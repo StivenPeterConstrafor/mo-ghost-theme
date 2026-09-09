@@ -25619,3 +25619,111 @@ body:has(.welcome-page) .site-header { position: static; flex: 0 0 auto; }
   .admin-emails-fields { grid-template-columns: 1fr; }
   .admin-emails-frame { height: 480px; }
 }
+
+/* ── Email preferences (/email-preferences/) ─────────────────────────
+   Three newsletter switches + universal unsubscribe. Sits on the
+   membership-support page-simple shell, same as /manage/. The toggle is
+   a real button[role=switch]; the ::after pseudo expands the hit area to
+   ≥44px without inflating the 52×30 visual track. */
+.pref-list, .pref-unsub, .pref-status { text-align: left; }
+.pref-list { margin-top: 32px; border-top: 1px solid var(--color-card-border); }
+.pref-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--color-card-border);
+}
+.pref-row-title {
+  font-size: 1.05rem;
+  margin: 0 0 4px;
+}
+.pref-row-desc {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.pref-chip {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  vertical-align: middle;
+}
+.pref-toggle {
+  position: relative;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 30px;
+  margin-top: 2px;
+  padding: 0;
+  border: 1px solid var(--color-muted);
+  border-radius: 15px;
+  background: var(--color-card-border);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+.pref-toggle::after {
+  /* Expanded touch target (30px visual → 46px effective). */
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+.pref-toggle[aria-checked="true"] {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.pref-toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.18s ease;
+}
+.pref-toggle[aria-checked="true"] .pref-toggle-knob { transform: translateX(22px); }
+.pref-toggle:disabled { opacity: 0.55; cursor: default; }
+.pref-toggle:focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 3px; }
+.pref-row--locked .pref-toggle { cursor: not-allowed; }
+.pref-status {
+  min-height: 1.5em;
+  margin: 16px 0 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+.pref-status.is-error { color: var(--color-alert-text); }
+.pref-unsub {
+  margin-top: 44px;
+  padding-top: 28px;
+  border-top: 1px solid var(--color-card-border);
+}
+.pref-unsub-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.pref-unsub-confirm p {
+  margin: 16px 0 0;
+  font-size: 0.95rem;
+}
+.pref-unsub [hidden] {
+  /* .btn's display:inline-flex beats the UA [hidden] rule (Frontend
+     §6.36) — same fix as .admin-workspace .btn[hidden]. */
+  display: none !important;
+}
+@media (max-width: 640px) {
+  .pref-row { gap: 16px; }
+}

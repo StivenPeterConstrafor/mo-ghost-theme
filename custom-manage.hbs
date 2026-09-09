@@ -47,6 +47,7 @@
             <div class="button-row">
               <a href="#/portal/account" data-portal="account" class="btn btn-primary btn-inline">Open Billing Portal</a>
               <a href="/dashboard/" class="btn btn-dark btn-inline">Go to Dashboard</a>
+              <a href="/email-preferences/" class="btn btn-outline btn-inline">Email Preferences</a>
             </div>
           </div>
 
@@ -120,6 +121,14 @@
                pointer to /membership/, which shows current members no
                pricing at all. --}}
           {{> "lifetime-upgrade"}}
+
+          {{!-- Email subscriptions live on their own page; this is the
+               member-facing door to it (free subscribers reach it from
+               the nav name button instead). --}}
+          <p class="fine-print">
+            Want to change which emails you receive?
+            <a href="/email-preferences/">Manage your email preferences</a>.
+          </p>
 
           <p class="fine-print">
             Questions? Email <a href="mailto:member@mereorthodoxy.com">member@mereorthodoxy.com</a>.

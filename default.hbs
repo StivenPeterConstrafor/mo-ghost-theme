@@ -346,7 +346,15 @@
                     <a href="/membership/" class="btn btn-primary">Become a Member</a>
                 {{else}}
                     <button class="sign-out" data-portal="signout">Sign out</button>
-                    <a href="/dashboard/" class="btn btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Dashboard{{/if}}</a>
+                    {{!-- Free subscribers have no dashboard access worth
+                         landing on; their name button goes to the email
+                         preferences page instead (Ian, 2026-09-09). Paid +
+                         comped keep the dashboard. --}}
+                    {{#match @member.status "free"}}
+                        <a href="/email-preferences/" class="btn btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Your Emails{{/if}}</a>
+                    {{else}}
+                        <a href="/dashboard/" class="btn btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Dashboard{{/if}}</a>
+                    {{/match}}
                 {{/unless}}
             </div>
             <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
@@ -381,7 +389,11 @@
                     <button class="mobile-nav-signin" data-portal="signin">Sign in</button>
                     <a href="/membership/" class="btn btn-primary">Become a Member</a>
                 {{else}}
-                    <a href="/dashboard/" class="btn btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Dashboard{{/if}}</a>
+                    {{#match @member.status "free"}}
+                        <a href="/email-preferences/" class="btn btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Your Emails{{/if}}</a>
+                    {{else}}
+                        <a href="/dashboard/" class="btn btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Dashboard{{/if}}</a>
+                    {{/match}}
                     <button class="mobile-nav-signout" data-portal="signout">Sign out</button>
                 {{/unless}}
             </div>

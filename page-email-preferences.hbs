@@ -1,0 +1,144 @@
+{{!< default}}
+{{#contentFor "moHead"}}
+<title>Email Preferences | Mere Orthodoxy</title>
+<meta name="robots" content="noindex, nofollow" />
+<meta name="description" content="Choose which emails you receive from Mere Orthodoxy." />
+{{/contentFor}}
+{{!-- page-email-preferences: /email-preferences/. One page to manage the
+     three opt-in emails (Weekly Digest, Mere O Mailbag, Daily Liturgy)
+     plus a universal unsubscribe. Backend: mo-kit GET/POST /preferences
+     and POST /unsubscribe-all, authed with the Ghost member JWT via
+     MOAuth.fetch (same pattern as /manage/'s address editor).
+
+     Server-side rendering only picks the shell: signed-out visitors get a
+     sign-in prompt, free subscribers get a locked Mailbag row (it's a
+     member benefit), everyone signed in gets live toggle state from the
+     worker. CTA/announcement emails are deliberately NOT listed — the
+     only way out of those is the unsubscribe-all button, which for a
+     free subscriber removes the account entirely. --}}
+
+<main class="membership membership-support page-simple">
+  <div class="centered-main">
+    <div class="container centered-inner narrow">
+
+      {{#if @member}}
+        <div class="pref-wrap" data-pref-page data-member-status="{{@member.status}}">
+          <p class="eyebrow">Your Emails</p>
+          <h1 class="page-hero-headline page-hero-headline--dark">Email Preferences</h1>
+          <p class="page-hero-sub page-hero-sub--dark">
+            Choose which emails you receive from Mere&nbsp;Orthodoxy. Changes take effect right away.
+          </p>
+
+          <div class="pref-list" data-pref-list aria-busy="true">
+
+            <div class="pref-row">
+              <div class="pref-row-text">
+                <h2 class="pref-row-title">Weekly Digest</h2>
+                <p class="pref-row-desc">One email each week with our latest essays, reviews, and news.</p>
+              </div>
+              <button type="button" class="pref-toggle" role="switch" aria-checked="false"
+                      data-pref-toggle="digest" disabled>
+                <span class="pref-toggle-knob" aria-hidden="true"></span>
+                <span class="sr-only">Receive the Weekly Digest</span>
+              </button>
+            </div>
+
+            {{#match @member.status "free"}}
+              <div class="pref-row pref-row--locked">
+                <div class="pref-row-text">
+                  <h2 class="pref-row-title">Mere O Mailbag <span class="pref-chip">Members only</span></h2>
+                  <p class="pref-row-desc">
+                    A members-only email from the editors.
+                    <a href="/membership/">Become a Member</a> to receive it.
+                  </p>
+                </div>
+                <button type="button" class="pref-toggle" role="switch" aria-checked="false"
+                        aria-label="Mere O Mailbag is available to members" disabled>
+                  <span class="pref-toggle-knob" aria-hidden="true"></span>
+                </button>
+              </div>
+            {{else}}
+              <div class="pref-row">
+                <div class="pref-row-text">
+                  <h2 class="pref-row-title">Mere O Mailbag</h2>
+                  <p class="pref-row-desc">A members-only email from the editors, included with your membership.</p>
+                </div>
+                <button type="button" class="pref-toggle" role="switch" aria-checked="false"
+                        data-pref-toggle="mailbag" disabled>
+                  <span class="pref-toggle-knob" aria-hidden="true"></span>
+                  <span class="sr-only">Receive the Mere O Mailbag</span>
+                </button>
+              </div>
+            {{/match}}
+
+            <div class="pref-row">
+              <div class="pref-row-text">
+                <h2 class="pref-row-title">Daily Liturgy</h2>
+                <p class="pref-row-desc">A short daily email with Scripture readings and prayer, every morning.</p>
+              </div>
+              <button type="button" class="pref-toggle" role="switch" aria-checked="false"
+                      data-pref-toggle="liturgy" disabled>
+                <span class="pref-toggle-knob" aria-hidden="true"></span>
+                <span class="sr-only">Receive the Daily Liturgy</span>
+              </button>
+            </div>
+
+          </div>
+
+          <p class="pref-status" data-pref-status role="status" aria-live="polite"></p>
+
+          <div class="pref-unsub" data-pref-unsub>
+            <h2 class="manage-section-heading"><em>Unsubscribe from everything</em></h2>
+            {{#match @member.status "free"}}
+              <p class="pref-row-desc">
+                This removes you from every Mere&nbsp;Orthodoxy email, including occasional announcements,
+                and closes your free account. You can always sign up again later.
+              </p>
+            {{else}}
+              <p class="pref-row-desc">
+                This turns off all three emails above. As a member you will still receive occasional
+                membership announcements and account emails.
+              </p>
+            {{/match}}
+            <div class="pref-unsub-actions">
+              <button type="button" class="btn btn-dark btn-inline" data-pref-unsub-start>
+                Unsubscribe from all emails
+              </button>
+            </div>
+            <div class="pref-unsub-confirm" data-pref-unsub-confirm hidden>
+              {{#match @member.status "free"}}
+                <p>Are you sure? This unsubscribes you from everything and closes your account.</p>
+              {{else}}
+                <p>Are you sure? This turns off the Weekly Digest, the Mailbag, and the Daily Liturgy.</p>
+              {{/match}}
+              <div class="pref-unsub-actions">
+                <button type="button" class="btn btn-dark btn-inline" data-pref-unsub-yes>Yes, unsubscribe me</button>
+                <button type="button" class="btn btn-outline btn-inline" data-pref-unsub-cancel>Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          <p class="fine-print">
+            Questions? Email <a href="mailto:member@mereorthodoxy.com">member@mereorthodoxy.com</a>.
+          </p>
+        </div>
+
+        <script src="{{asset "js/page/email-preferences.js"}}"></script>
+
+      {{else}}
+        <p class="eyebrow">Your Emails</p>
+        <h1 class="page-hero-headline page-hero-headline--dark">Email Preferences</h1>
+        <p class="page-hero-sub page-hero-sub--dark">
+          Sign in to choose which emails you receive from Mere&nbsp;Orthodoxy.
+        </p>
+        <div class="button-row">
+          <button class="btn btn-primary btn-inline" data-portal="signin">Sign in</button>
+        </div>
+        <p class="fine-print">
+          Need help? Email <a href="mailto:member@mereorthodoxy.com">member@mereorthodoxy.com</a>.
+        </p>
+      {{/if}}
+
+    </div>
+  </div>
+</main>
