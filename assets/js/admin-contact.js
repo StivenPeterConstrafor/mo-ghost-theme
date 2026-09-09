@@ -33,12 +33,22 @@
   const emptyEl = root.querySelector("[data-contact-empty]");
   const statusEl = root.querySelector("[data-contact-status]");
   const filterSelect = root.querySelector("[data-contact-filter-select]");
+  const syncBtn = root.querySelector("[data-contact-sync]");
 
   let messages = {};
   let activeFilter = "all";
+  // Which row is expanded, tracked outside the DOM. repaint() rebuilds
+  // listEl.innerHTML wholesale (see below), so a hidden attribute toggled
+  // directly on a node is destroyed the instant anything else triggers a
+  // repaint — and opening an UNREAD row calls markRead(), which repaints
+  // synchronously in the same click, closing the row before the browser
+  // ever paints it open. Rendering hidden/open from this instead of a
+  // per-node attribute survives that repaint.
+  let openId = null;
 
   hydrate();
   wireFilters();
+  wireSync();
 
   // -------------------------------------------------------------------------
   // Data
@@ -89,26 +99,39 @@
     const typeLabel = escapeHtml(TYPE_LABELS[m.type] || m.type || "Other");
     const when = formatDate(m.created_at);
     const unread = !m.read;
+    // Tickets that arrived via a forwarded email (support-inbox.js) rather
+    // than the public contact form — the original subject line is the
+    // clearest context a staff member gets before opening the row.
+    const fromGmail = m.source === "gmail";
+    const isOpen = String(openId) === String(m.id);
     return (
       `<li class="contact-msg-row${unread ? " is-unread" : ""}" data-id="${m.id}">` +
         `<div class="contact-msg-head" data-action="toggle" data-id="${m.id}">` +
-          `<span class="contact-msg-name">${name}${ 
-            unread ? `<span class="contact-msg-dot"></span>` : "" 
+          `<span class="contact-msg-name">${name}${
+            unread ? `<span class="contact-msg-dot"></span>` : ""
           }</span>` +
-          `<span class="contact-msg-badge contact-type-${escapeAttr(m.type || "other")}">${typeLabel}</span>` +
-          `<span class="contact-msg-date">${escapeHtml(when)}</span>` +
+          `<span class="contact-msg-badge contact-type-${escapeAttr(m.type || "other")}">${typeLabel}</span>${
+          fromGmail ? '<span class="contact-msg-badge contact-source-gmail">Forwarded</span>' : ""
+          }<span class="contact-msg-date">${escapeHtml(when)}</span>` +
         `</div>` +
-        `<div class="contact-msg-body" hidden>` +
-          `<p class="contact-msg-email">` +
-            `<a href="mailto:${escapeAttr(m.email)}">${escapeHtml(m.email || "")}</a>` +
-          `</p>` +
-          `<p class="contact-msg-text">${escapeHtml(m.message || "")}</p>` +
+        `<div class="contact-msg-body"${isOpen ? "" : " hidden"}>` +
+          `<p class="contact-msg-email">${ 
+            m.email
+              ? `<a href="mailto:${escapeAttr(m.email)}">${escapeHtml(m.email)}</a>`
+              : `<em>No email address found — check the original forwarded message.</em>` 
+          }</p>${ 
+          fromGmail && m.original_subject
+            ? `<p class="contact-msg-subject"><strong>Original subject:</strong> ${escapeHtml(m.original_subject)}</p>`
+            : "" 
+          }<p class="contact-msg-text">${escapeHtml(m.message || "")}</p>` +
           `<div class="contact-msg-actions">` +
             `<button type="button" class="btn btn-sm" data-action="${unread ? "mark-read" : "mark-unread"}" data-id="${m.id}">${ 
               unread ? "Mark read" : "Mark unread" 
-            }</button>` +
-            `<a href="mailto:${escapeAttr(m.email)}?subject=${encodeURIComponent("Re: Your message to Mere Orthodoxy")}" class="btn btn-sm">Reply</a>` +
-            `<button type="button" class="btn btn-sm btn-danger" data-action="delete" data-id="${m.id}">Delete</button>` +
+            }</button>${ 
+            m.email
+              ? `<a href="mailto:${escapeAttr(m.email)}?subject=${encodeURIComponent("Re: Your message to Mere Orthodoxy")}" class="btn btn-sm">Reply</a>`
+              : "" 
+            }<button type="button" class="btn btn-sm btn-danger" data-action="delete" data-id="${m.id}">Delete</button>` +
             `<select class="contact-assign-select" data-assign-contact="${escapeAttr(m.id)}" data-id="${escapeAttr(m.id)}"><option value="">Assign to…</option></select>` +
           `</div>` +
         `</div>` +
@@ -123,17 +146,15 @@
     listEl.querySelectorAll('[data-action="toggle"]').forEach((el) => {
       el.addEventListener("click", () => {
         const id = el.getAttribute("data-id");
-        const row = listEl.querySelector(`li[data-id="${id}"]`);
-        if (!row) return;
-        const body = row.querySelector(".contact-msg-body");
-        if (!body) return;
-        const wasHidden = body.hasAttribute("hidden");
-        // Collapse any open row first.
-        listEl.querySelectorAll(".contact-msg-body").forEach((b) => b.setAttribute("hidden", ""));
-        if (wasHidden) {
-          body.removeAttribute("hidden");
-          // Auto-mark as read on open.
-          if (messages[id] && !messages[id].read) markRead(id, true);
+        const wasOpen = String(openId) === String(id);
+        openId = wasOpen ? null : id;
+        // Opening an unread row marks it read, which repaints on its own
+        // (using the openId set above) — repainting again here would just
+        // be redundant, not wrong, but there's no reason to do it twice.
+        if (!wasOpen && messages[id] && !messages[id].read) {
+          markRead(id, true);
+        } else {
+          repaint();
         }
       });
     });
@@ -189,6 +210,34 @@
     filterSelect.addEventListener("change", () => {
       activeFilter = filterSelect.value;
       repaint();
+    });
+  }
+
+  // Runs the same Gmail check the cron does (lib/support-inbox.js), on
+  // demand — for when you forwarded something to support@mereorthodoxy.com
+  // and don't want to wait up to 10 minutes for the next scheduled run.
+  function wireSync() {
+    if (!syncBtn) return;
+    syncBtn.addEventListener("click", () => {
+      syncBtn.disabled = true;
+      const origLabel = syncBtn.textContent;
+      syncBtn.textContent = "Checking…";
+      setStatus("Checking Gmail for forwarded tickets…");
+      window.MOAuth.fetch(`${adminUrl}/contact/sync-gmail`, { method: "POST", credentials: "omit" })
+        .then((r) => r.json().then((data) => ({ ok: r.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok) {
+            setStatus(`Couldn't check Gmail: ${(data && data.error) || "unknown error"}.`);
+            return;
+          }
+          const created = data.created || 0;
+          setStatus(created
+            ? `Found ${created} new ticket${created === 1 ? "" : "s"}.`
+            : "Checked — nothing new.");
+          if (created) hydrate();
+        })
+        .catch(() => setStatus("Network error checking Gmail."))
+        .finally(() => { syncBtn.disabled = false; syncBtn.textContent = origLabel; });
     });
   }
 

@@ -42,6 +42,11 @@
               <option value="general_feedback">General Feedback</option>
               <option value="other">Other</option>
             </select>
+            {{!-- Forward a customer email to support@mereorthodoxy.com and
+                  it lands here within ~10 minutes via the cron in
+                  lib/support-inbox.js. This button runs the same check
+                  immediately, for when you don't want to wait. --}}
+            <button type="button" class="btn btn-sm" data-contact-sync>Check for new tickets</button>
           </div>
 
           <p class="admin-sub" data-contact-empty hidden>No messages yet. New submissions from the contact form will appear here.</p>

@@ -19458,6 +19458,10 @@ body:has(.au-modal-overlay) {
 
 .contact-filters {
   margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .contact-filter-select {
@@ -19554,6 +19558,7 @@ body:has(.au-modal-overlay) {
 .contact-type-media_query         { background: #f8f0e8; color: #7a4a10; }
 .contact-type-general_feedback    { background: #f0e8f8; color: #5a2a8a; }
 .contact-type-other               { background: #f0eeea; color: #666; }
+.contact-source-gmail             { background: #fdf3e3; color: #8a5a10; }
 
 .contact-msg-date {
   font-size: 11px;
@@ -19575,6 +19580,12 @@ body:has(.au-modal-overlay) {
 .contact-msg-email a {
   color: inherit;
   text-decoration: underline;
+}
+
+.contact-msg-subject {
+  font-size: 13px;
+  color: var(--color-muted, #888);
+  margin: 0 0 12px;
 }
 
 .contact-msg-text {
