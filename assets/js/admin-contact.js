@@ -34,6 +34,8 @@
   const statusEl = root.querySelector("[data-contact-status]");
   const filterSelect = root.querySelector("[data-contact-filter-select]");
   const syncBtn = root.querySelector("[data-contact-sync]");
+  const markAllReadBtn = root.querySelector("[data-contact-mark-all-read]");
+  const markSelectedReadBtn = root.querySelector("[data-contact-mark-selected-read]");
 
   let messages = {};
   let activeFilter = "all";
@@ -48,10 +50,15 @@
   // Which ticket (if any) currently has its raw original text expanded —
   // same repaint-survival reasoning as openId, just for the nested toggle.
   let showRawFor = null;
+  // Multiselect for bulk "mark as read". Outside the DOM for the same
+  // repaint-survival reason as openId/showRawFor. Mutated in place
+  // (add/delete/clear), never reassigned.
+  const selectedIds = new Set();
 
   hydrate();
   wireFilters();
   wireSync();
+  wireBulkActions();
 
   // -------------------------------------------------------------------------
   // Data
@@ -80,12 +87,23 @@
   // -------------------------------------------------------------------------
   // Rendering
 
+  // Rows currently matching the active filter — what "Mark all as read"
+  // operates on, and what "select all visible" (if ever added) would mean.
+  // Kept as a module variable rather than re-derived at click time so the
+  // bulk actions act on exactly what's on screen right now.
+  let visibleIds = [];
+
   function repaint() {
+    // A deleted message can leave a stale entry selected; drop anything
+    // that no longer exists so the "N selected" count stays honest.
+    for (const id of selectedIds) { if (!messages[id]) selectedIds.delete(id); }
+
     const all = Object.values(messages)
       .sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
     const filtered = activeFilter === "all"
       ? all
       : all.filter((m) => m.type === activeFilter);
+    visibleIds = filtered.map((m) => m.id);
 
     if (!filtered.length) {
       listEl.innerHTML = "";
@@ -95,6 +113,7 @@
       listEl.innerHTML = filtered.map(renderRow).join("");
       wireRows();
     }
+    updateBulkButtons();
   }
 
   function renderRow(m) {
@@ -110,6 +129,9 @@
     return (
       `<li class="contact-msg-row${unread ? " is-unread" : ""}" data-id="${m.id}">` +
         `<div class="contact-msg-head" data-action="toggle" data-id="${m.id}">` +
+          `<input type="checkbox" class="contact-msg-select" data-action="select" data-id="${escapeAttr(m.id)}"${
+            selectedIds.has(m.id) ? " checked" : ""
+          } aria-label="Select ${name || "this message"}">` +
           `<span class="contact-msg-name">${name}${
             unread ? `<span class="contact-msg-dot"></span>` : ""
           }</span>` +
@@ -227,6 +249,15 @@
   // Wire interactions
 
   function wireRows() {
+    listEl.querySelectorAll('[data-action="select"]').forEach((cb) => {
+      cb.addEventListener("click", (ev) => ev.stopPropagation());
+      cb.addEventListener("change", () => {
+        const id = cb.getAttribute("data-id");
+        if (cb.checked) selectedIds.add(id); else selectedIds.delete(id);
+        updateBulkButtons();
+      });
+    });
+
     listEl.querySelectorAll('[data-action="toggle"]').forEach((el) => {
       el.addEventListener("click", () => {
         const id = el.getAttribute("data-id");
@@ -348,6 +379,42 @@
     });
   }
 
+  function wireBulkActions() {
+    if (markAllReadBtn) {
+      markAllReadBtn.addEventListener("click", () => {
+        if (!visibleIds.length) return;
+        bulkMarkRead(visibleIds, markAllReadBtn, "Marking all read…");
+      });
+    }
+    if (markSelectedReadBtn) {
+      markSelectedReadBtn.addEventListener("click", () => {
+        const ids = [...selectedIds];
+        if (!ids.length) return;
+        bulkMarkRead(ids, markSelectedReadBtn, "Marking selected read…", () => {
+          selectedIds.clear();
+        });
+      });
+    }
+  }
+
+  // Reflects the current selection into the "Mark selected as read" button
+  // — disabled with no count when nothing is selected, so it never reads
+  // as a live "mark everything" action by mistake.
+  function updateBulkButtons() {
+    if (markSelectedReadBtn) {
+      const n = selectedIds.size;
+      markSelectedReadBtn.disabled = n === 0;
+      markSelectedReadBtn.textContent = n ? `Mark ${n} selected as read` : "Mark selected as read";
+    }
+    if (markAllReadBtn) {
+      markAllReadBtn.disabled = visibleIds.length === 0;
+      // Always the fixed label, not a snapshot — bulkMarkRead's loading
+      // state ("Marking all read…") would otherwise stick permanently,
+      // since nothing else ever restores this button's resting text.
+      markAllReadBtn.textContent = "Mark all as read";
+    }
+  }
+
   // -------------------------------------------------------------------------
   // Actions
 
@@ -363,6 +430,41 @@
       credentials: "omit",
       body: JSON.stringify({ read }),
     }).catch((err) => { console.error("mark read failed", err); });
+  }
+
+  // One request for N ids (POST /contact/messages/bulk-read), not N
+  // requests — the backlog this button exists for can be in the hundreds,
+  // and a loop of individual /read calls would be slow and easy to half-
+  // finish on a network hiccup.
+  function bulkMarkRead(ids, btn, loadingLabel, onSuccess) {
+    btn.disabled = true;
+    btn.textContent = loadingLabel;
+    window.MOAuth.fetch(`${adminUrl}/contact/messages/bulk-read`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "omit",
+      body: JSON.stringify({ ids, read: true }),
+    })
+      .then((r) => r.json().then((data) => ({ ok: r.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok) {
+          setStatus(`Couldn't mark as read: ${(data && data.error) || "unknown error"}.`);
+          return;
+        }
+        ids.forEach((id) => { if (messages[id]) messages[id].read = 1; });
+        if (onSuccess) onSuccess();
+        updateUnreadCounts();
+        repaint();
+        setStatus(`Marked ${data.updated || ids.length} as read.`);
+      })
+      .catch(() => setStatus("Network error."))
+      // Not a restore-the-snapshot .finally(): repaint() above (on success)
+      // already gave the button its correct post-update label via
+      // updateBulkButtons(), and re-deriving it here rather than restoring
+      // whatever the label said before the click is what keeps a stale
+      // "Mark 3 selected" from reappearing after the 3 were just cleared.
+      // On failure it's the only thing that un-sticks the button at all.
+      .finally(() => { btn.disabled = false; updateBulkButtons(); });
   }
 
   function deleteMessage(id, btn) {

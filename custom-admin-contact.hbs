@@ -47,6 +47,12 @@
                   lib/support-inbox.js. This button runs the same check
                   immediately, for when you don't want to wait. --}}
             <button type="button" class="btn btn-sm" data-contact-sync>Check for new tickets</button>
+            {{!-- "All as read" scopes to the current filter (visibleIds in
+                  admin-contact.js), not literally every message — matches
+                  what the dropdown above already scopes the unread counts
+                  to. "Selected" stays disabled until a checkbox is ticked. --}}
+            <button type="button" class="btn btn-sm" data-contact-mark-all-read disabled>Mark all as read</button>
+            <button type="button" class="btn btn-sm" data-contact-mark-selected-read disabled>Mark selected as read</button>
           </div>
 
           <p class="admin-sub" data-contact-empty hidden>No messages yet. New submissions from the contact form will appear here.</p>
