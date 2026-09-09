@@ -95,15 +95,24 @@
     const payMain = pay ? usd(pay.amount) : "—";
     const paySub = pay ? `${mdy(pay.at)}${pay.status ? ` · ${esc(pay.status)}` : ""}` : "no payments on file";
 
-    // The number Ian actually acts on, with the band that produced it so
-    // it can be checked at a glance rather than taken on trust.
+    // The number Ian actually acts on, with the band (and any charges since
+    // migrating) that produced it so it can be checked at a glance rather
+    // than taken on trust. total_refund_owed folds in every post-migration
+    // overcharge, not just the laddered legacy payment — a person charged
+    // twice after migrating but owed nothing under the ladder itself used
+    // to read here as "nothing to refund".
     const ref = r.refund;
-    const refMain = ref ? usd(ref.amount) : "—";
-    const refSub = ref
+    const totalOwed = typeof r.total_refund_owed === "number" ? r.total_refund_owed : (ref ? ref.amount : 0);
+    const refMain = totalOwed > 0 ? usd(totalOwed) : "—";
+    const ladderNote = ref
       ? (ref.blocked
         ? `HubSpot will not refund this — ${esc(String(ref.blocked).replace(/_/g, " "))}`
         : `${esc(ref.band)} · ${Math.round(ref.pct * 100)}% of ${usd(ref.of)}`)
-      : "nothing to refund";
+      : "";
+    const postNote = r.post_owed > 0
+      ? `${fmt(r.post_charges.length)} charge${r.post_charges.length === 1 ? "" : "s"} since migrating (${usd(r.post_owed)})`
+      : "";
+    const refSub = [ladderNote, postNote].filter(Boolean).join(", plus ") || "nothing to refund";
 
     // One primary per row, and which one depends on what is actually left
     // to do: cancel it, or just file it.
@@ -117,9 +126,19 @@
     } else if (r.kind === "risk") {
       actions.push('<button type="button" class="kpi-btn" data-mig-do="cancel" disabled>Cancel</button>');
     }
-    if (pay) {
-      const owed = ref && ref.amount > 0 ? ` ${usd(ref.amount)}` : "";
-      actions.push(`<a class="kpi-btn${r.kind === "clear" ? " kpi-btn--quiet" : ""}" href="${esc(pay.url)}" target="_blank" rel="noopener">Refund${owed} ↗</a>`);
+    // HubSpot has no refund API and no bulk refund, so every payment that
+    // still owes money gets its own link straight to that payment record —
+    // the legacy charge plus any post-migration overcharges. Capped inline
+    // so a person charged monthly for a year doesn't turn one row into a
+    // wall of buttons; the rest are one click away via the full payment list.
+    const links = Array.isArray(r.refund_links) ? r.refund_links : [];
+    const MAX_INLINE_REFUND_LINKS = 3;
+    links.slice(0, MAX_INLINE_REFUND_LINKS).forEach((link) => {
+      actions.push(`<a class="kpi-btn${r.kind === "clear" ? " kpi-btn--quiet" : ""}" href="${esc(link.url)}" target="_blank" rel="noopener" title="${esc(link.note)} · ${mdy(link.at)}">Refund ${usd(link.amount)} ↗</a>`);
+    });
+    if (links.length > MAX_INLINE_REFUND_LINKS) {
+      const rest = links.length - MAX_INLINE_REFUND_LINKS;
+      actions.push(`<a class="kpi-btn kpi-btn--quiet" href="${esc(r.payments_url)}" target="_blank" rel="noopener">+${rest} more payment${rest === 1 ? "" : "s"} ↗</a>`);
     }
     actions.push(`<a class="kpi-btn kpi-btn--quiet" href="${esc(r.hubspot_contact_url)}" target="_blank" rel="noopener">HubSpot ↗</a>`);
     actions.push(`<button type="button" class="kpi-btn${r.kind === "clear" ? " kpi-btn--primary" : " kpi-btn--quiet"}" data-mig-do="processed">Done</button>`);
@@ -199,7 +218,9 @@
 
   /*
    * What "mark all done" covers: the rows with nothing left to do — no
-   * legacy subscription, so nothing to cancel and nothing to refund.
+   * legacy subscription, so nothing to cancel, AND nothing still owed
+   * (total_refund_owed folds in post-migration overcharges as well as the
+   * ladder), so nothing to refund either.
    *
    * Not the cancelled-this-session rows, even though they look finished.
    * Filing one removes it from the queue, and HubSpot has no way to tell
@@ -208,7 +229,9 @@
    * a time, after the refund. And never the do-not-cancel rows: those are
    * unresolved by definition.
    */
-  const filedByBulk = () => (queue ? queue.rows.filter((r) => r.kind === "clear") : []);
+  const filedByBulk = () => (queue
+    ? queue.rows.filter((r) => r.kind === "clear" && !(r.total_refund_owed > 0))
+    : []);
 
   async function load() {
     try {
