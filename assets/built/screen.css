@@ -19542,6 +19542,17 @@ body:has(.au-modal-overlay) {
   flex-shrink: 0;
 }
 
+/* A row can carry more than one badge (type + "Forwarded"), so the head's
+   grid places THIS wrapper as a single item; the badges inside it just
+   flex-wrap, which is what keeps two badges from being independently
+   placed into the same grid cell and overlapping (see the mobile rule
+   below, which used to target .contact-msg-badge directly). */
+.contact-msg-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .contact-msg-badge {
   font-size: 10px;
   font-weight: 600;
@@ -19597,6 +19608,114 @@ body:has(.au-modal-overlay) {
   max-width: 640px;
 }
 
+/* AI summary/recommendation — a Gmail-forwarded ticket only, shown above
+   the cleaned thread. Left-accent-border treatment (not a floating card)
+   matches .mig-row.is-risk's precedent for admin-only emphasis. */
+.contact-msg-summary {
+  background: var(--color-cream, #f5efe1);
+  border-left: 3px solid var(--color-primary, #ee7d51);
+  padding: 14px 16px;
+  margin: 0 0 16px;
+  max-width: 640px;
+}
+
+.contact-msg-summary-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted, #888);
+  margin: 0 0 4px;
+}
+
+.contact-msg-summary-label:not(:first-child) { margin-top: 12px; }
+
+.contact-msg-summary-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-dark, #1e1c1a);
+  margin: 0;
+}
+
+/* Cleaned message-by-message thread, replacing the raw quote chain. */
+.contact-msg-thread {
+  margin: 0 0 16px;
+  max-width: 640px;
+  border-top: 1px solid var(--color-border, #e8e4de);
+}
+
+.contact-msg-thread-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border, #e8e4de);
+}
+
+.contact-msg-thread-meta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-muted, #888);
+  margin: 0 0 4px;
+}
+
+.contact-msg-thread-text {
+  font-size: 13.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: var(--color-dark, #1e1c1a);
+  margin: 0;
+}
+
+/* Collapsed-by-default original forwarded email, behind "Show original…". */
+.contact-msg-raw {
+  font-family: ui-monospace, monospace;
+  font-size: 11.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: var(--color-muted, #888);
+  background: var(--color-light, #f6f5f3);
+  border: 1px solid var(--color-border, #e8e4de);
+  border-radius: 6px;
+  padding: 12px;
+  max-width: 640px;
+  max-height: 320px;
+  overflow-y: auto;
+  margin: 8px 0 16px;
+}
+
+.contact-msg-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  max-width: 640px;
+}
+
+.contact-msg-attachments-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted, #888);
+  margin: 0;
+  width: 100%;
+}
+
+.contact-attachment-link {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-dark, #1e1c1a);
+  background: var(--color-light, #f6f5f3);
+  border: 1px solid var(--color-border, #e8e4de);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.contact-attachment-link:hover {
+  border-color: var(--color-primary, #ee7d51);
+}
+
 .contact-msg-actions {
   display: flex;
   flex-wrap: wrap;
@@ -19612,7 +19731,7 @@ body:has(.au-modal-overlay) {
     grid-column: 2;
     grid-row: 1;
   }
-  .contact-msg-badge {
+  .contact-msg-badges {
     grid-column: 1 / -1;
     grid-row: 2;
     justify-self: start;

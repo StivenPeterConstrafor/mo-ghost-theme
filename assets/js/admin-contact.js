@@ -45,6 +45,9 @@
   // ever paints it open. Rendering hidden/open from this instead of a
   // per-node attribute survives that repaint.
   let openId = null;
+  // Which ticket (if any) currently has its raw original text expanded —
+  // same repaint-survival reasoning as openId, just for the nested toggle.
+  let showRawFor = null;
 
   hydrate();
   wireFilters();
@@ -110,32 +113,113 @@
           `<span class="contact-msg-name">${name}${
             unread ? `<span class="contact-msg-dot"></span>` : ""
           }</span>` +
-          `<span class="contact-msg-badge contact-type-${escapeAttr(m.type || "other")}">${typeLabel}</span>${
-          fromGmail ? '<span class="contact-msg-badge contact-source-gmail">Forwarded</span>' : ""
-          }<span class="contact-msg-date">${escapeHtml(when)}</span>` +
+          `<span class="contact-msg-badges">` +
+            `<span class="contact-msg-badge contact-type-${escapeAttr(m.type || "other")}">${typeLabel}</span>${
+            fromGmail ? '<span class="contact-msg-badge contact-source-gmail">Forwarded</span>' : ""
+            }` +
+          `</span>` +
+          `<span class="contact-msg-date">${escapeHtml(when)}</span>` +
         `</div>` +
-        `<div class="contact-msg-body"${isOpen ? "" : " hidden"}>` +
-          `<p class="contact-msg-email">${ 
-            m.email
-              ? `<a href="mailto:${escapeAttr(m.email)}">${escapeHtml(m.email)}</a>`
-              : `<em>No email address found — check the original forwarded message.</em>` 
-          }</p>${ 
-          fromGmail && m.original_subject
-            ? `<p class="contact-msg-subject"><strong>Original subject:</strong> ${escapeHtml(m.original_subject)}</p>`
-            : "" 
-          }<p class="contact-msg-text">${escapeHtml(m.message || "")}</p>` +
-          `<div class="contact-msg-actions">` +
-            `<button type="button" class="btn btn-sm" data-action="${unread ? "mark-read" : "mark-unread"}" data-id="${m.id}">${ 
-              unread ? "Mark read" : "Mark unread" 
-            }</button>${ 
+        `<div class="contact-msg-body"${isOpen ? "" : " hidden"}>${ 
+          renderMessageBody(m, fromGmail) 
+          }<div class="contact-msg-actions">` +
+            `<button type="button" class="btn btn-sm" data-action="${unread ? "mark-read" : "mark-unread"}" data-id="${m.id}">${
+              unread ? "Mark read" : "Mark unread"
+            }</button>${
             m.email
               ? `<a href="mailto:${escapeAttr(m.email)}?subject=${encodeURIComponent("Re: Your message to Mere Orthodoxy")}" class="btn btn-sm">Reply</a>`
-              : "" 
+              : ""
             }<button type="button" class="btn btn-sm btn-danger" data-action="delete" data-id="${m.id}">Delete</button>` +
             `<select class="contact-assign-select" data-assign-contact="${escapeAttr(m.id)}" data-id="${escapeAttr(m.id)}"><option value="">Assign to…</option></select>` +
           `</div>` +
         `</div>` +
       `</li>`
+    );
+  }
+
+  // The email address line, the original subject (Gmail tickets), then
+  // either the AI summary/recommendation + cleaned thread (once one
+  // exists), a "Clean up this ticket" prompt (Gmail ticket, none yet), or
+  // just the plain message text (contact-form tickets, which are already
+  // clean — a single structured submission, not a quote chain). Attachments
+  // render regardless of summary state.
+  function renderMessageBody(m, fromGmail) {
+    const emailLine = m.email
+      ? `<a href="mailto:${escapeAttr(m.email)}">${escapeHtml(m.email)}</a>`
+      : `<em>No email address found — check the original forwarded message.</em>`;
+    const subjectLine = fromGmail && m.original_subject
+      ? `<p class="contact-msg-subject"><strong>Original subject:</strong> ${escapeHtml(m.original_subject)}</p>`
+      : "";
+
+    let content;
+    if (fromGmail && m.summary) {
+      content = renderSummary(m) + renderThread(m) + renderRawToggle(m);
+    } else if (fromGmail) {
+      content = (
+        `<p class="contact-msg-text">${escapeHtml(m.message || "")}</p>` +
+        `<button type="button" class="btn btn-sm" data-action="summarize" data-id="${escapeAttr(m.id)}">Clean up this ticket</button>`
+      );
+    } else {
+      content = `<p class="contact-msg-text">${escapeHtml(m.message || "")}</p>`;
+    }
+
+    return `<p class="contact-msg-email">${emailLine}</p>${subjectLine}${content}${renderAttachments(m)}`;
+  }
+
+  function renderSummary(m) {
+    return (
+      `<div class="contact-msg-summary">` +
+        `<p class="contact-msg-summary-label">Summary</p>` +
+        `<p class="contact-msg-summary-text">${escapeHtml(m.summary)}</p>${ 
+        m.recommendation
+          ? `<p class="contact-msg-summary-label">Recommendation</p>` +
+            `<p class="contact-msg-summary-text">${escapeHtml(m.recommendation)}</p>`
+          : "" 
+      }</div>`
+    );
+  }
+
+  function renderThread(m) {
+    const items = Array.isArray(m.messages) ? m.messages : [];
+    if (!items.length) return "";
+    return (
+      `<div class="contact-msg-thread">${ 
+        items.map((t) => (
+          `<div class="contact-msg-thread-item">` +
+            `<p class="contact-msg-thread-meta">${
+              [escapeHtml(t.from || ""), escapeHtml(t.date || "")].filter(Boolean).join(" · ")
+            }</p>` +
+            `<p class="contact-msg-thread-text">${escapeHtml(t.text || "")}</p>` +
+          `</div>`
+        )).join("") 
+      }</div>`
+    );
+  }
+
+  // Collapsed by default — the AI cleanup is a read of the same text, not
+  // a replacement for it, so the original stays one click away.
+  function renderRawToggle(m) {
+    const showing = showRawFor === m.id;
+    return (
+      `<button type="button" class="btn btn-sm btn-ghost" data-action="toggle-raw" data-id="${escapeAttr(m.id)}">${
+        showing ? "Hide" : "Show"
+      } original forwarded email</button>` +
+      `<pre class="contact-msg-raw"${showing ? "" : " hidden"}>${escapeHtml(m.message || "")}</pre>`
+    );
+  }
+
+  function renderAttachments(m) {
+    const files = Array.isArray(m.attachments) ? m.attachments : [];
+    if (!files.length) return "";
+    return (
+      `<div class="contact-msg-attachments">` +
+        `<p class="contact-msg-attachments-label">Attachments</p>${ 
+        files.map((a) => (
+          `<button type="button" class="contact-attachment-link" data-action="view-attachment" ` +
+          `data-id="${escapeAttr(m.id)}" data-attachment-id="${escapeAttr(a.attachment_id)}">` +
+          `${escapeHtml(a.filename || "attachment")} (${formatBytes(a.size)})</button>`
+        )).join("") 
+      }</div>`
     );
   }
 
@@ -176,6 +260,29 @@
         const name = `${m.first_name} ${m.last_name || ""}`.trim();
         if (!confirm(`Delete message from "${name}"? This cannot be undone.`)) return;
         deleteMessage(id, btn);
+      });
+    });
+
+    listEl.querySelectorAll('[data-action="toggle-raw"]').forEach((btn) => {
+      btn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        const id = btn.getAttribute("data-id");
+        showRawFor = showRawFor === id ? null : id;
+        repaint();
+      });
+    });
+
+    listEl.querySelectorAll('[data-action="summarize"]').forEach((btn) => {
+      btn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        summarizeTicket(btn.getAttribute("data-id"), btn);
+      });
+    });
+
+    listEl.querySelectorAll('[data-action="view-attachment"]').forEach((btn) => {
+      btn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        viewAttachment(btn.getAttribute("data-id"), btn.getAttribute("data-attachment-id"), btn);
       });
     });
 
@@ -275,6 +382,60 @@
       .catch(() => { setStatus("Network error."); btn.disabled = false; btn.textContent = origLabel; });
   }
 
+  // Calls Claude once to turn the raw quote-chain into a summary,
+  // recommendation, and cleaned message-by-message thread — see
+  // lib/support-inbox.js. Covers a ticket ingested before this existed, or
+  // whose auto-summary failed at ingestion time (network blip, rate limit).
+  function summarizeTicket(id, btn) {
+    const origLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Cleaning up…";
+    window.MOAuth.fetch(`${adminUrl}/contact/messages/${encodeURIComponent(id)}/summarize`, {
+      method: "POST", credentials: "omit",
+    })
+      .then((r) => r.json().then((data) => ({ ok: r.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok || !data.message) {
+          setStatus(`Couldn't clean up ticket: ${(data && data.error) || "unknown error"}.`);
+          btn.disabled = false;
+          btn.textContent = origLabel;
+          return;
+        }
+        messages[id] = data.message;
+        repaint();
+      })
+      .catch(() => { setStatus("Network error."); btn.disabled = false; btn.textContent = origLabel; });
+  }
+
+  // Attachments need an authenticated fetch (MOAuth.fetch attaches the
+  // Ghost JWT), so a plain <a href> can't reach them — fetch as a blob and
+  // hand the browser an object URL instead. Images/PDFs preview in the new
+  // tab (the worker sets Content-Disposition: inline for those); anything
+  // else downloads, since the worker forces application/octet-stream +
+  // Content-Disposition: attachment for mime types it won't render inline.
+  function viewAttachment(id, attachmentId, btn) {
+    const origLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Loading…";
+    window.MOAuth.fetch(
+      `${adminUrl}/contact/messages/${encodeURIComponent(id)}/attachments/${encodeURIComponent(attachmentId)}`,
+      { credentials: "omit" },
+    )
+      .then((r) => {
+        if (!r.ok) throw new Error(`status ${r.status}`);
+        return r.blob();
+      })
+      .then((blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        window.open(objectUrl, "_blank");
+        // Revoke once the browser has had time to open it — an immediate
+        // revoke can race the new tab reading the blob on a slow machine.
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+      })
+      .catch(() => setStatus("Couldn't load attachment."))
+      .finally(() => { btn.disabled = false; btn.textContent = origLabel; });
+  }
+
   // -------------------------------------------------------------------------
   // Unread count labels on dropdown options
 
@@ -345,5 +506,12 @@
     const d = new Date(iso);
     if (isNaN(d.getTime())) return iso;
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  }
+
+  function formatBytes(n) {
+    const size = Number(n) || 0;
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
   }
 })();
