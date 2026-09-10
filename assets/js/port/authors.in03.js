@@ -442,6 +442,53 @@ async function topicsIndex(){
     for(const [c0,c1,sl] of rng){if(col>=c0&&col<=c1)return "/the-faith-received/read/?w="+sl+"#b"+col+"-0";}
     return null;};
   // "Haymo, CXVIII, 107 , 253 . 273 ." → author + roman volume + a run of column numbers
+  // work titles + authors for the index panes (owner 2026-09-10 "have the
+  // work with the author so its useful"): the per-corpus directory is the
+  // slug -> {title, author} table
+  let _WD=null;
+  const _wd=async()=>{if(_WD)return _WD;
+    try{const d3=await gzJ(BLOB+"/v1/works-dir/pl.json.gz");_WD={};(d3.works||[]).forEach(x2=>{_WD[x2.w]={t:x2.t,a:x2.a};});}
+    catch(e){_WD={};}return _WD;};
+  // instant column preview: slice the canonical TEI at the column milestone
+  // (owner: "make preview available"); one TEI per work, cached, ~1MB
+  const _teiCache=new Map();
+  async function _pldColText(slug,col){
+    const id=String(slug).replace(/^pld-/,"");
+    let xml=_teiCache.get(id);
+    if(!xml){const r2=await fetch(BLOB+"/v1/tei/pld/"+id+".xml");if(!r2.ok)throw 0;xml=await r2.text();
+      _teiCache.set(id,xml);if(_teiCache.size>4)_teiCache.delete(_teiCache.keys().next().value);}
+    // columns appear as n="32:1221" or zero-padded n="51:0736A"; a skipped
+    // column falls back to the nearest preceding marker (phantom-anchor law)
+    let best=null,bestCol=-1;const it=xml.matchAll(/<milestone unit="column" n="\d+:0*(\d+)[A-D]?"[^>]*\/>/g);
+    for(const mm of it){const c3=+mm[1];
+      if(c3<=col&&c3>bestCol){bestCol=c3;best=mm;}
+      if(c3>col&&best)break;}
+    if(!best)return null;
+    let seg=xml.slice(best.index+best[0].length,best.index+best[0].length+6000);
+    const stop=seg.search(new RegExp('<milestone unit="column" n="\\d+:0*(?!'+bestCol+'[A-D]?")\\d'));
+    if(stop>0)seg=seg.slice(0,stop);
+    seg=seg.replace(/<note[\s\S]*?<\/note>/g," ").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim();
+    return seg.slice(0,700)||null;
+  }
+  // one drawer per pane host: a column chip previews IN PLACE; the reader
+  // link rides inside the drawer (the owner's preview-first pattern)
+  function wireColPreviews(host){
+    host.addEventListener("click",async e2=>{
+      const b3=e2.target.closest("[data-pvw]");if(!b3)return;
+      e2.preventDefault();
+      const row=b3.closest(".irw")||b3.parentElement;
+      let dr=row.querySelector(".irw-drawer");
+      if(!dr){dr=document.createElement("div");dr.className="irw-drawer";row.appendChild(dr);}
+      if(dr.dataset.for===b3.dataset.c&&!dr.hidden){dr.hidden=true;return;}
+      dr.hidden=false;dr.dataset.for=b3.dataset.c;
+      dr.innerHTML='<p class="loading" style="margin:.3rem 0">\u2026</p>';
+      try{const tx=await _pldColText(b3.dataset.pvw,+b3.dataset.c);
+        dr.innerHTML='<div style="font-size:.86rem;line-height:1.55;border-left:2px solid var(--accent,#b45f3d);padding:.35rem .7rem;margin:.3rem 0;background:var(--highlight,#f5f2ea);border-radius:0 6px 6px 0">'
+          +(tx?esc(tx)+"\u2026":"The column text could not be sliced here.")
+          +(b3.dataset.h?' <a class="readbtn" style="margin-left:.4rem" href="'+esc(b3.dataset.h)+'">Open at col. '+esc(b3.dataset.c)+' \u2192</a>':"")+'</div>';
+      }catch(_){dr.innerHTML='<p class="loading" style="margin:.3rem 0">The column could not load.'+(b3.dataset.h?' <a class="readbtn" href="'+esc(b3.dataset.h)+'">Open in the reader</a>':"")+'</p>';}
+    });
+  }
   const _linkCols=(txt,cm)=>esc(txt).replace(
     /\b([IVXLCDM]{2,8})[,.]?((?:\s*\d{1,4}\s*[,.])+|\s+\d{1,4}\b)/g,
     (m0,rom,cols)=>{const vol=_r2i(rom);
@@ -457,13 +504,14 @@ async function topicsIndex(){
     irHost.innerHTML=`<h2 class="sect">Index Rerum · Migne\u2019s own index to the Latin Fathers (PL 218\u2013221) <span class="tn" style="font-family:var(--body);font-size:.74rem;color:var(--faint)">${tops.length} heads \u00b7 ${tot.toLocaleString()} entries</span></h2>
       <div class="chstrip">${tops.map(t2=>`<button class="chp" data-s="${esc(slugOf(t2.t))}" title="${t2.n.toLocaleString()} entries">${esc(t2.t)}<span style="color:var(--faint);margin-left:.3rem;font-size:.7rem">${t2.n.toLocaleString()}</span></button>`).join("")}</div>
       <div id="irBody"></div>`;
+    wireColPreviews(irHost);
     irHost.addEventListener("click",async e=>{
       const b2=e.target.closest("[data-s]");if(!b2)return;
       irHost.querySelectorAll(".chp").forEach(x=>x.classList.toggle("on",x===b2));
       const bd=irHost.querySelector("#irBody");
       bd.innerHTML='<p class="loading">\u2026</p>';
-      const [d2,_CM]=await Promise.all([
-        J(BLOB+"/v1/mine/pld_topic/"+b2.dataset.s+".json").catch(()=>null),_cmap()]);
+      const [d2,_CM,WD]=await Promise.all([
+        J(BLOB+"/v1/mine/pld_topic/"+b2.dataset.s+".json").catch(()=>null),_cmap(),_wd()]);
       if(!d2){bd.innerHTML='<p class="loading">Unavailable.</p>';return;}
       const claims=(d2.claims||[]).filter(c2=>c2.q);
       const aus=(d2.authors||[]).slice().sort((x,y)=>(y.n||0)-(x.n||0));
@@ -477,15 +525,29 @@ async function topicsIndex(){
         ${aus.length?`<div class="volhead" style="margin:.5rem 0 .2rem">The Fathers under this head \u00b7 ${aus.length}</div>
           <div style="margin-bottom:.6rem">${aus.map(a2=>{
             const refs=(a2.refs||[]);
-            const chips=refs.map(r2=>{const lab=`${rn(r2.v)||r2.v}:${r2.c}`;
-              return r2.h?`<a class="readbtn" href="${esc(r2.h)}" style="font-size:.8rem;padding:.1rem .3rem">${esc(lab)}</a>`
-                         :`<span style="font-size:.8rem;color:var(--faint);padding:.1rem .3rem">${esc(lab)}</span>`;}).join(" ");
+            const byW=new Map();
+            refs.forEach(r2=>{const h2=r2.h||_colHref(_CM,r2.v,r2.c);
+              const mm=h2&&h2.match(/w=(pld-\d+)/);const sl2=mm?mm[1]:null;
+              const k2=sl2||("vol"+r2.v);
+              if(!byW.has(k2))byW.set(k2,{sl:sl2,v:r2.v,rows:[]});
+              byW.get(k2).rows.push({c:r2.c,h:h2});});
+            const wrows=[...byW.values()].map(g2=>{
+              const wd2=(g2.sl&&WD[g2.sl])||{};
+              const label=wd2.t?wd2.t:(g2.sl?g2.sl:"");
+              const cols=g2.rows.map(r2=>g2.sl
+                ?`<button type="button" class="readbtn" data-pvw="${esc(g2.sl)}" data-c="${r2.c}" data-h="${esc(r2.h||"")}" style="font-size:.8rem;padding:.1rem .3rem">${r2.c}</button>`
+                :(r2.h?`<a class="readbtn" href="${esc(r2.h)}" style="font-size:.8rem;padding:.1rem .3rem">${r2.c}</a>`
+                      :`<span style="font-size:.8rem;color:var(--faint);padding:.1rem .3rem">${r2.c}</span>`)).join(" ");
+              return `<div class="irw" style="display:flex;flex-wrap:wrap;align-items:baseline;gap:.35rem;padding:.16rem 0">
+                <span style="font-size:.86rem;font-weight:600">${esc(label)||("PL "+(rn(g2.v)||g2.v))}</span>
+                <span style="color:var(--faint);font-size:.74rem">PL ${rn(g2.v)||g2.v}</span>
+                <span style="display:flex;flex-wrap:wrap;gap:.15rem .25rem">${cols}</span></div>`;}).join("");
             return `<details style="padding:.14rem 0;border-bottom:1px solid var(--border)">
               <summary style="cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:.5rem">
                 <span class="wk" style="font-size:.9rem;font-weight:600">${esc(a2.a)}</span>
-                <span style="color:var(--faint);font-size:.74rem">${a2.n} ${a2.n>1?"entries":"entry"} \u00b7 PL ${[...new Set(refs.map(r2=>rn(r2.v)||r2.v))].slice(0,6).join(", ")}</span>
-                <span style="margin-left:auto;color:var(--faint);font-size:.72rem">\u25be columns</span></summary>
-              <div style="display:flex;flex-wrap:wrap;gap:.15rem .3rem;padding:.3rem 0 .35rem .1rem">${chips}</div>
+                <span style="color:var(--faint);font-size:.74rem">${a2.n} ${a2.n>1?"entries":"entry"} \u00b7 ${byW.size} work${byW.size>1?"s":""} \u00b7 PL ${[...new Set(refs.map(r2=>rn(r2.v)||r2.v))].slice(0,6).join(", ")}</span>
+                <span style="margin-left:auto;color:var(--faint);font-size:.72rem">\u25be works \u00b7 tap a column to preview</span></summary>
+              <div style="padding:.3rem 0 .35rem .1rem">${wrows}</div>
             </details>`;}).join("")}</div>`:""}
         ${claims.length?`<div class="volhead" style="margin:.4rem 0 .2rem">Migne\u2019s own judgments \u00b7 ${claims.length}</div>
           <div class="dir">${claims.map((c2,i2)=>`
@@ -497,6 +559,57 @@ async function topicsIndex(){
       bd.scrollIntoView({behavior:"smooth",block:"nearest"});
     });
   }).catch(()=>{});
+  // MIGNE'S VOLUME INDICES (owner 2026-09-10 "use all the indices of migne"):
+  // every PL volume's OWN back-index (v1/mine/pld_subjects, 1,244 works),
+  // titled and authored via the corpus directory, entries previewable
+  const viWrap=document.createElement("details");viWrap.className="rx-historical";
+  viWrap.innerHTML="<summary>Browse each Latin volume\u2019s own back-index</summary>";
+  const viHost=document.createElement("div");viWrap.appendChild(viHost);
+  if(!shelf||shelf==='pl')page.appendChild(viWrap);
+  let _viLoaded=false;
+  viWrap.addEventListener("toggle",async()=>{
+    if(!viWrap.open||_viLoaded)return;_viLoaded=true;
+    viHost.innerHTML='<p class="loading">\u2026</p>';
+    const [si2,WD]=await Promise.all([J(BLOB+"/v1/mine/pld_subjects/index.json").catch(()=>null),_wd()]);
+    if(!si2||!(si2.works||[]).length){viHost.innerHTML='<p class="loading">Unavailable.</p>';return;}
+    const vworks=(si2.works||[]).map(x2=>({w:x2.w,n:x2.n||0,t:(WD[x2.w]||{}).t||x2.w,a:(WD[x2.w]||{}).a||""}))
+      .sort((x2,y2)=>y2.n-x2.n);
+    const tot2=vworks.reduce((a3,x2)=>a3+x2.n,0);
+    viHost.innerHTML=`<h2 class="sect">Indices per volume \u00b7 printed at the back of each work <span class="tn" style="font-family:var(--body);font-size:.74rem;color:var(--faint)">${vworks.length.toLocaleString()} works \u00b7 ${tot2.toLocaleString()} entries</span></h2>
+      <label class="rx-search" style="display:block;margin:.3rem 0 .5rem">Find a work or author<input type="search" id="viQ" placeholder="Augustine, City of God\u2026"></label>
+      <div id="viList"></div><div id="viBody"></div>`;
+    const list=viHost.querySelector("#viList"),body3=viHost.querySelector("#viBody");
+    const paint=q3=>{const f3=String(q3||"").toLowerCase();
+      const hits=(f3?vworks.filter(x2=>(x2.t+" "+x2.a).toLowerCase().includes(f3)):vworks).slice(0,40);
+      list.innerHTML=hits.map(x2=>`<button type="button" class="chp" data-w="${esc(x2.w)}" style="display:flex;gap:.5rem;align-items:baseline;width:100%;text-align:left">
+        <span style="font-weight:600;font-size:.88rem">${esc(x2.t)}</span>
+        <span style="color:var(--faint);font-size:.76rem">${esc(x2.a)}</span>
+        <span style="margin-left:auto;color:var(--faint);font-size:.74rem">${x2.n.toLocaleString()} entries</span></button>`).join("")
+        +(hits.length===40?'<p class="loading" style="font-size:.78rem">Keep typing to narrow the list.</p>':"");};
+    paint("");
+    viHost.querySelector("#viQ").oninput=e3=>paint(e3.target.value);
+    list.addEventListener("click",async e3=>{
+      const b4=e3.target.closest("[data-w]");if(!b4)return;
+      list.querySelectorAll(".chp").forEach(x2=>x2.classList.toggle("on",x2===b4));
+      body3.innerHTML='<p class="loading">\u2026</p>';
+      const d4=await J(BLOB+"/v1/mine/pld_subjects/"+b4.dataset.w+".json").catch(()=>null);
+      if(!d4){body3.innerHTML='<p class="loading">Unavailable.</p>';return;}
+      const wd3=_WD[b4.dataset.w]||{};
+      const ents=(d4.entries||[]);
+      const paintE=(q4)=>{const f4=String(q4||"").toLowerCase();
+        const hits=(f4?ents.filter(x2=>String(x2.t).toLowerCase().includes(f4)):ents).slice(0,300);
+        body3.querySelector("#viEnts").innerHTML=hits.map(x2=>`<div class="irw" style="display:flex;flex-wrap:wrap;align-items:baseline;gap:.4rem;padding:.14rem 0;border-bottom:1px dotted var(--border)">
+          <span style="font-size:.88rem">${esc(x2.t)}</span>
+          <span style="display:flex;gap:.2rem">${(x2.refs||[]).map(r3=>`<button type="button" class="readbtn" data-pvw="${esc(b4.dataset.w)}" data-c="${r3.c}" data-h="${esc(r3.h||"")}" style="font-size:.78rem;padding:.08rem .3rem">${r3.c}</button>`).join(" ")}</span></div>`).join("");};
+      body3.innerHTML=`<div class="volhead" style="margin:.5rem 0 .2rem">${esc(wd3.t||b4.dataset.w)} \u2014 ${esc(wd3.a||"")} \u00b7 ${ents.length.toLocaleString()} entries \u00b7 tap a column to preview</div>
+        <label class="rx-search" style="display:block;margin:.2rem 0 .4rem">Search this index<input type="search" id="viEQ" placeholder="grace, baptism\u2026"></label>
+        <div id="viEnts"></div>`;
+      paintE("");
+      body3.querySelector("#viEQ").oninput=e4=>paintE(e4.target.value);
+      body3.scrollIntoView({behavior:"smooth",block:"nearest"});
+    });
+    wireColPreviews(body3);
+  });
   // ORDO RERUM — Migne's own subject index to the Greek Fathers, entry by entry
   // (harvested from the family site 2026-08-28; refs open the exact column)
   J(BLOB+"/v1/mine/pg_subject/index.json").then(si=>{if(run!==RESEARCH_RUN)return;
