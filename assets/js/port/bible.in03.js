@@ -9,7 +9,7 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const cache={};
 async function J(u){if(cache[u])return cache[u];const r=await fetch(u);if(!r.ok)throw new Error(u);return cache[u]=await r.json();}
 async function gzJ(u){if(cache[u])return cache[u];const r=await fetch(u);if(!r.ok)throw new Error(u);
-  const t=await new Response(r.body.pipeThrough(new DecompressionStream("gzip"))).text();
+  const _b=new Uint8Array(await r.arrayBuffer());const t=(_b[0]===31&&_b[1]===139)?await new Response(new Blob([_b]).stream().pipeThrough(new DecompressionStream("gzip"))).text():new TextDecoder().decode(_b);
   return cache[u]=JSON.parse(t);}
 // Migne's editorial/anonymous aggregates are held and searchable but never RANK among
 // the authors (owner 2026-08-31 "dont like having PL editorials show up in authors")
@@ -130,7 +130,7 @@ async function passageOf(slug,col){
     if(!paras){
       const r=await fetch(`${BLOB}/eebo/${mE[1]}.json.gz`);
       if(!r.ok)return null;
-      const d=JSON.parse(await new Response(r.body.pipeThrough(new DecompressionStream("gzip"))).text());
+      const d=JSON.parse(await (async()=>{const _b=new Uint8Array(await r.arrayBuffer());return (_b[0]===31&&_b[1]===139)?new Response(new Blob([_b]).stream().pipeThrough(new DecompressionStream("gzip"))).text():new TextDecoder().decode(_b);})());
       paras={};let cur=1;
       (function walk(nodes){(nodes||[]).forEach(nd=>{
         const parts=String(nd.html||"").split(/<span class="pb" data-n="(\d+)"[^>]*><\/span>/);
@@ -1775,14 +1775,42 @@ async function pairPage(slugA,slugB,topicSeg){
   <div class="view rx-pair"><div class="rx-filters rx-pair-tools">${pickerHTML}<a class="rx-text-link" href="/the-faith-received/fathers/?sh=${encodeURIComponent(ra.sh)}&cmp=${encodeURIComponent(slugB)}#${encodeURIComponent(slugA)}/positions">Every topic of ${esc(A.a)} with ${esc(B.a)} beside it</a></div><nav class="rx-loci-jump">${dirs.filter(d=>d.n).map(d=>`<a href="#${d.id}">${esc(d.from.a)} on ${esc(d.to.a)}</a>`).join('')}<a href="#pair-topics">Shared topics</a><a href="#pair-scripture">Scripture in common</a></nav>
     ${dirs.map(d=>block(d.from,d.to,d.shard,d.pack,d.id)).join('')}
     <section class="rx-pair-block" id="pair-topics"><h3>Positions, topic by topic<small>${fmtR(sharedN)} shared topics · every statement, grouped by work</small></h3><div id="pair-desk"></div></section>
-    <section class="rx-pair-block" id="pair-scripture"><h3>Scripture in common<small>books both authors cite most</small></h3>${sharedBooks.length?`<table class="rx-pair-table"><thead><tr><th>Book</th><th>${esc(A.a)}</th><th>${esc(B.a)}</th></tr></thead><tbody>${sharedBooks.map(([b,na,nb])=>`<tr><td><a href="${FRScripture.bibleURL?FRScripture.bibleURL(b):'/the-faith-received/bible/'}">${esc(b)}</a></td><td>${fmtR(na)}</td><td>${fmtR(nb)}</td></tr>`).join('')}</tbody></table>`:'<p class="rx-note">No shared books recorded.</p>'}</section>
+    <section class="rx-pair-block" id="pair-scripture"><h3>Scripture in common<small>books both authors cite most</small></h3>${sharedBooks.length?`<table class="rx-pair-table"><thead><tr><th>Book</th><th>${esc(A.a)}</th><th>${esc(B.a)}</th></tr></thead><tbody>${sharedBooks.map(([b,na,nb])=>`<tr><td><details class="pair-sb" data-pb="${esc(b)}"><summary>${esc(b)} <small style="color:var(--muted)">where they both comment</small></summary><div class="pb-body"><p class="rx-note">Open to load the verses both authors comment on…</p></div></details></td><td>${fmtR(na)}</td><td>${fmtR(nb)}</td></tr>`).join('')}</tbody></table>`:'<p class="rx-note">No shared books recorded.</p>'}</section>
   </div>`;
   researchLayout();bindPicker();
   page.querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>showWork(b.dataset.md,b.dataset.w));
   dirs.forEach(dd=>{if(dd.n)mountPair(dd.id);});
-  compareDesk($('#pair-desk'),{a:[slugA,slugB],sel:wantT,g:'work',s:'',q:''},{embedded:true,onState:st=>{const h='#'+encodeURIComponent(slugA)+'/with/'+encodeURIComponent(slugB)+(st.sel?'/topic/'+encodeURIComponent(st.sel):'');if(location.hash!==h)history.replaceState(null,'',location.pathname+location.search+h);}});
+  compareDesk($('#pair-desk'),{a:[slugA,slugB],sel:wantT,g:'work',s:'',q:'',o:'n'},{embedded:true,onState:st=>{const h='#'+encodeURIComponent(slugA)+'/with/'+encodeURIComponent(slugB)+(st.sel?'/topic/'+encodeURIComponent(st.sel):'');if(location.hash!==h)history.replaceState(null,'',location.pathname+location.search+h);}});
   if(wantT)requestAnimationFrame(()=>document.getElementById('pair-topics')?.scrollIntoView({block:'start'}));
-  page.querySelector('.rx-loci-jump').addEventListener('click',e=>{const a=e.target.closest('a');if(!a)return;e.preventDefault();document.getElementById(a.getAttribute('href').slice(1))?.scrollIntoView({block:'start',behavior:'smooth'});});
+  // Scripture in common: open a book to see the VERSES both authors comment
+   // on, each side linking into the pages (owner 2026-09-10)
+   let __PBOOKS=null;const pbooks=()=>__PBOOKS||(__PBOOKS=FRConnectionEvidence.json(BLOB+'/v1/bible/all/books.json'));
+   page.querySelectorAll('details.pair-sb').forEach(det=>{let loaded=false;det.addEventListener('toggle',async()=>{
+     if(!det.open||loaded)return;loaded=true;const box=det.querySelector('.pb-body');
+     box.innerHTML='<p class="rx-note">Finding shared verses…</p>';
+     try{
+       const bk=await pbooks();const want=RX.fold(det.dataset.pb);
+       const entry=(bk.books||[]).find(x=>RX.fold(x.book).startsWith(want)||RX.fold(x.slug).startsWith(want)||want.startsWith(RX.fold(x.slug).slice(0,4)));
+       if(!entry){box.innerHTML='<p class="rx-note">This book is not in the verse index.</p>';return;}
+       const chs=(entry.chapters||[]).filter(c=>c.n>0).map(c=>c.c).slice(0,80);
+       const hits=[];let done=0;
+       const workers=Array.from({length:6},async function pull(){
+         while(chs.length){const c=chs.shift();
+           try{const ch=await FRConnectionEvidence.json(BLOB+'/v1/bible/all/'+entry.slug+'/'+c+'.json.gz');
+             FRConnectionEvidence.verseOverlap(ch,{a:A.a},{a:B.a}).forEach(v=>hits.push({c,...v}));}catch(_){}
+           if(++done%10===0)box.innerHTML='<p class="rx-note">Scanning '+esc(entry.book)+' — chapter '+done+'…</p>';}
+       });
+       await Promise.all(workers);
+       hits.sort((x,y)=>x.c-y.c||x.v-y.v);
+       if(!hits.length){box.innerHTML='<p class="rx-note">No verse where both comment is recorded in '+esc(entry.book)+'.</p>';return;}
+       const side=(rows,who)=>rows.slice(0,3).map(r=>`<a href="${FRConnectionEvidence.readerURL(r.w,r.p)}" target="_blank" title="${esc(r.t||r.w)} p.${r.p}">${esc(who)} p.${r.p}</a>`).join(' ');
+       box.innerHTML='<div class="pb-verses">'+hits.slice(0,60).map(v=>
+         `<div class="pb-verse"><b>${esc(entry.book)} ${v.c}:${v.v}</b>`+
+         `<span>${side(v.left,A.a.split(' ')[0])}</span><span>${side(v.right,B.a.split(' ')[0])}</span></div>`).join('')+
+         (hits.length>60?'<p class="rx-note">'+fmtR(hits.length-60)+' more shared verses not shown.</p>':'')+'</div>';
+     }catch(e){box.innerHTML='<p class="rx-note">The verse index could not load.</p>';}
+   });});
+   page.querySelector('.rx-loci-jump').addEventListener('click',e=>{const a=e.target.closest('a');if(!a)return;e.preventDefault();document.getElementById(a.getAttribute('href').slice(1))?.scrollIntoView({block:'start',behavior:'smooth'});});
   document.title=`${A.a} and ${B.a} · The Faith Received`;
 }
 function route(){

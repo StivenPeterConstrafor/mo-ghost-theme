@@ -761,10 +761,7 @@ function authorSection(author,items){
   sec.appendChild(h);sec.appendChild(body);return sec;
 }
 function byAuthor(arr){const m={};arr.forEach(w=>{const k=_foldAu(w.author);(m[k]=m[k]||[]).push(w);});return m;}
-// Landing shelf links use the same canonical vocabulary as the catalogue.
-const LANDING_SHELVES=["Latin Fathers","Greek Fathers","Eastern Fathers","Medieval","Roman Catholic","Reformed","English Divines","Lutheran","Humanism and Law"];
-const requestedShelf=new URLSearchParams(location.search).get("shelf");
-let SEL_TRAD=LANDING_SHELVES.includes(requestedShelf)?requestedShelf:null,SEL_TOPIC=null,TOPICS=null;
+let SEL_TRAD=null,SEL_TOPIC=null,TOPICS=null;
 function tradDesc(items){   // the tradition's best-represented authors, as an italic sample line
   const junk=/^(unknown|auctor|various|editors|anonym|editores|auctores|maurines)/i;
   const c={};items.forEach(w=>{const a=w.author_en||w.author;if(a&&!junk.test(a))c[a]=(c[a]||0)+1;});

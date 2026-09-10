@@ -1,0 +1,7 @@
+
+.pb-verses{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.pb-verse{display:flex;gap:14px;align-items:baseline;font-size:.85rem;border-bottom:1px solid var(--rule-soft,#eee5d8);padding:3px 0}
+.pb-verse b{min-width:7.5em;font-weight:600}
+.pb-verse a{color:var(--accent,#b45f3d);text-decoration:none;margin-right:8px}
+.pb-verse a:hover{text-decoration:underline}
+details.pair-sb summary{cursor:pointer}

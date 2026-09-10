@@ -528,9 +528,10 @@ async function openAuthor(slug,push=true){
     ${inn.length!==(n.din||0)?`<p class="index-coverage">The passage index lists ${inn.length.toLocaleString()} citing authors; the graph index lists ${(n.din||0).toLocaleString()}. Their coverage differs.</p>`:""}
     <div class="hows">${Object.entries(hows).sort((a,b)=>b[1]-a[1]).map(([h,c])=>`<span><b>${fmt(c)}</b> ${esc(h)}</span>`).join("")}</div>
     <div class="pbtns">
-      <a class="pbtn warm" href="${journeyURL([slug],'in')}">Follow reception</a><a class="pbtn" href="${journeyURL([slug],'out')}">Follow sources</a><button class="pbtn" id="bpath">Find a connecting path</button>
+      <button class="pbtn warm" data-jump="in">Cited by · see who cites him</button><button class="pbtn warm" data-jump="out">Sources · see whom he cites</button><button class="pbtn" id="bpath">Find a connecting path</button>
       ${window.__ROOMS&&window.__ROOMS[slug]?`<a class="pbtn" href="/the-faith-received/fathers/?sh=${esc(window.__ROOMS[slug].sh)}#${esc(slug)}">Author room</a><a class="pbtn" href="${pairURL(slug,'')}">Compare with another author</a>`:""}
     </div>
+    <p class="pquiet" style="margin:.4rem 0 .2rem;font-size:.78rem;color:var(--muted)">Trace a chain instead: <a href="${journeyURL([slug],'in')}">reception path</a> · <a href="${journeyURL([slug],'out')}">sources path</a></p>
     <div class="relation-tools"><label for="relation-query">Find a connection<input id="relation-query" type="search" placeholder="Filter connected authors"></label></div>
     <p id="relation-feedback" role="status"></p><h3 class="psect" id="relations-in-count">Cited by ${inn.length} authors</h3><div class="web-pane" data-relations="in">${inn.map(r=>eRow(r,"in")).join("")}</div>
     <h3 class="psect" id="relations-out-count">Cites ${out.length} authors</h3><div class="web-pane" data-relations="out">${out.map(r=>eRow(r,"out")).join("")}</div>`;
@@ -540,6 +541,10 @@ async function openAuthor(slug,push=true){
     if(el.tagName!=="SUMMARY")el.parentElement.classList.toggle("open");}));
   pbody.querySelectorAll("[data-edge]").forEach(el=>el.onclick=()=>{
     const [c2,t2]=el.dataset.edge.split("|");openEdge(c2,t2,slug);});
+   pbody.querySelectorAll("[data-jump]").forEach(el=>el.onclick=()=>{
+     const sec=pbody.querySelector('[data-relations="'+el.dataset.jump+'"]');
+     if(!sec)return;const first=sec.querySelector('details.edge');if(first)first.open=true;
+     (pbody.querySelector('#relations-'+el.dataset.jump+'-count')||sec).scrollIntoView({behavior:'smooth',block:'start'});});
   FRShelfMap.bindPreviews(pbody);
   $("#bpath").onclick=()=>{openPathPicker();$("#path-from").value=n.a;$("#path-to").focus();};
   $("#relation-query").oninput=e=>{const term=e.target.value.trim().toLowerCase();let all=0;[['in','Cited by'],['out','Cites']].forEach(([dir,label])=>{const rows=[...pbody.querySelectorAll('[data-relations="'+dir+'"] .edge')];let visible=0;rows.forEach(row=>{row.hidden=!row.querySelector('.nm').textContent.toLowerCase().includes(term);if(!row.hidden)visible++;});all+=visible;$('#relations-'+dir+'-count').textContent=label+' '+visible+(term?' of '+rows.length:'')+' authors';});$('#relation-feedback').textContent=all?'':'No connected authors match this name. Try another spelling.';};

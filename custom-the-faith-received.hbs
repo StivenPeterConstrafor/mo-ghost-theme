@@ -212,7 +212,7 @@
         <p class="lp-num">Study</p>
         <h2 class="lp-head">Over a million pages unlocked for the first time.</h2>
         <p class="lp-body">This theology has sat in folio in a handful of research libraries where only a few specialists could read it. The English now runs beside the Latin with the scanned page beside both.</p>
-        <a href="/the-faith-received/research/" class="btn btn-primary">Search the library</a>
+        <a href="/the-faith-received/research/" class="btn btn-primary">Browse the library</a>
       </div>
     </div>
   </div>
@@ -222,58 +222,102 @@
 <section class="lp-band">
   <div class="container">
     <h2 class="lp-num" id="library-shelves">The shelves</h2>
-    <div class="lp-shelf" aria-labelledby="library-shelves">
-      <a href="/the-faith-received/library/?shelf=Latin%20Fathers">
-        <h4>Latin Fathers</h4>
-        <p class="lp-shelf-desc">The Latin patristic tradition and its medieval reception.</p>
-        <p class="lp-shelf-who">Augustine · Jerome · Ambrose · Gregory the Great</p>
+    {{!-- Collection-card treatment with a period leaf per shelf (owner
+         2026-09-10: "should have pictures and adopt how The collections
+         [look]"). Leaves are representative facsimiles served from the
+         library worker; swap the slugs to retint a shelf. --}}
+    <style>
+      .lp-shelfgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
+      .lp-shelfcard{display:flex;gap:16px;text-decoration:none;color:inherit;border:1px solid var(--color-card-border,#d9c6a7);background:var(--color-card-bg,#fffdf8);border-radius:6px;padding:16px;transition:box-shadow .2s ease,transform .2s ease}
+      .lp-shelfcard:hover{box-shadow:0 10px 30px -18px rgba(60,40,20,.55);transform:translateY(-2px)}
+      .lp-shelfcard-plate{flex:0 0 86px}
+      .lp-shelfcard-plate img{width:86px;height:118px;object-fit:cover;object-position:center;border:1px solid var(--color-card-border,#d9c6a7);border-radius:3px;background:#efe7d8}
+      .lp-shelfcard-body h4{margin:0 0 2px}
+      .lp-shelfcard-n{margin:0 0 6px;font-size:.82rem;letter-spacing:.04em;color:var(--color-primary-text,#b45f3d)}
+    </style>
+    <div class="lp-shelf lp-shelfgrid" aria-labelledby="library-shelves">
+      <a class="lp-shelfcard" href="/the-faith-received/library/?shelf=Latin%20Fathers">
+        <span class="lp-shelfcard-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/works/fulgentius-lafosse-augustinus-theologus-sive-theologia-secundum-genium/p/12.webp" alt="" loading="lazy" /></span>
+        <span class="lp-shelfcard-body">
+          <h4>Latin Fathers</h4>
+          <p class="lp-shelfcard-n">8,967 works</p>
+          <p class="lp-shelf-desc">The Latin patristic tradition and its medieval reception.</p>
+          <p class="lp-shelf-who">Augustine · Jerome · Ambrose · Gregory the Great</p>
+        </span>
       </a>
-      <a href="/the-faith-received/library/?shelf=Greek%20Fathers">
-        <h4>Greek Fathers</h4>
-        <p class="lp-shelf-desc">Greek patristic and Byzantine theology.</p>
-        <p class="lp-shelf-who">Athanasius · Basil the Great · John Chrysostom · John of Damascus</p>
+      <a class="lp-shelfcard" href="/the-faith-received/library/?shelf=Greek%20Fathers">
+        <span class="lp-shelfcard-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/works/petavius-de-theologicis-dogmatibus-vol-2/p/16.webp" alt="" loading="lazy" /></span>
+        <span class="lp-shelfcard-body">
+          <h4>Greek Fathers</h4>
+          <p class="lp-shelfcard-n">3,822 works</p>
+          <p class="lp-shelf-desc">Greek patristic and Byzantine theology.</p>
+          <p class="lp-shelf-who">Athanasius · Basil the Great · John Chrysostom · John of Damascus</p>
+        </span>
       </a>
-      <a href="/the-faith-received/library/?shelf=Eastern%20Fathers">
-        <h4>Eastern Fathers</h4>
-        <p class="lp-shelf-desc">The Syriac, Coptic, Armenian, Ethiopic and Arabic traditions.</p>
-        <p class="lp-shelf-who">Severus of Antioch · Philoxenus of Mabbug · Jacob of Edessa</p>
+      <a class="lp-shelfcard" href="/the-faith-received/library/?shelf=Eastern%20Fathers">
+        <span class="lp-shelfcard-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/works/petavius-de-theologicis-dogmatibus-vol-6/p/24.webp" alt="" loading="lazy" /></span>
+        <span class="lp-shelfcard-body">
+          <h4>Eastern Fathers</h4>
+          <p class="lp-shelfcard-n">400 works</p>
+          <p class="lp-shelf-desc">The Syriac, Coptic, Armenian, Ethiopic and Arabic traditions.</p>
+          <p class="lp-shelf-who">Severus of Antioch · Philoxenus of Mabbug · Jacob of Edessa</p>
+        </span>
       </a>
-      <a href="/the-faith-received/library/?shelf=Medieval">
-        <h4>Medieval</h4>
-        <p class="lp-shelf-desc">Scholastic theology, commentary and disputation.</p>
-        <p class="lp-shelf-who">Anselm · Peter Lombard · Thomas Aquinas · Duns Scotus</p>
+      <a class="lp-shelfcard" href="/the-faith-received/library/?shelf=Medieval">
+        <span class="lp-shelfcard-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/works/capreolus-defensiones-theologiae-aquinatis-vol-1/p/24.webp" alt="" loading="lazy" /></span>
+        <span class="lp-shelfcard-body">
+          <h4>Medieval</h4>
+          <p class="lp-shelfcard-n">358 works</p>
+          <p class="lp-shelf-desc">Scholastic theology, commentary and disputation.</p>
+          <p class="lp-shelf-who">Anselm · Peter Lombard · Thomas Aquinas · Duns Scotus</p>
+        </span>
       </a>
-      <a href="/the-faith-received/library/?shelf=Roman%20Catholic">
-        <h4>Roman Catholic</h4>
-        <p class="lp-shelf-desc">Catholic theology and controversy after the Reformation.</p>
-        <p class="lp-shelf-who">Robert Bellarmine · Francisco Suárez · Thomas Cajetan</p>
+      <a class="lp-shelfcard" href="/the-faith-received/library/?shelf=Roman%20Catholic">
+        <span class="lp-shelfcard-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/works/becanus-summa-theologiae-scholasticae-vol-1/p/24.webp" alt="" loading="lazy" /></span>
+        <span class="lp-shelfcard-body">
+          <h4>Roman Catholic</h4>
+          <p class="lp-shelfcard-n">514 works</p>
+          <p class="lp-shelf-desc">Catholic theology and controversy after the Reformation.</p>
+          <p class="lp-shelf-who">Robert Bellarmine · Francisco Suárez · Thomas Cajetan</p>
+        </span>
       </a>
-      <a href="/the-faith-received/library/?shelf=Reformed">
-        <h4>Reformed</h4>
-        <p class="lp-shelf-desc">Reformed theology, biblical commentary and confessional debate.</p>
-        <p class="lp-shelf-who">John Calvin · Peter Martyr Vermigli · Heinrich Bullinger</p>
+      <a class="lp-shelfcard" href="/the-faith-received/library/?shelf=Reformed">
+        <span class="lp-shelfcard-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/works/chamier-panstratia-catholica-vol-1/p/8.webp" alt="" loading="lazy" /></span>
+        <span class="lp-shelfcard-body">
+          <h4>Continental Reformed</h4>
+          <p class="lp-shelfcard-n">426 works</p>
+          <p class="lp-shelf-desc">Reformed theology, biblical commentary and confessional debate.</p>
+          <p class="lp-shelf-who">John Calvin · Peter Martyr Vermigli · Heinrich Bullinger</p>
+        </span>
       </a>
-      <a href="/the-faith-received/library/?shelf=English%20Divines">
-        <h4>English Divines</h4>
-        <p class="lp-shelf-desc">English sermons, controversy and practical divinity.</p>
-        <p class="lp-shelf-who">John Owen · Richard Baxter · William Perkins · Richard Hooker</p>
+      <a class="lp-shelfcard" href="/the-faith-received/library/?shelf=English%20Divines">
+        <span class="lp-shelfcard-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/works/robert-baron-of-st-andrews-disputatio-de-formali-objecto-fidei/p/8.webp" alt="" loading="lazy" /></span>
+        <span class="lp-shelfcard-body">
+          <h4>English Divines</h4>
+          <p class="lp-shelfcard-n">4,635 works</p>
+          <p class="lp-shelf-desc">English sermons, controversy and practical divinity.</p>
+          <p class="lp-shelf-who">John Owen · Richard Baxter · William Perkins · Richard Hooker</p>
+        </span>
       </a>
-      <a href="/the-faith-received/library/?shelf=Lutheran">
-        <h4>Lutheran</h4>
-        <p class="lp-shelf-desc">Lutheran theology, biblical commentary and disputation.</p>
-        <p class="lp-shelf-who">Martin Luther · Philipp Melanchthon · Johann Gerhard</p>
+      <a class="lp-shelfcard" href="/the-faith-received/library/?shelf=Lutheran">
+        <span class="lp-shelfcard-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/works/christoph-scheibler-metaphysica-duobus-libris-geneva-1636-protestant-s/p/24.webp" alt="" loading="lazy" /></span>
+        <span class="lp-shelfcard-body">
+          <h4>Lutheran</h4>
+          <p class="lp-shelfcard-n">280 works</p>
+          <p class="lp-shelf-desc">Lutheran theology, biblical commentary and disputation.</p>
+          <p class="lp-shelf-who">Martin Luther · Philipp Melanchthon · Johann Gerhard</p>
+        </span>
       </a>
-      <a href="/the-faith-received/library/?shelf=Humanism%20and%20Law">
-        <h4>Humanism and Law</h4>
-        <p class="lp-shelf-desc">Humanist scholarship, jurisprudence and the study of conscience.</p>
-        <p class="lp-shelf-who">Erasmus · Hugo Grotius · Robert Sanderson</p>
+      <a class="lp-shelfcard" href="/the-faith-received/library/?shelf=Humanism%20and%20Law">
+        <span class="lp-shelfcard-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/works/coluccio-salutati-de-nobilitate-legum-et-medicinae-vol-1/p/20.webp" alt="" loading="lazy" /></span>
+        <span class="lp-shelfcard-body">
+          <h4>Humanism and Law</h4>
+          <p class="lp-shelfcard-n">45 works</p>
+          <p class="lp-shelf-desc">Humanist scholarship, jurisprudence and the study of conscience.</p>
+          <p class="lp-shelf-who">Erasmus · Hugo Grotius · Robert Sanderson</p>
+        </span>
       </a>
-      <a href="/the-faith-received/library/#confessions">
-        <h4>Confessions</h4>
-        <p class="lp-shelf-desc">Creeds, confessions and catechisms of the Christian churches.</p>
-        <p class="lp-shelf-who">Nicaea · Augsburg · Trent · Westminster</p>
-      </a>
-    </div>
+</div>
     <p class="tfr-browse-all tfr-browse-all--under"><a class="tfr-browse-btn" href="/the-faith-received/all-works/">Browse Full Library</a></p>
   </div>
 </section>
