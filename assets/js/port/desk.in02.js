@@ -231,7 +231,13 @@ window.addEventListener('resize',syncPanels);syncPanels();
 var boot=docsAll();
 var requestedDoc=new URLSearchParams(location.search).get('doc');
 if(requestedDoc&&boot.some(function(d){return d.id===requestedDoc;}))openDoc(requestedDoc);
-else if(boot.length){var last=lj('fr_desk_context_v1').docId;openDoc(boot.some(function(d){return d.id===last;})?last:boot[0].id);}else newDoc();
+else if(requestedDoc){
+ var nb=document.createElement('div');
+ nb.style.cssText='margin:10px 0;padding:10px 14px;border:1px solid var(--border,#ddd);border-left:3px solid var(--accent,#b45f3d);border-radius:6px;font-size:.9rem;background:var(--card,#fff)';
+ nb.textContent='The linked Desk document was not found in this browser. Desk documents are saved in the browser (and site copy) where they were created — open this link there, or export the document and import it here.';
+ var host=document.querySelector('main')||document.body;host.insertBefore(nb,host.firstChild);
+ if(boot.length){var last0=lj('fr_desk_context_v1').docId;openDoc(boot.some(function(d){return d.id===last0;})?last0:boot[0].id);}else newDoc();
+} else if(boot.length){var last=lj('fr_desk_context_v1').docId;openDoc(boot.some(function(d){return d.id===last;})?last:boot[0].id);}else newDoc();
 try{var savedTheme=localStorage.getItem('fr_theme');if(savedTheme==='light'||savedTheme==='dark')document.documentElement.dataset.theme=savedTheme;}catch(_){}
 document.addEventListener('DOMContentLoaded',function(){var params=new URLSearchParams(location.search),target=params.get('notebook');syncWorkspace();if(params.get('view')==='research'){showPersonal(true);if(params.get('item'))personalResearch.focusItem(target||paperNotebook(),params.get('item'));}});
 renderRail();
