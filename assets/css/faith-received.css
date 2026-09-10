@@ -2401,11 +2401,39 @@ mark.faith-find-hit.is-current {
   display: flex;
   flex-direction: column;
 }
+/* Filter the contents (assets/js/faith-toc-filter.js). Mounted above
+   the list, only on works long enough to need it. Sits in the rail's
+   own chrome rather than looking like a site search field: this is a
+   narrowing control for a list already on screen. */
+.faith-toc-filter-wrap { margin: 0 0 12px; padding: 0 8px; }
+.faith-toc-filter {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 12px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-dark);
+  background: var(--color-white);
+  border: 1px solid var(--color-card-border);
+  border-radius: 4px;
+}
+.faith-toc-filter:focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 1px; }
+.faith-toc-filter-count {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-muted);
+  margin: 6px 0 0;
+  min-height: 1em;
+}
+.faith-toc-item a .faith-toc-label.is-match { color: var(--color-primary-text); font-weight: 600; }
 /* Editorial rows: hairlines between items, no card chrome. Active
    item gets a thin accent rule on the left and accent-coloured text;
    no background fill (MO rule: hairlines + editorial rows, not pills).
    Stacked layout keeps the numeral as a small eyebrow above the title
    so long values ("c. 2nd–3rd Century") don't crowd the row. */
+/* `display: block` below outranks the user-agent's [hidden] rule, so
+   the contents filter's hidden rows would stay on screen. */
+.faith-toc-item[hidden] { display: none; }
 .faith-toc-item { display: block; border-top: 1px solid var(--color-rule); }
 .faith-toc-item:last-child { border-bottom: 1px solid var(--color-rule); }
 .faith-toc-item a {
@@ -4941,8 +4969,14 @@ mark.faith-find-hit.is-current {
 }
 .faith-glossary-term-btn:hover,
 .faith-glossary-term-btn:focus-visible { border-bottom-color: var(--color-secondary); }
+/* `display: block` outranks the user-agent's [hidden] rule, so the
+   button that JS has hidden stays on the page offering to show more of
+   a list that has nothing more in it. Both the Glossary and the
+   Dictionary hide this button that way. */
+.faith-glossary-more[hidden] { display: none; }
 .faith-glossary-more {
   display: block;
+  min-height: 44px;
   margin: 4px 0 24px;
   font-family: var(--font-body);
   font-size: 14px;
@@ -5005,17 +5039,46 @@ mark.faith-find-hit.is-current {
 }
 
 /* ── Dictionary (DTC) ─────────────────────────────────────────
-   Browse chrome (letter nav, entry list, "more" button, empty state)
-   reuses .faith-glossary-az / -letter / -terms / -term-btn / -more /
-   -empty / -note from the block above -- identical widgets, one CSS
-   copy. Only the filter input and the article's side-by-side French/
-   English columns are new here. */
-.faith-dictionary { max-width: 900px; margin: 0 auto; }
-.faith-dictionary-filter-wrap { margin: 0 0 16px; }
+   The letter nav, "more" button and empty state still reuse
+   .faith-glossary-az / -letter / -more / -empty / -note from the block
+   above: identical widgets, one CSS copy.
+
+   Everything below the letter nav is the corpus owner's arrangement in
+   our type. Two rules govern it:
+
+     1. No display face. The dictionary's own <h1> is the page hero;
+        every heading inside an article is body type, because these are
+        the source's numbered divisions ("III. Doctrine.") and setting
+        those in IM Fell would make section numbering look like a title
+        page.
+     2. The pair, not the column. French and English sit as a pair per
+        paragraph rather than as two independent columns, so they
+        cannot drift apart down the page. On a narrow screen the pair
+        stacks; at reading width it splits. --fr-dtc-size carries the
+        reader's size control down into both lanes at once. */
+.faith-dictionary { max-width: 940px; margin: 0 auto; --fr-dtc-size: 1rem; }
+
+/* Every block below that JS hides carries its own display value, and a
+   display value outranks the user-agent's [hidden] rule. Without these
+   the search band shows before a letter is chosen and the contents
+   popup opens itself on load. */
+.faith-dictionary-band[hidden],
+.faith-dictionary-list[hidden],
+.faith-dictionary-article[hidden],
+.faith-dictionary-contents-pop[hidden] { display: none; }
+
+.faith-dictionary-band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 20px;
+  margin: 0 0 20px;
+}
 .faith-dictionary-filter {
-  width: 100%;
-  max-width: 360px;
-  padding: 10px 14px;
+  flex: 1 1 260px;
+  min-width: 0;
+  max-width: 380px;
+  padding: 11px 14px;
   font-family: var(--font-body);
   font-size: 15px;
   color: var(--color-dark);
@@ -5024,19 +5087,84 @@ mark.faith-find-hit.is-current {
   border-radius: 4px;
 }
 .faith-dictionary-filter:focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 1px; }
+.faith-dictionary-count {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-muted);
+  margin: 0;
+}
+.faith-dictionary-count.is-error { color: var(--color-secondary); }
 
-.faith-dictionary-article { max-width: 900px; margin: 0 auto; }
+/* The entry list. One column of rows rather than the Glossary's chip
+   cloud: a dictionary headword is a phrase, sometimes a long one, and
+   chips of wildly different widths make an alphabetical list hard to
+   scan down. */
+.faith-dictionary-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 2px 24px;
+  margin: 0 0 20px;
+}
+.faith-dictionary-term {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 8px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.4;
+  text-align: left;
+  color: var(--color-dark);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--color-rule);
+  cursor: pointer;
+}
+.faith-dictionary-term:hover { background: var(--color-cream); }
+.faith-dictionary-term:focus-visible { outline: 2px solid var(--color-secondary); outline-offset: -2px; }
+.faith-dictionary-term-word mark {
+  background: rgba(238, 125, 81, 0.28);
+  color: inherit;
+  padding: 0 1px;
+}
+.faith-dictionary-term-meta {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+/* ── An open article ───────────────────────────────────────── */
+.faith-dictionary-article { max-width: 940px; margin: 0 auto; }
+.faith-dictionary-bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 20px;
+}
 .faith-dictionary-back {
   font-family: var(--font-body);
   font-size: 14px;
   color: var(--color-secondary);
   background: none;
   border: none;
-  padding: 0 0 20px;
+  min-height: 44px;
+  padding: 0;
   cursor: pointer;
 }
 .faith-dictionary-back:hover,
 .faith-dictionary-back:focus-visible { text-decoration: underline; }
+.faith-dictionary-bar-word {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  text-align: right;
+}
 
 .faith-dictionary-title {
   font-family: var(--font-body);
@@ -5058,52 +5186,189 @@ mark.faith-find-hit.is-current {
   color: var(--color-muted);
   padding: 32px 0;
 }
-.faith-dictionary-unavailable { font-style: normal; }
+.faith-dictionary-unavailable {
+  font-style: normal;
+  font-size: 14px;
+  padding: 0 0 20px;
+}
+.faith-dictionary-renvoi {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-dark);
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  background: var(--color-cream);
+  border-left: 2px solid var(--color-card-border);
+}
 
 /* fr-ai-note is the sitewide disclosure block (see the Translation
    Transparency panel); no local override needed beyond spacing. */
-.faith-dictionary-article .fr-ai-note { margin: 0 0 24px; }
+.faith-dictionary-article .fr-ai-note { margin: 0 0 20px; }
 
-.faith-dictionary-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  margin-top: 8px;
-}
-.faith-dictionary-col-head {
-  font-family: var(--font-body);
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-muted);
-  margin: 0 0 12px;
-  padding-bottom: 8px;
+/* The meta bar: lanes, contents, size, and what the entry admits about
+   itself. Wraps rather than scrolls, because a control that has slid
+   off the right edge of a phone is a control nobody finds. */
+.faith-dictionary-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 0 0 28px;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-rule);
   border-bottom: 1px solid var(--color-rule);
 }
-.faith-dictionary-col p {
+.faith-dictionary-seg { display: flex; align-items: stretch; gap: 4px; position: relative; }
+.faith-dictionary-btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 12px;
   font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.7;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--color-dark);
+  background: var(--color-white);
+  border: 1px solid var(--color-card-border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.faith-dictionary-btn:hover:not(:disabled) { background: var(--color-cream); }
+.faith-dictionary-btn:focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 1px; }
+.faith-dictionary-btn:disabled { opacity: 0.4; cursor: default; }
+.faith-dictionary-btn.is-active {
+  color: var(--color-white);
+  background: var(--color-primary-text);
+  border-color: var(--color-primary-text);
+}
+.faith-dictionary-contents-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  width: min(340px, 78vw);
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 6px;
+  background: var(--color-white);
+  border: 1px solid var(--color-card-border);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(45, 41, 39, 0.14);
+}
+.faith-dictionary-contents-link {
+  min-height: 44px;
+  padding: 10px 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: left;
+  color: var(--color-dark);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.faith-dictionary-contents-link:hover { background: var(--color-cream); }
+.faith-dictionary-flags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-left: auto;
+}
+.faith-dictionary-flag {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+  padding: 3px 8px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 999px;
+}
+.faith-dictionary-extent {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+/* ── The text ──────────────────────────────────────────────── */
+.faith-dictionary-p {
+  font-family: var(--font-body);
+  font-size: var(--fr-dtc-size);
+  line-height: 1.66;
   color: var(--color-dark);
   margin: 0 0 16px;
 }
-.faith-dictionary-col p:last-child { margin-bottom: 0; }
-.faith-dictionary-col p.is-gap { color: var(--color-muted); font-style: italic; }
+.faith-dictionary-p.is-gap {
+  color: var(--color-muted);
+  font-style: italic;
+  font-size: 0.85em;
+}
+.faith-dictionary-xref { color: var(--color-secondary); border-bottom: 1px solid var(--color-card-border); }
+.faith-dictionary-xref:hover { border-bottom-color: var(--color-secondary); }
+
+.faith-dictionary-heading { margin: 34px 0 14px; }
+.faith-dictionary-heading:first-child { margin-top: 0; }
+.faith-dictionary-heading h3 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: calc(var(--fr-dtc-size) * 1.08);
+  line-height: 1.35;
+  color: var(--color-dark);
+  margin: 0;
+}
+.faith-dictionary-heading-fr {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: calc(var(--fr-dtc-size) * 0.86);
+  color: var(--color-muted);
+  margin: 3px 0 0;
+}
+
+/* The pair. English first, because this is an English publication and
+   the French is the check on it, not the other way round. */
+.faith-dictionary-pair { margin: 0 0 18px; }
+.faith-dictionary-body.is-both .faith-dictionary-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 36px;
+}
+.faith-dictionary-body.is-both .faith-dictionary-p { margin-bottom: 0; }
+.faith-dictionary-body.is-both .faith-dictionary-p--fr {
+  color: var(--color-muted);
+  font-size: calc(var(--fr-dtc-size) * 0.94);
+}
+
+.faith-dictionary-source {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-muted);
+  margin: 40px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-rule);
+}
 
 @media (max-width: 820px) {
-  .faith-dictionary-columns { grid-template-columns: 1fr; gap: 4px; }
-  .faith-dictionary-col + .faith-dictionary-col {
-    margin-top: 28px;
-    padding-top: 24px;
-    border-top: 1px solid var(--color-rule);
+  /* The pair stops being a pair. Two 45-character columns is not a
+     comparison, it is two narrow columns of hyphenation. */
+  .faith-dictionary-body.is-both .faith-dictionary-pair {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-rule);
   }
+  .faith-dictionary-body.is-both .faith-dictionary-p--fr { padding-top: 4px; }
 }
 @media (max-width: 700px) {
   .faith-dictionary-title { font-size: 25px; }
 }
 @media (max-width: 640px) {
   .faith-dictionary-filter { max-width: none; }
-  .faith-dictionary-col p { font-size: 15px; }
+  .faith-dictionary-list { grid-template-columns: 1fr; }
+  .faith-dictionary-meta { gap: 8px; }
+  .faith-dictionary-flags { margin-left: 0; }
 }
 
 /* ── Mobile tightening ───────────────────────────────────────── */
@@ -10576,6 +10841,232 @@ body.faith-toc-open .faith-dock { display: none; }
   background: var(--color-dark);
   border-color: var(--color-dark);
   color: var(--color-white, #fff);
+}
+
+/* ── The review desk, on the Faith Received board ────────────────
+   A queue, not a table. Each row is one work, its state, and the two
+   things that can be done to it; the tally above says how far the
+   session has got, and the tally deliberately says "looked at so far"
+   rather than printing a number that would read as a collection
+   total. See assets/js/admin-tfr-review.js. */
+.tfr-review-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+  margin: 0 0 12px;
+}
+/* The shared admin select is 39px tall. Raised here only, rather than
+   restyling every dashboard, so the desk's own controls all clear a
+   thumb. */
+.tfr-review-bar select { min-height: 44px; }
+.tfr-review-search-field { flex: 1 1 240px; min-width: 0; }
+.tfr-review-search-field input {
+  width: 100%;
+  min-height: 44px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-dark);
+  background: var(--color-white, #fff);
+  border: 1px solid var(--color-card-border);
+  border-radius: 3px;
+  padding: 8px 12px;
+}
+.tfr-review-filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+.tfr-review-filter {
+  font-family: var(--font-body);
+  font-size: 13px;
+  min-height: 44px;
+  background: none;
+  border: 1px solid var(--color-card-border);
+  border-radius: 3px;
+  color: var(--color-muted);
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.tfr-review-filter.is-current {
+  background: var(--color-dark);
+  border-color: var(--color-dark);
+  color: var(--color-white, #fff);
+}
+
+.tfr-review-tally {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 0 0 10px;
+}
+.tfr-review-pill {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-muted);
+  padding: 4px 10px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 999px;
+}
+.tfr-review-pill b { color: var(--color-dark); font-weight: 600; }
+.tfr-review-pill.is-reviewed { border-color: #2f7d52; color: #2f7d52; }
+.tfr-review-pill.is-reviewed b { color: #2f7d52; }
+.tfr-review-pill.is-needs { border-color: var(--color-card-border); }
+.tfr-review-pill.is-reported { border-color: var(--color-secondary); color: var(--color-secondary); }
+.tfr-review-pill.is-reported b { color: var(--color-secondary); }
+.tfr-review-pill.is-unknown { font-style: italic; }
+.tfr-review-tally-note {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.tfr-review-list { list-style: none; margin: 0; padding: 0; }
+.tfr-review-row {
+  border-top: 1px solid var(--color-rule);
+  padding: 14px 0;
+}
+.tfr-review-row:last-child { border-bottom: 1px solid var(--color-rule); }
+.tfr-review-row.is-found { background: var(--color-cream); }
+.tfr-review-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin: 0 0 10px;
+}
+.tfr-review-name { min-width: 0; flex: 1 1 260px; }
+.tfr-review-title {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--color-dark);
+  margin: 0;
+}
+.tfr-review-by {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-muted);
+  margin: 2px 0 0;
+}
+.tfr-review-marks { display: flex; flex-wrap: wrap; gap: 6px; }
+.tfr-review-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.tfr-review-btn {
+  font-family: var(--font-body);
+  font-size: 13px;
+  min-height: 44px;
+  background: none;
+  border: 1px solid var(--color-card-border);
+  border-radius: 3px;
+  color: var(--color-dark);
+  padding: 7px 13px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tfr-review-btn:hover { border-color: var(--color-secondary); color: var(--color-secondary); }
+.tfr-review-btn:focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 1px; }
+.tfr-review-btn[disabled] { opacity: 0.5; cursor: default; }
+.tfr-review-btn.is-active { border-color: var(--color-dark); }
+.tfr-review-btn--primary {
+  background: var(--color-dark);
+  border-color: var(--color-dark);
+  color: var(--color-white, #fff);
+}
+.tfr-review-btn--primary:hover {
+  background: var(--color-secondary);
+  border-color: var(--color-secondary);
+  color: var(--color-white, #fff);
+}
+.tfr-review-btn kbd {
+  font-family: var(--font-body);
+  font-size: 11px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 0 4px;
+  opacity: 0.8;
+}
+
+.tfr-review-msg {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-muted);
+  margin: 8px 0 0;
+}
+.tfr-review-msg:empty { margin: 0; }
+.tfr-review-msg.is-bad { color: var(--color-secondary); }
+
+.tfr-review-correction { margin: 12px 0 0; }
+.tfr-review-label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-muted);
+  margin: 0 0 6px;
+}
+.tfr-review-input {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 5px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-dark);
+  background: var(--color-white, #fff);
+  border: 1px solid var(--color-card-border);
+  border-radius: 3px;
+  padding: 8px 12px;
+}
+.tfr-review-correction-acts { display: flex; gap: 8px; margin-top: 8px; }
+
+.tfr-review-history { margin: 12px 0 0; }
+.tfr-review-history-list { list-style: none; margin: 0; padding: 0; }
+.tfr-review-history-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-dark);
+  padding: 6px 0 6px 12px;
+  border-left: 2px solid var(--color-rule);
+}
+.tfr-review-history-date { color: var(--color-muted); flex: 0 0 auto; }
+.tfr-review-history-what { flex: 1 1 200px; min-width: 0; }
+.tfr-review-history-who { color: var(--color-muted); flex: 0 0 auto; }
+.tfr-review-history-empty,
+.tfr-review-history-loading,
+.tfr-review-empty {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--color-muted);
+  margin: 10px 0 0;
+}
+.tfr-review-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 0;
+}
+.tfr-review-page {
+  font-family: var(--font-body);
+  font-size: 13px;
+  min-height: 44px;
+  background: none;
+  border: 1px solid var(--color-card-border);
+  border-radius: 3px;
+  color: var(--color-dark);
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.tfr-review-page[disabled] { opacity: 0.45; cursor: default; }
+.tfr-review-page-at { font-family: var(--font-body); font-size: 13px; color: var(--color-muted); }
+
+@media (max-width: 640px) {
+  .tfr-review-bar { gap: 10px; }
+  .tfr-review-acts .tfr-review-btn { flex: 1 1 auto; justify-content: center; }
 }
 
 /* ── How a work stands ───────────────────────────────────────────

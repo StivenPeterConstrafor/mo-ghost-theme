@@ -224,6 +224,11 @@
      and falls back to the plain work URL. --}}
 <script src="{{asset "js/lib/faith-position-store.js"}}"></script>
 <script src="{{asset "js/faith-reader.js"}}"></script>
+{{!-- Filter the contents rail. Ported from the corpus owner's English
+     Divines reading edition, and kept out of faith-reader.js: it reads
+     the finished rail, so it needs none of the reader's internals. Does
+     not mount on a work with a short contents list. --}}
+<script src="{{asset "js/faith-toc-filter.js"}}"></script>
 {{!-- "Report An Issue" in the text tools: a reader who has found a bad
      translation or a broken page is already looking at it, so the form
      comes to them and carries the work with it. Appended to the same

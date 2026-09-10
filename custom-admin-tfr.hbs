@@ -89,6 +89,57 @@
               <div class="tfr-issue-pager" data-issues-pager></div>
             </section>
 
+            {{!-- The review desk. Ported from the corpus owner's own
+                  review surface, which is a mode of his reader: a bar
+                  per page with OK / Needs work, a running tally, and one
+                  key that jumps to the next thing nobody has checked.
+                  His unit is a page inside a work; ours is a work,
+                  because tfr_work_review holds one row per work and
+                  there is no per-page state anywhere in this estate.
+
+                  Reads GET /v1/work-status on the library worker, which
+                  is public and takes sixty ids at a time. Writes POST
+                  /tfr/review and POST /tfr/revisions on mo-admin, both
+                  claimed by the "tfr" tool in the admin registry, so a
+                  caller is either Ghost staff or holds that grant. The
+                  controls are not hidden from anyone: they render, and
+                  the worker refuses what it should.
+
+                  Only the two catalogues the library worker serves
+                  itself are listed. Early English Books and the
+                  Patrologias keep theirs on the corpus owner's hosts,
+                  and an admin board is the wrong place to start talking
+                  to those. See assets/js/admin-tfr-review.js. --}}
+            <section class="admin-tfr-section" data-tfr-review
+                     data-admin-url="{{@custom.admin_worker_url}}">
+              <h2 class="admin-tfr-section-title"><em>Work review</em></h2>
+              <p class="admin-tfr-section-note">Where each work stands: whether anyone has read it against the original, what readers have reported against it, and what has been corrected in it. A work with no row has not been reviewed, and that is the honest default. Everything recorded here is printed on the work's own page under Translation Transparency.</p>
+
+              <div class="tfr-review-bar">
+                <label class="dashboard-form-field">
+                  <span class="dashboard-form-label">Collection</span>
+                  <select data-review-corpus></select>
+                </label>
+                <label class="dashboard-form-field tfr-review-search-field">
+                  <span class="dashboard-form-label">Find a work</span>
+                  <input type="search" data-review-search placeholder="Title, author or slug" autocomplete="off" />
+                </label>
+                <button type="button" class="tfr-review-btn tfr-review-btn--primary" data-review-next>Next unreviewed <kbd>u</kbd></button>
+              </div>
+
+              <div class="tfr-review-filters" role="group" aria-label="Which works to show">
+                <button type="button" class="tfr-review-filter is-current" data-review-filter="all" aria-pressed="true">All</button>
+                <button type="button" class="tfr-review-filter" data-review-filter="needs" aria-pressed="false">Needs review</button>
+                <button type="button" class="tfr-review-filter" data-review-filter="reviewed" aria-pressed="false">Reviewed</button>
+                <button type="button" class="tfr-review-filter" data-review-filter="reported" aria-pressed="false">Has an open report</button>
+              </div>
+
+              <div class="tfr-review-tally" data-review-tally></div>
+              <p class="admin-tfr-status" data-review-status role="status" aria-live="polite"></p>
+              <div data-review-list></div>
+              <div class="tfr-review-pager" data-review-pager></div>
+            </section>
+
             {{!-- Zero-result searches lead. This is the one panel that
                   generates work: it is a standing list of what the library
                   is missing, written by the readers. --}}
@@ -140,4 +191,6 @@
 <script src="{{asset "js/admin-sidebar.js"}}"></script>
 <script src="{{asset "js/admin-tfr.js"}}"></script>
 <script src="{{asset "js/admin-tfr-issues.js"}}"></script>
+<meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
+<script src="{{asset "js/admin-tfr-review.js"}}"></script>
 <script src="{{asset "js/admin-tfr-budget.js"}}"></script>

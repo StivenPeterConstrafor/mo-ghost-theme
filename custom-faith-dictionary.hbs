@@ -1,11 +1,11 @@
 {{!< default}}
 {{#contentFor "moHead"}}
 <title>Dictionary | The Faith Received</title>
-<meta name="description" content="The Dictionnaire de Théologie Catholique, translated into English as it is read — French and English side by side, article by article." />
+<meta name="description" content="The Dictionnaire de Théologie Catholique, translated into English as it is read, French and English paragraph by paragraph." />
 <meta property="og:title" content="Dictionary | The Faith Received" />
-<meta property="og:description" content="The Dictionnaire de Théologie Catholique, translated into English as it is read — French and English side by side, article by article." />
+<meta property="og:description" content="The Dictionnaire de Théologie Catholique, translated into English as it is read, French and English paragraph by paragraph." />
 <meta name="twitter:title" content="Dictionary | The Faith Received" />
-<meta name="twitter:description" content="The Dictionnaire de Théologie Catholique, translated into English as it is read — French and English side by side, article by article." />
+<meta name="twitter:description" content="The Dictionnaire de Théologie Catholique, translated into English as it is read, French and English paragraph by paragraph." />
 {{/contentFor}}
 {{!-- /the-faith-received/dictionary/ — a browsable reader for mo-tfr's
      v1/dtc/, the Dictionnaire de Théologie Catholique: a real French
@@ -26,7 +26,7 @@
     <div class="bhero-inner container">
       <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/dictionary/">Dictionary</a></p>
       <h1>Dictionary</h1>
-      <p class="bhero-sub">The Dictionnaire de Théologie Catholique, translated as it is read &mdash; French and English side by side, article by article.</p>
+      <p class="bhero-sub">The Dictionnaire de Théologie Catholique (Vacant, Mangenot, Amann; Paris, 1899 to 1950), translated as it is read. French and English run beside each other, paragraph by paragraph.</p>
     </div>
   </section>
 
@@ -38,4 +38,7 @@
 
 </main>
 
+{{!-- The library worker, read from the page rather than hardcoded in
+     the script, the same way the reader stamps it. --}}
+<meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
 <script src="{{asset "js/faith-dictionary.js"}}"></script>
