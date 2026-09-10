@@ -572,6 +572,8 @@ routes:
   # Dynamic reader for the Latin library (503 early modern theology
   # works). Content is fetched from R2 via the mo-tfr-library Worker.
   /the-faith-received/reader/:
+    template: custom-faith-port-readershim
+  /the-faith-received/reader-classic/:
     template: custom-faith-reader
 
 collections:

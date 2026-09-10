@@ -4573,7 +4573,7 @@ function rerenderFolio(sec,pi){if(typeof TEI_ON!=="undefined"&&TEI_ON){console.w
 // build() paints. __frTools resolves when the file lands; the boot awaits it lazily.
 window.__frToolsReady=new Promise(res=>{window.__frToolsRes=res;});
 window.__frLoadTools=()=>{if(window.__frToolsTag)return;window.__frToolsTag=1;
-  const sc=document.createElement("script");sc.src="/read-tools.js?v="+encodeURIComponent(window.__FR_VER||"local");document.body.appendChild(sc);};
+  const sc=document.createElement("script");sc.src="/assets/js/port/read-tools.js?v="+encodeURIComponent(window.__FR_VER||"local");document.body.appendChild(sc);};
 function _lateInit(name){return async function(){await window.__frToolsReady;return window[name].apply(null,arguments);};}
 const initReview=_lateInit("__initReview"),initSearch=_lateInit("__initSearch"),initReaderTools=_lateInit("__initReaderTools");
 async function jfetch(u,tries){for(let i=0;;i++){try{const r=await fetch(u);if(!r.ok){const e=new Error("HTTP "+r.status+" "+u);if(r.status===404)e.no_retry=1;throw e;}return await r.json();}catch(e){if(e.no_retry||i>=(tries||1))throw e;await new Promise(z=>setTimeout(z,400*(i+1)));}}}
