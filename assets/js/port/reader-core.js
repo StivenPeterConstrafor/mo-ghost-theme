@@ -4120,7 +4120,7 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
     const base=f.src==='PO'?'https://patrologia-orientalis.vercel.app':f.src==='AQ'?'https://aquinas-studies.vercel.app':'https://pld-patrologia-latina.vercel.app';
     const frag=f.src==='AQ'?'#'+(f.anchor||''):'#b'+(f.anchor||'');   // Aquinas anchors are r-ids (#r123), PL/PO are #b<page>
     const inner='<span class=cit>'+esc(f.cit||f.src)+(f.era?' <span class=era>s. '+_rom(f.era)+'</span>':'')+'</span><span class=tx>'+esc(f.tx)+'…</span>';
-    return f.doc?'<a class=rp-f href="'+base+'/read/'+encodeURIComponent(f.doc)+'.html'+frag+'" target=_blank style="display:block;text-decoration:none;color:inherit">'+inner+'</a>'
+    return f.doc?'<a class=rp-f href="'+base+'/the-faith-received/read/'+encodeURIComponent(f.doc)+'.html'+frag+'" target=_blank style="display:block;text-decoration:none;color:inherit">'+inner+'</a>'
                 :'<div class=rp-f>'+inner+'</div>';}
   // ── auto-saved parallels: every lookup that returns results is kept, no action needed
   // (owner 2026-07-21: "allow me to save these parallels automatically"). localStorage, cap 40,
@@ -4691,7 +4691,7 @@ function wireSrcSel(options,cur){
 async function loadPldCanon(ws){
   const id=ws.slice(4);
   const [xml,toc]=await Promise.all([
-    ((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/tei/pld/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/tei/pld/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})),
+    ((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/v1/tei/pld/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/v1/tei/pld/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})),
     fetch(BLOB+"/v1/pldtoc/"+id+".json").then(r=>r.ok?r.json():{}).catch(()=>({}))]);
   const doc=new DOMParser().parseFromString(xml,"application/xml");
   if(doc.querySelector("parsererror"))throw new Error("canon parse");
@@ -4894,7 +4894,7 @@ async function loadPgCanon(ws){
   const _pfc=window.__pgFetchCache[id]=window.__pgFetchCache[id]||{};
   const _cached=(k,mk)=>(_pfc[k]=_pfc[k]||mk().catch(e=>{delete _pfc[k];throw e;}));
   const [xml,toc,vtx,pgen,pggap]=await Promise.all([
-    _cached("xml",()=>((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/tei/pg/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/tei/pg/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();}))),
+    _cached("xml",()=>((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/v1/tei/pg/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/v1/tei/pg/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();}))),
     _cached("toc",()=>fetch(BLOB+"/v1/pgtoc/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null)),
     // the PG site's own cleaned vision transcription, per column (owner 2026-08-17
     // 'let the reader just copy the page') — staged for mixed works; absent elsewhere
@@ -5843,7 +5843,7 @@ async function loadPgCanon(ws){
 async function loadPoCanon(ws){
   const id=ws.slice(3);
   const [xml,facsMap,povtx,poen,pofx2]=await Promise.all([
-    ((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/tei/po/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/tei/po/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})),
+    ((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/v1/tei/po/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/v1/tei/po/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})),
     fetch(BLOB+"/v1/pofacs/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null),
     // the PO site's own original-script text, page-keyed — harvested for thin-lane works
     fetch(BLOB+"/v1/povtx/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null),
