@@ -62,7 +62,7 @@
     <div class="home-modes" role="group" aria-label="Search type"><button type="button" data-home-mode="works" aria-pressed="true">Works &amp; authors</button><button type="button" data-home-mode="passages" aria-pressed="false">Passages</button><button type="button" data-home-mode="ask" aria-pressed="false">Ask the library</button></div>
     <label class="home-sr" for="heroQ">Search works and authors</label>
     <div class="home-query"><svg class="home-search-icon" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="heroQ" name="q" type="search" placeholder="Search works or authors" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-describedby="homeSearchHelp" aria-controls="homeResults"><button id="homeClear" type="button" aria-label="Clear search" hidden></button><button id="homeSubmit" type="submit">Search</button></div>
-    <div class="home-search-foot"><p id="homeSearchHelp">Find a title, an author, or a subject in the catalogue.</p><div class="home-chatgpt" data-cgpt-link></div><span class="home-keyhint">⌘ K</span></div>
+    <div class="home-search-foot"><p id="homeSearchHelp">Find a title, an author, or a subject in the catalogue.</p><span class="home-keyhint">⌘ K</span></div>
   </form>
   <div id="homeExamples" class="home-examples" hidden></div><div id="homeRecent" class="home-recent" hidden></div>
   <div id="afChip"></div>
@@ -98,7 +98,7 @@
 </footer>
 
 <script src="{{asset "js/port/index.in09.js"}}"></script>
-<link rel="stylesheet" href="{{asset "css/port/shelf-constellations.css"}}"><script src="{{asset "js/port/research-tools.js"}}"></script><script src="{{asset "js/port/shelf-constellations.js"}}"></script><script src="{{asset "js/port/cgpt-link.js"}}"></script>
+<link rel="stylesheet" href="{{asset "css/port/shelf-constellations.css"}}"><script src="{{asset "js/port/research-tools.js"}}"></script><script src="{{asset "js/port/shelf-constellations.js"}}"></script>
 
 <script src="{{asset "js/port/index.in10.js"}}"></script>
 {{ghost_foot}}

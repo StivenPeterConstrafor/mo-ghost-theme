@@ -30,7 +30,7 @@
     <p class="lp-hero-sub">The Faith Received gathers the creeds, confessions, and classic works of the Christian tradition into a single library, designed to be publicly available, practically usable, and beautifully readable.</p>
     {{!-- The library's search, in the hero (owner 2026-09-10 "make the landing page look like what you had"):
           a plain GET to the library page, which reads q and find from the address. --}}
-    <form class="lp-search" action="/the-faith-received/library/" method="get" role="search" aria-label="Search the library">
+    <form class="lp-search" action="/the-faith-received/library/" method="get" role="search" aria-label="Search the library" onsubmit="if(this.find.value==='ask'){this.action='/the-faith-received/ask/';}">
       <div class="lp-modes" role="group" aria-label="Search type">
         <label><input type="radio" name="find" value="works" checked> Works &amp; authors</label>
         <label><input type="radio" name="find" value="passages"> Passages</label>
