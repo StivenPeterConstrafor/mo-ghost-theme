@@ -1487,7 +1487,7 @@ async function compareDesk(host,state,opts={}){
   const lociOrder=(x,y)=>headOf(x.key)-headOf(y.key)||((LOCUS_HEAD[x.key]||[0,99])[1]-(LOCUS_HEAD[y.key]||[0,99])[1]);
   const orderTopics=()=>{if(state.o==='n')topics.sort((x,y)=>(y.total-x.total)||(y.shared-x.shared)||lociOrder(x,y));
     else if(state.o==='denies')topics.sort((x,y)=>(y.den-x.den)||(y.denShare-x.denShare)||(y.total-x.total)||lociOrder(x,y));
-    else topics.sort((x,y)=>(y.shared-x.shared)||lociOrder(x,y)||y.total-x.total);};
+    else topics.sort((x,y)=>(y.shared-x.shared)||(y.total-x.total)||lociOrder(x,y));};
   orderTopics();
   const findTopic=sel=>{if(!sel)return null;const f=RX.fold(sel),ck=topicCanon(sel).key;return topics.find(t=>t.tslug===sel||t.reg===sel||t.key===f)||topics.find(t=>t.key===ck)||topics.find(t=>t.parts.some(ps=>ps.some(p=>(p.parts||[]).some(x=>x.tslug===sel||RX.fold(x.t)===f))))||null;};
   let cur=findTopic(state.sel)||topics[0]||null;if(cur)state.sel=cur.tslug;

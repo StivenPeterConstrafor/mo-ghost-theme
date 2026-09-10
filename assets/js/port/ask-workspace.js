@@ -193,7 +193,7 @@
     catch(_){legacyWarning='Full conversations are saved here. Desk export is full; download a conversation to keep a separate copy.';}
   }
   function createWorker() {
-    try { worker=new SharedWorker('/assets/js/port/ask-worker.js?v=7g&v=5',{name:'fr-ask-v7g'});port=worker.port;port.start(); }
+    try { worker=new SharedWorker('/assets/js/port/ask-worker.js?v=7g',{name:'fr-ask-v7g'});port=worker.port;port.start(); }
     catch(_){workerKind='tab';worker=new Worker('/assets/js/port/ask-worker.js?v=7g');port=worker;}
     port.onmessage=async({data})=>{
       if(data.type==='reply'){const r=replies.get(data.rid);if(r){clearTimeout(r.timer);replies.delete(data.rid);data.error?r.reject(new Error(data.error)):r.resolve();}}

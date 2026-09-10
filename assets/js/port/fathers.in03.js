@@ -1487,7 +1487,7 @@ async function compareDesk(host,state,opts={}){
   const lociOrder=(x,y)=>headOf(x.key)-headOf(y.key)||((LOCUS_HEAD[x.key]||[0,99])[1]-(LOCUS_HEAD[y.key]||[0,99])[1]);
   const orderTopics=()=>{if(state.o==='n')topics.sort((x,y)=>(y.total-x.total)||(y.shared-x.shared)||lociOrder(x,y));
     else if(state.o==='denies')topics.sort((x,y)=>(y.den-x.den)||(y.denShare-x.denShare)||(y.total-x.total)||lociOrder(x,y));
-    else topics.sort((x,y)=>(y.shared-x.shared)||lociOrder(x,y)||y.total-x.total);};
+    else topics.sort((x,y)=>(y.shared-x.shared)||(y.total-x.total)||lociOrder(x,y));};
   orderTopics();
   const findTopic=sel=>{if(!sel)return null;const f=RX.fold(sel),ck=topicCanon(sel).key;return topics.find(t=>t.tslug===sel||t.reg===sel||t.key===f)||topics.find(t=>t.key===ck)||topics.find(t=>t.parts.some(ps=>ps.some(p=>(p.parts||[]).some(x=>x.tslug===sel||RX.fold(x.t)===f))))||null;};
   let cur=findTopic(state.sel)||topics[0]||null;if(cur)state.sel=cur.tslug;
@@ -1775,16 +1775,96 @@ async function pairPage(slugA,slugB,topicSeg){
   <div class="view rx-pair"><div class="rx-filters rx-pair-tools">${pickerHTML}<a class="rx-text-link" href="/the-faith-received/fathers/?sh=${encodeURIComponent(ra.sh)}&cmp=${encodeURIComponent(slugB)}#${encodeURIComponent(slugA)}/positions">Every topic of ${esc(A.a)} with ${esc(B.a)} beside it</a></div><nav class="rx-loci-jump">${dirs.filter(d=>d.n).map(d=>`<a href="#${d.id}">${esc(d.from.a)} on ${esc(d.to.a)}</a>`).join('')}<a href="#pair-topics">Shared topics</a><a href="#pair-scripture">Scripture in common</a></nav>
     ${dirs.map(d=>block(d.from,d.to,d.shard,d.pack,d.id)).join('')}
     <section class="rx-pair-block" id="pair-topics"><h3>Positions, topic by topic<small>${fmtR(sharedN)} shared topics · every statement, grouped by work</small></h3><div id="pair-desk"></div></section>
-    <section class="rx-pair-block" id="pair-scripture"><h3>Scripture in common<small>books both authors cite most</small></h3>${sharedBooks.length?`<table class="rx-pair-table"><thead><tr><th>Book</th><th>${esc(A.a)}</th><th>${esc(B.a)}</th></tr></thead><tbody>${sharedBooks.map(([b,na,nb])=>`<tr><td><a href="${FRScripture.bibleURL?FRScripture.bibleURL(b):'/the-faith-received/bible/'}">${esc(b)}</a></td><td>${fmtR(na)}</td><td>${fmtR(nb)}</td></tr>`).join('')}</tbody></table>`:'<p class="rx-note">No shared books recorded.</p>'}</section>
+    <section class="rx-pair-block" id="pair-scripture"><h3>Scripture in common<small>read a chapter and see where both authors comment</small></h3><div id="pair-sc"><p class="loading">Loading Scripture profiles…</p></div></section>
   </div>`;
   researchLayout();bindPicker();
   page.querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>showWork(b.dataset.md,b.dataset.w));
   dirs.forEach(dd=>{if(dd.n)mountPair(dd.id);});
   compareDesk($('#pair-desk'),{a:[slugA,slugB],sel:wantT,g:'work',s:'',q:''},{embedded:true,onState:st=>{const h='#'+encodeURIComponent(slugA)+'/with/'+encodeURIComponent(slugB)+(st.sel?'/topic/'+encodeURIComponent(st.sel):'');if(location.hash!==h)history.replaceState(null,'',location.pathname+location.search+h);}});
+  mountPairScripture(page.querySelector('#pair-sc'),slugA,slugB,A.a,B.a);
   if(wantT)requestAnimationFrame(()=>document.getElementById('pair-topics')?.scrollIntoView({block:'start'}));
   page.querySelector('.rx-loci-jump').addEventListener('click',e=>{const a=e.target.closest('a');if(!a)return;e.preventDefault();document.getElementById(a.getAttribute('href').slice(1))?.scrollIntoView({block:'start',behavior:'smooth'});});
   document.title=`${A.a} and ${B.a} · The Faith Received`;
 }
+/* ---- Scripture in common (owner 2026-09-10: "rebuild this so we see all
+   scripture, can preview it, make it aesthetic, see the actual verses or
+   chapters") ---- Both authors' a2 bundles drive one shared book grid;
+   opening a book reads the chapter AS SCRIPTURE (ASV base, ESV merged at
+   read time) with each author's comments folded under the verses they
+   cite. Chapters where BOTH comment are marked. */
+let _psAsvBooks=null;const _psAsvCache={};
+async function _psAsv(bookName,ch){
+  if(!_psAsvBooks){const bj=await J(BLOB+"/v1/bible/asv/books.json").catch(()=>null);
+    _psAsvBooks={};if(bj)Object.keys(bj).forEach(k=>_psAsvBooks[k.toLowerCase().replace(/[^a-z0-9]/g,"")]=bj[k].path);}
+  const AL={revelationofjohn:"revelation",songofsolomon:"songofsongs",sirach:"ecclesiasticus"};
+  let key=String(bookName).toLowerCase().replace(/^(i{1,3}|iv)\s/,m2=>(({i:"1",ii:"2",iii:"3",iv:"4"})[m2.trim()]||m2)+" ").replace(/[^a-z0-9]/g,"");
+  key=AL[key]||key;
+  const path=_psAsvBooks[key];if(!path)return null;
+  const ck=path+"/"+ch;
+  if(!(ck in _psAsvCache))_psAsvCache[ck]=await J(BLOB+`/v1/bible/asv/${path}/${ch}.json`).catch(()=>null);
+  return _psAsvCache[ck];
+}
+async function mountPairScripture(host,slugA,slugB,nameA,nameB){
+  if(!host)return;
+  let PA,PB;
+  try{[PA,PB]=await Promise.all([gzJ(BLOB+`/v1/bible/all/a2/${slugA}.json.gz`),gzJ(BLOB+`/v1/bible/all/a2/${slugB}.json.gz`)]);}
+  catch(_){host.innerHTML='<p class="rx-note">A Scripture profile is missing for one of these authors.</p>';return;}
+  const bksA=(PA.profile&&PA.profile.books)||[],bksB=(PB.profile&&PB.profile.books)||[];
+  const mA=new Map(bksA.map(b=>[b.slug,b])),mB=new Map(bksB.map(b=>[b.slug,b]));
+  const order=[...new Set([...bksA.map(b=>b.slug),...bksB.map(b=>b.slug)])]
+    .map(s=>({s,book:(mA.get(s)||mB.get(s)).book,na:(mA.get(s)||{n:0}).n,nb:(mB.get(s)||{n:0}).n}));
+  order.sort((x,y)=>(Math.min(y.na,y.nb)-Math.min(x.na,x.nb))||((y.na+y.nb)-(x.na+x.nb)));
+  if(!order.length){host.innerHTML='<p class="rx-note">No Scripture citations recorded.</p>';return;}
+  const nmax=Math.max(...order.map(o=>Math.max(o.na,o.nb)),1);
+  const shared=order.filter(o=>o.na&&o.nb).length;
+  const grid=()=>{
+    host.innerHTML=`<div class="pane-meta">${order.length} books · ${shared} cited by both — open a book to read its chapters with both authors' comments in place</div>
+      <div class="psb-grid">${order.map(o=>`
+        <button class="psb-row${o.na&&o.nb?' both':''}" data-b="${esc(o.s)}">
+          <b>${esc(o.book)}</b>
+          <span class="psb-bars"><i class="a" style="width:${(100*Math.sqrt(o.na/nmax)).toFixed(0)}%"></i><i class="b" style="width:${(100*Math.sqrt(o.nb/nmax)).toFixed(0)}%"></i></span>
+          <span class="psb-n">${fmtR(o.na)} · ${fmtR(o.nb)}</span></button>`).join('')}</div>
+      <p class="rx-note psb-key"><span class="psb-swatch a"></span>${esc(nameA)} &nbsp; <span class="psb-swatch b"></span>${esc(nameB)}</p>`;
+    host.querySelectorAll('.psb-row').forEach(b=>b.onclick=()=>book(b.dataset.b));
+  };
+  async function book(slug,ch){
+    const bookName=((mA.get(slug)||mB.get(slug))||{}).book||slug;
+    host.innerHTML='<p class="loading">Loading '+esc(bookName)+'…</p>';
+    const rA=(PA.books&&PA.books[slug])||[],rB=(PB.books&&PB.books[slug])||[];
+    const bycA={},bycB={};rA.forEach(r=>(bycA[r.c||0]=bycA[r.c||0]||[]).push(r));rB.forEach(r=>(bycB[r.c||0]=bycB[r.c||0]||[]).push(r));
+    const chs=[...new Set([...Object.keys(bycA),...Object.keys(bycB)].map(Number))].filter(c=>c>0).sort((x,y)=>x-y);
+    const bothChs=chs.filter(c=>bycA[c]&&bycB[c]);
+    if(!ch)ch=bothChs[0]||chs[0];
+    let asv=null;
+    if(ch){asv=await _psAsv(bookName,ch);
+      const ev=await esvChapter(bookName,ch);
+      if(ev){asv=asv&&asv.verses?{...asv,verses:{...asv.verses,...ev}}:{verses:ev};}}
+    const byvA={},byvB={};(bycA[ch]||[]).forEach(r=>(byvA[r.v||0]=byvA[r.v||0]||[]).push(r));(bycB[ch]||[]).forEach(r=>(byvB[r.v||0]=byvB[r.v||0]||[]).push(r));
+    const cits=(rows,name,cls)=>rows.length?`<div class="psb-cits ${cls}"><b class="psb-who">${esc(name)}</b>${rows.map(r=>`<a class="psb-cit" href="${esc(r.h||'#')}"><span class="psb-w">${esc(r.t||r.w)}</span>${r.p?` <span class="psb-p">p. ${esc(String(r.p))}</span>`:''}${r.g?`<span class="psb-g">${escQ(String(r.g).slice(0,220))}</span>`:''}</a>`).join('')}</div>`:'';
+    let body='';
+    if(asv&&asv.verses){
+      const vns=Object.keys(asv.verses).map(Number).sort((x,y)=>x-y);
+      body=vns.map(v=>{
+        const ra=byvA[v]||[],rb=byvB[v]||[],n=ra.length+rb.length;
+        return `<div class="vs2${n?' cited':''}"><span class="vn">${v}</span><span class="vtx">${esc(asv.verses[String(v)])}</span>${n?`<button class="vex psb-vex" data-v="${v}" aria-expanded="false" aria-label="Show comments on verse ${v}">${ra.length?`<i class="a">${ra.length}</i>`:''}${rb.length?`<i class="b">${rb.length}</i>`:''}</button>`:''}</div>`+
+          (n?`<div class="vcits" data-vfor="${v}" hidden>${cits(ra,nameA,'a')}${cits(rb,nameB,'b')}</div>`:'');
+      }).join('');
+      const unA=byvA[0]||[],unB=byvB[0]||[];
+      if(unA.length+unB.length)body+=`<div class="psb-onch"><h4>On the chapter</h4>${cits(unA,nameA,'a')}${cits(unB,nameB,'b')}</div>`;
+    }else body='<p class="rx-note">The chapter text could not load. The recorded comments are below.</p>'+cits(bycA[ch]||[],nameA,'a')+cits(bycB[ch]||[],nameB,'b');
+    host.innerHTML=`<button class="rx-text-link psb-back" type="button">&#8249; All books</button>
+      <div class="pane-topic">${esc(bookName)} ${ch||''}</div>
+      <div class="pane-meta">${(bycA[ch]||[]).length} comments by ${esc(nameA)} · ${(bycB[ch]||[]).length} by ${esc(nameB)}${bothChs.length?` · ${bothChs.length} chapter${bothChs.length===1?'':'s'} where both comment (marked)`:''}</div>
+      <div class="psb-chs">${chs.map(c=>`<button class="psb-ch${c===ch?' on':''}${bycA[c]&&bycB[c]?' both':''}" data-c="${c}" type="button">${c}</button>`).join('')}</div>
+      <div class="psb-body">${body}</div>`;
+    host.querySelector('.psb-back').onclick=grid;
+    host.querySelectorAll('.psb-ch').forEach(b=>b.onclick=()=>book(slug,+b.dataset.c));
+    host.querySelectorAll('.psb-vex').forEach(b=>b.onclick=()=>{const d=host.querySelector(`.vcits[data-vfor="${b.dataset.v}"]`);if(d){d.hidden=!d.hidden;b.setAttribute('aria-expanded',String(!d.hidden));}});
+    host.scrollIntoView({block:'nearest'});
+  }
+  grid();
+}
+
 function route(){
   const [hashPath,hashQuery=""]=location.hash.slice(1).split("?");
   const h=decodeURIComponent(hashPath);
