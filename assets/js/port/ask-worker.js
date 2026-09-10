@@ -1,7 +1,7 @@
 /* One stream owner per origin, independent of which conversation is on screen.
    SharedWorker survives panel close and page changes while another site port is open.
    Browsers may suspend it: persisted interrupted states never masquerade as completion. */
-importScripts('/ask-store.js', '/ask-stream.js?v=4');
+importScripts('/assets/js/port/ask-store.js', '/assets/js/port/ask-stream.js?v=4');
 const Store = FRChatStore, jobs = new Map(), ports = new Set();
 const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('fr-ask-updates') : null;
 function broadcast(event) { for (const p of ports) { try { p.postMessage(event); } catch (_) { ports.delete(p); } } if (channel) channel.postMessage(event); }

@@ -97,6 +97,13 @@ results.addEventListener('input',e=>{const field=e.target.closest('[data-author-
 results.addEventListener('compositionend',e=>{if(e.target.matches('[data-author-query]'))e.target.dispatchEvent(new Event('input',{bubbles:true}));});
 results.addEventListener('click',e=>{const b=e.target.closest('[data-open-author],[data-clear-author]');if(!b)return;if(b.hasAttribute('data-open-author')){const [gi,ai]=b.dataset.openAuthor.split(':').map(Number),g=groups[gi],a=g.authors[ai];openShelves.add(g.key);openAuthors.add(a.key);lastKey='';paint();const field=results.querySelector('[data-author-query="'+gi+':'+ai+'"]');field?.focus();}else{const [gi,ai]=b.dataset.clearAuthor.split(':').map(Number),a=groups[gi].authors[ai],body=b.closest('.home-author-works'),field=body.querySelector('[data-author-query]');authorQueries.delete(a.key);workLimits.delete(a.key);field.value='';updateAuthorBody(body,a,gi,ai);field.focus({preventScroll:true});}});
 document.querySelectorAll('[data-home-mode]').forEach(b=>b.onclick=()=>{setMode(b.dataset.homeMode);input.focus({preventScroll:true});});
+ // seamless handoff into the full search page: same query, matching mode
+ (function(){var foot=document.querySelector('.home-search-foot');if(!foot)return;
+   var a=document.createElement('a');a.id='homeAdvanced';a.style.cssText='margin-left:auto;font:13px/1.4 var(--font-ui);color:var(--muted);text-decoration:underline;text-underline-offset:3px;white-space:nowrap';
+   var map={works:'title',passages:'full',ask:'ask'};
+   var sync=function(){var m=map[mode]||'title';a.href='/the-faith-received/search/?m='+m+(input.value.trim()?'&q='+encodeURIComponent(input.value.trim()):'');a.textContent='Open in advanced search →';};
+   input.addEventListener('input',sync);document.querySelectorAll('[data-home-mode]').forEach(function(b){b.addEventListener('click',function(){setTimeout(sync,0);});});
+   sync();foot.appendChild(a);})();
 document.addEventListener('click',e=>{const b=e.target.closest('[data-query],[data-save],[data-reload],[data-reset-scope]');if(!b)return;
  if(b.hasAttribute('data-query')){choose(b.dataset.query);return;}
  if(b.hasAttribute('data-reload')){location.reload();return;}

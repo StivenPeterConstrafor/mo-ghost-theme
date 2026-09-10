@@ -11,8 +11,10 @@ function contents(reading){
   const clone=e.cloneNode(true);clone.querySelectorAll('a.hlink,button,.h-anchor').forEach(n=>n.remove());
   const title=label(clone.textContent).replace(/^§\s*/,''),head=/^H[2-6]$/.test(e.tagName);
   const emphasized=e.tagName==='P'&&e.children.length===1&&/^(STRONG|B)$/.test(e.firstElementChild.tagName)&&label(e.firstElementChild.textContent)===title;
-  const rubric=e.tagName==='P'&&e.parentElement.children.length===1&&title.length>=15&&title.length<=100&&title.split(' ').length>=3&&/^[A-Z]/.test(title)&&!/[.!?;:]$/.test(title);
+  const rubric=e.tagName==='P'&&e.parentElement.children.length===1&&title.length>=15&&title.length<=100&&title.split(' ').length>=3&&/^[A-Z]/.test(title)&&!/[.!?;:,]$/.test(title);
   const numbered=chapterLabel(title);
+  // a question is catechesis, not a section (2026-09-10, the Small Catechism's "What does this mean?")
+  if(!head&&/\?$/.test(title))continue;
   if(!title||title.length>300||(!head&&!numbered&&!emphasized&&!rubric))continue;
   candidates.push({e,title,head,numbered});
  }
@@ -28,6 +30,9 @@ function contents(reading){
   const key=anchor+'|'+title;if(seen.has(key))continue;seen.add(key);
   rows.push({title,page:string(page),anchor,depth:head?(/^H[23]$/.test(e.tagName)?1:2):(numbered?1:2),element:e});
  }
+ // levelled heads (2026-09-10): when the work marks main heads (.hmain rows) beside sub heads, sub heads sit under them
+ if(rows.some(r=>r.element?.closest?.('.hmain'))&&rows.some(r=>/^H[2-6]$/.test(r.element?.tagName||'')&&!r.element.closest('.hmain')))
+  for(const r of rows)if(/^H[2-6]$/.test(r.element?.tagName||''))r.depth=r.element.closest('.hmain')?1:2;
  return rows;
 }
 function catalogue(data,titles={},confessions=[]){

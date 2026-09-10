@@ -48,7 +48,7 @@ function setMode(m){
     var topic=qEl.value.trim();var opts={mode:'deep',q:topic?'Trace “'+topic+'” through the theological tradition. Compare the authors, show where they agree or differ, and cite the passages.':'Trace the history of a theological idea, comparing the authors and citing the passages.'};
     setMode('title');if(window.FRAsk)window.FRAsk.open(opts);else window.__FR_ASK_PENDING__=opts;return;
   }
-  if(m==='ask'&&window.FRAsk){window.FRAsk.open();return;}MODE=m;
+  MODE=m;   // ask flows through renderAsk/askTurn (autoSend handoff to the workspace)
   var method=document.getElementById('passageMethod');if(method){method.hidden=m!=='full'&&m!=='meaning';method.querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.passage===m));});}
 
   var tip=document.getElementById('smodesHint');if(tip)tip.style.display=(m==='title')?'':'none';   // teaches the modes BEFORE one is chosen; inside a mode the per-mode hint speaks

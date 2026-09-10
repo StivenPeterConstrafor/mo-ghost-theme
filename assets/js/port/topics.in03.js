@@ -1768,52 +1768,21 @@ async function pairPage(slugA,slugB,topicSeg){
   const wantT=topicSeg?decodeURIComponent(topicSeg):'';
   const sharedN=(A.topics||[]).filter(t=>!RX.isRawTopic(t.t)&&(B.topics||[]).some(x=>RX.fold(x.t)===RX.fold(t.t))).length;
   const dirs=[{from:A,to:B,shard:fullA,pack:AtoB,id:'pair-ab',n:(AtoB.rows||[]).length},{from:B,to:A,shard:fullB,pack:BtoA,id:'pair-ba',n:(BtoA.rows||[]).length}].sort((x,y)=>y.n-x.n);
-  const bA=new Map(A.books||[]),bB=new Map(B.books||[]);const sharedBooks=[...bA.keys()].filter(k=>bB.has(k)).map(k=>[k,bA.get(k),bB.get(k)]).sort((x,y)=>(y[1]+y[2])-(x[1]+x[2]));
+  const bA=new Map(A.books||[]),bB=new Map(B.books||[]);const sharedBooks=[...bA.keys()].filter(k=>bB.has(k)).map(k=>[k,bA.get(k),bB.get(k)]).sort((x,y)=>(y[1]+y[2])-(x[1]+x[2])).slice(0,24);
   page.innerHTML=`<div class="crumbs"><a href="/the-faith-received/fathers/#">Authors</a> · <a href="${RX.authorURL(ra)}">${esc(A.a)}</a> · <a href="${RX.authorURL(rb)}">${esc(B.a)}</a></div>
   <div class="ridbar"><h1>${esc(A.a)} <span class="rx-pair-and">and</span> ${esc(B.a)}</h1>
     <div class="stats"><b>${fmtR(AtoB.n||AtoB.rows.length)}</b> ${pl(AtoB.n||AtoB.rows.length,'citation')} of ${esc(B.a)} in ${esc(A.a)} · <b>${fmtR(BtoA.n||BtoA.rows.length)}</b> ${pl(BtoA.n||BtoA.rows.length,'citation')} of ${esc(A.a)} in ${esc(B.a)} · <b>${fmtR(sharedN)}</b> shared ${pl(sharedN,'topic')} · <a href="/the-faith-received/web/#a=${encodeURIComponent(slugA)}">${esc(A.a)} in the citation web</a> · <a href="/the-faith-received/web/#a=${encodeURIComponent(slugB)}">${esc(B.a)} in the citation web</a></div></div>
   <div class="view rx-pair"><div class="rx-filters rx-pair-tools">${pickerHTML}<a class="rx-text-link" href="/the-faith-received/fathers/?sh=${encodeURIComponent(ra.sh)}&cmp=${encodeURIComponent(slugB)}#${encodeURIComponent(slugA)}/positions">Every topic of ${esc(A.a)} with ${esc(B.a)} beside it</a></div><nav class="rx-loci-jump">${dirs.filter(d=>d.n).map(d=>`<a href="#${d.id}">${esc(d.from.a)} on ${esc(d.to.a)}</a>`).join('')}<a href="#pair-topics">Shared topics</a><a href="#pair-scripture">Scripture in common</a></nav>
     ${dirs.map(d=>block(d.from,d.to,d.shard,d.pack,d.id)).join('')}
     <section class="rx-pair-block" id="pair-topics"><h3>Positions, topic by topic<small>${fmtR(sharedN)} shared topics · every statement, grouped by work</small></h3><div id="pair-desk"></div></section>
-    <section class="rx-pair-block" id="pair-scripture"><h3>Scripture in common<small>books both authors cite most</small></h3>${sharedBooks.length?`<table class="rx-pair-table"><thead><tr><th>Book</th><th>${esc(A.a)}</th><th>${esc(B.a)}</th></tr></thead><tbody>${sharedBooks.map(([b,na,nb])=>`<tr><td><details class="pair-sb" data-pb="${esc(b)}"><summary>${esc(b)} <small style="color:var(--muted)">where they both comment</small></summary><div class="pb-body"><p class="rx-note">Open to load the verses both authors comment on…</p></div></details></td><td>${fmtR(na)}</td><td>${fmtR(nb)}</td></tr>`).join('')}</tbody></table>`:'<p class="rx-note">No shared books recorded.</p>'}</section>
+    <section class="rx-pair-block" id="pair-scripture"><h3>Scripture in common<small>books both authors cite most</small></h3>${sharedBooks.length?`<table class="rx-pair-table"><thead><tr><th>Book</th><th>${esc(A.a)}</th><th>${esc(B.a)}</th></tr></thead><tbody>${sharedBooks.map(([b,na,nb])=>`<tr><td><a href="${FRScripture.bibleURL?FRScripture.bibleURL(b):'/the-faith-received/bible/'}">${esc(b)}</a></td><td>${fmtR(na)}</td><td>${fmtR(nb)}</td></tr>`).join('')}</tbody></table>`:'<p class="rx-note">No shared books recorded.</p>'}</section>
   </div>`;
   researchLayout();bindPicker();
   page.querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>showWork(b.dataset.md,b.dataset.w));
   dirs.forEach(dd=>{if(dd.n)mountPair(dd.id);});
-  compareDesk($('#pair-desk'),{a:[slugA,slugB],sel:wantT,g:'work',s:'',q:'',o:'n'},{embedded:true,onState:st=>{const h='#'+encodeURIComponent(slugA)+'/with/'+encodeURIComponent(slugB)+(st.sel?'/topic/'+encodeURIComponent(st.sel):'');if(location.hash!==h)history.replaceState(null,'',location.pathname+location.search+h);}});
+  compareDesk($('#pair-desk'),{a:[slugA,slugB],sel:wantT,g:'work',s:'',q:''},{embedded:true,onState:st=>{const h='#'+encodeURIComponent(slugA)+'/with/'+encodeURIComponent(slugB)+(st.sel?'/topic/'+encodeURIComponent(st.sel):'');if(location.hash!==h)history.replaceState(null,'',location.pathname+location.search+h);}});
   if(wantT)requestAnimationFrame(()=>document.getElementById('pair-topics')?.scrollIntoView({block:'start'}));
-  // Scripture in common: open a book to see the VERSES both authors comment
-   // on, each side linking into the pages (owner 2026-09-10)
-   let __PBOOKS=null;const pbooks=()=>__PBOOKS||(__PBOOKS=FRConnectionEvidence.json(BLOB+'/v1/bible/all/books.json'));
-   page.querySelectorAll('details.pair-sb').forEach(det=>{let loaded=false;det.addEventListener('toggle',async()=>{
-     if(!det.open||loaded)return;loaded=true;const box=det.querySelector('.pb-body');
-     box.innerHTML='<p class="rx-note">Finding shared verses…</p>';
-     try{
-       const bk=await pbooks();const want=RX.fold(det.dataset.pb);
-       const entry=(bk.books||[]).find(x=>RX.fold(x.book).startsWith(want)||RX.fold(x.slug).startsWith(want)||want.startsWith(RX.fold(x.slug).slice(0,4)));
-       if(!entry){box.innerHTML='<p class="rx-note">This book is not in the verse index.</p>';return;}
-       const chs=(entry.chapters||[]).filter(c=>c.n>0).map(c=>c.c).slice(0,80);
-       const hits=[];let done=0;
-       const workers=Array.from({length:6},async function pull(){
-         while(chs.length){const c=chs.shift();
-           try{const ch=await FRConnectionEvidence.json(BLOB+'/v1/bible/all/'+entry.slug+'/'+c+'.json.gz');
-             FRConnectionEvidence.verseOverlap(ch,{a:A.a},{a:B.a}).forEach(v=>hits.push({c,...v}));}catch(_){}
-           if(++done%10===0)box.innerHTML='<p class="rx-note">Scanning '+esc(entry.book)+' — chapter '+done+'…</p>';}
-       });
-       await Promise.all(workers);
-       hits.sort((x,y)=>x.c-y.c||x.v-y.v);
-       if(!hits.length){box.innerHTML='<p class="rx-note">No verse where both comment is recorded in '+esc(entry.book)+'.</p>';return;}
-       const side=(rows,who)=>rows.slice(0,4).map(r=>`<a class="pb-side" href="${FRConnectionEvidence.readerURL(r.w,r.p)}" target="_blank" title="${esc(r.t||r.w)} p.${r.p}${r.g?' — '+esc(String(r.g).slice(0,180)):''}">${esc(who)} p.${r.p}</a>`).join('');
-       const byCh=new Map();hits.forEach(v=>{if(!byCh.has(v.c))byCh.set(v.c,[]);byCh.get(v.c).push(v);});
-       box.innerHTML='<div class="pb-verses">'+[...byCh.entries()].map(([c,vv])=>
-         `<div class="pb-ch"><h5>${esc(entry.book)} ${c}<small>${vv.length} shared ${vv.length===1?'verse':'verses'}</small></h5>`+
-         vv.map(v=>`<div class="pb-verse"><b>${c}:${v.v}</b><span class="pb-text">${esc(String(v.t||'').slice(0,320))}</span>`+
-           `<span class="pb-links"><span class="pb-au">${esc(A.a.split(' ')[0])}</span>${side(v.left,'p.').replaceAll('>p. p.','>p.')}`+
-           `<span class="pb-au">${esc(B.a.split(' ')[0])}</span>${side(v.right,'p.').replaceAll('>p. p.','>p.')}</span></div>`).join('')+
-         '</div>').join('')+'</div>';
-     }catch(e){box.innerHTML='<p class="rx-note">The verse index could not load.</p>';}
-   });});
-   page.querySelector('.rx-loci-jump').addEventListener('click',e=>{const a=e.target.closest('a');if(!a)return;e.preventDefault();document.getElementById(a.getAttribute('href').slice(1))?.scrollIntoView({block:'start',behavior:'smooth'});});
+  page.querySelector('.rx-loci-jump').addEventListener('click',e=>{const a=e.target.closest('a');if(!a)return;e.preventDefault();document.getElementById(a.getAttribute('href').slice(1))?.scrollIntoView({block:'start',behavior:'smooth'});});
   document.title=`${A.a} and ${B.a} · The Faith Received`;
 }
 function route(){

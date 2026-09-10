@@ -173,3 +173,4 @@ details[open]>summary>.home-fold{transform:rotate(90deg)}
 }
 @media(max-width:360px){.fr-library .wrap,.fr-library .home-hero{padding-left:16px;padding-right:16px}.fr-library .brand{font-size:20px}.fr-library .top{gap:8px;padding:10px 12px}.fr-library #libSignIn{font-size:12px}.home-modes{gap:17px}.home-modes button{font-size:13px}.home-query .home-search-icon{display:none}.fr-library #heroQ{font-size:16px}#homeSubmit{min-width:64px;padding:9px}.home-intro p{font-size:14px}}
 @media(prefers-reduced-motion:reduce){.fr-library *{scroll-behavior:auto!important;transition:none!important}}
+

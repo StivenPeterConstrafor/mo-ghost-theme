@@ -706,6 +706,7 @@ function blocks(t){
         else out.push({t:"p",h:inl(body),raw:body});}};
     para.split(/\n/).forEach(ln=>{const m=ln.match(HEAD);
       if(m){let ht=m[1].replace(/#{2,}/g," ").replace(/\s{2,}/g," ").trim();           // strip stray inline ##/### from heading text
+        const _lvl=((ln.match(/^\s*(#{1,6})/)||[])[1]||"###").length;                   // heading LEVEL (2026-09-10): ## = main, ### = sub — the contents tree keeps it
         if(!ht)return;                                                                   // markers-only → drop
         // DOUBLED-HEAD guard (owner 2026-08-28 aq-detrin-86 A.4): the ingest ran the heading
         // twice on ONE line with no separator — folded text = X+X exactly. Keep the first half.
@@ -720,7 +721,7 @@ function blocks(t){
         const vm=ht.match(/^((?:Verse|Vers\.?|VERSE|v\.)\s*[\dIVXLCivxlc]+\.?)\s+(\S.*)$/);
         if(vm||(ht.length>100&&/[.!?][)"'”\]]?$/.test(ht))){
           flush();out.push({t:"p",h:inl(vm?("**"+vm[1].trim()+"** "+vm[2].trim()):ht)});
-        }else{flush();out.push({t:"h",h:inl(ht)});}
+        }else{flush();out.push({t:"h",h:inl(ht),lvl:_lvl});}
       }else buf.push(ln);});
     flush();
   });
@@ -1003,7 +1004,8 @@ function buildRows(lb,eb,first){
       // its own column like every body row — the Latin head was a stacked .56em subline.
       // A one-sided head keeps the full-width banner.
       const _pair=!!(_hla&&_hen);
-      const h=el("div","row rhead"+(_pair?" hpair":"")+(VIVES_APP&&_EDSEC?" hedit":""));
+      const _lvl=Math.min((e&&e.t==="h"&&e.lvl)||(l&&l.t==="h"&&l.lvl)||3,6);
+      const h=el("div","row rhead"+(_pair?" hpair":"")+(VIVES_APP&&_EDSEC?" hedit":"")+(_lvl<=2?" hmain":"")+" hl"+_lvl);
       // hover § anchor: every heading is a copyable deep link (schola-thomistica pattern)
       const _hid="h"+(++_HSEQ)+"-"+(_hen||_hla).replace(/<[^>]+>/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40);h.id=_hid;
       const _chip=(VIVES_APP&&_EDSEC)?'<span class="edchip" title="This section is the Wadding–Vivès editors’ apparatus (Lychetus, Hiquaeus …), not Scotus’s own text — citations from it are attributed to the editors">editors’ apparatus · Wadding–Vivès</span>':"";
