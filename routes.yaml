@@ -295,6 +295,18 @@ routes:
     template: custom-faith-centuries
   /the-faith-received/browse/:
     template: custom-faith-browse
+  # The research desk, ported from the corpus owner's own site (2026-09-10)
+  # and rebuilt on our backend and design. Compare sets two to four authors
+  # side by side on one topic, oldest first, so a topic reads as a reception
+  # history. Pins groups kept passages into named collections; it stores only
+  # the grouping, since faith-notebook-store.js owns the passages themselves.
+  # Desk is where a paper gets written out of them.
+  /the-faith-received/compare/:
+    template: custom-faith-compare
+  /the-faith-received/pins/:
+    template: custom-faith-pins
+  /the-faith-received/desk/:
+    template: custom-faith-desk
   # One route for all eight reading rooms; ?collection= picks which.
   # A page per collection. The shared /room/ route stays as a fallback
   # for links that still carry ?collection=.
