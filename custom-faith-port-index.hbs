@@ -4,7 +4,7 @@
 <script src="{{asset "js/port/index.in01.js"}}"></script>
 <script src="{{asset "js/port/index.in02.js"}}"></script>
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
-<link rel=preconnect href="https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev">
+<link rel=preconnect href="https://mo-tfr-library.mo-podcast-feed.workers.dev">
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap">
 <title>The Faith Received — Library</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232A231D'/%3E%3Ctext x='33' y='46' font-family='Georgia,serif' font-style='italic' font-size='40' fill='%23F4EDE0' text-anchor='middle'%3EF%3C/text%3E%3Crect x='14' y='52' width='36' height='3' rx='1.5' fill='%23A94F35'/%3E%3C/svg%3E"><link rel="stylesheet" href="{{asset "css/port/index.in01.css"}}"><script src="{{asset "js/port/index.in03.js"}}"></script><script src="{{asset "js/port/index.in04.js"}}"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}"><script defer src="{{asset "js/port/ask-store.js"}}"></script><script defer src="{{asset "js/port/ask-workspace.js"}}"></script><script src="{{asset "js/port/research-data.js"}}"></script><script src="{{asset "js/port/research-notebook.js"}}"></script><script defer src="{{asset "js/port/site-navigation.js"}}"></script><link rel="stylesheet" href="{{asset "css/port/site-navigation.css"}}"><script src="{{asset "js/port/connection-evidence.js"}}"></script><link rel="stylesheet" href="{{asset "css/port/connection-evidence.css"}}"><link rel="stylesheet" href="{{asset "css/port/index.in02.css"}}"><link rel="stylesheet" href="{{asset "css/port/index.in03.css"}}"><link rel="stylesheet" href="{{asset "css/port/index.in04.css"}}"><style>.tfrp-bridge{display:flex;justify-content:space-between;align-items:center;padding:.45rem 1.25rem;border-bottom:1px solid rgba(0,0,0,.08);font:500 .78rem/1 Georgia,'Times New Roman',serif;letter-spacing:.04em;background:inherit;color:inherit}.tfrp-bridge a{color:inherit;text-decoration:none;opacity:.75}.tfrp-bridge a:hover{opacity:1;text-decoration:underline}.tfrp-bridge .tfrp-r a{margin-left:1.1rem}[data-theme=dark] .tfrp-bridge{border-bottom-color:rgba(255,255,255,.14)}</style>
@@ -59,10 +59,10 @@
 <header class="hero home-hero">
   <div class="home-intro"><h1>The library</h1><p>Christian theology, from the Fathers<br class="home-desktop-break"> to the early modern divines.</p></div>
   <form id="homeSearchForm" class="home-search" role="search" aria-label="Search the library">
-    <div class="home-modes" role="group" aria-label="Search type"><button type="button" data-home-mode="works" aria-pressed="true">Works &amp; authors</button><button type="button" data-home-mode="passages" aria-pressed="false">Passages</button><button type="button" data-home-mode="ask" aria-pressed="false">Ask the library</button></div>
+    <div class="home-modes" role="group" aria-label="Search type"><button type="button" data-home-mode="works" aria-pressed="true">Works &amp; authors</button><button type="button" data-home-mode="ask" aria-pressed="false">Ask the library</button></div>
     <label class="home-sr" for="heroQ">Search works and authors</label>
     <div class="home-query"><svg class="home-search-icon" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="heroQ" name="q" type="search" placeholder="Search works or authors" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-describedby="homeSearchHelp" aria-controls="homeResults"><button id="homeClear" type="button" aria-label="Clear search" hidden></button><button id="homeSubmit" type="submit">Search</button></div>
-    <div class="home-search-foot"><p id="homeSearchHelp">Find a title, an author, or a subject in the catalogue.</p><span class="home-keyhint">⌘ K</span></div>
+    <div class="home-search-foot"><p id="homeSearchHelp">Find a title, an author, or a subject in the catalogue.</p><div class="home-chatgpt" data-cgpt-link></div><span class="home-keyhint">⌘ K</span></div>
   </form>
   <div id="homeExamples" class="home-examples" hidden></div><div id="homeRecent" class="home-recent" hidden></div>
   <div id="afChip"></div>
@@ -98,7 +98,7 @@
 </footer>
 
 <script src="{{asset "js/port/index.in09.js"}}"></script>
-<link rel="stylesheet" href="{{asset "css/port/shelf-constellations.css"}}"><script src="{{asset "js/port/research-tools.js"}}"></script><script src="{{asset "js/port/shelf-constellations.js"}}"></script>
+<link rel="stylesheet" href="{{asset "css/port/shelf-constellations.css"}}"><script src="{{asset "js/port/research-tools.js"}}"></script><script src="{{asset "js/port/shelf-constellations.js"}}"></script><script src="{{asset "js/port/cgpt-link.js"}}"></script>
 
 <script src="{{asset "js/port/index.in10.js"}}"></script>
 {{ghost_foot}}

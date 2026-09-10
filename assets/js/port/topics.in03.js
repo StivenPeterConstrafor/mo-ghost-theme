@@ -1,6 +1,6 @@
 
 "use strict";
-const BLOB="https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev";
+const BLOB="https://mo-tfr-library.mo-podcast-feed.workers.dev";
 // witness registry (owner 2026-09-02): facsimile copy -> born-digital primary — global, once
 window.__WIT=window.__WIT||fetch(BLOB+"/v1/witnesses.json").then(r=>r.ok?r.json():{}).catch(()=>({}));
 window.__WIT.then(m=>{window.__WITM=m||{};});

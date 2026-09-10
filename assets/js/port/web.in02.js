@@ -1,6 +1,6 @@
 
 "use strict";
-const BLOB="https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev";
+const BLOB="https://mo-tfr-library.mo-podcast-feed.workers.dev";
 // ease of use (2026-09-02): command-palette reflexes · press ⌘K or / to find a star;
 // the intro card bows out after the first travel
 addEventListener("keydown",e=>{
@@ -499,9 +499,9 @@ async function openAuthor(slug,push=true){
     const pu2=pairURL(slug,r.fk);
     const allBtn=`<button class="pbtn" style="font-size:.74rem;padding:.2rem .7rem" data-edge="${esc(cslug)}|${esc(tslug2)}">Why connected · read ${fmt(r.n)} references</button>${pu2?` <a class="pbtn" style="font-size:.74rem;padding:.2rem .7rem" href="${pu2}">Compare the two authors</a>`:''}`;
     const tw=(r.tw||[]).slice(0,3).map(t=>`<a href="/the-faith-received/read/?w=${esc(t[0])}" target="_blank">${esc(t[1])}</a>`).join(" · ");
-    return `<details class="edge"><summary class="er"><span class="nm">${esc(r.a)}</span>
+    return `<details class="edge" data-fk="${esc(r.fk||"")}" data-dir="${dir}"><summary class="er"><span class="nm">${esc(r.a)}</span>
       <span class="n">${fmt(r.n)} citations</span></summary>
-      <div class="ev">${link}${tw?`<div style="font-size:.8rem;margin:.2rem 0">${dir==="in"?"into":"of"} ${tw}</div>`:""}${sms}${allBtn}</div></details>`;};
+      <div class="ev">${tw?`<div style="font-size:.8rem;margin:.2rem 0">${dir==="in"?"into":"of"} ${tw}</div>`:""}${sms}${allBtn}<span style="margin-left:.6rem">${link}</span></div></details>`;};
   const inn=((d.in||{}).rows||[]).slice().sort((a,b)=>b.n-a.n);
   const out=((d.out||{}).rows||[]).slice().sort((a,b)=>b.n-a.n);
   try{await Promise.race([window.__BIOSP,new Promise(r=>setTimeout(r,1400))]);}catch(_){}
@@ -540,7 +540,28 @@ async function openAuthor(slug,push=true){
     if(el.tagName!=="SUMMARY")el.parentElement.classList.toggle("open");}));
   pbody.querySelectorAll("[data-edge]").forEach(el=>el.onclick=()=>{
     const [c2,t2]=el.dataset.edge.split("|");openEdge(c2,t2,slug);});
-  FRShelfMap.bindPreviews(pbody);
+  pbody.querySelectorAll('[data-relations="out"] details.edge').forEach(det=>{
+     det.addEventListener('toggle',async()=>{
+       if(!det.open||det.dataset.citesLoaded)return;det.dataset.citesLoaded='1';
+       const host=document.createElement('div');host.className='edge-inline';det.appendChild(host);
+       const mount=async()=>{
+         host.innerHTML='<p class="loading">Loading every citation…</p>';
+         try{
+           window.__FULL_SELF=window.__FULL_SELF||FRConnectionEvidence.json('/v1/reception/full/'+encodeURIComponent(slug)+'.json.gz');
+           const d2=await window.__FULL_SELF;
+           const fk=det.dataset.fk;const tn2=BYS[fk]||{s:fk,a:det.querySelector('.nm')?.textContent||fk};
+           host.innerHTML='';
+           FRConnectionEvidence.mountCitation(host,{data:d2,citing:{s:slug,a:n.a},target:tn2,hideSave:true});
+         }catch(e){host.innerHTML='<p class="loading">The reference file could not load. Use “Why connected” instead.</p>';}
+       };
+       if(det.querySelector('.sm .q')){
+         const b=document.createElement('button');b.className='pbtn';b.style.cssText='font-size:.74rem;padding:.2rem .7rem;margin:.3rem 0';
+         b.textContent='Read all the citations here';b.onclick=e=>{e.preventDefault();b.remove();mount();};
+         host.appendChild(b);
+       } else { mount(); }
+     });
+   });
+   FRShelfMap.bindPreviews(pbody);
   $("#bpath").onclick=()=>{openPathPicker();$("#path-from").value=n.a;$("#path-to").focus();};
   $("#relation-query").oninput=e=>{const term=e.target.value.trim().toLowerCase();let all=0;[['in','Cited by'],['out','Cites']].forEach(([dir,label])=>{const rows=[...pbody.querySelectorAll('[data-relations="'+dir+'"] .edge')];let visible=0;rows.forEach(row=>{row.hidden=!row.querySelector('.nm').textContent.toLowerCase().includes(term);if(!row.hidden)visible++;});all+=visible;$('#relations-'+dir+'-count').textContent=label+' '+visible+(term?' of '+rows.length:'')+' authors';});$('#relation-feedback').textContent=all?'':'No connected authors match this name. Try another spelling.';};
   pbody.scrollTop=0;

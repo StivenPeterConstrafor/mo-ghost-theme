@@ -1,7 +1,7 @@
 /* Navigation helpers shared by Scripture and the Web. Published metadata is read only. */
 (function(root){
   'use strict';
-  const base='https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev';
+  const base='https://mo-tfr-library.mo-podcast-feed.workers.dev';
   const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const readerURL=(work,page)=>'/the-faith-received/read/?w='+encodeURIComponent(work)+(page!=null&&page!==''?'#b'+encodeURIComponent(String(page))+'-0':'');
   const bibleURL=(book,ch,verse,view)=>'/the-faith-received/bible/#b/'+encodeURIComponent(book)+(ch?'/'+ch:'')+((verse||view)?'?'+new URLSearchParams({...verse?{v:verse}:{},...view?{view}: {}}):'');
