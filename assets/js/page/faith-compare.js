@@ -73,12 +73,57 @@
  * and is deliberately ignored — it addresses the owner's own site, and
  * re-pointing a fetched URL is exactly the sink that shipped an XSS
  * here before.
+ *
+ * ── LIVING IN A TAB ──────────────────────────────────────────────
+ *
+ * This panel is normally the Compare tab of
+ * /the-faith-received/research/, and it is written to work either way:
+ * inside that shell, or dropped on a page of its own. Two things follow
+ * from being one of seven panels, and both are handled by asking the
+ * markup rather than by being told.
+ *
+ * THE MODE PREFIX. The shell puts the workspace name in the first
+ * segment of the hash and leaves everything after the first "&" to the
+ * panel (see assets/js/page/faith-research.js for why that grammar).
+ * So hosted, this file reads and writes
+ * #compare&a=…&sel=…&g=…&s=…&q=… , and standalone it reads and writes
+ * #a=…&sel=… exactly as it always did. MODE below is "" or the host
+ * panel's name, and it is discovered from
+ * root.closest("[data-research-panel]"). The tail after the prefix is
+ * unchanged in either case, so parseHash() is the same URLSearchParams
+ * call it has always been and a link shared from either shape carries
+ * the same five parameters.
+ *
+ * NOT READING SOMEBODY ELSE'S ADDRESS. When the reader is on another
+ * tab the hash names that tab, and this file's hashchange listener must
+ * not treat #notebook as an instruction to empty the comparison. It
+ * returns early on any hash whose mode is not its own, and keeps its
+ * state in memory until its tab comes back.
+ *
+ * WAKING UP. The roster is nine fetches (one shelf index apiece) and
+ * they are the whole cost of this panel. Hidden behind a tab, that cost
+ * would be spent on every reader who only wanted to Ask a question. So
+ * the fetch waits for the tab: a MutationObserver on the host panel's
+ * `hidden` attribute, which is the same signal and the same reasoning
+ * faith-constellations.js sets out at length — a ResizeObserver or any
+ * rAF-driven visibility trap is not delivered at all in a background
+ * tab, so a panel that woke on one would sit blank forever. Everything
+ * that costs nothing (binding, reading the address, painting saved
+ * views) still happens at parse time.
  */
 (function () {
   "use strict";
 
   const root = document.querySelector("[data-cmp-root]");
   if (!root) return;
+  // The partial ships its own <script> tags so it can be dropped into
+  // any page. If a host page loads this file a second time, bind once.
+  if (root.getAttribute("data-cmp-bound") === "1") return;
+  root.setAttribute("data-cmp-bound", "1");
+
+  // "" standalone, or the name of the workspace this panel is a tab of.
+  const hostPanel = root.closest ? root.closest("[data-research-panel]") : null;
+  const MODE = (hostPanel && hostPanel.getAttribute("data-research-panel")) || "";
 
   const baseMeta = document.querySelector('meta[name="tfr-library-base"]');
   const BASE = ((baseMeta && baseMeta.content) || "").replace(/\/$/, "");
@@ -236,10 +281,31 @@
     return a;
   }
 
-  /* ── The address ─────────────────────────────────────────────── */
+  /* ── The address ─────────────────────────────────────────────── *
+   *
+   * Standalone:  #a=augustine-of-hippo,jerome&sel=sin&g=canon
+   * In the shell: #compare&a=augustine-of-hippo,jerome&sel=sin&g=canon
+   *
+   * One grammar with an optional first segment, so the parameters and
+   * their order are identical in both and a link made in either shape
+   * carries the same view. Everything below the two helpers works on
+   * the tail alone and does not know which shape it is in. */
+
+  // The part of the hash that belongs to this panel, mode segment
+  // stripped. "" when the hash names some other tab, which is how the
+  // hashchange listener knows to leave it alone.
+  function tailOfHash(hash) {
+    const s = String(hash || "").replace(/^#/, "");
+    if (!MODE) return s;
+    if (s === MODE) return "";
+    if (s.slice(0, MODE.length + 1) === `${MODE}&`) return s.slice(MODE.length + 1);
+    return null; // not ours
+  }
+
+  const isOurs = (hash) => tailOfHash(hash) !== null;
 
   function parseHash() {
-    const P = new URLSearchParams(String(location.hash || "").replace(/^#/, ""));
+    const P = new URLSearchParams(tailOfHash(location.hash) || "");
     const list = (P.get("a") || "").split(",").map((x) => x.trim()).filter(isSlug).slice(0, MAX_AUTHORS);
     return {
       a: list,
@@ -250,13 +316,27 @@
     };
   }
 
+  // The tail on its own, so that the example links in the empty state
+  // and the saved-view rows can be built from one place.
+  function tailOf(st) {
+    let t = `a=${st.a.map(encodeURIComponent).join(",")}`;
+    if (st.sel) t += `&sel=${encodeURIComponent(st.sel)}`;
+    if (st.g !== "work") t += `&g=${st.g}`;
+    if (st.s) t += `&s=${encodeURIComponent(st.s)}`;
+    if (st.q) t += `&q=${encodeURIComponent(st.q)}`;
+    return t;
+  }
+
+  // A whole hash from a tail. With no authors chosen the tail is the
+  // bare "a=", which says nothing the mode does not already say, so
+  // hosted it is dropped and the address is just "#compare".
+  function hashFromTail(tail) {
+    if (!MODE) return `#${tail}`;
+    return tail && tail !== "a=" ? `#${MODE}&${tail}` : `#${MODE}`;
+  }
+
   function hashOf(st) {
-    let h = `#a=${st.a.map(encodeURIComponent).join(",")}`;
-    if (st.sel) h += `&sel=${encodeURIComponent(st.sel)}`;
-    if (st.g !== "work") h += `&g=${st.g}`;
-    if (st.s) h += `&s=${encodeURIComponent(st.s)}`;
-    if (st.q) h += `&q=${encodeURIComponent(st.q)}`;
-    return h;
+    return hashFromTail(tailOf(st));
   }
 
   function writeHash() {
@@ -272,10 +352,22 @@
    * this browser, and the page says so. */
   const VIEWS_KEY = "fr_compare_views";
 
+  // A saved view keeps the TAIL, not the whole hash. It used to keep the
+  // hash, from before this panel could be a tab, and those records are
+  // still on readers' machines: their `hash` is always the standalone
+  // "#a=…" shape, since that is the only shape that existed when they
+  // were written. Normalising on the way in means an old saved view
+  // opens correctly inside the tab shell instead of pointing at a hash
+  // the shell reads as an unknown mode and clamps to Ask.
   function readViews() {
     try {
       const v = JSON.parse(window.localStorage.getItem(VIEWS_KEY) || "[]");
-      return Array.isArray(v) ? v : [];
+      if (!Array.isArray(v)) return [];
+      return v.map((x) => {
+        if (!x || typeof x !== "object") return null;
+        const tail = x.tail != null ? String(x.tail) : String(x.hash || "").replace(/^#/, "");
+        return { ...x, tail };
+      }).filter((x) => x && x.tail);
     } catch (_) {
       return [];
     }
@@ -716,7 +808,7 @@
   function paintSaved() {
     if (!savedList) return;
     const views = readViews();
-    const here = hashOf(state);
+    const here = tailOf(state);
     if (savedCount) savedCount.textContent = views.length ? `${fmt(views.length)} in this browser` : "none yet";
     clear(savedList);
     if (!views.length) {
@@ -726,10 +818,13 @@
     }
     views.forEach((v) => {
       const row = el("div", "cmp-saved-row");
-      if (v.hash === here) row.classList.add("is-active");
-      row.appendChild(link(`/the-faith-received/compare/${v.hash}`, v.name, "cmp-saved-name"));
+      if (v.tail === here) row.classList.add("is-active");
+      // This page, at another address. Hosted that is an in-page anchor
+      // and the hashchange it fires is what re-renders the panel;
+      // standalone it is the same link it always was.
+      row.appendChild(link(location.pathname + hashFromTail(v.tail), v.name, "cmp-saved-name"));
       row.appendChild(el("small", "cmp-saved-meta",
-        (v.authors || []).join(" · ") + (v.topic ? ` · ${v.topic}` : "") + (v.hash === here ? " · this view" : "")));
+        (v.authors || []).join(" · ") + (v.topic ? ` · ${v.topic}` : "") + (v.tail === here ? " · this view" : "")));
       const del = el("button", "cmp-saved-remove", "Remove");
       del.type = "button";
       del.setAttribute("aria-label", `Remove the saved view ${v.name}`);
@@ -763,9 +858,9 @@
 
   function saveView() {
     if (!authors.length) { say("Add an author before saving a view."); return; }
-    const hash = hashOf(state);
+    const tail = tailOf(state);
     const views = readViews();
-    const existing = views.filter((v) => v.hash === hash)[0];
+    const existing = views.filter((v) => v.tail === tail)[0];
     const name = [
       authors.map((a) => a.a).join(" · "),
       current ? `on ${current.label}` : "",
@@ -773,12 +868,12 @@
     const entry = {
       id: existing ? existing.id : `v${Date.now().toString(36)}`,
       name: (existing && existing.name) || name || "Comparison",
-      hash,
+      tail,
       authors: authors.map((a) => a.a),
       topic: current ? current.label : "",
       at: new Date().toISOString().slice(0, 10),
     };
-    const ok = writeViews([entry].concat(views.filter((v) => v.hash !== hash)));
+    const ok = writeViews([entry].concat(views.filter((v) => v.tail !== tail)));
     paintSaved();
     say(ok
       ? "Saved in this browser."
@@ -848,6 +943,26 @@
       return;
     }
     window.MOFaithDesk.setContext(created.id);
+
+    // Hosted, the Desk is the next tab along rather than another page,
+    // so this is a tab switch and not a navigation: reloading the whole
+    // document to reach a panel that is already in it would throw away
+    // the comparison the reader just made, and they will want to come
+    // back to it. ?doc= is still written, because that is the address of
+    // a paper and the Desk reads it on both its first wake and every
+    // later one; and it is still what makes the result linkable.
+    //
+    // The tab is asked for by CLICKING ITS BUTTON rather than by writing
+    // the hash. The button is the shell's own entry point: it carries
+    // the tail memo and the aria-selected bookkeeping with it, neither
+    // of which this file knows anything about.
+    if (MODE) {
+      const url = new URL(location.href);
+      url.searchParams.set("doc", created.id);
+      history.replaceState(null, "", url.pathname + url.search + location.hash);
+      const tab = document.querySelector('[data-research-mode="desk"]');
+      if (tab) { tab.click(); return; }
+    }
     location.assign(`/the-faith-received/desk/?doc=${encodeURIComponent(created.id)}`);
   }
 
@@ -867,6 +982,19 @@
     paintAuthors();
     paintAddList();
 
+    // Said in BOTH branches below, and computed here so it cannot drift
+    // out of one of them. A link that named two authors and resolved
+    // none of them used to fall through the early return with nothing
+    // on screen and nothing in the status line — an empty comparison
+    // and a broken one look identical, and the reader was shown the
+    // empty one. That matters more now than it did: a Compare link
+    // shared before this panel moved into the Research desk arrives
+    // through a redirect, so a reader landing on an empty tab has even
+    // less idea what became of it.
+    const notes = [];
+    if (missing.length) notes.push(`${missing.length === 1 ? "One author" : `${missing.length} authors`} in this link could not be found in the library.`);
+    if (rosterMissing.length) notes.push(`${rosterMissing.join(" and ")} did not answer, so those authors are missing from the list.`);
+
     const has = authors.length > 0;
     if (toolsEl) toolsEl.hidden = !has;
     if (topicsWrap) topicsWrap.hidden = !has;
@@ -881,6 +1009,10 @@
       clear(topicHeadEl);
       paintTopics();
       writeHash();
+      // Only when the address actually asked for somebody. An ordinary
+      // empty desk is not a failure and the empty state already speaks
+      // for it.
+      say(notes.join(" "));
       return;
     }
 
@@ -892,10 +1024,6 @@
     paintTopics();
     paintTopicHead();
     paintColumns();
-
-    const notes = [];
-    if (missing.length) notes.push(`${missing.length === 1 ? "One author" : `${missing.length} authors`} in this link could not be found in the library.`);
-    if (rosterMissing.length) notes.push(`${rosterMissing.join(" and ")} did not answer, so those authors are missing from the list.`);
     say(notes.join(" "));
 
     if (current) {
@@ -970,9 +1098,15 @@
   if (saveBtn) saveBtn.addEventListener("click", saveView);
   if (exportBtn) exportBtn.addEventListener("click", exportToDesk);
 
+  // A real navigation: a pasted link, one of the example links or a
+  // saved view below, or the back button. Hosted, the hash spends most
+  // of its life naming some OTHER tab, and #notebook is not an
+  // instruction to empty the comparison — so anything that is not ours
+  // is left alone and the state stays in memory until the tab returns.
   window.addEventListener("hashchange", () => {
+    if (!isOurs(location.hash)) return;
     const next = parseHash();
-    if (hashOf(next) === hashOf(state)) return;
+    if (tailOf(next) === tailOf(state)) return;
     state = next;
     if (groupSel) groupSel.value = state.g;
     if (stanceSel) stanceSel.value = state.s;
@@ -980,7 +1114,11 @@
     render();
   });
 
-  /* ── Boot ────────────────────────────────────────────────────── */
+  /* ── Binding ─────────────────────────────────────────────────── *
+   * Everything to here costs nothing and runs at parse time, hidden
+   * tab or not. The address is read now rather than on wake so that a
+   * link opened straight onto this tab is already parsed by the time
+   * the roster lands. */
 
   state = parseHash();
   if (groupSel) groupSel.value = state.g;
@@ -989,19 +1127,64 @@
   if (savedWrap) savedWrap.hidden = false;
   paintSaved();
 
-  if (!BASE) {
-    say("The library could not be reached from this page, so nothing can be compared. Reload, and tell us if it keeps happening.");
-    if (toolsEl) toolsEl.hidden = true;
-    if (topicsWrap) topicsWrap.hidden = true;
-    return;
+  // The example links in the empty state. Written in the markup as the
+  // standalone "#a=…" so the panel is correct with no script at all,
+  // and re-pointed at this page's own address here, which is what makes
+  // them work inside the tab shell.
+  root.querySelectorAll("[data-cmp-example]").forEach((a) => {
+    const href = location.pathname + hashFromTail(a.getAttribute("data-cmp-example") || "");
+    if (window.MOSafeHref) window.MOSafeHref.set(a, href, "#");
+    else a.setAttribute("href", href);
+  });
+
+  /* ── Waking up ───────────────────────────────────────────────── *
+   *
+   * The roster is nine fetches and it is the entire cost of this panel.
+   * Behind a tab it waits for the tab. The trigger is a
+   * MutationObserver on the host panel's `hidden` attribute, for the
+   * reason faith-constellations.js sets out at length: attribute
+   * mutations are delivered as microtasks and do not care whether
+   * anything is being painted, where a ResizeObserver or any
+   * rAF-driven visibility trap is not delivered AT ALL in a tab the
+   * browser is not painting, so a panel woken by one sits blank
+   * forever.
+   *
+   * Once only. Nothing here is re-read on a second visit: the roster
+   * does not change while the page is open, and loadRoster() memoises
+   * anyway. */
+  let booted = false;
+
+  function boot() {
+    if (booted) return;
+    booted = true;
+
+    if (!BASE) {
+      say("The library could not be reached from this page, so nothing can be compared. Reload, and tell us if it keeps happening.");
+      if (toolsEl) toolsEl.hidden = true;
+      if (topicsWrap) topicsWrap.hidden = true;
+      return;
+    }
+
+    say("Loading the library…");
+    loadRoster().then(() => {
+      say("");
+      paintAddList();
+      render();
+    }).catch(() => {
+      say("The list of authors could not be loaded, so nothing can be added to the comparison. Reload to try again.");
+    });
   }
 
-  say("Loading the library…");
-  loadRoster().then(() => {
-    say("");
-    paintAddList();
-    render();
-  }).catch(() => {
-    say("The list of authors could not be loaded, so nothing can be added to the comparison. Reload to try again.");
-  });
+  if (hostPanel && hostPanel.hidden && typeof MutationObserver === "function") {
+    const watch = new MutationObserver(() => {
+      if (hostPanel.hidden) return;
+      watch.disconnect();
+      boot();
+    });
+    watch.observe(hostPanel, { attributes: true, attributeFilter: ["hidden"] });
+  } else {
+    // Standalone, or hosted and already the open tab because the reader
+    // arrived on #compare.
+    boot();
+  }
 })();

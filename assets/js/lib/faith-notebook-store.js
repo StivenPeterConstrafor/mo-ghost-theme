@@ -70,6 +70,15 @@
 (function () {
   "use strict";
 
+  // Two self-contained partials on the Research page (Notebook and the
+  // Desk) each declare this store, so the file is on that page twice.
+  // Defining it twice is harmless while every function here reads
+  // localStorage on every call and holds nothing in memory — but
+  // consumers capture `window.MOFaithNotebook` in a const on their
+  // first line, and the moment anything in here gains a cache the
+  // second definition becomes a second, diverging copy. First one wins.
+  if (window.MOFaithNotebook) return;
+
   const NOTEBOOK_KEY = "fr_notebook";
   const EDGES_KEY = "fr_notebook_edges";
   const MAX_ENTRIES = 500;

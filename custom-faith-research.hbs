@@ -1,13 +1,13 @@
 {{!< default}}
 {{#contentFor "moHead"}}
 <title>Research | The Faith Received</title>
-<meta name="description" content="The research desk for The Faith Received. Ask a question of the library, search it by meaning, and keep what you find." />
+<meta name="description" content="The research desk for The Faith Received. Ask a question of the library, search it by meaning, compare two authors on a topic, keep what you find, and write from it." />
 <meta property="og:title" content="Research | The Faith Received" />
-<meta property="og:description" content="The research desk for The Faith Received. Ask a question of the library, search it by meaning, and keep what you find." />
+<meta property="og:description" content="The research desk for The Faith Received. Ask a question of the library, search it by meaning, compare two authors on a topic, keep what you find, and write from it." />
 <meta name="twitter:title" content="Research | The Faith Received" />
-<meta name="twitter:description" content="The research desk for The Faith Received. Ask a question of the library, search it by meaning, and keep what you find." />
+<meta name="twitter:description" content="The research desk for The Faith Received. Ask a question of the library, search it by meaning, compare two authors on a topic, keep what you find, and write from it." />
 {{/contentFor}}
-{{!-- /the-faith-received/research/ — the research desk. One page, five
+{{!-- /the-faith-received/research/ — the research desk. One page, seven
      workspaces, a tab strip under the heading, and whichever workspace
      is active fills everything below it.
 
@@ -21,12 +21,31 @@
      with the same mechanism faith-tfr-search.js's showMode() uses:
      [data-research-mode] buttons toggle `is-active`, [data-research-panel]
      elements toggle `hidden`. Deliberately its own small file rather
-     than a sixth and seventh mode bolted onto faith-tfr-search.js —
-     that file is 500-odd lines of Pagefind shard-merging and has no
-     business knowing about this page. Deep-linkable: the hash (#ask,
-     #power-search, #bookmarks, #notebook, #constellations) is read on
-     load and written with replaceState on every tab change, same as
-     the Search page.
+     than more modes bolted onto faith-tfr-search.js — that file is
+     500-odd lines of Pagefind shard-merging and has no business knowing
+     about this page.
+
+     THE ADDRESS. `#<mode>` names the workspace, and anything after the
+     first "&" belongs to the panel: #ask, #compare,
+     #compare&a=augustine-of-hippo,jerome&sel=sin. Read on load, written
+     with replaceState on every tab change. The grammar and the reasoning
+     behind it are set out at the top of faith-research.js; the short
+     version is that it is the only shape under which every hash that
+     shipped before Compare arrived still means what it meant. The Desk
+     takes ?doc= as a QUERY parameter rather than in the hash, because
+     the hash names the workspace and a paper is something a workspace is
+     showing.
+
+     SEVEN PANELS FROM THREE PAGES. Compare and the Desk were pages of
+     their own (/the-faith-received/compare/ and /desk/) until they were
+     folded in here; so was Pins, which is now the collection strip
+     inside the Notebook panel rather than a tab of its own, because a
+     collection has only ever been a grouping of THIS notebook's entries.
+     The three old URLs still resolve: their templates are now redirect
+     stubs that carry their state across into the right tab. Read
+     custom-faith-compare.hbs for how, and do not delete them without
+     replacing them with server-side redirects, or every comparison
+     anyone has shared dies.
 
      ASK. Renders partials/faith-received/_ask-panel.hbs — the SAME
      partial the standalone /the-faith-received/ask/ route and the Ask
@@ -36,7 +55,20 @@
      script order (feature-gate.js, then page/faith-ask.js) reproduced
      at the bottom of this file. Nothing on this page may introduce a
      second [data-ask-*] element; faith-ask.js would bind to whichever
-     came first in the document.
+     came first in the document. The same rule holds for every other
+     panel's prefix: one [data-cmp-*], one [data-fn-*], one [data-desk-*]
+     on this page, ever.
+
+     WHAT COSTS SOMETHING, AND WHEN. Ask and Power Search bind at parse
+     time and spend nothing until a form is submitted. Bookmarks,
+     Notebook and Constellations are the reader's own stored material.
+     Compare (nine roster fetches) and the Desk (which creates a paper
+     when there are none) are the two panels whose mere existence would
+     cost a reader who never opened them, so both wait for their tab by
+     watching their own panel's `hidden` attribute. Do not put network
+     work or a store write at the top of a panel script without doing
+     the same; faith-constellations.js documents why the observer has to
+     be a MutationObserver.
 
      POWER SEARCH. Semantic search over the corpus — meaning, not
      words. GET /v1/vsearch on mo-tfr-library (see
@@ -47,12 +79,18 @@
      button, per the standing rule that any LLM/embedding-spending
      feature carries both. Driven by assets/js/page/faith-power-search.js.
 
-     BOOKMARKS / NOTEBOOK / CONSTELLATIONS. Empty on purpose. Bookmarks
-     and Notebook are being built in a parallel session; Constellations
-     is a port that does not exist yet. Each is a real panel with the
-     right data-research-panel value and one honest line saying so, so
-     the tab strip is complete and the panels are somewhere to drop
-     real markup into. Nothing here fakes a feature. --}}
+     COMPARE / BOOKMARKS / NOTEBOOK / CONSTELLATIONS / THE DESK. Five
+     self-contained partials, each of which ships its own <script> tags
+     so that this template cannot forget one and render a permanent
+     empty box. Each partial's header carries its own DOM contract; read
+     that before touching its markup.
+
+     Compare and the Desk also ship their own .research-workspace
+     wrapper, because they were pages before they were panels and their
+     CSS was written against that structure. The other three are wrapped
+     here instead. That difference is load-bearing, not an oversight:
+     wrapping Compare or the Desk again would nest one full-bleed
+     breakout inside another and double the workspace padding. --}}
 
 <main class="faith-received faith-feature">
 
@@ -60,7 +98,7 @@
     <div class="bhero-inner container">
       <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/research/">Research</a></p>
       <h1>Research</h1>
-      <p class="bhero-sub">Nineteen thousand works of Christian theology, and the tools to work in them. Ask the library a question, search it by meaning, and keep what you find.</p>
+      <p class="bhero-sub">Nineteen thousand works of Christian theology, and the tools to work in them. Ask the library a question, search it by meaning, set two authors against each other, keep what you find, and write from it.</p>
     </div>
   </section>
 
@@ -72,12 +110,23 @@
            which handle the horizontal scroll at 375px and the active
            tab's underline), with .faith-research-tabs adding only the
            rule that separates the strip from the workspace below it. --}}
+      {{!-- Ordered as the work goes rather than as the panels were
+            built: ask the library, search it, set two authors against
+            each other, then what you have kept, then the map over it
+            all, then write. The MODES list in faith-research.js is
+            derived from this markup, so this order is also the
+            arrow-key order, and the first tab is the fallback for an
+            unknown or absent hash. Every mode name here is a public
+            address; renaming one breaks every link anybody has
+            shared. --}}
       <nav class="faith-view-toggle faith-search-modes faith-research-tabs" data-research-tabs role="tablist" aria-label="Research workspace">
         <button type="button" class="faith-view-toggle-tab is-active" data-research-mode="ask" role="tab" aria-selected="true" aria-controls="research-panel-ask" id="research-tab-ask">Ask</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="power-search" role="tab" aria-selected="false" aria-controls="research-panel-power-search" id="research-tab-power-search">Power Search</button>
+        <button type="button" class="faith-view-toggle-tab" data-research-mode="compare" role="tab" aria-selected="false" aria-controls="research-panel-compare" id="research-tab-compare">Compare</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="bookmarks" role="tab" aria-selected="false" aria-controls="research-panel-bookmarks" id="research-tab-bookmarks">Bookmarks</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="notebook" role="tab" aria-selected="false" aria-controls="research-panel-notebook" id="research-tab-notebook">Notebook</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="constellations" role="tab" aria-selected="false" aria-controls="research-panel-constellations" id="research-tab-constellations">Constellations</button>
+        <button type="button" class="faith-view-toggle-tab" data-research-mode="desk" role="tab" aria-selected="false" aria-controls="research-panel-desk" id="research-tab-desk">The Desk</button>
       </nav>
 
       {{!-- ── Ask ────────────────────────────────────────────────────
@@ -282,20 +331,35 @@
         </div>
       </div>
 
-      {{!-- ── Bookmarks / Notebook / Constellations ──────────────────
-           Deliberately empty. Bookmarks and Notebook are under
-           construction in a parallel session and Constellations has not
-           been ported yet; each panel says so in one line and does
-           nothing else.
+      {{!-- ── Compare ────────────────────────────────────────────────
+           The partial ships its own .research-workspace, so it is
+           dropped in bare. See the note at the top of this file about
+           why wrapping it again would be wrong.
 
-           Each still carries the same three-div workspace shell the
-           other two tabs use (.research-workspace > -inner >
-           .research-column) so that switching tabs doesn't change the
-           ground under the reader's feet, and so whoever builds these
-           out replaces one .faith-pending-panel with real markup and
-           inherits the layout for free. Keep the
-           data-research-panel attribute where it is —
-           faith-research.js reads nothing else about these panels. --}}
+           faith-compare.js discovers that it is hosted by reading this
+           element's data-research-panel value, and that value is what
+           it writes as the first segment of the hash. It is "compare"
+           in three places that must agree: here, the tab button above,
+           and the redirect stub in custom-faith-compare.hbs. --}}
+      <div data-research-panel="compare" role="tabpanel" id="research-panel-compare" aria-labelledby="research-tab-compare" hidden>
+        {{> "faith-received/_compare-panel"}}
+      </div>
+
+      {{!-- ── Bookmarks / Notebook / Constellations ──────────────────
+           Three self-contained partials, each bringing its own scripts.
+
+           Each is wrapped in the workspace shell here (.research-workspace
+           > -inner) so that switching tabs doesn't change the ground
+           under the reader's feet. Keep the data-research-panel
+           attribute where it is — faith-research.js reads nothing else
+           about these panels, and faith-constellations.js reads its
+           `hidden` attribute to know when its tab was opened.
+
+           NOTEBOOK IS ALSO COLLECTIONS. What used to be the Pins page is
+           the collection strip inside that panel; there is no Pins tab
+           and there should not be one. The reasoning is in
+           _notebook-panel.hbs, and it comes down to a collection never
+           having been anything but a grouping of notebook entries. --}}
       <div data-research-panel="bookmarks" role="tabpanel" id="research-panel-bookmarks" aria-labelledby="research-tab-bookmarks" hidden>
         <div class="research-workspace">
           <div class="research-workspace-inner">
@@ -320,6 +384,20 @@
         </div>
       </div>
 
+      {{!-- ── The Desk ───────────────────────────────────────────────
+           Like Compare, the partial ships its own .research-workspace
+           and is dropped in bare.
+
+           This panel WRITES on boot: with no papers in the browser it
+           makes one, so that the reader lands in something they can type
+           into. That is why faith-desk.js waits for this element's
+           `hidden` attribute to go away instead of booting at parse
+           time — otherwise everyone who opened this page to ask a
+           question would come away with an untitled paper. --}}
+      <div data-research-panel="desk" role="tabpanel" id="research-panel-desk" aria-labelledby="research-tab-desk" hidden>
+        {{> "faith-received/_desk-panel"}}
+      </div>
+
     </div>
   </section>
 
@@ -334,10 +412,12 @@
       <ul class="blist blist--2 blist--tools">
         <li><span class="brow-t">Ask</span><span class="brow-m">A question answered from the corpus. Every page it drew on is cited inline.</span></li>
         <li><span class="brow-t">Power Search</span><span class="brow-m">Search by meaning rather than by word, across every collection.</span></li>
+        <li><span class="brow-t">Compare</span><span class="brow-m">Two to four authors on one topic, side by side, grouped by the work.</span></li>
         <li><span class="brow-t">Latin word forms</span><span class="brow-m">One search across every inflection of a word.</span></li>
         <li><span class="brow-t">Constellations</span><span class="brow-m">The passages that stand behind a passage. Share the set as a link.</span></li>
         <li><span class="brow-t">Citation export</span><span class="brow-m">Copy, permalink, BibTeX or Zotero. Each one carries its locus.</span></li>
-        <li><span class="brow-t">The notebook</span><span class="brow-m">Highlight a paragraph, keep a private note, or write your own translation.</span></li>
+        <li><span class="brow-t">The notebook</span><span class="brow-m">Keep a passage, write a note on it, and gather passages into collections.</span></li>
+        <li><span class="brow-t">The Desk</span><span class="brow-m">Write with what you have kept beside you, citations already attached.</span></li>
       </ul>
     </div>
   </section>
@@ -365,14 +445,27 @@
 <script src="{{asset "js/page/membership-toggle.js"}}"></script>
 <script src="{{asset "js/page/membership-cards.js"}}"></script>
 
-{{!-- feature-gate.js FIRST, then the two page scripts that depend on
-     it gating their submit buttons — the same relative order
+{{!-- Only Ask and Power Search are loaded from here. The other five
+     panels are self-contained partials that bring their own scripts,
+     which therefore run at the point in the document where their panel
+     is rendered — ABOVE this block, and above faith-research.js.
+
+     That order is deliberate and the panels depend on it. Compare and
+     the Desk register a MutationObserver on their own panel's `hidden`
+     attribute and then wait; faith-research.js runs last and toggles
+     that attribute to open whichever tab the hash names. Load the shell
+     first and a reader arriving on #compare would find the observer
+     registered after the only mutation it was waiting for, and the
+     panel would sit blank until they clicked another tab and came back.
+
+     feature-gate.js FIRST, then the two page scripts that depend on it
+     gating their submit buttons — the same relative order
      custom-faith-ask.hbs and custom-faith-search.hbs use for the same
-     partial. All three are plain page-bottom <script src> tags rather
-     than bundle members because page-template scripts run BEFORE
-     site.min.js (FRONTEND §6.18); the only bundle global any of them
-     touches is window.MOAuth, which ships in boot.min.js in <head> and
-     is therefore already on the page. --}}
+     partial. All of these are plain page-bottom <script src> tags
+     rather than bundle members because page-template scripts run BEFORE
+     site.min.js (FRONTEND §6.18); the only bundle globals any of them
+     touch are window.MOAuth and window.MOSafeHref, which ship in
+     boot.min.js in <head> and are therefore already on the page. --}}
 <script src="{{asset "js/feature-gate.js"}}"></script>
 <script src="{{asset "js/page/faith-ask.js"}}"></script>
 <script src="{{asset "js/page/faith-power-search.js"}}"></script>

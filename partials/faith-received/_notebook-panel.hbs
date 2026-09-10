@@ -2,7 +2,8 @@
 
      Every passage the reader has kept, across every work, with its
      citation, its own note, and a link back to the exact block it came
-     from. Bound by assets/js/page/faith-notebook.js.
+     from — and the collections those passages have been gathered into.
+     Bound by assets/js/page/faith-notebook.js.
 
      ONE NOTEBOOK, TWO VIEWS. The notes are made in the reader:
      assets/js/faith-reader-tools.js puts a "Save to notebook" popover
@@ -13,13 +14,52 @@
      localStorage directly, so there is exactly one definition of the
      stored format. Do not add a second one here.
 
-     SELF-CONTAINED. Like _bookmarks-panel.hbs and unlike
-     _ask-panel.hbs, this partial ships its own <script> tags at the
-     bottom, so it can be dropped into a workspace shell whose template
-     is owned by someone else. A host page that also loads either file
-     is harmless: the store only redefines window.MOFaithNotebook, and
+     ── COLLECTIONS LIVE HERE ────────────────────────────────────────
+
+     They used to be a page of their own, /the-faith-received/pins/,
+     with its own tab in the Research strip. They are not, because they
+     never were a second place to put things: a collection has only ever
+     held ENTRY IDS into this same notebook (see
+     assets/js/lib/faith-collections-store.js, whose header explains why
+     it refuses to hold the records themselves). Two sibling tabs over
+     one store presented that as two destinations, and the tell is that
+     anything kept while reading appeared in the other tab under "Not in
+     a collection" without the reader having done anything. It was one
+     panel with a filter on it.
+
+     SO THE COLLECTION STRIP IS A FILTER, and everything below it is the
+     Notebook it always was. "Everything" is selected by default and the
+     panel is then exactly what it was before collections arrived. Choose
+     a collection and the list narrows to it, and the apparatus that only
+     makes sense inside a collection appears with it: its working notes,
+     its own order, the relations drawn between its members, and an
+     export of that collection rather than of the whole notebook.
+
+     A filter, rather than sections in one long list, because almost
+     everything a collection carries is collection-scoped and has
+     nowhere to live in a flat list — a memo, a hand-made order, edges
+     between two members, a Markdown export with a title. Selecting the
+     collection gives every one of those a place to be.
+
+     BOOKMARKS STAYS ITS OWN TAB. It answers a different question and is
+     a different pair of stores: which WORK you saved (the mo-kit
+     Worker's KV) and where in it you had got to (fr_positions, this
+     browser). "Where am I in Augustine" is not "what have I gathered
+     about grace".
+
+     SELF-CONTAINED. Like _bookmarks-panel.hbs and unlike _ask-panel.hbs,
+     this partial ships its own <script> tags at the bottom, so it can be
+     dropped into a workspace shell whose template is owned by someone
+     else. A host page that also loads any of them is harmless: the
+     stores only redefine their window.MOFaith* globals, and
      faith-notebook.js binds once and returns on a second run (it marks
-     [data-fn-root] with data-fn-bound). The store must load FIRST.
+     [data-fn-root] with data-fn-bound). The notebook store must load
+     FIRST: the collections store reads MOFaithNotebook.RELATIONS on its
+     own first pass, and page-template scripts run before site.min.js so
+     nothing bundled can be assumed here.
+
+     Nothing in this panel touches the network, so unlike Compare and the
+     Desk it has no reason to wait for its tab and does not.
 
      DOM contract faith-notebook.js depends on — re-read that file
      before touching any of this:
@@ -29,28 +69,47 @@
          filter is on. Hidden until there is something to count.
        - [data-fn-tools] holding [data-fn-filter] (a search input with a
          real <label>, never placeholder-only) and [data-fn-group]
-         (class .notebook-groupby) with two button[data-fn-group-by],
-         "recent" and "work". Hidden by the script below two passages.
-       - [data-fn-status] — the one status line, for "Note saved" and
-         for a save that failed.
+         (class .notebook-groupby) with three button[data-fn-group-by]:
+         "recent", "work" and "author". The third ships hidden and is
+         offered only inside a real collection; the first is RELABELLED
+         to "Your order" there, because inside a collection the list is
+         already in the order the reader put it in. Hidden by the script
+         below two passages.
+       - [data-fn-collections] — the collection strip, written by the
+         script. [data-fn-cbar] holding [data-fn-c-new],
+         [data-fn-c-rename], [data-fn-c-delete], [data-fn-c-link] and
+         [data-fn-rel] (the relation vocabulary).
+       - [data-fn-name-form] > [data-fn-name-legend],
+         [data-fn-name-input], [data-fn-name-cancel]
+       - [data-fn-memo] wrapping a textarea. Shown only inside a real
+         collection.
+       - [data-fn-status] — the one status line.
        - [data-fn-list] — everything rendered. Entries carry
-         [data-fn-id], a textarea[data-fn-note], and three controls:
-         a link, button[data-fn-copy-one], button[data-fn-remove].
+         [data-fn-id], a textarea[data-fn-note], and their controls:
+         a link, button[data-fn-copy-one], button[data-fn-remove], and
+         inside a collection button[data-fn-up] / [data-fn-down] /
+         [data-fn-unfile], or outside one a select[data-fn-file].
+       - [data-fn-constellation] — the relations drawn in this
+         collection, as a ring and as a list.
        - [data-fn-foot] holding [data-fn-copy], [data-fn-download] and
-         [data-fn-share]. Hidden while there is nothing to export.
+         [data-fn-share], plus [data-fn-foot-note]. Hidden while there is
+         nothing to export.
 
-     Remove is TWO CLICKS here (the button becomes "Remove?"), where the
-     reader's panel removes on one. A note is someone's own work, there
-     is no undo, and it cannot be got back by clicking anything: it
-     would have to be found and re-selected in the text. The reader's
-     panel gets away with one click because it lists a handful of
-     passages from the work on screen; this lists the whole notebook and
-     the rows all look alike.
+     REMOVE IS TWO PRESSES, both for a passage and for a collection. A
+     note is someone's own work, there is no undo, and it cannot be got
+     back by clicking anything: it would have to be found and
+     re-selected in the text. The reader's panel gets away with one
+     click because it lists a handful of passages from the work on
+     screen; this lists the whole notebook and the rows all look alike.
+     Taking a passage OUT OF a collection is one press, because that one
+     is reversible: the passage stays in the notebook and can be filed
+     again.
 
-     What is deliberately NOT here: drawing a relation between two
-     notes. That belongs to the reader panel and to Constellations.
-     Relations already drawn ARE shown on each entry, since hiding them
-     would make a passage look like it stood alone. --}}
+     DRAWING a relation is offered only inside a real collection, which
+     is the only scope the store can hold one in — edges belong to a
+     collection and both ends must be in it. Relations already drawn are
+     SHOWN on every entry everywhere, because hiding them would make a
+     passage look like it stood alone. --}}
 <div class="notebook-workspace" data-fn-root>
   <div class="notebook-workspace-inner">
 
@@ -80,13 +139,66 @@
         <div class="notebook-groupby" data-fn-group role="group" aria-label="Order your notes">
           <button type="button" class="notebook-groupby-btn is-active" data-fn-group-by="recent" aria-pressed="true">Recent</button>
           <button type="button" class="notebook-groupby-btn" data-fn-group-by="work" aria-pressed="false">By work</button>
+          <button type="button" class="notebook-groupby-btn" data-fn-group-by="author" aria-pressed="false" hidden>By author</button>
         </div>
       </div>
     </header>
 
+    {{!-- ── Collections ──────────────────────────────────────────
+          The strip is written by the script: "Everything" first, then
+          each collection with its count, then "Not in a collection"
+          when something is unfiled AND something else is filed, since
+          otherwise that group is just Everything under a second name.
+          Empty in the markup rather than seeded with a placeholder,
+          because a strip that shows one wrong tab before the script
+          runs is worse than a strip that shows none. --}}
+    <div class="pins-tabs" data-fn-collections role="tablist" aria-label="Your collections"></div>
+
+    <div class="pins-bar" data-fn-cbar hidden>
+      <button type="button" class="pins-act" data-fn-c-new>New collection</button>
+      <button type="button" class="pins-act" data-fn-c-rename hidden>Rename</button>
+      <button type="button" class="pins-act" data-fn-c-link aria-pressed="false" hidden>Draw a relation</button>
+      <label class="pins-rel-field" data-fn-rel-field hidden>
+        <span class="visually-hidden">How the first passage relates to the second</span>
+        <select class="pins-rel" data-fn-rel>
+          <option value="parallels">parallels</option>
+          <option value="supports">supports</option>
+          <option value="contests">contests</option>
+          <option value="cites">cites</option>
+          <option value="expands">expands</option>
+        </select>
+      </label>
+      <button type="button" class="pins-act pins-act-danger" data-fn-c-delete hidden>Delete collection</button>
+    </div>
+
+    {{!-- A real form rather than window.prompt(), which the page this
+          was ported from used: prompt cannot be styled, is invisible to
+          the flow of the page for a screen reader, and is blocked
+          outright in some embedded browsers, where the button would
+          simply appear to do nothing. --}}
+    <form class="pins-name-form" data-fn-name-form hidden>
+      <label class="pins-name-label">
+        <span data-fn-name-legend>Name the new collection</span>
+        <input type="text" class="pins-name-input" data-fn-name-input maxlength="60" autocomplete="off" />
+      </label>
+      <button type="submit" class="pins-act pins-act-primary">Save</button>
+      <button type="button" class="pins-act" data-fn-name-cancel>Cancel</button>
+    </form>
+
     <p class="notebook-status" data-fn-status role="status" aria-live="polite" hidden></p>
 
+    {{!-- Working notes for the collection as a whole, distinct from the
+          note on any one passage. Saved on blur: this writes the whole
+          store back, and doing that per keystroke is a stutter on a
+          phone. --}}
+    <div class="pins-memo" data-fn-memo hidden>
+      <label class="pins-memo-label" for="notebook-memo">Working notes for this collection</label>
+      <textarea id="notebook-memo" class="pins-memo-text" rows="3" placeholder="What you are assembling here, and why&hellip;"></textarea>
+    </div>
+
     <div class="notebook-list" data-fn-list></div>
+
+    <div class="pins-constellation" data-fn-constellation></div>
 
     <div class="notebook-foot" data-fn-foot hidden>
       <div class="notebook-foot-acts">
@@ -96,8 +208,10 @@
       </div>
       {{!-- Said plainly, and said here rather than in a tooltip. The
             notebook is in this browser, so it does not follow the
-            reader to a phone and clearing site data clears it. --}}
-      <p class="notebook-foot-note">Kept in this browser only. Copy or download anything you want to keep.</p>
+            reader to a phone and clearing site data clears it. The
+            script adds a second sentence inside a collection, about
+            what a share link does and does not carry. --}}
+      <p class="notebook-foot-note" data-fn-foot-note>Kept in this browser only. Copy or download anything you want to keep.</p>
     </div>
 
   </div>
@@ -105,9 +219,11 @@
 
 {{!-- Last inside the panel on purpose: a non-visual node placed first
       would take the :first-child margin reset off the header above it.
-      The store first, always — faith-notebook.js reads
-      window.MOFaithNotebook on its first line, and page-template
+      The notebook store FIRST, always: faith-notebook.js reads
+      window.MOFaithNotebook on its first line and the collections store
+      reads MOFaithNotebook.RELATIONS on its own, and page-template
       scripts run before site.min.js, so nothing bundled can be assumed
       here. --}}
 <script src="{{asset "js/lib/faith-notebook-store.js"}}"></script>
+<script src="{{asset "js/lib/faith-collections-store.js"}}"></script>
 <script src="{{asset "js/page/faith-notebook.js"}}"></script>

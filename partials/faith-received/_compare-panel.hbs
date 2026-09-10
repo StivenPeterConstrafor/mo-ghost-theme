@@ -1,0 +1,196 @@
+{{!-- Faith Received — the Compare workspace.
+
+     Two to four authors set side by side on one topic, their statements
+     grouped by the work each came from. Bound by
+     assets/js/page/faith-compare.js; read that file's header for where
+     the data comes from, for why /v1/evidence may 404, and for the
+     hash grammar it shares with the tab shell.
+
+     PORTED from the corpus owner's /compare. His interaction model is
+     kept whole — authors as columns, the topic as the row, statements
+     grouped by the work they came from, and the address as the view.
+     His chrome is not: no second masthead, no bridge bar, no Google
+     fonts, no inline :root palette.
+
+     SELF-CONTAINED. Like _bookmarks-panel.hbs and _constellations-panel.hbs
+     and unlike _ask-panel.hbs, this partial ships its own
+     .research-workspace wrapper and its own <script> tags, so it can be
+     dropped into a tab shell whose template is owned by someone else. A
+     host page that ALSO loads js/page/faith-compare.js is harmless: the
+     script marks [data-cmp-root] with data-cmp-bound and returns on a
+     second run. The stores are plain window.MOFaith* definitions and are
+     safe to define twice.
+
+     IT DOES NOT COST ANYTHING UNTIL ITS TAB IS OPENED. The roster is
+     nine fetches against mo-tfr-library and none of them is made while
+     this panel is hidden; faith-compare.js waits on the `hidden`
+     attribute of its [data-research-panel] host. See that file's "Waking
+     up" section.
+
+     THE ADDRESS IS THE VIEW. #compare&a=<slugs>&sel=<topic>&g=&s=&q=
+     holds everything, so a comparison is linkable and a saved view is
+     only a name and a hash. Standalone, with no tab shell around it, the
+     same script writes #a=<slugs>&… with no mode in front. Either way
+     faith-compare.js reads and writes it with replaceState.
+
+     DOM contract for faith-compare.js. Every selector in that file:
+       - [data-cmp-root] wrapping everything
+       - [data-cmp-authors] — the chips
+       - [data-cmp-add-form] > [data-cmp-add] + [data-cmp-add-list]
+         (a datalist), and [data-cmp-add-note] for the four-author cap
+       - [data-cmp-tools] holding [data-cmp-group], [data-cmp-stance],
+         [data-cmp-phrase], [data-cmp-save], [data-cmp-export]
+       - [data-cmp-topics-wrap] > [data-cmp-topics]
+       - [data-cmp-topic-head], [data-cmp-columns]
+       - [data-cmp-status] — the one status line
+       - [data-cmp-empty] — shown only with no authors chosen
+       - [data-cmp-saved] > [data-cmp-saved-count] + [data-cmp-saved-list]
+
+     THE BACKEND. mo-tfr-library only, read from the tfr-library-base
+     meta tag at the foot of this file. The owner's build called
+     mo-tfr-ask-dev for its deep paging; that host appears nowhere here.
+     The rooms, the full topic files and the topic export are all live
+     on our worker today. GET /v1/evidence — the paging contract that
+     reaches past the full file — was still being built as of
+     2026-09-10, so the script probes it once and, when it is missing,
+     says the rest of the index is not open yet and shows what it has.
+     Nothing here waits on it. --}}
+<div class="research-workspace">
+  <div class="research-workspace-inner" data-cmp-root>
+
+    <header class="rpanel-head">
+      <h2 class="rpanel-title">Compare</h2>
+      <p class="rpanel-lede">Set two to four authors beside each other on one topic and read what each of them actually says, grouped by the work it comes from.</p>
+    </header>
+
+    {{!-- The authors. Chips first, then the one control that adds
+          another, because the set being compared is the thing the
+          whole screen is about. --}}
+    <div class="cmp-authorbar">
+      <div class="cmp-authors" data-cmp-authors role="group" aria-label="Authors being compared"></div>
+
+      <form class="cmp-add-form" data-cmp-add-form>
+        <label class="cmp-add-label" for="cmp-add">Add an author</label>
+        <input
+          id="cmp-add"
+          class="cmp-add"
+          type="search"
+          list="cmp-add-list"
+          data-cmp-add
+          maxlength="120"
+          autocomplete="off"
+          placeholder="An author&rsquo;s name&hellip;"
+        />
+        <datalist id="cmp-add-list" data-cmp-add-list></datalist>
+        <button type="submit" class="cmp-add-submit">Add</button>
+      </form>
+      <p class="cmp-note" data-cmp-add-note hidden></p>
+    </div>
+
+    <p class="cmp-status" data-cmp-status role="status" aria-live="polite"></p>
+
+    {{!-- The empty state. Named authors rather than a bare
+          instruction: the hardest part of a comparison tool is
+          the first move, and three real pairings that the library
+          can actually answer are worth more than a sentence
+          telling someone to start typing.
+
+          These are real links and they cost nothing until pressed.
+          faith-compare.js rewrites their hrefs on boot so that inside
+          the tab shell they read #compare&a=… and standalone they read
+          #a=… ; the markup carries the standalone form so the panel is
+          correct before any script runs. --}}
+    <div class="cmp-empty" data-cmp-empty>
+      <p class="cmp-empty-lede">Nobody is being compared yet.</p>
+      <p class="cmp-empty-note">Add an author above, then add a second. Two to four sit side by side, oldest first, so a topic reads as a reception history. Or begin with one of these:</p>
+      <ul class="cmp-examples">
+        <li><a href="#a=augustine-of-hippo,jerome" data-cmp-example="a=augustine-of-hippo,jerome">Augustine and Jerome</a></li>
+        <li><a href="#a=ambrose-of-milan,augustine-of-hippo" data-cmp-example="a=ambrose-of-milan,augustine-of-hippo">Ambrose and Augustine</a></li>
+        <li><a href="#a=augustine-of-hippo,bede-the-venerable" data-cmp-example="a=augustine-of-hippo,bede-the-venerable">Augustine and Bede</a></li>
+      </ul>
+    </div>
+
+    {{!-- The tools. Hidden until there is something to filter, so
+          an empty screen is not fronted by five dead controls. --}}
+    <div class="cmp-tools" data-cmp-tools hidden>
+      <label class="cmp-field">
+        <span class="cmp-field-label">Order works</span>
+        <select class="cmp-select" data-cmp-group>
+          <option value="work">Most statements first</option>
+          <option value="canon">By title</option>
+        </select>
+      </label>
+      <label class="cmp-field">
+        <span class="cmp-field-label">Stance</span>
+        <select class="cmp-select" data-cmp-stance>
+          <option value="">Every stance</option>
+          <option value="asserts">Asserts</option>
+          <option value="denies">Denies</option>
+          <option value="reports">Reports another view</option>
+          <option value="qualifies">Qualifies or other</option>
+        </select>
+      </label>
+      <label class="cmp-field cmp-field-wide">
+        <span class="cmp-field-label">Phrase</span>
+        <input class="cmp-input" type="search" data-cmp-phrase maxlength="120" autocomplete="off" placeholder="Find a phrase in every column&hellip;" />
+      </label>
+      <div class="cmp-tool-acts">
+        <button type="button" class="cmp-act" data-cmp-save>Save this view</button>
+        <button type="button" class="cmp-act cmp-act-primary" data-cmp-export>Send to the Desk</button>
+      </div>
+    </div>
+
+    {{!-- The topics: the union of the chosen authors' own topics,
+          each with every author's count beside it, so a topic only
+          one of them treats is visible as exactly that rather
+          than quietly absent. --}}
+    <div class="cmp-topics-wrap" data-cmp-topics-wrap hidden>
+      <details class="cmp-topics-fold" open>
+        <summary class="cmp-topics-summary">
+          <span class="cmp-topics-title">Choose a topic</span>
+        </summary>
+        <div class="cmp-topics" data-cmp-topics role="tablist" aria-label="Topics"></div>
+      </details>
+    </div>
+
+    <div class="cmp-topic-head" data-cmp-topic-head></div>
+
+    {{!-- One column per author. The grid is set from JS via
+          --cmp-cols, since the count is 1 to 4 and only the script
+          knows it. --}}
+    <div class="cmp-columns" data-cmp-columns></div>
+
+    {{!-- Saved views. An address and a name, kept in this browser,
+          and the copy says so rather than implying an account. --}}
+    <details class="cmp-saved" data-cmp-saved hidden>
+      <summary class="cmp-saved-summary">
+        <span class="cmp-saved-title">Saved comparisons</span>
+        <span class="cmp-saved-count" data-cmp-saved-count></span>
+      </summary>
+      <div class="cmp-saved-body">
+        <div data-cmp-saved-list></div>
+        <p class="cmp-note">Saved comparisons are kept in this browser. They store the address of the view, not the passages, so re-opening one shows what the library holds today.</p>
+      </div>
+    </details>
+
+    {{!-- Said once, at the foot, where it belongs: the whole
+          screen is built on extracted statements and a reader who
+          quotes one without opening the source can misattribute a
+          view its author was arguing against. --}}
+    <p class="cmp-caveat">These are extracted statements, sometimes summarised or translated, and not always direct quotations. A statement can report another speaker or a view its author rejects. Read the passage in its source before attributing it.</p>
+
+  </div>
+</div>
+
+{{!-- Last inside the panel on purpose: a non-visual node placed first
+      would take the :first-child margin reset off the header above it.
+
+      The Desk's store first: Send to the Desk writes a draft through
+      window.MOFaithDesk before handing over, so it has to exist by the
+      time faith-compare.js binds the button. Page-template scripts run
+      BEFORE site.min.js (FRONTEND §6.18), so nothing bundled can be
+      assumed here; the only bundle global this panel touches is
+      window.MOSafeHref, which ships in boot.min.js in <head>. --}}
+<meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
+<script src="{{asset "js/lib/faith-desk-store.js"}}"></script>
+<script src="{{asset "js/page/faith-compare.js"}}"></script>

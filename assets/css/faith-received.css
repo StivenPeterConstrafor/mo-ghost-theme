@@ -268,7 +268,6 @@
   .cmp-read,
   .cmp-open-work,
   .cmp-col-name a,
-  .pins-card-title,
   .desk-act-link {
     display: inline-flex;
     align-items: center;
@@ -13893,30 +13892,56 @@ a.cn-row-title { color: var(--color-primary-text); }
    <h1>, and the only h1 on any of these pages is the one in the hero,
    which already has it. */
 
-/* ── The three bands ───────────────────────────────────────────────
-   Zero top padding so the workspace sits directly under the hero, the
-   same shape .bband.faith-research-band has and for the same reason.
-   Two classes so this beats `.bband`'s own 92px. */
-.bband.faith-compare-band,
-.bband.faith-pins-band,
-.bband.faith-desk-band {
-  padding: 0 0 88px;
-  border-top: 0;
-}
-/* The Desk is a workspace rather than a document: it wants the height
-   its three columns need and nothing under it. */
-.bband.faith-desk-band { padding-bottom: 48px; }
+/* ── The bands are gone ────────────────────────────────────────────
+   .bband.faith-compare-band, .faith-pins-band and .faith-desk-band used
+   to give each of these three its own page band. All three are panels
+   of /the-faith-received/research/ now and sit inside
+   .bband.faith-research-band, which carries the identical
+   `padding: 0 0 88px; border-top: 0`, so the rules were removed rather
+   than left to be matched by nothing. The three old URLs still resolve;
+   their templates are redirect stubs with no workspace in them.
 
-/* Shared small type. Every one of these three pages has notes,
-   statuses and empty states, and three copies of the same rule is how
-   they drift apart. */
+   THE PANEL HEAD. Each of these three used to be a page with a hero,
+   and the hero carried the name of the tool and a sentence saying what
+   it was for. Inside a tab strip the name is on the tab, but the
+   sentence is real orienting copy and had nowhere to go, so it moved
+   into the panel — matched to .cn-head, which the Constellations panel
+   has always used for exactly this, down to the 720px measure and the
+   hairline under it. The title is an h2 and NOT --font-display: the
+   display face belongs to the h1, and the only h1 on the page is the
+   one in the Research hero. */
+.rpanel-head {
+  max-width: 720px;
+  margin: 0 auto 24px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-rule);
+}
+/* The Desk has real chrome of its own immediately below the head, and
+   every pixel here is a pixel the draft does not get. */
+.rpanel-head--tight { margin-bottom: 16px; }
+.rpanel-title {
+  font-family: var(--font-body);
+  font-size: var(--tfr-display-s);
+  line-height: 1.2;
+  color: var(--color-dark);
+  margin: 0;
+}
+.rpanel-lede {
+  font-family: var(--font-body);
+  font-size: var(--tfr-meta);
+  line-height: 1.6;
+  color: var(--color-muted);
+  margin: 8px 0 0;
+}
+
+/* Shared small type. All three of these surfaces have notes, statuses
+   and empty states, and three copies of the same rule is how they
+   drift apart. */
 .cmp-note,
 .cmp-status,
-.pins-status,
 .desk-status,
 .desk-panel-note,
 .desk-foot-note,
-.pins-foot-note,
 .cmp-caveat {
   font-family: var(--font-body);
   font-size: var(--tfr-meta);
@@ -13925,27 +13950,23 @@ a.cn-row-title { color: var(--color-primary-text); }
   margin: 0;
 }
 .cmp-status:empty,
-.pins-status:empty,
 .desk-status:empty { display: none; }
 
-.cmp-empty-lede,
-.pins-empty-lede {
+.cmp-empty-lede {
   font-family: var(--font-body);
   font-size: 18px;
   font-weight: 600;
   color: var(--color-dark);
   margin: 0 0 6px;
 }
-.cmp-empty-note,
-.pins-empty-note {
+.cmp-empty-note {
   font-family: var(--font-body);
   font-size: var(--tfr-body);
   line-height: 1.55;
   color: var(--color-muted);
   margin: 0;
 }
-.cmp-empty,
-.pins-empty {
+.cmp-empty {
   padding: 28px 0 8px;
   max-width: 660px;
 }
@@ -14077,8 +14098,7 @@ a.cn-row-title { color: var(--color-primary-text); }
 .pins-rel:focus-visible,
 .pins-name-input:focus-visible,
 .cmp-add:focus-visible,
-.pins-memo-text:focus-visible,
-.pins-note:focus-visible {
+.pins-memo-text:focus-visible {
   outline: 2px solid var(--color-dark);
   outline-offset: 1px;
   border-color: var(--color-dark);
@@ -14532,7 +14552,23 @@ a.cn-row-title { color: var(--color-primary-text); }
   max-width: 660px;
 }
 
-/* ══ Pins ═════════════════════════════════════════════════════════ */
+/* ══ Collections ══════════════════════════════════════════════════
+   The `pins-` prefix is kept although the Pins page is gone. These
+   rules now dress the collection apparatus inside the Notebook
+   workspace (partials/faith-received/_notebook-panel.hbs): the strip,
+   the bar, the name form, the memo and the constellation. They were not
+   renamed because a rename would have been a second diff over the same
+   change with nothing to show for it — no reader ever sees a class
+   name, and every one of these selectors is flat, so grep for `pins-`
+   finds all of it in one pass.
+
+   What HAS gone is everything that dressed the page's own cards:
+   .pins-card and its parts, .pins-list, .pins-note, .pins-empty,
+   .pins-group, .pins-head, .pins-count, .pins-foot and .pins-status.
+   The merged panel renders one kind of row, .notebook-entry, rather
+   than keeping a second card that duplicated it. The two states the
+   cards had that the entry did not are added to .notebook-entry below
+   its own block. */
 
 /* ── The collection strip ─────────────────────────────────────────
    Horizontal scroll rather than wrap, matching .faith-search-modes:
@@ -14579,20 +14615,6 @@ a.cn-row-title { color: var(--color-primary-text); }
   color: var(--color-muted);
 }
 
-.pins-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0 0 16px;
-}
-.pins-count {
-  font-family: var(--font-body);
-  font-size: var(--tfr-meta);
-  color: var(--color-muted);
-  margin: 0;
-}
 .pins-bar {
   display: flex;
   flex-wrap: wrap;
@@ -14629,8 +14651,7 @@ a.cn-row-title { color: var(--color-primary-text); }
 
 .pins-memo { margin: 0 0 20px; }
 .pins-memo-label { display: block; margin: 0 0 4px; }
-.pins-memo-text,
-.pins-note {
+.pins-memo-text {
   width: 100%;
   min-width: 0;
   padding: 10px 12px;
@@ -14644,67 +14665,30 @@ a.cn-row-title { color: var(--color-primary-text); }
   resize: vertical;
 }
 
-/* ── The cards ────────────────────────────────────────────────────
-   One column, not a masonry of tiles. These are passages with a
-   citation and a note under each, and the thing a reader does here is
-   read down them in the order they arranged. */
-.pins-list { display: flex; flex-direction: column; gap: 16px; }
-.pins-card {
-  padding: 16px;
-  border: 1px solid var(--color-rule);
-  border-radius: 8px;
-  background: var(--color-white);
-}
-.pins-card.is-linkable { cursor: pointer; border-color: var(--color-primary-text); }
-.pins-card.is-linking { box-shadow: inset 0 0 0 2px var(--color-dark); }
-.pins-card-head { margin: 0 0 4px; }
-.pins-card-title {
-  font-family: var(--font-body);
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--color-dark);
-  text-decoration: none;
-}
-.pins-card-title:hover { text-decoration: underline; }
-.pins-card-meta {
+/* ── Filing a passage ─────────────────────────────────────────────
+   The one control from the old cards that survived, because the
+   notebook entry had no equivalent: the select that puts a passage into
+   a collection, offered on Everything and on the unfiled group. 44px so
+   it is a real touch target. */
+.pins-file { min-height: 44px; min-width: 200px; }
+
+/* ── Drawing a relation ───────────────────────────────────────────
+   The two states the old .pins-card had that .notebook-entry did not.
+   While a relation is being drawn every entry is a target, and the one
+   already chosen as the first end is marked. Kept as the same two
+   values the cards used, so the affordance did not change when the
+   markup under it did. */
+.notebook-entry.is-linkable { cursor: pointer; border-color: var(--color-primary-text); }
+.notebook-entry.is-linking { box-shadow: inset 0 0 0 2px var(--color-dark); }
+
+/* Which collections hold this passage. Shown on Everything only, where
+   it is the one thing the row cannot otherwise say. */
+.notebook-entry-filed {
   margin: 0 0 10px;
   font-family: var(--font-body);
   font-size: var(--tfr-micro);
   color: var(--color-muted);
 }
-.pins-card-text {
-  margin: 0 0 10px;
-  padding: 0 0 0 12px;
-  border-left: 2px solid var(--color-card-border);
-  font-family: var(--font-body);
-  font-size: var(--tfr-body);
-  font-style: normal;
-  line-height: 1.55;
-  color: var(--color-dark);
-}
-.pins-card-text::before { content: none; }
-.pins-note-field { display: block; margin: 0 0 10px; }
-.pins-card-acts {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-.pins-file { min-height: 44px; min-width: 200px; }
-.pins-group {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 20px 0 0;
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--color-muted);
-}
-.pins-group-n { font-size: var(--tfr-micro); font-weight: 400; }
 
 /* ── The constellation ────────────────────────────────────────────
    The ring is aria-hidden and the rows beneath carry the same
@@ -14759,20 +14743,6 @@ a.cn-row-title { color: var(--color-primary-text); }
   color: var(--color-muted);
 }
 
-.pins-foot {
-  margin: 32px 0 0;
-  padding: 20px 0 0;
-  border-top: 1px solid var(--color-rule);
-}
-.pins-foot-acts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0 0 12px;
-}
-.pins-foot-note { margin: 0 0 6px; max-width: 660px; }
-.pins-foot-note a { color: var(--color-primary-text); text-decoration: underline; text-underline-offset: 2px; }
-.pins-foot-note a:hover { color: var(--color-dark); }
 
 /* ══ The Desk ═════════════════════════════════════════════════════ */
 
@@ -15107,8 +15077,6 @@ a.cn-row-title { color: var(--color-primary-text); }
   }
 }
 @media (max-width: 640px) {
-  .bband.faith-compare-band,
-  .bband.faith-pins-band { padding-bottom: 56px; }
   .cmp-tools { padding: 12px; }
   .cmp-tool-acts { margin-left: 0; width: 100%; }
   .cmp-act,
@@ -15117,7 +15085,6 @@ a.cn-row-title { color: var(--color-primary-text); }
   .cmp-topics { grid-template-columns: 1fr; padding: 0 12px 12px; }
   .cmp-add { width: 100%; }
   .cmp-add-form { width: 100%; }
-  .pins-head { flex-direction: column; align-items: stretch; }
   .pins-bar { width: 100%; }
   .pins-rel { width: 100%; }
   .pins-rel-field { flex: 1 1 100%; }
@@ -15132,8 +15099,7 @@ a.cn-row-title { color: var(--color-primary-text); }
      Matched to the .cn-legend rule above, which solves the same
      problem on the Constellations panel. */
   .cmp-tool-acts,
-  .pins-bar,
-  .pins-foot-acts { gap: 10px; }
+  .pins-bar { gap: 10px; }
   .cmp-col { flex-basis: 88vw; }
   .desk-toolbar { gap: 6px; }
 }

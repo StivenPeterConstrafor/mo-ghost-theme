@@ -1,8 +1,10 @@
 /*
  * The Faith Received — collections, in one place.
  *
- * A collection is a NAMED GROUP OF NOTEBOOK ENTRIES: the research
- * portfolio behind /the-faith-received/pins/. Ported from the corpus
+ * A collection is a NAMED GROUP OF NOTEBOOK ENTRIES: the collection
+ * strip inside the Notebook workspace, which was the /pins/ page until
+ * it became clear it had always been a filter over the notebook rather
+ * than a second place to keep things. Ported from the corpus
  * owner's `fr_collections_v1` store, which kept
  * [{id,name,items:[…],edges:[…],memo,sort}] and held the saved records
  * themselves inside each collection.
@@ -55,6 +57,17 @@
  */
 (function () {
   "use strict";
+
+  // Three self-contained partials on the Research page each declare the
+  // stores they need, so this file is on that page twice. Defining it
+  // twice was harmless while every function here reads localStorage on
+  // every call and holds nothing in memory — but a consumer captures
+  // `window.MOFaithCollections` in a const on its first line, and the
+  // moment anything in here gains a cache the second definition becomes
+  // a second, diverging copy. First one wins, which on that page is the
+  // one loaded immediately after the notebook store, which is the order
+  // RELATIONS below needs.
+  if (window.MOFaithCollections) return;
 
   const KEY = "fr_collections";
   const ACTIVE_KEY = "fr_collections_active";

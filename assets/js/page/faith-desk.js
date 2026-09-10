@@ -44,12 +44,49 @@
  * a list. The toolbar therefore uses execCommand; INSERTION does not —
  * it builds real nodes and puts them in a Range, so no HTML string is
  * ever parsed out of a passage's text.
+ *
+ * ── LIVING IN A TAB ──────────────────────────────────────────────
+ *
+ * This panel is normally the Desk tab of
+ * /the-faith-received/research/, and it is written to work either way:
+ * inside that shell, or dropped on a page of its own.
+ *
+ * WAKING UP, AND WHY IT MATTERS MORE HERE THAN ANYWHERE. Booting this
+ * panel WRITES. With no papers in the browser it makes one, because
+ * landing in something you can type into is right and landing on an
+ * empty screen with a button is not. Behind a tab that inverts: every
+ * reader who opened the Research page to ask a question would silently
+ * acquire an untitled paper they never asked for, and the Papers list
+ * would fill with them. So the boot waits for the tab, on a
+ * MutationObserver over the host panel's `hidden` attribute — the same
+ * signal and the same reasoning faith-constellations.js sets out at
+ * length, where a ResizeObserver or any rAF-driven visibility trap is
+ * not delivered AT ALL in a tab the browser is not painting.
+ *
+ * Unlike the other panels this one wakes EVERY time, not just the
+ * first. ?doc= names the paper on screen, and Compare's "Send to the
+ * Desk" writes a new one and switches tabs without reloading the
+ * document; a Desk that only ever read the address once would show the
+ * previous paper and quietly drop the one just made.
+ *
+ * NOT EATING THE HASH. openDoc() rewrites the address to carry ?doc=.
+ * Hosted, the hash is what names the open tab, so that rewrite has to
+ * carry the hash through unchanged or opening a paper would knock the
+ * page back to the first tab on the next reload.
  */
 (function () {
   "use strict";
 
   const root = document.querySelector("[data-desk-root]");
   if (!root) return;
+  // The partial ships its own <script> tags so it can be dropped into
+  // any page. If a host page loads this file a second time, bind once.
+  if (root.getAttribute("data-desk-bound") === "1") return;
+  root.setAttribute("data-desk-bound", "1");
+
+  // "" standalone, or the name of the workspace this panel is a tab of.
+  const hostPanel = root.closest ? root.closest("[data-research-panel]") : null;
+  const MODE = (hostPanel && hostPanel.getAttribute("data-research-panel")) || "";
 
   const NB = window.MOFaithNotebook;
   const CO = window.MOFaithCollections;
@@ -170,9 +207,12 @@
     titleInput.value = d.title === "Untitled paper" ? "" : d.title;
     editor.innerHTML = d.html || "";
     DK.setContext(d.id);
+    // The hash goes back on. Hosted it names the open tab, and dropping
+    // it here would mean that opening a paper quietly rewrote the
+    // address to one that reloads on the first tab instead of this one.
     const url = new URL(location.href);
     url.searchParams.set("doc", d.id);
-    history.replaceState(null, "", url.pathname + url.search);
+    history.replaceState(null, "", url.pathname + url.search + location.hash);
     saveState("Saved in this browser");
     updateWords();
     renderDocs();
@@ -531,24 +571,81 @@
     saveNow();
   });
 
-  /* ── Boot ────────────────────────────────────────────────────── */
+  /* ── In-page links ───────────────────────────────────────────── *
+   * Collections belong to the Notebook workspace. Standalone that is
+   * another page; hosted it is the tab next door, and reloading the
+   * whole document to reach a panel already in it would throw away an
+   * unsaved sentence. The tab's own button is clicked rather than the
+   * hash being written, because the button is the shell's entry point
+   * and carries bookkeeping this file knows nothing about. */
 
-  syncPanels();
-  syncCollection();
+  if (MODE) {
+    root.querySelectorAll("[data-desk-goto]").forEach((a) => {
+      const target = a.getAttribute("data-desk-goto");
+      const tab = document.querySelector(`[data-research-mode="${target}"]`);
+      if (!tab) return;
+      a.setAttribute("href", `#${target}`);
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        tab.click();
+      });
+    });
+  }
 
-  const wanted = new URLSearchParams(location.search).get("doc");
-  const all = DK.all();
-  if (wanted && all.some((d) => d.id === wanted)) openDoc(wanted);
-  else if (wanted) {
-    say("That paper is not in this browser. Papers are kept where they were written; "
-      + "open the link there, or download the paper and bring the file across.");
-    if (all.length) openDoc(DK.context().docId && all.some((d) => d.id === DK.context().docId)
-      ? DK.context().docId : all[0].id);
-    else newDoc();
-  } else if (all.length) {
-    const last = DK.context().docId;
-    openDoc(all.some((d) => d.id === last) ? last : all[0].id);
-  } else newDoc();
+  /* ── Boot ────────────────────────────────────────────────────── *
+   *
+   * Deliberately NOT run at parse time behind a tab: with no papers yet
+   * this creates one, and a reader who came to the Research page to ask
+   * a question must not come away with a paper. See "Waking up" at the
+   * top of this file.
+   *
+   * Re-run on every wake, not just the first, because ?doc= can change
+   * without the document reloading — that is exactly what Compare's
+   * "Send to the Desk" does. On a second wake with nothing new in the
+   * address, openDoc() on the paper already open is a no-op that costs
+   * a render, so it is skipped. */
 
-  renderRail();
+  let booted = false;
+
+  function boot() {
+    const wanted = new URLSearchParams(location.search).get("doc");
+
+    if (booted) {
+      if (!wanted || (current && current.id === wanted)) return;
+      if (DK.all().some((d) => d.id === wanted)) { openDoc(wanted); renderRail(); }
+      return;
+    }
+    booted = true;
+
+    syncPanels();
+    syncCollection();
+
+    const all = DK.all();
+    if (wanted && all.some((d) => d.id === wanted)) openDoc(wanted);
+    else if (wanted) {
+      say("That paper is not in this browser. Papers are kept where they were written; "
+        + "open the link there, or download the paper and bring the file across.");
+      if (all.length) openDoc(DK.context().docId && all.some((d) => d.id === DK.context().docId)
+        ? DK.context().docId : all[0].id);
+      else newDoc();
+    } else if (all.length) {
+      const last = DK.context().docId;
+      openDoc(all.some((d) => d.id === last) ? last : all[0].id);
+    } else newDoc();
+
+    renderRail();
+  }
+
+  if (hostPanel && typeof MutationObserver === "function") {
+    new MutationObserver(() => {
+      if (!hostPanel.hidden) boot();
+    }).observe(hostPanel, { attributes: true, attributeFilter: ["hidden"] });
+    // Hosted and already the open tab, because the reader arrived on
+    // #desk. The shell has not run yet at this point in the document,
+    // so the attribute still says what the markup said and the observer
+    // above will not have fired.
+    if (!hostPanel.hidden) boot();
+  } else {
+    boot();
+  }
 })();

@@ -53,6 +53,16 @@
 (function () {
   "use strict";
 
+  // Two self-contained partials on the Research page (Compare, which
+  // writes a draft when it hands one to the Desk, and the Desk itself)
+  // each declare this store, so the file is on that page twice.
+  // Defining it twice is harmless while every function here reads
+  // localStorage on every call and holds nothing in memory — but
+  // consumers capture `window.MOFaithDesk` in a const on their first
+  // line, and the moment anything in here gains a cache the second
+  // definition becomes a second, diverging copy. First one wins.
+  if (window.MOFaithDesk) return;
+
   const KEY = "fr_desk_docs";
   const CONTEXT_KEY = "fr_desk_context";
 

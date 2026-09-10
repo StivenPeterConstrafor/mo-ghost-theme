@@ -1,0 +1,195 @@
+{{!-- Faith Received — the Desk workspace.
+
+     Write with the library beside you: papers on the left, the draft in
+     the middle, everything you have kept on the right, and a rail whose
+     whole point is that a passage arrives WITH its citation rather than
+     as loose text to be attributed later. Bound by
+     assets/js/page/faith-desk.js.
+
+     PORTED from the corpus owner's /desk. The shape is his. His chrome
+     is not: no second masthead, no bridge bar, no Google fonts, no
+     inline :root palette.
+
+     SELF-CONTAINED. Like _bookmarks-panel.hbs and unlike _ask-panel.hbs,
+     this partial ships its own .research-workspace wrapper and its own
+     <script> tags, so it can be dropped into a tab shell whose template
+     is owned by someone else. A host page that ALSO loads
+     js/page/faith-desk.js is harmless: the script marks
+     [data-desk-root] with data-desk-bound and returns on a second run.
+     The three stores are plain window.MOFaith* definitions and are safe
+     to define twice; the Notebook and Compare panels of the Research
+     page load two of the same three.
+
+     IT CREATES NOTHING UNTIL ITS TAB IS OPENED. Booting this panel
+     writes to localStorage — with no papers yet it makes one, so that
+     the reader lands in something they can type into rather than in an
+     empty screen with a button. That is right on a page someone chose
+     to open and wrong behind a tab they did not, where it would mean
+     every visitor to the Research page silently acquired an untitled
+     paper. So faith-desk.js waits on the `hidden` attribute of its
+     [data-research-panel] host. See that file's "Waking up" section.
+
+     WHAT IS NOT HERE. His rail has four tabs — notes, highlights,
+     reading history, Ask conversations. Only the first has a store on
+     our side; `fr_hl`, `fr_lastread` and `fr_chats` are his. Three tabs
+     that were always empty would tell a reader they had highlighted
+     nothing when they had highlighted plenty in a different tool. His
+     iframe preview of a source beside the draft is gone too: a link
+     that opens the reader in a new tab does the same work without
+     putting our own pages in a frame.
+
+     WHERE A DRAFT COMES FROM. Two ways in. The reader presses New paper
+     here, or Compare sends one: its "Send to the Desk" writes a draft
+     through window.MOFaithDesk and asks for this tab, with ?doc=<id> on
+     the address. Same store, no integration between the two beyond it.
+     ?doc= is a query parameter and not part of the hash on purpose: the
+     hash names the workspace, and a paper is a thing this workspace is
+     showing rather than a workspace of its own.
+
+     A PAPER KNOWS ITS COLLECTION, so the rail opens on the material
+     that paper is being written from. It is a default and never a
+     constraint, and a collection since deleted degrades to everything
+     rather than to an empty rail.
+
+     DOM contract for assets/js/page/faith-desk.js. Every selector in
+     that file:
+       - [data-desk-root] wrapping everything
+       - [data-desk-title], [data-desk-editor], [data-desk-words],
+         [data-desk-savestate], [data-desk-toolbar] with
+         [data-desk-cmd] / [data-desk-value] buttons
+       - [data-desk-docs] holding [data-desk-doc-list],
+         [data-desk-docs-close], [data-desk-new]; toggled by
+         [data-desk-docs-toggle]
+       - [data-desk-rail] holding [data-desk-collection],
+         [data-desk-rail-search], [data-desk-rail-body],
+         [data-desk-rail-more], [data-desk-rail-close]; toggled by
+         [data-desk-rail-toggle]
+       - [data-desk-scrim], [data-desk-status]
+       - [data-desk-export], [data-desk-print], [data-desk-delete]
+
+     THE TWO RAILS ARE DISCLOSURES. Both toggles carry aria-expanded and
+     aria-controls, both panels can be closed from inside, and Escape
+     closes them; below 1160px they overlay the draft rather than
+     squeezing it, because the draft is what the page is for. --}}
+<div class="research-workspace">
+  <div class="desk" data-desk-root>
+
+    {{!-- One line, and the lede kept to a sentence. Every pixel here is
+          a pixel the draft does not get, and unlike the other panels
+          this one has real chrome of its own immediately below. --}}
+    <header class="rpanel-head rpanel-head--tight">
+      <h2 class="rpanel-title">The Desk</h2>
+      <p class="rpanel-lede">Write with the library beside you. Anything you have kept goes into the draft with its citation already attached.</p>
+    </header>
+
+    {{!-- The bar. The two rail toggles bracket the title, so on a
+          phone the two things that open are at the two thumbs. --}}
+    <div class="desk-bar">
+      <button type="button" class="desk-toggle" data-desk-docs-toggle aria-expanded="false" aria-controls="desk-docs">Papers</button>
+
+      <label class="desk-title-field">
+        <span class="visually-hidden">Title of this paper</span>
+        <input type="text" class="desk-title" data-desk-title maxlength="160" autocomplete="off" placeholder="Untitled paper" />
+      </label>
+
+      <span class="desk-words" data-desk-words></span>
+      <button type="button" class="desk-toggle" data-desk-rail-toggle aria-expanded="false" aria-controls="desk-rail">Research</button>
+    </div>
+
+    <p class="desk-status" data-desk-status role="status" aria-live="polite"></p>
+
+    <div class="desk-body">
+
+      {{!-- Papers ────────────────────────────────────────── --}}
+      <aside class="desk-panel desk-docs" id="desk-docs" data-desk-docs>
+        <div class="desk-panel-head">
+          <h2 class="desk-panel-title">Your papers</h2>
+          <button type="button" class="desk-panel-close" data-desk-docs-close aria-label="Close your papers">Close</button>
+        </div>
+        <button type="button" class="desk-act desk-act-primary" data-desk-new>New paper</button>
+        <div class="desk-doc-list" data-desk-doc-list></div>
+        <div class="desk-panel-foot">
+          <button type="button" class="desk-act" data-desk-export>Download Markdown</button>
+          <button type="button" class="desk-act" data-desk-print>Print or save PDF</button>
+          <button type="button" class="desk-act desk-act-danger" data-desk-delete>Delete paper</button>
+        </div>
+      </aside>
+
+      {{!-- The draft ─────────────────────────────────────── --}}
+      <section class="desk-editor-wrap">
+        <div class="desk-toolbar" data-desk-toolbar role="toolbar" aria-label="Formatting">
+          <button type="button" class="desk-tool" data-desk-cmd="formatBlock" data-desk-value="h2" title="Section heading">H2</button>
+          <button type="button" class="desk-tool" data-desk-cmd="formatBlock" data-desk-value="h3" title="Subheading">H3</button>
+          <button type="button" class="desk-tool" data-desk-cmd="bold" title="Bold"><strong>B</strong></button>
+          <button type="button" class="desk-tool" data-desk-cmd="italic" title="Italic"><em>I</em></button>
+          <button type="button" class="desk-tool" data-desk-cmd="formatBlock" data-desk-value="blockquote" title="Block quotation">Quote</button>
+          <button type="button" class="desk-tool" data-desk-cmd="insertUnorderedList" title="Bulleted list">List</button>
+          <button type="button" class="desk-tool" data-desk-cmd="removeFormat" title="Clear formatting">Clear</button>
+        </div>
+
+        <div
+          class="desk-editor"
+          data-desk-editor
+          contenteditable="true"
+          spellcheck="true"
+          role="textbox"
+          aria-multiline="true"
+          aria-label="The text of this paper"
+        ></div>
+
+        <p class="desk-savestate" data-desk-savestate role="status" aria-live="polite">Saved in this browser</p>
+      </section>
+
+      {{!-- Research ──────────────────────────────────────── --}}
+      <aside class="desk-panel desk-rail" id="desk-rail" data-desk-rail>
+        <div class="desk-panel-head">
+          <h2 class="desk-panel-title">Your research</h2>
+          <button type="button" class="desk-panel-close" data-desk-rail-close aria-label="Close your research">Close</button>
+        </div>
+
+        <label class="desk-field">
+          <span class="desk-field-label">Show</span>
+          <select class="desk-select" data-desk-collection></select>
+        </label>
+
+        <label class="desk-field">
+          <span class="desk-field-label">Search what you have kept</span>
+          <input type="search" class="desk-input" data-desk-rail-search maxlength="120" autocomplete="off" placeholder="A passage, a work, a note&hellip;" />
+        </label>
+
+        <div class="desk-rail-body" data-desk-rail-body></div>
+        <button type="button" class="desk-act" data-desk-rail-more hidden>Show more</button>
+
+        {{!-- Collections are the Notebook tab's own apparatus, so these
+              are in-page links to sibling workspaces rather than
+              navigations off this page. faith-desk.js re-points them at
+              the tab strip when this panel is hosted; the markup
+              carries the standalone URLs so they are correct with no
+              script at all. --}}
+        <p class="desk-panel-note"><a href="/the-faith-received/research/#notebook" data-desk-goto="notebook">Manage your collections</a> &middot; <a href="/the-faith-received/search/">Find more sources</a></p>
+      </aside>
+
+    </div>
+
+    {{!-- The overlay backdrop for the two rails below 1160px. A
+          real button so it is reachable by keyboard, though
+          Escape is the usual way out. --}}
+    <button type="button" class="desk-scrim" data-desk-scrim hidden aria-label="Close the open panel"></button>
+
+    <p class="desk-foot-note">Papers are kept in this browser. They do not follow you to another device, and clearing site data clears them. Download anything you mean to keep.</p>
+
+  </div>
+</div>
+
+{{!-- Last inside the panel on purpose: a non-visual node placed first
+      would take the :first-child margin reset off the header above it.
+      The notebook store first (the rail reads it), then collections
+      (which reads MOFaithNotebook.RELATIONS), then the Desk's own
+      store, then the page script, which needs all three. Page-template
+      scripts run BEFORE site.min.js (FRONTEND §6.18); the only bundle
+      global any of these touches is window.MOSafeHref, which ships in
+      boot.min.js in <head>. --}}
+<script src="{{asset "js/lib/faith-notebook-store.js"}}"></script>
+<script src="{{asset "js/lib/faith-collections-store.js"}}"></script>
+<script src="{{asset "js/lib/faith-desk-store.js"}}"></script>
+<script src="{{asset "js/page/faith-desk.js"}}"></script>

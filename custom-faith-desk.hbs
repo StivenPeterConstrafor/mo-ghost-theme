@@ -1,186 +1,72 @@
 {{!< default}}
 {{#contentFor "moHead"}}
-<title>The Desk &mdash; The Faith Received</title>
-<meta name="description" content="Write with the library beside you. Your kept passages sit in a rail and go into the draft with their citation already attached." />
-<meta property="og:title" content="The Desk — The Faith Received" />
-<meta property="og:description" content="Write with the library beside you. Your kept passages sit in a rail and go into the draft with their citation already attached." />
-<meta name="twitter:title" content="The Desk — The Faith Received" />
-<meta name="twitter:description" content="Write with the library beside you. Your kept passages sit in a rail and go into the draft with their citation already attached." />
-{{!-- Someone's unpublished writing. Never in an index. --}}
-<meta name="robots" content="noindex" />
+<title>The Desk | The Faith Received</title>
+<meta name="description" content="Write with the library beside you. Now the Desk tab of the Research desk." />
+{{!-- Someone's unpublished writing was never in an index and this
+      forwarding page should not be either. --}}
+<meta name="robots" content="noindex, follow" />
+<link rel="canonical" href="https://mereorthodoxy.com/the-faith-received/research/" />
 {{/contentFor}}
-{{!-- /the-faith-received/desk/ — the writing desk.
+{{!-- /the-faith-received/desk/ — a redirect into the Research desk.
 
-     ROUTING. routes.yaml must map this template at
-     /the-faith-received/desk/. The deploy Action does NOT ship
-     routes.yaml (FRONTEND §6.12); until it is uploaded by hand this URL
-     404s however healthy the template is.
+     WHAT HAPPENED. The Desk was a page. It is now the Desk tab of
+     /the-faith-received/research/. This template is what is left of the
+     old page: no markup, no scripts, no styles, one job.
 
-     PORTED from the corpus owner's /desk. The shape is his: documents
-     on the left, the draft in the middle, research on the right, and a
-     rail whose whole point is that a passage arrives WITH its citation
-     rather than as loose text to be attributed later.
+     WHY THIS URL STILL EXISTS. ?doc=<id> addresses a particular paper,
+     and the papers are in the reader's own browser. A reader who
+     bookmarked a paper, or who was handed a ?doc= link by Compare's
+     "Send to the Desk" before the merge, has an address that must keep
+     opening the same paper. A 404 would strand it, and because the
+     papers are local there would be nothing anywhere to recover the
+     link from.
 
-     WHAT IS NOT HERE. His rail has four tabs — notes, highlights,
-     reading history, Ask conversations. Only the first has a store on
-     our side; `fr_hl`, `fr_lastread` and `fr_chats` are his. Three tabs
-     that were always empty would tell a reader they had highlighted
-     nothing when they had highlighted plenty in a different tool. His
-     iframe preview of a source beside the draft is gone too: a link
-     that opens the reader in a new tab does the same work without
-     putting our own pages in a frame.
+     THE TRANSFORM. ?doc= is a query parameter and survives as one; the
+     Desk panel reads it on every wake. Only the tab has to be named:
 
-     WHERE A DRAFT COMES FROM. Two ways in. The reader presses New
-     paper here, or Compare sends one: its "Send to the Desk" writes a
-     draft through window.MOFaithDesk and redirects to
-     ?doc=<id>. Same store, no integration between the pages beyond it.
+       /the-faith-received/desk/            -> /research/#desk
+       /the-faith-received/desk/?doc=abc123 -> /research/?doc=abc123#desk
 
-     A PAPER KNOWS ITS COLLECTION, so the rail opens on the material
-     that paper is being written from. It is a default and never a
-     constraint, and a collection since deleted degrades to everything
-     rather than to an empty rail.
+     Unlike Compare this one COULD have been a server-side 301, since
+     nothing it carries is in the fragment. It is done here anyway, for
+     three reasons: routes.yaml is a hand upload in Ghost Admin and is
+     not free; a redirect written here sits next to the two that had to
+     be written here; and a rule in routes.yaml that quietly stopped
+     matching would fail invisibly, where this page fails loudly with a
+     link on screen. If the routing is ever centralised, this template
+     and its two siblings go together and the behaviour above is the
+     specification.
 
-     DOM contract for assets/js/page/faith-desk.js. Every selector in
-     that file:
-       - [data-desk-root] wrapping everything
-       - [data-desk-title], [data-desk-editor], [data-desk-words],
-         [data-desk-savestate], [data-desk-toolbar] with
-         [data-desk-cmd] / [data-desk-value] buttons
-       - [data-desk-docs] holding [data-desk-doc-list],
-         [data-desk-docs-close], [data-desk-new]; toggled by
-         [data-desk-docs-toggle]
-       - [data-desk-rail] holding [data-desk-collection],
-         [data-desk-rail-search], [data-desk-rail-body],
-         [data-desk-rail-more], [data-desk-rail-close]; toggled by
-         [data-desk-rail-toggle]
-       - [data-desk-scrim], [data-desk-status]
-       - [data-desk-export], [data-desk-print], [data-desk-delete]
+     location.replace, not assign, so Back from the Research desk does
+     not bounce through here.
 
-     THE TWO RAILS ARE DISCLOSURES. Both toggles carry aria-expanded and
-     aria-controls, both panels can be closed from inside, and Escape
-     closes them; below 1160px they overlay the draft rather than
-     squeezing it, because the draft is what the page is for. --}}
+     WITHOUT SCRIPT there is a real link, and it is the whole content of
+     the page rather than a hidden fallback. --}}
 
 <main class="faith-received faith-feature">
-
   <section class="bhero bhero--tool">
     <div class="bhero-inner container">
-      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/desk/">The Desk</a></p>
-      <h1>The Desk</h1>
-      <p class="bhero-sub">Write with the library beside you. Anything you have kept goes into the draft with its citation already attached.</p>
+      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a></p>
+      <h1>The Desk has moved</h1>
+      <p class="bhero-sub">The Desk is now a tab of the Research desk, beside your notebook and everything else you have kept. Your papers are untouched: they are in this browser and the Desk tab opens the same ones.</p>
+      <p class="bhero-sub"><a href="/the-faith-received/research/#desk" data-desk-forward>Open the Desk on the Research desk</a></p>
     </div>
   </section>
-
-  <section class="bband faith-feature-body faith-desk-band">
-    <div class="container">
-      <div class="research-workspace">
-        <div class="desk" data-desk-root>
-
-          {{!-- The bar. The two rail toggles bracket the title, so on a
-                phone the two things that open are at the two thumbs. --}}
-          <div class="desk-bar">
-            <button type="button" class="desk-toggle" data-desk-docs-toggle aria-expanded="false" aria-controls="desk-docs">Papers</button>
-
-            <label class="desk-title-field">
-              <span class="visually-hidden">Title of this paper</span>
-              <input type="text" class="desk-title" data-desk-title maxlength="160" autocomplete="off" placeholder="Untitled paper" />
-            </label>
-
-            <span class="desk-words" data-desk-words></span>
-            <button type="button" class="desk-toggle" data-desk-rail-toggle aria-expanded="false" aria-controls="desk-rail">Research</button>
-          </div>
-
-          <p class="desk-status" data-desk-status role="status" aria-live="polite"></p>
-
-          <div class="desk-body">
-
-            {{!-- Papers ────────────────────────────────────────── --}}
-            <aside class="desk-panel desk-docs" id="desk-docs" data-desk-docs>
-              <div class="desk-panel-head">
-                <h2 class="desk-panel-title">Your papers</h2>
-                <button type="button" class="desk-panel-close" data-desk-docs-close aria-label="Close your papers">Close</button>
-              </div>
-              <button type="button" class="desk-act desk-act-primary" data-desk-new>New paper</button>
-              <div class="desk-doc-list" data-desk-doc-list></div>
-              <div class="desk-panel-foot">
-                <button type="button" class="desk-act" data-desk-export>Download Markdown</button>
-                <button type="button" class="desk-act" data-desk-print>Print or save PDF</button>
-                <button type="button" class="desk-act desk-act-danger" data-desk-delete>Delete paper</button>
-              </div>
-            </aside>
-
-            {{!-- The draft ─────────────────────────────────────── --}}
-            <section class="desk-editor-wrap">
-              <div class="desk-toolbar" data-desk-toolbar role="toolbar" aria-label="Formatting">
-                <button type="button" class="desk-tool" data-desk-cmd="formatBlock" data-desk-value="h2" title="Section heading">H2</button>
-                <button type="button" class="desk-tool" data-desk-cmd="formatBlock" data-desk-value="h3" title="Subheading">H3</button>
-                <button type="button" class="desk-tool" data-desk-cmd="bold" title="Bold"><strong>B</strong></button>
-                <button type="button" class="desk-tool" data-desk-cmd="italic" title="Italic"><em>I</em></button>
-                <button type="button" class="desk-tool" data-desk-cmd="formatBlock" data-desk-value="blockquote" title="Block quotation">Quote</button>
-                <button type="button" class="desk-tool" data-desk-cmd="insertUnorderedList" title="Bulleted list">List</button>
-                <button type="button" class="desk-tool" data-desk-cmd="removeFormat" title="Clear formatting">Clear</button>
-              </div>
-
-              <div
-                class="desk-editor"
-                data-desk-editor
-                contenteditable="true"
-                spellcheck="true"
-                role="textbox"
-                aria-multiline="true"
-                aria-label="The text of this paper"
-              ></div>
-
-              <p class="desk-savestate" data-desk-savestate role="status" aria-live="polite">Saved in this browser</p>
-            </section>
-
-            {{!-- Research ──────────────────────────────────────── --}}
-            <aside class="desk-panel desk-rail" id="desk-rail" data-desk-rail>
-              <div class="desk-panel-head">
-                <h2 class="desk-panel-title">Your research</h2>
-                <button type="button" class="desk-panel-close" data-desk-rail-close aria-label="Close your research">Close</button>
-              </div>
-
-              <label class="desk-field">
-                <span class="desk-field-label">Show</span>
-                <select class="desk-select" data-desk-collection></select>
-              </label>
-
-              <label class="desk-field">
-                <span class="desk-field-label">Search what you have kept</span>
-                <input type="search" class="desk-input" data-desk-rail-search maxlength="120" autocomplete="off" placeholder="A passage, a work, a note&hellip;" />
-              </label>
-
-              <div class="desk-rail-body" data-desk-rail-body></div>
-              <button type="button" class="desk-act" data-desk-rail-more hidden>Show more</button>
-
-              <p class="desk-panel-note"><a href="/the-faith-received/pins/">Manage your collections</a> &middot; <a href="/the-faith-received/search/">Find more sources</a></p>
-            </aside>
-
-          </div>
-
-          {{!-- The overlay backdrop for the two rails below 1160px. A
-                real button so it is reachable by keyboard, though
-                Escape is the usual way out. --}}
-          <button type="button" class="desk-scrim" data-desk-scrim hidden aria-label="Close the open panel"></button>
-
-          <p class="desk-foot-note">Papers are kept in this browser. They do not follow you to another device, and clearing site data clears them. Download anything you mean to keep.</p>
-
-        </div>
-      </div>
-    </div>
-  </section>
-
 </main>
-{{> "membership-cta"}}
 
-{{!-- The notebook store first (the rail reads it), then collections
-     (which reads MOFaithNotebook.RELATIONS), then the Desk's own store,
-     then the page script, which needs all three. Page-template scripts
-     run BEFORE site.min.js (FRONTEND §6.18); the only bundle global any
-     of these touches is window.MOSafeHref, which ships in boot.min.js
-     in <head>. --}}
-<script src="{{asset "js/lib/faith-notebook-store.js"}}"></script>
-<script src="{{asset "js/lib/faith-collections-store.js"}}"></script>
-<script src="{{asset "js/lib/faith-desk-store.js"}}"></script>
-<script src="{{asset "js/page/faith-desk.js"}}"></script>
+<script>
+  (function () {
+    // ?doc= names a paper and travels as it is. The fragment on the old
+    // address carried nothing, so it is not preserved.
+    var search = String(window.location.search || "");
+    var target = "/the-faith-received/research/" + search + "#desk";
+
+    // The link is corrected before the redirect fires, so that a reader
+    // whose navigation is blocked or slow still has the right one under
+    // the cursor.
+    var a = document.querySelector("[data-desk-forward]");
+    if (a) a.setAttribute("href", target);
+
+    window.location.replace(target);
+  })();
+</script>
