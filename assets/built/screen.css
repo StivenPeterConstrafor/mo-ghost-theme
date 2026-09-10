@@ -17225,6 +17225,14 @@ body:has(.au-modal-overlay) {
 }
 .cc-item:hover .cc-item-remove { opacity: 1; }
 .cc-item-remove:hover { color: var(--color-accent); }
+/* Repeating-series marker on a calendar chip */
+.cc-item-repeat {
+  font-size: 12px;
+  line-height: 1;
+  color: var(--color-muted);
+  flex-shrink: 0;
+  cursor: help;
+}
 
 /* Modal */
 .cc-modal-overlay {
@@ -17292,6 +17300,73 @@ body:has(.au-modal-overlay) {
   flex-wrap: wrap;
   justify-content: flex-end;
   margin-top: 20px;
+}
+
+/* Repeat controls (Add/Edit item modals) */
+.cc-hide { display: none !important; }
+.cc-repeat-end-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cc-modal-field .cc-repeat-end-row select,
+.cc-modal-field .cc-repeat-end-row input[type="date"] {
+  width: auto;
+  flex: 1;
+  min-width: 0;
+}
+.cc-modal-field .cc-repeat-end-row input[type="number"] {
+  width: 78px;
+  flex: 0 0 auto;
+}
+.cc-repeat-end-unit {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+.cc-series-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-rule);
+  border-radius: 6px;
+  background: var(--color-page);
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+.cc-series-note-icon {
+  font-size: 14px;
+  line-height: 1.2;
+  color: var(--color-dark);
+  flex-shrink: 0;
+}
+.cc-modal-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+.cc-modal-check input[type="checkbox"] {
+  width: auto;
+  margin: 2px 0 0;
+  flex-shrink: 0;
+}
+.cc-modal-error {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.45;
+  color: #c1593c;
 }
 .cc-btn-danger {
   color: #c1593c !important;

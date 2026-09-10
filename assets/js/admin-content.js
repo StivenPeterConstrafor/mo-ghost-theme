@@ -22,6 +22,31 @@
   const STATUS_COLORS = { Idea: "#9a8773", Drafting: "#3498db", "In Review": "#f39c12", Scheduled: "#27ae60", Published: "#2d2927" };
   const SWATCH_COLORS = ["#c1593c", "#3498db", "#27ae60", "#f39c12", "#9b59b6", "#1abc9c", "#e74c3c", "#34495e", "#e67e22", "#2d2927", "#16a085", "#8e44ad"];
 
+  // Repeating items are materialized: one real item per occurrence, tied
+  // together by seriesId. Nothing else in this file has to know about
+  // recurrence — filters, drag-and-drop, and the month grid keep working on
+  // plain dated items. The cost is a ceiling, since mo-admin rejects a
+  // calendar blob over 5000 items and a silent 400 reads as "Offline".
+  const MAX_OCCURRENCES = 260;
+  const MAX_TOTAL_ITEMS = 5000;
+  const REPEAT_OPTIONS = [
+    { value: "", label: "Does not repeat" },
+    { value: "daily", label: "Daily" },
+    { value: "weekdays", label: "Every weekday (Mon to Fri)" },
+    { value: "weekly", label: "Weekly" },
+    { value: "biweekly", label: "Every other week" },
+    { value: "monthly", label: "Monthly" },
+    { value: "yearly", label: "Yearly" }
+  ];
+  const REPEAT_LABELS = {
+    daily: "daily",
+    weekdays: "every weekday",
+    weekly: "weekly",
+    biweekly: "every other week",
+    monthly: "monthly",
+    yearly: "yearly"
+  };
+
   const DEFAULT_DATA = {
     projects: [
       { id: "content-calendar", name: "Content Calendar", group: "operations", color: "#c1593c" },
@@ -200,6 +225,142 @@
     return `${MONTHS[first.getMonth()]} ${first.getDate()} – ${MONTHS[last.getMonth()]} ${last.getDate()}, ${last.getFullYear()}`;
   }
 
+  // ── Recurrence ──────────────────────────────────────────────────
+  function parseISO(s) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || "");
+    if (!m) return null;
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  }
+
+  function daysInMonth(year, month) {
+    return new Date(year, month + 1, 0).getDate();
+  }
+
+  // Every date in a series, first occurrence included. Monthly and yearly
+  // step from the ORIGINAL date each time rather than from the previous
+  // occurrence, so a short month can't drag the rest of the series backward
+  // (Jan 31 → Feb 28 → Mar 28 → …). A month with no such day is skipped.
+  function expandRecurrence(startStr, freq, endMode, count, untilStr) {
+    const start = parseISO(startStr);
+    if (!start || !freq) return startStr ? [startStr] : [];
+
+    const limit = endMode === "count"
+      ? Math.min(Math.max(parseInt(count, 10) || 1, 1), MAX_OCCURRENCES)
+      : MAX_OCCURRENCES;
+    const until = endMode === "until" ? parseISO(untilStr) : null;
+    if (endMode === "until" && !until) return [startStr];
+
+    const dates = [];
+    function push(d) {
+      if (until && d > until) return false;
+      dates.push(fmtDate(d));
+      return dates.length < limit;
+    }
+
+    if (freq === "monthly" || freq === "yearly") {
+      const bump = freq === "monthly" ? 1 : 12;
+      const day = start.getDate();
+      for (let n = 0; n < 1200; n++) {
+        const probe = new Date(start.getFullYear(), start.getMonth() + (n * bump), 1);
+        if (daysInMonth(probe.getFullYear(), probe.getMonth()) < day) continue;
+        if (!push(new Date(probe.getFullYear(), probe.getMonth(), day))) break;
+      }
+    } else {
+      const cursor = new Date(start);
+      for (;;) {
+        if (!push(cursor)) break;
+        if (freq === "daily") {
+          cursor.setDate(cursor.getDate() + 1);
+        } else if (freq === "weekdays") {
+          do { cursor.setDate(cursor.getDate() + 1); } while (cursor.getDay() === 0 || cursor.getDay() === 6);
+        } else if (freq === "weekly") {
+          cursor.setDate(cursor.getDate() + 7);
+        } else if (freq === "biweekly") {
+          cursor.setDate(cursor.getDate() + 14);
+        } else {
+          break;
+        }
+      }
+    }
+
+    // An end date before the start date would otherwise produce nothing and
+    // lose the item the user just typed.
+    return dates.length > 0 ? dates : [startStr];
+  }
+
+  function describeRepeat(rep) {
+    if (!rep || !rep.freq) return "";
+    const label = REPEAT_LABELS[rep.freq] || rep.freq;
+    if (rep.endMode === "until" && rep.until) return `Repeats ${label} until ${rep.until}`;
+    if (rep.endMode === "count" && rep.count) return `Repeats ${label}, ${rep.count} times`;
+    return `Repeats ${label}`;
+  }
+
+  function repeatFieldsHtml(defaultUntil) {
+    return `<label class="cc-modal-field"><span>Repeat</span><select data-cc-modal-repeat>${
+        REPEAT_OPTIONS.map((o) => { return `<option value="${o.value}">${esc(o.label)}</option>`; }).join("")
+      }</select></label>` +
+      `<div class="cc-modal-field cc-hide" data-cc-repeat-end>` +
+        `<span>Ends</span>` +
+        `<div class="cc-repeat-end-row">` +
+          `<select data-cc-repeat-end-mode>` +
+            `<option value="count">After</option>` +
+            `<option value="until">On date</option>` +
+          `</select>` +
+          `<input type="number" min="1" max="${MAX_OCCURRENCES}" value="12" data-cc-repeat-count>` +
+          `<span class="cc-repeat-end-unit" data-cc-repeat-count-unit>times</span>` +
+          `<input type="date" class="cc-hide" value="${escAttr(defaultUntil || "")}" data-cc-repeat-until>` +
+        `</div>` +
+      `</div>`;
+  }
+
+  function wireRepeatFields(overlay) {
+    const sel = overlay.querySelector("[data-cc-modal-repeat]");
+    if (!sel) return;
+    const endBlock = overlay.querySelector("[data-cc-repeat-end]");
+    const modeSel = overlay.querySelector("[data-cc-repeat-end-mode]");
+    const countInput = overlay.querySelector("[data-cc-repeat-count]");
+    const countUnit = overlay.querySelector("[data-cc-repeat-count-unit]");
+    const untilInput = overlay.querySelector("[data-cc-repeat-until]");
+
+    function sync() {
+      endBlock.classList.toggle("cc-hide", !sel.value);
+      const byCount = modeSel.value === "count";
+      countInput.classList.toggle("cc-hide", !byCount);
+      countUnit.classList.toggle("cc-hide", !byCount);
+      untilInput.classList.toggle("cc-hide", byCount);
+    }
+
+    sel.addEventListener("change", sync);
+    modeSel.addEventListener("change", sync);
+    sync();
+  }
+
+  function readRepeatFields(overlay) {
+    const sel = overlay.querySelector("[data-cc-modal-repeat]");
+    if (!sel || !sel.value) return null;
+    const endMode = overlay.querySelector("[data-cc-repeat-end-mode]").value;
+    const rawCount = parseInt(overlay.querySelector("[data-cc-repeat-count]").value, 10);
+    return {
+      freq: sel.value,
+      endMode,
+      count: endMode === "count" ? Math.min(Math.max(rawCount || 1, 1), MAX_OCCURRENCES) : null,
+      until: endMode === "until" ? overlay.querySelector("[data-cc-repeat-until]").value : null
+    };
+  }
+
+  function showModalError(overlay, msg) {
+    let el = overlay.querySelector("[data-cc-modal-error]");
+    if (!el) {
+      el = document.createElement("p");
+      el.className = "cc-modal-error";
+      el.setAttribute("data-cc-modal-error", "");
+      const actions = overlay.querySelector(".cc-modal-actions");
+      actions.parentNode.insertBefore(el, actions);
+    }
+    el.textContent = msg;
+  }
+
   function matchesFilters(it) {
     if (activeProject && it.project !== activeProject) return false;
     if (activeFilters.project && it.project !== activeFilters.project) return false;
@@ -248,7 +409,8 @@
     return `<div class="cc-item" data-cc-item-id="${it.id}" draggable="true">` +
       `<span class="cc-item-dot" style="background:${col}"></span>` +
       `<span class="cc-item-title">${esc(it.title)}</span>${
-      cat ? `<span class="cc-item-type">${esc(cat.name)}</span>` : ''
+      it.seriesId ? `<span class="cc-item-repeat" title="${escAttr(describeRepeat(it.repeat) || "Repeating item")}">↻</span>` : ''
+      }${cat ? `<span class="cc-item-type">${esc(cat.name)}</span>` : ''
       }${it.person ? `<span class="cc-item-person">${esc(it.person)}</span>` : '' 
       }${it.status ? `<span class="cc-item-status" style="color:${statusCol}">${esc(it.status)}</span>` : '' 
       }<button type="button" class="cc-item-remove" data-cc-remove-item="${it.id}" title="Remove">&times;</button>` +
@@ -368,8 +530,8 @@
         const itemList = visible.map((it) => {
           const cat = data.categories.find((c) => { return c.id === it.type; });
           const col = cat ? cat.color : "#9a8773";
-          return `<div class="cc-mcell-item" data-cc-item-id="${it.id}" draggable="true" style="background:${col}">` +
-            `<span class="cc-mcell-item-title">${esc(it.title)}</span>` +
+          return `<div class="cc-mcell-item" data-cc-item-id="${it.id}" draggable="true" style="background:${col}" title="${escAttr(it.title)}${it.seriesId ? `. ${describeRepeat(it.repeat) || "Repeating item"}` : ""}">` +
+            `<span class="cc-mcell-item-title">${it.seriesId ? '↻ ' : ''}${esc(it.title)}</span>` +
           `</div>`;
         }).join("");
 
@@ -604,8 +766,9 @@
       `<div class="cc-modal">` +
         `<h3 class="cc-modal-title">Add Calendar Item</h3>` +
         `<label class="cc-modal-field"><span>Title</span><input type="text" data-cc-modal-title placeholder="What's happening?"></label>` +
-        `<label class="cc-modal-field"><span>Date</span><input type="date" data-cc-modal-date value="${dateStr}"></label>` +
-        `<label class="cc-modal-field"><span>Project</span><select data-cc-modal-project>${ 
+        `<label class="cc-modal-field"><span>Date</span><input type="date" data-cc-modal-date value="${dateStr}"></label>${
+        repeatFieldsHtml(dateStr)
+        }<label class="cc-modal-field"><span>Project</span><select data-cc-modal-project>${
           data.projects.map((p) => { return `<option value="${p.id}">${esc(p.name)}</option>`; }).join("") 
         }</select></label>` +
         `<label class="cc-modal-field"><span>Category</span><select data-cc-modal-type>` +
@@ -627,6 +790,7 @@
 
     root.appendChild(overlay);
     if (window.MOAdmin && window.MOAdmin.initMentions) window.MOAdmin.initMentions(overlay, WORKER_URL);
+    wireRepeatFields(overlay);
     const titleInput = overlay.querySelector("[data-cc-modal-title]");
     titleInput.focus();
     if (activeProject) overlay.querySelector("[data-cc-modal-project]").value = activeProject;
@@ -637,20 +801,39 @@
       const title = titleInput.value.trim();
       if (!title) { titleInput.focus(); return; }
       const personVal = overlay.querySelector("[data-cc-modal-person]").value;
-      const newItem = {
-        id: `item_${Date.now()}`,
+      const baseDate = overlay.querySelector("[data-cc-modal-date]").value;
+      const base = {
         title,
-        date: overlay.querySelector("[data-cc-modal-date]").value,
+        date: baseDate,
         project: overlay.querySelector("[data-cc-modal-project]").value,
         type: overlay.querySelector("[data-cc-modal-type]").value,
         person: personVal,
         status: overlay.querySelector("[data-cc-modal-status]").value
       };
-      data.items.push(newItem);
+
+      const repeat = readRepeatFields(overlay);
+      const stamp = Date.now();
+      let newItems;
+      if (repeat) {
+        const dates = expandRecurrence(baseDate, repeat.freq, repeat.endMode, repeat.count, repeat.until);
+        if (data.items.length + dates.length > MAX_TOTAL_ITEMS) {
+          showModalError(overlay, `That series would push the calendar past ${MAX_TOTAL_ITEMS} items, which the server rejects. Shorten it and try again.`);
+          return;
+        }
+        const seriesId = `series_${stamp}`;
+        newItems = dates.map((d, i) => {
+          return { ...base, id: `item_${stamp}_${i}`, date: d, seriesId, repeat: { ...repeat } };
+        });
+      } else {
+        newItems = [{ ...base, id: `item_${stamp}` }];
+      }
+
+      newItems.forEach((it) => { data.items.push(it); });
       save(data);
       renderCalendar();
       overlay.remove();
-      if (personVal) notifyAssigned(newItem, personVal);
+      // One notification per series, not one per occurrence.
+      if (personVal) notifyAssigned(newItems[0], personVal);
     };
     titleInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") overlay.querySelector("[data-cc-modal-save]").click();
@@ -1266,14 +1449,33 @@
 
   function showEditItemModal(item) {
     const oldPerson = item.person;
+    const inSeries = !!item.seriesId;
+    const seriesCount = inSeries
+      ? data.items.filter((it) => { return it.seriesId === item.seriesId; }).length
+      : 0;
+
+    // An item already in a series gets a scope choice. A one-off gets the same
+    // Repeat controls as the Add modal, so a single item can become a series
+    // without retyping it.
+    const seriesBlock = inSeries
+      ? `<div class="cc-series-note">` +
+          `<span class="cc-series-note-icon">↻</span>` +
+          `<span>${esc(describeRepeat(item.repeat) || "Part of a repeating series")}. ${seriesCount} item${seriesCount === 1 ? "" : "s"} in the series.</span>` +
+        `</div>` +
+        `<label class="cc-modal-check"><input type="checkbox" data-cc-apply-series>` +
+          `<span>Apply these changes to the whole series (the date stays on this item only)</span>` +
+        `</label>`
+      : repeatFieldsHtml(item.date);
+
     const overlay = document.createElement("div");
     overlay.className = "cc-modal-overlay";
     overlay.innerHTML =
       `<div class="cc-modal">` +
         `<h3 class="cc-modal-title">Edit Item</h3>` +
         `<label class="cc-modal-field"><span>Title</span><input type="text" data-cc-modal-title value="${escAttr(item.title)}"></label>` +
-        `<label class="cc-modal-field"><span>Date</span><input type="date" data-cc-modal-date value="${item.date}"></label>` +
-        `<label class="cc-modal-field"><span>Project</span><select data-cc-modal-project>${
+        `<label class="cc-modal-field"><span>Date</span><input type="date" data-cc-modal-date value="${item.date}"></label>${
+        seriesBlock
+        }<label class="cc-modal-field"><span>Project</span><select data-cc-modal-project>${
           data.projects.map((p) => { return `<option value="${p.id}"${p.id === item.project ? ' selected' : ''}>${esc(p.name)}</option>`; }).join("")
         }</select></label>` +
         `<label class="cc-modal-field"><span>Category</span><select data-cc-modal-type>` +
@@ -1288,14 +1490,16 @@
           STATUS_OPTIONS.map((s) => { return `<option value="${s}"${s === item.status ? ' selected' : ''}>${s}</option>`; }).join("")
         }</select></label>` +
         `<div class="cc-modal-actions">` +
-          `<button type="button" class="btn btn-sm btn-danger" data-cc-modal-delete>Delete</button>` +
-          `<button type="button" class="btn btn-sm" style="margin-left:auto" data-cc-modal-cancel>Cancel</button>` +
+          `<button type="button" class="btn btn-sm btn-danger" data-cc-modal-delete>Delete</button>${
+          inSeries ? `<button type="button" class="btn btn-sm btn-danger" data-cc-modal-delete-series>Delete series</button>` : ''
+          }<button type="button" class="btn btn-sm" style="margin-left:auto" data-cc-modal-cancel>Cancel</button>` +
           `<button type="button" class="btn btn-sm btn-primary" data-cc-modal-save>Save</button>` +
         `</div>` +
       `</div>`;
 
     root.appendChild(overlay);
     if (window.MOAdmin && window.MOAdmin.initMentions) window.MOAdmin.initMentions(overlay, WORKER_URL);
+    wireRepeatFields(overlay);
     overlay.querySelector("[data-cc-modal-cancel]").onclick = function () { overlay.remove(); };
     overlay.addEventListener("click", (ev) => { if (ev.target === overlay) overlay.remove(); });
     overlay.querySelector("[data-cc-modal-delete]").onclick = function () {
@@ -1304,6 +1508,15 @@
       renderCalendar();
       overlay.remove();
     };
+    if (inSeries) {
+      overlay.querySelector("[data-cc-modal-delete-series]").onclick = function () {
+        if (!window.confirm(`Delete all ${seriesCount} items in this series? This cannot be undone.`)) return;
+        data.items = data.items.filter((it) => { return it.seriesId !== item.seriesId; });
+        save(data);
+        renderCalendar();
+        overlay.remove();
+      };
+    }
     overlay.querySelector("[data-cc-modal-save]").onclick = function () {
       item.title = overlay.querySelector("[data-cc-modal-title]").value.trim() || item.title;
       item.date = overlay.querySelector("[data-cc-modal-date]").value;
@@ -1312,6 +1525,44 @@
       const newPerson = overlay.querySelector("[data-cc-modal-person]").value;
       item.person = newPerson;
       item.status = overlay.querySelector("[data-cc-modal-status]").value;
+
+      const applyAll = overlay.querySelector("[data-cc-apply-series]");
+      if (inSeries && applyAll && applyAll.checked) {
+        data.items.forEach((it) => {
+          if (it.seriesId !== item.seriesId || it.id === item.id) return;
+          it.title = item.title;
+          it.project = item.project;
+          it.type = item.type;
+          it.person = item.person;
+          it.status = item.status;
+        });
+      }
+
+      // Turning a one-off into a series: this item becomes the first
+      // occurrence and the rest are generated from it.
+      const repeat = inSeries ? null : readRepeatFields(overlay);
+      if (repeat) {
+        const dates = expandRecurrence(item.date, repeat.freq, repeat.endMode, repeat.count, repeat.until);
+        const extra = dates.slice(1);
+        if (data.items.length + extra.length > MAX_TOTAL_ITEMS) {
+          showModalError(overlay, `That series would push the calendar past ${MAX_TOTAL_ITEMS} items, which the server rejects. Shorten it and try again.`);
+          return;
+        }
+        const stamp = Date.now();
+        const seriesId = `series_${stamp}`;
+        item.seriesId = seriesId;
+        item.repeat = { ...repeat };
+        extra.forEach((d, i) => {
+          data.items.push({
+            ...item,
+            id: `item_${stamp}_${i}`,
+            date: d,
+            seriesId,
+            repeat: { ...repeat }
+          });
+        });
+      }
+
       save(data);
       renderCalendar();
       overlay.remove();
