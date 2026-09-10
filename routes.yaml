@@ -282,13 +282,33 @@ routes:
   #   3. add or remove the matching block below
   # See memory/ghost-theme.md for the full operational guide.
   /the-faith-received/:
-    template: custom-the-faith-received
+    template: custom-faith-port-index
+  /the-faith-received/readen/:
+    template: custom-faith-port-readen
+  /the-faith-received/review/:
+    template: custom-faith-port-review
+  /the-faith-received/dtc/:
+    template: custom-faith-port-dtc
+  /the-faith-received/desk/:
+    template: custom-faith-port-desk
+  /the-faith-received/pins/:
+    template: custom-faith-port-pins
+  /the-faith-received/web/:
+    template: custom-faith-port-web
+  /the-faith-received/compare/:
+    template: custom-faith-port-compare
+  /the-faith-received/authors/:
+    template: custom-faith-port-authors
+  /the-faith-received/bible/:
+    template: custom-faith-port-bible
+  /the-faith-received/read/:
+    template: custom-faith-port-read
   # The landing stopped being a tab shell on 2026-08-20: browsing moved
   # to its own route below, and topics, scripture, today and devotional
   # were already routed separately further down this file, so nothing
   # was orphaned by the change. See website/handoffs/TFR-REDESIGN.md.
   /the-faith-received/fathers/:
-    template: custom-faith-fathers
+    template: custom-faith-port-fathers
   /the-faith-received/all-works/:
     template: custom-faith-centuries
   /the-faith-received/century/:
@@ -340,11 +360,11 @@ routes:
   /the-faith-received/transparency/:
     template: custom-faith-transparency
   /the-faith-received/search/:
-    template: custom-faith-search
+    template: custom-faith-port-search
   # A question answered from the library with citations — POSTs to
   # mo-tfr-library's /v1/ask. See website/workers/tfr-library/lib/ask.js.
   /the-faith-received/ask/:
-    template: custom-faith-ask
+    template: custom-faith-port-ask
   # The research desk — one page, five workspaces behind a tab strip:
   # Ask (the same shared partial /ask/ renders), Power Search (semantic
   # search over the corpus, GET /v1/vsearch on mo-tfr-library), and
@@ -371,7 +391,7 @@ routes:
   /the-faith-received/doctrines/:
     template: custom-faith-doctrines
   /the-faith-received/topics/:
-    template: custom-faith-topics
+    template: custom-faith-port-topics
   /the-faith-received/topics/god-and-trinity/:
     template: custom-faith-topic-god-and-trinity
   /the-faith-received/topics/scripture-and-revelation/:
