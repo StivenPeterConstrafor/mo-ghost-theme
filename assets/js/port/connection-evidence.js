@@ -1,7 +1,7 @@
 /* Inspectable connections from published indexes. A profile match is never a citation. */
 (function(root){
   'use strict';
-  const BLOB='https://mo-tfr-library.mo-podcast-feed.workers.dev';
+  const BLOB='https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fold=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
   const count=n=>Number(n||0).toLocaleString();

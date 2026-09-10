@@ -3,7 +3,7 @@
   if (window.FRAsk) return;
   // A source opened beside a conversation uses its parent's workspace and stream owner.
   try { if (window.parent !== window && window.parent.FRAsk) { if(window.frameElement?.id==='fra-source-frame')document.documentElement.classList.add('fr-ask-source');window.FRAsk = { open: (opts={}) => window.parent.FRAsk.open({...opts,contextWork:new URLSearchParams(location.search).get('w')||window.__FR_SLUG__||''}), markdown:window.parent.FRAsk.markdown, readURL:window.parent.FRAsk.readURL }; return; } } catch (_) {}
-  const S = FRChatStore, BASE = 'https://mo-tfr-library.mo-podcast-feed.workers.dev';
+  const S = FRChatStore, BASE = 'https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev';
   const modes = {
     ask: ['Ask', 'A concise answer from the texts. Choose Deep for a longer investigation.'],
     deep: ['Deep research', 'Gathers across the relevant texts, then quotes and explains them in depth. Saves progress after you close the browser. Up to 10 minutes per run; continue saved research if needed.'],

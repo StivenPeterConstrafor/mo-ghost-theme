@@ -1,6 +1,6 @@
 
 "use strict";
-const BLOB="https://mo-tfr-library.mo-podcast-feed.workers.dev";
+const BLOB="https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev";
 // witness registry (owner 2026-09-02): facsimile copy -> born-digital primary — global, once
 window.__WIT=window.__WIT||fetch(BLOB+"/v1/witnesses.json").then(r=>r.ok?r.json():{}).catch(()=>({}));
 window.__WIT.then(m=>{window.__WITM=m||{};});
@@ -1613,7 +1613,7 @@ async function compareDesk(host,state,opts={}){
     say('Preparing…');
     const abs=h=>h?(/^https?:/.test(h)?h:location.origin+h):'';const names=authors.map(au=>au.a);const viewURL=location.origin+cdURL({...state,a:authors.map(x=>x.s),sel:cur.tslug});
     const quote=(r,au)=>{const t=au.works.get(r.w)?.t||r.wt||r.w||'Source work',pg=RX.page(r.p),href=abs(RX.safeReaderURL(r.h)||(r.w?readerHref(r.w,r.p):''));
-      return `<blockquote><p>${esc(r.q||r.g||'')}</p>${r.q&&r.g?`<p><small>Page annotation: ${esc(r.g)}</small></p>`:''}<p><cite>${esc(au.a)}, <em>${esc(t)}</em>${pg!==null?', '+pgl(r.w)+' '+esc(String(pg)):''}${r.s?' · '+esc(r.s):''}${href?` · <a href="${esc(href)}">Read the passage</a>`:''}</cite></p></blockquote>`;};
+      return `<blockquote>${href?`<a class="rx-qlink" target="_blank" rel="noopener" href="${esc(href)}" title="Open the passage in a new tab"><p>${esc(r.q||r.g||'')}</p></a>`:`<p>${esc(r.q||r.g||'')}</p>`}${r.q&&r.g?`<p><small>Page annotation: ${esc(r.g)}</small></p>`:''}<p><cite>${esc(au.a)}, <em>${esc(t)}</em>${pg!==null?', '+pgl(r.w)+' '+esc(String(pg)):''}${r.s?' · '+esc(r.s):''}${href?` · <a href="${esc(href)}" target="_blank" rel="noopener">Read the passage</a>`:''}</cite></p></blockquote>`;};
     const filters=[state.s?'stance '+state.s:'',state.q?'phrase “'+state.q+'”':''].filter(Boolean).join(', ');
     let body='',n=0;
     if(state.v==='meet'){const dis=host.__meet||{groups:[],N:0,total:0};
@@ -1706,7 +1706,7 @@ function paneList(box,items,render,chunk=80){
 function statementHTML(r,o={}){
   const title=o.title?o.title(r):(r.wt||r.w||'Source work'),pg=RX.page(r.p),href=RX.safeReaderURL(r.h)||(r.w?readerHref(r.w,r.p):null);
   const text=r.q||r.g||(r.pageSummary?'Indexed source page. Open the text to read its context.':'');
-  return `<article class="rx-excerpt">${r.pageSummary?'<span class="rx-evidence-kind">Page summary</span>':''}<p>${esc(text)}</p>${r.q&&r.g?`<details class="rx-context"><summary>Read page annotation</summary><p>${esc(r.g)}</p></details>`:''}<div class="rx-source"><span>${esc(title)}${pg!==null?' · '+pgl(r.w)+' '+esc(String(pg)):''}</span><div>${href?`<a class="rx-text-link" href="${esc(href)}">Read the passage</a>`:''}${r.w?(o.actions?previewBtn(r.w,r.p):'')+pinBtn(r.w,r.p,title,r.a||o.author||'',r.q||r.g):''}</div></div>${o.extra?o.extra(r):(o.annotation&&r.s?`<span class="rx-annotation">Annotation: ${esc(r.s)}</span>`:'')}</article>`;}
+  return `<article class="rx-excerpt">${r.pageSummary?'<span class="rx-evidence-kind">Page summary</span>':''}<p>${esc(text)}</p>${r.q&&r.g?`<details class="rx-context"><summary>Read page annotation</summary><p>${esc(r.g)}</p></details>`:''}<div class="rx-source"><span>${esc(title)}${pg!==null?' · '+pgl(r.w)+' '+esc(String(pg)):''}</span><div>${href?`<a class="rx-text-link" target="_blank" rel="noopener" href="${esc(href)}">Read the passage</a>`:''}${r.w?(o.actions?previewBtn(r.w,r.p):'')+pinBtn(r.w,r.p,title,r.a||o.author||'',r.q||r.g):''}</div></div>${o.extra?o.extra(r):(o.annotation&&r.s?`<span class="rx-annotation">Annotation: ${esc(r.s)}</span>`:'')}</article>`;}
 function statementPane(box,rows,o={}){if(!rows.length){box.classList.remove('rx-pane');box.innerHTML=`<p class="rx-note">${esc(o.empty||'No statements.')}</p>`;return box;}
   if(o.byWork===false)return paneList(box,rows,r=>statementHTML(r,o),o.chunk||60);
   box.classList.add('rx-pane');box.innerHTML=workFoldsHTML(rows,o);return box;}

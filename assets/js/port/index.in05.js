@@ -942,7 +942,7 @@ function render(){
       const tg2=el("div","plorg");
       tg2.innerHTML=`<button class="pob${window.__plOrg==="volume"?" on":""}" data-o="volume">By ${VW} volume</button>`+
                     `<button class="pob${window.__plOrg==="author"?" on":""}" data-o="author">By author</button>`+
-                    ((SEL_TRAD==="Latin Fathers"||SEL_TRAD==="Greek Fathers")?`<a class="pob" href="/the-faith-received/bible/" title="Scripture, verse by verse, with every commentator">Scripture →</a><a class="pob" href="/the-faith-received/topics/" title="Topics across the whole library">Topics →</a>`:"");
+                    ((false /* doors removed (owner 2026-09-10) */)?`<a class="pob" href="/the-faith-received/bible/" title="Scripture, verse by verse, with every commentator">Scripture →</a><a class="pob" href="/the-faith-received/topics/" title="Topics across the whole library">Topics →</a>`:"");
       tg2.onclick=e=>{const b=e.target.closest(".pob");if(!b||!b.dataset.o)return;window.__plOrg=b.dataset.o;render();};
       sw.appendChild(tg2);
       if(String(window.__plOrg||"").startsWith("cmap-")&&(SEL_TRAD==="Latin Fathers"||SEL_TRAD==="Greek Fathers")){
