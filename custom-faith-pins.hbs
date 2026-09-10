@@ -1,0 +1,152 @@
+{{!< default}}
+{{#contentFor "moHead"}}
+<title>Pins &mdash; The Faith Received</title>
+<meta name="description" content="Your research portfolio: the passages you have kept, gathered into collections, with the relations between them drawn out." />
+<meta property="og:title" content="Pins — The Faith Received" />
+<meta property="og:description" content="Your research portfolio: the passages you have kept, gathered into collections, with the relations between them drawn out." />
+<meta name="twitter:title" content="Pins — The Faith Received" />
+<meta name="twitter:description" content="Your research portfolio: the passages you have kept, gathered into collections, with the relations between them drawn out." />
+{{!-- Someone's own reading notes. Never in an index. --}}
+<meta name="robots" content="noindex" />
+{{/contentFor}}
+{{!-- /the-faith-received/pins/ — the research portfolio.
+
+     ROUTING. routes.yaml must map this template at
+     /the-faith-received/pins/. The deploy Action does NOT ship
+     routes.yaml (FRONTEND §6.12); until it is uploaded by hand this URL
+     404s however healthy the template is.
+
+     PORTED from the corpus owner's /pins. His structure is kept:
+     collections as tabs, a memo under them, cards in the reader's own
+     order, relations drawn between two pins and shown as a
+     constellation, and an export. His chrome is not.
+
+     ONE NOTEBOOK, SEEN AS COLLECTIONS. The passages are the same ones
+     the reader's own notebook panel holds — window.MOFaithNotebook,
+     assets/js/lib/faith-notebook-store.js. This page never copies them.
+     window.MOFaithCollections (assets/js/lib/faith-collections-store.js)
+     owns only the GROUPING: a name, a memo, an ordered list of entry
+     ids, and the relations between them. Read that store's header
+     before changing anything here; the reasoning for holding ids rather
+     than records is the whole design.
+
+     Because the grouping is separate, a passage kept while reading
+     appears here immediately under "Not in a collection" without having
+     been filed. That group is a view, not a stored collection, and it
+     is only offered when it has something in it.
+
+     DOM contract for assets/js/page/faith-pins.js. Every selector in
+     that file:
+       - [data-pins-root] wrapping everything
+       - [data-pins-tabs] — the collection strip
+       - [data-pins-count], [data-pins-status]
+       - [data-pins-memo] wrapping a textarea
+       - [data-pins-bar] holding [data-pins-new], [data-pins-rename],
+         [data-pins-delete], [data-pins-group], [data-pins-link],
+         [data-pins-rel] (the relation vocabulary)
+       - [data-pins-name-form] > [data-pins-name-legend],
+         [data-pins-name-input], [data-pins-name-cancel]
+       - [data-pins-list] — the cards, each [data-pins-id]
+       - [data-pins-constellation]
+       - [data-pins-foot] holding [data-pins-copy], [data-pins-download],
+         [data-pins-share]
+
+     Remove is TWO PRESSES on the collection, matching
+     _notebook-panel.hbs and for the same reason: someone's own
+     arrangement, no undo. Removing a passage FROM a collection is one
+     press, because that one is reversible — the passage stays in the
+     notebook and can be filed again. --}}
+
+<main class="faith-received faith-feature">
+
+  <section class="bhero bhero--tool">
+    <div class="bhero-inner container">
+      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/pins/">Pins</a></p>
+      <h1>Pins</h1>
+      <p class="bhero-sub">The passages you have kept, gathered into collections, with the relations between them drawn out.</p>
+    </div>
+  </section>
+
+  <section class="bband faith-feature-body faith-pins-band">
+    <div class="container">
+      <div class="research-workspace">
+        <div class="research-workspace-inner" data-pins-root>
+
+          <div class="pins-tabs" data-pins-tabs role="tablist" aria-label="Your collections"></div>
+
+          <div class="pins-head">
+            <p class="pins-count" data-pins-count hidden></p>
+            <div class="pins-bar" data-pins-bar hidden>
+              <button type="button" class="pins-act" data-pins-new>New collection</button>
+              <button type="button" class="pins-act" data-pins-rename>Rename</button>
+              <button type="button" class="pins-act" data-pins-group aria-pressed="false">Group by author</button>
+              <button type="button" class="pins-act" data-pins-link aria-pressed="false">Draw a relation</button>
+              <label class="pins-rel-field">
+                <span class="visually-hidden">How the first passage relates to the second</span>
+                <select class="pins-rel" data-pins-rel>
+                  <option value="parallels">parallels</option>
+                  <option value="supports">supports</option>
+                  <option value="contests">contests</option>
+                  <option value="cites">cites</option>
+                  <option value="expands">expands</option>
+                </select>
+              </label>
+              <button type="button" class="pins-act pins-act-danger" data-pins-delete>Delete collection</button>
+            </div>
+          </div>
+
+          {{!-- A real form rather than window.prompt(), which the
+                original used: prompt cannot be styled, is invisible to
+                the flow of the page for a screen reader, and is blocked
+                outright in some embedded browsers, where the button
+                would simply appear to do nothing. --}}
+          <form class="pins-name-form" data-pins-name-form hidden>
+            <label class="pins-name-label">
+              <span data-pins-name-legend>Name the new collection</span>
+              <input type="text" class="pins-name-input" data-pins-name-input maxlength="60" autocomplete="off" />
+            </label>
+            <button type="submit" class="pins-act pins-act-primary">Save</button>
+            <button type="button" class="pins-act" data-pins-name-cancel>Cancel</button>
+          </form>
+
+          <p class="pins-status" data-pins-status role="status" aria-live="polite"></p>
+
+          {{!-- Working notes for the collection as a whole, distinct
+                from the note on any one passage. Saved on blur: this
+                writes the whole store back, and doing that per
+                keystroke is a stutter on a phone. --}}
+          <div class="pins-memo" data-pins-memo hidden>
+            <label class="pins-memo-label" for="pins-memo-text">Working notes for this collection</label>
+            <textarea id="pins-memo-text" class="pins-memo-text" rows="3" placeholder="What you are assembling here, and why&hellip;"></textarea>
+          </div>
+
+          <div class="pins-list" data-pins-list></div>
+
+          <div class="pins-constellation" data-pins-constellation></div>
+
+          <div class="pins-foot" data-pins-foot hidden>
+            <div class="pins-foot-acts">
+              <button type="button" class="pins-act" data-pins-copy>Copy as Markdown</button>
+              <button type="button" class="pins-act" data-pins-download>Download</button>
+              <button type="button" class="pins-act" data-pins-share>Share as a link</button>
+            </div>
+            <p class="pins-foot-note">Kept in this browser only. Copy or download anything you want to keep. A share link carries the passages and the relations between them, not your working notes.</p>
+            <p class="pins-foot-note"><a href="/the-faith-received/desk/">Open the Desk</a> to write from a collection, or <a href="/the-faith-received/compare/">Compare</a> two authors on a topic.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+{{> "membership-cta"}}
+
+{{!-- The notebook store FIRST, then the collections store, which reads
+     MOFaithNotebook.RELATIONS on its first pass, then the page script,
+     which needs both. Page-template scripts run BEFORE site.min.js
+     (FRONTEND §6.18); the only bundle global any of these touches is
+     window.MOSafeHref, which ships in boot.min.js in <head>. --}}
+<script src="{{asset "js/lib/faith-notebook-store.js"}}"></script>
+<script src="{{asset "js/lib/faith-collections-store.js"}}"></script>
+<script src="{{asset "js/page/faith-pins.js"}}"></script>

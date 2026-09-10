@@ -259,6 +259,22 @@
   margin: 0 auto 12px;
 }
 
+/* Touch widths: the inline action links inside a citation or a card
+   head become real targets. Not done at desktop widths, where a mouse
+   is precise and 44px rows would double the height of every statement
+   in a column. Same split .cn-legend-item makes on the Constellations
+   panel. */
+@media (max-width: 940px) {
+  .cmp-read,
+  .cmp-open-work,
+  .cmp-col-name a,
+  .pins-card-title,
+  .desk-act-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
 @media (max-width: 640px) {
   .faith-tradition-tabs { gap: 16px; padding: 10px 0; }
   .faith-tradition-tab { font-size: 15px; }
@@ -13228,6 +13244,1276 @@ a.cn-row-title { color: var(--color-primary-text); }
   .cn-legend-item { min-height: 44px; }
   .cn-dossier-title { font-size: 20px; }
   .cn-index-list { columns: 1; }
+}
+
+/* ══ Compare, Pins and the Desk ════════════════════════════════════
+   Three research surfaces ported from the corpus owner's own site:
+   /the-faith-received/compare/, /pins/ and /desk/. His interaction
+   models are kept whole; none of his styling is. He ships a second
+   masthead, two Google faces, a "bridge bar" back to this site and an
+   inline :root palette of his own — all of which exist because his
+   pages stand alone, and none of which has any business inside our
+   header.
+
+   So these three read as Faith Received pages: .bhero over a
+   .research-workspace, the body face throughout, and the same
+   hairline-and-white ground the Research desk and Power Search use.
+   Values that appear in both places name what they are matched
+   against, so the two can be kept in step by grep.
+
+   Every colour token below is a real one: --color-white, --color-rule,
+   --color-card-border, --color-dark, --color-muted, --color-secondary,
+   --color-primary-text, --color-darkgrey. (--color-hairline,
+   --color-bg, --color-border and --color-heading do NOT exist and
+   silently kill the whole declaration: MOBILE §6.1.)
+
+   THE DISPLAY FACE IS NOT USED ANYWHERE IN THIS BLOCK. It belongs to
+   <h1>, and the only h1 on any of these pages is the one in the hero,
+   which already has it. */
+
+/* ── The three bands ───────────────────────────────────────────────
+   Zero top padding so the workspace sits directly under the hero, the
+   same shape .bband.faith-research-band has and for the same reason.
+   Two classes so this beats `.bband`'s own 92px. */
+.bband.faith-compare-band,
+.bband.faith-pins-band,
+.bband.faith-desk-band {
+  padding: 0 0 88px;
+  border-top: 0;
+}
+/* The Desk is a workspace rather than a document: it wants the height
+   its three columns need and nothing under it. */
+.bband.faith-desk-band { padding-bottom: 48px; }
+
+/* Shared small type. Every one of these three pages has notes,
+   statuses and empty states, and three copies of the same rule is how
+   they drift apart. */
+.cmp-note,
+.cmp-status,
+.pins-status,
+.desk-status,
+.desk-panel-note,
+.desk-foot-note,
+.pins-foot-note,
+.cmp-caveat {
+  font-family: var(--font-body);
+  font-size: var(--tfr-meta);
+  line-height: 1.5;
+  color: var(--color-muted);
+  margin: 0;
+}
+.cmp-status:empty,
+.pins-status:empty,
+.desk-status:empty { display: none; }
+
+.cmp-empty-lede,
+.pins-empty-lede {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-dark);
+  margin: 0 0 6px;
+}
+.cmp-empty-note,
+.pins-empty-note {
+  font-family: var(--font-body);
+  font-size: var(--tfr-body);
+  line-height: 1.55;
+  color: var(--color-muted);
+  margin: 0;
+}
+.cmp-empty,
+.pins-empty {
+  padding: 28px 0 8px;
+  max-width: 660px;
+}
+
+/* Shared button. Standalone, not chained off `.btn` — `.btn` sets
+   `border: 0` and a pill radius that fight anything a component adds
+   (DESIGN §6.9 / MOBILE §6.3), and `.btn-primary`'s white-on-#ee7d51 is
+   2.73:1, well under AA. Matched to .ps-submit, including the #1a1816
+   hover, which is `.btn-dark:hover`'s own value in screen.css. */
+.cmp-act,
+.pins-act,
+.desk-act,
+.cmp-add-submit,
+.desk-toggle,
+.desk-panel-close {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 6px;
+  background: var(--color-white);
+  color: var(--color-dark);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cmp-act:hover,
+.pins-act:hover,
+.desk-act:hover,
+.cmp-add-submit:hover,
+.desk-toggle:hover,
+.desk-panel-close:hover { border-color: var(--color-dark); }
+.cmp-act:focus-visible,
+.pins-act:focus-visible,
+.desk-act:focus-visible,
+.cmp-add-submit:focus-visible,
+.desk-toggle:focus-visible,
+.desk-panel-close:focus-visible,
+.cmp-topic:focus-visible,
+.pins-tab:focus-visible,
+.desk-doc:focus-visible {
+  outline: 2px solid var(--color-dark);
+  outline-offset: 2px;
+}
+.cmp-act-primary,
+.pins-act-primary,
+.desk-act-primary,
+.cmp-add-submit {
+  border-color: var(--color-dark);
+  background: var(--color-dark);
+  color: var(--color-white);
+}
+.cmp-act-primary:hover,
+.pins-act-primary:hover,
+.desk-act-primary:hover,
+.cmp-add-submit:hover { background: #1a1816; }
+.cmp-act:disabled,
+.pins-act:disabled,
+.desk-act:disabled {
+  color: var(--color-muted);
+  border-color: var(--color-rule);
+  cursor: default;
+}
+/* Delete is the same button with a red word on it, not a red slab: the
+   slab reads as the primary action of the row it sits in. */
+.pins-act-danger,
+.desk-act-danger { color: var(--color-alert-text); }
+
+/* Shared field. Matched to .ps-form's box and focus treatment. */
+.cmp-field,
+.desk-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.cmp-field-label,
+.desk-field-label,
+.cmp-add-label,
+.pins-memo-label {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.cmp-select,
+.cmp-input,
+.desk-select,
+.desk-input,
+.pins-rel,
+.pins-name-input,
+.cmp-add {
+  min-height: 44px;
+  width: 100%;
+  min-width: 0;
+  padding: 0 12px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 6px;
+  background: var(--color-white);
+  color: var(--color-dark);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.4;
+  -webkit-appearance: none;
+  appearance: none;
+}
+/* 16px above, deliberately: iOS Safari zooms the viewport on focus of
+   any control under 16px, and a zoom the reader did not ask for is a
+   layout they then have to pinch back out of (MOBILE §6.6). */
+.cmp-select,
+.desk-select,
+.pins-rel {
+  appearance: auto;
+  -webkit-appearance: auto;
+  padding-right: 8px;
+}
+.cmp-input::-webkit-search-cancel-button,
+.desk-input::-webkit-search-cancel-button,
+.cmp-add::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.cmp-select:focus-visible,
+.cmp-input:focus-visible,
+.desk-select:focus-visible,
+.desk-input:focus-visible,
+.pins-rel:focus-visible,
+.pins-name-input:focus-visible,
+.cmp-add:focus-visible,
+.pins-memo-text:focus-visible,
+.pins-note:focus-visible {
+  outline: 2px solid var(--color-dark);
+  outline-offset: 1px;
+  border-color: var(--color-dark);
+}
+
+/* Every element below that JS toggles with `hidden` ALSO has a display
+   of its own, and a `display: flex` beats the UA's own
+   `[hidden] { display: none }` — so the control bar stayed on screen
+   with nothing to control until this block existed. The same trap the
+   .ask-usage rows hit; noted at [data-research-panel][hidden] above. */
+.cmp-tools[hidden],
+.cmp-add-form[hidden],
+.pins-tabs[hidden],
+.pins-bar[hidden],
+.pins-name-form[hidden] { display: none; }
+
+/* ══ Compare ══════════════════════════════════════════════════════ */
+
+/* ── The author bar ───────────────────────────────────────────────
+   Chips first, then the control that adds another: the set being
+   compared is what the whole screen is about, so it is the first thing
+   in it and the first thing that changes when the reader acts. */
+.cmp-authorbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+  margin: 0 0 20px;
+}
+.cmp-authors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+.cmp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 4px 0 14px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 999px;
+  background: var(--color-white);
+}
+/* inline-flex with the chip's own min-height, so the whole chip is the
+   link rather than a 24px band of text inside a 44px pill. */
+.cmp-chip-name {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-dark);
+  text-decoration: none;
+}
+.cmp-chip-name:hover { text-decoration: underline; }
+.cmp-chip-when {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+}
+/* A full 44 square. It removes an author and there is no undo short of
+   adding them back and waiting for the fetches again, so it does not
+   get to be the one control on the page that is harder to hit than the
+   rest (MOBILE M4). */
+.cmp-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-muted);
+  font-family: var(--font-body);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.cmp-chip-remove:hover { background: var(--color-cream); color: var(--color-dark); }
+.cmp-chip-remove:focus-visible { outline: 2px solid var(--color-dark); outline-offset: 1px; }
+
+.cmp-add-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+.cmp-add-label { display: block; width: 100%; margin: 0 0 2px; }
+.cmp-add { width: 240px; max-width: 100%; }
+
+.cmp-examples {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+.cmp-examples a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-body);
+  font-size: var(--tfr-body);
+  color: var(--color-primary-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cmp-examples a:hover { color: var(--color-dark); }
+
+/* ── The tools ────────────────────────────────────────────────────
+   No flex-basis anywhere in this row — MOBILE §6.13, a px basis becomes
+   a HEIGHT the moment the block below flips it to a column. */
+.cmp-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+  margin: 0 0 24px;
+  padding: 16px;
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
+  background: var(--color-white);
+}
+.cmp-field-wide { flex: 1 1 220px; }
+.cmp-tool-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* ── The topics ───────────────────────────────────────────────────
+   The union of the chosen authors' topics as a grid of tiles, each
+   carrying every author's count. A tile rather than a row because the
+   counts are the comparison: four numbers side by side say "both of
+   them treat this heavily, only one treats that" at a glance, which a
+   list of labels cannot. */
+.cmp-topics-fold {
+  margin: 0 0 24px;
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
+  background: var(--color-white);
+}
+.cmp-topics-summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  cursor: pointer;
+  list-style: none;
+}
+.cmp-topics-summary::-webkit-details-marker { display: none; }
+.cmp-topics-summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-left: 10px;
+  border-right: 1.5px solid var(--color-muted);
+  border-bottom: 1.5px solid var(--color-muted);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.15s;
+}
+.cmp-topics-fold[open] > .cmp-topics-summary::after { transform: rotate(-135deg) translateY(-2px); }
+.cmp-topics-summary:focus-visible { outline: 2px solid var(--color-dark); outline-offset: -2px; }
+.cmp-topics-title {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+.cmp-topics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+.cmp-topic {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 6px;
+  background: var(--color-white);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.cmp-topic:hover { border-color: var(--color-dark); }
+.cmp-topic.is-active {
+  border-color: var(--color-dark);
+  box-shadow: inset 0 0 0 1px var(--color-dark);
+}
+/* A topic only some of the chosen authors treat. Dimmed, never hidden:
+   "Calvin has forty statements here and Aquinas none" is a real finding
+   and removing the row would delete it. */
+.cmp-topic-partial { border-style: dashed; }
+.cmp-topic-label {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-dark);
+}
+.cmp-topic-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+}
+.cmp-topic-count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+.cmp-topic-count i {
+  font-style: normal;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* 11ch cut "Augustine of Hippo" to "Augustine of …", which names
+     nobody. 18ch clears the long Latin names; four authors then make
+     the tile taller rather than the labels useless. */
+  max-width: 18ch;
+}
+.cmp-topic-count b {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.cmp-topic-head { margin: 0 0 16px; }
+.cmp-topic-head:focus { outline: none; }
+.cmp-topic-title {
+  font-family: var(--font-body);
+  font-size: var(--tfr-display-s);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-dark);
+  margin: 0 0 4px;
+}
+
+/* ── The columns ──────────────────────────────────────────────────
+   One per author, oldest first, so left-to-right reads as a reception
+   history. --cmp-cols is set from JS because only the script knows
+   whether there are one or four. */
+.cmp-columns {
+  display: grid;
+  grid-template-columns: repeat(var(--cmp-cols, 2), minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+.cmp-col {
+  min-width: 0;
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
+  background: var(--color-white);
+  padding: 16px;
+}
+.cmp-col-head { margin: 0 0 8px; }
+.cmp-col-name {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0 0 2px;
+}
+.cmp-col-name a { color: var(--color-dark); text-decoration: none; }
+.cmp-col-name a:hover { text-decoration: underline; }
+.cmp-progress {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  line-height: 1.45;
+  color: var(--color-muted);
+  margin: 0 0 12px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.cmp-work { border-bottom: 1px solid var(--color-rule); }
+.cmp-work:last-of-type { border-bottom: 0; }
+.cmp-work-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 0;
+  cursor: pointer;
+  list-style: none;
+}
+.cmp-work-head::-webkit-details-marker { display: none; }
+.cmp-work-head:focus-visible { outline: 2px solid var(--color-dark); outline-offset: -2px; }
+.cmp-work-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-dark);
+}
+.cmp-work-sub,
+.cmp-work-n {
+  flex: 0 0 auto;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+}
+.cmp-work-body { padding: 0 0 12px; }
+.cmp-statement { margin: 0 0 16px; }
+.cmp-statement:last-child { margin-bottom: 0; }
+/* No ❦. The ornament on .faith-received blockquote is decorative and
+   belongs to a reading page; forty of them down one column is noise.
+   Reset explicitly rather than hoped away. */
+.cmp-quote {
+  margin: 0 0 6px;
+  padding: 0 0 0 12px;
+  border-left: 2px solid var(--color-card-border);
+  font-family: var(--font-body);
+  font-size: var(--tfr-body);
+  font-style: normal;
+  line-height: 1.5;
+  color: var(--color-dark);
+}
+.cmp-quote::before { content: none; }
+.cmp-gloss {
+  margin: 0 0 6px;
+  font-family: var(--font-body);
+  font-size: var(--tfr-meta);
+  line-height: 1.5;
+  color: var(--color-darkgrey);
+}
+.cmp-cite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+}
+.cmp-cite-work { font-style: italic; }
+/* The stance is data, not a verdict: "reports" means the author is
+   relaying someone else's view. Set as a quiet label rather than a
+   coloured badge, which would read as a judgement the extraction is
+   not making. */
+.cmp-stance {
+  padding: 1px 6px;
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+.cmp-read,
+.cmp-open-work {
+  color: var(--color-primary-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cmp-read:hover,
+.cmp-open-work:hover { color: var(--color-dark); }
+.cmp-open-work {
+  display: inline-block;
+  margin: 4px 0 0;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+}
+
+/* ── Saved comparisons ──────────────────────────────────────────── */
+.cmp-saved {
+  margin: 32px 0 0;
+  border-top: 1px solid var(--color-rule);
+}
+.cmp-saved-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+}
+.cmp-saved-summary::-webkit-details-marker { display: none; }
+.cmp-saved-summary:focus-visible { outline: 2px solid var(--color-dark); outline-offset: -2px; }
+.cmp-saved-title {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+.cmp-saved-count {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+}
+.cmp-saved-body { padding: 0 0 16px; }
+.cmp-saved-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-rule);
+}
+.cmp-saved-row.is-active { padding-left: 10px; border-left: 2px solid var(--color-dark); }
+.cmp-saved-name {
+  font-family: var(--font-body);
+  font-size: var(--tfr-body);
+  font-weight: 600;
+  color: var(--color-dark);
+  text-decoration: none;
+}
+.cmp-saved-name:hover { text-decoration: underline; }
+.cmp-saved-meta {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+}
+.cmp-saved-remove {
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary-text);
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.cmp-saved-remove:hover { color: var(--color-dark); }
+.cmp-saved-remove:focus-visible { outline: 2px solid var(--color-dark); outline-offset: 1px; }
+
+.cmp-caveat {
+  margin: 32px 0 0;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--color-rule);
+  max-width: 660px;
+}
+
+/* ══ Pins ═════════════════════════════════════════════════════════ */
+
+/* ── The collection strip ─────────────────────────────────────────
+   Horizontal scroll rather than wrap, matching .faith-search-modes:
+   a reader with nine collections gets one line that scrolls, not four
+   lines that push the cards off the first screen. */
+.pins-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--color-rule);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.pins-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 6px;
+  background: var(--color-white);
+  cursor: pointer;
+}
+.pins-tab:hover { border-color: var(--color-dark); }
+.pins-tab.is-active { border-color: var(--color-dark); background: var(--color-dark); }
+.pins-tab.is-active .pins-tab-name,
+.pins-tab.is-active .pins-tab-n { color: var(--color-white); }
+/* The unfiled group is a VIEW, not a stored collection, so it is drawn
+   as one: dashed, to say it is not a thing the reader made. */
+.pins-tab-unfiled { border-style: dashed; }
+.pins-tab-name {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+.pins-tab-n {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+}
+
+.pins-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 16px;
+}
+.pins-count {
+  font-family: var(--font-body);
+  font-size: var(--tfr-meta);
+  color: var(--color-muted);
+  margin: 0;
+}
+.pins-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.pins-rel-field { display: inline-flex; }
+.pins-rel { width: auto; min-width: 130px; }
+
+.pins-name-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 16px;
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
+  background: var(--color-white);
+}
+.pins-name-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 220px;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.pins-memo { margin: 0 0 20px; }
+.pins-memo-label { display: block; margin: 0 0 4px; }
+.pins-memo-text,
+.pins-note {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 6px;
+  background: var(--color-white);
+  color: var(--color-dark);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+/* ── The cards ────────────────────────────────────────────────────
+   One column, not a masonry of tiles. These are passages with a
+   citation and a note under each, and the thing a reader does here is
+   read down them in the order they arranged. */
+.pins-list { display: flex; flex-direction: column; gap: 16px; }
+.pins-card {
+  padding: 16px;
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
+  background: var(--color-white);
+}
+.pins-card.is-linkable { cursor: pointer; border-color: var(--color-primary-text); }
+.pins-card.is-linking { box-shadow: inset 0 0 0 2px var(--color-dark); }
+.pins-card-head { margin: 0 0 4px; }
+.pins-card-title {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-dark);
+  text-decoration: none;
+}
+.pins-card-title:hover { text-decoration: underline; }
+.pins-card-meta {
+  margin: 0 0 10px;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+}
+.pins-card-text {
+  margin: 0 0 10px;
+  padding: 0 0 0 12px;
+  border-left: 2px solid var(--color-card-border);
+  font-family: var(--font-body);
+  font-size: var(--tfr-body);
+  font-style: normal;
+  line-height: 1.55;
+  color: var(--color-dark);
+}
+.pins-card-text::before { content: none; }
+.pins-note-field { display: block; margin: 0 0 10px; }
+.pins-card-acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.pins-file { min-height: 44px; min-width: 200px; }
+.pins-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 20px 0 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.pins-group-n { font-size: var(--tfr-micro); font-weight: 400; }
+
+/* ── The constellation ────────────────────────────────────────────
+   The ring is aria-hidden and the rows beneath carry the same
+   information as text, which is the part that is actually readable
+   with a screen reader and the part that survives a narrow screen. */
+.pins-constellation:empty { display: none; }
+.pins-constellation {
+  margin: 32px 0 0;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--color-rule);
+}
+.pins-cons-title {
+  font-family: var(--font-body);
+  font-size: var(--tfr-display-s);
+  font-weight: 600;
+  color: var(--color-dark);
+  margin: 0 0 12px;
+}
+.pins-cons-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 640px;
+  margin: 0 0 16px;
+}
+.pins-cons-line { stroke: var(--color-card-border); stroke-width: 1.4; }
+.pins-cons-node { fill: var(--color-dark); }
+.pins-cons-text {
+  fill: var(--color-muted);
+  font-family: var(--font-body);
+  font-size: 10.5px;
+}
+.pins-cons-list { list-style: none; margin: 0; padding: 0; }
+.pins-cons-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-rule);
+  font-family: var(--font-body);
+  font-size: var(--tfr-meta);
+  color: var(--color-dark);
+}
+.pins-cons-end { flex: 1 1 160px; min-width: 0; }
+.pins-cons-rel {
+  flex: 0 0 auto;
+  padding: 1px 8px;
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+}
+
+.pins-foot {
+  margin: 32px 0 0;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--color-rule);
+}
+.pins-foot-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.pins-foot-note { margin: 0 0 6px; max-width: 660px; }
+.pins-foot-note a { color: var(--color-primary-text); text-decoration: underline; text-underline-offset: 2px; }
+.pins-foot-note a:hover { color: var(--color-dark); }
+
+/* ══ The Desk ═════════════════════════════════════════════════════ */
+
+/* The Desk breaks the 1180px workspace measure on purpose: it is three
+   columns rather than a reading column, and the middle one still holds
+   its own measure below. */
+.desk {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 28px 32px;
+}
+.desk-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--color-rule);
+}
+.desk-title-field { flex: 1 1 auto; min-width: 0; }
+.desk-title {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-dark);
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.desk-title:hover { border-color: var(--color-card-border); }
+.desk-title:focus-visible {
+  outline: 2px solid var(--color-dark);
+  outline-offset: 1px;
+  border-color: var(--color-dark);
+}
+.desk-title::placeholder { color: var(--color-muted); font-weight: 400; }
+.desk-words {
+  flex: 0 0 auto;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.desk-status { margin: 0 0 12px; }
+
+.desk-body {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 300px;
+  gap: 20px;
+  align-items: start;
+}
+.desk-panel {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
+  background: var(--color-white);
+}
+.desk-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.desk-panel-title {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 0;
+}
+/* Only shown when the panel is an overlay: on a wide screen there is
+   nothing to close. */
+.desk-panel-close { display: none; padding: 0 10px; }
+.desk-panel-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--color-rule);
+}
+.desk-panel-note { margin: 16px 0 0; }
+.desk-panel-note a { color: var(--color-primary-text); text-decoration: underline; text-underline-offset: 2px; }
+.desk-panel-note a:hover { color: var(--color-dark); }
+
+.desk-doc-list { display: flex; flex-direction: column; gap: 4px; margin: 12px 0 0; }
+.desk-doc {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.desk-doc:hover { border-color: var(--color-card-border); }
+.desk-doc.is-active { border-color: var(--color-dark); background: var(--color-cream); }
+.desk-doc-title {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-dark);
+}
+.desk-doc-date {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+}
+
+/* ── The draft ────────────────────────────────────────────────────
+   The one place on these three pages that is a reading measure. */
+.desk-editor-wrap { min-width: 0; }
+.desk-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--color-rule);
+}
+.desk-tool {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 6px;
+  background: var(--color-white);
+  color: var(--color-dark);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.desk-tool:hover { border-color: var(--color-dark); }
+.desk-tool:focus-visible { outline: 2px solid var(--color-dark); outline-offset: 2px; }
+.desk-editor {
+  min-height: 60vh;
+  max-width: 660px;
+  padding: 8px 0;
+  font-family: var(--font-body);
+  font-size: var(--fr-size, 18px);
+  line-height: var(--fr-lead, 1.62);
+  color: var(--color-dark);
+}
+.desk-editor:focus-visible { outline: 2px solid var(--color-dark); outline-offset: 6px; }
+.desk-editor:empty::before {
+  content: "Start writing, or insert a passage from the rail beside you.";
+  color: var(--color-muted);
+}
+.desk-editor h2 { font-size: var(--tfr-display-s); font-weight: 600; margin: 28px 0 10px; }
+.desk-editor h3 { font-size: 20px; font-weight: 600; margin: 24px 0 8px; }
+.desk-editor p { margin: 0 0 16px; }
+.desk-editor ul { margin: 0 0 16px; padding-left: 22px; }
+/* The inserted quotation. No ❦ here either: this is a citation block
+   inside someone's own draft, and the ornament belongs to a published
+   reading page. */
+.desk-editor blockquote {
+  margin: 0 0 16px;
+  padding: 2px 0 2px 16px;
+  border-left: 2px solid var(--color-card-border);
+  font-style: normal;
+}
+.desk-editor blockquote::before { content: none; }
+.desk-editor blockquote p { margin: 0 0 6px; }
+.desk-editor cite {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  font-style: normal;
+  color: var(--color-muted);
+}
+.desk-editor cite a { color: var(--color-primary-text); }
+.desk-savestate {
+  margin: 12px 0 0;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+}
+
+/* ── The research rail ────────────────────────────────────────── */
+.desk-rail .desk-field { margin: 0 0 12px; }
+.desk-rail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.desk-item {
+  padding: 12px;
+  border: 1px solid var(--color-rule);
+  border-radius: 6px;
+  background: var(--color-white);
+}
+.desk-item-cite {
+  margin: 0 0 6px;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  font-weight: 600;
+  color: var(--color-muted);
+}
+.desk-item-text {
+  margin: 0 0 6px;
+  font-family: var(--font-body);
+  font-size: var(--tfr-meta);
+  line-height: 1.5;
+  color: var(--color-dark);
+  /* Four lines, then it stops. The rail is a place to FIND a passage,
+     not to read it; the whole text goes into the draft on insert and
+     the source link opens the real thing. */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.desk-item-note {
+  margin: 0 0 6px;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  font-style: italic;
+  color: var(--color-muted);
+}
+.desk-item-acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.desk-item-acts .desk-act { padding: 0 10px; font-size: 13px; }
+.desk-act-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+.desk-empty {
+  font-family: var(--font-body);
+  font-size: var(--tfr-meta);
+  line-height: 1.5;
+  color: var(--color-muted);
+  margin: 0;
+}
+.desk-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  border: 0;
+  padding: 0;
+  background: rgba(28, 28, 26, 0.45);
+  cursor: pointer;
+}
+.desk-foot-note {
+  margin: 24px 0 0;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--color-rule);
+  max-width: 660px;
+}
+
+/* ── Breakpoints ──────────────────────────────────────────────────
+   1160: the papers rail becomes an overlay. 940: so does research, and
+   the comparison columns start scrolling sideways rather than being
+   crushed. 640/375: everything is one column.
+
+   The rails overlay rather than stack because the draft is what this
+   page is for. A rail that pushed it down the page would mean scrolling
+   past your own research to reach your own sentence. */
+@media (max-width: 1160px) {
+  .desk-body { grid-template-columns: minmax(0, 1fr) 300px; }
+  .desk-panel-close { display: inline-flex; }
+  .desk-docs {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 50;
+    width: min(320px, 86vw);
+    border-radius: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transform: translateX(-101%);
+    transition: transform 0.18s ease-out;
+  }
+  .desk-docs.is-open { transform: translateX(0); }
+}
+@media (max-width: 940px) {
+  .desk-body { grid-template-columns: minmax(0, 1fr); }
+  .desk-rail {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 50;
+    width: min(340px, 90vw);
+    border-radius: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transform: translateX(101%);
+    transition: transform 0.18s ease-out;
+  }
+  .desk-rail.is-open { transform: translateX(0); }
+  .desk-rail-body { max-height: none; }
+  .desk { padding: 20px 20px 28px; }
+  .desk-editor { min-height: 50vh; }
+
+  /* The comparison columns start scrolling sideways here rather than
+     shrinking further. Two 300px columns fit; three or four do not, and
+     the alternative — stacking four authors down the page — destroys
+     the one thing the screen exists to do, which is to let two
+     statements be read against each other without scrolling between
+     them. The scroll is INSIDE this container, so the page body never
+     scrolls horizontally. */
+  .cmp-columns {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 8px;
+  }
+  .cmp-col {
+    flex: 0 0 min(86vw, 360px);
+    scroll-snap-align: start;
+  }
+}
+@media (max-width: 640px) {
+  .bband.faith-compare-band,
+  .bband.faith-pins-band { padding-bottom: 56px; }
+  .cmp-tools { padding: 12px; }
+  .cmp-tool-acts { margin-left: 0; width: 100%; }
+  .cmp-act,
+  .pins-act,
+  .desk-act { flex: 1 1 auto; }
+  .cmp-topics { grid-template-columns: 1fr; padding: 0 12px 12px; }
+  .cmp-add { width: 100%; }
+  .cmp-add-form { width: 100%; }
+  .pins-head { flex-direction: column; align-items: stretch; }
+  .pins-bar { width: 100%; }
+  .pins-rel { width: 100%; }
+  .pins-rel-field { flex: 1 1 100%; }
+  .desk { padding: 16px 16px 24px; }
+  .desk-bar { flex-wrap: wrap; }
+  .desk-title-field { order: 3; flex: 1 1 100%; }
+  .desk-words { order: 2; margin-left: auto; }
+}
+@media (max-width: 375px) {
+  /* 18px apart rather than 8: at this width these wrap to one per line
+     and adjacent targets that close together are a mis-tap (MOBILE M4).
+     Matched to the .cn-legend rule above, which solves the same
+     problem on the Constellations panel. */
+  .cmp-tool-acts,
+  .pins-bar,
+  .pins-foot-acts { gap: 10px; }
+  .cmp-col { flex-basis: 88vw; }
+  .desk-toolbar { gap: 6px; }
 }
 
 /* ── The display face is for <h1> only ─────────────────────────────────
