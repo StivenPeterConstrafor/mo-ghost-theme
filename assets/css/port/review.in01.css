@@ -1242,8 +1242,10 @@ html[data-theme="dark"] .seg button[aria-pressed=true],html[data-theme="dark"] .
   .app:not(.only-en):not(.only-la) .row .en{order:2}
   .app:not(.only-en):not(.only-la) .row .la{order:1;font-size:calc(.97em * var(--lasz,1))}
   .app:not(.only-en):not(.only-la) #reading{font-size:var(--rdszm,clamp(13px,3.5vw,15px))!important}
-  /* display heads are titles, not prose lanes — they take the full width, Latin over English */
-  .app:not(.only-en):not(.only-la) .row.rhead{grid-template-columns:1fr}
+  /* one-sided display heads take the full width; PAIRED heads keep their
+     two columns — never Latin stacked over English (owner 2026-09-10:
+     'no stacking of headings') */
+  .app:not(.only-en):not(.only-la) .row.rhead:not(.hpair){grid-template-columns:1fr}
   .app:not(.only-en):not(.only-la) .row.rhead .csub{grid-column:1;max-width:100%}
   .row.rhead .csub .hla,.row.rhead .csub .hen{overflow-wrap:break-word}
   .ph h1{font-size:1.02rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58vw}
