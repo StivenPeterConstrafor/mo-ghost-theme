@@ -227,7 +227,14 @@ function draw(){
     ctx.strokeStyle=style;ctx.lineWidth=lw;
     ctx.beginPath();ctx.moveTo(x1,y1);
     ctx.quadraticCurveTo((x1+x2)/2,(y1+y2)/2-(x2-x1)*0.07,x2,y2);ctx.stroke();};
-  if(EGO!=null&&NOUT.length){
+  // A JOURNEY draws the current author's own threads in the direction being followed (owner 2026-09-10 "follow
+  // sources should be exactly like follow reception": the old ambient fallback happened to include a reader's
+  // edges and none of a source's). Sources in amber, reception in verdigris, exactly as the focus view.
+  const JD=(PATHV&&PATHV.length&&window.__JDIR&&NOUT.length)?{i:PATHV[PATHV.length-1],dir:window.__JDIR}:null;
+  if(JD){ctx.lineWidth=.8;
+    if(JD.dir!=='in')NOUT[JD.i].slice(0,120).forEach(k=>{const nb=NODES[EDGES[k][1]];if(dimmed(nb))return;edge(k,graphColor(GRAPH_SOURCE,.8),1.2);});
+    if(JD.dir!=='out')NIN[JD.i].slice(0,120).forEach(k=>{const na=NODES[EDGES[k][0]];if(dimmed(na))return;edge(k,graphColor(GRAPH_RECEPTION,.8),1.2);});
+  }else if(EGO!=null&&NOUT.length){
     // the star's own web, directional: whom he DRAWS ON in amber, who RECEIVED him in verdigris
     ctx.lineWidth=.8;
     NOUT[EGO].slice(0,80).forEach(k=>{const nb=NODES[EDGES[k][1]];if(dimmed(nb))return;
@@ -428,7 +435,7 @@ $("#shsel").addEventListener("change",e=>{scopeShelf(e.target.value);});
 /* ── the paper panel ────────────────────────────────────────────────────────── */
 const panel=$("#panel"),pbody=$("#pbody");
 function openPanel(t,sub){$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");panel.inert=false;const key=location.hash.slice(1).split("=")[0],mode=({v:"verse",t:"topic",p:"path",paths:"path",topics:"topic",shelves:"shelves"})[key]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));$("#pt").innerHTML=t;$("#ps").innerHTML=sub||"";panel.classList.add("open");document.body.classList.add("popen");requestAnimationFrame(resize);$("#pt").focus({preventScroll:true});renderAuthorIndex();}
-$("#px").onclick=()=>{$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;draw();
+$("#px").onclick=()=>{$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;draw();
   history.pushState(null,"","#");$("#map-title").textContent="The citation network";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m==="sky"));fitNodes(NODES.filter(n=>!hidden(n)).map(n=>n.i));renderAuthorIndex();requestAnimationFrame(resize);restoreExplorerFocus();};
 const shard=s=>gz(BLOB+"/v1/reception/"+s+".json.gz");
 let _COMMS=null;
@@ -455,7 +462,7 @@ async function openAuthor(slug,push=true){
   // the sky TRAVELS to a found star (owner 2026-08-29 'fix how the search bar works'):
   // a search means 'take me there' · center the century window and the vertical band
   fitNodes([n.i,...ADJ[n.i].slice().sort((a,b)=>b[1]-a[1]).slice(0,60).map(x=>x[0])]);
-  FOCUS=n.i;SUBSET=null;PATHV=null;draw();
+  FOCUS=n.i;SUBSET=null;PATHV=null;window.__JDIR=null;draw();
   if(push)history.pushState(null,"","#a="+slug);
   // SIGNED GRAPH (2026-09-02): a star whose received citations are largely refutations
   // is a battleground, not an authority · say so where the reader first looks
@@ -596,7 +603,7 @@ async function openJourney(chain,direction='in',options={}){
  // the map keeps the current author's neighbourhood in the chosen direction (owner 2026-09-10 "why does web disappear
  // when I click follow sources": the chain alone was one point). The chain stays the highlighted path.
  PATHV=nodes.map(n=>n.i);window.__CHAIN=chain;FOCUS=null;
- const showAround=sel=>{const rows=[];for(const e of EDGES){if(e[0]===current.i&&sel!=='in')rows.push([e[1],e[2]]);if(e[1]===current.i&&sel!=='out')rows.push([e[0],e[2]]);}const around=rows.sort((a,b)=>b[1]-a[1]).slice(0,80).map(x=>x[0]);SUBSET=new Set([...PATHV,...around]);fitNodes([...SUBSET]);draw();};
+ const showAround=sel=>{window.__JDIR=sel;const rows=[];for(const e of EDGES){if(e[0]===current.i&&sel!=='in')rows.push([e[1],e[2]]);if(e[1]===current.i&&sel!=='out')rows.push([e[0],e[2]]);}const around=rows.sort((a,b)=>b[1]-a[1]).slice(0,80).map(x=>x[0]);SUBSET=new Set([...PATHV,...around]);fitNodes([...SUBSET]);draw();};
  showAround(direction);
  openPanel('Citation journey',mode+' · '+current.a);
  pbody.innerHTML=`<div class="ce-journey"><p>${direction==='in'?'Each next author cites the preceding author.':direction==='out'?'Each next author is cited by the preceding author.':'This route can alternate citation directions; each step states who cites whom.'} These are documented references, not a verified chain of identical quotations.</p><ol class="ce-chain">${nodes.map((n,i)=>`<li><a href="${journeyURL(chain.slice(0,i+1),direction,work,targetWork)}">${esc(n.a)}</a><small>${esc(ERAL[n.e]||'Period not supplied')}${n.sh?' · '+esc(SHN[n.sh]||n.sh):''}</small></li>`).join('')}</ol><p class="ce-note">Period labels orient the authors. They are not dates of composition or publication.</p><div class="ce-path-steps">${steps.map((step,i)=>`<details class="ce-journey-step" data-journey-step="${i}"${i===steps.length-1?' open':''}><summary>${i+1}. ${esc(step.citing.a)} cites ${esc(step.target.a)}</summary><div class="ce-step-body"><p class="ce-note">Open this step to read its recorded references.</p></div></details>`).join('')}</div>${steps.length?'<button class="ce-save-path" disabled>Save selected journey</button><p class="ce-journey-feedback" id="journey-selection" role="status">Select source passages within a step to save this journey.</p>':''}<h3>Continue from ${esc(current.a)}</h3><label>Follow a direction<select id="journey-direction"><option value="in">Reception: authors who cite this author</option><option value="out">Sources: authors cited by this author</option><option value="either">Connections in either direction</option></select></label><label>Find the next author<input type="search" id="journey-query" placeholder="Filter recorded connections"></label><p class="ce-journey-feedback" id="journey-next-count" role="status"></p><div class="ce-next-list"></div><button class="ce-next-more" hidden>Show more authors</button><details class="ce-branch-history"><summary>Recently explored branches</summary><div></div></details></div>`;
@@ -622,7 +629,7 @@ async function openJourney(chain,direction='in',options={}){
 async function openTopic(slug,push=true){
  const token=++__PSEQ;if(push)history.pushState(null,'','#t='+encodeURIComponent(slug));openPanel('Topic connections','Loading available evidence…');pbody.innerHTML='<p class="loading" role="status">Loading topic…</p>';
  const d=await J(BLOB+'/v1/mine/topic2-all/'+slug+'.json').catch(()=>null);if(token!==__PSEQ)return;if(!d){pbody.innerHTML='<p class="index-note">This topic could not load.</p><button class="pbtn" id="topic-retry">Retry topic</button><a class="pbtn" href="/the-faith-received/topics/">Browse topics</a>';$('#topic-retry').onclick=()=>openTopic(slug,false);return;}
- const voices=FRResearch.voices(d),mapped=voices.map(r=>BYS[r.s]||NODES.find(n=>n.a===r.a)).filter(Boolean);SUBSET=new Set(mapped.map(n=>n.i));FOCUS=null;PATHV=null;draw();
+ const voices=FRResearch.voices(d),mapped=voices.map(r=>BYS[r.s]||NODES.find(n=>n.a===r.a)).filter(Boolean);SUBSET=new Set(mapped.map(n=>n.i));FOCUS=null;PATHV=null;window.__JDIR=null;draw();
  openPanel(esc(d.t),fmt(d.n_pages)+' indexed pages · '+fmt(d.n_pos)+' recorded positions');
  pbody.innerHTML=`${FRResearch.isRawTopic(d.t)?'<p class="index-note">This is an unreviewed extraction label. Its passages remain available, but the label is not an established topic.</p>':''}<p class="index-note">${fmt((d.pos||[]).length)} excerpts are available here. The map shows citation links among ${mapped.length} contributors with graph records; it does not show agreement about ${esc(d.t)}.</p><a class="pbtn warm" href="/the-faith-received/topics/#${encodeURIComponent(d.s||slug)}">Compare authors and explore this topic</a><label class="web-topic-search">Search available passages<input id="web-topic-evidence-q" type="search" placeholder="Author, work, or phrase"></label><p id="web-topic-evidence-count" role="status"></p><div id="web-topic-evidence" class="web-pane"></div><details class="web-topic-contributors"><summary>Browse ${voices.length} contributing authors</summary><label>Find a contributor<input id="web-topic-author-q" type="search" placeholder="Search contributors"></label><div id="web-topic-contributors" class="web-pane"></div></details>`;
  const render=()=>{const q=$('#web-topic-evidence-q').value.trim().toLowerCase(),rows=(d.pos||[]).filter(r=>!q||[r.a,r.wt,r.q].join(' ').toLowerCase().includes(q));$('#web-topic-evidence-count').textContent=rows.length+' available excerpts';$('#web-topic-evidence').innerHTML=rows.map(r=>`<article class="quote"><p class="q">${esc(r.q||'')}</p><div class="m"><strong>${esc(r.a||'')}</strong><span>${esc(r.wt||r.w||'')}</span>${r.w?`<a href="${FRScripture.readerURL(r.w,r.p)}">Read passage${r.p!=null?' · '+esc(r.p):''}</a>${saveBtn(r.w,r.p,r.wt||r.w,r.a,r.q)}`:''}</div>${r.w?FRShelfMap.previewHTML(FRScripture.readerURL(r.w,r.p)):''}</article>`).join('')||'<p class="index-note">No matching excerpts. Try another phrase.</p>';FRShelfMap.bindPreviews($('#web-topic-evidence'));};$('#web-topic-evidence-q').oninput=render;render();
@@ -640,7 +647,7 @@ async function openVerse(book,ch,push=true){
   if(token!==__PSEQ)return;
   const seen=new Map();(d.verses||[]).forEach(v=>(v.rows||[]).forEach(r=>{const cur=seen.get(r.a)||{a:r.a,n:0};cur.n++;seen.set(r.a,cur);}));
   const names=[...seen.values()],slugged=names.map(r=>NODES.find(n=>n.a===r.a)?.i).filter(i=>i!=null);
-  SUBSET=new Set(slugged);FOCUS=null;PATHV=null;draw();
+  SUBSET=new Set(slugged);FOCUS=null;PATHV=null;window.__JDIR=null;draw();
   const books=BOOKS?.books||[],B=books.find(b=>b.slug===book),chapters=B?.chapters||[];
   const controls=`<div class="web-scripture-nav"><label>Book<select id="pkb" class="pk">${books.map(b=>`<option value="${esc(b.slug)}"${b.slug===book?' selected':''}>${esc(b.book)}</option>`).join('')}</select></label><label>Chapter<select id="pkc" class="pk">${chapters.map(x=>`<option value="${x.c}"${x.c===+ch?' selected':''}>${x.c}</option>`).join('')}</select></label></div>`;
   openPanel(`${esc(d.book)} ${ch}`,`${names.length} authors in the indexed passages · ${slugged.length} shown on the graph`);
@@ -710,7 +717,7 @@ async function openTopicIndex(push=true){
 
 function route(){
   const h=location.hash.slice(1);const kind=h.split("=")[0],mode=({v:"verse",t:"topic",topics:"topic",shelves:"shelves",paths:"path",p:"path",journey:"path"})[kind]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));
-  if(!h){$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;renderAuthorIndex();requestAnimationFrame(resize);draw();return;}
+  if(!h){$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;renderAuthorIndex();requestAnimationFrame(resize);draw();return;}
   if(h==="shelves"||h.startsWith("shelves=")){const [sh,kind]=(h.split("=")[1]||"english-divines/authors").split("/");openShelfMaps(decodeURIComponent(sh),kind||"authors",false);return;}
   if(h.startsWith('journey=')){const [path,query='']=h.slice(8).split('?'),params=new URLSearchParams(query);openJourney(path.split(',').filter(Boolean).map(decodeURIComponent),params.get('direction')||'in',{work:params.get('work')||'',targetWork:params.get('targetWork')||'',push:false});return;}
   if(h==="paths"){openPathPicker(false);return;}if(h==="topics"){openTopicIndex(false);return;}
