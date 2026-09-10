@@ -3459,7 +3459,7 @@ function build(){
         ]);
         const ws=FRReaderNavigation.catalogue(d,te,confs?.confessions||[]);if(confs)window.__WORKSLIST=ws;go(ws);
         if(!confs&&box.isConnected){list.insertAdjacentHTML('afterbegin','<p class="nl-msg">The confession catalogue could not load. <button type="button" class="nl-retry">Retry loading</button></p>');list.querySelector('.nl-retry').onclick=load;}
-      }catch(error){if(!box.isConnected)return;list.innerHTML='<div class="nl-msg" role="status">The library could not load. <button type="button" class="nl-retry">Retry loading</button> <a href="/the-faith-received/">Open library</a></div>';list.querySelector('.nl-retry').onclick=load;}
+      }catch(error){if(!box.isConnected)return;list.innerHTML='<div class="nl-msg" role="status">The library could not load. <button type="button" class="nl-retry">Retry loading</button> <a href="/the-faith-received/library/">Open library</a></div>';list.querySelector('.nl-retry').onclick=load;}
     };load();
   }
   // Confessions can carry chapter rubrics in the text that their brief metadata outline omits.
@@ -6596,7 +6596,7 @@ async function loadWork(ws){
       const ph=document.querySelector(".ph");if(ph)ph.appendChild(b);
     }}).catch(()=>{});
   }
-  if(!ws){$("#reading").innerHTML='<div class="loading">No work specified. <a href="/the-faith-received/">Return to the library.</a></div>';return;}
+  if(!ws){$("#reading").innerHTML='<div class="loading">No work specified. <a href="/the-faith-received/library/">Return to the library.</a></div>';return;}
   try{ws=await resolveAlias(ws);DATA=await loadWork(ws);
   // TEI-only exports (scholarios/calvin class 2026-08-18) arrive with ZERO pages here —
   // loadTEI() synthesizes the folio skeleton from the sidecar's <pb>s, so only bail
@@ -6713,4 +6713,4 @@ async function loadWork(ws){
       // fr_lanes2 remembers the reader's own combination on every return.
       else{Object.assign(LN,{en:true,la:false,fx:false});applyLanes();}}}
     if(window.__frApplyOwner)window.__frApplyOwner();}   // owner signed in BEFORE the text loaded → wire review controls now
-  catch(err){$("#reading").innerHTML='<div class="loading">Failed to load: '+esc(String(err))+' — <a href="/the-faith-received/">return to the library</a></div>';}})();
+  catch(err){$("#reading").innerHTML='<div class="loading">Failed to load: '+esc(String(err))+' — <a href="/the-faith-received/library/">return to the library</a></div>';}})();

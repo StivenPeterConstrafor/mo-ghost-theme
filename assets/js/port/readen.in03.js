@@ -230,8 +230,8 @@ function wireToc(){
 // ── boot ──
 (async function(){
   const id=new URLSearchParams(location.search).get('id');
-  if(!id){ $('#work').innerHTML='<p class="err">No work specified. <a href="/the-faith-received/">Back to the library ›</a></p>'; return; }
+  if(!id){ $('#work').innerHTML='<p class="err">No work specified. <a href="/the-faith-received/library/">Back to the library ›</a></p>'; return; }
   try{ const w=await loadWork(id); render(w); window._eeboWork={id:id,meta:w.meta}; if(window.EEBO_ANNO) EEBO_ANNO.mount(window._eeboWork); }
-  catch(e){ $('#work').innerHTML='<p class="err">Could not load this work ('+esc(e.message)+'). <a href="/the-faith-received/">Back to the library ›</a></p>';
+  catch(e){ $('#work').innerHTML='<p class="err">Could not load this work ('+esc(e.message)+'). <a href="/the-faith-received/library/">Back to the library ›</a></p>';
             $('#toc').innerHTML=''; }
 })();
