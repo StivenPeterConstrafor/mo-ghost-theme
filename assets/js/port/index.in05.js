@@ -1542,10 +1542,13 @@ Promise.all([pWorks,pMe]).then(([d,me])=>{
   }catch(e){}
   render();}).catch(()=>{window.__FR_CATALOGUE_FAILED__=true;render();});
 // author bios + work blurbs (so browsing teaches WHO & WHAT): two small Blob artifacts, then re-render
+// daily buster (kinds.json precedent): blurbs/titles are re-baked between
+// deploys, and the build stamp alone caches them stale for a day
+const _dver="?d="+new Date().toISOString().slice(0,10)+".2";
 if(BLOB)Promise.all([
-  fetch(BLOB+"/v1/blurbs.json"+VER).then(r=>r.ok?r.json():{}).catch(()=>({})),
+  fetch(BLOB+"/v1/blurbs.json"+_dver).then(r=>r.ok?r.json():{}).catch(()=>({})),
   fetch(BLOB+"/v1/authors.json"+VER).then(r=>r.ok?r.json():{}).catch(()=>({})),
-  fetch(BLOB+"/v1/titles_en.json"+VER).then(r=>r.ok?r.json():{}).catch(()=>({}))
+  fetch(BLOB+"/v1/titles_en.json"+_dver).then(r=>r.ok?r.json():{}).catch(()=>({}))
 ]).then(([bl,au,te])=>{BLURBS=bl||{};AUTHORS=au||{};TITLES=te||{};render();loadNoteShard(SEL_TRAD);}).catch(()=>{});
 // SHARDED NOTES (2026-08-23). The core files above hold the confessional shelves' bios and
 // blurbs — what June wrote plus the new notes for those shelves, ~1 MB. The four big families
