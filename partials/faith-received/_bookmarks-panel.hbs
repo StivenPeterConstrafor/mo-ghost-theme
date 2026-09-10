@@ -47,14 +47,22 @@
          Shown by the script only once at least one row actually has a
          place to resume to, since otherwise it describes nothing.
 
-     WHERE IT OPENS. A bookmark names the work; where you were in it is
+     WHERE IT OPENS. A bookmark names the work; the places inside it are
      kept separately, in this browser, by
      assets/js/lib/faith-position-store.js. The two cannot be one
      record: bookmarks are the mo-kit Worker's KV and its ids are bare
-     strings with no field to carry a position. So the row's link
-     resumes where there is something to resume to, and the foot note
-     says plainly that the work follows the reader between devices and
-     the place in it does not.
+     strings with no field to carry a place. So the row's link resumes
+     where there is something to resume to, and the foot note says
+     plainly that the work follows the reader between devices and the
+     places in it do not.
+
+     PLACES UNDER THE WORK. Each row can carry a nested list of the
+     places inside that work: the sections the reader bookmarked from
+     the Bookmark button at the foot of a section, newest first, and
+     last the place reading stopped. A work bookmarked from a browse row
+     has no places under it, which is correct rather than a gap: a list
+     row knows the work and nothing finer. Nothing in that list is a
+     passage. Keeping the text is the notebook's job.
 
      Rendered on its own page rather than in a tab strip, wrap it in a
      <section class="bband"> and give the page its own hero. Nothing in
@@ -88,9 +96,9 @@
           on their phone and lands at the top would otherwise think the
           resume had broken. --}}
     <p class="bookmarks-foot-note" data-fb-foot hidden>
-      Works marked <em>picks up where you left off</em> reopen at the place you stopped.
-      Your saved works are kept with your membership and follow you between devices;
-      the place you left off is kept in this browser only.
+      A work reopens at the place you bookmarked, or where you stopped reading if you
+      have not bookmarked one. Your saved works are kept with your membership and follow
+      you between devices; the places inside them are kept in this browser only.
     </p>
 
   </div>

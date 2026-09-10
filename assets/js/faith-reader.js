@@ -3835,6 +3835,28 @@
     if (ref) landOnRef(ref, 0, contentEl, true);
     if (quote) landOnQuote(quote, 0, contentEl, true);
     if (window.location.hash && revealSection(window.location.hash, true)) return;
+    // Nothing in the URL named a place. Before falling back to the top
+    // of the work, honour a bookmark: Ian's ask was that a bookmarked
+    // section "opens up to it the next time the user opens it", and a
+    // reader who arrives from the Library shelf, a search, or their own
+    // history carries no locator at all.
+    //
+    // The newest mark, because a work can hold many and nothing on
+    // screen asks which. Marks only, never the automatic stop: an
+    // explicit bookmark is a thing the reader did and the stop is a
+    // thing that happened to them, so a bookmark may steal the viewport
+    // on open and the stop may not. Where the stop is wanted the LINK
+    // carries it (appendTo), which is the behaviour the "Continue
+    // reading" shelf has always had and is left exactly as it was.
+    //
+    // revealSection, not a fourth landing mechanism: it is the same
+    // call ?p= and #anchor already go through, it opens the ancestor
+    // <details> (which is what triggers a lazy section to hydrate), and
+    // it returns false rather than scrolling nowhere if the anchor is
+    // gone from a re-shaped work.
+    const store = POS();
+    const mark = store && slug ? store.latestMark(corpusId, slug) : null;
+    if (mark && revealSection(`#${mark.anchor}`, true)) return;
     const first = contentEl.querySelector(".faith-section-details");
     if (first) revealSection(`#${first.id}`, false);
   }

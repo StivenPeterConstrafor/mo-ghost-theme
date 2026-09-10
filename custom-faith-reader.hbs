@@ -207,6 +207,12 @@
 <script src="{{asset "js/faith-modernize.js"}}"></script>
 <script src="{{asset "js/faith-corpora.js"}}"></script>
 <script src="{{asset "js/faith-century.js"}}"></script>
+{{!-- Which WORKS are bookmarked. Before faith-received.js, whose
+      Bookmark button at the foot of a section saves the work as well as
+      the place, and before faith-bookmark.js below, which is now only
+      the reader's binding to this one store. One fetch per page serves
+      both, which is the point of the extraction. --}}
+<script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
 <script src="{{asset "js/faith-received.js"}}"></script>
 {{!-- Matches a scripture reference against early modern printing, so a
      citation link from the index can land on the line rather than on
@@ -216,12 +222,15 @@
      Shared with the searches on the browse and author pages. --}}
 <script src="{{asset "js/faith-text.js"}}"></script>
 <script src="{{asset "js/faith-scripture-ref.js"}}"></script>
-{{!-- Where you left off. BEFORE the reader, which reads
-     window.MOFaithPosition as it renders: the position is what the
-     "Continue reading" shelf's link and the Bookmarks workspace's link
-     resume to, and both are written by the reader. A missing store
-     costs the resume point and nothing else — the reader checks for it
-     and falls back to the plain work URL. --}}
+{{!-- Every PLACE in a work: the places the reader bookmarked and the
+     one where they stopped. BEFORE the reader, which reads
+     window.MOFaithPosition as it renders: it is what the "Continue
+     reading" shelf's link and the Bookmarks workspace's link resume to,
+     what the Bookmark button at the foot of a section writes, and what
+     openInitialSection() consults to decide where a work reopens. A
+     missing store costs the resume point and the bookmarks and nothing
+     else — every caller checks for it and falls back to the plain work
+     URL. --}}
 <script src="{{asset "js/lib/faith-position-store.js"}}"></script>
 <script src="{{asset "js/faith-reader.js"}}"></script>
 {{!-- Filter the contents rail. Ported from the corpus owner's English

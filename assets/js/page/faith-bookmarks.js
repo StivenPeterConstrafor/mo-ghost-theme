@@ -118,19 +118,45 @@
     return `/the-faith-received/reader/?${c}w=${encodeURIComponent(workId)}`;
   }
 
-  // The reader link, plus the place this browser last saw this reader
-  // in this work. The store returns the URL untouched where there is no
-  // position, so this is safe to run over every row.
+  // The reader link, plus a place inside the work. The store returns
+  // the URL untouched where there is no place at all, so this is safe
+  // to run over every row.
+  //
+  // "mark" rather than the default: this list is what the reader SAVED,
+  // so a place they chose outranks the one recorded on their behalf.
+  // The Library's "Continue reading" shelf asks the same store the
+  // other way round, because that row means "carry on".
   const POS = () => window.MOFaithPosition || null;
+  const PREFER = "mark";
 
   function resumeUrl(url, corpusId, workId) {
     const store = POS();
-    return store ? store.appendTo(url, corpusId, workId) : url;
+    return store ? store.appendTo(url, corpusId, workId, PREFER) : url;
   }
 
   function hasResume(corpusId, workId) {
     const store = POS();
-    return !!(store && store.has(corpusId, workId));
+    return !!(store && store.has(corpusId, workId, PREFER));
+  }
+
+  // Every place inside one work, marks first and the stop last. This is
+  // what turns a bookmark from a bare title into something a reader
+  // recognises: the work, and where in it.
+  function placesFor(corpusId, workId) {
+    const store = POS();
+    return store && store.places ? store.places(corpusId, workId) : [];
+  }
+
+  // A place's label. A mark carries a heading or a citation, never the
+  // passage: keeping the text is the notebook's job, and a bookmark
+  // that copied it would be a second copy drifting away from the first.
+  // A place with no label still gets a row, because the reader put it
+  // there and it still opens.
+  function placeLabel(p) {
+    if (p.kind === "stop") {
+      return p.page ? `Where you stopped, page ${p.page}` : "Where you stopped";
+    }
+    return p.cite || "A place you marked";
   }
 
   /* ── State ───────────────────────────────────────────────────── */
@@ -161,8 +187,9 @@
     listEl.innerHTML =
       `<div class="bookmarks-empty">` +
       `<p class="bookmarks-empty-lede">Nothing saved yet.</p>` +
-      `<p class="bookmarks-empty-note">Open any work in the reader, then choose Save in the text tools. ` +
-      `It will appear here with the collection it came from and a link straight back to it.</p>` +
+      `<p class="bookmarks-empty-note">Use the bookmark on any work in the library, or the ` +
+      `Bookmark button at the foot of a section while you are reading. It will appear here with ` +
+      `the collection it came from and a link straight back to it.</p>` +
       `<p class="bookmarks-empty-act"><a class="bookmarks-empty-link" href="/the-faith-received/browse/">Browse the library</a></p>` +
       `</div>`;
   }
@@ -197,6 +224,24 @@
       `</div>`;
   }
 
+  // The places under a work, each its own link into the reader. Built
+  // from the same sanitized base as the row's own link, with the
+  // locator appended after: a decimal page and an encoded anchor cannot
+  // reintroduce a scheme or a host.
+  function placesMarkup(r) {
+    if (!r.places.length) return "";
+    const base = safeHref(r.url);
+    const items = r.places.map((p) => {
+      const href = p.page
+        ? `${base}${base.indexOf("?") >= 0 ? "&" : "?"}p=${encodeURIComponent(p.page)}`
+        : `${base}#${encodeURIComponent(p.anchor)}`;
+      return `<li class="bookmarks-place bookmarks-place--${esc(p.kind)}">` +
+        `<a class="bookmarks-place-link" href="${esc(href)}">${esc(placeLabel(p))}</a>` +
+        `</li>`;
+    }).join("");
+    return `<ul class="bookmarks-places">${items}</ul>`;
+  }
+
   function rowMarkup(r) {
     const meta = [r.author, r.eyebrow].filter(Boolean).map(esc).join(" &middot; ");
     // Sanitize first, then add the locator: a page number and an
@@ -213,8 +258,12 @@
       // row, which would read as "we lost it".
       r.resolved ? "" : `<span class="bookmarks-row-note">Not in the catalogue just now. The link still opens the reader.</span>`,
       // Only where the link really does resume. An unconditional label
-      // would be a promise the row could not keep.
-      r.resume ? `<span class="bookmarks-row-note">Picks up where you left off.</span>` : "",
+      // would be a promise the row could not keep. A work with a marked
+      // place opens at the newest one; a work with only a stop opens
+      // where reading stopped, and the two are not the same promise.
+      r.marked
+        ? `<span class="bookmarks-row-note">Opens at the place you bookmarked.</span>`
+        : (r.resume ? `<span class="bookmarks-row-note">Picks up where you left off.</span>` : ""),
       `</a>`,
       `<span class="bookmarks-row-side">`,
       // The shelf name is already the group heading when grouped.
@@ -222,6 +271,11 @@
       `<button type="button" class="bookmarks-remove" data-fb-remove `,
       `aria-label="Remove ${esc(r.title)} from your saved works">Remove</button>`,
       `</span>`,
+      // Last in the row and on a line of its own: the row is a flex
+      // row that wraps, and the places are a list under the work rather
+      // than a third column beside it. At 640 the row is already a
+      // column and this simply falls to the bottom of it.
+      placesMarkup(r),
       `</li>`,
     ].join("");
   }
@@ -326,11 +380,15 @@
       // confessions fallback, which is a catalogue we retry against and
       // not an address the reader ever used.
       const resume = hasResume(want.corpus, want.work);
+      const places = placesFor(want.corpus, want.work);
+      const marked = places.some((p) => p.kind === "mark");
       if (hit) {
         return {
           id: want.id,
           resolved: true,
           resume,
+          places,
+          marked,
           corpus: want.corpus,
           work: want.work,
           title: hit.title || hit.id,
@@ -346,6 +404,8 @@
         id: want.id,
         resolved: false,
         resume,
+        places,
+        marked,
         corpus: want.corpus,
         work: want.work,
         title: want.work,

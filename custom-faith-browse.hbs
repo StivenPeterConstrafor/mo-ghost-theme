@@ -12,7 +12,12 @@
      the other collections last. The selections are editorial and are
      maintained here by hand; see website/handoffs/TFR-REDESIGN.md. --}}
 
-<main class="faith-received faith-browse">
+{{!-- data-fr-bookmark-rows: every <li><a> below that points at the
+     reader gets a bookmark pennant at the end of its row. On <main>
+     rather than on each of the four bands, because the rule is "a
+     reader link in a list row" and this page has no others. See
+     assets/js/faith-work-bookmark-rows.js. --}}
+<main class="faith-received faith-browse" data-fr-bookmark-rows>
 <section class="bhero">
   <div class="bhero-inner container">
     <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a></p>
@@ -188,3 +193,9 @@
 <script src="{{asset "js/faith-term-index.js"}}"></script>
 <script src="{{asset "js/faith-browse-search.js"}}"></script>
 <script src="{{asset "js/faith-resolve.js"}}"></script>
+{{!-- Bookmark a work from its row. The store first: it is the same
+     mo-kit bookmark the reader's Save button and the Bookmark button at
+     the foot of a section write, so a work saved here and a section
+     saved inside it are one record, not two. --}}
+<script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
+<script src="{{asset "js/faith-work-bookmark-rows.js"}}"></script>

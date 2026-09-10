@@ -668,9 +668,13 @@
   // outline is chunked into hundreds of them; the answer cannot change
   // between two of those calls, since [data-fr-content] is in the
   // template rather than rendered.
+  //
+  // The Bookmark button is gated on the same question and for the same
+  // reason: a bookmark names a work and a place in it, and the
+  // generated document pages have neither a work id nor a corpus.
   let isReaderPage = null;
 
-  function notebookAvailable() {
+  function onReaderPage() {
     if (isReaderPage === null) {
       isReaderPage = !!document.querySelector("[data-fr-content]");
     }
@@ -767,10 +771,104 @@
     if (btn) flashLabel(btn, "Saved");
   }
 
+  // ── Bookmarking a section ─────────────────────────────────────
+  //
+  // "Notebook saves the text and bookmarks saves the place." The button
+  // beside this one keeps the words; this one keeps the spot, and the
+  // two are deliberately different acts on different stores.
+  //
+  // A section bookmark is two writes and they are not the same kind of
+  // thing:
+  //
+  //   the mark   the place, in assets/js/lib/faith-position-store.js.
+  //              localStorage, this browser, many per work.
+  //   the work   the bookmark itself, in the mo-kit Worker's KV via
+  //              assets/js/lib/faith-work-bookmarks.js. Per member,
+  //              follows them between devices, one per work.
+  //
+  // Which is why "bookmark this section" and "bookmark this work from a
+  // browse row" cannot fall out of step: they write the same KV id, and
+  // the section one adds a place under it. A work bookmark and a
+  // section bookmark differ only in precision.
+  //
+  // ASYMMETRIC ON PURPOSE. Marking a section saves the work if it was
+  // not saved. Unmarking the last section does NOT unsave it: the
+  // reader may have saved the work deliberately from a shelf, and
+  // silently dropping a work out of someone's bookmarks because they
+  // tidied up one place inside it is a loss they did not ask for.
+
+  function markLabel(ctx, section) {
+    // A heading or a citation, and never the passage: see MAX_CITE in
+    // the position store. `cite` is already the section's own
+    // data-cite where the corpus prints one, and its title otherwise.
+    return ctx.cite || (section.id || "");
+  }
+
+  function isSectionBookmarked(section) {
+    const P = window.MOFaithPosition;
+    if (!P) return false;
+    const where = readerWork();
+    if (!where.work) return false;
+    return P.hasMark(where.corpus, where.work, sectionContext(section).anchor);
+  }
+
+  function paintBookmark(btn, on) {
+    const label = btn.querySelector(".faith-section-action-label");
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.classList.toggle("is-bookmarked", !!on);
+    btn.title = on
+      ? "Remove this bookmark"
+      : "Bookmark this place and save the work";
+    // Not while a flash is showing its word, or the flash would restore
+    // the label it is standing in for.
+    if (label && btn.dataset.faithFlashing !== "1") {
+      label.textContent = on ? "Bookmarked" : "Bookmark";
+    }
+  }
+
+  function bookmarkSection(section, btn) {
+    const P = window.MOFaithPosition;
+    const where = readerWork();
+    if (!P || !where.work) {
+      if (btn) flashLabel(btn, "Unavailable");
+      return;
+    }
+    const ctx = sectionContext(section);
+    if (!ctx.anchor) {
+      // No anchor is no place. A bookmark that cannot be reopened is
+      // worse than no button, so it says so rather than storing one.
+      if (btn) flashLabel(btn, "No anchor");
+      return;
+    }
+    const on = P.toggleMark(where.corpus, where.work, {
+      anchor: ctx.anchor,
+      cite: markLabel(ctx, section),
+    });
+    if (btn) paintBookmark(btn, on);
+    if (!on) return;
+
+    // The place is kept whatever happens next; the work bookmark is a
+    // network call and may not be. Both outcomes are said out loud
+    // rather than left to be discovered on the Bookmarks page.
+    const BM = window.MOFaithBookmarks;
+    const id = BM ? BM.idFor(where.corpus, where.work) : "";
+    if (!BM || !id || !BM.available()) {
+      if (btn) flashLabel(btn, "Saved here");
+      return;
+    }
+    BM.ensure(id)
+      .then(() => { if (btn) flashLabel(btn, "Bookmarked"); })
+      .catch(() => { if (btn) flashLabel(btn, "Saved here"); });
+  }
+
   function buildActionsRow(section) {
     const url = sectionUrl(section.id);
     const actions = document.createElement("div");
     actions.className = "faith-section-actions";
+    // Still a FIXED template with nothing interpolated into it. Every
+    // piece of stored data this row now carries — whether the section
+    // is bookmarked, what its heading is — is applied afterwards
+    // through textContent and setAttribute, never built into a string.
     actions.innerHTML =
       `<button type="button" class="faith-section-action" data-faith-copy-link>${
         iconLink()}<span class="faith-section-action-label">Copy link</span>` +
@@ -778,9 +876,13 @@
       `<button type="button" class="faith-section-action" data-faith-copy-text>${
         iconCopy()}<span class="faith-section-action-label">Copy passage</span>` +
       `</button>${
-        notebookAvailable()
+        onReaderPage()
           ? `<button type="button" class="faith-section-action" data-faith-notebook-save>${
             iconNotebook()}<span class="faith-section-action-label">Save to notebook</span>` +
+            `</button>` +
+            `<button type="button" class="faith-section-action faith-section-action--bookmark" ` +
+            `data-faith-bookmark aria-pressed="false">${
+              iconBookmark()}<span class="faith-section-action-label">Bookmark</span>` +
             `</button>`
           : ""}`;
     actions.querySelector("[data-faith-copy-link]").addEventListener("click", (e) => {
@@ -802,6 +904,20 @@
         // a save from also collapsing the section it saved.
         e.stopPropagation();
         saveSectionToNotebook(section, e.currentTarget);
+      });
+    }
+    const mark = actions.querySelector("[data-faith-bookmark]");
+    if (mark) {
+      // Painted from the store at build time, which is what makes this
+      // survive the lazy rebuild for free: hydrateSection() throws the
+      // row away and calls MOFaithSections.refresh, and the row that
+      // comes back asks the store again rather than remembering
+      // anything. There is no state living in the DOM to lose.
+      paintBookmark(mark, isSectionBookmarked(section));
+      mark.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        bookmarkSection(section, e.currentTarget);
       });
     }
     return actions;
@@ -914,12 +1030,20 @@
   function iconCopy() {
     return '<svg class="faith-section-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
   }
-  // An open book with a ribbon. Deliberately not a bookmark pennant:
-  // that is the Save button in the text tools, which saves the WORK,
-  // and two different actions wearing one glyph is how a reader learns
-  // to distrust both.
+  // An open book with a ribbon: the notebook, which keeps the TEXT.
+  // Deliberately not the pennant beside it, which keeps the PLACE. Two
+  // different actions wearing one glyph is how a reader learns to
+  // distrust both.
   function iconNotebook() {
     return '<svg class="faith-section-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H19v18H6.5A2.5 2.5 0 0 0 4 22z"/><path d="M9 2v8l2.5-1.8L14 10V2"/></svg>';
+  }
+  // The pennant, and the one glyph a bookmark wears anywhere on the
+  // site: the same shape marks a bookmarked row on the browse, author,
+  // room and century pages (assets/js/faith-work-bookmark-rows.js).
+  // Filled when the place is kept, outline when it is not, which is the
+  // state read at a glance down a column of sections.
+  function iconBookmark() {
+    return '<svg class="faith-section-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-5-7 5V4a1 1 0 0 1 1-1z"/></svg>';
   }
 
   // ── Mobile TOC drawer ─────────────────────────────────────────

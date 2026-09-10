@@ -2055,8 +2055,25 @@ mark.faith-find-hit.is-current {
   height: 14px;
   flex-shrink: 0;
 }
+/* Bookmarked. The pennant fills and the row's own colour comes up, so
+   the state is readable running an eye down a column of sections
+   without reading a single label. Two signals rather than one: colour
+   alone is not a state. */
+.faith-section-action--bookmark.is-bookmarked { color: var(--color-primary); }
+.faith-section-action--bookmark.is-bookmarked .faith-section-action-icon {
+  fill: currentColor;
+}
+/* The row is a 14px control on a touch device. The label carries the
+   width; this puts the height back without changing how the row looks,
+   since the padding is vertical and the row is centred on its baseline. */
+@media (pointer: coarse) {
+  .faith-section-action { padding-top: 15px; padding-bottom: 15px; }
+  .faith-section-actions { padding-top: 0; margin-top: 10px; }
+}
 @media (max-width: 640px) {
-  .faith-section-actions { gap: 14px; }
+  /* Four actions do not fit one phone line. Wrapping beats shrinking
+     the type below 10px or hiding the one that came last. */
+  .faith-section-actions { gap: 14px; flex-wrap: wrap; row-gap: 2px; }
   .faith-section-action { font-size: 10px; letter-spacing: 0.16em; }
 }
 
@@ -3660,11 +3677,49 @@ mark.faith-find-hit.is-current {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  /* Wraps so the places list can take a line of its own under the work
+     rather than becoming a third column beside it. Nothing else in the
+     row ever wraps: the title flexes and the side is nowrap. */
+  flex-wrap: wrap;
   gap: 20px;
   margin: 0;
   border-bottom: 1px solid var(--color-rule);
 }
 .bookmarks-row[hidden] { display: none; }
+
+/* The places inside one saved work: the sections the reader
+   bookmarked, newest first, then where they stopped reading. Indented
+   under the title and set in the meta size, because this is apparatus
+   under the work rather than a second list of works. */
+.bookmarks-places {
+  flex: 1 0 100%;
+  list-style: none;
+  margin: -6px 0 14px;
+  padding: 0 0 0 14px;
+  border-left: 1px solid var(--color-rule);
+}
+.bookmarks-place { margin: 0; }
+.bookmarks-place-link {
+  display: block;
+  padding: 5px 0;
+  font-family: var(--font-body);
+  font-size: var(--tfr-meta);
+  line-height: 1.5;
+  color: var(--color-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.bookmarks-place-link:hover,
+.bookmarks-place-link:focus-visible {
+  color: var(--color-primary-text);
+  text-decoration: none;
+}
+/* Where reading stopped was recorded on the reader's behalf rather than
+   chosen, so it is set apart from the places they marked. */
+.bookmarks-place--stop .bookmarks-place-link { font-style: italic; }
+@media (pointer: coarse) {
+  .bookmarks-place-link { padding: 12px 0; }
+}
 .bookmarks-row-main {
   flex: 1 1 auto;
   min-width: 0;
@@ -6560,6 +6615,82 @@ mark.faith-find-hit.is-current {
 .bcard p { font-family: var(--font-body); font-size: 15px; color: var(--color-muted); margin: 0 0 16px; }
 .bcard-read { font-family: var(--font-body); font-size: 11px; letter-spacing: 0.22em;
   text-transform: uppercase; color: var(--color-secondary); }
+
+/* ── Bookmark a work from a list row ──────────────────────────────
+   One control for four pages: browse (static .blist), the reading rooms
+   and the centuries page (.blist, built by faith-room.js) and the
+   author page (.fa-works). All four are <li> with one <a> in them, so
+   the <li> becomes the flex row and the pennant sits at its end. See
+   assets/js/faith-work-bookmark-rows.js.
+
+   Flex rather than an absolutely positioned corner: three of these
+   lists are CSS multi-column, and an abspos child inside a multicol
+   flow is positioned against the column box rather than the row. */
+.frb-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.frb-row > a,
+.frb-row > span { flex: 1 1 auto; min-width: 0; }
+.frb-mark {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 44px of target, 15px of ink. The negative margin keeps the extra
+     height from pushing a 13px-padded row taller than its neighbours,
+     which would break the column rhythm on a three-across list. */
+  width: 44px;
+  height: 44px;
+  margin: -8px -12px -8px 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--color-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+.frb-mark svg { width: 15px; height: 15px; }
+/* These lists run to fifty rows in three columns, so at rest the only
+   ink added is on the works actually bookmarked. */
+.frb-row:hover .frb-mark,
+.frb-mark:focus-visible { opacity: 1; }
+.frb-row:hover .frb-mark.is-unknown { opacity: 0.35; }
+
+/* No hover to wait for: always visible, and quiet.
+   TWO RULES for one condition. The media query is the right answer and
+   is the one that normally fires. The class beside it covers the device
+   the media query cannot describe: a hybrid laptop with both a
+   trackpad and a touchscreen answers `hover: hover`, correctly, and its
+   owner still reaches for the screen, at which point a pennant hidden
+   until hover is a control they cannot see. The class is put on by the
+   first touch the list actually receives (see
+   assets/js/faith-work-bookmark-rows.js), so it is observed rather than
+   declared. Either alone is enough for the device it describes. */
+@media (hover: none) {
+  .frb-mark { opacity: 0.4; }
+}
+.frb-rows-touch .frb-mark { opacity: 0.4; }
+
+/* After both, so a bookmarked pennant is solid and an unread one is
+   invisible whichever of the two above applied. */
+.frb-mark.is-on { opacity: 1; }
+.frb-mark.is-on { color: var(--color-primary-text); }
+.frb-mark.is-on svg { fill: currentColor; }
+/* Not read back from the worker yet. Neither on nor off, because a
+   pennant that starts empty and fills a second later reads as a
+   bookmark that nearly got lost. */
+.frb-mark.is-unknown { opacity: 0; }
+.frb-mark:focus-visible {
+  outline: 2px solid var(--color-dark);
+  outline-offset: -8px;
+}
+.frb-mark:hover { color: var(--color-secondary); }
+.blist--dark .frb-mark { color: #ffffff8c; }
+.blist--dark .frb-mark.is-on,
+.blist--dark .frb-mark:hover { color: var(--color-primary); }
 
 .blist { list-style: none; margin: 0; padding: 0; }
 .blist--3 { columns: 3; column-gap: 56px; }
