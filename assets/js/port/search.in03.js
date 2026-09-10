@@ -218,44 +218,87 @@ function renderFull(q){var my=++seq;ct.innerHTML='<span class="sbusy">searching�
         /* CHUNKED (owner eval 2026-09-06 "evaluate full text": the list hard-stopped at 60
            of 2,294 with no way on) — 60 per batch, a Show-more foot walks the rest. Each
            row cite carries its page number, parsed from the deep-link anchor. */
-        var rfTotal=r.results.length,shown=0,acc=[];
-        function pageOf(u){var m2=/#b(\d+)-/.exec(u||'');return m2?(' · p. '+m2[1]):'';}
-        function rowHtml(it){
-            var meta=it.meta||{},sl=meta.slug||'';
-            var cite=docCite(sl);
-            var cpx=/^pg-/.test(sl)?'Greek Fathers':/^pld-/.test(sl)?'Latin Fathers':/^po-/.test(sl)?'Oriental':/^eebo-/.test(sl)?'EEBO':/^(rc|lc)-/.test(sl)?'Confessions':'';
-            if(cpx&&cite.indexOf(cpx)<0)cite=cite? cite+' · '+cpx : cpx;
-            var subs=(it.sub_results||[]).slice(0,3).map(function(s){
-              return '<a class="sr" href="'+s.url+'"><div class="sr-cite">'+cite+pageOf(s.url)+'</div><div>'+esc(meta.title||'')+'</div><div class="sr-ex">'+mdHeadings(s.excerpt||'')+'</div></a>';}).join('');
-            if(subs)return subs;
-            return '<a class="sr" href="'+it.url+'"><div class="sr-cite">'+cite+pageOf(it.url)+'</div><div>'+esc(meta.title||it.url)+'</div><div class="sr-ex">'+mdHeadings(it.excerpt||'')+'</div></a>';
-        }
-        function batch(){
-          Promise.all(r.results.slice(shown,shown+60).map(function(x){return x.data();})).then(function(items){if(my!==seq)return;
-            shown=Math.min(shown+60,r.results.length);
-            items=items.filter(function(it){var sl=(it.meta&&it.meta.slug)||'';
-              if(FAC.work&&sl!==FAC.work)return false;
-              if(FAC.trad){var e=NAV[sl];if(e&&e.tr!==FAC.trad)return false;}
-              return true;});
-            acc=acc.concat(items);
-            if(!acc.length&&shown>=r.results.length){ct.innerHTML='';res.innerHTML=zeroHtml(q,'full');return;}
-            ct.textContent=(rfTotal>acc.length
-              ? acc.length.toLocaleString()+' of '+rfTotal.toLocaleString()+' matching pages'
-              : acc.length.toLocaleString()+' matching page'+(acc.length===1?'':'s'));
-            res.innerHTML=acc.map(rowHtml).join('')
-              +(shown<r.results.length?'<button type="button" class="sr-more" id="pfMore">Show more — '+(r.results.length-shown).toLocaleString()+' further pages</button>':'');
-            var mb=document.getElementById('pfMore');
-            if(mb)mb.onclick=function(){mb.disabled=true;mb.textContent='Loading\u2026';batch();};
-          });
-        }
-        batch();
+        var rfTotal=r.results.length,shown=0,byWork={},order=[];
+         /* GROUPED BY WORK (owner 2026-09-10 'passages fundamentally broken'):
+            a work whose TITLE matches floods the page-level list (the title
+            rides on every indexed page) and the excerpts echo the title.
+            One card per work; excerpts strip the title and prefer real text. */
+         function pageOf(u){var m2=/#b(\d+)-/.exec(u||'');return m2?m2[1]:'';}
+         function cleanEx(ex,title){var t2=String(ex||'');
+           if(title){try{var e2=title.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');t2=t2.replace(new RegExp(e2,'gi'),' ');}catch(_){}}
+           return t2.replace(/\s+/g,' ').trim();}
+         function addItem(it){var meta=it.meta||{},sl=meta.slug||'';
+           if(!byWork[sl]){var cite=docCite(sl);
+             var cpx=/^pg-/.test(sl)?'Greek Fathers':/^pld-/.test(sl)?'Latin Fathers':/^po-/.test(sl)?'Oriental':/^eebo-/.test(sl)?'EEBO':/^(rc|lc)-/.test(sl)?'Confessions':'';
+             if(cpx&&cite.indexOf(cpx)<0)cite=cite?cite+' · '+cpx:cpx;
+             byWork[sl]={cite:cite,title:meta.title||sl,url:it.url,pages:[],n:0};order.push(sl);}
+           var w=byWork[sl];w.n++;
+           if(w.pages.length>=8)return;
+           var cands=(it.sub_results||[]).map(function(s){return {url:s.url,ex:cleanEx(s.excerpt,meta.title)};});
+           cands.push({url:it.url,ex:cleanEx(it.excerpt,meta.title)});
+           var best=null;for(var ci=0;ci<cands.length;ci++){if(cands[ci].ex.length>40){best=cands[ci];break;}}
+           if(!best)best=cands[0]||{url:it.url,ex:''};
+           var pg=pageOf(best.url||it.url);
+           if(w.pages.some(function(x){return x.page===pg;}))return;
+           // keep the indexed page text for the Preview drawer — works for
+           // every storage shape (TEI-only works have no shards to hydrate);
+           // the index prepends the work title to every page, so peel it
+           var fu=String(it.content||'').replace(/\s+/g,' ').trim();
+           var ttl=String(meta.title||'').replace(/\s+/g,' ').trim();
+           if(ttl.length>8){var g=0;while(g++<4&&fu.toLowerCase().indexOf(ttl.toLowerCase())===0){fu=fu.slice(ttl.length).replace(/^[\s.,;:·—–-]+/,'');}}
+           w.pages.push({url:best.url||it.url,page:pg,ex:best.ex,full:fu.slice(0,1800)});}
+         function pageRow(pp){return '<a class="sr sr-page" href="'+pp.url+'">'+(pp.page?'<span class="sr-pg">p. '+pp.page+'</span>':'')+'<span class="sr-ex">'+mdHeadings(pp.ex||'')+'</span></a>';}
+         function workHtml(sl,idx){var w=byWork[sl];
+           var head='<summary class="sr-whead"><span class="sr-cite">'+w.cite+'</span><span class="sr-wtitle">'+esc(w.title)+'</span><span class="sr-wn">'+w.n.toLocaleString()+' page'+(w.n===1?'':'s')+'</span></summary>';
+           var rows=w.pages.map(function(pp){
+             return '<div class="sr-page" data-sl="'+esc(sl)+'" data-pg="'+esc(pp.page||'')+'">'
+               +(pp.page?'<span class="sr-pg">p. '+pp.page+'</span>':'')
+               +'<span class="sr-ex">'+mdHeadings(pp.ex||'')+'</span>'
+               +'<span class="sr-act"><button type="button" class="sr-peek">Preview</button><a href="'+pp.url+'">Open \u2192</a></span>'
+               +'<div class="sr-drawer" hidden></div></div>';}).join('');
+           var note=w.n>w.pages.length?'<div class="sr-note">'+(w.n-w.pages.length).toLocaleString()+' more matching pages \u2014 open the work and search inside.</div>':'';
+           return '<details class="sr-work"'+(idx<2?' open':'')+'>'+head+rows+note+'</details>';}
+         function render(){
+           if(!order.length){ct.innerHTML='';res.innerHTML=zeroHtml(q,'full');return;}
+           ct.textContent=rfTotal.toLocaleString()+' matching page'+(rfTotal===1?'':'s')+' across '+order.length.toLocaleString()+' work'+(order.length===1?'':'s')+(shown<r.results.length?' so far':'');
+           res.innerHTML=order.map(function(sl,ix){return workHtml(sl,ix);}).join('')
+             +(shown<r.results.length?'<button type="button" class="sr-more" id="pfMore">Show more works — '+(r.results.length-shown).toLocaleString()+' further pages unscanned</button>':'');
+           var mb=document.getElementById('pfMore');
+           if(mb)mb.onclick=function(){mb.disabled=true;mb.textContent='Loading…';batch();};
+           res.querySelectorAll('.sr-peek').forEach(function(b){b.onclick=function(){
+             var row=b.closest('.sr-page'),dr=row.querySelector('.sr-drawer');
+             if(!dr.hidden){dr.hidden=true;b.textContent='Preview';return;}
+             dr.hidden=false;b.textContent='Hide';
+             if(dr.dataset.done)return;dr.dataset.done='1';
+             dr.innerHTML='<p class="sr-loading">Loading the page\u2026</p>';
+             var sl=row.dataset.sl,pg=row.dataset.pg,wk=byWork[sl];
+             var pp=wk&&wk.pages.filter(function(x){return String(x.page||'')===pg;})[0];
+             var show=function(tx){tx=String(tx||'');
+               if(!tx){dr.innerHTML='<p class="sr-loading">This page has no readable text here \u2014 open the work to see it in place.</p>';return;}
+               dr.innerHTML='<div class="sr-ptext">'+esc(tx.slice(0,1600))+(tx.length>=1600?'\u2026':'')+'</div>';};
+             if(pp&&pp.full){show(pp.full);return;}
+             excerpt(sl,+pg,1600).then(show)
+               .catch(function(){dr.innerHTML='<p class="sr-loading">The page could not load.</p>';});
+           };});}
+         function batch(){
+           Promise.all(r.results.slice(shown,shown+60).map(function(x){return x.data();})).then(function(items){if(my!==seq)return;
+             shown=Math.min(shown+60,r.results.length);
+             items.forEach(function(it){var sl=(it.meta&&it.meta.slug)||'';
+               if(FAC.work&&sl!==FAC.work)return;
+               if(FAC.trad){var e=NAV[sl];if(e&&e.tr!==FAC.trad)return;}
+               addItem(it);});
+             if(order.length<10&&shown<r.results.length&&shown<420){render();batch();return;}
+             render();
+           });
+         }
+         batch();
       });
     });
   });}
 
 /* ---- Blob excerpt hydration (meaning + tradition home hits): meta.json → shard → page text ---- */
 var _exc={};
-function excerpt(slug,page){var k=slug+'|'+page;
+function excerpt(slug,page,max){max=max||220;page=+page;var k=slug+'|'+page+'|'+max;
   if(k in _exc)return Promise.resolve(_exc[k]);
   return fetch(FRB+'/v1/works/'+slug+'/meta.json').then(function(r){return r.json();}).then(function(meta){
     var f=meta.single?'work.json':(((meta.shards||[]).filter(function(s){return s.from<=page&&page<=s.to;})[0])||{}).file;
@@ -263,7 +306,7 @@ function excerpt(slug,page){var k=slug+'|'+page;
     return fetch(FRB+'/v1/works/'+slug+'/'+f).then(function(r){return r.json();}).then(function(d){
       var pg=(d.pages||[]).filter(function(x){return x.n===page;})[0];
       var tx=(pg&&(pg.en||pg.la)||'').replace(/\[\^[^\]]*\]:?/g,'').replace(/[#*]+/g,'').replace(/\s+/g,' ').trim();
-      return (_exc[k]=tx?tx.slice(0,220):null);});
+      return (_exc[k]=tx?tx.slice(0,max):null);});
   }).catch(function(){return (_exc[k]=null);});}
 
 function searchUnavailable(label,query){
@@ -272,22 +315,51 @@ function searchUnavailable(label,query){
   res.querySelector('[data-recover="full"]').onclick=function(){qEl.value=query;setMode('full');};
   res.querySelector('[data-recover="ask"]').onclick=function(){if(window.FRAsk)window.FRAsk.open({q:query});else setMode('ask');};
 }
-/* ---- Meaning (hybrid semantic+lexical via /api/vsearch&sparse=1) ---- */
+/* ---- Meaning (hybrid semantic+lexical via /api/vsearch&sparse=1) ----
+   Grouped per work like the Passages mode (owner 09-10: "by idea search
+   too ... organized better so we dont have endless scrolling ... allow
+   preview source"): one collapsed card per work, best passages inside,
+   Preview drawer hydrates the page text in place. */
 function renderMeaning(q){var my=++seq;ct.innerHTML='<span class="sbusy">searching by meaning…</span>';
   navMap(function(){if(my!==seq)return;
     fetch('https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/vsearch?q='+encodeURIComponent(q)+'&k=40'+((FAC.corpus==='pld'||FAC.corpus==='pg'||FAC.corpus==='po')?'&corpus='+(FAC.corpus==='pld'?'pl':FAC.corpus):'&sparse=1')).then(function(r){return r.ok?r.json():r.json().catch(function(){return {error:'unavailable'};});}).then(function(j){
       if(my!==seq)return;var rs=((j&&j.results)||[]).filter(function(p){return p.slug&&facetOk(p.slug);});
       if(!rs.length){if(j&&j.error)return searchUnavailable('Search by idea',q);ct.textContent='No passages found.';res.innerHTML='';return;}
-      ct.textContent=rs.length+' passages by meaning';
-      res.innerHTML=rs.map(function(p,i){
-        return '<a class="sr" href="'+rdHref(p.slug,p.page)+'"><div class="sr-cite">'+docCite(p.slug)+(p.page!=null?' · p. '+p.page:'')+'</div>'+
-          '<div>'+docTitle(p.slug)+'</div><div class="sr-ex" data-ex="'+esc(p.slug)+'|'+p.page+'"></div></a>';}).join('');
-      Array.prototype.slice.call(res.querySelectorAll('[data-ex]'),0,20).forEach(function(sp){
+      var byW={},ord=[];
+      rs.forEach(function(p){var sl=p.slug;
+        if(!byW[sl]){byW[sl]={pp:[]};ord.push(sl);}
+        if(byW[sl].pp.length<6&&!byW[sl].pp.some(function(x){return x.page===p.page;}))byW[sl].pp.push(p);
+        byW[sl].n=(byW[sl].n||0)+1;});
+      ord.sort(function(a,b){return byW[b].n-byW[a].n;});
+      ct.textContent=rs.length+' passages by meaning across '+ord.length+' work'+(ord.length===1?'':'s');
+      res.innerHTML=ord.map(function(sl,ix){var w=byW[sl];
+        var head='<summary class="sr-whead"><span class="sr-cite">'+docCite(sl)+'</span><span class="sr-wtitle">'+docTitle(sl)+'</span><span class="sr-wn">'+w.n+' passage'+(w.n===1?'':'s')+'</span></summary>';
+        var rows=w.pp.map(function(pp){
+          return '<div class="sr-page" data-sl="'+esc(sl)+'" data-pg="'+esc(pp.page==null?'':pp.page)+'">'
+            +(pp.page!=null?'<span class="sr-pg">p. '+pp.page+'</span>':'')
+            +'<span class="sr-ex" data-ex="'+esc(sl)+'|'+pp.page+'">'+esc(String(pp.snippet||'').slice(0,220))+'</span>'
+            +'<span class="sr-act"><button type="button" class="sr-peek">Preview</button><a href="'+rdHref(sl,pp.page)+'">Open →</a></span>'
+            +'<div class="sr-drawer" hidden></div></div>';}).join('');
+        return '<details class="sr-work"'+(ix<3?' open':'')+'>'+head+rows+'</details>';}).join('');
+      Array.prototype.slice.call(res.querySelectorAll('[data-ex]'),0,24).forEach(function(sp){
         var kv=sp.getAttribute('data-ex').split('|');
         excerpt(kv[0],+kv[1]).then(function(tx){if(tx&&my===seq)sp.textContent=tx+'…';});});
+      var snipOf={};rs.forEach(function(p){snipOf[p.slug+'|'+p.page]=String(p.snippet||'');});
+      res.querySelectorAll('.sr-peek').forEach(function(b){b.onclick=function(){
+        var row=b.closest('.sr-page'),dr=row.querySelector('.sr-drawer');
+        if(!dr.hidden){dr.hidden=true;b.textContent='Preview';return;}
+        dr.hidden=false;b.textContent='Hide';
+        if(dr.dataset.done)return;dr.dataset.done='1';
+        dr.innerHTML='<p class="sr-loading">Loading the page…</p>';
+        var fb=snipOf[row.dataset.sl+'|'+row.dataset.pg]||'';
+        excerpt(row.dataset.sl,+row.dataset.pg,1600).then(function(tx){
+          tx=String(tx||'')||fb;
+          if(!tx){dr.innerHTML='<p class="sr-loading">This page has no readable text here — open the work to see it in place.</p>';return;}
+          dr.innerHTML='<div class="sr-ptext">'+esc(tx.slice(0,1600))+(tx.length>=1600?'…':'')+'</div>';
+        }).catch(function(){dr.innerHTML=fb?'<div class="sr-ptext">'+esc(fb)+'</div>':'<p class="sr-loading">The page could not load.</p>';});
+      };});
     }).catch(function(){if(my!==seq)return;searchUnavailable('Search by idea',q);});
   });}
-
 /* ---- Tradition (cross-corpus timeline via /api/xsearch) — Round-5 scope contract ---- */
 var CORPUS_BADGE={PG:'Greek Fathers',PL:'Latin Fathers',PO:'Oriental',AQ:'Aquinas',TFR:'Early modern'};
 var TRS={c:{pg:1,pl:1,po:1,aq:1,tfr:1},t:{catholic:1,reformed:1,lutheran:1}};

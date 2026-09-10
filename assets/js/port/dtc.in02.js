@@ -127,7 +127,7 @@ function openArt(id,push){
   CUR=id;paintList();
   document.body.classList.add("reading");
   $("#art").innerHTML='<div class=inner><div class=welcome>Loading…</div></div>';
-  fetch(BLOB+"/v1/dtc/a/"+encodeURIComponent(id)+".json"+VER).then(r=>r.json()).then(d=>{
+  fetch("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/dtc/a/"+encodeURIComponent(id)+".json"+VER).then(r=>r.json()).then(d=>{
     d.id=id;renderArt(d);
     document.title=d.t+" — Dictionnaire de Théologie Catholique";
     if(push!==false)history.replaceState(null,"","#"+encodeURIComponent(id));
@@ -143,7 +143,7 @@ $("#list").addEventListener("click",e=>{const b=e.target.closest(".hw");
 $("#alpha").addEventListener("click",e=>{const b=e.target.closest("button[data-l]");if(!b||b.disabled)return;
   LETTER=(LETTER===b.dataset.l?null:b.dataset.l);paintAlpha();paintList();});
 $("#q").addEventListener("input",()=>{QY=$("#q").value;paintList();});
-fetch(BLOB+"/v1/dtc/index.json"+VER).then(r=>r.json()).then(d=>{
+fetch("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/dtc/index.json"+VER).then(r=>r.json()).then(d=>{
   IDX=d.articles||[];SEEALSO=d.seealso||{};
   paintAlpha();paintList();
   const h=decodeURIComponent(location.hash.slice(1));

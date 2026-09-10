@@ -40,7 +40,7 @@ const esvCache={};
 async function esvChapter(bookName,ch){
   const id=_esvId(bookName);if(!id)return null;
   const ck=id+"/"+ch;
-  if(!(ck in esvCache))esvCache[ck]=fetch(`https://bolls.life/get-chapter/ESV/${id}/${ch}/`)
+  if(!(ck in esvCache))esvCache[ck]=fetch(`https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/chapter/ESV/${id}/${ch}/`)
     .then(r=>r.ok?r.json():null)
     .then(a2=>{if(!Array.isArray(a2)||!a2.length)return null;
       const vs={};a2.forEach(x2=>{vs[String(x2.verse)]=String(x2.text||"").replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim();});

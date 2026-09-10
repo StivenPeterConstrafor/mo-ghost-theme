@@ -379,7 +379,7 @@
   async function flushDraft(){clearTimeout(draftTimer);if(!visible||!selected())return;const id=current,value=$('#fra-input').value;await S.update(id,c=>{c.draft=value;});}
   async function switchChat(id){await flushDraft();togglePopover('fra-scope',false);forgetSource();current=id;await S.update(id,c=>{c.unread=false;});await refresh();syncComposer();panel.classList.remove('fra-history-open');$('#fra-history-toggle').setAttribute('aria-expanded','false');$('#fra-feed').scrollTop=selected()?.turns.length?$('#fra-feed').scrollHeight:0;}
   let jobsPromise;
-  async function researchJobs(){if(!jobsPromise)jobsPromise=import('/ask-jobs.js?v='+encodeURIComponent(window.__FR_VER||'deep-1')).then(async()=>{await FRResearchJobs.init(S,scheduleRefresh);return FRResearchJobs;});return jobsPromise;}
+  async function researchJobs(){if(!jobsPromise)jobsPromise=import('/assets/js/port/ask-jobs.js?v='+encodeURIComponent(window.__FR_VER||'deep-1')).then(async()=>{await FRResearchJobs.init(S,scheduleRefresh);return FRResearchJobs;});return jobsPromise;}
   async function send(question, modeOverride, scopeOverride, passageOverride){
     await flushDraft();let c=await S.get(current);if(!c)return;
     if(running(c)){const t=running(c);if(t.serverJob)await (await researchJobs()).control(c.id,t.id,'cancel');else await rpc('stop',{id:c.id});return;}
