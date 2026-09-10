@@ -1768,7 +1768,7 @@ async function pairPage(slugA,slugB,topicSeg){
   const wantT=topicSeg?decodeURIComponent(topicSeg):'';
   const sharedN=(A.topics||[]).filter(t=>!RX.isRawTopic(t.t)&&(B.topics||[]).some(x=>RX.fold(x.t)===RX.fold(t.t))).length;
   const dirs=[{from:A,to:B,shard:fullA,pack:AtoB,id:'pair-ab',n:(AtoB.rows||[]).length},{from:B,to:A,shard:fullB,pack:BtoA,id:'pair-ba',n:(BtoA.rows||[]).length}].sort((x,y)=>y.n-x.n);
-  const bA=new Map(A.books||[]),bB=new Map(B.books||[]);const sharedBooks=[...bA.keys()].filter(k=>bB.has(k)).map(k=>[k,bA.get(k),bB.get(k)]).sort((x,y)=>(y[1]+y[2])-(x[1]+x[2])).slice(0,24);
+  const bA=new Map(A.books||[]),bB=new Map(B.books||[]);const sharedBooks=[...bA.keys()].filter(k=>bB.has(k)).map(k=>[k,bA.get(k),bB.get(k)]).sort((x,y)=>(y[1]+y[2])-(x[1]+x[2]));
   page.innerHTML=`<div class="crumbs"><a href="/the-faith-received/fathers/#">Authors</a> · <a href="${RX.authorURL(ra)}">${esc(A.a)}</a> · <a href="${RX.authorURL(rb)}">${esc(B.a)}</a></div>
   <div class="ridbar"><h1>${esc(A.a)} <span class="rx-pair-and">and</span> ${esc(B.a)}</h1>
     <div class="stats"><b>${fmtR(AtoB.n||AtoB.rows.length)}</b> ${pl(AtoB.n||AtoB.rows.length,'citation')} of ${esc(B.a)} in ${esc(A.a)} · <b>${fmtR(BtoA.n||BtoA.rows.length)}</b> ${pl(BtoA.n||BtoA.rows.length,'citation')} of ${esc(A.a)} in ${esc(B.a)} · <b>${fmtR(sharedN)}</b> shared ${pl(sharedN,'topic')} · <a href="/the-faith-received/web/#a=${encodeURIComponent(slugA)}">${esc(A.a)} in the citation web</a> · <a href="/the-faith-received/web/#a=${encodeURIComponent(slugB)}">${esc(B.a)} in the citation web</a></div></div>
@@ -1803,11 +1803,14 @@ async function pairPage(slugA,slugB,topicSeg){
        await Promise.all(workers);
        hits.sort((x,y)=>x.c-y.c||x.v-y.v);
        if(!hits.length){box.innerHTML='<p class="rx-note">No verse where both comment is recorded in '+esc(entry.book)+'.</p>';return;}
-       const side=(rows,who)=>rows.slice(0,3).map(r=>`<a href="${FRConnectionEvidence.readerURL(r.w,r.p)}" target="_blank" title="${esc(r.t||r.w)} p.${r.p}">${esc(who)} p.${r.p}</a>`).join(' ');
-       box.innerHTML='<div class="pb-verses">'+hits.slice(0,60).map(v=>
-         `<div class="pb-verse"><b>${esc(entry.book)} ${v.c}:${v.v}</b>`+
-         `<span>${side(v.left,A.a.split(' ')[0])}</span><span>${side(v.right,B.a.split(' ')[0])}</span></div>`).join('')+
-         (hits.length>60?'<p class="rx-note">'+fmtR(hits.length-60)+' more shared verses not shown.</p>':'')+'</div>';
+       const side=(rows,who)=>rows.slice(0,4).map(r=>`<a class="pb-side" href="${FRConnectionEvidence.readerURL(r.w,r.p)}" target="_blank" title="${esc(r.t||r.w)} p.${r.p}${r.g?' — '+esc(String(r.g).slice(0,180)):''}">${esc(who)} p.${r.p}</a>`).join('');
+       const byCh=new Map();hits.forEach(v=>{if(!byCh.has(v.c))byCh.set(v.c,[]);byCh.get(v.c).push(v);});
+       box.innerHTML='<div class="pb-verses">'+[...byCh.entries()].map(([c,vv])=>
+         `<div class="pb-ch"><h5>${esc(entry.book)} ${c}<small>${vv.length} shared ${vv.length===1?'verse':'verses'}</small></h5>`+
+         vv.map(v=>`<div class="pb-verse"><b>${c}:${v.v}</b><span class="pb-text">${esc(String(v.t||'').slice(0,320))}</span>`+
+           `<span class="pb-links"><span class="pb-au">${esc(A.a.split(' ')[0])}</span>${side(v.left,'p.').replaceAll('>p. p.','>p.')}`+
+           `<span class="pb-au">${esc(B.a.split(' ')[0])}</span>${side(v.right,'p.').replaceAll('>p. p.','>p.')}</span></div>`).join('')+
+         '</div>').join('')+'</div>';
      }catch(e){box.innerHTML='<p class="rx-note">The verse index could not load.</p>';}
    });});
    page.querySelector('.rx-loci-jump').addEventListener('click',e=>{const a=e.target.closest('a');if(!a)return;e.preventDefault();document.getElementById(a.getAttribute('href').slice(1))?.scrollIntoView({block:'start',behavior:'smooth'});});
