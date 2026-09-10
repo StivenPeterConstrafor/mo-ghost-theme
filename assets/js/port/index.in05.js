@@ -1666,7 +1666,7 @@ function setView(v){
   window.__navved=1;
 }
 {const sc2=$("#shelfCue");if(sc2)sc2.onclick=e=>{e.preventDefault();if(VIEW!=="library"){SEL_TOPIC=null;window.__navved=0;setView("library");}const lib3=$("#lib");if(lib3)lib3.scrollIntoView({behavior:"smooth",block:"start"});};}
-{const bh=$("#brandHome");if(bh)bh.onclick=e=>{e.preventDefault();SEL_TOPIC=null;try{history.replaceState(null,"",location.pathname+location.search);}catch(e2){}window.__navved=0;setView("library");scrollTo({top:0,behavior:"smooth"});};}
+{const bh=$("#brandHome");if(bh)bh.onclick=e=>{if(location.search){return;}e.preventDefault();SEL_TOPIC=null;try{history.replaceState(null,"",location.pathname);}catch(e2){}window.__navved=0;setView("library");scrollTo({top:0,behavior:"smooth"});};}
 {const lb=$("#navLib"),cb=$("#navConf");
  if(lb)lb.onclick=()=>setView("library");
  if(cb)cb.onclick=()=>setView("confessions");

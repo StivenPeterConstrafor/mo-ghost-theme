@@ -1,6 +1,6 @@
 
 "use strict";
-const BLOB="https://mo-tfr-library.mo-podcast-feed.workers.dev";
+const BLOB="https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev";
 // ease of use (2026-09-02): command-palette reflexes · press ⌘K or / to find a star;
 // the intro card bows out after the first travel
 addEventListener("keydown",e=>{
