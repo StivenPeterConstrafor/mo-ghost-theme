@@ -113,6 +113,7 @@ details[open]>summary>.home-fold{transform:rotate(90deg)}
 .home-work h3 a{color:inherit;text-decoration:none}
 .home-work h3 a:hover{text-decoration:underline;text-underline-offset:4px}
 .home-work mark{color:inherit;background:var(--hl);padding:0 2px;border-radius:2px}
+.home-work-blurb{margin:.25rem 0 0;font-size:.8rem;line-height:1.45;color:var(--muted,#6b6660);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .home-work-meta{display:flex;flex-wrap:wrap;gap:3px 14px;margin-top:6px;color:var(--muted);font:12px/1.5 var(--font-ui)}
 .home-work-actions{display:flex;align-items:center;align-self:start;gap:14px;padding-top:2px}
 .home-read{font:14px/1.5 var(--font-ui);color:var(--fg);display:inline-flex;align-items:center;gap:7px;min-height:44px;white-space:nowrap}
