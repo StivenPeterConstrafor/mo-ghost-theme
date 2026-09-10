@@ -367,7 +367,7 @@
     if (view.memo) { lines.push(`> ${view.memo.replace(/\n+/g, "\n> ")}`, ""); }
     const write = (e) => {
       const head = [authorOf(e), titleOf(e)].filter(Boolean).join(", ");
-      lines.push(`- **${head}**${e.cite ? ` — ${e.cite}` : ""}`);
+      lines.push(`- **${head}**${e.cite ? `, ${e.cite}` : ""}`);
       if (e.text) lines.push(`  > ${e.text.replace(/\n+/g, " ")}`);
       if (e.note) lines.push(`  - ${e.note.replace(/\n+/g, " ")}`);
       const href = NB.linkFor(e);
@@ -395,11 +395,11 @@
       view.edges.forEach((e) => {
         const a = byId.get(e.a);
         const b = byId.get(e.b);
-        if (a && b) lines.push(`- ${titleOf(a)} — *${e.rel}* — ${titleOf(b)}`);
+        if (a && b) lines.push(`- ${titleOf(a)}, *${e.rel}*, ${titleOf(b)}`);
       });
       lines.push("");
     }
-    lines.push("— assembled in The Faith Received");
+    lines.push("Assembled in The Faith Received");
     return lines.join("\n");
   }
 

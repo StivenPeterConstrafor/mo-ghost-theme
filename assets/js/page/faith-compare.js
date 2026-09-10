@@ -811,7 +811,7 @@
       const groups = groupsOf(au, cell);
       if (!groups.length) return;
       const h = document.createElement("h3");
-      h.textContent = `${au.a} — ${whenOf(au.r)}`;
+      h.textContent = `${au.a}, ${whenOf(au.r)}`;
       doc.appendChild(h);
       groups.forEach((g) => {
         const hw = document.createElement("p");
