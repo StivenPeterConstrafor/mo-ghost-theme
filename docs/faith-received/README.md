@@ -15,7 +15,7 @@ Read a spec to know what a surface must do; read the matching recreate sheet to 
 
 1. **LANDING-PAGE-SPEC.md** — how the library is organised (shelves → authors → sets → volumes) and what data it reads. Everything else hangs off this.
 2. **READER-SPEC.md** — the reader. §0 is the gap list for MereO's current reader (flat sections, no facsimile, TOC-driven) and is the single largest piece of work.
-3. **SEARCH-SPEC.md** — every search box and the omnibox, algorithm by surface.
+3. **SEARCH-SPEC.md** — every search box and the omnibox, algorithm by surface; **ASK-SPEC.md** — the Ask workspace behind `/?find=ask` and the API contract.
 4. **COLLECTIONS-SPEC.md** — how MereO's own "collections" landing and rooms must be restructured by tradition.
 5. Then the surface specs (§2 below) and the data contracts (§3 below) as needed.
 
@@ -45,6 +45,7 @@ Read a spec to know what a surface must do; read the matching recreate sheet to 
 | Document | Home | Covers | Ian's action |
 |---|---|---|---|
 | **SEARCH-SPEC.md** | specs | Library home search (score table, kinds, volume order, similar-names net); MASTER OMNIBOX engine contract + TFR adapter (row order, escapes, hash targets, corpus palette); the search page's six modes (Find, Full text = merged Pagefind, Meaning = `/api/vsearch` with RRF, Scripture, Tradition = `/api/xsearch` bands, Ask); room Search; Ask retrieval (channels, fusion, rerank, sparse tokenizer); reader Find; §8 per-surface MereO deltas | §8 table: merge Pagefind buckets with `mergeIndex`, fix room search per COLLECTIONS-SPEC §4, wire Meaning/Ask to the worker |
+| **ASK-SPEC.md** | specs | `/?find=ask` boot and mode toggle, every door into the Ask workspace, the workspace DOM/layout/scope/turn rendering, persistence (IndexedDB + SharedWorker), the `/api/ask` request/response line protocol, Deep research jobs, and §7 the MereO deltas (worker frame dialect translator, bearer token + usage meter) | §7 table: publish the ported landing, add the member bearer token to the ported worker fetch, keep the stream translator in step with the worker |
 | **SEARCH_INSTRUCTIONS.md** | mo-workers | `/search` page recreate sheet with `search.html` in full and the proof battery | Build from it; rules in SEARCH-SPEC §3 |
 | **COLLECTIONS-SPEC.md §4** | specs | The room search bug ("Richard" does not find Richard Baxter) and the exact replacement (author key, prefix per token, authors strip ranked by work count) | Implement in `faith-room.js` |
 
@@ -84,7 +85,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 1. **Reader**: replace the section-based reader with the page-native ported reader (READER-SPEC §0, acceptance on the Sedan volume). Witness rules ride along (WITNESSES-SPEC §4).
 2. **Library landing**: port per LANDING-PAGE-SPEC; titles/volumes from `mo-tfr` only (CATALOGUE-CHANGES §5); shelf head + dictionary door (SHELF_DOORS_DTC); Migne index clicks (MIGNE-INDICES-SPEC).
 3. **Collections restructure**: shelf cards by tradition, rooms = volume + author, confessions by tradition, room-search fix (COLLECTIONS-SPEC §§2–4).
-4. **Search**: one merged Pagefind instance, room search fix, Meaning/Ask to the worker (SEARCH-SPEC §8).
+4. **Search and Ask**: one merged Pagefind instance, room search fix, Meaning/Ask to the worker (SEARCH-SPEC §8); the Ask workspace wired per ASK-SPEC §7 (bearer token, stream translator, ported landing route).
 5. **Research surfaces**: verify the ported `/fathers`, `/topics`, `/bible`, `/web`, `/compare` against their batteries; the 09-11 fixes are mandatory: author-card white bands, fold headers "open at p. N", inline position previews, Scripture short abbreviations, deep links on `/read/` paths.
 6. **Mobile**: run MOBILE_SCROLLING battery on every page above.
 7. **Process**: follow RESEARCH_RAIL §6 (theme protocol) and §8 (deploy + smoke) on every PR.
@@ -106,6 +107,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 
 | Date | Document | Commit |
 |---|---|---|
+| 09-11 | ASK-SPEC.md | mo-ghost-theme (this commit) |
 | 09-11 | README.md (this index) | mo-ghost-theme (this commit) |
 | 09-11 | SEARCH-SPEC.md | mo-ghost-theme 4389eef; cross-referenced from mo-workers SEARCH_INSTRUCTIONS d8a6569 |
 | 09-11 | AUTHORS_ROOMS_INSTRUCTIONS.md (author-card fix + research-experience.css) | mo-workers 34aab43 |
