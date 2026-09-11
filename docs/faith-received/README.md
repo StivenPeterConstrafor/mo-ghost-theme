@@ -70,6 +70,12 @@ Read a spec to know what a surface must do; read the matching recreate sheet to 
 | **COLLECTIONS-SPEC.md** + **shelves.json** | specs | The nine shelves (closed vocabulary) with slugs and descriptions; break "The collections" into shelf cards; shelf rooms = volume + author; confessions room by tradition; room search fix; Early English Books vs English Divines; checklist | Restructure `custom-the-faith-received.hbs`, `custom-faith-room-*.hbs`, `faith-room.js`; counts from the catalogue, never hard-coded |
 | **MOBILE_SCROLLING_INSTRUCTIONS.md** | mo-workers | The owner's mobile principles (drill-in not squeeze, sheet-over-list with restored scroll position…), verification traps, the phone-width battery per surface, then every surface's mobile code | Run the battery on every ported page |
 
+### E2. Contributing (before any PR)
+
+| Document | Home | Covers | Ian's action |
+|---|---|---|---|
+| **LOCAL-PREVIEW.md** | specs | The contributor runbook: local Ghost preview of the theme against the real library, the pieces already set up, how to see a change live before opening a PR | Read before any theme PR; pair with RESEARCH_RAIL_INSTRUCTIONS §6 (theme protocol) and §8 (deploy + smoke) |
+
 ### F. Data, stores and sync
 
 | Document | Home | Covers | Ian's action |
@@ -109,6 +115,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 
 | Date | Document | Commit |
 |---|---|---|
+| 09-11 | LOCAL-PREVIEW.md (contributor runbook, restored) | mo-ghost-theme 163ed3d8 |
 | 09-11 | READER-COMPARISON.md (+ READER-SPEC §0 corrected) | mo-ghost-theme 73eea23f |
 | 09-11 | DESK_INSTRUCTIONS.md (desk research-rail card redesign; theme hunks 5756a7a) | mo-workers 8cd9690 |
 | 09-11 | ASK-SPEC.md | mo-ghost-theme 79f9414 |
