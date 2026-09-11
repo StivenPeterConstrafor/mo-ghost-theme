@@ -115,7 +115,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 
 | Date | Document | Commit |
 |---|---|---|
-| 09-11 | ASK-SPEC.md §3.2/§3.6/§8: resizable source pane divider (shipped both sites) | mo-ghost-theme (this commit) |
+| 09-11 | ASK-SPEC.md §3.2/§3.6/§8: resizable source pane divider (shipped both sites) | mo-ghost-theme 496f879b |
 | 09-11 | LOCAL-PREVIEW.md (contributor runbook, restored) | mo-ghost-theme 163ed3d8 |
 | 09-11 | READER-COMPARISON.md (+ READER-SPEC §0 corrected) | mo-ghost-theme 73eea23f |
 | 09-11 | DESK_INSTRUCTIONS.md (desk research-rail card redesign; theme hunks 5756a7a) | mo-workers 8cd9690 |
