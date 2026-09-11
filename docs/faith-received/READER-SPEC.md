@@ -104,6 +104,7 @@ Research rail (`read-tools.js`, deferred, injects a root path): `Explore this wo
 - PG works are column-range slices: a work starting mid-column may carry the previous work's tail (known corpus defect, not a reader bug).
 - PG English lives in `/v1/pgen/` sidecars; the Source column selector (`wireSrcSel`) offers grc / la / grcla / ocr only when the document actually carries a secondary witness, a diplomatic layer or a page view.
 - PLD milestone law: `vol:col` strings, never `parseInt` a column.
+- Migne's own indices (Index Rerum, per-volume back-indices, Ordo Rerum) and how an index click reaches a column are specified in `MIGNE-INDICES-SPEC.md`.
 
 ---
 

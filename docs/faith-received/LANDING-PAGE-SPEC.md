@@ -108,7 +108,7 @@ Large sets carry a label in the volume field so a reader knows what each tome ho
 - **Index-leaf and editorial badges**: `_migneKind` classifies pg-/pld- rows (index leaves — Analytical/General/Alphabetical Index, Order of Contents/Subjects — and editorial pieces) and shows `· N editorial` in the author header ("124 works · 12 editorial").
 - **Filters are URL-addressable**: `?shelf=Greek Fathers&au=Athanasius of Alexandria`.
 - **No Scripture/Topics doors** on these two shelves (owner 09-10, re-applied 09-11): the shelf toolbar carries only its own organisation buttons.
-- Migne rows show the column range in the edition line and open the reader at the column; PG works may carry a Source column selector in the reader (Greek / Latin / both / OCR) when the document has them.
+- Migne's printed indices are browsed on the Topics page (see `MIGNE-INDICES-SPEC.md`); Migne rows show the column range in the edition line and open the reader at the column; PG works may carry a Source column selector in the reader (Greek / Latin / both / OCR) when the document has them.
 
 ---
 
