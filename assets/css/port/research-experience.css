@@ -175,5 +175,16 @@ body.research-page .pinb{min-height:0;min-width:0;font:500 12.5px/1.2 var(--sans
 .cd-savebtn.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 .cd-saved-row.on{background:var(--bg-alt,transparent)}.cd-saved-actions{display:inline-flex;gap:12px;margin-left:auto}
 .cd-rename{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}.cd-rename input{flex:1 1 240px;font:inherit;padding:6px 8px;border:1px solid var(--border);border-radius:3px;background:var(--bg);color:var(--fg)}
+
 /* PREVIEW ON PHONES (owner 2026-09-11 "also make it on mobile"): the embedded reader under a statement bleeds to the pane edge and takes most of the viewport; the Preview control is a 44px target */
 @media(max-width:640px){.rx-position-body .cd-fold-body{padding-left:0}.research .rx-excerpt .peekwrap{margin:0 -14px}.research .rx-excerpt .peekwrap iframe{height:70vh;border-radius:8px;margin:.4rem 0 .2rem}.rx-position-body .rx-source>div{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}/* an open preview lifts the pane's own scroll cap so the phone scrolls one surface, not a reader inside a pane inside the page */.rx-position-body:not(.rx-position-compare):has(.peekwrap.on),.rx-position-compare .rx-cmp-col:has(.peekwrap.on),.rx-pane:has(.peekwrap.on){max-height:none;overflow:visible}}
+
+/* ── 2026-09-11 (owner, screenshot: "i dont like the white above and below
+   authors") — the authors page had a WHITE SLAB (.rx-fold-body, --card)
+   with the grey directory card floating inside it: 24px of white above
+   the card (the directory's margin-top) and 18px below (the body's
+   bottom padding). The slab is gone: the fold body sits transparent on
+   the page ground and the directory itself is THE card — white, bordered,
+   rounded — so nothing bands above or below it. ── */
+.rx-author-folds .rx-fold-body{background:transparent;border-top:0;padding:0 0 18px}
+.research-directory .rx-author-fold .rx-directory{margin-top:0;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:0 18px}
