@@ -120,3 +120,4 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 | 09-11 | WEB, TOPICS, BIBLE, SEARCH, AUTHORS_ROOMS _INSTRUCTIONS.md (five surface sheets) | mo-workers 8a363d4 |
 | 09-11 | SHELF_DOORS_DTC_INSTRUCTIONS.md | mo-workers 71269d7 |
 | 09-11 | RESEARCH_RAIL_INSTRUCTIONS.md | mo-workers ad296d1 |
+| Desk (writing + research rail) | `~/mo-workers/DESK_INSTRUCTIONS.md` (8cd9690) | Recreate the 09-11 rail card redesign per the spec + battery; theme hunks already on ask-port-ui (5756a7a) |
