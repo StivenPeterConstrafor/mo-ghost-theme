@@ -454,7 +454,18 @@ async function eeboText(id) {
     if (!r.ok) throw new Error(`${r.status}`);
     return Buffer.from(await r.arrayBuffer());
   }, id);
-  const j = JSON.parse((await gunzip(buf)).toString("utf8"));
+  // The name says .json.gz, and the body very often is not gzipped. The
+  // worker serves these with `content-encoding: br`, and fetch undoes
+  // the transport encoding for us, so what lands here is plain JSON with
+  // a gzip extension. Calling gunzip on it throws "incorrect header
+  // check", which withRetry counted as a failed work and moved on: every
+  // one of the 53,832 EEBO works failed that way, silently, and the run
+  // still reported a tidy "N failed" total rather than stopping.
+  //
+  // So sniff the two-byte gzip magic (1f 8b) instead of trusting either
+  // the extension or the header.
+  const gz = buf.length > 1 && buf[0] === 0x1f && buf[1] === 0x8b;
+  const j = JSON.parse((gz ? await gunzip(buf) : buf).toString("utf8"));
   const segs = [];
   (function walk(nodes) {
     (nodes || []).forEach((n) => {
