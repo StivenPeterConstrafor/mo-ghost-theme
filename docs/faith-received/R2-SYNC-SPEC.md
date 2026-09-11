@@ -52,6 +52,11 @@ MereO reads R2 live; nothing needs to be "pulled". To pick up a change:
 5. **Search**: the Pagefind manifest is read at load; new buckets appear when `manifest.json` lists them.
 6. **Canon TEI for previews and the Migne index**: `v1/tei/<ns>/<id>.xml` on the worker (Blob keeps it at `tei/<ns>/…` — the porter and the index code use the `/v1/tei/` form on MereO).
 
+
+### 3.1 Corpus data changes you pick up automatically (log)
+
+- **2026-09-11 — English-lane untranslated Latin heads fixed corpus-wide.** 4,337 heading lines in 472 works whose English lane still carried the Latin head (e.g. Voetius, *Politica ecclesiastica* vol. 2 p. 16 "III. Quæst. An Conjugium…") were translated (deterministic formulaic substitutions, a small model for content heads; gates include Greek byte-preservation; note numbers, page pointers and parentheticals re-attached). `tei.en.xml` changed for those works and each work's `tei_v` was bumped, so the reader refetches the lane on next open; pushed to Blob and both R2 buckets with md5 read-backs. Tool `tools/headfix_en.py`, ledger `runs/headfix_ledger.jsonl` (one line per fixed head), snapshots `tei.en.xml.pre-headfix.bak.gz` per work. Nothing to do on MereO beyond §3 (2). A residue of 504 lines belongs to other defect classes (lowercase fragments, English in both lanes, hyphen shards, citation apparatus) and was left as is.
+
 What Ian must NOT do: derive anything from `mo-tfr-library`; write to `mo-tfr` (it is written only by the Davenant publish chain); remove the archive prefix; expect the Westminster vol-1 work or its full-text minutes on R2.
 
 ---

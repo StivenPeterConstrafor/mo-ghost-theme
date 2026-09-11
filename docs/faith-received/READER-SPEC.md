@@ -83,6 +83,8 @@ Loader families (`loadWork` dispatches): `loadTEI` (has_tei — THE canonical pa
 
 `inl()` (the inline formatter, scripture on by default) runs `linkScriptureHTML` over every text cell: references become `<a class="xref" target="_blank" data-scripture-ref="Genesis 2" href="/search?m=scripture&q=Genesis%202">` and get the Scripture preview on hover (`reader-scripture-preview.js`). The book table `XREF_EN` maps abbreviations → English names: Latin/PL forms (Matth., Ioh., Joan., Reg./Paral. by prefix, Mos. by number for the Luther WA corpus), German forms (Röm., Offb., Hes.…), and since 09-11 the short English forms (Dt., Mt., Mk., Lk., Jn., Gn., Lv., Nm., Dn., Rm., Hb., Jas., Jdg., Ezk., Zec., Mic., Zep., Hag., Jl., Est., Ecc., Lam., Jdt., Rv., Prv.). `Ex`, `Is`, `Ac`, `Am` are deliberately absent (ordinary English words at sentence start). A book must also be in `XREF_CAP` (chapter counts) to link — Wisdom/Sirach/Tobit are not. A chapter must not exceed the book's chapter count; verse lists and ranges (`3:5-7, 9`) and `seqq.`/`ff.` tails are parsed; lower-case ordinary words ("mark 3 items") never link.
 
+**Ordinal lookahead (owner 2026-09-11, "Matthew 19, 1 Corinthians 7"):** `XREF_ORDNEXT` in `scriptureLocation` — when a digit ≤ 5 follows `[.:,]` and is itself followed by a book name, that digit is the NEXT book's ordinal, not a verse of the current reference: the current reference closes as a chapter-only link and the verse-list loop stops there. So "Matthew 19, 1 Corinthians 7" yields `Matthew 19` and `1 Corinthians 7`, never `Matthew 19:1`. Canonical `reader_shell.html`, theme `port/reader-core.js` (ask-port-ui 1c9794b7); verified with the XREF-consts-to-node harness (6 cases).
+
 ---
 
 ## 7. The highlight door (`?hl=`)
@@ -135,6 +137,8 @@ Academic Monochrome v3 (09-05): black/white journal palette; the classic layer u
 ---
 
 ## 13. Verification checklist
+
+- Scripture linker: a cell reading "Matthew 19, 1 Corinthians 7" produces two links, `Matthew 19` and `1 Corinthians 7` (no `Matthew 19:1`); "Dt. 6; Mt. 22" produces `Deuteronomy 6` and `Matthew 22`.
 1. `/read?w=gennadius-scholarios-works-vol-7&p=370&hl=ἀπορία` (both sites): lands on `#b370-0`, bar shows `1/2`, the current mark is on screen, × clears marks and drops `hl` from the URL, the apparatus note "f. 158v rempli par ce tableau…" is in the note band, not in the body.
 2. `/read?w=gennadius-scholarios-works-vol-8` page 26: lemma heads render as `.vlem` paragraphs; the contents tree has 78 entries and a click lands on the heading, not the page top.
 3. `/read?w=rc-026-valdess-catechism-1549`: "(Rom. 3; Gal. 3; Dt. 6; Mt. 22)" gives four `a.xref` links; "Is 3 enough?" gives none.
