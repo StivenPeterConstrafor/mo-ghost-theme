@@ -432,6 +432,31 @@
       // translation.
       .replace(/⟦h⟧([^\n]*)/g, '<strong class="faith-en-head">$1</strong>')
       .replace(/⟦i⟧([\s\S]*?)⟦\/i⟧/g, "<em>$1</em>")
+      /* The translation also marks italics the Markdown way, with a
+       * pair of asterisks, and those were rendering as literal
+       * asterisks: "to have composed a *Chronicon*". Reported by Jesse
+       * Bingham 2026-09-11. It is nearly always a work's title, which
+       * is exactly what italics are for in a bibliography.
+       *
+       * PAIRED only, and never across a line. Measured on PG 10: 507
+       * asterisks, 243 pairs, so 21 are unpaired and are left exactly
+       * as printed rather than guessed at. There is no ** anywhere in
+       * the corpus, so no bold rule is needed and none is added.
+       *
+       * Patrologia Graeca alone carries this. Patrologia Latina, the
+       * native shelf and Early English Books have none, so this is
+       * scoped to the one layer that needs it.
+       *
+       * The span may not open or close on whitespace, which is
+       * Markdown's own flanking rule and is load-bearing here: two
+       * unrelated footnote asterisks on one line would otherwise pair
+       * with each other and italicise the words between them. With the
+       * rule, "a marker * and another * here" is left alone and
+       * "*Chronicon*" is not.
+       *
+       * Safe against injection: markUp() is handed escapeHtml(text),
+       * so there is no markup left in `t` for a pair to capture. */
+      .replace(/\*([^\s*][^*\n]{0,118}[^\s*]|[^\s*])\*/g, "<em>$1</em>")
       .replace(/⟦([A-D])⟧/g, '<span class="faith-col-q">$1</span>')
       .replace(/⟦(cont)⟧/gi, "")
       .replace(/⟦([^⟧]{4,})⟧/g, '<span class="faith-ed-note">[$1]</span>')
