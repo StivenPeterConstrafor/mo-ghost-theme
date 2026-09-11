@@ -117,7 +117,17 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-query],[da
 addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'&&!document.documentElement.classList.contains('fra-open')){e.preventDefault();window.FRHome.focus();}});
 addEventListener('storage',e=>{if(e.key==='fr_collections_v1'||e.key==='fr_pincol'){lastKey='';paint();}if(e.key==='fr_library_queries')paintRecent();});
 window.FRHome={render:paint,focus(){if(VIEW!=='library'){window.__navved=0;setView('library');}document.querySelector('.home-hero').scrollIntoView({block:'start',behavior:'instant'});input.focus({preventScroll:true});}};
-const restore=()=>{const u=new URL(location.href);if(/^#conf/i.test(u.hash)){setView('confessions');return;}const legacy=u.hash.match(/^#a=([^&]+)/);input.value=u.searchParams.get('q')||(legacy?decodeURIComponent(legacy[1]):'');scope=u.searchParams.get('shelf')||'';setMode(['passages','ask'].includes(u.searchParams.get('find'))?u.searchParams.get('find'):'works');run();};
+const restore=()=>{const u=new URL(location.href);if(/^#conf/i.test(u.hash)){setView('confessions');return;}const legacy=u.hash.match(/^#a=([^&]+)/);
+  const _q=u.searchParams.get('q')||(legacy?decodeURIComponent(legacy[1]):'');
+  // ?shelf= WITHOUT a query is the shelf's own address (review §2): open the
+  // real shelf view — author/volume controls — not a collapsed result group
+  if(!_q&&u.searchParams.get('shelf')&&!['passages','ask'].includes(u.searchParams.get('find'))){
+    // leave the home-search module INERT (scope set would make FRHome.render()
+    // claim the view and the shelf never paints) — just open the shelf
+    const _sh=u.searchParams.get('shelf');scope='';input.value='';
+    if(window.__openShelf)setTimeout(()=>{try{window.AUTHORF=u.searchParams.get('au')||null;window.__openShelf(_sh);}catch(e){}},0);
+    return;}
+  input.value=_q;scope=u.searchParams.get('shelf')||'';setMode(['passages','ask'].includes(u.searchParams.get('find'))?u.searchParams.get('find'):'works');run();};
 addEventListener('popstate',restore);
 pWorks.then(()=>{ready=true;index();$h('homeShelf').value=scope;lastKey='';render();}).catch(()=>{loadFailed=true;paint();});
 restore();

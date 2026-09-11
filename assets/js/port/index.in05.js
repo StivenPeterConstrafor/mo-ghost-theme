@@ -124,7 +124,7 @@ const _plrLink=h=>{const col=_plrCol(h.cit);
 // merges into one 'Uncertain attribution' shelf, with the conjecture kept on the row.
 const _ANON=/^(unknown|auctor|various|anonym|editors|editores|uncertain)/i;
 function byAuthorClean(ws){const m={};ws.forEach(w=>{
-  let k=_foldAu(String(w.author_en||w.author||"Unknown").split(";")[0].trim());
+  let k=_foldAu((window.__dispAu||(x=>x))(String(w.author_en||w.author||"Unknown").split(";")[0].trim()));
   if(_ANON.test(k))k="Uncertain attribution";
   (m[k]=m[k]||[]).push(w);});return m;}
 const _attOf=w=>{const a=String(w.author_en||w.author||"");
@@ -552,6 +552,18 @@ function renderPlScripture(sw,opts){
     paintRank();
   });
 }
+// Migne editorial/index classification, client-side (same patterns as the
+// corpus tools' migne_genre): pg-/pld- only — on the library shelves an
+// 'Index' in a title is a published book (review §4)
+const _MG_NAV=[/^(title\s*page|table\s*of\s*contents?|contents?)\b/i,/^index\b/i,/^(order\s+of\s+(things|the\s+old\s+editions?|editions?))\b/i,/^(elenchus|tabula|ordo)\b/i];
+const _MG_APP=[/^admonition/i,/^(historical\s+)?notice\b/i,/^editorial\s+notice/i,/^prolegomena\b/i,/^monitum\b/i,/^(preface|praefatio)\s*$/i,/^(preface|praefatio)\s+(of|by)\s+the\s+(editor|editors|maurist)/i,/^appendix\s*$/i,/^(bibliograph|biographical\s+notice)/i,/^(synopsis\s+of\s+the\s+editions?|conspectus)\b/i];
+function _migneKind(w){
+  if(!/^(pg|pld)-\d+$/.test(String(w.slug||"")))return null;
+  const ti=String((typeof TITLES!=="undefined"&&TITLES[w.slug])||w.title||"").trim();
+  for(const r of _MG_NAV)if(r.test(ti))return "index";
+  for(const r of _MG_APP)if(r.test(ti))return "apparatus";
+  return null;}
+window.__migneKind=_migneKind;
 function authorSection(author,items){
   // COLLAPSED BY DEFAULT (owner 2026-08-17 'landing as a whole collapsed, aesthetic'):
   // with the Latin Fathers' ~700 authors and 220 tomes, open sections made the page a
@@ -576,7 +588,12 @@ function authorSection(author,items){
       const g=wg&&wg[w.slug]&&wg[w.slug].g;
       if(g){if(!seen.has(g)){seen.add(g);n++;}}else n++;}
     return n||items.length;})();
-  h.innerHTML=`<span class=cv>▾</span><span class="aname${bioPop?" haspop":""}">${esc(author)}${bioPop}</span>${dt}<span class=c>${_nw} ${_nw>1?"works":"work"}</span>`;
+  // editorial material counts apart from the works (review §4); anthology
+  // bands (many authors in one catalogue string) carry their own label
+  const _ned=items.filter(w=>w.apparatus||_migneKind(w)).length;
+  const _nww=Math.max(_nw-_ned,0)||_nw;
+  const _anth=(/;|,.*,.*,/.test(author)&&author.length>60)||/,\s*etc\.?\s*$/i.test(author)||/\betc\.?\s*$/i.test(author)&&author.includes(",");
+  h.innerHTML=`<span class=cv>▾</span><span class="aname${bioPop?" haspop":""}${_anth?" anth":""}" ${_anth?`title="${esc(author)}"`:""}>${esc(_anth?author.split(/[;,]/)[0]+" and others":author)}${bioPop}</span>${_anth?'<span class="wbadge app" title="A PG anthology band: several authors printed together in one volume span">anthology</span>':""}${dt}<span class=c>${_nww} ${_nww>1?"works":"work"}${_ned?` <i class=ced title="Editorial and catalogue material printed with the works: indexes, notices, prefaces">· ${_ned} editorial</i>`:""}</span>`;
   const body=el("div","authbody");
   // LAZY BODY (owner 2026-08-17 'not an infinite scroll'): rows render on first expand —
   // a collapsed shelf of hundreds of sections costs only its headers.
@@ -605,7 +622,9 @@ function authorSection(author,items){
     const _cov=w.img_base?`<img class=wlcov loading=lazy decoding=async src="${esc(w.img_base)}${w.title_page||1}.webp" alt="">`:`<span class="wlcov wlcov-bd" aria-hidden=true>▤</span>`;
     const _wit=(w.has_pages||w.pdf_pages||w.img_base)?`<span class="wbadge fac" title="Facsimile: the original printing is available page-by-page">Facsimile</span>`
                          :`<span class="wbadge bd" title="Born-digital text (no facsimile)">Born-digital text</span>`;
-    const _app=w.apparatus?`<span class="wbadge app" title="Migne’s editorial apparatus — a preface, notice, or dedication printed with the Fathers, not a work of this author">apparatus</span>`:"";
+    const _mk=(typeof _migneKind==="function")?_migneKind(w):null;
+    const _app=w.apparatus?`<span class="wbadge app" title="Migne’s editorial apparatus — a preface, notice, or dedication printed with the Fathers, not a work of this author">apparatus</span>`
+      :_mk?`<span class="wbadge app" title="${_mk==="index"?"A catalogue leaf of the printed edition — an index, table, or title page":"Editorial material printed with the works — a notice, preface, or appendix"}">${_mk==="index"?"index leaf":"editorial"}</span>`:"";
     const _cw=(typeof WREL!=="undefined"&&WREL&&WREL.__cw&&WREL.__cw[w.slug])||null;
     const _sec=_cw?(_cw.kind==="dig"
         ?`<span class="wbadge sec" title="A facsimile of this work is held as well — the page scans are the second witness of this text (${_cw.other.length} volume${_cw.other.length===1?"":"s"})">Facsimile witness held</span>`
@@ -760,7 +779,16 @@ function authorSection(author,items){
   {const an=h.querySelector(".aname");if(an)an.title="Show only "+author;}
   sec.appendChild(h);sec.appendChild(body);return sec;
 }
-function byAuthor(arr){const m={};arr.forEach(w=>{const k=_foldAu(w.author);(m[k]=m[k]||[]).push(w);});return m;}
+// DISPLAY ALIAS FOLD (owner 2026-09-10 review §3): catalogue spellings of the
+// SAME person fold for display; pseudo-attributions stay distinct. Bare
+// 'Cyril' verified = the Alexandrian span (PG 68-75; Jerusalem is named).
+const DISPLAY_ALIAS={"Athanasius":"Athanasius of Alexandria","Origenes":"Origen",
+  "Cyril":"Cyril of Alexandria","Nilus":"Nilus of Sinai",
+  "Photius of Constantinople.":"Photius of Constantinople",
+  "Severian of Gabala (OCR)":"Severian of Gabala"};
+const dispAu=a=>{a=String(a||"").replace(/,\s*pt\.\s*\d+$/,"").trim();return DISPLAY_ALIAS[a]||a;};
+window.__dispAu=dispAu;
+function byAuthor(arr){const m={};arr.forEach(w=>{const k=_foldAu(dispAu(w.author));(m[k]=m[k]||[]).push(w);});return m;}
 let SEL_TRAD=null,SEL_TOPIC=null,TOPICS=null;
 function tradDesc(items){   // the tradition's best-represented authors, as an italic sample line
   const junk=/^(unknown|auctor|various|editors|anonym|editores|auctores|maurines)/i;
@@ -778,9 +806,27 @@ function paintAF(){
   const b=host.querySelector(".afx");if(b)b.onclick=()=>setAuthorF(null);
 }
 function setAuthorF(a){
-  window.AUTHORF=a||null;paintAF();render();
+  window.AUTHORF=a||null;
+  try{const u=new URL(location.href);
+    if(a)u.searchParams.set("au",a);else u.searchParams.delete("au");
+    history.pushState({shelf:SEL_TRAD,au:a||null},"",u);}catch(e){}
+  paintAF();render();
   if(a){const lib=$("#lib");if(lib)lib.scrollIntoView({block:"start",behavior:"smooth"});}
 }
+window.__openShelf=t=>{if(!t)return;SEL_TRAD=t;
+  try{if(typeof loadNoteShard==="function")loadNoteShard(t);}catch(e){}
+  render();
+  setTimeout(()=>{const e=$("#shelfworks");if(e)e.scrollIntoView({block:"start"});},80);};
+function __shelfFromURL(){
+  const u=new URL(location.href);
+  const sh=u.searchParams.get("shelf"),au=u.searchParams.get("au");
+  if(u.searchParams.get("q")||["passages","ask"].includes(u.searchParams.get("find")))return false;
+  window.AUTHORF=au||null;
+  if(sh&&sh!==SEL_TRAD){window.__openShelf(sh);return true;}
+  if(!sh&&SEL_TRAD){SEL_TRAD=null;render();return true;}
+  if(au!==undefined){paintAF();render();}
+  return !!sh;}
+addEventListener("popstate",()=>{try{__shelfFromURL();}catch(e){}});
 function render(){
   paintAF();
   if(window.FRHome&&window.FRHome.render())return;
@@ -854,7 +900,12 @@ function render(){
     b.innerHTML=`<span class=sx>▸</span><span class=sn>${esc(TRAD_LABEL(t))}</span>`+
       `<span class=sc><b>${tg[t].length.toLocaleString()}</b> ${tg[t].length>1?"works":"work"}</span>`+
       `<span class=sd>${esc(tradDesc(tg[t]))}</span>`;
-    b.onclick=()=>{SEL_TRAD=(SEL_TRAD===t?null:t);render();
+    b.onclick=()=>{SEL_TRAD=(SEL_TRAD===t?null:t);
+      // the shelf is an ADDRESS (review §1): Back returns to it, links carry it
+      try{const u=new URL(location.href);
+        if(SEL_TRAD)u.searchParams.set("shelf",SEL_TRAD);else u.searchParams.delete("shelf");
+        u.searchParams.delete("au");history.pushState({shelf:SEL_TRAD},"",u);}catch(e){}
+      render();
       try{if(SEL_TRAD&&typeof loadNoteShard==="function")loadNoteShard(SEL_TRAD);}catch(e){}   // this family's bios + introductions, once
       try{document.activeElement.blur();}catch(e){}   // release the hero omnibox so type-to-search reaches the shelf bar
       if(SEL_TRAD)setTimeout(()=>{const e=$("#shelfworks");if(e)e.scrollIntoView({behavior:"smooth",block:"start"});},70);};
@@ -1000,7 +1051,7 @@ function render(){
           if(!a||_junk.test(a))return;c[a]=(c[a]||0)+1;});
           return Object.keys(c).sort((x,y)=>c[y]-c[x]);};
         // the series wall: every tome a small numbered cell, hover names its authors
-        const g=el("div","volgrid");
+        const g=el("div","volgrid"+(cur.vol?" picked":""));
         keys.forEach(v=>{
           const n=v.replace(/^(PL|PG|PO Tome)\s*/,"")||v;
           const c=el("button","vcell"+(cur.vol===v?" on":""));c.type="button";
@@ -1018,9 +1069,12 @@ function render(){
           vh.innerHTML=`<button class=vnav data-v="${esc(prev||"")}" ${prev?"":"disabled"} title="${esc(prev||"")}">&#8249;</button>`+
             `<span class=vn>${esc(cur.vol)}</span>`+
             `<button class=vnav data-v="${esc(next||"")}" ${next?"":"disabled"} title="${esc(next||"")}">&#8250;</button>`+
+            `<button class="vnav vall" type="button" title="Show the whole volume wall">All volumes</button>`+
             `<span class=va>${esc(auths.slice(0,4).join(" \u00b7 "))}${auths.length>4?" \u00b7 \u2026":""}</span>`+
             `<span class=vc>${ws2.length} works</span>`;
-          vh.onclick=e=>{const b=e.target.closest(".vnav");if(b&&b.dataset.v)openVol(b.dataset.v);};
+          vh.onclick=e=>{const b=e.target.closest(".vnav");if(!b)return;
+            if(b.classList.contains("vall")){const gr=sw.querySelector(".volgrid");if(gr){gr.classList.toggle("picked");if(!gr.classList.contains("picked"))gr.scrollIntoView({block:"nearest"});}return;}
+            if(b.dataset.v)openVol(b.dataset.v);};
           panel.appendChild(vh);
           const vn2=(cur.vol.match(/\d+/)||[""])[0];
           const spineRow=w=>{
