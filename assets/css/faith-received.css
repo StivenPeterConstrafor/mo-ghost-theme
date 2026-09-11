@@ -6851,6 +6851,41 @@ mark.faith-find-hit.is-current {
 .btrad-all { display: inline-block; margin-top: 18px; font-family: var(--font-body); font-size: 11px;
   letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-secondary); text-decoration: none; }
 .btrad-all:hover { text-decoration: none; color: var(--color-primary-text); }
+
+/* A reference work under a shelf, rather than a work on it. The DTC is
+   the only one so far. Set apart from the work rows above it by a rule
+   and a label, because a dictionary is a different kind of thing from a
+   treatise and the eye should not have to work that out. */
+.btrad-ref {
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-card-border);
+}
+.btrad-ref-label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+  margin-bottom: 8px;
+}
+.btrad-ref a {
+  font-family: var(--font-body);
+  font-size: 17px;
+  color: var(--color-dark);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-card-border);
+}
+.btrad-ref a:hover { border-bottom-color: var(--color-dark); }
+.btrad-ref-note {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  line-height: 1.5;
+  color: var(--color-muted);
+}
 @media (max-width: 900px) { .btrads { columns: 1; } }
 
 /* The work's own title, under the English. Most of this library has never
