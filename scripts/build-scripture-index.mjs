@@ -119,18 +119,25 @@ const ALIASES = {
   john: ["joh", "jn", "ioan", "ioannis", "ioannem", "johan"],
   acts: ["act", "acta", "actorum", "actes"],
   romans: ["rom", "rm", "romanos"],
-  "1 corinthians": ["1 cor", "1 co", "1 corinth"],
-  "2 corinthians": ["2 cor", "2 co", "2 corinth"],
+  // The Latin accusative is how Migne and the divines cite Paul: "Ad
+  // Corinthios", "Ad Thessalonicenses", "Ad Timotheum". Romans, Galatians,
+  // Ephesians, Philippians, Colossians and Hebrews already carried theirs;
+  // Corinthians, Thessalonians, Timothy, Titus and Philemon did not, so
+  // every Latin citation of them was dropped on the floor. In the live
+  // index that showed up as Patrologia contributing 30 rows to 1 Cor 15
+  // against 7,171 to Romans 8.
+  "1 corinthians": ["1 cor", "1 co", "1 corinth", "1 corinthios"],
+  "2 corinthians": ["2 cor", "2 co", "2 corinth", "2 corinthios"],
   galatians: ["gal", "ga", "galat", "galatas"],
   ephesians: ["eph", "ephes", "ephesios"],
   philippians: ["phil", "philip", "philipp", "philippenses"],
   colossians: ["col", "coloss", "colossenses"],
-  "1 thessalonians": ["1 thess", "1 thes", "1 the"],
-  "2 thessalonians": ["2 thess", "2 thes", "2 the"],
-  "1 timothy": ["1 tim", "1 ti"],
-  "2 timothy": ["2 tim", "2 ti"],
-  titus: ["tit", "tt"],
-  philemon: ["philem", "phlm", "phile"],
+  "1 thessalonians": ["1 thess", "1 thes", "1 the", "1 thessalonicenses"],
+  "2 thessalonians": ["2 thess", "2 thes", "2 the", "2 thessalonicenses"],
+  "1 timothy": ["1 tim", "1 ti", "1 timotheum"],
+  "2 timothy": ["2 tim", "2 ti", "2 timotheum"],
+  titus: ["tit", "tt", "titum"],
+  philemon: ["philem", "phlm", "phile", "philemonem"],
   hebrews: ["heb", "hebr", "hebraeos"],
   james: ["jam", "jas", "iac", "iacobi", "jacobi"],
   "1 peter": ["1 pet", "1 pe", "1 petr"],
@@ -154,8 +161,21 @@ const ALIASES = {
 // alternation below can only match strings that appear in it — so the
 // stem has to be matchable on its own and rejoined with the ordinal.
 const NUMBERED_STEMS = [
-  "corinthians", "corinth", "thessalonians", "thess", "timothy", "tim",
-  "peter", "pet", "petr", "john", "joh", "ioan", "samuel", "sam",
+  // Latin stems sit here for the same reason the English ones do: "I Ad
+  // Corinthios" and "Corinthios I" both detach the ordinal, so the stem
+  // has to stand alone and be rejoined.
+  // The abbreviated stems have to be here too. Migne writes "I Cor. 15",
+  // not "1 Corinthians 15": the ordinal is split off as a roman numeral
+  // and the remainder has to resolve on its own before it can be
+  // rejoined. "cor" was missing, so every roman-numeral Corinthians
+  // citation in the Latin corpus was dropped, which is the whole of the
+  // Corinthians shortfall. A bare stem never resolves without an
+  // ordinal in front of it (LOOKUP has no "cor"), so Latin "cor", the
+  // heart, cannot be read as a citation.
+  "corinthians", "corinth", "corinthios", "cor", "co",
+  "thessalonians", "thess", "thes", "thessalonicenses",
+  "timothy", "tim", "timotheum",
+  "peter", "pet", "petr", "petri", "john", "joh", "jn", "ioan", "samuel", "sam",
   "kings", "kin", "kgs", "chronicles", "chron", "chr", "esdras",
   "maccabees", "macc", "mac", "regum", "reg", "paralipomenon", "paral",
   "kingdoms",
