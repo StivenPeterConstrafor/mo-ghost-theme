@@ -707,6 +707,16 @@
     // drawer with a name and no text than a title dropped in silence.
     if (carried) out.push({ id: "", title: carried, subtitle: "", rows: [], children: [] });
     if (!out.length) return sections;
+    // The rows an unnamed first division held before its first chapter
+    // are the work's front matter — in On Genesis it is Augustine's own
+    // note from the Retractations — and "Section 1" says nothing about
+    // them. extract() already calls exactly these rows "Prologue" when
+    // they sit outside a division, so the same word is used when they
+    // sit inside an unnamed one. Only ever the first, and never where
+    // the source already named a prologue of its own.
+    if (out[0] && !out[0].title && !out.some((s) => s.title === "Prologue")) {
+      out[0].title = "Prologue";
+    }
     out.forEach(asSection);
     return out;
   }
