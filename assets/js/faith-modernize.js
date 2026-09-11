@@ -127,6 +127,20 @@ const ETH_EXCEPTIONS = new Set([
   "method",
 ]);
 
+/* Words that introduce a superlative. If one of these sits immediately
+ * before a word ending in -est, that word is an adjective and not an
+ * archaic second person verb, and Phase 4 leaves it alone. A closed
+ * class, which is what makes it safe; EST_EXCEPTIONS below is an open
+ * one and can only ever list the superlatives somebody thought of. */
+const SUPERLATIVE_MARKERS = new Set([
+  "the", "a", "an", "this", "that", "these", "those",
+  "my", "your", "his", "her", "its", "our", "their", "thy", "thine",
+  "mine", "whose", "one", "ones", "of", "in", "at", "by", "for", "with",
+  "very", "most", "much", "far", "second", "third", "next", "last",
+  "and", "or", "but", "is", "was", "are", "were", "be", "been", "being",
+  "o", "oh", "god's", "christ's", "lord's", "man's",
+]);
+
 /** Words ending in -est that are NOT archaic verb forms */
 const EST_EXCEPTIONS = new Set([
   "best",
@@ -560,6 +574,24 @@ function modernizeEthVerb(word) {
   let modernStem;
   let suffix;
 
+  // Ask the dictionary before guessing. "abideth" and "becometh" both
+  // end in a consonant once -eth is removed, so the rule below took
+  // "abid" and "becom" and produced "abids" and "becoms". The silent e
+  // belongs to the stem in both, and the library's own word list knows
+  // that "abides" and "becomes" are words while "abids" and "becoms"
+  // are not. Only the -th stem is offered here: the -eth stem is what
+  // the rules below already prefer, so this decides nothing it would
+  // otherwise have got right. Skipped entirely when no lexicon is
+  // loaded, which is the same condition the spelling pass uses.
+  if (KNOWN && stemFromTh.endsWith("e") && stemFromTh.length >= 3) {
+    const viaE = `${stemFromTh}s`;
+    const viaConsonant = `${stemFromEth}s`;
+    if (KNOWN.has(viaE) && !KNOWN.has(viaConsonant)) {
+      const out = viaE;
+      return isCapitalized ? out.charAt(0).toUpperCase() + out.slice(1) : out;
+    }
+  }
+
   // Prefer consonant-ending stem from removing -eth (e.g., bringeth → bring)
   // UNLESS the stem ends in 'v' which virtually always needs a silent 'e' (giveth → give)
   if (stemFromEth.length >= 2 && /[^aeiouv]$/.test(stemFromEth)) {
@@ -655,9 +687,28 @@ function modernizeText(text) {
   });
 
   // Phase 4: Pattern-based -est verb modernization (2nd person)
-  // {2,} = at least 2 chars before "est", so minimum 5-char words
-  result = result.replace(/\b[A-Za-z]{2,}est\b/g, (match) => {
-    return modernizeEstVerb(match);
+  //
+  // -est is TWO endings wearing one spelling: the archaic second person
+  // ("thou hearest") and the ordinary English superlative ("the
+  // fairest"). Until this pass the phase rewrote every word ending in
+  // -est and relied on EST_EXCEPTIONS to spare the superlatives, which
+  // is a list of 74 against an open class. Everything it missed was
+  // quietly destroyed: fairest -> fair, hardest -> hard, easiest ->
+  // easy, eldest -> eld, choicest -> choic, almagest -> almag. In a
+  // library that quotes the Song of Songs, "the fairest of ten
+  // thousand" was rendering as "the fair of ten thousand".
+  //
+  // The discriminator is the word in front. A superlative is introduced
+  // by a determiner, a possessive or an intensifier; a second person
+  // verb is not. That is a closed class and it is checked here rather
+  // than in the verb function, because only the caller can see context.
+  //
+  // Checking for "thou" instead would not work: Phase 2 has already
+  // turned thou into you by the time this runs.
+  result = result.replace(/([A-Za-z']+\s+)?\b([A-Za-z]{2,}est)\b/g, (match, before, word) => {
+    const prev = (before || "").trim().toLowerCase().replace(/[^a-z']/g, "");
+    if (SUPERLATIVE_MARKERS.has(prev)) return match;
+    return (before || "") + modernizeEstVerb(word);
   });
 
   // Phase 5: Standalone "art" → "are" (the verb "to be" in archaic 2nd person)
@@ -807,6 +858,36 @@ const REWRITES = [
   [/o/g, "u", SHIFT], // soche
   [/e$/, "", TAKE], // silent terminal e
   [/([bcdfgklmnprstvz])\1/, "$1", TAKE], // synne, allmighty
+  // ── Added 2026-09-11, measured against 300 Early English Books works
+  // (16.6M running words). Before this pass 2.01% of every word in that
+  // corpus was left as printed. Each rule below was scored for what it
+  // recovers and for what it breaks, and none of them alters a single
+  // one of the 33,841 words the library itself uses.
+
+  // u for v after a CONSONANT, which is most of them. The rule above
+  // only fired between two vowels, so "haue" and "euery" modernised
+  // while "selues", "serue", "siluer", "twelue" and "obserue" did not.
+  // This is the largest single class of Early Modern spelling in the
+  // corpus: 116 word types, 24,021 occurrences. q is excluded so that
+  // "queen" is never considered.
+  [/([a-pr-tv-z])u([aeiou])/g, "$1v$2", RESTORE],
+  // -ely for -ly. "onely" alone is 12,124 occurrences across 224 of the
+  // 300 works sampled, the commonest unmodernised word in the corpus.
+  // Also truely, plainely, expressely, certainely, duely.
+  [/ely$/, "ly", TAKE],
+  // -our for -or: emperour, errour, governour, inferiour, authour,
+  // superiour, terrour, mediatour. This does NOT touch honour, colour,
+  // saviour, favour, labour or neighbour: the library's translations use
+  // both spellings, so all of those are in the lexicon already and
+  // bestSpelling returns early for anything it holds.
+  [/our$/, "or", SHIFT],
+  // -aies for -ays: alwaies, daies, waies, saies, laies, plaies.
+  [/aies$/, "ays", RESTORE],
+  // neere, yeere, beere. The doubled e is a long vowel the modern
+  // spelling writes "ea".
+  [/eere/, "ear", SHIFT],
+  // therfore, therof, therby, wherfore: the compositor dropped the e.
+  [/^ther/, "there", RESTORE],
   [/vv/g, "w", RESTORE],
 ];
 
@@ -820,15 +901,187 @@ const spellCache = new Map();
 // "sine" — both one step, and "sine" is in the dictionary. In a
 // theological library that is not a spelling mistake, it is a
 // different subject.
-const SETTLED = { sinne: "sin", synne: "sin", sinnes: "sins", synnes: "sins" };
+/* Early Modern spellings the rules cannot reach, and the modern word.
+ *
+ * Curated 2026-09-11 from a frequency count over 300 Early English Books
+ * works (16.6M running words). Every entry below was seen at least 120
+ * times; they are listed roughly in that order so the weight of the list
+ * is visible. The rules in REWRITES handle the regular classes (u/v,
+ * i/j, -ely, -our, -aies); what is left here is irregular and has to be
+ * written down.
+ *
+ * Deliberately NOT in this list, and they show up high in the same
+ * count, so this is a decision and not an oversight:
+ *
+ *   Law French and legal Latin. feoffment, feoffor, seisin, seisina,
+ *   disseisin, disseisor, advowson, attornment, villein, homagium,
+ *   warantum, querens, petens, assisa. These are terms of art in the
+ *   year books and the abridgements, they are still spelled this way in
+ *   legal history, and "modernising" them would be an error.
+ *
+ *   Proper nouns, except where the modern form is not in doubt. sathan
+ *   and esay are here; glocester, paules, lewes, montaigu and pequin
+ *   are not, because a place or a person is entitled to its own
+ *   spelling and we would be guessing.
+ *
+ *   Scanning debris. dly, eing, upo, betw, cuph, duw, heic, euist,
+ *   ghour. A word list cannot repair a bad transcription, and pretending
+ *   to would hide the damage rather than show it.
+ *
+ *   Ambiguous forms. "powre" is power or pour and the page decides;
+ *   "stile" is style or stile; "smart" and "amity" and "conceited" and
+ *   "ordnance" are modern words already. Left as printed.
+ */
+const SETTLED = {
+  sinne: "sin", synne: "sin", sinnes: "sins", synnes: "sins",
+
+  // Doubled and dropped consonants
+  councell: "council", councels: "councils", councel: "council",
+  battel: "battle", battaile: "battle", battayle: "battle",
+  cattell: "cattle", cattel: "cattle", wals: "walls", cals: "calls",
+  litle: "little", littl: "little", shal: "shall",
+  maner: "manner", mannor: "manner", colledge: "college",
+  knowledg: "knowledge", bigness: "bigness",
+
+  // e where the modern word has none, and the reverse
+  vertue: "virtue", vertues: "virtues", vertuous: "virtuous",
+  countrey: "country", countreys: "countries",
+  sence: "sense", beeing: "being", seing: "seeing",
+  wisedome: "wisdom", commandement: "commandment",
+  commandements: "commandments", commaundement: "commandment",
+  ministerie: "ministry", ministery: "ministry",
+  governement: "government", falshood: "falsehood",
+  houshold: "household", wholsome: "wholesome",
+  extreame: "extreme", extream: "extreme", speach: "speech",
+  boke: "book", kepe: "keep", dede: "deed", herte: "heart",
+  eche: "each", geve: "give", geven: "given", quene: "queen",
+  yere: "year", yeer: "year", yeers: "years", yeres: "years",
+  moneths: "months", shoare: "shore", neer: "near",
+  tast: "taste", sute: "suit", vail: "veil", hony: "honey",
+  grete: "great", deth: "death", thow: "thou", theim: "them",
+
+  // -ed and -ing the compositor contracted
+  entred: "entered", entring: "entering",
+  threatned: "threatened", threatning: "threatening",
+  threatnings: "threatenings",
+  remembred: "remembered", remembring: "remembering",
+  rendred: "rendered", rendring: "rendering",
+  administred: "administered", ministred: "ministered",
+  numbred: "numbered", hindred: "hindered", hapned: "happened",
+  quickned: "quickened", quickning: "quickening",
+  hardned: "hardened", fastned: "fastened", enlightned: "enlightened",
+  wandring: "wandering", setled: "settled", caried: "carried",
+  stopt: "stopped", lookt: "looked", mixt: "mixed", fixt: "fixed",
+  drawen: "drawn", knowen: "known", devided: "divided",
+
+  // s and z, c and t, and the -tion spellings
+  seised: "seized", suspition: "suspicion", ascention: "ascension",
+  apostacy: "apostasy", subiection: "subjection", iniuries: "injuries",
+  choise: "choice", pretious: "precious", gratious: "gracious",
+  prophane: "profane", physitian: "physician",
+
+  // per- and pre- that were written with a w or an i
+  perswade: "persuade", perswaded: "persuaded",
+  perswasion: "persuasion", perswasions: "persuasions",
+
+  // in- and en-, im- and em-
+  encrease: "increase", encreased: "increased",
+  imployed: "employed", imploy: "employ", imployment: "employment",
+  indure: "endure", indued: "endued", imbrace: "embrace",
+  intreated: "entreated", intituled: "entitled", injoy: "enjoy",
+  intire: "entire", injust: "unjust", uncapable: "incapable",
+  unpossible: "impossible",
+
+  // where-, there- and some- compounds
+  wherof: "whereof", wherin: "wherein", wherby: "whereby",
+  wheras: "whereas", wherfore: "wherefore", wherevpon: "whereupon",
+  somtimes: "sometimes", somwhat: "somewhat", whenas: "when",
+
+  // -ly
+  expresly: "expressly", immediatly: "immediately", falsly: "falsely",
+  meerly: "merely", wholy: "wholly", throughly: "thoroughly",
+  publickly: "publicly", publikely: "publicly", fiftly: "fifthly",
+
+  // -our and -ck plurals the single-word rules miss
+  errours: "errors", authours: "authors", superiours: "superiors",
+  ambassadours: "ambassadors", successours: "successors",
+  hereticks: "heretics", heretikes: "heretics",
+  heretiques: "heretics", heretickes: "heretics",
+
+  // th for d, and other consonant swaps
+  burthen: "burden", burthens: "burdens",
+  murther: "murder", murthered: "murdered",
+
+  // Long vowels spelled with a digraph
+  bloud: "blood", bloude: "blood", bloudy: "bloody", floud: "flood",
+  raigne: "reign", raigned: "reigned",
+  soveraigne: "sovereign", soveraign: "sovereign",
+  soveraignty: "sovereignty", supream: "supreme", compleat: "complete",
+  cloath: "cloth", cloathed: "clothed", cloaths: "clothes",
+  cloathing: "clothing", smoak: "smoke", aboord: "aboard",
+  streight: "straight", waight: "weight", hainous: "heinous",
+  apparant: "apparent", desart: "desert", margent: "margin",
+  seaven: "seven", fourty: "forty", fift: "fifth",
+  shepheard: "shepherd", schollers: "scholars", sheriffe: "sheriff",
+  friers: "friars", frier: "friar", earles: "earls",
+  reliques: "relics", tearmes: "terms", accompt: "account",
+  woful: "woeful", wofull: "woeful", fearefull: "fearful",
+  enimies: "enemies", sutable: "suitable", yong: "young",
+  thorow: "through", togither: "together", antient: "ancient",
+  ecclesiasticall: "ecclesiastical", apostolique: "apostolic",
+  catholike: "catholic", alledge: "allege", alledged: "alleged",
+  alleadged: "alleged", beleve: "believe", praier: "prayer",
+  praiers: "prayers", toke: "took", iland: "island", ilands: "islands",
+  divel: "devil", divels: "devils", maister: "master",
+  mayster: "master", souldier: "soldier", souldiers: "soldiers",
+  priviledge: "privilege", priviledges: "privileges",
+  passeover: "Passover", sabboth: "Sabbath",
+
+  // Spellings of the auxiliaries and function words
+  shulde: "should", shuld: "should", shold: "should",
+  sholde: "should", wolde: "would", wold: "would",
+  bycause: "because", bicause: "because", whan: "when",
+  yow: "you", sith: "since", whiles: "while", nother: "neither",
+
+  // Names whose modern form is not in doubt
+  sathan: "Satan", esay: "Isaiah", isay: "Isaiah", jerom: "Jerome",
+
+  /* Forms the LEXICON was vouching for, so no rule could ever reach
+   * them: bestSpelling returned early on anything the harvested word
+   * list called modern. Found by counting the corpus a second time
+   * WITHOUT excluding lexicon words, which is where they were hiding.
+   * "bee" alone is 19,286 occurrences in 150 works.
+   *
+   * Only the unambiguous ones are taken. The same scan proposed
+   * use -> us, note -> not, fore -> for, haste -> hast, fare -> far,
+   * sine -> sin and diverse -> divers, every one of which would break a
+   * common modern word to fix a rarer archaic one. A terminal -e is only
+   * safe to drop when what is left is the obviously intended word and
+   * the form itself is not modern English. */
+  bee: "be", ende: "end", lande: "land", parte: "part", newe: "new",
+  sorte: "sort", stande: "stand", regarde: "regard", seconde: "second",
+  schisme: "schism", credite: "credit", arte: "art",
+  christe: "Christ", neuer: "never",
+};
 
 // Fewest changes wins, so the search goes breadth first and stops at
 // the first depth that lands on a real word. Anything else would let a
 // four-step mangling beat a one-step correction. Within a depth the
 // rank above decides, so a deletion is preferred to a vowel swap.
 function bestSpelling(lower) {
-  if (KNOWN.has(lower)) return null;
+  // SETTLED is consulted BEFORE the lexicon, because it is a decision
+  // somebody made and the lexicon is a guess harvested from prose.
+  //
+  // The two disagree more often than you would hope. The lexicon is
+  // built from the English lane of the Latin works, and that lane
+  // carries archaic renderings, quoted Early Modern passages and some
+  // untranslated Latin, so forms like "obiect", "doeth", "neuer",
+  // "subiect" and "iohn" are all in it at five works or more. Any word
+  // the lexicon wrongly believes is modern was previously returned
+  // untouched here, which is why several of them survived every rule in
+  // the table above.
   if (SETTLED[lower]) return SETTLED[lower];
+  if (KNOWN.has(lower)) return null;
   let frontier = [lower];
   const seen = new Set([lower]);
   for (let d = 0; d < MAX_DEPTH; d += 1) {
