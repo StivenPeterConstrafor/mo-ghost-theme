@@ -13,6 +13,7 @@ Read a spec to know what a surface must do; read the matching recreate sheet to 
 
 ## 0. Start here (reading order)
 
+0. **The handoff hub** — a living web page that mirrors this index and adds live screenshots, condensed proof batteries, endpoint recipes and deep-dive protocols per area: https://claude.ai/code/artifact/cb675bcb-22e3-4993-8f82-2bf10f389a7c (a private Claude artifact; the link works once the owner shares it with you). It is republished at the same address as things ship; this README stays the source of truth for organisation, the hub adds the pictures and the batteries.
 1. **LANDING-PAGE-SPEC.md** — how the library is organised (shelves → authors → sets → volumes) and what data it reads. Everything else hangs off this.
 2. **READER-SPEC.md** — the reader. §0 is the gap list for MereO's current reader (flat sections, no facsimile, TOC-driven) and is the single largest piece of work. **READER-COMPARISON.md** explains the two readers side by side, with code.
 3. **SEARCH-SPEC.md** — every search box and the omnibox, algorithm by surface; **ASK-SPEC.md** — the Ask workspace behind `/?find=ask` and the API contract.
@@ -115,6 +116,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 
 | Date | Document | Commit |
 |---|---|---|
+| 09-11 | Handoff hub published (living artifact: §0 item 0 — screenshots, batteries, deep dives; grows with this index) | — (Claude artifact, updated in place) |
 | 09-11 | ASK-SPEC §6 bench cap 24; SEARCH-SPEC §3.4 scripture.json commentary gate; R2-SYNC-SPEC §3 (7) worker edge cache + §3.1 log (scripture.json cleaned, Lightfoot added) | mo-ghost-theme 9504a65f |
 | 09-11 | READER-SPEC §6 ordinal lookahead rule + battery line; R2-SYNC-SPEC §3.1 corpus-change log (EN-lane Latin heads fixed, 4,337 in 472 works) | mo-ghost-theme ed0dba01 |
 | 09-11 | ASK-SPEC.md §3.2/§3.6/§8: resizable source pane divider (shipped both sites) | mo-ghost-theme 496f879b |
