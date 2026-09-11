@@ -369,7 +369,9 @@ byo             false to refuse "Use my ChatGPT" routing
 Behaviour: relevance gate (an unrelated question returns a short "Ask is for this library's
 texts…" answer flagged `relevance:'unrelated'`); answer cache (`ASK_CACHE=1`, single-turn,
 not deep, no notebook, 14 days, key = site+normalised question+scope); crosswalk of
-Sentences / Summa / Scripture references in the question; the retrieval stack of
+Sentences / Summa / Scripture references in the question (up to **24** landings per reference from
+`v1/sentences.json` / `v1/summa.json` / `v1/scripture.json`; raised from 14 on 2026-09-11 so a chapter
+with 17 real commentaries keeps them all — same cap in the worker's `miner.js`); the retrieval stack of
 SEARCH-SPEC §5 (planner, channels, RRF, editions collapse, 22-page round-robin, rerank);
 `ENUM_RE` ("all the times…", "every place…", "list every…") or a work scope switches to
 **enumerate** mode (exhaustive, no rerank); the generation model `ASK_GEN_MODEL`

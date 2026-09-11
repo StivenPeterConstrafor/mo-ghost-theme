@@ -282,6 +282,7 @@ from the URL and the chips; `facetOk(slug)` gates every mode's rows (work must e
   else `BOOK_ABBR` table (gen, exod, ex, lev, num, deut, dt, …), else the first key that
   *starts with* the text, else the first key that starts with it after dropping a leading number
   (only if both sides agree on having a number).
+- `v1/scripture.json` holds only **commentary** landings (2026-09-11 gate in `tools/build_scripture.py`: a work is admitted to a book's bench only with registry membership in `commentaries.json bible[].w`, or the Latin book stem plus testament-marker evidence in its title/structure; the ungated builder had poured philosophical opera into book benches — 8,844 of 12,659 rows dropped).
 - Rows = `scripture.json[book][chapter]` triples `[slug, page, excerpt]`, filtered by `facetOk`,
   first 300, linked to `/read?w=<slug>&p=<page>`; the verse is chapter-level ("verse N will be
   on these pages"). Empty query shows `scriptureBrowse()` (book/chapter doors) and door rows to
