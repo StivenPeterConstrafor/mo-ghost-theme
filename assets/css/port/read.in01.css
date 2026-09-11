@@ -1527,6 +1527,8 @@ body.selg-la .row .en,body.selg-la .row .en *{user-select:none;-webkit-user-sele
 .selpop .sw.clear{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e9dcc4 3px,#e9dcc4 5px)}
 .selpop button.pb{font:600 11px/1 var(--sans);color:var(--muted);background:none;border:0;border-left:1px solid var(--rule-soft);padding:.3rem .55rem;cursor:pointer}
 .selpop button.pb:hover{color:var(--accent2)}
+.rowx.drifted{display:flex;gap:.6rem;align-items:baseline;font-size:.78rem;color:var(--faint,#8a8580);border:1px dashed var(--border);border-radius:6px;padding:.25rem .6rem;margin:.3rem 0}
+.rowx.drifted .act button{background:none;border:1px solid var(--border);border-radius:5px;font-size:.72rem;padding:.05rem .45rem;cursor:pointer;color:inherit;margin-left:.3rem}
 .row .trpencil{position:absolute;right:-1.9rem;top:.05rem;width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:var(--card-bg);color:var(--accent);cursor:pointer;display:none;font-size:12px;padding:0}
 .row:hover .trpencil{display:block}
 @media(max-width:1100px){.row .trpencil{display:none}}
