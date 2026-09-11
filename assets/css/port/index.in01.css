@@ -818,7 +818,7 @@ body{font-size:17px;line-height:1.55;letter-spacing:-.011em}
 .shelfsearch{display:block;width:100%;font:16px/1.2 var(--sans);color:var(--fg);background:var(--card-bg);
  border:0;border-radius:12px;box-shadow:0 0 0 1px var(--border),0 8px 22px -18px rgba(42,28,14,.5);
  padding:.72rem 1rem .72rem 2.5rem;margin:.15rem 0 1rem;
- position:sticky;top:3.4rem;z-index:6;
+ position:sticky;top:5rem;z-index:6;
  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a8462b' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.8-3.8'/%3E%3C/svg%3E");
  background-repeat:no-repeat;background-size:1.05rem;background-position:.85rem center}
 .shelfsearch::placeholder{color:var(--muted)}

@@ -1171,10 +1171,25 @@ function render(){
       ini.setAttribute("aria-label","Filter authors by initial");
       ini.innerHTML=`<button class="inib${!cur.ini?" on":""}" data-i="" aria-pressed="${!cur.ini}">All</button>`+
         Object.keys(inis).sort().map(i=>`<button class="inib${cur.ini===i?" on":""}" data-i="${i}" aria-pressed="${cur.ini===i}">${i}<span>${inis[i]}</span></button>`).join("");
-      ini.onclick=e=>{const b=e.target.closest(".inib");if(!b)return;cur.ini=(cur.ini===b.dataset.i?null:b.dataset.i)||null;render();};
+      ini.onclick=e=>{const b=e.target.closest(".inib");if(!b)return;
+        // in the All view a letter tap JUMPS (the list is one alphabet — no
+        // reason to re-render); a second tap on the same letter filters to it
+        if(!cur.ini&&b.dataset.i){const d=document.getElementById("alet-"+b.dataset.i);
+          // jump to the letter's FIRST SECTION, not the divider: a stuck
+          // position:sticky divider reads as already-in-view and
+          // scrollIntoView does nothing
+          const tgt=d&&d.nextElementSibling;
+          if(tgt&&!b.classList.contains("jumped")){ini.querySelectorAll(".inib").forEach(x=>x.classList.remove("jumped"));b.classList.add("jumped");
+            tgt.scrollIntoView({block:"start"});return;}}
+        cur.ini=(cur.ini===b.dataset.i?null:b.dataset.i)||null;render();};
       sw.appendChild(ini);
+      {let _lastIni=null;
       Object.keys(m).filter(a=>!cur.ini||(a[0]||"#").toUpperCase()===cur.ini).sort((a,b)=>a.localeCompare(b))
-        .forEach(a=>sw.appendChild(authorSection(a,m[a])));
+        .forEach(a=>{
+          const i0=(a[0]||"#").toUpperCase();
+          if(!cur.ini&&i0!==_lastIni){_lastIni=i0;
+            const d=el("div","alet");d.textContent=i0;d.id="alet-"+i0;sw.appendChild(d);}
+          sw.appendChild(authorSection(a,m[a]));});}
       lib.appendChild(sw);
     };
     // ENGLISH DIVINES (owner 2026-08-17): party first — Puritans, Anglicans, Other —
