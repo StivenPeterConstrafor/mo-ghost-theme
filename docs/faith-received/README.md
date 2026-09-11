@@ -14,7 +14,7 @@ Read a spec to know what a surface must do; read the matching recreate sheet to 
 ## 0. Start here (reading order)
 
 1. **LANDING-PAGE-SPEC.md** — how the library is organised (shelves → authors → sets → volumes) and what data it reads. Everything else hangs off this.
-2. **READER-SPEC.md** — the reader. §0 is the gap list for MereO's current reader (flat sections, no facsimile, TOC-driven) and is the single largest piece of work.
+2. **READER-SPEC.md** — the reader. §0 is the gap list for MereO's current reader (flat sections, no facsimile, TOC-driven) and is the single largest piece of work. **READER-COMPARISON.md** explains the two readers side by side, with code.
 3. **SEARCH-SPEC.md** — every search box and the omnibox, algorithm by surface; **ASK-SPEC.md** — the Ask workspace behind `/?find=ask` and the API contract.
 4. **COLLECTIONS-SPEC.md** — how MereO's own "collections" landing and rooms must be restructured by tradition.
 5. Then the surface specs (§2 below) and the data contracts (§3 below) as needed.
@@ -37,6 +37,7 @@ Read a spec to know what a surface must do; read the matching recreate sheet to 
 | Document | Home | Covers | Ian's action |
 |---|---|---|---|
 | **READER-SPEC.md** | specs | §0 what MereO's reader does today vs what it must be (page-native, parallel lanes, facsimile pane, TOC = navigation not structure); URL grammar; data contract; page model and DOM; navigation; facsimile; Scripture links (incl. the 09-11 short abbreviations Dt./Mt./Mk./Lk./Jn.); the `?hl=` highlight door; embedded previews (iframe must not be lazy); research layer; Migne specifics; typography; MereO differences; checklist | Replace the "Dynamic Reader" with the ported `reader-core.js` + `read-tools.js` (already on `ask-port-ui`); acceptance on the Sedan volume in §0 |
+| **READER-COMPARISON.md** | specs | Ian's Dynamic Reader (`faith-reader.js`) versus the ported page-native reader, side by side with code: TOC-accordion model vs one folio per printed page, lanes, facsimile, navigation, deep links, notes, research layer; migration steps; acceptance battery; full template/shim/config source and function indexes | Read before touching the reader; follow §5 (routes, retire `faith-reader.js` for library works, worker routes) |
 | **WITNESSES-SPEC.md** | specs | The five relations when one work is held twice (dupfold, editions, complementary witnesses facsimile + born-digital, workgroups, second copies); what each does on every surface; worked examples | §4 in order: hide `dupfold`, one per edition group in results, badge complementary witnesses both ways, bands display-only, counts exclude secondaries |
 | **SEARCH-SPEC.md §6** | specs | The reader's Find bar and "Search whole work" | Comes with the ported reader |
 
@@ -108,6 +109,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 
 | Date | Document | Commit |
 |---|---|---|
+| 09-11 | READER-COMPARISON.md (+ READER-SPEC §0 corrected) | mo-ghost-theme (this commit) |
 | 09-11 | DESK_INSTRUCTIONS.md (desk research-rail card redesign; theme hunks 5756a7a) | mo-workers 8cd9690 |
 | 09-11 | ASK-SPEC.md | mo-ghost-theme 79f9414 |
 | 09-11 | README.md (this index) | mo-ghost-theme 8a0d95d |
