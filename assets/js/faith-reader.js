@@ -3921,9 +3921,39 @@
   // Longer than this and a "heading" is a paragraph wearing a hash.
   const HEADING_MAX = 110;
 
+  // Where a paragraph ends.
+  //
+  // This renderer assumed Markdown's rule: a blank line opens a new
+  // paragraph, a single newline is a soft wrap to be joined up with a
+  // space. The Latin corpus does not write that way. Its pages carry no
+  // blank lines at all and one newline per block. Checked against the
+  // TEI for the same pages, a newline in the shard text lands exactly
+  // where the TEI opens a <p> or a <head>, and across fourteen sampled
+  // works it never once fell inside a paragraph. So every page of a
+  // sharded work collapsed into one block, and a section joined those
+  // blocks end to end: a median paragraph of 160,748 characters, the
+  // longest 360,063. That is the wall of text.
+  //
+  // Both conventions are real, though, and this renderer also serves
+  // EEBO and Migne. So the text is asked which one it is. Hard-wrapped
+  // text clusters its lines just under a fixed column; text whose
+  // newlines are paragraph breaks does not. If nine lines in ten come
+  // in under a hundred characters the newlines are wraps and are joined
+  // as before. Otherwise they are breaks, and they are honoured.
+  const WRAP_WIDTH = 100;
+
+  function newlineIsParagraph(text) {
+    const lines = String(text).split("\n").filter((l) => l.trim().length > 8);
+    if (lines.length < 4) return false;
+    const lens = lines.map((l) => l.length).sort((a, b) => a - b);
+    return lens[Math.floor(lens.length * 0.9)] > WRAP_WIDTH;
+  }
+
   function renderMarkdown(text) {
     if (!text) return "";
-    const paragraphs = text.split(/\n\n+/);
+    const paragraphs = newlineIsParagraph(text)
+      ? text.split(/\n+/)
+      : text.split(/\n\n+/);
     let html = "";
     paragraphs.forEach((para) => {
       para = para.trim();
