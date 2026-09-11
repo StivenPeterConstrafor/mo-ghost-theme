@@ -878,6 +878,7 @@
     "licensed": "The licence on this collection does not allow the passage to be shown here.",
     "work-not-held": "This library does not hold the text of this work, only the citation.",
     "locus-not-found": "The cited place is not in the copy of the work held here.",
+    "work-has-no-columns": "The copy of this work held here carries no column numbers, so the citation cannot be located in it.",
     "locus-not-held": "The text of this part of the work is not held here.",
     "no-column-range": "This work has no column range recorded, so the citation cannot be located.",
     "no-locus": "The index recorded no place in the work for this statement.",
