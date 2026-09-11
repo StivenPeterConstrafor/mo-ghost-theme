@@ -1,0 +1,29 @@
+{{!-- The beta band, at the foot of every Faith Received page.
+
+     One partial rather than a copy per template, because the copy in it
+     changes and eleven divergent copies of a status notice is how a site
+     ends up telling a reader two different things about the same thing.
+
+     WHAT IT IS FOR. Saying plainly that the project is unfinished, and
+     asking for the bug. It deliberately does NOT enumerate what is thin
+     any more: that list was a standing promise to keep a paragraph in
+     step with the data, which it never was. It claimed the scripture
+     index did not cover every collection at a moment when the gap was
+     something else entirely.
+
+     THE BUTTON. [data-report-issue] is bound by assets/js/faith-report-
+     issue.js, which ships with the theme on every page. Nothing here
+     needs a script tag of its own.
+
+     PLACEMENT. Last band before the footer, inside <main>. On the
+     landing page it sits between the member CTA and the transparency
+     block, which is where it has always been. --}}
+<section class="lp-band lp-band--cream lp-beta">
+  <div class="container container-narrow">
+    <p class="lp-num">Beta</p>
+    <p>We are actively working on The Faith Received. We expect there are bugs. If you find one, please tell us so we can make it better.</p>
+    <p class="lp-beta-act">
+      <button type="button" class="btn btn-primary" data-report-issue>Give Feedback</button>
+    </p>
+  </div>
+</section>
