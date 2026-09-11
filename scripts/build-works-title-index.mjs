@@ -10,12 +10,36 @@ import { writeFileSync, readFileSync } from "node:fs";
 const B="https://mo-tfr-library.mo-podcast-feed.workers.dev";
 const j = async (u) => { const r=await fetch(u,{headers:{"user-agent":"curl/8.7.1"}}); if(!r.ok) throw new Error(`${r.status} ${u}`); return r.json(); };
 const EX=/^(pld|pg|po|eebo)-\d+$/;
+
+/* Author names, canonicalised across the shelves.
+ *
+ * The same person is spelled differently by different catalogues, and
+ * an author scope that does not know that finds a fraction of a
+ * writer's work. Athanasius is the case that exposed it: the native
+ * catalogue was folded to "Athanasius of Alexandria" on 2026-09-11, but
+ * Patrologia Graeca's own nav still says "Athanasius", so 110 of his
+ * works sat under a name the author page never asks for.
+ *
+ * Two sources, and neither alone is enough:
+ *   v1/author_aliases.json  the corpus owner's 42 rulings (Petau, Beza,
+ *                           Photius, Mansi and the rest).
+ *   FOLDS below             the two folds applied directly to the
+ *                           native catalogue and recorded only in
+ *                           docs/faith-received/CATALOGUE-CHANGES-2026-09-11.md,
+ *                           so they are nowhere a machine can read.
+ */
+const FOLDS = {
+  "Athanasius": "Athanasius of Alexandria",
+  "Bede": "Bede the Venerable",
+};
+const ALIASES = { ...FOLDS, ...(await j(`${B}/v1/author_aliases.json`).catch(() => ({}))) };
+const canonAuthor = (a) => ALIASES[String(a || "").trim()] || String(a || "").trim();
 const rows=[];
 const slugWords = (id) => /^[a-z0-9-]+$/.test(String(id)) ? String(id).replace(/-/g," ") : "";
 function push(c,id,t,a,y,latin){
   t=String(t||"").trim(); if(!t) return;
   const alt=[String(latin||"").trim(), slugWords(id)].filter(Boolean).join(" ");
-  rows.push([c,String(id),t,String(a||"").trim(),y||0,alt]);
+  rows.push([c,String(id),t,canonAuthor(a),y||0,alt]);
 }
 const ll=await j(`${B}/v1/works-index.json`);
 for (const w of ll.works) if(!EX.test(w.slug||"")) push("tfr",w.slug,w.title,w.author,0,w.title_la);
