@@ -237,6 +237,11 @@ const REF_RE = new RegExp(
 // happened to follow a chapter number.
 const MAX_VERSE = 176;
 
+/* Does the text immediately after a reference begin with a book name?
+ * Used by the ordinal lookahead in extractRefs. Built from NAME_ALT so
+ * it can never drift from the names the matcher actually knows. */
+const ORD_THEN_BOOK = new RegExp(String.raw`^\s*(?:${NAME_ALT})\b`, "i");
+
 // Every surface form actually seen, and what it was read as. This is
 // the key: not the table of forms we guessed at, but the forms the
 // corpus really uses, counted, so a wrong reading can be found by
@@ -310,6 +315,35 @@ export function extractRefs(segments) {
       // The verse, where the citation gave one.
       let v = m[4] ? parseInt(m[4], 10) : 0;
       if (v < 1 || v > MAX_VERSE) v = 0;
+
+      /* ORDINAL LOOKAHEAD. "Matthew 19, 1 Corinthians 7" is two
+       * references, not Matthew 19:1 followed by a bookless
+       * "Corinthians 7". A small number after a comma, followed by a
+       * book name, is the NEXT book's ordinal.
+       *
+       * Left unchecked this was wrong twice over: it invented a verse
+       * the text never cited, AND it swallowed the ordinal, so
+       * "1 Corinthians" arrived as bare "corinthians", which is in no
+       * canon list and was dropped. A false verse on one book and a
+       * lost citation on the next, from one comma.
+       *
+       * Ordinals only run to 5 (5 Maccabees is the furthest any canon
+       * goes), so a larger number after a comma is a real verse and is
+       * left alone. On a match the verse is discarded and lastIndex is
+       * wound back to the digit, so the next pass reads it as the
+       * ordinal it is.
+       *
+       * The rule is the corpus owner's, recorded in his READER-SPEC on
+       * 2026-09-11; this is the same rule applied to the index rather
+       * than to the reader's links. */
+      if (v && v <= 5) {
+        const tail = hay.slice(m.index + m[0].length);
+        if (ORD_THEN_BOOK.test(tail)) {
+          v = 0;
+          const back = m[0].lastIndexOf(String(m[4]));
+          if (back > 0) REF_RE.lastIndex = m.index + back;
+        }
+      }
 
       const surface = (m[1] ? `${m[1]} ` : "") + raw;
       noteVariant(surface.toLowerCase(), canon);
