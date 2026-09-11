@@ -343,7 +343,7 @@
           if (!Array.isArray(s.children)) s.children = [];
           if (!Array.isArray(s.rows)) s.rows = [];
         });
-        data.sections = nestByHeadings(divideFlatSections(data.sections));
+        data.sections = nestByHeadings(liftUnnamedSections(divideFlatSections(data.sections)));
         meta = {
           title: data.title || slug,
           author: data.author || data.work || corpus.label,
@@ -376,7 +376,7 @@
         if (!data || !data.sections || !data.sections.length) {
           throw new Error("no readable sections");
         }
-        data.sections = nestByHeadings(divideFlatSections(data.sections));
+        data.sections = nestByHeadings(liftUnnamedSections(divideFlatSections(data.sections)));
         meta = {
           title: data.title || slug,
           author: data.work || corpus.label,
@@ -647,6 +647,55 @@
   const NUMERALS_ONLY = /^[\dIVXLCDMivxlcdm.,;:()[\]\s–—-]+$/;
   const SENTENCE_END = /[.?!;:,]$/;
   const TRAILING_QUOTE = /["'»”)\]]+$/;
+
+  // Divisions the source declared but never named.
+  //
+  // The Enchiridion ships ten <details class="collapse-question">, and
+  // eight of them carry <span class="head-la"></span> — an empty title.
+  // Seven became a drawer with a chevron, a rule above it and nothing
+  // written on it, stacked one after another down the page, and the
+  // reader had to open each in turn to find out what was inside. A
+  // ninth, "On Faith", had a name and no content at all.
+  //
+  // An unnamed division is not a division: its chapters are promoted to
+  // the level it was occupying, which is where they read. A named one
+  // with nothing under it is a super-heading standing over what
+  // follows, so its title is carried onto the next division that has
+  // something in it. nestByHeadings already does exactly this for
+  // headings one level down ("ENARRATION ON PSALM LXXX." over "SERMON
+  // 1591"); this is the same rule applied to the divisions themselves.
+  function liftUnnamedSections(sections) {
+    const flat = [];
+    sections.forEach((s) => {
+      const kids = s.children || [];
+      if (s.title || !kids.length) { flat.push(s); return; }
+      // Rows the division held itself, before its first chapter, are a
+      // preamble and keep their place ahead of them.
+      if ((s.rows || []).length) {
+        flat.push({ id: s.id || "", title: "", subtitle: "", rows: s.rows, children: [] });
+      }
+      kids.forEach((k) => flat.push(k));
+    });
+
+    const out = [];
+    let carried = "";
+    flat.forEach((s) => {
+      const empty = !(s.rows || []).length && !(s.children || []).length;
+      if (empty) {
+        if (s.title) carried = carried ? `${carried} · ${s.title}` : s.title;
+        return;
+      }
+      if (carried) {
+        s.title = s.title ? `${carried} · ${s.title}` : carried;
+        carried = "";
+      }
+      out.push(s);
+    });
+    // A trailing super-heading has nothing to stand over. Better a
+    // drawer with a name and no text than a title dropped in silence.
+    if (carried) out.push({ id: "", title: carried, subtitle: "", rows: [], children: [] });
+    return out.length ? out : sections;
+  }
 
   function divideFlatSections(sections) {
     const out = [];

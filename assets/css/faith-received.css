@@ -12244,7 +12244,6 @@ a.faith-tp-work:hover .faith-tp-work-title { color: var(--color-secondary); }
    we never styled, so they arrived at full body size and full width and
    read as though Augustine had written them. They are apparatus: set
    them smaller and quieter than the text they comment on. */
-.faith-reader [data-fr-content] .aug-note,
 .faith-reader [data-fr-content] .note,
 .faith-reader [data-fr-content] .editor-note {
   display: block;
@@ -12256,12 +12255,26 @@ a.faith-tp-work:hover .faith-tp-work-title { color: var(--color-secondary); }
   border-left: 2px solid var(--color-card-border);
   overflow-wrap: break-word;
 }
-[data-fr-tint="dark"] .faith-reader [data-fr-content] .aug-note,
+
+/* Augustine's are not that kind of note. They are the parenthetical
+   references a critical edition prints inside the sentence — "(De Trin.
+   12, 14, 22)" — and there are 5,307 of them across 5,453 rows, close to
+   one a paragraph. Set as blocks they cut almost every paragraph in the
+   corpus into three pieces, and because the sentence's own full stop
+   comes after the closing tag it was left stranded on a line of its own:
+   4,641 rows end on an orphaned "." or "?". They belong in the line
+   they were written in, quiet but not separate. */
+.faith-reader [data-fr-content] .aug-note {
+  font-size: 0.86em;
+  color: var(--color-muted);
+  overflow-wrap: break-word;
+}
 [data-fr-tint="dark"] .faith-reader [data-fr-content] .note,
 [data-fr-tint="dark"] .faith-reader [data-fr-content] .editor-note {
   border-left-color: #453f3a;
   color: #a9a29a;
 }
+[data-fr-tint="dark"] .faith-reader [data-fr-content] .aug-note { color: #a9a29a; }
 
 /* Below the width where that margin exists, the chip cannot go outside
    the column without leaving the screen. It drops under the block
