@@ -105,7 +105,7 @@
       `<input type="email" name="email" autocomplete="email" required></label>` +
       `<label class="fr-report-field"><span>Work name</span>` +
       `<input type="text" name="workName" value="${escapeHtml(here)}" ` +
-      `placeholder="${onWork ? "" : "The work this is about, or the page"}" required></label>` +
+      `placeholder="${onWork ? "" : "The work or page this is about"}" required></label>` +
       `<label class="fr-report-field"><span>Issue type</span>` +
       `<select name="issueType" required>` +
       `<option value="">Choose one</option>${ 

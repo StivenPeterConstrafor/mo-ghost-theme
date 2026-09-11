@@ -266,11 +266,11 @@
       : "";
     const note = byOccurrence
       ? "The figure is how many times the verse is cited, counted across everything the library holds under the name."
-      : "The figure is how many of the works cite the verse, not how many times it is cited.";
+      : "The figure is how many works cite the verse rather than how many times it is cited.";
     return `<div class="fa-fp-col">` +
       `<h3 class="fa-fp-sub">Verses returned to</h3>` +
       `<p class="fa-fp-note">${note}${
-        canSearch ? " Choose one to search this author's shelf for it, in the panel below." : ""
+        canSearch ? " Choose one to search this author's shelf in the panel below." : ""
       }</p>` +
       `<ul class="fa-fp-verses">${items}</ul>${more}</div>`;
   }

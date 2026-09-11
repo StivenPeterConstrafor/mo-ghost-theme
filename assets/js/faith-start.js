@@ -78,7 +78,7 @@
     { slug: "apostles-creed", eyebrow: "The creed", title: "The Apostles' Creed",
       note: "The oldest summary of the faith, learned at baptism for eighteen centuries." },
     { slug: "nicene-creed", eyebrow: "325 &amp; 381", title: "The Nicene Creed",
-      note: "What the whole church settled about Christ, and still confesses together." },
+      note: "What the whole church settled about Christ and still confesses together." },
     { slug: "heidelberg", eyebrow: "1563", title: "The Heidelberg Catechism",
       note: "Warmest of the catechisms. Begins not with doctrine but with comfort." },
     { slug: "westminster-shorter", eyebrow: "1647", title: "The Westminster Shorter Catechism",

@@ -120,7 +120,7 @@
 
   if (!editor || !DK || !NB) {
     if (statusEl) {
-      statusEl.textContent = "The Desk could not be opened. Nothing has been lost; "
+      statusEl.textContent = "Desk could not be opened. Nothing has been lost; "
         + "this page failed to load the piece that reads your papers.";
     }
     return;
@@ -251,7 +251,7 @@
     const list = DK.all();
     clear(docsList);
     if (!list.length) {
-      docsList.appendChild(el("p", "desk-empty", "Papers you write are kept here, in this browser."));
+      docsList.appendChild(el("p", "desk-empty", "Papers you write are kept in this browser."));
       return;
     }
     list.forEach((d) => {
@@ -624,7 +624,7 @@
     if (wanted && all.some((d) => d.id === wanted)) openDoc(wanted);
     else if (wanted) {
       say("That paper is not in this browser. Papers are kept where they were written; "
-        + "open the link there, or download the paper and bring the file across.");
+        + "open the link there or download the paper to bring the file across.");
       if (all.length) openDoc(DK.context().docId && all.some((d) => d.id === DK.context().docId)
         ? DK.context().docId : all[0].id);
       else newDoc();
