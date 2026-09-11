@@ -109,7 +109,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 
 | Date | Document | Commit |
 |---|---|---|
-| 09-11 | READER-COMPARISON.md (+ READER-SPEC §0 corrected) | mo-ghost-theme (this commit) |
+| 09-11 | READER-COMPARISON.md (+ READER-SPEC §0 corrected) | mo-ghost-theme 73eea23f |
 | 09-11 | DESK_INSTRUCTIONS.md (desk research-rail card redesign; theme hunks 5756a7a) | mo-workers 8cd9690 |
 | 09-11 | ASK-SPEC.md | mo-ghost-theme 79f9414 |
 | 09-11 | README.md (this index) | mo-ghost-theme 8a0d95d |
