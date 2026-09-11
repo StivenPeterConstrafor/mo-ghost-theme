@@ -2379,10 +2379,12 @@
   // The page is marked `tei` because this lane arrives as HTML and must
   // not be run through the Markdown renderer.
   //
-  // Fallback only, deliberately. The 1,494 works that already carry
-  // shards keep reading from them; nothing that works today changes
-  // path. Preferring TEI everywhere is the next step, and it is what
-  // buys the apparatus, but it is not this change.
+  // This is now the path for every work that has TEI, not a fallback.
+  // It was a fallback until 2026-09-11, and the 1,016 sharded native
+  // works that kept reading flat text had no headings at all: the shard
+  // export writes a <head> and a <p> as two indistinguishable lines.
+  // The TEI is the only place the distinction survives, so it is read
+  // in preference to the shards wherever it exists.
 
   const TEI_FILE = "__tei__";
 
@@ -2571,54 +2573,176 @@
 
   let teiPromise = null;
 
-  // Both lanes, in parallel. Either may be absent: the English-only
-  // works have no tei.la.xml, and a 404 on one lane must not lose the
-  // other.
+  // Set when the TEI could not be read at all. meta.has_tei was true on
+  // every one of 60 sampled sharded works and both lanes answered, but
+  // the flag is a claim about the store and the store can be wrong, so
+  // a work that has shards drops back to them rather than to an error
+  // panel.
+  let teiFailed = false;
+
+  // What each lane turned out to hold. Kept here rather than passed
+  // along, because the two lanes now land at different times and the
+  // one arriving second must not be the only thing the language switch
+  // is decided on: a Latin lane that loaded first and an English lane
+  // landing after it were being read as "no Latin", and the switch was
+  // taken away from a bilingual work.
+  const teiMaps = { en: new Map(), la: new Map() };
+
+  function teiLane(code) {
+    return fetch(`${BASE}/v1/works/${slug}/tei.${code}.xml`)
+      .then((r) => (r.ok ? r.text() : ""))
+      .then((t) => (t ? parseTei(t) : new Map()))
+      .catch(() => new Map());
+  }
+
+  // Fold a lane into the pages already in the store, and report whether
+  // anything arrived. The store owns the page objects, so writing into
+  // them here is what makes the lane visible to every section that
+  // hydrates afterwards.
+  function mergeTeiLane(map, key) {
+    let added = 0;
+    teiMaps[key] = map;
+    map.forEach((html, n) => {
+      if (!html) return;
+      let pg = pageStore.get(n);
+      if (!pg) {
+        pg = { n, en: "", la: "", tei: true };
+        pageStore.set(n, pg);
+      }
+      if (!pg[key]) { pg[key] = html; added += 1; }
+    });
+    return added;
+  }
+
+  // The lane the reader is actually looking at. Parallel shows both, but
+  // it reads left to right and the source column is the left one, so the
+  // Latin is what an empty pane would be missing.
+  function readingLane() {
+    return currentLang === "la" || currentLang === "parallel" ? "la" : "en";
+  }
+
+  // A work's TEI runs to megabytes on the big folios — Hollaz is 2.0 MB
+  // of English and 2.0 MB of Latin — and waiting on both before painting
+  // anything is most of a minute on a phone. So the lane being read is
+  // fetched first and the reader opens on it; the other follows behind
+  // and is folded in when it lands. Either may be absent: the 733
+  // English-only works have no tei.la.xml, and a 404 on one lane must
+  // never lose the other.
   function loadTei() {
     if (teiPromise) return teiPromise;
-    const lane = (code) =>
-      fetch(`${BASE}/v1/works/${slug}/tei.${code}.xml`)
-        .then((r) => (r.ok ? r.text() : ""))
-        .then((t) => (t ? parseTei(t) : new Map()))
-        .catch(() => new Map());
+    const first = readingLane();
+    const other = first === "la" ? "en" : "la";
 
-    teiPromise = Promise.all([lane("en"), lane("la")]).then(([en, la]) => {
-      if (!en.size && !la.size) throw new Error("tei: neither lane parsed");
-      // A work whose second lane 404s on the CDN, which is every one of
-      // the 733 English-only works, was still being offered the button.
-      // The switch is narrowed to what actually arrived — unless both
-      // languages turn out to be inside the one file, in which case
-      // they are taken apart and the switch means something again.
-      let oneFile = null;
-      if (!la.size) oneFile = splitOneFile(en);
-      if (oneFile) {
-        oneFile.forEach((r, n) => { en.set(n, r.en); la.set(n, r.la); });
-        document.documentElement.setAttribute(
-          "data-fr-original-lang", (lanes[1] && lanes[1].label) || "Latin");
-      } else if (la.size) {
-        document.documentElement.setAttribute(
-          "data-fr-original-lang", (lanes[1] && lanes[1].label) || "Latin");
-      } else if (!la.size && lanes.length > 1) {
-        lanes = [lanes[0]];
-        buildLangToggle();
-        document.documentElement.setAttribute("data-fr-original-lang", "");
-      }
-      if (la.size) sniffSecondLane([...la.values()].join(" ").replace(/<[^>]*>/g, " "));
-      const nums = new Set([...en.keys(), ...la.keys()]);
-      const out = [];
-      nums.forEach((n) => {
-        out.push({ n, en: en.get(n) || "", la: la.get(n) || "", tei: true });
+    teiPromise = teiLane(first)
+      .then((map) => {
+        // Nothing on the lane we asked for. There is still the other
+        // one, and for an English-only work asked for its Latin that is
+        // the whole book, so wait for it rather than failing.
+        if (!map.size) return teiLane(other).then((m2) => ({ map: m2, key: other, solo: true }));
+        return { map, key: first, solo: false };
+      })
+      .then(({ map, key, solo }) => {
+        if (!map.size) throw new Error("tei: neither lane parsed");
+        mergeTeiLane(map, key);
+        if (!solo) loadTeiSecond(other);
+        else if (key === "en") {
+          // Asked for the Latin, found none, and the English is all
+          // there is. That is either a genuinely English-only work or
+          // one of the files carrying both languages at once, and only
+          // splitOneFile can tell the two apart.
+          settleOneFile(map);
+        } else finishTeiLanes();
+        const out = [];
+        pageStore.forEach((pg) => out.push(pg));
+        out.sort((a, b) => a.n - b.n);
+        return out;
+      })
+      .catch((err) => {
+        teiPromise = null;
+        if (meta && meta.shards && meta.shards.length) teiFailed = true;
+        throw err;
       });
-      out.sort((a, b) => a.n - b.n);
-      out.forEach((pg) => {
-        if (!pageStore.has(pg.n)) pageStore.set(pg.n, pg);
-      });
-      return out;
-    }).catch((err) => {
-      teiPromise = null;
-      throw err;
-    });
     return teiPromise;
+  }
+
+  // The lane nobody is waiting on. When it arrives every section already
+  // built is one column short, so those are rebuilt in place.
+  function loadTeiSecond(code) {
+    return teiLane(code).then((map) => {
+      // The Latin was asked for and is not there. If the English lane
+      // is the one that loaded, it may be carrying both languages.
+      if (code === "la" && !map.size && teiMaps.en.size) return settleOneFile(teiMaps.en, true);
+      const added = mergeTeiLane(map, code);
+      finishTeiLanes();
+      if (added) rebuildLoadedSections();
+      return map;
+    }).catch(() => null);
+  }
+
+  // No second file. Either the work is English-only, or both languages
+  // are inside the one file — splitOneFile is what tells them apart, and
+  // where it finds a split the pages in the store are rewritten from it.
+  function settleOneFile(enMap, rebuild) {
+    const oneFile = splitOneFile(enMap);
+    if (!oneFile) { finishTeiLanes(); return null; }
+    const en = new Map(), la = new Map();
+    oneFile.forEach((r, n) => {
+      en.set(n, r.en); la.set(n, r.la);
+      const pg = pageStore.get(n);
+      if (pg) { pg.en = r.en; pg.la = r.la; }
+    });
+    teiMaps.en = en;
+    teiMaps.la = la;
+    finishTeiLanes();
+    if (rebuild) rebuildLoadedSections();
+    return null;
+  }
+
+  // What the language switch is allowed to offer, decided once both
+  // lanes have reported. A work whose second lane 404s on the CDN was
+  // still being offered the button.
+  function finishTeiLanes() {
+    const { la } = teiMaps;
+    if (la.size) {
+      document.documentElement.setAttribute(
+        "data-fr-original-lang", (lanes[1] && lanes[1].label) || "Latin");
+      sniffSecondLane([...la.values()].join(" ").replace(/<[^>]*>/g, " "));
+    } else if (lanes.length > 1) {
+      lanes = [lanes[0]];
+      buildLangToggle();
+      document.documentElement.setAttribute("data-fr-original-lang", "");
+      if (currentLang !== "en") { currentLang = "en"; applyLang("en"); }
+    }
+  }
+
+  // Rebuild every open section against the fuller store, holding the
+  // reader's place: the second lane only widens a row, but a row that
+  // grows above the viewport still moves the text under the eye.
+  function rebuildLoadedSections() {
+    const open = contentEl
+      ? Array.prototype.slice.call(
+          contentEl.querySelectorAll('.faith-section-details[data-fr-state="loaded"]'))
+      : [];
+    if (!open.length) return;
+    // Anchor on whatever is nearest the top of the screen, which is
+    // the section the reader is in or about to be in. A section above
+    // it that grows a line taller would otherwise push the page down
+    // under the eye.
+    let anchor = open[0];
+    let best = Infinity;
+    open.forEach((el) => {
+      const d = Math.abs(el.getBoundingClientRect().top);
+      if (d < best) { best = d; anchor = el; }
+    });
+    const before = anchor.getBoundingClientRect().top;
+    open.forEach((details) => {
+      details.dataset.frState = "";
+      hydrateSection(details);
+    });
+    window.requestAnimationFrame(() => {
+      const after = anchor.getBoundingClientRect().top;
+      if (after !== before) window.scrollBy(0, after - before);
+    });
   }
 
   // ── Shard loading ─────────────────────────────────────────────
@@ -2627,6 +2751,19 @@
   // modelled as one shard spanning every page so the rest of the code
   // has exactly one path to reason about.
   function shardList(m) {
+    // TEI first wherever there is TEI, which on this corpus is every
+    // native work (40 of 40 sampled; meta.has_tei is authoritative, the
+    // field of the same name in works-index.json is not). The shards
+    // carry the same words with the markup thrown away: a heading and a
+    // paragraph arrive as two lines of flat text that nothing can tell
+    // apart afterwards, and a heuristic over them scores 69% precision
+    // and 33% recall against the <head> elements it is trying to guess.
+    // 1,016 native works were reading that way, 72% of all native pages.
+    // Modelled as one shard over the whole work, because the parse
+    // yields every page at once either way.
+    if (m.has_tei && !teiFailed) {
+      return [{ file: TEI_FILE, from: 1, to: m.n_pages || Infinity }];
+    }
     if (m.shards && m.shards.length) {
       return m.shards.map((s, i) => {
         if (typeof s === "string") {
@@ -2635,12 +2772,6 @@
         }
         return { file: s.file, from: s.from, to: s.to };
       });
-    }
-    // No shards and no single file: the text is only on the CDN as TEI.
-    // Modelled as one shard over the whole work, because the parse
-    // yields every page at once either way.
-    if (!m.single && m.has_tei) {
-      return [{ file: TEI_FILE, from: 1, to: m.n_pages || Infinity }];
     }
     return [{
       file: m.single || "work.json",
@@ -2693,14 +2824,22 @@
   // Load every shard covering [from, to), then return the pages in
   // that range, in order.
   function pagesInRange(from, to) {
-    const needed = shardsFor(meta, from, to);
-    return Promise.all(needed.map(loadShard)).then(() => {
+    const collect = () => {
       const out = [];
       pageStore.forEach((pg, n) => {
         if (n >= from && n < to) out.push(pg);
       });
       out.sort((a, b) => a.n - b.n);
       return out;
+    };
+    const run = () => Promise.all(shardsFor(meta, from, to).map(loadShard)).then(collect);
+    return run().catch((err) => {
+      // The TEI was claimed and is not there. teiFailed has just sent
+      // shardList back to the shards, so the same call now asks for a
+      // different set of files. Only ever once: the second failure is
+      // the reader's own error panel, as before.
+      if (!teiFailed) throw err;
+      return run();
     });
   }
 
