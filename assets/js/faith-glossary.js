@@ -88,13 +88,24 @@
   // is served as raw gzip bytes (no Content-Encoding), so this decodes
   // it itself when the browser supports DecompressionStream and falls
   // back to fetch()'s own inflation when the host sets the header.
+  /* A key named .json.gz is often NOT gzipped by the time it arrives.
+   * The library serves these with `content-encoding: br`, and the
+   * browser undoes the transport encoding before handing over the body,
+   * so what lands here is plain JSON with a .gz name. Inflating that
+   * unconditionally throws, and the throw surfaces as "we could not
+   * reach the service". Sniff the gzip magic (1f 8b) instead of
+   * trusting the extension or the header. Measured 2026-09-11: every
+   * sampled object on this host arrived already decoded. */
   async function gunzip(response) {
-    if (typeof window.DecompressionStream === "function") {
-      const blob = await response.blob();
-      const stream = blob.stream().pipeThrough(new window.DecompressionStream("gzip"));
-      return JSON.parse(await new Response(stream).text());
+    const buf = await response.arrayBuffer();
+    const head = new Uint8Array(buf, 0, Math.min(2, buf.byteLength));
+    const isGzip = head.length > 1 && head[0] === 0x1f && head[1] === 0x8b;
+    if (!isGzip || typeof window.DecompressionStream !== "function") {
+      return JSON.parse(new TextDecoder().decode(buf));
     }
-    return response.json();
+    const stream = new Blob([buf]).stream()
+      .pipeThrough(new window.DecompressionStream("gzip"));
+    return JSON.parse(await new Response(stream).text());
   }
 
   function loadBucket(key) {

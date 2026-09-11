@@ -415,15 +415,24 @@
   // gzipped documents. Duplicated rather than shared: this file has no
   // other dependency on faith-text.js and script order on this page
   // does not guarantee one is loaded before the other.
+  /* A key named .json.gz is often NOT gzipped by the time it arrives.
+   * The library serves these with `content-encoding: br`, and the
+   * browser undoes the transport encoding before handing over the body,
+   * so what lands here is plain JSON with a .gz name. Inflating that
+   * unconditionally throws, and the throw surfaces as "we could not
+   * reach the service". Sniff the gzip magic (1f 8b) instead of
+   * trusting the extension or the header. Measured 2026-09-11: every
+   * sampled object on this host arrived already decoded. */
   async function gunzip(response) {
-    if (typeof window.DecompressionStream === "function") {
-      const blob = await response.blob();
-      const stream = blob.stream().pipeThrough(new window.DecompressionStream("gzip"));
-      return JSON.parse(await new Response(stream).text());
+    const buf = await response.arrayBuffer();
+    const head = new Uint8Array(buf, 0, Math.min(2, buf.byteLength));
+    const isGzip = head.length > 1 && head[0] === 0x1f && head[1] === 0x8b;
+    if (!isGzip || typeof window.DecompressionStream !== "function") {
+      return JSON.parse(new TextDecoder().decode(buf));
     }
-    // No DecompressionStream: if the host ever serves this with a real
-    // Content-Encoding header the browser will have inflated it already.
-    return response.json();
+    const stream = new Blob([buf]).stream()
+      .pipeThrough(new window.DecompressionStream("gzip"));
+    return JSON.parse(await new Response(stream).text());
   }
 
   /* ── Merging the two sources ────────────────────────────────────ㅤ */

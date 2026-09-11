@@ -113,9 +113,20 @@
   // transport encoding — so they need decompressing here regardless of
   // what the browser negotiated on the wire.
   function getGz(path) {
-    return fetch(HOST + path).then((r) => {
+    return fetch(HOST + path).then(async (r) => {
       if (!r.ok) throw new Error(`${path} ${r.status}`);
-      const stream = r.body.pipeThrough(new DecompressionStream("gzip"));
+      /* The comment above was true of the bucket and is not true of the
+       * wire. These are served with `content-encoding: br`, so the
+       * browser has already decoded them and the body is plain JSON
+       * under a .gz name. Inflating it regardless threw and took the
+       * shelf counts with it. Sniff the gzip magic instead. */
+      const buf = await r.arrayBuffer();
+      const head = new Uint8Array(buf, 0, Math.min(2, buf.byteLength));
+      const isGzip = head.length > 1 && head[0] === 0x1f && head[1] === 0x8b;
+      if (!isGzip || typeof DecompressionStream !== "function") {
+        return JSON.parse(new TextDecoder().decode(buf));
+      }
+      const stream = new Blob([buf]).stream().pipeThrough(new DecompressionStream("gzip"));
       return new Response(stream).json();
     });
   }

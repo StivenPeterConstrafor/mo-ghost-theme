@@ -1663,16 +1663,34 @@
     });
   }
 
-  // DecompressionStream is the native path; fall back to letting the
-  // CDN's own content negotiation handle it where it isn't supported.
+  /* A key named .json.gz is very often NOT gzipped by the time it gets
+   * here, and unconditionally inflating it broke every one of the
+   * 15,569 Early English Books works.
+   *
+   * The library serves these with `content-encoding: br`. The browser
+   * undoes the TRANSPORT encoding before handing the body over, so what
+   * arrives is plain JSON with a .gz name. Piping that through
+   * DecompressionStream("gzip") throws, the read rejects, and the page
+   * shows "We could not reach the service that handles the library" —
+   * which blamed the reader's ad blocker for a fault that was ours.
+   *
+   * So sniff the first two bytes (1f 8b is the gzip magic) instead of
+   * trusting either the extension or the header. Measured 2026-09-11:
+   * 25 of 25 sampled EEBO objects arrive already decoded.
+   *
+   * The same mistake, in the same shape, was in
+   * scripts/build-scripture-index.mjs, where it silently indexed zero
+   * EEBO works while reporting a tidy failure count. */
   function gunzip(response) {
-    if (typeof window.DecompressionStream === "function") {
-      return response.blob().then((blob) => {
-        const stream = blob.stream().pipeThrough(new window.DecompressionStream("gzip"));
-        return new Response(stream).json();
-      });
-    }
-    return response.json();
+    if (typeof window.DecompressionStream !== "function") return response.json();
+    return response.arrayBuffer().then((buf) => {
+      const head = new Uint8Array(buf, 0, Math.min(2, buf.byteLength));
+      const isGzip = head.length > 1 && head[0] === 0x1f && head[1] === 0x8b;
+      if (!isGzip) return JSON.parse(new TextDecoder().decode(buf));
+      const stream = new Blob([buf]).stream()
+        .pipeThrough(new window.DecompressionStream("gzip"));
+      return new Response(stream).json();
+    });
   }
 
   // EEBO gets its own contents rail. buildToc() groups a flat outline
