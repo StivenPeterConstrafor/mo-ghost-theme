@@ -1,0 +1,40 @@
+/* Slim title index for GET /v1/titles.
+ * Row: [corpus, id, title, author, year, alt]
+ * `alt` is extra text that should MATCH but never DISPLAY: the Latin
+ * title, and the slug's own words. Two real misses drove it:
+ *   "de civitate dei"    — the Latin title was not indexed at all, in a
+ *                          library that is mostly Latin.
+ *   "ninety-five theses" — the work is titled "The 95 Theses"; only its
+ *                          slug spells the number out. */
+import { writeFileSync, readFileSync } from "node:fs";
+const B="https://mo-tfr-library.mo-podcast-feed.workers.dev";
+const j = async (u) => { const r=await fetch(u,{headers:{"user-agent":"curl/8.7.1"}}); if(!r.ok) throw new Error(`${r.status} ${u}`); return r.json(); };
+const EX=/^(pld|pg|po|eebo)-\d+$/;
+const rows=[];
+const slugWords = (id) => /^[a-z0-9-]+$/.test(String(id)) ? String(id).replace(/-/g," ") : "";
+function push(c,id,t,a,y,latin){
+  t=String(t||"").trim(); if(!t) return;
+  const alt=[String(latin||"").trim(), slugWords(id)].filter(Boolean).join(" ");
+  rows.push([c,String(id),t,String(a||"").trim(),y||0,alt]);
+}
+const ll=await j(`${B}/v1/works-index.json`);
+for (const w of ll.works) if(!EX.test(w.slug||"")) push("tfr",w.slug,w.title,w.author,0,w.title_la);
+const cf=await j(`${B}/v1/confessions-index.json`);
+for (const c of (cf.confessions||[])) push("confessions",c.slug,c.title,"",c.year||0,"");
+const mo=await j(`${B}/v1/mo/index.json`);
+for (const w of (mo.works||[])) push("mo",w.slug,w.title,w.author,0,"");
+const ee=await j("https://eebo-backup.vercel.app/data/catalogue.json");
+const keep=new Set(JSON.parse(readFileSync(process.env.THEO,"utf8")).ids.map(String));
+for (const w of ee) if(keep.has(String(w.i))) push("eebo",w.i,w.t,w.a,w.y||0,"");
+for (const [c,host,en] of [["pld","pld-patrologia-latina","te"],["pg","patrologia-graeca","e"],["po","patrologia-orientalis","te"]]) {
+  const nav=await j(`https://${host}.vercel.app/data/nav.json`);
+  for (const [id,v] of Object.entries(nav.docs||{})) {
+    const eng = v[en] || v.t;
+    const latin = (v.t && v.t !== eng) ? v.t : "";
+    push(c,id,eng,v.ae||v.a,v.v||0,latin);
+  }
+}
+const body=JSON.stringify({ v:2, n:rows.length, rows });
+writeFileSync(process.env.OUT, body);
+const { gzipSync } = await import("node:zlib");
+console.log(`${rows.length.toLocaleString()} works, ${(body.length/1048576).toFixed(2)} MB raw, ${(gzipSync(Buffer.from(body)).length/1024).toFixed(0)} KB gz`);
