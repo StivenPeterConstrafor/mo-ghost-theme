@@ -82,6 +82,12 @@ const XREF_EN={"Matth":"Matthew","Matt":"Matthew","Marc":"Mark","Luc":"Luke","Io
 const XREF_MOS={1:"Genesis",2:"Exodus",3:"Leviticus",4:"Numbers",5:"Deuteronomy"};
 const XREF_NAMES=[...new Set([...Object.keys(XREF_CAP).filter(name=>!/^\d/.test(name)),...Object.keys(XREF_EN),'Mos','Reg','Paral'])].sort((a,b)=>b.length-a.length);
 const XREF_LOOKUP=new Map(XREF_NAMES.map(name=>[name.toLowerCase(),name]));
+// "Matthew 19, 1 Corinthians 7" (Voetius pol.eccl. p14, owner 2026-09-11):
+// a small digit after the comma that is FOLLOWED BY A BOOK NAME is the next
+// book's ordinal, never a verse — the old verse regex only vetoed an
+// immediately-adjacent letter, so it swallowed the 1 and orphaned
+// "Corinthians 7" (bare ordinal books refuse to link).
+const XREF_ORDNEXT=new RegExp('^\\s+(?:'+XREF_NAMES.map(name=>name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')\\b','iu');
 const XREF_RE=new RegExp('(^|[^\\p{L}\\p{N}_])((?:(?:[1-5]|III|II|IV|I|V)\\.?\\s*)?(?:'+XREF_NAMES.map(name=>name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')\\.?)(\\s*)','giu');
 function scriptureNumber(value){
   const roman=String(value).toUpperCase();if(/^\d+$/.test(roman))return Number(roman);
@@ -118,8 +124,9 @@ function scriptureLocation(text,start,book){
   const chapter=scriptureNumber(chapterToken[1]);if(!chapter||chapter>XREF_CAP[book])return null;
   let end=start+chapterToken[0].length,selection='',following=false;
   const first=/^\s*[.:,]\s*(?:v\.\s*)?(\d{1,3})(?![\p{L}\p{N}])/u.exec(text.slice(end));
+  const ordinalNext=first&&Number(first[1])<=5&&XREF_ORDNEXT.test(text.slice(end+first[0].length));
   if(!first&&/^\s*[.:,]\s*(?:v\.\s*)?\d/.test(text.slice(end)))return null;
-  if(first){
+  if(first&&!ordinalNext){
     if(Number(first[1])<1||Number(first[1])>200)return null;
     selection=String(Number(first[1]));end+=first[0].length;let previous=Number(first[1]);
     while(true){
@@ -127,6 +134,7 @@ function scriptureLocation(text,start,book){
       if(range){const last=Number(range[1]);if(last<previous||last>200)return null;selection+='-'+last;end+=range[0].length;previous=last;}
       const list=/^\s*,\s*(\d{1,3})(?![\p{L}\p{N}])/u.exec(text.slice(end));
       if(!list||/^\s*(?::\s*|\.)\d{1,3}(?![\p{L}\p{N}])/u.test(text.slice(end+list[0].length)))break;
+      if(Number(list[1])<=5&&XREF_ORDNEXT.test(text.slice(end+list[0].length)))break;
       previous=Number(list[1]);if(!previous||previous>200)return null;selection+=','+previous;end+=list[0].length;
     }
     const tail=/^\s*\.?\s*(?:(?:&amp;|&|et)\s*)?(?:seqq?\.|ff?\.)(?!\p{L})/u.exec(text.slice(end));
