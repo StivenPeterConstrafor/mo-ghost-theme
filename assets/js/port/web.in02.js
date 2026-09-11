@@ -499,9 +499,9 @@ async function openAuthor(slug,push=true){
     const pu2=pairURL(slug,r.fk);
     const allBtn=`<button class="pbtn" style="font-size:.74rem;padding:.2rem .7rem" data-edge="${esc(cslug)}|${esc(tslug2)}">Why connected · read ${fmt(r.n)} references</button>${pu2?` <a class="pbtn" style="font-size:.74rem;padding:.2rem .7rem" href="${pu2}">Compare the two authors</a>`:''}`;
     const tw=(r.tw||[]).slice(0,3).map(t=>`<a href="/the-faith-received/read/?w=${esc(t[0])}" target="_blank">${esc(t[1])}</a>`).join(" · ");
-    return `<details class="edge" data-fk="${esc(r.fk||"")}" data-dir="${dir}"><summary class="er"><span class="nm">${esc(r.a)}</span>
+    return `<details class="edge"><summary class="er"><span class="nm">${esc(r.a)}</span>
       <span class="n">${fmt(r.n)} citations</span></summary>
-      <div class="ev">${tw?`<div style="font-size:.8rem;margin:.2rem 0">${dir==="in"?"into":"of"} ${tw}</div>`:""}${sms}${allBtn}<span style="margin-left:.6rem">${link}</span></div></details>`;};
+      <div class="ev">${link}${tw?`<div style="font-size:.8rem;margin:.2rem 0">${dir==="in"?"into":"of"} ${tw}</div>`:""}${sms}${allBtn}</div></details>`;};
   const inn=((d.in||{}).rows||[]).slice().sort((a,b)=>b.n-a.n);
   const out=((d.out||{}).rows||[]).slice().sort((a,b)=>b.n-a.n);
   try{await Promise.race([window.__BIOSP,new Promise(r=>setTimeout(r,1400))]);}catch(_){}
@@ -540,28 +540,7 @@ async function openAuthor(slug,push=true){
     if(el.tagName!=="SUMMARY")el.parentElement.classList.toggle("open");}));
   pbody.querySelectorAll("[data-edge]").forEach(el=>el.onclick=()=>{
     const [c2,t2]=el.dataset.edge.split("|");openEdge(c2,t2,slug);});
-  pbody.querySelectorAll('[data-relations="out"] details.edge').forEach(det=>{
-     det.addEventListener('toggle',async()=>{
-       if(!det.open||det.dataset.citesLoaded)return;det.dataset.citesLoaded='1';
-       const host=document.createElement('div');host.className='edge-inline';det.appendChild(host);
-       const mount=async()=>{
-         host.innerHTML='<p class="loading">Loading every citation…</p>';
-         try{
-           window.__FULL_SELF=window.__FULL_SELF||FRConnectionEvidence.json('/v1/reception/full/'+encodeURIComponent(slug)+'.json.gz');
-           const d2=await window.__FULL_SELF;
-           const fk=det.dataset.fk;const tn2=BYS[fk]||{s:fk,a:det.querySelector('.nm')?.textContent||fk};
-           host.innerHTML='';
-           FRConnectionEvidence.mountCitation(host,{data:d2,citing:{s:slug,a:n.a},target:tn2,hideSave:true});
-         }catch(e){host.innerHTML='<p class="loading">The reference file could not load. Use “Why connected” instead.</p>';}
-       };
-       if(det.querySelector('.sm .q')){
-         const b=document.createElement('button');b.className='pbtn';b.style.cssText='font-size:.74rem;padding:.2rem .7rem;margin:.3rem 0';
-         b.textContent='Read all the citations here';b.onclick=e=>{e.preventDefault();b.remove();mount();};
-         host.appendChild(b);
-       } else { mount(); }
-     });
-   });
-   FRShelfMap.bindPreviews(pbody);
+  FRShelfMap.bindPreviews(pbody);
   $("#bpath").onclick=()=>{openPathPicker();$("#path-from").value=n.a;$("#path-to").focus();};
   $("#relation-query").oninput=e=>{const term=e.target.value.trim().toLowerCase();let all=0;[['in','Cited by'],['out','Cites']].forEach(([dir,label])=>{const rows=[...pbody.querySelectorAll('[data-relations="'+dir+'"] .edge')];let visible=0;rows.forEach(row=>{row.hidden=!row.querySelector('.nm').textContent.toLowerCase().includes(term);if(!row.hidden)visible++;});all+=visible;$('#relations-'+dir+'-count').textContent=label+' '+visible+(term?' of '+rows.length:'')+' authors';});$('#relation-feedback').textContent=all?'':'No connected authors match this name. Try another spelling.';};
   pbody.scrollTop=0;
@@ -721,6 +700,31 @@ async function openShelfMaps(shelf='english-divines',kind='authors',push=true){
  if(!d){$('#shelf-map-host').innerHTML='<p class="index-note">This constellation could not load. Your shelf and map selection are kept.</p><button class="pbtn" id="shelf-graph-retry">Retry constellation</button>';$('#shelf-graph-retry').onclick=()=>openShelfMaps(sl,kind,false);return;}
  if(!d.nodes?.length){$('#shelf-map-host').innerHTML='<p class="index-note">This export contains no '+(kind==='doctrines'?'topics':kind)+'. Choose another map or shelf.</p>';return;}
  const K={name:n=>n.t||n.a,size:n=>n.n,unit:'Scripture citations',href:n=>kind==='works'&&n.w?FRScripture.readerURL(n.w):kind==='authors'?'/the-faith-received/fathers/?q='+encodeURIComponent(n.a):'',goLabel:kind==='works'?'Read work':'Find author works',rowLabel:kind==='authors'?'Available works':kind==='works'?'Recorded Scripture chapters':'Available topic passages',ask:(n,nm)=>'/the-faith-received/ask/?q='+encodeURIComponent('Explore '+nm+' in '+entry.shelf)};
+ /* CONNECTIONS YOU CAN ACT ON (owner 2026-09-11 "change the usability of our
+    connections between authors"): the constellation's similarity edges now
+    reach the atlas's REAL evidence. Every author entry links its citation
+    dossier (recorded citations with quoted passages — openAuthor); every
+    why-connected PAIR offers the full two-author comparison page and, where
+    the citation graph records actual contact, the recorded citations
+    between them (openEdge). Name→atlas-slug resolves through the graph's
+    node roster; entries the atlas does not know keep their works-search. */
+ if(kind==='authors'){
+  const _fold=s2=>String(s2||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z ]+/g,' ').replace(/\s+/g,' ').trim();
+  /* LAZY (a deep link renders the constellation before the atlas graph
+     finishes loading — an eager map would be empty forever) */
+  let _byName=null,_byNameN=0;
+  const atlasSlug=nm=>{if(!_byName||_byNameN!==NODES.length){_byName={};_byNameN=NODES.length;NODES.forEach(x=>{if(x&&x.a)_byName[_fold(x.a)]=x.s;});}return _byName[_fold(nm)]||null;};
+  K.actions=(n,nm)=>{const s2=atlasSlug(nm);return s2?[{label:'Citation dossier · who cites them, with passages',go:()=>openAuthor(s2)}]:[];};
+  K.pairActions=(nA,nB)=>{
+    const a2=atlasSlug(nA.t||nA.a),b2=atlasSlug(nB.t||nB.a),acts=[];
+    if(a2&&b2){const pu=pairURL(a2,b2);if(pu)acts.push({label:'Full comparison · both directions, shared topics',href:pu});
+      const ni=BYS[a2]&&BYS[a2].i,nj=BYS[b2]&&BYS[b2].i;
+      if(ni!=null&&nj!=null){const ab=EDGES.some(e=>e[0]===ni&&e[1]===nj),ba=EDGES.some(e=>e[0]===nj&&e[1]===ni);
+        if(ab)acts.push({label:'Recorded citations: '+(nA.t||nA.a)+' cites '+(nB.t||nB.a),go:()=>openEdge(a2,b2,a2)});
+        if(ba)acts.push({label:'Recorded citations: '+(nB.t||nB.a)+' cites '+(nA.t||nA.a),go:()=>openEdge(b2,a2,a2)});
+        if(!ab&&!ba)acts.push({label:'No recorded citation between them — similarity only',href:null,note:1});}}
+    return acts.filter(x=>x.go||x.href);};
+ }
  FRShelfMap.render($('#shelf-map-host'),d,K,{kind,shelf:sl,rowsUrl:base+kind+'.rows.json',blob:BLOB});pbody.scrollTop=0;
 }
 
