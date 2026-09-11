@@ -76,14 +76,36 @@
   // arriving late and pushing the shelves down. It is two kilobytes
   // against catalogues that run to megabytes, so it never decides how
   // long this wait is.
+  // The Migne shelves keep their lives in their own files, on the notes
+  // host rather than the library one. Until this pass the page fetched
+  // only the Latin Library's authors.json, so every Patrologia author
+  // read as "No biography has been written for this author yet" even
+  // where one had been: Ambrose of Milan has a life in pld-authors.json,
+  // spelled exactly as the catalogue spells him, and the page had simply
+  // never asked for the file. That was 139 written lives going unread.
+  //
+  // pg- and po-authors.json answer {"error":"Not found"} today. They are
+  // requested anyway so they light up the day they are written, and a
+  // non-map answer is discarded below rather than merged.
+  const NOTES = "https://mo-tfr.mo-podcast-feed.workers.dev";
+  const shelfLives = ["pld", "pg", "po"].map((c) =>
+    fetch(`${NOTES}/v1/notes/${c}-authors.json`)
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((d) => (d && typeof d === "object" && !d.error ? d : {}))
+      .catch(() => ({})));
+
   Promise.all([
     fetch(`${BLOB}/v1/authors.json`).then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
     Promise.all(corpora.map((c) =>
       window.MOCorpora.load(c.id).catch(() => []))),
     fetch(oursUrl).then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
     window.MOAuthorScripture ? window.MOAuthorScripture.load(key) : Promise.resolve(null),
-  ]).then(([theirs, sets, ours, fingerprint]) => {
-    const authors = { ...ours, ...theirs };
+    Promise.all(shelfLives),
+  ]).then(([theirs, sets, ours, fingerprint, shelves]) => {
+    // Ours first, then the shelf files, then the Latin Library's, which
+    // keeps the existing precedence: a life written for the Latin
+    // Library still wins outright where the same name appears twice.
+    const authors = Object.assign({}, ours, ...shelves, theirs);
     // ── The author's own entry, matched folded ─────────────────
     let entry = null;
     let displayName = wanted;
