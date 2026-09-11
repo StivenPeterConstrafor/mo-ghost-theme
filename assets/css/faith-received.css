@@ -16272,3 +16272,130 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   .tfr-gate-title { font-size: 25px; }
   .tfr-gate-lede { font-size: 16px; }
 }
+
+/* ══ The reader reads as one continuous work ═══════════════════════
+   2026-09-11. Chapters used to be drawers. They told you where you
+   were and gave you something to copy, and they paid for it by hiding
+   the text: seven blank bars on the Enchiridion, a find-in-page that
+   could not see past the open one, and a click between a reader and
+   every chapter of a book.
+
+   Every division is open now and stays open. The <details> elements
+   remain because every deep link, scripture link and citation door in
+   this reader lands by opening an ancestor, and all of those keep
+   working against something already open. What goes is the chrome that
+   invited a click: no chevron, no pointer, no hover colour. A summary
+   row is a heading, and it should look like one. */
+.faith-reader [data-fr-content] .faith-chev { display: none; }
+.faith-reader [data-fr-content] .faith-section-summary,
+.faith-reader [data-fr-content] .faith-book-summary {
+  cursor: default;
+  list-style: none;
+}
+.faith-reader [data-fr-content] .faith-section-summary::-webkit-details-marker,
+.faith-reader [data-fr-content] .faith-book-summary::-webkit-details-marker { display: none; }
+.faith-reader [data-fr-content] .faith-section-summary:hover .faith-section-title { color: inherit; }
+
+/* The reserved height a section holds before its text arrives is a
+   scrollbar promise, not a visible box. */
+.faith-reader [data-fr-content] .faith-section-body:empty { min-height: 0; }
+
+/* ── Where you are ────────────────────────────────────────────────
+   The drawer's summary row, unpinned from the drawer and pinned to the
+   top of the screen, so the chapter you are reading is never off it. */
+.faith-here {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  margin-bottom: 8px;
+  background: var(--color-bg, #F6F3F2);
+  border-bottom: 1px solid var(--color-card-border);
+}
+[data-fr-tint="dark"] .faith-here { background: #23211f; }
+.faith-here-crumb { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; }
+.faith-here-locus {
+  font-size: 11px; letter-spacing: 3.08px; text-transform: uppercase;
+  color: var(--color-muted); white-space: nowrap;
+}
+.faith-here-chapter {
+  font-size: 15px; color: var(--color-ink, inherit);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.faith-here-acts { display: flex; flex: 0 0 auto; }
+.faith-here-acts button {
+  font-family: var(--font-body); font-size: 13px; line-height: 13px;
+  padding: 7px 11px; border: 1px solid var(--color-card-border);
+  background: transparent; color: inherit; cursor: pointer;
+}
+.faith-here-acts button + button { border-left: 0; }
+.faith-here-acts button:hover { background: var(--color-card-border); }
+.faith-here-acts button[aria-pressed="true"] { background: var(--color-card-border); }
+@media (max-width: 640px) {
+  .faith-here-locus { display: none; }
+  .faith-here-chapter { font-size: 14px; }
+}
+
+/* ── Addressability ──────────────────────────────────────────────
+   A footnote cites a passage, not a chapter, so every block carries its
+   own address. Faint but always there: hidden until hover meant a
+   reader had to know it existed before they could find it. */
+.faith-reader [data-fr-content] .faith-parallel-block { position: relative; }
+.faith-blk-anchor {
+  position: absolute; left: -28px; top: 1px;
+  width: 22px; height: 22px; padding: 0; border: 0; background: transparent;
+  color: var(--color-muted); cursor: pointer;
+  font-family: var(--font-body); font-size: 14px; line-height: 22px; text-align: center;
+  opacity: 0.3; transition: opacity 0.12s ease, color 0.12s ease;
+}
+@media (prefers-reduced-motion: reduce) { .faith-blk-anchor { transition: none; } }
+.faith-parallel-block:hover .faith-blk-anchor { opacity: 0.62; }
+.faith-blk-anchor:hover, .faith-blk-anchor:focus-visible { opacity: 1; color: var(--color-primary); }
+@media (max-width: 1023px) { .faith-blk-anchor { left: auto; right: 0; top: -4px; } }
+
+/* A bookmark sits opposite the address, so each margin means one thing. */
+.faith-blk-mark {
+  position: absolute; right: -26px; top: 1px; width: 20px; height: 22px;
+  line-height: 22px; text-align: center; font-size: 13px;
+  color: var(--color-primary); display: none; pointer-events: none;
+}
+.faith-parallel-block.faith-marked .faith-blk-mark { display: block; }
+@media (max-width: 1023px) { .faith-blk-mark { right: 22px; top: -4px; } }
+
+/* ── Your spot ───────────────────────────────────────────────────
+   "Notebook saves the text and bookmarks saves the place." The place
+   you stopped is kept without asking; the places you chose are kept
+   because you asked. They should not look alike. */
+.faith-resume {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin: 0 0 24px; padding: 12px 14px;
+  border: 1px solid var(--color-card-border);
+}
+.faith-resume p { margin: 0; flex: 1; min-width: 0; font-size: 14px; color: var(--color-muted); }
+.faith-resume b { color: inherit; font-weight: 600; }
+.faith-resume button {
+  font-family: var(--font-body); font-size: 13px; line-height: 13px; padding: 8px 12px;
+  border: 1px solid var(--color-card-border); background: transparent;
+  color: inherit; cursor: pointer;
+}
+.faith-resume .faith-resume-no { border-color: transparent; color: var(--color-muted); }
+
+/* The paragraph is the addressable unit, so it is the positioning
+   context for its own margin marks. */
+.faith-reader [data-fr-content] .faith-col-en > .faith-parallel-block { position: relative; }
+.faith-reader [data-fr-content] .faith-toc-here,
+.faith-reader [data-fr-toc] .faith-toc-here {
+  box-shadow: inset 2px 0 0 var(--color-primary);
+  background: var(--color-card-border);
+}
+.faith-toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  background: #2D2927; color: #F6F3F2; font-size: 13px;
+  padding: 9px 15px; border-radius: 2px; opacity: 0; pointer-events: none;
+  transition: opacity 0.18s ease; z-index: 60;
+}
+.faith-toast-on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .faith-toast { transition: none; } }
