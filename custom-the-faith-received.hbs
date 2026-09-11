@@ -87,10 +87,52 @@
 <!-- ── III. The corpus in numbers ────────────────────────────────── -->
 <section class="lp-band lp-stats-band">
   <div class="container">
+    {{!-- Recounted from the live catalogues 2026-09-11. Every figure
+          here is a sum somebody can reproduce, which the old ones were
+          not.
+
+          WORKS 30,748. The eight collections faith-corpora.js
+          registers, counted the way that file counts them: the Latin
+          Library 2,383 (v1/works-index.json with its own `exclude`
+          predicate applied, which drops the 17,064 textless pointer
+          rows), Patrologia Latina 8,967, Patrologia Graeca 2,976,
+          Patrologia Orientalis 400, Early English Books 15,569,
+          Creeds/Confessions/Catechisms 260, English Editions 69,
+          Augustine of Hippo 124. The shelf below shows seven of the
+          eight because English Editions is the one with no reading
+          room of its own; its works are the ones named above under "In
+          the collection".
+
+          This replaces 69,074, which counted the FULL Early English
+          Books catalogue, all 53,832 rows of it, newsbooks and ballads
+          and proclamations and weaving manuals included. We filter that
+          to the 15,569 theological works
+          (assets/data/faith-received/eebo-theological.json, `kept`), so
+          69,074 was never a number of things a visitor could open.
+
+          PAGES 2.1M. 2,158,284, the sum of n_pages across all 19,447
+          rows of v1/works-index.json: 1,095,614 for the Latin Library
+          itself and 1,062,670 carried on the pointer rows, which is how
+          the page counts for PL, PG, PO and EEBO reach us. It is a
+          floor rather than a total, because the roughly 11,700 EEBO
+          works with no pointer row report no page count at all.
+
+          ENGLISH TRANSLATIONS 13,892. Works carrying an English layer
+          we made: the Latin Library 2,242 (en_chars above zero, less
+          the 10 works that were English already), Patrologia Latina
+          8,736 and Patrologia Graeca 2,790 (an English title in their
+          own nav.json, `te` and `e` respectively), Augustine 124.
+
+          The label says English translations and not "first
+          translations". Nothing in any catalogue records whether a
+          translation is the first ever made into English, so a count of
+          firsts is not a number we can stand behind. The claim survives
+          as prose under "Academics" below, which is the right register
+          for it. Do not turn that hedge back into a figure. --}}
     <div class="lp-stats">
-      <div class="lp-stat"><b>69,074</b><span>Works</span></div>
-      <div class="lp-stat"><b>1.3M</b><span>Pages</span></div>
-      <div class="lp-stat"><b>2,218</b><span>First translations</span></div>
+      <div class="lp-stat"><b>30,748</b><span>Works</span></div>
+      <div class="lp-stat"><b>2.1M</b><span>Pages</span></div>
+      <div class="lp-stat"><b>13,892</b><span>English translations</span></div>
       <div class="lp-stat"><b>Free</b><span>Every page</span></div>
     </div>
 
@@ -156,19 +198,19 @@
       <a class="faith-card" href="/the-faith-received/reader/?c=mo&amp;w=athanasius-incarnation">
         <p class="faith-card-date">Athanasius</p><p class="faith-card-era">c. 318 AD</p>
         <h3 class="faith-card-title"><em>On the Incarnation</em></h3>
-        <p class="faith-card-desc">Athanasius’ classic defense of the Incarnation — why the eternal Word took flesh to restore fallen humanity and conquer death.</p>
+        <p class="faith-card-desc">Athanasius’ classic defense of the Incarnation, why the eternal Word took flesh to restore fallen humanity and conquer death.</p>
         <span class="faith-card-link">Read <span class="faith-card-arrow">&rarr;</span></span>
       </a>
       <a class="faith-card" href="/the-faith-received/reader/?c=mo&amp;w=augustine-confessions">
         <p class="faith-card-date">Augustine of Hippo</p><p class="faith-card-era">c. 397–400 AD</p>
         <h3 class="faith-card-title"><em>Confessions</em></h3>
-        <p class="faith-card-desc">Augustine’s autobiographical meditation on sin, grace, memory, and time — the first great Western autobiography.</p>
+        <p class="faith-card-desc">Augustine’s autobiographical meditation on sin, grace, memory, and time. The first great Western autobiography.</p>
         <span class="faith-card-link">Read <span class="faith-card-arrow">&rarr;</span></span>
       </a>
       <a class="faith-card" href="/the-faith-received/reader/?c=mo&amp;w=imitation-of-christ">
         <p class="faith-card-date">Thomas &agrave; Kempis</p><p class="faith-card-era">c. 1418–1427</p>
         <h3 class="faith-card-title"><em>The Imitation of Christ</em></h3>
-        <p class="faith-card-desc">The most widely read devotional work after the Bible — a guide to the interior life of prayer, humility, and union with God.</p>
+        <p class="faith-card-desc">The most widely read devotional work after the Bible, a guide to the interior life of prayer, humility, and union with God.</p>
         <span class="faith-card-link">Read <span class="faith-card-arrow">&rarr;</span></span>
       </a>
       <a class="faith-card" href="/the-faith-received/reader/?c=mo&amp;w=edwards-resolutions">
@@ -180,13 +222,13 @@
       <a class="faith-card" href="/the-faith-received/reader/?c=mo&amp;w=calvin-institutes">
         <p class="faith-card-date">John Calvin</p><p class="faith-card-era">1536 / 1559</p>
         <h3 class="faith-card-title"><em>Institutes of the Christian Religion</em></h3>
-        <p class="faith-card-desc">The foundational work of Reformed systematic theology — covering God, Scripture, Christ, salvation, and the Church across four books.</p>
+        <p class="faith-card-desc">The foundational work of Reformed systematic theology, covering God, Scripture, Christ, salvation, and the Church across four books.</p>
         <span class="faith-card-link">Read <span class="faith-card-arrow">&rarr;</span></span>
       </a>
       <a class="faith-card" href="/the-faith-received/reader/?c=mo&amp;w=charnock-attributes">
         <p class="faith-card-date">Stephen Charnock</p><p class="faith-card-era">1682</p>
         <h3 class="faith-card-title"><em>The Existence and Attributes of God</em></h3>
-        <p class="faith-card-desc">A comprehensive Puritan treatise on the divine perfections — 14 discourses exploring God’s existence, eternity, immutability, omnipresence, and other attributes.</p>
+        <p class="faith-card-desc">A comprehensive Puritan treatise on the divine perfections. Fourteen discourses exploring God’s existence, eternity, immutability, omnipresence, and other attributes.</p>
         <span class="faith-card-link">Read <span class="faith-card-arrow">&rarr;</span></span>
       </a>
       <a class="faith-card" href="/the-faith-received/reader/?c=mo&amp;w=belgic">
@@ -230,8 +272,14 @@
         <p class="lp-shelf-desc">The confessional record from the second century to the twentieth, with the conciliar acts alongside it.</p>
         <p class="lp-shelf-who">Nicaea &middot; Chalcedon &middot; Augsburg &middot; Trent &middot; Westminster</p>
       </a>
+      {{!-- The Migne column plate was hotlinked from the source
+            project's blob. It is served byte for byte by our own worker
+            at /pg/scan/ + the catalogue's own path, which is the
+            rewrite faith-reader.js applies to every PG scan
+            (SCAN_SOURCES there). Same 281,228 bytes, our host, checked
+            2026-09-11. --}}
       <a href="/the-faith-received/patrologia-graeca/">
-        <span class="lp-shelf-plate"><img src="https://xmw4yslyv6oq3m7i.public.blob.vercel-storage.com/migne/047/00109_dialogus-historicus-latin/mg047_0110.jpg" alt="" loading="lazy" /></span>
+        <span class="lp-shelf-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/pg/scan/migne/047/00109_dialogus-historicus-latin/mg047_0110.jpg" alt="" loading="lazy" /></span>
         <h4>Patrologia Graeca</h4>
         <p>2,976 works</p>
         <p class="lp-shelf-desc">Migne&rsquo;s Greek fathers, the Apostolic Fathers to the fall of Constantinople.</p>
@@ -244,8 +292,16 @@
         <p class="lp-shelf-desc">Migne&rsquo;s Latin fathers and medievals, Tertullian to Innocent III.</p>
         <p class="lp-shelf-who">Augustine &middot; Jerome &middot; Ambrose &middot; Bernard of Clairvaux &middot; Peter Damian</p>
       </a>
+      {{!-- No plate here, and this one is deliberate rather than a
+            missing file. The tile used to hotlink a Patrologia
+            Orientalis facsimile from a third-party blob. Those
+            facsimiles are licensed and must not be published, so there
+            is no version of that image this page may show, ours or
+            anyone's. The typographic tile below is the same
+            .lp-shelf-plate--set treatment the collections that were
+            never scanned already use. --}}
       <a href="/the-faith-received/patrologia-orientalis/">
-        <span class="lp-shelf-plate"><img src="https://fqzfe6cpzqk0a5qv.public.blob.vercel-storage.com/po/26794985/26794985_seg00.jpg" alt="" loading="lazy" /></span>
+        <span class="lp-shelf-plate lp-shelf-plate--set"><em>Patrologia<br />Orientalis</em></span>
         <h4>Patrologia Orientalis</h4>
         <p>400 works</p>
         <p class="lp-shelf-desc">The Christian East: Syriac, Coptic, Armenian, Ethiopic and Arabic.</p>
@@ -254,7 +310,7 @@
       <a href="/the-faith-received/latin-library/">
         <span class="lp-shelf-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/works/alsted-theologia-scholastica-didactica/p/5.webp" alt="" loading="lazy" /></span>
         <h4>The Latin Library</h4>
-        <p>2,285 works</p>
+        <p>2,383 works</p>
         <p class="lp-shelf-desc">Scholastic and reformation divinity in Latin, with English alongside.</p>
         <p class="lp-shelf-who">Thomas Aquinas &middot; Martin Luther &middot; John Calvin &middot; Duns Scotus &middot; Francisco Su&aacute;rez</p>
       </a>
@@ -264,6 +320,19 @@
         <p>15,569 works</p>
         <p class="lp-shelf-desc">Nearly everything printed in English before 1700, sermons and controversy alike.</p>
         <p class="lp-shelf-who">John Owen &middot; Richard Baxter &middot; John Bunyan &middot; William Perkins &middot; Richard Hooker</p>
+      </a>
+      {{!-- The seventh collection, which this shelf used to leave out
+            while the feature list below it counted seven. Every other
+            surface has it: faith-corpora.js registers `augustine`, and
+            routes.yaml gives it a reading room of its own at
+            /the-faith-received/augustine/. The count is the catalogue's
+            own, checked live 2026-09-11. --}}
+      <a href="/the-faith-received/augustine/">
+        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/augustine-plate.jpg"}}" alt="" loading="lazy" /></span>
+        <h4>Augustine of Hippo</h4>
+        <p>124 works</p>
+        <p class="lp-shelf-desc">One author given a collection of his own, the whole of him rather than the four books everyone quotes.</p>
+        <p class="lp-shelf-who">Confessions &middot; The City of God &middot; The Trinity &middot; Teaching Christianity &middot; The Enchiridion</p>
       </a>
     </div>
     <p class="tfr-browse-all tfr-browse-all--under"><a class="tfr-browse-btn" href="/the-faith-received/all-works/">Browse Full Library</a></p>
@@ -275,13 +344,24 @@
   <div class="container">
     <p class="lp-num">Everything in the library</p>
     <ul class="lp-features">
+      {{!-- These three carried the old, unreproducible counts and had
+            to move with the hero above, which is the only place on this
+            page the derivations are written down. The collections
+            figure is gone rather than corrected: the shelf above shows
+            seven reading rooms, the registry holds eight entries, and a
+            bare number here could only disagree with one of them. --}}
       <li><b>Creeds &amp; Catechisms</b> <span>&middot; 260 documents</span></li>
-      <li><b>The Library</b> <span>&middot; 7 collections, 68,814 works</span></li>
-      <li><b>First translation</b> <span>&middot; 2,218 works newly in English</span></li>
+      <li><b>The Library</b> <span>&middot; 30,748 works, every collection</span></li>
+      <li><b>English translations</b> <span>&middot; 13,892 works carrying an English layer we made</span></li>
       <li><b>Topics</b> <span>&middot; 43 doctrinal loci</span></li>
       <li><a href="/the-faith-received/doctrines/"><b>Every doctrine</b> <span>&middot; ~190 topics, ranked by who wrote on it most</span></a></li>
       <li><a href="/the-faith-received/glossary/"><b>Glossary</b> <span>&middot; look up a term across the library</span></a></li>
-      <li><a href="/the-faith-received/dictionary/"><b>Dictionary</b> <span>&middot; the Dictionnaire de Théologie Catholique, translated as it is read</span></a></li>
+      {{!-- The old line stopped at "translated as it is read", which was
+            true of the first build and is now half of it: the rebuilt
+            DTC pairs the French and the English paragraph by paragraph
+            and lets a reader take either lane on its own. See the lane
+            switch in assets/js/faith-dictionary.js. --}}
+      <li><a href="/the-faith-received/dictionary/"><b>Dictionary</b> <span>&middot; the Dictionnaire de Théologie Catholique, French and English paragraph by paragraph, or either one alone</span></a></li>
       <li><b>Scripture</b> <span>&middot; 8.1M citations, traced to the line</span></li>
       <li><b>Today</b> <span>&middot; a question a day</span></li>
       <li><b>Devotional</b> <span>&middot; build a reading plan</span></li>
@@ -290,8 +370,16 @@
       <li><b>Memorize</b> <span>&middot; three catechisms</span></li>
       <li><b>In the reader</b> <span>&middot; English, Latin, or both</span></li>
       <li><b>Page scans</b> <span>&middot; check the transcription</span></li>
-      <li><b>Notebook</b> <span>&middot; highlight, note, export</span></li>
+      <li><b>Notebook</b> <span>&middot; highlight, note, gather into collections, export</span></li>
       <li><b>Modern spelling</b> <span>&middot; for the older English</span></li>
+      {{!-- The notebook saves the text; bookmarks save the place. The
+            list carried only the first half of that pair, and only the
+            automatic half of the second: Continue reading is the place
+            you stopped, a bookmark is a place you chose. Bookmarks are
+            on every section in the reader and on the work rows across
+            browse, the author pages, the reading rooms and the
+            centuries, per the header of assets/js/faith-bookmark.js. --}}
+      <li><b>Bookmarks</b> <span>&middot; mark a place yourself, in the reader or on any work row</span></li>
       <li><b>Continue reading</b> <span>&middot; picks up where you left off</span></li>
     </ul>
   </div>
@@ -312,13 +400,26 @@
   <div class="container">
     <p class="lp-num">For members</p>
     <h2 class="lp-head">Get the most from The Faith Received.</h2>
+    {{!-- Rewritten 2026-09-11 against what is actually live. Three
+          changes, each checked in this repo rather than remembered:
+          "Semantic search" is called Power Search everywhere else in
+          the product (assets/js/page/faith-power-search.js, and the tab
+          in custom-faith-research.hbs), so the name agrees here now;
+          Compare and the Desk shipped and were missing; and the
+          notebook line predated collections being folded into it (see
+          the header of partials/faith-received/_notebook-panel.hbs).
+          They are tabs in one workspace, which the line below says so
+          that the list does not read as a list of separate pages. --}}
+    <p class="lp-body">Most of these are tabs in one workspace, the Research page, rather than separate destinations.</p>
     <ul class="blist blist--2 blist--tools">
         <li><span class="brow-t">Ask</span><span class="brow-m">A question answered from the corpus. Every page it drew on is cited inline.</span></li>
-        <li><span class="brow-t">Semantic search</span><span class="brow-m">Search by meaning rather than by word across every collection.</span></li>
-        <li><span class="brow-t">Latin word forms</span><span class="brow-m">One search across every inflection of a word.</span></li>
+        <li><span class="brow-t">Power Search</span><span class="brow-m">Search by meaning rather than by word, across every collection.</span></li>
+        <li><span class="brow-t">Compare</span><span class="brow-m">Two to four authors on one topic, side by side and oldest first, so it reads as a reception history.</span></li>
         <li><span class="brow-t">Constellations</span><span class="brow-m">The passages that stand behind a passage. Share the set as a link.</span></li>
+        <li><span class="brow-t">The notebook</span><span class="brow-m">Highlight a paragraph, keep a private note, and gather passages into named collections.</span></li>
+        <li><span class="brow-t">The Desk</span><span class="brow-m">Write with what you have kept beside you. A passage arrives with its citation already attached.</span></li>
+        <li><span class="brow-t">Latin word forms</span><span class="brow-m">One search across every inflection of a word.</span></li>
         <li><span class="brow-t">Citation export</span><span class="brow-m">Copy, permalink, BibTeX or Zotero. Each one carries its locus.</span></li>
-        <li><span class="brow-t">The notebook</span><span class="brow-m">Highlight a paragraph, keep a private note, or write your own translation.</span></li>
     </ul>
   </div>
 </section>

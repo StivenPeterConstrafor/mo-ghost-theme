@@ -1,7 +1,7 @@
 {{!< default}}
 {{#contentFor "moHead"}}
 <title>Search The Faith Received</title>
-<meta name="description" content="Search across every creed, confession, catechism, and classic work in The Faith Received — full text, by work, by tradition, and by passage." />
+<meta name="description" content="Search across every creed, confession, catechism, and classic work in The Faith Received: full text, by work, by tradition, and by passage." />
 <meta property="og:title" content="Search The Faith Received" />
 <meta property="og:description" content="Search across every creed, confession, catechism, and classic work in The Faith Received." />
 <meta name="twitter:title" content="Search The Faith Received" />
@@ -14,9 +14,17 @@
      ~108,500 pages of the Latin Library — see the header of
      assets/js/faith-tfr-search.js for how that was confirmed and how
      the shards are merged). Ask is real, built inline via a shared
-     partial — see [data-fs-panel="ask"] below. Meaning needs a vector
-     index this codebase does not have; that panel says so rather than
-     pretending to work — see [data-fs-panel="meaning"] below.
+     partial, see [data-fs-panel="ask"] below. The sixth tab was
+     "Meaning" and is now Power Search: the semantic index it used to
+     say did not exist does exist, and the tab is a door into the one
+     place it lives rather than a second copy of it. See
+     [data-fs-panel="power"] below.
+
+     Rebuilt 2026-09-11 alongside a port from the corpus owner's own
+     /search. What came across and what did not is written up in the
+     header of assets/js/faith-tfr-search.js; the parts that show here
+     are the Power Search tab, the start state and the zero state that
+     the result panels now render, and the Preview control on each row.
 
      Fresh data-fs-* attributes throughout, deliberately not the older
      data-faith-search-* set assets/js/faith-received.js still binds
@@ -54,7 +62,12 @@
         <button type="button" class="faith-view-toggle-tab" data-fs-mode="tradition" role="tab" aria-selected="false">Tradition</button>
         <button type="button" class="faith-view-toggle-tab" data-fs-mode="scripture" role="tab" aria-selected="false">Scripture</button>
         <button type="button" class="faith-view-toggle-tab" data-fs-mode="ask" role="tab" aria-selected="false">Ask</button>
-        <button type="button" class="faith-view-toggle-tab" data-fs-mode="meaning" role="tab" aria-selected="false">Meaning</button>
+        {{!-- Was "Meaning", and was an honest placeholder for a feature
+              that did not exist. It exists now and it is called Power
+              Search, on /the-faith-received/research/. The tab is kept
+              because this is where a reader looks for it, and the name
+              is the product's name so the two agree. --}}
+        <button type="button" class="faith-view-toggle-tab" data-fs-mode="power" role="tab" aria-selected="false">Power Search</button>
       </nav>
 
       {{!-- Shared scope filters — author / work / tradition — per the
@@ -97,18 +110,12 @@
       <div data-fs-panel="find">
         <p class="faith-search-status" data-fs-count="find" role="status" aria-live="polite"></p>
         <div data-fs-results="find"></div>
-        <div class="faith-search-empty" data-fs-empty="find" hidden>
-          <p>No results. Try a different phrase, or drop a scope filter above.</p>
-        </div>
       </div>
 
       {{!-- Full text: the same index, flat, one row per matching page. --}}
       <div data-fs-panel="fulltext" hidden>
         <p class="faith-search-status" data-fs-count="fulltext" role="status" aria-live="polite"></p>
         <ol class="faith-search-results" data-fs-results="fulltext"></ol>
-        <div class="faith-search-empty" data-fs-empty="fulltext" hidden>
-          <p>No results. Try a different phrase, or drop a scope filter above.</p>
-        </div>
       </div>
 
       {{!-- Tradition: Full text with the Tradition pill pinned rather
@@ -118,9 +125,6 @@
         <p class="faith-search-scope-note" data-fs-trad-required>Choose a tradition above to search within it.</p>
         <p class="faith-search-status" data-fs-count="tradition" role="status" aria-live="polite"></p>
         <ol class="faith-search-results" data-fs-results="tradition"></ol>
-        <div class="faith-search-empty" data-fs-empty="tradition" hidden>
-          <p>No results in this tradition. Try a different phrase.</p>
-        </div>
       </div>
 
       {{!-- Scripture: a passage-lookup shortcut into the full Scripture
@@ -128,7 +132,7 @@
            the canon-wide citation panel, the tradition filter chips, and
            the citation-density strip. Not a second citation browser. --}}
       <div class="faith-search-scripture-panel" data-fs-panel="scripture" hidden>
-        <p class="faith-pending-note faith-search-scripture-note">Jump straight to a passage in the full Scripture Index — every citation in the library, by book, with tradition filters and a canon-wide density chart.</p>
+        <p class="faith-pending-note faith-search-scripture-note">Jump straight to a passage in the full Scripture Index, which carries every citation in the library, by book, with tradition filters and a canon-wide density chart.</p>
         <form class="faith-scripture-jump" data-fs-scripture-form>
           <label class="faith-scripture-jump-label"><span>Go to a passage</span>
             <input type="text" class="faith-scripture-jump-input" data-fs-scripture-input placeholder="Romans 8, or Genesis 1" aria-label="Go to a book and chapter">
@@ -167,25 +171,28 @@
       <div data-fs-panel="ask" data-ask-page hidden>
         {{> "faith-received/_ask-panel"}}
       </div>
-      {{!-- Meaning: genuinely still unbuilt, unlike Ask above — checked
-           2026-09-03 alongside the Ask fix per the same brief (the two
-           placeholders were written together and needed the same
-           audit). /v1/vsearch exists on mo-tfr-library (see default.hbs's
-           mo-trusted-hosts comment and admin-tfr-budget.js), but nothing
-           in this theme calls it: no routed page, no faith-*.js file
-           references "vsearch" anywhere except that worker-auth comment
-           and the admin spend dashboard, which only shows it isn't
-           spending Claude budget (lib/budget.js excludes it — it never
-           calls Claude). There is no working Meaning feature for this
-           tab to link out to, so unlike Ask it stays an honest
-           placeholder rather than a second instance of the same bug. --}}
-      <div data-fs-panel="meaning" hidden>
+      {{!-- Power Search. This panel used to say that searching by
+           meaning needed a vector index nobody had built, which was
+           true when it was written and is not true now: Power Search
+           ships on /the-faith-received/research/, talking to
+           mo-tfr-library's GET /v1/vsearch over the Vectorize index
+           (assets/js/page/faith-power-search.js is the authority on the
+           query params and the result shape).
+
+           It is a door, not a second copy. Power Search groups its
+           results by work and opens each work's own passages from a
+           second, slug-scoped query; rebuilding that here would be two
+           of the same thing to keep in step, which is the mistake the
+           Ask tab already made once. So this panel says what Power
+           Search does, says plainly that it is for members, and links
+           into the one place it lives. --}}
+      <div data-fs-panel="power" hidden>
         <div class="faith-pending-panel faith-search-pending-panel">
-          <p class="faith-pending-lede">Meaning needs a semantic index that isn&rsquo;t built yet.</p>
-          <p class="faith-pending-note">Full text and Find search the words on the page. Meaning is meant to search by concept instead — so a search for "God's unchangeableness" would also surface a passage that says "immutability" and never uses that word. That takes a vector-search index over the whole library, which doesn&rsquo;t exist here yet; the knowledge graph the 2026-09 data drop shipped (v1/graph/) is a step toward it but is itself still Phase 1, with no author- or work-level nodes to search by. Nothing here will silently return word matches and call them semantic.</p>
+          <p class="faith-pending-lede">Power Search finds a passage by what it means, not by the words it uses.</p>
+          <p class="faith-pending-note">Full text and Find match the words on the page. Power Search matches the sense, so a search for &ldquo;God&rsquo;s unchangeableness&rdquo; also reaches a passage that says immutability and never uses your word at all. Results come back a work at a time, and opening a work shows its own best passages underneath. It is one of the member tools in the Research workspace.</p>
           <p class="faith-pending-actions">
-            <a href="/the-faith-received/search/#fulltext">Try Full text instead</a>
-            <a href="/membership/">Become a member</a>
+            <a href="/the-faith-received/research/#power-search">Open Power Search</a>
+            <a href="/the-faith-received/search/#fulltext">Search the words instead</a>
           </p>
         </div>
       </div>
@@ -204,13 +211,20 @@
         <p class="blabel">For members</p>
         <h2>Get the most from The Faith Received.</h2>
       </header>
+      {{!-- The same eight entries, in the same order, as the list on
+           the landing page (custom-the-faith-received.hbs). They are
+           kept word for word in step on purpose: a reader who meets
+           this list twice should not have to work out whether the two
+           are describing the same thing. --}}
       <ul class="blist blist--2 blist--tools">
         <li><span class="brow-t">Ask</span><span class="brow-m">A question answered from the corpus. Every page it drew on is cited inline.</span></li>
-        <li><span class="brow-t">Meaning</span><span class="brow-m">Search by concept rather than by word, across every collection.</span></li>
-        <li><span class="brow-t">Latin word forms</span><span class="brow-m">One search across every inflection of a word.</span></li>
+        <li><span class="brow-t">Power Search</span><span class="brow-m">Search by meaning rather than by word, across every collection.</span></li>
+        <li><span class="brow-t">Compare</span><span class="brow-m">Two to four authors on one topic, side by side and oldest first, so it reads as a reception history.</span></li>
         <li><span class="brow-t">Constellations</span><span class="brow-m">The passages that stand behind a passage. Share the set as a link.</span></li>
+        <li><span class="brow-t">The notebook</span><span class="brow-m">Highlight a paragraph, keep a private note, and gather passages into named collections.</span></li>
+        <li><span class="brow-t">The Desk</span><span class="brow-m">Write with what you have kept beside you. A passage arrives with its citation already attached.</span></li>
+        <li><span class="brow-t">Latin word forms</span><span class="brow-m">One search across every inflection of a word.</span></li>
         <li><span class="brow-t">Citation export</span><span class="brow-m">Copy, permalink, BibTeX or Zotero. Each one carries its locus.</span></li>
-        <li><span class="brow-t">The notebook</span><span class="brow-m">Highlight a paragraph, keep a private note, or write your own translation.</span></li>
       </ul>
     </div>
   </section>
