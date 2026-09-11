@@ -81,6 +81,7 @@ Header `A and B`, stats (statements each, shared topics), `Positions, topic by t
 ## 5. Rules that hold on every surface
 - One author = one canonical name; aliases fold before counting; homonyms stay separate by ruling.
 - Every citation door is `reader ?w=&#b<page>-<i>` (+ `?hl=` with the flagged words) and never a bare work link (owner 09-10 "can't see the thing that was flagged in the work").
+- **Work-fold headers open at the page they say** (owner 09-11 "make sure links go to the page they say"): wherever statements or verse comments are grouped by work (`details.cd-work` — Scripture chapter comments, Positions by work, topic detail, Connections, the pair page, the comparison desk), the header link is `open at p. N` → the reader at the FIRST cited page of that group (`readerHrefHl(w, rows[0].p, rows[0].q)`, anchor `#b<page>-0`, `?hl=` with the statement's words). `open the work` (the work's start) appears only when no row carries a page. Each row inside keeps its own `Read the passage` (its page) and `Preview`. Helper: `foldOpen(w, rows)` in research_shell.html, six call sites; the same helper in the theme's five `*.in03.js` copies.
 - Statements are deduplicated by (work, page, text); "indexed" statements (from the evidence API) and the room's own selection are merged, indexed first.
 - Nothing is hidden behind pagination that the user cannot reach: lists page in place (`Show more`, scroll sentinels), counts are whole-collection counts.
 - Notebook: one save path (`FRResearchNotebook`) on works and passages; saved state is read once per render.
@@ -94,7 +95,8 @@ Route `/the-faith-received/fathers/` (`/author/` routes to the ported authors di
 ## 7. Checklist (Richard Baxter, `?sh=ed`)
 1. Header: `155 works · pages · 47,441 Scripture citations · English Divines`, doors to the citation map and Compare, a bio.
 2. Segments read `Works · 155 · Positions · Scripture · Topics · 70 · Reception · 17,215 · Connections · Search`.
-3. Positions: loci groups with counts (Prolegomena & Scripture 3 topics · 26,227 positions …); opening `Scripture` loads statements; every statement has `Read the passage` and `Preview`; Preview opens the reader in place; the Compare box adds a second column.
+3. Scripture → Matthew → 28: under verse 19 the work folds read `open at p. 41` (A paraphrase on the New Testament, eebo-42074) and open the reader at `#b41-0`; inside, `Read the passage` points at the same page.
+4. Positions: loci groups with counts (Prolegomena & Scripture 3 topics · 26,227 positions …); opening `Scripture` loads statements; every statement has `Read the passage` and `Preview`; Preview opens the reader in place; the Compare box adds a second column.
 4. Scripture: `71 books · 47,441 citations`; Matthew 4,979 first; book → chapters → verses with comments and Read doors.
 5. Topics: `70 topics`, The Church 12,113 pages first; a topic opens its detail with Connected topics.
 6. Reception: `cited 1,186 times by 81 authors · draws on 744 authors across 16,029 citations`; two tabs; an author click opens the citation door on the cited page with the name marked.
