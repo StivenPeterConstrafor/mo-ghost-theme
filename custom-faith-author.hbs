@@ -32,29 +32,22 @@
     </div>
   </section>
 
-  {{!-- Positions: what this writer is recorded as holding, doctrine by
-       doctrine. Its own band rather than a panel built into the body
-       above, because faith-author.js rewrites that container's whole
-       innerHTML once the catalogues resolve and would take any node
-       mounted inside it with them. The author is read from ?a= by the
-       panel itself (folded, the same key faith-author.js uses), so the
-       two scripts share no state and a fault in one cannot blank the
-       other.
+  {{!-- Positions was here: "what this writer is recorded as holding,
+       doctrine by doctrine", a doctrine picker over the mined statement
+       set. Removed from the author page on Ian's instruction,
+       2026-09-11.
 
-       Nothing is fetched until this band is scrolled to.
+       The reason it could not stay is the standing rule that the
+       library quotes and never paraphrases. Every statement in that
+       data is a paraphrase — the mined set carries no verbatim text
+       anywhere — and the panel said so itself, in a standing caveat
+       telling the reader to go and check the passage before
+       attributing any of it to the author. A feature that has to warn
+       you not to trust it is not one this library should be running.
 
-       Behind the same member branch as the panels below it. Positions
-       is a research tool of exactly the kind the gate names, and the
-       topic index beside it reads the same mined data, so gating the
-       count and serving the statements free would be incoherent. This
-       one was a judgement call rather than a named instruction: to
-       reverse it, lift this band and its script out of the two
-       {{#if @member}} blocks. --}}
-  {{#if @member}}
-  <section class="bband faith-positions-band"
-           data-faith-positions
-           data-positions-author-param="a"></section>
-  {{/if}}
+       The data and faith-positions.js are untouched and still serve
+       /the-faith-received/doctrines/ and the topic pages. Only the
+       author-page mount is gone. --}}
 
   {{!-- BETA GATE. The life and the shelf are open to everyone: an
        author page is the library's own catalogue and a reader who
@@ -132,13 +125,9 @@
      member-tier and this is the only thing that tells a free
      subscriber why the search did nothing. --}}
 <script src="{{asset "js/feature-gate.js"}}"></script>
-{{!-- Positions. Independent of every script above it: it reads ?a=
-     itself, mounts into its own band, and waits to be scrolled to. In
-     the member branch with the rest, and it returns on its own first
-     line when its band is absent, so a signed-out page would be safe
-     either way. Not loading it is the point: it is the fetch and the
-     panel that are gated, not just the sight of them. --}}
-<script src="{{asset "js/faith-positions.js"}}"></script>
+{{!-- faith-positions.js is not loaded here any more; see the note where
+     its band used to be. It still runs on the doctrines and topic
+     pages. --}}
 {{/if}}
 
 <script src="{{asset "js/faith-author.js"}}"></script>
