@@ -15956,9 +15956,45 @@ a.cn-row-title { color: var(--color-primary-text); }
 body:not([data-member-status]) [data-tfr-gate="tools"] { display: none !important; }
 body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important; }
 
+/* ── The merged band ──────────────────────────────────────────────
+   The signup form and the list of tools were two sections stacked on
+   one another until 2026-09-11. They are one now, and this is the only
+   layout that band needs.
+
+   The list keeps the full container and its two columns, because it is
+   a scan. The prose and the form take a reading measure and centre
+   under it, because they are not. Without this the form inherited the
+   container's full width and the fields ran the width of the page:
+   .tfr-gate-form's own `margin: 0 auto` was measured against
+   .tfr-gate-inner, which the merge removed. */
+.tfr-gate-band .tfr-gate-lede,
+.tfr-gate-band .tfr-gate-note,
+.tfr-gate-band .tfr-gate-signin {
+  max-width: 62ch;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+.tfr-gate-band .tfr-gate-lede { margin-bottom: 44px; }
+.tfr-gate-band .tfr-gate-form {
+  max-width: 620px;
+  margin: 44px auto 0;
+}
+/* The rule under the form separates the offer from the terms, which is
+   the one place this band changes register. */
+.tfr-gate-band .tfr-gate-note {
+  border-top: 1px solid var(--color-card-border);
+  padding-top: 28px;
+  margin-top: 36px;
+}
+
 /* ── The box ──────────────────────────────────────────────────────
    Sits where the workspace would have been, on the same white ground
-   the workspaces use, so the page does not visibly lose a section. */
+   the workspaces use, so the page does not visibly lose a section.
+
+   Still used by nothing after the merge above, and kept because the
+   .tfr-gate-* element rules below it are shared with the merged band.
+   Delete the wrapper rules only, if you ever do. */
 .tfr-gate {
   background: #fff;
   border-top: 1px solid var(--color-card-border);

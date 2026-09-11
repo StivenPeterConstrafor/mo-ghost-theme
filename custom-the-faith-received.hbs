@@ -414,44 +414,18 @@
 
 
 <!-- ── For members ───────────────────────────────────────────────
-     Reading is free and stays free. What membership buys is the work
-     the corpus can do for you. The same two blocks close the Research
-     page; this is where a reader who came for the landing meets them. -->
-{{!-- Hidden for paid and comped members. This list sells the tools
-     membership buys, and a member has already bought them; leaving it
-     up pitches somebody something they own. Same gate as the CTA
-     below, so the two cannot drift apart. --}}
-{{#match @member.status "paid"}}{{else}}
-{{#match @member.status "comped"}}{{else}}
-<section class="lp-band lp-band--cream faith-tools">
-  <div class="container">
-    <p class="lp-num">For members</p>
-    <h2 class="lp-head">Get the most from The Faith Received.</h2>
-    {{!-- Rewritten 2026-09-11 against what is actually live. Three
-          changes, each checked in this repo rather than remembered:
-          "Semantic search" is called Power Search everywhere else in
-          the product (assets/js/page/faith-power-search.js, and the tab
-          in custom-faith-research.hbs), so the name agrees here now;
-          Compare and the Desk shipped and were missing; and the
-          notebook line predated collections being folded into it (see
-          the header of partials/faith-received/_notebook-panel.hbs).
-          They are tabs in one workspace, which the line below says so
-          that the list does not read as a list of separate pages. --}}
-    <p class="lp-body">Most of these are tabs in one workspace, the Research page, rather than separate destinations.</p>
-    <ul class="blist blist--2 blist--tools">
-        <li><span class="brow-t">Ask</span><span class="brow-m">A question answered from the corpus. Every page it drew on is cited inline.</span></li>
-        <li><span class="brow-t">Power Search</span><span class="brow-m">Search by meaning rather than by word, across every collection.</span></li>
-        <li><span class="brow-t">Compare</span><span class="brow-m">Two to four authors on one topic, side by side and oldest first, so it reads as a reception history.</span></li>
-        <li><span class="brow-t">Constellations</span><span class="brow-m">The passages that stand behind a passage. Share the set as a link.</span></li>
-        <li><span class="brow-t">The notebook</span><span class="brow-m">Highlight a paragraph, keep a private note, and gather passages into named collections.</span></li>
-        <li><span class="brow-t">Desk</span><span class="brow-m">Write with what you have kept beside you. A passage arrives with its citation already attached.</span></li>
-        <li><span class="brow-t">Latin word forms</span><span class="brow-m">One search across every inflection of a word.</span></li>
-        <li><span class="brow-t">Citation export</span><span class="brow-m">Copy, permalink, BibTeX or Zotero. Each one carries its locus.</span></li>
-    </ul>
-  </div>
-</section>
-{{/match}}
-{{/match}}
+     One section now, not two. The list of tools and the signup form
+     that unlocks them were separate blocks saying the same thing to
+     the same reader; they were merged into the shared partial on
+     2026-09-11 per Ian, so the landing page and the three tool pages
+     all render the same one and cannot drift apart.
+
+     The old gate here was a "match member.status paid" block nested
+     with "comped", which hid the pitch from paying members and went on
+     showing it to signed-in FREE members, who during the beta already
+     have every tool in the list. The partial gates on "unless member":
+     signed in at all, it is gone. -->
+{{> "faith-received/_beta-gate"}}
 
 {{!-- The pricing cards, which is what a reader who has got this far
      down the landing page should be offered. They were here all

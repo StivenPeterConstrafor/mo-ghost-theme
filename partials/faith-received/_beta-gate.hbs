@@ -29,6 +29,20 @@
        2. Render this partial where the tools would have been, with
           the usual partial call: {{> "faith-received/_beta-gate"}}
 
+          MERGED 2026-09-11, per Ian. This used to be the signup box
+          alone, and every page that rendered it ALSO carried a separate
+          "Get the most from The Faith Received" band listing the same
+          tools: two sections saying the same thing to the same reader,
+          one above the other. They are one now. The list is the
+          argument and the form is the answer to it, so the form sits
+          inside the list rather than above it.
+
+          That also fixed an older visibility bug. The tools band was
+          hidden from PAID and comped members only, so a signed-in FREE
+          member was still being sold features they already had. The
+          whole section now gates on "unless member": signed in at all,
+          it is gone.
+
           It gates itself with {{#unless @member}}, so a signed-in
           member is never sent the markup. Render it ONCE per
           page: the form carries element ids, and inline-signup.js and
@@ -80,12 +94,33 @@
      and losing it for an existing member costs nothing.
      ════════════════════════════════════════════════════════════════ --}}
 {{#unless @member}}
-<div class="tfr-gate">
-  <div class="tfr-gate-inner">
+{{!-- One section, not two. The eyebrow says the price, the list says
+     what is on offer, the form is how you take it. --}}
+<section class="bband bband--cream faith-tools tfr-gate-band">
+  <div class="container">
 
-    <p class="tfr-gate-eyebrow">Free during the beta</p>
-    <h2 class="tfr-gate-title"><em>The research tools need an account.</em></h2>
+    <header class="bhead">
+      <p class="blabel">Free during the beta</p>
+      <h2>Get the most from The Faith Received.</h2>
+    </header>
+
     <p class="tfr-gate-lede">Ask the library a question and read a cited answer. Search nineteen thousand works by meaning rather than by word. Set two authors against each other, keep what you find, and write from it. Every one of these is free while the beta runs. All it takes is an account.</p>
+
+    {{!-- "Citation export" was listed here and on three other pages
+         until 2026-09-11, and no such feature exists: there is no
+         BibTeX, no Zotero, no COinS and no copy-citation control
+         anywhere in the theme. Removed rather than left advertising
+         something a reader would go looking for. Put it back when it
+         is built. --}}
+    <ul class="blist blist--2 blist--tools">
+      <li><span class="brow-t">Ask</span><span class="brow-m">A question answered from the corpus. Every page it drew on is cited inline.</span></li>
+      <li><span class="brow-t">Power Search</span><span class="brow-m">Search by meaning rather than by word, across every collection.</span></li>
+      <li><span class="brow-t">Compare</span><span class="brow-m">Two to four authors on one topic, side by side, grouped by the work.</span></li>
+      <li><span class="brow-t">Latin word forms</span><span class="brow-m">One search across every inflection of a word.</span></li>
+      <li><span class="brow-t">Constellations</span><span class="brow-m">The passages that stand behind a passage. Share the set as a link.</span></li>
+      <li><span class="brow-t">The notebook</span><span class="brow-m">Keep a passage, write a note on it, and gather passages into collections.</span></li>
+      <li><span class="brow-t">Desk</span><span class="brow-m">Write with what you have kept beside you, citations already attached.</span></li>
+    </ul>
 
     {{!-- Plain [data-inline-signup]. inline-signup.js ships in
          site.min.js and binds by delegation on document, so it does not
@@ -119,5 +154,5 @@
     <p class="tfr-gate-signin">Already have an account? <button type="button" class="tfr-gate-signin-btn" data-portal="signin">Sign in</button></p>
 
   </div>
-</div>
+</section>
 {{/unless}}
