@@ -144,7 +144,25 @@
   // introduce are the fixed <strong>/<sup><a> templates here, so this
   // stays as safe as the citation-marker handling it's alongside.
   function renderInline(text, citByN, workLinks) {
-    const withNotes = text.replace(/\[(\d+)\]/g, (whole, numStr) => {
+    /* The note goes OUTSIDE the punctuation, not inside it (Ian,
+     * 2026-09-11). The model writes "justified by faith [1]." and the
+     * convention every press sheet in this field follows is "justified
+     * by faith.[1]" — the number follows the stop.
+     *
+     * Moved here rather than asked for in the prompt, because a
+     * generated answer only follows a formatting instruction most of
+     * the time and this way it is always right.
+     *
+     * A run of markers moves together, so "faith [1][2]." becomes
+     * "faith.[1][2]" and not "faith.[1] [2]". Whitespace before the
+     * run is dropped, since the superscript sits tight against the
+     * stop. Applies to the other stops as well, so a sentence and a
+     * clause do not end up looking different from each other. */
+    const placed = text.replace(
+      /\s*((?:\[\d+\]\s*)+)([.,;:!?])/g,
+      (whole, markers, stop) => stop + markers.replace(/\s+/g, ""),
+    );
+    const withNotes = placed.replace(/\[(\d+)\]/g, (whole, numStr) => {
       const n = parseInt(numStr, 10);
       if (!citByN.has(n)) return ""; // a dangling marker never renders as text or markup
       return `<sup class="ask-footnote-ref"><a href="#ask-fn-${n}">${n}</a></sup>`;
