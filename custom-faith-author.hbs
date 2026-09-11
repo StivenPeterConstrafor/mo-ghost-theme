@@ -41,30 +41,79 @@
        two scripts share no state and a fault in one cannot blank the
        other.
 
-       Nothing is fetched until this band is scrolled to. --}}
+       Nothing is fetched until this band is scrolled to.
+
+       Behind the same member branch as the panels below it. Positions
+       is a research tool of exactly the kind the gate names, and the
+       topic index beside it reads the same mined data, so gating the
+       count and serving the statements free would be incoherent. This
+       one was a judgement call rather than a named instruction: to
+       reverse it, lift this band and its script out of the two
+       {{#if @member}} blocks. --}}
+  {{#if @member}}
   <section class="bband faith-positions-band"
            data-faith-positions
            data-positions-author-param="a"></section>
+  {{/if}}
+
+  {{!-- BETA GATE. The life and the shelf are open to everyone: an
+       author page is the library's own catalogue and a reader who
+       cannot yet see it has nothing to sign in for. The research
+       panels are the gated part, and they are gated by NOT LOADING
+       THEIR SCRIPTS at the foot of this page, inside a
+       {{#if @member}}. Nothing draws them, so there is no markup to
+       hide and no flash to avoid. That is the server gate the contract
+       in partials/faith-received/_beta-gate.hbs asks for, in the only
+       shape a page whose body is built by JS can take it.
+
+       "Account" here means ANY signed-in Ghost member, free included. --}}
+  {{> "faith-received/_beta-gate"}}
+
 {{> "faith-received/_beta-band"}}
 </main>
-{{!-- Sitewide membership CTA. Same partial and same gate as the rest
-     of the site: hidden for paid and comped members, shown to free
-     subscribers and anonymous visitors. --}}
-{{> "membership-cta"}}
+{{!-- Sitewide membership CTA. The partial's own rule is "hide for paid
+     and comped"; during the beta this page wants it hidden for every
+     signed-in member, free included, because a free member is using
+     the research panels above right now. Same wrapper and same
+     reasoning as /the-faith-received/ask/ and /search/. --}}
+<div data-tfr-gate="signed-out">{{> "membership-cta"}}</div>
 
 
 
 <meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
 <script src="{{asset "js/faith-corpora.js"}}"></script>
 <script src="{{asset "js/faith-century.js"}}"></script>
-{{!-- Search this author's shelf: by scripture reference, from the
-     generated index, or by word, by reading the works themselves.
+
+{{!-- ── The research panels, member-only for the beta ──────────────
+     Search this author, the scripture fingerprint, reception and the
+     topic index. All four are drawn by these scripts into
+     [data-faith-author] at read time, so not loading them IS the
+     server gate: a signed-out visitor is served no panel markup, no
+     panel CSS state and no fetch, and the beta-gate box above stands
+     where they would have been.
+
+     faith-author.js below asks for each of these with a
+     `window.MO…` guard and draws the life and the shelf without any
+     of them, which is what makes this branch safe to take. Do not
+     move faith-author.js inside it.
+
+     ORDER MATTERS in one place only: faith-author-panels.js defines
+     the fold the other three build into, so it goes first. --}}
+{{#if @member}}
+<script src="{{asset "js/faith-author-panels.js"}}"></script>
+{{!-- Search this author. Power Search is the first mode and the one
+     the box opens on: the same semantic search as the Research desk,
+     with the library narrowed to this author's own works. The two
+     older modes stay beside it, and the scripture one is load-bearing
+     rather than legacy: the fingerprint's verse figures call
+     MOAuthorSearch.find() and answer inside this panel.
+
      faith-text.js is the one way to get the text of a work whatever
      collection it is in; faith-corpus-search.js is Find over a set of
-     them. Loaded before faith-author.js, which calls the panel once
-     the works are resolved. --}}
+     them, which is what the word-or-phrase mode walks. --}}
 <script src="{{asset "js/faith-text.js"}}"></script>
 <script src="{{asset "js/faith-corpus-search.js"}}"></script>
+<script src="{{asset "js/faith-author-power.js"}}"></script>
 <script src="{{asset "js/faith-author-search.js"}}"></script>
 {{!-- The scripture fingerprint: what this author quoted, from the
      generated index, drawn above the search panel and driving it. --}}
@@ -73,13 +122,33 @@
      this author cites in turn. Draws beside the fingerprint, both
      fetched once faith-author.js has resolved the author's name. --}}
 <script src="{{asset "js/faith-author-reception.js"}}"></script>
-<script src="{{asset "js/faith-author.js"}}"></script>
+{{!-- The topic index: the same mined topics the Compare desk offers,
+     for this one author, with the count of recorded statements and
+     the works they sit in. Counts and links only. --}}
+<script src="{{asset "js/faith-author-topics.js"}}"></script>
+{{!-- The submit button in the search panel carries
+     data-feature-gate="ask". Today that tier is "any signed-in
+     member" and the modal never fires; when the beta ends it becomes
+     member-tier and this is the only thing that tells a free
+     subscriber why the search did nothing. --}}
+<script src="{{asset "js/feature-gate.js"}}"></script>
 {{!-- Positions. Independent of every script above it: it reads ?a=
-     itself, mounts into its own band, and waits to be scrolled to. --}}
+     itself, mounts into its own band, and waits to be scrolled to. In
+     the member branch with the rest, and it returns on its own first
+     line when its band is absent, so a signed-out page would be safe
+     either way. Not loading it is the point: it is the fetch and the
+     panel that are gated, not just the sight of them. --}}
 <script src="{{asset "js/faith-positions.js"}}"></script>
+{{/if}}
+
+<script src="{{asset "js/faith-author.js"}}"></script>
 {{!-- Bookmark a work from its row. The store first: it is the same
      mo-kit bookmark the reader's Save button and the Bookmark button at
      the foot of a section write, so a work saved here and a section
      saved inside it are one record, not two. --}}
 <script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
 <script src="{{asset "js/faith-work-bookmark-rows.js"}}"></script>
+
+{{!-- Claims the TFR / TFR-Beta Kit tags for a signed-in member. Hides
+     and reveals nothing; see the file header. --}}
+<script src="{{asset "js/faith-beta-gate.js"}}"></script>

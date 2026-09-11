@@ -1151,6 +1151,21 @@
     else if (shelf) root2.insertBefore(panel, shelf);
     else root2.appendChild(panel);
 
+    // Closed to begin with, and linkable at #reception. See
+    // assets/js/faith-author-panels.js. The hint is the two counts the
+    // lede opens with, short enough to sit on one line beside the
+    // heading: how many writers name him, and how many he names.
+    if (window.MOAuthorPanels) {
+      // Joined on a middot rather than a comma: two label fragments
+      // stitched with a comma read as a comma splice, which is a thing
+      // this publication does not print.
+      const hint = [
+        citedBy.length ? `cited by ${n(citedBy.length)}` : "",
+        cites.length ? `cites ${n(cites.length)}` : "",
+      ].filter(Boolean).join(" · ");
+      window.MOAuthorPanels.fold(panel, { id: "reception", hint });
+    }
+
     const status = panel.querySelector(".fa-rc-status");
     const say = (text) => { if (status) status.textContent = text; };
 

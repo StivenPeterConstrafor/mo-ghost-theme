@@ -1,19 +1,39 @@
 /*
  * Searching one author's shelf.
  *
- * An author page lists everything the library holds under a name —
- * Augustine's is 124 works, Migne's Latin fathers run to hundreds — and
- * a list that long is only a list. The question a reader actually
- * arrives with is narrower: where does this man handle Romans 8?
+ * An author page lists everything the library holds under a name.
+ * Augustine's is 124 works and Migne's Latin fathers run to hundreds,
+ * and a list that long is only a list. The question a reader actually
+ * arrives with is narrower than the shelf.
  *
- * This answers that from the generated scripture index, which knows
- * every citation in the corpus and the place in the work where it sits.
- * One fetch for the chapter, intersected with the works on this page.
+ * Three ways of asking it, one field, chosen by the control beside it.
  *
- * Keyword search across the same shelf is the other half of the
- * question and is not this: it needs the text of every work rather than
- * an index of citations, and the four collections here store their text
- * four different ways. That is a build of its own.
+ *   power   Power Search, narrowed to this author. Search by MEANING
+ *           rather than by word, which is the mode the box opens on
+ *           (Ian, 2026-09-11: "Search this author should be the same
+ *           Power Search feature but limited to whatever author page
+ *           the box is on"). Implemented in
+ *           assets/js/faith-author-power.js, whose header sets out why
+ *           narrowing a semantic search to one author is a fan-out over
+ *           that author's works and cannot be one query.
+ *
+ *   ref     A scripture reference, out of the generated index, which
+ *           knows every citation in the corpus and the place in the
+ *           work where it sits. One fetch for the chapter, intersected
+ *           with the works on this page. NOT legacy and not to be
+ *           removed with the mode control: the scripture fingerprint
+ *           above draws its verses as buttons that call find() below,
+ *           and this is what answers them.
+ *
+ *   kw      A word or a phrase, by reading the works themselves. The
+ *           same walk Find does over one open work, over this shelf
+ *           instead.
+ *
+ * ONE CRAWL AT A TIME. Both the power fan-out and the keyword walk run
+ * for seconds and write their own answer when they land. Starting
+ * anything puts the other down first, silently, or the older one
+ * arrives later and overwrites the newer under a field that says
+ * something else.
  */
 (function () {
   const root = document.querySelector("[data-faith-author]");
@@ -99,19 +119,30 @@
   // ── Mounted after faith-author.js has drawn the shelves ────────
   function mount(works) {
     if (!works.length) return;
+    // Power Search is offered when this author has works the vector
+    // index actually holds. An author whose whole shelf is Patrologia
+    // Orientalis has none, and an option that can only ever answer
+    // "nothing here is indexed" is worse than not being offered it.
+    const canPower = !!(window.MOAuthorPower && window.MOAuthorPower.available(works));
     const panel = document.createElement("section");
     panel.className = "fa-search";
     panel.innerHTML =
       `<h2 class="fa-search-head">Search this author</h2>` +
       `<div class="fa-search-row">` +
       `<label class="fa-search-mode"><span>Search for</span>` +
-      `<select data-fa-mode aria-label="What to search for">` +
+      `<select data-fa-mode aria-label="What to search for">${
+        canPower ? `<option value="power">An idea, by meaning</option>` : ""}` +
       `<option value="ref">A scripture reference</option>` +
       `<option value="kw">A word or phrase</option></select></label>` +
       `<input type="search" class="fa-search-input" data-fa-ref` +
       ` placeholder="A scripture reference, such as Romans 8 or 1 Cor 15:22"` +
       ` aria-label="Search this author">` +
-      `<button type="button" class="fa-search-btn" data-fa-go>Find</button></div>` +
+      // data-feature-gate="ask" is the client half of the member gate
+      // on /v1/vsearch. It never fires during the beta, when the tier
+      // is "any signed-in member" and this page only serves the panel
+      // to one. It is what will tell a free subscriber why nothing
+      // happened on the day the beta ends. See assets/js/feature-gate.js.
+      `<button type="button" class="fa-search-btn" data-feature-gate="ask" data-fa-go>Find</button></div>` +
       `<p class="fa-search-note" data-fa-note>Every place this author cites a passage, from the generated index.</p>` +
       // A one-line summary, said out loud. The search can be started
       // from the fingerprint above rather than from this field — the
@@ -227,6 +258,11 @@
     const mode = panel.querySelector("[data-fa-mode]");
     const note = panel.querySelector("[data-fa-note]");
     let running = null;
+    // The power fan-out, which is a separate runner with the same
+    // { cancel } shape. Held apart from `running` because the two are
+    // stopped for different reasons and only one of them reports a
+    // partial answer.
+    let power = null;
     // True only while `stopKeyword` is putting a crawl down. `cancel()`
     // fires `done` synchronously, and the reference search that
     // follows waits on a fetch, so without this the panel shows "No
@@ -239,24 +275,59 @@
     // Hoisted, so `run` above can call it: both entries into the panel
     // have to be able to put a crawl down, not just the keyword one.
     function stopKeyword() {
-      if (!running) return;
-      stopping = true;
-      try { running.cancel(); } finally { stopping = false; }
-      running = null;
+      if (running) {
+        stopping = true;
+        try { running.cancel(); } finally { stopping = false; }
+        running = null;
+      }
+      // Silently. A fan-out put down to make room for another search
+      // must not land its own answer over the top of that search.
+      if (power) {
+        try { power.cancel(true); } finally { power = null; }
+      }
     }
 
+    const PLACEHOLDER = {
+      power: "An idea, in your own words",
+      kw: "A word or a phrase, as it appears in the text",
+      ref: "A scripture reference, such as Romans 8 or 1 Cor 15:22",
+    };
+
     function setMode() {
-      const kw = mode.value === "kw";
-      input.placeholder = kw
-        ? "A word or a phrase, as it appears in the text"
-        : "A scripture reference, such as Romans 8 or 1 Cor 15:22";
-      note.textContent = kw
-        ? `Reads the text of all ${works.length.toLocaleString()} work${works.length === 1 ? "" : "s"} under this name. It fetches as it goes, so it takes a moment.`
-        : "Every place this author cites a passage, from the generated index.";
+      const which = mode.value;
+      input.placeholder = PLACEHOLDER[which] || PLACEHOLDER.ref;
+      if (which === "power" && window.MOAuthorPower) {
+        note.textContent = window.MOAuthorPower.note(works);
+      } else if (which === "kw") {
+        note.textContent = `Reads the text of all ${works.length.toLocaleString()} work${
+          works.length === 1 ? "" : "s"} under this name. It fetches as it goes, so it takes a moment.`;
+      } else {
+        note.textContent = "Every place this author cites a passage, from the generated index.";
+      }
       say("");
     }
-    mode.addEventListener("change", setMode);
+    mode.addEventListener("change", () => { stopKeyword(); setMode(); });
     setMode();
+
+    function runPower() {
+      const term = input.value.trim();
+      stopKeyword();
+      if (term.length < 3) {
+        say(`<p class="fa-search-msg">Three letters at least. Power Search reads a sentence better than a word.</p>`);
+        return;
+      }
+      if (!window.MOAuthorPower) {
+        say(`<p class="fa-search-msg">Power Search is not available on this page.</p>`);
+        return;
+      }
+      // The module writes into `out` itself: its result rows are the
+      // Research desk's own vocabulary rather than this panel's, and
+      // building them through say() would mean handing it markup.
+      out.textContent = "";
+      power = window.MOAuthorPower.search(works, term, out, (line) => {
+        if (status) status.textContent = line;
+      });
+    }
 
     function runKeyword() {
       const term = input.value.trim();
@@ -307,7 +378,8 @@
     }
 
     function go() {
-      if (mode.value === "kw") runKeyword();
+      if (mode.value === "power") runPower();
+      else if (mode.value === "kw") runKeyword();
       else run();
     }
 

@@ -9069,6 +9069,206 @@ a.fa-rc-page:hover { color: var(--color-primary); text-decoration: underline; }
   .faith-scripture-jump-label { flex: 0 0 auto; }
 }
 
+/* ── The fold ─────────────────────────────────────────────────────
+   The author page's research panels arrive closed. See
+   assets/js/faith-author-panels.js for why they are <details> and how
+   a deep link opens one.
+
+   The <details> sits INSIDE the panel section rather than replacing
+   it, so every .fa-fp / .fa-rc / .fa-tp rule above and below keeps
+   working on descendants exactly as it did when the panel was flat.
+   Nothing in this block restyles the panels themselves. */
+/* The panel's own 40/26/44 was tuned for a panel that is always open.
+   Three of those closed in a row put 110px between one heading and the
+   next, which reads as three stray headings rather than as a stack of
+   things you can open. The fold takes the rhythm over: 28 above the
+   rule, 22 under it, and the air below moves into the body where it is
+   only spent when a panel is actually open. */
+.fa-panel--folded { margin: 28px 0 0; padding-top: 22px; }
+.fa-fold-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-height: 44px;
+  padding: 2px 0;
+  cursor: pointer;
+  list-style: none;
+}
+.fa-fold-summary::-webkit-details-marker { display: none; }
+.fa-fold-summary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+/* The heading keeps its own type and loses only its bottom margin: it
+   is sitting in a row now, not above a paragraph. */
+.fa-fold-summary .fa-fold-head { margin: 0; }
+.fa-fold-hint {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-muted);
+  /* Pushed to the right on a wide screen and allowed to wrap under the
+     heading on a narrow one, which is what the flex-wrap below buys. */
+  margin-left: auto;
+  text-align: right;
+}
+/* Rotated square rather than a glyph, so the caret matches the weight
+   of the hairline above it at any font size. Same control the Research
+   desk's Scope and Filter summaries use. */
+.fa-fold-summary::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-right: 1px solid var(--color-muted);
+  border-bottom: 1px solid var(--color-muted);
+  transform: rotate(45deg);
+  transition: transform 0.15s;
+}
+.fa-fold[open] > .fa-fold-summary::after { transform: rotate(-135deg); }
+.fa-fold-summary:hover .fa-fold-hint { color: var(--color-dark); }
+.fa-fold-body { padding: 18px 0 30px; }
+/* The gap between two folds is the next one's own top margin. The last
+   fold has no next one, and what follows it carries no top margin of
+   its own, so the gap is put back here. */
+.fa-panel--folded + .fa-search,
+.fa-panel--folded + .fa-shelf { margin-top: 34px; }
+
+@media (max-width: 640px) {
+  /* At 375px a long hint and an uppercase heading will not share a
+     line. Wrapping beats two words per line in a 90px column. */
+  .fa-fold-summary { flex-wrap: wrap; gap: 4px 14px; }
+  .fa-fold-hint { margin-left: 0; text-align: left; flex: 1 0 100%; }
+  .fa-fold-summary::after { margin-left: auto; }
+}
+
+/* ── Topic index ──────────────────────────────────────────────────
+   What the author writes about most, from the mined rooms. Counts and
+   links only: see the header of assets/js/faith-author-topics.js for
+   why nothing in this panel is set as a quotation. */
+.fa-tp {
+  margin: 40px 0 44px;
+  padding-top: 26px;
+  border-top: 1px solid var(--color-card-border);
+}
+.fa-tp-head {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--color-primary-text);
+  margin: 0 0 14px;
+}
+.fa-tp-lede {
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--color-dark);
+  max-width: 68ch;
+  margin: 0 0 30px;
+}
+/* auto-fit rather than a fixed count: seventy-five topics on a wide
+   screen want four columns and the same list on a phone wants one,
+   and nothing in between needs a breakpoint of its own. */
+.fa-tp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px 32px;
+}
+.fa-tp-card {
+  border-top: 1px solid var(--color-rule);
+  padding-top: 12px;
+}
+.fa-tp-topic {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-dark);
+  margin: 0 0 6px;
+}
+.fa-tp-figures {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-muted);
+  margin: 0 0 8px;
+}
+.fa-tp-figures b { font-weight: 600; color: var(--color-dark); }
+.fa-tp-toggle {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 6px 0;
+  min-height: 44px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+/* A control, not a link. It never underlines: underline means "this
+   navigates" everywhere else on the page and the caret is what says
+   this one opens something in place. */
+.fa-tp-toggle::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.15s;
+}
+.fa-tp-toggle[aria-expanded="true"]::after { transform: rotate(-135deg); }
+.fa-tp-toggle:hover { color: var(--color-primary); }
+.fa-tp-toggle:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.fa-tp-region[hidden] { display: none; }
+.fa-tp-detail-note {
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-muted);
+  margin: 0 0 10px;
+}
+.fa-tp-works { list-style: none; margin: 0 0 12px; padding: 0; }
+.fa-tp-work {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--color-rule);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.fa-tp-work-link {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--color-dark);
+  text-decoration: none;
+}
+a.fa-tp-work-link:hover { color: var(--color-primary); text-decoration: underline; }
+/* A work whose id belongs to the corpus owner's own site and not to
+   our reader. Set as plain type rather than as a link that dead-ends. */
+.fa-tp-work-flat { color: var(--color-muted); }
+.fa-tp-work-n {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+}
+.fa-tp-open {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-primary-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.fa-tp-open:hover { color: var(--color-primary); }
+
 /* One shelf per collection the author appears in. */
 .fa-shelf { margin: 48px 0 0; }
 .fa-shelf-head {

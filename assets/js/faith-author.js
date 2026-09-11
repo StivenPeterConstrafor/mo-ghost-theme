@@ -273,8 +273,9 @@
     // The shelf is drawn; now the way into it. Handed the works rather
     // than re-deriving them, since this page has already done the
     // matching across every collection.
+    const works = byCorpus.reduce((all, g) => all.concat(g.works), []);
     if (window.MOAuthorSearch) {
-      window.MOAuthorSearch.mount(byCorpus.reduce((all, g) => all.concat(g.works), []));
+      window.MOAuthorSearch.mount(works);
     }
 
     // How they read, above how to look. The old prebuilt index
@@ -290,14 +291,43 @@
       ? window.MOAuthorScripture.loadExtra(name) : Promise.resolve(null);
     const receptionP = window.MOAuthorReception && window.MOAuthorReception.load
       ? window.MOAuthorReception.load(name) : Promise.resolve([null, null]);
+    // Each panel draws inside its own try. They are independent
+    // features that happen to share a mounting point, and the order is
+    // a layout decision rather than a dependency, so one of them
+    // throwing must not take the two after it off the page with it.
+    // Caught in practice, not in theory: a missing MOSafeHref method
+    // inside the reception mount silently cost the page its topic
+    // index, with nothing on screen to say a panel was ever expected.
+    function draw(what, fn) {
+      try {
+        fn();
+      } catch (err) {
+        console.error(`[faith-author] the ${what} panel failed to draw`, err);
+      }
+    }
+
     Promise.all([extraP, receptionP]).then(([extra, reception]) => {
-      if (window.MOAuthorScripture) {
-        window.MOAuthorScripture.mount(fingerprint, extra, root, total);
-      }
-      if (window.MOAuthorReception) {
-        const [neighbors, excerpts] = reception || [null, null];
-        window.MOAuthorReception.mount(neighbors, excerpts, root);
-      }
+      draw("scripture fingerprint", () => {
+        if (window.MOAuthorScripture) {
+          window.MOAuthorScripture.mount(fingerprint, extra, root, total);
+        }
+      });
+      draw("reception", () => {
+        if (window.MOAuthorReception) {
+          const [neighbors, excerpts] = reception || [null, null];
+          window.MOAuthorReception.mount(neighbors, excerpts, root);
+        }
+      });
+      // Last of the three, and mounted after them rather than beside
+      // them, because it places itself under whichever of them drew.
+      // It costs one roster fetch to find out whether this author has
+      // a mined room at all, and draws nothing when they do not, which
+      // is the answer for most of fourteen thousand names.
+      draw("topic index", () => {
+        if (window.MOAuthorTopics) {
+          window.MOAuthorTopics.mount(name, key, works, root);
+        }
+      });
     });
   }
 })();

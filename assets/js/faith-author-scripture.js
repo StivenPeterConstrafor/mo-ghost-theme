@@ -549,6 +549,21 @@
     if (before) root.insertBefore(panel, before);
     else root.appendChild(panel);
 
+    // Closed to begin with, and linkable. See
+    // assets/js/faith-author-panels.js for why this is a <details> and
+    // how #scripture-fingerprint opens itself. The hint is what the
+    // panel is worth on the strength of one line, because a closed
+    // section reading only "Scripture fingerprint" gives a reader
+    // nothing to decide on.
+    if (window.MOAuthorPanels) {
+      window.MOAuthorPanels.fold(panel, {
+        id: "scripture-fingerprint",
+        hint: `${n(d.citations)} citation${d.citations === 1 ? "" : "s"} of scripture · ${
+          n(d.booksTotal || (d.books || []).length)} book${
+          (d.booksTotal || (d.books || []).length) === 1 ? "" : "s"}`,
+      });
+    }
+
     const status = panel.querySelector(".fa-fp-status");
 
     // The control is one-way on purpose. A reader who asked for the
