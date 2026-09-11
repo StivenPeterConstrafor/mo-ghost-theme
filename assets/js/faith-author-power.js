@@ -94,13 +94,15 @@
   const VSEARCH_URL = `${LIBRARY}/v1/vsearch`;
 
   // See the header. Twelve legs, against the 30-per-60s limiter.
-  const MAX_WORKS = 12;
+  // The worker's fan-out cap (AUTHOR_FANOUT_MAX in lib/vsearch.js).
+  // Kept here only so the note under the field can say how much of a
+  // large shelf a search will reach. The cap itself is enforced there.
+  const MAX_WORKS = 24;
   // Passages per work. The row is a work and the passages sit under it,
   // so this is how deep a single work can be read, not how wide.
   const PER_WORK = 5;
   // Three at a time. The limiter counts calls and not concurrency, so
   // this is about not opening twelve sockets at once on a phone.
-  const LANES = 3;
 
   // Which collections the vector index actually holds. Patrologia
   // Orientalis is licensed out of it (LICENSED_EXCLUDED in the worker's
@@ -203,44 +205,12 @@
     return searchable(works).length > 0;
   }
 
-  /* ── One leg ───────────────────────────────────────────────────── */
-
-  // Keyed on query and slug together, so a second search for the same
-  // sentence costs nothing and a different sentence is never answered
-  // out of the first one's cache.
-  const cache = new Map();
-
-  async function leg(term, slug, signal) {
-    const key = `${term} ${slug}`;
-    if (cache.has(key)) return cache.get(key);
-
-    const params = new URLSearchParams({ q: term, k: String(PER_WORK), slug });
-    const url = `${VSEARCH_URL}?${params.toString()}`;
-    const init = { signal };
-    const res = await (window.MOAuth && window.MOAuth.fetch
-      ? window.MOAuth.fetch(url, init)
-      : fetch(url, init));
-
-    if (!res.ok) {
-      let message = "";
-      try {
-        const body = await res.json();
-        if (body && body.error) message = String(body.error);
-      } catch (_) { /* non-JSON error body: the status carries it */ }
-      // Thrown rather than returned, because a 401, 403 or 429 is not a
-      // fact about this one work. Every other leg is about to fail the
-      // same way and the reader needs the sentence once.
-      const err = new Error(message || `The library answered ${res.status}.`);
-      err.fatal = res.status === 401 || res.status === 403 || res.status === 429;
-      err.reader = message;
-      throw err;
-    }
-
-    const data = await res.json();
-    const rows = Array.isArray(data && data.results) ? data.results : [];
-    cache.set(key, rows);
-    return rows;
-  }
+  /* The per-work fan-out that used to live here is gone. It ranked the
+     works client-side and issued one request each, up to twelve,
+     through three lanes. The worker does all of that now in a single
+     request on one embedding: GET /v1/vsearch?author=. See
+     vsearchByAuthor in tfr-library/lib/vsearch.js, and the note in
+     search() below. */
 
   /* ── Drawing ───────────────────────────────────────────────────── */
 
@@ -334,13 +304,31 @@
    * Returns { cancel }, the same shape MOCorpusSearch.run returns, so
    * the panel can stop this the way it already stops a keyword crawl.
    */
+  /* The writer's name as the CATALOGUE spells it, which is what the
+   * worker matches on. Taken off the works themselves rather than the
+   * URL: `?a=` carries the folded key ("augustineofhippo"), and while
+   * the worker folds both sides before comparing, handing it the real
+   * name keeps the request legible in a log and in a network panel.
+   * The URL is the fallback for the case where no work carries one. */
+  function authorOf(rows) {
+    for (const r of rows) {
+      const a = r.work && r.work.author;
+      if (a && String(a).trim()) return String(a).trim();
+    }
+    try { return new URLSearchParams(window.location.search).get("a") || ""; }
+    catch (_) { return ""; }
+  }
+
   function search(works, term, out, say) {
     const all = searchable(works);
+    const authorName = authorOf(all);
     const rows = rank(all, term);
     const controller = new AbortController();
     let stopped = false;
     let silenced = false;
     let done = 0;
+    let serverHeld = 0;
+    let serverTruncated = false;
 
     /*
      * `silent` is for the panel putting this down to run something
@@ -366,7 +354,7 @@
     }
 
     out.textContent = "";
-    const progress = el("p", "fa-search-msg", `Reading 0 of ${rows.length}…`);
+    const progress = el("p", "fa-search-msg", "Reading this author\u2019s works\u2026");
     out.appendChild(progress);
     const stop = el("button", "fa-search-stop", "Stop");
     stop.type = "button";
@@ -377,13 +365,6 @@
     out.appendChild(stop);
 
     const found = new Map();
-
-    function tick() {
-      done += 1;
-      if (stopped) return;
-      progress.textContent = `Reading ${done} of ${rows.length}… ${
-        found.size} work${found.size === 1 ? "" : "s"} so far`;
-    }
 
     function collect(slug, work, passages) {
       if (!passages.length) return;
@@ -430,8 +411,8 @@
       let scope;
       if (stopped) {
         scope = ` The rest of the shelf was not read. Press Find again to search all ${n(rows.length)}.`;
-      } else if (rows.length < all.length) {
-        scope = ` The ${rows.length} searched are the ones out of ${n(all.length)} whose titles sit closest to what you asked.`;
+      } else if (serverTruncated && serverHeld > done) {
+        scope = ` The ${n(done)} searched are the ones out of ${n(serverHeld)} whose titles sit closest to what you asked.`;
       } else {
         scope = " Every work under this name that the index holds was read.";
       }
@@ -439,40 +420,58 @@
       say(head);
     }
 
-    // Three lanes over the same queue. Each lane takes the next slug
-    // until the queue is empty, which keeps exactly LANES requests in
-    // flight whatever the mix of fast and slow works.
-    let next = 0;
+    /* ONE request. The fan-out moved into the worker on 2026-09-11:
+     * GET /v1/vsearch?author= resolves the writer's works and runs the
+     * per-work queries there, on a single embedding. See
+     * vsearchByAuthor in tfr-library/lib/vsearch.js.
+     *
+     * What this file used to do, and no longer does: rank the works
+     * client-side, then run up to twelve requests through three lanes,
+     * each one embedding the same sentence again, each one a slot
+     * against a 30-per-60s limiter. The ranking, the cap and the
+     * merging are the worker's now, and it does them better because it
+     * can see the whole shelf.
+     *
+     * The reader-facing behaviour is deliberately unchanged: the same
+     * grouped-by-work list, the same two figures underneath, the same
+     * Stop. Stop is now one abort rather than a queue drain.
+     */
     let fatal = "";
-    async function lane() {
-      for (;;) {
-        if (stopped) return;
-        const i = next;
-        next += 1;
-        if (i >= rows.length) return;
-        const row = rows[i];
-        try {
-          const passages = await leg(term, row.slug, controller.signal);
-          collect(row.slug, row.work, passages);
-        } catch (err) {
-          if (stopped) return;
-          if (err && err.fatal) {
-            // The gate or the limiter. Every other leg is about to say
-            // the same thing, so this stops and says it once.
-            fatal = err.reader || "The library is limiting searches just now. Try again in a minute.";
-            cancel();
-            return;
-          }
-          // One work that failed to answer is not the search failing.
-          // It is counted as read and left out, which is what the
-          // "of N read" figure under the list is for.
-        }
-        tick();
-      }
-    }
+    const params = new URLSearchParams({ q: term, author: authorName, k: "40", per_work: String(PER_WORK) });
+    const url = `${VSEARCH_URL}?${params.toString()}`;
+    const init = { signal: controller.signal };
 
-    Promise.all(Array.from({ length: Math.min(LANES, rows.length) }, lane))
-      .then(() => { finish(fatal); })
+    (window.MOAuth && window.MOAuth.fetch ? window.MOAuth.fetch(url, init) : fetch(url, init))
+      .then(async (res) => {
+        if (!res.ok) {
+          let message = "";
+          try { const b = await res.json(); if (b && b.error) message = String(b.error); } catch (_) { /* status carries it */ }
+          fatal = message || "The library is limiting searches just now. Try again in a minute.";
+          return null;
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (stopped || !data) { finish(fatal); return; }
+        // The worker says how much of the shelf it read. Used verbatim
+        // rather than recomputed here, so the figure under the list is
+        // the one the search actually used.
+        done = data.works_read || 0;
+        serverHeld = data.works_held || 0;
+        serverTruncated = !!data.truncated;
+        const byWork = new Map();
+        (data.results || []).forEach((r) => {
+          const slug = r.doc || r.slug;
+          if (!slug) return;
+          if (!byWork.has(slug)) byWork.set(slug, []);
+          byWork.get(slug).push(r);
+        });
+        byWork.forEach((passages, slug) => {
+          const known = all.find((w) => w.slug === slug);
+          collect(slug, known ? known.work : (passages[0] && passages[0].title) || slug, passages);
+        });
+        finish(fatal);
+      })
       .catch(() => { finish(fatal); });
 
     return { cancel };
