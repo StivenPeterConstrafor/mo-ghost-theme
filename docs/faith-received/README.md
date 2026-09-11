@@ -59,6 +59,7 @@ Read a spec to know what a surface must do; read the matching recreate sheet to 
 | **BIBLE_INSTRUCTIONS.md** | mo-workers | `/bible` Scripture experience, `bible.html` in full, battery | Build/verify; verse folds open at the cited page (AUTHOR-PAGE-SPEC §5) |
 | **WEB_INSTRUCTIONS.md** | mo-workers | `/web` citation atlas + shelf constellations, the 09-11 usability change (connections you can act on: `K.actions`, pair links to `#<a>/with/<b>`), `web.html` + `shelf-constellations.js` + `connection-evidence.js` in full | Build/verify |
 | **RESEARCH_RAIL_INSTRUCTIONS.md** | mo-workers | The research rail (Ask workspace): prerequisites, data, modules, the 14 tools, the agent loop, routes, **the theme protocol that broke earlier PRs**, model rules, deploy + smoke discipline, battery, trap ledger | The template every other sheet follows; read §6 before any theme PR |
+| **DESK_INSTRUCTIONS.md** | mo-workers | The Desk (`/desk`, writing + research rail): the 09-11 rail card redesign (empty untitled conversations off the rail, state chips, clamped plain-text previews, Read full item, state-named chat actions), `desk.html` in full, battery | Recreate per the sheet; theme hunks already on `ask-port-ui` (5756a7a); the 'Resume draft' marker is in the deploy gate registry |
 | Comparison desk `/compare` | specs (AUTHOR-PAGE-SPEC §4.8, SEARCH-SPEC §4.2) + mo-workers (MOBILE §Comparison desk) | Pair page and desk rules; the position previews inline (desktop + mobile) shipped 09-11 on both sites | Ported as `compare.in03.js` |
 
 ### E. Site structure on MereO
@@ -107,8 +108,9 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 
 | Date | Document | Commit |
 |---|---|---|
-| 09-11 | ASK-SPEC.md | mo-ghost-theme (this commit) |
-| 09-11 | README.md (this index) | mo-ghost-theme (this commit) |
+| 09-11 | DESK_INSTRUCTIONS.md (desk research-rail card redesign; theme hunks 5756a7a) | mo-workers 8cd9690 |
+| 09-11 | ASK-SPEC.md | mo-ghost-theme 79f9414 |
+| 09-11 | README.md (this index) | mo-ghost-theme 8a0d95d |
 | 09-11 | SEARCH-SPEC.md | mo-ghost-theme 4389eef; cross-referenced from mo-workers SEARCH_INSTRUCTIONS d8a6569 |
 | 09-11 | AUTHORS_ROOMS_INSTRUCTIONS.md (author-card fix + research-experience.css) | mo-workers 34aab43 |
 | 09-11 | MOBILE_SCROLLING_INSTRUCTIONS.md | mo-workers 804883c |
@@ -120,4 +122,3 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 | 09-11 | WEB, TOPICS, BIBLE, SEARCH, AUTHORS_ROOMS _INSTRUCTIONS.md (five surface sheets) | mo-workers 8a363d4 |
 | 09-11 | SHELF_DOORS_DTC_INSTRUCTIONS.md | mo-workers 71269d7 |
 | 09-11 | RESEARCH_RAIL_INSTRUCTIONS.md | mo-workers ad296d1 |
-| Desk (writing + research rail) | `~/mo-workers/DESK_INSTRUCTIONS.md` (8cd9690) | Recreate the 09-11 rail card redesign per the spec + battery; theme hunks already on ask-port-ui (5756a7a) |
