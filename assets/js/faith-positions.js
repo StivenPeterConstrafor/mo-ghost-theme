@@ -106,12 +106,46 @@
  * second. Both are handled in statusLine() and every branch of it is a
  * sentence somebody could defend.
  *
+ * ── WHAT IS IN THE BLOCKQUOTE (2026-09-11) ───────────────────────
+ *
+ * The writer's own words, and nothing else.
+ *
+ * The index's `q` was never a quotation. It is a machine-written
+ * statement of the position, and checked against the works themselves
+ * it appears in the text it cites 70 times in 3,240. Ambrose at
+ * PL 14:0123 actually begins "Have men assumed so much opinion that
+ * some of them established three principles of all things"; the index
+ * says "Plato and his disciples posited three uncreated principles —
+ * God, the exemplar/idea, and matter (hyle)". Four pages of those, set
+ * as blockquotes under a Father's name, would be a fabrication however
+ * carefully the surrounding copy hedged. Ian's ruling: no paraphrases,
+ * direct quotes only.
+ *
+ * So `item.q` is now the text at the cited place, read out of the work
+ * by the worker (website/workers/tfr-library/lib/locus-text.js), and
+ * `item.quote.unit` says how precise it is:
+ *
+ *   "extract"  the index's own sentence, PROVED to sit at the cited
+ *              place before it was shown
+ *   "column"   the opening of the cited Migne column, taken whole
+ *   "page"     the opening of the cited printed page, taken whole
+ *
+ * The second is the common case here, and it is the honest one: the
+ * index's anchors point at a column's first block and never at a
+ * sentence, so the unit of citation is the column. Each statement
+ * prints which of the three it is, under the quotation.
+ *
+ * Every machine-written string has moved to `item.indexer` and is
+ * printed under an "Index note" label. Where the passage could not be
+ * reached at all the row stays, its citation stays, and the panel says
+ * the passage is not held rather than putting the summary in its place.
+ *
  * ── POSITIONS, NOT PAGE SUMMARIES ────────────────────────────────
  *
  * Items carry `src`: "position", "sample" or "page". A page row is a
- * SUMMARY OF A PAGE rather than something its author said on it, it
- * never carries a stance, and it puts its text in `g` rather than `q`.
- * Over half the rows in a sweep of 3,531 items were page rows.
+ * SUMMARY OF A PAGE rather than something its author said on it and it
+ * never carries a stance. Over half the rows in a sweep of 3,531 items
+ * were page rows.
  *
  * A panel that files everything under Asserts, Denies and Reports has no
  * honest place to put them: filed under a stance they become claims the
@@ -414,6 +448,10 @@
     let catalogue = null; // positions the catalogue records
     let capped = false; // `held` is a file's ceiling, not a count
     let pageRows = null; // the page annotations, which are not shown here
+    /* coverage.text from the pages fetched so far, summed: how many
+     * citations resolved to the sentence the index marks, how many to
+     * the opening of the cited column, how many to nothing. */
+    let textStats = null;
     let reason = ""; // coverage.reason
     let loading = false;
     let done = false;
@@ -535,6 +573,7 @@
       catalogue = null;
       capped = false;
       pageRows = null;
+      textStats = null;
       reason = "";
       loading = false;
       done = false;
@@ -620,7 +659,14 @@
         loading = false;
         failures = 0;
         result.items.forEach((item) => {
-          if (!item || !item.w || !item.q) return;
+          if (!item || !item.w) return;
+          /* A row with no `q` is one whose passage the library could
+           * not reach. It is KEPT: the citation and the stance are
+           * still a record of where the index found something, and
+           * dropping it would quietly shrink a count the panel prints.
+           * statementNode() paints it as a citation with a line saying
+           * the passage is not held, never as a quotation. */
+          if (!item.q && !(item.indexer && (item.indexer.statement || item.indexer.page_summary))) return;
           // A page row is a summary OF a page, not a statement made on
           // it, and it never carries a stance. `include=positions`
           // should have kept them off the wire; this is the check that
@@ -634,7 +680,8 @@
           // sample. Deduped on its content, and counted, so the footnote
           // can account for the gap between what the worker says it
           // holds and how many rows are on screen.
-          const key = `${item.w}|${item.p == null ? "" : item.p}|${item.q}`;
+          const key = `${item.w}|${item.p == null ? "" : item.p}|`
+            + `${(item.indexer && item.indexer.statement) || item.q || ""}`;
           if (seenContent.has(key)) { duplicates += 1; return; }
           if (id) seenIds.add(id);
           seenContent.add(key);
@@ -660,6 +707,13 @@
           capped = false;
         }
         pageRows = coverage.pages || null;
+        const t = coverage.text || null;
+        if (t) {
+          if (!textStats) textStats = { extract: 0, locus: 0, unresolved: 0 };
+          textStats.extract += t.extract || 0;
+          textStats.locus += t.locus || 0;
+          textStats.unresolved += t.unresolved || 0;
+        }
         reason = coverage.reason || "";
         cursor = result.next_cursor || null;
         done = !result.has_more;
@@ -770,6 +824,26 @@
 
     function footLine() {
       const bits = [];
+      /* What the reader is actually looking at, counted. The two units
+       * are different claims about the text and the difference belongs
+       * on screen, not only in this file's comments. */
+      if (textStats && (textStats.extract || textStats.locus || textStats.unresolved)) {
+        const parts = [];
+        if (textStats.extract) {
+          parts.push(`${fmt(textStats.extract)} at the sentence the index marks`);
+        }
+        if (textStats.locus) {
+          parts.push(`${fmt(textStats.locus)} at the opening of the cited column or page`);
+        }
+        let line = parts.length
+          ? `Quotations are taken from the works themselves: ${parts.join(", ")}.`
+          : "";
+        if (textStats.unresolved) {
+          line += ` ${fmt(textStats.unresolved)} passage${textStats.unresolved === 1 ? "" : "s"} `
+            + "could not be reached and appear as a citation alone.";
+        }
+        if (line) bits.push(line.trim());
+      }
       /* The page annotations. They are indexed on the same author and
        * the same doctrine and they are NOT statements: a page summary
        * describes a page, and this panel would be claiming the writer
@@ -894,7 +968,9 @@
       if (!phrase) return true;
       const needle = fold(phrase);
       if (!needle) return true;
-      return fold(`${r.q} ${r.g || ""} ${r.wt || r.w}`).indexOf(needle) !== -1;
+      const idx = r.indexer || {};
+      const hay = `${r.q || ""} ${idx.statement || ""} ${idx.page_summary || ""} ${r.wt || r.w}`;
+      return fold(hay).indexOf(needle) !== -1;
     }
 
     function groupsOf(kept) {
@@ -921,24 +997,111 @@
         .map(([k, label]) => ({ key: k || "other", label, rows: byStance.get(k) }));
     }
 
-    function statementNode(r) {
+    /* Why a citation has no text, in the reader's words rather than in
+     * the endpoint's. */
+    const NO_TEXT = {
+      "licensed": "The licence on this collection does not allow the passage to be shown here.",
+      "work-not-held": "This library holds the citation for this passage but not the text of the work.",
+      "locus-not-found": "The cited place is not in the copy of the work held here.",
+      "locus-not-held": "The text of this part of the work is not held here.",
+      "no-column-range": "This work has no column range recorded, so the citation cannot be located.",
+      "no-locus": "The index recorded no place in the work for this statement.",
+      "not-resolved-here": "The passage was not fetched with this page of results. Load more to bring it in.",
+      "read-failed": "The passage could not be read just now.",
+    };
+    const NO_TEXT_DEFAULT = "The passage behind this citation could not be reached.";
+
+    /* ── HOW PRECISE THE QUOTATION IS ────────────────────────────── *
+     *
+     * Two units, and the difference is a claim about the text, so it is
+     * printed rather than implied.
+     *
+     *   "the passage the index marks"       the index's own sentence,
+     *                                       proved to sit at the cited
+     *                                       place before it was shown.
+     *   "the opening of the cited column"   the first words printed at
+     *                                       that column, taken whole
+     *                                       from the work.
+     *
+     * The second is the common case for mined positions and it is not a
+     * shortcoming: Migne is cited BY COLUMN, the index's own anchors
+     * point at a column's first block and never at a sentence, and a
+     * column runs to some hundreds of words. Saying "the opening of the
+     * cited column" is the true version of what the reader is looking
+     * at; implying a sentence would not be. */
+    function provenanceOf(q) {
+      if (!q || q.status !== "ok") return "";
+      const locus = q.locus ? `${q.locus} · ` : "";
+      if (q.unit === "extract") return `${locus}the passage the index marks`;
+      if (q.unit === "column") return `${locus}the opening of the cited column`;
+      return `${locus}the opening of the cited page`;
+    }
+
+    /* ── ONE COLUMN, ONE QUOTATION ───────────────────────────────── *
+     *
+     * The index regularly mines several positions from a single Migne
+     * column — Ambrose on Creation has two at PL 14:0285 alone — and
+     * the honest unit of quotation is the column, so each of those
+     * rows resolves to the SAME words. Printed one per row that is the
+     * same paragraph of Ambrose set out twice under two different
+     * notes, which reads as two passages and is not.
+     *
+     * Rows are therefore bucketed by the place they cite, in the order
+     * the list already has them, and a bucket is one article: the
+     * column quoted once, then each index note under it. */
+    function bucketByLocus(rs) {
+      const out = [];
+      let last = null;
+      rs.forEach((r) => {
+        const key = `${r.w}|${r.p == null ? "" : r.p}|${r.q || ""}`;
+        if (last && last.key === key) { last.rows.push(r); return; }
+        last = { key, rows: [r] };
+        out.push(last);
+      });
+      return out;
+    }
+
+    function noteOf(r) {
+      const idx = r.indexer && typeof r.indexer === "object" ? r.indexer : {};
+      return idx.statement || idx.page_summary || "";
+    }
+
+    function statementNode(bucket) {
+      const rs = Array.isArray(bucket) ? bucket : [bucket];
+      const r = rs[0];
       const art = el("article", "fpos-statement");
-      art.appendChild(el("blockquote", "fpos-quote", r.q));
-      /* `g` is the index's own note about where this sits, not more of
-       * the writer. It is labelled rather than set as a second
-       * paragraph of the quotation, because an unlabelled line under a
-       * blockquote reads as part of it. */
-      if (r.g) {
+      const q = r.quote && typeof r.quote === "object" ? r.quote : null;
+      const idx = r.indexer && typeof r.indexer === "object" ? r.indexer : {};
+
+      if (r.q) {
+        art.appendChild(el("blockquote", "fpos-quote", r.q));
+        const prov = provenanceOf(q);
+        if (prov) art.appendChild(el("p", "fpos-provenance", prov));
+      } else {
+        art.appendChild(el("p", "fpos-notext", (q && NO_TEXT[q.status]) || NO_TEXT_DEFAULT));
+      }
+
+      /* The index's own strings: its statement of the position and its
+       * summary of the page. NOT more of the writer, so they are
+       * labelled rather than set as a second paragraph of the
+       * quotation — an unlabelled line under a blockquote reads as part
+       * of it, which is how a machine summary came to be read as
+       * Ambrose for as long as it did. */
+      rs.map(noteOf).filter(Boolean).forEach((note) => {
         const gloss = el("p", "fpos-gloss");
         gloss.appendChild(el("span", "fpos-gloss-label", "Index note"));
-        gloss.appendChild(document.createTextNode(String(r.g)));
+        gloss.appendChild(document.createTextNode(String(note)));
         art.appendChild(gloss);
-      }
+      });
+
       const cite = el("p", "fpos-cite");
       cite.appendChild(el("span", "fpos-work", r.wt || r.w));
-      if (r.p != null && r.p !== "") cite.appendChild(el("span", "fpos-page", `p. ${r.p}`));
+      // The printed locus where there is one ("PL 14:0123"), which is
+      // how these works are cited; the bare index number otherwise.
+      const locus = q && q.locus ? q.locus : (r.p != null && r.p !== "" ? `p. ${r.p}` : "");
+      if (locus) cite.appendChild(el("span", "fpos-page", locus));
       if (group === "work" && r.s) cite.appendChild(el("span", "fpos-tag", r.s));
-      if (r.move) cite.appendChild(el("span", "fpos-tag", r.move));
+      if (idx.move) cite.appendChild(el("span", "fpos-tag", String(idx.move)));
       const href = readerHref(r.url);
       if (href) cite.appendChild(link(href, "Read the passage", "fpos-read"));
       art.appendChild(cite);
@@ -964,7 +1127,7 @@
         sum.appendChild(el("span", "fpos-group-n", fmt(g.rows.length)));
         box.appendChild(sum);
         const body = el("div", "fpos-group-body");
-        g.rows.forEach((r) => body.appendChild(statementNode(r)));
+        bucketByLocus(g.rows).forEach((b) => body.appendChild(statementNode(b.rows)));
         box.appendChild(body);
         listEl.appendChild(box);
       });

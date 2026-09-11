@@ -14712,6 +14712,63 @@ a.cn-row-title { color: var(--color-primary-text); }
   line-height: 1.5;
   color: var(--color-darkgrey);
 }
+/* Where the quotation above came from, and how precise it is. Small and
+   quiet, because it is apparatus, but never absent: "the opening of the
+   cited column" and "the passage the index marks" are two different
+   claims about the same blockquote. */
+.cmp-provenance {
+  margin: 0 0 6px 12px;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  letter-spacing: 0.02em;
+  color: var(--color-muted);
+}
+/* A citation whose text this library could not reach. Set as plain
+   prose rather than as a blockquote: there is nothing to quote, and a
+   bordered box here would read as one. */
+.cmp-notext {
+  margin: 0 0 6px;
+  padding: 0 0 0 12px;
+  border-left: 2px dotted var(--color-card-border);
+  font-family: var(--font-body);
+  font-size: var(--tfr-meta);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+/* The index's own note about a passage, labelled. An unlabelled grey
+   line under a blockquote reads as the quotation continuing, which is
+   exactly how a machine summary passed for a Father's own words. */
+.cmp-gloss-label {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+/* The column is showing index notes rather than passages. Said once at
+   the top of the column instead of forty times down it. */
+.cmp-warn { color: var(--color-secondary); }
+.cmp-more {
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--color-primary-text);
+  background: none;
+  border: 1px solid var(--color-card-border);
+  border-radius: 3px;
+  padding: 11px 18px;
+  min-height: 44px;
+  margin: 14px 0 0;
+  cursor: pointer;
+}
+.cmp-more:hover { border-color: var(--color-primary); }
+.cmp-more:disabled { color: var(--color-muted); cursor: default; }
+.cmp-more:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
 .cmp-cite {
   display: flex;
   flex-wrap: wrap;
@@ -15524,6 +15581,31 @@ a.cn-row-title { color: var(--color-primary-text); }
   padding: 2px 0 2px 16px;
   max-width: 74ch;
 }
+/* Provenance under the quotation: the printed locus and which of the
+   two units it is. Apparatus, so it is small and grey, but it is never
+   dropped — "the opening of the cited column" is a weaker claim than
+   "the passage the index marks" and the reader is owed the difference. */
+.fpos-provenance {
+  margin: 6px 0 0 18px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--color-muted);
+  max-width: 74ch;
+}
+/* A citation whose passage could not be reached. Dotted rather than
+   solid, and italic, so it does not read as a quotation at a glance. */
+.fpos-notext {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--color-muted);
+  border-left: 2px dotted var(--color-card-border);
+  margin: 0;
+  padding: 2px 0 2px 16px;
+  max-width: 74ch;
+}
 .fpos-gloss {
   font-family: var(--font-body);
   font-size: 14px;
@@ -15597,7 +15679,9 @@ a.cn-row-title { color: var(--color-primary-text); }
      keeps a readable measure rather than an eleven-word line. */
   .fpos-quote { padding-left: 12px; }
   .fpos-gloss,
+  .fpos-provenance,
   .fpos-cite { margin-left: 14px; }
+  .fpos-notext { padding-left: 12px; }
   .fpos-more,
   .fpos-retry { width: 100%; }
 }
