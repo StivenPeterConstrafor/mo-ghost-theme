@@ -15726,3 +15726,136 @@ a.cn-row-title { color: var(--color-primary-text); }
 .faith-doc .article-content > p:first-of-type::first-letter {
   font-family: var(--font-body);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE FAITH RECEIVED BETA GATE
+   Contract: partials/faith-received/_beta-gate.hbs. Read that first.
+
+   Two rules and a box. The rules are the whole visibility mechanism
+   for pages that keep their gated markup in the DOM; the box is what a
+   signed-out visitor gets in place of the tools.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── The visibility pair ──────────────────────────────────────────
+   body[data-member-status] is server-rendered by default.hbs for ANY
+   signed-in member, free included. This file arrives in a
+   render-blocking <link> in <head>, so both rules are already in force
+   at first paint: the tools are never painted and then taken away, and
+   nothing has to be revealed by JS afterwards. That is the whole
+   reason the gate is expressed as CSS on a server-rendered attribute
+   rather than as a class some script adds.
+
+   Note the OPPOSITE polarity of the two. "tools" is for the people who
+   are in; "signed-out" is for the people who are not, and the
+   Membership CTA belongs to the second group.
+
+   !important because these have to beat whatever `display` the gated
+   block's own layout class sets (.research-workspace is a grid, the
+   CTA section is a block). Specificity alone would not reliably win,
+   and a gate that loses a cascade fight is a gate that leaks. */
+body:not([data-member-status]) [data-tfr-gate="tools"] { display: none !important; }
+body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important; }
+
+/* ── The box ──────────────────────────────────────────────────────
+   Sits where the workspace would have been, on the same white ground
+   the workspaces use, so the page does not visibly lose a section. */
+.tfr-gate {
+  background: #fff;
+  border-top: 1px solid var(--color-card-border);
+  border-bottom: 1px solid var(--color-card-border);
+  padding: 56px 24px 60px;
+}
+.tfr-gate-inner {
+  max-width: 620px;
+  margin: 0 auto;
+  text-align: center;
+}
+.tfr-gate-eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin: 0 0 14px;
+}
+.tfr-gate-title {
+  font-size: 30px;
+  line-height: 1.2;
+  color: var(--color-dark);
+  margin: 0 0 16px;
+}
+.tfr-gate-title em { font-style: italic; }
+.tfr-gate-lede {
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--color-muted);
+  margin: 0 0 30px;
+}
+
+/* The form is a stock .digest-form, so it inherits the site's field
+   chrome unchanged. Only two things differ here. */
+.tfr-gate-form {
+  text-align: left;
+  margin: 0 auto;
+}
+/* screen.css hides .digest-fineprint everywhere, because on the
+   homepage digest block the fineprint duplicates copy already beside
+   the form. Here it is the only line that says what pressing the
+   button actually does, so it is shown. */
+.tfr-gate-form .digest-fineprint {
+  display: block;
+  grid-column: 1 / -1;
+  margin: 8px 0 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.tfr-gate-note {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-muted);
+  margin: 30px auto 0;
+  max-width: 520px;
+  padding-top: 22px;
+  border-top: 1px solid var(--color-card-border);
+}
+.tfr-gate-signin {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-muted);
+  margin: 16px 0 0;
+}
+/* A button, not a link, because Portal binds [data-portal] and there is
+   no URL to fall back to. Drawn as a link so it reads as one. */
+.tfr-gate-signin-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--color-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  /* Positioned so the ::after target below is measured against the
+     BUTTON. Putting the relative on the paragraph instead would make
+     the whole "Already have an account?" line open the Portal. */
+  position: relative;
+}
+.tfr-gate-signin-btn:hover { color: var(--color-primary); }
+/* 44px target without moving the baseline of the sentence it sits in
+   (MOBILE M4). Same trick the /email-preferences/ toggle uses. */
+.tfr-gate-signin-btn::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+}
+
+@media (max-width: 640px) {
+  .tfr-gate { padding: 40px 20px 44px; }
+  .tfr-gate-title { font-size: 25px; }
+  .tfr-gate-lede { font-size: 16px; }
+}

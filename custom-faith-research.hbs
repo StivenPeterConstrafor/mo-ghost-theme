@@ -102,6 +102,17 @@
     </div>
   </section>
 
+  {{!-- BETA GATE. All seven workspaces are free during the beta and
+       require an account, where "account" is any signed-in Ghost
+       member, free included (Ian, 2026-09-11). Signed-out visitors are
+       not served this markup at all, which also means none of the
+       seven panel scripts below ever run for them. The contract is
+       written out in partials/faith-received/_beta-gate.hbs.
+
+       The {{#if}} wraps the whole band rather than each panel on
+       purpose: the tab strip is meaningless without the panels, and
+       seven separate gates would be seven chances to miss one. --}}
+  {{#if @member}}
   <section class="bband faith-feature-body faith-research-band">
     <div class="container" data-research-page>
 
@@ -126,7 +137,7 @@
         <button type="button" class="faith-view-toggle-tab" data-research-mode="bookmarks" role="tab" aria-selected="false" aria-controls="research-panel-bookmarks" id="research-tab-bookmarks">Bookmarks</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="notebook" role="tab" aria-selected="false" aria-controls="research-panel-notebook" id="research-tab-notebook">Notebook</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="constellations" role="tab" aria-selected="false" aria-controls="research-panel-constellations" id="research-tab-constellations">Constellations</button>
-        <button type="button" class="faith-view-toggle-tab" data-research-mode="desk" role="tab" aria-selected="false" aria-controls="research-panel-desk" id="research-tab-desk">The Desk</button>
+        <button type="button" class="faith-view-toggle-tab" data-research-mode="desk" role="tab" aria-selected="false" aria-controls="research-panel-desk" id="research-tab-desk">Desk</button>
       </nav>
 
       {{!-- ── Ask ────────────────────────────────────────────────────
@@ -400,6 +411,9 @@
 
     </div>
   </section>
+  {{/if}}
+
+  {{> "faith-received/_beta-gate"}}
 
   {{!-- No prices here on purpose: /membership/ is where they live, and a
        number repeated in two places is a number that goes stale in one. --}}
@@ -417,7 +431,7 @@
         <li><span class="brow-t">Constellations</span><span class="brow-m">The passages that stand behind a passage. Share the set as a link.</span></li>
         <li><span class="brow-t">Citation export</span><span class="brow-m">Copy, permalink, BibTeX or Zotero. Each one carries its locus.</span></li>
         <li><span class="brow-t">The notebook</span><span class="brow-m">Keep a passage, write a note on it, and gather passages into collections.</span></li>
-        <li><span class="brow-t">The Desk</span><span class="brow-m">Write with what you have kept beside you, citations already attached.</span></li>
+        <li><span class="brow-t">Desk</span><span class="brow-m">Write with what you have kept beside you, citations already attached.</span></li>
       </ul>
     </div>
   </section>
@@ -441,11 +455,30 @@
 {{> "membership-pricing"}}
 {{> "faith-received/_beta-band"}}
 </main>
-{{> "membership-cta"}}
+{{!-- BETA GATE, signed-out branch. The sitewide partial's own rule is
+     "hide for paid and comped"; during the beta this page wants it
+     hidden for every signed-in member, free included, because a free
+     member IS using the tools right now. Note the polarity is the
+     opposite of the tools above: same one mechanism, other side of it.
+     Wrapped rather than edited so the sitewide partial keeps its own
+     behaviour everywhere else. --}}
+<div data-tfr-gate="signed-out">{{> "membership-cta"}}</div>
 
 <script src="{{asset "js/page/membership-toggle.js"}}"></script>
 <script src="{{asset "js/page/membership-cards.js"}}"></script>
 
+{{!-- Claims the TFR / TFR-Beta Kit tags for a signed-in member. Hides
+     and reveals nothing; see the file header. Outside the member
+     branch below because it decides for itself, and because it is the
+     one script on this page that a future non-gated caller would also
+     want. --}}
+<script src="{{asset "js/faith-beta-gate.js"}}"></script>
+
+{{!-- The workspace scripts ride inside the same {{#if @member}} as the
+     markup they bind to. A signed-out visitor has no panels, no tab
+     strip and no composer, so shipping four files that would each find
+     nothing is bytes spent on a page that cannot use them. --}}
+{{#if @member}}
 {{!-- Only Ask and Power Search are loaded from here. The other five
      panels are self-contained partials that bring their own scripts,
      which therefore run at the point in the document where their panel
@@ -471,3 +504,4 @@
 <script src="{{asset "js/page/faith-ask.js"}}"></script>
 <script src="{{asset "js/page/faith-power-search.js"}}"></script>
 <script src="{{asset "js/page/faith-research.js"}}"></script>
+{{/if}}

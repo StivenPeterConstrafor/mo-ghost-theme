@@ -46,6 +46,12 @@
     </div>
   </section>
 
+  {{!-- BETA GATE. Ask is free during the beta and requires an account,
+       where "account" is any signed-in Ghost member, free included.
+       Signed-out visitors get the signup box instead of the workspace;
+       the markup below is not served to them at all. The contract is
+       written out in partials/faith-received/_beta-gate.hbs. --}}
+  {{#if @member}}
   <section class="bband faith-feature-body faith-ask-band">
     <div class="container" data-ask-page>
 
@@ -57,6 +63,9 @@
 
     </div>
   </section>
+  {{/if}}
+
+  {{> "faith-received/_beta-gate"}}
 
   {{!-- No prices here on purpose: /membership/ is where they live. --}}
   <section class="bband bband--cream faith-tools">
@@ -95,9 +104,25 @@
 {{> "membership-pricing"}}
 {{> "faith-received/_beta-band"}}
 </main>
-{{> "membership-cta"}}
+{{!-- BETA GATE, signed-out branch. The sitewide partial's own rule is
+     "hide for paid and comped"; during the beta this page wants it
+     hidden for every signed-in member, free included, because a free
+     member IS using the tools right now. Note the polarity is the
+     opposite of the tools above: same one mechanism, other side of it.
+     Wrapped rather than edited so the sitewide partial keeps its own
+     behaviour everywhere else. --}}
+<div data-tfr-gate="signed-out">{{> "membership-cta"}}</div>
 
 <script src="{{asset "js/page/membership-toggle.js"}}"></script>
 <script src="{{asset "js/page/membership-cards.js"}}"></script>
+
+{{!-- Claims the TFR / TFR-Beta Kit tags for a signed-in member. Hides
+     and reveals nothing; see the file header. --}}
+<script src="{{asset "js/faith-beta-gate.js"}}"></script>
+
+{{!-- The composer's two scripts ride inside the same member branch as
+     the panel they bind to. A signed-out visitor has no composer. --}}
+{{#if @member}}
 <script src="{{asset "js/feature-gate.js"}}"></script>
 <script src="{{asset "js/page/faith-ask.js"}}"></script>
+{{/if}}

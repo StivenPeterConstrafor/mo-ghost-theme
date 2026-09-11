@@ -3,10 +3,14 @@
  * visitor isn't entitled to, and presents a modal with the right
  * next step.
  *
- * Tier mapping (Ian, 2026-04-23; pdf moved to member 2026-09-02):
+ * Tier mapping (Ian, 2026-04-23; pdf moved to member 2026-09-02; ask
+ * moved to subscriber for the TFR beta 2026-09-11):
  *   - Members (paid/comped):        audio, bookmark, pdf
- *   - Subscribers (any signed-in):  gift
+ *   - Subscribers (any signed-in):  gift, ask
  *   - Everyone:                     dark mode (no gate)
+ *
+ * `ask` is the odd one out and is deliberately temporary. See
+ * TFR_BETA_OPEN_TO_ALL_MEMBERS below for the switch that puts it back.
  *
  * pdf was listed as subscriber-tier here while article-pdf.js required
  * paid and hard-redirected to /membership/ when it didn't find it. A free
@@ -49,6 +53,31 @@
     STATUS = "anonymous";
   }
 
+  /*
+   * BETA SWITCH for The Faith Received (2026-09-11, Ian). One constant,
+   * one place, and the two shapes the `ask` feature can take.
+   *
+   * While this is true the research tools are free and need only an
+   * account. Set it to false to end the beta and put Ask, Power Search
+   * and the rest back behind paid membership. Nothing else in this file
+   * has to change.
+   */
+  const TFR_BETA_OPEN_TO_ALL_MEMBERS = true;
+
+  const BETA_ASK_FEATURE = TFR_BETA_OPEN_TO_ALL_MEMBERS
+    ? {
+      requires: "subscriber",
+      eyebrow: "Free during the beta",
+      title: "The research tools need an account",
+      body: "Ask the library a question and read a cited answer. Semantic search, Compare and the notebook come with it. All of it is free while the beta runs. Give us an email address and we will send a sign-in link.",
+    }
+    : {
+      requires: "member",
+      eyebrow: "Members Only",
+      title: "Ask is for members",
+      body: "Members can ask a question of the library and get back a cited answer, plus semantic search, the print journal, Discord, and a growing library of benefits. Support the work to unlock it all.",
+    };
+
   const FEATURES = {
     audio: {
       requires: "member",
@@ -74,12 +103,25 @@
       title: "Subscribe to gift essays",
       body: "Become a free subscriber and we'll email a magic link to verify your address. You'll come right back to this essay.",
     },
-    ask: {
-      requires: "member",
-      eyebrow: "Members Only",
-      title: "Ask is for members",
-      body: "Members can ask a question of the library and get back a cited answer, plus semantic search, the print journal, Discord, and a growing library of benefits. Support the work to unlock it all.",
-    },
+    /*
+     * BETA MEASURE (2026-09-11, Ian). The Faith Received research
+     * tools are free during the beta and require only an account, so
+     * `ask` is subscriber-tier rather than member-tier for as long as
+     * TFR_BETA_OPEN_TO_ALL_MEMBERS is true above.
+     *
+     * TO END THE BETA: flip that constant to false. This entry falls
+     * back to member-tier and the modal copy goes back to the
+     * Become-a-Member wording, because subscriber-tier features render
+     * the inline signup form and member-tier ones render the CTA.
+     *
+     * The tier is declared in three places and all three must agree:
+     * here, the server gate in website/workers/tfr-library/worker.js
+     * (requireLibraryMember), and the page markup that decides who is
+     * served the tools at all. Change one without the others and a
+     * reader either sees a modal for something they can use or reaches
+     * a button that 403s with no explanation.
+     */
+    ask: BETA_ASK_FEATURE,
   };
 
   function hasAccess(feature) {

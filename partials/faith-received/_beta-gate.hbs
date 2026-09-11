@@ -1,0 +1,123 @@
+{{!-- ════════════════════════════════════════════════════════════════
+     THE FAITH RECEIVED BETA GATE — the one mechanism, documented once.
+
+     The research tools are free during the beta and require an account.
+     "Account" means ANY signed-in Ghost member, free included (Ian,
+     2026-09-11). Not paid. Not comped. Any.
+
+     ── THE CONTRACT ────────────────────────────────────────────────
+     A page opts in with four moves. Nothing here is copied per page;
+     the box lives in this partial and the visibility rules live in
+     assets/css/faith-received.css.
+
+       1. Hide the tools from signed-out visitors. Prefer the SERVER
+          gate, which does not serve the markup at all: wrap the block
+          in a Handlebars {{#if @member}} … {{/if}}.
+
+          Use the CSS gate instead when the markup has to exist in the
+          DOM for a signed-out visitor (a script that measures it, a
+          shared partial you cannot split):
+
+            <div data-tfr-gate="tools"> …the tools… </div>
+
+          Both are first-paint correct. The CSS rule keys off
+          body[data-member-status], which default.hbs server-renders,
+          and lives in a render-blocking <link> in <head>. There is no
+          window in which the tools are painted and then removed, and
+          nothing has to be revealed by JS.
+
+       2. Render this partial where the tools would have been, with
+          the usual partial call: {{> "faith-received/_beta-gate"}}
+
+          It gates itself with {{#unless @member}}, so a signed-in
+          member is never sent the markup. Render it ONCE per
+          page: the form carries element ids, and inline-signup.js and
+          Portal both bind by attribute across the whole document.
+
+       3. Anything that should show ONLY to signed-out visitors (the
+          Membership CTA at the bottom of these pages) gets:
+
+            <div data-tfr-gate="signed-out"> … </div>
+
+          Note this is the OPPOSITE polarity from the tools. It is
+          deliberate: the person who cannot use the tools yet is
+          exactly the person the CTA is written for.
+
+       4. Load the module once, page-bottom, with an ordinary
+          {{asset "js/faith-beta-gate.js"}} script tag.
+
+          Its only job is to claim the TFR / TFR-Beta tags for a member
+          who is already signed in. It does no hiding and no revealing.
+          It is safe on a signed-out page (it returns on its first
+          check) and safe to load alongside any other page script.
+
+     ── WHAT HAPPENS WHEN SOMEONE FILLS THIS IN ─────────────────────
+     The form is a plain [data-inline-signup], so assets/js/inline-
+     signup.js handles it unchanged: it POSTs to Ghost's own
+     /members/api/send-magic-link/ with emailType "signup", which
+     creates a free member if the address is new and emails a sign-in
+     link either way. The link is EMAILED. Nothing ever returns a
+     signinUrl to the browser — a previous version of that mistake on
+     /institution-join/ meant nobody was ever actually signed in.
+
+     The TFR / TFR-Beta Kit tags are NOT written here. They are written
+     by mo-kit's POST /tfr-beta, called by faith-beta-gate.js with the
+     member's own Ghost JWT once they come back signed in. Two reasons,
+     and both are load-bearing:
+
+       - Ghost's sendMagicLink applies `labels` only when it CREATES a
+         member and silently ignores them when the address already
+         exists. Of 133 registrations for the Loftus forum, 103 were
+         existing members and none of them carried the label. Any label
+         we actually need has to be written server-side.
+       - Ian chose the magic link over silent member creation so the
+         address is verified before the tags land. Claiming on first
+         signed-in load is what makes that true: an address nobody
+         confirmed never reaches Kit.
+
+     source:tfr-beta DOES ride along on the magic-link call. It is
+     provenance on a member we just created, not a segment we send to,
+     and losing it for an existing member costs nothing.
+     ════════════════════════════════════════════════════════════════ --}}
+{{#unless @member}}
+<div class="tfr-gate">
+  <div class="tfr-gate-inner">
+
+    <p class="tfr-gate-eyebrow">Free during the beta</p>
+    <h2 class="tfr-gate-title"><em>The research tools need an account.</em></h2>
+    <p class="tfr-gate-lede">Ask the library a question and read a cited answer. Search nineteen thousand works by meaning rather than by word. Set two authors against each other, keep what you find, and write from it. Every one of these is free while the beta runs. All it takes is an account.</p>
+
+    {{!-- Plain [data-inline-signup]. inline-signup.js ships in
+         site.min.js and binds by delegation on document, so it does not
+         matter that this markup parses before the bundle loads. --}}
+    <div class="tfr-gate-form digest-form" data-inline-signup data-source="tfr-beta">
+      <div class="digest-field">
+        <label for="tfr-gate-first">First Name</label>
+        <input id="tfr-gate-first" type="text" autocomplete="given-name" placeholder="First" data-signup-first required />
+      </div>
+      <div class="digest-field">
+        <label for="tfr-gate-last">Last Name</label>
+        <input id="tfr-gate-last" type="text" autocomplete="family-name" placeholder="Last" data-signup-last required />
+      </div>
+      <div class="digest-field">
+        <label for="tfr-gate-email">Email</label>
+        <input id="tfr-gate-email" type="email" autocomplete="email" placeholder="you@example.com" data-signup-email required />
+      </div>
+      <button type="button" class="digest-submit" data-signup-submit>Get access</button>
+      <p class="digest-fineprint">We email you a sign-in link. There is no password to keep.</p>
+      <p class="digest-status" data-signup-status></p>
+    </div>
+
+    {{!-- Said plainly and up front rather than in fine print. Someone
+         who signs up for a free tool and finds it priced later has been
+         handled badly, whatever the footer said. --}}
+    <p class="tfr-gate-note">The research tools are open to everyone with an account while the beta runs. When the beta ends they become Member features. We will tell you before that happens.</p>
+
+    {{!-- Portal enumerates [data-portal] once at init, so this button
+         has to be in the served HTML and must never be injected. It is
+         server-rendered here, which satisfies that. --}}
+    <p class="tfr-gate-signin">Already have an account? <button type="button" class="tfr-gate-signin-btn" data-portal="signin">Sign in</button></p>
+
+  </div>
+</div>
+{{/unless}}
