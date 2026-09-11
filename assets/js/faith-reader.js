@@ -3272,6 +3272,9 @@
       contentEl.appendChild(createSection("Front matter", sectionSeq, 1, firstPage));
     }
     tree.forEach((node) => contentEl.appendChild(renderNode(node)));
+    // The opening screen fills from here, not from the observer.
+    setTimeout(sweepSections, 0);
+    setTimeout(sweepSections, 400);
   }
 
   function renderNode(node) {
@@ -3390,8 +3393,9 @@
   // hydrating on the spot where IntersectionObserver is absent.
   let sectionWatcher = null;
   function observeSection(details) {
+    pendingSections.push(details);
     if (typeof IntersectionObserver !== "function") {
-      hydrateSection(details);
+      sweepSections();
       return;
     }
     if (!sectionWatcher) {
@@ -3399,12 +3403,51 @@
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
           sectionWatcher.unobserve(entry.target);
+          const at = pendingSections.indexOf(entry.target);
+          if (at >= 0) pendingSections.splice(at, 1);
           hydrateSection(entry.target);
         });
       }, { rootMargin: "200% 0px" });
     }
     sectionWatcher.observe(details);
   }
+
+  // Belt and braces, and not a nicety.
+  //
+  // An IntersectionObserver only reports while the page is being
+  // rendered. In a background tab, a hidden window, or any headless
+  // surface, its callback never runs — and if it is the ONLY thing that
+  // loads text, a work opened in a background tab and brought forward
+  // is a table of contents attached to nothing. The reader must not
+  // have a single point of failure between the reader and the book.
+  //
+  // So the same decision is also made from scroll, which fires wherever
+  // a human is actually reading, and once on a short timer after the
+  // build so the opening screen never waits on an observer at all.
+  // hydrateSection is idempotent, so both paths arriving is harmless.
+  const pendingSections = [];
+  function sweepSections() {
+    if (!pendingSections.length) return;
+    const reach = (window.innerHeight || 800) * 2;
+    for (let i = pendingSections.length - 1; i >= 0; i -= 1) {
+      const el = pendingSections[i];
+      if (!el.isConnected) { pendingSections.splice(i, 1); continue; }
+      const box = el.getBoundingClientRect();
+      if (box.bottom < -reach || box.top > reach) continue;
+      pendingSections.splice(i, 1);
+      if (sectionWatcher) sectionWatcher.unobserve(el);
+      hydrateSection(el);
+    }
+  }
+  let sweepQueued = false;
+  function onSweepScroll() {
+    if (sweepQueued) return;
+    sweepQueued = true;
+    setTimeout(() => { sweepQueued = false; sweepSections(); }, 120);
+  }
+  window.addEventListener("scroll", onSweepScroll, { passive: true });
+  window.addEventListener("resize", onSweepScroll, { passive: true });
+  document.addEventListener("visibilitychange", sweepSections);
 
   function hydrateSection(details) {
     if (details.dataset.frState === "loaded" || details.dataset.frState === "loading") return;
