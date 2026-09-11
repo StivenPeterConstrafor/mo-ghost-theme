@@ -94,10 +94,31 @@
     </div>
   </section>
 
+  {{!-- Positions: what the earliest writers are recorded as holding.
+       The picker is not built from the headings above. The statement
+       index keeps its own catalogue of names, spelled its own way
+       ("Irenaeus of Lyon", "Theophilus, Bishop of Antioch") and with
+       works attributed to a father filed apart from the father himself
+       ("Pseudo-Justin Martyr"), so mapping one list onto the other by
+       hand would put attributions on screen that nobody here checked.
+       The panel asks the index for the writers it dates before Nicaea
+       instead, which is the same question this page is asking and one
+       the data can answer for itself. --}}
+  <section class="bband faith-positions-band"
+           data-faith-positions
+           data-positions-before-year="325"
+           data-positions-lede="What the earliest writers are recorded as holding, doctrine by doctrine. Choose a doctrine and a writer; the statements load below, each one carrying the work and page it was drawn from."
+           data-positions-note="The writers listed here are the ones the statement index dates before Nicaea, across the whole library rather than the forty-five works above. Its catalogue spells some names differently from this page, and it files works attributed to a father separately from the father himself."></section>
+
 </main>
 {{!-- Sitewide membership CTA. Same partial and same gate as the rest
      of the site: hidden for paid and comped members, shown to free
      subscribers and anonymous visitors. --}}
 {{> "membership-cta"}}
+
+{{!-- The one data host this page talks to. Read by faith-positions.js,
+     which refuses to fetch anything at all without it. --}}
+<meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
+<script src="{{asset "js/faith-positions.js"}}"></script>
 
 

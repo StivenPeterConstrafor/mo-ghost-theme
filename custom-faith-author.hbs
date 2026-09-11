@@ -32,6 +32,20 @@
     </div>
   </section>
 
+  {{!-- Positions: what this writer is recorded as holding, doctrine by
+       doctrine. Its own band rather than a panel built into the body
+       above, because faith-author.js rewrites that container's whole
+       innerHTML once the catalogues resolve and would take any node
+       mounted inside it with them. The author is read from ?a= by the
+       panel itself (folded, the same key faith-author.js uses), so the
+       two scripts share no state and a fault in one cannot blank the
+       other.
+
+       Nothing is fetched until this band is scrolled to. --}}
+  <section class="bband faith-positions-band"
+           data-faith-positions
+           data-positions-author-param="a"></section>
+
 </main>
 {{!-- Sitewide membership CTA. Same partial and same gate as the rest
      of the site: hidden for paid and comped members, shown to free
@@ -60,6 +74,9 @@
      fetched once faith-author.js has resolved the author's name. --}}
 <script src="{{asset "js/faith-author-reception.js"}}"></script>
 <script src="{{asset "js/faith-author.js"}}"></script>
+{{!-- Positions. Independent of every script above it: it reads ?a=
+     itself, mounts into its own band, and waits to be scrolled to. --}}
+<script src="{{asset "js/faith-positions.js"}}"></script>
 {{!-- Bookmark a work from its row. The store first: it is the same
      mo-kit bookmark the reader's Save button and the Bookmark button at
      the foot of a section write, so a work saved here and a section
