@@ -243,7 +243,7 @@ document.addEventListener("click",async e=>{
   if(wrap){const on=wrap.classList.toggle("on");b.classList.toggle("on",on);b.setAttribute("aria-expanded",String(on));return;}
   const [w,p,hl]=String(b.dataset.pk).split("|");
   wrap=document.createElement("div");wrap.className="peekwrap";
-  wrap.innerHTML=`<div><iframe loading="lazy" src="${readerHrefHl(w,p,hl)}" title="Passage"></iframe></div>`;
+  wrap.innerHTML=`<div><iframe src="${readerHrefHl(w,p,hl)}" title="Passage"></iframe></div>`;
   (b.closest(".rx-excerpt,.vpr,.ev")||b.parentElement).appendChild(wrap);
   requestAnimationFrame(()=>{wrap.classList.add("on");b.classList.add("on");b.setAttribute("aria-expanded","true");});
 });
@@ -1817,9 +1817,14 @@ function paneList(box,items,render,chunk=80){
    topic view — draws it here. Options: title(r) resolves the work title; actions adds preview + pin;
    annotation shows the recorded stance; extra(r) appends a trailing line. */
 function statementHTML(r,o={}){
-  const title=o.title?o.title(r):(r.wt||r.w||'Source work'),pg=RX.page(r.p),href=RX.safeReaderURL(r.h)||(r.w?readerHref(r.w,r.p):null);
+  // PREVIEW EVERYWHERE (owner 2026-09-11 "see inline the page for each position, also for the compare, also on mobile"):
+  // every statement with a source page gets the peek button (the reader embedded under the row) and its reader links
+  // carry ?hl= with the quote's words so the landed page marks the passage — the positions and comparison views used
+  // to get a bare "Read the passage" link only (the button was gated on o.actions).
+  const hl=String(r.q||r.g||'').replace(/\s+/g,' ').slice(0,120);
+  const title=o.title?o.title(r):(r.wt||r.w||'Source work'),pg=RX.page(r.p),href=(r.w&&pg!==null)?readerHrefHl(r.w,r.p,hl):(RX.safeReaderURL(r.h)||(r.w?readerHref(r.w,r.p):null));
   const text=r.q||r.g||(r.pageSummary?'Indexed source page. Open the text to read its context.':'');
-  return `<article class="rx-excerpt">${r.pageSummary?'<span class="rx-evidence-kind">Page summary</span>':''}<p>${esc(text)}</p>${r.q&&r.g?`<details class="rx-context"><summary>Read page annotation</summary><p>${esc(r.g)}</p></details>`:''}<div class="rx-source"><span>${esc(title)}${pg!==null?' · '+pgl(r.w)+' '+esc(String(pg)):''}</span><div>${href?`<a class="rx-text-link" target="_blank" rel="noopener" href="${esc(href)}">Read the passage</a>`:''}${r.w?(o.actions?previewBtn(r.w,r.p):'')+pinBtn(r.w,r.p,title,r.a||o.author||'',r.q||r.g):''}</div></div>${o.extra?o.extra(r):(o.annotation&&r.s?`<span class="rx-annotation">Annotation: ${esc(r.s)}</span>`:'')}</article>`;}
+  return `<article class="rx-excerpt">${r.pageSummary?'<span class="rx-evidence-kind">Page summary</span>':''}<p>${esc(text)}</p>${r.q&&r.g?`<details class="rx-context"><summary>Read page annotation</summary><p>${esc(r.g)}</p></details>`:''}<div class="rx-source"><span>${esc(title)}${pg!==null?' · '+pgl(r.w)+' '+esc(String(pg)):''}</span><div>${href?`<a class="rx-text-link" target="_blank" rel="noopener" href="${esc(href)}">Read the passage</a>`:''}${r.w?(pg!==null?previewBtn(r.w,r.p,hl):'')+pinBtn(r.w,r.p,title,r.a||o.author||'',r.q||r.g):''}</div></div>${o.extra?o.extra(r):(o.annotation&&r.s?`<span class="rx-annotation">Annotation: ${esc(r.s)}</span>`:'')}</article>`;}
 function statementPane(box,rows,o={}){if(!rows.length){box.classList.remove('rx-pane');box.innerHTML=`<p class="rx-note">${esc(o.empty||'No statements.')}</p>`;return box;}
   if(o.byWork===false)return paneList(box,rows,r=>statementHTML(r,o),o.chunk||60);
   box.classList.add('rx-pane');box.innerHTML=workFoldsHTML(rows,o);return box;}
