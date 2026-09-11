@@ -3367,10 +3367,16 @@
     body.style.minHeight = `${Math.min(span * 620, 40000)}px`;
     details.appendChild(body);
 
-    // `toggle` fires for user clicks and for programmatic .open = true.
-    // Nothing closes any more, but a reader can still collapse one by
-    // hand if the browser offers it, and reopening must refill it.
+    // `toggle` fires for user clicks AND for the programmatic open
+    // above — which is dispatched after this function returns, so the
+    // listener catches it. Hydrating on that event meant every section
+    // in the work loaded the moment it was built: 141 sections, 8,433
+    // blocks and 42,013 DOM nodes on Coccejus, in 8.4 seconds, which is
+    // the whole of a 1,304-page folio arriving at once. The opening
+    // toggle is swallowed; the observer is what loads text now.
+    let openedOnce = false;
     details.addEventListener("toggle", () => {
+      if (!openedOnce) { openedOnce = true; return; }
       if (details.open) hydrateSection(details);
     });
     observeSection(details);
@@ -3799,6 +3805,12 @@
     // section around it and mark the row itself.
     if (target.tagName === "DETAILS") target.open = true;
     else target.classList.add("faith-page-target");
+    // Sections are open from the start and load on approach, so a deep
+    // link can land on one the observer has not reached. Fill it here
+    // rather than waiting for a scroll that already happened.
+    const host = target.closest ? target.closest(".faith-section-details") : null;
+    if (host) hydrateSection(host);
+    else if (target.tagName === "DETAILS") hydrateSection(target);
     if (scroll) {
       const where = target.tagName === "DETAILS" ? "start" : "center";
       // Opening the ancestor <details> reflows everything below it, and
