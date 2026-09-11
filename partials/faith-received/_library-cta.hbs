@@ -1,0 +1,34 @@
+{{!-- The membership CTA for the LIBRARY pages.
+
+     The sitewide one (partials/membership-cta) is written for the
+     moment a reader finishes an essay: "Loved this essay? Help us write
+     the next one." That is the right copy under a post and nonsense at
+     the foot of a reading room, where the reader has not read an essay
+     and is not being asked to commission another. Ian pulled it from
+     the three research tools on 2026-09-11 for exactly that reason;
+     this replaces it on the twenty browse, reading-room and shelf pages
+     where it was the only membership prompt there was.
+
+     Same gate as the sitewide partial, deliberately: hidden from paid
+     and comped members, shown to free members and to anonymous
+     visitors. Reading is free and stays free, so a free member is still
+     somebody this is written for.
+
+     Not to be used under a post. The sitewide partial is still correct
+     there and is untouched. --}}
+{{#match @member.status "paid"}}{{else}}
+{{#match @member.status "comped"}}{{else}}
+<section class="membership-cta">
+    <div class="cta-inner">
+        <p class="eyebrow">The Faith Received</p>
+        <h2><em>Free to read, and paid for by readers.</em></h2>
+        <p>
+            Every text here is free, and it stays free. What membership pays for is the work behind it: the translating, the scanning, and the years of putting a library like this within reach. Members also get the print journal, the full archive, and the research tools.
+        </p>
+        <div class="cta-buttons">
+            <a href="/membership/" class="btn btn-primary btn-lg">Become a Member</a>
+        </div>
+    </div>
+</section>
+{{/match}}
+{{/match}}
