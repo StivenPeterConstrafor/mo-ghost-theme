@@ -665,6 +665,18 @@
   // headings one level down ("ENARRATION ON PSALM LXXX." over "SERMON
   // 1591"); this is the same rule applied to the divisions themselves.
   function liftUnnamedSections(sections) {
+    // A child comes off the adapters as {title, subtitle, rows} with no
+    // `children` key, which is fine while it stays a child — the
+    // renderer only ever reads that key on a top-level section. Promote
+    // one without filling it in and the renderer takes .length off
+    // undefined and the whole work fails to load.
+    const asSection = (s) => {
+      if (!Array.isArray(s.rows)) s.rows = [];
+      if (!Array.isArray(s.children)) s.children = [];
+      if (typeof s.title !== "string") s.title = s.title ? String(s.title) : "";
+      return s;
+    };
+
     const flat = [];
     sections.forEach((s) => {
       const kids = s.children || [];
@@ -674,7 +686,7 @@
       if ((s.rows || []).length) {
         flat.push({ id: s.id || "", title: "", subtitle: "", rows: s.rows, children: [] });
       }
-      kids.forEach((k) => flat.push(k));
+      kids.forEach((k) => flat.push(asSection(k)));
     });
 
     const out = [];
@@ -694,7 +706,9 @@
     // A trailing super-heading has nothing to stand over. Better a
     // drawer with a name and no text than a title dropped in silence.
     if (carried) out.push({ id: "", title: carried, subtitle: "", rows: [], children: [] });
-    return out.length ? out : sections;
+    if (!out.length) return sections;
+    out.forEach(asSection);
+    return out;
   }
 
   function divideFlatSections(sections) {
