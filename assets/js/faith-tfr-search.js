@@ -319,7 +319,7 @@
   // on the Research page, and the tab is a door into it. Nothing
   // outside this page ever linked to #meaning (checked), so the old id
   // is not kept as an alias.
-  const MODES = ["find", "fulltext", "scripture", "tradition", "ask", "power"];
+  const MODES = ["find", "fulltext", "works", "scripture", "tradition", "ask", "power"];
 
   function showMode(mode) {
     if (MODES.indexOf(mode) < 0) mode = "find";
@@ -877,6 +877,100 @@
     if (host) host.appendChild(tail);
   }
 
+
+  /* ── Works: find a book by its NAME ───────────────────────────────
+   *
+   * Every other tab on this page searches TEXT. Pagefind indexes the
+   * body of a work, so "Institutes of the Christian Religion" only
+   * found Calvin if those words happened to fall inside somebody's
+   * prose, and asking for a book by its title, which is what a reader
+   * does first, was the one thing this page could not do.
+   *
+   * Answered by the worker (GET /v1/titles), not in the browser. The
+   * corpus owner's version of this tier pulls the 7.3 MB catalogue
+   * client-side and filters it there. A slim index of title, author and
+   * id over all 30,624 works is still 1,164 KB gzipped, and the titles
+   * are most of that, so there is no shape of that file worth shipping.
+   * Measured before it was decided.
+   *
+   * No feature gate: this is string matching over a file we already
+   * hold. It spends nothing, so it must not sit behind the paid gate.
+   */
+  const worksResults = page.querySelector('[data-fs-results="works"]');
+  const worksStatus = page.querySelector('[data-fs-count="works"]');
+  const LIB = (document.querySelector('meta[name="tfr-library-base"]') || {}).content
+    || "https://mo-tfr-library.mo-podcast-feed.workers.dev";
+  let worksToken = 0;
+  const worksCache = new Map();
+
+  function worksHref(corpus, id) {
+    const p = new URLSearchParams();
+    if (corpus && corpus !== "tfr" && corpus !== "confessions") p.set("c", corpus);
+    p.set("w", id);
+    return `/the-faith-received/reader/?${p.toString()}`;
+  }
+
+  function renderWorks(data, q) {
+    if (!worksResults || !worksStatus) return;
+    worksResults.textContent = "";
+    if (!q || q.length < 2) {
+      worksStatus.textContent = "Type the name of a work.";
+      return;
+    }
+    if (data && data.error) {
+      // An index that did not load is not an empty shelf, and must
+      // never be allowed to read as one.
+      worksStatus.textContent = "The title index did not load, so this tab has nothing to search. Nothing is missing from the library.";
+      return;
+    }
+    const items = (data && data.items) || [];
+    if (!items.length) {
+      worksStatus.textContent = `No work in the library is called \u201c${q}\u201d. Try Full text, which searches inside the works.`;
+      return;
+    }
+    worksStatus.textContent = data.truncated
+      ? `${items.length.toLocaleString()} of ${data.total.toLocaleString()} works whose name matches, best first.`
+      : `${data.total.toLocaleString()} work${data.total === 1 ? "" : "s"} whose name matches.`;
+    items.forEach((it) => {
+      const li = document.createElement("li");
+      li.className = "faith-search-result";
+      const a = document.createElement("a");
+      a.className = "faith-search-result-title";
+      a.textContent = it.title;
+      const href = worksHref(it.corpus, it.id);
+      if (window.MOSafeHref) window.MOSafeHref.set(a, href, "#");
+      else a.setAttribute("href", href);
+      li.appendChild(a);
+      const meta = document.createElement("p");
+      meta.className = "faith-search-result-meta";
+      const bits = [];
+      if (it.author) bits.push(it.author);
+      const c = window.MOCorpora && window.MOCorpora.get ? window.MOCorpora.get(it.corpus) : null;
+      if (c && c.label) bits.push(c.label);
+      meta.textContent = bits.join(" \u00b7 ");
+      li.appendChild(meta);
+      worksResults.appendChild(li);
+    });
+  }
+
+  function runWorks(q) {
+    if (!worksResults) return;
+    const key = q.toLowerCase();
+    if (worksCache.has(key)) { renderWorks(worksCache.get(key), q); return; }
+    if (!q || q.length < 2) { renderWorks(null, q); return; }
+    const mine = ++worksToken;
+    worksStatus.textContent = "Searching the catalogue\u2026";
+    fetch(`${LIB}/v1/titles?q=${encodeURIComponent(q)}&limit=60`, { signal: AbortSignal.timeout(15000) })
+      .then((r) => (r.ok ? r.json() : { error: true }))
+      .catch(() => ({ error: true }))
+      .then((d) => {
+        // A later keystroke won; this answer is stale.
+        if (mine !== worksToken) return;
+        worksCache.set(key, d);
+        renderWorks(d, q);
+      });
+  }
+
   function render() {
     const mode = activeMode();
     // The Tradition tab's standing instruction. Evaluated here rather
@@ -888,6 +982,7 @@
     renderFind();
     renderPanelFlat(fulltextResults, fulltextStatus, "fulltext");
     if (mode === "tradition") renderPanelFlat(tradResults, tradStatus, "tradition");
+    if (mode === "works") runWorks(state.query || "");
     try {
       document.dispatchEvent(new CustomEvent("mo:faith-search", {
         detail: { query: state.query, count: state.raw.length, mode },

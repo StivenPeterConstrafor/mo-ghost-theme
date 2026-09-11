@@ -75,6 +75,10 @@
       <nav class="faith-view-toggle faith-search-modes" data-fs-tabs role="tablist" aria-label="Search mode">
         <button type="button" class="faith-view-toggle-tab is-active" data-fs-mode="find" role="tab" aria-selected="true">Find</button>
         <button type="button" class="faith-view-toggle-tab" data-fs-mode="fulltext" role="tab" aria-selected="false">Full text</button>
+        {{!-- Works searches the NAME of a work. Every other tab here
+             searches text, so a reader asking for a book by its title was
+             the one thing this page could not answer. --}}
+        <button type="button" class="faith-view-toggle-tab" data-fs-mode="works" role="tab" aria-selected="false">Works</button>
         <button type="button" class="faith-view-toggle-tab" data-fs-mode="tradition" role="tab" aria-selected="false">Tradition</button>
         <button type="button" class="faith-view-toggle-tab" data-fs-mode="scripture" role="tab" aria-selected="false">Scripture</button>
         <button type="button" class="faith-view-toggle-tab" data-fs-mode="ask" role="tab" aria-selected="false">Ask</button>
@@ -137,6 +141,17 @@
       {{!-- Tradition: Full text with the Tradition pill pinned rather
            than optional. Uses the same pill row above; this panel just
            insists one is chosen before it runs anything. --}}
+      {{!-- Works: find a book by its name, across all eight collections.
+           Answered by GET /v1/titles on mo-tfr-library, which holds a
+           slim prebuilt title index in the worker. The browser downloads
+           none of it: the same index shipped to the client would be
+           1,164 KB gzipped, and the titles are most of that, so there is
+           no cheap shape of it. See lib/titles.js. --}}
+      <div data-fs-panel="works" hidden>
+        <p class="faith-search-status" data-fs-count="works" role="status" aria-live="polite"></p>
+        <ol class="faith-search-results" data-fs-results="works"></ol>
+      </div>
+
       <div data-fs-panel="tradition" hidden>
         <p class="faith-search-scope-note" data-fs-trad-required>Choose a tradition above to search within it.</p>
         <p class="faith-search-status" data-fs-count="tradition" role="status" aria-live="polite"></p>
