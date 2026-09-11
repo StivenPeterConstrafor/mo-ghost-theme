@@ -58,6 +58,24 @@ for (const [c,host,en] of [["pld","pld-patrologia-latina","te"],["pg","patrologi
     push(c,id,eng,v.ae||v.a,v.v||0,latin);
   }
 }
+/* Augustine. Left out of every earlier build of this index, so none of
+ * his 124 works could be found by name and /v1/titles answered "no such
+ * work" for the City of God's own author. The catalogue is the second
+ * half of the aquinas-studies nav — the first half was Thomas Aquinas
+ * and was pulled on 2026-07-28 — and the cut is the same file-number
+ * floor faith-corpora.js uses (AUGUSTINE_FROM = 151). Kept in step with
+ * that constant: if it moves there it must move here. */
+const AUGUSTINE_FROM = 151;
+const au = await j("https://aquinas-studies.vercel.app/data/nav.json").catch(() => []);
+for (const group of (Array.isArray(au) ? au : [])) {
+  for (const sec of (group.s || [])) {
+    const f = String(sec.f || "");
+    const n = parseInt((f.match(/_(\d+)\.html$/) || [])[1], 10);
+    if (!(n >= AUGUSTINE_FROM)) continue;
+    push("augustine", f.replace(/\.html$/, ""), sec.n, "Augustine of Hippo", 0, "");
+  }
+}
+
 const body=JSON.stringify({ v:2, n:rows.length, rows });
 writeFileSync(process.env.OUT, body);
 const { gzipSync } = await import("node:zlib");
