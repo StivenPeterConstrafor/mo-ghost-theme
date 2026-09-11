@@ -190,7 +190,12 @@
 
   // ── Loaders, one per source shape ─────────────────────────────
 
-  const BLOB = "https://mo-tfr-library.mo-podcast-feed.workers.dev";
+  // mo-tfr-library, and only ever mo-tfr-library. Read from the meta
+  // tag, with the same literal fallback the other Faith Received
+  // scripts carry: the Topics page mounts this file without setting the
+  // tag, and must keep working.
+  const BLOB = (document.querySelector('meta[name="tfr-library-base"]') || {}).content
+    || "https://mo-tfr-library.mo-podcast-feed.workers.dev";
 
   // { genesis: { "1": [[slug, page, excerpt], …] } }
   // The Latin Library's shipped scripture index mistakes a work's own
@@ -588,6 +593,84 @@
     return testament === "ot" ? OT.concat(DEUTERO) : NT;
   }
 
+  // ── The citation figure, and why it is not the figure below it ──
+  //
+  // Two numbers exist for every book and they measure different things.
+  // The one on the row is a CITATION OCCURRENCE count, from
+  // v1/bible/all/books.json by way of faith-scripture-totals.js: every
+  // place a work names or quotes a passage, across all nine traditions.
+  // Genesis, 250,677.
+  //
+  // The one inside the book, which the chapter rows add up to, counts
+  // WORK-AND-CHAPTER PAIRS in the generated index: one per work per
+  // chapter it cites, so a work citing Genesis 1 and Genesis 3 counts
+  // twice and a work citing Genesis 1 eleven times counts once. It also
+  // spans only the four collections whose text has been walked, where
+  // the first spans all nine traditions. Genesis, 92,022.
+  //
+  // Neither is wrong and neither is the other. The old page printed
+  // both, unlabelled, one above the other, and left the reader to
+  // conclude that the index could not count. So: the occurrence count
+  // is the figure and the bar on the row, and the work-and-chapter
+  // count is stated inside the book, beside the rows that make it up.
+  function totals() {
+    const t = window.MOScriptureTotals;
+    return t && t.byBook && typeof t.byBook.get === "function" ? t : null;
+  }
+
+  // Scaled to the largest book of the testament on screen, and on a
+  // square-root scale. Psalms is cited 592,661 times and Philemon 755,
+  // so linearly Philemon would be 0.13% of the track, which at any
+  // width this list is ever drawn at is less than a pixel: an empty row
+  // where there should be a mark, for a book that is genuinely cited.
+  // sqrt puts Philemon at 3.6%, visible and still plainly tiny. The
+  // note under the list says the scale is not linear, because a bar
+  // that flatters the small books without admitting it is a chart that
+  // lies.
+  function barPct(value, max) {
+    if (!value || !max) return 0;
+    return Math.min(100, Math.max(1.2, Math.sqrt(value / max) * 100));
+  }
+
+  function testamentMax() {
+    const t = totals();
+    if (!t) return 0;
+    return bookList().reduce((max, b) => Math.max(max, t.byBook.get(b) || 0), 0);
+  }
+
+  // Painted into rows that already exist rather than rebuilt with them.
+  // The two scripts race, and the tradition chips repaint these figures
+  // without touching anything else on the row, so redrawing the whole
+  // accordion would close every <details> the reader had opened.
+  function paintTotals() {
+    const host = scriptureHost();
+    if (!host) return;
+    const t = totals();
+    const max = testamentMax();
+    host.querySelectorAll("[data-faith-book-total]").forEach((cell) => {
+      const book = cell.getAttribute("data-faith-book-total");
+      const value = t ? t.byBook.get(book) || 0 : 0;
+      const fill = cell.querySelector("[data-faith-book-bar]");
+      const fig = cell.querySelector("[data-faith-book-fig]");
+      if (fill) fill.style.width = `${barPct(value, max).toFixed(1)}%`;
+      if (!fig) return;
+      fig.textContent = "";
+      fig.appendChild(document.createTextNode(value ? value.toLocaleString() : "—"));
+      const sr = document.createElement("span");
+      sr.className = "visually-hidden";
+      sr.textContent = value
+        ? ` citation${value === 1 ? "" : "s"}${t && t.scopeLabel ? t.scopeLabel : ""}`
+        : " no citations recorded";
+      fig.appendChild(sr);
+    });
+    const note = host.querySelector("[data-faith-scripture-figure-note]");
+    if (note) note.textContent = t && t.note ? t.note : "";
+  }
+
+  // faith-scripture-totals.js may finish before this file renders or
+  // long after, and fires again on every tradition chip.
+  window.addEventListener("faith:scripture-totals", paintTotals);
+
   function renderScripture() {
     const host = scriptureHost();
     if (!host) return;
@@ -603,10 +686,20 @@
     scripture.forEach((chs) => chs.forEach((l) => { entries += l.length; chapters += 1; }));
 
     chrome(host, {
+      // "references" was the word that made this read as a rival
+      // citation count to the one on the rows. It is neither a count of
+      // citations nor of works: it is one entry per work per chapter.
       title: "Scripture",
-      sub: `${entries.toLocaleString()} references across ${chapters.toLocaleString()} chapters`,
+      sub: `${entries.toLocaleString()} entries across ${chapters.toLocaleString()} chapters, one per work per chapter it cites`,
       note: coverageNote("scripture"),
     });
+
+    // The overview panel faith-scripture-totals.js mounts belongs above
+    // this heading, not below it. Both insert at the top of the host and
+    // whichever runs last used to win. Idempotent, so the testament
+    // toggle does not re-parent the panel on every press.
+    const panel = host.querySelector(".faith-scripture-totals");
+    if (panel && host.firstChild !== panel) host.insertBefore(panel, host.firstChild);
 
     const wrap = document.createElement("div");
     wrap.setAttribute("data-faith-scripture-list", "");
@@ -630,7 +723,16 @@
       list.appendChild(bookRow(book, chs, total));
     });
     wrap.appendChild(list);
+
+    // The note travels with the figures rather than with the panel that
+    // fetched them, because it is the figures it explains.
+    const figNote = document.createElement("p");
+    figNote.className = "fa-fp-source faith-scripture-figure-note";
+    figNote.setAttribute("data-faith-scripture-figure-note", "");
+    wrap.appendChild(figNote);
+
     host.appendChild(wrap);
+    paintTotals();
   }
 
   function bookRow(book, chs, total) {
@@ -638,15 +740,37 @@
     details.className = `faith-scripture-book-details${total ? "" : " is-empty"}`;
     const summary = document.createElement("summary");
     summary.className = "faith-scripture-book";
+    // One row: the name, the proportional mark, the figure, the
+    // disclosure. The bar and the figure are the same fact, so the bar
+    // is hidden from the accessibility tree and the figure carries the
+    // word "citations" for a screen reader. Filled by paintTotals once
+    // the totals land; until then the row is complete and usable
+    // without them.
     summary.innerHTML =
       `<span class="faith-scripture-book-name">${escapeHtml(book)}</span>` +
-      `<span class="faith-scripture-book-count">${total ? `${total.toLocaleString()} reference${total === 1 ? "" : "s"}` : "none yet"}</span>` +
+      `<span class="faith-scripture-book-total" data-faith-book-total="${escapeHtml(book)}">` +
+      `<span class="faith-scripture-book-bar" aria-hidden="true">` +
+      `<span class="faith-scripture-book-bar-fill" data-faith-book-bar style="width:0"></span></span>` +
+      `<span class="faith-scripture-book-fig" data-faith-book-fig></span></span>` +
       `<span class="faith-chev faith-scripture-chev" aria-hidden="true"></span>`;
     details.appendChild(summary);
     if (!total) return details;
 
     const body = document.createElement("div");
     body.className = "faith-scripture-book-body";
+
+    // Where the second number is reconciled, next to the chapter rows
+    // that add up to it. Without this the reader meets 250,677 on the
+    // row, adds the chapters to 92,022, and has no way to know that the
+    // two were never the same measurement.
+    const lead = document.createElement("p");
+    lead.className = "faith-scripture-book-lead";
+    lead.textContent = `${total.toLocaleString()} entr${total === 1 ? "y" : "ies"} across `
+      + `${chs.size.toLocaleString()} chapter${chs.size === 1 ? "" : "s"}, counting one work for each chapter `
+      + `it cites, however many times it cites it. Drawn from the four collections whose text has been walked, `
+      + `so it is a narrower count than the citations figure on the row above.`;
+    body.appendChild(lead);
+
     [...chs.keys()]
       .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
       .forEach((ch) => body.appendChild(chapterRow(book, ch, chs.get(ch))));
@@ -1374,6 +1498,14 @@
   // seeing a book list.
   let generatedBase = null;
 
+  // The collections the generated index actually spans. It is a
+  // property of the built data, not of the registry, and the summary
+  // file does not state it, so it is written down here: every row in
+  // every per-chapter file sampled across the canon carries one of
+  // these four corpus ids and no other. When the index is rebuilt wider
+  // this is the line that has to move with it.
+  const GENERATED_CORPORA = ["tfr", "eebo", "pld", "augustine"];
+
   function loadGenerated(url) {
     return fetch(url).then((r) => {
       if (!r.ok) throw new Error(String(r.status));
@@ -1388,8 +1520,17 @@
           for (let i = 0; i < n; i += 1) addScripture(book, ch, { pending: true, times: 1 });
         });
       });
-      COVERAGE.scripture.push({ id: "generated", n: 1 });
+      // "generated" is not a collection, and no registry entry answers
+      // to it, so coverageNote() printed its own id back: the page read
+      // "Indexed from generated." and then cleared the not-yet-indexed
+      // list, claiming coverage of collections the generated index has
+      // never walked. Named for what they are now, and what is still
+      // missing is said rather than erased.
+      GENERATED_CORPORA.forEach((id) => COVERAGE.scripture.push({ id, n: 1 }));
       COVERAGE.missing.scripture.length = 0;
+      window.MOCorpora.all.forEach((c) => {
+        if (GENERATED_CORPORA.indexOf(c.id) < 0) COVERAGE.missing.scripture.push(c.id);
+      });
     });
   }
 

@@ -37,6 +37,10 @@
 
 </main>
 
+{{!-- mo-tfr-library, read from here by both scripts below rather than
+     written into either of them. Same tag, same value, as every other
+     Faith Received page. --}}
+<meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
 {{!-- The index is merged from every collection at read time, so the
      corpus registry has to be present before faith-indexes.js runs. --}}
 <script src="{{asset "js/faith-corpora.js"}}"></script>
@@ -49,7 +53,14 @@
      being used; unset it, or let the fetch fail, and they come back. --}}
 <meta name="tfr-scripture-index" content="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/index/scripture-books.json" />
 <script src="{{asset "js/faith-indexes.js"}}"></script>
-{{!-- The library-wide citation totals, from the 2026-09 mo-tfr drop.
-     Independent of faith-indexes.js above: its own fetch, its own
-     panel, no shared state. See the file's own header for why. --}}
+{{!-- The library-wide citation totals. Still its own fetch and its own
+     panel: it draws the lede, the canon density strip, the tradition
+     chips and the jump control, and it hands the per-book citation
+     figures to faith-indexes.js, which paints them into the book rows
+     rather than drawing a second list of the same books above them.
+     One way, one object (window.MOScriptureTotals) plus an event, so
+     either script can finish first and a fault in this one costs the
+     accordion its bars and nothing else. See the file's own header for
+     what the figure counts and why it differs from the count inside an
+     opened book. --}}
 <script src="{{asset "js/faith-scripture-totals.js"}}"></script>
