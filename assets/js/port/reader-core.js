@@ -5440,6 +5440,15 @@ async function loadPgCanon(ws){
     const h2=enD.createElement("head");h2.textContent=t;enB.appendChild(h2);};
   const hasSecondary=!!doc.querySelector('div[type="secondary"]');
   const hasDipl=!!doc.querySelector('div[type="diplomatic"]');
+  // OFFER THE COLUMNS THE PRINT HAS (owner 2026-09-11 pg-1938 'this has greek
+  // and latin, why does only greek appear'): wireSrcSel existed but was never
+  // called — the Latin facing column sat in the TEI unreachable.
+  {const _pvW0=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
+   const _opts=[{v:"grc",l:"Greek (as printed)"}];
+   if(hasSecondary||_pvW0)_opts.push({v:"la",l:"Latin — Migne’s facing column"});
+   if(_pvW0)_opts.push({v:"grcla",l:"Greek · Latin, per opening"});
+   if(hasDipl)_opts.push({v:"ocr",l:"Page transcription"});
+   if(_opts.length>1)wireSrcSel(_opts,src);}
   // BACKFILLED BODY BEATS THE WITNESS FLOOR (owner 2026-09-04 pg-1891): the zone
   // backfill gives the body full column coverage — and a Latin-heavy backfill flips the
   // script census to 'ocr', which switched the build to a diplomatic witness covering a
