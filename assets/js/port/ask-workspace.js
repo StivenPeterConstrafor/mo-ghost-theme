@@ -423,7 +423,7 @@
       '<main class="fra-main"><header class="fra-header"><button class="fra-icon" id="fra-history-toggle" aria-label="Show conversations" aria-expanded="false">'+icon('menu')+'</button><div class="fra-heading"><strong id="fra-title">New conversation</strong><span id="fra-context">Whole library</span></div><button class="fra-icon" id="fra-theme" aria-label="Change reading theme">'+icon('sun')+'</button><button class="fra-icon" id="fra-more-toggle" aria-label="Conversation options" aria-expanded="false">•••</button><a class="fra-home" id="fra-home" href="/the-faith-received/library/" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a><button class="fra-icon" id="fra-close" aria-label="Return to reading">'+icon('close')+'</button><div class="fra-menu" id="fra-more" hidden><button id="fra-rename">Rename conversation</button><button id="fra-export">Download conversation</button><button id="fra-archive">Archive conversation</button></div></header>'+
       '<nav class="fra-reader-bar" id="fra-reader-bar" hidden aria-label="Reader research"><button id="fra-reader-notes">Saved research</button><button id="fra-expand">Expand Ask</button></nav><div class="fra-mobile-tabs" hidden><button id="fra-chat-tab" class="active">Conversation</button><button id="fra-read-tab">Read source</button></div><div class="fra-body"><section class="fra-chat"><div id="fra-feed" class="fra-feed"><div id="fra-welcome" class="fra-welcome"><div class="fra-welcome-mark">'+icon('book')+'</div><h1>Ask the Library</h1><p>Explore an idea, understand a passage, or follow a question through the texts.</p><div class="fra-suggestions"></div></div><div id="fra-thread"></div></div><button id="fra-jump" class="fra-jump" hidden>Latest answer ↓</button>'+
       '<footer class="fra-compose-area"><aside class="fra-passage" id="fra-passage" hidden aria-label="Selected passage"><div><span id="fra-passage-cite"></span><button id="fra-passage-clear" aria-label="Remove selected passage">'+icon('close')+'</button></div><blockquote id="fra-passage-text"></blockquote></aside><div class="fra-composer"><textarea id="fra-input" rows="1" disabled placeholder="Ask anything" aria-label="Message the library"></textarea><div class="fra-compose-tools"><button id="fra-mode-toggle" aria-expanded="false"><span id="fra-mode-name">Ask</span>'+icon('chevron')+'</button><button id="fra-scope-toggle" aria-expanded="false"><span id="fra-scope-name">Scope</span>'+icon('chevron')+'</button><span class="fra-grow"></span><button id="fra-send" class="fra-send" aria-label="Send message" disabled>'+icon('send')+'</button></div><div class="fra-mode-menu fra-popover" id="fra-modes" hidden>'+Object.entries(modes).map(([key,value])=>'<button data-mode="'+key+'"><strong>'+value[0]+'</strong><span>'+value[1]+'</span></button>').join('')+'</div><section class="fra-popover fra-scope" id="fra-scope" aria-label="Research scope" hidden></section></div><div class="fra-compose-foot"><span id="fra-save-state">Saved in this browser</span><span>Check the cited passages.</span></div></footer></section>'+
-      '<section class="fra-reader" hidden><header><button class="fra-icon" id="fra-source-back" aria-label="Back to conversation">'+icon('back')+'</button><div class="fra-source-heading"><span id="fra-source-title">Source passage</span><small id="fra-source-location"></small></div><a id="fra-source-open" target="_blank" rel="noopener">Open reader</a><button class="fra-icon" id="fra-source-close" aria-label="Close source">'+icon('close')+'</button></header><div class="fra-source-viewport"><div id="fra-source-status" class="fra-source-status" role="status" hidden>Loading passage…</div><iframe id="fra-source-frame" title="Read the cited source" referrerpolicy="same-origin"></iframe></div></section></div></main>';
+      '<div class="fra-split" id="fra-split" role="separator" aria-orientation="vertical" aria-label="Resize the source pane" aria-valuemin="28" aria-valuemax="76" tabindex="0" title="Drag to resize the source pane · double-click to reset"></div><section class="fra-reader" hidden><header><button class="fra-icon" id="fra-source-back" aria-label="Back to conversation">'+icon('back')+'</button><div class="fra-source-heading"><span id="fra-source-title">Source passage</span><small id="fra-source-location"></small></div><a id="fra-source-open" target="_blank" rel="noopener">Open reader</a><button class="fra-icon" id="fra-source-close" aria-label="Close source">'+icon('close')+'</button></header><div class="fra-source-viewport"><div id="fra-source-status" class="fra-source-status" role="status" hidden>Loading passage…</div><iframe id="fra-source-frame" title="Read the cited source" referrerpolicy="same-origin"></iframe></div></section></div></main>';
     document.body.appendChild(panel);
     panel.addEventListener('click',handleClick);
     $('#fra-home').onclick=async e=>{if(e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();try{await flushDraft();location.assign('/');}catch(_){toast('Your draft could not be saved. Please try again before leaving.');}};
@@ -432,6 +432,7 @@
       panel.style.setProperty('--fra-compose-offset',($('.fra-compose-area').offsetHeight+12)+'px');
     }).observe($('.fra-compose-area'));
     $('#fra-source-frame').addEventListener('load',bindSourceDocument);
+    initSplit();
     window.addEventListener('popstate',()=>{
       if(!visible)return;
       if(sourceReturning){
@@ -562,6 +563,37 @@
   function forgetSource(){
     showConversation();sourceURL='';sourceTitle='';sourceFocus=null;sourceFocusRef=null;sourceChatPosition=null;sourcePositions.clear();sourceReady=false;sourceRestore++;sourceReturning=false;if(panel){$('.fra-mobile-tabs').hidden=true;panel.classList.remove('fra-with-reader');}
     if(history.state&&history.state.frAskSource){const state={...history.state};delete state.frAskSource;history.replaceState(state,'');}
+  }
+  // SOURCE PANE WIDTH (owner 2026-09-11 "allow to shift how much space it takes up on screen"):
+  // a drag handle between the conversation and the source pane sets --fra-source-w (28–76% of
+  // the body), remembered per browser (fra_source_w); double-click resets to the 53% default;
+  // the handle is a keyboard separator (←/→ 3%, Home/End). Desktop overlay + standalone only —
+  // phones stack the pane behind the Read source tab and the docked rail has no source pane.
+  const SPLIT_MIN=28,SPLIT_MAX=76,SPLIT_KEY='fra_source_w';
+  function setSplit(pct,save){
+    pct=Math.round(Math.max(SPLIT_MIN,Math.min(SPLIT_MAX,pct)));
+    panel.style.setProperty('--fra-source-w',pct+'%');
+    const h=$('#fra-split');if(h){h.setAttribute('aria-valuenow',String(pct));h.setAttribute('aria-valuetext',pct+'% of the window for the source');}
+    if(save){try{localStorage.setItem(SPLIT_KEY,String(pct));}catch(_){}}
+  }
+  function resetSplit(){panel.style.removeProperty('--fra-source-w');const h=$('#fra-split');if(h){h.setAttribute('aria-valuenow','53');h.setAttribute('aria-valuetext','53% of the window for the source');}try{localStorage.removeItem(SPLIT_KEY);}catch(_){}}
+  function initSplit(){
+    const h=$('#fra-split');if(!h)return;
+    let saved=NaN;try{saved=parseInt(localStorage.getItem(SPLIT_KEY)||'',10);}catch(_){}
+    if(Number.isFinite(saved))setSplit(saved,false);else h.setAttribute('aria-valuenow','53');
+    let drag=null;
+    const pctFromX=x=>{const body=$('.fra-body').getBoundingClientRect();return (body.right-x)/Math.max(1,body.width)*100;};
+    h.addEventListener('pointerdown',e=>{if(e.button!==0)return;e.preventDefault();drag={id:e.pointerId};h.setPointerCapture(e.pointerId);panel.classList.add('fra-resizing');setSplit(pctFromX(e.clientX),false);});
+    h.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;setSplit(pctFromX(e.clientX),false);});
+    const end=e=>{if(!drag||(e&&e.pointerId!==drag.id))return;drag=null;panel.classList.remove('fra-resizing');try{h.releasePointerCapture(e.pointerId);}catch(_){}const now=parseInt(h.getAttribute('aria-valuenow')||'53',10);setSplit(now,true);};
+    h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end);
+    h.addEventListener('dblclick',e=>{e.preventDefault();resetSplit();});
+    h.addEventListener('keydown',e=>{const now=parseInt(h.getAttribute('aria-valuenow')||'53',10);
+      if(e.key==='ArrowLeft'){e.preventDefault();setSplit(now+3,true);}         // handle moves left = source grows
+      else if(e.key==='ArrowRight'){e.preventDefault();setSplit(now-3,true);}
+      else if(e.key==='Home'){e.preventDefault();setSplit(SPLIT_MAX,true);}
+      else if(e.key==='End'){e.preventDefault();setSplit(SPLIT_MIN,true);}
+      else if(e.key==='Enter'||e.key===' '){e.preventDefault();resetSplit();}});
   }
   async function openSource(href,title,recordHistory=true,resume=false,trigger=null){
     const u=new URL(href,location.origin);if(u.origin!==location.origin){window.open(u.href,'_blank','noopener');return;}

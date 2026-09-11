@@ -155,7 +155,8 @@ its own workspace: it proxies `FRAsk.open` to the parent with `contextWork` set.
      anything", grows to min(scrollHeight, 170px, 26vh)), `#fra-mode-toggle` (**Ask** /
      **Deep research**), `#fra-scope-toggle` (**Scope**), `#fra-send`. Popovers
      `#fra-modes` and `#fra-scope`.
-   - `section.fra-reader` — the **source pane**: back button, `#fra-source-title` +
+   - `div#fra-split.fra-split` — the **divider** between the conversation and the source pane (`role="separator"`, `aria-orientation="vertical"`, `aria-valuenow` = the pane's share in percent). Shown only while a source is open on desktop (`.fra-show-reader`), never on phones (≤800px) or in the docked rail. Drag sets `--fra-source-w` on the workspace (28–76% of `.fra-body`, default 53%), remembered in `localStorage fra_source_w`; double-click (or Enter/Space on the handle) resets; ←/→ move 3%, Home/End jump to the limits (`setSplit`, `resetSplit`, `initSplit`; owner 2026-09-11 "allow to shift how much space it takes up on screen"). While dragging the workspace carries `.fra-resizing` (text selection off, the iframe ignores pointer events so the drag is not swallowed).
+   - `section.fra-reader` — the **source pane** (width `var(--fra-source-w,53%)`): back button, `#fra-source-title` +
      `#fra-source-location`, "Open reader" (new tab), close, `#fra-source-status`, and the
      `iframe#fra-source-frame` that shows the cited page of the reader with `?hl=`.
 
@@ -222,7 +223,7 @@ question (90 chars) and the draft is cleared.
 
 - **Overlay** (default): full-viewport dialog, `html.fra-open` locks page scroll; sidebar
   column + main; the source pane takes 53% width beside the chat when open
-  (`.fra-show-reader`).
+  (`.fra-show-reader`), resizable by the divider (28–76%, remembered per browser).
 - **Standalone** (`/ask`): same, with the "Library" back link.
 - **Docked** (reader pages, `.fra-docked`): a right rail `width: var(--fr-rail-width, 460px)`
   under the reader header (`--phh`), no sidebar, no shadow; citations navigate the reader
@@ -417,6 +418,9 @@ catalogue for scope search), the notebook stores in `localStorage` (`fr_notes`,
    in Desk / Research in Deep.
 3. Click a cite → the source pane opens beside the chat on the cited page with the phrase
    highlighted; Back returns to the conversation; "Open reader" opens a new tab.
+   Drag the divider left → the source pane widens (stays between 28% and 76%); reload and
+   reopen a source → the same width; double-click the divider → back to 53%; at phone
+   width the divider is absent and the pane is the Read source tab.
 4. Scope → check "Continental Reformed" only → header context "Continental Reformed"; ask
    again → request carries `filters.tradition:'Reformed'`. Add "All works by John Owen" →
    request carries `scope.tfr` with Owen's slugs. Tick the notebook → `filters.nb` present.
