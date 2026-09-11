@@ -36,6 +36,21 @@ jobs:
         # contributors, and a PR that edits the source without running
         # `npm run build` would otherwise merge green and deploy stale.
         run: npm run build:check
+      - name: Verify no reader inflates a body that is not gzipped
+        # 2026-09-11: every one of the 15,569 Early English Books works
+        # was unreadable because gunzip() piped a body through
+        # DecompressionStream regardless of what was in it. The library
+        # serves these .json.gz keys with `content-encoding: br`, the
+        # browser decodes the transport layer, and inflating the result
+        # throws. The page blamed the reader's ad blocker.
+        #
+        # The same mistake had already appeared in
+        # build-scripture-index.mjs and been written around in
+        # lib/locus-text.js, so it is a class of bug rather than a slip.
+        # This asserts both halves: every DecompressionStream caller
+        # sniffs the gzip magic first, and real endpoints still parse.
+        run: npm run check:gz
+
       - name: Verify Daily Liturgy Scripture references parse
         # A hand-entered reading the parser can't read renders as
         # "Could not parse reference" on /daily-liturgy/read/ and

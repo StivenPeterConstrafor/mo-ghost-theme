@@ -24,7 +24,8 @@
     "build:digest:check": "node scripts/build-digest.mjs --check",
     "check:meta": "node scripts/check-meta.mjs",
     "check:refs": "node scripts/check-scripture-refs.mjs",
-    "check:admin": "node scripts/check-admin-tools.mjs"
+    "check:admin": "node scripts/check-admin-tools.mjs",
+    "check:gz": "node scripts/check-gz-readers.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.24.0",
@@ -89,7 +90,13 @@
       },
       "heatmap_sample": {
         "type": "select",
-        "options": ["100", "50", "25", "10", "0"],
+        "options": [
+          "100",
+          "50",
+          "25",
+          "10",
+          "0"
+        ],
         "default": "100",
         "description": "Percentage of homepage sessions recorded by the click heatmap at /admin/heatmap/. Sampling is decided once per browser tab, so a recorded session is recorded whole. Set to 0 to switch collection off entirely."
       },
