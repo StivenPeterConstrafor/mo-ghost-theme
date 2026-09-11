@@ -28,11 +28,25 @@ import path from "node:path";
 const ROOT = path.join(import.meta.dirname, "..");
 const LIB = "https://mo-tfr-library.mo-podcast-feed.workers.dev";
 
+/* `port` is the corpus owner's reader, vendored as he wrote it (PR #10).
+ * It is exempt from the sniff rule and from nothing else. It solves the
+ * same problem a different way: `try { DecompressionStream } catch {
+ * TextDecoder }`, which handles the already-decoded body by falling
+ * through rather than by looking first. That is correct — it was
+ * checked against the real keys before this exemption was written — but
+ * it will never contain the two magic bytes this check greps for, and a
+ * guard that fails on working code teaches people to ignore guards.
+ *
+ * The behaviour itself is still covered: part 2 below fetches real
+ * endpoints, and scripts/reader-acceptance.js opens an EEBO work in the
+ * browser and asserts it renders. Those test what happens, which is the
+ * thing that actually matters. This first part tests how it is written,
+ * and only our own code has to be written our way. */
 function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {
     const p = path.join(dir, name);
     if (statSync(p).isDirectory()) {
-      if (name === "built" || name === "node_modules") continue;
+      if (name === "built" || name === "node_modules" || name === "port") continue;
       walk(p, out);
     } else if (name.endsWith(".js")) out.push(p);
   }

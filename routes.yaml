@@ -563,6 +563,19 @@ routes:
   # works). Content is fetched from R2 via the mo-tfr-library Worker.
   /the-faith-received/reader/:
     template: custom-faith-reader
+  # The ported page-native reader, side by side with the one above
+  # rather than in place of it (READER-SPEC 0 asks for a replacement;
+  # this is the trial that decides whether it earns one). Nothing links
+  # here. /reader/ is untouched and is still what every link on the site
+  # opens, so a reader cannot land on this by accident.
+  #
+  # The gate is scripts/reader-acceptance.js, which was written against
+  # the five bugs fixed on 2026-09-11 and asserts on the rendered page
+  # rather than on our code, so it runs against either reader unchanged.
+  # It is green on /reader/ today. When it is green here too, this
+  # becomes the route /reader/ points at — and not before.
+  /the-faith-received/read/:
+    template: custom-faith-port-read
 
 collections:
   /transcripts/:

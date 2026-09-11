@@ -179,6 +179,14 @@ export default [
     ignores: [
       "assets/js/vendor/**",
       "assets/js/digest/**",
+      // The corpus owner's reader and its satellites, vendored from
+      // mo-ghost-theme PR #10 exactly as he wrote them. Linting someone
+      // else's code to our house style produces 1,063 errors and not one
+      // of them is a defect; worse, fixing them by hand would fork the
+      // file and make his next drop unmergeable. It is judged by
+      // scripts/reader-acceptance.js, which asks what the page does
+      // rather than how the source is punctuated.
+      "assets/js/port/**",
     ],
   },
 ];
