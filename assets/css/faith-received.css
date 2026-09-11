@@ -3793,8 +3793,13 @@ mark.faith-find-hit.is-current {
    Under the list rather than in the header, because it explains a
    label the rows carry. */
 .bookmarks-foot-note {
-  margin: 20px 0 0;
-  max-width: 62ch;
+  /* Sits in the same centred 720px column as .bookmarks-list above it.
+     It used to take `margin: 20px 0 0`, which pinned it to the left
+     edge of the full-width panel while the list it explains was
+     centred, so the note read as though it had fallen off the page. */
+  width: 100%;
+  max-width: 720px;
+  margin: 24px auto 0;
   font-family: var(--font-body);
   font-size: var(--tfr-meta);
   line-height: 1.6;
@@ -14838,10 +14843,17 @@ a.cn-row-title { color: var(--color-primary-text); }
    Horizontal scroll rather than wrap, matching .faith-search-modes:
    a reader with nine collections gets one line that scrolls, not four
    lines that push the cards off the first screen. */
+/* The strip and the bar below it belong to the same centred 720px
+   column as .pins-list and the empty state. Both used to take a
+   left-flush margin, which left "New collection" and the relation
+   dropdown hanging off the left edge while the content they act on sat
+   centred well to their right. */
 .pins-tabs {
   display: flex;
   gap: 8px;
-  margin: 0 0 20px;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto 20px;
   padding: 0 0 12px;
   border-bottom: 1px solid var(--color-rule);
   overflow-x: auto;
@@ -14884,6 +14896,9 @@ a.cn-row-title { color: var(--color-primary-text); }
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto 20px;
 }
 .pins-rel-field { display: inline-flex; }
 .pins-rel { width: auto; min-width: 130px; }

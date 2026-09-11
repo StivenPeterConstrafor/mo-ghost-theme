@@ -113,7 +113,7 @@
           return c ? c.label : id;
         });
         fillSelect("[data-bs-tradition]", tally(all, topTradOf), null);
-        fillSelect("[data-bs-century]", tally(all, century), (n) =>
+        fillSelect("[data-bs-century]", tally(all, century, true), (n) =>
           (window.MOCentury ? window.MOCentury.label(n) : String(n)));
         return all;
       });
@@ -124,12 +124,18 @@
     return w._c;
   }
 
-  function tally(list, pick) {
+  // `byValue` puts a facet in the order of its own values rather than by
+  // how much sits in each. Centuries want this: a chronological axis
+  // ranked by citation count reads 17th, 16th, 13th, 12th, 5th, 9th,
+  // which nobody can scan. It also skips the top-40 cut, which is a
+  // ranking device and meaningless on an axis with twenty points.
+  function tally(list, pick, byValue) {
     const m = new Map();
     list.forEach((w) => {
       const v = pick(w);
       if (v) m.set(v, (m.get(v) || 0) + 1);
     });
+    if (byValue) return [...m.entries()].sort((a, b) => Number(a[0]) - Number(b[0]));
     return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 40);
   }
 

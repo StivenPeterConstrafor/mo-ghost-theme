@@ -925,6 +925,13 @@
             : e[key];
         if (v) m.set(v, (m.get(v) || 0) + 1);
       });
+      // Centuries read in century order, never by how much is in them.
+      // Ranking 17th, 16th, 13th, 12th, 5th, 9th by citation count makes
+      // a chronological axis unscannable: the eye has nowhere to go.
+      // Every other facet here is a ranking, so those stay by count.
+      if (key === "century") {
+        return [...m.entries()].sort((a, b) => Number(a[0]) - Number(b[0]));
+      }
       return [...m.entries()].sort((a, b) => b[1] - a[1]);
     };
 

@@ -6067,7 +6067,12 @@
       shelves.some((s) => s.slug === wantShelf) ||
       (wantShelf === ALL_SLUG && allViews.length > 0) ||
       (wantShelf === CITE_SLUG && citeOK);
-    const first = known ? wantShelf : shelves[0].slug;
+    // Citations between authors is the view to land on. It is the one
+    // plate that covers the whole indexed library at once and reads as a
+    // picture of the tradition arguing with itself, where the first
+    // alphabetical shelf is an arbitrary slice nobody asked for. A
+    // ?shelf= in the query still wins, so shared links are unaffected.
+    const first = known ? wantShelf : (citeOK ? CITE_SLUG : shelves[0].slug);
     shelfSel.value = first;
     if (wantView && availableViews(first).indexOf(wantView) >= 0) view = wantView;
     setShelf(first);
