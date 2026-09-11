@@ -34,7 +34,22 @@
     </div>
   </section>
 
+  {{!-- Positions: one writer at a time on this doctrine, the whole of
+       what the library holds rather than the sample the block above
+       draws from. Present on both states of this route and hides itself
+       on the index one, where there is no ?s= and so no doctrine for it
+       to be about. Nothing is fetched until it is scrolled to. --}}
+  <section class="bband faith-positions-band"
+           data-faith-positions
+           data-positions-topic-param="s"></section>
+
 </main>
 
+{{!-- The one data host this page talks to. faith-doctrines.js and
+     faith-topic-synthesis.js each carry their own copy of this origin
+     in JS; faith-positions.js reads it from here, which is the
+     convention the rest of The Faith Received follows. --}}
+<meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
 <script src="{{asset "js/faith-topic-synthesis.js"}}"></script>
 <script src="{{asset "js/faith-doctrines.js"}}"></script>
+<script src="{{asset "js/faith-positions.js"}}"></script>
