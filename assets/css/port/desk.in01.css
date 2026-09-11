@@ -53,6 +53,13 @@ main{flex:1;display:grid;grid-template-columns:230px minmax(0,1fr) 300px;min-hei
 .rl-item .tx{max-height:4.2em;overflow:hidden}
 .rl-ins{margin-top:.35rem;font:500 .72rem/1 var(--sans);border:1px solid var(--line);background:none;color:var(--accent);border-radius:6px;padding:.34rem .6rem;cursor:pointer}
 .rl-ins:hover{border-color:var(--accent)}
+.rl-state{display:inline-block;font:500 .6rem/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:.16rem .5rem;margin-left:.35rem;color:var(--muted);vertical-align:1px}
+.rl-state[data-state=complete]{color:var(--accent);border-color:var(--accent)}
+.rl-state[data-state=needs_input],.rl-state[data-state=running]{color:var(--fg);border-color:var(--muted)}
+.rl-hint{font-style:italic;font-size:.74rem;line-height:1.5;color:var(--muted);margin:.15rem 0}
+.rl-full>summary{cursor:pointer;font:500 .7rem/1.4 var(--sans);color:var(--muted);margin-top:.25rem}
+.rl-full>div{font-size:.78rem;line-height:1.55;margin:.3rem 0;max-height:22rem;overflow:auto}
+.rl-full>div blockquote{margin:.4rem 0;padding-left:.6rem;border-left:1px solid var(--line);color:var(--muted)}
 .rl-empty{color:var(--muted);font-size:.8rem;font-style:italic;padding:.6rem .2rem;line-height:1.5}
 /* ── Ask the library, in the rail (2026-09-06): research without leaving the paper ── */
 .ak-box{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:.3rem .35rem;margin:0 0 .6rem}
