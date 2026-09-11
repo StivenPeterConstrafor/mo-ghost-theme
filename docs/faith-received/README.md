@@ -115,7 +115,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 
 | Date | Document | Commit |
 |---|---|---|
-| 09-11 | ASK-SPEC §6 bench cap 24; SEARCH-SPEC §3.4 scripture.json commentary gate; R2-SYNC-SPEC §3 (7) worker edge cache + §3.1 log (scripture.json cleaned, Lightfoot added) | mo-ghost-theme (this commit) |
+| 09-11 | ASK-SPEC §6 bench cap 24; SEARCH-SPEC §3.4 scripture.json commentary gate; R2-SYNC-SPEC §3 (7) worker edge cache + §3.1 log (scripture.json cleaned, Lightfoot added) | mo-ghost-theme 9504a65f |
 | 09-11 | READER-SPEC §6 ordinal lookahead rule + battery line; R2-SYNC-SPEC §3.1 corpus-change log (EN-lane Latin heads fixed, 4,337 in 472 works) | mo-ghost-theme ed0dba01 |
 | 09-11 | ASK-SPEC.md §3.2/§3.6/§8: resizable source pane divider (shipped both sites) | mo-ghost-theme 496f879b |
 | 09-11 | LOCAL-PREVIEW.md (contributor runbook, restored) | mo-ghost-theme 163ed3d8 |
