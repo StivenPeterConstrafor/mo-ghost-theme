@@ -87,6 +87,17 @@
   // pg- and po-authors.json answer {"error":"Not found"} today. They are
   // requested anyway so they light up the day they are written, and a
   // non-map answer is discarded below rather than merged.
+  // Latin-form author names in the Patrologia bio files, mapped to the
+  // English form the catalogue uses. See the _readme in that file for
+  // how it was made and why a looser rule was refused.
+  const aliasUrl = window.moAssetUrl
+    ? window.moAssetUrl("/assets/data/faith-received/author-aliases.json")
+    : "/assets/data/faith-received/author-aliases.json";
+  const aliasesP = fetch(aliasUrl)
+    .then((r) => (r.ok ? r.json() : {}))
+    .then((d) => (d && d.aliases) || {})
+    .catch(() => ({}));
+
   const NOTES = "https://mo-tfr.mo-podcast-feed.workers.dev";
   const shelfLives = ["pld", "pg", "po"].map((c) =>
     fetch(`${NOTES}/v1/notes/${c}-authors.json`)
@@ -101,7 +112,8 @@
     fetch(oursUrl).then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
     window.MOAuthorScripture ? window.MOAuthorScripture.load(key) : Promise.resolve(null),
     Promise.all(shelfLives),
-  ]).then(([theirs, sets, ours, fingerprint, shelves]) => {
+    aliasesP,
+  ]).then(([theirs, sets, ours, fingerprint, shelves, aliases]) => {
     // Ours first, then the shelf files, then the Latin Library's, which
     // keeps the existing precedence: a life written for the Latin
     // Library still wins outright where the same name appears twice.
@@ -114,6 +126,24 @@
       entry = authors[name];
       displayName = name;
     });
+    // The Patrologia bio files spell 82 of these names in Latin while
+    // the catalogue spells them in English: "Peter Damianus" against
+    // "Peter Damian", who has 76 works here, "Hugh de S. Victore"
+    // against "Hugh of Saint Victor", who has 34. The exact fold above
+    // can never match those, so the life sat in the file unread and the
+    // page said none had been written.
+    //
+    // Tried only when the direct match failed, so an alias can never
+    // displace a life filed under the catalogue's own spelling.
+    if (!entry) {
+      Object.keys(aliases || {}).forEach((latin) => {
+        if (entry) return;
+        if (fold(aliases[latin]) !== key) return;
+        if (!Object.prototype.hasOwnProperty.call(authors, latin)) return;
+        entry = authors[latin];
+        displayName = aliases[latin];
+      });
+    }
     // A string entry is a bio and nothing else.
     if (typeof entry === "string") entry = { bio: entry };
 
