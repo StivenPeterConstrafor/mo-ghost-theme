@@ -47,7 +47,15 @@ const XREF_CAP={"Matthew":28,"Mark":16,"Luke":24,"John":21,"Acts":28,"Romans":16
   "1 Corinthians":16,"2 Corinthians":13,"1 Thessalonians":5,"2 Thessalonians":3,
   "1 Timothy":6,"2 Timothy":4,"1 Peter":5,"2 Peter":3,"1 John":5,"2 John":1,"3 John":1};
 const XREF_EN={"Matth":"Matthew","Matt":"Matthew","Marc":"Mark","Luc":"Luke","Ioh":"John","Joh":"John",
+  // short English abbreviations (owner 2026-09-11 "Dt. 6; Mt. 22 … not ingested as scripture links" — Valdés catechism): only the
+  // unambiguous two/three-letter forms; Ex/Is/Ac/Am are left out because they are ordinary English words at sentence start
+  "Dt":"Deuteronomy","Mt":"Matthew","Mk":"Mark","Lk":"Luke","Jn":"John","Gn":"Genesis","Lv":"Leviticus","Nm":"Numbers",
+  "Dn":"Daniel","Rm":"Romans","Hb":"Hebrews","Jas":"James","Jdg":"Judges","Ezk":"Ezekiel","Zec":"Zechariah","Zech":"Zechariah",
+  "Mic":"Micah","Zep":"Zephaniah","Hag":"Haggai","Jl":"Joel","Est":"Esther","Ecc":"Ecclesiastes","Eccles":"Ecclesiastes",
+  "Lam":"Lamentations","Jdt":"Judith","Rv":"Revelation","Prv":"Proverbs",
   // Latin abbreviations of the PL corpus (owner 2026-08-17 'does scripture hover work?'):
+  // Joan. is Migne's John; Reg./Paral. are Vulgate-numbered and resolved by prefix below
+    // Latin abbreviations of the PL corpus (owner 2026-08-17 'does scripture hover work?'):
   // Joan. is Migne's John; Reg./Paral. are Vulgate-numbered and resolved by prefix below
   "Joan":"John","Joann":"John","Ioann":"John","Isai":"Isaiah","Isa":"Isaiah","Num":"Numbers",
   "Judic":"Judges","Cant":"Song of Songs","Thren":"Lamentations","Osee":"Hosea","Abd":"Obadiah",
@@ -396,34 +404,70 @@ function appBank(laN,enN){
   const terms=[...new Set(q.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu," ").split(/\s+/).filter(w=>w.length>=4))].sort((a,b)=>b.length-a.length).slice(0,3).map(w=>w.length>=7?w.slice(0,w.length-2):w);
   if(!terms.length)return;
   const ref=frReaderBlockReference(location.hash),refPage=ref?String(ref.page):null;
-  let marks=[],idx=0,bar=null;
-  function apply(){
-    const walker=document.createTreeWalker(reading,NodeFilter.SHOW_TEXT,null);
-    const todo=[];let n;
-    while((n=walker.nextNode())&&todo.length<1200){
-      const low=n.textContent.toLowerCase();
-      if(terms.some(w=>low.includes(w))&&n.parentElement.closest(".row .en,.row .la")&&!n.parentElement.closest("mark,.pganchor,.fmark"))todo.push(n);}
-    todo.forEach(node=>{let html=esc(node.textContent);
-      terms.forEach(w=>{html=html.replace(new RegExp("("+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"[a-zà-ÿ]*)","gi"),"<mark class=hlq>$1</mark>");});
-      if(html.indexOf("<mark")<0)return;
-      const span=document.createElement("span");span.innerHTML=html;node.replaceWith(span);});
-    marks=[...reading.querySelectorAll("mark.hlq")];
-    if(!marks.length)return;
-    // start on the cited page: the first mark at or after its folio (or its page-turn anchor inside the previous row)
-    if(refPage!=null){const start=Array.from(reading.querySelectorAll(".pganchor")).find(a=>String(a.dataset.page)===refPage)||reading.querySelector('.folio[data-page="'+CSS.escape(refPage)+'"]');
-      if(start){const i=marks.findIndex(m=>start===m||(start.compareDocumentPosition(m)&(Node.DOCUMENT_POSITION_FOLLOWING|Node.DOCUMENT_POSITION_CONTAINED_BY)));if(i>=0)idx=i;}}
+  let marks=[],idx=0,bar=null,busy=false,mo=null,landed=false,t1=null;
+  // RE-MARK AFTER REBUILDS (owner 2026-09-10 "highlight when you open the source in a new tab"): a big work
+  // paints its first shards, the door marks them, then the shard-complete / TEI-hydration rebuild wipes
+  // #reading and the marks with it — the bar kept counting detached nodes and nothing was highlighted.
+  // mark() is idempotent (text already inside a mark is skipped) and runs again whenever the reading is
+  // rebuilt; × clears the marks AND drops hl from the URL so no later rebuild or reload brings it back.
+  function mark(){
+    busy=true;
+    try{
+      const walker=document.createTreeWalker(reading,NodeFilter.SHOW_TEXT,null);
+      const todo=[];let n;
+      while((n=walker.nextNode())&&todo.length<1200){
+        const low=n.textContent.toLowerCase();
+        if(terms.some(w=>low.includes(w))&&n.parentElement.closest(".row .en,.row .la")&&!n.parentElement.closest("mark,.pganchor,.fmark"))todo.push(n);}
+      todo.forEach(node=>{let html=esc(node.textContent);
+        terms.forEach(w=>{html=html.replace(new RegExp("("+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"[a-zà-ÿ]*)","gi"),"<mark class=hlq>$1</mark>");});
+        if(html.indexOf("<mark")<0)return;
+        const span=document.createElement("span");span.innerHTML=html;node.replaceWith(span);});
+      marks=[...reading.querySelectorAll("mark.hlq")];
+    }finally{setTimeout(()=>{busy=false;},0);}
+    return marks.length;}
+  // start on the cited page: the first mark at or after its folio (or its page-turn anchor inside the previous row)
+  function startIndex(){
+    if(refPage==null)return 0;
+    const start=Array.from(reading.querySelectorAll(".pganchor")).find(a=>String(a.dataset.page)===refPage)||reading.querySelector('.folio[data-page="'+CSS.escape(refPage)+'"]');
+    if(!start)return 0;
+    const i=marks.findIndex(m=>start===m||(start.compareDocumentPosition(m)&(Node.DOCUMENT_POSITION_FOLLOWING|Node.DOCUMENT_POSITION_CONTAINED_BY)));
+    return i>=0?i:0;}
+  const count=()=>{if(bar)bar.querySelector(".hln").textContent=(marks.length?idx+1:0)+"/"+marks.length;};
+  const paint=()=>marks.forEach((m,i)=>m.classList.toggle("cur",i===idx));
+  const go=d=>{if(!marks.length)return;idx=(idx+d+marks.length)%marks.length;count();paint();marks[idx].scrollIntoView({block:"center"});};
+  function clear(){
+    if(mo){mo.disconnect();mo=null;}
+    reading.querySelectorAll("mark.hlq").forEach(m=>{const s=document.createElement("span");s.textContent=m.textContent;m.replaceWith(s);});
+    marks=[];if(bar){bar.remove();bar=null;}
+    try{const u=new URL(location.href);u.searchParams.delete("hl");history.replaceState(history.state,"",u.pathname+u.search+u.hash);}catch(_){}}
+  function ensureBar(){
+    if(bar)return;
     bar=el("div","hlbar");
-    bar.innerHTML='<span class=hlq-q>“'+esc(q.slice(0,28))+'”</span><span class=hln>'+(idx+1)+'/'+marks.length+'</span><button data-d=-1 aria-label="Previous match">‹</button><button data-d=1 aria-label="Next match">›</button><button class=hlx aria-label="Clear highlights">×</button>';
+    bar.innerHTML='<span class=hlq-q>“'+esc(q.slice(0,28))+'”</span><span class=hln></span><button data-d=-1 aria-label="Previous match">‹</button><button data-d=1 aria-label="Next match">›</button><button class=hlx aria-label="Clear highlights" title="Clear highlights">×</button>';
     document.body.appendChild(bar);
-    const go=d=>{idx=(idx+d+marks.length)%marks.length;bar.querySelector(".hln").textContent=(idx+1)+"/"+marks.length;
-      marks.forEach((m,i)=>m.classList.toggle("cur",i===idx));marks[idx].scrollIntoView({block:"center"});};
     bar.addEventListener("click",e2=>{const b2=e2.target.closest("button");if(!b2)return;
-      if(b2.classList.contains("hlx")){marks.forEach(m=>{const s=document.createElement("span");s.textContent=m.textContent;m.replaceWith(s);});bar.remove();return;}
+      if(b2.classList.contains("hlx")){clear();return;}
       go(+b2.dataset.d);});
-    addEventListener("keydown",e2=>{if(!bar.isConnected)return;
+    addEventListener("keydown",e2=>{if(!bar||!bar.isConnected)return;
       if(e2.key==="n"&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){go(1);}
-      else if(e2.key==="N"&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){go(-1);}});
-    if(!refPage||!window.__frUserScrolled)setTimeout(()=>go(0),80);}
+      else if(e2.key==="N"&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){go(-1);}});}
+  // a rebuild (shard-complete, TEI hydration, lane change) replaces the rows: re-mark once the DOM settles
+  function watch(){
+    if(mo||!("MutationObserver" in window))return;
+    mo=new MutationObserver(()=>{if(busy)return;clearTimeout(t1);t1=setTimeout(()=>{
+      if(!bar)return;
+      const alive=marks.filter(m=>m.isConnected).length;
+      if(alive&&alive===marks.length)return;            // nothing was rebuilt
+      const wasCur=marks[idx]&&marks[idx].isConnected?marks[idx]:null;
+      if(!mark()){count();return;}
+      idx=wasCur?Math.max(0,marks.indexOf(wasCur)):startIndex();count();paint();
+      if(!window.__frUserScrolled&&marks[idx])marks[idx].scrollIntoView({block:"center"});},400);});
+    mo.observe(reading,{childList:true,subtree:true});}
+  function apply(){
+    if(!mark())return;
+    idx=startIndex();ensureBar();count();paint();
+    if(!landed){landed=true;if(!refPage||!window.__frUserScrolled)setTimeout(()=>go(0),80);}
+    watch();}
   // with a page reference, wait for the landing to settle (it re-pins its anchor until stable) before marking
   const ready=()=>reading.querySelector(".row")&&(!refPage||(window.__readerBuilt&&!window.__readerPendingPosition&&!document.getElementById("app")?.classList.contains("prelanding")));
   const t0=setInterval(()=>{if(ready()){clearInterval(t0);apply();}},350);
@@ -2291,7 +2335,7 @@ function build(){
   // <quote> facing an EN <p> still pairs side-by-side (owner 2026-08-10 Capreolus screenshots:
   // per-tag queues left tag-mismatched lanes unpaired → staggered solo rows + blank columns).
   function teiKids(els){const q={head:[],body:[]};
-    (els||[]).forEach(e=>{if(e.localName==="head")q.head.push(e);
+    (els||[]).forEach(e=>{if(e.localName==="head"&&(e.getAttribute("rend")||"")!=="lemma")q.head.push(e);
       else if(e.localName==="p"||e.localName==="ab"||e.localName==="list"||e.localName==="quote"||e.localName==="table"||e.localName==="figure")q.body.push(e);});return q;}
   function teiInline(node){let out="";
     node.childNodes.forEach(c=>{
@@ -2331,6 +2375,10 @@ function build(){
       ht=ht.replace(/^((?:Vers|Verse|V)\.?\s*)(\d+)\.\s*\2\./,'$1$2.');
       if(/^(?:Vers\.|Verse\b|V\.\s*\d)/.test(ht))return `<p class="vlem"${sourceAttrs}>${ht}</p>`;
       if((e.getAttribute("rend")||"")==="editorial")return `<h3 class="csub inflow editorial"${sourceAttrs}>${ht}</h3>`;
+      // COMMENTARY LEMMATA (Scholarios on Aristotle/Aquinas, owner 2026-09-10 "clean up the scholarios"): a
+      // <head rend="lemma"> is the printed incipit lead-in ("Εἰ δὲ ἡ τέχνη." / "But if art."), set as a lemma
+      // paragraph like the verse lemmata — never a display heading, never a TOC row.
+      if((e.getAttribute("rend")||"")==="lemma")return `<p class="vlem"${sourceAttrs}>${ht}</p>`;
       return `<h3 class="csub inflow"${sourceAttrs}>${ht}</h3>`;
     }
     // margin note kept IN-FLOW at its text position (owner 2026-08-12 'get margins right'):
@@ -2549,6 +2597,8 @@ function build(){
       (els||[]).forEach(e=>{
         // margin notes are READING content at their position; only foot notes go to the bank
         if(e.localName==="note"){if((e.getAttribute("place")||"foot")==="margin")out[out.length-1].body.push(e);else out[out.length-1].notes.push(e);return;}
+        // a commentary lemma (<head rend="lemma">) is READING content, not a section boundary (Scholarios 09-10)
+        if(e.localName==="head"&&(e.getAttribute("rend")||"")==="lemma"){out[out.length-1].body.push(e);return;}
         if(e.localName==="head"){out.push({head:e,body:[],notes:[]});return;}
         if(e.localName==="p"||e.localName==="quote"||e.localName==="list"||e.localName==="table"||e.localName==="ab"||e.localName==="figure")out[out.length-1].body.push(e);});
       return out;};
