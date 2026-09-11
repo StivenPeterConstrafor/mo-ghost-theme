@@ -404,7 +404,7 @@ function appBank(laN,enN){
   const terms=[...new Set(q.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu," ").split(/\s+/).filter(w=>w.length>=4))].sort((a,b)=>b.length-a.length).slice(0,3).map(w=>w.length>=7?w.slice(0,w.length-2):w);
   if(!terms.length)return;
   const ref=frReaderBlockReference(location.hash),refPage=ref?String(ref.page):null;
-  let marks=[],idx=0,bar=null,busy=false,mo=null,landed=false,t1=null;
+  let marks=[],idx=0,bar=null,busy=false,mo=null,landed=false,t1=null,t2=null;
   // RE-MARK AFTER REBUILDS (owner 2026-09-10 "highlight when you open the source in a new tab"): a big work
   // paints its first shards, the door marks them, then the shard-complete / TEI-hydration rebuild wipes
   // #reading and the marks with it — the bar kept counting detached nodes and nothing was highlighted.
@@ -455,7 +455,7 @@ function appBank(laN,enN){
   function watch(){
     if(mo||!("MutationObserver" in window))return;
     mo=new MutationObserver(()=>{if(busy)return;clearTimeout(t1);t1=setTimeout(()=>{
-      if(!bar)return;
+      if(!bar){if(mark())finish();return;}          // rows arrived after an empty first pass (streamed TEI hydration)
       const alive=marks.filter(m=>m.isConnected).length;
       if(alive&&alive===marks.length)return;            // nothing was rebuilt
       const wasCur=marks[idx]&&marks[idx].isConnected?marks[idx]:null;
@@ -464,7 +464,11 @@ function appBank(laN,enN){
       if(!window.__frUserScrolled&&marks[idx])marks[idx].scrollIntoView({block:"center"});},400);});
     mo.observe(reading,{childList:true,subtree:true});}
   function apply(){
-    if(!mark())return;
+    // build() streams folios in chunks (and the MereO port hydrates the TEI later still): an empty first pass is not
+    // 'no matches' — keep watching the reading and re-try for ~20 s before giving up (owner 2026-09-11 'fix it for mereo')
+    if(!mark()){watch();if(!t2){let tries=0;t2=setInterval(()=>{if(bar||++tries>40){clearInterval(t2);t2=null;return;}if(mark()){clearInterval(t2);t2=null;finish();}},500);}return;}
+    finish();}
+  function finish(){
     idx=startIndex();ensureBar();count();paint();
     if(!landed){landed=true;if(!refPage||!window.__frUserScrolled)setTimeout(()=>go(0),80);}
     watch();}
@@ -1287,7 +1291,10 @@ window.__frNavigateReaderAnchor=href=>{
     if(target.origin!==here.origin)return false;
     const work=url=>url.searchParams.get('w')||url.searchParams.get('ws')||(/^\/read\/([^/]+?)(?:\.html)?$/.exec(url.pathname)||[])[1]||'';
     const currentWork=work(here)||window.__FR_SLUG__||DATA?.slug||'',targetWork=work(target);
-    if(!/^\/read(?:\.html|\/[^/]+)?$/.test(target.pathname)||!targetWork||![currentWork,DATA?.slug].filter(Boolean).includes(targetWork))return false;
+    // the reader may be mounted under a route prefix (MereO: /the-faith-received/read/) — a citation to the SAME page is
+    // always ours; the bare /read shapes stay for cross-page doors (owner 2026-09-11 'fix it for mereo': ?p=&hl= never landed)
+    const samePage=target.pathname.replace(/\/+$/,'')===here.pathname.replace(/\/+$/,'');
+    if(!(samePage||/^\/read(?:\.html|\/[^/]+)?$/.test(target.pathname))||!targetWork||![currentWork,DATA?.slug].filter(Boolean).includes(targetWork))return false;
     // A citation can omit the current lane/view settings; an explicit change still needs navigation.
     for(const [key,value]of target.searchParams)if(!['w','ws','p','section','heading'].includes(key)&&here.searchParams.get(key)!==value)return false;
     let id;try{id=decodeURIComponent(target.hash.slice(1));}catch(_){return false;}
