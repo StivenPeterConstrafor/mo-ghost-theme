@@ -7392,6 +7392,135 @@ mark.faith-find-hit.is-current {
   .faith-room-blocks .btrad--wide .blist { columns: 1; }
 }
 
+/* ── The volume view ─────────────────────────────────────────────────
+   Migne's three collections are cited by volume and column, "PL 139 /
+   473a", and that address is how the Patrologia is reached in every
+   footnote in the discipline. So those three rooms carry a second door
+   beside the A-Z, and only those three.
+
+   The toggle is the site's editorial switcher under the tab-strip
+   treatment the search page already gives it. The shelf below it is a
+   grid of hairline tiles, which is the vocabulary the tradition and
+   century chips on this same page already speak: no fill, no radius,
+   no shadow. A tile is a control, not a card. */
+.faith-room-views {
+  border-top: 0;
+  gap: 26px;
+  margin: 0 0 22px;
+  padding: 0;
+}
+.faith-room-views .faith-view-toggle-tab { flex: 0 0 auto; padding: 10px 0 13px; }
+.faith-room-views .faith-view-toggle-tab.is-active { color: var(--color-dark); }
+.faith-room-views .faith-view-toggle-tab.is-active::after {
+  bottom: 0;
+  height: 2px;
+  background: var(--color-secondary);
+}
+.faith-room-shelf-note {
+  font-family: var(--font-body);
+  font-size: var(--tfr-meta);
+  color: var(--color-muted);
+  max-width: 62ch;
+  margin: 0 0 20px;
+}
+
+/* 220 volumes at 375px. The track floor is what keeps that inside the
+   viewport: four columns of 72px and three 8px gaps come to 312, and
+   the container leaves 339 there. */
+.faith-room-vols {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+  max-width: 1180px;
+}
+.faith-room-vol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 56px;
+  padding: 9px 6px;
+  border: 1px solid var(--color-card-border);
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-darkgrey);
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+.faith-room-vol:hover { border-color: var(--color-secondary); color: var(--color-secondary); }
+.faith-room-vol.is-active {
+  background: var(--color-dark);
+  border-color: var(--color-dark);
+  color: #fff;
+}
+.faith-room-vol-n { font-family: var(--font-body); font-size: 17px; line-height: 1; }
+.faith-room-vol-c {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--color-muted);
+}
+.faith-room-vol:hover .faith-room-vol-c { color: inherit; }
+.faith-room-vol.is-active .faith-room-vol-c { color: #ffffff8f; }
+/* A bucket the set does not number takes the row to itself and prints
+   its name. Patrologia Syriaca is the only one, and "PS" on a tile the
+   width of a number would tell nobody anything. */
+.faith-room-vol--wide {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  gap: 10px;
+}
+.faith-room-vol--wide .faith-room-vol-n { font-size: var(--tfr-meta); }
+
+.faith-room-vol-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin: 0 0 24px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-card-border);
+}
+.faith-room-vol-head h2 {
+  font-family: var(--font-display);
+  font-size: var(--tfr-display-s);
+  font-style: italic;
+  margin: 0;
+}
+.faith-room-vol-cite {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 0;
+}
+/* A 44px box around 11px type, per MOBILE M4. align-self keeps that
+   box from dragging the heading's baseline row down with it. */
+.faith-room-vol-back {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  min-height: 44px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+@media (max-width: 640px) {
+  .faith-room-views { gap: 20px; margin-bottom: 18px; }
+  /* 18px type at this width put the tab at 41px; MOBILE M4 wants 44. */
+  .faith-room-views .faith-view-toggle-tab { padding: 12px 0 15px; }
+  .faith-room-vol-back { margin-left: 0; }
+}
+
 /* The annual/monthly pill.
 
    The markup is shared with /membership/, but the styling there comes

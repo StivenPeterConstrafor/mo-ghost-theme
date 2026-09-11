@@ -14,6 +14,21 @@
  * first five titles and repeated itself wherever an author had a
  * multi-volume set. A reader opening a table of contents wants the
  * works.
+ *
+ * Migne's three collections carry a second view beside that one. The
+ * Patrologia is cited by volume and column, "PL 139 / 473a", and that
+ * address is how every footnote in the discipline reaches it, so a
+ * scholar who arrives at Patrologia Latina holding a citation and finds
+ * only an A-Z of authors cannot get to what they came for. Those three
+ * rooms therefore offer By volume beside By author. It is a second door
+ * into the same shelf, not a replacement: By author stays the default,
+ * because most readers have never seen a Migne citation. See SHELVES.
+ *
+ * The address lives in the query string, `?view=volume&vol=139` on the
+ * two Latin and Greek series and `?view=tome&tome=2` on Patrologia
+ * Orientalis, which is cited by tome and fascicle rather than by
+ * volume. Same grammar as the rest of this page: short lowercase keys,
+ * defaults omitted, written with replaceState.
  */
 
 (function () {
@@ -47,6 +62,65 @@
   let scope = SCOPES[params.get("scope")] ? params.get("scope") : "all";
   let page = Math.max(1, parseInt(params.get("page"), 10) || 1);
 
+  // ── The shelf a collection is cited by ───────────────────────────
+  //
+  // Only Migne's three. The other collections are cited by title and
+  // author like any other book, so a volume view there would be a door
+  // onto nothing and they get no toggle at all.
+  //
+  //   of      the record's shelf mark, set in faith-corpora.js
+  //   face    the catalogue's own name for a bucket, where it has one
+  //   name    what the bucket is called in a heading
+  //   cite    the address a footnote would print
+  //   mark    what a row shows once the reader is inside the bucket
+  //
+  // `mark` returns nothing on the two Latin and Greek series: inside PL
+  // 139 the volume number on every row is the one fact the reader
+  // already has. Patrologia Orientalis is addressed one level finer, so
+  // there the row carries its fascicle instead.
+  const SHELVES = {
+    pld: {
+      view: "volume", param: "vol", tab: "By volume", one: "volume", many: "volumes",
+      of: (w) => w.volume,
+      face: () => "",
+      name: (s) => (s.num ? `Patrologia Latina ${s.num}` : s.label || s.v),
+      cite: (s) => (s.num ? `PL ${s.num}` : s.label || s.v),
+      mark: () => "",
+      lead: "Migne is cited by volume and column, as PL 139 / 473a. Choose a volume to see what it holds.",
+    },
+    pg: {
+      view: "volume", param: "vol", tab: "By volume", one: "volume", many: "volumes",
+      of: (w) => w.volume,
+      face: () => "",
+      name: (s) => (s.num ? `Patrologia Graeca ${s.num}` : s.label || s.v),
+      cite: (s) => (s.num ? `PG ${s.num}` : s.label || s.v),
+      mark: () => "",
+      lead: "Migne is cited by volume and column, as PG 44 / 125a. Choose a volume to see what it holds.",
+    },
+    po: {
+      view: "tome", param: "tome", tab: "By tome", one: "tome", many: "tomes",
+      of: (w) => w.tome,
+      // "Tome 2" for a numbered one, "Patrologia Syriaca" for the one
+      // that is a series of its own. Both come from the catalogue.
+      face: (w) => w.tomeLabel,
+      name: (s) => s.label || s.v,
+      cite: (s) => (s.num ? `PO ${s.num}` : s.label || s.v),
+      mark: (w) => (w.fasc ? `fasc. ${w.fasc}` : ""),
+      lead: "Patrologia Orientalis is cited by tome and page, as PO 2, 421. Choose a tome to see what it holds.",
+    },
+  };
+  const shelf = collectionId === "all" ? null : SHELVES[collectionId] || null;
+  // A hand-typed address is accepted on the shelf mark alone, so
+  // `?vol=139` opens volume 139 without also being told which view that
+  // is. Letters are kept because one bucket is named PS rather than
+  // numbered; everything else is dropped, and the value is escaped on
+  // output as well.
+  let vol = shelf ? String(params.get(shelf.param) || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 12) : "";
+  let view = shelf && (vol || params.get("view") === shelf.view) ? shelf.view : "author";
+  // Filled once the catalogue is in: shelf mark -> { v, num, label },
+  // in the order the buckets are printed in.
+  let shelfOrder = [];
+
   // "all" is every collection at once, which is what the century page
   // reads: one table of contents cut by date rather than by shelf.
   const ALL = ["pg", "pld", "po", "tfr", "eebo", "confessions", "augustine"];
@@ -70,8 +144,36 @@
       const an = surname(a.author), bn = surname(b.author);
       return an.localeCompare(bn) || (a.title || "").localeCompare(b.title || "");
     });
+    shelfOrder = indexShelves(works);
     render();
   });
+
+  // Every shelf mark in the collection, once each, in the order the
+  // set was printed. Built from the catalogue the room has already
+  // loaded, so the grid of volumes costs no second request.
+  //
+  // Numbered buckets come first and in numeric order; anything else
+  // follows, sorted by name. That is what puts the Patrologia Syriaca
+  // at the end of Patrologia Orientalis rather than between tomes 1
+  // and 2, where a string sort would have left it.
+  function indexShelves(list) {
+    if (!shelf) return [];
+    const seen = new Map();
+    list.forEach((w) => {
+      const v = String(shelf.of(w) || "");
+      if (!v || seen.has(v)) return;
+      seen.set(v, {
+        v,
+        num: /^\d+$/.test(v) ? parseInt(v, 10) : 0,
+        label: String(shelf.face(w) || ""),
+      });
+    });
+    return [...seen.values()].sort((a, b) =>
+      (a.num ? 0 : 1) - (b.num ? 0 : 1)
+      || a.num - b.num
+      || a.label.localeCompare(b.label)
+      || a.v.localeCompare(b.v));
+  }
 
   // The name a work files under. Two catalogue conventions collide
   // here, so the comma decides which one we are looking at.
@@ -269,16 +371,29 @@
     if (century) q.set("century", String(century));
     if (collection) q.set("in", collection);
     if (letter) q.set("letter", letter);
+    // By author is the default and, like the others here, is left out
+    // rather than written down. The shelf mark is what makes a volume
+    // linkable, so it is the half that matters.
+    if (shelf && view !== "author") {
+      q.set("view", shelf.view);
+      if (vol) q.set(shelf.param, vol);
+    }
     if (page > 1) q.set("page", String(page));
     window.history.replaceState(null, "", `?${q.toString()}`);
   }
 
   // A work, under its author's name. The author is the block heading,
   // so the row carries the title and the work's own title only.
-  function row(w) {
+  //
+  // `mark` is the small line at the end of the row, and defaults to the
+  // work's volume, which is what tells two printings of one title
+  // apart. A caller that has already said which volume this is passes
+  // its own, or an empty string for none.
+  function row(w, mark) {
     const second = w.titleLatin && w.titleLatin !== w.title ? w.titleLatin : "";
     const second2 = second ? `<span class="brow-la">${escapeHtml(second)}</span>` : "";
-    const vol = w.volume ? `<span class="brow-m">${escapeHtml(w.volume)}</span>` : "";
+    const m = mark === undefined ? w.volume : mark;
+    const vol = m ? `<span class="brow-m">${escapeHtml(m)}</span>` : "";
     const inner = `<span class="brow-t">${escapeHtml(w.title || w.id)}</span>${second2}${vol}`;
     if (w.readable !== false && w.url) {
       return `<li><a href="${escapeHtml(w.url)}">${inner}</a></li>`;
@@ -294,7 +409,7 @@
   // leave the right one empty.
   const WIDE_AT = 10;
 
-  function block(name, list) {
+  function block(name, list, markOf) {
     const wide = list.length >= WIDE_AT ? " btrad--wide" : "";
     // The author heading goes to their page. "Unattributed" is a bucket
     // rather than a person, so it stays plain text.
@@ -302,15 +417,86 @@
     const head = key && name !== "Unattributed"
       ? `<a class="brow-author" href="/the-faith-received/author/?a=${encodeURIComponent(key)}">${escapeHtml(name)}</a>`
       : escapeHtml(name);
+    const rows = list.map((w) => row(w, markOf ? markOf(w) : undefined)).join("");
     return `<div class="btrad${wide}">
   <h3>${head}</h3>
-  <ul class="blist">${list.map(row).join("")}</ul>
+  <ul class="blist">${rows}</ul>
 </div>`;
+  }
+
+  // ── The volume grid ──────────────────────────────────────────────
+  //
+  // One tile per volume, carrying its number and how many works it
+  // holds. The counts are taken off the same filtered list the author
+  // view is drawing, so a search narrows the grid the way it narrows
+  // the A-Z rail, and a volume that holds nothing under the current
+  // filters is not drawn at all. That is also the whole answer to dead
+  // tiles: a tile exists because works were counted into it.
+  //
+  // A bucket with no number takes the full width of the grid and prints
+  // its name. There is exactly one today, the Patrologia Syriaca, whose
+  // 38 works are shelved under "PS" in the catalogue. "PS" alone means
+  // nothing on a page, and dropping the bucket would lose the works.
+  function volTile(s, n) {
+    const held = `${n.toLocaleString()} work${n === 1 ? "" : "s"}`;
+    const wide = s.num ? "" : " faith-room-vol--wide";
+    const face = s.num ? String(s.num) : escapeHtml(s.label || s.v);
+    return `<button type="button" class="faith-room-vol${wide}${s.v === vol ? " is-active" : ""}"`
+      + ` data-room-vol="${escapeHtml(s.v)}"`
+      + ` aria-label="${escapeHtml(shelf.name(s))}, ${held}">`
+      + `<span class="faith-room-vol-n">${face}</span>`
+      + `<span class="faith-room-vol-c">${held}</span></button>`;
+  }
+
+  function volGrid(list) {
+    const counts = new Map();
+    let unshelved = 0;
+    list.forEach((w) => {
+      const v = String(shelf.of(w) || "");
+      if (v) counts.set(v, (counts.get(v) || 0) + 1); else unshelved += 1;
+    });
+    const tiles = shelfOrder.filter((s) => counts.get(s.v));
+    if (!tiles.length) {
+      return `<p class="faith-room-status">Nothing matches that. Try another name or title.</p>`;
+    }
+    // Said plainly rather than left to be noticed. Every work in all
+    // three collections carries a shelf mark today, so this line does
+    // not print; it is here so that a catalogue that stops carrying one
+    // does not quietly shrink the library instead.
+    const rest = unshelved
+      ? `<p class="faith-room-undated">${unshelved.toLocaleString()} work${unshelved === 1 ? " names" : "s name"} no ${shelf.one}</p>`
+      : "";
+    return `<p class="faith-room-shelf-note">${escapeHtml(shelf.lead)}</p>`
+      + `<div class="faith-room-vols">${tiles.map((s) => volTile(s, counts.get(s.v))).join("")}</div>${rest}`;
+  }
+
+  // The heading over one volume's works, with the address a footnote
+  // would print and the way back to the grid. The address is dropped
+  // where it only repeats the heading, which is the Patrologia Syriaca:
+  // that bucket is named rather than numbered, so the two lines were
+  // the same line twice.
+  function volHead(s) {
+    const cite = shelf.cite(s);
+    const line = cite && cite !== shelf.name(s)
+      ? `<p class="faith-room-vol-cite">Cited as ${escapeHtml(cite)}</p>` : "";
+    return `<div class="faith-room-vol-head">`
+      + `<h2>${escapeHtml(shelf.name(s))}</h2>${line}`
+      + `<button type="button" class="faith-room-vol-back" data-room-vol="">`
+      + `&larr; All ${escapeHtml(shelf.many)}</button></div>`;
   }
 
   function render() {
     const filtered = works.filter(matches);
-    const scoped = letter ? filtered.filter((w) => initial(w.author) === letter) : filtered;
+    // Three states, not two. By author is the page as it has always
+    // been; the volume view is either the grid of volumes or one volume
+    // opened, and on the grid there is no list of works to page
+    // through.
+    const onShelf = Boolean(shelf) && view !== "author";
+    const onGrid = onShelf && !vol;
+    const chosen = onShelf && vol ? shelfOrder.find((s) => s.v === vol) : null;
+    const scoped = onShelf
+      ? (vol ? filtered.filter((w) => String(shelf.of(w) || "") === vol) : [])
+      : (letter ? filtered.filter((w) => initial(w.author) === letter) : filtered);
     const pages = Math.max(1, Math.ceil(scoped.length / PAGE_SIZE));
     if (page > pages) page = pages;
     const slice = scoped.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -388,13 +574,60 @@
       .sort((a, b) => (a === "#") - (b === "#") || a.localeCompare(b));
 
     const label = isAll ? "the whole library" : (corpus ? corpus.label : "the collection");
-    const rail = letters.length > 1
+    // The rail files by the author's surname, which is the other view's
+    // question. Inside a volume it would be a second index over at most
+    // a few dozen works.
+    const rail = letters.length > 1 && !onShelf
       ? `<nav class="faith-room-letters" aria-label="Jump to a letter"><button type="button" data-room-letter="" class="${letter ? "" : "is-active"}">All</button>${
           letters.map((l) => `<button type="button" data-room-letter="${l}" class="${letter === l ? "is-active" : ""}">${l}</button>`).join("")}</nav>`
       : "";
-    const body = groups.length
-      ? `<div class="btrads faith-room-blocks">${groups.map((g) => block(g.name, g.works)).join("")}</div>`
+    const list = groups.length
+      ? `<div class="btrads faith-room-blocks">${groups.map((g) => block(g.name, g.works, onShelf ? shelf.mark : null)).join("")}</div>`
       : `<p class="faith-room-status">Nothing matches that. Try another name or title.</p>`;
+    // An address that names no volume in this collection is the one
+    // case where a reader can arrive holding something we cannot open,
+    // so it says so and puts the grid back within reach.
+    let body = list;
+    if (onGrid) {
+      body = volGrid(filtered);
+    } else if (onShelf && chosen) {
+      body = volHead(chosen) + list;
+    } else if (onShelf) {
+      body = `<p class="faith-room-status">There is no ${escapeHtml(shelf.one)} ${escapeHtml(vol)} in ${escapeHtml(label)}.</p>`
+        + `<p><button type="button" class="faith-room-vol-back" data-room-vol="">&larr; All ${escapeHtml(shelf.many)}</button></p>`;
+    }
+
+    // Two doors into the same shelf, and only where the collection has
+    // a second one. By author is written first and is the default, so a
+    // reader who has never heard of a Migne citation is not asked to
+    // choose before they can read anything.
+    const views = shelf
+      ? `<nav class="faith-view-toggle faith-room-views" role="tablist" aria-label="How to browse this collection">`
+        + `<button type="button" class="faith-view-toggle-tab" data-room-view="author" role="tab">By author</button>`
+        + `<button type="button" class="faith-view-toggle-tab" data-room-view="${shelf.view}" role="tab">${escapeHtml(shelf.tab)}</button>`
+        + `</nav>`
+      : "";
+
+    // What the count reports is whatever the reader is looking at: the
+    // works in the collection, the volumes on the shelf, or the works
+    // in the one volume they have opened.
+    let counted = `${scoped.length.toLocaleString()} work${scoped.length === 1 ? "" : "s"} in ${escapeHtml(label)}`;
+    if (onGrid) {
+      const shelved = new Set();
+      filtered.forEach((w) => {
+        const v = String(shelf.of(w) || "");
+        if (v) shelved.add(v);
+      });
+      counted = `${shelved.size.toLocaleString()} ${shelved.size === 1 ? shelf.one : shelf.many}`
+        + ` &middot; ${filtered.length.toLocaleString()} work${filtered.length === 1 ? "" : "s"} in ${escapeHtml(label)}`;
+    } else if (onShelf && chosen) {
+      counted = `${scoped.length.toLocaleString()} work${scoped.length === 1 ? "" : "s"} in ${escapeHtml(shelf.name(chosen))}`;
+    } else if (onShelf) {
+      // An address that names nothing here. The collection's own total
+      // is the true thing to print: a bare zero beside its name would
+      // read as an empty shelf rather than a bad link.
+      counted = `${filtered.length.toLocaleString()} work${filtered.length === 1 ? "" : "s"} in ${escapeHtml(label)}`;
+    }
 
     // The search box and the selects are built once and left alone.
     // Rewriting the whole subtree on every render tore them out from
@@ -403,15 +636,24 @@
     if (!root.querySelector("[data-room-shell]")) {
       const scopeOpts = Object.keys(SCOPES).map((k) =>
         `<option value="${k}"${k === scope ? " selected" : ""}>${SCOPES[k]}</option>`).join("");
-      root.innerHTML = `<div data-room-shell><div class="faith-room-head"><div class="faith-room-searchbar"><input type="search" class="faith-room-filter" data-room-filter placeholder="Search an author or a title&hellip;" value="${escapeHtml(filter)}" aria-label="Search this collection" /><label class="faith-room-scope"><span class="faith-room-scope-label">Search in</span><select data-room-scope aria-label="What to search">${scopeOpts}</select></label></div><p class="faith-room-count" data-room-count></p></div><div data-room-controls>${filters}</div><div data-room-rail></div><div data-room-list></div><div data-room-pager></div></div>`;
+      root.innerHTML = `<div data-room-shell>${views}<div class="faith-room-head"><div class="faith-room-searchbar"><input type="search" class="faith-room-filter" data-room-filter placeholder="Search an author or a title&hellip;" value="${escapeHtml(filter)}" aria-label="Search this collection" /><label class="faith-room-scope"><span class="faith-room-scope-label">Search in</span><select data-room-scope aria-label="What to search">${scopeOpts}</select></label></div><p class="faith-room-count" data-room-count></p></div><div data-room-controls>${filters}</div><div data-room-rail></div><div data-room-list></div><div data-room-pager></div></div>`;
       wireOnce();
     }
 
-    root.querySelector("[data-room-count]").innerHTML =
-      `${scoped.length.toLocaleString()} work${scoped.length === 1 ? "" : "s"} in ${escapeHtml(label)}`;
+    root.querySelector("[data-room-count]").innerHTML = counted;
     root.querySelector("[data-room-rail]").innerHTML = rail;
     root.querySelector("[data-room-list]").innerHTML = body;
-    root.querySelector("[data-room-pager]").innerHTML = pager(page, pages);
+    // The grid of volumes is one screen of tiles and has nothing to
+    // page through.
+    root.querySelector("[data-room-pager]").innerHTML = onGrid ? "" : pager(page, pages);
+
+    // The toggle is part of the shell and is never rebuilt, so the
+    // chosen view is marked on it here rather than written into it.
+    root.querySelectorAll("[data-room-view]").forEach((b) => {
+      const on = b.getAttribute("data-room-view") === view;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
 
     // The denomination list follows the chosen tradition, so its options
     // are rewritten when that choice changes. Guarded on the option set
@@ -508,6 +750,20 @@
     // which would otherwise filter to nothing.
     onPick("trad", (v) => { tradition = v; denomination = ""; });
     onPick("denom", (v) => { denomination = v; });
+    // Switching views drops the other view's place in the shelf: a
+    // letter means nothing inside a volume, and a volume means nothing
+    // under an A-Z.
+    root.querySelectorAll("[data-room-view]").forEach((b) => {
+      b.addEventListener("click", () => {
+        const next = b.getAttribute("data-room-view");
+        if (next === view) return;
+        view = next;
+        letter = "";
+        vol = "";
+        page = 1;
+        render();
+      });
+    });
     const scopeEl = root.querySelector("[data-room-scope]");
     if (scopeEl) {
       scopeEl.addEventListener("change", () => {
@@ -527,6 +783,17 @@
   }
 
   function wireList() {
+    // Both the tiles and the way back out of one. An empty value is the
+    // way back, which is why this reads the attribute rather than
+    // trusting the button's class.
+    root.querySelectorAll("[data-room-vol]").forEach((b) => {
+      b.addEventListener("click", () => {
+        vol = b.getAttribute("data-room-vol") || "";
+        page = 1;
+        render();
+        root.scrollIntoView({ block: "start" });
+      });
+    });
     root.querySelectorAll("[data-room-letter]").forEach((b) => {
       b.addEventListener("click", () => {
         letter = b.getAttribute("data-room-letter");

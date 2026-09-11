@@ -839,11 +839,24 @@
         };
       },
       tradition: () => "Eastern Fathers",
+      // Patrologia Orientalis does not shelve the way Migne's two Latin
+      // and Greek series do, and it must not be flattened to look as
+      // though it does. A work here is addressed by tome and fascicle,
+      // "PO 2, 421", so both halves are carried rather than a single
+      // volume number. `tome` is the sorting key and is a string: 57 of
+      // the 58 buckets are numbered, and the other is the Patrologia
+      // Syriaca, whose tome reads "PS". `v` is the catalogue's own name
+      // for the bucket, which is "Tome 2" for a numbered one and
+      // "Patrologia Syriaca" for that one, so the label a reader sees
+      // comes from the catalogue rather than from a rule we invent.
       normalize: (w) => ({
         corpus: "po",
         id: String(w._id),
         title: w.t || "",
         author: (w.a || "").trim(),
+        tome: String(w.tome == null ? "" : w.tome).trim(),
+        tomeLabel: String(w.v == null ? "" : w.v).trim(),
+        fasc: String(w.fasc == null ? "" : w.fasc).trim(),
         eyebrow: [w.v, w.fasc ? `fasc. ${w.fasc}` : ""].filter(Boolean).join(" · "),
         extent: (w.divs || []).length,
         url: `/the-faith-received/reader/?c=po&w=${encodeURIComponent(w._id)}`,
