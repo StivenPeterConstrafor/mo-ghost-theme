@@ -555,7 +555,7 @@ function renderPlScripture(sw,opts){
 // Migne editorial/index classification, client-side (same patterns as the
 // corpus tools' migne_genre): pg-/pld- only — on the library shelves an
 // 'Index' in a title is a published book (review §4)
-const _MG_NAV=[/^(title\s*page|table\s*of\s*contents?|contents?)\b/i,/^index\b/i,/^(order\s+of\s+(things|the\s+old\s+editions?|editions?))\b/i,/^(elenchus|tabula|ordo)\b/i];
+const _MG_NAV=[/^(title\s*page|table\s*of\s*contents?|contents?)\b/i,/^index\b/i,/^(analytical|general|alphabetical)\s+index\b/i,/^order\s+of\s+(things|contents?|subjects?|the\s+old\s+editions?|editions?)\b/i,/^(elenchus|tabula|ordo)\b/i];
 const _MG_APP=[/^admonition/i,/^(historical\s+)?notice\b/i,/^editorial\s+notice/i,/^prolegomena\b/i,/^monitum\b/i,/^(preface|praefatio)\s*$/i,/^(preface|praefatio)\s+(of|by)\s+the\s+(editor|editors|maurist)/i,/^appendix\s*$/i,/^(bibliograph|biographical\s+notice)/i,/^(synopsis\s+of\s+the\s+editions?|conspectus)\b/i];
 function _migneKind(w){
   if(!/^(pg|pld)-\d+$/.test(String(w.slug||"")))return null;
