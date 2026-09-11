@@ -4918,13 +4918,23 @@ mark.faith-find-hit.is-current {
   color: var(--color-secondary);
   margin: 0 0 4px;
 }
+/* Upright, not italic, and labelled. This line is the index's summary
+   of a position and not the writer's words; italics between quotation
+   marks said otherwise for as long as it looked like a quotation. */
 .faith-topic-quote-text {
   font-family: var(--font-body);
-  font-style: italic;
   font-size: 17px;
   line-height: 1.6;
   color: var(--color-dark);
   margin: 0 0 6px;
+}
+.faith-topic-quote-label {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
 }
 .faith-topic-quote-source {
   font-family: var(--font-body);
@@ -14712,6 +14722,63 @@ a.cn-row-title { color: var(--color-primary-text); }
   line-height: 1.5;
   color: var(--color-darkgrey);
 }
+/* Where the quotation above came from, and how precise it is. Small and
+   quiet, because it is apparatus, but never absent: "the opening of the
+   cited column" and "the passage the index marks" are two different
+   claims about the same blockquote. */
+.cmp-provenance {
+  margin: 0 0 6px 12px;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  letter-spacing: 0.02em;
+  color: var(--color-muted);
+}
+/* A citation whose text this library could not reach. Set as plain
+   prose rather than as a blockquote: there is nothing to quote, and a
+   bordered box here would read as one. */
+.cmp-notext {
+  margin: 0 0 6px;
+  padding: 0 0 0 12px;
+  border-left: 2px dotted var(--color-card-border);
+  font-family: var(--font-body);
+  font-size: var(--tfr-meta);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+/* The index's own note about a passage, labelled. An unlabelled grey
+   line under a blockquote reads as the quotation continuing, which is
+   exactly how a machine summary passed for a Father's own words. */
+.cmp-gloss-label {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+/* The column is showing index notes rather than passages. Said once at
+   the top of the column instead of forty times down it. */
+.cmp-warn { color: var(--color-secondary); }
+.cmp-more {
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--color-primary-text);
+  background: none;
+  border: 1px solid var(--color-card-border);
+  border-radius: 3px;
+  padding: 11px 18px;
+  min-height: 44px;
+  margin: 14px 0 0;
+  cursor: pointer;
+}
+.cmp-more:hover { border-color: var(--color-primary); }
+.cmp-more:disabled { color: var(--color-muted); cursor: default; }
+.cmp-more:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
 .cmp-cite {
   display: flex;
   flex-wrap: wrap;
@@ -15381,6 +15448,252 @@ a.cn-row-title { color: var(--color-primary-text); }
   .pins-bar { gap: 10px; }
   .cmp-col { flex-basis: 88vw; }
   .desk-toolbar { gap: 6px; }
+}
+
+/* ── Positions ─────────────────────────────────────────────────────
+   The statement index, on the author, fathers, doctrines and scripture
+   pages. One panel, one stylesheet block; assets/js/faith-positions.js
+   draws all four.
+
+   Built on the Reception panel's furniture rather than on anything new
+   (.fa-rc above): a micro uppercase heading, a lede at 68ch, hairline
+   card borders, figures in tabular numerals. The two shapes it adds are
+   the control row, which is the same label-over-select pattern the
+   Compare panel uses, and the statement itself, which is the verse
+   card's rule-on-the-left treatment (.fa-fp-verse-text) because it is
+   doing the same job: a quotation set apart from the page.
+
+   The band's own padding comes from .bband on the section, so nothing
+   here sets vertical page rhythm. */
+.fpos-head {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--color-primary-text);
+  margin: 0 0 14px;
+}
+.fpos-lede {
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--color-dark);
+  max-width: 68ch;
+  margin: 0 0 20px;
+}
+.fpos .fr-ai-note { max-width: 68ch; margin: 0 0 24px; }
+
+/* The control row. auto-fit rather than a fixed column count: the
+   author page shows three controls and the fathers page four, and both
+   have to sit down to one column at 375px without a second rule. */
+.fpos-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px 20px;
+  margin: 0 0 18px;
+}
+.fpos-field { display: flex; flex-direction: column; gap: 5px; }
+.fpos-field-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.fpos-select,
+.fpos-input {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-dark);
+  background: var(--color-page);
+  border: 1px solid var(--color-card-border);
+  border-radius: 3px;
+  /* 44px, the theme's tap target, without a separate mobile rule. */
+  min-height: 44px;
+  padding: 8px 10px;
+  width: 100%;
+  max-width: 100%;
+}
+.fpos-select:focus-visible,
+.fpos-input:focus-visible,
+.fpos-more:focus-visible,
+.fpos-retry:focus-visible,
+.fpos-group-head:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.fpos-select:disabled { color: var(--color-muted); }
+
+/* The coverage line. It carries the one sentence this panel cannot get
+   wrong, so it is set at reading size rather than as fine print. */
+.fpos-status {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-darkgrey);
+  max-width: 72ch;
+  margin: 0 0 18px;
+  min-height: 1.6em;
+}
+.fpos-note {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-muted);
+  max-width: 72ch;
+  margin: 14px 0 0;
+}
+.fpos-note[hidden] { display: none; }
+
+/* One reading column, and the group rules are part of it. Left to the
+   container's own width the rule above "Asserts" ran 1,124px while the
+   statements under it were set to 592, so the count at its right end sat
+   half a screen from the heading it belonged to. */
+.fpos-list { margin: 0; max-width: 78ch; }
+.fpos-group { border-top: 1px solid var(--color-card-border); }
+.fpos-group:last-of-type { border-bottom: 1px solid var(--color-card-border); }
+.fpos-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 12px 0;
+  cursor: pointer;
+  list-style: none;
+}
+.fpos-group-head::-webkit-details-marker { display: none; }
+.fpos-group-label {
+  font-family: var(--font-body);
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  color: var(--color-dark);
+}
+.fpos-group[open] .fpos-group-label { color: var(--color-primary-text); }
+.fpos-group-n {
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+.fpos-group-body { padding: 2px 0 18px; }
+
+.fpos-statement { margin: 0 0 18px; }
+.fpos-statement:last-child { margin-bottom: 0; }
+.fpos-quote {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-dark);
+  border-left: 2px solid var(--color-primary);
+  margin: 0;
+  padding: 2px 0 2px 16px;
+  max-width: 74ch;
+}
+/* Provenance under the quotation: the printed locus and which of the
+   two units it is. Apparatus, so it is small and grey, but it is never
+   dropped — "the opening of the cited column" is a weaker claim than
+   "the passage the index marks" and the reader is owed the difference. */
+.fpos-provenance {
+  margin: 6px 0 0 18px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--color-muted);
+  max-width: 74ch;
+}
+/* A citation whose passage could not be reached. Dotted rather than
+   solid, and italic, so it does not read as a quotation at a glance. */
+.fpos-notext {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--color-muted);
+  border-left: 2px dotted var(--color-card-border);
+  margin: 0;
+  padding: 2px 0 2px 16px;
+  max-width: 74ch;
+}
+.fpos-gloss {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-muted);
+  margin: 8px 0 0 18px;
+  max-width: 74ch;
+}
+/* The index's note about the passage is not more of the passage, so it
+   is labelled. An unlabelled grey line under a blockquote reads as the
+   quotation continuing. */
+.fpos-gloss-label {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+.fpos-cite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 7px 0 0 18px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.fpos-work { color: var(--color-darkgrey); }
+.fpos-page { font-variant-numeric: tabular-nums; }
+/* The stance and the extraction's own move label. Set as words rather
+   than as coloured pills: they describe one local statement and do not
+   establish what the writer held, and a colour would argue otherwise. */
+.fpos-tag {
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+.fpos-read {
+  color: var(--color-primary-text);
+  text-decoration: underline;
+  text-decoration-color: var(--color-card-border);
+  text-underline-offset: 3px;
+}
+.fpos-read:hover { text-decoration-color: var(--color-primary); }
+
+.fpos-more,
+.fpos-retry {
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--color-primary-text);
+  background: none;
+  border: 1px solid var(--color-card-border);
+  border-radius: 3px;
+  padding: 11px 18px;
+  min-height: 44px;
+  margin: 18px 0 0;
+  cursor: pointer;
+}
+.fpos-more:hover,
+.fpos-retry:hover { border-color: var(--color-primary); }
+.fpos-more[hidden] { display: none; }
+.fpos-more:disabled { color: var(--color-muted); cursor: default; }
+
+@media (max-width: 640px) {
+  .fpos-lede { font-size: 16px; }
+  .fpos-controls { grid-template-columns: 1fr; gap: 12px; }
+  /* The rule and the indent both come in at 375px so the quotation
+     keeps a readable measure rather than an eleven-word line. */
+  .fpos-quote { padding-left: 12px; }
+  .fpos-gloss,
+  .fpos-provenance,
+  .fpos-cite { margin-left: 14px; }
+  .fpos-notext { padding-left: 12px; }
+  .fpos-more,
+  .fpos-retry { width: 100%; }
 }
 
 /* ── The display face is for <h1> only ─────────────────────────────────

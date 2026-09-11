@@ -47,22 +47,33 @@
  *   /v1/mine/topic2-all/<topic>.json        the topic across every author,
  *                                           and the paging contract below
  *
- * /v1/evidence AND WHY IT MAY 404. The topic export carries an
- * `evidence` contract — a snapshot id and a topic id — that the owner's
- * build pages through at GET /v1/evidence to reach the complete index
- * (12,075 statements for Augustine on Sin, against the 400 in the full
- * file). That endpoint is being built on our worker in a parallel
- * session and is NOT live yet: it 404s today, verified 2026-09-10.
+ * ── THE STATEMENTS NOW COME FROM /v1/evidence (2026-09-11) ──
  *
- * This file therefore treats deeper paging as an ENHANCEMENT and never
- * as the source of the screen. The full topic file is fetched first and
- * unconditionally, so every column has real statements with or without
- * the endpoint; loadMore() is only offered once a contract has been
- * seen AND a probe has come back non-404. A 404 sets `deepUnavailable`
- * on the cell and the column's own footnote says the complete index is
- * not open yet, naming the number actually loaded. Nothing spins, and
- * "we cannot page further today" never renders as "this author said
- * forty things about sin" — which is the one lie this screen could tell
+ * They used to be read out of the room and topic files above, and set
+ * straight into a blockquote. They should never have been. NOTHING in
+ * those files is a quotation: a position row's `q` is a machine-written
+ * statement of the position and a page row's `g` is a machine-written
+ * description of the page. Checked against the works themselves, 70 of
+ * 3,240 position rows appear in the text they cite, and none of the
+ * page summaries do. Ambrose's own words at PL 14:0123 begin "Have men
+ * assumed so much opinion that some of them established three
+ * principles of all things"; the mined row is a summary of that, in
+ * somebody else's voice, complete with em dashes the corpus does not
+ * use. Forty of those down a column, set as blockquotes under a
+ * Father's name, is a fabrication however carefully it is hedged.
+ *
+ * /v1/evidence resolves each citation against the work itself and
+ * returns the author's actual words — see website/workers/tfr-library/
+ * lib/locus-text.js. That cannot be done in the browser: a Patrologia
+ * Latina work is 150KB to 2.1MB of JSON and a column has to be
+ * assembled from its blocks, so four columns of forty statements would
+ * be tens of megabytes over the reader's connection.
+ *
+ * The mined files are still fetched, for the topic grid and its counts,
+ * and their rows are the FALLBACK if the endpoint cannot be reached.
+ * In that case the column says so in a line of its own and every row is
+ * painted as the index's labelled note. It is never quietly promoted
+ * back into a blockquote, which is the one lie this screen could tell
  * that a reader would carry away and repeat.
  *
  * SAFETY. Every string on this screen came off the network. There is no
@@ -193,7 +204,6 @@
   const roomCache = new Map();
   const fullCache = new Map();
   const exportCache = new Map();
-  let evidenceOpen = null; // null = unprobed, false = 404, true = live
   let run = 0; // guards against a stale fetch painting
 
   /* ── Small helpers ───────────────────────────────────────────── */
@@ -236,38 +246,79 @@
    * for the native collection. `pld-2809` is corpus pld and work 2809 —
    * `?w=pld-2809` loads nothing at all.
    *
-   * The page is appended ONLY for the two collections that have real
-   * printed pages. Patrologia Latina and our own English editions are
-   * stored as sections and rows with no page numbering, so a `p=` there
-   * would be a number the reader could not find on the page it landed
-   * on. The statement's own `h` anchor is not used: it addresses the
+   * ── WHAT ACTUALLY MAKES A CITATION LAND (2026-09-11) ──
+   *
+   * This table used to carry a hasPages flag per collection and append
+   * `?p=` on its say-so, and the diagnosis that Patrologia Latina's
+   * page was being thrown away was correct. The cure is not to set the
+   * flag: the reader CANNOT honour `?p=` for pld, and it cannot honour
+   * it for Early English Books either, whatever this table says.
+   * openInitialSection() in assets/js/faith-reader.js resolves `?p=N`
+   * by looking for the section whose [data-from, data-to) covers N, and
+   * only the shard reader writes those attributes. The reader's own
+   * pageResolves() says so in as many words: "Early English Books is
+   * `gz-toc` and renders sections with no data-from at all: a `p=`
+   * there resolves to nothing and drops the reader at the top of the
+   * work having promised otherwise." So `eebo: true` here was a lie of
+   * the same kind as `pld: false`, pointing the other way.
+   *
+   * What DOES land, in every collection, is `?q=` — landOnQuote()
+   * searches the rendered text for the passage and scrolls to it,
+   * retrying while the section hydrates. It only works if the text
+   * really is in the work, which is exactly what changed: the worker
+   * now sends the work's own words rather than the index's summary of
+   * them, and a summary could never be found. That is why a citation
+   * used to open at the top of an 881,000-character work.
+   *
+   * `?p=` is therefore appended only for the native collection, which
+   * is the one the reader can resolve it in, and the quotation is what
+   * carries the landing everywhere.
+   *
+   * The statement's own `h` anchor is still not used: it addresses the
    * owner's reader, whose block ids are not ours. */
   const PREFIXES = [
-    [/^pld-/, "pld", 4, false],
-    [/^mo-/, "mo", 3, false],
-    [/^eebo-/, "eebo", 5, true],
-    [/^pg-/, "pg", 3, false],
+    [/^pld-/, "pld", 4],
+    [/^mo-/, "mo", 3],
+    [/^eebo-/, "eebo", 5],
+    [/^pg-/, "pg", 3],
   ];
 
-  function readerHref(work, page) {
+  // landOnQuote needs 30 characters and takes up to 160.
+  const LANDING_MIN = 30;
+  const LANDING_MAX = 150;
+
+  function readerHref(work, page, quote) {
     const w = String(work || "");
     if (!w) return "";
     let corpus = "";
     let id = w;
-    let hasPages = true;
     for (let i = 0; i < PREFIXES.length; i += 1) {
       if (PREFIXES[i][0].test(w)) {
         corpus = PREFIXES[i][1];
         id = w.slice(PREFIXES[i][2]);
-        hasPages = PREFIXES[i][3];
         break;
       }
     }
     const params = [];
     if (corpus) params.push(`c=${encodeURIComponent(corpus)}`);
     params.push(`w=${encodeURIComponent(id)}`);
-    if (hasPages && page != null && page !== "") params.push(`p=${encodeURIComponent(page)}`);
+    // Native works only — see the note above.
+    if (!corpus && page != null && page !== "") params.push(`p=${encodeURIComponent(page)}`);
+    const landing = String(quote || "").replace(/\s+/g, " ").trim().slice(0, LANDING_MAX);
+    if (landing.length >= LANDING_MIN) params.push(`q=${encodeURIComponent(landing)}`);
     return `/the-faith-received/reader/?${params.join("&")}`;
+  }
+
+  /* The worker builds the same link and knows the collection rules
+   * first-hand, so its `url` is preferred where there is one. Ours is
+   * the fallback for the index-only rows the panel falls back to when
+   * /v1/evidence cannot be reached. Both go through MOSafeHref in
+   * link(). A same-origin absolute path only: anything else is dropped
+   * rather than followed. */
+  function hrefOf(r) {
+    const given = String(r.url || "");
+    if (/^\/the-faith-received\/reader\/\?/.test(given)) return given;
+    return readerHref(r.w, r.p, r.q);
   }
 
   // The one place a link is made. Built from ids this file validated,
@@ -440,24 +491,75 @@
     return exportCache.get(reg);
   }
 
-  // A statement row, normalised. `q` is the extracted statement, `g`
-  // the page annotation where there is one; a row with neither is
-  // dropped, since an empty blockquote under a citation reads as a
-  // passage that says nothing.
-  function rows(list) {
+  /* ── A statement row ─────────────────────────────────────────── *
+   *
+   * NOTHING THE INDEX WROTE IS A QUOTATION. The mined files' `q` on a
+   * position row is a machine-written statement of the position and
+   * their `g` is a machine-written description of the page; measured
+   * against the works themselves, 70 of 3,240 position rows and none
+   * of the page summaries appear in the text they cite. This panel
+   * used to set the first of them in a blockquote, which put words in
+   * a Father's mouth.
+   *
+   * So a row now carries two separable things and the painter keeps
+   * them apart:
+   *
+   *   r.q      THE AUTHOR'S WORDS at the cited locus, resolved by the
+   *            worker out of the work itself. Empty when it could not
+   *            be resolved — never a summary standing in for one.
+   *   r.quote  where those words came from: unit ("extract" for the
+   *            index's own quotation proved to sit at the locus,
+   *            "column"/"page" for the opening of the cited locus),
+   *            the printed locus ("PL 14:0123"), and a status.
+   *   r.index  the machine-written strings, which are labelled on
+   *            screen as the index's own note and are never quoted.
+   */
+  function evidenceRows(list) {
+    return (list || [])
+      .map((r) => {
+        const quote = r.quote && typeof r.quote === "object" ? r.quote : null;
+        const idx = r.indexer && typeof r.indexer === "object" ? r.indexer : {};
+        return {
+          id: String(r.id || ""),
+          q: quote && quote.status === "ok" ? String(r.q || "") : "",
+          quote,
+          index: {
+            statement: String(idx.statement || ""),
+            pageQuotation: String(idx.page_quotation || ""),
+            summary: String(idx.page_summary || ""),
+          },
+          s: String(r.s || ""),
+          w: String(r.w || ""),
+          wt: String(r.wt || ""),
+          p: r.p == null ? null : r.p,
+          url: String(r.url || ""),
+        };
+      })
+      .filter((r) => r.q || r.index.statement || r.index.summary || r.index.pageQuotation);
+  }
+
+  /* The index rows read straight off the mined files, used ONLY when
+   * /v1/evidence cannot be reached. They carry no resolved text, so
+   * `quote` is null and the painter says the library could not reach
+   * the passage rather than quoting the summary in its place. */
+  function indexOnlyRows(list) {
     return (list || [])
       .map((r) => ({
-        q: String(r.q || ""),
-        g: String(r.g || ""),
+        id: "",
+        q: "",
+        quote: null,
+        index: { statement: String(r.q || ""), pageQuotation: "", summary: String(r.g || "") },
         s: String(r.s || ""),
         w: String(r.w || ""),
         wt: String(r.wt || ""),
         p: r.p == null ? null : r.p,
+        url: "",
       }))
-      .filter((r) => r.q || r.g);
+      .filter((r) => r.index.statement || r.index.summary);
   }
 
-  const rowKey = (r) => `${r.w}|${r.p}|${(r.q || r.g).slice(0, 60)}`;
+  const rowKey = (r) => r.id
+    || `${r.w}|${r.p}|${(r.index.statement || r.index.summary).slice(0, 60)}`;
 
   /* ── Building the author set ─────────────────────────────────── */
 
@@ -528,32 +630,76 @@
         rows: [], seen: new Set(), total: 0, loading: true,
         contract: null, author: null, cursor: null,
         done: false, deepUnavailable: false, failed: false, open: new Set(),
+        // Set when /v1/evidence could not answer and the column is
+        // showing the mined index rows instead. Nothing in an
+        // index-only column is ever set as a quotation.
+        indexOnly: false,
+        held: 0,
+        // coverage.text from the last page fetched: how many of the
+        // served citations resolved to the sentence the index marks,
+        // how many to the opening of the cited column, how many not at
+        // all. Painted as one sentence under the count line.
+        textStats: null,
       });
     }
     return cells.get(k);
   }
 
+  /* ── Filling a column ────────────────────────────────────────── *
+   *
+   * The rows come from /v1/evidence, NOT from the mined files this page
+   * reads for everything else. The mined files carry no quotation — see
+   * the note on evidenceRows() — and /v1/evidence is the only place the
+   * author's actual words at a cited locus can be got, because
+   * resolving one means reading the work (150KB to 2.1MB) and joining a
+   * Migne column against its blocks. Doing that in the browser, for
+   * four columns of forty statements, would be tens of megabytes.
+   *
+   * The mined files are still read, for the topic grid and its counts,
+   * and their rows are the FALLBACK when the endpoint cannot be
+   * reached — shown as the index's own notes, under a line saying the
+   * passages could not be reached, and never as quotations. */
   async function fillCell(au, topic, token) {
     const cell = cellFor(au, topic);
     const idx = authors.indexOf(au);
     const part = topic.parts[idx];
     if (!part) { cell.loading = false; return; }
 
-    // The room's own selection first, so a column has something in it
-    // while the full file is still in flight.
-    if (!cell.rows.length) {
-      rows(part.pos).forEach((r) => {
-        const k = rowKey(r);
-        if (!cell.seen.has(k)) { cell.seen.add(k); cell.rows.push(r); }
-      });
-      cell.total = part.npos || cell.rows.length;
-      paintColumns();
+    cell.total = part.npos || 0;
+
+    const reg = topic.reg || topic.tslug;
+    const ex = await loadExport(reg);
+    if (token !== run) return;
+    const mine = ex && Array.isArray(ex.authors) ? ex.authors.filter((x) => x.s === au.s)[0] : null;
+    if (ex && ex.evidence && mine) {
+      cell.contract = ex.evidence;
+      cell.author = mine;
+      if (mine.np && mine.np > cell.total) cell.total = mine.np;
     }
+
+    const got = cell.contract ? await loadEvidence(cell, token) : false;
+    if (token !== run) return;
+    if (got) {
+      cell.loading = false;
+      paintColumns();
+      return;
+    }
+
+    /* The endpoint could not answer. Fall back to the mined rows so the
+     * column is not empty, and mark the cell so every statement in it
+     * is painted as an index note rather than as a quotation. */
+    cell.indexOnly = true;
+    cell.deepUnavailable = true;
+    indexOnlyRows(part.pos).forEach((r) => {
+      const k = rowKey(r);
+      if (!cell.seen.has(k)) { cell.seen.add(k); cell.rows.push(r); }
+    });
+    paintColumns();
 
     const full = part.full ? await loadFull(au.sh, au.s, topic.tslug) : null;
     if (token !== run) return;
     if (full) {
-      rows(full.pos).forEach((r) => {
+      indexOnlyRows(full.pos).forEach((r) => {
         const k = rowKey(r);
         if (!cell.seen.has(k)) { cell.seen.add(k); cell.rows.push(r); }
       });
@@ -564,40 +710,41 @@
     }
     cell.loading = false;
     paintColumns();
-    probeDeep(au, topic, cell, token);
   }
 
-  /* ── The deep index: pending on /v1/evidence ─────────────────── *
-   * The topic export carries the paging contract. We fetch it for the
-   * count alone — knowing an author has 12,075 statements when 400 are
-   * loaded is worth saying even when nothing can page further — and
-   * probe the endpoint once per page load. A 404 is not an error here;
-   * it is the expected answer today, and it is recorded as
-   * `deepUnavailable` so the footnote can be honest rather than silent. */
-  async function probeDeep(au, topic, cell, token) {
-    const reg = topic.reg || topic.tslug;
-    const ex = await loadExport(reg);
-    if (token !== run) return;
-    if (!ex || !ex.evidence || !Array.isArray(ex.authors)) return;
-    const mine = ex.authors.filter((x) => x.s === au.s)[0];
-    if (!mine) return;
-    cell.contract = ex.evidence;
-    cell.author = mine;
-    if (mine.np && mine.np > cell.total) cell.total = mine.np;
+  /* One page of /v1/evidence into a cell. Returns false on any failure,
+   * which is what sends fillCell() to the index-only fallback.
+   *
+   * `include=positions` drops the page-level records: they carry no
+   * stance, and this panel groups by work and filters by stance. The
+   * count line names them rather than hiding them. */
+  async function loadEvidence(cell, token) {
+    if (!cell.contract || !cell.author) return false;
+    const params = new URLSearchParams({
+      snapshot: String(cell.contract.snapshot || ""),
+      topic: String(cell.contract.topic || ""),
+      author: String(cell.author.id || cell.author.s || ""),
+      include: "positions",
+      limit: "50",
+    });
+    if (cell.cursor) params.set("cursor", cell.cursor);
+    const res = await getJSON(`${BASE}/v1/evidence?${params}`);
+    if (token !== run) return false;
+    if (!res || !Array.isArray(res.items)) return false;
 
-    if (evidenceOpen === false) { cell.deepUnavailable = true; paintColumns(); return; }
-    if (evidenceOpen === null) {
-      const probe = await fetch(`${BASE}/v1/evidence?${new URLSearchParams({
-        snapshot: String(ex.evidence.snapshot || ""),
-        topic: String(ex.evidence.topic || ""),
-        author: String(mine.id || mine.s || ""),
-        limit: "1",
-      })}`, { signal: AbortSignal.timeout(20000) }).catch(() => null);
-      if (token !== run) return;
-      evidenceOpen = !!(probe && probe.ok);
-    }
-    cell.deepUnavailable = !evidenceOpen;
-    paintColumns();
+    evidenceRows(res.items).forEach((r) => {
+      const k = rowKey(r);
+      if (!cell.seen.has(k)) { cell.seen.add(k); cell.rows.push(r); }
+    });
+    cell.cursor = res.has_more ? String(res.next_cursor || "") : null;
+    cell.done = !cell.cursor;
+    const cov = res.coverage || {};
+    const positions = cov.positions || null;
+    if (positions && positions.total != null && positions.total > cell.total) cell.total = positions.total;
+    cell.held = cov.total_held == null ? cell.rows.length : cov.total_held;
+    cell.textStats = cov.text || null;
+    cell.deepUnavailable = false;
+    return true;
   }
 
   /* ── Filtering ───────────────────────────────────────────────── */
@@ -606,7 +753,8 @@
     if (state.s && r.s !== state.s) return false;
     if (state.q) {
       const needle = fold(state.q);
-      if (needle && fold(`${r.q} ${r.g}`).indexOf(needle) === -1) return false;
+      const hay = `${r.q} ${r.index.statement} ${r.index.summary} ${r.wt}`;
+      if (needle && fold(hay).indexOf(needle) === -1) return false;
     }
     return true;
   }
@@ -723,16 +871,67 @@
     topicHeadEl.appendChild(el("p", "cmp-note", `${line} recorded statements`));
   }
 
+  /* Why a citation has no text, in the reader's words rather than in
+   * the endpoint's. `not-resolved-here` is the per-request file budget
+   * on the worker and genuinely means "ask again", so it says so. */
+  const NO_TEXT = {
+    "licensed": "The licence on this collection does not allow the passage to be shown here.",
+    "work-not-held": "This library does not hold the text of this work, only the citation.",
+    "locus-not-found": "The cited place is not in the copy of the work held here.",
+    "work-has-no-columns": "The copy of this work held here carries no column numbers, so the citation cannot be located in it.",
+    "locus-not-held": "The text of this part of the work is not held here.",
+    "no-column-range": "This work has no column range recorded, so the citation cannot be located.",
+    "no-locus": "The index recorded no place in the work for this statement.",
+    "not-resolved-here": "The passage was not fetched with this page of results. Load more to bring it in.",
+    "read-failed": "The passage could not be read just now.",
+  };
+  const NO_TEXT_DEFAULT = "The passage behind this citation could not be reached.";
+
+  /* How precise the quotation is, said plainly. "extract" is the
+   * index's own sentence, proved to sit at the cited place. Anything
+   * else is the opening of the cited column or page, taken whole from
+   * the work — a Migne column runs to some hundreds of words and the
+   * index points at the column, not at a sentence in it, so the label
+   * must not imply otherwise. */
+  function provenanceOf(q) {
+    if (!q || q.status !== "ok") return "";
+    const locus = q.locus ? `${q.locus} · ` : "";
+    if (q.unit === "extract") return `${locus}the passage the index marks`;
+    if (q.unit === "column") return `${locus}the opening of the cited column`;
+    return `${locus}the opening of the cited page`;
+  }
+
   function statementNode(r, au) {
     const art = el("article", "cmp-statement");
-    if (r.q) art.appendChild(el("blockquote", "cmp-quote", r.q));
-    if (r.g) art.appendChild(el("p", "cmp-gloss", r.g));
+
+    if (r.q) {
+      art.appendChild(el("blockquote", "cmp-quote", r.q));
+      const prov = provenanceOf(r.quote);
+      if (prov) art.appendChild(el("p", "cmp-provenance", prov));
+    } else {
+      const why = (r.quote && NO_TEXT[r.quote.status]) || NO_TEXT_DEFAULT;
+      art.appendChild(el("p", "cmp-notext", why));
+    }
+
+    /* The index's own words, always labelled and never in a blockquote.
+     * `statement` is its summary of the position; `summary` its
+     * description of the page. Neither is anything the author wrote,
+     * and an unlabelled line under a quotation reads as the quotation
+     * continuing. */
+    const note = r.index.statement || r.index.summary;
+    if (note) {
+      const gloss = el("p", "cmp-gloss");
+      gloss.appendChild(el("span", "cmp-gloss-label", "Index note"));
+      gloss.appendChild(document.createTextNode(note));
+      art.appendChild(gloss);
+    }
+
     const cite = el("p", "cmp-cite");
     const meta = au.works.get(r.w);
     const title = (meta && meta.t) || r.wt || r.w || "Source work";
     cite.appendChild(el("span", "cmp-cite-work", title));
     if (r.s) cite.appendChild(el("span", "cmp-stance", r.s));
-    const href = readerHref(r.w, r.p);
+    const href = hrefOf(r);
     if (href) cite.appendChild(link(href, "Read the passage", "cmp-read"));
     art.appendChild(cite);
     return art;
@@ -776,6 +975,29 @@
       }
       col.appendChild(prog);
 
+      /* One sentence on what is being quoted, because the two units are
+       * not the same claim and the reader should not have to work it
+       * out from forty provenance lines. */
+      if (!cell.loading && cell.indexOnly && cell.rows.length) {
+        col.appendChild(el(
+          "p",
+          "cmp-note cmp-warn",
+          "The passages behind these citations could not be reached, so what follows is the index's own note on each one and not the writer's words.",
+        ));
+      } else if (!cell.loading && cell.textStats && cell.textStats.resolved != null) {
+        const s = cell.textStats;
+        const parts = [];
+        if (s.extract) parts.push(`${fmt(s.extract)} at the sentence the index marks`);
+        if (s.locus) parts.push(`${fmt(s.locus)} at the opening of the cited column or page`);
+        let line = parts.length
+          ? `Quotations are taken from the works themselves: ${parts.join(", ")}.`
+          : "";
+        if (s.unresolved) {
+          line += ` ${fmt(s.unresolved)} could not be reached and are shown as citations alone.`;
+        }
+        if (line) col.appendChild(el("p", "cmp-note", line.trim()));
+      }
+
       const body = el("div", "cmp-col-body");
       if (!cell.loading && cell.rows.length && !shown) {
         body.appendChild(el("p", "cmp-note", "No loaded statements match these filters."));
@@ -800,6 +1022,29 @@
         });
         body.appendChild(d);
       });
+
+      /* Paging. /v1/evidence answers fifty statements at a time, and it
+       * reads a work file per page to quote from, so the rest is asked
+       * for rather than pulled down unbidden. A column that fell back
+       * to the index rows has nothing to page. */
+      if (!cell.loading && !cell.indexOnly && cell.cursor && !cell.done) {
+        const more = el("button", "cmp-more", cell.paging ? "Loading…" : "Show more statements");
+        more.type = "button";
+        more.disabled = !!cell.paging;
+        more.addEventListener("click", async () => {
+          if (cell.paging) return;
+          cell.paging = true;
+          paintColumns();
+          const token = run;
+          const ok = await loadEvidence(cell, token);
+          if (token !== run) return;
+          cell.paging = false;
+          if (!ok) cell.done = true;
+          paintColumns();
+        });
+        body.appendChild(more);
+      }
+
       col.appendChild(body);
       columnsEl.appendChild(col);
     });
@@ -895,9 +1140,12 @@
     doc.appendChild(h1);
 
     const intro = document.createElement("p");
-    intro.textContent = "These are extracted statements, sometimes summarised or translated, "
-      + "and not always direct quotations. A statement can report another speaker or a view its "
-      + "author rejects. Read each passage in its source before attributing it.";
+    intro.textContent = "Quoted passages are the writer's own words at the place cited, taken "
+      + "from the work itself. Where the citation names a printed column, the quotation is the "
+      + "opening of that column rather than a single sentence. Lines marked \"Index note\" are "
+      + "the library's own description of a passage and are not quotations. A passage can report "
+      + "another speaker or a view its author rejects. Read each one in its source before "
+      + "attributing it.";
     doc.appendChild(intro);
 
     let n = 0;
@@ -916,22 +1164,52 @@
         doc.appendChild(hw);
         g.rows.forEach((r) => {
           n += 1;
-          const bq = document.createElement("blockquote");
-          const p = document.createElement("p");
-          p.textContent = r.q || r.g;
-          bq.appendChild(p);
-          const cite = document.createElement("cite");
-          cite.textContent = `${au.a}, ${g.label}${r.p != null ? `, ${r.p}` : ""}${r.s ? ` · ${r.s}` : ""}`;
-          const href = readerHref(r.w, r.p);
-          if (href && window.MOSafeHref && window.MOSafeHref.isSafe(href)) {
-            cite.appendChild(document.createTextNode(" · "));
+          /* A blockquote ONLY where there are the writer's own words to
+           * put in it. A row whose passage could not be reached goes
+           * out as a citation and a labelled index note, so a draft
+           * written from this export cannot carry a machine summary
+           * inside quotation marks. */
+          const locus = (r.quote && r.quote.locus) || (r.p != null ? String(r.p) : "");
+          const citeText = `${au.a}, ${g.label}${locus ? `, ${locus}` : ""}${r.s ? ` · ${r.s}` : ""}`;
+          const href = hrefOf(r);
+          const readLink = () => {
+            if (!href || !window.MOSafeHref || !window.MOSafeHref.isSafe(href)) return null;
             const a = document.createElement("a");
             a.href = href;
             a.textContent = "Read the passage";
-            cite.appendChild(a);
+            return a;
+          };
+
+          if (r.q) {
+            const bq = document.createElement("blockquote");
+            const p = document.createElement("p");
+            p.textContent = r.q;
+            bq.appendChild(p);
+            const cite = document.createElement("cite");
+            cite.textContent = citeText;
+            const a = readLink();
+            if (a) { cite.appendChild(document.createTextNode(" · ")); cite.appendChild(a); }
+            bq.appendChild(cite);
+            doc.appendChild(bq);
+          } else {
+            const p = document.createElement("p");
+            const em = document.createElement("em");
+            em.textContent = `${citeText} — passage not held here. `;
+            p.appendChild(em);
+            const a = readLink();
+            if (a) p.appendChild(a);
+            doc.appendChild(p);
           }
-          bq.appendChild(cite);
-          doc.appendChild(bq);
+
+          const note = r.index.statement || r.index.summary;
+          if (note) {
+            const p = document.createElement("p");
+            const label = document.createElement("strong");
+            label.textContent = "Index note: ";
+            p.appendChild(label);
+            p.appendChild(document.createTextNode(note));
+            doc.appendChild(p);
+          }
         });
       });
     });

@@ -13,10 +13,12 @@
  *     (Latin-scholastic and English both, e.g. "the-trinity", "grace",
  *     "christ-christology"), each carrying every author who was cited
  *     on it, ranked by how many positions they hold, PLUS a sample of
- *     quotable positions: { q: the position in English, s: stance
+ *     positions: { q: the index's own STATEMENT of the position, in
+ *     English and in its own words, s: stance
  *     ("asserts"/"denies"/"reports"/"qualifies"), a: author, w: work
- *     slug, p: page, wt: work title }. This is primary-source-grade:
- *     a reader can open the exact page. Per the 2026-09 spec, this
+ *     slug, p: page, wt: work title }. `q` IS NOT A QUOTATION — see
+ *     quoteRow() below — but the citation beside it is real and a
+ *     reader can open the exact page. Per the 2026-09 spec, this
  *     ranked-author list renders FIRST on a topic page — it tells a
  *     reader who to open before any excerpt does — and positions read
  *     chronologically, Fathers to Post-Reformation.
@@ -178,6 +180,22 @@
       else undated.push(p);
     });
 
+    /* NOT A QUOTATION, AND NO LONGER DRESSED AS ONE (2026-09-11).
+     *
+     * `p.q` is the index's machine-written statement OF the position,
+     * not words the author wrote. Checked against the works themselves,
+     * 70 of 3,240 of these appear in the text they cite. It used to be
+     * set between curly quotation marks under the author's name, which
+     * is the same claim a blockquote makes and just as false.
+     *
+     * The marks are gone and the line is labelled. Resolving these to
+     * the writer's own words needs /v1/evidence, which reads the work
+     * itself — see website/workers/tfr-library/lib/locus-text.js and
+     * what Compare and the positions pages do with it. This page cannot
+     * call it as it stands: it shows positions from dozens of authors
+     * across five eras in one render, and the endpoint is scoped to one
+     * author on one topic. Labelling is the honest holding position;
+     * the link beside each one still opens the page it cites. */
     function quoteRow(p) {
       const stance = p.s && p.s !== "asserts"
         ? `<span class="faith-topic-quote-stance">${escapeHtml(p.s)}</span>` : "";
@@ -185,7 +203,7 @@
       return `
           <li class="faith-topic-quote">
             ${stance}
-            <p class="faith-topic-quote-text">&ldquo;${escapeHtml(p.q)}&rdquo;</p>
+            <p class="faith-topic-quote-text"><span class="faith-topic-quote-label">Index note</span>${escapeHtml(p.q)}</p>
             <p class="faith-topic-quote-source"><a href="${readerUrl(p.w, p.p)}">${escapeHtml(p.a)}, <em>${work}</em>${p.p != null ? `, p. ${escapeHtml(String(p.p))}` : ""}</a></p>
           </li>`;
     }
