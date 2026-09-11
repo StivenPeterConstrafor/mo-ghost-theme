@@ -1184,9 +1184,6 @@
       const book = document.createElement("details");
       book.className = "faith-book faith-book-details faith-book-details--editorial";
       book.id = `section-${n}`;
-      // Open, like every other division in the reader. Nothing in a
-      // work is hidden behind a click any more.
-      book.open = true;
       if (s.id && s.id !== book.id) book.setAttribute("data-src-id", s.id);
       const sum = document.createElement("summary");
       sum.className = "faith-book-summary";
@@ -1213,7 +1210,6 @@
     const details = document.createElement("details");
     details.className = "faith-section-details faith-book-chapter";
     details.id = `section-${n}`;
-    details.open = true;
     // A source anchor (PO's printed-page ids, which the reference
     // index points at) is carried as an alias rather than as the id,
     // so #section-N links keep working too.
@@ -1876,7 +1872,6 @@
         const book = document.createElement("details");
         book.className = "faith-book faith-book-details faith-book-details--editorial";
         book.id = id;
-        book.open = true;
         if (alias) book.setAttribute("data-src-id", alias);
         const leaves = countTocLeaves(node);
         const sum = document.createElement("summary");
@@ -1896,7 +1891,6 @@
 
       const details = document.createElement("details");
       details.className = "faith-section-details faith-book-chapter";
-      details.open = true;
       // The contents rail links by position, but the scripture index
       // records the node's own id from the source. Carry both: the
       // positional id for the rail, the source id as an alias so a
@@ -3289,7 +3283,6 @@
     const book = document.createElement("details");
     book.className = "faith-book faith-book-details faith-book-details--editorial";
     book.id = `section-${seq}`;
-    book.open = true;
     const leaves = countLeaves(node);
     const summary = document.createElement("summary");
     summary.className = "faith-book-summary";
@@ -3318,24 +3311,12 @@
     return Number.MAX_SAFE_INTEGER;
   }
 
-  // Builds the shell. The text arrives as the section nears the
-  // viewport, via hydrateSection.
-  //
-  // A chapter is no longer a drawer. It is open from the start and it
-  // stays open: a work reads as one continuous run of its pages, the
-  // way the book does, and the contents rail is how you move around it.
-  // The <details> element is kept because every deep link, scripture
-  // link and citation door in the reader lands by opening an ancestor
-  // <details>, and those all keep working against a thing that is
-  // already open. What changes is that nothing is ever closed, so no
-  // reader has to click seven blank bars to find out what is behind
-  // them (the Enchiridion, 2026-09-11) and no text is hidden from a
-  // find-in-page.
+  // Builds the collapsed shell only. The text arrives on first open,
+  // via hydrateSection.
   function createSection(title, seq, fromPage, toPage) {
     const details = document.createElement("details");
     details.className = "faith-section-details faith-book-chapter";
     details.id = `section-${seq}`;
-    details.open = true;
     details.setAttribute("data-from", fromPage);
     // Ranges are half-open. Consecutive outline entries frequently
     // share a start page (two chapters opening on p. 8), which yields
@@ -3355,49 +3336,15 @@
 
     const body = document.createElement("div");
     body.className = "faith-section-body article-content";
-    // Every section is open, so without a placeholder every section
-    // would also be nearly zero pixels tall until its text arrived —
-    // they would all stack inside the first screen, the observer below
-    // would see the whole work at once, and a 1,304-page folio would
-    // load in one go. Reserved from the page count at roughly a screen
-    // of prose per page; the exact number does not matter, only that
-    // the scrollbar is honest before the text lands. The reservation is
-    // dropped the moment real text replaces it.
-    const span = Math.max(1, Math.max(toPage, fromPage + 1) - fromPage);
-    body.style.minHeight = `${Math.min(span * 620, 40000)}px`;
     details.appendChild(body);
 
-    // `toggle` fires for user clicks and for programmatic .open = true.
-    // Nothing closes any more, but a reader can still collapse one by
-    // hand if the browser offers it, and reopening must refill it.
+    // `toggle` fires for user clicks and for programmatic .open = true,
+    // so expand-all hydrates through this same path.
     details.addEventListener("toggle", () => {
       if (details.open) hydrateSection(details);
     });
-    observeSection(details);
 
     return details;
-  }
-
-  // Text arrives as a section nears the screen, not when it is clicked,
-  // because nothing is clicked any more. Two screens of margin so the
-  // page below is already there by the time it is reached; falls back to
-  // hydrating on the spot where IntersectionObserver is absent.
-  let sectionWatcher = null;
-  function observeSection(details) {
-    if (typeof IntersectionObserver !== "function") {
-      hydrateSection(details);
-      return;
-    }
-    if (!sectionWatcher) {
-      sectionWatcher = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          sectionWatcher.unobserve(entry.target);
-          hydrateSection(entry.target);
-        });
-      }, { rootMargin: "200% 0px" });
-    }
-    sectionWatcher.observe(details);
   }
 
   function hydrateSection(details) {
@@ -3435,9 +3382,6 @@
           if (kept && `${kept.en || ""}${kept.la || ""}`.trim()) sectionPages.push(kept);
         }
         body.innerHTML = "";
-        // The reserved height has done its job; real text sets the real
-        // one from here on.
-        body.style.minHeight = "";
         if (!sectionPages.length) {
           body.innerHTML = `<p class="faith-section-loading">No text on these pages.</p>`;
           details.dataset.frState = "loaded";
@@ -3450,15 +3394,6 @@
         body.appendChild(buildPagesBlock(sectionPages));
         details.dataset.frState = "loaded";
         restoreSectionActions(details);
-        // Addresses, the margin marks and the position bar all need the
-        // text to exist first.
-        buildHereBar();
-        addressBlocks(details);
-        locateHere();
-        if (!hydrateSection.offered) {
-          hydrateSection.offered = true;
-          offerResume();
-        }
         // A section opened after the reader was switched to modern
         // English has to catch up, or the work reads half-modernized.
         if (modernOn) modernizeWithin(details);
@@ -3488,7 +3423,6 @@
         retry.setAttribute("data-faith-retry", "");
         retry.textContent = "Retry";
         p.appendChild(retry);
-        body.style.minHeight = "";
         body.replaceChildren(p);
         retry.addEventListener("click", () => hydrateSection(details));
         if (window.console) window.console.warn("faith-reader:", err);
@@ -4309,343 +4243,6 @@
       }
     }
   }
-
-
-  // ══ Where you are, and what you can take away ═══════════════════
-  //
-  // The drawers did three jobs at once. They told you which chapter you
-  // were in, they let you collapse the work to see its shape, and they
-  // gave you something to copy or link to. They paid for it by hiding
-  // the text. Now that nothing is hidden, those three jobs need doing
-  // another way, and each is done by something that hides nothing: a
-  // heading pinned to the top of the screen, the contents rail marking
-  // your place as you read, and an address on every paragraph.
-
-  const PLACE_KEY = "fr_lastread";
-  const MARKS_KEY = "fr_marks";
-  const workKey = () => `${corpusId}:${slug}`;
-
-  function readStore(key) {
-    try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (_) { return {}; }
-  }
-  function writeStore(key, val) {
-    try { localStorage.setItem(key, JSON.stringify(val)); } catch (_) { /* private mode */ }
-  }
-
-  // Every paragraph gets the reader's own address grammar, b<page>-<i>,
-  // the same shape a citation door already targets — so a link a reader
-  // copies and a link the scripture index generates are one kind of
-  // thing. Runs once per section, as its text lands.
-  function addressBlocks(details) {
-    const lane = details.querySelector(".faith-col-en");
-    if (!lane || lane.dataset.frAddressed) return;
-    lane.dataset.frAddressed = "1";
-    let page = details.getAttribute("data-from") || "0";
-    let i = 0;
-    Array.prototype.forEach.call(lane.children, (el) => {
-      const mark = el.querySelector && el.querySelector(".faith-page-marker");
-      if (mark && mark.getAttribute("data-page")) {
-        page = mark.getAttribute("data-page");
-        i = 0;
-      }
-      if (!el.textContent.trim()) return;
-      const id = `b${page}-${i}`;
-      i += 1;
-      if (!document.getElementById(id)) el.id = id;
-      el.setAttribute("data-page", page);
-      el.classList.add("faith-parallel-block");
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "faith-blk-anchor";
-      btn.textContent = "§";
-      btn.title = "Copy a link to this passage";
-      btn.setAttribute("aria-label", `Copy a link to this passage, page ${page}`);
-      btn.setAttribute("data-fr-anchor", el.id || id);
-      const mk = document.createElement("span");
-      mk.className = "faith-blk-mark";
-      mk.setAttribute("aria-hidden", "true");
-      mk.textContent = "⚑";
-      el.insertBefore(mk, el.firstChild);
-      el.insertBefore(btn, el.firstChild);
-    });
-    paintMarks();
-  }
-
-  function addressedBlocks() {
-    return Array.prototype.slice.call(
-      contentEl.querySelectorAll(".faith-col-en > .faith-parallel-block[id]"));
-  }
-
-  function blockHere() {
-    const all = addressedBlocks();
-    if (!all.length) return null;
-    let found = all[0];
-    for (let i = 0; i < all.length; i += 1) {
-      if (all[i].getBoundingClientRect().top <= 140) found = all[i];
-      else break;
-    }
-    return found;
-  }
-
-  function sectionOf(el) {
-    return el ? el.closest(".faith-section-details") : null;
-  }
-  function titleOfSection(el) {
-    const t = el && el.querySelector(".faith-section-title");
-    return t ? t.textContent.trim() : "";
-  }
-  function bookOf(el) {
-    const b = el ? el.closest(".faith-book-details") : null;
-    const t = b && b.querySelector(".faith-part-eyebrow");
-    return t ? t.textContent.trim() : "";
-  }
-
-  // ── The bar ───────────────────────────────────────────────────
-  let hereBar = null;
-  let hereChapter = null;
-  let hereLocus = null;
-  let markBtn = null;
-
-  function buildHereBar() {
-    if (hereBar || !contentEl || !contentEl.parentNode) return;
-    hereBar = document.createElement("div");
-    hereBar.className = "faith-here";
-    const crumb = document.createElement("span");
-    crumb.className = "faith-here-crumb";
-    hereLocus = document.createElement("span");
-    hereLocus.className = "faith-here-locus";
-    hereChapter = document.createElement("span");
-    hereChapter.className = "faith-here-chapter";
-    crumb.appendChild(hereLocus);
-    crumb.appendChild(hereChapter);
-    const acts = document.createElement("span");
-    acts.className = "faith-here-acts";
-
-    const link = document.createElement("button");
-    link.type = "button";
-    link.textContent = "Copy link";
-    link.title = "Copy a link to this section";
-    link.addEventListener("click", () => {
-      const b = blockHere();
-      const sec = sectionOf(b);
-      const first = sec ? sec.querySelector(".faith-col-en > [id]") : null;
-      copyText(linkToBlock(first ? first.id : (b && b.id)), "Link to this section copied");
-    });
-
-    const text = document.createElement("button");
-    text.type = "button";
-    text.textContent = "Copy section";
-    text.title = "Copy this section's text, with its citation";
-    text.addEventListener("click", () => copyText(sectionText(), "Section copied, with its citation"));
-
-    markBtn = document.createElement("button");
-    markBtn.type = "button";
-    markBtn.textContent = "Bookmark";
-    markBtn.setAttribute("aria-pressed", "false");
-    markBtn.title = "Bookmark the passage you are on";
-    markBtn.addEventListener("click", toggleMark);
-
-    acts.appendChild(link);
-    acts.appendChild(text);
-    acts.appendChild(markBtn);
-    hereBar.appendChild(crumb);
-    hereBar.appendChild(acts);
-    contentEl.parentNode.insertBefore(hereBar, contentEl);
-  }
-
-  function locateHere() {
-    if (!hereBar) return;
-    const b = blockHere();
-    if (!b) return;
-    const sec = sectionOf(b);
-    hereChapter.textContent = titleOfSection(sec);
-    hereLocus.textContent = bookOf(b);
-    const marks = (readStore(MARKS_KEY)[workKey()] || []).some((m) => m.id === b.id);
-    markBtn.setAttribute("aria-pressed", String(marks));
-    markBtn.textContent = marks ? "Bookmarked" : "Bookmark";
-    // The rail marks the same place.
-    if (tocNav && sec) {
-      const want = `#${sec.id}`;
-      Array.prototype.forEach.call(tocNav.querySelectorAll("a[href^='#section-']"), (a) => {
-        a.classList.toggle("faith-toc-here", a.getAttribute("href") === want);
-      });
-    }
-    rememberPlace(b, sec);
-  }
-
-  // ── The place you stopped ─────────────────────────────────────
-  let lastWrote = 0;
-  function rememberPlace(b, sec) {
-    const now = Date.now();
-    if (now - lastWrote < 1000) return;
-    lastWrote = now;
-    const all = readStore(PLACE_KEY);
-    all[workKey()] = {
-      id: b.id,
-      page: b.getAttribute("data-page") || "",
-      chapter: titleOfSection(sec),
-      slug,
-      corpus: corpusId,
-    };
-    writeStore(PLACE_KEY, all);
-  }
-
-  function offerResume() {
-    if (window.location.hash) return;
-    const saved = readStore(PLACE_KEY)[workKey()];
-    if (!saved || !saved.id) return;
-    const first = addressedBlocks()[0];
-    if (first && saved.id === first.id) return;
-    const bar = document.createElement("div");
-    bar.className = "faith-resume";
-    const p = document.createElement("p");
-    p.appendChild(document.createTextNode("You stopped at "));
-    const b = document.createElement("b");
-    b.textContent = saved.chapter ? `${saved.chapter}, p. ${saved.page}` : `p. ${saved.page}`;
-    p.appendChild(b);
-    p.appendChild(document.createTextNode("."));
-    const go = document.createElement("button");
-    go.type = "button";
-    go.textContent = "Pick up there";
-    go.addEventListener("click", () => {
-      const el = document.getElementById(saved.id);
-      if (el) el.scrollIntoView({ block: "start" });
-      else revealSection(`#${saved.id}`, true);
-      bar.remove();
-    });
-    const no = document.createElement("button");
-    no.type = "button";
-    no.className = "faith-resume-no";
-    no.textContent = "Start at the beginning";
-    no.addEventListener("click", () => bar.remove());
-    bar.appendChild(p);
-    bar.appendChild(go);
-    bar.appendChild(no);
-    if (hereBar && hereBar.parentNode) hereBar.parentNode.insertBefore(bar, hereBar.nextSibling);
-  }
-
-  // ── The places you chose ──────────────────────────────────────
-  function paintMarks() {
-    const list = readStore(MARKS_KEY)[workKey()] || [];
-    const ids = {};
-    list.forEach((m) => { ids[m.id] = true; });
-    addressedBlocks().forEach((b) => b.classList.toggle("faith-marked", !!ids[b.id]));
-  }
-
-  function toggleMark() {
-    const b = blockHere();
-    if (!b) return;
-    const all = readStore(MARKS_KEY);
-    const list = all[workKey()] || [];
-    const at = list.findIndex((m) => m.id === b.id);
-    const sec = sectionOf(b);
-    if (at >= 0) {
-      list.splice(at, 1);
-      all[workKey()] = list;
-      writeStore(MARKS_KEY, all);
-      paintMarks();
-      locateHere();
-      toast("Bookmark removed");
-      return;
-    }
-    list.push({ id: b.id, page: b.getAttribute("data-page") || "", chapter: titleOfSection(sec) });
-    list.sort((x, y) => Number(x.page) - Number(y.page));
-    all[workKey()] = list;
-    writeStore(MARKS_KEY, all);
-    paintMarks();
-    locateHere();
-    toast("Bookmarked");
-  }
-
-  // ── Taking it away ────────────────────────────────────────────
-  function linkToBlock(id) {
-    const u = new URL(window.location.href);
-    u.hash = id ? `#${id}` : "";
-    return u.toString();
-  }
-
-  function sectionText() {
-    const sec = sectionOf(blockHere());
-    if (!sec) return "";
-    const lane = sec.querySelector(".faith-col-en");
-    if (!lane) return "";
-    const parts = [];
-    Array.prototype.forEach.call(lane.children, (el) => {
-      const clone = el.cloneNode(true);
-      Array.prototype.forEach.call(
-        clone.querySelectorAll(".faith-blk-anchor, .faith-blk-mark, .faith-page-marker"),
-        (x) => x.remove());
-      const t = clone.textContent.replace(/\s+/g, " ").trim();
-      if (t) parts.push(t);
-    });
-    const pages = addressedBlocks()
-      .filter((b) => sectionOf(b) === sec)
-      .map((b) => b.getAttribute("data-page"))
-      .filter(Boolean);
-    const where = pages.length ? `, pp. ${pages[0]}–${pages[pages.length - 1]}` : "";
-    const who = [meta && meta.author, meta && meta.title, titleOfSection(sec)]
-      .filter(Boolean).join(", ");
-    const cite = `${who}${where}.`;
-    return `${parts.join("\n\n")}\n\n${cite}`;
-  }
-
-  function copyText(text, said) {
-    if (!text) return;
-    const done = () => toast(said);
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, () => copyFallback(text, done));
-    } else copyFallback(text, done);
-  }
-  function copyFallback(text, done) {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.setAttribute("readonly", "");
-    ta.style.cssText = "position:fixed;top:-1000px";
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand("copy"); done(); } catch (_) { toast("Could not copy"); }
-    ta.remove();
-  }
-
-  let toastEl = null;
-  let toastTimer = null;
-  function toast(msg) {
-    if (!toastEl) {
-      toastEl = document.createElement("div");
-      toastEl.className = "faith-toast";
-      toastEl.setAttribute("role", "status");
-      toastEl.setAttribute("aria-live", "polite");
-      document.body.appendChild(toastEl);
-    }
-    toastEl.textContent = msg;
-    toastEl.classList.add("faith-toast-on");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toastEl.classList.remove("faith-toast-on"), 1600);
-  }
-
-  if (contentEl) {
-    contentEl.addEventListener("click", (e) => {
-      const b = e.target.closest(".faith-blk-anchor");
-      if (!b) return;
-      const row = b.closest("[id]");
-      copyText(linkToBlock(row && row.id), "Link to this passage copied");
-    });
-  }
-
-  // Coalesced to a frame, but never staked on the frame arriving: an
-  // earlier version cleared its flag inside the callback, so anywhere
-  // frames do not run the reader stopped knowing where it was for good.
-  let placeQueued = false;
-  function onPlaceScroll() {
-    if (placeQueued) return;
-    placeQueued = true;
-    const run = () => { placeQueued = false; locateHere(); };
-    if (typeof requestAnimationFrame === "function") requestAnimationFrame(run);
-    else setTimeout(run, 16);
-  }
-  window.addEventListener("scroll", onPlaceScroll, { passive: true });
-  window.addEventListener("resize", onPlaceScroll, { passive: true });
-  window.__frPlace = { locate: locateHere, address: addressBlocks, resume: offerResume };
 
   function restoreLang() {
     try {
