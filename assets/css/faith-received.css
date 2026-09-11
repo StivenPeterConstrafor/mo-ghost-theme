@@ -4184,9 +4184,21 @@ mark.faith-find-hit.is-current {
   cursor: default;
   pointer-events: none;
 }
+/* The book row carries four things now: the name, a proportional mark,
+   the citation figure, and the disclosure control. The bar used to be a
+   separate two-column chart stacked above this whole list, which put
+   sixty-six books on the page twice with two different figures beside
+   each of them.
+
+   The name track is fixed rather than `1fr` so that every bar in the
+   list starts on the same left edge. Each summary is its own grid, so a
+   content-sized track would step in and out down the page and the bars
+   would read as broken rather than as a chart. 13em against the
+   summary's own 16px is 208px, which clears "1 Thessalonians" set at
+   22px italic, the longest name in either testament. */
 .faith-scripture-book {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: minmax(0, 13em) minmax(40px, 1fr) auto;
   align-items: baseline;
   column-gap: 18px;
   padding: 16px 0;
@@ -4214,6 +4226,67 @@ mark.faith-find-hit.is-current {
   font-size: 12px;
   letter-spacing: 0.04em;
   color: var(--color-muted);
+}
+/* Bar and figure travel together in one grid cell, so the figures line
+   up down the right whatever the bar is doing. `baseline` on the row
+   aligns the figure with the book name; the bar is centred against that
+   figure inside this cell rather than sitting on the baseline, where a
+   6px block reads as an underline on the number. */
+.faith-scripture-book-total {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+/* No track behind the fill, for the reason .fa-fp-bar carries no track:
+   a track is a progress metaphor, so much of a maximum, and there is no
+   maximum here. It would also give every one of sixty-six rows a second
+   horizontal rule under the hairline it already has. */
+.faith-scripture-book-bar {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 6px;
+}
+/* --color-primary-text, not --color-primary: sixty-six bars of the
+   accent orange is a large field of it, and the darker brick is already
+   the ink of the eyebrows on this page. The bar must not outrank the
+   chevron or the figure, so it is ink at 6px and nothing else: no
+   radius, no shadow, no animation. */
+.faith-scripture-book-bar-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--color-primary-text);
+  transition: width 0.25s ease;
+}
+.faith-scripture-book-details.is-empty .faith-scripture-book-bar-fill {
+  background: var(--color-card-border);
+}
+.faith-scripture-book-fig {
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--color-muted);
+  /* 7ch holds "592,661" without the column stepping left as the
+     tradition chips rescope every figure in the list at once. */
+  min-width: 7ch;
+  text-align: right;
+  flex: 0 0 auto;
+}
+/* The reconciliation of the two counts, stated where the chapter rows
+   that make up the second one begin. Set as the quiet aside it is, not
+   as a warning. */
+.faith-scripture-book-lead {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-muted);
+  max-width: 62ch;
+  margin: 2px 0 14px;
+}
+.faith-scripture-figure-note {
+  max-width: 68ch;
 }
 .faith-scripture-chev {
   width: 11px;
@@ -5444,6 +5517,28 @@ mark.faith-find-hit.is-current {
   .faith-feature-cta .faith-hero-form { flex-direction: row; padding: 4px 4px 4px 14px; }
   .faith-feature-cta .faith-hero-form .btn { padding: 10px 18px; }
   .faith-scripture-grid { grid-template-columns: 1fr; }
+  /* The bar drops to its own line under the name. Inline, a 375px row
+     has 335px of content width, and the 13em name track plus the gaps
+     plus a 7ch figure plus the chevron leave the bar about sixteen
+     pixels to work in: too narrow to read a proportion off at all, and
+     Philemon would be gone entirely. On its own line it gets the full
+     width of the row, so the smallest book still draws a mark and the
+     largest still fills the measure.
+
+     `display: contents` dissolves the wrapper so the figure can stay on
+     the first line beside the name, where the reader is looking, while
+     only the bar moves down. */
+  .faith-scripture-book {
+    grid-template-columns: 1fr auto auto;
+    column-gap: 12px;
+    row-gap: 9px;
+  }
+  .faith-scripture-book-total { display: contents; }
+  .faith-scripture-book-name { grid-column: 1; grid-row: 1; }
+  .faith-scripture-book-fig { grid-column: 2; grid-row: 1; min-width: 0; }
+  .faith-scripture-book .faith-scripture-chev { grid-column: 3; grid-row: 1; }
+  .faith-scripture-book-bar { grid-column: 1 / -1; grid-row: 2; align-self: center; }
+  .faith-scripture-book-body { padding-left: 12px; }
   .faith-scripture-ref-link { grid-template-columns: 1fr; gap: 4px; }
   .faith-section-summary { padding: 22px 0; column-gap: 16px; }
   .faith-section-summary .faith-section-title { font-size: clamp(22px, 5.5vw, 28px); }

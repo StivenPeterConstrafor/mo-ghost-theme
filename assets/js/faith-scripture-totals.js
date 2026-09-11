@@ -1,49 +1,60 @@
 /*
- * Citations across the whole canon — the Scripture Index page, above
- * the book-by-book browser faith-indexes.js already draws.
+ * Citations across the whole canon — the Scripture Index page.
  *
- * faith-indexes.js answers "who cites Genesis 3" from two collections
- * it has walked itself, work by work. This answers a different,
- * coarser question — "how much does the library cite Genesis, next to
- * everything else" — from files the 2026-09 mo-tfr drop ships whole:
- * v1/bible/all/books.json (6,037,993 citations, all nine traditions
- * combined) and, per tradition, v1/bible/{code}/books.json — the same
- * per-book/per-chapter shape, just scoped to one of the nine codes
- * (ed/gf/hl/lu/md/pl/po/rc/rf; see TRADITION_LABEL below, duplicated
- * from assets/js/faith-author-scripture.js's CORPUS_LABEL per this
- * file family's no-shared-state convention rather than imported).
+ * This file used to draw its own two-column bar chart of every book,
+ * stacked above the book-by-book accordion faith-indexes.js draws. Two
+ * lists of the same sixty-six books, one above the other, each with its
+ * own figure beside each book, and the two figures did not agree:
+ * Genesis read 250,677 here and "92,022 references" there. They are
+ * merged now. This file still owns the DATA; faith-indexes.js owns the
+ * one list, and paints the bar and the figure into the same row that
+ * carries the book's name and its disclosure control.
  *
- * Two pieces of the door were deferred when this panel first shipped
- * (2026-09-03, see the git log around "canon-wide citation totals"):
- * tradition filter chips on the count, and a citation-density strip
- * across the whole canon. Both are built here now, from data that was
- * always there — v1/bible/{code}/books.json for the chips, and
- * v1/bible/all/books.json (already fetched) for the strip.
+ * WHAT THE FIGURE COUNTS, and why the old two disagreed.
  *
- * Deliberately still not the full "Scripture door": no chapter-level
- * density, no cross-tradition comparison chart. What is here is real
- * and load-bearing: the per-book figures, filterable by tradition, a
- * way to jump straight to a passage, and a single-glance shape of the
- * whole canon.
+ * v1/bible/all/books.json counts CITATION OCCURRENCES: every place a
+ * work in the library quotes or names a passage. 6,037,993 of them,
+ * and the file is exactly the sum of the nine per-tradition files
+ * v1/bible/{code}/books.json (verified: Genesis 250,677 = 76,118 ed +
+ * 21,660 gf + 1,218 hl + 31,507 lu + 7,680 md + 34,001 pl + 2,869 po +
+ * 27,148 rc + 48,476 rf, and the grand totals agree to the unit).
  *
- * Fetched and drawn independently of faith-indexes.js — this panel
- * does not read its data, wait on its fetches, or touch the DOM it
- * builds — so a fault in one can never take down the other.
+ * The accordion's old "92,022 references" was not a citation count at
+ * all. It is the sum, over a book's chapters, of the ROW COUNT in each
+ * generated per-chapter file, and a row there is one WORK. So it
+ * counted work-and-chapter pairs: a work citing Genesis 1 and Genesis 3
+ * counts twice, and a work citing Genesis 1 eleven times counts once.
+ * It also spans only the four collections whose text has been walked
+ * (the Latin Library, Early English Books, Patrologia Latina and
+ * Augustine), where this file spans all nine traditions.
+ *
+ * Both are real and both are wanted, so both are shown: the occurrence
+ * count is the figure and the bar on the book's row, and the
+ * work-and-chapter count is stated inside the book when it is opened,
+ * next to the chapter rows that add up to it. Neither is presented as
+ * the other, and the note under the list says which is which.
+ *
+ * Still deliberately not built: chapter-level density, and a
+ * cross-tradition comparison chart.
+ *
+ * Fault isolation is unchanged and still the point. faith-indexes.js
+ * renders a complete, usable accordion knowing nothing about this file;
+ * if this fetch never lands, the rows simply carry no bar and no
+ * citation figure. Nothing here reads that file's data or waits on its
+ * fetches. The hand-off is one way and one object: window.MOScriptureTotals,
+ * plus a `faith:scripture-totals` event when it changes, because either
+ * script may finish first.
  *
  * The jump control does not reach into faith-indexes.js's markup
  * either. It only ever sets `location.hash` to the id that script
  * gives a chapter's own <details> when that chapter has something in
- * the OLD index — `ref-<book>-<chapter>`, built the same way here as
- * there, so the ids agree without the two files knowing about each
- * other. A browser that supports scroll-to-fragment inside a closed
- * <details> — every evergreen one does — opens it and scrolls there on
- * its own. Nothing to wire up. A chapter the old index has not read
- * yet jumps nowhere; the number from this file is shown beside it
- * anyway, because that number does not depend on the old index having
- * read that far. The tradition filter never changes what the jump
- * control can reach — the old index has no tradition granularity of
- * its own, so narrowing the count above it would be a filter with
- * nothing underneath to honour it.
+ * the generated index — `ref-<book>-<chapter>`, built the same way here
+ * as there, so the ids agree without the two files knowing about each
+ * other. The tradition filter rescopes the figure and the bar, and
+ * nothing below them: the generated index has no tradition granularity
+ * of its own, so the chapters a book opens to are the same whichever
+ * chips are lit. The note says so rather than letting the reader assume
+ * the filter reached all the way down.
  */
 (function () {
   "use strict";
@@ -53,7 +64,11 @@
   const host = section.querySelector(".container");
   if (!host) return;
 
-  const LIBRARY = "https://mo-tfr-library.mo-podcast-feed.workers.dev";
+  // mo-tfr-library, and only ever mo-tfr-library. Read from the meta
+  // tag the rest of the Faith Received scripts read, with the same
+  // literal fallback they carry for a page that has not set it.
+  const LIBRARY = (document.querySelector('meta[name="tfr-library-base"]') || {}).content
+    || "https://mo-tfr-library.mo-podcast-feed.workers.dev";
 
   function escapeHtml(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
@@ -161,6 +176,32 @@
     return new Map(rows.map((b) => [String(b.book || "").toLowerCase(), b]));
   }
 
+  // ── The hand-off to faith-indexes.js ──────────────────────────────
+  //
+  // Keyed by the canonical display name faith-indexes.js builds its own
+  // book list from ("Genesis", "1 Corinthians", "Song Of Solomon",
+  // "Ecclesiasticus", "Revelation"), so that file never has to know that
+  // books.json spells three of them differently. The aliasing stays
+  // here, where the file that needs it is read.
+  //
+  // Published as a plain object with a Map on it rather than as an
+  // event payload alone, because the two scripts race: whichever
+  // finishes second has to be able to pick up what the first left.
+  function publish(byKey, scopeLabel, note) {
+    const byBook = new Map();
+    CANON_ORDER.forEach((name) => {
+      const row = byKey.get(toBooksJsonKey(name));
+      if (row && row.n) byBook.set(name, row.n);
+    });
+    window.MOScriptureTotals = { byBook, scopeLabel, note };
+    try {
+      window.dispatchEvent(new CustomEvent("faith:scripture-totals"));
+    } catch (err) {
+      // An older browser without the CustomEvent constructor still gets
+      // the object above; faith-indexes.js reads it on its own render.
+    }
+  }
+
   function maxOf(names, byKey) {
     return names.reduce((max, name) => {
       const row = byKey.get(toBooksJsonKey(name));
@@ -169,19 +210,6 @@
   }
 
   // ── Rendering pieces ──────────────────────────────────────────────
-
-  function bookBars(names, byKey, testamentMax) {
-    return names.map((name) => {
-      const row = byKey.get(toBooksJsonKey(name));
-      const total = row ? row.n : 0;
-      const pct = total ? Math.max(1.5, (total / testamentMax) * 100) : 0;
-      return `<li class="fa-fp-book${total ? "" : " is-empty"}">` +
-        `<span class="fa-fp-book-name">${escapeHtml(name)}</span>` +
-        `<span class="fa-fp-bar"><span class="fa-fp-bar-fill" style="width:${pct.toFixed(1)}%"></span></span>` +
-        `<span class="fa-fp-book-n">${total ? n(total) : "—"}` +
-        `<span class="visually-hidden"> citation${total === 1 ? "" : "s"}</span></span></li>`;
-    }).join("");
-  }
 
   // One thin bar per canonical book, Genesis through Revelation in one
   // row, height on a square-root scale — Psalms outweighs Obadiah by
@@ -203,13 +231,27 @@
     return `<ol class="fa-canon-strip" aria-label="Citation density across the canon, Genesis to Revelation">${items}</ol>`;
   }
 
+  // The unit is defined here, once, because it is the thing the two
+  // counts on this page differ about and the reader meets this sentence
+  // before either figure.
+  const UNIT = "A citation is one place a work names or quotes a passage, so a work that returns to the"
+    + " same verse ten times is counted ten times.";
+
   function ledeHtml(rows, scopeLabel) {
     const total = rows.reduce((s, b) => s + (b.n || 0), 0);
     const top = rows.slice().sort((a, b) => b.n - a.n)[0] || {};
-    return `${n(total)} citations of scripture${scopeLabel}, counted across every tradition the library` +
-      ` now sorts into — Latin and Greek Fathers, the English Divines, the schoolmen, the Reformers and those` +
-      ` who answered them. <b>${escapeHtml(top.book || "")}</b>` +
-      ` is cited more than any other book, at ${n(top.n)}.`;
+    // "in Lutheran, counted across every tradition the library sorts
+    // into" is a sentence that contradicts itself, which is what the
+    // scoped lede used to say: the scope label was dropped into a
+    // clause written for the unscoped figure. Two sentences now, and
+    // only the one that is true gets printed.
+    const opening = scopeLabel
+      ? `${n(total)} citations of scripture${scopeLabel}.`
+      : `${n(total)} citations of scripture, counted across every tradition the library now sorts into:`
+        + ` Latin and Greek Fathers, the English Divines, the schoolmen, the Reformers and those who`
+        + ` answered them.`;
+    return `${opening} ${UNIT} <b>${escapeHtml(top.book || "")}</b>`
+      + ` is cited more than any other book${scopeLabel ? " there" : ""}, at ${n(top.n)}.`;
   }
 
   function traditionChipsHtml(active) {
@@ -226,8 +268,25 @@
 
   // ── Mount ───────────────────────────────────────────────────────
 
+  // The note that travels with the figures. It has to do three things
+  // at once: say what the figure counts, say that the bar is not linear
+  // (Psalms outweighs Philemon 785 to 1, and a linear bar would render
+  // Philemon at a third of a pixel), and say that the count inside an
+  // opened book is a different measure rather than a contradiction.
+  const ALL_NOTE = "The figure beside each book counts citation occurrences: every place a work in the"
+    + " library names or quotes a passage from it. Counted from v1/bible/all/books.json, the 2026-08-25"
+    + " library-wide index, across all nine traditions. The bar is on a square-root scale so that the"
+    + " shorter books stay visible beside Psalms, so read the figure for the size and the bar only for the"
+    + " shape. Open a book and the chapter rows count something narrower, and say so there.";
+
+  function scopedNote(codes, labels) {
+    return `The figure beside each book counts citation occurrences, from v1/bible/${codes.join(", ")}/books.json,`
+      + ` scoped to ${labels.join(" + ")}. A dash means that tradition cites nothing in the book. The chapters`
+      + ` inside a book do not narrow with these chips: the generated index this list opens into records where a`
+      + ` citation is, not which tradition made it.`;
+  }
+
   function mount(allRows) {
-    const otNames = OT.concat(DEUTERO);
     const active = new Set();
 
     const panel = document.createElement("section");
@@ -243,42 +302,29 @@
       `<input type="text" class="faith-scripture-jump-input" data-faith-scripture-jump-input` +
       ` placeholder="Romans 8, or Genesis 1" aria-label="Go to a book and chapter"></label>` +
       `<button type="submit" class="fa-search-btn">Go</button></form>` +
-      `<p class="faith-scripture-jump-status visually-hidden" role="status" aria-live="polite" data-faith-scripture-jump-status></p>` +
-      `<div class="fa-fp-cols">` +
-      `<div class="fa-fp-col"><h3 class="fa-fp-sub">Old Testament</h3>` +
-      `<ol class="fa-fp-books faith-scripture-totals-list" data-fst-ot></ol></div>` +
-      `<div class="fa-fp-col"><h3 class="fa-fp-sub">New Testament</h3>` +
-      `<ol class="fa-fp-books faith-scripture-totals-list" data-fst-nt></ol></div>` +
-      `</div>` +
-      `<p class="fa-fp-source" data-fst-source></p>`;
+      `<p class="faith-scripture-jump-status visually-hidden" role="status" aria-live="polite" data-faith-scripture-jump-status></p>`;
 
     host.insertBefore(panel, host.firstChild);
 
     const ledeEl = panel.querySelector("[data-fst-lede]");
     const stripEl = panel.querySelector("[data-fst-strip]");
-    const otEl = panel.querySelector("[data-fst-ot]");
-    const ntEl = panel.querySelector("[data-fst-nt]");
-    const sourceEl = panel.querySelector("[data-fst-source]");
     const tradStatus = panel.querySelector("[data-fst-trad-status]");
 
+    // The books themselves are drawn by faith-indexes.js, one row per
+    // book, bar and figure in the same row as the name and the
+    // disclosure control. All this does is hand over the numbers.
     function draw(rows, scopeLabel, sourceNote) {
       const byKey = byKeyOf(rows);
-      const otMax = maxOf(otNames, byKey);
-      const ntMax = maxOf(NT, byKey);
       ledeEl.innerHTML = ledeHtml(rows, scopeLabel);
       stripEl.innerHTML = canonStrip(byKey);
-      otEl.innerHTML = bookBars(otNames, byKey, otMax);
-      ntEl.innerHTML = bookBars(NT, byKey, ntMax);
-      sourceEl.textContent = sourceNote;
+      publish(byKey, scopeLabel, sourceNote);
     }
 
-    draw(allRows, "", "Counted from v1/bible/all/books.json, the 2026-09 library-wide index. A dash"
-      + " means the book has no citations recorded there yet, not that none exist.");
+    draw(allRows, "", ALL_NOTE);
 
     function refresh() {
       if (!active.size) {
-        draw(allRows, "", "Counted from v1/bible/all/books.json, the 2026-09 library-wide index. A dash"
-          + " means the book has no citations recorded there yet, not that none exist.");
+        draw(allRows, "", ALL_NOTE);
         if (tradStatus) tradStatus.textContent = "Showing every tradition.";
         return;
       }
@@ -288,8 +334,7 @@
         const rows = sumBooks(sets);
         const labels = codes.map((c) => TRADITION_LABEL[c]);
         const scopeLabel = ` in ${labels.length === 1 ? labels[0] : `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`}`;
-        draw(rows, scopeLabel, `Counted from v1/bible/${codes.join(", ")}/books.json, scoped to`
-          + ` ${labels.join(" + ")}. A dash means the book has no citations recorded there.`);
+        draw(rows, scopeLabel, scopedNote(codes, labels));
         tradStatus.textContent = `Showing ${labels.join(", ")}.`;
       });
     }
@@ -328,7 +373,7 @@
     const form = panel.querySelector("[data-faith-scripture-jump]");
     const input = panel.querySelector("[data-faith-scripture-jump-input]");
     const status = panel.querySelector("[data-faith-scripture-jump-status]");
-    const ALL_NAMES = otNames.concat(NT);
+    const ALL_NAMES = CANON_ORDER;
 
     function resolveBook(text) {
       const t = String(text || "").trim().toLowerCase();
@@ -351,19 +396,24 @@
         status.textContent = "Not a reference this page knows. Try a book and a chapter, such as Romans 8.";
         return;
       }
-      const id = chapterId(book, ch);
-      const target = document.getElementById(id);
-      if (target) {
-        status.textContent = `Opening ${book} ${ch}.`;
-        window.location.hash = id;
-        target.scrollIntoView({ block: "start", behavior: "smooth" });
-        if (typeof target.open !== "undefined") target.open = true;
-      } else {
-        const row = byKeyOf(allRows).get(toBooksJsonKey(book));
-        status.textContent = row && row.chapters
-          ? `${book} ${ch} is not yet open below — the book browser only reads two of the library's collections so far.`
-          : `${book} ${ch} is not in the index.`;
-      }
+      // Ask the list to go there rather than reaching into its markup.
+      // The hash trick this used to do could only ever work when the
+      // book was already on screen, so a jump to Romans 8 from the Old
+      // Testament tab found nothing and reported the reference missing
+      // when it was merely on the other tab. faith-indexes.js already
+      // listens for this, switches the testament, opens the book and
+      // the chapter and scrolls to it.
+      window.dispatchEvent(new CustomEvent("faith:goto-scripture", {
+        detail: { book, chapter: ch },
+      }));
+      // Checked on the next frame, after that listener has rendered, so
+      // the reader is told the truth whether it worked or not. If
+      // faith-indexes.js never loaded, nothing moved and this says so.
+      window.requestAnimationFrame(() => {
+        status.textContent = document.getElementById(chapterId(book, ch))
+          ? `Opening ${book} ${ch}.`
+          : `${book} ${ch} is not in the index yet. The chapters below come from the four collections whose text has been walked.`;
+      });
     });
   }
 
