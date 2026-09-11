@@ -132,7 +132,20 @@
     <div class="lp-stats">
       <div class="lp-stat"><b>30,748</b><span>Works</span></div>
       <div class="lp-stat"><b>2.1M</b><span>Pages</span></div>
-      <div class="lp-stat"><b>13,892</b><span>English translations</span></div>
+      {{!-- 13,167, not 13,892. The larger figure counted 735 Latin Library
+            works that carry English and no Latin at all: the English
+            Divines, Baxter, Watson, Perkins, Andrewes, writing in English
+            in the first place. Nobody translated them. Only 10 of those
+            carry the en_only flag, so the flag undercounts by 725 and
+            cannot be used to find them; the test is la_chars > 0.
+
+            Labelled "English translations" and not "First translations".
+            No catalogue anywhere records whether a translation is the
+            first ever made into English, so a precise count of firsts is
+            not a claim we can defend. The Academics paragraph below keeps
+            "most of which are now in English for the first time" as
+            prose, which is a scholarly generalisation and true. --}}
+      <div class="lp-stat"><b>13,167</b><span>English translations</span></div>
       <div class="lp-stat"><b>Free</b><span>Every page</span></div>
     </div>
 
