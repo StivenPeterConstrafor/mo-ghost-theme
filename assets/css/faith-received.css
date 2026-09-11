@@ -4918,13 +4918,23 @@ mark.faith-find-hit.is-current {
   color: var(--color-secondary);
   margin: 0 0 4px;
 }
+/* Upright, not italic, and labelled. This line is the index's summary
+   of a position and not the writer's words; italics between quotation
+   marks said otherwise for as long as it looked like a quotation. */
 .faith-topic-quote-text {
   font-family: var(--font-body);
-  font-style: italic;
   font-size: 17px;
   line-height: 1.6;
   color: var(--color-dark);
   margin: 0 0 6px;
+}
+.faith-topic-quote-label {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
 }
 .faith-topic-quote-source {
   font-family: var(--font-body);
