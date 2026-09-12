@@ -10,6 +10,7 @@ Do not create a replacement artifact URL. Publication is for the owner or an edi
 
 - Theme handoff PR: https://github.com/cvs4bz49sb-oss/mo-ghost-theme/pull/11
 - Backend handoff PR: https://github.com/cvs4bz49sb-oss/mo-workers/pull/4
+- Native MereO code PR: https://github.com/cvs4bz49sb-oss/mo-ghost-theme/pull/12
 - Native MereO source branch: https://github.com/StivenPeterConstrafor/mo-ghost-theme/tree/fix/ask-question-persistence
 - Native implementation and acceptance details: `docs/faith-received/ASK-QUESTION-PERSISTENCE.md` on that branch.
 - Full Vercel source snapshots and hashes: `docs/faith-received/reference/ask-persistence-2026-09-12/` in theme handoff PR 11. These are the complete files with `.txt` suffixes, not abbreviated snippets. Preserve MereO routes, Cloudflare adapters, member gates, and branding when porting the full workspace.
