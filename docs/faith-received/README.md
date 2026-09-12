@@ -1,5 +1,8 @@
 # The Faith Received on MereO — master index of the instruction sheets
 
+
+> September 12 repair handoff: [Mobile Ask source integrity](MOBILE-ASK-SOURCE-INTEGRITY.md) includes the corrected citation/UI contract, full source snapshots and verification requirements. The companion backend changes are in mo-workers PR #4.
+
 Organised 2026-09-11. Everything sent to Ian lives in two GitHub homes, both public to him:
 
 | Home | Repo / path | What it holds |

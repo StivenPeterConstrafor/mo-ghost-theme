@@ -1,5 +1,8 @@
 # Ask the Library — `/?find=ask`, the Ask workspace, and the API contract
 
+
+> September 12 repair handoff: [Mobile Ask source integrity](MOBILE-ASK-SOURCE-INTEGRITY.md) includes the corrected citation/UI contract, full source snapshots and verification requirements. The companion backend changes are in mo-workers PR #4.
+
 Written 2026-09-11 for Ian. Live reference: https://thefaithreceived.vercel.app/?find=ask.
 Every rule below is grounded in the code named beside it. Source of truth on the Vercel side:
 `tools/visual_review/faith_received.py` (the home page), `tools/ask_workspace/*` (the
