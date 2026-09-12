@@ -119,6 +119,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 |---|---|---|
 | 09-11 | ASK_BACKEND_INSTRUCTIONS.md rewritten for the WHOLE BRAIN (owner: the tool layer is in scope) — two gears behind one `/v1/ask`, the 14-tool loop, the member gate, 14-step battery, thirteen files | mo-workers a393969 (worker 689b66d) |
 | 09-11 | Handoff hub published (living artifact: §0 item 0 — screenshots, batteries, deep dives; grows with this index) | — (Claude artifact, updated in place) |
+| 09-12 | R2-SYNC-SPEC §3.1: Doronzo's eleven volumes curated (OCR letter-spacing, article headings, contents leaf) | mo-ghost-theme d1d88167 |
 | 09-11 | R2-SYNC-SPEC §3.1: CCEL boilerplate out of the Calvin corpus (47 works); Doronzo outlines rebuilt to the printed Ordo (11 works) | mo-ghost-theme b39fdc8a |
 | 09-11 | ASK-SPEC §6 bench cap 24; SEARCH-SPEC §3.4 scripture.json commentary gate; R2-SYNC-SPEC §3 (7) worker edge cache + §3.1 log (scripture.json cleaned, Lightfoot added) | mo-ghost-theme 9504a65f |
 | 09-11 | READER-SPEC §6 ordinal lookahead rule + battery line; R2-SYNC-SPEC §3.1 corpus-change log (EN-lane Latin heads fixed, 4,337 in 472 works) | mo-ghost-theme ed0dba01 |
