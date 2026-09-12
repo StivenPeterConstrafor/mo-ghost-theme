@@ -4489,9 +4489,34 @@
 
     const text = document.createElement("button");
     text.type = "button";
-    text.textContent = "Copy section";
+    // The site's own word for this, not a new one.
+    text.textContent = "Copy passage";
     text.title = "Copy this section's text, with its citation";
-    text.addEventListener("click", () => copyText(sectionText(), "Section copied, with its citation"));
+    text.addEventListener("click", () => copyText(sectionText(), "Passage copied, with its citation"));
+
+    // "Notebook saves the text and bookmarks saves the place." Both
+    // promises need to be reachable from the bar now that the row that
+    // used to carry them is gone. Shown only when there is a notebook
+    // to save into, which is the same gate the row used.
+    let note = null;
+    if (window.MOFaithNotebook) {
+      note = document.createElement("button");
+      note.type = "button";
+      note.textContent = "Save to notebook";
+      note.title = "Save this section's text to your notebook";
+      note.addEventListener("click", () => {
+        const sec = sectionOf(blockHere());
+        if (!sec) return;
+        try {
+          window.MOFaithNotebook.saveSection
+            ? window.MOFaithNotebook.saveSection(sec)
+            : copyText(sectionText(), "Passage copied, with its citation");
+          toast("Saved to notebook");
+        } catch (_) {
+          toast("Could not save to the notebook");
+        }
+      });
+    }
 
     markBtn = document.createElement("button");
     markBtn.type = "button";
@@ -4502,6 +4527,7 @@
 
     acts.appendChild(link);
     acts.appendChild(text);
+    if (note) acts.appendChild(note);
     acts.appendChild(markBtn);
     hereBar.appendChild(crumb);
     hereBar.appendChild(acts);
@@ -5016,9 +5042,23 @@
   //
   // Scoped to the one section, because the alternative is re-walking a
   // 900-page work on every open.
-  function restoreSectionActions(details) {
-    if (window.MOFaithSections) window.MOFaithSections.refresh(details);
-  }
+  // The per-section action row is not injected in the reader any more.
+  //
+  // It was built for drawers: one row per drawer, sitting at the head of
+  // the one section you had opened. With every chapter open it became
+  // 141 rows of the same four buttons interrupting the text, and three
+  // of the four were already in the bar pinned to the top of the screen
+  // — Copy link and Bookmark literally twice over, a screen apart.
+  //
+  // The bar wins because it follows the reader. In a continuous work
+  // "this section" means the one you are in, and the bar always knows
+  // which that is, where a fixed row only acts on the section it sits
+  // in. Save to notebook moved into the bar so nothing was lost.
+  //
+  // faith-received.js still injects the row everywhere else — the
+  // creeds, the confessions, the 95 Theses — where the units are short
+  // and there is no bar. Only the reader opts out.
+  function restoreSectionActions() {}
 
   // Every path through this file ends here, whichever reader kind the
   // corpus declared, which makes it the one place the text is reliably
@@ -5026,7 +5066,6 @@
   // and is injected by walking the DOM, so it has to be told.
   function hideLoading() {
     if (loadingEl) loadingEl.hidden = true;
-    if (window.MOFaithSections) window.MOFaithSections.refresh();
   }
 
   // ── Utility ───────────────────────────────────────────────────
