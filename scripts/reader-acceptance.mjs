@@ -189,17 +189,23 @@ async function open(url, waitFor) {
     `${READER}?w=coccejus-summa-theologiae&p=221&q=${encodeURIComponent(quote)}`,
     "document.querySelectorAll('.faith-section-details').length > 0");
   const landed = await page.evaluate(async () => {
-    for (let i = 0; i < 40; i += 1) {
+    // The mark appears BEFORE the scroll that brings it into view, so
+    // sampling the moment it exists reports it off-screen and calls a
+    // working reader broken. It did, twice. Wait for the position to
+    // settle, not merely for the element to exist.
+    const inView = (el) => {
+      const b = el.getBoundingClientRect();
+      return b.top >= 0 && b.bottom <= window.innerHeight;
+    };
+    let mark = null;
+    for (let i = 0; i < 60; i += 1) {
       await new Promise((r) => setTimeout(r, 500));
-      if (document.querySelector("mark, .faith-quote-hit, .faith-page-target")) break;
+      mark = document.querySelector("mark, .faith-quote-hit");
+      if (mark && inView(mark)) break;
     }
-    const mark = document.querySelector("mark, .faith-quote-hit");
     return {
       marked: !!mark,
-      onScreen: mark
-        ? (() => { const b = mark.getBoundingClientRect();
-            return b.top > -200 && b.top < window.innerHeight + 200; })()
-        : false,
+      onScreen: mark ? inView(mark) : false,
       scrolled: window.scrollY,
     };
   });
