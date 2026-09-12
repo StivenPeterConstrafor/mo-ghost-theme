@@ -2022,6 +2022,10 @@ html:not(.fr-plain) .fr-reader-head .reader-identity{display:block;min-width:0;f
 html:not(.fr-plain) .fr-reader-head h1{font-size:20px;line-height:1.25;letter-spacing:0;min-width:0;max-width:100%;margin:0;font-variant:normal}
 html:not(.fr-plain) .fr-reader-head .sub,html:not(.fr-plain) .fr-reader-head .ploc{display:none}
 html:not(.fr-plain) .fr-reader-head .reader-reference{display:flex;align-items:center;gap:0 8px;min-width:0;margin-top:3px;font:12px/1.5 var(--font-body);color:var(--muted);font-variant-numeric:tabular-nums}
+html:not(.fr-plain) .ph.fr-reader-head:has(#reader-introduction:not([hidden])){flex-wrap:wrap;row-gap:0}
+#reader-introduction:not([hidden]){display:flex;align-items:center;flex-wrap:wrap;flex:0 0 100%;order:20;gap:0 14px;margin-top:2px;font:12px/1.5 var(--font-body);color:var(--muted)}
+#reader-introduction a{color:var(--fg);text-underline-offset:3px;min-height:28px;display:inline-flex;align-items:center}
+@media(max-width:640px){#reader-introduction:not([hidden]){gap:0 12px}#reader-introduction a{min-height:44px}}
 .reader-reference a{color:inherit;text-decoration:none;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0}.reader-reference a:hover{text-decoration:underline}.reader-reference span{white-space:nowrap;flex:none}.reader-reference span:empty{display:none}
 html:not(.fr-plain) .fr-reader-head #reader-location{background:none;border:0;border-left:1px solid var(--border);padding:0 0 0 8px;min-height:24px;border-radius:0;color:var(--muted);font:inherit;white-space:nowrap;flex:none;cursor:pointer}
 html:not(.fr-plain) .fr-reader-head .mh-home{display:inline-flex;align-items:center;gap:2px;min-height:44px;min-width:44px;padding:0;color:var(--muted);font:13px var(--font-body);letter-spacing:0;text-decoration:none;flex:none}

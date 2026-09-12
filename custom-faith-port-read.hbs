@@ -14,11 +14,12 @@
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer:ital@0;1&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Old+Standard+TT:ital,wght@0,400;0,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
 <link rel="stylesheet" href="{{asset "css/port/prdl-system.css"}}&amp;frv=773f88d15ebcac8e">  <!-- shared design system (one source for all four sites); the inline tokens below still win, so this is additive -->
-<link rel="stylesheet" href="{{asset "css/port/read.in01.css"}}&amp;frv=7ec661d68575dabc">
+<link rel="stylesheet" href="{{asset "css/port/read.in01.css"}}&amp;frv=b9cbac387f569bfb">
 <link rel="stylesheet" href="{{asset "css/port/work-research.css"}}&amp;frv=2752d3b8f4712425">
 <script defer src="{{asset "js/port/work-research.js"}}&amp;frv=d365d11383a739d4"></script>
 <script defer src="{{asset "js/port/reader-bookmarks.js"}}&amp;frv=4e92a8363e3e9697"></script>
 <script src="{{asset "js/port/migne-navigation.js"}}&amp;frv=c79221ed33aa8385"></script>
+<script src="{{asset "js/port/pld-reading.js"}}&amp;frv=cad286ad73b47a57"></script>
 <script src="{{asset "js/port/reader-navigation.js"}}&amp;frv=749e603cd55e3f46"></script>
 <script src="{{asset "js/port/reader-source-outline.js"}}&amp;frv=e279535bb9854a04"></script>
 <script src="{{asset "js/port/reader-contents.js"}}&amp;frv=8c2a6af25f9138d3"></script>
@@ -29,7 +30,7 @@
 <link rel="stylesheet" href="{{asset "css/port/reader-margins.css"}}&amp;frv=1db8200a0e7ddcd1"><script defer src="{{asset "js/port/reader-margins.js"}}&amp;frv=bdb97eb6eba471ba"></script>
 <link rel="stylesheet" href="{{asset "css/port/reader-footnotes.css"}}&amp;frv=17ad80959a8b50ce"><script defer src="{{asset "js/port/reader-footnotes.js"}}&amp;frv=02bf9e1cb9320c19"></script>
 <link rel="stylesheet" href="{{asset "css/port/reader-scripture-preview.css"}}&amp;frv=78f84b854c76833d"><script defer src="{{asset "js/port/reader-scripture-preview.js"}}&amp;frv=f217b0fe4b30adef"></script>
-<script src="{{asset "js/port/read.in01.js"}}&amp;frv=6b6162ff3668061f"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=925ae280bc835f5b"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}&amp;frv=8618bdf9072bb354"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=e7d3c7adbe5a3ffc"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=50493d5997bc2aaf"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=8054a1a8cc536753"></script><script defer src="{{asset "js/port/site-navigation.js"}}&amp;frv=60364ae57d578f9b"></script><link rel="stylesheet" href="{{asset "css/port/site-navigation.css"}}&amp;frv=2ab4f51e8599fbab"><script src="{{asset "js/port/fr-noblob.js"}}&amp;frv=bb56551f8c8d92e0"></script><style>.tfrp-bridge{display:flex;justify-content:space-between;align-items:center;padding:.45rem 1.25rem;border-bottom:1px solid rgba(0,0,0,.08);font:500 .78rem/1 Georgia,'Times New Roman',serif;letter-spacing:.04em;background:inherit;color:inherit}.tfrp-bridge a{color:inherit;text-decoration:none;opacity:.75}.tfrp-bridge a:hover{opacity:1;text-decoration:underline}.tfrp-bridge .tfrp-r a{margin-left:1.1rem}[data-theme=dark] .tfrp-bridge{border-bottom-color:rgba(255,255,255,.14)}</style>
+<script src="{{asset "js/port/read.in01.js"}}&amp;frv=a542c19324dc7a72"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=925ae280bc835f5b"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}&amp;frv=8618bdf9072bb354"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=e7d3c7adbe5a3ffc"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=50493d5997bc2aaf"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=8054a1a8cc536753"></script><script defer src="{{asset "js/port/site-navigation.js"}}&amp;frv=60364ae57d578f9b"></script><link rel="stylesheet" href="{{asset "css/port/site-navigation.css"}}&amp;frv=2ab4f51e8599fbab"><script src="{{asset "js/port/fr-noblob.js"}}&amp;frv=bb56551f8c8d92e0"></script><style>.tfrp-bridge{display:flex;flex-wrap:wrap;gap:.5rem 1rem;justify-content:space-between;align-items:center;padding:.45rem 1.25rem;border-bottom:1px solid rgba(0,0,0,.08);font:500 .78rem/1 Georgia,'Times New Roman',serif;letter-spacing:.04em;background:inherit;color:inherit}.tfrp-bridge a{color:inherit;text-decoration:none;opacity:.75}.tfrp-bridge a:hover{opacity:1;text-decoration:underline}.tfrp-bridge .tfrp-r{display:flex;flex-wrap:wrap;gap:.5rem 1.1rem;min-width:0}[data-theme=dark] .tfrp-bridge{border-bottom-color:rgba(255,255,255,.14)}</style>
 {{ghost_head}}
 </head>
 <body>
@@ -67,7 +68,7 @@
               <div class="aarow"><span class="aal">Scan</span><label class="sld izc" title="Scan size · over the image: scroll = pan, Ctrl/⌘+scroll = zoom, drag = move">🔍<input type="range" id="izs" min="55" max="360" step="5"></label></div>
             </div></div>
         </div>
-        <div class="rvsum" id="rvsum"></div>
+        <div class="rvsum" id="rvsum"></div><div id="reader-introduction" hidden></div>
       </header>
       <main id="reading" aria-label="The text"><div class="loading">Loading the text…</div></main>
     </div>
@@ -130,7 +131,7 @@
   <button class="pb" id="spPin" title="Pin this page to your active collection">★ Pin</button>
   </div>
 </div>
-<script src="{{asset "js/port/reader-core.js"}}&amp;frv=3f23c82f664d487f"></script>
+<script src="{{asset "js/port/reader-core.js"}}&amp;frv=2d028cd12ac62b0c"></script>
 <script src="{{asset "js/port/cgpt-link.js"}}&amp;frv=386401f14f087d18"></script>
 {{ghost_foot}}
 </body>

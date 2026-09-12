@@ -1427,7 +1427,8 @@ function readerOutlineHref(row){
 }
 function locOf(n){
   const corrected=window.FRReaderNavigation?.locator(DATA,n);if(corrected)return corrected;
-  if(DATA&&DATA.has_pages)return (/^P[LG]\s*\d/i.test(DATA.volume||"")?"col. ":"p. ")+n;
+  if(/^P[LG]\s*\d/i.test(DATA?.volume||""))return "col. "+n;
+  if(DATA&&DATA.has_pages)return "p. "+n;
   // born-digital: prefer the export-time deep locator (page.loc, body-mined + carried forward),
   // then the nearest TOC heading parse, then the bare section ordinal.
   if(!_pageByN){_pageByN={};(DATA&&DATA.pages||[]).forEach(p=>_pageByN[p.n]=p);}
@@ -3703,6 +3704,17 @@ function goReaderReference(pg){
 function syncReaderHeader(n){
  if(!DATA)return;
  const author=$("#reader-author"),volume=$("#reader-volume"),place=$("#reader-location");
+ const guide=$("#reader-introduction"),intro=DATA.reader_introduction;
+ if(guide){guide.hidden=!intro||Number(n)>=intro.end;
+  if(intro&&guide.dataset.work!==DATA.slug){
+   guide.dataset.work=DATA.slug;guide.replaceChildren();
+   const label=document.createElement('span');label.textContent='Printed chapter summaries';guide.appendChild(label);
+   for(const target of intro.targets){const link=document.createElement('a');link.textContent=target.label;
+    const url=new URL(location.href);url.searchParams.set('p',String(target.page));url.hash='b'+target.page+'-0';link.href=url.pathname+url.search+url.hash;
+    link.onclick=e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();history.replaceState(null,'',link.href);
+     window.__frRestoreReaderPosition({page:target.page,title:target.title,choice:true});};guide.appendChild(link);}
+  }
+ }
  author.textContent=DATA.author||"";author.href="/?a="+encodeURIComponent(DATA.author||"");
  volume.textContent=String(DATA.volume||"").replace(/\b(P[LG]|PO)\s*(\d+)/g,"$1 $2");
  place.textContent=locOf(n);place.setAttribute('aria-label','Go to a place in this work, currently '+locOf(n));
@@ -3720,9 +3732,9 @@ function syncReaderHeader(n){
  $("#m-par").title='Show '+source+' text';$("#m-en").title='Show English translation';
 }
 function pgDenom(){const ns=(DATA&&DATA.pages||[]).map(x=>+x.n).filter(Number.isFinite);
-  // PG names printed columns in the numerator. Repeated or out-of-order source
+  // Migne names printed columns in the numerator. Repeated or out-of-order source
   // entries must not switch its denominator to a count of stored openings.
-  if(/^PG\s/.test(DATA?.volume||'')&&ns.length){const last=ns.reduce((a,b)=>Math.max(a,b),0);
+  if(/^P[LG]\s/.test(DATA?.volume||'')&&ns.length){const last=ns.reduce((a,b)=>Math.max(a,b),0);
     return {txt:String(last),tip:'Last available column: '+last};}
   if(ns.length>1&&ns.every((v,i)=>i===0||v>=ns[i-1])&&ns[ns.length-1]!==ns.length)
     return {txt:String(ns[ns.length-1]),tip:(DATA.pages.length)+" pages, numbered to "+ns[ns.length-1]};
@@ -4803,20 +4815,33 @@ async function loadPldCanon(ws){
     if(COLONFMT){if(!raw.includes(":"))return 0;return parseInt(raw.split(":")[1],10)||0;}
     return parseInt(raw,10)||0;};
   let depth0=null;
+  const pairedHeads=new Set();
+  const advance=n=>{if(n&&!seen.has(n)){seen.add(n);pages.push(n);
+    for(const [d,b] of [[laD,laB],[enD,enB]]){const pb=d.createElement("pb");pb.setAttribute("n",String(n));b.appendChild(pb);}}};
+  // The first source column also owns any opening text printed before its marker.
+  const firstColumn=[...doc.querySelectorAll('milestone[unit="column"]')].map(m=>colN(m.getAttribute('n'))).find(Boolean);
+  advance(firstColumn);
+  window.__pldLastEnHead=null;window.__pldLastEnHeadEcho=false;
   const walk=(node,depth)=>{
     for(const ch of node.children){
       const ln=ch.localName;
       if(ln==="milestone"&&ch.getAttribute("unit")==="column"){
-        const n=colN(ch.getAttribute("n"));
-        if(n&&!seen.has(n)){seen.add(n);pages.push(n);
-          for(const [d,b] of [[laD,laB],[enD,enB]]){const pb=d.createElement("pb");pb.setAttribute("n",String(n));b.appendChild(pb);}}
+        advance(colN(ch.getAttribute("n")));
       }else if(ln==="head"){
-        const t=ch.textContent.replace(/\s+/g," ").trim();
-        // deep-TOC: prefer the family's English label for this div (xml:id w{id}-d{path})
+        if(pairedHeads.has(ch))continue;
+        const info=window.FRPldReading.heading(ch);
+        if(info.companion)pairedHeads.add(info.companion);
+        // A new division's explicit column belongs to its heading, not the prior chapter.
+        advance(colN(info.rawColumn));
+        const t=info.source;
         const did=(ch.parentElement.getAttribute("xml:id")||"").replace(/^w\d+-d/,"").replace(/_/g," ");
-        const en=(toc&&toc[did])||"";
+        const en=info.english||(toc&&toc[did])||"";
         if(depth0===null)depth0=depth;
-        if(t||en)struct.push({title:(en||t).slice(0,140),page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5)});
+        if(t||en)struct.push({title:en||t,page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5)});
+        window.__pldLastEnHead=null;window.__pldLastEnHeadEcho=false;
+        // Exact source head/p + corresp translation: retain the complete canonical
+        // paragraphs once. The sidecar label is navigation metadata, often truncated.
+        if(info.repeated)continue;
         if(t){const h=laD.createElement("head");h.textContent=t;laB.appendChild(h);}
         {const h=enD.createElement("head");h.textContent=en||t;enB.appendChild(h);window.__pldLastEnHead=h;window.__pldLastEnHeadEcho=!en;}
       }else if(ln==="p"){
@@ -4875,7 +4900,7 @@ async function loadPldCanon(ws){
   window.__pldCanonDocs={la:laD,en:enD};   // loadTEI consumes these instead of fetching sidecars
   return {slug:ws,title,title_en:title,author,author_la:author_la!==author?author_la:undefined,volume:vol,tradition:"Latin Fathers",
     has_pages:false,has_tei:true,tei_v:0,en_only:false,n_pages:pages.length,
-    structure:struct,base:null,
+    structure:struct,base:null,reader_introduction:window.FRPldReading.introduction(doc.querySelectorAll('head'),colN),
     pages:pages.map(n=>({n,la:"",en:""}))};
 }
 
