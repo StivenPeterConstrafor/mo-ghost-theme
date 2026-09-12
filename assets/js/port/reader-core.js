@@ -55,8 +55,6 @@ const XREF_EN={"Matth":"Matthew","Matt":"Matthew","Marc":"Mark","Luc":"Luke","Io
   "Lam":"Lamentations","Jdt":"Judith","Rv":"Revelation","Prv":"Proverbs",
   // Latin abbreviations of the PL corpus (owner 2026-08-17 'does scripture hover work?'):
   // Joan. is Migne's John; Reg./Paral. are Vulgate-numbered and resolved by prefix below
-    // Latin abbreviations of the PL corpus (owner 2026-08-17 'does scripture hover work?'):
-  // Joan. is Migne's John; Reg./Paral. are Vulgate-numbered and resolved by prefix below
   "Joan":"John","Joann":"John","Ioann":"John","Isai":"Isaiah","Isa":"Isaiah","Num":"Numbers",
   "Judic":"Judges","Cant":"Song of Songs","Thren":"Lamentations","Osee":"Hosea","Abd":"Obadiah",
   "Habac":"Habakkuk","Soph":"Zephaniah","Agg":"Haggai","Zach":"Zechariah","Malach":"Malachi",
@@ -1509,7 +1507,7 @@ let APPARATUS_MODE="anchored";
 // this patch — verified meta.json.index_pages absent even on the flagship Luther-WA publish),
 // else via the looksLikeTailIndex() stopgap below, per §2.2's explicit stopgap authorization.
 let INDEX_PAGES=null;
-const teiNorm=v=>{const s=String(v==null?"":v).trim(),i=parseInt(s,10);return isNaN(i)?s:String(i);};  // strips zero-padding so pb@n="0017" keys the same as pg.n===17
+const teiNorm=v=>{const s=String(v==null?"":v).trim();return /^\d+$/.test(s)?s.replace(/^0+(?=\d)/,""):s;};  // strips zero-padding so pb@n="0017" keys the same as pg.n===17
 function teiSegment(doc){
   const map={};if(!doc)return map;
   const pbEl=doc.querySelector("pb");
@@ -3841,7 +3839,14 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
 // mobile: scrim behind the open sidebar + tap-to-dismiss; nav taps auto-close the sheet
 (function(){const sc=document.createElement("div");sc.id="sbScrim";app.appendChild(sc);
   sc.onclick=()=>{app.classList.add("nosb");window.__frThumbSync&&window.__frThumbSync();};
-  $("#nav").addEventListener("click",e=>{if(matchMedia("(max-width:880px)").matches&&e.target.closest("a,.fmnav,[data-page]")){app.classList.add("nosb");window.__frThumbSync&&window.__frThumbSync();}});})();
+  $("#nav").addEventListener("click",e=>{
+    // Folding a branch changes the outline, not the reading location. A row's
+    // data-page also surrounds its disclosure button, so never use it alone.
+    if(e.target.closest("button.cv,summary,.nav-sech,.fmnav,input"))return;
+    if(matchMedia("(max-width:880px)").matches&&e.target.closest("a[href],.fol[data-page]")){
+      app.classList.add("nosb");window.__frThumbSync&&window.__frThumbSync();
+    }
+  });})();
 /* MOBILE SHELL (ported from Patrologia Graeca, 2026-07-04) — the phone reading model:
    a fixed bottom thumb bar [English · + Latin · Scan · ☰ Contents · ★ Notebook] driving the
    EXISTING mode()/sidebar/notebook controls. html.g-mobile flips live with the 880px query;
@@ -4489,7 +4494,7 @@ if(fst){
       // in scan mode the SCAN is the page: step by the pages array and set it directly —
       // stepFolio's text-scroll can land the scroll-spy back on the boundary page.
       {const pgs=(typeof DATA!=="undefined"&&DATA)?DATA.pages:null;
-       const i2=pgs?pgs.findIndex(x=>+x.n===+cur):-9;
+       const i2=pgs?pgs.findIndex(x=>String(x.n)===String(cur)):-9;
        const nx=pgs?pgs[i2+(dx<0?1:-1)]:null;
        Object.assign(window.__swDbg,{pgsN:pgs?pgs.length:null,i2,nxn:nx?nx.n:null,curv:(typeof cur!=="undefined")?cur:"nd"});
        if(nx){window.__folioLock=Date.now()+1600;if(typeof jump==="function")jump(nx.n);
@@ -4521,11 +4526,11 @@ if(fst){
       const rg=sc.querySelector("input"),nEl=sc.querySelector("#fscN");
       const sync=()=>{const pgs=(typeof DATA!=="undefined"&&DATA)?DATA.pages:null;if(!pgs||!pgs.length)return;
         rg.max=String(pgs.length-1);
-        const ci=(typeof cur!=="undefined"&&cur!=null)?pgs.findIndex(x=>+x.n===+cur):-1;   // cur is the page NUMBER
+        const ci=(typeof cur!=="undefined"&&cur!=null)?pgs.findIndex(x=>String(x.n)===String(cur)):-1;   // cur is the page NUMBER
         const cur2=ci>=0?ci:0;
-        rg.value=String(cur2);nEl.textContent="p. "+(pgs[cur2]?pgs[cur2].n:"");};
+        rg.value=String(cur2);const column=/^(PG|PL)\b/.test(DATA.volume||"");rg.setAttribute("aria-label",column?"Go to column":"Go to page");nEl.textContent=(column?"col. ":"p. ")+(pgs[cur2]?pgs[cur2].n:"");};
       rg.addEventListener("input",()=>{const pgs=(typeof DATA!=="undefined"&&DATA)?DATA.pages:null;if(!pgs)return;
-        const i2=+rg.value;nEl.textContent="p. "+(pgs[i2]?pgs[i2].n:"")+" \u00b7 "+(i2+1)+"/"+pgs.length;});
+        const i2=+rg.value;nEl.textContent=(/^(PG|PL)\b/.test(DATA.volume||"")?"col. ":"p. ")+(pgs[i2]?pgs[i2].n:"")+" \u00b7 "+(i2+1)+"/"+pgs.length;});
       rg.addEventListener("change",()=>{const pgs=(typeof DATA!=="undefined"&&DATA)?DATA.pages:null;if(!pgs)return;
         const pg2=pgs[+rg.value];
         if(pg2){window.__folioLock=Date.now()+1600;if(typeof jump==="function")jump(pg2.n);
@@ -4687,15 +4692,15 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
           const body=`${cc}<span class=vnt>${esc(e.t||"")}</span>`;
           const fm=lvl===0&&_fm(e.t)?" vnfm":"";
           if(e.id==null)return `<span class="vnrow vnd${lvl} off${fm}">${body}</span>`;
-          return `<a class="vnrow vnd${lvl}${cur?" on":""}${fm}" target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${e.id}${e.c!=null?`#b${e.c}-0`:""}">${body}</a>`;
+          return `<a class="vnrow vnd${lvl}${cur?" on":""}${fm}" href="/the-faith-received/read/?w=${prefix}-${e.id}${e.c!=null?`#b${e.c}-0`:""}">${body}</a>`;
         }).join("");
       }else rows=sp.works.map(x=>{
         const cur=+x.id===meId;
         const cc=x.c?`<span class=vnc>${x.c[0]===x.c[1]?x.c[0]:x.c[0]+"&#8211;"+x.c[1]}</span>`:"";
-        return `<a class="vnrow${cur?" on":""}${_fm(x.t)?" vnfm":""}" target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${x.id}">${cc}<span class=vnt>${esc(x.t||(prefix+"-"+x.id))}</span></a>`;}).join("");
-      box.innerHTML=`<div class=vnhead><span>In this volume &#8212; ${volWord} ${volN}</span>`+
-        `<span class=vnnav>${sp.prev?`<a target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${sp.prev.first}" title="${volWord} ${sp.prev.vol}">&#8249; ${volWord} ${sp.prev.vol}</a>`:""}`+
-        `${sp.next?`<a target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${sp.next.first}" title="${volWord} ${sp.next.vol}">${volWord} ${sp.next.vol} &#8250;</a>`:""}</span></div>`+rows;
+        return `<a class="vnrow${cur?" on":""}${_fm(x.t)?" vnfm":""}" href="/the-faith-received/read/?w=${prefix}-${x.id}">${cc}<span class=vnt>${esc(x.t||(prefix+"-"+x.id))}</span></a>`;}).join("");
+      box.innerHTML=`<details class="vncontents"><summary class="vnhead">Browse ${volWord} ${volN}</summary><div class="vnhead"><span>Volume navigation</span>`+
+        `<span class=vnnav>${sp.prev?`<a href="/the-faith-received/read/?w=${prefix}-${sp.prev.first}" title="${volWord} ${sp.prev.vol}">&#8249; ${volWord} ${sp.prev.vol}</a>`:""}`+
+        `${sp.next?`<a href="/the-faith-received/read/?w=${prefix}-${sp.next.first}" title="${volWord} ${sp.next.vol}">${volWord} ${sp.next.vol} &#8250;</a>`:""}</span></div><div class="vnlist">`+rows+'</div></details>';
       nav.appendChild(box);
       // NEVER scrollIntoView here: #nav is the SHARED scroll container — centering the
       // volume row dragged the outline 8,800px away from the reader's position on every
@@ -4722,16 +4727,24 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
         hint.style.cssText="text-align:center;font:600 .72rem/1 var(--sans);color:var(--muted);margin:-1.6rem 0 2.4rem;opacity:.7";
         hint.textContent="keep scrolling to continue";
         band.after(hint);
+        const pane=document.getElementById('scroll');
+        window.__frVolumeTravelCleanup?.();
+        const events=new AbortController();let observer;
+        window.__frVolumeTravelCleanup=()=>{events.abort();observer?.disconnect();};
         let armed=false,acc=0,fired=false;
-        try{new IntersectionObserver(es=>{es.forEach(x=>{armed=x.isIntersecting;if(!x.isIntersecting)acc=0;});},{threshold:.9}).observe(band);}catch(e){}
+        try{observer=new IntersectionObserver(es=>{es.forEach(x=>{armed=x.isIntersecting;if(!x.isIntersecting)acc=0;});},{root:pane,threshold:.9});observer.observe(band);}catch(e){}
+        const eligible=ev=>armed&&!fired&&band.isConnected&&pane?.contains(ev.target)&&
+          pane.scrollHeight-pane.clientHeight-pane.scrollTop<8&&
+          !String(window.getSelection?.()||'')&&!document.querySelector('#aaPop.on,.notebook.open')&&app.classList.contains('nosb');
         const go=()=>{if(fired)return;fired=true;hint.textContent="continuing\u2026";location.href=nxUrl;};
-        window.addEventListener("wheel",ev=>{if(!armed||fired)return;
-          if(ev.deltaY>0){acc+=ev.deltaY;if(acc>350)go();}else acc=0;},{passive:true});
+        pane?.addEventListener("wheel",ev=>{if(!eligible(ev)){acc=0;return;}
+          if(ev.deltaY>0){acc+=ev.deltaY;if(acc>350)go();}else acc=0;},{passive:true,signal:events.signal});
         let ty=null;
-        window.addEventListener("touchstart",ev=>{ty=ev.touches[0].clientY;},{passive:true});
-        window.addEventListener("touchmove",ev=>{if(!armed||fired||ty==null)return;
-          const dy=ty-ev.touches[0].clientY;
-          if(dy>0){acc+=dy;ty=ev.touches[0].clientY;if(acc>350)go();}},{passive:true});
+        pane?.addEventListener("touchstart",ev=>{ty=ev.touches[0]?.clientY;acc=0;},{passive:true,signal:events.signal});
+        pane?.addEventListener("touchmove",ev=>{if(ty==null)return;
+          const y=ev.touches[0]?.clientY,dy=ty-y;ty=y;
+          if(!eligible(ev)){acc=0;return;}
+          if(dy>0){acc+=dy;if(acc>350)go();}else acc=0;},{passive:true,signal:events.signal});
       }
     }
   });};
@@ -4750,7 +4763,7 @@ function wireSrcSel(options,cur){
     const u=new URL(location.href);
     box.innerHTML='<div class=sshead>Source column</div>'+options.map(o=>{
       u.searchParams.set("src",o.v);
-      return `<a class="ssopt${o.v===cur?" on":""}" href="${u.pathname+u.search}">${o.l}</a>`;}).join("");
+      return `<a class="ssopt${o.v===cur?" on":""}" href="${u.pathname+u.search+u.hash}">${o.l}</a>`;}).join("");
     nav.insertBefore(box,nav.firstChild);
   },600);
   setTimeout(()=>clearInterval(t),30000);
@@ -5895,7 +5908,7 @@ async function loadPgCanon(ws){
     if(typeof DATA!=='undefined'&&DATA)syncReaderHeader(cur||DATA.pages[0]?.n);
   },800);
   try{const am=await window.__pgAuth;if(am&&am[id])author=am[id];}catch(e){}   // English byline (owner 2026-08-17)
-  window.__SRCNAME=src==="grcla"?(window.__pgLatFallback?"Greek":"Greek \u00b7 Latin"):src==="la"?(window.__pgLatFallback?"Greek":"Latin"):src==="ocr"?"Page":"Greek";
+  window.__SRCNAME=src==="grcla"?(window.__pgLatFallback?"Greek":"Greek \u00b7 Latin"):src==="la"?(window.__pgLatFallback?"Greek":"Latin"):src==="ocr"?"Source":"Greek";
   // polytonic face for the Greek reading lane (lazily; Cardo covers Greek+Latin so mixed
   // apparatus pages stay coherent)
   try{
@@ -6713,6 +6726,10 @@ async function loadWork(ws){
   // lane rebuilds in place: the TEI and pageview ride session caches, the URL updates via
   // replaceState, and the reader stays on the same folio.
   window.__switchSrc=async ns=>{
+    if(window.__frSourceChanging)return;
+    window.__frSourceChanging=true;
+    const sourceBusy=busy=>{const group=document.getElementById('reader-witnesses');if(group){group.setAttribute('aria-busy',String(busy));group.querySelectorAll('button').forEach(b=>b.disabled=busy);}};
+    sourceBusy(true);
     try{
       const u=new URL(location.href);u.searchParams.set("src",ns);history.replaceState(null,"",u);
       window.__srcOverride=ns;
@@ -6729,6 +6746,7 @@ async function loadWork(ws){
         try{jump(keep);}catch(e){}
         setTimeout(()=>{try{window.__jumpSettle&&window.__jumpSettle(keep);}catch(e){}},700);}
     }catch(e){location.reload();}
+    finally{window.__frSourceChanging=false;sourceBusy(false);}
   };
   // Cold arrival and same-document source choices share one cancellable navigation owner.
   const arrive=()=>{

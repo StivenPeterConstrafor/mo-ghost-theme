@@ -18,7 +18,7 @@
   }
   function filtered(tree,query,expanded=new Set(),filterCollapsed=new Set()){
     const tokens=[...new Set(fold(query).split(' ').filter(Boolean))],searching=tokens.length>0,n=tree.items.length;
-    const matches=tree.search.map(value=>!searching||tokens.every(token=>value.includes(token))),eligible=matches.slice(),visible=new Array(n),collapsed=new Array(n),children=new Array(n).fill(false);
+    const matches=tree.search.map(value=>!searching||tokens.every(token=>/^(?:\d+|[ivxlcdm]+)$/.test(token)?value.split(/[^\p{L}\p{N}]+/u).includes(token):value.includes(token))),eligible=matches.slice(),visible=new Array(n),collapsed=new Array(n),children=new Array(n).fill(false);
     if(searching)for(let i=n-1;i>=0;i--)if(eligible[i]&&tree.parents[i]>=0)eligible[tree.parents[i]]=true;
     for(let i=0;i<n;i++)if(eligible[i]&&tree.parents[i]>=0)children[tree.parents[i]]=true;
     for(let i=0;i<n;i++){

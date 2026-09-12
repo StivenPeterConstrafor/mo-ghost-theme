@@ -148,3 +148,21 @@ Academic Monochrome v3 (09-05): black/white journal palette; the classic layer u
 7. Embedded: on `/fathers#<author>/positions/<topic>` click `Preview` — the frame loads the reader (not `about:blank`), landed on the cited page.
 8. Console: the only acceptable 404s are `work.json`, `cites.json`, `/v1/mine/units/<slug>.json`.
 9. 400px width: `scrollWidth === innerWidth`, lanes stacked, controls reachable.
+
+
+## 14. PG navigation acceptance, 12 September 2026
+
+Production release `dpl_CCKr6qQEin1qQTZB1h7RbS4zgADL` carries the shared reader fixes below. The port must preserve them.
+
+- Mobile contents: opening or closing a branch keeps the sheet open. Choosing a heading or page closes it. Disclosure buttons never trigger the parent navigation row.
+- Volume spine: a closed **Browse PG n** disclosure contains a bounded scrolling list. Links use the current tab; browser modifier keys remain available.
+- Numbered searches: **Title X** matches X, not IX, XI or XX; **Chapter 1** does not match Chapter 10. PG 130 `pg-2462`: Enter on Title X must land at column 327 with TITLE X visible.
+- The appearance menu stays inside the viewport at 390px (12px side gutters), in light and dark themes.
+- Switching Greek / Migne Latin / combined sources permits only one rebuild at a time and retains the current column. PG 89 `pg-1938`: switch Latin and advance to column 11.
+- Compound column IDs remain strings through TEI lookup; only purely numeric padding is normalized. The facsimile scrubber says **col.** for PG/PL, **p.** elsewhere. An OCR reading lane is labelled **Source**.
+- Automatic next-work continuation requires a downward gesture in the reading pane at its bottom. Contents, settings, selections and other panes cannot accidentally advance the book. Rebuilding cleans up the previous gesture listeners.
+- Personal translations remain disabled for all works under the September 10 ruling. Previously saved material is retained, not deleted.
+
+Validation: 209 reader tests and the canonical secrets/page gates pass. Browser samples include PG 13, 14, 15, 89 and 130, plus Salmeron and Westminster regression checks, mobile and desktop. Production `reader-core.js`, `reader-contents.js` and `read-tools.js` were byte-matched against the alias.
+
+This release verifies the shared reading interface, not every source transcription. Known corpus issues still require source evidence: preceding-work tails at PG column boundaries, some volume-spine assignments outside a work's range, and occasional footer contamination. Do not guess new boundaries or silently delete source text in the interface.
