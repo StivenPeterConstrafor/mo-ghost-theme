@@ -166,6 +166,14 @@
     hitAt = -1;
   }
 
+  // Find means the whole work, so the whole work has to be here.
+  //
+  // Sections load as they are approached, which means a work a reader
+  // has just opened is almost entirely absent from the DOM. This walks
+  // text nodes, so before 2026-09-11 it searched whatever the reader
+  // happened to have opened and afterwards it searched almost nothing:
+  // the tool stopped highlighting anything. It now loads the work
+  // first, and says so, because on a folio that takes a moment.
   function runFind(term, statusEl) {
     clearMarks();
     const q = term.trim();
@@ -173,6 +181,16 @@
       statusEl.textContent = q ? "Type at least two characters." : "";
       return;
     }
+    const R = window.MOFaithReader;
+    if (R && R.hydrateAll && R.sectionsPending && R.sectionsPending() > 0) {
+      statusEl.textContent = "Loading the whole work to search it…";
+      R.hydrateAll().then(() => searchNow(q, statusEl));
+      return;
+    }
+    searchNow(q, statusEl);
+  }
+
+  function searchNow(q, statusEl) {
 
     // Whole words. "sin" in Augustine on the Trinity reported 1,092
     // matches and they were abusing, despising, since and choosing:

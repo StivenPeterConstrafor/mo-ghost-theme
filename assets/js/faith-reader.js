@@ -3895,6 +3895,25 @@
   // reader who has given up and started reading somewhere else.
   const LAND_TRIES = 50;
 
+
+  // Run something once a section has its text, or give up quietly.
+  // Polls rather than watching state, because the section can reach
+  // "loaded" by more than one path and a single observer has missed one
+  // before.
+  function whenLoaded(section, fn) {
+    if (!section) { fn(); return; }
+    hydrateSection(section);
+    const started = Date.now();
+    const tick = () => {
+      if (section.dataset.frState === "loaded" || Date.now() - started > 15000) {
+        fn();
+        return;
+      }
+      window.setTimeout(tick, 120);
+    };
+    tick();
+  }
+
   function landOnPage(section, page, tries) {
     const block = section.querySelector(`[data-page="${page}"]`);
     if (!block) {
@@ -4199,10 +4218,17 @@
         // Inside that section only, and without stealing the scroll:
         // the page puts the reader on the right folio, this puts a mark
         // on the line.
-        if (ref) landOnRef(ref, 0, target, false);
-        // Same idea for an Ask citation's retrieved passage: the page
-        // already positioned the viewport, this only marks the line.
-        if (quote) landOnQuote(quote, 0, target, false);
+        //
+        // Both of these poll for their text and give up after about
+        // three seconds. That was patient enough when a section filled
+        // as soon as it opened; since sections load on approach the
+        // text can still be in flight, and an Ask citation was landing
+        // on the work with nothing marked (2026-09-11). Wait for the
+        // section to report loaded first, and only then start looking.
+        whenLoaded(target, () => {
+          if (ref) landOnRef(ref, 0, target, false);
+          if (quote) landOnQuote(quote, 0, target, false);
+        });
         return;
       }
     }
@@ -4727,6 +4753,46 @@
   window.addEventListener("scroll", onPlaceScroll, { passive: true });
   window.addEventListener("resize", onPlaceScroll, { passive: true });
   window.__frPlace = { locate: locateHere, address: addressBlocks, resume: offerResume };
+
+
+  // ── The whole work, on demand ─────────────────────────────────
+  //
+  // Sections load as they are approached, which is what keeps a
+  // 1,304-page folio from arriving at once. But some jobs are about the
+  // work rather than the screen, and they need all of it: Find in this
+  // work means the whole work, and saying "no matches" over text that
+  // was never in the DOM is a lie.
+  //
+  // 2026-09-11: this is why Find stopped highlighting. When chapters
+  // were drawers, reading one hydrated it, so a work a reader had been
+  // through was largely in the page. Now almost none of it is until
+  // something asks.
+  let hydrateAllPromise = null;
+  function hydrateAll() {
+    if (hydrateAllPromise) return hydrateAllPromise;
+    const all = Array.prototype.slice.call(contentEl.querySelectorAll("[data-from]"));
+    all.forEach((el) => hydrateSection(el));
+    // hydrateSection is fire-and-forget, so completion is observed
+    // rather than awaited: poll until nothing is still loading, and
+    // give up rather than hang if one section never resolves.
+    hydrateAllPromise = new Promise((resolve) => {
+      const started = Date.now();
+      const tick = () => {
+        const pending = all.filter((el) => el.dataset.frState !== "loaded").length;
+        if (!pending || Date.now() - started > 30000) { resolve(all.length - pending); return; }
+        window.setTimeout(tick, 200);
+      };
+      tick();
+    });
+    return hydrateAllPromise;
+  }
+
+  // The one thing the reader offers the rest of the page.
+  window.MOFaithReader = Object.assign(window.MOFaithReader || {}, {
+    hydrateAll,
+    sectionsPending: () =>
+      contentEl.querySelectorAll('[data-from]:not([data-fr-state="loaded"])').length,
+  });
 
   function restoreLang() {
     try {
