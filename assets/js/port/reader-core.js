@@ -3720,6 +3720,10 @@ function syncReaderHeader(n){
  $("#m-par").title='Show '+source+' text';$("#m-en").title='Show English translation';
 }
 function pgDenom(){const ns=(DATA&&DATA.pages||[]).map(x=>+x.n).filter(Number.isFinite);
+  // PG names printed columns in the numerator. Repeated or out-of-order source
+  // entries must not switch its denominator to a count of stored openings.
+  if(/^PG\s/.test(DATA?.volume||'')&&ns.length){const last=ns.reduce((a,b)=>Math.max(a,b),0);
+    return {txt:String(last),tip:'Last available column: '+last};}
   if(ns.length>1&&ns.every((v,i)=>i===0||v>=ns[i-1])&&ns[ns.length-1]!==ns.length)
     return {txt:String(ns[ns.length-1]),tip:(DATA.pages.length)+" pages, numbered to "+ns[ns.length-1]};
   return {txt:String(DATA&&DATA.pages?DATA.pages.length:0),tip:""};}
@@ -5033,6 +5037,23 @@ async function loadPgCanon(ws){
         _lat+=(t.match(/[A-Za-z]/g)||[]).length;_grc+=(t.match(/[Ͱ-Ͽἀ-῿]/g)||[]).length;}
       else if(ch.localName==="div")_cnt(ch);}})(doc.querySelector("body")||doc.documentElement);
     if(_lat+_grc>2000&&_lat>(_lat+_grc)*0.6)src="ocr";
+  }
+  // The opening can be Latin even in a predominantly Greek work. Inspect only
+  // its first original-language column, never the translation or catalogue head.
+  // Explicit source choices and the existing whole-page transcription default win.
+  if(!_srcParam&&src==='grc'&&window.FRMigneNavigation?.sourceForOpening){
+    let firstColumn=null,finished=false;const opening=[];
+    const visit=node=>{for(const child of node.children){
+      if(finished)return;const type=child.getAttribute?.('type'),tag=child.localName;
+      if(tag==='div'&&['translation','secondary','diplomatic','contents'].includes(type))continue;
+      if(tag==='pb'||tag==='milestone'&&child.getAttribute('unit')==='column'){
+        const n=child.getAttribute('n');if(!/^\d+$/.test(n||''))continue;
+        if(firstColumn==null)firstColumn=n;else if(n!==firstColumn&&opening.length){finished=true;return;}
+      }else if(tag==='p'&&child.getAttribute('xml:lang')!=='en'){const text=child.textContent.trim();if(text)opening.push(text);}
+      else if(tag==='div')visit(child);
+    }};
+    const body=doc.querySelector('body');if(body)visit(body);
+    if(window.FRMigneNavigation.sourceForOpening(opening.join(' '))==='la')src='la';
   }
   const mk=()=>{const d=document.implementation.createDocument(null,"TEI",null);
     const tx=d.createElement("text");d.documentElement.appendChild(tx);return [d,tx];};

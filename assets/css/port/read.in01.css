@@ -1287,7 +1287,14 @@ html[data-theme="dark"] .seg button[aria-pressed=true],html[data-theme="dark"] .
   .facs{width:100vw;left:0;right:auto}
   .fstage{padding:.6rem max(.6rem,env(safe-area-inset-left)) 1.2rem}
   .facs-x{display:grid!important;place-items:center;position:absolute;top:max(8px,env(safe-area-inset-top));right:10px;z-index:5;width:44px;height:44px;border-radius:8px;border:1px solid var(--border);background:var(--paper);color:var(--muted);font-size:19px;cursor:pointer}
-  .fh{padding-top:max(.7rem,env(safe-area-inset-top));padding-right:64px}  /* clear the × button */
+  .fh{display:grid;grid-template-columns:44px minmax(68px,1fr) 44px 44px 44px;grid-template-rows:44px 44px;gap:4px 6px;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top))}
+  .fh .lbl{grid-row:1;grid-column:1/3;justify-self:start;margin-left:0!important;font-size:12px;line-height:1.3;letter-spacing:.02em;text-transform:none}
+  .fh .fh-ct{grid-row:1;grid-column:3/5;justify-self:end;margin:0;font-size:12px;line-height:1.3;white-space:nowrap}
+  .fh #fPrev{grid-row:2;grid-column:1}
+  .fh #ffol{grid-row:2;grid-column:2;min-width:0;margin:0;text-align:center;font-size:16px;line-height:1.3;padding:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fh #fNext{grid-row:2;grid-column:3}
+  .fh #fzOut{grid-row:2;grid-column:4}
+  .fh #fzIn{grid-row:2;grid-column:5}
   .fh .fnav{width:44px;height:44px;font-size:1.5rem}                       /* thumb-size page-turns on the scan */
 }
 .facs-x{display:none}

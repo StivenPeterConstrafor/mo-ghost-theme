@@ -17,5 +17,11 @@
     }
     return column;
   }
-  return {openingKey,indexLabel};
+  function sourceForOpening(text){
+    text=String(text||'');
+    const latin=(text.match(/[A-Za-z]/g)||[]).length,greek=(text.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;
+    const words=new Set(text.toLowerCase().match(/\b(?:et|quod|qui|quae|cum|autem|enim|sunt|ejus|eius|atque|igitur|haec|fuit|erat)\b/g)||[]);
+    return latin>=200&&latin>greek*10&&words.size>=3?'la':'grc';
+  }
+  return {openingKey,indexLabel,sourceForOpening};
 });

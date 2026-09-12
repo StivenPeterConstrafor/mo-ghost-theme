@@ -21,6 +21,9 @@
   function swap(s) {
     for (var i = 0; i < MAP.length; i++)
       if (s.indexOf(MAP[i][0]) >= 0) s = s.split(MAP[i][0]).join(MAP[i][1]);
+    // Dynamic witness URLs inside TEI still use the old unversioned path.
+    // Cloudflare serves those same objects under /v1/tei/.
+    s = s.split(LIB + "/tei/").join(LIB + "/v1/tei/");
     return s;
   }
   var OF = window.fetch;
