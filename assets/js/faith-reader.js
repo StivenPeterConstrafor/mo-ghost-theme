@@ -4139,9 +4139,29 @@
       if (parent.tagName === "DETAILS") parent.open = true;
       parent = parent.parentElement;
     }
-    if (!scroll) return;
     // Instant and asserted, for the reason landOnPage and landOnRef are.
     const go = () => marks[0].scrollIntoView({ block: "center", behavior: "instant" });
+
+    // scroll=false means landOnPage has already put the viewport on the
+    // right folio and this should not fight it for the scroll. That
+    // holds only while the marked words are actually on the folio it
+    // landed on. A section can run to hundreds of pages, and an Ask
+    // citation was arriving with its words marked somewhere below the
+    // fold — the reader saw the work, not the reference, which is
+    // exactly the complaint (2026-09-11, caught by the acceptance
+    // battery). So: defer to the page when the quote is visible, and
+    // override it when it is not.
+    if (!scroll) {
+      const settle = () => {
+        const box = marks[0].getBoundingClientRect();
+        const seen = box.top >= 0 && box.bottom <= (window.innerHeight || 0);
+        if (!seen) go();
+      };
+      window.requestAnimationFrame(settle);
+      window.setTimeout(settle, 400);
+      window.setTimeout(settle, 900);
+      return;
+    }
     window.requestAnimationFrame(go);
     window.setTimeout(go, 200);
     window.setTimeout(go, 600);
