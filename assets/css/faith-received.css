@@ -16399,3 +16399,32 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
 }
 .faith-toast-on { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .faith-toast { transition: none; } }
+
+/* ── Taking an Ask answer away with you ───────────────────────────
+   Sits under the answer and above its sources, because that is the
+   order the reader meets them in: read it, decide to keep it, then
+   check where it came from. Same button as everywhere else in the
+   library — 13px on the tan rule — so it reads as part of the place
+   rather than as a widget bolted to it. */
+.ask-actions {
+  display: flex;
+  gap: 0;
+  margin: 20px 0 4px;
+}
+.ask-action {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 13px;
+  padding: 9px 13px;
+  border: 1px solid var(--color-card-border);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.ask-action + .ask-action { border-left: 0; }
+.ask-action:hover:not(:disabled) { background: var(--color-card-border); }
+.ask-action:disabled { color: var(--color-muted); cursor: default; }
+@media (max-width: 480px) {
+  .ask-actions { flex-wrap: wrap; }
+  .ask-action + .ask-action { border-left: 1px solid var(--color-card-border); }
+}

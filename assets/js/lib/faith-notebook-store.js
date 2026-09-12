@@ -92,7 +92,12 @@
   // The three ways a passage gets kept. See the header note on `kind`:
   // descriptive, never load-bearing, and absent from every entry
   // written before the field existed.
-  const KINDS = { SELECTION: "selection", SECTION: "section", SHARED: "shared" };
+  // `answer` (2026-09-11): an Ask answer, kept whole. Not a passage
+  // from a work — it has no corpus, no work and no anchor, and its
+  // `cite` names the question rather than a page. Nothing switches on
+  // kind to render, so it lists beside the rest; kind is here so a
+  // surface that later wants to tell them apart can.
+  const KINDS = { SELECTION: "selection", SECTION: "section", SHARED: "shared", ANSWER: "answer" };
 
   /* ── Entries ─────────────────────────────────────────────────── */
 

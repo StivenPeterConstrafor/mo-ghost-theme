@@ -78,6 +78,9 @@
   const footnotesWrap = document.querySelector("[data-ask-footnotes-wrap]");
   const footnotesEl = document.querySelector("[data-ask-footnotes]");
   const errorEl = document.querySelector("[data-ask-error]");
+  const actionsEl = document.querySelector("[data-ask-actions]");
+  const copyBtn = document.querySelector("[data-ask-copy]");
+  const saveBtn = document.querySelector("[data-ask-save]");
 
   // Scope control (2026-09): the collapsed <details> in the composer.
   // The worker has accepted `traditions` (array) and `author` on POST
@@ -234,6 +237,88 @@
     });
     return out;
   }
+
+
+  /* ── Taking an answer away with you ───────────────────────────────
+   *
+   * An Ask answer is worth more than the minute it took to read. It can
+   * be copied whole, or kept in the same notebook the reader keeps
+   * passages in, so a question and the passages that answered it end up
+   * in one place rather than two.
+   *
+   * "Whole" means whole: the question, the answer, and the sources, in
+   * the order they were on screen. An answer pasted without its sources
+   * is an assertion, and this library does not make those. */
+  let lastAnswer = null;
+
+  function answerAsText() {
+    if (!lastAnswer) return "";
+    const parts = [lastAnswer.question.trim(), "", lastAnswer.answer.trim()];
+    const cits = lastAnswer.citations || [];
+    if (cits.length) {
+      parts.push("", "Sources");
+      cits.forEach((c) => {
+        const url = c.url ? ` — ${new URL(c.url, window.location.origin).toString()}` : "";
+        parts.push(`${c.n}. ${c.cit}${url}`);
+      });
+    }
+    parts.push("", `Asked of The Faith Received, ${new Date().toISOString().slice(0, 10)}.`);
+    return parts.join("\n");
+  }
+
+  function flash(btn, word) {
+    if (!btn) return;
+    const was = btn.textContent;
+    btn.textContent = word;
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = was; btn.disabled = false; }, 1500);
+  }
+
+  function copyWhole() {
+    const text = answerAsText();
+    if (!text) return;
+    const done = () => flash(copyBtn, "Copied");
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, () => flash(copyBtn, "Could not copy"));
+      return;
+    }
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:-1000px";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); done(); } catch (_) { flash(copyBtn, "Could not copy"); }
+    ta.remove();
+  }
+
+  function saveWhole() {
+    const NB = window.MOFaithNotebook;
+    // A button that silently does nothing teaches a reader that saves
+    // are unreliable, which is a worse lesson than one clear failure.
+    if (!NB || !lastAnswer) { flash(saveBtn, "Unavailable"); return; }
+    const already = NB.load().some((e) => (
+      e.kind === NB.KINDS.ANSWER && e.title === lastAnswer.question
+    ));
+    if (already) { flash(saveBtn, "Already saved"); return; }
+    const n = (lastAnswer.citations || []).length;
+    NB.add(NB.newEntry({
+      kind: NB.KINDS.ANSWER,
+      corpus: "",
+      work: "",
+      title: lastAnswer.question,
+      author: "",
+      cite: `Ask · ${n} source${n === 1 ? "" : "s"}`,
+      anchor: "",
+      url: window.location.href,
+      text: lastAnswer.answer,
+    }));
+    if (window.MOFaithNotebookPanel) window.MOFaithNotebookPanel.render();
+    flash(saveBtn, "Saved");
+  }
+
+  if (copyBtn) copyBtn.addEventListener("click", copyWhole);
+  if (saveBtn) saveBtn.addEventListener("click", saveWhole);
 
   function renderAnswer(text, citations, works) {
     const citByN = new Map((citations || []).map((c) => [c.n, c]));
@@ -609,6 +694,12 @@
           if (errorEl) errorEl.hidden = true;
           headingEl.textContent = obj.question || question;
           renderAnswer(obj.answer || "", obj.citations || [], obj.works || []);
+          lastAnswer = {
+            question: obj.question || question,
+            answer: obj.answer || "",
+            citations: obj.citations || [],
+          };
+          if (actionsEl) actionsEl.hidden = false;
           renderFootnotes(obj.citations || []);
           renderGaps(obj.gaps || []);
           resultEl.hidden = false;

@@ -105,6 +105,12 @@
       <article class="ask-result" data-ask-result hidden>
         <h2 class="ask-question" data-ask-heading></h2>
         <div class="ask-answer" data-ask-answer></div>
+        {{!-- What to do with an answer once you have one. Hidden
+             until there is one to act on. --}}
+        <div class="ask-actions" data-ask-actions hidden>
+          <button type="button" class="ask-action" data-ask-copy>Copy answer</button>
+          <button type="button" class="ask-action" data-ask-save>Save to notebook</button>
+        </div>
 
         <p class="ask-gaps" data-ask-gaps hidden></p>
       </article>
