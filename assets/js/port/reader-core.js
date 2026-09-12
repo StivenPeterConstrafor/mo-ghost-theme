@@ -1221,7 +1221,8 @@ function frResolveSourceHeading(position){
 }
 function frResolveReaderAnchor(position){
   if(position.sourcePath)return frResolveSourceHeading(position);
-  if(position.page!=null)window.__ensurePage?.(position.page);
+  const opening=position.page==null?null:(window.FRMigneNavigation?.openingKey(DATA,position.page)??position.page);
+  if(opening!=null)window.__ensurePage?.(opening);
   const visible=node=>{if(node?.closest?.('.frontmatter'))document.getElementById('app')?.classList.add('show-fm');return node?.isConnected&&node.getClientRects().length?node:null;};
   // A search occurrence is temporary UI; keep its canonical body ID as the saved location.
   if(position.focusId)return visible(document.getElementById(position.focusId));
@@ -1230,7 +1231,8 @@ function frResolveReaderAnchor(position){
   if(!block||block.index!=='0'||!window.__readerBuilt)return null;
   return Array.from(document.querySelectorAll('#reading .pganchor')).filter(node=>String(node.dataset.page)===block.page).map(visible).find(Boolean)
     ||visible(document.getElementById('b'+block.page+'-1'))
-    ||Array.from(document.querySelectorAll('#reading .folio:not(.rolled)')).filter(node=>String(node.dataset.page)===block.page).map(visible).find(Boolean)||null;
+    ||Array.from(document.querySelectorAll('#reading .folio:not(.rolled)')).filter(node=>String(node.dataset.page)===block.page).map(visible).find(Boolean)
+    ||(String(opening)!==block.page?Array.from(document.querySelectorAll('#reading .folio:not(.rolled)')).filter(node=>String(node.dataset.page)===String(opening)).map(visible).find(Boolean):null)||null;
 }
 function frReaderNavigationLanded(position){
   if(window.__readerLandedSerial===position.serial)return;window.__readerLandedSerial=position.serial;
@@ -1345,11 +1347,13 @@ window.__frPlaceReaderAnchor=(target,opts={})=>{
 };
 window.__frAnchorBlock=frAnchorBlock;
 function jump(p,ttl){
+  const requested=p;p=window.FRMigneNavigation?.openingKey(DATA,p)??p;
   // WINDOWED RENDERING (owner 2026-08-20, Baxter "A Safe Religion" on mobile: inline TOC
   // links did nothing): the target folio may still be a placeholder — hydrate it, and its
   // neighbours, BEFORE looking for it. No-op on small works.
   try{if(window.__ensurePage)window.__ensurePage(p);}catch(e){}
   let t=$("#reading").querySelector(`.folio[data-page="${p}"]`);
+  if(String(requested)!==String(p)){const inline=$("#reading").querySelector(`.pganchor.an-en[data-page="${requested}"],.pganchor[data-page="${requested}"]`);if(inline?.getClientRects().length)t=inline;}
   // reading-edition merge can leave a folio empty (its body ran on from the previous page) —
   // the inline page anchor is then the true position of the page start
   if(t&&!t.getBoundingClientRect().height){const a=$("#reading").querySelector(`.pganchor.an-en[data-page="${p}"],.pganchor[data-page="${p}"]`);if(a)t=a;}
@@ -2105,16 +2109,17 @@ function build(){
     }
     const ttl=title??(node&&node.querySelector&&node.querySelector(".nn-t")?node.querySelector(".nn-t").textContent:null);
     const request=rememberReaderChoice(p,ttl||'');
+    const renderedPage=window.FRMigneNavigation?.openingKey(DATA,p)??p;
     // shard-streaming guard (2026-07-20, same fix as the pager): if the target folio hasn't rendered
     // yet on a large work, queue it as the settle target and pull the remaining shards — a bare jump()
     // was a silent no-op that left the reader at page 1.
-    if(!$("#reading").querySelector(`.folio[data-page="${p}"]`)&&DATA&&p>=1&&p<=(DATA.n_pages||0)){
+    if(!$("#reading").querySelector(`.folio[data-page="${renderedPage}"]`)&&DATA&&(DATA.__loadRest||DATA.pages.some(page=>String(page.n)===String(renderedPage)))){
       window.__frTgt=p;window.__frUserScrolled=false;
       if(DATA.__loadRest)DATA.__loadRest().catch(()=>{});
       // retry until the folio renders (progressive build may still be streaming DOM), then jump
       let k=0;const iv=setInterval(()=>{
         if(request!==window.__readerNavSerial){clearInterval(iv);return;}
-        if($("#reading").querySelector(`.folio[data-page="${p}"]`)){clearInterval(iv);jump(p,ttl);}
+        if($("#reading").querySelector(`.folio[data-page="${renderedPage}"]`)){clearInterval(iv);jump(p,ttl);}
         else if(++k>120)clearInterval(iv);},250);
     }
     jump(p,ttl);   // jump + light up the clicked node directly (scroll-spy is suppressed briefly so the jump's scroll can't re-pick a neighbouring entry)
@@ -2127,7 +2132,7 @@ function build(){
     // scrolled the fmark/heading made corrections ping-pong — "navs are snapping").
     {let k=0,st=0,cj=0;window.__frUserScrolled=false;const iv=setInterval(()=>{
       if(request!==window.__readerNavSerial||window.__frUserScrolled||++k>12||st>=2||cj>=4){clearInterval(iv);return;}
-      const t=(window.__frJumpEl&&window.__frJumpEl.isConnected)?window.__frJumpEl:$("#reading").querySelector(`.folio[data-page="${p}"]`);
+      const t=(window.__frJumpEl&&window.__frJumpEl.isConnected)?window.__frJumpEl:$("#reading").querySelector(`.folio[data-page="${renderedPage}"]`);
       if(t){const off=Math.abs(t.getBoundingClientRect().top-((document.querySelector('.ph')?.offsetHeight||64)+14));
         if(off>(cj?120:40)){jump(p,ttl);cj++;st=0;}else st++;}
     },260);}
@@ -4684,10 +4689,8 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
         rows=sp.toc.map(e=>{
           const lvl=Math.min(+e.lvl||0,4);
           const cur=e.id===meId&&lvl===0;
-          let cc="";
-          if(lvl===0&&e.id!=null&&ranges[e.id]&&seenWork!==e.id){const c=ranges[e.id];
-            cc=`<span class=vnc>${c[0]===c[1]?c[0]:c[0]+"&#8211;"+c[1]}</span>`;}
-          else if(e.c!=null)cc=`<span class=vnc>${e.c}</span>`;
+          const column=window.FRMigneNavigation?.indexLabel(e,ranges[e.id],lvl===0&&e.id!=null&&seenWork!==e.id)??String(e.c??'');
+          const cc=column?`<span class=vnc>${esc(column)}</span>`:'';
           if(lvl===0)seenWork=e.id;
           const body=`${cc}<span class=vnt>${esc(e.t||"")}</span>`;
           const fm=lvl===0&&_fm(e.t)?" vnfm":"";

@@ -1102,10 +1102,9 @@ function render(){
               const rows=sp.toc.map(e2=>{
                 const lvl=Math.min(+e2.lvl||0,3);
                 const id2=e2.id!=null?("pg-"+e2.id):null;
-                let cc="";
-                if(lvl===0&&e2.id!=null&&ranges[e2.id]&&seenW!==e2.id){const c=ranges[e2.id];
-                  cc=`${vn2}:${c[0]===c[1]?c[0]:c[0]+"&#8211;"+c[1]}`;}
-                else if(e2.c!=null)cc=String(e2.c);
+                const showRange=lvl===0&&e2.id!=null&&seenW!==e2.id;
+                const column=window.FRMigneNavigation?.indexLabel(e2,ranges[e2.id],showRange)??String(e2.c??'');
+                const cc=esc(column);
                 if(lvl===0)seenW=e2.id;
                 const body2=`<span class=spc title="Migne columns">${cc}</span><span class=spt>${esc(e2.t||"")}</span>`;
                 if(!id2||!have.has(id2))return `<span class="sprow spd${lvl} spoff">${body2}</span>`;
