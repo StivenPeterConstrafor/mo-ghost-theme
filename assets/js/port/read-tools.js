@@ -881,7 +881,8 @@ function canTranslateSource(data=DATA,reader=document.getElementById('app')){
 }
 function __initReaderTools(){
   const reading=$("#reading"), WORK=[DATA.title,DATA.volume].filter(Boolean).join(", ")||"";  // cite incl. volume / part
-  const WORK_SLUG=DATA.slug||new URLSearchParams(location.search).get("w")||new URLSearchParams(location.search).get("ws")||DATA.workspace||"", WSID=DATA.workspace||WORK_SLUG, K=r=>WSID+"|"+r.id;   // workspace-scoped storage key (row ids repeat across works)
+  const WORK_SLUG=DATA.slug||new URLSearchParams(location.search).get("w")||new URLSearchParams(location.search).get("ws")||DATA.workspace||"", SOURCE_PART=DATA.pld_source_view?.id,
+    WSID=(DATA.workspace||WORK_SLUG)+(SOURCE_PART&&SOURCE_PART!=='2'?'::pldpart-'+SOURCE_PART:''), K=r=>WSID+"|"+r.id;   // source divisions can reuse the same printed column and row ids
   const lj=k=>{try{return JSON.parse(lsGet(k))||{}}catch(e){return{}}};
   function applyTranslationPolicy(){
     const allowed=canTranslateSource();document.documentElement.classList.toggle('fr-no-personal-translation',!allowed);
@@ -1239,6 +1240,11 @@ function __initReaderTools(){
     if(t.closest('.frontmatter'))app.classList.add('show-fm');
     placeReaderAnchor(t);t.classList.add("anchor-flash");setTimeout(()=>t.classList.remove("anchor-flash"),2300);}
   function gotoSavedReference(item){
+    if(WORK_SLUG==='pld-6037'&&item.url){try{
+      const url=new URL(item.url,location.href);
+      if(url.origin===location.origin&&(url.searchParams.get('w')||url.searchParams.get('ws'))===WORK_SLUG
+        &&(url.searchParams.get('pldpart')||'2')!==(SOURCE_PART||'2')){location.assign(url.href);return;}
+    }catch(_){}}
     if(item.readingPlace&&item.readerPosition){
       const position={...item.readerPosition};delete position.focusId;
       if(!position.id||window.FRReaderBookmarks?.isTransientAnchor(position.id)){status('This saved place has no stable reader anchor.');return;}

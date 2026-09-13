@@ -2183,3 +2183,14 @@ html.fr-research-tools .selchip{display:none!important}
 .cc-search{box-sizing:border-box;width:100%;min-height:44px;margin-top:6px;padding:9px 10px;border:1px solid var(--border);background:var(--card);color:var(--fg);border-radius:4px;font:16px var(--font-body)}
 .cc-search::placeholder{color:var(--muted);opacity:1}.cc-count{font:12px var(--font-body);color:var(--muted);margin:10px 0}.cc-list .nav-node{display:block;min-height:44px;box-sizing:border-box;text-decoration:none;color:var(--fg);padding:10px 8px;border-bottom:1px solid var(--border);font-size:14px;line-height:1.45}.cc-list .nd2{padding-left:18px}.cc-list a:focus-visible{outline:2px solid var(--fg);outline-offset:-2px}
 .nl-retry{font:inherit;color:var(--fg);background:none;border:1px solid var(--border);border-radius:4px;min-height:44px;padding:8px 12px;margin:8px}.nl-q{font-size:16px!important}
+
+/* Preserved PLD source divisions. */
+#reader-source-view{padding:12px 14px;border-bottom:1px solid var(--border);font:13px/1.5 var(--font-body);color:var(--fg)}
+#reader-source-view label{display:block;margin-bottom:5px}
+#reader-source-view select{width:100%;min-height:44px;padding:7px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card-bg,var(--bg));color:var(--fg);font:inherit}
+#reader-source-view p{margin:8px 0 0;color:var(--muted);font:inherit}
+#reader-source-view a{display:inline-flex;align-items:center;min-height:36px;color:var(--fg);text-underline-offset:3px}
+#reader-source-view :focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+#reader-source-choice{appearance:none;border:0;background:none;color:var(--fg);font:inherit;white-space:nowrap;cursor:pointer;padding:0 7px;min-height:32px;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:640px){#reader-source-choice{min-height:44px}}
+.app.source-only #m-en{display:none!important}

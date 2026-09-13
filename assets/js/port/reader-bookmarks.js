@@ -42,10 +42,12 @@
     const page=text(place.page),row=generatedHeading(place.row)?'b'+page+'-0':text(place.row),origin=context.origin||environment.location?.origin||'https://thefaithreceived.vercel.app',sourcePosition=sourceLocation(place.position);
     const path=environment.location?.pathname==='/read.html'?'/read.html':'/the-faith-received/read/';
     const url=new URL(path,origin);url.searchParams.set('w',slug);url.searchParams.set('p',page);if(sourcePosition.sourcePath)url.searchParams.set('section',sourcePosition.sourcePath);if(sourcePosition.sourceKey)url.searchParams.set('heading',sourcePosition.sourceKey);url.hash=row;
+    const part=slug==='pld-6037'?new URL(environment.location?.href||origin).searchParams.get('pldpart'):null;
+    if(['2','3','4','5'].includes(part))url.searchParams.set('pldpart',part);
     let label;try{label=context.pageLabel?.(page);}catch(_){}label=text(label)||'Location '+page;
     const citation=[title,context.volume,label].filter(Boolean).map(text).join(', '),author=text(context.author);
     const source={site:'fr',slug,page,row,url:url.href,title,author,cite:citation,...sourcePosition};
-    return {id:'reading-place:'+encodeURIComponent(slug)+':'+encodeURIComponent(row)+(sourcePosition.sourcePath?':section:'+encodeURIComponent(sourcePosition.sourcePath):'')+(sourcePosition.sourceKey?':heading:'+encodeURIComponent(sourcePosition.sourceKey):''),type:'note',readingPlace:true,site:'fr',slug,page,row,
+    return {id:'reading-place:'+encodeURIComponent(slug)+':'+encodeURIComponent(row)+(part&&part!=='2'?':pldpart:'+part:'')+(sourcePosition.sourcePath?':section:'+encodeURIComponent(sourcePosition.sourcePath):'')+(sourcePosition.sourceKey?':heading:'+encodeURIComponent(sourcePosition.sourceKey):''),type:'note',readingPlace:true,site:'fr',slug,page,row,
       title,work:title,author,cite:citation,url:url.href,label:'Reading place · '+label,text:'',
       readerPosition:{page,id:row,title:text(place.position?.title),offset:Number.isFinite(place.position?.offset)?place.position.offset:null,choice:false,anchor:true,...sourcePosition},
       research:{kind:'reference',sources:[source],authors:author?[author]:[],topics:[],verses:[],provenance:'A reading place explicitly saved from the visible reader.'}};

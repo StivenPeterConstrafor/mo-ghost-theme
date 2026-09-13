@@ -397,6 +397,8 @@ function appBank(laN,enN){
   if(frReaderBlockReference(location.hash)||location.hash.length>1)return;
   let page=new URLSearchParams(location.search).get("p");
   if(!page)try{const ws=new URLSearchParams(location.search).get("ws")||new URLSearchParams(location.search).get("w"),saved=JSON.parse(localStorage.getItem("fr_lastread")||"{}");
+    if(ws==='pld-6037'&&!new URLSearchParams(location.search).has('pldpart')&&['2','3','4','5'].includes(saved[ws]?.pldpart)){
+      const url=new URL(location.href);url.searchParams.set('pldpart',saved[ws].pldpart);history.replaceState(history.state,'',url);}
     const last=saved[ws]?.page;if(last!=null&&(!/^\d+$/.test(String(last))||Number(last)>3))page=String(last);
   }catch(_){}
   if(page)window.__frInitialReference=String(page);
@@ -1299,6 +1301,7 @@ window.__frNavigateReaderAnchor=href=>{
     if(target.origin!==here.origin)return false;
     const work=url=>url.searchParams.get('w')||url.searchParams.get('ws')||(/^\/read\/([^/]+?)(?:\.html)?$/.exec(url.pathname)||[])[1]||'';
     const currentWork=work(here)||window.__FR_SLUG__||DATA?.slug||'',targetWork=work(target);
+    if(currentWork==='pld-6037'&&(target.searchParams.get('pldpart')||'2')!==(here.searchParams.get('pldpart')||'2'))return false;
     // the reader may be mounted under a route prefix (MereO: /the-faith-received/read/) — a citation to the SAME page is
     // always ours; the bare /read shapes stay for cross-page doors (owner 2026-09-11 'fix it for mereo': ?p=&hl= never landed)
     const samePage=target.pathname.replace(/\/+$/,'')===here.pathname.replace(/\/+$/,'');
@@ -1426,6 +1429,7 @@ function readerOutlineHref(row){
   return url.href;
 }
 function locOf(n){
+  if(DATA?.pld_source_view?.notes)return 'Notes, section '+n;
   const corrected=window.FRReaderNavigation?.locator(DATA,n);if(corrected)return corrected;
   if(/^P[LG]\s*\d/i.test(DATA?.volume||""))return "col. "+n;
   if(DATA&&DATA.has_pages)return "p. "+n;
@@ -1787,6 +1791,8 @@ function build(){
   document.title="The Faith Received — "+_entitle;
   $("#wt").textContent=_entitle;$("#wt").title=_entitle;$("#h1").textContent=_entitle;
   app.classList.toggle('source-en',DATA.src_lang==='en');
+  app.classList.toggle('source-only',DATA.source_only===true);
+  renderSourceView();
   if(DATA.src_lang==='en')applyLanes();
   {const c=$("#coins");if(c)c.title=coinsOf(DATA);}   // Zotero/Mendeley COinS — reference managers auto-detect this citation
   // English-only works (e.g. Baxter's Methodus — no Latin parallel; the Ramist diagrams live in the
@@ -1924,7 +1930,7 @@ function build(){
   app.classList.toggle("flow",DATA.flow===true||DATA.collection==="reformed-confessions");
   {const mp=$("#m-par");if(mp)mp.style.display=enOnly?"none":"";}
   // witness (owner 2026-09-09): a facsimile work reads text AND scan — two witnesses; a digital work is the text alone
-  $("#wmeta").textContent=[DATA.author,`${DATA.n_pages} ${DATA.has_pages?"folia":"sections"}`,enOnly||DATA.src_lang==='en'?"English":((window.__SRCNAME||"Latin")+" + English"),DATA.has_pages?"facsimile · text + page scans":"digital text"].filter(Boolean).join(" · ");
+  $("#wmeta").textContent=[DATA.author,`${DATA.n_pages} ${DATA.has_pages?"folia":"sections"}`,DATA.source_only?'Latin':enOnly||DATA.src_lang==='en'?"English":((window.__SRCNAME||"Latin")+" + English"),DATA.pld_source_view?.label,DATA.has_pages?"facsimile · text + page scans":"digital text"].filter(Boolean).join(" · ");
   {const bits=[(DATA.title_en&&DATA.title_en!==DATA.title)?esc(DATA.title):null,
      DATA.author?('<a class=subau href="/?a='+encodeURIComponent(DATA.author)+'" title="All works by '+esc(DATA.author)+'">'+esc(DATA.author)+'</a>'):null,
      DATA.volume?esc(DATA.volume):null].filter(Boolean);
@@ -2160,7 +2166,7 @@ function build(){
     {const ff=fm.querySelector(".ff");ff.title="Click to copy the citation for this page";
      ff.onclick=()=>{const a=(Array.isArray(DATA.author)?DATA.author.join(", "):(DATA.author||"")),
        cite=[a,[DATA.title,DATA.volume].filter(Boolean).join(", "),locOf(pg.n)].filter(Boolean).join(", ")
-         +" — "+location.origin+"/the-faith-received/read/?w="+encodeURIComponent(DATA.slug||"")+"#b"+pg.n+"-0";
+         +" — "+location.origin+"/the-faith-received/read/?w="+encodeURIComponent(DATA.slug||"")+(DATA.pld_source_view?'&pldpart='+DATA.pld_source_view.id:'')+"#b"+pg.n+"-0";
        navigator.clipboard.writeText(cite).then(()=>{const old=ff.textContent;ff.textContent="✓ copied";
          setTimeout(()=>{ff.textContent=old;},1200);}).catch(()=>{});};}
     R.appendChild(fm);
@@ -3701,6 +3707,25 @@ function goReaderReference(pg){
  jump(pg.n);setFolio(pg);
  setTimeout(()=>{if(window.__frTgt===pg.n&&window.__jumpSettle)window.__jumpSettle(pg.n);},900);
 }
+function renderSourceView(){
+ const box=$('#reader-source-view'),view=DATA?.pld_source_view;if(!box)return;
+ box.hidden=!view;if(!view){box.replaceChildren();return;}
+ if(box.dataset.view===DATA.slug+':'+view.id)return;
+ box.dataset.view=DATA.slug+':'+view.id;box.replaceChildren();
+ const label=document.createElement('label');label.htmlFor='pld-source-select';label.textContent='Read a source division';
+ const select=document.createElement('select');select.id='pld-source-select';
+ for(const option of view.options){const el=document.createElement('option');el.value=option.id;el.textContent=option.label;select.appendChild(el);}select.value=view.id;
+ select.onchange=()=>{const url=new URL(location.href);url.searchParams.set('pldpart',select.value);
+  for(const key of ['p','section','heading','hl'])url.searchParams.delete(key);url.hash='';
+  // A deliberate source choice starts at its opening, not the other division's resume point.
+  url.searchParams.set('p',select.value==='3'||select.value==='5'?'1':'73');location.assign(url.href);};
+ const note=document.createElement('p');note.textContent=view.notes?'These editorial notes are in Latin.':'The PLD source contains two text divisions, each with its own notes.';
+ const link=document.createElement('a');link.href=view.source;link.target='_blank';link.rel='noopener';link.textContent=view.notes?'Open linked notes in PLD':'View this division in PLD';
+ box.append(label,select,note,link);
+ let button=$('#reader-source-choice');if(!button){button=document.createElement('button');button.id='reader-source-choice';button.type='button';$('.reader-reference').appendChild(button);}
+ button.textContent=view.notes?'Notes '+(view.id==='3'?'1':'2'):'Text '+(view.id==='2'?'1':'2');button.title='Choose a PLD text division or its notes';
+ button.onclick=()=>{app.classList.remove('nosb');window.__frThumbSync?.();select.focus();};
+}
 function syncReaderHeader(n){
  if(!DATA)return;
  const author=$("#reader-author"),volume=$("#reader-volume"),place=$("#reader-location");
@@ -3718,7 +3743,7 @@ function syncReaderHeader(n){
  author.textContent=DATA.author||"";author.href="/?a="+encodeURIComponent(DATA.author||"");
  volume.textContent=String(DATA.volume||"").replace(/\b(P[LG]|PO)\s*(\d+)/g,"$1 $2");
  place.textContent=locOf(n);place.setAttribute('aria-label','Go to a place in this work, currently '+locOf(n));
- const column=/^P[LG]\s*\d/i.test(DATA.volume||""),unit=column?'column':DATA.has_pages?'page':'section';
+ const column=!DATA.pld_source_view?.notes&&/^P[LG]\s*\d/i.test(DATA.volume||""),unit=column?'column':DATA.has_pages?'page':'section';
  $("#pgJump").setAttribute('aria-label',unit[0].toUpperCase()+unit.slice(1)+' number');$("#pgJump").title='Go to '+unit;
  $("#reader-jump-label").textContent='Go to '+unit;
  if(!$("#aaPop").classList.contains('on'))$("#reader-jump").value=String(n);
@@ -3747,7 +3772,7 @@ function setFolio(pg){if(!pg||cur===pg.n)return;cur=pg.n;syncReaderHeader(pg.n);
     if(!pl.onclick)pl.onclick=()=>{app.classList.remove("nosb");const n=$(".nav-node.on");if(n)n.scrollIntoView({block:"center"});};}}
   try{const lr=JSON.parse(lsGet("fr_lastread")||"{}");
     {const _q=new URLSearchParams(location.search);const _k=_q.get("ws")||_q.get("w")||DATA.slug||DATA.workspace;
-     lr[_k]={page:pg.n,slug:DATA.slug||"",title:DATA.title||"",author:DATA.author||"",ts:Date.now()};
+     lr[_k]={page:pg.n,slug:DATA.slug||"",title:DATA.title||"",author:DATA.author||"",ts:Date.now(),...(DATA.pld_source_view?{pldpart:DATA.pld_source_view.id}:{} )};
      if(lr["undefined"])delete lr["undefined"];}
     lsSet("fr_lastread",JSON.stringify(lr));
     if(window._frSyncLastread)window._frSyncLastread(lr);
@@ -3826,6 +3851,7 @@ function applyLanes(){
   const englishSource=DATA?.src_lang==='en';
   const singleLane=englishSource||DATA?.en_only===true||app.classList.contains('en-only');
   if(singleLane){LN.en=true;LN.la=false;}
+  if(DATA?.source_only){LN.en=false;LN.la=true;}
   if(!LN.en&&!LN.la)LN.en=true;
   if(!(DATA&&DATA.has_pages))LN.fx=false;                 // born-digital: no scan exists
   app.classList.toggle("only-en",LN.en&&!LN.la);
@@ -3834,7 +3860,7 @@ function applyLanes(){
   const P={en:LN.en,par:LN.la,study:LN.fx};
   ["en","par","study"].forEach(x=>{const b=$("#m-"+x);if(b)b.setAttribute("aria-pressed",!!P[x]);});
   if(!LN.fx){app.classList.remove("facs-only");const fe=$("#facsExp");if(fe){fe.setAttribute("aria-pressed","false");fe.textContent="⤢";}}  // dropping the scan drops facsimile-only too
-  if(!singleLane)lsSet("fr_lanes2",JSON.stringify(LN));if(window.__frThumbSync)window.__frThumbSync();
+  if(!singleLane&&!DATA?.source_only)lsSet("fr_lanes2",JSON.stringify(LN));if(window.__frThumbSync)window.__frThumbSync();
   // PHONE PARALLEL (owner 2026-08-10 "work on this on mobile"): stacked runs render la-column-
   // then-en-column — pages of Latin before any English on a phone. Zip them into la∥en pairs,
   // paragraph by paragraph, whenever both lanes are on at phone width. One-way per stkwrap
@@ -3929,6 +3955,7 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
     const hasScan=(typeof DATA!=="undefined")&&!!(DATA&&DATA.has_pages),enOnly=app.classList.contains("en-only")||DATA?.src_lang==='en';
     B.study.style.display=hasScan?"":"none";
     B.par.style.display=enOnly?"none":"";
+    B.en.style.display=DATA?.source_only?'none':'';
     B.en.classList.toggle("on",!!(window.LN&&LN.en&&!LN.fx));
     B.par.classList.toggle("on",!!(window.LN&&LN.la&&!LN.fx));
     {const lb=B.par.querySelector(".lb");const SN=window.__SRCNAME||"Latin";
@@ -4792,8 +4819,13 @@ async function loadPldCanon(ws){
   const [xml,toc]=await Promise.all([
     ((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/v1/tei/pld/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/v1/tei/pld/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})),
     fetch(BLOB+"/v1/pldtoc/"+id+".json").then(r=>r.ok?r.json():{}).catch(()=>({}))]);
-  const doc=new DOMParser().parseFromString(xml,"application/xml");
+  let doc=new DOMParser().parseFromString(xml,"application/xml"),sourceView=null;
   if(doc.querySelector("parsererror"))throw new Error("canon parse");
+  if(ws==='pld-6037'){
+    const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(xml))),b=>b.toString(16).padStart(2,'0')).join('');
+    sourceView=window.FRPldReading.sourceView(doc,ws,digest,new URLSearchParams(location.search).get('pldpart'));
+    if(sourceView){doc=sourceView.doc;const url=new URL(location.href);url.searchParams.set('pldpart',sourceView.id);history.replaceState(history.state,'',url);}
+  }
   const gt=(sel)=>{const e=doc.querySelector(sel);return e?e.textContent.trim():"";};
   const title=gt("titleStmt > title")||("PL "+id);
   const author_la=gt("titleStmt > author")||"", author=await _auEn(author_la);
@@ -4819,13 +4851,14 @@ async function loadPldCanon(ws){
   const advance=n=>{if(n&&!seen.has(n)){seen.add(n);pages.push(n);
     for(const [d,b] of [[laD,laB],[enD,enB]]){const pb=d.createElement("pb");pb.setAttribute("n",String(n));b.appendChild(pb);}}};
   // The first source column also owns any opening text printed before its marker.
-  const firstColumn=[...doc.querySelectorAll('milestone[unit="column"]')].map(m=>colN(m.getAttribute('n'))).find(Boolean);
+  const firstColumn=sourceView?.notes?null:[...doc.querySelectorAll('milestone[unit="column"]')].map(m=>colN(m.getAttribute('n'))).find(Boolean);
   advance(firstColumn);
   window.__pldLastEnHead=null;window.__pldLastEnHeadEcho=false;
   const walk=(node,depth)=>{
     for(const ch of node.children){
       const ln=ch.localName;
       if(ln==="milestone"&&ch.getAttribute("unit")==="column"){
+        if(sourceView?.notes)continue;
         advance(colN(ch.getAttribute("n")));
       }else if(ln==="head"){
         if(pairedHeads.has(ch))continue;
@@ -4846,6 +4879,12 @@ async function loadPldCanon(ws){
         {const h=enD.createElement("head");h.textContent=en||t;enB.appendChild(h);window.__pldLastEnHead=h;window.__pldLastEnHeadEcho=!en;}
       }else if(ln==="p"){
         const lang=ch.getAttribute("xml:lang");
+        if(sourceView?.notes){
+          // The export's note translations are Latin echoes. Retain the actual
+          // source once, in Latin, and use note sections rather than false columns.
+          if(lang==='en')continue;
+          advance(pages.length+1);
+        }
         let t=ch.textContent.replace(/\s+/g," ").trim();
         // DEHYPHENATION (owner 2026-08-18 mobile screenshot 'ho- moeusion', 'un- derstanding'):
         // the canon keeps the print's line-break hyphens; a hyphen + space + lowercase
@@ -4854,6 +4893,7 @@ async function loadPldCanon(ws){
         t=t.replace(/([A-Za-zÀ-ÿæœ])-\s+([a-zà-ÿæœ])/g,"$1$2")
            .replace(/([A-Z]{2,})-\s+([A-Z]{2,})/g,"$1$2");
         if(!t)continue;
+        if(sourceView?.notes){const incipit=t.split(/[.!?]\s/)[0];struct.push({title:'Notes '+pages.length+': '+incipit.slice(0,90),page:pages.length,depth:1});}
         // INDEX-VOLUME FORMATTING (owner 2026-08-17 'one big block'): Migne's index tomes
         // (PL 218-221) print thousands of entries glued with ".--"; give each its own line.
         const parts=(IS_PL_INDEX&&t.length>500&&t.split(" .--").length>3)?t.split(/\s*\.--\s*/):[t];
@@ -4899,7 +4939,8 @@ async function loadPldCanon(ws){
   wireVolTravel("PL",(vol.match(/\d+/)||[])[0],+id,"pld","plvol");
   window.__pldCanonDocs={la:laD,en:enD};   // loadTEI consumes these instead of fetching sidecars
   return {slug:ws,title,title_en:title,author,author_la:author_la!==author?author_la:undefined,volume:vol,tradition:"Latin Fathers",
-    has_pages:false,has_tei:true,tei_v:0,en_only:false,n_pages:pages.length,
+    has_pages:false,has_tei:true,tei_v:0,en_only:false,source_only:!!sourceView?.notes,n_pages:pages.length,
+    pld_source_view:sourceView?{id:sourceView.id,label:sourceView.label,options:sourceView.options,notes:sourceView.notes,source:sourceView.source}:null,
     structure:struct,base:null,reader_introduction:window.FRPldReading.introduction(doc.querySelectorAll('head'),colN,ws,struct),
     pages:pages.map(n=>({n,la:"",en:""}))};
 }

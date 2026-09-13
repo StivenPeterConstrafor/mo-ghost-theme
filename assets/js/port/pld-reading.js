@@ -86,7 +86,51 @@
     }
     return matches.length===1?matches[0]:null;
   }
-  const api={heading,introduction,renderedHeading};
+  // UChicago 6037 has two text divisions, each followed by Notes. The TEI
+  // export nests those boundaries under the preceding chapter. Project a view
+  // from a byte-verified source; never deduplicate or rewrite its paragraphs.
+  const etymologiesHash='3eb893c24e8a7ca281c5fe49872aa4b8156a302b8ac9eccf7e53809a9dba8611';
+  function sourcePart(id){
+    const match=/^#?w6037-b(\d+)$/.exec(id||'');if(!match)return null;
+    const n=Number(match[1]);
+    if(n>=746701&&n<=753620)return '2';
+    if(n>=753622&&n<=753630)return '3';
+    if(n>=753632&&n<=760549)return '4';
+    if(n>=760551&&n<=760559)return '5';
+    return null;
+  }
+  function sourceView(doc,slug,hash,requested){
+    if(slug!=='pld-6037'||hash!==etymologiesHash)return null;
+    const options=[{id:'2',label:'PLD text 1'},{id:'3',label:'Notes for text 1 (Latin)'},
+      {id:'4',label:'PLD text 2'},{id:'5',label:'Notes for text 2 (Latin)'}];
+    const selected=options.some(o=>o.id===requested)?requested:'2';
+    const body=doc.querySelector('body');if(!body)return null;
+    const leaves=Array.from(body.querySelectorAll('head,p,milestone')).filter(n=>!n.parentElement?.closest('p,head'));
+    const ownership=new Map();let nextPart=null;
+    for(let i=leaves.length-1;i>=0;i--){
+      const node=leaves[i];let part=null;
+      if(node.localName==='p')part=sourcePart(node.getAttribute('xml:id')||node.getAttribute('corresp'));
+      if(node.localName==='head'){
+        let ancestor=node.parentElement;
+        while(ancestor&&!part){part=/^w6037-d6037_([24])(?:_|$)/.exec(ancestor.getAttribute('xml:id')||'')?.[1]||null;ancestor=ancestor.parentElement;}
+      }
+      // Unnumbered title lines and column markers belong to the following text.
+      if(part)nextPart=part;ownership.set(node,part||nextPart);
+    }
+    if(leaves.some(n=>!ownership.get(n)))return null;
+    const copy=node=>{
+      if(ownership.has(node))return ownership.get(node)===selected?node.cloneNode(true):null;
+      const clone=node.cloneNode(false);
+      for(const child of Array.from(node.children)){const kept=copy(child);if(kept)clone.appendChild(kept);}
+      return clone.children.length?clone:null;
+    };
+    const projected=copy(body);if(!projected)return null;
+    const result=doc.cloneNode(true);result.querySelector('body').replaceWith(projected);
+    const choice=options.find(o=>o.id===selected);
+    return {doc:result,id:selected,label:choice.label,options,notes:selected==='3'||selected==='5',
+      source:'https://artflsrv04.uchicago.edu/philologic5/PLD/navigate/6037/'+selected};
+  }
+  const api={heading,introduction,renderedHeading,sourcePart,sourceView,etymologiesHash};
   if(typeof module==='object'&&module.exports)module.exports=api;
   root.FRPldReading=api;
 })(typeof window==='object'?window:globalThis);
