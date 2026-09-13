@@ -108,6 +108,18 @@ The research pages embed the reader in an `<iframe>` under a statement (`.peekwr
 
 Research rail (`read-tools.js`, deferred, injects a root path): `Explore this work` (`&research=1`), evidence and related works (`/v1/related`, `/v1/mine/work/<slug>.json`), Ask docked in the LEFT rail (`html.fra-docked #app{margin-left:var(--fr-rail-width)}`), notebook saves (`FRResearchNotebook.saveWork/savePassage/unsave/savedKeys`, one path on every surface; `fr_pins` is a derived mirror, never written directly), comparison doors to `/compare` and `/fathers#<author>/with/<other>`.
 
+### 9.1 Topics in the work analysis panel (fixed 13 September 2026)
+
+The analysis panel (`work-research.js`) shows a record's topics in three places: the **Topic context** menu, the **Explore doctrines** block under a record (Statement topics and Section context), and the search haystack. All three used to take the published `loci` lists verbatim. Those lists are model output, and about 0.09% of their values are the classifier talking to itself rather than naming a topic, in dozens of wordings: "Perseverance is not on the list — see loci_other", "Salvation-related topics not in list", "Repentance placeholder", "Salvation—see Eternal Life", "Marriage—n/a", even whole claims. The panel printed them as text. On the Synod of Dort acts, 20 of the menu's 74 entries were such values.
+
+**The rule now.** The topic vocabulary is closed (180 topics, `/v1/mine/topic2-all/index.json`, loaded by `FRResearchData.topics()`), so a value is shown only when it names one of those topics, and it is shown under that topic's canonical name. Matching folds case, accents, a leading "The", `&`/"and", punctuation and a trailing plural, which rescues valid variants onto real, linkable topics: "Law" → "The Law", "Holy Spirit" → "The Holy Spirit", "Merits" → "Merit". A value that maps onto no topic is dropped. Validated over every topic value in the corpus (23.9 million): no two topics share a key, 99.91% of values are kept, 4,721 variant occurrences are rescued onto real topics.
+
+**If the vocabulary fails to load**, a strict pattern drops the chatter instead (`loci_other`, `placeholder`, `see`, `list`, `use`, `n/a`, `covered`, `excluded`, `-related`, `none`, and `; : ?` or a dash), and no real topic name trips it.
+
+**What to replicate on MereO.** `normalize(data, topics)` and `recordContext(record, books, parser, topics)` both take the vocabulary; `load()` awaits `dictionaries()` before calling `normalize`. The helpers `cleanTopics(values, topics)` and `topicVocabulary(topics)` are exported. Tests: `tools/prdl_reader_prototype/work-research.test.cjs`, the four cases after "Topic chatter" (chatter dropped with and without a vocabulary, variants shown under their canonical name, real names never mistaken for chatter, menu/filter/context carry only canonical topics). Deploy gate: `tools/deploy_site.sh` refuses to ship a `dist/work-research.js` that lacks `cleanTopics`.
+
+**Known trade-off.** A clean label that is simply outside the vocabulary is dropped too, for example "Divine Immutability" or "Simony", because it cannot link to a topic page. That follows from the vocabulary being closed; widening it is a vocabulary decision, not a panel one.
+
 ---
 
 ## 10. Migne specifics
