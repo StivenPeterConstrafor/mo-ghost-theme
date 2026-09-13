@@ -707,6 +707,8 @@ const TOPIC_ALIAS=(()=>{const m=new Map();const add=(to,...from)=>from.forEach(f
   add('Prolegomena / Theological Method','Theology','Theology / Prolegomena','Theology / Theological Method','Theological Method');
   return m;})();
 function topicCanon(label){const f=RX.fold(label);const done=l=>({label:l,key:RX.fold(l)});
+  // 09-13: the shared registry rule first (READER-SPEC 9.1: chatter → the topic it names, composites → parts, aliases), then the loci fold below
+  const reg=__TREG.size?RX.topicNames(label,tregRows()):[];if(reg.length&&reg[0]!==label)return topicCanon(reg[0]);
   if(CANON_LOCI.has(f))return done(CANON_LOCI.get(f));if(TOPIC_ALIAS.has(f))return done(TOPIC_ALIAS.get(f));
   const st=TOPIC_STRIP(label);if(CANON_LOCI.has(st))return done(CANON_LOCI.get(st));if(TOPIC_ALIAS.has(st))return done(TOPIC_ALIAS.get(st));
   const parts=f.split(/\s*\/\s*/).filter(Boolean);
@@ -716,11 +718,11 @@ function topicCanon(label){const f=RX.fold(label);const done=l=>({label:l,key:RX
   return done(label);}
 /* ROOM TOPIC CANON: a room's topic entries merged by canon (pos deduped, counts summed, byw merged); `parts`
    keep every original label and file name so the full topic files behind a merged entry still load. */
-function canonRoomTopics(list){const out=new Map(),order=[];
+function canonRoomTopics(list){const out=new Map(),order=[];const canonX=r=>r&&Array.isArray(r.x)?{...r,x:[...new Set(r.x.map(v=>topicCanon(v).label))]}:r;   // a page's other topics fold the same way (09-13)
   (list||[]).forEach(t=>{if(!t||!t.t)return;const c=topicCanon(t.t),key=c.key,canonical=RX.fold(t.t)===key;
     if(!out.has(key)){out.set(key,{...t,t:c.label,key,parts:[],via:[],pos:[],pages:[],byw:new Map(),n:0,np:0,npos:0,nm:0,full:false,npos_via:0,migne:null});order.push(key);}
     const m=out.get(key);m.parts.push({t:t.t,full:!!t.full,tslug:tslugOf(t.t),canonical});if(!canonical){m.via.push(t.t);m.npos_via+=t.npos||0;}
-    m.pos=m.pos.concat(t.pos||[]);m.pages=m.pages.concat(t.pages||[]);m.n+=t.n||0;m.np+=t.np||0;m.npos+=t.npos||0;m.nm+=t.nm||0;m.full=m.full||!!t.full;
+    m.pos=m.pos.concat((t.pos||[]).map(canonX));m.pages=m.pages.concat((t.pages||[]).map(canonX));m.n+=t.n||0;m.np+=t.np||0;m.npos+=t.npos||0;m.nm+=t.nm||0;m.full=m.full||!!t.full;
     (t.byw||[]).forEach(x=>{const cur=m.byw.get(x[0]);if(cur)cur[2]=(cur[2]||0)+(x[2]||0);else m.byw.set(x[0],[x[0],x[1],x[2]||0]);});
     if(t.migne&&(canonical||!m.migne))m.migne=t.migne;});
   return order.map(k=>{const m=out.get(k);m.pos=positionRows(m.pos);const seen=new Set();m.pages=m.pages.filter(r=>{const pk=r.w+'|'+RX.page(r.p);if(seen.has(pk))return false;seen.add(pk);return true;});m.byw=[...m.byw.values()].sort((a,b)=>b[2]-a[2]).slice(0,30);if(!m.migne)delete m.migne;return m;});}
@@ -757,6 +759,7 @@ async function room(slug,arg){
   for(const r of candidates.length?candidates:[{sh:RSH}]){d=await J(BLOB+`/v1/bible/${r.sh}/rooms/${slug}.json`).catch(()=>null);if(d){RSH=r.sh;break;}}
   if(run!==RESEARCH_RUN)return;if(!d){researchError('This author could not load');return;}
   let roomViewRun=0;
+  await topicSlugs();if(run!==RESEARCH_RUN)return;   // the registry (aliases included) must be in hand before the fold (09-13)
   const topics=canonRoomTopics(d.topics).sort((a,b)=>(b.np||0)-(a.np||0));   // variants folded into their locus (topicCanon)
   // arg: undefined|"w" → works · "t" → topic index · "s[/book[/ch]]" → scripture · else topic detail
   let VIEW="w",selT=null,selBook=null,selCh=0;
@@ -854,7 +857,7 @@ async function room(slug,arg){
       const response=await fetch('https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/evidence?'+params,{signal:AbortSignal.timeout(25000)});if(!response.ok)throw new Error('Evidence unavailable');
       const result=await response.json();if(run!==RESEARCH_RUN)return;
       state=positionPage(state,result,state.contract,state.author);positionState.set(t.t,state);
-    }catch(_){if(run!==RESEARCH_RUN)return;state.error=true;state.failures=(state.failures||0)+1;if(state.failures>=2)state.halted=true;}finally{state.loading=false;if(run===RESEARCH_RUN)refreshPositions();}
+    }catch(_){if(run!==RESEARCH_RUN)return;state.error=true;state.failures=(state.failures||0)+1;if(state.failures>=4)state.halted=true;else setTimeout(()=>{if(run===RESEARCH_RUN&&!state.loading)loadIndexedPositions(t);},700*state.failures);}finally{state.loading=false;if(run===RESEARCH_RUN)refreshPositions();}
   }
   let drawPositions=null;
   function refreshPositions(){if(VIEW==='p'&&run===RESEARCH_RUN&&drawPositions)drawPositions();}
@@ -983,14 +986,14 @@ async function room(slug,arg){
     researchLayout();const draw=()=>{const q=RX.fold($('#room-tq').value),w=$('#room-tw').value,x=$('#room-tx').value,s=$('#room-ts')?.value;const rows=records.filter(r=>(!w||r.w===w)&&(!x||(r.x||[]).includes(x))&&(!s||r.s===s)&&(!q||RX.fold((r.q||'')+' '+(r.g||'')).includes(q)));
     addEventListener('fr-sections-ready',()=>{if(run===RESEARCH_RUN&&VIEW==='q')draw();},{signal:researchEvents.signal});
     $('#room-topic-count').textContent=fmtR(rows.length)+' matching entries';$('#room-topic-more').hidden=true;
-    statementPane($('#room-topic-evidence'),rows,{title:r=>titles[r.w]||r.wt||r.w,author:d.a,actions:true,extra:r=>`<p class="rx-annotation">${esc(r.type)}${r.s?' · '+esc(r.s):''}${RX.cleanTopics(r.x,[...__TREG.values()]).length?' · Also discusses '+RX.cleanTopics(r.x,[...__TREG.values()]).map(esc).join(', '):''}</p>`,empty:'No matching passages. Clear a filter or try another phrase.'});};
+    statementPane($('#room-topic-evidence'),rows,{title:r=>titles[r.w]||r.wt||r.w,author:d.a,actions:true,extra:r=>`<p class="rx-annotation">${esc(r.type)}${r.s?' · '+esc(r.s):''}${RX.cleanTopics(r.x,tregRows()).length?' · Also discusses '+RX.cleanTopics(r.x,tregRows()).map(esc).join(', '):''}</p>`,empty:'No matching passages. Clear a filter or try another phrase.'});};
     for(const id of ['room-tq','room-tw','room-tx','room-ts']){const el=$('#'+id);if(el)el.addEventListener(id==='room-tq'?'input':'change',()=>draw());}draw();pbody.scrollTop=0;setHash(encodeURIComponent(t.t));
   }
   function renderConnections(){
     VIEW='c';segOn('c');starSel(null);++roomViewRun;setHash('connections');
     // MASTER–DETAIL (owner 2026-09-10 "this is collapsed by work too"): every connection in a bounded
     // list pane; the chosen one's shared pages on the right, grouped by work in folds. No "show more".
-    const pairs=RX.connections(topics,[...__TREG.values()]);let sel=null;if(!__TREG.size)topicSlugs().then(()=>{if(run===RESEARCH_RUN&&VIEW==='c'&&__TREG.size)renderConnections();});
+    const pairs=RX.connections(topics,tregRows());let sel=null;if(!__TREG.size)topicSlugs().then(()=>{if(run===RESEARCH_RUN&&VIEW==='c'&&__TREG.size)renderConnections();});
     pbody.innerHTML=`<div class="view rx-connections"><h2>Connected topics</h2><p class="pane-meta">Where subjects meet in ${esc(d.a)}’s available passages.</p><p class="rx-note">Each connection counts distinct pages tagged with both topics in this room’s sample. This reveals places to read together; it does not establish agreement, influence, or a complete account of the author’s theology.</p><label class="rx-search">Find a connection<input id="connection-q" type="search" placeholder="Grace, sin, free will"></label><p id="connection-count" role="status"></p>
       <div class="rx-md rx-conn-md"><div class="rx-md-list rx-pane" id="room-connections" role="tablist" aria-label="Connections"></div><div class="rx-md-detail" id="connection-detail"><p class="rx-note">Choose a connection to read its shared pages, grouped by work.</p></div></div></div>`;
     const showPair=p=>{sel=p;$('#room-connections').querySelectorAll('[data-pair]').forEach(b=>{const on=+b.dataset.pair===pairs.indexOf(p);b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on));});
@@ -1649,7 +1652,7 @@ async function compareDesk(host,state,opts={}){
       if(result.has_more&&(!result.next_cursor||result.next_cursor===cell.cursor))throw new Error('Evidence page did not advance');
       for(const r of result.items){const key=r.id||JSON.stringify([r.w,RX.page(r.p),r.q]);if(!cell.seen.has(key)){cell.seen.add(key);cell.rows.push(r);}}
       cell.total=result.total||cell.total;cell.cursor=result.next_cursor||null;cell.done=!result.has_more;cell.failures=0;}
-    catch(_){if(!active()){cell.loading=false;return;}cell.failures=(cell.failures||0)+1;if(cell.failures>=2)cell.halted=true;}
+    catch(_){if(!active()){cell.loading=false;return;}cell.failures=(cell.failures||0)+1;if(cell.failures>=4)cell.halted=true;else setTimeout(()=>{if(active()&&!cell.loading)pageCell(au,cell);},700*cell.failures);}   // 09-13: a transient 503 retries with backoff before the index is declared silent
     cell.loading=false;drawCell(au,cell);}
   async function openCell(au,t){const k=cellKey(au,t);let cell=CELLS.get(k);
     if(!cell){const parts=t.parts[authors.indexOf(au)]||[];const byw={};parts.forEach(p=>(p.byw||[]).forEach(x=>{byw[x[0]]=(byw[x[0]]||0)+(x[2]||0);}));
@@ -1836,7 +1839,9 @@ function statementPane(box,rows,o={}){if(!rows.length){box.classList.remove('rx-
 /* commentary contexts for the shared citation module (same map the citation web builds) */
 let __COMMS=null;async function comms(){if(__COMMS)return __COMMS;const d=await J(BLOB+'/v1/commentaries.json').catch(()=>null);const m={};if(d){(d.sentences||[]).forEach(c=>m[c.w]={l:'Commentary on Peter Lombard’s Sentences'+(c.bk?' · Book '+c.bk:''),k:'sent'});(d.summa||[]).forEach(c=>m[c.w]={l:'Commentary on Thomas Aquinas’s Summa'+(c.p?' · '+c.p:''),k:'sum'});(d.bible||[]).forEach(c=>m[c.w]={l:'Scripture commentary: '+String(c.bk||'').replace(/-/g,' ').replace(/\b\w/g,x=>x.toUpperCase()),k:'bib'});(d.compilations||[]).forEach(c=>m[c.w]={l:'Compilation · a reference may belong to a collected source',k:'comp'});}__COMMS={map:m,raw:d||{}};return __COMMS;}
 /* registry slugs for topic labels: /topics#<slug> and /web#t=<slug> both want the topic2-all slug, never the label */
-let __TSLUGS=null;const __TREG=new Map();const topicSlugs=()=>__TSLUGS||(__TSLUGS=J(BLOB+'/v1/mine/topic2-all/index.json').then(ix=>{const m=new Map();(ix.topics||[]).forEach(x=>{m.set(RX.fold(x.t),x.s);__TREG.set(RX.fold(x.t),{t:x.t,n:x.n||0});});return m;}).catch(()=>new Map()));
+let __TSLUGS=null;const __TREG=new Map();const topicSlugs=()=>__TSLUGS||(__TSLUGS=J(BLOB+'/v1/mine/topic2-all/index.json').then(ix=>{const m=new Map();(ix.topics||[]).forEach(x=>{m.set(RX.fold(x.t),x.s);__TREG.set(RX.fold(x.t),{t:x.t,n:x.n||0,...(Array.isArray(x.aliases)?{aliases:x.aliases}:{})});});return m;}).catch(()=>new Map()));
+/* the registry rows as ONE array (RX.topicVocabulary caches by array identity) */
+let __TREG_ROWS=null;const tregRows=()=>(__TREG_ROWS&&__TREG_ROWS.length===__TREG.size)?__TREG_ROWS:(__TREG_ROWS=[...__TREG.values()]);
 const tslugOf=label=>String(label||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,50);
 async function pairPage(slugA,slugB,topicSeg){
   const pl=(n,w)=>n===1?w:w+'s';
