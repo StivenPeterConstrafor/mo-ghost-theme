@@ -1,10 +1,5 @@
 # The Faith Received — the author page (`/fathers?sh=<shelf>#<author>`): every surface
 
-## 2026-09-13 Shared volume-order repair
-
-The [source and acceptance package](search-volume-qa-2026-09-13/README.md) carries canonical library series/volume/edition order into author Works, topic and position work folds, work selectors and Search. It uses the display-only workgroups registry where present, understands Roman and Arabic volumes/parts, preserves all witnesses, and leaves the largest evidence group initially open. Leibniz Creation and all 17 selector options were verified live. The same package fixes repeated topic metadata-listener registration that could freeze a long author page. This is deployed Vercel behavior and a source handoff; native MereO integration is pending.
-
-
 The author page is one "room" for one author on one shelf. It has a header, a topic rail and seven surfaces (tabs): **Works, Positions, Scripture, Topics, Reception, Connections, Search**, plus the pair page (`#<a>/with/<b>`). This document describes each surface completely — address, data, layout, rules, controls — so an agent can recreate or verify it. Everything here was checked live on `https://thefaithreceived.vercel.app/fathers?sh=ed#richard-baxter` on 2026-09-11 (numbers in the checklist are from that page).
 
 Source of truth: `tools/prdl_reader_prototype/research_shell.html` (function `room(slug,arg)` and its renderers `renderWorks`, `drawPositions`, `renderScripture`, `renderTopic`, `renderReception`, `renderConnections`, `renderSearch`, `pairPage`), styles in `research-experience.css`. Built as `dist/fathers.html` (also `authors.html` = the same shell, the directory). MereO: `custom-faith-port-fathers.hbs` + `assets/js/port/fathers.in03.js` (route `/the-faith-received/fathers/`).
@@ -90,6 +85,8 @@ Header `A and B`, stats (statements each, shared topics), `Positions, topic by t
 - Statements are deduplicated by (work, page, text); "indexed" statements (from the evidence API) and the room's own selection are merged, indexed first.
 - Nothing is hidden behind pagination that the user cannot reach: lists page in place (`Show more`, scroll sentinels), counts are whole-collection counts.
 - Notebook: one save path (`FRResearchNotebook`) on works and passages; saved state is read once per render.
+- **Evidence pages retry before they halt (09-13, owner: "1,560 of 4,530 statements · the index stopped answering" on `/compare#a=bonaventure&sel=christ-christology`).** A page walk is ~90 requests through one site-wide queue (2 in flight, 160 ms apart); one transient 503 used to count as a failure and two failures halted the cell. Now `pageCell` and `loadIndexedPositions` retry with backoff (700 ms × attempt) and halt only after four consecutive failures; "the index stopped answering · Try again" stays for that case. Server side, `/api/evidence` retries each Blob fetch three times and keeps the inflated shards per instance (up to six), so a walk touches each 5,000-row shard once instead of a hundred times.
+- **Topic labels on every room surface follow READER-SPEC §9.1–9.3.** `topicCanon` calls `RX.topicNames` (the shared rule, aliases included) before folding a label into its locus head, and the same fold is applied to each row's other topics (`r.x`); the topic registry (`topicSlugs()`) is awaited before `canonRoomTopics` runs. Connections and "Also discusses" use `RX.cleanTopics` with the registry rows (`tregRows()`).
 - Phones (≤ 640px): the header stats wrap, the segment strip scrolls horizontally with 44px targets, panes lose their inner scroll cap when a preview is open, the rail hides.
 
 ---

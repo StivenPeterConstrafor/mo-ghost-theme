@@ -1,8 +1,5 @@
 # The Faith Received on MereO — master index of the instruction sheets
 
-
-> September 12 repair handoff: [Mobile Ask source integrity](MOBILE-ASK-SOURCE-INTEGRITY.md) includes the corrected citation/UI contract, full source snapshots and verification requirements. The companion backend changes are in mo-workers PR #4.
-
 Organised 2026-09-11. Everything sent to Ian lives in two GitHub homes, both public to him:
 
 | Home | Repo / path | What it holds |
@@ -121,6 +118,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 
 | Date | Document | Commit |
 |---|---|---|
+| 09-13 | READER-SPEC §9.1–9.3, R2-SYNC-SPEC §3.1, AUTHOR-PAGE-SPEC §5 — one topic-label rule on the site AND at the source (registry `2026-09-13.1`, 179 topics with aliases; evidence snapshot `mine-23e80dea8050caa3b14e`; units, work overviews, rooms, graphs republished); `/compare` evidence pages retry before halting | theme ask-port-ui 55ef459d · 5dc7b202 · 6eb89663 |
 | 09-12 | PINS_INSTRUCTIONS.md — the last surface without a code sheet; every page of the library now has its source here | mo-workers (docs branch) |
 | 09-11 | ASK_BACKEND_INSTRUCTIONS.md rewritten for the WHOLE BRAIN (owner: the tool layer is in scope) — two gears behind one `/v1/ask`, the 14-tool loop, the member gate, 14-step battery, thirteen files | mo-workers a393969 (worker 689b66d) |
 | 09-11 | Handoff hub published (living artifact: §0 item 0 — screenshots, batteries, deep dives; grows with this index) | — (Claude artifact, updated in place) |
@@ -145,19 +143,3 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 | 09-11 | WEB, TOPICS, BIBLE, SEARCH, AUTHORS_ROOMS _INSTRUCTIONS.md (five surface sheets) | mo-workers 8a363d4 |
 | 09-11 | SHELF_DOORS_DTC_INSTRUCTIONS.md | mo-workers 71269d7 |
 | 09-11 | RESEARCH_RAIL_INSTRUCTIONS.md | mo-workers ad296d1 |
-
-## Ask recovery update, September 12
-
-See [Ask question persistence](ASK-QUESTION-PERSISTENCE.md), [artifact update instructions](ARTIFACT-UPDATE-ASK-PERSISTENCE.md), and the [complete Vercel source and hash manifest](reference/ask-persistence-2026-09-12/manifest.json). The native MereO code is a separate reviewable PR; this handoff does not deploy it.
-
-## Mobile repair checkpoint, September 13
-
-[Full source, patch, before/after screenshots and artifact update instructions](mobile-repair-2026-09-13/README.md). Local repair pending final desktop/live verification; do not mark deployed.
-
-## TOC scrolling repair, September13
-
-[Deployed Vercel repair, full source, patch, metrics and screenshots](toc-scroll-2026-09-13/README.md). MereO integration remains pending.
-
-## Search, Scripture and volume ordering: 2026-09-13
-
-[Integration package](search-volume-qa-2026-09-13/README.md): seven complete source files, focused tests, patch, measured browser QA, screenshots, seven alias byte matches and existing-address artifact instructions. Vercel release `dpl_8Kx8Fj5RY92JwBd6f6u1UuWoYnHR`; native Ghost/Cloudflare integration remains pending.
