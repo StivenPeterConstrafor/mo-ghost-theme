@@ -22,3 +22,13 @@
  html.g-mobile .rc-contents-actions{gap:0 12px;margin-top:0}
  html.g-mobile .rc-contents-count{margin-block:0 2px}
 }
+
+.rc-contents-close{display:none}
+@media(max-width:880px){
+ html.g-mobile .sidebar .work{position:relative;padding-right:60px;min-height:56px}
+ html.g-mobile .rc-contents-close{display:flex;align-items:center;justify-content:center;position:absolute;right:6px;top:50%;transform:translateY(-50%);width:44px;height:44px;padding:10px;border:0;border-radius:5px;color:var(--fg);background:none;cursor:pointer}
+ html.g-mobile .rc-contents-close:hover,html.g-mobile .rc-contents-close:active{background:var(--hl,var(--highlight))}
+ html.g-mobile .rc-contents-close:focus-visible{outline:2px solid var(--fg);outline-offset:-2px}
+ html.g-mobile #nav .nav-node .nav-open{flex:1;min-width:0;text-align:left;overflow-wrap:break-word}
+ html.g-mobile #nav .nav-node{scroll-margin-top:calc(var(--rc-tabs-height,48px) + 140px);scroll-margin-bottom:12px}
+}

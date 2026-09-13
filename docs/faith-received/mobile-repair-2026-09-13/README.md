@@ -1,6 +1,14 @@
 # Mobile history focus and Contents repair
 
-The owner supplied iPhone screenshots showing unwanted input zoom and an oversized Contents header. This folder provides full source, a narrow patch and actual Chrome phone-width comparison images. **Local repair; not deployed at this checkpoint.** Final desktop verification was interrupted by browser timeouts. Do not mark the iPhone zoom issue fully resolved from desktop emulation.
+The owner supplied iPhone screenshots showing unwanted input zoom and an oversized Contents header. This folder provides full source, a narrow patch and actual Chrome phone-width comparison images. **Vercel deployed; MereO integration pending.** Final desktop verification was interrupted by browser timeouts. Do not mark the iPhone zoom issue fully resolved from desktop emulation.
+
+## Current release status
+
+Vercel deployment `dpl_Baf6BmjVFHatA4WKYnti4N4KyLBb` is READY. The protected deployment script passed its build/drift/protected-file gates and public-alias marker check. Six relevant assets, including reader-core.js, match the deployed bytes; see alias-proof.json. 42 focused contents/source-navigation/Ask tests pass. The first deployment attempt was refused, but the same protected pipeline succeeded on retry after account/project access was verified.
+
+The final release adds an explicit 44px Close contents control and clears search focus when the drawer closes while preserving outline scroll and expansion state. toc-usability.patch isolates that last addition. The larger bottom toolbar, compact identity/controls and mobile Ask history focus fix are included. Final browser/actual-iPhone interaction checks remain pending because browser control timed out; do not claim those passed. Existing screenshots below show an EARLIER local layout preview, before the final close button and bottom-toolbar update.
+
+MereO is not deployed by this handoff. Apply the current full sources or the ordered narrow patches to the native port, preserving adapters and guards. Mark Vercel deployed and MereO pending in the existing artifact, retain its address and A–F identities, and capture fresh final-release comparisons when browser access resumes.
 
 ## Behavior
 
@@ -26,12 +34,12 @@ The mobile history check observed ASIDE as activeElement on opening, then 16px f
 
 ## Artifact update
 
-Add this repair as a dated fold in existing section B, Reader, and cross-reference C, Search and Ask. Keep the existing artifact URL, A–F identities, all existing figures and measured counts. Label images as current Vercel before/local preview after. Do not label the repair deployed until an alias hash check and live acceptance pass. Update the existing change log and surface matrix; rebuild using the supplied HANDOFF_PACK/rebuild.py and verify the same artifact address. The backend audit is in private worker PR4; do not copy detailed security findings or ungated origins into a public artifact.
+Add this repair as a dated fold in existing section B, Reader, and cross-reference C, Search and Ask. Keep the existing artifact URL, A–F identities, all existing figures and measured counts. Label images as current Vercel before/local preview after. Distinguish the verified Vercel deployment from pending live interaction acceptance and pending MereO integration. Update the existing change log and surface matrix; rebuild using the supplied HANDOFF_PACK/rebuild.py and verify the same artifact address. The backend audit is in private worker PR4; do not copy detailed security findings or ungated origins into a public artifact.
 
 ## Bottom reading toolbar, added September 13
 
 The owner also requested the bottom toolbar on /read. `reader_shell.html.txt` contains the full updated Vercel template; `bottom-toolbar.patch` isolates this additional change. Labels are 12px (11px below 360px), icons 22px, and buttons have a 52px minimum height. The footer, Contents inset, highlight bar and text clearance share one toolbar-height variable including the bottom safe area. The same English/source-language/scan/search/contents/research/Ask actions remain; no row-pairing or source content change. Language/scan buttons expose pressed state and Contents exposes expanded state.
 
-Final build secret and script-parse gates pass. Browser toolbar verification and deployment remain pending because the connection times out. The screenshots above show the earlier Contents repair, NOT this additional toolbar change. Do not reuse them as proof of the new toolbar. Verify 320/390px, all seven controls when present, English-only and bilingual/facsimile works, text end clearance, open/close Contents, light/dark, keyboard interaction, and unchanged desktop behavior before release.
+Final build secret and script-parse gates pass, and Vercel is deployed as recorded above. Browser toolbar interaction verification remains pending because the connection times out. The screenshots above show the earlier Contents repair, NOT this additional toolbar change. Do not reuse them as proof of the new toolbar. Verify 320/390px, all seven controls when present, English-only and bilingual/facsimile works, text end clearance, open/close Contents, light/dark, keyboard interaction, and unchanged desktop behavior before release.
 
 Include the toolbar addition in the existing artifact section B mobile-reader fold, link its source/patch, and retain pending status until live verification.

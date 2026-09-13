@@ -2051,6 +2051,8 @@ html:not(.fr-plain) .ph.fr-reader-head:has(#reader-introduction:not([hidden])){f
 #reader-source-view p{margin:8px 0 0;color:var(--muted);font:inherit}
 #reader-source-view a{display:inline-flex;align-items:center;min-height:36px;color:var(--fg);text-underline-offset:3px}
 #reader-source-view :focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+#reader-source-choice{appearance:none;border:0;background:none;color:var(--fg);font:inherit;white-space:nowrap;cursor:pointer;padding:0 7px;min-height:32px;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:640px){#reader-source-choice{min-height:44px}}
 .app.source-only #m-en{display:none!important}
 @media(max-width:640px){#reader-introduction:not([hidden]){gap:0 12px}#reader-introduction a{min-height:44px}}
 .reader-reference a{color:inherit;text-decoration:none;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0}.reader-reference a:hover{text-decoration:underline}.reader-reference span{white-space:nowrap;flex:none}.reader-reference span:empty{display:none}
@@ -2261,7 +2263,7 @@ html.fr-research-tools .selchip{display:none!important}
 </script>
 <div class="app no-facs nosb" id="app">
   <aside class="sidebar">
-    <div class="work"><div class="wt" id="wt">…</div><div class="wmeta" id="wmeta"></div><span class="Z3988" id="coins" title="" aria-hidden="true"></span></div>
+    <div class="work"><div class="wt" id="wt">…</div><div class="wmeta" id="wmeta"></div><span class="Z3988" id="coins" title="" aria-hidden="true"></span><button type="button" class="rc-contents-close" id="contentsClose" aria-label="Close contents" title="Close contents"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
     <div id="reader-source-view" hidden></div>
     <nav class="nav" id="nav"></nav>
   </aside>
@@ -3658,6 +3660,7 @@ window.__frNavigateReaderAnchor=href=>{
     if(target.origin!==here.origin)return false;
     const work=url=>url.searchParams.get('w')||url.searchParams.get('ws')||(/^\/read\/([^/]+?)(?:\.html)?$/.exec(url.pathname)||[])[1]||'';
     const currentWork=work(here)||window.__FR_SLUG__||DATA?.slug||'',targetWork=work(target);
+    if(currentWork==='pld-6037'&&(target.searchParams.get('pldpart')||'2')!==(here.searchParams.get('pldpart')||'2'))return false;
     // the reader may be mounted under a route prefix (MereO: /the-faith-received/read/) — a citation to the SAME page is
     // always ours; the bare /read shapes stay for cross-page doors (owner 2026-09-11 'fix it for mereo': ?p=&hl= never landed)
     const samePage=target.pathname.replace(/\/+$/,'')===here.pathname.replace(/\/+$/,'');
@@ -6238,16 +6241,24 @@ document.addEventListener("pointerdown",ev=>{if(ev.target.closest&&ev.target.clo
 $("#m-en").onclick=()=>{LN.en=!LN.en;if(!LN.en&&!LN.la)LN.la=true;applyLanes();};
 $("#m-par").onclick=()=>{LN.la=!LN.la;if(!LN.en&&!LN.la)LN.en=true;applyLanes();};
 $("#m-study")&&($("#m-study").onclick=()=>{LN.fx=!LN.fx;applyLanes();});
-$("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the left contents sidebar
+function setContentsOpen(open,restoreFocus=false){
+  const sidebar=document.querySelector('.sidebar'),focused=document.activeElement;
+  app.classList.toggle('nosb',!open);
+  if(!open&&sidebar?.contains(focused))focused.blur();
+  window.__frThumbSync?.();
+  if(!open&&restoreFocus){const target=document.documentElement.classList.contains('g-mobile')?document.querySelector('.frthumb [data-t="toc"]'):$('#sbT');target?.focus({preventScroll:true});}
+}
+$("#sbT").onclick=()=>setContentsOpen(app.classList.contains('nosb'),true);
+$("#contentsClose").onclick=()=>setContentsOpen(false,true);
 // mobile: scrim behind the open sidebar + tap-to-dismiss; nav taps auto-close the sheet
 (function(){const sc=document.createElement("div");sc.id="sbScrim";app.appendChild(sc);
-  sc.onclick=()=>{app.classList.add("nosb");window.__frThumbSync&&window.__frThumbSync();};
+  sc.onclick=()=>setContentsOpen(false);
   $("#nav").addEventListener("click",e=>{
     // Folding a branch changes the outline, not the reading location. A row's
     // data-page also surrounds its disclosure button, so never use it alone.
     if(e.target.closest("button.cv,summary,.nav-sech,.fmnav,input"))return;
     if(matchMedia("(max-width:880px)").matches&&e.target.closest("a[href],.fol[data-page]")){
-      app.classList.add("nosb");window.__frThumbSync&&window.__frThumbSync();
+      setContentsOpen(false);
     }
   });})();
 /* MOBILE SHELL (ported from Patrologia Graeca, 2026-07-04) — the phone reading model:
@@ -6285,7 +6296,7 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
   B.study.onclick=()=>{LN.fx=!LN.fx;applyLanes();};                   // "Scan" = toggle the facsimile
   B.find.onclick=()=>{if(window.__frOpenSearch)window.__frOpenSearch();};
   if(B.ask)B.ask.onclick=()=>{if(window.__openAsk)window.__openAsk("");};
-  B.toc.onclick=()=>{app.classList.toggle("nosb");window.__frThumbSync&&window.__frThumbSync();};
+  B.toc.onclick=()=>setContentsOpen(app.classList.contains("nosb"),true);
   B.nb.onclick=()=>{if(window.__frOpenNotebook)window.__frOpenNotebook();};
   // chrome auto-hide while reading down (phones): accumulate same-direction travel so tiny
   // jitters don't flap it; near the top it is always shown. A tap on the prose toggles it
@@ -7252,6 +7263,7 @@ async function loadPldCanon(ws){
         t=t.replace(/([A-Za-zÀ-ÿæœ])-\s+([a-zà-ÿæœ])/g,"$1$2")
            .replace(/([A-Z]{2,})-\s+([A-Z]{2,})/g,"$1$2");
         if(!t)continue;
+        if(sourceView?.notes){const incipit=t.split(/[.!?]\s/)[0];struct.push({title:'Notes '+pages.length+': '+incipit.slice(0,90),page:pages.length,depth:1});}
         // INDEX-VOLUME FORMATTING (owner 2026-08-17 'one big block'): Migne's index tomes
         // (PL 218-221) print thousands of entries glued with ".--"; give each its own line.
         const parts=(IS_PL_INDEX&&t.length>500&&t.split(" .--").length>3)?t.split(/\s*\.--\s*/):[t];
