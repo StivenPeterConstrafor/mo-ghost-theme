@@ -149,3 +149,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 ## Ask recovery update, September 12
 
 See [Ask question persistence](ASK-QUESTION-PERSISTENCE.md), [artifact update instructions](ARTIFACT-UPDATE-ASK-PERSISTENCE.md), and the [complete Vercel source and hash manifest](reference/ask-persistence-2026-09-12/manifest.json). The native MereO code is a separate reviewable PR; this handoff does not deploy it.
+
+## Mobile repair checkpoint, September 13
+
+[Full source, patch, before/after screenshots and artifact update instructions](mobile-repair-2026-09-13/README.md). Local repair pending final desktop/live verification; do not mark deployed.
