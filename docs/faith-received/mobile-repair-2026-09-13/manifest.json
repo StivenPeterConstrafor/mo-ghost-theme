@@ -19,5 +19,12 @@
     "bytes": 3724,
     "sha256": "ccff1bca86d05e464c05e4a2c2ca19503669ecff2046de7a40221e50d8327c06",
     "state": "local proposed repair, not deployed"
+  },
+  {
+    "source": "tools/prdl_reader_prototype/reader_shell.html",
+    "file": "reader_shell.html.txt",
+    "bytes": 760875,
+    "sha256": "6bb7e53d10e974d85961c6f5acf2f3b3245a720c03d45e182bf38c7eae209bab",
+    "state": "local bottom-toolbar repair, browser verification pending, not deployed"
   }
 ]

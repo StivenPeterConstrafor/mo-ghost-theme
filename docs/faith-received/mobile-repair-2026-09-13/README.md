@@ -27,3 +27,11 @@ The mobile history check observed ASIDE as activeElement on opening, then 16px f
 ## Artifact update
 
 Add this repair as a dated fold in existing section B, Reader, and cross-reference C, Search and Ask. Keep the existing artifact URL, A–F identities, all existing figures and measured counts. Label images as current Vercel before/local preview after. Do not label the repair deployed until an alias hash check and live acceptance pass. Update the existing change log and surface matrix; rebuild using the supplied HANDOFF_PACK/rebuild.py and verify the same artifact address. The backend audit is in private worker PR4; do not copy detailed security findings or ungated origins into a public artifact.
+
+## Bottom reading toolbar, added September 13
+
+The owner also requested the bottom toolbar on /read. `reader_shell.html.txt` contains the full updated Vercel template; `bottom-toolbar.patch` isolates this additional change. Labels are 12px (11px below 360px), icons 22px, and buttons have a 52px minimum height. The footer, Contents inset, highlight bar and text clearance share one toolbar-height variable including the bottom safe area. The same English/source-language/scan/search/contents/research/Ask actions remain; no row-pairing or source content change. Language/scan buttons expose pressed state and Contents exposes expanded state.
+
+Final build secret and script-parse gates pass. Browser toolbar verification and deployment remain pending because the connection times out. The screenshots above show the earlier Contents repair, NOT this additional toolbar change. Do not reuse them as proof of the new toolbar. Verify 320/390px, all seven controls when present, English-only and bilingual/facsimile works, text end clearance, open/close Contents, light/dark, keyboard interaction, and unchanged desktop behavior before release.
+
+Include the toolbar addition in the existing artifact section B mobile-reader fold, link its source/patch, and retain pending status until live verification.
