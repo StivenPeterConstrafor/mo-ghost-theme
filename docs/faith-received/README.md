@@ -153,3 +153,7 @@ See [Ask question persistence](ASK-QUESTION-PERSISTENCE.md), [artifact update in
 ## Mobile repair checkpoint, September 13
 
 [Full source, patch, before/after screenshots and artifact update instructions](mobile-repair-2026-09-13/README.md). Local repair pending final desktop/live verification; do not mark deployed.
+
+## TOC scrolling repair, September13
+
+[Deployed Vercel repair, full source, patch, metrics and screenshots](toc-scroll-2026-09-13/README.md). MereO integration remains pending.
