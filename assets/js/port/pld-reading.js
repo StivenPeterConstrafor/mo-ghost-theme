@@ -4,16 +4,30 @@
   const text=node=>String(node?.textContent||'').replace(/\s+/g,' ').trim();
   const lang=node=>node?.getAttribute('xml:lang')||'';
   const column=node=>node?.localName==='milestone'&&node.getAttribute('unit')==='column';
+  const tokens=s=>s.normalize('NFC').toLowerCase().replace(/^\s*§\s*/,'').replace(/[\[\]]/g,'')
+    .match(/[\p{L}\p{M}]+|\p{N}+|[^\s]/gu)||[];
+  const headingTokens=s=>tokens(s).join('\u001f');
   function repeatsHeading(source,p){
     if(text(p)===source)return true;
+    // The structural head can omit editorial brackets or the leading section
+    // sign from its paired paragraph. Compare the same word/number/punctuation
+    // sequence; retain the full paragraph, including those editorial marks.
+    if(headingTokens(text(p))===headingTokens(source))return true;
     // Some PL proposition paragraphs are wholly bold and add print note numbers
     // absent from the structural head (Alain XIX: 31, 32). Only suppress the
     // synthetic head; preserve every character of that complete paragraph.
     const children=Array.from(p?.children||[]),bold=children.length===1&&children[0].localName==='hi'
       &&children[0].getAttribute('rend')==='bold'&&text(children[0])===text(p);
-    if(!bold||/\d/.test(source))return false;
-    const fold=s=>s.replace(/\s+/g,' ').replace(/\s+([,.;:])/g,'$1').trim();
-    return fold(text(p).replace(/\b\d+\b/g,''))===fold(source);
+    if(!bold)return false;
+    const original=tokens(source),paragraph=tokens(text(p));let i=0,added=false;
+    for(const token of paragraph){
+      if(token===original[i])i++;
+      // Only extra numeral tokens can differ. An original Scripture number,
+      // date or chapter number must still match in its original position.
+      else if(/^\d+$/.test(token)&&!/^\d+$/.test(original[i]||''))added=true;
+      else return false;
+    }
+    return added&&i===original.length;
   }
   function heading(head){
     const source=text(head);let next=head.nextElementSibling,companion=null,rawColumn='';
