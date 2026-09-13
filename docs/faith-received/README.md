@@ -143,3 +143,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 | 09-11 | WEB, TOPICS, BIBLE, SEARCH, AUTHORS_ROOMS _INSTRUCTIONS.md (five surface sheets) | mo-workers 8a363d4 |
 | 09-11 | SHELF_DOORS_DTC_INSTRUCTIONS.md | mo-workers 71269d7 |
 | 09-11 | RESEARCH_RAIL_INSTRUCTIONS.md | mo-workers ad296d1 |
+
+## Topics scrolling and data audit: 2026-09-13
+
+[Source and acceptance package](topics-qa-2026-09-13/README.md): one scrolling area per shelf, fixed author/statement pages, indexed work selection, bounded loading and clearer extracted-statement provenance. Built and verified with 44 tests and real-data browser checks, including all 622 positions in Baxter’s Method of Christian Theology. **Not deployed: current production approval is pending.** Artifact update instructions retain this status.
