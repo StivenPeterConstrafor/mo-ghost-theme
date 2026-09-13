@@ -10,11 +10,20 @@ const str=v=>v==null?'':String(v),list=v=>Array.isArray(v)?v:[],fold=v=>str(v).n
 // one of its topics, matched loosely enough that "Law" still finds "The Law" and "Merits" finds
 // "Merit". If the vocabulary could not be loaded, a strict pattern drops the chatter instead, so it
 // never reaches the page either way.
-const RAW_TOPIC=/loci_other|placeholder|unplaced|\bn\/a\b|\buse\b|\bsee\b|\blist(?:ed)?\b|\bcovered\b|\bexcluded\b|-related\b|\bnone\b|[;:?–—]/i;
-const topicKey=v=>fold(v).replace(/&/g,' and ').replace(/^the\s+/,'').replace(/[^a-z0-9]+/g,' ').trim().split(' ').map(w=>w.length>3&&/s$/.test(w)&&!/ss$/.test(w)?w.slice(0,-1):w).join(' ');
-const vocabularies=new WeakMap();
-function topicVocabulary(topics){if(!Array.isArray(topics)||!topics.length)return null;if(vocabularies.has(topics))return vocabularies.get(topics);const map=new Map();for(const t of topics){const name=str(t&&t.t);if(name)map.set(topicKey(name),name);}vocabularies.set(topics,map);return map;}
-function cleanTopics(values,topics){const vocab=topicVocabulary(topics),out=[];for(const v of list(values)){const s=str(v).trim();if(!s)continue;const name=vocab?vocab.get(topicKey(s))||'':(s.length<=48&&!RAW_TOPIC.test(s)?s:'');if(name&&!out.includes(name))out.push(name);}return out;}
+/* TOPIC LABELS (09-13) — one rule, the same text in research-tools.js and work-research.js (a parity test
+   holds them together). A value that matches the closed topic index by canonical key links to its topic.
+   Classifier chatter is recovered onto the topic it names ("Marriage is not in the list — see loci_other" →
+   Marriage), a composite onto its parts that are topics ("Merit / Rewards" → Merit), a clean label outside
+   the index stays as plain text ("Simony"), and the rest is dropped. Without the index only the last two apply. */
+const RAW_TOPIC=/loci_other|placeholder|unplaced|\bn\/a\b|(?:[(;,.\u2013\u2014\u2192-]\s*|\bbut\s+|\bor\s+|\bno\s*)use\b|\buse\s+(?:closest|loci)|(?:[(;,.\u2013\u2014\u2192-]\s*|\balso\s+)see\b|\blist(?:ed)?\b|\bcovered\b|\bexcluded\b|-related\b|\bnone\b|\bnot a (?:listed )?locus\b|[;:?\u2013\u2014]/i;
+const TOPIC_SUBJECT=/^\s*(.+?)\s*(?:\bis\b|\bare\b|\bnot\b|\bimplied\b|\u2192|\u2014|\u2013|\s-\s|-related\b|\(|;|:|\bplaceholder\b|\btopics?\b|\bthemes?\b|$)/i;
+const isRawTopic=v=>{const s=String(v==null?'':v).trim();return !!s&&(s.length>48||RAW_TOPIC.test(s));};
+const topicKey=v=>String(v==null?'':v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/&/g,' and ').replace(/^the\s+/,'').replace(/[^a-z0-9]+/g,' ').trim().split(' ').map(w=>w.length>3&&/s$/.test(w)&&!/ss$/.test(w)?w.slice(0,-1):w).join(' ');
+const topicVocabularies=new WeakMap();
+function topicVocabulary(topics){if(!Array.isArray(topics)||!topics.length)return null;if(topicVocabularies.has(topics))return topicVocabularies.get(topics);const map=new Map();for(const t of topics){const name=String(t&&t.t||'');if(name&&!map.has(topicKey(name)))map.set(topicKey(name),name);}topicVocabularies.set(topics,map);return map;}
+function topicNames(value,topics){const s=String(value==null?'':value).trim(),vocab=topicVocabulary(topics);if(!s)return [];if(vocab){if(vocab.has(topicKey(s)))return [vocab.get(topicKey(s))];if(!s.includes('?')){const subject=(s.match(TOPIC_SUBJECT)||[s,s])[1].trim();if(subject!==s&&vocab.has(topicKey(subject)))return [vocab.get(topicKey(subject))];const parts=subject.split(/\s*\/\s*|\s+&\s+/).filter(p=>p.trim()),got=[];if(parts.length>1)for(const p of parts){const n=vocab.get(topicKey(p));if(n&&!got.includes(n))got.push(n);}if(got.length)return got;}}return isRawTopic(s)?[]:[s];}
+function cleanTopics(values,topics){const out=[];for(const v of Array.isArray(values)?values:[])for(const n of topicNames(v,topics))if(!out.includes(n))out.push(n);return out;}
+/* END TOPIC LABELS */
 const stable=v=>Array.isArray(v)?'['+v.map(stable).join(',')+']':v&&typeof v==='object'?'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}':JSON.stringify(v);
 function normalize(data,topics){
  const records=[],pages=new Set(),positions=new Map(),ids=new Set();
@@ -94,5 +103,5 @@ function mount(host,opts){
  }
  return {load,browse,setPage(next){next=str(next);if(next!==page){page=next;if(scope==='page'){limits={};render();}}},destroy(){dead=true;browseSequence++;}};
 }
-return {kinds,recordNames,normalize,filter,recordContext,cleanTopics,topicVocabulary,sourceURL,discussion,mount};
+return {kinds,recordNames,normalize,filter,recordContext,cleanTopics,topicVocabulary,topicNames,topicKey,isRawTopic,sourceURL,discussion,mount};
 });

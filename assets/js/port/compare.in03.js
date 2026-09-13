@@ -983,14 +983,14 @@ async function room(slug,arg){
     researchLayout();const draw=()=>{const q=RX.fold($('#room-tq').value),w=$('#room-tw').value,x=$('#room-tx').value,s=$('#room-ts')?.value;const rows=records.filter(r=>(!w||r.w===w)&&(!x||(r.x||[]).includes(x))&&(!s||r.s===s)&&(!q||RX.fold((r.q||'')+' '+(r.g||'')).includes(q)));
     addEventListener('fr-sections-ready',()=>{if(run===RESEARCH_RUN&&VIEW==='q')draw();},{signal:researchEvents.signal});
     $('#room-topic-count').textContent=fmtR(rows.length)+' matching entries';$('#room-topic-more').hidden=true;
-    statementPane($('#room-topic-evidence'),rows,{title:r=>titles[r.w]||r.wt||r.w,author:d.a,actions:true,extra:r=>`<p class="rx-annotation">${esc(r.type)}${r.s?' · '+esc(r.s):''}${(r.x||[]).length?' · Also discusses '+r.x.map(esc).join(', '):''}</p>`,empty:'No matching passages. Clear a filter or try another phrase.'});};
+    statementPane($('#room-topic-evidence'),rows,{title:r=>titles[r.w]||r.wt||r.w,author:d.a,actions:true,extra:r=>`<p class="rx-annotation">${esc(r.type)}${r.s?' · '+esc(r.s):''}${RX.cleanTopics(r.x,[...__TREG.values()]).length?' · Also discusses '+RX.cleanTopics(r.x,[...__TREG.values()]).map(esc).join(', '):''}</p>`,empty:'No matching passages. Clear a filter or try another phrase.'});};
     for(const id of ['room-tq','room-tw','room-tx','room-ts']){const el=$('#'+id);if(el)el.addEventListener(id==='room-tq'?'input':'change',()=>draw());}draw();pbody.scrollTop=0;setHash(encodeURIComponent(t.t));
   }
   function renderConnections(){
     VIEW='c';segOn('c');starSel(null);++roomViewRun;setHash('connections');
     // MASTER–DETAIL (owner 2026-09-10 "this is collapsed by work too"): every connection in a bounded
     // list pane; the chosen one's shared pages on the right, grouped by work in folds. No "show more".
-    const pairs=RX.connections(topics);let sel=null;
+    const pairs=RX.connections(topics,[...__TREG.values()]);let sel=null;if(!__TREG.size)topicSlugs().then(()=>{if(run===RESEARCH_RUN&&VIEW==='c'&&__TREG.size)renderConnections();});
     pbody.innerHTML=`<div class="view rx-connections"><h2>Connected topics</h2><p class="pane-meta">Where subjects meet in ${esc(d.a)}’s available passages.</p><p class="rx-note">Each connection counts distinct pages tagged with both topics in this room’s sample. This reveals places to read together; it does not establish agreement, influence, or a complete account of the author’s theology.</p><label class="rx-search">Find a connection<input id="connection-q" type="search" placeholder="Grace, sin, free will"></label><p id="connection-count" role="status"></p>
       <div class="rx-md rx-conn-md"><div class="rx-md-list rx-pane" id="room-connections" role="tablist" aria-label="Connections"></div><div class="rx-md-detail" id="connection-detail"><p class="rx-note">Choose a connection to read its shared pages, grouped by work.</p></div></div></div>`;
     const showPair=p=>{sel=p;$('#room-connections').querySelectorAll('[data-pair]').forEach(b=>{const on=+b.dataset.pair===pairs.indexOf(p);b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on));});
