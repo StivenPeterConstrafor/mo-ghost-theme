@@ -146,4 +146,4 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 
 ## Topics scrolling and data audit: 2026-09-13
 
-[Source and acceptance package](topics-qa-2026-09-13/README.md): one scrolling area per shelf, fixed author/statement pages, indexed work selection, bounded loading and clearer extracted-statement provenance. Built and verified with 44 tests and real-data browser checks, including all 622 positions in Baxter’s Method of Christian Theology. **Not deployed: current production approval is pending.** Artifact update instructions retain this status.
+[Source and acceptance package](topics-qa-2026-09-13/README.md): one scrolling area per shelf, fixed author/statement pages, indexed work selection, bounded loading and clearer extracted-statement provenance. Built and verified with 44 tests and real-data browser checks, including all 622 positions in Baxter’s Method of Christian Theology. **Deployed on Vercel: `dpl_4KuTW4MNw6q8xV19xsTWCVBgqcfW`.** Six research outputs match the production alias. Native MereO integration remains pending.

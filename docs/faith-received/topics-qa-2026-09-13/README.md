@@ -1,6 +1,6 @@
 # Topic scrolling and evidence: source handoff
 
-These repairs are built and browser-verified against real public data, but **not deployed**. Automatic approval review requires fresh production authorization for this topic audit. The local QA report records that limit; do not describe the reference site as updated until release evidence is added.
+These repairs are **deployed on the Vercel reference** in `dpl_4KuTW4MNw6q8xV19xsTWCVBgqcfW` after explicit owner approval. All six changed research outputs match the production alias byte-for-byte; see `alias-proof.json`. Native MereO integration remains pending.
 
 `source-manifest.json` lists complete source files and SHA-256 values. `.txt` is a reference suffix only. `topics.patch` records the change from the sources at the start of this audit. The temporary local evidence-forwarding preview is a QA aid and is not part of the shipped source or port.
 
@@ -28,4 +28,4 @@ Check the first statement against source page 9. It condenses the Creator/order 
 
 Add the dated audit, source package and screenshots within the existing Topics/research sections and change log. Preserve the existing artifact address, section IDs and numbering. Use the supplied HANDOFF_PACK workflow: edit `hub-skeleton.html`, add figures as needed, run `python3 rebuild.py`, and publish `hub.html` only to the established address.
 
-Keep status explicit: built and verified; production approval pending; native MereO integration pending; online Claude artifact not republished. Do not turn the selected work’s complete 622-record check into a claim that the full topic or corpus was reviewed. Update the release status only after an authorized deployment and alias verification.
+Keep status explicit: Vercel reference deployed and verified; native MereO integration pending; online Claude artifact not republished. Do not turn the selected work’s complete 622-record check into a claim that the full topic or corpus was reviewed. Update the release status only after an authorized deployment and alias verification.
