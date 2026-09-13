@@ -13260,3 +13260,20 @@ a.cn-row-title { color: var(--color-primary-text); }
 .faith-doc .article-content > p:first-of-type::first-letter {
   font-family: var(--font-body);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   NO ZOOM ON TAP (owner, 2026-09-12: "clicking into new convo etc zooms in").
+   iOS Safari zooms the whole page when a focused control computes under 16px,
+   and it does not zoom back out — the reader is left in a magnified layout they
+   have to pinch their way out of. Several fields here set 14-15px. Sixteen is
+   the floor on touch devices, whatever a narrower rule asks for; the visual
+   difference is one pixel and the behavioural difference is a broken page.
+   Scoped to coarse pointers so desktop typography is untouched. */
+@media (pointer: coarse) {
+  .faith-find-input,
+  .faith-notebook-input,
+  .faith-hero-form input,
+  .faith-feature-cta .faith-hero-form input[type="email"],
+  input[type="text"], input[type="search"], input[type="email"],
+  textarea, select { font-size: 16px !important; }
+}
