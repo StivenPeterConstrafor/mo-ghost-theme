@@ -157,3 +157,7 @@ See [Ask question persistence](ASK-QUESTION-PERSISTENCE.md), [artifact update in
 ## TOC scrolling repair, September13
 
 [Deployed Vercel repair, full source, patch, metrics and screenshots](toc-scroll-2026-09-13/README.md). MereO integration remains pending.
+
+## Search, Scripture and volume ordering: 2026-09-13
+
+[Integration package](search-volume-qa-2026-09-13/README.md): seven complete source files, focused tests, patch, measured browser QA, screenshots, seven alias byte matches and existing-address artifact instructions. Vercel release `dpl_8Kx8Fj5RY92JwBd6f6u1UuWoYnHR`; native Ghost/Cloudflare integration remains pending.

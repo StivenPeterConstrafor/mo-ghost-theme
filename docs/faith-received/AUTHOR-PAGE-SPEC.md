@@ -1,5 +1,10 @@
 # The Faith Received — the author page (`/fathers?sh=<shelf>#<author>`): every surface
 
+## 2026-09-13 Shared volume-order repair
+
+The [source and acceptance package](search-volume-qa-2026-09-13/README.md) carries canonical library series/volume/edition order into author Works, topic and position work folds, work selectors and Search. It uses the display-only workgroups registry where present, understands Roman and Arabic volumes/parts, preserves all witnesses, and leaves the largest evidence group initially open. Leibniz Creation and all 17 selector options were verified live. The same package fixes repeated topic metadata-listener registration that could freeze a long author page. This is deployed Vercel behavior and a source handoff; native MereO integration is pending.
+
+
 The author page is one "room" for one author on one shelf. It has a header, a topic rail and seven surfaces (tabs): **Works, Positions, Scripture, Topics, Reception, Connections, Search**, plus the pair page (`#<a>/with/<b>`). This document describes each surface completely — address, data, layout, rules, controls — so an agent can recreate or verify it. Everything here was checked live on `https://thefaithreceived.vercel.app/fathers?sh=ed#richard-baxter` on 2026-09-11 (numbers in the checklist are from that page).
 
 Source of truth: `tools/prdl_reader_prototype/research_shell.html` (function `room(slug,arg)` and its renderers `renderWorks`, `drawPositions`, `renderScripture`, `renderTopic`, `renderReception`, `renderConnections`, `renderSearch`, `pairPage`), styles in `research-experience.css`. Built as `dist/fathers.html` (also `authors.html` = the same shell, the directory). MereO: `custom-faith-port-fathers.hbs` + `assets/js/port/fathers.in03.js` (route `/the-faith-received/fathers/`).

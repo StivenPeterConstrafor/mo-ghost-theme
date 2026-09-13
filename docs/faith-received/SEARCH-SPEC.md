@@ -1,5 +1,10 @@
 # The Faith Received — search and omnibox algorithms, surface by surface
 
+## 2026-09-13 Search-page implementation update
+
+The [Search/Scripture and volume-order handoff](search-volume-qa-2026-09-13/README.md) supersedes the older Search-page display limits and corpus-selector behavior described below. It supplies complete source, tests, patch, screenshots and verified Vercel alias hashes. The page now uses nine shelves plus standard groups/collections, fixed pagination and collapsible shelf/author/work organization. Exact text pages ten indexed sections; Meaning uses cross-corpus ranked candidates with an explicit broader search; Scripture uses verse-reference files with honest selection limits. The legacy Tradition entry opens an unsent Deep draft. These changes are deployed on the Vercel reference and still require native MereO integration. Other surfaces' search mechanics remain separately documented below.
+
+
 Written 2026-09-11 for Ian. Every search box on thefaithreceived.vercel.app, what it
 matches against, how it ranks, what it caps, and where the same box on mereorthodoxy.com
 differs. Each section names the source file and the function so the behaviour can be
