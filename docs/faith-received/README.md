@@ -118,6 +118,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 
 | Date | Document | Commit |
 |---|---|---|
+| 09-13 | READER-SPEC §9.1–9.3, R2-SYNC-SPEC §3.1, AUTHOR-PAGE-SPEC §5 — one topic-label rule on the site AND at the source (registry `2026-09-13.1`, 179 topics with aliases; evidence snapshot `mine-23e80dea8050caa3b14e`; units, work overviews, rooms, graphs republished); `/compare` evidence pages retry before halting | theme ask-port-ui 55ef459d · 5dc7b202 · 6eb89663 |
 | 09-12 | PINS_INSTRUCTIONS.md — the last surface without a code sheet; every page of the library now has its source here | mo-workers (docs branch) |
 | 09-11 | ASK_BACKEND_INSTRUCTIONS.md rewritten for the WHOLE BRAIN (owner: the tool layer is in scope) — two gears behind one `/v1/ask`, the 14-tool loop, the member gate, 14-step battery, thirteen files | mo-workers a393969 (worker 689b66d) |
 | 09-11 | Handoff hub published (living artifact: §0 item 0 — screenshots, batteries, deep dives; grows with this index) | — (Claude artifact, updated in place) |
