@@ -123,13 +123,43 @@ window.FRAsk = { open(opts), close(), isOpen(), markdown(text, sources), readURL
 (prefill), `autoSend` (send `q` immediately), `mode` (`ask`|`deep`; legacy `agent`/`scan` map
 to `deep`), `tradition` (one shelf), `shelves[]`, `authors[]`, `groups[]`, `works[]`,
 `passage {text, cite, url, slug, page, row}` (a selected passage to quote), `contextWork`
-(the reader's slug). Rules in `open()`: an `id` switches to that conversation; otherwise
+(the reader's slug), `folder` (2026-09-13: the conversation folder a NEW conversation is filed
+under; see §3.8), `view:'history'` (open with the conversation rail showing).
+
+**Host configuration (2026-09-13, one file for every site).** `window.FRAskConfig`, set before
+`ask-workspace.js` loads; every key optional, defaults are the Vercel site:
+`apiBase` ('/api'; MereO `https://mo-tfr-ask-dev…/v1`), `dataBase` (Blob origin; MereO the
+library worker), `readPath` ('/read'; MereO '/the-faith-received/read/'), `askPath` ('/ask';
+MereO '/the-faith-received/ask/'), `libraryPath` ('/'), `assetBase` ('/'; MereO
+'/assets/js/port/'), `launcher` (false → no floating button), `nav` ([[href,label],…] shown
+on the standalone page; false → none). See ASK-INTEGRATION.md. The theme's forked
+`assets/js/port/ask-workspace.js` (96 diverging lines, 09-13) is superseded by this file + config. Rules in `open()`: an `id` switches to that conversation; otherwise
 `fresh`, or no current conversation, or a reader page whose work changed → a new
 conversation; with none of `fresh/q/works` the most recent conversation is resumed. Scope
 options overwrite the conversation's scope; `q` becomes the draft; `autoSend && q` sends.
 
 An iframe opened inside the workspace (the source pane, `#fra-source-frame`) does not build
 its own workspace: it proxies `FRAsk.open` to the parent with `contextWork` set.
+
+### 3.1b Conversation controls (2026-09-13: archive, delete, folders)
+
+The ⋯ menu (`#fra-more`) on a conversation: **Rename**, **Download**, **Move to folder…**
+(inline chooser `#fra-folder-pick`: a `datalist` of existing folder names + a free name, *Move* /
+*No folder*), **Archive / Restore**, **Delete** (inline two-step `#fra-confirm`; never
+`confirm()`; a running Deep job is cancelled first through `researchJobs().control(...,'cancel')`
+or `rpc('stop')`). The rail (`#fra-history-list`) lists loose conversations first, then one
+`<details class="fra-folder" data-folder>` per folder (count, rename pencil `data-folder-rename`,
+open/closed state persisted in meta `folders-closed`; a search term forces every folder open).
+History search matches folder names. The header context line reads `Folder · scope`.
+The archived view (`#fra-show-archived`) ends with **Delete all archived** (two clicks: the first
+arms it with the count).
+
+**Deletion is durable.** `FRChatStore.remove(id)` deletes the record and the id is appended to
+meta `deleted-conversations` (tombstones, last 400). The boot migration adds every tombstone to
+its `ids` set, so the legacy `localStorage fr_chats` / `fr_ask_history` / `fr_research` imports
+and the cross-tab `storage` re-import can never resurrect a deleted conversation. Proof:
+`docs/faith-received-specs/ask/ask-folders.browser.cjs` (Playwright: move, rename, collapse,
+search, archive, delete, reload, legacy re-import → still gone, phone rail).
 
 ### 3.2 Layout (`build()`), DOM order = tab order
 
@@ -301,10 +331,13 @@ set, else opens for `/ask`, `?m=ask` or `?ask=`. A 1 s timer refreshes elapsed c
 ### 5.1 Store (`ask-store.js`, `FRChatStore`)
 
 IndexedDB `fr-conversations` v1, stores `conversations` (keyPath `id`) and `meta`. API:
-`all, get, put, meta, setMeta, update(id, change)` (atomic read-modify-write inside one
+`all, get, put, remove, meta, setMeta, update(id, change)` (atomic read-modify-write inside one
 transaction so another tab cannot overwrite a streaming turn), `id()` (UUID).
 Conversation: `{id, t, ts, mode, scope:{works,shelves,authors,groups,tradition,notebook},
-contextWork, turns[], draft, draftPassage, archived, unread}`. Legacy `localStorage fr_chats`
+contextWork, turns[], draft, draftPassage, archived, folder, unread}` (`folder`: free text ≤ 60
+chars, '' = loose). Meta keys: `active-conversation`, `deleted-conversations` (tombstones),
+`folders-closed`. The `fr_chats` mirror (v2) gains `folder` on each item; its shape is otherwise
+unchanged for the Desk and the sync layer. Legacy `localStorage fr_chats`
 is migrated on boot and kept readable for the Desk.
 
 ### 5.2 Stream owner (`ask-worker.js`)
@@ -394,7 +427,7 @@ change in `runs/ghost_ask_embed.md`).
 | Piece | Vercel | MereO today | Action |
 |---|---|---|---|
 | Home `?find=ask` | `/` (`faith_received.py`) | Ported landing `custom-faith-port-index.hbs` + `port/index.in10.js` carries the same `restore()` (`find=ask` handled) and loads the ported workspace; the route `/the-faith-received/library/` is on the fork only (live site 404s today) | Publish the ported landing route; keep `?find=ask` and the `.home-modes` toggle |
-| Workspace | `tools/ask_workspace/*` | `assets/js/port/ask-*.js` — same code with: `BASE` = library worker, `readURL` → `/the-faith-received/read/?w=…`, catalogue from `<worker>/v1/data/embcat.json`, worker script `/assets/js/port/ask-worker.js?v=7g`, brand link `/the-faith-received/library/` | Keep these as the only diffs (exact-substring hunks); re-port never |
+| Workspace | `tools/ask_workspace/*` | **Same file as Vercel from 2026-09-13** (`docs/faith-received-specs/ask/`) with `window.FRAskConfig` set in the page (ASK-INTEGRATION.md); the older fork `assets/js/port/ask-*.js` — same code with: `BASE` = library worker, `readURL` → `/the-faith-received/read/?w=…`, catalogue from `<worker>/v1/data/embcat.json`, worker script `/assets/js/port/ask-worker.js?v=7g`, brand link `/the-faith-received/library/` | Keep these as the only diffs (exact-substring hunks); re-port never |
 | Ask API | `POST /api/ask` (§6) | `POST https://mo-tfr-ask-dev…/v1/ask` (`~/mo-workers/tfr-library/ask-dev/ask.js`): same pipeline ported (planner, GraphRAG route, RRF, miner, rerank, cache on R2 `v1/cache/ask/`), accepts `messages`/`question`, `deep`, `filters`; **streams a different dialect**: `{"type":"progress","message"}*`, `{"type":"delta","text"}*`, `{"type":"result","sources":[…],"cached"?,"relevance"?}` or `{"type":"error"}` | `port/ask-stream.js` already translates the worker dialect into the workspace events (`delta` → first `sources:[]` then `text`; `result` → `sources` + `completion:'complete'`). Keep the translator in step with `lib/ask.js` if the worker's frames change |
 | Deep research | `POST /api/investigations` | `POST https://mo-tfr-ask-dev…/v1/investigations` (RESEARCH_RAIL_INSTRUCTIONS §5–6: the op-based protocol the theme's `ask-jobs.js` speaks) | Follow §6 of the rail sheet exactly (it is what broke earlier PRs) |
 | Auth and spend cap | preview gate cookie (`fr_gate`), `x-fr-embed` for the widget | the editorial `/the-faith-received/ask/` (`page/faith-ask.js`, `_ask-panel.hbs`) uses `window.MOAuth.fetch` → paid-member bearer token, `GET /v1/ask/usage` meter, 429 cooldown `{ok:false,cooldown:true,reason,error,resetsAt}` | The ported workspace must send the same bearer token from `ask-worker.js` (add the `Authorization` header via `MOAuth` before the fetch) and surface the usage meter or the cooldown copy; anonymous → 401 copy "sign in" |
