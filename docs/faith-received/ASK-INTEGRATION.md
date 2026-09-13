@@ -74,6 +74,7 @@ The stylesheet no longer carries its own palette. It resolves, with the Academic
 | `--fra-border` | `--border` | `#D8D8D3` / `#383836` |
 | `--fra-hl` | `--highlight` | `#E7E7E2` / `#2E2E2B` |
 | `--fra-ease` | `--ease` | `cubic-bezier(.22,1,.36,1)` |
+| `--fra-measure` | (set it yourself on `:root` or `.fra`) | `1040px` — the reading column; the composer follows it |
 | body face | `--font-ui` | `'Source Serif Pro', Georgia, serif` |
 | brand face (`.fra-brand a`) | `--font-display` | `'EB Garamond', Georgia, serif` |
 

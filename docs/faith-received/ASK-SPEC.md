@@ -323,6 +323,8 @@ set, else opens for `/ask`, `?m=ask` or `?ask=`. A 1 s timer refreshes elapsed c
   `interrupted`, `stopped`; server-job controls Pause / Continue research / Research further
   for 10 minutes / Reconnect Deep research.
 - The feed auto-scrolls while near the bottom; otherwise **Latest answer ↓** appears.
+- **Reading column (09-13 pm; owner: long answers were a pain to scroll, margins too wide).** The measure is one token, `--fra-measure` (default **1040px**, was 780), read by `.fra-feed` and `.fra-compose-area` so the composer stays aligned with the text; side padding floor 24px. Desktop answer type 17px / 1.65 (was 18px / 1.8), `h3` 24px with a 1.2em top margin. The feed's top space is a `::before` block, not padding — a sticky element offsets from the scroll container's content edge, so with padding the bar stuck 28px down.
+- **Sticky outline for long answers (`renderOutline`, `.fra-outline`).** When an answer has ≥ 2 `h3` or is taller than 1.5 × the feed, a `nav.fra-outline` is inserted before `.fra-answer`: the question (ellipsised), **Top ↑**, one button per section. `position:sticky; top:0` inside the turn, so it scrolls away with its own turn. Targets are resolved by index at click time (`[data-jump="<i>"][data-jump-turn]` → the turn's `h3` list) because `reconcileAnswer` re-diffs the answer on every stream update and ids would not survive; the jump lands the heading 10px below the bar, smooth unless `prefers-reduced-motion`. Phone: one horizontally scrolling line; docked and print: hidden. Proof: `docs/faith-received-specs/ask/ask-long-answer.browser.cjs` (1920/1440: column 1040px, bar offset 0 after a 1500px scroll, jump lands heading at 66px with the bar bottom at 56px; phone strip scrollable).
 
 ---
 
