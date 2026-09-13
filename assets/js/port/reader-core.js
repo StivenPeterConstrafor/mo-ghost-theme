@@ -1366,7 +1366,7 @@ function jump(p,ttl){
   // in-page section targeting (owner 2026-07-28, Zanchi: "click Book 2 → header not visible"):
   // when the clicked TOC title matches a heading row INSIDE the page, land on the heading itself —
   // the section often starts mid-page and the page top shows the previous section's tail.
-  const exact=window.FRReaderNavigation?.exactHeading(DATA,t,ttl);
+  const exact=window.FRReaderNavigation?.exactHeading(DATA,t,ttl)||(/^pld-/.test(DATA?.slug||'')?window.FRPldReading?.renderedHeading(t,ttl):null);
   if(exact)tgt=exact.classList?.contains('reader-inline-target')?exact:(exact.closest(".row")||exact);
   if(ttl&&!exact){const _n=s=>String(s||"").toLowerCase().replace(/<[^>]+>/g,"").replace(/[^a-z0-9]+/g," ").trim();
     // strip the "Q. 1 — " / "Article 2 — " label so the subject words drive the match
@@ -3705,10 +3705,10 @@ function syncReaderHeader(n){
  if(!DATA)return;
  const author=$("#reader-author"),volume=$("#reader-volume"),place=$("#reader-location");
  const guide=$("#reader-introduction"),intro=DATA.reader_introduction;
- if(guide){guide.hidden=!intro||Number(n)>=intro.end;
+ if(guide){guide.hidden=!intro||(intro.start!=null&&Number(n)<Number(intro.start))||(intro.end!=null&&Number(n)>=Number(intro.end));
   if(intro&&guide.dataset.work!==DATA.slug){
    guide.dataset.work=DATA.slug;guide.replaceChildren();
-   const label=document.createElement('span');label.textContent='Printed chapter summaries';guide.appendChild(label);
+   const label=document.createElement('span');label.textContent=intro.label||'Printed chapter summaries';if(intro.note)label.title=intro.note;guide.appendChild(label);
    for(const target of intro.targets){const link=document.createElement('a');link.textContent=target.label;
     const url=new URL(location.href);url.searchParams.set('p',String(target.page));url.hash='b'+target.page+'-0';link.href=url.pathname+url.search+url.hash;
     link.onclick=e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();history.replaceState(null,'',link.href);
@@ -4837,7 +4837,7 @@ async function loadPldCanon(ws){
         const did=(ch.parentElement.getAttribute("xml:id")||"").replace(/^w\d+-d/,"").replace(/_/g," ");
         const en=info.english||(toc&&toc[did])||"";
         if(depth0===null)depth0=depth;
-        if(t||en)struct.push({title:en||t,page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5)});
+        if(t||en)struct.push({title:en||t,page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5),pld_division:ch.parentElement.getAttribute("xml:id")||""});
         window.__pldLastEnHead=null;window.__pldLastEnHeadEcho=false;
         // Exact source head/p + corresp translation: retain the complete canonical
         // paragraphs once. The sidecar label is navigation metadata, often truncated.
@@ -4900,7 +4900,7 @@ async function loadPldCanon(ws){
   window.__pldCanonDocs={la:laD,en:enD};   // loadTEI consumes these instead of fetching sidecars
   return {slug:ws,title,title_en:title,author,author_la:author_la!==author?author_la:undefined,volume:vol,tradition:"Latin Fathers",
     has_pages:false,has_tei:true,tei_v:0,en_only:false,n_pages:pages.length,
-    structure:struct,base:null,reader_introduction:window.FRPldReading.introduction(doc.querySelectorAll('head'),colN),
+    structure:struct,base:null,reader_introduction:window.FRPldReading.introduction(doc.querySelectorAll('head'),colN,ws,struct),
     pages:pages.map(n=>({n,la:"",en:""}))};
 }
 
