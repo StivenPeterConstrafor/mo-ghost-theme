@@ -5,7 +5,7 @@ whole integration contract. The Ask workspace is **one set of files that runs un
 the Vercel site and on MereO**; a page tells it where things live through one object. No fork,
 no path edits inside the script.
 
-## 1. The files (all under `docs/faith-received-specs/ask/`, byte-identical to Vercel's `tools/ask_workspace/`)
+## 1. The files (branch `faith-received-specs` of this repo, folder `ask/` — checked out locally at `docs/faith-received-specs/ask/`; byte-identical to Vercel's `tools/ask_workspace/`)
 
 | File | Role | Load |
 |---|---|---|
@@ -91,6 +91,6 @@ Define those on `:root` (and under `[data-theme="dark"]`) and the workspace take
 ```sh
 node --test tools/ask_workspace/*.test.cjs                         # 93 pass
 python3 tools/build_dist.py && python3 runs/preview_server.py 8917  # local dist
-node docs/faith-received-specs/ask/ask-folders.browser.cjs http://127.0.0.1:8917 /tmp/shots
+node docs/faith-received-specs/ask/ask-folders.browser.cjs http://127.0.0.1:8917 /tmp/shots   # ask/ on branch faith-received-specs
 ```
 Expected log (measured 2026-09-13): folder move → 2 rows under *Grace debate*; header `Grace debate · Whole library`; rename + collapse survive reload; search "freedom" finds the folder's rows; archive → the row leaves the list and appears under *Archived*; delete → gone after reload, tombstone present, legacy `fr_chats` re-import does **not** resurrect it; phone (390 px, dark) rail visible with the site sections.
