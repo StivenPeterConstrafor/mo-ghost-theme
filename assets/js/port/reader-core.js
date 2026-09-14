@@ -418,9 +418,71 @@ function appBank(laN,enN){
   // #reading and the marks with it — the bar kept counting detached nodes and nothing was highlighted.
   // mark() is idempotent (text already inside a mark is skipped) and runs again whenever the reading is
   // rebuilt; × clears the marks AND drops hl from the URL so no later rebuild or reload brings it back.
+  // MereO delta (Ian, 2026-09-14 "highlight the exact quote that's being
+  // pulled when it's open"): when hl carries a whole quoted passage, mark
+  // the passage, not three words from it. Ask sends the sentence it
+  // quoted, and the word behaviour below scatters marks down the page
+  // wherever those words recur, which is the opposite of showing someone
+  // the line they just read in the answer.
+  //
+  // The exact pass is tried first and the word pass is the fallback, so
+  // nothing regresses: a citation door still sends a name, and a quote
+  // the model modernised or stitched with an ellipsis will not be found
+  // verbatim and lands on the old behaviour rather than on nothing.
+  //
+  // Matching ignores case, punctuation and line breaks, because the
+  // reading is folio text with hyphenation and the quote is not. It does
+  // NOT fold the long s: these transcriptions print it as an f, and so
+  // does the quote, so the two already agree. Offsets are mapped back to
+  // the original text nodes, which is what lets a passage that crosses
+  // rows be marked as one run.
+  const phraseNorm=s=>String(s||"").toLowerCase().replace(/[^\p{L}\p{N}\s]/gu," ").replace(/\s+/g," ").trim();
+  const PHRASE=/\s/.test(q.trim())&&q.trim().length>=24?phraseNorm(q):"";
+  function markPhrase(){
+    const nodes=[];const walk=document.createTreeWalker(reading,NodeFilter.SHOW_TEXT,null);let n;
+    while((n=walk.nextNode())){
+      if(!n.parentElement||!n.parentElement.closest(".row .en,.row .la"))continue;
+      if(n.parentElement.closest("mark,.pganchor,.fmark"))continue;
+      nodes.push(n);}
+    if(!nodes.length)return 0;
+    // one entry per kept character, carrying the node and offset it came
+    // from; whitespace collapses to a single space so folio line breaks
+    // and the quote's spacing compare equal.
+    const chars=[];let prevSpace=true;
+    for(const node of nodes){const t=node.textContent;
+      for(let i=0;i<t.length;i++){const c=t[i].toLowerCase();
+        if(/\s/.test(c)){if(!prevSpace){chars.push({node,off:i,ch:" "});prevSpace=true;}continue;}
+        if(!/[\p{L}\p{N}]/u.test(c))continue;
+        chars.push({node,off:i,ch:c});prevSpace=false;}}
+    const hay=chars.map(c=>c.ch).join("");
+    const segs=[];let from=0,found=0,at;
+    while(found<40&&(at=hay.indexOf(PHRASE,from))>=0){
+      const run=chars.slice(at,at+PHRASE.length);
+      for(let i=0,first=true;i<run.length;first=false){
+        const node=run[i].node;let j=i;
+        while(j<run.length&&run[j].node===node)j++;
+        segs.push({node,start:run[i].off,end:run[j-1].off+1,cont:!first});i=j;}
+      found++;from=at+PHRASE.length;}
+    if(!segs.length)return 0;
+    // Split each node from its last segment backwards, so the offsets of
+    // the earlier ones are still the offsets of the node that holds them.
+    const byNode=new Map();
+    for(const s of segs){if(!byNode.has(s.node))byNode.set(s.node,[]);byNode.get(s.node).push(s);}
+    for(const [node,list] of byNode){
+      list.sort((a,b)=>b.start-a.start);
+      for(const s of list){
+        if(s.start>=node.length||s.end>node.length)continue;
+        node.splitText(s.end);
+        const target=node.splitText(s.start);
+        const m=document.createElement("mark");
+        m.className=s.cont?"hlq hlq-cont":"hlq";
+        m.textContent=target.textContent;
+        target.replaceWith(m);}}
+    return found;}
   function mark(){
     busy=true;
     try{
+      if(!(PHRASE&&markPhrase())){
       const walker=document.createTreeWalker(reading,NodeFilter.SHOW_TEXT,null);
       const todo=[];let n;
       while((n=walker.nextNode())&&todo.length<1200){
@@ -430,7 +492,11 @@ function appBank(laN,enN){
         terms.forEach(w=>{html=html.replace(new RegExp("("+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"[a-zà-ÿ]*)","gi"),"<mark class=hlq>$1</mark>");});
         if(html.indexOf("<mark")<0)return;
         const span=document.createElement("span");span.innerHTML=html;node.replaceWith(span);});
-      marks=[...reading.querySelectorAll("mark.hlq")];
+      }
+      // A run that crosses rows is several <mark>s and one hit: the
+      // continuations are marked but not counted, or the bar would say
+      // 1/4 for a single passage.
+      marks=[...reading.querySelectorAll("mark.hlq:not(.hlq-cont)")];
     }finally{setTimeout(()=>{busy=false;},0);}
     return marks.length;}
   // start on the cited page: the first mark at or after its folio (or its page-turn anchor inside the previous row)

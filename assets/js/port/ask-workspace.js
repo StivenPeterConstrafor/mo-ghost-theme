@@ -54,7 +54,13 @@
   };
   const icon = name => '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+icons[name]+'</svg>';
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const readURL = (slug,page) => '/the-faith-received/read/?w='+encodeURIComponent(slug)+(page == null || page === '' ? '' : '#b'+encodeURIComponent(String(page).split(/[–—,]|(?<=\d)-(?=\d)/)[0].trim())+'-0');
+  /* MereO delta: carry the quoted passage as ?hl= so the reader marks the
+     line the answer quoted instead of only landing on its page (Ian,
+     2026-09-14). The reader's hl handler does the work and already knows
+     how to re-mark after its rebuilds. Truncation is safe because the
+     match is by prefix: a short quote is still found whole. Re-apply when
+     re-vendoring. */
+  const readURL = (slug,page,quote) => '/the-faith-received/read/?w='+encodeURIComponent(slug)+(quote?'&hl='+encodeURIComponent(String(quote).slice(0,300)):'')+(page == null || page === '' ? '' : '#b'+encodeURIComponent(String(page).split(/[–—,]|(?<=\d)-(?=\d)/)[0].trim())+'-0');
   function safeURL(value) { if(typeof value!=='string'||!value.trim())return ''; try { const u = new URL(value, location.origin); return ['http:','https:'].includes(u.protocol) ? u.href : ''; } catch (_) { return ''; } }
   let catalog = [], catalogBySlug = new Map(), catalogRevision = 0, catalogPromise, conversations = [], current = null, panel, port, worker, initPromise, renderTimer, draftTimer;
   const backgroundInert = new Map();
@@ -111,7 +117,7 @@
     return [...found].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,3);
   }
   function scopeWorkTitle(slug){const work=catalogBySlug.get(slug);return titleOf({slug})+(work&&work.volume?' · '+work.volume:'');}
-  function sourceHref(s){return safeURL(s.link)||(typeof s.slug==='string'&&s.slug.trim()?readURL(s.slug,s.page):'');}
+  function sourceHref(s){return safeURL(s.link)||(typeof s.slug==='string'&&s.slug.trim()?readURL(s.slug,s.page,s.quote):'');}
   function sourceCard(s){
     const href=sourceHref(s),tag=href?'a':'div';
     const cite=s.cit||s.cite||(s.page!=null?'p. '+s.page:href?'Read passage':'Source location unavailable');
@@ -125,7 +131,7 @@
     });
     out = out.replace(/\[([a-zA-Z0-9_-]+)\/p([^\]\s]+)\]|\[W\s*([a-zA-Z0-9_-]+):([^\]\s]+)\]/g, (_, a, p, b, q) => {
       const slug = a || b, page = p || q, s = sources.find(s => s.slug === slug && String(s.page) === page) || { slug, page };
-      return hold('<a class="fra-cite" href="'+esc(safeURL(s.link)||readURL(slug,page))+'" title="'+esc(titleOf(s))+'">'+esc(s.cite || ('p. '+page))+'</a>');
+      return hold('<a class="fra-cite" href="'+esc(safeURL(s.link)||readURL(slug,page,s.quote))+'" title="'+esc(titleOf(s))+'">'+esc(s.cite || ('p. '+page))+'</a>');
     });
     out=out.replace(/\[([^\]\n]+)\]/g,(_,label)=>{const src=sources.find(s=>String(s.cit||s.cite||'').replace(/^\[|\]$/g,'')===label);const href=src&&sourceHref(src);return href?hold('<a class="fra-cite" href="'+esc(href)+'">'+esc(label)+'</a>'):'['+label+']';});
     return esc(out).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\*([^*]+)\*/g,'<em>$1</em>').replace(/\u0001(\d+)\u0002/g, (_, n) => held[+n]);
@@ -527,7 +533,12 @@
     let timer;$('#fra-work-search').oninput=e=>{clearTimeout(timer);if(e.isComposing)return;const query=e.target.value;timer=setTimeout(()=>scopeSearch(query),150);};
     $('#fra-work-search').oncompositionend=e=>{clearTimeout(timer);scopeSearch(e.target.value);};
   }
-  function sourceDocumentKey(href){const u=new URL(href,location.origin);u.hash='';u.searchParams.delete('p');u.searchParams.delete('section');u.searchParams.delete('heading');u.searchParams.sort();return u.href;}
+  /* MereO delta: hl joins the params that do not identify a document. It
+     is the quote the answer cited, and the reader DELETES it from its own
+     URL when the × clears the highlight, so without this that clearing
+     reads here as "the reader navigated somewhere else" and the pane
+     rewrites its title and pushes history for a passage nobody left. */
+  function sourceDocumentKey(href){const u=new URL(href,location.origin);u.hash='';u.searchParams.delete('p');u.searchParams.delete('section');u.searchParams.delete('heading');u.searchParams.delete('hl');u.searchParams.sort();return u.href;}
   function setSourceLoading(loading,message='Opening passage…'){
     const host=$('.fra-reader');host.classList.toggle('fra-source-pending',loading);host.setAttribute('aria-busy',String(loading));$('#fra-source-status').hidden=!loading;$('#fra-source-status').textContent=message;
     if(!loading){clearTimeout(sourceStatusTimer);sourceStatusTimer=null;sourceReady=true;}
