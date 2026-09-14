@@ -18,13 +18,14 @@
   "scripts": {
     "lint": "eslint assets/js",
     "lint:fix": "eslint assets/js --fix",
-    "build": "node scripts/check-admin-tools.mjs && node scripts/check-citation-parser.mjs && node scripts/build-theme.mjs",
+    "build": "node scripts/check-admin-tools.mjs && node scripts/check-citation-parser.mjs && node scripts/check-title-order.mjs && node scripts/build-theme.mjs",
     "build:check": "node scripts/build-theme.mjs --check",
     "build:digest": "node scripts/build-digest.mjs",
     "build:digest:check": "node scripts/build-digest.mjs --check",
     "check:meta": "node scripts/check-meta.mjs",
     "check:refs": "node scripts/check-scripture-refs.mjs",
     "check:citations": "node scripts/check-citation-parser.mjs",
+    "check:titles": "node scripts/check-title-order.mjs",
     "check:admin": "node scripts/check-admin-tools.mjs",
     "check:gz": "node scripts/check-gz-readers.mjs"
   },

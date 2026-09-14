@@ -57,6 +57,11 @@ const BUNDLES = [
       // ones that talk to a *.workers.dev host and need to explain it
       // when the request never leaves the browser.
       "assets/js/lib/mo-net.js",
+      // The shelf comparator rides in boot for that same reason: the
+      // eight surfaces that sort a list of titles are page scripts, so
+      // a comparator published from site.min.js would not exist yet at
+      // the moment faith-room.js sorts a room.
+      "assets/js/lib/faith-title-order.js",
       "assets/js/vendor/purify.min.js",
     ],
   },

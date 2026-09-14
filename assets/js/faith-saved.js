@@ -10,6 +10,17 @@
  * before anyone opens it.
  */
 (function () {
+  /* One shelf order for the whole library, so a multi-volume set reads
+   1, 2, 3 rather than 1, 10, 11, 2. window.MOTitleOrder ships in boot,
+   which runs before every page script; the fallback is the ordering
+   this line had before it existed, so a boot that failed to load costs
+   the order and never the list. See assets/js/lib/faith-title-order.js. */
+  function cmpTitle(a, b) {
+    const x = String(a || ""), y = String(b || "");
+    return window.MOTitleOrder
+      ? window.MOTitleOrder.compareTitles(x, y)
+      : x.localeCompare(y);
+  }
   const body = document.body;
   const WORKER = (body.getAttribute("data-kit-worker-url") || "").replace(/\/$/, "");
   const list = document.querySelector("[data-faith-saved]");
@@ -78,7 +89,7 @@
       }
 
       rows.sort((a, b) => String(a.w.author || "").localeCompare(String(b.w.author || ""))
-        || String(a.w.title || "").localeCompare(String(b.w.title || "")));
+        || cmpTitle(a.w.title, b.w.title));
 
       list.innerHTML = `<ol class="faith-saved-list">${rows.map(({ w, corpus }) => {
         const author = w.author

@@ -33,6 +33,17 @@
 
 (function () {
   "use strict";
+  /* One shelf order for the whole library, so a multi-volume set reads
+   1, 2, 3 rather than 1, 10, 11, 2. window.MOTitleOrder ships in boot,
+   which runs before every page script; the fallback is the ordering
+   this line had before it existed, so a boot that failed to load costs
+   the order and never the list. See assets/js/lib/faith-title-order.js. */
+  function cmpTitle(a, b) {
+    const x = String(a || ""), y = String(b || "");
+    return window.MOTitleOrder
+      ? window.MOTitleOrder.compareTitles(x, y)
+      : x.localeCompare(y);
+  }
 
   const root = document.querySelector("[data-faith-room]");
   if (!root || !window.MOCorpora) return;
@@ -142,7 +153,7 @@
         if (ac !== bc) return ac - bc;
       }
       const an = surname(a.author), bn = surname(b.author);
-      return an.localeCompare(bn) || (a.title || "").localeCompare(b.title || "");
+      return an.localeCompare(bn) || cmpTitle(a.title, b.title);
     });
     shelfOrder = indexShelves(works);
     render();

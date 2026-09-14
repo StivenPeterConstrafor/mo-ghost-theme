@@ -19,6 +19,17 @@
  * renders all of it at once is a page that stops responding.
  */
 (function () {
+  /* One shelf order for the whole library, so a multi-volume set reads
+   1, 2, 3 rather than 1, 10, 11, 2. window.MOTitleOrder ships in boot,
+   which runs before every page script; the fallback is the ordering
+   this line had before it existed, so a boot that failed to load costs
+   the order and never the list. See assets/js/lib/faith-title-order.js. */
+  function cmpTitle(a, b) {
+    const x = String(a || ""), y = String(b || "");
+    return window.MOTitleOrder
+      ? window.MOTitleOrder.compareTitles(x, y)
+      : x.localeCompare(y);
+  }
   const root = document.querySelector("[data-faith-transparency]");
   if (!root) return;
 
@@ -154,7 +165,7 @@
     })
     .then(() => {
       all.sort((a, b) => String(a.author || "~").localeCompare(String(b.author || "~"))
-        || String(a.title || "").localeCompare(String(b.title || "")));
+        || cmpTitle(a.title, b.title));
 
       countEl.textContent = `${all.length.toLocaleString()} works`;
       if (!all.length) {
