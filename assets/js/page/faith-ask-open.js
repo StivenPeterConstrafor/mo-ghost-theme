@@ -25,8 +25,9 @@
  *
  * Loaded as a page script, so per this theme's script-order rule it
  * runs before site.min.js and must not depend on any site-bundle
- * global. It depends only on window.FRAsk, published by the engine
- * loaded immediately above it.
+ * global. It uses window.FRAsk, published by the engine loaded
+ * immediately above it, and window.MOSafeRedirect, which rides in the
+ * boot bundle and so is already defined. Nothing from site.min.js.
  */
 (function () {
   "use strict";
@@ -53,8 +54,57 @@
     return !!(window.FRAsk && window.FRAsk.isOpen && window.FRAsk.isOpen());
   }
 
+  /*
+   * CLOSING A WORKSPACE THAT IS THE WHOLE PAGE.
+   *
+   * The engine's close() hides the panel and hands focus back to the
+   * launcher, which is right where Ask is an overlay sitting on top of
+   * the reader: hide it and the reader is underneath. Here the panel is
+   * the entire page, so hiding it leaves a blank one, and the X reads as
+   * doing nothing (Ian, 2026-09-14).
+   *
+   * The engine already has a name for this situation, `fra-standalone`,
+   * but it sets that class only for the path /ask on its own domain.
+   * Ours is /the-faith-received/ask/, so we set it ourselves and then
+   * supply the one behaviour the class implies: closing leaves.
+   *
+   * Watching the `hidden` attribute rather than binding the X means
+   * every route to closed is covered, the button and the Escape key
+   * both, without reaching into the engine's handlers. close() awaits
+   * its draft flush before it hides, so by the time this runs the
+   * conversation is already saved.
+   *
+   * Where "leave" goes: back, when there is a page of ours to go back
+   * to, because the button says "Return to reading" and the reader is
+   * usually what sent you here. A direct visit or an off-site referrer
+   * has no reading to return to, so it falls back to the library.
+   */
+  const LIBRARY = "/the-faith-received/library/";
+
+  function leave() {
+    let sameOrigin = false;
+    try {
+      sameOrigin = !!document.referrer &&
+        new URL(document.referrer).origin === window.location.origin &&
+        new URL(document.referrer).pathname !== window.location.pathname;
+    } catch (e) { /* no referrer to read; fall back to the library */ }
+    if (sameOrigin && window.history.length > 1) window.history.back();
+    else window.MOSafeRedirect.go(LIBRARY);
+  }
+
+  function watchForClose(panel) {
+    panel.classList.add("fra-standalone");
+    new MutationObserver(() => {
+      if (panel.hidden) leave();
+    }).observe(panel, { attributes: true, attributeFilter: ["hidden"] });
+  }
+
   function attempt() {
-    if (isOpen()) return;
+    if (isOpen()) {
+      const panel = document.getElementById("fra-workspace");
+      if (panel && !panel.classList.contains("fra-standalone")) watchForClose(panel);
+      return;
+    }
     if (tries++ >= MAX) return;
     if (window.FRAsk && typeof window.FRAsk.open === "function") {
       try {

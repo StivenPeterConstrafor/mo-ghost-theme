@@ -383,6 +383,39 @@ html.fra-open .fra-launcher { display: none; }
   border: 1px solid var(--color-card-border);
   box-shadow: 0 8px 28px rgba(45, 41, 39, 0.13);
 }
+
+/* These three must be anchored, and anchored to the right edge of the
+   right thing. `position: absolute` on its own leaves an element at its
+   static position, which for the two composer menus is directly below a
+   control that sits at the bottom of the window: they opened downward
+   into the fold and got clipped (Ian, 2026-09-14).
+
+   Both composer menus open UPWARD. That is not a nicety of placement, it
+   is the only direction with room, because the composer is pinned to the
+   bottom of the viewport at every width. The scope panel also has to cap
+   its own height and scroll: its content grows with the shelves, groups
+   and the work-search results, so no fixed height is safe. */
+.fra-composer { position: relative; }
+.fra-mode-menu,
+.fra-scope {
+  bottom: calc(100% + 8px);
+  left: 0;
+  max-height: min(68vh, 560px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.fra-scope {
+  width: min(420px, calc(100vw - 2 * var(--fra-gutter)));
+}
+
+/* The header's ••• menu hangs from the button, at the right edge. Same
+   absolute-with-no-insets problem, opposite corner. */
+.fra-header { position: relative; }
+.fra-menu#fra-more {
+  top: calc(100% - 8px);
+  right: var(--fra-gutter);
+  left: auto;
+}
 .fra-menu button,
 .fra-modes button,
 .fra-scope button {

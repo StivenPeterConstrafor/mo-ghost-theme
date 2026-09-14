@@ -454,7 +454,13 @@
       '<div class="fra-split" id="fra-split" role="separator" aria-orientation="vertical" aria-label="Resize the source pane" aria-valuemin="28" aria-valuemax="76" tabindex="0" title="Drag to resize the source pane · double-click to reset"></div><section class="fra-reader" hidden><header><button class="fra-icon" id="fra-source-back" aria-label="Back to conversation">'+icon('back')+'</button><div class="fra-source-heading"><span id="fra-source-title">Source passage</span><small id="fra-source-location"></small></div><a id="fra-source-open" target="_blank" rel="noopener">Open reader</a><button class="fra-icon" id="fra-source-close" aria-label="Close source">'+icon('close')+'</button></header><div class="fra-source-viewport"><div id="fra-source-status" class="fra-source-status" role="status" hidden>Loading passage…</div><iframe id="fra-source-frame" title="Read the cited source" referrerpolicy="same-origin"></iframe></div></section></div></main>';
     document.body.appendChild(panel);
     panel.addEventListener('click',handleClick);
-    $('#fra-home').onclick=async e=>{if(e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();try{await flushDraft();location.assign('/');}catch(_){toast('Your draft could not be saved. Please try again before leaving.');}};
+    /* MereO delta: follow the link's own href instead of the hard-coded
+       '/'. The Library is the site root on his domain and is
+       /the-faith-received/library/ on ours, so the literal sent people
+       to the Mere Orthodoxy homepage. The href in the markup above was
+       right all along, the handler just ignored it. Re-apply when
+       re-vendoring. */
+    $('#fra-home').onclick=async e=>{if(e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();const to=e.currentTarget.getAttribute('href')||'/';try{await flushDraft();location.assign(to);}catch(_){toast('Your draft could not be saved. Please try again before leaving.');}};
     // Keep the latest-answer control above the composer as drafts or the keyboard resize it.
     new ResizeObserver(()=>{
       panel.style.setProperty('--fra-compose-offset',($('.fra-compose-area').offsetHeight+12)+'px');
