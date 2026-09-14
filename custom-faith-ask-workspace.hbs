@@ -1,0 +1,81 @@
+{{!< default}}
+{{#contentFor "moHead"}}
+<title>Ask the Library | The Faith Received</title>
+<meta name="description" content="Ask a question of the library and read a cited answer. Every claim opens the page it came from." />
+<meta property="og:title" content="Ask the Library | The Faith Received" />
+<meta property="og:description" content="Ask a question of the library and read a cited answer. Every claim opens the page it came from." />
+<meta name="twitter:title" content="Ask the Library | The Faith Received" />
+<meta name="twitter:description" content="Ask a question of the library and read a cited answer. Every claim opens the page it came from." />
+<link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}" />
+{{/contentFor}}
+{{!-- /the-faith-received/ask/ — the Ask workspace.
+
+     WHAT THIS PAGE IS. Almost nothing. The corpus owner's engine
+     (assets/js/port/ask-workspace.js) builds the entire surface itself
+     and opens on boot; this template exists to load it inside Mere
+     Orthodoxy's shell, give it our stylesheet instead of his, and hand
+     it the two things it cannot work out for itself.
+
+     SKIN AND BONES. His engine, our design. We deliberately do NOT
+     load assets/css/port/ask-workspace.css: his pages carry a second
+     masthead, two Google faces and a bridge bar back to his site, and
+     dropped in whole they read as another publication living here.
+     assets/css/faith-ask-workspace.css replaces it wholesale, keeping
+     his class names because they are what his DOM emits.
+
+     SCRIPT ORDER MATTERS, and not in the usual way. Page scripts in
+     this theme run inside {{{body}}}, BEFORE site.min.js — so nothing
+     here may depend on a site-bundle global. It depends on window.MOAuth
+     instead, which ships in the BOOT bundle and is therefore already
+     present. That is what mints the member bearer; see the MereO delta
+     in ask-workspace.js and ask-worker.js.
+
+     ask-store.js first: ask-workspace.js reads FRChatStore at boot.
+
+     THE SHAREDWORKER. The stream is owned by a SharedWorker at
+     /assets/js/port/ask-worker.js, which is why a question survives
+     navigation and a closed tab. It is fetched by absolute path at
+     runtime by the engine, so it must exist at exactly that path and
+     must NOT be renamed or bundled.
+
+     WHY __FR_ASK_PENDING__. The engine opens itself when the path is
+     /ask; ours is /the-faith-received/ask/, which its boot test does
+     not match. Setting this global before the engine loads is its own
+     documented hook for "open on arrival", and it also carries a
+     question through from a link like ?q=… so a reader can be sent
+     straight into an answer. --}}
+
+<main class="faith-received faith-ask-page">
+  <noscript>
+    <div class="container" style="padding:64px 0">
+      <h1>Ask the Library</h1>
+      <p>Ask needs JavaScript, because the answer is written a piece at a time
+        while the library is read. The whole library is readable without it:
+        <a href="/the-faith-received/browse/">browse the collections</a>.</p>
+    </div>
+  </noscript>
+</main>
+
+<script>
+  /* The engine's own "open on arrival" hook. `q` lets a link ask a
+     question outright (/the-faith-received/ask/?q=…), which is how the
+     landing page's prompts and a shared answer both get here. */
+  (function () {
+    try {
+      var p = new URLSearchParams(window.location.search);
+      var q = (p.get("q") || p.get("ask") || "").slice(0, 2000);
+      window.__FR_ASK_PENDING__ = {
+        id: p.get("chat") || undefined,
+        q: q,
+        autoSend: !!q,
+        tradition: p.get("trad") || undefined
+      };
+    } catch (e) {
+      window.__FR_ASK_PENDING__ = {};
+    }
+  })();
+</script>
+<script src="{{asset "js/port/ask-store.js"}}"></script>
+<script src="{{asset "js/port/ask-stream.js"}}"></script>
+<script src="{{asset "js/port/ask-jobs.js"}}"></script>
+<script src="{{asset "js/port/ask-workspace.js"}}"></script>

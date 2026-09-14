@@ -1,0 +1,987 @@
+/* ══ Ask, the workspace ═══════════════════════════════════════════
+   The engine is the corpus owner's (assets/js/port/ask-workspace.js);
+   this is Mere Orthodoxy's skin over it, and it replaces his
+   assets/css/port/ask-workspace.css entirely. Nothing of his styling
+   is loaded: his pages ship a second masthead, two Google faces and a
+   bridge bar, and dropped in whole they read as another publication
+   living on mereorthodoxy.com.
+
+   So the class names below are his, because they are what his DOM
+   emits and renaming them would fork the engine. Every value is ours:
+   Source Serif Pro on the warm page, IM Fell for display only, the tan
+   rule, the burnt-orange accent, and the same 44px touch floor the rest
+   of the library holds itself to.
+
+   WHAT THE SURFACE IS. A full-height three-part frame — history rail,
+   conversation, and a source pane that slides in when a citation is
+   opened — with the composer pinned at the foot. It is a dialog, so it
+   owns the viewport while it is up.
+
+   READ THE ENGINE BEFORE CHANGING A SELECTOR. The panel is
+   `section#fra-workspace` and its class is `fra`, NOT `fra-workspace`;
+   an earlier draft of this file styled the latter and matched nothing.
+   State lives in two places and the split matters:
+
+     on <html>   fra-open, fra-docked, and data-theme
+     on .fra     fra-history-open, fra-show-reader, fra-with-reader,
+                 fra-resizing, data-theme, and --fra-source-w
+
+   The title and the scope line are IDs (#fra-title, #fra-context)
+   holding a <strong> and a <span>, so they are told to stack. A
+   suggestion is <button><span>label</span><small>question</small>.
+   Styling those states is this file's job; producing them is not. */
+
+.fra {
+  --fra-rail: 272px;
+  --fra-source-w: 53%;
+  --fra-gutter: 28px;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  background: var(--color-page);
+  color: var(--color-dark);
+  font-family: var(--font-body);
+}
+/* The engine puts `fra-open` on <html>, not on the panel, and that is
+   what it means for the workspace to own the viewport: the page behind
+   must not scroll under it. */
+html.fra-open, html.fra-open body { overflow: hidden; }
+
+/* A FLOOR FOR EVERY CONTROL IN HERE.
+   The engine names most controls by id alone — #fra-notify,
+   #fra-show-archived, #fra-expand, #fra-chat-tab and five more carry no
+   class at all — so styling by class left nine of them on the browser's
+   default button face: grey fill, 2px black border, system font, and
+   unreadable in dark. Rather than chase each id, everything inside the
+   workspace starts from the theme and is then dressed by the rules
+   below. Anything that genuinely wants a border asks for one. */
+.fra button,
+.fra input,
+.fra textarea,
+.fra select {
+  font-family: var(--font-body);
+  color: inherit;
+  background: transparent;
+  border: 0;
+}
+.fra button { cursor: pointer; }
+/* The small-caps pills in the rail and the reader bar: Archived,
+   Saved research, Beside the book. One treatment, since they are the
+   same kind of thing in three places. */
+#fra-show-archived,
+#fra-reader-notes,
+#fra-expand {
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--color-card-border);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+#fra-show-archived:hover,
+#fra-reader-notes:hover,
+#fra-expand:hover { border-color: var(--color-primary); color: var(--color-primary-text); }
+#fra-show-archived[aria-pressed="true"],
+#fra-notify[aria-pressed="true"] { color: var(--color-primary-text); border-color: var(--color-primary); }
+/* The mode popover's two options are unclassed buttons holding a name
+   and a sentence of explanation; they need the name to lead. */
+.fra-modes button > strong,
+.fra-modes button > span:first-child { display: block; font-weight: 600; }
+.fra-modes button > small,
+.fra-modes button > span + span {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-muted);
+  white-space: normal;
+}
+.fra-modes button { height: auto; min-height: 44px; padding: 10px; text-align: left; }
+
+/* EVERY ICON IS AN INLINE <svg> WITH A viewBox AND NO SIZE, so without
+   this it expands to fill whatever holds it: the plus on New
+   conversation rendered 143px wide, the search glass 272, the bell 256.
+   One floor for all of them, overridden where a particular control
+   wants a different size. `flex: none` keeps a button's label from
+   being squeezed out by it. */
+.fra svg { width: 17px; height: 17px; flex: none; }
+
+/* `hidden` must win. The engine hides the selected-passage strip and
+   the popovers with the attribute, and a display rule of ours would
+   quietly override it — the empty cream bar above the composer was
+   exactly that. */
+.fra [hidden] { display: none !important; }
+
+/* The launcher. It lives outside the panel, on any page the engine is
+   loaded on, and opens the workspace. Bottom-right and quiet: it sits
+   over a reading surface and must not compete with the text. */
+.fra-launcher {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 55;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  background: var(--color-page);
+  color: var(--color-dark);
+  border: 1px solid var(--color-card-border);
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(45, 41, 39, 0.12);
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+}
+.fra-launcher:hover { border-color: var(--color-primary); color: var(--color-primary-text); }
+.fra-launcher svg { width: 17px; height: 17px; fill: currentColor; }
+/* While the workspace is up the launcher is redundant, and while a
+   question is running it says so rather than inviting a second one. */
+html.fra-open .fra-launcher { display: none; }
+.fra-launcher.fra-running { border-color: var(--color-primary); }
+.fra-launcher.fra-in-toolbar {
+  position: static;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* ── The history rail ──────────────────────────────────────────── */
+.fra-sidebar {
+  flex: 0 0 var(--fra-rail);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 18px 18px;
+  border-right: 1px solid var(--color-card-border);
+  background: var(--color-cream);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* The one place the display face appears on this surface. Everywhere
+   else it is body type: a workspace is read, not announced. */
+.fra-brand { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.fra-brand a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-display);
+  font-size: 23px;
+  line-height: 1.15;
+  color: var(--color-dark);
+  text-decoration: none;
+}
+.fra-brand a:hover { color: var(--color-primary-text); text-decoration: none; }
+
+.fra-new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-dark);
+  background: var(--color-page);
+  border: 1px solid var(--color-card-border);
+  cursor: pointer;
+}
+.fra-new:hover { border-color: var(--color-primary); color: var(--color-primary-text); }
+
+.fra-history-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 10px;
+  color: var(--color-muted);
+  background: var(--color-page);
+  border: 1px solid var(--color-card-border);
+}
+.fra-history-search input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-dark);
+}
+.fra-history-search input:focus { outline: none; }
+.fra-history-search:focus-within { border-color: var(--color-primary); }
+
+/* Conversations / Archived. Small caps on the rule, the same eyebrow
+   treatment the rooms use for an author heading. */
+.fra-history-label { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.fra-history-label,
+.fra-show-archived {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.fra-show-archived {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.fra-show-archived:hover { color: var(--color-primary-text); }
+
+.fra-history-list { display: flex; flex-direction: column; }
+.fra-history-row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 10px 11px;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: none;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+.fra-history-row:hover { background: var(--color-page); }
+/* The open conversation is marked on the rule rather than by a fill:
+   a block of colour in a rail this narrow reads as a button. */
+.fra-history-row[aria-current="true"] {
+  border-left-color: var(--color-primary);
+  background: var(--color-page);
+}
+.fra-history-row .fra-elapsed,
+.fra-history-row time,
+.fra-history-row small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.fra-empty-history {
+  padding: 10px;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--color-muted);
+}
+
+.fra-sidebar-foot {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-card-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+.fra-sidebar-foot a,
+#fra-notify,
+.fra-notify {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--color-dark);
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.fra-sidebar-foot a:hover,
+#fra-notify:hover,
+.fra-notify:hover { color: var(--color-primary-text); text-decoration: none; }
+.fra-save-state {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+
+/* ── The conversation column ───────────────────────────────────── */
+.fra-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.fra-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px var(--fra-gutter) 14px;
+  border-bottom: 1px solid var(--color-card-border);
+}
+.fra-heading { min-width: 0; flex: 1 1 auto; }
+#fra-title {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.3;
+  margin: 0;
+  /* One line. A long question is the conversation's name, and a name
+     that wraps to three lines pushes the thread off the screen. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#fra-context {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.fra-icon,
+.fra-theme,
+.fra-more-toggle,
+.fra-close,
+.fra-home,
+.fra-history-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 8px;
+  background: none;
+  border: 0;
+  color: var(--color-muted);
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+}
+.fra-icon:hover,
+.fra-theme:hover,
+.fra-more-toggle:hover,
+.fra-close:hover,
+.fra-home:hover,
+.fra-history-toggle:hover { color: var(--color-primary-text); }
+.fra-icon svg { width: 18px; height: 18px; fill: currentColor; }
+
+.fra-popover,
+.fra-menu,
+.fra-modes,
+.fra-scope {
+  position: absolute;
+  z-index: 5;
+  min-width: 232px;
+  padding: 8px;
+  background: var(--color-page);
+  border: 1px solid var(--color-card-border);
+  box-shadow: 0 8px 28px rgba(45, 41, 39, 0.13);
+}
+.fra-menu button,
+.fra-modes button,
+.fra-scope button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  min-height: 44px;
+  padding: 0 10px;
+  background: none;
+  border: 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+.fra-menu button:hover,
+.fra-modes button:hover,
+.fra-scope button:hover { background: var(--color-cream); }
+.fra-mode-name { font-weight: 600; }
+.fra-scope-help,
+.fra-mode-menu p {
+  margin: 2px 0 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+
+.fra-body { flex: 1 1 auto; display: flex; min-height: 0; }
+.fra-chat {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.fra-feed {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--fra-gutter);
+}
+
+/* ── The welcome ───────────────────────────────────────────────── */
+.fra-welcome {
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 72px 0 40px;
+  text-align: center;
+}
+.fra-welcome-mark { color: var(--color-card-border); }
+.fra-welcome-mark svg { width: 34px; height: 34px; fill: currentColor; }
+.fra-welcome h1 {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 4.4vw, 52px);
+  line-height: 1.08;
+  margin: 18px 0 14px;
+}
+.fra-welcome > p {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--color-muted);
+  margin: 0 auto 30px;
+  max-width: 34ch;
+}
+/* The suggestion cards. Ruled boxes rather than filled chips, matching
+   the reading-room card: this library does not use buttons where a
+   rule will do. */
+.fra-suggestions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  text-align: left;
+}
+.fra-suggestions button {
+  display: block;
+  min-height: 44px;
+  padding: 14px 16px 15px;
+  background: var(--color-page);
+  border: 1px solid var(--color-card-border);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--color-dark);
+  text-align: left;
+  cursor: pointer;
+}
+.fra-suggestions button:hover { border-color: var(--color-primary); }
+.fra-suggestions button > span {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.fra-suggestions button > small {
+  display: block;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--color-dark);
+}
+
+/* ── A turn ────────────────────────────────────────────────────── */
+.fra-thread { max-width: 760px; margin: 0 auto; padding-bottom: 28px; }
+.fra-turn { padding: 34px 0 8px; }
+.fra-turn + .fra-turn { border-top: 1px solid var(--color-card-border); }
+/* The question is the heading of its own answer, which is the whole
+   editorial conceit of Ask: prose under a title, not a chat bubble. */
+.fra-question {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 2.6vw, 33px);
+  line-height: 1.16;
+  margin: 0 0 6px;
+}
+.fra-turn-meta {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-bottom: 18px;
+}
+
+.fra-progress {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 15px;
+  color: var(--color-muted);
+  margin: 0 0 16px;
+}
+.fra-elapsed { font-variant-numeric: tabular-nums; font-size: 13px; }
+/* Three dots that breathe while the library works. Motion is small on
+   purpose: this sits under a question somebody is waiting on, and a
+   busy animation makes a wait feel longer. */
+.fra-motion { display: inline-flex; gap: 4px; }
+.fra-motion i {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--color-primary);
+  animation: fra-breathe 1.4s ease-in-out infinite;
+}
+.fra-motion i:nth-child(2) { animation-delay: 0.18s; }
+.fra-motion i:nth-child(3) { animation-delay: 0.36s; }
+@keyframes fra-breathe { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .fra-motion i { animation: none; opacity: 0.6; }
+}
+
+.fra-answer { font-size: var(--tfr-body); line-height: 1.66; }
+.fra-answer p { margin: 0 0 1.05em; }
+.fra-answer h2, .fra-answer h3 {
+  font-family: var(--font-body);
+  font-size: 1.04em;
+  font-weight: 600;
+  margin: 1.6em 0 0.5em;
+}
+.fra-answer ul, .fra-answer ol { margin: 0 0 1.05em; padding-left: 1.3em; }
+.fra-answer li { margin-bottom: 0.4em; }
+.fra-answer blockquote {
+  margin: 1.2em 0;
+  padding: 14px 18px;
+  background: var(--color-cream);
+  border-left: 2px solid var(--color-card-border);
+  font-size: 0.97em;
+}
+.fra-answer code {
+  font-size: 0.92em;
+  background: var(--color-cream);
+  padding: 1px 4px;
+}
+
+/* The citation chip. This is the thing the ported brain exists to
+   produce: an address you can open, not a superscript to look up. It
+   is set on the tan rule so a paragraph of them still reads as prose. */
+.fra-cite {
+  display: inline-block;
+  padding: 0 5px;
+  margin: 0 1px;
+  font-size: 0.78em;
+  line-height: 1.7;
+  vertical-align: 0.08em;
+  color: var(--color-primary-text);
+  background: var(--color-cream);
+  border: 1px solid var(--color-card-border);
+  border-radius: 2px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.fra-cite:hover {
+  color: var(--color-page);
+  background: var(--color-primary-text);
+  border-color: var(--color-primary-text);
+  text-decoration: none;
+}
+
+/* ── What stands behind the answer ─────────────────────────────── */
+.fra-turn-extra { margin-top: 22px; font-size: var(--tfr-meta); }
+.fra-research-context {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-card-border);
+}
+.fra-activity,
+.fra-sources { border-bottom: 1px solid var(--color-card-border); }
+.fra-activity > summary,
+.fra-sources > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-muted);
+  list-style: none;
+}
+.fra-activity > summary::-webkit-details-marker,
+.fra-sources > summary::-webkit-details-marker { display: none; }
+.fra-activity > summary::before,
+.fra-sources > summary::before {
+  content: "\203A";
+  display: inline-block;
+  width: 14px;
+  color: var(--color-card-border);
+  transition: transform 0.15s ease;
+}
+.fra-activity[open] > summary::before,
+.fra-sources[open] > summary::before { transform: rotate(90deg); }
+.fra-activity > summary:hover,
+.fra-sources > summary:hover { color: var(--color-primary-text); }
+.fra-activity ol { margin: 0 0 14px; padding-left: 30px; color: var(--color-muted); }
+.fra-activity li { margin-bottom: 5px; }
+.fra-coverage {
+  margin: 10px 0;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--color-muted);
+}
+/* A source card names where to look. It carries no quotation, because
+   the worker does not send passage text and a card that looked like a
+   quotation would be inventing one. */
+.fra-source {
+  display: block;
+  padding: 12px 0;
+  border-top: 1px solid var(--color-card-border);
+  color: inherit;
+  text-decoration: none;
+}
+.fra-source:first-child { border-top: 0; }
+.fra-source:hover { text-decoration: none; }
+.fra-source:hover .fra-source-name { color: var(--color-primary-text); }
+.fra-source-name { display: block; font-size: 15px; line-height: 1.35; }
+.fra-source-quote {
+  display: block;
+  margin: 4px 0;
+  font-size: 14px;
+  color: var(--color-muted);
+  font-style: italic;
+}
+.fra-source-location,
+.fra-source .fra-cite { font-size: 12px; color: var(--color-muted); }
+
+.fra-error {
+  margin: 14px 0;
+  padding: 12px 14px;
+  border-left: 2px solid var(--color-secondary);
+  background: var(--color-cream);
+  font-size: 15px;
+}
+
+.fra-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 18px 0 4px;
+}
+.fra-actions button,
+.fra-actions a {
+  min-height: 44px;
+  padding: 0 13px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-dark);
+  background: transparent;
+  border: 1px solid var(--color-card-border);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.fra-actions button + button,
+.fra-actions a + button,
+.fra-actions button + a { border-left: 0; }
+.fra-actions button:hover,
+.fra-actions a:hover { background: var(--color-cream); text-decoration: none; }
+.fra-actions button:disabled { color: var(--color-muted); cursor: default; }
+
+.fra-jump {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 120px;
+  min-height: 44px;
+  padding: 0 16px;
+  background: var(--color-dark);
+  color: var(--color-page);
+  border: 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ── The composer ──────────────────────────────────────────────── */
+.fra-compose-area {
+  border-top: 1px solid var(--color-card-border);
+  padding: 14px var(--fra-gutter) 16px;
+  background: var(--color-page);
+}
+.fra-passage {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  max-width: 760px;
+  margin: 0 auto 10px;
+  padding: 10px 12px;
+  background: var(--color-cream);
+  border-left: 2px solid var(--color-card-border);
+  font-size: 14px;
+}
+.fra-passage-cite { color: var(--color-muted); font-size: 12px; }
+.fra-passage-text { font-style: italic; }
+.fra-passage-clear {
+  margin-left: auto;
+  min-width: 44px;
+  min-height: 44px;
+  background: none;
+  border: 0;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.fra-composer {
+  max-width: 760px;
+  margin: 0 auto;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-page);
+  padding: 10px 12px 8px;
+}
+.fra-composer:focus-within { border-color: var(--color-primary); }
+#fra-input {
+  width: 100%;
+  border: 0;
+  resize: none;
+  background: transparent;
+  font-family: var(--font-body);
+  /* 17px, which is also the floor that stops iOS zooming the page when
+     the reader taps it. See the pointer:coarse block in
+     faith-received.css — this one never drops below it, so it needs no
+     override there. */
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--color-dark);
+}
+#fra-input:focus { outline: none; }
+#fra-input::placeholder { color: var(--color-muted); }
+
+.fra-compose-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+}
+#fra-mode-toggle,
+#fra-scope-toggle,
+.fra-mode-toggle,
+.fra-scope-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 10px;
+  background: none;
+  border: 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+#fra-mode-toggle:hover,
+#fra-scope-toggle:hover,
+.fra-mode-toggle:hover,
+.fra-scope-toggle:hover { color: var(--color-primary-text); }
+.fra-status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--color-primary);
+  display: inline-block;
+}
+#fra-send,
+.fra-send {
+  margin-left: auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-page);
+  color: var(--color-dark);
+  cursor: pointer;
+}
+#fra-send:hover:not(:disabled),
+.fra-send:hover:not(:disabled) {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-page);
+}
+#fra-send:disabled,
+.fra-send:disabled { color: var(--color-card-border); cursor: default; }
+.fra-compose-foot {
+  display: flex;
+  justify-content: space-between;
+  max-width: 760px;
+  margin: 8px auto 0;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+/* ── The source pane ───────────────────────────────────────────── */
+.fra-reader {
+  flex: 0 0 var(--fra-source-w);
+  min-width: 0;
+  display: none;
+  flex-direction: column;
+  border-left: 1px solid var(--color-card-border);
+  background: var(--color-page);
+}
+.fra.fra-show-reader .fra-reader { display: flex; }
+.fra-source-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--color-card-border);
+}
+.fra-source-title { font-size: 16px; line-height: 1.3; margin: 0; }
+.fra-source-location { font-size: 12px; color: var(--color-muted); }
+.fra-source-open {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--color-primary-text);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.fra-source-viewport { flex: 1 1 auto; min-height: 0; }
+.fra-source-frame { width: 100%; height: 100%; border: 0; display: block; }
+.fra-source-status,
+.fra-source-pending {
+  padding: 16px 18px;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--color-muted);
+}
+
+/* The divider. A rule you can grab, which is what it looks like until
+   the pointer is on it. */
+.fra-split {
+  flex: 0 0 9px;
+  cursor: col-resize;
+  background: transparent;
+  border: 0;
+  position: relative;
+  display: none;
+}
+.fra.fra-show-reader .fra-split { display: block; }
+.fra-split::before {
+  content: "";
+  position: absolute;
+  inset: 0 4px;
+  background: var(--color-card-border);
+}
+.fra-split:hover::before,
+.fra-split:focus-visible::before { background: var(--color-primary); }
+.fra.fra-resizing { user-select: none; }
+.fra.fra-resizing .fra-source-frame { pointer-events: none; }
+
+/* ── Notices ───────────────────────────────────────────────────── */
+.fra-notices {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fra-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--color-dark);
+  color: var(--color-page);
+  font-size: 14px;
+}
+.fra-toast button {
+  background: none;
+  border: 0;
+  color: inherit;
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.fra-sr,
+.fra-announcer {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Phones and narrow windows ─────────────────────────────────── */
+.fra-mobile-only,
+.fra-mobile-tabs,
+.fra-history-scrim { display: none; }
+
+@media (max-width: 900px) {
+  .fra { --fra-gutter: 18px; }
+  /* The rail becomes a drawer. It is the same list, moved, so that a
+     phone gets the whole width for the thing it came to read. */
+  .fra-sidebar {
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: 3;
+    width: min(86vw, var(--fra-rail));
+    transform: translateX(-102%);
+    transition: transform 0.22s ease;
+  }
+  .fra.fra-history-open .fra-sidebar { transform: none; }
+  .fra.fra-history-open .fra-history-scrim {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: rgba(45, 41, 39, 0.34);
+  }
+  .fra-mobile-only { display: inline-flex; }
+  .fra-question { font-size: 25px; }
+  /* One line of a long question is "What…" at this width, which names
+     nothing. Two wrapped lines, then clip. */
+  #fra-title {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  #fra-context { letter-spacing: 0.1em; }
+  .fra-welcome { padding: 44px 0 28px; }
+  .fra-welcome h1 { font-size: 34px; }
+  /* No split on a phone: the source takes the surface and the tabs
+     move between it and the conversation. */
+  .fra-split { display: none !important; }
+  .fra.fra-show-reader .fra-reader {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    flex: 1 1 auto;
+  }
+  .fra.fra-show-reader .fra-mobile-tabs { display: flex; }
+  .fra-mobile-tabs {
+    border-bottom: 1px solid var(--color-card-border);
+  }
+  .fra-mobile-tabs button {
+    flex: 1;
+    min-height: 44px;
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--color-muted);
+    cursor: pointer;
+  }
+  .fra-mobile-tabs button[aria-selected="true"] {
+    color: var(--color-dark);
+    border-bottom-color: var(--color-primary);
+  }
+}
+
+/* ── Dark ──────────────────────────────────────────────────────
+   The engine stamps data-theme on the workspace. Neutral throughout:
+   the reader's own dark mode was corrected off an olive-and-brown mix
+   for the same reason, and these two surfaces sit beside each other. */
+.fra[data-theme="dark"] {
+  --color-page: #201d1b;
+  --color-cream: #2a2624;
+  --color-dark: #ece7e1;
+  --color-muted: #a49d94;
+  --color-card-border: #3d3733;
+  --color-primary-text: #e8a184;
+}
+.fra[data-theme="dark"] .fra-toast {
+  background: var(--color-cream);
+  color: var(--color-dark);
+}

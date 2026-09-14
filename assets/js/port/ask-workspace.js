@@ -409,6 +409,21 @@
       if(body.filters?.nb||body.hint_w)messages.push({role:'user',content:'Reading context, not verified source evidence: '+JSON.stringify({work:body.hint_w,notebook:body.filters?.nb})});
       request={url:'https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/investigations',format:'job',body:{...body,question:prompt,messages}};
     }
+    /* MereO delta (ASK-SPEC §7): mint the member bearer here, on the
+       page, because the SharedWorker that owns the stream has its own
+       global scope and cannot reach window.MOAuth. Attached after BOTH
+       branches above so Ask and Deep research carry it alike. Our Ask
+       worker requires a verified Ghost member on every spending route;
+       without this every question 401s. MOAuth.tokenFor re-checks the
+       trusted-host allowlist against request.url, so a bearer is never
+       minted for a host the page has not allowlisted, and it returns
+       null for an anonymous visitor rather than throwing — the 401 path
+       below already explains that in words.
+       Re-apply when re-vendoring ask-workspace.js from upstream. */
+    try{
+      const tok=window.MOAuth&&window.MOAuth.tokenFor?await window.MOAuth.tokenFor(request.url):null;
+      if(tok)request.headers={Authorization:'Bearer '+tok};
+    }catch(_){/* anonymous, or the identity endpoint is down: let the 401 speak */}
     const turn={id:S.id(),q,a:'',src:[],mode,scope:structuredClone(scope),works:works.slice(),ts:Date.now(),status:'running',stage:'Preparing the answer',steps:[],...(passage?{passage:structuredClone(passage)}:{})};
     try{
       await S.update(c.id,c=>{if(!c.turns.length&&c.t==='New conversation')c.t=q.slice(0,90);c.ts=Date.now();});

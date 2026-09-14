@@ -193,6 +193,10 @@ for (const bundle of BUNDLES) {
 const STYLESHEETS = [
   { src: "assets/built/screen.css", out: "screen.min.css" },
   { src: "assets/css/faith-received.css", out: "faith-received.min.css" },
+  // Ask's workspace: our skin over the ported engine. Its own bundle
+  // rather than part of faith-received.css because exactly one page
+  // loads it, and it is the size of a small stylesheet on its own.
+  { src: "assets/css/faith-ask-workspace.css", out: "faith-ask-workspace.min.css" },
 ];
 
 for (const sheet of STYLESHEETS) {

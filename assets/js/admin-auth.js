@@ -171,5 +171,34 @@
     }
   } catch (_) { /* noop */ }
 
-  window.MOAuth = { fetch: authedFetch };
+  /*
+   * The raw bearer, for the one caller that cannot use authedFetch.
+   *
+   * Ask's stream is owned by a SharedWorker (assets/js/port/ask-worker.js)
+   * so a question survives navigation and a closed tab. A SharedWorker
+   * has its own global scope: it cannot see window.MOAuth, and the page
+   * cannot fetch on its behalf without giving up the very durability the
+   * worker exists for. So the page reads the token and hands it over in
+   * the request it posts to the worker.
+   *
+   * DELIBERATELY NOT a general accessor. authedFetch stays the way
+   * everything else talks to a worker, because it also enforces the
+   * trusted-host allowlist — handing out a bearer means the caller now
+   * owns that check. isTrusted() is applied here too, against the
+   * destination the caller names, so a token still cannot be obtained
+   * for a host the page has not allowlisted.
+   *
+   * Returns null rather than throwing for an anonymous visitor: not
+   * being signed in is an ordinary state, and Ask already has a 401
+   * path that says so in words a reader understands.
+   */
+  async function tokenFor(url) {
+    if (!isTrusted(url)) {
+      console.error("[MOAuth] refusing to mint a bearer for untrusted host", url);
+      return null;
+    }
+    return await getTokenInternal();
+  }
+
+  window.MOAuth = { fetch: authedFetch, tokenFor };
 })();
