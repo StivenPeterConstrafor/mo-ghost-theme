@@ -151,3 +151,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 ## Mobile Web and source workflows: 2026-09-13
 
 [Source and acceptance package](web-mobile-qa-2026-09-13/README.md): compact mobile research views, working work/passage saves without previews, fixed citation pages, edition labels in Web and Notebook, and reader header-aware source placement. Verified Web → Notebook → reader → Desk, plus an English-only reader. Release `dpl_8oPyvgKgnoQ29ZvYzUBAKwWjJiwZ`; 78 focused checks and ten alias byte matches. Native MereO integration remains pending.
+
+## Following sources and reception: 2026-09-13
+
+[Workflow and source package](web-journey-qa-2026-09-13/README.md): session-local restoration of author/citation filters, reference pages, open evidence and scrolling; visible path and direction controls. Tested Jansen → Augustine and Jansen → Voetius → Calov. Release `dpl_5tSibx6tvcRXCQpg76Zzq77Ypoif`; 30 checks and three alias byte matches. Native MereO integration remains pending.
