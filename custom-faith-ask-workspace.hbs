@@ -77,16 +77,36 @@
      reopens a saved conversation. Keys are omitted rather than passed
      as undefined, so the engine sees only what was actually given. */
   (function () {
-    if (!window.FRAsk || typeof window.FRAsk.open !== "function") return;
-    if (window.FRAsk.isOpen && window.FRAsk.isOpen()) return;
-    var opts = {};
-    try {
-      var p = new URLSearchParams(window.location.search);
-      var q = (p.get("q") || p.get("ask") || "").slice(0, 2000);
-      if (q) { opts.q = q; opts.autoSend = true; }
-      if (p.get("chat")) opts.id = p.get("chat");
-      if (p.get("trad")) opts.tradition = p.get("trad");
-    } catch (e) { /* no query string to read; open empty */ }
-    Promise.resolve(window.FRAsk.open(opts)).catch(function () {});
+    function go() {
+      if (!window.FRAsk || typeof window.FRAsk.open !== "function") return;
+      if (window.FRAsk.isOpen && window.FRAsk.isOpen()) return;
+      var opts = {};
+      try {
+        var p = new URLSearchParams(window.location.search);
+        var q = (p.get("q") || p.get("ask") || "").slice(0, 2000);
+        if (q) { opts.q = q; opts.autoSend = true; }
+        if (p.get("chat")) opts.id = p.get("chat");
+        if (p.get("trad")) opts.tradition = p.get("trad");
+      } catch (e) { /* no query string to read; open empty */ }
+      Promise.resolve(window.FRAsk.open(opts)).catch(function () {});
+    }
+    /* AFTER the engine's own bootstrap, not merely after its script.
+       ask-workspace.js publishes window.FRAsk while it parses but defers
+       bootstrap() to DOMContentLoaded, and bootstrap resets the panel
+       state. Calling open() from here during parse therefore opened the
+       workspace and then had it wiped a moment later — the page settled
+       with the launcher showing and nothing else, which is exactly what
+       it did on the live route. The same call from the console after
+       load worked every time, which is what gave it away.
+
+       Our listener is registered after the engine's, so on
+       DOMContentLoaded it runs second. If the document has already
+       finished parsing (a cached load), bootstrap has run and we can
+       just go. */
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", go, { once: true });
+    } else {
+      go();
+    }
   })();
 </script>
