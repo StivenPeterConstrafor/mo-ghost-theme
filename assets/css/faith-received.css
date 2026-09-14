@@ -16468,3 +16468,46 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
     font-size: 16px;
   }
 }
+
+/* ── Three targets the library still missed (MOBILE M4) ────────────
+   Measured on a 375px viewport against the built stylesheet, counting
+   the ::after hit targets the theme already layers on inline controls,
+   so only the controls with no target at all are here. The gate's
+   Sign in button, the constellation legend and the rest already pass
+   and are untouched.
+
+     .btrad-all             17.6px   "All 45 works", nine per browse page
+     .lp-more-link          19.2px   "Browse the whole library"
+     .faith-doc-toc-toggle    40px   Contents, the reader's phone control
+
+   Two patterns, both already in this file. A control with a real box
+   gets a min-height. A small-caps link whose height IS its line box
+   gets the ::after trick instead: growing the box would open a gap in
+   a rhythm that was set deliberately, while an absolutely positioned
+   ::after enlarges only what the finger hits.
+
+   Both links sit last in their block with card padding beneath, so the
+   expanded targets reach into that padding and not onto a neighbour.
+   That is the thing to re-check if either ever moves: adjacent targets
+   this close together are a mis-tap, which is the defect MOBILE M4
+   exists to prevent and not a rule to satisfy twice. */
+@media (pointer: coarse) {
+  /* Needs a containing block for the ::after to be measured against. */
+  .btrad-all,
+  .lp-more-link { position: relative; }
+  /* (44 - 17.6) / 2 = 13.2 */
+  .btrad-all::after {
+    content: "";
+    position: absolute;
+    inset: -14px 0;
+  }
+  /* (44 - 19.2) / 2 = 12.4 */
+  .lp-more-link::after {
+    content: "";
+    position: absolute;
+    inset: -13px 0;
+  }
+  /* 11px type on 9px padding came to 40. The type and the letter
+     spacing are the header's, so the height moves and they do not. */
+  .faith-doc-toc-toggle { min-height: 44px; }
+}
