@@ -1,0 +1,55 @@
+/* ══ The ported reader, in Mere Orthodoxy's colour ═══════════════════
+   Skin and bones: the corpus owner's reader engine, our palette.
+
+   THE READER CAME OUT GREY (Ian, 2026-09-14: "It's also too gray. I
+   liked the warmth of the old reader"). Not because his design is grey
+   — `prdl-system.css` is already built from our brand and sets the same
+   #f6f3f2 page, the same #d9c6a7 tan rule and the same #c1593c accent
+   we do. Two later stylesheets overwrite all of it with a neutral
+   scheme:
+
+     read.in01.css:9          :root{--bg:#F0F0ED; --fg:#1C1C1A; …}
+     fr-reading-system.css:5  :root,:root[data-site]{--bg:#F0F0ED;
+                              --card:#FFFFFF; --border:#D8D8D3; …}
+
+   #F0F0ED is a cool grey-green and #FFFFFF is a white card on top of
+   it, which is why the page reads colder than the rest of the library
+   and why a highlighted passage sat in a grey band.
+
+   So this restores the values his own system file already holds. It is
+   loaded last in custom-faith-port-read.hbs, which is the only reason
+   it wins; keep it last.
+
+   WHAT IS DELIBERATELY NOT TOUCHED: --accent. The reading system sets
+   it to #1C1C1A, near-black, and in this engine the accent is used on
+   running text as well as on controls, so making it burnt orange would
+   colour prose rather than furniture. The controls take the accent from
+   our own rules instead. If that changes, verify on screen before
+   trusting it — this file exists because someone assumed. */
+
+:root,
+:root[data-site] {
+  /* The page and the paper it sits on */
+  --bg: #f6f3f2;
+  --bg-warm: #f1e0c9;
+  --card: #fffdfa;
+  --card-bg: #fffdfa;
+  --panel: #fffdfa;
+  --paper: #fffdfa;
+  --sidebar: #f5efe1;
+  --sidebar-bg: #f5efe1;
+
+  /* Ink. #2d2927 is the library's dark; #1C1C1A is a colder black. */
+  --fg: #2d2927;
+  --head: #2d2927;
+  --ink: #2d2927;
+  --muted: #6b6660;
+
+  /* The tan rule, everywhere a rule is drawn */
+  --border: #d9c6a7;
+  --line: #d9c6a7;
+
+  /* A marked passage sits on cream, not on grey */
+  --hl: #f5efe1;
+  --highlight: #f5efe1;
+}
