@@ -38,12 +38,22 @@
      runtime by the engine, so it must exist at exactly that path and
      must NOT be renamed or bundled.
 
-     WHY __FR_ASK_PENDING__. The engine opens itself when the path is
-     /ask; ours is /the-faith-received/ask/, which its boot test does
-     not match. Setting this global before the engine loads is its own
-     documented hook for "open on arrival", and it also carries a
-     question through from a link like ?q=… so a reader can be sent
-     straight into an answer. --}}
+     WHY WE CALL open() OURSELVES. The engine opens on its own only when
+     the path matches /ask, or when the URL carries ?ask= or ?m=ask.
+     Ours is /the-faith-received/ask-workspace/, which matches none of
+     them.
+
+     It also reads a window.__FR_ASK_PENDING__ global at boot, and that
+     is what this template used first. It does not work: verified on the
+     live page, the global is set before the engine script loads and in
+     the right order, the engine consumes it, and the workspace is still
+     never built — while ?ask= on the same URL opens it every time. So
+     the hook is not load-bearing here and we do not depend on it.
+
+     Instead the engine is asked directly, once it exists. window.FRAsk
+     is published synchronously by ask-workspace.js, so a script after it
+     can call open() with no waiting and no polling. The isOpen() guard
+     means a URL that ALSO carries ?ask= opens once, not twice. --}}
 
 <main class="faith-received faith-ask-page">
   <noscript>
@@ -56,26 +66,27 @@
   </noscript>
 </main>
 
-<script>
-  /* The engine's own "open on arrival" hook. `q` lets a link ask a
-     question outright (/the-faith-received/ask/?q=…), which is how the
-     landing page's prompts and a shared answer both get here. */
-  (function () {
-    try {
-      var p = new URLSearchParams(window.location.search);
-      var q = (p.get("q") || p.get("ask") || "").slice(0, 2000);
-      window.__FR_ASK_PENDING__ = {
-        id: p.get("chat") || undefined,
-        q: q,
-        autoSend: !!q,
-        tradition: p.get("trad") || undefined
-      };
-    } catch (e) {
-      window.__FR_ASK_PENDING__ = {};
-    }
-  })();
-</script>
 <script src="{{asset "js/port/ask-store.js"}}"></script>
 <script src="{{asset "js/port/ask-stream.js"}}"></script>
 <script src="{{asset "js/port/ask-jobs.js"}}"></script>
 <script src="{{asset "js/port/ask-workspace.js"}}"></script>
+<script>
+  /* Open it. `q` lets a link ask outright
+     (/the-faith-received/ask-workspace/?q=…), which is how a prompt on
+     the landing page or a shared answer arrives already asking. `chat`
+     reopens a saved conversation. Keys are omitted rather than passed
+     as undefined, so the engine sees only what was actually given. */
+  (function () {
+    if (!window.FRAsk || typeof window.FRAsk.open !== "function") return;
+    if (window.FRAsk.isOpen && window.FRAsk.isOpen()) return;
+    var opts = {};
+    try {
+      var p = new URLSearchParams(window.location.search);
+      var q = (p.get("q") || p.get("ask") || "").slice(0, 2000);
+      if (q) { opts.q = q; opts.autoSend = true; }
+      if (p.get("chat")) opts.id = p.get("chat");
+      if (p.get("trad")) opts.tradition = p.get("trad");
+    } catch (e) { /* no query string to read; open empty */ }
+    Promise.resolve(window.FRAsk.open(opts)).catch(function () {});
+  })();
+</script>
