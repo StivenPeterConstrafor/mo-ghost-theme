@@ -3870,6 +3870,9 @@ $("#scroll").addEventListener("scroll",()=>{const s=$("#scroll");$("#prog").styl
    flips the other on, so the reading column can never go empty. */
 window.LN={en:true,la:true,fx:false};   // owner 2026-08-17: the Latin lane shows by DEFAULT ("no latin" report) — this is a Latin library
 function applyLanes(){
+  // The row under the top of the viewport is remembered before the relayout when nothing captured it (keyboard activation,
+  // a scripted click): a lane switch used to land three columns away in that case (PG 3059, 2026-09-14).
+  if(!(window.__frAnchorRow&&window.__frAnchorRow.isConnected)&&typeof document!=="undefined"){const host=document.getElementById&&document.getElementById("reading");if(host&&typeof host.querySelectorAll==="function"&&window.__readerBuilt){try{window.__frAnchorRow=[...host.querySelectorAll(".row[id]")].find(r=>r.getBoundingClientRect&&r.getBoundingClientRect().bottom>120)||null;}catch(_){}}}
   // An English source is already read in the English lane. A parallel preference
   // carried from a Latin work must not open two English versions side by side.
   const englishSource=DATA?.src_lang==='en';
