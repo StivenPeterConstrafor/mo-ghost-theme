@@ -2021,8 +2021,8 @@ html[data-theme="dark"] .app.rflow .fmark.titlepage .ff{color:var(--muted)}
 html:not(.fr-plain) .ph.fr-reader-head{padding:10px 24px;gap:24px;background:var(--bg);border-bottom:1px solid var(--border);box-shadow:none;transform:none;transition:none}
 html:not(.fr-plain) .fr-reader-head .phl{align-items:center;gap:12px;flex:1;min-width:0}
 html:not(.fr-plain) .fr-reader-head .reader-identity{display:block;min-width:0;flex:1;overflow:hidden}
-/* At 1200 px the pager and the site nav left the identity 24 px wide and 'PG 31 · col. 1468' spilled under the arrows (2026-09-14): clip the identity, keep the chip legible. */
-.ph.fr-reader-head .phl{min-width:min(230px,26vw)}
+/* At 1200 px the pager and the site nav left the identity 24 px wide and 'PG 31 · col. 1468' spilled under the arrows (2026-09-14): the identity clips, and below 1280 px the 'Library' word, the page total and two pixels of gap give the chip its room. */
+@media (max-width:1280px){.fr-reader-head .mh-home span{display:none}.fr-reader-head .pg-total{display:none}.fr-reader-head .ctr{gap:6px}}
 html:not(.fr-plain) .fr-reader-head h1{font-size:20px;line-height:1.25;letter-spacing:0;min-width:0;max-width:100%;margin:0;font-variant:normal}
 html:not(.fr-plain) .fr-reader-head .sub,html:not(.fr-plain) .fr-reader-head .ploc{display:none}
 html:not(.fr-plain) .fr-reader-head .reader-reference{display:flex;align-items:center;gap:0 8px;min-width:0;margin-top:3px;font:12px/1.5 var(--font-body);color:var(--muted);font-variant-numeric:tabular-nums}

@@ -4800,7 +4800,8 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
     if(R&&!document.getElementById("volnext")){
       const nx=i>=0?sp.works[i+1]:null;
       const band=document.createElement("div");band.id="volnext";
-      const nxUrl=nx?`/the-faith-received/read/?w=${prefix}-${nx.id}`:(sp.next?`/the-faith-received/read/?w=${prefix}-${sp.next.first}`:null);
+      let nxUrl=nx?`/the-faith-received/read/?w=${prefix}-${nx.id}`:(sp.next?`/the-faith-received/read/?w=${prefix}-${sp.next.first}`:null);
+      if(nxUrl&&prefix==='pg'){const source=new URL(location.href).searchParams.get('src');if(['grc','grcla','la','ocr'].includes(source))nxUrl+='&src='+source;}
       band.innerHTML=nx
         ?`<span class=vk>Next in ${volWord} ${volN}</span><a href="${nxUrl}">${esc(nx.t||"")} &#8250;</a>`
         :(sp.next?`<span class=vk>End of ${volWord} ${volN}</span><a href="${nxUrl}">Continue into ${volWord} ${sp.next.vol} &#8250;</a>`:"");
@@ -5197,7 +5198,7 @@ async function loadPgCanon(ws){
       else cur=cur?cur+" "+sn:sn;});
     if(cur)bucket.push(cur);};
   const _carveEn=(t,bucket)=>{
-    let _rest=t,_guard=0;
+    let _rest=window.FRPgParallel.cleanEnglish(t),_guard=0;
     while(_rest&&_guard++<12){
       const m2=_rest.match(_RXC),cand2=m2&&_capsHead(m2[1]);
       const m3=_rest.match(_DAYRX);
@@ -5229,6 +5230,18 @@ async function loadPgCanon(ws){
     _carveEn(t,enByCol[n]=enByCol[n]||[]);});
   // page spans (n -> next pb) for span-union of vtx and EN lanes
   const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=window.FRPgParallel.printedColumns(doc);
+  const _pgOwned=new Set(Object.keys(_canonOpenings).filter(k=>_canonOpenings[k].verified));
+  // Older links could name a following work's column while retaining this work's ID.
+  // Resolve only a verified overrun into the immediately following catalogue work.
+  if(_pgOwned.size){
+    const reference=frReaderBlockReference(location.hash)?.page||new URLSearchParams(location.search).get('p');
+    const lastColumn=Math.max(...[..._pgOwned].flatMap(k=>Object.keys(_canonOpenings[k].columns).map(Number)));
+    if(reference&&Number(reference)>lastColumn){try{
+      const spine=await fetch(BLOB+'/v1/pgvol/'+vol+'.json').then(r=>r.ok?r.json():null);
+      const next=window.FRPgParallel.nextWorkReference(spine?.works||[],id,reference,lastColumn);
+      if(next){const url=new URL(location.href);url.searchParams.set('w','pg-'+next);url.searchParams.delete('ws');url.searchParams.set('p',reference);url.hash='b'+reference+'-0';location.replace(url);return new Promise(()=>{});}
+    }catch(_){/* Keep the explicit link when a neighbouring work cannot be verified. */}}
+  }
   const _bodyPage={};
   {let _bp=null;
    (function bt(node){for(const ch of node.children){
@@ -5262,7 +5275,7 @@ async function loadPgCanon(ws){
       Object.assign(enByCol,shifted);
     }}}
   // pgen top-up: columns the canon translation never covered take the sidecar English
-  if(pgen)Object.keys(pgen).forEach(k=>{const n=+k;
+  if(pgen&&!_pgOwned.size)Object.keys(pgen).forEach(k=>{const n=+k;
     if(!n||(enByCol[n]&&enByCol[n].join("").length>120))return;
     // a '## ' line is the printed division heading (HOMILY III. On the firmament), not a
     // paragraph — mark it so the renderer sets a head and the outline can see it
@@ -5747,7 +5760,7 @@ async function loadPgCanon(ws){
                 .map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim(),
               grc:[...sf.querySelectorAll("zone")].filter(z=>(z.getAttribute("type")||"").includes("ColGreek"))
                 .map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim()}))
-              .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&x.n>=lo3&&x.n<=hi3).sort((a,b)=>a.n-b.n);
+              .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&x.n>=lo3&&x.n<=hi3&&(!_pgOwned.size||_pgOwned.has(String(x.n)))).sort((a,b)=>a.n-b.n);
             // The source site's vision text is already in the primary TEI columns.
             // Raw pageview zones are a fallback, never an unconditional replacement.
             for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)];if(canon?.grc)sf.grc=canon.grcRich||canon.grc;if(canon?.la)sf.lat=canon.laRich||canon.la;}
@@ -5792,7 +5805,7 @@ async function loadPgCanon(ws){
     }
     // BOUNDARY HEAL: the recovered opening column(s) lead the reading order, before the
     // canon's own first pb — the work now begins where it begins on the plate
-    if(!_latBuilt&&pggap){Object.keys(pggap).map(Number).filter(Boolean).sort((a,b)=>a-b).forEach(n=>{
+    if(!_latBuilt&&pggap&&!_pgOwned.size){Object.keys(pggap).map(Number).filter(Boolean).sort((a,b)=>a-b).forEach(n=>{
       const t=String(pggap[n]||"");if(t.length<60)return;
       addPb(n);
       // the sidecar is CURATED (prev-work tail already cut, vision-cleaned) — it wins
