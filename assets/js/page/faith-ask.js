@@ -104,13 +104,36 @@
   const usageGlobalText = document.querySelector("[data-ask-usage-global-text]");
   const usageGlobalFill = document.querySelector("[data-ask-usage-global-fill]");
 
-  // Same worker every other faith-*.js file in this theme talks to
-  // (see assets/js/faith-corpora.js's own BLOB/LIBRARY constant) —
-  // each file defines its own copy of this base URL rather than
-  // sharing a global, matching that existing convention.
-  const WORKER = "https://mo-tfr-library.mo-podcast-feed.workers.dev";
-  const ASK_URL = `${WORKER}/v1/ask`;
-  const USAGE_URL = `${WORKER}/v1/ask/usage`;
+  /*
+   * ASK RUNS ON THE PORTED BRAIN (Ian, 2026-09-14: "we want his version
+   * of ask"), which is a different worker from the rest of the library.
+   *
+   * The two answer the same question differently, and it is the
+   * pipeline rather than the model: the brain fuses its retrieval legs
+   * with RRF, keeps a page-and-author diversity round-robin, runs the
+   * Sentences/Summa/Scripture crosswalk, escalates into a fourteen-tool
+   * agent loop when a question needs it, and writes under the
+   * CITE-OR-DIE prompt, which is what produces `[slug/pN]` page chips
+   * instead of bare footnote numbers.
+   *
+   * WHY A SECOND HOST AND NOT A MERGE. The brain queries the
+   * mo-tfr-openai Vectorize index (OpenAI text-embedding-3-large); the
+   * library worker queries mo-tfr-vsearch (bge-m3). Both are 1024
+   * dimensions, and crossing them raises NO error anywhere — Vectorize
+   * simply returns confident nonsense. Keeping them in separate workers
+   * keeps that impossible rather than merely discouraged.
+   *
+   * The host has to be in BOTH the CSP connect-src and the
+   * mo-trusted-hosts meta in default.hbs, or MOAuth.fetch refuses the
+   * call before it is made and the browser refuses it after. That
+   * omission, not the code, is why this never ran before today.
+   *
+   * Everything else in the library still talks to mo-tfr-library; see
+   * assets/js/faith-corpora.js.
+   */
+  const ASK_WORKER = "https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev";
+  const ASK_URL = `${ASK_WORKER}/v1/ask`;
+  const USAGE_URL = `${ASK_WORKER}/v1/ask/usage`;
 
   function escapeHtml(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => {
@@ -319,6 +342,67 @@
 
   if (copyBtn) copyBtn.addEventListener("click", copyWhole);
   if (saveBtn) saveBtn.addEventListener("click", saveWhole);
+
+  /*
+   * THE FRAME DIALECT TRANSLATOR (ASK-SPEC §7).
+   *
+   * The ported brain and this page speak different NDJSON. The brain
+   * streams the answer as `delta` frames and then sends one `result`
+   * carrying `sources` alone; this page has no `delta` case at all and
+   * expects a `result` that carries the finished `answer` plus
+   * `citations`. Pointed at the brain untranslated, a reader would have
+   * watched the progress line, received the source list, and never seen
+   * a word of the answer.
+   *
+   * The citation forms differ too, and that difference is the point of
+   * the brain: it writes `[slug/pN]`, an address, where our renderer
+   * expects `[n]`, a footnote number. So the markers are renumbered in
+   * order of first appearance and each is given the reader link its
+   * address already implies. A marker whose source is not in the list
+   * is dropped rather than renumbered — renderInline() already refuses
+   * to print a dangling `[n]`, and a citation that points nowhere is
+   * worse than none.
+   *
+   * Corpus is read off the slug prefix, matching faith-corpora.js's own
+   * reader URLs: pld-/pg-/po-/eebo- name their corpus, everything else
+   * is the native collection ("mo").
+   */
+  function corpusForSlug(slug) {
+    const s = String(slug || "");
+    if (s.startsWith("pld-")) return "pld";
+    if (s.startsWith("pg-")) return "pg";
+    if (s.startsWith("po-")) return "po";
+    if (s.startsWith("eebo-")) return "eebo";
+    return "mo";
+  }
+
+  function translateBrainAnswer(text, sources) {
+    const byKey = new Map();
+    (sources || []).forEach((s) => {
+      if (s && s.slug) byKey.set(`${s.slug}/p${s.page}`, s);
+    });
+    const order = [];
+    const seen = new Map();
+    const renumbered = String(text || "").replace(/\[([a-z0-9_-]+)\/p(\d+)\]/gi, (whole, slug, page) => {
+      const key = `${slug}/p${page}`;
+      if (!byKey.has(key)) return "";
+      if (!seen.has(key)) {
+        seen.set(key, seen.size + 1);
+        order.push(key);
+      }
+      return `[${seen.get(key)}]`;
+    });
+    const citations = order.map((key, i) => {
+      const s = byKey.get(key);
+      const bits = [s.author, s.title].filter(Boolean).join(", ");
+      return {
+        n: i + 1,
+        cit: `${bits || s.slug}, p. ${s.page}`,
+        url: `/the-faith-received/reader/?c=${corpusForSlug(s.slug)}&w=${encodeURIComponent(s.slug)}&p=${encodeURIComponent(s.page)}`,
+      };
+    });
+    return { answer: renumbered, citations };
+  }
 
   function renderAnswer(text, citations, works) {
     const citByN = new Map((citations || []).map((c) => [c.n, c]));
@@ -669,6 +753,10 @@
     const decoder = new TextDecoder();
     let buf = "";
     let gotResult = false;
+    // The ported brain's answer arrives as `delta` frames; see
+    // translateBrainAnswer(). Empty for the library worker, which sends
+    // its answer whole inside `result`.
+    let streamed = "";
 
     for (;;) {
       let chunk;
@@ -688,19 +776,31 @@
         try { obj = JSON.parse(line); } catch (_) { continue; }
         if (obj.type === "progress") {
           setStatus(obj.message || "");
+        } else if (obj.type === "delta") {
+          // The brain streams its answer here. Accumulated rather than
+          // painted per token: the renderer works on whole markdown
+          // blocks, and half a `[slug/pN]` marker is not translatable.
+          streamed += obj.text || "";
         } else if (obj.type === "result") {
           gotResult = true;
           setStatus("");
           if (errorEl) errorEl.hidden = true;
           headingEl.textContent = obj.question || question;
-          renderAnswer(obj.answer || "", obj.citations || [], obj.works || []);
+          // The brain sends sources and no answer; the library worker
+          // sends a finished answer and citations. Accept both.
+          const fromBrain = !obj.answer && streamed;
+          const t = fromBrain
+            ? translateBrainAnswer(streamed, obj.sources || [])
+            : { answer: obj.answer || "", citations: obj.citations || [] };
+          renderAnswer(t.answer, t.citations, obj.works || []);
           lastAnswer = {
             question: obj.question || question,
-            answer: obj.answer || "",
-            citations: obj.citations || [],
+            answer: t.answer,
+            citations: t.citations,
           };
+          obj = { ...obj, citations: t.citations };
           if (actionsEl) actionsEl.hidden = false;
-          renderFootnotes(obj.citations || []);
+          renderFootnotes(obj.citations || []); // translated above for the brain
           renderGaps(obj.gaps || []);
           resultEl.hidden = false;
           resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
