@@ -1,5 +1,12 @@
 # The Faith Received — Reader specification
 
+## 2026-09-14: continuous text and editorial reading
+
+Ordinary PL volume/work entries now open **Text and editorial notes**. The source-guarded editorial material is included in recorded column order and labelled outside the author’s paired rows; unmapped notes remain in a labelled appendix. A prior notes-only preference must not control a plain volume entry. Explicit source-layer links remain supported. This supersedes any earlier description below of excluding editorial notes from the default reading view.
+
+The [continuous PL package](pld-continuous-2026-09-14/README.md) supplies the source, tests, paragraph/column reconciliation and deployed alias proof. Anselm’s letter at column 1067 is translated; his edition’s 52 editorial paragraphs are Latin-only in the current canonical export. Restoring their display does not supply a translation. Native MereO integration remains pending.
+
+
 The reader is the page that shows one work: Latin (or Greek) and English side by side, page by page, with the facsimile, the table of contents, the apparatus, Scripture links, highlights and deep links. This document describes everything it does and every rule it follows, so that an agent (Claude) can recreate it or verify a port against it. Rules with a date come from an owner decision on that day.
 
 Source of truth: `tools/prdl_reader_prototype/reader_shell.html` (Davenant). `tools/build_dist.py` packages its `<script id="reader-core">` into `dist/reader-core.js?v=<sha16>` and emits `dist/read.html` (+ one SEO shell per work under `dist/read/<slug>.html`, born-digital works as 1 KB stubs that redirect into `/read?w=`). On MereO: `custom-faith-port-read.hbs` + `assets/js/port/reader-core.js` (route `/the-faith-received/read/`), plus `reader-navigation.js`, `reader-contents.js`, `reader-source-outline.js`, `reader-bookmarks.js`, `reader-margins.js`, `reader-footnotes.js`, `reader-scripture-preview.js`, `work-research*.js`, `read-tools.js` (research rail, deferred).
