@@ -155,3 +155,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 ## Following sources and reception: 2026-09-13
 
 [Workflow and source package](web-journey-qa-2026-09-13/README.md): session-local restoration of author/citation filters, reference pages, open evidence and scrolling; visible path and direction controls. Tested Jansen → Augustine and Jansen → Voetius → Calov. Release `dpl_5tSibx6tvcRXCQpg76Zzq77Ypoif`; 30 checks and three alias byte matches. Native MereO integration remains pending.
+
+## Continuous PL text and editorial notes: 2026-09-14
+
+[Source and acceptance package](pld-continuous-2026-09-14/README.md): ordinary volume entries include labelled editorial material in recorded column order, while explicit source-layer links remain precise. Verified Anselm’s English letter at 1067 and all 52 original editorial paragraphs across 20 columns; the notes have no supplied English translation. Release `dpl_5ufFf1to8pGiV5AFVV4hymtNhxAt`, 48 checks and three alias byte matches. Native MereO integration and editorial translation remain separate.
