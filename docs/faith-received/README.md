@@ -161,3 +161,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 ## Continuous PL text and editorial notes: 2026-09-14
 
 [Source and acceptance package](pld-continuous-2026-09-14/README.md): ordinary volume entries include labelled editorial material in recorded column order, while explicit source-layer links remain precise. Verified Anselm’s English letter at 1067 and all 52 original editorial paragraphs across 20 columns; the notes have no supplied English translation. Release `dpl_5ufFf1to8pGiV5AFVV4hymtNhxAt`, 48 checks and three alias byte matches. Native MereO integration and editorial translation remain separate.
+
+### Web connection follow-up · 14 September 2026
+
+See [the mixed-direction connection package](web-connections-2026-09-14/README.md) for the Athanasius → Aquinas → Vásquez workflow: full source, tests, screenshots and measured reference-site fixes. It covers work-header layout, explicit Both directions, preserving found paths on Back, and a narrow guard against a cited question outside the resolver target volume. Native integration and artifact publication remain separate; the complete-site audit is still incomplete.
