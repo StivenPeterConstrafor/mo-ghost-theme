@@ -169,3 +169,7 @@ See [the mixed-direction connection package](web-connections-2026-09-14/README.m
 ### Web Scripture and shelf workflows · 14 September 2026
 
 The [Scripture/shelf package](web-scripture-shelves-2026-09-14/README.md) contains full source and verification for verse → author → work → source navigation, all available Luther work groups, bounded shelf profiles and source pages, selected-author URLs, comparison return controls, and build-versioned Scripture helpers. Follow the package’s existing-artifact instructions; native MereO integration remains pending.
+
+### PG source choices and printed-column navigation · 14 September 2026
+
+The [PG source UI package](pg-source-ui-2026-09-14/README.md) contains full reader source, the navigation helper, tests and scan-grounded findings for PG 31, columns 1467–1468. The visible Greek/Latin choices, primary-witness selection and manual column jumps are fixed on the reference site. Greek OCR, misclassified main-text rubrics and multilingual paragraph alignment remain explicitly unresolved; this UI session did not have authority to mutate the corpus or change pairing.
