@@ -4801,7 +4801,7 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
       const nx=i>=0?sp.works[i+1]:null;
       const band=document.createElement("div");band.id="volnext";
       let nxUrl=nx?`/the-faith-received/read/?w=${prefix}-${nx.id}`:(sp.next?`/the-faith-received/read/?w=${prefix}-${sp.next.first}`:null);
-      if(nxUrl&&prefix==='pg'){const source=new URL(location.href).searchParams.get('src');if(['grc','grcla','la','ocr'].includes(source))nxUrl+='&src='+source;}
+      if(nxUrl&&prefix==='pg'){const source=new URL(location.href).searchParams.get('src');if(['grc','grcla','la','ocr'].includes(source))nxUrl+='&src='+source;if(nx?.c?.[0]!=null){const start=encodeURIComponent(String(nx.c[0]));nxUrl+='&p='+start+'#b'+start+'-0';}}
       band.innerHTML=nx
         ?`<span class=vk>Next in ${volWord} ${volN}</span><a href="${nxUrl}">${esc(nx.t||"")} &#8250;</a>`
         :(sp.next?`<span class=vk>End of ${volWord} ${volN}</span><a href="${nxUrl}">Continue into ${volWord} ${sp.next.vol} &#8250;</a>`:"");
