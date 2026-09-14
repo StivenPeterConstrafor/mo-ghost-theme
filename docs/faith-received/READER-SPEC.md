@@ -149,6 +149,15 @@ The display rule of 9.1–9.2 is now also the publishing rule, so the three site
 
 Browser check: `/fathers?sh=pl#hildegard-of-bingen/connections` search "placeholder" → no entries; `/topics#the-virgin-mary` exists; a work whose overview used to print "Salvation-related topics" prints Salvation.
 
+**Residue closed the same evening (owner: "fix these").**
+- The mine records themselves now carry registry labels: all 18,650 `runs/mine/records/<slug>.json` went through `normalize_page` (18,603 changed; unresolved chatter sits in each page's `topic_review`; `topic_registry_version` stamped), each with a gzip backup beside it. Builders still normalize on read, so nothing depends on this, but the historical extraction and the published data now say the same thing. The unit files were touched afterwards so the stitcher's mtime rule keeps them current.
+- The classifier list's version travels with every new record as `loci_v` and every page's `input_provenance.loci_list` (`2026-09-13.1`). `SCHEMA_V` stays 6 on purpose: the miner's skip test re-mines any work whose `schema_v` differs, so a bump would re-mine the corpus; the docstring's "only with `--resweep`" was never implemented.
+- The per-shelf topic rooms (`v1/mine/topic2` for pl, `v1/mine/topic2-<shelf>` for the other eight; 762 files) were rebuilt under the rule and pushed to Blob and R2 (md5 read-back on two indexes).
+- The 23 stale `topic2-all/<slug>.json` files (six merged topics and seventeen older retired or chatter slugs such as `marriage-is-not-in-list.json`) were deleted from Blob, R2 and the local stage; `topic2-all` holds exactly the 179 topics plus `index.json` on both stores.
+- R2 `v1/mine/units` is a full mirror of Blob's (17,560 files, less `westminster-assembly-minutes-vol-1.json`, which stays off R2 by the public-variant ruling); the six unit files that lived only in `runs/mine_local` are included.
+- The units whose embedding text changed are being re-embedded into Upstash v2 namespace `units` with `embed_units.py --refresh-legacy` on their 1,235 plannable works (137,856 units; whole works, because the freshness ledger verifies a work, not a unit). 1,183 works (125,852 units) completed; the run stopped on OpenAI `credit_balance_exhausted` with 52 works left (one, `suarez-opera-vol-21`, mid-work and resumable). The same command resumes from the ledger once credits are added. 311 further works could not be planned: their unit files carry duplicate unit ids (the stitcher's title-slug collisions, e.g. `unit:acta-concilii-vaticani:207:titulus-c` ×4), a pre-existing defect the embedder refuses by design; they keep their earlier vectors.
+- The superseded evidence snapshot `mine-a4316671636aa96c6640` (3,508 objects) is unreferenced and ready to delete; the session's permission gate refused the mass delete, so the recipe is in `runs/topic_release_0913/README.md` for the owner.
+
 ---
 
 ## 10. Migne specifics
