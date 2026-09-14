@@ -357,6 +357,23 @@ routes:
   # mo-tfr-library's /v1/ask. See website/workers/tfr-library/lib/ask.js.
   /the-faith-received/ask/:
     template: custom-faith-ask
+  # The Ask WORKSPACE (2026-09-14): the corpus owner's engine in our
+  # skin — a conversation with a history rail, the citation chips that
+  # open the page they came from, and a source pane beside the thread.
+  # See custom-faith-ask-workspace.hbs.
+  #
+  # ON ITS OWN PATH ON PURPOSE, for now. /ask/ above still serves the
+  # single-shot page, so this can be looked at beside the thing it
+  # replaces rather than instead of it. It talks to mo-tfr-ask-dev (the
+  # ported brain), not mo-tfr-library, and no live question has been
+  # asked through it yet.
+  #
+  # TO PROMOTE IT: point /the-faith-received/ask/ at
+  # custom-faith-ask-workspace and delete this entry. The engine already
+  # treats that path as its own — its link handler opens the workspace
+  # for any /the-faith-received/ask/ link — so nothing else has to move.
+  /the-faith-received/ask-workspace/:
+    template: custom-faith-ask-workspace
   # The research desk — one page, five workspaces behind a tab strip:
   # Ask (the same shared partial /ask/ renders), Power Search (semantic
   # search over the corpus, GET /v1/vsearch on mo-tfr-library), and
