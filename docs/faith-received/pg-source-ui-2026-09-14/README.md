@@ -1,3 +1,5 @@
+> Follow-up: the authorized corpus and canonical carryover repair is documented in [PG canonical carryover](../pg-canonical-carryover-2026-09-14/README.md). Its release status supersedes the pending-permission and alignment statements below; this file records the earlier UI-only stage.
+
 # PG reader source selection and facing-column navigation
 
 This package fixes the UI failures observed while reading `pg-3059`, PG 31, printed columns 1467–1468. It includes full source, a patch, tests, screenshots and a scan-grounded report. It does not certify the underlying Greek transcription or repair the multilingual alignment.

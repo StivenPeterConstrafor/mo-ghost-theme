@@ -1,3 +1,5 @@
+> Follow-up: the authorized corpus and canonical carryover repair is documented in [PG canonical carryover](../pg-canonical-carryover-2026-09-14/README.md). Its release status supersedes the pending-permission and alignment statements below; this file records the earlier UI-only stage.
+
 # PG 31, columns 1467–1468: reader and text audit
 
 The requested work is `pg-3059`, displayed as *On the Holy Nativity of Christ*, under Basil the Great. The supplied link lands at column 1457; the requested passage is on the scan whose printed columns are 1467 and 1468. The source image is the published `migne/031/01429_homiliae-quaedam-dubiae/mg031_1467.jpg`.

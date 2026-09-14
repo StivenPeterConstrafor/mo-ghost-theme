@@ -84,3 +84,7 @@ What Ian must NOT do: derive anything from `mo-tfr-library`; write to `mo-tfr` (
 - Canon TEI (pld/pg/po): inventory R2 `v1/tei/<ns>` with `rclone lsl`, HEAD every Blob `tei/<ns>/<id>.xml` and compare `Content-Length`, and md5-compare a random sample by full download.
 - Works-index: md5 of Blob vs local must match; R2's public variant equals local minus the vol-1 row.
 - Any layer directory: `rclone check --one-way --checksum <local> mor2:mo-tfr/<prefix>` (use `--files-from` with `--no-traverse` for large prefixes — listing `v1/mine/work` (19k objects) takes more than 20 minutes).
+
+## PG release, 14 September 2026
+
+The PG text/navigation prefixes have now been synchronized and fully read back in both `mo-tfr` and `mo-tfr-library`: 16,027 objects in each. This updates only the PG portion of the older bucket; it does not make that bucket the canonical catalogue for other shelves. See [PG canonical carryover](pg-canonical-carryover-2026-09-14/README.md) for exact paths, source code, proofs and remaining editorial review.
