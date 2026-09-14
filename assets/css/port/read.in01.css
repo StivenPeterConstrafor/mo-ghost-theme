@@ -2022,7 +2022,7 @@ html:not(.fr-plain) .ph.fr-reader-head{padding:10px 24px;gap:24px;background:var
 html:not(.fr-plain) .fr-reader-head .phl{align-items:center;gap:12px;flex:1;min-width:0}
 html:not(.fr-plain) .fr-reader-head .reader-identity{display:block;min-width:0;flex:1;overflow:hidden}
 /* At 1200 px the pager and the site nav left the identity 24 px wide and 'PG 31 · col. 1468' spilled under the arrows (2026-09-14): clip the identity, keep the chip legible. */
-.fr-reader-head .phl{min-width:min(230px,26vw)}
+.ph.fr-reader-head .phl{min-width:min(230px,26vw)}
 html:not(.fr-plain) .fr-reader-head h1{font-size:20px;line-height:1.25;letter-spacing:0;min-width:0;max-width:100%;margin:0;font-variant:normal}
 html:not(.fr-plain) .fr-reader-head .sub,html:not(.fr-plain) .fr-reader-head .ploc{display:none}
 html:not(.fr-plain) .fr-reader-head .reader-reference{display:flex;align-items:center;gap:0 8px;min-width:0;margin-top:3px;font:12px/1.5 var(--font-body);color:var(--muted);font-variant-numeric:tabular-nums}

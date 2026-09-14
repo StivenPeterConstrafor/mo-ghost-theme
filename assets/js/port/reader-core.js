@@ -3872,7 +3872,7 @@ window.LN={en:true,la:true,fx:false};   // owner 2026-08-17: the Latin lane show
 function applyLanes(){
   // The row under the top of the viewport is remembered before the relayout when nothing captured it (keyboard activation,
   // a scripted click): a lane switch used to land three columns away in that case (PG 3059, 2026-09-14).
-  if(!(window.__frAnchorRow&&window.__frAnchorRow.isConnected)&&typeof reading!=='undefined'&&reading&&reading.querySelectorAll)window.__frAnchorRow=[...reading.querySelectorAll(".row[id]")].find(r=>r.getBoundingClientRect().bottom>120)||null;
+  if(!(window.__frAnchorRow&&window.__frAnchorRow.isConnected)){const host=document.getElementById("reading");if(host&&window.__readerBuilt)window.__frAnchorRow=[...host.querySelectorAll(".row[id]")].find(r=>r.getBoundingClientRect().bottom>120)||null;}
   // An English source is already read in the English lane. A parallel preference
   // carried from a Latin work must not open two English versions side by side.
   const englishSource=DATA?.src_lang==='en';
@@ -5231,6 +5231,17 @@ async function loadPgCanon(ws){
   // page spans (n -> next pb) for span-union of vtx and EN lanes
   const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=window.FRPgParallel.printedColumns(doc);
   const _pgOwned=new Set(Object.keys(_canonOpenings).filter(k=>_canonOpenings[k].verified));
+  // Older links could name a following work's column while retaining this work's ID.
+  // Resolve only a verified overrun into the immediately following catalogue work.
+  if(_pgOwned.size){
+    const reference=frReaderBlockReference(location.hash)?.page||new URLSearchParams(location.search).get('p');
+    const lastColumn=Math.max(...[..._pgOwned].flatMap(k=>Object.keys(_canonOpenings[k].columns).map(Number)));
+    if(reference&&Number(reference)>lastColumn){try{
+      const spine=await fetch(BLOB+'/v1/pgvol/'+vol+'.json').then(r=>r.ok?r.json():null);
+      const next=window.FRPgParallel.nextWorkReference(spine?.works||[],id,reference,lastColumn);
+      if(next){const url=new URL(location.href);url.searchParams.set('w','pg-'+next);url.searchParams.delete('ws');url.searchParams.set('p',reference);url.hash='b'+reference+'-0';location.replace(url);return new Promise(()=>{});}
+    }catch(_){/* Keep the explicit link when a neighbouring work cannot be verified. */}}
+  }
   const _bodyPage={};
   {let _bp=null;
    (function bt(node){for(const ch of node.children){
