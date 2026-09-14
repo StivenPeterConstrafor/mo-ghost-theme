@@ -3870,6 +3870,9 @@ $("#scroll").addEventListener("scroll",()=>{const s=$("#scroll");$("#prog").styl
    flips the other on, so the reading column can never go empty. */
 window.LN={en:true,la:true,fx:false};   // owner 2026-08-17: the Latin lane shows by DEFAULT ("no latin" report) — this is a Latin library
 function applyLanes(){
+  // The row under the top of the viewport is remembered before the relayout when nothing captured it (keyboard activation,
+  // a scripted click): a lane switch used to land three columns away in that case (PG 3059, 2026-09-14).
+  if(!(window.__frAnchorRow&&window.__frAnchorRow.isConnected)&&typeof reading!=='undefined'&&reading&&reading.querySelectorAll)window.__frAnchorRow=[...reading.querySelectorAll(".row[id]")].find(r=>r.getBoundingClientRect().bottom>120)||null;
   // An English source is already read in the English lane. A parallel preference
   // carried from a Latin work must not open two English versions side by side.
   const englishSource=DATA?.src_lang==='en';
@@ -4797,7 +4800,8 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
     if(R&&!document.getElementById("volnext")){
       const nx=i>=0?sp.works[i+1]:null;
       const band=document.createElement("div");band.id="volnext";
-      const nxUrl=nx?`/the-faith-received/read/?w=${prefix}-${nx.id}`:(sp.next?`/the-faith-received/read/?w=${prefix}-${sp.next.first}`:null);
+      let nxUrl=nx?`/the-faith-received/read/?w=${prefix}-${nx.id}`:(sp.next?`/the-faith-received/read/?w=${prefix}-${sp.next.first}`:null);
+      if(nxUrl&&prefix==='pg'){const source=new URL(location.href).searchParams.get('src');if(['grc','grcla','la','ocr'].includes(source))nxUrl+='&src='+source;}
       band.innerHTML=nx
         ?`<span class=vk>Next in ${volWord} ${volN}</span><a href="${nxUrl}">${esc(nx.t||"")} &#8250;</a>`
         :(sp.next?`<span class=vk>End of ${volWord} ${volN}</span><a href="${nxUrl}">Continue into ${volWord} ${sp.next.vol} &#8250;</a>`:"");
@@ -5194,7 +5198,7 @@ async function loadPgCanon(ws){
       else cur=cur?cur+" "+sn:sn;});
     if(cur)bucket.push(cur);};
   const _carveEn=(t,bucket)=>{
-    let _rest=t,_guard=0;
+    let _rest=window.FRPgParallel.cleanEnglish(t),_guard=0;
     while(_rest&&_guard++<12){
       const m2=_rest.match(_RXC),cand2=m2&&_capsHead(m2[1]);
       const m3=_rest.match(_DAYRX);
@@ -5226,6 +5230,7 @@ async function loadPgCanon(ws){
     _carveEn(t,enByCol[n]=enByCol[n]||[]);});
   // page spans (n -> next pb) for span-union of vtx and EN lanes
   const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=window.FRPgParallel.printedColumns(doc);
+  const _pgOwned=new Set(Object.keys(_canonOpenings).filter(k=>_canonOpenings[k].verified));
   const _bodyPage={};
   {let _bp=null;
    (function bt(node){for(const ch of node.children){
@@ -5259,7 +5264,7 @@ async function loadPgCanon(ws){
       Object.assign(enByCol,shifted);
     }}}
   // pgen top-up: columns the canon translation never covered take the sidecar English
-  if(pgen)Object.keys(pgen).forEach(k=>{const n=+k;
+  if(pgen&&!_pgOwned.size)Object.keys(pgen).forEach(k=>{const n=+k;
     if(!n||(enByCol[n]&&enByCol[n].join("").length>120))return;
     // a '## ' line is the printed division heading (HOMILY III. On the firmament), not a
     // paragraph — mark it so the renderer sets a head and the outline can see it
@@ -5744,7 +5749,7 @@ async function loadPgCanon(ws){
                 .map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim(),
               grc:[...sf.querySelectorAll("zone")].filter(z=>(z.getAttribute("type")||"").includes("ColGreek"))
                 .map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim()}))
-              .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&x.n>=lo3&&x.n<=hi3).sort((a,b)=>a.n-b.n);
+              .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&x.n>=lo3&&x.n<=hi3&&(!_pgOwned.size||_pgOwned.has(String(x.n)))).sort((a,b)=>a.n-b.n);
             // The source site's vision text is already in the primary TEI columns.
             // Raw pageview zones are a fallback, never an unconditional replacement.
             for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)];if(canon?.grc)sf.grc=canon.grcRich||canon.grc;if(canon?.la)sf.lat=canon.laRich||canon.la;}
@@ -5789,7 +5794,7 @@ async function loadPgCanon(ws){
     }
     // BOUNDARY HEAL: the recovered opening column(s) lead the reading order, before the
     // canon's own first pb — the work now begins where it begins on the plate
-    if(!_latBuilt&&pggap){Object.keys(pggap).map(Number).filter(Boolean).sort((a,b)=>a-b).forEach(n=>{
+    if(!_latBuilt&&pggap&&!_pgOwned.size){Object.keys(pggap).map(Number).filter(Boolean).sort((a,b)=>a-b).forEach(n=>{
       const t=String(pggap[n]||"");if(t.length<60)return;
       addPb(n);
       // the sidecar is CURATED (prev-work tail already cut, vision-cleaned) — it wins
