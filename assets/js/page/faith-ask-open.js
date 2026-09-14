@@ -31,15 +31,15 @@
 (function () {
   "use strict";
 
-  var tries = 0;
-  var MAX = 20;
-  var GAP = 200;
+  let tries = 0;
+  const MAX = 20;
+  const GAP = 200;
 
   function options() {
-    var o = {};
+    const o = {};
     try {
-      var p = new URLSearchParams(window.location.search);
-      var q = (p.get("q") || p.get("ask") || "").slice(0, 2000);
+      const p = new URLSearchParams(window.location.search);
+      const q = (p.get("q") || p.get("ask") || "").slice(0, 2000);
       // `q` lets a link ask outright, which is how a prompt elsewhere on
       // the site or a shared answer arrives already asking.
       if (q) { o.q = q; o.autoSend = true; }
@@ -58,7 +58,7 @@
     if (tries++ >= MAX) return;
     if (window.FRAsk && typeof window.FRAsk.open === "function") {
       try {
-        Promise.resolve(window.FRAsk.open(options())).catch(function () {});
+        Promise.resolve(window.FRAsk.open(options())).catch(() => {});
       } catch (e) { /* not ready yet; the retry below covers it */ }
     }
     window.setTimeout(attempt, GAP);
