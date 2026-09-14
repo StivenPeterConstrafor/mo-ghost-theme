@@ -43,3 +43,5 @@ recompute the entry, run `reader-pld-source-views.test.cjs`, push the TEI to Blo
 build and deploy. Proof this time: dist `pld-reading.js` md5 = alias; the alias serves the entry with the new sha.
 Backups and the English sidecar: `runs/pld448_notes_en/` in the corpus repo. The theme's
 `assets/js/port/pld-reading.js` predates source views entirely (a port gap; it is not affected by this entry).
+
+The dedicated Notes view (`pldpart=3`) used to pin itself to the original language (`source_only`) for every notes partition. It now does so only when the partition has no English: `partitionView` reports `hasEnglish` for the projected notes document, `reader_shell.html` derives `source_only` from it, and the note label reads "Editorial notes from the source edition, with their English translation." Latin-only partitions behave exactly as before.
