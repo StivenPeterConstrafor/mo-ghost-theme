@@ -35,6 +35,18 @@
   --fra-rail: 272px;
   --fra-source-w: 53%;
   --fra-gutter: 28px;
+  /* ONE MEASURE, and everything in the column uses it: the answer, the
+     composer, the selected-passage strip and the line beneath it. They
+     were four separate 760s, which is how a composer ends up wider than
+     the text above it the moment one of them is touched.
+
+     640px is the house measure. It is what the rest of The Faith
+     Received sets for prose in sixty-one other rules, and the reader's
+     own single-lane reading is min(40em, 88%), which comes out about
+     here. 760 was wider than anything else on the site and read as a
+     page with no margins (Ian, 2026-09-14). At 17px this is around 68
+     characters a line. */
+  --fra-measure: 640px;
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -416,9 +428,13 @@ html.fra-open .fra-launcher { display: none; }
   right: var(--fra-gutter);
   left: auto;
 }
+/* `.fra-scope button` would catch the close × in the panel's header too
+   and lay a 44px full-width block over it. Only the panel's own direct
+   children are menu-style buttons; the × is an .fra-icon and is dressed
+   as one. */
 .fra-menu button,
 #fra-modes button,
-.fra-scope button {
+.fra-scope > button {
   display: block;
   width: 100%;
   text-align: left;
@@ -433,7 +449,7 @@ html.fra-open .fra-launcher { display: none; }
 }
 .fra-menu button:hover,
 #fra-modes button:hover,
-.fra-scope button:hover { background: var(--color-cream); }
+.fra-scope > button:hover { background: var(--color-cream); }
 #fra-mode-name { font-weight: 600; }
 .fra-scope-help,
 .fra-mode-menu p {
@@ -526,7 +542,7 @@ html.fra-open .fra-launcher { display: none; }
 }
 
 /* ── A turn ────────────────────────────────────────────────────── */
-#fra-thread { max-width: 760px; margin: 0 auto; padding-bottom: 28px; }
+#fra-thread { max-width: var(--fra-measure); margin: 0 auto; padding-bottom: 28px; }
 .fra-turn { padding: 34px 0 8px; }
 .fra-turn + .fra-turn { border-top: 1px solid var(--color-card-border); }
 /* The question is the heading of its own answer, which is the whole
@@ -749,7 +765,7 @@ html.fra-open .fra-launcher { display: none; }
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  max-width: 760px;
+  max-width: var(--fra-measure);
   margin: 0 auto 10px;
   padding: 10px 12px;
   background: var(--color-cream);
@@ -769,7 +785,7 @@ html.fra-open .fra-launcher { display: none; }
 }
 
 .fra-composer {
-  max-width: 760px;
+  max-width: var(--fra-measure);
   margin: 0 auto;
   border: 1px solid var(--color-card-border);
   background: var(--color-page);
@@ -846,7 +862,7 @@ html.fra-open .fra-launcher { display: none; }
 .fra-compose-foot {
   display: flex;
   justify-content: space-between;
-  max-width: 760px;
+  max-width: var(--fra-measure);
   margin: 8px auto 0;
   font-size: 12px;
   color: var(--color-muted);
@@ -1109,4 +1125,155 @@ html.fra-open .fra-launcher { display: none; }
   line-height: 1.5;
   color: var(--color-muted);
   white-space: pre;
+}
+
+/* ── Search within ─────────────────────────────────────────────────
+   The scope panel had no rules of its own, so every part of it fell to
+   the browser: native checkboxes at body size, labels running together
+   inline and wrapping mid-phrase, "Shelves" and its hint reading as one
+   sentence, and the close x laid out as a full-width block (Ian,
+   2026-09-14, "can this be more within our normal TFR design rules").
+
+   It is a control panel, not a reading surface, so it takes the
+   library's furniture: meta type rather than body type, the small-caps
+   label for a section, the tan rule, the burnt-orange accent on the
+   controls, and the same disclosure mark the sources and activity
+   sections already use. */
+.fra-scope > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.fra-scope > header strong { font-size: 14px; font-weight: 600; }
+
+/* Whole library, and "use the work I am reading": the two standalone
+   actions. Bordered so they read as buttons among the checkboxes. */
+#fra-all-scope,
+.fra .fra-add-current {
+  min-height: 40px;
+  margin-bottom: 10px;
+  padding: 0 10px;
+  border: 1px solid var(--color-card-border);
+  font-size: 13px;
+  color: var(--color-muted);
+}
+#fra-all-scope:hover,
+.fra .fra-add-current:hover { border-color: var(--color-primary); color: var(--color-primary-text); }
+#fra-all-scope[aria-pressed="true"] {
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
+  background: var(--color-cream);
+}
+
+/* Shelves and English groups. Same disclosure treatment as the sources
+   and activity sections above, so the panel has one idiom for "open
+   this". The count sits at the far end as a hint, not as part of the
+   label: they were reading as one run-on line. */
+.fra-shelves { border-top: 1px solid var(--color-card-border); }
+.fra-shelves > summary {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.fra-shelves > summary::-webkit-details-marker { display: none; }
+.fra-shelves > summary::before {
+  content: "\203A";
+  display: inline-block;
+  width: 12px;
+  letter-spacing: 0;
+  color: var(--color-card-border);
+  transition: transform 0.15s ease;
+}
+.fra-shelves[open] > summary::before { transform: rotate(90deg); }
+.fra-shelves > summary:hover { color: var(--color-primary-text); }
+#fra-shelf-count,
+#fra-group-count {
+  margin-left: auto;
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-card-border);
+}
+
+/* Two columns of checkboxes, each a row of its own. Inline labels are
+   what made "English Divines" wrap away from its own box. */
+.fra-shelf-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 12px;
+  padding-bottom: 10px;
+}
+.fra-shelf-options label,
+.fra-notebook {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+.fra-notebook {
+  min-height: 40px;
+  border-top: 1px solid var(--color-card-border);
+  margin-top: 4px;
+}
+/* accent-color is how the rest of the library tints a native control:
+   the box stays the platform's, the colour is ours. */
+.fra-scope input[type="checkbox"] {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+/* Add works or authors. The label wraps its input, so it has to stack or
+   the caption and the field sit on one line fighting for width. */
+.fra-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+#fra-work-search {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-page);
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-dark);
+}
+#fra-work-search:focus { outline: none; border-color: var(--color-primary); }
+#fra-work-results:not(:empty),
+#fra-selected-works:not(:empty) { margin-bottom: 8px; font-size: 13px; }
+
+/* Announced, not shown. It is a live region for the screen reader and
+   was printing its running commentary into the panel. */
+.fra-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
