@@ -99,9 +99,28 @@ html.fra-open, html.fra-open body { overflow: hidden; }
 #fra-notify[aria-pressed="true"] { color: var(--color-primary-text); border-color: var(--color-primary); }
 /* The mode popover's two options are unclassed buttons holding a name
    and a sentence of explanation; they need the name to lead. */
+/* THE DESCRIPTION IS A `strong` FOLLOWED BY A `span`, not two spans, so
+   `span + span` matched nothing and the explanation rendered at the
+   button's own 15px in full black, the same weight of voice as the name
+   it explains (Ian, 2026-09-14). This is a menu of two choices, so it
+   takes the control-panel treatment the scope panel takes: the name
+   leads, the sentence under it is meta.
+
+   The menu is also given a width. Absolutely positioned with no cap it
+   grows to whatever the longest sentence wants, which at this measure
+   made a banner the width of the composer rather than a menu. */
+#fra-modes {
+  width: min(360px, calc(100vw - 2 * var(--fra-gutter)));
+}
 #fra-modes button > strong,
-#fra-modes button > span:first-child { display: block; font-weight: 600; }
+#fra-modes button > span:first-child {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-dark);
+}
 #fra-modes button > small,
+#fra-modes button > strong + span,
 #fra-modes button > span + span {
   display: block;
   margin-top: 2px;
@@ -111,6 +130,7 @@ html.fra-open, html.fra-open body { overflow: hidden; }
   white-space: normal;
 }
 #fra-modes button { height: auto; min-height: 44px; padding: 10px; text-align: left; }
+#fra-modes button[aria-pressed="true"] { background: var(--color-cream); }
 
 /* EVERY ICON IS AN INLINE <svg> WITH A viewBox AND NO SIZE, so without
    this it expands to fill whatever holds it: the plus on New
