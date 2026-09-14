@@ -209,6 +209,19 @@ body #notebook .nb-head,body #notebook .nb-destinations,body #rail .rl-tabs,body
  html.fr-ask-source #selpop{bottom:max(10px,env(safe-area-inset-bottom))}
 }
 
+/* The Aa panel in the Ask source pane (Ian, 2026-09-14 "I don't think the
+   Aa tools are working here"). They work; you cannot see them. .aapop
+   opens inside .ph, which is position:fixed with z-index:40 and a
+   backdrop-filter, so .ph is a stacking context and the panel's z-index:70
+   is trapped in it, painting under the reading below.
+
+   This is a known bug with a known fix: read.in01.css already lifts .ph
+   while the panel is open for the docked research rail. That rule names
+   .fr-research-docked and sits inside @media(min-width:1100px), and the
+   source pane is neither, so the embed never got it. Same lift, keyed to
+   the embed, and unconditional because the pane is narrow by nature. */
+html.fr-ask-source:not(.fr-plain) .ph.fr-reader-head:has(#aaPop.on){z-index:10030}
+
 /* Phone reading uses the toolbar's location. Hide only generated boundary
    labels; inline milestones keep geometry for navigation and saved places. */
 @media screen and (max-width:880px){
