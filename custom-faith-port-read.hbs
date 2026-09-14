@@ -1,13 +1,15 @@
-<!doctype html>
-<html lang="en" data-site="faith-received">
-<head>
-
+{{!< default}}
+{{#contentFor "moHead"}}
+<title>{{#if title}}{{title}} | {{/if}}The Faith Received | Mere Orthodoxy</title>
+{{!-- THE FAMILY IDENTITY AND THE MASTHEAD OFFSET, before the engine runs.
+     reader-core.js consumes window.__FR_SITE__ at its first statement, and
+     our nav is fixed at top:0 like the reader's toolbar, so the toolbar
+     needs to know how tall ours is. Both are done here; must load first. --}}
+<script src="{{asset "js/page/faith-port-read-boot.js"}}"></script>
 <meta charset="utf-8">
 <meta name="theme-color" content="#FAF8F3" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#211E1A" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="The Faith Received">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The Faith Received</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232A231D'/%3E%3Ctext x='33' y='46' font-family='Georgia,serif' font-style='italic' font-size='40' fill='%23F4EDE0' text-anchor='middle'%3EF%3C/text%3E%3Crect x='14' y='52' width='36' height='3' rx='1.5' fill='%23A94F35'/%3E%3C/svg%3E">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,13 +30,31 @@
 <link rel="stylesheet" href="{{asset "css/port/reader-margins.css"}}"><script defer src="{{asset "js/port/reader-margins.js"}}"></script>
 <link rel="stylesheet" href="{{asset "css/port/reader-footnotes.css"}}"><script defer src="{{asset "js/port/reader-footnotes.js"}}"></script>
 <link rel="stylesheet" href="{{asset "css/port/reader-scripture-preview.css"}}"><script defer src="{{asset "js/port/reader-scripture-preview.js"}}"></script>
-<script src="{{asset "js/port/read.in01.js"}}"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}"><script defer src="{{asset "js/port/ask-store.js"}}"></script><script defer src="{{asset "js/port/ask-workspace.js"}}"></script><script src="{{asset "js/port/research-data.js"}}"></script><script src="{{asset "js/port/research-notebook.js"}}"></script><script defer src="{{asset "js/port/site-navigation.js"}}"></script><link rel="stylesheet" href="{{asset "css/port/site-navigation.css"}}"><link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}"><script src="/assets/js/port/fr-noblob.js?v=nb1"></script><style>.tfrp-bridge{display:flex;justify-content:space-between;align-items:center;padding:.45rem 1.25rem;border-bottom:1px solid rgba(0,0,0,.08);font:500 .78rem/1 Georgia,'Times New Roman',serif;letter-spacing:.04em;background:inherit;color:inherit}.tfrp-bridge a{color:inherit;text-decoration:none;opacity:.75}.tfrp-bridge a:hover{opacity:1;text-decoration:underline}.tfrp-bridge .tfrp-r a{margin-left:1.1rem}[data-theme=dark] .tfrp-bridge{border-bottom-color:rgba(255,255,255,.14)}</style>
-{{ghost_head}}
-</head>
-<body>
-<div class="tfrp-bridge"><span class="tfrp-l"><a href="https://mereorthodoxy.com/">Mere&nbsp;Orthodoxy</a></span><span class="tfrp-r"><a href="https://mereorthodoxy.com/the-faith-received/">The&nbsp;Faith&nbsp;Received</a><a href="/the-faith-received/library/">Library</a><a href="/#/portal/signin">Sign&nbsp;in</a><a href="/membership/">Become&nbsp;a&nbsp;Member</a></span></div>
+<script src="{{asset "js/port/read.in01.js"}}"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}"><script defer src="{{asset "js/port/ask-store.js"}}"></script><script defer src="{{asset "js/port/ask-workspace.js"}}"></script><script src="{{asset "js/port/research-data.js"}}"></script><script src="{{asset "js/port/research-notebook.js"}}"></script><script defer src="{{asset "js/port/site-navigation.js"}}"></script><link rel="stylesheet" href="{{asset "css/port/site-navigation.css"}}"><link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}"><script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}">
+{{/contentFor}}
+
+{{!-- /the-faith-received/read/ — the ported page-native reader.
+
+     IT LIVES INSIDE THE SITE NOW. This template used to emit its own
+     <!doctype html>, <html>, <head> and <body>, plus a ".tfrp-bridge" bar
+     linking back to mereorthodoxy.com — a whole second site wearing our
+     name (Ian, 2026-09-14: "it takes you out of the Mere O site. This
+     needs to be baked into the site with the nav bar at the top and
+     footer at the bottom"). It extends `default` now, so our masthead and
+     footer wrap it and Ghost owns the document.
+
+     WHAT WAS DELIBERATELY KEPT: header.ph.fr-reader-head, the reader's
+     OWN toolbar. That is the engine's UI, not site chrome, and its ids
+     (#sbT, #aaBtn, #reader-location and the rest) are what reader-core
+     queries. What went is the site-level bridge; our nav does that job.
+
+     SKIN AND BONES: his engine, our shell and our colour. The palette
+     lives in assets/css/faith-port-reader-skin.css and must stay the last
+     stylesheet, because it restores values two of his own sheets
+     overwrite. --}}
 <script src="{{asset "js/port/read.in02.js"}}"></script>
-<div class="app no-facs nosb" id="app">
+<div class="app no-facs nosb faith-port-read-page" id="app">
   <aside class="sidebar">
     <div class="work"><div class="wt" id="wt">…</div><div class="wmeta" id="wmeta"></div><span class="Z3988" id="coins" title="" aria-hidden="true"></span></div>
     <nav class="nav" id="nav"></nav>
@@ -132,5 +152,3 @@
 <script src="{{asset "js/port/reader-core.js"}}"></script>
 <script src="{{asset "js/port/cgpt-link.js"}}"></script>
 {{ghost_foot}}
-</body>
-</html>
