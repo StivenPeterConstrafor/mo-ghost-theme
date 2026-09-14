@@ -294,6 +294,19 @@
       'Suggest a short reading path through the library on prayer.',
       'Where should I begin reading about the Council of Nicaea?',
       'Suggest a reading path on faith and reason, beginning with introductory passages.'
+    ]},
+    /* MereO delta: a fourth group, so the welcome shows four cards in a
+       square rather than three and a gap (Ian, 2026-09-14). It is
+       "understand a passage", which is the one thing the subtitle above
+       promises and had no card for: the other three explore an idea,
+       follow a question, and say where to begin. Questions name a
+       specific text on purpose, because that is what distinguishes this
+       from a search box. Re-apply when re-vendoring. */
+    {label:'Understand a passage', questions:[
+      'What is Anselm arguing in the opening of the Proslogion?',
+      'What does the Chalcedonian Definition mean by "in two natures"?',
+      'What does Athanasius mean by the Word becoming flesh in On the Incarnation?',
+      'What is Calvin doing in the first chapter of the Institutes?'
     ]}
   ];
   const previousSuggestions = new Map();

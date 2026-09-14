@@ -453,9 +453,13 @@ html.fra-open .fra-launcher { display: none; }
 /* The suggestion cards. Ruled boxes rather than filled chips, matching
    the reading-room card: this library does not use buttons where a
    rule will do. */
+/* Two by two. There are four groups, so auto-fit would give the right
+   answer at this measure anyway; it is pinned because the point is the
+   square, and a column count that falls out of the container width is
+   one stray padding change away from three-and-a-gap again. */
 .fra-suggestions {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   text-align: left;
 }
@@ -951,7 +955,8 @@ html.fra-open .fra-launcher { display: none; }
   }
   #fra-context { letter-spacing: 0.1em; }
   .fra-welcome { padding: 44px 0 28px; }
-  .fra-welcome h1 { font-size: 34px; }
+  .fra-welcome h1 { font-size: 30px; }
+  .fra-suggestions { grid-template-columns: minmax(0, 1fr); }
   /* No split on a phone: the source takes the surface and the tabs
      move between it and the conversation. */
   .fra-split { display: none !important; }
