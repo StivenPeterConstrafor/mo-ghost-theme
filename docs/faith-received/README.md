@@ -165,3 +165,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 ### Web connection follow-up · 14 September 2026
 
 See [the mixed-direction connection package](web-connections-2026-09-14/README.md) for the Athanasius → Aquinas → Vásquez workflow: full source, tests, screenshots and measured reference-site fixes. It covers work-header layout, explicit Both directions, preserving found paths on Back, and a narrow guard against a cited question outside the resolver target volume. Native integration and artifact publication remain separate; the complete-site audit is still incomplete.
+
+### Web Scripture and shelf workflows · 14 September 2026
+
+The [Scripture/shelf package](web-scripture-shelves-2026-09-14/README.md) contains full source and verification for verse → author → work → source navigation, all available Luther work groups, bounded shelf profiles and source pages, selected-author URLs, comparison return controls, and build-versioned Scripture helpers. Follow the package’s existing-artifact instructions; native MereO integration remains pending.
