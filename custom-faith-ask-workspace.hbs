@@ -71,42 +71,52 @@
 <script src="{{asset "js/port/ask-jobs.js"}}"></script>
 <script src="{{asset "js/port/ask-workspace.js"}}"></script>
 <script>
-  /* Open it. `q` lets a link ask outright
-     (/the-faith-received/ask-workspace/?q=…), which is how a prompt on
-     the landing page or a shared answer arrives already asking. `chat`
-     reopens a saved conversation. Keys are omitted rather than passed
-     as undefined, so the engine sees only what was actually given. */
+  /* Open the workspace, and check that it stayed open.
+     
+     WHY THIS RETRIES INSTEAD OF PICKING A MOMENT. The engine publishes
+     window.FRAsk while ask-workspace.js parses, but finishes setting
+     itself up later and asynchronously, and until it has, an open()
+     call is accepted and then undone — the page settles showing only
+     the launcher. Three attempts to name the safe moment were all
+     wrong: during parse, after the script, and after DOMContentLoaded
+     behind the engine's own listener. Each looked right in the served
+     HTML and each left the route shut.
+     
+     So this stops modelling someone else's boot sequence. It asks, then
+     looks: if the workspace is not open a beat later, it asks again.
+     That is correct whenever the engine becomes ready, which is the
+     property we actually need. It gives up after ~4s so a genuinely
+     broken engine cannot spin, and the launcher is still there to open
+     it by hand.
+     
+     `q` lets a link ask outright (?q=…), `chat` reopens a saved
+     conversation. Keys are omitted rather than passed as undefined, so
+     the engine sees only what was given. */
   (function () {
-    function go() {
-      if (!window.FRAsk || typeof window.FRAsk.open !== "function") return;
-      if (window.FRAsk.isOpen && window.FRAsk.isOpen()) return;
-      var opts = {};
+    var tries = 0, MAX = 20, GAP = 200;
+    function opts() {
+      var o = {};
       try {
         var p = new URLSearchParams(window.location.search);
         var q = (p.get("q") || p.get("ask") || "").slice(0, 2000);
-        if (q) { opts.q = q; opts.autoSend = true; }
-        if (p.get("chat")) opts.id = p.get("chat");
-        if (p.get("trad")) opts.tradition = p.get("trad");
-      } catch (e) { /* no query string to read; open empty */ }
-      Promise.resolve(window.FRAsk.open(opts)).catch(function () {});
+        if (q) { o.q = q; o.autoSend = true; }
+        if (p.get("chat")) o.id = p.get("chat");
+        if (p.get("trad")) o.tradition = p.get("trad");
+      } catch (e) { /* no query string; open empty */ }
+      return o;
     }
-    /* AFTER the engine's own bootstrap, not merely after its script.
-       ask-workspace.js publishes window.FRAsk while it parses but defers
-       bootstrap() to DOMContentLoaded, and bootstrap resets the panel
-       state. Calling open() from here during parse therefore opened the
-       workspace and then had it wiped a moment later — the page settled
-       with the launcher showing and nothing else, which is exactly what
-       it did on the live route. The same call from the console after
-       load worked every time, which is what gave it away.
-
-       Our listener is registered after the engine's, so on
-       DOMContentLoaded it runs second. If the document has already
-       finished parsing (a cached load), bootstrap has run and we can
-       just go. */
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", go, { once: true });
-    } else {
-      go();
+    function isOpen() {
+      return !!(window.FRAsk && window.FRAsk.isOpen && window.FRAsk.isOpen());
     }
+    function attempt() {
+      if (isOpen()) return;                     /* already up: done */
+      if (tries++ >= MAX) return;               /* give up quietly */
+      if (window.FRAsk && typeof window.FRAsk.open === "function") {
+        try { Promise.resolve(window.FRAsk.open(opts())).catch(function () {}); }
+        catch (e) { /* keep trying */ }
+      }
+      window.setTimeout(attempt, GAP);
+    }
+    attempt();
   })();
 </script>
