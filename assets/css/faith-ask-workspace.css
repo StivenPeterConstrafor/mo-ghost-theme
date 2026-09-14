@@ -87,10 +87,10 @@ html.fra-open, html.fra-open body { overflow: hidden; }
 #fra-notify[aria-pressed="true"] { color: var(--color-primary-text); border-color: var(--color-primary); }
 /* The mode popover's two options are unclassed buttons holding a name
    and a sentence of explanation; they need the name to lead. */
-.fra-modes button > strong,
-.fra-modes button > span:first-child { display: block; font-weight: 600; }
-.fra-modes button > small,
-.fra-modes button > span + span {
+#fra-modes button > strong,
+#fra-modes button > span:first-child { display: block; font-weight: 600; }
+#fra-modes button > small,
+#fra-modes button > span + span {
   display: block;
   margin-top: 2px;
   font-size: 13px;
@@ -98,7 +98,7 @@ html.fra-open, html.fra-open body { overflow: hidden; }
   color: var(--color-muted);
   white-space: normal;
 }
-.fra-modes button { height: auto; min-height: 44px; padding: 10px; text-align: left; }
+#fra-modes button { height: auto; min-height: 44px; padding: 10px; text-align: left; }
 
 /* EVERY ICON IS AN INLINE <svg> WITH A viewBox AND NO SIZE, so without
    this it expands to fill whatever holds it: the plus on New
@@ -222,22 +222,22 @@ html.fra-open .fra-launcher { display: none; }
    treatment the rooms use for an author heading. */
 .fra-history-label { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .fra-history-label,
-.fra-show-archived {
+#fra-show-archived {
   font-family: var(--font-body);
   font-size: 11px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--color-muted);
 }
-.fra-show-archived {
+#fra-show-archived {
   background: none;
   border: 0;
   padding: 0;
   cursor: pointer;
 }
-.fra-show-archived:hover { color: var(--color-primary-text); }
+#fra-show-archived:hover { color: var(--color-primary-text); }
 
-.fra-history-list { display: flex; flex-direction: column; }
+#fra-history-list { display: flex; flex-direction: column; }
 .fra-history-row {
   display: block;
   width: 100%;
@@ -285,7 +285,7 @@ html.fra-open .fra-launcher { display: none; }
 }
 .fra-sidebar-foot a,
 #fra-notify,
-.fra-notify {
+#fra-notify {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -301,8 +301,8 @@ html.fra-open .fra-launcher { display: none; }
 }
 .fra-sidebar-foot a:hover,
 #fra-notify:hover,
-.fra-notify:hover { color: var(--color-primary-text); text-decoration: none; }
-.fra-save-state {
+#fra-notify:hover { color: var(--color-primary-text); text-decoration: none; }
+#fra-save-state {
   font-size: 12px;
   line-height: 1.45;
   color: var(--color-muted);
@@ -345,11 +345,11 @@ html.fra-open .fra-launcher { display: none; }
 }
 
 .fra-icon,
-.fra-theme,
-.fra-more-toggle,
-.fra-close,
+#fra-theme,
+#fra-more-toggle,
+#fra-close,
 .fra-home,
-.fra-history-toggle {
+#fra-history-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -364,16 +364,16 @@ html.fra-open .fra-launcher { display: none; }
   cursor: pointer;
 }
 .fra-icon:hover,
-.fra-theme:hover,
-.fra-more-toggle:hover,
-.fra-close:hover,
+#fra-theme:hover,
+#fra-more-toggle:hover,
+#fra-close:hover,
 .fra-home:hover,
-.fra-history-toggle:hover { color: var(--color-primary-text); }
+#fra-history-toggle:hover { color: var(--color-primary-text); }
 .fra-icon svg { width: 18px; height: 18px; fill: currentColor; }
 
 .fra-popover,
 .fra-menu,
-.fra-modes,
+#fra-modes,
 .fra-scope {
   position: absolute;
   z-index: 5;
@@ -417,7 +417,7 @@ html.fra-open .fra-launcher { display: none; }
   left: auto;
 }
 .fra-menu button,
-.fra-modes button,
+#fra-modes button,
 .fra-scope button {
   display: block;
   width: 100%;
@@ -432,9 +432,9 @@ html.fra-open .fra-launcher { display: none; }
   cursor: pointer;
 }
 .fra-menu button:hover,
-.fra-modes button:hover,
+#fra-modes button:hover,
 .fra-scope button:hover { background: var(--color-cream); }
-.fra-mode-name { font-weight: 600; }
+#fra-mode-name { font-weight: 600; }
 .fra-scope-help,
 .fra-mode-menu p {
   margin: 2px 0 8px;
@@ -526,7 +526,7 @@ html.fra-open .fra-launcher { display: none; }
 }
 
 /* ── A turn ────────────────────────────────────────────────────── */
-.fra-thread { max-width: 760px; margin: 0 auto; padding-bottom: 28px; }
+#fra-thread { max-width: 760px; margin: 0 auto; padding-bottom: 28px; }
 .fra-turn { padding: 34px 0 8px; }
 .fra-turn + .fra-turn { border-top: 1px solid var(--color-card-border); }
 /* The question is the heading of its own answer, which is the whole
@@ -686,7 +686,7 @@ html.fra-open .fra-launcher { display: none; }
   color: var(--color-muted);
   font-style: italic;
 }
-.fra-source-location,
+.fra-source small,
 .fra-source .fra-cite { font-size: 12px; color: var(--color-muted); }
 
 .fra-error {
@@ -756,9 +756,9 @@ html.fra-open .fra-launcher { display: none; }
   border-left: 2px solid var(--color-card-border);
   font-size: 14px;
 }
-.fra-passage-cite { color: var(--color-muted); font-size: 12px; }
-.fra-passage-text { font-style: italic; }
-.fra-passage-clear {
+#fra-passage-cite { color: var(--color-muted); font-size: 12px; }
+#fra-passage-text { font-style: italic; }
+#fra-passage-clear {
   margin-left: auto;
   min-width: 44px;
   min-height: 44px;
@@ -801,8 +801,8 @@ html.fra-open .fra-launcher { display: none; }
 }
 #fra-mode-toggle,
 #fra-scope-toggle,
-.fra-mode-toggle,
-.fra-scope-toggle {
+#fra-mode-toggle,
+#fra-scope-toggle {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -817,8 +817,8 @@ html.fra-open .fra-launcher { display: none; }
 }
 #fra-mode-toggle:hover,
 #fra-scope-toggle:hover,
-.fra-mode-toggle:hover,
-.fra-scope-toggle:hover { color: var(--color-primary-text); }
+#fra-mode-toggle:hover,
+#fra-scope-toggle:hover { color: var(--color-primary-text); }
 .fra-status-dot {
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--color-primary);
@@ -862,25 +862,62 @@ html.fra-open .fra-launcher { display: none; }
   background: var(--color-page);
 }
 .fra.fra-show-reader .fra-reader { display: flex; }
-.fra-source-heading {
+
+/* NAMED BY ID, NOT BY CLASS. Four of the rules below were written as
+   classes and matched nothing, because the engine gives these elements
+   an id and no class: the title, the location, the "Open reader" link
+   and, worst of the four, the iframe. An unstyled iframe is not merely
+   plain, it is 300x150, the HTML default, so a cited passage opened
+   into a small box in the corner of an empty pane with its own
+   scrollbars (Ian, 2026-09-14). This is the second time this file has
+   made that mistake; check the markup for class= before writing a dot.
+
+   The row itself is an unclassed <header>, so it is named by structure.
+   It was never laid out at all, which is why the back arrow, the title,
+   the link and the close button each sat on their own line. */
+.fra-reader > header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
-  padding: 14px 18px 12px;
+  padding: 12px 18px;
   border-bottom: 1px solid var(--color-card-border);
 }
-.fra-source-title { font-size: 16px; line-height: 1.3; margin: 0; }
-.fra-source-location { font-size: 12px; color: var(--color-muted); }
-.fra-source-open {
-  margin-left: auto;
+.fra-source-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#fra-source-title {
+  font-size: 15px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--color-dark);
+  /* One line. Titles here run to a dozen words and this row has to stay
+     one row deep next to the frame it labels. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#fra-source-location { font-size: 12px; color: var(--color-muted); }
+#fra-source-open {
+  flex: none;
   font-size: 13px;
   color: var(--color-primary-text);
   min-height: 44px;
   display: inline-flex;
   align-items: center;
+  white-space: nowrap;
 }
-.fra-source-viewport { flex: 1 1 auto; min-height: 0; }
-.fra-source-frame { width: 100%; height: 100%; border: 0; display: block; }
+.fra-source-viewport { flex: 1 1 auto; min-height: 0; position: relative; }
+#fra-source-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: var(--color-page);
+}
 .fra-source-status,
 .fra-source-pending {
   padding: 16px 18px;
@@ -909,10 +946,10 @@ html.fra-open .fra-launcher { display: none; }
 .fra-split:hover::before,
 .fra-split:focus-visible::before { background: var(--color-primary); }
 .fra.fra-resizing { user-select: none; }
-.fra.fra-resizing .fra-source-frame { pointer-events: none; }
+.fra.fra-resizing #fra-source-frame { pointer-events: none; }
 
 /* ── Notices ───────────────────────────────────────────────────── */
-.fra-notices {
+#fra-notices {
   position: fixed;
   right: 18px;
   bottom: 18px;
@@ -941,7 +978,7 @@ html.fra-open .fra-launcher { display: none; }
 }
 
 .fra-sr,
-.fra-announcer {
+#fra-announcer {
   position: absolute;
   width: 1px; height: 1px;
   padding: 0; margin: -1px;
