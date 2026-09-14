@@ -23,15 +23,7 @@
 })();
 /* SAVE TO NOTEBOOK (2026-09-10 "save works … specific passages, on all surfaces"): every result that opens the reader
    gets a star — a work (no page) or a passage (a page) — through FRResearchNotebook only. */
-(function(){const N=()=>window.FRResearchNotebook;const strip=v=>String(v||'').replace(/<[^>]+>/g,'');
-  const deco=root=>{(root.querySelectorAll?root.querySelectorAll('a.sr:not([data-starred])'):[]).forEach(a=>{a.dataset.starred='1';
-    const m=(a.getAttribute('href')||'').match(/\/read(?:\/|\?w=)([a-z0-9-]+)(?:#b([^-]+)-\d+)?/i);if(!m)return;const slug=m[1];let page=null;try{page=m[2]?decodeURIComponent(m[2]):null;}catch(_){}
-    const st=document.createElement('button');st.type='button';st.className='pinstar';st.textContent='\u2605';st.setAttribute('aria-label',page?'Save this passage to your notebook':'Save this work for later reading');st.title=st.getAttribute('aria-label');
-    const on=()=>!!(N()&&N().hasReference&&N().hasReference(slug,page));const paint=()=>{st.classList.toggle('on',on());};paint();
-    st.onclick=async e=>{e.preventDefault();e.stopPropagation();const n=N();if(!n||!n.saveWork){st.title='The notebook could not load.';return;}st.disabled=true;
-      try{const title=typeof docTitle==='function'?strip(docTitle(slug)):slug,author=typeof docCite==='function'?strip(docCite(slug)):'';
-        if(on())await n.unsave(slug,page);else if(page)await n.savePassage({slug,page,title,author,label:(a.querySelector('.sr-ex')||{}).textContent||''});else await n.saveWork({slug,title,author});}
-      catch(err){st.title=(err&&err.message)||'Could not save';}finally{st.disabled=false;paint();}};
-    a.style.position='relative';a.appendChild(st);});};
-  window.addEventListener('fr-notebook-updated',()=>document.querySelectorAll('a.sr[data-starred] .pinstar').forEach(st=>{const a=st.closest('a');const m=(a.getAttribute('href')||'').match(/\/read(?:\/|\?w=)([a-z0-9-]+)(?:#b([^-]+)-\d+)?/i);if(!m)return;let page=null;try{page=m[2]?decodeURIComponent(m[2]):null;}catch(_){}st.classList.toggle('on',!!(N()&&N().hasReference&&N().hasReference(m[1],page)));}));
-  deco(document);new MutationObserver(ms=>ms.forEach(x=>x.addedNodes.forEach(n=>{if(n.nodeType===1)deco(n);}))).observe(document.body,{childList:true,subtree:true});})();
+(function(){const N=()=>window.FRResearchNotebook;
+function paint(button){const page=button.getAttribute('data-page'),on=!!N()?.hasReference(button.dataset.slug,page);button.setAttribute('aria-pressed',String(on));button.textContent=(on?'Unsave ':'Save ')+(page!=null?'passage':'work');}
+function decorate(root){(root.querySelectorAll?root.querySelectorAll('a.sr:not([data-starred])'):[]).forEach(a=>{a.dataset.starred='1';const ref=FRSearch.readerLink(a.getAttribute('href'),location.origin);if(!ref)return;const wrapper=document.createElement('article');wrapper.className='search-result';a.parentNode.insertBefore(wrapper,a);wrapper.appendChild(a);const button=document.createElement('button');button.type='button';button.className='search-save';button.dataset.slug=ref.slug;if(ref.page!=null)button.dataset.page=ref.page;paint(button);button.onclick=async()=>{const n=N();if(!n)return;button.disabled=true;try{const w=WORKS_BY_SLUG?.[ref.slug]||{},title=w.title_en||w.title||ref.slug,author=w.author||'';if(n.hasReference(ref.slug,ref.page))await n.unsave(ref.slug,ref.page);else if(ref.page!=null)await n.savePassage({slug:ref.slug,page:ref.page,title,author,label:a.querySelector('.sr-ex')?.textContent||'',url:rdHref(ref.slug,ref.page)});else await n.saveWork({slug:ref.slug,title,author});paint(button);}catch(error){button.textContent='Save failed. Try again';button.title=error.message;}finally{button.disabled=false;}};wrapper.appendChild(button);});}
+window.addEventListener('fr-notebook-updated',()=>document.querySelectorAll('.search-save').forEach(paint));decorate(document);new MutationObserver(()=>decorate(res)).observe(res,{childList:true,subtree:true});})();

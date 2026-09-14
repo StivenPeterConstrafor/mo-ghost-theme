@@ -20,7 +20,8 @@
   function capture(context={},environment=root){
     const doc=environment.document,reading=doc?.getElementById('reading'),scroll=doc?.getElementById('scroll');
     if(!reading||!scroll)throw Error('Wait for the text to appear before saving a reading place.');
-    const bounds=scroll.getBoundingClientRect(),line=bounds.top+16;
+    const bounds=scroll.getBoundingClientRect(),head=doc.querySelector?.('.fr-reader-head')?.getBoundingClientRect();
+    const line=Math.max(bounds.top,Math.min(head?.bottom||bounds.top,bounds.bottom??bounds.top+scroll.clientHeight))+16;
     const visible=node=>node?.getClientRects().length&&node.getBoundingClientRect().bottom>line&&node.getBoundingClientRect().top<(bounds.bottom??bounds.top+scroll.clientHeight);
     let snapshot={};try{snapshot=environment.__frCaptureReaderPosition?.()||{};}catch(_){}
     const exact=canonicalNode(snapshot.id&&doc.getElementById(snapshot.id),reading);
@@ -36,13 +37,22 @@
     if(!page||transient(row))throw Error('This reading place could not be identified. Try again after the page finishes loading.');
     return {page,row,position:{page,id:row,title:typeof snapshot.title==='string'?snapshot.title:'',offset:node.getBoundingClientRect().top-bounds.top,choice:false,anchor:true,...sourceLocation(snapshot)}};
   }
+  function locationURL(href,place){
+    if(!place||!present(place.page)||!place.row||transient(place.row))return null;
+    const page=text(place.page),row=generatedHeading(place.row)?'b'+page+'-0':text(place.row);
+    const url=new URL(href);
+    url.searchParams.set('p',page);
+    // A prior outline heading must not override the newly visible paragraph on reload.
+    url.searchParams.delete('section');url.searchParams.delete('heading');
+    url.hash=row;return url.href;
+  }
   function makeRecord(context,place,environment=root){
     const slug=text(context.slug).trim(),title=text(context.title).trim();
     if(!slug||!title||!place||!present(place.page)||!place.row||transient(place.row))throw Error('The work and reading place must be identified before saving.');
     const page=text(place.page),row=generatedHeading(place.row)?'b'+page+'-0':text(place.row),origin=context.origin||environment.location?.origin||'https://thefaithreceived.vercel.app',sourcePosition=sourceLocation(place.position);
     const path=environment.location?.pathname==='/read.html'?'/read.html':'/the-faith-received/read/';
     const url=new URL(path,origin);url.searchParams.set('w',slug);url.searchParams.set('p',page);if(sourcePosition.sourcePath)url.searchParams.set('section',sourcePosition.sourcePath);if(sourcePosition.sourceKey)url.searchParams.set('heading',sourcePosition.sourceKey);url.hash=row;
-    const part=slug==='pld-6037'?new URL(environment.location?.href||origin).searchParams.get('pldpart'):null;
+    const part=/^pld-\d+$/.test(slug)?new URL(environment.location?.href||origin).searchParams.get('pldpart'):null;
     if(['2','3','4','5'].includes(part))url.searchParams.set('pldpart',part);
     let label;try{label=context.pageLabel?.(page);}catch(_){}label=text(label)||'Location '+page;
     const citation=[title,context.volume,label].filter(Boolean).map(text).join(', '),author=text(context.author);
@@ -68,5 +78,5 @@
     button.addEventListener('click',onSave);options.openSavedButton?.addEventListener('click',onOpen);
     return ()=>{button.removeEventListener('click',onSave);options.openSavedButton?.removeEventListener('click',onOpen);};
   }
-  return {capture,makeRecord,save,bind,isTransientAnchor:transient};
+  return {capture,locationURL,makeRecord,save,bind,isTransientAnchor:transient};
 });

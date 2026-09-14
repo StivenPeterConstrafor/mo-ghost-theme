@@ -26,10 +26,10 @@ header.site{position:fixed;inset:0 0 auto 0;z-index:30;display:flex;align-items:
 header.site .brand{font-family:var(--display);font-size:1.02rem;white-space:nowrap}
 header.site .brand a{color:var(--ink-l)}
 header.site .brand i{color:var(--mut-l)}
-header.site nav{display:flex;gap:.9rem;font-size:.84rem;overflow-x:auto;scrollbar-width:none}
-header.site nav::-webkit-scrollbar{display:none}
-header.site nav a{color:var(--mut-l);white-space:nowrap;padding:.1rem 0;font-size:.78rem;letter-spacing:.07em;text-transform:uppercase}
-header.site nav a.on{color:var(--ink-l);border-bottom:1px solid var(--ink-l)}
+header.site>nav{display:flex;gap:.9rem;font-size:.84rem;overflow-x:auto;scrollbar-width:none}
+header.site>nav::-webkit-scrollbar{display:none}
+header.site>nav a{color:var(--mut-l);white-space:nowrap;padding:.1rem 0;font-size:.78rem;letter-spacing:.07em;text-transform:uppercase}
+header.site>nav a.on{color:var(--ink-l);border-bottom:1px solid var(--ink-l)}
 #find{margin-left:auto;position:relative}
 #find input{width:15.5rem;max-width:38vw;background:rgba(255,255,255,.06);border:1px solid var(--bdr-l);
   border-radius:9px;color:var(--ink-l);font:inherit;font-size:.86rem;padding:.34rem .8rem;outline:none}
@@ -146,7 +146,7 @@ body.popen #find input{width:11rem}
   #tip{display:none !important}
   #intro{font-size:.74rem}
   header.site{flex-wrap:wrap;gap:.25rem .9rem;padding:.5rem .8rem}
-  header.site nav{order:3;width:100%}
+  header.site>nav{order:3;width:100%}
   #find{margin-left:auto}
   #find input{width:8.5rem}
   #panel{width:100vw;top:auto;height:72vh;border-left:0;border-top:1px solid var(--border);
@@ -164,9 +164,9 @@ body.popen #find input{width:11rem}
 header.site{background:rgba(22,18,9,.55);backdrop-filter:blur(18px) saturate(1.5);
   -webkit-backdrop-filter:blur(18px) saturate(1.5);border-bottom:1px solid rgba(201,169,110,.16);
   align-items:center;padding:.55rem 1.1rem}
-header.site nav a{padding:.28rem .75rem;border-radius:99px;transition:background .18s,color .18s}
-header.site nav a:hover{background:rgba(254,253,251,.07);color:#EFE0BE}
-header.site nav a.on{color:var(--ink-l);border-bottom:0;background:rgba(255,255,255,.08);border-radius:6px;padding:.15rem .5rem}
+header.site>nav a{padding:.28rem .75rem;border-radius:99px;transition:background .18s,color .18s}
+header.site>nav a:hover{background:rgba(254,253,251,.07);color:#EFE0BE}
+header.site>nav a.on{color:var(--ink-l);border-bottom:0;background:rgba(255,255,255,.08);border-radius:6px;padding:.15rem .5rem}
 #find input{width:19rem;max-width:40vw;background:rgba(254,253,251,.07);backdrop-filter:blur(14px);
   -webkit-backdrop-filter:blur(14px);border:1px solid rgba(201,169,110,.28);
   padding:.4rem 2.6rem .4rem 1rem;transition:border-color .2s,background .2s,box-shadow .2s}

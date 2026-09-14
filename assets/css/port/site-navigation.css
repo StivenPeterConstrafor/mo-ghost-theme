@@ -12,3 +12,24 @@
 @media(max-width:640px){.fr-quick{gap:0;font-size:13px}.fr-quick>a{padding:0 6px}}
 @media(max-width:420px){.fr-quick{display:none}}
 @media print{.fr-quick{display:none!important}}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   NO ZOOM ON TAP — site-wide (owner, 2026-09-12: "clicking into new convo etc
+   zooms in", on both sites).
+
+   iOS Safari zooms the whole page whenever a focused control computes under
+   16px, and it never zooms back out: the reader is left in a magnified layout
+   they must pinch their way out of, which is why a phone session feels broken
+   after one tap in a search box. Controls across these pages set .82rem-.95rem
+   for visual reasons, which is 13-15px.
+
+   This file is the one stylesheet EVERY surface loads, so the floor is set once
+   here rather than in nine templates that would drift apart. Scoped to coarse
+   pointers, so desktop typography is untouched; !important because the point is
+   to beat whatever a page-level rule asks for — a missed selector is a broken
+   page, and the visual cost is at most three pixels in a form field. */
+@media (pointer: coarse) {
+  input[type="text"], input[type="search"], input[type="email"], input[type="url"],
+  input[type="number"], input[type="tel"], input[type="password"], input:not([type]),
+  textarea, select { font-size: 16px !important; }
+}

@@ -44,9 +44,9 @@ function mount(host,opts){
  const slug=opts.slug,url=opts.blob+'/v1/mine/units/'+encodeURIComponent(slug)+'.json';
  let model=null,pending=null,page=str(opts.page),scope='page',query='',topic='',limits={},opened=new Set(),dead=false,missing=false,browseSequence=0;
  const location=p=>opts.location?.(p)||'Page '+p;
- host.innerHTML=`<div class="wr-identity"><p class="nb-context-label">This work</p><h2>${esc(opts.title)}</h2><p>${esc(opts.author)}</p><div class="wr-actions"><button type="button" data-about>View edition details</button><button type="button" data-ask-book>Discuss work</button></div></div><p class="wr-intro">Explore the published analysis beside the source. Save records to your notebook or bring them into a conversation.</p><div class="wr-controls"><label>Show<select data-scope><option value="page">Current location</option><option value="work">Whole work</option></select></label><label>Topic context<select data-topic><option value="">All topics</option></select></label><label class="wr-search">Search analysis<input type="search" data-query placeholder="Find a claim, name, or term"></label></div><p class="wr-status" data-status role="status">Loading work analysis…</p><div data-results></div><details class="wr-coverage"><summary>About this analysis</summary><p>These are extracted summaries and annotations, not a critical edition or a statement of the author's settled beliefs. Labels such as “asserts” describe the local passage and can belong to a speaker being reported. Open the source to check context.</p><p data-coverage></p><a href="${esc(url)}" target="_blank" rel="noopener">Open published data (JSON)</a></details>`;
+ host.innerHTML=(opts.compact?'':`<div class="wr-identity"><p class="nb-context-label">This work</p><h2>${esc(opts.title)}</h2><p>${esc(opts.author)}</p><div class="wr-actions"><button type="button" data-about>View edition details</button><button type="button" data-ask-book>Discuss work</button></div></div>`)+`<p class="wr-intro">Explore the published analysis beside the source. Save records to your notebook or bring them into a conversation.</p><div class="wr-controls"><label>Show<select data-scope><option value="page">Current location</option><option value="work">Whole work</option></select></label><label>Topic context<select data-topic><option value="">All topics</option></select></label><label class="wr-search">Search analysis<input type="search" data-query placeholder="Find a claim, name, or term"></label></div><p class="wr-status" data-status role="status">Loading work analysis…</p><div data-results></div><details class="wr-coverage"><summary>About this analysis</summary><p>These are extracted summaries and annotations, not a critical edition or a statement of the author's settled beliefs. Labels such as “asserts” describe the local passage and can belong to a speaker being reported. Open the source to check context.</p><p data-coverage></p><a href="${esc(url)}" target="_blank" rel="noopener">Open published data (JSON)</a></details>`;
  const results=host.querySelector('[data-results]'),status=host.querySelector('[data-status]');
- host.querySelector('[data-about]').onclick=opts.about;host.querySelector('[data-ask-book]').onclick=()=>opts.ask();
+ if(!opts.compact){host.querySelector('[data-about]').onclick=opts.about;host.querySelector('[data-ask-book]').onclick=()=>opts.ask();}
  const controls=()=>{limits={};render();};
  host.querySelector('[data-scope]').onchange=e=>{scope=e.target.value;controls();};host.querySelector('[data-topic]').onchange=e=>{topic=e.target.value;controls();};host.querySelector('[data-query]').oninput=e=>{query=e.target.value;controls();};
  function recordHTML(r){const x=r.raw,meta=[x.stance?'Local label: '+x.stance:'',x.how||x.intent,x.move,x.family].filter(Boolean).join(' · ');return `<article class="wr-record" data-record="${esc(r.id)}"><p class="wr-record-loc">${esc(r.page?location(r.page):'Location not supplied')}${r.unit?' · '+esc(r.unit):''}</p><p class="wr-text">${esc(r.text)}</p>${meta?'<p class="wr-meta">'+esc(meta)+'</p>':''}${x.against?'<p class="wr-meta">Directed against: '+esc(x.against)+'</p>':''}${x.locator?'<p class="wr-meta">Cited location: '+esc(x.locator)+'</p>':''}${x.subtle?'<p class="wr-meta">'+esc(x.subtle)+'</p>':''}${x.verify?.span?'<details class="wr-verification"><summary>Recorded evidence span</summary><p>'+esc(x.verify.span)+'</p><small>Recorded by the extraction process; check against the current source.</small></details>':''}<div class="wr-record-context"></div><div class="wr-actions">${r.page?'<a data-read data-page="'+esc(r.page)+'" href="'+esc(sourceURL(slug,r.page))+'">Read source</a>':''}<button type="button" data-save="${esc(r.id)}">Save record</button><button type="button" data-discuss="${esc(r.id)}">Discuss record</button>${x.resolved?.work_slug||list(x.resolved_multi).length?'<button type="button" data-targets="'+esc(r.id)+'">View cited works</button>':''}</div><div class="wr-resolved-targets" hidden></div></article>`;}
@@ -104,5 +104,65 @@ function mount(host,opts){
  }
  return {load,browse,setPage(next){next=str(next);if(next!==page){page=next;if(scope==='page'){limits={};render();}}},destroy(){dead=true;browseSequence++;}};
 }
-return {kinds,recordNames,normalize,filter,recordContext,cleanTopics,topicVocabulary,topicNames,topicKey,isRawTopic,sourceURL,discussion,mount};
+
+function relatedCandidates(data,currentSlug){
+ if(!data||typeof data!=='object'||data.error)throw Error('Related search is unavailable.');
+ const primary=Array.isArray(data.works)?data.works:Array.isArray(data.results)?data.results:null;
+ if(!primary)throw Error('Related search returned an unreadable response.');
+ const rows=[],seen=new Set(),add=(slug,page,citation='')=>{
+  slug=str(slug);if(!/^[a-z0-9][a-z0-9._-]*$/i.test(slug)||slug===currentSlug)return;
+  page=page==null||page===''?null:str(page);const key=slug+'|'+(page||'');if(seen.has(key))return;seen.add(key);rows.push({slug,page,citation:str(citation)});
+ };
+ for(const hit of primary)if(hit&&typeof hit==='object')add(hit.slug,hit.page);
+ for(const hit of list(data.fathers)){
+  if(!hit||typeof hit!=='object')continue;
+  const prefix={PL:'pld-',PG:'pg-',PO:'po-'}[hit.src],doc=str(hit.doc);
+  // Legacy vector anchors are row IDs, not canonical page numbers. Link the held work.
+  if(prefix&&/^[a-z0-9._-]+$/i.test(doc))add(doc.startsWith(prefix)?doc:prefix+doc,null,hit.cit);
+ }
+ return rows.slice(0,32);
+}
+function mountRelated(host,opts){
+ let sequence=0,controller=null,loaded=false,loading=false,basis=null,lastQuery='',dead=false;
+ const cache=new Map(),where=()=>opts.location(opts.page());
+ host.innerHTML=`<h2 class="nb-related-title">Related works</h2><p class="nb-guidance">Find other works through a passage or an idea. Suggestions come from indexed passages; similarity does not establish agreement.</p><form class="nb-related-form" role="search" aria-label="Find related works"><label>Search by an idea or phrase<input type="search" data-related-query placeholder="Enter an idea or phrase" autocomplete="off"></label><button type="submit">Find works</button></form><div class="nb-related-actions"><button type="button" data-related-page>Use current passage</button><a data-related-library href="/the-faith-received/search/" target="_blank" rel="noopener">Search the library</a></div><p class="nb-related-status" data-related-status role="status"></p><div data-related-results></div>`;
+ const input=host.querySelector('[data-related-query]'),status=host.querySelector('[data-related-status]'),results=host.querySelector('[data-related-results]'),pageButton=host.querySelector('[data-related-page]'),library=host.querySelector('[data-related-library]');
+ const libraryLink=()=>{library.href='/the-faith-received/search/'+(input.value.trim()?'?q='+encodeURIComponent(input.value.trim()):'');};
+ input.oninput=libraryLink;
+ async function load(query=''){
+  query=str(query).trim();if(query&&query.length<3){status.textContent='Enter at least three characters, or use the current passage.';return;}
+  const page=str(opts.page()),key=query?'query:'+query:'page:'+page;
+  const own=++sequence;loading=true;controller?.abort();const requestController=new AbortController();controller=requestController;let timer;
+  status.textContent=query?'Finding related works…':'Finding works related to '+where()+'…';status.setAttribute('aria-busy','true');results.replaceChildren();
+  try{
+   let record=cache.get(key);
+   if(!record){
+    const params=query?new URLSearchParams({q:query,k:'16',sparse:'1'}):new URLSearchParams({s:opts.slug,p:page});
+    timer=setTimeout(()=>requestController.abort(),20000);
+    const response=await (opts.request||fetch)((query?'https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/vsearch?':'https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/related?')+params,{signal:requestController.signal});
+    if(!response.ok)throw Error(response.status===401||response.status===403?'Sign in to the library and try again.':'Related search could not load. Try again, or search the library.');
+    const data=await response.json(),candidates=relatedCandidates(data,opts.slug);
+    const resolved=await Promise.all(candidates.map(async hit=>({hit,found:await opts.resolve(hit.slug)})));
+    const groups=new Map();let unresolved=0;
+    for(const {hit,found} of resolved){if(found?.status!=='held'){unresolved++;continue;}if(found.slug===opts.slug)continue;
+     let group=groups.get(found.slug);if(!group){group={slug:found.slug,title:found.work.title_en||found.work.title||'Untitled work',author:found.work.author||'',url:found.url,pages:[],citations:[]};groups.set(found.slug,group);}
+     if(hit.page!==null&&!group.pages.includes(hit.page))group.pages.push(hit.page);if(hit.citation&&!group.citations.includes(hit.citation))group.citations.push(hit.citation);
+    }
+    record={groups:[...groups.values()],unresolved,missing:!!data.missing};cache.set(key,record);if(cache.size>12)cache.delete(cache.keys().next().value);
+   }
+   if(dead||own!==sequence)return;loaded=true;basis=page;lastQuery=query;
+   results.innerHTML=record.groups.map(g=>`<article class="nb-related-work"><h3><a href="${esc(g.url)}" target="_blank" rel="noopener">${esc(g.title)}</a></h3><p>${esc(g.author)}</p>${g.citations.length?'<p class="nb-related-citation">'+esc(g.citations.join(' · '))+'</p>':''}<div class="nb-related-passages">${g.pages.map(p=>'<a href="'+esc(sourceURL(g.slug,p))+'" target="_blank" rel="noopener">Read '+esc(/^\d+$/.test(p)?'p. '+p:p)+'</a>').join('')}${g.pages.length?'':'<a href="'+esc(g.url)+'" target="_blank" rel="noopener">Open work</a>'}</div></article>`).join('');
+   const count=record.groups.length;
+   status.textContent=record.missing?'This passage has no similarity results yet. Try an idea or phrase.':count?count+' related '+(count===1?'work':'works')+(query?' for “'+query+'”.':' based on '+opts.location(page)+'.'):record.unresolved?'The suggestions could not be matched to current library editions. Try a phrase or search the library.':'No related works were found for this selection. Try another phrase or passage.';
+   sync();
+  }catch(error){if(!dead&&own===sequence){status.textContent=error.name==='AbortError'?'Related search took too long. Try again, or search the library.':error.message;}}
+  finally{clearTimeout(timer);if(own===sequence){loading=false;status.removeAttribute('aria-busy');}}
+ }
+ function sync(){pageButton.textContent=loaded&&!lastQuery&&basis!==str(opts.page())?'Update from current passage · '+where():'Use current passage · '+where();}
+ host.querySelector('form').onsubmit=e=>{e.preventDefault();load(input.value);};
+ pageButton.onclick=()=>{input.value='';libraryLink();load();};sync();
+ return {open(){if(!loaded&&!loading)load();else sync();},setPage:sync,destroy(){dead=true;sequence++;controller?.abort();}};
+}
+
+return {kinds,recordNames,normalize,filter,recordContext,cleanTopics,topicVocabulary,topicNames,topicKey,isRawTopic,sourceURL,discussion,relatedCandidates,mountRelated,mount};
 });

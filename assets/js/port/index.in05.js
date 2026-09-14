@@ -555,7 +555,7 @@ function renderPlScripture(sw,opts){
 // Migne editorial/index classification, client-side (same patterns as the
 // corpus tools' migne_genre): pg-/pld- only — on the library shelves an
 // 'Index' in a title is a published book (review §4)
-const _MG_NAV=[/^(title\s*page|table\s*of\s*contents?|contents?)\b/i,/^index\b/i,/^(analytical|general|alphabetical)\s+index\b/i,/^order\s+of\s+(things|contents?|subjects?|the\s+old\s+editions?|editions?)\b/i,/^(elenchus|tabula|ordo)\b/i];
+const _MG_NAV=[/^(title\s*page|table\s*of\s*contents?|contents?)\b/i,/^index\b/i,/^(order\s+of\s+(things|the\s+old\s+editions?|editions?))\b/i,/^(elenchus|tabula|ordo)\b/i];
 const _MG_APP=[/^admonition/i,/^(historical\s+)?notice\b/i,/^editorial\s+notice/i,/^prolegomena\b/i,/^monitum\b/i,/^(preface|praefatio)\s*$/i,/^(preface|praefatio)\s+(of|by)\s+the\s+(editor|editors|maurist)/i,/^appendix\s*$/i,/^(bibliograph|biographical\s+notice)/i,/^(synopsis\s+of\s+the\s+editions?|conspectus)\b/i];
 function _migneKind(w){
   if(!/^(pg|pld)-\d+$/.test(String(w.slug||"")))return null;
@@ -816,7 +816,7 @@ function setAuthorF(a){
 window.__openShelf=t=>{if(!t)return;SEL_TRAD=t;
   try{if(typeof loadNoteShard==="function")loadNoteShard(t);}catch(e){}
   render();
-  setTimeout(()=>{const e=$("#shelfworks");if(e)e.scrollIntoView({block:"start"});},80);};
+  setTimeout(()=>{const e=$("#shelfworks");if(e)(e.querySelector('.vol-browser')||e).scrollIntoView({block:"start"});},80);};
 function __shelfFromURL(){
   const u=new URL(location.href);
   const sh=u.searchParams.get("shelf"),au=u.searchParams.get("au");
@@ -904,6 +904,7 @@ function render(){
       // the shelf is an ADDRESS (review §1): Back returns to it, links carry it
       try{const u=new URL(location.href);
         if(SEL_TRAD)u.searchParams.set("shelf",SEL_TRAD);else u.searchParams.delete("shelf");
+        u.searchParams.delete("by");u.searchParams.delete("vol");
         u.searchParams.delete("au");history.pushState({shelf:SEL_TRAD},"",u);}catch(e){}
       render();
       try{if(SEL_TRAD&&typeof loadNoteShard==="function")loadNoteShard(SEL_TRAD);}catch(e){}   // this family's bios + introductions, once
@@ -965,7 +966,11 @@ function render(){
        the reader and the works they came for. The mine's reading still reaches readers where
        it answers a question they asked — the research doors and Ask — not as a panel every
        shelf visitor must scroll past. renderShelfInsights stays defined for those callers. */
-    if(SEL_TRAD==="Roman Catholic"){const cb=el("div","scomp");cb.innerHTML='<span class=sk>Reference</span>'
+    /* THE DICTIONARY DOOR, EVERY SHELF (owner 2026-09-11 "for each shelf,
+       links to this Dictionnaire"): the DTC covers the whole of theology —
+       articles on the Fathers, the Reformers, every council and doctrine —
+       so the reference row is no longer Roman-Catholic-only. */
+    {const cb=el("div","scomp");cb.innerHTML='<span class=sk>Reference</span>'
       +'<div class=scomp-row>'
       +'<a class=scomp-l href="/the-faith-received/dtc/"><span class=n>Dictionnaire de Théologie Catholique</span><span class=d>The great French theological dictionary (Vacant–Mangenot–Amann, 1899–1950): ~1,800 articles in a dedicated lookup interface — search any headword.</span><span class=u>the dictionary door</span></a>'
       +'</div>';sw.appendChild(cb);}
@@ -980,6 +985,8 @@ function render(){
     const VOLSHELF={"Latin Fathers":{word:"PL"},"Greek Fathers":{word:"PG"},"Eastern Fathers":{word:"PO Tome"}}[SEL_TRAD];
     if(VOLSHELF){
       const VW=VOLSHELF.word;
+      const volumeState=window.FRLibraryVolumes.state(SEL_TRAD);
+      window.__plOrg=volumeState.by;
       // THE MINED RESEARCH LAYERS (owner 2026-08-17 'adopt the scripture and other
       // research we got from mining PL'): the shelf carries the family's research doors —
       // the Scripture index (every Vulgate citation across the 8,967 works, by book and
@@ -991,10 +998,11 @@ function render(){
       if(window.__plOrg==="scripture"||window.__plOrg==="topics")window.__plOrg="author";
       window.__plOrg=window.__plOrg||"author";   // Show names immediately; volume browsing remains available.
       const tg2=el("div","plorg");
-      tg2.innerHTML=`<button class="pob${window.__plOrg==="volume"?" on":""}" data-o="volume">By ${VW} volume</button>`+
+      tg2.innerHTML=`<button class="pob${window.__plOrg==="volume"?" on":""}" data-o="volume">By ${VW.split(' ')[0]} volume</button>`+
                     `<button class="pob${window.__plOrg==="author"?" on":""}" data-o="author">By author</button>`+
                     ((false /* doors removed (owner 2026-09-10) */)?`<a class="pob" href="/the-faith-received/bible/" title="Scripture, verse by verse, with every commentator">Scripture →</a><a class="pob" href="/the-faith-received/topics/" title="Topics across the whole library">Topics →</a>`:"");
-      tg2.onclick=e=>{const b=e.target.closest(".pob");if(!b||!b.dataset.o)return;window.__plOrg=b.dataset.o;render();};
+      tg2.setAttribute('aria-label','Organize this shelf');tg2.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.o===volumeState.by)));
+      tg2.onclick=e=>{const b=e.target.closest(".pob");if(!b||!b.dataset.o)return;window.__plOrg=volumeState.by=b.dataset.o;window.FRLibraryVolumes.save(SEL_TRAD,volumeState,{navigate:true,push:true});render();if(b.dataset.o==='volume')requestAnimationFrame(()=>document.querySelector('.vol-browser')?.scrollIntoView({block:'start'}));};
       sw.appendChild(tg2);
       if(String(window.__plOrg||"").startsWith("cmap-")&&(SEL_TRAD==="Latin Fathers"||SEL_TRAD==="Greek Fathers")){
         const bar=el("div","plorg");
@@ -1011,21 +1019,26 @@ function render(){
         // does it'): the PLD landing pattern — a persistent compact grid of all 220 Migne
         // tomes, the chosen tome's SPINE opening beneath it, and \u2039 \u203a walking
         // tome to tome without ever losing the grid.
-        const st=window.__bigShelf=window.__bigShelf||{};const cur=st[SEL_TRAD+"-vol"]=st[SEL_TRAD+"-vol"]||{vol:null,q:""};
+        const cur=volumeState,shelf=SEL_TRAD;
         const byVol={};tg[SEL_TRAD].forEach(w=>{(byVol[w.volume||"PL ?"]=byVol[w.volume||"PL ?"]||[]).push(w);});
         const allKeys=Object.keys(byVol).sort((a,b)=>(+(a.match(/\d+/)||[9999])[0])-(+(b.match(/\d+/)||[9999])[0]));
-        let keys=allKeys;
-        const openVol=v=>{cur.vol=v;render();
-          setTimeout(()=>{const e=document.getElementById("volpanel");if(e)e.scrollIntoView({behavior:"smooth",block:"start"});},60);};
-        const sf=el("input","shelfsearch");sf.type="search";sf.placeholder=`Search ${SEL_TRAD} \u2014 a volume (\u201c137\u201d), an author, a work\u2026`;
+        const numberQuery=window.FRLibraryVolumes.volumeNumber(cur.q,VW.split(' ')[0]);
+        const keys=numberQuery?allKeys.filter(v=>String((v.match(/\d+/)||[''])[0]).startsWith(numberQuery)):allKeys;
+        if(cur.vol&&!byVol[cur.vol]){cur.vol=null;cur.panelTop=0;}
+        let interacted=false;
+        const savePosition=()=>{if(!interacted||document.querySelector('#shelfworks')?.dataset.shelf!==shelf)return;const grid=document.querySelector('.vol-browser .volgrid'),body=document.querySelector('.vol-browser .spine');cur.gridTop=grid?.scrollTop||0;cur.panelTop=body?.scrollTop||0;cur.pageY=window.scrollY;window.FRLibraryVolumes.save(shelf,cur);};
+        const openVol=v=>{savePosition();const changed=cur.vol!==v;cur.vol=v;cur.q='';if(changed)cur.panelTop=0;
+          window.FRLibraryVolumes.save(shelf,cur,{navigate:true,push:changed});const y=Math.min(window.scrollY,window.scrollY+(document.querySelector('.vol-browser')?.getBoundingClientRect().top||92)-92);render();
+          requestAnimationFrame(()=>{window.scrollTo({top:y,behavior:'instant'});document.querySelector('.vol-browser .vcell.on')?.focus({preventScroll:true});});};
+        const sf=el("input","shelfsearch");sf.type="search";sf.setAttribute('aria-label','Search '+shelf);sf.placeholder='Find a volume, author, or work title';
         sf.value=cur.q||"";
-        sf.oninput=()=>{const v=sf.value.trim();cur.q=v;
-          const mnum=v.match(/^(?:pl\s*)?(\d{1,3})$/i);
-          if(mnum&&byVol[VW+" "+mnum[1]]){cur.q="";openVol(VW+" "+mnum[1]);return;}
+        sf.oninput=()=>{interacted=true;const v=sf.value.trim();cur.q=v;
+          window.FRLibraryVolumes.save(shelf,cur);
           cur._foc=true;clearTimeout(sf._t);sf._t=setTimeout(render,180);};
+        sf.onkeydown=e=>{if(e.key!=='Enter')return;const n=window.FRLibraryVolumes.volumeNumber(sf.value,VW.split(' ')[0]);if(n&&byVol[VW+' '+n]){e.preventDefault();clearTimeout(sf._t);openVol(VW+' '+n);}};
         sw.appendChild(sf);
         if(cur._foc){requestAnimationFrame(()=>{sf.focus();try{sf.setSelectionRange(sf.value.length,sf.value.length);}catch(e){}});cur._foc=false;}
-        if(cur.q&&!/^(?:pl\s*)?\d{1,3}$/i.test(cur.q)){
+        if(cur.q&&!numberQuery){
           // an author or title query should answer with WORKS, not a wall of bare tome
           // numbers (owner 2026-08-17 'I type in Augustine… none of it has augustine'):
           // render the matching authors' ledgers right here, expanded.
@@ -1051,17 +1064,22 @@ function render(){
           if(!a||_junk.test(a))return;c[a]=(c[a]||0)+1;});
           return Object.keys(c).sort((x,y)=>c[y]-c[x]);};
         // the series wall: every tome a small numbered cell, hover names its authors
-        const g=el("div","volgrid"+(cur.vol?" picked":""));
+        const browser=el('div','vol-browser'),picker=el('div','vol-picker');
+        for(const event of ['pointerdown','wheel','keydown','touchstart'])browser.addEventListener(event,()=>{interacted=true;},{passive:true});
+        const pickerLabel=el('p','vol-picker-label');pickerLabel.id='volume-picker-label';pickerLabel.textContent='Choose a volume';picker.appendChild(pickerLabel);
+        const g=el("div","volgrid");g.setAttribute('role','group');g.setAttribute('aria-labelledby','volume-picker-label');
         keys.forEach(v=>{
           const n=v.replace(/^(PL|PG|PO Tome)\s*/,"")||v;
           const c=el("button","vcell"+(cur.vol===v?" on":""));c.type="button";
-          c.title=v+" \u2014 "+(domAuths(byVol[v]).slice(0,3).join(" \u00b7 ")||byVol[v].length+" works");
+          c.title=v+" \u2014 "+(domAuths(byVol[v]).slice(0,3).join(" \u00b7 ")||byVol[v].length+" entries");
+          c.setAttribute('aria-label',v+', '+byVol[v].length+' entries');c.setAttribute('aria-pressed',String(cur.vol===v));
           c.innerHTML=`<span class=vn>${n}</span><span class=vc>${byVol[v].length}</span>`;
           c.onclick=()=>openVol(v);
           g.appendChild(c);});
-        sw.appendChild(g);
+        picker.appendChild(g);browser.appendChild(picker);sw.appendChild(browser);
+        if(!keys.length){const hint=el('p','shelfhint');hint.setAttribute('role','status');hint.textContent='No volumes match. Try another number or clear the search.';picker.appendChild(hint);}
         if(cur.vol&&byVol[cur.vol]){
-          const panel=el("div");panel.id="volpanel";
+          const panel=el("div");panel.id="volpanel";panel.setAttribute('role','region');panel.setAttribute('aria-label',cur.vol+' contents');
           const ws2=byVol[cur.vol].slice().sort((a,b)=>(a.po??1e9)-(b.po??1e9));
           const auths=domAuths(ws2);   // dominance order: the tome's authors before its editors
           const ki=allKeys.indexOf(cur.vol),prev=allKeys[ki-1],next=allKeys[ki+1];
@@ -1069,24 +1087,23 @@ function render(){
           vh.innerHTML=`<button class=vnav data-v="${esc(prev||"")}" ${prev?"":"disabled"} title="${esc(prev||"")}">&#8249;</button>`+
             `<span class=vn>${esc(cur.vol)}</span>`+
             `<button class=vnav data-v="${esc(next||"")}" ${next?"":"disabled"} title="${esc(next||"")}">&#8250;</button>`+
-            `<button class="vnav vall" type="button" title="Show the whole volume wall">All volumes</button>`+
             `<span class=va>${esc(auths.slice(0,4).join(" \u00b7 "))}${auths.length>4?" \u00b7 \u2026":""}</span>`+
-            `<span class=vc>${ws2.length} works</span>`;
+            `<span class=vc>${ws2.length} entries</span>`;
           vh.onclick=e=>{const b=e.target.closest(".vnav");if(!b)return;
-            if(b.classList.contains("vall")){const gr=sw.querySelector(".volgrid");if(gr){gr.classList.toggle("picked");if(!gr.classList.contains("picked"))gr.scrollIntoView({block:"nearest"});}return;}
             if(b.dataset.v)openVol(b.dataset.v);};
           panel.appendChild(vh);
+          vh.querySelectorAll('button').forEach(b=>b.setAttribute('aria-label',b.dataset.v?'Open '+b.dataset.v:(b===vh.firstElementChild?'No previous volume':'No next volume')));
           const vn2=(cur.vol.match(/\d+/)||[""])[0];
           const spineRow=w=>{
             const c=w.cols,rng=c?`${vn2}:${c[0]===c[1]?c[0]:c[0]+"&#8211;"+c[1]}`:"";
             const au=String(w.author_en||w.author||"").replace(/\s*\(.*$/,"").trim();
             return `<a class=sprow href="${"/the-faith-received/read/?w="+encodeURIComponent(w.slug)}">`+
               `<span class=spc title="Migne columns">${rng}</span>`+
-              `<span class=spt>${esc(TITLES[w.slug]||w.title||w.slug)}${au&&!_junk.test(au)?` <span class=spa>&#8212; ${esc(au)}</span>`:""}</span></a>`;};
-          const texts=ws2.filter(w=>w.cd!=="MOD"),appar=ws2.filter(w=>w.cd==="MOD");
-          const body=el("div","spine");
-          body.innerHTML=texts.map(spineRow).join("")+
-            (appar.length?`<details class=sappar><summary>Editorial apparatus <span class=sac>(${appar.length})</span></summary>${appar.map(spineRow).join("")}</details>`:"");
+              `<span class=spt>${esc(TITLES[w.slug]||w.title||w.slug)}${au&&!_junk.test(au)?` <span class=spa>&#8212; ${esc(au)}</span>`:""}${w.cd==="MOD"?' <span class=spkind>Editorial</span>':""}</span></a>`;};
+          const body=el("div","spine");body.tabIndex=0;body.setAttribute('aria-label','Contents of '+cur.vol);body.addEventListener('scroll',savePosition,{passive:true});body.addEventListener('click',savePosition,{capture:true});
+          // A volume follows its catalogue sequence, including prefaces, notes and indexes.
+          // Classification labels an entry; it must never move it to a separate outline.
+          body.innerHTML=ws2.map(spineRow).join("");
           panel.appendChild(body);
           // NESTED PG SPINE (owner 2026-08-18 'match how pg is organized on the old site —
           // beginning to end, with nesting'): the family voltoc (v1/pgvol/{n}.json `toc`)
@@ -1112,10 +1129,16 @@ function render(){
               }).join("");
               if(!rows)return;
               body.innerHTML=rows;
+              body.scrollTop=cur.panelTop;
             }).catch(()=>{});
           }
-          sw.appendChild(panel);
+          browser.appendChild(panel);
+          requestAnimationFrame(()=>{body.scrollTop=cur.panelTop;});
+        }else{
+          const empty=el('p','vol-empty');empty.textContent='Choose a volume to browse its works.';browser.appendChild(empty);
         }
+        g.addEventListener('scroll',savePosition,{passive:true});
+        requestAnimationFrame(()=>{g.scrollTop=cur.gridTop;const selected=g.querySelector('.on');if(selected){const a=selected.getBoundingClientRect(),b=g.getBoundingClientRect();if(a.top<b.top||a.bottom>b.bottom)g.scrollTop+=a.top-b.top-(g.clientHeight-a.height)/2;}if(cur._restore){cur._restore=false;browser.scrollIntoView({block:'start'});}});
         lib.appendChild(sw);return;
       }
     }
@@ -1174,12 +1197,8 @@ function render(){
         // in the All view a letter tap JUMPS (the list is one alphabet — no
         // reason to re-render); a second tap on the same letter filters to it
         if(!cur.ini&&b.dataset.i){const d=document.getElementById("alet-"+b.dataset.i);
-          // jump to the letter's FIRST SECTION, not the divider: a stuck
-          // position:sticky divider reads as already-in-view and
-          // scrollIntoView does nothing
-          const tgt=d&&d.nextElementSibling;
-          if(tgt&&!b.classList.contains("jumped")){ini.querySelectorAll(".inib").forEach(x=>x.classList.remove("jumped"));b.classList.add("jumped");
-            tgt.scrollIntoView({block:"start"});return;}}
+          if(d&&!b.classList.contains("jumped")){ini.querySelectorAll(".inib").forEach(x=>x.classList.remove("jumped"));b.classList.add("jumped");
+            d.scrollIntoView({block:"start"});return;}}
         cur.ini=(cur.ini===b.dataset.i?null:b.dataset.i)||null;render();};
       sw.appendChild(ini);
       {let _lastIni=null;

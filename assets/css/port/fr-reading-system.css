@@ -1,4 +1,4 @@
-/* Shared reading edition: paper, soft graphite, editorial type. Source files only.
+/* Shared reading edition: paper, neutral graphite, editorial type. Source files only.
    The owner's September 6 direction replaces the mixed warm and colored chrome.
    Existing accessibility font, size, lane, and explicit sepia choices remain available. */
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap');
@@ -18,11 +18,11 @@ html[data-lh] .app #reading :is(.row:not(.rapp)>.en,.row:not(.rapp)>.la,.stk>.en
 /* Owner-approved September 7 direction: stone/graphite, brown apparatus details,
    and the established shelf identities. Paragraph ink and primary actions stay neutral. */
 :root{--detail:#775B43;--detail-rule:#C6B7A7;--shelf-latin:#A8462B;--shelf-greek:#3E5F8A;--shelf-eastern:#7A6025;--shelf-english:#3F6B4E;--shelf-medieval:#5B4E7A;--shelf-catholic:#8E2F39;--shelf-reformed:#4A6178;--shelf-lutheran:#2F6F62;--shelf-humanism:#6E5A3A;--shelfc:var(--detail)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-theme="sepia"]){--detail:#C7AD90;--detail-rule:#62564A;--shelf-latin:#D09A7E;--shelf-greek:#9FB5D3;--shelf-eastern:#C7AD78;--shelf-english:#A4B7A4;--shelf-medieval:#B9ACCA;--shelf-catholic:#C9A0A5;--shelf-reformed:#A5B7C6;--shelf-lutheran:#97B8AE;--shelf-humanism:#BEAE91}}
-:root[data-theme="dark"]{--detail:#C7AD90;--detail-rule:#62564A;--shelf-latin:#D09A7E;--shelf-greek:#9FB5D3;--shelf-eastern:#C7AD78;--shelf-english:#A4B7A4;--shelf-medieval:#B9ACCA;--shelf-catholic:#C9A0A5;--shelf-reformed:#A5B7C6;--shelf-lutheran:#97B8AE;--shelf-humanism:#BEAE91}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-theme="sepia"]){--detail:#B9BCB8;--detail-rule:#3A3D3F;--shelf-latin:#D09A7E;--shelf-greek:#9FB5D3;--shelf-eastern:#C7AD78;--shelf-english:#A4B7A4;--shelf-medieval:#B9ACCA;--shelf-catholic:#C9A0A5;--shelf-reformed:#A5B7C6;--shelf-lutheran:#97B8AE;--shelf-humanism:#BEAE91}}
+:root[data-theme="dark"]{--detail:#B9BCB8;--detail-rule:#3A3D3F;--shelf-latin:#D09A7E;--shelf-greek:#9FB5D3;--shelf-eastern:#C7AD78;--shelf-english:#A4B7A4;--shelf-medieval:#B9ACCA;--shelf-catholic:#C9A0A5;--shelf-reformed:#A5B7C6;--shelf-lutheran:#97B8AE;--shelf-humanism:#BEAE91}
 [data-shelf="Latin Fathers"]{--shelfc:var(--shelf-latin)}[data-shelf="Greek Fathers"]{--shelfc:var(--shelf-greek)}[data-shelf="Eastern Fathers"]{--shelfc:var(--shelf-eastern)}[data-shelf="English Divines"]{--shelfc:var(--shelf-english)}[data-shelf="Medieval"]{--shelfc:var(--shelf-medieval)}[data-shelf="Roman Catholic"]{--shelfc:var(--shelf-catholic)}[data-shelf="Reformed"],[data-shelf="Continental Reformed"]{--shelfc:var(--shelf-reformed)}[data-shelf="Lutheran"]{--shelfc:var(--shelf-lutheran)}[data-shelf="Humanism and Law"]{--shelfc:var(--shelf-humanism)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-theme="sepia"]),:root[data-site]:not([data-theme="light"]):not([data-theme="sepia"]){--bg:#222320;--bg-warm:#272824;--card:#2B2C29;--card-bg:#2B2C29;--panel:#2B2C29;--paper:#2B2C29;--sidebar:#242521;--sidebar-bg:#242521;--fg:#E9E9E5;--head:#E9E9E5;--ink:#E9E9E5;--accent:#E9E9E5;--accent2:#D2D3CB;--muted:#B0B0A8;--border:#454740;--line:#454740;--hl:#373932;--highlight:#373932;--rule-soft:#3A3C35;--accent-soft:#868A7E;--latin:#E9E9E5;--english:#E9E9E5;--masthead:#2B2C29;--masthead-ink:#E9E9E5;--facs-mat:#1C1D1B}}
-:root[data-theme="dark"],:root[data-site][data-theme="dark"]{--bg:#222320;--bg-warm:#272824;--card:#2B2C29;--card-bg:#2B2C29;--panel:#2B2C29;--paper:#2B2C29;--sidebar:#242521;--sidebar-bg:#242521;--fg:#E9E9E5;--head:#E9E9E5;--ink:#E9E9E5;--accent:#E9E9E5;--accent2:#D2D3CB;--muted:#B0B0A8;--border:#454740;--line:#454740;--hl:#373932;--highlight:#373932;--rule-soft:#3A3C35;--accent-soft:#868A7E;--latin:#E9E9E5;--english:#E9E9E5;--masthead:#2B2C29;--masthead-ink:#E9E9E5;--facs-mat:#1C1D1B}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-theme="sepia"]),:root[data-site]:not([data-theme="light"]):not([data-theme="sepia"]){--bg:#1C1D1E;--bg-warm:#202122;--card:#222426;--card-bg:#222426;--panel:#222426;--paper:#222426;--sidebar:#1C1E20;--sidebar-bg:#1C1E20;--fg:#DAD9D5;--head:#DAD9D5;--ink:#DAD9D5;--accent:#DAD9D5;--accent2:#C8C8C4;--muted:#ABADA9;--border:#3A3D3F;--line:#3A3D3F;--hl:#2D3032;--highlight:#2D3032;--rule-soft:#303336;--accent-soft:#777B7D;--latin:#DAD9D5;--english:#DAD9D5;--masthead:#222426;--masthead-ink:#DAD9D5;--facs-mat:#17191A}}
+:root[data-theme="dark"],:root[data-site][data-theme="dark"]{--bg:#1C1D1E;--bg-warm:#202122;--card:#222426;--card-bg:#222426;--panel:#222426;--paper:#222426;--sidebar:#1C1E20;--sidebar-bg:#1C1E20;--fg:#DAD9D5;--head:#DAD9D5;--ink:#DAD9D5;--accent:#DAD9D5;--accent2:#C8C8C4;--muted:#ABADA9;--border:#3A3D3F;--line:#3A3D3F;--hl:#2D3032;--highlight:#2D3032;--rule-soft:#303336;--accent-soft:#777B7D;--latin:#DAD9D5;--english:#DAD9D5;--masthead:#222426;--masthead-ink:#DAD9D5;--facs-mat:#17191A}
 :root[data-theme="sepia"],:root[data-site][data-theme="sepia"]{--bg:#EEE7D9;--card:#FAF6EC;--card-bg:#FAF6EC;--panel:#FAF6EC;--paper:#FAF6EC;--sidebar:#EEE7D9;--sidebar-bg:#EEE7D9;--fg:#302C24;--head:#302C24;--ink:#302C24;--accent:#302C24;--accent2:#514A3D;--muted:#6D6557;--border:#D8D0C1;--line:#D8D0C1;--hl:#E7DFCF;--highlight:#E7DFCF;--rule-soft:#E2DACB;--latin:#302C24;--english:#302C24;--masthead:#FAF6EC;--masthead-ink:#302C24}
 body{ -webkit-font-smoothing:antialiased }
 body::after{display:none!important}
@@ -121,10 +121,10 @@ body:has(#rail.open) #fra-launcher,body:has(#docs.open) #fra-launcher{display:no
 #deskScrim{position:fixed;inset:0;z-index:35;border:0;background:rgba(0,0,0,.18);padding:0;width:100%;height:100%}
 #deskScrim[hidden]{display:none}
 
-/* Soft graphite for long academic reading; explicit and system themes agree. */
+/* Neutral graphite for long academic reading; explicit and system themes agree. */
 :root{color-scheme:light;--control-border:var(--border)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-theme="sepia"]){color-scheme:dark;--control-border:#7D8075}}
-:root[data-theme="dark"]{color-scheme:dark;--control-border:#7D8075}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-theme="sepia"]){color-scheme:dark;--control-border:#767C80}}
+:root[data-theme="dark"]{color-scheme:dark;--control-border:#767C80}
 ::selection{background:var(--fg);color:var(--bg)}
 #ed{caret-color:var(--fg)}
 #ed a{text-decoration:underline;text-underline-offset:3px}
@@ -215,3 +215,10 @@ body #notebook .nb-head,body #notebook .nb-destinations,body #rail .rl-tabs,body
  #reading .fmark>.ff,#reading .fmark>.fm{display:none!important}
  #reading .pganchor[data-page]{display:inline-block!important;width:1px!important;min-width:0!important;max-width:1px!important;height:1px!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important;font-size:0!important;line-height:0!important;overflow:hidden!important;clip-path:inset(50%);opacity:0!important;pointer-events:none!important;vertical-align:baseline}
 }
+
+/* Calm reader chrome: one neutral surface hierarchy in dark mode. */
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-theme="sepia"]){--detail:var(--muted);--detail-rule:var(--border)}}
+:root[data-theme="dark"]{--detail:var(--muted);--detail-rule:var(--border)}
+html:not(.fr-plain) .ph.fr-reader-head,html:not(.fr-plain) #notebook,html:not(.fr-plain) .frthumb{box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+html:not(.fr-plain) #nav .nav-node.on{background:var(--hl);border-left-color:var(--fg)}
+html:not(.fr-plain) #notebook .nb-context-label{color:var(--muted)}

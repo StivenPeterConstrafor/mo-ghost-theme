@@ -48,6 +48,55 @@
     const row=w=>'<div class="annotation-volume"><div><strong>'+escape(w.title)+'</strong>'+(w.volume?'<span>'+escape(w.volume)+'</span>':'')+'<small>'+escape(w.hit?w.hit.heading:w.available?'No matching book section in the available contents.':'The table of contents is unavailable. Browse the volume to find a passage.')+'</small></div><a href="'+readerURL(w.slug,w.hit?.page)+'" target="_blank" rel="noopener">'+(w.hit?.kind==='chapter'?'Read chapter':w.hit?.kind==='citation'?'Read cited passage':w.hit?'Read book section':'Browse volume')+'</a></div>';
     container.innerHTML=(matched.length?matched.map(row).join(''):'<p class="scripture-status">A matching section could not be located. You can browse the volumes below.</p>')+(rest.length?'<details class="annotation-other"'+(!matched.length?' open':'')+'><summary>Browse '+rest.length+' '+(matched.length?'other ':'')+'volume'+(rest.length===1?'':'s')+'</summary>'+rest.map(row).join('')+'</details>':'');
   }
-  const api={escape,readerURL,bibleURL,roman,bookMatch,locate,family,catalogue,volumes,renderVolumes};
+
+  const foldName=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  function verseGroups(rows,works=new Map()){
+    const authors=new Map();
+    for(const row of rows||[]){const author=String(row.a||'Unattributed'),slug=String(row.w||''),meta=works.get(slug)||{};
+      if(!authors.has(author))authors.set(author,{author,records:0,works:new Map()});const a=authors.get(author);a.records++;
+      if(!a.works.has(slug))a.works.set(slug,{slug,title:meta.title_en||meta.title||row.wt||slug||'Work not identified',volume:meta.volume||'',records:0,pages:new Map()});
+      const w=a.works.get(slug),page=row.p==null?'':String(row.p);w.records++;w.pages.set(page,(w.pages.get(page)||0)+1);
+    }
+    return [...authors.values()].map(a=>({...a,works:[...a.works.values()].map(w=>({...w,pages:[...w.pages].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true}))}))})).sort((a,b)=>b.records-a.records||a.author.localeCompare(b.author));
+  }
+  const webVerseURL=(book,ch,state={})=>'/the-faith-received/web/#v='+encodeURIComponent(book)+'/'+ch+'?'+new URLSearchParams({verse:state.verse||1,...state.author?{author:state.author}:{},...state.query?{q:state.query}:{},...state.page?{page:state.page}:{}});
+  async function renderWebVerse(host,chapter,options={}){
+    const E=root.FRConnectionEvidence,verses=chapter.verses||[],book=options.book,ch=options.ch;
+    let verse=verses.find(v=>String(v.v)===String(options.verse))||verses[0],author=options.author||'',query=options.query||'',page=+options.page||0;
+    let works=new Map();try{works=(await root.FRResearchData.corpus()).works;}catch(_){}if(!host.isConnected)return;
+    if(!verse){host.innerHTML='<p class="scripture-status">No verses are available for this chapter.</p>';return;}
+    const state=()=>({verse:verse.v,author,query,page}),remember=()=>options.onChange?.(state());
+    host.classList.add('web-scripture-evidence','connection-evidence');
+    host.innerHTML=`<div class="web-verse-nav"><button type="button" data-verse-prev aria-label="Previous verse">Previous</button><label>Verse<select data-verse>${verses.map(v=>`<option value="${v.v}">${v.v}</option>`).join('')}</select></label><button type="button" data-verse-next aria-label="Next verse">Next</button></div><article class="web-selected-verse"></article><label class="web-verse-find">Find an author or work<input type="search" data-verse-query placeholder="Luther, Augustine, or a work title"></label><p class="scripture-status" data-verse-count role="status"></p><div class="web-verse-authors"></div><nav class="ce-pager" aria-label="Verse author pages"><button data-authors-prev>Previous</button><span data-author-page></span><button data-authors-next>Next authors</button></nav>`;
+    const find=s=>host.querySelector(s);find('[data-verse-query]').value=query;
+    function renderAuthors(){
+      const groups=verseGroups(verse.rows,works),q=foldName(query),hits=groups.filter(a=>!q||foldName([a.author,...a.works.map(w=>w.title+' '+w.volume)].join(' ')).includes(q));
+      const win=E.pageWindow(hits,page,12);page=win.page;
+      find('[data-verse-count]').textContent=hits.length+(hits.length===1?' author':' authors')+(q?' matching your search':'')+' · '+(q?hits.reduce((n,a)=>n+a.records,0).toLocaleString()+' of ':'')+(verse.rows||[]).length.toLocaleString()+' available indexed records. Multiple records can refer to the same source location.';
+      find('[data-author-page]').textContent='Page '+(win.page+1)+' of '+win.pages;find('[data-authors-prev]').disabled=win.page===0;find('[data-authors-next]').disabled=win.page+1===win.pages;
+      find('.web-verse-authors').innerHTML=win.items.map((a,i)=>`<details class="web-verse-author" data-verse-author="${i}"${a.author===author?' open':''}><summary><span>${escape(a.author)}</span><small>${a.works.length} ${a.works.length===1?'work':'works'} · ${a.records} records</small></summary><div class="web-author-works"></div></details>`).join('')||'<p class="scripture-status">No author or work matches. Clear the search to see the available sources.</p>';
+      host.querySelectorAll('[data-verse-author]').forEach(d=>{const a=win.items[+d.dataset.verseAuthor];let loaded=false;
+        const open=()=>{if(!d.open){if(author===a.author){author='';remember();}return;}author=a.author;host.querySelectorAll('.web-verse-author[open]').forEach(other=>{if(other!==d)other.open=false;});remember();if(loaded)return;loaded=true;
+          const target=d.querySelector('.web-author-works');let workPage=0;const recordPages=new Map();
+          function workList(){const ordered=root.FRResearch?.orderedWorks?root.FRResearch.orderedWorks(a.works,w=>({...works.get(w.slug),w:w.slug})):a.works;const wwin=E.pageWindow(ordered,workPage,6);workPage=wwin.page;
+            target.innerHTML=(wwin.pages>1?`<nav class="ce-pager" aria-label="Source work pages"><button data-work-prev${!workPage?' disabled':''}>Previous</button><span>Works ${wwin.start+1}–${wwin.end} of ${a.works.length}</span><button data-work-next${workPage+1===wwin.pages?' disabled':''}>Next works</button></nav>`:'')+wwin.items.map((w,i)=>`<details class="ce-work" data-verse-work="${i}"${i===0?' open':''}><summary><span><strong>${escape(w.title)}${w.volume?' · '+escape(w.volume):''}</strong></span><small class="ce-n">${w.pages.length} source ${w.pages.length===1?'location':'locations'}</small></summary><div class="web-work-sources"></div></details>`).join('');
+            target.querySelector('[data-work-prev]')?.addEventListener('click',()=>{workPage--;workList();});target.querySelector('[data-work-next]')?.addEventListener('click',()=>{workPage++;workList();});
+            target.querySelectorAll('[data-verse-work]').forEach(wd=>{const w=wwin.items[+wd.dataset.verseWork],body=wd.querySelector('.web-work-sources');
+              const draw=()=>{const p=E.pageWindow(w.pages,recordPages.get(w.slug)||0,5);recordPages.set(w.slug,p.page);
+                body.innerHTML=(p.pages>1?`<nav class="ce-pager" aria-label="Source location pages"><button data-source-prev${!p.page?' disabled':''}>Previous</button><span>${p.start+1}–${p.end} of ${w.pages.length}</span><button data-source-next${p.page+1===p.pages?' disabled':''}>Next</button></nav>`:'')+p.items.map(([loc,n])=>{const url=w.slug?readerURL(w.slug,loc):'';return `<article class="web-verse-source"><p class="scripture-status">${loc?'Source location '+escape(loc):'Location not supplied'}${n>1?' · '+n+' indexed records':''}</p>${url?`<div class="web-source-actions"><a href="${escape(url)}" target="_blank" rel="noopener">Open source</a>${options.saveBtn?.(w.slug,loc,w.title,a.author,chapter.book+' '+ch+':'+verse.v)||''}</div>${E.preview(url)}`:'<p>The source work has not been identified.</p>'}</article>`;}).join('');E.bindPreviews(body);
+                body.querySelector('[data-source-prev]')?.addEventListener('click',()=>{recordPages.set(w.slug,p.page-1);draw();});body.querySelector('[data-source-next]')?.addEventListener('click',()=>{recordPages.set(w.slug,p.page+1);draw();});};draw();
+            });
+          }workList();
+        };d.addEventListener('toggle',open);if(d.open)open();
+      });remember();
+    }
+    function showVerse(){const index=verses.indexOf(verse);find('[data-verse]').value=verse.v;find('[data-verse-prev]').disabled=index===0;find('[data-verse-next]').disabled=index===verses.length-1;
+      find('.web-selected-verse').innerHTML=`<h3>${escape(chapter.book)} ${ch}:${verse.v}</h3><p>${escape(verse.t||'Verse text is unavailable.')}</p><a href="${bibleURL(book,ch,verse.v)}" target="_blank" rel="noopener">Explore this verse in Scripture</a>`;renderAuthors();}
+    function changeVerse(v){verse=v;page=0;author='';showVerse();options.onVerse?.(state());}
+    find('[data-verse]').onchange=e=>changeVerse(verses.find(v=>String(v.v)===e.target.value)||verses[0]);find('[data-verse-prev]').onclick=()=>changeVerse(verses[Math.max(0,verses.indexOf(verse)-1)]);find('[data-verse-next]').onclick=()=>changeVerse(verses[Math.min(verses.length-1,verses.indexOf(verse)+1)]);
+    find('[data-verse-query]').oninput=e=>{query=e.target.value;page=0;renderAuthors();};find('[data-authors-prev]').onclick=()=>{page--;renderAuthors();find('.web-verse-authors').scrollIntoView({block:'start'});};find('[data-authors-next]').onclick=()=>{page++;renderAuthors();find('.web-verse-authors').scrollIntoView({block:'start'});};showVerse();return {state};
+  }
+
+  const api={verseGroups,webVerseURL,renderWebVerse,escape,readerURL,bibleURL,roman,bookMatch,locate,family,catalogue,volumes,renderVolumes};
   if(typeof module==='object'&&module.exports)module.exports=api;else root.FRScripture=api;
 })(typeof window==='undefined'?globalThis:window);

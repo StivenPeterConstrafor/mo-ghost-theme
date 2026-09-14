@@ -149,9 +149,9 @@
       if(edit.before!==undefined&&str(collection.memo)!==edit.before)throw error('These working notes changed in another view. Your draft is kept; copy it before reloading.');
       collection.memo=str(edit.text);
     }else{
-      const at=findItemIndex(collection,edit.key,edit.index),item=collection.items[at],field=item.type==='note'?'text':'note';
+      const at=findItemIndex(collection,edit.key,edit.index),item=collection.items[at],field=edit.field==='note'?'note':item.type==='note'?'text':'note';
       if(edit.before!==undefined&&str(item[field])!==edit.before)throw error('This note changed in another view. Your draft is kept; copy it before reloading.');
-      editCollectionItem(collection,edit.key,edit.text,at);
+      protectUnresolvedEdges(collection);item[field]=str(edit.text);
     }
     commitCollections(state.collections,store);return {collections:state.collections,text:str(edit.text)};
   }

@@ -209,5 +209,23 @@ function locator(data,page){
  return chapter?"Part "+part+" · ch. "+chapter[1]:node.title.startsWith("Index:")?"Part "+part+" · Index":node.title.startsWith("Front matter")?"Front matter":node.title;
 }
 
-return {isConfession,chapterLabel,contents,catalogue,outline,locator,exactHeading};
+// Group only published index pages, using the existing outline for section labels.
+// Page IDs are opaque; sequence comes from the edition's page inventory.
+function indexSections(entries,outline,pages){
+ const order=new Map((pages||[]).map((p,i)=>[string(p.n),i])),seen=new Set();
+ const heads=(outline||[]).map((h,i)=>({...h,key:i,page:string(h.page),position:order.get(string(h.page))})).filter(h=>h.position!==undefined&&/\b(index|indices|contents|tabula|errata)\b/i.test(h.title||'')).sort((a,b)=>a.position-b.position||a.key-b.key);
+ const labels={quaestionum:'Index of questions',errata:'Errata',citations:'Index of citations',topical:'Index',alphabetic:'Index',contents:'Contents'};
+ const groups=[];let prior=null;
+ for(const [raw,kind] of entries||[]){
+  const page=string(raw);if(!page||seen.has(page))continue;seen.add(page);
+  const position=order.get(page);let head=null;
+  if(position!==undefined)for(const h of heads){if(h.position>position)break;head=h;}
+  const key=head?'outline:'+head.key:'kind:'+kind;
+  if(!prior||prior.key!==key){const sourceTitle=head?.title||labels[kind]||'Index',parts=sourceTitle.split(' — '),tail=parts.slice(1).join(' — '),letters=tail.replace(/[^A-Za-z]/g,'');const title=parts.length>1&&letters&&letters===letters.toUpperCase()?parts[0]:sourceTitle;prior={key,title,sourceTitle,pages:[]};groups.push(prior);}
+  prior.pages.push(page);
+ }
+ return groups;
+}
+
+return {isConfession,chapterLabel,contents,catalogue,outline,locator,exactHeading,indexSections};
 });

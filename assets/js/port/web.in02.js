@@ -5,8 +5,8 @@ const BLOB="https://mo-tfr-library.mo-podcast-feed.workers.dev";
 // the intro card bows out after the first travel
 addEventListener("keydown",e=>{
   if(((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k")||(e.key==="/"&&!/input|textarea|select/i.test((document.activeElement||{}).tagName||""))){
-    e.preventDefault();const q=document.getElementById("q");q.focus();q.select();}
-  if(e.key==="Escape"){const px=document.getElementById("px");if(document.getElementById("panel").classList.contains("open"))px.click();}});
+    e.preventDefault();if(innerWidth<=1150&&document.getElementById("panel").classList.contains("open"))document.getElementById("px").click();const q=document.getElementById("q");q.focus();q.select();}
+  if(e.key==="Escape"&&!document.querySelector("header.site .fr-explore[open]")){const px=document.getElementById("px");if(document.getElementById("panel").classList.contains("open"))px.click();}});
 addEventListener("pointerdown",function _f(){document.body.classList.add("moved");removeEventListener("pointerdown",_f);},{once:true});
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -17,7 +17,7 @@ const J=u=>fetch(u).then(r=>{if(!r.ok)throw 0;return r.json();});
 
 /* ── the corpus ─────────────────────────────────────────────────────────────── */
 let ERAC={};
-const ERAL={E:"Early patristic",L:"Later patristic",C:"Carolingian",H:"High medieval",R:"Reformation",P:"17th century onward"};
+const ERAL={E:"Early patristic",L:"Later patristic",C:"Early medieval",H:"High medieval",R:"Reformation",P:"17th century onward"};
 const ERAMID={E:275,L:480,C:850,H:1230,R:1545,P:1660};
 const COMC={};const COMPAL=["#E8A94C","#D07A50","#7FA3C2","#B287AD","#7FB397","#A8B86A","#C9A96E"];
 let NODES=[],BYS={},EDGES=[],EXAMPLE_EDGES=[],ADJ=null,READY=false;
@@ -434,8 +434,10 @@ $("#shsel").addEventListener("change",e=>{scopeShelf(e.target.value);});
 
 /* ── the paper panel ────────────────────────────────────────────────────────── */
 const panel=$("#panel"),pbody=$("#pbody");
-function openPanel(t,sub){$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");panel.inert=false;const key=location.hash.slice(1).split("=")[0],mode=({v:"verse",t:"topic",p:"path",paths:"path",topics:"topic",shelves:"shelves"})[key]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));$("#pt").innerHTML=t;$("#ps").innerHTML=sub||"";panel.classList.add("open");document.body.classList.add("popen");requestAnimationFrame(resize);$("#pt").focus({preventScroll:true});renderAuthorIndex();}
-$("#px").onclick=()=>{$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;draw();
+function syncPanelAccess(){const open=panel.classList.contains("open"),shelf=document.body.classList.contains("shelf-comparison");$("#explorer").inert=open&&(innerWidth<=1150||shelf);$("#atlas").inert=open&&(innerWidth<=760||shelf);}
+addEventListener("resize",syncPanelAccess);
+function openPanel(t,sub){stashJourney();$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");panel.inert=false;const key=location.hash.slice(1).split("=")[0],mode=({v:"verse",t:"topic",p:"path",paths:"path",journey:"path",topics:"topic",shelves:"shelves"})[key]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));$("#pt").innerHTML=t;$("#ps").innerHTML=sub||"";panel.classList.add("open");document.body.classList.add("popen");syncPanelAccess();requestAnimationFrame(resize);$("#pt").focus({preventScroll:true});renderAuthorIndex();}
+$("#px").onclick=()=>{stashJourney();$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;draw();
   history.pushState(null,"","#");$("#map-title").textContent="The citation network";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m==="sky"));fitNodes(NODES.filter(n=>!hidden(n)).map(n=>n.i));renderAuthorIndex();requestAnimationFrame(resize);restoreExplorerFocus();};
 const shard=s=>gz(BLOB+"/v1/reception/"+s+".json.gz");
 let _COMMS=null;
@@ -491,9 +493,9 @@ async function openAuthor(slug,push=true){
     ((d[k]||{}).rows||[]).forEach(r=>Object.entries(r.how||{}).forEach(([h,c])=>hows[h]=(hows[h]||0)+c)));
   const eRow=(r,dir)=>{
     const link=BYS[r.fk]?` <i data-go="${esc(r.fk)}" style="cursor:pointer;color:var(--accent)">View author</i>`:"";
-    const sms=(r.sm||[]).slice(0,4).map(s=>{const u=FRScripture.readerURL(s.cw,s.p),hl=s.sf?u.replace('#','&hl='+encodeURIComponent(String(s.sf).slice(0,120))+'#'):u;return `<div class="sm"><div class="q">“${esc(s.sf||s.loc||"")}”</div>
+    const sms=(r.sm||[]).slice(0,4).map(s=>{const u=FRScripture.readerURL(s.cw,s.p),hl=u;return `<div class="sm"><div class="q">“${esc(s.sf||s.loc||"")}”</div>
       <div class="m"><span>${esc(s.ct||s.cw||"")}${s.loc?" · "+esc(s.loc):""}</span>
-      <a href="${hl}" target="_blank">open p. ${s.p} →</a>${saveBtn(s.cw,s.p,s.ct||s.cw,dir==="in"?r.a:n.a,(s.sf||'')+(s.loc?' — '+s.loc:''))}</div>${FRShelfMap.previewHTML(hl)}</div>`;}).join("")
+      <a href="${hl}" target="_blank">Open ${/^pld-/.test(s.cw)?'col.':'p.'} ${s.p} →</a>${saveBtn(s.cw,s.p,s.ct||s.cw,dir==="in"?r.a:n.a,(s.sf||'')+(s.loc?' — '+s.loc:''))}</div>${FRShelfMap.previewHTML(hl)}</div>`;}).join("")
       ||'<div class="sm"><div class="m">no sampled passages on this edge</div></div>';
     const cslug=dir==="in"?r.fk:slug, tslug2=dir==="in"?slug:r.fk;
     const pu2=pairURL(slug,r.fk);
@@ -519,30 +521,32 @@ async function openAuthor(slug,push=true){
       attrH=`<p style="font-size:.8rem;color:var(--gold);margin:.2rem 0 .5rem">${esc(mine.length>1?mine.length+" of his shelved volumes are "+note:note)}</p>`;}
   }catch(_){}
   if(__my!==__PSEQ)return;
-  pbody.innerHTML=`${collH}${attrH}${bioH}
+  pbody.innerHTML=`<details class="web-author-about"><summary>About this author and index</summary>${collH}${attrH}${bioH}
     <div class="metr">
       <div><b>${inn.length.toLocaleString()}</b>citing authors</div>
       <div><b>${fmt(n.win)}</b>times cited</div>
       <div><b>${fmt(n.wout)}</b>citations made</div>
     </div>
     ${inn.length!==(n.din||0)?`<p class="index-coverage">The passage index lists ${inn.length.toLocaleString()} citing authors; the graph index lists ${(n.din||0).toLocaleString()}. Their coverage differs.</p>`:""}
-    <div class="hows">${Object.entries(hows).sort((a,b)=>b[1]-a[1]).map(([h,c])=>`<span><b>${fmt(c)}</b> ${esc(h)}</span>`).join("")}</div>
+    <div class="hows">${Object.entries(hows).sort((a,b)=>b[1]-a[1]).map(([h,c])=>`<span><b>${fmt(c)}</b> ${esc(h)}</span>`).join("")}</div></details>
     <div class="pbtns">
       <a class="pbtn warm" href="${journeyURL([slug],'in')}">Follow reception</a><a class="pbtn" href="${journeyURL([slug],'out')}">Follow sources</a><button class="pbtn" id="bpath">Find a connecting path</button>
       ${window.__ROOMS&&window.__ROOMS[slug]?`<a class="pbtn" href="/the-faith-received/fathers/?sh=${esc(window.__ROOMS[slug].sh)}#${esc(slug)}">Author room</a><a class="pbtn" href="${pairURL(slug,'')}">Compare with another author</a>`:""}
     </div>
     <div class="relation-tools"><label for="relation-query">Find a connection<input id="relation-query" type="search" placeholder="Filter connected authors"></label></div>
-    <p id="relation-feedback" role="status"></p><h3 class="psect" id="relations-in-count">Cited by ${inn.length} authors</h3><div class="web-pane" data-relations="in">${inn.map(r=>eRow(r,"in")).join("")}</div>
-    <h3 class="psect" id="relations-out-count">Cites ${out.length} authors</h3><div class="web-pane" data-relations="out">${out.map(r=>eRow(r,"out")).join("")}</div>`;
-  pbody.querySelectorAll(".edge .er").forEach(el=>el.addEventListener("click",e=>{
-    const go=e.target.closest("[data-go]");
-    if(go){openAuthor(go.dataset.go);return;}
-    if(el.tagName!=="SUMMARY")el.parentElement.classList.toggle("open");}));
-  pbody.querySelectorAll("[data-edge]").forEach(el=>el.onclick=()=>{
-    const [c2,t2]=el.dataset.edge.split("|");openEdge(c2,t2,slug);});
-  FRShelfMap.bindPreviews(pbody);
-  $("#bpath").onclick=()=>{openPathPicker();$("#path-from").value=n.a;$("#path-to").focus();};
-  $("#relation-query").oninput=e=>{const term=e.target.value.trim().toLowerCase();let all=0;[['in','Cited by'],['out','Cites']].forEach(([dir,label])=>{const rows=[...pbody.querySelectorAll('[data-relations="'+dir+'"] .edge')];let visible=0;rows.forEach(row=>{row.hidden=!row.querySelector('.nm').textContent.toLowerCase().includes(term);if(!row.hidden)visible++;});all+=visible;$('#relations-'+dir+'-count').textContent=label+' '+visible+(term?' of '+rows.length:'')+' authors';});$('#relation-feedback').textContent=all?'':'No connected authors match this name. Try another spelling.';};
+    <p id="relation-feedback" role="status"></p><h3 class="psect" id="relations-in-count">Cited by ${inn.length} authors</h3><div class="web-pane" data-relations="in"></div>
+    <h3 class="psect" id="relations-out-count">Cites ${out.length} authors</h3><div class="web-pane" data-relations="out"></div>`;
+  const relationPages={in:0,out:0};
+  function renderRelations(){const term=$('#relation-query').value.trim().toLowerCase();let total=0;
+   for(const [dir,label,all] of [['in','Cited by',inn],['out','Cites',out]]){const rows=all.filter(r=>!term||String(r.a).toLowerCase().includes(term)),box=pbody.querySelector('[data-relations="'+dir+'"]'),win=FRConnectionEvidence.pageWindow(rows,relationPages[dir],12);relationPages[dir]=win.page;total+=rows.length;
+    $('#relations-'+dir+'-count').textContent=label+' '+rows.length+(term?' of '+all.length:'')+' authors';
+    box.innerHTML=win.items.map(r=>eRow(r,dir)).join('')+(win.pages>1?`<nav class="ce-pager" aria-label="${label} author pages"><button data-relation-page="${win.page-1}"${win.page===0?' disabled':''}>Previous</button><span>Page ${win.page+1} of ${win.pages}</span><button data-relation-page="${win.page+1}"${win.page+1===win.pages?' disabled':''}>Next</button></nav>`:'');
+    box.querySelectorAll('[data-relation-page]').forEach(button=>button.onclick=()=>{relationPages[dir]=Number(button.dataset.relationPage);renderRelations();box.scrollIntoView({block:'start'});});
+    box.querySelectorAll('[data-edge]').forEach(button=>button.onclick=()=>{const [c,t]=button.dataset.edge.split('|');openEdge(c,t,slug);});box.querySelectorAll('[data-go]').forEach(button=>button.onclick=()=>openAuthor(button.dataset.go));FRShelfMap.bindPreviews(box);
+   }$('#relation-feedback').textContent=total?'':'No connected authors match this name. Try another spelling.';
+  }
+  $('#bpath').onclick=()=>{openPathPicker();$('#path-from').value=n.a;$('#path-to').focus();};
+  $('#relation-query').oninput=()=>{relationPages.in=relationPages.out=0;renderRelations();};renderRelations();
   pbody.scrollTop=0;
 }
 
@@ -582,63 +586,88 @@ async function openPath(...args){
  const chain=path.map(i=>NODES[i].s);
  openJourney(chain,direction,{push});
 }
-const journeyBranches=[],journeySelections=new Map();
-function journeyURL(chain,direction='in',work='',targetWork=''){return '/the-faith-received/web/#journey='+chain.map(encodeURIComponent).join(',')+'?'+new URLSearchParams({direction,...work?{work}:{},...targetWork?{targetWork}:{}});}
-function rememberJourney(chain,direction,work,targetWork){if(chain.length<2)return;const url=journeyURL(chain,direction,work,targetWork);if(!journeyBranches.some(b=>b.url===url))journeyBranches.unshift({url,label:chain.map(s=>BYS[s]?.a||s).join(' · ')});if(journeyBranches.length>12)journeyBranches.length=12;}
+const journeyBranches=[],journeySelections=new Map(),journeyViews=new Map();let activeJourney=null;
+function stashJourney(){if(!activeJourney)return;const active=activeJourney;activeJourney=null;journeyViews.delete(active.key);journeyViews.set(active.key,active.capture());while(journeyViews.size>12)journeyViews.delete(journeyViews.keys().next().value);active.stop();}
+function journeyURL(chain,direction='in',work='',targetWork='',reference='',via=[]){return '/the-faith-received/web/#journey='+chain.map(encodeURIComponent).join(',')+'?'+new URLSearchParams({direction,...work?{work}:{},...targetWork?{targetWork}:{},...reference?{reference}:{},...(direction==='either'&&via.length)?{via:via.join(',')}:{}});}
+function rememberJourney(chain,direction,work,targetWork,via=[]){if(!chain.length)return;const url=journeyURL(chain,direction,work,targetWork,'',via);if(!journeyBranches.some(b=>b.url===url))journeyBranches.unshift({url,label:chain.map(s=>BYS[s]?.a||s).join(' › ')+' · '+(direction==='in'?'Reception':direction==='out'?'Sources':'Both directions')});if(journeyBranches.length>12)journeyBranches.length=12;}
 async function openJourney(chain,direction='in',options={}){
- const token=++__PSEQ;direction=['in','out','either'].includes(direction)?direction:'in';const work=options.work||'',targetWork=options.targetWork||'';
+ stashJourney();const token=++__PSEQ;direction=['in','out','either'].includes(direction)?direction:'in';const work=options.work||'',targetWork=options.targetWork||'',via=options.via||[];
  const nodes=chain.map(s=>BYS[s]);
- if(!nodes.length||nodes.some(n=>!n)){openPanel('Citation journey','An author in this link is not present in the citation graph.');pbody.innerHTML='<p class="ce-note">Use the author index to choose a published graph entry.</p>';return;}
+ if(!nodes.length||nodes.some(n=>!n)){openPanel('Choose an author','This author is not in the published citation graph.');pbody.innerHTML='<p class="ce-note">Return to the index to find an author.</p><button class="pbtn" id="journey-return">Browse authors</button>';$('#journey-return').onclick=()=>$('#px').click();return;}
  const repeated=chain.findIndex((s,i)=>chain.indexOf(s)!==i);
- if(repeated>=0){openPanel('This journey returns to an earlier author','Repeated authors can create a cycle.');pbody.innerHTML=`<p class="ce-note">${esc(nodes[repeated].a)} already appears at step ${chain.indexOf(chain[repeated])+1}. Return to the preceding step to explore another branch.</p><a class="pbtn" href="${journeyURL(chain.slice(0,repeated),direction,work,targetWork)}">Open the preceding steps</a>`;return;}
+ if(repeated>=0){openPanel('Return to an earlier author','This author already occurs in the path.');pbody.innerHTML=`<p class="ce-note">${esc(nodes[repeated].a)} is at step ${chain.indexOf(chain[repeated])+1}.</p><a class="pbtn" href="${journeyURL(chain.slice(0,chain.indexOf(chain[repeated])+1),direction,work,targetWork,'',via.slice(0,chain.indexOf(chain[repeated])))}">Return to that branch</a>`;return;}
  const steps=[];
  for(let i=0;i<nodes.length-1;i++){
-   const left=nodes[i],right=nodes[i+1],out=EDGES.find(e=>e[0]===left.i&&e[1]===right.i),incoming=EDGES.find(e=>e[0]===right.i&&e[1]===left.i);
-   const edge=direction==='out'?out:direction==='in'?incoming:out||incoming;
-   if(!edge){openPanel('A step is not recorded','This link contains an edge absent from the published graph.');pbody.innerHTML=`<a class="pbtn" href="${journeyURL(chain.slice(0,i+1),direction,work,targetWork)}">Return to the last recorded step</a>`;return;}
-   steps.push({citing:NODES[edge[0]],target:NODES[edge[1]],n:edge[2],key:NODES[edge[0]].s+'|'+NODES[edge[1]].s});
+   const left=nodes[i],right=nodes[i+1],edge=FRConnectionEvidence.journeyEdge(NODES,EDGES,left.i,right.i,direction,via[i]||'');
+   if(!edge){openPanel('A step is not recorded','The published graph does not contain this connection.');pbody.innerHTML=`<a class="pbtn" href="${journeyURL(chain.slice(0,i+1),direction,work,targetWork,'',via.slice(0,i))}">Return to the last recorded step</a>`;return;}
+   steps.push({citing:NODES[edge[0]],target:NODES[edge[1]],count:edge[2],key:NODES[edge[0]].s+'|'+NODES[edge[1]].s});
  }
- if(options.push!==false)history.pushState(null,'',journeyURL(chain,direction,work,targetWork));
- const current=nodes.at(-1),mode=direction==='in'?'Following reception':direction==='out'?'Following sources':'Connecting authors in either direction';
- // the map keeps the current author's neighbourhood in the chosen direction (owner 2026-09-10 "why does web disappear
- // when I click follow sources": the chain alone was one point). The chain stays the highlighted path.
- PATHV=nodes.map(n=>n.i);window.__CHAIN=chain;FOCUS=null;
- const showAround=sel=>{window.__JDIR=sel;const rows=[];for(const e of EDGES){if(e[0]===current.i&&sel!=='in')rows.push([e[1],e[2]]);if(e[1]===current.i&&sel!=='out')rows.push([e[0],e[2]]);}const around=rows.sort((a,b)=>b[1]-a[1]).slice(0,80).map(x=>x[0]);SUBSET=new Set([...PATHV,...around]);fitNodes([...SUBSET]);draw();};
- showAround(direction);
- openPanel('Citation journey',mode+' · '+current.a);
- pbody.innerHTML=`<div class="ce-journey"><p>${direction==='in'?'Each next author cites the preceding author.':direction==='out'?'Each next author is cited by the preceding author.':'This route can alternate citation directions; each step states who cites whom.'} These are documented references, not a verified chain of identical quotations.</p><ol class="ce-chain">${nodes.map((n,i)=>`<li><a href="${journeyURL(chain.slice(0,i+1),direction,work,targetWork)}">${esc(n.a)}</a><small>${esc(ERAL[n.e]||'Period not supplied')}${n.sh?' · '+esc(SHN[n.sh]||n.sh):''}</small></li>`).join('')}</ol><p class="ce-note">Period labels orient the authors. They are not dates of composition or publication.</p><div class="ce-path-steps">${steps.map((step,i)=>`<details class="ce-journey-step" data-journey-step="${i}"${i===steps.length-1?' open':''}><summary>${i+1}. ${esc(step.citing.a)} cites ${esc(step.target.a)}</summary><div class="ce-step-body"><p class="ce-note">Open this step to read its recorded references.</p></div></details>`).join('')}</div>${steps.length?'<button class="ce-save-path" disabled>Save selected journey</button><p class="ce-journey-feedback" id="journey-selection" role="status">Select source passages within a step to save this journey.</p>':''}<h3>Continue from ${esc(current.a)}</h3><label>Follow a direction<select id="journey-direction"><option value="in">Reception: authors who cite this author</option><option value="out">Sources: authors cited by this author</option><option value="either">Connections in either direction</option></select></label><label>Find the next author<input type="search" id="journey-query" placeholder="Filter recorded connections"></label><p class="ce-journey-feedback" id="journey-next-count" role="status"></p><div class="ce-next-list"></div><button class="ce-next-more" hidden>Show more authors</button><details class="ce-branch-history"><summary>Recently explored branches</summary><div></div></details></div>`;
- $('#journey-direction').value=direction;
- const historyBox=$('.ce-branch-history div');historyBox.innerHTML=journeyBranches.filter(b=>b.url!==journeyURL(chain,direction,work,targetWork)).map(b=>`<a href="${esc(b.url)}">${esc(b.label)}</a>`).join('')||'<p class="ce-note">Branches visited in this session appear here.</p>';
+ const stepKeys=steps.map(s=>s.key),current=nodes.at(-1),mode=direction==='in'?'Follow reception':direction==='out'?'Follow sources':'Follow connections';
+ const viewKey=FRConnectionEvidence.journeyViewKey(chain,direction,work,targetWork,stepKeys),resume=journeyViews.get(viewKey),evidenceViews=new Map(Object.entries(resume?.evidence||{})),controllers=new Map(),readyViews=new Set(),viewEvents=new AbortController();let restorePending=!!resume;
+ if(options.push!==false)history.pushState(null,'',journeyURL(chain,direction,work,targetWork,options.reference||'',stepKeys));
+ PATHV=nodes.map(n=>n.i);window.__CHAIN=chain;window.__JDIR=direction;FOCUS=null;
+ const connections=FRConnectionEvidence.journeyConnections(NODES,EDGES,current.i,direction),around=connections.slice(0,80).map(r=>r.node.i);
+ SUBSET=new Set([...PATHV,...around]);fitNodes([...SUBSET]);
+ openPanel(mode,esc(current.a));$('#map-title').textContent=current.a;
+ $('#map-summary').textContent=connections.length.toLocaleString()+' recorded '+(direction==='out'?'source':direction==='in'?'reception':'author')+' connections'+(connections.length>80?' · strongest 80 shown on the map':'');draw();
+ const authorOptions=NODES.slice().sort((a,b)=>a.a.localeCompare(b.a)).map(n=>`<option value="${esc(n.s)}"${n.s===current.s?' selected':''}>${esc(n.a)}${n.sh?' · '+esc(SHN[n.sh]||''):''}</option>`).join('');
+ const heading=direction==='out'?'Cited authors':direction==='in'?'Citing authors':'Connected authors';
+ pbody.innerHTML=`<div class="ce-journey"><nav class="ce-journey-trail" aria-label="Current research path">${nodes.map((n,i)=>i===nodes.length-1?`<span aria-current="step">${esc(n.a)}</span>`:`<a href="${journeyURL(chain.slice(0,i+1),direction,work,targetWork,'',stepKeys.slice(0,i))}">${esc(n.a)}</a>`).join('<span aria-hidden="true">›</span>')}</nav><p class="ce-direction-help">${direction==='out'?'Recorded sources in works indexed under '+esc(current.a)+'.':direction==='in'?'Recorded references to '+esc(current.a)+' in other authors’ works.':'Recorded citations in either direction; each connection names who cites whom.'}</p>${steps.length?`<p class="ce-path-direction">Latest step: ${esc(steps.at(-1).citing.a)} cites ${esc(steps.at(-1).target.a)}.</p>`:''}<div class="ce-direction-switch" aria-label="Citation direction"><button data-journey-direction="out" aria-pressed="${direction==='out'}">Sources</button><button data-journey-direction="in" aria-pressed="${direction==='in'}">Reception</button><button data-journey-direction="either" aria-pressed="${direction==='either'}">Both directions</button></div><details class="ce-journey-options"><summary>Change author or direction</summary><div class="ce-journey-controls"><label>Choose author<select id="journey-author">${authorOptions}</select></label><label>Follow<select id="journey-direction"><option value="out">Sources this author cites</option><option value="in">Authors who cite this author</option><option value="either">Both directions</option></select></label></div></details>${steps.length?`<details class="ce-path-history"><summary>Path so far · ${nodes.length} authors</summary><ol class="ce-chain">${nodes.map((n,i)=>`<li><a href="${journeyURL(chain.slice(0,i+1),direction,work,targetWork,'',stepKeys.slice(0,i))}">${esc(n.a)}</a><small>${n.yok?'c. '+n.y+' · ':''}${esc(SHN[n.sh]||'Indexed author')}</small></li>`).join('')}</ol><div class="ce-path-steps">${FRConnectionEvidence.journeyStepFolds(steps,resume?.openSteps||[])}</div><button class="ce-save-path" disabled>Save selected journey</button><p class="ce-journey-feedback" id="journey-selection" role="status">Select passages from the path to save them together.</p></details>`:''}<div class="ce-connections-heading"><h3>${esc(heading)}</h3><a href="/the-faith-received/web/#a=${encodeURIComponent(current.s)}">Author overview</a></div><label><span class="sr-only">Find a cited author</span><input type="search" id="journey-query" placeholder="Filter these authors"></label><p class="ce-journey-feedback" id="journey-next-count" role="status"></p><div class="ce-next-list"></div><nav class="ce-pager ce-journey-pager" aria-label="Connection pages"><button class="ce-next-previous" hidden>Previous</button><button class="ce-next-more" hidden>Next authors</button></nav><details class="ce-about"><summary>About these connections</summary><p class="ce-note">Open an author to read recorded references, grouped by their citing work. References are indexed under a work’s author; correspondence and editorial material can include other voices. Inspect the source before attributing a statement. Dates describe authors, not publication dates.</p></details><details class="ce-branch-history"><summary>Recently explored branches</summary><div></div></details></div>`;
+ $('#journey-direction').value=direction;$('#journey-query').value=resume?.query||'';if(resume?.pathOpen&&$('.ce-path-history'))$('.ce-path-history').open=true;
+ if(direction!=='out')$('#journey-query').previousElementSibling.textContent='Find a connected author';
+ $('.ce-branch-history div').innerHTML=journeyBranches.filter(b=>b.url!==journeyURL(chain,direction,work,targetWork,'',stepKeys)).map(b=>`<a href="${esc(b.url)}">${esc(b.label)}</a>`).join('')||'<p class="ce-note">Branches you explore in this session appear here.</p>';
  const picked=new Map(steps.filter(step=>journeySelections.has(step.key)).map(step=>[step.key,journeySelections.get(step.key)]));
- const update=()=>{const sources=[...picked.values()].flat();if($('#journey-selection'))$('#journey-selection').textContent=sources.length?sources.length+' selected source passages across '+[...picked.values()].filter(s=>s.length).length+' steps':'Select source passages within a step to save this journey.';if($('.ce-save-path')){$('.ce-save-path').disabled=!sources.length;$('.ce-save-path').textContent='Save selected journey';}};
- if($('.ce-save-path'))$('.ce-save-path').onclick=()=>{const evidenceSteps=steps.filter(s=>picked.get(s.key)?.length).map(s=>({citing:s.citing.s,target:s.target.s,sources:picked.get(s.key)}));return FRConnectionEvidence.save($('.ce-save-path'),FRConnectionEvidence.researchNote('citation-journey',nodes.map(n=>n.a).join(' · '),[...picked.values()].flat(),{url:journeyURL(chain,direction,work,targetWork),authors:nodes.map(n=>n.a),research:{direction,chain:chain.slice(),steps:evidenceSteps}}));};
- pbody.querySelectorAll('[data-journey-step]').forEach(details=>{
-   let loading=false,loaded=false;const step=steps[+details.dataset.journeyStep];
-   const load=async()=>{if(!details.open||loading||loaded)return;loading=true;const body=details.querySelector('.ce-step-body');body.innerHTML='<p class="ce-note" role="status">Loading this step’s source references…</p>';
-     try{const [data,cm]=await Promise.all([FRConnectionEvidence.json('/v1/reception/full/'+encodeURIComponent(step.citing.s)+'.json.gz'),comms()]);if(token!==__PSEQ)return;FRConnectionEvidence.mountCitation(body,{data,citing:step.citing,target:step.target,commentaries:cm,initialWork:+details.dataset.journeyStep===0?work:'',initialTarget:+details.dataset.journeyStep===0?targetWork:'',initialSources:picked.get(step.key)||[],hideSave:true,onSelection:sources=>{picked.set(step.key,sources);journeySelections.set(step.key,sources);update();}});loaded=true;}
-     catch(_){if(token!==__PSEQ)return;body.innerHTML='<p class="ce-note">References for this step could not load.</p><button class="ce-step-retry">Retry this step</button>';body.querySelector('button').onclick=load;}finally{loading=false;}
+ const update=()=>{const sources=[...picked.values()].flat();if($('#journey-selection'))$('#journey-selection').textContent=sources.length?sources.length+' selected '+(sources.length===1?'passage':'passages')+' across '+[...picked.values()].filter(s=>s.length).length+' '+([...picked.values()].filter(s=>s.length).length===1?'connection':'connections'):'Select passages from the path to save them together.';if($('.ce-save-path'))$('.ce-save-path').disabled=!sources.length;};
+ if($('.ce-save-path'))$('.ce-save-path').onclick=()=>FRConnectionEvidence.save($('.ce-save-path'),FRConnectionEvidence.researchNote('citation-journey',nodes.map(n=>n.a).join(' · '),[...picked.values()].flat(),{url:journeyURL(chain,direction,work,targetWork,'',stepKeys),authors:nodes.map(n=>n.a),research:{direction,chain:chain.slice(),steps:steps.filter(s=>picked.get(s.key)?.length).map(s=>({citing:s.citing.s,target:s.target.s,sources:picked.get(s.key)}))}}));
+ function resumeScroll(){if(!restorePending||token!==__PSEQ)return;pbody.scrollTop=resume?.scrollTop||0;const required=[...(resume?.openSteps||[]).map(key=>'step:'+key),...(resume?.openKey?['next:'+resume.openKey]:[])];if(required.every(key=>readyViews.has(key)))restorePending=false;}
+ for(const event of ['wheel','touchstart','pointerdown','keydown'])pbody.addEventListener(event,()=>{restorePending=false;},{passive:true,signal:viewEvents.signal});
+ function wireEvidence(details,step,body,save,first){const viewId=(save?'next:':'step:')+step.key;
+   let loading=false,loaded=false;
+   const load=async()=>{if(!details.open||loading||loaded)return;loading=true;body.innerHTML='<p class="ce-note" role="status">Loading recorded references…</p>';
+     try{const [data,cm]=await Promise.all([FRConnectionEvidence.json('/v1/reception/full/'+encodeURIComponent(step.citing.s)+'.json.gz'),comms()]);if(token!==__PSEQ||!body.isConnected)return;
+       const controller=FRConnectionEvidence.mountCitation(body,{data,initialState:evidenceViews.get(viewId),onReady:()=>{if(body.isConnected&&token===__PSEQ){readyViews.add(viewId);resumeScroll();}},citing:step.citing,target:step.target,commentaries:cm,initialWork:first?work:'',initialTarget:first?targetWork:'',initialSources:journeySelections.get(step.key)||[],hideSave:!save,onSelection:sources=>{journeySelections.set(step.key,sources);if(steps.some(s=>s.key===step.key))picked.set(step.key,sources);update();}});controllers.set(viewId,controller);loaded=true;
+     }catch(_){if(token!==__PSEQ||!body.isConnected)return;body.innerHTML='<p class="ce-note">These references could not load. Your author selection is kept.</p><button type="button">Retry references</button>';body.querySelector('button').onclick=load;}finally{loading=false;}
    };details.addEventListener('toggle',load);if(details.open)load();
- });
- let nextLimit=30;
- const candidates=()=>{const selected=$('#journey-direction').value,rows=[];for(const e of EDGES){if(e[0]===current.i&&selected!=='in')rows.push({n:NODES[e[1]],weight:e[2],relation:'cites'});if(e[1]===current.i&&selected!=='out')rows.push({n:NODES[e[0]],weight:e[2],relation:'cited by'});}return rows.sort((a,b)=>b.weight-a.weight);};
- const renderNext=()=>{const q=$('#journey-query').value.trim().toLowerCase(),rows=candidates().filter(r=>!q||r.n.a.toLowerCase().includes(q)),box=$('.ce-next-list');$('#journey-next-count').textContent='Showing '+Math.min(nextLimit,rows.length)+' of '+rows.length+' recorded connections';$('.ce-next-more').hidden=rows.length<=nextLimit;box.innerHTML=rows.slice(0,nextLimit).map(r=>`<button data-next-author="${esc(r.n.s)}" data-next-relation="${r.relation}"><span>${esc(r.n.a)}${chain.includes(r.n.s)?'<small>Already at step '+(chain.indexOf(r.n.s)+1)+'; return here to branch</small>':''}</span><small>${esc(r.relation)} · ${fmt(r.weight)}</small></button>`).join('')||'<p class="ce-note">No recorded connections match this selection.</p>';box.querySelectorAll('button').forEach(button=>button.onclick=()=>{rememberJourney(chain,direction,work,targetWork);const slug=button.dataset.nextAuthor,prior=chain.indexOf(slug),selected=$('#journey-direction').value,newDirection=chain.length===1?selected:selected===direction?direction:'either';openJourney(prior>=0?chain.slice(0,prior+1):[...chain,slug],newDirection,{work,targetWork});});};
- $('#journey-query').oninput=()=>{nextLimit=30;renderNext();};$('#journey-direction').onchange=()=>{nextLimit=30;renderNext();showAround($('#journey-direction').value);};$('.ce-next-more').onclick=()=>{nextLimit+=30;renderNext();};renderNext();update();pbody.scrollTop=0;
-}
+ }
+ pbody.querySelectorAll('[data-journey-step]').forEach(d=>wireEvidence(d,steps[+d.dataset.journeyStep],d.querySelector('.ce-step-body'),false,+d.dataset.journeyStep===0));
+ let openKey=options.reference||resume?.openKey||'',nextPage=resume?.nextPage??Math.max(0,Math.floor(connections.findIndex(r=>r.key===openKey)/12));
+ const renderNext=()=>{
+   for(const [key,c] of controllers)if(key.startsWith('next:')){if(c.capture)evidenceViews.set(key,c.capture());controllers.delete(key);readyViews.delete(key);}
+   const q=FRConnectionEvidence.fold($('#journey-query').value),rows=connections.filter(r=>!q||FRConnectionEvidence.fold(r.node.a).includes(q)),box=$('.ce-next-list');
+   const win=FRConnectionEvidence.pageWindow(rows,nextPage,12);nextPage=win.page;$('#journey-next-count').textContent=rows.length.toLocaleString()+' '+(rows.length===1?'connection':'connections')+(win.pages>1?' · page '+(win.page+1)+' of '+win.pages:'');$('.ce-next-more').hidden=$('.ce-next-previous').hidden=win.pages===1;$('.ce-next-more').disabled=win.page+1===win.pages;$('.ce-next-previous').disabled=win.page===0;
+   box.innerHTML=win.items.map((r,j)=>{const i=j+win.start;return `<details class="ce-next-author" data-connection-index="${i}"${r.key===openKey?' open':''}><summary><span>${esc(r.node.a)}${direction==='either'?'<small>'+esc(r.citing.a)+' cites '+esc(r.target.a)+'</small>':''}</span><small>${r.count.toLocaleString()} ${r.count===1?'reference':'references'}</small></summary><div class="ce-next-content"><div class="ce-next-actions"><button type="button" data-follow="${i}">${chain.includes(r.node.s)?'Return to this author':direction==='in'?'Follow their reception':direction==='out'?'Follow their sources':'Continue with this author'}</button><a href="/the-faith-received/web/#a=${encodeURIComponent(r.node.s)}">Author overview</a></div><div class="ce-next-evidence"></div></div></details>`;}).join('')||'<p class="ce-note">No recorded connections match. Try another name or direction.</p>';
+   box.querySelectorAll('[data-connection-index]').forEach(d=>{const r=rows[+d.dataset.connectionIndex];d.addEventListener('toggle',()=>{if(d.open){box.querySelectorAll('.ce-next-author[open]').forEach(other=>{if(other!==d)other.open=false;});openKey=r.key;history.replaceState(null,'',journeyURL(chain,direction,work,targetWork,openKey,stepKeys));}else if(openKey===r.key){openKey='';history.replaceState(null,'',journeyURL(chain,direction,work,targetWork,'',stepKeys));}});wireEvidence(d,r,d.querySelector('.ce-next-evidence'),true,chain.length===1);});
+   box.querySelectorAll('[data-follow]').forEach(button=>button.onclick=()=>{const r=rows[+button.dataset.follow],prior=chain.indexOf(r.node.s);rememberJourney(chain,direction,work,targetWork,stepKeys);openJourney(prior>=0?chain.slice(0,prior+1):[...chain,r.node.s],direction,{work,targetWork,via:prior>=0?stepKeys.slice(0,prior):[...stepKeys,r.key]});});
+ };
+ $('#journey-author').onchange=e=>{rememberJourney(chain,direction,work,targetWork,stepKeys);openJourney([e.target.value],direction);};
+ pbody.querySelectorAll('[data-journey-direction]').forEach(button=>button.onclick=()=>{if(button.dataset.journeyDirection!==direction){rememberJourney(chain,direction,work,targetWork,stepKeys);openJourney([current.s],button.dataset.journeyDirection);}});
+ $('#journey-direction').onchange=e=>{rememberJourney(chain,direction,work,targetWork,stepKeys);openJourney([current.s],e.target.value);};
+ $('#journey-query').oninput=()=>{nextPage=0;renderNext();};$('.ce-next-more').onclick=()=>{nextPage++;renderNext();$('.ce-next-list').scrollIntoView({block:'start'});};$('.ce-next-previous').onclick=()=>{nextPage--;renderNext();$('.ce-next-list').scrollIntoView({block:'start'});};renderNext();update();
+ activeJourney={key:viewKey,stop:()=>viewEvents.abort(),capture:()=>{if(restorePending)return resume;for(const [key,c]of controllers)if(c.capture)evidenceViews.set(key,c.capture());return {query:$('#journey-query')?.value||'',openKey,nextPage,scrollTop:pbody.scrollTop,pathOpen:!!$('.ce-path-history')?.open,openSteps:[...pbody.querySelectorAll('[data-journey-step][open]')].map(el=>steps[+el.dataset.journeyStep]?.key).filter(Boolean),evidence:Object.fromEntries(evidenceViews)};}};
+ if(!resume)pbody.scrollTop=0;else if(!openKey)requestAnimationFrame(resumeScroll);
+} 
 
 /* ── doctrine flow ──────────────────────────────────────────────────────────── */
 async function openTopic(slug,push=true){
  const token=++__PSEQ;if(push)history.pushState(null,'','#t='+encodeURIComponent(slug));openPanel('Topic connections','Loading available evidence…');pbody.innerHTML='<p class="loading" role="status">Loading topic…</p>';
  const d=await J(BLOB+'/v1/mine/topic2-all/'+slug+'.json').catch(()=>null);if(token!==__PSEQ)return;if(!d){pbody.innerHTML='<p class="index-note">This topic could not load.</p><button class="pbtn" id="topic-retry">Retry topic</button><a class="pbtn" href="/the-faith-received/topics/">Browse topics</a>';$('#topic-retry').onclick=()=>openTopic(slug,false);return;}
  const voices=FRResearch.voices(d),mapped=voices.map(r=>BYS[r.s]||NODES.find(n=>n.a===r.a)).filter(Boolean);SUBSET=new Set(mapped.map(n=>n.i));FOCUS=null;PATHV=null;window.__JDIR=null;draw();
- openPanel(esc(d.t),fmt(d.n_pages)+' indexed pages · '+fmt(d.n_pos)+' recorded positions');
+ openPanel(esc(d.t),fmt(d.n_pages)+' indexed pages · '+fmt(d.n_pos)+' recorded positions');$('#map-title').textContent=d.t;$('#map-summary').textContent=SUBSET.size+' contributing authors with citation-map entries';
  pbody.innerHTML=`${FRResearch.isRawTopic(d.t)?'<p class="index-note">This is an unreviewed extraction label. Its passages remain available, but the label is not an established topic.</p>':''}<p class="index-note">${fmt((d.pos||[]).length)} excerpts are available here. The map shows citation links among ${mapped.length} contributors with graph records; it does not show agreement about ${esc(d.t)}.</p><a class="pbtn warm" href="/the-faith-received/topics/#${encodeURIComponent(d.s||slug)}">Compare authors and explore this topic</a><label class="web-topic-search">Search available passages<input id="web-topic-evidence-q" type="search" placeholder="Author, work, or phrase"></label><p id="web-topic-evidence-count" role="status"></p><div id="web-topic-evidence" class="web-pane"></div><details class="web-topic-contributors"><summary>Browse ${voices.length} contributing authors</summary><label>Find a contributor<input id="web-topic-author-q" type="search" placeholder="Search contributors"></label><div id="web-topic-contributors" class="web-pane"></div></details>`;
- const render=()=>{const q=$('#web-topic-evidence-q').value.trim().toLowerCase(),rows=(d.pos||[]).filter(r=>!q||[r.a,r.wt,r.q].join(' ').toLowerCase().includes(q));$('#web-topic-evidence-count').textContent=rows.length+' available excerpts';$('#web-topic-evidence').innerHTML=rows.map(r=>`<article class="quote"><p class="q">${esc(r.q||'')}</p><div class="m"><strong>${esc(r.a||'')}</strong><span>${esc(r.wt||r.w||'')}</span>${r.w?`<a href="${FRScripture.readerURL(r.w,r.p)}">Read passage${r.p!=null?' · '+esc(r.p):''}</a>${saveBtn(r.w,r.p,r.wt||r.w,r.a,r.q)}`:''}</div>${r.w?FRShelfMap.previewHTML(FRScripture.readerURL(r.w,r.p)):''}</article>`).join('')||'<p class="index-note">No matching excerpts. Try another phrase.</p>';FRShelfMap.bindPreviews($('#web-topic-evidence'));};$('#web-topic-evidence-q').oninput=render;render();
- const renderAuthors=()=>{const q=$('#web-topic-author-q').value.trim().toLowerCase(),hits=voices.filter(r=>!q||r.a.toLowerCase().includes(q));$('#web-topic-contributors').innerHTML=hits.map(r=>{const n=BYS[r.s]||NODES.find(n=>n.a===r.a);return n?`<button class="web-topic-row" data-a="${esc(n.s)}"><span>${esc(r.a)}</span><small>View citations</small></button>`:r.s?`<a class="web-topic-row" href="${FRResearch.authorURL(r,d.t)}"><span>${esc(r.a)}</span><small>Read topic evidence</small></a>`:`<div class="web-topic-row"><span>${esc(r.a)}</span><small>No graph record</small></div>`;}).join('')||'<p class="index-note">No matching contributors.</p>';$('#web-topic-contributors').querySelectorAll('[data-a]').forEach(el=>el.onclick=()=>openAuthor(el.dataset.a));};$('#web-topic-author-q').oninput=renderAuthors;renderAuthors();pbody.scrollTop=0;
+ let excerptLimit=24;
+ const topicUI={readerHref:FRScripture.readerURL,readerHrefHl:(w,p)=>FRScripture.readerURL(w,p),pgl:w=>/^(?:pld|pg)-/.test(w)?'col.':'p.',previewBtn:(w,p)=>FRShelfMap.previewHTML(FRScripture.readerURL(w,p)),pinBtn:saveBtn,workSaveBtn:saveWorkBtn,foldOpen:(w,rs)=>`<a href="${esc(FRScripture.readerURL(w,rs.find(r=>r.p!=null)?.p))}">Open work</a>`};
+ const render=()=>{const q=FRResearch.fold($('#web-topic-evidence-q').value),rows=(d.pos||[]).filter(r=>!q||FRResearch.fold([r.a,r.wt,r.q].join(' ')).includes(q));
+   const byWork=new Map();rows.forEach(r=>{if(!byWork.has(r.w))byWork.set(r.w,[]);byWork.get(r.w).push(r);});const groups=[...byWork.values()].sort((a,b)=>b.length-a.length),shown=groups.slice(0,excerptLimit).flat();
+   $('#web-topic-evidence-count').textContent=rows.length+' available '+(rows.length===1?'excerpt':'excerpts')+' in '+groups.length+' '+(groups.length===1?'work':'works')+(groups.length>excerptLimit?' · showing '+excerptLimit+' works':'');
+   $('#web-topic-evidence').innerHTML=shown.length?FRResearch.workFoldsHTML(shown,{evidenceKind:true,sub:r=>r.a||'',extra:r=>`<span class="rx-annotation">${esc(r.a||'')}</span>`},topicUI):'<p class="index-note">No matching excerpts. Try another phrase.</p>';
+   let more=$('#web-topic-evidence-more');if(!more){more=document.createElement('button');more.id='web-topic-evidence-more';more.className='pbtn';$('#web-topic-evidence').after(more);}more.textContent='Show more works';more.hidden=groups.length<=excerptLimit;more.onclick=()=>{excerptLimit+=24;render();};FRShelfMap.bindPreviews($('#web-topic-evidence'));
+ };$('#web-topic-evidence-q').oninput=()=>{excerptLimit=24;render();};render();
+ let contributorLimit=40;const renderAuthors=()=>{const q=FRResearch.fold($('#web-topic-author-q').value),hits=voices.filter(r=>!q||FRResearch.fold(r.a).includes(q));$('#web-topic-contributors').innerHTML=hits.slice(0,contributorLimit).map(r=>{const n=BYS[r.s]||NODES.find(n=>n.a===r.a);return n?`<button class="web-topic-row" data-a="${esc(n.s)}"><span>${esc(r.a)}</span><small>View citations</small></button>`:r.s?`<a class="web-topic-row" href="${FRResearch.authorURL(r,d.t)}"><span>${esc(r.a)}</span><small>Read topic evidence</small></a>`:`<div class="web-topic-row"><span>${esc(r.a)}</span><small>No citation-map entry</small></div>`;}).join('')||'<p class="index-note">No matching contributors.</p>';$('#web-topic-contributors').querySelectorAll('[data-a]').forEach(el=>el.onclick=()=>openAuthor(el.dataset.a));};const contributorMore=document.createElement('button');contributorMore.className='pbtn';contributorMore.textContent='Show more contributors';$('#web-topic-contributors').after(contributorMore);contributorMore.onclick=()=>{contributorLimit+=40;renderAuthors();contributorMore.hidden=voices.filter(r=>!$('#web-topic-author-q').value||FRResearch.fold(r.a).includes(FRResearch.fold($('#web-topic-author-q').value))).length<=contributorLimit;};$('#web-topic-author-q').oninput=()=>{contributorLimit=40;renderAuthors();contributorMore.hidden=voices.filter(r=>FRResearch.fold(r.a).includes(FRResearch.fold($('#web-topic-author-q').value))).length<=40;};renderAuthors();contributorMore.hidden=voices.length<=40;pbody.scrollTop=0;
 }
 
 /* ── verse 360 ──────────────────────────────────────────────────────────────── */
 let BOOKS=null,COMMS=null;
-async function openVerse(book,ch,push=true){
+async function openVerse(book,ch,push=true,options={}){
   const token=++__PSEQ;
   if(push)history.pushState(null,'','#v='+book+'/'+ch);
   openPanel('Scripture','Loading chapter connections…');pbody.innerHTML='<p class="loading" role="status">Loading Scripture…</p>';
@@ -650,10 +679,10 @@ async function openVerse(book,ch,push=true){
   SUBSET=new Set(slugged);FOCUS=null;PATHV=null;window.__JDIR=null;draw();
   const books=BOOKS?.books||[],B=books.find(b=>b.slug===book),chapters=B?.chapters||[];
   const controls=`<div class="web-scripture-nav"><label>Book<select id="pkb" class="pk">${books.map(b=>`<option value="${esc(b.slug)}"${b.slug===book?' selected':''}>${esc(b.book)}</option>`).join('')}</select></label><label>Chapter<select id="pkc" class="pk">${chapters.map(x=>`<option value="${x.c}"${x.c===+ch?' selected':''}>${x.c}</option>`).join('')}</select></label></div>`;
-  openPanel(`${esc(d.book)} ${ch}`,`${names.length} authors in the indexed passages · ${slugged.length} shown on the graph`);
-  const vs=(d.verses||[]).map(v=>{const rows=v.rows||[],authors=new Map();rows.forEach(r=>{if(!authors.has(r.a))authors.set(r.a,r);});return `<article class="vrow"><div class="vt"><a class="vn" href="${FRScripture.bibleURL(book,ch,v.v)}" aria-label="Read ${esc(d.book)} ${ch}:${v.v}">${v.v}</a>${esc(v.t||'')}</div>${rows.length?`<details class="web-verse-sources"><summary>${authors.size} authors · ${rows.length} indexed passages</summary>${[...authors].map(([name,r])=>`<div class="web-verse-source"><span>${esc(name)}</span><a href="${FRScripture.readerURL(r.w,r.p)}" target="_blank" rel="noopener">Read source</a></div>`).join('')}<a class="web-all-citations" href="${FRScripture.bibleURL(book,ch,v.v)}">Explore all citations for verse ${v.v}</a></details>`:''}</article>`;}).join('');
-  pbody.innerHTML=`${controls}<nav class="web-chapter-links"><a href="${FRScripture.bibleURL(book,ch)}">Read chapter</a><a href="${FRScripture.bibleURL(book,ch,null,'commentaries')}">Commentaries</a><a href="${FRScripture.bibleURL(book,ch,null,'annotations')}">Whole-Bible annotations</a></nav><p class="scripture-status">Select an author on the graph to trace their connections, or open a verse’s sources below.</p>${vs}`;
+  openPanel(`${esc(d.book)} ${ch}`,`${names.length} authors in the indexed passages · ${slugged.length} shown on the graph`);$('#map-title').textContent=d.book+' '+ch;$('#map-summary').textContent=slugged.length+' authors with indexed chapter citations';
+  pbody.innerHTML=`${controls}<nav class="web-chapter-links"><a href="${FRScripture.bibleURL(book,ch)}" target="_blank" rel="noopener">Read chapter</a><a href="${FRScripture.bibleURL(book,ch,null,'commentaries')}" target="_blank" rel="noopener">Commentaries</a><a href="${FRScripture.bibleURL(book,ch,null,'annotations')}" target="_blank" rel="noopener">Whole-Bible annotations</a></nav><p class="scripture-status">Choose a verse, then expand an author to read the sources. The map shows authors represented in this chapter.</p><div id="web-verse-evidence"><p class="scripture-status" role="status">Loading source works…</p></div>`;
   $('#pkb').onchange=e=>openVerse(e.target.value,1);$('#pkc').onchange=e=>openVerse(book,+e.target.value);pbody.scrollTop=0;
+  await FRScripture.renderWebVerse($('#web-verse-evidence'),d,{book,ch,...options,saveBtn,onChange:state=>{if(token===__PSEQ)history.replaceState(null,'',FRScripture.webVerseURL(book,ch,state));}});
 }
 function openChainPicker(chain){
  ++__PSEQ;openPanel('Extend this path',chain.map(s=>esc(BYS[s]?.a||s)).join(' → '));
@@ -661,17 +690,19 @@ function openChainPicker(chain){
  $('#extend-path-form').onsubmit=e=>{e.preventDefault();const n=NODES.find(n=>n.a.toLowerCase()===$('#extend-author').value.trim().toLowerCase());if(!n||chain[chain.length-1]===n.s){$('#extend-feedback').textContent='Choose another author from the available names.';return;}openPath([...chain,n.s]);};
  $('#extend-author').focus();
 }
+let pathDraft={from:'',to:'',direction:'either'};
 function openPathPicker(push=true){
   if(push)history.pushState(null,'','#paths');
   ++__PSEQ;openPanel('Trace a connection','Choose two authors to follow the chain of citations.');
   pbody.innerHTML=`<form id="web-path-form"><label>From author<input id="path-from" list="path-authors" required placeholder="Augustine of Hippo"></label><label>To author<input id="path-to" list="path-authors" required placeholder="Thomas Aquinas"></label><datalist id="path-authors">${NODES.filter(n=>!n.coll).sort((a,b)=>a.a.localeCompare(b.a)).map(n=>`<option value="${esc(n.a)}"></option>`).join('')}</datalist><label>Direction<select id="path-direction"><option value="either">Either citation direction</option><option value="in">Follow reception</option><option value="out">Follow cited sources</option></select></label><button class="pbtn" type="submit">Find connection</button><p id="path-feedback" role="status"></p></form>`;
-  $('#web-path-form').onsubmit=e=>{e.preventDefault();const find=id=>NODES.find(n=>n.a.toLowerCase()===$(id).value.trim().toLowerCase());const a=find('#path-from'),b=find('#path-to');if(!a||!b){$('#path-feedback').textContent='Select both authors from the available names.';return;}if(a.s===b.s){$('#path-feedback').textContent='Choose two different authors.';return;}openPath([a.s,b.s],{direction:$('#path-direction').value});};
+  $('#path-from').value=pathDraft.from;$('#path-to').value=pathDraft.to;$('#path-direction').value=pathDraft.direction;
+  $('#web-path-form').onsubmit=e=>{e.preventDefault();pathDraft={from:$('#path-from').value,to:$('#path-to').value,direction:$('#path-direction').value};const find=id=>NODES.find(n=>n.a.toLowerCase()===$(id).value.trim().toLowerCase());const a=find('#path-from'),b=find('#path-to');if(!a||!b){$('#path-feedback').textContent='Select both authors from the available names.';return;}if(a.s===b.s){$('#path-feedback').textContent='Choose two different authors.';return;}openPath([a.s,b.s],{direction:$('#path-direction').value});};
 }
 
 /* ── find + modes + routing ─────────────────────────────────────────────────── */
 const q=$("#q"),fl=$("#findlist");
 q.addEventListener("keydown",e=>{const first=$('#author-index [data-author]');if(e.key==='ArrowDown'&&first){e.preventDefault();first.focus();}if(e.key==='Enter'&&first){e.preventDefault();first.click();}if(e.key==='Escape'&&!panel.classList.contains('open')){q.value='';indexQuery='';renderAuthorIndex();}});
-function go(slug){fl.style.display="none";q.placeholder="Name or author…";
+function go(slug){fl.style.display="none";q.placeholder="Find an author…";
   if(PATHEXT){const ch=PATHEXT.concat([slug]);PATHEXT=null;openPath(ch);return;}
   if(PATHFROM){const from=PATHFROM;PATHFROM=null;openPath([from,slug]);return;}
   openAuthor(slug);}
@@ -685,21 +716,21 @@ $("#mnav").addEventListener("click",e=>{
   if(m==="topic")openTopicIndex();
   if(m==="verse")openVerse("romans",8);
 });
-async function openShelfMaps(shelf='english-divines',kind='authors',push=true){
+async function openShelfMaps(shelf='english-divines',kind='authors',push=true,options={}){
  const token=++__PSEQ;if(push)history.pushState(null,'','#shelves='+encodeURIComponent(shelf)+'/'+kind);
  openPanel('Shelf connections','Explore Scripture citation patterns and topics recorded together.');document.body.classList.add('shelf-comparison');$('#atlas').inert=true;$('#explorer').inert=true;pbody.innerHTML='<p class="loading" role="status">Loading shelf maps…</p>';
  const idx=await J(BLOB+'/v1/mine/constellations/index.json').catch(()=>null);if(token!==__PSEQ)return;
  const shelves=idx?.shelves||[],entry=shelves.find(s=>s.slug===shelf||s.s===shelf)||shelves.find(s=>s.shelf==='English Divines')||shelves[0];
  if(!entry){pbody.innerHTML='<p class="index-note">Shelf maps could not load.</p><button class="pbtn" id="shelf-retry">Retry shelf maps</button>';$('#shelf-retry').onclick=()=>openShelfMaps(shelf,kind,false);return;}
  const slugOf=s=>s.slug||s.s||s.shelf.toLowerCase().replace(/[^a-z0-9]+/g,'-'),sl=slugOf(entry),labels={authors:'Authors',works:'Works',doctrines:'Topics'},available=Object.keys(labels).filter(k=>Object.prototype.hasOwnProperty.call(entry.have||{},k));
- if(!available.includes(kind))kind=available[0]||'';history.replaceState(null,'','#shelves='+encodeURIComponent(sl)+(kind?'/'+kind:''));
+ if(!available.includes(kind))kind=available[0]||'';history.replaceState(null,'','#shelves='+encodeURIComponent(sl)+(kind?'/'+kind:'')+((options.entry||options.query||options.page)?'?'+new URLSearchParams({entry:options.entry||'',q:options.query||'',page:options.page||0}):''));
  pbody.innerHTML=`<div class="shelf-map-controls"><label>Shelf or group<select id="shelf-map-shelf">${shelves.map(s=>`<option value="${esc(slugOf(s))}">${esc(s.shelf)}</option>`).join('')}</select></label><label>Explore connections between<select id="shelf-map-kind"${available.length?"":" disabled"}>${available.length?available.map(k=>`<option value="${k}">${labels[k]}</option>`).join(''):'<option>No maps published</option>'}</select></label></div><div id="shelf-map-host"><p class="loading" role="status">Loading this constellation…</p></div>`;
  $('#shelf-map-shelf').value=sl;$('#shelf-map-kind').value=kind;$('#shelf-map-shelf').onchange=e=>openShelfMaps(e.target.value,kind);$('#shelf-map-kind').onchange=e=>openShelfMaps(sl,e.target.value);
  if(!available.length){$('#shelf-map-host').innerHTML='<p class="index-note">No constellation exports are published for this group. Choose another shelf or group.</p>';return;}
  const base=BLOB+'/v1/mine/constellations/'+sl+'/',d=await J(base+kind+'.json').catch(()=>null);if(token!==__PSEQ)return;
  if(!d){$('#shelf-map-host').innerHTML='<p class="index-note">This constellation could not load. Your shelf and map selection are kept.</p><button class="pbtn" id="shelf-graph-retry">Retry constellation</button>';$('#shelf-graph-retry').onclick=()=>openShelfMaps(sl,kind,false);return;}
  if(!d.nodes?.length){$('#shelf-map-host').innerHTML='<p class="index-note">This export contains no '+(kind==='doctrines'?'topics':kind)+'. Choose another map or shelf.</p>';return;}
- const K={name:n=>n.t||n.a,size:n=>n.n,unit:'Scripture citations',href:n=>kind==='works'&&n.w?FRScripture.readerURL(n.w):kind==='authors'?'/the-faith-received/fathers/?q='+encodeURIComponent(n.a):'',goLabel:kind==='works'?'Read work':'Find author works',rowLabel:kind==='authors'?'Available works':kind==='works'?'Recorded Scripture chapters':'Available topic passages',ask:(n,nm)=>'/the-faith-received/ask/?q='+encodeURIComponent('Explore '+nm+' in '+entry.shelf)};
+ const K={name:n=>n.t||n.a,size:n=>n.n,unit:'Scripture citations',href:n=>kind==='works'&&n.w?FRScripture.readerURL(n.w):kind==='authors'?'/the-faith-received/fathers/?q='+encodeURIComponent(n.a):'',goLabel:kind==='works'?'Open work':'View works',rowLabel:kind==='authors'?'Available works':kind==='works'?'Recorded Scripture chapters':'Available topic passages',ask:(n,nm)=>'/the-faith-received/ask/?q='+encodeURIComponent('Explore '+nm+' in '+entry.shelf)};
  /* CONNECTIONS YOU CAN ACT ON (owner 2026-09-11 "change the usability of our
     connections between authors"): the constellation's similarity edges now
     reach the atlas's REAL evidence. Every author entry links its citation
@@ -714,7 +745,8 @@ async function openShelfMaps(shelf='english-divines',kind='authors',push=true){
      finishes loading — an eager map would be empty forever) */
   let _byName=null,_byNameN=0;
   const atlasSlug=nm=>{if(!_byName||_byNameN!==NODES.length){_byName={};_byNameN=NODES.length;NODES.forEach(x=>{if(x&&x.a)_byName[_fold(x.a)]=x.s;});}return _byName[_fold(nm)]||null;};
-  K.actions=(n,nm)=>{const s2=atlasSlug(nm);return s2?[{label:'Citation dossier · who cites them, with passages',go:()=>openAuthor(s2)}]:[];};
+  /* Citation dossier: the existing author evidence route is retained behind Follow citations. */
+  K.actions=(n,nm)=>{const s2=atlasSlug(nm);return s2?[{label:'Follow citations',go:()=>openAuthor(s2)}]:[];};
   K.pairActions=(nA,nB)=>{
     const a2=atlasSlug(nA.t||nA.a),b2=atlasSlug(nB.t||nB.a),acts=[];
     if(a2&&b2){const pu=pairURL(a2,b2);if(pu)acts.push({label:'Full comparison · both directions, shared topics',href:pu});
@@ -725,7 +757,7 @@ async function openShelfMaps(shelf='english-divines',kind='authors',push=true){
         if(!ab&&!ba)acts.push({label:'No recorded citation between them — similarity only',href:null,note:1});}}
     return acts.filter(x=>x.go||x.href);};
  }
- FRShelfMap.render($('#shelf-map-host'),d,K,{kind,shelf:sl,rowsUrl:base+kind+'.rows.json',blob:BLOB});pbody.scrollTop=0;
+ FRShelfMap.render($('#shelf-map-host'),d,K,{kind,shelf:sl,rowsUrl:base+kind+'.rows.json',blob:BLOB,focus:options.entry,query:options.query,page:options.page,onSelect:state=>{if(token===__PSEQ)history.pushState(null,'','#shelves='+encodeURIComponent(sl)+'/'+kind+'?'+new URLSearchParams({entry:state.entry,q:state.query,page:state.page}));}});pbody.scrollTop=0;
 }
 
 async function openTopicIndex(push=true){
@@ -741,10 +773,10 @@ async function openTopicIndex(push=true){
 }
 
 function route(){
-  const h=location.hash.slice(1);const kind=h.split("=")[0],mode=({v:"verse",t:"topic",topics:"topic",shelves:"shelves",paths:"path",p:"path",journey:"path"})[kind]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));
+  stashJourney();const h=location.hash.slice(1);const kind=h.split("=")[0],mode=({v:"verse",t:"topic",topics:"topic",shelves:"shelves",paths:"path",p:"path",journey:"path"})[kind]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));
   if(!h){$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;renderAuthorIndex();requestAnimationFrame(resize);draw();return;}
-  if(h==="shelves"||h.startsWith("shelves=")){const [sh,kind]=(h.split("=")[1]||"english-divines/authors").split("/");openShelfMaps(decodeURIComponent(sh),kind||"authors",false);return;}
-  if(h.startsWith('journey=')){const [path,query='']=h.slice(8).split('?'),params=new URLSearchParams(query);openJourney(path.split(',').filter(Boolean).map(decodeURIComponent),params.get('direction')||'in',{work:params.get('work')||'',targetWork:params.get('targetWork')||'',push:false});return;}
+  if(h==="shelves"||h.startsWith("shelves=")){const [path,query=""]=(h.startsWith("shelves=")?h.slice(8):"english-divines/authors").split("?"),[sh,kind]=path.split("/"),params=new URLSearchParams(query);openShelfMaps(decodeURIComponent(sh),kind||"authors",false,{entry:params.get("entry")||"",query:params.get("q")||"",page:+params.get("page")||0});return;}
+  if(h.startsWith('journey=')){const [path,query='']=h.slice(8).split('?'),params=new URLSearchParams(query);openJourney(path.split(',').filter(Boolean).map(decodeURIComponent),params.get('direction')||'in',{work:params.get('work')||'',targetWork:params.get('targetWork')||'',reference:params.get('reference')||'',via:(params.get('via')||'').split(',').filter(Boolean),push:false});return;}
   if(h==="paths"){openPathPicker(false);return;}if(h==="topics"){openTopicIndex(false);return;}
   const [k,v]=h.split("=");
   if(k==="a"&&v){
@@ -757,7 +789,7 @@ function route(){
   else if(k==="p"&&v){const st=v.split(",").filter(Boolean);if(st.length>=2)openPath(st,false);}
   else if(k==="e"&&v){const [from,to]=v.split(",").map(decodeURIComponent);if(from&&to)openEdge(from,to,null,false);}
   else if(k==="t"&&v)openTopic(v,false);
-  else if(k==="v"&&v){const [bk,ch]=v.split("/");openVerse(bk,+ch||1,false);}
+  else if(k==="v"&&v){const [path,query='']=h.slice(2).split('?'),[bk,ch]=path.split('/'),params=new URLSearchParams(query);openVerse(bk,+ch||1,false,{verse:params.get('verse'),author:params.get('author')||'',query:params.get('q')||'',page:+params.get('page')||0});}
 }
 addEventListener("hashchange",route);
 addEventListener("popstate",route);
@@ -767,7 +799,7 @@ new MutationObserver(()=>{if(READY){draw();drawBrush();}}).observe(document.docu
 matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if(READY){draw();drawBrush();}});
 $('#zoom-in').onclick=()=>{const mid=(view.y0+view.y1)/2,span=Math.max(100,(view.y1-view.y0)*.7);view.y0=mid-span/2;view.y1=mid+span/2;draw();};
 $('#zoom-out').onclick=()=>{const mid=(view.y0+view.y1)/2,span=Math.min(4000,(view.y1-view.y0)/.7);view.y0=mid-span/2;view.y1=mid+span/2;draw();};
-$('#zoom-reset').onclick=()=>{fitNodes(FOCUS!=null?[FOCUS,...ADJ[FOCUS].map(x=>x[0])]:NODES.filter(n=>!hidden(n)).map(n=>n.i));draw();};
+$('#zoom-reset').onclick=()=>{fitNodes(SUBSET?[...SUBSET]:FOCUS!=null?[FOCUS,...ADJ[FOCUS].map(x=>x[0])]:NODES.filter(n=>!hidden(n)).map(n=>n.i));draw();};
 new MutationObserver(()=>pbody.querySelectorAll('[data-a],[data-t],[data-edge],[data-go]').forEach(el=>{if(el.tagName==='A'||el.tagName==='BUTTON')return;el.tabIndex=0;el.setAttribute('role','button');el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click();}};})).observe(pbody,{childList:true,subtree:true});
 let indexLimit=40,indexQuery='',indexReady=false,lastExplorerSlug=null,indexCounts=null;
 function fitNodes(ids){const ns=ids.map(i=>NODES[i]).filter(Boolean);if(!ns.length)return;const years=ns.map(n=>n.y),ys=ns.map(n=>n.ny),lo=Math.min(...years),hi=Math.max(...years),bottom=Math.min(...ys),top=Math.max(...ys),pad=Math.max(65,(hi-lo)*.1);view={y0:lo-pad,y1:hi+pad,cy:(bottom+top)/2,zy:Math.min(5,.86/Math.max(.17,top-bottom))};}
@@ -775,11 +807,11 @@ function restoreExplorerFocus(){const btn=[...document.querySelectorAll('#author
 function renderAuthorIndex(){
  if(!indexReady)return;
  const sort=$('#index-sort').value;
- const rows=NODES.filter(n=>!hidden(n)&&(!indexQuery||n.a.toLowerCase().includes(indexQuery))).sort((a,b)=>sort==='name'?a.a.localeCompare(b.a):sort==='citations'?(b.win||0)-(a.win||0):(b.din||0)-(a.din||0));
+ const rows=NODES.filter(n=>!hidden(n)&&(!indexQuery||FRConnectionEvidence.fold(n.a).includes(indexQuery))).sort((a,b)=>sort==='name'?a.a.localeCompare(b.a):sort==='citations'?(b.win||0)-(a.win||0):(b.din||0)-(a.din||0));
  $('#index-count').textContent=rows.length.toLocaleString()+(rows.length===1?' entry':' entries');
  $('#filter-count').textContent=anyFilter()?'Active':'';
  $('#map-empty').hidden=rows.length>0;
- if(FOCUS==null){if(!indexCounts){const visible=new Set(NODES.filter(n=>!hidden(n)).map(n=>n.i));indexCounts={nodes:visible.size,edges:EDGES.reduce((count,[a,b])=>count+(visible.has(a)&&visible.has(b)?1:0),0)};}$('#map-summary').textContent=indexCounts.nodes.toLocaleString()+' entries · '+indexCounts.edges.toLocaleString()+' recorded connections';}
+ if(FOCUS==null&&!PATHV&&!panel.classList.contains("open")){if(!indexCounts){const visible=new Set(NODES.filter(n=>!hidden(n)).map(n=>n.i));indexCounts={nodes:visible.size,edges:EDGES.reduce((count,[a,b])=>count+(visible.has(a)&&visible.has(b)?1:0),0)};}$('#map-summary').textContent=indexCounts.nodes.toLocaleString()+' entries · '+indexCounts.edges.toLocaleString()+' recorded connections';}
  $('#author-index').innerHTML=rows.slice(0,indexLimit).map(n=>`<button class="author-entry${FOCUS===n.i?' selected':''}" data-author="${esc(n.s)}" data-era="${n.e}" aria-pressed="${FOCUS===n.i}"><span><strong>${esc(n.a)}</strong><small><i class="era-dot" aria-hidden="true"></i>${n.yok?'c. '+n.y+' · ':''}${esc(SHN[n.sh]||ERAL[n.e]||'Indexed author')}${n.coll?' · collection':''}</small></span><span class="author-measure"><b>${fmt(sort==='citations'?(n.win||0):(n.din||0))}</b><small>${sort==='citations'?'citations':'citing authors'}</small></span></button>`).join('')||'<p class="index-note">No matching authors. Try another name or clear the filters.</p>';
  $('#index-more').hidden=rows.length<=indexLimit;
 }
@@ -792,7 +824,7 @@ function renderConnectionExamples(){if(!indexReady)return;const examples=connect
 function initExplorer(){
  indexReady=true;if(innerWidth<=760)$("#map-density").value="20";
  $("#atlas-ask").onclick=()=>$("#fra-launcher")?.click();Object.entries(ERAL).forEach(([k,v])=>$('#era-select').insertAdjacentHTML('beforeend',`<option value="${k}">${esc(v)}</option>`));
- $('#q').addEventListener('input',()=>{indexQuery=$('#q').value.trim().toLowerCase();indexLimit=40;renderAuthorIndex();});
+ $('#q').addEventListener('input',()=>{indexQuery=FRConnectionEvidence.fold($('#q').value);indexLimit=40;renderAuthorIndex();});
  $('#map-density').onchange=()=>{draw();};
  $('#index-sort').onchange=()=>{indexLimit=40;renderAuthorIndex();};
  $('#index-more').onclick=()=>{const offset=indexLimit;indexLimit+=40;renderAuthorIndex();$('#author-index').children[offset]?.focus();};

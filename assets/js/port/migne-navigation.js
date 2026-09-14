@@ -2,6 +2,7 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.FRMigneNavigation=api;})(typeof window==='undefined'?globalThis:window,function(){
   'use strict';
   const key=value=>String(value??'').trim();
+  const isReadingDivision=type=>!['translation','secondary','diplomatic','witness','edition'].includes(String(type||''));
   function openingKey(data,column){
     const wanted=key(column),pages=data?.pages||[];
     const exact=pages.find(page=>key(page.n)===wanted);if(exact)return key(exact.n);
@@ -23,5 +24,5 @@
     const words=new Set(text.toLowerCase().match(/\b(?:et|quod|qui|quae|cum|autem|enim|sunt|ejus|eius|atque|igitur|haec|fuit|erat)\b/g)||[]);
     return latin>=200&&latin>greek*10&&words.size>=3?'la':'grc';
   }
-  return {openingKey,indexLabel,sourceForOpening};
+  return {isReadingDivision,openingKey,indexLabel,sourceForOpening};
 });

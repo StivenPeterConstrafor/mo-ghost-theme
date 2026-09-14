@@ -13,8 +13,16 @@
   if(!header.querySelector('a[data-m]')&&!(has('/the-faith-received/authors/')&&has('/the-faith-received/bible/')&&has('/the-faith-received/topics/'))){const quick=document.createElement('nav');quick.className='fr-quick';quick.setAttribute('aria-label','Research');
     quick.innerHTML=[['/the-faith-received/authors/','Authors'],['/the-faith-received/bible/','Scripture'],['/the-faith-received/topics/','Topics']].map(([h,t])=>`<a href="${h}"${location.pathname.replace(/\.html$/,'')===h?' aria-current="page"':''}>${t}</a>`).join('');header.appendChild(quick);}
   const menu=document.createElement('details');menu.className='fr-explore';
-  menu.innerHTML='<summary aria-label="Explore the library">Explore</summary><nav aria-label="Library sections"><a href="/the-faith-received/library/">Library</a><a href="/the-faith-received/authors/">Authors<small>Find an author’s works</small></a><a href="/the-faith-received/bible/">Scripture<small>Find biblical commentary</small></a><a href="/the-faith-received/topics/">Topics<small>Explore theological subjects</small></a><a href="/the-faith-received/compare/">Compare authors</a><a href="/the-faith-received/web/">Constellations</a><a href="/the-faith-received/pins/">Notebooks</a><a href="/the-faith-received/desk/">Writing desk</a></nav>';
+  menu.innerHTML='<summary aria-label="Explore the library">Explore</summary><nav aria-label="Library sections"><a href="/the-faith-received/library/">Library</a><a href="/the-faith-received/authors/">Authors<small>Find an author’s works</small></a><a href="/the-faith-received/bible/">Scripture<small>Find biblical commentary</small></a><a href="/the-faith-received/topics/">Topics<small>Explore theological subjects</small></a><a href="/the-faith-received/compare/">Compare authors</a><a href="/the-faith-received/web/">Constellations</a><a href="/the-faith-received/pins/">Notebooks</a><a href="/the-faith-received/desk/">Writing desk</a><a href="/the-faith-received/ask/?view=history">Saved questions<small>Return to Ask conversations</small></a></nav>';
   header.appendChild(menu);
+  const questionId=new URLSearchParams(location.search).get('ask_chat');
+  if(questionId&&/^[A-Za-z0-9_.:-]{1,180}$/.test(questionId)&&/^\/read(?:[/.]|$)/.test(location.pathname)){
+   const askPath='/the-faith-received/ask/'+(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)?'.html':'')+'?chat='+encodeURIComponent(questionId);
+   const restoreLink=()=>{const a=header.querySelector('[data-question-return],a[aria-label="Back to the library"],a[aria-label="Back to library"],a[href="/the-faith-received/library/"]');if(a&&a.getAttribute('href')!==askPath){a.dataset.questionReturn='';a.href=askPath;a.textContent='← Question';a.setAttribute('aria-label','Return to saved question');a.title='Return to your saved Ask conversation';}};
+   restoreLink();new MutationObserver(restoreLink).observe(header,{childList:true,subtree:true,attributes:true,attributeFilter:['href']});
+   const a=document.createElement('a');a.href=askPath;a.textContent='Return to saved question';menu.querySelector('nav').prepend(a);
+  }
+
   menu.querySelectorAll('a').forEach(link=>{if(new URL(link.href).pathname===location.pathname)link.setAttribute('aria-current','page');link.addEventListener('click',()=>{menu.open=false;});});
   document.addEventListener('pointerdown',event=>{if(menu.open&&!menu.contains(event.target))menu.open=false;});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&menu.open){event.preventDefault();menu.open=false;menu.querySelector('summary').focus();}});

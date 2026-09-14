@@ -26,6 +26,7 @@
     all: () => transaction('conversations', 'readonly', s => s.getAll()),
     get: id => transaction('conversations', 'readonly', s => s.get(id)),
     put: c => transaction('conversations', 'readwrite', s => s.put(c)),
+    remove: id => transaction('conversations', 'readwrite', s => s.delete(id)),
     meta: id => transaction('meta', 'readonly', s => s.get(id)),
     setMeta: (id, value) => transaction('meta', 'readwrite', s => s.put({ id, value })),
     // Atomically update one conversation so another tab cannot overwrite a streaming turn.

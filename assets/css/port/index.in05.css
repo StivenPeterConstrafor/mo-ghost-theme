@@ -2,8 +2,41 @@
 /* Greek-shelf review polish (2026-09-10) */
 .auth .c .ced{font-style:normal;color:var(--faint,#8a8580);font-size:.86em}
 .aname.anth{max-width:22em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:bottom}
-.volgrid.picked{max-height:0;overflow:hidden;padding:0;margin:0;border:0;opacity:0;transition:max-height .2s,opacity .2s}
-.volhead .vall{width:auto;padding:0 .6rem;font-size:.72rem}
+/* Keep the series index available while its selected volume scrolls independently. */
+.fr-library .vol-browser{display:grid;grid-template-columns:minmax(220px,280px) minmax(0,1fr);gap:24px;margin:18px 0 28px;align-items:start;scroll-margin-top:92px}
+.fr-library #shelfworks:has(.vol-browser)>.shelfsearch{position:static}
+.vol-browser .vol-picker,.vol-browser #volpanel{min-width:0}
+.vol-picker-label{margin:0 0 12px;font:16px/1.4 var(--font-body);color:var(--fg)}
+.fr-library .vol-browser .volgrid{position:relative;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));align-content:start;gap:6px;max-height:62vh;max-height:62svh;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;margin:0;padding:2px 8px 2px 2px}
+.fr-library .vol-browser .vcell{min-height:48px;border:1px solid var(--border);border-radius:5px;box-shadow:none;transform:none;background:var(--card-bg,var(--bg));color:var(--fg);transition:background .12s ease,border-color .12s ease}
+.fr-library #shelfworks .vol-browser .vcell.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.fr-library #shelfworks .vol-browser .vcell .vn{font:600 16px/1.2 var(--font-body);color:inherit}
+.fr-library .vol-browser .vcell .vc{font:12px/1.2 var(--font-body)}
+.fr-library .vol-browser .vcell:hover{border-color:var(--fg);box-shadow:none;transform:none}
+.vol-browser :focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.vol-browser .volhead{gap:8px;margin-bottom:12px;min-height:32px}
+.vol-browser .volhead .vn{font-size:24px;color:var(--fg)}
+.vol-browser .volhead .va{order:2;flex-basis:100%;font:14px/1.5 var(--font-body);overflow-wrap:anywhere}
+.vol-browser .volhead .vc{order:1}
+.vol-browser .volhead .vnav{width:36px;height:36px;box-shadow:none;border:1px solid var(--border);border-radius:5px;color:var(--fg)}
+.fr-library .vol-browser .spine{max-height:62vh;max-height:62svh;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;border:1px solid var(--border);border-radius:5px;box-shadow:none;margin:0}
+.vol-browser .sprow{align-items:start;gap:12px;padding:12px;font:16px/1.5 var(--font-body)}
+.vol-browser .spc{flex:0 0 5.5em;white-space:normal;overflow-wrap:anywhere;font:12px/1.6 var(--font-body);font-variant-numeric:tabular-nums;color:var(--muted)}
+.vol-browser .spt{min-width:0;white-space:normal;overflow-wrap:anywhere}
+.vol-browser .spa{font:14px/1.5 var(--font-body)}
+.vol-browser .spkind{display:inline-block;margin-left:.6em;font:12px/1.5 var(--font-body);color:var(--muted);font-style:normal}
+.vol-empty{margin:0;padding:36px 0;color:var(--muted);font:16px/1.5 var(--font-body)}
+@media(max-width:700px){
+ .fr-library .vol-browser{grid-template-columns:minmax(0,1fr);gap:20px}
+ .fr-library .vol-browser .volgrid{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));max-height:164px}
+ .fr-library .vol-browser .spine{max-height:max(160px,calc(100vh - 480px));max-height:max(160px,calc(100svh - 480px))}
+ .vol-browser .volhead .va{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+ .vol-browser .sprow{display:grid;grid-template-columns:minmax(0,1fr);gap:3px;padding:12px}
+ .vol-browser .spc{order:1;max-width:100%;width:auto}
+ .vol-browser .spt{order:0}
+ .vol-browser .volhead .vnav{width:44px;height:44px}
+ .vol-picker-label{margin-bottom:8px}
+}
 @media(max-width:640px){
   .authsec .auth{display:flex;flex-wrap:wrap;align-items:baseline;gap:.25rem .5rem;line-height:1.35;padding:.5rem 0}
   .authsec .auth .cv{font-size:1.05rem;min-width:1.4rem;text-align:center}

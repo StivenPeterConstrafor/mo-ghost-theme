@@ -35,16 +35,25 @@ function newDoc(){
 function renderDocs(){
   var list=docsAll();
   $('#docList').innerHTML=list.map(function(d){
-    return '<button class="doc-row'+(CUR&&d.id===CUR.id?' on':'')+'" data-id="'+esc(d.id)+'">'
-      +'<span class="doc-del" data-del="'+esc(d.id)+'" title="Delete this document">✕</span>'
-      +'<span class="t">'+esc(d.title||'Untitled paper')+'</span>'
-      +'<span class="m">'+new Date(d.ts).toLocaleDateString()+'</span></button>';}).join('')
+    var title=d.title||'Untitled paper';
+    return '<div class="doc-row'+(CUR&&d.id===CUR.id?' on':'')+'">'
+      +'<button type="button" class="doc-open" data-id="'+esc(d.id)+'"><span class="t">'+esc(title)+'</span><span class="m">'+new Date(d.ts).toLocaleDateString()+'</span></button>'
+      +'<button type="button" class="doc-del" data-del="'+esc(d.id)+'" aria-label="Delete '+esc(title)+'">Delete</button>'
+      +'<button type="button" class="doc-cancel" hidden>Cancel</button></div>';}).join('')
     ||'<div class="rl-empty">Papers you write collect here, saved on this device.</div>';
   Array.prototype.forEach.call(document.querySelectorAll('.doc-row'),function(r){
-    r.onclick=function(e){
-      var del=e.target.getAttribute&&e.target.getAttribute('data-del');
-      if(del){if(confirm('Delete this document?')){docsPut(docsAll().filter(function(d){return d.id!==del;}));if(CUR&&CUR.id===del){CUR=null;$('#ed').innerHTML='';$('#dTitle').value='';}renderDocs();}return;}
-      openDoc(r.getAttribute('data-id'));};});}
+    var open=r.querySelector('.doc-open'),del=r.querySelector('.doc-del'),cancel=r.querySelector('.doc-cancel');
+    open.onclick=function(){openDoc(open.getAttribute('data-id'));};
+    cancel.onclick=function(){renderDocs();};
+    del.onclick=function(){
+      if(del.getAttribute('data-armed')!=='true'){del.setAttribute('data-armed','true');del.textContent='Confirm delete';del.setAttribute('aria-label','Confirm deletion of '+open.querySelector('.t').textContent);cancel.hidden=false;return;}
+      var id=del.getAttribute('data-del');
+      if(!docsPut(docsAll().filter(function(d){return d.id!==id;})))return;
+      if(CUR&&CUR.id===id){clearTimeout(_sv);CUR=null;docDirty=false;savedRange=null;$('#ed').innerHTML='';$('#dTitle').value='';}
+      renderDocs();wcUpdate();if(!CUR){var remaining=docsAll();if(remaining.length)openDoc(remaining[0].id);else $('#newDoc').focus();}
+    };
+  });}
+
 function wcUpdate(){var t=$('#ed').textContent.trim();$('#wc').textContent=t?t.split(/\s+/).length.toLocaleString()+' words':'';}
 
 /* ── toolbar ── */
@@ -248,14 +257,8 @@ window.addEventListener('resize',syncPanels);syncPanels();
 var boot=docsAll();
 var requestedDoc=new URLSearchParams(location.search).get('doc');
 if(requestedDoc&&boot.some(function(d){return d.id===requestedDoc;}))openDoc(requestedDoc);
-else if(requestedDoc){
- var nb=document.createElement('div');
- nb.style.cssText='margin:10px 0;padding:10px 14px;border:1px solid var(--border,#ddd);border-left:3px solid var(--accent,#b45f3d);border-radius:6px;font-size:.9rem;background:var(--card,#fff)';
- nb.textContent='The linked Desk document was not found in this browser. Desk documents are saved in the browser (and site copy) where they were created — open this link there, or export the document and import it here.';
- var host=document.querySelector('main')||document.body;host.insertBefore(nb,host.firstChild);
- if(boot.length){var last0=lj('fr_desk_context_v1').docId;openDoc(boot.some(function(d){return d.id===last0;})?last0:boot[0].id);}else newDoc();
-} else if(boot.length){var last=lj('fr_desk_context_v1').docId;openDoc(boot.some(function(d){return d.id===last;})?last:boot[0].id);}else newDoc();
+else if(boot.length){var last=lj('fr_desk_context_v1').docId;openDoc(boot.some(function(d){return d.id===last;})?last:boot[0].id);}else newDoc();
 try{var savedTheme=localStorage.getItem('fr_theme');if(savedTheme==='light'||savedTheme==='dark')document.documentElement.dataset.theme=savedTheme;}catch(_){}
-document.addEventListener('DOMContentLoaded',function(){var params=new URLSearchParams(location.search),target=params.get('notebook');syncWorkspace();if(params.get('view')==='research'){showPersonal(true);if(params.get('item'))personalResearch.focusItem(target||paperNotebook(),params.get('item'));}});
+document.addEventListener('DOMContentLoaded',function(){var params=new URLSearchParams(location.search),target=params.get('notebook');syncWorkspace();if(params.get('view')==='research'){showPersonal(true);if(target){var collection=notebook().read().collections.find(function(c){return c.id===target;});if(collection){personalResearch.setCollection(target);contextStatus('Browsing '+collection.name+'. Choose an item to insert into your paper.');}else contextStatus('This collection is unavailable in this browser. Your paper is unchanged.');}if(params.get('item'))personalResearch.focusItem(target||paperNotebook(),params.get('item'));}});
 renderRail();
 })();

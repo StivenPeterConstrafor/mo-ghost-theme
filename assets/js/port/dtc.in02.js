@@ -59,7 +59,9 @@ function tok(p){
 function detok(p){return String(p??"").replace(/<\/?(?:em|i)>/g,"");}
 const isHead=p=>{const t=p.replace(/\u27e6[^\u27e7]+\u27e7/g,"").trim();
   return t.length<170&&/^([IVXLC]+|\d+\u00b0?)[.)\u2014\u00b0]?\s+\S/.test(t)&&t.length<150;};
-function renderArt(d){
+function renderArt(d,initialParagraph=0){
+  let paragraph=initialParagraph;
+  const writePlace=(i,l=LANEPREF)=>{const url=new URL(location.href);url.hash=encodeURIComponent(d.id);url.searchParams.set("paragraph",String(i));if(["both","en","fr"].includes(l))url.searchParams.set("lang",l);history.replaceState(history.state,"",url);};
   const FR=Array.isArray(d.fr)?d.fr:String(d.fr||"").split(/\n\n+/);
   const EN=Array.isArray(d.en)?d.en:null;
   const hasEn=EN&&EN.length===FR.length;
@@ -103,7 +105,6 @@ function renderArt(d){
       ${(SEEALSO[d.id]||[]).length?`<div class=seealso><b>Referenced as</b><br>${SEEALSO[d.id].map(esc).join(" · ")}</div>`:""}
       <div class=srcnote>Text: fr.wikisource.org, <i>Dictionnaire de théologie catholique</i> (public domain). Part of the Roman Catholic shelf of The Faith Received.</div>
     </div></div>`;
-    $("#art").querySelectorAll(".lane-t button").forEach(b=>b.onclick=()=>{if(!b.disabled){LANEPREF=b.dataset.l;paint(b.dataset.l);}});
     $("#art").querySelectorAll("a.xref").forEach(a=>a.onclick=e=>{e.preventDefault();openArt(a.dataset.id);});
     const pv=$("#pPrev"),nx=$("#pNext");
     if(pv&&prev)pv.onclick=()=>openArt(prev[0]);
@@ -111,31 +112,43 @@ function renderArt(d){
     const ob=$("#olBtn");
     if(ob){ob.onclick=e=>{e.stopPropagation();$("#olPop").classList.toggle("on");};
       $("#olPop").querySelectorAll("a").forEach(a=>a.onclick=e=>{e.preventDefault();
-        const t=document.getElementById("sec"+a.dataset.sec);if(t)t.scrollIntoView({block:"start",behavior:"smooth"});
+        const t=document.getElementById("sec"+a.dataset.sec);if(t){paragraph=Number(a.dataset.sec);writePlace(paragraph);t.scrollIntoView({block:"start",behavior:"smooth"});}
         $("#olPop").classList.remove("on");});}
     const setSz=v=>{SZ=Math.max(.86,Math.min(1.3,v));try{localStorage.setItem("dtc_sz",SZ);}catch(e){}
       document.documentElement.style.setProperty("--dtcsz",SZ+"rem");};
     $("#szDn").onclick=()=>setSz(SZ-0.06);$("#szUp").onclick=()=>setSz(SZ+0.06);
     const asc=$("#art .artscroll");
-    asc.onscroll=()=>{$("#art").classList.toggle("scrolled",asc.scrollTop>10);};
+    let follow=false,timer=0;
+    const current=()=>{const line=asc.getBoundingClientRect().top+16;return [...asc.querySelectorAll('.body [id^="sec"]')].find(n=>n.getBoundingClientRect().bottom>line);};
+    const remember=()=>{const n=current();if(n)paragraph=Number(n.id.slice(3));};
+    for(const event of ['wheel','touchmove','pointerdown','keydown'])asc.addEventListener(event,()=>{follow=true;},{passive:true});
+    asc.tabIndex=0;
+    asc.onscroll=()=>{$("#art").classList.toggle("scrolled",asc.scrollTop>10);
+      if(timer)return;timer=setTimeout(()=>{timer=0;if(!asc.isConnected||CUR!==d.id||!follow)return;remember();writePlace(paragraph);},400);};
+    $("#art").querySelectorAll(".lane-t button").forEach(b=>b.onclick=()=>{if(!b.disabled){remember();LANEPREF=b.dataset.l;writePlace(paragraph,LANEPREF);paint(b.dataset.l);}});
     $("#art").classList.remove("scrolled");
     asc.scrollTop=0;
+    if(paragraph>0)document.getElementById('sec'+paragraph)?.scrollIntoView({block:'start'});
   };
   paint(LANEPREF&&(LANEPREF==="fr"||hasEn)?LANEPREF:lane);
 }
 function openArt(id,push){
+  const params=new URL(location.href),raw=params.searchParams.get('paragraph');
+  const paragraph=push===false&&/^\d+$/.test(raw||'')?Number(raw):0;
+  if(push===false&&['both','en','fr'].includes(params.searchParams.get('lang')))LANEPREF=params.searchParams.get('lang');
+  if(push!==false){params.searchParams.delete('paragraph');params.hash=encodeURIComponent(id);history.replaceState(history.state,'',params);}
   CUR=id;paintList();
   document.body.classList.add("reading");
   $("#art").innerHTML='<div class=inner><div class=welcome>Loading…</div></div>';
   fetch("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/dtc/a/"+encodeURIComponent(id)+".json"+VER).then(r=>r.json()).then(d=>{
-    d.id=id;renderArt(d);
+    if(CUR!==id)return;d.id=id;renderArt(d,paragraph);
     document.title=d.t+" — Dictionnaire de Théologie Catholique";
-    if(push!==false)history.replaceState(null,"","#"+encodeURIComponent(id));
+
   }).catch(()=>{$("#art").innerHTML='<div class=artbar></div><div class=artscroll><div class=inner><div class=welcome>Could not load this article.</div></div></div>';});
 }
 let LISTPOS=0;
 function closeArt(){document.body.classList.remove("reading");CUR=null;
-  history.replaceState(null,"",location.pathname);
+  const url=new URL(location.href);url.hash="";url.searchParams.delete("paragraph");history.replaceState(history.state,"",url);
   document.title="Dictionnaire de Th\u00e9ologie Catholique \u2014 The Faith Received";
   requestAnimationFrame(()=>{$("#list").scrollTop=LISTPOS;paintList();});}
 $("#list").addEventListener("click",e=>{const b=e.target.closest(".hw");

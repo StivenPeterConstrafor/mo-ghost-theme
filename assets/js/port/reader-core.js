@@ -148,6 +148,9 @@ function scriptureReferences(text){
     let reference=scriptureLocation(text,XREF_RE.lastIndex,book);if(!reference)continue;
     // Lowercase ordinary words such as "mark 3 items" are not chapter citations.
     const plainBook=match[2].replace(/\.$/,'');if(plainBook===plainBook.toLowerCase()&&!reference.selection&&(!match[2].endsWith('.')||plainBook===book.toLowerCase()))continue;
+    // Bare num. denotes an internal numbered passage in scholarly prose.
+    // Require a verse for this ambiguous abbreviation; spelled-out Numbers still works.
+    if(/^num$/i.test(plainBook)&&!reference.selection)continue;
     reference.start=match.index+match[1].length;references.push(reference);
     while(reference.selection){
       const separator=/^\s*(?:,|;|&amp;|&|et\b)\s*/.exec(text.slice(reference.end))||/^\s*\.\s*(?=[IVXLCDM]+\s*[.:,]\s*\d)/i.exec(text.slice(reference.end));if(!separator)break;
@@ -397,8 +400,7 @@ function appBank(laN,enN){
   if(frReaderBlockReference(location.hash)||location.hash.length>1)return;
   let page=new URLSearchParams(location.search).get("p");
   if(!page)try{const ws=new URLSearchParams(location.search).get("ws")||new URLSearchParams(location.search).get("w"),saved=JSON.parse(localStorage.getItem("fr_lastread")||"{}");
-    if(ws==='pld-6037'&&!new URLSearchParams(location.search).has('pldpart')&&['2','3','4','5'].includes(saved[ws]?.pldpart)){
-      const url=new URL(location.href);url.searchParams.set('pldpart',saved[ws].pldpart);history.replaceState(history.state,'',url);}
+    // A plain volume opens the complete reading view; explicit saved-source links retain their layer.
     const last=saved[ws]?.page;if(last!=null&&(!/^\d+$/.test(String(last))||Number(last)>3))page=String(last);
   }catch(_){}
   if(page)window.__frInitialReference=String(page);
@@ -1259,7 +1261,7 @@ function restoreReaderPosition(position){
       const delta=target.getBoundingClientRect().top-sc.getBoundingClientRect().top;
       // The mobile masthead can grow after fonts load. Keep source-heading arrivals
       // below its current bottom instead of freezing the initial desktop-sized gap.
-      const header=position.sourcePath&&document.querySelector?.('.ph');
+      const header=(position.sourcePath||target.classList?.contains('pganchor')||frReaderBlockReference(position.id)?.index==='0')&&document.querySelector?.('.ph');
       if(header)offset=Math.max(14,header.getBoundingClientRect().bottom-sc.getBoundingClientRect().top+14);
       if(offset==null)offset=delta;
       const drift=delta-offset;if(Math.abs(drift)>2){sc.scrollTop+=drift;stable=0;}else stable++;
@@ -1301,7 +1303,7 @@ window.__frNavigateReaderAnchor=href=>{
     if(target.origin!==here.origin)return false;
     const work=url=>url.searchParams.get('w')||url.searchParams.get('ws')||(/^\/read\/([^/]+?)(?:\.html)?$/.exec(url.pathname)||[])[1]||'';
     const currentWork=work(here)||window.__FR_SLUG__||DATA?.slug||'',targetWork=work(target);
-    if(currentWork==='pld-6037'&&(target.searchParams.get('pldpart')||'2')!==(here.searchParams.get('pldpart')||'2'))return false;
+    if(/^pld-\d+$/.test(currentWork)&&(target.searchParams.get('pldpart')||'all')!==(here.searchParams.get('pldpart')||'all'))return false;
     // the reader may be mounted under a route prefix (MereO: /the-faith-received/read/) — a citation to the SAME page is
     // always ours; the bare /read shapes stay for cross-page doors (owner 2026-09-11 'fix it for mereo': ?p=&hl= never landed)
     const samePage=target.pathname.replace(/\/+$/,'')===here.pathname.replace(/\/+$/,'');
@@ -1330,7 +1332,8 @@ window.__frNavigateReaderAnchor=href=>{
 // Real reading movement wins over arrival targets and late hydration corrections.
 (function(){const cancel=e=>{const sc=document.getElementById('scroll');if(!sc?.contains(e.target))return;cancelReaderNavigation();};
   document.addEventListener('wheel',cancel,{capture:true,passive:true});document.addEventListener('touchmove',cancel,{capture:true,passive:true});
-  document.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End'].includes(e.key)&&!e.target.closest('input,textarea,select,[contenteditable]'))cancel(e);},true);
+  document.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End'].includes(e.key)&&!e.target.closest('input,textarea,select,[contenteditable]')){if(e.target===document.body||e.target===document.documentElement)cancelReaderNavigation();else cancel(e);}},true);
+  document.getElementById('scroll')?.addEventListener('pointerdown',e=>{if(e.target===e.currentTarget)cancelReaderNavigation();},{passive:true});
 })();
 // Citation and research anchors may resolve to a merged Flow row spanning several pages. Start
 // a row that is taller than the available reading viewport so its cited opening is visible;
@@ -1345,7 +1348,11 @@ function frAnchorBlock(target){
 window.__frPlaceReaderAnchor=(target,opts={})=>{
   if(!target)return null;
   const block=opts.block||frAnchorBlock(target);
-  target.scrollIntoView({block,behavior:opts.behavior||'auto'});
+  target.scrollIntoView({block,behavior:opts.behavior||'instant'});
+  if(block==='start'){
+    const sc=document.getElementById('scroll'),header=document.querySelector?.('.ph');
+    if(sc?.contains(target)&&header){const top=Math.max(sc.getBoundingClientRect().top,header.getBoundingClientRect().bottom)+12;sc.scrollTop+=target.getBoundingClientRect().top-top;}
+  }
   return block;
 };
 window.__frAnchorBlock=frAnchorBlock;
@@ -1388,7 +1395,7 @@ function jump(p,ttl){
       if(bs<0.6)t.querySelectorAll(".row:not(.rhead)").forEach(r=>{if(!r.getClientRects().length)return;
         const sc=score((r.textContent||"").slice(0,260));if(sc>bs){bs=sc;best=r;}});
       if(best&&bs>=0.6)tgt=best.closest(".row")||best;}}
-  tgt.scrollIntoView({behavior:"auto",block:"start"});window.__frJumpEl=tgt;return tgt;}  // page starts at "pg. N", clear of the masthead (scroll-margin-top)
+  window.__frPlaceReaderAnchor(tgt,{block:"start"});window.__frJumpEl=tgt;return tgt;}  // page starts at "pg. N", clear of the masthead (scroll-margin-top)
 // ---- canonical locators ----
 // Scanned works cite by PRINTED PAGE ("p. N"). Born-digital (SCTA) works have no page image,
 // so they're cited by their place in the spine — the scholastic locator (lib./dist./q./art./
@@ -1429,8 +1436,12 @@ function readerOutlineHref(row){
   return url.href;
 }
 function locOf(n){
-  if(DATA?.pld_source_view?.notes)return 'Notes, section '+n;
+  if(typeof INDEX_PAGES!=='undefined'&&(INDEX_PAGES?.has(n)||INDEX_PAGES?.has(String(n))))return 'Index · '+(DATA?.has_pages?'p. ':'§ ')+n;
+  if(n==='editorial')return 'Editorial notes';
+  if(DATA?.pld_source_view?.combined&&DATA.pld_source_view.hasColumns===false)return 'Section '+n;
+  if(DATA?.pld_source_view?.notes)return DATA.pld_source_view.columnNotes?'Editorial notes, col. '+n:'Notes, section '+n;
   const corrected=window.FRReaderNavigation?.locator(DATA,n);if(corrected)return corrected;
+  const pgPlace=window.FRPgParallel?.location(DATA,n);if(pgPlace)return pgPlace;
   if(/^P[LG]\s*\d/i.test(DATA?.volume||""))return "col. "+n;
   if(DATA&&DATA.has_pages)return "p. "+n;
   // born-digital: prefer the export-time deep locator (page.loc, body-mined + carried forward),
@@ -1471,12 +1482,13 @@ function enrichSub(){ aboutFor().then(d=>{ if(!d.author&&!d.blurb)return;
   if(d.blurb&&d.blurb.genre)bits.push(esc(d.blurb.genre));
   const s=$("#sub"); if(!s)return; s.innerHTML=bits.join(" · ");
 }).catch(()=>{}); }
-function openAbout(){ aboutFor().then(d=>{
+function openAbout(){ const priorFocus=document.activeElement;aboutFor().then(d=>{
   let ov=document.getElementById("aboutOv"); if(ov)ov.remove();
-  ov=document.createElement("div"); ov.id="aboutOv"; ov.className="about-ov";
+  ov=document.createElement("div"); ov.id="aboutOv"; ov.className="about-ov";ov.setAttribute("role","dialog");ov.setAttribute("aria-modal","true");ov.setAttribute("aria-label","Edition details");
+  $("#aaPop")?.classList.remove("on");$("#aaBtn")?.setAttribute("aria-expanded","false");
   const a=d.author,b=(typeof d.blurb==="string")?{blurb:d.blurb}:d.blurb;   // blurbs.json carries plain strings for newer works
   const authLine=[a&&a.dates,a&&a.tradition,a&&a.affiliation].filter(Boolean).join(" · ");
-  let h='<div class="about-box"><div class="about-h"><div><h2>'+esc(DATA.title_en||DATA.title)+'</h2><div class="ah-meta">'+esc([(DATA.title_en&&DATA.title_en!==DATA.title)?DATA.title:null,DATA.author,DATA.volume].filter(Boolean).join(" · "))+'</div></div><button class="about-x" title="Close (esc)">✕</button></div><div class="about-body">';
+  let h='<div class="about-box"><div class="about-h"><div><h2>'+esc(DATA.title_en||DATA.title)+'</h2><div class="ah-meta">'+esc([(DATA.title_en&&DATA.title_en!==DATA.title)?DATA.title:null,DATA.author,DATA.volume].filter(Boolean).join(" · "))+'</div></div><button class="about-x" aria-label="Close edition details" title="Close (esc)">✕</button></div><div class="about-body">';
   // WHO first — situate the person, then the work
   h+='<div class="about-sec"><h3>'+esc(DATA.author)+'</h3>';
   if(authLine)h+='<div class="about-tags">'+esc(authLine)+'</div>';
@@ -1487,10 +1499,10 @@ function openAbout(){ aboutFor().then(d=>{
   if(b&&b.blurb){ if(b.genre)h+='<div class="about-tags"><b>'+esc(b.genre)+'</b></div>'; h+='<div class="about-prose"><p>'+esc(b.blurb)+'</p></div>'; }
   h+='</div></div>';    // no machine fallback sentence, no generated-orientation eyebrow (user 2026-07-20): author + work, period.
   ov.innerHTML=h; document.body.appendChild(ov);
-  const close=()=>{ov.remove();removeEventListener("keydown",esk);};
-  function esk(e){if(e.key==="Escape")close();}
+  const close=()=>{ov.remove();removeEventListener("keydown",esk);const target=priorFocus?.getClientRects().length?priorFocus:$("#aaBtn");target?.focus({preventScroll:true});};
+  function esk(e){if(e.key==="Escape"){e.preventDefault();close();}else if(e.key==="Tab"){e.preventDefault();ov.querySelector(".about-x").focus();}}
   ov.addEventListener("click",e=>{if(e.target===ov)close();});
-  ov.querySelector(".about-x").onclick=close; addEventListener("keydown",esk);
+  ov.querySelector(".about-x").onclick=close;ov.querySelector(".about-x").focus();addEventListener("keydown",esk);
 }).catch(()=>{}); }
 function wireAbout(){ const b=$("#rdAbout"); if(b)b.onclick=openAbout; enrichSub(); }
 // TEI PATH (2026-08-10): fetches the per-lane TEI sidecars, pre-segments them by <pb>, and hands
@@ -1930,7 +1942,7 @@ function build(){
   app.classList.toggle("flow",DATA.flow===true||DATA.collection==="reformed-confessions");
   {const mp=$("#m-par");if(mp)mp.style.display=enOnly?"none":"";}
   // witness (owner 2026-09-09): a facsimile work reads text AND scan — two witnesses; a digital work is the text alone
-  $("#wmeta").textContent=[DATA.author,`${DATA.n_pages} ${DATA.has_pages?"folia":"sections"}`,DATA.source_only?'Latin':enOnly||DATA.src_lang==='en'?"English":((window.__SRCNAME||"Latin")+" + English"),DATA.pld_source_view?.label,DATA.has_pages?"facsimile · text + page scans":"digital text"].filter(Boolean).join(" · ");
+  $("#wmeta").textContent=[DATA.author,`${DATA.n_pages} ${DATA.has_pages?"folia":"sections"}`,DATA.source_only?(window.__SRCNAME||'Original'):enOnly||DATA.src_lang==='en'?"English":((window.__SRCNAME||"Latin")+" + English"),DATA.pld_source_view?.label,DATA.has_pages?"facsimile · text + page scans":"digital text"].filter(Boolean).join(" · ");
   {const bits=[(DATA.title_en&&DATA.title_en!==DATA.title)?esc(DATA.title):null,
      DATA.author?('<a class=subau href="/?a='+encodeURIComponent(DATA.author)+'" title="All works by '+esc(DATA.author)+'">'+esc(DATA.author)+'</a>'):null,
      DATA.volume?esc(DATA.volume):null].filter(Boolean);
@@ -2608,11 +2620,12 @@ function build(){
     const laEls=teiHeadFix(TEI_PAGES.la[key]||[],String(pg.n)),enEls=teiHeadFix(TEI_PAGES.en[key]||[],String(pg.n));
     // mirror renderFolio's ONLY skip rule: born-digital blank leaves. Facsimile blanks still
     // get a section (the scan stays visible) — every DATA.pages entry must produce a folio.
-    if(DATA.has_pages===false&&!isFront&&!isTitle&&!laEls.length&&!enEls.length)return;
+    if(DATA.has_pages===false&&!isFront&&!isTitle&&!laEls.length&&!enEls.length&&!DATA.pld_editorial?.[key]?.length)return;
     const fm=el("div","fmark"+(isFront?" frontmatter":"")+(isTitle?" titlepage":""));
     fm.innerHTML=`<span class="ff" role="button" tabindex="0">${esc(locOf(pg.n))}</span><span class="fr"></span><span class="fm">${isTitle?"title page":"p. "+pg.n}</span>`;
     R.appendChild(fm);
     const sec=el("section","folio"+(isFront?" frontmatter":"")+(isTitle?" titlepage":""));sec.dataset.idx=pi;sec.dataset.page=pg.n;
+    if(DATA.pld_source_view?.notes){const label=el("p","pld-note-label");label.textContent=DATA.pld_source_view.hasEnglish?"Editorial notes from the source edition, with their English translation.":"Editorial notes from the source edition, shown in their original language.";sec.appendChild(label);}
     const enQ=teiKids(enEls),notesLA=[],notesEN=[];
     // SECTION-SYNC pairing (owner 2026-08-11 'all deadspace at the bottom'): heads are the
     // only hard sync points — everything between renders as TWO CONTINUOUS FACING COLUMNS,
@@ -2866,6 +2879,7 @@ function build(){
     }
     enhanceScriptureContinuations(sec);
     const ab=appBank(notesLA,notesEN);if(ab)sec.appendChild(ab);
+    if(DATA.pld_editorial?.[key]?.length)sec.insertAdjacentHTML('beforeend',window.FRPldReading.editorialHTML(DATA.pld_editorial[key],String(pg.n)));
     R.appendChild(sec);io.observe(sec);
   }
   // READING EDITION post-pass (owner 2026-08-10): (1) body runs continue across page
@@ -3158,6 +3172,8 @@ function build(){
     let prev=null;
     for(const cur of secs){
       if(!prev){prev=cur;continue;}
+      if(prev.querySelector(".pld-editorial")||cur.querySelector(".pld-editorial")){prev=cur;continue;}
+      if(DATA.pg_source==="grcla"){prev=cur;continue;}   // preserve aligned source-opening boundaries and their citation IDs
       if(cur.classList.contains("frontmatter")!==prev.classList.contains("frontmatter")){prev=cur;continue;}
       const kidsP=[...prev.children].filter(x=>!x.classList.contains("apptog")&&!x.classList.contains("rapp"));
       const kidsC=[...cur.children].filter(x=>!x.classList.contains("ixchip"));
@@ -3183,6 +3199,8 @@ function build(){
     prev=null;
     for(const cur of R.querySelectorAll(".folio")){
       if(!prev){prev=cur;continue;}
+      if(prev.querySelector(".pld-editorial")||cur.querySelector(".pld-editorial")){prev=cur;continue;}
+      if(DATA.pg_source==="grcla"){prev=cur;continue;}   // preserve aligned source-opening boundaries and their citation IDs
       const pk=[...prev.children].filter(x=>!x.classList.contains("apptog")&&!x.classList.contains("rapp"));
       const pr=pk[pk.length-1],cr=[...cur.children].find(x=>!x.classList.contains("ixchip"));
       if(pr&&cr&&pr.classList.contains("row")&&pr.classList.contains("tail")
@@ -3221,7 +3239,7 @@ function build(){
     R.querySelectorAll(".row.furn").forEach(r=>{const t=((r.querySelector(".la")||{}).textContent||"")+" "+((r.querySelector(".en")||{}).textContent||"");if(t.replace(/p\.\s*\d+/g,"").trim().length>12)r.classList.remove("furn");});
     R.querySelectorAll(".folio.rolled").forEach(f=>{const m=f.previousElementSibling;if(m&&m.classList&&m.classList.contains("fmark"))m.classList.add("rolled");});
     // a BLANK leaf (title verso, blank page: no rows at all) has nothing to head either — its chip would stack on the next page's (owner 2026-09-04)
-    R.querySelectorAll(".folio:not(.titlepage)").forEach(f=>{if(f.querySelector(".row,.stkwrap"))return;const m=f.previousElementSibling;if(m&&m.classList&&m.classList.contains("fmark"))m.classList.add("rolled");});
+    R.querySelectorAll(".folio:not(.titlepage)").forEach(f=>{if(f.querySelector(".row,.stkwrap,.pld-editorial"))return;const m=f.previousElementSibling;if(m&&m.classList&&m.classList.contains("fmark"))m.classList.add("rolled");});
     // RUNNING-HEAD ECHO HEADS (owner 2026-09-04, Urraburu Psych. II p.13 "DISPUTATIO PRIMA." printed as the leaf's
     // running head AND as the display head): within one folio, a head row whose Latin (or English) repeats the
     // text of a head row earlier in the same consecutive run of heads is the echo — hide it, keep the first.
@@ -3413,7 +3431,7 @@ function build(){
         if(syn.length>=3){DATA.structure=syn;STRUCT=true;}
       }catch(e){}
     }
-    const nav=$("#nav");window.FRReaderContents?.capture(nav);nav.innerHTML="";
+    const nav=$("#nav");if(window.FRReaderContents?.release)window.FRReaderContents.release(nav);else window.FRReaderContents?.capture(nav);nav.innerHTML="";
     // NEVER A DEAD END ON A PHONE (owner 2026-08-31 "when I'm in a confession I can't get
     // out"): the brand home link is hidden on small screens, so the contents sheet opens
     // with the ways OUT — home, and the section this work belongs to. Library-tab work
@@ -3465,34 +3483,19 @@ function build(){
   // extra scroll-to-letter step is layered ON TOP of goNav rather than inside it, so goNav's own
   // poll-until-rendered contract (2560ish) stays exactly as every other nav destination uses it.
   function renderIndexNav(nav){
-    const KIND_LABEL={quaestionum:"Index Quaestionum",errata:"Errata",citations:"Index of Citations",topical:"Index",alphabetic:"Index",contents:"Contents"};
-    const box=el("div","nav-index");
-    [...INDEX_PAGES.entries()].forEach(([page,kind])=>{
-      const row=el("div","nav-node nd1 ixnavrow");
-      row.dataset.page=page;
-      row.innerHTML=`<span class="cv leaf">▾</span><span class="nn-t">${esc(KIND_LABEL[kind]||"Index")}</span>`;
-      row.onclick=()=>goNav(+page,row);
-      box.appendChild(row);
-      if(kind==="alphabetic"){
-        const rail=el("div","ixnav-az");
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(L=>{
-          const chip=el("button","ixnav-chip");chip.type="button";chip.textContent=L;
-          chip.onclick=ev=>{ev.stopPropagation();
-            goNav(+page,row);
-            // same plain-then-zero-padded data-page lookup the .pgo jump handler already uses
-            // (readingEditionPass, ~3288) — INDEX_PAGES' key comes from teiNorm() (padding
-            // stripped) while .folio's own data-page mirrors pg.n, which isn't always in the
-            // same padded/unpadded form across works.
-            let k=0;const iv=setInterval(()=>{
-              const sec=document.querySelector(`.folio[data-page="${page}"]`)||document.querySelector(`.folio[data-page="${String(page).padStart(4,"0")}"]`);
-              const hit=sec&&[...sec.querySelectorAll(".ixletter")].find(h=>h.textContent.trim()===L);
-              if(hit){clearInterval(iv);hit.scrollIntoView({behavior:"smooth",block:"start"});}
-              else if(++k>40)clearInterval(iv);
-            },200);};
-          rail.appendChild(chip);
-        });
-        box.appendChild(rail);
-      }
+    const box=el('div','nav-index');
+    const groups=FRReaderNavigation.indexSections([...INDEX_PAGES.entries()],readerDisplayOutline(),DATA.pages);
+    const intro=el('p','index-guidance');intro.textContent='Open an index section or choose one of its pages.';box.appendChild(intro);
+    groups.forEach((group,i)=>{
+      const fold=el('details','index-section');fold.open=i===0;
+      const summary=el('summary');summary.textContent=group.title;summary.title=group.sourceTitle;fold.appendChild(summary);
+      const count=el('p','index-guidance');count.textContent=group.pages.length+' '+(group.pages.length===1?'page':'pages');fold.appendChild(count);
+      const pages=el('div','index-page-links');
+      group.pages.forEach(page=>{
+        const link=el('a','index-page-link');link.dataset.page=page;link.href=readerOutlineHref({page});
+        link.textContent=(DATA.has_pages?'Page ':'Section ')+page;
+        link.onclick=e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();goNav(page,link);};pages.appendChild(link);
+      });fold.appendChild(pages);box.appendChild(fold);
     });
     nav.appendChild(box);
   }
@@ -3500,7 +3503,7 @@ function build(){
   // author-sorted list in the drawer; the open work is marked. Index cached across views.
   function renderLibrary(nav){
     const box=el("div","nav-lib");
-    box.innerHTML='<input class="nl-q" placeholder="Filter by title or author…" autocomplete=off spellcheck=false><div class="nl-list"><div class="nl-msg">Loading the library…</div></div>';
+    box.innerHTML='<input class="nl-q" type="search" aria-label="Filter library by title or author" placeholder="Filter by title or author…" autocomplete=off spellcheck=false><div class="nl-list"><div class="nl-msg">Loading the library…</div></div>';
     nav.appendChild(box);
     const list=box.querySelector(".nl-list"),inp=box.querySelector(".nl-q");
     const norm=s=>(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");  // Suárez matches "suarez"
@@ -3512,15 +3515,15 @@ function build(){
       let h="",lastA=null;
       m.slice(0,900).forEach(w=>{
         const a=w._confession?"Confessions":w.author||"No named author";
-        if(a!==lastA){h+='<div class="nl-au'+(t?" open":"")+'" data-au="'+esc(a)+'"><span class="nl-cv">▸</span>'+esc(a)+'</div>';lastA=a;}
+        if(a!==lastA){h+='<button type="button" class="nl-au'+(t?" open":"")+'" aria-expanded="'+(t?'true':'false')+'" data-au="'+esc(a)+'"><span class="nl-cv" aria-hidden="true">▸</span>'+esc(a)+'</button>';lastA=a;}
         h+='<a class="nl-w'+(DATA&&w.slug===DATA.slug?" here":"")+'" href="/the-faith-received/read/?w='+encodeURIComponent(w.slug)+'">'
           +'<span class="nl-t">'+esc(w.title_en||w.title||w.slug)+(w.volume?' <span class="nl-v">· '+esc(String(w.volume))+'</span>':'')+'</span></a>';
       });
       list.innerHTML=h||'<div class="nl-msg">No matches.</div>';
       if(!t)list.classList.add("nl-collapsed");else list.classList.remove("nl-collapsed");
-      list.querySelectorAll(".nl-au").forEach(g=>{g.onclick=()=>g.classList.toggle("open");});
+      list.querySelectorAll(".nl-au").forEach(g=>{g.onclick=()=>g.setAttribute("aria-expanded",String(g.classList.toggle("open")));});
       // keep the current work's author expanded
-      if(DATA){let group=list.querySelector("a.here")?.previousElementSibling;while(group&&!group.classList.contains("nl-au"))group=group.previousElementSibling;if(group)group.classList.add("open");}
+      if(DATA){let group=list.querySelector("a.here")?.previousElementSibling;while(group&&!group.classList.contains("nl-au"))group=group.previousElementSibling;if(group){group.classList.add("open");group.setAttribute("aria-expanded","true");}}
       if(m.length>900)list.insertAdjacentHTML("beforeend",'<div class="nl-msg">'+(m.length-900)+' more — narrow the filter</div>');
     };
     const go=ws=>{if(!box.isConnected)return;paint(ws,inp.value);inp.oninput=()=>paint(ws,inp.value);};
@@ -3708,8 +3711,13 @@ function goReaderReference(pg){
  setTimeout(()=>{if(window.__frTgt===pg.n&&window.__jumpSettle)window.__jumpSettle(pg.n);},900);
 }
 function renderSourceView(){
- const box=$('#reader-source-view'),view=DATA?.pld_source_view;if(!box)return;
- box.hidden=!view;if(!view){box.replaceChildren();return;}
+  const box=$('#reader-source-view'),view=DATA?.pld_source_view;if(!box)return;
+ const external=window.FRPldReading?.publisherNotes(DATA?.slug);
+ box.hidden=!view&&!external;if(!view){box.replaceChildren();if(external){
+  const title=document.createElement('strong');title.textContent='Editorial notes';
+  const note=document.createElement('p');note.textContent=external.text;
+  const link=document.createElement('a');link.href=external.url;link.target='_blank';link.rel='noopener';link.textContent='Read notes in PLD';box.append(title,note,link);
+ }return;}
  if(box.dataset.view===DATA.slug+':'+view.id)return;
  box.dataset.view=DATA.slug+':'+view.id;box.replaceChildren();
  const label=document.createElement('label');label.htmlFor='pld-source-select';label.textContent='Read a source division';
@@ -3718,12 +3726,12 @@ function renderSourceView(){
  select.onchange=()=>{const url=new URL(location.href);url.searchParams.set('pldpart',select.value);
   for(const key of ['p','section','heading','hl'])url.searchParams.delete(key);url.hash='';
   // A deliberate source choice starts at its opening, not the other division's resume point.
-  url.searchParams.set('p',select.value==='3'||select.value==='5'?'1':'73');location.assign(url.href);};
- const note=document.createElement('p');note.textContent=view.notes?'These editorial notes are in Latin.':'The PLD source contains two text divisions, each with its own notes.';
+  url.searchParams.set('p',view.options.find(o=>o.id===select.value)?.start||(select.value==='3'||select.value==='5'?'1':'73'));location.assign(url.href);};
+ const note=document.createElement('p');note.textContent=view.explanation||(view.notes?'These editorial notes are in Latin.':'The PLD source contains two text divisions, each with its own notes.');
  const link=document.createElement('a');link.href=view.source;link.target='_blank';link.rel='noopener';link.textContent=view.notes?'Open linked notes in PLD':'View this division in PLD';
- box.append(label,select,note,link);
+ box.append(label,select,note);if(view.sourceLinks?.length){for(const source of view.sourceLinks){const item=link.cloneNode(false);item.href=source.url;item.textContent=source.label;box.appendChild(item);}}else box.appendChild(link);
  let button=$('#reader-source-choice');if(!button){button=document.createElement('button');button.id='reader-source-choice';button.type='button';$('.reader-reference').appendChild(button);}
- button.textContent=view.notes?'Notes '+(view.id==='3'?'1':'2'):'Text '+(view.id==='2'?'1':'2');button.title='Choose a PLD text division or its notes';
+ button.textContent=view.buttonLabel||(view.notes?'Notes '+(view.id==='3'?'1':'2'):'Text '+(view.id==='2'?'1':'2'));button.title='Choose a PLD text division or its notes';
  button.onclick=()=>{app.classList.remove('nosb');window.__frThumbSync?.();select.focus();};
 }
 function syncReaderHeader(n){
@@ -3743,20 +3751,22 @@ function syncReaderHeader(n){
  author.textContent=DATA.author||"";author.href="/?a="+encodeURIComponent(DATA.author||"");
  volume.textContent=String(DATA.volume||"").replace(/\b(P[LG]|PO)\s*(\d+)/g,"$1 $2");
  place.textContent=locOf(n);place.setAttribute('aria-label','Go to a place in this work, currently '+locOf(n));
- const column=!DATA.pld_source_view?.notes&&/^P[LG]\s*\d/i.test(DATA.volume||""),unit=column?'column':DATA.has_pages?'page':'section';
+ const column=DATA.pld_source_view?.hasColumns!==false&&(!DATA.pld_source_view?.notes||DATA.pld_source_view?.columnNotes)&&/^P[LG]\s*\d/i.test(DATA.volume||""),unit=column?'column':DATA.has_pages?'page':'section';
  $("#pgJump").setAttribute('aria-label',unit[0].toUpperCase()+unit.slice(1)+' number');$("#pgJump").title='Go to '+unit;
  $("#reader-jump-label").textContent='Go to '+unit;
  if(!$("#aaPop").classList.contains('on'))$("#reader-jump").value=String(n);
  $("#pPrev").setAttribute('aria-label','Previous '+unit);$("#pNext").setAttribute('aria-label','Next '+unit);
  $("#pPrev").title='Previous '+unit;$("#pNext").title='Next '+unit;
- const source=window.__SRCNAME||'Latin',enOnly=app.classList.contains('en-only')||DATA?.src_lang==='en';
+ const source=DATA.pld_source_view?.sourceName||window.__SRCNAME||'Latin',enOnly=app.classList.contains('en-only')||DATA?.src_lang==='en';
  app.style.setProperty('--source-label',JSON.stringify(source));
  $("#source-size-name").textContent=source;$("#source-size").hidden=enOnly;
  $("#source-size .lt").textContent=source==='Greek'?'Gr':source==='Latin'?'La':'Aa';
  $("#source-size label").title=source+' text size';
- $("#m-par").title='Show '+source+' text';$("#m-en").title='Show English translation';
+ if(DATA.pld_source_view?.sourceName){window.__SRCNAME=source;$("#m-par").textContent=source;}
+ $("#m-par").disabled=DATA.source_only===true;$("#m-par").title=DATA.source_only?'Source edition notes in their original language':'Show '+source+' text';$("#m-en").title='Show English translation';
 }
 function pgDenom(){const ns=(DATA&&DATA.pages||[]).map(x=>+x.n).filter(Number.isFinite);
+  if(DATA?.pld_source_view?.notes){if(!DATA.pld_source_view.columnNotes)return {txt:String(DATA.pages.length),tip:'Notes sections'};const last=Math.max(...ns);return {txt:String(last),tip:'Last indexed note starting column: '+last};}
   // Migne names printed columns in the numerator. Repeated or out-of-order source
   // entries must not switch its denominator to a count of stored openings.
   if(/^P[LG]\s/.test(DATA?.volume||'')&&ns.length){const last=ns.reduce((a,b)=>Math.max(a,b),0);
@@ -3833,7 +3843,21 @@ function setFolio(pg){if(!pg||cur===pg.n)return;cur=pg.n;syncReaderHeader(pg.n);
     nav.querySelectorAll(".nav-node,.fol").forEach(f=>{const fp=String(f.dataset.page);if(outline){if(f.classList.contains("nd-hidden"))return;if(Number.isFinite(Number(fp))&&Number(fp)<=Number(pg.n)&&(!active||Number(fp)>Number(active.dataset.page)))active=f;}else if(fp===String(pg.n))active=f;});
     nav.querySelectorAll(".nav-node,.fol").forEach(f=>f.classList.toggle("on",f===active));
   }}}
-$("#scroll").addEventListener("scroll",()=>{const s=$("#scroll");$("#prog").style.width=(s.scrollTop/(s.scrollHeight-s.clientHeight)*100)+"%";
+// Keep a shareable address for deliberate reading movement. Initial deep-link
+// settling and background reflow must never replace the requested destination.
+let frReadingURLTimer=0;
+function frScheduleReadingURL(){
+  if(frReadingURLTimer)return;
+  frReadingURLTimer=setTimeout(()=>{frReadingURLTimer=0;
+    if(!DATA||!window.__frUserScrolled||window.__readerChoice||window.__readerPendingPosition||window.__readerNavigationSuspended)return;
+    try{
+      const api=window.FRReaderBookmarks;if(!api)return;
+      const url=api.locationURL(location.href,api.capture());
+      if(url&&url!==location.href)history.replaceState(history.state,'',url);
+    }catch(_){/* A temporarily unrendered passage keeps its last known link. */}
+  },400);
+}
+$("#scroll").addEventListener("scroll",()=>{const s=$("#scroll");$("#prog").style.width=(s.scrollTop/(s.scrollHeight-s.clientHeight)*100)+"%";frScheduleReadingURL();
   if(!_tick){_tick=true;requestAnimationFrame(()=>{pickFolio();_tick=false;});}},{passive:true});
 // Read · Parallel · Study. Read = English-primary single column; Parallel = EN∥LA (rows are
 // locus-paired, so the columns stay in sync inherently); Study = Parallel + the source scan.
@@ -3870,7 +3894,7 @@ function applyLanes(){
   // keep your place: the row that was under the top of the viewport stays there across the relayout
   if(window.__frAnchorRow&&window.__frAnchorRow.isConnected){
     const navigation=window.__readerNavSerial||0,anchor=window.__frAnchorRow;
-    requestAnimationFrame(()=>{if(navigation===(window.__readerNavSerial||0)&&anchor?.isConnected)anchor.scrollIntoView({block:"start"});});}
+    requestAnimationFrame(()=>{if(navigation===(window.__readerNavSerial||0)&&anchor?.isConnected)window.__frPlaceReaderAnchor(anchor,{block:"start"});});}
 }
 function mode(m){                                          // legacy presets → lane states
   if(m==="en")Object.assign(LN,{en:true,la:false,fx:false});
@@ -3882,16 +3906,25 @@ document.addEventListener("pointerdown",ev=>{if(ev.target.closest&&ev.target.clo
 $("#m-en").onclick=()=>{LN.en=!LN.en;if(!LN.en&&!LN.la)LN.la=true;applyLanes();};
 $("#m-par").onclick=()=>{LN.la=!LN.la;if(!LN.en&&!LN.la)LN.en=true;applyLanes();};
 $("#m-study")&&($("#m-study").onclick=()=>{LN.fx=!LN.fx;applyLanes();});
-$("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the left contents sidebar
+function setContentsOpen(open,restoreFocus=false){
+  const sidebar=document.querySelector('.sidebar'),focused=document.activeElement;
+  app.classList.toggle('nosb',!open);
+  if(open)document.documentElement.classList.remove('mh-hide','mh-mini');
+  if(!open&&sidebar?.contains(focused))focused.blur();
+  window.__frThumbSync?.();
+  if(!open&&restoreFocus){const target=document.documentElement.classList.contains('g-mobile')?document.querySelector('.frthumb [data-t="toc"]'):$('#sbT');target?.focus({preventScroll:true});}
+}
+$("#sbT").onclick=()=>setContentsOpen(app.classList.contains('nosb'),true);
+$("#contentsClose").onclick=()=>setContentsOpen(false,true);
 // mobile: scrim behind the open sidebar + tap-to-dismiss; nav taps auto-close the sheet
 (function(){const sc=document.createElement("div");sc.id="sbScrim";app.appendChild(sc);
-  sc.onclick=()=>{app.classList.add("nosb");window.__frThumbSync&&window.__frThumbSync();};
+  sc.onclick=()=>setContentsOpen(false);
   $("#nav").addEventListener("click",e=>{
     // Folding a branch changes the outline, not the reading location. A row's
     // data-page also surrounds its disclosure button, so never use it alone.
     if(e.target.closest("button.cv,summary,.nav-sech,.fmnav,input"))return;
     if(matchMedia("(max-width:880px)").matches&&e.target.closest("a[href],.fol[data-page]")){
-      app.classList.add("nosb");window.__frThumbSync&&window.__frThumbSync();
+      setContentsOpen(false);
     }
   });})();
 /* MOBILE SHELL (ported from Patrologia Graeca, 2026-07-04) — the phone reading model:
@@ -3903,14 +3936,15 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
   const applyM=()=>HTML.classList.toggle("g-mobile",mq.matches);
   applyM();mq.addEventListener?mq.addEventListener("change",applyM):mq.addListener(applyM);
   const bar=document.createElement("nav");bar.className="frthumb";bar.setAttribute("aria-label","Reading controls");
+  const toolbarIcon=path=>'<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+path+'</svg>';
   bar.innerHTML=
     '<button type="button" data-t="en"><span class="ic" aria-hidden="true">A</span><span class="lb">English</span></button>'+
-    '<button type="button" data-t="par"><span class="ic" aria-hidden="true">∥</span><span class="lb">+ Latin</span></button>'+
-    '<button type="button" data-t="study"><span class="ic" aria-hidden="true">▦</span><span class="lb">Scan</span></button>'+
-    '<button type="button" data-t="find"><span class="ic" aria-hidden="true">⌕</span><span class="lb">Search</span></button>'+
-    '<button type="button" data-t="toc"><span class="ic" aria-hidden="true">☰</span><span class="lb">Contents</span></button>'+
+    '<button type="button" data-t="par"><span class="ic" aria-hidden="true">'+toolbarIcon('<path d="M9 4v16M15 4v16"/>')+'</span><span class="lb">+ Latin</span></button>'+
+    '<button type="button" data-t="study"><span class="ic" aria-hidden="true">'+toolbarIcon('<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 7h8M8 11h8M8 15h5"/>')+'</span><span class="lb">Scan</span></button>'+
+    '<button type="button" data-t="find"><span class="ic" aria-hidden="true">'+toolbarIcon('<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>')+'</span><span class="lb">Search</span></button>'+
+    '<button type="button" data-t="toc"><span class="ic" aria-hidden="true">'+toolbarIcon('<path d="M4 6h16M4 12h16M4 18h16"/>')+'</span><span class="lb">Contents</span></button>'+
     '<button type="button" data-t="nb"><span class="ic" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v15M12 5C8 2 3 4 2 4v15c4-2 7-1 10 1 3-2 6-3 10-1V4c-1 0-6-2-10 1Z"/></svg></span><span class="lb">Research</span></button>'+
-    '<button type="button" data-t="ask"><span class="ic" aria-hidden="true">✦</span><span class="lb">Ask</span></button>';
+    '<button type="button" data-t="ask"><span class="ic" aria-hidden="true">'+toolbarIcon('<path d="M20 11a8 8 0 0 1-8 8H5l-3 3V11a9 9 0 0 1 18 0Z"/>')+'</span><span class="lb">Ask</span></button>';
   document.body.appendChild(bar);
   const B={};bar.querySelectorAll("button").forEach(b=>{B[b.dataset.t]=b;
     b.style.touchAction="manipulation";
@@ -3928,7 +3962,7 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
   B.study.onclick=()=>{LN.fx=!LN.fx;applyLanes();};                   // "Scan" = toggle the facsimile
   B.find.onclick=()=>{if(window.__frOpenSearch)window.__frOpenSearch();};
   if(B.ask)B.ask.onclick=()=>{if(window.__openAsk)window.__openAsk("");};
-  B.toc.onclick=()=>{app.classList.toggle("nosb");window.__frThumbSync&&window.__frThumbSync();};
+  B.toc.onclick=()=>setContentsOpen(app.classList.contains("nosb"),true);
   B.nb.onclick=()=>{if(window.__frOpenNotebook)window.__frOpenNotebook();};
   // chrome auto-hide while reading down (phones): accumulate same-direction travel so tiny
   // jitters don't flap it; near the top it is always shown. A tap on the prose toggles it
@@ -3938,6 +3972,7 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
     sc.addEventListener("scroll",()=>{
       const mob=mq.matches;
       const y=sc.scrollTop,d=y-y0;y0=y;
+      if(mob&&!app.classList.contains("nosb")){acc=0;return;}
       if(y<90){HTML.classList.remove("mh-hide","mh-mini");acc=0;return;}
       acc=(d>0)===(acc>0)?acc+d:d;
       if(acc>140)HTML.classList.add(mob?"mh-hide":"mh-mini");
@@ -3954,14 +3989,16 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
   window.__frThumbSync=()=>{
     const hasScan=(typeof DATA!=="undefined")&&!!(DATA&&DATA.has_pages),enOnly=app.classList.contains("en-only")||DATA?.src_lang==='en';
     B.study.style.display=hasScan?"":"none";
-    B.par.style.display=enOnly?"none":"";
+    B.par.style.display=enOnly?"none":"";B.par.disabled=DATA?.source_only===true;
     B.en.style.display=DATA?.source_only?'none':'';
     B.en.classList.toggle("on",!!(window.LN&&LN.en&&!LN.fx));
     B.par.classList.toggle("on",!!(window.LN&&LN.la&&!LN.fx));
     {const lb=B.par.querySelector(".lb");const SN=window.__SRCNAME||"Latin";
-     if(lb)lb.textContent=(window.LN&&LN.la&&!LN.en)?(SN+" only"):(window.LN&&LN.la)?"∥ Both":("+ "+SN);}
+     if(lb)lb.textContent=SN==="Greek \u00b7 Latin"?(window.LN&&LN.la?"Sources":"+ Sources"):(window.LN&&LN.la&&!LN.en)?(SN+" only"):(window.LN&&LN.la)?"∥ Both":("+ "+SN);B.par.setAttribute("aria-label",(window.LN&&LN.la?"Hide ":"Show ")+SN+" source text");}
     B.study.classList.toggle("on",!!(window.LN&&LN.fx));
     B.toc.classList.toggle("on",!app.classList.contains("nosb"));
+    for(const key of ["en","par","study"])B[key].setAttribute("aria-pressed",String(B[key].classList.contains("on")));
+    B.toc.setAttribute("aria-expanded",String(!app.classList.contains("nosb")));B.toc.setAttribute("aria-controls","nav");
     {const w=document.getElementById("m-wit"),bp=document.querySelector(".aamob [data-x=\'m-wit\']");
      if(bp){bp.style.display=w?"":"none";if(w)bp.textContent="⇄ "+w.textContent+" text";}}
   };
@@ -3976,7 +4013,7 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
     const jumpBox=document.createElement('form');jumpBox.className='reader-jump-form';
     jumpBox.innerHTML='<label id="reader-jump-label" for="reader-jump">Go to page</label><div><input id="reader-jump" type="text" autocomplete="off" aria-describedby="reader-jump-status"><button type="submit">Go</button></div><p id="reader-jump-status" role="status"></p>';
     pop.prepend(jumpBox);
-    jumpBox.onsubmit=e=>{e.preventDefault();const value=$('#reader-jump').value.trim(),pg=DATA?.pages.find(p=>String(p.n)===value);if(pg){pop.classList.remove('on');$('#reader-jump').blur();$('#aaBtn').setAttribute('aria-expanded','false');$('#reader-jump-status').textContent='';goReaderReference(pg);}else{$('#reader-jump-status').textContent='That reference is not available in this work.';}};
+    jumpBox.onsubmit=e=>{e.preventDefault();const value=$('#reader-jump').value.trim(),opening=window.FRMigneNavigation?.openingKey(DATA,value)??value,pg=DATA?.pages.find(p=>String(p.n)===String(opening));if(pg){pop.classList.remove('on');$('#reader-jump').blur();$('#aaBtn').setAttribute('aria-expanded','false');$('#reader-jump-status').textContent='';goReaderReference(pg);}else{$('#reader-jump-status').textContent='That reference is not available in this work.';}};
     $('#reader-location').onclick=e=>{e.stopPropagation();$('#reader-jump').value=String(cur??'');pop.classList.add('on');$('#aaBtn').setAttribute('aria-expanded','true');$('#reader-jump').focus();$('#reader-jump').select();};
     pop.insertBefore(row,pop.firstChild);
     row.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
@@ -4611,7 +4648,7 @@ $("#pPrev").onclick=()=>stepFolio(-1);$("#pNext").onclick=()=>stepFolio(1);
    if(nx){rememberReaderChoice(nx.n);window.__folioLock=Date.now()+1600;jump(nx.n);setTimeout(()=>setFolio(nx),80);
      if(window.__jumpSettle)setTimeout(()=>window.__jumpSettle(nx.n),900);}};
  if(a)a.onclick=()=>stepScan(-1);if(b)b.onclick=()=>stepScan(1);}   // page-turn from the scan header (the only nav on a phone's full-screen scan)
-{const pj=$("#pgJump");if(pj){const go=e=>{const value=e.target.value.trim(),exact=DATA&&DATA.pages.find(x=>String(x.n)===value),p=/^\d+$/.test(value)?Number(value):null;
+{const pj=$("#pgJump");if(pj){const go=e=>{const value=e.target.value.trim(),opening=window.FRMigneNavigation?.openingKey(DATA,value)??value,exact=DATA&&DATA.pages.find(x=>String(x.n)===String(opening)),p=/^\d+$/.test(value)?Number(value):null;
    if(exact)goReaderReference(exact);   // exact printed label; a new choice replaces the arrival target
    else if(p&&DATA&&p>=1&&p<=(DATA.n_pages||0)){
      // folio lives in a shard that hasn't loaded yet (large works stream in chunks):
@@ -4821,9 +4858,10 @@ async function loadPldCanon(ws){
     fetch(BLOB+"/v1/pldtoc/"+id+".json").then(r=>r.ok?r.json():{}).catch(()=>({}))]);
   let doc=new DOMParser().parseFromString(xml,"application/xml"),sourceView=null;
   if(doc.querySelector("parsererror"))throw new Error("canon parse");
-  if(ws==='pld-6037'){
+  if(window.FRPldReading.hasSourceViews(ws)){
     const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(xml))),b=>b.toString(16).padStart(2,'0')).join('');
-    sourceView=window.FRPldReading.sourceView(doc,ws,digest,new URLSearchParams(location.search).get('pldpart'));
+    const params=new URLSearchParams(location.search),reference=params.get('p')||frReaderBlockReference(location.hash)?.page;
+    sourceView=window.FRPldReading.sourceView(doc,ws,digest,params.get('pldpart'),reference);
     if(sourceView){doc=sourceView.doc;const url=new URL(location.href);url.searchParams.set('pldpart',sourceView.id);history.replaceState(history.state,'',url);}
   }
   const gt=(sel)=>{const e=doc.querySelector(sel);return e?e.textContent.trim():"";};
@@ -4851,24 +4889,24 @@ async function loadPldCanon(ws){
   const advance=n=>{if(n&&!seen.has(n)){seen.add(n);pages.push(n);
     for(const [d,b] of [[laD,laB],[enD,enB]]){const pb=d.createElement("pb");pb.setAttribute("n",String(n));b.appendChild(pb);}}};
   // The first source column also owns any opening text printed before its marker.
-  const firstColumn=sourceView?.notes?null:[...doc.querySelectorAll('milestone[unit="column"]')].map(m=>colN(m.getAttribute('n'))).find(Boolean);
+  const firstColumn=sourceView?.notes&&!sourceView.columnNotes?null:[...doc.querySelectorAll('milestone[unit="column"]')].map(m=>colN(m.getAttribute('n'))).find(Boolean);
   advance(firstColumn);
   window.__pldLastEnHead=null;window.__pldLastEnHeadEcho=false;
   const walk=(node,depth)=>{
     for(const ch of node.children){
       const ln=ch.localName;
       if(ln==="milestone"&&ch.getAttribute("unit")==="column"){
-        if(sourceView?.notes)continue;
+        if(sourceView?.notes&&!sourceView.columnNotes)continue;
         advance(colN(ch.getAttribute("n")));
       }else if(ln==="head"){
         if(pairedHeads.has(ch))continue;
         const info=window.FRPldReading.heading(ch);
         if(info.companion)pairedHeads.add(info.companion);
         // A new division's explicit column belongs to its heading, not the prior chapter.
-        advance(colN(info.rawColumn));
+        if(!sourceView?.notes||sourceView.columnNotes)advance(colN(info.rawColumn));
         const t=info.source;
         const did=(ch.parentElement.getAttribute("xml:id")||"").replace(/^w\d+-d/,"").replace(/_/g," ");
-        const en=info.english||(toc&&toc[did])||"";
+        const en=info.english||(!sourceView?.notes&&toc&&toc[did])||"";
         if(depth0===null)depth0=depth;
         if(t||en)struct.push({title:en||t,page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5),pld_division:ch.parentElement.getAttribute("xml:id")||""});
         window.__pldLastEnHead=null;window.__pldLastEnHeadEcho=false;
@@ -4880,10 +4918,14 @@ async function loadPldCanon(ws){
       }else if(ln==="p"){
         const lang=ch.getAttribute("xml:lang");
         if(sourceView?.notes){
-          // The export's note translations are Latin echoes. Retain the actual
-          // source once, in Latin, and use note sections rather than false columns.
-          if(lang==='en')continue;
-          advance(pages.length+1);
+          // The export's note "translations" were Latin echoes: keep the source once, in Latin,
+          // and use note sections rather than false columns. A real translation — a <p corresp>
+          // that follows its Latin note and differs from it (pld-448, 2026-09-14) — joins the
+          // English lane; anything else in English is still an echo and is dropped.
+          if(lang==='en'){const prev=ch.previousElementSibling,norm=s=>String(s||'').replace(/\s+/g,' ').trim();
+            const echo=!prev||prev.localName!=='p'||prev.getAttribute('xml:lang')==='en'||'#'+(prev.getAttribute('xml:id')||'')!==(ch.getAttribute('corresp')||'')||norm(prev.textContent)===norm(ch.textContent);
+            if(echo)continue;}
+          else if(!sourceView.columnNotes)advance(pages.length+1);
         }
         let t=ch.textContent.replace(/\s+/g," ").trim();
         // DEHYPHENATION (owner 2026-08-18 mobile screenshot 'ho- moeusion', 'un- derstanding'):
@@ -4893,7 +4935,7 @@ async function loadPldCanon(ws){
         t=t.replace(/([A-Za-zÀ-ÿæœ])-\s+([a-zà-ÿæœ])/g,"$1$2")
            .replace(/([A-Z]{2,})-\s+([A-Z]{2,})/g,"$1$2");
         if(!t)continue;
-        if(sourceView?.notes){const incipit=t.split(/[.!?]\s/)[0];struct.push({title:'Notes '+pages.length+': '+incipit.slice(0,90),page:pages.length,depth:1});}
+        if(sourceView?.notes&&lang!=='en'){const notePage=pages.at(-1);if(sourceView.columnNotes){if(!struct.some(s=>s.page===notePage))struct.push({title:'Notes at column '+notePage,page:notePage,depth:1});}else{const incipit=t.split(/[.!?]\s/)[0];struct.push({title:'Notes '+pages.length+': '+incipit.slice(0,90),page:notePage,depth:1});}}
         // INDEX-VOLUME FORMATTING (owner 2026-08-17 'one big block'): Migne's index tomes
         // (PL 218-221) print thousands of entries glued with ".--"; give each its own line.
         const parts=(IS_PL_INDEX&&t.length>500&&t.split(" .--").length>3)?t.split(/\s*\.--\s*/):[t];
@@ -4912,6 +4954,8 @@ async function loadPldCanon(ws){
     }
   };
   const body=doc.querySelector("body");if(body)walk(body,0);
+  if(!pages.length){const count=Math.max(Object.keys(teiSegment(laD)).length,Object.keys(teiSegment(enD)).length,1);for(let i=1;i<=count;i++)pages.push(i);}
+  if(sourceView?.combined){for(const key of Object.keys(sourceView.editorial||{}))if(key!=='editorial'&&!pages.some(n=>String(n)===key))pages.push(Number(key));pages.sort((a,b)=>Number(a)-Number(b));if(sourceView.editorial?.editorial?.length)pages.push('editorial');}
   if(!pages.length)pages.push(1);
   if(IS_PL_INDEX){
     // CLICKABLE CITATIONS (owner 2026-08-17 'this is not clickable'): every "S. August.,
@@ -4939,8 +4983,9 @@ async function loadPldCanon(ws){
   wireVolTravel("PL",(vol.match(/\d+/)||[])[0],+id,"pld","plvol");
   window.__pldCanonDocs={la:laD,en:enD};   // loadTEI consumes these instead of fetching sidecars
   return {slug:ws,title,title_en:title,author,author_la:author_la!==author?author_la:undefined,volume:vol,tradition:"Latin Fathers",
-    has_pages:false,has_tei:true,tei_v:0,en_only:false,source_only:!!sourceView?.notes,n_pages:pages.length,
-    pld_source_view:sourceView?{id:sourceView.id,label:sourceView.label,options:sourceView.options,notes:sourceView.notes,source:sourceView.source}:null,
+    has_pages:false,has_tei:true,tei_v:0,en_only:false,source_only:!!sourceView?.notes&&!sourceView.hasEnglish||!!sourceView?.combined&&!sourceView.hasMainEnglish,n_pages:pages.length,
+    pld_editorial:sourceView?.combined?sourceView.editorial:null,
+    pld_source_view:sourceView?{id:sourceView.id,label:sourceView.label,combined:!!sourceView.combined,hasColumns:firstColumn!=null,options:sourceView.options,notes:sourceView.notes,columnNotes:sourceView.columnNotes,sourceName:sourceView.sourceName,buttonLabel:sourceView.buttonLabel,explanation:sourceView.explanation,sourceLinks:sourceView.sourceLinks,source:sourceView.source}:null,
     structure:struct,base:null,reader_introduction:window.FRPldReading.introduction(doc.querySelectorAll('head'),colN,ws,struct),
     pages:pages.map(n=>({n,la:"",en:""}))};
 }
@@ -5028,12 +5073,12 @@ function _alignPair(laArr,enArr){
 async function pgZoneSidecar(id){
   window.__pgzCache=window.__pgzCache||{};
   if(!(id in window.__pgzCache)){
-    window.__pgzCache[id]=fetch(BLOB+"/v1/pgzone/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null);
+    window.__pgzCache[id]=fetch(BLOB+"/v1/pgzone/"+id+".json?v="+encodeURIComponent(window.__FR_VER||"pg-source-20260914")).then(r=>r.ok?r.json():null).catch(()=>null);
   }
   return window.__pgzCache[id];
 }
 async function loadPgCanon(ws){
-  const id=ws.slice(3);
+  const id=ws.slice(3),pgVersion="?v="+encodeURIComponent(window.__FR_VER||"pg-source-20260914");
   let _pgZone=null;   // page-keyed ColGreek zones (set when the body is mixed)
   const _healGrc=s=>String(s)
     .replace(/([\u0370-\u03FF\u1F00-\u1FFF])-\s?(?=[\u0370-\u03FF\u1F00-\u1FFF])/g,"$1")
@@ -5042,24 +5087,24 @@ async function loadPgCanon(ws){
   let _zoneReplace=true;   // false = CLEAN body (owner 2026-08-18 pg-3223: dirty vol-34 zones
                            // were OVERWRITING a 99%-Greek body with Latin+apparatus glue) —
                            // zones then serve ARBITRATION only (post-walk <0.15 disagreement)
-  window.__pgAuth=window.__pgAuth||fetch(BLOB+"/v1/pgauthors.json").then(r=>r.ok?r.json():{}).catch(()=>({}));
+  window.__pgAuth=window.__pgAuth||fetch(BLOB+"/v1/pgauthors.json"+pgVersion).then(r=>r.ok?r.json():{}).catch(()=>({}));
   window.__pgFetchCache=window.__pgFetchCache||{};
   const _pfc=window.__pgFetchCache[id]=window.__pgFetchCache[id]||{};
   const _cached=(k,mk)=>(_pfc[k]=_pfc[k]||mk().catch(e=>{delete _pfc[k];throw e;}));
   const [xml,toc,vtx,pgen,pggap]=await Promise.all([
-    _cached("xml",()=>((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/v1/tei/pg/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/v1/tei/pg/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();}))),
-    _cached("toc",()=>fetch(BLOB+"/v1/pgtoc/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null)),
+    _cached("xml",()=>((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/v1/tei/pg/"+id+".xml"+pgVersion).then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/v1/tei/pg/"+id+".xml"+pgVersion).then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();}))),
+    _cached("toc",()=>fetch(BLOB+"/v1/pgtoc/"+id+".json"+pgVersion).then(r=>r.ok?r.json():null).catch(()=>null)),
     // the PG site's own cleaned vision transcription, per column (owner 2026-08-17
     // 'let the reader just copy the page') — staged for mixed works; absent elsewhere
-    _cached("vtx",()=>fetch(BLOB+"/v1/pgvtx/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null)),
+    _cached("vtx",()=>fetch(BLOB+"/v1/pgvtx/"+id+".json"+pgVersion).then(r=>r.ok?r.json():null).catch(()=>null)),
     // EN top-up sidecar (2026-08-17): column-keyed translations for the 28 works the
     // canon (and the PG site) never carried English for
-    _cached("pgen",()=>fetch(BLOB+"/v1/pgen/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null)),
+    _cached("pgen",()=>fetch(BLOB+"/v1/pgen/"+id+".json"+pgVersion).then(r=>r.ok?r.json():null).catch(()=>null)),
     // BOUNDARY-LOSS sidecar (owner 2026-08-18 'transition between works — one work ending
     // and another beginning on the same page'): the opening column(s) the canon never
     // carried, recovered from the volume pageview zones / plate vision (125 works,
     // pg-105 class — Justin's Apology opened mid-sentence at col 329)
-    _cached("pggap",()=>fetch(BLOB+"/v1/pggap/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null))]);
+    _cached("pggap",()=>fetch(BLOB+"/v1/pggap/"+id+".json"+pgVersion).then(r=>r.ok?r.json():null).catch(()=>null))]);
   // the SITE vtx / gap sidecars are reading surfaces too — heal them like the canon
   const _healDeep=o=>{if(!o)return o;for(const k in o){const v=o[k];
     if(typeof v==="string")o[k]=_healGrc(v);
@@ -5098,7 +5143,7 @@ async function loadPgCanon(ws){
     let _lat=0,_grc=0;
     (function _cnt(node){for(const ch of node.children){
       const ty=ch.getAttribute?ch.getAttribute("type"):null;
-      if(ch.localName==="div"&&(ty==="translation"||ty==="secondary"||ty==="diplomatic"))continue;
+      if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
       if(ch.localName==="p"){const t=ch.textContent;
         _lat+=(t.match(/[A-Za-z]/g)||[]).length;_grc+=(t.match(/[Ͱ-Ͽἀ-῿]/g)||[]).length;}
       else if(ch.localName==="div")_cnt(ch);}})(doc.querySelector("body")||doc.documentElement);
@@ -5111,7 +5156,7 @@ async function loadPgCanon(ws){
     let firstColumn=null,finished=false;const opening=[];
     const visit=node=>{for(const child of node.children){
       if(finished)return;const type=child.getAttribute?.('type'),tag=child.localName;
-      if(tag==='div'&&['translation','secondary','diplomatic','contents'].includes(type))continue;
+      if(tag==='div'&&(!window.FRMigneNavigation.isReadingDivision(type)||type==='contents'))continue;
       if(tag==='pb'||tag==='milestone'&&child.getAttribute('unit')==='column'){
         const n=child.getAttribute('n');if(!/^\d+$/.test(n||''))continue;
         if(firstColumn==null)firstColumn=n;else if(n!==firstColumn&&opening.length){finished=true;return;}
@@ -5180,11 +5225,12 @@ async function loadPgCanon(ws){
     // head block so the aligner can never fuse a division into a paragraph
     _carveEn(t,enByCol[n]=enByCol[n]||[]);});
   // page spans (n -> next pb) for span-union of vtx and EN lanes
+  const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=window.FRPgParallel.printedColumns(doc);
   const _bodyPage={};
   {let _bp=null;
    (function bt(node){for(const ch of node.children){
      const ty=ch.getAttribute?ch.getAttribute("type"):null;
-     if(ch.localName==="div"&&(ty==="translation"||ty==="secondary"||ty==="diplomatic"))continue;
+     if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
      if(ch.localName==="pb"||(ch.localName==="milestone"&&ch.getAttribute("unit")==="column")){const nn=+ch.getAttribute("n");if(nn)_bp=nn;}
      else if(ch.localName==="p"&&_bp!=null){const t=ch.textContent.replace(/\s+/g," ").trim();
        if(t)_bodyPage[_bp]=(_bodyPage[_bp]?_bodyPage[_bp]+" ":"")+t;}
@@ -5193,7 +5239,7 @@ async function loadPgCanon(ws){
    const pbs=[];
    (function pw(node){for(const ch of node.children){
      const ty=ch.getAttribute?ch.getAttribute("type"):null;
-     if(ch.localName==="div"&&(ty==="translation"||ty==="secondary"||ty==="diplomatic"))continue;
+     if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
      if(ch.localName==="pb"||(ch.localName==="milestone"&&ch.getAttribute("unit")==="column")){const nn=+ch.getAttribute("n");if(nn)pbs.push(nn);}
      else if(ch.localName==="div")pw(ch);}})(doc.querySelector("body")||doc.documentElement);
    for(let i=0;i<pbs.length;i++){if(window.__pgPbNext[pbs[i]]!==undefined)continue;
@@ -5233,7 +5279,7 @@ async function loadPgCanon(ws){
   {const pbOnly=[];
    (function pspd(node){for(const ch of node.children){
      const ty=ch.getAttribute?ch.getAttribute("type"):null;
-     if(ch.localName==="div"&&(ty==="translation"||ty==="secondary"||ty==="diplomatic"))continue;
+     if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
      if(ch.localName==="pb"){const nn=+ch.getAttribute("n");if(nn&&!pbOnly.includes(nn))pbOnly.push(nn);}
      else if(ch.localName==="div")pspd(ch);}})(doc.querySelector("body")||doc.documentElement);
    if(pbOnly.length>=5){
@@ -5258,7 +5304,7 @@ async function loadPgCanon(ws){
       const bodyEl=doc.querySelector("body");
       if(bodyEl){
         const clone=bodyEl.cloneNode(true);
-        clone.querySelectorAll('div[type="translation"],div[type="secondary"],div[type="diplomatic"]').forEach(d=>d.remove());
+        clone.querySelectorAll('div[type="translation"],div[type="secondary"],div[type="diplomatic"],div[type="witness"],div[type="edition"]').forEach(d=>d.remove());
         const t=clone.textContent;
         const g=(t.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;
         const l=(t.match(/[A-Za-z]/g)||[]).length;
@@ -5301,7 +5347,7 @@ async function loadPgCanon(ws){
     }
     const bodyCols=new Set();
     [...doc.querySelectorAll("body pb, body milestone")].forEach(x=>{
-      if(x.closest&&x.closest('div[type="translation"],div[type="secondary"],div[type="diplomatic"]'))return;
+      if(x.closest&&x.closest('div[type="translation"],div[type="secondary"],div[type="diplomatic"],div[type="witness"],div[type="edition"]'))return;
       const n=+x.getAttribute("n");if(n)bodyCols.add(n);});
     const gaps=Object.keys(enByCol).map(Number).filter(n=>!bodyCols.has(n)).sort((a,b)=>a-b);
     const pvW=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
@@ -5399,7 +5445,8 @@ async function loadPgCanon(ws){
       const gl=c.replace(/[^\u0370-\u03FF\u1F00-\u1FFF]/g,"");
       return c.length>=6&&c.length<=160&&gl.length>=6&&gl===gl.toUpperCase();};
     let _pairs;
-    {
+    if(_colLa._aligned){_pairs=_colLa.map((text,i)=>[text,_colEn[i]||" "]);}
+    else {
       const sE=[[]],hE=[null];
       _enM.forEach(x=>{if(typeof x==="string"&&x.charCodeAt(0)===1){hE.push(x);sE.push([]);}else sE[sE.length-1].push(x);});
       const sL=[[]],hL=[null];
@@ -5509,6 +5556,11 @@ async function loadPgCanon(ws){
     // pageview machinery below is Greek-reading-lane authority only (2026-08-18:
     // it was injecting pageview Greek into the Latin witness on every even column)
     if(src!=="grc"){_colLa._prune=false;return;}
+    const canonicalOpening=_canonOpenings[String(n)];
+    if(canonicalOpening?.grc&&(window.__pgSpread?.has(n)||Object.keys(canonicalOpening.columns).length===1)){
+      _carveGr(canonicalOpening.grc,_colLa);_colLa._zoned=true;_colLa._prune=false;return;
+    }
+
     // PAGE-KEYED SOURCE (owner 2026-08-17 'the PG site doesn't have these issues —
     // everything is keyed by page'): when the volume pageview has this opening's
     // layout-zoned Greek column, it IS the source text — the mixed vision/OCR body
@@ -5532,7 +5584,7 @@ async function loadPgCanon(ws){
         const refMap={};let curN=null;const pbList=[];
         (function bw(node){for(const ch of node.children){
           const ty=ch.getAttribute?ch.getAttribute("type"):null;
-          if(ch.localName==="div"&&(ty==="translation"||ty==="secondary"||ty==="diplomatic"))continue;
+          if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
           if(ch.localName==="pb"||(ch.localName==="milestone"&&ch.getAttribute("unit")==="column")){const nn=+ch.getAttribute("n");if(nn){curN=nn;if(!pbList.includes(nn))pbList.push(nn);}}
           else if(ch.localName==="p"&&curN)refMap[curN]=(refMap[curN]||"")+" "+ch.textContent;
           else if(ch.localName==="div")bw(ch);}})(doc.querySelector("body")||doc.documentElement);
@@ -5608,22 +5660,13 @@ async function loadPgCanon(ws){
     const h2=enD.createElement("head");h2.textContent=t;enB.appendChild(h2);};
   const hasSecondary=!!doc.querySelector('div[type="secondary"]');
   const hasDipl=!!doc.querySelector('div[type="diplomatic"]');
-  // OFFER THE COLUMNS THE PRINT HAS (owner 2026-09-11 pg-1938 'this has greek
-  // and latin, why does only greek appear'): wireSrcSel existed but was never
-  // called — the Latin facing column sat in the TEI unreachable.
-  {const _pvW0=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
-   const _opts=[{v:"grc",l:"Greek (as printed)"}];
-   if(hasSecondary||_pvW0)_opts.push({v:"la",l:"Latin — Migne’s facing column"});
-   if(_pvW0)_opts.push({v:"grcla",l:"Greek · Latin, per opening"});
-   if(hasDipl)_opts.push({v:"ocr",l:"Page transcription"});
-   if(_opts.length>1)wireSrcSel(_opts,src);}
   // BACKFILLED BODY BEATS THE WITNESS FLOOR (owner 2026-09-04 pg-1891): the zone
   // backfill gives the body full column coverage — and a Latin-heavy backfill flips the
   // script census to 'ocr', which switched the build to a diplomatic witness covering a
   // FRACTION of the columns (every other page rendered English-only). When the body
   // carries clearly more column anchors than the chosen witness, the body is the source.
   const _witColsN=(sel)=>[...doc.querySelectorAll(`div[type="${sel}"] pb, div[type="${sel}"] milestone`)].length;
-  const _bodyColsN=[...doc.querySelectorAll("body pb, body milestone")].filter(x=>!(x.closest&&x.closest('div[type="translation"],div[type="secondary"],div[type="diplomatic"]'))).length;
+  const _bodyColsN=[...doc.querySelectorAll("body pb, body milestone")].filter(x=>!(x.closest&&x.closest('div[type="translation"],div[type="secondary"],div[type="diplomatic"],div[type="witness"],div[type="edition"]'))).length;
   const _witRicher=(sel)=>_bodyColsN<=_witColsN(sel)*1.2;
   if((src==="la"&&hasSecondary&&_witRicher("secondary"))||(src==="ocr"&&hasDipl&&_witRicher("diplomatic"))){
     const walk2=(node,depth)=>{for(const ch of node.children){
@@ -5640,7 +5683,7 @@ async function loadPgCanon(ws){
     const body=doc.querySelector("body");
     const walk=(node,depth)=>{for(const ch of node.children){
       const ln=ch.localName,ty=ch.getAttribute?ch.getAttribute("type"):null;
-      if(ln==="div"&&(ty==="translation"||ty==="secondary"||ty==="diplomatic"))continue;
+      if(ln==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
       if(ln==="pb")addPb(+ch.getAttribute("n"));
       else if(ln==="milestone"&&ch.getAttribute("unit")==="column")addPb(+ch.getAttribute("n"));
       else if(ln==="head")addHead(ch.textContent.replace(/\s+/g," ").trim(),depth);
@@ -5676,7 +5719,7 @@ async function loadPgCanon(ws){
       const pvUrl3=pvW3?((pvW3.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null;
       if(pvUrl3)try{
         window.__pgpvCache=window.__pgpvCache||{};
-        window.__pgpvCache[pvUrl3]=window.__pgpvCache[pvUrl3]||fetch(pvUrl3).then(r=>r.ok?r.text():null).catch(()=>null);
+        window.__pgpvCache[pvUrl3]=window.__pgpvCache[pvUrl3]||fetch(pvUrl3+(pvUrl3.includes("?")?"&":"?")+"v="+encodeURIComponent(window.__FR_VER||"pg-source-20260914")).then(r=>r.ok?r.text():null).catch(()=>null);
         const pvXml3=await window.__pgpvCache[pvUrl3];
         if(pvXml3){
           const pv3=new DOMParser().parseFromString(pvXml3,"application/xml");
@@ -5684,9 +5727,10 @@ async function loadPgCanon(ws){
           const cols3=[];
           (function cw(node){for(const ch of node.children){
             const ty3=ch.getAttribute?ch.getAttribute("type"):null;
-            if(ch.localName==="div"&&(ty3==="translation"||ty3==="secondary"||ty3==="diplomatic"))continue;
+            if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty3))continue;
             if(ch.localName==="pb"||(ch.localName==="milestone"&&ch.getAttribute("unit")==="column")){const nn=+ch.getAttribute("n");if(nn)cols3.push(nn);}
             else if(ch.localName==="div")cw(ch);}})(doc.querySelector("body")||doc.documentElement);
+          cols3.push(...Object.keys(_canonOpenings).map(Number).filter(Boolean));
           if(!cols3.length)cols3.push(...Object.keys(enByCol).map(Number).filter(Boolean));
           if(cols3.length){
             const lo3=Math.min(...cols3)-1,hi3=Math.max(...cols3)+1;
@@ -5701,6 +5745,9 @@ async function loadPgCanon(ws){
               grc:[...sf.querySelectorAll("zone")].filter(z=>(z.getAttribute("type")||"").includes("ColGreek"))
                 .map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim()}))
               .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&x.n>=lo3&&x.n<=hi3).sort((a,b)=>a.n-b.n);
+            // The source site's vision text is already in the primary TEI columns.
+            // Raw pageview zones are a fallback, never an unconditional replacement.
+            for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)];if(canon?.grc)sf.grc=canon.grcRich||canon.grc;if(canon?.la)sf.lat=canon.laRich||canon.la;}
             window.__grclaDbg={surfs:surfs3.length,pv:!!pvXml3,cols:cols3.length};
             if(surfs3.length){
               _latBuilt=true;
@@ -5719,16 +5766,19 @@ async function loadPgCanon(ws){
                   if(lt===_b4)break;}
                 lt=lt.replace(/\s[A-E](?=\s+[a-z\u00e6\u0153])/g,"").replace(/\s[A-E](?=\s+[a-z\u00e6\u0153])/g,"");   // Migne margin letters, incl. A B pairs
                 _colLa=[];_colLa._prune=false;
-                if(src==="grcla"){
-                  // the print's own pairing: Greek authoritative, Migne's Latin beneath it —
-                  // aligned per paragraph by the same proportional aligner the EN lane uses
-                  let gt=_healGrc(sf.grc.replace(/^\d+\s+[^\u0370-\u03ff]{0,120}?(?=[\u0370-\u03ff])/,"").replace(/\s+\d+\s*$/,""));
-                  _alignPair(_paras3(gt),_paras3(lt)).forEach(([g2,l2])=>{
-                    _colLa.push((g2||"")+(l2?"\u0006"+l2:""));});
-                }else lt.split(/(?<=[.!?])\s+(?=[A-Z\u00c6\u0152]{2,}(?:\s+[A-Z\u00c6\u0152]{2,}\.?)+)/)
-                  .forEach(seg2=>_paras3(seg2).forEach(t2=>_colLa.push(t2)));
                 _colEn=[];
                 for(let k3=sf.n;k3<sf.n+2;k3++){if(enByCol[k3]&&enByCol[k3].length){_colEn.push(...enByCol[k3]);(window.__enUsed=window.__enUsed||new Set()).add(k3);}}
+                if(src==="grcla"){
+                  const aligned=window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_colEn.map(e=>typeof e==="string"&&e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e).join(" "));
+                  // Keep printed headings visible in their own lane, without guessing
+                  // their counterparts. Their opening remains a usable outline target.
+                  const marked=aligned.rows.map(r=>r.en).join(" ");
+                  const heads=[...marked.matchAll(/\u0002([^\u0003]+)\u0003/g)];
+                  const sourceHeads=heads.length?heads:[...sf.grc.matchAll(/\u0002([^\u0003]+)\u0003/g)];
+                  for(const h of sourceHeads){if(!struct.some(x=>x.page===sf.n&&x.title===h[1].slice(0,140)))struct.push({title:h[1].slice(0,140),page:sf.n,depth:2});}
+                  _colLa=aligned.rows.map(r=>r.grc+(r.la?"\u0006"+r.la:""));_colLa._aligned=true;_colEn=aligned.rows.map(r=>r.en);
+                }else lt.split(/(?<=[.!?])\s+(?=[A-Z\u00c6\u0152]{2,}(?:\s+[A-Z\u00c6\u0152]{2,}\.?)+)/)
+                  .forEach(seg2=>_paras3(seg2).forEach(t2=>_colLa.push(t2)));
               });
               flushCol();
             }
@@ -5984,7 +6034,7 @@ async function loadPgCanon(ws){
       b.textContent=label;b.title=title;
       b.classList.toggle("srcon",src===ps);
       b.setAttribute("aria-pressed",src===ps?"true":"false");
-      b.onclick=()=>{if(src===ps)return;
+      b.onclick=()=>{if(src===ps){if(mp.getAttribute("aria-pressed")==="false")mp.click();return;}
         if(window.__switchSrc)window.__switchSrc(ps);
         else{const u=new URL(location.href);u.searchParams.set("src",ps);location.href=u.toString();}};
       return b;};
@@ -5993,7 +6043,7 @@ async function loadPgCanon(ws){
     mkPill("m-wit","la","Latin","Migne's facing Latin column — the other half of the printed page");
     mkPill("m-wit0","grc","Greek","The Greek reading text");
     let choices=document.getElementById('reader-witnesses');
-    if(!choices){choices=document.createElement('div');choices.id='reader-witnesses';choices.className='reader-witnesses';choices.innerHTML='<span>Source edition</span><div role="group" aria-label="Source edition"></div>';document.getElementById('aaPop').appendChild(choices);}
+    if(!choices){choices=document.createElement('div');choices.id='reader-witnesses';choices.className='reader-witnesses';choices.innerHTML='<span>Source</span><div role="group" aria-label="Source language"></div>';mp.closest('header').appendChild(choices);}
     for(const id of ['m-wit0','m-wit','m-wit2'])choices.querySelector('div').appendChild(document.getElementById(id));
     if(typeof DATA!=='undefined'&&DATA)syncReaderHeader(cur||DATA.pages[0]?.n);
   },800);
@@ -6011,6 +6061,7 @@ async function loadPgCanon(ws){
   window.__pldCanonDocs={la:laD,en:enD};
   const _aula=author;author=await _auEn(author);
   return {slug:ws,title,title_en:title,author:author||author_gr,author_la:_aula&&_aula!==author?_aula:undefined,volume:vol?("PG "+vol):"",
+    pg_columns:_printedColumns,pg_source:src,
     tradition:"Greek Fathers",has_pages:true,has_tei:true,tei_v:0,en_only:false,
     n_pages:pages.length,structure:structure,base:null,spine_nav:structure.length>1,
     pages:pages.map(n=>({n,la:"",en:"",img:facs[n]||null,thumb:facs[n]||null}))};
@@ -6676,7 +6727,7 @@ async function loadWork(ws){
   // works whose source lane is not Latin (lang census + LLM verify, runs/lang_final.json). The
   // lane toggle, headings and About copy all read __SRCNAME instead of assuming Latin.
   {const LGN={de:"German",fr:"French",el:"Greek",it:"Italian",es:"Spanish",nl:"Dutch",cy:"Welsh",en:"Original",mul:"Source"};
-   if(meta.src_lang&&LGN[meta.src_lang])window.__SRCNAME=LGN[meta.src_lang];else if(!/^pg-/.test(ws))window.__SRCNAME="Latin";
+   if(meta.pld_source_view?.sourceName)window.__SRCNAME=meta.pld_source_view.sourceName;else if(meta.src_lang&&LGN[meta.src_lang])window.__SRCNAME=LGN[meta.src_lang];else if(!/^pg-/.test(ws))window.__SRCNAME="Latin";
    try{const SN=window.__SRCNAME,mp=document.getElementById("m-par");
      if(mp&&SN&&SN!=="Latin"){mp.textContent=SN;mp.title=SN+" source text — a toggle; read it beside the English, or alone with the scan";}
      const me=document.getElementById("m-en");

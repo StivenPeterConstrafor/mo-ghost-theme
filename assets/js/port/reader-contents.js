@@ -54,6 +54,7 @@
   }
   function persist(key,state){try{root.sessionStorage?.setItem('fr_contents_v1:'+encodeURIComponent(key),JSON.stringify({v:1,query:state.query,expanded:[...state.expanded]}));}catch(_){} }
   function capture(nav){return controllers.get(nav)?.capture()||null;}
+  function release(nav){const controller=controllers.get(nav);if(!controller)return null;const saved=controller.capture();controller.destroy();return saved;}
   function highlight(nav,index){return controllers.get(nav)?.highlight(index)??-1;}
   function bind(options){
     const {nav,items,rows,parents,key,onCurrent}=options;if(!nav||!Array.isArray(items)||!Array.isArray(rows)||rows.length!==items.length)throw Error('Contents rows must match their source inventory.');
@@ -72,8 +73,14 @@
     const hasBranches=tree.hasChildren.some(Boolean);expand.hidden=collapse.hidden=!hasBranches;
     const showTools=items.length>8||hasBranches||!!state.query;
     if(showTools)nav.insertBefore(tools,rows[0]||null);
-    const tabs=nav.querySelector('.nav-vt'),measureTabs=()=>tools.style.setProperty('--rc-tabs-height',Math.ceil(tabs?.getBoundingClientRect().height||0)+'px');measureTabs();
-    const resize=tabs&&root.ResizeObserver?new root.ResizeObserver(measureTabs):null;if(resize)resize.observe(tabs);
+    const leading=Array.from(nav.children).filter(node=>node.classList.contains('nav-home')||node.classList.contains('nav-vt'));
+    if(showTools)leading.push(tools);
+    const header=leading.length?create('div','rc-contents-header'):null;
+    if(header){nav.insertBefore(header,leading[0]);leading.forEach(node=>header.appendChild(node));nav.classList.add('rc-has-controls');}
+    let controlsHeight=-1;
+    const measureControls=()=>{const height=Math.ceil(header?.getBoundingClientRect().height||0);if(height!==controlsHeight){controlsHeight=height;nav.style.setProperty('--rc-controls-height',height+'px');}};
+    measureControls();
+    const resize=header&&root.ResizeObserver?new root.ResizeObserver(measureControls):null;if(resize)resize.observe(header);
     function listen(node,type,handler){node.addEventListener(type,handler);listeners.push(()=>node.removeEventListener(type,handler));}
     function readCurrent(){try{const index=onCurrent?.();return Number.isInteger(index)&&index>=0&&index<rows.length?index:-1;}catch(_){return -1;}}
     function markCurrent(index){
@@ -110,10 +117,10 @@
     listen(clear,'click',()=>{setQuery('');input.focus({preventScroll:true});});listen(expand,'click',()=>expandAll(true));listen(collapse,'click',()=>expandAll(false));listen(current,'click',showCurrent);
     const controller={tree,input,tools,setQuery,expandAll,showCurrent,highlight:markCurrent,hasCaptured:()=>state.pending,
       capture(){state.query=input.value;state.scroll=nav.scrollTop;const focused=doc.activeElement;state.focus=focused===input?{kind:'query',start:input.selectionStart,end:input.selectionEnd,direction:input.selectionDirection}:targets.get(focused)||null;state.pending=true;persist(text(key),state);return {query:state.query,scroll:state.scroll,focus:state.focus,expanded:[...state.expanded]};},
-      destroy(){destroyed=true;resize?.disconnect();listeners.forEach(stop=>stop());tools.remove();if(controllers.get(nav)===controller)controllers.delete(nav);}};
+      destroy(){destroyed=true;resize?.disconnect();listeners.forEach(stop=>stop());tools.remove();if(header?.parentElement===nav){Array.from(header.children).forEach(node=>nav.insertBefore(node,header));header.remove();}nav.classList.remove('rc-has-controls');nav.style.setProperty('--rc-controls-height','0px');if(controllers.get(nav)===controller)controllers.delete(nav);}};
     controllers.set(nav,controller);refresh();
     if(state.pending){const saved={scroll:state.scroll,focus:state.focus},focused=doc.activeElement;state.pending=false;frame(()=>{if(destroyed)return;nav.scrollTop=saved.scroll;if(doc.activeElement!==focused)return;let target=saved.focus?.kind==='query'?input:saved.focus?((saved.focus.kind==='caret'?carets:links)[keyIndex.get(saved.focus.key)]):null;if(target?.getClientRects().length){target.focus({preventScroll:true});if(target===input&&Number.isInteger(saved.focus.start))try{input.setSelectionRange(saved.focus.start,saved.focus.end,saved.focus.direction);}catch(_){}}});}
     return controller;
   }
-  return {bind,capture,highlight,currentIndex,model,filtered,itemsFor:nav=>controllers.get(nav)?.tree.items||null};
+  return {bind,capture,release,highlight,currentIndex,model,filtered,itemsFor:nav=>controllers.get(nav)?.tree.items||null};
 });

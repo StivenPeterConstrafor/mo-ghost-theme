@@ -50,7 +50,7 @@ async function esvChapter(bookName,ch){
 
 const aslug=a=>String(a).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60);
 const HOVERABLE=matchMedia("(hover:hover)").matches;
-const ERAL={E:"Early patristic",L:"Later patristic",C:"Carolingian",H:"High medieval",R:"Reformation",P:"1600 and later"};   // P = the mine's last bucket (born 1600 or later), not one century
+const ERAL={E:"Early patristic",L:"Later patristic",C:"Carolingian",H:"High medieval",R:"Reformation",P:"Seventeenth century",M:"Later authors",U:"Undated"};   // P = the mine's last bucket (born 1600 or later), not one century
 // WORK KINDS (owner 2026-08-25 'divisions and ordering intuitive and yet comprehensive…
 // will eventually cover every text TFR serves'): one map, v1/kinds.json.gz {slug:[kindIdx,canonOrd]}
 const KINDS=["commentary","sermons","treatises","polemical","letters","catechetical","devotional","history","law","poetry","collected","reference"];
@@ -80,6 +80,7 @@ let FACS=new Set((localStorage.getItem("fr_bfac2")||"").split(",").filter(Boolea
    const ks=_q.split(",").map(x=>x.trim()).filter(x=>OK.has(x));
    if(ks.length){FACS=new Set(ks);try{localStorage.setItem("fr_bfac2",ks.join(","));}catch(e){}}}}
 const FACL=[["all","All"],["pl","Latin Fathers"],["gf","Greek Fathers"],["po","Eastern Fathers"],["ed","English Divines"],["md","Medieval"],["rc","Roman Catholic"],["lu","Lutheran"],["rf","Continental Reformed"],["hl","Humanism and Law"],["pu","Puritan"],["an","Anglican"],["wm","Westminster"]];
+const validFacets=new Set(FACL.map(([key])=>key).filter(key=>key!=='all'));FACS=new Set([...FACS].filter(key=>validFacets.has(key)));
 const SHK=new Set(["pl","gf","po","ed","md","rc","lu","rf","hl"]);   // shelf facets match r.sh directly (2026-08-28 parity); party facets are orthogonal
 const facOK=r=>{if(!FACS.size)return true;
   for(const k of FACS){
@@ -104,7 +105,7 @@ const wOf=a2=>(WTS&&WTS[a2])||0;
 // era authority = the rooms index (dated bios); the bible rows' own e field is unreliable
 let AERAS=null;
 J(BLOB+"/v1/bible/pl/rooms/index.json").then(d2=>{AERAS={};(d2.authors||[]).forEach(r=>{AERAS[r.a]={e:r.e,y:r.y};});}).catch(()=>{});
-const eraOf=r=>((r.e==="R"||r.e==="P")?r.e:((AERAS&&AERAS[r.a]&&AERAS[r.a].e)||r.e||"L"));
+const eraOf=r=>{const author=AERAS?.[r.a],year=r.y||author?.y;if(year)return RX.era({y:year});const era=r.e||author?.e;return Object.hasOwn(ERAL,era)?era:"U";};
 // baked rows carry a truncated upstream author string until the next full bake
 const AFIX={"Westminster Divines (Ley, Gouge":"Westminster Divines"};
 const aName=a2=>AFIX[a2]||a2;
@@ -228,8 +229,8 @@ const readerHrefHl=(w,p,hl)=>{const u=readerHref(w,p);if(!hl)return u;const i=u.
 // FOLD DOORS (owner 2026-09-11 "make sure links go to the page they say"): a work fold's header link opens the reader AT THE
 // FIRST CITED PAGE of the rows it holds (with the row's words as ?hl=), never at the work's start; "open the work" only when no row has a page
 const foldOpen=(w,rows)=>{const r=(rows||[]).find(x=>x&&RX.page(x.p)!=null);const pg=r?RX.page(r.p):null;
-  if(pg==null)return `${foldOpen(w,g.rows)}`;
-  return `<a class="rx-text-link cd-read" href="${readerHrefHl(w,r.p,String(r.q||r.g||'').replace(/\s+/g,' ').slice(0,120))}" onclick="event.stopPropagation()" title="Open the reader at the first cited page">open at ${pgl(w)} ${esc(String(pg))}</a>`;};
+  if(pg==null)return `<a class="rx-text-link cd-read" href="${readerHref(w,null)}" onclick="event.stopPropagation()">Open work</a>`;
+  return `<a class="rx-text-link cd-read" href="${readerHrefHl(w,r.p,r.pageSummary||!r.q?'':String(r.q).replace(/\s+/g,' ').slice(0,120))}" onclick="event.stopPropagation()" title="Open the reader at the first cited page">open at ${pgl(w)} ${esc(String(pg))}</a>`;};
 const previewBtn=(w,p,hl)=>w&&p!=null&&p!==""?`<button class="peekbtn" data-pk="${esc(w)}|${esc(p)}|${esc(hl||'')}" aria-label="Preview source passage" aria-expanded="false">Preview source</button>`:"";
 const readBtn=(w,p,hl)=>(w&&p!=null&&p!=="")?`<a class="readbtn" target="_blank" rel="noopener" href="${readerHrefHl(w,p,hl)}">Open ↗</a><button class="peekbtn" data-pk="${esc(w)}|${p}|${esc(hl||'')}" aria-label="Preview source passage" aria-expanded="false" title="Read the passage here">Preview</button>`:"";   // owner 2026-09-02 "open inline, peeking, opening in a tab" (supersedes 08-31 never-inline)
 // PEEK: the passage slides open right under its row — the reader itself, embedded
@@ -306,7 +307,7 @@ async function authorsIndex(){
  const byShelf={};ORDER.forEach(sh=>byShelf[sh]=[]);roster.forEach(r=>{(byShelf[r.sh]||(byShelf[r.sh]=[])).push(r);});
  const sorter=()=>AV.sort==='a'?(a,b)=>a.a.localeCompare(b.a):AV.sort==='w'?(a,b)=>(b.w||0)-(a.w||0):AV.sort==='n'?(a,b)=>(b.n||0)-(a.n||0):(a,b)=>_edt(a.a)-_edt(b.a)||(rank[a.s]??9999)-(rank[b.s]??9999)||(b.w||0)-(a.w||0);
  const matches=r=>(!AV.era||r.e===AV.era)&&RX.authorScore(r,AV.q)>0;
- const rowHTML=r=>`<article class="rx-author-row"><a class="rx-author-main" href="${RX.authorURL(r)}"><span><strong>${esc(aName(r.a))}</strong><small>${r.y?'c. '+r.y+' · ':''}${esc(RX.eras[r.e])}</small></span><span class="rx-counts"><span>${fmtR(r.w)} works</span><span>${fmtR(r.nt)} topics</span>${AV.sort==='n'?`<span>${fmtR(r.n)} Scripture citations</span>`:''}</span></a><div class="rx-author-actions"><a class="rx-text-link" href="${RX.authorURL(r)}">Browse works</a><a class="rx-text-link" href="${RX.authorURL(r)}/positions">Browse positions</a></div>${r.variants.length>1?`<div class="rx-editions">Also on ${r.variants.slice(1).map(v=>`<a href="${RX.authorURL(v)}">${esc(RX.shelves[v.sh])} (${fmtR(v.w)} works)</a>`).join(' · ')}</div>`:''}</article>`;
+ const rowHTML=r=>`<article class="rx-author-row"><a class="rx-author-main" href="${RX.authorURL(r)}"><span><strong>${esc(aName(r.a))}</strong><small>${r.y?'c. '+r.y+' · ':''}${esc(RX.eras[r.e])}</small></span><span class="rx-counts"><span>${fmtR(r.w)} ${r.w===1?'work':'works'}</span><span>${fmtR(r.nt)} topic entries</span>${AV.sort==='n'?`<span>${fmtR(r.n)} Scripture citations</span>`:''}</span></a><div class="rx-author-actions"><a class="rx-text-link" href="${RX.authorURL(r)}">Browse works</a><a class="rx-text-link" href="${RX.authorURL(r)}/positions">Browse positions</a></div>${r.variants.length>1?`<div class="rx-editions">Also on ${r.variants.slice(1).map(v=>`<a href="${RX.authorURL(v)}">${esc(RX.shelves[v.sh])} (${fmtR(v.w)} works)</a>`).join(' · ')}</div>`:''}</article>`;
  page.innerHTML=`<div class="research-intro"><div><h1>Authors</h1><p>Every writer in the library, shelf by shelf. Open a tradition to see its authors; open an author to read their works, follow their use of Scripture, and explore the passages behind their ideas.</p></div><a class="rx-text-link" href="/the-faith-received/web/">Explore citation connections</a></div>
  <form class="rx-filters" role="search" onsubmit="return false"><label class="rx-search">Find an author<input id="q" type="search" placeholder="Search by name, across all traditions" value="${esc(AV.q)}"></label><label>Period<select id="author-era"><option value="">All periods</option>${Object.entries(RX.eras).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label><label>Order authors<select id="sort"><option value="imp">Library selection</option><option value="a">Name A–Z</option><option value="w">Most works</option><option value="n">Most Scripture citations</option></select></label></form>
  <div class="rx-results-line"><p id="dircount" role="status"></p><span><button class="rx-text-link" id="author-expand">Expand all</button> <button class="rx-text-link" id="author-reset">Reset filters</button></span></div>
@@ -314,26 +315,26 @@ async function authorsIndex(){
  <div id="dir" class="rx-fold-list rx-author-folds">${ORDER.map(sh=>`<details class="rx-fold rx-author-fold" data-sh="${sh}"${sh===shelfOpen?' open':''}><summary><span><strong>${esc(RX.shelves[sh])}</strong><small class="rx-fold-count"></small></span><span class="rx-fold-preview"></span></summary><div class="rx-fold-body"><div class="rx-directory"></div><button class="rx-button rx-more" hidden>Show all</button></div></details>`).join('')}</div>
  <p class="rx-note" id="author-order-note"></p>`;
  researchLayout();$('#author-era').value=AV.era;$('#sort').value=AV.sort;
- const LIM=60,shown={};
- const paint=()=>{const cmp=sorter();let total=0;
+ const LIM=60,shown={};let revealedQuery=null;
+ const paint=()=>{const cmp=sorter(),reveal=AV.q!==revealedQuery;revealedQuery=AV.q;let total=0;
   document.querySelectorAll('.rx-author-fold').forEach(d=>{const sh=d.dataset.sh;const list=byShelf[sh].filter(matches).sort((a,b)=>(AV.q?RX.authorScore(b,AV.q)-RX.authorScore(a,AV.q):0)||cmp(a,b));total+=list.length;
    const works=list.reduce((n,r)=>n+(r.w||0),0);
    d.hidden=!!(AV.q||AV.era)&&!list.length;
-   d.querySelector('.rx-fold-count').textContent=list.length?`${fmtR(list.length)} authors · ${fmtR(works)} works`:'no authors';
+   d.querySelector('.rx-fold-count').textContent=list.length?`${fmtR(list.length)} ${list.length===1?'author':'authors'} · ${fmtR(works)} ${works===1?'work':'works'}`:'no authors';
    d.querySelector('.rx-fold-preview').textContent=list.slice(0,4).map(r=>aName(r.a)).join(' · ')+(list.length>4?' · …':'');
-   if(AV.q)d.open=!!list.length;
+   if(reveal&&AV.q)d.open=!!list.length;
    const body=d.querySelector('.rx-directory'),more=d.querySelector('.rx-more');
    if(d.open){more.hidden=true;const key=JSON.stringify([AV.q,AV.era,AV.sort,list.map(r=>r.s)]);if(body.dataset.authorRenderKey!==key){body.dataset.authorRenderKey=key;if(list.length)paneList(body,list,rowHTML);else{body.classList.remove('rx-pane');body.innerHTML='<div class="rx-empty"><p>No matching authors on this shelf.</p></div>';}}}
    else{body.innerHTML='';delete body.dataset.authorRenderKey;more.hidden=true;}
   });
-  $('#dircount').textContent=fmtR(total)+' authors across '+fmtR(ORDER.filter(sh=>byShelf[sh].filter(matches).length).length)+' traditions';
+  const shelves=ORDER.filter(sh=>byShelf[sh].filter(matches).length).length;$('#dircount').textContent=fmtR(total)+(total===1?' author across ':' authors across ')+fmtR(shelves)+(shelves===1?' tradition':' traditions');const visible=[...document.querySelectorAll('.rx-author-fold')].filter(d=>!d.hidden);$('#author-expand').textContent=visible.some(d=>!d.open)?'Expand all':'Collapse all';$('#author-expand').disabled=!visible.length;
   $('#author-order-note').textContent=(AV.sort==='imp'?'Within a tradition, library selection follows the existing editorial order. ':'')+'Counts are the works each author has in the research rooms; an author held on several shelves is listed once, with the other shelves beneath.';
  };
  document.querySelectorAll('.rx-author-fold').forEach(d=>d.addEventListener('toggle',()=>paint()));
  const writeAuthorQuery=()=>{const url=new URL(location.href);AV.q.trim()?url.searchParams.set('q',AV.q.trim()):url.searchParams.delete('q');history.replaceState(history.state,'',url);};
  $('#q').oninput=e=>{AV.q=e.target.value;writeAuthorQuery();paint();};
  $('#q').onkeydown=e=>{if(e.key!=='Enter'||e.isComposing||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;const candidates=roster.filter(matches).sort((a,b)=>RX.authorScore(b,AV.q)-RX.authorScore(a,AV.q));if(candidates.length===1||candidates.length>1&&RX.authorScore(candidates[0],AV.q)>RX.authorScore(candidates[1],AV.q)){e.preventDefault();location.assign(RX.authorURL(candidates[0]));}};$('#author-era').onchange=e=>{AV.era=e.target.value;paint();};$('#sort').onchange=e=>{AV.sort=e.target.value;paint();};
- $('#author-expand').onclick=()=>{const all=[...document.querySelectorAll('.rx-author-fold')];const open=all.some(d=>!d.open);all.forEach(d=>{d.open=open;});$('#author-expand').textContent=open?'Collapse all':'Expand all';paint();};
+ $('#author-expand').onclick=()=>{const all=[...document.querySelectorAll('.rx-author-fold')].filter(d=>!d.hidden);const open=all.some(d=>!d.open);all.forEach(d=>{d.open=open;});$('#author-expand').textContent=open?'Collapse all':'Expand all';paint();};
  $('#author-reset').onclick=()=>{AV.q='';AV.era='';writeAuthorQuery();$('#q').value='';$('#author-era').value='';document.querySelectorAll('.rx-author-fold').forEach(d=>{d.open=false;});paint();};
  if($('#roster-retry'))$('#roster-retry').onclick=()=>{ROSTER_PROMISE=null;authorsIndex();};
  paint();
@@ -346,9 +347,9 @@ async function authorsIndex(){
 const WSH=[["pl","Latin Fathers"],["gf","Greek Fathers"],["po","Eastern Fathers"],["ed","English Divines"],
            ["md","Medieval"],["rc","Roman Catholic"],["lu","Lutheran"],["rf","Continental Reformed"],["hl","Humanism and Law"]];
 let WV={q:new URLSearchParams(location.search).get('q')||'',g:'author',sh:(()=>{const sh=new URLSearchParams(location.search).get('sh')||localStorage.getItem('fr_wsh');return RX.shelves[sh]?sh:'pl';})()};
-let CATALOGUE_PROMISE=null,WORKS_INDEX_RUN=0;
-function getWorkCatalogue(){if(!CATALOGUE_PROMISE)CATALOGUE_PROMISE=Promise.all([J(BLOB+'/v1/works-index.json'),J(BLOB+'/v1/titles_en.json').catch(()=>({}))]).then(([index,titles])=>({bySlug:new Map(index.works.map(w=>[w.slug,w])),titles,ok:true})).catch(()=>{CATALOGUE_PROMISE=null;return {bySlug:new Map(),titles:{},ok:false};});return CATALOGUE_PROMISE;}
-function catalogueWork(row,catalogue){const meta=catalogue.bySlug.get(row.w)||{};return {...row,volume:meta.volume||row.vs||'',cols:meta.cols,t:catalogue.titles[row.w]||row.t||meta.title||row.w,originalTitle:row.t||meta.title||'',date:meta.year||'',a:row.a||meta.author||'Author not recorded'};}
+let CATALOGUE_PROMISE=null,WORK_CATALOGUE=null,WORKS_INDEX_RUN=0;
+function getWorkCatalogue(){if(!CATALOGUE_PROMISE)CATALOGUE_PROMISE=Promise.all([J(BLOB+'/v1/works-index.json'),J(BLOB+'/v1/titles_en.json').catch(()=>({})),J(BLOB+'/v1/workgroups.json').catch(()=>({})),fetch('https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/data/workgroups.json',{signal:AbortSignal.timeout(10000)}).then(r=>r.ok?r.json():{}).catch(()=>({}))]).then(([index,titles,published,local])=>{WORK_CATALOGUE={bySlug:new Map(index.works.map(w=>[w.slug,w])),titles,groups:{works:{...(published.works||{}),...(local.works||{})},groups:{...(published.groups||{}),...(local.groups||{})}},ok:true};RX.setWorkCatalogue(WORK_CATALOGUE);return WORK_CATALOGUE;}).catch(()=>{CATALOGUE_PROMISE=null;return {bySlug:new Map(),titles:{},groups:{works:{},groups:{}},ok:false};});return CATALOGUE_PROMISE;}
+function catalogueWork(row,catalogue){const meta=catalogue.bySlug.get(row.w)||{};return {...row,volume:catalogue.groups?.works?.[row.w]?.display_volume||meta.volume||row.vs||'',cols:meta.cols,t:catalogue.titles[row.w]||row.t||meta.title||row.w,originalTitle:meta.title||row.t||'',po:meta.po,date:meta.year||'',a:row.a||meta.author||'Author not recorded'};}
 function workRowHTML(w){const reference=RX.edition(w),details=[reference,w.date,(!/^P[LG]\b/.test(reference)&&w.np)?fmtR(w.np)+' indexed pages':''].filter(Boolean);return `<article class="rx-work-row"><div><h3><a href="${readerHref(w.w)}">${esc(w.t)}</a></h3><p class="rx-work-reference">${details.map(esc).join(' · ')||'Edition details not recorded'}</p>${w.ambiguous?`<small>Catalogue entry: ${esc(w.w)}</small>`:''}</div><div class="rx-work-actions"><a class="rx-text-link" href="${readerHref(w.w)}" aria-label="Read ${esc(w.t)}${reference?', '+esc(reference):''}">Read work</a><a class="rx-text-link" href="/the-faith-received/fathers/#w/${encodeURIComponent(w.w)}" aria-label="Explore ${esc(w.t)}${reference?', '+esc(reference):''}">Explore work</a>${workSaveBtn(w.w,w.t,w.a||w.author||'')}</div></article>`;}
 // Build only the branches the reader opens. The catalogue and its identifiers stay intact.
 function mountWorkGroups(host,rows,mode,options={}){
@@ -394,7 +395,8 @@ function setTopicShelf(sh){const url=new URL(location.href);if(sh)url.searchPara
 async function topicsIndex(){
   const run=researchStart('research-directory');
   const d=await J(BLOB+"/v1/mine/topic2-all/index.json").catch(()=>null)||await J(BLOB+"/v1/mine/topic2/index.json");
-  let shelf=new URLSearchParams(location.search).get('sh')||'';if(!RX.shelves[shelf])shelf='';
+  const topicParams=new URLSearchParams(location.search);TV.q=topicParams.get('q')||'';TV.sort=['group','pages','a'].includes(topicParams.get('order'))?topicParams.get('order'):'group';
+  let shelf=topicParams.get('sh')||'';if(!RX.shelves[shelf])shelf='';
   const map=shelf?await topicShelfMap(shelf).catch(()=>null):null;
   if(run!==RESEARCH_RUN)return;if(shelf&&!map){researchError('This shelf’s topics could not load');return;}
   const scoped=shelf?RX.scopedTopics(d.topics,map.nodes||[]):d.topics,rows=scoped.filter(t=>!RX.isRawTopic(t.t));
@@ -416,7 +418,8 @@ async function topicsIndex(){
         <span class="sc">${r.na!=null?fmtR(r.na)+" indexed authors · ":""}${r.n!=null?fmtR(r.n)+" pages":"Indexed topic"}${r.m?" · Migne":""}</span>
       </a><a class="tr2-cmp" href="/the-faith-received/compare/#t=${encodeURIComponent(r.s)}" aria-label="Compare authors on ${esc(r.t)}">Compare</a></div>`;
   const render=()=>{
-    let list=rows.filter(r=>!TV.q||r.t.toLowerCase().includes(TV.q));
+    const address=new URL(location.href);TV.q?address.searchParams.set('q',TV.q):address.searchParams.delete('q');TV.sort!=='group'?address.searchParams.set('order',TV.sort):address.searchParams.delete('order');history.replaceState(history.state,'',address);
+    let list=rows.filter(r=>!TV.q||RX.fold(r.t).includes(RX.fold(TV.q)));
     if(TV.q||TV.sort!=="group"){
       list=TV.sort==="a"?[...list].sort((x,y)=>x.t.localeCompare(y.t)):[...list].sort((x,y)=>(y.n||0)-(x.n||0));
       $("#dir").innerHTML=list.map(rowHTML2).join("")||'<p class="loading">No match.</p>';
@@ -430,14 +433,14 @@ async function topicsIndex(){
   };
   if(TV.sort==='n')TV.sort='group';
   page.innerHTML=`<div class="research-intro"><div><h1>Topics</h1><p>Explore a theological question through its sources. Find passages, compare authors, and follow the argument into the text.</p></div><div class="rx-intro-links"><a class="rx-button" href="/the-faith-received/compare/">Compare authors</a><a class="rx-text-link" href="/the-faith-received/web/#topics">Explore topic connections</a></div></div>
-  <div class="rx-filters"><label class="rx-search">Find a topic<input type="search" id="q" placeholder="Grace, Trinity, justification" value="${esc(TV.q)}"></label><label class="rx-primary-filter">Shelf<select id="topics-shelf"><option value="">All shelves</option>${Object.entries(RX.shelves).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label><label>Order topics<select id="sort"><option value="group">Theological subjects</option><option value="pages">Most indexed pages</option><option value="a">Name A–Z</option></select></label></div><div class="rx-results-line"><p role="status"><span id="dircount"></span> topics${shelf?' in '+esc(RX.shelves[shelf]):' across all shelves'}</p><button class="rx-text-link" id="topics-collapse">Collapse all</button></div><p class="rx-note">Open a subject to browse its topics. ${shelf?'Counts describe indexed pages on this shelf. <a href="/the-faith-received/web/#shelves='+RX.shelfMaps[shelf]+'/doctrines">Explore this shelf’s full topic map</a>.':'Counts describe the full index; each topic links to its available evidence.'}</p><div class="dir rx-fold-list" id="dir"></div>`;
-  researchLayout();$('#topics-shelf').value=shelf;$('#topics-shelf').onchange=e=>{setTopicShelf(e.target.value);topicsIndex().catch(()=>researchError('Topics could not load'));};$('#sort').value=TV.sort;$('#topics-collapse').onclick=()=>$('#dir').querySelectorAll('details[open]').forEach(d=>d.open=false);render();$('#q').oninput=e=>{TV.q=e.target.value.toLowerCase().trim();render();};$('#sort').onchange=e=>{TV.sort=e.target.value;render();};
+  <div class="rx-filters"><label class="rx-search">Find a topic<input type="search" id="q" placeholder="Grace, Trinity, justification" value="${esc(TV.q)}"></label><label class="rx-primary-filter">Shelf<select id="topics-shelf"><option value="">All shelves</option>${Object.entries(RX.shelves).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label><label>Order topics<select id="sort"><option value="group">Theological subjects</option><option value="pages">Most indexed pages</option><option value="a">Name A–Z</option></select></label></div><div class="rx-results-line"><p role="status"><span id="dircount"></span> topics${shelf?' in '+esc(RX.shelves[shelf]):' across all shelves'}</p><span><button class="rx-text-link" id="topics-collapse">Collapse all</button> <button class="rx-text-link" id="topics-reset">Reset filters</button></span></div><p class="rx-note">Open a subject to browse its topics. ${shelf?'Counts describe indexed pages on this shelf. <a href="/the-faith-received/web/#shelves='+RX.shelfMaps[shelf]+'/doctrines">Explore this shelf’s full topic map</a>.':'Counts describe the full index; each topic links to its available evidence.'}</p><div class="dir rx-fold-list" id="dir"></div>`;
+  researchLayout();$('#topics-reset').onclick=()=>{TV.q='';TV.sort='group';const url=new URL(location.href);for(const key of ['q','order','sh'])url.searchParams.delete(key);history.replaceState(null,'',url);topicsIndex().catch(()=>researchError('Topics could not load'));};$('#topics-shelf').value=shelf;$('#topics-shelf').onchange=e=>{setTopicShelf(e.target.value);topicsIndex().catch(()=>researchError('Topics could not load'));};$('#sort').value=TV.sort;$('#topics-collapse').onclick=()=>$('#dir').querySelectorAll('details[open]').forEach(d=>d.open=false);render();$('#q').oninput=e=>{TV.q=e.target.value.toLowerCase().trim();render();};$('#sort').onchange=e=>{TV.sort=e.target.value;render();};
   $('#q').onkeydown=event=>{if(event.key!=='Enter'||event.isComposing||event.ctrlKey||event.metaKey||event.altKey||event.shiftKey)return;const query=RX.fold($('#q').value);if(!query)return;const matches=rows.filter(row=>RX.fold(row.t).includes(query)),exact=matches.filter(row=>RX.fold(row.t)===query);const selected=exact.length===1?exact[0]:matches.length===1?matches[0]:null;if(selected){event.preventDefault();location.assign(RX.topicURL(selected.s,shelf));}};
   // INDEX RERUM — Migne's OWN index to the Latin Fathers (PL 218–221), organized
   // (owner 2026-08-31 "leverage migne for the PL — this is valuable work"): 106 heads,
   // ~30k volume:column refs, ~13k doctrinal CLAIM lines in the Maurists' own words —
   // each claim cited and opening the exact column in the reader.
-  const irWrap=document.createElement("details");irWrap.className="rx-historical";irWrap.innerHTML="<summary>Browse the Latin Fathers’ historical index</summary>";const irHost=document.createElement("div");irWrap.appendChild(irHost);if(!shelf||shelf==='pl')page.appendChild(irWrap);   // appended NOW so PL sits above the Greek Ordo
+  const irWrap=document.createElement("details");irWrap.className="rx-historical ir-index-wrap";irWrap.innerHTML="<summary>Historical index · Latin Fathers</summary>";const irHost=document.createElement("div");irHost.className='ir-index';irHost.innerHTML='<p class="rx-note" role="status">Loading the historical index…</p>';irWrap.appendChild(irHost);if(!shelf||shelf==='pl')page.appendChild(irWrap);
   let _CMAP=null;
   const _cmap=async()=>{if(_CMAP)return _CMAP;
     try{_CMAP=(await gzJ(BLOB+"/v1/pld_colmap.json.gz")).vols||{};}catch(e){_CMAP={};}return _CMAP;};
@@ -486,12 +489,13 @@ async function topicsIndex(){
       if(!dr){dr=document.createElement("div");dr.className="irw-drawer";row.appendChild(dr);}
       if(dr.dataset.for===b3.dataset.c&&!dr.hidden){dr.hidden=true;return;}
       dr.hidden=false;dr.dataset.for=b3.dataset.c;
-      dr.innerHTML='<p class="loading" style="margin:.3rem 0">\u2026</p>';
+      const request=String((+dr.dataset.request||0)+1);dr.dataset.request=request;
+      dr.innerHTML='<p class="rx-note" role="status">Loading column…</p>';
       try{const tx=await _pldColText(b3.dataset.pvw,+b3.dataset.c);
-        dr.innerHTML='<div style="font-size:.86rem;line-height:1.55;border-left:2px solid var(--accent,#b45f3d);padding:.35rem .7rem;margin:.3rem 0;background:var(--highlight,#f5f2ea);border-radius:0 6px 6px 0">'
-          +(tx?esc(tx)+"\u2026":"The column text could not be sliced here.")
-          +(b3.dataset.h?' <a class="readbtn" style="margin-left:.4rem" href="'+esc(b3.dataset.h)+'">Open at col. '+esc(b3.dataset.c)+' \u2192</a>':"")+'</div>';
-      }catch(_){dr.innerHTML='<p class="loading" style="margin:.3rem 0">The column could not load.'+(b3.dataset.h?' <a class="readbtn" href="'+esc(b3.dataset.h)+'">Open in the reader</a>':"")+'</p>';}
+        if(dr.dataset.request!==request||!dr.isConnected)return;
+        dr.innerHTML='<div class="ir-column-preview"><p>'+(tx?esc(tx)+'…':'A preview is not available for this column.')+'</p>'
+          +(b3.dataset.h?'<a class="rx-text-link" href="'+esc(b3.dataset.h)+'">Read column '+esc(b3.dataset.c)+'</a>':'')+'</div>';
+      }catch(_){if(dr.dataset.request===request&&dr.isConnected)dr.innerHTML='<p class="rx-note">The column could not load.'+(b3.dataset.h?' <a class="rx-text-link" href="'+esc(b3.dataset.h)+'">Open in the reader</a>':'')+'</p>';}
     });
   }
   const _linkCols=(txt,cm)=>esc(txt).replace(
@@ -503,21 +507,32 @@ async function topicsIndex(){
       return rom+(cols.startsWith(",")||cols.startsWith(".")?"":"")+linked;});
   J(BLOB+"/v1/mine/pld_topics.json").then(pi=>{if(run!==RESEARCH_RUN)return;
     const tops=((pi&&pi.topics)||[]).slice().sort((x,y)=>(y.n||0)-(x.n||0));
-    if(!tops.length)return;
+    if(!tops.length){irHost.innerHTML='<p class="rx-note">No historical index headings are available.</p>';return;}
     const tot=tops.reduce((a2,t2)=>a2+(t2.n||0),0);
     const slugOf=t2=>String(t2||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
-    irHost.innerHTML=`<h2 class="sect">Index Rerum · Migne\u2019s own index to the Latin Fathers (PL 218\u2013221) <span class="tn" style="font-family:var(--body);font-size:.74rem;color:var(--faint)">${tops.length} heads \u00b7 ${tot.toLocaleString()} entries</span></h2>
-      <div class="chstrip">${tops.map(t2=>`<button class="chp" data-s="${esc(slugOf(t2.t))}" title="${t2.n.toLocaleString()} entries">${esc(t2.t)}<span style="color:var(--faint);margin-left:.3rem;font-size:.7rem">${t2.n.toLocaleString()}</span></button>`).join("")}</div>
-      <div id="irBody"></div>`;
+    irHost.innerHTML=`<header class="ir-intro"><div><h2>Index Rerum</h2><p>Migne’s index to the Latin Fathers · PL 218–221</p></div><p class="ir-total">${fmtR(tops.length)} headings · ${fmtR(tot)} entries</p></header>
+      <div class="ir-layout rx-md"><div class="ir-navigation"><div class="ir-controls"><label>Find an index heading<input id="ir-search" type="search" placeholder="Grace, virtues, charity" autocomplete="off"></label><label>Order headings<select id="ir-sort"><option value="name">Name A–Z</option><option value="entries">Most entries</option></select></label></div><p class="ir-count" id="ir-count" role="status"></p><div class="ir-headings rx-md-list" id="ir-headings" role="group" aria-label="Index headings"></div></div>
+      <section class="ir-detail" id="irBody" aria-label="Selected index heading"><div class="ir-empty"><h3>Choose an index heading</h3><p>Browse the authors and passages listed under it, then open a column in the reader.</p></div></section></div>`;
+    let irSelected='',irRequest=0;
+    const headings=irHost.querySelector('#ir-headings'),filter=irHost.querySelector('#ir-search'),order=irHost.querySelector('#ir-sort'),bd=irHost.querySelector('#irBody');
+    const filteredHeads=()=>tops.filter(t2=>!filter.value.trim()||RX.fold(t2.t).includes(RX.fold(filter.value))).sort((a,b)=>order.value==='entries'?(b.n||0)-(a.n||0):a.t.localeCompare(b.t));
+    const markHeading=()=>headings.querySelectorAll('[data-ir-head]').forEach(button=>{const on=button.dataset.irHead===irSelected;button.classList.toggle('on',on);button.setAttribute('aria-pressed',String(on));});
+    const paintHeadings=()=>{const rows=filteredHeads();headings.innerHTML=rows.map(t2=>`<button type="button" class="rx-md-item ir-heading" data-ir-head="${esc(slugOf(t2.t))}" aria-pressed="false"><span>${esc(t2.t)}</span><small aria-label="${fmtR(t2.n)} entries">${fmtR(t2.n)}</small></button>`).join('')||'<p class="ir-no-match">No matching headings. Try another word.</p>';markHeading();headings.scrollTop=0;irHost.querySelector('#ir-count').textContent=rows.length===tops.length?fmtR(tops.length)+' headings':fmtR(rows.length)+' of '+fmtR(tops.length)+' headings';};
+    filter.oninput=paintHeadings;order.onchange=paintHeadings;
+    filter.onkeydown=event=>{if(event.key==='Enter'&&!event.isComposing){const rows=filteredHeads(),exact=rows.find(t2=>RX.fold(t2.t)===RX.fold(filter.value));if(exact||rows.length===1){event.preventDefault();selectHeading(slugOf((exact||rows[0]).t));}}};
+    paintHeadings();
     wireColPreviews(irHost);
-    irHost.addEventListener("click",async e=>{
-      const b2=e.target.closest("[data-s]");if(!b2)return;
-      irHost.querySelectorAll(".chp").forEach(x=>x.classList.toggle("on",x===b2));
-      const bd=irHost.querySelector("#irBody");
-      bd.innerHTML='<p class="loading">\u2026</p>';
+    irHost.addEventListener('click',e=>{const button=e.target.closest('[data-ir-head],[data-ir-retry]');if(button)selectHeading(button.dataset.irHead||irSelected);});
+    async function selectHeading(slug){
+      const selected=tops.find(t2=>slugOf(t2.t)===slug);if(!selected)return;
+      irSelected=slug;markHeading();const request=++irRequest;
+      const address=new URL(location.href);address.searchParams.set('ir',slug);history.replaceState(history.state,'',address);
+      bd.setAttribute('aria-busy','true');bd.innerHTML='<p class="rx-note" role="status">Loading index entries…</p>';
       const [d2,_CM,WD]=await Promise.all([
-        J(BLOB+"/v1/mine/pld_topic/"+b2.dataset.s+".json").catch(()=>null),_cmap(),_wd()]);
-      if(!d2){bd.innerHTML='<p class="loading">Unavailable.</p>';return;}
+        J(BLOB+"/v1/mine/pld_topic/"+slug+".json").catch(()=>null),_cmap(),_wd()]);
+      if(request!==irRequest||run!==RESEARCH_RUN||!bd.isConnected)return;
+      bd.setAttribute('aria-busy','false');
+      if(!d2){bd.innerHTML='<div class="ir-empty"><h3>These index entries could not load</h3><p>Try loading this heading again.</p><button type="button" class="rx-button" data-ir-retry>Retry loading</button></div>';return;}
       const claims=(d2.claims||[]).filter(c2=>c2.q);
       const aus=(d2.authors||[]).slice().sort((x,y)=>(y.n||0)-(x.n||0));
       const secs=(d2.sections||[]).filter(Boolean);
@@ -525,10 +540,10 @@ async function topicsIndex(){
         const T={100:"C",90:"XC",50:"L",40:"XL",10:"X",9:"IX",5:"V",4:"IV",1:"I"};
         for(const k of [100,90,50,40,10,9,5,4,1]){while(v2>=k){o+=T[k];v2-=k;}}return o;};
       bd.innerHTML=`
-        ${secs.length?`<div class="volhead" style="margin:.5rem 0 .2rem">Migne\u2019s subsections \u00b7 ${secs.length}</div>
-          <div style="margin-bottom:.5rem">${secs.map(x2=>`<div style="font-size:.9rem;padding:.12rem 0;color:var(--fg)">${esc(x2)}</div>`).join("")}</div>`:""}
-        ${aus.length?`<div class="volhead" style="margin:.5rem 0 .2rem">The Fathers under this head \u00b7 ${aus.length}</div>
-          <div style="margin-bottom:.6rem">${aus.map(a2=>{
+        <header class="ir-selection"><h3>${esc(selected.t)}</h3><p>${fmtR(selected.n)} index entries${aus.length?' · '+fmtR(aus.length)+' authors':''}</p></header>
+        ${secs.length?`<details class="ir-subsections"><summary>Subheadings <span>${fmtR(secs.length)}</span></summary><ul>${secs.map(x2=>`<li>${esc(x2)}</li>`).join('')}</ul></details>`:''}
+        ${aus.length?`<h4 class="ir-section-title">Authors and works</h4>
+          <div class="ir-authors">${aus.map(a2=>{
             const refs=(a2.refs||[]);
             const byW=new Map();
             refs.forEach(r2=>{const h2=r2.h||_colHref(_CM,r2.v,r2.c);
@@ -543,27 +558,16 @@ async function topicsIndex(){
                 ?`<button type="button" class="readbtn" data-pvw="${esc(g2.sl)}" data-c="${r2.c}" data-h="${esc(r2.h||"")}" style="font-size:.8rem;padding:.1rem .3rem">${r2.c}</button>`
                 :(r2.h?`<a class="readbtn" href="${esc(r2.h)}" style="font-size:.8rem;padding:.1rem .3rem">${r2.c}</a>`
                       :`<span style="font-size:.8rem;color:var(--faint);padding:.1rem .3rem">${r2.c}</span>`)).join(" ");
-              return `<div class="irw" style="display:flex;flex-wrap:wrap;align-items:baseline;gap:.35rem;padding:.16rem 0">
-                <span style="font-size:.86rem;font-weight:600">${esc(label)||("PL "+(rn(g2.v)||g2.v))}</span>
-                <span style="color:var(--faint);font-size:.74rem">PL ${rn(g2.v)||g2.v}</span>
-                <span style="display:flex;flex-wrap:wrap;gap:.15rem .25rem">${cols}</span></div>`;}).join("");
-            return `<details style="padding:.14rem 0;border-bottom:1px solid var(--border)">
-              <summary style="cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:.5rem">
-                <span class="wk" style="font-size:.9rem;font-weight:600">${esc(a2.a)}</span>
-                <span style="color:var(--faint);font-size:.74rem">${a2.n} ${a2.n>1?"entries":"entry"} \u00b7 ${byW.size} work${byW.size>1?"s":""} \u00b7 PL ${[...new Set(refs.map(r2=>rn(r2.v)||r2.v))].slice(0,6).join(", ")}</span>
-                <span style="margin-left:auto;color:var(--faint);font-size:.72rem">\u25be works \u00b7 tap a column to preview</span></summary>
-              <div style="padding:.3rem 0 .35rem .1rem">${wrows}</div>
+              return `<div class="irw"><strong>${esc(label)||("PL "+(rn(g2.v)||g2.v))}</strong><span class="ir-volume">PL ${rn(g2.v)||g2.v}</span><div class="ir-columns" aria-label="Columns to preview">${cols}</div></div>`;}).join("");
+            return `<details class="ir-author"><summary><span class="ir-author-name">${esc(a2.a)}</span><span class="ir-author-count">${fmtR(a2.n)} ${a2.n>1?'entries':'entry'} · ${byW.size} ${byW.size>1?'works':'work'}</span></summary>
+              <div class="ir-author-works"><p class="ir-preview-hint">Select a column to preview its passage.</p>${wrows}</div>
             </details>`;}).join("")}</div>`:""}
-        ${claims.length?`<div class="volhead" style="margin:.4rem 0 .2rem">Migne\u2019s own judgments \u00b7 ${claims.length}</div>
-          <div class="dir">${claims.map((c2,i2)=>`
-            <div class="dr" style="--i:${Math.min(i2,40)};cursor:default">
-              <span class="dot" style="background:var(--gold)"></span>
-              <span class="nm" style="font-size:.93rem">\u201c${_linkCols(c2.q,_CM)}\u201d${c2.a?` <span style="color:var(--faint);font-size:.8rem">\u2014 under ${esc(c2.a)}</span>`:""}</span>
-              <span class="meta">${c2.h?`<a class="readbtn" href="${esc(c2.h)}">Open</a>`:""}</span>
-            </div>`).join("")}</div>`:""}`;
-      bd.scrollIntoView({behavior:"smooth",block:"nearest"});
-    });
-  }).catch(()=>{});
+        ${claims.length?`<details class="ir-passages"${!aus.length?' open':''}><summary>Index passages <span>${fmtR(claims.length)}</span></summary>${claims.map(c2=>`<article class="rx-excerpt"><p>${_linkCols(c2.q,_CM)}</p><div class="rx-source">${c2.a?`<span>Listed under ${esc(c2.a)}</span>`:''}${c2.h?`<a class="rx-text-link" href="${esc(c2.h)}">Read index passage</a>`:''}</div></article>`).join('')}</details>`:''}
+        ${!aus.length&&!claims.length&&!secs.length?'<p class="rx-note">No entries are included under this heading.</p>':''}`;
+      bd.scrollTop=0;
+    }
+    const linked=new URL(location.href).searchParams.get('ir');if(linked&&tops.some(t2=>slugOf(t2.t)===linked)){irWrap.open=true;selectHeading(linked);requestAnimationFrame(()=>{irWrap.scrollIntoView({block:'start'});const selected=headings.querySelector('.on');if(selected)headings.scrollTop=Math.max(0,selected.offsetTop-(headings.clientHeight-selected.offsetHeight)/2);});}
+  }).catch(()=>{if(run===RESEARCH_RUN)irHost.innerHTML='<p class="rx-note">The historical index could not load. <button type="button" class="rx-text-link" onclick="location.reload()">Reload this page</button></p>';});
   // MIGNE'S VOLUME INDICES (owner 2026-09-10 "use all the indices of migne"):
   // every PL volume's OWN back-index (v1/mine/pld_subjects, 1,244 works),
   // titled and authored via the corpus directory, entries previewable
@@ -745,15 +749,11 @@ function sectionFoldsHTML(rows,render,w,o={}){
   return `<div data-secbody="${esc(w)}">${groups.map((g,i)=>`<details class="cd-sec"${i===0?' open':''}><summary><span>${esc(g.label)}</span><small class="cd-n">${fmtR(g.rows.length)}</small></summary>${g.rows.map(render).join('')}</details>`).join('')}</div>`;}
 /* BY WORK, COLLAPSED (owner 2026-09-10 "make everything collapsed and organized by work"): statements of any
    surface grouped under their work in folds, the largest work open; the one renderer behind statementPane */
-function workFoldsHTML(rows,o={}){const g=new Map();rows.forEach(r=>{const w=r.w||'';if(!g.has(w))g.set(w,[]);g.get(w).push(r);});
-  const groups=[...g.entries()].sort((x,y)=>y[1].length-x[1].length||String(x[0]).localeCompare(String(y[0])));
-  const render=o.render||(r=>statementHTML(r,o));
-  return groups.map(([w,rs],i)=>{const first=rs[0],title=o.title?o.title(first):(first.wt||first.t||w||'Source work'),sub=o.sub?o.sub(first):'';
-    return `<details class="cd-work"${i===0||o.openAll?' open':''}><summary><span><strong>${esc(title)}</strong>${sub?` <small>${esc(sub)}</small>`:''}</span><small class="cd-n">${fmtR(rs.length)}</small>${w?` ${foldOpen(w,rs)}${workSaveBtn(w,title,o.author||first.a||'')}`:''}</summary><div class="cd-fold-body">${sectionFoldsHTML(rs,render,w)}</div></details>`;}).join('');}
+function workFoldsHTML(rows,o={}){return RX.workFoldsHTML(rows,{...o,render:o.render||(r=>statementHTML(r,o))},{foldOpen,workSaveBtn,sectionFoldsHTML});}
 async function room(slug,arg){
   const run=researchStart('research-room');
   const hint=new URLSearchParams(location.search).get('sh')||'';
-  const roster=await getRoster();if(run!==RESEARCH_RUN)return;
+  const [roster]=await Promise.all([getRoster(),getWorkCatalogue()]);if(run!==RESEARCH_RUN)return;
   const candidates=roster.rows.filter(r=>r.s===slug).sort((a,b)=>(b.sh===hint)-(a.sh===hint)||(b.w||0)-(a.w||0));
   let d=null,RSH=candidates[0]?.sh||hint||'pl';
   for(const r of candidates.length?candidates:[{sh:RSH}]){d=await J(BLOB+`/v1/bible/${r.sh}/rooms/${slug}.json`).catch(()=>null);if(d){RSH=r.sh;break;}}
@@ -823,13 +823,14 @@ async function room(slug,arg){
     pbody.innerHTML=`<div class="view"><h2>Works</h2><p class="pane-meta">${fmtR(works.length)} works in this shelf. Open a work to begin reading.</p><div class="rx-filters"><label class="rx-search">Find a work<input id="room-work-q" type="search" placeholder="Search titles"></label><label>Kind of work<select id="room-work-kind"><option value="">All kinds</option>${groups.map(k=>`<option value="${esc(k)}">${esc(KNAME[k]||k)}</option>`).join('')}</select></label><label>Order works<select id="room-work-order"><option value="library">Library order</option><option value="name">Title A–Z</option></select></label></div><p id="room-work-count" class="rx-note" role="status"></p><div id="room-works" class="rx-work-list"></div><button id="room-works-more" class="rx-button rx-more">Show more works</button></div>`;
     researchLayout();const draw=()=>{const q=RX.fold($('#room-work-q').value),kind=$('#room-work-kind').value;const rows=works.filter(w=>(!q||RX.fold(w.t+' '+w.volume).includes(q))&&(!kind||(kindOf(w.w)||'treatises')===kind));
     const vn=v=>+(String(v||'').match(/\d+/)||[9999])[0];rows.sort((a,b)=>a.t===b.t&&(a.volume||b.volume)?RX.workOrder(a,b):$('#room-work-order').value==='name'?a.t.localeCompare(b.t):(KORD.indexOf(kindOf(a.w)||'treatises')<0?999:KORD.indexOf(kindOf(a.w)||'treatises'))-(KORD.indexOf(kindOf(b.w)||'treatises')<0?999:KORD.indexOf(kindOf(b.w)||'treatises'))||(kordOf(a.w)||9999)-(kordOf(b.w)||9999)||(b.nc||0)-(a.nc||0));
+    const ordered=RX.orderedWorks(rows);rows.splice(0,rows.length,...ordered);
     $('#room-work-count').textContent=fmtR(rows.length)+' matching works'+(rows.length>limit?' · showing '+limit:'');$('#room-works-more').hidden=limit>=rows.length;
     $('#room-works').innerHTML=rows.slice(0,limit).map(workRowHTML).join('')||'<p class="rx-note">No matching works. Try another title or kind.</p>';};$('#room-work-q').oninput=()=>{limit=40;draw();};$('#room-work-kind').onchange=()=>{limit=40;draw();};$('#room-work-order').onchange=()=>{limit=40;draw();};$('#room-works-more').onclick=()=>{limit+=40;draw();};draw();setHash('');
   }
   // ---- Positions: topic groups retain coverage even before all indexed rows load. ----
   const positionState=new Map(),positionOpen=new Set(),positionLimits=new Map();
   let positionIndex=null,positionTopicLimit=20,positionTopic='',positionPhrase='',positionAnnotation='',positionWork=new URLSearchParams(location.search).get('work')||'';
-  const roomWorks=new Map((d.works||[]).map(w=>[w.w,w]));
+  const roomWorks=new Map((d.works||[]).map(w=>[w.w,catalogueWork(w,WORK_CATALOGUE||{bySlug:new Map(),titles:{}})]));
   const workResearchHref=w=>'/the-faith-received/read/?w='+encodeURIComponent(w)+'&research=work';
   const positionRoute=t=>'positions'+(t?'/'+encodeURIComponent(t):'');
   const setPositionWork=()=>{const u=new URL(location.href);if(positionWork)u.searchParams.set('work',positionWork);else u.searchParams.delete('work');history.replaceState(null,'',u.pathname+u.search+u.hash);};
@@ -891,10 +892,10 @@ async function room(slug,arg){
     VIEW='p';segOn('p');starSel(null);positionTopic=typeof topicName==='string'?topicName:'';
     if(positionTopic)positionOpen.add(positionTopic);
     const listed=topics.filter(t=>(t.npos||0)>0||(t.pos||[]).length);
-    const workOptions=[...roomWorks.values()].sort((a,b)=>a.t.localeCompare(b.t)||RX.workOrder(a,b));
+    const workOptions=RX.orderedWorks([...roomWorks.values()].sort((a,b)=>a.t.localeCompare(b.t)));
     pbody.innerHTML=`<div class="view rx-positions"><h2>Positions</h2><p class="pane-meta">Mined statements with their source passages, in the order of the loci. Open a topic and read; the index fills in as you scroll.</p>
       <details class="rx-position-coverage"><summary>About these statements and their coverage</summary><p>These are extracted statements, sometimes summarized or translated. A statement can report another speaker, an objection, or a rejected view. Read its source before attributing it to ${esc(d.a)}. Each topic opens with the room's selected statements and then draws the complete index page by page.</p></details>
-      <div class="rx-filters"><label class="rx-search">Find a topic<input id="positions-topic" type="search" placeholder="Grace, baptism, free will" value="${esc(positionTopic)}"></label><label class="rx-primary-filter">Work<select id="positions-work"><option value="">All works in this room</option>${workOptions.map(w=>`<option value="${esc(w.w)}">${esc(w.t)}${w.v?' · '+esc(w.v):''}</option>`).join('')}</select></label><label class="rx-search">Phrase in statements<input id="positions-phrase" type="search" placeholder="Search the loaded statements" value="${esc(positionPhrase)}"></label><label>Stance<select id="positions-annotation"><option value="">All stances</option>${STANCES.filter(x=>x[0]).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label><label>Group statements<select id="positions-group"><option value="work">By work</option><option value="stance">By stance</option></select></label>
+      <div class="rx-filters"><label class="rx-search">Find a topic<input id="positions-topic" type="search" placeholder="Grace, baptism, free will" value="${esc(positionTopic)}"></label><label class="rx-primary-filter">Work<select id="positions-work"><option value="">All works in this room</option>${workOptions.map(w=>`<option value="${esc(w.w)}">${esc(w.t)}${RX.edition(RX.orderWork(w))?' · '+esc(RX.edition(RX.orderWork(w))):''}</option>`).join('')}</select></label><label class="rx-search">Phrase in statements<input id="positions-phrase" type="search" placeholder="Search the loaded statements" value="${esc(positionPhrase)}"></label><label>Stance<select id="positions-annotation"><option value="">All stances</option>${STANCES.filter(x=>x[0]).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label><label>Group statements<select id="positions-group"><option value="work">By work</option><option value="stance">By stance</option></select></label>
       <label class="rx-search rx-compare-pick">Compare with<input id="positions-compare" type="search" placeholder="Another author’s name" value="${esc(positionCompare?.a||'')}" list="positions-compare-list" autocomplete="off"><datalist id="positions-compare-list"></datalist></label></div>
       <div id="positions-work-link"></div><div class="rx-results-line"><p id="positions-count" role="status"></p><div class="rx-result-actions"><button class="rx-text-link" id="positions-expand">Open all</button><button class="rx-text-link" id="positions-collapse">Collapse all</button><button class="rx-text-link" id="positions-reset">Reset filters</button></div></div>
       <nav class="rx-loci-jump" id="positions-jump" aria-label="Loci"></nav>
@@ -904,11 +905,11 @@ async function room(slug,arg){
     const otherStatement=r=>statementHTML(r,{author:positionCompare?.a||''});
     const byStance=rows=>{const g={};rows.forEach(r=>{const k=STANCES.some(x=>x[0]===r.s)?(r.s||''):'';(g[k]=g[k]||[]).push(r);});return STANCES.filter(([k])=>g[k]&&g[k].length).map(([k,label])=>({k,label:label||'Other statements',rows:g[k]}));};
     const byWork=(rows,works=roomWorks)=>{const g=new Map();rows.forEach(r=>{if(!g.has(r.w))g.set(r.w,[]);g.get(r.w).push(r);});
-      return [...g.entries()].sort((a,b)=>b[1].length-a[1].length||a[0].localeCompare(b[0])).map(([w,rs])=>{const wk=works.get(w);return {k:w,w,label:(wk?.t||rs[0].wt||w),sub:wk?.vs||(wk?.v?(/^\d+$/.test(String(wk.v))?'vol. ':'')+wk.v:''),rows:rs.slice().sort((a,b)=>(RX.page(a.p)??0)-(RX.page(b.p)??0))};});};
+      return RX.orderedWorks([...g.entries()].sort((a,b)=>b[1].length-a[1].length||a[0].localeCompare(b[0])),([w,rs])=>({...works.get(w),w,t:works.get(w)?.t||rs[0].wt||w})).map(([w,rs])=>{const wk=RX.orderWork({...works.get(w),w});return {k:w,w,label:(wk?.t||rs[0].wt||w),sub:RX.edition(wk)||wk?.vs||(wk?.v?(/^\d+$/.test(String(wk.v))?'vol. ':'')+wk.v:''),rows:rs.slice().sort((a,b)=>(RX.page(a.p)??0)-(RX.page(b.p)??0))};});};
     const grouped=(rows,works)=>positionGroup==='work'?byWork(rows,works):byStance(rows);
     // collapsed folds per group (work or stance); the first open. Fold state lives on the topic so a redraw keeps it.
-    const foldsHTML=(groups,render,tkey)=>{const openSet=positionFolds.get(tkey)||(positionFolds.set(tkey,new Set()),positionFolds.get(tkey));if(!openSet.size&&groups.length)openSet.add(groups[0].k);
-      return groups.map(g=>`<details class="cd-work" data-position-fold="${esc(tkey)}|${esc(g.k)}"${openSet.has(g.k)?' open':''}><summary><span><strong>${esc(g.label)}</strong>${g.sub?` <small>${esc(g.sub)}</small>`:''}</span><small class="cd-n">${fmtR(g.rows.length)}</small>${g.w?` ${foldOpen(g.w,ws)}${workSaveBtn(g.w,g.label,tkey.endsWith('|theirs')?(positionCompare?.a||''):d.a)}`:''}</summary><div class="cd-fold-body">${g.w?sectionFoldsHTML(g.rows,render,g.w):g.rows.map(render).join('')}</div></details>`).join('');};
+    const foldsHTML=(groups,render,tkey)=>{const openSet=positionFolds.get(tkey)||(positionFolds.set(tkey,new Set()),positionFolds.get(tkey));if(!openSet.size&&groups.length)openSet.add(positionGroup==='work'?groups.reduce((a,b)=>b.rows.length>a.rows.length?b:a).k:groups[0].k);
+      return groups.map(g=>`<details class="cd-work" data-position-fold="${esc(tkey)}|${esc(g.k)}"${openSet.has(g.k)?' open':''}><summary><span><strong>${esc(g.label)}</strong>${g.sub?` <small>${esc(g.sub)}</small>`:''}</span><small class="cd-n">${fmtR(g.rows.length)}</small>${g.w?` ${foldOpen(g.w,g.rows)}${workSaveBtn(g.w,g.label,tkey.endsWith('|theirs')?(positionCompare?.a||''):d.a)}`:''}</summary><div class="cd-fold-body">${g.w?sectionFoldsHTML(g.rows,render,g.w):g.rows.map(render).join('')}</div></details>`).join('');};
     const headOf=t=>{const hk=LOCUS_HEAD[RX.fold(t.t)];return hk?hk[0]:(RX.isRawTopic(t.t)?LOCI_HEADS.length+1:LOCI_HEADS.length);};
     drawPositions=()=>{
       if(VIEW!=='p')return;const focus=document.activeElement,focusTopic=focus?.closest('[data-position-topic]')?.dataset.positionTopic;
@@ -920,10 +921,10 @@ async function room(slug,arg){
       const groups=[];hits.forEach(h=>{const hi=headOf(h.t);const g=groups.find(x=>x.hi===hi)||(groups.push({hi,label:hi<LOCI_HEADS.length?LOCI_HEADS[hi][0]:hi===LOCI_HEADS.length?'Other topics':'Unreviewed extraction labels',items:[]}),groups[groups.length-1]);g.items.push(h);});
       const cmpLink=positionCompare?` <a class="rx-text-link" href="#${encodeURIComponent(slug)}/with/${encodeURIComponent(positionCompare.s)}">Full comparison with ${esc(positionCompare.a)}</a> · <a class="rx-text-link" href="${cdURL({a:[slug,positionCompare.s],sel:positionTopic?tslugOf(positionTopic):'',g:positionGroup,s:positionAnnotation,q:positionPhrase})}">Open in the comparison desk</a>`:'';
       $('#positions-work-link').dataset.cmp=cmpLink;
-      $('#positions-count').textContent=fmtR(hits.length)+' topics · '+fmtR(hits.reduce((n,x)=>n+x.t.npos||0,0))+' indexed positions · '+fmtR(hits.reduce((n,x)=>n+x.rows.length,0))+' statements loaded'+(positionCompare?' · compared with '+positionCompare.a:'');
+      $('#positions-count').textContent=fmtR(hits.length)+(hits.length===1?' topic · ':' topics · ')+fmtR(hits.reduce((n,x)=>n+x.t.npos||0,0))+' indexed positions · '+fmtR(hits.reduce((n,x)=>n+x.rows.length,0))+' statements loaded'+(positionCompare?' · compared with '+positionCompare.a:'');
       $('#positions-work-link').innerHTML=(positionWork?`<a class="rx-text-link" href="${workResearchHref(positionWork)}">Explore this work in the reader</a>`:'')+cmpLink;
       $('#positions-jump').innerHTML=groups.map(g=>`<a href="#loci-${g.hi}" data-jump="${g.hi}">${esc(g.label)}<small>${fmtR(g.items.reduce((n,x)=>n+(x.t.npos||0),0))}</small></a>`).join('');
-      $('#positions-list').innerHTML=groups.map(g=>`<section class="rx-loci-group" id="loci-${g.hi}"><h3 class="rx-loci-head">${esc(g.label)}<small>${fmtR(g.items.length)} topics · ${fmtR(g.items.reduce((n,x)=>n+(x.t.npos||0),0))} positions</small></h3>${g.items.map(({t,rows})=>{
+      $('#positions-list').innerHTML=groups.map(g=>`<section class="rx-loci-group" id="loci-${g.hi}"><h3 class="rx-loci-head">${esc(g.label)}<small>${fmtR(g.items.length)} ${g.items.length===1?'topic':'topics'} · ${fmtR(g.items.reduce((n,x)=>n+(x.t.npos||0),0))} positions</small></h3>${g.items.map(({t,rows})=>{
         const i=topics.indexOf(t),state=positionState.get(t.t)||{},total=state.author?.np??t.npos,open=positionOpen.has(t.t);
         const cmp=positionCompare?positionCompare.state.get(t.t):null,cmpTopic=positionCompare?(positionCompare.topics||[]).find(x=>x.key===t.key):null;
         const coverage=state.started?fmtR(state.indexedRows.length)+' of '+fmtR(total)+' indexed loaded':(total!=null?fmtR(total)+' indexed positions':'');
@@ -977,16 +978,16 @@ async function room(slug,arg){
     const [full,globalTopics]=await Promise.all([roomTopicFull(RSH,slug,t),J(BLOB+'/v1/mine/topic2-all/index.json').catch(()=>({topics:[]}))]);
     const globalTopic=(globalTopics.topics||[]).find(x=>RX.fold(x.t)===RX.fold(t.t));
     if(token!==roomViewRun||run!==RESEARCH_RUN)return;
-    const src=full||t,titles=Object.fromEntries((d.works||[]).map(w=>[w.w,w.t])),seen=new Set(),records=[];
+    const src=full||t,titles=Object.fromEntries((d.works||[]).map(w=>[w.w,WORK_CATALOGUE?.titles[w.w]||w.t])),seen=new Set(),records=[];
     for(const r of [...(src.pos||[]).map(r=>({...r,type:'Position'})),...(src.pages||[]).map(r=>({...r,type:'Page annotation'}))]){const key=JSON.stringify([r.w,RX.page(r.p),r.q||r.g]);if(seen.has(key))continue;seen.add(key);if(r.q||r.g)records.push(r);}
-    const works=[...new Set(records.map(r=>r.w))],cross=[...new Set(records.flatMap(r=>r.x||[]))].filter(x=>x!==t.t&&!RX.isRawTopic(x)).sort(),stances=[...new Set(records.map(r=>r.s).filter(Boolean))].sort();let limit=24;
+    const works=RX.orderedWorks([...new Set(records.map(r=>r.w))],w=>({w,t:titles[w]||w})),cross=[...new Set(records.flatMap(r=>r.x||[]))].filter(x=>x!==t.t&&!RX.isRawTopic(x)).sort(),stances=[...new Set(records.map(r=>r.s).filter(Boolean))].sort();let limit=24;
     pbody.innerHTML=`<div class="view"><div class="rx-section-head"><h2>${esc(t.t)}</h2>${globalTopic?`<a class="rx-text-link" href="/the-faith-received/topics/#${encodeURIComponent(globalTopic.s)}">Compare across authors</a>`:''}</div><p class="pane-meta">${fmtR(t.np)} indexed pages · ${fmtR(t.npos)} recorded positions · ${fmtR(records.length)} available entries</p><p class="rx-note">Mined excerpts and page annotations. Open the source to check its speaker, context, and translation.${t.full&&!full?' The larger export could not load; the room’s sample is shown.':''}</p>
-    <div class="rx-filters"><label class="rx-search">Search this topic<input type="search" id="room-tq" placeholder="Find a phrase"></label><label>Work<select id="room-tw"><option value="">All available works</option>${works.map(w=>`<option value="${esc(w)}">${esc(titles[w]||w)}</option>`).join('')}</select></label><label>Also discusses<select id="room-tx"><option value="">All connected topics</option>${cross.map(x=>`<option>${esc(x)}</option>`).join('')}</select></label>${stances.length?`<label>Annotation<select id="room-ts"><option value="">All annotations</option>${stances.map(x=>`<option>${esc(x)}</option>`).join('')}</select></label>`:''}</div>${globalTopic?`<a class="rx-text-link" href="/the-faith-received/fathers/?sh=${RSH}#${slug}/positions/${encodeURIComponent(t.t)}">Browse this author’s indexed positions</a>`:''}<p class="rx-note">Connections mean topics tagged on the same passage. Annotation types describe local statements, not agreement or disagreement with the topic.</p><p id="room-topic-count" role="status"></p><div id="room-topic-evidence"></div><button class="rx-button rx-more" id="room-topic-more">Show more passages</button>
+    <div class="rx-filters"><label class="rx-search">Search this topic<input type="search" id="room-tq" placeholder="Find a phrase"></label><label>Work<select id="room-tw"><option value="">All available works</option>${works.map(w=>`<option value="${esc(w)}">${esc(titles[w]||w)}${RX.edition(RX.orderWork({w}))?' · '+esc(RX.edition(RX.orderWork({w}))):''}</option>`).join('')}</select></label><label>Also discusses<select id="room-tx"><option value="">All connected topics</option>${cross.map(x=>`<option>${esc(x)}</option>`).join('')}</select></label>${stances.length?`<label>Annotation<select id="room-ts"><option value="">All annotations</option>${stances.map(x=>`<option>${esc(x)}</option>`).join('')}</select></label>`:''}</div>${globalTopic?`<a class="rx-text-link" href="/the-faith-received/fathers/?sh=${RSH}#${slug}/positions/${encodeURIComponent(t.t)}">Browse this author’s indexed positions</a>`:''}<p class="rx-note">Connections mean topics tagged on the same passage. Annotation types describe local statements, not agreement or disagreement with the topic.</p><p id="room-topic-count" role="status"></p><div id="room-topic-evidence"></div><button class="rx-button rx-more" id="room-topic-more">Show more passages</button>
     ${(src.migne||[]).length?`<details class="rx-historical"><summary>Read Migne’s index · ${fmtR(src.migne.length)} entries</summary>${src.migne.map(r=>`<article class="rx-excerpt"><p>${esc(r.q||'Index reference')}</p>${RX.safeReaderURL(r.h)?`<a class="rx-text-link" href="${esc(RX.safeReaderURL(r.h))}">Read PL ${esc(r.v)}, column ${esc(r.c)}</a>`:''}</article>`).join('')}</details>`:''}</div>`;
     researchLayout();const draw=()=>{const q=RX.fold($('#room-tq').value),w=$('#room-tw').value,x=$('#room-tx').value,s=$('#room-ts')?.value;const rows=records.filter(r=>(!w||r.w===w)&&(!x||(r.x||[]).includes(x))&&(!s||r.s===s)&&(!q||RX.fold((r.q||'')+' '+(r.g||'')).includes(q)));
-    addEventListener('fr-sections-ready',()=>{if(run===RESEARCH_RUN&&VIEW==='q')draw();},{signal:researchEvents.signal});
     $('#room-topic-count').textContent=fmtR(rows.length)+' matching entries';$('#room-topic-more').hidden=true;
     statementPane($('#room-topic-evidence'),rows,{title:r=>titles[r.w]||r.wt||r.w,author:d.a,actions:true,extra:r=>`<p class="rx-annotation">${esc(r.type)}${r.s?' · '+esc(r.s):''}${RX.cleanTopics(r.x,tregRows()).length?' · Also discusses '+RX.cleanTopics(r.x,tregRows()).map(esc).join(', '):''}</p>`,empty:'No matching passages. Clear a filter or try another phrase.'});};
+    addEventListener('fr-sections-ready',()=>{if(run===RESEARCH_RUN&&VIEW==='q')draw();},{signal:researchEvents.signal});
     for(const id of ['room-tq','room-tw','room-tx','room-ts']){const el=$('#'+id);if(el)el.addEventListener(id==='room-tq'?'input':'change',()=>draw());}draw();pbody.scrollTop=0;setHash(encodeURIComponent(t.t));
   }
   function renderConnections(){
@@ -1066,7 +1067,7 @@ async function room(slug,arg){
       const vns=Object.keys(asv.verses).map(Number).sort((x,y)=>x-y);
       body2=vns.map(v2=>{
         const rows=byv[v2]||[];
-        return `<div class="vs2${rows.length?" cited":""}"${rows.length?` data-verse="${v2}"`:""}><span class="vn">${v2}</span><span class="vtx">${esc(asv.verses[String(v2)])}</span>${rows.length?`<button class="vex" data-vx="${v2}" aria-expanded="false" aria-label="Show ${rows.length} comments on verse ${v2}">${rows.length}</button>`:""}</div>`+
+        return `<div class="vs2${rows.length?" cited":""}"${rows.length?` data-verse="${v2}"`:""}><span class="vn">${v2}</span><span class="vtx">${esc(asv.verses[String(v2)])}</span>${rows.length?`<button class="vex" data-vx="${v2}" aria-expanded="false" aria-label="Show ${rows.length} ${rows.length===1?'comment':'comments'} on verse ${v2}">${rows.length}</button>`:""}</div>`+
           (rows.length?`<div class="vcits" data-vfor="${v2}" hidden>${scriptureCitations(rows)}</div>`:"");
       }).join("");
       const un=(byv[0]||[]);
@@ -1105,7 +1106,7 @@ async function room(slug,arg){
       if(posH.length)out.push('<h2 class="sect">Recorded statements</h2>'+workFoldsHTML(posH.map(({t,p})=>({...p,topicLabel:t.t})),{title:titleOf,author:d.a,annotation:true,extra:r=>'<p class="rx-note">'+esc(r.topicLabel)+'</p>'}));
       if(pagH.length)out.push('<h2 class="sect">Indexed passages</h2>'+workFoldsHTML(pagH.map(({t,p})=>({...p,topicLabel:t.t,pageSummary:!p.q})),{title:titleOf,author:d.a,extra:r=>'<p class="rx-note">'+esc(r.topicLabel)+'</p>'}));
       const wH=d.works.filter(x=>RX.fold(x.t).includes(RX.fold(q))).slice(0,10);
-      if(wH.length)out.push('<h2 class="sect">Works</h2>'+wH.map(x=>workRowHTML({...x,a:d.a})).join(''));
+      if(wH.length)out.push('<h2 class="sect">Works</h2>'+RX.orderedWorks(wH).map(x=>workRowHTML({...x,a:d.a})).join(''));
       sres.classList.add('rx-pane');sres.innerHTML='<p class="rx-note">Searches the evidence loaded for this author. Showing up to 30 statements, 30 indexed passages, and 10 works. Open Positions for the complete topic index.</p>'+(out.join('')||'<p class="rx-note">No matches in the loaded evidence. Try another phrase, browse Positions, or ask about this author’s works.</p>');
     };
     let lT=null;
@@ -1311,13 +1312,25 @@ async function topicPage(slug){
  const cmpWanted=(new URLSearchParams(location.hash.slice(1).split('?')[1]||'').get('compare')||'').split(',').map(x=>decodeURIComponent(x).trim()).filter(Boolean);
  const cmpKey=a=>a.s||(a.rooms&&a.rooms.length===1?a.rooms[0].s:'')||RX.fold(a.a);
  const writeCompare=()=>{const path=location.hash.slice(1).split('?')[0];const keys=[...selected].map(i=>cmpKey(all[i])).filter(Boolean);const h='#'+path+(keys.length?'?compare='+keys.map(encodeURIComponent).join(','):'');if(location.hash!==h)history.replaceState(null,'',location.pathname+location.search+h);};
- const evidenceState=new Map(),openedShelves=new Set(),openedAuthors=new Set(),shelfLimits=new Map(),passageLimits=new Map();
+ const workSelections=new Map(),evidenceState=new Map(),openedShelves=new Set(),openedAuthors=new Set(),shelfLimits=new Map(),passageLimits=new Map();
  // Room links use exact names only; never infer authorship from a shared name token.
  for(const a of all){a.rooms=rooms.rows.filter(r=>r.a===a.a);a.rows=a.rows.filter(r=>r.q||r.g);a.pageRows=[];}
  if(cmpWanted.length){all.forEach((a,i)=>{if(selected.size<3&&cmpWanted.some(k=>k===a.s||(a.rooms||[]).some(r=>r.s===k)||RX.fold(k)===RX.fold(a.a)))selected.add(i);});if(selected.size)view='compare';}
  let shelf=new URLSearchParams(location.search).get('sh')||'';if(!RX.shelves[shelf])shelf='';
  if(shelf)openedShelves.add(shelf);
  const pageState=new Map();
+ const [catalogue,ledger]=await Promise.all([getWorkCatalogue(),d.evidence?J(BLOB+`/v1/mine/evidence/${d.evidence.snapshot}/${d.evidence.topic}/index.json`).catch(()=>null):null]);if(run!==RESEARCH_RUN)return;
+ const ledgerOK=ledger?.snapshot_id===d.evidence?.snapshot&&ledger?.topic_id===d.evidence?.topic;
+ const workTitle=w=>catalogue.titles?.[w]||catalogue.bySlug.get(w)?.title||w;
+ const selectionWork=i=>workSelections.get(i)||'';
+ const stateKey=i=>all[i].id+'|'+selectionWork(i);
+ const authorRows=i=>{const a=all[i],state=evidenceState.get(stateKey(i)),w=selectionWork(i);return state?.started?state.rows:a.rows.filter(r=>!w||r.w===w);};
+ const selectionTotal=i=>{const a=all[i],w=selectionWork(i);return evidenceState.get(stateKey(i))?.total??(w?ledger?.authors?.[a.id]?.works?.[w]?.count:a.np)??0;};
+ const workOptions=i=>{const a=all[i],slugs=ledgerOK?Object.keys(ledger.authors?.[a.id]?.works||{}):[...new Set(a.rows.map(r=>r.w))];return RX.orderedWorks(slugs.map(w=>({w})).sort((a,b)=>workTitle(a.w).localeCompare(workTitle(b.w))));};
+ const foldStates=new Map();
+ const captureView=()=>{const host=$('#topic-results');if(!host)return null;host.querySelectorAll('[data-topic-author]').forEach(el=>{const i=+el.dataset.topicAuthor;if(el.open)openedAuthors.add(i);else openedAuthors.delete(i);});host.querySelectorAll('[data-topic-shelf]').forEach(el=>{if(el.open)openedShelves.add(el.dataset.topicShelf);else openedShelves.delete(el.dataset.topicShelf);});host.querySelectorAll('[data-voice-pane] .cd-work').forEach(el=>foldStates.set(el.closest('[data-voice-pane]').dataset.voicePane+'|'+el.dataset.work,el.open));return {y:scrollY,panes:[...host.querySelectorAll('[data-shelf-pane]')].map(el=>[el.dataset.shelfPane,el.scrollTop])};};
+ const restoreView=state=>{if(!state)return;$('#topic-results').querySelectorAll('[data-voice-pane] .cd-work').forEach(el=>{const key=el.closest('[data-voice-pane]').dataset.voicePane+'|'+el.dataset.work;if(foldStates.has(key))el.open=foldStates.get(key);});for(const [sh,y] of state.panes){const el=$('[data-shelf-pane="'+sh+'"]');if(el)el.scrollTop=y;}window.scrollTo({top:state.y,behavior:'instant'});};
+ const pager=(win,kind,key)=>win.pages>1?`<nav class="rx-topic-pager" aria-label="${kind==='shelf'?'Author pages':'Statement pages'}"><button class="rx-button" data-${kind==='shelf'?'shelf':'topic'}-page="${key}" data-page="${win.page-1}"${win.page===0?' disabled':''}>Previous</button><span>Page ${win.page+1} of ${win.pages}<small>${win.start+1}–${win.end}</small></span><button class="rx-button" data-${kind==='shelf'?'shelf':'topic'}-page="${key}" data-page="${win.page+1}"${win.page+1===win.pages?' disabled':''}>Next</button></nav>`:'';
  const loadPageRefs=async a=>{
    if(pageState.get(a)?.loading||pageState.get(a)?.done)return;
    const state={loading:true,error:false,done:false};pageState.set(a,state);
@@ -1336,61 +1349,56 @@ async function topicPage(slug){
  if(shelf)await Promise.all(all.filter(a=>a.sh===shelf&&!a.np&&a.n>0).slice(0,12).map(loadPageRefs));
  if(run!==RESEARCH_RUN)return;
  const authorLink=a=>{const r=a.s?a:a.rooms.length===1?a.rooms[0]:null;return r?RX.authorURL(r,d.t):null;};
- // one evidence page (50 rows/cursor from /api/evidence), or every page to the end when `all`
+ // Explicit bounded requests; changing layout never starts another evidence walk.
  async function loadEvidence(i,all_=false){
-   const a=all[i];if(!d.evidence||!a.id||!(a.np>0))return;const state=evidenceState.get(a.id)||{};if(state.loading||state.done)return;
-   state.loading=true;state.error=false;evidenceState.set(a.id,state);render();
-   try{do{
-     const params=new URLSearchParams({snapshot:d.evidence.snapshot,topic:d.evidence.topic,author:a.id,limit:'50'});
-     if(state.cursor)params.set('cursor',state.cursor);
-     const response=await fetch('https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/evidence?'+params,{signal:AbortSignal.timeout(25000)});
-     if(!response.ok)throw new Error('Evidence unavailable');const result=await response.json();
-     if(run!==RESEARCH_RUN)return;
-     if(result.snapshot_id!==d.evidence.snapshot||result.filters?.author_id!==a.id||!Array.isArray(result.items))throw new Error('Evidence selection changed');
-     const previous=state.started?a.rows:[],seen=new Set(previous.map(r=>r.id));
-     a.rows=previous.concat(result.items.filter(r=>!seen.has(r.id)));state.started=true;state.cursor=result.next_cursor;state.done=!result.has_more;
-     if(all_&&!state.done)render();
-   }while(all_&&!state.done);}
-   catch(error){if(run!==RESEARCH_RUN)return;state.error=true;}
-   state.loading=false;render();
+  const a=all[i],work=selectionWork(i),key=stateKey(i);if(!d.evidence||!a.id)return;let state=evidenceState.get(key)||{};if(state.loading||state.done)return;
+  state.loading=true;state.auto=all_;state.error=false;evidenceState.set(key,state);render();
+  try{do{const params=new URLSearchParams({snapshot:d.evidence.snapshot,topic:d.evidence.topic,author:a.id,limit:'50'});if(work)params.set('work',work);if(state.cursor)params.set('cursor',state.cursor);
+   const result=await evidenceFetch(params);if(run!==RESEARCH_RUN)return;
+   const auto=state.auto;state=RX.mergeTopicEvidence(state,result,{snapshot:d.evidence.snapshot,topic:d.evidence.topic,author:a.id,work});state.auto=auto;evidenceState.set(key,state);render();
+  }while(state.auto&&!state.done&&run===RESEARCH_RUN&&key===stateKey(i));}
+  catch(error){if(run!==RESEARCH_RUN)return;state.error=true;}
+  state.loading=false;state.auto=false;render();
  }
- // the compare tab loads every selected author's complete positions and linked pages by itself (owner 2026-09-09: no click to load)
- const loadCompared=()=>{[...selected].forEach(i=>{const a=all[i];loadPageRefs(a).then(()=>{if(run===RESEARCH_RUN)render();});loadEvidence(i,true);});};
+ const loadCompared=()=>{[...selected].forEach(i=>{const a=all[i];if(!a.np)loadPageRefs(a).then(()=>{if(run===RESEARCH_RUN)render();});else if(!evidenceState.get(stateKey(i))?.started)loadEvidence(i);});};
  const excerpt=r=>statementHTML(r,{actions:true,annotation:true});
  page.innerHTML=`<div class="crumbs"><a id="topic-back" href="${RX.topicURL('',shelf)}">Browse ${shelf?esc(RX.shelves[shelf])+' topics':'topics'}</a></div><div class="rx-topic-heading"><h1>${esc(d.t)}</h1><a class="rx-text-link" href="/the-faith-received/web/#t=${encodeURIComponent(d.s||slug)}">View citation map</a></div>
- <details class="rx-coverage"><summary>About this evidence</summary><div>${RX.isRawTopic(d.t)?'<p class="rx-note">This is an unreviewed extraction label. Its passages remain available, but the label is not an established topic.</p>':''}<p>${d.n_pages!=null?`<strong>${fmtR(d.n_pages)}</strong> indexed pages · <strong>${fmtR(d.n_pos)}</strong> recorded positions${meta?.na?' · '+fmtR(meta.na)+' indexed authors':''}. `:''}<strong>${fmtR((d.pos||[]).length)}</strong> excerpts in the initial selection.${d.evidence?' Load each author’s complete indexed positions below.':''}</p><p>${d.evidence?'The initial view is a selection. Each author’s passages can be loaded in full from this dated snapshot.':'The export is a selection, not the whole index.'} Filters and comparisons apply to the excerpts currently loaded. A mined statement may summarize or translate a passage, including a reported view; read the source to establish its speaker and context. “Denies” and “qualifies” describe a local statement, not opposition to this topic. Linked pages below include summaries from author rooms and shelf indexes. A page summary describes the page; it is not a quotation or an extracted position.</p></div></details>
+ <details class="rx-coverage"><summary>About this evidence</summary><div>${RX.isRawTopic(d.t)?'<p class="rx-note">This is an unreviewed extraction label. Its passages remain available, but the label is not an established topic.</p>':''}<p>${d.n_pages!=null?`<strong>${fmtR(d.n_pages)}</strong> indexed pages · <strong>${fmtR(d.n_pos)}</strong> recorded positions${meta?.na?' · '+fmtR(meta.na)+' indexed authors':''}. `:''}<strong>${fmtR((d.pos||[]).length)}</strong> excerpts in the initial selection.${d.evidence?' Choose an author and work, then load the next 50 positions or explicitly load all.':''}</p><p>${d.evidence?'The initial view is a selection. Each author’s positions can be loaded in full from this dated snapshot. Counts distinguish records already loaded from the complete indexed total.':'The export is a selection, not the whole index.'} Filters and comparisons apply to the excerpts currently loaded. A mined statement may summarize or translate a passage, including a reported view; read the source to establish its speaker and context. “Denies” and “qualifies” describe a local statement, not opposition to this topic. Linked pages below include summaries from author rooms and shelf indexes. A page summary describes the page; it is not a quotation or an extracted position.</p></div></details>
  <div class="rx-view-tabs" role="tablist" aria-label="Topic view"><button role="tab" id="topic-browse" aria-selected="true" aria-controls="topic-results">Browse passages</button><button role="tab" id="topic-compare" aria-selected="false" aria-controls="topic-results">Compare authors <span id="compare-number">0</span></button></div><div id="compare-tray" hidden><span id="compare-tray-count"></span><button id="compare-tray-open" class="rx-button">Compare authors</button></div>
  <div class="rx-filters"><label class="rx-search">Search available evidence<input id="tq" type="search" placeholder="Author, work, or phrase"></label><label class="rx-primary-filter">Shelf<select id="topic-shelf"><option value="">All shelves</option>${Object.entries(RX.shelves).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}<option value="unknown">Shelf not recorded</option></select></label><label>Order authors<select id="topic-order"><option value="pages">Available passages first</option><option value="name">Name A–Z</option><option value="date">Earlier authors first</option></select></label></div>
  <div class="rx-results-line"><p id="topic-count" role="status"></p><div class="rx-result-actions"><button class="rx-text-link" id="topic-collapse">Collapse all</button><button class="rx-text-link" id="topic-reset">Reset filters</button></div></div><p class="rx-note" id="compare-help">Select up to three authors to compare their available passages.</p><div id="topic-results" role="tabpanel"></div><button id="topic-more" class="rx-button rx-more">Show more authors</button>
  ${mg?`<details class="rx-historical"><summary>Read Migne’s index${mg.claims?.length?' · '+fmtR(mg.claims.length)+' entries':''}</summary><p class="rx-note">Historical index entries keep their own attribution. Similar author names are not merged.</p><div>${(mg.claims||[]).map(c=>`<article class="rx-excerpt"><p>${esc(c.q||'')}</p><div class="rx-source"><span>${esc(c.a||'Migne’s index')}</span>${RX.safeReaderURL(c.h)?`<a class="rx-text-link" href="${esc(RX.safeReaderURL(c.h))}">Read index passage</a>`:''}</div></article>`).join('')||'<p>No index statements are included in this export.</p>'}</div></details>`:''}`;
- researchLayout();$('#topic-shelf').value=shelf;$('#tq').value=new URLSearchParams(location.search).get('author')||'';
- const render=()=>{const q=RX.fold($('#tq').value),order=$('#topic-order').value;let hits=all.map((a,i)=>({...a,i,visible:[...a.rows,...a.pageRows.map(r=>({...r,pageSummary:true}))].filter(r=>!q||RX.fold(a.a+' '+(r.q||r.g||'')+' '+(r.wt||r.w||'')).includes(q))})).filter(a=>(!shelf||(shelf==='unknown'?!a.sh:a.sh===shelf))&&(!q||a.visible.length||RX.fold(a.a).includes(q)));
+ researchLayout();$('#topic-shelf').value=shelf;$('#tq').value=new URLSearchParams(location.search).get('q')||new URLSearchParams(location.search).get('author')||'';const savedOrder=new URLSearchParams(location.search).get('order');if(['pages','name','date'].includes(savedOrder))$('#topic-order').value=savedOrder;
+ const render=()=>{const savedView=captureView();const q=RX.fold($('#tq').value),order=$('#topic-order').value,address=new URL(location.href);$('#tq').value.trim()?address.searchParams.set('q',$('#tq').value.trim()):address.searchParams.delete('q');address.searchParams.delete('author');order!=='pages'?address.searchParams.set('order',order):address.searchParams.delete('order');history.replaceState(history.state,'',address);let hits=all.map((a,i)=>({...a,i,visible:[...authorRows(i),...a.pageRows.filter(r=>!selectionWork(i)||r.w===selectionWork(i)).map(r=>({...r,pageSummary:true}))].filter(r=>!q||RX.fold(a.a+' '+(r.q||r.g||'')+' '+workTitle(r.w)).includes(q))})).filter(a=>(!shelf||(shelf==='unknown'?!a.sh:a.sh===shelf))&&(!q||a.visible.length||RX.fold(a.a).includes(q)));
  hits.sort(order==='name'?(a,b)=>a.a.localeCompare(b.a):order==='date'?(a,b)=>(a.y||9999)-(b.y||9999)||(b.n||0)-(a.n||0):(a,b)=>Number(b.visible.length>0)-Number(a.visible.length>0)||(b.n||0)-(a.n||0)||a.a.localeCompare(b.a));
- $('.research-topic .rx-filters').hidden=view==='compare';$('#topic-reset').hidden=view==='compare';$('#topic-count').textContent=view==='compare'?selected.size+' selected authors · '+fmtR([...selected].reduce((n,i)=>n+all[i].rows.length+all[i].pageRows.length,0))+' available entries':fmtR(hits.length)+' matching authors · '+fmtR(hits.reduce((n,a)=>n+a.visible.filter(r=>!r.pageSummary).length,0))+' excerpts · '+fmtR(hits.reduce((n,a)=>n+a.visible.filter(r=>r.pageSummary).length,0))+' linked pages';$('#compare-number').textContent=selected.size;$('#compare-tray').hidden=!selected.size||view==='compare';$('#compare-tray-count').textContent=selected.size+' selected';$('#topic-compare').setAttribute('aria-selected',String(view==='compare'));$('#topic-browse').setAttribute('aria-selected',String(view==='browse'));$('#topic-results').className=view==='compare'?'rx-comparison':'rx-fold-list';$('#topic-more').hidden=true;$('#topic-collapse').hidden=view==='compare';
- const picks=view==='compare'?[...selected].map(i=>({...all[i],i,visible:[...all[i].rows,...all[i].pageRows.map(r=>({...r,pageSummary:true}))]})):hits;
- $('#compare-help').textContent=view==='compare'?'Comparing selected authors’ available excerpts. They may address different questions within this topic. Return to Browse passages to choose other authors.':shelf?'Open an author to read the available evidence. Select up to three to compare.':'Open a shelf to read its authors. Select up to three to compare.';
+ $('.research-topic .rx-filters').hidden=view==='compare';$('#topic-reset').hidden=view==='compare';$('#topic-count').textContent=view==='compare'?selected.size+' selected authors · '+fmtR([...selected].reduce((n,i)=>n+authorRows(i).length+all[i].pageRows.length,0))+' available entries':fmtR(hits.length)+' matching '+(hits.length===1?'author':'authors')+' · '+fmtR(hits.reduce((n,a)=>n+a.visible.filter(r=>!r.pageSummary).length,0))+' loaded '+(hits.reduce((n,a)=>n+a.visible.filter(r=>!r.pageSummary).length,0)===1?'statement':'statements')+(hits.some(a=>a.visible.some(r=>r.pageSummary))?' · '+fmtR(hits.reduce((n,a)=>n+a.visible.filter(r=>r.pageSummary).length,0))+' linked pages':'');$('#compare-number').textContent=selected.size;$('#compare-tray').hidden=!selected.size||view==='compare';$('#compare-tray-count').textContent=selected.size+' selected';$('#topic-compare').setAttribute('aria-selected',String(view==='compare'));$('#topic-browse').setAttribute('aria-selected',String(view==='browse'));$('#topic-results').className=view==='compare'?'rx-comparison':'rx-fold-list';$('#topic-more').hidden=true;$('#topic-collapse').hidden=view==='compare';
+ const picks=view==='compare'?[...selected].map(i=>({...all[i],i,visible:[...authorRows(i),...all[i].pageRows.map(r=>({...r,pageSummary:true}))]})):hits;
+ $('#compare-help').textContent=view==='compare'?'Comparing selected authors’ available excerpts. They may address different questions within this topic. Return to Browse passages to choose other authors.':shelf?'Open an author, then choose a work or load more positions.':'Open a shelf to read its authors. Select up to three to compare.';
  const choice=a=>`<label class="rx-compare-choice"><input type="checkbox" aria-label="Compare ${esc(a.a)}" data-compare="${a.i}"${selected.has(a.i)?' checked':''}${selected.size>=3&&!selected.has(a.i)?' disabled':''}><span>${view==='compare'?'Keep in comparison':'Compare'}</span></label>`;
- const body=a=>{const link=authorLink(a);return `<div class="rx-voice-body">${a.visible.length?`<div class="rx-pane rx-voice-pane" data-voice-pane="${a.i}"></div>`:'<p class="rx-note">'+(pageState.get(all[a.i])?.loading?'Loading linked pages…':a.np?'Load this author’s indexed passages below.':'No extracted position is included. Linked source pages may be available below.')+'</p>'}${!a.np&&a.n>0&&!pageState.get(all[a.i])?.done?`<button class="rx-button" data-load-pages="${a.i}"${pageState.get(all[a.i])?.loading?' disabled':''}>${pageState.get(all[a.i])?.loading?'Loading pages…':pageState.get(all[a.i])?.error?'Retry linked pages':'Load linked pages'}</button>`:''}${d.evidence&&a.id&&a.np>0?`<div class="rx-evidence-loader"><p class="rx-note" role="status">${evidenceState.get(a.id)?.error?'Passages could not load. Your current selection is preserved.':evidenceState.get(a.id)?.started?fmtR(a.rows.length)+' of '+fmtR(a.np)+' positions loaded':fmtR(a.np)+' positions available for this author'}</p>${!evidenceState.get(a.id)?.done?`<button class="rx-button" data-load-evidence="${a.i}"${evidenceState.get(a.id)?.loading?' disabled':''}>${evidenceState.get(a.id)?.loading?'Loading passages…':evidenceState.get(a.id)?.error?'Retry passages':evidenceState.get(a.id)?.started?'Load more passages':'Load indexed passages'}</button>`:''}</div>`:''}${link?`<a class="rx-room-link" href="${link}">Explore ${esc(a.a)} on ${esc(d.t)}</a>`:a.rooms.length?`<div class="rx-room-link">Browse this author’s shelves: ${a.rooms.map(r=>`<a href="${RX.authorURL(r,d.t)}">${esc(RX.shelves[r.sh])}</a>`).join(' · ')}</div>`:''}</div>`;};
- const voice=a=>view==='compare'?`<section class="rx-voice"><header><div><h2>${esc(a.a)}</h2><p class="rx-note">${a.y?'c. '+a.y+' · ':''}${esc(RX.shelves[a.sh]||'Shelf not recorded')}</p></div>${choice(a)}</header>${body(a)}</section>`:`<div class="rx-voice-item"><details class="rx-fold rx-author-fold" data-topic-author="${a.i}"${openedAuthors.has(a.i)?' open':''}><summary><span><strong>${esc(a.a)}</strong><small>${a.y?'c. '+a.y+' · ':''}${a.n!=null?fmtR(a.n)+' indexed pages · ':''}${fmtR(a.visible.filter(r=>!r.pageSummary).length)} excerpts${a.visible.some(r=>r.pageSummary)?' · '+fmtR(a.visible.filter(r=>r.pageSummary).length)+' linked pages':''}</small></span></summary>${body(a)}</details>${choice(a)}</div>`;
+ const body=a=>{const link=authorLink(a),state=evidenceState.get(stateKey(a.i)),w=selectionWork(a.i),works=workOptions(a.i),win=RX.topicWindow(a.visible,passageLimits.get(a.i)||0);passageLimits.set(a.i,win.page);
+  return `<div class="rx-voice-body"><div class="rx-topic-evidence-tools">${works.length?`<label>Work<select data-author-work="${a.i}" aria-label="Work by ${esc(a.a)}"><option value="">All indexed works</option>${works.map(x=>`<option value="${esc(x.w)}"${w===x.w?' selected':''}>${esc(workTitle(x.w))}${RX.edition(RX.orderWork(x))?' · '+esc(RX.edition(RX.orderWork(x))):''}</option>`).join('')}</select></label>`:''}<p class="rx-note" role="status">${fmtR(authorRows(a.i).length)} ${state?.started?'loaded':'preview'} ${authorRows(a.i).length===1?'statement':'statements'}${selectionTotal(a.i)?' of '+fmtR(selectionTotal(a.i))+' indexed':''}${q?' · '+fmtR(a.visible.length)+' match the current filter':''}.${!ledgerOK&&d.evidence?' Work choices cover the loaded selection.':''}</p>${d.evidence&&a.id&&a.np>0?`<div class="rx-topic-load">${state?.error?'<p role="status">The next records could not load. Your current page is retained.</p>':''}${state?.loading?`<span role="status">Loading positions…</span>${state.auto?`<button class="rx-text-link" data-stop-evidence="${a.i}">Stop loading</button>`:''}`:!state?.done?`<button class="rx-button" data-load-evidence="${a.i}">${state?.error?'Retry next 50':state?.started?'Load next 50':'Load first 50'}</button><button class="rx-text-link" data-load-evidence="${a.i}" data-load-all="true">Load all ${fmtR(selectionTotal(a.i))} positions</button>`:''}</div>`:''}${pager(win,'topic',a.i)}</div>
+  ${a.visible.length?`<div class="rx-voice-pane" data-voice-pane="${a.i}"></div>`:'<p class="rx-note">No statements in this loaded selection. Choose a work, load its indexed positions, or clear the phrase filter.</p>'}
+  ${!a.np&&a.n>0&&!pageState.get(all[a.i])?.done?`<button class="rx-button" data-load-pages="${a.i}"${pageState.get(all[a.i])?.loading?' disabled':''}>${pageState.get(all[a.i])?.loading?'Loading linked pages…':pageState.get(all[a.i])?.error?'Retry linked pages':'Load linked pages'}</button>`:''}${pager(win,'topic',a.i)}${link?`<a class="rx-room-link" href="${link}">Explore ${esc(a.a)} on ${esc(d.t)}</a>`:''}</div>`;};
+ const voice=a=>view==='compare'?`<section class="rx-voice"><header><div><h2>${esc(a.a)}</h2><p class="rx-note">${a.y?'c. '+a.y+' · ':''}${esc(RX.shelves[a.sh]||'Shelf not recorded')}</p></div>${choice(a)}</header>${body(a)}</section>`:`<div class="rx-voice-item"><details class="rx-fold rx-author-fold" data-topic-author="${a.i}"${openedAuthors.has(a.i)?' open':''}><summary><span><strong>${esc(a.a)}</strong><small>${a.y?'c. '+a.y+' · ':''}${a.n!=null?fmtR(a.n)+' indexed pages · ':''}${fmtR(authorRows(a.i).length)} loaded ${authorRows(a.i).length===1?'statement':'statements'}${a.visible.some(r=>r.pageSummary)?' · '+fmtR(a.visible.filter(r=>r.pageSummary).length)+' linked pages':''}</small></span></summary>${body(a)}</details>${choice(a)}</div>`;
  if(view==='compare'){const sl=[...selected].map(i=>{const a=all[i];return a.s?a:(a.rooms||[]).length===1?a.rooms[0]:null;}),tsl=tslugOf(d.t);
    const deskLink=sl.filter(Boolean).length?`<a class="rx-button cd-open" href="${cdURL({a:sl.filter(Boolean).map(x=>x.s),sel:slug,g:'work',s:'',q:''})}">Open in the comparison desk</a> `:'';
    const tools=sl.length===2&&sl[0]&&sl[1]?`<p class="rx-compare-links">${deskLink}<a class="rx-text-link" href="/the-faith-received/fathers/?sh=${encodeURIComponent(sl[0].sh)}#${encodeURIComponent(sl[0].s)}/with/${encodeURIComponent(sl[1].s)}/topic/${encodeURIComponent(tsl)}">Full comparison: every citation between them, all shared topics, Scripture</a> · <a class="rx-text-link" href="/the-faith-received/fathers/?sh=${encodeURIComponent(sl[0].sh)}&cmp=${encodeURIComponent(sl[1].s)}#${encodeURIComponent(sl[0].s)}/positions/${encodeURIComponent(d.t)}">${esc(sl[0].a)}’s positions with ${esc(sl[1].a)} beside them</a> · <a class="rx-text-link" href="/the-faith-received/web/#e=${encodeURIComponent(sl[0].s)},${encodeURIComponent(sl[1].s)}">${esc(sl[0].a)} citing ${esc(sl[1].a)} in the citation web</a></p>`:sl.length===1&&sl[0]?`<p class="rx-compare-links">${deskLink}<a class="rx-text-link" href="/the-faith-received/fathers/?sh=${encodeURIComponent(sl[0].sh)}#${encodeURIComponent(sl[0].s)}/with">Compare ${esc(sl[0].a)} with any author</a> · <a class="rx-text-link" href="${RX.authorURL(sl[0],d.t)}">${esc(sl[0].a)}’s positions on ${esc(d.t)}</a></p>`:'';
    $('#topic-results').innerHTML=tools+(picks.map(voice).join('')||'<div class="rx-empty"><h2>Choose authors to compare</h2><p>Return to Browse passages and select two or three authors.</p><button id="compare-back" class="rx-button">Browse passages</button></div>');}
  else{const groups=new Map();for(const a of picks){const key=a.sh||'unknown';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(a);}
- $('#topic-results').innerHTML=[...Object.keys(RX.shelves),'unknown'].filter(sh=>groups.has(sh)).map(sh=>{const group=groups.get(sh);return `<details class="rx-fold rx-topic-shelf" data-topic-shelf="${sh}"${openedShelves.has(sh)?' open':''}><summary><span><strong>${esc(RX.shelves[sh]||'Shelf not recorded')}</strong><small>${group.slice(0,2).map(a=>esc(a.a)).join(' · ')}</small></span><span class="rx-fold-count">${fmtR(group.length)} ${group.length===1?'author':'authors'}</span></summary><div class="rx-fold-body rx-pane rx-topic-authors" data-shelf-pane="${sh}"></div></details>`;}).join('')||'<div class="rx-empty"><h2>No matching passages</h2><p>Try another phrase or reset the filters. This search covers the evidence currently loaded.</p></div>';
+ $('#topic-results').innerHTML=[...Object.keys(RX.shelves),'unknown'].filter(sh=>groups.has(sh)).map(sh=>{const group=groups.get(sh);return `<details class="rx-fold rx-topic-shelf" data-topic-shelf="${sh}"${openedShelves.has(sh)?' open':''}><summary><span><strong>${esc(RX.shelves[sh]||'Shelf not recorded')}</strong><small>${group.slice(0,2).map(a=>esc(a.a)).join(' · ')}</small></span><span class="rx-fold-count">${fmtR(group.length)} ${group.length===1?'author':'authors'}</span></summary>${pager(RX.topicWindow(group,shelfLimits.get(sh)||0,8),'shelf',sh)}<div class="rx-fold-body rx-pane rx-topic-authors" tabindex="0" role="region" aria-label="${esc(RX.shelves[sh]||'Unassigned')} authors and statements" data-shelf-pane="${sh}"></div>${pager(RX.topicWindow(group,shelfLimits.get(sh)||0,8),'shelf',sh)}</details>`;}).join('')||'<div class="rx-empty"><h2>No matching passages</h2><p>Try another phrase or reset the filters. This search covers the evidence currently loaded.</p></div>';
  }
- $('#topic-results').querySelectorAll('[data-shelf-pane]').forEach(box=>{const sh=box.dataset.shelfPane,group=picks.filter(a=>(a.sh||'unknown')===sh);if(openedShelves.has(sh))paneList(box,group,voice,40);else box.dataset.pending='1';});
- $('#topic-results').querySelectorAll('[data-voice-pane]').forEach(box=>{const a=picks.find(x=>x.i===+box.dataset.voicePane);if(a)statementPane(box,a.visible,{actions:true,annotation:true});});
- if($('#compare-back'))$('#compare-back').onclick=()=>{view='browse';render();};
+ $('#topic-results').querySelectorAll('[data-shelf-pane]').forEach(box=>{const sh=box.dataset.shelfPane,group=picks.filter(a=>(a.sh||'unknown')===sh);if(openedShelves.has(sh)){const win=RX.topicWindow(group,shelfLimits.get(sh)||0,8);shelfLimits.set(sh,win.page);box.innerHTML=win.rows.map(voice).join('');}else box.dataset.pending='1';});
+ $('#topic-results').querySelectorAll('[data-voice-pane]').forEach(box=>{const a=picks.find(x=>x.i===+box.dataset.voicePane);if(a&& (view==='compare'||openedAuthors.has(a.i))){const win=RX.topicWindow(a.visible,passageLimits.get(a.i)||0);statementPane(box,win.rows,{actions:true,annotation:true,evidenceKind:true,sections:false,pageCounts:true,title:r=>workTitle(r.w)});}});
+ restoreView(savedView);if($('#compare-back'))$('#compare-back').onclick=()=>{view='browse';render();};
  };
  // delegated: rows arrive in chunks inside panes, so handlers live on the results container
- $('#topic-results').addEventListener('change',e=>{const el=e.target.closest('[data-compare]');if(!el)return;const i=+el.dataset.compare;if(el.checked&&selected.size<3)selected.add(i);else selected.delete(i);writeCompare();render();if(view==='compare')loadCompared();$('[data-compare="'+i+'"]')?.focus({preventScroll:true});});
- $('#topic-results').addEventListener('click',async e=>{const lp=e.target.closest('[data-load-pages]');if(lp){const a=all[+lp.dataset.loadPages];const pending=loadPageRefs(a);render();await pending;if(run===RESEARCH_RUN)render();return;}
-   const le=e.target.closest('[data-load-evidence]');if(le){const i=+le.dataset.loadEvidence;loadEvidence(i,true).then(()=>$('[data-load-evidence="'+i+'"]')?.focus({preventScroll:true}));}});
- $('#topic-results').addEventListener('toggle',e=>{const el=e.target;if(!el.isConnected)return;if(el.matches('[data-topic-shelf]')){if(el.open)openedShelves.add(el.dataset.topicShelf);else openedShelves.delete(el.dataset.topicShelf);const box=el.querySelector('[data-shelf-pane]');if(el.open&&box&&box.dataset.pending){delete box.dataset.pending;const sh=box.dataset.shelfPane;render();}}if(el.matches('[data-topic-author]')){const i=+el.dataset.topicAuthor;if(el.open){openedAuthors.add(i);const a=all[i];if(!a.np&&a.n>0&&!pageState.get(a)){loadPageRefs(a).then(()=>{if(run===RESEARCH_RUN)render();});}}else openedAuthors.delete(i);}},true);
+ $('#topic-results').addEventListener('change',e=>{const work=e.target.closest('[data-author-work]');if(work){const i=+work.dataset.authorWork;const previous=evidenceState.get(stateKey(i));if(previous)previous.auto=false;workSelections.set(i,work.value);passageLimits.set(i,0);render();loadEvidence(i);return;}const el=e.target.closest('[data-compare]');if(!el)return;const i=+el.dataset.compare;if(el.checked&&selected.size<3)selected.add(i);else selected.delete(i);writeCompare();render();if(view==='compare')loadCompared();$('[data-compare="'+i+'"]')?.focus({preventScroll:true});});
+ $('#topic-results').addEventListener('click',async e=>{const pg=e.target.closest('[data-topic-page],[data-shelf-page]');if(pg){const n=Number(pg.dataset.page),i=pg.dataset.topicPage,sh=pg.dataset.shelfPage;if(i!=null)passageLimits.set(+i,n);else shelfLimits.set(sh,n);render();const target=i!=null?$('[data-topic-author="'+i+'"]'):$('[data-shelf-pane="'+sh+'"]');if(target){const pane=target.closest('[data-shelf-pane]');if(pane)pane.scrollTop=i!=null?target.offsetTop-pane.offsetTop:0;target.querySelector('summary,button')?.focus({preventScroll:true});}return;}const stop=e.target.closest('[data-stop-evidence]');if(stop){const state=evidenceState.get(stateKey(+stop.dataset.stopEvidence));if(state)state.auto=false;render();return;}const lp=e.target.closest('[data-load-pages]');if(lp){const a=all[+lp.dataset.loadPages];const pending=loadPageRefs(a);render();await pending;if(run===RESEARCH_RUN)render();return;}
+   const le=e.target.closest('[data-load-evidence]');if(le){const i=+le.dataset.loadEvidence;loadEvidence(i,le.dataset.loadAll==='true').then(()=>$('[data-load-evidence="'+i+'"]')?.focus({preventScroll:true}));}});
+ $('#topic-results').addEventListener('toggle',e=>{const el=e.target;if(!el.isConnected)return;if(el.matches('[data-topic-shelf]')){if(el.open)openedShelves.add(el.dataset.topicShelf);else openedShelves.delete(el.dataset.topicShelf);const box=el.querySelector('[data-shelf-pane]');if(el.open&&box&&box.dataset.pending){delete box.dataset.pending;const sh=box.dataset.shelfPane;render();}}if(el.matches('[data-topic-author]')){const i=+el.dataset.topicAuthor;if(el.open){const fresh=!openedAuthors.has(i);openedAuthors.add(i);if(fresh){render();return;}const a=all[i];if(!a.np&&a.n>0&&!pageState.get(a)){loadPageRefs(a).then(()=>{if(run===RESEARCH_RUN)render();});}}else openedAuthors.delete(i);}},true);
  $('#topic-collapse').onclick=()=>{openedShelves.clear();openedAuthors.clear();$('#topic-results').querySelectorAll('details[open]').forEach(el=>el.open=false);};
- addEventListener('fr-sections-ready',()=>{if(run===RESEARCH_RUN)render();},{signal:researchEvents.signal});
- $('#tq').oninput=()=>{shelfLimits.clear();render();};$('#topic-shelf').onchange=e=>{shelf=e.target.value;setTopicShelf(shelf);$('#topic-back').href=RX.topicURL('',shelf);$('#topic-back').textContent=shelf?'Browse '+RX.shelves[shelf]+' topics':'Browse topics';if(shelf)openedShelves.add(shelf);limit=12;render();};$('#topic-order').onchange=()=>{limit=12;render();};$('#topic-more').onclick=()=>{limit+=12;render();};$('#topic-reset').onclick=()=>{$('#tq').value='';shelf='';setTopicShelf('');$('#topic-back').href='/the-faith-received/topics/';$('#topic-back').textContent='Browse topics';$('#topic-shelf').value='';limit=12;render();};$('#topic-browse').onclick=()=>{view='browse';render();};$('#topic-compare').onclick=()=>{view='compare';render();loadCompared();};$('#compare-tray-open').onclick=()=>{view='compare';render();loadCompared();$('#topic-compare').focus();};render();
+ // Topic pages show bounded statement pages, so late outline metadata cannot reset their scroll.
+ $('#tq').oninput=()=>{shelfLimits.clear();passageLimits.clear();render();};$('#topic-shelf').onchange=e=>{shelf=e.target.value;setTopicShelf(shelf);$('#topic-back').href=RX.topicURL('',shelf);$('#topic-back').textContent=shelf?'Browse '+RX.shelves[shelf]+' topics':'Browse topics';if(shelf)openedShelves.add(shelf);limit=12;render();};$('#topic-order').onchange=()=>{limit=12;render();};$('#topic-more').onclick=()=>{limit+=12;render();};$('#topic-reset').onclick=()=>{$('#tq').value='';shelf='';setTopicShelf('');$('#topic-back').href='/the-faith-received/topics/';$('#topic-back').textContent='Browse topics';$('#topic-shelf').value='';limit=12;render();};$('#topic-browse').onclick=()=>{view='browse';render();};$('#topic-compare').onclick=()=>{view='compare';render();loadCompared();};$('#compare-tray-open').onclick=()=>{view='compare';render();loadCompared();$('#topic-compare').focus();};render();
  if(view==='compare')loadCompared();
 }
 
@@ -1417,7 +1425,7 @@ function panelHTML(rows,total,hl,opts={}){
           <span class="hint">${pgl(r.w)} ${r.p??"—"}</span>${readBtn(r.w,r.p,hl)}${pinBtn(r.w,r.p,r.t,r.a,r.g||"")}
           ${r.g?`<div class="vpg">${esc(ell(r.g))}</div>`:""}</div>`;
   let out="";
-  for(const e of ["E","L","C","H","R","P"]){
+  for(const e of ["E","L","C","H","R","P","M","U"]){
     const rs=byE[e];if(!rs||!rs.length)continue;
     const byA={};rs.forEach(r=>{(byA[r.a]=byA[r.a]||[]).push(r);});
     const authors=Object.entries(byA).sort((x,y)=>(wOf(y[0])-wOf(x[0]))||(y[1].length-x[1].length)).map(([a2,ars])=>{
@@ -1440,7 +1448,7 @@ let JUMPV=null;
 const JABBR={gen:"Genesis",ex:"Exodus",exod:"Exodus",lev:"Leviticus",num:"Numbers",deut:"Deuteronomy",dt:"Deuteronomy",josh:"Joshua",judg:"Judges",sam:"Samuel",kgs:"Kings",chr:"Chronicles",chron:"Chronicles",neh:"Nehemiah",esth:"Esther",ps:"Psalms",psa:"Psalms",psalm:"Psalms",prov:"Proverbs",eccl:"Ecclesiastes",song:"Song of Solomon",cant:"Song of Solomon",isa:"Isaiah",jer:"Jeremiah",lam:"Lamentations",ezek:"Ezekiel",dan:"Daniel",hos:"Hosea",obad:"Obadiah",jon:"Jonah",mic:"Micah",nah:"Nahum",hab:"Habakkuk",zeph:"Zephaniah",hag:"Haggai",zech:"Zechariah",zach:"Zechariah",mal:"Malachi",mt:"Matthew",matt:"Matthew",mk:"Mark",lk:"Luke",jn:"John",rom:"Romans",cor:"Corinthians",gal:"Galatians",eph:"Ephesians",phil:"Philippians",col:"Colossians",thess:"Thessalonians",tim:"Timothy",tit:"Titus",phlm:"Philemon",heb:"Hebrews",jas:"James",pet:"Peter",rev:"Revelation of John",apoc:"Revelation of John",wis:"Wisdom",sap:"Wisdom",sir:"Sirach",eccli:"Sirach",ecclus:"Sirach",tob:"Tobit",jdt:"Judith",bar:"Baruch",macc:"Maccabees",mach:"Maccabees"};
 function jumpParse(q,books){
   const m=String(q).trim().match(/^([123]|I{1,3}(?=\s))?\s*\.?\s*([A-Za-z .']+?)\s*(\d{1,3})?(?:\s*[:.,]\s*(\d{1,3}))?$/);
-  if(!m||!m[2])return null;
+  if(!m||!m[2]||m[3]&&Number(m[3])<1||m[4]&&Number(m[4])<1)return null;
   const fold=s2=>String(s2).toLowerCase().replace(/[^a-z0-9]/g,"");
   const pfx=m[1]?({1:"i",2:"ii",3:"iii",i:"i",ii:"ii",iii:"iii"}[String(m[1]).toLowerCase()]):"";
   const raw=m[2].replace(/[.']/g," ").trim().toLowerCase();
@@ -1465,14 +1473,14 @@ function bindBibleNav(books,B,ch){
     const dest=FRScripture.bibleURL(r.slug,r.ch,r.v);if(location.hash.slice(1)===dest.split('#')[1])route();else location.hash=dest.split('#')[1];};
   if(B){$('#bible-book').onchange=e=>location.hash='b/'+e.target.value+'/1';$('#bible-chapter').onchange=e=>location.hash='b/'+B.slug+(+e.target.value?'/'+e.target.value:'');}
 }
-function scriptureFacets(){return `<details class="bible-filters"><summary>Filter sources${FACS.size?' · '+FACS.size+' selected':''}</summary>${facBar()}</details>`;}
+function scriptureFacets(){const names=[...FACS].map(k=>FACL.find(row=>row[0]===k)?.[1]).filter(Boolean);return `<div class="bible-scope"><details class="bible-filters"><summary>Sources: ${names.length?names.map(esc).join(', '):'whole library'}</summary>${facBar()}</details>${names.length?'<button type="button" class="rx-text-link" data-fac="all">Show all sources</button>':''}</div>`;}
 async function bibleHome(){
   const run=++BIBLE_RUN;page.className='scripture-page';page.innerHTML='<p class="loading" role="status">Loading the Bible…</p>';
   const d=await J(BLOB+'/v1/bible/all/books.json');if(run!==BIBLE_RUN)return;
   const NT=new Set(['Matthew','Mark','Luke','John','Acts','Romans','I Corinthians','II Corinthians','Galatians','Ephesians','Philippians','Colossians','I Thessalonians','II Thessalonians','I Timothy','II Timothy','Titus','Philemon','Hebrews','James','I Peter','II Peter','I John','II John','III John','Jude','Revelation of John']);
   const groups={ot:[],nt:[],dc:[]};d.books.forEach(b=>groups[b.txt?'dc':NT.has(b.book)?'nt':'ot'].push(b));
   const grid=(id,title,rows)=>`<section id="${id}" class="bible-books"><h2>${title}</h2><div class="bookgrid">${rows.map(b=>`<a class="bk" href="#b/${esc(b.slug)}"><span class="t">${esc(b.book)}</span><span class="n">${b.chapters.length} ${b.chapters.length===1?'chapter':'chapters'}</span></a>`).join('')}</div></section>`;
-  page.innerHTML=`<h1 class="index">Scripture</h1><p class="bible-intro">Read a chapter, explore its citations, and open the commentaries alongside the text.</p>${bibleNav(d.books)}<nav class="bible-sections" aria-label="Testaments"><a href="#old-testament">Old Testament</a><a href="#new-testament">New Testament</a><a href="#deuterocanon">Deuterocanon</a></nav>${grid('old-testament','Old Testament',groups.ot)}${grid('new-testament','New Testament',groups.nt)}${grid('deuterocanon','Deuterocanon',groups.dc)}<p class="hint">${esc(d.text)}</p>`;
+  page.innerHTML=`<h1 class="index">Scripture</h1><p class="bible-intro">Read a chapter, explore its citations, and open the commentaries alongside the text.</p>${bibleNav(d.books)}<nav class="bible-sections" aria-label="Testaments"><a href="#old-testament">Old Testament</a><a href="#new-testament">New Testament</a><a href="#deuterocanon">Deuterocanon</a></nav>${grid('old-testament','Old Testament',groups.ot)}${grid('new-testament','New Testament',groups.nt)}${grid('deuterocanon','Deuterocanon',groups.dc)}<p class="hint">Each chapter identifies its English translation. Deuterocanonical books use Douay-Rheims; Psalm citations follow the index’s Gallican-to-Hebrew remapping.</p>`;
   bindBibleNav(d.books);
   page.querySelectorAll('.bible-sections a').forEach(a=>a.onclick=e=>{e.preventDefault();document.getElementById(a.hash.slice(1)).scrollIntoView({block:'start'});});
 }
@@ -1614,19 +1622,20 @@ async function compareDesk(host,state,opts={}){
   let cur=findTopic(state.sel)||topics[0]||null;if(cur)state.sel=cur.tslug;
   const stanceOpts=STANCES.filter(x=>x[0]).map(([k,v])=>`<option value="${k}"${state.s===k?' selected':''}>${v}</option>`).join('');
   host.classList.add('cd');
-  host.innerHTML=`<div class="cd-authors" role="group" aria-label="Authors compared">${authors.map((au,i)=>`<span class="cd-chip"><a href="${RX.authorURL(au.r)}">${esc(au.a)}</a><small>${esc(whenOf(au))}</small>${authors.length>1?`<button type="button" class="cd-x" data-cd-remove="${i}" aria-label="Remove ${esc(au.a)}">×</button>`:''}</span>`).join('')}${authors.length<4?`<label class="rx-search cd-add">Add an author<input type="search" id="cd-add" placeholder="${authors.length?'Another name':'An author’s name'}" list="cd-add-list" autocomplete="off"><datalist id="cd-add-list"></datalist></label>`:'<span class="rx-note">Four authors is the desk’s width. Remove one to add another.</span>'}</div>
-  ${authors.length?`<div class="rx-filters cd-tools"><label>Group statements<select id="cd-group"><option value="work"${state.g==='work'?' selected':''}>By work · most statements first</option><option value="canon"${state.g==='canon'?' selected':''}>By work · library order</option></select></label><label>Stance<select id="cd-stance"><option value="">All stances</option>${stanceOpts}</select></label><label class="rx-search">Phrase in statements<input type="search" id="cd-q" placeholder="Search every column" value="${esc(state.q)}"></label><label>View<select id="cd-view"><option value="columns"${state.v!=='meet'?' selected':''}>Columns, oldest author first</option><option value="meet"${state.v==='meet'?' selected':''}>Where they meet</option></select></label><button type="button" class="rx-button cd-export" id="cd-export" title="Every statement on screen, cited, as a Desk draft">Export to Desk</button><button type="button" class="rx-button cd-savebtn" id="cd-save-view" aria-pressed="false" title="Keep this view: these authors, this topic, this mode and filters">Save view</button>${opts.embedded?`<a class="rx-text-link cd-open" href="${cdURL(state)}">Open in the comparison desk</a>`:''}</div>
-  <details class="cd-topic-picker"><summary>Choose topic<span id="cd-selected-topic"></span></summary><div class="cd-topics"><div class="cd-topics-head"><label class="rx-note">${fmtR(topics.filter(t=>t.locus).length)} loci · <select id="cd-order" aria-label="Order topics"><option value="shared"${state.o==='shared'?' selected':''}>in loci order</option><option value="n"${state.o==='n'?' selected':''}>most statements</option><option value="denies"${state.o==='denies'?' selected':''}>most denial</option></select></label><p class="rx-note cd-legend"><span>${['asserts','denies','reports','other'].map(k=>`<i style="background:${STANCE_C[k]}"></i>${k==='other'?'qualifies / other':k}`).join(' ')}</span><span>Bars from each room’s selection, one per author in column order · pick a tile</span></p></div><div class="cd-groups" id="cd-mosaic" role="tablist" aria-label="Topics" style="--cols:${authors.length}"></div><div id="cd-tail"></div></div></details>
+  host.innerHTML=`<div class="cd-authors" role="group" aria-label="Authors compared">${authors.map((au,i)=>`<span class="cd-chip"><a href="${RX.authorURL(au.r)}">${esc(au.a)}</a><small>${esc(whenOf(au))}</small><button type="button" class="cd-x" data-cd-remove="${i}" aria-label="Remove ${esc(au.a)}">×</button></span>`).join('')}${authors.length<4?`<div class="rx-search cd-add"><label for="cd-add">Add an author</label><input type="search" id="cd-add" aria-label="Add an author" placeholder="${authors.length?'Another name':'An author’s name'}" list="cd-add-list" autocomplete="off"><datalist id="cd-add-list"></datalist><button type="button" class="rx-button" id="cd-add-button">Add author</button><span id="cd-add-feedback" role="status"></span></div>`:'<span class="rx-note">Four authors is the desk’s width. Remove one to add another.</span>'}</div>
+  ${authors.length?`<div class="rx-filters cd-tools"><label>Group statements<select id="cd-group"><option value="work"${state.g==='work'?' selected':''}>By work · most statements first</option><option value="canon"${state.g==='canon'?' selected':''}>By work · library order</option></select></label><label>Stance<select id="cd-stance"><option value="">All stances</option>${stanceOpts}</select></label><label class="rx-search">Phrase in statements<input type="search" id="cd-q" placeholder="Search every column" value="${esc(state.q)}"></label><label>View<select id="cd-view"><option value="columns"${state.v!=='meet'?' selected':''}>Columns, oldest author first</option><option value="meet"${state.v==='meet'?' selected':''}>Where they meet</option></select></label><button type="button" class="rx-button cd-export" id="cd-export" title="Export the loaded statements and their citations as a Desk draft">Export to Desk</button>${opts.embedded?`<button type="button" class="rx-button cd-savebtn" id="cd-save-view" aria-pressed="false" title="Keep this view: these authors, this topic, this mode and filters">Save view</button>`:""}${opts.embedded?`<a class="rx-text-link cd-open" href="${cdURL(state)}">Open in the comparison desk</a>`:''}</div>
+  <details class="cd-topic-picker"><summary>Choose topic<span id="cd-selected-topic"></span></summary><div class="cd-topics"><div class="cd-topics-head"><label class="rx-search cd-topic-search">Find a topic<input type="search" id="cd-topic-search" placeholder="Topic or doctrine"></label><label class="rx-note">${fmtR(topics.filter(t=>t.locus).length)} loci · <select id="cd-order" aria-label="Order topics"><option value="shared"${state.o==='shared'?' selected':''}>in loci order</option><option value="n"${state.o==='n'?' selected':''}>most statements</option><option value="denies"${state.o==='denies'?' selected':''}>most denial</option></select></label><p class="rx-note cd-legend"><span>${['asserts','denies','reports','other'].map(k=>`<i style="background:${STANCE_C[k]}"></i>${k==='other'?'qualifies / other':k}`).join(' ')}</span><span>Bars from each room’s selection, one per author in column order · pick a tile</span></p></div><div class="cd-groups" id="cd-mosaic" role="tablist" aria-label="Topics" style="--cols:${authors.length}"></div><div id="cd-tail"></div></div></details>
   <div class="cd-detail"><div class="cd-topic-head"><h3 id="cd-topic-title"></h3><p class="rx-note" id="cd-topic-links"></p></div><p class="cd-mobile-hint">Swipe between authors. Each column keeps its own reading place.</p><div class="cd-columns" id="cd-columns" style="--cols:${authors.length}"></div><div class="cd-dis-view" id="cd-dis" hidden><div class="rx-filters cd-meet-tools"><label>Pairs<select id="cd-match"><option value="any"${state.m!=='opposite'&&state.m!=='assert'?' selected':''}>Any stance</option><option value="opposite"${state.m==='opposite'?' selected':''}>Opposite stances</option><option value="assert"${state.m==='assert'?' selected':''}>Both assert</option></select></label></div><div id="cd-meet-body"></div></div></div>`:`<p class="rx-note">Add an author to begin. Two to four authors compare side by side, topic by topic.</p>`}`;
   // add / remove authors
   const rows=RX.roster(roster.rows).filter(r=>!authors.some(a=>a.s===r.s));
   const dl=host.querySelector('#cd-add-list'),inp=host.querySelector('#cd-add');
   if(dl&&inp){const fill=q=>{const f=RX.fold(q||'');dl.innerHTML=rows.filter(r=>!f||RX.authorScore(r,f)>0).sort((a,b)=>RX.authorScore(b,f)-RX.authorScore(a,f)).slice(0,30).map(r=>`<option value="${esc(r.a)}">${esc(RX.shelves[r.sh])} · ${fmtR(r.w)} works</option>`).join('');};fill('');
     const go=r=>{state.a=[...authors.map(x=>x.s),r.s];emit();compareDesk(host,state,opts);};
-    let adding=false;const choose=r=>{if(adding)return;adding=true;go(r);};
+    let adding=false;const choose=r=>{if(adding)return;adding=true;inp.disabled=true;const button=host.querySelector('#cd-add-button');button.disabled=true;button.textContent='Adding…';go(r);};
     inp.oninput=e=>fill(e.target.value);
     inp.onchange=e=>{const hit=rows.filter(r=>RX.fold(r.a)===RX.fold(e.target.value));if(hit.length===1)choose(hit[0]);};
-    inp.onkeydown=e=>{if(e.key!=='Enter'||e.isComposing)return;e.preventDefault();const hits=rows.filter(r=>RX.authorScore(r,inp.value)>0).sort((a,b)=>RX.authorScore(b,inp.value)-RX.authorScore(a,inp.value));if(hits.length===1||hits.length>1&&RX.authorScore(hits[0],inp.value)>RX.authorScore(hits[1],inp.value))choose(hits[0]);};}
+    const addTyped=()=>{const hits=rows.filter(r=>RX.authorScore(r,inp.value)>0).sort((a,b)=>RX.authorScore(b,inp.value)-RX.authorScore(a,inp.value));if(inp.value.trim()&&(hits.length===1||hits.length>1&&RX.authorScore(hits[0],inp.value)>RX.authorScore(hits[1],inp.value)))choose(hits[0]);else host.querySelector('#cd-add-feedback').textContent=hits.length?'Choose a more specific author name from the suggestions.':'No matching author. Try another name.';};
+    host.querySelector('#cd-add-button').onclick=addTyped;inp.onkeydown=e=>{if(e.key!=='Enter'||e.isComposing)return;e.preventDefault();addTyped();};}
   host.querySelectorAll('[data-cd-remove]').forEach(b=>b.onclick=()=>{authors.splice(+b.dataset.cdRemove,1);state.a=authors.map(x=>x.s);emit();compareDesk(host,state,opts);});
   if(!authors.length)return;
   // ── cells ──
@@ -1636,12 +1645,12 @@ async function compareDesk(host,state,opts={}){
   const cellHTML=(au,cell)=>{const groups=cellGroups(au,cell);
     if(!cell.foldsInitialized&&groups.length){cell.open.add(groups[0].k);cell.foldsInitialized=true;}
     const title=r=>au.works.get(r.w)?.t||r.wt||r.w;
-    return groups.map(g=>`<details class="cd-work"${cell.open.has(g.k)?' open':''} data-cd-fold="${esc(g.k)}"><summary><span><strong>${esc(g.label)}</strong>${g.sub?` <small>${esc(g.sub)}</small>`:''}</span><small class="cd-n">${fmtR(g.rows.length)}</small>${g.w?` ${foldOpen(g.w,ws)}${workSaveBtn(g.w,g.label,au.a)}`:''}</summary><div class="cd-fold-body">${g.w?sectionFoldsHTML(g.rows,r=>statementHTML(r,{title,author:au.a}),g.w):g.rows.map(r=>statementHTML(r,{title,author:au.a})).join('')}</div></details>`).join('')||`<p class="rx-note">${cell.rows.length?'No loaded statements match these filters.':cell.loading?'Loading…':'No statements recorded on this topic.'}</p>`;};
+    return groups.map(g=>`<details class="cd-work"${cell.open.has(g.k)?' open':''} data-cd-fold="${esc(g.k)}"><summary><span><strong>${esc(g.label)}</strong>${g.sub?` <small>${esc(g.sub)}</small>`:''}</span><small class="cd-n">${fmtR(g.rows.length)}</small>${g.w?` ${foldOpen(g.w,g.rows)}${workSaveBtn(g.w,g.label,au.a)}`:''}</summary><div class="cd-fold-body">${g.w?sectionFoldsHTML(g.rows,r=>statementHTML(r,{title,author:au.a}),g.w):g.rows.map(r=>statementHTML(r,{title,author:au.a})).join('')}</div></details>`).join('')||`<p class="rx-note">${cell.rows.length?'No loaded statements match these filters.':cell.loading?'Loading…':'No statements recorded on this topic.'}</p>`;};
   const drawCell=(au,cell)=>{if(!active()||cell.topic!==cur?.tslug)return;const col=host.querySelector(`[data-cd-col="${au.s}"]`);if(!col)return;const pane=col.querySelector('.cd-pane'),y=pane.scrollTop;
     pane.innerHTML=cellHTML(au,cell)+(cell.contract&&!cell.done&&!cell.halted?`<div class="rx-pane-sentinel cd-sentinel" data-cd-sentinel="${au.s}" aria-hidden="true"></div>`:'');pane.scrollTop=y;
     const loaded=cell.rows.length,total=Math.max(cell.total||0,loaded);
     col.querySelector('.cd-progress').innerHTML=`${fmtR(loaded)} of ${fmtR(total)} statements${cell.loading?' · loading…':cell.done?' · complete':cell.halted?` · the index stopped answering <button type="button" class="rx-text-link" data-cd-retry="${au.s}">Try again</button>`:cell.contract?' · more as you scroll':cell.noIndex?' · room selection only':''}`;
-    const bar=col.querySelector('.cd-bar i');if(bar)bar.style.width=(total?Math.min(100,loaded/total*100):0)+'%';
+    const bar=col.querySelector('.cd-bar i');if(bar)bar.style.transform='scaleX('+(total?Math.max(0,Math.min(1,loaded/total)):0)+')';
     if(state.v==='meet')drawMeet();
     pane.querySelectorAll('[data-cd-fold]').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)cell.open.add(d.dataset.cdFold);else cell.open.delete(d.dataset.cdFold);}));
     cell.io?.disconnect();const sent=pane.querySelector('[data-cd-sentinel]');if(sent){const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){io.disconnect();pageCell(au,cell);}},{root:pane,rootMargin:'240px 0px'});io.observe(sent);cell.io=io;}};
@@ -1675,18 +1684,18 @@ async function compareDesk(host,state,opts={}){
   // stance bar per author — instead of a list in a nested scroll box. Other labels sit folded beneath.
   const drawTopics=()=>{const box=host.querySelector('#cd-mosaic');if(!box)return;
     const tile=(t,cls='')=>`<button role="tab" class="cd-tile${cls}${cur&&t.key===cur.key?' on':''}${t.shared<authors.length?' cd-partial':''}" aria-selected="${cur&&t.key===cur.key}" data-cd-topic="${esc(t.tslug)}" title="${esc(t.label+(t.via.size?' · includes '+[...t.via].join(', '):''))}"><span class="cd-tile-label">${esc(t.label)}${t.via.size?' <i class="cd-via" aria-hidden="true">+</i>':''}</span><span class="cd-cells">${authors.map((au,i)=>`<span class="cd-cell">${stanceBar(t.tally[i],au.a)}<small>${fmtR(t.counts[i])}</small></span>`).join('')}</span></button>`;
-    const loci=topics.filter(t=>t.locus),tail=topics.filter(t=>!t.locus);let body='';
+    const query=RX.fold(host.querySelector('#cd-topic-search')?.value||''),matching=topics.filter(t=>!query||RX.fold([t.label,...t.via].join(' ')).includes(query)),loci=matching.filter(t=>t.locus),tail=matching.filter(t=>!t.locus);let body='';
     const groupOpen=host.__groupOpen||(host.__groupOpen=new Map());
     if(state.o==='shared'){LOCI_HEADS.forEach(([h],hi)=>{const rows=loci.filter(t=>(LOCUS_HEAD[t.key]||[])[0]===hi).sort(lociOrder);if(!rows.length)return;
-        const has=cur&&rows.some(t=>t.key===cur.key);const open=groupOpen.has(hi)?groupOpen.get(hi):!!has;
+        const has=cur&&rows.some(t=>t.key===cur.key);const open=!!query||(groupOpen.has(hi)?groupOpen.get(hi):!!has);
         const tally=authors.map((au,i)=>rows.reduce((a,t)=>addTally(a,t.tally[i]),null));const total=authors.map((au,i)=>rows.reduce((n,t)=>n+t.counts[i],0));
         body+=`<details class="cd-group" data-cd-group="${hi}"${open?' open':''}><summary><span class="cd-head">${esc(h)}</span><span class="cd-cells">${authors.map((au,i)=>`<span class="cd-cell">${stanceBar(tally[i],au.a)}<small>${fmtR(total[i])}</small></span>`).join('')}</span><small class="cd-n">${fmtR(rows.length)} ${rows.length===1?'locus':'loci'}</small></summary><div class="cd-mosaic">${rows.map(t=>tile(t)).join('')}</div></details>`;});}
     else body=`<div class="cd-mosaic">${loci.map(t=>tile(t)).join('')}</div>`;
-    box.innerHTML=body||'<p class="rx-note">No loci topics recorded for these authors.</p>';
+    box.innerHTML=body||(query?'<p class="rx-note" role="status">No matching loci. Try another topic name.</p>':'<p class="rx-note">No loci topics recorded for these authors.</p>');
     box.querySelectorAll('[data-cd-group]').forEach(d=>d.addEventListener('toggle',()=>groupOpen.set(+d.dataset.cdGroup,d.open)));
-    const tb=host.querySelector('#cd-tail');if(tb)tb.innerHTML=tail.length?`<details class="cd-tail"${cur&&!cur.locus?' open':''}><summary><span><strong>Other labels</strong><small>${fmtR(tail.length)} · extraction labels outside the loci, most with a handful of statements</small></span></summary><div class="cd-mosaic cd-mosaic-tail" role="tablist" aria-label="Other labels" style="--cols:${authors.length}">${tail.map(t=>tile(t,' cd-tile-sm')).join('')}</div></details>`:'';
+    const tb=host.querySelector('#cd-tail');if(tb)tb.innerHTML=tail.length?`<details class="cd-tail"${query||cur&&!cur.locus?' open':''}><summary><span><strong>Other labels</strong><small>${fmtR(tail.length)} · extraction labels outside the loci, most with a handful of statements</small></span></summary><div class="cd-mosaic cd-mosaic-tail" role="tablist" aria-label="Other labels" style="--cols:${authors.length}">${tail.map(t=>tile(t,' cd-tile-sm')).join('')}</div></details>`:'';
     host.querySelectorAll('[data-cd-topic]').forEach(b=>b.onclick=()=>{const t=findTopic(b.dataset.cdTopic);if(t)showTopic(t);});};
-  drawTopics();
+  drawTopics();host.querySelector('#cd-topic-search').oninput=drawTopics;
   /* ── view modes: the columns stay in the DOM while hidden (their panes keep their loaded rows and
      stop paging, since a hidden pane never intersects); the finder reads the same cells ── */
   const setView=()=>{const cols=host.querySelector('#cd-columns'),dis=host.querySelector('#cd-dis');if(!cols||!dis)return;cols.hidden=state.v==='meet';dis.hidden=state.v!=='meet';if(state.v==='meet')drawMeet();};
@@ -1703,6 +1712,7 @@ async function compareDesk(host,state,opts={}){
   function paintMeet(){const box=host.querySelector('#cd-meet-body');if(!box||host.querySelector('#cd-dis')?.hidden||!cur)return;
     const pool=authors.map(au=>{const cell=cells.get(au.s);return {au,cell,rows:(cell?.rows||[]).filter(matches)};});
     const all=pool.flatMap((p,pi)=>p.rows.map(r=>({r,pi})));const N=all.length;
+    if(state.s&&(state.m==='opposite'||state.m==='assert'&&state.s!=='asserts')){box.innerHTML='<p class="rx-note">The stance filter excludes the pairs requested here. <button type="button" class="rx-text-link" data-cd-clear-stance>Clear stance filter</button></p>';box.querySelector('[data-cd-clear-stance]').onclick=()=>{state.s='';host.querySelector('#cd-stance').value='';emit();redraw();};host.__meet={groups:[],N,total:0};return;}
     const post=new Map();all.forEach((x,k)=>termsOf(x.r).forEach(w=>{let l=post.get(w);if(!l)post.set(w,l=[]);l.push(k);}));
     const idf=w=>{const d=(post.get(w)||[]).length;return d>N*0.25?0:Math.log((N+1)/(d+0.5));};   // the topic's own vocabulary weighs nothing
     const WT=new Map();const weight=k=>{let v=WT.get(k);if(v===undefined){v=0;termsOf(all[k].r).forEach(w=>{v+=idf(w)**2;});v=Math.sqrt(v)||1;WT.set(k,v);}return v;};
@@ -1724,32 +1734,34 @@ async function compareDesk(host,state,opts={}){
       ${top.length?`<div class="rx-pane cd-dis-pane">${[...groups.values()].map(g=>`<section class="cd-dis-group"><h4>${esc(g.A.a)} and ${esc(g.B.a)}${pairHead(g.A,g.B)}</h4>${g.items.map(p=>`<article class="cd-dis"><div class="cd-dis-cols">${side(p.left)}${side(p.right)}</div><p class="rx-note cd-dis-terms">Shared terms: ${p.shared.map(esc).join(', ')}</p></article>`).join('')}</section>`).join('')}</div>`:`<p class="rx-note">${N?'No two loaded statements from different authors share enough rare vocabulary'+(state.m!=='any'?' with these stances':'')+' to pair.':'No statements loaded yet.'}</p>`}`;
     box.querySelectorAll('[data-cd-jump]').forEach(b=>b.onclick=()=>{const el=document.getElementById(b.dataset.cdJump)||document.getElementById('pair-ba');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});});
     host.__meet={groups:[...groups.values()],N,total:pairs.length};}
-  /* ── export: the view on screen as a Desk draft, every statement a cited blockquote ── */
+  /* Export loaded extraction records with citations; they are not verified quotations. */
   const cellGroups=(au,cell)=>{const rowsF=cell.rows.filter(matches);const W=cell.byw||{};const groups=[];
     if(state.g==='stance'){const g={};rowsF.forEach(r=>{const k=STANCES.some(x=>x[0]===r.s)?(r.s||''):'';(g[k]=g[k]||[]).push(r);});STANCES.forEach(([k,label])=>{if(g[k]&&g[k].length)groups.push({k:'s:'+k,label:label||'Other statements',rows:g[k]});});}
     else{const g=new Map();rowsF.forEach(r=>{if(!g.has(r.w))g.set(r.w,[]);g.get(r.w).push(r);});groups.push(...[...g.entries()].sort((x,y)=>{if(state.g!=='canon'){const d=((W[y[0]]||0)-(W[x[0]]||0))||(y[1].length-x[1].length);if(d)return d;}const wa=au.works.get(x[0]),wb=au.works.get(y[0]);return wa&&wb?RX.workOrder(wa,wb):(wa?-1:wb?1:y[1].length-x[1].length);}).map(([w,rs])=>{const wk=au.works.get(w);return {k:'w:'+w,w,label:(wk?.t||rs[0].wt||w),sub:wk?.vs||(wk?.v?(/^\d+$/.test(String(wk.v))?'vol. ':'')+wk.v:''),rows:rs.slice().sort((a,b)=>(RX.page(a.p)??0)-(RX.page(b.p)??0))};}));}
     return groups;};
   async function exportDesk(){const btn=host.querySelector('#cd-export');if(!cur||!btn)return;const say=t=>{btn.textContent=t;};
     if(!window.FRResearchNotebook?.createDeskDraft){say('Desk drafts unavailable here');setTimeout(()=>say('Export to Desk'),2500);return;}
-    say('Preparing…');
+    btn.disabled=true;say('Preparing…');
+    const sources=[];
     const abs=h=>h?(/^https?:/.test(h)?h:location.origin+h):'';const names=authors.map(au=>au.a);const viewURL=location.origin+cdURL({...state,a:authors.map(x=>x.s),sel:cur.tslug});
-    const quote=(r,au)=>{const t=au.works.get(r.w)?.t||r.wt||r.w||'Source work',pg=RX.page(r.p),href=abs(RX.safeReaderURL(r.h)||(r.w?readerHref(r.w,r.p):''));
-      return `<blockquote>${href?`<a class="rx-qlink" target="_blank" rel="noopener" href="${esc(href)}" title="Open the passage in a new tab"><p>${esc(r.q||r.g||'')}</p></a>`:`<p>${esc(r.q||r.g||'')}</p>`}${r.q&&r.g?`<p><small>Page annotation: ${esc(r.g)}</small></p>`:''}<p><cite>${esc(au.a)}, <em>${esc(t)}</em>${pg!==null?', '+pgl(r.w)+' '+esc(String(pg)):''}${r.s?' · '+esc(r.s):''}${href?` · <a href="${esc(href)}" target="_blank" rel="noopener">Read the passage</a>`:''}</cite></p></blockquote>`;};
+    const exportedStatement=(r,au)=>{const t=au.works.get(r.w)?.t||r.wt||r.w||'Source work',pg=RX.page(r.p),href=abs(RX.safeReaderURL(r.h)||(r.w?readerHref(r.w,r.p):''));
+      sources.push({slug:r.w||'',page:pg,url:href,title:t,author:au.a,statement:r.q||r.g||'',annotation:r.s||'',kind:'extracted-statement',sourceChecked:false});
+      return `<div class="cd-export-statement">${href?`<a class="rx-qlink" target="_blank" rel="noopener" href="${esc(href)}" title="Open the passage in a new tab"><p>${esc(r.q||r.g||'')}</p></a>`:`<p>${esc(r.q||r.g||'')}</p>`}${r.q&&r.g?`<p><small>Page annotation: ${esc(r.g)}</small></p>`:''}<p><cite>${esc(au.a)}, <em>${esc(t)}</em>${pg!==null?', '+pgl(r.w)+' '+esc(String(pg)):''}${r.s?' · '+esc(r.s):''}${href?` · <a href="${esc(href)}" target="_blank" rel="noopener">Read the passage</a>`:''}</cite></p></div>`;};
     const filters=[state.s?'stance '+state.s:'',state.q?'phrase “'+state.q+'”':''].filter(Boolean).join(', ');
     let body='',n=0;
     if(state.v==='meet'){const dis=host.__meet||{groups:[],N:0,total:0};
       body+=`<h2>Where they meet · ${esc(MATCH[state.m||'any'])}</h2><p>Statements from different authors that share rare vocabulary, found among ${fmtR(dis.N)} loaded statements. The pairing is lexical; whether the two passages agree or differ is for the reader to judge.</p>`;
-      dis.groups.forEach(g=>{body+=`<h3>${esc(g.A.a)} and ${esc(g.B.a)}</h3>`;g.items.forEach(p=>{n+=2;body+=`<p><strong>${esc(p.left.au.a)} ${esc(p.left.r.s||'')}</strong></p>${quote(p.left.r,p.left.au)}<p><strong>${esc(p.right.au.a)} ${esc(p.right.r.s||'')}</strong></p>${quote(p.right.r,p.right.au)}<p><small>Shared terms: ${p.shared.map(esc).join(', ')}</small></p>`;});});
+      dis.groups.forEach(g=>{body+=`<h3>${esc(g.A.a)} and ${esc(g.B.a)}</h3>`;g.items.forEach(p=>{n+=2;body+=`<p><strong>${esc(p.left.au.a)} ${esc(p.left.r.s||'')}</strong></p>${exportedStatement(p.left.r,p.left.au)}<p><strong>${esc(p.right.au.a)} ${esc(p.right.r.s||'')}</strong></p>${exportedStatement(p.right.r,p.right.au)}<p><small>Shared terms: ${p.shared.map(esc).join(', ')}</small></p>`;});});
       if(!dis.groups.length)body+='<p>No pairs were on screen.</p>';}
     else{for(const au of authors){const cell=cells.get(au.s);if(!cell)continue;const groups=cellGroups(au,cell);const shown=groups.reduce((s,g)=>s+g.rows.length,0);n+=shown;
         body+=`<h2>${esc(au.a)} <small>${esc(whenOf(au))}</small></h2><p>${fmtR(shown)} ${shown===1?'statement':'statements'}${cell.total>cell.rows.length?` of ${fmtR(cell.total)} in the index (${fmtR(cell.rows.length)} loaded at export)`:cell.rows.length!==shown?` shown of ${fmtR(cell.rows.length)} loaded`:''}${filters?' · '+esc(filters):''}${cell.noIndex?' · room selection only':''}</p>`;
-        groups.forEach(g=>{body+=`<h3>${esc(g.label)}${g.sub?' <small>'+esc(g.sub)+'</small>':''} <small>${fmtR(g.rows.length)}</small></h3>`+g.rows.map(r=>quote(r,au)).join('');});}}
+        groups.forEach(g=>{body+=`<h3>${esc(g.label)}${g.sub?' <small>'+esc(g.sub)+'</small>':''} <small>${fmtR(g.rows.length)}</small></h3>`+g.rows.map(r=>exportedStatement(r,au)).join('');});}}
     const title=`${names.join(', ')} on ${cur.label}`;
     const html=`<h1>${esc(title)}</h1><p>A comparison from The Faith Received, exported ${new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'})} · ${fmtR(n)} cited statements · <a href="${esc(viewURL)}">open the live view</a></p><p><em>These are extracted statements, sometimes summarized or translated, not quotations. A statement can report another speaker, an objection, or a rejected view. Read each source before attributing it to its author.</em></p>${body}`;
-    try{const result=await FRResearchNotebook.createDeskDraft({title,html,research:{kind:'comparison-view',sources:[],topics:[cur.label],authors:names,url:viewURL}});say('Opening the Desk…');location.assign(result.url);}
-    catch(e){say((e&&e.message)||'The draft could not be saved');setTimeout(()=>say('Export to Desk'),4000);}}
+    try{const result=await FRResearchNotebook.createDeskDraft({title,html,research:{kind:'comparison-view',sources,topics:[cur.label],authors:names,url:viewURL,filters:{phrase:state.q||'',stance:state.s||'',view:state.v||'columns'},coverage:authors.map(au=>{const cell=cells.get(au.s);return {author:au.a,slug:au.s,loaded:cell?.rows.length||0,indexTotal:cell?.total||0,complete:!!cell?.done};})}});if(!active())return;say('Opening the Desk…');location.assign(result.url);}
+    catch(e){say((e&&e.message)||'The draft could not be saved');setTimeout(()=>say('Export to Desk'),4000);}finally{btn.disabled=false;}}
   host.querySelector('#cd-export').onclick=exportDesk;
-  host.querySelector('#cd-save-view').onclick=async()=>{const b=host.querySelector('#cd-save-view');b.disabled=true;const st={...state,a:authors.map(x=>x.s)};const r=await cdSaveView(st,{names:authors.map(x=>x.a),topic:cur?cur.label:''});b.disabled=false;paintSave();b.textContent='Saved '+r.where;setTimeout(paintSave,3000);if(opts.onSaved)opts.onSaved(r.entry);};
+  const inlineSave=host.querySelector('#cd-save-view');if(inlineSave)inlineSave.onclick=async()=>{const b=host.querySelector('#cd-save-view');b.disabled=true;const st={...state,a:authors.map(x=>x.s)};let r;try{r=await cdSaveView(st,{names:authors.map(x=>x.a),topic:cur?cur.label:''});}catch(error){cdNotice(host,error.message);return;}finally{b.disabled=false;}if(!active())return;paintSave();b.textContent='Saved '+r.where;setTimeout(paintSave,3000);if(opts.onSaved)opts.onSaved(r.entry);};
   addEventListener('fr-compare-views',paintSave,{signal:researchEvents.signal});paintSave();
   host.addEventListener('click',e=>{const b=e.target.closest('[data-cd-retry]');if(!b)return;const au=authors.find(x=>x.s===b.dataset.cdRetry),cell=au&&cells.get(au.s);if(cell){cell.halted=false;cell.failures=0;pageCell(au,cell);}});
   const redraw=()=>{authors.forEach(au=>{const cell=cells.get(au.s);if(cell)drawCell(au,cell);});if(state.v==='meet')drawMeet();};
@@ -1765,8 +1777,8 @@ async function compareDesk(host,state,opts={}){
 
 /* the desk page: /compare#a=…&sel=… — saved views live in this browser and in the research notebook */
 const CD_VIEWS='fr_compare_views_v1';
-const cdViews={read(){try{const v=JSON.parse(localStorage.getItem(CD_VIEWS)||'[]');return Array.isArray(v)?v:[];}catch(_){return [];}},write(v){try{localStorage.setItem(CD_VIEWS,JSON.stringify(v));}catch(_){}dispatchEvent(new Event('fr-compare-views'));},
-  find(url){return this.read().find(x=>x.url===url)||null;}};
+const cdViews={lastError:'',read(){try{const v=JSON.parse(localStorage.getItem(CD_VIEWS)||'[]');if(!Array.isArray(v)||v.some(x=>!x||typeof x.url!=='string'||typeof x.id!=='string'))throw Error('Invalid saved views');this.lastError='';return v;}catch(_){this.lastError='Saved views could not be read. Existing data has not been changed.';return [];}},write(v){this.read();if(this.lastError)throw Error(this.lastError);localStorage.setItem(CD_VIEWS,JSON.stringify(v));dispatchEvent(new Event('fr-compare-views'));},find(url){return this.read().find(x=>x.url===url)||null;}};
+function cdNotice(host,message){let el=host.querySelector('.cd-save-message');if(!el){el=document.createElement('p');el.className='rx-note cd-save-message';el.setAttribute('role','status');host.prepend(el);}el.textContent=message;}
 /* SAVE A VIEW (owner 2026-09-10 "need to save views…"): one click, no dialog. The address is the view; the name is
    suggested from the authors, topic, and mode and can be renamed in the saved list. Kept in this browser and in the
    research notebook (kind comparison-view, stable id per address, so re-saving never duplicates). */
@@ -1774,28 +1786,32 @@ async function cdSaveView(st,{names=[],topic='',name=''}={}){
   const url=cdURL(st),mode=st.v==='meet'?' · where they meet'+(st.m&&st.m!=='any'?' ('+(st.m==='opposite'?'opposite stances':'both assert')+')':''):'',filters=[st.s?'stance '+st.s:'',st.q?'“'+st.q+'”':''].filter(Boolean).join(', ');
   const suggested=(names.join(' · ')||'Comparison')+(topic?' on '+topic:'')+mode+(filters?' · '+filters:'');
   const list=cdViews.read(),existing=list.find(x=>x.url===url);const entry={id:existing?.id||'v'+Date.now().toString(36),name:name||existing?.name||suggested,url,authors:names,topic,created:existing?.created||new Date().toISOString()};
-  cdViews.write([entry,...list.filter(x=>x.url!==url)]);
-  let where='here';try{if(window.FRResearchNotebook?.save){const r=await FRResearchNotebook.save({id:'compare-view:'+cdHash(st),type:'note',label:entry.name,text:entry.name+'\n'+location.origin+url,cite:entry.name,url,research:{kind:'comparison-view',sources:[],topics:topic?[topic]:[],authors:names}});where=r.created===false?'here and already in your notebook':'here and in your notebook'+(r.warnings?.length?' (account sync could not be confirmed)':'');}}catch(_){}
+  let savedHere=false,notebookResult=null;
+  try{cdViews.write([entry,...list.filter(x=>x.url!==url)]);savedHere=true;}catch(_){}
+  try{if(window.FRResearchNotebook?.save)notebookResult=await FRResearchNotebook.save({id:'compare-view:'+cdHash(st),type:'note',label:entry.name,text:entry.name+'\n'+location.origin+url,cite:entry.name,url,research:{kind:'comparison-view',sources:[],topics:topic?[topic]:[],authors:names}});}catch(_){}
+  if(!savedHere&&!notebookResult)throw Error('This view could not be saved. Keep its address before leaving and try again.');
+  const where=savedHere?(notebookResult?'here and in '+notebookResult.collectionName:'here; notebook saving did not complete'):'in '+notebookResult.collectionName+'; the shortcut could not be saved';
   return {entry,where};}
+
 async function comparePage(){
   const run=researchStart('research-compare');
   const state=cdParse(location.hash);
-  const write=st=>{const h=cdHash(st);if(location.hash!==h)history.replaceState(null,'',location.pathname+location.search+h);};
+  const write=st=>{const h=cdHash(st);if(location.hash!==h)history.replaceState(null,'',location.pathname+location.search+h);const button=$('#cd-save');if(button)button.disabled=!st.a.length;};
   page.innerHTML=`<div class="crumbs"><a href="/the-faith-received/topics/">Topics</a> · <a href="/the-faith-received/authors/">Authors</a></div>
   <div class="research-intro cd-intro"><div><h1>Compare</h1><p>Compare authors on a topic, read the passages grouped by work, and bring your findings into the writing desk.</p></div></div>
-  <div class="cd-viewbar"><button type="button" class="rx-button" id="cd-save">Save this view</button><details class="rx-fold cd-saved"><summary><span><strong>Saved views</strong><small id="cd-saved-count"></small></span></summary><div id="cd-saved-list" class="rx-fold-body"></div></details></div>
-  <div id="cd-host"></div>`;
+  <div class="cd-viewbar"><button type="button" class="rx-button" id="cd-save" disabled>Save this view</button><details class="rx-fold cd-saved"><summary><span><strong>Saved views</strong><small id="cd-saved-count"></small></span></summary><div id="cd-saved-list" class="rx-fold-body"></div></details></div>
+  <div id="cd-host"><p class="rx-note" role="status">Loading the comparison directory…</p></div>`;
   const host=$('#cd-host');
-  const drawSaved=()=>{const v=cdViews.read(),here=cdURL(cdParse(location.hash));$('#cd-saved-count').textContent=v.length?fmtR(v.length)+' in this browser':'none yet';
-    $('#cd-saved-list').innerHTML=v.length?v.map(x=>`<div class="cd-saved-row${x.url===here?' on':''}" data-cd-row="${esc(x.id)}"><a href="${esc(x.url)}">${esc(x.name)}</a><small>${esc((x.authors||[]).join(' · '))}${x.topic?' · '+esc(x.topic):''}${x.url===here?' · this view':''}</small><span class="cd-saved-actions"><button type="button" class="rx-text-link" data-cd-rename="${esc(x.id)}">Rename</button><button type="button" class="rx-text-link" data-cd-del="${esc(x.id)}">Remove</button></span></div>`).join(''):'<p class="rx-note">Save a view and it appears here. Saved views also go to your research notebook, which syncs with your account.</p>';
-    $('#cd-saved-list').querySelectorAll('[data-cd-del]').forEach(b=>b.onclick=()=>{cdViews.write(cdViews.read().filter(x=>x.id!==b.dataset.cdDel));drawSaved();});
+  const drawSaved=()=>{const v=cdViews.read(),viewError=cdViews.lastError,here=cdURL(cdParse(location.hash));$('#cd-saved-count').textContent=v.length?fmtR(v.length)+' in this browser':'none yet';
+    $('#cd-saved-list').innerHTML=viewError?'<p class="rx-note" role="status">'+esc(viewError)+'</p>':v.length?v.map(x=>`<div class="cd-saved-row${x.url===here?' on':''}" data-cd-row="${esc(x.id)}"><a href="${esc(x.url)}">${esc(x.name)}</a><small>${esc((x.authors||[]).join(' · '))}${x.topic?' · '+esc(x.topic):''}${x.url===here?' · this view':''}</small><span class="cd-saved-actions"><button type="button" class="rx-text-link" data-cd-rename="${esc(x.id)}">Rename</button><button type="button" class="rx-text-link" data-cd-del="${esc(x.id)}">Remove</button></span></div>`).join(''):'<p class="rx-note">Save a view to keep a shortcut here and a copy in the selected notebook.</p>';
+    $('#cd-saved-list').querySelectorAll('[data-cd-del]').forEach(b=>b.onclick=()=>{try{cdViews.write(cdViews.read().filter(x=>x.id!==b.dataset.cdDel));drawSaved();}catch(error){cdNotice(page,error.message);}});
     $('#cd-saved-list').querySelectorAll('[data-cd-rename]').forEach(b=>b.onclick=()=>{const row=b.closest('[data-cd-row]'),x=cdViews.read().find(y=>y.id===b.dataset.cdRename);if(!row||!x)return;row.innerHTML=`<form class="cd-rename"><input type="text" value="${esc(x.name)}" aria-label="Name for this view" maxlength="120"><button type="submit" class="rx-button">Save name</button><button type="button" class="rx-text-link" data-cd-cancel>Cancel</button></form>`;const inp=row.querySelector('input');inp.focus();inp.select();
-      row.querySelector('form').onsubmit=e=>{e.preventDefault();const name=inp.value.trim()||x.name;cdViews.write(cdViews.read().map(y=>y.id===x.id?{...y,name}:y));drawSaved();};row.querySelector('[data-cd-cancel]').onclick=drawSaved;});};
+      row.querySelector('form').onsubmit=e=>{e.preventDefault();const name=inp.value.trim()||x.name;try{cdViews.write(cdViews.read().map(y=>y.id===x.id?{...y,name}:y));drawSaved();}catch(error){cdNotice(page,error.message);}};row.querySelector('[data-cd-cancel]').onclick=drawSaved;});};
   drawSaved();addEventListener('fr-compare-views',drawSaved,{signal:researchEvents.signal});addEventListener('hashchange',drawSaved,{signal:researchEvents.signal});
-  $('#cd-save').onclick=async()=>{const st=cdParse(location.hash);if(!st.a.length){$('#cd-save').textContent='Add authors first';setTimeout(()=>{$('#cd-save').textContent='Save this view';},2000);return;}
+  $('#cd-save').onclick=async()=>{const button=$('#cd-save'),st=cdParse(location.hash);if(!st.a.length){button.textContent='Add authors first';setTimeout(()=>{button.textContent='Save this view';},2000);return;}
     const names=[...host.querySelectorAll('.cd-chip a')].map(a=>a.textContent),topic=host.querySelector('#cd-topic-title')?.childNodes[0]?.textContent?.trim()||st.sel;
-    $('#cd-save').disabled=true;const r=await cdSaveView(st,{names,topic});$('#cd-save').disabled=false;$('#cd-save').textContent='Saved '+r.where;$('.cd-saved')?.setAttribute('open','');drawSaved();
-    setTimeout(()=>{$('#cd-save').textContent='Save this view';},3000);};
+    button.disabled=true;let r;try{r=await cdSaveView(st,{names,topic});}catch(error){cdNotice(page,error.message);return;}finally{button.disabled=false;}if(run!==RESEARCH_RUN)return;button.textContent='Saved '+r.where;$('.cd-saved')?.setAttribute('open','');drawSaved();
+    setTimeout(()=>{button.textContent='Save this view';},3000);};
   if(!state.a.length&&state.sel){ // /compare#t=<registry slug>: suggest the topic's top contributors
     const ex=await cdExport(state.sel).catch(()=>null);if(run!==RESEARCH_RUN)return;
     const top=(ex?.authors||[]).filter(a=>a.s&&a.sh&&a.np>0).sort((a,b)=>(b.np||0)-(a.np||0)).slice(0,12);
@@ -1824,18 +1840,11 @@ function paneList(box,items,render,chunk=80){
    positions, the compare column, the pair page's shared topics, the topic page's voices, the room's
    topic view — draws it here. Options: title(r) resolves the work title; actions adds preview + pin;
    annotation shows the recorded stance; extra(r) appends a trailing line. */
-function statementHTML(r,o={}){
-  // PREVIEW EVERYWHERE (owner 2026-09-11 "see inline the page for each position, also for the compare, also on mobile"):
-  // every statement with a source page gets the peek button (the reader embedded under the row) and its reader links
-  // carry ?hl= with the quote's words so the landed page marks the passage — the positions and comparison views used
-  // to get a bare "Read the passage" link only (the button was gated on o.actions).
-  const hl=String(r.q||r.g||'').replace(/\s+/g,' ').slice(0,120);
-  const title=o.title?o.title(r):(r.wt||r.w||'Source work'),pg=RX.page(r.p),href=(r.w&&pg!==null)?readerHrefHl(r.w,r.p,hl):(RX.safeReaderURL(r.h)||(r.w?readerHref(r.w,r.p):null));
-  const text=r.q||r.g||(r.pageSummary?'Indexed source page. Open the text to read its context.':'');
-  return `<article class="rx-excerpt">${r.pageSummary?'<span class="rx-evidence-kind">Page summary</span>':''}<p>${esc(text)}</p>${r.q&&r.g?`<details class="rx-context"><summary>Read page annotation</summary><p>${esc(r.g)}</p></details>`:''}<div class="rx-source"><span>${esc(title)}${pg!==null?' · '+pgl(r.w)+' '+esc(String(pg)):''}</span><div>${href?`<a class="rx-text-link" target="_blank" rel="noopener" href="${esc(href)}">Read the passage</a>`:''}${r.w?(pg!==null?previewBtn(r.w,r.p,hl):'')+pinBtn(r.w,r.p,title,r.a||o.author||'',r.q||r.g):''}</div></div>${o.extra?o.extra(r):(o.annotation&&r.s?`<span class="rx-annotation">Annotation: ${esc(r.s)}</span>`:'')}</article>`;}
-function statementPane(box,rows,o={}){if(!rows.length){box.classList.remove('rx-pane');box.innerHTML=`<p class="rx-note">${esc(o.empty||'No statements.')}</p>`;return box;}
+function statementHTML(r,o={}){return RX.statementHTML(r,o,{readerHrefHl,readerHref,pgl,previewBtn,pinBtn});}
+const STATEMENT_PANES=new WeakMap();
+function statementPane(box,rows,o={}){const serial=(STATEMENT_PANES.get(box)||0)+1;STATEMENT_PANES.set(box,serial);if(!rows.length){box.classList.remove('rx-pane');box.innerHTML=`<p class="rx-note">${esc(o.empty||'No statements.')}</p>`;return box;}
   if(o.byWork===false)return paneList(box,rows,r=>statementHTML(r,o),o.chunk||60);
-  box.classList.add('rx-pane');box.innerHTML=workFoldsHTML(rows,o);return box;}
+  box.classList.add('rx-pane');box.innerHTML=workFoldsHTML(rows,o);if(!WORK_CATALOGUE)getWorkCatalogue().then(()=>{if(!box.isConnected||STATEMENT_PANES.get(box)!==serial)return;const y=box.scrollTop,opened=new Map([...box.querySelectorAll('.cd-work[data-work]')].map(d=>[d.dataset.work,d.open]));box.innerHTML=workFoldsHTML(rows,o);box.querySelectorAll('.cd-work[data-work]').forEach(d=>{if(opened.has(d.dataset.work))d.open=opened.get(d.dataset.work);});box.scrollTop=y;});return box;}
 /* commentary contexts for the shared citation module (same map the citation web builds) */
 let __COMMS=null;async function comms(){if(__COMMS)return __COMMS;const d=await J(BLOB+'/v1/commentaries.json').catch(()=>null);const m={};if(d){(d.sentences||[]).forEach(c=>m[c.w]={l:'Commentary on Peter Lombard’s Sentences'+(c.bk?' · Book '+c.bk:''),k:'sent'});(d.summa||[]).forEach(c=>m[c.w]={l:'Commentary on Thomas Aquinas’s Summa'+(c.p?' · '+c.p:''),k:'sum'});(d.bible||[]).forEach(c=>m[c.w]={l:'Scripture commentary: '+String(c.bk||'').replace(/-/g,' ').replace(/\b\w/g,x=>x.toUpperCase()),k:'bib'});(d.compilations||[]).forEach(c=>m[c.w]={l:'Compilation · a reference may belong to a collected source',k:'comp'});}__COMMS={map:m,raw:d||{}};return __COMMS;}
 /* registry slugs for topic labels: /topics#<slug> and /web#t=<slug> both want the topic2-all slug, never the label */
@@ -1968,7 +1977,7 @@ async function mountPairScripture(host,slugA,slugB,nameA,nameB){
       const ev=await esvChapter(bookName,ch);
       if(ev){asv=asv&&asv.verses?{...asv,verses:{...asv.verses,...ev}}:{verses:ev};}}
     const byvA={},byvB={};(bycA[ch]||[]).forEach(r=>(byvA[r.v||0]=byvA[r.v||0]||[]).push(r));(bycB[ch]||[]).forEach(r=>(byvB[r.v||0]=byvB[r.v||0]||[]).push(r));
-    const cits=(rows,name,cls)=>rows.length?`<div class="psb-cits ${cls}"><b class="psb-who">${esc(name)}</b>${rows.map(r=>`<a class="psb-cit" href="${esc(r.h||'#')}"><span class="psb-w">${esc(r.t||r.w)}</span>${r.p?` <span class="psb-p">p. ${esc(String(r.p))}</span>`:''}${r.g?`<span class="psb-g">${escQ(String(r.g).slice(0,220))}</span>`:''}</a>`).join('')}</div>`:'';
+    const cits=(input,name,cls)=>{const rows=RX.orderedWorks(input,r=>({w:r.w,t:r.t}));return rows.length?`<div class="psb-cits ${cls}"><b class="psb-who">${esc(name)}</b>${rows.map(r=>`<a class="psb-cit" href="${esc(r.h||'#')}"><span class="psb-w">${esc(r.t||r.w)}</span>${r.p?` <span class="psb-p">p. ${esc(String(r.p))}</span>`:''}${r.g?`<span class="psb-g">${escQ(String(r.g).slice(0,220))}</span>`:''}</a>`).join('')}</div>`:'';}
     let body='';
     if(asv&&asv.verses){
       const vns=Object.keys(asv.verses).map(Number).sort((x,y)=>x-y);
@@ -2024,7 +2033,7 @@ function route(){
   if(seg[1]==="with"){pairPage(seg[0],seg[2]||"",seg[3]==="topic"?seg.slice(4).join("/"):"").catch(()=>{if(token===RESEARCH_RUN)researchError("This comparison could not load");});return;}
   room(seg[0],seg.slice(1).join("/")).catch(()=>{if(token===RESEARCH_RUN)researchError("This author could not load");});
 }
-document.addEventListener('keydown',e=>{const tab=e.target.closest('[role="tab"]');if(tab&&['ArrowRight','ArrowLeft','Home','End'].includes(e.key)){const tabs=[...tab.closest('[role="tablist"]').querySelectorAll('[role="tab"]')].filter(t=>t.style.display!=='none');const i=tabs.indexOf(tab),next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;e.preventDefault();tabs[next].click();tabs[next].focus();}const verse=e.target.closest('.vs2[role="button"]');if(verse&&e.target===verse&&['Enter',' '].includes(e.key)){e.preventDefault();verse.click();}});
+document.addEventListener('keydown',e=>{const tab=e.target.closest('[role="tab"]');if(tab&&['ArrowRight','ArrowLeft','Home','End'].includes(e.key)){const tabs=[...tab.closest('[role="tablist"]').querySelectorAll('[role="tab"]')].filter(t=>t.getClientRects().length&&!t.disabled);if(!tabs.length)return;const i=tabs.indexOf(tab),next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;e.preventDefault();tabs[next].click();tabs[next].focus();}const verse=e.target.closest('.vs2[role="button"]');if(verse&&e.target===verse&&['Enter',' '].includes(e.key)){e.preventDefault();verse.click();}});
 addEventListener("hashchange",route);
 addEventListener("popstate",route);
 route();

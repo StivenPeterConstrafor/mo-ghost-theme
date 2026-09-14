@@ -6,10 +6,10 @@ function scopeSummary(){
   if(cc&&cc.getAttribute('data-c'))bits.push(cc.textContent.trim());
   if(FAC.author)bits.push(FAC.author);
   if(FAC.work)bits.push('1 work');
-  if(FAC.trad)bits.push(FAC.trad);
+  if(FAC.trad)bits.push(FRSearch.label(FAC.trad));if(FAC.collection)bits.push('Confessions');
   if(typeof SCOPE!=='undefined'&&SCOPE&&SCOPE.author)bits.push(SCOPE.author);
   var el=document.getElementById('stSum');
-  if(el)el.textContent=bits.length?('· '+bits.join(' · ')):'· everything';
+  if(el)el.textContent=[FAC.author,FAC.work||FAC.workQuery,FAC.collection,FAC.group].filter(Boolean).length?' · active':'';var scope=document.getElementById('activeSearchScope'),parts=[({westminster:'Westminster Divines',puritan:'Puritans',anglican:'Anglicans'})[FAC.group],FAC.author?'Author: '+FAC.author:'',FAC.work||FAC.workQuery?'Work filter applied':'',FAC.collection?'Confessions':''].filter(Boolean);if(scope){scope.hidden=!parts.length;scope.textContent=parts.join(' · ');}
 }
 document.addEventListener('click',function(e){
   var mo=e.target.closest('#smMore');
@@ -18,24 +18,22 @@ document.addEventListener('click',function(e){
   if(sg){var q2=sg.getAttribute('data-q');if(q2){if(sg.getAttribute('data-deep'))window.__askDeepOnce=true;qEl.value=q2;renderAsk(q2);}return;}
   var t=e.target.closest('#scopeToggle');
   if(t){var w=document.getElementById('scopeWrap');var open=!w.classList.contains('open');
-    w.classList.toggle('open',open);t.setAttribute('aria-expanded',open?'true':'false');return;}
-  var b=e.target.closest('#corpusChips .cc');if(!b)return;
-  FAC.corpus=b.getAttribute('data-c')||'';
-  document.querySelectorAll('#corpusChips .cc').forEach(function(x){x.classList.toggle('on',x===b);});
-  scopeSummary();
-  var qv=document.getElementById('q');if(qv&&qv.value.trim().length>=2)run();
+    w.classList.toggle('open',open);w.hidden=!open;t.setAttribute('aria-expanded',open?'true':'false');return;}
+
 });
+document.getElementById('searchTheme').onclick=function(){var themes=['light','sepia','dark'],current=document.documentElement.dataset.theme||'light',next=themes[(themes.indexOf(current)+1)%3];document.documentElement.dataset.theme=next;try{localStorage.setItem('fr_theme',next);}catch(_){}this.title='Current theme: '+next;};
+function focusQuery(){if(!matchMedia('(max-width:640px)').matches)qEl.focus();}
 function mdHeadings(s){return (s||'').replace(/⟦h⟧([\s\S]{1,300}?)⟦\/?h⟧/g,'<b>$1</b>');}
 var FRB='https://mo-tfr-library.mo-podcast-feed.workers.dev';
 var VER='?d='+new Date().toISOString().slice(0,10);   // daily buster on mutable JSON
-function rdHref(slug,page){return '/the-faith-received/read/?w='+encodeURIComponent(slug)+(page!=null&&page!==''?('#b'+page+'-0'):'');}
+function rdHref(slug,page){return FRSearch.readerURL(slug,page);}
 var qEl=document.getElementById('q'),res=document.getElementById('results'),ct=document.getElementById('count'),hint=document.getElementById('hint');
-var MODE='title',NAV=null,WLIST=null,IDX=null,seq=0;
+var MODE='title',NAV=null,WLIST=null,WORKS_BY_SLUG=null,WORK_ALIASES={},IDX=null,seq=0,CATALOG_ERROR=false,RESULT_PAGE=0,RESTORE_PAGE=null,ORDER='shelf',REDRAW=null,SCOPE_SCHOOLS=null;
 var HINTS={
-  title:'Works, authors, and section headings across the whole library (Latin &amp; English).',
+  title:'Find works, authors, and section headings in the selected shelf.',
   full:'Find words or phrases in the Latin and English texts. For example, “foedus operum”.',
   meaning:'Describe what you want to find. For example, “how faith unites us to Christ” finds passages even when they use different words.',
-  scripture:'Enter a Bible reference, such as Romans 8, to find commentary in the library.',
+  scripture:'Search a chapter, verse, or range, such as Romans 8:1–4.',
   tradition:'One question, the whole tradition: the strongest parallels era by era \u2014 Greek and Latin Fathers, Aquinas, the early-modern library \u2014 in chronological order.',
   ask:'Ask a question; an answer is composed from the corpus with [work/pN] citations you can click. Press Enter to ask.'};
 var PH={title:'Find a work, author, or section',full:'Enter words or a phrase',
@@ -45,10 +43,10 @@ var PH={title:'Find a work, author, or section',full:'Enter words or a phrase',
   ask:'Ask a question — e.g. How do the Reformed treat middle knowledge?'};
 function setMode(m){
   if(m==='tradition'){
-    var topic=qEl.value.trim();var opts={mode:'deep',q:topic?'Trace “'+topic+'” through the theological tradition. Compare the authors, show where they agree or differ, and cite the passages.':'Trace the history of a theological idea, comparing the authors and citing the passages.'};
+    var topic=qEl.value.trim();var opts={fresh:true,shelves:FAC.trad?[FRSearch.label(FAC.trad)]:[],mode:'deep',q:topic?'Trace “'+topic+'” through the theological tradition. Compare the authors, show where they agree or differ, and cite the passages.':'Trace the history of a theological idea, comparing the authors and citing the passages.'};
     setMode('title');if(window.FRAsk)window.FRAsk.open(opts);else window.__FR_ASK_PENDING__=opts;return;
   }
-  MODE=m;   // ask flows through renderAsk/askTurn (autoSend handoff to the workspace)
+  if(m==='ask'){if(FAC.group==='westminster'&&!FAC.groupSlugs){ensureSearchGroups().then(function(){setMode('ask');}).catch(function(){searchUnavailable('Westminster group',qEl.value);});return;}var selectedWorks=(FAC.author||FAC.workQuery||FAC.work||FAC.collection||FAC.group)?(WLIST||[]).filter(function(w){return FRSearch.matches(w,FAC);}).map(function(w){return w.slug;}):[];var askOptions={fresh:true,q:qEl.value.trim(),works:selectedWorks,shelves:!selectedWorks.length&&FAC.trad?[FRSearch.label(FAC.trad)]:[]};if(window.FRAsk)window.FRAsk.open(askOptions);else window.__FR_ASK_PENDING__=askOptions;return;}MODE=m;
   var method=document.getElementById('passageMethod');if(method){method.hidden=m!=='full'&&m!=='meaning';method.querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.passage===m));});}
 
   var tip=document.getElementById('smodesHint');if(tip)tip.style.display=(m==='title')?'':'none';   // teaches the modes BEFORE one is chosen; inside a mode the per-mode hint speaks
@@ -57,12 +55,12 @@ function setMode(m){
   var st2=document.getElementById('scopeToggle');
   if(st2){st2.hidden=false;scopeSummary();}document.querySelectorAll('.smodes button').forEach(function(b){var on=b.getAttribute('data-m')===(m==='meaning'?'full':m);b.classList.toggle('active',on);b.setAttribute('aria-pressed',on?'true':'false');});
   hint.innerHTML=(m==='ask')?'':HINTS[m];
-  qEl.placeholder=PH[m];
-  var fb=document.getElementById('facets');if(fb)fb.style.display=(m==='ask'||m==='tradition'||m==='full')?'none':'';
+  qEl.placeholder=PH[m];qEl.setAttribute('aria-label',m==='scripture'?'Bible reference':'Search the library');
+  var fb=document.getElementById('facets');if(fb)fb.style.display='';
   var sb=document.getElementById('scopeBar');if(sb)sb.style.display=(m==='ask')?'':'none';   // '' lets the CSS govern: hidden until the ⌖ sheet adopts it
   {var dh=document.getElementById('sdoorsHost');
    if(!dh&&res&&res.parentNode){dh=document.createElement('div');dh.id='sdoorsHost';res.parentNode.insertBefore(dh,res);}
-   if(dh)dh.innerHTML=(m==='scripture'||m==='tradition')?doorRow(m):'';}
+   if(dh)dh.innerHTML='';}
   if(m==='ask'){askReset();
     /* CLAUDE-IDIOM (owner 2026-09-05 "should instantly resonate … remind them of claude.com /
        chatgpt.com"): greeting first, then THE composer beneath it — the one query input moves
@@ -72,8 +70,8 @@ function setMode(m){
     document.body.classList.remove('mode-ask');
   }
   run();}
-document.querySelectorAll('.smodes button[data-m]').forEach(function(b){b.addEventListener('click',function(){setMode(b.getAttribute('data-m'));if(b.getAttribute('data-m')!=='ask')qEl.focus();});});
-document.querySelectorAll('[data-passage]').forEach(function(b){b.onclick=function(){setMode(b.dataset.passage);qEl.focus();};});
+document.querySelectorAll('.smodes button[data-m]').forEach(function(b){b.addEventListener('click',function(){setMode(b.getAttribute('data-m'));if(b.getAttribute('data-m')!=='ask')focusQuery();});});
+document.querySelectorAll('[data-passage]').forEach(function(b){b.onclick=function(){setMode(b.dataset.passage);focusQuery();};});
 document.getElementById('runSearch').onclick=function(){run();};
 
 /* ---- works map: Blob works-index — every mode's cite/title join ---- */
@@ -81,27 +79,19 @@ var _navq=null;
 function navMap(cb){if(NAV)return cb(NAV);
   if(_navq){_navq.push(cb);return;}
   _navq=[cb];
-  fetch(FRB+'/v1/works-index.json'+VER).then(function(r){return r.json();}).then(function(j){
-    var rows=(j&&j.works)||[];NAV={};WLIST=rows;
-    rows.forEach(function(w){if(w.slug)NAV[w.slug]={t:w.title||w.slug,a:w.author||'',al:w.author_la||'',v:w.volume||'',tr:w.tradition||'',n:w.n_pages||0};if(w.party)(PARTYSLUGS[w.party]=PARTYSLUGS[w.party]||[]).push(w.slug);});
-    IDX=rows.filter(function(w){return w.slug;}).map(function(w){return {d:w.slug,k:'work',t:w.title||w.slug,a:w.author||'',al:w.author_la||''};});
-    buildFacetLists();
-    var q2=_navq;_navq=null;q2.forEach(function(f){f(NAV);});
-  }).catch(function(){NAV={};WLIST=[];IDX=[];var q2=_navq||[];_navq=null;q2.forEach(function(f){f(NAV);});});}
-function docCite(d){var e=NAV&&NAV[d];if(!e)return 'The Faith Received';
-  return esc(e.a||'')+(e.v?' · '+esc(e.v):'')+(e.tr?' · '+esc(e.tr):'');}
+  Promise.all([FRResearchData.corpus(),FRResearchData.json('/v1/workgroups.json').catch(()=>({})),fetch('https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/data/workgroups.json',{signal:AbortSignal.timeout(10000)}).then(r=>r.ok?r.json():{}).catch(()=>({}))]).then(function([corpus,published,local]){FRResearch.setWorkCatalogue({bySlug:corpus.works,groups:{works:{...(published.works||{}),...(local.works||{})},groups:{...(published.groups||{}),...(local.groups||{})}}});
+    WORK_ALIASES=corpus.aliases||{};var rows=Array.from(corpus.works.values()).map(function(w){return Object.assign({},w,{author:Array.isArray(w.author)?w.author.join(', '):String(w.author||'')});});NAV={};WLIST=rows;WORKS_BY_SLUG={};
+    rows.forEach(function(w){WORKS_BY_SLUG[w.slug]=w;if(w.slug)NAV[w.slug]={t:w.title_en||w.title||w.slug,a:w.author||'',al:w.author_la||'',v:w.volume||'',tr:w.tradition||'',n:w.n_pages||0};if(w.party)(PARTYSLUGS[w.party]=PARTYSLUGS[w.party]||[]).push(w.slug);});
+    IDX=rows.filter(function(w){return w.slug;}).map(function(w){return {d:w.slug,k:'work',t:w.title_en||w.title||w.slug,o:w.title||'',a:w.author||'',al:w.author_la||''};});
+    buildFacetLists();var q2=_navq;_navq=null;q2.forEach(function(f){f(NAV);});
+  }).catch(function(){CATALOG_ERROR=true;NAV={};WLIST=[];IDX=[];WORKS_BY_SLUG={};var q2=_navq||[];_navq=null;q2.forEach(function(f){f(NAV);});});}
+function docCite(d){var e=NAV&&NAV[d];if(!e)return 'The Faith Received';var parts=[];if(ORDER==='relevance'&&e.a)parts.push(esc(e.a));if(e.v)parts.push(esc(e.v));if(e.tr)parts.push(esc(FRSearch.label(e.tr)));return parts.join(' · ');}
 function docTitle(d){var e=NAV&&NAV[d];return e?esc(e.t||d):esc(d||'');}
 
 /* ---- Facets: author / work / tradition — narrow any result set ---- */
-var FAC={author:'',work:'',trad:'',corpus:''};
+var FAC={author:'',work:'',workQuery:'',trad:'',corpus:'',collection:'',group:'',groupSlugs:null};
 var WORKMAP=null;
-function facetOk(d){var e=NAV&&NAV[d];
-  if(FAC.work && String(d)!==String(FAC.work))return false;
-  if(!e)return true;
-  if(FAC.author){var _fa=FAC.author.toLowerCase();
-    if((e.a||'').toLowerCase().indexOf(_fa)<0&&(e.al||'').toLowerCase().indexOf(_fa)<0)return false;}
-  if(FAC.trad && (e.tr||'')!==FAC.trad)return false;
-  return true;}
+function facetOk(d){return FRSearch.matches(WORKS_BY_SLUG&&WORKS_BY_SLUG[d],FAC);}
 function buildFacetLists(){
   var auth={},trad={};WORKMAP={};var wopts=[];
   (WLIST||[]).forEach(function(w){if(!w.slug)return;
@@ -111,30 +101,31 @@ function buildFacetLists(){
     WORKMAP[label]=w.slug;wopts.push(label);});
   var authList=Object.keys(auth).sort();wopts.sort();
   ['facAuthors','scopeAuthors'].forEach(function(id){var dl=document.getElementById(id);
-    if(dl)dl.innerHTML=authList.map(function(a){return '<option value="'+esc(a)+'">';}).join('');});
+    if(dl)dl.innerHTML=authList.filter(function(a){return !FAC.author||foldQ(a).includes(foldQ(FAC.author));}).slice(0,40).map(function(a){return '<option value="'+esc(a)+'">';}).join('');});
   ['facWorks','scopeWorks'].forEach(function(id){var dl=document.getElementById(id);
-    if(dl)dl.innerHTML=wopts.slice(0,4000).map(function(w){return '<option value="'+esc(w)+'">';}).join('');});
+    if(dl)dl.innerHTML=wopts.filter(function(w){return !FAC.workQuery||foldQ(w).includes(foldQ(FAC.workQuery));}).slice(0,40).map(function(w){return '<option value="'+esc(w)+'">';}).join('');});
   var vs=document.getElementById('fTrad');
   if(vs&&vs.options.length<=1){
-    var opts=['<option value="">All traditions</option>'];
-    Object.keys(trad).sort().forEach(function(v){opts.push('<option value="'+esc(v)+'">'+esc(v)+'</option>');});
-    vs.innerHTML=opts.join('');}
+    var opts=['<option value="">All shelves</option>'];
+    FRSearch.shelves.forEach(function(v){opts.push('<option value="'+esc(v.value)+'">'+esc(v.label)+'</option>');});
+    vs.innerHTML=opts.join('');vs.value=FAC.trad;}
 }
 function facetInit(){
   navMap(function(){});
   var fa=document.getElementById('fAuthor'),fw=document.getElementById('fWork'),
       fv=document.getElementById('fTrad'),fc=document.getElementById('fClear');
-  function upd(){
+  function upd(event){
     FAC.author=(fa&&fa.value||'').trim();
     FAC.trad=(fv&&fv.value||'').trim();
     var wv=(fw&&fw.value||'').trim();
-    FAC.work=(wv&&WORKMAP&&WORKMAP[wv])||'';
-    if(fc)fc.hidden=!(FAC.author||FAC.trad||FAC.work);
-    run();}
+    FAC.work=(wv&&WORKMAP&&WORKMAP[wv])||'';FAC.workQuery=FAC.work?'':wv;FAC.collection=document.getElementById('fCollection').value;FAC.group=document.getElementById('fGroup').value;buildFacetLists();scopeSummary();
+    if(fc)fc.hidden=!(FAC.author||FAC.trad||FAC.work||FAC.workQuery||FAC.collection||FAC.group);
+    if(event&&event.type==='input'&&MODE!=='title'){seq++;REDRAW=null;setPager(0,0,function(){});res.innerHTML='';ct.textContent='Select Search to apply these filters.';}else run();}
   if(fa)fa.addEventListener('input',upd);
   if(fw)fw.addEventListener('input',upd);
-  if(fv)fv.addEventListener('change',upd);
-  if(fc)fc.onclick=function(){if(fa)fa.value='';if(fw)fw.value='';if(fv)fv.value='';upd();};}
+  if(fv)fv.addEventListener('change',upd);document.getElementById('fCollection').onchange=upd;document.getElementById('fGroup').onchange=upd;
+  if(fc)fc.onclick=function(){if(fa)fa.value='';if(fw)fw.value='';if(fv)fv.value='';document.getElementById('fCollection').value='';document.getElementById('fGroup').value='';FAC.groupSlugs=null;upd();};}
+document.getElementById('fTrad').innerHTML='<option value="">All shelves</option>'+FRSearch.shelves.map(function(s){return '<option value="'+esc(s.value)+'">'+esc(s.label)+'</option>';}).join('');
 facetInit();
 
 /* ---- Title mode: works-index first, then the lazy 154k section-heading tier ---- */
@@ -146,16 +137,17 @@ function loadHeadingsTier(){
     var add=rows.map(function(r2){var e=NAV&&NAV[r2[0]]||{};
       return {d:r2[0],k:'div',t:r2[2],a:e.a||'',page:r2[1]};});
     IDX=(IDX||[]).concat(add);_hFull=true;_hLoading=false;
-    if(MODE==='title'){hint.textContent='Searches '+(WLIST||[]).length.toLocaleString()+' works and '+rows.length.toLocaleString()+' section headings.';run();}
+    if(MODE==='title'){hint.textContent='Searches '+(WLIST||[]).length.toLocaleString()+' works and '+rows.length.toLocaleString()+' section headings.';RESTORE_PAGE=RESULT_PAGE;run();}
   }).catch(function(){_hLoading=false;});}
 function foldQ(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/v/g,'u').replace(/j/g,'i');}
 function renderTitle(q){
-  if(!IDX){res.innerHTML='';ct.innerHTML='<span class="sbusy">loading…</span>';navMap(function(){run();});return;}
-  loadHeadingsTier();
+  if(CATALOG_ERROR){searchUnavailable('Work catalogue',q);return;}
+  if(!IDX){var waiting=seq,requestedPage=RESULT_PAGE;res.innerHTML='';ct.innerHTML='<span class="sbusy">loading…</span>';navMap(function(){if(waiting===seq){RESTORE_PAGE=requestedPage;run();}});return;}
+  if(q.trim().length>=2)loadHeadingsTier();
   var toks=foldQ(q).split(/\s+/).filter(function(t2){return t2.length>=2;});
   var m=IDX.filter(function(e){
-    var hay=foldQ(e.t+' '+e.a+' '+(e.al||''));
-    return toks.every(function(t2){return hay.indexOf(t2)>=0;})&&facetOk(e.d);
+    var hay=foldQ(e.t+' '+(e.o||'')+' '+e.a+' '+(e.al||''));
+    return (toks.length||e.k==='work')&&toks.every(function(t2){return hay.indexOf(t2)>=0;})&&facetOk(e.d);
   });
   // author-name queries surface the author's OWN works first ("Augustine" = the 143
   // Augustine works, then works merely mentioning him in the title)
@@ -166,7 +158,7 @@ function renderTitle(q){
   m.sort(function(x,y){return x._au-y._au;});
   if(!m.length&&window._AUTO_MODE&&q.length>=3){window._AUTO_MODE=false;setMode('full');return;}
   // question-shaped input in Find mode ("what/why/how…?") → Ask is what they meant
-  if(MODE==='title'&&/^(what|why|how|did|does|is|are|who|when|where|can|should)\b/i.test(q)&&/\?\s*$/.test(q)){setMode('ask');renderAsk(q);return;}
+  // Work searches never send a paid question automatically; Ask opens a draft.
   var byDoc={},order=[];
   m.forEach(function(e){
     if(!(e.d in byDoc)){byDoc[e.d]={work:null,divs:[]};order.push(e.d);}
@@ -174,7 +166,7 @@ function renderTitle(q){
   });
   if(!order.length){ct.innerHTML='';res.innerHTML=zeroHtml(q,'title');return;}
   ct.textContent=order.length+' work'+(order.length===1?'':'s')+(m.length>order.length?(' · '+m.length+' incl. sections'):'');
-  res.innerHTML=order.slice(0,300).map(function(d){
+  var rankOrder=order.slice(),priorities={},authorCounts={};if(q.trim()){order.forEach(function(d){var e=byDoc[d].work||byDoc[d].divs[0];authorCounts[e.a]=(authorCounts[e.a]||0)+1;});order.forEach(function(d){var e=byDoc[d].work||byDoc[d].divs[0];priorities[d]=e._au*1000000-authorCounts[e.a];});}function paintTitle(page){order=FRSearch.orderWorks(rankOrder,ORDER,WORKS_BY_SLUG,priorities,FRResearch.workOrder);var win=FRSearch.pageWindow(order.length,page);setPager(order.length,win.page,paintTitle,'works');res.innerHTML=order.slice(win.start,win.end).map(function(d){
     var g=byDoc[d], e=g.work||g.divs[0];
     var href=rdHref(e.d,e.k==='div'?e.page:null);
     var nd=g.divs.length;
@@ -183,185 +175,70 @@ function renderTitle(q){
     var first=(!g.work&&e.k==='div')?e.t:(g.work?g.work.t:e.t);
     var out='<a class="sr" href="'+href+'"><div class="sr-cite">'+docCite(d)+sec+'</div>'+
       '<div>'+kind+esc(first)+(!g.work?'<span class="nt-meta"> — '+docTitle(d)+'</span>':'')+'</div></a>';
-    if(g.work&&nd)out+=g.divs.slice(0,3).map(function(dv){
-      return '<a class="sr" style="padding-left:1.4rem" href="'+rdHref(dv.d,dv.page)+'"><div>§ '+esc(dv.t)+(dv.page?' <span class="nt-meta">· p. '+dv.page+'</span>':'')+'</div></a>';}).join('');
-    return out;
+    if(nd)out+='<details class="matching-sections"><summary>Browse '+nd+' matching '+(nd===1?'section':'sections')+'</summary><div class="matched-section-list" data-doc="'+esc(d)+'"></div></details>';
+    return '<section class="search-work-block" data-work="'+esc(d)+'">'+out+'</section>';
   }).join('');
-  if(order.length>300){var capNote=document.createElement('div');capNote.className='shint';
-    capNote.style.cssText='margin:.6rem 0 0';
-    capNote.textContent='300 of '+order.length.toLocaleString()+' works — showing the first 300.';
-    res.appendChild(capNote);}
+  res.querySelectorAll('.matched-section-list').forEach(function(host){var rows=byDoc[host.dataset.doc].divs;locationPager(host,rows.length,function(start,end,target){rows.slice(start,end).forEach(function(dv){var a=document.createElement('a');a.className='sr';a.href=rdHref(dv.d,dv.page);a.innerHTML='<div>'+esc(dv.t)+'</div><div class="sr-cite">Location '+esc(dv.page)+'</div>';target.appendChild(a);});},10);});organizePage();}REDRAW=paintTitle;paintTitle(RESULT_PAGE);
 }
 
 /* ---- Full text (Pagefind — Blob multi-bucket, same loader as the landing) ---- */
-var _pf=null;
+var _pf=null,_pfMissing=[];
 function pfInit(){if(_pf)return _pf;
-  _pf=fetch(FRB+'/v1/search/pagefind/manifest.json?v=4').then(function(r){return r.json();}).catch(function(){return {buckets:9};})
+  _pfMissing=[];_pf=fetch(FRB+'/v1/search/pagefind/manifest.json?v=4').then(function(r){if(!r.ok)throw Error('Index manifest unavailable');return r.json();})
     .then(function(man){
       var dirs=(man&&man.list&&man.list.length)
         ? man.list.map(function(e){return e.path.replace(/\/pagefind$/,'');}).filter(function(d){return d!=='b0';})
         : (function(){var a=[];for(var i=1;i<((man&&man.buckets)||9);i++)a.push('b'+i);return a;})();
       return import(FRB+'/v1/search/pagefind/b0/pagefind.js?v=4').then(function(p){
-        return Promise.all(dirs.map(function(d){return p.mergeIndex(FRB+'/v1/search/pagefind/'+d+'/').catch(function(){return null;});}))
+        return Promise.all(dirs.map(function(d){return p.mergeIndex(FRB+'/v1/search/pagefind/'+d+'/').catch(function(){_pfMissing.push(d);return null;});}))
           .then(function(){return p;});});})
-    .catch(function(){return null;});
+    .catch(function(){_pf=null;return null;});
   return _pf;}
-function renderFull(q){var my=++seq;ct.innerHTML='<span class="sbusy">searching… <span style="font-weight:400">(first search loads the index)</span></span>';
-  navMap(function(){if(my!==seq)return;
-    pfInit().then(function(p){if(my!==seq)return;
-      if(!p){ct.textContent='Full-text index unavailable.';res.innerHTML='';return;}
-      var filt={};
-      if(FAC.author)filt.author=FAC.author;
-      if(FAC.corpus)filt.corpus=FAC.corpus;
-      var opts=Object.keys(filt).length?{filters:filt}:undefined;
-      p.search(q,opts).then(function(r){if(my!==seq)return;
-        /* CHUNKED (owner eval 2026-09-06 "evaluate full text": the list hard-stopped at 60
-           of 2,294 with no way on) — 60 per batch, a Show-more foot walks the rest. Each
-           row cite carries its page number, parsed from the deep-link anchor. */
-        var rfTotal=r.results.length,shown=0,byWork={},order=[];
-         /* GROUPED BY WORK (owner 2026-09-10 'passages fundamentally broken'):
-            a work whose TITLE matches floods the page-level list (the title
-            rides on every indexed page) and the excerpts echo the title.
-            One card per work; excerpts strip the title and prefer real text. */
-         function pageOf(u){var m2=/#b(\d+)-/.exec(u||'');return m2?m2[1]:'';}
-         function cleanEx(ex,title){var t2=String(ex||'');
-           if(title){try{var e2=title.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');t2=t2.replace(new RegExp(e2,'gi'),' ');}catch(_){}}
-           return t2.replace(/\s+/g,' ').trim();}
-         function addItem(it){var meta=it.meta||{},sl=meta.slug||'';
-           if(!byWork[sl]){var cite=docCite(sl);
-             var cpx=/^pg-/.test(sl)?'Greek Fathers':/^pld-/.test(sl)?'Latin Fathers':/^po-/.test(sl)?'Oriental':/^eebo-/.test(sl)?'EEBO':/^(rc|lc)-/.test(sl)?'Confessions':'';
-             if(cpx&&cite.indexOf(cpx)<0)cite=cite?cite+' · '+cpx:cpx;
-             byWork[sl]={cite:cite,title:meta.title||sl,url:it.url,pages:[],n:0};order.push(sl);}
-           var w=byWork[sl];w.n++;
-           if(w.pages.length>=8)return;
-           var cands=(it.sub_results||[]).map(function(s){return {url:s.url,ex:cleanEx(s.excerpt,meta.title)};});
-           cands.push({url:it.url,ex:cleanEx(it.excerpt,meta.title)});
-           var best=null;for(var ci=0;ci<cands.length;ci++){if(cands[ci].ex.length>40){best=cands[ci];break;}}
-           if(!best)best=cands[0]||{url:it.url,ex:''};
-           var pg=pageOf(best.url||it.url);
-           if(w.pages.some(function(x){return x.page===pg;}))return;
-           // keep the indexed page text for the Preview drawer — works for
-           // every storage shape (TEI-only works have no shards to hydrate);
-           // the index prepends the work title to every page, so peel it
-           var fu=String(it.content||'').replace(/\s+/g,' ').trim();
-           var ttl=String(meta.title||'').replace(/\s+/g,' ').trim();
-           if(ttl.length>8){var g=0;while(g++<4&&fu.toLowerCase().indexOf(ttl.toLowerCase())===0){fu=fu.slice(ttl.length).replace(/^[\s.,;:·—–-]+/,'');}}
-           w.pages.push({url:best.url||it.url,page:pg,ex:best.ex,full:fu.slice(0,1800)});}
-         function pageRow(pp){return '<a class="sr sr-page" href="'+pp.url+'">'+(pp.page?'<span class="sr-pg">p. '+pp.page+'</span>':'')+'<span class="sr-ex">'+mdHeadings(pp.ex||'')+'</span></a>';}
-         function workHtml(sl,idx){var w=byWork[sl];
-           var head='<summary class="sr-whead"><span class="sr-cite">'+w.cite+'</span><span class="sr-wtitle">'+esc(w.title)+'</span><span class="sr-wn">'+w.n.toLocaleString()+' page'+(w.n===1?'':'s')+'</span></summary>';
-           var rows=w.pages.map(function(pp){
-             return '<div class="sr-page" data-sl="'+esc(sl)+'" data-pg="'+esc(pp.page||'')+'">'
-               +(pp.page?'<span class="sr-pg">p. '+pp.page+'</span>':'')
-               +'<span class="sr-ex">'+mdHeadings(pp.ex||'')+'</span>'
-               +'<span class="sr-act"><button type="button" class="sr-peek">Preview</button><a href="'+pp.url+'">Open \u2192</a></span>'
-               +'<div class="sr-drawer" hidden></div></div>';}).join('');
-           var note=w.n>w.pages.length?'<div class="sr-note">'+(w.n-w.pages.length).toLocaleString()+' more matching pages \u2014 open the work and search inside.</div>':'';
-           return '<details class="sr-work"'+(idx<2?' open':'')+'>'+head+rows+note+'</details>';}
-         function render(){
-           if(!order.length){ct.innerHTML='';res.innerHTML=zeroHtml(q,'full');return;}
-           ct.textContent=rfTotal.toLocaleString()+' matching page'+(rfTotal===1?'':'s')+' across '+order.length.toLocaleString()+' work'+(order.length===1?'':'s')+(shown<r.results.length?' so far':'');
-           res.innerHTML=order.map(function(sl,ix){return workHtml(sl,ix);}).join('')
-             +(shown<r.results.length?'<button type="button" class="sr-more" id="pfMore">Show more works — '+(r.results.length-shown).toLocaleString()+' further pages unscanned</button>':'');
-           var mb=document.getElementById('pfMore');
-           if(mb)mb.onclick=function(){mb.disabled=true;mb.textContent='Loading…';batch();};
-           res.querySelectorAll('.sr-peek').forEach(function(b){b.onclick=function(){
-             var row=b.closest('.sr-page'),dr=row.querySelector('.sr-drawer');
-             if(!dr.hidden){dr.hidden=true;b.textContent='Preview';return;}
-             dr.hidden=false;b.textContent='Hide';
-             if(dr.dataset.done)return;dr.dataset.done='1';
-             dr.innerHTML='<p class="sr-loading">Loading the page\u2026</p>';
-             var sl=row.dataset.sl,pg=row.dataset.pg,wk=byWork[sl];
-             var pp=wk&&wk.pages.filter(function(x){return String(x.page||'')===pg;})[0];
-             var show=function(tx){tx=String(tx||'');
-               if(!tx){dr.innerHTML='<p class="sr-loading">This page has no readable text here \u2014 open the work to see it in place.</p>';return;}
-               dr.innerHTML='<div class="sr-ptext">'+esc(tx.slice(0,1600))+(tx.length>=1600?'\u2026':'')+'</div>';};
-             if(pp&&pp.full){show(pp.full);return;}
-             excerpt(sl,+pg,1600).then(show)
-               .catch(function(){dr.innerHTML='<p class="sr-loading">The page could not load.</p>';});
-           };});}
-         function batch(){
-           Promise.all(r.results.slice(shown,shown+60).map(function(x){return x.data();})).then(function(items){if(my!==seq)return;
-             shown=Math.min(shown+60,r.results.length);
-             items.forEach(function(it){var sl=(it.meta&&it.meta.slug)||'';
-               if(FAC.work&&sl!==FAC.work)return;
-               if(FAC.trad){var e=NAV[sl];if(e&&e.tr!==FAC.trad)return;}
-               addItem(it);});
-             if(order.length<10&&shown<r.results.length&&shown<420){render();batch();return;}
-             render();
-           });
-         }
-         batch();
-      });
-    });
-  });}
+function renderFull(q){var my=++seq;ct.textContent='Loading the text index…';res.innerHTML='';
+ navMap(function(){if(my!==seq)return;pfInit().then(function(p){if(my!==seq)return;if(!p)throw Error('The text index could not load.');
+  return p.search(q,{filters:FRSearch.pagefindFilters(FAC,WLIST||[])}).then(function(r){if(my!==seq)return;var total=r.results.length,cache=new Map();
+   function href(raw,slug){var ref=FRSearch.readerLink(raw,location.origin);return ref?rdHref(ref.slug,ref.page):WORKS_BY_SLUG[slug]?rdHref(slug):null;}
+   function snippet(s){return mdHeadings(s||'').replace(/<(?!\/?(?:mark|b|strong)\b)[^>]*>/gi,'').replace(/<(mark|b|strong)\b[^>]*>/gi,'<$1>');}
+   function renderItems(items){var grouped=new Map();items.forEach(function(item){var meta=item.meta||{},slug=meta.slug||'',g=grouped.get(slug);if(!g){g={slug:slug,parts:[]};grouped.set(slug,g);}var parts=item.sub_results?.length?item.sub_results:[item];parts.forEach(function(part){var url=href(part.url||item.url,slug);if(url&&!g.parts.some(p=>p.url===url&&p.excerpt===part.excerpt))g.parts.push({url:url,excerpt:part.excerpt||item.excerpt});});});
+    var ordered=FRSearch.orderWorks(Array.from(grouped.values()),ORDER,WORKS_BY_SLUG,{},FRResearch.workOrder);for(const [i,g] of ordered.entries()){var fold=document.createElement('details');fold.className='scripture-work exact-work';fold.dataset.work=g.slug;fold.open=i===0;fold.innerHTML='<summary>'+docTitle(g.slug)+'<span>'+docCite(g.slug)+' · '+g.parts.length+' indexed '+(g.parts.length===1?'excerpt':'excerpts')+' on this page</span></summary><div class="exact-locations"></div>';locationPager(fold.querySelector('.exact-locations'),g.parts.length,function(start,end,host){g.parts.slice(start,end).forEach(function(part){var ref=FRSearch.readerLink(part.url,location.origin),a=document.createElement('a');a.className='sr';a.href=part.url;a.innerHTML='<div class="sr-cite">'+esc(ref?.page!=null?'Location '+ref.page:'Open work')+'</div><div class="sr-ex">'+snippet(part.excerpt)+'</div>';host.appendChild(a);});},3);res.appendChild(fold);}
+   }
+   async function draw(page){var win=FRSearch.pageWindow(total,page);setPager(total,win.page,draw,'indexed sections');ct.textContent='Loading result page…';try{var items=cache.get(win.page);if(!items){items=await Promise.all(r.results.slice(win.start,win.end).map(function(x){return x.data();}));cache.set(win.page,items);}if(my!==seq||win.page!==RESULT_PAGE)return;items=items.filter(function(it){return facetOk(it.meta&&it.meta.slug);});ct.textContent=total.toLocaleString()+' matching indexed sections · groups arrange this page'+(_pfMissing.length?' · incomplete index':'');res.innerHTML=(_pfMissing.length?'<p class="search-warning">Some text-index files could not load. These results are incomplete.</p>':'');renderItems(items);if(!items.length)res.insertAdjacentHTML('beforeend',zeroHtml(q,'full'));organizePage();}catch(e){if(my===seq)searchUnavailable('Full-text search',q);}}
+   REDRAW=draw;return draw(RESULT_PAGE);
+  });
+ }).catch(function(){if(my===seq)searchUnavailable('Full-text search',q);});});}
 
 /* ---- Blob excerpt hydration (meaning + tradition home hits): meta.json → shard → page text ---- */
 var _exc={};
-function excerpt(slug,page,max){max=max||220;page=+page;var k=slug+'|'+page+'|'+max;
+function excerpt(slug,page){var k=slug+'|'+page;
   if(k in _exc)return Promise.resolve(_exc[k]);
   return fetch(FRB+'/v1/works/'+slug+'/meta.json').then(function(r){return r.json();}).then(function(meta){
     var f=meta.single?'work.json':(((meta.shards||[]).filter(function(s){return s.from<=page&&page<=s.to;})[0])||{}).file;
     if(!f)return (_exc[k]=null);
     return fetch(FRB+'/v1/works/'+slug+'/'+f).then(function(r){return r.json();}).then(function(d){
-      var pg=(d.pages||[]).filter(function(x){return x.n===page;})[0];
+      var pg=(d.pages||[]).filter(function(x){return String(x.n)===String(page);})[0];
       var tx=(pg&&(pg.en||pg.la)||'').replace(/\[\^[^\]]*\]:?/g,'').replace(/[#*]+/g,'').replace(/\s+/g,' ').trim();
-      return (_exc[k]=tx?tx.slice(0,max):null);});
+      return (_exc[k]=tx?tx.slice(0,220):null);});
   }).catch(function(){return (_exc[k]=null);});}
 
-function searchUnavailable(label,query){
-  ct.textContent=label+' is temporarily unavailable. Your search is still here.';
-  res.innerHTML='<div class="search-recovery"><p>Continue with exact wording, or ask a question of the library.</p><button type="button" data-recover="full">Search full text</button><button type="button" data-recover="ask">Ask the library</button></div>';
-  res.querySelector('[data-recover="full"]').onclick=function(){qEl.value=query;setMode('full');};
-  res.querySelector('[data-recover="ask"]').onclick=function(){if(window.FRAsk)window.FRAsk.open({q:query});else setMode('ask');};
-}
-/* ---- Meaning (hybrid semantic+lexical via /api/vsearch&sparse=1) ----
-   Grouped per work like the Passages mode (owner 09-10: "by idea search
-   too ... organized better so we dont have endless scrolling ... allow
-   preview source"): one collapsed card per work, best passages inside,
-   Preview drawer hydrates the page text in place. */
-function renderMeaning(q){var my=++seq;ct.innerHTML='<span class="sbusy">searching by meaning…</span>';
-  navMap(function(){if(my!==seq)return;
-    fetch('https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/vsearch?q='+encodeURIComponent(q)+'&k=40'+((FAC.corpus==='pld'||FAC.corpus==='pg'||FAC.corpus==='po')?'&corpus='+(FAC.corpus==='pld'?'pl':FAC.corpus):'&sparse=1')).then(function(r){return r.ok?r.json():r.json().catch(function(){return {error:'unavailable'};});}).then(function(j){
-      if(my!==seq)return;var rs=((j&&j.results)||[]).filter(function(p){return p.slug&&facetOk(p.slug);});
-      if(!rs.length){if(j&&j.error)return searchUnavailable('Search by idea',q);ct.textContent='No passages found.';res.innerHTML='';return;}
-      var byW={},ord=[];
-      rs.forEach(function(p){var sl=p.slug;
-        if(!byW[sl]){byW[sl]={pp:[]};ord.push(sl);}
-        if(byW[sl].pp.length<6&&!byW[sl].pp.some(function(x){return x.page===p.page;}))byW[sl].pp.push(p);
-        byW[sl].n=(byW[sl].n||0)+1;});
-      ord.sort(function(a,b){return byW[b].n-byW[a].n;});
-      ct.textContent=rs.length+' passages by meaning across '+ord.length+' work'+(ord.length===1?'':'s');
-      res.innerHTML=ord.map(function(sl,ix){var w=byW[sl];
-        var head='<summary class="sr-whead"><span class="sr-cite">'+docCite(sl)+'</span><span class="sr-wtitle">'+docTitle(sl)+'</span><span class="sr-wn">'+w.n+' passage'+(w.n===1?'':'s')+'</span></summary>';
-        var rows=w.pp.map(function(pp){
-          return '<div class="sr-page" data-sl="'+esc(sl)+'" data-pg="'+esc(pp.page==null?'':pp.page)+'">'
-            +(pp.page!=null?'<span class="sr-pg">p. '+pp.page+'</span>':'')
-            +'<span class="sr-ex" data-ex="'+esc(sl)+'|'+pp.page+'">'+esc(String(pp.snippet||'').slice(0,220))+'</span>'
-            +'<span class="sr-act"><button type="button" class="sr-peek">Preview</button><a href="'+rdHref(sl,pp.page)+'">Open →</a></span>'
-            +'<div class="sr-drawer" hidden></div></div>';}).join('');
-        return '<details class="sr-work"'+(ix<3?' open':'')+'>'+head+rows+'</details>';}).join('');
-      Array.prototype.slice.call(res.querySelectorAll('[data-ex]'),0,24).forEach(function(sp){
-        var kv=sp.getAttribute('data-ex').split('|');
-        excerpt(kv[0],+kv[1]).then(function(tx){if(tx&&my===seq)sp.textContent=tx+'…';});});
-      var snipOf={};rs.forEach(function(p){snipOf[p.slug+'|'+p.page]=String(p.snippet||'');});
-      res.querySelectorAll('.sr-peek').forEach(function(b){b.onclick=function(){
-        var row=b.closest('.sr-page'),dr=row.querySelector('.sr-drawer');
-        if(!dr.hidden){dr.hidden=true;b.textContent='Preview';return;}
-        dr.hidden=false;b.textContent='Hide';
-        if(dr.dataset.done)return;dr.dataset.done='1';
-        dr.innerHTML='<p class="sr-loading">Loading the page…</p>';
-        var fb=snipOf[row.dataset.sl+'|'+row.dataset.pg]||'';
-        excerpt(row.dataset.sl,+row.dataset.pg,1600).then(function(tx){
-          tx=String(tx||'')||fb;
-          if(!tx){dr.innerHTML='<p class="sr-loading">This page has no readable text here — open the work to see it in place.</p>';return;}
-          dr.innerHTML='<div class="sr-ptext">'+esc(tx.slice(0,1600))+(tx.length>=1600?'…':'')+'</div>';
-        }).catch(function(){dr.innerHTML=fb?'<div class="sr-ptext">'+esc(fb)+'</div>':'<p class="sr-loading">The page could not load.</p>';});
-      };});
-    }).catch(function(){if(my!==seq)return;searchUnavailable('Search by idea',q);});
-  });}
+function searchUnavailable(label,query){setPager(0,0,function(){});ct.textContent=label+' is temporarily unavailable. Your search is still here.';res.innerHTML='<div class="search-recovery"><p>Retry this search, or choose another search mode.</p><button type="button" id="retrySearch">Retry search</button></div>';document.getElementById('retrySearch').onclick=function(){if(CATALOG_ERROR){CATALOG_ERROR=false;NAV=null;IDX=null;}if(MODE==='full')_pf=null;run();};}
+/* ---- Meaning (hybrid semantic+lexical via /api/vsearch&sparse=1) ---- */
+function renderMeaning(q){var my=++seq,pools=[],expanded=false,expanding=false,groups=[];ct.textContent='Finding related passages…';res.innerHTML='';
+ navMap(function(){if(my!==seq)return;var params=new URLSearchParams({q:q,k:FAC.collection?'80':'25'}),endpoint='https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/xsearch?';if(FAC.collection){endpoint='https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/vsearch?';params.set('collection',FAC.collection);if(FAC.work)params.set('w',FAC.work);}else if(FAC.trad==='English Divines')params.set('c','tfr');else if(FAC.trad==='Medieval')params.set('c','aq,tfr');else if(FAC.trad)params.set('trad',FAC.trad);
+  fetch(endpoint+params,{signal:AbortSignal.timeout(25000)}).then(function(r){if(!r.ok)throw Error('Search unavailable');return r.json();}).then(function(data){if(my!==seq)return;pools=[FRSearch.meaningCandidates(data,WORKS_BY_SLUG)];refresh();}).catch(function(){if(my===seq)searchUnavailable('Search by idea',q);});
+  function refresh(){var rows=FRSearch.fuseMeaning(pools).filter(function(r){return facetOk(r.slug);});groups=FRSearch.meaningGroups(rows);REDRAW=paint;ct.textContent=rows.length+' ranked passages in '+groups.length+' works'+(FAC.trad?' · '+FRSearch.label(FAC.trad):'');paint(RESULT_PAGE);}
+  function paint(page){var ordered=FRSearch.orderWorks(groups,ORDER,WORKS_BY_SLUG,{},FRResearch.workOrder),win=FRSearch.pageWindow(groups.length,page);setPager(groups.length,win.page,paint,'works');res.innerHTML='<details class="search-guidance"><summary>About these ranked results</summary><p>Expand a work to read its indexed passages. Use Search more passages for a broader candidate set. Neither list is an exhaustive match count.</p></details>';
+   ordered.slice(win.start,win.end).forEach(function(g,i){var fold=document.createElement('details');fold.className='scripture-work meaning-work';fold.dataset.work=g.slug;fold.open=i===0;fold.innerHTML='<summary>'+docTitle(g.slug)+'<span>'+docCite(g.slug)+' · '+g.locations.length+' ranked '+(g.locations.length===1?'passage':'passages')+'</span></summary><div class="meaning-locations"></div>';
+    locationPager(fold.querySelector('.meaning-locations'),g.locations.length,function(start,end,host){g.locations.slice(start,end).forEach(function(p){var a=document.createElement('a');a.className='sr';a.href=rdHref(p.slug,p.page);a.innerHTML='<div class="sr-cite">'+esc(p.citation||(p.page!=null?'Location '+p.page:'Work-level match'))+'</div>'+(p.excerpt?'<div class="sr-ex">'+esc(p.excerpt)+'</div>':'<div class="sr-ex"></div>')+'<small>'+esc(p.page==null?'Open work; exact reader location unavailable':'Read passage')+'</small>';host.appendChild(a);if(!p.excerpt&&p.page!=null){var span=a.querySelector('.sr-ex');excerpt(p.slug,p.page).then(function(text){if(my===seq&&span.isConnected&&text)span.textContent=text+'…';});}});},3);res.appendChild(fold);
+   });if(!groups.length)res.insertAdjacentHTML('beforeend','<p>No ranked matches were returned for these filters. Try a broader set, another phrase, or Exact words.</p>');organizePage();
+   var button=document.getElementById('meaningBroaden');if(!button){button=document.createElement('button');button.type='button';button.id='meaningBroaden';document.getElementById('groupControls').appendChild(button);}button.disabled=expanded||expanding;button.textContent=expanding?'Finding more passages…':expanded?'Broader ranked set loaded':'Search more passages';button.onclick=broaden;
+  }
+  async function broaden(){if(expanding||expanded)return;expanding=true;var button=document.getElementById('meaningBroaden');button.disabled=true;button.textContent='Finding more passages…';var selected=FRSearch.shelf(FAC.trad),names=selected?.code==='pl'?['pl']:selected?.code==='gf'?['pg']:selected?.code==='po'?['po']:selected?.code==='md'?['library','aq']:selected?['library']:['library','pl','pg','po','aq'];if(FAC.collection)names=['library'];
+   var settled=await Promise.allSettled(names.map(async function(corpus){var params=new URLSearchParams({q:q,k:'200',corpus:corpus});if(FAC.collection)params.set('collection',FAC.collection);if(FAC.work&&corpus==='library')params.set('w',FAC.work);var response=await fetch('https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/vsearch?'+params,{signal:AbortSignal.timeout(25000)});if(!response.ok)throw Error('Search unavailable');var data=await response.json();return FRSearch.meaningCandidates(Object.assign({},data,{corpus:corpus}),WORKS_BY_SLUG);}));if(my!==seq)return;expanding=false;var good=settled.filter(function(r){return r.status==='fulfilled';});if(!good.length){button.disabled=false;button.textContent='Retry broader search';ct.textContent='The broader search could not load. Your current results are retained.';return;}pools=pools.concat(good.map(function(r){return r.value;}));expanded=true;RESULT_PAGE=0;saveSearchURL();refresh();if(good.length!==settled.length)ct.textContent+=' · some sources could not load';
+  }
+ });}
+
 /* ---- Tradition (cross-corpus timeline via /api/xsearch) — Round-5 scope contract ---- */
-var CORPUS_BADGE={PG:'Greek Fathers',PL:'Latin Fathers',PO:'Oriental',AQ:'Aquinas',TFR:'Early modern'};
+var CORPUS_BADGE={PG:'Greek Fathers',PL:'Latin Fathers',PO:'Eastern Fathers',AQ:'Aquinas',TFR:'Early modern'};
 var TRS={c:{pg:1,pl:1,po:1,aq:1,tfr:1},t:{catholic:1,reformed:1,lutheran:1}};
 try{var _s=JSON.parse(localStorage.getItem('fr_tr_scope'));if(_s&&_s.c)TRS=_s;}catch(e){}
 function trsSave(){try{localStorage.setItem('fr_tr_scope',JSON.stringify(TRS));}catch(e){}}
@@ -378,7 +255,7 @@ function ensureTrScope(){
   d.innerHTML='<span class="trad-scope-lab">Corpora:</span>'
     +'<button type="button" class="trad-chip tb-pg" data-c="pg" title="Greek Fathers">PG</button>'
     +'<button type="button" class="trad-chip tb-pl" data-c="pl" title="Latin Fathers">PL</button>'
-    +'<button type="button" class="trad-chip tb-po" data-c="po" title="Oriental">PO</button>'
+    +'<button type="button" class="trad-chip tb-po" data-c="po" title="Eastern Fathers">PO</button>'
     +'<button type="button" class="trad-chip tb-aq" data-c="aq" title="Aquinas Opera Omnia">AQ</button>'
     +'<button type="button" class="trad-chip tb-tfr" data-c="tfr" title="Early-modern reception — this library">TFR</button>'
     +'<span class="trs-sub"><span class="trad-scope-lab">·</span>'
@@ -435,81 +312,27 @@ function renderTradition(q){var my=++seq;
       excerpt(kv[0],+kv[1]).then(function(tx){if(tx&&my===seq)sp.textContent=tx+'…';});});
   }).catch(function(){if(my!==seq)return;searchUnavailable('Tradition search',q);});}
 
-/* ---- Scripture (chapter landings from v1/scripture.json — the preach-a-text door) ---- */
-var SCR=null;
-function sbInit(cb){if(SCR)return cb(SCR);
-  fetch(FRB+'/v1/scripture.json'+VER).then(function(r){return r.json();}).then(function(j){SCR=j||{};cb(SCR);}).catch(function(){SCR={};cb(SCR);});}
-var BOOK_ABBR={gen:'genesis',exod:'exodus',ex:'exodus',lev:'leviticus',num:'numbers',deut:'deuteronomy',dt:'deuteronomy',
-  josh:'joshua',judg:'judges',ruth:'ruth','1sam':'1 samuel','2sam':'2 samuel','1kgs':'1 kings','2kgs':'2 kings',
-  '1kings':'1 kings','2kings':'2 kings','1chr':'1 chronicles','2chr':'2 chronicles',ezra:'ezra',neh:'nehemiah',
-  esth:'esther',job:'job',ps:'psalms',psa:'psalms',psalm:'psalms',prov:'proverbs',eccl:'ecclesiastes',
-  song:'song of songs',cant:'song of songs',isa:'isaiah',jer:'jeremiah',lam:'lamentations',ezek:'ezekiel',
-  dan:'daniel',hos:'hosea',joel:'joel',amos:'amos',obad:'obadiah',jonah:'jonah',mic:'micah',nah:'nahum',
-  hab:'habakkuk',zeph:'zephaniah',hag:'haggai',zech:'zechariah',mal:'malachi',matt:'matthew',mt:'matthew',
-  mk:'mark',mark:'mark',lk:'luke',luke:'luke',jn:'john',john:'john',acts:'acts',rom:'romans',
-  '1cor':'1 corinthians','2cor':'2 corinthians',gal:'galatians',eph:'ephesians',phil:'philippians',
-  col:'colossians','1thess':'1 thessalonians','2thess':'2 thessalonians','1tim':'1 timothy','2tim':'2 timothy',
-  titus:'titus',phlm:'philemon',heb:'hebrews',jas:'james',james:'james','1pet':'1 peter','2pet':'2 peter',
-  '1john':'1 john','2john':'2 john','3john':'3 john',jude:'jude',rev:'revelation',apoc:'revelation'};
-function resolveBook(s){if(!SCR)return null;
-  var raw=s.replace(/\./g,'').trim().toLowerCase().replace(/^([123])\s+/,'$1');
-  var key=raw.replace(/\s+/g,' ');
-  if(SCR[key])return key;
-  if(BOOK_ABBR[raw.replace(/\s+/g,'')])return BOOK_ABBR[raw.replace(/\s+/g,'')];
-  var ks=Object.keys(SCR);
-  for(var i=0;i<ks.length;i++)if(ks[i].indexOf(key)===0)return ks[i];
-  for(var i2=0;i2<ks.length;i2++)if(ks[i2].replace(/^\d+ /,'').indexOf(key.replace(/^\d+ ?/,''))===0&&(/^\d/.test(key)===/^\d/.test(ks[i2])))return ks[i2];
-  return null;}
-function parseRef(q){q=q.trim();var m=q.match(/^(.+?)\s+(\d+)\s*(?:[:.,]\s*(\d+))?\s*$/);
-  if(!m)return null;return {book:m[1],ch:m[2],v:m[3]?parseInt(m[3]):0};}
+/* Scripture searches use the published verse-citation files, not inferred title matches. */
+var SCRIPTURE_BOOKS=null,SCRIPTURE_LAST=null;
+function scriptureChapter(path){if(SCRIPTURE_LAST&&SCRIPTURE_LAST.path===path)return SCRIPTURE_LAST.promise;var promise=FRResearchData.json(path).catch(function(error){if(SCRIPTURE_LAST?.path===path)SCRIPTURE_LAST=null;throw error;});SCRIPTURE_LAST={path:path,promise:promise};return promise;}
+function scriptureBooks(){if(!SCRIPTURE_BOOKS)SCRIPTURE_BOOKS=FRResearchData.books().catch(function(e){SCRIPTURE_BOOKS=null;throw e;});return SCRIPTURE_BOOKS;}
 function capB(s){return String(s).replace(/\b[a-z]/g,function(c){return c.toUpperCase();});}
-function renderScripture(q){var my=++seq;var ref=parseRef(q);
-  if(!ref){ct.textContent='Type a reference — e.g. Rom 8 · Matt 5 · Ps 110.';res.innerHTML='';return;}
-  sbInit(function(S){if(my!==seq)return;var b=resolveBook(ref.book);
-    if(!b){ct.textContent='No biblical book matched “'+esc(ref.book)+'”.';res.innerHTML='';return;}
-    var rows=S[b]&&S[b][String(ref.ch)];
-    if(!rows||!rows.length){ct.textContent=capB(b)+' '+esc(ref.ch)+' has no commentary landings in the library.';res.innerHTML='';return;}
-    navMap(function(){if(my!==seq)return;
-      var hits=rows.filter(function(e){return facetOk(e[0]);});
-      var label=capB(b)+' '+ref.ch;
-      ct.textContent=hits.length.toLocaleString()+' commentator landing'+(hits.length===1?'':'s')+' on '+label+(ref.v?' (chapter level — verse '+ref.v+' will be on these pages)':'');
-      res.innerHTML=hits.slice(0,300).map(function(e){
-        return '<a class="sr" href="'+rdHref(e[0],e[1])+'"><div class="sr-cite">'+docCite(e[0])+' <span class="sr-n">· p. '+e[1]+'</span></div><div>'+docTitle(e[0])+'</div><div class="sr-ex">'+esc(e[2]||'')+'</div></a>';}).join('')
-        +(hits.length>300?'<div class="shint">…and '+(hits.length-300).toLocaleString()+' more</div>':'');
-    });
-  });}
-/* RESEARCH DOORS (owner 2026-09-05 "these tabs don't cohere with our constellations — link
-   deeply"): Scripture and Tradition are windows onto the dedicated surfaces; say so and
-   link straight in, in the site's own quiet register. */
-function doorRow(m){
-  var doors=m==='scripture'
-    ?[['/the-faith-received/bible/','Scripture atlas','every citation, book by book, opening on the verse'],
-      ['/the-faith-received/fathers/?sh=gf','Author rooms','each author’s topics, positions, and reception']]
-    :[['/the-faith-received/web/','The Web of Theology','fifteen centuries of citation as a navigable sky'],
-      ['/the-faith-received/fathers/?sh=gf','Author rooms','each author’s topics, positions, and reception'],
-      ['/the-faith-received/topics/','Topics','doctrines era by era, with their carrying passages']];
-  return '<div class="sdoors">'+doors.map(function(d){
-    return '<a class="sdoor" href="'+d[0]+'"><span class="sd-n">'+d[1]+' →</span><span class="sd-d">'+d[2]+'</span></a>';}).join('')+'</div>';
-}
-function scriptureBrowse(){
-  ct.innerHTML='<span class="sbusy">loading the scripture index…</span>';res.innerHTML='';
-  sbInit(function(S){
-    if(qEl.value.trim().length>=2)return;
-    var flat=[];
-    Object.keys(S).forEach(function(b){Object.keys(S[b]).forEach(function(c){flat.push({b:b,c:c,n:S[b][c].length});});});
-    flat.sort(function(a,b2){return b2.n-a.n;});
-    flat=flat.slice(0,40);
-    if(!flat.length){ct.textContent='';res.innerHTML='';return;}
-    ct.textContent='Most-commented chapters — tap one, or type any reference above.';
-    res.innerHTML='<div class="sb-grid">'+flat.map(function(e){
-      var ref=capB(e.b)+' '+e.c;
-      return '<button type="button" class="sb-chip" data-ref="'+esc(ref)+'">'+esc(ref)+' <span class="sr-n">'+e.n+'</span></button>';
-    }).join('')+'</div>';
-    Array.prototype.forEach.call(res.querySelectorAll('.sb-chip'),function(btn){
-      btn.addEventListener('click',function(){qEl.value=btn.getAttribute('data-ref');run();qEl.focus();});
-    });
+function scriptureAtlas(ref){return FRResearchData.verseURL(ref.book,ref.ch,ref.verses.length===1?ref.verses[0]:null);}
+function renderScripture(q){var my=++seq;ct.textContent='Loading Scripture references…';res.innerHTML='';
+ scriptureBooks().then(async function(books){if(my!==seq)return;var ref=FRSearch.scriptureReference(q,books,FRResearchData.parseReference);
+  if(!ref){var bookRef=FRResearchData.parseReference(q+' 1',books);if(bookRef){renderBibleChapters(books.find(function(b){return b.slug===bookRef.book;}));return;}ct.textContent='Enter a book and chapter, with an optional verse or range, such as Romans 8:1–4.';return;}
+  var sh=FRSearch.shelf(FAC.trad),data;try{data=await scriptureChapter('/v1/bible/'+(sh?sh.code:'all')+'/'+encodeURIComponent(ref.book)+'/'+ref.ch+'.json.gz');}catch(e){if(my!==seq)return;if(e.status===404){ct.textContent='No published Scripture records are available for this passage in the selected shelf.';res.innerHTML='<a class="sr" href="'+scriptureAtlas(ref)+'">Open this passage in Scripture</a>';return;}throw e;}
+  if(my!==seq)return;var records=FRSearch.scriptureRecords(data,ref);navMap(function(){if(my!==seq)return;var groups=FRSearch.scriptureGroups(records.rows,FAC,WORKS_BY_SLUG,WORK_ALIASES),name=(books.find(function(b){return b.slug===ref.book;})||{}).book||ref.book,label=name+' '+ref.ch+(ref.selection?':'+ref.selection:'');
+   var locations=groups.reduce(function(n,g){return n+g.locations.length;},0);ct.textContent=locations.toLocaleString()+' source locations · '+groups.length.toLocaleString()+' works · '+label+(records.partial?' · published selection':'');
+   function paint(page){var ordered=FRSearch.orderWorks(groups,ORDER,WORKS_BY_SLUG,{},FRResearch.workOrder),win=FRSearch.pageWindow(groups.length,page);setPager(groups.length,win.page,paint,'works');res.innerHTML='<div class="scripture-context"><a href="'+scriptureAtlas(ref)+'">Read '+esc(ref.verses.length===1?label:name+' '+ref.ch)+' in Scripture</a><details><summary>Coverage</summary><p>These are indexed citations, including quotations and references. They do not establish agreement or a continuous commentary.</p>'+(records.partial?'<p class="search-warning">The published file contains a selection of the indexed references. These results are not exhaustive.</p>':'')+'</details></div>';
+    ordered.slice(win.start,win.end).forEach(function(g,i){var fold=document.createElement('details');fold.className='scripture-work';fold.dataset.work=g.slug;fold.dataset.author=g.author;fold.dataset.shelf=g.shelf;fold.open=i===0;fold.innerHTML='<summary>'+esc(ORDER==='relevance'&&g.author?g.author+' · ':'')+esc(g.title)+'<span>'+(g.volume?esc(g.volume)+' · ':'')+g.locations.length+' source location'+(g.locations.length===1?'':'s')+' · '+esc(g.shelf)+(g.available?'':' · Work not currently available')+'</span></summary><div class="scripture-locations"></div>';var list=fold.querySelector('.scripture-locations');locationPager(list,g.locations.length,function(start,end,target){g.locations.slice(start,end).forEach(function(loc){var a=document.createElement(g.available?'a':'div');a.className='sr';if(g.available)a.href=rdHref(g.slug,loc.page);a.innerHTML='<div class="sr-cite">'+esc(loc.verses.length?'Verse'+(loc.verses.length>1?'s ':' ')+loc.verses.join(', '):'Chapter reference')+' · '+esc(loc.page)+'</div><div>'+esc(g.title)+'</div>';target.appendChild(a);});},10);res.appendChild(fold);});if(!groups.length)res.insertAdjacentHTML('beforeend','<p>No available records match these filters. Try another shelf or clear the filters.</p>');
+   organizePage();}REDRAW=paint;paint(RESULT_PAGE);
   });
-}
+ }).catch(function(error){if(my!==seq)return;if(/requested verse|does not match/.test(error.message)){ct.textContent=error.message;res.innerHTML='';}else searchUnavailable('Scripture search',q);});}
+function renderBibleChapters(book){if(!book)return;ct.textContent='Choose a chapter of '+book.book+'.';res.innerHTML='<div class="sb-grid">'+book.chapters.map(function(c){var label=book.book+' '+c.c;return '<button type="button" class="sb-chip" data-ref="'+esc(label)+'">'+esc(label)+'</button>';}).join('')+'</div>';wireBibleButtons();}
+function wireBibleButtons(){res.querySelectorAll('[data-ref]').forEach(function(b){b.onclick=function(){qEl.value=b.dataset.ref;run();};});}
+function scriptureBrowse(){var my=++seq;ct.textContent='Loading Bible books…';res.innerHTML='';scriptureBooks().then(function(books){if(my!==seq||qEl.value.trim())return;ct.textContent='Choose a book, or enter a passage above.';res.innerHTML='<div class="sb-grid">'+books.map(function(b){return '<button type="button" class="sb-chip" data-book="'+esc(b.slug)+'">'+esc(b.book)+'</button>';}).join('')+'</div>';res.querySelectorAll('[data-book]').forEach(function(b){b.onclick=function(){var book=books.find(function(x){return x.slug===b.dataset.book;});qEl.value=book.book;saveSearchURL();renderBibleChapters(book);};});}).catch(function(){if(my===seq)searchUnavailable('Scripture catalogue','');});}
+function doorRow(m){return m==='scripture'?'<div class="sdoors"><a class="sdoor" href="/the-faith-received/bible/"><span class="sd-n">Open Scripture</span><span class="sd-d">Read the text, citations, and commentary.</span></a></div>':'';}
 
 /* ---- Ask (RAG via /api/ask, streamed) — TFR stream contract: {"t":"k"/"p"} control
        frames on their own lines + FIRST non-frame line = {"sources":[…],"graph":…} preamble,
@@ -755,7 +578,7 @@ function askHint(lastQ,turnData){var m=res.querySelector('#askMore');if(!m)retur
   m.innerHTML='<div class="ask-sugg ask-refine">'+chips.map(function(c,i){
       return '<button data-q="'+esc(c.q)+'"'+(c.deep?' data-deep="1"':'')+'>'+c.t+'</button>';}).join('')
     +'</div><div class="ask-tools"><button class="ask-new" id="askNew" type="button">New conversation</button><button class="ask-new" id="askMap" type="button" title="See this conversation as a map — its questions, loci, and cited works">⊚ Map</button><a class="ask-new" href="/the-faith-received/desk/" style="text-decoration:none" title="Write a paper at the Desk — insert your saved answers and notes with citations">✎ Desk</a><span class="ask-cgpt" data-cgpt-link style="margin-left:auto"></span></div>';
-  var b=res.querySelector('#askNew');if(b)b.onclick=function(){askReset();qEl.value='';qEl.focus();};
+  var b=res.querySelector('#askNew');if(b)b.onclick=function(){askReset();qEl.value='';focusQuery();};
   var mb=res.querySelector('#askMap');if(mb)mb.onclick=toggleMap;}
 function renderFallib(turn){var el=turn.querySelector('.ask-fallib');if(!el)return;
   var date='';try{date=new Date().toISOString().slice(0,10);}catch(e){}
@@ -850,25 +673,25 @@ function startHtml(){
   return '<div class="sstart"><div class="sstart-h">Start with what you need</div><div class="sdoors">'
     +door('title','Find a work','Look up an author, title, or section','Turretin')
     +door('full','Find a passage','Search the texts for a phrase or an idea','foedus operum')
-    +door('scripture','Read commentary','Find authors discussing a Bible passage','Romans 8')
+    +door('scripture','Find Scripture references','Find where a Bible passage is cited','Romans 8')
     +door('ask','Ask the library','Explore a question with cited answers','How did the early church understand the Eucharist?')
     +'</div></div>';}
 document.addEventListener('click',function(e){
   var d=e.target.closest('.sd-mode');if(!d)return;
   var m=d.getAttribute('data-dm'),q2=d.getAttribute('data-dq')||'';
   if(m==='ask'){if(window.FRAsk)window.FRAsk.open({q:q2});else{qEl.value=q2;setMode('ask');}return;}
-  qEl.value=q2;setMode(m);qEl.focus();});
-function run(){var q=qEl.value.trim();
+  qEl.value=q2;setMode(m);focusQuery();});
+function run(){seq++;REDRAW=null;RESULT_PAGE=RESTORE_PAGE===null?0:RESTORE_PAGE;RESTORE_PAGE=null;setPager(0,0,function(){});document.getElementById('meaningBroaden')?.remove();var groupUI=document.getElementById('groupControls');if(groupUI)groupUI.hidden=true;saveSearchURL();var q=qEl.value.trim();if(FAC.group==='westminster'&&!FAC.groupSlugs){var turn=seq;ct.textContent='Loading the Westminster scope…';res.innerHTML='';ensureSearchGroups().then(function(){if(turn===seq){RESTORE_PAGE=RESULT_PAGE;run();}}).catch(function(){if(turn===seq)searchUnavailable('Westminster group',q);});return;}
   if(q.length<2){if(MODE==='scripture'){scriptureBrowse();return;}if(MODE==='ask'){if(!res.querySelector('#askThread'))askReset();return;}
-    if(MODE==='title'&&!FAC.author&&!FAC.work&&!FAC.trad){res.innerHTML=startHtml();ct.textContent='';return;}
-    res.innerHTML='';ct.textContent='';return;}
+    if(MODE==='title'&&!FAC.author&&!FAC.work&&!FAC.workQuery&&!FAC.collection&&!FAC.group&&!FAC.trad){res.innerHTML=startHtml();ct.textContent='';return;}
+    if(MODE==='title'){renderTitle(q);return;}res.innerHTML='';ct.textContent='';return;}
   if(MODE==='full')renderFull(q);
   else if(MODE==='tradition')renderTradition(q);
   else if(MODE==='meaning')renderMeaning(q);
   else if(MODE==='ask'){ /* Ask runs on Enter only */ }
   else if(MODE==='scripture')renderScripture(q);
   else renderTitle(q);}
-var _t;qEl.addEventListener('input',function(){if(MODE==='ask')return;clearTimeout(_t);if(MODE==='title'||!qEl.value.trim())_t=setTimeout(run,180);});
+var _t;qEl.addEventListener('input',function(){if(MODE==='ask')return;seq++;clearTimeout(_t);if(MODE!=='title'&&qEl.value.trim()){REDRAW=null;setPager(0,0,function(){});res.innerHTML='';ct.textContent='Select Search to run this query.';}if(MODE==='title'||!qEl.value.trim())_t=setTimeout(run,180);});
 qEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();var q=qEl.value.trim();if(MODE==='ask'){if(q.length>=3){askTurn(q);qEl.value='';}}else run();}});
 
 /* ---- search elevation helpers (donor tail, TFR keys) ---- */
@@ -897,14 +720,30 @@ function zeroHtml(q,mode){
   }
 })();
 
+function ensureSearchGroups(){if(FAC.group!=='westminster')return Promise.resolve();if(!SCOPE_SCHOOLS)SCOPE_SCHOOLS=FRResearchData.json('/v1/schools.json').then(function(data){var slugs=data['Westminster Assembly']?.slugs;if(!Array.isArray(slugs)||!slugs.length)throw Error('Westminster membership is unavailable.');return slugs.map(function(s){return s.replace(/^@eebo:/,'eebo-');});}).catch(function(e){SCOPE_SCHOOLS=null;throw e;});return SCOPE_SCHOOLS.then(function(slugs){FAC.groupSlugs=slugs;});}
+function organizePage(){if(ORDER==='relevance'){groupControls();return;}var nodes=Array.from(res.children).filter(function(n){return n.dataset.work;}),shelves=new Map(),authors=new Map();nodes.forEach(function(node){var w=WORKS_BY_SLUG[node.dataset.work]||{},author=w.author||node.dataset.author||'No named author',sh=FRSearch.label(w.tradition||node.dataset.shelf)||'Indexed sources',parent=res;if(ORDER==='shelf'&&!FAC.trad){if(!shelves.has(sh)){var d=document.createElement('details');d.className='result-shelf';d.open=true;var summary=document.createElement('summary');summary.textContent=sh;d.appendChild(summary);res.appendChild(d);shelves.set(sh,d);}parent=shelves.get(sh);}var key=(ORDER==='shelf'?sh:'')+'|'+author;if(!authors.has(key)){var group=document.createElement('details');group.className='result-author';group.open=authors.size===0;var head=document.createElement('summary');head.textContent=author;group.appendChild(head);parent.appendChild(group);authors.set(key,{node:group,head:head,works:new Set()});}var a=authors.get(key);a.works.add(node.dataset.work);a.head.textContent=author+' · '+a.works.size+' '+(a.works.size===1?'work':'works')+' on this page';a.node.appendChild(node);});groupControls();}
+function groupControls(){var host=document.getElementById('groupControls');if(!host){host=document.createElement('div');host.id='groupControls';host.className='group-controls';res.before(host);}host.hidden=!res.querySelector('details');if(!host.childNodes.length){['Expand all','Collapse all'].forEach(function(label,i){var b=document.createElement('button');b.type='button';b.textContent=label;b.setAttribute('aria-controls','results');b.onclick=function(){res.querySelectorAll('details').forEach(function(d){d.open=i===0;});};host.appendChild(b);});}}
+function setPager(total,page,draw,noun){
+ var host=document.getElementById('resultsPager');if(!host){host=document.createElement('nav');host.id='resultsPager';host.className='results-pager';host.setAttribute('aria-label','Search result pages');res.before(host);}host.hidden=total===0;if(!total)return;
+ var win=FRSearch.pageWindow(total,page);RESULT_PAGE=win.page;var prev=host.querySelector('[data-direction=previous]'),next=host.querySelector('[data-direction=next]'),label=host.querySelector('span');
+ if(!prev){prev=document.createElement('button');next=document.createElement('button');label=document.createElement('span');prev.type=next.type='button';prev.dataset.direction='previous';next.dataset.direction='next';prev.textContent='Previous';next.textContent='Next';host.append(prev,label,next);}
+ prev.disabled=win.page===0;next.disabled=win.page+1===win.pages;label.textContent='Page '+(win.page+1)+' of '+win.pages+' · '+(win.start+1)+'–'+win.end+' of '+total+' '+(noun||'results');
+ function change(n,direction){RESULT_PAGE=n;saveSearchURL();res.scrollTop=0;draw(n);var target=host.querySelector('[data-direction='+direction+']:not(:disabled)')||host.querySelector('button:not(:disabled)');target?.focus({preventScroll:true});}
+ prev.onclick=function(){change(win.page-1,'previous');};next.onclick=function(){change(win.page+1,'next');};saveSearchURL();
+}
+function locationPager(host,total,draw,size){var current=0;function render(){host.replaceChildren();var win=FRSearch.pageWindow(total,current,size);draw(win.start,win.end,host);if(win.pages>1){var nav=document.createElement('div');nav.className='location-pager';var p=document.createElement('button'),n=document.createElement('button'),label=document.createElement('span');p.type=n.type='button';p.textContent='Previous locations';n.textContent='Next locations';p.disabled=current===0;n.disabled=current+1===win.pages;label.textContent=(win.start+1)+'–'+win.end+' of '+total;p.onclick=function(){current--;render();};n.onclick=function(){current++;render();};nav.append(p,label,n);host.appendChild(nav);}}render();}
+
+function saveSearchURL(){var u=new URL(location.href);var values={page:RESULT_PAGE?String(RESULT_PAGE+1):'',group:FAC.group,order:ORDER==='shelf'?'':ORDER,m:MODE,q:qEl.value.trim(),tradition:FAC.trad,author:FAC.author,work:document.getElementById('fWork').value.trim(),collection:FAC.collection};Object.keys(values).forEach(function(k){if(values[k])u.searchParams.set(k,values[k]);else u.searchParams.delete(k);});history.replaceState(history.state,'',u);}
+
+document.getElementById('groupOrder').onchange=function(){ORDER=this.value;RESULT_PAGE=0;saveSearchURL();if(REDRAW)REDRAW(0);};
 /* deep links: ?q=<query>&m=<mode> + ?author=/?tradition= facet prefills (boot-race-safe:
    setMode runs the search itself; nav/index loads re-run via their own cbs). */
 (function(){var VALID={full:1,meaning:1,ask:1,scripture:1,title:1,tradition:1};
   try{var u=new URL(location.href),m=u.searchParams.get('m'),q=u.searchParams.get('q');
-    var fa=u.searchParams.get('author'),fv=u.searchParams.get('tradition');
+    var group=u.searchParams.get('group');if(['westminster','puritan','anglican'].includes(group)){FAC.group=group;document.getElementById('fGroup').value=group;}var order=u.searchParams.get('order');if(['shelf','author','relevance'].includes(order)){ORDER=order;document.getElementById('groupOrder').value=order;}RESTORE_PAGE=Math.max(0,(Number(u.searchParams.get('page'))||1)-1);var fa=u.searchParams.get('author'),fv=u.searchParams.get('tradition');if(fv)fv=FRSearch.shelf(fv)?.value||'';var collection=u.searchParams.get('collection'),work=u.searchParams.get('work');if(collection==='confessions'){FAC.collection=collection;document.getElementById('fCollection').value=collection;}if(work){document.getElementById('fWork').value=work;FAC.workQuery=work;}
     if(fa){var el=document.getElementById('fAuthor');if(el){el.value=fa;FAC.author=fa;}}
     if(fv){var vs=document.getElementById('fTrad');if(vs){vs.value=fv;FAC.trad=fv;}}
-    if(q){qEl.value=q;}
+    if(q){qEl.value=q;}document.getElementById('fClear').hidden=!(FAC.author||FAC.workQuery||FAC.trad||FAC.collection||FAC.group);scopeSummary();
     var chatId=u.searchParams.get('chat'),trad=u.searchParams.get('trad');
     if(trad)ASKTRAD=trad;   // any shelf name works — the server post-filters by tradition; unlisted shelves just show no active chip
     window._AUTO_MODE=!VALID[m]&&!!q;
