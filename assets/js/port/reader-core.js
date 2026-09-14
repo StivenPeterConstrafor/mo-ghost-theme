@@ -4466,18 +4466,7 @@ const _thCycle=()=>{const cur=document.documentElement.getAttribute("data-theme"
 $("#th")&&($("#th").onclick=_thCycle);
 $("#thTop")&&($("#thTop").onclick=_thCycle);   /* masthead theme switch — light/dark reachable without opening Aa (owner 2026-09-05) */
 // keep the content offset equal to the fixed masthead's height (it wraps taller on narrow screens)
-/* MereO delta: --phh is "how much fixed chrome is above the text", and
-   on this site that is two headers, not one. The reader lives inside
-   Mere Orthodoxy's shell now, under a masthead that is also fixed at
-   top:0, so every consumer of --phh — .app's padding, the scroll-margin
-   a folio lands at, the cap on the Aa panel's height — has to clear both
-   or a heading lands underneath our nav. --mo-head is published by
-   assets/js/page/faith-port-read-boot.js; where it is absent, on his own
-   site or an embedded preview, this is exactly the old behaviour.
-   Re-apply when re-vendoring. */
-function setPhh(){const p=$(".ph");if(!p)return;
-  const mo=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--mo-head"))||0;
-  document.documentElement.style.setProperty("--phh",(p.offsetHeight+mo)+"px");}
+function setPhh(){const p=$(".ph");if(p)document.documentElement.style.setProperty("--phh",p.offsetHeight+"px");}
 addEventListener("resize",setPhh);new ResizeObserver(setPhh).observe($(".ph"));setTimeout(setPhh,60);setTimeout(setPhh,600);
 // seamless facsimile navigation: plain wheel = pan (down/across), Ctrl/Cmd+wheel = zoom the scan
 // (contained — never the browser), drag = pan. So you zoom in and still move freely.
