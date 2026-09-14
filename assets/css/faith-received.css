@@ -12051,7 +12051,12 @@ a.faith-tp-work:hover .faith-tp-work-title { color: var(--color-secondary); }
 /* Outlined, small radius, not a pill and not filled. Same manners as
    the spelling options in the dialog, which is the vocabulary the rest
    of this feature already speaks. */
-.fr-plan-open {
+/* Shared with the Ask door on /research/ and /search/
+   (partials/faith-received/_ask-door.hbs). One rule rather than two
+   look-alikes: they are the same control in the reader's eyes and a
+   copy would drift. `a` is included because the door's is a link. */
+.fr-plan-open,
+a.fr-plan-open {
   display: inline-block;
   font-family: var(--font-body);
   font-size: 15px;
@@ -12065,7 +12070,7 @@ a.faith-tp-work:hover .faith-tp-work-title { color: var(--color-secondary); }
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
-.fr-plan-open:hover { background: var(--color-secondary); color: #fff; }
+.fr-plan-open:hover { background: var(--color-secondary); color: #fff; text-decoration: none; }
 .fr-plan-open:focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 2px; }
 
 /* ── The dialog ─────────────────────────────────────────────────
@@ -16531,4 +16536,4 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   margin: 0 0 14px;
   color: var(--color-dark);
 }
-.faith-ask-door .btn { margin-top: 10px; }
+.faith-ask-door .fr-plan-open { margin-top: 4px; }
