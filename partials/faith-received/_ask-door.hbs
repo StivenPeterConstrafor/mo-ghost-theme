@@ -1,0 +1,25 @@
+{{!-- The Ask tab, on a page that is not the Ask workspace.
+
+     WHY THIS IS A DOOR AND NOT THE THING ITSELF. Ask stopped being a
+     panel on 2026-09-14. It is a conversation with a history rail, a
+     source pane and a composer that owns the viewport, which is not
+     something that fits inside a tab alongside Power Search and the
+     Desk. So the tab says what Ask is now and opens it.
+
+     The old single-shot panel (_ask-panel.hbs) is still in the theme
+     and still rendered by nothing: it is kept until the workspace has
+     been exercised by real members, so reverting is a one-line change
+     back to `{{> "faith-received/_ask-panel"}}` on the three pages that
+     used it. --}}
+<div class="faith-ask-door">
+  <h2 class="faith-ask-door-title">A question, answered from the library itself.</h2>
+  <p class="faith-ask-door-body">
+    Nineteen thousand works of Christian theology are open in front of you.
+    Every claim in the answer carries a citation you can open in the reader.
+  </p>
+  <p class="faith-ask-door-body">
+    Ask now keeps your conversations, lets you follow a question through several
+    turns, and opens each cited page beside the answer.
+  </p>
+  <a class="btn btn-primary" href="/the-faith-received/ask/" data-feature-gate="ask">Open Ask</a>
+</div>

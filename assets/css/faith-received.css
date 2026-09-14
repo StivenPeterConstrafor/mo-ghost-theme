@@ -16511,3 +16511,24 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
      spacing are the header's, so the height moves and they do not. */
   .faith-doc-toc-toggle { min-height: 44px; }
 }
+
+/* ── The Ask tab, once Ask became its own surface ──────────────────
+   Ask outgrew a tab on 2026-09-14: it is a conversation with a history
+   rail, a source pane and a composer that owns the viewport. The tab
+   now says what it is and opens it. Set to the same measure and rhythm
+   as the panel it replaces so the tab strip does not lurch when a
+   reader moves between Ask and Power Search. */
+.faith-ask-door { max-width: 620px; padding: 8px 0 24px; }
+.faith-ask-door-title {
+  font-family: var(--font-display);
+  font-size: var(--tfr-display-s);
+  line-height: 1.16;
+  margin: 0 0 16px;
+}
+.faith-ask-door-body {
+  font-size: var(--tfr-body);
+  line-height: 1.65;
+  margin: 0 0 14px;
+  color: var(--color-dark);
+}
+.faith-ask-door .btn { margin-top: 10px; }
