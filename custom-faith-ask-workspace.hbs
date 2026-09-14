@@ -72,6 +72,11 @@
   </noscript>
 </main>
 
+{{!-- Diagrams. Loaded before the engine because the engine's
+      updateAnswer calls window.MODiagrams the first time an answer
+      paints. It fetches nothing until an answer actually contains a
+      diagram, so the ordinary question pays nothing for it. --}}
+<script src="{{asset "js/lib/faith-diagrams.js"}}"></script>
 <script src="{{asset "js/port/ask-store.js"}}"></script>
 <script src="{{asset "js/port/ask-stream.js"}}"></script>
 <script src="{{asset "js/port/ask-jobs.js"}}"></script>

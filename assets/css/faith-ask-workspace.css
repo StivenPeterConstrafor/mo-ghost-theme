@@ -1073,3 +1073,40 @@ html.fra-open .fra-launcher { display: none; }
   background: var(--color-cream);
   color: var(--color-dark);
 }
+
+/* ── Diagrams in an answer ─────────────────────────────────────────
+   Asked to show a structure, the model used to draw it in ASCII inside
+   a code fence, which does not reflow, does not scale, and picked up
+   the striped background of our code-block rule. It emits Mermaid now
+   and assets/js/lib/faith-diagrams.js renders it.
+
+   The SVG scales to the column: the renderer strips Mermaid's fixed
+   width so this rule can govern. A wide diagram scrolls inside its own
+   box rather than pushing the answer sideways, which is the same
+   bargain .fra-table makes. */
+.fra-diagram {
+  margin: 20px 0;
+  padding: 16px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  background: var(--color-page);
+  border: 1px solid var(--color-card-border);
+  text-align: center;
+}
+.fra-diagram svg {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+}
+/* A diagram that will not parse falls back to its own source, so the
+   reader sees what the model wrote rather than an empty box. Kept
+   monospace and quiet: it is a failure state, not a figure. */
+.fra-diagram-source {
+  margin: 0;
+  text-align: left;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-muted);
+  white-space: pre;
+}

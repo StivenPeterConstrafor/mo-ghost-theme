@@ -39,6 +39,9 @@ const ENGINE = [
   "assets/js/port/ask-workspace.js",
   "assets/js/port/ask-jobs.js",
   "assets/js/port/ask-stream.js",
+  // Our own renderer emits .fra-diagram-source; it is as much a source
+  // of these class names as the engine is.
+  "assets/js/lib/faith-diagrams.js",
 ].map((p) => path.join(ROOT, p));
 
 // Classes the engine builds at runtime rather than writing out whole,

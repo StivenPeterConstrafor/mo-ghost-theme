@@ -137,12 +137,21 @@
     return esc(out).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\*([^*]+)\*/g,'<em>$1</em>').replace(/\u0001(\d+)\u0002/g, (_, n) => held[+n]);
   }
   function markdown(text, sources = []) {
-    const lines = String(text || '').split('\n'), out = []; let list = '', code = false, codeLines = [], paragraph = [];
+    const lines = String(text || '').split('\n'), out = []; let list = '', code = false, codeLines = [], codeLang = '', paragraph = [];
+    /* MereO delta: keep the fence's language, and turn a mermaid fence
+       into a diagram node for assets/js/lib/faith-diagrams.js to render
+       (Ian, 2026-09-14). Everything else is still a code block, and an
+       UNCLOSED fence stays a code block on purpose: an answer is
+       re-rendered on every streamed delta, so a diagram half-written is
+       not yet a diagram. Re-apply when re-vendoring. */
+    const block = (lang, body) => lang === 'mermaid' && body.trim()
+      ? '<div class="fra-diagram" data-diagram="'+esc(body)+'"></div>'
+      : '<pre><code>'+esc(body)+'</code></pre>';
     const flush = () => { if (paragraph.length) { out.push('<p>'+inline(paragraph.join('\n'),sources).replace(/\n/g,'<br>')+'</p>'); paragraph=[]; } };
     const closeList = () => { if (list) { out.push('</'+list+'>'); list=''; } };
     for (let i=0;i<lines.length;i++) {
       const l=lines[i];
-      if (/^```/.test(l)) { flush(); closeList(); if(code){out.push('<pre><code>'+esc(codeLines.join('\n'))+'</code></pre>');codeLines=[];}code=!code;continue; }
+      if (/^```/.test(l)) { flush(); closeList(); if(code){out.push(block(codeLang,codeLines.join('\n')));codeLines=[];codeLang='';}else{codeLang=l.slice(3).trim().toLowerCase();}code=!code;continue; }
       if(code){codeLines.push(l);continue;}
       if (l.includes('|') && i+1<lines.length && /^\s*\|?\s*:?-{3}/.test(lines[i+1])) {
         flush();closeList();const cells=x=>x.replace(/^\s*\||\|\s*$/g,'').split('|');
@@ -353,7 +362,10 @@
     }
     while(node){const following=node.nextSibling;node.remove();node=following;}
   }
-  function updateAnswer(answer,html){const fragment=document.createElement('template');fragment.innerHTML=html;reconcileAnswer(answer,fragment.content);}
+  /* MereO delta: draw any diagram the answer contains once the answer is
+     in the DOM. The renderer is lazy and caches by source, so calling it
+     on every delta costs a querySelector on a settled answer. */
+  function updateAnswer(answer,html){const fragment=document.createElement('template');fragment.innerHTML=html;reconcileAnswer(answer,fragment.content);if(window.MODiagrams)window.MODiagrams.render(answer);}
   function renderThread(){
     const c=selected();if(!c)return;const feed=$('#fra-feed'), thread=$('#fra-thread');
     const feedVisible=feed.clientHeight>0,near=feedVisible&&feed.scrollHeight-feed.scrollTop-feed.clientHeight<110;
