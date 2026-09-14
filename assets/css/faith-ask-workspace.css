@@ -160,16 +160,21 @@ html.fra-open .fra-launcher { display: none; }
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-/* The one place the display face appears on this surface. Everywhere
-   else it is body type: a workspace is read, not announced. */
+/* NO DISPLAY FACE ON THIS SURFACE (Ian, 2026-09-14: "can we not use IM
+   Fell anywhere here"). IM Fell is the library's voice for a title page
+   and a work's own name; a workspace is a place to work, and setting
+   its furniture in it made the tool announce itself. Everything here is
+   Source Serif, and the hierarchy comes from size, weight and space. */
 .fra-brand { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .fra-brand a {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  font-family: var(--font-display);
-  font-size: 23px;
-  line-height: 1.15;
+  font-family: var(--font-body);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
   color: var(--color-dark);
   text-decoration: none;
 }
@@ -429,9 +434,13 @@ html.fra-open .fra-launcher { display: none; }
 .fra-welcome-mark { color: var(--color-card-border); }
 .fra-welcome-mark svg { width: 34px; height: 34px; fill: currentColor; }
 .fra-welcome h1 {
-  font-family: var(--font-display);
-  font-size: clamp(34px, 4.4vw, 52px);
-  line-height: 1.08;
+  font-family: var(--font-body);
+  /* Smaller than the display face was, because Source Serif carries far
+     more weight per point: 52px of IM Fell and 52px of this are not the
+     same amount of ink. */
+  font-size: clamp(30px, 3.4vw, 40px);
+  font-weight: 600;
+  line-height: 1.14;
   margin: 18px 0 14px;
 }
 .fra-welcome > p {
@@ -484,11 +493,15 @@ html.fra-open .fra-launcher { display: none; }
 .fra-turn { padding: 34px 0 8px; }
 .fra-turn + .fra-turn { border-top: 1px solid var(--color-card-border); }
 /* The question is the heading of its own answer, which is the whole
-   editorial conceit of Ask: prose under a title, not a chat bubble. */
+   editorial conceit of Ask: prose under a title, not a chat bubble.
+   Body face at weight, not the display face: it has to sit directly
+   above the answer's own prose without reading as a different
+   publication. */
 .fra-question {
-  font-family: var(--font-display);
-  font-size: clamp(24px, 2.6vw, 33px);
-  line-height: 1.16;
+  font-family: var(--font-body);
+  font-size: clamp(23px, 2.2vw, 28px);
+  font-weight: 600;
+  line-height: 1.22;
   margin: 0 0 6px;
 }
 .fra-turn-meta {
