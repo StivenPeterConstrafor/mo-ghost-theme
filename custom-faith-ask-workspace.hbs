@@ -38,6 +38,12 @@
      runtime by the engine, so it must exist at exactly that path and
      must NOT be renamed or bundled.
 
+     NOTHING ON THIS PAGE MAY BE AN INLINE SCRIPT. The theme's CSP is
+     `script-src 'self'` with no 'unsafe-inline', so an inline <script>
+     is refused and never runs. Three fixes for this page shipped inline
+     and none executed. The open call lives in
+     assets/js/page/faith-ask-open.js.
+
      WHY WE CALL open() OURSELVES. The engine opens on its own only when
      the path matches /ask, or when the URL carries ?ask= or ?m=ask.
      Ours is /the-faith-received/ask-workspace/, which matches none of
@@ -70,53 +76,4 @@
 <script src="{{asset "js/port/ask-stream.js"}}"></script>
 <script src="{{asset "js/port/ask-jobs.js"}}"></script>
 <script src="{{asset "js/port/ask-workspace.js"}}"></script>
-<script>
-  /* Open the workspace, and check that it stayed open.
-     
-     WHY THIS RETRIES INSTEAD OF PICKING A MOMENT. The engine publishes
-     window.FRAsk while ask-workspace.js parses, but finishes setting
-     itself up later and asynchronously, and until it has, an open()
-     call is accepted and then undone — the page settles showing only
-     the launcher. Three attempts to name the safe moment were all
-     wrong: during parse, after the script, and after DOMContentLoaded
-     behind the engine's own listener. Each looked right in the served
-     HTML and each left the route shut.
-     
-     So this stops modelling someone else's boot sequence. It asks, then
-     looks: if the workspace is not open a beat later, it asks again.
-     That is correct whenever the engine becomes ready, which is the
-     property we actually need. It gives up after ~4s so a genuinely
-     broken engine cannot spin, and the launcher is still there to open
-     it by hand.
-     
-     `q` lets a link ask outright (?q=…), `chat` reopens a saved
-     conversation. Keys are omitted rather than passed as undefined, so
-     the engine sees only what was given. */
-  (function () {
-    var tries = 0, MAX = 20, GAP = 200;
-    function opts() {
-      var o = {};
-      try {
-        var p = new URLSearchParams(window.location.search);
-        var q = (p.get("q") || p.get("ask") || "").slice(0, 2000);
-        if (q) { o.q = q; o.autoSend = true; }
-        if (p.get("chat")) o.id = p.get("chat");
-        if (p.get("trad")) o.tradition = p.get("trad");
-      } catch (e) { /* no query string; open empty */ }
-      return o;
-    }
-    function isOpen() {
-      return !!(window.FRAsk && window.FRAsk.isOpen && window.FRAsk.isOpen());
-    }
-    function attempt() {
-      if (isOpen()) return;                     /* already up: done */
-      if (tries++ >= MAX) return;               /* give up quietly */
-      if (window.FRAsk && typeof window.FRAsk.open === "function") {
-        try { Promise.resolve(window.FRAsk.open(opts())).catch(function () {}); }
-        catch (e) { /* keep trying */ }
-      }
-      window.setTimeout(attempt, GAP);
-    }
-    attempt();
-  })();
-</script>
+<script src="{{asset "js/page/faith-ask-open.js"}}"></script>
