@@ -85,6 +85,11 @@
   const ORD = { i: "1", ii: "2", iii: "3", iv: "4", 1: "1", 2: "2", 3: "3", 4: "4",
     first: "1", second: "2", third: "3", fourth: "4" };
 
+  // Book abbreviations that are also structural abbreviations in the
+  // Latin apparatus. Keyed on the form as typed, not on the book, so
+  // the spelled-out name always resolves. See the note in parse().
+  const AMBIGUOUS_ABBR = new Set(["col", "num", "nu", "tit", "act", "is"]);
+
   function romanToInt(s) {
     const m = { i: 1, v: 5, x: 10, l: 50, c: 100, d: 500, m: 1000 };
     let t = 0;
@@ -122,19 +127,58 @@
     }
 
     // Scripture: "Rom 9:16", "Romans 9", "Rom. ix. 16", "1 Cor 3".
-    m = q.match(/^(?:(1|2|3|i{1,3}|iv|first|second|third|fourth)\s+)?([a-z][a-z\s]{1,22}?)\.?\s*(\d{1,3}|[ivxlc]{1,7})(?:\s*[:.]\s*(\d{1,3}))?$/i);
+    //
+    // The name and the chapter must be separated by a period or a space.
+    // Without that requirement the roman-numeral alternative below eats
+    // the last letter of any abbreviation ending in i, v, x, l or c:
+    // "Col. 5" parsed as book "co", chapter "l" (= 50), verse 5, found
+    // no book called "co" and silently gave up. Nineteen aliases failed
+    // that way whenever they were written with the period they are
+    // normally written with — Prov., Gal., Phil., Col., Rev., Mal.,
+    // Lev., Mic., Luc., Marc., and Apoc., which is the ordinary Latin
+    // abbreviation for Revelation and so appears throughout this
+    // corpus. They all worked without the period, which is why it went
+    // unnoticed. The cost of the separator is that "Rom9" no longer
+    // parses; nothing in this apparatus is written that way, and the
+    // Migne branch above keeps its own tighter grammar.
+    // The ordinal alternation carries a literal 4 as well as `iv`: the
+    // Vulgate numbers Samuel and Kings straight through as 1–4 Regum,
+    // so "4 Reg. 5" is an ordinary citation in this corpus. It was the
+    // one ordinal missing, and it failed while "iv reg 5" resolved.
+    m = q.match(/^(?:(1|2|3|4|i{1,3}|iv|first|second|third|fourth)\s+)?([a-z][a-z\s]{1,22}?)(?:\.\s*|\s+)(\d{1,3}|[ivxlc]{1,7})(?:\s*[:.]\s*(\d{1,3}))?$/i);
     if (m) {
       const ord = m[1] ? ORD[m[1].toLowerCase()] : null;
       const name = m[2].toLowerCase().trim();
       const canon = (ord && BOOK_LOOKUP.get(`${ord} ${name}`)) || BOOK_LOOKUP.get(name);
       const ch = num(m[3]);
-      if (canon && ch) {
+      const verse = m[4] ? parseInt(m[4], 10) : null;
+      // Six abbreviations are also ordinary structural abbreviations in
+      // the Latin apparatus that makes up most of this library, and a
+      // citation is exactly where both senses appear:
+      //
+      //   col.  columna    the commonest abbreviation in all of Migne
+      //   num.  numero     "num. 5" is item five, not Numbers five
+      //   nu.   numero
+      //   tit.  titulus    canon law cites by title and chapter
+      //   act.  actus
+      //   is                the English copula, and not a form anyone
+      //                     writing English uses for Isaiah anyway
+      //
+      // A wrong Scripture link is silent: the reader follows it and
+      // lands in the wrong book with nothing to tell them so. An
+      // unmade link just leaves the text as it was. So when the name
+      // was typed in one of these ambiguous short forms, it counts as
+      // Scripture only on an explicit verse, which no structural
+      // reference carries. The spelled-out name is never ambiguous and
+      // is always honoured: "Colossians 5" and "Col 3:16" both resolve,
+      // "col. 5" does not.
+      if (canon && ch && !(AMBIGUOUS_ABBR.has(name) && verse === null)) {
         return {
           kind: "scripture",
           book: titleCase(canon),
           chapter: ch,
-          verse: m[4] ? parseInt(m[4], 10) : null,
-          label: `${titleCase(canon)} ${ch}${m[4] ? `:${m[4]}` : ""}`,
+          verse,
+          label: `${titleCase(canon)} ${ch}${verse !== null ? `:${verse}` : ""}`,
         };
       }
     }

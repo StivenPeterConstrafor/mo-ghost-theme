@@ -16428,3 +16428,43 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   .ask-actions { flex-wrap: wrap; }
   .ask-action + .ask-action { border-left: 1px solid var(--color-card-border); }
 }
+
+/* ── Typing on a phone must not zoom the page ──────────────────────
+   iOS Safari zooms the viewport whenever a focused text control is set
+   below 16px, and it does not zoom back out. The reader taps Find, the
+   page jumps, and the column they were reading is off-screen. Nineteen
+   controls across the library were between 10px and 15px, so it fired
+   on Find, the notebook, Ask's scope box, the Scripture jump, the room
+   and author filters, and the report form.
+
+   The fix is a floor, not a restyle: only on a touch device, and only
+   for controls that take typed text. Desktop keeps every size the
+   design chose, because the defect does not exist there. `pointer:
+   coarse` rather than a width, because this is a property of the input
+   device — an iPad in landscape zooms exactly like a phone, and a
+   narrow desktop window does not zoom at all.
+
+   16px is the threshold Safari tests, so it is the value; going higher
+   would change the design rather than fix the bug. Checkboxes, radios
+   and buttons are excluded: they take no text and never trigger it.
+
+   NOTE: this floor only reaches controls inside the TFR roots below.
+   The two overlays that mount on <body> (the Report An Issue form and
+   the reading-plan dialog) are named explicitly for that reason. A new
+   body-mounted TFR overlay has to be added here or it will zoom. */
+@media (pointer: coarse) {
+  .faith-received input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="button"]):not([type="submit"]),
+  .faith-received select,
+  .faith-received textarea,
+  .faith-reader input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="button"]):not([type="submit"]),
+  .faith-reader select,
+  .faith-reader textarea,
+  .fr-report-field input,
+  .fr-report-field select,
+  .fr-report-field textarea,
+  .fr-modal-form input,
+  .fr-modal-form select,
+  .fr-modal-form textarea {
+    font-size: 16px;
+  }
+}
