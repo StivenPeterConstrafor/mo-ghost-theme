@@ -147,3 +147,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 ## Topics scrolling and data audit: 2026-09-13
 
 [Source and acceptance package](topics-qa-2026-09-13/README.md): one scrolling area per shelf, fixed author/statement pages, indexed work selection, bounded loading and clearer extracted-statement provenance. Built and verified with 44 tests and real-data browser checks, including all 622 positions in Baxter’s Method of Christian Theology. **Deployed on Vercel: `dpl_4KuTW4MNw6q8xV19xsTWCVBgqcfW`.** Six research outputs match the production alias. Native MereO integration remains pending.
+
+## Mobile Web and source workflows: 2026-09-13
+
+[Source and acceptance package](web-mobile-qa-2026-09-13/README.md): compact mobile research views, working work/passage saves without previews, fixed citation pages, edition labels in Web and Notebook, and reader header-aware source placement. Verified Web → Notebook → reader → Desk, plus an English-only reader. Release `dpl_8oPyvgKgnoQ29ZvYzUBAKwWjJiwZ`; 78 focused checks and ten alias byte matches. Native MereO integration remains pending.
