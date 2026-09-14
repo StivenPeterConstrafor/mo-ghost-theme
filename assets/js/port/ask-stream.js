@@ -16,7 +16,7 @@
       if (obj && typeof obj.type === 'string') { // Cloudflare worker dialect
         if (obj.type === 'progress') { emit({ t: 'progress', message: obj.message || '' }); return; }
         if (obj.type === 'delta') { if (!preamble) { preamble = true; emit({ t: 'sources', sources: [] }); } emit({ t: 'text', text: String(obj.text || '') }); return; }
-        if (obj.type === 'result') { preamble = true; emit({ t: 'sources', sources: obj.sources || [] }); emit({ t: 'progress', message: '', completion: 'complete' }); return; }
+        if (obj.type === 'result') { preamble = true; emit({ t: 'sources', sources: obj.sources || [], unverified: obj.unverified || [] }); emit({ t: 'progress', message: '', completion: 'complete' }); return; }
         if (obj.type === 'error') throw new Error(String(obj.message || obj.error || 'Ask failed.'));
       }
       if (!preamble && obj && Array.isArray(obj.sources)) { preamble = true; emit({ t: 'sources', ...obj }); return; }
@@ -43,7 +43,7 @@
               if (obj && typeof obj.type === 'string') { // worker dialect mid-stream
                 if (obj.type === 'delta') emit({ t: 'text', text: String(obj.text || '') });
                 else if (obj.type === 'progress') emit({ t: 'progress', message: obj.message || '' });
-                else if (obj.type === 'result') { emit({ t: 'sources', sources: obj.sources || [] }); emit({ t: 'progress', message: '', completion: 'complete' }); }
+                else if (obj.type === 'result') { emit({ t: 'sources', sources: obj.sources || [], unverified: obj.unverified || [] }); emit({ t: 'progress', message: '', completion: 'complete' }); }
                 else if (obj.type === 'error') throw new Error(String(obj.message || 'Ask failed.'));
                 buffer = n < 0 ? '' : buffer.slice(n + 1); continue;
               }

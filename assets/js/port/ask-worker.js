@@ -70,7 +70,7 @@ async function run(id, turnId, request, job) {
       }
       if (ev.t === 'text') turn.a += ev.text;
       else if(ev.t==='replace')turn.a=String(ev.text||'');
-      else if (ev.t === 'sources') { turn.src = ev.sources; turn.graph = ev.graph; turn.gaps = ev.deep || ''; }
+      else if (ev.t === 'sources') { turn.src = ev.sources; turn.graph = ev.graph; turn.gaps = ev.deep || ''; turn.unverified = ev.unverified || []; }
       else if (ev.t === 'progress' || ev.t === 'step' || ev.t === 'plan') {
         let message = ev.message || ev.title || ev.note;
         if (ev.t === 'plan') { turn.plan = ev.steps || []; message = 'Planning the research'; }

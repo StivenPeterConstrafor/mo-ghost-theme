@@ -1297,3 +1297,24 @@ html.fra-open .fra-launcher { display: none; }
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* Quotations the worker could not find in the passages the answer cites.
+   Quotation marks are a promise that these words are on that page, and
+   Ask broke it once: a Latin sentence in quotation marks under two page
+   citations that could not contain it. Every quoted span is now matched
+   against the evidence and anything unfound is said plainly here.
+
+   A caution, not an error. It uses the accent rather than the error's
+   red, and a rule rather than a filled panel, because the research is
+   sound and one wording could not be confirmed. */
+.fra-unverified {
+  margin: 18px 0 0;
+  padding: 12px 0 12px 14px;
+  border-left: 2px solid var(--color-primary);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-muted);
+}
+.fra-unverified p { margin: 0 0 6px; }
+.fra-unverified ul { margin: 0; padding-left: 18px; }
+.fra-unverified li { margin-bottom: 4px; color: var(--color-dark); }

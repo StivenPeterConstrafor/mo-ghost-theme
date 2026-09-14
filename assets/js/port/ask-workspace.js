@@ -395,9 +395,16 @@
       const stage=humanStage(t.stage||'Starting research'), stageKey=t.status+'|'+stage;
       if(progress.dataset.stage!==stageKey){progress.dataset.stage=stageKey;progress.dataset.kind=/writ|compos|synthesi/i.test(stage)?'writing':/read|batch|page/i.test(stage)?'reading':/check|gap|verif/i.test(stage)?'checking':'searching';progress.innerHTML=t.status==='running'?'<span class="fra-motion" aria-hidden="true"><i></i><i></i><i></i></span><span>'+esc(stage)+'</span><span class="fra-elapsed" data-start="'+t.ts+'">'+elapsed(t.ts)+'</span>':t.status==='paused'?'<span>'+esc(stage)+'</span>':'';}
       const extra=node.querySelector('.fra-turn-extra');
-      const extrasKey=JSON.stringify([t.status,t.error,t.steps,t.src,t.stats,t.gaps,t.graph,catalogRevision]);
+      /* MereO delta: t.unverified joins the key, or the notice below would
+         paint once and never update. */
+      const extrasKey=JSON.stringify([t.status,t.error,t.steps,t.src,t.stats,t.gaps,t.graph,t.unverified,catalogRevision]);
       if(extra.dataset.key!==extrasKey){extra.dataset.key=extrasKey;const openDetails=Array.from(extra.querySelectorAll('details[open]')).map(d=>d.classList.contains('fra-sources')?'sources':d.querySelector('summary').textContent.replace(/ ·.*$/,''));
+        /* MereO delta: quotations the worker could not find in the passages
+           this answer cites. It sits directly under the answer, above the
+           sources, because it qualifies what was just read. Not role=alert:
+           it is a caution about wording, not a failure of the research. */
         extra.innerHTML=(t.graph&&t.graph.loci&&t.graph.loci.length?'<p class="fra-research-context">Research context · <span>'+t.graph.loci.map(esc).join(' · ')+'</span></p>':'')+(t.error?'<div class="fra-error" role="alert">'+esc(shownError(t))+'</div>':'')+
+          ((t.unverified||[]).length?'<div class="fra-unverified"><p>'+((t.unverified.length===1)?'This quotation could not be found':'These quotations could not be found')+' in the passages this answer cites. Read the sources before relying on '+((t.unverified.length===1)?'it':'them')+'.</p><ul>'+t.unverified.map(x=>'<li>“'+esc(x)+'”</li>').join('')+'</ul></div>':'')+
           (t.steps&&t.steps.length?'<details class="fra-activity"><summary>Research activity · '+t.steps.length+' steps</summary><ol>'+t.steps.map(s=>'<li>'+esc(humanStage(s.label))+'</li>').join('')+'</ol></details>':'')+
           (t.gaps?'<details class="fra-activity"><summary>Gaps in the evidence</summary><p>'+esc(t.gaps)+'</p></details>':'')+
           (t.stats?'<p class="fra-coverage">'+esc(t.stats.unique||0)+' passages found'+(t.stats.capped?' · Scan capped; this is not complete coverage.':' · '+esc(t.stats.pages)+' pages loaded.')+'</p>':'')+
