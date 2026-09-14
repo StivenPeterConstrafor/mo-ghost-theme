@@ -144,7 +144,17 @@
        UNCLOSED fence stays a code block on purpose: an answer is
        re-rendered on every streamed delta, so a diagram half-written is
        not yet a diagram. Re-apply when re-vendoring. */
-    const block = (lang, body) => lang === 'mermaid' && body.trim()
+    /* A fence is a diagram if it SAYS mermaid or if it READS as mermaid.
+       The prompt asks for ```mermaid and the model writes a bare ``` with
+       a perfectly good `flowchart TD` inside it often enough that trusting
+       the tag alone shipped a diagram as a code block (Ian, 2026-09-14).
+       The grammar is the more reliable signal of the two, so either will
+       do. MODiagrams owns the list of kinds, and its ALLOWED matches only
+       a diagram keyword at the very start of the block; anything it does
+       not recognise stays a code block, and anything that turns out not to
+       parse falls back to showing this same source. */
+    const looksLikeDiagram = body => !!(window.MODiagrams && window.MODiagrams.ALLOWED.test(body));
+    const block = (lang, body) => body.trim() && (lang === 'mermaid' || (!lang && looksLikeDiagram(body)))
       ? '<div class="fra-diagram" data-diagram="'+esc(body)+'"></div>'
       : '<pre><code>'+esc(body)+'</code></pre>';
     const flush = () => { if (paragraph.length) { out.push('<p>'+inline(paragraph.join('\n'),sources).replace(/\n/g,'<br>')+'</p>'); paragraph=[]; } };
