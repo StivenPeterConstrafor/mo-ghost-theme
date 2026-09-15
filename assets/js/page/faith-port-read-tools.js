@@ -296,6 +296,49 @@
     });
   }
 
+  /* ---- The thumb bar's two dead buttons ----------------------------
+   *
+   * reader-core wires the phone toolbar's Search and Research buttons to
+   * window.__frOpenSearch and window.__frOpenNotebook, and each call site
+   * is guarded, so when the global is missing the button silently does
+   * nothing at all. Both were missing here:
+   *
+   *   __frOpenNotebook is defined only in index.in05.js, the library
+   *   landing bundle, which the reader does not load.
+   *   __frOpenSearch is defined nowhere in the port, on any page.
+   *
+   * So two of the five buttons on the phone toolbar had never worked.
+   * Defining the globals is the whole fix: the engine's call sites are
+   * already there and already correct, and his file stays untouched.
+   */
+  if (!window.__frOpenSearch) {
+    window.__frOpenSearch = function () {
+      const app = document.getElementById("app");
+      if (app) app.classList.remove("nosb");
+      if (window.__frThumbSync) window.__frThumbSync();
+      // The field lives on the contents tab, so make sure that is the
+      // tab showing before reaching for it.
+      let box = document.querySelector('.sidebar input[type="search"]');
+      if (!box) {
+        const tab = document.querySelector(".nav-vt button");
+        if (tab) tab.click();
+        box = document.querySelector('.sidebar input[type="search"]');
+      }
+      if (box) { box.focus(); box.select(); }
+    };
+  }
+
+  if (!window.__frOpenNotebook) {
+    window.__frOpenNotebook = function () {
+      const nb = document.getElementById("notebook");
+      if (!nb) return;
+      // .open is what slides it in; without the class it sits parked off
+      // the right edge at translateX(102%).
+      nb.classList.toggle("open");
+      if (window.__frThumbSync) window.__frThumbSync();
+    };
+  }
+
   /* ---- The popover ------------------------------------------------- */
 
   function open(on) {
