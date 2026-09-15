@@ -16537,3 +16537,86 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   color: var(--color-dark);
 }
 .faith-ask-door .fr-plan-open { margin-top: 4px; }
+
+/* ─────────────────────────────────────────────────────────────────────
+   THE WAYS IN, above the table of contents (assets/js/faith-room-openers.js)
+
+   Two blocks at the top of All Works: where the reader left off, and the
+   shelves. Both are links into the room below rather than pages of their
+   own, so they are typographic and quiet. Nothing here is a card with a
+   shadow: the shelf list is a ruled list, which is what a catalogue
+   actually looks like.
+   ──────────────────────────────────────────────────────────────────── */
+.faith-room-openers { margin: 0 0 56px; }
+.faith-room-openers:empty { display: none; }
+
+.fro-block + .fro-block { margin-top: 52px; }
+
+/* The heading sits on the same baseline as its tally, which is why this
+   is a flex row and not a heading with a span floated off it. */
+.fro-h {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  margin: 0 0 20px;
+  font-family: var(--font-body);
+  font-size: 1.5rem; font-weight: 600; line-height: 1.2;
+  color: var(--color-dark);
+}
+.fro-tally {
+  font-size: var(--tfr-micro); font-weight: 400;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* ---- Continue reading ---- */
+.fro-cards {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.fro-card {
+  display: block; padding: 14px 16px;
+  border: 1px solid var(--color-card-border); border-radius: 3px;
+  background: var(--color-white);
+  text-decoration: none; color: inherit;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.fro-card:hover { border-color: var(--color-secondary); background: var(--color-cream); }
+.fro-card-t {
+  display: block; font-size: 1.0625rem; line-height: 1.3;
+  color: var(--color-dark);
+}
+.fro-card-m {
+  display: block; margin-top: 4px;
+  font-size: var(--tfr-micro); color: var(--color-muted);
+}
+
+/* ---- Browse the shelves ---- */
+.fro-shelf-list {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 0 48px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+.fro-shelf { border-top: 1px solid var(--color-rule); }
+.fro-shelf a {
+  display: block; padding: 14px 0;
+  text-decoration: none; color: inherit;
+}
+.fro-shelf a:hover .fro-shelf-name { color: var(--color-primary); }
+.fro-shelf-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+}
+.fro-shelf-name { font-size: 1.125rem; color: var(--color-dark); }
+.fro-shelf-n { font-size: var(--tfr-micro); color: var(--color-muted); white-space: nowrap; }
+.fro-shelf-n b { color: var(--color-primary); font-weight: 600; }
+.fro-shelf-who {
+  display: block; margin-top: 3px;
+  font-size: var(--tfr-micro); font-style: italic; color: var(--color-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .faith-room-openers { margin-bottom: 40px; }
+  .fro-block + .fro-block { margin-top: 38px; }
+  .fro-h { font-size: 1.3125rem; margin-bottom: 14px; }
+  .fro-cards { grid-template-columns: 1fr; }
+}

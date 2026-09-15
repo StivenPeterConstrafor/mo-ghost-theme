@@ -293,11 +293,14 @@ routes:
     template: custom-faith-centuries
   /the-faith-received/century/:
     template: custom-faith-centuries
-  # The ported library landing — the front door every byline, the Ask
-  # workspace and the reader's own "Library" link point at. Built from
-  # LANDING-PAGE-SPEC.md; his engine inside our shell.
+  # /library/ was the ported landing (custom-faith-port-index, built from
+  # LANDING-PAGE-SPEC.md). Retired 2026-09-15: its two useful parts,
+  # Continue reading and Browse the shelves, now sit at the top of All
+  # Works, which already had the search, the facets and the A-Z. Every
+  # link that pointed here points at /all-works/ now, and the route stays
+  # so an old bookmark lands on the same page rather than a 404.
   /the-faith-received/library/:
-    template: custom-faith-port-index
+    template: custom-faith-centuries
   /the-faith-received/browse/:
     template: custom-faith-browse
   # The research desk, ported from the corpus owner's own site (2026-09-10)

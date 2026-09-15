@@ -21,7 +21,14 @@
   </section>
 
   <section class="bband faith-room-body">
-    <div class="container" data-faith-room data-fr-bookmark-rows></div>
+    <div class="container">
+      {{!-- The two ways in, above the table of contents: where the reader
+            left off, and the shelves. Both are links into the room below,
+            and both remove themselves when they have nothing to show, so a
+            first-time visitor sees the shelves and the contents alone. --}}
+      <div class="faith-room-openers" data-faith-openers></div>
+      <div data-faith-room data-fr-bookmark-rows></div>
+    </div>
   </section>
 
 {{> "faith-received/_beta-band"}}
@@ -36,6 +43,9 @@
 <script src="{{asset "js/faith-corpora.js"}}"></script>
 <script src="{{asset "js/faith-century.js"}}"></script>
 <script src="{{asset "js/faith-room.js"}}"></script>
+{{!-- Continue reading and the shelves. Loads the same seven catalogues the
+     room does, and MOCorpora caches by id, so this costs no second fetch. --}}
+<script src="{{asset "js/faith-room-openers.js"}}"></script>
 {{!-- Bookmark a work from its row. The store first: it is the same
      mo-kit bookmark the reader's Save button and the Bookmark button at
      the foot of a section write, so a work saved here and a section
