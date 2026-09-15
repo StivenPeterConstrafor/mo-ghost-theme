@@ -16581,8 +16581,16 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 .fro-card:hover { border-color: var(--color-secondary); background: var(--color-cream); }
+/* Early English Books titles are whole paragraphs — "Lex, rex The law and
+   the prince : a dispute for the just prerogative of king and people :
+   containing the reasons and causes of…" ran to nine lines and made one
+   card taller than the block it sits in. Two lines, then an ellipsis;
+   the full title is on the card's own title attribute and on the page it
+   opens. */
 .fro-card-t {
-  display: block; font-size: 1.0625rem; line-height: 1.3;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 1.0625rem; line-height: 1.3;
   color: var(--color-dark);
 }
 .fro-card-m {

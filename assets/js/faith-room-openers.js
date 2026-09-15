@@ -52,7 +52,7 @@
       const href = "/the-faith-received/read/?w=" + encodeURIComponent(slug) +
         "#b" + encodeURIComponent(e.page) + "-0";
       const meta = [e.author, "fol. " + e.page].filter(Boolean).join(" · ");
-      return '<a class="fro-card" href="' + esc(href) + '">' +
+      return '<a class="fro-card" href="' + esc(href) + '" title="' + esc(title) + '">' +
         '<span class="fro-card-t">' + esc(title) + "</span>" +
         '<span class="fro-card-m">' + esc(meta) + "</span></a>";
     }).join("");
