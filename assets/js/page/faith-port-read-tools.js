@@ -71,14 +71,32 @@
     if (sel) return sel;
     const reading = $("reading");
     if (!reading) return "";
+
+    // The reader scrolls inside #scroll, not the window, so the window's
+    // height is the wrong ruler for what is on screen. This is the same
+    // rect the port's own position capture measures against.
+    const scroll = $("scroll");
+    const box = scroll ? scroll.getBoundingClientRect() : null;
+    const top = box ? box.top : 0;
+    const bottom = box && box.height ? box.bottom : window.innerHeight;
+
+    // innerText is empty for anything the browser is not rendering, so
+    // textContent is the fallback. It loses paragraph breaks, which is
+    // worth less than losing the text.
+    const read = (el) => ((el.innerText || el.textContent || "").trim());
+
+    const rows = Array.from(reading.querySelectorAll(".row"));
     const seen = [];
-    reading.querySelectorAll(".row").forEach((r) => {
-      const box = r.getBoundingClientRect();
-      if (box.bottom < 0 || box.top > window.innerHeight) return;
-      const t = (r.innerText || "").trim();
+    rows.forEach((r) => {
+      const b = r.getBoundingClientRect();
+      if (b.bottom < top || b.top > bottom) return;
+      const t = read(r);
       if (t) seen.push(t);
     });
-    return seen.join("\n\n");
+    // A geometry test that finds nothing must not be the reason a reader
+    // cannot copy. Fall back to the column itself.
+    if (seen.length) return seen.join("\n\n");
+    return read(reading);
   }
 
   function note(msg, bad) {
@@ -116,7 +134,11 @@
   const keep = $("rdKeep");
   function drawKeep(on) {
     keep.setAttribute("aria-pressed", on ? "true" : "false");
-    keep.textContent = on ? "★ Kept" : "☆ Keep this work";
+    // Only the label. Writing textContent here would take the
+    // description span with it, and the row would lose its second line
+    // the first time anyone kept anything.
+    const label = keep.querySelector(".rdt-l");
+    if (label) label.textContent = on ? "★ Kept" : "☆ Keep this work";
   }
   if (!BM || !BM.available || !BM.available()) {
     keep.disabled = true;
