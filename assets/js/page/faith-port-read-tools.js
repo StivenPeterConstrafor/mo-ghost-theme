@@ -359,13 +359,24 @@
       if (window.__frThumbSync) window.__frThumbSync();
       // The field lives on the contents tab, so make sure that is the
       // tab showing before reaching for it.
-      let box = document.querySelector('.sidebar input[type="search"]');
-      if (!box) {
-        const tab = document.querySelector(".nav-vt button");
-        if (tab) tab.click();
-        box = document.querySelector('.sidebar input[type="search"]');
-      }
-      if (box) { box.focus(); box.select(); }
+      // Focused on a later frame, not this one. The panel has only just
+      // been un-hidden, and focus() on an element the browser has not
+      // laid out yet is dropped silently — on a touch tap it left the
+      // caret wherever it already was and the field looked ignored.
+      const reach = (tries) => {
+        let box = document.querySelector('.sidebar input[type="search"]');
+        if (!box) {
+          const tab = document.querySelector(".nav-vt button");
+          if (tab) tab.click();
+          box = document.querySelector('.sidebar input[type="search"]');
+        }
+        if (box && box.getBoundingClientRect().height > 0) {
+          box.focus();
+          if (document.activeElement === box) { box.select(); return; }
+        }
+        if (tries > 0) window.setTimeout(() => reach(tries - 1), 80);
+      };
+      window.requestAnimationFrame(() => reach(6));
     };
   }
 
