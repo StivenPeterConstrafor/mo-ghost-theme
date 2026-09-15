@@ -151,8 +151,18 @@
    */
   if (corpusId !== "mo" && slug) {
     try {
+      // The two catalogues name the same work differently. Ours keeps
+      // the corpus in ?c= and the bare id in ?w= (c=eebo&w=53832); the
+      // ported index folds the corpus into the slug (eebo-53832). Where
+      // the id already carries its prefix, as PL's pld-448 does, it is
+      // left alone.
+      const PORTED_PREFIX = { eebo: "eebo", pld: "pld", pg: "pg", po: "po", augustine: "aq" };
+      const prefix = PORTED_PREFIX[corpusId];
+      const portedSlug = prefix && !slug.startsWith(`${prefix}-`)
+        ? `${prefix}-${slug}`
+        : slug;
       const to = new URL("/the-faith-received/read/", location.origin);
-      to.searchParams.set("w", slug);
+      to.searchParams.set("w", portedSlug);
       // Carry the address the visitor actually asked for: the page, the
       // highlight door, the source lane. Losing these would land every
       // deep link at folio 1.
