@@ -16620,3 +16620,9 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   .fro-h { font-size: 1.3125rem; margin-bottom: 14px; }
   .fro-cards { grid-template-columns: 1fr; }
 }
+.fro-foot {
+  grid-column: 1 / -1;
+  margin: 14px 0 0; padding-top: 14px;
+  border-top: 1px solid var(--color-rule);
+  font-size: var(--tfr-micro); color: var(--color-muted);
+}
