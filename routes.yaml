@@ -293,6 +293,11 @@ routes:
     template: custom-faith-centuries
   /the-faith-received/century/:
     template: custom-faith-centuries
+  # The ported library landing — the front door every byline, the Ask
+  # workspace and the reader's own "Library" link point at. Built from
+  # LANDING-PAGE-SPEC.md; his engine inside our shell.
+  /the-faith-received/library/:
+    template: custom-faith-port-index
   /the-faith-received/browse/:
     template: custom-faith-browse
   # The research desk, ported from the corpus owner's own site (2026-09-10)
