@@ -110,6 +110,25 @@
   // toolbar's real bottom and the reading text showed through the band
   // between them. Measured from the toolbar itself, and re-measured
   // whenever it changes shape.
+  /* Embedded in an iframe — the Ask workspace's source preview opens the
+     reader in one. The site masthead and footer are the frame around a
+     page, and inside someone else's panel they are neither: Ian saw a
+     second Mere Orthodoxy nav bar, hamburger and all, sitting in the
+     middle of an Ask answer.
+
+     Marked on <html> rather than tested in CSS because there is no media
+     query for "I am in a frame". Set as early as this script runs, so the
+     chrome never paints inside the panel. */
+  try {
+    if (window.self !== window.top) {
+      document.documentElement.classList.add("mo-embedded");
+    }
+  } catch (e) {
+    // Cross-origin parent: reading window.top throws, and throwing at all
+    // means we are framed. Same conclusion.
+    document.documentElement.classList.add("mo-embedded");
+  }
+
   function measurePh() {
     const ph = document.querySelector(".ph");
     if (!ph) return;

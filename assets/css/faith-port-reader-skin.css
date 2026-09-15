@@ -896,3 +896,16 @@ body:has(#app.faith-port-read-page) { background: var(--bg); }
    than left as a fifth control that does nothing when tapped. Restore it
    together with a panel that is actually mounted. */
 nav.frthumb [data-t="nb"] { display: none !important; }
+
+/* ── The reader, embedded in someone else's panel ───────────────────
+   The Ask workspace opens a cited work in an iframe. The masthead and
+   the footer are the frame around a PAGE; inside a preview panel they
+   are a second Mere Orthodoxy nav bar sitting in the middle of an
+   answer. The reader itself is the whole point of the embed, so it
+   takes the full height it is given. */
+html.mo-embedded header.site-header,
+html.mo-embedded .site-footer,
+html.mo-embedded #mobile-nav { display: none !important; }
+html.mo-embedded { --mo-head: 0px; }
+html.mo-embedded .faith-port-read-page { height: 100dvh; }
+html.mo-embedded .ph { top: 0; }

@@ -134,7 +134,7 @@
       return hold('<a class="fra-cite" href="'+esc(safeURL(s.link)||readURL(slug,page,s.quote))+'" title="'+esc(titleOf(s))+'">'+esc(s.cite || ('p. '+page))+'</a>');
     });
     out=out.replace(/\[([^\]\n]+)\]/g,(_,label)=>{const src=sources.find(s=>String(s.cit||s.cite||'').replace(/^\[|\]$/g,'')===label);const href=src&&sourceHref(src);return href?hold('<a class="fra-cite" href="'+esc(href)+'">'+esc(label)+'</a>'):'['+label+']';});
-    return esc(out).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\*([^*]+)\*/g,'<em>$1</em>').replace(/\u0001(\d+)\u0002/g, (_, n) => held[+n]);
+    return esc(out).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*\*([^*]+)\*\*\*/g,'<strong><em>$1</em></strong>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\*([^*]+)\*/g,'<em>$1</em>').replace(/\*{2,}/g,'').replace(/\u0001(\d+)\u0002/g, (_, n) => held[+n]);
   }
   function markdown(text, sources = []) {
     const lines = String(text || '').split('\n'), out = []; let list = '', code = false, codeLines = [], codeLang = '', paragraph = [];
@@ -171,9 +171,14 @@
       const h=/^(#{1,6})\s+(.+)$/.exec(l), li=/^\s*([-*]|\d+[.)])\s+(.+)$/.exec(l);
       if(h){flush();closeList();out.push('<h3>'+inline(h[2],sources)+'</h3>');}
       else if(li){flush();const kind=/\d/.test(li[1])?'ol':'ul';if(list!==kind){closeList();list=kind;out.push('<'+kind+'>');}out.push('<li>'+inline(li[2],sources)+'</li>');}
-      else if(/^>\s?/.test(l)){
-        flush();closeList();const quoted=[l.replace(/^>\s?/,'')];
-        while(i+1<lines.length&&/^>\s?/.test(lines[i+1]))quoted.push(lines[++i].replace(/^>\s?/,''));
+      /* MereO delta (Ian, 2026-09-15): allow up to three spaces before the
+         marker. CommonMark does, and the model indents its quotations
+         under the list item they belong to, so the strict /^>/ left every
+         one of them as a literal "> " in the middle of a paragraph.
+         Re-apply when re-vendoring. */
+      else if(/^ {0,3}>\s?/.test(l)){
+        flush();closeList();const quoted=[l.replace(/^ {0,3}>\s?/,'')];
+        while(i+1<lines.length&&/^ {0,3}>\s?/.test(lines[i+1]))quoted.push(lines[++i].replace(/^ {0,3}>\s?/,''));
         out.push('<blockquote>'+quoted.join('\n').split(/\n\s*\n/).map(p=>'<p>'+inline(p,sources).replace(/\n/g,'<br>')+'</p>').join('')+'</blockquote>');
       }
       else if(!l.trim()||/^\s*[-*_]{3,}\s*$/.test(l)){flush();closeList();}
