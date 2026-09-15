@@ -70,6 +70,7 @@
             <button id="m-par" aria-pressed="true" title="Latin source text — a toggle; read it beside the English, or alone with the scan">Latin</button>
             <button id="m-study" aria-pressed="false" title="Source facsimile — a toggle; the scan follows your scroll (drag the divider to resize)">Scan</button>
           </div>
+          <button id="m-modern" class="tgl" aria-pressed="false" hidden title="Rewrite the English into modern spelling and grammar. The source lane is never touched.">Modernize</button>
           <button id="rdFlow" class="tgl" aria-pressed="true" title="Continuous reading — page divisions recede; paragraphs split by the original page breaks re-join. Click for page-by-page.">Flow</button>
           <button id="rdRel" class="tgl" aria-pressed="false" title="Related passages — where this page's themes appear elsewhere in the library and among the authors">✧ Related</button>
           <div class="aaw rdtw"><button id="rdTools" class="tgl" aria-haspopup="true" aria-expanded="false" title="Copy the text, copy a link, keep this work, keep this passage">⌘ Tools</button>
@@ -162,5 +163,9 @@
 <script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
 <script src="{{asset "js/lib/faith-notebook-store.js"}}"></script>
 <script src="{{asset "js/page/faith-port-read-tools.js"}}"></script>
+{{!-- The English Modernizer. Same engine the Dynamic Reader uses, so a
+     word is modernized the same way everywhere on the site. --}}
+<script src="{{asset "js/faith-modernize.js"}}"></script>
+<script src="{{asset "js/page/faith-port-read-modernize.js"}}"></script>
 <script src="{{asset "js/port/cgpt-link.js"}}"></script>
 {{ghost_foot}}
