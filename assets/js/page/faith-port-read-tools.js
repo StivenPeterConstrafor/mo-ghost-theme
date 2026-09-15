@@ -230,7 +230,13 @@
    * the paragraph with its citation under it.
    */
   const reading = $("reading");
-  if (reading && window.matchMedia && window.matchMedia("(hover: hover)").matches) {
+  // No matchMedia gate here. Asking "(hover: hover)" once, at load, made
+  // whether the feature exists at all depend on what the browser reported
+  // in that instant, and a wrong answer then was permanent and silent.
+  // Whether the rail SHOWS is a CSS question, answered in the skin by a
+  // media query that re-evaluates itself; pointer events on a touch-only
+  // device simply never arrive.
+  if (reading) {
     const rail = document.createElement("div");
     rail.className = "fr-para-rail";
     rail.hidden = true;

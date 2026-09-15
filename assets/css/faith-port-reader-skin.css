@@ -725,3 +725,8 @@ html:not(.fr-plain) .app.teiflow:not(.no-facs):not(.only-en):not(.only-la) #read
 }
 .fr-para-rail button:hover { background: var(--hl); color: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .fr-para-rail { transition: none; } }
+
+/* Touch-only: a hover affordance there either never appears or never
+   leaves. This is the gate; the script no longer asks at load, because a
+   wrong answer in that one instant was permanent and silent. */
+@media (hover: none) { .fr-para-rail { display: none !important; } }
