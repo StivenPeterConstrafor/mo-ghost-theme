@@ -121,6 +121,55 @@
     return;
   }
 
+  /*
+   * EVERY PAGE-NATIVE WORK READS IN THE PORTED READER (Ian, 2026-09-15:
+   * "every single work should load in the new reader").
+   *
+   * It is decided here rather than by rewriting links because the whole
+   * site points at /reader/ from twenty-odd files, and a work's corpus is
+   * not known at the link. One redirect at the door moves all of them.
+   *
+   * WHAT CANNOT MOVE, AND WHY IT IS NOT A ROUTE PROBLEM. The registry
+   * above records how each corpus STORES its text. Six of them are
+   * `shards`: a folio per printed page, both lanes, a scan. That is
+   * exactly the model the ported reader was built on, so those go.
+   *
+   * `mo` (English Editions) is `json-sections` and `eebo` is `gz-toc`.
+   * Those texts have chapters and no pages — no folios, no facsimile,
+   * nothing for a page-native reader to paint. Sending them to /read/
+   * does not render them badly, it renders nothing, which is what
+   * Augustine's Confessions did when it was tried. They stay on this
+   * reader until their text is re-ingested as pages, and that is an
+   * ingest job on the corpus side, not a change we can make here.
+   */
+  if (readerKind === "shards" && slug) {
+    try {
+      const to = new URL("/the-faith-received/read/", location.origin);
+      to.searchParams.set("w", slug);
+      // Carry the address the visitor actually asked for: the page, the
+      // highlight door, the source lane. Losing these would land every
+      // deep link at folio 1.
+      const q = new URLSearchParams(location.search);
+      for (const key of ["p", "hl", "ref", "src", "ws"]) {
+        const v = q.get(key);
+        if (v) to.searchParams.set(key, v);
+      }
+      // replace(), not assign(): Back should return to where the reader
+      // was opened from, not bounce through this redirect forever.
+      //
+      // MOSafeRedirect is deliberately not used. It exists to stop a
+      // worker response sending us to an unexpected ORIGIN, so it
+      // demands an absolute https URL on an allowlist and would refuse
+      // this one. What is navigated to here is a path this file wrote
+      // itself, built against location.origin, and only the search and
+      // hash come from the current URL — no scheme can be smuggled
+      // through pathname + search + hash.
+      // eslint-disable-next-line no-restricted-syntax
+      window.location.replace(to.pathname + to.search + location.hash);
+      return;
+    } catch (e) { /* malformed URL; fall through and read it here */ }
+  }
+
   // ── State ─────────────────────────────────────────────────────
   let meta = null;
   let currentLang = restoreLang();
