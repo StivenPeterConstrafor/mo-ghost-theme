@@ -133,22 +133,24 @@ footer.site-footer .nav {
 .hero small,
 .hero label { color: inherit; }
 
-/* ── The layer cuts both ways ───────────────────────────────────────
-   read.in01.css is served inside `@layer port` so it cannot restyle
-   our masthead. The cost is that EVERY rule in it now loses to every
-   unlayered rule of ours — including inside the reader, where his
-   should win. Our screen.min.css carries `.nav { display: flex;
-   align-items: center; gap: 10px }` for the site menu, and `.nav` is
-   also the name of his contents sidebar. So the outline became a
-   horizontal flex row and all 276 chapter titles collapsed into 60px
-   columns, one letter per line (Ian, 2026-09-15: "the TOC on the reader
-   is a mess").
+/* ── Our shell's rules must not reach into his reader ──────────────
+   The collision runs both ways. `.nav` and `.brand` are our site
+   masthead's class names AND his reader's: `.nav` is the contents
+   sidebar, `.brand` the work card. Our screen.min.css loads after his
+   read.in01.css, so on a tie our rule wins — which is what we want in
+   our header and exactly what we do not want in his sidebar.
 
-   Inside #app his rules are put back. This is the other half of the
-   containment above: our shell is not his chrome, and his reader is not
-   our shell. Any further collision on a shared class name belongs
-   here — check `#app` first when something in the reader inherits a
-   site style it should not. */
+   `.nav { display: flex; align-items: center; gap: 10px }` is our site
+   menu, and applied to his outline it laid 276 chapter titles out as a
+   horizontal row, collapsing each to a 60px column one letter wide
+   (Ian, 2026-09-15: "the TOC on the reader is a mess").
+
+   Only the properties that actually collide are restored, and only
+   inside #app. Anything more — a cascade layer over his whole
+   stylesheet — demotes every rule he has, including the ones that are
+   more specific than ours and ought to win, and that cost the outline
+   its typography as well as its layout. Check `#app` first when
+   something in the reader inherits a site style it should not. */
 #app .nav {
   display: block;
   align-items: normal;

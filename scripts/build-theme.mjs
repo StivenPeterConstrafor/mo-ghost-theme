@@ -199,34 +199,6 @@ const STYLESHEETS = [
   { src: "assets/css/faith-ask-workspace.css", out: "faith-ask-workspace.min.css" },
 ];
 
-/*
- * THE PORTED READER'S STYLESHEET, WRAPPED IN A CASCADE LAYER.
- *
- * read.in01.css is the corpus owner's and is written for a document it
- * owns entirely. The reader now shares a document with Mere Orthodoxy's
- * masthead and footer, and the sheet collides with them on two of the
- * most generic class names there are: it styles `.brand` and `.nav`, and
- * so does our header. Measured on the live site, loading it takes
- * header.site-header from 61px to 89px, and its bare `a` rule repaints
- * our nav links in its own grey.
- *
- * A layer fixes the second kind of collision and not the first. Where we
- * have a competing declaration — link colour — an unlayered rule of ours
- * beats a layered rule of his, and the nav keeps its colours. Where we
- * have NO competing declaration — nothing of ours sets padding on
- * `.brand` — there is no conflict to resolve and his rule still applies.
- * That half is handled by the containment block in
- * assets/css/faith-port-reader-skin.css, which declares the values
- * explicitly. Both were verified in the browser before being written
- * down; neither is sufficient alone.
- *
- * It is wrapped at build time rather than edited in place because the
- * file is vendored and its author still pushes to it daily. Re-vendoring
- * must not have to remember this.
- */
-const LAYERED_PORT_CSS = [
-  { src: "assets/css/port/read.in01.css", out: "port/read.in01.css", layer: "port" },
-];
 
 for (const sheet of STYLESHEETS) {
   const outPath = path.join(BUILT, sheet.out);
@@ -247,30 +219,6 @@ for (const sheet of STYLESHEETS) {
   }
 }
 
-for (const sheet of LAYERED_PORT_CSS) {
-  const outPath = path.join(BUILT, sheet.out);
-  const source = await fs.readFile(path.join(REPO, sheet.src), "utf8");
-  // Wrapped, not compiled: esbuild would resolve the sheet's own imports
-  // and rewrite its asset URLs, and this file is served from a different
-  // directory than it was written for. The bytes stay his; only the
-  // layer is ours.
-  const wrapped = `@layer ${sheet.layer} {\n${source}\n}\n`;
-
-  if (checkMode) {
-    const existing = await readIfExists(outPath);
-    if (existing !== wrapped) {
-      console.error(`STALE: ${sheet.out} — run \`npm run build\` and commit.`);
-      stale = true;
-    } else {
-      console.log(`  OK: ${sheet.out}`);
-    }
-  } else {
-    await fs.mkdir(path.dirname(outPath), { recursive: true });
-    await fs.writeFile(outPath, wrapped);
-    const kb = (Buffer.byteLength(wrapped) / 1024).toFixed(1);
-    console.log(`  ✓ ${sheet.out} (${kb} KB, @layer ${sheet.layer})`);
-  }
-}
 
 if (checkMode && stale) {
   process.exit(1);
