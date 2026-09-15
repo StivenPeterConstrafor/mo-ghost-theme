@@ -5228,6 +5228,14 @@ async function loadPgCanon(ws){
     // THE SAME MONTH. THE THIRD DAY. The contest…") — carve every caps-run out as its own
     // head block so the aligner can never fuse a division into a paragraph
     _carveEn(t,enByCol[n]=enByCol[n]||[]);});
+  // PRINTED ENGLISH PARAGRAPHS (owner 2026-09-15 'rich labelled inner text like the patrologia site'): the site-sidecar's own
+  // <p>/<head> sequence per column, UNCARVED — the paragraph basis in alignOpening pairs these with the source paragraphs when the
+  // counts agree; the carved enByCol stays the fallback for every other opening.
+  const enParasByCol={};
+  [...doc.querySelectorAll('div[type="translation"][resp="#site-sidecar"] p, div[type="translation"][resp="#site-sidecar"] head')].forEach(el=>{
+    let n=+(el.getAttribute("n")||0);if(!n){const m=(el.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}
+    if(!n)return;const t=el.textContent.replace(/\s+/g," ").trim();if(!t)return;
+    (enParasByCol[n]=enParasByCol[n]||[]).push(el.localName==="head"?"\u0001H"+t:t);});
   // page spans (n -> next pb) for span-union of vtx and EN lanes
   const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=window.FRPgParallel.printedColumns(doc);
   const _pgOwned=new Set(Object.keys(_canonOpenings).filter(k=>_canonOpenings[k].verified));
@@ -5693,8 +5701,32 @@ async function loadPgCanon(ws){
       else if(ln==="p"){const t=ch.textContent.replace(/\s+/g," ").trim();
         if(t)_carveGr(t,_colLa);}
       else if(ln==="div")walk2(ch,depth+1);}};
-    // the witness repeats as ONE DIV PER COLUMN BLOCK — walk them all, in document order
-    [...doc.querySelectorAll(src==="la"?'div[type="secondary"]':'div[type="diplomatic"]')].forEach(d2=>walk2(d2,0));
+    // SECONDARY-LANE GAPS (owner 2026-09-15 pg-343 col. 1048 'latin view … substantially smaller'): the site fill placed a Latin-only
+    // opening in the body (vision-scan division) while the secondary witness starts later or skips it — the Latin view showed nothing
+    // for that opening. Body openings whose text is Latin and whose numbers no secondary <pb>/<milestone> carries are walked in column
+    // order with the witness: each becomes one page (both printed columns), so the Latin view covers what the Greek·Latin view covers.
+    const _secN=new Set([...doc.querySelectorAll('div[type="secondary"] pb, div[type="secondary"] milestone[unit="column"]')].map(x=>+x.getAttribute("n")).filter(Boolean));
+    const _gapOpen=[];
+    if(src==="la"){const _cur={n:0,ps:[]};
+      const _flush=()=>{if(_cur.n&&!_secN.has(_cur.n)&&!_secN.has(_cur.n+1)){const t=_cur.ps.join(" ");const la=(t.match(/[A-Za-z]/g)||[]).length,gr=(t.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;
+        if(la>=100&&la>=gr*6)_gapOpen.push({n:_cur.n,ps:_cur.ps.slice()});}_cur.n=0;_cur.ps=[];};
+      (function bw(node){for(const ch of node.children){const ln=ch.localName,ty=ch.getAttribute?ch.getAttribute("type"):null;
+        if(ln==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
+        if(ln==="pb"){_flush();_cur.n=+ch.getAttribute("n")||0;}
+        else if(ln==="p"&&_cur.n){const t=ch.textContent.replace(/\s+/g," ").trim();if(t)_cur.ps.push(t);}
+        else if(ln==="div")bw(ch);}})(doc.querySelector("body")||doc.documentElement);_flush();
+      _gapOpen.sort((a,b)=>a.n-b.n);}
+    let _gi=0;const _emitGaps=(before)=>{while(_gi<_gapOpen.length&&(before==null||_gapOpen[_gi].n<before)){const g=_gapOpen[_gi++];addPb(g.n);g.ps.forEach(t=>_carveGr(t,_colLa));}};
+    const walk2g=(node,depth)=>{for(const ch of node.children){
+      const ln=ch.localName;
+      if((ln==="milestone"&&ch.getAttribute("unit")==="column")||ln==="pb"){const nn=+ch.getAttribute("n");if(nn)_emitGaps(nn);addPb(nn);}
+      else if(ln==="head")addHead(ch.textContent.replace(/\s+/g," ").trim(),depth);
+      else if(ln==="p"){const t=ch.textContent.replace(/\s+/g," ").trim();
+        if(t)_carveGr(t,_colLa);}
+      else if(ln==="div")walk2g(ch,depth+1);}};
+    // the witness repeats as ONE DIV PER COLUMN BLOCK — walk them all, in document order (gap openings interleaved by column number)
+    [...doc.querySelectorAll(src==="la"?'div[type="secondary"]':'div[type="diplomatic"]')].forEach(d2=>(src==="la"?walk2g:walk2)(d2,0));
+    if(src==="la")_emitGaps(null);
   }else{
     const body=doc.querySelector("body");
     const walk=(node,depth)=>{for(const ch of node.children){
@@ -5763,7 +5795,7 @@ async function loadPgCanon(ws){
               .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&x.n>=lo3&&x.n<=hi3&&(!_pgOwned.size||_pgOwned.has(String(x.n)))).sort((a,b)=>a.n-b.n);
             // The source site's vision text is already in the primary TEI columns.
             // Raw pageview zones are a fallback, never an unconditional replacement.
-            for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)];if(canon?.grc)sf.grc=canon.grcRich||canon.grc;if(canon?.la)sf.lat=canon.laRich||canon.la;}
+            for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)];if(canon?.grc)sf.grc=canon.grcRich||canon.grc;if(canon?.la)sf.lat=canon.laRich||canon.la;if(canon){sf.grcParas=canon.grcParas||[];sf.laParas=canon.laParas||[];}}
             window.__grclaDbg={surfs:surfs3.length,pv:!!pvXml3,cols:cols3.length};
             if(surfs3.length){
               _latBuilt=true;
@@ -5785,7 +5817,9 @@ async function loadPgCanon(ws){
                 _colEn=[];
                 for(let k3=sf.n;k3<sf.n+2;k3++){if(enByCol[k3]&&enByCol[k3].length){_colEn.push(...enByCol[k3]);(window.__enUsed=window.__enUsed||new Set()).add(k3);}}
                 if(src==="grcla"){
-                  const aligned=window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_colEn.map(e=>typeof e==="string"&&e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e).join(" "));
+                  const _enMarked=_colEn.map(e=>typeof e==="string"&&e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e);
+                  const _enParas=[...(enParasByCol[sf.n]||[]),...(enParasByCol[sf.n+1]||[])].map(e=>e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e);
+                  const aligned=window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_enMarked.join(" "),{grc:(sf.grcParas||[]).map(_healGrc),la:sf.laParas||[],en:_enParas});
                   // Keep printed headings visible in their own lane, without guessing
                   // their counterparts. Their opening remains a usable outline target.
                   const marked=aligned.rows.map(r=>r.en).join(" ");
@@ -6392,8 +6426,14 @@ async function loadEeboCanon(ws){
     try{const ds=new DecompressionStream("gzip");
       return await new Response(new Blob([buf]).stream().pipeThrough(ds)).text();}
     catch(e){return new TextDecoder().decode(buf);}};
+  // ONE DOWNLOAD, NOT TWO (2026-09-15, reverse-ported from the MereO reader): the early-fetch
+  // block already has this file on the wire as window.__frEarly.canonEebo before the document
+  // finished parsing. A second fetch here doubled the transfer of every Early English Books
+  // canon work (21 MB for the 10.6 MB Ness folio) and held two decodes in memory at once.
+  // Consume the early response when it is ours and unread; fetch only where there is none.
+  const early=(window.__frEarly&&window.__frEarly.canonEebo)?window.__frEarly.canonEebo.catch(()=>null):Promise.resolve(null);
   const [d,mod]=await Promise.all([
-    fetch(BLOB+"/eebo/"+encodeURIComponent(id)+".json.gz").then(async r=>{if(!r.ok)throw new Error("eebo "+r.status);return JSON.parse(await gunz(r));}),
+    early.then(r=>(r&&r.ok&&!r.bodyUsed)?r:fetch(BLOB+"/eebo/"+encodeURIComponent(id)+".json.gz")).then(async r=>{if(!r.ok)throw new Error("eebo "+r.status);return JSON.parse(await gunz(r));}),
     fetch(BLOB+"/eebo_modern/"+encodeURIComponent(id)+".json.gz").then(async r=>r.ok?JSON.parse(await gunz(r)):null).catch(()=>null)]);
   const M=(mod&&mod.m)||null;
   const mk=()=>{const D2=document.implementation.createDocument(null,"TEI",null);
