@@ -214,6 +214,12 @@ footer.site-footer .nav {
   .app:not(.nosb) .sidebar {
     position: relative;
     top: 0;
+    /* Stated explicitly. The drawer's translateX(-100%) is applied while
+       .nosb is on the element at first paint, and it survives the class
+       being removed a moment later — computed transform stayed at -300px
+       with no rule matching it. The open state says what open means
+       rather than relying on the closed state's rule stopping. */
+    transform: none;
     flex: 0 0 300px;
     box-shadow: none;
   }
