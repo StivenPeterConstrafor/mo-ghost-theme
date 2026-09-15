@@ -28,6 +28,11 @@
 
   let bar = null, input = null, meta = null, count = null, scope = null;
   let hits = [], at = -1, term = "";
+  // Marking and unmarking are themselves DOM changes inside #scroll, so
+  // the page-turn observer below sees them and re-runs the search, which
+  // resets the cursor to the first hit. Pressing Next then appeared to do
+  // nothing: it advanced, and 200ms later the re-run put it back.
+  let marking = false;
 
   function build() {
     if (bar) return bar;
@@ -76,6 +81,7 @@
   // normalise, searching repeatedly leaves a paragraph in hundreds of
   // fragments and every later search gets slower than the last.
   function clear() {
+    marking = true;
     const reading = readingNow();
     if (!reading) { hits = []; at = -1; return; }
     const marks = reading.querySelectorAll("mark.findhit");
@@ -88,6 +94,7 @@
     });
     parents.forEach((p) => p.normalize());
     hits = []; at = -1;
+    marking = false;
   }
 
   function textNodes(root) {
@@ -112,6 +119,7 @@
     const reading = readingNow();
     if (!reading || term.trim().length < 2) { draw(); return; }
     const needle = term.toLowerCase();
+    marking = true;
 
     // Collected first, then marked. Marking while walking mutates the
     // tree the walker is standing in.
@@ -131,6 +139,7 @@
       }
     });
 
+    marking = false;
     at = hits.length ? 0 : -1;
     if (at === 0) show();
     draw();
@@ -211,7 +220,7 @@
   const scroller = $("scroll");
   if (scroller && window.MutationObserver) {
     new MutationObserver(() => {
-      if (!bar || bar.hidden || !term.trim()) return;
+      if (marking || !bar || bar.hidden || !term.trim()) return;
       window.clearTimeout(settling);
       settling = window.setTimeout(() => run(term), 200);
     }).observe(scroller, { childList: true, subtree: true });
