@@ -34,8 +34,10 @@
      reader, and read.in01.css is taken from the layered build so it
      cannot restyle our header's .brand and .nav. --}}
 <a class="home-skip" href="#heroQ">Skip to search</a>
-<div class=top><a class=brand href="/the-faith-received/library/" id=brandHome>The Faith&nbsp;Received</a><button id=thBtn class=thbtn aria-label="Light or dark">☾</button><span class=tag>The&nbsp;Theological&nbsp;Heritage of&nbsp;Christianity</span>
-  <div class="seg nav" role=group aria-label="Sections"><button id=navLib aria-pressed=true>Library</button><button id=navConf aria-pressed=false>Confessions</button><button id=navSearch onclick="location.href='/the-faith-received/search/'" title="Search passages and works">Search</button><a href="/the-faith-received/desk/">Desk</a><a href="/the-faith-received/pins/">Notebook</a></div></div>
+{{!-- His masthead (div.top: brand, Library/Confessions/Search/Desk/
+     Notebook, theme toggle, Sign in) removed. Mere Orthodoxy's nav is
+     directly above it and does this job; two mastheads stacked is what
+     made the page read as a site within a site. --}}
 <div class=libbar>
   <input class=search id=q placeholder="Search by title or author…">
   <div class="seg witf" role=group aria-label="Witness"><button data-wit="" aria-pressed=true title="Every work">All</button><button data-wit="fac" aria-pressed=false title="Works with page scans: the scan is a second witness beside the text">Facsimile</button><button data-wit="dig" aria-pressed=false title="Transcribed texts without page scans">Digital</button></div>
