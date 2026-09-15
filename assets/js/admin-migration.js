@@ -127,14 +127,20 @@
       actions.push('<button type="button" class="kpi-btn" data-mig-do="cancel" disabled>Cancel</button>');
     }
     // HubSpot has no refund API and no bulk refund, so every payment that
-    // still owes money gets its own link straight to that payment record —
-    // the legacy charge plus any post-migration overcharges. Capped inline
-    // so a person charged monthly for a year doesn't turn one row into a
-    // wall of buttons; the rest are one click away via the full payment list.
+    // still owes money gets its own button — the legacy charge plus any
+    // post-migration overcharges. Payments have no HubSpot record page, so
+    // all of these land on the same place: that member's payments list,
+    // filtered to them. The amount and date on the button are what pick the
+    // row out on arrival, so the date is shown whenever a row has more than
+    // one button and they would otherwise be indistinguishable. Capped
+    // inline so a person charged monthly for a year doesn't turn one row
+    // into a wall of buttons; the rest are one click away in the same list.
     const links = Array.isArray(r.refund_links) ? r.refund_links : [];
     const MAX_INLINE_REFUND_LINKS = 3;
     links.slice(0, MAX_INLINE_REFUND_LINKS).forEach((link) => {
-      actions.push(`<a class="kpi-btn${r.kind === "clear" ? " kpi-btn--quiet" : ""}" href="${esc(link.url)}" target="_blank" rel="noopener" title="${esc(link.note)} · ${mdy(link.at)}">Refund ${usd(link.amount)} ↗</a>`);
+      const when = mdy(link.at);
+      const label = links.length > 1 ? `Refund ${usd(link.amount)} · ${when}` : `Refund ${usd(link.amount)}`;
+      actions.push(`<a class="kpi-btn${r.kind === "clear" ? " kpi-btn--quiet" : ""}" href="${esc(link.url)}" target="_blank" rel="noopener" title="${esc(link.note)} · ${when} · opens this member's payments in HubSpot">${label} ↗</a>`);
     });
     if (links.length > MAX_INLINE_REFUND_LINKS) {
       const rest = links.length - MAX_INLINE_REFUND_LINKS;
