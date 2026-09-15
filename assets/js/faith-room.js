@@ -628,7 +628,22 @@
           letters.map((l) => `<button type="button" data-room-letter="${l}" class="${letter === l ? "is-active" : ""}">${l}</button>`).join("")}</nav>`
       : "";
     const list = groups.length
-      ? `<div class="btrads faith-room-blocks faith-room-blocks--fold">${groups.map((g) => block(g.name, g.works, onShelf ? shelf.mark : null)).join("")}</div>`
+      ? (() => {
+        // TWO COLUMNS, and they are two real columns in the markup
+        // rather than one balanced multicol. A balanced multicol
+        // re-flows its whole content whenever anything in it changes
+        // height, so opening an author could throw the block you just
+        // clicked into the other column. Two independent columns each
+        // flow on their own: opening an author in the left one pushes
+        // only what is below it, and the right one does not move at
+        // all. On a phone they collapse back into one run in order.
+        const half = Math.ceil(groups.length / 2);
+        const col = (list) => `<div class="btrads-col">${list
+          .map((g) => block(g.name, g.works, onShelf ? shelf.mark : null))
+          .join("")}</div>`;
+        return `<div class="btrads faith-room-blocks faith-room-blocks--fold">`
+          + col(groups.slice(0, half)) + col(groups.slice(half)) + `</div>`;
+      })()
       : `<p class="faith-room-status">Nothing matches that. Try another name or title.</p>`;
     // An address that names no volume in this collection is the one
     // case where a reader can arrive holding something we cannot open,

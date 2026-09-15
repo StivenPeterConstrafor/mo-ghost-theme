@@ -16709,3 +16709,14 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   .faith-room-blocks--fold .btrad-all { padding-left: 0; margin-left: 0; }
   .faith-room-blocks--fold .btrad-all { margin-bottom: 18px; }
 }
+
+/* Two real columns for the folding author index. Not a multicol: see the
+   note in faith-room.js. Each column flows on its own, so opening an
+   author never moves anything in the other one. */
+.faith-room-blocks--fold { display: flex; align-items: flex-start; gap: 0 56px; }
+.faith-room-blocks--fold .btrads-col { flex: 1 1 0; min-width: 0; }
+.faith-room-blocks--fold .btrads-col:empty { display: none; }
+@media (max-width: 760px) {
+  .faith-room-blocks--fold { display: block; }
+  .faith-room-blocks--fold .btrads-col { display: contents; }
+}
