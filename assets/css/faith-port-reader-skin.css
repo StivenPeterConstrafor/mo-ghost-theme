@@ -730,3 +730,15 @@ html:not(.fr-plain) .app.teiflow:not(.no-facs):not(.only-en):not(.only-la) #read
    leaves. This is the gate; the script no longer asks at load, because a
    wrong answer in that one instant was permanent and silent. */
 @media (hover: none) { .fr-para-rail { display: none !important; } }
+
+/* ── No site footer in the reader ───────────────────────────────────
+   The reader is a full-height application: the toolbar is fixed, the
+   column scrolls inside #scroll, and the page itself does not scroll.
+   A site footer under that is unreachable by scrolling and only ever
+   appeared as a band of marketing wedged beneath the text.
+
+   :has() on the body rather than a class from JS, so it is right on the
+   first paint and there is no moment where the footer flashes. The
+   footer is a sibling of <main>, not of #app, so no combinator from
+   #app can reach it. */
+body:has(#app.faith-port-read-page) .site-footer { display: none; }
