@@ -703,3 +703,25 @@ html:not(.fr-plain) .app.teiflow:not(.no-facs):not(.only-en):not(.only-la) #read
   border-top: 1px solid var(--border);
 }
 #app .aapop.rdtools .rdt-say.is-bad { color: var(--accent); }
+
+/* ── The paragraph rail (assets/js/page/faith-port-read-tools.js) ───
+   Follows the pointer down the column and acts on the block beside it.
+   It lives in the margin, which after the sheet came off is space the
+   page had going spare. Pointer devices only: it is a hover affordance,
+   and on a touch screen it would either never show or never leave. */
+.fr-para-rail {
+  position: absolute; left: 0; z-index: 3;
+  display: flex; flex-direction: column; gap: 2px;
+  opacity: 0; transition: opacity 0.12s ease;
+}
+#reading:hover .fr-para-rail { opacity: 1; }
+.fr-para-rail[hidden] { display: none; }
+.fr-para-rail button {
+  appearance: none; cursor: pointer;
+  width: 24px; height: 24px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: 0; border-radius: 4px;
+  font: 0.82rem/1 var(--sans); color: var(--muted);
+}
+.fr-para-rail button:hover { background: var(--hl); color: var(--accent); }
+@media (prefers-reduced-motion: reduce) { .fr-para-rail { transition: none; } }

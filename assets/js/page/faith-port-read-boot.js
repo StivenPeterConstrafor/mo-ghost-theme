@@ -102,4 +102,39 @@
   // toolbar sat 24px inside our nav. Watch the element, not the window.
   const header = document.querySelector("header.site-header, header.site, .site-header");
   if (header && window.ResizeObserver) new ResizeObserver(measure).observe(header);
+
+  // --phh is the READER TOOLBAR's height, and the sidebar and the fixed
+  // chrome are positioned from it. The engine sets it once, so a toolbar
+  // that wrapped to two lines while the fonts were still loading and then
+  // reflowed to one left --phh too tall: the sidebar started below the
+  // toolbar's real bottom and the reading text showed through the band
+  // between them. Measured from the toolbar itself, and re-measured
+  // whenever it changes shape.
+  function measurePh() {
+    const ph = document.querySelector(".ph");
+    if (!ph) return;
+    const px = Math.round(ph.getBoundingClientRect().height);
+    if (px > 0) document.documentElement.style.setProperty("--phh", px + "px");
+  }
+  measurePh();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", measurePh, { once: true });
+  }
+  window.addEventListener("load", measurePh, { once: true });
+  if (window.ResizeObserver) {
+    const ph = document.querySelector(".ph");
+    if (ph) new ResizeObserver(measurePh).observe(ph);
+    // The toolbar is built by the engine after this script runs, so wait
+    // for it to appear before trying to observe it.
+    else if (window.MutationObserver) {
+      const mo = new MutationObserver(() => {
+        const el = document.querySelector(".ph");
+        if (!el) return;
+        mo.disconnect();
+        measurePh();
+        new ResizeObserver(measurePh).observe(el);
+      });
+      mo.observe(document.documentElement, { childList: true, subtree: true });
+    }
+  }
 })();

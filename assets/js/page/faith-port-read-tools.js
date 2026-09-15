@@ -130,6 +130,11 @@
     say.classList.toggle("is-bad", !!bad);
   }
 
+  function copyRaw(text) {
+    if (!navigator.clipboard) return Promise.reject(new Error("no clipboard"));
+    return navigator.clipboard.writeText(text);
+  }
+
   async function toClipboard(text, ok) {
     try {
       await navigator.clipboard.writeText(text);
@@ -210,6 +215,65 @@
       note("Saved to your notebook.");
     }).catch(() => note("That could not be saved to the notebook.", true));
   });
+
+
+  /* ---- Paragraph anchors -------------------------------------------
+   *
+   * The toolbar's Copy acts on the passage in view, which is the right
+   * unit for reading and the wrong one for citing. Every block the
+   * engine renders already carries a stable id — reader-core stamps
+   * rw.id = "b" + page + "-" + n on each .row — so a paragraph is
+   * addressable; nothing in the interface admitted it.
+   *
+   * A rail follows the pointer down the column and acts on the block it
+   * is beside: ¶ copies a link that lands on that paragraph, ⧉ copies
+   * the paragraph with its citation under it.
+   */
+  const reading = $("reading");
+  if (reading && window.matchMedia && window.matchMedia("(hover: hover)").matches) {
+    const rail = document.createElement("div");
+    rail.className = "fr-para-rail";
+    rail.hidden = true;
+    rail.innerHTML =
+      '<button type="button" data-a="link" title="Copy a link to this paragraph"' +
+      ' aria-label="Copy a link to this paragraph">\u00b6</button>' +
+      '<button type="button" data-a="copy" title="Copy this paragraph, with its citation"' +
+      ' aria-label="Copy this paragraph, with its citation">\u29c9</button>';
+    reading.appendChild(rail);
+
+    let host = null;
+    reading.addEventListener("pointerover", (e) => {
+      const row = e.target.closest && e.target.closest(".row[id]");
+      if (!row || !reading.contains(row)) return;
+      host = row;
+      const r = row.getBoundingClientRect();
+      const base = reading.getBoundingClientRect();
+      rail.style.top = (r.top - base.top + reading.scrollTop) + "px";
+      rail.hidden = false;
+    });
+    reading.addEventListener("pointerleave", () => { rail.hidden = true; host = null; });
+
+    // The rail reports on its own face. The Tools popover's status line
+    // is shut when the rail is in use, so saying it there says nothing.
+    function flash(b, mark) {
+      const was = b.textContent;
+      b.textContent = mark;
+      setTimeout(() => { b.textContent = was; }, 1100);
+    }
+
+    rail.addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b || !host) return;
+      e.preventDefault();
+      const link = new URL(deepLink());
+      link.hash = host.id;
+      const body = b.getAttribute("data-a") === "link"
+        ? link.href
+        : (host.innerText || host.textContent || "").trim() +
+          "\n\n" + citation() + "\n" + link.href;
+      copyRaw(body).then(() => flash(b, "\u2713"), () => flash(b, "\u2715"));
+    });
+  }
 
   /* ---- The popover ------------------------------------------------- */
 
