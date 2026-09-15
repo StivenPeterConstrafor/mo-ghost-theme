@@ -53,3 +53,67 @@
   --hl: #f5efe1;
   --highlight: #f5efe1;
 }
+
+<<<<<<< Updated upstream
+/* ── The reader inside the shell ────────────────────────────────────
+   Both mastheads are position:fixed at top:0 — ours at z-index 20, the
+   reader's toolbar at 40 — so until the toolbar is pushed down it
+   covers the site nav completely.
+
+   --mo-head is measured by assets/js/page/faith-port-read-boot.js
+   rather than written here as a number, because our header is 61px on a
+   desktop and taller when it wraps. The fallback is the desktop height,
+   which is what an unmeasured first paint should assume. */
+.ph.fr-reader-head,
+.ph {
+  top: var(--mo-head, 61px);
+}
+
+/* .app is `height:100dvh; padding-top:var(--phh)` — a full-viewport app
+   shell with its own internal scroller. --phh is published at runtime by
+   the engine's setPhh() and now carries our masthead as well as the
+   reader's toolbar (see the MereO delta in reader-core.js), so the
+   padding clears both and the app still measures exactly one viewport.
+   border-box is what keeps that true. */
+.app {
+  box-sizing: border-box;
+}
+
+/* The footer sits after the app. The app is exactly one viewport tall,
+   so the page itself scrolls to reach it once the reader's own scroller
+   hits its end — which is ordinary scroll chaining, not a second
+   scrollbar competing with the first. `overscroll-behavior: auto` on the
+   reader's scroller is what allows the chain; the reader sets `contain`
+   in places to trap it, and on this page we want it to pass through. */
+.faith-port-read-page #scroll { overscroll-behavior-y: auto; }
+=======
+/* ── Our shell is not his chrome ────────────────────────────────────
+   read.in01.css styles `.brand` and `.nav`. So does Mere Orthodoxy's
+   masthead. Sharing a document, his rules land on our header: measured
+   live, they take header.site-header from 61px to 89px by giving our
+   brand block 16px of top padding, 11.2px of bottom, and a rule under
+   it, and they hand our nav `overflow-y: auto`.
+
+   The stylesheet is served inside `@layer port` (see scripts/
+   build-theme.mjs), which settles every collision where we have a
+   competing declaration — our nav links keep their three colours
+   because an unlayered rule of ours outranks a layered rule of his.
+   A layer cannot settle THIS one: nothing of ours sets padding on
+   `.brand`, so there is no conflict to resolve and his rule simply
+   applies. The only fix is to say the value out loud.
+
+   These are the shell's own computed values, read off a clean page
+   rather than guessed, and verified to restore 61px exactly. */
+header.site-header .brand,
+header.site-header .nav,
+footer.site-footer .brand,
+footer.site-footer .nav {
+  padding: 0;
+  border-bottom: 0;
+  position: static;
+  flex: 0 1 auto;
+  overflow-y: visible;
+  scrollbar-width: auto;
+  font-family: var(--font-body);
+}
+>>>>>>> Stashed changes
