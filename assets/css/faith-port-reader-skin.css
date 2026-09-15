@@ -562,3 +562,56 @@ html.g-mobile #app .fr-reader-head .aamob { display: flex; }
    is kept: it is what guarantees a margin at every width. */
 #app.only-la #reading,
 #app.only-en #reading { max-width: min(46rem, 88%); }
+
+/* ── The toolbar's right cluster ────────────────────────────────────
+   Four groups with four different rhythms: the arrows cramped against
+   each other, a white input box on a cream band, a rule with unequal
+   air either side, then two text buttons at a third spacing. Read left
+   to right it has no beat (Ian, 2026-09-15).
+
+   One gap between groups, one height for everything in the row, and
+   the page field belongs to the toolbar rather than looking like a form
+   dropped onto it. */
+#app .ph .ctr {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+#app .ph .ctr .seg {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+#app .ph .ctr #pPrev,
+#app .ph .ctr #pNext {
+  min-width: 34px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+#app .ph .ctr #pgJump {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  min-height: 30px;
+  padding: 0 6px;
+  text-align: right;
+  font: inherit;
+  color: var(--fg);
+}
+#app .ph .ctr .pg-total { color: var(--muted); }
+#app .ph .ctr #rdFlow,
+#app .ph .ctr #rdRel { min-height: 34px; }
+
+/* ── Where the reader stops and the site resumes ────────────────────
+   The reading pane is exactly one viewport, so the footer sits below it
+   and the join had nothing marking it: text ran to the pane's edge and
+   the footer began, with no line to say one had ended (Ian, 2026-09-15:
+   "the footer is showing up here weird").
+
+   A rule is what the rest of the library uses between a reading surface
+   and what follows it. The Ask pill also stops floating over the
+   footer — it belongs to the reader, not to the page below it. */
+.faith-port-read-page { border-bottom: 1px solid var(--color-card-border, #d9c6a7); }
+body:has(.faith-port-read-page) .fra-launcher { position: absolute; bottom: 18px; }
