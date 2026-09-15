@@ -16626,3 +16626,78 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   border-top: 1px solid var(--color-rule);
   font-size: var(--tfr-micro); color: var(--color-muted);
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+   THE FOLDING AUTHOR INDEX (.faith-room-blocks--fold)
+
+   Every author folds shut and starts shut, so the table of contents opens
+   as an index of names rather than tens of thousands of rows.
+
+   ONE COLUMN, deliberately. The blocks used to sit in a balanced
+   two-column multicol, and a balanced multicol re-flows its whole content
+   whenever anything in it changes height: open one author and the block
+   you just clicked can be thrown into the other column, under your
+   cursor. Down one column, opening an author only ever pushes what is
+   already below it.
+   ──────────────────────────────────────────────────────────────────── */
+.faith-room-blocks--fold { columns: auto; column-gap: normal; }
+
+.faith-room-blocks--fold .btrad {
+  display: block; width: auto;
+  margin: 0; border-top: 1px solid var(--color-rule);
+}
+.faith-room-blocks--fold .btrad:last-child { border-bottom: 1px solid var(--color-rule); }
+
+/* The browser's own disclosure triangle, in both dialects, replaced by
+   a caret we can place and colour. */
+.faith-room-blocks--fold .btrad-sum { list-style: none; cursor: pointer; }
+.faith-room-blocks--fold .btrad-sum::-webkit-details-marker { display: none; }
+
+.faith-room-blocks--fold .btrad-sum h3 {
+  display: flex; align-items: baseline; gap: 16px;
+  /* 44px of target at the smallest text size this heading takes. */
+  margin: 0; padding: 13px 0 13px 26px;
+  position: relative;
+}
+.faith-room-blocks--fold .btrad-sum:hover h3 { color: var(--color-primary); }
+
+/* The caret. Rotates a quarter turn on open; holds still for a reader
+   who has asked for less motion. */
+.faith-room-blocks--fold .btrad-sum h3::before {
+  content: ""; position: absolute; left: 4px; top: 50%;
+  width: 6px; height: 6px; margin-top: -4px;
+  border-right: 1.5px solid var(--color-secondary);
+  border-bottom: 1.5px solid var(--color-secondary);
+  transform: rotate(-45deg); transform-origin: 50% 50%;
+  transition: transform 0.15s ease;
+}
+.faith-room-blocks--fold .btrad[open] > .btrad-sum h3::before { transform: rotate(45deg); }
+@media (prefers-reduced-motion: reduce) {
+  .faith-room-blocks--fold .btrad-sum h3::before { transition: none; }
+}
+
+.faith-room-blocks--fold .btrad-n {
+  margin-left: auto;
+  font-size: var(--tfr-micro); font-weight: 400;
+  letter-spacing: 0; text-transform: none;
+  color: var(--color-muted); white-space: nowrap;
+}
+
+/* The open panel. Indented to the caret so the works sit under the name
+   rather than beside it. */
+.faith-room-blocks--fold .blist { margin: 0 0 4px; padding-left: 26px; }
+.faith-room-blocks--fold .btrad-all { margin: 10px 0 20px 26px; }
+
+/* A long shelf runs in two columns once it is open. Nothing re-flows
+   across a block boundary here, so this cannot move anything but itself. */
+@media (min-width: 900px) {
+  .faith-room-blocks--fold .btrad--wide[open] .blist { columns: 2; column-gap: 48px; }
+  .faith-room-blocks--fold .btrad--wide[open] .blist li { break-inside: avoid; }
+}
+
+@media (max-width: 640px) {
+  .faith-room-blocks--fold .btrad-sum h3 { padding-left: 22px; gap: 10px; }
+  .faith-room-blocks--fold .blist,
+  .faith-room-blocks--fold .btrad-all { padding-left: 0; margin-left: 0; }
+  .faith-room-blocks--fold .btrad-all { margin-bottom: 18px; }
+}

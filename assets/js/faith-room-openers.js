@@ -17,10 +17,10 @@
   const root = document.querySelector("[data-faith-openers]");
   if (!root || !window.MOCorpora) return;
 
-  // The same seven the room reads on the all-works page. Kept in step
+  // The same eight the room reads on the all-works page. Kept in step
   // deliberately: a shelf count that disagrees with the table of
   // contents under it is worse than no shelf count at all.
-  const ALL = ["pg", "pld", "po", "tfr", "eebo", "confessions", "augustine"];
+  const ALL = ["pg", "pld", "po", "tfr", "eebo", "confessions", "augustine", "mo"];
 
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => (
     { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]

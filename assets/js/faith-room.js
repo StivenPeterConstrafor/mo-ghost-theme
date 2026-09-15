@@ -134,7 +134,12 @@
 
   // "all" is every collection at once, which is what the century page
   // reads: one table of contents cut by date rather than by shelf.
-  const ALL = ["pg", "pld", "po", "tfr", "eebo", "confessions", "augustine"];
+  //
+  // Every collection means every collection. "mo" (English Editions, 69
+  // works) was missing until 2026-09-15, so the one page that promises
+  // the whole library was the one page those works could not be found
+  // from.
+  const ALL = ["pg", "pld", "po", "tfr", "eebo", "confessions", "augustine", "mo"];
   const isAll = collectionId === "all";
   const corpus = isAll ? null : window.MOCorpora.get(collectionId);
   root.innerHTML = '<p class="faith-room-status">Loading the collection&hellip;</p>';
@@ -422,17 +427,33 @@
 
   function block(name, list, markOf) {
     const wide = list.length >= WIDE_AT ? " btrad--wide" : "";
-    // The author heading goes to their page. "Unattributed" is a bucket
-    // rather than a person, so it stays plain text.
     const key = fold(name);
-    const head = key && name !== "Unattributed"
-      ? `<a class="brow-author" href="/the-faith-received/author/?a=${encodeURIComponent(key)}">${escapeHtml(name)}</a>`
-      : escapeHtml(name);
     const rows = list.map((w) => row(w, markOf ? markOf(w) : undefined)).join("");
-    return `<div class="btrad${wide}">
-  <h3>${head}</h3>
-  <ul class="blist">${rows}</ul>
-</div>`;
+    const n = list.length;
+
+    // Every author folds shut, and starts shut. Open, this page is tens
+    // of thousands of rows; closed, it is an index of names, which is
+    // what a reader scanning for someone actually wants.
+    //
+    // <details> rather than a button and a class: it opens on Enter and
+    // on Space, it is announced as expanded or collapsed, and the
+    // browser's own find-in-page opens a closed block to show a hit.
+    // None of that is free when the fold is hand-rolled.
+    //
+    // The heading lives inside the summary, which is the one place the
+    // content model allows a heading, so the outline still reads as a
+    // list of authors.
+    //
+    // The author's own page used to hang off the heading. A link inside
+    // a summary is a coin toss between navigating and toggling, so it
+    // moved into the open panel, where it can say what it is.
+    const all = key && name !== "Unattributed"
+      ? `<a class="btrad-all" href="/the-faith-received/author/?a=${encodeURIComponent(key)}">Everything by ${escapeHtml(name)} &rarr;</a>`
+      : "";
+    return `<details class="btrad${wide}">
+  <summary class="btrad-sum"><h3>${escapeHtml(name)}<span class="btrad-n">${n.toLocaleString()} work${n === 1 ? "" : "s"}</span></h3></summary>
+  <ul class="blist">${rows}</ul>${all}
+</details>`;
   }
 
   // ── The volume grid ──────────────────────────────────────────────
@@ -593,7 +614,7 @@
           letters.map((l) => `<button type="button" data-room-letter="${l}" class="${letter === l ? "is-active" : ""}">${l}</button>`).join("")}</nav>`
       : "";
     const list = groups.length
-      ? `<div class="btrads faith-room-blocks">${groups.map((g) => block(g.name, g.works, onShelf ? shelf.mark : null)).join("")}</div>`
+      ? `<div class="btrads faith-room-blocks faith-room-blocks--fold">${groups.map((g) => block(g.name, g.works, onShelf ? shelf.mark : null)).join("")}</div>`
       : `<p class="faith-room-status">Nothing matches that. Try another name or title.</p>`;
     // An address that names no volume in this collection is the one
     // case where a reader can arrive holding something we cannot open,
