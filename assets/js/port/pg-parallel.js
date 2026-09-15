@@ -50,12 +50,22 @@ function nextWorkReference(works,currentId,page,lastColumn){
  const index=works.findIndex(w=>String(w.id)===String(currentId)),next=index>=0?works[index+1]:null;
  return next&&Array.isArray(next.c)&&n>=Number(next.c[0])&&n<=Number(next.c[1])?String(next.id):null;
 }
+// Migne's gutter letters A–D (the quarters of an opening) reached the per-column English as words ("…desirable promise, D by
+// adding these words", 2026-09-14). B, C, D are never English words; "A" is the article, so it is a gutter letter only where an
+// article cannot stand — before a pronoun, verb, article, preposition, conjunction or negation — or at the end of a paragraph.
+const NOT_AFTER_ARTICLE=new Set('you he she it we they i me him her us them your his its our their this that these those the a an and but or nor for yet so in on at by to of from with without into onto over under upon after before against between among through during within is are was were be been being am has have had do does did not no never also then thus therefore whether if when where while as than because since although though unless until'.split(' '));
+function dropGutterLetters(value){
+ return String(value).replace(/(^|[^\p{L}\p{N}])([ABCD])(?:[ \u00a0]+(?=([\p{L}“"‘(\[]))|[ \u00a0]*$)/gu,(m,pre,letter,next,offset,whole)=>{
+  if(letter==='A'&&next){const word=(whole.slice(offset+m.length).match(/^[\p{L}]+/u)||[''])[0].toLowerCase();if(!NOT_AFTER_ARTICLE.has(word))return m;}
+  return pre;
+ }).replace(/[ \u00a0]{2,}/g,' ').trim();
+}
 function cleanEnglish(value){
- return text(value).replace(/\s*Continue:\s*Ask about[\s\S]*?search the corpus[\s\S]*?Topics[\s\S]*?The Tradition[\s\S]*?next work\s*→\s*$/,'').trim();
+ return dropGutterLetters(text(value).replace(/\s*Continue:\s*Ask about[\s\S]*?search the corpus[\s\S]*?Topics[\s\S]*?The Tradition[\s\S]*?next work\s*→\s*$/,'').trim());
 }
 function location(data,opening){
  const map=data?.pg_columns?.[text(opening)];if(!map)return null;const mode=data.pg_source||'grc',cols=[...new Set((mode==='grcla'?[...(map.grc||[]),...(map.la||[])]:map[mode]||[]).map(text))];if(!cols.length)return null;
  cols.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));return cols.length===1?'col. '+cols[0]:'cols. '+cols.join('–');
 }
-return {canonicalOpenings,alignOpening,printedColumns,location,cleanEnglish,nextWorkReference};
+return {canonicalOpenings,alignOpening,printedColumns,location,cleanEnglish,dropGutterLetters,nextWorkReference};
 });
