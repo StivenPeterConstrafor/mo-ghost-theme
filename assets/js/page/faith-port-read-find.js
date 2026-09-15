@@ -28,11 +28,30 @@
 
   let bar = null, input = null, meta = null, count = null, scope = null;
   let hits = [], at = -1, term = "";
-  // Marking and unmarking are themselves DOM changes inside #scroll, so
-  // the page-turn observer below sees them and re-runs the search, which
-  // resets the cursor to the first hit. Pressing Next then appeared to do
-  // nothing: it advanced, and 200ms later the re-run put it back.
-  let marking = false;
+  const scroller = $("scroll");
+  /* Marking and unmarking are themselves DOM changes inside #scroll, and
+     the page-turn observer at the foot of this file cannot tell them from
+     a real page turn: it re-ran the search, which reset the cursor to the
+     first hit. Next advanced and then, 200ms later, jumped back.
+
+     A boolean guard does NOT fix this, which is what I tried first.
+     MutationObserver delivers its callback as a microtask AFTER the
+     current task finishes, so by the time the guard is read it has
+     already been set back to false. The observer has to be genuinely
+     detached while we mutate, and its queue emptied before it is
+     reattached, or the records it banked during the edit are delivered
+     the moment it comes back. */
+  let observer = null;
+  function quietly(fn) {
+    if (observer) observer.disconnect();
+    try { fn(); }
+    finally {
+      if (observer && scroller) {
+        observer.takeRecords();
+        observer.observe(scroller, { childList: true, subtree: true });
+      }
+    }
+  }
 
   function build() {
     if (bar) return bar;
@@ -81,7 +100,6 @@
   // normalise, searching repeatedly leaves a paragraph in hundreds of
   // fragments and every later search gets slower than the last.
   function clear() {
-    marking = true;
     const reading = readingNow();
     if (!reading) { hits = []; at = -1; return; }
     const marks = reading.querySelectorAll("mark.findhit");
@@ -94,7 +112,6 @@
     });
     parents.forEach((p) => p.normalize());
     hits = []; at = -1;
-    marking = false;
   }
 
   function textNodes(root) {
@@ -115,31 +132,30 @@
 
   function run(q) {
     term = String(q || "");
-    clear();
     const reading = readingNow();
-    if (!reading || term.trim().length < 2) { draw(); return; }
     const needle = term.toLowerCase();
-    marking = true;
+    quietly(() => {
+      clear();
+      if (!reading || term.trim().length < 2) return;
 
-    // Collected first, then marked. Marking while walking mutates the
-    // tree the walker is standing in.
-    textNodes(reading).forEach((node) => {
-      const hay = node.nodeValue.toLowerCase();
-      if (hay.indexOf(needle) === -1) return;
-      let rest = node, from = 0, idx;
-      while ((idx = rest.nodeValue.toLowerCase().indexOf(needle, from)) !== -1) {
-        const after = rest.splitText(idx);
-        rest = after.splitText(needle.length);
-        const mark = document.createElement("mark");
-        mark.className = "findhit";
-        mark.appendChild(document.createTextNode(after.nodeValue));
-        after.parentNode.replaceChild(mark, after);
-        hits.push(mark);
-        from = 0;
-      }
+      // Collected first, then marked. Marking while walking mutates the
+      // tree the walker is standing in.
+      textNodes(reading).forEach((node) => {
+        const hay = node.nodeValue.toLowerCase();
+        if (hay.indexOf(needle) === -1) return;
+        let rest = node, from = 0, idx;
+        while ((idx = rest.nodeValue.toLowerCase().indexOf(needle, from)) !== -1) {
+          const after = rest.splitText(idx);
+          rest = after.splitText(needle.length);
+          const mark = document.createElement("mark");
+          mark.className = "findhit";
+          mark.appendChild(document.createTextNode(after.nodeValue));
+          after.parentNode.replaceChild(mark, after);
+          hits.push(mark);
+          from = 0;
+        }
+      });
     });
-
-    marking = false;
     at = hits.length ? 0 : -1;
     if (at === 0) show();
     draw();
@@ -193,7 +209,7 @@
 
   function close() {
     if (!bar) return;
-    clear();
+    quietly(clear);
     term = "";
     input.value = "";
     bar.classList.remove("on");
@@ -217,12 +233,12 @@
   // A page turn replaces the text the marks were in. Re-run against what
   // is there now rather than leaving a stale count over new prose.
   let settling = null;
-  const scroller = $("scroll");
   if (scroller && window.MutationObserver) {
-    new MutationObserver(() => {
-      if (marking || !bar || bar.hidden || !term.trim()) return;
+    observer = new MutationObserver(() => {
+      if (!bar || bar.hidden || !term.trim()) return;
       window.clearTimeout(settling);
       settling = window.setTimeout(() => run(term), 200);
-    }).observe(scroller, { childList: true, subtree: true });
+    });
+    observer.observe(scroller, { childList: true, subtree: true });
   }
 })();
