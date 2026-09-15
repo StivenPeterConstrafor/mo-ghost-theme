@@ -48,7 +48,13 @@
   const root = document.querySelector("[data-faith-room]");
   if (!root || !window.MOCorpora) return;
 
-  const PAGE_SIZE = 50;
+  // A page of AUTHORS, not of works. Every author folds shut, so a page
+  // is a list of names, and a hundred of those is a screen or two of
+  // scrolling rather than the tens of thousands of rows a hundred
+  // authors' works would be. Paging by works also cut an author across
+  // the boundary, which is how Cyprian's eighteen could land on two
+  // pages; a page break now only ever falls between authors.
+  const PAGE_SIZE = 100;
   const params = new URLSearchParams(window.location.search);
   // The page says which collection it is; ?collection= is only a
   // fallback for the shared /room/ route.
@@ -448,7 +454,7 @@
     // a summary is a coin toss between navigating and toggling, so it
     // moved into the open panel, where it can say what it is.
     const all = key && name !== "Unattributed"
-      ? `<a class="btrad-all" href="/the-faith-received/author/?a=${encodeURIComponent(key)}">Everything by ${escapeHtml(name)} &rarr;</a>`
+      ? `<a class="btrad-all" href="/the-faith-received/author/?a=${encodeURIComponent(key)}">About ${escapeHtml(name)} &rarr;</a>`
       : "";
     return `<details class="btrad${wide}">
   <summary class="btrad-sum"><h3>${escapeHtml(name)}<span class="btrad-n">${n.toLocaleString()} work${n === 1 ? "" : "s"}</span></h3></summary>
@@ -529,23 +535,24 @@
     const scoped = onShelf
       ? (vol ? filtered.filter((w) => String(shelf.of(w) || "") === vol) : [])
       : (letter ? filtered.filter((w) => initial(w.author) === letter) : filtered);
-    const pages = Math.max(1, Math.ceil(scoped.length / PAGE_SIZE));
-    if (page > pages) page = pages;
-    const slice = scoped.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-    // Group the page's works under their author, in the order they were
-    // sorted, so an author is never split across two headings.
-    const groups = [];
-    slice.forEach((w) => {
+    // Group the whole filtered set under its authors first, then page the
+    // authors. Grouping after the slice was what let one author land on
+    // two pages.
+    const allGroups = [];
+    scoped.forEach((w) => {
       const name = (w.author || "").trim() || "Unattributed";
-      const last = groups[groups.length - 1];
+      const last = allGroups[allGroups.length - 1];
       if (last && last.name === name) {
         const key = `${(w.title || "").toLowerCase()}|${w.volume || ""}`;
         if (!last.seen.has(key)) { last.seen.add(key); last.works.push(w); }
       } else {
-        groups.push({ name, works: [w], seen: new Set([`${(w.title || "").toLowerCase()}|${w.volume || ""}`]) });
+        allGroups.push({ name, works: [w], seen: new Set([`${(w.title || "").toLowerCase()}|${w.volume || ""}`]) });
       }
     });
+
+    const pages = Math.max(1, Math.ceil(allGroups.length / PAGE_SIZE));
+    if (page > pages) page = pages;
+    const groups = allGroups.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
     const inCounts = new Map();
     if (isAll) works.forEach((w) => inCounts.set(w.corpus, (inCounts.get(w.corpus) || 0) + 1));
@@ -724,9 +731,19 @@
   // window is the first page, the last, and two either side of where
   // the reader is; the gaps are elided rather than printing forty
   // numbers across a phone.
+  // Paging by author brought the count down from 180 to a number worth
+  // printing in full, and a reader who can see page 14 can go straight
+  // to it. Past forty the row would wrap into a block of numbers on a
+  // phone, so the elided window below takes over again.
+  const ALL_PAGES_UP_TO = 40;
+
   function pageWindow(page, pages) {
     const out = [];
     const push = (n) => { if (out[out.length - 1] !== n) out.push(n); };
+    if (pages <= ALL_PAGES_UP_TO) {
+      for (let n = 1; n <= pages; n += 1) out.push(n);
+      return out;
+    }
     push(1);
     if (page - 2 > 2) out.push(null);
     for (let n = Math.max(2, page - 2); n <= Math.min(pages - 1, page + 2); n += 1) push(n);

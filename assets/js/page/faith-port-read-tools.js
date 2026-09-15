@@ -24,18 +24,43 @@
   const NB = window.MOFaithNotebook;
 
   // The ported reader folds the collection into the slug; our stores key
-  // on the pair. "aq" is Augustine, whose corpus id is the long name.
-  // A slug with no prefix is the Latin Library, which is also idFor's
-  // default, so it needs no entry here.
+  // on the pair, and the pair has to be the one All Works uses or a work
+  // kept here is a second record rather than the same one.
+  //
+  // "aq" is Augustine, whose corpus id is the long name.
   const PREFIX = { eebo: "eebo", pld: "pld", pg: "pg", po: "po", aq: "augustine" };
 
+  const SLUG = new URLSearchParams(location.search).get("w") || "";
+  const CUT = SLUG.indexOf("-");
+  const HEAD = CUT > 0 ? SLUG.slice(0, CUT) : "";
+
+  // Two collections carry no prefix: the Latin Library, whose slugs are
+  // author-title, and English Editions. Guessing between them by shape is
+  // not possible, and guessing wrong is exactly the bug this exists to
+  // close, so the English Editions catalogue is asked. It is 31KB and 69
+  // works, it is only ever fetched for an unprefixed slug, and the answer
+  // is kept for the life of the page.
+  let englishEditions = null;
+  function englishEditionSlugs() {
+    if (englishEditions) return englishEditions;
+    const base = window.__FR_BLOB_BASE__;
+    if (!base) return (englishEditions = Promise.resolve(new Set()));
+    englishEditions = fetch(String(base).replace(/\/$/, "") + "/v1/mo/index.json")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => new Set(((d && d.works) || []).map((w) => String(w.slug))))
+      .catch(() => new Set());
+    return englishEditions;
+  }
+
+  // Resolves the collection. A prefixed slug answers with no fetch at all.
   function where() {
-    const slug = new URLSearchParams(location.search).get("w") || "";
-    const cut = slug.indexOf("-");
-    const head = cut > 0 ? slug.slice(0, cut) : "";
-    return PREFIX[head]
-      ? { corpus: PREFIX[head], work: slug.slice(cut + 1), slug }
-      : { corpus: "tfr", work: slug, slug };
+    if (PREFIX[HEAD]) {
+      return Promise.resolve({ corpus: PREFIX[HEAD], work: SLUG.slice(CUT + 1), slug: SLUG });
+    }
+    // Unprefixed: the work id is the whole slug either way, so only the
+    // collection is in question.
+    return englishEditionSlugs()
+      .then((set) => ({ corpus: set.has(SLUG) ? "mo" : "tfr", work: SLUG, slug: SLUG }));
   }
 
   // What the reader is showing, straight off the chrome it already fills
@@ -58,7 +83,7 @@
   function deepLink() {
     const w = work();
     const u = new URL("/the-faith-received/read/", location.origin);
-    u.searchParams.set("w", where().slug);
+    u.searchParams.set("w", SLUG);
     if (w.page) u.searchParams.set("p", w.page);
     return u.href;
   }
@@ -144,15 +169,22 @@
     keep.disabled = true;
     keep.title = "Sign in to keep a work";
   } else {
-    const id = BM.idFor(where().corpus, where().work);
-    BM.ready().then(() => drawKeep(BM.has(id) === true)).catch(() => {});
-    if (BM.subscribe) BM.subscribe(() => drawKeep(BM.has(id) === true));
-    keep.addEventListener("click", () => {
-      keep.disabled = true;
-      Promise.resolve(BM.toggle(id))
-        .then((on) => { drawKeep(on === true); note(on ? "Kept. It is in your bookmarks." : "Removed from your bookmarks."); })
-        .catch(() => note("That could not be saved. Try again.", true))
-        .finally(() => { keep.disabled = false; });
+    // Disabled until the collection is known, because the id is what the
+    // button acts on and an id built from a guess is the whole bug.
+    keep.disabled = true;
+    where().then((at) => {
+      const id = BM.idFor(at.corpus, at.work);
+      const paint = () => drawKeep(BM.has(id) === true);
+      BM.ready().then(paint).catch(() => {});
+      if (BM.subscribe) BM.subscribe(paint);
+      keep.disabled = false;
+      keep.addEventListener("click", () => {
+        keep.disabled = true;
+        Promise.resolve(BM.toggle(id))
+          .then((on) => { drawKeep(on === true); note(on ? "Kept. It is in your bookmarks." : "Removed from your bookmarks."); })
+          .catch(() => note("That could not be saved. Try again.", true))
+          .finally(() => { keep.disabled = false; });
+      });
     });
   }
 
@@ -161,23 +193,22 @@
     const body = visibleText();
     if (!body) { note("Wait for the text to appear.", true); return; }
     const w = work();
-    const at = where();
-    try {
+    const cite = citation();
+    const url = deepLink();
+    where().then((at) => {
       NB.add(NB.newEntry({
         kind: "selection",
         corpus: at.corpus,
         work: at.work,
         title: w.title,
         author: w.author,
-        cite: citation(),
+        cite,
         anchor: w.page ? "p. " + w.page : "",
-        url: deepLink(),
+        url,
         text: body,
       }));
       note("Saved to your notebook.");
-    } catch (e) {
-      note("That could not be saved to the notebook.", true);
-    }
+    }).catch(() => note("That could not be saved to the notebook.", true));
   });
 
   /* ---- The popover ------------------------------------------------- */
