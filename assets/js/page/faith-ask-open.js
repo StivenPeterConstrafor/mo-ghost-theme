@@ -1,3 +1,36 @@
+/* The Ask page keeps Mere Orthodoxy's nav bar.
+ *
+ * .fra is `position: fixed; inset: 0; height: 100dvh` — a dialog that owns
+ * the viewport — so it covered the masthead entirely and the Ask page read
+ * as a different site. Ian's call: the nav bar belongs there.
+ *
+ * The workspace is pushed below the masthead in CSS, against --mo-head,
+ * and the measurement is here because the reader's boot script is the only
+ * other place that sets it and it does not run on this page. Re-measured
+ * when the header changes shape; a wrapped two-line header on a phone is
+ * taller than a one-line one.
+ *
+ * Not in an iframe: the Ask source preview frames the READER, not this
+ * page, and html.mo-embedded hides the chrome there instead.
+ */
+(function () {
+  "use strict";
+  function measure() {
+    const header = document.querySelector("header.site-header");
+    if (!header) return;
+    const px = Math.round(header.getBoundingClientRect().height);
+    if (px > 0) document.documentElement.style.setProperty("--mo-head", px + "px");
+  }
+  measure();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", measure, { once: true });
+  }
+  window.addEventListener("load", measure, { once: true });
+  window.addEventListener("resize", measure);
+  const header = document.querySelector("header.site-header");
+  if (header && window.ResizeObserver) new ResizeObserver(measure).observe(header);
+})();
+
 /*
  * Open the Ask workspace on /the-faith-received/ask-workspace/.
  *

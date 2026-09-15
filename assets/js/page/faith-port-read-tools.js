@@ -352,38 +352,11 @@
     };
   }
 
-  if (!window.__frOpenSearch) {
-    window.__frOpenSearch = function () {
-      const app = document.getElementById("app");
-      if (app) app.classList.remove("nosb");
-      if (window.__frThumbSync) window.__frThumbSync();
-      // The field lives on the contents tab, so make sure that is the
-      // tab showing before reaching for it.
-      // Focused on a later frame, not this one. The panel has only just
-      // been un-hidden, and focus() on an element the browser has not
-      // laid out yet is dropped silently — on a touch tap it left the
-      // caret wherever it already was and the field looked ignored.
-      const reach = (tries) => {
-        let box = document.querySelector('.sidebar input[type="search"]');
-        if (!box) {
-          const tab = document.querySelector(".nav-vt button");
-          if (tab) tab.click();
-          box = document.querySelector('.sidebar input[type="search"]');
-        }
-        if (box && box.getBoundingClientRect().height > 0) {
-          box.focus();
-          if (document.activeElement === box) { box.select(); return; }
-        }
-        if (tries > 0) window.setTimeout(() => reach(tries - 1), 80);
-      };
-      // Tried at once, then on timers. Not requestAnimationFrame: a
-      // backgrounded or hidden page can stop servicing rAF entirely, and
-      // a focus that only ever runs inside one is a focus that sometimes
-      // never runs at all. setTimeout keeps firing either way.
-      reach(0);
-      window.setTimeout(() => reach(6), 0);
-    };
-  }
+  // __frOpenSearch is NOT defined here any more. It opens the find bar
+  // now — assets/js/page/faith-port-read-find.js — which is what a
+  // magnifying glass on a reader means. This used to open the contents
+  // panel and focus its heading filter, which searched the table of
+  // contents rather than the text.
 
   // NO __frOpenNotebook. The Research panel it opened has been removed:
   // it was library-landing markup carried into this template without the

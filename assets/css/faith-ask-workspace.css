@@ -1318,3 +1318,20 @@ html.fra-open .fra-launcher { display: none; }
 .fra-unverified p { margin: 0 0 6px; }
 .fra-unverified ul { margin: 0; padding-left: 18px; }
 .fra-unverified li { margin-bottom: 4px; color: var(--color-dark); }
+
+/* ── The nav bar stays on the Ask page ──────────────────────────────
+   .fra is `position: fixed; inset: 0; height: 100dvh` — a dialog that
+   owns the viewport — so it covered Mere Orthodoxy's masthead outright
+   and the Ask page read as a different site. Ian's call: the nav bar
+   belongs there.
+
+   --mo-head is measured by assets/js/page/faith-ask-open.js, because the
+   reader's boot script is the only other thing that sets it and it does
+   not run on this page.
+
+   NOT when embedded: the Ask source preview frames the reader, and there
+   the chrome is hidden rather than made room for. */
+html:not(.mo-embedded) .fra {
+  top: var(--mo-head, 61px);
+  height: calc(100dvh - var(--mo-head, 61px));
+}
