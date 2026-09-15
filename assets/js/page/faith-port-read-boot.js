@@ -20,9 +20,15 @@
  * 2. THE HEIGHT OF OUR MASTHEAD. Both headers are position:fixed at
  *    top:0 — ours at z-index 20, the reader's toolbar at 40 — so without
  *    an offset the reader's toolbar sits on top of the site nav and
- *    hides it. The offset cannot be a constant: our header is 61px on a
- *    desktop and taller when it wraps. So it is measured and published
- *    as --mo-head, and the stylesheet positions the toolbar against it.
+ *    hides it.
+ *
+ *    The offset cannot be a constant, but not for the reason first
+ *    written here. Our header does NOT wrap: .header-inner is
+ *    flex-wrap:nowrap and its height follows .brand-logo. What it does
+ *    is STEP at the 640px breakpoint — 61px at or below it, 85px above.
+ *    61 is therefore the mobile height, not the desktop one, and it is
+ *    the right fallback because it is the one a first paint on a phone
+ *    needs. (Corrected from the Mobile agent's measurements.)
  *
  * It is a page script, so per this theme's script-order rule it runs
  * before site.min.js and must not depend on any site-bundle global. It
@@ -58,4 +64,14 @@
     window.clearTimeout(t);
     t = window.setTimeout(measure, 120);
   });
+
+  // A resize listener only catches height changes that a resize causes.
+  // The header also changes height without one — a webfont swapping in
+  // after load, nav content changing — and the site's own
+  // boot/header-behaviors.js already watches for exactly that with a
+  // ResizeObserver. Caught the two disagreeing in a live document:
+  // scroll-padding-top said 85px while --mo-head still said 61, and the
+  // toolbar sat 24px inside our nav. Watch the element, not the window.
+  const header = document.querySelector("header.site-header, header.site, .site-header");
+  if (header && window.ResizeObserver) new ResizeObserver(measure).observe(header);
 })();

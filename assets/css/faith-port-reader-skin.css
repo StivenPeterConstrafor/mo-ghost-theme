@@ -52,6 +52,22 @@
   /* A marked passage sits on cream, not on grey */
   --hl: #f5efe1;
   --highlight: #f5efe1;
+
+  /* ONE TOKEN CARRIES MOST OF THE "THIS ISN'T OUR SITE" FEELING.
+     --sans was -apple-system/Segoe UI, and it paints every label in the
+     tool layer: the Aa row labels, the Outline tabs, the sidebar chips,
+     the mobile dock, the century badges, the selection chip. A system
+     sans on a page of Garamond is the single loudest tell. */
+  --sans: "Source Serif Pro", Georgia, serif;
+
+  /* The white slab behind the About dialog's header and the related
+     passages bar. One token, two surfaces. */
+  --masthead: #f5efe1;
+  --masthead-ink: #2d2927;
+
+  /* Was #B0B0AA, a cool grey, on volume pills and related-passage
+     hovers. Our tan rule. */
+  --accent-soft: #d9c6a7;
 }
 
 /* ── The reader inside the shell ────────────────────────────────────
@@ -278,4 +294,206 @@ aside.relpanel,
 #selpop,
 #notebook {
   color: var(--fg);
+}
+
+/* ── Every overlay was anchored to a viewport it no longer owns ─────
+   One defect, five instances. The facsimile pane, the contents scrim,
+   the related-passages panel, the research drawer and its scrim are all
+   `top: 0` — correct when the reader was the whole document, wrong now
+   that our masthead occupies the first 61px. Four of the five carry a
+   z-index above our masthead's 20, so they do not merely reach it, they
+   cover it: with the contents drawer open at 375px, elementFromPoint at
+   our logo returns the scrim, and the hamburger cannot be tapped.
+
+   .facs stays inside the media query on purpose. Above 1100px it is
+   position:relative and a bare `top` would shift it in normal flow. */
+#sbScrim,
+.nb-scrim,
+.notebook,
+aside.relpanel {
+  top: var(--mo-head, 61px);
+}
+@media (max-width: 1100px) {
+  #app .facs { top: var(--mo-head, 61px); }
+}
+
+/* The section title in the toolbar never shrinks — `white-space:nowrap`
+   with `flex:none` and no overflow rule, while the sibling link beside
+   it got the full ellipsis treatment. At 375px it measures 566px inside
+   a 260px container and runs 344px past the right edge, straight under
+   the Aa button, which is why "Aa" is unreadable on a phone. Only
+   `html{overflow-x:hidden}` hides it from the scrollbar.
+
+   It is removed rather than clipped: it prints the same heading that
+   the reading column prints 60px below it, and removing it gives the
+   author's name back the room it was being crushed out of. */
+#app .fr-reader-head #reader-location { display: none; }
+
+/* The settings panel's height cap subtracts the reader's toolbar and
+   nothing else — not our masthead, not the mobile dock. At 320x640 the
+   last row, the text-size slider, renders 35px underneath the dock and
+   the panel does not scroll, so it cannot be reached at all. */
+#app .fr-reader-head .aapop {
+  max-height: calc(100dvh - var(--mo-head, 61px) - var(--phh, 62px) - 57px - 24px);
+}
+
+/* The contents drawer reserves 52px for a dock that measures 57. */
+html.g-mobile #app .sidebar { bottom: calc(57px + env(safe-area-inset-bottom)); }
+
+/* Seven dock labels at 9.6px. 14px cannot fit seven cells at 320px;
+   11.5px can, and is the honest floor for a label anyone must read. */
+html.g-mobile nav.frthumb button { font-size: 11.5px; }
+
+/* The dock's visibility is decided once at load by the g-mobile class
+   and never re-run, so a phone-width load resized to desktop keeps the
+   dock AND shows the floating Ask pill on top of the dock's own Ask
+   cell. Wherever the dock exists, it owns Ask. */
+html.g-mobile .fra-launcher { display: none !important; }
+
+/* The only way to dismiss a panel covering the whole phone screen was a
+   26px target. */
+#app aside.relpanel .relpanel-x { min-width: 44px; min-height: 44px; }
+
+/* ── The font control pointed at the wrong element entirely ─────────
+   It changed our masthead and never touched the work. Both halves of
+   that are explainable and one of them is this file's fault.
+
+   OUT: the containment rule above restores `font-family: var(--font-body)`
+   on our header and footer — but his sheets REDEFINE --font-body at
+   :root for each data-font value, so that line was not restoring our
+   face, it was piping his toggle straight into our masthead. Our chrome
+   now states its own value for the variable rather than reading a token
+   he owns. (That is also why the masthead was EB Garamond at rest on
+   this page and Source Serif everywhere else on the site.)
+
+   IN: the work's prose inherits from `body { font-family }` in
+   screen.min.css, which the control has no way to outrank, so the
+   setting had no path to the text. #reading now reads a variable only
+   this block sets, keyed off his data-font attribute, so his control
+   drives our element. The serif value is unchanged from today's
+   default, so nothing moves until a reader asks it to. */
+header.site-header,
+footer.site-footer {
+  --font-body: "Source Serif Pro", Georgia, serif;
+  --font-display: "IM Fell Great Primer", "Source Serif Pro", Georgia, serif;
+}
+:root[data-font="serif"] { --fr-read-font: "Source Serif Pro", Georgia, serif; }
+:root[data-font="sans"]  { --fr-read-font: "Source Sans 3", -apple-system, BlinkMacSystemFont, sans-serif; }
+:root[data-font="easy"]  { --fr-read-font: "Atkinson Hyperlegible", "Source Sans 3", sans-serif; }
+#app #reading { font-family: var(--fr-read-font, "Source Serif Pro", Georgia, serif); }
+
+/* ── Parchment, not pixels. Stone, not glass. ───────────────────────
+   Five surfaces in the tool layer were frosted glass with saturation
+   boosts. The brand voice says the opposite in those words. The toolbar
+   in particular was a translucent page colour under a 16px blur, so it
+   read as a floating pane; opaque cream makes it a band belonging to
+   the masthead above it. */
+#app .ph,
+#app .aapop,
+#app .fh,
+aside.relpanel .relpanel-h,
+html nav.frthumb {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+#app .ph { background: var(--color-cream, #f5efe1); }
+#app .aapop { background: var(--card, #fffdfa); }
+
+/* ── The outline is a list, not a wall ──────────────────────────────
+   276 entries at weight 600. Weight now means "you are here" and
+   nothing else, and the current entry is marked by the tan rule down
+   its edge rather than a floating white tile — the editorial row, which
+   is what the rest of the library uses.
+
+   His selector is (0,3,0); #app is required or this loses. */
+#app .nav-node.nd1 .nn-t { font-weight: 400; }
+#app .nav-node.on .nn-t { font-weight: 600; }
+#app .nav-node.on {
+  background: transparent;
+  border-radius: 0;
+  border-left-color: var(--color-secondary, #c1593c);
+}
+#app .nav-node:hover { background: var(--hl); }
+
+/* ── The settings panel, in a column ────────────────────────────────
+   The label track was `flex: 0 0 3.4rem` — 54.4px — and "FOOTNOTES"
+   renders 74px, so that one row's control started 20px right of the
+   other five. A grid guarantees the column instead of hoping every
+   label fits the basis. The label itself becomes our eyebrow. */
+#app .aapop .aarow {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 14px;
+  padding: 6px 0;
+}
+#app .aapop .aal {
+  font: 600 11px/1 var(--font-ui, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Selected means terracotta, not near-black. His --accent is #1C1C1A
+   and paints every active state in the reader; it is left alone at the
+   root because it also reaches footnote markers and drop caps in the
+   prose, which is a house-style decision rather than a bug fix. */
+#app .aapop .aaseg .tgl[aria-pressed="true"],
+#app .aapop .aaseg .tgl.on {
+  background: var(--color-secondary, #c1593c);
+  border-color: var(--color-secondary, #c1593c);
+  color: #fff;
+}
+#app .nav-vt button.on { color: var(--color-secondary, #c1593c); }
+html nav.frthumb button.on { color: var(--color-secondary, #c1593c); }
+
+/* ── One radius, no shadows ─────────────────────────────────────────
+   Twelve pill shapes and nine card shadows across the tool layer. The
+   site system is a 6px radius and flat surfaces with a tan rule. */
+#app .aapop,
+#aboutOv .about-box,
+aside.relpanel a.rsr {
+  border-radius: 4px;
+  box-shadow: none;
+}
+#aboutOv .about-box { border: 1px solid var(--border); }
+aside.relpanel { box-shadow: none; border-radius: 0; }
+aside.relpanel a.rsr:hover { transform: none; }
+#app .nav-vt,
+#app .nav-vt button { border-radius: 0; box-shadow: none; }
+
+/* ── The settings panel stops being a second toolbar ────────────────
+   Two blocks at the top of a menu labelled "Reading settings" are not
+   settings: Previous/Next duplicate the toolbar arrows eight pixels
+   away, About and Related belong on the toolbar, and "Go to section" is
+   the THIRD way to move within a work after the outline and the
+   toolbar's own number field. Together they are 167px of a panel that
+   is supposed to be about type.
+
+   His own stylesheet already hides .aamob; a later rule of his turns it
+   back on at every width, which is a rule-order accident rather than a
+   decision. It stays on the phone, where the toolbar has no room for
+   those controls. */
+#app .fr-reader-head .aamob,
+#app .fr-reader-head .reader-jump-form { display: none; }
+html.g-mobile #app .fr-reader-head .aamob { display: flex; }
+
+/* The welcome banner names three things that do not exist on this
+   page: a Latin lane and a Scan button that are both display:none on an
+   English-only work, and a command palette whose script this template
+   deliberately does not load. It is also set in italic EB Garamond — a
+   display face on a working surface — and opens with an em dash. An
+   open contents list teaches the interface better than a paragraph
+   about controls that are not there. */
+#app .coach { display: none; }
+
+/* A lane toggle with one lane. On an English-only work this cannot be
+   toggled, but it still renders underlined as though it were active. */
+#app.only-en .fr-reader-head #m-en { display: none; }
+
+/* The sidebar opens by default where there is room for it. A reader
+   landing on a 276-section work saw no contents at all. */
+@media (min-width: 1100px) {
+  #app.nosb .sidebar { transform: none; }
+  #app.nosb #sbScrim { display: none; }
 }

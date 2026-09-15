@@ -56,7 +56,7 @@
 <script src="{{asset "js/port/read.in02.js"}}"></script>
 <div class="app no-facs nosb faith-port-read-page" id="app">
   <aside class="sidebar">
-    <div class="work"><div class="wt" id="wt">…</div><div class="wmeta" id="wmeta"></div><span class="Z3988" id="coins" title="" aria-hidden="true"></span></div>
+    <div class="work"><div class="wt" id="wt">…</div><div class="wmeta" id="wmeta"></div>{{!-- COinS removed: it advertised thefaithreceived.vercel.app as publisher. --}}</div>
     <nav class="nav" id="nav"></nav>
   </aside>
   <div class="scroll" id="scroll">
@@ -75,11 +75,11 @@
           <button id="thTop" class="tgl" title="Theme — Light / Sepia / Dark" aria-label="Reading theme">◐</button><div class="aaw"><button id="aaBtn" class="tgl" aria-haspopup="true" aria-expanded="false" title="Reading settings — theme, text size, lane balance, scan zoom">Aa</button>
             <div class="aapop" id="aaPop" role="menu" aria-label="Reading settings">
               <div class="aarow"><span class="aal">Theme</span><button id="th" class="tgl" title="Reading theme — Light / Sepia / Dark" aria-label="Reading theme">◐</button></div>
-              <div class="aarow"><span class="aal">Layout</span><div class="aaseg" role="group" aria-label="Reading layout"><button type="button" id="readerFlowView" aria-pressed="true">Flow</button><button type="button" id="readerPageView" aria-pressed="false">Pages</button></div></div>
-              <div class="aarow"><span class="aal">Footnotes</span><div class="aaseg" role="group" aria-label="Footnote display"><button type="button" id="readerNotesDemand" aria-pressed="true">On demand</button><button type="button" id="readerNotesAll" aria-pressed="false">Show all</button></div><span id="readerNoteState" class="reader-note-state"></span></div>
-              <div class="aarow"><span class="aal">Font</span><div class="aaseg" role="group" aria-label="Body font"><button id="fSerif" class="tgl" title="Classic serif">Serif</button><button id="fSans" class="tgl" title="Modern sans-serif">Sans</button><button id="fEasy" class="tgl" title="Atkinson Hyperlegible — high-legibility / dyslexia-friendly">Easy</button></div></div>
+              <div class="aarow"><span class="aal">Layout</span><div class="aaseg" role="group" aria-label="Reading layout"><button type="button" id="readerFlowView" class="tgl" aria-pressed="true">Flow</button><button type="button" id="readerPageView" class="tgl" aria-pressed="false">Pages</button></div></div>
+              <div class="aarow"><span class="aal">Footnotes</span><div class="aaseg" role="group" aria-label="Footnote display"><button type="button" id="readerNotesDemand" class="tgl" aria-pressed="true">On demand</button><button type="button" id="readerNotesAll" class="tgl" aria-pressed="false">Show all</button></div><span id="readerNoteState" class="reader-note-state"></span></div>
+              <div class="aarow"><span class="aal">Font</span><div class="aaseg" role="group" aria-label="Body font"><button id="fSerif" class="tgl" title="Classic serif">Serif</button><button id="fSans" class="tgl" title="Modern sans-serif">Sans</button><button id="fEasy" class="tgl" title="Atkinson Hyperlegible — high-legibility / dyslexia-friendly">Legible</button></div></div>
               <div class="aarow"><span class="aal">Spacing</span><div class="aaseg" role="group" aria-label="Line spacing"><button id="lhC" class="tgl" title="Compact lines">▤</button><button id="lhN" class="tgl" title="Normal lines">☰</button><button id="lhR" class="tgl" title="Relaxed lines">≡</button></div></div>
-              <div class="aarow aakeys"><span class="aal">Keys</span><button id="kbdBtn" class="tgl" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts" style="min-width:1.6em;padding:0 .3em">?</button></div>
+              {{!-- Keys row removed: #kbdBtn has no handler in any script this page loads. --}}
               <div class="aarow"><span class="aal">Text</span><div class="sld szc" title="Text size"><button type="button" class="t1" id="szDn" title="Smaller text" aria-label="Decrease text size">A</button><input type="range" id="tzs" aria-label="Text size" min="14" max="34" step="1"><button type="button" class="t2" id="szUp" title="Larger text" aria-label="Increase text size">A</button></div></div>
               <div class="aarow" id="source-size"><span class="aal" id="source-size-name">Latin</span><label class="sld lnz lz-la" title="Latin lane size — relative to the base text size"><span class="lt">La</span><input type="range" id="lzs" min="70" max="150" step="5"></label></div>
               <div class="aarow"><span class="aal">English</span><label class="sld lnz lz-en" title="English lane size — relative to the base text size"><span class="lt">En</span><input type="range" id="ezs" min="70" max="150" step="5"></label></div>

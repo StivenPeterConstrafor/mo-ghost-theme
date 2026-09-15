@@ -3480,7 +3480,16 @@ function build(){
       home.style.cssText="display:flex;gap:.4rem;flex-wrap:wrap;padding:.15rem 0 .5rem;border-bottom:1px solid var(--border);margin-bottom:.4rem";
       const mk=(href,label)=>`<a href="${href}" style="font:600 .78rem/1 var(--sans);color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:.45rem .7rem">${label}</a>`;
       const conf=window.FRReaderNavigation?.isConfession(DATA)||/confessio|catechis|bekenntnis|helvetic|augsburg|westminster-confession|dennison/i.test((DATA.slug||"")+" "+(DATA.title||""));
-      home.innerHTML=mk("/","\u2302 Library")+ (conf?mk("/#confessions","\u274d All confessions"):"")+mk("/the-faith-received/fathers/","Authors")+mk("/the-faith-received/bible/","Scripture");
+      /* MereO delta: the first two chips were written for a site where
+         "/" IS the library. Here "/" is the Mere Orthodoxy homepage, so
+         "Library" landed a reader on our front page and "All
+         confessions" landed them there with a fragment that does not
+         exist. The toolbar's own back-link already goes to the real
+         library and goes there correctly, so those two are dropped
+         rather than repointed — three controls labelled "Library" was
+         itself the problem. Scripture is /scripture/ here, not /bible/.
+         Re-apply when re-vendoring. */
+      home.innerHTML=mk("/the-faith-received/fathers/","Authors")+mk("/the-faith-received/scripture/","Scripture");
       nav.appendChild(home);
     }
     // A facsimile work with an authoritative outline can be browsed two ways: the OUTLINE tree
