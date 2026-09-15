@@ -311,6 +311,47 @@
    * Defining the globals is the whole fix: the engine's call sites are
    * already there and already correct, and his file stays untouched.
    */
+  /* Ask, on a touch screen.
+   *
+   * reader-core binds every thumb-bar button like this:
+   *
+   *   b.addEventListener("touchend", e => {
+   *     e.preventDefault(); b.onclick && b.onclick(); }, {passive:false});
+   *
+   * preventDefault on touchend SUPPRESSES THE SYNTHETIC CLICK. Every
+   * other button survives that, because each has a real onclick doing
+   * the work. Ask's onclick is `if (window.__openAsk) __openAsk("")`,
+   * and __openAsk is defined nowhere in the port — so on a phone the tap
+   * fired the no-op, the click never happened, and the document-level
+   * delegate in ask-workspace.js that actually opens Ask never ran.
+   *
+   * With a mouse there is no touchend, the click survives, the delegate
+   * fires and Ask opens. That is the whole reason this read as working
+   * in testing and dead on Ian's phone.
+   *
+   * The delegate opens on anything matching [data-m="ask"], so the fix
+   * is to give it a click it will accept.
+   */
+  if (!window.__openAsk) {
+    window.__openAsk = function () {
+      let proxy = document.getElementById("moAskProxy");
+      if (!proxy) {
+        proxy = document.createElement("button");
+        proxy.id = "moAskProxy";
+        proxy.type = "button";
+        proxy.setAttribute("data-m", "ask");
+        proxy.setAttribute("aria-hidden", "true");
+        proxy.tabIndex = -1;
+        // Not `hidden` and not display:none: it has to stay a real node
+        // in the tree for closest() to match it from the event target.
+        proxy.style.cssText =
+          "position:fixed;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;";
+        document.body.appendChild(proxy);
+      }
+      proxy.click();
+    };
+  }
+
   if (!window.__frOpenSearch) {
     window.__frOpenSearch = function () {
       const app = document.getElementById("app");
