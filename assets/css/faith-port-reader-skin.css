@@ -742,3 +742,39 @@ html:not(.fr-plain) .app.teiflow:not(.no-facs):not(.only-en):not(.only-la) #read
    footer is a sibling of <main>, not of #app, so no combinator from
    #app can reach it. */
 body:has(#app.faith-port-read-page) .site-footer { display: none; }
+
+/* ═══ MOBILE: two layout faults that are arithmetic, not guesswork ═══ */
+
+/* 1. The last lines of a page sat UNDER the thumb bar. nav.frthumb is a
+      fixed 57px strip at the foot of the screen and #reading's bottom
+      padding was 48px, so the closing paragraph of every page was
+      unreachable however far you scrolled. Enough room for the bar, the
+      home indicator, and a line of air. */
+@media (max-width: 880px) {
+  html.g-mobile .app #reading,
+  #app.faith-port-read-page #reading {
+    padding-bottom: calc(57px + env(safe-area-inset-bottom, 0px) + 28px);
+  }
+}
+
+/* 2. The contents panel left a band of reading text showing between the
+      toolbar and its own top edge.
+      
+      The panel is positioned from --phh, the toolbar's height, and any
+      disagreement between that number and the toolbar's real height
+      opens a gap the text shows through. Rather than keep chasing the
+      number, the panel now starts ABOVE where the toolbar ends and pads
+      its content back down: a gap is then geometrically impossible, and
+      the overlap hides behind the toolbar.
+
+      That requires the panel to sit UNDER the toolbar in the stacking
+      order. It shipped at z-index 60 against the toolbar's 40, so it
+      would have covered it. 30 keeps it above the scrim (25) — which is
+      what it must overlay on a phone — and below the toolbar. */
+@media (max-width: 1099px) {
+  #app .sidebar {
+    top: calc(var(--phh, 64px) - 28px);
+    padding-top: 28px;
+    z-index: 30;
+  }
+}

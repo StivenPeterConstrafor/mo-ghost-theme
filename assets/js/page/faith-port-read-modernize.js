@@ -40,6 +40,39 @@
   let on = false;
   let lexiconPromise = null;
 
+  /* Where the toggle lives depends on how much room the toolbar has.
+   *
+   * Adding a fourth control to the top bar pushed Tools and Aa clean off
+   * the right edge of a 375px screen — the .ctr row measured 490px wide
+   * in a 375px viewport. On a narrow screen the toggle moves into the
+   * Tools popover instead, which is a list and cannot overflow. The
+   * BUTTON moves, not a copy of it, so there is one element and one
+   * handler and the two placements can never disagree about state.
+   */
+  const NARROW = 700;
+  const pop = document.getElementById("rdToolsPop");
+  const bar = btn.parentElement;
+  const next = btn.nextElementSibling;
+
+  function place() {
+    const narrow = window.innerWidth <= NARROW;
+    if (narrow && pop && btn.parentElement !== pop) {
+      btn.classList.add("rdt");
+      // Above the status line, which must stay last.
+      const say = document.getElementById("rdToolsSay");
+      pop.insertBefore(btn, say || null);
+    } else if (!narrow && btn.parentElement === pop) {
+      btn.classList.remove("rdt");
+      bar.insertBefore(btn, next || null);
+    }
+  }
+  place();
+  let placing = null;
+  window.addEventListener("resize", () => {
+    window.clearTimeout(placing);
+    placing = window.setTimeout(place, 150);
+  });
+
   function loadLexicon() {
     if (lexiconPromise) return lexiconPromise;
     const path = "/assets/data/faith-received/modern-words.txt";
@@ -150,6 +183,7 @@
     settling = window.setTimeout(() => {
       const wanted = archaic();
       btn.hidden = !wanted && !on;
+      place();
       if (on && wanted) apply();
     }, 120);
   }
