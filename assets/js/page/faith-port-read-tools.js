@@ -229,14 +229,15 @@
    * is beside: ¶ copies a link that lands on that paragraph, ⧉ copies
    * the paragraph with its citation under it.
    */
-  const reading = $("reading");
+  // Resolved per event, never held. See the delegation note below.
+  const readingNow = () => $("reading");
   // No matchMedia gate here. Asking "(hover: hover)" once, at load, made
   // whether the feature exists at all depend on what the browser reported
   // in that instant, and a wrong answer then was permanent and silent.
   // Whether the rail SHOWS is a CSS question, answered in the skin by a
   // media query that re-evaluates itself; pointer events on a touch-only
   // device simply never arrive.
-  if (reading) {
+  {
     const rail = document.createElement("div");
     rail.className = "fr-para-rail";
     rail.hidden = true;
@@ -250,18 +251,28 @@
     // moment a work arrives — and again on every page turn. It is
     // re-attached on demand instead, which survives every re-render
     // without having to know when one happened.
+    // DELEGATED FROM THE DOCUMENT, with #reading looked up per event.
+    // The engine does not refill the reading column when a work arrives,
+    // it REPLACES the <main id="reading"> element. A listener bound to
+    // the one present at load is left on a detached node, still
+    // listening, never firing — which is why re-attaching the rail three
+    // times changed nothing. Nothing this feature owns may outlive a
+    // re-render.
     let host = null;
-    reading.addEventListener("pointerover", (e) => {
-      const row = e.target.closest && e.target.closest(".row[id]");
-      if (!row || !reading.contains(row)) return;
-      if (!rail.isConnected) reading.appendChild(rail);
+    document.addEventListener("pointerover", (e) => {
+      const reading = readingNow();
+      if (!reading || !e.target.closest) return;
+      const row = e.target.closest(".row[id]");
+      if (!row || !reading.contains(row)) {
+        if (!e.target.closest("#reading")) { rail.hidden = true; host = null; }
+        return;
+      }
+      if (rail.parentElement !== reading) reading.appendChild(rail);
       host = row;
-      const r = row.getBoundingClientRect();
-      const base = reading.getBoundingClientRect();
-      rail.style.top = (r.top - base.top + reading.scrollTop) + "px";
+      rail.style.top =
+        (row.getBoundingClientRect().top - reading.getBoundingClientRect().top) + "px";
       rail.hidden = false;
     });
-    reading.addEventListener("pointerleave", () => { rail.hidden = true; host = null; });
 
     // The rail reports on its own face. The Tools popover's status line
     // is shut when the rail is in use, so saying it there says nothing.
