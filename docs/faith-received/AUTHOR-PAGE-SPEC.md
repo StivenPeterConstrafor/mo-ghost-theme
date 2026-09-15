@@ -105,3 +105,31 @@ Route `/the-faith-received/fathers/` (`/author/` routes to the ported authors di
 7. Connections: `Faith with Justification 205 shared pages across 53 works` first.
 8. Search: Find lists Works / Topics / Recorded statements / Indexed passages for "grace"; Ask streams an answer with citations.
 9. Pair: `#richard-baxter/with/john-owen` shows the desk, Scripture in common (73-book grid style), and citation directions.
+
+---
+
+## 8. MereO author identity: catalogue names (15 September 2026)
+
+Owner report: two Richard Hookers on mereorthodoxy.com — `/the-faith-received/author/?a=hookerrichard1553or41600` and `?a=richardhooker`.
+
+**Why.** The MereO author page (`assets/js/faith-author.js`) builds one page per *folded name* across every collection `faith-corpora.js` loads. The Early English Books catalogue (`eebo-backup.vercel.app/data/catalogue.json`, 53,831 rows, 15,569 kept by `eebo-theological.json`) names its authors the way a library catalogue does — `Hooker, Richard, 1553 or 4-1600` — and the Latin Library the way a title page does — `Richard Hooker`. The folds differ, so the same person had two pages: one with his Latin Library shelf, life and scripture fingerprint, the other with his early printings and nothing else. Measured over the kept shelf: **340 catalogue names, 3,259 works** split from a Latin Library author this way (Prynne 112, Baxter 75, Owen 66, Taylor 50, Hall 48, Perkins 47, Andrewes 34, Hooker 9 …).
+
+**The rule (`turnCatalogueNames`, `faith-corpora.js`).** Runs once per load over the *kept* rows of the EEBO corpus, after the tradition lists and the subset filter:
+
+1. `catalogueName(raw)` parses a plain personal catalogue form — `Surname, Forename[, date][, attributed name | aut]` — into forename, surname and the date string. It returns nothing (the name is left exactly as written) for corporate names (`Church of England`), names with a title or an epithet (`Sibthorp, Christopher, Sir`; `Bradford, John, serving-man` — the epithet is the catalogue's own disambiguation), initials (`R. P., fl. 1557`), and any form with two date parts. 4,318 of 5,725 catalogue strings parse; 1,407 are left alone.
+2. Parsed names are grouped by the fold of `Forename Surname`. Within a group, dated strings are clustered into people: the same person if the first years are within two, or the death years within two (`1589-1650?` and `1598-1650?` are one Timothy Rogers). Undated strings take the bare name.
+3. One cluster → everyone takes the bare name (`Richard Hooker`). Several clusters (146 groups) → each keeps its dates in brackets — `Thomas Watson (1513–1584)` — **except** the cluster whose dates agree with the library's own record of that name (`tfr-authors.json` first, then `v1/authors.json`; either end within eight years), which takes the bare name and so joins the Latin Library page. Where the library has no dates for the name, nobody joins: two pages is a smaller wrong than one page for two people.
+
+Result on the kept shelf: 5,718 → 5,651 distinct author keys; Thomas Watson the Puritan (`d. 1686`, 28 works) joins the library's Thomas Watson (dates `c. 1620–1686`), the bishop of Lincoln keeps his own page.
+
+**What stays keyed by the catalogue string.** Each EEBO row carries `authorRaw` (verbatim). Tradition (`puritans.json` / `anglicans.json`) is looked up by `authorRaw`, so the counts are unchanged: 1,928 Puritan, 980 Anglican.
+
+**Old addresses.** `faith-author.js`: when neither a life nor any work matches the requested key, the page looks for works whose `authorRaw` folds to it, continues under the turned name, rewrites the address bar (`history.replaceState`) and re-asks `MOAuthorScripture.load` under the new key. So `?a=hookerrichard1553or41600` opens the Richard Hooker page; `?a=watsonthomas15131584` opens `Thomas Watson (1513–1584)` at `?a=thomaswatson15131584`. Links produced by the classic reader's author line (`fold(m.author)` of the catalogue string) keep working through the same door.
+
+**Roster dates added** (`assets/data/faith-received/tfr-authors.json`, dates only, each checked against the printing years of that author's Latin Library works): William Barlow d. 1568; Thomas Cooper c. 1517–1594; Thomas Cartwright 1535–1603; John Rogers c. 1572–1636; Thomas Jackson 1579–1640; John Wilson 1588–1667; Thomas Taylor 1576–1632; William Sclater 1575–1626; John Williams 1582–1650; Timothy Rogers c. 1589–1650; John Cotton 1584–1652; John Stoughton 1593–1639; Edmund Calamy 1600–1666; Henry More 1614–1687; Daniel Whitby 1638–1726; William Price d. 1666 (added to his existing entry). Left out on purpose: Thomas Wilson and Henry Smith (the library's own shelf under those names mixes namesakes — print years to 1682 and 1688), John Jackson, John Carter, John Smith, John Ward (no clean single person).
+
+**Proof.** `eebo-author-names-reference.py` (this folder) is the same rule in Python, regex for regex. Run over the live catalogue with both rosters and diffed against the theme's JavaScript executed in Node over the same rows: 5,725 strings, **0 differences**. Live check by serving the four changed files into mereorthodoxy.com pages (Playwright, iPhone 13): `?a=hookerrichard1553or41600` → h1 "Richard Hooker", Latin Library 7 + Early English Books 9, dates 1554–1600, URL rewritten to `?a=richardhooker`; `?a=thomaswatson` → 28 + 28; `?a=watsonthomas15131584` → "Thomas Watson (1513–1584)", 2 works; `?a=thomascartwright` → 12 works with dates 1535–1603; `?a=thomashooker` → 26 works, Puritan.
+
+**Recreate.** Theme PR from `StivenPeterConstrafor/mo-ghost-theme` branch `fix/author-identity-eebo-deeplink` (based on upstream `main` b01f9cb1): `assets/js/faith-corpora.js` (catalogue-name block, eebo `aux`/`finish`/`authorRaw`, `finishRows`), `assets/js/faith-author.js` (old-address door), `assets/data/faith-received/tfr-authors.json`. Nothing changes on mereorthodoxy.com until the PR is merged and the theme deployed. The classic reader's author line still prints the catalogue form; turning it there is a separate, cosmetic change.
+
+**Residue.** Continental names whose forename carries a particle (`Bèze, Théodore de`, `Thomas, à Kempis`) are left in catalogue form by rule 1 and so do not join `Theodore Beza` / `Thomas à Kempis`. 1,318 kept works still carry a catalogue-form author (titles, epithets, corporate, initials) — by design.
