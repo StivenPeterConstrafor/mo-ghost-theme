@@ -46,16 +46,25 @@ function sectionStarts(value){
 }
 // A printed label that the lanes carry as its own paragraph — a marked <head>, a short all-caps run (running title, 'S. BASILII MAGNI.'),
 // or a short division label ('Caput I.', 'Κεφάλ. Β.', 'ΟΡΟΣ ΙΗ΄', 'Homilia III.') — rides with the paragraph it introduces.
-const LABEL=/^(?:Caput|Cap\.|Κεφ(?:αλ|άλ)?\.?|Κεφάλαιον|ΚΕΦΑΛΑΙΟΝ|Regula|ΟΡΟΣ|Ὅρος|Homilia|Sermo|Oratio|Epistola|Liber|Pars|Quaestio|Articulus|Titulus|Λόγος|ΛΟΓΟΣ|Ὁμιλία|ΟΜΙΛΙΑ|Ἐπιστολή|ΕΠΙΣΤΟΛΗ|Chapter|Rule|Homily|Sermon|Letter|Book|Part|Question|Article|Oration|Discourse|Title|Preface|Prologue)\b/u;
-function isLabel(v){if(/^\u0002[^\u0003]*\u0003$/.test(v))return true;if(v.length>48)return false;const letters=v.replace(/[^\p{L}]/gu,'');if(letters.length>=4&&letters===letters.toUpperCase())return true;return LABEL.test(v)&&v.length<=40;}
+const LABEL=/^(?:Caput|Cap\.|Κεφ(?:αλ|άλ)?\.?|Κεφάλαιον|ΚΕΦΑΛΑΙΟΝ|Regula|ΟΡΟΣ|Ὅρος|Homilia|Sermo|Oratio|Epistola|Liber|Pars|Quaestio|Articulus|Titulus|Λόγος|ΛΟΓΟΣ|Ὁμιλία|ΟΜΙΛΙΑ|Ἐπιστολή|ΕΠΙΣΤΟΛΗ|Chapter|Rule|Homily|Sermon|Letter|Book|Part|Question|Article|Oration|Discourse|Title|Preface|Prologue)(?=[\s.,:;·()\[]|$)/u;   // no \b: JS word boundaries are ASCII-only, Greek labels would never match
+function isLabel(v){if(/^\u0002[^\u0003]*\u0003$/.test(v))return true;if(v.length>48)return false;const letters=v.replace(/[^\p{L}]/gu,'');if(letters.length>=4&&letters===letters.toUpperCase())return true;if(!LABEL.test(v))return false;const rest=v.replace(LABEL,'').trim();return rest.length<=12&&!/[a-zα-ωά-ώ]{3,}/u.test(rest);}   // a bare label ('Caput I.'), never a paragraph that merely opens with one
+function hasLabel(v){v=text(v);return /^\u0002/.test(v)||LABEL.test(v);}
 function foldHeads(list){const out=[];let pending='';for(const e of list||[]){const v=text(e).replace(/\s+/g,' ').trim();if(!v)continue;if(isLabel(v)){pending+=v+' ';continue;}out.push((pending+v).trim());pending='';}if(pending.trim()){if(out.length)out[out.length-1]+=' '+pending.trim();else out.push(pending.trim());}return out;}
 function alignOpening(grc,la,en,paras){
  // Paragraph basis (owner 2026-09-15): when the source and the English carry the same number of printed paragraphs, pair them by
  // position — the patrologia site's rows. Headings ride with the paragraph they introduce. Any count mismatch falls through unchanged.
  if(paras&&Array.isArray(paras.en)){const g=foldHeads(paras.grc||[]),e=foldHeads(paras.en),l=foldHeads(paras.la||[]);
   const src=g.length>=2?g:(l.length>=2?l:null);   // Greek pages pair on the Greek; Latin-only pages on the Latin
-  if(src&&src.length===e.length&&!sectionStarts(text(grc)).size&&!sectionStarts(text(la)).size){
-   const rows=src.map((t,i)=>({grc:src===g?t:'',la:src===l?t:(l.length===g.length?l[i]:(i===0?text(la):'')),en:e[i]}));return {basis:'paragraphs',rows};}}
+  if(src&&!sectionStarts(text(grc)).size&&!sectionStarts(text(la)).size){
+   const mk=(t,i)=>({grc:src===g?t:'',la:src===l?t:(l.length===g.length?l[i]:(i===0?text(la):'')),en:e[i]});
+   if(src.length===e.length)return {basis:'paragraphs',rows:src.map(mk)};
+   // Label anchors: when the counts differ but both lanes carry the same number of labelled paragraphs (a rule, a chapter — 'ΟΡΟΣ ΙΓ´.',
+   // 'RULE XIII'), each lane is cut before every labelled paragraph and the segments pair by position; a segment may hold several paragraphs
+   // (the English often prints the rule's statement as its own paragraph where the Greek runs on).
+   const segs=list=>{const out=[];list.forEach((t,i)=>{if(i===0||!hasLabel(t))(out.length?out[out.length-1]:(out.push([]),out[0])).push(t);else out.push([t]);});return out.map(a=>a.join(' '));};
+   const sg=segs(src),se=segs(e);
+   if(sg.length>=2&&sg.length===se.length&&(l.length===0||src===l||l.length===g.length)){
+    const rows=sg.map((t,i)=>({grc:src===g?t:'',la:src===l?t:(l.length===g.length?segs(l)[i]||'':(i===0?text(la):'')),en:se[i]}));return {basis:'label-anchors',rows};}}}
  const source=[text(grc),text(la),text(en)],marks=source.map(sectionStarts);const shared=[...marks[0]].filter(([k,v])=>v!==null&&marks.every(m=>m.get(k)!=null)).map(([key])=>({key,at:marks.map(m=>m.get(key))}));
  // Crossing or repeated markers do not license guessed paragraph pairs.
  const crossing=shared.some((marker,index)=>index>0&&marker.at.some((n,i)=>n<=shared[index-1].at[i]));const anchors=crossing?[]:shared;
