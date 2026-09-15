@@ -26,7 +26,16 @@ function sourceColumns(doc){
  const printed={};
  for(const [key,opening]of Object.entries(out)){opening.grc=[];opening.la=[];opening.grcRich=[];opening.laRich=[];for(const [column,candidates]of Object.entries(opening.columns)){
   for(const role of ['verified','reading','secondary','supplement']){const t=(candidates[role]||[]).join(' ').replace(/\s+/g,' ').trim(),g=(t.match(/\p{Script=Greek}/gu)||[]).length,l=(t.match(/\p{Script=Latin}/gu)||[]).length,letters=(t.match(/\p{L}/gu)||[]).length;if(g+l<(role==='verified'?1:100))continue;const lang=g/Math.max(letters,1)>=.85?'grc':l/Math.max(letters,1)>=.85?'la':null;if(!lang||role==='secondary'&&lang!=='la')continue;opening[lang].push(t);opening[lang+'Rich'].push((candidates[role+'Rich']||candidates[role]).join(' ').replace(/\s+/g,' ').trim());if(!printed[key])printed[key]={};(printed[key][lang]||(printed[key][lang]=[])).push(column);break;}
- }opening.grc=opening.grc.join(' ');opening.la=opening.la.join(' ');opening.grcRich=opening.grcRich.join(' ');opening.laRich=opening.laRich.join(' ');}
+ }opening.grc=opening.grc.join(' ');opening.la=opening.la.join(' ');opening.grcRich=opening.grcRich.join(' ');opening.laRich=opening.laRich.join(' ');
+  // Paragraph lists (owner 2026-09-15 'rich labelled inner text like the patrologia site'): the printed paragraphs of each lane in column
+  // order, a heading folded into the paragraph it introduces. alignOpening pairs lanes by these when their counts agree.
+  opening.grcParas=[];opening.laParas=[];
+  for(const [column,candidates]of Object.entries(opening.columns)){for(const role of ['verified','reading','secondary','supplement']){const rich=candidates[role+'Rich'];if(!rich||!rich.length)continue;
+   const t=(candidates[role]||[]).join(' '),g=(t.match(/\p{Script=Greek}/gu)||[]).length,l=(t.match(/\p{Script=Latin}/gu)||[]).length,letters=(t.match(/\p{L}/gu)||[]).length;if(g+l<100)continue;
+   const lang=g/Math.max(letters,1)>=.85?'grc':l/Math.max(letters,1)>=.85?'la':null;if(!lang||role==='secondary'&&lang!=='la')continue;
+   const list=opening[lang+'Paras'];let pending='';
+   for(const e of rich){const v=String(e||'').replace(/\s+/g,' ').trim();if(!v)continue;if(/^\u0002[^\u0003]*\u0003$/.test(v)){pending+=v+' ';continue;}list.push((pending+v).trim());pending='';}
+   if(pending.trim()){if(list.length)list[list.length-1]+=' '+pending.trim();else list.push(pending.trim());}break;}}}
  const result={openings:out,printed};sourceCache.set(doc,result);return result;
 }
 function printedColumns(doc){return sourceColumns(doc).printed;}
@@ -35,7 +44,18 @@ function sectionStarts(value){
  const s=text(value),hits=new Map(),rx=/(?:^|[.!?·»”"']\s+)(\d{1,3})\.\s+(?=[«“"'Α-ΩA-ZἈ-Ὧ])/gu;let m;
  while((m=rx.exec(s))){const key=m[1],index=m.index+m[0].indexOf(key);if(hits.has(key))hits.set(key,null);else hits.set(key,index);}return hits;
 }
-function alignOpening(grc,la,en){
+// A printed label that the lanes carry as its own paragraph — a marked <head>, a short all-caps run (running title, 'S. BASILII MAGNI.'),
+// or a short division label ('Caput I.', 'Κεφάλ. Β.', 'ΟΡΟΣ ΙΗ΄', 'Homilia III.') — rides with the paragraph it introduces.
+const LABEL=/^(?:Caput|Cap\.|Κεφ(?:αλ|άλ)?\.?|Κεφάλαιον|ΚΕΦΑΛΑΙΟΝ|Regula|ΟΡΟΣ|Ὅρος|Homilia|Sermo|Oratio|Epistola|Liber|Pars|Quaestio|Articulus|Titulus|Λόγος|ΛΟΓΟΣ|Ὁμιλία|ΟΜΙΛΙΑ|Ἐπιστολή|ΕΠΙΣΤΟΛΗ|Chapter|Rule|Homily|Sermon|Letter|Book|Part|Question|Article|Oration|Discourse|Title|Preface|Prologue)\b/u;
+function isLabel(v){if(/^\u0002[^\u0003]*\u0003$/.test(v))return true;if(v.length>48)return false;const letters=v.replace(/[^\p{L}]/gu,'');if(letters.length>=4&&letters===letters.toUpperCase())return true;return LABEL.test(v)&&v.length<=40;}
+function foldHeads(list){const out=[];let pending='';for(const e of list||[]){const v=text(e).replace(/\s+/g,' ').trim();if(!v)continue;if(isLabel(v)){pending+=v+' ';continue;}out.push((pending+v).trim());pending='';}if(pending.trim()){if(out.length)out[out.length-1]+=' '+pending.trim();else out.push(pending.trim());}return out;}
+function alignOpening(grc,la,en,paras){
+ // Paragraph basis (owner 2026-09-15): when the source and the English carry the same number of printed paragraphs, pair them by
+ // position — the patrologia site's rows. Headings ride with the paragraph they introduce. Any count mismatch falls through unchanged.
+ if(paras&&Array.isArray(paras.en)){const g=foldHeads(paras.grc||[]),e=foldHeads(paras.en),l=foldHeads(paras.la||[]);
+  const src=g.length>=2?g:(l.length>=2?l:null);   // Greek pages pair on the Greek; Latin-only pages on the Latin
+  if(src&&src.length===e.length&&!sectionStarts(text(grc)).size&&!sectionStarts(text(la)).size){
+   const rows=src.map((t,i)=>({grc:src===g?t:'',la:src===l?t:(l.length===g.length?l[i]:(i===0?text(la):'')),en:e[i]}));return {basis:'paragraphs',rows};}}
  const source=[text(grc),text(la),text(en)],marks=source.map(sectionStarts);const shared=[...marks[0]].filter(([k,v])=>v!==null&&marks.every(m=>m.get(k)!=null)).map(([key])=>({key,at:marks.map(m=>m.get(key))}));
  // Crossing or repeated markers do not license guessed paragraph pairs.
  const crossing=shared.some((marker,index)=>index>0&&marker.at.some((n,i)=>n<=shared[index-1].at[i]));const anchors=crossing?[]:shared;
