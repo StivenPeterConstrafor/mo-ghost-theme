@@ -13,6 +13,11 @@ Read a spec to know what a surface must do; read the matching recreate sheet to 
 
 ## 0. Start here (reading order)
 
+**The whole system, one entry:** `StivenPeterConstrafor/tfr-backend` → **`HANDOFF.md`** (2026-09-15) — the protocol for adopting the entire
+backend + front end: read order, system map, the stores and their prefixes, the 19 env names, the canonical-vs-copy table (which reader/Ask
+files are hot-fixed in the deploy tree and must never be regenerated from source), the update protocol every push follows, `handoff/verify.sh`
+(15 checks) and `handoff/LAWS.md` (every dated ruling). `pipeline/` in that repo is the synced corpus build tree. Ian holds an admin invitation.
+
 0. **The handoff hub** — a living web page that mirrors this index and adds live screenshots, condensed proof batteries, endpoint recipes and deep-dive protocols per area: https://claude.ai/code/artifact/cb675bcb-22e3-4993-8f82-2bf10f389a7c (a private Claude artifact; the link works once the owner shares it with you). It is republished at the same address as things ship; this README stays the source of truth for organisation, the hub adds the pictures and the batteries.
 1. **LANDING-PAGE-SPEC.md** — how the library is organised (shelves → authors → sets → volumes) and what data it reads. Everything else hangs off this.
 2. **READER-SPEC.md** — the reader. §0 is the gap list for MereO's current reader (flat sections, no facsimile, TOC-driven) and is the single largest piece of work. **READER-COMPARISON.md** explains the two readers side by side, with code.
@@ -126,6 +131,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 | 09-12 | PINS_INSTRUCTIONS.md — the last surface without a code sheet; every page of the library now has its source here | mo-workers (docs branch) |
 | 09-11 | ASK_BACKEND_INSTRUCTIONS.md rewritten for the WHOLE BRAIN (owner: the tool layer is in scope) — two gears behind one `/v1/ask`, the 14-tool loop, the member gate, 14-step battery, thirteen files | mo-workers a393969 (worker 689b66d) |
 | 09-11 | Handoff hub published (living artifact: §0 item 0 — screenshots, batteries, deep dives; grows with this index) | — (Claude artifact, updated in place) |
+| 09-15 | **tfr-backend `HANDOFF.md`** — the whole-system protocol (site + backend + pipeline + stores + laws + verification); pipeline/ synced; reader re-ported to PR #10 | tfr-backend `f9f601ca` |
 | 09-12 | R2-SYNC-SPEC §3.1: Doronzo's eleven volumes curated (OCR letter-spacing, article headings, contents leaf) | mo-ghost-theme d1d88167 |
 | 09-11 | R2-SYNC-SPEC §3.1: CCEL boilerplate out of the Calvin corpus (47 works); Doronzo outlines rebuilt to the printed Ordo (11 works) | mo-ghost-theme b39fdc8a |
 | 09-11 | ASK-SPEC §6 bench cap 24; SEARCH-SPEC §3.4 scripture.json commentary gate; R2-SYNC-SPEC §3 (7) worker edge cache + §3.1 log (scripture.json cleaned, Lightfoot added) | mo-ghost-theme 9504a65f |
