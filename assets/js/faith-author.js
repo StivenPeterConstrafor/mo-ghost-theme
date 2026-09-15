@@ -158,10 +158,38 @@
     // A string entry is a bio and nothing else.
     if (typeof entry === "string") entry = { bio: entry };
 
+    // ── Old addresses ──────────────────────────────────────────
+    // Early English Books used to link its authors by the catalogue's
+    // own form of the name — ?a=hookerrichard1553or41600 — before those
+    // names were turned round to match the Latin Library's (see
+    // turnCatalogueNames in faith-corpora.js). A link written then still
+    // has to open: the works filed under that catalogue name carry the
+    // turned name now, so the page continues under it, and the address
+    // bar follows so the page can be shared again under one name.
+    let shelfKey = key;
+    if (!entry && !sets.some((works) => works.some((w) => fold(w.author) === key))) {
+      let hit = null;
+      sets.some((works) => (hit = works.find((w) => w.authorRaw && fold(w.authorRaw) === key)));
+      if (hit && fold(hit.author) !== key) shelfKey = fold(hit.author);
+    }
+    if (shelfKey !== key) {
+      Object.keys(authors).forEach((name) => {
+        if (fold(name) !== shelfKey) return;
+        entry = authors[name];
+        displayName = name;
+      });
+      if (typeof entry === "string") entry = { bio: entry };
+      try {
+        const u = new URL(window.location.href);
+        u.searchParams.set("a", shelfKey);
+        window.history.replaceState(window.history.state, "", u.toString());
+      } catch (_) { /* the page still renders */ }
+    }
+
     // ── Their works, across every collection ───────────────────
     const byCorpus = [];
     sets.forEach((works, i) => {
-      const mine = works.filter((w) => fold(w.author) === key);
+      const mine = works.filter((w) => fold(w.author) === shelfKey);
       if (!mine.length) return;
       // Chronological where we can date them, then by title, so a
       // multi-volume set reads in order.
@@ -185,6 +213,16 @@
       return;
     }
 
+    // The scripture fingerprint was asked for under the old key, which
+    // names nobody; ask again under the name the page now carries.
+    if (shelfKey !== key && window.MOAuthorScripture) {
+      const finalEntry = entry || {};
+      const finalName = displayName;
+      window.MOAuthorScripture.load(shelfKey)
+        .catch(() => null)
+        .then((print) => render(finalEntry, finalName, byCorpus, all, print));
+      return;
+    }
     render(entry || {}, displayName, byCorpus, all, fingerprint);
   });
 

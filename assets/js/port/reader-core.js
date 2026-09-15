@@ -1372,7 +1372,23 @@ window.__frNavigateReaderAnchor=href=>{
     // A citation can omit the current lane/view settings; an explicit change still needs navigation.
     for(const [key,value]of target.searchParams)if(!['w','ws','p','section','heading'].includes(key)&&here.searchParams.get(key)!==value)return false;
     let id;try{id=decodeURIComponent(target.hash.slice(1));}catch(_){return false;}
-    const sourcePath=target.searchParams.get('section'),sourceKey=target.searchParams.get('heading')||'';
+    // EARLY ENGLISH BOOKS DEEP LINKS (2026-09-15): the Scripture index sends #<division id> — the
+    // canon's own id, hyphenated ("#50504-3-22-27"). It is neither a block reference nor a
+    // heading, so it resolved to nothing and every such link opened the work at § 1. The canon
+    // loader now records the page each division opens on (loadEeboCanon → eebo_id_pages);
+    // land there, as a page door, and let the URL carry the page it resolved to.
+    let sourcePath=target.searchParams.get('section'),eeboPage=null;
+    if(id&&!sourcePath&&DATA?.eebo_id_pages&&Object.prototype.hasOwnProperty.call(DATA.eebo_id_pages,id)){
+      const door=DATA.eebo_id_pages[id],first=DATA.pages?.[0]?.n;
+      // A labelled division is in the Contents outline: go there the way a Contents click does,
+      // which lands on the heading itself. A multi-volume folio restarts its page numbers per
+      // volume and this reader keys pages by printed number, so the page alone can hold text
+      // from two volumes; the heading is the exact spot. An unlabelled division opens its page.
+      const row=door.path!=null?readerDisplayOutline().find(r=>r.navSourcePath===door.path):null;
+      if(row&&frSourceHeadingRecord(door.path,row.navSourceText||'',''))sourcePath=door.path;
+      else eeboPage=door.page!=null?String(door.page):(first!=null?String(first):null);
+      if(sourcePath||eeboPage!=null)id='';}
+    const sourceKey=target.searchParams.get('heading')||'';
     if(sourceKey&&!sourcePath)return false;
     const sourceRow=sourcePath?readerDisplayOutline().find(row=>row.navSourcePath===sourcePath&&(!sourceKey||row.navSourceKey===sourceKey)):null;
     const sourceText=sourceRow?.navSourceText||'',source=sourcePath?frSourceHeadingRecord(sourcePath,sourceText,sourceKey):null;
@@ -1382,7 +1398,7 @@ window.__frNavigateReaderAnchor=href=>{
     const baxterStart=DATA?.slug==='eebo-34087'&&DATA.nav_source_version==='eebo-path-v1'&&sourcePath==='0'&&sourceRow?.title==='Front Matter';
     const sourceStart=!source&&!sourceKey&&(explicitStart||baxterStart)?DATA.pages?.[0]?.n:null;
     if(sourcePath&&!source&&sourceStart==null)return false;
-    const reference=frReaderBlockReference(target.hash),page=source?.page||(sourceStart==null?null:String(sourceStart))||reference?.page||(!id?target.searchParams.get('p'):null);
+    const reference=frReaderBlockReference(target.hash),page=source?.page||(sourceStart==null?null:String(sourceStart))||reference?.page||eeboPage||(!id?target.searchParams.get('p'):null);
     if(source||sourceStart!=null||!id&&page)id='b'+page+'-0';if(!id)return false;
     const serial=rememberReaderChoice(page,sourceRow?.title||'',id);
     if(source){here.searchParams.set('section',sourcePath);here.searchParams.set('p',page);if(sourceKey)here.searchParams.set('heading',sourceKey);else here.searchParams.delete('heading');window.__readerChoice.sourcePath=sourcePath;window.__readerChoice.sourceText=sourceText;window.__readerChoice.sourceKey=sourceKey;}
@@ -4477,7 +4493,14 @@ $("#thTop")&&($("#thTop").onclick=_thCycle);   /* masthead theme switch — ligh
    Re-apply when re-vendoring. */
 function setPhh(){const p=$(".ph");if(!p)return;
   const mo=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--mo-head"))||0;
-  document.documentElement.style.setProperty("--phh",(p.offsetHeight+mo)+"px");}
+  // --phh pads .app down past everything fixed above its content: the toolbar, and the host
+  // site's masthead where there is one (--mo-head). But the host may ALREADY have pushed .app
+  // below its masthead — Mere Orthodoxy pads <body> by the header's height, so .app starts at
+  // 61px, not 0 — and adding the masthead again opened a blank band as tall as the header
+  // between the toolbar and the first line (2026-09-15, "the formatting was off"). Count only
+  // the part of the fixed stack .app does not already sit below.
+  const app=$("#app")||$(".app"),below=app?Math.max(0,app.offsetTop||0):0;
+  document.documentElement.style.setProperty("--phh",Math.max(p.offsetHeight,p.offsetHeight+mo-below)+"px");}
 addEventListener("resize",setPhh);new ResizeObserver(setPhh).observe($(".ph"));setTimeout(setPhh,60);setTimeout(setPhh,600);
 // seamless facsimile navigation: plain wheel = pan (down/across), Ctrl/Cmd+wheel = zoom the scan
 // (contained — never the browser), drag = pan. So you zoom in and still move freely.
@@ -6299,8 +6322,14 @@ async function loadEeboCanon(ws){
     try{const ds=new DecompressionStream("gzip");
       return await new Response(new Blob([buf]).stream().pipeThrough(ds)).text();}
     catch(e){return new TextDecoder().decode(buf);}};
+  // ONE DOWNLOAD, NOT TWO (2026-09-15): read.in02.js already has this file on the wire as
+  // window.__frEarly.canonEebo before this document finished parsing. Starting a second fetch
+  // here doubled the transfer of every Early English Books work — 21 MB on a phone for the
+  // 10.6 MB Ness folio — and held two decodes in memory at once. Consume the early response
+  // when it is ours and unread; fetch only where there is none.
+  const early=(window.__frEarly&&window.__frEarly.canonEebo)?window.__frEarly.canonEebo.catch(()=>null):Promise.resolve(null);
   const [d,mod]=await Promise.all([
-    fetch(BLOB+"/eebo/"+encodeURIComponent(id)+".json.gz").then(async r=>{if(!r.ok)throw new Error("eebo "+r.status);return JSON.parse(await gunz(r));}),
+    early.then(r=>(r&&r.ok&&!r.bodyUsed)?r:fetch(BLOB+"/eebo/"+encodeURIComponent(id)+".json.gz")).then(async r=>{if(!r.ok)throw new Error("eebo "+r.status);return JSON.parse(await gunz(r));}),
     fetch(BLOB+"/eebo_modern/"+encodeURIComponent(id)+".json.gz").then(async r=>r.ok?JSON.parse(await gunz(r)):null).catch(()=>null)]);
   const M=(mod&&mod.m)||null;
   const mk=()=>{const D2=document.implementation.createDocument(null,"TEI",null);
@@ -6308,6 +6337,7 @@ async function loadEeboCanon(ws){
   const [laD,laB]=mk(),[enD,enB]=mk();
   const seen=new Set(),pages=[],struct=[];
   const sourceOutline=[],sourceLabelNodes=new Map();
+  const idPages={};   // the canon's own division id (hyphenated) → {path, page the division opens on}
   let _sourceRegion="body",_sourcePath="";
   const sourceBlock=e=>{e.setAttribute("data-source-region",_sourceRegion);e.setAttribute("data-source-path",_sourcePath);return e;};
   const addPb=n=>{if(!n||seen.has(n))return;seen.add(n);pages.push(n);
@@ -6536,6 +6566,11 @@ async function loadEeboCanon(ws){
   };
   (function walk(nodes,base,depth,region="body"){(nodes||[]).forEach((nd,i)=>{
     const path=base===""?String(i):base+"."+i;_curDepth=(nd.depth||depth);
+    // THE SOURCE'S OWN ID IS A DOOR (2026-09-15): the Scripture index addresses a division by
+    // the id the canon file gives it ("50504 3 22 27"), hyphenated into the fragment. Record
+    // the page each division opens on under that spelling, so __frNavigateReaderAnchor can
+    // land a #50504-3-22-27 link on the cited chapter instead of § 1 of a four-volume folio.
+    if(nd.id!=null&&String(nd.id).trim())idPages[String(nd.id).trim().replace(/\s+/g,"-")]={path,page:pages.length?pages[pages.length-1]:null};
     const regionLabel=String(nd.label||"").replace(/_/g," ").trim();
     _sourceRegion=/^(?:table of contents|contents)$/i.test(regionLabel)?"contents":/^front matter$/i.test(regionLabel)?"frontmatter":region;_sourcePath=path;
     const sourceLabel=String(nd.label||""),displayLabel=window.FRSourceOutline?.cleanLabel(sourceLabel,nd.html,document)||sourceLabel;
@@ -6605,7 +6640,7 @@ async function loadEeboCanon(ws){
   }
   return {slug:ws,title:meta.title||("EEBO "+id),title_en:meta.title||"",author:meta.author||"",
     volume:String(meta.year||meta.date||""),tradition:meta.tradition||"English Divines",
-    has_pages:false,has_tei:true,tei_v:0,en_only:true,nav_source_version:"eebo-path-v1",eebo_source_outline:sourceOutline,
+    has_pages:false,has_tei:true,tei_v:0,en_only:true,nav_source_version:"eebo-path-v1",eebo_source_outline:sourceOutline,eebo_id_pages:idPages,
     n_pages:pages.length,structure:struct,base:null,spine_nav:struct.length>1,
     pages:pages.map(n=>({n,la:"",en:""}))};
 }
@@ -6847,7 +6882,19 @@ async function loadWork(ws){
         const c=document.createElement("div");c.className="coach";
         c.innerHTML='Welcome — read in <b>English</b>, <b>Latin</b>, or both, and open the original <b>Scan</b>, from the buttons above · <b>☰&hairsp;Contents</b> holds the work’s outline · <b>⌕</b>&hairsp;(⌘K) searches this work, the whole library, and asks questions with citations.<button class="coach-x" aria-label="Dismiss">✕</button>';
         c.querySelector(".coach-x").onclick=()=>{try{lsSet("fr_coach_v1","9");}catch(e){}c.remove();};
-        c.style.marginTop=((document.querySelector(".ph")||{}).offsetHeight||56)+"px";   // clear the fixed masthead — the scroll content's first strip runs under it
+        // clear the fixed masthead where the scroll content's first strip runs under it (the
+        // standalone reader); where the app is already padded past it (the reader inside a host
+        // site), no margin — the old constant left a second blank band the size of the toolbar.
+        // Measured, not assumed, and measured again once the toolbar has its final height: the
+        // lane buttons arrive with the work and grow the toolbar after this line first runs.
+        // Layout quantities only — the toolbar is fixed and the app scrolls with the page, so
+        // viewport rectangles drift apart the moment a deep link lands.
+        {const fit=()=>{const ph=document.querySelector(".ph"),app=$("#app")||$(".app");
+           if(!ph||!app){c.style.marginTop="56px";return;}
+           const mo=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--mo-head"))||0;
+           const padded=(app.offsetTop||0)+(parseFloat(getComputedStyle(app).paddingTop)||0);
+           c.style.marginTop=Math.max(0,Math.round(mo+ph.offsetHeight-padded))+"px";};
+         fit();requestAnimationFrame(fit);setTimeout(fit,700);setTimeout(fit,1500);}
         const sc0=$("#scroll");if(sc0)sc0.insertBefore(c,sc0.firstChild);}}catch(e){}
     // default layout: English only. The reader's last explicit lane combination (fr_lanes) wins on
     // return visits; pre-lanes visitors fall back to their old preset (fr_mode).

@@ -518,12 +518,39 @@
         corpus: "eebo",
         id: String(w.i),
         title: w.t || `EEBO ${w.i}`,
+        // The catalogue's own form of the name — "Hooker, Richard, 1553
+        // or 4-1600" — kept verbatim as authorRaw, because the tradition
+        // lists above are keyed by it and an old author link may carry
+        // it. `author` is turned round to the title-page form by
+        // `finish` below, once the whole shelf is in hand.
         author: (w.a || "").trim(),
+        authorRaw: (w.a || "").trim(),
         eyebrow: w.y ? String(w.y) : "",
         place: w.p || "",
         extent: 0,
         url: `/the-faith-received/reader/?c=eebo&w=${encodeURIComponent(w.i)}`,
       }),
+      // The dates the rest of the library holds for its authors, so a
+      // catalogue name that several people share can be given to the
+      // one the Latin Library means. See turnCatalogueNames.
+      aux: () => Promise.all([
+        fetch(`${BLOB}/v1/authors.json`).then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
+        fetch(window.moAssetUrl
+          ? window.moAssetUrl("/assets/data/faith-received/tfr-authors.json")
+          : "/assets/data/faith-received/tfr-authors.json")
+          .then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
+      ]).then(([theirs, ours]) => {
+        const dates = new Map();
+        // Ours first, then the Latin Library's: the same precedence the
+        // author page gives the two files.
+        [ours, theirs].forEach((book) => Object.keys(book || {}).forEach((name) => {
+          const e = book[name];
+          const d = e && typeof e === "object" ? (e.dates || e.born || "") : "";
+          if (d && !dates.has(foldName(name))) dates.set(foldName(name), String(d));
+        }));
+        return dates;
+      }),
+      finish: (rows, dates) => turnCatalogueNames(rows, dates),
     },
     {
       // ── Our own editions ──────────────────────────────────────
@@ -1038,6 +1065,178 @@
   // rejecting: one unreachable source must never blank the shelf.
   const loaded = new Map();
 
+  // A pass over the finished shelf, for what one row cannot decide
+  // alone: which catalogue names belong to one person is a question
+  // about the whole collection, and only about the kept part of it.
+  function finishRows(c, aux, rows) {
+    if (!c.finish) return rows;
+    try {
+      return c.finish(rows, aux) || rows;
+    } catch (err) {
+      if (window.console) window.console.warn("faith-corpora:", c.id, err.message);
+      return rows;
+    }
+  }
+
+  // ── Catalogue names ────────────────────────────────────────────
+  //
+  // Early English Books names its authors the way a library catalogue
+  // does — "Hooker, Richard, 1553 or 4-1600" — and the Latin Library the
+  // way a title page does — "Richard Hooker". The author page keys a
+  // person by the folded name, so the same man had two pages: one with
+  // his Latin Library shelf, his life and the scripture he quoted, the
+  // other with his early printings and nothing else. Measured over the
+  // 15,569 kept works, 340 catalogue names split from a Latin Library
+  // author this way: Prynne, Baxter, Owen, Perkins, Andrewes, Hooker.
+  //
+  // So a personal catalogue name is turned round: forename first, the
+  // dates dropped. The dates are not discarded — they are what tells the
+  // two Thomas Watsons apart — so where the catalogue holds more than one
+  // person under a turned name, each keeps their dates in brackets, and
+  // only the one whose dates agree with the library's own record of that
+  // name takes the bare name and joins that page. Where the library has
+  // no dates for the name, nobody joins: two pages is a smaller wrong
+  // than one page for two people.
+  //
+  // Left alone, deliberately: corporate names ("Church of England"),
+  // names carrying a title or an epithet ("Sibthorp, Christopher, Sir",
+  // "Bradford, John, serving-man" — the epithet is the catalogue's own
+  // disambiguation), and bare initials ("R. P., fl. 1557").
+  //
+  // A reference implementation of exactly this rule, regex for regex,
+  // lives beside the specs (docs/faith-received-specs/
+  // eebo-author-names-reference.py); it and this file are run over the
+  // whole catalogue and diffed to zero before either changes.
+  const NAME_LETTER = "A-Za-zÀ-ÿ";
+  const NAME_DATE = /^(?:(?:b\.|d\.|fl\.|ca\.|c\.|approximately|active)\s*)?(?:\d{3,4}|\d{1,2}(?:st|nd|rd|th) cent)/i;
+  const NAME_MARK = /^(?:attrib(?:uted)?\.? name|aut|supposed author|pseud|spurious)/i;
+  const NAME_TITLE = new RegExp(
+    `(?:^|[^${NAME_LETTER}])(?:Saint|Sir|King|Queen|Bishop|Pope|Emperor|Duke|Earl|Prince|Archbishop|Abbot|Cardinal|Lord|Viscount|Baron|Marquis|Countess|Lady|Dame|Mrs|Mr|Dr|Rev|Father|Brother|Mother|Sister|of|de|von|van|à)(?![${NAME_LETTER}])`
+  );
+  const NAME_WORD = new RegExp(`^[${NAME_LETTER}'’\\- ]+$`);
+  const NAME_FORE = new RegExp(`^[${NAME_LETTER}'’\\-. ]+$`);
+  const NAME_INITIALS = /^(?:[A-Z]\.\s*)+$/;
+
+  // The fold the author page and the shelves match names by.
+  function foldName(s) {
+    return String(s || "")
+      .normalize("NFD")
+      .replace(/\p{M}/gu, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "");
+  }
+
+  // "Hooker, Richard, 1553 or 4-1600" → { fore, surname, date, name }.
+  // null for anything that is not a plain personal name in catalogue
+  // form, which is left exactly as the catalogue wrote it.
+  function catalogueName(raw) {
+    const a = String(raw || "").trim();
+    if (a.indexOf(",") < 0) return null;
+    const parts = a.split(",").map((p) => p.trim());
+    const surname = parts[0];
+    const fore = parts[1];
+    if (!surname || !fore) return null;
+    if (surname.indexOf(".") >= 0 || !NAME_WORD.test(surname)) return null;
+    if (!NAME_FORE.test(fore) || NAME_TITLE.test(fore) || NAME_INITIALS.test(fore)) return null;
+    let date = "";
+    for (let i = 2; i < parts.length; i += 1) {
+      const p = parts[i];
+      if (NAME_DATE.test(p)) {
+        // Two date parts is a form this does not understand.
+        if (date) return null;
+        // "d. 1364. Polycronicon. English" carries a title after the
+        // date; "1483-1546. aut" a role. Both end at the date.
+        date = p.split(/\.\s+[A-Z]/)[0].replace(/\.\s*aut$/, "").trim().replace(/\.+$/, "");
+      } else if (NAME_MARK.test(p)) {
+        // "attributed name", "aut": a cataloguer's note, not a person.
+        continue;
+      } else {
+        return null;
+      }
+    }
+    return { fore, surname, date, name: `${fore} ${surname}` };
+  }
+
+  function nameYearKey(date) {
+    const y = /\d{4}/.exec(date || "");
+    if (y) return y[0];
+    const c = /(\d{1,2})(?:st|nd|rd|th) cent/.exec(date || "");
+    return c ? `c${c[1]}` : "";
+  }
+
+  function nameYears(date) {
+    return (String(date || "").match(/\d{4}/g) || []).map(Number);
+  }
+
+  function nameDeath(date) {
+    const ys = nameYears(date);
+    if (/^d\./.test(String(date || ""))) return ys.length ? ys[0] : null;
+    return ys.length > 1 ? ys[ys.length - 1] : null;
+  }
+
+  // Two catalogue datings of one person: "1520?-1576" and "1520-1576",
+  // "1589-1650?" and "1598-1650?". Born within two years of each other,
+  // or dead within two.
+  function samePerson(d1, d2) {
+    const a = nameYears(d1);
+    const b = nameYears(d2);
+    if (!a.length || !b.length) return false;
+    if (Math.abs(a[0] - b[0]) <= 2) return true;
+    const da = nameDeath(d1);
+    const db = nameDeath(d2);
+    return da !== null && db !== null && Math.abs(da - db) <= 2;
+  }
+
+  // The catalogue's dates against the library's: "1553 or 4-1600"
+  // against "1554–1600". Either end within eight years is the same life.
+  function datesOverlap(d1, d2) {
+    const a = nameYears(d1);
+    const b = nameYears(d2);
+    if (!a.length || !b.length) return false;
+    return Math.abs(Math.min(...a) - Math.min(...b)) <= 8
+      || Math.abs(Math.max(...a) - Math.max(...b)) <= 8;
+  }
+
+  // `rows` are a corpus's finished rows carrying `authorRaw`; `dates` maps
+  // a folded name to the library's dates for it. Sets `author` on each
+  // row. Returns the rows.
+  function turnCatalogueNames(rows, dates) {
+    const groups = new Map();
+    rows.forEach((w) => {
+      const p = catalogueName(w.authorRaw);
+      if (!p) return;
+      const k = foldName(p.name);
+      if (!groups.has(k)) groups.set(k, { rows: [], byRaw: new Map() });
+      const g = groups.get(k);
+      if (!g.byRaw.has(w.authorRaw)) g.byRaw.set(w.authorRaw, p);
+      g.rows.push(w);
+    });
+    groups.forEach((g, k) => {
+      const clusters = [];
+      const undated = [];
+      g.byRaw.forEach((p, raw) => {
+        if (!nameYearKey(p.date)) { undated.push(raw); return; }
+        const hit = clusters.find((c) => samePerson(c.date, p.date));
+        if (hit) hit.raws.push(raw);
+        else clusters.push({ date: p.date, raws: [raw] });
+      });
+      const display = new Map();
+      undated.forEach((raw) => display.set(raw, g.byRaw.get(raw).name));
+      const known = dates && dates.get ? dates.get(k) : "";
+      const winner = clusters.length > 1 && known
+        ? clusters.find((c) => datesOverlap(c.date, known)) || null
+        : null;
+      clusters.forEach((c) => c.raws.forEach((raw) => {
+        const p = g.byRaw.get(raw);
+        display.set(raw, clusters.length <= 1 || c === winner
+          ? p.name
+          : `${p.name} (${c.date.replace(/-/g, "–")})`);
+      }));
+      g.rows.forEach((w) => { w.author = display.get(w.authorRaw) || w.author; });
+    });
+    return rows;
+  }
+
   function loadCorpus(id) {
     if (loaded.has(id)) return loaded.get(id);
     const c = byId.get(id);
@@ -1063,8 +1262,11 @@
       }),
       loadAuthorTraditions(c),
       subset,
+      // Whatever else a corpus needs before its rows are finished. Its
+      // failure is not the catalogue's: the shelf still loads.
+      c.aux ? c.aux().catch(() => null) : Promise.resolve(null),
     ])
-      .then(([d, byAuthor, keep]) => c.pick(d)
+      .then(([d, byAuthor, keep, aux]) => finishRows(c, aux, c.pick(d)
         // A corpus may disown rows in its own catalogue — see `exclude`
         // on the Latin Library, where the source now lists collections
         // this theme already carries separately.
@@ -1085,13 +1287,16 @@
           // tradition in normalize, and tfr's two paths are identical,
           // so nothing else changes shape here.
           if (!w.tradition && c.tradition) w.tradition = c.tradition(raw) || "";
-          if (!w.tradition && byAuthor && w.author) {
-            w.tradition = byAuthor.get(w.author) || "";
+          // Keyed by the catalogue's own form of the name where the
+          // corpus keeps one (Early English Books), so turning the
+          // display name round below cannot lose an author's tradition.
+          if (!w.tradition && byAuthor && (w.authorRaw || w.author)) {
+            w.tradition = byAuthor.get(w.authorRaw || w.author) || "";
           }
           return w;
         })
         .filter((w) => w.id && w.title)
-        .filter((w) => !keep || keep.has(String(w.id))))
+        .filter((w) => !keep || keep.has(String(w.id)))))
       .catch((err) => {
         if (window.console) window.console.warn("faith-corpora:", err.message);
         return [];
@@ -1104,6 +1309,11 @@
     all: CORPORA,
     get: (id) => byId.get(id),
     load: loadCorpus,
+    // The catalogue-name rule, exposed so the reference implementation
+    // can be diffed against it and a reader can turn a name it holds.
+    catalogueName,
+    turnCatalogueNames,
+    foldName,
     // The page for a collection, or "" if it has none.
     room: (id) => CORPUS_ROOM[id] || "",
     // The parent of a tradition, or "" if it has none. Callers pass the

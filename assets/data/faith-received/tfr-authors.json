@@ -1469,6 +1469,7 @@
   "source": "mere-orthodoxy"
  },
  "William Price": {
+  "dates": "d. 1666",
   "tradition": "English Puritan; Presbyterian",
   "affiliation": "Member of the Westminster Assembly; pastor of the English Reformed church at Amsterdam",
   "bio": "Welsh-born, of Christ Church, Oxford, minister at Waltham Abbey in Essex and then a member of the Westminster Assembly, where he served on committees and took part in debate. In 1648 he was called to the English Reformed congregation at Amsterdam and remained its pastor for the rest of his life. He wrote Janitor Animae (1638), a treatise on the fear of God, and Triumphus Sapientiae (Amsterdam, 1655), besides two published sermons. Reference works give his death as 1646 and as 1666, which cannot both be right, so no dates are stated here.",
@@ -1593,5 +1594,50 @@
   "bio": "Not a divine. The single item under this name is a printed information, that is a sworn deposition, laid during the Popish Plot years and concerning what had passed between the deponent and others. It is catalogued with the sermons of Henry Wilkinson the Oxford divine on a shared name.",
   "confidence": "medium",
   "source": "mere-orthodoxy"
+ },
+ "William Barlow": {
+  "dates": "d. 1568"
+ },
+ "Thomas Cooper": {
+  "dates": "c. 1517–1594"
+ },
+ "Thomas Cartwright": {
+  "dates": "1535–1603"
+ },
+ "John Rogers": {
+  "dates": "c. 1572–1636"
+ },
+ "Thomas Jackson": {
+  "dates": "1579–1640"
+ },
+ "John Wilson": {
+  "dates": "1588–1667"
+ },
+ "Thomas Taylor": {
+  "dates": "1576–1632"
+ },
+ "William Sclater": {
+  "dates": "1575–1626"
+ },
+ "John Williams": {
+  "dates": "1582–1650"
+ },
+ "Timothy Rogers": {
+  "dates": "c. 1589–1650"
+ },
+ "John Cotton": {
+  "dates": "1584–1652"
+ },
+ "John Stoughton": {
+  "dates": "1593–1639"
+ },
+ "Edmund Calamy": {
+  "dates": "1600–1666"
+ },
+ "Henry More": {
+  "dates": "1614–1687"
+ },
+ "Daniel Whitby": {
+  "dates": "1638–1726"
  }
 }
