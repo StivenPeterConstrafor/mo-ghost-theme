@@ -114,3 +114,21 @@ footer.site-footer .nav {
   scrollbar-width: auto;
   font-family: var(--font-body);
 }
+
+/* `.hero` is the third generic class name both sides use, after `.brand`
+   and `.nav`. Ours is the dark band with the cathedral behind it —
+   screen.min.css paints it `linear-gradient(#2d2927e6, #2d2927 50%)` and
+   sets white text. His index.in01.css sets `.hero h1 { color: var(--head) }`,
+   and our skin points --head at the library's dark ink, so the heading
+   came out #2d2927 on #2d2927: "The library" was there, in the right
+   place, and invisible.
+
+   Inside our hero the band's own colour wins. This is not a palette
+   choice, it is the rule that light text belongs on a dark ground. */
+.hero { color: #fff; }
+.hero h1,
+.hero h2,
+.hero p,
+.hero span,
+.hero small,
+.hero label { color: inherit; }
