@@ -497,3 +497,19 @@ html.g-mobile #app .fr-reader-head .aamob { display: flex; }
   #app.nosb .sidebar { transform: none; }
   #app.nosb #sbScrim { display: none; }
 }
+
+/* ── The work is named once ─────────────────────────────────────────
+   The sidebar printed "Confessions / Augustine of Hippo · 276 sections
+   · English · digital text" directly beneath a toolbar printing
+   "Confessions / Augustine of Hippo · c. 397–400 AD" — the same work,
+   named twice, forty pixels apart, and the lower one clipped by the
+   band above it (Ian, 2026-09-15).
+
+   The toolbar's copy wins because it is always visible; this one only
+   exists while the sidebar is open. Removing it also gives the outline
+   back the 81px it was costing, which is most of a first entry.
+
+   The count line goes with it: "276 contents entries" restates the
+   toolbar's "/ 276" and the scrollbar says as much again. */
+#app .sidebar .work { display: none; }
+#app .sidebar .cc-count { display: none; }
