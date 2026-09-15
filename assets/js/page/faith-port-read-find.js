@@ -130,7 +130,16 @@
     return out;
   }
 
-  function run(q) {
+  /* `keep` preserves the reader's place across a re-run.
+   *
+   * Stepping to a match scrolls it into view, and scrolling makes the
+   * reader hydrate more of the work — a real DOM change, which the
+   * observer below is right to notice. But re-running the search from
+   * scratch reset the cursor to match 1, so every press of Next landed
+   * on the next match and was thrown back a moment later. The observer
+   * was not misfiring; it was discarding the answer. */
+  function run(q, keep) {
+    const was = at;
     term = String(q || "");
     const reading = readingNow();
     const needle = term.toLowerCase();
@@ -156,8 +165,10 @@
         }
       });
     });
-    at = hits.length ? 0 : -1;
-    if (at === 0) show();
+    if (!hits.length) at = -1;
+    else if (keep && was >= 0) at = Math.min(was, hits.length - 1);
+    else at = 0;
+    if (at >= 0) show();
     draw();
   }
 
@@ -237,7 +248,7 @@
     observer = new MutationObserver(() => {
       if (!bar || bar.hidden || !term.trim()) return;
       window.clearTimeout(settling);
-      settling = window.setTimeout(() => run(term), 200);
+      settling = window.setTimeout(() => run(term, true), 200);
     });
     observer.observe(scroller, { childList: true, subtree: true });
   }
