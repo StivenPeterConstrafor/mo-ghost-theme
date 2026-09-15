@@ -129,20 +129,27 @@
    * site points at /reader/ from twenty-odd files, and a work's corpus is
    * not known at the link. One redirect at the door moves all of them.
    *
-   * WHAT CANNOT MOVE, AND WHY IT IS NOT A ROUTE PROBLEM. The registry
-   * above records how each corpus STORES its text. Six of them are
-   * `shards`: a folio per printed page, both lanes, a scan. That is
-   * exactly the model the ported reader was built on, so those go.
+   * WHAT MOVES IS DECIDED BY THE PORTED READER'S OWN INDEX, not by the
+   * `reader` field above. That field says how THIS reader loads a
+   * corpus; it says nothing about what the ported one can do. Keying on
+   * it sent only tfr and confessions across while /read/?w=pld-448 was
+   * already rendering 125 folios perfectly well.
    *
-   * `mo` (English Editions) is `json-sections` and `eebo` is `gz-toc`.
-   * Those texts have chapters and no pages — no folios, no facsimile,
-   * nothing for a page-native reader to paint. Sending them to /read/
-   * does not render them badly, it renders nothing, which is what
-   * Augustine's Confessions did when it was tried. They stay on this
-   * reader until their text is re-ingested as pages, and that is an
-   * ingest job on the corpus side, not a change we can make here.
+   * The ported index (mo-tfr v1/works-index.json) carries 19,450 works:
+   * pld 8,967, eebo 3,873, pg 3,824, po 400, aq 150, and the named
+   * Reformed, Lutheran and Medieval sets. Confessions are readable too,
+   * from their own confessions-index. Checked: pld-448 and eebo-113 both
+   * render there.
+   *
+   * THE ONE EXCEPTION IS `mo`, our English Editions — Augustine's
+   * Confessions, the Institutes in English, the creeds as we publish
+   * them. Those slugs are absent from that index (augustine-confessions
+   * returns nothing at any of its paths), which is why sending them to
+   * /read/ renders an empty page rather than a bad one. They stay here
+   * until that text exists in the corpus store, which is an ingest job
+   * on the corpus side and not something this file can fix.
    */
-  if (readerKind === "shards" && slug) {
+  if (corpusId !== "mo" && slug) {
     try {
       const to = new URL("/the-faith-received/read/", location.origin);
       to.searchParams.set("w", slug);
