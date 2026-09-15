@@ -879,39 +879,14 @@ body:has(#app.faith-port-read-page) { background: var(--bg); }
   top: auto;
 }
 
-/* The masthead, on the reader page, in dark scheme.
-   
-   Everything below it now takes the dark palette, which left the site's
-   cream band sitting alone across the top like a strip of a different
-   page. The site has no dark mode of its own and this does not give it
-   one: the rule is scoped to the reader, where the surrounding surface
-   has already changed and the mismatch is visible.
-   
-   The roundel stays terracotta. It is the brand mark, it carries enough
-   contrast on a dark ground, and it is the one thing on the page that
-   should look the same in both schemes. */
-@media (prefers-color-scheme: dark) {
-  body:has(#app.faith-port-read-page) header.site-header {
-    background: var(--card-bg);
-    border-bottom-color: var(--border);
-  }
-  body:has(#app.faith-port-read-page) header.site-header a,
-  body:has(#app.faith-port-read-page) header.site-header button,
-  body:has(#app.faith-port-read-page) header.site-header span,
-  body:has(#app.faith-port-read-page) header.site-header svg { color: var(--fg); }
-  /* The logo is a PNG with the wordmark's dark ink baked into it, so no
-     colour property can reach it: on the dark band the roundel survived
-     and "MERE ORTHODOXY" vanished. The theme already ships the light
-     cut of the same mark, which keeps the terracotta roundel and sets
-     the wordmark in white. Referenced relatively, because a stylesheet
-     cannot call Ghost's {{asset}} helper. */
-  body:has(#app.faith-port-read-page) header.site-header .brand-logo {
-    content: url("../images/mere-o-logo-white.png");
-  }
-  /* The hamburger's bars are painted with background, not color, so the
-     colour rule above never touched them and three dark lines sat
-     invisible on a dark header. */
-  body:has(#app.faith-port-read-page) header.site-header .nav-toggle-bar {
-    background: var(--fg);
-  }
-}
+/* The masthead does not change for dark mode. Ian's call, and it is the
+   right one: the nav bar is the site's, not the reader's, and it should
+   read the same on every page of Mere Orthodoxy whatever the reader
+   underneath it is doing. A cream band over a dark reader is a seam
+   between two things that genuinely are two things.
+
+   This is also why the logo swap and the hamburger rule that used to sit
+   here are gone: both existed only to prop up a dark masthead. The
+   shipped logo PNG has the wordmark's dark ink baked in, so if this is
+   ever revisited, mere-o-logo-white.png is the light cut, and
+   .nav-toggle-bar is painted with background rather than color. */
