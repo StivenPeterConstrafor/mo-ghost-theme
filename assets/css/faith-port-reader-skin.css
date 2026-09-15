@@ -795,7 +795,15 @@ body:has(#app.faith-port-read-page) .site-footer { display: none; }
 @media (max-width: 880px) {
   #app .ph .ctr {
     gap: 10px;
+    /* overflow-x cannot produce a scroll until the box is actually
+       CONSTRAINED. The strip is a flex child, and it was sizing to its
+       own content and overflowing .ph instead of scrolling inside it:
+       394px of controls reported as a 394px box, so scrollWidth equalled
+       clientWidth and nothing scrolled. flex-shrink plus min-width: 0 is
+       what lets it be narrower than its contents. */
+    flex: 1 1 auto;
     min-width: 0;
+    max-width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
