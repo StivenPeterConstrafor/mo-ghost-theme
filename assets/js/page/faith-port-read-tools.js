@@ -328,16 +328,14 @@
     };
   }
 
-  if (!window.__frOpenNotebook) {
-    window.__frOpenNotebook = function () {
-      const nb = document.getElementById("notebook");
-      if (!nb) return;
-      // .open is what slides it in; without the class it sits parked off
-      // the right edge at translateX(102%).
-      nb.classList.toggle("open");
-      if (window.__frThumbSync) window.__frThumbSync();
-    };
-  }
+  // NO __frOpenNotebook. The Research panel it opened has been removed:
+  // it was library-landing markup carried into this template without the
+  // wiring, every one of its thirty-five controls was dead, it shipped
+  // with `inert` set — so a real tap could not even reach its close
+  // button — and one control navigated to /read/? and discarded the work
+  // being read. Defining this global made an inert panel reachable,
+  // which was worse than leaving the button doing nothing. The thumb
+  // bar's Research button is hidden in the skin to match.
 
   /* ---- The popover ------------------------------------------------- */
 

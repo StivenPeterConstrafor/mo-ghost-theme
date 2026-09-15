@@ -890,3 +890,9 @@ body:has(#app.faith-port-read-page) { background: var(--bg); }
    shipped logo PNG has the wordmark's dark ink baked in, so if this is
    ever revisited, mere-o-logo-white.png is the light cut, and
    .nav-toggle-bar is painted with background rather than color. */
+
+/* The thumb bar's Research button has nothing to open: its panel was
+   removed as dead markup (see custom-faith-port-read.hbs). Hidden rather
+   than left as a fifth control that does nothing when tapped. Restore it
+   together with a panel that is actually mounted. */
+nav.frthumb [data-t="nb"] { display: none !important; }
