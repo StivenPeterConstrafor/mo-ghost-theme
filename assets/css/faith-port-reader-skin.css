@@ -487,9 +487,22 @@ html.g-mobile #app .fr-reader-head .aamob { display: flex; }
    about controls that are not there. */
 #app .coach { display: none; }
 
-/* A lane toggle with one lane. On an English-only work this cannot be
-   toggled, but it still renders underlined as though it were active. */
-#app.only-en .fr-reader-head #m-en { display: none; }
+/* A lane toggle with one lane. On an English-only work it cannot be
+   toggled, and it was rendering underlined as though it were a live
+   control you had selected.
+
+   Hiding it was the wrong answer and lasted one commit: it is the only
+   thing on screen that says WHICH LANE YOU ARE READING, and a reader
+   who opens a parallel work and then an English-only one should not
+   have that fact silently disappear (Ian, 2026-09-15). It stays, and
+   reads as the statement of fact it is: no underline, no pressed
+   state, not a button. */
+#app.only-en .fr-reader-head #m-en {
+  text-decoration: none;
+  cursor: default;
+  color: var(--muted);
+  pointer-events: none;
+}
 
 /* The sidebar opens by default where there is room for it. A reader
    landing on a 276-section work saw no contents at all. */
@@ -513,3 +526,39 @@ html.g-mobile #app .fr-reader-head .aamob { display: flex; }
    toolbar's "/ 276" and the scrollbar says as much again. */
 #app .sidebar .work { display: none; }
 #app .sidebar .cc-count { display: none; }
+
+/* ── Rows for things this work does not have ────────────────────────
+   MY BUG, AND THE ANSWER TO "these tools don't make sense". His
+   stylesheet hides the scan-zoom row on a work with no facsimile
+   (`.app.nopdf .aarow:has(.izc)`), but the grid rule above sets
+   `display: grid` on every .aarow and carries an id, so it outranks his
+   hiding and put the row back. Confessions is a born-digital English
+   text: there is no scan to zoom and no second lane to balance, so
+   those sliders moved nothing at all.
+
+   His conditions are re-asserted at this file's specificity. */
+#app.nopdf .aapop .aarow:has(.izc),
+#app.no-facs .aapop .aarow:has(.izc) { display: none; }
+
+/* The two lane-size sliders set the size of one lane RELATIVE to the
+   other. With a single lane there is no other, so "En" was a control
+   with nothing on the far side of it. The text-size slider above is the
+   one that does this job on an English-only work. */
+#app.only-en .aapop .aarow:has(.lnz),
+#app.only-en .aapop #source-size { display: none; }
+
+/* ── Type size changes the type, not the page ───────────────────────
+   `max-width: min(40em, 88%)` is measured in em, so it tracks the
+   reading font-size: turning the text down pulled the column in with
+   it and left a widening band of empty page on the right, and the
+   layout appeared to move when only the type should have (Ian,
+   2026-09-15: "it should just change the actual font size in the doc
+   but keep it formatted to the page").
+
+   rem is rooted on the document, and the slider sets font-size on
+   #reading, so the column now holds its width while the type inside it
+   grows and shrinks. 46rem is the same 736px the em measure gave at the
+   default size, so nothing moves until someone asks it to. The 88% cap
+   is kept: it is what guarantees a margin at every width. */
+#app.only-la #reading,
+#app.only-en #reading { max-width: min(46rem, 88%); }
