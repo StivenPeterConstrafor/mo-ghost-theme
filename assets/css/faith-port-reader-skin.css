@@ -778,3 +778,35 @@ body:has(#app.faith-port-read-page) .site-footer { display: none; }
     z-index: 30;
   }
 }
+
+/* 3. The toolbar's right-hand strip, on a phone.
+      
+      Measured at 375px: the row wants 394px and Aa's right edge lands at
+      406, so it sits outside the screen with no way to reach it. That is
+      the BEST case — a single-lane work. A work with English · Latin ·
+      Scan, or one carrying a date under the page box, is far wider
+      again, which is why tightening the spacing alone cannot be the
+      whole answer.
+
+      So: tighter spacing to make the common case fit outright, and the
+      strip scrolls when it still does not. A control that has run off
+      the edge is then reachable rather than lost. The scrollbar is
+      hidden because this is chrome, not content. */
+@media (max-width: 880px) {
+  #app .ph .ctr {
+    gap: 10px;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    /* The strip must be able to scroll to its own end, and the last
+       control needs air after it rather than being flush to the edge. */
+    padding-inline: 8px;
+    scroll-padding-inline: 8px;
+  }
+  #app .ph .ctr::-webkit-scrollbar { display: none; }
+  /* Nothing in the strip may be squeezed: a compressed page box or a
+     lane label clipped to three letters is worse than a scroll. */
+  #app .ph .ctr > * { flex: 0 0 auto; }
+}
