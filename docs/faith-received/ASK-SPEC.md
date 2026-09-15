@@ -392,6 +392,29 @@ change in `runs/ghost_ask_embed.md`).
 
 ---
 
+### 6.5 Two answer rules the worker must carry (2026-09-15)
+
+A friend of the owner asked for a reading path on irenic Protestantism, got Zanchi, Arminius and Turretin quoted in
+Latin only, and then asked "can you rerun the response above changing all the quotes from Latin to English" — which
+the site condensed into a fresh search and answered with the Vulgate debate. Two rules now hold on Vercel
+(`api/ask.mjs`, helpers in `api/_ask_language.mjs`, tests on the exported transcript in `api/_ask_language.test.mjs`):
+
+1. **Rewrite turns are not questions.** A turn that asks to re-render an earlier answer (rerun / redo / rewrite /
+   translate / "in English" / "the English renderings of the quotes from the first reply" / shorter / as a table) is
+   detected deterministically (`detectRewrite(question, msgs)`: a rewrite verb or a language request, plus a reference
+   to a prior answer; "first reply/answer/query" targets the first assistant turn, otherwise the last). Retrieval then
+   runs on the ORIGINAL question of the answer being re-rendered (never on the instruction), every page that answer
+   cited is carried into the evidence (not the usual last-answer cap of six), and the writer receives a REWRITE
+   instruction: same structure, authors, works and citations; apply the change throughout; no new sources.
+2. **Quotations are given in English.** The library is parallel Latin–English on every page; the writer quotes the
+   English text of the passages, adds the Latin only directly after its English where a technical term matters, and
+   never ships a Latin quotation without its English. A deterministic check (`latinQuoteIssues(text)`: Latin block
+   quotes or long inline Latin quotations with no English quotation beside them, judged by function-word ratios)
+   triggers one repair round from the same passages before the answer ships; the repaired draft must still pass
+   source verification and must reduce the count, or the original stands and the log says why.
+
+The worker port has neither rule yet; both are pure functions and port as written.
+
 ## 7. MereO: what exists and what to do
 
 | Piece | Vercel | MereO today | Action |
