@@ -92,13 +92,15 @@
    brand block 16px of top padding, 11.2px of bottom, and a rule under
    it, and they hand our nav `overflow-y: auto`.
 
-   The stylesheet is served inside `@layer port` (see scripts/
-   build-theme.mjs), which settles every collision where we have a
-   competing declaration — our nav links keep their three colours
-   because an unlayered rule of ours outranks a layered rule of his.
-   A layer cannot settle THIS one: nothing of ours sets padding on
-   `.brand`, so there is no conflict to resolve and his rule simply
-   applies. The only fix is to say the value out loud.
+   HIS STYLESHEET IS NOT LAYERED AND THIS FILE IS NOT LAST. An earlier
+   version of this comment claimed both, from a cascade-layer experiment
+   that was reverted in 30cd646; the claim outlived the code and would
+   have sent the next person writing rules that silently lose. The
+   rendered order is: his port sheets, then this file, then
+   screen.min.css, then faith-received.min.css. So this file BEATS his
+   sheets on a tie and LOSES to ours. Anything that has to outrank our
+   own site CSS needs specificity, not position — which is why the rules
+   below name `header.site-header` and `#app` rather than bare classes.
 
    These are the shell's own computed values, read off a clean page
    rather than guessed, and verified to restore 61px exactly. */
@@ -213,4 +215,67 @@ footer.site-footer .nav {
    wraps at narrow widths. */
 .faith-port-read-page {
   height: calc(100dvh - var(--mo-head, 61px));
+}
+
+/* ── Dark mode is not shipped, so it must not arrive by accident ────
+   fr-reading-system.css applies its whole dark token set under
+   `@media (prefers-color-scheme: dark)` to
+   `:root:not([data-theme="light"]):not([data-theme="sepia"])`. On a
+   first visit there is no data-theme attribute at all, so A READER
+   WHOSE OS IS DARK LANDS ON THE DARK READER WITHOUT TOUCHING A CONTROL
+   — under our cream masthead, above our cream footer. Dark content,
+   light chrome, no seam between them that anyone chose.
+
+   The reading theme is a property of the reading surface, and a
+   masthead carrying the wordmark and a terracotta member button is not
+   part of that surface. Light and sepia are both warm and sit under
+   that masthead without a seam, which is why they are fine scoped to
+   the reader. Dark is different in kind: someone who asks for a dark
+   screen is not asking for an 85px cream band at the top of it. Doing
+   it properly means taking our own shell dark in OUR dark
+   (--color-dark ground, --color-cream ink, the band our heroes already
+   use), and that is its own piece of work with its own review.
+
+   Until then the OS preference does not get to choose it. The explicit
+   toggle still works — `[data-theme="dark"]` is untouched — so nothing
+   is removed, it just stops being the default for a third of visitors.
+   The theme control itself should drop to Light/Sepia; that is a
+   template change, tracked separately. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="dark"]),
+  :root[data-site]:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f6f3f2;
+    --bg-warm: #f1e0c9;
+    --card: #fffdfa;
+    --card-bg: #fffdfa;
+    --panel: #fffdfa;
+    --paper: #fffdfa;
+    --sidebar: #f5efe1;
+    --sidebar-bg: #f5efe1;
+    --fg: #2d2927;
+    --head: #2d2927;
+    --ink: #2d2927;
+    --muted: #6b6660;
+    --border: #d9c6a7;
+    --line: #d9c6a7;
+    --hl: #f5efe1;
+    --highlight: #f5efe1;
+  }
+}
+
+/* THE READER SUBTREE TAKES THE THEME'S INK, NOT THE SITE'S.
+   Any element in here that sets no colour of its own inherits from
+   `body`, and `body { color: var(--color-dark) }` comes from
+   screen.min.css, which loads after this file. In dark that put
+   #2d2927 ink on a #242521 sidebar — the work title measured about
+   1.1:1 against its own background, which is invisible, not merely
+   low-contrast. Asserting --fg at the roots of the embedded surfaces
+   fixes every un-coloured descendant at once. */
+#app,
+#aboutOv,
+aside.relpanel,
+#selpop,
+#notebook {
+  color: var(--fg);
 }
