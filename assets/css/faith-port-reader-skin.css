@@ -569,6 +569,18 @@ html.g-mobile #app .fr-reader-head .aamob { display: flex; }
 #app.only-la #reading,
 #app.only-en #reading { max-width: min(46rem, 88%); }
 
+/* Wider once the sheet is gone. 46rem was right when the column sat on a
+   lit sheet of paper: the paper drew the eye and the space around it read
+   as a mat. With the surface removed the same column reads as a narrow
+   ribbon stranded in a field, which is what Ian saw. The measure opens on
+   wide screens only, so phones and tablets keep the line length they
+   have, and 60rem at the reader's body size is still inside a sane
+   measure rather than a full-bleed wall of text. */
+@media (min-width: 1200px) {
+  #app.only-la #reading,
+  #app.only-en #reading { max-width: min(60rem, 92%); }
+}
+
 /* ── The toolbar's right cluster ────────────────────────────────────
    Four groups with four different rhythms: the arrows cramped against
    each other, a white input box on a cream band, a rule with unequal

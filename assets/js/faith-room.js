@@ -539,15 +539,22 @@
     // authors. Grouping after the slice was what let one author land on
     // two pages.
     const allGroups = [];
+    const byName = new Map();
     scoped.forEach((w) => {
       const name = (w.author || "").trim() || "Unattributed";
-      const last = allGroups[allGroups.length - 1];
-      if (last && last.name === name) {
-        const key = `${(w.title || "").toLowerCase()}|${w.volume || ""}`;
-        if (!last.seen.has(key)) { last.seen.add(key); last.works.push(w); }
-      } else {
-        allGroups.push({ name, works: [w], seen: new Set([`${(w.title || "").toLowerCase()}|${w.volume || ""}`]) });
+      // By NAME, not by consecutive run. A run only merged neighbours,
+      // and the catalogue's several "Unknown author" spellings interleave
+      // in the sort, so one page of the Latin Fathers printed twenty-two
+      // separate "Unknown author" rows. A name gets one block, at the
+      // place it first appears.
+      const key = `${(w.title || "").toLowerCase()}|${w.volume || ""}`;
+      let g = byName.get(name);
+      if (!g) {
+        g = { name, works: [], seen: new Set() };
+        byName.set(name, g);
+        allGroups.push(g);
       }
+      if (!g.seen.has(key)) { g.seen.add(key); g.works.push(w); }
     });
 
     const pages = Math.max(1, Math.ceil(allGroups.length / PAGE_SIZE));
