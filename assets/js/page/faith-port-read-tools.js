@@ -239,12 +239,16 @@
       ' aria-label="Copy a link to this paragraph">\u00b6</button>' +
       '<button type="button" data-a="copy" title="Copy this paragraph, with its citation"' +
       ' aria-label="Copy this paragraph, with its citation">\u29c9</button>';
-    reading.appendChild(rail);
-
+    // NOT appended here. The engine renders each work by replacing the
+    // contents of #reading, so a rail attached at load is thrown away the
+    // moment a work arrives — and again on every page turn. It is
+    // re-attached on demand instead, which survives every re-render
+    // without having to know when one happened.
     let host = null;
     reading.addEventListener("pointerover", (e) => {
       const row = e.target.closest && e.target.closest(".row[id]");
       if (!row || !reading.contains(row)) return;
+      if (!rail.isConnected) reading.appendChild(rail);
       host = row;
       const r = row.getBoundingClientRect();
       const base = reading.getBoundingClientRect();
