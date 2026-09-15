@@ -201,3 +201,16 @@ footer.site-footer .nav {
   }
   .app:not(.nosb) .main { min-width: 0; }
 }
+
+/* .app is `height: 100dvh` — one viewport — which was true when the
+   reader owned the document. Inside our shell it starts below the
+   masthead, so a full viewport of height runs past the fold by exactly
+   the masthead's height, and the sidebar and the reading column both
+   ended up with their last rows under the bottom edge.
+
+   It gets the viewport MINUS our masthead. --mo-head is measured at
+   runtime by faith-port-read-boot.js, so this follows the header when it
+   wraps at narrow widths. */
+.faith-port-read-page {
+  height: calc(100dvh - var(--mo-head, 61px));
+}
