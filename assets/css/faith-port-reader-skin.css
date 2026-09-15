@@ -899,6 +899,19 @@ body:has(#app.faith-port-read-page) { background: var(--bg); }
   body:has(#app.faith-port-read-page) header.site-header button,
   body:has(#app.faith-port-read-page) header.site-header span,
   body:has(#app.faith-port-read-page) header.site-header svg { color: var(--fg); }
-  body:has(#app.faith-port-read-page) header.site-header .brand,
-  body:has(#app.faith-port-read-page) header.site-header .brand-logo { color: #c1593c; }
+  /* The logo is a PNG with the wordmark's dark ink baked into it, so no
+     colour property can reach it: on the dark band the roundel survived
+     and "MERE ORTHODOXY" vanished. The theme already ships the light
+     cut of the same mark, which keeps the terracotta roundel and sets
+     the wordmark in white. Referenced relatively, because a stylesheet
+     cannot call Ghost's {{asset}} helper. */
+  body:has(#app.faith-port-read-page) header.site-header .brand-logo {
+    content: url("../images/mere-o-logo-white.png");
+  }
+  /* The hamburger's bars are painted with background, not color, so the
+     colour rule above never touched them and three dark lines sat
+     invisible on a dark header. */
+  body:has(#app.faith-port-read-page) header.site-header .nav-toggle-bar {
+    background: var(--fg);
+  }
 }
