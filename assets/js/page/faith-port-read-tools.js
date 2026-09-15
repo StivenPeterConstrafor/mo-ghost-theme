@@ -376,7 +376,12 @@
         }
         if (tries > 0) window.setTimeout(() => reach(tries - 1), 80);
       };
-      window.requestAnimationFrame(() => reach(6));
+      // Tried at once, then on timers. Not requestAnimationFrame: a
+      // backgrounded or hidden page can stop servicing rAF entirely, and
+      // a focus that only ever runs inside one is a focus that sometimes
+      // never runs at all. setTimeout keeps firing either way.
+      reach(0);
+      window.setTimeout(() => reach(6), 0);
     };
   }
 
