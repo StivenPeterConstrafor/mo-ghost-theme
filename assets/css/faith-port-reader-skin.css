@@ -878,3 +878,27 @@ body:has(#app.faith-port-read-page) { background: var(--bg); }
   position: static;
   top: auto;
 }
+
+/* The masthead, on the reader page, in dark scheme.
+   
+   Everything below it now takes the dark palette, which left the site's
+   cream band sitting alone across the top like a strip of a different
+   page. The site has no dark mode of its own and this does not give it
+   one: the rule is scoped to the reader, where the surrounding surface
+   has already changed and the mismatch is visible.
+   
+   The roundel stays terracotta. It is the brand mark, it carries enough
+   contrast on a dark ground, and it is the one thing on the page that
+   should look the same in both schemes. */
+@media (prefers-color-scheme: dark) {
+  body:has(#app.faith-port-read-page) header.site-header {
+    background: var(--card-bg);
+    border-bottom-color: var(--border);
+  }
+  body:has(#app.faith-port-read-page) header.site-header a,
+  body:has(#app.faith-port-read-page) header.site-header button,
+  body:has(#app.faith-port-read-page) header.site-header span,
+  body:has(#app.faith-port-read-page) header.site-header svg { color: var(--fg); }
+  body:has(#app.faith-port-read-page) header.site-header .brand,
+  body:has(#app.faith-port-read-page) header.site-header .brand-logo { color: #c1593c; }
+}
