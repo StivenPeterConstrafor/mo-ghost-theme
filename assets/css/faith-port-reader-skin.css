@@ -168,3 +168,36 @@ footer.site-footer .nav {
    sidebar"). The sidebar carries the same tree, with a filter and a
    Show current control the inline copy does not have. */
 #reading .inctoc { display: none; }
+
+/* Our site-menu link treatment — 11px, uppercase, letter-spaced — is
+   `.nav a`, and his outline entries are links inside a `.nav`. His own
+   rules set the family, size and colour, so those came right once the
+   layer went; these two he never declares, so there is nothing of his
+   to win and ours simply applies. Two hundred and seventy-six chapter
+   titles in spaced small caps is not a list anyone reads. */
+#app .nav a {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* THE SIDEBAR STAYS OPEN ON A WIDE SCREEN (Ian, 2026-09-15: "we need it
+   to all be sidebar and the sidebar to be really really good").
+
+   His sidebar is a drawer: absolutely positioned over the text with a
+   scrim behind it, which is right on a phone and wrong on a desktop,
+   where there is room for the outline and the text at once and no
+   reason to dim what you are reading to look at where you are in it.
+
+   Above 1100px it joins the flex row instead, so the reading column
+   starts where the sidebar ends and nothing is covered. Below that it
+   remains the drawer it was. */
+@media (min-width: 1100px) {
+  .app:not(.nosb) #sbScrim { display: none !important; }
+  .app:not(.nosb) .sidebar {
+    position: relative;
+    top: 0;
+    flex: 0 0 300px;
+    box-shadow: none;
+  }
+  .app:not(.nosb) .main { min-width: 0; }
+}
