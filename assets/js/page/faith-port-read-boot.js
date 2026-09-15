@@ -72,7 +72,14 @@
     const app = document.getElementById("app");
     if (app) app.classList.remove("nosb");
   }
-  openSidebarOnDesktop();
+  // This file runs in the HEAD, so #app does not exist yet and the
+  // first attempt found nothing — the sidebar stayed shut and it looked
+  // as though the toggle was dead. Run it once the body is parsed.
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", openSidebarOnDesktop, { once: true });
+  } else {
+    openSidebarOnDesktop();
+  }
 
   measure();
   if (document.readyState === "loading") {
