@@ -132,3 +132,37 @@ footer.site-footer .nav {
 .hero span,
 .hero small,
 .hero label { color: inherit; }
+
+/* ── The layer cuts both ways ───────────────────────────────────────
+   read.in01.css is served inside `@layer port` so it cannot restyle
+   our masthead. The cost is that EVERY rule in it now loses to every
+   unlayered rule of ours — including inside the reader, where his
+   should win. Our screen.min.css carries `.nav { display: flex;
+   align-items: center; gap: 10px }` for the site menu, and `.nav` is
+   also the name of his contents sidebar. So the outline became a
+   horizontal flex row and all 276 chapter titles collapsed into 60px
+   columns, one letter per line (Ian, 2026-09-15: "the TOC on the reader
+   is a mess").
+
+   Inside #app his rules are put back. This is the other half of the
+   containment above: our shell is not his chrome, and his reader is not
+   our shell. Any further collision on a shared class name belongs
+   here — check `#app` first when something in the reader inherits a
+   site style it should not. */
+#app .nav {
+  display: block;
+  align-items: normal;
+  gap: 0;
+}
+#app .brand {
+  display: block;
+  align-items: normal;
+}
+
+/* The contents belong in the sidebar, not stacked above the text as
+   well. The engine prints an inline contents block at the head of any
+   work whose outline runs to four entries or more, which for these is
+   the whole outline a second time (Ian: "we need it to all be
+   sidebar"). The sidebar carries the same tree, with a filter and a
+   Show current control the inline copy does not have. */
+#reading .inctoc { display: none; }
