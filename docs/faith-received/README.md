@@ -13,7 +13,7 @@ Read a spec to know what a surface must do; read the matching recreate sheet to 
 
 ## 0. Start here (reading order)
 
-0. **The handoff hub** — a living web page that mirrors this index and adds live screenshots, condensed proof batteries, endpoint recipes and deep-dive protocols per area: https://claude.ai/code/artifact/cb675bcb-22e3-4993-8f82-2bf10f389a7c (a private Claude artifact; the link works once the owner shares it with you). It is republished at the same address as things ship; this README stays the source of truth for organisation, the hub adds the pictures and the batteries. Since 2026-09-14 it also carries two inventories — **Backend stacks** (every backend this library runs on, entry by entry, with its audit state) and **Front ends** (every surface on both sites, every MereO template, with the document that governs each) — so nothing is implied by omission.
+0. **The handoff hub** — a living web page that mirrors this index and adds live screenshots, condensed proof batteries, endpoint recipes and deep-dive protocols per area: https://claude.ai/code/artifact/cb675bcb-22e3-4993-8f82-2bf10f389a7c (a private Claude artifact; the link works once the owner shares it with you). It is republished at the same address as things ship; this README stays the source of truth for organisation, the hub adds the pictures and the batteries.
 1. **LANDING-PAGE-SPEC.md** — how the library is organised (shelves → authors → sets → volumes) and what data it reads. Everything else hangs off this.
 2. **READER-SPEC.md** — the reader. §0 is the gap list for MereO's current reader (flat sections, no facsimile, TOC-driven) and is the single largest piece of work. **READER-COMPARISON.md** explains the two readers side by side, with code.
 3. **SEARCH-SPEC.md** — every search box and the omnibox, algorithm by surface; **ASK-SPEC.md** — the Ask workspace behind `/?find=ask` and the API contract.
@@ -118,6 +118,7 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 
 | Date | Document | Commit |
 |---|---|---|
+| 09-15 | AUTHOR-PAGE-SPEC §8 — one author, one page on MereO: Early English Books catalogue names turned to the library's (340 names / 3,259 works rejoin their Latin Library author; homonyms keep dates; old `?a=` addresses resolve); READER-SPEC §15 — EEBO deep links land on the cited chapter, one download not two, the phone/desktop blank band under the toolbar removed; reference implementation `eebo-author-names-reference.py` (0 diffs vs the theme) | mo-ghost-theme PR from `fix/author-identity-eebo-deeplink` (theme code) + docs commit |
 | 09-13 | READER-SPEC §9.1–9.3, R2-SYNC-SPEC §3.1, AUTHOR-PAGE-SPEC §5 — one topic-label rule on the site AND at the source (registry `2026-09-13.1`, 179 topics with aliases; evidence snapshot `mine-23e80dea8050caa3b14e`; units, work overviews, rooms, graphs republished); `/compare` evidence pages retry before halting | theme ask-port-ui 55ef459d · 5dc7b202 · 6eb89663 Re-embed completed 13 Sep 22:47 (1,235 works, 137,856 units); raw record store on Blob only (R2-SYNC-SPEC §3.1). |
 | 09-14 | R2-SYNC-SPEC §3.1 — raw record store republished (`raw-a3885e4e29e8eed8a8765803`), mirrored to R2 for the first time; 482 unit files with `~n` id suffixes on both stores; superseded stores archived on Dropbox, deletes with the owner. |
 | 09-14 | PLD-SOURCE-DIVISIONS — `pld-448` (Anselm, Letters, PL 158) notes partition now carries English (52 machine paragraphs in `tei/pld/448.xml`); registry entry recomputed (sha, leaves, ranges); the recipe for the next Latin-only notes partition. |
@@ -146,33 +147,3 @@ Deduplicated across every sheet. Each line names the document that holds the rul
 | 09-11 | WEB, TOPICS, BIBLE, SEARCH, AUTHORS_ROOMS _INSTRUCTIONS.md (five surface sheets) | mo-workers 8a363d4 |
 | 09-11 | SHELF_DOORS_DTC_INSTRUCTIONS.md | mo-workers 71269d7 |
 | 09-11 | RESEARCH_RAIL_INSTRUCTIONS.md | mo-workers ad296d1 |
-
-## Topics scrolling and data audit: 2026-09-13
-
-[Source and acceptance package](topics-qa-2026-09-13/README.md): one scrolling area per shelf, fixed author/statement pages, indexed work selection, bounded loading and clearer extracted-statement provenance. Built and verified with 44 tests and real-data browser checks, including all 622 positions in Baxter’s Method of Christian Theology. **Deployed on Vercel: `dpl_4KuTW4MNw6q8xV19xsTWCVBgqcfW`.** Six research outputs match the production alias. Native MereO integration remains pending.
-
-## Mobile Web and source workflows: 2026-09-13
-
-[Source and acceptance package](web-mobile-qa-2026-09-13/README.md): compact mobile research views, working work/passage saves without previews, fixed citation pages, edition labels in Web and Notebook, and reader header-aware source placement. Verified Web → Notebook → reader → Desk, plus an English-only reader. Release `dpl_8oPyvgKgnoQ29ZvYzUBAKwWjJiwZ`; 78 focused checks and ten alias byte matches. Native MereO integration remains pending.
-
-## Following sources and reception: 2026-09-13
-
-[Workflow and source package](web-journey-qa-2026-09-13/README.md): session-local restoration of author/citation filters, reference pages, open evidence and scrolling; visible path and direction controls. Tested Jansen → Augustine and Jansen → Voetius → Calov. Release `dpl_5tSibx6tvcRXCQpg76Zzq77Ypoif`; 30 checks and three alias byte matches. Native MereO integration remains pending.
-
-## Continuous PL text and editorial notes: 2026-09-14
-
-[Source and acceptance package](pld-continuous-2026-09-14/README.md): ordinary volume entries include labelled editorial material in recorded column order, while explicit source-layer links remain precise. Verified Anselm’s English letter at 1067 and all 52 original editorial paragraphs across 20 columns; the notes have no supplied English translation. Release `dpl_5ufFf1to8pGiV5AFVV4hymtNhxAt`, 48 checks and three alias byte matches. Native MereO integration and editorial translation remain separate.
-
-### Web connection follow-up · 14 September 2026
-
-See [the mixed-direction connection package](web-connections-2026-09-14/README.md) for the Athanasius → Aquinas → Vásquez workflow: full source, tests, screenshots and measured reference-site fixes. It covers work-header layout, explicit Both directions, preserving found paths on Back, and a narrow guard against a cited question outside the resolver target volume. Native integration and artifact publication remain separate; the complete-site audit is still incomplete.
-
-### Web Scripture and shelf workflows · 14 September 2026
-
-The [Scripture/shelf package](web-scripture-shelves-2026-09-14/README.md) contains full source and verification for verse → author → work → source navigation, all available Luther work groups, bounded shelf profiles and source pages, selected-author URLs, comparison return controls, and build-versioned Scripture helpers. Follow the package’s existing-artifact instructions; native MereO integration remains pending.
-
-### PG source choices and printed-column navigation · 14 September 2026
-
-The [PG source UI package](pg-source-ui-2026-09-14/README.md) contains full reader source, the navigation helper, tests and scan-grounded findings for PG 31, columns 1467–1468. The visible Greek/Latin choices, primary-witness selection and manual column jumps are fixed on the reference site. Greek OCR, misclassified main-text rubrics and multilingual paragraph alignment remain explicitly unresolved; this UI session did not have authority to mutate the corpus or change pairing.
-
-- [PG canonical carryover and rich TEI](pg-canonical-carryover-2026-09-14/README.md): reader source selection, printed-column alignment, preserved headings, complete source, storage proofs, and remaining editorial anchor review.
