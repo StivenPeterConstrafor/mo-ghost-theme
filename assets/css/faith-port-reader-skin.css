@@ -818,3 +818,63 @@ body:has(#app.faith-port-read-page) .site-footer { display: none; }
      lane label clipped to three letters is worse than a scroll. */
   #app .ph .ctr > * { flex: 0 0 auto; }
 }
+
+/* ═══ DARK MODE: the text was on the wrong surface ═══════════════════
+   
+   Measured on a phone in dark scheme: the reader's own palette switches
+   correctly — --fg is #E9E9E5 and the text computes to rgb(233,233,229)
+   — but the page underneath it stayed rgb(246,243,242), because the site
+   shell has no dark mode of its own. Near-white type on near-white
+   paper: eleven points of luminance between them. Unreadable, exactly as
+   reported.
+
+   Removing the paper sheet is what exposed it. Until then #reading
+   painted --card-bg, which in dark scheme is #2B2C29, so the text sat on
+   a dark card and could be read. Taking the sheet away let the light
+   body through.
+
+   The reading surface follows the reader's own --bg from here, which is
+   the variable the reader's Light/Sepia/Dark control writes too — so
+   this answers the OS setting and the in-reader toggle with one rule.
+   In light scheme --bg is #f6f3f2, the colour the page already was, so
+   nothing moves. */
+body:has(#app.faith-port-read-page) { background: var(--bg); }
+#app.faith-port-read-page,
+#app.faith-port-read-page .main,
+#app.faith-port-read-page #scroll { background: var(--bg); }
+
+/* The reader's toolbar is ours, not his, and it was pinned to the cream
+   masthead colour in every scheme — a bright band across the top of an
+   otherwise dark reader. It takes the dark surface with everything else,
+   and only in dark scheme, so the light reader is untouched. */
+@media (prefers-color-scheme: dark) {
+  #app.faith-port-read-page .ph {
+    background: var(--card-bg);
+    color: var(--fg);
+    border-bottom-color: var(--border);
+  }
+  #app.faith-port-read-page .ph button,
+  #app.faith-port-read-page .ph a,
+  #app.faith-port-read-page .ph input { color: var(--fg); }
+  #app.faith-port-read-page .ph .pg-total,
+  #app.faith-port-read-page .ph .sub,
+  #app.faith-port-read-page .ph .ploc { color: var(--muted); }
+}
+
+/* ── The contents panel's header scrolls away with everything else ───
+   
+   Two sticky blocks were stacked at the top of the panel: the
+   Outline/Library tabs (56px, pinned at 0) and the tools box beneath
+   them (135px, pinned at 57px) — the search field, Expand all / Collapse
+   all, and the entry count. 191px of chrome held permanently above the
+   list.
+   
+   On a phone that is a quarter of the screen gone before a single
+   contents entry is shown, and it is what was covering the outline.
+   Ian's call: it should not stick. You scroll past it to read the
+   contents, and scroll back up to search. */
+#app .sidebar .nav-vt,
+#app .sidebar .rc-contents-tools {
+  position: static;
+  top: auto;
+}
