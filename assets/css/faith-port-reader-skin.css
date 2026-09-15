@@ -54,7 +54,6 @@
   --highlight: #f5efe1;
 }
 
-<<<<<<< Updated upstream
 /* ── The reader inside the shell ────────────────────────────────────
    Both mastheads are position:fixed at top:0 — ours at z-index 20, the
    reader's toolbar at 40 — so until the toolbar is pushed down it
@@ -86,7 +85,6 @@
    reader's scroller is what allows the chain; the reader sets `contain`
    in places to trap it, and on this page we want it to pass through. */
 .faith-port-read-page #scroll { overscroll-behavior-y: auto; }
-=======
 /* ── Our shell is not his chrome ────────────────────────────────────
    read.in01.css styles `.brand` and `.nav`. So does Mere Orthodoxy's
    masthead. Sharing a document, his rules land on our header: measured
@@ -116,4 +114,3 @@ footer.site-footer .nav {
   scrollbar-width: auto;
   font-family: var(--font-body);
 }
->>>>>>> Stashed changes
