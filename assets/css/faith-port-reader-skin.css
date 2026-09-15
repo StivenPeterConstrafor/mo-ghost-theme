@@ -504,12 +504,12 @@ html.g-mobile #app .fr-reader-head .aamob { display: flex; }
   pointer-events: none;
 }
 
-/* The sidebar opens by default where there is room for it. A reader
-   landing on a 276-section work saw no contents at all. */
-@media (min-width: 1100px) {
-  #app.nosb .sidebar { transform: none; }
-  #app.nosb #sbScrim { display: none; }
-}
+/* The sidebar's default-open lives in faith-port-read-boot.js, NOT
+   here. It was briefly done in CSS by neutralising the transform on
+   .nosb — which is the CLOSED state, so open and closed rendered
+   identically and the toggle silently stopped working (Ian,
+   2026-09-15: "this does not actually collapse/expand the TOC"). Never
+   style a state class to look like its opposite; drop the class. */
 
 /* ── The work is named once ─────────────────────────────────────────
    The sidebar printed "Confessions / Augustine of Hippo · 276 sections

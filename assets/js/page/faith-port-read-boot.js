@@ -53,6 +53,27 @@
 
   // Published before first paint so the toolbar is never briefly over
   // the nav, then again once the header's own fonts and layout settle.
+  /*
+   * THE CONTENTS SIDEBAR STARTS OPEN WHERE THERE IS ROOM FOR IT.
+   *
+   * The template ships #app with `nosb` — closed — which is right on a
+   * phone, where the sidebar is a drawer over the text. On a desktop it
+   * meant landing on a 276-section work with no contents in sight and a
+   * hamburger to discover.
+   *
+   * The class is dropped rather than styled around. An earlier attempt
+   * neutralised the closed state's transform in CSS, which made closed
+   * look exactly like open and left the toggle doing nothing visible.
+   * The engine owns this class; we only choose its starting value, and
+   * only on the first paint, so every later toggle is the reader's.
+   */
+  function openSidebarOnDesktop() {
+    if (window.innerWidth < 1100) return;
+    const app = document.getElementById("app");
+    if (app) app.classList.remove("nosb");
+  }
+  openSidebarOnDesktop();
+
   measure();
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", measure, { once: true });
