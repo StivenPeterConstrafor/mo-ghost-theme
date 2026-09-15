@@ -79,7 +79,7 @@
    * floor for "which direction", never for "how much".
    */
   const LIVE_MIN_N = 20;
-  const meta = DATA.meta;
+  const {meta} = DATA;
   // Placeholder so the Real Time tab exists before its fetch resolves.
   // renderTabs skips any cohort with no entry, which would otherwise hide it.
   meta.cohorts.live = { label: "Real Time: everyone", n: 0, base: null, live: true,

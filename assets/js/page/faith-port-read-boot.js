@@ -114,7 +114,7 @@
     const ph = document.querySelector(".ph");
     if (!ph) return;
     const px = Math.round(ph.getBoundingClientRect().height);
-    if (px > 0) document.documentElement.style.setProperty("--phh", px + "px");
+    if (px > 0) document.documentElement.style.setProperty("--phh", `${px}px`);
   }
   measurePh();
   if (document.readyState === "loading") {

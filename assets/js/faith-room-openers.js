@@ -49,17 +49,17 @@
       const title = e.title || String(ws).split("/").pop();
       // The reader anchors a page as #b<page>-0, so the link reopens on
       // the page last read rather than at the title page.
-      const href = "/the-faith-received/read/?w=" + encodeURIComponent(slug) +
-        "#b" + encodeURIComponent(e.page) + "-0";
-      const meta = [e.author, "fol. " + e.page].filter(Boolean).join(" · ");
-      return '<a class="fro-card" href="' + esc(href) + '" title="' + esc(title) + '">' +
-        '<span class="fro-card-t">' + esc(title) + "</span>" +
-        '<span class="fro-card-m">' + esc(meta) + "</span></a>";
+      const href = `/the-faith-received/read/?w=${encodeURIComponent(slug)}`
+        + `#b${encodeURIComponent(e.page)}-0`;
+      const meta = [e.author, `fol. ${e.page}`].filter(Boolean).join(" · ");
+      return `<a class="fro-card" href="${esc(href)}" title="${esc(title)}">` +
+        `<span class="fro-card-t">${esc(title)}</span>` +
+        `<span class="fro-card-m">${esc(meta)}</span></a>`;
     }).join("");
 
-    return '<div class="fro-block fro-continue">' +
-      '<h2 class="fro-h">Continue reading</h2>' +
-      '<div class="fro-cards">' + cards + "</div></div>";
+    return `<div class="fro-block fro-continue">` +
+      `<h2 class="fro-h">Continue reading</h2>` +
+      `<div class="fro-cards">${cards}</div></div>`;
   }
 
   /* ---- Browse the shelves ------------------------------------------ */
@@ -89,7 +89,7 @@
     // with a capital and is a word or two; anything else is left alone.
     const fore = named[1];
     if (!/^\p{Lu}/u.test(fore) || fore.split(/\s+/).length > 2) return named[0];
-    return fore + " " + named[0];
+    return `${fore} ${named[0]}`;
   }
 
   // A shelf is a tradition as the catalogue declares it. Where that
@@ -141,16 +141,15 @@
         .sort((a, b) => b[1] - a[1]).slice(0, 3)
         .map(([a]) => displayName(a)).filter(Boolean);
       const under = names.length
-        ? '<span class="fro-shelf-who">' + esc(names.join(" · ")) +
-          (s.authors.size > names.length ? " · …" : "") + "</span>"
+        ? `<span class="fro-shelf-who">${esc(names.join(" · "))}`
+          + `${s.authors.size > names.length ? " · …" : ""}</span>`
         : "";
 
-      return '<li class="fro-shelf"><a href="?' + esc(q.toString()) + '">' +
-        '<span class="fro-shelf-row">' +
-        '<span class="fro-shelf-name">' + esc(s.name) + "</span>" +
-        '<span class="fro-shelf-n"><b>' + num(s.n) + "</b> " +
-        (s.n === 1 ? "work" : "works") + "</span></span>" +
-        under + "</a></li>";
+      return `<li class="fro-shelf"><a href="?${esc(q.toString())}">` +
+        `<span class="fro-shelf-row">` +
+        `<span class="fro-shelf-name">${esc(s.name)}</span>` +
+        `<span class="fro-shelf-n"><b>${num(s.n)}</b> ${s.n === 1 ? "work" : "works"}</span>` +
+        `</span>${under}</a></li>`;
     }).join("");
 
     // No aggregate work count in the heading. Only a work with a declared
@@ -158,16 +157,16 @@
     // the catalogue's own, and printing it a few inches above "30,682
     // works in the whole library" reads as one of the two being wrong.
     const foot = rest
-      ? '<p class="fro-foot">' + num(rest) + " smaller " +
-        (rest === 1 ? "tradition holds" : "traditions hold") +
-        " fewer than " + num(MIN) +
-        " works each. They are in the Tradition filter below.</p>"
+      ? `<p class="fro-foot">${num(rest)} smaller `
+        + `${rest === 1 ? "tradition holds" : "traditions hold"}`
+        + ` fewer than ${num(MIN)}`
+        + ` works each. They are in the Tradition filter below.</p>`
       : "";
 
-    return '<div class="fro-block fro-shelves">' +
-      '<h2 class="fro-h">Browse the shelves' +
-      '<span class="fro-tally">' + num(list.length) + " shelves</span></h2>" +
-      '<ul class="fro-shelf-list">' + rows + "</ul>" + foot + "</div>";
+    return `<div class="fro-block fro-shelves">` +
+      `<h2 class="fro-h">Browse the shelves` +
+      `<span class="fro-tally">${num(list.length)} shelves</span></h2>` +
+      `<ul class="fro-shelf-list">${rows}</ul>${foot}</div>`;
   }
 
   /* ---- Render ------------------------------------------------------ */

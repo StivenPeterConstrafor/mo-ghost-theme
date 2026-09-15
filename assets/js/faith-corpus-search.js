@@ -54,7 +54,7 @@
     const hits = [];
     let total = 0;
     for (let i = 0; i < rows.length; i += 1) {
-      const text = rows[i].text;
+      const {text} = rows[i];
       re.lastIndex = 0;
       let m = re.exec(text);
       let firstInRow = true;

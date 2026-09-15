@@ -642,7 +642,7 @@
           .map((g) => block(g.name, g.works, onShelf ? shelf.mark : null))
           .join("")}</div>`;
         return `<div class="btrads faith-room-blocks faith-room-blocks--fold">`
-          + col(groups.slice(0, half)) + col(groups.slice(half)) + `</div>`;
+          + `${col(groups.slice(0, half))}${col(groups.slice(half))}</div>`;
       })()
       : `<p class="faith-room-status">Nothing matches that. Try another name or title.</p>`;
     // An address that names no volume in this collection is the one

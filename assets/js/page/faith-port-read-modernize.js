@@ -149,7 +149,7 @@
     let text = "";
     const ls = lanes();
     for (let i = 0; i < ls.length && text.length < 4000; i += 1) {
-      text += " " + (ls[i].textContent || "");
+      text += ` ${ls[i].textContent || ""}`;
     }
     if (!text.trim()) return false;
     return window.FaithModernize.hasArchaicLanguage(text) || EARLY_MODERN.test(text);

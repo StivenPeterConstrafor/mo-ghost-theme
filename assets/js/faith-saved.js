@@ -21,7 +21,7 @@
       ? window.MOTitleOrder.compareTitles(x, y)
       : x.localeCompare(y);
   }
-  const body = document.body;
+  const {body} = document;
   const WORKER = (body.getAttribute("data-kit-worker-url") || "").replace(/\/$/, "");
   const list = document.querySelector("[data-faith-saved]");
   const countEl = document.querySelector('[data-card-count="faith-received"]');

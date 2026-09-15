@@ -73,8 +73,8 @@
     if (!str) return out;
     const n = str.split(",");
     for (let i = 0; i + 1 < n.length; i += 2) {
-      const w = works[+n[i]];
-      if (w) out.push({ corpus: w[0], id: w[1], count: +n[i + 1] });
+      const w = works[Number(n[i])];
+      if (w) out.push({ corpus: w[0], id: w[1], count: Number(n[i + 1]) });
     }
     return out;
   }

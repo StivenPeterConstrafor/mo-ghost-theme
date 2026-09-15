@@ -45,7 +45,7 @@
     if (englishEditions) return englishEditions;
     const base = window.__FR_BLOB_BASE__;
     if (!base) return (englishEditions = Promise.resolve(new Set()));
-    englishEditions = fetch(String(base).replace(/\/$/, "") + "/v1/mo/index.json")
+    englishEditions = fetch(`${String(base).replace(/\/$/, "")}/v1/mo/index.json`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => new Set(((d && d.works) || []).map((w) => String(w.slug))))
       .catch(() => new Set());
@@ -75,7 +75,7 @@
 
   function citation() {
     const w = work();
-    return [w.author, w.title, w.volume, w.page && "p. " + w.page]
+    return [w.author, w.title, w.volume, w.page && `p. ${w.page}`]
       .filter(Boolean).join(", ");
   }
 
@@ -154,7 +154,7 @@
     // The citation travels with the words. A quotation pasted into a
     // footnote without its source is the thing this library exists to
     // stop happening.
-    toClipboard(body + "\n\n" + citation() + "\n" + deepLink(), "Text and citation copied.");
+    toClipboard(`${body}\n\n${citation()}\n${deepLink()}`, "Text and citation copied.");
   });
 
   $("rdCopyLink").addEventListener("click", () => {
@@ -208,7 +208,7 @@
         title: w.title,
         author: w.author,
         cite,
-        anchor: w.page ? "p. " + w.page : "",
+        anchor: w.page ? `p. ${w.page}` : "",
         url,
         text: body,
       }));
@@ -270,7 +270,7 @@
       if (rail.parentElement !== reading) reading.appendChild(rail);
       host = row;
       rail.style.top =
-        (row.getBoundingClientRect().top - reading.getBoundingClientRect().top) + "px";
+        `${row.getBoundingClientRect().top - reading.getBoundingClientRect().top}px`;
       rail.hidden = false;
     });
 
@@ -290,8 +290,8 @@
       link.hash = host.id;
       const body = b.getAttribute("data-a") === "link"
         ? link.href
-        : (host.innerText || host.textContent || "").trim() +
-          "\n\n" + citation() + "\n" + link.href;
+        : `${(host.innerText || host.textContent || "").trim()}`
+          + `\n\n${citation()}\n${link.href}`;
       copyRaw(body).then(() => flash(b, "\u2713"), () => flash(b, "\u2715"));
     });
   }
