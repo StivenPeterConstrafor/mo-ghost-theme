@@ -141,15 +141,16 @@
    * from their own confessions-index. Checked: pld-448 and eebo-113 both
    * render there.
    *
-   * THE ONE EXCEPTION IS `mo`, our English Editions — Augustine's
-   * Confessions, the Institutes in English, the creeds as we publish
-   * them. Those slugs are absent from that index (augustine-confessions
-   * returns nothing at any of its paths), which is why sending them to
-   * /read/ renders an empty page rather than a bad one. They stay here
-   * until that text exists in the corpus store, which is an ingest job
-   * on the corpus side and not something this file can fix.
+   * NOTHING IS EXCLUDED ANY MORE. English Editions used to be, because
+   * its 69 works existed only as v1/mo/<slug>.json — a section shape the
+   * ported reader has no loader for — so /read/ opened an empty page.
+   * Rather than leave a corpus behind, the same text was written in the
+   * shape that reader already reads: v1/works/<slug>/meta.json plus a
+   * page file, 69 works and 3,362 pages, chapter per page because a
+   * born-digital English edition has no printed folio to honour. Purely
+   * additive keys; no reader code changed.
    */
-  if (corpusId !== "mo" && slug) {
+  if (slug) {
     try {
       // The two catalogues name the same work differently. Ours keeps
       // the corpus in ?c= and the bare id in ?w= (c=eebo&w=53832); the
