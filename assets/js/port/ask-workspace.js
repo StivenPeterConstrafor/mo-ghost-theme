@@ -117,6 +117,29 @@
     return [...found].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,3);
   }
   function scopeWorkTitle(slug){const work=catalogBySlug.get(slug);return titleOf({slug})+(work&&work.volume?' · '+work.volume:'');}
+  /* MereO delta (Ian, 2026-09-15): open the work AT THE QUOTE.
+     The worker's source objects carry slug, page and snippet — no `quote`
+     and no `link` — so sourceHref fell through to readURL(slug, page,
+     undefined), the &hl= was never added, and a citation landed on the
+     right page with nothing marked on it. reader-core's markPhrase() has
+     been waiting for that parameter all along.
+     The quotation is already on screen: the answer prints it immediately
+     before the citation. So it is taken from there, which also means the
+     highlight is exactly the words the reader just read rather than a
+     snippet the retriever happened to store.
+     markPhrase needs whitespace and 24 characters before it will act, so
+     anything shorter is not worth sending. Re-apply when re-vendoring. */
+  const QUOTE_CHARS = '"\u201C\u201D\u2018\u2019\u00AB\u00BB';
+  function quoteBefore(text, idx) {
+    if (typeof text !== 'string' || !(idx > 0)) return '';
+    const before = text.slice(Math.max(0, idx - 1400), idx);
+    // The citation has to sit right after the closing quote — a stray
+    // trailing word or two, no more — or it is citing something else.
+    const re = new RegExp('[' + QUOTE_CHARS + ']([^' + QUOTE_CHARS + ']{24,400})[' + QUOTE_CHARS + '][^' + QUOTE_CHARS + ']{0,24}$');
+    const m = re.exec(before);
+    return m ? m[1].replace(/\s+/g, ' ').trim() : '';
+  }
+
   function sourceHref(s){return safeURL(s.link)||(typeof s.slug==='string'&&s.slug.trim()?readURL(s.slug,s.page,s.quote):'');}
   function sourceCard(s){
     const href=sourceHref(s),tag=href?'a':'div';
@@ -129,11 +152,12 @@
     let out = String(text).replace(/\\([\\`*_[\]<>])/g, (_, literal) => hold(esc(literal))).replace(/\[((?:[a-zA-Z0-9_-]+\/p[^,;\]\s]+\s*[,;]\s*)+[a-zA-Z0-9_-]+\/p[^,;\]\s]+)\]/g,(_,group)=>group.split(/\s*[,;]\s*/).map(cite=>'['+cite+']').join(', ')).replace(/\[([^\]\n]+)\]\(([^\s)]+)\)/g, (_, label, href) => {
       const safe = safeURL(href); return safe ? hold('<a href="'+esc(safe)+'"'+(new URL(safe).origin !== location.origin || new URL(safe).pathname==='https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/corpus' ? ' target="_blank" rel="noopener noreferrer"' : '')+'>'+esc(label)+'</a>') : label;
     });
-    out = out.replace(/\[([a-zA-Z0-9_-]+)\/p([^\]\s]+)\]|\[W\s*([a-zA-Z0-9_-]+):([^\]\s]+)\]/g, (_, a, p, b, q) => {
+    out = out.replace(/\[([a-zA-Z0-9_-]+)\/p([^\]\s]+)\]|\[W\s*([a-zA-Z0-9_-]+):([^\]\s]+)\]/g, (_, a, p, b, q, at, whole) => {
       const slug = a || b, page = p || q, s = sources.find(s => s.slug === slug && String(s.page) === page) || { slug, page };
-      return hold('<a class="fra-cite" href="'+esc(safeURL(s.link)||readURL(slug,page,s.quote))+'" title="'+esc(titleOf(s))+'">'+esc(s.cite || ('p. '+page))+'</a>');
+      const said = s.quote || quoteBefore(whole, at);
+      return hold('<a class="fra-cite" href="'+esc(safeURL(s.link)||readURL(slug,page,said))+'" title="'+esc(titleOf(s))+'">'+esc(s.cite || ('p. '+page))+'</a>');
     });
-    out=out.replace(/\[([^\]\n]+)\]/g,(_,label)=>{const src=sources.find(s=>String(s.cit||s.cite||'').replace(/^\[|\]$/g,'')===label);const href=src&&sourceHref(src);return href?hold('<a class="fra-cite" href="'+esc(href)+'">'+esc(label)+'</a>'):'['+label+']';});
+    out=out.replace(/\[([^\]\n]+)\]/g,(_,label,at,whole)=>{const src=sources.find(s=>String(s.cit||s.cite||'').replace(/^\[|\]$/g,'')===label);if(!src)return '['+label+']';const said=src.quote||quoteBefore(whole,at);const href=safeURL(src.link)||(typeof src.slug==='string'&&src.slug.trim()?readURL(src.slug,src.page,said):'');return href?hold('<a class="fra-cite" href="'+esc(href)+'">'+esc(label)+'</a>'):'['+label+']';});
     return esc(out).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*\*([^*]+)\*\*\*/g,'<strong><em>$1</em></strong>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\*([^*]+)\*/g,'<em>$1</em>').replace(/\*{2,}/g,'').replace(/\u0001(\d+)\u0002/g, (_, n) => held[+n]);
   }
   function markdown(text, sources = []) {
