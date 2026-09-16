@@ -1281,9 +1281,20 @@ function __initReaderTools(){
   function renderNotebook(){const body=$("#nbBody"),opened=new Map([...body.querySelectorAll(".nb-saved-group")].map(g=>[g.dataset.group,g.open]));body.innerHTML='<div class="nb-desk-link"><a href="/the-faith-received/desk/">Write with this research at Desk →</a> · <a href="/the-faith-received/pins/">Manage notebooks</a></div>';
     const hl=lj("fr_hl"),notes=lj("fr_notes"),tr=lj("fr_tr"),here=key=>key.indexOf(WSID+"|")===0;
     const ni=Object.keys(notes).filter(here),ti=Object.keys(tr).filter(here),hi=Object.keys(hl).filter(here);
-    const saved=savedCollections().flatMap(c=>(c.items||[]).filter(i=>((i.site||'fr')==='fr'&&i.slug===WORK_SLUG)||i.askSources?.some(s=>(s.slug||s.w)===WORK_SLUG)).map(i=>({...i,collection:c.name})));
-    $('#nbSavedCount').textContent=ni.length+ti.length+hi.length+saved.length||'';$('#nbTitle').textContent=(ni.length+ti.length+hi.length+saved.length)+' saved items from this book';
-    if(!ni.length&&!ti.length&&!hi.length&&!saved.length){body.insertAdjacentHTML("beforeend",'<div class="nb-empty">Nothing saved from this book yet. Select text to highlight it, add a note, or make a quote image. Your work will collect here with its source.</div>');return;}
+    const savedAll=savedCollections().flatMap(c=>(c.items||[]).filter(i=>((i.site||'fr')==='fr'&&i.slug===WORK_SLUG)||i.askSources?.some(s=>(s.slug||s.w)===WORK_SLUG)).map(i=>({...i,collection:c.name})));
+    // PLACES (owner 2026-09-15 'the research rail should track highlights, saved bookmarks, places'): reading places were buried among the
+    // references. They lead the Saved tab now — save this place, resume where the reader last was, and every saved place with its label.
+    const isPlace=i=>String(i.id||'').startsWith('reading-place:'),places=savedAll.filter(isPlace),saved=savedAll.filter(i=>!isPlace(i));
+    {let last=null;try{const lr=lj('fr_lastread');last=lr[WSID]||lr[WORK_SLUG]||null;}catch(_){}
+      const pl=el('section','nb-places');pl.setAttribute('aria-label','Places in this book');
+      const rows=places.slice().sort((a,b)=>String(a.page).localeCompare(String(b.page),undefined,{numeric:true})).map(i=>{const lab=esc(String(String(i.label||'').replace(/^Reading place · /,'')||('Location '+i.page)));return '<li><a href="'+esc(String(i.url||('/read?w='+encodeURIComponent(WORK_SLUG)+'&p='+encodeURIComponent(String(i.page))+'#b'+encodeURIComponent(String(i.page))+'-0')))+'">'+lab+'</a><span class="nb-place-col">'+esc(String(i.collection||''))+'</span></li>';}).join('');
+      pl.innerHTML='<div class="nb-places-head"><span class="nb-context-label">Places in this book</span><button type="button" class="nb-place-save">Save this place</button></div>'
+        +(last&&last.page!=null?'<p class="nb-place-last">Last read: <a href="/read?w='+esc(String(WORK_SLUG))+'&p='+esc(String(last.page))+'#b'+esc(String(last.page))+'-0">'+esc(String((()=>{try{return locOf(last.page);}catch(_){return 'Location '+last.page;}})()||('Location '+last.page)))+'</a>'+(last.ts?' <span class="nb-place-when">· '+esc(String(new Date(last.ts).toLocaleDateString()))+'</span>':'')+'</p>':'')
+        +(rows?'<ul class="nb-place-list">'+rows+'</ul>':'<p class="nb-guidance">No saved places yet. Save this place to keep a fixed spot as your reading moves on.</p>');
+      pl.querySelector('.nb-place-save').onclick=()=>{const b=$('#nbSaveReadingPlace');if(b){b.click();setTimeout(renderNotebook,600);}};
+      body.appendChild(pl);}
+    $('#nbSavedCount').textContent=ni.length+ti.length+hi.length+saved.length+places.length||'';$('#nbTitle').textContent=(ni.length+ti.length+hi.length+saved.length+places.length)+' saved items from this book';
+    if(!ni.length&&!ti.length&&!hi.length&&!saved.length){body.insertAdjacentHTML("beforeend",'<div class="nb-empty">Nothing else saved from this book yet. Select text to highlight it, add a note, or make a quote image. Your work will collect here with its source.</div>');filterNotebook();return;}
     const ord=(a,b)=>{const ea=nbEl(a),eb=nbEl(b);return ea&&eb?(ea.compareDocumentPosition(eb)&Node.DOCUMENT_POSITION_FOLLOWING?-1:1):0;};
     let section=body;const sec=(t,n)=>{section=el("details","nb-saved-group");section.dataset.group=t;section.open=opened.has(t)?opened.get(t):n<=3;const h=el("summary");h.textContent=t+" · "+n;section.appendChild(h);body.appendChild(section);};
     if(ni.length){sec("Notes",ni.length);ni.sort(ord).forEach(id=>section.appendChild(nbItem(id,{mine:(notes[id]||{}).t})));}
