@@ -3317,11 +3317,21 @@ function build(){
       if(i<0||i>=pages.length||hydrated[i])return;
       hydrated[i]=true;
       const ph = phs[i]; if(!ph||!ph.isConnected)return;
+      // MANUAL SCROLL ANCHORING (owner 2026-09-15 'reading on mobile snaps back up or down'): a placeholder ABOVE the viewport is
+      // replaced by a folio of a different height (the estimate is characters ÷ line width); Chrome's scroll anchoring absorbs the
+      // difference, Safari has none, so on the phone the text under the thumb jumped by the delta on every neighbour hydration.
+      // The scroll container is moved by exactly the height change when the hydrated block sits wholly above the viewport.
+      const _noAnchor = !(window.CSS && CSS.supports && CSS.supports('overflow-anchor: auto'));   // Safari: no native scroll anchoring
+      const _scTop = sc ? sc.getBoundingClientRect().top : 0;
+      const _wasAbove = _noAnchor && ph.getBoundingClientRect().bottom <= _scTop + 1;
+      const _hBefore = _wasAbove ? ph.offsetHeight : 0;
       const mark = R.childNodes.length;
       try{ RENDER(pages[i], i); }catch(e){ console.warn('[window] folio',i,e); }
       const added = [...R.childNodes].slice(mark);   // renderFolio* appends to R
       added.forEach(n=>R.insertBefore(n, ph));
       ph.remove(); phs[i]=null;
+      if(_wasAbove){ const _hAfter = added.reduce((a,n)=>a+(n.getBoundingClientRect?n.getBoundingClientRect().height:0),0); const _d = _hAfter - _hBefore;
+        if(Math.abs(_d) > 1){ if(sc) sc.scrollTop += _d; else window.scrollBy(0,_d); } }
       const sec = added.find(n=>n.classList&&n.classList.contains('folio'));
       if(window.__afterHydrate)window.__afterHydrate(sec||null);
     };
@@ -4492,6 +4502,26 @@ else{const b=$("#th");if(b)b.textContent="◐";}})();   /* OS dark by default; t
 const _thCycle=()=>{const cur=document.documentElement.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");applyTheme(THEMES[(THEMES.indexOf(cur)+1)%THEMES.length]);};
 $("#th")&&($("#th").onclick=_thCycle);
 $("#thTop")&&($("#thTop").onclick=_thCycle);   /* masthead theme switch — light/dark reachable without opening Aa (owner 2026-09-05) */
+// SCROLL ANCHORING FOR SAFARI (owner 2026-09-15 'reading on mobile snaps back up or down'). Chrome keeps the text under the
+// reader's eye still when content ABOVE the viewport changes height (overflow-anchor); Safari has no such thing, so every
+// late hydration above the fold — a folio placeholder, a Patrologia column's English sidecar, a facsimile row — pushed the
+// page by the delta. This watches every top-level block of the reading column: when a block that sits wholly above the
+// viewport grows or shrinks, the scroll container moves by exactly that amount. Chrome (native anchoring) is left alone.
+(function(){
+  if(window.CSS&&CSS.supports&&CSS.supports('overflow-anchor: auto'))return;
+  const sc=document.getElementById('scroll'),reading=document.getElementById('reading');if(!sc||!reading)return;
+  const heights=new WeakMap();let pending=0;const queue=new Map();
+  const flush=()=>{pending=0;let delta=0;const top=sc.getBoundingClientRect().top;
+    for(const [node,h]of queue){const prev=heights.get(node);heights.set(node,h);if(prev==null||!node.isConnected)continue;
+      const r=node.getBoundingClientRect();if(r.bottom<=top+1)delta+=h-prev;}
+    queue.clear();if(Math.abs(delta)>0.5)sc.scrollTop+=delta;};
+  const ro=new ResizeObserver(entries=>{for(const e of entries){const h=e.borderBoxSize&&e.borderBoxSize[0]?e.borderBoxSize[0].blockSize:e.contentRect.height;queue.set(e.target,h);}
+    if(!pending)pending=requestAnimationFrame(flush);});
+  const watch=node=>{if(node&&node.nodeType===1&&!heights.has(node)){heights.set(node,node.getBoundingClientRect().height);ro.observe(node);}};
+  [...reading.children].forEach(watch);
+  new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.parentNode===reading)watch(n);}).observe(reading,{childList:true});
+  window.__frScrollAnchorPolyfill=true;
+})();
 // keep the content offset equal to the fixed masthead's height (it wraps taller on narrow screens)
 function setPhh(){const p=$(".ph");if(p)document.documentElement.style.setProperty("--phh",p.offsetHeight+"px");}
 addEventListener("resize",setPhh);new ResizeObserver(setPhh).observe($(".ph"));setTimeout(setPhh,60);setTimeout(setPhh,600);
