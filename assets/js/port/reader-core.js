@@ -5194,7 +5194,15 @@ async function loadPgCanon(ws){
       if(ch.localName==="p"){const t=ch.textContent;
         _lat+=(t.match(/[A-Za-z]/g)||[]).length;_grc+=(t.match(/[Ͱ-Ͽἀ-῿]/g)||[]).length;}
       else if(ch.localName==="div")_cnt(ch);}})(doc.querySelector("body")||doc.documentElement);
-    if(_lat+_grc>2000&&_lat>(_lat+_grc)*0.6)src="ocr";
+    if(_lat+_grc>2000&&_lat>(_lat+_grc)*0.6){
+      // LATIN-ONLY WORKS READ IN THE PARALLEL VIEW (owner 2026-09-16 'fix the residue', after PG 78 col. 61): when the canon carries Latin
+      // and no Greek column anywhere — a Latin dissertation, a preface, a set of editor's notes — the parallel path now lays the site's
+      // paragraphs beside their English column by column, so it is the faithful surface; the whole-page transcription stays the default
+      // for a Latin-dominant work that still prints Greek columns (the 2026-08-18 rule).
+      let _latinOnly=false;
+      try{const _co=Object.values(window.FRPgParallel.canonicalOpenings(doc));_latinOnly=_co.length>0&&_co.some(o=>o.la)&&!_co.some(o=>o.grc);}catch(e){}
+      if(_latinOnly){src="grcla";window.__pgLatinOnly=true;}else src="ocr";
+    }
   }
   // The opening can be Latin even in a predominantly Greek work. Inspect only
   // its first original-language column, never the translation or catalogue head.
@@ -6132,7 +6140,7 @@ async function loadPgCanon(ws){
   // interaction (gated on a lazily-set __PGPV_URL) and named just one next view.
   setTimeout(()=>{const mp=document.getElementById("m-par");
     if(!mp)return;
-    mp.textContent=src==="ocr"?"Page transcription":(src==="grcla"&&!window.__pgLatFallback)?"Greek \u00b7 Latin":(src==="la"&&!window.__pgLatFallback)?"Latin (Migne)":"Greek";
+    mp.textContent=src==="ocr"?"Page transcription":(src==="grcla"&&!window.__pgLatFallback)?(window.__pgLatinOnly?"Latin":"Greek \u00b7 Latin"):(src==="la"&&!window.__pgLatFallback)?"Latin (Migne)":"Greek";
     const mkPill=(pid,ps,label,title)=>{
       let b=document.getElementById(pid);
       if(!b){b=document.createElement("button");b.id=pid;mp.after(b);}
@@ -6153,7 +6161,7 @@ async function loadPgCanon(ws){
     if(typeof DATA!=='undefined'&&DATA)syncReaderHeader(cur||DATA.pages[0]?.n);
   },800);
   try{const am=await window.__pgAuth;if(am&&am[id])author=am[id];}catch(e){}   // English byline (owner 2026-08-17)
-  window.__SRCNAME=src==="grcla"?(window.__pgLatFallback?"Greek":"Greek \u00b7 Latin"):src==="la"?(window.__pgLatFallback?"Greek":"Latin"):src==="ocr"?"Source":"Greek";
+  window.__SRCNAME=src==="grcla"?(window.__pgLatFallback?"Greek":(window.__pgLatinOnly?"Latin":"Greek \u00b7 Latin")):src==="la"?(window.__pgLatFallback?"Greek":"Latin"):src==="ocr"?"Source":"Greek";
   // polytonic face for the Greek reading lane (lazily; Cardo covers Greek+Latin so mixed
   // apparatus pages stay coherent)
   try{
