@@ -46,7 +46,7 @@ const XREF_CAP={"Matthew":28,"Mark":16,"Luke":24,"John":21,"Acts":28,"Romans":16
   "1 Samuel":31,"2 Samuel":24,"1 Kings":22,"2 Kings":25,"1 Chronicles":29,"2 Chronicles":36,
   "1 Corinthians":16,"2 Corinthians":13,"1 Thessalonians":5,"2 Thessalonians":3,
   "1 Timothy":6,"2 Timothy":4,"1 Peter":5,"2 Peter":3,"1 John":5,"2 John":1,"3 John":1};
-const XREF_EN={"Matth":"Matthew","Matt":"Matthew","Marc":"Mark","Luc":"Luke","Ioh":"John","Joh":"John",
+const XREF_EN={"Matth":"Matthew","Matt":"Matthew","Lev":"Leviticus","Chron":"Chronicles","Ezek":"Ezekiel","Ioan":"John","Iohan":"John","Jerem":"Jeremiah","Ies":"Isaiah","Josh":"Joshua","Corinth":"Corinthians","Marc":"Mark","Luc":"Luke","Ioh":"John","Joh":"John",
   // short English abbreviations (owner 2026-09-11 "Dt. 6; Mt. 22 … not ingested as scripture links" — Valdés catechism): only the
   // unambiguous two/three-letter forms; Ex/Is/Ac/Am are left out because they are ordinary English words at sentence start
   "Dt":"Deuteronomy","Mt":"Matthew","Mk":"Mark","Lk":"Luke","Jn":"John","Gn":"Genesis","Lv":"Leviticus","Nm":"Numbers",
@@ -88,6 +88,16 @@ const XREF_LOOKUP=new Map(XREF_NAMES.map(name=>[name.toLowerCase(),name]));
 // immediately-adjacent letter, so it swallowed the 1 and orphaned
 // "Corinthians 7" (bare ordinal books refuse to link).
 const XREF_ORDNEXT=new RegExp('^\\s+(?:'+XREF_NAMES.map(name=>name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')\\b','iu');
+// Only the books that TAKE an ordinal can claim a small number as theirs ("Exod. xx. 5. Rom. viii. 7." keeps verse 5;
+// "Kor. XIII. 4. 5. Mos. VI. 4." gives 5 to Moses). The dotted twin of XREF_ORDNEXT, and the chapter-position form,
+// which also needs the book to be CITED (a chapter follows): "Hebrews 1 Sam. 17:43" hides Hebrews 1, "in Matthew 3 John said" keeps it.
+const XREF_ORDBOOKS=/^(Samuel|Kings|Chronicles|Corinthians|Thessalonians|Timothy|Peter|John|Maccabees|Esdras)$/;
+const XREF_ORDPAT='(?:'+XREF_NAMES.filter(name=>['Mos','Reg','Paral'].includes(name)||XREF_ORDBOOKS.test(XREF_EN[name]||name)).map(name=>name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')\\b';
+// In the dotted form John is left out: "Isa. 6. 3. John 12. 41." is verse 3 then John (the gospel is cited far more often
+// than the epistles), whereas Pet./Cor./Tim./Sam./Mos. cannot be cited without an ordinal, so "53. 1. Pet. 2." is 1 Peter.
+const XREF_ORDPAT_DOT='(?:'+XREF_NAMES.filter(name=>['Mos','Reg','Paral'].includes(name)||(XREF_ORDBOOKS.test(XREF_EN[name]||name)&&(XREF_EN[name]||name)!=='John')).map(name=>name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')\\b';
+const XREF_ORDNEXT_DOT=new RegExp('^\\s*\\.\\s+'+XREF_ORDPAT_DOT,'iu');
+const XREF_ORDNEXT_CITED=new RegExp('^\\s+'+XREF_ORDPAT+'\\.?\\s*(?=\\d|[IVXLCDM]+(?![\\p{L}\\p{N}]))','iu');
 const XREF_RE=new RegExp('(^|[^\\p{L}\\p{N}_])((?:(?:[1-5]|III|II|IV|I|V)\\.?\\s*)?(?:'+XREF_NAMES.map(name=>name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')\\.?)(\\s*)','giu');
 function scriptureNumber(value){
   const roman=String(value).toUpperCase();if(/^\d+$/.test(roman))return Number(roman);
@@ -122,19 +132,32 @@ function parseScriptureQuery(query){
 function scriptureLocation(text,start,book){
   const chapterToken=/^([IVXLCDMivxlcdm]+|\d{1,3})(?![\p{L}\p{N}])/u.exec(text.slice(start));if(!chapterToken)return null;
   const chapter=scriptureNumber(chapterToken[1]);if(!chapter||chapter>XREF_CAP[book])return null;
+  // "I.Iohan. 1 John 5:7" (a Latin siglum glossed by its English form): a small chapter number followed by a book name is that book's ordinal.
+  if(chapter<=5&&/^\d/.test(chapterToken[1])&&XREF_ORDNEXT_CITED.test(text.slice(start+chapterToken[0].length)))return null;
   let end=start+chapterToken[0].length,selection='',following=false;
   const first=/^\s*[.:,]\s*(?:v\.\s*)?(\d{1,3})(?![\p{L}\p{N}])/u.exec(text.slice(end));
-  const ordinalNext=first&&Number(first[1])<=5&&XREF_ORDNEXT.test(text.slice(end+first[0].length));
+  // The dotted ordinal reading ("XIII. 4. 5. Mos.") only applies when the citation itself is dot-style; after a colon
+  // verse ("Ps. 23:1. Ioh. I.1.") the period is the sentence's, and the verse stays.
+  const ordinalNext=first&&Number(first[1])<=5&&(XREF_ORDNEXT.test(text.slice(end+first[0].length))||(/^\s*\./.test(first[0])&&XREF_ORDNEXT_DOT.test(text.slice(end+first[0].length))));
   if(!first&&/^\s*[.:,]\s*(?:v\.\s*)?\d/.test(text.slice(end)))return null;
   if(first&&!ordinalNext){
     if(Number(first[1])<1||Number(first[1])>200)return null;
-    selection=String(Number(first[1]));end+=first[0].length;let previous=Number(first[1]);
+    selection=String(Number(first[1]));end+=first[0].length;let previous=Number(first[1]);const dotted=/^\s*\./.test(first[0]);
     while(true){
       const range=/^\s*\.?\s*[–—-]\s*(\d{1,3})(?![\p{L}\p{N}])/u.exec(text.slice(end));
       if(range){const last=Number(range[1]);if(last<previous||last>200)return null;selection+='-'+last;end+=range[0].length;previous=last;}
-      const list=/^\s*,\s*(\d{1,3})(?![\p{L}\p{N}])/u.exec(text.slice(end));
+      let list=/^\s*,\s*(\d{1,3})(?![\p{L}\p{N}])/u.exec(text.slice(end));
+      // Early-modern dotted verse lists — "Rom. 2. 14. 15." / "Psal. 19. v. 1. 8." (Voetius Disp. vol. 1 p. 55,
+      // owner 2026-09-16; 983 such citations in a 200-work sample): after a dot-style verse, a period-separated
+      // number that ASCENDS and is itself closed by punctuation is the next verse; a lower number is a new
+      // chapter or a prose enumeral ("14. 2. either in idea"), and a bare number before a word is prose.
+      // Not a verse: a number over 200 (a page number in a register), an ordinal before a book name, or a number
+      // that a SMALLER dotted number follows ("Ps. 9. 10. 18. 3." — 18 is the next psalm, whose verse is 3).
+      if(!list&&dotted){const dot=/^\s*\.\s*(\d{1,3})(?=\s*(?:[.;:)\]]|,(?!\d)|$))/u.exec(text.slice(end));
+        if(dot&&Number(dot[1])>previous&&Number(dot[1])<=200){const rest=text.slice(end+dot[0].length),after=/^\s*\.\s*(\d{1,3})(?![\p{L}\p{N}])/u.exec(rest);
+          if(!(Number(dot[1])<=5&&XREF_ORDNEXT_DOT.test(rest))&&!(after&&Number(after[1])<Number(dot[1])))list=dot;}}
       if(!list||/^\s*(?::\s*|\.)\d{1,3}(?![\p{L}\p{N}])/u.test(text.slice(end+list[0].length)))break;
-      if(Number(list[1])<=5&&XREF_ORDNEXT.test(text.slice(end+list[0].length)))break;
+      if(Number(list[1])<=5&&(XREF_ORDNEXT.test(text.slice(end+list[0].length))||XREF_ORDNEXT_DOT.test(text.slice(end+list[0].length))))break;
       previous=Number(list[1]);if(!previous||previous>200)return null;selection+=','+previous;end+=list[0].length;
     }
     const tail=/^\s*\.?\s*(?:(?:&amp;|&|et)\s*)?(?:seqq?\.|ff?\.)(?!\p{L})/u.exec(text.slice(end));
@@ -146,10 +169,20 @@ function scriptureReferences(text){
   const references=[];XREF_RE.lastIndex=0;let match;
   while((match=XREF_RE.exec(text))){
     if(!match[2].endsWith('.')&&!match[3])continue;
-    const book=scriptureBook(match[2]);if(!book)continue;
-    let reference=scriptureLocation(text,XREF_RE.lastIndex,book);if(!reference)continue;
+    // A failed match must give back the whitespace it consumed: it is the boundary the next citation needs
+    // ("the church at Corinth. Romans 16:" — owner 2026-09-16, Corinth is a city here and a book only with an ordinal).
+    // Resume one character INTO the failed match: an ordinal the regex grabbed by mistake ("5. Levit. 5.", "1. Ps. 45")
+    // is then skipped and the bare name is found on the next pass.
+    const book=scriptureBook(match[2]);if(!book){XREF_RE.lastIndex=match.index+match[1].length+1;continue;}
+    // A book whose chapter is really the next book's ordinal ("John. 1 John 4:18", "I.Iohan. 1 John 5:7") resumes inside too;
+    // an invalid citation ("2 John 15:2") stays unlinked as a whole.
+    let reference=scriptureLocation(text,XREF_RE.lastIndex,book);
+    if(!reference){const after=text.slice(XREF_RE.lastIndex);if(/^[1-5](?![\p{L}\p{N}])/u.test(after)&&XREF_ORDNEXT_CITED.test(after.slice(1)))XREF_RE.lastIndex=match.index+match[1].length+1;continue;}
     // Lowercase ordinary words such as "mark 3 items" are not chapter citations.
     const plainBook=match[2].replace(/\.$/,'');if(plainBook===plainBook.toLowerCase()&&!reference.selection&&(!match[2].endsWith('.')||plainBook===book.toLowerCase()))continue;
+    // Bare num. denotes an internal numbered passage in scholarly prose.
+    // Require a verse for this ambiguous abbreviation; spelled-out Numbers still works.
+    if(/^num$/i.test(plainBook)&&!reference.selection)continue;
     reference.start=match.index+match[1].length;references.push(reference);
     while(reference.selection){
       const separator=/^\s*(?:,|;|&amp;|&|et\b)\s*/.exec(text.slice(reference.end))||/^\s*\.\s*(?=[IVXLCDM]+\s*[.:,]\s*\d)/i.exec(text.slice(reference.end));if(!separator)break;
