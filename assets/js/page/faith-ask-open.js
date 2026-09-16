@@ -19,7 +19,7 @@
     const header = document.querySelector("header.site-header");
     if (!header) return;
     const px = Math.round(header.getBoundingClientRect().height);
-    if (px > 0) document.documentElement.style.setProperty("--mo-head", px + "px");
+    if (px > 0) document.documentElement.style.setProperty("--mo-head", `${px}px`);
   }
   measure();
   if (document.readyState === "loading") {

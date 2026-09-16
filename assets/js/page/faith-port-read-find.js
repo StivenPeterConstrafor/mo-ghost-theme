@@ -189,7 +189,7 @@
   function draw() {
     if (!count) return;
     count.textContent = !term.trim() ? ""
-      : hits.length ? (at + 1) + " of " + hits.length
+      : hits.length ? `${at + 1} of ${hits.length}`
       : "No matches on this page";
     scope.textContent = hits.length || !term.trim()
       ? "Searching the text in view"
