@@ -2718,6 +2718,7 @@ function build(){
         if(LAp.length===ENp.length&&LAp.length>1&&LAp.every(x=>x.e)&&ENp.every(x=>x.e)){
           for(let j=0;j<LAp.length;j++){
             const row=el("div","row prow");
+            if(LAp[j].e.getAttribute("rend")==="flow")row.classList.add("pflow");   // unpaired printed paragraphs (stacked below)
             row.innerHTML=`<div class="la" lang="la">${_cellHtml(LAp[j])}</div><div class="en" lang="en">${_cellHtml(ENp[j])}</div>`;
             sec.appendChild(row);}
         }else{
@@ -2775,6 +2776,18 @@ function build(){
       (b?b.notes:[]).forEach(e=>notesEN.push(teiNote(e)));
     }
     let bi=0;sec.querySelectorAll(".row").forEach(rw=>{if(!rw.classList.contains("rhead"))rw.id="b"+pg.n+"-"+(bi++);});
+    // UNPAIRED FLOWS (owner 2026-09-15, PG 78 col. 63): rows the PG aligner could not pair (printed-paragraphs basis) stack as two
+    // independent columns — each lane keeps its printed paragraphs in order and no row asserts a pairing (the gappy-page rescue's
+    // structure; deep-link ids move to the cell that carries text).
+    try{const flows=[...sec.querySelectorAll(".row.pflow")];let run=[];
+      const flush=()=>{if(!run.length)return;const w=el("div","stkwrap flow"),c1=el("div","stk stk-la"),c2=el("div","stk stk-en");
+        run[0].parentNode.insertBefore(w,run[0]);
+        run.forEach(r=>{const la=r.querySelector(".la"),en=r.querySelector(".en"),hasEn=!!(en&&en.textContent.replace(/\u00a0/g,"").trim()),hasLa=!!(la&&la.textContent.replace(/\u00a0/g,"").trim());
+          const tgt=hasEn?en:(hasLa?la:null);if(tgt&&r.id){tgt.id=r.id;r.removeAttribute("id");}
+          if(hasLa)c1.appendChild(la);if(hasEn)c2.appendChild(en);r.remove();});
+        w.appendChild(c1);w.appendChild(c2);run=[];};
+      flows.forEach(r=>{if(run.length&&r.previousElementSibling!==run[run.length-1])flush();run.push(r);});flush();
+      if(flows.length)sec.classList.add("sec-stacked");}catch(e){}
     // REF MIRROR (owner 2026-08-18 hover parity): when the source cell of a paired row
     // carries footnote anchors and the English cell carries none, mirror the anchors at
     // the English paragraph's end — hover pops the English note via the band pairing.
@@ -5243,11 +5256,17 @@ async function loadPgCanon(ws){
     }
     return bucket;};
   let _lastEnCol=0;
+  // THE SITE SIDECAR WINS PER COLUMN (owner 2026-09-15, PG 78 col. 61 default view: 'PART THREE…' printed twice): a work that carries both
+  // the old machine English and the site's column-keyed English showed both for the same column. Where the sidecar speaks for a column,
+  // the machine lane's paragraphs for that column stay out of the English lane.
+  const _sidecarCols=new Set([...doc.querySelectorAll('div[type="translation"][resp="#site-sidecar"] p, div[type="translation"][resp="#site-sidecar"] head')].map(el=>{
+    let n=+(el.getAttribute("n")||0);if(!n){const m=(el.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}return n;}).filter(Boolean));
   [...doc.querySelectorAll('div[type="translation"] p')].forEach(pp=>{
     let n=+(pp.getAttribute("n")||0);
     if(!n){const m=(pp.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}
     if(!n)n=_lastEnCol;else _lastEnCol=n;   // unanchored p continues the previous column
     if(!n)return;
+    if(_sidecarCols.size&&_sidecarCols.has(n)&&(pp.closest?pp.closest('div[type="translation"]'):null)?.getAttribute("resp")!=="#site-sidecar")return;
     const t=pp.textContent.replace(/\s+/g," ").trim();if(!t)return;
     // a whole-block caps line is a printed division head — 'HOMILY I' (no period, so the
     // embedded-rubric regex never fires) arrived as body text and the outline lost the
@@ -5562,13 +5581,13 @@ async function loadPgCanon(ws){
       // (renders as a quiet solo row, never a page-collapsing mismatch)
       // punctuation-only residue (a lone '.' after a watermark strip) is not a row
       if(!(String(l||"").replace(/[^A-Za-z0-9\u0370-\u1FFF]/g,""))&&!(String(e||"").replace(/[^A-Za-z0-9\u0370-\u1FFF]/g,"")))return;
-      const el2=laD.createElement("p");el2.textContent=_mk(_tidy(l))||"\u00A0";laB.appendChild(el2);
+      const el2=laD.createElement("p");el2.textContent=_mk(_tidy(l))||"\u00A0";if(_colLa._flow)el2.setAttribute("rend","flow");laB.appendChild(el2);
       // harvest residue is not reading text (owner 2026-09-03 pg-1445): the site EN pages
       // carry '[alt-version omitted]' markers and bare apparatus cue letters ('A its
       // punishment', 'therefore: B *But you shall\u2026', 'shown A For by the fire') \u2014 strip
       // the marker always, a lone A\u2013F only in cue positions (after :;, before a function
       // word, or block-initial before lowercase) so the article 'A Christian' survives
-      const e2=enD.createElement("p");e2.textContent=(e?_mk(e.replace(/\bDigitized\s+by\s+Google\b/gi," ").replace(/\s*\[alt-version omitted\]\s*/g," ").replace(/(^|[a-z][;:] )[A-F] (?=[A-Z\u201c"*])/g,"$1").replace(/([a-z][.,;:] )[A-F] (?=\u0004)/g,"$1").replace(/^[A-F] (?=[a-z])/,"").replace(/\b[A-F] (?=\u0004?(?:For|But|And|When|Then|Thus|Yet|Nor|Therefore|Moreover|Wherefore|The|This|That|These|Those|Saint|Holy)\b)/g,"").replace(/([.!?\u201d"]) [A-F]$/,"$1").replace(/([a-z])-\s+([a-z])/g,"$1$2").replace(/\s*[\u2022\ufffd]+\s*/g," ").replace(/\s+([.,;:!?\u00bb)])/g,"$1").replace(/\s{2,}/g," ").trim()):"")||"\u00A0";enB.appendChild(e2);});
+      const e2=enD.createElement("p");e2.textContent=(e?_mk(e.replace(/\bDigitized\s+by\s+Google\b/gi," ").replace(/\s*\[alt-version omitted\]\s*/g," ").replace(/(^|[a-z][;:] )[A-F] (?=[A-Z\u201c"*])/g,"$1").replace(/([a-z][.,;:] )[A-F] (?=\u0004)/g,"$1").replace(/^[A-F] (?=[a-z])/,"").replace(/\b[A-F] (?=\u0004?(?:For|But|And|When|Then|Thus|Yet|Nor|Therefore|Moreover|Wherefore|The|This|That|These|Those|Saint|Holy)\b)/g,"").replace(/([.!?\u201d"]) [A-F]$/,"$1").replace(/([a-z])-\s+([a-z])/g,"$1$2").replace(/\s*[\u2022\ufffd]+\s*/g," ").replace(/\s+([.,;:!?\u00bb)])/g,"$1").replace(/\s{2,}/g," ").trim()):"")||"\u00A0";if(_colLa._flow)e2.setAttribute("rend","flow");enB.appendChild(e2);});
     const _pr=_colLa._prune;_colLa=[];_colEn=[];_colLa._prune=_pr;};
   // PG READABILITY (owner 2026-09-03 audit: canon columns render as 2-5k-char walls with
   // the printed running titles fused in): carve UPPERCASE-GREEK rubric runs out as their
@@ -5825,7 +5844,11 @@ async function loadPgCanon(ws){
               .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&x.n>=lo3&&x.n<=hi3&&(!_pgOwned.size||_pgOwned.has(String(x.n)))).sort((a,b)=>a.n-b.n);
             // The source site's vision text is already in the primary TEI columns.
             // Raw pageview zones are a fallback, never an unconditional replacement.
-            for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)];if(canon?.grc)sf.grc=canon.grcRich||canon.grc;if(canon?.la)sf.lat=canon.laRich||canon.la;if(canon){sf.grcParas=canon.grcParas||[];sf.laParas=canon.laParas||[];}}
+            for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)];if(canon?.grc)sf.grc=canon.grcRich||canon.grc;if(canon?.la)sf.lat=canon.laRich||canon.la;if(canon){sf.grcParas=canon.grcParas||[];sf.laParas=canon.laParas||[];sf.colParas=canon.colParas||[];
+              // NO GREEK COLUMN (owner 2026-09-15, PG 78 col. 61 'Isidori doctrina'): when the canon carries BOTH printed columns of the
+              // opening as Latin and no Greek, the opening has no Greek column — the pageview's ColGreek zone there is the apparatus (the
+              // footnote quotations from Isidore's letters), not a lane. Latin direction only; the Greek-only mirror is unverified.
+              const _pc=_printedColumns[String(sf.n)]||{},_laCols=(_pc.la||[]).map(Number);if(!canon.grc&&_laCols.includes(sf.n)&&_laCols.includes(sf.n+1))sf.grc="";}}
             window.__grclaDbg={surfs:surfs3.length,pv:!!pvXml3,cols:cols3.length};
             if(surfs3.length){
               _latBuilt=true;
@@ -5849,14 +5872,16 @@ async function loadPgCanon(ws){
                 if(src==="grcla"){
                   const _enMarked=_colEn.map(e=>typeof e==="string"&&e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e);
                   const _enParas=[...(enParasByCol[sf.n]||[]),...(enParasByCol[sf.n+1]||[])].map(e=>e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e);
-                  const aligned=window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_enMarked.join(" "),{grc:(sf.grcParas||[]).map(_healGrc),la:sf.laParas||[],en:_enParas});
+                  const _byCol=(sf.colParas||[]).map(c=>({n:c.n,lang:c.lang,paras:c.lang==="grc"?(c.paras||[]).map(_healGrc):(c.paras||[]),en:(enParasByCol[+c.n]||[]).map(e=>e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e)}));
+                  const aligned=window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_enMarked.join(" "),{grc:(sf.grcParas||[]).map(_healGrc),la:sf.laParas||[],en:_enParas,byCol:_byCol});
                   // Keep printed headings visible in their own lane, without guessing
                   // their counterparts. Their opening remains a usable outline target.
                   const marked=aligned.rows.map(r=>r.en).join(" ");
                   const heads=[...marked.matchAll(/\u0002([^\u0003]+)\u0003/g)];
                   const sourceHeads=heads.length?heads:[...sf.grc.matchAll(/\u0002([^\u0003]+)\u0003/g)];
                   for(const h of sourceHeads){if(!struct.some(x=>x.page===sf.n&&x.title===h[1].slice(0,140)))struct.push({title:h[1].slice(0,140),page:sf.n,depth:2});}
-                  _colLa=aligned.rows.map(r=>r.grc+(r.la?"\u0006"+r.la:""));_colLa._aligned=true;_colEn=aligned.rows.map(r=>r.en);
+                  // a row with no Greek is the Latin itself (a Latin-only opening), not an under-voice beneath nothing
+                  _colLa=aligned.rows.map(r=>r.grc?(r.grc+(r.la?"\u0006"+r.la:"")):(r.la||""));_colLa._aligned=true;_colLa._flow=aligned.basis==="printed-paragraphs";_colEn=aligned.rows.map(r=>r.en);
                 }else lt.split(/(?<=[.!?])\s+(?=[A-Z\u00c6\u0152]{2,}(?:\s+[A-Z\u00c6\u0152]{2,}\.?)+)/)
                   .forEach(seg2=>_paras3(seg2).forEach(t2=>_colLa.push(t2)));
               });
