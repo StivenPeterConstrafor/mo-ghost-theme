@@ -153,7 +153,7 @@ function scriptureLocation(text,start,book){
       // chapter or a prose enumeral ("14. 2. either in idea"), and a bare number before a word is prose.
       // Not a verse: a number over 200 (a page number in a register), an ordinal before a book name, or a number
       // that a SMALLER dotted number follows ("Ps. 9. 10. 18. 3." — 18 is the next psalm, whose verse is 3).
-      if(!list&&dotted){const dot=/^\s*\.\s*(\d{1,3})(?=\s*(?:[.;:)\]]|,(?!\d)|$))/u.exec(text.slice(end));
+      if(!list&&dotted){const dot=/^\s*\.\s*(\d{1,3})(?=\s*(?:[.;:)\]?!]|,(?!\d)|$))/u.exec(text.slice(end));
         if(dot&&Number(dot[1])>previous&&Number(dot[1])<=200){const rest=text.slice(end+dot[0].length),after=/^\s*\.\s*(\d{1,3})(?![\p{L}\p{N}])/u.exec(rest);
           if(!(Number(dot[1])<=5&&XREF_ORDNEXT_DOT.test(rest))&&!(after&&Number(after[1])<Number(dot[1])))list=dot;}}
       if(!list||/^\s*(?::\s*|\.)\d{1,3}(?![\p{L}\p{N}])/u.test(text.slice(end+list[0].length)))break;
