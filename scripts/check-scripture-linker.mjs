@@ -55,6 +55,10 @@ const CASES = [
   ["Ps. 23:1. Ioh. I.1.", "Psalms 23:1 | John 1:1"],
   // a descending dotted number is the next chapter, not a verse
   ["Ps. 9. 10. 18. 3.", "Psalms 9:10"],
+  // the list can be closed by any sentence punctuation, not only a period —
+  // the narrower class silently dropped the last verse of a quoted question
+  ["does Rom. 2. 14. 15? he asks", "Romans 2:14,15"],
+  ["Ps. 19. 1. 8! indeed", "Psalms 19:1,8"],
   // a failed match gives back the boundary the next citation needs
   ["Hebrews 1 Sam. 17:43", "1 Samuel 17:43"],
   ["the church at Corinth. Romans 16:", "Romans 16"],
