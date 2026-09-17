@@ -408,8 +408,21 @@
    * worse version of the message the reader already gets.
    *
    * So the verse carries its question to the surface that owns it: Ask
-   * reads ?ask=, the search page reads ?q=. Each already knows how to
-   * ask an anonymous reader to sign in, and the question survives it.
+   * reads ?ask=, the search page reads ?q=.
+   *
+   * They do NOT behave the same for a signed-out reader, and it is worth
+   * knowing which is which. Ask opens its workspace for anyone and shows
+   * the question; the gate bites server-side on send, so the question is
+   * still there afterwards. The search page decides at first paint --
+   * the tools are not rendered for a non-member at all -- so ?q= has
+   * nothing to seed, and the magic-link round trip does not come back to
+   * this URL. A signed-out reader who clicks Search lands on the sign-in
+   * prompt and has to type the search again once they are in.
+   *
+   * Left as is rather than papered over. Stashing the query client-side
+   * would have to survive an email round trip and a possible change of
+   * browser to pay off, and the honest fix belongs on the search page,
+   * which every other entry point reaches the same way.
    *
    * Both are full-viewport once open, so opening them in place here
    * would cover this page anyway. Navigating costs the reader nothing
