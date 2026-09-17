@@ -7354,6 +7354,20 @@ mark.faith-find-hit.is-current {
 .faith-room-letters button:hover { color: var(--color-secondary); }
 .faith-room-letters button.is-active { color: var(--color-primary-text); }
 
+/* How many names sit under a letter, set beside it. A rail that says
+   only "A B C" tells a reader which letters exist; one that says "A 215"
+   tells them what they are about to open. Numerals, so they are read as
+   a count and not as part of the letter. */
+.faith-room-letter-n {
+  margin-left: 5px;
+  font-size: 0.82em;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+  opacity: 0.75;
+}
+.faith-room-letters button.is-active .faith-room-letter-n { opacity: 1; }
+
 .faith-room-list { columns: 1; max-width: 1180px; }
 .faith-room-list li { border-top: 1px solid var(--color-card-border); }
 .faith-room-list li:first-child { border-top: 0; }
@@ -16717,6 +16731,31 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   font-size: var(--tfr-micro); font-weight: 400;
   letter-spacing: 0; text-transform: none;
   color: var(--color-muted); white-space: nowrap;
+}
+
+/* Who the name belongs to. An index of two thousand names needs more
+   than the names: the dates sit beside the name in the summary line,
+   the office on a line of its own beneath it. Both are quiet — the name
+   is what is being scanned, and these answer the question it raises.
+   Neither is ever present for every author, so both collapse to nothing
+   without leaving a gap. */
+.faith-room-blocks--fold .btrad-dates {
+  margin-left: 8px;
+  font-size: var(--tfr-micro); font-weight: 400;
+  letter-spacing: 0; text-transform: none;
+  font-style: italic;
+  color: var(--color-muted); white-space: nowrap;
+}
+.faith-room-blocks--fold .btrad-office {
+  display: block;
+  padding-left: 26px;
+  margin: -2px 0 2px;
+  font-size: var(--tfr-micro);
+  letter-spacing: 0; text-transform: none;
+  color: var(--color-muted);
+}
+@media (max-width: 640px) {
+  .faith-room-blocks--fold .btrad-dates { display: block; margin: 2px 0 0 0; white-space: normal; }
 }
 
 /* The open panel. Indented to the caret so the works sit under the name

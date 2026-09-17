@@ -62,6 +62,24 @@
   const collectionId = ((meta && meta.getAttribute("content")) ||
     params.get("collection") || "tfr").replace(/[^a-z0-9_-]/gi, "");
 
+  // A room is a collection. A SHELF is a tradition, and the two stopped
+  // being the same thing on 2026-09-17, when the Fathers in English were
+  // filed into Migne's two series: "Latin Fathers" is now Patrologia
+  // Latina plus 22 works from English Editions, "Greek Fathers" is
+  // Patrologia Graeca plus 27. The all-works page counts the shelf, so a
+  // room that counted only its own collection would disagree with the
+  // shelf a reader just clicked — and a count that disagrees with the
+  // list under it is worse than no count at all.
+  //
+  // Where this meta names a tradition the room is that whole shelf:
+  // its own collection, plus every work under that tradition in the
+  // collections that carry more than one. The single-tradition
+  // collections (eebo, and the Migne series themselves) can contribute
+  // nothing to another shelf and are not fetched.
+  const shelfMeta = document.querySelector('meta[name="tfr-room-shelf"]');
+  const shelfTradition = (shelfMeta && shelfMeta.getAttribute("content") || "").trim();
+  const MIXED = ["mo", "tfr", "confessions"];
+
   let works = [];
   let tradition = params.get("tradition") || "";
   let denomination = params.get("denomination") || "";
@@ -153,9 +171,38 @@
   const source = isAll
     ? Promise.all(ALL.map((id) => window.MOCorpora.load(id).catch(() => [])))
         .then((sets) => sets.flat())
-    : window.MOCorpora.load(collectionId);
+    : Promise.all([
+      window.MOCorpora.load(collectionId),
+      shelfTradition
+        ? Promise.all(MIXED.filter((id) => id !== collectionId)
+          .map((id) => window.MOCorpora.load(id).catch(() => [])))
+          .then((sets) => sets.flat().filter((w) =>
+            String(w.tradition || "").trim() === shelfTradition))
+        : [],
+    ]).then(([own, guests]) => own.concat(guests));
 
-  source.then((list) => {
+  // Name, dates and office for the authors this collection has them for,
+  // keyed by name. The Patrologia rooms are an index of names, and a name
+  // alone does not say who it is: "Abbo of Fleury" means one thing beside
+  // "c. 945-1004 · Abbot of Fleury" and nothing without it. Resolves to an
+  // empty map rather than rejecting, and the room renders either way.
+  let authorNotes = new Map();
+  const notes = corpus && corpus.authors
+    ? fetch((corpus.notesBase || corpus.base) + corpus.authors)
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((d) => {
+        const m = new Map();
+        Object.keys(d || {}).forEach((name) => {
+          const e = d[name] || {};
+          if (e.dates || e.affiliation) m.set(fold(name), { dates: e.dates || "", office: e.affiliation || "" });
+        });
+        return m;
+      })
+      .catch(() => new Map())
+    : Promise.resolve(new Map());
+
+  Promise.all([source, notes]).then(([list, noteMap]) => {
+    authorNotes = noteMap;
     // Sort by the name the reader is scanning for, then by title so a
     // multi-volume set reads in order rather than in catalogue order.
     works = list.slice().sort((a, b) => {
@@ -456,8 +503,16 @@
     const all = key && name !== "Unattributed"
       ? `<a class="btrad-all" href="/the-faith-received/author/?a=${encodeURIComponent(key)}">About ${escapeHtml(name)} &rarr;</a>`
       : "";
+    // Dates beside the name, office beneath it — the shape the shelf
+    // pages on the corpus site use, and the one a reader scanning two
+    // thousand names needs to tell one Abbo from another.
+    const note = authorNotes.get(key) || null;
+    const dates = note && note.dates
+      ? `<span class="btrad-dates">${escapeHtml(note.dates)}</span>` : "";
+    const office = note && note.office
+      ? `<span class="btrad-office">${escapeHtml(note.office)}</span>` : "";
     return `<details class="btrad${wide}">
-  <summary class="btrad-sum"><h3>${escapeHtml(name)}<span class="btrad-n">${n.toLocaleString()} work${n === 1 ? "" : "s"}</span></h3></summary>
+  <summary class="btrad-sum"><h3>${escapeHtml(name)}${dates}<span class="btrad-n">${n.toLocaleString()} work${n === 1 ? "" : "s"}</span></h3>${office}</summary>
   <ul class="blist">${rows}</ul>${all}
 </details>`;
   }
@@ -616,7 +671,16 @@
       ? `<div class="faith-room-filters">${controls}${undated ? `<p class="faith-room-undated">${undated.toLocaleString()} works carry no date</p>` : ""}</div>`
       : "";
 
-    const letters = [...new Set(filtered.map((w) => initial(w.author)))]
+    // Counted by AUTHOR and not by work: the rail sits over a list of
+    // names, so "A 215" has to mean 215 names under A. Counting works
+    // would have promised 215 rows and shown a fraction of that.
+    const letterCounts = new Map();
+    new Set(filtered.map((w) => `${initial(w.author)}\u0000${fold(w.author)}`))
+      .forEach((k) => {
+        const l = k.split("\u0000")[0];
+        letterCounts.set(l, (letterCounts.get(l) || 0) + 1);
+      });
+    const letters = [...letterCounts.keys()]
       .sort((a, b) => (a === "#") - (b === "#") || a.localeCompare(b));
 
     const label = isAll ? "the whole library" : (corpus ? corpus.label : "the collection");
@@ -624,8 +688,10 @@
     // question. Inside a volume it would be a second index over at most
     // a few dozen works.
     const rail = letters.length > 1 && !onShelf
-      ? `<nav class="faith-room-letters" aria-label="Jump to a letter"><button type="button" data-room-letter="" class="${letter ? "" : "is-active"}">All</button>${
-          letters.map((l) => `<button type="button" data-room-letter="${l}" class="${letter === l ? "is-active" : ""}">${l}</button>`).join("")}</nav>`
+      ? `<nav class="faith-room-letters" aria-label="Jump to a letter"><button type="button" data-room-letter="" class="${letter ? "" : "is-active"}">All<span class="faith-room-letter-n">${
+          [...letterCounts.values()].reduce((a, b) => a + b, 0).toLocaleString()}</span></button>${
+          letters.map((l) => `<button type="button" data-room-letter="${l}" class="${letter === l ? "is-active" : ""}">${l}<span class="faith-room-letter-n">${
+            letterCounts.get(l).toLocaleString()}</span></button>`).join("")}</nav>`
       : "";
     const list = groups.length
       ? (() => {

@@ -22,6 +22,15 @@
   // contents under it is worse than no shelf count at all.
   const ALL = ["pg", "pld", "po", "tfr", "eebo", "confessions", "mo"];
 
+  // The shelves that are a room. Each of these rooms declares the same
+  // tradition in its tfr-room-shelf meta, so what it lists and what this
+  // card counts are the same set of works, down to the last one.
+  const SHELF_ROOM = {
+    "Latin Fathers": "/the-faith-received/patrologia-latina/",
+    "Greek Fathers": "/the-faith-received/patrologia-graeca/",
+    "Eastern Fathers": "/the-faith-received/patrologia-orientalis/",
+  };
+
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => (
     { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
   ));
@@ -134,6 +143,14 @@
       const q = new URLSearchParams({ collection: "all" });
       if (s.parent) { q.set("tradition", s.parent); q.set("denomination", s.name); }
       else { q.set("tradition", s.name); }
+      // Three shelves have a room of their own, and a room is the better
+      // door: it opens on an index of AUTHORS, each with dates and
+      // office, and it offers the volume view beside it, because Migne is
+      // cited by volume and column and a reader arriving with a citation
+      // needs that first. The table below cuts by tradition and is the
+      // right answer for every shelf that has no room.
+      const room = SHELF_ROOM[s.name];
+      const href = room || `?${esc(q.toString())}`;
 
       // The three names a reader is most likely to recognise, which is
       // the three most published, not the first three alphabetically.
@@ -145,7 +162,7 @@
           + `${s.authors.size > names.length ? " · …" : ""}</span>`
         : "";
 
-      return `<li class="fro-shelf"><a href="?${esc(q.toString())}">` +
+      return `<li class="fro-shelf"><a href="${esc(href)}">` +
         `<span class="fro-shelf-row">` +
         `<span class="fro-shelf-name">${esc(s.name)}</span>` +
         `<span class="fro-shelf-n"><b>${num(s.n)}</b> ${s.n === 1 ? "work" : "works"}</span>` +
