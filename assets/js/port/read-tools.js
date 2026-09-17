@@ -1140,8 +1140,8 @@ function __initReaderTools(){
     if(action==='pin'){window.FRResearchNotebook?.selectCollection(activeNotebookId());window.__frPinToggle?.(passage.page);status('Reference updated in your active collection.');}
     if(action==='bib'){$('#spBib').click();status('BibTeX citation copied.');}
   }
-  notebook.querySelectorAll('[data-reader-action]').forEach(b=>b.onclick=()=>act(b.dataset.readerAction));
-  notebook.querySelectorAll('[data-reader-color]').forEach(b=>b.onclick=()=>{const r=passageRow();if(r){setHl(r,b.dataset.readerColor);status(b.dataset.readerColor?'Highlight saved.':'Highlight cleared.');}});
+  if(notebook) notebook.querySelectorAll('[data-reader-action]').forEach(b=>b.onclick=()=>act(b.dataset.readerAction));
+  if(notebook) notebook.querySelectorAll('[data-reader-color]').forEach(b=>b.onclick=()=>{const r=passageRow();if(r){setHl(r,b.dataset.readerColor);status(b.dataset.readerColor?'Highlight saved.':'Highlight cleared.');}});
   if($('#spClip'))$('#spClip').onclick=()=>{hidePop();savePassageResearch();openNotebook('passage');};
   if($('#nbAskBook'))$('#nbAskBook').onclick=()=>{closeNotebook(false);window.FRAsk?.open({contextWork:WORK_SLUG});};
   if($('#nbNewChat'))$('#nbNewChat').onclick=()=>{closeNotebook(false);window.FRAsk?.open({fresh:true,contextWork:WORK_SLUG});};
