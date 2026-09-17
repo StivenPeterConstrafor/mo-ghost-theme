@@ -93,7 +93,6 @@
   // shelf with the rest of Migne.
   const SHELF_FOR_CORPUS = {
     pld: "pl",
-    augustine: "pl",
     pg: "gf",
     po: "po",
     eebo: "ed",

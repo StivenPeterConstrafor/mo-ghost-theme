@@ -25,11 +25,10 @@
  *   The Latin Library ...  1,195 works ·    272 authors · 785,437 pp
  *   Patrologia Orientalis    400 works ·    121 authors
  *   TFR confessions .....    260 documents
- *   Augustine ...........    124 works ·      1 author
  *
- * 29,491 works in all.
+ * 29,367 works in all.
  *
- * Two collections were pulled, both 2026-07-28, both Ian's call:
+ * Three collections were pulled:
  *
  *   PanGrammata (7,582 works) — a Greek and Latin CLASSICAL corpus,
  *   Plutarch, Galen, Cicero and Demosthenes alongside Chrysostom and
@@ -37,9 +36,18 @@
  *   Received is for.
  *
  *   Thomas Aquinas (150 works) — pulled from aquinas-studies, whose
- *   other half is Augustine and stays. The host therefore remains in
- *   connect-src. The `ST`/`SCG`/`Sent` citation scheme went with it:
- *   see faith-resolve.js.
+ *   other half was Augustine. The `ST`/`SCG`/`Sent` citation scheme
+ *   went with it: see faith-resolve.js.
+ *
+ *   Augustine of Hippo (124 works) — pulled 2026-09-17, the owner's
+ *   call: a whole collection for one author who is already in the
+ *   library. Patrologia Latina carries 143 of his works across PL
+ *   32–47, the Confessions (PL 32) and the City of God (PL 41) among
+ *   them, and English Editions carries the Confessions in English. The
+ *   collection put him a third time at the top of the collection facet
+ *   and a "Patristic" tradition beside "Latin Fathers", where he
+ *   belongs. With it goes the last of aquinas-studies, so that host is
+ *   no longer fetched.
  *
  * Both adapters are in git history if they are ever wanted back.
  *
@@ -67,12 +75,6 @@
   // nav.json. No group name says which is which, but the file ids run
   // a single counter across the whole catalogue and the split is exact
   // and contiguous: 1–150 Aquinas, ending with the Opuscula sermons;
-  // 151–274 Augustine, starting with the Confessions. Verified that no
-  // group range straddles the boundary.
-  //
-  // Aquinas was pulled 2026-07-28, so this now exists to discard the
-  // first half of a catalogue we still fetch for its second.
-  const AUGUSTINE_FROM = 151;
 
   // An image URL out of a catalogue we do not own is trusted only to
   // address the host that catalogue is served from. Same rule the rest
@@ -104,17 +106,6 @@
     return `${BLOB}${u.pathname}`;
   }
 
-  function pickAugustine(d) {
-    const out = [];
-    (Array.isArray(d) ? d : []).forEach((group) => {
-      (group.s || []).forEach((sec) => {
-        const n = parseInt((String(sec.f || "").match(/_(\d+)\.html$/) || [])[1], 10);
-        if (n < AUGUSTINE_FROM) return;
-        out.push({ group: group.n || "", name: sec.n || "", file: sec.f || "", heads: sec.h || [] });
-      });
-    });
-    return out;
-  }
 
   // The confessions catalogue carries three traditions only: Roman
   // Catholic, Lutheran, and Reformed for everything else Protestant. So
@@ -365,17 +356,76 @@
     pld: { "Latin Fathers": "The Fathers" },
     pg: { "Greek Fathers": "The Fathers" },
     po: { "Eastern Fathers": "The Fathers" },
-    /* Augustine is a Latin Father, and so is the Augustine inside
-       Patrologia Latina. Labelling this collection "Patristic"
-       gave it a shelf of its own beside Latin Fathers, which read
-       as two traditions when the only difference is the edition:
-       Augustinus.cc in English here, Migne in Latin there. */
-    augustine: { "Latin Fathers": "The Fathers" },
+    // English Editions carries the Fathers in translation. Its own
+    // catalogue files them under "Patristic & Early Church", "The early
+    // church" and "The church at Smyrna" — three labels for one thing,
+    // and a fourth top-level row beside the series they already belong
+    // to. moTradition() below sorts each work into Migne's own two
+    // series instead; both hang here, as pld and pg do.
+    mo: { "Latin Fathers": "The Fathers", "Greek Fathers": "The Fathers" },
   };
 
   // The Latin Library carries eight Greek Fathers of its own, and they
   // belong with the rest rather than standing alone at the top level.
   TRADITION_PARENT.tfr["Greek Fathers"] = "The Fathers";
+
+  // The Fathers in English are filed by the series they belong to.
+  //
+  // English Editions ships 53 patristic works under three labels that
+  // say when they were written rather than which Fathers they are:
+  // "Patristic & Early Church" (45), "The early church" (3) and "The
+  // church at Smyrna" (1, the church that wrote the Martyrdom of
+  // Polycarp — an author, not a tradition). Beside "Latin Fathers" and
+  // "Greek Fathers" they read as a fourth and fifth kind of Father.
+  //
+  // They are not. Every one of them is in Migne, and Migne's division
+  // is the library's: Tertullian, Augustine and the Passion of Perpetua
+  // in the Latin series, the Greek apologists and Alexandrians in the
+  // Greek. The author decides it, so the author is the key; the four
+  // anonymous pieces are keyed by title. Anything not listed keeps the
+  // label its catalogue gave it.
+  const MO_FATHERS = {
+    // PL 1–3: Carthage and North Africa, writing in Latin.
+    Tertullian: "Latin Fathers",
+    "Augustine of Hippo": "Latin Fathers",
+    // PG 1–28: the apostolic fathers, the apologists, Alexandria.
+    "Clement of Rome": "Greek Fathers",
+    Hermas: "Greek Fathers",
+    Barnabas: "Greek Fathers",
+    "Ignatius of Antioch": "Greek Fathers",
+    Polycarp: "Greek Fathers",
+    Papias: "Greek Fathers",
+    "Justin Martyr": "Greek Fathers",
+    Tatian: "Greek Fathers",
+    Athenagoras: "Greek Fathers",
+    "Theophilus of Antioch": "Greek Fathers",
+    // Greek, though it survives whole only in a Latin translation:
+    // Migne prints him in PG 7 and so do we.
+    "Irenaeus of Lyons": "Greek Fathers",
+    "Clement of Alexandria": "Greek Fathers",
+    Athanasius: "Greek Fathers",
+  };
+  const MO_FATHERS_ANON = {
+    "the passion of perpetua and felicitas": "Latin Fathers",
+    "the didache": "Greek Fathers",
+    "letter to diognetus": "Greek Fathers",
+    "the martyrdom of ignatius": "Greek Fathers",
+    "the martyrdom of polycarp": "Greek Fathers",
+  };
+  // The creeds arrive as "The whole church"; the confessions carry the
+  // same tradition as "The Whole Church". One tradition, listed twice in
+  // every facet until the case matches.
+  const MO_TRADITION_FIX = { "the whole church": "The Whole Church" };
+
+  function moTradition(w) {
+    const given = String(w.tradition || "").trim();
+    const author = String(w.author || "").trim();
+    const byAuthor = MO_FATHERS[author];
+    if (byAuthor) return byAuthor;
+    const byTitle = MO_FATHERS_ANON[String(w.title || "").trim().toLowerCase()];
+    if (byTitle) return byTitle;
+    return MO_TRADITION_FIX[given.toLowerCase()] || given;
+  }
 
   const CORPORA = [
     {
@@ -558,13 +608,13 @@
       readable: true,
       textBase: `${LIBRARY}/v1/mo/`,
       textSuffix: ".json",
-      tradition: (w) => w.tradition || "",
+      tradition: (w) => moTradition(w),
       normalize: (w) => ({
         corpus: "mo",
         id: String(w.slug),
         title: w.title || w.slug,
         author: (w.author || "").trim(),
-        tradition: w.tradition || "",
+        tradition: moTradition(w),
         eyebrow: w.eyebrow || "",
         extent: w.n_sections || 0,
         url: `/the-faith-received/reader/?c=mo&w=${encodeURIComponent(w.slug)}`,
@@ -866,130 +916,6 @@
         extent: (w.divs || []).length,
         url: `/the-faith-received/reader/?c=po&w=${encodeURIComponent(w._id)}`,
       }),
-    },
-    {
-      id: "augustine",
-      label: "Augustine of Hippo",
-      short: "The Confessions, the City of God, the letters & sermons",
-      base: "https://aquinas-studies.vercel.app",
-      catalogue: "/data/nav.json",
-      // The second half of the aquinas-studies catalogue; the first
-      // half was Thomas Aquinas, pulled 2026-07-28.
-      pick(d) {
-        return pickAugustine(d);
-      },
-      indexes: { refindex: "/data/refindex.json" },
-      extras: { summa: "/data/summa.json" },
-      lanes: [{ id: "en", label: "English" }, { id: "la", label: "Latin" }],
-      modernize: true,
-
-      // No per-work JSON is published, but the reader pages are clean:
-      // the source already nests <details class="collapse-question">
-      // and "collapse-article" with bilingual summaries, which is the
-      // same shape our reader renders. So we parse the page rather than
-      // wait on the author. One fetch per section (~3.4 MB for a
-      // quarter of the Summa) — the same the source site serves.
-      //
-      // nav.json's h[] anchors are NOT usable for this: they sit on
-      // empty <span class="q-anchor"> markers, and only 1 of 310
-      // lands on a content row. Walk the <details> tree instead.
-      reader: "html-extract",
-      readable: true,
-      textPath: (id) => `/read/${id}.html`,
-
-      // doc -> { title, sections: [{ title, subtitle, children:[…] }] }
-      // where the leaves carry parallel rows.
-      extract(doc) {
-        const txt = (el) => (el ? el.textContent.trim() : "");
-        const rowsIn = (root) => {
-          const out = [];
-          root.querySelectorAll(":scope > .parallel").forEach((r) => {
-            const la = r.querySelector(".col-la");
-            const en = r.querySelector(".col-en");
-            if (!la && !en) return;
-            out.push({
-              // The source's own row id. The scripture index records
-              // this same id, so a citation's anchor and the block the
-              // reader renders can never drift apart — counting
-              // sections independently in two places put every link
-              // one section early.
-              id: r.getAttribute("id") || "",
-              kind: (r.className.match(/row-([\w-]+)/) || [])[1] || "",
-              cite: r.getAttribute("data-cite") || "",
-              la: la ? la.innerHTML : "",
-              en: en ? en.innerHTML : "",
-            });
-          });
-          return out;
-        };
-        const head = (d) => {
-          const s = d.querySelector(":scope > summary");
-          if (!s) return { title: "", subtitle: "" };
-          const num = txt(s.querySelector(".head-la"));
-          const en = txt(s.querySelector(".head-en"));
-          return {
-            title: [num, en].filter(Boolean).join(" — "),
-            subtitle: txt(s.querySelector(".head-la-title")),
-          };
-        };
-
-        const sections = [];
-        doc.querySelectorAll("details.collapse-question").forEach((q) => {
-          const h = head(q);
-          const children = [];
-          q.querySelectorAll("details.collapse-article").forEach((a) => {
-            const ah = head(a);
-            children.push({ title: ah.title, subtitle: ah.subtitle, rows: rowsIn(a) });
-          });
-          sections.push({ title: h.title, subtitle: h.subtitle, rows: rowsIn(q), children });
-        });
-
-        // Prologues and anything else outside a question still belong
-        // to the work — collect the rows no question claimed.
-        const claimed = new Set();
-        doc.querySelectorAll("details.collapse-question .parallel").forEach((r) => claimed.add(r));
-        const loose = [];
-        doc.querySelectorAll(".parallel").forEach((r) => {
-          if (claimed.has(r)) return;
-          const la = r.querySelector(".col-la");
-          const en = r.querySelector(".col-en");
-          if (!la && !en) return;
-          loose.push({
-            // Same source row id the claimed rows carry. Without it a
-            // scripture link like #r310499 lands nowhere, which is
-            // every citation into the two thirds of this corpus that
-            // ships no <details> at all.
-            id: r.getAttribute("id") || "",
-            kind: (r.className.match(/row-([\w-]+)/) || [])[1] || "",
-            cite: r.getAttribute("data-cite") || "",
-            la: la ? la.innerHTML : "",
-            en: en ? en.innerHTML : "",
-          });
-        });
-        // `flat` marks the one section that is a bag of rows rather
-        // than a division of the work, and is the only thing the
-        // reader's divideFlatSections will take apart. See
-        // faith-reader.js.
-        if (loose.length) {
-          sections.unshift({ title: "Prologue", subtitle: "", rows: loose, children: [], flat: true });
-        }
-
-        return {
-          title: txt(doc.querySelector(".page-header h1")),
-          work: txt(doc.querySelector(".page-header .work-name")),
-          sections,
-        };
-      },
-      tradition: () => "Latin Fathers",
-      normalize: (s) => ({
-        corpus: "augustine",
-        id: s.file.replace(/\.html$/, ""),
-        title: s.name,
-        author: "Augustine of Hippo",
-        eyebrow: s.group,
-        extent: s.heads.length,
-        url: `/the-faith-received/reader/?c=augustine&w=${encodeURIComponent(s.file.replace(/\.html$/, ""))}`,
-      }),
     }
   ];
 
@@ -1011,7 +937,6 @@
     pld: "/the-faith-received/patrologia-latina/",
     pg: "/the-faith-received/patrologia-graeca/",
     po: "/the-faith-received/patrologia-orientalis/",
-    augustine: "/the-faith-received/augustine/",
   };
 
   const byId = new Map(CORPORA.map((c) => [c.id, c]));

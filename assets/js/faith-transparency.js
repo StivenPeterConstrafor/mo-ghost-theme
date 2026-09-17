@@ -33,7 +33,7 @@
   const root = document.querySelector("[data-faith-transparency]");
   if (!root) return;
 
-  const AI_CORPORA = ["tfr", "pld", "pg", "augustine"];
+  const AI_CORPORA = ["tfr", "pld", "pg"];
   // The creeds are mixed: 29 of the 260 were composed in English and
   // were never translated. Each one has to be asked where it came
   // from, so this collection is resolved separately.

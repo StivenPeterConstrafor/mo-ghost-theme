@@ -1,30 +1,42 @@
 {{!< default}}
 {{#contentFor "moHead"}}
 <title>Augustine of Hippo &mdash; The Faith Received</title>
-<meta name="description" content="The whole table of contents for Augustine of Hippo in The Faith Received: every work, every author, in one place." />
+<meta name="description" content="Augustine of Hippo in The Faith Received: 144 works, read on his author page and in Patrologia Latina." />
 <meta property="og:title" content="Augustine of Hippo — The Faith Received" />
 <meta name="twitter:title" content="Augustine of Hippo — The Faith Received" />
+<link rel="canonical" href="https://mereorthodoxy.com/the-faith-received/author/?a=augustine-of-hippo" />
 {{/contentFor}}
-{{!-- /the-faith-received/augustine/ — Augustine of Hippo, whole.
+{{!-- /the-faith-received/augustine/ — kept as a signpost.
 
-     One page per collection. faith-room.js reads which one from the
-     tfr-room-collection meta below, sorts every work by its author's
-     last name, pages at fifty, and draws the rail and the filter.
+     Augustine had a collection of his own here until 2026-09-17, when
+     it was pulled: one author cannot be a collection beside Migne's
+     series when Migne already carries him. Patrologia Latina has 143 of
+     his works across PL 32–47 — the Confessions at PL 32, the City of
+     God at PL 41 — and English Editions has the Confessions in English.
+     All 144 are on his author page.
 
-     Generated as a set: if one changes, change them all. --}}
+     The route is in routes.yaml and stays, because links and bookmarks
+     to it exist. So the page stays too, and says where he went. --}}
 
 <main class="faith-received faith-room">
 
   <section class="bhero bhero--tool">
     <div class="bhero-inner container">
-      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/augustine/">Library</a></p>
+      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/all-works/">Library</a></p>
       <h1>Augustine of Hippo</h1>
-      <p class="bhero-sub">The Confessions, the City of God, the letters and sermons. Every work in the collection, sorted by author. Jump by letter, or search for a name or a title.</p>
+      <p class="bhero-sub">His works are read on his author page, with the rest of the Latin Fathers. He is no longer a collection of his own.</p>
     </div>
   </section>
 
-  <section class="bband faith-room-body">
-    <div class="container" data-faith-room></div>
+  <section class="bband">
+    <div class="container">
+      <p>Augustine was a collection here until September 2026. He is not a collection now, because he was never only one: <strong>Patrologia Latina</strong> carries 143 of his works across PL&nbsp;32&ndash;47, the <em>Confessions</em> at PL&nbsp;32 and the <em>City of God</em> at PL&nbsp;41, and <strong>English Editions</strong> carries the <em>Confessions</em> in English. Nothing was removed from the library; one duplicate door was.</p>
+      <p>
+        <a class="btn" href="/the-faith-received/author/?a=augustine-of-hippo">Augustine of Hippo &mdash; all 144 works</a>
+        <a class="btn" href="/the-faith-received/patrologia-latina/">Patrologia Latina</a>
+        <a class="btn" href="/the-faith-received/augustine-confessions/">The Confessions in English</a>
+      </p>
+    </div>
   </section>
 
 {{> "faith-received/_beta-band"}}
@@ -33,12 +45,3 @@
      of the site: hidden for paid and comped members, shown to free
      subscribers and anonymous visitors. --}}
 {{> "faith-received/_library-cta"}}
-
-
-
-<meta name="tfr-room-collection" content="augustine" />
-<meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
-<script src="{{asset "js/faith-corpora.js"}}"></script>
-<script src="{{asset "js/faith-century.js"}}"></script>
-<script src="{{asset "js/faith-room.js"}}"></script>
-<script src="{{asset "js/faith-resolve.js"}}"></script>

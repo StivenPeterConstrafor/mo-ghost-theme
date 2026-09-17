@@ -56,7 +56,7 @@
   // Early English Books is English already, and the English Editions
   // are historic translations made by people. Patrologia Orientalis
   // prints the translation its own fascicles carry.
-  const AI_COLLECTIONS = new Set(["tfr", "pld", "pg", "augustine", "confessions"]);
+  const AI_COLLECTIONS = new Set(["tfr", "pld", "pg", "confessions"]);
 
   // Regions whose confessions were composed in English. The creeds
   // ship no original text, so they cannot answer for themselves and

@@ -145,7 +145,7 @@
   // works) was missing until 2026-09-15, so the one page that promises
   // the whole library was the one page those works could not be found
   // from.
-  const ALL = ["pg", "pld", "po", "tfr", "eebo", "confessions", "augustine", "mo"];
+  const ALL = ["pg", "pld", "po", "tfr", "eebo", "confessions", "mo"];
   const isAll = collectionId === "all";
   const corpus = isAll ? null : window.MOCorpora.get(collectionId);
   root.innerHTML = '<p class="faith-room-status">Loading the collection&hellip;</p>';

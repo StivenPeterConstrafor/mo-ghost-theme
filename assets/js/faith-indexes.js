@@ -1489,8 +1489,8 @@
 
   // Collections with no index of their own. Named on the page so their
   // absence reads as "not yet indexed" rather than "nothing to find".
-  ["eebo", "augustine", "pg"].forEach((id) => COVERAGE.missing.topics.push(id));
-  ["augustine", "pg", "po", "pld"].forEach((id) => COVERAGE.missing.scripture.push(id));
+  ["eebo", "pg"].forEach((id) => COVERAGE.missing.topics.push(id));
+  ["pg", "po", "pld"].forEach((id) => COVERAGE.missing.scripture.push(id));
 
   // A generated index, built by scripts/build-scripture-index.mjs by
   // walking the actual text, supersedes the partial indexes the source
@@ -1513,7 +1513,7 @@
   // every per-chapter file sampled across the canon carries one of
   // these four corpus ids and no other. When the index is rebuilt wider
   // this is the line that has to move with it.
-  const GENERATED_CORPORA = ["tfr", "eebo", "pld", "augustine"];
+  const GENERATED_CORPORA = ["tfr", "eebo", "pld"];
 
   function loadGenerated(url) {
     return fetch(url).then((r) => {
