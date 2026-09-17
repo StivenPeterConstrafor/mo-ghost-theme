@@ -58,6 +58,17 @@
     btn.textContent = "Start from the beginning";
     btn.title = `You were left at page ${page}. Open this work at its first page instead.`;
     btn.addEventListener("click", () => {
+      // The hash has to go too. Restoring your place leaves #b18-0 on
+      // the URL, and a block anchor beats ?p= in the reader's own
+      // landing order — so setting the search alone reloaded straight
+      // back to page 18, which is the opposite of the button's name.
+      //
+      // Dropped with replaceState first, then the search is set, which
+      // is what actually reloads. Assigning location.href would do both
+      // at once and is forbidden here for a good reason: it takes a
+      // whole URL and so has to be trusted. This only ever edits the
+      // URL the browser is already on.
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
       const next = new URLSearchParams(window.location.search);
       next.set("p", "1");
       window.location.search = next.toString();
