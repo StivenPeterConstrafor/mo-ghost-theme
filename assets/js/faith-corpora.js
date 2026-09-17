@@ -365,7 +365,12 @@
     pld: { "Latin Fathers": "The Fathers" },
     pg: { "Greek Fathers": "The Fathers" },
     po: { "Eastern Fathers": "The Fathers" },
-    augustine: { Patristic: "The Fathers" },
+    /* Augustine is a Latin Father, and so is the Augustine inside
+       Patrologia Latina. Labelling this collection "Patristic"
+       gave it a shelf of its own beside Latin Fathers, which read
+       as two traditions when the only difference is the edition:
+       Augustinus.cc in English here, Migne in Latin there. */
+    augustine: { "Latin Fathers": "The Fathers" },
   };
 
   // The Latin Library carries eight Greek Fathers of its own, and they
@@ -975,7 +980,7 @@
           sections,
         };
       },
-      tradition: () => "Patristic",
+      tradition: () => "Latin Fathers",
       normalize: (s) => ({
         corpus: "augustine",
         id: s.file.replace(/\.html$/, ""),

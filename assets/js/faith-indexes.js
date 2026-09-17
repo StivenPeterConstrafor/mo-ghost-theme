@@ -954,12 +954,14 @@
     //
     // Normally the parent: Protestant, The Fathers, Roman Catholic,
     // with the denomination under it. But a chapter can be entirely
-    // patristic — Deuteronomy 6 is 328 works from Patrologia Latina
-    // and 29 from Augustine — and both of those roll up to The
-    // Fathers, so the parent level had one value and the control
-    // correctly hid itself, leaving nothing to filter by at all.
+    // patristic, and Greek and Latin Fathers both roll up to The
+    // Fathers, so the parent level has one value and the control
+    // correctly hides itself, leaving nothing to filter by at all.
     // Where the parent does not discriminate, offer the tradition
-    // itself: Latin Fathers 328, Patristic 29.
+    // itself. (The example this was written for, Patrologia Latina
+    // against the Augustine collection, is no longer one: both are
+    // Latin Fathers now, and a chapter holding only those two really
+    // does have nothing to filter by.)
     const parentCounts = counts("tradition");
     const rawCounts = (() => {
       const m = new Map();
@@ -1338,7 +1340,7 @@
   // Reformation and its opponents — rather than by size, which would
   // put Migne's volume count ahead of the Reformation.
   const TRADITION_ORDER = [
-    "Classical", "Patristic", "Greek Fathers", "Latin Fathers",
+    "Classical", "Greek Fathers", "Latin Fathers",
     "Eastern Fathers", "Medieval", "Medieval Scholastic",
     "Humanism and Law", "Roman Catholic", "Lutheran", "Reformed",
     "Anglican", "Puritan",
