@@ -149,8 +149,12 @@
       // cited by volume and column and a reader arriving with a citation
       // needs that first. The table below cuts by tradition and is the
       // right answer for every shelf that has no room.
+      // esc() ONCE, on output. Building the href pre-escaped and escaping it again
+      // at the attribute turned every & into &amp;amp;, so the browser followed a
+      // literal "?collection=all&amp;tradition=Protestant" and every shelf without a
+      // room of its own landed on the unfiltered table (2026-09-17).
       const room = SHELF_ROOM[s.name];
-      const href = room || `?${esc(q.toString())}`;
+      const href = room || `?${q.toString()}`;
 
       // The three names a reader is most likely to recognise, which is
       // the three most published, not the first three alphabetically.
