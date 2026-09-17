@@ -47,12 +47,11 @@
     pld: "/the-faith-received/patrologia-latina/",
     pg: "/the-faith-received/patrologia-graeca/",
     po: "/the-faith-received/patrologia-orientalis/",
-    augustine: "/the-faith-received/augustine/",
     confessions: "/the-faith-received/confessions/",
     "mo-english": "/the-faith-received/english-editions/",
   };
 
-  const LIBRARY_IDS = ["tfr", "eebo", "pld", "po", "augustine", "pg"];
+  const LIBRARY_IDS = ["tfr", "eebo", "pld", "po", "pg"];
 
   // Curated English works ship server-rendered in the Library grid.
   // Harvest them before anything clears it; they become their own

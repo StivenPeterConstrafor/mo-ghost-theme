@@ -6814,6 +6814,67 @@ mark.faith-find-hit.is-current {
   text-transform: uppercase; color: var(--color-muted); margin-top: 3px; }
 .bband--dark .brow-m { color: #ffffff8a; }
 
+/* ── A volume, in the order it was printed ─────────────────────────────
+   The contents of one Patrologia volume are not an index of names but a
+   printed object with a sequence, so the row carries what a reader holding
+   a citation is looking for: the columns first, in a fixed-width gutter so
+   the numbers line up down the page and the eye can run them; then the
+   title, with the author set quietly after it, because here the author is
+   one fact about the work rather than the heading it lives under. */
+.faith-room-printed li { display: block; }
+.faith-room-printed a,
+.faith-room-printed .faith-room-row { padding: 11px 0; }
+/* The gutter exists only where the series has something to put in it. */
+.faith-room-printed--loc a,
+.faith-room-printed--loc .faith-room-row {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 0 18px;
+  align-items: baseline;
+}
+.brow-c {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.faith-room-printed .brow-t { font-size: 19px; }
+.faith-room-printed--loc .brow-la,
+.faith-room-printed--loc .brow-m { grid-column: 2; }
+
+/* The volume's byline: whose works Migne bound here. */
+.faith-room-vol-by {
+  margin: 4px 0 0;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+}
+.brow-a {
+  font-size: 0.75em;
+  color: var(--color-muted);
+}
+.brow-a::before { content: "\2014"; margin: 0 0.35em 0 0.5em; }
+/* Migne's own apparatus — a preface, a notice, an admonition — as against
+   the father it surrounds. Named, not hidden: it is part of the volume. */
+.brow-kind {
+  margin-left: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .faith-room-printed--loc a,
+  .faith-room-printed--loc .faith-room-row { grid-template-columns: 1fr; gap: 2px; }
+  .faith-room-printed--loc .brow-la,
+  .faith-room-printed--loc .brow-m { grid-column: 1; }
+  .brow-c { font-size: 12px; }
+}
+
 .btiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--color-card-border); }
 .btiles--4 { grid-template-columns: repeat(4, 1fr); }
 .btiles a { background: var(--color-cream); padding: 26px 24px; text-decoration: none; color: inherit; }
@@ -7353,6 +7414,20 @@ mark.faith-find-hit.is-current {
 }
 .faith-room-letters button:hover { color: var(--color-secondary); }
 .faith-room-letters button.is-active { color: var(--color-primary-text); }
+
+/* How many names sit under a letter, set beside it. A rail that says
+   only "A B C" tells a reader which letters exist; one that says "A 215"
+   tells them what they are about to open. Numerals, so they are read as
+   a count and not as part of the letter. */
+.faith-room-letter-n {
+  margin-left: 5px;
+  font-size: 0.82em;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+  opacity: 0.75;
+}
+.faith-room-letters button.is-active .faith-room-letter-n { opacity: 1; }
 
 .faith-room-list { columns: 1; max-width: 1180px; }
 .faith-room-list li { border-top: 1px solid var(--color-card-border); }
@@ -16717,6 +16792,31 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   font-size: var(--tfr-micro); font-weight: 400;
   letter-spacing: 0; text-transform: none;
   color: var(--color-muted); white-space: nowrap;
+}
+
+/* Who the name belongs to. An index of two thousand names needs more
+   than the names: the dates sit beside the name in the summary line,
+   the office on a line of its own beneath it. Both are quiet — the name
+   is what is being scanned, and these answer the question it raises.
+   Neither is ever present for every author, so both collapse to nothing
+   without leaving a gap. */
+.faith-room-blocks--fold .btrad-dates {
+  margin-left: 8px;
+  font-size: var(--tfr-micro); font-weight: 400;
+  letter-spacing: 0; text-transform: none;
+  font-style: italic;
+  color: var(--color-muted); white-space: nowrap;
+}
+.faith-room-blocks--fold .btrad-office {
+  display: block;
+  padding-left: 26px;
+  margin: -2px 0 2px;
+  font-size: var(--tfr-micro);
+  letter-spacing: 0; text-transform: none;
+  color: var(--color-muted);
+}
+@media (max-width: 640px) {
+  .faith-room-blocks--fold .btrad-dates { display: block; margin: 2px 0 0 0; white-space: normal; }
 }
 
 /* The open panel. Indented to the caret so the works sit under the name

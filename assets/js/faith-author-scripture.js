@@ -122,7 +122,6 @@
   // which source answered.
   const CORPUS_LABEL = {
     pld: "Patrologia Latina",
-    augustine: "the Augustine collection",
     tfr: "the Latin Library",
     eebo: "Early English Books",
     ed: "the English Divines",

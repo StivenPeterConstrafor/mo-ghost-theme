@@ -157,7 +157,7 @@
       // ported index folds the corpus into the slug (eebo-53832). Where
       // the id already carries its prefix, as PL's pld-448 does, it is
       // left alone.
-      const PORTED_PREFIX = { eebo: "eebo", pld: "pld", pg: "pg", po: "po", augustine: "aq" };
+      const PORTED_PREFIX = { eebo: "eebo", pld: "pld", pg: "pg", po: "po" };
       const prefix = PORTED_PREFIX[corpusId];
       const portedSlug = prefix && !slug.startsWith(`${prefix}-`)
         ? `${prefix}-${slug}`
