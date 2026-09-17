@@ -627,7 +627,7 @@
       base: "https://pld-patrologia-latina.vercel.app",
       catalogue: "/data/nav.json",
       // nav.docs is an object keyed by doc id, not an array.
-      pick: (d) => Object.keys(d.docs || {}).map((k) => ({_id: k, ...d.docs[k]})),
+      pick: (d) => Object.keys(d.docs || {}).map((k, i) => ({ _id: k, _i: i, ...d.docs[k] })),
       indexes: { topics: "/data/topics.json", refindex: "/data/refindex.json" },
       lanes: [{ id: "en", label: "English" }, { id: "la", label: "Latin" }],
       notesBase: "https://mo-tfr.mo-podcast-feed.workers.dev",
@@ -658,6 +658,14 @@
         author: (w.ae || w.a || "").trim(),
         eyebrow: w.v ? `PL ${w.v}` : "",
         extent: (w.divs || []).length,
+        // Where the work sits in its volume, and where it sits on the page.
+        // `po` is Migne's own printed order (1..n within the volume), `c` the
+        // column range that every footnote in the discipline cites, and `cd`
+        // MOD the editorial matter Migne set around the text — a preface, a
+        // notice, an admonition — as against MED, the father himself.
+        order: w.po == null ? 1e9 + w._i : w.po,
+        columns: Array.isArray(w.c) && w.c.length === 2 ? w.c : null,
+        editorial: w.cd === "MOD",
         url: `/the-faith-received/reader/?c=pld&w=${encodeURIComponent(w._id)}`,
       }),
     },
@@ -670,7 +678,7 @@
       // 494 authors. voltoc.json only describes the 161 physical
       // volumes, which is shelving, not a catalogue.
       catalogue: "/data/nav.json",
-      pick: (d) => Object.keys(d.docs || {}).map((k) => ({ _id: k, ...d.docs[k] })),
+      pick: (d) => Object.keys(d.docs || {}).map((k, i) => ({ _id: k, _i: i, ...d.docs[k] })),
       indexes: { deepindex: "/data/deepindex.json", refindex: "/data/refindex.json" },
       extras: { voltoc: "/data/voltoc.json" },
       // Two lanes again. The published pages carry only one column per
@@ -781,6 +789,10 @@
         author: (w.a || "").trim(),
         eyebrow: w.v ? `PG ${w.v}` : "",
         extent: (w.divs || []).length,
+        // No printed position of its own, and none needed: this catalogue is
+        // already in Migne's order — PG 44 opens on the title page, the table
+        // of contents and Fabricius's notice, exactly as the volume does.
+        order: w._i,
         url: `/the-faith-received/reader/?c=pg&w=${encodeURIComponent(w._id)}`,
       }),
     },
@@ -792,7 +804,7 @@
       catalogue: "/data/nav.json",
       // Same shape as PLD: nav.docs keyed by id. nav.volumes and
       // nav.authors are lookup lists, not the works themselves.
-      pick: (d) => Object.keys(d.docs || {}).map((k) => ({_id: k, ...d.docs[k]})),
+      pick: (d) => Object.keys(d.docs || {}).map((k, i) => ({ _id: k, _i: i, ...d.docs[k] })),
       indexes: { topics: "/data/topics.json", refindex: "/data/refindex.json" },
       extras: { titles: "/data/titles_en.json", authreg: "/data/authreg.json" },
       // LICENSING — OPEN BY DECISION, NOT BY OVERSIGHT. The owner's
@@ -914,6 +926,12 @@
         fasc: String(w.fasc == null ? "" : w.fasc).trim(),
         eyebrow: [w.v, w.fasc ? `fasc. ${w.fasc}` : ""].filter(Boolean).join(" · "),
         extent: (w.divs || []).length,
+        // This catalogue is alphabetical by author, which is the one order a
+        // tome is NOT printed in. A tome is published as fascicles and bound
+        // in their order, so the fascicle leads and the catalogue breaks ties
+        // inside it. A tome that names no fascicle sorts last rather than
+        // first, where a missing number would otherwise put it.
+        order: (parseInt(w.fasc, 10) || 9999) * 100000 + w._i,
         url: `/the-faith-received/reader/?c=po&w=${encodeURIComponent(w._id)}`,
       }),
     }

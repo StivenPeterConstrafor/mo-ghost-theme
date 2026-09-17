@@ -6814,6 +6814,67 @@ mark.faith-find-hit.is-current {
   text-transform: uppercase; color: var(--color-muted); margin-top: 3px; }
 .bband--dark .brow-m { color: #ffffff8a; }
 
+/* ── A volume, in the order it was printed ─────────────────────────────
+   The contents of one Patrologia volume are not an index of names but a
+   printed object with a sequence, so the row carries what a reader holding
+   a citation is looking for: the columns first, in a fixed-width gutter so
+   the numbers line up down the page and the eye can run them; then the
+   title, with the author set quietly after it, because here the author is
+   one fact about the work rather than the heading it lives under. */
+.faith-room-printed li { display: block; }
+.faith-room-printed a,
+.faith-room-printed .faith-room-row { padding: 11px 0; }
+/* The gutter exists only where the series has something to put in it. */
+.faith-room-printed--loc a,
+.faith-room-printed--loc .faith-room-row {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 0 18px;
+  align-items: baseline;
+}
+.brow-c {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.faith-room-printed .brow-t { font-size: 19px; }
+.faith-room-printed--loc .brow-la,
+.faith-room-printed--loc .brow-m { grid-column: 2; }
+
+/* The volume's byline: whose works Migne bound here. */
+.faith-room-vol-by {
+  margin: 4px 0 0;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+}
+.brow-a {
+  font-size: 0.75em;
+  color: var(--color-muted);
+}
+.brow-a::before { content: "\2014"; margin: 0 0.35em 0 0.5em; }
+/* Migne's own apparatus — a preface, a notice, an admonition — as against
+   the father it surrounds. Named, not hidden: it is part of the volume. */
+.brow-kind {
+  margin-left: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .faith-room-printed--loc a,
+  .faith-room-printed--loc .faith-room-row { grid-template-columns: 1fr; gap: 2px; }
+  .faith-room-printed--loc .brow-la,
+  .faith-room-printed--loc .brow-m { grid-column: 1; }
+  .brow-c { font-size: 12px; }
+}
+
 .btiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--color-card-border); }
 .btiles--4 { grid-template-columns: repeat(4, 1fr); }
 .btiles a { background: var(--color-cream); padding: 26px 24px; text-decoration: none; color: inherit; }

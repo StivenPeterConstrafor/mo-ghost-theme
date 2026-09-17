@@ -495,6 +495,45 @@
     return `<li class="faith-room-pending"><span class="faith-room-row">${inner}</span></li>`;
   }
 
+  // A name that names nobody. Migne's catalogue fills the author column with
+  // the state of the question — "Unknown author", "Various", "Editors", the
+  // Maurines who edited the volume — and a row reading "— Editors" says less
+  // than a row saying nothing. Same list the corpus site suppresses.
+  const NO_NAME = /^(unknown|auctor|various|editors|anonym|maurines|editores|unattributed)/i;
+
+  // A work as it stands IN ITS VOLUME: the columns it occupies, its title, who
+  // wrote it, and whether Migne wrote it rather than printed it.
+  //
+  // Not grouped under an author, and that is the point. A volume of the
+  // Patrologia is a printed object with an order — column 10 to column 78,
+  // then 79 to 82, then 83 to 90 — and grouping its contents under author
+  // headings sorted A to Z destroys the one order the volume actually has.
+  // The author moves onto the row instead, where it costs nothing.
+  function volRow(w, num, oneAuthor) {
+    // The gutter carries whatever locator the series is cited by: Migne's
+    // column range in the two Patrologiae, the fascicle in the Orientalis,
+    // which is how a tome is divided and how it is cited. A series with
+    // neither gets no gutter at all rather than an empty one.
+    const c = w.columns;
+    const cite = c ? `${num ? `${num}:` : ""}${c[0]}${c[1] !== c[0] ? `\u2013${c[1]}` : ""}` : "";
+    const loc = cite || (w.fasc ? `fasc. ${w.fasc}` : "");
+    const col = loc
+      ? `<span class="brow-c"${cite ? ' title="Migne columns"' : ""}>${escapeHtml(loc)}</span>` : "";
+    const second = w.titleLatin && w.titleLatin !== w.title ? w.titleLatin : "";
+    const la = second ? `<span class="brow-la">${escapeHtml(second)}</span>` : "";
+    const name = (w.author || "").trim();
+    // One author's volume says so once, in the head. Printing "— Gregory of
+    // Nyssa" against all twenty-four of his own entries is noise.
+    const who = name && !oneAuthor && !NO_NAME.test(name)
+      ? `<span class="brow-a">${escapeHtml(name)}</span>` : "";
+    const kind = w.editorial ? `<span class="brow-kind">Editorial</span>` : "";
+    const inner = `${col}<span class="brow-t">${escapeHtml(w.title || w.id)}${who}${kind}</span>${la}`;
+    if (w.readable !== false && w.url) {
+      return `<li><a href="${escapeHtml(w.url)}">${inner}</a></li>`;
+    }
+    return `<li class="faith-room-pending"><span class="faith-room-row">${inner}</span></li>`;
+  }
+
   // One block per author, laid out two across, exactly as the traditions
   // are on the browse page.
   // An author with a long shelf spans the full width and runs their works
@@ -593,12 +632,30 @@
   // where it only repeats the heading, which is the Patrologia Syriaca:
   // that bucket is named rather than numbered, so the two lines were
   // the same line twice.
-  function volHead(s) {
+  // Who is in this volume, most published first, editors and "Unknown author"
+  // left out: Migne bound a father's works together, so the volume has a
+  // byline, and naming it in the head is what lets the rows below stop
+  // repeating it.
+  function volAuthors(list) {
+    const c = new Map();
+    list.forEach((w) => {
+      const a = String(w.author || "").replace(/\s*\(.*$/, "").trim();
+      if (!a || NO_NAME.test(a)) return;
+      c.set(a, (c.get(a) || 0) + 1);
+    });
+    return [...c.entries()].sort((x, y) => y[1] - x[1]).map(([a]) => a);
+  }
+
+  function volHead(s, list) {
     const cite = shelf.cite(s);
     const line = cite && cite !== shelf.name(s)
       ? `<p class="faith-room-vol-cite">Cited as ${escapeHtml(cite)}</p>` : "";
+    const who = volAuthors(list || []);
+    const by = who.length
+      ? `<p class="faith-room-vol-by">${escapeHtml(who.slice(0, 4).join(" \u00b7 "))}${who.length > 4 ? " \u00b7 \u2026" : ""}</p>`
+      : "";
     return `<div class="faith-room-vol-head">`
-      + `<h2>${escapeHtml(shelf.name(s))}</h2>${line}`
+      + `<h2>${escapeHtml(shelf.name(s))}</h2>${line}${by}`
       + `<button type="button" class="faith-room-vol-back" data-room-vol="">`
       + `&larr; All ${escapeHtml(shelf.many)}</button></div>`;
   }
@@ -633,9 +690,17 @@
     // Group the whole filtered set under its authors first, then page the
     // authors. Grouping after the slice was what let one author land on
     // two pages.
+    // Inside one volume there are no author blocks to page through: the volume
+    // itself is the page. `order` is Migne's, set per series in faith-corpora.js.
+    const inVolume = onShelf && Boolean(chosen);
+    const printed = inVolume
+      ? scoped.slice().sort((a, b) => (a.order == null ? Infinity : a.order) - (b.order == null ? Infinity : b.order)
+        || cmpTitle(a.title, b.title))
+      : [];
+
     const allGroups = [];
     const byName = new Map();
-    scoped.forEach((w) => {
+    (inVolume ? [] : scoped).forEach((w) => {
       const name = (w.author || "").trim() || "Unattributed";
       // By NAME, not by consecutive run. A run only merged neighbours,
       // and the catalogue's several "Unknown author" spellings interleave
@@ -652,7 +717,7 @@
       if (!g.seen.has(key)) { g.seen.add(key); g.works.push(w); }
     });
 
-    const pages = Math.max(1, Math.ceil(allGroups.length / PAGE_SIZE));
+    const pages = inVolume ? 1 : Math.max(1, Math.ceil(allGroups.length / PAGE_SIZE));
     if (page > pages) page = pages;
     const groups = allGroups.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -738,8 +803,17 @@
           letters.map((l) => `<button type="button" data-room-letter="${l}" class="${letter === l ? "is-active" : ""}">${l}<span class="faith-room-letter-n">${
             letterCounts.get(l).toLocaleString()}</span></button>`).join("")}</nav>`
       : "";
-    const list = groups.length
-      ? (() => {
+    const volNum = inVolume && chosen ? (chosen.num || "") : "";
+    const volWho = inVolume ? volAuthors(printed) : [];
+    const oneAuthor = volWho.length === 1;
+    const gutter = inVolume && printed.some((w) => w.columns || w.fasc)
+      ? " faith-room-printed--loc" : "";
+    const list = inVolume
+      ? (printed.length
+        ? `<ul class="blist faith-room-printed${gutter}">${printed.map((w) => volRow(w, volNum, oneAuthor)).join("")}</ul>`
+        : `<p class="faith-room-status">Nothing matches that. Try another name or title.</p>`)
+      : groups.length
+        ? (() => {
         // TWO COLUMNS, and they are two real columns in the markup
         // rather than one balanced multicol. A balanced multicol
         // re-flows its whole content whenever anything in it changes
@@ -752,10 +826,10 @@
         const col = (list) => `<div class="btrads-col">${list
           .map((g) => block(g.name, g.works, onShelf ? shelf.mark : null))
           .join("")}</div>`;
-        return `<div class="btrads faith-room-blocks faith-room-blocks--fold">`
-          + `${col(groups.slice(0, half))}${col(groups.slice(half))}</div>`;
-      })()
-      : `<p class="faith-room-status">Nothing matches that. Try another name or title.</p>`;
+          return `<div class="btrads faith-room-blocks faith-room-blocks--fold">`
+            + `${col(groups.slice(0, half))}${col(groups.slice(half))}</div>`;
+        })()
+        : `<p class="faith-room-status">Nothing matches that. Try another name or title.</p>`;
     // An address that names no volume in this collection is the one
     // case where a reader can arrive holding something we cannot open,
     // so it says so and puts the grid back within reach.
@@ -763,7 +837,7 @@
     if (onGrid) {
       body = volGrid(filtered);
     } else if (onShelf && chosen) {
-      body = volHead(chosen) + list;
+      body = volHead(chosen, printed) + list;
     } else if (onShelf) {
       body = `<p class="faith-room-status">There is no ${escapeHtml(shelf.one)} ${escapeHtml(vol)} in ${escapeHtml(label)}.</p>`
         + `<p><button type="button" class="faith-room-vol-back" data-room-vol="">&larr; All ${escapeHtml(shelf.many)}</button></p>`;
@@ -822,7 +896,7 @@
     root.querySelector("[data-room-list]").innerHTML = body;
     // The grid of volumes is one screen of tiles and has nothing to
     // page through.
-    root.querySelector("[data-room-pager]").innerHTML = onGrid ? "" : pager(page, pages);
+    root.querySelector("[data-room-pager]").innerHTML = onGrid || inVolume ? "" : pager(page, pages);
 
     // The toggle is part of the shell and is never rebuilt, so the chosen
     // view is marked on it here rather than written into it. On the
