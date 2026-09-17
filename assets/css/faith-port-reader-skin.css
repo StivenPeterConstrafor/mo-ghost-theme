@@ -302,6 +302,26 @@ aside.relpanel,
   color: var(--fg);
 }
 
+/* THE VOLUME LIST NEEDED SAYING TWICE.
+   `#volnav` sits inside `#app`, so the rule above should have reached it, and
+   `read.in01.css` sets `.vnrow { color: var(--fg) }` besides. It still came out
+   #2d2927 on the #242521 sidebar — 1.07:1, which is not low contrast, it is
+   invisible — for every one of the forty-six rows in PL 140. Whatever wins that
+   cascade, an id in the selector settles it. The list is the way from one work in
+   a Migne volume to the rest of it and it is now the first thing under the
+   outline, so it cannot be the one part of the sidebar a reader cannot see. */
+#app #volnav,
+#app #volnav .vnrow,
+#app #volnav .vnt,
+#app #volnav .vnhead,
+#app #volnext {
+  color: var(--fg);
+}
+#app #volnav .vni,
+#app #volnav .vnc {
+  color: var(--muted);
+}
+
 /* ── Every overlay was anchored to a viewport it no longer owns ─────
    One defect, five instances. The facsimile pane, the contents scrim,
    the related-passages panel, the research drawer and its scrim are all
