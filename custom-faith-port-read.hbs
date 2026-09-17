@@ -20,6 +20,13 @@
 <link rel="stylesheet" href="{{asset "css/port/work-research.css"}}">
 <script defer src="{{asset "js/port/work-research.js"}}"></script>
 <script defer src="{{asset "js/port/reader-bookmarks.js"}}"></script>
+{{!-- The three the corpus site's reader loads and this one did not, which is why PL
+      columns, the Greek parallel lanes and the PL editorial notes all behaved
+      differently here. reader-core.js calls FRMigneNavigation for every column it
+      opens, so these must load before it, in this order. --}}
+<script src="{{asset "js/port/migne-navigation.js"}}"></script>
+<script src="{{asset "js/port/pg-parallel.js"}}"></script>
+<script src="{{asset "js/port/pld-reading.js"}}"></script>
 <script src="{{asset "js/port/reader-navigation.js"}}"></script>
 <script src="{{asset "js/port/reader-source-outline.js"}}"></script>
 <script src="{{asset "js/port/reader-contents.js"}}"></script>
@@ -109,13 +116,49 @@
 </div>
 <div class="light" id="light"><img id="limg" alt="Source page enlarged"></div>
 <div class="nb-scrim" id="nbScrim"></div>
-{{!-- The Research panel was removed 2026-09-15. It was markup copied from
-     the library landing without the wiring, which lives in index.in05.js
-     and is not loaded here: all thirty-five of its controls were dead, and
-     one of them navigated to /read/? and threw away the work you were
-     reading. It carried `inert` and aria-hidden, so whoever brought it
-     across knew. Re-add it only with FRWorkResearch.mount() actually
-     called against it. --}}
+{{!-- The Research panel, restored 2026-09-17 on the condition it was removed under.
+     20897a9 pulled it because it was markup copied from the LIBRARY LANDING, whose
+     wiring lives in index.in05.js and is not loaded here: thirty-five dead controls,
+     `inert` so the close button could not be tapped, and one path that navigated to
+     /read/? and threw away the work being read.
+
+     This is the corpus site's own reader panel from read.html, which is a different
+     piece of markup with a different owner. Its wiring is read-tools.js, which this
+     page already loads and which reaches into the panel twenty-five times — including
+     `FRWorkResearch.mount($('#nbWorkAnalysis'), …)` at line 1160, the exact call that
+     commit asked for. It was never firing because the element was not here.
+
+     Four bare site links (/desk, /pins, /pins?view=research, /search) are rewritten to
+     this site's routes, so no control can navigate away from the work. --}}
+<aside class="notebook" id="notebook" aria-hidden="true" aria-label="Research" inert>
+  <div class="nb-head"><span>Research</span><button class="nb-x" id="nbClose" aria-label="Close research">×</button></div>
+  <div class="nb-tabs" role="tablist" aria-label="Research tools"><button type="button" id="nbWorkPanelTab" role="tab" aria-selected="true" aria-controls="nbWorkPanel">Work</button><button type="button" id="nbWorkSearchTab" role="tab" aria-selected="false" aria-controls="nbWorkSearch">Search</button><button type="button" id="nbPassageTab" role="tab" aria-selected="false" aria-controls="nbPassage">Passage</button><button type="button" id="nbSavedTab" role="tab" aria-selected="false" aria-controls="nbSaved">Saved <span id="nbSavedCount"></span></button><button type="button" id="nbChatsTab" role="tab" aria-selected="false" aria-controls="nbChats">Chats</button></div>
+  <div class="nb-project"><label>Save to notebook<select id="nbProjectPick" aria-label="Save to notebook"></select></label><a id="nbProjectDesk" href="/the-faith-received/desk/">Return to writing</a></div>
+  <section id="nbWorkPanel" class="nb-panel" role="tabpanel" aria-labelledby="nbWorkPanelTab"><div class="nb-work-identity"><h2 id="nbWorkTitle"></h2><p id="nbWorkAuthor"></p><div class="nb-work-primary"><button type="button" id="nbFindInWork">Search this work</button><button type="button" id="nbFindRelated">Find related works</button><button type="button" id="nbWorkAsk">Ask about this work</button><button type="button" id="nbWorkAbout">Edition details</button></div></div><div class="nb-reading-place"><div><button type="button" id="nbSaveWork" aria-pressed="false" title="Keep this work in your notebook for later reading">Save work</button><button type="button" id="nbSaveReadingPlace">Save reading place</button><button type="button" id="nbOpenSavedPlaces" hidden>Open saved places</button></div><p id="nbBookmarkStatus" role="status">Keep a fixed place in your notebook as your reading progress changes.</p></div><div id="nbWorkSources"></div><details id="nbAnalysisFold" class="nb-analysis-fold"><summary>Summaries and analysis</summary><div id="nbWorkAnalysis"></div></details></section>
+  <section id="nbWorkSearch" class="nb-panel" role="tabpanel" aria-labelledby="nbWorkSearchTab" hidden>
+    <div class="nb-find-modes" role="group" aria-label="Search scope"><button type="button" id="nbFindTextMode" aria-pressed="true">This work</button><button type="button" id="nbFindRelatedMode" aria-pressed="false">Related works</button></div><div id="nbWorkTextSearch">
+    <div class="nb-work-search-controls">
+    <form id="nbWorkSearchForm" class="nb-work-search-form" role="search" aria-label="Search this work"><label for="nbWorkSearchQuery">Search this work</label><div><input id="nbWorkSearchQuery" type="search" placeholder="Enter words or a phrase" autocomplete="off" aria-describedby="nbWorkSearchStatus"><button type="submit">Search text</button></div></form>
+    <div class="nb-work-search-tools"><button type="button" id="nbWorkSearchClear">Clear search</button><a id="nbWorkSearchLibrary" href="/the-faith-received/search/" target="_blank" rel="noopener">Search library</a></div>
+    </div>
+    <p id="nbWorkSearchStatus" class="nb-guidance" role="status">Find pages containing all the words you enter.</p><div id="nbWorkSearchResults"></div><button type="button" id="nbWorkSearchMore" class="nb-book-ask" hidden>Show more results</button>
+  </div><div id="nbRelatedSearch" hidden></div></section>
+  <section id="nbPassage" class="nb-panel" role="tabpanel" aria-labelledby="nbPassageTab" hidden>
+    <p class="nb-guidance" id="nbSelectionHelp">Select words in the book to highlight, add a note, make a quote image, or discuss the passage.</p>
+    <div id="nbSelection" hidden><p class="nb-context-label" id="nbSelectionCite"></p><blockquote id="nbSelectionText"></blockquote><div class="nb-passage-actions"><button type="button" data-reader-action="highlight">Highlight passage</button><button type="button" data-reader-action="save-research">Clip to notebook</button><button type="button" data-reader-action="desk">Use in Desk</button><button type="button" data-reader-action="note">Add note</button><button type="button" data-reader-action="image">Make quote image</button><button type="button" data-reader-action="ask">Discuss passage</button></div><fieldset class="nb-highlight-colors"><legend>Highlight color</legend><button type="button" data-reader-color="amber">Amber</button><button type="button" data-reader-color="sage">Sage</button><button type="button" data-reader-color="slate">Slate</button><button type="button" data-reader-color="">Clear highlight</button></fieldset><details class="nb-more"><summary>More passage tools</summary><div class="nb-passage-actions"><button type="button" data-reader-action="copy">Copy with citation</button><button type="button" data-reader-action="link">Copy passage link</button><button type="button" data-reader-action="translate">Write translation</button><button type="button" data-reader-action="parallels">Find parallels</button><button type="button" data-reader-action="pin">Save reference</button><button type="button" data-reader-action="bib">Copy BibTeX</button></div></details></div>
+    <figure id="nbImagePreview" class="nb-image-preview" hidden><figcaption>Quote image</figcaption><img alt="A typeset image of the selected quotation" width="1200" height="630"><a id="nbImageDownload" download>Download PNG</a></figure>
+    <button type="button" id="nbAskBook" class="nb-book-ask">Ask about this book</button><p id="nbActionStatus" role="status" class="nb-guidance"></p>
+  </section>
+  <section id="nbSaved" class="nb-panel nb-saved" role="tabpanel" aria-labelledby="nbSavedTab" hidden><p id="nbTitle" class="nb-context-label">Saved research</p><input id="nbSearch" type="search" placeholder="Search saved research" aria-label="Search saved research"><div class="nb-body" id="nbBody"></div></section>
+  <section id="nbChats" class="nb-panel" role="tabpanel" aria-labelledby="nbChatsTab" hidden><button type="button" id="nbNewChat" class="nb-book-ask">Start a conversation</button><div id="nbChatList"></div></section>
+  <details class="nb-settings"><summary>Notebook settings and exports</summary>
+  <div class="nb-account" id="nbAccount"></div>
+  <div class="nb-mytr"><label><input type="checkbox" id="nbMyTr"> Show <b>my translations</b> in place of the English where I have written one</label></div>
+  <div class="nb-mytr"><label><input type="checkbox" id="nbNoCite"> <b>Plain copy</b> — do not append the citation when I copy text</label></div>
+  <div class="nb-mytr"><label><input type="checkbox" id="nbHypo"> Enable <b>Hypothes.is</b> — public scholarly annotation layer (loads their sidebar)</label></div>
+  <div class="nb-tools"><button id="nbCopyEn" title="Copy the whole English column to the clipboard">Copy English</button><button id="nbCopyLa" title="Copy the whole Latin column to the clipboard">Copy Latin</button><button id="nbExport" title="Download your notebook as Markdown">Export notebook</button><button id="nbPages" title="Download a page range of this work as Markdown">Export pages</button><button id="nbWork" title="Download this work's full text">Export work</button></div></details>
+  <div class="nb-destinations"><a href="/the-faith-received/pins/?view=research">Personal research</a><a id="nbColl" href="/the-faith-received/pins/">Notebooks</a><a id="nbDesk" href="/the-faith-received/desk/">Open Desk</a></div>
+</aside>
 <div class="selpop" id="selpop" role="toolbar" aria-label="Selected passage tools">
   <button class="sw amber" data-hl="amber" title="Highlight this passage">Highlight</button>
   <button class="pb" id="spNote">Note</button>

@@ -2170,3 +2170,34 @@ html.fr-research-tools .selchip{display:none!important}
 .cc-search{box-sizing:border-box;width:100%;min-height:44px;margin-top:6px;padding:9px 10px;border:1px solid var(--border);background:var(--card);color:var(--fg);border-radius:4px;font:16px var(--font-body)}
 .cc-search::placeholder{color:var(--muted);opacity:1}.cc-count{font:12px var(--font-body);color:var(--muted);margin:10px 0}.cc-list .nav-node{display:block;min-height:44px;box-sizing:border-box;text-decoration:none;color:var(--fg);padding:10px 8px;border-bottom:1px solid var(--border);font-size:14px;line-height:1.45}.cc-list .nd2{padding-left:18px}.cc-list a:focus-visible{outline:2px solid var(--fg);outline-offset:-2px}
 .nl-retry{font:inherit;color:var(--fg);background:none;border:1px solid var(--border);border-radius:4px;min-height:44px;padding:8px 12px;margin:8px}.nl-q{font-size:16px!important}
+
+/* The volume list reads as a sequence. The number is the volume's own order, the
+   range the columns Migne gave the piece; nine of PL 140's forty-six carry no
+   range, and without the number the list broke into ragged groups at each one. */
+.vni{flex:0 0 1.9rem;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;font-size:.68rem;white-space:nowrap;opacity:.75}
+.vnc-none{opacity:.45}
+.vnrow--num{align-items:baseline}
+/* Folded: the volume is named and reachable, not forty-six rows deep. */
+.vncontents>summary.vnhead{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:baseline}
+.vncontents>summary.vnhead::-webkit-details-marker{display:none}
+.vncontents>summary.vnhead::after{content:"\203A";transform:rotate(90deg);transition:transform .15s ease;display:inline-block}
+.vncontents[open]>summary.vnhead::after{transform:rotate(-90deg)}
+@media (prefers-reduced-motion: reduce){.vncontents>summary.vnhead::after{transition:none}}
+
+/* ── The editorial notes, as notes ────────────────────────────────────────
+   Ported whole from the corpus site's reader (2026-09-17). The markup has been
+   rendered here since pld-reading.js started loading on this page; without these
+   rules a column's apparatus came out as one undifferentiated run, which is the
+   thing the design was built to stop. Two columns, Latin lemma against its
+   English, numbered down the margin; one column on a phone. */
+.pld-note-label{font:13px/1.55 var(--body);color:var(--muted);margin:0 0 14px;max-width:75ch}
+.pld-notes{list-style:none;margin:0;padding:0;counter-reset:pldnote}
+.pld-note{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 28px;align-items:start;padding:10px 0 12px;border-top:1px solid color-mix(in srgb,var(--border) 60%,transparent)}
+.pld-notes>.pld-note{counter-increment:pldnote;position:relative;padding-left:2.2em}
+.pld-notes>.pld-note::before{content:counter(pldnote);position:absolute;left:0;top:11px;font:600 12px/1.5 var(--body);color:var(--muted);letter-spacing:.02em}
+.pld-note p{font:16px/1.65 var(--body);margin:0;white-space:normal;overflow-wrap:anywhere;max-width:none}
+.pld-note-la{color:var(--muted)}
+.pld-note-lemma{font-style:italic;color:var(--ink,inherit)}
+.pld-note-same{grid-template-columns:minmax(0,1fr)}
+.pld-note-same .pld-note-la{color:inherit}
+@media(max-width:820px){.pld-editorial .pld-note{grid-template-columns:minmax(0,1fr);gap:4px 0}.pld-editorial .pld-note-en{padding-bottom:2px}}
