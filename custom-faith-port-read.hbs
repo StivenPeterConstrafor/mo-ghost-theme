@@ -20,6 +20,13 @@
 <link rel="stylesheet" href="{{asset "css/port/work-research.css"}}">
 <script defer src="{{asset "js/port/work-research.js"}}"></script>
 <script defer src="{{asset "js/port/reader-bookmarks.js"}}"></script>
+{{!-- The three the corpus site's reader loads and this one did not, which is why PL
+      columns, the Greek parallel lanes and the PL editorial notes all behaved
+      differently here. reader-core.js calls FRMigneNavigation for every column it
+      opens, so these must load before it, in this order. --}}
+<script src="{{asset "js/port/migne-navigation.js"}}"></script>
+<script src="{{asset "js/port/pg-parallel.js"}}"></script>
+<script src="{{asset "js/port/pld-reading.js"}}"></script>
 <script src="{{asset "js/port/reader-navigation.js"}}"></script>
 <script src="{{asset "js/port/reader-source-outline.js"}}"></script>
 <script src="{{asset "js/port/reader-contents.js"}}"></script>

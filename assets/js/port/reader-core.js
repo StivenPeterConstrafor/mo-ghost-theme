@@ -1521,8 +1521,13 @@ function readerOutlineHref(row){
   return url.href;
 }
 function locOf(n){
+  if(n==='editorial')return 'Editorial notes';
+  if(DATA?.pld_source_view?.combined&&DATA.pld_source_view.hasColumns===false)return 'Section '+n;
+  if(DATA?.pld_source_view?.notes)return DATA.pld_source_view.columnNotes?'Editorial notes, col. '+n:'Notes, section '+n;
   const corrected=window.FRReaderNavigation?.locator(DATA,n);if(corrected)return corrected;
-  if(DATA&&DATA.has_pages)return (/^P[LG]\s*\d/i.test(DATA.volume||"")?"col. ":"p. ")+n;
+  const pgPlace=window.FRPgParallel?.location(DATA,n);if(pgPlace)return pgPlace;
+  if(/^P[LG]\s*\d/i.test(DATA?.volume||""))return "col. "+n;
+  if(DATA&&DATA.has_pages)return "p. "+n;
   // born-digital: prefer the export-time deep locator (page.loc, body-mined + carried forward),
   // then the nearest TOC heading parse, then the bare section ordinal.
   if(!_pageByN){_pageByN={};(DATA&&DATA.pages||[]).forEach(p=>_pageByN[p.n]=p);}
@@ -3787,7 +3792,11 @@ function build(){
       }
       const a=el("div","fol"+(TP&&pg.n<TP?" frontmatter":""));a.dataset.page=pg.n;
       const w=(pg.en||"").replace(/[#*\[\]^]/g,"").trim().split(/\s+/).slice(0,10).join(" ");
-      a.innerHTML=`${pg.thumb?`<img src="${pg.thumb}" loading="lazy" alt="">`:""}<div><div class="fn">fol. ${pg.n}</div><div class="fp">${esc(w)}…</div></div>`;a.onclick=()=>goNav(pg.n);curBody.appendChild(a);});
+      // Migne is cited by column and has no folios, so the rail says what the
+      // pager and the margin say. locOf() already knows which word the volume
+      // takes; before today it was asked everywhere but here.
+      const face=(/^P[LG]\s*\d/i.test(DATA?.volume||"")?`col. ${pg.n}`:`fol. ${pg.n}`);
+      a.innerHTML=`${pg.thumb?`<img src="${pg.thumb}" loading="lazy" alt="">`:""}<div><div class="fn">${face}</div><div class="fp">${esc(w)}…</div></div>`;a.onclick=()=>goNav(pg.n);curBody.appendChild(a);});
   }
 }
 // PAGE DENOMINATOR IN THE SAME UNIT AS THE INPUT (owner 2026-09-04 '191 / 70'): the
@@ -4640,9 +4649,9 @@ if(fst){
         rg.max=String(pgs.length-1);
         const ci=(typeof cur!=="undefined"&&cur!=null)?pgs.findIndex(x=>+x.n===+cur):-1;   // cur is the page NUMBER
         const cur2=ci>=0?ci:0;
-        rg.value=String(cur2);nEl.textContent="p. "+(pgs[cur2]?pgs[cur2].n:"");};
+        rg.value=String(cur2);const column=/^(PG|PL)\b/.test(DATA.volume||"");rg.setAttribute("aria-label",column?"Go to column":"Go to page");nEl.textContent=(column?"col. ":"p. ")+(pgs[cur2]?pgs[cur2].n:"");};
       rg.addEventListener("input",()=>{const pgs=(typeof DATA!=="undefined"&&DATA)?DATA.pages:null;if(!pgs)return;
-        const i2=+rg.value;nEl.textContent="p. "+(pgs[i2]?pgs[i2].n:"")+" \u00b7 "+(i2+1)+"/"+pgs.length;});
+        const i2=+rg.value;nEl.textContent=(/^(PG|PL)\b/.test(DATA.volume||"")?"col. ":"p. ")+(pgs[i2]?pgs[i2].n:"")+" \u00b7 "+(i2+1)+"/"+pgs.length;});
       rg.addEventListener("change",()=>{const pgs=(typeof DATA!=="undefined"&&DATA)?DATA.pages:null;if(!pgs)return;
         const pg2=pgs[+rg.value];
         if(pg2){window.__folioLock=Date.now()+1600;if(typeof jump==="function")jump(pg2.n);
@@ -4806,13 +4815,22 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
           if(e.id==null)return `<span class="vnrow vnd${lvl} off${fm}">${body}</span>`;
           return `<a class="vnrow vnd${lvl}${cur?" on":""}${fm}" target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${e.id}${e.c!=null?`#b${e.c}-0`:""}">${body}</a>`;
         }).join("");
-      }else rows=sp.works.map(x=>{
+      }else rows=sp.works.map((x,xi)=>{
         const cur=+x.id===meId;
-        const cc=x.c?`<span class=vnc>${x.c[0]===x.c[1]?x.c[0]:x.c[0]+"&#8211;"+x.c[1]}</span>`:"";
-        return `<a class="vnrow${cur?" on":""}${_fm(x.t)?" vnfm":""}" target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${x.id}">${cc}<span class=vnt>${esc(x.t||(prefix+"-"+x.id))}</span></a>`;}).join("");
-      box.innerHTML=`<div class=vnhead><span>In this volume &#8212; ${volWord} ${volN}</span>`+
+        // The enumeration beside the columns. Migne printed 46 pieces into PL 140 in an
+        // order, and nine of them carry no column range in the catalogue, so a list
+        // showing only ranges broke into ragged groups and stopped reading as a
+        // sequence. The number is the volume's own order; the range sits beside it
+        // where the catalogue has one, and an em dash holds the place where it does not.
+        const nn=`<span class=vni>${xi+1}</span>`;
+        const cc=x.c?`<span class=vnc>${x.c[0]===x.c[1]?x.c[0]:x.c[0]+"&#8211;"+x.c[1]}</span>`:`<span class="vnc vnc-none">&#8212;</span>`;
+        return `<a class="vnrow vnrow--num${cur?" on":""}${_fm(x.t)?" vnfm":""}" target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${x.id}">${nn}${cc}<span class=vnt>${esc(x.t||(prefix+"-"+x.id))}</span></a>`;}).join("");
+      // Folded, as it is on the corpus site. Forty-six rows standing open between the
+      // reader and the outline is why the volume could only be reached by scrolling
+      // past it; a summary that names the volume puts it in front of them instead.
+      box.innerHTML=`<details class="vncontents"><summary class="vnhead">Browse ${volWord} ${volN}</summary><div class=vnhead><span>Volume navigation</span>`+
         `<span class=vnnav>${sp.prev?`<a target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${sp.prev.first}" title="${volWord} ${sp.prev.vol}">&#8249; ${volWord} ${sp.prev.vol}</a>`:""}`+
-        `${sp.next?`<a target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${sp.next.first}" title="${volWord} ${sp.next.vol}">${volWord} ${sp.next.vol} &#8250;</a>`:""}</span></div>`+rows;
+        `${sp.next?`<a target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${sp.next.first}" title="${volWord} ${sp.next.vol}">${volWord} ${sp.next.vol} &#8250;</a>`:""}</span></div><div class="vnlist">`+rows+`</div></details>`;
       nav.appendChild(box);
       // NEVER scrollIntoView here: #nav is the SHARED scroll container — centering the
       // volume row dragged the outline 8,800px away from the reader's position on every
