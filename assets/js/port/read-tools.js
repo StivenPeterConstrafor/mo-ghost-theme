@@ -2,7 +2,7 @@ async function __initReview(){
   let me={};try{me=await jget("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/me");}catch(e){}
   if(!me.owner)return;
   document.body.classList.add("review");
-  $("#sub").textContent=[DATA.author,DATA.tradition||DATA.group].filter(Boolean).concat(["owner review — double-click a page to edit it (⌘↵ save · esc cancel) · OK / Needs / Redo per page"]).join(" · ");
+  if($("#sub"))$("#sub").textContent=[DATA.author,DATA.tradition||DATA.group].filter(Boolean).concat(["owner review — double-click a page to edit it (⌘↵ save · esc cancel) · OK / Needs / Redo per page"]).join(" · ");
   let prog={};try{prog=await jget("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/progress");}catch(e){}
   const okS=new Set(prog.ok_pages||[]),ndS=new Set(prog.needs_agent_pages||[]),vwS=new Set(prog.viewed_pages||[]),agS=new Set(prog.agent_pages||[]);
   const statusOf=n=>okS.has(n)?"ok":ndS.has(n)?"needs":vwS.has(n)?"viewed":"new";
@@ -74,7 +74,7 @@ async function __initReview(){
     };
   });
   function renderSum(){const un=DATA.pages.filter(g=>statusOf(g.n)==="new").length;
-    $("#rvsum").innerHTML=`<span class="pill"><span class="dot" style="background:#2f7d52"></span><b>${okS.size}</b> ok</span>`+
+    if($("#rvsum"))$("#rvsum").innerHTML=`<span class="pill"><span class="dot" style="background:#2f7d52"></span><b>${okS.size}</b> ok</span>`+
     `<span class="pill"><span class="dot" style="background:#9a2420"></span><b>${ndS.size}</b> needs</span>`+
     `<span class="pill"><span class="dot" style="background:var(--accent)"></span><b>${vwS.size}</b> viewed</span>`+
     `<span class="pill"><span class="dot" style="background:var(--accent-soft)"></span><b>${agS.size}</b> agent-redone</span>`+
@@ -275,7 +275,7 @@ function _findBar(){
         if(input.value.trim()!==FIND.terms.join(" ")){findSet(input.value.trim()?[input.value.trim()]:[]);findScrollCur();}else findStep(e.shiftKey?-1:1);
       }else if(e.key==="Escape"){e.preventDefault();e.stopPropagation();findClear();}
     });
-    $("#findPrev").onclick=()=>findStep(-1);$("#findNext").onclick=()=>findStep(1);$("#findX").onclick=findClear;
+    if($("#findPrev"))$("#findPrev").onclick=()=>findStep(-1);$("#findNext").onclick=()=>findStep(1);$("#findX").onclick=findClear;
     if($('#findWholeWork'))$('#findWholeWork').onclick=findWholeWork;
     document.addEventListener("keydown",e=>{
       if(!FIND.open||e.defaultPrevented)return;
@@ -288,8 +288,8 @@ function _findBar(){
   b.classList.toggle("on",FIND.open);b.hidden=!FIND.open;
   if(!FIND.open)return;
   const input=$("#findInput");if(document.activeElement!==input)input.value=FIND.terms.join(" ");
-  $("#findCount").textContent=!FIND.terms.length?"Find a word or phrase":FIND.marks.length?((FIND.i+1)+" of "+FIND.marks.length):"No matches";
-  $("#findPrev").disabled=$("#findNext").disabled=!FIND.marks.length;
+  if($("#findCount"))$("#findCount").textContent=!FIND.terms.length?"Find a word or phrase":FIND.marks.length?((FIND.i+1)+" of "+FIND.marks.length):"No matches";
+  if($("#findPrev"))$("#findPrev").disabled=$("#findNext").disabled=!FIND.marks.length;
 }
 
 function __initSearch(){
@@ -354,9 +354,9 @@ function __initSearch(){
         :"Ask a question of the corpus…";};
     const inp=$("#rsaInput"),send=()=>{const v=inp.value.trim();if(v.length>1){inp.value="";
       if(window.__rsResearchMode)runResearch(v);else runAsk(v);}};
-    $("#rsaSend").onclick=send;
+    if($("#rsaSend"))$("#rsaSend").onclick=send;
     inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();send();}});
-    $("#rsaNew").onclick=()=>{ASK=[];saveAsk();paintAsk();const a=$("#rsaInput");if(a)a.focus();};
+    if($("#rsaNew"))$("#rsaNew").onclick=()=>{ASK=[];saveAsk();paintAsk();const a=$("#rsaInput");if(a)a.focus();};
     if(window.__frScopePaint)window.__frScopePaint();
     paintAsk();}
   function paintAsk(){const t=$("#rsathread");if(!t)return;
@@ -389,7 +389,7 @@ function __initSearch(){
     try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
     setTimeout(()=>{try{window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;}catch(e){}},60);};
   ov.addEventListener("click",e=>{if(e.target===ov)close();});
-  $("#rsX").onclick=close;
+  if($("#rsX"))$("#rsX").onclick=close;
   document.addEventListener("keydown",e=>{
     if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();open();}
     else if(e.key==="/"&&!/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)&&!document.activeElement.isContentEditable){e.preventDefault();open();}
@@ -418,12 +418,12 @@ function __initSearch(){
     q.style.display=m==="ask"?"none":"";
     {const sc=$("#rsScope");if(sc)sc.style.display=m==="all"?"flex":"none";}
     if(m==="ask"){askShell();const ai=$("#rsaInput");if(ai)ai.focus();}else{body.classList.remove("askmode");run();q.focus();}};
-  $("#rsThis").onclick=()=>setMode("this");$("#rsAll").onclick=()=>setMode("all");$("#rsAsk").onclick=()=>setMode("ask");
+  if($("#rsThis"))$("#rsThis").onclick=()=>setMode("this");$("#rsAll").onclick=()=>setMode("all");$("#rsAsk").onclick=()=>setMode("ask");
   // Search runs on Enter or ⌕ — never per keystroke (a half-typed "d" used to fan out
   // pagefind + vector calls on every letter). Emptying the box resets the hint.
   q.addEventListener("input",()=>{if(mode==="ask")return;if(!q.value.trim()){clearTimeout(tmr);run();}});
   q.addEventListener("keydown",e=>{if(e.key!=="Enter"||mode==="ask")return;run();});
-  $("#rsGo").onclick=()=>{if(mode!=="ask")run();};
+  if($("#rsGo"))$("#rsGo").onclick=()=>{if(mode!=="ask")run();};
   const idx=()=>{if(!wi)wi=fetch(BLOB+"/v1/works-index.json"+(window.__FR_VER?("?v="+window.__FR_VER):"")).then(r=>r.json()).then(d=>{const m={};(d.works||[]).forEach(w=>m[w.slug]=w);return m;}).catch(()=>({}));return wi;};
   const hlt=(s,terms)=>{let h=esc(s);terms.forEach(t=>{if(t.length>1){h=h.replace(new RegExp("("+t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi"),"<mark>$1</mark>");}});return h;};
   // render the Ask answer's markdown (headings/emphasis/paragraphs) + turn [slug/pNNN] citations into chips
@@ -1002,24 +1002,24 @@ function __initReaderTools(){
   document.addEventListener("contextmenu",e=>{if(captureSelection()){e.preventDefault();showSelPop();}});
   document.addEventListener("mousedown",e=>{if(!pop.contains(e.target))hidePop();});
   pop.addEventListener("pointerdown",e=>{if(e.pointerType==='mouse'&&e.target.closest('button'))e.preventDefault();});
-  $("#spMore").onclick=()=>{hidePop();openNotebook('passage');};
+  if($("#spMore"))$("#spMore").onclick=()=>{hidePop();openNotebook('passage');};
   pop.querySelectorAll(".sw").forEach(sw=>sw.onclick=e=>{e.preventDefault();if(popRow)setHl(popRow,sw.dataset.hl);hidePop();getSelection().removeAllRanges();});
-  $("#spNote").onclick=()=>{if(popRow)editNote(popRow);hidePop();getSelection().removeAllRanges();};
-  $("#spPar").onclick=()=>{const t2=passageText();hidePop();getSelection().removeAllRanges();
+  if($("#spNote"))$("#spNote").onclick=()=>{if(popRow)editNote(popRow);hidePop();getSelection().removeAllRanges();};
+  if($("#spPar"))$("#spPar").onclick=()=>{const t2=passageText();hidePop();getSelection().removeAllRanges();
     if(t2.length>=10&&window.__frParallels)window.__frParallels(t2);};
-  $("#spAsk").onclick=()=>askPassage();
-  $("#spPin").onclick=function(){const m=popRow&&popRow.id.match(/^b(\d+)-/);hidePop();getSelection().removeAllRanges();
+  if($("#spAsk"))$("#spAsk").onclick=()=>askPassage();
+  if($("#spPin"))$("#spPin").onclick=function(){const m=popRow&&popRow.id.match(/^b(\d+)-/);hidePop();getSelection().removeAllRanges();
     if(m&&window.__frPinToggle){const on=window.__frPinToggle(+m[1]);cpFlash(this,on?"Pinned \u2605":"Unpinned");}};
-  $("#spTr").onclick=()=>{if(popRow)editTr(popRow);hidePop();getSelection().removeAllRanges();};
+  if($("#spTr"))$("#spTr").onclick=()=>{if(popRow)editTr(popRow);hidePop();getSelection().removeAllRanges();};
   function cpFlash(btn,txt){const o=btn.textContent;btn.textContent=txt||"Copied ✓";setTimeout(()=>{btn.textContent=o;},1100);}
   function rowAnchor(r){return location.origin+location.pathname+location.search+"#"+r.id;}
   const cw=t=>navigator.clipboard&&navigator.clipboard.writeText(t);
-  $("#spCopy").onclick=function(){const t=passageText();const cite=popRow?rowCite(popRow):WORK;
+  if($("#spCopy"))$("#spCopy").onclick=function(){const t=passageText();const cite=popRow?rowCite(popRow):WORK;
     cw(t+"\n\n— "+cite+(popRow?"\n"+rowAnchor(popRow):""));cpFlash(this);};
   // deep-link to this exact passage
-  $("#spLink").onclick=function(){if(popRow)cw(rowAnchor(popRow));cpFlash(this,"Link ✓");};
+  if($("#spLink"))$("#spLink").onclick=function(){if(popRow)cw(rowAnchor(popRow));cpFlash(this,"Link ✓");};
   // citation: stable locus + permalink (Chicago-ish; scholars can paste & adapt)
-  $("#spCite").onclick=function(){const cite=popRow?rowCite(popRow):WORK,url=popRow?rowAnchor(popRow):location.href;
+  if($("#spCite"))$("#spCite").onclick=function(){const cite=popRow?rowCite(popRow):WORK,url=popRow?rowAnchor(popRow):location.href;
     const loc=popRow&&WORK_SLUG?(()=>{const m=popRow.id.match(/^b(\d+)-(\d+)$/);return m?` [${WORK_SLUG}/p${m[1]}/b${m[2]}]`:"";})():"";
     cw(cite+loc+". The Faith Received. "+url+".");cpFlash(this,"Cited ✓");};
   // BibTeX export (locus + permalink)
@@ -1068,8 +1068,8 @@ function __initReaderTools(){
   function showQuoteImage(image,context){if(context){passage={...context};paintPassage();}if(quoteImageURL)URL.revokeObjectURL(quoteImageURL);quoteImageURL=image.url;const preview=$('#nbImagePreview');preview.dataset.quote=passage?.text||'';preview.querySelector('img').src=image.url;preview.hidden=false;$('#nbImageDownload').href=image.url;$('#nbImageDownload').download=image.name;hidePop();getSelection()?.removeAllRanges();openNotebook('passage').then(()=>preview.scrollIntoView({block:'nearest'}));status('Quote image ready. Its quotation and citation remain in Saved research.');}
   function paintPassage(){
     const preview=$('#nbImagePreview');if(preview.dataset.quote&&preview.dataset.quote!==passage?.text){preview.hidden=true;if(quoteImageURL)URL.revokeObjectURL(quoteImageURL);quoteImageURL='';delete preview.dataset.quote;}
-    $("#nbSelection").hidden=!passage;$("#nbSelectionHelp").hidden=!!passage;
-    $("#nbSelectionText").textContent=passage?.text||'';$("#nbSelectionCite").textContent=passage?.cite||'';
+    if($("#nbSelection"))$("#nbSelection").hidden=!passage;$("#nbSelectionHelp").hidden=!!passage;
+    if($("#nbSelectionText"))$("#nbSelectionText").textContent=passage?.text||'';$("#nbSelectionCite").textContent=passage?.cite||'';
   }
   function activeNotebookId(){return $('#nbProjectPick')?.value||lsGet('fr_pincol')||'default';}
   function populateNotebookContext(){if(!window.FRResearchNotebook||!$('#nbProjectPick'))return;try{const state=FRResearchNotebook.read(),pick=$('#nbProjectPick');pick.innerHTML=state.collections.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');pick.value=state.activeId;let context=lj('fr_desk_context_v1');$('#nbProjectDesk').textContent=context.title?'Return to '+context.title:'Open writing desk';$('#nbProjectDesk').href='/the-faith-received/desk/'+(context.docId?'?doc='+encodeURIComponent(context.docId):'');}catch(e){status(e.message);}}
@@ -1183,21 +1183,21 @@ function __initReaderTools(){
   }
   function renderReaderSearch(){
     const host=$('#nbWorkSearchResults');host.innerHTML=readerSearchHits.slice(0,readerSearchShown).map((hit,i)=>'<button type="button" class="nb-work-search-hit" data-reader-search-result="'+i+'"'+(readerSearchSelected===hit.page?' aria-current="location"':'')+'><span>'+esc(frReaderSearchResultLabel(hit.page,locOf(hit.page))+(hit.sourceRegion==='contents'?' · Contents':hit.sourceRegion==='frontmatter'?' · Front matter':'')+(hit.lane?' · '+(hit.lane==='en'?'English':window.__SRCNAME||'Source'):'')+(hit.kind==='note'?' · '+(hit.margin?'Margin note':'Footnote'):''))+'</span><span>'+frReaderSearchMarkup(frReaderSearchSnippet(hit.text,readerSearchTerms),readerSearchTerms)+'</span></button>').join('');
-    $('#nbWorkSearchMore').hidden=readerSearchShown>=readerSearchHits.length;
+    if($('#nbWorkSearchMore'))$('#nbWorkSearchMore').hidden=readerSearchShown>=readerSearchHits.length;
   }
   async function runReaderSearch(){
     const query=$('#nbWorkSearchQuery').value.trim(),sequence=++readerSearchSequence;
-    $('#nbWorkSearchLibrary').href='/the-faith-received/search/'+(query?'?q='+encodeURIComponent(query):'');
+    if($('#nbWorkSearchLibrary'))$('#nbWorkSearchLibrary').href='/the-faith-received/search/'+(query?'?q='+encodeURIComponent(query):'');
     if(!query){readerSearchQuery='';readerSearchHits=[];readerSearchTerms=[];renderReaderSearch();$('#nbWorkSearchStatus').textContent='Find pages containing all the words you enter.';findSet([],{open:false});return;}
-    $('#nbWorkSearchStatus').textContent='Indexing this work’s text…';$('#nbWorkSearchStatus').setAttribute('aria-busy','true');
+    if($('#nbWorkSearchStatus'))$('#nbWorkSearchStatus').textContent='Indexing this work’s text…';$('#nbWorkSearchStatus').setAttribute('aria-busy','true');
     try{
       const index=await ensureReaderSearchIndex();if(sequence!==readerSearchSequence)return;
       const result=frSearchReaderIndex(index,query);readerSearchQuery=query;readerSearchTerms=result.terms;readerSearchHits=result.hits;readerSearchShown=50;readerSearchSelected='';renderReaderSearch();
-      $('#nbWorkSearchStatus').textContent=readerSearchHits.length+' matching '+(readerSearchHits.length===1?'page':'pages')+' for “'+query+'”. '+readerSearchCoverage(index);
+      if($('#nbWorkSearchStatus'))$('#nbWorkSearchStatus').textContent=readerSearchHits.length+' matching '+(readerSearchHits.length===1?'page':'pages')+' for “'+query+'”. '+readerSearchCoverage(index);
     }catch(_){if(sequence===readerSearchSequence)$('#nbWorkSearchStatus').textContent='The text could not be indexed. Search again to retry, or search the library.';}
     finally{if(sequence===readerSearchSequence)$('#nbWorkSearchStatus').removeAttribute('aria-busy');}
   }
-  $('#nbWorkSearchForm').onsubmit=e=>{e.preventDefault();runReaderSearch();};
+  if($('#nbWorkSearchForm'))$('#nbWorkSearchForm').onsubmit=e=>{e.preventDefault();runReaderSearch();};
   if($('#nbWorkSearchQuery'))$('#nbWorkSearchQuery').oninput=()=>{readerSearchSequence++;$('#nbWorkSearchStatus').removeAttribute('aria-busy');const query=$('#nbWorkSearchQuery').value.trim();$('#nbWorkSearchLibrary').href='/the-faith-received/search/'+(query?'?q='+encodeURIComponent(query):'');if(!query)runReaderSearch();else if(query!==readerSearchQuery)$('#nbWorkSearchStatus').textContent=readerSearchQuery?'Results for “'+readerSearchQuery+'” are retained. Select Search text to run the new query.':'Select Search text to search this work.';};
   if($('#nbWorkSearchMore'))$('#nbWorkSearchMore').onclick=()=>{readerSearchShown+=50;renderReaderSearch();};
   if($('#nbWorkSearchClear'))$('#nbWorkSearchClear').onclick=()=>{$('#nbWorkSearchQuery').value='';runReaderSearch();$('#nbWorkSearchQuery').focus({preventScroll:true});};
@@ -1276,7 +1276,7 @@ function __initReaderTools(){
     const hl=lj("fr_hl"),notes=lj("fr_notes"),tr=lj("fr_tr"),here=key=>key.indexOf(WSID+"|")===0;
     const ni=Object.keys(notes).filter(here),ti=Object.keys(tr).filter(here),hi=Object.keys(hl).filter(here);
     const saved=savedCollections().flatMap(c=>(c.items||[]).filter(i=>((i.site||'fr')==='fr'&&i.slug===WORK_SLUG)||i.askSources?.some(s=>(s.slug||s.w)===WORK_SLUG)).map(i=>({...i,collection:c.name})));
-    $('#nbSavedCount').textContent=ni.length+ti.length+hi.length+saved.length||'';$('#nbTitle').textContent=(ni.length+ti.length+hi.length+saved.length)+' saved items from this book';
+    if($('#nbSavedCount'))$('#nbSavedCount').textContent=ni.length+ti.length+hi.length+saved.length||'';$('#nbTitle').textContent=(ni.length+ti.length+hi.length+saved.length)+' saved items from this book';
     if(!ni.length&&!ti.length&&!hi.length&&!saved.length){body.insertAdjacentHTML("beforeend",'<div class="nb-empty">Nothing saved from this book yet. Select text to highlight it, add a note, or make a quote image. Your work will collect here with its source.</div>');return;}
     const ord=(a,b)=>{const ea=nbEl(a),eb=nbEl(b);return ea&&eb?(ea.compareDocumentPosition(eb)&Node.DOCUMENT_POSITION_FOLLOWING?-1:1):0;};
     let section=body;const sec=(t,n)=>{section=el("details","nb-saved-group");section.dataset.group=t;section.open=opened.has(t)?opened.get(t):n<=3;const h=el("summary");h.textContent=t+" · "+n;section.appendChild(h);body.appendChild(section);};
@@ -1335,7 +1335,7 @@ function __initReaderTools(){
      b.onclick=()=>{const t=col(side);if(t){cw(t);b.textContent="✓ copied";setTimeout(()=>b.textContent=lbl,1200);}};};
    wire("nbCopyEn","en","⧉ English");wire("nbCopyLa","la","⧉ Latin");
    if(DATA.en_only){const l=$("#nbCopyLa");if(l)l.style.display="none";}}
-  $("#nbClose").onclick=closeNotebook;$("#nbScrim").onclick=closeNotebook;
+  if($("#nbClose"))$("#nbClose").onclick=closeNotebook;$("#nbScrim").onclick=closeNotebook;
   addEventListener("keydown",e=>{if(e.key==="Escape"){closeNotebook();
     const app=document.querySelector(".app");   // Contents sheet = .app without 'nosb' (Opus audit P0: no exit)
     if(app&&!app.classList.contains("nosb"))app.classList.add("nosb");}});
