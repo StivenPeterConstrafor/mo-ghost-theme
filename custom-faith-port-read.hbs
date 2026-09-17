@@ -136,6 +136,20 @@
   <button class="pb" id="spPin" title="Pin this page to your active collection">★ Pin</button>
   </div>
 </div>
+{{!-- The two port scripts that are NOT loaded by a tag: reader-core.js
+     injects read-tools.js, and ask-workspace.js imports ask-jobs.js.
+     Both built their own URL as ...?v=__FR_VER, one constant for every
+     file, while Ghost hashes each asset separately. So the URL for
+     read-tools.js never changed when read-tools.js did, and with
+     max-age=31536000 the CDN kept handing out the old object: a fix
+     verified present on the server was still absent in the browser.
+     Passing the real {{asset}} URLs through data attributes gives each
+     file its own hash. A data attribute rather than a global because
+     setting a global here would need inline script, which the CSP
+     forbids. --}}
+<div id="frPortAssets" hidden
+     data-read-tools="{{asset "js/port/read-tools.js"}}"
+     data-ask-jobs="{{asset "js/port/ask-jobs.js"}}"></div>
 <script src="{{asset "js/port/reader-core.js"}}"></script>
 {{!-- The reader's Tools popover writes to OUR stores: the mo-kit bookmark
      All Works draws its row stars from, and the notebook the desk reads. --}}
