@@ -180,12 +180,62 @@
   // Verse numbers arrive as <sup>N</sup>. Each becomes a link to the
   // Scripture Index for this book and chapter, so a verse is one click
   // from everything in the library that cites it.
-  function linkVerses(html, book, chapterNum) {
-    const href = `${SCRIPTURE_PAGE}?book=${encodeURIComponent(book.name)}&chapter=${chapterNum}`;
-    return String(html).replace(/<sup>(\d+)<\/sup>/g, (whole, n) =>
-      `<a class="bible-verse-ref" href="${href}#v${n}"` +
-      ` title="Where the tradition cites ${escapeHtml(book.name)} ${chapterNum}"` +
-      `><sup>${n}</sup></a>`);
+  /* Verses become addressable things rather than loose text.
+   *
+   * The verse number used to be a bare link to the Scripture Index, one
+   * destination and nothing else. A verse is the unit a reader actually
+   * wants to act on -- to ask about it, to search the library for it, to
+   * quote it -- so each one is wrapped in an element that the tools below
+   * can anchor to, and the old index link becomes one entry among them.
+   *
+   * Done in the DOM rather than by rewriting the HTML string, because a
+   * verse does not respect the markup: it can begin mid-paragraph and run
+   * past a </p> into the next one, and a regex that wraps from one <sup>
+   * to the next would produce crossed tags. Walking blocks and carrying
+   * the open verse number across them yields one span per block per
+   * verse, all sharing data-v -- correct, and it keeps the prose flowing
+   * instead of breaking the chapter into one line per verse.
+   */
+  const isMarker = (n) =>
+    n.nodeType === 1 && n.tagName === "SUP" && /^\d+$/.test((n.textContent || "").trim());
+
+  function markVerses(root) {
+    const blocks = root.querySelectorAll("p").length
+      ? Array.prototype.slice.call(root.querySelectorAll("p"))
+      : [root];
+    let carry = 0;
+    const idSeen = new Set();
+
+    blocks.forEach((block) => {
+      const nodes = Array.prototype.slice.call(block.childNodes);
+      if (!nodes.length) return;
+      nodes.forEach((n) => block.removeChild(n));
+
+      let span = null;
+      const open = (v) => {
+        span = document.createElement("span");
+        span.className = "bible-verse";
+        span.dataset.v = String(v);
+        span.setAttribute("tabindex", "0");
+        span.setAttribute("role", "button");
+        // Only the first block of a verse answers to #v12.
+        if (!idSeen.has(v)) { span.id = `v${v}`; idSeen.add(v); }
+        block.appendChild(span);
+      };
+
+      nodes.forEach((node) => {
+        if (isMarker(node)) {
+          carry = parseInt((node.textContent || "").trim(), 10);
+          open(carry);
+        } else if (!span) {
+          // Text before any marker in this block continues the verse the
+          // previous block left open. With nothing open (a heading), it
+          // stays where it is.
+          if (carry) open(carry); else { block.appendChild(node); return; }
+        }
+        span.appendChild(node);
+      });
+    });
   }
 
   function loadChapter(translation, bookId, chapterNum) {
@@ -214,7 +264,10 @@
             `<p class="bible-chapter-eyebrow">${escapeHtml(book.name)}</p>` +
             `<h2 class="bible-chapter-heading"><em>Chapter ${chapterNum}</em></h2>` +
           `</header>` +
-          `<div class="bible-chapter-content article-content">${linkVerses(content, book, chapterNum)}</div>`;
+          `<div class="bible-chapter-content article-content">${content}</div>`;
+        const $content = $body.querySelector(".bible-chapter-content");
+        if ($content) markVerses($content);
+        closeVersePop();
         $body.classList.add("is-loaded");
         setStatus("");
 
@@ -232,6 +285,7 @@
         setHash(book.id, chapterNum);
         renderAttribution(translation);
         renderCrossRefs(book.name, chapterNum);
+        syncChapterTools();
       })
       .catch((err) => {
         console.error("mo-bible chapter", err);
@@ -341,6 +395,167 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
+  }
+
+  /* ── Ask and Search, from the verse ────────────────────────────
+   *
+   * Both HAND OFF rather than answer here, and that is deliberate.
+   * /v1/ask and /v1/vsearch are member-gated and metered on the server,
+   * and /bible/ is a public page. Re-implementing either here would mean
+   * a second copy of the gate, the rate limit and the sign-in prompt on
+   * the one surface most likely to be someone's first visit -- and the
+   * gate that matters is the server's, so the copy would only ever be a
+   * worse version of the message the reader already gets.
+   *
+   * So the verse carries its question to the surface that owns it: Ask
+   * reads ?ask=, the search page reads ?q=. Each already knows how to
+   * ask an anonymous reader to sign in, and the question survives it.
+   *
+   * Both are full-viewport once open, so opening them in place here
+   * would cover this page anyway. Navigating costs the reader nothing
+   * and costs this page five scripts it would otherwise carry on every
+   * load, for a panel most visits never open.
+   */
+  const ASK_PAGE = "/the-faith-received/ask/";
+  const SEARCH_PAGE = "/the-faith-received/search/";
+
+  let $pop = null;
+
+  function closeVersePop() {
+    if ($pop) { $pop.remove(); $pop = null; }
+    const was = $body.querySelector(".bible-verse.is-active");
+    if (was) was.classList.remove("is-active");
+  }
+
+  function verseText(n) {
+    // A verse can be several spans; read them in order, and drop the
+    // verse number itself so the quote starts at the first word.
+    const parts = Array.prototype.slice.call(
+      $body.querySelectorAll(`.bible-verse[data-v="${String(n).replace(/"/g, "")}"]`),
+    ).map((el) => {
+      const copy = el.cloneNode(true);
+      Array.prototype.slice.call(copy.querySelectorAll("sup")).forEach((s) => s.remove());
+      return (copy.textContent || "").trim();
+    });
+    return parts.join(" ").replace(/\s+/g, " ").trim();
+  }
+
+  function link(cls, href, label, hint) {
+    const a = document.createElement("a");
+    a.className = cls;
+    // Same-origin paths built here from a fixed prefix and an encoded
+    // query. Anchors rather than a scripted redirect, so the reader can
+    // see the destination and open it in a new tab.
+    a.setAttribute("href", href);
+    a.textContent = label;
+    if (hint) a.title = hint;
+    return a;
+  }
+
+  function openVersePop(span) {
+    const n = span.dataset.v;
+    if (!n) return;
+    const active = $pop && $pop.dataset.v === n;
+    closeVersePop();
+    if (active) return; // second click on the same verse closes
+
+    const book = current.bookName || "";
+    const ref = `${book} ${current.chapterNum}:${n}`;
+    const text = verseText(n);
+    // Enough of the verse to make the question specific, short enough to
+    // stay inside a URL that has to survive a sign-in round trip.
+    const quote = text.length > 240 ? `${text.slice(0, 240).replace(/\s+\S*$/, "")}…` : text;
+
+    $pop = document.createElement("div");
+    $pop.className = "bible-pop";
+    $pop.dataset.v = n;
+    $pop.setAttribute("role", "dialog");
+    $pop.setAttribute("aria-label", `Tools for ${ref}`);
+
+    const head = document.createElement("p");
+    head.className = "bible-pop-ref";
+    head.textContent = ref;
+    $pop.appendChild(head);
+
+    const row = document.createElement("div");
+    row.className = "bible-pop-row";
+    row.appendChild(link(
+      "bible-pop-btn bible-pop-btn--primary",
+      `${ASK_PAGE}?ask=${encodeURIComponent(
+        `What does the historic Christian tradition say about ${ref} — “${quote}”?`)}`,
+      "Ask",
+      `Ask the library about ${ref}`,
+    ));
+    row.appendChild(link(
+      "bible-pop-btn",
+      `${SEARCH_PAGE}?q=${encodeURIComponent(quote.slice(0, 120))}`,
+      "Search",
+      `Search the library for the words of ${ref}`,
+    ));
+    row.appendChild(link(
+      "bible-pop-btn",
+      `${SCRIPTURE_PAGE}?book=${encodeURIComponent(book)}&chapter=${current.chapterNum}#v${n}`,
+      "Cited by",
+      `Where the tradition cites ${book} ${current.chapterNum}`,
+    ));
+
+    const copy = document.createElement("button");
+    copy.type = "button";
+    copy.className = "bible-pop-btn";
+    copy.textContent = "Copy";
+    copy.title = `Copy ${ref}`;
+    copy.addEventListener("click", () => {
+      const payload = `“${text}” — ${ref} (${current.translation || ""})`.replace(/ \(\)$/, "");
+      const done = () => { copy.textContent = "Copied"; window.setTimeout(() => { copy.textContent = "Copy"; }, 1400); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(payload).then(done, () => { copy.textContent = "Press ⌘C"; });
+      } else { copy.textContent = "Press ⌘C"; }
+    });
+    row.appendChild(copy);
+    $pop.appendChild(row);
+
+    span.classList.add("is-active");
+    span.appendChild($pop);
+  }
+
+  // Delegated, because the chapter is replaced on every navigation and a
+  // handler bound to a verse would die with it.
+  $body.addEventListener("click", (e) => {
+    if (e.target.closest && e.target.closest(".bible-pop")) return;
+    const span = e.target.closest && e.target.closest(".bible-verse");
+    if (span) { e.preventDefault(); openVersePop(span); return; }
+    closeVersePop();
+  });
+
+  $body.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const span = e.target.closest && e.target.closest(".bible-verse");
+    if (!span || e.target.closest(".bible-pop")) return;
+    e.preventDefault();
+    openVersePop(span);
+  });
+
+  document.addEventListener("click", (e) => {
+    if ($pop && !e.target.closest(".bible-chapter-content")) closeVersePop();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeVersePop(); });
+
+  // Chapter-level, for the reader who wants the whole passage rather
+  // than one verse. Same hand-off, same two surfaces.
+  const $askChapter = document.querySelector("[data-bible-ask]");
+  const $searchChapter = document.querySelector("[data-bible-search]");
+  function syncChapterTools() {
+    const ref = `${current.bookName || ""} ${current.chapterNum || ""}`.trim();
+    if (!ref) return;
+    if ($askChapter) {
+      $askChapter.setAttribute("href", `${ASK_PAGE}?ask=${encodeURIComponent(
+        `What does the historic Christian tradition say about ${ref}?`)}`);
+      $askChapter.title = `Ask the library about ${ref}`;
+    }
+    if ($searchChapter) {
+      $searchChapter.setAttribute("href", `${SEARCH_PAGE}?q=${encodeURIComponent(ref)}`);
+      $searchChapter.title = `Search the library for ${ref}`;
+    }
   }
 
   // ── Wire up ────────────────────────────────────────────────────

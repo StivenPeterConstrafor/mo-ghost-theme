@@ -56,6 +56,15 @@
           <option>&mdash;</option>
         </select>
       </label>
+      {{!-- Ask and Search for the whole chapter. Real anchors with a
+           real href, filled in by mo-bible.js as the chapter changes:
+           both destinations own the member gate, so a reader who is not
+           signed in gets that page's own prompt and keeps the question.
+           Per-verse versions of these two appear on click. --}}
+      <div class="bible-controls-tools">
+        <a class="bible-tool-btn" data-bible-ask href="/the-faith-received/ask/">Ask</a>
+        <a class="bible-tool-btn" data-bible-search href="/the-faith-received/search/">Search</a>
+      </div>
       <div class="bible-controls-nav">
         <button type="button" class="bible-nav-btn" data-bible-prev aria-label="Previous chapter" disabled>
           <span aria-hidden="true">&larr;</span>

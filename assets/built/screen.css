@@ -15641,6 +15641,107 @@ details.bookstore-section[open] > .bookstore-section-header::after {
 .bible-chapter-content .wj { color: var(--color-secondary); }
 .bible-chapter-content .nd { font-variant: small-caps; letter-spacing: 0.04em; }
 
+/* ── Verse tools ────────────────────────────────────────────────
+   Each verse is its own element so it can be asked about, searched for
+   and quoted. The resting state has to stay invisible: a chapter of
+   boxed, tinted or underlined verses reads as a UI, not as Scripture.
+   So there is no resting treatment at all -- only hover, focus and the
+   open state, and even those are a wash of the page's own orange. */
+.bible-verse { cursor: pointer; border-radius: 2px; transition: background 0.12s; }
+.bible-verse:hover { background: rgba(238,125,81,0.09); }
+.bible-verse:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.bible-verse.is-active { background: rgba(238,125,81,0.14); }
+
+/* The popover hangs off the verse, which is inline and can wrap across
+   lines, so it is positioned relative to the chapter column instead:
+   `position: absolute` inside a `relative` .bible-verse would anchor to
+   whichever line fragment came first. Centred and below, where it does
+   not cover the verse a reader is looking at. */
+.bible-chapter-content { position: relative; }
+.bible-pop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 8px auto 0;
+  width: max-content;
+  max-width: min(420px, 92vw);
+  z-index: 5;
+  display: block;
+  background: var(--color-white, #fff);
+  border: 1px solid var(--color-rule, #e5ded5);
+  box-shadow: 0 10px 34px rgba(45,41,39,0.16);
+  padding: 14px 16px 13px;
+  cursor: auto;
+  text-align: left;
+}
+.bible-pop-ref {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+.bible-pop-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.bible-pop-btn {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--color-dark);
+  background: transparent;
+  border: 1px solid var(--color-rule, #e5ded5);
+  padding: 8px 13px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.14s, border-color 0.14s, color 0.14s;
+}
+.bible-pop-btn:hover,
+.bible-pop-btn:focus-visible {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  text-decoration: none;
+}
+/* Ask is the one that costs something to run and the one worth
+   reaching for, so it carries the colour at rest. */
+.bible-pop-btn--primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+.bible-pop-btn--primary:hover,
+.bible-pop-btn--primary:focus-visible { background: var(--color-dark); border-color: var(--color-dark); }
+
+/* Chapter-level Ask / Search, in the controls rail beside the arrows. */
+.bible-controls-tools { display: inline-flex; gap: 8px; align-self: stretch; align-items: flex-end; }
+.bible-tool-btn {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--color-dark);
+  border: 1px solid var(--color-rule, #e5ded5);
+  padding: 9px 14px;
+  text-decoration: none;
+  transition: background 0.14s, border-color 0.14s, color 0.14s;
+}
+.bible-tool-btn:hover,
+.bible-tool-btn:focus-visible {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  text-decoration: none;
+}
+@media (max-width: 640px) {
+  .bible-controls-tools { order: 3; }
+  .bible-pop { max-width: 94vw; }
+}
+
 /* ── Cross-references panel ─────────────────────────────────── */
 .bible-cross-refs {
   max-width: 720px;

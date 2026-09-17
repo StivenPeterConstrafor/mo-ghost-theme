@@ -6949,6 +6949,34 @@ mark.faith-find-hit.is-current {
 }
 @media (max-width: 640px) { .bhero--tool { padding: 56px 0 52px; } }
 
+/* "Read the Bible", under the Scripture Index subtitle. On the dark
+   hero, so it is outlined in white rather than filled with the orange:
+   a solid primary button here would outweigh the headline it sits
+   under, and this is an offer to leave for a sister page, not the
+   page's own call to action. */
+.bhero-actions { margin: 26px 0 0; }
+.bhero-btn {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #fff;
+  padding: 13px 26px;
+  border: 1px solid #ffffff5c;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.bhero-btn:hover,
+.bhero-btn:focus-visible {
+  background: var(--color-primary, #ee7d51);
+  border-color: var(--color-primary, #ee7d51);
+  color: #fff;
+  text-decoration: none;
+}
+
+
 /* ══ Type scale ═══════════════════════════════════════════════════
    Standardised 2026-08-20. Components had been choosing their own
    sizes, so a reader's section title ran to 40px beside a 15px
