@@ -144,7 +144,20 @@
       lead: "Patrologia Orientalis is cited by tome and page, as PO 2, 421. Choose a tome to see what it holds.",
     },
   };
-  const shelf = collectionId === "all" ? null : SHELVES[collectionId] || null;
+  // Which shelf the reader is standing on. In a room it is the room's own
+  // collection. On the all-works page it is whichever Migne series the
+  // Denomination filter names — because that filter cuts the library down
+  // to exactly one series, and a series is cited by volume. Arriving at
+  // ?tradition=The+Fathers&denomination=Latin+Fathers and being offered
+  // only an A-Z was the gap: the same 8,989 works, the same shelf, and no
+  // way to reach PL 139 but to know an author who is in it.
+  const DENOM_SHELF = { "Latin Fathers": "pld", "Greek Fathers": "pg", "Eastern Fathers": "po" };
+  function shelfFor(denom) {
+    if (collectionId !== "all") return SHELVES[collectionId] || null;
+    const id = DENOM_SHELF[String(denom || "").trim()];
+    return id ? SHELVES[id] : null;
+  }
+  let shelf = shelfFor(denomination);
   // A hand-typed address is accepted on the shelf mark alone, so
   // `?vol=139` opens volume 139 without also being told which view that
   // is. Letters are kept because one bucket is named PS rather than
@@ -213,9 +226,21 @@
       const an = surname(a.author), bn = surname(b.author);
       return an.localeCompare(bn) || cmpTitle(a.title, b.title);
     });
-    shelfOrder = indexShelves(works);
+    rebuildShelfOrder();
     render();
   });
+
+  // The volumes of the shelf now in hand. In a room that is the whole
+  // collection; on the all-works page it is only the works under the
+  // denomination, or Patrologia Graeca's volume 44 would be counted into
+  // Patrologia Latina's grid, both series carrying a `volume`.
+  let shelfDenom = denomination;
+  function rebuildShelfOrder() {
+    if (!shelf) { shelfOrder = []; return; }
+    shelfOrder = indexShelves(collectionId === "all"
+      ? works.filter((w) => String(w.tradition || "").trim() === denomination)
+      : works);
+  }
 
   // Every shelf mark in the collection, once each, in the order the
   // set was printed. Built from the catalogue the room has already
@@ -579,6 +604,21 @@
   }
 
   function render() {
+    // The denomination filter can move the reader from one series to
+    // another, or off the Fathers entirely, between renders. A volume
+    // number from the series they just left means nothing in the one they
+    // arrived at, so it goes with the shelf.
+    if (collectionId === "all" && denomination !== shelfDenom) {
+      shelfDenom = denomination;
+      const next = shelfFor(denomination);
+      if (next !== shelf) {
+        shelf = next;
+        vol = "";
+        if (!shelf) view = "author";
+        else if (view !== "author") view = shelf.view;
+      }
+      rebuildShelfOrder();
+    }
     const filtered = works.filter(matches);
     // Three states, not two. By author is the page as it has always
     // been; the volume view is either the grid of volumes or one volume
@@ -683,7 +723,12 @@
     const letters = [...letterCounts.keys()]
       .sort((a, b) => (a === "#") - (b === "#") || a.localeCompare(b));
 
-    const label = isAll ? "the whole library" : (corpus ? corpus.label : "the collection");
+    // What the count is counting. "8,989 works in the whole library" was
+    // true of the page and false of the list under it once the filter had
+    // cut the library down to one shelf, so a shelf in hand names itself.
+    const label = shelf && isAll ? denomination
+      : isAll ? "the whole library"
+        : (corpus ? corpus.label : "the collection");
     // The rail files by the author's surname, which is the other view's
     // question. Inside a volume it would be a second index over at most
     // a few dozen works.
@@ -728,10 +773,15 @@
     // a second one. By author is written first and is the default, so a
     // reader who has never heard of a Migne citation is not asked to
     // choose before they can read anything.
-    const views = shelf
-      ? `<nav class="faith-view-toggle faith-room-views" role="tablist" aria-label="How to browse this collection">`
+    // Written whenever the page can ever have a shelf, not only when it has
+    // one now: the shell is built once, and on the all-works page the
+    // Denomination filter can hand the reader a series after that. A nav
+    // that was never written cannot be shown later, so it is written and
+    // hidden, and the block below keeps its name and its state in step.
+    const views = shelf || isAll
+      ? `<nav class="faith-view-toggle faith-room-views" role="tablist" aria-label="How to browse this collection"${shelf ? "" : " hidden"}>`
         + `<button type="button" class="faith-view-toggle-tab" data-room-view="author" role="tab">By author</button>`
-        + `<button type="button" class="faith-view-toggle-tab" data-room-view="${shelf.view}" role="tab">${escapeHtml(shelf.tab)}</button>`
+        + `<button type="button" class="faith-view-toggle-tab" data-room-shelf-tab data-room-view="${shelf ? shelf.view : "volume"}" role="tab">${escapeHtml(shelf ? shelf.tab : "By volume")}</button>`
         + `</nav>`
       : "";
 
@@ -774,8 +824,22 @@
     // page through.
     root.querySelector("[data-room-pager]").innerHTML = onGrid ? "" : pager(page, pages);
 
-    // The toggle is part of the shell and is never rebuilt, so the
-    // chosen view is marked on it here rather than written into it.
+    // The toggle is part of the shell and is never rebuilt, so the chosen
+    // view is marked on it here rather than written into it. On the
+    // all-works page the shelf itself changes under the Denomination
+    // filter, so the second tab's name and the view it selects are kept in
+    // step too, and the whole nav goes when the filter names no series:
+    // "By volume" over a list of every tradition in the library would
+    // promise a grid that cannot be drawn.
+    const viewsNav = root.querySelector(".faith-room-views");
+    if (viewsNav) {
+      viewsNav.hidden = !shelf;
+      const shelfTab = viewsNav.querySelector("[data-room-shelf-tab]");
+      if (shelfTab && shelf) {
+        if (shelfTab.getAttribute("data-room-view") !== shelf.view) shelfTab.setAttribute("data-room-view", shelf.view);
+        if (shelfTab.textContent !== shelf.tab) shelfTab.textContent = shelf.tab;
+      }
+    }
     root.querySelectorAll("[data-room-view]").forEach((b) => {
       const on = b.getAttribute("data-room-view") === view;
       b.classList.toggle("is-active", on);
