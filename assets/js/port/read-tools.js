@@ -276,7 +276,7 @@ function _findBar(){
       }else if(e.key==="Escape"){e.preventDefault();e.stopPropagation();findClear();}
     });
     $("#findPrev").onclick=()=>findStep(-1);$("#findNext").onclick=()=>findStep(1);$("#findX").onclick=findClear;
-    $('#findWholeWork').onclick=findWholeWork;
+    if($('#findWholeWork'))$('#findWholeWork').onclick=findWholeWork;
     document.addEventListener("keydown",e=>{
       if(!FIND.open||e.defaultPrevented)return;
       const inField=/^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(document.activeElement.tagName)||document.activeElement.isContentEditable||document.activeElement.closest('[role="dialog"]');
@@ -1073,8 +1073,8 @@ function __initReaderTools(){
   }
   function activeNotebookId(){return $('#nbProjectPick')?.value||lsGet('fr_pincol')||'default';}
   function populateNotebookContext(){if(!window.FRResearchNotebook||!$('#nbProjectPick'))return;try{const state=FRResearchNotebook.read(),pick=$('#nbProjectPick');pick.innerHTML=state.collections.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');pick.value=state.activeId;let context=lj('fr_desk_context_v1');$('#nbProjectDesk').textContent=context.title?'Return to '+context.title:'Open writing desk';$('#nbProjectDesk').href='/the-faith-received/desk/'+(context.docId?'?doc='+encodeURIComponent(context.docId):'');}catch(e){status(e.message);}}
-  $('#nbProjectPick').onchange=()=>{try{FRResearchNotebook.selectCollection($('#nbProjectPick').value);}catch(e){status(e.message);}};
-  [$('#nbProjectDesk'),$('#nbDesk')].forEach(link=>{if(window.parent!==window)link.target='_top';link.onclick=e=>{if(window.parent===window)return;try{if(window.parent.FRDesk?.returnToWriting){e.preventDefault();window.parent.FRDesk.returnToWriting();}}catch(_){}};});
+  if($('#nbProjectPick'))$('#nbProjectPick').onchange=()=>{try{FRResearchNotebook.selectCollection($('#nbProjectPick').value);}catch(e){status(e.message);}};
+  [$('#nbProjectDesk'),$('#nbDesk')].filter(Boolean).forEach(link=>{if(window.parent!==window)link.target='_top';link.onclick=e=>{if(window.parent===window)return;try{if(window.parent.FRDesk?.returnToWriting){e.preventDefault();window.parent.FRDesk.returnToWriting();}}catch(_){}};});
   window.addEventListener('fr-notebook-updated',populateNotebookContext);window.addEventListener('fr-notebook-selection',populateNotebookContext);populateNotebookContext();
   window.FRReaderBookmarks?.bind($('#nbSaveReadingPlace'),{getContext:()=>({slug:WORK_SLUG,title:WORK,author:AUTHOR,collectionId:activeNotebookId(),pageLabel:p=>locOf(p)}),feedback:$('#nbBookmarkStatus'),openSavedButton:$('#nbOpenSavedPlaces'),onOpenSaved:()=>openNotebook('saved')});
   // SAVE WORK (owner 2026-09-10 "save works to my notebook, for later reading"): the whole work as a reference (page null), one path through the notebook
@@ -1142,9 +1142,9 @@ function __initReaderTools(){
   }
   notebook.querySelectorAll('[data-reader-action]').forEach(b=>b.onclick=()=>act(b.dataset.readerAction));
   notebook.querySelectorAll('[data-reader-color]').forEach(b=>b.onclick=()=>{const r=passageRow();if(r){setHl(r,b.dataset.readerColor);status(b.dataset.readerColor?'Highlight saved.':'Highlight cleared.');}});
-  $('#spClip').onclick=()=>{hidePop();savePassageResearch();openNotebook('passage');};
-  $('#nbAskBook').onclick=()=>{closeNotebook(false);window.FRAsk?.open({contextWork:WORK_SLUG});};
-  $('#nbNewChat').onclick=()=>{closeNotebook(false);window.FRAsk?.open({fresh:true,contextWork:WORK_SLUG});};
+  if($('#spClip'))$('#spClip').onclick=()=>{hidePop();savePassageResearch();openNotebook('passage');};
+  if($('#nbAskBook'))$('#nbAskBook').onclick=()=>{closeNotebook(false);window.FRAsk?.open({contextWork:WORK_SLUG});};
+  if($('#nbNewChat'))$('#nbNewChat').onclick=()=>{closeNotebook(false);window.FRAsk?.open({fresh:true,contextWork:WORK_SLUG});};
   function syncNotebookLayout(){
     const open=notebook.classList.contains('open');populateNotebookContext();
     document.documentElement.classList.toggle('fr-research-docked',open&&sideMedia.matches);
@@ -1198,10 +1198,10 @@ function __initReaderTools(){
     finally{if(sequence===readerSearchSequence)$('#nbWorkSearchStatus').removeAttribute('aria-busy');}
   }
   $('#nbWorkSearchForm').onsubmit=e=>{e.preventDefault();runReaderSearch();};
-  $('#nbWorkSearchQuery').oninput=()=>{readerSearchSequence++;$('#nbWorkSearchStatus').removeAttribute('aria-busy');const query=$('#nbWorkSearchQuery').value.trim();$('#nbWorkSearchLibrary').href='/the-faith-received/search/'+(query?'?q='+encodeURIComponent(query):'');if(!query)runReaderSearch();else if(query!==readerSearchQuery)$('#nbWorkSearchStatus').textContent=readerSearchQuery?'Results for “'+readerSearchQuery+'” are retained. Select Search text to run the new query.':'Select Search text to search this work.';};
-  $('#nbWorkSearchMore').onclick=()=>{readerSearchShown+=50;renderReaderSearch();};
-  $('#nbWorkSearchClear').onclick=()=>{$('#nbWorkSearchQuery').value='';runReaderSearch();$('#nbWorkSearchQuery').focus({preventScroll:true});};
-  $('#nbWorkSearchResults').onclick=e=>{
+  if($('#nbWorkSearchQuery'))$('#nbWorkSearchQuery').oninput=()=>{readerSearchSequence++;$('#nbWorkSearchStatus').removeAttribute('aria-busy');const query=$('#nbWorkSearchQuery').value.trim();$('#nbWorkSearchLibrary').href='/the-faith-received/search/'+(query?'?q='+encodeURIComponent(query):'');if(!query)runReaderSearch();else if(query!==readerSearchQuery)$('#nbWorkSearchStatus').textContent=readerSearchQuery?'Results for “'+readerSearchQuery+'” are retained. Select Search text to run the new query.':'Select Search text to search this work.';};
+  if($('#nbWorkSearchMore'))$('#nbWorkSearchMore').onclick=()=>{readerSearchShown+=50;renderReaderSearch();};
+  if($('#nbWorkSearchClear'))$('#nbWorkSearchClear').onclick=()=>{$('#nbWorkSearchQuery').value='';runReaderSearch();$('#nbWorkSearchQuery').focus({preventScroll:true});};
+  if($('#nbWorkSearchResults'))$('#nbWorkSearchResults').onclick=e=>{
     const button=e.target.closest('[data-reader-search-result]'),hit=button&&readerSearchHits[Number(button.dataset.readerSearchResult)];if(!hit)return;
     readerSearchSelected=hit.page;renderReaderSearch();$('#nbWorkSearchQuery').blur();if(!sideMedia.matches)closeNotebook(false);
     const sequence=readerSearchSequence;findReadSearchResult(hit,readerSearchTerms,{current:()=>sequence===readerSearchSequence,status:text=>{$('#nbWorkSearchStatus').textContent=text;}}).catch(()=>{if(sequence===readerSearchSequence)$('#nbWorkSearchStatus').textContent='The matching words could not be shown. Select the result to retry; your search is retained.';});
