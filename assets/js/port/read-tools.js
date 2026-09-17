@@ -253,9 +253,9 @@ function findOpen(){
 }
 async function findWholeWork(){
   const query=($('#findInput')?.value??FIND.terms.join(' ')).trim();clearTimeout(FIND._inputTimer);FIND.sequence++;
-  if(!window.__frSearchWork){$('#findHelp').textContent='Research tools are loading. Try again.';return false;}
+  if(!window.__frSearchWork){($('#findHelp')||{}).textContent='Research tools are loading. Try again.';return false;}
   FIND.open=false;_findBar();
-  try{await window.__frSearchWork(query);return true;}catch(_){FIND.open=true;_findBar();$('#findHelp').textContent='Research search could not open. Try again.';return false;}
+  try{await window.__frSearchWork(query);return true;}catch(_){FIND.open=true;_findBar();($('#findHelp')||{}).textContent='Research search could not open. Try again.';return false;}
 }
 function _findBar(){
   let b=$("#findbar");
@@ -275,7 +275,7 @@ function _findBar(){
         if(input.value.trim()!==FIND.terms.join(" ")){findSet(input.value.trim()?[input.value.trim()]:[]);findScrollCur();}else findStep(e.shiftKey?-1:1);
       }else if(e.key==="Escape"){e.preventDefault();e.stopPropagation();findClear();}
     });
-    if($("#findPrev"))$("#findPrev").onclick=()=>findStep(-1);$("#findNext").onclick=()=>findStep(1);$("#findX").onclick=findClear;
+    if($("#findPrev"))$("#findPrev").onclick=()=>findStep(-1);($("#findNext")||{}).onclick=()=>findStep(1);($("#findX")||{}).onclick=findClear;
     if($('#findWholeWork'))$('#findWholeWork').onclick=findWholeWork;
     document.addEventListener("keydown",e=>{
       if(!FIND.open||e.defaultPrevented)return;
@@ -289,7 +289,7 @@ function _findBar(){
   if(!FIND.open)return;
   const input=$("#findInput");if(document.activeElement!==input)input.value=FIND.terms.join(" ");
   if($("#findCount"))$("#findCount").textContent=!FIND.terms.length?"Find a word or phrase":FIND.marks.length?((FIND.i+1)+" of "+FIND.marks.length):"No matches";
-  if($("#findPrev"))$("#findPrev").disabled=$("#findNext").disabled=!FIND.marks.length;
+  if($("#findPrev"))$("#findPrev").disabled=($("#findNext")||{}).disabled=!FIND.marks.length;
 }
 
 function __initSearch(){
@@ -413,12 +413,12 @@ function __initSearch(){
         +'<span class=kh-x>press ? to close</span></div>';
       h.onclick=()=>h.remove();document.body.appendChild(h);}});
   {const kb=$("#kbdBtn");if(kb)kb.onclick=()=>document.dispatchEvent(new KeyboardEvent("keydown",{key:"?"}));}
-  const setMode=m=>{if(m==="ask"&&window.FRAsk){ov.classList.remove("open");window.FRAsk.open();return;}mode=m;$("#rsThis").setAttribute("aria-pressed",m==="this");$("#rsAll").setAttribute("aria-pressed",m==="all");$("#rsAsk").setAttribute("aria-pressed",m==="ask");
+  const setMode=m=>{if(m==="ask"&&window.FRAsk){ov.classList.remove("open");window.FRAsk.open();return;}mode=m;$("#rsThis")?.setAttribute("aria-pressed",m==="this");$("#rsAll")?.setAttribute("aria-pressed",m==="all");$("#rsAsk")?.setAttribute("aria-pressed",m==="ask");
     q.placeholder=m==="this"?"Search this work…":m==="all"?"Search the corpus…":"Ask a question of the corpus…";
     q.style.display=m==="ask"?"none":"";
     {const sc=$("#rsScope");if(sc)sc.style.display=m==="all"?"flex":"none";}
     if(m==="ask"){askShell();const ai=$("#rsaInput");if(ai)ai.focus();}else{body.classList.remove("askmode");run();q.focus();}};
-  if($("#rsThis"))$("#rsThis").onclick=()=>setMode("this");$("#rsAll").onclick=()=>setMode("all");$("#rsAsk").onclick=()=>setMode("ask");
+  if($("#rsThis"))$("#rsThis").onclick=()=>setMode("this");($("#rsAll")||{}).onclick=()=>setMode("all");($("#rsAsk")||{}).onclick=()=>setMode("ask");
   // Search runs on Enter or ⌕ — never per keystroke (a half-typed "d" used to fan out
   // pagefind + vector calls on every letter). Emptying the box resets the hint.
   q.addEventListener("input",()=>{if(mode==="ask")return;if(!q.value.trim()){clearTimeout(tmr);run();}});
@@ -527,12 +527,12 @@ function __initSearch(){
     btn.onclick=go;inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();go();}});}
   window.__frOpenRun=id=>{const run=loadRuns().find(r=>r.id===id);if(!run)return;
     if(!$("#rsathread"))askShell();
-    {const it=$("#rsathread")&&$("#rsathread").querySelector(".rsa-intro");if(it)it.remove();}
-    const card=el("div","rsa-turn");$("#rsathread").appendChild(card);renderRunCard(run,card);toBottom();};
+    {const it=$("#rsathread")&&$("#rsathread")?.querySelector(".rsa-intro");if(it)it.remove();}
+    const card=el("div","rsa-turn");$("#rsathread")?.appendChild(card);renderRunCard(run,card);toBottom();};
   async function runResearch(brief){
     if(window.FRAsk){ov.classList.remove("open");return window.FRAsk.open({q:brief,mode:"deep",works:DATA&&DATA.slug?[DATA.slug]:[]});}
     if(!$("#rsathread"))askShell();
-    {const it=$("#rsathread")&&$("#rsathread").querySelector(".rsa-intro");if(it)it.remove();}
+    {const it=$("#rsathread")&&$("#rsathread")?.querySelector(".rsa-intro");if(it)it.remove();}
     const scopeSel=window.__frScope&&window.__frScope.get&&window.__frScope.get();
     const works=(scopeSel&&scopeSel.tfr&&scopeSel.tfr.length)?scopeSel.tfr.slice(0,3):(DATA&&DATA.slug?[DATA.slug]:[]);
     if(!works.length){addA("Open a work (or pick works in the scope) to run research.",null);return;}
@@ -569,17 +569,17 @@ function __initSearch(){
   async function runAsk(term){
     if(window.FRAsk){ov.classList.remove("open");return window.FRAsk.open({q:term,autoSend:true});}
     if(!$("#rsathread"))askShell();
-    {const it=$("#rsathread")&&$("#rsathread").querySelector(".rsa-intro");if(it)it.remove();}
-    const here=$("#rsAskWork")&&$("#rsAskWork").checked;
+    {const it=$("#rsathread")&&$("#rsathread")?.querySelector(".rsa-intro");if(it)it.remove();}
+    const here=$("#rsAskWork")&&$("#rsAskWork")?.checked;
     ASK.push({role:"user",content:term});if(ASK.length>16)ASK=ASK.slice(-16);saveAsk();
     addQ(term);const aEl=addA("…",null);toBottom();
-    const deepOn=$("#rsAskDeep")&&$("#rsAskDeep").checked;
+    const deepOn=$("#rsAskDeep")&&$("#rsAskDeep")?.checked;
     // hand-picked works scope (the sisters' multi-work picker): when active it IS the pool —
     // this-work / author / Fathers-strip scoping all yield to the explicit selection
     const scopeSel=window.__frScope&&window.__frScope.get&&window.__frScope.get();
     let filters=!scopeSel&&here&&DATA&&DATA.slug?{slug:DATA.slug}:undefined;
     if(!scopeSel&&window.__rsFC&&window.__rsFC.length){filters=filters||{};filters.fathersCorpora=window.__rsFC.slice();}
-    const av=($("#rsAskAuth")&&$("#rsAskAuth").value||"").trim();
+    const av=($("#rsAskAuth")&&$("#rsAskAuth")?.value||"").trim();
     if(av&&!here&&!scopeSel){filters=filters||{};filters.author=av;
       const set=(window.__rsWIDX||[]).filter(w=>w.author===av).map(w=>w.slug);
       if(set.length&&set.length<=50)filters.works=set;}
@@ -1023,13 +1023,13 @@ function __initReaderTools(){
     const loc=popRow&&WORK_SLUG?(()=>{const m=popRow.id.match(/^b(\d+)-(\d+)$/);return m?` [${WORK_SLUG}/p${m[1]}/b${m[2]}]`:"";})():"";
     cw(cite+loc+". The Faith Received. "+url+".");cpFlash(this,"Cited ✓");};
   // BibTeX export (locus + permalink)
-  $("#spBib")&&($("#spBib").onclick=function(){const fol=popRow&&popRow.closest(".folio");
+  $("#spBib")&&(($("#spBib")||{}).onclick=function(){const fol=popRow&&popRow.closest(".folio");
     const loc=fol?locOf(+fol.dataset.page):"",url=popRow?rowAnchor(popRow):location.href;
     const key=((DATA.author||WORK).split(/[\s,]+/)[0]||"work").replace(/[^A-Za-z]/g,"")+(WORK.split(/\s+/)[0]||"");
     cw("@book{"+key+",\n  author = {"+(DATA.author||"")+"},\n  title = {"+WORK+(DATA.volume?", "+DATA.volume:"")+"},\n  note = {The Faith Received"+(loc?", "+loc:"")+"},\n  url = {"+url+"}\n}");
     cpFlash(this,"BibTeX ✓");});
   // typeset quote-card image
-  $("#spCard")&&($("#spCard").onclick=function(){saveQuoteImage();hidePop();getSelection().removeAllRanges();});
+  $("#spCard")&&(($("#spCard")||{}).onclick=function(){saveQuoteImage();hidePop();getSelection().removeAllRanges();});
   // native copy → append citation (owner 2026-08-19: opt-out setting — plain copy for
   // readers pasting into their own drafts; the notebook toggle persists per device)
   document.addEventListener("copy",e=>{const s=getSelection();if(!s||s.isCollapsed)return;
@@ -1064,16 +1064,16 @@ function __initReaderTools(){
   const HLC={amber:"#e8b04b",sage:"#8fae6f",slate:"#7d97bd"};
   let nbFocus=null,chatSequence=0,activeResearchTab='work';const notebook=$("#notebook"),nbInert=new Map(),sideMedia=matchMedia('(min-width:1100px)');
   let quoteImageURL='';
-  function status(text){$("#nbActionStatus").textContent=text;}
-  function showQuoteImage(image,context){if(context){passage={...context};paintPassage();}if(quoteImageURL)URL.revokeObjectURL(quoteImageURL);quoteImageURL=image.url;const preview=$('#nbImagePreview');preview.dataset.quote=passage?.text||'';preview.querySelector('img').src=image.url;preview.hidden=false;$('#nbImageDownload').href=image.url;$('#nbImageDownload').download=image.name;hidePop();getSelection()?.removeAllRanges();openNotebook('passage').then(()=>preview.scrollIntoView({block:'nearest'}));status('Quote image ready. Its quotation and citation remain in Saved research.');}
+  function status(text){($("#nbActionStatus")||{}).textContent=text;}
+  function showQuoteImage(image,context){if(context){passage={...context};paintPassage();}if(quoteImageURL)URL.revokeObjectURL(quoteImageURL);quoteImageURL=image.url;const preview=$('#nbImagePreview');preview.dataset.quote=passage?.text||'';preview.querySelector('img').src=image.url;preview.hidden=false;($('#nbImageDownload')||{}).href=image.url;($('#nbImageDownload')||{}).download=image.name;hidePop();getSelection()?.removeAllRanges();openNotebook('passage').then(()=>preview.scrollIntoView({block:'nearest'}));status('Quote image ready. Its quotation and citation remain in Saved research.');}
   function paintPassage(){
     const preview=$('#nbImagePreview');if(preview.dataset.quote&&preview.dataset.quote!==passage?.text){preview.hidden=true;if(quoteImageURL)URL.revokeObjectURL(quoteImageURL);quoteImageURL='';delete preview.dataset.quote;}
-    if($("#nbSelection"))$("#nbSelection").hidden=!passage;$("#nbSelectionHelp").hidden=!!passage;
-    if($("#nbSelectionText"))$("#nbSelectionText").textContent=passage?.text||'';$("#nbSelectionCite").textContent=passage?.cite||'';
+    if($("#nbSelection"))$("#nbSelection").hidden=!passage;($("#nbSelectionHelp")||{}).hidden=!!passage;
+    if($("#nbSelectionText"))$("#nbSelectionText").textContent=passage?.text||'';($("#nbSelectionCite")||{}).textContent=passage?.cite||'';
   }
   function activeNotebookId(){return $('#nbProjectPick')?.value||lsGet('fr_pincol')||'default';}
-  function populateNotebookContext(){if(!window.FRResearchNotebook||!$('#nbProjectPick'))return;try{const state=FRResearchNotebook.read(),pick=$('#nbProjectPick');pick.innerHTML=state.collections.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');pick.value=state.activeId;let context=lj('fr_desk_context_v1');$('#nbProjectDesk').textContent=context.title?'Return to '+context.title:'Open writing desk';$('#nbProjectDesk').href='/the-faith-received/desk/'+(context.docId?'?doc='+encodeURIComponent(context.docId):'');}catch(e){status(e.message);}}
-  if($('#nbProjectPick'))$('#nbProjectPick').onchange=()=>{try{FRResearchNotebook.selectCollection($('#nbProjectPick').value);}catch(e){status(e.message);}};
+  function populateNotebookContext(){if(!window.FRResearchNotebook||!$('#nbProjectPick'))return;try{const state=FRResearchNotebook.read(),pick=$('#nbProjectPick');pick.innerHTML=state.collections.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');pick.value=state.activeId;let context=lj('fr_desk_context_v1');($('#nbProjectDesk')||{}).textContent=context.title?'Return to '+context.title:'Open writing desk';($('#nbProjectDesk')||{}).href='/the-faith-received/desk/'+(context.docId?'?doc='+encodeURIComponent(context.docId):'');}catch(e){status(e.message);}}
+  if($('#nbProjectPick'))$('#nbProjectPick').onchange=()=>{try{FRResearchNotebook.selectCollection($('#nbProjectPick')?.value);}catch(e){status(e.message);}};
   [$('#nbProjectDesk'),$('#nbDesk')].filter(Boolean).forEach(link=>{if(window.parent!==window)link.target='_top';link.onclick=e=>{if(window.parent===window)return;try{if(window.parent.FRDesk?.returnToWriting){e.preventDefault();window.parent.FRDesk.returnToWriting();}}catch(_){}};});
   window.addEventListener('fr-notebook-updated',populateNotebookContext);window.addEventListener('fr-notebook-selection',populateNotebookContext);populateNotebookContext();
   window.FRReaderBookmarks?.bind($('#nbSaveReadingPlace'),{getContext:()=>({slug:WORK_SLUG,title:WORK,author:AUTHOR,collectionId:activeNotebookId(),pageLabel:p=>locOf(p)}),feedback:$('#nbBookmarkStatus'),openSavedButton:$('#nbOpenSavedPlaces'),onOpenSaved:()=>openNotebook('saved')});
@@ -1112,11 +1112,11 @@ function __initReaderTools(){
     save('fr_collections_v1',cols,'_frSyncCollections');window.dispatchEvent(new Event('fr-notebook-updated'));
     const context={...passage};makeCard(context.text,context.cite,image=>showQuoteImage(image,context));status('Preparing quote image…');
   }
-  function openSavedAtDesk(result){const docId=new URL($('#nbProjectDesk').href,location.origin).searchParams.get('doc'),url=FRResearchNotebook.deskURL(result,docId);if(window.parent!==window){try{if(window.parent.FRDesk?.receiveClip){window.parent.FRDesk.receiveClip(result);return;}window.top.location.assign(url);return;}catch(_){}}location.assign(url);}
+  function openSavedAtDesk(result){const docId=new URL($('#nbProjectDesk')?.href,location.origin).searchParams.get('doc'),url=FRResearchNotebook.deskURL(result,docId);if(window.parent!==window){try{if(window.parent.FRDesk?.receiveClip){window.parent.FRDesk.receiveClip(result);return;}window.top.location.assign(url);return;}catch(_){}}location.assign(url);}
   async function savePassageResearch(useInDesk=false){
     if(!passage?.text){status('Select a passage first.');return;}
     if(!window.FRResearchNotebook){status('Research saving could not load. Reload this page to try again.');return;}
-    const p={...passage},target=$('#nbProjectPick').value;status('Saving passage…');
+    const p={...passage},target=$('#nbProjectPick')?.value;status('Saving passage…');
     try{const result=await FRResearchNotebook.save({...p,type:'note',label:p.cite||'Selected passage',work:WORK,research:{kind:'passage',sources:[{slug:p.slug,page:String(p.page),row:p.row,url:p.url,cite:p.cite,title:p.title||WORK,author:p.author||AUTHOR}],authors:AUTHOR?[AUTHOR]:[],topics:[],verses:[]}},{collectionId:target});status(result.warnings?.length?'Saved in this browser. Account sync could not be confirmed.':'Clipped to '+result.collectionName+'. Ready to use in your writing.');if(useInDesk)openSavedAtDesk(result);return result;}catch(e){status(e.message||'The passage could not be saved. Please try again.');}
   }
   async function askPassage(){
@@ -1138,7 +1138,7 @@ function __initReaderTools(){
     if(action==='note'||action==='translate'){closeNotebook(false);action==='note'?editNote(r):editTr(r);}
     if(action==='parallels'){closeNotebook(false);window.__frParallels?.(passage.text);}
     if(action==='pin'){window.FRResearchNotebook?.selectCollection(activeNotebookId());window.__frPinToggle?.(passage.page);status('Reference updated in your active collection.');}
-    if(action==='bib'){$('#spBib').click();status('BibTeX citation copied.');}
+    if(action==='bib'){$('#spBib')?.click();status('BibTeX citation copied.');}
   }
   if(notebook) notebook.querySelectorAll('[data-reader-action]').forEach(b=>b.onclick=()=>act(b.dataset.readerAction));
   if(notebook) notebook.querySelectorAll('[data-reader-color]').forEach(b=>b.onclick=()=>{const r=passageRow();if(r){setHl(r,b.dataset.readerColor);status(b.dataset.readerColor?'Highlight saved.':'Highlight cleared.');}});
@@ -1155,10 +1155,10 @@ function __initReaderTools(){
   }
   let workResearch=null;
   function ensureWorkResearch(){
-    if(!window.FRWorkResearch){$('#nbWorkAnalysis').textContent='Work analysis tools could not be loaded. Reload this page to try again.';return;}
+    if(!window.FRWorkResearch){($('#nbWorkAnalysis')||{}).textContent='Work analysis tools could not be loaded. Reload this page to try again.';return;}
     if(!workResearch){
       workResearch=FRWorkResearch.mount($('#nbWorkAnalysis'),{slug:WORK_SLUG,blob:BLOB,title:[$('#h1')?.textContent||DATA.title,DATA.volume].filter(Boolean).join(', '),author:AUTHOR,page:cur,location:locOf,
-        about:()=>{closeNotebook(false);$('#rdAbout').click();},
+        about:()=>{closeNotebook(false);$('#rdAbout')?.click();},
         read:page=>{if(!sideMedia.matches)closeNotebook();jump(String(page));},
         ask:q=>{closeNotebook(false);window.FRAsk?.open({fresh:true,q:q||'',contextWork:WORK_SLUG,works:WORK_SLUG?[WORK_SLUG]:[]});},
         save:async(record,url,context={})=>{
@@ -1174,7 +1174,7 @@ function __initReaderTools(){
   let readerSearchIndex=null,readerSearchTEI=null,readerSearchSequence=0,readerSearchQuery='',readerSearchHits=[],readerSearchTerms=[],readerSearchShown=50,readerSearchSelected='';
   function readerSearchCoverage(index){return index.kind==='canonical'?'Canonical '+index.lanes.join(' and ')+' text · '+index.pages+' pages indexed':'Loaded reading text only · '+index.pages+' pages indexed. Other pages have not been searched.';}
   async function ensureReaderSearchIndex(){
-    if(window.__teiHydrating){$('#nbWorkSearchStatus').textContent='Loading the canonical text for this work…';await window.__teiHydrating;}
+    if(window.__teiHydrating){($('#nbWorkSearchStatus')||{}).textContent='Loading the canonical text for this work…';await window.__teiHydrating;}
     const tei=typeof TEI_PAGES!=='undefined'&&TEI_ON?TEI_PAGES:null;
     if(tei&&readerSearchIndex&&readerSearchTEI===tei)return readerSearchIndex;
     const loaded=tei?[]:Array.from(reading.querySelectorAll('.folio')).map(folio=>({page:folio.dataset.page,nodes:folio.querySelectorAll('.row .en,.row .la')}));
@@ -1186,50 +1186,50 @@ function __initReaderTools(){
     if($('#nbWorkSearchMore'))$('#nbWorkSearchMore').hidden=readerSearchShown>=readerSearchHits.length;
   }
   async function runReaderSearch(){
-    const query=$('#nbWorkSearchQuery').value.trim(),sequence=++readerSearchSequence;
+    const query=$('#nbWorkSearchQuery')?.value.trim(),sequence=++readerSearchSequence;
     if($('#nbWorkSearchLibrary'))$('#nbWorkSearchLibrary').href='/the-faith-received/search/'+(query?'?q='+encodeURIComponent(query):'');
-    if(!query){readerSearchQuery='';readerSearchHits=[];readerSearchTerms=[];renderReaderSearch();$('#nbWorkSearchStatus').textContent='Find pages containing all the words you enter.';findSet([],{open:false});return;}
-    if($('#nbWorkSearchStatus'))$('#nbWorkSearchStatus').textContent='Indexing this work’s text…';$('#nbWorkSearchStatus').setAttribute('aria-busy','true');
+    if(!query){readerSearchQuery='';readerSearchHits=[];readerSearchTerms=[];renderReaderSearch();($('#nbWorkSearchStatus')||{}).textContent='Find pages containing all the words you enter.';findSet([],{open:false});return;}
+    if($('#nbWorkSearchStatus'))$('#nbWorkSearchStatus').textContent='Indexing this work’s text…';$('#nbWorkSearchStatus')?.setAttribute('aria-busy','true');
     try{
       const index=await ensureReaderSearchIndex();if(sequence!==readerSearchSequence)return;
       const result=frSearchReaderIndex(index,query);readerSearchQuery=query;readerSearchTerms=result.terms;readerSearchHits=result.hits;readerSearchShown=50;readerSearchSelected='';renderReaderSearch();
       if($('#nbWorkSearchStatus'))$('#nbWorkSearchStatus').textContent=readerSearchHits.length+' matching '+(readerSearchHits.length===1?'page':'pages')+' for “'+query+'”. '+readerSearchCoverage(index);
-    }catch(_){if(sequence===readerSearchSequence)$('#nbWorkSearchStatus').textContent='The text could not be indexed. Search again to retry, or search the library.';}
-    finally{if(sequence===readerSearchSequence)$('#nbWorkSearchStatus').removeAttribute('aria-busy');}
+    }catch(_){if(sequence===readerSearchSequence)($('#nbWorkSearchStatus')||{}).textContent='The text could not be indexed. Search again to retry, or search the library.';}
+    finally{if(sequence===readerSearchSequence)$('#nbWorkSearchStatus')?.removeAttribute('aria-busy');}
   }
   if($('#nbWorkSearchForm'))$('#nbWorkSearchForm').onsubmit=e=>{e.preventDefault();runReaderSearch();};
-  if($('#nbWorkSearchQuery'))$('#nbWorkSearchQuery').oninput=()=>{readerSearchSequence++;$('#nbWorkSearchStatus').removeAttribute('aria-busy');const query=$('#nbWorkSearchQuery').value.trim();$('#nbWorkSearchLibrary').href='/the-faith-received/search/'+(query?'?q='+encodeURIComponent(query):'');if(!query)runReaderSearch();else if(query!==readerSearchQuery)$('#nbWorkSearchStatus').textContent=readerSearchQuery?'Results for “'+readerSearchQuery+'” are retained. Select Search text to run the new query.':'Select Search text to search this work.';};
+  if($('#nbWorkSearchQuery'))$('#nbWorkSearchQuery').oninput=()=>{readerSearchSequence++;$('#nbWorkSearchStatus')?.removeAttribute('aria-busy');const query=$('#nbWorkSearchQuery')?.value.trim();($('#nbWorkSearchLibrary')||{}).href='/the-faith-received/search/'+(query?'?q='+encodeURIComponent(query):'');if(!query)runReaderSearch();else if(query!==readerSearchQuery)($('#nbWorkSearchStatus')||{}).textContent=readerSearchQuery?'Results for “'+readerSearchQuery+'” are retained. Select Search text to run the new query.':'Select Search text to search this work.';};
   if($('#nbWorkSearchMore'))$('#nbWorkSearchMore').onclick=()=>{readerSearchShown+=50;renderReaderSearch();};
-  if($('#nbWorkSearchClear'))$('#nbWorkSearchClear').onclick=()=>{$('#nbWorkSearchQuery').value='';runReaderSearch();$('#nbWorkSearchQuery').focus({preventScroll:true});};
+  if($('#nbWorkSearchClear'))$('#nbWorkSearchClear').onclick=()=>{($('#nbWorkSearchQuery')||{}).value='';runReaderSearch();$('#nbWorkSearchQuery')?.focus({preventScroll:true});};
   if($('#nbWorkSearchResults'))$('#nbWorkSearchResults').onclick=e=>{
     const button=e.target.closest('[data-reader-search-result]'),hit=button&&readerSearchHits[Number(button.dataset.readerSearchResult)];if(!hit)return;
-    readerSearchSelected=hit.page;renderReaderSearch();$('#nbWorkSearchQuery').blur();if(!sideMedia.matches)closeNotebook(false);
-    const sequence=readerSearchSequence;findReadSearchResult(hit,readerSearchTerms,{current:()=>sequence===readerSearchSequence,status:text=>{$('#nbWorkSearchStatus').textContent=text;}}).catch(()=>{if(sequence===readerSearchSequence)$('#nbWorkSearchStatus').textContent='The matching words could not be shown. Select the result to retry; your search is retained.';});
+    readerSearchSelected=hit.page;renderReaderSearch();$('#nbWorkSearchQuery')?.blur();if(!sideMedia.matches)closeNotebook(false);
+    const sequence=readerSearchSequence;findReadSearchResult(hit,readerSearchTerms,{current:()=>sequence===readerSearchSequence,status:text=>{($('#nbWorkSearchStatus')||{}).textContent=text;}}).catch(()=>{if(sequence===readerSearchSequence)($('#nbWorkSearchStatus')||{}).textContent='The matching words could not be shown. Select the result to retry; your search is retained.';});
   };
   function researchTab(name){
     name=['work','search','passage','saved','chats'].includes(name)?name:activeResearchTab;activeResearchTab=name;
-    for(const [key,id] of [['work','WorkPanel'],['search','WorkSearch'],['passage','Passage'],['saved','Saved'],['chats','Chats']]){const on=key===name;$('#nb'+id).hidden=!on;$('#nb'+id+'Tab').setAttribute('aria-selected',String(on));$('#nb'+id+'Tab').tabIndex=on?0:-1;}
+    for(const [key,id] of [['work','WorkPanel'],['search','WorkSearch'],['passage','Passage'],['saved','Saved'],['chats','Chats']]){const on=key===name;($('#nb'+id)||{}).hidden=!on;$('#nb'+id+'Tab')?.setAttribute('aria-selected',String(on));($('#nb'+id+'Tab')||{}).tabIndex=on?0:-1;}
     notebook.querySelector('.nb-project').hidden=name==='search';
     notebook.querySelector('.nb-settings').hidden=name==='work'||name==='search'||name==='chats';
     if(name==='chats')renderConversations();
     if(name==='work')ensureWorkResearch();
   }
-  for(const [key,id] of [['work','WorkPanel'],['search','WorkSearch'],['passage','Passage'],['saved','Saved'],['chats','Chats']])$('#nb'+id+'Tab').onclick=()=>researchTab(key);
-  $('.nb-tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const keys=['work','search','passage','saved','chats'],tabs=[...$('.nb-tabs').querySelectorAll('button')],i=tabs.indexOf(document.activeElement),n=e.key==='Home'?0:e.key==='End'?keys.length-1:(i+(e.key==='ArrowRight'?1:keys.length-1))%keys.length;researchTab(keys[n]);tabs[n].focus();tabs[n].scrollIntoView({block:'nearest',inline:'nearest'});});
+  for(const [key,id] of [['work','WorkPanel'],['search','WorkSearch'],['passage','Passage'],['saved','Saved'],['chats','Chats']])($('#nb'+id+'Tab')||{}).onclick=()=>researchTab(key);
+  $('.nb-tabs')?.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const keys=['work','search','passage','saved','chats'],tabs=[...$('.nb-tabs').querySelectorAll('button')],i=tabs.indexOf(document.activeElement),n=e.key==='Home'?0:e.key==='End'?keys.length-1:(i+(e.key==='ArrowRight'?1:keys.length-1))%keys.length;researchTab(keys[n]);tabs[n].focus();tabs[n].scrollIntoView({block:'nearest',inline:'nearest'});});
   async function openNotebook(view){
     nbFocus=document.activeElement;if(window.FRAsk?.isOpen?.())await window.FRAsk.close();
     captureSelection();renderNotebook();paintPassage();researchTab(view);
-    notebook.inert=false;notebook.classList.add('open');notebook.setAttribute('aria-hidden','false');$('#nbScrim').classList.add('open');$('#nbCount')?.setAttribute('aria-expanded','true');syncNotebookLayout();
-    if(!sideMedia.matches)$('#nbClose').focus();
+    notebook.inert=false;notebook.classList.add('open');notebook.setAttribute('aria-hidden','false');$('#nbScrim')?.classList.add('open');$('#nbCount')?.setAttribute('aria-expanded','true');syncNotebookLayout();
+    if(!sideMedia.matches)$('#nbClose')?.focus();
   }
-  function closeNotebook(restore=true){const wasOpen=notebook.classList.contains('open');notebook.classList.remove('open');notebook.setAttribute('aria-hidden','true');notebook.inert=true;$('#nbScrim').classList.remove('open');$('#nbCount')?.setAttribute('aria-expanded','false');syncNotebookLayout();if(wasOpen&&restore){const target=nbFocus?.isConnected&&nbFocus.getClientRects().length&&!nbFocus.closest('[inert]')?nbFocus:[...document.querySelectorAll('#nbCount,.frthumb [data-t="nb"]')].find(e=>e.getClientRects().length&&!e.closest('[inert]'));target?.focus({preventScroll:true});}}
+  function closeNotebook(restore=true){const wasOpen=notebook.classList.contains('open');notebook.classList.remove('open');notebook.setAttribute('aria-hidden','true');notebook.inert=true;$('#nbScrim')?.classList.remove('open');$('#nbCount')?.setAttribute('aria-expanded','false');syncNotebookLayout();if(wasOpen&&restore){const target=nbFocus?.isConnected&&nbFocus.getClientRects().length&&!nbFocus.closest('[inert]')?nbFocus:[...document.querySelectorAll('#nbCount,.frthumb [data-t="nb"]')].find(e=>e.getClientRects().length&&!e.closest('[inert]'));target?.focus({preventScroll:true});}}
   sideMedia.addEventListener('change',syncNotebookLayout);
   notebook.addEventListener('keydown',e=>{if(e.key==='Tab'&&!sideMedia.matches){const controls=[...notebook.querySelectorAll('button,a,input,select,textarea,summary')].filter(x=>x.getClientRects().length&&!x.disabled&&!x.closest('[hidden]'));const first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){last.focus();e.preventDefault();}else if(!e.shiftKey&&document.activeElement===last){first.focus();e.preventDefault();}}});
   window.addEventListener('fr-ask-visibility',e=>{if(e.detail?.open)closeNotebook(false);});
   window.addEventListener('fr-notebook-updated',()=>{updateCount();if(notebook.classList.contains('open'))renderNotebook();});
-  window.addEventListener('fr-conversations-updated',()=>{if(notebook.classList.contains('open')&&!$('#nbChats').hidden)renderConversations();});
+  window.addEventListener('fr-conversations-updated',()=>{if(notebook.classList.contains('open')&&!$('#nbChats')?.hidden)renderConversations();});
   window.addEventListener('storage',e=>{if(['fr_hl','fr_notes','fr_tr','fr_collections_v1'].includes(e.key)&&notebook.classList.contains('open'))renderNotebook();});
-  window.__frSearchWork=async query=>{await openNotebook('search');$('#nbWorkSearchQuery').value=String(query||'');await runReaderSearch();};
+  window.__frSearchWork=async query=>{await openNotebook('search');($('#nbWorkSearchQuery')||{}).value=String(query||'');await runReaderSearch();};
   window.__frOpenNotebook=openNotebook;   // thumb-bar hook (mobile shell)
   window.FRReaderResearch={open:openNotebook,close:closeNotebook,passage:()=>passage&&({...passage}),navigate(url){return window.__frNavigateReaderAnchor?.(url)===true;}};
   if(new URLSearchParams(location.search).get('research')==='work')queueMicrotask(()=>openNotebook('work'));
@@ -1276,17 +1276,17 @@ function __initReaderTools(){
     const hl=lj("fr_hl"),notes=lj("fr_notes"),tr=lj("fr_tr"),here=key=>key.indexOf(WSID+"|")===0;
     const ni=Object.keys(notes).filter(here),ti=Object.keys(tr).filter(here),hi=Object.keys(hl).filter(here);
     const saved=savedCollections().flatMap(c=>(c.items||[]).filter(i=>((i.site||'fr')==='fr'&&i.slug===WORK_SLUG)||i.askSources?.some(s=>(s.slug||s.w)===WORK_SLUG)).map(i=>({...i,collection:c.name})));
-    if($('#nbSavedCount'))$('#nbSavedCount').textContent=ni.length+ti.length+hi.length+saved.length||'';$('#nbTitle').textContent=(ni.length+ti.length+hi.length+saved.length)+' saved items from this book';
+    if($('#nbSavedCount'))$('#nbSavedCount').textContent=ni.length+ti.length+hi.length+saved.length||'';($('#nbTitle')||{}).textContent=(ni.length+ti.length+hi.length+saved.length)+' saved items from this book';
     if(!ni.length&&!ti.length&&!hi.length&&!saved.length){body.insertAdjacentHTML("beforeend",'<div class="nb-empty">Nothing saved from this book yet. Select text to highlight it, add a note, or make a quote image. Your work will collect here with its source.</div>');return;}
     const ord=(a,b)=>{const ea=nbEl(a),eb=nbEl(b);return ea&&eb?(ea.compareDocumentPosition(eb)&Node.DOCUMENT_POSITION_FOLLOWING?-1:1):0;};
     let section=body;const sec=(t,n)=>{section=el("details","nb-saved-group");section.dataset.group=t;section.open=opened.has(t)?opened.get(t):n<=3;const h=el("summary");h.textContent=t+" · "+n;section.appendChild(h);body.appendChild(section);};
     if(ni.length){sec("Notes",ni.length);ni.sort(ord).forEach(id=>section.appendChild(nbItem(id,{mine:(notes[id]||{}).t})));}
     if(ti.length){sec("My translations",ti.length);ti.sort(ord).forEach(id=>section.appendChild(nbItem(id,{mine:(tr[id]||{}).t})));}
     if(hi.length){sec("Highlights",hi.length);hi.sort(ord).forEach(id=>section.appendChild(nbItem(id,{dot:HLC[hl[id]]||"#ccc"})));}
-    if(saved.length){sec('References, answers, and images',saved.length);for(const item of saved){const it=el('article','nb-item');it.innerHTML='<div class="nb-cite">'+esc(item.quoteImage?'Quote image':item.askAnswer?'Ask answer':item.collection)+'</div><div class="nb-ex">'+esc((item.text||item.label||item.title||item.slug||'').slice(0,260))+'</div><div class="nb-cite">'+esc(item.cite||item.work||item.collection)+'</div><div class="nb-item-actions"></div>';const actions=it.querySelector('.nb-item-actions');const desk=el('button');desk.textContent='Use in Desk';desk.onclick=async()=>{try{const result=await FRResearchNotebook.save(item,{collectionId:$('#nbProjectPick').value});openSavedAtDesk(result);}catch(e){status(e.message);}};actions.appendChild(desk);if((item.site||'fr')==='fr'&&item.slug===WORK_SLUG&&(item.row||item.page!=null)){const go=el('button');go.textContent=item.readingPlace?'Go to saved place':'Read passage';go.onclick=()=>gotoSavedReference(item);actions.appendChild(go);}if(item.quoteImage){const image=el('button');image.textContent='Open image';image.onclick=()=>{passage={...item};paintPassage();makeCard(item.text,item.cite||CITEWORK,image=>showQuoteImage(image,item));};actions.appendChild(image);}if(item.chat){const chat=el('button');chat.textContent='Open conversation';chat.onclick=()=>{closeNotebook(false);window.FRAsk?.open({id:item.chat});};actions.appendChild(chat);}section.appendChild(it);}}
+    if(saved.length){sec('References, answers, and images',saved.length);for(const item of saved){const it=el('article','nb-item');it.innerHTML='<div class="nb-cite">'+esc(item.quoteImage?'Quote image':item.askAnswer?'Ask answer':item.collection)+'</div><div class="nb-ex">'+esc((item.text||item.label||item.title||item.slug||'').slice(0,260))+'</div><div class="nb-cite">'+esc(item.cite||item.work||item.collection)+'</div><div class="nb-item-actions"></div>';const actions=it.querySelector('.nb-item-actions');const desk=el('button');desk.textContent='Use in Desk';desk.onclick=async()=>{try{const result=await FRResearchNotebook.save(item,{collectionId:$('#nbProjectPick')?.value});openSavedAtDesk(result);}catch(e){status(e.message);}};actions.appendChild(desk);if((item.site||'fr')==='fr'&&item.slug===WORK_SLUG&&(item.row||item.page!=null)){const go=el('button');go.textContent=item.readingPlace?'Go to saved place':'Read passage';go.onclick=()=>gotoSavedReference(item);actions.appendChild(go);}if(item.quoteImage){const image=el('button');image.textContent='Open image';image.onclick=()=>{passage={...item};paintPassage();makeCard(item.text,item.cite||CITEWORK,image=>showQuoteImage(image,item));};actions.appendChild(image);}if(item.chat){const chat=el('button');chat.textContent='Open conversation';chat.onclick=()=>{closeNotebook(false);window.FRAsk?.open({id:item.chat});};actions.appendChild(chat);}section.appendChild(it);}}
     filterNotebook();
   }
-  function filterNotebook(){const value=$('#nbSearch').value.toLowerCase(),body=$('#nbBody');body.querySelectorAll('.nb-item').forEach(it=>it.hidden=!!value&&!it.textContent.toLowerCase().includes(value));body.querySelectorAll('.nb-saved-group').forEach(g=>{g.hidden=!!value&&![...g.querySelectorAll('.nb-item')].some(i=>!i.hidden);if(value){if(!g.hasAttribute('data-filter-open'))g.dataset.filterOpen=String(g.open);g.open=true;}else if(g.hasAttribute('data-filter-open')){g.open=g.dataset.filterOpen==='true';delete g.dataset.filterOpen;}});let empty=$('#nbNoMatches');if(!empty){empty=el('p','nb-guidance');empty.id='nbNoMatches';empty.setAttribute('role','status');body.appendChild(empty);}empty.textContent='No saved research matches this search.';empty.hidden=!value||[...body.querySelectorAll('.nb-item')].some(i=>!i.hidden);}
+  function filterNotebook(){const value=$('#nbSearch')?.value.toLowerCase(),body=$('#nbBody');body.querySelectorAll('.nb-item').forEach(it=>it.hidden=!!value&&!it.textContent.toLowerCase().includes(value));body.querySelectorAll('.nb-saved-group').forEach(g=>{g.hidden=!!value&&![...g.querySelectorAll('.nb-item')].some(i=>!i.hidden);if(value){if(!g.hasAttribute('data-filter-open'))g.dataset.filterOpen=String(g.open);g.open=true;}else if(g.hasAttribute('data-filter-open')){g.open=g.dataset.filterOpen==='true';delete g.dataset.filterOpen;}});let empty=$('#nbNoMatches');if(!empty){empty=el('p','nb-guidance');empty.id='nbNoMatches';empty.setAttribute('role','status');body.appendChild(empty);}empty.textContent='No saved research matches this search.';empty.hidden=!value||[...body.querySelectorAll('.nb-item')].some(i=>!i.hidden);}
   async function renderConversations(){
     const token=++chatSequence,host=$('#nbChatList');host.textContent='Loading conversations…';
     try{const rows=window.FRChatStore?await FRChatStore.all():(lj('fr_chats').chats||[]);if(token!==chatSequence)return;host.innerHTML='';const visible=rows.filter(c=>!c.archived).sort((a,b)=>b.ts-a.ts),belongs=c=>c.contextWork===WORK_SLUG||c.w===WORK_SLUG||(c.scope?.works||[]).includes(WORK_SLUG);for(const [label,list] of [['This book',visible.filter(belongs)],['Other conversations',visible.filter(c=>!belongs(c))]]){if(!list.length)continue;const group=el('details','nb-conversation-group');group.open=label==='This book';const summary=el('summary');summary.textContent=label+' · '+list.length;group.appendChild(summary);for(const c of list){const button=el('button','nb-chat'),last=(c.turns||[]).at(-1),state=last?.serverJob?.status||last?.status||'draft';button.innerHTML='<span>'+esc(c.t||'New conversation')+'</span><small>'+esc(state.replace(/_/g,' '))+(c.unread?' · unread':'')+'</small>';button.onclick=()=>{closeNotebook(false);window.FRAsk?.open({id:c.id});};group.appendChild(button);}host.appendChild(group);}if(!visible.length)host.textContent='Your conversations will appear here. Start one to discuss this book.';}catch(_){host.textContent='Conversations could not be loaded. Open Ask to try again.';}
@@ -1335,7 +1335,7 @@ function __initReaderTools(){
      b.onclick=()=>{const t=col(side);if(t){cw(t);b.textContent="✓ copied";setTimeout(()=>b.textContent=lbl,1200);}};};
    wire("nbCopyEn","en","⧉ English");wire("nbCopyLa","la","⧉ Latin");
    if(DATA.en_only){const l=$("#nbCopyLa");if(l)l.style.display="none";}}
-  if($("#nbClose"))$("#nbClose").onclick=closeNotebook;$("#nbScrim").onclick=closeNotebook;
+  if($("#nbClose"))$("#nbClose").onclick=closeNotebook;($("#nbScrim")||{}).onclick=closeNotebook;
   addEventListener("keydown",e=>{if(e.key==="Escape"){closeNotebook();
     const app=document.querySelector(".app");   // Contents sheet = .app without 'nosb' (Opus audit P0: no exit)
     if(app&&!app.classList.contains("nosb"))app.classList.add("nosb");}});
@@ -1553,10 +1553,10 @@ function __initReaderTools(){
             const rvMsg=t=>{const n=$("#frSyncNote");if(n)n.textContent=t;};
             RV.statusOf=n=>(RV.stat[n]&&RV.stat[n].st)||"new";
             // per-folio status badge — painted into the folio's preceding .fmark .fr slot
-            const rvPaint=n=>{const sec=$("#reading").querySelector('.folio[data-page="'+n+'"]');if(!sec)return;
+            const rvPaint=n=>{const sec=$("#reading")?.querySelector('.folio[data-page="'+n+'"]');if(!sec)return;
               const fm=sec.previousElementSibling,slot=fm&&fm.classList.contains("fmark")?fm.querySelector(".fr"):null;if(!slot)return;
               const st=RV.statusOf(n);slot.innerHTML=st==="new"?"":'<span class="rvchip '+st+'">'+ST_LAB[st]+'</span>';};
-            const rvPaintAll=()=>$("#reading").querySelectorAll(".folio[data-page]").forEach(sec=>rvPaint(+sec.dataset.page));
+            const rvPaintAll=()=>$("#reading")?.querySelectorAll(".folio[data-page]").forEach(sec=>rvPaint(+sec.dataset.page));
             window.__frRvPaintAll=rvPaintAll;
             const counts=()=>{const c={ok:0,needs:0,redone:0,viewed:0,new:0,total:(DATA.pages||[]).length};
               (DATA.pages||[]).forEach(p=>{const k=RV.statusOf(p.n);c[k]=(c[k]||0)+1;});c.reviewed=c.ok+c.needs+c.redone;return c;};
