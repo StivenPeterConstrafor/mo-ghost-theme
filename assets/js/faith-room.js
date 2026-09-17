@@ -483,10 +483,26 @@
   // work's volume, which is what tells two printings of one title
   // apart. A caller that has already said which volume this is passes
   // its own, or an empty string for none.
+  // Where the work is, in the form its own shelf is cited by. The bare "101"
+  // under a title in the Patrologia said nothing — a number with no series in
+  // front of it is not an address. The catalogues already carry the citable
+  // form in `eyebrow` for the four shelves that have one; the Latin Library is
+  // cited by the volume of its set, and the confessions and the English
+  // editions are not cited by place at all, so they get none rather than a
+  // tradition name pretending to be a location.
+  const WHERE = {
+    pld: (w) => w.eyebrow, pg: (w) => w.eyebrow, po: (w) => w.eyebrow,
+    eebo: (w) => w.eyebrow, tfr: (w) => w.volume,
+  };
+  function where(w) {
+    const f = WHERE[w.corpus];
+    return f ? String(f(w) || "").trim() : "";
+  }
+
   function row(w, mark) {
     const second = w.titleLatin && w.titleLatin !== w.title ? w.titleLatin : "";
     const second2 = second ? `<span class="brow-la">${escapeHtml(second)}</span>` : "";
-    const m = mark === undefined ? w.volume : mark;
+    const m = mark === undefined ? where(w) : mark;
     const vol = m ? `<span class="brow-m">${escapeHtml(m)}</span>` : "";
     const inner = `<span class="brow-t">${escapeHtml(w.title || w.id)}</span>${second2}${vol}`;
     if (w.readable !== false && w.url) {
