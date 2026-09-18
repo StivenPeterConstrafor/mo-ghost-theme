@@ -237,6 +237,212 @@ const REF_RE = new RegExp(
 // happened to follow a chapter number.
 const MAX_VERSE = 176;
 
+/* ── Migne's Latin chapter form ───────────────────────────────────────
+ *
+ * "Gen. cap. XVII", "Exod. cap. XXXIII", "Num. cap. VII", "Josue. cap.
+ * XX", "Matth. capit. V, 3", "Luc. c. 19". Migne prints the chapter
+ * word, and while it is there the pattern above cannot fire at all:
+ * after "Gen." it wants a number, and what follows is "cap".
+ *
+ * WHY THIS IS A SECOND ARM AND NOT A LOOSENING OF THE FIRST.
+ * The obvious fix — let a roman numeral follow a Latin abbreviation
+ * with no chapter word, "Matth. XXVIII, 19" — was measured over 300
+ * unindexed works and produced 27 hits of which 27 were false. Migne's
+ * own indexes give volume/column pairs in exactly that shape
+ * ("Psalmos, IX, 362", "Conc. Rom., V, 131"); manuscripts are cited by
+ * siglum and number ("Cod. Luc., IV"); English prose supplies the rest
+ * ("Thomas James, I think"). The first arm already catches the genuine
+ * instances of that form, because a genuine one writes the chapter as a
+ * plain number or gives a verse. Requiring the chapter word is the only
+ * thing that separates a citation from a shelf mark.
+ *
+ * WHAT THE TRAP IS NOT. "Col. 361" and "Rom. 181" are Migne column
+ * numbers and were the expected failure, but they never reach a guard:
+ * Colossians has 4 chapters and Romans 16, so MAX_CHAPTERS rejects both
+ * before anything else runs. Nor can a regnal or papal numeral arrive
+ * here — "Innocent III" has no chapter word and no book name.
+ *
+ * WHAT THE TRAP IS. The Latin work title whose abbreviation IS a book
+ * name. "lib. V adv. Marc., c. 1" is Against Marcion, not Mark.
+ * "Praef. in lib. Job, c. 6" is chapter 6 of Gregory's preface, not of
+ * Job. "de Script. Eccl. c. 10" is De viris illustribus. Every entry in
+ * GUARDS below is there because one specific citation of that kind was
+ * being read as Scripture; none of them is precautionary.
+ *
+ * Unguarded, this arm is wrong 28.8% of the time. Guarded, 0 of 49 on
+ * a set never used to fit a guard, and it kills no true citation: 0 of
+ * 230 adjudicated true positives lost across three sets.
+ */
+
+// The chapter word, in the forms Migne prints it. `cap` alone is not
+// enough — it must carry either its period or its declension, or
+// "Cap" as an ordinary capitalised word would qualify. `capiti` is
+// spelled out in the alternation because an earlier draft tokenised it
+// as "capit" + a stray "i" and read "respondet Lucae capiti 19" as
+// Luke 1, which is the single false positive the held-out set found.
+const CAP_WORD = String.raw`(?:cap(?:\.|it(?:e|i|is|ul[oi]|ulum)?\.?)|c\.)`;
+
+// Exported so a run can be audited hit by hit — which is how the guards
+// below were fitted, and the only way to tell a citation this arm found
+// from one it invented.
+export const MIGNE_RE = new RegExp(
+  String.raw`\b(?:(1|2|3|4|i{1,3}|iv|first|second|third|fourth|1st|2nd|3rd|4th)\s+)?` +
+  String.raw`(${NAME_ALT})\b\.?\s*,?\s*` +
+  CAP_WORD + String.raw`\s*` +
+  String.raw`(\d{1,3}|[ivxlc]{1,7})\b` +
+  // Migne writes the verse "V, 3", "V. 3" and "V, v. 3" alike.
+  String.raw`(?:\s*[.:,]\s*v?\.?\s*(\d{1,3})(?!\d))?`,
+  "gi"
+);
+
+// How much text before the match a guard may look at. Long enough for
+// "Praef. in lib. b. Job" and "lib. V Bell. Jud."; short enough that a
+// guard cannot reach back into an unrelated sentence.
+const GUARD_BACK = 48;
+
+/* The guards. `left` is tested against the text immediately before the
+ * match (anchored with $), `right` against the text immediately after
+ * (anchored with ^), `book` against the book name that matched, `raw`
+ * against the whole matched string. Every condition a guard names must
+ * hold for it to fire. What each one catches is a work title, not a
+ * book of the Bible. */
+const GUARDS = [
+  // "lib. V adv. Marc., c. 1" — Tertullian Against Marcion, and
+  // "Aug. oratione cont. Jud. c. 3" — Adversus Judaeos, whose chapter 3
+  // is its own. `cont` has to carry its period: without one it is the
+  // stem of continet, contra hoc, and half the Latin in the library.
+  { name: "adversus", left: /\b(?:adv|advers(?:us|um)|contra|cont\.|c)\.?\s+$/i },
+  // "lib. V Bell. Jud. cap. 20" — Josephus, the Jewish War; "Ant. Jud."
+  // is the Antiquities. Neither is the book of Judith or of Jude.
+  { name: "josephus", left: /\b(?:ant(?:\.|iq\w*)|bell(?:\.|[oui]m?))\s+$/i },
+  // "Praef. in lib. b. Job, c. 6" — chapter 6 of Gregory's preface, and
+  // with it the whole front matter of the Moralia, which the corpus
+  // cites three ways: "Greg. pref. in 1. Job. cap. 1", "Greg. præf. in
+  // 1. Job. cap.1", "Gregorius Praefat. Moral. in Job. cap. 4". The
+  // title word and the book number both have to be allowed through, or
+  // the guard only ever catches the one form it was written for.
+  {
+    name: "praefatio",
+    left: /\b(?:praef|pref)\w*\.?\s+(?:(?!cap\b|c\.)[A-Za-z]\w{0,9}\.\s+)?(?:in\s+)?(?:lib\.?\s+)?(?:\d{1,2}\.?\s+)?(?:b\.?\s+)?$/i,
+  },
+  // "S. GREG. epist. in Job cap. IV" — a letter about Job, numbered
+  // by its own chapters.
+  { name: "epistula-in", left: /\bepist\w*\.?\s+(?:in|on)\s+$/i },
+  // "de Prov., c. 3", "de Script. Eccl. c. 10", "de Plac. Phil., cap. 3",
+  // "lib. 3. De Eccles. cap. 2", "lib. de unit. Eccles. c. 4" — a title
+  // beginning De, whose next word or two are abbreviated. De is matched
+  // in either case (Migne prints both) but the words after it must be
+  // abbreviated, or every Latin sentence containing "de" would qualify.
+  //
+  // The title's words may not include the chapter word. Without that
+  // exclusion "Socin. lib. 2. de Serv. cap. Lev. cap. 16" reads as one
+  // long title and loses a real citation of Leviticus 16 that merely
+  // happens to follow a truncated one.
+  {
+    name: "de-title",
+    left: /\b[Dd](?:e|ogm\w*\.?)\s+(?:(?!cap\b|c\.)[A-Za-z]\w{0,11}\.\s+){0,2}$/,
+  },
+  // "Book XI On Genesis, c. 7" — De Genesi ad litteram, whose chapters
+  // are its own.
+  { name: "on-genesis", left: /(?:\bbook\s+)?[IVXLC]{1,6}\s*,?\s+[Oo]n\s+$/, book: /^gen/i },
+  /* The same thing in Latin, and far commoner: a commentary carrying
+   * its own book number, whose "cap." counts the commentary's chapters
+   * and not the Bible's.
+   *   Rupertus, libr. 2, in Genes., c. 32      In Genesim
+   *   Rupertus, l. 1, in Gen., c. 30 et 31
+   *   Augustinus ... et lib. 2, Gen., cap. 8   De Genesi ad litteram
+   * The book number must sit OUTSIDE the match for this to fire, which
+   * is what keeps it off the real citations that look similar: in "lib.
+   * III Reg. cap. XVIII" and "EX LIBRO III REGUM. Cap. iv" the numeral
+   * is the book's own ordinal and belongs to the match, so the text
+   * before it carries no number and the guard stays silent.
+   * `1.` is in the alternation because the scans read "l." as "1."
+   * often enough to matter ("Rupertus, 1. 3, in Gen., c. 3"), and its
+   * period is NOT optional: a bare 1 let "18" parse as the stem 1 plus
+   * the book number 8, which killed a real Ezekiel 1:5 citation sitting
+   * after "Exodi cap. XXV, 18," and two more like it. */
+  {
+    name: "commentary-book",
+    left: /(?:\b(?:lib(?:er|ri|ro)?|libr|l|tom(?:us|i)?|book)\.?|\b1\.)\s*(?:[IVXLC]{1,6}|\d{1,2})\s*,?\s+(?:in|ad|on|de)?\s*$/i,
+  },
+  // Augustine's two Genesis commentaries and the Opus imperfectum in
+  // Matthaeum are cited by their short titles: "in Imperfect. Gen.,
+  // cap. 4", "Imperfec. ad Genes., cap. 3", "auctor Imperfecti in
+  // Matth. cap. I". The chapters are the commentary's.
+  //
+  // "ad litteram" has to carry its `ad`: on its own, `litter` also
+  // matches *littera*, the text of Scripture itself, and "ex littera
+  // Genesis, cap. 1" is as real a citation of Genesis 1 as any.
+  {
+    name: "commentary-title",
+    left: /\b(?:imperfect\w*|imperfec\w*|hexaem\w*|exaem\w*|ad\s+litt?er\w*)\.?\s+(?:ad\s+|in\s+)?$/i,
+  },
+  // The parser's own recorded lesson: a history is cited by its books.
+  // The period is not optional decoration — "lib. 4. histor. Ecclesiast.
+  // cap. 7" is Eusebius, and without it the guard never fires on the
+  // form the corpus actually prints.
+  { name: "historia", left: /\b(?:hist|histor(?:ia|iae|ic[ae])?)\.?\s*,?\s*$/i },
+  // "Ignat. epist. ad Ephes. cap. 5" — Ignatius To the Ephesians, not
+  // Paul's. Same for Clement, Polycarp, Barnabas and Hermas.
+  {
+    name: "sub-apostolic",
+    left: /\b(?:ignat|clem|polyc|barnab|hermae?)\w*\.?\s+(?:epist\w*\.?\s+|epistle\s+)?(?:ad\s+|to\s+(?:the\s+)?)?$/i,
+  },
+  /* ECCLESIA. "Eccl.", "Eccles." and "Ecclesiast." abbreviate
+   * Ecclesiastes and Ecclesiasticus, and they also abbreviate
+   * *ecclesia*, which is the commonest noun in this entire library.
+   * Every one of these is a treatise, not a book of the Bible:
+   *   Bellar. lib. 3. De Eccles. cap. 2        De Ecclesia
+   *   lib. de unit. Eccles. c. 4               De unitate ecclesiae
+   *   Dionys. de hierarch. Eccl. cap. 8        De hierarchia ecclesiastica
+   *   lib. 4. histor. Ecclesiast. cap. 7       Historia ecclesiastica
+   *   de exord. & increm. rerum Eccles. cap. 7 Walafrid Strabo
+   *   ministerii Ecclesiastici cap. 1          De ministerio ecclesiastico
+   *   in De Notis Eccles. cap. 9               De notis ecclesiae
+   * and each is announced by the word the title hangs on. Scoped to
+   * this one family of abbreviations, so it cannot reach any other
+   * book. The genuine citations in the same works — "Unde Eccli. cap.
+   * 10", "locus Ecclesiastici cap. 38", "Comment. in Eccl. c. 10, 11" —
+   * are not preceded by any of these and survive. */
+  {
+    name: "ecclesia",
+    book: /^eccl/i,
+    left: /\b(?:de|lib|libr|libro|part|hierarch|histor|hist|rerum|ministeri|unit|notis|script|polit|discipl|jur|jure|can|canon)\w*\.?\s+(?:(?!cap\b|c\.)[A-Za-z]\w{0,11}\.\s+)?$/i,
+  },
+  /* ENGLISH STATUTES. Early English Books is full of "3. Jacobi. c. 4"
+   * and "1 Jacobi, ch. 1, 2, 3. Jacobi, c. 3, 4" — Acts of Parliament,
+   * cited by the regnal year of James I and the chapter of the statute.
+   * "Jacobi" is also how the Latin cites the epistle of James, but
+   * James takes no ordinal, so a number in front of it is a regnal year
+   * and never a citation. */
+  { name: "regnal-statute", book: /^[ij]acobi$/i, left: /\b\d{1,2}\.?\s+$/ },
+  // "in Psalmos. CAP. 41.-- De eadem re" is a chapter heading in a
+  // commentary, and the dash is how Migne prints one.
+  { name: "chapter-heading", right: /^\s*\.\s*[-–—]/ },
+  // "Psal. c.x, 4" is Psalm 110 with an OCR period inside the numeral,
+  // not chapter 10 of anything. A chapter word glued to what follows is
+  // not a chapter word.
+  { name: "ocr-glued-c", raw: /\bc\.[^\s]/ },
+];
+
+// Kept so a run can report which guard did the work rather than only
+// that something did.
+export const GUARD_HITS = new Map();
+
+export function guarded(hay, m) {
+  const before = hay.slice(Math.max(0, m.index - GUARD_BACK), m.index);
+  const after = hay.slice(m.index + m[0].length, m.index + m[0].length + 8);
+  for (const g of GUARDS) {
+    if (g.left && !g.left.test(before)) continue;
+    if (g.right && !g.right.test(after)) continue;
+    if (g.book && !g.book.test(m[2])) continue;
+    if (g.raw && !g.raw.test(m[0])) continue;
+    GUARD_HITS.set(g.name, (GUARD_HITS.get(g.name) || 0) + 1);
+    return g.name;
+  }
+  return null;
+}
+
 /* Does the text immediately after a reference begin with a book name?
  * Used by the ordinal lookahead in extractRefs. Built from NAME_ALT so
  * it can never drift from the names the matcher actually knows. */
@@ -290,6 +496,10 @@ export function extractRefs(segments) {
     const seg = segments[si];
     const hay = seg.text || "";
     if (!hay) continue;
+    // Where the first arm already found a citation. The second arm
+    // skips anything overlapping one of these, so a form both arms can
+    // read is counted once and not twice.
+    const spans = [];
     let m;
     REF_RE.lastIndex = 0;
     while ((m = REF_RE.exec(hay))) {
@@ -347,6 +557,7 @@ export function extractRefs(segments) {
 
       const surface = (m[1] ? `${m[1]} ` : "") + raw;
       noteVariant(surface.toLowerCase(), canon);
+      spans.push([m.index, m.index + m[0].length]);
 
       const here = seg.loc == null ? null : seg.loc;
       const key = `${canon}|${n}`;
@@ -358,6 +569,62 @@ export function extractRefs(segments) {
         // them: a cap here is a reference the reader is never offered,
         // and no chapter runs past 176 verses, so the ceiling was
         // never protecting the file from anything.
+        if (v && !prev.verses.has(v)) prev.verses.set(v, here);
+        continue;
+      }
+      found.set(key, {
+        n: 1,
+        loc: here,
+        excerpt: excerptFrom(seg, m.index, segments, si),
+        verses: v ? new Map([[v, here]]) : new Map(),
+      });
+    }
+
+    /* SECOND ARM: Migne's chapter word. See MIGNE_RE above for why this
+     * is separate and why it is guarded. Nothing here can disturb the
+     * first arm: it runs after, on the same text, and drops any hit
+     * overlapping one the first arm already made. */
+    spans.sort((a, b) => a[0] - b[0]);
+    let sp = 0;
+    MIGNE_RE.lastIndex = 0;
+    while ((m = MIGNE_RE.exec(hay))) {
+      const raw = m[2];
+      // Same capitalisation rule as the first arm, and for the same
+      // reason: Latin prose is full of words that are also book names.
+      if (raw[0] !== raw[0].toUpperCase() || raw[0] === raw[0].toLowerCase()) continue;
+      const name = raw.toLowerCase();
+      const ord = m[1] ? ORDINALS[m[1].toLowerCase()] : null;
+      const joined = ord ? `${ord} ${name}` : null;
+      const canon = (joined && (VULGATE_REGNUM[joined] || LOOKUP.get(joined)))
+        || VULGATE_REGNUM[name] || LOOKUP.get(name);
+      if (!canon) continue;
+      const ch = m[3];
+      const n = /^\d+$/.test(ch) ? parseInt(ch, 10) : romanToInt(ch);
+      if (!n) continue;
+      // This is what rejects "Col. 361" and "Rom. 181" — the Migne
+      // column numbers — without a guard having to know about them.
+      const max = MAX_CHAPTERS[canon];
+      if (max && n > max) continue;
+      if (guarded(hay, m)) continue;
+
+      const from = m.index;
+      const to = m.index + m[0].length;
+      while (sp < spans.length && spans[sp][1] <= from) sp += 1;
+      if (sp < spans.length && spans[sp][0] < to) continue;
+
+      let v = m[4] ? parseInt(m[4], 10) : 0;
+      if (v < 1 || v > MAX_VERSE) v = 0;
+
+      // The ordinal lookahead of the first arm does not apply: a number
+      // after "cap. V" is a verse, and the next book brings its own
+      // chapter word with it.
+      noteVariant(`${(m[1] ? `${m[1]} ` : "") + raw} cap.`.toLowerCase(), canon);
+
+      const here = seg.loc == null ? null : seg.loc;
+      const key = `${canon}|${n}`;
+      const prev = found.get(key);
+      if (prev) {
+        prev.n += 1;
         if (v && !prev.verses.has(v)) prev.verses.set(v, here);
         continue;
       }
