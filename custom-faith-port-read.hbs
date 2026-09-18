@@ -144,9 +144,17 @@
   <div class="nb-head"><span>Research</span><button class="nb-x" id="nbClose" aria-label="Close research">×</button></div>
   <div class="nb-tabs" role="tablist" aria-label="Research tools"><button type="button" id="nbWorkPanelTab" role="tab" aria-selected="true" aria-controls="nbWorkPanel">Work</button><button type="button" id="nbWorkSearchTab" role="tab" aria-selected="false" aria-controls="nbWorkSearch">Search</button><button type="button" id="nbPassageTab" role="tab" aria-selected="false" aria-controls="nbPassage">Passage</button><button type="button" id="nbSavedTab" role="tab" aria-selected="false" aria-controls="nbSaved">Saved <span id="nbSavedCount"></span></button><button type="button" id="nbChatsTab" role="tab" aria-selected="false" aria-controls="nbChats">Chats</button></div>
   <div class="nb-project"><label>Save to notebook<select id="nbProjectPick" aria-label="Save to notebook"></select></label><a id="nbProjectDesk" href="/the-faith-received/desk/">Return to writing</a></div>
-  <section id="nbWorkPanel" class="nb-panel" role="tabpanel" aria-labelledby="nbWorkPanelTab"><div class="nb-work-identity"><h2 id="nbWorkTitle"></h2><p id="nbWorkAuthor"></p><div class="nb-work-primary"><button type="button" id="nbFindInWork">Search this work</button><button type="button" id="nbFindRelated">Find related works</button><button type="button" id="nbWorkAsk">Ask about this work</button><button type="button" id="nbWorkAbout">Edition details</button></div></div><div class="nb-reading-place"><div><button type="button" id="nbSaveWork" aria-pressed="false" title="Keep this work in your notebook for later reading">Save work</button><button type="button" id="nbSaveReadingPlace">Save reading place</button><button type="button" id="nbOpenSavedPlaces" hidden>Open saved places</button></div><p id="nbBookmarkStatus" role="status">Keep a fixed place in your notebook as your reading progress changes.</p></div><div id="nbWorkSources"></div><details id="nbAnalysisFold" class="nb-analysis-fold"><summary>Summaries and analysis</summary><div id="nbWorkAnalysis"></div></details></section>
+  <section id="nbWorkPanel" class="nb-panel" role="tabpanel" aria-labelledby="nbWorkPanelTab"><div class="nb-work-identity"><h2 id="nbWorkTitle"></h2><p id="nbWorkAuthor"></p><div class="nb-work-primary"><button type="button" id="nbFindInWork">Search this work</button><button type="button" id="nbFindRelated" hidden>Find related works</button><button type="button" id="nbWorkAsk">Ask about this work</button><button type="button" id="nbWorkAbout">Edition details</button></div></div><div class="nb-reading-place"><div><button type="button" id="nbSaveWork" aria-pressed="false" title="Keep this work in your notebook for later reading">Save work</button><button type="button" id="nbSaveReadingPlace">Save reading place</button><button type="button" id="nbOpenSavedPlaces" hidden>Open saved places</button></div><p id="nbBookmarkStatus" role="status">Keep a fixed place in your notebook as your reading progress changes.</p></div><div id="nbWorkSources"></div><details id="nbAnalysisFold" class="nb-analysis-fold"><summary>Summaries and analysis</summary><div id="nbWorkAnalysis"></div></details></section>
   <section id="nbWorkSearch" class="nb-panel" role="tabpanel" aria-labelledby="nbWorkSearchTab" hidden>
-    <div class="nb-find-modes" role="group" aria-label="Search scope"><button type="button" id="nbFindTextMode" aria-pressed="true">This work</button><button type="button" id="nbFindRelatedMode" aria-pressed="false">Related works</button></div><div id="nbWorkTextSearch">
+    {{!-- RELATED WORKS IS NOT BUILT. This toggle, its sibling #nbRelatedSearch
+          and #nbFindRelated in the Work tab above came over in the 2026-09-17
+          restore; grepping every script this page loads, nothing binds any of
+          the three and no stylesheet names .nb-find-modes, so they painted as
+          OS chrome and did nothing when pressed. Hidden rather than deleted:
+          the markup is the spec for the feature when it is written, and one
+          attribute is the whole difference. Delete the `hidden` here, on
+          #nbRelatedSearch, and on #nbFindRelated when it exists. --}}
+    <div class="nb-find-modes" role="group" aria-label="Search scope" hidden><button type="button" id="nbFindTextMode" aria-pressed="true">This work</button><button type="button" id="nbFindRelatedMode" aria-pressed="false">Related works</button></div><div id="nbWorkTextSearch">
     <div class="nb-work-search-controls">
     <form id="nbWorkSearchForm" class="nb-work-search-form" role="search" aria-label="Search this work"><label for="nbWorkSearchQuery">Search this work</label><div><input id="nbWorkSearchQuery" type="search" placeholder="Enter words or a phrase" autocomplete="off" aria-describedby="nbWorkSearchStatus"><button type="submit">Search text</button></div></form>
     <div class="nb-work-search-tools"><button type="button" id="nbWorkSearchClear">Clear search</button><a id="nbWorkSearchLibrary" href="/the-faith-received/search/" target="_blank" rel="noopener">Search library</a></div>
@@ -209,6 +217,9 @@
 <script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
 <script src="{{asset "js/lib/faith-notebook-store.js"}}"></script>
 <script src="{{asset "js/page/faith-port-read-tools.js"}}"></script>
+{{!-- The Research rail's Work tab. read-tools.js owns the panel; this names the
+     work in it and routes the four shortcuts the restore left unbound. --}}
+<script src="{{asset "js/page/faith-port-read-research.js"}}"></script>
 {{!-- Find in this work. The port shipped #findbar's styling and no
      implementation; this is the implementation, written to its selectors. --}}
 <script src="{{asset "js/page/faith-port-read-find.js"}}"></script>
