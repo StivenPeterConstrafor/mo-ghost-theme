@@ -1067,3 +1067,147 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
 }
 }
 
+
+/* ── THE READER TOOLBAR, BOXED ──────────────────────────────────────
+   Ian, 2026-09-18: "Box the toolbar buttons too."
+
+   The bar was the last surface in the library still speaking in bare
+   text. read.in01.css:2049 flattens `.seg button`, `.tgl` and `.sbt` to
+   `border: 0` on a transparent ground, which is a defensible reading of
+   a reading toolbar and is not the one we are using: every other control
+   in The Faith Received is now an outlined terracotta box, and a row of
+   unboxed words at the top of the page read as labels rather than as the
+   controls they are. Same two variants as everywhere else — outline at
+   rest, filled when hovered or pressed. See the TFR BUTTON block at the
+   end of assets/css/faith-received.css; this is that button, stated for
+   the one surface whose sheets are too specific for it to reach.
+
+   HIS SELECTOR IS (0,3,1) — `html:not(.fr-plain) .fr-reader-head .tgl`.
+   A bare class loses to it however late it is stated, so every rule here
+   carries `#app`. That is also why this lives in the skin rather than in
+   faith-received.css: it needs the reader's own ids.
+
+   A SEGMENTED GROUP IS ONE BOX WITH DIVIDERS, not boxes in a row — but
+   only where the group really is one control. `‹ ›` and `1 / 19` are,
+   and they get the group box. THE LANES ARE NOT: their own tooltips say
+   "a toggle; combine freely with Latin and the scan", so English, Latin
+   and Scan are three independent switches that happen to sit together,
+   and a single box around them would promise a single choice. They are
+   boxed one by one.
+
+   AND ONE OF THEM IS NOT A BUTTON AT ALL. `#app.only-en … #m-en` is
+   `pointer-events: none` and muted — see "the lane you are reading is a
+   state, not a button" earlier in this file. Boxed and filled it became
+   terracotta ink on a terracotta ground, about 2.3:1, on a control that
+   cannot be pressed: a button that looks pressable and is not, which is
+   the thing this whole sweep exists to stop. The inert lane keeps its
+   quiet label.
+
+   NOT BOXED, deliberately: `.mh-home` ("‹ Library"), which is a back
+   link and belongs with the title beside it rather than with the tools,
+   and everything inside `.aapop` — the Aa and Tools popovers are panels
+   with their own segment design, and they already fill in terracotta
+   when a choice is on. */
+#app .ph.fr-reader-head .phl > .sbt,
+#app .ph.fr-reader-head .ctr > .seg.pnav,
+#app .ph.fr-reader-head .ctr > .seg.pgjump,
+#app .ph.fr-reader-head .ctr > .seg.lanes > button,
+#app .ph.fr-reader-head .ctr > .tgl,
+#app .ph.fr-reader-head .ctr > button,
+#app .ph.fr-reader-head .ctr > .aaw > .tgl,
+#app .ph.fr-reader-head #nbCount {
+  box-sizing: border-box;
+  height: 40px;
+  min-height: 40px;
+  border: 1px solid var(--color-secondary, #c1593c);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--color-secondary, #c1593c);
+}
+
+/* One box, dividers inside it. The parts give up their own radius so the
+   group's corners are the only ones in the row. */
+#app .ph.fr-reader-head .ctr > .seg.pnav,
+#app .ph.fr-reader-head .ctr > .seg.pgjump {
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+}
+#app .ph.fr-reader-head .ctr > .seg.pnav > button {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+}
+#app .ph.fr-reader-head .ctr > .seg.pnav > button + button {
+  border-left: 1px solid var(--color-secondary, #c1593c);
+}
+#app .ph.fr-reader-head .ctr > .seg.lanes { gap: 6px; }
+/* The page field IS the group's box. A bordered input inside a bordered
+   group is a box in a box, and his `border-right … !important` on .pgjump
+   has to be answered in kind or three sides come out terracotta and the
+   fourth stays tan. */
+#app .ph.fr-reader-head .ctr > .seg.pgjump {
+  border-right: 1px solid var(--color-secondary, #c1593c) !important;
+  padding: 0 8px;
+  gap: 4px;
+}
+#app .ph.fr-reader-head .ctr .pgjump #pgJump {
+  min-height: 0;
+  height: 26px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-secondary, #c1593c);
+}
+#app .ph.fr-reader-head .ctr .pgjump .pg-total {
+  color: var(--color-secondary, #c1593c);
+}
+/* The arrows sat in a group pulled 10px into its neighbour, which reads
+   as kerning when the group has no edge and as a collision once it has. */
+#app .ph.fr-reader-head .ctr > .seg.pnav { margin-right: 0; }
+
+#app .ph.fr-reader-head .phl > .sbt:hover,
+#app .ph.fr-reader-head .ctr > .tgl:hover,
+#app .ph.fr-reader-head .ctr > button:hover,
+#app .ph.fr-reader-head .ctr > .aaw > .tgl:hover,
+#app .ph.fr-reader-head .ctr > .seg.pnav > button:hover,
+#app .ph.fr-reader-head .ctr > .seg.lanes > button:hover,
+#app .ph.fr-reader-head #nbCount:hover,
+#app .ph.fr-reader-head .ctr > .seg.lanes > button[aria-pressed="true"],
+#app .ph.fr-reader-head .ctr > .tgl[aria-pressed="true"],
+#app .ph.fr-reader-head .ctr > .aaw > .tgl[aria-expanded="true"],
+#app .ph.fr-reader-head #nbCount[aria-expanded="true"] {
+  background: var(--color-secondary, #c1593c);
+  color: var(--color-white, #fff);
+}
+
+#app .ph.fr-reader-head .phl > .sbt:focus-visible,
+#app .ph.fr-reader-head .ctr > .tgl:focus-visible,
+#app .ph.fr-reader-head .ctr > button:focus-visible,
+#app .ph.fr-reader-head .ctr > .aaw > .tgl:focus-visible,
+#app .ph.fr-reader-head .ctr > .seg.pnav > button:focus-visible,
+#app .ph.fr-reader-head .ctr > .seg.lanes > button:focus-visible {
+  outline: 2px solid var(--color-secondary, #c1593c);
+  outline-offset: 2px;
+}
+
+/* Three switches, three boxes, and the one that cannot be switched keeps
+   the quiet label it already had.
+
+   LAST IN THE BLOCK, AND STATED TWICE. The inert lane also carries
+   aria-pressed="true" — it is the lane you are reading — so it matches
+   the filled state above. On paper this rule outranks that one (two ids
+   against one); in the browser it did not, and terracotta ink sat on a
+   terracotta ground at about 2.3:1 until this moved below it. Source
+   order settles what a specificity argument did not, and the pressed
+   form is spelled out so neither can be read as the closer match. */
+#app.only-en .ph.fr-reader-head .ctr > .seg.lanes > #m-en[aria-pressed="true"],
+#app.only-la .ph.fr-reader-head .ctr > .seg.lanes > #m-par[aria-pressed="true"],
+#app.only-en .ph.fr-reader-head .ctr > .seg.lanes > #m-en,
+#app.only-la .ph.fr-reader-head .ctr > .seg.lanes > #m-par {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
