@@ -1172,12 +1172,22 @@ function __initReaderTools(){
     workResearch.setPage(cur);workResearch.load();
   }
   let readerSearchIndex=null,readerSearchTEI=null,readerSearchSequence=0,readerSearchQuery='',readerSearchHits=[],readerSearchTerms=[],readerSearchShown=50,readerSearchSelected='';
-  function readerSearchCoverage(index){return index.kind==='canonical'?'Canonical '+index.lanes.join(' and ')+' text · '+index.pages+' pages indexed':'Loaded reading text only · '+index.pages+' pages indexed. Other pages have not been searched.';}
+  function readerSearchCoverage(index){return index.kind==='canonical'?'Canonical '+index.lanes.join(' and ')+' text · '+index.pages+(index.pages===1?' page indexed':' pages indexed'):'Loaded reading text only · '+index.pages+(index.pages===1?' page':' pages')+' indexed. Other pages have not been searched.';}
   async function ensureReaderSearchIndex(){
     if(window.__teiHydrating){($('#nbWorkSearchStatus')||{}).textContent='Loading the canonical text for this work…';await window.__teiHydrating;}
     const tei=typeof TEI_PAGES!=='undefined'&&TEI_ON?TEI_PAGES:null;
     if(tei&&readerSearchIndex&&readerSearchTEI===tei)return readerSearchIndex;
-    const loaded=tei?[]:Array.from(reading.querySelectorAll('.folio')).map(folio=>({page:folio.dataset.page,nodes:folio.querySelectorAll('.row .en,.row .la')}));
+    // A two-lane work keeps its text in .row .en / .row .la, and that is all this
+    // asked for. A single-lane work has no rows at all -- the creeds, confessions
+    // and catechisms render as one stacked column of paragraphs -- so every folio
+    // yielded nothing, the index came back with nought pages, and searching any of
+    // the 260 of them answered "0 matching pages ... 0 pages indexed" however
+    // plainly the word was on the screen. Where a folio has no lanes, the folio
+    // itself is the text; frReaderSearchText already skips the furniture.
+    const loaded=tei?[]:Array.from(reading.querySelectorAll('.folio')).map(folio=>{
+      const lanes=folio.querySelectorAll('.row .en,.row .la');
+      return {page:folio.dataset.page,nodes:lanes.length?lanes:[folio]};
+    });
     const index=await frBuildReaderSearchIndex({tei,pages:DATA?.pages||[],loaded,sourceLabel:window.__SRCNAME||'source'});
     if(tei){readerSearchIndex=index;readerSearchTEI=tei;}return index;
   }
