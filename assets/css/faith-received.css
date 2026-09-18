@@ -16974,13 +16974,20 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
    that differentiates it from the rest of the Mere O site, which means every
    TFR button should be changed to match it."
 
-   The style is the one he picked in September for the reading-plan control and
-   asked for again on the Ask door: outlined, not filled, small radius, in the
-   DARK terracotta (--color-secondary #c1593c) rather than the primary orange
-   the rest of Mere Orthodoxy uses on its CTAs. That difference is the point.
-   Primary orange is the magazine's accent; the library answers in the darker
-   one, so a reader can tell by the furniture which of the two they are in.
-   .fr-plan-open above is the same button and stays the reference.
+   Ian, 2026-09-18, on the reader's toolbar: "Boxes should have the off-black
+   outline and black font and then exactly what you have here is the hover
+   color." So the box is QUIET AT REST -- off-black outline, off-black ink
+   (--color-dark #2d2927) -- and the terracotta it used to wear at rest is now
+   what it wears under the cursor. Three steps, one colour: off-black outlined,
+   terracotta outlined, terracotta filled.
+
+   The terracotta still tells the library from the magazine; it has only moved
+   off the resting state. A row of ten boxed controls all sounding the accent at
+   once is why: at rest the toolbar is furniture, and the accent now means "this
+   one, the one you are pointing at". The DARK terracotta (--color-secondary
+   #c1593c) rather than the primary orange the rest of Mere Orthodoxy uses is
+   unchanged and is still the point. .fr-plan-open above is the same button and
+   stays the reference.
 
    WHY ONE APPENDED BLOCK RATHER THAN THIRTY-SIX EDITS. The library grew eleven
    dialects of button — pills at 999px, cards at 4px, boxes at 6px, dark fills,
@@ -17039,9 +17046,9 @@ a.fr-btn,
 #notebook .nb-work-search-form button,
 #notebook .nb-highlight-colors button,
 #selpop button.pb {
-  color: var(--tfr-btn, var(--color-secondary));
+  color: var(--tfr-btn, var(--color-dark));
   background: transparent;
-  border: 1px solid var(--tfr-btn, var(--color-secondary));
+  border: 1px solid var(--tfr-btn, var(--color-dark));
   border-radius: 3px;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
@@ -17076,15 +17083,17 @@ a.fr-btn:hover,
 #notebook .nb-reading-place button:hover,
 #notebook .nb-work-search-form button:hover,
 #selpop button.pb:hover {
-  background: var(--tfr-btn, var(--color-secondary));
+  background: var(--tfr-btn, var(--color-dark));
   color: var(--tfr-btn-ink, var(--color-white, #fff));
-  border-color: var(--tfr-btn, var(--color-secondary));
+  border-color: var(--tfr-btn, var(--color-dark));
   text-decoration: none;
 }
 
 /* PRESSED IS FILLED, AND SO IS THE ONE CTA. A segmented control needs its
    chosen segment to read as chosen without a second colour entering the system,
-   so "on" is the hover state made permanent. Each of these is stated at the
+   so "on" is the filled terracotta: one step past hover now that hover is
+   outlined rather than filled, which is what keeps chosen distinct from
+   merely-pointed-at. Each of these is stated at the
    specificity of the rule it has to beat, because .x.is-active outranks .x
    however late in the file .x is stated.
 
@@ -17110,9 +17119,9 @@ a.fr-btn:hover,
 .tfr-review-btn--primary,
 #notebook .nb-reading-place #nbSaveReadingPlace,
 #selpop button.pb[aria-pressed="true"] {
-  background: var(--tfr-btn, var(--color-secondary));
+  background: var(--tfr-btn, var(--color-dark));
   color: var(--tfr-btn-ink, var(--color-white, #fff));
-  border: 1px solid var(--tfr-btn, var(--color-secondary));
+  border: 1px solid var(--tfr-btn, var(--color-dark));
   border-radius: 3px;
 }
 .tfr-browse-btn:hover {
@@ -17152,7 +17161,7 @@ a.fr-btn:hover,
 .tfr-gate-signin-btn:focus-visible,
 #notebook .nb-work-primary button:focus-visible,
 #notebook .nb-reading-place button:focus-visible {
-  outline: 2px solid var(--tfr-btn, var(--color-secondary));
+  outline: 2px solid var(--tfr-btn, var(--color-dark));
   outline-offset: 2px;
 }
 
@@ -17172,8 +17181,8 @@ a.fr-btn:hover,
 .bhero-btn:focus-visible,
 .bsearch button:hover,
 .bsearch button:focus-visible {
-  background: var(--tfr-btn, var(--color-secondary));
-  border-color: var(--tfr-btn, var(--color-secondary));
+  background: var(--tfr-btn, var(--color-dark));
+  border-color: var(--tfr-btn, var(--color-dark));
   color: var(--tfr-btn-ink, var(--color-white, #fff));
 }
 
@@ -17193,5 +17202,5 @@ a.fr-btn:hover,
 #notebook .wrs-link,
 #notebook .wrs-button,
 #notebook .nb-destinations a {
-  color: var(--tfr-btn, var(--color-secondary));
+  color: var(--tfr-btn, var(--color-dark));
 }

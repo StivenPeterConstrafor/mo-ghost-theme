@@ -1097,10 +1097,10 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
    text. read.in01.css:2049 flattens `.seg button`, `.tgl` and `.sbt` to
    `border: 0` on a transparent ground, which is a defensible reading of
    a reading toolbar and is not the one we are using: every other control
-   in The Faith Received is now an outlined terracotta box, and a row of
-   unboxed words at the top of the page read as labels rather than as the
-   controls they are. Same two variants as everywhere else — outline at
-   rest, filled when hovered or pressed. See the TFR BUTTON block at the
+   in The Faith Received is now an outlined box, and a row of unboxed words
+   at the top of the page read as labels rather than as the controls they
+   are. Same three steps as everywhere else — off-black outlined at rest,
+   terracotta outlined when pointed at, terracotta filled when chosen. See the TFR BUTTON block at the
    end of assets/css/faith-received.css; this is that button, stated for
    the one surface whose sheets are too specific for it to reach.
 
@@ -1141,10 +1141,10 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
   box-sizing: border-box;
   height: 40px;
   min-height: 40px;
-  border: 1px solid var(--tfr-btn, var(--color-secondary, #c1593c));
+  border: 1px solid var(--tfr-btn, var(--color-dark, #2d2927));
   border-radius: 3px;
   background: transparent;
-  color: var(--tfr-btn, var(--color-secondary, #c1593c));
+  color: var(--tfr-btn, var(--color-dark, #2d2927));
 }
 
 /* One box, dividers inside it. The parts give up their own radius so the
@@ -1163,7 +1163,7 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
   color: inherit;
 }
 #app .ph.fr-reader-head .ctr > .seg.pnav > button + button {
-  border-left: 1px solid var(--tfr-btn, var(--color-secondary, #c1593c));
+  border-left: 1px solid var(--tfr-btn, var(--color-dark, #2d2927));
 }
 #app .ph.fr-reader-head .ctr > .seg.lanes { gap: 6px; }
 /* The page field IS the group's box. A bordered input inside a bordered
@@ -1171,7 +1171,7 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
    has to be answered in kind or three sides come out terracotta and the
    fourth stays tan. */
 #app .ph.fr-reader-head .ctr > .seg.pgjump {
-  border-right: 1px solid var(--tfr-btn, var(--color-secondary, #c1593c)) !important;
+  border-right: 1px solid var(--tfr-btn, var(--color-dark, #2d2927)) !important;
   padding: 0 8px;
   gap: 4px;
 }
@@ -1181,27 +1181,37 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: var(--tfr-btn, var(--color-secondary, #c1593c));
+  color: var(--tfr-btn, var(--color-dark, #2d2927));
 }
 #app .ph.fr-reader-head .ctr .pgjump .pg-total {
-  color: var(--tfr-btn, var(--color-secondary, #c1593c));
+  color: var(--tfr-btn, var(--color-dark, #2d2927));
 }
 /* The arrows sat in a group pulled 10px into its neighbour, which reads
    as kerning when the group has no edge and as a collision once it has. */
 #app .ph.fr-reader-head .ctr > .seg.pnav { margin-right: 0; }
 
+/* POINTED AT: the terracotta outline the box used to wear at rest.
+   Only the two colours move, so the row does not shift under the cursor. */
 #app .ph.fr-reader-head .phl > .sbt:hover,
 #app .ph.fr-reader-head .ctr > .tgl:hover,
 #app .ph.fr-reader-head .ctr > button:hover,
 #app .ph.fr-reader-head .ctr > .aaw > .tgl:hover,
 #app .ph.fr-reader-head .ctr > .seg.pnav > button:hover,
 #app .ph.fr-reader-head .ctr > .seg.lanes > button:hover,
-#app .ph.fr-reader-head #nbCount:hover,
+#app .ph.fr-reader-head #nbCount:hover {
+  background: transparent;
+  border-color: var(--color-secondary, #c1593c);
+  color: var(--color-secondary, #c1593c);
+}
+
+/* CHOSEN: filled, one step past hover. Flow, the lane you are reading, an
+   open popover. Stated after hover so that pointing at the chosen control
+   does not un-fill it. */
 #app .ph.fr-reader-head .ctr > .seg.lanes > button[aria-pressed="true"],
 #app .ph.fr-reader-head .ctr > .tgl[aria-pressed="true"],
 #app .ph.fr-reader-head .ctr > .aaw > .tgl[aria-expanded="true"],
 #app .ph.fr-reader-head #nbCount[aria-expanded="true"] {
-  background: var(--tfr-btn, var(--color-secondary, #c1593c));
+  background: var(--tfr-btn, var(--color-dark, #2d2927));
   color: var(--tfr-btn-ink, var(--color-white, #fff));
 }
 
@@ -1211,7 +1221,7 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
 #app .ph.fr-reader-head .ctr > .aaw > .tgl:focus-visible,
 #app .ph.fr-reader-head .ctr > .seg.pnav > button:focus-visible,
 #app .ph.fr-reader-head .ctr > .seg.lanes > button:focus-visible {
-  outline: 2px solid var(--tfr-btn, var(--color-secondary, #c1593c));
+  outline: 2px solid var(--tfr-btn, var(--color-dark, #2d2927));
   outline-offset: 2px;
 }
 
@@ -1269,10 +1279,10 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
 #app .aapop .reader-jump-form button,
 #app .aapop .reader-witnesses button {
   box-sizing: border-box;
-  border: 1px solid var(--tfr-btn, var(--color-secondary, #c1593c));
+  border: 1px solid var(--tfr-btn, var(--color-dark, #2d2927));
   border-radius: 3px;
   background: transparent;
-  color: var(--tfr-btn, var(--color-secondary, #c1593c));
+  color: var(--tfr-btn, var(--color-dark, #2d2927));
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
@@ -1289,7 +1299,7 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
   color: inherit;
 }
 #app .aapop .aaseg .tgl + .tgl {
-  border-left: 1px solid var(--tfr-btn, var(--color-secondary, #c1593c));
+  border-left: 1px solid var(--tfr-btn, var(--color-dark, #2d2927));
 }
 #app .aapop .sld .t1,
 #app .aapop .sld .t2 {
@@ -1316,17 +1326,17 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
 #app .aapop .aamob button[aria-pressed="true"],
 #app .aapop .reader-witnesses button[aria-pressed="true"],
 #app .aapop.rdtools .rdt[aria-pressed="true"] {
-  background: var(--tfr-btn, var(--color-secondary, #c1593c));
+  background: var(--tfr-btn, var(--color-dark, #2d2927));
   color: var(--tfr-btn-ink, var(--color-white, #fff));
-  border-color: var(--tfr-btn, var(--color-secondary, #c1593c));
+  border-color: var(--tfr-btn, var(--color-dark, #2d2927));
 }
 
 /* The only thing left in the popover still painted with his near-black
    --accent: the slider thumb, sitting inside a terracotta box. */
-#app .aapop input[type="range"] { accent-color: var(--tfr-btn, var(--color-secondary, #c1593c)); }
+#app .aapop input[type="range"] { accent-color: var(--tfr-btn, var(--color-dark, #2d2927)); }
 
 #app .aapop :is(button, .tgl):focus-visible {
-  outline: 2px solid var(--tfr-btn, var(--color-secondary, #c1593c));
+  outline: 2px solid var(--tfr-btn, var(--color-dark, #2d2927));
   outline-offset: 2px;
 }
 
