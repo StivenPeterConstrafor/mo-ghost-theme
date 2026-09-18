@@ -965,7 +965,11 @@ html.mo-embedded header.site-header,
 html.mo-embedded .site-footer,
 html.mo-embedded #mobile-nav { display: none !important; }
 html.mo-embedded { --mo-head: 0px; }
-}
+/* A stray `}` stood here. At the top level that is a parse error, and the
+   parser resyncs by DISCARDING THE NEXT CONSTRUCT — so the embed height
+   rule below it was never applied by any browser that ever loaded this
+   file. Found 2026-09-18 while chasing the same fault two hundred lines
+   down; see the note at the toolbar block. */
 html.mo-embedded .faith-port-read-page { height: 100dvh; }
 html.mo-embedded .ph { top: 0; }
 
@@ -1065,9 +1069,27 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
   html header.site-header, html body, html #app,
   html .faith-port-read-page { transition: none; }
 }
-}
 
 
+/* A NOTE ON WHY THIS DID NOT WORK THE FIRST TIME, 2026-09-18.
+   Every rule below was correct, top-specificity and live in the deployed
+   file, and the toolbar still painted bare. A stray `}` sat directly
+   above this block. At the top level that is a parse error, and a
+   browser resyncs from it by DISCARDING THE NEXT CONSTRUCT — which was
+   this block's base rule, and only that one, so the hover, focus and
+   segment rules below all survived and the bar came out half-dressed.
+   Nothing in the cascade was to blame and no amount of specificity would
+   have fixed it.
+
+   Two lessons, both paid for:
+   - A `}` that does not close anything is not cosmetic. Both of this
+     file's strays were eating a rule. Run the brace check over any
+     stylesheet you append to, and compare to ZERO, not to the file's
+     previous imbalance.
+   - Previewing a rule by appending a <style> to <head> tests it in the
+     LAST cascade position, which is not where this file loads. It hid
+     the fault completely. Preview by editing the real file and looking
+     at the real deploy. */
 /* ── THE READER TOOLBAR, BOXED ──────────────────────────────────────
    Ian, 2026-09-18: "Box the toolbar buttons too."
 
