@@ -49,15 +49,25 @@
     button.title=button.getAttribute('aria-label');
     notes.forEach(note=>note.classList.add('rm-original'));
   }
+  // The margin column is 224px of a 1600px screen, and it was reserved for every
+  // work the moment this module loaded, before anything asked whether the work had
+  // margin notes. Migne's do not: a Patrologia carries its apparatus as editorial
+  // notes printed at their own column, not as inline <note>s, so every one of the
+  // 12,000 of them held a quarter of the page open for notes that were never
+  // coming. Reserve it when there is something to put in it, and give the space
+  // back when there is not — re-asked on every pass, so a work that gains notes
+  // when a later section loads gets its column then.
+  function reserve(){document.documentElement.classList.toggle('fr-margin-notes', !!root.querySelector('.rm-marker'));}
   function enhance(){queued=false;
     root.querySelectorAll('.mnp:not(.edblock)').forEach(host=>{const notes=notesIn(host);if(!notes.length||host.querySelector('.headnote,.edinl'))return;marker(host,notes,false);host.classList.add('rm-group');});
     root.querySelectorAll('.mnote').forEach(note=>{if(!eligible(note)||note.parentElement.classList.contains('rm-group'))return;marker(note,[note],true);});
+    reserve();
   }
   sheet.querySelector('.rm-close').onclick=()=>close(true);
   document.addEventListener('fr-apparatus-open',e=>{if(e.detail?.kind&&e.detail.kind!=='margin')close(false);});
   sheet.addEventListener('toggle',e=>{if(e.newState==='closed'&&active)active.setAttribute('aria-expanded','false');});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(!native&&sheet.classList.contains('rm-open')||native&&sheet.matches(':popover-open'))){e.preventDefault();e.stopImmediatePropagation();close();}},true);
   if(!native)document.addEventListener('pointerdown',e=>{if(sheet.classList.contains('rm-open')&&!sheet.contains(e.target)&&!e.target.closest('.rm-marker')){sheet.classList.remove('rm-open');active?.setAttribute('aria-expanded','false');}});
-  document.documentElement.classList.add('fr-margin-notes');enhance();
+  enhance();
   new MutationObserver(records=>{if(queued||!records.some(r=>Array.from(r.addedNodes).some(n=>n.nodeType===1&&(n.matches('.mnote,.mnp')||n.querySelector('.mnote')))))return;queued=true;requestAnimationFrame(enhance);}).observe(root,{childList:true,subtree:true});
 })();

@@ -1657,7 +1657,8 @@ html.g-mobile.mh-hide .ph{transform:translateY(-108%)}
 html.g-mobile .app{transition:padding-top .28s var(--ease)}
 html.g-mobile.mh-hide .app{padding-top:env(safe-area-inset-top,0px)}
 html.g-mobile .frthumb{transition:transform .28s var(--ease)}
-/* thumb bar stays visible while reading — it is the ONLY door to Search/Contents on a phone (owner 2026-08-02) */
+/* The thumb bar leaves with the masthead again (owner 2026-09-17) — the rules are below,
+   beside the masthead restyle that used to cancel them. */
 html.g-mobile .ph .phl{flex:1;min-width:0}
 html.g-mobile .ph .ctr{flex:0 0 auto}
 html.g-mobile .ph .phl{align-items:center;gap:.5rem}
@@ -2007,7 +2008,33 @@ html[data-theme="dark"] .app.rflow .fmark.titlepage .ff{color:var(--muted)}
 /* ═══ FR-EDITION end ═══ */
 
 /* Reader masthead: identity, citation, and primary reading controls. */
-html:not(.fr-plain) .ph.fr-reader-head{padding:10px 24px;gap:24px;background:var(--bg);border-bottom:1px solid var(--border);box-shadow:none;transform:none;transition:none}
+html:not(.fr-plain) .ph.fr-reader-head{padding:10px 24px;gap:24px;background:var(--bg);border-bottom:1px solid var(--border);box-shadow:none;transition:transform .28s var(--ease)}
+/* ── Reading, uninterrupted ───────────────────────────────────────────────────
+   Ported from the corpus site, where the same two declarations that used to end
+   this rule — transform:none;transition:none — were the reason the hide never
+   moved anything. The engine has driven it since 2026-07-22: down past 90px adds
+   mh-hide on a phone or mh-mini on a desktop, up 24px takes them off, a tap on
+   the prose toggles them. The thumb bar was held back on 2026-08-02 as the only
+   door to Search and Contents on a phone; the owner asked for it on 2026-09-17,
+   and that door is still one scroll-up or one tap away.
+
+   No will-change: .ph carries backdrop-filter, and promoting a blurred fixed bar
+   to its own layer is where Safari drops the blur. This site's own masthead sits
+   above the reader bar, so faith-port-reader-skin.css adds the extra offset the
+   bar needs to clear it; everything else is this file's. */
+html.g-mobile.mh-hide .frthumb{transform:translateY(101%)}
+html.mh-mini .ph.fr-reader-head{transform:translateY(-101%)}
+/* The page is held below the bar by .app's own padding, so on a desktop the
+   departing bar uncovered its height in bare ground instead of the text it had
+   been covering. The phone rule above has always given that padding back; this
+   is the other half of it. On this site the skin restates both, because our own
+   masthead pads the body as well and the two have to leave together. */
+html .app{transition:padding-top .28s var(--ease)}
+html.mh-mini .app{padding-top:0}
+@media(prefers-reduced-motion:reduce){
+ html:not(.fr-plain) .ph.fr-reader-head{transition:none}
+ html.g-mobile .frthumb,html .app{transition:none}
+}
 html:not(.fr-plain) .fr-reader-head .phl{align-items:center;gap:12px;flex:1;min-width:0}
 html:not(.fr-plain) .fr-reader-head .reader-identity{display:block;min-width:0;flex:1}
 html:not(.fr-plain) .fr-reader-head h1{font-size:20px;line-height:1.25;letter-spacing:0;min-width:0;max-width:100%;margin:0;font-variant:normal}
@@ -2027,7 +2054,7 @@ html:not(.fr-plain) .fr-reader-head .pnav button{min-width:30px;padding:0 5px;fo
 html:not(.fr-plain) .fr-reader-head .pgjump{padding:0 12px 0 2px;border-right:1px solid var(--border)!important}
 html:not(.fr-plain) .fr-reader-head .pgjump input{width:5ch;min-height:36px;font:13px var(--font-body);font-variant-numeric:tabular-nums;border:0;border-radius:4px;background:var(--card);color:var(--fg)}
 html:not(.fr-plain) .fr-reader-head .pg-total{font:12px var(--font-body);font-variant-numeric:tabular-nums}
-html:not(.fr-plain) .fr-reader-head #rdAbout,html:not(.fr-plain) .fr-reader-head .ctr>#rdFlow,html:not(.fr-plain) .fr-reader-head .ctr>#rdRel,html:not(.fr-plain) .fr-reader-head #thTop{display:none}
+html:not(.fr-plain) .fr-reader-head #rdAbout,html:not(.fr-plain) .fr-reader-head .ctr>#rdFlow,html:not(.fr-plain) .fr-reader-head .ctr>#rdRel{display:none}
 html:not(.fr-plain) .fr-reader-head #rsBtn{order:2;min-width:40px;min-height:40px;border:0;border-radius:6px}
 html:not(.fr-plain) .fr-reader-head .aaw{order:3}
 html:not(.fr-plain) .fr-reader-head #aaBtn{font-size:17px;letter-spacing:0;min-height:44px;min-width:44px}
@@ -2035,10 +2062,21 @@ html:not(.fr-plain) .fr-reader-head .aapop{width:min(340px,calc(100vw - 24px));m
 html:not(.fr-plain) .fr-reader-head .aamob{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px}
 html:not(.fr-plain) .fr-reader-head .aamob button,.reader-jump-form button,.reader-witnesses button{border:1px solid var(--border);background:none;color:var(--fg);border-radius:5px;padding:8px 10px;font:13px var(--font-body);min-height:40px;cursor:pointer}
 .reader-jump-form{margin:0 0 14px}.reader-jump-form label,.reader-witnesses>span{display:block;font:13px/1.5 var(--font-body);margin-bottom:6px;color:var(--muted)}.reader-jump-form>div{display:flex;gap:8px}.reader-jump-form input{width:0;min-width:0;flex:1;min-height:40px;border:1px solid var(--border);background:var(--bg);color:var(--fg);border-radius:5px;padding:6px 10px;font:16px var(--font-body)}.reader-jump-form p{font:12px/1.5 var(--font-body);color:var(--muted);margin:5px 0}.reader-jump-form p:empty{display:none}.reader-witnesses{border-top:1px solid var(--border);padding-top:12px;margin-top:12px}.reader-witnesses>div{display:flex;flex-wrap:wrap;gap:6px}.reader-witnesses button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+/* THE SOURCE ROW BELONGS TO THE MASTHEAD, NOT THE Aa MENU. A Migne Greek volume prints
+   two columns, Greek and its facing Latin, and which of them you are reading is the first
+   thing about the page — the corpus site puts Greek | Latin | Greek · Latin in the reader
+   bar on its own wrapped row, and this port had buried the same three buttons inside the
+   Aa popover, where nothing showed them. These six rules are that row, ported with it. */
+html:not(.fr-plain) .ph.fr-reader-head:has(>.reader-witnesses){flex-wrap:wrap!important}
+.fr-reader-head>.reader-witnesses{display:flex;align-items:center;flex-basis:100%;gap:8px;width:100%;margin:4px 0 0;padding:6px 0 0}
+.fr-reader-head>.reader-witnesses>span{margin:0;color:var(--muted);font-size:12px}
+.fr-reader-head>.reader-witnesses>div{gap:6px}
+.fr-reader-head>.reader-witnesses button{min-height:44px;font-size:13px;padding:7px 10px}
+.fr-reader-head>.reader-witnesses button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 html:not(.fr-plain) .fr-reader-head :focus-visible{outline:2px solid var(--fg);outline-offset:3px}
 @media(min-width:881px) and (max-width:1180px){html:not(.fr-plain) .ph.fr-reader-head{gap:12px;padding-inline:16px}.fr-reader-head .mh-home span{display:none}html:not(.fr-plain) .fr-reader-head .ctr{gap:6px}html:not(.fr-plain) .fr-reader-head .seg button{padding-inline:7px}html:not(.fr-plain) .fr-reader-head h1{font-size:18px}}
 @media(max-width:880px){
- html.g-mobile:not(.fr-plain) .ph.fr-reader-head{padding:7px max(10px,env(safe-area-inset-right)) 7px max(6px,env(safe-area-inset-left));gap:6px;flex-wrap:nowrap;transform:none}
+ html.g-mobile:not(.fr-plain) .ph.fr-reader-head{padding:7px max(10px,env(safe-area-inset-right)) 7px max(6px,env(safe-area-inset-left));gap:6px;flex-wrap:nowrap}
  html.g-mobile:not(.fr-plain) .fr-reader-head .phl{gap:3px}
  html.g-mobile:not(.fr-plain) .fr-reader-head h1{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;font-size:18px;line-height:1.18;max-height:2.36em;overflow:hidden}
  html.g-mobile:not(.fr-plain) .fr-reader-head .reader-reference{font-size:12px;gap:6px;margin-top:2px}
@@ -2201,3 +2239,10 @@ html.fr-research-tools .selchip{display:none!important}
 .pld-note-same{grid-template-columns:minmax(0,1fr)}
 .pld-note-same .pld-note-la{color:inherit}
 @media(max-width:820px){.pld-editorial .pld-note{grid-template-columns:minmax(0,1fr);gap:4px 0}.pld-editorial .pld-note-en{padding-bottom:2px}}
+
+/* The reading theme, back in the bar. It was hidden here and left only inside the
+   Aa menu, which is where a reader looks for type size and not for light or dark;
+   the control worked the whole time and could not be found. Light, sepia and dark
+   cycle on it and the icon says which you are in. The explicit choice is the only
+   way dark is reached — the OS preference still does not get to choose it. */
+html:not(.fr-plain) .fr-reader-head #thTop{display:inline-flex;align-items:center;justify-content:center}

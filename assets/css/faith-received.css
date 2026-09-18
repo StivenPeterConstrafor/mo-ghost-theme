@@ -16822,13 +16822,86 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
 /* The open panel. Indented to the caret so the works sit under the name
    rather than beside it. */
 .faith-room-blocks--fold .blist { margin: 0 0 4px; padding-left: 26px; }
+
+/* ── One line per work ────────────────────────────────────────────────
+   Opening an author gave every work three stacked lines and a rule of its
+   own: the English title at reading size, the Latin under it, and a bare
+   volume number under that. Alcuin's thirty-five ran past two full screens
+   and the index stopped being an index.
+
+   A work is one line now. The title carries it; the original title follows
+   inline, quiet and italic, because it is the same work said again and not
+   a second fact; the place sits in a column of its own on the right, where
+   the numbers line up and can be read down. Three lines to one, no rule
+   between them, the hairline only where the eye needs the break. */
+/* No rule between works. A hairline under all thirty-five of Alcuin's is
+   thirty-four more lines than the eye needs: the title and its original sit
+   together and the space between pairs does the separating. The block's own
+   rule above still closes the list off from the next author. */
+.faith-room-blocks--fold .blist li { border-top: 0; }
+.faith-room-blocks--fold .blist a,
+.faith-room-blocks--fold .blist .faith-room-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0 16px;
+  padding: 5px 0 9px;
+}
+.faith-room-blocks--fold .blist .brow-t {
+  display: inline;
+  font-size: 16px;
+  line-height: 1.35;
+}
+.faith-room-blocks--fold .blist .brow-la {
+  display: block;
+  grid-column: 1;
+  font-size: 13px;
+  line-height: 1.3;
+  font-style: italic;
+  color: var(--color-muted);
+}
+.faith-room-blocks--fold .blist .brow-m {
+  grid-column: 2;
+  grid-row: 1;
+  display: block;
+  margin-top: 0;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  /* Never wide enough to starve the title. The longest real address is 28
+     characters; anything longer is rendered as a subtitle instead, and this
+     ceiling is the guard in case a catalogue ever sends one through. */
+  max-width: 18ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-muted);
+}
+/* A volume that describes itself rather than naming a place: "Vol. 2: The Votes
+   of the Assembly and Minutes, Sessions 45-198". It is part of what the work is,
+   so it sits under the title and wraps like the title does. */
+.faith-room-blocks--fold .blist .brow-sub {
+  display: block;
+  grid-column: 1;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--color-muted);
+}
+@media (max-width: 640px) {
+  .faith-room-blocks--fold .blist a,
+  .faith-room-blocks--fold .blist .faith-room-row { grid-template-columns: minmax(0, 1fr); }
+  .faith-room-blocks--fold .blist .brow-m { grid-column: 1; grid-row: auto; margin-top: 2px; }
+}
 .faith-room-blocks--fold .btrad-all { margin: 10px 0 20px 26px; }
 
 /* A long shelf runs in two columns once it is open. Nothing re-flows
    across a block boundary here, so this cannot move anything but itself. */
+/* NO sub-columns inside an open author. The block already sits in one of the
+   page's two columns, so splitting it again left each work about 230px wide and
+   wrapped every title and every original title. One column, full block width. */
 @media (min-width: 900px) {
-  .faith-room-blocks--fold .btrad--wide[open] .blist { columns: 2; column-gap: 48px; }
-  .faith-room-blocks--fold .btrad--wide[open] .blist li { break-inside: avoid; }
+  .faith-room-blocks--fold .btrad--wide[open] .blist { columns: auto; }
 }
 
 @media (max-width: 640px) {

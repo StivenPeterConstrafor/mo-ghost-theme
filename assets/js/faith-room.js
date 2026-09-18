@@ -151,11 +151,69 @@
   // ?tradition=The+Fathers&denomination=Latin+Fathers and being offered
   // only an A-Z was the gap: the same 8,989 works, the same shelf, and no
   // way to reach PL 139 but to know an author who is in it.
+  // A Patrologia volume is a printed object whose contents run in Migne's order.
+  // A year and a century are not: nothing was printed "in" 1640 in a sequence.
+  // Only a printed shelf opens on the work order; the others open on the authors.
+  SHELVES.pld.printed = true;
+  SHELVES.pg.printed = true;
+  SHELVES.po.printed = true;
+
+  // Every shelf has a second way in, not only the three Migne numbered.
+  //
+  // A Patrologia is cited by volume and that is the whole reason those three
+  // rooms carry a second view. The other shelves are cited by nothing, but they
+  // are still ordered by something a reader has in hand: Early English Books is
+  // dated to the year it was printed, and everything else sits in a century.
+  // So a shelf offers whichever of the three its own works can answer, and the
+  // machinery below — the grid, the tiles, the head, the way back — does not
+  // care which of them it was handed.
+  const YEAR_SHELF = {
+    view: "year", param: "yr", tab: "By year", one: "year", many: "years",
+    of(w) {
+      const y = String(w.eyebrow || "").match(/\b(1[3-9]\d\d)\b/);
+      return y ? y[1] : "";
+    },
+    face: () => "",
+    name: (s) => s.v,
+    cite: (s) => s.v,
+    mark: () => "",
+    lead: "Printed year by year. Choose a year to see what came out in it.",
+  };
+  const CENTURY_SHELF = {
+    view: "century", param: "cy", tab: "By century", one: "century", many: "centuries",
+    of: (w) => String(cent(w) || ""),
+    face: () => "",
+    name: (s) => (window.MOCentury ? window.MOCentury.label(Number(s.v)) : s.v),
+    cite: (s) => (window.MOCentury ? window.MOCentury.label(Number(s.v)) : s.v),
+    mark: () => "",
+    lead: "Choose a century to see what this shelf holds from it.",
+  };
+
   const DENOM_SHELF = { "Latin Fathers": "pld", "Greek Fathers": "pg", "Eastern Fathers": "po" };
+  // Which second view this shelf can answer. The named series first, because a
+  // volume is an address and a century is only a date; then the year, where the
+  // works carry one; then the century, which every dated work has. A shelf whose
+  // works are undated — the creeds — gets no second view, and the toggle hides.
+  function kindFor(list) {
+    if (!list || !list.length) return null;
+    const n = list.length;
+    let years = 0, cents = 0;
+    for (const w of list) {
+      if (YEAR_SHELF.of(w)) years += 1;
+      if (cent(w)) cents += 1;
+    }
+    if (years >= n * 0.6) return YEAR_SHELF;
+    if (cents >= n * 0.6) return CENTURY_SHELF;
+    return null;
+  }
+
   function shelfFor(denom) {
-    if (collectionId !== "all") return SHELVES[collectionId] || null;
+    if (collectionId !== "all") return SHELVES[collectionId] || kindFor(works);
     const id = DENOM_SHELF[String(denom || "").trim()];
-    return id ? SHELVES[id] : null;
+    if (id) return SHELVES[id];
+    // On the all-works page a shelf is whatever the filters have cut it down to,
+    // so the question is asked of the works actually in hand.
+    return kindFor(works.filter(matches));
   }
   let shelf = shelfFor(denomination);
   // A hand-typed address is accepted on the shelf mark alone, so
@@ -226,6 +284,17 @@
       const an = surname(a.author), bn = surname(b.author);
       return an.localeCompare(bn) || cmpTitle(a.title, b.title);
     });
+    // A shelf with no named series cannot be known until its works are in, so the
+    // address is read here rather than at startup: a reader who arrived on
+    // ?view=year&yr=1640 asked for that year before the catalogue had landed, and
+    // reading it any earlier dropped it and showed them the whole grid.
+    if (!shelf) {
+      shelf = shelfFor(denomination);
+      if (shelf) {
+        vol = String(params.get(shelf.param) || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 12);
+        if (vol || params.get("view") === shelf.view) view = shelf.view;
+      }
+    }
     rebuildShelfOrder();
     render();
   });
@@ -234,12 +303,12 @@
   // collection; on the all-works page it is only the works under the
   // denomination, or Patrologia Graeca's volume 44 would be counted into
   // Patrologia Latina's grid, both series carrying a `volume`.
-  let shelfDenom = denomination;
+  let shelfSig = null;
   function rebuildShelfOrder() {
     if (!shelf) { shelfOrder = []; return; }
-    shelfOrder = indexShelves(collectionId === "all"
-      ? works.filter((w) => String(w.tradition || "").trim() === denomination)
-      : works);
+    // Everything the filters admit, so a year grid under Puritan counts Puritan
+    // works and a volume grid under Latin Fathers counts that series only.
+    shelfOrder = indexShelves(collectionId === "all" ? works.filter(matches) : works);
   }
 
   // Every shelf mark in the collection, once each, in the order the
@@ -483,12 +552,38 @@
   // work's volume, which is what tells two printings of one title
   // apart. A caller that has already said which volume this is passes
   // its own, or an empty string for none.
+  // Where the work is, in the form its own shelf is cited by. The bare "101"
+  // under a title in the Patrologia said nothing — a number with no series in
+  // front of it is not an address. The catalogues already carry the citable
+  // form in `eyebrow` for the four shelves that have one; the Latin Library is
+  // cited by the volume of its set, and the confessions and the English
+  // editions are not cited by place at all, so they get none rather than a
+  // tradition name pretending to be a location.
+  const WHERE = {
+    pld: (w) => w.eyebrow, pg: (w) => w.eyebrow, po: (w) => w.eyebrow,
+    eebo: (w) => w.eyebrow, tfr: (w) => w.volume,
+  };
+  function where(w) {
+    const f = WHERE[w.corpus];
+    return f ? String(f(w) || "").trim() : "";
+  }
+
   function row(w, mark) {
     const second = w.titleLatin && w.titleLatin !== w.title ? w.titleLatin : "";
     const second2 = second ? `<span class="brow-la">${escapeHtml(second)}</span>` : "";
-    const m = mark === undefined ? w.volume : mark;
-    const vol = m ? `<span class="brow-m">${escapeHtml(m)}</span>` : "";
-    const inner = `<span class="brow-t">${escapeHtml(w.title || w.id)}</span>${second2}${vol}`;
+    const m = String(mark === undefined ? where(w) : mark || "").trim();
+    // An address is short. "PL 101", "1640", "Tome 2 · fasc. 4" — the longest of
+    // them is 28 characters, and they belong in the right-hand column where the
+    // numbers line up. The Latin Library's volume field is not always an address:
+    // it runs to 141 characters of description, and a volume of the Westminster
+    // Assembly minutes put in a nowrap column took the whole row, squeezed the
+    // title to nothing and set it one word per line with the description printed
+    // over the top of it. Anything that long is a subtitle, so it goes under the
+    // title where a subtitle goes, and wraps.
+    const ADDRESS = 30;
+    const vol = m && m.length <= ADDRESS ? `<span class="brow-m">${escapeHtml(m)}</span>` : "";
+    const sub = m && m.length > ADDRESS ? `<span class="brow-sub">${escapeHtml(m)}</span>` : "";
+    const inner = `<span class="brow-t">${escapeHtml(w.title || w.id)}</span>${sub}${second2}${vol}`;
     if (w.readable !== false && w.url) {
       return `<li><a href="${escapeHtml(w.url)}">${inner}</a></li>`;
     }
@@ -665,13 +760,25 @@
     // another, or off the Fathers entirely, between renders. A volume
     // number from the series they just left means nothing in the one they
     // arrived at, so it goes with the shelf.
-    if (collectionId === "all" && denomination !== shelfDenom) {
-      shelfDenom = denomination;
+    // The shelf follows the filters, because on the all-works page the filters are
+    // what a shelf IS. A signature rather than one field: moving from Puritan to
+    // Medieval changes which second view the works can answer, and so does
+    // changing collection or century.
+    const sig = [collection, tradition, denomination, century].join("\u0000");
+    if (sig !== shelfSig) {
+      shelfSig = sig;
       const next = shelfFor(denomination);
       if (next !== shelf) {
+        const first = shelf === null;
         shelf = next;
-        vol = "";
+        // First time this shelf is known, the address gets its say: a reader who
+        // arrived on ?view=year&yr=1640 asked for that year before the catalogue
+        // had even landed, and dropping it sent them to an empty grid.
+        vol = first && shelf
+          ? String(params.get(shelf.param) || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 12)
+          : "";
         if (!shelf) view = "author";
+        else if (vol || params.get("view") === shelf.view) view = shelf.view;
         else if (view !== "author") view = shelf.view;
       }
       rebuildShelfOrder();
@@ -692,7 +799,7 @@
     // two pages.
     // Inside one volume there are no author blocks to page through: the volume
     // itself is the page. `order` is Migne's, set per series in faith-corpora.js.
-    const inVolume = onShelf && Boolean(chosen);
+    const inVolume = onShelf && Boolean(chosen) && shelf.printed === true;
     const printed = inVolume
       ? scoped.slice().sort((a, b) => (a.order == null ? Infinity : a.order) - (b.order == null ? Infinity : b.order)
         || cmpTitle(a.title, b.title))

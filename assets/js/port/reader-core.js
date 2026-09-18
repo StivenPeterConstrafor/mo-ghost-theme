@@ -5158,7 +5158,18 @@ async function pgZoneSidecar(id){
   return window.__pgzCache[id];
 }
 async function loadPgCanon(ws){
-  const id=ws.slice(3);
+  const id=ws.slice(3),pgVersion="";   // this site reads the PG canon from R2 under /v1/ and
+  // versions nothing by query: every pg fetch below has always been bare and the store's own
+  // cache headers decide. Kept as an empty string so the lines stay identical to the corpus
+  // site's, which is the copy this region is ported from.
+  // THE VOLUME PAGEVIEW IS ON R2 UNDER /v1/ LIKE EVERYTHING ELSE. Its URL comes out of
+  // the TEI as the Vercel Blob address it was written with, and fr-noblob.js rebases the
+  // HOST onto the library worker but leaves the path alone, so this asked the worker for
+  // /tei/pgpv/089.xml and got a 404. The pageview is where Migne's facing Latin lives, one
+  // MainText_ColLatin zone per opening, so losing it made the Greek + Latin view fall back
+  // to Greek alone — silently, with the label still reading Greek. Same /v1/ adaptation the
+  // canon fetch above already carries. (/v1/tei/pgpv/089.xml is 5,417,500 chars.)
+  const _pvR2=u=>u?String(u).replace(/\/(?!v1\/)tei\//,"/v1/tei/"):u;
   let _pgZone=null;   // page-keyed ColGreek zones (set when the body is mixed)
   const _healGrc=s=>String(s)
     .replace(/([\u0370-\u03FF\u1F00-\u1FFF])-\s?(?=[\u0370-\u03FF\u1F00-\u1FFF])/g,"$1")
@@ -5167,24 +5178,24 @@ async function loadPgCanon(ws){
   let _zoneReplace=true;   // false = CLEAN body (owner 2026-08-18 pg-3223: dirty vol-34 zones
                            // were OVERWRITING a 99%-Greek body with Latin+apparatus glue) —
                            // zones then serve ARBITRATION only (post-walk <0.15 disagreement)
-  window.__pgAuth=window.__pgAuth||fetch(BLOB+"/v1/pgauthors.json").then(r=>r.ok?r.json():{}).catch(()=>({}));
+  window.__pgAuth=window.__pgAuth||fetch(BLOB+"/v1/pgauthors.json"+pgVersion).then(r=>r.ok?r.json():{}).catch(()=>({}));
   window.__pgFetchCache=window.__pgFetchCache||{};
   const _pfc=window.__pgFetchCache[id]=window.__pgFetchCache[id]||{};
   const _cached=(k,mk)=>(_pfc[k]=_pfc[k]||mk().catch(e=>{delete _pfc[k];throw e;}));
   const [xml,toc,vtx,pgen,pggap]=await Promise.all([
-    _cached("xml",()=>((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/v1/tei/pg/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/v1/tei/pg/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();}))),
-    _cached("toc",()=>fetch(BLOB+"/v1/pgtoc/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null)),
+    _cached("xml",()=>((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/v1/tei/pg/"+id+".xml"+pgVersion).then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/v1/tei/pg/"+id+".xml"+pgVersion).then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();}))),
+    _cached("toc",()=>fetch(BLOB+"/v1/pgtoc/"+id+".json"+pgVersion).then(r=>r.ok?r.json():null).catch(()=>null)),
     // the PG site's own cleaned vision transcription, per column (owner 2026-08-17
     // 'let the reader just copy the page') — staged for mixed works; absent elsewhere
-    _cached("vtx",()=>fetch(BLOB+"/v1/pgvtx/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null)),
+    _cached("vtx",()=>fetch(BLOB+"/v1/pgvtx/"+id+".json"+pgVersion).then(r=>r.ok?r.json():null).catch(()=>null)),
     // EN top-up sidecar (2026-08-17): column-keyed translations for the 28 works the
     // canon (and the PG site) never carried English for
-    _cached("pgen",()=>fetch(BLOB+"/v1/pgen/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null)),
+    _cached("pgen",()=>fetch(BLOB+"/v1/pgen/"+id+".json"+pgVersion).then(r=>r.ok?r.json():null).catch(()=>null)),
     // BOUNDARY-LOSS sidecar (owner 2026-08-18 'transition between works — one work ending
     // and another beginning on the same page'): the opening column(s) the canon never
     // carried, recovered from the volume pageview zones / plate vision (125 works,
     // pg-105 class — Justin's Apology opened mid-sentence at col 329)
-    _cached("pggap",()=>fetch(BLOB+"/v1/pggap/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null))]);
+    _cached("pggap",()=>fetch(BLOB+"/v1/pggap/"+id+".json"+pgVersion).then(r=>r.ok?r.json():null).catch(()=>null))]);
   // the SITE vtx / gap sidecars are reading surfaces too — heal them like the canon
   const _healDeep=o=>{if(!o)return o;for(const k in o){const v=o[k];
     if(typeof v==="string")o[k]=_healGrc(v);
@@ -5223,11 +5234,36 @@ async function loadPgCanon(ws){
     let _lat=0,_grc=0;
     (function _cnt(node){for(const ch of node.children){
       const ty=ch.getAttribute?ch.getAttribute("type"):null;
-      if(ch.localName==="div"&&(ty==="translation"||ty==="secondary"||ty==="diplomatic"))continue;
+      if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
       if(ch.localName==="p"){const t=ch.textContent;
         _lat+=(t.match(/[A-Za-z]/g)||[]).length;_grc+=(t.match(/[Ͱ-Ͽἀ-῿]/g)||[]).length;}
       else if(ch.localName==="div")_cnt(ch);}})(doc.querySelector("body")||doc.documentElement);
-    if(_lat+_grc>2000&&_lat>(_lat+_grc)*0.6)src="ocr";
+    if(_lat+_grc>2000&&_lat>(_lat+_grc)*0.6){
+      // LATIN-ONLY WORKS READ IN THE PARALLEL VIEW (owner 2026-09-16 'fix the residue', after PG 78 col. 61): when the canon carries Latin
+      // and no Greek column anywhere — a Latin dissertation, a preface, a set of editor's notes — the parallel path now lays the site's
+      // paragraphs beside their English column by column, so it is the faithful surface; the whole-page transcription stays the default
+      // for a Latin-dominant work that still prints Greek columns (the 2026-08-18 rule).
+      let _latinOnly=false;
+      try{const _co=Object.values(window.FRPgParallel.canonicalOpenings(doc));_latinOnly=_co.length>0&&_co.some(o=>o.la)&&!_co.some(o=>o.grc);}catch(e){}
+      if(_latinOnly){src="grcla";window.__pgLatinOnly=true;}else src="ocr";
+    }
+  }
+  // The opening can be Latin even in a predominantly Greek work. Inspect only
+  // its first original-language column, never the translation or catalogue head.
+  // Explicit source choices and the existing whole-page transcription default win.
+  if(!_srcParam&&src==='grc'&&window.FRMigneNavigation?.sourceForOpening){
+    let firstColumn=null,finished=false;const opening=[];
+    const visit=node=>{for(const child of node.children){
+      if(finished)return;const type=child.getAttribute?.('type'),tag=child.localName;
+      if(tag==='div'&&(!window.FRMigneNavigation.isReadingDivision(type)||type==='contents'))continue;
+      if(tag==='pb'||tag==='milestone'&&child.getAttribute('unit')==='column'){
+        const n=child.getAttribute('n');if(!/^\d+$/.test(n||''))continue;
+        if(firstColumn==null)firstColumn=n;else if(n!==firstColumn&&opening.length){finished=true;return;}
+      }else if(tag==='p'&&child.getAttribute('xml:lang')!=='en'){const text=child.textContent.trim();if(text)opening.push(text);}
+      else if(tag==='div')visit(child);
+    }};
+    const body=doc.querySelector('body');if(body)visit(body);
+    if(window.FRMigneNavigation.sourceForOpening(opening.join(' '))==='la')src='la';
   }
   const mk=()=>{const d=document.implementation.createDocument(null,"TEI",null);
     const tx=d.createElement("text");d.documentElement.appendChild(tx);return [d,tx];};
@@ -5257,7 +5293,7 @@ async function loadPgCanon(ws){
       else cur=cur?cur+" "+sn:sn;});
     if(cur)bucket.push(cur);};
   const _carveEn=(t,bucket)=>{
-    let _rest=t,_guard=0;
+    let _rest=window.FRPgParallel.cleanEnglish(t),_guard=0;
     while(_rest&&_guard++<12){
       const m2=_rest.match(_RXC),cand2=m2&&_capsHead(m2[1]);
       const m3=_rest.match(_DAYRX);
@@ -5272,11 +5308,17 @@ async function loadPgCanon(ws){
     }
     return bucket;};
   let _lastEnCol=0;
+  // THE SITE SIDECAR WINS PER COLUMN (owner 2026-09-15, PG 78 col. 61 default view: 'PART THREE…' printed twice): a work that carries both
+  // the old machine English and the site's column-keyed English showed both for the same column. Where the sidecar speaks for a column,
+  // the machine lane's paragraphs for that column stay out of the English lane.
+  const _sidecarCols=new Set([...doc.querySelectorAll('div[type="translation"][resp="#site-sidecar"] p, div[type="translation"][resp="#site-sidecar"] head')].map(el=>{
+    let n=+(el.getAttribute("n")||0);if(!n){const m=(el.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}return n;}).filter(Boolean));
   [...doc.querySelectorAll('div[type="translation"] p')].forEach(pp=>{
     let n=+(pp.getAttribute("n")||0);
     if(!n){const m=(pp.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}
     if(!n)n=_lastEnCol;else _lastEnCol=n;   // unanchored p continues the previous column
     if(!n)return;
+    if(_sidecarCols.size&&_sidecarCols.has(n)&&(pp.closest?pp.closest('div[type="translation"]'):null)?.getAttribute("resp")!=="#site-sidecar")return;
     const t=pp.textContent.replace(/\s+/g," ").trim();if(!t)return;
     // a whole-block caps line is a printed division head — 'HOMILY I' (no period, so the
     // embedded-rubric regex never fires) arrived as body text and the outline lost the
@@ -5287,12 +5329,33 @@ async function loadPgCanon(ws){
     // THE SAME MONTH. THE THIRD DAY. The contest…") — carve every caps-run out as its own
     // head block so the aligner can never fuse a division into a paragraph
     _carveEn(t,enByCol[n]=enByCol[n]||[]);});
+  // PRINTED ENGLISH PARAGRAPHS (owner 2026-09-15 'rich labelled inner text like the patrologia site'): the site-sidecar's own
+  // <p>/<head> sequence per column, UNCARVED — the paragraph basis in alignOpening pairs these with the source paragraphs when the
+  // counts agree; the carved enByCol stays the fallback for every other opening.
+  const enParasByCol={};
+  [...doc.querySelectorAll('div[type="translation"][resp="#site-sidecar"] p, div[type="translation"][resp="#site-sidecar"] head')].forEach(el=>{
+    let n=+(el.getAttribute("n")||0);if(!n){const m=(el.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}
+    if(!n)return;const t=el.textContent.replace(/\s+/g," ").trim();if(!t)return;
+    (enParasByCol[n]=enParasByCol[n]||[]).push(el.localName==="head"?"\u0001H"+t:t);});
   // page spans (n -> next pb) for span-union of vtx and EN lanes
+  const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=window.FRPgParallel.printedColumns(doc);
+  const _pgOwned=new Set(Object.keys(_canonOpenings).filter(k=>_canonOpenings[k].verified));
+  // Older links could name a following work's column while retaining this work's ID.
+  // Resolve only a verified overrun into the immediately following catalogue work.
+  if(_pgOwned.size){
+    const reference=frReaderBlockReference(location.hash)?.page||new URLSearchParams(location.search).get('p');
+    const lastColumn=Math.max(...[..._pgOwned].flatMap(k=>Object.keys(_canonOpenings[k].columns).map(Number)));
+    if(reference&&Number(reference)>lastColumn){try{
+      const spine=await fetch(BLOB+'/v1/pgvol/'+vol+'.json').then(r=>r.ok?r.json():null);
+      const next=window.FRPgParallel.nextWorkReference(spine?.works||[],id,reference,lastColumn);
+      if(next){const url=new URL(location.href);url.searchParams.set('w','pg-'+next);url.searchParams.delete('ws');url.searchParams.set('p',reference);url.hash='b'+reference+'-0';location.replace(url);return new Promise(()=>{});}
+    }catch(_){/* Keep the explicit link when a neighbouring work cannot be verified. */}}
+  }
   const _bodyPage={};
   {let _bp=null;
    (function bt(node){for(const ch of node.children){
      const ty=ch.getAttribute?ch.getAttribute("type"):null;
-     if(ch.localName==="div"&&(ty==="translation"||ty==="secondary"||ty==="diplomatic"))continue;
+     if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
      if(ch.localName==="pb"||(ch.localName==="milestone"&&ch.getAttribute("unit")==="column")){const nn=+ch.getAttribute("n");if(nn)_bp=nn;}
      else if(ch.localName==="p"&&_bp!=null){const t=ch.textContent.replace(/\s+/g," ").trim();
        if(t)_bodyPage[_bp]=(_bodyPage[_bp]?_bodyPage[_bp]+" ":"")+t;}
@@ -5301,7 +5364,7 @@ async function loadPgCanon(ws){
    const pbs=[];
    (function pw(node){for(const ch of node.children){
      const ty=ch.getAttribute?ch.getAttribute("type"):null;
-     if(ch.localName==="div"&&(ty==="translation"||ty==="secondary"||ty==="diplomatic"))continue;
+     if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
      if(ch.localName==="pb"||(ch.localName==="milestone"&&ch.getAttribute("unit")==="column")){const nn=+ch.getAttribute("n");if(nn)pbs.push(nn);}
      else if(ch.localName==="div")pw(ch);}})(doc.querySelector("body")||doc.documentElement);
    for(let i=0;i<pbs.length;i++){if(window.__pgPbNext[pbs[i]]!==undefined)continue;
@@ -5321,7 +5384,7 @@ async function loadPgCanon(ws){
       Object.assign(enByCol,shifted);
     }}}
   // pgen top-up: columns the canon translation never covered take the sidecar English
-  if(pgen)Object.keys(pgen).forEach(k=>{const n=+k;
+  if(pgen&&!_pgOwned.size)Object.keys(pgen).forEach(k=>{const n=+k;
     if(!n||(enByCol[n]&&enByCol[n].join("").length>120))return;
     // a '## ' line is the printed division heading (HOMILY III. On the firmament), not a
     // paragraph — mark it so the renderer sets a head and the outline can see it
@@ -5341,7 +5404,7 @@ async function loadPgCanon(ws){
   {const pbOnly=[];
    (function pspd(node){for(const ch of node.children){
      const ty=ch.getAttribute?ch.getAttribute("type"):null;
-     if(ch.localName==="div"&&(ty==="translation"||ty==="secondary"||ty==="diplomatic"))continue;
+     if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
      if(ch.localName==="pb"){const nn=+ch.getAttribute("n");if(nn&&!pbOnly.includes(nn))pbOnly.push(nn);}
      else if(ch.localName==="div")pspd(ch);}})(doc.querySelector("body")||doc.documentElement);
    if(pbOnly.length>=5){
@@ -5366,7 +5429,7 @@ async function loadPgCanon(ws){
       const bodyEl=doc.querySelector("body");
       if(bodyEl){
         const clone=bodyEl.cloneNode(true);
-        clone.querySelectorAll('div[type="translation"],div[type="secondary"],div[type="diplomatic"]').forEach(d=>d.remove());
+        clone.querySelectorAll('div[type="translation"],div[type="secondary"],div[type="diplomatic"],div[type="witness"],div[type="edition"]').forEach(d=>d.remove());
         const t=clone.textContent;
         const g=(t.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;
         const l=(t.match(/[A-Za-z]/g)||[]).length;
@@ -5383,7 +5446,7 @@ async function loadPgCanon(ws){
             }
           }else{
           const pvW0=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
-          const pvUrl0=pvW0?((pvW0.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null;
+          const pvUrl0=_pvR2(pvW0?((pvW0.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null);
           if(pvUrl0){
             try{
               window.__pgpvCache=window.__pgpvCache||{};
@@ -5409,11 +5472,11 @@ async function loadPgCanon(ws){
     }
     const bodyCols=new Set();
     [...doc.querySelectorAll("body pb, body milestone")].forEach(x=>{
-      if(x.closest&&x.closest('div[type="translation"],div[type="secondary"],div[type="diplomatic"]'))return;
+      if(x.closest&&x.closest('div[type="translation"],div[type="secondary"],div[type="diplomatic"],div[type="witness"],div[type="edition"]'))return;
       const n=+x.getAttribute("n");if(n)bodyCols.add(n);});
     const gaps=Object.keys(enByCol).map(Number).filter(n=>!bodyCols.has(n)).sort((a,b)=>a-b);
     const pvW=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
-    const pvUrl=pvW?((pvW.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null;
+    const pvUrl=_pvR2(pvW?((pvW.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null);
     let gapsLeft=gaps;
     if(gaps.length&&_pgZone){
       gapsLeft=[];
@@ -5507,7 +5570,8 @@ async function loadPgCanon(ws){
       const gl=c.replace(/[^\u0370-\u03FF\u1F00-\u1FFF]/g,"");
       return c.length>=6&&c.length<=160&&gl.length>=6&&gl===gl.toUpperCase();};
     let _pairs;
-    {
+    if(_colLa._aligned){_pairs=_colLa.map((text,i)=>[text,_colEn[i]||" "]);}
+    else {
       const sE=[[]],hE=[null];
       _enM.forEach(x=>{if(typeof x==="string"&&x.charCodeAt(0)===1){hE.push(x);sE.push([]);}else sE[sE.length-1].push(x);});
       const sL=[[]],hL=[null];
@@ -5569,13 +5633,13 @@ async function loadPgCanon(ws){
       // (renders as a quiet solo row, never a page-collapsing mismatch)
       // punctuation-only residue (a lone '.' after a watermark strip) is not a row
       if(!(String(l||"").replace(/[^A-Za-z0-9\u0370-\u1FFF]/g,""))&&!(String(e||"").replace(/[^A-Za-z0-9\u0370-\u1FFF]/g,"")))return;
-      const el2=laD.createElement("p");el2.textContent=_mk(_tidy(l))||"\u00A0";laB.appendChild(el2);
+      const el2=laD.createElement("p");el2.textContent=_mk(_tidy(l))||"\u00A0";if(_colLa._flow)el2.setAttribute("rend","flow");laB.appendChild(el2);
       // harvest residue is not reading text (owner 2026-09-03 pg-1445): the site EN pages
       // carry '[alt-version omitted]' markers and bare apparatus cue letters ('A its
       // punishment', 'therefore: B *But you shall\u2026', 'shown A For by the fire') \u2014 strip
       // the marker always, a lone A\u2013F only in cue positions (after :;, before a function
       // word, or block-initial before lowercase) so the article 'A Christian' survives
-      const e2=enD.createElement("p");e2.textContent=(e?_mk(e.replace(/\bDigitized\s+by\s+Google\b/gi," ").replace(/\s*\[alt-version omitted\]\s*/g," ").replace(/(^|[a-z][;:] )[A-F] (?=[A-Z\u201c"*])/g,"$1").replace(/([a-z][.,;:] )[A-F] (?=\u0004)/g,"$1").replace(/^[A-F] (?=[a-z])/,"").replace(/\b[A-F] (?=\u0004?(?:For|But|And|When|Then|Thus|Yet|Nor|Therefore|Moreover|Wherefore|The|This|That|These|Those|Saint|Holy)\b)/g,"").replace(/([.!?\u201d"]) [A-F]$/,"$1").replace(/([a-z])-\s+([a-z])/g,"$1$2").replace(/\s*[\u2022\ufffd]+\s*/g," ").replace(/\s+([.,;:!?\u00bb)])/g,"$1").replace(/\s{2,}/g," ").trim()):"")||"\u00A0";enB.appendChild(e2);});
+      const e2=enD.createElement("p");e2.textContent=(e?_mk(e.replace(/\bDigitized\s+by\s+Google\b/gi," ").replace(/\s*\[alt-version omitted\]\s*/g," ").replace(/(^|[a-z][;:] )[A-F] (?=[A-Z\u201c"*])/g,"$1").replace(/([a-z][.,;:] )[A-F] (?=\u0004)/g,"$1").replace(/^[A-F] (?=[a-z])/,"").replace(/\b[A-F] (?=\u0004?(?:For|But|And|When|Then|Thus|Yet|Nor|Therefore|Moreover|Wherefore|The|This|That|These|Those|Saint|Holy)\b)/g,"").replace(/([.!?\u201d"]) [A-F]$/,"$1").replace(/([a-z])-\s+([a-z])/g,"$1$2").replace(/\s*[\u2022\ufffd]+\s*/g," ").replace(/\s+([.,;:!?\u00bb)])/g,"$1").replace(/\s{2,}/g," ").trim()):"")||"\u00A0";if(_colLa._flow)e2.setAttribute("rend","flow");enB.appendChild(e2);});
     const _pr=_colLa._prune;_colLa=[];_colEn=[];_colLa._prune=_pr;};
   // PG READABILITY (owner 2026-09-03 audit: canon columns render as 2-5k-char walls with
   // the printed running titles fused in): carve UPPERCASE-GREEK rubric runs out as their
@@ -5617,6 +5681,17 @@ async function loadPgCanon(ws){
     // pageview machinery below is Greek-reading-lane authority only (2026-08-18:
     // it was injecting pageview Greek into the Latin witness on every even column)
     if(src!=="grc"){_colLa._prune=false;return;}
+    const canonicalOpening=_canonOpenings[String(n)];
+    if(canonicalOpening?.grc&&(window.__pgSpread?.has(n)||Object.keys(canonicalOpening.columns).length===1)){
+      _carveGr(canonicalOpening.grc,_colLa);_colLa._zoned=true;_colLa._prune=false;
+      // A PAGE PRINTS ONCE (owner 2026-09-17 'just get it right page by page'): the opening's Greek was just carved for the PAGE, so
+      // the column milestones inside it open no folio of their own -- pg-3288 page 1583 keys its Greek under milestone 1584 and printed
+      // twice, as page 1583 and again as column 1584 (8,888 pages in 991 works carry this shape). Their English joins this folio.
+      for(const c of Object.keys(canonicalOpening.columns).map(Number)){if(c&&c!==n&&!seen.has(c)&&!_canonOpenings[String(c)]){seen.add(c);
+        if(enByCol[c]&&enByCol[c].length&&!(window.__enUsed&&window.__enUsed.has(c))){_colEn.push(...enByCol[c]);(window.__enUsed=window.__enUsed||new Set()).add(c);}}}
+      return;
+    }
+
     // PAGE-KEYED SOURCE (owner 2026-08-17 'the PG site doesn't have these issues —
     // everything is keyed by page'): when the volume pageview has this opening's
     // layout-zoned Greek column, it IS the source text — the mixed vision/OCR body
@@ -5629,6 +5704,12 @@ async function loadPgCanon(ws){
       for(let i=0;i+12<=t.length;i+=3)o.add(t.slice(i,i+12));return o;};
     const _ov=(a,b)=>{const A=_sh(a),B2=_sh(b);if(!A.size||!B2.size)return 0;
       let c=0;A.forEach(x=>{if(B2.has(x))c++;});return c/Math.min(A.size,B2.size);};
+    // A PAGE BEGINS WHERE THE PAGE BEGINS (owner 2026-09-17, pg-3288 col. 1589): whole-text overlap cannot tell two recensions of one
+    // creed apart -- the site's Regio 2356 confession and the printed quarta formula share most of their wording, so column 1588's
+    // text scored 'the same' as page 1589 and was printed under it. Compare the OPENING of each instead: text one column adrift has
+    // a different first third.
+    const _head=t=>{t=String(t||"").replace(/[^\u0370-\u03ff\u1f00-\u1fff]/g,"");return t.slice(0,Math.max(120,Math.round(t.length*0.4)));};
+    const _ovHead=(a,b)=>_ov(_head(a),_head(b));
     if(window.__vtxByCanon===undefined&&vtx){
       // SPAN-UNION vtx assembly (owner 2026-08-18 'do whatever is needed — perfect'):
       // the canon may key OPENINGS (odd pbs only) while the site keys individual COLUMNS —
@@ -5640,7 +5721,7 @@ async function loadPgCanon(ws){
         const refMap={};let curN=null;const pbList=[];
         (function bw(node){for(const ch of node.children){
           const ty=ch.getAttribute?ch.getAttribute("type"):null;
-          if(ch.localName==="div"&&(ty==="translation"||ty==="secondary"||ty==="diplomatic"))continue;
+          if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
           if(ch.localName==="pb"||(ch.localName==="milestone"&&ch.getAttribute("unit")==="column")){const nn=+ch.getAttribute("n");if(nn){curN=nn;if(!pbList.includes(nn))pbList.push(nn);}}
           else if(ch.localName==="p"&&curN)refMap[curN]=(refMap[curN]||"")+" "+ch.textContent;
           else if(ch.localName==="div")bw(ch);}})(doc.querySelector("body")||doc.documentElement);
@@ -5679,6 +5760,32 @@ async function loadPgCanon(ws){
         if(best&&best[1]>=0.3){
           const map={};
           for(let i=0;i<pbList.length;i++){const t=assemble(i,best[0]);if(t.length>120)map[pbList[i]]=t;}
+          // PAGE IDENTITY FOR THE SITE TEXT (owner 2026-09-17: "i care about the right pages, not cols ... just get it right page by
+          // page"). The site keys its own carve of a volume, not the plate: for pg-3288 its columns hold a DIFFERENT Greek recension
+          // (the Regio 2356 confession), so ONE work-level offset put column 1588's text on page 1589, where the plate prints
+          // "Allē gar hypostasis". A work-level offset can only ever be right on average. Each page is now verified against its OWN
+          // witness -- the scan zone where the volume has one, else the page's own body text -- and a page the offset gets wrong
+          // takes the offset that matches IT. A page that matches nothing keeps its own text; a page with no witness of its own
+          // (the blank pages this fill exists for) still takes the work-level offset.
+          for(let i=0;i<pbList.length;i++){const p0=pbList[i];
+            // THE PAGE'S OWN TEXT WINS. A page that HAS a witness of its own -- its scan zone, or its own body Greek -- keeps it: no
+            // similarity score can separate two recensions of one creed (the site's Regio 2356 confession scored 'the same' as the
+            // printed quarta formula and was printed one column adrift under pg-3288 page 1589), and the page's own material is the
+            // page. The site's columns fill the pages that carry nothing -- the blank-column gap fill this path exists for.
+            const _z0=String((_pgZone&&_pgZone[p0])||""),_b0=String(refMap[p0]||"");
+            // ... of ANY script: a Latin column is not a blank column (PG 28 col. 1582 prints 'QUICUNQUE vult salvus esse' and took the
+            // site's Greek of col. 1581 as a 'fill' -- the page's Greek twice, once under a Latin column).
+            const _bg0=(_b0.match(/\p{L}/gu)||[]).length;   // \p{L}: without the u flag \W is ASCII and a Greek column counts as empty
+            if(_z0.length>200||_bg0>=200){if(map[p0]){delete map[p0];(window.__vtxRefused=window.__vtxRefused||new Set()).add(p0);}continue;}
+            const r0=ref[p0]||refMap[p0];
+            if(!r0||_sh(r0).size<4)continue;
+            if(map[p0]&&_ov(map[p0],r0)>=0.3&&_ovHead(map[p0],r0)>=0.25)continue;
+            let cand=null;
+            for(const d of [0,-1,1,-2,2,-3,3,-4,4,-5,5,-6,6,-8,8,-10,10,-12,12]){
+              const t=assemble(i,d);if(t.length<120)continue;
+              const sc=_ov(t,r0);if(sc>=0.3&&_ovHead(t,r0)>=0.25&&(!cand||sc>cand[1]))cand=[t,sc];}
+            if(cand){map[p0]=cand[0];(window.__vtxRekeyed=window.__vtxRekeyed||new Set()).add(p0);}
+            else {delete map[p0];(window.__vtxRefused=window.__vtxRefused||new Set()).add(p0);}}
           window.__vtxByCanon=map;window.__vtxDelta=best[0];
         }else window.__vtxDelta=null;
       }catch(e){window.__vtxByCanon=null;}
@@ -5696,12 +5803,16 @@ async function loadPgCanon(ws){
     else if(_zn&&_zoneReplace){
       // zone = page-keying authority; the BODY's text wins when it covers the same page
       // (complete, Greek-dominant, agreeing) — canon/vision text is cleaner than zone OCR
-      const bt=_bodyPage[n]||"";
-      const bg=(bt.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;
-      const bl=(bt.match(/[A-Za-z]/g)||[]).length;
-      if(bt.length>=_zn.length*0.85&&bg>bl&&_ov(bt,_zn)>=0.2){_carveGr(bt,_colLa);}
-      else{_carveGr(_zn,_colLa);}
-      _colLa._zoned=true;}
+      // A PAGE PRINTS ONCE (owner 2026-09-17 'just get it right page by page'): the zone is the PAGE's Greek (keyed by its odd column)
+      // while the body keys COLUMNS -- pg-3288 page 1583 carries its Greek under milestone 1584, page 1587 under 1587 and 1588. Judged
+      // column by column the zone 'covered more' and was carved under the odd column, and the body then printed the same Greek again
+      // under the even one. The page's two body columns together are the page's own text: when they cover the zone the body wins,
+      // each column showing only its own paragraphs; only a page whose body does not cover the zone takes the zone.
+      const bt=_bodyPage[n]||"",_mateN=(n%2===1)?n+1:n-1,bu=(bt+" "+(_bodyPage[_mateN]||"")).trim();
+      const bg=(bu.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;
+      const bl=(bu.match(/[A-Za-z]/g)||[]).length;
+      if(bu.length>=_zn.length*0.85&&bg>bl&&_ov(bu,_zn)>=0.2){if(bt.trim()){_carveGr(bt,_colLa);_colLa._zoned=true;}}
+      else{_carveGr(_zn,_colLa);_colLa._zoned=true;}}
     else if(typeof pgpvFill!=="undefined"&&typeof pgpvFill[n]==="string"&&pgpvFill[n].length>40)_carveGr(pgpvFill[n],_colLa);};
   // DIALOGUE-TURN heads (Cyril's dialogi, pg-1737 class): the canon encodes each speaker
   // turn ('Α— …' / 'Β— Καὶ μάλα') as <head> — the family site renders them as TEXT. A
@@ -5716,22 +5827,13 @@ async function loadPgCanon(ws){
     const h2=enD.createElement("head");h2.textContent=t;enB.appendChild(h2);};
   const hasSecondary=!!doc.querySelector('div[type="secondary"]');
   const hasDipl=!!doc.querySelector('div[type="diplomatic"]');
-  // OFFER THE COLUMNS THE PRINT HAS (owner 2026-09-11 pg-1938 'this has greek
-  // and latin, why does only greek appear'): wireSrcSel existed but was never
-  // called — the Latin facing column sat in the TEI unreachable.
-  {const _pvW0=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
-   const _opts=[{v:"grc",l:"Greek (as printed)"}];
-   if(hasSecondary||_pvW0)_opts.push({v:"la",l:"Latin — Migne’s facing column"});
-   if(_pvW0)_opts.push({v:"grcla",l:"Greek · Latin, per opening"});
-   if(hasDipl)_opts.push({v:"ocr",l:"Page transcription"});
-   if(_opts.length>1)wireSrcSel(_opts,src);}
   // BACKFILLED BODY BEATS THE WITNESS FLOOR (owner 2026-09-04 pg-1891): the zone
   // backfill gives the body full column coverage — and a Latin-heavy backfill flips the
   // script census to 'ocr', which switched the build to a diplomatic witness covering a
   // FRACTION of the columns (every other page rendered English-only). When the body
   // carries clearly more column anchors than the chosen witness, the body is the source.
   const _witColsN=(sel)=>[...doc.querySelectorAll(`div[type="${sel}"] pb, div[type="${sel}"] milestone`)].length;
-  const _bodyColsN=[...doc.querySelectorAll("body pb, body milestone")].filter(x=>!(x.closest&&x.closest('div[type="translation"],div[type="secondary"],div[type="diplomatic"]'))).length;
+  const _bodyColsN=[...doc.querySelectorAll("body pb, body milestone")].filter(x=>!(x.closest&&x.closest('div[type="translation"],div[type="secondary"],div[type="diplomatic"],div[type="witness"],div[type="edition"]'))).length;
   const _witRicher=(sel)=>_bodyColsN<=_witColsN(sel)*1.2;
   if((src==="la"&&hasSecondary&&_witRicher("secondary"))||(src==="ocr"&&hasDipl&&_witRicher("diplomatic"))){
     const walk2=(node,depth)=>{for(const ch of node.children){
@@ -5742,13 +5844,37 @@ async function loadPgCanon(ws){
       else if(ln==="p"){const t=ch.textContent.replace(/\s+/g," ").trim();
         if(t)_carveGr(t,_colLa);}
       else if(ln==="div")walk2(ch,depth+1);}};
-    // the witness repeats as ONE DIV PER COLUMN BLOCK — walk them all, in document order
-    [...doc.querySelectorAll(src==="la"?'div[type="secondary"]':'div[type="diplomatic"]')].forEach(d2=>walk2(d2,0));
+    // SECONDARY-LANE GAPS (owner 2026-09-15 pg-343 col. 1048 'latin view … substantially smaller'): the site fill placed a Latin-only
+    // opening in the body (vision-scan division) while the secondary witness starts later or skips it — the Latin view showed nothing
+    // for that opening. Body openings whose text is Latin and whose numbers no secondary <pb>/<milestone> carries are walked in column
+    // order with the witness: each becomes one page (both printed columns), so the Latin view covers what the Greek·Latin view covers.
+    const _secN=new Set([...doc.querySelectorAll('div[type="secondary"] pb, div[type="secondary"] milestone[unit="column"]')].map(x=>+x.getAttribute("n")).filter(Boolean));
+    const _gapOpen=[];
+    if(src==="la"){const _cur={n:0,ps:[]};
+      const _flush=()=>{if(_cur.n&&!_secN.has(_cur.n)&&!_secN.has(_cur.n+1)){const t=_cur.ps.join(" ");const la=(t.match(/[A-Za-z]/g)||[]).length,gr=(t.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;
+        if(la>=100&&la>=gr*6)_gapOpen.push({n:_cur.n,ps:_cur.ps.slice()});}_cur.n=0;_cur.ps=[];};
+      (function bw(node){for(const ch of node.children){const ln=ch.localName,ty=ch.getAttribute?ch.getAttribute("type"):null;
+        if(ln==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
+        if(ln==="pb"){_flush();_cur.n=+ch.getAttribute("n")||0;}
+        else if(ln==="p"&&_cur.n){const t=ch.textContent.replace(/\s+/g," ").trim();if(t)_cur.ps.push(t);}
+        else if(ln==="div")bw(ch);}})(doc.querySelector("body")||doc.documentElement);_flush();
+      _gapOpen.sort((a,b)=>a.n-b.n);}
+    let _gi=0;const _emitGaps=(before)=>{while(_gi<_gapOpen.length&&(before==null||_gapOpen[_gi].n<before)){const g=_gapOpen[_gi++];addPb(g.n);g.ps.forEach(t=>_carveGr(t,_colLa));}};
+    const walk2g=(node,depth)=>{for(const ch of node.children){
+      const ln=ch.localName;
+      if((ln==="milestone"&&ch.getAttribute("unit")==="column")||ln==="pb"){const nn=+ch.getAttribute("n");if(nn)_emitGaps(nn);addPb(nn);}
+      else if(ln==="head")addHead(ch.textContent.replace(/\s+/g," ").trim(),depth);
+      else if(ln==="p"){const t=ch.textContent.replace(/\s+/g," ").trim();
+        if(t)_carveGr(t,_colLa);}
+      else if(ln==="div")walk2g(ch,depth+1);}};
+    // the witness repeats as ONE DIV PER COLUMN BLOCK — walk them all, in document order (gap openings interleaved by column number)
+    [...doc.querySelectorAll(src==="la"?'div[type="secondary"]':'div[type="diplomatic"]')].forEach(d2=>(src==="la"?walk2g:walk2)(d2,0));
+    if(src==="la")_emitGaps(null);
   }else{
     const body=doc.querySelector("body");
     const walk=(node,depth)=>{for(const ch of node.children){
       const ln=ch.localName,ty=ch.getAttribute?ch.getAttribute("type"):null;
-      if(ln==="div"&&(ty==="translation"||ty==="secondary"||ty==="diplomatic"))continue;
+      if(ln==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
       if(ln==="pb")addPb(+ch.getAttribute("n"));
       else if(ln==="milestone"&&ch.getAttribute("unit")==="column")addPb(+ch.getAttribute("n"));
       else if(ln==="head")addHead(ch.textContent.replace(/\s+/g," ").trim(),depth);
@@ -5781,10 +5907,10 @@ async function loadPgCanon(ws){
       // hasSecondary true, the parallel path was skipped, and "Greek · Latin" showed no
       // Latin at all while the volume pageview carries ColLatin on every surface)   // grcla = the MIGNE PARALLEL: Greek with its Latin under-voice, per opening (owner 2026-08-28 'how greek + latin interact with migne')
       const pvW3=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
-      const pvUrl3=pvW3?((pvW3.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null;
+      const pvUrl3=_pvR2(pvW3?((pvW3.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null);
       if(pvUrl3)try{
         window.__pgpvCache=window.__pgpvCache||{};
-        window.__pgpvCache[pvUrl3]=window.__pgpvCache[pvUrl3]||fetch(pvUrl3).then(r=>r.ok?r.text():null).catch(()=>null);
+        window.__pgpvCache[pvUrl3]=window.__pgpvCache[pvUrl3]||fetch(pvUrl3+(pvUrl3.includes("?")?"&":"?")+"v="+encodeURIComponent(window.__FR_VER||"pg-source-20260914")).then(r=>r.ok?r.text():null).catch(()=>null);
         const pvXml3=await window.__pgpvCache[pvUrl3];
         if(pvXml3){
           const pv3=new DOMParser().parseFromString(pvXml3,"application/xml");
@@ -5792,9 +5918,10 @@ async function loadPgCanon(ws){
           const cols3=[];
           (function cw(node){for(const ch of node.children){
             const ty3=ch.getAttribute?ch.getAttribute("type"):null;
-            if(ch.localName==="div"&&(ty3==="translation"||ty3==="secondary"||ty3==="diplomatic"))continue;
+            if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty3))continue;
             if(ch.localName==="pb"||(ch.localName==="milestone"&&ch.getAttribute("unit")==="column")){const nn=+ch.getAttribute("n");if(nn)cols3.push(nn);}
             else if(ch.localName==="div")cw(ch);}})(doc.querySelector("body")||doc.documentElement);
+          cols3.push(...Object.keys(_canonOpenings).map(Number).filter(Boolean));
           if(!cols3.length)cols3.push(...Object.keys(enByCol).map(Number).filter(Boolean));
           if(cols3.length){
             const lo3=Math.min(...cols3)-1,hi3=Math.max(...cols3)+1;
@@ -5808,7 +5935,56 @@ async function loadPgCanon(ws){
                 .map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim(),
               grc:[...sf.querySelectorAll("zone")].filter(z=>(z.getAttribute("type")||"").includes("ColGreek"))
                 .map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim()}))
-              .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&x.n>=lo3&&x.n<=hi3).sort((a,b)=>a.n-b.n);
+              .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&x.n>=lo3&&x.n<=hi3&&(!_pgOwned.size||_pgOwned.has(String(x.n)))).sort((a,b)=>a.n-b.n);
+            // The source site's vision text is already in the primary TEI columns.
+            // Raw pageview zones are a fallback, never an unconditional replacement.
+            for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)],_pvLat=sf.lat,_pvGrc=sf.grc;
+              // COMPLETE PER PAGE (owner 2026-09-17 'just make sure the latin and greek is shown completely per page'): the canon
+              // sometimes carries a FRAGMENT of a column -- pg-3288 page 1583 keeps 820 of the 2,936 Latin letters the plate prints
+              // (the rest never came over). A canon lane that covers less than 70% of the page's zone for its script yields to the
+              // zone: the whole column, scan-true, carved into paragraphs. Its Latin zone must agree with the canon's Latin first.
+              const _gL=t=>(String(t||"").match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length,_lL=t=>(String(t||"").match(/[A-Za-z]/g)||[]).length;
+              const _grcShort=!!(canon?.grc)&&_gL(_pvGrc)>=200&&_gL(canon.grc)<0.7*_gL(_pvGrc);
+              const _laShort=!!(canon?.la)&&_lL(_pvLat)>=200&&_lL(canon.la)<0.7*_lL(_pvLat);
+              if(canon?.grc&&!_grcShort)sf.grc=canon.grcRich||canon.grc;if(canon?.la&&!_laShort)sf.lat=canon.laRich||canon.la;if(canon){sf.grcParas=canon.grcParas||[];sf.laParas=canon.laParas||[];sf.colParas=canon.colParas||[];
+              if(_grcShort){sf.grcParas=[];sf.colParas=sf.colParas.filter(c=>c.lang!=="grc");}
+              if(_laShort){const _shL=t=>{const w=String(t||"").toLowerCase().replace(/[^a-z\s]/g," ").split(/\s+/).filter(x=>x.length>=3);const o=new Set();for(let i=0;i+4<=w.length;i++)o.add(w.slice(i,i+4).join(" "));return o;};
+                const _A2=_shL(_pvLat),_B2=_shL(canon.la);let _c2=0;_A2.forEach(x=>{if(_B2.has(x))_c2++;});
+                if(_B2.size<10||_c2/Math.max(1,Math.min(_A2.size,_B2.size))>=0.15){let lp=[];try{lp=_paras3(_pvLat);}catch(e){}if(!lp.length)lp=[_pvLat];
+                  const lcol=(canon.colParas||[]).find(c=>c.lang==="la");sf.laParas=lp;sf.colParas=[...sf.colParas.filter(c=>c.lang!=="la"),{n:String(lcol?lcol.n:sf.n),lang:"la",paras:lp}];sf._pvLatin=true;}
+                else sf.lat=canon.laRich||canon.la;}
+              // NO GREEK COLUMN (owner 2026-09-15, PG 78 col. 61 'Isidori doctrina'): when the canon carries BOTH printed columns of the
+              // opening as Latin and no Greek, the opening has no Greek column — the pageview's ColGreek zone there is the apparatus (the
+              // footnote quotations from Isidore's letters), not a lane. Latin direction only; the Greek-only mirror is unverified.
+              const _pc=_printedColumns[String(sf.n)]||{},_laCols=(_pc.la||[]).map(Number);
+              if(!canon.grc||_grcShort){
+                // PAGEVIEW GREEK IS A LANE (owner 2026-09-17, pg-3288 col. 1589 'the greek latin view doesnt have the greek', 'no greek should be
+                // discarded'): the canon's reading lane had no Greek for the opening, the volume pageview had 2,293 letters of it, and every
+                // alignment basis reads paras.grc/colParas — never the string — so the Latin paired with the English and the Greek vanished.
+                // Carve the zone into paragraphs and give it the opening's non-Latin column. Two Latin columns that are one text keyed twice
+                // (a secondary lane under the odd column, the reading lane under the even) count as ONE Latin column.
+                const _zg=(sf.grc.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length,_zl=(sf.grc.match(/[A-Za-z]/g)||[]).length;
+                const _laTexts=(canon.colParas||[]).filter(c=>c.lang==="la").map(c=>(c.paras||[]).join(" "));
+                const _dupLa=_laTexts.length>=2&&(()=>{const T=s=>new Set(s.toLowerCase().match(/[a-z]{4,}/g)||[]);const A=T(_laTexts[0]),B=T(_laTexts[1]);let i=0;A.forEach(w=>{if(B.has(w))i++;});return i/Math.max(1,Math.min(A.size,B.size))>=0.6;})();
+                // ... and only for apparatus-SIZED Greek (owner 2026-09-17, PG 28 page 1605: the canon carries both columns as Latin --
+                // the Monitum and De ratione Paschae fill the lower page -- but the plate's upper left column is 916 letters of Greek, the
+                // end of the De Trinitate opusculum, with its Latin facing. A Greek zone of column size (>= 600 letters and >= a quarter
+                // of the page's Latin) is a lane the canon never carried, not footnote quotations.
+                const _laLettersPage=(String(canon.la||"").match(/[A-Za-z]/g)||[]).length;
+                const _apparatusSized=_zg<600||_zg<0.25*_laLettersPage;
+                const _bothLa=_laCols.includes(sf.n)&&_laCols.includes(sf.n+1)&&!_dupLa&&_apparatusSized;
+                // NO GREEK COLUMN (owner 2026-09-15, PG 78 col. 61 'Isidori doctrina'): both printed columns Latin and distinct → the zone is the
+                // apparatus (footnote quotations), not a lane. That exception alone still blanks the zone.
+                // SURFACE IDENTITY: the surface's own Latin zone must agree with the canon's Latin for the opening before its Greek zone is
+                // trusted as the opening's Greek (PG 106 surface 1331 carries another page's text under this number: its zones are somebody
+                // else's columns). No canon Latin, or no zone Latin, is no witness against it.
+                const _sh=t=>{const w=String(t||"").toLowerCase().replace(/[^a-z\s]/g," ").split(/\s+/).filter(x=>x.length>=3);const o=new Set();for(let i=0;i+4<=w.length;i++)o.add(w.slice(i,i+4).join(" "));return o;};
+                const _A=_sh(_pvLat),_B=_sh(canon.la||"");let _c=0;_A.forEach(x=>{if(_B.has(x))_c++;});
+                const _pvAgrees=!_B.size||_A.size<10||_c/Math.min(_A.size,_B.size)>=0.15;
+                if(_bothLa)sf.grc="";
+                else if(_zg>=40&&_zg>_zl&&_pvAgrees){const gp=[];try{_carveGr(_healGrc(sf.grc),gp);}catch(e){}if(!gp.length)gp.push(_healGrc(sf.grc));
+                  const gcol=_laCols.includes(sf.n)?sf.n+1:sf.n;sf.grcParas=gp;sf.colParas=[{n:String(gcol),lang:"grc",paras:gp},...(sf.colParas||[]).filter(c=>+c.n!==gcol)];sf._pvGreek=true;}
+              }}}
             window.__grclaDbg={surfs:surfs3.length,pv:!!pvXml3,cols:cols3.length};
             if(surfs3.length){
               _latBuilt=true;
@@ -5825,18 +6001,30 @@ async function loadPgCanon(ws){
                   lt=lt.replace(/^[A-Z\u00c6\u0152][A-Z\u00c6\u0152\d .,'\u2019:-]{5,60}?\s(?=\u0002|\(|[A-Z\u00c6\u0152]?[a-z\u00e6\u0153])/,"");
                   lt=lt.replace(/^(?:\(cod\.?[^)]{0,16}\)?\.?\s*){1,4}/,"");
                   if(lt===_b4)break;}
-                lt=lt.replace(/\s[A-E](?=\s+[a-z\u00e6\u0153])/g,"").replace(/\s[A-E](?=\s+[a-z\u00e6\u0153])/g,"");   // Migne margin letters, incl. A B pairs
+                // Migne margin letters, incl. A B pairs -- but never a WORD: Old French "E" ("and") opens sentence after sentence of
+                // the Colbertinus formula (owner 2026-09-17, pg-3288 page 1591: "E nequedent ne sunt treis Deus" lost its E). A capital E
+                // that begins the text or follows sentence punctuation is a word; a margin letter sits mid-sentence.
+                lt=lt.replace(/(^|[.!?;:\u00bb]\s+)E(?=\s+[a-z\u00e6\u0153])/g,"$1\uE000");
+                lt=lt.replace(/\s[A-E](?=\s+[a-z\u00e6\u0153])/g,"").replace(/\s[A-E](?=\s+[a-z\u00e6\u0153])/g,"");
+                lt=lt.replace(/\uE000/g,"E");
                 _colLa=[];_colLa._prune=false;
-                if(src==="grcla"){
-                  // the print's own pairing: Greek authoritative, Migne's Latin beneath it —
-                  // aligned per paragraph by the same proportional aligner the EN lane uses
-                  let gt=_healGrc(sf.grc.replace(/^\d+\s+[^\u0370-\u03ff]{0,120}?(?=[\u0370-\u03ff])/,"").replace(/\s+\d+\s*$/,""));
-                  _alignPair(_paras3(gt),_paras3(lt)).forEach(([g2,l2])=>{
-                    _colLa.push((g2||"")+(l2?"\u0006"+l2:""));});
-                }else lt.split(/(?<=[.!?])\s+(?=[A-Z\u00c6\u0152]{2,}(?:\s+[A-Z\u00c6\u0152]{2,}\.?)+)/)
-                  .forEach(seg2=>_paras3(seg2).forEach(t2=>_colLa.push(t2)));
                 _colEn=[];
                 for(let k3=sf.n;k3<sf.n+2;k3++){if(enByCol[k3]&&enByCol[k3].length){_colEn.push(...enByCol[k3]);(window.__enUsed=window.__enUsed||new Set()).add(k3);}}
+                if(src==="grcla"){
+                  const _enMarked=_colEn.map(e=>typeof e==="string"&&e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e);
+                  const _enParas=[...(enParasByCol[sf.n]||[]),...(enParasByCol[sf.n+1]||[])].map(e=>e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e);
+                  const _byCol=(sf.colParas||[]).map(c=>({n:c.n,lang:c.lang,paras:c.lang==="grc"?(c.paras||[]).map(_healGrc):(c.paras||[]),en:(enParasByCol[+c.n]||[]).map(e=>e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e)}));
+                  const aligned=window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_enMarked.join(" "),{grc:(sf.grcParas||[]).map(_healGrc),la:sf.laParas||[],en:_enParas,byCol:_byCol});
+                  // Keep printed headings visible in their own lane, without guessing
+                  // their counterparts. Their opening remains a usable outline target.
+                  const marked=aligned.rows.map(r=>r.en).join(" ");
+                  const heads=[...marked.matchAll(/\u0002([^\u0003]+)\u0003/g)];
+                  const sourceHeads=heads.length?heads:[...sf.grc.matchAll(/\u0002([^\u0003]+)\u0003/g)];
+                  for(const h of sourceHeads){if(!struct.some(x=>x.page===sf.n&&x.title===h[1].slice(0,140)))struct.push({title:h[1].slice(0,140),page:sf.n,depth:2});}
+                  // a row with no Greek is the Latin itself (a Latin-only opening), not an under-voice beneath nothing
+                  _colLa=aligned.rows.map(r=>r.grc?(r.grc+(r.la?"\u0006"+r.la:"")):(r.la||""));_colLa._aligned=true;_colLa._flow=aligned.basis==="printed-paragraphs";_colEn=aligned.rows.map(r=>r.en);
+                }else lt.split(/(?<=[.!?])\s+(?=[A-Z\u00c6\u0152]{2,}(?:\s+[A-Z\u00c6\u0152]{2,}\.?)+)/)
+                  .forEach(seg2=>_paras3(seg2).forEach(t2=>_colLa.push(t2)));
               });
               flushCol();
             }
@@ -5847,7 +6035,7 @@ async function loadPgCanon(ws){
     }
     // BOUNDARY HEAL: the recovered opening column(s) lead the reading order, before the
     // canon's own first pb — the work now begins where it begins on the plate
-    if(!_latBuilt&&pggap){Object.keys(pggap).map(Number).filter(Boolean).sort((a,b)=>a-b).forEach(n=>{
+    if(!_latBuilt&&pggap&&!_pgOwned.size){Object.keys(pggap).map(Number).filter(Boolean).sort((a,b)=>a-b).forEach(n=>{
       const t=String(pggap[n]||"");if(t.length<60)return;
       addPb(n);
       // the sidecar is CURATED (prev-work tail already cut, vision-cleaned) — it wins
@@ -6085,14 +6273,14 @@ async function loadPgCanon(ws){
   // interaction (gated on a lazily-set __PGPV_URL) and named just one next view.
   setTimeout(()=>{const mp=document.getElementById("m-par");
     if(!mp)return;
-    mp.textContent=src==="ocr"?"Page transcription":(src==="grcla"&&!window.__pgLatFallback)?"Greek \u00b7 Latin":(src==="la"&&!window.__pgLatFallback)?"Latin (Migne)":"Greek";
+    mp.textContent=src==="ocr"?"Page transcription":(src==="grcla"&&!window.__pgLatFallback)?(window.__pgLatinOnly?"Latin":"Greek \u00b7 Latin"):(src==="la"&&!window.__pgLatFallback)?"Latin (Migne)":"Greek";
     const mkPill=(pid,ps,label,title)=>{
       let b=document.getElementById(pid);
       if(!b){b=document.createElement("button");b.id=pid;mp.after(b);}
       b.textContent=label;b.title=title;
       b.classList.toggle("srcon",src===ps);
       b.setAttribute("aria-pressed",src===ps?"true":"false");
-      b.onclick=()=>{if(src===ps)return;
+      b.onclick=()=>{if(src===ps){if(mp.getAttribute("aria-pressed")==="false")mp.click();return;}
         if(window.__switchSrc)window.__switchSrc(ps);
         else{const u=new URL(location.href);u.searchParams.set("src",ps);location.href=u.toString();}};
       return b;};
@@ -6101,12 +6289,12 @@ async function loadPgCanon(ws){
     mkPill("m-wit","la","Latin","Migne's facing Latin column — the other half of the printed page");
     mkPill("m-wit0","grc","Greek","The Greek reading text");
     let choices=document.getElementById('reader-witnesses');
-    if(!choices){choices=document.createElement('div');choices.id='reader-witnesses';choices.className='reader-witnesses';choices.innerHTML='<span>Source edition</span><div role="group" aria-label="Source edition"></div>';document.getElementById('aaPop').appendChild(choices);}
+    if(!choices){choices=document.createElement('div');choices.id='reader-witnesses';choices.className='reader-witnesses';choices.innerHTML='<span>Source</span><div role="group" aria-label="Source language"></div>';mp.closest('header').appendChild(choices);}
     for(const id of ['m-wit0','m-wit','m-wit2'])choices.querySelector('div').appendChild(document.getElementById(id));
     if(typeof DATA!=='undefined'&&DATA)syncReaderHeader(cur||DATA.pages[0]?.n);
   },800);
   try{const am=await window.__pgAuth;if(am&&am[id])author=am[id];}catch(e){}   // English byline (owner 2026-08-17)
-  window.__SRCNAME=src==="grcla"?(window.__pgLatFallback?"Greek":"Greek \u00b7 Latin"):src==="la"?(window.__pgLatFallback?"Greek":"Latin"):src==="ocr"?"Page":"Greek";
+  window.__SRCNAME=src==="grcla"?(window.__pgLatFallback?"Greek":(window.__pgLatinOnly?"Latin":"Greek \u00b7 Latin")):src==="la"?(window.__pgLatFallback?"Greek":"Latin"):src==="ocr"?"Source":"Greek";
   // polytonic face for the Greek reading lane (lazily; Cardo covers Greek+Latin so mixed
   // apparatus pages stay coherent)
   try{
@@ -6119,6 +6307,7 @@ async function loadPgCanon(ws){
   window.__pldCanonDocs={la:laD,en:enD};
   const _aula=author;author=await _auEn(author);
   return {slug:ws,title,title_en:title,author:author||author_gr,author_la:_aula&&_aula!==author?_aula:undefined,volume:vol?("PG "+vol):"",
+    pg_columns:_printedColumns,pg_source:src,
     tradition:"Greek Fathers",has_pages:true,has_tei:true,tei_v:0,en_only:false,
     n_pages:pages.length,structure:structure,base:null,spine_nav:structure.length>1,
     pages:pages.map(n=>({n,la:"",en:"",img:facs[n]||null,thumb:facs[n]||null}))};

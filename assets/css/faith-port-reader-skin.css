@@ -929,3 +929,102 @@ html.mo-embedded #mobile-nav { display: none !important; }
 html.mo-embedded { --mo-head: 0px; }
 html.mo-embedded .faith-port-read-page { height: 100dvh; }
 html.mo-embedded .ph { top: 0; }
+
+/* ── The reader's own chrome, in dark ──────────────────────────────────
+   Putting the theme control back in the bar made dark reachable by a click,
+   and dark had never been finished here. The toolbar's ground is painted
+   with a literal cream rather than a token, so in dark it held #f5efe1
+   under #e9e9e5 ink: the work's own title measured 1.06 against its own
+   background, which is invisible rather than merely faint. The tokens were
+   right all along — --bg resolves to #222320 in dark — so it is the paint
+   that is corrected here and nothing else.
+
+   Our masthead is deliberately left alone. Taking the site shell dark is
+   its own piece of work with its own review, as the note above says; this
+   is the reader's own furniture only. */
+:root[data-theme="dark"] #app .ph.fr-reader-head,
+:root[data-theme="dark"] #app .ph {
+  background: var(--card-bg, #232320);
+  border-bottom-color: color-mix(in srgb, var(--fg) 20%, transparent);
+}
+:root[data-theme="dark"] #nbSaveReadingPlace {
+  background: var(--card-bg, #232320);
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--fg) 24%, transparent);
+}
+
+/* ── The reader bar on a phone ─────────────────────────────────────────
+   At 390px the bar was laying out nine controls in a nowrap row and simply
+   running off the side: Tools sat at x=373 and the Aa button at x=449, both
+   past the edge of the screen, which is why tapping them did nothing. The
+   title block, which is flex:1 against them, was squeezed to nought and the
+   work's name disappeared with it.
+
+   The corpus site's reader shows four controls at this width -- home, where
+   you are, which text, and Aa -- and hides forty-five. Everything it hides
+   is already reachable: reader-core.js proxies Previous, Next, About and
+   Related into the Aa menu (see "fold the header controls" there), the lane
+   buttons are the same choice as the source picker, and the theme lives in
+   that menu as #th. So the bar keeps the four and the title gets its room
+   back. Nothing is removed, only moved to where there is space for it. */
+@media (max-width: 880px) {
+  /* `#app .ph .ctr #pPrev` above is two ids; a selector that means to overrule it
+     has to carry two of its own, or it loses however many classes it stacks. */
+  html.g-mobile:not(.fr-plain) #app .ph .ctr #pPrev,
+  html.g-mobile:not(.fr-plain) #app .ph .ctr #pNext,
+  html.g-mobile:not(.fr-plain) #app .ph .ctr #pgJump,
+  html.g-mobile:not(.fr-plain) #app .ph .ctr .seg,
+  html.g-mobile:not(.fr-plain) #app .ph #m-en,
+  html.g-mobile:not(.fr-plain) #app .ph #m-par,
+  html.g-mobile:not(.fr-plain) #app .ph #rdTools,
+  html.g-mobile:not(.fr-plain) #app .ph #thTop {
+    display: none;
+  }
+  /* The title block is what the freed width is for. */
+  html.g-mobile:not(.fr-plain) #app .ph .phl { min-width: 0; flex: 1 1 auto; }
+  html.g-mobile:not(.fr-plain) #app .ph .ctr { flex: 0 0 auto; gap: 2px; }
+}
+
+/* ── Reading, uninterrupted: the part that is ours ────────────────────────────
+   The gesture itself now lives where it belongs, in assets/css/port/read.in01.css,
+   ported from the corpus site along with the fix that made it work: the masthead
+   restyle there used to end in transform:none, which is exactly the property the
+   hide needs. What is left here is the part that is only true of this site.
+
+   This site has its own masthead above the reader's bar, so the bar has to clear
+   both itself and that masthead, and the masthead has to leave with it. The port
+   moves the reader bar by -101% and knows nothing about ours; these two rules are
+   more specific, so they win, and they say the same thing plus the offset.
+   Anyone who has asked not to see motion sees them cut instead of slide. */
+html header.site-header { transition: transform .28s var(--ease, ease); }
+html body,
+html #app { transition: padding-top .28s var(--ease, ease); }
+html.mh-hide header.site-header,
+html.mh-mini header.site-header { transform: translateY(-101%); }
+html.mh-hide #app .ph.fr-reader-head,
+html.mh-mini #app .ph.fr-reader-head {
+  transform: translateY(calc(-101% - var(--mo-head, 61px)));
+}
+/* Both bars are fixed, so the page is padded to start below them: the body by
+   this site's own boot script, which writes the masthead's height as an inline
+   style, and #app by the port, which reserves the reader bar's. Leave those in
+   place and the departing chrome uncovers a blank band 150px deep instead of the
+   text it was covering. They go with it and the prose glides up into the space,
+   which is what the corpus site does on a phone and now what both do everywhere.
+   !important only because an inline style outranks every selector without one. */
+html.mh-hide body,
+html.mh-mini body { padding-top: env(safe-area-inset-top, 0px) !important; }
+html.mh-hide #app,
+html.mh-mini #app { padding-top: env(safe-area-inset-top, 0px); }
+/* The reader box is a screen minus our masthead, so moving it up without
+   growing it only moves the blank band from the top of the page to the bottom.
+   It takes the whole screen while the masthead is away. */
+html .faith-port-read-page { transition: height .28s var(--ease, ease); }
+html.mh-hide .faith-port-read-page,
+html.mh-mini .faith-port-read-page { height: 100dvh; }
+@media (prefers-reduced-motion: reduce) {
+  html header.site-header, html body, html #app,
+  html .faith-port-read-page { transition: none; }
+}
+}
+
