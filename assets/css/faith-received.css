@@ -16943,3 +16943,234 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
 }
 .fr-restart:hover { color: var(--color-primary, #EE7D51); }
 .fr-restart:focus-visible { outline: 2px solid var(--color-primary, #EE7D51); outline-offset: 2px; }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE TFR BUTTON
+   ══════════════════════════════════════════════════════════════════════════
+
+   Ian, 2026-09-18: "that button style should be the universal TFR button style
+   that differentiates it from the rest of the Mere O site, which means every
+   TFR button should be changed to match it."
+
+   The style is the one he picked in September for the reading-plan control and
+   asked for again on the Ask door: outlined, not filled, small radius, in the
+   DARK terracotta (--color-secondary #c1593c) rather than the primary orange
+   the rest of Mere Orthodoxy uses on its CTAs. That difference is the point.
+   Primary orange is the magazine's accent; the library answers in the darker
+   one, so a reader can tell by the furniture which of the two they are in.
+   .fr-plan-open above is the same button and stays the reference.
+
+   WHY ONE APPENDED BLOCK RATHER THAN THIRTY-SIX EDITS. The library grew eleven
+   dialects of button — pills at 999px, cards at 4px, boxes at 6px, dark fills,
+   white-on-dark — each with its own geometry that is usually right for where it
+   sits. Rewriting every rule would mean re-deciding padding, grid placement and
+   tap targets thirty-six times to change four properties. This states only the
+   four (ink, fill, line, radius) and leaves every rule's own geometry alone. It
+   is last in the file, so it beats the earlier rules on source order at equal
+   specificity; the state selectors below are repeated at their own specificity
+   for the same reason, because .x.is-active outranks .x however late .x is.
+
+   WHAT IS DELIBERATELY NOT IN THE LIST. Borderless text affordances — the A–Z
+   index letters, the pager arrows, the inline glossary term, the notebook's
+   underlined row actions — are links wearing a <button> tag, not buttons. Boxing
+   them is a different decision about those pages and not one to smuggle in
+   under a recolour. They are listed at the bottom of this block and take the
+   terracotta as their INK only, which is what makes the whole surface read as
+   one system without turning an index into a wall of boxes.
+
+   #notebook and #app selectors carry their id on purpose: the ported reader's
+   sheets are more specific than a bare class and this file, though it loads
+   after them, would otherwise lose. */
+
+.fr-btn,
+a.fr-btn,
+/* ── Library, rooms and browse ─────────────────────────────────────────── */
+.faith-dictionary-btn,
+.faith-memorize-nav-btn,
+.fa-search-btn,
+.ps-pager-btn,
+/* ── Constellations, compare, pins, desk ───────────────────────────────── */
+.cn-view-btn,
+.cn-zoom-btn,
+.cn-link-btn,
+.cn-compare-btn,
+.cn-index-btn,
+.cmp-act,
+.pins-act,
+.desk-act,
+.cmp-add-submit,
+.desk-toggle,
+.desk-panel-close,
+/* ── Reader chrome, feedback and review ────────────────────────────────── */
+.faith-reader .faith-tool,
+.faith-reader .faith-lang-btn,
+.tfr-issue-btn,
+.tfr-review-btn,
+.tfr-gate-signin-btn,
+.faith-here-acts button,
+.faith-resume button,
+/* ── The ported reader's Research rail and its selection popover ───────── */
+#notebook .nb-passage-actions button,
+#notebook .nb-work-primary button,
+#notebook .nb-book-ask,
+#notebook .nb-reading-place button,
+#notebook .nb-work-search-form button,
+#notebook .nb-highlight-colors button,
+#selpop button.pb {
+  color: var(--color-secondary);
+  background: transparent;
+  border: 1px solid var(--color-secondary);
+  border-radius: 3px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.fr-btn:hover,
+a.fr-btn:hover,
+.faith-dictionary-btn:hover:not(:disabled),
+.faith-memorize-nav-btn:hover,
+.fa-search-btn:hover,
+.ps-pager-btn:hover:not(:disabled),
+.cn-view-btn:hover,
+.cn-zoom-btn:hover,
+.cn-link-btn:hover,
+.cn-compare-btn:hover,
+.cn-index-btn:hover,
+.cmp-act:hover,
+.pins-act:hover,
+.desk-act:hover,
+.cmp-add-submit:hover,
+.desk-toggle:hover,
+.desk-panel-close:hover,
+.faith-reader .faith-tool:hover,
+.faith-reader .faith-lang-btn:hover,
+.tfr-issue-btn:hover,
+.tfr-review-btn:hover,
+.tfr-gate-signin-btn:hover,
+.faith-here-acts button:hover,
+.faith-resume button:hover,
+#notebook .nb-passage-actions button:hover,
+#notebook .nb-work-primary button:hover,
+#notebook .nb-book-ask:hover,
+#notebook .nb-reading-place button:hover,
+#notebook .nb-work-search-form button:hover,
+#selpop button.pb:hover {
+  background: var(--color-secondary);
+  color: var(--color-white, #fff);
+  border-color: var(--color-secondary);
+  text-decoration: none;
+}
+
+/* PRESSED IS FILLED, AND SO IS THE ONE CTA. A segmented control needs its
+   chosen segment to read as chosen without a second colour entering the system,
+   so "on" is the hover state made permanent. Each of these is stated at the
+   specificity of the rule it has to beat, because .x.is-active outranks .x
+   however late in the file .x is stated.
+
+   THREE FAMILIES WERE DROPPED FROM THIS SWEEP AFTER BEING WRITTEN INTO IT.
+   .faith-room-trads, .faith-room-cents and .faith-room-ins carry a full set of
+   pill rules at faith-received.css:7830-7851, and no template or script in the
+   theme emits any of the three. Styling markup that does not exist makes the
+   sweep look wider than it is and leaves the next person believing the room
+   filters were covered. They are dead rules and want deleting on their own,
+   not quietly repainting here.
+
+   .tfr-browse-btn is here rather than in the outline group because it is the
+   library's one front-door CTA and it stands on a PHOTOGRAPH. It was already
+   filled terracotta; outlining it put terracotta line-work and terracotta type
+   over a painted sky, which is the one ground this palette cannot hold. It
+   keeps the fill and gives up only its 999px pill for the family's 3px, which
+   is the part that made it look like it came from somewhere else. */
+.tfr-browse-btn,
+.faith-dictionary-btn.is-active,
+.faith-reader .faith-lang-btn.is-active,
+.faith-reader .faith-tool[aria-pressed="true"],
+.faith-here-acts button[aria-pressed="true"],
+.tfr-review-btn--primary,
+#notebook .nb-reading-place #nbSaveReadingPlace,
+#selpop button.pb[aria-pressed="true"] {
+  background: var(--color-secondary);
+  color: var(--color-white, #fff);
+  border: 1px solid var(--color-secondary);
+  border-radius: 3px;
+}
+.tfr-browse-btn:hover {
+  background: var(--color-dark);
+  border-color: var(--color-dark);
+  color: var(--color-white, #fff);
+}
+
+/* Disabled keeps the outline and loses its conviction. Not display:none and not
+   a grey swap, both of which make a pager jump as you reach the end of it. */
+.tfr-browse-btn:disabled,
+.faith-dictionary-btn:disabled,
+.ps-pager-btn:disabled,
+.cmp-act:disabled,
+.pins-act:disabled,
+.desk-act:disabled,
+.faith-resume button:disabled,
+#notebook .nb-work-primary button:disabled,
+#notebook .nb-reading-place button:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.fr-btn:focus-visible,
+.tfr-browse-btn:focus-visible,
+.faith-dictionary-btn:focus-visible,
+.faith-memorize-nav-btn:focus-visible,
+.fa-search-btn:focus-visible,
+.ps-pager-btn:focus-visible,
+.cmp-act:focus-visible,
+.pins-act:focus-visible,
+.desk-act:focus-visible,
+.faith-reader .faith-tool:focus-visible,
+.faith-reader .faith-lang-btn:focus-visible,
+.tfr-issue-btn:focus-visible,
+.tfr-review-btn:focus-visible,
+.tfr-gate-signin-btn:focus-visible,
+#notebook .nb-work-primary button:focus-visible,
+#notebook .nb-reading-place button:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+/* ON A DARK GROUND THE OUTLINE INVERTS. The browse hero and its search sit on
+   --color-dark, where a terracotta outline on near-black fails contrast and a
+   terracotta fill is the only thing that reads. White outline at rest, the
+   library's terracotta on hover: the same button, lit from the other side. */
+.bhero-btn,
+.bsearch button {
+  color: var(--color-white, #fff);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 3px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.bhero-btn:hover,
+.bhero-btn:focus-visible,
+.bsearch button:hover,
+.bsearch button:focus-visible {
+  background: var(--color-secondary);
+  border-color: var(--color-secondary);
+  color: var(--color-white, #fff);
+}
+
+/* THE TEXT AFFORDANCES TAKE THE INK AND NOT THE BOX. See the note at the top of
+   this block: these are links in a <button> tag. They join the system by
+   speaking its colour. Their hover stays the darker ink they already had, so
+   "hovered" and "current" do not become the same thing on an index. */
+.faith-az-btn.is-active,
+.faith-room-letters button.is-active,
+.faith-pager-btn,
+.faith-room-pager button,
+.faith-notebook-act,
+.faith-scripture-toggle-btn.is-active,
+.faith-memorize-filter-btn.is-active,
+#notebook .nb-item-actions button,
+#notebook .wr-actions button,
+#notebook .wrs-link,
+#notebook .wrs-button,
+#notebook .nb-destinations a {
+  color: var(--color-secondary);
+}

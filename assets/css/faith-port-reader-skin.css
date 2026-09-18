@@ -343,6 +343,44 @@ aside.relpanel {
   #app .facs { top: var(--mo-head, 61px); }
 }
 
+/* ── A MODAL SHEET COVERS; A DOCKED RAIL SITS INSIDE THE WINDOW ─────
+   The rule above gives the research drawer our masthead's height, which
+   is right for the sheet it is below 1100px: that one is aria-modal,
+   it takes the screen, and covering the reader's toolbar is what a
+   modal is for.
+
+   Docked it is not a modal. read-tools.js sets role="complementary" and
+   drops aria-modal, the text narrows to make room, and the rail is
+   furniture standing beside the book. So it has to start where the book
+   starts. `html.fr-research-docked #notebook { top: var(--phh) }` in
+   read.in01.css gives it the READER TOOLBAR's height alone — 65px —
+   which was the whole offset back when the reader owned the viewport.
+   Our masthead is 85px, so the rail began twenty pixels ABOVE the
+   masthead's own bottom edge and, carrying z-index 10020 against the
+   masthead's 20, covered it; below that it ran straight over the
+   reader's toolbar, which is what Ian saw (2026-09-18: "it's not
+   aligned at the top... needs to sit in the TFR window and not overlap
+   the navbar"). Both bars, not one.
+
+   Same specificity as his (1,1,1) and this file loads after, so this
+   wins on source order. When the chrome hides on scroll both bars leave
+   together — see the transform block at the end of this file — and the
+   rail takes the space with them rather than leaving a band of nothing
+   where the toolbar used to be. */
+@media (min-width: 1100px) {
+  html.fr-research-docked #notebook {
+    top: calc(var(--mo-head, 61px) + var(--phh, 64px));
+    transition: transform .18s ease-out, top .28s var(--ease, ease);
+  }
+  html.fr-research-docked.mh-hide #notebook,
+  html.fr-research-docked.mh-mini #notebook {
+    top: env(safe-area-inset-top, 0px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html.fr-research-docked #notebook { transition: transform .18s ease-out; }
+  }
+}
+
 /* The section title in the toolbar never shrinks — `white-space:nowrap`
    with `flex:none` and no overflow rule, while the sibling link beside
    it got the full ellipsis treatment. At 375px it measures 566px inside
