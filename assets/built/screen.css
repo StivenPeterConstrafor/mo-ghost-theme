@@ -25900,6 +25900,20 @@ body:has(.welcome-page) .site-header { position: static; flex: 0 0 auto; }
      §6.36) — same fix as .admin-workspace .btn[hidden]. */
   display: none !important;
 }
+/* "Questions? Email …" sits flush under the unsubscribe button otherwise:
+   .membership-support .fine-print zeroes the margin (5383), because on
+   /membership/ and /manage/ the gap is owned by the PRECEDING row's
+   margin-bottom. This page's preceding element is .pref-unsub-actions,
+   which carries no bottom margin, so the gap has to come from here.
+   Three classes deep to beat .membership-support .fine-print outright
+   rather than relying on source order. 32px is this page's section-
+   internal step: clear of the 16px intra-block rhythm, short of the
+   44px .pref-unsub section break. Scoped to .pref-wrap because
+   custom-manage.hbs has two consecutive .fine-print paragraphs that are
+   deliberately flush. */
+.membership-support .pref-wrap .fine-print {
+  margin-top: 32px;
+}
 @media (max-width: 640px) {
   .pref-row { gap: 16px; }
 }
