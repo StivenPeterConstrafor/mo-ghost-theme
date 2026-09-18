@@ -161,6 +161,13 @@
       opt.textContent = b.name;
       $book.appendChild(opt);
     }
+    // custom-bible.hbs ships this select disabled so it cannot be
+    // opened onto an empty list before the book table is in. Filling it
+    // is what makes it usable, so enabling it belongs here, exactly as
+    // populateChapters() does below. Without this the reader is locked
+    // to Genesis with all sixty-six books sitting in a select that will
+    // not open.
+    $book.disabled = false;
   }
 
   function populateChapters(bookId) {
