@@ -7752,7 +7752,12 @@ mark.faith-find-hit.is-current {
   border-bottom: 1px solid transparent;
 }
 .lp-fathers .lp-more a:hover { border-bottom-color: var(--color-secondary); }
-}
+/* A stray `}` stood here. At the top level that is a parse error, and the
+   parser resyncs by DISCARDING THE NEXT CONSTRUCT — so `.lp-shelf-desc`
+   below has never applied in any browser that has loaded this file. The
+   `!important` on its margin is the fingerprint: someone added it fighting
+   a rule that was never being parsed. Found 2026-09-18 by counting braces
+   against zero; see the same fault, twice, in faith-port-reader-skin.css. */
 
 /* What is in a collection, and who is in it. The count stays the loud
    line; these two sit under it quietly. */
@@ -17034,9 +17039,9 @@ a.fr-btn,
 #notebook .nb-work-search-form button,
 #notebook .nb-highlight-colors button,
 #selpop button.pb {
-  color: var(--color-secondary);
+  color: var(--tfr-btn, var(--color-secondary));
   background: transparent;
-  border: 1px solid var(--color-secondary);
+  border: 1px solid var(--tfr-btn, var(--color-secondary));
   border-radius: 3px;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
@@ -17071,9 +17076,9 @@ a.fr-btn:hover,
 #notebook .nb-reading-place button:hover,
 #notebook .nb-work-search-form button:hover,
 #selpop button.pb:hover {
-  background: var(--color-secondary);
-  color: var(--color-white, #fff);
-  border-color: var(--color-secondary);
+  background: var(--tfr-btn, var(--color-secondary));
+  color: var(--tfr-btn-ink, var(--color-white, #fff));
+  border-color: var(--tfr-btn, var(--color-secondary));
   text-decoration: none;
 }
 
@@ -17105,15 +17110,15 @@ a.fr-btn:hover,
 .tfr-review-btn--primary,
 #notebook .nb-reading-place #nbSaveReadingPlace,
 #selpop button.pb[aria-pressed="true"] {
-  background: var(--color-secondary);
-  color: var(--color-white, #fff);
-  border: 1px solid var(--color-secondary);
+  background: var(--tfr-btn, var(--color-secondary));
+  color: var(--tfr-btn-ink, var(--color-white, #fff));
+  border: 1px solid var(--tfr-btn, var(--color-secondary));
   border-radius: 3px;
 }
 .tfr-browse-btn:hover {
   background: var(--color-dark);
   border-color: var(--color-dark);
-  color: var(--color-white, #fff);
+  color: var(--tfr-btn-ink, var(--color-white, #fff));
 }
 
 /* Disabled keeps the outline and loses its conviction. Not display:none and not
@@ -17147,7 +17152,7 @@ a.fr-btn:hover,
 .tfr-gate-signin-btn:focus-visible,
 #notebook .nb-work-primary button:focus-visible,
 #notebook .nb-reading-place button:focus-visible {
-  outline: 2px solid var(--color-secondary);
+  outline: 2px solid var(--tfr-btn, var(--color-secondary));
   outline-offset: 2px;
 }
 
@@ -17157,7 +17162,7 @@ a.fr-btn:hover,
    library's terracotta on hover: the same button, lit from the other side. */
 .bhero-btn,
 .bsearch button {
-  color: var(--color-white, #fff);
+  color: var(--tfr-btn-ink, var(--color-white, #fff));
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.36);
   border-radius: 3px;
@@ -17167,9 +17172,9 @@ a.fr-btn:hover,
 .bhero-btn:focus-visible,
 .bsearch button:hover,
 .bsearch button:focus-visible {
-  background: var(--color-secondary);
-  border-color: var(--color-secondary);
-  color: var(--color-white, #fff);
+  background: var(--tfr-btn, var(--color-secondary));
+  border-color: var(--tfr-btn, var(--color-secondary));
+  color: var(--tfr-btn-ink, var(--color-white, #fff));
 }
 
 /* THE TEXT AFFORDANCES TAKE THE INK AND NOT THE BOX. See the note at the top of
@@ -17188,5 +17193,5 @@ a.fr-btn:hover,
 #notebook .wrs-link,
 #notebook .wrs-button,
 #notebook .nb-destinations a {
-  color: var(--color-secondary);
+  color: var(--tfr-btn, var(--color-secondary));
 }

@@ -1141,10 +1141,10 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
   box-sizing: border-box;
   height: 40px;
   min-height: 40px;
-  border: 1px solid var(--color-secondary, #c1593c);
+  border: 1px solid var(--tfr-btn, var(--color-secondary, #c1593c));
   border-radius: 3px;
   background: transparent;
-  color: var(--color-secondary, #c1593c);
+  color: var(--tfr-btn, var(--color-secondary, #c1593c));
 }
 
 /* One box, dividers inside it. The parts give up their own radius so the
@@ -1163,7 +1163,7 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
   color: inherit;
 }
 #app .ph.fr-reader-head .ctr > .seg.pnav > button + button {
-  border-left: 1px solid var(--color-secondary, #c1593c);
+  border-left: 1px solid var(--tfr-btn, var(--color-secondary, #c1593c));
 }
 #app .ph.fr-reader-head .ctr > .seg.lanes { gap: 6px; }
 /* The page field IS the group's box. A bordered input inside a bordered
@@ -1171,7 +1171,7 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
    has to be answered in kind or three sides come out terracotta and the
    fourth stays tan. */
 #app .ph.fr-reader-head .ctr > .seg.pgjump {
-  border-right: 1px solid var(--color-secondary, #c1593c) !important;
+  border-right: 1px solid var(--tfr-btn, var(--color-secondary, #c1593c)) !important;
   padding: 0 8px;
   gap: 4px;
 }
@@ -1181,10 +1181,10 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: var(--color-secondary, #c1593c);
+  color: var(--tfr-btn, var(--color-secondary, #c1593c));
 }
 #app .ph.fr-reader-head .ctr .pgjump .pg-total {
-  color: var(--color-secondary, #c1593c);
+  color: var(--tfr-btn, var(--color-secondary, #c1593c));
 }
 /* The arrows sat in a group pulled 10px into its neighbour, which reads
    as kerning when the group has no edge and as a collision once it has. */
@@ -1201,8 +1201,8 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
 #app .ph.fr-reader-head .ctr > .tgl[aria-pressed="true"],
 #app .ph.fr-reader-head .ctr > .aaw > .tgl[aria-expanded="true"],
 #app .ph.fr-reader-head #nbCount[aria-expanded="true"] {
-  background: var(--color-secondary, #c1593c);
-  color: var(--color-white, #fff);
+  background: var(--tfr-btn, var(--color-secondary, #c1593c));
+  color: var(--tfr-btn-ink, var(--color-white, #fff));
 }
 
 #app .ph.fr-reader-head .phl > .sbt:focus-visible,
@@ -1211,7 +1211,7 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
 #app .ph.fr-reader-head .ctr > .aaw > .tgl:focus-visible,
 #app .ph.fr-reader-head .ctr > .seg.pnav > button:focus-visible,
 #app .ph.fr-reader-head .ctr > .seg.lanes > button:focus-visible {
-  outline: 2px solid var(--color-secondary, #c1593c);
+  outline: 2px solid var(--tfr-btn, var(--color-secondary, #c1593c));
   outline-offset: 2px;
 }
 
@@ -1269,10 +1269,10 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
 #app .aapop .reader-jump-form button,
 #app .aapop .reader-witnesses button {
   box-sizing: border-box;
-  border: 1px solid var(--color-secondary, #c1593c);
+  border: 1px solid var(--tfr-btn, var(--color-secondary, #c1593c));
   border-radius: 3px;
   background: transparent;
-  color: var(--color-secondary, #c1593c);
+  color: var(--tfr-btn, var(--color-secondary, #c1593c));
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
@@ -1289,7 +1289,7 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
   color: inherit;
 }
 #app .aapop .aaseg .tgl + .tgl {
-  border-left: 1px solid var(--color-secondary, #c1593c);
+  border-left: 1px solid var(--tfr-btn, var(--color-secondary, #c1593c));
 }
 #app .aapop .sld .t1,
 #app .aapop .sld .t2 {
@@ -1316,16 +1316,88 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
 #app .aapop .aamob button[aria-pressed="true"],
 #app .aapop .reader-witnesses button[aria-pressed="true"],
 #app .aapop.rdtools .rdt[aria-pressed="true"] {
-  background: var(--color-secondary, #c1593c);
-  color: var(--color-white, #fff);
-  border-color: var(--color-secondary, #c1593c);
+  background: var(--tfr-btn, var(--color-secondary, #c1593c));
+  color: var(--tfr-btn-ink, var(--color-white, #fff));
+  border-color: var(--tfr-btn, var(--color-secondary, #c1593c));
 }
 
 /* The only thing left in the popover still painted with his near-black
    --accent: the slider thumb, sitting inside a terracotta box. */
-#app .aapop input[type="range"] { accent-color: var(--color-secondary, #c1593c); }
+#app .aapop input[type="range"] { accent-color: var(--tfr-btn, var(--color-secondary, #c1593c)); }
 
 #app .aapop :is(button, .tgl):focus-visible {
-  outline: 2px solid var(--color-secondary, #c1593c);
+  outline: 2px solid var(--tfr-btn, var(--color-secondary, #c1593c));
   outline-offset: 2px;
+}
+
+/* ── THE TFR BUTTON IN DARK ─────────────────────────────────────────
+   Ian, 2026-09-18, after the popovers went in: add a dark variant.
+
+   The dark terracotta that carries the library in daylight cannot carry
+   it at night. Measured against the reader's own dark surfaces,
+   #c1593c runs 3.58:1 on --bg #222320, 3.19:1 on --card #2B2C29 and
+   2.65:1 on the hover ground --hl #373932 — every one of them below
+   4.5:1, and these are 13–15px control labels, which is normal text.
+   Filled, #c1593c under white ink is 4.41:1, also short.
+
+   So the same colour is lifted rather than replaced:
+   `color-mix(in srgb, var(--color-secondary) 65%, #fff)` = #d79380.
+   It is derived from the closed palette rather than a twelfth invented
+   value (brand.md §6.5 permits exactly this), and it holds the hue, so
+   the library reads as the same product with the light turned down.
+   Measured: 6.30 / 5.60 / 4.67:1 on those same three grounds. The FILL
+   inverts instead of keeping white ink — lifted terracotta under the
+   page's own near-black is 6.30:1, where white on it would be 2.5.
+
+   65% and not 75%: at 75% (#d0826d) the text still passes on the panel
+   at 4.75:1 but drops to 3.96:1 on --hl, which is the ground a hovered
+   control actually sits on. The hover state is where this was checked.
+
+   ── WHY THIS IS SCOPED TO #app, #notebook AND #selpop ──────────────
+
+   NOT `:root`, and this is the whole reason the dark variant lives in
+   this file rather than beside the light one in faith-received.css.
+
+   `dark-mode.js` is bundled into site.min.js, so it runs on EVERY page,
+   and on first visit with no saved preference it sets
+   data-theme="dark" on <html> whenever the OS prefers dark. Its CSS in
+   screen.css is scoped to `.article-body`, so a Faith Received library
+   page — browse, a room, search, the desk — keeps its cream ground and
+   carries the dark attribute anyway. A `:root`-level dark token, or a
+   bare `@media (prefers-color-scheme: dark)`, would therefore repaint
+   those buttons in the lifted night colour on a daylight page, for
+   every reader whose laptop is in dark mode.
+
+   These three ids exist only inside the ported reader, which is the
+   only TFR surface that has a dark ground at all. Custom properties
+   inherit, so setting them here reaches the toolbar and both popovers
+   (#app), the research rail (#notebook) and the selection popover
+   (#selpop) — including the rules for those last two, which live in
+   faith-received.css and read the same tokens.
+
+   The two conditions are the port's own, copied exactly from
+   fr-reading-system.css:21-25: sepia is a LIGHT ground and must not
+   match, and an explicit data-theme="light" must always win over the
+   OS preference. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="sepia"]) #app,
+  :root:not([data-theme="light"]):not([data-theme="sepia"]) #notebook,
+  :root:not([data-theme="light"]):not([data-theme="sepia"]) #selpop {
+    --tfr-btn: color-mix(in srgb, var(--color-secondary, #c1593c) 65%, #fff);
+    --tfr-btn-ink: var(--bg, #222320);
+  }
+}
+:root[data-theme="dark"] #app,
+:root[data-theme="dark"] #notebook,
+:root[data-theme="dark"] #selpop {
+  --tfr-btn: color-mix(in srgb, var(--color-secondary, #c1593c) 65%, #fff);
+  --tfr-btn-ink: var(--bg, #222320);
+}
+
+/* The Tools rows' second line rides on the row's own colour at 72%,
+   which is right on cream and too faint once the row is a lifted
+   terracotta outline on near-black. */
+:root[data-theme="dark"] #app .aapop.rdtools .rdt span:not(.rdt-l) { opacity: 0.85; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="sepia"]) #app .aapop.rdtools .rdt span:not(.rdt-l) { opacity: 0.85; }
 }
