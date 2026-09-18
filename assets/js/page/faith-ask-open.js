@@ -125,7 +125,23 @@
     else window.MOSafeRedirect.go(LIBRARY);
   }
 
+  /*
+   * WHY THE GUARD IS A FLAG OF OUR OWN AND NOT THE CLASS.
+   *
+   * This used to skip the watcher whenever the panel already carried
+   * fra-standalone, on the reasoning that only we ever set it. That stopped
+   * being true when ask-workspace.js was re-vendored on 2026-09-18: the
+   * engine now derives standalone from FRAskConfig.askPath, which is
+   * /the-faith-received/ask/, so on the canonical Ask URL it sets the class
+   * itself at build time. The old guard then read its own success as someone
+   * else's and never attached the observer, and the X and Escape hid the
+   * panel and left a blank page behind. The class says how the panel LOOKS;
+   * this flag says whether the leaving behaviour is wired. They are two
+   * different questions and need two different answers.
+   */
   function watchForClose(panel) {
+    if (panel.dataset.moLeaveWatched === "1") return;
+    panel.dataset.moLeaveWatched = "1";
     panel.classList.add("fra-standalone");
     new MutationObserver(() => {
       if (panel.hidden) leave();
@@ -135,7 +151,7 @@
   function attempt() {
     if (isOpen()) {
       const panel = document.getElementById("fra-workspace");
-      if (panel && !panel.classList.contains("fra-standalone")) watchForClose(panel);
+      if (panel) watchForClose(panel);
       return;
     }
     if (tries++ >= MAX) return;

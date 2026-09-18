@@ -3,7 +3,19 @@
   if (window.FRAsk) return;
   // A source opened beside a conversation uses its parent's workspace and stream owner.
   try { if (window.parent !== window && window.parent.FRAsk) { if(window.frameElement?.id==='fra-source-frame')document.documentElement.classList.add('fr-ask-source');window.FRAsk = { open: (opts={}) => window.parent.FRAsk.open({...opts,contextWork:new URLSearchParams(location.search).get('w')||window.__FR_SLUG__||''}), markdown:window.parent.FRAsk.markdown, readURL:window.parent.FRAsk.readURL }; return; } } catch (_) {}
-  const S = FRChatStore, BASE = 'https://mo-tfr-library.mo-podcast-feed.workers.dev';
+  // INTEGRATION (owner 2026-09-13 'make integration of ask easy'): one file runs on every host. A host sets
+  // window.FRAskConfig BEFORE this script loads; every key is optional and defaults to the Vercel site.
+  //   apiBase          origin+prefix that serves ask + investigations   ('' → same origin '/api'; MereO → 'https://…workers.dev/v1')
+  //   dataBase         origin that serves works-index / schools / embcat  (Blob base on Vercel; the library worker on MereO)
+  //   readPath         reader page path                                  ('/read'; MereO '/the-faith-received/read/')
+  //   askPath          the standalone Ask page path                      ('/ask'; MereO '/the-faith-received/ask/')
+  //   libraryPath      the brand link                                    ('/')
+  //   assetBase        where ask-worker.js / ask-jobs.js live            ('/'; MereO '/assets/js/port/')
+  //   launcher         false → no floating Ask button (the host mounts its own door via FRAsk.open)
+  //   nav              [[href,label],…] for the standalone page's site sections; false → none
+  const CFG=Object.assign({apiBase:'/api',dataBase:'https://0ss8v4l06kodnhp0.public.blob.vercel-storage.com',readPath:'/read',askPath:'/ask',libraryPath:'/',assetBase:'/',launcher:true,nav:[['/','Library'],['/authors','Authors'],['/bible','Scripture'],['/topics','Topics'],['/search','Search'],['/pins','Notebooks'],['/desk','Desk']]},window.FRAskConfig||{});
+  const S = FRChatStore, BASE = CFG.dataBase.replace(/\/$/,'');
+  const ASK_PATH_RE=new RegExp('^'+CFG.askPath.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\/$/,'')+'(?:\\.html|/)?$');
   const modes = {
     ask: ['Ask', 'A concise answer from the texts. Choose Deep for a longer investigation.'],
     deep: ['Deep research', 'Gathers across the relevant texts, then quotes and explains them in depth. Saves progress after you close the browser. Up to 10 minutes per run; continue saved research if needed.'],
@@ -45,6 +57,7 @@
   const icons = {
     chat: '<path d="M20 11.5a8 8 0 0 1-8 8H5l-4 3v-11a8 8 0 0 1 8-8h3a8 8 0 0 1 8 8Z"/>',
     menu: '<path d="M4 6h16M4 12h16M4 18h16"/>', plus: '<path d="M12 5v14M5 12h14"/>',
+    edit: '<path d="M4 20h4l10.5-10.5a2 2 0 0 0 0-2.8l-1.2-1.2a2 2 0 0 0-2.8 0L4 16v4Z"/>',
     close: '<path d="m6 6 12 12M18 6 6 18"/>', send: '<path d="M12 19V5m-6 6 6-6 6 6"/>',
     book: '<path d="M12 5v15M12 5C8 2 3 4 2 4v15c4-2 7-1 10 1 3-2 6-3 10-1V4c-1 0-6-2-10 1Z"/>',
     chevron: '<path d="m7 10 5 5 5-5"/>', bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M9 21h6"/>',
@@ -59,8 +72,9 @@
      2026-09-14). The reader's hl handler does the work and already knows
      how to re-mark after its rebuilds. Truncation is safe because the
      match is by prefix: a short quote is still found whole. Re-apply when
-     re-vendoring. */
-  const readURL = (slug,page,quote) => '/the-faith-received/read/?w='+encodeURIComponent(slug)+(quote?'&hl='+encodeURIComponent(String(quote).slice(0,300)):'')+(page == null || page === '' ? '' : '#b'+encodeURIComponent(String(page).split(/[–—,]|(?<=\d)-(?=\d)/)[0].trim())+'-0');
+     re-vendoring. The reader PATH is no longer patched here: it comes
+     from CFG.readPath, which faith-ask-config.js sets. */
+  const readURL = (slug,page,quote) => CFG.readPath+'?w='+encodeURIComponent(slug)+(quote?'&hl='+encodeURIComponent(String(quote).slice(0,300)):'')+(page == null || page === '' ? '' : '#b'+encodeURIComponent(String(page).split(/[–—,]|(?<=\d)-(?=\d)/)[0].trim())+'-0');
   function safeURL(value) { if(typeof value!=='string'||!value.trim())return ''; try { const u = new URL(value, location.origin); return ['http:','https:'].includes(u.protocol) ? u.href : ''; } catch (_) { return ''; } }
   let catalog = [], catalogBySlug = new Map(), catalogRevision = 0, catalogPromise, conversations = [], current = null, panel, port, worker, initPromise, renderTimer, draftTimer;
   const backgroundInert = new Map();
@@ -92,7 +106,17 @@
   async function loadCatalog() {
     return catalogPromise || (catalogPromise = Promise.all([
       (window.__FR_LIBRARY_CATALOGUE__||fetch(BASE+'/v1/works-index.json').then(r=>{if(!r.ok)throw new Error();return r.json();})).catch(()=>fetch(BASE+'/v1/works-index.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error();return r.json();})),
-      fetch('https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/data/embcat.json').then(r=>r.ok?r.json():{works:[]}).catch(()=>({works:[]}))
+      /* MereO delta (Ian, 2026-09-18): the owner's integration layer builds
+         this as dataBase + '/data/embcat.json'. That is right for his Vercel
+         Blob, where the file sits at the root, and wrong for a worker: ours
+         serves it at /v1/data/embcat.json and answers the bare path with a
+         404. The fetch swallows failures into {works:[]}, so the symptom is
+         not an error, it is a catalogue that quietly loses every Patrologia,
+         Patrologia Orientalis, Aquinas and EEBO work, leaving Search within
+         able to offer only the TFR shelf. Verified 2026-09-18: /v1/data/…
+         returns 1.25MB, the bare path returns 404. The blob branch is left
+         exactly as he wrote it so his own site is unaffected. */
+      fetch((BASE.includes('blob.vercel-storage.com')?'':BASE+'/v1')+'/data/embcat.json').then(r=>r.ok?r.json():{works:[]}).catch(()=>({works:[]}))
     ]).then(([main,embedded])=>{catalog=(main.works||[]).concat((embedded.works||[]).filter(w=>w.c!=='tfr').map(w=>({slug:'@'+w.c+':'+w.s,title:w.t,author:w.a,corpus:w.c})));catalogBySlug=new Map();for(const w of catalog)if(!catalogBySlug.has(w.slug))catalogBySlug.set(w.slug,w);catalogRevision++;return catalog;}).catch(()=>{catalogPromise=null;return [];}));
   }
   let schoolPromise;
@@ -128,7 +152,9 @@
      highlight is exactly the words the reader just read rather than a
      snippet the retriever happened to store.
      markPhrase needs whitespace and 24 characters before it will act, so
-     anything shorter is not worth sending. Re-apply when re-vendoring. */
+     anything shorter is not worth sending. Re-apply when re-vendoring.
+     The call sites below pass it as sourceHref({...s,quote:said}) so the
+     owner's sourceHref/sourceAttributes chain still owns the URL. */
   const QUOTE_CHARS = '"\u201C\u201D\u2018\u2019\u00AB\u00BB';
   function quoteBefore(text, idx) {
     if (typeof text !== 'string' || !(idx > 0)) return '';
@@ -141,23 +167,34 @@
   }
 
   function sourceHref(s){return safeURL(s.link)||(typeof s.slug==='string'&&s.slug.trim()?readURL(s.slug,s.page,s.quote):'');}
+  function sourceVisitURL(href,id=current){const u=new URL(href,location.origin);if(id&&u.origin===location.origin&&/^\/read(?:[/.]|$)/.test(u.pathname))u.searchParams.set('ask_chat',id);return localURL(u.href);}
+  function sourceAttributes(href){return ' href="'+esc(sourceVisitURL(href))+'" target="_blank" rel="noopener noreferrer"';}
   function sourceCard(s){
     const href=sourceHref(s),tag=href?'a':'div';
     const cite=s.cit||s.cite||(s.page!=null?'p. '+s.page:href?'Read passage':'Source location unavailable');
-    return '<'+tag+(href?' href="'+esc(href)+'" aria-label="Read '+esc(titleOf(s)+' · '+cite)+'"':'')+' class="fra-source"><span><strong class="fra-source-name">'+esc(titleOf(s))+'</strong>'+(s.quote?'<q class="fra-source-quote">'+esc(s.quote)+'</q>':'')+'</span><small>'+esc(cite)+'</small></'+tag+'>';
+    return '<div class="fra-source-row"><'+tag+(href?sourceAttributes(href)+' aria-label="Open source in a new tab: '+esc((s.author?s.author+' · ':'')+titleOf(s)+' · '+cite)+'"':'')+' class="fra-source"><span>'+(s.author?'<span class="fra-source-author">'+esc(s.author)+'</span>':'')+'<strong class="fra-source-name">'+esc(titleOf(s))+'</strong>'+(s.quote?'<q class="fra-source-quote">'+esc(s.quote)+'</q>':'')+'</span><small>'+esc(cite)+(href?' ↗':'')+'</small></'+tag+'>'+(href?'<button class="fra-source-preview" data-preview-source="'+esc(href)+'" data-preview-title="'+esc(titleOf(s))+'">Read here</button>':'')+'</div>';
   }
+  function citationKey(value){return String(value??'').replace(/^[[(]|[\])]$/g,'').trim().replace(/\b(PL|PG|PO)\s*(\d+)\s*[:·]\s*0*(\d+)([a-z]*)/gi,(_,ns,v,c,suffix)=>ns.toUpperCase()+' '+BigInt(v)+':'+BigInt(c)+suffix.toUpperCase()).replace(/^\d+$/,n=>String(BigInt(n)));}
   function inline(text, sources) {
     const held = [];
     const hold = html => '\u0001'+(held.push(html)-1)+'\u0002';
     let out = String(text).replace(/\\([\\`*_[\]<>])/g, (_, literal) => hold(esc(literal))).replace(/\[((?:[a-zA-Z0-9_-]+\/p[^,;\]\s]+\s*[,;]\s*)+[a-zA-Z0-9_-]+\/p[^,;\]\s]+)\]/g,(_,group)=>group.split(/\s*[,;]\s*/).map(cite=>'['+cite+']').join(', ')).replace(/\[([^\]\n]+)\]\(([^\s)]+)\)/g, (_, label, href) => {
-      const safe = safeURL(href); return safe ? hold('<a href="'+esc(safe)+'"'+(new URL(safe).origin !== location.origin || new URL(safe).pathname==='https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/corpus' ? ' target="_blank" rel="noopener noreferrer"' : '')+'>'+esc(label)+'</a>') : label;
+      const safe = safeURL(href); return safe ? hold('<a'+sourceAttributes(safe)+'>'+esc(label)+'</a>') : label;
     });
     out = out.replace(/\[([a-zA-Z0-9_-]+)\/p([^\]\s]+)\]|\[W\s*([a-zA-Z0-9_-]+):([^\]\s]+)\]/g, (_, a, p, b, q, at, whole) => {
-      const slug = a || b, page = p || q, s = sources.find(s => s.slug === slug && String(s.page) === page) || { slug, page };
+      const slug = a || b, page = p || q, s = sources.find(s => s.slug === slug && [s.page,...(s.anchors||[])].some(n=>citationKey(n)===citationKey(page)));
+      if(!s)return hold('<span class="fra-unverified-cite" title="This reference was not supplied with the answer">Unverified reference</span>');
+      // MereO delta (see quoteBefore above): the words just quoted become ?hl=.
       const said = s.quote || quoteBefore(whole, at);
-      return hold('<a class="fra-cite" href="'+esc(safeURL(s.link)||readURL(slug,page,said))+'" title="'+esc(titleOf(s))+'">'+esc(s.cite || ('p. '+page))+'</a>');
+      return hold('<a class="fra-cite"'+sourceAttributes(sourceHref({...s,quote:said}))+' title="Open source in a new tab: '+esc((s.author?s.author+' · ':'')+titleOf(s))+'">'+esc(s.cit || s.cite || ('p. '+page))+'</a>');
     });
-    out=out.replace(/\[([^\]\n]+)\]/g,(_,label,at,whole)=>{const src=sources.find(s=>String(s.cit||s.cite||'').replace(/^\[|\]$/g,'')===label);if(!src)return '['+label+']';const said=src.quote||quoteBefore(whole,at);const href=safeURL(src.link)||(typeof src.slug==='string'&&src.slug.trim()?readURL(src.slug,src.page,said):'');return href?hold('<a class="fra-cite" href="'+esc(href)+'">'+esc(label)+'</a>'):'['+label+']';});
+    // MereO delta (see quoteBefore above): ?hl= here too, so a bare [PL 32:659]
+    // chip opens the column at the sentence the answer just quoted.
+    out=out.replace(/\[([^\]\n]+)\]|\(((?:PL|PG|PO)\s*\d+\s*:\s*\d+[a-z]?)\)/g,(all,bracket,paren,at,whole)=>{const label=bracket||paren,src=sources.find(s=>citationKey(s.cit||s.cite)===citationKey(label));const said=src&&(src.quote||quoteBefore(whole,at));const href=src&&sourceHref({...src,quote:said});return href?hold('<a class="fra-cite"'+sourceAttributes(href)+' title="Open source in a new tab: '+esc((src.author?src.author+' · ':'')+titleOf(src))+'">'+esc(label)+'</a>'):all;});
+    /* MereO delta (unmarked in the old copy, kept deliberately): ***both***
+       renders as bold italic, and a stray run of asterisks the model leaves
+       behind is dropped rather than printed. Upstream handles ** and * only,
+       so without these two an answer shows literal asterisks to the reader. */
     return esc(out).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*\*([^*]+)\*\*\*/g,'<strong><em>$1</em></strong>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\*([^*]+)\*/g,'<em>$1</em>').replace(/\*{2,}/g,'').replace(/\u0001(\d+)\u0002/g, (_, n) => held[+n]);
   }
   function markdown(text, sources = []) {
@@ -194,12 +231,15 @@
       }
       const h=/^(#{1,6})\s+(.+)$/.exec(l), li=/^\s*([-*]|\d+[.)])\s+(.+)$/.exec(l);
       if(h){flush();closeList();out.push('<h3>'+inline(h[2],sources)+'</h3>');}
-      else if(li){flush();const kind=/\d/.test(li[1])?'ol':'ul';if(list!==kind){closeList();list=kind;out.push('<'+kind+'>');}out.push('<li>'+inline(li[2],sources)+'</li>');}
+      else if(li){flush();const kind=/\d/.test(li[1])?'ol':'ul';if(list!==kind){closeList();list=kind;const ordinal=kind==='ol'?Number(li[1].replace(/[.)]$/,'')):1;out.push('<'+kind+(ordinal!==1?' start="'+ordinal+'"':'')+'>');}out.push('<li>'+inline(li[2],sources)+'</li>');}
       /* MereO delta (Ian, 2026-09-15): allow up to three spaces before the
          marker. CommonMark does, and the model indents its quotations
          under the list item they belong to, so the strict /^>/ left every
          one of them as a literal "> " in the middle of a paragraph.
-         Re-apply when re-vendoring. */
+         UPSTREAM HAS THIS NOW: the owner's 2026-09-13 file already writes
+         / {0,3}>/, so there is nothing to re-apply. The note stays so the
+         next re-vendoring does not read the match as a coincidence and
+         "simplify" it back to /^>/. */
       else if(/^ {0,3}>\s?/.test(l)){
         flush();closeList();const quoted=[l.replace(/^ {0,3}>\s?/,'')];
         while(i+1<lines.length&&/^ {0,3}>\s?/.test(lines[i+1]))quoted.push(lines[++i].replace(/^ {0,3}>\s?/,''));
@@ -226,6 +266,8 @@
   }
   async function migrate() {
     const existing=await S.all(), ids=new Set(existing.map(c=>c.id));
+    // DELETED conversations are tombstoned in meta; every legacy import below treats them as present so they never resurrect (owner 2026-09-13).
+    for(const id of await deletedIds())ids.add(id);
     for(const c of existing)if(c.turns.some(t=>/^\s*\(synthesis failed\)\s*$/i.test(t.a||'')&&t.status==='complete'))await S.update(c.id,c=>{for(const t of c.turns)if(/^\s*\(synthesis failed\)\s*$/i.test(t.a||'')){t.status='error';t.error='This saved scan did not produce a report. Retry with Deep research.';}c.unread=true;});
     let old=[];try{old=(JSON.parse(localStorage.getItem('fr_chats')||'{}').chats)||[];}catch(_){}if(!Array.isArray(old))old=[];old=old.filter(c=>c&&Array.isArray(c.turns));
     for(const c of old)if(c&&c.id&&!ids.has(c.id)){
@@ -242,28 +284,41 @@
   }
   async function mirror() {
     // Compatibility snapshot only. IndexedDB is authoritative and is never truncated here.
-    const list=conversations.filter(c=>!c.archived&&c.turns.length).slice(0,40).map(c=>({id:c.id,t:c.t,ts:c.ts,w:c.contextWork||(c.scope.works||[])[0]||'',turns:c.turns.filter(t=>t.status==='complete').map(t=>({q:t.q,a:t.a,src:t.src,graph:t.graph,ts:t.ts,mode:t.mode,passage:t.passage}))}));
+    const list=conversations.filter(c=>!c.archived&&c.turns.length).slice(0,40).map(c=>({id:c.id,t:c.t,ts:c.ts,folder:folderOf(c)||undefined,w:c.contextWork||(c.scope.works||[])[0]||'',turns:c.turns.filter(t=>t.status==='complete').map(t=>({q:t.q,a:t.a,src:t.src,graph:t.graph,ts:t.ts,mode:t.mode,passage:t.passage}))}));
     try{localStorage.setItem('fr_chats',JSON.stringify({v:2,chats:list}));if(window._frSyncChats)window._frSyncChats({v:2,chats:list});legacyWarning='';window.dispatchEvent(new Event('fr-conversations-updated'));}
     catch(_){legacyWarning='Full conversations are saved here. Desk export is full; download a conversation to keep a separate copy.';}
   }
-  function createWorker() {
-    try { worker=new SharedWorker('/assets/js/port/ask-worker.js?v=7g',{name:'fr-ask-v7g'});port=worker.port;port.start(); }
-    catch(_){workerKind='tab';worker=new Worker('/assets/js/port/ask-worker.js?v=7g');port=worker;}
-    port.onmessage=async({data})=>{
-      if(data.type==='reply'){const r=replies.get(data.rid);if(r){clearTimeout(r.timer);replies.delete(data.rid);data.error?r.reject(new Error(data.error)):r.resolve();}}
-      else if(data.type==='updated')scheduleRefresh();
-      else if(data.type==='storage-error'){storageError='The latest answer could not be saved. Browser storage may be full.';toast(storageError);}
-      else if(data.type==='finished'){
+  // One arrival path for every finished answer: chat answers (the worker's 'finished' broadcast, os:true keeps the opt-in
+  // OS notice) and deep-research jobs (the job watcher's leave-running transition, os:false — inside the app only:
+  // toast, unread mark, live-region announcement).
+  async function answerFinished(data,{os=false}={}){
         await refresh();await mirror();
         const c=conversations.find(c=>c.id===data.id);if(!c)return;const status=c.turns.find(t=>t.id===data.turnId)?.status||data.status;
         if(visible&&current===c.id&&document.visibilityState==='visible'){await S.update(c.id,c=>{c.unread=false;});announce(status==='complete'?'Answer complete':'Research needs attention');}
         else{toast((status==='complete'?'Answer ready: ':'Research needs attention: ')+c.t,c.id);
-          if(localStorage.getItem('fr_ask_notify')==='1'&&'Notification'in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){
+          if(os&&localStorage.getItem('fr_ask_notify')==='1'&&'Notification'in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){
             // A local claim prevents every open tab producing the same OS notification.
             const key='fr_notice_'+data.turnId;if(!localStorage.getItem(key)){localStorage.setItem(key,'1');const n=new Notification('The Faith Received',{body:status==='complete'?'Your research is ready.':'Your research needs attention.',tag:data.turnId});n.onclick=()=>{window.focus();open({id:c.id});n.close();};}
           }
         }
-      }
+      
+  }
+  function createWorker() {
+    /* MereO delta (unmarked in the old copy, kept deliberately): our
+       ask-worker.js is ahead of the owner's, so it keeps OUR cache token,
+       v7g, not his v4. The token is also the SharedWorker NAME: a browser
+       that already owns fr-ask-v7g would keep serving the old script under
+       a reused name, and every tab of a member mid-question would be
+       answered by a worker without our member-bearer handling. Bump both
+       together whenever ask-worker.js changes. The PATH comes from
+       CFG.assetBase; only the version is ours. */
+    try { worker=new SharedWorker(CFG.assetBase+'ask-worker.js?v=7g',{name:'fr-ask-v7g'});port=worker.port;port.start(); }
+    catch(_){workerKind='tab';worker=new Worker(CFG.assetBase+'ask-worker.js?v=7g');port=worker;}
+    port.onmessage=async({data})=>{
+      if(data.type==='reply'){const r=replies.get(data.rid);if(r){clearTimeout(r.timer);replies.delete(data.rid);data.error?r.reject(new Error(data.error)):r.resolve();}}
+      else if(data.type==='updated')scheduleRefresh();
+      else if(data.type==='storage-error'){storageError='The latest answer could not be saved. Browser storage may be full.';toast(storageError);}
+      else if(data.type==='finished')await answerFinished(data,{os:true});
     };
     worker.onerror=()=>{storageError='The background connection stopped. Reload to reconnect; saved conversations will remain.';refresh();};
   }
@@ -297,16 +352,19 @@
   async function newConversation(opts={}){
     if(panel)togglePopover('fra-scope',false);forgetSource();
     historyFilter='';showArchived=false;if(panel){$('#fra-history-search').value='';$('#fra-show-archived').setAttribute('aria-pressed','false');}
-    const c={id:S.id(),t:'New conversation',ts:Date.now(),mode:researchMode(opts.mode),scope:{works:opts.works||(readerPage()&&contextWork()?[contextWork()]:[]),tradition:opts.tradition||'',notebook:false},turns:[],draft:opts.q||'',archived:false,contextWork:opts.contextWork||contextWork()};
-    await S.put(c);current=c.id;await refresh();syncComposer();return c;
+    const c={id:S.id(),t:'New conversation',ts:Date.now(),mode:researchMode(opts.mode),scope:{works:opts.works||(readerPage()&&contextWork()?[contextWork()]:[]),tradition:opts.tradition||'',notebook:false},turns:[],draft:opts.q||'',archived:false,folder:String(opts.folder||'').trim().slice(0,60),contextWork:opts.contextWork||contextWork()};
+    await S.put(c);current=c.id;if(S.setMeta)await S.setMeta('active-conversation',current);await refresh();syncComposer();return c;
   }
   function renderHistory(){
     if(!panel)return;
-    const list=conversations.filter(c=>!!c.archived===showArchived&&(c.t+' '+c.turns.map(t=>t.q+' '+t.a).join(' ')).toLowerCase().includes(historyFilter.toLowerCase()));
-    const historyHTML=list.length?list.map(c=>{
+    const list=conversations.filter(c=>(c.turns.length||String(c.draft||'').trim())&&!!c.archived===showArchived&&(folderOf(c)+' '+c.t+' '+c.turns.map(t=>t.q+' '+t.a).join(' ')).toLowerCase().includes(historyFilter.toLowerCase()));
+    const row=c=>{
       const t=c.turns[c.turns.length-1],status=running(c)?'Researching':t&&['error','interrupted','stopped'].includes(t.status)?'Needs attention':c.unread?'Ready':new Date(c.ts).toLocaleDateString(undefined,{month:'short',day:'numeric'});
       return '<button class="fra-history-row'+(current===c.id?' active':'')+'" data-chat="'+esc(c.id)+'"'+(current===c.id?' aria-current="true"':'')+'><span>'+esc(c.t)+'</span><small>'+esc(status)+'</small></button>';
-    }).join(''):'<p class="fra-empty-history">'+(historyFilter?'No matching conversations.':'Your conversations will appear here.')+'</p>';
+    };
+    // FOLDERS (owner 2026-09-13): conversations group under named folders; loose ones come first.
+    const loose=list.filter(c=>!folderOf(c)),folders=[...new Set(list.map(folderOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+    const historyHTML=list.length?loose.map(row).join('')+folders.map(name=>'<details class="fra-folder" data-folder="'+esc(name)+'"'+(foldersClosed.has(name)&&!historyFilter?'':' open')+'><summary><span>'+esc(name)+'</span><small>'+list.filter(c=>folderOf(c)===name).length+'</small><button type="button" class="fra-folder-rename" data-folder-rename="'+esc(name)+'" aria-label="Rename folder '+esc(name)+'">'+icon('edit')+'</button></summary>'+list.filter(c=>folderOf(c)===name).map(row).join('')+'</details>').join('')+(showArchived?'<button type="button" id="fra-delete-archived" class="fra-danger fra-delete-archived">Delete all archived</button>':''):'<p class="fra-empty-history">'+(historyFilter?'No matching conversations.':showArchived?'No archived conversations.':'Your conversations will appear here.')+'</p>';
     const host=$('#fra-history-list');if(host.dataset.html!==historyHTML){const focused=document.activeElement&&document.activeElement.dataset.chat;host.innerHTML=historyHTML;host.dataset.html=historyHTML;if(focused){const b=host.querySelector('[data-chat="'+CSS.escape(focused)+'"]');if(b)b.focus();}}
   }
   function scopeText(c){const s=c.scope||{},parts=scopeParts(s);if(parts.length===1){if((s.groups||[]).length===1)return scopeGroups.find(g=>g.id===s.groups[0])?.name||'Selected group';if(scopeShelves(s).length===1)return scopeShelves(s)[0];if((s.authors||[]).length===1)return 'Works by '+s.authors[0];if((s.works||[]).length===1)return titleOf({slug:s.works[0]});}return parts.join(' · ')||'Whole library';}
@@ -320,8 +378,8 @@
   function shownError(t){return /load failed|failed to fetch|networkerror|network request failed|fetch failed/i.test(t.error||'')?'The connection was interrupted. Your question and any received passages are saved. Try again.':t.error||'';}
   function renderHeader(){const c=selected();if(!c)return;
     const passage=$('#fra-passage');passage.hidden=!c.draftPassage;$('#fra-passage-cite').textContent=c.draftPassage?.cite||'';$('#fra-passage-text').textContent=c.draftPassage?.text||'';
-    if(/^\/ask(?:\.html)?$/.test(location.pathname)){const u=new URL(location.href);if(u.searchParams.get('chat')!==c.id){u.searchParams.set('chat',c.id);u.searchParams.delete('q');u.searchParams.delete('ask');history.replaceState(null,'',u);}}
-    $('#fra-title').textContent=c.t;$('#fra-context').textContent=scopeText(c);$('#fra-mode-name').textContent=modes[researchMode(c.mode)][0];
+    if(ASK_PATH_RE.test(location.pathname)){const u=new URL(location.href);if(u.searchParams.get('chat')!==c.id){u.searchParams.set('chat',c.id);u.searchParams.delete('q');u.searchParams.delete('ask');history.replaceState(history.state,'',u);}}
+    $('#fra-title').textContent=c.t;$('#fra-context').textContent=(folderOf(c)?folderOf(c)+' · ':'')+scopeText(c);$('#fra-mode-name').textContent=modes[researchMode(c.mode)][0];
     $('#fra-scope-name').textContent=scopeButton(c.scope||{});$('#fra-context').title=scopeText(c);
     $('#fra-archive').textContent=c.archived?'Restore conversation':'Archive conversation';
     $('#fra-save-state').textContent=storageError||legacyWarning||(running(c)?.serverJob?.status==='submitting'?'Starting Deep research · Wait for confirmation':running(c)?.serverJob?'Saved on the server · You can close this browser':running(c)?'Saved · '+(workerKind==='shared'?'Research continues while the site is open':'Keep this tab open while research runs'):c.turns.some(t=>t.serverJob&&t.serverJob.status!=='submitting')?'Research saved on the server':researchMode(c.mode)==='deep'?'Saves progress · Works in the background · Up to 10 minutes':'Saved in this browser');
@@ -405,6 +463,16 @@
      in the DOM. The renderer is lazy and caches by source, so calling it
      on every delta costs a querySelector on a settled answer. */
   function updateAnswer(answer,html){const fragment=document.createElement('template');fragment.innerHTML=html;reconcileAnswer(answer,fragment.content);if(window.MODiagrams)window.MODiagrams.render(answer);}
+  // A long answer gets a sticky outline above it: the question, Top, one jump per section. Targets are
+  // resolved by index at click time — reconcileAnswer re-diffs the answer on every update, so ids would not survive.
+  function renderOutline(node,t,answer){
+    const feed=$('#fra-feed'),heads=Array.from(answer.querySelectorAll('h3'));let bar=node.querySelector('.fra-outline');
+    const long=heads.length>=2||(feed.clientHeight>0&&answer.offsetHeight>feed.clientHeight*1.5);
+    if(!long){if(bar)bar.remove();return;}
+    const html='<strong title="'+esc(t.q)+'">'+esc(t.q)+'</strong><button type="button" data-jump="top" data-jump-turn="'+esc(t.id)+'">Top ↑</button>'+heads.map((h,i)=>'<button type="button" data-jump="'+i+'" data-jump-turn="'+esc(t.id)+'" title="'+esc(h.textContent)+'">'+esc(h.textContent.trim().slice(0,72))+'</button>').join('');
+    if(!bar){bar=document.createElement('nav');bar.className='fra-outline';bar.setAttribute('aria-label','In this answer');node.insertBefore(bar,answer);}
+    if(bar.dataset.html!==html){bar.innerHTML=html;bar.dataset.html=html;}
+  }
   function renderThread(){
     const c=selected();if(!c)return;const feed=$('#fra-feed'), thread=$('#fra-thread');
     const feedVisible=feed.clientHeight>0,near=feedVisible&&feed.scrollHeight-feed.scrollTop-feed.clientHeight<110;
@@ -419,10 +487,14 @@
       const node=thread.querySelector('[data-turn="'+CSS.escape(t.id)+'"]'),answer=node.querySelector('.fra-answer');
       node.querySelector('.fra-turn-meta').textContent=turnModeLabel(t);
       const answerText=shownAnswer(t),sourceKey=JSON.stringify((t.src||[]).map(s=>[s.slug,s.page,s.link,s.cit,s.cite,titleOf(s)]));
-      if(answer.dataset.text!==answerText||answer.dataset.catalog!==String(catalogRevision)||answer.dataset.sources!==sourceKey){answer.dataset.sources=sourceKey;answer.dataset.catalog=String(catalogRevision);updateAnswer(answer,markdown(answerText,t.src||[]));answer.dataset.text=answerText;}
+      if(answer.dataset.text!==answerText||answer.dataset.catalog!==String(catalogRevision)||answer.dataset.sources!==sourceKey){answer.dataset.sources=sourceKey;answer.dataset.catalog=String(catalogRevision);updateAnswer(answer,markdown(answerText,t.src||[]));answer.dataset.text=answerText;renderOutline(node,t,answer);}
       const progress=node.querySelector('.fra-progress');
-      const stage=humanStage(t.stage||'Starting research'), stageKey=t.status+'|'+stage;
-      if(progress.dataset.stage!==stageKey){progress.dataset.stage=stageKey;progress.dataset.kind=/writ|compos|synthesi/i.test(stage)?'writing':/read|batch|page/i.test(stage)?'reading':/check|gap|verif/i.test(stage)?'checking':'searching';progress.innerHTML=t.status==='running'?'<span class="fra-motion" aria-hidden="true"><i></i><i></i><i></i></span><span>'+esc(stage)+'</span><span class="fra-elapsed" data-start="'+t.ts+'">'+elapsed(t.ts)+'</span>':t.status==='paused'?'<span>'+esc(stage)+'</span>':'';}
+      const stage=humanStage(t.stage||'Starting research');
+      // While the turn runs, the steps already passed stay visible under the current one (the server used to go quiet for
+      // ten seconds between 'Reading source passages' and 'Preparing the response'; now each verification batch reports).
+      const done=t.status==='running'?(t.steps||[]).map(s=>humanStage(s.label)).filter((l,i,a)=>l&&l!==stage&&a.indexOf(l)===i).slice(-6):[];
+      const stageKey=t.status+'|'+stage+'|'+done.join('|');
+      if(progress.dataset.stage!==stageKey){progress.dataset.stage=stageKey;progress.dataset.kind=/writ|compos|synthesi/i.test(stage)?'writing':/read|batch|page/i.test(stage)?'reading':/check|gap|verif/i.test(stage)?'checking':'searching';progress.innerHTML=t.status==='running'?'<span class="fra-motion" aria-hidden="true"><i></i><i></i><i></i></span><span>'+esc(stage)+'</span><span class="fra-elapsed" data-start="'+t.ts+'">'+elapsed(t.ts)+'</span>'+(done.length?'<ol class="fra-steps-done" aria-label="Completed steps">'+done.map(l=>'<li>'+esc(l)+'</li>').join('')+'</ol>':''):t.status==='paused'?'<span>'+esc(stage)+'</span>':'';}
       const extra=node.querySelector('.fra-turn-extra');
       /* MereO delta: t.unverified joins the key, or the notice below would
          paint once and never update. */
@@ -435,14 +507,14 @@
         extra.innerHTML=(t.graph&&t.graph.loci&&t.graph.loci.length?'<p class="fra-research-context">Research context · <span>'+t.graph.loci.map(esc).join(' · ')+'</span></p>':'')+(t.error?'<div class="fra-error" role="alert">'+esc(shownError(t))+'</div>':'')+
           ((t.unverified||[]).length?'<div class="fra-unverified"><p>'+((t.unverified.length===1)?'This quotation could not be found':'These quotations could not be found')+' in the passages this answer cites. Read the sources before relying on '+((t.unverified.length===1)?'it':'them')+'.</p><ul>'+t.unverified.map(x=>'<li>“'+esc(x)+'”</li>').join('')+'</ul></div>':'')+
           (t.steps&&t.steps.length?'<details class="fra-activity"><summary>Research activity · '+t.steps.length+' steps</summary><ol>'+t.steps.map(s=>'<li>'+esc(humanStage(s.label))+'</li>').join('')+'</ol></details>':'')+
-          (t.gaps?'<details class="fra-activity"><summary>Gaps in the evidence</summary><p>'+esc(t.gaps)+'</p></details>':'')+
+          (t.gaps?'<details class="fra-activity"><summary>Gaps in the evidence</summary><ul class="fra-gaps">'+String(t.gaps).split('\n').filter(g=>g.trim()).map(g=>'<li>'+esc(g)+'</li>').join('')+'</ul></details>':'')+
           (t.stats?'<p class="fra-coverage">'+esc(t.stats.unique||0)+' passages found'+(t.stats.capped?' · Scan capped; this is not complete coverage.':' · '+esc(t.stats.pages)+' pages loaded.')+'</p>':'')+
-          ((t.src||[]).length?'<details class="fra-sources"><summary>'+t.src.length+' source passages</summary><div>'+t.src.map(sourceCard).join('')+'</div></details>':'');
+          ((t.src||[]).length?'<details class="fra-sources"><summary>'+t.src.length+' source passage'+(t.src.length===1?'':'s')+'</summary><div>'+t.src.map(sourceCard).join('')+'</div></details>':'');
         extra.querySelectorAll('details').forEach(d=>{if(openDetails.includes(d.classList.contains('fra-sources')?'sources':d.querySelector('summary').textContent.replace(/ ·.*$/,'')))d.open=true;});
       }
       const actions=node.querySelector('.fra-actions');
-      const actionKey=t.status+'|'+!!answerText+'|'+offersDeep(t)+'|'+(t.serverJob?.status||'');
-      if(actions.dataset.status!==actionKey){actions.dataset.status=actionKey;actions.innerHTML=t.status==='running'?'':(answerText?'<button data-copy="'+esc(t.id)+'">Copy answer</button><button data-note="'+esc(t.id)+'">Save to notebook</button><button data-desk="'+esc(t.id)+'">Insert in Desk</button>':'')+(offersDeep(t)?'<button data-deepen="'+esc(t.id)+'" title="Research this question in the background using the same scope. Saves progress; up to 10 minutes per run.">Research in Deep</button>':'')+(['error','interrupted','stopped'].includes(t.status)&&!t.serverJob?'<button data-retry="'+esc(t.id)+'">Retry question</button>':'');}
+      const actionKey=t.status+'|'+!!answerText+'|'+offersDeep(t)+'|'+(t.src||[]).length+'|'+(t.serverJob?.status||'');
+      if(actions.dataset.status!==actionKey){actions.dataset.status=actionKey;actions.innerHTML=t.status==='running'?'':((t.src||[]).length?'<button data-sources="'+esc(t.id)+'">Read sources</button>':'')+(answerText?'<button data-share="'+esc(t.id)+'">Share</button><button data-copy="'+esc(t.id)+'">Copy answer</button><button data-note="'+esc(t.id)+'">Save to notebook</button><button data-desk="'+esc(t.id)+'">Insert in Desk</button>':'')+(offersDeep(t)?'<button data-deepen="'+esc(t.id)+'" title="Research this question in the background using the same scope. Saves progress; up to 10 minutes per run.">Research in Deep</button>':'')+(['error','interrupted','stopped'].includes(t.status)&&!t.serverJob?'<button data-retry="'+esc(t.id)+'">Retry question</button>':'');}
       if(t.serverJob){let controls=actions.querySelector('.fra-job-controls');if(!controls){controls=document.createElement('span');controls.className='fra-job-controls';actions.append(controls);}const state=t.serverJob.status,controlState=state+'|'+!!t.serverJob.canResume;if(controls.dataset.state!==controlState){controls.dataset.state=controlState;controls.innerHTML=(['queued','running'].includes(state)?'<button data-job-control="pause" data-job-turn="'+esc(t.id)+'">Pause research</button>':(['paused','limit_reached','needs_input'].includes(state)||state==='complete'&&t.serverJob.canResume)?'<button data-job-control="resume" data-job-turn="'+esc(t.id)+'">'+(state==='complete'?'Research further for 10 minutes':state==='limit_reached'?'Continue for 10 more minutes':'Continue research')+'</button>':'')+(t.status==='error'?'<button data-job-control="retry" data-job-turn="'+esc(t.id)+'">Reconnect Deep research</button>':'');}}
     }
     if(near&&c.turns.length&&(!window.getSelection||window.getSelection()?.isCollapsed!==false))feed.scrollTop=feed.scrollHeight;
@@ -454,9 +526,19 @@
   function fitInput(){const ta=$('#fra-input'),height=window.visualViewport?.height||window.innerHeight;ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,170,Math.max(60,height*.26))+'px';renderHeader();}
   function fitViewport(){if(!panel||!visible)return;const view=window.visualViewport;panel.style.height=(view?.height||window.innerHeight)+'px';panel.style.top=(view?.offsetTop||0)+'px';panel.style.setProperty('--fra-view-height',(view?.height||window.innerHeight)+'px');fitInput();}
   async function flushDraft(){clearTimeout(draftTimer);if(!visible||!selected())return;const id=current,value=$('#fra-input').value;await S.update(id,c=>{c.draft=value;});}
-  async function switchChat(id){await flushDraft();togglePopover('fra-scope',false);forgetSource();current=id;await S.update(id,c=>{c.unread=false;});await refresh();syncComposer();panel.classList.remove('fra-history-open');$('#fra-history-toggle').setAttribute('aria-expanded','false');$('#fra-feed').scrollTop=selected()?.turns.length?$('#fra-feed').scrollHeight:0;}
+  async function switchChat(id){await flushDraft();togglePopover('fra-scope',false);forgetSource();current=id;if(S.setMeta)await S.setMeta('active-conversation',id);await S.update(id,c=>{c.unread=false;});await refresh();syncComposer();panel.classList.remove('fra-history-open');$('#fra-history-toggle').setAttribute('aria-expanded','false');$('#fra-feed').scrollTop=selected()?.turns.length?$('#fra-feed').scrollHeight:0;}
   let jobsPromise;
-  async function researchJobs(){if(!jobsPromise)jobsPromise=import((document.getElementById('frPortAssets')||{dataset:{}}).dataset.askJobs||('/assets/js/port/ask-jobs.js?v='+encodeURIComponent(window.__FR_VER||'deep-1'))).then(async()=>{await FRResearchJobs.init(S,scheduleRefresh);return FRResearchJobs;});return jobsPromise;}
+  /* MereO delta (unmarked in the old copy, kept deliberately): prefer the
+     {{asset}} URL the template published on #frPortAssets. This import is
+     one of two port files fetched without a script tag, and building the
+     URL as ...?v=__FR_VER gives every file ONE shared constant while Ghost
+     hashes each asset separately. So the ask-jobs.js URL never changed when
+     ask-jobs.js did, and with max-age=31536000 the CDN kept handing back the
+     old object: a deep-research fix verified present on the server was still
+     absent in the browser. The data attribute carries the real per-file
+     hash. CFG.assetBase is the fallback for any page that does not publish
+     one. See the frPortAssets note in custom-faith-port-read.hbs. */
+  async function researchJobs(){if(!jobsPromise)jobsPromise=import((document.getElementById('frPortAssets')||{dataset:{}}).dataset.askJobs||(CFG.assetBase+'ask-jobs.js?v='+encodeURIComponent(window.__FR_VER||'deep-1'))).then(async()=>{await FRResearchJobs.init(S,scheduleRefresh,data=>answerFinished(data,{os:false}));return FRResearchJobs;});return jobsPromise;}
   async function send(question, modeOverride, scopeOverride, passageOverride){
     await flushDraft();let c=await S.get(current);if(!c)return;
     if(running(c)){const t=running(c);if(t.serverJob)await (await researchJobs()).control(c.id,t.id,'cancel');else await rpc('stop',{id:c.id});return;}
@@ -478,13 +560,13 @@
     if(!resolved.length&&c.contextWork)body.hint_w=c.contextWork;
     if(scope.notebook){let notes={};try{notes=JSON.parse(localStorage.getItem('fr_notes')||'{}');}catch(_){}body.filters=body.filters||{};let cols=[];try{cols=JSON.parse(localStorage.getItem('fr_collections_v1')||'[]');}catch(_){}const active=cols.find(x=>x.id===localStorage.getItem('fr_pincol'))||cols[0];body.filters.nb={name:active?active.name:'My notebook',memo:active&&active.memo||'',notes:[...Object.entries(JSON.parse(localStorage.getItem('fr_highlight_passages_v1')||'{}')).filter(([key])=>JSON.parse(localStorage.getItem('fr_hl')||'{}')[key]).map(([,x])=>x.cite+': '+x.text).slice(-6),...(active?active.items||[]:[]).filter(x=>x.type==='note').map(x=>x.text),...Object.values(notes).map(x=>x.t||'')].slice(-12),items:(active?active.items||[]:[]).filter(x=>x.type!=='note').slice(-40).map(x=>({t:x.title||x.slug,a:x.author||'',l:x.label||''}))};}
     body.corpus_context=c.turns.filter(t=>t.corpusState).slice(-3).map(t=>t.corpusState);
-    let request={url:'https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/ask',format:'ask',body};
+    let request={url:CFG.apiBase+'/ask',format:'ask',body};
     if(mode==='deep'){
       // The same scope and selected passage travel to the durable research job.
       // Notebook notes are user context, never substitutes for source evidence.
       const messages=prior.slice(-6);
       if(body.filters?.nb||body.hint_w)messages.push({role:'user',content:'Reading context, not verified source evidence: '+JSON.stringify({work:body.hint_w,notebook:body.filters?.nb})});
-      request={url:'https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/investigations',format:'job',body:{...body,question:prompt,messages}};
+      request={url:CFG.apiBase+'/investigations',format:'job',body:{...body,question:prompt,messages}};
     }
     /* MereO delta (ASK-SPEC §7): mint the member bearer here, on the
        page, because the SharedWorker that owns the stream has its own
@@ -496,6 +578,8 @@
        minted for a host the page has not allowlisted, and it returns
        null for an anonymous visitor rather than throwing — the 401 path
        below already explains that in words.
+       The URL is now CFG.apiBase, not a literal, so the allowlist check
+       follows whatever faith-ask-config.js points Ask at.
        Re-apply when re-vendoring ask-workspace.js from upstream. */
     try{
       const tok=window.MOAuth&&window.MOAuth.tokenFor?await window.MOAuth.tokenFor(request.url):null;
@@ -509,22 +593,26 @@
     }catch(e){toast(e.message);}finally{sending.delete(c.id);}
   }
   function build(){
-    panel=document.createElement('section');panel.id='fra-workspace';panel.className='fra'+(/^\/ask(?:\.html)?$/.test(location.pathname)?' fra-standalone':'');panel.hidden=true;panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Ask the Library');panel.setAttribute('aria-modal','true');
-    panel.innerHTML='<div class="fra-history-scrim" data-history-close></div><aside class="fra-sidebar"><div class="fra-brand"><a href="/the-faith-received/">The Faith Received</a><button class="fra-icon fra-mobile-only" data-history-close aria-label="Close conversations">'+icon('close')+'</button></div>'+
-      '<button class="fra-new" id="fra-new">'+icon('plus')+'New conversation</button><label class="fra-history-search">'+icon('search')+'<input id="fra-history-search" type="search" placeholder="Search conversations" aria-label="Search conversations"></label><div class="fra-history-label"><span>Conversations</span><button id="fra-show-archived" aria-pressed="false">Archived</button></div><nav id="fra-history-list" aria-label="Conversations"></nav><div class="fra-sidebar-foot"><a href="/the-faith-received/pins/">Collections</a><a href="/the-faith-received/desk/">Open Desk</a><div data-cgpt-link></div><button id="fra-notify" aria-pressed="false">'+icon('bell')+'Completion notifications</button><p>Conversations are saved in this browser. Deep research also saves progress on the server.</p></div></aside>'+
-      '<main class="fra-main"><header class="fra-header"><button class="fra-icon" id="fra-history-toggle" aria-label="Show conversations" aria-expanded="false">'+icon('menu')+'</button><div class="fra-heading"><strong id="fra-title">New conversation</strong><span id="fra-context">Whole library</span></div><button class="fra-icon" id="fra-theme" aria-label="Change reading theme">'+icon('sun')+'</button><button class="fra-icon" id="fra-more-toggle" aria-label="Conversation options" aria-expanded="false">•••</button><a class="fra-home" id="fra-home" href="/the-faith-received/" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a><button class="fra-icon" id="fra-close" aria-label="Return to reading">'+icon('close')+'</button><div class="fra-menu" id="fra-more" hidden><button id="fra-rename">Rename conversation</button><button id="fra-export">Download conversation</button><button id="fra-archive">Archive conversation</button></div></header>'+
-      '<nav class="fra-reader-bar" id="fra-reader-bar" hidden aria-label="Reader research"><button id="fra-reader-notes">Saved research</button><button id="fra-expand">Expand Ask</button></nav><div class="fra-mobile-tabs" hidden><button id="fra-chat-tab" class="active">Conversation</button><button id="fra-read-tab">Read source</button></div><div class="fra-body"><section class="fra-chat"><div id="fra-feed" class="fra-feed"><div id="fra-welcome" class="fra-welcome"><div class="fra-welcome-mark">'+icon('book')+'</div><h1>Ask the Library</h1><p>Explore an idea, understand a passage, or follow a question through the texts.</p><div class="fra-suggestions"></div></div><div id="fra-thread"></div></div><button id="fra-jump" class="fra-jump" hidden>Latest answer ↓</button>'+
-      '<footer class="fra-compose-area"><aside class="fra-passage" id="fra-passage" hidden aria-label="Selected passage"><div><span id="fra-passage-cite"></span><button id="fra-passage-clear" aria-label="Remove selected passage">'+icon('close')+'</button></div><blockquote id="fra-passage-text"></blockquote></aside><div class="fra-composer"><textarea id="fra-input" rows="1" disabled placeholder="Ask anything" aria-label="Message the library"></textarea><div class="fra-compose-tools"><button id="fra-mode-toggle" aria-expanded="false"><span id="fra-mode-name">Ask</span>'+icon('chevron')+'</button><button id="fra-scope-toggle" aria-expanded="false"><span id="fra-scope-name">Scope</span>'+icon('chevron')+'</button><span class="fra-grow"></span><button id="fra-send" class="fra-send" aria-label="Send message" disabled>'+icon('send')+'</button></div><div class="fra-mode-menu fra-popover" id="fra-modes" hidden>'+Object.entries(modes).map(([key,value])=>'<button data-mode="'+key+'"><strong>'+value[0]+'</strong><span>'+value[1]+'</span></button>').join('')+'</div><section class="fra-popover fra-scope" id="fra-scope" aria-label="Research scope" hidden></section></div><div class="fra-compose-foot"><span id="fra-save-state">Saved in this browser</span><span>Check the cited passages.</span></div></footer></section>'+
+    const standalone=ASK_PATH_RE.test(location.pathname);
+    panel=document.createElement('section');panel.id='fra-workspace';panel.className='fra'+(standalone?' fra-standalone':'');panel.hidden=true;panel.setAttribute('role',standalone?'main':'dialog');panel.setAttribute('aria-label','Ask the Library');if(!standalone)panel.setAttribute('aria-modal','true');
+    panel.innerHTML='<div class="fra-history-scrim" data-history-close></div><aside class="fra-sidebar" tabindex="-1"><div class="fra-brand"><a href="'+esc(CFG.libraryPath)+'">The Faith Received</a><button class="fra-icon fra-mobile-only" data-history-close aria-label="Close conversations">'+icon('close')+'</button></div>'+(standalone&&Array.isArray(CFG.nav)&&CFG.nav.length?'<nav class="fra-site-nav" aria-label="Library sections">'+CFG.nav.map(([h,t])=>'<a href="'+esc(h)+'">'+esc(t)+'</a>').join('')+'</nav>':'')+''+
+      '<button class="fra-new" id="fra-new">'+icon('plus')+'New conversation</button><label class="fra-history-search">'+icon('search')+'<input id="fra-history-search" type="search" placeholder="Search conversations" aria-label="Search conversations"></label><div class="fra-history-label"><span>Conversations</span><button id="fra-show-archived" aria-pressed="false">Archived</button></div><nav id="fra-history-list" aria-label="Conversations"></nav><div class="fra-sidebar-foot"><a href="/pins">Collections</a><a href="/desk">Open Desk</a><div data-cgpt-link></div><button id="fra-notify" aria-pressed="false">'+icon('bell')+'Completion notifications</button><p>Conversations are saved in this browser. Deep research also saves progress on the server.</p></div></aside>'+
+      '<main class="fra-main"><header class="fra-header"><button class="fra-icon" id="fra-history-toggle" aria-label="Show conversations" aria-expanded="false">'+icon('menu')+'</button><div class="fra-heading"><strong id="fra-title">New conversation</strong><span id="fra-context">Whole library</span></div><button class="fra-icon" id="fra-theme" aria-label="Change reading theme">'+icon('sun')+'</button><button class="fra-icon" id="fra-more-toggle" aria-label="Conversation options" aria-expanded="false">•••</button><a class="fra-home" id="fra-home" href="/" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a><button class="fra-icon" id="fra-close" aria-label="Return to reading">'+icon('close')+'</button><div class="fra-menu" id="fra-more" hidden><button id="fra-rename">Rename conversation</button><button id="fra-export">Download conversation</button><button id="fra-folder">Move to folder…</button><div id="fra-folder-pick" class="fra-folder-pick" hidden><label>Folder<input id="fra-folder-name" list="fra-folder-list" maxlength="60" placeholder="New or existing folder" autocomplete="off"></label><datalist id="fra-folder-list"></datalist><div class="fra-confirm-row"><button id="fra-folder-save">Move</button><button id="fra-folder-clear">No folder</button></div></div><button id="fra-archive">Archive conversation</button><button id="fra-delete" class="fra-danger">Delete conversation</button><div id="fra-confirm" class="fra-confirm" hidden><span id="fra-confirm-text">Delete this conversation? This cannot be undone.</span><div class="fra-confirm-row"><button id="fra-confirm-yes" class="fra-danger">Delete</button><button id="fra-confirm-no">Keep</button></div></div></div></header>'+
+      '<nav class="fra-reader-bar" id="fra-reader-bar" hidden aria-label="Reader research"><button id="fra-reader-notes">Saved research</button><button id="fra-expand">Expand Ask</button></nav><div class="fra-mobile-tabs" hidden><button id="fra-chat-tab" class="active">Conversation</button><button id="fra-read-tab">Read source</button></div><div class="fra-body"><section class="fra-chat"><div id="fra-feed" class="fra-feed"><div id="fra-welcome" class="fra-welcome"><div class="fra-welcome-mark">'+icon('book')+'</div><h1>Ask the Library</h1><p>Explore an idea, understand a passage, or follow a question through the texts.</p><div class="fra-suggestions"></div></div><div id="fra-thread"></div></div>'+
+      '<footer class="fra-compose-area"><button id="fra-jump" class="fra-jump" hidden>Latest answer ↓</button><aside class="fra-passage" id="fra-passage" hidden aria-label="Selected passage"><div><span id="fra-passage-cite"></span><button id="fra-passage-clear" aria-label="Remove selected passage">'+icon('close')+'</button></div><blockquote id="fra-passage-text"></blockquote></aside><div class="fra-composer"><textarea id="fra-input" rows="1" disabled placeholder="Ask anything" aria-label="Message the library"></textarea><div class="fra-compose-tools"><button id="fra-mode-toggle" aria-expanded="false"><span id="fra-mode-name">Ask</span>'+icon('chevron')+'</button><button id="fra-scope-toggle" aria-expanded="false"><span id="fra-scope-name">Scope</span>'+icon('chevron')+'</button><span class="fra-grow"></span><button id="fra-send" class="fra-send" aria-label="Send message" disabled>'+icon('send')+'</button></div><div class="fra-mode-menu fra-popover" id="fra-modes" hidden>'+Object.entries(modes).map(([key,value])=>'<button data-mode="'+key+'"><strong>'+value[0]+'</strong><span>'+value[1]+'</span></button>').join('')+'</div><section class="fra-popover fra-scope" id="fra-scope" aria-label="Research scope" hidden></section></div><div class="fra-compose-foot"><span id="fra-save-state">Saved in this browser</span><button class="fra-history-link" data-show-conversations>Saved questions</button><span>Sources open in a new tab.</span></div></footer></section>'+
       '<div class="fra-split" id="fra-split" role="separator" aria-orientation="vertical" aria-label="Resize the source pane" aria-valuemin="28" aria-valuemax="76" tabindex="0" title="Drag to resize the source pane · double-click to reset"></div><section class="fra-reader" hidden><header><button class="fra-icon" id="fra-source-back" aria-label="Back to conversation">'+icon('back')+'</button><div class="fra-source-heading"><span id="fra-source-title">Source passage</span><small id="fra-source-location"></small></div><a id="fra-source-open" target="_blank" rel="noopener">Open reader</a><button class="fra-icon" id="fra-source-close" aria-label="Close source">'+icon('close')+'</button></header><div class="fra-source-viewport"><div id="fra-source-status" class="fra-source-status" role="status" hidden>Loading passage…</div><iframe id="fra-source-frame" title="Read the cited source" referrerpolicy="same-origin"></iframe></div></section></div></main>';
     document.body.appendChild(panel);
     panel.addEventListener('click',handleClick);
-    /* MereO delta: follow the link's own href instead of the hard-coded
-       '/'. The Library is the site root on his domain and is
-       /the-faith-received/ on ours, so the literal sent people
-       to the Mere Orthodoxy homepage. The href in the markup above was
-       right all along, the handler just ignored it. Re-apply when
-       re-vendoring. */
-    $('#fra-home').onclick=async e=>{if(e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();const to=e.currentTarget.getAttribute('href')||'/';try{await flushDraft();location.assign(to);}catch(_){toast('Your draft could not be saved. Please try again before leaving.');}};
+    panel.addEventListener('toggle',e=>{const d=e.target;if(!(d instanceof HTMLDetailsElement)||!d.classList.contains('fra-folder')||historyFilter)return;const name=d.dataset.folder;if(d.open)foldersClosed.delete(name);else foldersClosed.add(name);if(S.setMeta)S.setMeta('folders-closed',[...foldersClosed]).catch(()=>{});},true);
+    /* MereO delta, NOW EXPRESSED AS CONFIG: this handler used to navigate to
+       a literal '/', which is the Library on the owner's domain and the Mere
+       Orthodoxy homepage on ours, so the brand link sent readers out of the
+       library entirely. We patched it to follow the anchor's own href. The
+       owner's file now reads CFG.libraryPath in BOTH the markup and this
+       handler, so faith-ask-config.js setting libraryPath fixes it at the
+       source and there is nothing to patch. Do not re-add the href-reading
+       patch on the next re-vendoring; set the config key instead. */
+    $('#fra-home').onclick=async e=>{if(e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();try{await flushDraft();location.assign(CFG.libraryPath);}catch(_){toast('Your draft could not be saved. Please try again before leaving.');}};
     // Keep the latest-answer control above the composer as drafts or the keyboard resize it.
     new ResizeObserver(()=>{
       panel.style.setProperty('--fra-compose-offset',($('.fra-compose-area').offsetHeight+12)+'px');
@@ -555,7 +643,21 @@
     });
     if(window.visualViewport){visualViewport.addEventListener('resize',fitViewport);visualViewport.addEventListener('scroll',fitViewport);}window.addEventListener('resize',fitViewport);
   }
-  function togglePopover(id, value){for(const name of ['fra-scope','fra-modes','fra-more']){const el=$('#'+name);el.hidden=name===id?(value===undefined?!el.hidden:!value):true;}for(const [button,menu]of [['fra-scope-toggle','fra-scope'],['fra-mode-toggle','fra-modes'],['fra-more-toggle','fra-more']])$('#'+button).setAttribute('aria-expanded',String(!$('#'+menu).hidden));}
+  async function deletedIds(){try{return Array.isArray((await S.meta?.('deleted-conversations'))?.value)?(await S.meta('deleted-conversations')).value:[];}catch(_){return [];}}
+  async function rememberDeleted(id){const ids=await deletedIds();if(!ids.includes(id))ids.push(id);if(S.setMeta)await S.setMeta('deleted-conversations',ids.slice(-400));}
+  let foldersClosed=new Set();
+  async function loadFolderState(){try{const v=(await S.meta?.('folders-closed'))?.value;foldersClosed=new Set(Array.isArray(v)?v:[]);}catch(_){}}
+  function folderOf(c){return String(c&&c.folder||'').trim();}
+  function folderNames(){return [...new Set(conversations.map(folderOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b));}
+  async function deleteConversation(id){
+    const c=conversations.find(x=>x.id===id);if(!c)return;
+    // a running job is cancelled first so nothing keeps spending for a conversation nobody can see
+    if(running(c)){const t=running(c);try{if(t.serverJob)await (await researchJobs()).control(c.id,t.id,'cancel');else await rpc('stop',{id:c.id});}catch(_){}}
+    if(S.remove)await S.remove(id);await rememberDeleted(id);conversations=conversations.filter(x=>x.id!==id);
+    if(current===id){current=null;const next=conversations.find(x=>!x.archived&&x.turns.length);if(next)current=next.id;else await newConversation();if(S.setMeta&&current)await S.setMeta('active-conversation',current);}
+    await refresh();await mirror();announce('Conversation deleted');
+  }
+  function togglePopover(id, value){for(const name of ['fra-scope','fra-modes','fra-more']){const el=$('#'+name);el.hidden=name===id?(value===undefined?!el.hidden:!value):true;}if(id!=='fra-more'||$('#fra-more').hidden){const pick=$('#fra-folder-pick'),box=$('#fra-confirm');if(pick)pick.hidden=true;if(box)box.hidden=true;}for(const [button,menu]of [['fra-scope-toggle','fra-scope'],['fra-mode-toggle','fra-modes'],['fra-more-toggle','fra-more']])$('#'+button).setAttribute('aria-expanded',String(!$('#'+menu).hidden));}
   function renderScopeSelection(){
     const s=selected()?.scope||{},chosen=scopeShelves(s),authors=s.authors||[],works=s.works||[],groups=s.groups||[];
     $('#fra-all-scope').setAttribute('aria-pressed',String(!chosen.length&&!authors.length&&!works.length&&!groups.length));
@@ -602,7 +704,7 @@
     if(!loading){clearTimeout(sourceStatusTimer);sourceStatusTimer=null;sourceReady=true;}
   }
   function updateSourceHeader(href=sourceURL){
-    $('#fra-source-title').textContent=sourceTitle;$('#fra-source-title').title=sourceTitle;$('#fra-source-open').href=localURL(href);
+    $('#fra-source-title').textContent=sourceTitle;$('#fra-source-title').title=sourceTitle;$('#fra-source-open').href=sourceVisitURL(href);
     let page='';try{const u=new URL(href,location.origin),id=decodeURIComponent(u.hash.slice(1));page=(id.match(/^b(.+)-\d+$/)||[])[1]||u.searchParams.get('p')||'';}catch(_){}
     $('#fra-source-location').textContent=page?'Passage '+page:'';
   }
@@ -730,9 +832,11 @@
 
     if(e.target.hasAttribute('data-history-close')){panel.classList.remove('fra-history-open');$('#fra-history-toggle').setAttribute('aria-expanded','false');return;}
     const b=e.target.closest('button'),link=e.target.closest('a');
-    if(link&&link.target==='_blank')return;
+    if(link&&(link.target==='_blank'||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button>0))return;
     if(link){const u=new URL(link.href,location.origin);if(u.origin===location.origin){e.preventDefault();if(/^\/read/.test(u.pathname)||link.classList.contains('fra-cite')||link.classList.contains('fra-source')){openSource(link.href,link.getAttribute('title')||link.querySelector('.fra-source-name')?.textContent||link.textContent.trim(),true,false,link);}else if(conversations.some(running)){openSource(link.href,link.textContent.trim());}else{await close();location.href=localURL(link.href);}}return;}
     if(!b)return;
+    if(b.hasAttribute('data-show-conversations')){showConversations();return;}
+    if(b.dataset.previewSource){await flushDraft();await openSource(b.dataset.previewSource,b.dataset.previewTitle,true,false,b);return;}
     if(b.dataset.chat){await switchChat(b.dataset.chat);return;}
     if(b.dataset.prompt){if(b.dataset.research){await S.update(current,c=>{c.mode=b.dataset.research;});await refresh();}$('#fra-input').value=b.dataset.prompt;fitInput();await flushDraft();$('#fra-input').focus();return;}
     if(b.dataset.mode){await S.update(current,c=>{c.mode=b.dataset.mode;});togglePopover('fra-modes',false);await refresh();if(b.dataset.mode==='scan')openScope();return;}
@@ -750,9 +854,21 @@
     if(b.hasAttribute('data-history-close')){panel.classList.remove('fra-history-open');$('#fra-history-toggle').setAttribute('aria-expanded','false');return;}
     if(b.hasAttribute('data-scope-close')){togglePopover('fra-scope',false);$('#fra-scope-toggle').focus();return;}
     const c=selected();
+    if(b.dataset.jump!=null&&b.dataset.jumpTurn){const node=panel.querySelector('[data-turn="'+CSS.escape(b.dataset.jumpTurn)+'"]'),feed=$('#fra-feed');if(!node)return;
+      const bar=node.querySelector('.fra-outline'),target=b.dataset.jump==='top'?node:node.querySelectorAll('.fra-answer h3')[+b.dataset.jump];if(!target)return;
+      const top=target.getBoundingClientRect().top-feed.getBoundingClientRect().top+feed.scrollTop-(b.dataset.jump==='top'?12:(bar?.offsetHeight||0)+10);
+      feed.scrollTo({top:Math.max(0,top),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});return;}
+    if(b.dataset.sources){const node=panel.querySelector('[data-turn="'+CSS.escape(b.dataset.sources)+'"]'),sources=node?.querySelector('.fra-sources');if(sources){sources.open=true;sources.querySelector('summary').scrollIntoView({block:'center'});sources.querySelector('summary').focus();}return;}
+    if(b.dataset.share){const t=c.turns.find(t=>t.id===b.dataset.share);if(!t)return;b.disabled=true;const was=b.textContent;b.textContent='Sharing…';
+      try{const r=await fetch('/api/share',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:t.q,a:shownAnswer(t),src:t.src||[],mode:t.mode||'ask'})});const d=await r.json();if(!r.ok||!d.url)throw Error(d.error||'share failed');
+        let shared=false;if(navigator.share){try{await navigator.share({title:t.q,text:t.q,url:d.url});shared=true;}catch(_){}}
+        if(!shared){try{await navigator.clipboard.writeText(d.url);toast('Share link copied: '+d.url);}catch(_){prompt('Share this answer',d.url);}}}
+      catch(e){toast('Sharing failed. '+(e.message||''));}
+      finally{b.disabled=false;b.textContent=was;}return;}
     if(b.dataset.copy){const t=c.turns.find(t=>t.id===b.dataset.copy);try{await navigator.clipboard.writeText(shownAnswer(t));toast('Answer copied.');}catch(_){toast('Copy is unavailable. Use Download conversation.');}return;}
-    if(b.dataset.desk){const t=c.turns.find(t=>t.id===b.dataset.desk);if(window.FRDesk){await close();window.FRDesk.insertAnswer({...t,a:shownAnswer(t)});}else{try{sessionStorage.setItem('fr_desk_insert_v1',JSON.stringify({q:t.q,a:shownAnswer(t),src:t.src||[]}));await openSource('/the-faith-received/desk/','Desk');}catch(_){toast('The answer could not be sent to Desk. Copy or download it instead.');}}return;}
-    if(b.dataset.note){const t=c.turns.find(t=>t.id===b.dataset.note);try{let cols=JSON.parse(localStorage.getItem('fr_collections_v1')||'[]');if(!cols.length)cols=[{id:'default',name:'Reading list',items:JSON.parse(localStorage.getItem('fr_pins')||'[]')}];const active=cols.find(x=>x.id===localStorage.getItem('fr_pincol'))||cols[0];active.items=active.items||[];if(!active.items.some(x=>x.askTurn===t.id))active.items.push({type:'note',id:'ask-'+t.id,chat:c.id,slug:c.contextWork||contextWork(),askTurn:t.id,text:'Q: '+t.q+'\n\n'+shownAnswer(t),askQuestion:t.q,askAnswer:shownAnswer(t),askSources:t.src||[],ts:Date.now()});localStorage.setItem('fr_collections_v1',JSON.stringify(cols));if(window._frSyncCollections)window._frSyncCollections(cols);window.dispatchEvent(new Event('fr-notebook-updated'));b.textContent='Saved to notebook';b.disabled=true;toast('Saved in '+active.name+'.');}catch(_){toast('Notebook storage is full. Download the conversation instead.');}return;}
+    if(b.dataset.desk){const t=c.turns.find(t=>t.id===b.dataset.desk);if(window.FRDesk){await close();window.FRDesk.insertAnswer({...t,a:shownAnswer(t)});}else{try{sessionStorage.setItem('fr_desk_insert_v1',JSON.stringify({q:t.q,a:shownAnswer(t),src:t.src||[]}));await openSource('/desk','Desk');}catch(_){toast('The answer could not be sent to Desk. Copy or download it instead.');}}return;}
+    if(b.dataset.note){const t=c.turns.find(t=>t.id===b.dataset.note);try{const notebook=window.FRResearchNotebook;if(!notebook)throw Error('Notebook unavailable');const result=await notebook.save({type:'note',id:'ask-'+t.id,chat:c.id,url:'/ask?chat='+encodeURIComponent(c.id),slug:c.contextWork||contextWork(),askTurn:t.id,text:'Q: '+t.q+'\n\n'+shownAnswer(t),askQuestion:t.q,askAnswer:shownAnswer(t),askSources:t.src||[],ts:Date.now()});b.textContent='Saved to notebook';b.disabled=true;toast('Saved in '+result.collectionName+'.');}catch(_){toast('The answer could not be saved. Download the conversation or try again.');}return;}
+    if(b.dataset.folderRename){const old=b.dataset.folderRename,name=prompt('Folder name',old);if(name!=null&&name.trim()&&name.trim()!==old){const next=name.trim().slice(0,60);for(const x of conversations.filter(x=>folderOf(x)===old))await S.update(x.id,c=>{c.folder=next;});if(foldersClosed.delete(old))foldersClosed.add(next);await refresh();await mirror();}return;}
     if(b.dataset.deepen){if(running(c)){toast('Stop or finish the current answer first.');return;}const t=c.turns.find(t=>t.id===b.dataset.deepen);await send(t.q,'deep',t.scope,t.passage||null);return;}
     if(b.dataset.retry){if(running(c)){toast('Stop or finish the current answer before retrying.');return;}const t=c.turns.find(t=>t.id===b.dataset.retry);await send(t.q,t.mode,t.scope,t.passage||null);return;}
     switch(b.id){
@@ -761,7 +877,7 @@
       case 'fra-expand':expandedReaderAsk=!expandedReaderAsk;syncPresentation();fitInput();break;
       case 'fra-passage-clear':await S.update(current,c=>{delete c.draftPassage;});await refresh();break;
       case 'fra-new':await flushDraft();await newConversation();panel.classList.remove('fra-history-open');$('#fra-history-toggle').setAttribute('aria-expanded','false');$('#fra-input').focus();break;
-      case 'fra-history-toggle':panel.classList.toggle('fra-history-open');b.setAttribute('aria-expanded',String(panel.classList.contains('fra-history-open')));if(panel.classList.contains('fra-history-open'))$('#fra-history-search').focus();break;
+      case 'fra-history-toggle':panel.classList.toggle('fra-history-open');b.setAttribute('aria-expanded',String(panel.classList.contains('fra-history-open')));if(panel.classList.contains('fra-history-open'))focusConversations();break;
       case 'fra-show-archived':showArchived=!showArchived;b.setAttribute('aria-pressed',String(showArchived));renderHistory();break;
       case 'fra-mode-toggle':togglePopover('fra-modes');break;
       case 'fra-scope-toggle':if($('#fra-scope').hidden)openScope();else togglePopover('fra-scope',false);break;
@@ -770,6 +886,13 @@
       case 'fra-more-toggle':togglePopover('fra-more');break;
       case 'fra-rename':{const name=prompt('Conversation title',c.t);if(name&&name.trim())await S.update(c.id,c=>{c.t=name.trim().slice(0,120);});togglePopover('fra-more',false);await refresh();break;}
       case 'fra-archive':await S.update(c.id,c=>{c.archived=!c.archived;});togglePopover('fra-more',false);await refresh();await mirror();break;
+      case 'fra-folder':{const pick=$('#fra-folder-pick');pick.hidden=!pick.hidden;$('#fra-confirm').hidden=true;if(!pick.hidden){$('#fra-folder-list').innerHTML=folderNames().map(n=>'<option value="'+esc(n)+'">').join('');$('#fra-folder-name').value=folderOf(c);$('#fra-folder-name').focus();}break;}
+      case 'fra-folder-save':{const name=$('#fra-folder-name').value.trim().slice(0,60);await S.update(c.id,c=>{c.folder=name;});if(name)foldersClosed.delete(name);togglePopover('fra-more',false);$('#fra-folder-pick').hidden=true;await refresh();await mirror();announce(name?'Moved to '+name:'Removed from its folder');break;}
+      case 'fra-folder-clear':await S.update(c.id,c=>{c.folder='';});togglePopover('fra-more',false);$('#fra-folder-pick').hidden=true;await refresh();await mirror();break;
+      case 'fra-delete':{const box=$('#fra-confirm');box.hidden=!box.hidden;$('#fra-folder-pick').hidden=true;$('#fra-confirm-text').textContent=running(c)?'Stop the running research and delete this conversation? This cannot be undone.':'Delete this conversation? This cannot be undone.';if(!box.hidden)$('#fra-confirm-no').focus();break;}
+      case 'fra-confirm-no':$('#fra-confirm').hidden=true;break;
+      case 'fra-confirm-yes':togglePopover('fra-more',false);$('#fra-confirm').hidden=true;await deleteConversation(c.id);break;
+      case 'fra-delete-archived':{if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Confirm: delete '+conversations.filter(x=>x.archived).length+' archived';return;}for(const x of conversations.filter(x=>x.archived))await deleteConversation(x.id);showArchived=false;$('#fra-show-archived').setAttribute('aria-pressed','false');await refresh();break;}
       case 'fra-export':{const md='# '+c.t+'\n\n'+c.turns.map(t=>'## '+t.q+'\n\n'+(t.passage?'> '+String(t.passage.text||'').replace(/\n/g,'\n> ')+'\n\n'+(t.passage.cite||'Selected passage')+(safeURL(t.passage.url)?' · [Read passage]('+safeURL(t.passage.url)+')':'')+'\n\n':'')+shownAnswer(t).replace(/\]\(\/api\/corpus\?/g,'](https://thefaithreceived.vercel.app/api/corpus?')+'\n\n'+(t.src||[]).map(s=>'- ['+titleOf(s)+(s.page!=null?' · '+s.page:'')+']('+(safeURL(s.link)||'https://thefaithreceived.vercel.app'+readURL(s.slug,s.page))+')').join('\n')+(t.status!=='complete'?'\n\nStatus: '+t.status:'' )).join('\n\n');const url=URL.createObjectURL(new Blob([md],{type:'text/markdown;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download=c.t.replace(/[^a-z0-9 -]/gi,'').slice(0,70)+'.md';a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);togglePopover('fra-more',false);break;}
       case 'fra-theme':{const dark=panel.dataset.theme==='dark';panel.dataset.theme=dark?'light':'dark';document.documentElement.dataset.theme=panel.dataset.theme;localStorage.setItem('fr_theme',panel.dataset.theme);try{$('#fra-source-frame').contentDocument.documentElement.dataset.theme=panel.dataset.theme;}catch(_){}break;}
       case 'fra-notify':{if(localStorage.getItem('fr_ask_notify')==='1'){localStorage.setItem('fr_ask_notify','0');toast('Browser notifications turned off. In-site notices remain on.');}else if(!('Notification'in window)){toast('This browser supports in-site notices only.');}else{const permission=await Notification.requestPermission();if(permission==='granted'){localStorage.setItem('fr_ask_notify','1');toast('Completion notifications enabled while the site is open.');}else toast('Browser notifications are blocked. In-site notices still work.');}renderHeader();break;}
@@ -779,13 +902,21 @@
       case 'fra-source-close':returnToConversation();break;
     }
   }
+  function focusConversations(){
+    // Opening the history drawer is navigation. Touch users choose when to type.
+    const target=matchMedia('(max-width:800px), (any-pointer:coarse)').matches?$('.fra-sidebar'):$('#fra-history-search');
+    target.focus({preventScroll:true});
+  }
+  function showConversations(){panel.classList.add('fra-history-open');$('#fra-history-toggle').setAttribute('aria-expanded','true');focusConversations();}
   async function open(opts={}){
+    if(!opts.id&&!opts.fresh){const sourceChat=new URLSearchParams(location.search).get('ask_chat');if(sourceChat)opts={...opts,id:sourceChat};}
     if(opts.mode)opts={...opts,mode:researchMode(opts.mode)};
-    if(!panel)build();if(!visible)focusBefore=document.activeElement;window.FRReaderResearch?.close(false);visible=true;panel.hidden=false;document.documentElement.classList.add('fra-open');syncPresentation();
+    if(!panel)build();if(!visible)focusBefore=document.activeElement;window.FRReaderResearch?.close(false);visible=true;document.documentElement.classList.add('fra-open');/* The workspace is a fixed overlay, but the PAGE BEHIND IT still scrolled: html.fra-open{overflow:hidden} was written in the stylesheet and close() removed the class, but nothing ever added it, so on a phone you could drag the overlay and reveal the library underneath — the view changing scope under your thumb (owner, 2026-09-12; confirmed in the browser at 390px: documentScrolls was true). */panel.hidden=false;document.documentElement.classList.add('fra-open');syncPresentation();
     const theme=localStorage.getItem('fr_theme');panel.dataset.theme=theme==='dark'||!theme&&matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
     fitViewport();
     try{
       await init();
+      if(!opts.id&&!opts.fresh&&!current&&S.meta){const last=(await S.meta('active-conversation'))?.value;if(conversations.some(c=>c.id===last&&!c.archived))opts={...opts,id:last};}
       if(opts.id&&conversations.some(c=>c.id===opts.id))await switchChat(opts.id);
       else if(opts.fresh||!current||readerPage()&&selected()?.contextWork!==contextWork()){
         const recent=conversations.find(c=>!c.archived&&(!readerPage()||c.contextWork===contextWork()||(c.scope?.works||[]).includes(contextWork())));
@@ -796,39 +927,42 @@
       if(opts.passage?.text)await S.update(current,c=>{c.draftPassage={text:String(opts.passage.text),cite:String(opts.passage.cite||''),url:safeURL(opts.passage.url),slug:String(opts.passage.slug||''),page:String(opts.passage.page||''),row:String(opts.passage.row||'')};});
       if(opts.works||opts.tradition||opts.shelves||opts.authors||opts.groups)await S.update(current,c=>{c.scope={...c.scope,works:opts.works||[],shelves:opts.shelves||(opts.works?[]:opts.tradition?[shelfName(opts.tradition)]:[]),authors:opts.authors||[],groups:opts.groups||[],tradition:''};});
       if(opts.contextWork||!opts.id&&contextWork())await S.update(current,c=>{c.contextWork=opts.contextWork||contextWork();});
+      if(S.setMeta)await S.setMeta('active-conversation',current);
       await S.update(current,c=>{c.unread=false;});await refresh();syncComposer();
       if(opts.mode||researchMode(selected().mode)!==selected().mode){await S.update(current,c=>{c.mode=researchMode(opts.mode||c.mode);});await refresh();}
       loadCatalog().then(()=>{if(visible){renderHistory();renderThread();renderHeader();}});
       $('#fra-input').disabled=false;
       if(opts.autoSend&&opts.q)await send(opts.q);
       else if(!matchMedia('(pointer:coarse)').matches)$('#fra-input').focus();
+      if(opts.view==='history')showConversations();
       if(window.cgptLink)window.cgptLink.mount();
     }catch(e){$('#fra-save-state').textContent=storageError||e.message;announce(storageError||e.message);}
   }
   async function close(){if(!panel||!visible)return;await flushDraft();forgetSource();visible=false;panel.hidden=true;expandedReaderAsk=false;document.documentElement.classList.remove('fra-open');syncPresentation();const focusTarget=focusBefore?.isConnected&&focusBefore.getClientRects().length&&!focusBefore.closest('[inert]')?focusBefore:[...document.querySelectorAll('#fra-launcher,.frthumb [data-t="ask"]')].find(e=>e.getClientRects().length&&!e.closest('[inert]'));focusTarget?.focus({preventScroll:true});await mirror();}
-  window.FRAsk={open,close,isOpen:()=>visible,markdown,readURL,sourceHref,sourceCard,turnModeLabel,offersDeep,shownAnswer,shownError,deliveryIncomplete};
+  window.FRAsk={open,close,isOpen:()=>visible,markdown,readURL,sourceHref,sourceCard,sourceVisitURL,turnModeLabel,offersDeep,shownAnswer,shownError,deliveryIncomplete};
   function mountLauncher(launcher){
     const modes=document.querySelector('.desk-workspace-bar .desk-modes');
     if(modes){launcher.classList.add('fra-in-toolbar');modes.after(launcher);}
     else document.body.appendChild(launcher);
   }
   function bootstrap(){
-    const launcher=document.createElement('button');launcher.id='fra-launcher';launcher.className='fra-launcher';launcher.innerHTML=icon('chat')+'<span>Ask</span>';launcher.onclick=()=>open();mountLauncher(launcher);
+    const launcher=document.createElement('button');launcher.id='fra-launcher';launcher.className='fra-launcher';launcher.innerHTML=icon('chat')+'<span>Ask</span>';launcher.onclick=()=>open();if(CFG.launcher!==false)mountLauncher(launcher);
     const notices=document.createElement('div');notices.id='fra-notices';document.body.appendChild(notices);
     const announcer=document.createElement('div');announcer.id='fra-announcer';announcer.className='fra-sr';announcer.setAttribute('role','status');announcer.setAttribute('aria-live','polite');document.body.appendChild(announcer);
     init().then(()=>researchJobs()).catch(()=>{launcher.title='Open Ask to check conversation storage';});
     if(updates)updates.onmessage=()=>scheduleRefresh();
     document.addEventListener('click',e=>{
       if(e.target.closest('#fra-workspace,#fra-launcher,#fra-notices'))return;
+      if(e.target.closest('a')&&(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button>0))return;
       const target=e.target.closest('#heroAsk,#rsAsk,#tabAsk,[data-m="ask"],.frthumb [data-t="ask"],#heroSearchAsk');
       const link=e.target.closest('a[href]');let url;try{if(link)url=new URL(link.href);}catch(_){}
       if(!target&&link&&url&&url.origin===location.origin&&link.target!=='_blank'&&!link.hasAttribute('download')&&conversations.some(c=>running(c)&&!running(c).serverJob)&&/^\/(?:read(?:\/.*|\.html)?|search(?:\.html)?|desk(?:\.html)?|pins(?:\.html)?|bible(?:\.html)?|fathers(?:\.html)?|topics(?:\.html)?|web(?:\.html)?|dtc(?:\.html)?|)$/.test(url.pathname)&&!(url.pathname===location.pathname&&url.search===location.search&&url.hash)){
         e.preventDefault();e.stopImmediatePropagation();open().then(()=>openSource(url.href,link.textContent.trim()));return;
       }
-      if(target||url&&url.origin===location.origin&&(url.pathname==='/the-faith-received/ask/'||url.searchParams.get('m')==='ask'||url.searchParams.has('ask'))){
+      if(target||url&&url.origin===location.origin&&(ASK_PATH_RE.test(url.pathname)||url.searchParams.get('m')==='ask'||url.searchParams.has('ask'))){
         e.preventDefault();e.stopImmediatePropagation();
         const q=target&&target.id==='heroAsk'?(document.getElementById('heroQ')||{}).value||'':url&&(url.searchParams.get('ask')||url.searchParams.get('q'))||'';
-        open({q,autoSend:!!q,tradition:url&&url.searchParams.get('trad')||undefined});
+        open({q,autoSend:!!q,id:url&&url.searchParams.get('chat')||undefined,view:url&&url.searchParams.get('view')||undefined,tradition:url&&url.searchParams.get('trad')||undefined});
       }
     },true);
     document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.shiftKey&&e.key.toLowerCase()==='a'){e.preventDefault();open();}});
@@ -836,7 +970,7 @@
     window.addEventListener('storage',e=>{if(e.key==='fr_theme'&&['light','dark','sepia'].includes(e.newValue)){document.documentElement.dataset.theme=e.newValue;if(panel)panel.dataset.theme=e.newValue==='sepia'?'light':e.newValue;}if(e.key==='fr_chats')migrate().then(refresh).catch(()=>{});});
     const params=new URLSearchParams(location.search);
     if(window.__FR_ASK_PENDING__){const pending=window.__FR_ASK_PENDING__;delete window.__FR_ASK_PENDING__;open(pending);}
-    else if(/^\/ask(?:\.html)?$/.test(location.pathname)||params.get('m')==='ask'||params.has('ask'))open({id:params.get('chat')||undefined,q:params.get('ask')||params.get('q')||'',tradition:params.get('trad')||undefined});
+    else if(ASK_PATH_RE.test(location.pathname)||params.get('m')==='ask'||params.has('ask'))open({id:params.get('chat')||undefined,view:params.get('view')||undefined,q:params.get('ask')||params.get('q')||'',tradition:params.get('trad')||undefined});
     setInterval(()=>{if(visible)panel.querySelectorAll('.fra-elapsed').forEach(e=>e.textContent=elapsed(+e.dataset.start));},1000);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootstrap,{once:true});else bootstrap();
