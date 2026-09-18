@@ -1003,7 +1003,6 @@ mark.fr-hlx[data-hl="slate"] { background: #e5ecf3; }
   border-color: var(--color-secondary, #c1593c);
   color: var(--color-secondary, #c1593c);
 }
-}
 html.mo-embedded .faith-port-read-page { height: 100dvh; }
 html.mo-embedded .ph { top: 0; }
 
@@ -1102,7 +1101,6 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
 @media (prefers-reduced-motion: reduce) {
   html header.site-header, html body, html #app,
   html .faith-port-read-page { transition: none; }
-}
 }
 
 
