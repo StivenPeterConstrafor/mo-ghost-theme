@@ -2062,6 +2062,17 @@ html:not(.fr-plain) .fr-reader-head .aapop{width:min(340px,calc(100vw - 24px));m
 html:not(.fr-plain) .fr-reader-head .aamob{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px}
 html:not(.fr-plain) .fr-reader-head .aamob button,.reader-jump-form button,.reader-witnesses button{border:1px solid var(--border);background:none;color:var(--fg);border-radius:5px;padding:8px 10px;font:13px var(--font-body);min-height:40px;cursor:pointer}
 .reader-jump-form{margin:0 0 14px}.reader-jump-form label,.reader-witnesses>span{display:block;font:13px/1.5 var(--font-body);margin-bottom:6px;color:var(--muted)}.reader-jump-form>div{display:flex;gap:8px}.reader-jump-form input{width:0;min-width:0;flex:1;min-height:40px;border:1px solid var(--border);background:var(--bg);color:var(--fg);border-radius:5px;padding:6px 10px;font:16px var(--font-body)}.reader-jump-form p{font:12px/1.5 var(--font-body);color:var(--muted);margin:5px 0}.reader-jump-form p:empty{display:none}.reader-witnesses{border-top:1px solid var(--border);padding-top:12px;margin-top:12px}.reader-witnesses>div{display:flex;flex-wrap:wrap;gap:6px}.reader-witnesses button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+/* THE SOURCE ROW BELONGS TO THE MASTHEAD, NOT THE Aa MENU. A Migne Greek volume prints
+   two columns, Greek and its facing Latin, and which of them you are reading is the first
+   thing about the page — the corpus site puts Greek | Latin | Greek · Latin in the reader
+   bar on its own wrapped row, and this port had buried the same three buttons inside the
+   Aa popover, where nothing showed them. These six rules are that row, ported with it. */
+html:not(.fr-plain) .ph.fr-reader-head:has(>.reader-witnesses){flex-wrap:wrap!important}
+.fr-reader-head>.reader-witnesses{display:flex;align-items:center;flex-basis:100%;gap:8px;width:100%;margin:4px 0 0;padding:6px 0 0}
+.fr-reader-head>.reader-witnesses>span{margin:0;color:var(--muted);font-size:12px}
+.fr-reader-head>.reader-witnesses>div{gap:6px}
+.fr-reader-head>.reader-witnesses button{min-height:44px;font-size:13px;padding:7px 10px}
+.fr-reader-head>.reader-witnesses button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 html:not(.fr-plain) .fr-reader-head :focus-visible{outline:2px solid var(--fg);outline-offset:3px}
 @media(min-width:881px) and (max-width:1180px){html:not(.fr-plain) .ph.fr-reader-head{gap:12px;padding-inline:16px}.fr-reader-head .mh-home span{display:none}html:not(.fr-plain) .fr-reader-head .ctr{gap:6px}html:not(.fr-plain) .fr-reader-head .seg button{padding-inline:7px}html:not(.fr-plain) .fr-reader-head h1{font-size:18px}}
 @media(max-width:880px){

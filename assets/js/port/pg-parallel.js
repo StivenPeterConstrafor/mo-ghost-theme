@@ -33,17 +33,52 @@ function sourceColumns(doc){
  const scripts=t=>{const g=(t.match(/\p{Script=Greek}/gu)||[]).length,l=(t.match(/\p{Script=Latin}/gu)||[]).length,letters=(t.match(/\p{L}/gu)||[]).length;return {g,l,letters,pure:g/Math.max(letters,1)>=.85?'grc':l/Math.max(letters,1)>=.85?'la':null};};
  const cands=new Map();   // opening key + column -> candidate witnesses in role order
  for(const [key,opening]of Object.entries(out))for(const [column,candidates]of Object.entries(opening.columns)){const list=[];
-  for(const role of ['verified','reading','secondary','supplement']){const t=(candidates[role]||[]).join(' ').replace(/\s+/g,' ').trim(),s=scripts(t);if(s.g+s.l<(role==='verified'?1:100))continue;if(role==='secondary'&&s.pure!=='la')continue;list.push({role,t,...s});}
+  for(const role of ['verified','reading','secondary','supplement']){const t=(candidates[role]||[]).join(' ').replace(/\s+/g,' ').trim(),s=scripts(t);if(s.g+s.l<(role==='verified'?1:100))continue;if(role==='secondary'&&s.pure==='grc')continue;list.push({role,t,...s,mixedSecondary:role==='secondary'&&!s.pure});}
+  // (a MIXED secondary column -- the Onomasticon's Greek lemma + Latin gloss, PG 28 cols. 1619-1622 -- used to be refused as 'not the
+  //  Latin witness' and the page showed nothing at all; it now enters the page-true split below, never the lane resolution.)
   cands.set(key+'|'+column,list);}
  const pureSet=new Set();let mg=0,ml=0;
- for(const list of cands.values()){const c=list[0];if(!c)continue;if(c.pure)pureSet.add(c.pure);else{mg+=c.g;ml+=c.l;}}
+ for(const list of cands.values()){const c=list.find(x=>!x.mixedSecondary);if(!c)continue;if(c.pure)pureSet.add(c.pure);else{mg+=c.g;ml+=c.l;}}
  const mixedLane=pureSet.size<=1&&mg+ml>0?(mg>=ml?'grc':'la'):null;
  for(const [key,opening]of Object.entries(out)){opening.grc=[];opening.la=[];opening.grcRich=[];opening.laRich=[];
   // Paragraph lists (owner 2026-09-15 'rich labelled inner text like the patrologia site'): the printed paragraphs of each lane in column
   // order, a heading folded into the paragraph it introduces; colParas keeps them by printed column for the column basis in alignOpening.
   opening.grcParas=[];opening.laParas=[];opening.colParas=[];
   for(const [column,candidates]of Object.entries(opening.columns)){
-   const pick=(cands.get(key+'|'+column)||[]).find(c=>c.pure||mixedLane);if(!pick)continue;const lang=pick.pure||mixedLane;
+   const _list0=cands.get(key+'|'+column)||[];
+   const pick=_list0.find(c=>(c.pure||mixedLane)&&!c.mixedSecondary);
+   // PAGE-TRUE LANES (owner 2026-09-17 'i care about the right pages, not cols ... sometimes left latin, sometimes right latin,
+   // just get it right page by page'): a printed column carrying BOTH scripts -- the tail of a Greek formula above a Latin rubric,
+   // PG 28 col. 1587 'QUARTA FORMULA' -- failed the 85% purity test and the WHOLE column was dropped, so the page showed neither
+   // its Greek nor its Latin (census on the live canon: 3,092 columns, 2,9xx pages, 6.8M letters). In a work that prints a
+   // Greek|Latin pair such a column is now split by PARAGRAPH: each paragraph joins the lane of its own script, in printed order,
+   // a head riding with the paragraph it introduces. A column with only a crumb of the second script stays whole under its own
+   // voice -- no lane is invented. Nothing the page prints is discarded. (A single-stream work still takes mixedLane; a pure
+   // column is untouched.)
+   let _pieces=null;
+   if(!pick&&_list0.length&&!mixedLane){
+    const c0=_list0.find(c=>!c.mixedSecondary)||_list0[0],rich0=candidates[c0.role+'Rich']||candidates[c0.role]||[],runs=[];let pend=[];
+    for(const e of rich0){const v=String(e||'').replace(/\s+/g,' ').trim();if(!v)continue;
+     const s2=scripts(v);
+     if(s2.g+s2.l<12||isLabel(v)){pend.push(v);continue;}
+     const lg=s2.g>=s2.l?'grc':'la';
+     if(runs.length&&runs[runs.length-1].lang===lg)runs[runs.length-1].rich.push(...pend,v);
+     else runs.push({lang:lg,rich:[...pend,v]});
+     pend=[];}
+    if(pend.length&&runs.length)runs[runs.length-1].rich.push(...pend);
+    const side=l2=>runs.filter(r=>r.lang===l2).reduce((a,r)=>a+r.rich.reduce((b,q)=>b+(l2==='grc'?scripts(q).g:scripts(q).l),0),0);
+    if(runs.length)_pieces=(runs.length>1&&Math.min(side('grc'),side('la'))>=150)?runs:[{lang:side('grc')>=side('la')?'grc':'la',rich:runs.reduce((a,r)=>a.concat(r.rich),[])}];
+   }
+   if(_pieces){
+    for(const piece of _pieces){const lang=piece.lang,rich=piece.rich,list=[];let pending='';
+     for(const e of rich){const v=String(e||'').replace(/\s+/g,' ').trim();if(!v)continue;if(/^\u0002[^\u0003]*\u0003$/.test(v)){pending+=v+' ';continue;}list.push((pending+v).trim());pending='';}
+     if(pending.trim()){if(list.length)list[list.length-1]+=' '+pending.trim();else list.push(pending.trim());}
+     opening[lang].push(list.join(' ').replace(/\u0002|\u0003/g,'').replace(/\s+/g,' ').trim());
+     opening[lang+'Rich'].push(rich.join(' ').replace(/\s+/g,' ').trim());
+     if(!printed[key])printed[key]={};(printed[key][lang]||(printed[key][lang]=[])).push(column);
+     opening[lang+'Paras'].push(...list);opening.colParas.push({n:column,lang,paras:list});}
+    continue;}
+   if(!pick)continue;const lang=pick.pure||mixedLane;
    opening[lang].push(pick.t);opening[lang+'Rich'].push((candidates[pick.role+'Rich']||candidates[pick.role]).join(' ').replace(/\s+/g,' ').trim());
    if(!printed[key])printed[key]={};(printed[key][lang]||(printed[key][lang]=[])).push(column);
    const rich=candidates[pick.role+'Rich']||[],list=[];let pending='';
@@ -84,7 +119,10 @@ function alignOpening(grc,la,en,paras){
   // section start was refused the paragraph basis, the marker basis then anchored on the empty Greek lane, and the whole opening became one
   // wall. Equal paragraph counts pair by position whatever numerals the text carries; the marker basis below reads only the lanes present.
   if(src){
-   const mk=(t,i)=>({grc:src===g?t:'',la:src===l?t:(l.length===g.length?l[i]:(i===0?text(la):'')),en:e[i]});
+   // NOTHING A PAGE PRINTS IS DISCARDED (owner 2026-09-17 'make sure the latin and greek is shown completely per page'): when the
+   // Latin is the pairing source because the Greek has fewer than two paragraphs (PG 28 page 1603: one Greek paragraph beside five
+   // Latin), the Greek rode nowhere and vanished. It takes the first row, as the Latin already does in the mirror case.
+   const mk=(t,i)=>({grc:src===g?t:(g.length===l.length?g[i]:(i===0?text(grc):'')),la:src===l?t:(l.length===g.length?l[i]:(i===0?text(la):'')),en:e[i]});
    if(src.length===e.length)return {basis:'paragraphs',rows:src.map(mk)};
    // Label anchors: when the counts differ but both lanes carry the same number of labelled paragraphs (a rule, a chapter — 'ΟΡΟΣ ΙΓ´.',
    // 'RULE XIII'), each lane is cut before every labelled paragraph and the segments pair by position; a segment may hold several paragraphs
@@ -92,7 +130,7 @@ function alignOpening(grc,la,en,paras){
    const segs=list=>{const out=[];list.forEach((t,i)=>{if(i===0||!hasLabel(t))(out.length?out[out.length-1]:(out.push([]),out[0])).push(t);else out.push([t]);});return out.map(a=>a.join(' '));};
    const sg=segs(src),se=segs(e);
    if(sg.length>=2&&sg.length===se.length&&(l.length===0||src===l||l.length===g.length)){
-    const rows=sg.map((t,i)=>({grc:src===g?t:'',la:src===l?t:(l.length===g.length?segs(l)[i]||'':(i===0?text(la):'')),en:se[i]}));return {basis:'label-anchors',rows};}}}
+    const rows=sg.map((t,i)=>({grc:src===g?t:(g.length===l.length?segs(g)[i]||'':(i===0?text(grc):'')),la:src===l?t:(l.length===g.length?segs(l)[i]||'':(i===0?text(la):'')),en:se[i]}));return {basis:'label-anchors',rows};}}}
  const source=[text(grc),text(la),text(en)],marks=source.map(sectionStarts),present=source.map(s=>s.trim().length>0),lead=marks[present.findIndex(Boolean)]||new Map();
  const shared=[...lead].filter(([k,v])=>v!==null&&marks.every((m,i)=>!present[i]||m.get(k)!=null)).map(([key])=>({key,at:marks.map((m,i)=>present[i]?m.get(key):0)}));
  // Crossing or repeated markers do not license guessed paragraph pairs.
