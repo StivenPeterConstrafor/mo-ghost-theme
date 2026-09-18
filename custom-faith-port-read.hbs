@@ -86,13 +86,6 @@
               <button type="button" id="rdCopyLink" class="rdt">Copy link<span>A link to this page of this work</span></button>
               <button type="button" id="rdKeep" class="rdt" aria-pressed="false"><span class="rdt-l">☆ Keep this work</span><span>Saved to your bookmarks</span></button>
               <button type="button" id="rdNote" class="rdt">Save to notebook<span>The passage, with its citation, for the desk</span></button>
-              {{!-- Feedback lives here rather than in the header bar.
-                   As a top-level button it was the sixth control in a
-                   row that has no room for five: at 390px it sat at
-                   x230-310 with Tools at x260-326, overlapping it, and
-                   Andrew hit that on a phone. It belongs here anyway --
-                   every other action about THIS WORK is in this menu. --}}
-              <button type="button" class="rdt" data-report-issue>⚑ Report a problem<span>A bad scan, wrong text, a broken link</span></button>
               <p class="rdt-say" id="rdToolsSay" role="status" aria-live="polite"></p>
             </div></div><button id="thTop" class="tgl" title="Theme — Light / Sepia / Dark" aria-label="Reading theme">◐</button><div class="aaw"><button id="aaBtn" class="tgl" aria-haspopup="true" aria-expanded="false" title="Reading settings — theme, text size, lane balance, scan zoom">Aa</button>
             <div class="aapop" id="aaPop" role="menu" aria-label="Reading settings">
@@ -106,6 +99,16 @@
               <div class="aarow" id="source-size"><span class="aal" id="source-size-name">Latin</span><label class="sld lnz lz-la" title="Latin lane size — relative to the base text size"><span class="lt">La</span><input type="range" id="lzs" min="70" max="150" step="5"></label></div>
               <div class="aarow"><span class="aal">English</span><label class="sld lnz lz-en" title="English lane size — relative to the base text size"><span class="lt">En</span><input type="range" id="ezs" min="70" max="150" step="5"></label></div>
               <div class="aarow"><span class="aal">Scan</span><label class="sld izc" title="Scan size · over the image: scroll = pan, Ctrl/⌘+scroll = zoom, drag = move">🔍<input type="range" id="izs" min="55" max="360" step="5"></label></div>
+              {{!-- Feedback, on its third home and this one checked.
+                   As a header button it overlapped Tools at 390px. Moving it
+                   into the Tools menu fixed that and broke it differently:
+                   the port hides #rdTools below 880px and folds its header
+                   controls into THIS menu, so on a phone -- the place Andrew
+                   reported from -- there was no way to reach it at all.
+                   Here it sits beside "About this work" and "Related
+                   passages", the other two things about the work itself, and
+                   Aa is on screen at every width. --}}
+              <div class="aarow"><span class="aal">Problem</span><button type="button" class="tgl" data-report-issue title="Tell us about a problem with this work — a bad scan, wrong text, a broken link">⚑ Report</button></div>
             </div></div>
         </div>
         <div class="rvsum" id="rvsum"></div>
