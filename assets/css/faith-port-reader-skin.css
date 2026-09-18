@@ -953,3 +953,81 @@ html.mo-embedded .ph { top: 0; }
   border-color: color-mix(in srgb, var(--fg) 24%, transparent);
 }
 
+/* ── The reader bar on a phone ─────────────────────────────────────────
+   At 390px the bar was laying out nine controls in a nowrap row and simply
+   running off the side: Tools sat at x=373 and the Aa button at x=449, both
+   past the edge of the screen, which is why tapping them did nothing. The
+   title block, which is flex:1 against them, was squeezed to nought and the
+   work's name disappeared with it.
+
+   The corpus site's reader shows four controls at this width -- home, where
+   you are, which text, and Aa -- and hides forty-five. Everything it hides
+   is already reachable: reader-core.js proxies Previous, Next, About and
+   Related into the Aa menu (see "fold the header controls" there), the lane
+   buttons are the same choice as the source picker, and the theme lives in
+   that menu as #th. So the bar keeps the four and the title gets its room
+   back. Nothing is removed, only moved to where there is space for it. */
+@media (max-width: 880px) {
+  /* `#app .ph .ctr #pPrev` above is two ids; a selector that means to overrule it
+     has to carry two of its own, or it loses however many classes it stacks. */
+  html.g-mobile:not(.fr-plain) #app .ph .ctr #pPrev,
+  html.g-mobile:not(.fr-plain) #app .ph .ctr #pNext,
+  html.g-mobile:not(.fr-plain) #app .ph .ctr #pgJump,
+  html.g-mobile:not(.fr-plain) #app .ph .ctr .seg,
+  html.g-mobile:not(.fr-plain) #app .ph #m-en,
+  html.g-mobile:not(.fr-plain) #app .ph #m-par,
+  html.g-mobile:not(.fr-plain) #app .ph #rdTools,
+  html.g-mobile:not(.fr-plain) #app .ph #thTop {
+    display: none;
+  }
+  /* The title block is what the freed width is for. */
+  html.g-mobile:not(.fr-plain) #app .ph .phl { min-width: 0; flex: 1 1 auto; }
+  html.g-mobile:not(.fr-plain) #app .ph .ctr { flex: 0 0 auto; gap: 2px; }
+}
+
+/* ── Reading, uninterrupted ────────────────────────────────────────────
+   The engine has driven this since the port began: scroll down past 90px
+   and it adds mh-hide on a phone or mh-mini on a desktop, scroll back up
+   24px and it takes them off again (reader-core.js, "at the top, chrome
+   stays"). read.in01.css even carries the phone rule,
+   `html.g-mobile.mh-hide .ph{transform:translateY(-108%)}`.
+
+   None of it moved anything here, because the rule that restyles the bar
+   for this site ends with `transform:none;transition:none`, which is
+   exactly the two properties the hide needs. So the classes went on and
+   came off and the chrome sat there through all of it.
+
+   Reading is the thing this page is for, so all three pieces go: our
+   masthead, the reader's own bar, and the thumb bar at the foot. They
+   leave on the way down and come back on the way up, and at the top of a
+   work they never left. The reader's bar clears our masthead as well as
+   itself, since it is positioned below it. Anyone who has asked not to see
+   motion sees them cut instead of slide. */
+html.mh-hide header.site-header,
+html.mh-mini header.site-header,
+html.mh-hide #app .ph.fr-reader-head,
+html.mh-mini #app .ph.fr-reader-head,
+html.mh-hide nav.frthumb,
+html.mh-mini nav.frthumb {
+  transition: transform 0.22s ease;
+}
+html #app .ph.fr-reader-head,
+html header.site-header,
+html nav.frthumb {
+  transition: transform 0.22s ease;
+  will-change: transform;
+}
+html.mh-hide header.site-header,
+html.mh-mini header.site-header { transform: translateY(-101%); }
+html.mh-hide #app .ph.fr-reader-head,
+html.mh-mini #app .ph.fr-reader-head {
+  transform: translateY(calc(-101% - var(--mo-head, 61px)));
+}
+html.mh-hide nav.frthumb,
+html.mh-mini nav.frthumb { transform: translateY(101%); }
+@media (prefers-reduced-motion: reduce) {
+  html #app .ph.fr-reader-head,
+  html header.site-header,
+  html nav.frthumb { transition: none; }
+}
+
