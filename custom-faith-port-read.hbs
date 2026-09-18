@@ -37,7 +37,12 @@
 <link rel="stylesheet" href="{{asset "css/port/reader-margins.css"}}"><script defer src="{{asset "js/port/reader-margins.js"}}"></script>
 <link rel="stylesheet" href="{{asset "css/port/reader-footnotes.css"}}"><script defer src="{{asset "js/port/reader-footnotes.js"}}"></script>
 <link rel="stylesheet" href="{{asset "css/port/reader-scripture-preview.css"}}"><script defer src="{{asset "js/port/reader-scripture-preview.js"}}"></script>
-<script src="{{asset "js/port/read.in01.js"}}"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}"><script defer src="{{asset "js/port/ask-store.js"}}"></script><script defer src="{{asset "js/port/ask-workspace.js"}}"></script><script src="{{asset "js/port/research-data.js"}}"></script><script src="{{asset "js/port/research-notebook.js"}}"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
+<script src="{{asset "js/port/read.in01.js"}}"></script>{{!-- read.in01.js ends by setting window.__FR_FB__ to the corpus site's own
+      Firebase project. read-tools.js would sign our readers into it and mirror
+      their notebook there; our CSP refuses the gstatic imports, so today it only
+      logs three CSP errors per load and mislabels the notebook "sync
+      unavailable". This drops the config while the window between the two files
+      is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}"><script defer src="{{asset "js/port/ask-store.js"}}"></script><script defer src="{{asset "js/port/ask-workspace.js"}}"></script><script src="{{asset "js/port/research-data.js"}}"></script><script src="{{asset "js/port/research-notebook.js"}}"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
 <link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}">
 {{/contentFor}}
 
@@ -220,8 +225,11 @@
 {{!-- The Research rail's Work tab. read-tools.js owns the panel; this names the
      work in it and routes the four shortcuts the restore left unbound. --}}
 <script src="{{asset "js/page/faith-port-read-research.js"}}"></script>
-{{!-- Find in this work. The port shipped #findbar's styling and no
-     implementation; this is the implementation, written to its selectors. --}}
+{{!-- Find in this work belongs to read-tools.js: it builds #findbar and owns
+     window._frSearch. This file adds only the door the port leaves unbound,
+     Ctrl/⌘+Shift+F, and routes it there. It used to be a second find whose
+     bar collided with the port's on the id "findbar" and, once opened, broke
+     the toolbar's Search for the rest of the session. --}}
 <script src="{{asset "js/page/faith-port-read-find.js"}}"></script>
 {{!-- The English Modernizer. Same engine the Dynamic Reader uses, so a
      word is modernized the same way everywhere on the site. --}}
