@@ -6,8 +6,20 @@ const Store = FRChatStore, jobs = new Map(), ports = new Set();
 const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('fr-ask-updates') : null;
 function broadcast(event) { for (const p of ports) { try { p.postMessage(event); } catch (_) { ports.delete(p); } } if (channel) channel.postMessage(event); }
 // A previous worker version may still own a live turn in another open tab.
-// Preserve recently updated turns; only recover abandoned work after the server window.
+// Preserve recently updated turns; only recover abandoned work after the client window.
 const STALE_AFTER=360000;
+/* MereO delta: how long THIS FILE waits before it gives up on a turn.
+   Named, and the wording below is derived from it, because the old copy
+   said "five-minute server window" for a 330s browser-side abort and got
+   two things wrong at once. Nothing on the server closes this stream: the
+   Ask worker holds a streaming response open with a heartbeat, and the
+   only clock that stops it is the AbortController on the next line. The
+   deep-research path never reaches this file either, because
+   ask-workspace.js sends mode==='deep' to FRResearchJobs instead, so a
+   message that says "Research" here names the wrong feature. Re-apply
+   when re-vendoring ask-worker.js from upstream. */
+const CLIENT_ABORT_MS=330000;
+const CLIENT_ABORT_TEXT=(CLIENT_ABORT_MS/60000).toFixed(1).replace(/\.0$/,'')+' minutes';
 async function recoverInterrupted(){
  const all=await Store.all();let pending=false;
  for(const c of all){
@@ -42,7 +54,7 @@ async function run(id, turnId, request, job) {
   try {
     const c = await Store.get(id); turn = c.turns.find(t => t.id === turnId);
     if (!turn) throw new Error('Conversation not found');
-    timer = setTimeout(() => { job.timeout = true; ctl.abort(); }, 330000);
+    timer = setTimeout(() => { job.timeout = true; ctl.abort(); }, CLIENT_ABORT_MS);
     /* MereO delta (ASK-SPEC §7): carry the member bearer.
        This worker has its own global scope and cannot reach
        window.MOAuth, and `credentials: 'same-origin'` sends nothing to
@@ -95,7 +107,7 @@ async function run(id, turnId, request, job) {
     if (!turn) return;
     turn.status = ctl.signal.aborted && !job.timeout && !job.storageError ? 'stopped' : 'error';
     const detail=String(error.message||error);
-    turn.error = job.storageError ? 'The latest text could not be saved. Check available browser storage before retrying.' : job.timeout ? 'Research exceeded the five-minute server window. Narrow the question or scope and retry.' : ctl.signal.aborted ? 'Stopped. Any partial answer is saved.' : /load failed|failed to fetch|networkerror|network request failed|fetch failed/i.test(detail) ? 'The connection was interrupted. Your question and any received passages are saved. Try again.' : detail;
+    turn.error = job.storageError ? 'The latest text could not be saved. Check available browser storage before retrying.' : job.timeout ? 'This answer was still arriving after '+CLIENT_ABORT_TEXT+', so the browser stopped waiting. Any text received is saved below. Narrow the question, or switch to Deep research, which runs on the server and keeps going after you close the tab.' : ctl.signal.aborted ? 'Stopped. Any partial answer is saved.' : /load failed|failed to fetch|networkerror|network request failed|fetch failed/i.test(detail) ? 'The connection was interrupted. Your question and any received passages are saved. Try again.' : detail;
   } finally {
     clearTimeout(timer); jobs.delete(id);
     if (turn) {
