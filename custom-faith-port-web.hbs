@@ -1,0 +1,94 @@
+{{!< default}}
+{{#contentFor "moHead"}}
+<title>Constellations | The Faith Received | Mere Orthodoxy</title>
+<meta name="description" content="Fifteen centuries of citation as one map: who reads whom, and the recorded passages behind every connection." />
+{{!-- The family identity the engine reads before it starts, and our
+     masthead's height as --mo-head, so anything fixed can sit under it.
+     Same two jobs as on the ported reader; must load first. --}}
+<script src="{{asset "js/page/faith-port-read-boot.js"}}"></script>
+{{!-- Nothing in this port goes to Vercel Blob (owner 2026-09-10); any
+     Blob address that arrives inside data is rebased onto the library
+     worker at the fetch boundary. Before any module that can fetch. --}}
+<script src="{{asset "js/port/fr-noblob.js"}}&amp;frv=a66e16a29a40a4eb"></script>
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
+<link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="{{asset "css/port/web.in01.css"}}&amp;frv=72d0d0b74046db2c">
+<link rel="stylesheet" href="{{asset "css/port/scripture-navigation.css"}}&amp;frv=7be6dc0e2f11ae7c">
+<link rel="stylesheet" href="{{asset "css/port/constellations.css"}}&amp;frv=44041063b9a5d90f">
+<link rel="stylesheet" href="{{asset "css/port/shelf-constellations.css"}}&amp;frv=4810b0739b0fa607"><script src="{{asset "js/port/shelf-constellations.js"}}&amp;frv=bd591792b1f3cf4d"></script>
+<script src="{{asset "js/port/research-tools.js"}}&amp;frv=f9f1901f4fa12a78"></script>
+<script src="{{asset "js/port/scripture-tools.js"}}&amp;frv=a2d1172c59c08a2a"></script>
+<script src="{{asset "js/port/web.in01.js"}}&amp;frv=ee6de72d22f48fe7"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}&amp;frv=8618bdf9072bb354"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=e7d3c7adbe5a3ffc"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=f3461573eea75a1c"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=215f1ef6dc2e579f"></script><script src="{{asset "js/port/pld-reading.js"}}&amp;frv=42310bb7ef661c18"></script><script src="{{asset "js/port/connection-evidence.js"}}&amp;frv=b3e4670587c9f87f"></script><link rel="stylesheet" href="{{asset "css/port/connection-evidence.css"}}&amp;frv=20656c5c1335c942">
+{{!-- Our colour, loaded last so it wins; then the offsets that start
+     this page under our masthead. Keep both last. --}}
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}">
+<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}">
+{{/contentFor}}
+
+{{!-- /the-faith-received/web/ — the citation atlas, ported.
+
+     THE CORPUS SITE'S /web INSIDE THIS SITE. Same shape as the ported
+     reader and library: his engine (web.in02.js, shelf-constellations.js,
+     connection-evidence.js), our shell. It extends `default`, so our
+     masthead and footer wrap it and Ghost owns the document. What went is
+     the page's home link and the bridge bar back to his site; what stayed
+     is its own bar: the page name, and the mode navigation (Explore ·
+     Paths · Topics · Shelf maps · Scripture) that web.in02.js drives.
+     Every byte of data comes from the library worker on R2: the graph,
+     the reception shards, the rooms. Nothing here reaches Blob.
+
+     THE BODY CLASS. constellations.css lays the whole atlas out from
+     body.web-page and the mobile explorer/map switch keys on
+     body[data-view]. Ghost renders <body class="">; the boot script
+     below sets both before this markup parses. The atlas is a
+     full-viewport instrument (body overflow hidden), as it is on the
+     corpus site; faith-port-surfaces.css starts it under our masthead. --}}
+<script src="{{asset "js/page/faith-port-surface-boot.js"}}" data-body-class="web-page" data-view="browse"></script>
+<!-- THESIS: A citation atlas for finding relationships and reading their evidence.
+OWN-WORLD: Inherits Academic Monochrome, EB Garamond headings, Source Serif Pro controls, ruled lists and neutral reading sheets.
+STORY: Find an author, see who cites whom, inspect recorded passages, open the text.
+FIRST VIEWPORT: A compact masthead, a 320px searchable author index, and a bounded chronological map. Mobile starts with the readable index; Map is one tap away. Selecting an author fits their connections beside an evidence panel.
+FORM: Code-led scoped replacement inside the established library world; no new visual-world seed.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance -->
+<header class="site">
+  <div class="brand"><span>Constellations</span></div>
+  <nav id="mnav" aria-label="Research navigation">
+    <a href="#" data-m="sky" class="on">Explore</a>
+    <a href="#paths" data-m="path">Paths</a>
+    <a href="#topics" data-m="topic">Topics</a>
+    <a href="#shelves" data-m="shelves">Shelf maps</a>
+    <a href="#v=romans/8" data-m="verse">Scripture</a>
+  </nav>
+  <button id="atlas-ask" type="button">Ask</button><button id="web-theme" aria-label="Change reading theme">Theme</button>
+</header>
+<div id="mobile-view" aria-label="Explore view"><button data-view="browse" aria-pressed="true">Browse authors</button><button data-view="map" aria-pressed="false">View map</button></div>
+<aside id="explorer" aria-label="Browse the citation index">
+  <div class="explorer-head"><h1>Constellations</h1><p>Find who an author reads, who reads them, and the texts behind each connection.</p>
+    <div id="find"><label for="q">Find an author</label><input id="q" type="search" placeholder="Find an author…" autocomplete="off"><div id="findlist"></div></div>
+    <details id="map-filters"><summary>Filter the index <span id="filter-count"></span></summary>
+      <div id="lens"><label for="shsel">Shelf and its connections</label><select id="shsel"><option value="">Every shelf</option></select>
+      <label for="era-select">Period</label><select id="era-select"><option value="">Every period</option></select>
+      <div class="year-filter"><label>From year<input id="year-from" type="number" min="-500" max="2000" placeholder="Any"></label><label>To year<input id="year-to" type="number" min="-500" max="2000" placeholder="Any"></label></div><button id="apply-years" type="button">Apply dates</button><p id="date-feedback" role="status"></p>
+      <label for="prq">Network prominence</label><span id="prwrap"><input type="range" id="prq" min="0" max="95" step="5" value="0" aria-describedby="rank-help"><span id="prql">All entries</span></span><small id="rank-help">PageRank in this citation network, not a measure of theological authority.</small>
+      <button id="clear-map-filters" type="button">Clear filters</button></div>
+    </details>
+  </div>
+  <div class="index-tools"><p id="index-count" role="status">Loading citation index…</p><label class="sr-only" for="index-sort">Sort authors</label><select id="index-sort"><option value="readers">Most cited by others</option><option value="citations">Most citations received</option><option value="name">Name A–Z</option></select></div>
+  <div id="author-index"></div><button id="index-more" hidden>Show more authors</button>
+  <p class="index-note">Counts describe the indexed corpus. A citation can agree, question, or refute.</p>
+</aside>
+<main id="atlas" aria-label="Citation map">
+  <div id="map-heading"><div><h2 id="map-title">The citation network</h2><p id="map-summary" role="status">Loading connections…</p></div><div class="map-top-controls"><label for="map-density" class="sr-only">Points on the map</label><select id="map-density"><option value="20">20 most cited</option><option value="60" selected>60 most cited</option><option value="200">200 most cited</option><option value="0">All entries</option></select><button id="map-help-button" aria-expanded="false" aria-controls="map-help">How to read this</button></div></div>
+  <div id="map-help" hidden><p>Each point is an author or collection. Lines are recorded citations; larger points have higher PageRank. Horizontal position follows time. Vertical spacing is arranged for readability; proximity does not imply agreement. The overview starts with the 60 authors cited by the most other authors. The complete index remains searchable.</p><p>Point colors identify historical periods. In an author’s map, ochre lines lead to sources and green lines to citing authors; the labels and positions show the same direction. Some dates are estimated for placement. Shelf filters include connected authors outside that shelf. Selecting an author shows up to eight sources on the left and eight citing authors on the right. The panel lists all available relationships.</p></div>
+  <div id="graph-frame"><canvas id="sky" role="img" aria-label="Citation map. Browse authors provides the same author navigation without using the map."></canvas>
+  <div id="map-empty" hidden>No entries match these filters. <button type="button">Clear filters</button></div>
+  <div id="web-zoom" aria-label="Graph controls"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="zoom-reset">Fit map</button></div></div>
+  <div id="period-key" aria-label="Point colors show historical periods"></div>
+  <div id="map-caption"><span id="map-key">Earlier authors to the left · Later authors to the right</span><span>Drag to pan · Use + or − to zoom</span></div>
+  <section id="connection-discovery" aria-label="Explore recorded connections"><h3>Explore a recorded connection</h3><div id="connection-examples"></div></section>
+</main>
+<div id="tip"></div><div id="legend" hidden></div><div id="fstat" hidden></div><div id="intro" hidden></div>
+<div id="brush" hidden><div id="brushc"><canvas id="brushcv"></canvas></div></div>
+<aside id="panel" aria-label="Connection details" inert><div class="ph"><h2 id="pt" tabindex="-1">Connection details</h2><div class="sub" id="ps"></div>
+  <button class="x" id="px" aria-label="Close details">×</button></div><div id="pbody"></div></aside>
+<script src="{{asset "js/port/web.in02.js"}}&amp;frv=4f51b1cdb42c86ae"></script>
