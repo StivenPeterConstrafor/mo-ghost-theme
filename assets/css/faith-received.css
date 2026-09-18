@@ -12727,6 +12727,22 @@ a.fr-plan-open {
 }
 .faith-search-zero-ask:hover { color: var(--color-dark); }
 
+/* The same button, reused inside the Scripture panel's status line as
+   the way back to the full-text index. That line is a 12px uppercase
+   label with 0.18em tracking, and a form control does not inherit
+   either (the UA sheet resets text-transform and letter-spacing), so
+   dropped in bare it computes to 12px sentence case in a 19px-tall
+   inline hit area: 25px under the touch floor, reading as a stray
+   link rather than the escape hatch it is. Given its own line and a
+   real target here instead. */
+.faith-search-status .faith-search-zero-ask {
+  display: block;
+  margin-top: 10px;
+  min-height: 44px;
+  font-size: 14px;
+  text-align: left;
+}
+
 /* Show more. The list used to stop at thirty with nowhere to go. */
 .faith-search-tail { margin-top: 8px; }
 .faith-search-more {

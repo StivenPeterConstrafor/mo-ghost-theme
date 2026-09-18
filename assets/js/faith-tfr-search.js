@@ -486,7 +486,151 @@
       .catch(() => { state.loading = false; });
   }
 
-  function run() {
+  // ── Scripture references ─────────────────────────────────────────
+  //
+  // The book tables and the resolver below lived inside
+  // scriptureShortcut() until 2026-09-18, reachable only from the
+  // Scripture tab's own box. Lifted here unchanged so that Find and
+  // Full text can consult them too. The tab's behaviour is untouched;
+  // resolveBook() is what it always was.
+
+  const OT = ["Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", "Judges", "Ruth",
+    "1 Samuel", "2 Samuel", "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra", "Nehemiah",
+    "Esther", "Job", "Psalms", "Proverbs", "Ecclesiastes", "Song Of Solomon", "Isaiah", "Jeremiah",
+    "Lamentations", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos", "Obadiah", "Jonah", "Micah", "Nahum",
+    "Habakkuk", "Zephaniah", "Haggai", "Zechariah", "Malachi"];
+  const NT = ["Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians",
+    "Galatians", "Ephesians", "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians",
+    "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews", "James", "1 Peter", "2 Peter", "1 John",
+    "2 John", "3 John", "Jude", "Revelation"];
+  const ALL_NAMES = OT.concat(NT);
+
+  // The short forms a reader actually types. His page carries the
+  // same table for the same reason: "Rom 8" and "Mt 5" are how a
+  // reference is written, and a resolver that only knows the full
+  // name reads as a broken box.
+  const ABBR = {
+    gen: "Genesis", ex: "Exodus", exod: "Exodus", lev: "Leviticus", num: "Numbers",
+    deut: "Deuteronomy", dt: "Deuteronomy", josh: "Joshua", judg: "Judges",
+    "1sam": "1 Samuel", "2sam": "2 Samuel", "1kgs": "1 Kings", "2kgs": "2 Kings",
+    "1chr": "1 Chronicles", "2chr": "2 Chronicles", neh: "Nehemiah", esth: "Esther",
+    ps: "Psalms", psa: "Psalms", psalm: "Psalms", prov: "Proverbs", eccl: "Ecclesiastes",
+    song: "Song Of Solomon", cant: "Song Of Solomon", isa: "Isaiah", jer: "Jeremiah",
+    lam: "Lamentations", ezek: "Ezekiel", dan: "Daniel", hos: "Hosea", obad: "Obadiah",
+    mic: "Micah", nah: "Nahum", hab: "Habakkuk", zeph: "Zephaniah", hag: "Haggai",
+    zech: "Zechariah", mal: "Malachi", matt: "Matthew", mt: "Matthew", mk: "Mark",
+    lk: "Luke", jn: "John", rom: "Romans", "1cor": "1 Corinthians", "2cor": "2 Corinthians",
+    gal: "Galatians", eph: "Ephesians", phil: "Philippians", col: "Colossians",
+    "1thess": "1 Thessalonians", "2thess": "2 Thessalonians", "1tim": "1 Timothy",
+    "2tim": "2 Timothy", phlm: "Philemon", heb: "Hebrews", jas: "James",
+    "1pet": "1 Peter", "2pet": "2 Peter", rev: "Revelation", apoc: "Revelation",
+  };
+
+  function resolveBook(text) {
+    const t = String(text || "").trim().toLowerCase();
+    if (!t) return null;
+    const full = ALL_NAMES
+      .filter((name) => t.startsWith(name.toLowerCase()))
+      .sort((a, b) => b.length - a.length)[0];
+    if (full) return full;
+    const head = (t.match(/^[1-3]?\s*[a-z]+/) || [""])[0].replace(/[\s.]/g, "");
+    return ABBR[head] || null;
+  }
+
+  // Strict, whole-string: the query is a reference and nothing else.
+  // Find and Full text hand off on this and only this, because
+  // resolveBook()'s prefix matching would eat real searches. "Acts of
+  // the Apostles in Calvin" begins with a book name, and "Romans 8 and
+  // the law of sin" is a phrase a reader means to find inside the
+  // text, not a chapter they want the commentary on. Both must stay in
+  // the index. Only a bare "Acts 16" leaves it.
+  const REF_RE = /^([1-3]?\s*[A-Za-z][A-Za-z.]*(?:\s+[A-Za-z][A-Za-z.]*)*)\s+(\d{1,3})\s*(?::\s*\d{1,3}(?:\s*[-–]\s*\d{1,3})?)?$/;
+
+  function parseReference(text) {
+    const m = REF_RE.exec(String(text || "").trim().replace(/\s+/g, " "));
+    if (!m) return null;
+    const key = m[1].trim().toLowerCase().replace(/\.+$/, "");
+    const book = ALL_NAMES.filter((n) => n.toLowerCase() === key)[0]
+      || ABBR[key.replace(/[\s.]/g, "")]
+      || null;
+    if (!book) return null;
+    const chapter = parseInt(m[2], 10);
+    if (!chapter || chapter < 1) return null;
+    return { book, chapter };
+  }
+
+  // The one string the reader is allowed to push through to the index
+  // anyway, set by the override button below and read by the handoff.
+  let refBypass = "";
+
+  // 700px is this component's own breakpoint: .faith-scripture-jump
+  // flips to a column there (faith-received.css). Asked at call time,
+  // never cached at load, because a load-time answer to a viewport
+  // question goes permanently wrong the moment the device rotates.
+  function smallViewport() {
+    return window.matchMedia("(max-width: 700px)").matches;
+  }
+
+  // Every programmatic focus in this theme passes preventScroll, and
+  // focus must come before any scrollIntoView: a focus() aborts a
+  // smooth scroll already in flight even with preventScroll set.
+  // Older engines throw on the options object rather than ignoring it.
+  function focusQuietly(node) {
+    if (!node) return;
+    try { node.focus({ preventScroll: true }); } catch (_) { node.focus(); }
+  }
+
+  // Writes the Scripture panel's explanation and ties it to the input.
+  // `sourceMode` is the tab the reader came from; passing it adds the
+  // override button. A deep link has no tab to go back to, so it
+  // passes nothing and gets the note alone.
+  function scriptureNote(sInput, text, sourceMode, q) {
+    const sStatus = page.querySelector("[data-fs-scripture-status]");
+    if (!sStatus) return;
+    sStatus.textContent = text;
+
+    // aria-live is the announcement; aria-describedby is the guarantee.
+    // Binding the note to the input means the explanation travels with
+    // focus deterministically rather than depending on live-region
+    // timing, which varies by screen reader.
+    if (!sStatus.id) sStatus.id = "fs-scripture-status";
+    sInput.setAttribute("aria-describedby", sStatus.id);
+    sInput.addEventListener("input", function drop() {
+      sInput.removeAttribute("aria-describedby");
+      sInput.removeEventListener("input", drop);
+    });
+
+    if (!sourceMode) return;
+    const btn = el("button", "faith-search-zero-ask", "Search the text for it anyway");
+    btn.type = "button";
+    btn.addEventListener("click", () => {
+      refBypass = q;
+      const back = page.querySelector(`[data-fs-mode="${sourceMode}"]`);
+      if (back) back.click();
+      if (queryInput) {
+        queryInput.value = q;
+        // The hero box is at the top of the page. Focusing it on a
+        // phone scrolls back up and opens the keyboard over the very
+        // results this button was pressed to get.
+        if (!smallViewport()) focusQuietly(queryInput);
+      }
+      run(true);
+      if (smallViewport()) {
+        const backPanel = page.querySelector(`[data-fs-panel="${sourceMode}"]`);
+        if (backPanel) backPanel.scrollIntoView({ block: "start", behavior: "auto" });
+      }
+    });
+    sStatus.appendChild(document.createTextNode(" "));
+    sStatus.appendChild(btn);
+  }
+
+  // `fromSubmit` is true only when the reader pressed Search (or
+  // arrived on a ?q= link). It gates the Scripture handoff below:
+  // run() is also the debounced `input` handler, and "Acts 16" parses
+  // as a reference the moment you finish typing "Acts 1", so a handoff
+  // that fired on every keystroke would yank the tab out from under
+  // someone still typing "Acts 16 in Chrysostom".
+  function run(fromSubmit) {
     const q = String(queryInput ? queryInput.value : "").trim();
     const scope = currentScope();
     const mode = activeMode();
@@ -515,6 +659,72 @@
         if (askInput) {
           askInput.value = q;
           askInput.focus();
+        }
+        return;
+      }
+    }
+
+    // A Scripture reference typed into Find or Full text is a
+    // reference, not a phrase, and the index cannot answer it. Pagefind
+    // stems and prefix-matches the trailing token, so "Acts 16" returns
+    // every page carrying some form of "act" next to 16, 1655 or 1667 —
+    // Alexander VII 1655-1667 scored as a hit on a question about Paul
+    // at Philippi. The Scripture tab is the thing that answers it, so
+    // the reader goes there, the same way a question goes to Ask.
+    // `refBypass` is the way back. A question ending in "?" is never
+    // answerable by the index, but a reference sometimes is: marginal
+    // notes, printed indexes and commentary headers do set "Romans 8"
+    // in the text, and a reader who wants those occurrences is asking
+    // something real. Capturing every submit with no override would
+    // make this a block rather than a handoff, so the status line
+    // carries a button that sends the same string back to the index.
+    // Gate on both parsers: parseReference() accepts "r o m 8" (its
+    // abbreviation lookup strips spaces), which resolveBook() then
+    // refuses, and a handoff must not promise an answer the tab it
+    // lands on will reject.
+    if (fromSubmit && (mode === "find" || mode === "fulltext")
+      && refBypass !== q && parseReference(q) && resolveBook(q)) {
+      const sTab = page.querySelector('[data-fs-mode="scripture"]');
+      const sInput = page.querySelector("[data-fs-scripture-input]");
+      if (sTab && sInput) {
+        // Drop the old query's results before leaving. The handoff used
+        // to return without touching `state`, so clicking back to Find
+        // showed the previous search's cards under a hero box reading
+        // "Acts 16". A neutral state renders the start state instead.
+        // Not `query: q` — renderFind() would then write "No works
+        // match “Acts 16”", contradicting the message just set.
+        state = { token: ++runToken, query: "", raw: [], rows: [], taken: 0, loading: false, scope };
+        render();
+        sTab.click();
+        sInput.value = q;
+        // Short on purpose. .faith-search-status is a 12px uppercase
+        // label style with 0.18em tracking, sized for "24 RESULTS IN 8
+        // WORKS"; a sentence set in it becomes a block. Measured at
+        // 375px, the long version ran to five lines and 96px, sitting
+        // exactly where the software keyboard covers. The budget is
+        // about 78 characters including the reference and the button
+        // label below. The tab strip already shows where the reader
+        // landed, so the note does not have to say it too.
+        scriptureNote(sInput, `“${q}” is a passage, not a phrase. Press Go.`, mode, q);
+        // Focus last, and not on a phone. Written first because the
+        // status element is aria-live="polite" and a polite update
+        // landing in the same tick as a focus move is deferred behind
+        // the focus announcement, then dropped outright by some screen
+        // readers. Skipped below 700px because this fires inside a
+        // submit handler, so iOS honours it and raises the keyboard
+        // over the note and the Go button the reader now needs. Nothing
+        // is lost for assistive tech: scriptureNote() already wired
+        // aria-describedby, so the explanation travels regardless.
+        if (!smallViewport()) focusQuietly(sInput);
+        // The panel sits a screen below the hero box, so without focus
+        // and without this, pressing Search on a phone would look like
+        // it did nothing at all.
+        const sPanel = page.querySelector('[data-fs-panel="scripture"]');
+        if (sPanel) {
+          sPanel.scrollIntoView({
+            block: "start",
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+          });
         }
         return;
       }
@@ -1003,13 +1213,18 @@
   let debounceTimer = 0;
   function debounced() {
     window.clearTimeout(debounceTimer);
-    debounceTimer = window.setTimeout(run, 220);
+    // Called, never passed: Gecko hands timeout callbacks a non-standard
+    // "actual lateness" argument, and any nonzero lateness is truthy. A
+    // bare `setTimeout(run, 220)` would therefore land that number in
+    // `fromSubmit` and fire the Scripture handoff off a keystroke on
+    // Firefox, which is the one thing the flag exists to prevent.
+    debounceTimer = window.setTimeout(() => run(false), 220);
   }
   if (queryInput) queryInput.addEventListener("input", debounced);
   if (authorInput) authorInput.addEventListener("input", debounced);
   if (workInput) workInput.addEventListener("input", debounced);
   const form = document.querySelector("[data-fs-form]"); // also in the hero
-  if (form) form.addEventListener("submit", (e) => { e.preventDefault(); run(); });
+  if (form) form.addEventListener("submit", (e) => { e.preventDefault(); run(true); });
 
   // ── Scripture tab: a shortcut, not a second citation browser ─────
   //
@@ -1023,48 +1238,11 @@
     const sStatus = page.querySelector("[data-fs-scripture-status]");
     if (!sForm || !sInput) return;
 
-    const OT = ["Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", "Judges", "Ruth",
-      "1 Samuel", "2 Samuel", "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra", "Nehemiah",
-      "Esther", "Job", "Psalms", "Proverbs", "Ecclesiastes", "Song Of Solomon", "Isaiah", "Jeremiah",
-      "Lamentations", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos", "Obadiah", "Jonah", "Micah", "Nahum",
-      "Habakkuk", "Zephaniah", "Haggai", "Zechariah", "Malachi"];
-    const NT = ["Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians",
-      "Galatians", "Ephesians", "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians",
-      "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews", "James", "1 Peter", "2 Peter", "1 John",
-      "2 John", "3 John", "Jude", "Revelation"];
-    const ALL_NAMES = OT.concat(NT);
-
-    // The short forms a reader actually types. His page carries the
-    // same table for the same reason: "Rom 8" and "Mt 5" are how a
-    // reference is written, and a resolver that only knows the full
-    // name reads as a broken box.
-    const ABBR = {
-      gen: "Genesis", ex: "Exodus", exod: "Exodus", lev: "Leviticus", num: "Numbers",
-      deut: "Deuteronomy", dt: "Deuteronomy", josh: "Joshua", judg: "Judges",
-      "1sam": "1 Samuel", "2sam": "2 Samuel", "1kgs": "1 Kings", "2kgs": "2 Kings",
-      "1chr": "1 Chronicles", "2chr": "2 Chronicles", neh: "Nehemiah", esth: "Esther",
-      ps: "Psalms", psa: "Psalms", psalm: "Psalms", prov: "Proverbs", eccl: "Ecclesiastes",
-      song: "Song Of Solomon", cant: "Song Of Solomon", isa: "Isaiah", jer: "Jeremiah",
-      lam: "Lamentations", ezek: "Ezekiel", dan: "Daniel", hos: "Hosea", obad: "Obadiah",
-      mic: "Micah", nah: "Nahum", hab: "Habakkuk", zeph: "Zephaniah", hag: "Haggai",
-      zech: "Zechariah", mal: "Malachi", matt: "Matthew", mt: "Matthew", mk: "Mark",
-      lk: "Luke", jn: "John", rom: "Romans", "1cor": "1 Corinthians", "2cor": "2 Corinthians",
-      gal: "Galatians", eph: "Ephesians", phil: "Philippians", col: "Colossians",
-      "1thess": "1 Thessalonians", "2thess": "2 Thessalonians", "1tim": "1 Timothy",
-      "2tim": "2 Timothy", phlm: "Philemon", heb: "Hebrews", jas: "James",
-      "1pet": "1 Peter", "2pet": "2 Peter", rev: "Revelation", apoc: "Revelation",
-    };
-
-    function resolveBook(text) {
-      const t = String(text || "").trim().toLowerCase();
-      if (!t) return null;
-      const full = ALL_NAMES
-        .filter((name) => t.startsWith(name.toLowerCase()))
-        .sort((a, b) => b.length - a.length)[0];
-      if (full) return full;
-      const head = (t.match(/^[1-3]?\s*[a-z]+/) || [""])[0].replace(/[\s.]/g, "");
-      return ABBR[head] || null;
-    }
+    // The book tables and resolveBook() used to live here. They are at
+    // module scope now (see "Scripture references" above) so that Find
+    // and Full text can hand a bare reference over to this tab instead
+    // of running it through Pagefind. Nothing here changed but where it
+    // reads its resolver from.
 
     sForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -1095,15 +1273,69 @@
 
   // ── Boot ──────────────────────────────────────────────────────────
 
+  // Two ways to name a tab in a URL. The hash is what this page writes
+  // itself — every tab click replaceStates it — so it wins. `?m=` is
+  // what a link written by hand or by another page carries, and until
+  // 2026-09-18 it was read by nothing at all: /search/?m=scripture&q=…
+  // silently opened Find and ran a Scripture reference through the
+  // full-text index, which is how "Acts 16" came back as Alexander VII
+  // 1655-1667. A `?m=` naming a mode this page does not have still
+  // falls back to Find rather than showing an empty frame.
+  let params = null;
+  try {
+    params = new URLSearchParams(window.location.search);
+  } catch (_) { /* a malformed query string is not a reason to fail to boot */ }
+
   const hash = (window.location.hash || "").replace(/^#/, "");
-  showMode(MODES.indexOf(hash) >= 0 ? hash : "find");
+  // Folded, because `?m=` exists for links written by hand and
+  // `MODES.indexOf` is exact: `?m=Scripture` would otherwise fall back
+  // to Find silently, which is the failure this whole change removes.
+  const wantedMode = params && params.get("m") ? String(params.get("m")).trim().toLowerCase() : "";
+  if (MODES.indexOf(hash) >= 0) showMode(hash);
+  else if (MODES.indexOf(wantedMode) >= 0) showMode(wantedMode);
+  else showMode("find");
   render();
 
-  try {
-    const q = new URLSearchParams(window.location.search).get("q");
-    if (q && queryInput) {
-      queryInput.value = q;
-      run();
+  if (params) {
+    const q = params.get("q");
+    if (q) {
+      // On Scripture, `?q=` belongs in that tab's own box, not in the
+      // Pagefind one, which is hidden behind another tab and would
+      // search the wrong thing. It is filled and left: submitting it
+      // navigates to /the-faith-received/scripture/, and a page that
+      // redirects itself on load is a page you cannot press Back out
+      // of. The reader presses Search.
+      const booted = activeMode();
+      if (booted === "scripture") {
+        const sInput = page.querySelector("[data-fs-scripture-input]");
+        if (sInput) {
+          sInput.value = q;
+          // Explained, not just filled. A reader who followed a link
+          // did not type this and arrived expecting an answer, so a
+          // populated box with no account of itself is the worse half
+          // of the old bug. No focus: focus follows a user action, and
+          // seizing it on load drops a screen reader into the middle
+          // of the document and raises the keyboard on a phone.
+          scriptureNote(sInput, `“${q}” is ready. Press Go.`, "", q);
+        }
+      } else if (booted === "ask") {
+        // Reading `?m=` promoted six tab names from inert to live, and
+        // only Scripture had its `?q=` routing. Without this, ?m=ask&q=
+        // opens an empty composer and runs the query through Pagefind
+        // into panels that are all hidden. Same selectors the two
+        // existing Ask hand-offs use.
+        const askInput = document.querySelector("[data-ask-input]") || document.querySelector(".ask-composer textarea");
+        if (askInput) askInput.value = q;
+      } else if (booted === "power") {
+        // Power Search lives on /the-faith-received/research/; this tab
+        // is a door, not a second copy. Carrying `?q=` into a hidden
+        // Pagefind run would be the same silent discard, so it is
+        // deliberately dropped here rather than half-handled.
+        setStatus("");
+      } else if (queryInput) {
+        queryInput.value = q;
+        run(true);
+      }
     }
-  } catch (_) { /* ignore malformed query string */ }
+  }
 }());
