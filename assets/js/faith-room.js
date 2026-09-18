@@ -571,9 +571,19 @@
   function row(w, mark) {
     const second = w.titleLatin && w.titleLatin !== w.title ? w.titleLatin : "";
     const second2 = second ? `<span class="brow-la">${escapeHtml(second)}</span>` : "";
-    const m = mark === undefined ? where(w) : mark;
-    const vol = m ? `<span class="brow-m">${escapeHtml(m)}</span>` : "";
-    const inner = `<span class="brow-t">${escapeHtml(w.title || w.id)}</span>${second2}${vol}`;
+    const m = String(mark === undefined ? where(w) : mark || "").trim();
+    // An address is short. "PL 101", "1640", "Tome 2 · fasc. 4" — the longest of
+    // them is 28 characters, and they belong in the right-hand column where the
+    // numbers line up. The Latin Library's volume field is not always an address:
+    // it runs to 141 characters of description, and a volume of the Westminster
+    // Assembly minutes put in a nowrap column took the whole row, squeezed the
+    // title to nothing and set it one word per line with the description printed
+    // over the top of it. Anything that long is a subtitle, so it goes under the
+    // title where a subtitle goes, and wraps.
+    const ADDRESS = 30;
+    const vol = m && m.length <= ADDRESS ? `<span class="brow-m">${escapeHtml(m)}</span>` : "";
+    const sub = m && m.length > ADDRESS ? `<span class="brow-sub">${escapeHtml(m)}</span>` : "";
+    const inner = `<span class="brow-t">${escapeHtml(w.title || w.id)}</span>${sub}${second2}${vol}`;
     if (w.readable !== false && w.url) {
       return `<li><a href="${escapeHtml(w.url)}">${inner}</a></li>`;
     }
