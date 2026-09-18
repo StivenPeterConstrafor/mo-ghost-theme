@@ -929,3 +929,27 @@ html.mo-embedded #mobile-nav { display: none !important; }
 html.mo-embedded { --mo-head: 0px; }
 html.mo-embedded .faith-port-read-page { height: 100dvh; }
 html.mo-embedded .ph { top: 0; }
+
+/* ── The reader's own chrome, in dark ──────────────────────────────────
+   Putting the theme control back in the bar made dark reachable by a click,
+   and dark had never been finished here. The toolbar's ground is painted
+   with a literal cream rather than a token, so in dark it held #f5efe1
+   under #e9e9e5 ink: the work's own title measured 1.06 against its own
+   background, which is invisible rather than merely faint. The tokens were
+   right all along — --bg resolves to #222320 in dark — so it is the paint
+   that is corrected here and nothing else.
+
+   Our masthead is deliberately left alone. Taking the site shell dark is
+   its own piece of work with its own review, as the note above says; this
+   is the reader's own furniture only. */
+:root[data-theme="dark"] #app .ph.fr-reader-head,
+:root[data-theme="dark"] #app .ph {
+  background: var(--card-bg, #232320);
+  border-bottom-color: color-mix(in srgb, var(--fg) 20%, transparent);
+}
+:root[data-theme="dark"] #nbSaveReadingPlace {
+  background: var(--card-bg, #232320);
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--fg) 24%, transparent);
+}
+
