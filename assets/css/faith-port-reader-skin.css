@@ -927,6 +927,36 @@ html.mo-embedded header.site-header,
 html.mo-embedded .site-footer,
 html.mo-embedded #mobile-nav { display: none !important; }
 html.mo-embedded { --mo-head: 0px; }
+
+/* ── Immersive reading ──────────────────────────────────────────
+   Driven by assets/js/page/faith-reader-immersive.js; read its header
+   for the rule. The bars do not merely hide -- zeroing the same two
+   custom properties the layout already hangs off lets the text fill the
+   space they leave, so there is no band of empty page where a toolbar
+   used to be. mo-embedded above zeroes --mo-head for the same reason.
+
+   !important because both values are written as inline styles on <html>
+   at runtime (our masthead is measured, the toolbar publishes its own
+   height), and an inline style outranks any rule that is not. */
+html.fr-immersive { --mo-head: 0px !important; --phh: 0px !important; }
+
+header.site-header,
+.ph.fr-reader-head,
+.frthumb { transition: transform 0.2s ease; }
+
+html.fr-immersive header.site-header { transform: translateY(-101%); }
+html.fr-immersive .ph.fr-reader-head { transform: translateY(-101%); }
+html.fr-immersive .frthumb { transform: translateY(101%); }
+
+/* The bars are gone, so nothing anchors the eye: give the column the
+   breathing room the toolbar used to provide. */
+html.fr-immersive .scroll { scroll-padding-top: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  header.site-header,
+  .ph.fr-reader-head,
+  .frthumb { transition: none; }
+}
 html.mo-embedded .faith-port-read-page { height: 100dvh; }
 html.mo-embedded .ph { top: 0; }
 
