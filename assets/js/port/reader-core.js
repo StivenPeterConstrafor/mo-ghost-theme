@@ -1567,21 +1567,71 @@ function enrichSub(){ aboutFor().then(d=>{ if(!d.author&&!d.blurb)return;
   if(d.blurb&&d.blurb.genre)bits.push(esc(d.blurb.genre));
   const s=$("#sub"); if(!s)return; s.innerHTML=bits.join(" · ");
 }).catch(()=>{}); }
+// The opening sentence of a biography, taken whole. A character truncation would cut mid-word
+// and an ellipsis would promise a "more" that this panel does not have, so the split is by
+// sentence and the guards are the ones the catalogue actually trips: "c. 878–c. 899", "St
+// Anthony's College", "J.G. Fatati", "(Magister 1605)". A full stop only ends a sentence when
+// the token before it is not a known abbreviation or a bare initial AND what follows opens
+// like a new sentence. A very short opening ("Jesuit dogmatic theologian.") takes the sentence
+// after it as well, capped at two, so no author is introduced by three words.
+const ABOUT_ABBR=/(?:^|[\s([.–—-])(?:st|ss|mr|mrs|ms|dr|fr|prof|rev|bp|abp|ca|cca|cf|fl|e\.g|i\.e|vol|vols|ch|chap|pt|no|nos|vs|etc|jr|sr|al|ep|epp|lib|cap|col|cols|op|trans|ed|eds|q|qq|art|[A-Za-z])\.$/;
+function aboutOpening(text){
+  const s=String(text||"").trim(); if(!s)return "";
+  const re=/[.!?](?=["')\]]?(?:\s|$))/g; let m,taken=0;
+  while((m=re.exec(s))){
+    const head=s.slice(0,m.index+1);
+    if(ABOUT_ABBR.test(head))continue;                              // an abbreviation, not an ending
+    const rest=s.slice(m.index+1).replace(/^["')\]]?\s+/,"");
+    if(rest&&!/^[A-Z“"'(\d]/.test(rest))continue;              // mid-sentence full stop
+    taken++;
+    if(head.split(/\s+/).length>=12||taken>=2)return head;
+  }
+  return s;
+}
 function openAbout(){ aboutFor().then(d=>{
   let ov=document.getElementById("aboutOv"); if(ov)ov.remove();
   ov=document.createElement("div"); ov.id="aboutOv"; ov.className="about-ov";
   const a=d.author,b=(typeof d.blurb==="string")?{blurb:d.blurb}:d.blurb;   // blurbs.json carries plain strings for newer works
-  const authLine=[a&&a.dates,a&&a.tradition,a&&a.affiliation].filter(Boolean).join(" · ");
-  let h='<div class="about-box"><div class="about-h"><div><h2>'+esc(DATA.title_en||DATA.title)+'</h2><div class="ah-meta">'+esc([(DATA.title_en&&DATA.title_en!==DATA.title)?DATA.title:null,DATA.author,DATA.volume].filter(Boolean).join(" · "))+'</div></div><button class="about-x" title="Close (esc)">✕</button></div><div class="about-body">';
-  // WHO first — situate the person, then the work
-  h+='<div class="about-sec"><h3>'+esc(DATA.author)+'</h3>';
-  if(authLine)h+='<div class="about-tags">'+esc(authLine)+'</div>';
-  if(a&&a.bio)h+='<div class="about-prose"><p>'+esc(a.bio)+'</p></div>';
-  if(a&&a.significance)h+='<div class="about-sig">'+esc(a.significance)+'</div>';
-  if(a&&a.key_works&&a.key_works.length)h+='<div class="about-kw"><b>Key works:</b> '+esc(a.key_works.join(" · "))+'</div>';
-  h+='</div><div class="about-sec">';
-  if(b&&b.blurb){ if(b.genre)h+='<div class="about-tags"><b>'+esc(b.genre)+'</b></div>'; h+='<div class="about-prose"><p>'+esc(b.blurb)+'</p></div>'; }
-  h+='</div></div>';    // no machine fallback sentence, no generated-orientation eyebrow (user 2026-07-20): author + work, period.
+  // THE WORK COMES FIRST AND NOTHING PRINTS AN EMPTY LABEL (Ian, 2026-09-18: "These About
+  // blocks on works are an absolute mess. They need to be incredibly simplified"). The panel
+  // used to stack two encyclopedia entries: author name, a three-fact metadata run, the full
+  // biography, an italic significance line, a "Key works:" list, a lowercase genre line, and
+  // only then the blurb for the work the reader had actually opened. On charnock-attributes —
+  // no blurb, no author entry — it rendered 242px of two empty .about-sec shells, the second
+  // of them nothing but a top rule.
+  //
+  // WHAT IS CUT AND WHY. `affiliation` is a second career summary in a panel that is not about
+  // a career. `key_works` is a shelf, and the author page IS that shelf. `significance` is
+  // measurably not what its name says: 821 of 1,876 entries in the Latin Fathers author shard
+  // describe the WORK rather than the person ("The letters and decrees held here assert…"),
+  // so it cannot be trusted as author context. `genre` is lowercase, sometimes parenthetical
+  // ("collected theological works (exegetical / didactic / polemical)"), and always redundant
+  // with the blurb's own first clause; every entry in v1/blurbs.json carries a blurb (1,664 of
+  // 1,664 when this was measured, 1,733 of 1,733 an hour later as the catalogue was filled),
+  // so genre never appears on a work that would otherwise have nothing said about it.
+  //
+  // The biography stays as ONE SENTENCE. aboutOpening() is an abbreviation-aware split, not a
+  // character truncation: measured over all 2,585 bios in the core and Latin shards it never
+  // returns under 8 words and runs past 70 in 15 of them. The full life, the affiliation, the
+  // significance and the key works are all on the author page, which the footer links to.
+  const house=s=>String(s||"").replace(/\s+—\s+/g,", ").replace(/(\d)\s*—\s*(\d)/g,"$1–$2").replace(/—/g,", ");
+  const headMeta=[(DATA.title_en&&DATA.title_en!==DATA.title)?DATA.title:null,DATA.volume].filter(Boolean).join(" · ");
+  let h='<div class="about-box" role="dialog" aria-modal="true" aria-label="About this work"><div class="about-h"><div><h2>'+esc(DATA.title_en||DATA.title)+'</h2>';
+  if(headMeta)h+='<div class="ah-meta">'+esc(headMeta)+'</div>';
+  h+='</div><button class="about-x" title="Close (esc)" aria-label="Close">✕</button></div><div class="about-body">';
+  if(b&&b.blurb)h+='<div class="about-work"><p>'+esc(house(b.blurb))+'</p></div>';
+  if(DATA.author){
+    const life=[(a&&a.dates&&!/unknown/i.test(a.dates))?a.dates:null,a&&a.tradition].filter(Boolean).join(" · ");
+    const opening=(a&&a.bio)?aboutOpening(house(a.bio)):"";
+    h+='<div class="about-who"><h3>'+esc(DATA.author)+'</h3>';
+    if(life)h+='<p class="about-life">'+esc(life)+'</p>';
+    // .about-bio, NOT .about-note: read.in01.css:133 already owns .about-note and would set
+    // this at .72rem, muted, under a dashed rule. Nothing emits that class any more, but a
+    // dead rule in a vendored sheet still paints.
+    if(opening)h+='<p class="about-bio">'+esc(opening)+'</p>';
+    h+='<a class="about-more" href="/the-faith-received/author/?a='+encodeURIComponent(DATA.author)+'">More by '+esc(DATA.author)+'</a></div>';
+  }
+  h+='</div></div>';    // no machine fallback sentence, no generated-orientation eyebrow (user 2026-07-20): the work, then the author, period.
   ov.innerHTML=h; document.body.appendChild(ov);
   const close=()=>{ov.remove();removeEventListener("keydown",esk);};
   function esk(e){if(e.key==="Escape")close();}

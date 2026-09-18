@@ -1320,3 +1320,155 @@ html[data-lh] .app #reading :is(.row:not(.rapp) > .en, .row:not(.rapp) > .la,
 @media (max-width: 880px) {
   #notebook { height: auto; }
 }
+
+
+/* ── THE ABOUT PANEL: THE WORK, THEN THE PERSON WHO WROTE IT ────────
+   Ian, 2026-09-18, on franciscus-junius-opera-theologica-vol-1: "These
+   About blocks on works are an absolute mess. They need to be incredibly
+   simplified."
+
+   The markup changed with it (reader-core.js, openAbout) — the panel no
+   longer emits .about-sec / .about-tags / .about-prose / .about-sig /
+   .about-kw, so read.in01.css:123-132 now styles nothing. Those rules
+   are left where they are: that file is the corpus owner's and forking
+   it costs us his next drop. This block styles the four elements the new
+   panel does emit.
+
+   WHAT THE TYPE IS DOING. The h2 is a WORK'S OWN NAME, which is the one
+   place the library spends its display face, so it keeps --font-display
+   (EB Garamond in this reader, measured) and the blurb keeps --font-body
+   — the panel reads in the same voice as the page behind it. Everything
+   that is furniture rather than reading goes to Source Serif: the meta
+   line under the title was italic EB Garamond at 14.4px, which is a
+   display face set in italic on a caption, and the author's name was
+   EB Garamond at 17.92px, which made a person's name look like a second
+   work title. Hierarchy from size, weight and space instead.
+
+   THE HAIRLINE IS THE ONLY DIVIDER. One work, one author, one rule
+   between them; a panel with two items in it does not need a grid. */
+#aboutOv .about-box { width: min(600px, 94vw); }
+
+/* THE PANEL SHARED TWO CLASS NAMES WITH /about/ AND LOST BOTH.
+   screen.min.css loads after every port sheet, so at equal specificity
+   its bare classes win, and Mere Orthodoxy's own About page owns
+   `.about-body` (10 rules) and `.about-prose` (12). Measured on the live
+   dialog: the panel body was taking `padding: 56px 0 32px` and
+   `background-color: #f1e8d5` from screen.css:6009 rather than
+   read.in01.css:122's `1.3rem 1.4rem 1.5rem` — which is where the 56px
+   of dead space under the title came from, why the body sat on a
+   different cream than the box, and why the prose ran flush to the box's
+   left edge, 22px outside the title above it. It had been true of every
+   About panel in the reader. The new markup drops `.about-prose`
+   altogether and this restates the body's own box; `#aboutOv` is (1,1,0)
+   and settles it for good. See [[project_port-and-shell-share-class-names]]. */
+#aboutOv .about-body {
+  padding: 1.35rem 1.4rem 1.5rem;
+  background: transparent;
+  max-width: none;
+  margin: 0;
+}
+
+#aboutOv .about-h .ah-meta {
+  font: 0.82rem/1.45 var(--sans, "Source Serif Pro", Georgia, serif);
+  font-style: normal;
+  color: var(--muted, #6b6660);
+  margin-top: 0.35rem;
+}
+
+/* The close control was rgba(255,255,255,.12) — a white wash designed
+   for a dark masthead, invisible on our cream one. Same three steps as
+   every other control in the library. */
+#aboutOv .about-x {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted, #6b6660);
+}
+#aboutOv .about-x:hover { color: var(--tfr-btn, var(--color-secondary, #c1593c)); }
+#aboutOv .about-x:focus-visible {
+  outline: 2px solid var(--tfr-btn, var(--color-secondary, #c1593c));
+  outline-offset: 2px;
+}
+
+/* The work. First, because a reader opened a work. */
+#aboutOv .about-work p {
+  margin: 0;
+  font: 1rem/1.62 var(--font-body, Georgia, serif);
+  color: var(--fg, #2d2927);
+}
+
+/* The author. Context, not a second entry: a name, the two facts that
+   place him, one sentence, and the door to the rest. */
+#aboutOv .about-who {
+  margin-top: 1.35rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--border, #d9c6a7);
+}
+#aboutOv .about-who:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+#aboutOv .about-who h3 {
+  margin: 0;
+  font: 600 0.95rem/1.3 var(--sans, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0.01em;
+  color: var(--fg, #2d2927);
+}
+#aboutOv .about-life {
+  margin: 0.2rem 0 0;
+  font: 0.8rem/1.45 var(--sans, "Source Serif Pro", Georgia, serif);
+  color: var(--muted, #6b6660);
+}
+/* .about-bio and not .about-note — read.in01.css:133 styles .about-note at .72rem under a
+   dashed rule, which landed on this line before it was renamed. */
+#aboutOv .about-bio {
+  margin: 0.55rem 0 0;
+  font: 0.94rem/1.58 var(--font-body, Georgia, serif);
+  color: var(--fg, #2d2927);
+}
+
+/* TFR BUTTON, stated for a surface that sits outside #app.
+   The overlay is appended to document.body, so none of the
+   `#app .ph.fr-reader-head …` rules above can reach it. Same system,
+   same three steps: off-black outlined at rest, terracotta outlined when
+   pointed at. See the TFR BUTTON block at the end of
+   assets/css/faith-received.css.
+
+   Ink and line read --fg rather than --color-dark so the one rule holds
+   in the reader's explicit dark theme, where an off-black outline would
+   be an invisible box; --tfr-btn is the lifted terracotta that theme
+   needs, and it falls back to the daylight colour when unset. */
+#aboutOv .about-more {
+  display: inline-block;
+  margin-top: 0.9rem;
+  padding: 0 13px;
+  height: 34px;
+  box-sizing: border-box;
+  border: 1px solid var(--fg, #2d2927);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--fg, #2d2927);
+  font: 13px/32px var(--sans, "Source Serif Pro", Georgia, serif);
+  text-decoration: none;
+}
+#aboutOv .about-more:hover {
+  border-color: var(--tfr-btn, var(--color-secondary, #c1593c));
+  color: var(--tfr-btn, var(--color-secondary, #c1593c));
+}
+#aboutOv .about-more:focus-visible {
+  outline: 2px solid var(--tfr-btn, var(--color-secondary, #c1593c));
+  outline-offset: 2px;
+}
+/* Dark is scoped to this overlay, never :root — dark-mode.js sets
+   data-theme="dark" on every page for an OS-dark reader, and a :root
+   token would repaint terracotta controls on a cream page. */
+:root[data-theme="dark"] #aboutOv {
+  --tfr-btn: color-mix(in srgb, var(--color-secondary, #c1593c) 65%, #fff);
+}
+
+/* A long author name is a two-line button, not a clipped one. */
+@media (max-width: 640px) {
+  #aboutOv .about-more {
+    height: auto;
+    min-height: 34px;
+    line-height: 1.5;
+    padding: 6px 13px;
+    font-size: 13px;
+  }
+}
