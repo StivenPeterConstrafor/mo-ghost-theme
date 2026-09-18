@@ -255,7 +255,7 @@
         paginate(content,rows,row=>{
           const node=record(row.name||'Authority name not supplied',row.mention?'Recorded mention: '+row.mention:'',row.page);
           if(row.corpus)note(node,'Recorded collection: '+({pl:'PL',pg:'PG'}[row.corpus]||row.corpus));
-          if(row.name)node.appendChild(link('Find works by '+row.name,'/?a='+encodeURIComponent(row.name)));
+          if(row.name)node.appendChild(link('Find works by '+row.name,'/the-faith-received/author/?a='+encodeURIComponent(row.name)));
           return node;
         },20,'mentions');
       });

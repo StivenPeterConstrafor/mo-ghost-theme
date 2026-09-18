@@ -1560,7 +1560,7 @@ function loadAbout(){ if(_aboutP)return _aboutP; if(!BLOB){_aboutP=Promise.resol
   return _aboutP; }
 function aboutFor(){ return loadAbout().then(d=>({blurb:d.blurbs[DATA.slug]||null, author:d.authors[DATA.author]||d.authors[DATA.author_la]||null})); }
 function enrichSub(){ aboutFor().then(d=>{ if(!d.author&&!d.blurb)return;
-  const au='<a class=subau href="/?a='+encodeURIComponent(DATA.author)+'" title="All works by '+esc(DATA.author)+'">'+esc(DATA.author)+'</a>'
+  const au='<a class=subau href="/the-faith-received/author/?a='+encodeURIComponent(DATA.author)+'" title="All works by '+esc(DATA.author)+'">'+esc(DATA.author)+'</a>'
     +((d.author&&d.author.dates&&!/unknown/i.test(d.author.dates))?(" ("+esc(d.author.dates)+")"):"");
   const bits=[au];
   if(DATA.volume)bits.push(esc(DATA.volume));
@@ -2026,7 +2026,7 @@ function build(){
   // witness (owner 2026-09-09): a facsimile work reads text AND scan — two witnesses; a digital work is the text alone
   $("#wmeta").textContent=[DATA.author,`${DATA.n_pages} ${DATA.has_pages?"folia":"sections"}`,DATA.source_only?(window.__SRCNAME||'Original'):enOnly||DATA.src_lang==='en'?"English":((window.__SRCNAME||"Latin")+" + English"),DATA.pld_source_view?.label,DATA.has_pages?"facsimile · text + page scans":"digital text"].filter(Boolean).join(" · ");
   {const bits=[(DATA.title_en&&DATA.title_en!==DATA.title)?esc(DATA.title):null,
-     DATA.author?('<a class=subau href="/?a='+encodeURIComponent(DATA.author)+'" title="All works by '+esc(DATA.author)+'">'+esc(DATA.author)+'</a>'):null,
+     DATA.author?('<a class=subau href="/the-faith-received/author/?a='+encodeURIComponent(DATA.author)+'" title="All works by '+esc(DATA.author)+'">'+esc(DATA.author)+'</a>'):null,
      DATA.volume?esc(DATA.volume):null].filter(Boolean);
    $("#sub").innerHTML=bits.join(" · ");}   // the author byline is an action: → the library, filtered to them
   wireAbout();   // fetch blurb+bio → enrich the subtitle (dates·genre) + wire the About button/link
@@ -3842,7 +3842,7 @@ function renderSourceView(){
 function syncReaderHeader(n){
  if(!DATA)return;
  const author=$("#reader-author"),volume=$("#reader-volume"),place=$("#reader-location");
- author.textContent=DATA.author||"";author.href="/?a="+encodeURIComponent(DATA.author||"");
+ author.textContent=DATA.author||"";author.href="/the-faith-received/author/?a="+encodeURIComponent(DATA.author||"");
  volume.textContent=String(DATA.volume||"").replace(/\b(P[LG]|PO)\s*(\d+)/g,"$1 $2");
  place.textContent=locOf(n);place.setAttribute('aria-label','Go to a place in this work, currently '+locOf(n));
  const column=DATA.pld_source_view?.hasColumns!==false&&(!DATA.pld_source_view?.notes||DATA.pld_source_view?.columnNotes)&&/^P[LG]\s*\d/i.test(DATA.volume||""),unit=column?'column':DATA.has_pages?'page':'section';

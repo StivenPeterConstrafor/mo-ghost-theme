@@ -1918,7 +1918,7 @@ window.__frToolsRes&&window.__frToolsRes();
               const after=node.splitText(i);after.splitText(m.length);
               const link=document.createElement("a");
               link.className="citelnk";
-              link.href="/?a="+encodeURIComponent(a);
+              link.href="/the-faith-received/author/?a="+encodeURIComponent(a);
               link.title="In this library: works of "+a;
               link.textContent=m;
               after.parentNode.replaceChild(link,after);
