@@ -972,7 +972,7 @@ function render(){
        so the reference row is no longer Roman-Catholic-only. */
     {const cb=el("div","scomp");cb.innerHTML='<span class=sk>Reference</span>'
       +'<div class=scomp-row>'
-      +'<a class=scomp-l href="/the-faith-received/dtc/"><span class=n>Dictionnaire de Théologie Catholique</span><span class=d>The great French theological dictionary (Vacant–Mangenot–Amann, 1899–1950): ~1,800 articles in a dedicated lookup interface — search any headword.</span><span class=u>the dictionary door</span></a>'
+      +'<a class=scomp-l href="/the-faith-received/dictionary/"><span class=n>Dictionnaire de Théologie Catholique</span><span class=d>The great French theological dictionary (Vacant–Mangenot–Amann, 1899–1950): ~1,800 articles in a dedicated lookup interface — search any headword.</span><span class=u>the dictionary door</span></a>'
       +'</div>';sw.appendChild(cb);}
     /* the Medieval shelf continues in two sister libraries — a quiet cross-reference at its head */
     /* Medieval companion-libraries block retired (owner 2026-08-20) */

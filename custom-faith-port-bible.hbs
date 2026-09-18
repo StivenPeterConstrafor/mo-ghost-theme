@@ -59,7 +59,10 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   <div class="brand"><span class="research-page-name"> · <span id="pgname" style="font-style:italic">Latin Fathers</span></span> <button id="thBtn" aria-label="Change reading theme" title="Light / dark" style="font:inherit;background:none;border:0;cursor:pointer;color:var(--muted);padding:.1rem .3rem">☾</button></div>
   <nav id="topnav" aria-label="Research navigation">
     <a href="/the-faith-received/bible/" data-p="bible">Scripture</a>
-    <a href="/the-faith-received/authors/" data-p="fathers">Authors</a>
+    {{!-- /the-faith-received/authors/ is the port's own path and has no
+          template here, so it can never be routed. /all-works/ is the
+          same door: By author is its default view. --}}
+    <a href="/the-faith-received/all-works/" data-p="fathers">Authors</a>
     <a href="/the-faith-received/fathers/#works" data-p="works">Works</a>
     <a href="/the-faith-received/topics/" data-p="topics">Topics</a>
     <a href="/the-faith-received/web/" data-p="web">Web</a>

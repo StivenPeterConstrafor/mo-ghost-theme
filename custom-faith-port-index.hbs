@@ -100,7 +100,11 @@
 <div id="homeNotice" class="home-sr" role="status" aria-live="polite"></div>
 <div class=wrap><div id=continue></div></div>
 <div class=wrap id=lib><p class=muted>Loading the library…</p></div>
-<nav id="homePaths" class="wrap home-paths" aria-label="Explore the library"><a href="/the-faith-received/authors/">Authors<span>Find an author’s works</span></a><a href="/the-faith-received/bible/">Scripture<span>Find biblical commentary</span></a><a href="/the-faith-received/topics/">Topics<span>Explore theological subjects</span></a><a href="/the-faith-received/desk/">Desk<span>Write with your research</span></a></nav>
+{{!-- The port's own /authors/ and /dtc/ paths have no template in this
+     theme and cannot be routed, so both links 404ed on this page. Ours
+     are /all-works/, whose default view is By author and which carries
+     the A-Z, and /dictionary/. See routes.yaml. --}}
+<nav id="homePaths" class="wrap home-paths" aria-label="Explore the library"><a href="/the-faith-received/all-works/">Authors<span>Find an author’s works</span></a><a href="/the-faith-received/bible/">Scripture<span>Find biblical commentary</span></a><a href="/the-faith-received/topics/">Topics<span>Explore theological subjects</span></a><a href="/the-faith-received/desk/">Desk<span>Write with your research</span></a></nav>
 <script src="{{asset "js/port/index.in05.js"}}&amp;frv=50e861a7bd1d5fbe"></script>
 <script src="{{asset "js/port/index.in06.js"}}&amp;frv=c2f9ae3d17ef6d30"></script>
 <script src="{{asset "js/port/index.in07.js"}}&amp;frv=59167276609e8a0f"></script>
@@ -111,10 +115,10 @@
     <div class="sfbrand">The Faith Received</div>
     <p class="sfline">Read the works of Christian theology with their source editions.</p>
     <nav class="sflinks" aria-label="Site">
-      <a href="/the-faith-received/bible/">Scripture</a><a href="/the-faith-received/authors/">Authors</a><a href="/the-faith-received/fathers/#works">Works</a><a href="/the-faith-received/topics/">Topics</a><a href="/the-faith-received/web/">Web</a><a href="/the-faith-received/library/">Shelf</a>
+      <a href="/the-faith-received/bible/">Scripture</a><a href="/the-faith-received/all-works/">Authors</a><a href="/the-faith-received/fathers/#works">Works</a><a href="/the-faith-received/topics/">Topics</a><a href="/the-faith-received/web/">Web</a><a href="/the-faith-received/library/">Shelf</a>
     </nav>
     <nav class="sflinks sf2" aria-label="Tools">
-      <a href="/the-faith-received/search/">Search</a><a href="/the-faith-received/search/?m=ask">Ask</a><a href="/the-faith-received/pins/">Collections</a><a href="/the-faith-received/desk/">Desk</a><a href="/the-faith-received/dtc/">Dictionary</a>
+      <a href="/the-faith-received/search/">Search</a><a href="/the-faith-received/search/?m=ask">Ask</a><a href="/the-faith-received/pins/">Collections</a><a href="/the-faith-received/desk/">Desk</a><a href="/the-faith-received/dictionary/">Dictionary</a>
     </nav>
     <p class="sfcolo">Texts from public-domain editions. Translations and curation remain a work in progress; consult the source facsimile when available.</p>
   </div>

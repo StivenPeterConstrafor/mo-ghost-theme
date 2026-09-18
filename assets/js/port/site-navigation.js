@@ -10,10 +10,17 @@
   // a header that carries its own mode nav (anchor links with data-m — the
   // constellations page) already gives the reader its doors: adding the
   // quick trio there doubles Topics/Scripture in the same bar.
-  if(!header.querySelector('a[data-m]')&&!(has('/the-faith-received/authors/')&&has('/the-faith-received/bible/')&&has('/the-faith-received/topics/'))){const quick=document.createElement('nav');quick.className='fr-quick';quick.setAttribute('aria-label','Research');
-    quick.innerHTML=[['/the-faith-received/authors/','Authors'],['/the-faith-received/bible/','Scripture'],['/the-faith-received/topics/','Topics']].map(([h,t])=>`<a href="${h}"${location.pathname.replace(/\.html$/,'')===h?' aria-current="page"':''}>${t}</a>`).join('');header.appendChild(quick);}
+  // The port's /authors/ is not a page here: this theme has no authors
+  // template and routes.yaml cannot bind one, so every "Authors" door in
+  // this nav answered 404. /all-works/ is the equivalent surface -- its
+  // default view is By author and it carries the A-Z -- so it takes the
+  // door, and the separate Library entry below folds into it rather than
+  // listing the same page twice.
+  const AUTHORS='/the-faith-received/all-works/';
+  if(!header.querySelector('a[data-m]')&&!(has(AUTHORS)&&has('/the-faith-received/bible/')&&has('/the-faith-received/topics/'))){const quick=document.createElement('nav');quick.className='fr-quick';quick.setAttribute('aria-label','Research');
+    quick.innerHTML=[[AUTHORS,'Authors'],['/the-faith-received/bible/','Scripture'],['/the-faith-received/topics/','Topics']].map(([h,t])=>`<a href="${h}"${location.pathname.replace(/\.html$/,'')===h?' aria-current="page"':''}>${t}</a>`).join('');header.appendChild(quick);}
   const menu=document.createElement('details');menu.className='fr-explore';
-  menu.innerHTML='<summary aria-label="Explore the library">Explore</summary><nav aria-label="Library sections"><a href="/the-faith-received/all-works/">Library</a><a href="/the-faith-received/authors/">Authors<small>Find an author’s works</small></a><a href="/the-faith-received/bible/">Scripture<small>Find biblical commentary</small></a><a href="/the-faith-received/topics/">Topics<small>Explore theological subjects</small></a><a href="/the-faith-received/compare/">Compare authors</a><a href="/the-faith-received/web/">Constellations</a><a href="/the-faith-received/pins/">Notebooks</a><a href="/the-faith-received/desk/">Writing desk</a></nav>';
+  menu.innerHTML='<summary aria-label="Explore the library">Explore</summary><nav aria-label="Library sections"><a href="'+AUTHORS+'">Library<small>Every work, by author</small></a><a href="/the-faith-received/bible/">Scripture<small>Find biblical commentary</small></a><a href="/the-faith-received/topics/">Topics<small>Explore theological subjects</small></a><a href="/the-faith-received/compare/">Compare authors</a><a href="/the-faith-received/web/">Constellations</a><a href="/the-faith-received/pins/">Notebooks</a><a href="/the-faith-received/desk/">Writing desk</a></nav>';
   header.appendChild(menu);
   menu.querySelectorAll('a').forEach(link=>{if(new URL(link.href).pathname===location.pathname)link.setAttribute('aria-current','page');link.addEventListener('click',()=>{menu.open=false;});});
   document.addEventListener('pointerdown',event=>{if(menu.open&&!menu.contains(event.target))menu.open=false;});
