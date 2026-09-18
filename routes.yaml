@@ -313,8 +313,12 @@ routes:
     template: custom-faith-compare
   /the-faith-received/pins/:
     template: custom-faith-pins
+  # /desk/ is the corpus site's writing desk, ported (custom-faith-port-desk).
+  # It was a redirect into /research/#desk, kept for ?doc=<id> links; the
+  # ported page reads ?doc= itself, so those links still open their paper.
+  # The redirect template, custom-faith-desk.hbs, stays in the tree.
   /the-faith-received/desk/:
-    template: custom-faith-desk
+    template: custom-faith-port-desk
   # One route for all eight reading rooms; ?collection= picks which.
   # A page per collection. The shared /room/ route stays as a fallback
   # for links that still carry ?collection=.
@@ -387,6 +391,18 @@ routes:
     template: custom-faith-research
   /the-faith-received/scripture/:
     template: custom-faith-scripture
+  # The corpus site's Scripture room, ported: the whole Bible to read (ESV
+  # through the ask-dev worker's /v1/chapter proxy) with the library's
+  # recorded citations under every chapter, from R2. /scripture/ above is
+  # the index of who cites a passage; this is the passage and what they
+  # said. #b/<book>/<chapter> opens a chapter.
+  /the-faith-received/bible/:
+    template: custom-faith-port-bible
+  # The citation atlas, ported: every author a point placed by time, every
+  # recorded citation an edge, with the passages behind each connection.
+  # Hash-routed: #a=<author> dossier, #t=<topic>, #v=<book>/<ch>, #shelves=.
+  /the-faith-received/web/:
+    template: custom-faith-port-web
   /the-faith-received/today/:
     template: custom-faith-today
   /the-faith-received/glossary/:

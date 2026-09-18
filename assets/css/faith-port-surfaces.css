@@ -1,0 +1,82 @@
+/* ══ Three ported surfaces, started under our masthead ═══════════════════
+   The corpus site's /web, /bible and /desk each own their whole document
+   there: a fixed or sticky bar at the top of the viewport, a body sized to
+   the screen. Here the document is Ghost's, with our masthead fixed above
+   everything at --mo-head (measured by faith-port-read-boot.js: 85px on a
+   desktop, 61px on a phone) and the body padded to start below it. These
+   rules are the whole difference. Loaded after faith-port-reader-skin.css,
+   and after every stylesheet of the page's own, so that on equal
+   specificity they win by order; keep them last. */
+
+/* ── The atlas ──────────────────────────────────────────────────────────
+   constellations.css sizes the page from body.web-page: the bar is --mast
+   tall and fixed at the top, the explorer, the details panel and the
+   phone's Browse/Map switch are all positioned from --mast, and the body
+   is the screen and does not scroll. The page's own bar keeps its mode
+   navigation and loses its brand, so it is shorter; it moves down under
+   our masthead and --mast grows by our masthead, and everything the page
+   positions from --mast follows. Nothing else is repositioned by hand: an
+   earlier draft pinned #panel to --mo-head as well, which put its head
+   under the bar on a desktop and broke the bottom sheet on a phone. */
+body.web-page { --mast: calc(var(--mo-head, 85px) + 56px); }
+body.web-page header.site {
+  top: var(--mo-head, 85px);
+  height: 56px;
+  padding: 8px 24px;
+}
+body.web-page header.site > nav { margin-left: 0; }
+/* The skin positions the READER's toolbar, `.ph`, under our masthead with a bare
+   `.ph { top: var(--mo-head) }`. The atlas names its details-panel head `.ph` as
+   well, and that one is position:relative, so the same rule slid it down over the
+   panel's body: the title printed across "About this author". It stays put. */
+body.web-page #panel .ph { top: auto; }
+/* the body is the screen; our body padding would push the bottom 85px off it */
+body.web-page { padding-top: 0 !important; }
+body.web-page.mh-hide, body.web-page.mh-mini { padding-top: 0 !important; }
+@media (max-width: 1000px) {
+  /* The page lets its bar wrap to two rows on a narrow screen, which is
+     right when the bar is the whole masthead and --mast is measured from
+     it there. Here --mast is a sum, so the bar keeps one row: the page
+     name goes (the explorer's own heading says it), and the mode
+     navigation scrolls sideways under the thumb instead of wrapping. */
+  /* the page turns the bar into a two-row grid on a phone; under a fixed
+     height that second row spilled over the panel head, so: one flex row */
+  body.web-page header.site { display: flex; flex-wrap: nowrap; gap: 10px; padding: 8px 12px; }
+  body.web-page header.site .brand { display: none; }
+  body.web-page header.site > nav {
+    order: initial; width: auto; flex: 1 1 auto; min-width: 0;
+    overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  body.web-page header.site > nav::-webkit-scrollbar { display: none; }
+}
+
+/* ── Scripture ──────────────────────────────────────────────────────────
+   Normal document flow. The page's bar is sticky at the top of the
+   viewport; under our fixed masthead that is under our masthead, so it
+   sticks below it instead. Two rules in bible.in01.css set the bar's
+   position at (0,1,1) and (0,2,1); this one outranks both. */
+body.research-page header.site,
+body.research-page header.site.glass { top: var(--mo-head, 85px); }
+@media (max-width: 760px) {
+  /* the page makes its bar static on a phone; nothing to offset */
+  body.research-page header.site { top: auto; }
+}
+
+/* ── The desk ───────────────────────────────────────────────────────────
+   The corpus page is a flex column on <body>: header, workspace bar, main
+   (flex:1, the editor scrolls inside it). Ghost's body is not that column,
+   so the page's content is wrapped in one, sized to the screen under our
+   masthead — the move .faith-port-read-page makes for the reader. The
+   documents and research drawers are fixed from the top of the viewport
+   on a phone; they start under our masthead instead. */
+.faith-port-desk-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - var(--mo-head, 85px));
+  min-height: 0;
+}
+.faith-port-desk-page > header { position: sticky; top: 0; }
+@media (max-width: 940px) {
+  .faith-port-desk-page #docs,
+  .faith-port-desk-page #rail { top: var(--mo-head, 85px); }
+}
