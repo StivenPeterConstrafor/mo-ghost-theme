@@ -206,10 +206,47 @@
   const isMarker = (n) =>
     n.nodeType === 1 && n.tagName === "SUP" && /^\d+$/.test((n.textContent || "").trim());
 
+  /* Strong's numbers are markup, not Scripture.
+   *
+   * Some editions upstream (KJV, ASV) are the Strong's-tagged texts and
+   * carry a <S>3068</S> after each tagged word. The tag is not a known
+   * element, so the browser keeps it and the digits land in the reading
+   * text: "The LORD3068 is my shepherd7462".
+   *
+   * A tag holds one number, or a comma-separated list of them, and the
+   * upstream data sometimes glues a stray book name onto an entry
+   * ("846, Exodus76"). Match that shape rather than digits alone, which
+   * left eight tags standing in ASV John 1. Anything carrying sentence
+   * punctuation is not a Strong's tag, so a real strikethrough survives. */
+  const STRONGS = /^\s*[A-Za-z]*\d+\s*(?:,\s*[A-Za-z]*\d+\s*)*$/;
+
+  function stripStrongs(root) {
+    Array.prototype.slice.call(root.querySelectorAll("s, S")).forEach((el) => {
+      if (STRONGS.test(el.textContent || "")) el.remove();
+    });
+  }
+
+  /* Poetry does not arrive in paragraphs.
+   *
+   * Prose chapters come back as <p> with <sup>N</sup> markers inside.
+   * Poetry comes back as <div class="stanza"> holding <span class="line">,
+   * and a chapter can mix the two: NIV John 1 is nine paragraphs and nine
+   * stanzas. Walking <p> alone silently skipped every verse that opened in
+   * a stanza -- the whole chapter in Psalms, where nothing is prose, so no
+   * verse was clickable at all and the verse tools were dead.
+   *
+   * Take both kinds of block in document order. If a block encloses
+   * another selected block, the inner one is the real unit and the outer
+   * would process the same nodes twice, so drop the enclosing one. */
+  function verseBlocks(root) {
+    const found = Array.prototype.slice.call(root.querySelectorAll("p, .line"));
+    if (!found.length) return [root];
+    return found.filter((b) => !found.some((o) => o !== b && o.contains(b)));
+  }
+
   function markVerses(root) {
-    const blocks = root.querySelectorAll("p").length
-      ? Array.prototype.slice.call(root.querySelectorAll("p"))
-      : [root];
+    stripStrongs(root);
+    const blocks = verseBlocks(root);
     let carry = 0;
     const idSeen = new Set();
 

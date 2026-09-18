@@ -1421,27 +1421,61 @@
       : "";
   }
 
+  // Book names reach us from other surfaces, which spell them their own
+  // way -- the Bible reader says "Song of Solomon" where the lists here
+  // say "Song Of Solomon". Fold to the canonical spelling so a
+  // reference is not lost to a capital letter.
+  const fold = (s) => String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
+  function canonBook(name) {
+    const want = fold(name);
+    return OT.concat(DEUTERO, NT).find((b) => fold(b) === want) || null;
+  }
+
   // The citation resolver hands us a parsed reference; open the book
   // and chapter it names and scroll to it.
   window.addEventListener("faith:goto-scripture", (e) => {
     const d = e.detail || {};
     if (!d.book) return;
-    testament = (scripture.has(d.book) && NT.indexOf(d.book) >= 0) ? "nt" : "ot";
+    // Canonical spelling if we know the book, otherwise what we were
+    // given -- an unknown name simply finds nothing, as before.
+    const name = canonBook(d.book) || d.book;
+    // Which testament the book belongs to, not whether anything cites
+    // it. Gating on `scripture.has` sent every uncited New Testament
+    // book to the Old Testament tab, where it was never going to be.
+    testament = NT.indexOf(name) >= 0 ? "nt" : "ot";
     renderScripture();
     window.requestAnimationFrame(() => {
       const host = scriptureHost();
       if (!host) return;
       const book = [...host.querySelectorAll(".faith-scripture-book-details")]
-        .find((b) => b.querySelector(".faith-scripture-book-name")?.textContent.trim() === d.book);
+        .find((b) => fold(b.querySelector(".faith-scripture-book-name")?.textContent) === fold(name));
       if (!book) return;
       book.open = true;
       const ch = [...book.querySelectorAll(".faith-scripture-chapter-details")]
-        .find((c) => c.querySelector(".faith-scripture-chapter-name")?.textContent.trim() === `${d.book} ${d.chapter}`);
+        .find((c) => fold(c.querySelector(".faith-scripture-chapter-name")?.textContent) === fold(`${name} ${d.chapter}`));
       if (!ch) { book.scrollIntoView({ block: "start" }); return; }
       ch.open = true;
       ch.scrollIntoView({ block: "start" });
     });
   });
+
+  /* A passage arriving from somewhere else on the site.
+   *
+   * The Bible reader's "Cited by" has always linked here as
+   * ?book=Psalms&chapter=23, and nothing on this page ever read those
+   * parameters: every verse in the Bible landed the reader at the top
+   * of a hundred-thousand-character index with no sign of where the
+   * passage was. The event above already knows how to open a reference;
+   * it had no caller but the in-page citation resolver. */
+  function gotoFromQuery() {
+    const q = new URLSearchParams(window.location.search);
+    const book = q.get("book");
+    if (!book || !canonBook(book)) return;
+    const chapter = parseInt(q.get("chapter"), 10);
+    window.dispatchEvent(new CustomEvent("faith:goto-scripture", {
+      detail: { book, chapter: chapter > 0 ? chapter : null },
+    }));
+  }
 
   // ── Events ────────────────────────────────────────────────────
 
@@ -1629,6 +1663,8 @@
   ]).then(() => {
     renderScripture();
     renderTopics();
+    // Only once the index has something in it; the handler re-renders.
+    gotoFromQuery();
   });
 
   // Traditions need no prebuilt index — every catalogue either carries

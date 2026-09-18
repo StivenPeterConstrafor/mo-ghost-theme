@@ -934,8 +934,117 @@ function __initReaderTools(){
     const clone=lane.cloneNode(true);if(lane.dataset.orig)clone.innerHTML=lane.dataset.orig;clone.querySelectorAll("button,.rowx,.la-rev,.rv-edit,.rm-original,textarea,input").forEach(x=>x.remove());
     store[key]={text:clone.textContent.trim(),cite:rowCite(r),slug:WORK_SLUG,page:r.closest(".folio")?.dataset.page||"",row:r.id,url:rowAnchor(r),work:WORK,author:AUTHOR,title:DATA.title_en||DATA.title||WORK,color:c,notebookId:store[key]?.notebookId||'',ts:store[key]?.ts||Date.now()};
   }
+  /* ── Highlighting what you actually selected ─────────────────────
+     Ian: "I need to be able to only highlight what I actually highlight,
+     not the whole section or paragraph."
+
+     The port stores one colour per ROW and paints it with
+     .row[data-hl]{background}, so marking three words tinted the whole
+     paragraph. This adds a range layer over that, and leaves the row
+     store alone so nothing already saved is lost.
+
+     STORED AS CHARACTER OFFSETS INTO THE ROW'S OWN TEXT, plus the text
+     itself. Not a DOM path: the reader rebuilds rows constantly -- lazy
+     hydration, lane switches, Flow against Pages -- and any anchor made
+     of elements would not survive that. Offsets survive because the
+     text does. The stored string is kept so a range that no longer
+     matches can be recognised as drifted rather than painted over the
+     wrong words.
+
+     .rowx SUBTREES ARE SKIPPED on both sides of the trip. Notes and
+     translations are appended INTO the row, so counting their text
+     would shift every offset after them the moment someone wrote a
+     note, and the highlight would slide down the paragraph. */
+  const HLR = "fr_hl_ranges";
+
+  function hlTextNodes(row){
+    const out=[];
+    const w=document.createTreeWalker(row,NodeFilter.SHOW_TEXT,{acceptNode(n){
+      return n.parentElement&&n.parentElement.closest(".rowx")
+        ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;}});
+    let n;while((n=w.nextNode()))out.push(n);
+    return out;
+  }
+
+  // Where the live selection sits inside this row, in characters.
+  function selOffsets(row){
+    const sel=getSelection();
+    if(!sel||!sel.rangeCount||sel.isCollapsed)return null;
+    const rg=sel.getRangeAt(0);
+    if(!row.contains(rg.startContainer)||!row.contains(rg.endContainer))return null;
+    const nodes=hlTextNodes(row);
+    let start=null,end=null,total=0;
+    for(const n of nodes){
+      if(n===rg.startContainer)start=total+rg.startOffset;
+      if(n===rg.endContainer)end=total+rg.endOffset;
+      total+=n.nodeValue.length;
+    }
+    // A selection that began or ended on an element rather than in text.
+    // Rare, and not worth guessing at: the caller falls back to the row.
+    if(start==null||end==null||start>=end)return null;
+    return {s:start,e:end,t:String(rg)};
+  }
+
+  const hlRanges=r=>{const all=lj(HLR);const v=all[K(r)];return Array.isArray(v)?v:[];};
+  function saveRanges(r,list){
+    const all=lj(HLR);
+    if(list&&list.length)all[K(r)]=list;else delete all[K(r)];
+    save(HLR,all,"_frSyncHlRanges");
+  }
+
+  // Wrap [s,e) in marks. One mark per text node it crosses, because a
+  // selection that spans an <em> or a scripture link cannot be a single
+  // element without re-parenting the markup it crosses.
+  function paintRange(row,s,e,colour){
+    const nodes=hlTextNodes(row);
+    let total=0;
+    for(const n of nodes){
+      const ns=total,ne=total+n.nodeValue.length;total=ne;
+      if(ne<=s||ns>=e)continue;
+      const from=Math.max(0,s-ns),to=Math.min(n.nodeValue.length,e-ns);
+      if(from>=to)continue;
+      let node=n;
+      if(to<node.nodeValue.length)node.splitText(to);
+      if(from>0)node=node.splitText(from);
+      const mk=document.createElement("mark");
+      mk.className="fr-hlx";
+      mk.dataset.hl=colour||"amber";
+      node.parentNode.insertBefore(mk,node);
+      mk.appendChild(node);
+    }
+  }
+
+  function unpaint(row){
+    row.querySelectorAll("mark.fr-hlx").forEach(mk=>{
+      const parent=mk.parentNode;
+      while(mk.firstChild)parent.insertBefore(mk.firstChild,mk);
+      parent.removeChild(mk);
+    });
+    row.normalize();
+  }
+
+  function repaint(row){
+    unpaint(row);
+    const list=hlRanges(row);
+    if(!list.length)return false;
+    const text=hlTextNodes(row).map(n=>n.nodeValue).join("");
+    // Painted longest-last so a shorter range inside a longer one still
+    // lands on text nodes the longer one has already split.
+    [...list].sort((a,b)=>a.s-b.s).forEach(rg=>{
+      if(rg.t&&text.slice(rg.s,rg.e)!==rg.t)return;   // drifted; leave it unpainted
+      paintRange(row,rg.s,rg.e,rg.c);
+    });
+    return true;
+  }
+
   function applyHl(){const m=lj("fr_hl"),passages=lj("fr_highlight_passages_v1");let changed=false;
-    reading.querySelectorAll(".row[id],.en[id^=b],.la[id^=b]").forEach(r=>{if(m[K(r)]){r.dataset.hl=m[K(r)];captureHl(r,m[K(r)],passages);changed=true;}else r.removeAttribute("data-hl");});
+    reading.querySelectorAll(".row[id],.en[id^=b],.la[id^=b]").forEach(r=>{
+      // Ranges win over the row tint: if part of this row is marked, the
+      // whole of it must not be. Legacy row-level highlights, made before
+      // there were ranges, still paint the way they always did.
+      const partial=repaint(r);
+      if(partial){r.removeAttribute("data-hl");captureHl(r,hlRanges(r)[0]?.c||"amber",passages);changed=true;return;}
+      if(m[K(r)]){r.dataset.hl=m[K(r)];captureHl(r,m[K(r)],passages);changed=true;}else r.removeAttribute("data-hl");});
     if(changed)lsSet("fr_highlight_passages_v1",JSON.stringify(passages));
   }
   function setHl(r,c){const m=lj("fr_hl");if(c){m[K(r)]=c;untomb("fr_hl",K(r));}else{delete m[K(r)];tomb("fr_hl",K(r));}
@@ -993,6 +1102,30 @@ function __initReaderTools(){
   function passageText(){return passage?.text||getSelection()?.toString().trim()||"";}
   const showSelPop=()=>{
     if(!captureSelection()){hidePop();return;}
+    /* The one highlight control has to work both ways, because the only
+       other way out was removed. `.sw.clear` (data-hl="") exists in the
+       markup but sits inside a hidden div, and the single thing that
+       could have led to it -- "More" -- calls openNotebook(), which has
+       opened nothing since the Research panel was taken out in 20897a9.
+       So a highlight could be made and never unmade.
+
+       Rather than un-hiding a bare swatch, the button that made the
+       highlight offers to take it back: select a highlighted passage and
+       it reads "Remove highlight" and carries the empty colour that
+       setHl() already understands as erase. One control, and the state
+       of the passage decides which way it points. */
+    // Marked means: this row is tinted, or the selection touches a mark.
+    const at=popRow?selOffsets(popRow):null;
+    const overlaps=popRow&&hlRanges(popRow).some(r=>at?(r.s<at.e&&r.e>at.s):false);
+    const marked=popRow&&(popRow.dataset.hl||overlaps);
+    const sw=pop.querySelector(".sw.amber,.sw.is-clear");
+    if(sw){
+      sw.dataset.hl=marked?"":"amber";
+      sw.textContent=marked?"Remove highlight":"Highlight";
+      sw.title=marked?"Remove the highlight from this passage":"Highlight this passage";
+      sw.classList.toggle("is-clear",!!marked);
+      sw.classList.toggle("amber",!marked);
+    }
     const rc=getSelection().getRangeAt(0).getBoundingClientRect();pop.classList.add("show");
     pop.style.left=Math.max(8,Math.min(rc.left,innerWidth-pop.offsetWidth-8))+"px";
     pop.style.top=Math.max(8,Math.min(rc.bottom+8,innerHeight-pop.offsetHeight-12))+"px";};
@@ -1003,7 +1136,39 @@ function __initReaderTools(){
   document.addEventListener("mousedown",e=>{if(!pop.contains(e.target))hidePop();});
   pop.addEventListener("pointerdown",e=>{if(e.pointerType==='mouse'&&e.target.closest('button'))e.preventDefault();});
   if($("#spMore"))$("#spMore").onclick=()=>{hidePop();openNotebook('passage');};
-  pop.querySelectorAll(".sw").forEach(sw=>sw.onclick=e=>{e.preventDefault();if(popRow)setHl(popRow,sw.dataset.hl);hidePop();getSelection().removeAllRanges();});
+  pop.querySelectorAll(".sw").forEach(sw=>sw.onclick=e=>{
+    e.preventDefault();
+    if(popRow){
+      const colour=sw.dataset.hl;
+      // Read the selection BEFORE the popover closes and clears it.
+      const at=selOffsets(popRow);
+      if(colour){
+        if(at){
+          // Drop anything it overlaps, so re-marking does not stack
+          // duplicate ranges over the same words.
+          const kept=hlRanges(popRow).filter(r=>r.e<=at.s||r.s>=at.e);
+          kept.push({s:at.s,e:at.e,t:at.t,c:colour});
+          saveRanges(popRow,kept);
+          // The row tint would sit under the mark and defeat the point.
+          const m=lj("fr_hl");if(m[K(popRow)]){delete m[K(popRow)];save("fr_hl",m,"_frSyncHl");tomb("fr_hl",K(popRow));}
+          popRow.removeAttribute("data-hl");
+          repaint(popRow);
+        } else {
+          setHl(popRow,colour);   // no usable selection: the old whole-row mark
+        }
+      } else {
+        // Remove: only what the selection touches, or all of it when the
+        // selection is not inside the row's marks.
+        const list=hlRanges(popRow);
+        const kept=at?list.filter(r=>r.e<=at.s||r.s>=at.e):[];
+        saveRanges(popRow,kept);
+        repaint(popRow);
+        if(!kept.length&&!at)setHl(popRow,"");
+        else if(!kept.length)popRow.removeAttribute("data-hl");
+      }
+      updateCount&&updateCount();
+    }
+    hidePop();getSelection().removeAllRanges();});
   if($("#spNote"))$("#spNote").onclick=()=>{if(popRow)editNote(popRow);hidePop();getSelection().removeAllRanges();};
   if($("#spPar"))$("#spPar").onclick=()=>{const t2=passageText();hidePop();getSelection().removeAllRanges();
     if(t2.length>=10&&window.__frParallels)window.__frParallels(t2);};
