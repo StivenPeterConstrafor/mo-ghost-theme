@@ -169,7 +169,7 @@
   // care which of them it was handed.
   const YEAR_SHELF = {
     view: "year", param: "yr", tab: "By year", one: "year", many: "years",
-    of: (w) => {
+    of(w) {
       const y = String(w.eyebrow || "").match(/\b(1[3-9]\d\d)\b/);
       return y ? y[1] : "";
     },
@@ -183,8 +183,8 @@
     view: "century", param: "cy", tab: "By century", one: "century", many: "centuries",
     of: (w) => String(cent(w) || ""),
     face: () => "",
-    name: (s) => (window.MOCentury ? window.MOCentury.label(+s.v) : s.v),
-    cite: (s) => (window.MOCentury ? window.MOCentury.label(+s.v) : s.v),
+    name: (s) => (window.MOCentury ? window.MOCentury.label(Number(s.v)) : s.v),
+    cite: (s) => (window.MOCentury ? window.MOCentury.label(Number(s.v)) : s.v),
     mark: () => "",
     lead: "Choose a century to see what this shelf holds from it.",
   };

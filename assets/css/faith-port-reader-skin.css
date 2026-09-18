@@ -985,49 +985,39 @@ html.mo-embedded .ph { top: 0; }
   html.g-mobile:not(.fr-plain) #app .ph .ctr { flex: 0 0 auto; gap: 2px; }
 }
 
-/* ── Reading, uninterrupted ────────────────────────────────────────────
-   The engine has driven this since the port began: scroll down past 90px
-   and it adds mh-hide on a phone or mh-mini on a desktop, scroll back up
-   24px and it takes them off again (reader-core.js, "at the top, chrome
-   stays"). read.in01.css even carries the phone rule,
-   `html.g-mobile.mh-hide .ph{transform:translateY(-108%)}`.
+/* ── Reading, uninterrupted: the part that is ours ────────────────────────────
+   The gesture itself now lives where it belongs, in assets/css/port/read.in01.css,
+   ported from the corpus site along with the fix that made it work: the masthead
+   restyle there used to end in transform:none, which is exactly the property the
+   hide needs. What is left here is the part that is only true of this site.
 
-   None of it moved anything here, because the rule that restyles the bar
-   for this site ends with `transform:none;transition:none`, which is
-   exactly the two properties the hide needs. So the classes went on and
-   came off and the chrome sat there through all of it.
-
-   Reading is the thing this page is for, so all three pieces go: our
-   masthead, the reader's own bar, and the thumb bar at the foot. They
-   leave on the way down and come back on the way up, and at the top of a
-   work they never left. The reader's bar clears our masthead as well as
-   itself, since it is positioned below it. Anyone who has asked not to see
-   motion sees them cut instead of slide. */
-html.mh-hide header.site-header,
-html.mh-mini header.site-header,
-html.mh-hide #app .ph.fr-reader-head,
-html.mh-mini #app .ph.fr-reader-head,
-html.mh-hide nav.frthumb,
-html.mh-mini nav.frthumb {
-  transition: transform 0.22s ease;
-}
-html #app .ph.fr-reader-head,
-html header.site-header,
-html nav.frthumb {
-  transition: transform 0.22s ease;
-  will-change: transform;
-}
+   This site has its own masthead above the reader's bar, so the bar has to clear
+   both itself and that masthead, and the masthead has to leave with it. The port
+   moves the reader bar by -101% and knows nothing about ours; these two rules are
+   more specific, so they win, and they say the same thing plus the offset.
+   Anyone who has asked not to see motion sees them cut instead of slide. */
+html header.site-header { transition: transform .28s var(--ease, ease); }
+html body,
+html #app { transition: padding-top .28s var(--ease, ease); }
 html.mh-hide header.site-header,
 html.mh-mini header.site-header { transform: translateY(-101%); }
 html.mh-hide #app .ph.fr-reader-head,
 html.mh-mini #app .ph.fr-reader-head {
   transform: translateY(calc(-101% - var(--mo-head, 61px)));
 }
-html.mh-hide nav.frthumb,
-html.mh-mini nav.frthumb { transform: translateY(101%); }
+/* Both bars are fixed, so the page is padded to start below them: the body by
+   this site's own boot script, which writes the masthead's height as an inline
+   style, and #app by the port, which reserves the reader bar's. Leave those in
+   place and the departing chrome uncovers a blank band 150px deep instead of the
+   text it was covering. They go with it and the prose glides up into the space,
+   which is what the corpus site does on a phone and now what both do everywhere.
+   !important only because an inline style outranks every selector without one. */
+html.mh-hide body,
+html.mh-mini body { padding-top: env(safe-area-inset-top, 0px) !important; }
+html.mh-hide #app,
+html.mh-mini #app { padding-top: env(safe-area-inset-top, 0px); }
 @media (prefers-reduced-motion: reduce) {
-  html #app .ph.fr-reader-head,
-  html header.site-header,
-  html nav.frthumb { transition: none; }
+  html header.site-header, html body, html #app { transition: none; }
+}
 }
 
