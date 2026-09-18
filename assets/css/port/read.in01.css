@@ -2024,9 +2024,16 @@ html:not(.fr-plain) .ph.fr-reader-head{padding:10px 24px;gap:24px;background:var
    bar needs to clear it; everything else is this file's. */
 html.g-mobile.mh-hide .frthumb{transform:translateY(101%)}
 html.mh-mini .ph.fr-reader-head{transform:translateY(-101%)}
+/* The page is held below the bar by .app's own padding, so on a desktop the
+   departing bar uncovered its height in bare ground instead of the text it had
+   been covering. The phone rule above has always given that padding back; this
+   is the other half of it. On this site the skin restates both, because our own
+   masthead pads the body as well and the two have to leave together. */
+html .app{transition:padding-top .28s var(--ease)}
+html.mh-mini .app{padding-top:0}
 @media(prefers-reduced-motion:reduce){
  html:not(.fr-plain) .ph.fr-reader-head{transition:none}
- html.g-mobile .frthumb,html.g-mobile .app{transition:none}
+ html.g-mobile .frthumb,html .app{transition:none}
 }
 html:not(.fr-plain) .fr-reader-head .phl{align-items:center;gap:12px;flex:1;min-width:0}
 html:not(.fr-plain) .fr-reader-head .reader-identity{display:block;min-width:0;flex:1}

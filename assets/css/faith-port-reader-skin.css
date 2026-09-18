@@ -1016,8 +1016,15 @@ html.mh-hide body,
 html.mh-mini body { padding-top: env(safe-area-inset-top, 0px) !important; }
 html.mh-hide #app,
 html.mh-mini #app { padding-top: env(safe-area-inset-top, 0px); }
+/* The reader box is a screen minus our masthead, so moving it up without
+   growing it only moves the blank band from the top of the page to the bottom.
+   It takes the whole screen while the masthead is away. */
+html .faith-port-read-page { transition: height .28s var(--ease, ease); }
+html.mh-hide .faith-port-read-page,
+html.mh-mini .faith-port-read-page { height: 100dvh; }
 @media (prefers-reduced-motion: reduce) {
-  html header.site-header, html body, html #app { transition: none; }
+  html header.site-header, html body, html #app,
+  html .faith-port-read-page { transition: none; }
 }
 }
 
