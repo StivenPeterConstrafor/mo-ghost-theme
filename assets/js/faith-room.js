@@ -1037,7 +1037,6 @@
       // written once and rewriting it mid-gesture is what tore the
       // dropdowns out from under the reader before.
       `<label class="faith-room-select" data-room-denom-wrap hidden><span data-room-denom-label>Denomination</span><select data-room-denom></select></label>`,
-      `<label class="faith-room-select" data-room-party-wrap hidden><span>Within English Divines</span><select data-room-party aria-label="Party within English Divines"></select></label>`,
     ].filter(Boolean).join("");
     const filters = controls
       ? `<div class="faith-room-filters">${controls}${undated ? `<p class="faith-room-undated">${undated.toLocaleString()} works carry no date</p>` : ""}</div>`
@@ -1136,12 +1135,19 @@
     // Denomination filter can hand the reader a series after that. A nav
     // that was never written cannot be shown later, so it is written and
     // hidden, and the block below keeps its name and its state in step.
-    const views = shelf || isAll
+    const views = (shelf || isAll
       ? `<nav class="faith-view-toggle faith-room-views" role="tablist" aria-label="How to browse this collection"${shelf ? "" : " hidden"}>`
         + `<button type="button" class="faith-view-toggle-tab" data-room-view="author" role="tab">By author</button>`
         + `<button type="button" class="faith-view-toggle-tab" data-room-shelf-tab data-room-view="${shelf ? shelf.view : "volume"}" role="tab">${escapeHtml(shelf ? shelf.tab : "By volume")}</button>`
         + `</nav>`
-      : "";
+      : "")
+      // The parties within English Divines, as a row of tabs under the
+      // views — the corpus site's own control for that shelf (All ·
+      // Puritan · Anglican · Westminster Assembly, each with its count).
+      // Written into the shell once and filled by render, like the
+      // views; shown only where English Divines is the denomination in
+      // hand.
+      + `<nav class="faith-view-toggle faith-room-parties" role="tablist" aria-label="Within English Divines" hidden></nav>`;
 
     // What the count reports is whatever the reader is looking at: the
     // works in the collection, the volumes on the shelf, or the works
@@ -1223,21 +1229,27 @@
       if (dSpan && dSpan.textContent !== dLabel) dSpan.textContent = dLabel;
       dWrap.hidden = !denoms.length;
     }
-    // The parties, on the same terms: rewritten only when the option set
-    // differs, shown only when there is one to offer.
-    const pWrap = root.querySelector("[data-room-party-wrap]");
-    const pSel = root.querySelector("[data-room-party]");
-    if (pWrap && pSel) {
-      const pOpts = parties.map(([p, n]) =>
-        `<option value="${escapeHtml(p)}">${escapeHtml(p)} (${n.toLocaleString()})</option>`).join("");
-      const want = parties.length ? `<option value="">All English Divines</option>${pOpts}` : "";
-      if (pSel.innerHTML !== want) pSel.innerHTML = want;
-      pWrap.hidden = !parties.length;
+    // The party tabs: rewritten only when the set differs, marked for the
+    // party in hand, hidden when there is none to offer.
+    const pNav = root.querySelector(".faith-room-parties");
+    if (pNav) {
+      const all = inHand.filter((w) => denomOf(w) === ENGLISH).length;
+      const tab = (key, label, n) => `<button type="button" class="faith-view-toggle-tab" data-room-party-tab="${escapeHtml(key)}" role="tab">${escapeHtml(label)} <em class="faith-room-party-n">${n.toLocaleString()}</em></button>`;
+      const want = parties.length
+        ? tab("", "All English Divines", all) + parties.map(([p, n]) => tab(p, p, n)).join("")
+        : "";
+      if (pNav.innerHTML !== want) pNav.innerHTML = want;
+      pNav.hidden = !parties.length;
+      pNav.querySelectorAll("[data-room-party-tab]").forEach((b) => {
+        const on = b.getAttribute("data-room-party-tab") === party;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-selected", on ? "true" : "false");
+      });
     }
 
     // Keep the selects in step with the state without replacing them.
     [["in", collection], ["cent", century || ""], ["trad", tradition],
-      ["denom", denomination], ["party", party]].forEach(([k, v]) => {
+      ["denom", denomination]].forEach(([k, v]) => {
       const el = root.querySelector(`[data-room-${k}]`);
       if (el && el.value !== String(v)) el.value = String(v);
     });
@@ -1322,7 +1334,21 @@
     // which would otherwise filter to nothing.
     onPick("trad", (v) => { tradition = v; denomination = ""; party = ""; });
     onPick("denom", (v) => { denomination = v; party = ""; });
-    onPick("party", (v) => { party = v; });
+    // The party tabs are rebuilt by render, so the click is caught on
+    // the nav, which is not.
+    const pNav = root.querySelector(".faith-room-parties");
+    if (pNav) {
+      pNav.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-room-party-tab]");
+        if (!b) return;
+        const next = b.getAttribute("data-room-party-tab") || "";
+        if (next === party) return;
+        party = next;
+        letter = "";
+        page = 1;
+        render();
+      });
+    }
     // Switching views drops the other view's place in the shelf: a
     // letter means nothing inside a volume, and a volume means nothing
     // under an A-Z.
