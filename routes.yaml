@@ -288,6 +288,8 @@ routes:
   # were already routed separately further down this file, so nothing
   # was orphaned by the change. See website/handoffs/TFR-REDESIGN.md.
   /the-faith-received/fathers/:
+    template: custom-faith-author
+  /the-faith-received/fathers/reading-guides/:
     template: custom-faith-fathers
   /the-faith-received/all-works/:
     template: custom-faith-centuries
@@ -618,6 +620,8 @@ routes:
   # rather than on our code, so it runs against either reader unchanged.
   # It is green on /reader/ today. When it is green here too, this
   # becomes the route /reader/ points at - and not before.
+  /the-faith-received/review/:
+    template: custom-faith-port-read
   /the-faith-received/readen/:
     template: custom-faith-port-readen
   /the-faith-received/read/:

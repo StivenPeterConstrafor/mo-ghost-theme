@@ -1256,7 +1256,7 @@ function coinsOf(D){
     ["rft.btitle",D.title||""],["rft.title",D.title||""],["rft.au",D.author||""],
     ["rft.pub","The Faith Received"],["rft.language","lat"]];
   if(D.volume)kv.push(["rft.volume",D.volume]);
-  if(D.slug)kv.push(["rft_id","https://thefaithreceived.vercel.app/read?w="+encodeURIComponent(D.slug)]);
+  if(D.slug)kv.push(["rft_id",location.origin+"/the-faith-received/read/?w="+encodeURIComponent(D.slug)]);
   return "url_ver=Z39.88-2004&"+kv.filter(([k,v])=>v).map(([k,v])=>k+"="+encodeURIComponent(v)).join("&");
 }
 const app=$("#app");let DATA=null,STRUCT=false,cur=null,pickFolio=()=>{},_tick=false,_navClickT=0,SECMAP=null,_EN_TITLES=null,_navView="outline";
@@ -4174,7 +4174,7 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
   let pn=null,lastPg=null,relatedSerial=0,relatedController=null;
   const localRelatedPreview=()=>['localhost','127.0.0.1','::1','[::1]'].includes(location.hostname);
   const relatedSlug=()=>new URLSearchParams(location.search).get('w')||DATA?.slug||'';
-  function liveRelatedReader(pg){const url=new URL('/the-faith-received/read/','https://thefaithreceived.vercel.app');url.searchParams.set('w',relatedSlug());if(pg!=null){url.searchParams.set('p',String(pg));url.hash='b'+String(pg)+'-0';}return url.href;}
+  function liveRelatedReader(pg){const url=new URL('/the-faith-received/read/',location.origin);url.searchParams.set('w',relatedSlug());if(pg!=null){url.searchParams.set('p',String(pg));url.hash='b'+String(pg)+'-0';}return url.href;}
   function cancelRelated(){relatedSerial++;relatedController?.abort();relatedController=null;}
   async function relatedJSON(url,signal){const response=await fetch(url,{signal});if(!response.ok){const error=Error('Related service returned HTTP '+response.status);error.status=response.status;throw error;}let data;try{data=await response.json();}catch(_){throw Error('The related service returned an unreadable response.');}if(!data||typeof data!=='object'||Array.isArray(data)||data.error)throw Error('The related service could not return results.');return data;}
   function relatedState(kind,pg,error,retry){
@@ -4377,7 +4377,7 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
         +P.map(x=>card({slug:x.slug,page:x.page},{title:x.title,author:x.author,tradition:x.tradition})).join("")
         +'<button class=rp-refresh id=rpRe>↻ Back to parallels for this page</button>';
       const c=$("#rpCopy");if(c)c.onclick=()=>{
-        const txt=P.map(x=>(x.author?x.author+", ":"")+(x.title||x.slug)+", pg. "+x.page+" — https://thefaithreceived.vercel.app/read?w="+x.slug+"%23b"+x.page+"-0").join("\n");
+        const txt=P.map(x=>(x.author?x.author+", ":"")+(x.title||x.slug)+", pg. "+x.page+" — "+location.origin+"/the-faith-received/read/?w="+x.slug+"%23b"+x.page+"-0").join("\n");
         navigator.clipboard.writeText(txt).then(()=>{c.textContent="✓ copied";setTimeout(()=>{c.textContent="⧉ Copy as citation list";},1200);});};
       hydrate(b);}
     const re=$("#rpRe");if(re)re.onclick=()=>{txtMode=false;if(cur)load(cur);};}

@@ -1,5 +1,6 @@
 {{!< default}}
 {{#contentFor "moHead"}}
+<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=8246d57ce3e7d20c"></script>
 <title>{{#if title}}{{title}} | {{/if}}The Faith Received | Mere Orthodoxy</title>
 {{!-- THE FAMILY IDENTITY AND THE MASTHEAD OFFSET, before the engine runs.
      reader-core.js consumes window.__FR_SITE__ at its first statement, and
@@ -42,7 +43,7 @@
       their notebook there; our CSP refuses the gstatic imports, so today it only
       logs three CSP errors per load and mislabels the notebook "sync
       unavailable". This drops the config while the window between the two files
-      is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}&amp;frv=8618bdf9072bb354"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ff318cb979c1dc92"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=215f1ef6dc2e579f"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
+      is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}&amp;frv=8618bdf9072bb354"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ff318cb979c1dc92"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
 <link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}">
 {{/contentFor}}
 
@@ -214,9 +215,9 @@
      setting a global here would need inline script, which the CSP
      forbids. --}}
 <div id="frPortAssets" hidden
-     data-read-tools="{{asset "js/port/read-tools.js"}}&amp;frv=a99f3692f0401808"
+     data-read-tools="{{asset "js/port/read-tools.js"}}&amp;frv=8ae33809b62afe23"
      data-ask-jobs="{{asset "js/port/ask-jobs.js"}}&amp;frv=408f593670c4a344"></div>
-<script src="{{asset "js/port/reader-core.js"}}&amp;frv=1f681fdf000a5a3f"></script>
+<script src="{{asset "js/port/reader-core.js"}}&amp;frv=ba1fd04e6f79aefc"></script>
 {{!-- The reader's Tools popover writes to OUR stores: the mo-kit bookmark
      All Works draws its row stars from, and the notebook the desk reads. --}}
 <script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
