@@ -27,7 +27,8 @@
       const blob = await response.blob(), objectURL = URL.createObjectURL(blob);
       const save = document.createElement('a');
       save.href = objectURL;
-      save.download = format === 'json' ? 'research-evidence.json' : 'research-report.md';
+      const artifactName = (url.searchParams.get('artifact') || decodeURIComponent(url.pathname.split('/').pop() || '')).split('/').pop().replace(/[^a-zA-Z0-9._ -]/g, '_').slice(0,150);
+      save.download = format === 'json' ? 'research-evidence.json' : format === 'md' ? 'research-report.md' : artifactName || 'research-artifact';
       document.body.appendChild(save); save.click(); save.remove();
       setTimeout(() => URL.revokeObjectURL(objectURL), 60000);
       link.textContent = label;
