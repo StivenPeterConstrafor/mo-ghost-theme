@@ -1,14 +1,10 @@
 {{!< default}}
 {{#contentFor "moHead"}}
-<title>Authors | The Faith Received | Mere Orthodoxy</title>
-<meta name="description" content="Every author in the library, by shelf, and each author’s own room: their works, positions, Scripture, topics, reception and connections, with the passages behind each." />
-{{!-- The family identity the engine reads before it starts, and our
-     masthead's height as --mo-head, so anything fixed can sit under it.
-     Same two jobs as on the ported reader; must load first. --}}
+<title>Compare authors | The Faith Received | Mere Orthodoxy</title>
+<meta name="description" content="Compare authors, with the library’s source passages." />
+
 <script src="{{asset "js/page/faith-port-read-boot.js"}}&amp;frv=af6a3529073948b4"></script>
-{{!-- Nothing in this port goes to Vercel Blob (owner 2026-09-10); any
-     Blob address that arrives inside data is rebased onto the library
-     worker at the fetch boundary. Before any module that can fetch. --}}
+
 <script src="{{asset "js/port/fr-noblob.js"}}&amp;frv=a66e16a29a40a4eb"></script>
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap">
@@ -16,39 +12,15 @@
 <link rel="stylesheet" href="{{asset "css/port/scripture-navigation.css"}}&amp;frv=7be6dc0e2f11ae7c">
 <link rel="stylesheet" href="{{asset "css/port/research-experience.css"}}&amp;frv=01ed7f5c4ddf5c2e">
 <script src="{{asset "js/port/research-tools.js"}}&amp;frv=f9f1901f4fa12a78"></script>
-<script src="{{asset "js/port/authors.in01.js"}}&amp;frv=67421059140e7e6c"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}&amp;frv=8618bdf9072bb354"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ff318cb979c1dc92"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=215f1ef6dc2e579f"></script>{{!-- ?a=<folded-name> → the room's slug hash; external, the CSP forbids inline scripts. --}}
-<script src="{{asset "js/port/author-address.js"}}&amp;frv=931bd1d8e0c3a6a4"></script>
-{{!-- Our colour, loaded last so it wins; then the offsets that start
-     this page under our masthead. Keep both last. --}}
+<script src="{{asset "js/port/authors.in01.js"}}&amp;frv=67421059140e7e6c"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}&amp;frv=8618bdf9072bb354"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ff318cb979c1dc92"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=215f1ef6dc2e579f"></script>
+
+
 <link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}">
 <link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}">
 {{/contentFor}}
 
-{{!-- /the-faith-received/author/ — every author's room, ported.
 
-     THE CORPUS SITE'S /authors AND /fathers INSIDE THIS SITE, at the
-     address this site already gave an author. The research shell in its
-     Authors mode: the directory by shelf when there is no hash, and one
-     author's room when there is — Works, Positions, Scripture, Topics,
-     Reception, Connections, Search, and the topic and comparison
-     sub-views — driven by authors.in03.js, the shell's whole engine.
-     Extends `default`; the home link and the bridge bar are gone; the
-     shell's own bar stays — the page name (#pgname, which the router
-     writes), its theme button (#thBtn) and its mode navigation —
-     restyled to sit under our masthead. Every byte of data comes from
-     the library worker on R2: the rooms, the reception shards, the
-     mined positions. Nothing here reaches Blob.
-
-     ?a=<folded-name>, the address this site's own links use, is mapped
-     to the room's slug by the shim in the head (fold-matched against
-     the nine shelf rosters); the corpus site's own form,
-     ?sh=<shelf>#<slug>, works as it is.
-
-     Owner 2026-09-19: "a perfect port of the author page and all its
-     surfaces". That brings back the Positions surface, which was taken
-     off the previous author page on 2026-09-11 because its statements
-     are the mine's paraphrases; here they are shown as the corpus site
-     shows them, each with the page behind it. --}}
+{{#if @member}}
 <script src="{{asset "js/page/faith-port-surface-boot.js"}}&amp;frv=c6ea6e388eea3f2a" data-body-class="research-page"></script>
 <!-- DIRECTION CONTRACT
 THESIS: A research library that leads from authors and questions to inspectable passages.
@@ -79,3 +51,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 <main id="page"><p class="loading">…</p></main>
 <script src="{{asset "js/port/authors.in03.js"}}&amp;frv=996a59fe1f365f9a"></script>
 <script src="{{asset "js/port/authors.in04.js"}}&amp;frv=8d00fd258d7820ab"></script>
+
+{{else}}
+<main class="faith-received">{{> "faith-received/_beta-gate"}}</main>
+{{/if}}

@@ -62,6 +62,7 @@
      means a URL that ALSO carries ?ask= opens once, not twice. --}}
 
 <main class="faith-received faith-ask-page">
+  {{> "faith-received/_beta-gate"}}
   <noscript>
     <div class="container" style="padding:64px 0">
       <h1>Ask the Library</h1>
@@ -72,13 +73,17 @@
   </noscript>
 </main>
 
+<script src="{{asset "js/faith-beta-gate.js"}}"></script>
+{{#if @member}}
 {{!-- Diagrams. Loaded before the engine because the engine's
       updateAnswer calls window.MODiagrams the first time an answer
       paints. It fetches nothing until an answer actually contains a
       diagram, so the ordinary question pays nothing for it. --}}
 <script src="{{asset "js/lib/faith-diagrams.js"}}"></script>
-<script src="{{asset "js/port/ask-store.js"}}"></script>
-<script src="{{asset "js/port/ask-stream.js"}}"></script>
-<script src="{{asset "js/port/ask-jobs.js"}}"></script>
-<script src="{{asset "js/page/faith-ask-config.js"}}"></script><script src="{{asset "js/port/ask-workspace.js"}}"></script>
-<script src="{{asset "js/page/faith-ask-open.js"}}"></script>
+<script src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script>
+<script src="{{asset "js/port/ask-stream.js"}}&amp;frv=432126f06305e46f"></script>
+<script src="{{asset "js/port/ask-jobs.js"}}&amp;frv=408f593670c4a344"></script>
+<script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ff318cb979c1dc92"></script><script src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script>
+<script src="{{asset "js/page/faith-ask-open.js"}}&amp;frv=82ae67115addae05"></script>
+
+{{/if}}

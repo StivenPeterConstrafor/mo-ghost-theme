@@ -1,0 +1,246 @@
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   PO EDITORIAL LAYER — soft-editorial design elevation (2026-07).
+   Appended to pg.css (index + reader pages link it) and injected as an inline
+   <style> into search.html / notebook.html (they inline their sheet copy and
+   never link pg.css). ask.html carries its own copy of these tokens.
+   CSS + microinteraction polish ONLY — no DOM contract is touched.
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+/* ── motion + surface tokens: ONE warm top light source; shadows drawn from the
+      paper/ink golds of PO's own palette — never pure black in the light themes ── */
+:root{
+  --ease-premium:cubic-bezier(.32,.72,0,1);   /* house curve — drawers, panels, anything that travels */
+  --ease-out:cubic-bezier(.23,1,.32,1);       /* strong ease-out — entrances */
+  --ease-spring:cubic-bezier(.34,1.56,.64,1); /* gentle-overshoot spring — MICRO interactions only:
+    pills/toasts/popovers arriving (≤200ms) and the :active press on primary CTAs. Never on panels
+    (those keep --ease-premium — a spring on something that travels far reads as jelly, not quality). */
+  --shadow-sm:0 1px 2px rgba(60,45,15,.05);
+  --shadow-md:0 2px 6px rgba(60,45,15,.05),0 10px 28px -18px rgba(60,45,15,.22);
+  --shadow-lg:0 4px 10px rgba(60,45,15,.06),0 18px 44px -22px rgba(60,45,15,.3);
+  --bezel-hi:inset 0 1px 0 rgba(255,255,255,.55);   /* print-shop matting: faint top highlight inside the hairline ring */
+}
+/* quiet the muted-text tier from 5.15:1 to ~4.86:1 against --bg (measured; stays ≥4.6, never
+   below) — scoped to PO only, light theme only (dark's 8:1 baseline is a much larger jump to
+   move and this is unverified without a live rebuild, so it is left as-is by design). */
+:root[data-site="the-faith-received"]{--muted:#5A5A56}
+[data-theme="dark"]{
+  --shadow-sm:0 1px 2px rgba(0,0,0,.28);
+  --shadow-md:0 2px 6px rgba(0,0,0,.26),0 10px 28px -18px rgba(0,0,0,.55);
+  --shadow-lg:0 4px 10px rgba(0,0,0,.3),0 18px 44px -22px rgba(0,0,0,.65);
+  --bezel-hi:inset 0 1px 0 rgba(255,255,255,.045);
+}
+
+/* ── paper grain — one fixed film to break digital flatness (pointer-events:none,
+      never on a scrolling container; hidden in print) ── */
+body::after{
+  content:""; position:fixed; inset:0; z-index:9999; pointer-events:none; opacity:.03;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat:repeat;
+}
+[data-theme="dark"] body::after{opacity:.035}
+@media print{body::after{display:none}}
+
+/* ── shadow audit: every pure-black rgba on the light themes → warm ink, one top light ── */
+.scroll-top{box-shadow:0 2px 8px rgba(60,45,15,.24)}
+.scroll-top:hover{box-shadow:0 6px 18px rgba(60,45,15,.32)}
+.study-toggle,.sb-mtoggle{box-shadow:0 1px 6px rgba(60,45,15,.2)}
+.study-panel{box-shadow:-2px 0 12px rgba(60,45,15,.12)}
+.sp-close,.tr-pencil,.note-pencil{box-shadow:0 1px 4px rgba(60,45,15,.16)}
+.ct-panel{box-shadow:0 0 44px -10px rgba(45,35,12,.42)}
+.findbar{box-shadow:0 6px 24px rgba(45,35,12,.18),0 1px 3px rgba(45,35,12,.09)}
+.facs-toolbar .sld{box-shadow:0 2px 8px rgba(60,45,15,.14)}
+body.sb-open .sidebar{box-shadow:2px 0 16px rgba(45,35,12,.28)}
+/* study.css ties (it loads after pg.css) — body-prefixed so these win without !important */
+body .sel-popup{box-shadow:var(--shadow-lg),var(--bezel-hi);border-radius:9px}
+body .nb-toggle{box-shadow:0 2px 8px rgba(60,45,15,.2)}
+body .nb-panel{box-shadow:-4px 0 20px rgba(60,45,15,.14)}
+body .modal-box{box-shadow:var(--shadow-lg)}
+/* modal/lightbox scrims: warm near-black instead of flat #000 (still reads as "dimmed") */
+body .modal-overlay{background:rgba(20,14,4,.42)}
+body .facs-light img{box-shadow:0 30px 80px -20px rgba(20,14,4,.55)}
+body .pv-page{box-shadow:0 1px 4px rgba(60,45,15,.07)}
+
+/* ── quiet double-bezel matting on the key panels: hairline ring + inset top highlight
+      + one diffuse warm shadow — print-shop matting, never tech glass ── */
+body .dash-card{box-shadow:var(--bezel-hi),var(--shadow-md)}
+body .hsearch{box-shadow:var(--bezel-hi),0 1px 2px rgba(60,45,15,.05),0 6px 20px rgba(60,45,15,.08)}
+body .hsearch:focus-within{box-shadow:var(--bezel-hi),0 0 0 3px var(--accent-tint,color-mix(in srgb,var(--accent) 16%,transparent)),0 8px 24px rgba(60,45,15,.12)}
+body .qc,body .tc{background:var(--card);box-shadow:var(--bezel-hi),var(--shadow-sm)}
+body #semResults .sr{box-shadow:var(--bezel-hi),var(--shadow-sm)}
+
+/* ── motion: the premium curve on everything that travels; exits FASTER than enters ── */
+.facs{transition:transform .3s var(--ease-premium)}
+.ct-panel{transition:transform .19s var(--ease-premium)}
+.ct-panel.open{transition-duration:.26s}
+.study-panel{transition:transform .19s var(--ease-premium)}
+.study-panel.open{transition-duration:.26s}
+.study-toggle{transition:right .24s var(--ease-premium)}
+body .nb-panel{transition:right .19s var(--ease-premium)}
+body .nb-panel.open{transition-duration:.26s}
+.ct-overlay{transition:opacity .15s var(--ease-out)}
+.ct-overlay.open{transition-duration:.22s}
+.study-backdrop{transition:opacity .15s var(--ease-out)}
+.study-backdrop.on{transition-duration:.22s}
+
+/* ── press feedback: unified tactile scale(.96) (house standard), added where missing ── */
+.auth-x:active{transform:scale(.96)}
+.tabbar button,.mode-tabs button{transition:color .15s var(--ease),border-color .15s var(--ease),transform .14s var(--ease)}
+.tabbar button:active,.mode-tabs button:active,.entoggle button:active{transform:scale(.96)}
+.dash-chip:active{transform:scale(.96)}
+.vol-cell:active{transform:translateY(0) scale(.97)}
+body .nbp-tools button:active,body .pass-add button:active,body .nb-tools button:active,
+body .sel-popup button:active,body .display-controls button:active{transform:scale(.96)}
+body .qc-acts button:hover,body .tc-actions button:hover,body .nb-item-actions button:hover{color:var(--accent)}
+
+/* ── primary-CTA press: the one place the spring shows — a hair of overshoot on release,
+      never on the many quiet secondary controls above (those stay the calm .96/--ease house feel) ── */
+body .pri,body .modal-save.primary,body .auth-g,body .comp-send{
+  transition:transform .18s var(--ease-spring),background .14s,border-color .14s}
+body .pri:active,body .modal-save.primary:active,body .auth-g:active,body .comp-send:active{transform:scale(.97)}
+
+/* ── micro-pop: gentle-overshoot entrance for small elements that ARRIVE (pills, toasts,
+      popovers) — an animation (not a transition) so it fires the instant display flips on,
+      no two-frame dance required. ≤200ms, motion-gated, opacity+scale only. ── */
+@media (prefers-reduced-motion: no-preference){
+  @keyframes po-pop-in{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+  .po-pop-in{animation:po-pop-in .16s var(--ease-spring)}
+}
+
+/* ── a11y: focus rings on the remaining interactives (select/textarea) ── */
+:where(select,textarea):focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--radius-sm,5px)}
+
+/* ── loading states shimmer softly instead of sitting flat (reduced-motion keeps
+      the plain text; body-prefixed to win each page's own colour without !important) ── */
+@media (prefers-reduced-motion: no-preference){
+  body .sbusy,body .loading,body .nav-loading{
+    background:linear-gradient(90deg,var(--muted) 38%,var(--accent) 50%,var(--muted) 62%);
+    background-size:220% 100%;-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;
+    animation:po-shimmer 2.4s linear infinite;
+  }
+  @keyframes po-shimmer{from{background-position:130% 0}to{background-position:-130% 0}}
+}
+
+/* ── entrance reveal (classes set by the PO reveal script via IntersectionObserver;
+      transform/opacity only; the hidden state exists ONLY when motion is welcome) ── */
+@media (prefers-reduced-motion: no-preference){
+  .rv{opacity:0;transform:translateY(13px)}
+  .rv.rv-in{opacity:1;transform:none;
+    transition:opacity .55s var(--ease-out),transform .55s var(--ease-out);
+    transition-delay:var(--rv-d,0ms)}
+}
+/* smooth scrolling opts out with the user (pg.css sets html{scroll-behavior:smooth}) */
+@media (prefers-reduced-motion:reduce){.faith-port-search-page{scroll-behavior:auto}}
+
+/* ── landing whitespace: the hero + card grids breathe a step more (calm-expensive pass,
+      DENSITY 3) — +35%/+36% over pg.css's base 2.6rem/2.2rem. Sized to still clear the fold
+      at 1440×900 and 390×844 (the hero's own content is short) — re-check against the live
+      rebuild before shipping; dial back to +25% (3.25rem/2.75rem) if it doesn't. Chrome only —
+      the reading column (.po-wrap/.dt-*) is deliberately NOT touched by this rule. ── */
+body .hero{padding:3.5rem 0 3rem}
+body .dash-grid{gap:1.35rem}
+body .dash-card{padding:1.2rem 1.35rem}
+
+/* ── typography: display presence, balanced heads, tidy numerals ── */
+.hero h1{font-size:clamp(2.5rem,5.2vw,3.7rem);letter-spacing:-.02em}
+.hero .sub{text-wrap:balance}
+.hq-src,.hq-en{hanging-punctuation:first}
+/* the credits colophon reads as one settled paragraph, not a full-bleed strip */
+.credits-note{max-width:70ch;margin-left:auto;margin-right:auto}
+.faith-port-search-page main>h1{font-family:var(--font-display);font-weight:400;font-size:clamp(1.85rem,4vw,2.5rem);
+  line-height:1.12;letter-spacing:-.015em;text-wrap:balance;margin:.4rem 0 .7rem}
+.shint,.doc-intro,.nb-empty,.cs-empty,.sem-status,.pass-msg{text-wrap:pretty}
+.pf-section h2,.sem-section h2{text-wrap:balance}
+.vol-cell .vc{font-variant-numeric:tabular-nums}
+/* citation examples + shortcut keys read as quiet print chips */
+code{font-family:var(--font-ui);font-size:.85em;background:color-mix(in oklch,var(--fg) 6%,transparent);
+  border:1px solid var(--border);border-radius:5px;padding:.05em .34em;white-space:nowrap}
+kbd{font:600 .78em var(--font-ui);background:var(--card);border:1px solid var(--border);
+  border-bottom-width:2px;border-radius:5px;padding:.08em .42em;white-space:nowrap;box-shadow:var(--bezel-hi)}
+
+/* ── optical: comfortable hit areas on the small close/step controls (pseudo-element
+      extension — the visual stays quiet, the target grows) ── */
+.ct-close,.nb-close,.facs-close,.findbar button{position:relative}
+.ct-close::after,.nb-close::after,.facs-close::after{content:"";position:absolute;inset:-8px}
+.findbar button::after{content:"";position:absolute;inset:-5px}
+
+/* ── PO DESKTOP CONTROL POLISH (TFR parity, 2026-07-04) ── */
+#displayBar .dt-modeseg button,#displayBar #facsBtn,#displayBar button{height:32px;box-sizing:border-box;border-radius:7px}
+#displayBar .dt-modeseg{border-radius:7px}
+#displayBar #facsBtn:not(.active){border-color:transparent;background:none}
+#displayBar #facsBtn:not(.active):hover{border-color:var(--border)}
+.dt-pn,.facs-pages,.facs-nav,.dt-cite,.rel-cit{font-variant-numeric:tabular-nums}
+.faith-port-search-page button:focus-visible,.faith-port-search-page a:focus-visible,.faith-port-search-page input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+
+/* ── PO READING TYPOGRAPHY (design pass 2026-07-04) ── */
+.main,.po-wrap{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-optical-sizing:auto}
+#poText .dt-src,#poText .dt-tr{text-wrap:pretty}
+.po-rhead h1{text-wrap:balance}
+.po-wrap a{text-underline-offset:.15em;text-decoration-thickness:1px}
+::selection{background:color-mix(in oklch,var(--accent,#9a7b1f) 22%,transparent)}
+/* the phone reads at an editorial article size (TGC / Christianity Today model):
+   a smaller, tighter measure than desktop — calm and compact, never ballooned. */
+html.po-mobile #poText{font-size:15px;line-height:1.6}
+html.po-mobile #poText .dt-pg{margin-bottom:1rem;padding-top:.9rem}
+html.po-mobile .po-rhead h1{font-size:1.02rem;line-height:1.3}
+/* Phone = a reading web-app: the bottom thumb bar IS the navigation (mode via
+   _poSetMode, Contents, Find, Search). Retire the full desktop control panel and the
+   edge pull-tabs so the reading surface owns the screen. */
+html.po-mobile #displayBar{display:none!important}
+html.po-mobile .sb-mtoggle,html.po-mobile .study-toggle,html.po-mobile .por-tab{display:none!important}
+
+
+/* Library shelves, clear scope, and bounded research results. */
+.matching-sections{margin:0 10px 12px}.matching-sections>summary{min-height:44px;padding:10px 0;font:14px var(--font-ui);cursor:pointer}
+
+.group-controls{display:flex;gap:16px;margin:4px 0 10px}.group-controls[hidden]{display:none}.group-controls button{min-height:44px;border:0;background:none;color:var(--fg);text-decoration:underline;text-underline-offset:4px;font:14px var(--font-ui);cursor:pointer}
+
+.results-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-block:1px solid var(--border);margin:8px 0 12px}.results-pager[hidden]{display:none}.results-pager span{font:13px/1.45 var(--font-ui);text-align:center;color:var(--muted)}
+.results-pager button,.location-pager button,#meaningBroaden{min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:5px;background:var(--card);color:var(--fg);font:14px var(--font-ui);cursor:pointer}.results-pager button:disabled,.location-pager button:disabled{opacity:.45;cursor:default}.location-pager{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:10px 0;font:12px var(--font-ui)}#meaningBroaden{margin:0 0 12px}
+
+#searchTheme{margin-left:auto;min-width:44px;min-height:44px;border:1px solid var(--border);border-radius:5px;background:var(--card);color:var(--fg);font:14px var(--font-ui);cursor:pointer}
+.search-result{border-bottom:1px solid var(--border)}#results .search-result .sr{border-bottom:0;padding-right:12px}
+.search-save{min-height:44px;padding:6px 10px;margin:0 0 8px;border:0;background:none;color:var(--fg);font:13px var(--font-ui);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+.shelf-controls{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin:18px 0 12px}
+.shelf-controls>label{display:flex;flex-direction:column;gap:5px;min-width:240px;font:14px/1.4 var(--font-ui);color:var(--muted)}
+.shelf-controls .scope-toggle{display:inline-flex;width:auto;margin:0;min-height:44px;align-items:center;padding:9px 14px;border:1px solid var(--border);border-radius:5px;background:var(--card);color:var(--fg);font:14px/1.4 var(--font-ui);cursor:pointer}
+#scopeWrap[hidden]{display:none!important}#scopeWrap:not([hidden]){display:block}
+#facets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:0 0 14px}
+#facets label{display:flex;flex-direction:column;gap:5px;min-width:0;font:14px/1.4 var(--font-ui);color:var(--muted)}
+#facets input,#facets select,#fTrad{width:100%;min-height:44px;font:16px/1.4 var(--font-ui);padding:9px 11px;background:var(--card);color:var(--fg);border:1px solid var(--control-border,var(--border));border-radius:5px}
+#fClear{min-height:44px;background:none;color:var(--fg);font:14px var(--font-ui)}
+#q{font-size:18px;min-height:48px}#runSearch{min-width:76px;min-height:48px}
+#results{max-height:min(70dvh,900px);overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:2px 8px 16px 2px}
+#results .sr{margin:0;border:0;border-bottom:1px solid var(--border);border-radius:0;padding:16px 46px 16px 10px}
+#results .sr>div:not(.sr-cite):not(.sr-ex){font-size:19px;line-height:1.4}
+#results .sr-ex{font-size:16px;line-height:1.6}
+.scripture-context,.search-guidance,.search-warning{font:14px/1.6 var(--font-ui);color:var(--muted)}
+.scripture-context{padding:6px 4px 18px}.scripture-context a{text-decoration:underline;text-underline-offset:3px;display:inline-flex;align-items:center;min-height:44px;color:var(--fg)}
+.scripture-work{border-top:1px solid var(--border);padding:0 4px}
+.scripture-work>summary{list-style:disclosure-closed;cursor:pointer;min-height:52px;padding:14px 4px;font:500 19px/1.45 var(--font-body)}
+.scripture-work[open]>summary{list-style:disclosure-open}.scripture-work>summary span{display:block;font:13px/1.5 var(--font-ui);color:var(--muted);margin-top:6px}
+.scripture-more,.sr-more,#retrySearch{min-height:44px;padding:10px 14px;margin:10px 0;border:1px solid var(--border);border-radius:5px;background:var(--card);color:var(--fg);font:14px var(--font-ui);cursor:pointer}
+#results .sb-chip{min-height:44px;font-size:16px;white-space:normal}#results .sb-grid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr))}
+.smodes button,.passage-method button,#densityBtn{min-height:44px}#results .pinstar{min-width:44px;min-height:44px}
+@media(max-width:640px){.main{padding:20px 16px}.shelf-controls{gap:8px}.shelf-controls>label{flex:1;min-width:190px}.shelf-controls .scope-toggle{font-size:13px}#facets{grid-template-columns:1fr}#q{font-size:16px}#results{max-height:60dvh}.scripture-work>summary{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.faith-port-search-page{scroll-behavior:auto}}
+
+.organize-label{display:flex;align-items:center;gap:8px;font:13px var(--font-ui);color:var(--muted)}.organize-label select{min-height:44px;font:14px var(--font-ui);padding:8px;border:1px solid var(--border);border-radius:5px;background:var(--card);color:var(--fg)}
+.result-shelf{margin:8px 0;border-top:1px solid var(--border)}.result-shelf>summary{font:500 23px/1.3 var(--font-display);padding:14px 4px;cursor:pointer;min-height:48px}
+.result-author{margin:0 0 12px}.result-author>summary{font:600 17px/1.5 var(--font-ui);padding:12px 6px;cursor:pointer;min-height:48px;border-bottom:1px solid var(--border)}
+.result-author>.scripture-work,.result-author>.search-work-block{margin-left:10px}.shelf-controls>label{min-width:200px}.shelf-controls>label[for=fGroup]{min-width:175px}
+@media(max-width:640px){.shelf-controls{display:grid;grid-template-columns:minmax(0,1fr) auto}.shelf-controls>label[for=fTrad]{grid-column:1/-1}.shelf-controls>label,.shelf-controls>label[for=fGroup]{min-width:0}.count-row{flex-wrap:wrap}.count-row #count{width:100%}.organize-label{flex:1;min-width:0}.organize-label select{min-width:0;width:100%;font-size:16px}.result-author>.scripture-work,.result-author>.search-work-block{margin-left:2px}.result-author>summary{font-size:16px}}
+
+.active-search-scope{font:13px/1.5 var(--font-ui);color:var(--muted);margin:0 0 10px}.active-search-scope[hidden]{display:none}
+#facets #fClear{justify-self:start;width:auto}
+/* Keep the first result in reach; advanced scope and ordering controls fold away. */
+.main>h1{font-size:34px;line-height:1.2;margin:12px 0 18px}.search-site-nav{margin-bottom:8px}
+.shelf-controls{display:flex;align-items:end;gap:10px}.shelf-controls>label{flex:1;max-width:330px;min-width:180px}.shelf-controls .scope-toggle{flex:none}
+#facets{grid-template-columns:repeat(2,minmax(0,1fr))}#facets .organize-label{display:flex;align-items:stretch;flex-direction:column;font-size:14px}
+#facets .organize-label select{font-size:16px;width:100%}
+.scripture-context{display:flex;align-items:start;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:0 4px 8px}.scripture-context>a{flex:1;margin:0}.scripture-context details{max-width:100%;font-size:14px}.scripture-context summary,.search-guidance>summary{cursor:pointer;min-height:44px;padding:10px 0}.scripture-context details[open]{flex-basis:100%}
+.group-controls{align-items:center;flex-wrap:wrap;gap:8px 20px}.group-controls #meaningBroaden{margin:0;padding:6px 0;border:0;background:none;text-decoration:underline;text-underline-offset:4px}.search-guidance{margin:0 4px 8px}
+@media(max-width:640px){.main>h1{font-size:28px;margin:10px 0 14px}.search-site-nav{gap:12px}.shelf-controls{display:grid;grid-template-columns:minmax(0,1fr) auto}.shelf-controls>label[for=fTrad]{grid-column:auto;min-width:0}.shelf-controls .scope-toggle{font-size:13px;padding-inline:8px}.shelf-controls #fClear{grid-column:1/-1;justify-self:start}.count-row #count{width:auto;flex:1;font-size:13px;line-height:1.5}.count-row #densityBtn{flex:none}#facets{grid-template-columns:1fr}.group-controls{gap:8px 16px}.group-controls button,.group-controls #meaningBroaden{font-size:13px}.results-pager span{font-size:12px}}

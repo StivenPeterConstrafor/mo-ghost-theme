@@ -310,9 +310,9 @@ routes:
   # the grouping, since faith-notebook-store.js owns the passages themselves.
   # Desk is where a paper gets written out of them.
   /the-faith-received/compare/:
-    template: custom-faith-compare
+    template: custom-faith-port-compare
   /the-faith-received/pins/:
-    template: custom-faith-pins
+    template: custom-faith-port-pins
   # /desk/ is the corpus site's writing desk, ported (custom-faith-port-desk).
   # It was a redirect into /research/#desk, kept for ?doc=<id> links; the
   # ported page reads ?doc= itself, so those links still open their paper.
@@ -358,13 +358,21 @@ routes:
     template: custom-faith-shelf-augustinians
   # One page per author, keyed by ?a=<folded-name>. Rendered at read
   # time: there are 14,000+ names across the seven collections.
+  /the-faith-received/authors/:
+    template: custom-faith-author
+  /the-faith-received/dtc/:
+    template: custom-faith-dictionary
+  /the-faith-received/english-editions/:
+    template: custom-faith-room-english-editions
+  /the-faith-received/topics/reading-guides/:
+    template: custom-faith-topics
   /the-faith-received/author/:
     template: custom-faith-author
   # Feature pages
   /the-faith-received/transparency/:
     template: custom-faith-transparency
   /the-faith-received/search/:
-    template: custom-faith-search
+    template: custom-faith-port-search
   # A question answered from the library with citations - POSTs to
   # mo-tfr-library's /v1/ask. See website/workers/tfr-library/lib/ask.js.
   /the-faith-received/ask/:
@@ -419,7 +427,7 @@ routes:
   /the-faith-received/doctrines/:
     template: custom-faith-doctrines
   /the-faith-received/topics/:
-    template: custom-faith-topics
+    template: custom-faith-port-topics
   /the-faith-received/topics/god-and-trinity/:
     template: custom-faith-topic-god-and-trinity
   /the-faith-received/topics/scripture-and-revelation/:
@@ -610,6 +618,8 @@ routes:
   # rather than on our code, so it runs against either reader unchanged.
   # It is green on /reader/ today. When it is green here too, this
   # becomes the route /reader/ points at - and not before.
+  /the-faith-received/readen/:
+    template: custom-faith-port-readen
   /the-faith-received/read/:
     template: custom-faith-port-read
 

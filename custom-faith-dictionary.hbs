@@ -5,15 +5,15 @@
 {{!-- The family identity the engine reads before it starts, and our
      masthead's height as --mo-head, so anything fixed can sit under it.
      Same two jobs as on the ported reader; must load first. --}}
-<script src="{{asset "js/page/faith-port-read-boot.js"}}"></script>
+<script src="{{asset "js/page/faith-port-read-boot.js"}}&amp;frv=af6a3529073948b4"></script>
 {{!-- Nothing in this port goes to Vercel Blob (owner 2026-09-10); any
      Blob address that arrives inside data is rebased onto the library
      worker at the fetch boundary. Before any module that can fetch. --}}
-<script src="{{asset "js/port/fr-noblob.js"}}"></script>
+<script src="{{asset "js/port/fr-noblob.js"}}&amp;frv=a66e16a29a40a4eb"></script>
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232A231D'/%3E%3Ctext x='33' y='46' font-family='Georgia,serif' font-style='italic' font-size='40' fill='%23F4EDE0' text-anchor='middle'%3ED%3C/text%3E%3Crect x='14' y='52' width='36' height='3' rx='1.5' fill='%23A94F35'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="{{asset "css/port/dtc.in01.css"}}&amp;frv=217a9e2900c1b62f">
-<script src="{{asset "js/port/dtc.in01.js"}}&amp;frv=169d27c0fd6ecde8"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=2525e1eeb0d5bc93"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}&amp;frv=2f2b319def822611"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=3890ad67d3b2bfad"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=215f1ef6dc2e579f"></script>
+<script src="{{asset "js/port/dtc.in01.js"}}&amp;frv=169d27c0fd6ecde8"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}&amp;frv=8618bdf9072bb354"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ff318cb979c1dc92"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=215f1ef6dc2e579f"></script>
 {{!-- Our colour, loaded last so it wins; then the offsets that start
      this page under our masthead. Keep both last. --}}
 <link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}">
@@ -39,7 +39,7 @@
      corpus site's page. The previous dictionary (faith-dictionary.js and
      the _dictionary partial, translate-on-open through the library
      worker) is unmounted, not deleted. --}}
-<script src="{{asset "js/page/faith-port-surface-boot.js"}}" data-body-class="dtc-page"></script>
+<script src="{{asset "js/page/faith-port-surface-boot.js"}}&amp;frv=c6ea6e388eea3f2a" data-body-class="dtc-page"></script>
 <div class="faith-port-dtc-page">
 <header class="top">
   <span class="wm">Dictionnaire de Théologie Catholique</span>

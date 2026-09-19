@@ -111,6 +111,31 @@
 
   /* ---- Browse the shelves ------------------------------------------ */
 
+  // The source library's nine shelf research doors. The code travels with
+  // each link so moving from the catalogue to research keeps its scope.
+  const RESEARCH_SHELVES = {
+    "Latin Fathers": "pl", "Greek Fathers": "gf", "Eastern Fathers": "po",
+    "Medieval": "md", "Roman Catholic": "rc", "Reformed": "rf",
+    "Continental Reformed": "rf", "English Divines": "ed", "Lutheran": "lu",
+    "Humanism and Law": "hl"
+  };
+  function studyShelf(name) {
+    const sh = RESEARCH_SHELVES[name];
+    if (!sh) return "";
+    const base = "/the-faith-received/";
+    const trad = name === "Reformed" ? "Continental Reformed" : name;
+    return `<details class="fro-study"><summary>Study this shelf</summary>` +
+      `<nav aria-label="Study ${esc(name)}">` +
+      `<a href="${base}ask/?trad=${encodeURIComponent(trad)}">Ask this shelf</a>` +
+      `<a href="${base}bible/?sh=${sh}">Scripture</a>` +
+      `<a href="${base}author/?sh=${sh}">Authors</a>` +
+      `<a href="${base}topics/?sh=${sh}">Topics</a>` +
+      `<a href="${base}web/">The Web</a>` +
+      `<a href="${base}dictionary/">Dictionnaire de Théologie Catholique</a>` +
+      `</nav></details>`;
+  }
+
+
   // A catalogue's stand-in for a name it does not have. Naming these
   // under a shelf tells a reader nothing, and "Unknown author · Editors ·
   // Various authors" under the Latin Fathers is worse than no line at
@@ -232,7 +257,7 @@
         `<span class="fro-shelf-row">` +
         `<span class="fro-shelf-name">${esc(s.name)}</span>` +
         `<span class="fro-shelf-n"><b>${num(s.n)}</b> ${s.n === 1 ? "work" : "works"}</span>` +
-        `</span>${under}</a>${within}</li>`;
+        `</span>${under}</a>${within}${studyShelf(s.name)}</li>`;
     }).join("");
 
     // No aggregate work count in the heading. Only a work with a declared

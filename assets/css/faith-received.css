@@ -17275,3 +17275,11 @@ a.fr-btn:hover,
 .bcolls--grouped .bcoll-group{grid-column:1/-1;margin:.9rem 0 .1rem}
 .bcolls--grouped .bcoll-group:first-child{margin-top:0}
 .bcolls--grouped .tfr-browse-all{grid-column:1/-1;margin:-.4rem 0 .4rem}
+
+/* Shelf research doors retain the source shelf while using MereO's type and rules. */
+.fro-study { margin-top: .65rem; border-top: 1px solid var(--border, #ddd2c4); padding-top: .5rem; }
+.fro-study summary { cursor: pointer; font-size: .85rem; }
+.fro-study nav { display: flex; flex-wrap: wrap; gap: .5rem 1rem; padding: .75rem 0 .25rem; }
+.fro-study nav a { font-size: .85rem; text-decoration: underline; text-underline-offset: .2em; }
+.faith-surface-links { display: flex; flex-wrap: wrap; gap: .65rem 1.25rem; margin-top: 1.5rem; }
+.faith-surface-links a { text-decoration: underline; text-underline-offset: .2em; }

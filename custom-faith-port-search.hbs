@@ -1,0 +1,62 @@
+{{!< default}}
+{{#contentFor "moHead"}}
+{{#if @member}}
+<script src="{{asset "js/page/faith-port-read-boot.js"}}&amp;frv=af6a3529073948b4"></script>
+<script src="{{asset "js/port/fr-noblob.js"}}&amp;frv=a66e16a29a40a4eb"></script>
+<script src="{{asset "js/page/faith-port-auth.js"}}&amp;frv=398bc7f5e0b56b7c"></script>
+
+
+<link rel="preconnect" href="https://mo-tfr-library.mo-podcast-feed.workers.dev" crossorigin>
+<title>Search | The Faith Received | Mere Orthodoxy</title><link rel="stylesheet" href="{{asset "css/port/prdl-system.css"}}&amp;frv=773f88d15ebcac8e"><link rel="stylesheet" href="{{asset "css/port/search.in01.css"}}&amp;frv=4849840ce5b36c5f"><script src="{{asset "js/port/search.in01.js"}}&amp;frv=86ef930cbafc24de"></script>
+<link rel="stylesheet" href="{{asset "css/port/search.in02.css"}}&amp;frv=2b86808ad2adbe06"><link rel="stylesheet" href="{{asset "css/port/search.in03.css"}}&amp;frv=774e5be1c6393c3b"><script src="{{asset "js/port/search.in02.js"}}&amp;frv=30e57166fb43c448"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}&amp;frv=8618bdf9072bb354"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ff318cb979c1dc92"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=215f1ef6dc2e579f"></script><script src="{{asset "js/port/fr-noblob.js"}}&amp;frv=a66e16a29a40a4eb"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer:ital@0;1&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}">
+<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}">
+{{/if}}
+{{/contentFor}}
+{{#if @member}}
+<div class="faith-port-search-page">
+
+<a class="skip-link" href="#main">Skip to text</a><main class="main" id="main"><link rel="stylesheet" href="{{asset "css/port/search.in04.css"}}&amp;frv=f6bb85f15374fe45">
+<nav class="search-site-nav" aria-label="Site navigation"><a class="fr-home-link" data-fr-home href="/the-faith-received/library/" aria-label="Back to library"><span class="fr-home-wide">← The Faith Received</span><span class="fr-home-compact"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</span></a><a href="/the-faith-received/pins/">Collections</a><a href="/the-faith-received/dictionary/">Dictionary</a><button type="button" id="searchTheme" aria-label="Change reading theme">Theme</button></nav>
+<h1 style="color:var(--accent);text-wrap:balance">Search The Faith Received</h1>
+<div class="smodes-wrap"><div class="smodes" role="group" aria-label="Search mode">
+  <button data-m="title" class="active sm-core" aria-pressed="true" title="Find a work, author, or section">Works</button>
+  <button data-m="full" class="sm-core" aria-pressed="false" title="Find passages in the texts">Passages</button>
+  <button data-m="scripture" class="sm-core" aria-pressed="false" title="Find indexed references to a Bible passage">Scripture</button>
+  <button data-m="ask" class="sm-core" aria-pressed="false" title="Ask a question of the library">Ask</button>
+</div></div>
+<div id="passageMethod" class="passage-method" role="group" aria-label="Find passages by" hidden><button type="button" data-passage="full" aria-pressed="true">Exact words</button><button type="button" data-passage="meaning" aria-pressed="false">By idea</button></div>
+<div class="search-query"><input class="search-box" id="q" placeholder="Find a work or author" aria-label="Search the library" enterkeyhint="search" autocomplete="off" type="search"><button type="button" id="runSearch">Search</button></div>
+<div class="shint" id="hint"></div>
+<div class="shelf-controls"><label for="fTrad">Shelf<select class="fac-sel" id="fTrad" aria-label="Shelf"><option value="">All shelves</option></select></label><button type="button" class="scope-toggle" id="scopeToggle" aria-controls="scopeWrap" aria-expanded="false">Filters &amp; order <span id="stSum"></span></button></div>
+<p class="active-search-scope" id="activeSearchScope" hidden></p>
+<div class="scope-wrap" id="scopeWrap" hidden>
+<div class="facets" id="facets">
+<label>Author<input class="fac-in" id="fAuthor" list="facAuthors" placeholder="Name or part of a name" autocomplete="off"></label><datalist id="facAuthors"></datalist>
+<label>Work<input class="fac-in" id="fWork" list="facWorks" placeholder="Title or part of a title" autocomplete="off"></label><datalist id="facWorks"></datalist>
+<label>Collection<select class="fac-sel" id="fCollection"><option value="">All works</option><option value="confessions">Confessions</option></select></label>
+<label for="fGroup">Group<select class="fac-sel" id="fGroup"><option value="">All groups</option><option value="westminster">Westminster Divines</option><option value="puritan">Puritans</option><option value="anglican">Anglicans</option></select></label><label class="organize-label">Organize<select id="groupOrder"><option value="shelf">Shelf → author → work</option><option value="author">Author → work</option><option value="relevance">Relevance</option></select></label>
+<button type="button" class="fac-x" id="fClear" hidden>Clear filters</button>
+</div>
+<div class="scopebar" id="scopeBar">
+  <input class="scope-in" id="scopeAuthorIn" list="scopeAuthors" placeholder="Scope to author…" autocomplete="off">
+  <datalist id="scopeAuthors"></datalist>
+  <input class="scope-in" id="scopeWorkIn" list="scopeWorks" placeholder="Scope to work…" autocomplete="off">
+  <datalist id="scopeWorks"></datalist>
+  <div class="scope-chips" id="scopeChips"></div>
+</div>
+</div>
+<div class="count-row"><div class="shint" id="count" aria-live="polite" aria-atomic="false"></div><button type="button" class="density-btn" id="densityBtn" aria-pressed="false">Compact</button></div><div id="results" role="region" aria-label="Search results"></div></main>
+<script src="{{asset "js/port/research-tools.js"}}&amp;frv=f9f1901f4fa12a78"></script><script src="{{asset "js/port/search-tools.js"}}&amp;frv=0cfe3dffbf68644e"></script>
+<script src="{{asset "js/port/search.in03.js"}}&amp;frv=8d76453dd62a43dc"></script>
+
+<script src="{{asset "js/port/search.in04.js"}}&amp;frv=403b777ff0059b49"></script>
+
+</div>
+{{else}}
+<main class="faith-received">{{> "faith-received/_beta-gate"}}</main>
+{{/if}}
+{{!-- Source corpus page, kept inside MereO default; edits and data remain on the Ghost/Cloudflare port. --}}

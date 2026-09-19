@@ -1,0 +1,52 @@
+{{!< default}}
+{{#contentFor "moHead"}}
+<meta name="tfr-room-collection" content="mo" />
+<title>Library &mdash; The Faith Received</title>
+<meta name="description" content="The full table of contents for a collection in The Faith Received: every author, every work, in one place." />
+<meta property="og:title" content="Library — The Faith Received" />
+<meta name="twitter:title" content="Library — The Faith Received" />
+{{/contentFor}}
+{{!-- /the-faith-received/room/ — a collection's whole table of contents.
+
+     One route serves all seven collections; which one is read from
+     ?collection= by faith-library-browse.js, the same module that used
+     to drive the Library tab. It groups by author, pages, and draws the
+     A-Z rail. This template supplies the section it binds to and the
+     band language around it.
+
+     Landing here without ?collection= shows the seven collections to
+     choose from, which is the module's own top level. --}}
+
+<main class="faith-received faith-room">
+
+  <section class="bhero bhero--tool">
+    <div class="bhero-inner container">
+      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/browse/">Library</a></p>
+      <h1>The whole table of contents.</h1>
+      <p class="bhero-sub">Every author in the collection, with their works beneath their name. Jump by letter, or search for a name or a title.</p>
+    </div>
+  </section>
+
+  <section class="bband faith-room-body">
+    <div class="container" data-faith-room data-fr-bookmark-rows></div>
+  </section>
+
+{{> "faith-received/_beta-band"}}
+</main>
+{{!-- Sitewide membership CTA. Same partial and same gate as the rest
+     of the site: hidden for paid and comped members, shown to free
+     subscribers and anonymous visitors. --}}
+{{> "faith-received/_library-cta"}}
+
+
+
+<meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
+<script src="{{asset "js/faith-corpora.js"}}"></script>
+<script src="{{asset "js/faith-room.js"}}"></script>
+<script src="{{asset "js/faith-resolve.js"}}"></script>
+{{!-- Bookmark a work from its row. The store first: it is the same
+     mo-kit bookmark the reader's Save button and the Bookmark button at
+     the foot of a section write, so a work saved here and a section
+     saved inside it are one record, not two. --}}
+<script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
+<script src="{{asset "js/faith-work-bookmark-rows.js"}}"></script>

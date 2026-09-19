@@ -291,7 +291,7 @@ function researchLayout(){
  if(page.classList.contains('research-room')&&!page.querySelector('.rx-profile')){const bar=page.querySelector('.ridbar');if(bar){const d=disclosure('rx-profile','About this author');for(const e of [bar.querySelector('.deck'),bar.querySelector('.stats'),page.querySelector('.rx-author-bio')])if(e)d.appendChild(e);bar.after(d);}}
 }
 researchPhone.addEventListener('change',()=>page.querySelectorAll('.rx-secondary,.rx-intro-detail,.rx-profile').forEach(d=>d.open=!researchPhone.matches));
-function researchError(message){page.innerHTML=`<h1>${esc(message)}</h1><p>Your place is saved in the address bar.</p><button class="rx-button" id="retry-research">Retry loading</button> <a href="/${PAGE}">Browse ${PAGE==='topics'?'topics':'authors'}</a>`;$('#retry-research').onclick=route;}
+function researchError(message){page.innerHTML=`<h1>${esc(message)}</h1><p>Your place is saved in the address bar.</p><button class="rx-button" id="retry-research">Retry loading</button> <a href="/the-faith-received/${PAGE === 'fathers' ? 'author' : PAGE}/">Browse ${PAGE==='topics'?'topics':'authors'}</a>`;$('#retry-research').onclick=route;}
 function getRoster(){if(!ROSTER_PROMISE)ROSTER_PROMISE=Promise.all(Object.keys(RX.shelves).map(async sh=>{try{const d=await J(BLOB+'/v1/bible/'+sh+'/rooms/index.json');return {sh,rows:(d.authors||[]).map(r=>({...r,sh})),ok:true};}catch(_){return {sh,rows:[],ok:false};}})).then(parts=>({rows:parts.flatMap(p=>p.rows),missing:parts.filter(p=>!p.ok).map(p=>p.sh)}));return ROSTER_PROMISE;}
 async function authorsIndex(){
  /* AUTHORS BY TRADITION (owner 2026-09-09 "replace /fathers to be authors, group authors by
@@ -1797,7 +1797,7 @@ async function comparePage(){
   const run=researchStart('research-compare');
   const state=cdParse(location.hash);
   const write=st=>{const h=cdHash(st);if(location.hash!==h)history.replaceState(null,'',location.pathname+location.search+h);const button=$('#cd-save');if(button)button.disabled=!st.a.length;};
-  page.innerHTML=`<div class="crumbs"><a href="/the-faith-received/doctrines/">Topics</a> · <a href="/the-faith-received/author/">Authors</a></div>
+  page.innerHTML=`<div class="crumbs"><a href="/the-faith-received/topics/">Topics</a> · <a href="/the-faith-received/author/">Authors</a></div>
   <div class="research-intro cd-intro"><div><h1>Compare</h1><p>Compare authors on a topic, read the passages grouped by work, and bring your findings into the writing desk.</p></div></div>
   <div class="cd-viewbar"><button type="button" class="rx-button" id="cd-save" disabled>Save this view</button><details class="rx-fold cd-saved"><summary><span><strong>Saved views</strong><small id="cd-saved-count"></small></span></summary><div id="cd-saved-list" class="rx-fold-body"></div></details></div>
   <div id="cd-host"><p class="rx-note" role="status">Loading the comparison directory…</p></div>`;
