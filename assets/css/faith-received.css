@@ -16760,6 +16760,21 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   font-size: var(--tfr-micro); font-style: italic; color: var(--color-muted);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+/* A shelf's subsets — the parties within English Divines — set under the
+   shelf's own link as a line of small doors, each into the room cut to
+   that party. Inline, so the shelf's block link rule does not make them
+   rows of their own. */
+.fro-shelf-subs {
+  display: block; margin: -6px 0 14px;
+  font-size: var(--tfr-micro); letter-spacing: 0.04em; color: var(--color-muted);
+}
+.fro-shelf-subs-l { text-transform: uppercase; letter-spacing: 0.16em; margin-right: 10px; }
+.fro-shelf .fro-shelf-sub {
+  display: inline; padding: 0; color: var(--color-dark);
+  border-bottom: 1px solid var(--color-rule);
+}
+.fro-shelf .fro-shelf-sub:hover { color: var(--color-primary); border-color: var(--color-primary); }
+.fro-shelf-sub b { color: var(--color-primary); font-weight: 600; }
 
 @media (max-width: 640px) {
   .faith-room-openers { margin-bottom: 40px; }

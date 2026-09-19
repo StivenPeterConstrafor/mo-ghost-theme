@@ -31,6 +31,32 @@
     "Eastern Fathers": "/the-faith-received/patrologia-orientalis/",
   };
 
+  // English Divines is ONE shelf. Early English Books files its works by
+  // party, Puritan or Anglican, and the Latin Library files the same men
+  // under "English Divines" with the party in a field of its own — three
+  // shelves for one body of divinity, and "Anglican" standing beside
+  // "English Divines" as if it were something else. The room already
+  // reads them as one family (faith-room.js, FAMILY); the strip does the
+  // same, and prints the parties under the shelf as its subsets, each a
+  // door into the room cut to that party. The Westminster Assembly is the
+  // third subset: a body rather than a party, its roster the explicit
+  // list in v1/schools.json, so a work can be Puritan and on it.
+  const FAMILY = { Puritan: "English Divines", Anglican: "English Divines" };
+  const ENGLISH = "English Divines";
+  const ASSEMBLY = "Westminster Assembly";
+  const PARTIES = ["Puritan", "Anglican", ASSEMBLY];
+  function rosterKey(slug) {
+    const m = /^eebo-(\d+)$/.exec(slug);
+    return m ? `eebo|${m[1]}` : `tfr|${slug}`;
+  }
+  function loadRoster() {
+    const tfr = window.MOCorpora.get("tfr");
+    return fetch(`${(tfr && tfr.base) || ""}/v1/schools.json`)
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((d) => new Set((((d || {})[ASSEMBLY] || {}).slugs || []).map((x) => rosterKey(String(x)))))
+      .catch(() => new Set());
+  }
+
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => (
     { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
   ));
@@ -105,20 +131,26 @@
   // tradition sits under a parent the shelf keeps its own name and the
   // parent becomes the group it prints under, so "English Divines" reads
   // as itself rather than disappearing into "Protestant".
-  function shelves(works) {
+  function shelves(works, roster) {
     const by = new Map();
 
     works.forEach((w) => {
-      const t = String(w.tradition || "").trim();
+      let t = String(w.tradition || "").trim();
       if (!t) return;
+      let parent = (window.MOCorpora.traditionParent
+        ? window.MOCorpora.traditionParent(t, w.corpus) : "") || "";
+      // The party, then the family it files under.
+      let party = "";
+      if (FAMILY[t] && parent === "Protestant") { party = t; t = FAMILY[t]; }
+      else if (t === ENGLISH) party = String(w.party || "").trim();
       let s = by.get(t);
       if (!s) {
-        const parent = (window.MOCorpora.traditionParent
-          ? window.MOCorpora.traditionParent(t, w.corpus) : "") || "";
-        s = { name: t, parent, n: 0, authors: new Map() };
+        s = { name: t, parent, n: 0, authors: new Map(), parties: new Map() };
         by.set(t, s);
       }
       s.n++;
+      if (party) s.parties.set(party, (s.parties.get(party) || 0) + 1);
+      if (roster && roster.has(`${w.corpus}|${w.id}`)) s.parties.set(ASSEMBLY, (s.parties.get(ASSEMBLY) || 0) + 1);
       const a = String(w.author || "").trim();
       if (a && !PLACEHOLDER.test(a)) s.authors.set(a, (s.authors.get(a) || 0) + 1);
     });
@@ -166,11 +198,23 @@
           + `${s.authors.size > names.length ? " · …" : ""}</span>`
         : "";
 
+      // The subsets of a shelf that has them, each its own door: the
+      // room cut to that party. Outside the shelf's own link, because a
+      // link inside a link is not markup.
+      const subs = PARTIES.filter((p) => s.parties.get(p)).map((p) => {
+        const pq = new URLSearchParams(q);
+        pq.set("party", p);
+        return `<a class="fro-shelf-sub" href="?${esc(pq.toString())}">${esc(p)} <b>${num(s.parties.get(p))}</b></a>`;
+      });
+      const within = subs.length
+        ? `<span class="fro-shelf-subs"><span class="fro-shelf-subs-l">Within</span>${subs.join('<span class="fro-shelf-sep"> · </span>')}</span>`
+        : "";
+
       return `<li class="fro-shelf"><a href="${esc(href)}">` +
         `<span class="fro-shelf-row">` +
         `<span class="fro-shelf-name">${esc(s.name)}</span>` +
         `<span class="fro-shelf-n"><b>${num(s.n)}</b> ${s.n === 1 ? "work" : "works"}</span>` +
-        `</span>${under}</a></li>`;
+        `</span>${under}</a>${within}</li>`;
     }).join("");
 
     // No aggregate work count in the heading. Only a work with a declared
@@ -197,9 +241,12 @@
   const first = continueReading();
   if (first) root.innerHTML = first;
 
-  Promise.all(ALL.map((id) => window.MOCorpora.load(id).catch(() => [])))
-    .then((sets) => {
-      const html = first + shelves(sets.flat());
+  Promise.all([
+    Promise.all(ALL.map((id) => window.MOCorpora.load(id).catch(() => []))),
+    loadRoster(),
+  ])
+    .then(([sets, roster]) => {
+      const html = first + shelves(sets.flat(), roster);
       if (html) root.innerHTML = html;
       else root.remove();
     })
