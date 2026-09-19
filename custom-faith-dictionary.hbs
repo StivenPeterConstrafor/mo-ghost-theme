@@ -30,8 +30,10 @@
      contents popover, previous/next, the reading-size control — driven
      by dtc.in02.js, the page's own engine. Extends `default`; the page's
      own top bar stays under our masthead. The 1,916 articles and the
-     index are read from R2 through the mo-tfr worker (the library
-     worker refuses /v1/dtc/ by design: see tfr-library/worker.js).
+     index are read from R2 through the library worker at v1/dictionary/
+     — a copy of v1/dtc/, which that worker refuses by design (its
+     reading of those files as raw French; see tfr-library/worker.js) and
+     which the mo-tfr worker serves without CORS for this origin.
 
      Owner 2026-09-19: "fix this … just the aesthetics" — the page is the
      corpus site's page. The previous dictionary (faith-dictionary.js and
@@ -58,5 +60,5 @@
     or browse by letter.</div>
   </div></div></div>
 </div>
-<script src="{{asset "js/port/dtc.in02.js"}}&amp;frv=28bcf1aba96fd1b6"></script>
+<script src="{{asset "js/port/dtc.in02.js"}}&amp;frv=bd3ed5a83ff51031"></script>
 </div>
