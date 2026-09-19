@@ -43,11 +43,11 @@ New catalogue work saves use FRResearchNotebook, the same store as the ported re
 
 ## Remaining verification / limits
 
-Do not describe this as complete end-to-end feature certification yet.
+This is a surface and workflow parity audit, not a claim that every individual corpus page or every generated answer was reviewed.
 
-- A signed-in localhost member session is still needed for Search's six legacy modes, Compare, Notebooks, Desk and Ask. The owner was asked to finish local sign-in.
-- The checked-in Ask-worker deployment configuration sets GHOST_URL to https://mereorthodoxy.com. Its verifier fetches that site's JWKS. Local Ghost issues different identity tokens; end-to-end local paid-service calls need an approved local-auth arrangement, not a removed gate. No worker authentication was weakened or changed in this task.
-- The browser viewport override did not change the measured width (it remained 1280); mobile verification is not claimed.
+- A local-only test member was created through Ghost's normal signup and emailed confirmation. Signed-in title search, full-text search, semantic search, Scripture search, Compare, saving to Notebooks, Desk handoff, Ask completion and embedded citation reading have now been exercised.
+- With explicit owner approval, staging now also verifies localhost Ghost signatures for a 24-hour window. The production verifier runs first and is unchanged. The local verifier requires the exact staging hostname, loopback Origin, configured public key, valid RS512 signature, and current token expiry. Both outer routing and Ask's inner gate use it; budget checks remain. All 17 original staging bindings were preserved and verified. The production worker was not changed.
+- The in-app viewport override did not change the measured width. Responsive testing moved to Chrome, where 390 × 844 was measured and the library fit without horizontal overflow. Library, signed-in Search, comparison, the English-only reader and the bilingual reader were measured at 390px without page overflow. The Aa menu clipping bug was repaired and verified in light and dark themes.
 - Source and local catalogue totals differ. This audit does not certify corpus-data parity or change corpus data.
 - Owner editing / QA writes are outside the verified public reader behavior. No corpus writes were made.
 
@@ -65,3 +65,32 @@ python3 scripts/check-faith-port-links.py --source ~/fr_deploy --output docs/fai
 ```
 
 Routes are Ghost site configuration: the theme GitHub build alone does not install routes.yaml. The current routes were copied to the local Ghost settings directory and Ghost restarted. Production route upload and any upstream handoff remain the owner's decision.
+
+## Signed-in test results
+
+- Title search: Turretin returned five works, with 86 matches including sections.
+- Exact-word search: “foedus operum” returned 2,297 indexed sections with pagination and local reader links.
+- Semantic search: “grace” returned 100 ranked passages in 66 works after correcting the Cloudflare response adapter. Opaque vector anchors are not treated as printed reader pages; citations remain visible and such hits open their work.
+- Scripture search: Romans 8:1 returned 1,000 published source locations in 357 works, with local chapter and reader links.
+- A new test save appeared in the source Notebooks page and the Desk research view. Earlier saves were not deleted.
+- Ask completed an authenticated test answer and “Read here” opened the Acts of the Council of Trent at p. 699 inside the local reader. Its source-verification warnings remained visible.
+
+- Legacy `m=tradition&trad=Medieval` opens Deep research with Medieval scope. A background test completed with its unsupported quotation explicitly marked as an unverified reference, rather than asserted as a verified page.
+- The completed Deep report downloaded as `research-report.md` (482 bytes); its evidence JSON downloaded as `research-evidence.json` (2,374 bytes, valid JSON). Authenticated fetch supplies the bearer before a local Blob download; credentials are never added to exported URLs.
+- Standalone English-reader collection navigation now stays on the local equivalents for PL, PG, PO, Aquinas and EEBO. Its wrapper uses the existing theme tokens to avoid pale headings on a pale background in dark mode.
+
+## What was changed
+
+Theme sources: mounted port templates; `routes.yaml`; shared port URL/auth/download adapters; the source Search response adapter and shelf query handling; catalogue shelf doors and save integration; scoped reader/standalone-reader CSS; required built CSS; address/link checks. Source engines and corpus text were retained. The full file list is in the branch diff.
+
+Backend sources: staging's outer and inner member-verifier imports, a signature-verifying localhost wrapper with explicit expiry, its negative/positive tests, and a staging-only deployment helper. Shared production auth and budget implementations were not edited.
+
+No Vercel deployment or canonical MereO deployment was performed. No PR was opened against Ian's repository. The local Ghost route configuration was applied; a production handoff will still need the corresponding Ghost route upload.
+
+## Final local evidence
+
+The final anonymous audit checked 15 source-page mappings, 17 static source URLs, and 123 local destinations/assets with no failures. Dynamic shelf doors were checked in the browser for all nine shelves. Two-author comparison (Aquinas and Scotus) remained within a 390px page and its “Where they meet” view retained the explicit rare-vocabulary explanation, not an agreement/contradiction verdict.
+
+The test save was recognized on its catalogue row, then removed through that row; the button returned to its unsaved state. No earlier saved items were removed. The standalone English reader's dark wrapper and heading were measured as rgb(34,35,32) and rgb(233,233,229). The library's research navigation uses white text on the existing MereO image hero. Phone viewport was 390 × 844; no page-level horizontal overflow was measured on the tested library, search, comparison and readers.
+
+One short Ask and one short Deep test were used. The generated answers retained their verification warnings. Their content is test output, not a new curated source. Local preview authentication is time-limited and must be explicitly re-enabled after its 24-hour staging window expires; this restriction does not apply to the site's normal production member verifier.
