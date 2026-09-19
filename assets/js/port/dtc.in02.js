@@ -140,7 +140,7 @@ function openArt(id,push){
   CUR=id;paintList();
   document.body.classList.add("reading");
   $("#art").innerHTML='<div class=inner><div class=welcome>Loading…</div></div>';
-  fetch("https://mo-tfr.mo-podcast-feed.workers.dev/v1/dtc/a/"+encodeURIComponent(id)+".json"+VER).then(r=>r.json()).then(d=>{
+  fetch("https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/dictionary/a/"+encodeURIComponent(id)+".json"+VER).then(r=>r.json()).then(d=>{
     if(CUR!==id)return;d.id=id;renderArt(d,paragraph);
     document.title=d.t+" — Dictionnaire de Théologie Catholique";
 
@@ -156,7 +156,7 @@ $("#list").addEventListener("click",e=>{const b=e.target.closest(".hw");
 $("#alpha").addEventListener("click",e=>{const b=e.target.closest("button[data-l]");if(!b||b.disabled)return;
   LETTER=(LETTER===b.dataset.l?null:b.dataset.l);paintAlpha();paintList();});
 $("#q").addEventListener("input",()=>{QY=$("#q").value;paintList();});
-fetch("https://mo-tfr.mo-podcast-feed.workers.dev/v1/dtc/index.json"+VER).then(r=>r.json()).then(d=>{
+fetch("https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/dictionary/index.json"+VER).then(r=>r.json()).then(d=>{
   IDX=d.articles||[];SEEALSO=d.seealso||{};
   paintAlpha();paintList();
   const h=decodeURIComponent(location.hash.slice(1));
