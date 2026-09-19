@@ -7413,6 +7413,21 @@ mark.faith-find-hit.is-current {
   color: var(--color-muted);
   margin: 0;
 }
+/* A search that found a name is drawn in two sections — the authors it
+   named, then the other works it matched by title — under headings set
+   like the count line, so the page keeps one voice. */
+.faith-room-section {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 0 0 22px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-card-border);
+}
+.faith-room-section:first-child { padding-top: 0; border-top: 0; }
 
 /* The rail reads as a line of type, not a row of buttons. */
 .faith-room-letters {

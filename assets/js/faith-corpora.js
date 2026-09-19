@@ -362,7 +362,16 @@
     // and a fourth top-level row beside the series they already belong
     // to. moTradition() below sorts each work into Migne's own two
     // series instead; both hang here, as pld and pg do.
-    mo: { "Latin Fathers": "The Fathers", "Greek Fathers": "The Fathers" },
+    mo: {
+      "Latin Fathers": "The Fathers", "Greek Fathers": "The Fathers",
+      // The English editions' own confessions and catechisms — the
+      // Westminster catechisms, the Thirty-nine Articles, the Prayer
+      // Book, Augsburg — file under Protestant with the rest. Left at
+      // the top they stood beside Protestant as "Anglican (2)",
+      // "Reformed (8)", "Lutheran (2)": the same denominations twice.
+      Reformed: "Protestant", Lutheran: "Protestant", Anglican: "Protestant",
+      "Reformed Baptist": "Protestant", Evangelical: "Protestant",
+    },
   };
 
   // The Latin Library carries eight Greek Fathers of its own, and they
@@ -478,6 +487,10 @@
         // rejected the whole load and emptied every room.
         volume: String(w.volume == null ? "" : w.volume).trim(),
         tradition: w.tradition || "",
+        // The party of an English divine, Puritan or Anglican, which the
+        // catalogue carries beside the tradition. The rooms file the
+        // English shelves by it (faith-room.js, FAMILY).
+        party: String(w.party || "").trim(),
         // Corrected where the catalogue has filed a work under a man
         // who did not write it. See WORK_AUTHOR.
         author: correctAuthor(w.slug, w.author),
