@@ -150,7 +150,11 @@
       }
       s.n++;
       if (party) s.parties.set(party, (s.parties.get(party) || 0) + 1);
-      if (roster && roster.has(`${w.corpus}|${w.id}`)) s.parties.set(ASSEMBLY, (s.parties.get(ASSEMBLY) || 0) + 1);
+      // The Assembly is a subset of the English Divines and of nothing
+      // else: two of its members' works file under Reformed in the Latin
+      // Library, and counted there they made a one-line "Westminster
+      // Assembly 2" under that shelf.
+      if (t === ENGLISH && roster && roster.has(`${w.corpus}|${w.id}`)) s.parties.set(ASSEMBLY, (s.parties.get(ASSEMBLY) || 0) + 1);
       const a = String(w.author || "").trim();
       if (a && !PLACEHOLDER.test(a)) s.authors.set(a, (s.authors.get(a) || 0) + 1);
     });
