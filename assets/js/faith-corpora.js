@@ -348,6 +348,12 @@
     eebo: {
       Anglican: "Protestant",
       Puritan: "Protestant",
+      // Since 2026-09-19 every Early English Book files as English
+      // Divines, the corpus site's shelf for them, with Puritan or
+      // Anglican as its PARTY rather than its tradition (see the
+      // collection's `partyByAuthor`). The two names above stay for any
+      // record that still carries them.
+      "English Divines": "Protestant",
     },
     // Migne's two series, Patrologia Orientalis and the Augustine
     // collection are one thing wearing four labels. Gathered under a
@@ -577,8 +583,14 @@
       // Puritan and 980 Anglican; the remaining 81.3% are anonymous,
       // pre-Reformation, continental, or by authors nobody has placed.
       // They are left unassigned rather than invented.
-      tradition: () => "",
-      traditionByAuthor: {
+      // Every one of these is an English divine — that is what the
+      // theological filter selects for — so the whole room files under
+      // the corpus site's shelf for them, English Divines. Before this
+      // (2026-09-19) only the 18.7% on the two author lists had any
+      // tradition at all, as "Puritan" or "Anglican", and the rest
+      // vanished from every tradition filter.
+      tradition: () => "English Divines",
+      partyByAuthor: {
         Puritan: "/data/puritans.json",
         Anglican: "/data/anglicans.json",
       },
@@ -978,9 +990,9 @@
   const authorTraditions = new Map();
 
   function loadAuthorTraditions(c) {
-    if (!c.traditionByAuthor) return Promise.resolve(null);
+    if (!c.partyByAuthor) return Promise.resolve(null);
     if (authorTraditions.has(c.id)) return authorTraditions.get(c.id);
-    const entries = Object.entries(c.traditionByAuthor);
+    const entries = Object.entries(c.partyByAuthor);
     const p = Promise.all(entries.map(([label, path]) =>
       fetch(c.base + path)
         .then((r) => (r.ok ? r.json() : []))
@@ -1046,8 +1058,11 @@
           // tradition in normalize, and tfr's two paths are identical,
           // so nothing else changes shape here.
           if (!w.tradition && c.tradition) w.tradition = c.tradition(raw) || "";
-          if (!w.tradition && byAuthor && w.author) {
-            w.tradition = byAuthor.get(w.author) || "";
+          // The party — Puritan, Anglican — is the second level under
+          // English Divines, read off the author lists. It used to be
+          // written as the tradition, which split one shelf in three.
+          if (!w.party && byAuthor && w.author) {
+            w.party = byAuthor.get(w.author) || "";
           }
           return w;
         })
