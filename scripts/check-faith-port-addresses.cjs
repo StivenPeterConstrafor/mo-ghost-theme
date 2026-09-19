@@ -25,5 +25,5 @@ const passages=search.meaningCandidates({bands:[{hits:[
  {corpus:'augustine',doc:'aq-test',anchor:'7',cit:'Aquinas',tx:'Witness',score:.7},
  {corpus:'tfr',link:'/the-faith-received/reader/?w=tfr-test&p=4',page:4,tx:'Early modern witness',score:.6}
 ]}]},works);
-assert.deepEqual(passages.map(p=>[p.slug,p.page]),[['pld-12','52:0183A'],['pg-23','18'],['aq-test','7'],['tfr-test','4']]);
-console.log('Cloudflare semantic-search contract: all four corpus shapes preserve their work and page.');
+assert.deepEqual(passages.map(p=>[p.slug,p.page]),[['pld-12',null],['pg-23',null],['aq-test',null],['tfr-test','4']]);
+console.log('Cloudflare semantic-search contract: all four corpus shapes preserve work IDs; opaque vector anchors are not presented as reader pages.');

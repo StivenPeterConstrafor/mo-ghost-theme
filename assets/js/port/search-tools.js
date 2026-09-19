@@ -21,9 +21,10 @@ function meaningCandidates(data,works){
  const rawCorpus=String(original.corpus||'').toUpperCase(),corpus=({PLD:'PL',AUGUSTINE:'AQ'})[rawCorpus]||rawCorpus;
  const hit={...original,corpus};
  // Cloudflare returns stable document/page identifiers; Vercel also returns legacy companion URLs.
- // Prefer the identifiers, without interpreting a printed column as an integer.
+ // Prefer stable work IDs. A vector anchor is not necessarily a printed reader page;
+ // retain the citation and open the work unless an explicit page is supplied.
  if(hit.doc!=null||hit.slug){const raw=str(hit.slug||hit.doc),prefix={PL:'pld-',PG:'pg-',PO:'po-',EEBO:'eebo-'}[corpus]||'',slug=works[raw]?raw:prefix&&!raw.startsWith(prefix)?prefix+raw:raw;
-  if(works[slug]){const page=hit.page??hit.anchor??null,key=slug+'|'+(page==null?str(hit.cit):str(page));if(!seen.has(key)){seen.add(key);out.push({slug,page:page==null?null:str(page),citation:str(hit.cit),excerpt:str(hit.tx),score:Number(hit.score)||0});}continue;}}
+  if(works[slug]){const page=hit.page??null,key=slug+'|'+(page==null?str(hit.cit):str(page));if(!seen.has(key)){seen.add(key);out.push({slug,page:page==null?null:str(page),citation:str(hit.cit),excerpt:str(hit.tx),score:Number(hit.score)||0});}continue;}}
  let candidates=[],page=null;let u;try{u=new URL(hit.link,'https://thefaithreceived.vercel.app');}catch(_){continue;}
  if(hit.corpus==='TFR'){let slug=u.searchParams.get('w');if(slug&&!works[slug]&&/^\d+$/.test(slug)&&works['eebo-'+slug])slug='eebo-'+slug;if(slug)candidates=[slug];page=hit.page==null?readerLink(u.href)?.page:str(hit.page);}
  else if(hit.corpus==='PG'){const volume=/vol(\d+)\.html/.exec(u.pathname)?.[1],col=/^#c(\d+)/.exec(u.hash)?.[1];if(volume&&col)candidates=Object.values(works).filter(w=>w.tradition==='Greek Fathers'&&Number(str(w.volume).replace(/^PG\s*/i,''))===Number(volume)&&Array.isArray(w.cols)&&Number(w.cols[0])<=Number(col)&&Number(w.cols[1])>=Number(col)).map(w=>w.slug);}

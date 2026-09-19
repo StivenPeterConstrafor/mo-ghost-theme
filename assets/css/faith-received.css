@@ -17283,3 +17283,4 @@ a.fr-btn:hover,
 .fro-study nav a { font-size: .85rem; text-decoration: underline; text-underline-offset: .2em; }
 .faith-surface-links { display: flex; flex-wrap: wrap; gap: .65rem 1.25rem; margin-top: 1.5rem; }
 .faith-surface-links a { text-decoration: underline; text-underline-offset: .2em; }
+.bhero .faith-surface-links a { color: inherit; }
