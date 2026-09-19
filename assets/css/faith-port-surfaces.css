@@ -120,3 +120,19 @@ body.research-page header.site.glass,
   height: calc(100dvh - var(--mo-head, 85px));
   min-height: 0;
 }
+
+/* The standalone English reader is a page inside Ghost, not the body.
+   Inherit the port's existing light/dark tokens on its actual wrapper. */
+.faith-port-readen-page { background: var(--bg); color: var(--fg); }
+.faith-port-readen-page .reader,
+.faith-port-readen-page .work { color: var(--fg); }
+.faith-port-readen-page .masthead { top: var(--mo-head, 85px); }
+.faith-port-readen-page .reader-home { color: var(--fg); font: inherit; white-space: nowrap; }
+.faith-port-readen-page .sidebar {
+  top: calc(var(--mo-head, 85px) + 3.1rem);
+  height: calc(100dvh - var(--mo-head, 85px) - 3.1rem);
+}
+@media (max-width: 760px) {
+  .faith-port-readen-page .sidebar { top: var(--mo-head, 61px); height: calc(100dvh - var(--mo-head, 61px)); }
+  .faith-port-readen-page .scrim { top: var(--mo-head, 61px); }
+}
