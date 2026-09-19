@@ -351,7 +351,7 @@ html{-webkit-text-size-adjust:100%}
   .dr .bar i{flex:1}
   .dr .bar span{margin-top:0;flex:none}
   .pseg::-webkit-scrollbar{display:none}
-  .pseg button{min-height:44px;font-size:.88rem;padding:.35rem .65rem;flex:0 0 auto;white-space:nowrap}
+  .pseg button{min-height:44px;font-size:.88rem;padding:.35rem .65rem;flex:0 0 auto;white-space:normal;text-align:left;line-height:1.2;overflow-wrap:anywhere}
   .chip{min-height:40px;padding:.3rem .75rem;display:inline-flex;align-items:center}
   .readbtn{min-height:36px;padding:.25rem .65rem}
   input[type=search],.tsearch,.toc-search{font-size:16px}
