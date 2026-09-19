@@ -18,3 +18,12 @@ global.location={origin};
 assert.deepEqual(search.readerLink(origin+'/the-faith-received/read/?w=a#b52:0183A-0'),{slug:'a',page:'52:0183A'});
 assert.equal(search.readerLink('https://example.org/read?w=a'),null);
 console.log('14 port address checks passed: shelf, search mode, column, external citation and MereO links.');
+const works={'pld-12':{slug:'pld-12'},'pg-23':{slug:'pg-23'},'aq-test':{slug:'aq-test'},'tfr-test':{slug:'tfr-test'}};
+const passages=search.meaningCandidates({bands:[{hits:[
+ {corpus:'pld',doc:'12',anchor:'52:0183A',cit:'PL 52',tx:'Latin witness',score:.9},
+ {corpus:'pg',doc:'23',anchor:'18',cit:'PG 18',tx:'Greek witness',score:.8},
+ {corpus:'augustine',doc:'aq-test',anchor:'7',cit:'Aquinas',tx:'Witness',score:.7},
+ {corpus:'tfr',link:'/the-faith-received/reader/?w=tfr-test&p=4',page:4,tx:'Early modern witness',score:.6}
+]}]},works);
+assert.deepEqual(passages.map(p=>[p.slug,p.page]),[['pld-12','52:0183A'],['pg-23','18'],['aq-test','7'],['tfr-test','4']]);
+console.log('Cloudflare semantic-search contract: all four corpus shapes preserve their work and page.');
