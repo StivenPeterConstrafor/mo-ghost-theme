@@ -498,12 +498,31 @@
   // record for it is corpus "eebo", id "30376". Everything else in the
   // roster is a Latin Library slug. Empty until schools.json lands.
   const roster = new Set();
+  // The roster's members by name as well, because that is the corpus
+  // site's rule (build_lf_bible.py: a work is the Assembly's if its slug
+  // is on the roster OR its author is a member), and the two sites should
+  // file the same work the same way. Early English Books writes a name
+  // inverted with dates — "Twisse, William, 1578?-1646" — so the name is
+  // turned round before it is folded.
+  const rosterAuthors = new Set();
   let rosterState = "";
   function rosterKey(slug) {
     const m = /^eebo-(\d+)$/.exec(slug);
     return m ? `eebo|${m[1]}` : `tfr|${slug}`;
   }
-  function inAssembly(w) { return roster.has(`${w.corpus}|${w.id}`); }
+  function directName(raw) {
+    const t = String(raw || "").trim().replace(/^\[+/, "").replace(/\]+$/, "").trim();
+    const parts = t.split(",").map((x) => x.trim()).filter(Boolean);
+    if (parts.length < 2) return t;
+    const named = parts.filter((x) => !/^(?:b\.|d\.|ca\.|fl\.|active\s)?\s*\d{3,4}\??(?:\s*[-\u2013]\s*\d{0,4}\??)?$/i.test(x));
+    if (named.length < 2) return named[0] || t;
+    return `${named[1]} ${named[0]}`;
+  }
+  function inAssembly(w) {
+    if (roster.has(`${w.corpus}|${w.id}`)) return true;
+    if (w._ra === undefined) w._ra = fold(directName(w.author));
+    return rosterAuthors.has(w._ra);
+  }
   function inParty(w, p) { return p === ASSEMBLY ? inAssembly(w) : partyOf(w) === p; }
   function loadRoster() {
     if (rosterState) return;
@@ -514,6 +533,7 @@
       .then((d) => {
         const e = d && d[ASSEMBLY];
         ((e && e.slugs) || []).forEach((slug) => roster.add(rosterKey(String(slug))));
+        ((e && e.authors) || []).forEach((a) => rosterAuthors.add(fold(a)));
         rosterState = "ready";
         render();
       })

@@ -49,12 +49,24 @@
     const m = /^eebo-(\d+)$/.exec(slug);
     return m ? `eebo|${m[1]}` : `tfr|${slug}`;
   }
+  // Lowercase, strip accents, drop everything that is not a letter or a
+  // number — the room's fold, so a roster name and a catalogue name meet.
+  const fold = (s) => String(s || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+  // The roster's works by slug, and its members by name: the corpus site's
+  // rule (a work is the Assembly's if its slug is on the roster OR its
+  // author is a member), so both sites file the same work the same way.
   function loadRoster() {
     const tfr = window.MOCorpora.get("tfr");
     return fetch(`${(tfr && tfr.base) || ""}/v1/schools.json`)
       .then((r) => (r.ok ? r.json() : {}))
-      .then((d) => new Set((((d || {})[ASSEMBLY] || {}).slugs || []).map((x) => rosterKey(String(x)))))
-      .catch(() => new Set());
+      .then((d) => {
+        const e = ((d || {})[ASSEMBLY] || {});
+        return {
+          keys: new Set((e.slugs || []).map((x) => rosterKey(String(x)))),
+          authors: new Set((e.authors || []).map((a) => fold(a))),
+        };
+      })
+      .catch(() => ({ keys: new Set(), authors: new Set() }));
   }
 
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => (
@@ -154,7 +166,9 @@
       // else: two of its members' works file under Reformed in the Latin
       // Library, and counted there they made a one-line "Westminster
       // Assembly 2" under that shelf.
-      if (t === ENGLISH && roster && roster.has(`${w.corpus}|${w.id}`)) s.parties.set(ASSEMBLY, (s.parties.get(ASSEMBLY) || 0) + 1);
+      if (t === ENGLISH && roster && (roster.keys.has(`${w.corpus}|${w.id}`) || roster.authors.has(fold(displayName(w.author))))) {
+        s.parties.set(ASSEMBLY, (s.parties.get(ASSEMBLY) || 0) + 1);
+      }
       const a = String(w.author || "").trim();
       if (a && !PLACEHOLDER.test(a)) s.authors.set(a, (s.authors.get(a) || 0) + 1);
     });
