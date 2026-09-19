@@ -50,7 +50,27 @@
   const roots = document.querySelectorAll("[data-fr-bookmark-rows]");
   if (!roots.length) return;
 
-  const BM = window.MOFaithBookmarks;
+  const legacy = window.MOFaithBookmarks;
+  const notebook = window.FRResearchNotebook;
+  function sourceSlug(id) {
+    const ref = legacy?.parseId(id);
+    if (!ref || ref.corpus === 'mo') return null;
+    return ['eebo','pld','pg','po'].includes(ref.corpus) && !ref.work.startsWith(ref.corpus+'-') ? ref.corpus+'-'+ref.work : ref.work;
+  }
+  // Catalogue saves and reader saves now use the same source notebook.
+  // MereO-only editions keep their existing account bookmark service.
+  const BM = notebook && legacy ? {
+    idFor: legacy.idFor,
+    available: id => sourceSlug(id) ? document.body.hasAttribute('data-member-status') : legacy.available(),
+    ready: () => legacy.available() ? legacy.ready().then(() => notebook.savedKeys()) : Promise.resolve(notebook.savedKeys()),
+    has: id => sourceSlug(id) ? notebook.hasReference(sourceSlug(id), null) : legacy.has(id),
+    subscribe: legacy.subscribe,
+    toggle: (id, title, url) => {
+      const slug = sourceSlug(id);
+      if (!slug) return legacy.toggle(id);
+      return notebook.hasReference(slug, null) ? notebook.unsave(slug, null) : notebook.saveWork({slug, title, url});
+    }
+  } : legacy;
   if (!BM) return;
 
   const READER_PATH = "/the-faith-received/reader/";
@@ -76,7 +96,7 @@
     if (!safe) return null;
     let u = null;
     try { u = new URL(safe, window.location.origin); } catch (_) { return null; }
-    if (u.pathname !== READER_PATH) return null;
+    if (![READER_PATH, "/the-faith-received/read/"].includes(u.pathname)) return null;
     const work = u.searchParams.get("w");
     if (!work) return null;
     return { corpus: u.searchParams.get("c") || "tfr", work };
@@ -133,16 +153,16 @@
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      if (!BM.available()) {
+      if (!BM.available(id)) {
         // eslint-disable-next-line no-restricted-syntax -- same-origin path literal
-        window.location.href = "/membership/";
+        window.location.href = "/the-faith-received/pins/";
         return;
       }
       if (btn.disabled) return;
       btn.disabled = true;
       // Optimistic inside the store, which also puts it back on a
       // failure and tells every button holding the same id.
-      BM.toggle(id)
+      BM.toggle(id, name, a.href)
         .catch(() => { /* the store already reverted and repainted */ })
         .then(() => { btn.disabled = false; });
     });
@@ -169,6 +189,9 @@
       list.forEach((btn) => paint(btn, on));
     });
   }
+
+  window.addEventListener("fr-notebook-updated", repaintAll);
+  window.addEventListener("storage", repaintAll);
 
   // A pennant hidden until hover is unreachable on a device with no
   // hover, and `@media (hover: none)` in the stylesheet covers the

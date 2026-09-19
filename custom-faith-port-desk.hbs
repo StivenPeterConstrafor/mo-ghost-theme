@@ -1,5 +1,6 @@
 {{!< default}}
 {{#contentFor "moHead"}}
+{{#if @member}}
 <script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=4680a65b308cbee2"></script>
 <title>Desk | The Faith Received | Mere Orthodoxy</title>
 <meta name="description" content="Write with the library beside you: a paper, and a rail of your saved passages, notes, highlights and Ask conversations to insert with their citations." />
@@ -19,7 +20,9 @@
      this page under our masthead. Keep both last. --}}
 <link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}">
 <link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}">
+{{/if}}
 {{/contentFor}}
+{{#if @member}}
 
 {{!-- /the-faith-received/desk/ — the writing desk, ported.
 
@@ -87,3 +90,7 @@
 </main><section id="deskPersonal" hidden><div class="desk-personal-top"><button type="button" id="deskPersonalBack" hidden>Back to writing</button><a href="/the-faith-received/pins/">Manage notebooks</a></div><div id="deskPersonalHost"></div></section><button id="deskScrim" hidden aria-label="Close side panel"></button>
 <script src="{{asset "js/port/desk.in02.js"}}&amp;frv=1494a7160b50afbc"></script>
 </div>
+
+{{else}}
+<main class="faith-received"><section class="bhero bhero--tool"><div class="bhero-inner container"><h1>Desk</h1></div></section>{{> "faith-received/_beta-gate"}}</main>
+{{/if}}
