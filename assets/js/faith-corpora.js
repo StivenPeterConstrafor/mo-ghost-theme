@@ -552,15 +552,19 @@
       // proclamations, ballads, weaving manuals and murder pamphlets;
       // a theological library has no use for them and carrying
       // them makes the library harder to search.
-      short: "Theological and devotional printing, 1473–1700",
+      short: "The English divines the library holds, 1473–1700",
       base: "https://eebo-backup.vercel.app",
       catalogue: "/data/catalogue.json",
-      // 15,569 of 53,831, selected by scripts/build-eebo-theological.mjs
-      // on scripture density, title vocabulary, and whether the author
-      // is a divine. The id list ships with the theme (117 KB); if it
-      // fails to load the filter opens rather than closes, so a missing
-      // file shows too much instead of an empty shelf.
-      filterIds: "/assets/data/faith-received/eebo-theological.json",
+      // Exactly the Early English Books the library itself holds — the
+      // corpus site's English Divines shelf, v1/works-index.json's eebo-
+      // rows (3,873 on 2026-09-19). Owner: "match what I report for
+      // EEBO" — the room shows what the corpus site shows, no more. The
+      // theological cut of the whole catalogue (eebo-theological.json,
+      // 15,569 by scripture density and title vocabulary) stays in the
+      // tree for the builder; nothing reads it now. If this list fails
+      // to load the filter opens rather than closes, so a missing file
+      // shows too much instead of an empty shelf.
+      filterIds: "/assets/data/faith-received/eebo-held.json",
       pick: (d) => (Array.isArray(d) ? d : d.works || []),
       indexes: { scripture: "/data/scripture.json", facets: "/data/facets.json" },
       // Curated facet lists the source site ships.
