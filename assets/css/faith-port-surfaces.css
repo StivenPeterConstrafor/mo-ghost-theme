@@ -81,50 +81,29 @@ body.research-page header.site.glass { top: var(--mo-head, 85px); }
   .faith-port-desk-page #rail { top: var(--mo-head, 85px); }
 }
 
-/* ── When the masthead hides, the ported bar follows it to the top ──────
+/* ── When the masthead hides, the pinned bar follows it to the top ──────
    header-behaviors.js puts .is-hidden on the masthead as you scroll down
    and slides it out of the window. The bars above are pinned at
    --mo-head, the masthead's height, so without this an 85px band of the
    page scrolled past ABOVE the bar while the bar hung mid-window (the
    author room, 2026-09-19). The bar is a later sibling of the masthead,
-   so the masthead's own class is the whole signal — Ian's reader rail
+   so the masthead's own class is the whole signal — the reader rail
    does the same. Matched to the masthead's transition so the two move
    as one gesture; parked when the reader has asked for no motion. */
 body.web-page .site-header.is-hidden ~ header.site,
-.site-header.is-hidden ~ /* The skin positions the READER's toolbar,
-.site-header.is-hidden ~ `.ph`,
-.site-header.is-hidden ~ under our masthead with a bare `.ph,
-.site-header.is-hidden ~ /* ── Scripture ────────────────────────────────────────────────────────── Normal document flow. The page's bar is sticky at the top of the viewport; under our fixed masthead that is under our masthead,
-.site-header.is-hidden ~ so it sticks below it instead. Two rules in bible.in01.css set the bar's position at (0,
-.site-header.is-hidden ~ 1,
-.site-header.is-hidden ~ 1) and (0,
-.site-header.is-hidden ~ 2,
-.site-header.is-hidden ~ 1); this one outranks both. */ body.research-page header.site,
+body.research-page .site-header.is-hidden ~ header.site,
 body.research-page .site-header.is-hidden ~ header.site.glass,
-.site-header.is-hidden ~ @media (max-width: 940px) { top: 0; }
+.faith-port-desk-page .site-header.is-hidden ~ #docs,
+.faith-port-desk-page .site-header.is-hidden ~ #rail { top: 0; }
 body.web-page header.site,
-/* The skin positions the READER's toolbar,
-`.ph`,
-under our masthead with a bare `.ph,
-/* ── Scripture ────────────────────────────────────────────────────────── Normal document flow. The page's bar is sticky at the top of the viewport; under our fixed masthead that is under our masthead,
-so it sticks below it instead. Two rules in bible.in01.css set the bar's position at (0,
-1,
-1) and (0,
-2,
-1); this one outranks both. */ body.research-page header.site,
+body.research-page header.site,
 body.research-page header.site.glass,
-@media (max-width: 940px) { transition: top 0.25s ease; }
+.faith-port-desk-page #docs,
+.faith-port-desk-page #rail { transition: top 0.25s ease; }
 @media (prefers-reduced-motion: reduce) {
   body.web-page header.site,
-  /* The skin positions the READER's toolbar,
-  `.ph`,
-  under our masthead with a bare `.ph,
-  /* ── Scripture ────────────────────────────────────────────────────────── Normal document flow. The page's bar is sticky at the top of the viewport; under our fixed masthead that is under our masthead,
-  so it sticks below it instead. Two rules in bible.in01.css set the bar's position at (0,
-  1,
-  1) and (0,
-  2,
-  1); this one outranks both. */ body.research-page header.site,
+  body.research-page header.site,
   body.research-page header.site.glass,
-  @media (max-width: 940px) { transition: none; }
+  .faith-port-desk-page #docs,
+  .faith-port-desk-page #rail { transition: none; }
 }
