@@ -4,6 +4,7 @@
  */
 (function (root) {
   'use strict';
+  if (root.FRPortLinks) return;
   const prefix = '/the-faith-received/';
   const routes = {index:'all-works', library:'all-works', read:'read', reader:'reader', readen:'readen', review:'review', search:'search', ask:'ask', authors:'author', fathers:'author', topics:'topics', compare:'compare', pins:'pins', desk:'desk', bible:'bible', web:'web', dtc:'dictionary'};
   function localURL(raw, origin) {
@@ -12,6 +13,15 @@
     const source = u.origin === 'https://thefaithreceived.vercel.app';
     if (!source && u.origin !== origin) return raw;
     let path = u.pathname;
+    if (path === prefix + 'reader/' || path === prefix + 'reader') {
+      const corpus = u.searchParams.get('c') || 'tfr';
+      const work = u.searchParams.get('w');
+      if (work && ['tfr','confessions','eebo','pld','pg','po'].includes(corpus)) {
+        u.searchParams.set('w', ['eebo','pld','pg','po'].includes(corpus) && !work.startsWith(corpus+'-') ? corpus+'-'+work : work);
+        u.searchParams.delete('c');
+        return prefix + 'read/' + u.search + u.hash;
+      }
+    }
     if (path.startsWith(prefix)) return source ? path + u.search + u.hash : raw;
     if (!path || path === '/') {
       if (u.searchParams.has('tq')) return prefix + 'search/?m=title&q=' + encodeURIComponent(u.searchParams.get('tq'));
