@@ -106,6 +106,7 @@ body.research-page header.site.glass,
   body.research-page header.site.glass,
   .faith-port-desk-page #docs,
   .faith-port-desk-page #rail { transition: none; }
+}
 /* ── The dictionary ──────────────────────────────────────────────────
    The corpus page laid itself out as a flex column on the body — its
    top bar, the search band, then two panes that fill the rest of the
