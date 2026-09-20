@@ -5331,6 +5331,7 @@
     }
     if (token !== loadToken) return;
     setStatus("");
+    if(focusedAuthor)budgetKey="all";
     adopt(adaptCitations(payload, view));
     if(focusedAuthor){const at=nodes.findIndex(n=>n.fk===focusedAuthor);if(at>=0)select(at,{fromWeb:true});}
     root.dataset.focusedAuthor=focusedAuthor;

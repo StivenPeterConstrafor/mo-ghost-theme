@@ -784,13 +784,14 @@ function syncNetworkControls(){
  $('#network-show-all').hidden=FOCUS==null;
  $('#network-author-map').hidden=FOCUS==null;
 }
+function showNetworkMap(){document.body.dataset.view="map";document.querySelectorAll("#mobile-view button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.view==="map")));}
 function changeNetworkLayout(layout){
  const author=FOCUS!=null?NODES[FOCUS]?.s:"";
  history.pushState(null,'',layout==='timeline'?(author?'#a='+author:'#'):networkHash(layout,author));route();
- document.body.dataset.view='map';
+ showNetworkMap();
 }
 document.querySelectorAll('[data-network-layout]').forEach(b=>b.onclick=()=>changeNetworkLayout(b.dataset.networkLayout));
-$('#network-author-map').onclick=()=>{panel.inert=true;panel.classList.remove('open');document.body.classList.remove('popen');document.body.dataset.view='map';$('#atlas').inert=false;$('#explorer').inert=false;requestAnimationFrame(resize);};
+$('#network-author-map').onclick=()=>{panel.inert=true;panel.classList.remove('open');document.body.classList.remove('popen');showNetworkMap();$('#atlas').inert=false;$('#explorer').inert=false;requestAnimationFrame(resize);};
 $('#network-show-all').onclick=()=>{FOCUS=null;history.pushState(null,'',networkLayout==='timeline'?'#':networkHash(networkLayout,''));route();};
 window.addEventListener('faith-web-author',e=>{if(e.detail?.slug)openAuthor(e.detail.slug);});
 function setConstellationMode(on){
@@ -810,7 +811,7 @@ function openShelfMaps(shelf='citations',kind='cited',push=true,options={}){
  window.MOFaithConstellations.open({shelf,view:kind,arrange:options.arrange||'',entry:options.entry||'',query:options.query||'',author:options.author||''});
  FOCUS=null;syncNetworkControls();
  if(citation&&options.author)openAuthor(options.author,false);
- document.body.dataset.view='map';
+ showNetworkMap();
 }
 
 function route(){
