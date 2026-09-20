@@ -85,7 +85,7 @@
 
     const items = Object.keys(lr)
       .map((k) => [k, lr[k]])
-      .filter(([key, e]) => window.MOFaithCatalogue.publicWork(e?.slug || key))
+      .filter(([key, e]) => window.MOFaithCatalogue.displayWork(e?.slug || key))
       .filter(([, e]) => e && e.page !== null && e.page !== undefined &&
         e.page !== "" && (e.slug || e.title))
       .sort((a, b) => (b[1].ts || 0) - (a[1].ts || 0))
