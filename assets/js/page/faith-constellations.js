@@ -3561,7 +3561,7 @@
     dossierEl.appendChild(textEl("p", "cn-dossier-heading", heading));
     const ul = document.createElement("ul");
     ul.className = "cn-links";
-    const shown = order.slice(0, CITE_LIST_CAP);
+    const shown = order;
     shown.forEach((ei) => {
       const e = edges[ei];
       if (!e) return;
@@ -4939,7 +4939,7 @@
     }
 
     const total = order.length;
-    const shown = order.slice(0, INDEX_CAP);
+    const shown = order;
 
     shown.forEach((i) => {
       const li = document.createElement("li");
@@ -5616,6 +5616,7 @@
         n: numOf(n && n.n),
         pos: numOf(n && n.pos),
         ref: numOf(n && n.ref),
+        refBy: n && typeof n.refBy === "number" ? n.refBy : null,
         src: numOf(n && n.src),
       };
       const at = n && typeof n.e === "number" ? catMap[n.e] : -1;
@@ -5645,7 +5646,7 @@
     nodes.forEach((n, i) => {
       if (which === "contested") {
         n.sub = n.ref
-          ? `${fmt(n.ref)} ${n.ref === 1 ? "refutation" : "refutations"} from ${fmt(refBy[i])} ${refBy[i] === 1 ? "author" : "authors"}`
+          ? `${fmt(n.ref)} ${n.ref === 1 ? "refutation" : "refutations"} from ${fmt(n.refBy ?? refBy[i])} ${(n.refBy ?? refBy[i]) === 1 ? "author" : "authors"}`
           : "Never refuted";
       } else {
         n.sub = n.pos
@@ -5695,6 +5696,7 @@
     }
     const heavy = (p, q) => (edges[q][2] || 0) - (edges[p][2] || 0) || p - q;
     for (let i = 0; i < nn; i++) {
+      if(nodes[i].refBy!=null)refuters[i]=nodes[i].refBy;
       if (inAdj[i]) inAdj[i].sort(heavy);
       if (outAdj[i]) outAdj[i].sort(heavy);
     }

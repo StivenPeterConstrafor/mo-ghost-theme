@@ -3,10 +3,11 @@
   global.MOFaithWebShelfURL = document.currentScript.dataset.shelves;
   global.MOFaithWebGraphAdapter = function (nodes, edges, shelves) {
     const codes = Object.keys(shelves);
+    const refuters=new Uint32Array(nodes.length);edges.forEach(e=>{if(e[3]>0)refuters[e[1]]++;});
     return {
       cats: codes.map(k => ({k, l: shelves[k]})),
-      nodes: nodes.map(n => ({a: n.a, fk: n.s, n: n.win || 0,
-        pos: n.win || 0, ref: n.nin || 0, src: n.din || 0, e: codes.indexOf(n.sh)})),
+      nodes: nodes.map((n,i) => ({a: n.a, fk: n.s, n: n.win || 0,
+        pos: n.win || 0, ref: n.nin || 0, refBy:refuters[i], src: n.din || 0, e: codes.indexOf(n.sh)})),
       edges: edges.map(e => [e[0], e[1], e[2], e[3] || 0])
     };
   };

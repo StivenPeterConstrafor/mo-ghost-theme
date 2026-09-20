@@ -19,3 +19,6 @@ assert.equal(shelves['queen-of-the-franks-radegund'].sh,'pl');
 assert.equal(shelves['archbishop-of-bulgaria-theophylact'].sh,'gf');
 assert.equal(shelves['denis-p-tau'].sh,'rc');
 console.log('✓ Web layouts: directed author focus, preserved totals, and catalogue shelf fallbacks');
+
+const adapted=context.window.MOFaithWebGraphAdapter([{s:'a',a:'A',nin:5},{s:'b',a:'B'},{s:'c',a:'C'}],[[1,0,10,2],[2,0,5,3]],{});
+assert.equal(context.window.MOFaithWebFocus(adapted,'a',1).nodes[0].refBy,2);
