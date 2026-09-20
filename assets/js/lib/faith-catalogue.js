@@ -40,9 +40,15 @@
       };
     }));
   }
+  function countLabel(works) {
+    const extra = works.filter(work => work.supplement).length, core = works.length - extra;
+    const base = core ? `${core.toLocaleString()} work${core === 1 ? '' : 's'}` : '';
+    const added = extra ? `${extra.toLocaleString()} English edition${extra === 1 ? '' : 's'}` : '';
+    return [base, added].filter(Boolean).join(' + ') || '0 works';
+  }
   const loaded = new Map();
   let ready = Promise.resolve();
-  const api = {publicWork, displayWork, workSlug, authorName, authorKey, normalize, setAliases, setWorkIdentity, setCanonical, catalogue, libraryIds,
+  const api = {publicWork, displayWork, workSlug, authorName, authorKey, normalize, setAliases, setWorkIdentity, setCanonical, catalogue, libraryIds, countLabel,
     load(id) {
       if (!loaded.has(id)) loaded.set(id, Promise.all([root.MOCorpora.load(id), ready]).then(([works]) => catalogue(id, works)));
       return loaded.get(id);

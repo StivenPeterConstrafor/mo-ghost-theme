@@ -185,10 +185,11 @@
       else if (t === ENGLISH) party = String(w.party || "").trim();
       let s = by.get(t);
       if (!s) {
-        s = { name: t, parent, n: 0, authors: new Map(), parties: new Map() };
+        s = { name: t, parent, n: 0, works: [], authors: new Map(), parties: new Map() };
         by.set(t, s);
       }
       s.n++;
+      s.works.push(w);
       if (party) s.parties.set(party, (s.parties.get(party) || 0) + 1);
       // The Assembly is a subset of the English Divines and of nothing
       // else: two of its members' works file under Reformed in the Latin
@@ -215,6 +216,8 @@
     if (!list.length) return "";
 
     const rows = list.map((s) => {
+      const extra = s.works.filter(w => w.supplement).length;
+      const core = s.n - extra;
       // The filter contract the room reads: a tradition with a parent is
       // reached as a denomination under it, one without is a tradition
       // in its own right.
@@ -259,7 +262,7 @@
       return `<li class="fro-shelf"><a href="${esc(href)}">` +
         `<span class="fro-shelf-row">` +
         `<span class="fro-shelf-name">${esc(s.name)}</span>` +
-        `<span class="fro-shelf-n"><b>${num(s.n)}</b> ${s.n === 1 ? "work" : "works"}</span>` +
+        `<span class="fro-shelf-n"><b>${num(core)}</b> ${core === 1 ? "work" : "works"}${extra ? `<small class="fro-shelf-extra">+ ${num(extra)} English editions</small>` : ""}</span>` +
         `</span>${under}</a>${within}${studyShelf(s.name)}</li>`;
     }).join("");
 

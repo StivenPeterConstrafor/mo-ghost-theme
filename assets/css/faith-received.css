@@ -17352,3 +17352,6 @@ a.fr-btn:hover,
 .fro-catalogue-return a{display:inline-flex;align-items:center;min-height:44px;color:var(--color-dark);text-decoration:underline;text-underline-offset:3px}
 .faith-room [data-faith-room]{scroll-margin-top:80px}
 @media(max-width:640px){.faith-room [data-room-letter],.faith-room .faith-room-pager button,.faith-room .frcw-contents>summary{min-height:44px;min-width:44px}}
+
+/* Keep Vercel core totals comparable when a shelf also holds native English editions. */
+.fro-shelf-extra { display: block; font-size: 0.85em; font-weight: 400; line-height: 1.4; }

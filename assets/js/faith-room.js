@@ -1237,7 +1237,7 @@
     // A search says what it matched; a party says which it is.
     const matching = filter ? ` matching &ldquo;${escapeHtml(filter)}&rdquo;` : "";
     const within = party ? ` &middot; ${escapeHtml(party)}` : "";
-    let counted = `${scoped.length.toLocaleString()} work${scoped.length === 1 ? "" : "s"}${matching} in ${escapeHtml(label)}${within}`;
+    let counted = `${window.MOFaithCatalogue.countLabel(scoped)}${matching} in ${escapeHtml(label)}${within}`;
     if (party === ASSEMBLY && rosterState !== "ready") counted = "";
     if (onGrid) {
       const shelved = new Set();
@@ -1253,7 +1253,7 @@
       // An address that names nothing here. The collection's own total
       // is the true thing to print: a bare zero beside its name would
       // read as an empty shelf rather than a bad link.
-      counted = `${filtered.length.toLocaleString()} work${filtered.length === 1 ? "" : "s"}${matching} in ${escapeHtml(label)}${within}`;
+      counted = `${window.MOFaithCatalogue.countLabel(filtered)}${matching} in ${escapeHtml(label)}${within}`;
     }
 
     // The search box and the selects are built once and left alone.

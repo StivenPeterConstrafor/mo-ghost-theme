@@ -7108,7 +7108,7 @@ async function loadWork(ws){
 }
 (async()=>{const _qp=new URLSearchParams(location.search);let ws=_qp.get("ws")||_qp.get("w")||window.__FR_SLUG__||null;   // let: the alias resolver rewrites it (2026-08-20)   // ?w=<title-slug> canonical; ?ws=<path> legacy; /read/<slug> shells bake __FR_SLUG__
   if(window.MOFaithCatalogue && !window.MOFaithCatalogue.publicWork(ws)){
-    document.querySelector('#app')?.classList.add('nosb');
+    document.querySelector('#app')?.classList.add('nosb','fr-work-unavailable');
     document.querySelector('#h1').textContent='Volume unavailable';
     document.querySelector('#reading').innerHTML='<div class="loading">This volume is not available in the public library. <a href="/the-faith-received/all-works/?collection=all">Return to the library</a></div>';
     document.querySelector('nav.frthumb')?.remove();return;

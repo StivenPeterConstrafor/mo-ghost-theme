@@ -1573,3 +1573,9 @@ html[data-lh] .app #reading :is(.row:not(.rapp) > .en, .row:not(.rapp) > .la,
 #app .contents-toolbar { display: flex; align-items: center; justify-content: space-between; flex: none; gap: 12px; padding: 0 12px 0 16px; border-bottom: 1px solid var(--border); color: var(--fg); }
 #app .contents-toolbar button { width: 48px; height: 48px; padding: 0; border: 0; background: none; color: inherit; font-size: 28px; touch-action: manipulation; }
 @media (min-width: 1100px) { #app .contents-toolbar { display: none; } }
+#app.fr-work-unavailable .sidebar,
+#app.fr-work-unavailable .ph .ctr,
+#app.fr-work-unavailable #sbT,
+#app.fr-work-unavailable #rdAbout,
+#app.fr-work-unavailable #fac,
+#app.fr-work-unavailable #dragbar { display: none !important; }
