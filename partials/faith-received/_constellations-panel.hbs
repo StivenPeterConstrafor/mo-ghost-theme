@@ -123,7 +123,7 @@
 
   <header class="cn-head">
     <h2 class="cn-title">Constellations</h2>
-    <p class="cn-lede">Sixteen shelves of the library, or all of them at once, read for the Scripture they quote. Every point is an author, a work or a doctrine, filed under the part of the Bible it leans on hardest. A line joins two that reach for the same passages. Switch the arrangement to see the same points placed by how alike they quote instead, or switch the shelf to the citation graph, where every point is an author and every line is one author citing another.</p>
+    <p class="cn-lede">Explore the citation network in rings or by tradition. Choose a shelf to compare how its authors, works and topics use Scripture. Select a point or a connection to read its sources.</p>
   </header>
 
   {{!-- The controls. A <select> for the shelves rather than sixteen
@@ -133,7 +133,7 @@
         thing being looked at, so nothing here is a filled button. --}}
   <div class="cn-controls">
     <div class="cn-control">
-      <label class="cn-control-label" for="cn-shelf">Shelf</label>
+      <label class="cn-control-label" for="cn-shelf">Map</label>
       <select id="cn-shelf" class="cn-select" data-cn-shelf disabled>
         <option value="">Reading the shelves&hellip;</option>
       </select>
@@ -144,7 +144,7 @@
       <div class="cn-views" role="group" aria-labelledby="cn-view-label">
         <button type="button" class="cn-view-btn" data-cn-view="authors" aria-pressed="false" hidden>Authors</button>
         <button type="button" class="cn-view-btn" data-cn-view="works" aria-pressed="false" hidden>Works</button>
-        <button type="button" class="cn-view-btn" data-cn-view="doctrines" aria-pressed="false" hidden>Doctrines</button>
+        <button type="button" class="cn-view-btn" data-cn-view="doctrines" aria-pressed="false" hidden>Topics</button>
         {{!-- The citation graph's two readings of one set of points.
               Offered only on that shelf, where the other three are
               hidden in turn: an author's Scripture fingerprint and an
@@ -233,12 +233,12 @@
             nobody is told about is an accelerator nobody uses, and it
             cannot exist on a phone, where the button is the only
             path. --}}
-      <p class="cn-hint">Drag to pan. Pinch, or hold Ctrl and scroll, to zoom. Point at a line to see what it joins, or choose a point and read its strongest links beside the map. To compare two points, choose one and press &ldquo;Compare with another point&rdquo;, then choose the second; with a mouse, shift-click the second point instead. The positions come from the library, so the same shelf draws the same map every time.</p>
+      <p class="cn-hint">Drag to pan. Use the zoom buttons, or pinch to zoom. Choose a point to inspect its connections. To compare two points, select one and choose “Compare with another point”.</p>
     </div>
 
     <aside class="cn-aside" aria-label="The selected point">
       <div class="cn-dossier" data-cn-dossier>
-        <p class="cn-dossier-empty">Choose a point to see what stands behind it.</p>
+        <p class="cn-dossier-empty">Choose a point to see its citations and sources.</p>
       </div>
     </aside>
 
@@ -268,4 +268,4 @@
       No dependency on anything bundled — window.MOSafeHref ships in
       boot.min.js in <head>, and page-template scripts run before
       site.min.js (FRONTEND §6.18). --}}
-<script src="{{asset "js/page/faith-constellations.js"}}"></script>
+<script src="{{asset "js/page/faith-constellations.js"}}&amp;frv=00784d30e04d95f1"></script>

@@ -17310,3 +17310,11 @@ a.fr-btn:hover,
   .faith-shelf-study-card { padding: 1rem; }
   .faith-shelf-study-head { align-items: flex-start; }
 }
+
+.faith-research-links{display:flex;justify-content:space-between;gap:20px;padding:0 0 18px;border-bottom:1px solid var(--color-rule);margin-bottom:14px}
+.faith-research-links a{color:var(--color-dark);text-decoration:underline;text-underline-offset:4px}
+
+.faith-landing .lp-shelf-caption{display:block;font-size:12px;line-height:1.4;color:var(--color-muted);margin:8px 0 14px}
+.faith-landing .lp-shelf-plate{display:block;height:210px}
+.faith-landing .lp-shelf-plate img{object-position:top center}
+@media(max-width:640px){.faith-landing .lp-shelf-plate{display:block;height:180px}}

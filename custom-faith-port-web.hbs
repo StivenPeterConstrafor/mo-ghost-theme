@@ -2,8 +2,8 @@
 {{#contentFor "moHead"}}
 <script defer src="{{asset "js/page/faith-port-downloads.js"}}&amp;frv=2b1f79b352c6db15"></script>
 <script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=4680a65b308cbee2"></script>
-<title>Constellations | The Faith Received | Mere Orthodoxy</title>
-<meta name="description" content="Fifteen centuries of citation as one map: who reads whom, and the recorded passages behind every connection." />
+<title>The Web | The Faith Received | Mere Orthodoxy</title>
+<meta name="description" content="Explore citations between authors and connections across Scripture, topics and works. Open the passages behind each connection." />
 {{!-- The family identity the engine reads before it starts, and our
      masthead's height as --mo-head, so anything fixed can sit under it.
      Same two jobs as on the ported reader; must load first. --}}
@@ -24,7 +24,7 @@
 {{!-- Our colour, loaded last so it wins; then the offsets that start
      this page under our masthead. Keep both last. --}}
 <link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=714b249461dbfc52">
-<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=66974dc068eea566">
+<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=7a36f9d537e4d57a">
 {{/contentFor}}
 
 {{!-- /the-faith-received/web/ — the citation atlas, ported.
@@ -54,19 +54,19 @@ FORM: Code-led scoped replacement inside the established library world; no new v
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance -->
 <header class="site">
   <a class="faith-atlas-home" href="/the-faith-received/all-works/" aria-label="Back to library"><span aria-hidden="true">←</span> Library</a>
-  <div class="brand"><span>Constellations</span></div>
+  <div class="brand"><span>The Web</span></div>
   <nav id="mnav" aria-label="Research navigation">
-    <a href="#" data-m="sky" class="on">Explore</a>
+    <a href="#" data-m="sky" class="on">Citation map</a>
     <a href="#paths" data-m="path">Paths</a>
     <a href="#topics" data-m="topic">Topics</a>
-    <a href="#shelves" data-m="shelves">Shelf maps</a>
+    <a href="#shelves" data-m="shelves">Constellations</a>
     <a href="#v=romans/8" data-m="verse">Scripture</a>
   </nav>
   <button id="atlas-ask" type="button">Ask</button><button id="web-theme" aria-label="Change reading theme">Theme</button>
 </header>
 <div id="mobile-view" aria-label="Explore view"><button data-view="browse" aria-pressed="true">Browse authors</button><button data-view="map" aria-pressed="false">View map</button></div>
 <aside id="explorer" aria-label="Browse the citation index">
-  <div class="explorer-head"><h1>Constellations</h1><p>Find who an author reads, who reads them, and the texts behind each connection.</p>
+  <div class="explorer-head"><h1>The Web</h1><p>Find who an author reads, who reads them, and the texts behind each connection.</p>
     <div id="find"><label for="q">Find an author</label><input id="q" type="search" placeholder="Find an author…" autocomplete="off"><div id="findlist"></div></div>
     <details id="map-filters"><summary>Filter the index <span id="filter-count"></span></summary>
       <div id="lens"><label for="shsel">Shelf and its connections</label><select id="shsel"><option value="">Every shelf</option></select>
@@ -94,4 +94,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 <div id="brush" hidden><div id="brushc"><canvas id="brushcv"></canvas></div></div>
 <aside id="panel" aria-label="Connection details" inert><div class="ph"><h2 id="pt" tabindex="-1">Connection details</h2><div class="sub" id="ps"></div>
   <button class="x" id="px" aria-label="Close details">×</button></div><div id="pbody"></div></aside>
-<script src="{{asset "js/port/web.in02.js"}}&amp;frv=4f51b1cdb42c86ae"></script>
+<section id="faith-web-constellations" aria-label="Constellation layouts" hidden>
+  {{> "faith-received/_constellations-panel"}}
+</section>
+<script src="{{asset "js/lib/faith-web-graph.js"}}&amp;frv=9ed024a1a95c416f"></script>
+<script src="{{asset "js/port/web.in02.js"}}&amp;frv=d8645e24bbfcb4ef"></script>

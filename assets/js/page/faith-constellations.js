@@ -510,13 +510,8 @@
   function readerUrlFromSlug(slug) {
     const s = typeof slug === "string" ? slug.trim() : "";
     if (!s) return "";
-    for (let i = 0; i < PREFIXES.length; i++) {
-      const p = PREFIXES[i];
-      if (p.re.test(s)) {
-        return `${READER}?c=${p.corpus}&w=${encodeURIComponent(s.slice(p.cut))}`;
-      }
-    }
-    return `${READER}?w=${encodeURIComponent(s)}`;
+    if(s.startsWith("mo-"))return `${READER}?c=mo&w=${encodeURIComponent(s.slice(3))}`;
+    return `/the-faith-received/read/?w=${encodeURIComponent(s)}`;
   }
 
   // The source href is "/read?w=<id>", sometimes with a "#b1-0" block
@@ -536,7 +531,13 @@
 
   function readerUrlFromSourceHref(h) {
     const slug = slugFromSourceHref(h);
-    return slug ? readerUrlFromSlug(slug) : "";
+    if(!slug)return "";
+    const result = new URL(readerUrlFromSlug(slug), location.origin);
+    try { const source = new URL(h, location.origin);
+      source.searchParams.forEach((v,k)=>{if(k!=="w"&&k!=="c")result.searchParams.set(k,v);});
+      result.hash=source.hash;
+    } catch (_) { /* keep the work link when source parameters are invalid */ }
+    return result.pathname+result.search+result.hash;
   }
 
   /* ── Author pages ─────────────────────────────────────────────────
@@ -730,9 +731,8 @@
   const CITE_SLUG = "citations";
   const CITE_LABEL = "Citations between authors";
   const CITE_VIEWS = ["cited", "contested"];
-  const CITE_URL = `${WORKER}/v1/mine/citations/all.json`;
   const CITE_FLOOR_NOTE =
-    "Pairs below five citations are not in this graph, so any count of how many authors cite or refute somebody is a floor rather than a total.";
+    "The Links control changes how many connections are drawn; author totals use the full citation index.";
 
   /* The blurb for each ring map. Said in the geometry's own terms,
    * because the plane means something here that it does not mean
@@ -740,9 +740,9 @@
    * measurement, and the rings are decades of it. */
   const CITE_BLURB = {
     cited:
-      "Every point is an author the indexed library has been read for, placed by how often the rest of that library cites them. The most cited sit at the centre and the least cited at the rim. Each ring inward is ten times as many citations. The wedges group authors by the tradition the library shelves them in. A line runs from an author to somebody they cite.",
+      "Authors are grouped by tradition. Each ring inward represents ten times as many citations. Lines run from an author to a source they cite.",
     contested:
-      "Every point is an author the indexed library has been read for, placed by how often the rest of that library argues with them. The most refuted sit at the centre and the never refuted at the rim. Each ring inward is ten times as many refutations. The wedges group authors by the tradition the library shelves them in. This measures who the arguments were with, not who was wrong.",
+      "Each ring inward represents ten times as many recorded refutations. This measures disagreement in this library, not whether an author was right or wrong.",
   };
   const CITE_REGION_BLURB = {
     cited:
@@ -771,9 +771,8 @@
   };
 
   const CITE_VIEWS_NOTE =
-    "Citations between authors covers the whole indexed library at once, so the shelf list does not apply to it and neither do the three Scripture views.";
-  const CITE_ARRANGE_NOTE =
-    "By similarity is unavailable here. The citation graph carries no coordinates of its own, so there is no embedding to lay these authors out in.";
+    "These are the same authors and recorded citations shown in the citation map.";
+  const CITE_ARRANGE_NOTE = "Similarity is available for individual Scripture maps.";
 
   /* ── Copy for the merged shelf ────────────────────────────────────
    *
@@ -3371,6 +3370,7 @@
     const cat = cats.find((c) => c && c.k === key);
     dossierEl.appendChild(textEl("p", "cn-dossier-kicker", cat && cat.l ? cat.l : "Unclassified"));
     dossierEl.appendChild(dossierTitle(node, node.t || node.a || "Untitled"));
+    if(!isAll)dossierEl.appendChild(webLink("Read Scripture evidence", "#shelf-evidence="+encodeURIComponent(shelfSlug)+"/"+view+"?"+new URLSearchParams({entry:node.t||node.a||""})));
     if (node.sub) dossierEl.appendChild(textEl("p", "cn-dossier-sub", node.sub));
 
     // Only on the merged shelf, where one point can stand for the same
@@ -3571,6 +3571,9 @@
     );
   }
 
+  function webLink(label, hash) {
+    const a=textEl("a", "cn-open-source", label);a.href="/the-faith-received/web/"+hash;return a;
+  }
   function renderCiteDossier(i) {
     const node = nodes[i];
     if (!node) return;
@@ -3581,6 +3584,7 @@
       textEl("p", "cn-dossier-kicker", key ? catLabel(key) : "Unclassified")
     );
     dossierEl.appendChild(dossierTitle(node, node.a || "Untitled"));
+    if(node.fk)dossierEl.appendChild(webLink("Follow citations and read sources", "#a="+encodeURIComponent(node.fk)));
     if (nodes.length > 1) dossierEl.appendChild(compareButton(i));
 
     const by = refuters.length > i ? refuters[i] : 0;
@@ -3676,7 +3680,7 @@
         textEl(
           "p",
           "cn-links-none",
-          "No pair involving this author reaches five citations, so none of them is in the graph."
+          "No citation connections are recorded for this entry."
         )
       );
     }
@@ -3694,6 +3698,8 @@
     }
     const c = f.cite;
     dossierEl.textContent = "";
+    const pair=edges[j];
+    if(pair&&nodes[pair[0]].fk&&nodes[pair[1]].fk)dossierEl.appendChild(webLink("Read the recorded passages", "#e="+encodeURIComponent(nodes[pair[0]].fk)+","+encodeURIComponent(nodes[pair[1]].fk)));
     dossierEl.appendChild(
       textEl("p", "cn-dossier-kicker", c.argument ? "Argument" : "Citation")
     );
@@ -3714,7 +3720,7 @@
         "p",
         "cn-dossier-sub",
         c.ref
-          ? `${fmt(c.pos)} of them positive and ${fmt(c.ref)} refutations, which is ${pct(c.share)} of the pair.`
+          ? `${fmt(c.ref)} refutations (${pct(c.share)}) and ${fmt(c.pos)} other citations.`
           : "None of them is a refutation."
       )
     );
@@ -3723,7 +3729,7 @@
         textEl(
           "p",
           "cn-link-gloss",
-          "Refutations outnumber agreements here, which is what the dashed line on the map marks."
+          "More than half of these citations are classified as refutations. The dashed line marks that proportion."
         )
       );
     } else if (c.ref) {
@@ -3734,7 +3740,7 @@
         textEl(
           "p",
           "cn-link-gloss",
-          "Mostly agreement with an argument inside it, so the line is drawn solid. A pair can be both a debt and a dispute. The heaviest ones in this library are."
+          "Some citations are classified as refutations. Other citations may report, qualify or support the source; read the passages to judge."
         )
       );
     }
@@ -5285,7 +5291,8 @@
     setStatus("Reading the citation graph…");
     let payload;
     try {
-      payload = await getJSON(CITE_URL);
+      payload = window.MOFaithWebGraph;
+      if (!payload) throw new Error("The citation index is still loading.");
     } catch (err) {
       console.error("[faith-constellations] could not load the citation graph", err);
       if (token !== loadToken) return;
@@ -5869,6 +5876,7 @@
     if (next === LAYOUT_RINGS && !onCiteShelf()) return;
     if (next === layout) return;
     layout = next;
+    syncWebAddress();
     renderLayoutButtons();
     // The selection is kept across the switch on purpose: watching the
     // point you chose move from the blob to its section, or back, is the
@@ -5906,6 +5914,7 @@
   function setView(next) {
     if (!next || next === view) return;
     view = next;
+    syncWebAddress();
     allMissed = 0;
     renderViewButtons();
     renderLayoutButtons();
@@ -5969,6 +5978,7 @@
     if (avail.indexOf(view) < 0) view = avail[0] || "";
     renderViewButtons();
     renderLayoutButtons();
+    syncWebAddress();
     if (!view) {
       showError("This shelf has not been mined yet.");
       clearMap();
@@ -5991,6 +6001,25 @@
   if (budgetSel) budgetSel.addEventListener("change", () => setBudget(budgetSel.value));
   shelfSel.addEventListener("change", () => setShelf(shelfSel.value));
 
+  let requested = null;
+  let mapReady = false;
+  function syncWebAddress(){
+    if(!document.body.classList.contains("web-constellation-mode")||!shelfSlug||!view)return;
+    const q=new URLSearchParams({arrange:layout});
+    history.replaceState(null,"","#shelves="+encodeURIComponent(shelfSlug)+"/"+view+"?"+q);
+  }
+  window.MOFaithConstellations={open(spec){
+    requested=spec;
+    if(mapReady){
+      const slug=spec.shelf||CITE_SLUG;
+      const known=slug===CITE_SLUG||slug===ALL_SLUG||shelves.some(s=>s.slug===slug);
+      const next=known?slug:CITE_SLUG;
+      if(availableViews(next).includes(spec.view))view=spec.view;
+      shelfSel.value=next;setShelf(next);
+      if(spec.arrange)setLayout(spec.arrange);
+    }
+    onResize();
+  }};
   async function boot() {
     readPalette();
     renderLayoutButtons();
@@ -6050,7 +6079,7 @@
     let wantView = "";
     let wantLayout = "";
     try {
-      const q = new URLSearchParams(window.location.search);
+      const q = requested ? new URLSearchParams({shelf:requested.shelf||"",view:requested.view||"",arrange:requested.arrange||""}) : new URLSearchParams(window.location.search);
       wantShelf = q.get("shelf") || "";
       wantView = q.get("view") || "";
       wantLayout = q.get("arrange") || "";
@@ -6075,7 +6104,9 @@
     const first = known ? wantShelf : (citeOK ? CITE_SLUG : shelves[0].slug);
     shelfSel.value = first;
     if (wantView && availableViews(first).indexOf(wantView) >= 0) view = wantView;
+    mapReady=true;
     setShelf(first);
+    if(wantLayout)setLayout(wantLayout);
   }
 
   /* ── Waking up ────────────────────────────────────────────────────

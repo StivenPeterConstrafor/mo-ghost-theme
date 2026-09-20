@@ -1,5 +1,6 @@
 {{!< default}}
 {{#contentFor "moHead"}}
+<script src="{{asset "js/page/faith-web-redirect.js"}}&amp;frv=34c8ae0e30276362"></script>
 <title>Research | The Faith Received</title>
 <meta name="description" content="The research desk for The Faith Received. Ask a question of the library, search it by meaning, compare two authors on a topic, keep what you find, and write from it." />
 <meta property="og:title" content="Research | The Faith Received" />
@@ -98,7 +99,7 @@
     <div class="bhero-inner container">
       <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/research/">Research</a></p>
       <h1>Research</h1>
-      <p class="bhero-sub">Nineteen thousand works of Christian theology, and the tools to work in them. Ask the library a question, search it by meaning, set two authors against each other, keep what you find, and write from it.</p>
+      <p class="bhero-sub">Ask questions, search the texts, compare authors, save passages and write with sources from the library.</p>
     </div>
   </section>
 
@@ -130,13 +131,13 @@
             unknown or absent hash. Every mode name here is a public
             address; renaming one breaks every link anybody has
             shared. --}}
+      <nav class="faith-research-links" aria-label="Library navigation"><a href="/the-faith-received/all-works/">← Library</a><a href="/the-faith-received/web/#shelves">The Web</a></nav>
       <nav class="faith-view-toggle faith-search-modes faith-research-tabs" data-research-tabs role="tablist" aria-label="Research workspace">
         <button type="button" class="faith-view-toggle-tab is-active" data-research-mode="ask" role="tab" aria-selected="true" aria-controls="research-panel-ask" id="research-tab-ask">Ask</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="power-search" role="tab" aria-selected="false" aria-controls="research-panel-power-search" id="research-tab-power-search">Power Search</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="compare" role="tab" aria-selected="false" aria-controls="research-panel-compare" id="research-tab-compare">Compare</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="bookmarks" role="tab" aria-selected="false" aria-controls="research-panel-bookmarks" id="research-tab-bookmarks">Bookmarks</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="notebook" role="tab" aria-selected="false" aria-controls="research-panel-notebook" id="research-tab-notebook">Notebook</button>
-        <button type="button" class="faith-view-toggle-tab" data-research-mode="constellations" role="tab" aria-selected="false" aria-controls="research-panel-constellations" id="research-tab-constellations">Constellations</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="desk" role="tab" aria-selected="false" aria-controls="research-panel-desk" id="research-tab-desk">Desk</button>
       </nav>
 
@@ -387,13 +388,6 @@
         </div>
       </div>
 
-      <div data-research-panel="constellations" role="tabpanel" id="research-panel-constellations" aria-labelledby="research-tab-constellations" hidden>
-        <div class="research-workspace">
-          <div class="research-workspace-inner">
-           {{> "faith-received/_constellations-panel"}}
-          </div>
-        </div>
-      </div>
 
       {{!-- ── The Desk ───────────────────────────────────────────────
            Like Compare, the partial ships its own .research-workspace
@@ -455,7 +449,7 @@
      branch below because it decides for itself, and because it is the
      one script on this page that a future non-gated caller would also
      want. --}}
-<script src="{{asset "js/faith-beta-gate.js"}}"></script>
+<script src="{{asset "js/faith-beta-gate.js"}}&amp;frv=b0271768cdcedc8f"></script>
 
 {{!-- The workspace scripts ride inside the same {{#if @member}} as the
      markup they bind to. A signed-out visitor has no panels, no tab
@@ -483,7 +477,7 @@
      site.min.js (FRONTEND §6.18); the only bundle globals any of them
      touch are window.MOAuth and window.MOSafeHref, which ship in
      boot.min.js in <head> and are therefore already on the page. --}}
-<script src="{{asset "js/feature-gate.js"}}"></script>
+<script src="{{asset "js/feature-gate.js"}}&amp;frv=b4ee473e8891118a"></script>
 <script src="{{asset "js/page/faith-ask.js"}}&amp;frv=27bc2986608b7653"></script>
 <script src="{{asset "js/page/faith-power-search.js"}}&amp;frv=2458fb6c613e1f76"></script>
 <script src="{{asset "js/page/faith-research.js"}}&amp;frv=ea29de7dfec7ee0a"></script>

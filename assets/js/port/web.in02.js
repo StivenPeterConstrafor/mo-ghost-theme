@@ -77,7 +77,7 @@ async function boot(){
     if(c)n.y=Math.round(s/c);
   });
   NODES.forEach(n=>{if(!n.y)n.y=1000;if(!n.e)n.e=eraOf(n.y);});
-  EDGES=e.edges;EXAMPLE_EDGES=EDGES.slice().sort((a,b)=>b[2]-a[2]);
+  EDGES=e.edges;window.MOFaithWebGraph=window.MOFaithWebGraphAdapter(NODES,EDGES,SHN);EXAMPLE_EDGES=EDGES.slice().sort((a,b)=>b[2]-a[2]);
   prepAmb();                     // the ambient index must exist before the first draw
   layout();READY=true;
   $("#legend").innerHTML=Object.entries(ERAL).map(([k,l])=>
@@ -716,19 +716,19 @@ $("#mnav").addEventListener("click",e=>{
   if(m==="topic")openTopicIndex();
   if(m==="verse")openVerse("romans",8);
 });
-async function openShelfMaps(shelf='english-divines',kind='authors',push=true,options={}){
- const token=++__PSEQ;if(push)history.pushState(null,'','#shelves='+encodeURIComponent(shelf)+'/'+kind);
+async function openShelfEvidence(shelf='english-divines',kind='authors',push=true,options={}){
+ setConstellationMode(false);const token=++__PSEQ;if(push)history.pushState(null,'','#shelf-evidence='+encodeURIComponent(shelf)+'/'+kind);
  openPanel('Shelf connections','Explore Scripture citation patterns and topics recorded together.');document.body.classList.add('shelf-comparison');$('#atlas').inert=true;$('#explorer').inert=true;pbody.innerHTML='<p class="loading" role="status">Loading shelf maps…</p>';
  const idx=await J(BLOB+'/v1/mine/constellations/index.json').catch(()=>null);if(token!==__PSEQ)return;
  const shelves=idx?.shelves||[],entry=shelves.find(s=>s.slug===shelf||s.s===shelf)||shelves.find(s=>s.shelf==='English Divines')||shelves[0];
- if(!entry){pbody.innerHTML='<p class="index-note">Shelf maps could not load.</p><button class="pbtn" id="shelf-retry">Retry shelf maps</button>';$('#shelf-retry').onclick=()=>openShelfMaps(shelf,kind,false);return;}
+ if(!entry){pbody.innerHTML='<p class="index-note">Shelf maps could not load.</p><button class="pbtn" id="shelf-retry">Retry shelf maps</button>';$('#shelf-retry').onclick=()=>openShelfEvidence(shelf,kind,false);return;}
  const slugOf=s=>s.slug||s.s||s.shelf.toLowerCase().replace(/[^a-z0-9]+/g,'-'),sl=slugOf(entry),labels={authors:'Authors',works:'Works',doctrines:'Topics'},available=Object.keys(labels).filter(k=>Object.prototype.hasOwnProperty.call(entry.have||{},k));
- if(!available.includes(kind))kind=available[0]||'';history.replaceState(null,'','#shelves='+encodeURIComponent(sl)+(kind?'/'+kind:'')+((options.entry||options.query||options.page)?'?'+new URLSearchParams({entry:options.entry||'',q:options.query||'',page:options.page||0}):''));
+ if(!available.includes(kind))kind=available[0]||'';history.replaceState(null,'','#shelf-evidence='+encodeURIComponent(sl)+(kind?'/'+kind:'')+((options.entry||options.query||options.page)?'?'+new URLSearchParams({entry:options.entry||'',q:options.query||'',page:options.page||0}):''));
  pbody.innerHTML=`<div class="shelf-map-controls"><label>Shelf or group<select id="shelf-map-shelf">${shelves.map(s=>`<option value="${esc(slugOf(s))}">${esc(s.shelf)}</option>`).join('')}</select></label><label>Explore connections between<select id="shelf-map-kind"${available.length?"":" disabled"}>${available.length?available.map(k=>`<option value="${k}">${labels[k]}</option>`).join(''):'<option>No maps published</option>'}</select></label></div><div id="shelf-map-host"><p class="loading" role="status">Loading this constellation…</p></div>`;
- $('#shelf-map-shelf').value=sl;$('#shelf-map-kind').value=kind;$('#shelf-map-shelf').onchange=e=>openShelfMaps(e.target.value,kind);$('#shelf-map-kind').onchange=e=>openShelfMaps(sl,e.target.value);
+ $('#shelf-map-shelf').value=sl;$('#shelf-map-kind').value=kind;$('#shelf-map-shelf').onchange=e=>openShelfEvidence(e.target.value,kind);$('#shelf-map-kind').onchange=e=>openShelfEvidence(sl,e.target.value);
  if(!available.length){$('#shelf-map-host').innerHTML='<p class="index-note">No constellation exports are published for this group. Choose another shelf or group.</p>';return;}
  const base=BLOB+'/v1/mine/constellations/'+sl+'/',d=await J(base+kind+'.json').catch(()=>null);if(token!==__PSEQ)return;
- if(!d){$('#shelf-map-host').innerHTML='<p class="index-note">This constellation could not load. Your shelf and map selection are kept.</p><button class="pbtn" id="shelf-graph-retry">Retry constellation</button>';$('#shelf-graph-retry').onclick=()=>openShelfMaps(sl,kind,false);return;}
+ if(!d){$('#shelf-map-host').innerHTML='<p class="index-note">This constellation could not load. Your shelf and map selection are kept.</p><button class="pbtn" id="shelf-graph-retry">Retry constellation</button>';$('#shelf-graph-retry').onclick=()=>openShelfEvidence(sl,kind,false);return;}
  if(!d.nodes?.length){$('#shelf-map-host').innerHTML='<p class="index-note">This export contains no '+(kind==='doctrines'?'topics':kind)+'. Choose another map or shelf.</p>';return;}
  const K={name:n=>n.t||n.a,size:n=>n.n,unit:'Scripture citations',href:n=>kind==='works'&&n.w?FRScripture.readerURL(n.w):kind==='authors'?'/the-faith-received/fathers/?q='+encodeURIComponent(n.a):'',goLabel:kind==='works'?'Open work':'View works',rowLabel:kind==='authors'?'Available works':kind==='works'?'Recorded Scripture chapters':'Available topic passages',ask:(n,nm)=>'/the-faith-received/ask/?q='+encodeURIComponent('Explore '+nm+' in '+entry.shelf)};
  /* CONNECTIONS YOU CAN ACT ON (owner 2026-09-11 "change the usability of our
@@ -757,7 +757,7 @@ async function openShelfMaps(shelf='english-divines',kind='authors',push=true,op
         if(!ab&&!ba)acts.push({label:'No recorded citation between them — similarity only',href:null,note:1});}}
     return acts.filter(x=>x.go||x.href);};
  }
- FRShelfMap.render($('#shelf-map-host'),d,K,{kind,shelf:sl,rowsUrl:base+kind+'.rows.json',blob:BLOB,focus:options.entry,query:options.query,page:options.page,onSelect:state=>{if(token===__PSEQ)history.pushState(null,'','#shelves='+encodeURIComponent(sl)+'/'+kind+'?'+new URLSearchParams({entry:state.entry,q:state.query,page:state.page}));}});pbody.scrollTop=0;
+ FRShelfMap.render($('#shelf-map-host'),d,K,{kind,shelf:sl,rowsUrl:base+kind+'.rows.json',blob:BLOB,focus:options.entry,query:options.query,page:options.page,onSelect:state=>{if(token===__PSEQ)history.pushState(null,'','#shelf-evidence='+encodeURIComponent(sl)+'/'+kind+'?'+new URLSearchParams({entry:state.entry,q:state.query,page:state.page}));}});pbody.scrollTop=0;
 }
 
 async function openTopicIndex(push=true){
@@ -772,10 +772,22 @@ async function openTopicIndex(push=true){
   $('#web-topic-query').oninput=()=>{topicLimit=60;render();};$('#web-topics-more').onclick=()=>{topicLimit+=60;render();};render();
 }
 
+function setConstellationMode(on){
+ document.body.classList.toggle('web-constellation-mode',on);
+ const host=document.getElementById('faith-web-constellations');if(host)host.hidden=!on;
+ if(!on){$('#atlas').inert=false;$('#explorer').inert=false;}
+}
+function openShelfMaps(shelf='citations',kind='cited',push=true,options={}){
+ ++__PSEQ;panel.inert=true;panel.classList.remove('open');document.body.classList.remove('popen','shelf-comparison');
+ $('#atlas').inert=true;$('#explorer').inert=true;setConstellationMode(true);
+ if(push)history.pushState(null,'','#shelves='+encodeURIComponent(shelf)+'/'+kind);
+ window.MOFaithConstellations.open({shelf,view:kind,arrange:options.arrange||'',entry:options.entry||'',query:options.query||''});
+}
 function route(){
-  stashJourney();const h=location.hash.slice(1);const kind=h.split("=")[0],mode=({v:"verse",t:"topic",topics:"topic",shelves:"shelves",paths:"path",p:"path",journey:"path"})[kind]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));
+  stashJourney();const h=location.hash.slice(1);setConstellationMode(h==='shelves'||h.startsWith('shelves='));const kind=h.split("=")[0],mode=({v:"verse",t:"topic",topics:"topic",shelves:"shelves","shelf-evidence":"shelves",paths:"path",p:"path",journey:"path"})[kind]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));
   if(!h){$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;renderAuthorIndex();requestAnimationFrame(resize);draw();return;}
-  if(h==="shelves"||h.startsWith("shelves=")){const [path,query=""]=(h.startsWith("shelves=")?h.slice(8):"english-divines/authors").split("?"),[sh,kind]=path.split("/"),params=new URLSearchParams(query);openShelfMaps(decodeURIComponent(sh),kind||"authors",false,{entry:params.get("entry")||"",query:params.get("q")||"",page:+params.get("page")||0});return;}
+  if(h==="shelves"||h.startsWith("shelves=")){const [path,query=""]=(h.startsWith("shelves=")?h.slice(8):"citations/cited").split("?"),[sh,kind]=path.split("/"),params=new URLSearchParams(query);openShelfMaps(decodeURIComponent(sh),kind||"authors",false,{entry:params.get("entry")||"",query:params.get("q")||"",page:+params.get("page")||0,arrange:params.get("arrange")||""});return;}
+  if(h.startsWith('shelf-evidence=')){const [path,query='']=h.slice(15).split('?'),[sh,kind]=path.split('/'),q=new URLSearchParams(query);openShelfEvidence(decodeURIComponent(sh),kind||'authors',false,{entry:q.get('entry')||'',query:q.get('q')||'',page:+q.get('page')||0});return;}
   if(h.startsWith('journey=')){const [path,query='']=h.slice(8).split('?'),params=new URLSearchParams(query);openJourney(path.split(',').filter(Boolean).map(decodeURIComponent),params.get('direction')||'in',{work:params.get('work')||'',targetWork:params.get('targetWork')||'',reference:params.get('reference')||'',via:(params.get('via')||'').split(',').filter(Boolean),push:false});return;}
   if(h==="paths"){openPathPicker(false);return;}if(h==="topics"){openTopicIndex(false);return;}
   const [k,v]=h.split("=");
