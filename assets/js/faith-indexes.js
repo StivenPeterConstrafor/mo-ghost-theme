@@ -1596,7 +1596,7 @@
       // resolved without anyone remembering to add it here.
       .then((rows) => Promise.all(
         window.MOCorpora.all.map((c) =>
-          window.MOCorpora.load(c.id).then((list) => [c.id, new Map(list.map((w) => [String(w.id), w]))]).catch(() => [c.id, new Map()])
+          window.MOFaithCatalogue.load(c.id).then((list) => [c.id, new Map(list.map((w) => [String(w.id), w]))]).catch(() => [c.id, new Map()])
         )
       ).then((pairs) => {
         const cats = new Map(pairs);
@@ -1633,8 +1633,8 @@
 
   function loadSourceScripture() {
     return Promise.all([
-      window.MOCorpora.load("tfr").then((cat) => loadLatinScripture(cat)).catch(() => {}),
-      window.MOCorpora.load("eebo").then((cat) => loadEeboScripture(cat)).catch(() => {}),
+      window.MOFaithCatalogue.load("tfr").then((cat) => loadLatinScripture(cat)).catch(() => {}),
+      window.MOFaithCatalogue.load("eebo").then((cat) => loadEeboScripture(cat)).catch(() => {}),
     ]);
   }
 
@@ -1651,13 +1651,13 @@
 
   Promise.all([
     ...scriptureSources,
-    window.MOCorpora.load("tfr")
+    window.MOFaithCatalogue.load("tfr")
       .then((cat) => loadTopics(`${BLOB}/v1/topics.json`, "tfr", cat))
       .catch(() => {}),
-    window.MOCorpora.load("pld")
+    window.MOFaithCatalogue.load("pld")
       .then((cat) => loadTopics("https://pld-patrologia-latina.vercel.app/data/topics.json", "pld", cat))
       .catch(() => {}),
-    window.MOCorpora.load("po")
+    window.MOFaithCatalogue.load("po")
       .then((cat) => loadTopics("https://patrologia-orientalis.vercel.app/data/topics.json", "po", cat))
       .catch(() => {}),
   ]).then(() => {
@@ -1671,7 +1671,7 @@
   // the field or the collection is a tradition in itself. That is why
   // this one covers all 37,223 works where scripture and topics do not.
   Promise.all(window.MOCorpora.all.map((c) =>
-    window.MOCorpora.load(c.id)
+    window.MOFaithCatalogue.load(c.id)
       .then((works) => works.forEach((w) => addTradition(w.tradition, w)))
       .catch(() => {})
   )).then(renderTraditions);

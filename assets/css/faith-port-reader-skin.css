@@ -953,7 +953,7 @@ body:has(#app.faith-port-read-page) { background: var(--bg); }
    removed as dead markup (see custom-faith-port-read.hbs). Hidden rather
    than left as a fifth control that does nothing when tapped. Restore it
    together with a panel that is actually mounted. */
-nav.frthumb [data-t="nb"] { display: none !important; }
+/* The Research panel is mounted again; its dock button uses __frOpenNotebook. */
 
 /* ── The reader, embedded in someone else's panel ───────────────────
    The Ask workspace opens a cited work in an iframe. The masthead and
@@ -1548,3 +1548,28 @@ html[data-lh] .app #reading :is(.row:not(.rapp) > .en, .row:not(.rapp) > .la,
     margin: 8px 0;
   }
 }
+
+/* One mobile interaction layout through the reader's own 880px breakpoint.
+   Keep the open-section link separate from a full-size expansion target. */
+@media (max-width: 880px) {
+  #app #nav .nav-node { align-items: center; gap: 8px; min-height: 56px; margin-block: 4px; padding: 4px 4px 4px calc(8px + var(--nav-depth, 0) * 12px) !important; }
+  #app #nav .nav-node .nav-open { order: 1; min-height: 48px; padding: 8px 4px; font-size: 16px; line-height: 1.45; color: var(--fg); }
+  #app #nav .nav-node button.cv { order: 2; align-self: center; flex: 0 0 48px; width: 48px; height: 48px; min-height: 48px; margin: 0; padding: 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--fg); touch-action: manipulation; }
+  #app #nav .nav-node button.cv svg { width: 18px; height: 18px; pointer-events: none; }
+  #app #nav .nav-node .cv.leaf { display: none; }
+  #app #nav .nav-node .nn-la { order: 3; }
+  #app #nav .nav-vt button { min-height: 48px; }
+  html.g-mobile nav.frthumb { min-height: 60px; padding: 3px 4px calc(3px + env(safe-area-inset-bottom)); gap: 2px; }
+  html.g-mobile nav.frthumb button { min-width: 0; min-height: 54px; padding: 5px 1px; gap: 3px; font-size: 12px; line-height: 1.15; border-radius: 4px; }
+  html.g-mobile nav.frthumb button .lb { font-size: 12px; line-height: 1.15; }
+  html.g-mobile nav.frthumb button .ic { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; font-size: 20px; line-height: 1; }
+  html.g-mobile nav.frthumb button .ic svg { display: block; width: 20px; height: 20px; }
+  html.g-mobile nav.frthumb button.on { background: var(--hl); color: var(--fg); }
+  html.g-mobile nav.frthumb button:focus-visible { outline: 2px solid var(--fg); outline-offset: -2px; }
+  html.g-mobile #app .sidebar { bottom: calc(60px + env(safe-area-inset-bottom)); }
+  html.g-mobile #app .reader-reference { min-width: 0; overflow: hidden; }
+  html.g-mobile #app #reader-volume { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; white-space: normal; overflow-wrap: anywhere; }
+}
+#app .contents-toolbar { display: flex; align-items: center; justify-content: space-between; flex: none; gap: 12px; padding: 0 12px 0 16px; border-bottom: 1px solid var(--border); color: var(--fg); }
+#app .contents-toolbar button { width: 48px; height: 48px; padding: 0; border: 0; background: none; color: inherit; font-size: 28px; touch-action: manipulation; }
+@media (min-width: 1100px) { #app .contents-toolbar { display: none; } }

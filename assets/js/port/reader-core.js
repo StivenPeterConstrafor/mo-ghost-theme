@@ -4035,11 +4035,27 @@ document.addEventListener("pointerdown",ev=>{if(ev.target.closest&&ev.target.clo
 $("#m-en").onclick=()=>{LN.en=!LN.en;if(!LN.en&&!LN.la)LN.la=true;applyLanes();};
 $("#m-par").onclick=()=>{LN.la=!LN.la;if(!LN.en&&!LN.la)LN.en=true;applyLanes();};
 $("#m-study")&&($("#m-study").onclick=()=>{LN.fx=!LN.fx;applyLanes();});
-$("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the left contents sidebar
+function setContentsOpen(open,restoreFocus=false){
+  const sidebar=document.querySelector('.sidebar'),focused=document.activeElement;
+  app.classList.toggle('nosb',!open);
+  if(open)document.documentElement.classList.remove('mh-hide','mh-mini');
+  if(!open&&sidebar?.contains(focused))focused.blur();
+  window.__frThumbSync?.();
+  if(!open&&restoreFocus){const target=document.documentElement.classList.contains('g-mobile')?document.querySelector('.frthumb [data-t="toc"]'):$('#sbT');target?.focus({preventScroll:true});}
+}
+$("#sbT").onclick=()=>setContentsOpen(app.classList.contains('nosb'),true);
+if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,true);
 // mobile: scrim behind the open sidebar + tap-to-dismiss; nav taps auto-close the sheet
 (function(){const sc=document.createElement("div");sc.id="sbScrim";app.appendChild(sc);
-  sc.onclick=()=>{app.classList.add("nosb");window.__frThumbSync&&window.__frThumbSync();};
-  $("#nav").addEventListener("click",e=>{if(matchMedia("(max-width:880px)").matches&&e.target.closest("a,.fmnav,[data-page]")){app.classList.add("nosb");window.__frThumbSync&&window.__frThumbSync();}});})();
+  sc.onclick=()=>setContentsOpen(false);
+  $("#nav").addEventListener("click",e=>{
+    // Folding a branch changes the outline, not the reading location. A row's
+    // data-page also surrounds its disclosure button, so never use it alone.
+    if(e.target.closest("button.cv,summary,.nav-sech,.fmnav,input"))return;
+    if(matchMedia("(max-width:880px)").matches&&e.target.closest("a[href],.fol[data-page]")){
+      setContentsOpen(false);
+    }
+  });})();
 /* MOBILE SHELL (ported from Patrologia Graeca, 2026-07-04) — the phone reading model:
    a fixed bottom thumb bar [English · + Latin · Scan · ☰ Contents · ★ Notebook] driving the
    EXISTING mode()/sidebar/notebook controls. html.g-mobile flips live with the 880px query;
@@ -4049,18 +4065,19 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
   const applyM=()=>HTML.classList.toggle("g-mobile",mq.matches);
   applyM();mq.addEventListener?mq.addEventListener("change",applyM):mq.addListener(applyM);
   const bar=document.createElement("nav");bar.className="frthumb";bar.setAttribute("aria-label","Reading controls");
+  const toolbarIcon=path=>'<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+path+'</svg>';
   bar.innerHTML=
     '<button type="button" data-t="en"><span class="ic" aria-hidden="true">A</span><span class="lb">English</span></button>'+
-    '<button type="button" data-t="par"><span class="ic" aria-hidden="true">∥</span><span class="lb">+ Latin</span></button>'+
-    '<button type="button" data-t="study"><span class="ic" aria-hidden="true">▦</span><span class="lb">Scan</span></button>'+
-    '<button type="button" data-t="find"><span class="ic" aria-hidden="true">⌕</span><span class="lb">Search</span></button>'+
-    '<button type="button" data-t="toc"><span class="ic" aria-hidden="true">☰</span><span class="lb">Contents</span></button>'+
+    '<button type="button" data-t="par"><span class="ic" aria-hidden="true">'+toolbarIcon('<path d="M9 4v16M15 4v16"/>')+'</span><span class="lb">+ Latin</span></button>'+
+    '<button type="button" data-t="study"><span class="ic" aria-hidden="true">'+toolbarIcon('<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 7h8M8 11h8M8 15h5"/>')+'</span><span class="lb">Scan</span></button>'+
+    '<button type="button" data-t="find"><span class="ic" aria-hidden="true">'+toolbarIcon('<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>')+'</span><span class="lb">Search</span></button>'+
+    '<button type="button" data-t="toc"><span class="ic" aria-hidden="true">'+toolbarIcon('<path d="M4 6h16M4 12h16M4 18h16"/>')+'</span><span class="lb">Contents</span></button>'+
     '<button type="button" data-t="nb"><span class="ic" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v15M12 5C8 2 3 4 2 4v15c4-2 7-1 10 1 3-2 6-3 10-1V4c-1 0-6-2-10 1Z"/></svg></span><span class="lb">Research</span></button>'+
-    '<button type="button" data-t="ask"><span class="ic" aria-hidden="true">✦</span><span class="lb">Ask</span></button>';
+    '<button type="button" data-t="ask"><span class="ic" aria-hidden="true">'+toolbarIcon('<path d="M20 11a8 8 0 0 1-8 8H5l-3 3V11a9 9 0 0 1 18 0Z"/>')+'</span><span class="lb">Ask</span></button>';
   document.body.appendChild(bar);
   const B={};bar.querySelectorAll("button").forEach(b=>{B[b.dataset.t]=b;
     b.style.touchAction="manipulation";
-    b.addEventListener("touchend",e=>{e.preventDefault();b.onclick&&b.onclick();},{passive:false});});
+    });
   // Lane model (2026-07-19, after user confusion): "English" is an absolute switch — always
   // lands on English-only (and exits the scan). "Latin" cycles Both → Latin-only → Both, so
   // every state is reachable in ≤2 taps and the highlights literally mean "this lane is visible".
@@ -4074,7 +4091,7 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
   B.study.onclick=()=>{LN.fx=!LN.fx;applyLanes();};                   // "Scan" = toggle the facsimile
   B.find.onclick=()=>{if(window.__frOpenSearch)window.__frOpenSearch();};
   if(B.ask)B.ask.onclick=()=>{if(window.__openAsk)window.__openAsk("");};
-  B.toc.onclick=()=>{app.classList.toggle("nosb");window.__frThumbSync&&window.__frThumbSync();};
+  B.toc.onclick=()=>setContentsOpen(app.classList.contains("nosb"),true);
   B.nb.onclick=()=>{if(window.__frOpenNotebook)window.__frOpenNotebook();};
   // chrome auto-hide while reading down (phones): accumulate same-direction travel so tiny
   // jitters don't flap it; near the top it is always shown. A tap on the prose toggles it
@@ -4084,6 +4101,7 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
     sc.addEventListener("scroll",()=>{
       const mob=mq.matches;
       const y=sc.scrollTop,d=y-y0;y0=y;
+      if(mob&&!app.classList.contains("nosb")){acc=0;return;}
       if(y<90){HTML.classList.remove("mh-hide","mh-mini");acc=0;return;}
       acc=(d>0)===(acc>0)?acc+d:d;
       if(acc>140)HTML.classList.add(mob?"mh-hide":"mh-mini");
@@ -4100,13 +4118,16 @@ $("#sbT").onclick=()=>app.classList.toggle("nosb");   // collapse / show the lef
   window.__frThumbSync=()=>{
     const hasScan=(typeof DATA!=="undefined")&&!!(DATA&&DATA.has_pages),enOnly=app.classList.contains("en-only")||DATA?.src_lang==='en';
     B.study.style.display=hasScan?"":"none";
-    B.par.style.display=enOnly?"none":"";
+    B.par.style.display=enOnly?"none":"";B.par.disabled=DATA?.source_only===true;
+    B.en.style.display=DATA?.source_only?'none':'';
     B.en.classList.toggle("on",!!(window.LN&&LN.en&&!LN.fx));
     B.par.classList.toggle("on",!!(window.LN&&LN.la&&!LN.fx));
     {const lb=B.par.querySelector(".lb");const SN=window.__SRCNAME||"Latin";
-     if(lb)lb.textContent=(window.LN&&LN.la&&!LN.en)?(SN+" only"):(window.LN&&LN.la)?"∥ Both":("+ "+SN);}
+     if(lb)lb.textContent=SN==="Greek \u00b7 Latin"?(window.LN&&LN.la?"Sources":"+ Sources"):(window.LN&&LN.la&&!LN.en)?(SN+" only"):(window.LN&&LN.la)?"∥ Both":("+ "+SN);B.par.setAttribute("aria-label",(window.LN&&LN.la?"Hide ":"Show ")+SN+" source text");}
     B.study.classList.toggle("on",!!(window.LN&&LN.fx));
     B.toc.classList.toggle("on",!app.classList.contains("nosb"));
+    for(const key of ["en","par","study"])B[key].setAttribute("aria-pressed",String(B[key].classList.contains("on")));
+    B.toc.setAttribute("aria-expanded",String(!app.classList.contains("nosb")));B.toc.setAttribute("aria-controls","nav");
     {const w=document.getElementById("m-wit"),bp=document.querySelector(".aamob [data-x=\'m-wit\']");
      if(bp){bp.style.display=w?"":"none";if(w)bp.textContent="⇄ "+w.textContent+" text";}}
   };
@@ -7086,6 +7107,12 @@ async function loadWork(ws){
   return meta;
 }
 (async()=>{const _qp=new URLSearchParams(location.search);let ws=_qp.get("ws")||_qp.get("w")||window.__FR_SLUG__||null;   // let: the alias resolver rewrites it (2026-08-20)   // ?w=<title-slug> canonical; ?ws=<path> legacy; /read/<slug> shells bake __FR_SLUG__
+  if(window.MOFaithCatalogue && !window.MOFaithCatalogue.publicWork(ws)){
+    document.querySelector('#app')?.classList.add('nosb');
+    document.querySelector('#h1').textContent='Volume unavailable';
+    document.querySelector('#reading').innerHTML='<div class="loading">This volume is not available in the public library. <a href="/the-faith-received/all-works/?collection=all">Return to the library</a></div>';
+    document.querySelector('nav.frthumb')?.remove();return;
+  }
   // owner affordances: review mode shows a slim exit banner; the public reader injects a
   // discreet ✎ masthead button ONLY once /api/me confirms the owner (nothing rendered otherwise).
   // In Blob mode there is no /api/me — owner detection arrives with the Firebase sign-in (Phase 4); skip the call.

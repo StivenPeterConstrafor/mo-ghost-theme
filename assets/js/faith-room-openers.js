@@ -85,6 +85,7 @@
 
     const items = Object.keys(lr)
       .map((k) => [k, lr[k]])
+      .filter(([key, e]) => window.MOFaithCatalogue.publicWork(e?.slug || key))
       .filter(([, e]) => e && e.page !== null && e.page !== undefined &&
         e.page !== "" && (e.slug || e.title))
       .sort((a, b) => (b[1].ts || 0) - (a[1].ts || 0))
@@ -290,7 +291,7 @@
   root.innerHTML = catalogueReturn + first;
 
   Promise.all([
-    Promise.all(ALL.map((id) => window.MOCorpora.load(id).catch(() => []))),
+    Promise.all(ALL.map((id) => window.MOFaithCatalogue.load(id).catch(() => []))),
     loadRoster(),
     window.MOCollectedContents?.ready,
   ])

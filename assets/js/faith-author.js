@@ -63,7 +63,7 @@
   try {
     wanted = new URLSearchParams(window.location.search).get("a") || "";
   } catch (_) { /* no query */ }
-  const key = fold(wanted);
+  let key = fold(wanted);
 
   if (!key) {
     root.innerHTML = `<p class="faith-author-empty">No author specified.</p>`;
@@ -119,12 +119,13 @@
   Promise.all([
     fetch(`${BLOB}/v1/authors.json`).then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
     Promise.all(corpora.map((c) =>
-      window.MOCorpora.load(c.id).catch(() => []))),
+      window.MOFaithCatalogue.load(c.id).catch(() => []))),
     fetch(oursUrl).then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
     window.MOAuthorScripture ? window.MOAuthorScripture.load(key) : Promise.resolve(null),
     Promise.all(shelfLives),
     aliasesP,
   ]).then(([theirs, sets, ours, fingerprint, shelves, aliases]) => {
+    key = window.MOFaithCatalogue.authorKey(wanted);
     // Ours first, then the shelf files, then the Latin Library's, which
     // keeps the existing precedence: a life written for the Latin
     // Library still wins outright where the same name appears twice.

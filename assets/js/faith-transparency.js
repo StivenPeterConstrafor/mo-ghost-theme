@@ -63,7 +63,7 @@
     const meta = window.MOCorpora.get(MIXED);
     if (!meta) return Promise.resolve();
     const label = meta.label || MIXED;
-    return window.MOCorpora.load(MIXED).then((works) => {
+    return window.MOFaithCatalogue.load(MIXED).then((works) => {
       let i = 0;
       const base = (document.querySelector('meta[name="tfr-library-base"]') || {}).content || "";
       const root = String(base).replace(/\/+$/, "");
@@ -110,7 +110,7 @@
     noteEl.textContent = `Showing ${shown.toLocaleString()} of ${all.length.toLocaleString()}.`;
   }
 
-  if (!window.MOCorpora || !window.MOCorpora.load) {
+  if (!window.MOCorpora || !window.MOFaithCatalogue.load) {
     countEl.textContent = "";
     noteEl.textContent = "The catalogue could not be loaded.";
     return;
@@ -136,7 +136,7 @@
   }
 
   loadOriginals().then(() => Promise.all(AI_CORPORA.map((id) =>
-    window.MOCorpora.load(id).then((works) => ({ id, works })).catch(() => ({ id, works: [] }))))
+    window.MOFaithCatalogue.load(id).then((works) => ({ id, works })).catch(() => ({ id, works: [] }))))
     .then((sets) => {
       sets.forEach(({ id, works }) => {
         const meta = window.MOCorpora.get(id);

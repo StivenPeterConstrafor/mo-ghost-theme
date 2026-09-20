@@ -45,7 +45,7 @@
       logs three CSP errors per load and mislabels the notebook "sync
       unavailable". This drops the config while the window between the two files
       is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=598b7ddddefac203"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=d2003c82432d7011"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
-<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=67d2d5b9fce4761c">
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=c82a32a1036787b2">
 {{/contentFor}}
 
 {{!-- /the-faith-received/read/ — the ported page-native reader.
@@ -71,6 +71,7 @@
 <div class="app no-facs nosb faith-port-read-page" id="app">
   <aside class="sidebar">
     <div class="work"><div class="wt" id="wt">…</div><div class="wmeta" id="wmeta"></div>{{!-- COinS removed: it advertised thefaithreceived.vercel.app as publisher. --}}</div>
+    <div class="contents-toolbar"><span>Contents</span><button id="contentsClose" type="button" aria-label="Close contents">×</button></div>
     <nav class="nav" id="nav"></nav>
   </aside>
   <div class="scroll" id="scroll">
@@ -218,7 +219,7 @@
 <div id="frPortAssets" hidden
      data-read-tools="{{asset "js/port/read-tools.js"}}&amp;frv=8ae33809b62afe23"
      data-ask-jobs="{{asset "js/port/ask-jobs.js"}}&amp;frv=408f593670c4a344"></div>
-<script src="{{asset "js/port/reader-core.js"}}&amp;frv=485302c1e2e5f264"></script>
+<script src="{{asset "js/port/reader-core.js"}}&amp;frv=4c69dfc3041b5743"></script>
 {{!-- The reader's Tools popover writes to OUR stores: the mo-kit bookmark
      All Works draws its row stars from, and the notebook the desk reads. --}}
 <script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>

@@ -2,7 +2,7 @@
 (function(){
  if(!window.MOCorpora||!document.querySelector('.faith-landing'))return;
  const ids=['pg','pld','po','tfr','eebo','confessions','mo'];
- Promise.all(ids.map(id=>window.MOCorpora.load(id).catch(()=>[]))).then(sets=>{
+ Promise.all(ids.map(id=>window.MOFaithCatalogue.load(id).catch(()=>[]))).then(sets=>{
    sets.forEach((works,i)=>{if(works.length)document.querySelectorAll(`[data-landing-corpus="${ids[i]}"]`).forEach(el=>el.textContent=`${works.length.toLocaleString()} ${ids[i]==='confessions'?'documents':'works'}`);});
    if(sets.some(works=>!works.length))return; // Keep descriptive labels if any catalogue failed.
    const all=sets.flat();

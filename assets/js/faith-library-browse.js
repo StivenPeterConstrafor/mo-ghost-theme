@@ -70,7 +70,7 @@
     // never hold up the whole page.
     renderCollections();
     LIBRARY_IDS.forEach((id) => {
-      window.MOCorpora.load(id).then((works) => {
+      window.MOFaithCatalogue.load(id).then((works) => {
         if (!works.length) return;
         const c = window.MOCorpora.get(id);
         collections.set(id, { id, meta: c, works, authors: groupByAuthor(works) });
@@ -616,7 +616,7 @@
 
   function loadConfessions() {
     if (!documentsSection) return;
-    window.MOCorpora.load("confessions").then((list) => {
+    window.MOFaithCatalogue.load("confessions").then((list) => {
       if (!list.length) return;
       const grid = documentsSection.querySelector(".faith-card-grid");
       appendCards(grid, list, (c) =>

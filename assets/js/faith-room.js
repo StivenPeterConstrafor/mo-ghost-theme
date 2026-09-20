@@ -286,13 +286,13 @@
   root.innerHTML = '<p class="faith-room-status">Loading the collection&hellip;</p>';
 
   const source = isAll
-    ? Promise.all(ALL.map((id) => window.MOCorpora.load(id).catch(() => [])))
+    ? Promise.all(ALL.map((id) => window.MOFaithCatalogue.load(id).catch(() => [])))
         .then((sets) => sets.flat())
     : Promise.all([
-      window.MOCorpora.load(collectionId),
+      window.MOFaithCatalogue.load(collectionId),
       shelfTradition
         ? Promise.all(MIXED.filter((id) => id !== collectionId)
-          .map((id) => window.MOCorpora.load(id).catch(() => [])))
+          .map((id) => window.MOFaithCatalogue.load(id).catch(() => [])))
           .then((sets) => sets.flat().filter((w) =>
             String(w.tradition || "").trim() === shelfTradition))
         : [],
@@ -1042,7 +1042,7 @@
       // in the sort, so one page of the Latin Fathers printed twenty-two
       // separate "Unknown author" rows. A name gets one block, at the
       // place it first appears.
-      const key = `${(w.title || "").toLowerCase()}|${w.volume || ""}`;
+      const key = `${w.corpus}|${w.id}`;
       let g = byName.get(name);
       if (!g) {
         g = { name, works: [], seen: new Set() };

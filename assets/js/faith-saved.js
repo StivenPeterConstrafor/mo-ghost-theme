@@ -69,7 +69,7 @@
     });
 
     return Promise.all([...wanted.keys()].map((id) =>
-      window.MOCorpora.load(id).then((works) => ({ id, works })).catch(() => ({ id, works: [] }))
+      window.MOFaithCatalogue.load(id).then((works) => ({ id, works })).catch(() => ({ id, works: [] }))
     )).then((sets) => {
       const rows = [];
       sets.forEach(({ id, works }) => {
