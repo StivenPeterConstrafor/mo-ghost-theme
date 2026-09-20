@@ -1,3 +1,9 @@
+/* Integration update, 2026-09-19: this renderer is mounted only inside /web.
+ * Citation data comes from MOFaithWebGraph (the Web's current authors/edges),
+ * including small citation pairs and self-citations. Historical notes below
+ * describing the retired mine/citations export and its five-citation floor
+ * no longer describe the data source. Shelf Scripture exports are unchanged.
+ */
 /*
  * Constellations — the map workspace on
  * /the-faith-received/research/ (the "Constellations" tab).

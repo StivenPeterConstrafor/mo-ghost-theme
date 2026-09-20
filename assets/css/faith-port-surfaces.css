@@ -166,7 +166,7 @@ body.web-constellation-mode #atlas,body.web-constellation-mode #explorer,body.we
 @media(max-width:640px){#faith-web-constellations{padding:20px 16px}#faith-web-constellations .cn-controls{gap:12px}#faith-web-constellations .cn-control:first-child{width:100%}#faith-web-constellations .cn-select{width:100%}}
 
 @media(max-width:640px){
- #faith-web-constellations .cn-controls{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+ #faith-web-constellations .cn-controls{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
  #faith-web-constellations .cn-control:first-child,#faith-web-constellations .cn-control:last-child{grid-column:1/-1}
  #faith-web-constellations .cn-views{gap:4px 10px}
  #faith-web-constellations .cn-view-btn{font-size:14px;min-height:38px}
