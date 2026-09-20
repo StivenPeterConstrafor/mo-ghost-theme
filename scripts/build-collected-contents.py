@@ -56,7 +56,7 @@ def build(catalogue,metadata):
         if slug=='luther-wa-schriften-55-ii':
             # The published outline places every entry on 1028; do not invent section anchors.
             summary='Psalm texts and notes; description of the Dresden scholia manuscript; editorial material'
-        result[slug]={'summary':summary,'sections':items,'source':'/v1/works/'+slug+'/meta.json'}
+        result[slug]={'summary':summary,'volume':parts[0].strip(),'sections':items,'source':'/v1/works/'+slug+'/meta.json'}
     if missing:raise ValueError('Missing metadata: '+', '.join(missing))
     return {'generated':str(datetime.date.today()),'works':result}
 if __name__=='__main__':

@@ -17342,3 +17342,5 @@ a.fr-btn:hover,
 .faith-room .frcw-volume.frb-row>a{grid-column:1;grid-row:1;min-width:0}
 .faith-room .frcw-volume.frb-row>.frb-mark{grid-column:2;grid-row:1;margin:5px 0 0}
 .faith-room .frcw-volume.frb-row>.frcw-contents,.faith-room .frcw-volume.frb-row>.frcw-unindexed{grid-column:1/-1;grid-row:2}
+
+.faith-room .fro-card .frcw-preview{font-size:12px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}

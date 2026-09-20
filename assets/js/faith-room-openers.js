@@ -98,10 +98,12 @@
       // the page last read rather than at the title page.
       const href = `/the-faith-received/read/?w=${encodeURIComponent(slug)}`
         + `#b${encodeURIComponent(e.page)}-0`;
-      const meta = [e.author, `fol. ${e.page}`].filter(Boolean).join(" · ");
+      const contents=window.MOCollectedContents?.get(slug);
+      const preview=window.MOCollectedContents?.preview(slug)||"";
+      const meta = [e.author, contents?.volume, `fol. ${e.page}`].filter(Boolean).join(" · ");
       return `<a class="fro-card" href="${esc(href)}" title="${esc(title)}">` +
         `<span class="fro-card-t">${esc(title)}</span>` +
-        `<span class="fro-card-m">${esc(meta)}</span></a>`;
+        `<span class="fro-card-m">${esc(meta)}</span>${preview}</a>`;
     }).join("");
 
     return `<div class="fro-block fro-continue">` +
@@ -287,9 +289,10 @@
   Promise.all([
     Promise.all(ALL.map((id) => window.MOCorpora.load(id).catch(() => []))),
     loadRoster(),
+    window.MOCollectedContents?.ready,
   ])
     .then(([sets, roster]) => {
-      const html = first + shelves(sets.flat(), roster);
+      const html = continueReading() + shelves(sets.flat(), roster);
       if (html) root.innerHTML = html;
       else root.remove();
     })
