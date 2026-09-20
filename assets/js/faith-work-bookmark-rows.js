@@ -55,7 +55,7 @@
   function sourceSlug(id) {
     const ref = legacy?.parseId(id);
     if (!ref || ref.corpus === 'mo') return null;
-    return ['eebo','pld','pg','po'].includes(ref.corpus) && !ref.work.startsWith(ref.corpus+'-') ? ref.corpus+'-'+ref.work : ref.work;
+    return ['eebo','pld','pg','po'].includes(ref.corpus) && !ref.work.startsWith(`${ref.corpus}-`) ? `${ref.corpus}-${ref.work}` : ref.work;
   }
   // Catalogue saves and reader saves now use the same source notebook.
   // MereO-only editions keep their existing account bookmark service.
@@ -65,7 +65,7 @@
     ready: () => legacy.available() ? legacy.ready().then(() => notebook.savedKeys()) : Promise.resolve(notebook.savedKeys()),
     has: id => sourceSlug(id) ? notebook.hasReference(sourceSlug(id), null) : legacy.has(id),
     subscribe: legacy.subscribe,
-    toggle: (id, title, url) => {
+    toggle(id, title, url) {
       const slug = sourceSlug(id);
       if (!slug) return legacy.toggle(id);
       return notebook.hasReference(slug, null) ? notebook.unsave(slug, null) : notebook.saveWork({slug, title, url});

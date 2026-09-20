@@ -176,7 +176,7 @@
     works.forEach((w) => {
       let t = String(w.tradition || "").trim();
       if (!t) return;
-      let parent = (window.MOCorpora.traditionParent
+      const parent = (window.MOCorpora.traditionParent
         ? window.MOCorpora.traditionParent(t, w.corpus) : "") || "";
       // The party, then the family it files under.
       let party = "";
@@ -281,10 +281,13 @@
 
   /* ---- Render ------------------------------------------------------ */
 
+  const catalogueReturn = '<nav class="fro-catalogue-return" aria-label="Catalogue navigation"><a href="/the-faith-received/all-works/?collection=all">← All shelves</a></nav>';
+  const initial = new URLSearchParams(location.search);
+  root.classList.toggle("is-filtered", ["q", "tradition", "denomination", "party", "century", "in", "letter", "page"].some(k => !!initial.get(k)));
   // Continue reading is local and instant, so it paints before the
   // catalogue is in rather than waiting on a fetch it does not need.
   const first = continueReading();
-  if (first) root.innerHTML = first;
+  root.innerHTML = catalogueReturn + first;
 
   Promise.all([
     Promise.all(ALL.map((id) => window.MOCorpora.load(id).catch(() => []))),
@@ -292,7 +295,7 @@
     window.MOCollectedContents?.ready,
   ])
     .then(([sets, roster]) => {
-      const html = continueReading() + shelves(sets.flat(), roster);
+      const html = catalogueReturn + continueReading() + shelves(sets.flat(), roster);
       if (html) root.innerHTML = html;
       else root.remove();
     })

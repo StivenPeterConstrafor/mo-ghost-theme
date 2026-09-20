@@ -13,7 +13,7 @@
     const token = await window.MOAuth?.tokenFor(url.href);
     if (!token) return new Response(JSON.stringify({error: 'Sign in to use this research tool.'}), {status: 401, headers: {'Content-Type': 'application/json'}});
     const headers = new Headers(init?.headers || (typeof input !== 'string' ? input.headers : undefined));
-    headers.set('Authorization', 'Bearer ' + token);
+    headers.set('Authorization', `Bearer ${token}`);
     return previous(input, {...init, headers});
   };
 })();

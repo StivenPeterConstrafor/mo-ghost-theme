@@ -3379,7 +3379,7 @@
     const cat = cats.find((c) => c && c.k === key);
     dossierEl.appendChild(textEl("p", "cn-dossier-kicker", cat && cat.l ? cat.l : "Unclassified"));
     dossierEl.appendChild(dossierTitle(node, node.t || node.a || "Untitled"));
-    if(!isAll)dossierEl.appendChild(webLink("Read Scripture evidence", "#shelf-evidence="+encodeURIComponent(shelfSlug)+"/"+view+"?"+new URLSearchParams({entry:node.t||node.a||""})));
+    if(!isAll)dossierEl.appendChild(webLink("Read Scripture evidence", `#shelf-evidence=${encodeURIComponent(shelfSlug)}/${view}?${new URLSearchParams({entry:node.t||node.a||""})}`));
     if (node.sub) dossierEl.appendChild(textEl("p", "cn-dossier-sub", node.sub));
 
     // Only on the merged shelf, where one point can stand for the same
@@ -3581,7 +3581,7 @@
   }
 
   function webLink(label, hash) {
-    const a=textEl("a", "cn-open-source", label);a.href="/the-faith-received/web/"+hash;return a;
+    const a=textEl("a", "cn-open-source", label);a.href=`/the-faith-received/web/${hash}`;return a;
   }
   function renderCiteDossier(i) {
     const node = nodes[i];
@@ -3593,7 +3593,7 @@
       textEl("p", "cn-dossier-kicker", key ? catLabel(key) : "Unclassified")
     );
     dossierEl.appendChild(dossierTitle(node, node.a || "Untitled"));
-    if(node.fk)dossierEl.appendChild(webLink("Follow citations and read sources", "#a="+encodeURIComponent(node.fk)));
+    if(node.fk)dossierEl.appendChild(webLink("Follow citations and read sources", `#a=${encodeURIComponent(node.fk)}`));
     if (nodes.length > 1) dossierEl.appendChild(compareButton(i));
 
     const by = refuters.length > i ? refuters[i] : 0;
@@ -3708,7 +3708,7 @@
     const c = f.cite;
     dossierEl.textContent = "";
     const pair=edges[j];
-    if(pair&&nodes[pair[0]].fk&&nodes[pair[1]].fk)dossierEl.appendChild(webLink("Read the recorded passages", "#e="+encodeURIComponent(nodes[pair[0]].fk)+","+encodeURIComponent(nodes[pair[1]].fk)));
+    if(pair&&nodes[pair[0]].fk&&nodes[pair[1]].fk)dossierEl.appendChild(webLink("Read the recorded passages", `#e=${encodeURIComponent(nodes[pair[0]].fk)},${encodeURIComponent(nodes[pair[1]].fk)}`));
     dossierEl.appendChild(
       textEl("p", "cn-dossier-kicker", c.argument ? "Argument" : "Citation")
     );
@@ -4502,7 +4502,7 @@
     // the merged shelf, where nothing was fetched on load.
     ensureFingerprints();
     renderLinkDossier(j);
-    if(citeMode){const pair=edges[j];location.hash="e="+encodeURIComponent(nodes[pair[0]].fk)+","+encodeURIComponent(nodes[pair[1]].fk);}
+    if(citeMode){const pair=edges[j];location.hash=`e=${encodeURIComponent(nodes[pair[0]].fk)},${encodeURIComponent(nodes[pair[1]].fk)}`;}
     syncIndexSelection();
     announce(
       f.cite
@@ -6035,7 +6035,7 @@
     const q=new URLSearchParams({arrange:layout});
     if(focusedAuthor)q.set("author",focusedAuthor);
     else if(selected>=0&&nodes[selected])q.set("entry",nodes[selected].t||nodes[selected].a||"");
-    history.replaceState(null,"","#shelves="+encodeURIComponent(shelfSlug)+"/"+view+"?"+q);
+    history.replaceState(null,"",`#shelves=${encodeURIComponent(shelfSlug)}/${view}?${q}`);
   }
   window.MOFaithConstellations={state(){return {view,layout,author:focusedAuthor};},showAuthor(slug){
     focusedAuthor=slug||"";

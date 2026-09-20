@@ -113,7 +113,7 @@
     lu: "Lutheran", hl: "Humanism and Law"
   };
   const studyRoot = document.createElement("section");
-  studyRoot.className = "faith-shelf-research" + (root.classList.contains("container") ? " container" : "");
+  studyRoot.className = `faith-shelf-research${root.classList.contains("container") ? " container" : ""}`;
   studyRoot.setAttribute("aria-label", "Shelf research and reference");
   studyRoot.hidden = true;
   root.insertAdjacentElement("beforebegin", studyRoot);
@@ -134,9 +134,9 @@
     ];
     studyRoot.innerHTML = `<div class="faith-shelf-study-head"><div><h2>Study this shelf</h2><p>${escapeHtml(name)}</p></div>`
       + `<a class="faith-shelf-ask" href="${base}ask/?trad=${encodeURIComponent(name)}">Ask this shelf</a></div>`
-      + `<nav class="faith-shelf-study-grid" aria-label="Study ${escapeHtml(name)}">`
-      + doors.map(([label, href, description]) => `<a class="faith-shelf-study-card" href="${base}${href}"><strong>${label}</strong><span>${description}</span></a>`).join("")
-      + `</nav><div class="faith-shelf-reference"><h2>Reference</h2>`
+      + `<nav class="faith-shelf-study-grid" aria-label="Study ${escapeHtml(name)}">${
+       doors.map(([label, href, description]) => `<a class="faith-shelf-study-card" href="${base}${href}"><strong>${label}</strong><span>${description}</span></a>`).join("")
+       }</nav><div class="faith-shelf-reference"><h2>Reference</h2>`
       + `<a class="faith-shelf-study-card" href="${base}dictionary/"><strong>Dictionnaire de Théologie Catholique</strong>`
       + `<span>The French theological dictionary (Vacant–Mangenot–Amann, 1899–1950). Search a headword and read the article in French and English.</span>`
       + `<span class="faith-shelf-reference-action">Open dictionary</span></a></div>`;
@@ -813,9 +813,21 @@
   // leave the right one empty.
   const WIDE_AT = 10;
 
+  function authorLabel(value) {
+    const raw = String(value || "");
+    if (!raw.includes("&")) return raw;
+    const decoder = document.createElement("textarea");
+    // Decode entity tokens only. The resulting label is escaped before rendering.
+    return raw.replace(/&(?:#[0-9]+|#x[0-9a-f]+|[a-z][a-z0-9]+);/gi, entity => {
+      decoder.innerHTML = entity;
+      return decoder.value;
+    });
+  }
+
   function block(name, list, markOf) {
     const wide = list.length >= WIDE_AT ? " btrad--wide" : "";
     const key = fold(name);
+    name = authorLabel(name);
     const rows = list.map((w) => row(w, markOf ? markOf(w) : undefined)).join("");
     const n = list.length;
 
@@ -931,7 +943,19 @@
       + `&larr; All ${escapeHtml(shelf.many)}</button></div>`;
   }
 
+  const pageHeading = document.querySelector(".bhero-title");
+  const pageLede = document.querySelector(".bhero-lede");
+  const originalHeading = pageHeading?.textContent || "";
+  const originalLede = pageLede?.textContent || "";
   function render() {
+    const narrowed = isAll && !!(filter || tradition || denomination || party || century || collection || letter || page > 1);
+    const openers = document.querySelector("[data-faith-openers]");
+    if (openers) openers.classList.toggle("is-filtered", narrowed);
+    if (isAll) {
+      const name = RESEARCH_NAMES[RESEARCH_SHELVES[denomination || tradition]] || "";
+      if (pageHeading) pageHeading.textContent = name || originalHeading;
+      if (pageLede) pageLede.textContent = name ? "Browse the works below, or search for an author or title." : originalLede;
+    }
     renderShelfResearch();
     // The denomination filter can move the reader from one series to
     // another, or off the Fathers entirely, between renders. A volume
@@ -1108,9 +1132,9 @@
     // What the count is counting. "8,989 works in the whole library" was
     // true of the page and false of the list under it once the filter had
     // cut the library down to one shelf, so a shelf in hand names itself.
-    const label = shelf && isAll ? denomination
-      : isAll ? "the whole library"
-        : (corpus ? corpus.label : "the collection");
+    const label = isAll
+      ? denomination || tradition || (collection && window.MOCorpora.get(collection)?.label) || "the whole library"
+      : (corpus ? corpus.label : "the collection");
     // The rail files by the author's surname, which is the other view's
     // question. Inside a volume it would be a second index over at most
     // a few dozen works.
@@ -1186,19 +1210,19 @@
     // Denomination filter can hand the reader a series after that. A nav
     // that was never written cannot be shown later, so it is written and
     // hidden, and the block below keeps its name and its state in step.
-    const views = (shelf || isAll
+    const views = `${shelf || isAll
       ? `<nav class="faith-view-toggle faith-room-views" role="tablist" aria-label="How to browse this collection"${shelf ? "" : " hidden"}>`
         + `<button type="button" class="faith-view-toggle-tab" data-room-view="author" role="tab">By author</button>`
         + `<button type="button" class="faith-view-toggle-tab" data-room-shelf-tab data-room-view="${shelf ? shelf.view : "volume"}" role="tab">${escapeHtml(shelf ? shelf.tab : "By volume")}</button>`
         + `</nav>`
-      : "")
+      : ""
       // The parties within English Divines, as a row of tabs under the
       // views — the corpus site's own control for that shelf (All ·
       // Puritan · Anglican · Westminster Assembly, each with its count).
       // Written into the shell once and filled by render, like the
       // views; shown only where English Divines is the denomination in
       // hand.
-      + `<nav class="faith-view-toggle faith-room-parties" role="tablist" aria-label="Within English Divines" hidden></nav>`;
+       }<nav class="faith-view-toggle faith-room-parties" role="tablist" aria-label="Within English Divines" hidden></nav>`;
 
     // What the count reports is whatever the reader is looking at: the
     // works in the collection, the volumes on the shelf, or the works
