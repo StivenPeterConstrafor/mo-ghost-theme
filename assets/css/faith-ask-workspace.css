@@ -32,6 +32,14 @@
    Styling those states is this file's job; producing them is not. */
 
 .fra {
+  /* Imported readers redefine --font-body. Ask keeps the site UI face. */
+  --font-body: "Source Serif Pro", Georgia, serif;
+  --fra-bg: var(--color-page);
+  --fra-card: var(--color-page);
+  --fra-fg: var(--color-dark);
+  --fra-muted: var(--color-muted);
+  --fra-border: var(--color-card-border);
+  --fra-hl: var(--color-cream);
   --fra-rail: 272px;
   --fra-source-w: 53%;
   --fra-gutter: 28px;
@@ -144,12 +152,13 @@ html.fra-open, html.fra-open body { overflow: hidden; }
    the popovers with the attribute, and a display rule of ours would
    quietly override it — the empty cream bar above the composer was
    exactly that. */
-.fra [hidden] { display: none !important; }
+.fra[hidden], .fra [hidden] { display: none !important; }
 
 /* The launcher. It lives outside the panel, on any page the engine is
    loaded on, and opens the workspace. Bottom-right and quiet: it sits
    over a reading surface and must not compete with the text. */
 .fra-launcher {
+  --font-body: "Source Serif Pro", Georgia, serif;
   position: fixed;
   right: 18px;
   bottom: 18px;

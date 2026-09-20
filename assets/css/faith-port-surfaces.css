@@ -136,3 +136,15 @@ body.research-page header.site.glass,
   .faith-port-readen-page .sidebar { top: var(--mo-head, 61px); height: calc(100dvh - var(--mo-head, 61px)); }
   .faith-port-readen-page .scrim { top: var(--mo-head, 61px); }
 }
+
+/* A persistent exit from every atlas hash view, outside its mode router. */
+body.web-page .faith-atlas-home {
+  flex: 0 0 auto;
+  color: var(--fg);
+  font: inherit;
+  white-space: nowrap;
+  text-decoration: none;
+  padding: .5rem 0;
+}
+body.web-page .faith-atlas-home:hover { text-decoration: underline; text-underline-offset: .2em; }
+body.web-page .faith-atlas-home:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
