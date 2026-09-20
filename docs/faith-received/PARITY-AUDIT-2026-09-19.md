@@ -138,3 +138,17 @@ Quenstedt's two known witnesses remain separate: 418 scan-witness records and 30
 Verified: Ghost displayed all 418 and all 305 records simultaneously in their respective open folds; the rebuilt source preview displayed all 418 and exposes both witnesses. Both source and Ghost allow the second witness to open and page. The original blocked disclosure was not reproduced in a fresh source browser session. On Ghost, Augustine selection survived Rings, Jerome selection survived By tradition and Timeline, the all-connections control rendered all 1,067 available Jerome incoming rows, Ausonius displays Latin Fathers, and the full tradition map has no Unclassified group. Desktop 1280px and mobile 390px were checked, including light/dark label contrast, selected map return and no horizontal overflow. Native focused maps preserve full refuter counts. No Web console errors on tested paths.
 
 Source files changed: `tools/prdl_reader_prototype/connection-evidence.js`, its CSS and tests, `web_shell.html`, new `web-author-shelves.json`, and the asset-copy entry in `tools/build_dist.py`. A portable source patch is included in `SOURCE-REFERENCE-CONTROLS.patch` because Davenant's source directory is not a Git checkout. Source build passes the secrets and page gates; 25 evidence tests pass. Theme build passes including the new directed-network regression checks. Local integration is updated. Vercel production is not deployed: the port handoff requires the owner's literal “deploy to prod”. No production Worker changes or PRs to Ian.
+
+
+## Production deployment confirmed
+
+Owner explicitly approved “deploy to prod”. Deployed through `bash tools/deploy_site.sh` at 2026-09-20T02:18:46+00:00. The script serialized behind another deployment, then passed the build, secrets, page, drift and page-count gates and its protected-file sanity checks.
+
+Deployment `dpl_Bgw4m3VGZHvSG8mpAzEhXb8akc7g` is READY on `https://thefaithreceived.vercel.app`. The script’s embed marker MD5 matched. Additional SHA-256 verification on the production alias matched the tested build:
+
+- `connection-evidence.js`: `e249e9c2c5f8fbefed7e50bfea2e3e2338f6d54ed14404443fb2660ae7e93fac`
+- `connection-evidence.css`: `62ef89e4148c2cdabcbd7cb2eb46db2c8aa57bdfc88ceb468255d6b04aee8542`
+- `web-author-shelves.json`: `ef3e2e56c60291d0d7ad09b9ca11fab5145958df9a8801c52b8eb67b9d3c4e78`
+- `web.html`: `00ac64d4b8ff86d96f98e77b373d92133cd1209885684410f27861c2b774c6a0`
+
+Browser verification on the production alias opened all 418 records in Quenstedt’s scan witness and all 305 in the Wittenberg-1685 witness. Both folds remained open, the heading identified one work in two witnesses without claiming a unique combined count, and no console errors were reported. This supersedes the earlier pending-production note. Localhost remains updated; this action did not publish the Ghost theme to Mere Orthodoxy.
