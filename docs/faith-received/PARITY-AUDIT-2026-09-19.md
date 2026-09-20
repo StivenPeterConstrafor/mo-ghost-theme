@@ -94,3 +94,11 @@ The final anonymous audit checked 15 source-page mappings, 17 static source URLs
 The test save was recognized on its catalogue row, then removed through that row; the button returned to its unsaved state. No earlier saved items were removed. The standalone English reader's dark wrapper and heading were measured as rgb(34,35,32) and rgb(233,233,229). The library's research navigation uses white text on the existing MereO image hero. Phone viewport was 390 × 844; no page-level horizontal overflow was measured on the tested library, search, comparison and readers.
 
 One short Ask and one short Deep test were used. The generated answers retained their verification warnings. Their content is test output, not a new curated source. Local preview authentication is time-limited and must be explicitly re-enabled after its 24-hour staging window expires; this restriction does not apply to the site's normal production member verifier.
+
+## Correction: research sections inside opened shelves
+
+The first audit checked the all-works shelf cards and their destinations but missed the research/reference sections inside the destination shelf pages. The owner's annotated Latin Fathers comparison exposed this omission.
+
+The shared `faith-room.js` renderer now places visible Study this shelf cards (Scripture, Authors, Topics, The Web), Ask this shelf, and a separate dictionary Reference card above the catalogue. The section is present on the dedicated PL, PG, PO and EEBO pages and on filtered all-works destinations for Medieval, Roman Catholic, Continental Reformed, Lutheran and Humanism and Law. It updates with the active shelf filters and is hidden when no particular shelf is selected.
+
+Browser verification: all nine destination shelves rendered all six local links with their correct research codes. The exact reported `/patrologia-latina/?collection=pld` page was checked; its dictionary card opened the lookup interface, and its Topics card arrived with Latin Fathers selected (87 topics at verification). At 390 × 844, the cards stacked into one 350px column and document scroll width remained 390px. This checks the visible destination content, not merely an HTTP status or the existence of a route.

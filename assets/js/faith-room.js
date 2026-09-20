@@ -120,8 +120,9 @@
   function renderShelfResearch() {
     const code = RESEARCH_SHELVES[shelfTradition || denomination || tradition]
       || RESEARCH_COLLECTIONS[collection || collectionId];
-    studyRoot.hidden = !code;
-    if (!code || studyRoot.dataset.shelf === code) return;
+    const valid = Object.hasOwn(RESEARCH_NAMES, code);
+    studyRoot.hidden = !valid;
+    if (!valid || studyRoot.dataset.shelf === code) return;
     studyRoot.dataset.shelf = code;
     const base = "/the-faith-received/";
     const name = RESEARCH_NAMES[code];
