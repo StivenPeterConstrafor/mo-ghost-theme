@@ -676,9 +676,9 @@
   };
   const LINK_GLOSS = {
     authors:
-      "A line joins two authors who reach for the same passages, not merely the same books.",
-    works: "A line joins two works that reach for the same passages, not merely the same books.",
-    doctrines: "A line joins two topics that rest on the same texts.",
+      "A line connects authors with similar patterns of Scripture citation.",
+    works: "A line connects works with similar patterns of Scripture citation.",
+    doctrines: "A line connects topics supported by similar sets of source texts.",
     cited:
       "A line runs from an author to someone they cite. It counts every citation the reception index holds for that pair.",
     contested:
@@ -770,7 +770,7 @@
   const CITE_TRADITION_CAVEAT =
     "Authors are grouped under the shelf containing the most of their indexed works.";
   const CITE_CONTESTED_CAVEAT =
-    "Being argued with is not a verdict. It is not the same as being ignored either. Several of the figures nearest this centre are also among the most cited in the library, which is why size here is total citations rather than refutations. A large count can also come from a single opponent, so every figure below is given with the number of authors behind it. A point refuted by fewer than three authors is drawn as a hollow ring.";
+    "Point size represents total citations. Hollow points have fewer than three distinct refuting authors. Select an author to see who cites or refutes them.";
 
   const CITE_LINE_KEY = {
     cited:
@@ -793,9 +793,9 @@
    */
   const ALL_BLURB = {
     authors:
-      "Every author the library has been read for, on one plate, each filed under the part of Scripture they quote most. A name found on more than one shelf is drawn once.",
+      "Authors are grouped by the part of Scripture they cite most. Names appearing on several shelves are shown once.",
     doctrines:
-      "Every doctrinal topic the library has been read for, on one plate, each filed under the head of doctrine it belongs to. A topic found on more than one shelf is drawn once.",
+      "Topics are grouped by doctrine. Topics appearing on several shelves are shown once.",
   };
 
   /* The honest sentence about the edges, and the reason for it. Every
