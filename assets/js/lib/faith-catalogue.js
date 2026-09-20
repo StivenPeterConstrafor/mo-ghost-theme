@@ -8,7 +8,6 @@
   const fold = value => String(value || '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
   const publicWork = value => !withdrawn.has(String(typeof value === 'object' && value ? value.slug || value.id || value.w || value.work || '' : value || ''));
   let aliases = {}, keys = new Map(), duplicates = {}, workgroups = {}, canonical = null;
-  const additions = new Set(['apostles-creed','nicene-creed','heidelberg','westminster-shorter','didache','athanasius-incarnation','augustine-confessions','imitation-of-christ','edwards-resolutions','calvin-institutes','belgic']);
   const libraryIds = ['pg','pld','po','tfr','eebo','mo'];
   const corpusOf = slug => /^(pg|pld|po|eebo)-\d+$/.exec(slug)?.[1] || 'tfr';
   function setCanonical(data) { canonical = data.works || []; }
@@ -25,7 +24,7 @@
     return works.filter(displayWork).map(work => ({...work, authorOriginal:work.authorOriginal || work.author, author:authorName(work.author)}));
   }
   function catalogue(corpus, original) {
-    if (corpus === 'mo') return normalize(original.filter(w => additions.has(String(w.id))));
+    if (corpus === 'mo') return normalize(original).map(work => ({...work, supplement:true}));
     if (corpus === 'confessions' || !canonical) return normalize(original);
     const old = new Map(original.map(w => [workSlug(w), w]));
     return normalize(canonical.filter(w => corpusOf(w.slug) === corpus).map(w => {
@@ -43,7 +42,7 @@
   }
   const loaded = new Map();
   let ready = Promise.resolve();
-  const api = {publicWork, displayWork, workSlug, authorName, authorKey, normalize, setAliases, setWorkIdentity, setCanonical, catalogue, libraryIds, additions,
+  const api = {publicWork, displayWork, workSlug, authorName, authorKey, normalize, setAliases, setWorkIdentity, setCanonical, catalogue, libraryIds,
     load(id) {
       if (!loaded.has(id)) loaded.set(id, Promise.all([root.MOCorpora.load(id), ready]).then(([works]) => catalogue(id, works)));
       return loaded.get(id);

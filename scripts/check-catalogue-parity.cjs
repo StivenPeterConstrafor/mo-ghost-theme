@@ -15,5 +15,5 @@ console.table(counts(core));
 assert.equal(core.filter(w=>w.author==='Richard Baxter').length,155);
 assert.equal(core.filter(w=>w.author==='Thomas Manton').length,18);
 assert.ok(core.some(w=>w.slug==='pg-3127'));
-assert.equal(policy.additions.size,11);
-console.log(`${core.length} canonical works: every slug and shelf count matches Vercel, minus the withdrawn introductory volume. Eleven listed MereO additions are separate.`);
+assert.equal(policy.catalogue('mo', [{id:'edwards-resolutions',author:'Jonathan Edwards'},{id:'new-native-work',author:'Another author'}]).length,2);
+console.log(`${core.length} canonical works: every slug and shelf count matches Vercel, minus the withdrawn introductory volume. The full MereO English Editions catalogue remains separate.`);

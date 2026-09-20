@@ -27,3 +27,5 @@ assert.equal(policy.displayWork({id:'baxter-work'}),true);
 assert.equal(policy.displayWork({id:'second-witness'}),true);
 assert.equal(policy.normalize([{corpus:'eebo',id:'7'},{corpus:'tfr',id:'baxter-work'}]).length,1);
 console.log('Vercel duplicate folding: repeated import removed, explicit edition-group witness retained.');
+
+assert.equal(policy.catalogue('mo',[{id:'didache'},{id:'edwards-resolutions'},{id:'native-addition-not-featured'}]).length,3);
