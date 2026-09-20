@@ -97,6 +97,51 @@
   // (see tierOf), which is what the select was for.
   let page = Math.max(1, parseInt(params.get("page"), 10) || 1);
 
+  // Research belongs inside an opened shelf as well as on its catalogue card.
+  // These are the source library's nine shelf codes; the existing catalogue
+  // alias "Reformed" displays the canonical research label at the destination.
+  const RESEARCH_SHELVES = {
+    "Latin Fathers": "pl", "Greek Fathers": "gf", "Eastern Fathers": "po",
+    "Medieval": "md", "Roman Catholic": "rc", "Reformed": "rf",
+    "Continental Reformed": "rf", "English Divines": "ed", "Lutheran": "lu",
+    "Humanism and Law": "hl"
+  };
+  const RESEARCH_COLLECTIONS = { pld: "pl", pg: "gf", po: "po", eebo: "ed" };
+  const RESEARCH_NAMES = {
+    pl: "Latin Fathers", gf: "Greek Fathers", po: "Eastern Fathers", md: "Medieval",
+    rc: "Roman Catholic", rf: "Continental Reformed", ed: "English Divines",
+    lu: "Lutheran", hl: "Humanism and Law"
+  };
+  const studyRoot = document.createElement("section");
+  studyRoot.className = "faith-shelf-research" + (root.classList.contains("container") ? " container" : "");
+  studyRoot.setAttribute("aria-label", "Shelf research and reference");
+  studyRoot.hidden = true;
+  root.insertAdjacentElement("beforebegin", studyRoot);
+  function renderShelfResearch() {
+    const code = RESEARCH_SHELVES[shelfTradition || denomination || tradition]
+      || RESEARCH_COLLECTIONS[collection || collectionId];
+    studyRoot.hidden = !code;
+    if (!code || studyRoot.dataset.shelf === code) return;
+    studyRoot.dataset.shelf = code;
+    const base = "/the-faith-received/";
+    const name = RESEARCH_NAMES[code];
+    const doors = [
+      ["Scripture", `bible/?sh=${code}`, "Every citation of Scripture across the shelf, book by book and chapter by chapter, opening on the verse itself."],
+      ["Authors", `author/?sh=${code}`, "Each author’s room: their topics, their positions in their own words, and their reception."],
+      ["Topics", `topics/?sh=${code}`, "The doctrines this shelf treats, era by era, with the passages that carry them."],
+      ["The Web", "web/", "Fifteen centuries of citation: who reads whom, traced passage by passage."]
+    ];
+    studyRoot.innerHTML = `<div class="faith-shelf-study-head"><div><h2>Study this shelf</h2><p>${escapeHtml(name)}</p></div>`
+      + `<a class="faith-shelf-ask" href="${base}ask/?trad=${encodeURIComponent(name)}">Ask this shelf</a></div>`
+      + `<nav class="faith-shelf-study-grid" aria-label="Study ${escapeHtml(name)}">`
+      + doors.map(([label, href, description]) => `<a class="faith-shelf-study-card" href="${base}${href}"><strong>${label}</strong><span>${description}</span></a>`).join("")
+      + `</nav><div class="faith-shelf-reference"><h2>Reference</h2>`
+      + `<a class="faith-shelf-study-card" href="${base}dictionary/"><strong>Dictionnaire de Théologie Catholique</strong>`
+      + `<span>The great French theological dictionary (Vacant–Mangenot–Amann, 1899–1950). Search a headword and read the article in French and English.</span>`
+      + `<span class="faith-shelf-reference-action">Open dictionary</span></a></div>`;
+  }
+  renderShelfResearch();
+
   // ── The shelf a collection is cited by ───────────────────────────
   //
   // Only Migne's three. The other collections are cited by title and
@@ -882,6 +927,7 @@
   }
 
   function render() {
+    renderShelfResearch();
     // The denomination filter can move the reader from one series to
     // another, or off the Fathers entirely, between renders. A volume
     // number from the series they just left means nothing in the one they

@@ -17284,3 +17284,29 @@ a.fr-btn:hover,
 .faith-surface-links { display: flex; flex-wrap: wrap; gap: .65rem 1.25rem; margin-top: 1.5rem; }
 .faith-surface-links a { text-decoration: underline; text-underline-offset: .2em; }
 .bhero .faith-surface-links a { color: inherit; }
+
+/* Opened shelf: research and reference sit before the author/volume catalogue. */
+.faith-shelf-research { margin-bottom: 2.5rem; }
+.faith-shelf-research[hidden] { display: none; }
+.faith-shelf-study-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.faith-shelf-study-head h2,
+.faith-shelf-reference h2 { margin: 0 0 .35rem; font: 500 1.1rem/1.4 var(--font-display); color: var(--color-dark); }
+.faith-shelf-study-head p { margin: 0; font-size: .85rem; color: var(--color-muted); }
+.faith-shelf-ask { flex-shrink: 0; padding: .5rem .85rem; border: 1px solid var(--color-primary); border-radius: 4px; color: var(--color-primary); font-size: .9rem; }
+.faith-shelf-ask:hover { background: var(--color-primary); color: var(--color-white, #fff); }
+.faith-shelf-study-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.faith-shelf-study-card { display: flex; flex-direction: column; gap: .45rem; padding: 1.15rem 1.35rem; border: 1px solid var(--color-rule); border-radius: 4px; background: var(--color-white, #fff); color: var(--color-dark); text-decoration: none; }
+.faith-shelf-study-card strong { font: 500 1.3rem/1.25 var(--font-display); }
+.faith-shelf-study-card > span { color: var(--color-darkgrey); line-height: 1.65; font-style: italic; }
+.faith-shelf-study-card:hover { border-color: var(--color-primary); text-decoration: none; }
+.faith-shelf-study-card:hover strong { color: var(--color-primary); }
+.faith-shelf-reference { margin-top: 1.75rem; }
+.faith-shelf-reference h2 { margin-bottom: .75rem; }
+.faith-shelf-study-card .faith-shelf-reference-action { font-size: .85rem; font-style: normal; color: var(--color-primary); text-decoration: underline; text-underline-offset: .2em; }
+.faith-shelf-study-card:focus-visible,
+.faith-shelf-ask:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+@media (max-width: 640px) {
+  .faith-shelf-study-grid { grid-template-columns: 1fr; }
+  .faith-shelf-study-card { padding: 1rem; }
+  .faith-shelf-study-head { align-items: flex-start; }
+}
