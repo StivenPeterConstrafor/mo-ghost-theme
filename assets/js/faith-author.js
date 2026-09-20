@@ -73,7 +73,7 @@
   // Every collection, because an author appears in more than one:
   // Augustine is in Patrologia Latina and in his own collection, and
   // the English divines run across the Latin Library and EEBO.
-  const corpora = (window.MOCorpora && window.MOCorpora.all) || [];
+  const corpora = ((window.MOCorpora && window.MOCorpora.all) || []).filter(c => window.MOFaithCatalogue.libraryIds.includes(c.id));
 
   // Stiven's entry first, ours second. His catalogue is the standard,
   // so where he has written a life it wins outright; ours fills the

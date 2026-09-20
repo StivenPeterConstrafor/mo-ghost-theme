@@ -78,7 +78,7 @@
   // nothing to another shelf and are not fetched.
   const shelfMeta = document.querySelector('meta[name="tfr-room-shelf"]');
   const shelfTradition = (shelfMeta && shelfMeta.getAttribute("content") || "").trim();
-  const MIXED = ["mo", "tfr", "confessions"];
+  const MIXED = ["mo", "tfr"];
 
   let works = [];
   let tradition = params.get("tradition") || "";
@@ -280,7 +280,7 @@
   // works) was missing until 2026-09-15, so the one page that promises
   // the whole library was the one page those works could not be found
   // from.
-  const ALL = ["pg", "pld", "po", "tfr", "eebo", "confessions", "mo"];
+  const ALL = ["pg", "pld", "po", "tfr", "eebo", "mo"];
   const isAll = collectionId === "all";
   const corpus = isAll ? null : window.MOCorpora.get(collectionId);
   root.innerHTML = '<p class="faith-room-status">Loading the collection&hellip;</p>';

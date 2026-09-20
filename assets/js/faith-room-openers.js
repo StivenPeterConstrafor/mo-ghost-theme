@@ -20,7 +20,7 @@
   // The same seven the room reads on the all-works page. Kept in step
   // deliberately: a shelf count that disagrees with the table of
   // contents under it is worse than no shelf count at all.
-  const ALL = ["pg", "pld", "po", "tfr", "eebo", "confessions", "mo"];
+  const ALL = ["pg", "pld", "po", "tfr", "eebo", "mo"];
 
   // The shelves that are a room. Each of these rooms declares the same
   // tradition in its tfr-room-shelf meta, so what it lists and what this

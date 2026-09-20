@@ -55,7 +55,7 @@ if (sort(room) !== sort(openers)) {
   console.error(`      faith-room-openers.js ${sort(openers)}`);
 }
 
-const missing = declared.filter((id) => !room.includes(id));
+const missing = declared.filter((id) => id !== "confessions" && !room.includes(id));
 if (missing.length) {
   bad++;
   console.error(`  ✗ readable but not in All Works: ${missing.join(", ")}`);

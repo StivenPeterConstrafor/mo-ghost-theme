@@ -7,7 +7,11 @@
   const withdrawn = new Set(['westminster-assembly-minutes-vol-1']);
   const fold = value => String(value || '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
   const publicWork = value => !withdrawn.has(String(typeof value === 'object' && value ? value.slug || value.id || value.w || value.work || '' : value || ''));
-  let aliases = {}, keys = new Map(), duplicates = {}, workgroups = {};
+  let aliases = {}, keys = new Map(), duplicates = {}, workgroups = {}, canonical = null;
+  const additions = new Set(['apostles-creed','nicene-creed','heidelberg','westminster-shorter','didache','athanasius-incarnation','augustine-confessions','imitation-of-christ','edwards-resolutions','calvin-institutes','belgic']);
+  const libraryIds = ['pg','pld','po','tfr','eebo','mo'];
+  const corpusOf = slug => /^(pg|pld|po|eebo)-\d+$/.exec(slug)?.[1] || 'tfr';
+  function setCanonical(data) { canonical = data.works || []; }
   const workSlug = work => typeof work !== 'object' ? String(work || '') : ['eebo','pld','pg','po'].includes(work.corpus) && !String(work.id).startsWith(`${work.corpus}-`) ? `${work.corpus}-${work.id}` : String(work.slug || work.id || '');
   function setWorkIdentity(fold, groups) { duplicates = fold || {}; workgroups = groups?.works || {}; }
   const displayWork = work => publicWork(work) && (!duplicates[workSlug(work)] || Boolean(workgroups[workSlug(work)]));
@@ -20,27 +24,46 @@
   function normalize(works) {
     return works.filter(displayWork).map(work => ({...work, authorOriginal:work.authorOriginal || work.author, author:authorName(work.author)}));
   }
+  function catalogue(corpus, original) {
+    if (corpus === 'mo') return normalize(original.filter(w => additions.has(String(w.id))));
+    if (corpus === 'confessions' || !canonical) return normalize(original);
+    const old = new Map(original.map(w => [workSlug(w), w]));
+    return normalize(canonical.filter(w => corpusOf(w.slug) === corpus).map(w => {
+      const previous = old.get(w.slug) || {};
+      const series = /^(?:PL|PG|PO)(?:\s+Tome)?\s+(\d+)/i.exec(w.volume || '');
+      const volume = series ? series[1] : String(w.volume || '');
+      return {...previous, corpus, id:corpus === 'tfr' ? w.slug : w.slug.replace(`${corpus}-`, ''),
+        slug:w.slug, title:w.title_en || w.title, titleLatin:w.title_en && w.title_en !== w.title ? w.title : previous.titleLatin || '',
+        author:authorName(previous.author).includes(' (') ? authorName(previous.author) : w.author_en || w.author, volume, tradition:w.tradition === 'Reformed' ? 'Continental Reformed' : w.tradition, party:w.party || '',
+        eyebrow:series ? w.volume : w.tradition, extent:w.n_pages || previous.extent || 0,
+        order:w.po ?? previous.order, cols:w.cols || previous.cols,
+        url:`/the-faith-received/read/?w=${encodeURIComponent(w.slug)}`,
+      };
+    }));
+  }
   const loaded = new Map();
   let ready = Promise.resolve();
-  const api = {publicWork, displayWork, workSlug, authorName, authorKey, normalize, setAliases, setWorkIdentity,
+  const api = {publicWork, displayWork, workSlug, authorName, authorKey, normalize, setAliases, setWorkIdentity, setCanonical, catalogue, libraryIds, additions,
     load(id) {
-      if (!loaded.has(id)) loaded.set(id, Promise.all([root.MOCorpora.load(id), ready]).then(([works]) => normalize(works)));
+      if (!loaded.has(id)) loaded.set(id, Promise.all([root.MOCorpora.load(id), ready]).then(([works]) => catalogue(id, works)));
       return loaded.get(id);
     },
   };
   root.MOFaithCatalogue = api;
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (!root.document || !root.location.pathname.startsWith('/the-faith-received/')) return;
-  const readJSON = url => fetch(url).then(response => { if (!response.ok) throw Error('Catalogue identity unavailable'); return response.json(); });
+  const readJSON = url => fetch(url, {cache:'no-cache'}).then(response => { if (!response.ok) throw Error('Catalogue identity unavailable'); return response.json(); });
   const libraryBase = 'https://mo-tfr-library.mo-podcast-feed.workers.dev';
   ready = Promise.all([
     readJSON('/assets/data/faith-received/english-author-aliases.json?v=20260920a'),
     readJSON(`${libraryBase}/v1/dupfold.json`),
     readJSON(`${libraryBase}/v1/workgroups.json`),
     readJSON(`${libraryBase}/v1/author_aliases.json`),
-  ]).then(([local, fold, groups, publishedAliases]) => {
+    readJSON(`${libraryBase}/v1/works-index.json`),
+  ]).then(([local, fold, groups, publishedAliases, index]) => {
     setAliases({aliases:{...publishedAliases, ...local.aliases}});
     setWorkIdentity(fold, groups);
+    setCanonical(index);
   }).catch(error => root.console?.warn(error.message));
   api.ready = ready;
   // Ported surfaces read the public work index directly. Apply the same
