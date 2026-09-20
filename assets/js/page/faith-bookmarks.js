@@ -117,7 +117,7 @@
 
   const safeHref = (url) => {
     const clean = window.MOSafeHref ? window.MOSafeHref.sanitize(url) : url;
-    return clean || "/the-faith-received/";
+    return clean || "/the-faith-received/all-works/?collection=all";
   };
 
   // Same rule as readerUrlFor() in the worker's collections.js, for the

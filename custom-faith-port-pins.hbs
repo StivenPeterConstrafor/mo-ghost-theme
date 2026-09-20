@@ -1,7 +1,7 @@
 {{!< default}}
 {{#contentFor "moHead"}}
 <script defer src="{{asset "js/page/faith-port-downloads.js"}}&amp;frv=2b1f79b352c6db15"></script>
-<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=4680a65b308cbee2"></script>
+<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=874e780f764ac855"></script>
 <title>Notebooks | The Faith Received | Mere Orthodoxy</title>
 {{#if @member}}
 <script src="{{asset "js/page/faith-port-read-boot.js"}}&amp;frv=af6a3529073948b4"></script>
@@ -14,7 +14,7 @@
 
 
 <link rel="stylesheet" href="{{asset "css/port/pins.in01.css"}}&amp;frv=da3a2d29fbfec409">
-<script src="{{asset "js/port/pins.in01.js"}}&amp;frv=30e57166fb43c448"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=598b7ddddefac203"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ff318cb979c1dc92"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script><script defer src="{{asset "js/port/personal-research.js"}}&amp;frv=b87e1145b10874db"></script><link rel="stylesheet" href="{{asset "css/port/personal-research.css"}}&amp;frv=6f95e2290678aac4"><script src="{{asset "js/port/pins-experience.js"}}&amp;frv=1942ebccab84ea33"></script><script src="{{asset "js/port/fr-noblob.js"}}&amp;frv=a66e16a29a40a4eb"></script>
+<script src="{{asset "js/port/pins.in01.js"}}&amp;frv=30e57166fb43c448"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=598b7ddddefac203"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=d2003c82432d7011"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script><script defer src="{{asset "js/port/personal-research.js"}}&amp;frv=b87e1145b10874db"></script><link rel="stylesheet" href="{{asset "css/port/personal-research.css"}}&amp;frv=6f95e2290678aac4"><script src="{{asset "js/port/pins-experience.js"}}&amp;frv=1942ebccab84ea33"></script><script src="{{asset "js/port/fr-noblob.js"}}&amp;frv=a66e16a29a40a4eb"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer:ital@0;1&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
 
@@ -27,7 +27,7 @@
 <p class="wrap"><a href="/dashboard/faith-received/">View earlier account bookmarks</a></p>
 
 
-<div class="top"><a class="wm" href="/the-faith-received/library/">The Faith Received</a><button type="button" class="btn" id="pinsTheme" aria-label="Change reading theme">Theme</button><a class="back fr-home-link" data-fr-home href="/the-faith-received/library/" aria-label="Back to library"><span class="fr-home-wide">‹ Library</span><span class="fr-home-compact"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</span></a></div>
+<div class="top"><a class="wm" href="/the-faith-received/all-works/?collection=all">The Faith Received</a><button type="button" class="btn" id="pinsTheme" aria-label="Change reading theme">Theme</button><a class="back fr-home-link" data-fr-home href="/the-faith-received/all-works/?collection=all" aria-label="Back to library"><span class="fr-home-wide">‹ Library</span><span class="fr-home-compact"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</span></a></div>
 <div class="wrap pins-navigation"><nav class="personal-entry-bar" aria-label="Research views"><button type="button" id="pinsBrowse" aria-pressed="true">Collections</button><button type="button" id="pinsPersonal" aria-pressed="false">All saved research</button><button type="button" id="importCollection">Import collection</button><a id="pinsDesk" href="/the-faith-received/desk/?view=research">Use in Desk</a></nav><input type="file" id="collectionFile" accept="application/json,.json" hidden><p id="collectionStatus" role="status" aria-live="polite"></p></div>
 <main class="wrap pins-main" id="app"><p class="muted">Loading…</p></main>
 <section id="personalResearchPage" hidden><div id="personalResearchHost"></div></section>
@@ -35,6 +35,6 @@
 
 </div>
 {{else}}
-<main class="faith-received"><section class="bhero bhero--tool"><div class="bhero-inner container"><p class="bhero-kicker"><a href="/the-faith-received/all-works/">The Faith Received</a></p><h1>Notebooks</h1></div></section>{{> "faith-received/_beta-gate"}}</main>
+<main class="faith-received"><section class="bhero bhero--tool"><div class="bhero-inner container"><p class="bhero-kicker"><a href="/the-faith-received/all-works/?collection=all">The Faith Received</a></p><h1>Notebooks</h1></div></section>{{> "faith-received/_beta-gate"}}</main>
 {{/if}}
 {{!-- Source corpus page, kept inside MereO default; edits and data remain on the Ghost/Cloudflare port. --}}

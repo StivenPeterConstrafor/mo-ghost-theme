@@ -21,7 +21,7 @@
 
   <section class="bhero bhero--tool">
     <div class="bhero-inner container">
-      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/browse/">Library</a></p>
+      <p class="bhero-kicker"><a href="/the-faith-received/all-works/?collection=all">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/browse/">Library</a></p>
       <h1>The whole table of contents.</h1>
       <p class="bhero-sub">Every author in the collection, with their works beneath their name. Jump by letter, or search for a name or a title.</p>
     </div>
@@ -42,7 +42,8 @@
 
 <meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
 <script src="{{asset "js/faith-corpora.js"}}"></script>
-<script src="{{asset "js/faith-room.js"}}&amp;frv=17e65d002e61bfdb"></script>
+<script data-contents="{{asset "data/faith-received/collected-work-contents.json"}}&amp;frv=5e9195027e185df4" src="{{asset "js/faith-collected-contents.js"}}&amp;frv=6dbd503b2ebac651"></script>
+<script src="{{asset "js/faith-room.js"}}&amp;frv=a42d41c515ec2961"></script>
 <script src="{{asset "js/faith-resolve.js"}}"></script>
 {{!-- Bookmark a work from its row. The store first: it is the same
      mo-kit bookmark the reader's Save button and the Bookmark button at

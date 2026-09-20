@@ -639,8 +639,8 @@
     // collection instead, and say why in the snippet.
     const pending = meta && meta.readable === false;
     const collectionUrl = meta
-      ? `/the-faith-received/?collection=${encodeURIComponent(meta.id)}`
-      : "/the-faith-received/";
+      ? `/the-faith-received/all-works/?collection=all&in=${encodeURIComponent(meta.id)}`
+      : "/the-faith-received/all-works/?collection=all";
     window.__tfrSearchAppend(works.map((w) => ({
       type: w.corpus || "library",
       slug: w.id,

@@ -1,7 +1,7 @@
 {{!< default}}
 {{#contentFor "moHead"}}
 <script defer src="{{asset "js/page/faith-port-downloads.js"}}&amp;frv=2b1f79b352c6db15"></script>
-<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=4680a65b308cbee2"></script>
+<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=874e780f764ac855"></script>
 <title>Search | The Faith Received | Mere Orthodoxy</title>
 {{#if @member}}
 <script src="{{asset "js/page/faith-port-read-boot.js"}}&amp;frv=af6a3529073948b4"></script>
@@ -11,7 +11,7 @@
 
 <link rel="preconnect" href="https://mo-tfr-library.mo-podcast-feed.workers.dev" crossorigin>
 <link rel="stylesheet" href="{{asset "css/port/prdl-system.css"}}&amp;frv=773f88d15ebcac8e"><link rel="stylesheet" href="{{asset "css/port/search.in01.css"}}&amp;frv=4849840ce5b36c5f"><script src="{{asset "js/port/search.in01.js"}}&amp;frv=86ef930cbafc24de"></script>
-<link rel="stylesheet" href="{{asset "css/port/search.in02.css"}}&amp;frv=2b86808ad2adbe06"><link rel="stylesheet" href="{{asset "css/port/search.in03.css"}}&amp;frv=774e5be1c6393c3b"><script src="{{asset "js/port/search.in02.js"}}&amp;frv=30e57166fb43c448"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=598b7ddddefac203"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ff318cb979c1dc92"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script><script src="{{asset "js/port/fr-noblob.js"}}&amp;frv=a66e16a29a40a4eb"></script>
+<link rel="stylesheet" href="{{asset "css/port/search.in02.css"}}&amp;frv=2b86808ad2adbe06"><link rel="stylesheet" href="{{asset "css/port/search.in03.css"}}&amp;frv=774e5be1c6393c3b"><script src="{{asset "js/port/search.in02.js"}}&amp;frv=30e57166fb43c448"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=598b7ddddefac203"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=d2003c82432d7011"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script><script src="{{asset "js/port/fr-noblob.js"}}&amp;frv=a66e16a29a40a4eb"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer:ital@0;1&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
 
@@ -23,7 +23,7 @@
 <div class="faith-port-search-page">
 
 <a class="skip-link" href="#main">Skip to text</a><main class="main" id="main"><link rel="stylesheet" href="{{asset "css/port/search.in04.css"}}&amp;frv=f6bb85f15374fe45">
-<nav class="search-site-nav" aria-label="Site navigation"><a class="fr-home-link" data-fr-home href="/the-faith-received/library/" aria-label="Back to library"><span class="fr-home-wide">← The Faith Received</span><span class="fr-home-compact"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</span></a><a href="/the-faith-received/pins/">Collections</a><a href="/the-faith-received/dictionary/">Dictionary</a><button type="button" id="searchTheme" aria-label="Change reading theme">Theme</button></nav>
+<nav class="search-site-nav" aria-label="Site navigation"><a class="fr-home-link" data-fr-home href="/the-faith-received/all-works/?collection=all" aria-label="Back to library"><span class="fr-home-wide">← The Faith Received</span><span class="fr-home-compact"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</span></a><a href="/the-faith-received/pins/">Collections</a><a href="/the-faith-received/dictionary/">Dictionary</a><button type="button" id="searchTheme" aria-label="Change reading theme">Theme</button></nav>
 <h1 style="color:var(--accent);text-wrap:balance">Search The Faith Received</h1>
 <div class="smodes-wrap"><div class="smodes" role="group" aria-label="Search mode">
   <button data-m="title" class="active sm-core" aria-pressed="true" title="Find a work, author, or section">Works</button>
@@ -60,6 +60,6 @@
 
 </div>
 {{else}}
-<main class="faith-received"><section class="bhero bhero--tool"><div class="bhero-inner container"><p class="bhero-kicker"><a href="/the-faith-received/all-works/">The Faith Received</a></p><h1>Search</h1></div></section>{{> "faith-received/_beta-gate"}}</main>
+<main class="faith-received"><section class="bhero bhero--tool"><div class="bhero-inner container"><p class="bhero-kicker"><a href="/the-faith-received/all-works/?collection=all">The Faith Received</a></p><h1>Search</h1></div></section>{{> "faith-received/_beta-gate"}}</main>
 {{/if}}
 {{!-- Source corpus page, kept inside MereO default; edits and data remain on the Ghost/Cloudflare port. --}}

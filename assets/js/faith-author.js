@@ -181,7 +181,7 @@
     if (!all && !entry) {
       root.innerHTML =
         `<p class="faith-author-empty">No author by that name in the library. ` +
-        `<a href="/the-faith-received/all-works/">Browse the full library</a>.</p>`;
+        `<a href="/the-faith-received/all-works/?collection=all">Browse the full library</a>.</p>`;
       return;
     }
 

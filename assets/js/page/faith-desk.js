@@ -336,7 +336,7 @@
       const href = NB.linkFor(e);
       if (href) {
         const a = el("a", "desk-act desk-act-link", "Open the source");
-        if (window.MOSafeHref) window.MOSafeHref.set(a, href, "/the-faith-received/");
+        if (window.MOSafeHref) window.MOSafeHref.set(a, href, "/the-faith-received/all-works/?collection=all");
         else a.setAttribute("href", href);
         a.target = "_blank";
         a.rel = "noopener";

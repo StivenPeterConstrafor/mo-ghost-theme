@@ -174,7 +174,7 @@ function header(doc, hasToc) {
   return `
   <section class="article-header faith-doc-header${isLibrary ? " faith-doc-header--library" : ""}">
     <div class="article-header-inner">
-      <p class="article-topic"><a href="/the-faith-received/" class="article-topic-tag">The Faith Received</a>${traditionPills}</p>
+      <p class="article-topic"><a href="/the-faith-received/all-works/?collection=all" class="article-topic-tag">The Faith Received</a>${traditionPills}</p>
       <h1 class="article-title">${escape(smarten(doc.title))}</h1>
       <p class="article-dek faith-doc-dek">${sub}</p>
       ${translatorLine}

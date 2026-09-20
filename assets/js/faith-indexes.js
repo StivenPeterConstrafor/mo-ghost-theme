@@ -350,7 +350,7 @@
   // that page, so both land on the passage rather than the front page.
   function readerUrl(corpus, id, loc, opts) {
     const c = window.MOCorpora.get(corpus);
-    if (!c) return "/the-faith-received/";
+    if (!c) return "/the-faith-received/all-works/?collection=all";
     if (c.readable === false) return `/the-faith-received/?collection=${encodeURIComponent(corpus)}`;
     const q = corpus === "tfr" || corpus === "confessions" ? "" : `c=${encodeURIComponent(corpus)}&`;
     let url = `/the-faith-received/reader/?${q}w=${encodeURIComponent(id)}`;

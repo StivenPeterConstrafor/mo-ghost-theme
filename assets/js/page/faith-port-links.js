@@ -13,6 +13,7 @@
     const source = u.origin === 'https://thefaithreceived.vercel.app';
     if (!source && u.origin !== origin) return raw;
     let path = u.pathname;
+    if([prefix,prefix.slice(0,-1),prefix+'all-works/',prefix+'library/'].includes(path)&&!u.search&&!u.hash)return prefix+'all-works/?collection=all';
     if (path === prefix + 'reader/' || path === prefix + 'reader') {
       const corpus = u.searchParams.get('c') || 'tfr';
       const work = u.searchParams.get('w');
@@ -25,7 +26,7 @@
     if (path.startsWith(prefix)) return source ? path + u.search + u.hash : raw;
     if (!path || path === '/') {
       if (u.searchParams.has('tq')) return prefix + 'search/?m=title&q=' + encodeURIComponent(u.searchParams.get('tq'));
-      return source ? prefix + 'all-works/' + u.search + u.hash : raw;
+      if(source){if(!u.searchParams.has('collection'))u.searchParams.set('collection','all');return prefix+'all-works/'+u.search+u.hash;}return raw;
     }
     const work = /^\/read\/([^/]+?)(?:\.html)?\/?$/.exec(path);
     if (work) {

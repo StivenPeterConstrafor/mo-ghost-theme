@@ -16,7 +16,7 @@
   // default view is By author and it carries the A-Z -- so it takes the
   // door, and the separate Library entry below folds into it rather than
   // listing the same page twice.
-  const AUTHORS='/the-faith-received/all-works/';
+  const AUTHORS='/the-faith-received/all-works/?collection=all';
   if(!header.querySelector('a[data-m]')&&!(has(AUTHORS)&&has('/the-faith-received/bible/')&&has('/the-faith-received/topics/'))){const quick=document.createElement('nav');quick.className='fr-quick';quick.setAttribute('aria-label','Research');
     quick.innerHTML=[[AUTHORS,'Authors'],['/the-faith-received/bible/','Scripture'],['/the-faith-received/topics/','Topics']].map(([h,t])=>`<a href="${h}"${location.pathname.replace(/\.html$/,'')===h?' aria-current="page"':''}>${t}</a>`).join('');header.appendChild(quick);}
   const menu=document.createElement('details');menu.className='fr-explore';

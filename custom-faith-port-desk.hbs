@@ -2,7 +2,7 @@
 {{#contentFor "moHead"}}
 <script defer src="{{asset "js/page/faith-port-downloads.js"}}&amp;frv=2b1f79b352c6db15"></script>
 {{#if @member}}
-<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=4680a65b308cbee2"></script>
+<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=874e780f764ac855"></script>
 <title>Desk | The Faith Received | Mere Orthodoxy</title>
 <meta name="description" content="Write with the library beside you: a paper, and a rail of your saved passages, notes, highlights and Ask conversations to insert with their citations." />
 {{!-- The family identity the engine reads before it starts, and our
@@ -16,7 +16,7 @@
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="{{asset "css/port/desk.in01.css"}}&amp;frv=4a14bec0d6dd0315">
 <link rel="stylesheet" href="{{asset "css/port/desk-workflow.css"}}&amp;frv=d30e48aba012c5c2"><script src="{{asset "js/port/desk-workflow.js"}}&amp;frv=71ddf6e483fa9932"></script>
-<script src="{{asset "js/port/desk.in01.js"}}&amp;frv=ee6de72d22f48fe7"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=598b7ddddefac203"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ff318cb979c1dc92"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script><script defer src="{{asset "js/port/personal-research.js"}}&amp;frv=b87e1145b10874db"></script><link rel="stylesheet" href="{{asset "css/port/personal-research.css"}}&amp;frv=6f95e2290678aac4">
+<script src="{{asset "js/port/desk.in01.js"}}&amp;frv=ee6de72d22f48fe7"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=598b7ddddefac203"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=d2003c82432d7011"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=af307816e5bb8b86"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script><script defer src="{{asset "js/port/personal-research.js"}}&amp;frv=b87e1145b10874db"></script><link rel="stylesheet" href="{{asset "css/port/personal-research.css"}}&amp;frv=6f95e2290678aac4">
 {{!-- Our colour, loaded last so it wins; then the offsets that start
      this page under our masthead. Keep both last. --}}
 <link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=714b249461dbfc52">
@@ -58,7 +58,7 @@
 </header>
 <nav class="desk-workspace-bar" aria-label="Desk workspace"><div class="desk-modes"><button id="deskWriteMode" aria-pressed="true">Write</button><button id="deskResearchMode" aria-pressed="false">Research</button></div><label id="deskPaperContext" hidden>Paper<select id="deskPaper" aria-label="Current paper"></select></label><label class="desk-notebook-context">Notebook<select id="paperNotebook" aria-label="Notebook for this paper"></select></label><details class="desk-new-notebook"><summary>New notebook</summary><form id="newNotebookForm"><label>Notebook name<input id="newNotebookName" required autocomplete="off" placeholder="e.g. Grace and freedom"></label><button type="submit">Create notebook</button></form></details><span id="deskContextStatus" role="status"></span></nav>
 <main id="deskMain">
-  <aside id="docs"><a class="fr-home-link desk-panel-home" data-fr-home href="/the-faith-received/library/" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a>
+  <aside id="docs"><a class="fr-home-link desk-panel-home" data-fr-home href="/the-faith-received/all-works/?collection=all" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a>
     <div class="desk-rail-head"><span class="ds-h">Your documents</span><button class="hbtn desk-rail-close" id="closeDocuments" aria-label="Close documents">×</button></div>
     <button id="newDoc">＋ New document</button>
     <div id="docList"></div>
@@ -76,7 +76,7 @@
     </div>
     <div id="ed" contenteditable="true" spellcheck="true" role="textbox" aria-multiline="true" aria-label="Document text"></div><div id="deskSaveState" role="status" aria-live="polite">Saved in this browser</div>
   </section>
-  <aside id="rail"><a class="fr-home-link desk-panel-home" data-fr-home href="/the-faith-received/library/" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a>
+  <aside id="rail"><a class="fr-home-link desk-panel-home" data-fr-home href="/the-faith-received/all-works/?collection=all" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a>
     <div class="desk-rail-head"><span class="ds-h">Your research</span><button class="hbtn desk-rail-close" id="closeResearch" aria-label="Close research">×</button></div>
     <div class="desk-research-links"><a href="/the-faith-received/pins/">Manage notebooks</a><a href="/the-faith-received/search/">Find sources</a></div>
     <button type="button" class="desk-personal-entry" id="deskPersonalOpen">Explore this notebook</button>

@@ -68,7 +68,7 @@
      * clicked. The Library is the site root on the owner's domain and lives
      * under /the-faith-received/ on ours, so his default of '/' sent readers
      * to the Mere Orthodoxy homepage. */
-    libraryPath: "/the-faith-received/",
+    libraryPath: "/the-faith-received/all-works/?collection=all",
 
     /* Where ask-worker.js and ask-jobs.js are fetched from at runtime. Trailing
      * slash required: the engine appends the bare filename. Neither file is

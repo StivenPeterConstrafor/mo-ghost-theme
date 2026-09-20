@@ -318,7 +318,7 @@
       .catch(() => new Map())
     : Promise.resolve(new Map());
 
-  Promise.all([source, notes]).then(([list, noteMap]) => {
+  Promise.all([source, notes, window.MOCollectedContents?.ready]).then(([list, noteMap]) => {
     authorNotes = noteMap;
     // Sort by the name the reader is scanning for, then by title so a
     // multi-volume set reads in order rather than in catalogue order.
@@ -665,7 +665,7 @@
   function tierOf(w, q) {
     if (w._qa === undefined) w._qa = fold(w.author || "");
     if (w._qa.includes(q)) return AUTHOR;
-    if (w._qt === undefined) w._qt = fold(`${w.title || ""} ${w.titleLatin || ""}`);
+    if (w._qt === undefined) w._qt = fold(`${w.title || ""} ${w.titleLatin || ""} ${window.MOCollectedContents?.search(w.id) || ""}`);
     if (w._qt.includes(q)) return TITLE;
     if (w._qk === undefined) {
       w._qk = fold([w.subject, w.topic, w.tradition, w.school, w.eyebrow, w.volume]
@@ -731,7 +731,9 @@
   function row(w, mark) {
     const second = w.titleLatin && w.titleLatin !== w.title ? w.titleLatin : "";
     const second2 = second ? `<span class="brow-la">${escapeHtml(second)}</span>` : "";
-    const m = String(mark === undefined ? where(w) : mark || "").trim();
+    const contents=window.MOCollectedContents?.get(w.id);
+    const rawMark = String(mark === undefined ? where(w) : mark || "").trim();
+    const m = contents && rawMark.includes(" · ") ? rawMark.split(" · ")[0] : rawMark;
     // An address is short. "PL 101", "1640", "Tome 2 · fasc. 4" — the longest of
     // them is 28 characters, and they belong in the right-hand column where the
     // numbers line up. The Latin Library's volume field is not always an address:
@@ -743,9 +745,11 @@
     const ADDRESS = 30;
     const vol = m && m.length <= ADDRESS ? `<span class="brow-m">${escapeHtml(m)}</span>` : "";
     const sub = m && m.length > ADDRESS ? `<span class="brow-sub">${escapeHtml(m)}</span>` : "";
-    const inner = `<span class="brow-t">${escapeHtml(w.title || w.id)}</span>${sub}${second2}${vol}`;
+    const preview=window.MOCollectedContents?.preview(w.id)||"";
+    const details=window.MOCollectedContents?.disclosure(w.id)||"";
+    const inner = `<span class="brow-t">${escapeHtml(w.title || w.id)}</span>${sub}${second2}${vol}${preview}`;
     if (w.readable !== false && w.url) {
-      return `<li><a href="${escapeHtml(w.url)}">${inner}</a></li>`;
+      return `<li${contents?' class="frcw-volume"':""}><a href="${escapeHtml(w.url)}">${inner}</a>${details}</li>`;
     }
     return `<li class="faith-room-pending"><span class="faith-room-row">${inner}</span></li>`;
   }
