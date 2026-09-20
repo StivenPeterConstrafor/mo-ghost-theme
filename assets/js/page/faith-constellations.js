@@ -576,8 +576,11 @@
   }
 
   function authorPageUrl(name) {
-    const key = fold(name);
-    return key ? `${AUTHOR_PAGE}?a=${encodeURIComponent(key)}` : "";
+    if(!name)return "";
+    const graph=window.MOFaithWebGraph;
+    const match=graph?.nodes.find(n=>fold(n.a)===fold(name));
+    const room=match&&window.__ROOMS?.[match.fk];
+    return room ? `${AUTHOR_PAGE}?sh=${encodeURIComponent(room.sh)}#${encodeURIComponent(match.fk)}` : `${AUTHOR_PAGE}?q=${encodeURIComponent(name)}`;
   }
 
   /* Which views have an author behind every point, and therefore an
@@ -5934,6 +5937,7 @@
     const wasAll = isAll;
     const wasCite = shelfSlug === CITE_SLUG;
     const isCite = slug === CITE_SLUG;
+    if(slug!==shelfSlug)clearSelection();
     shelfSlug = slug;
     isAll = slug === ALL_SLUG;
     allMissed = 0;
@@ -6193,6 +6197,8 @@
   // these plus the observer above costs nothing.
   if (typeof ResizeObserver === "function") new ResizeObserver(onResize).observe(stageEl);
   window.addEventListener("resize", onResize);
+  new MutationObserver(()=>{readPalette();draw();}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{readPalette();draw();});
 
   // And immediately, for the case where this partial is dropped on a
   // page of its own rather than behind a tab.

@@ -127,10 +127,10 @@
     const base = "/the-faith-received/";
     const name = RESEARCH_NAMES[code];
     const doors = [
-      ["Scripture", `bible/?sh=${code}`, "Every citation of Scripture across the shelf, book by book and chapter by chapter, opening on the verse itself."],
-      ["Authors", `author/?sh=${code}`, "Each author’s room: their topics, their positions in their own words, and their reception."],
-      ["Topics", `topics/?sh=${code}`, "The doctrines this shelf treats, era by era, with the passages that carry them."],
-      ["The Web", "web/", "Fifteen centuries of citation: who reads whom, traced passage by passage."]
+      ["Scripture", `bible/?sh=${code}`, "Find where these works cite a biblical book, chapter or verse."],
+      ["Authors", `author/?sh=${code}`, "Read each author’s works, topics and reception."],
+      ["Topics", `topics/?sh=${code}`, "Find theological topics and the passages that discuss them."],
+      ["The Web", `web/#shelves=${name === "Continental Reformed" ? "reformed" : name.toLowerCase().replace(/ /g,"-")}/authors`, "Explore this shelf’s Scripture connections and follow citations between authors."]
     ];
     studyRoot.innerHTML = `<div class="faith-shelf-study-head"><div><h2>Study this shelf</h2><p>${escapeHtml(name)}</p></div>`
       + `<a class="faith-shelf-ask" href="${base}ask/?trad=${encodeURIComponent(name)}">Ask this shelf</a></div>`
@@ -138,7 +138,7 @@
       + doors.map(([label, href, description]) => `<a class="faith-shelf-study-card" href="${base}${href}"><strong>${label}</strong><span>${description}</span></a>`).join("")
       + `</nav><div class="faith-shelf-reference"><h2>Reference</h2>`
       + `<a class="faith-shelf-study-card" href="${base}dictionary/"><strong>Dictionnaire de Théologie Catholique</strong>`
-      + `<span>The great French theological dictionary (Vacant–Mangenot–Amann, 1899–1950). Search a headword and read the article in French and English.</span>`
+      + `<span>The French theological dictionary (Vacant–Mangenot–Amann, 1899–1950). Search a headword and read the article in French and English.</span>`
       + `<span class="faith-shelf-reference-action">Open dictionary</span></a></div>`;
   }
   renderShelfResearch();

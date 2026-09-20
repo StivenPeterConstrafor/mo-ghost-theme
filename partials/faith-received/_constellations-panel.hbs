@@ -123,7 +123,7 @@
 
   <header class="cn-head">
     <h2 class="cn-title">Constellations</h2>
-    <p class="cn-lede">Explore the citation network in rings or by tradition. Choose a shelf to compare how its authors, works and topics use Scripture. Select a point or a connection to read its sources.</p>
+    <p class="cn-lede">Map citations by tradition, or choose a shelf to compare its use of Scripture. Select a point to read its sources.</p>
   </header>
 
   {{!-- The controls. A <select> for the shelves rather than sixteen
@@ -188,11 +188,11 @@
     </div>
   </div>
 
-  <p class="cn-views-note" data-cn-views-note hidden></p>
+
   {{!-- Why "By similarity" is greyed out on the merged shelf. Written
         by the script and hidden everywhere else, because on a single
         shelf the control works and there is nothing to explain. --}}
-  <p class="cn-views-note" data-cn-arrange-note hidden></p>
+
 
   <p class="cn-status" data-cn-status role="status" aria-live="polite" hidden></p>
   <p class="cn-error" data-cn-error role="alert" hidden></p>
@@ -233,6 +233,8 @@
             nobody is told about is an accelerator nobody uses, and it
             cannot exist on a phone, where the button is the only
             path. --}}
+      <p class="cn-views-note" data-cn-views-note hidden></p>
+      <p class="cn-views-note" data-cn-arrange-note hidden></p>
       <p class="cn-hint">Drag to pan. Use the zoom buttons, or pinch to zoom. Choose a point to inspect its connections. To compare two points, select one and choose “Compare with another point”.</p>
     </div>
 
@@ -268,4 +270,4 @@
       No dependency on anything bundled — window.MOSafeHref ships in
       boot.min.js in <head>, and page-template scripts run before
       site.min.js (FRONTEND §6.18). --}}
-<script src="{{asset "js/page/faith-constellations.js"}}&amp;frv=eed01be0ad3f7765"></script>
+<script src="{{asset "js/page/faith-constellations.js"}}&amp;frv=192f2bf4122fc82d"></script>

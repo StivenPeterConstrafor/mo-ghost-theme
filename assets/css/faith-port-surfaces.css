@@ -164,3 +164,13 @@ body.web-page .faith-atlas-home:focus-visible { outline: 2px solid currentColor;
 #faith-web-constellations .cn-index-list{max-height:50vh;overflow:auto}
 body.web-constellation-mode #atlas,body.web-constellation-mode #explorer,body.web-constellation-mode #mobile-view,body.web-constellation-mode #panel{display:none!important}
 @media(max-width:640px){#faith-web-constellations{padding:20px 16px}#faith-web-constellations .cn-controls{gap:12px}#faith-web-constellations .cn-control:first-child{width:100%}#faith-web-constellations .cn-select{width:100%}}
+
+@media(max-width:640px){
+ #faith-web-constellations .cn-controls{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+ #faith-web-constellations .cn-control:first-child,#faith-web-constellations .cn-control:last-child{grid-column:1/-1}
+ #faith-web-constellations .cn-views{gap:4px 10px}
+ #faith-web-constellations .cn-view-btn{font-size:14px;min-height:38px}
+ #faith-web-constellations .cn-view-btn+.cn-view-btn{margin-left:0}
+ #faith-web-constellations .cn-control-label{margin-bottom:4px}
+ #faith-web-constellations .cn-stage{min-height:360px}
+}
