@@ -151,7 +151,7 @@ body.web-page .faith-atlas-home:focus-visible { outline: 2px solid currentColor;
 
 /* Ian's constellation layouts share Web's navigation and evidence routes. */
 #faith-web-constellations[hidden]{display:none!important}
-#faith-web-constellations{position:fixed;inset:var(--mast) 0 0;z-index:21;overflow:auto;overscroll-behavior:contain;padding:28px clamp(18px,3vw,48px);background:var(--bg);color:var(--fg);--color-page:var(--bg);--color-white:var(--card);--color-dark:var(--fg);--color-muted:var(--muted);--color-rule:var(--border);--color-card-border:var(--border);--font-body:"Source Serif Pro",Georgia,serif;--cn-ink:var(--fg);--cn-paper:var(--card)}
+#faith-web-constellations{position:relative;flex:1;min-height:0;overflow:visible;overscroll-behavior:contain;padding:28px clamp(18px,3vw,48px);background:var(--bg);color:var(--fg);--color-page:var(--bg);--color-white:var(--card);--color-dark:var(--fg);--color-muted:var(--muted);--color-rule:var(--border);--color-card-border:var(--border);--font-body:"Source Serif Pro",Georgia,serif;--cn-ink:var(--fg);--cn-paper:var(--card)}
 #faith-web-constellations .cn-panel{max-width:1500px;margin:auto}
 #faith-web-constellations .cn-head{max-width:none;margin:0 0 20px}
 #faith-web-constellations .cn-lede{max-width:78ch}
@@ -162,7 +162,25 @@ body.web-page .faith-atlas-home:focus-visible { outline: 2px solid currentColor;
 #faith-web-constellations .cn-stage{background:var(--card)}
 #faith-web-constellations .cn-open-source{display:block;margin:12px 0;text-decoration:underline;text-underline-offset:3px}
 #faith-web-constellations .cn-index-list{max-height:50vh;overflow:auto}
-body.web-constellation-mode #atlas,body.web-constellation-mode #explorer,body.web-constellation-mode #mobile-view,body.web-constellation-mode #panel{display:none!important}
+body.web-constellation-mode :is(#graph-frame,#period-key,#map-caption,#connection-discovery,#map-help,#map-help-button,#map-density,label[for="map-density"]){display:none!important}
+body.web-citation-layout #faith-web-constellations :is(.cn-head,.cn-aside,.cn-index,.cn-controls>.cn-control:first-child,.cn-controls>.cn-control:nth-child(3)){display:none}
+body.web-citation-layout #faith-web-constellations .cn-body{display:block}
+body.web-citation-layout #faith-web-constellations .cn-stage{height:max(350px,52vh)}
+body.web-citation-layout #faith-web-constellations{padding-top:0}
+body.web-constellation-mode:not(.web-citation-layout) #map-heading{display:none}
+#network-layouts{position:fixed;z-index:26;top:var(--mast);left:var(--rail);right:0;display:flex;gap:18px;align-items:center;min-height:47px;padding:0 28px;background:var(--bg);border-bottom:1px solid var(--border)}
+#network-layouts button{font:14px var(--body);color:var(--muted);border:0;border-bottom:2px solid transparent;background:none;border-radius:0;padding:12px 0;white-space:nowrap}
+#network-layouts button[aria-pressed="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+#network-show-all{margin-left:auto}#network-show-all[hidden]{display:none}
+body.web-page #atlas{top:calc(var(--mast) + 47px)}
+body.web-page.popen #network-layouts{right:var(--details)}
+@media(max-width:1150px) and (min-width:761px){body.web-page.popen #network-layouts{left:0}}
+@media(max-width:760px){
+ #network-layouts{left:0;top:calc(var(--mast) + 45px);padding:0 16px;gap:16px;overflow-x:auto}
+ body.web-page #atlas,body.web-page.popen #atlas{top:calc(var(--mast) + 92px)}
+ body.web-page.popen #network-layouts,body.web-page[data-view="browse"] #network-layouts{display:none}
+ #network-layouts button{font-size:13px}
+}
 @media(max-width:640px){#faith-web-constellations{padding:20px 16px}#faith-web-constellations .cn-controls{gap:12px}#faith-web-constellations .cn-control:first-child{width:100%}#faith-web-constellations .cn-select{width:100%}}
 
 @media(max-width:640px){
@@ -174,3 +192,7 @@ body.web-constellation-mode #atlas,body.web-constellation-mode #explorer,body.we
  #faith-web-constellations .cn-control-label{margin-bottom:4px}
  #faith-web-constellations .cn-stage{min-height:360px}
 }
+
+#network-author-map{font:13px var(--body);color:var(--fg);text-decoration:underline;background:none;border:0;padding:12px 0 0}#network-author-map[hidden]{display:none}
+body.web-citation-layout #faith-web-constellations .cn-views{gap:6px}
+body.web-citation-layout #faith-web-constellations .cn-view-btn+.cn-view-btn{margin-left:10px}

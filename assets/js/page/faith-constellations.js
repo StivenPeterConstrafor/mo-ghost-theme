@@ -4478,6 +4478,9 @@
     hoveredEdge = -1;
     syncWebAddress();
     renderDossier(i);
+    if(citeMode&&nodes[i]?.fk&&!opts?.fromWeb){
+      window.dispatchEvent(new CustomEvent("faith-web-author",{detail:{slug:nodes[i].fk}}));
+    }
     if (i >= 0 && nodes[i]) {
       announce(`${nodes[i].a || "Point"} selected.`);
       if (opts && opts.centre) centreOn(i);
@@ -4499,6 +4502,7 @@
     // the merged shelf, where nothing was fetched on load.
     ensureFingerprints();
     renderLinkDossier(j);
+    if(citeMode){const pair=edges[j];location.hash="e="+encodeURIComponent(nodes[pair[0]].fk)+","+encodeURIComponent(nodes[pair[1]].fk);}
     syncIndexSelection();
     announce(
       f.cite
@@ -5307,6 +5311,7 @@
     let payload;
     try {
       payload = window.MOFaithWebGraph;
+      if(focusedAuthor&&payload)payload=window.MOFaithWebFocus(payload,focusedAuthor);
       if (!payload) throw new Error("The citation index is still loading.");
     } catch (err) {
       console.error("[faith-constellations] could not load the citation graph", err);
@@ -5327,6 +5332,9 @@
     if (token !== loadToken) return;
     setStatus("");
     adopt(adaptCitations(payload, view));
+    if(focusedAuthor){const at=nodes.findIndex(n=>n.fk===focusedAuthor);if(at>=0)select(at,{fromWeb:true});}
+    root.dataset.focusedAuthor=focusedAuthor;
+    root.dataset.visibleAuthors=String(nodes.length);
     renderViewButtons();
     renderLayoutButtons();
   }
@@ -6017,15 +6025,20 @@
   shelfSel.addEventListener("change", () => setShelf(shelfSel.value));
 
   let requested = null;
+  let focusedAuthor = "";
   let mapReady = false;
   function syncWebAddress(){
     if(!document.body.classList.contains("web-constellation-mode")||!shelfSlug||!view)return;
     const q=new URLSearchParams({arrange:layout});
-    if(selected>=0&&nodes[selected])q.set("entry",nodes[selected].t||nodes[selected].a||"");
+    if(focusedAuthor)q.set("author",focusedAuthor);
+    else if(selected>=0&&nodes[selected])q.set("entry",nodes[selected].t||nodes[selected].a||"");
     history.replaceState(null,"","#shelves="+encodeURIComponent(shelfSlug)+"/"+view+"?"+q);
   }
-  window.MOFaithConstellations={open(spec){
-    requested=spec;
+  window.MOFaithConstellations={state(){return {view,layout,author:focusedAuthor};},showAuthor(slug){
+    focusedAuthor=slug||"";
+    if(mapReady&&shelfSlug===CITE_SLUG)loadCitations();
+  },open(spec){
+    requested=spec;focusedAuthor=spec.author||"";
     if(mapReady){
       const slug=spec.shelf||CITE_SLUG;
       const known=slug===CITE_SLUG||slug===ALL_SLUG||shelves.some(s=>s.slug===slug);

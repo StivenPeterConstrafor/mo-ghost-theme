@@ -34,6 +34,7 @@ async function boot(){
   // Shelf metadata is required for the same date/shelf fallbacks. Start it with
   // the graph, rather than adding a second network wave before the first draw.
   const rost={};
+  const catalogueShelves=J(window.MOFaithWebShelfURL).catch(()=>({authors:{}}));
   const rostersReady=Promise.all(Object.keys(SHN).map(sh=>J(BLOB+`/v1/bible/${sh}/rooms/index.json`)
     .then(d=>{(d.authors||d||[]).forEach(r=>{if(r&&r.s&&(!rost[r.s]||(r.w||0)>rost[r.s].w))rost[r.s]={y:r.y,e:r.e,sh,w:r.w||0};});}).catch(()=>{})));
   const [g,e,bios]=await graphReady;
@@ -45,7 +46,7 @@ async function boot(){
     .map(f=>J(BLOB+"/v1/authors/"+f+".json").catch(()=>({}))))
     .then(shards=>{shards.forEach(d=>Object.entries(d).forEach(([k,v])=>{if(!window.__BIOS[k])window.__BIOS[k]=v;}));});
   // era + years from the shelf rosters: the rooms know their people
-  await rostersReady;
+  const [,catalogue]=await Promise.all([rostersReady,catalogueShelves]);
   window.__ROOMS=rost;   // who actually HAS a room · the dossier's room door checks first
   const shsel=$("#shsel");
   if(shsel)Object.entries(SHN).forEach(([k,l])=>{const o=document.createElement("option");
@@ -65,7 +66,7 @@ async function boot(){
     if(!y){const e0=n.e||r.e;if(e0&&ERAMID[e0])y=ERAMID[e0]+Math.round((hash(n.s)-.5)*120);}
     // an anthology filed under its own title is a COLLECTION, not a person
     const coll=n.a.length>42||/gospels?|versions?|variants?|fragments|anthology|apocryph|texts on|documents relatifs|miracles de/i.test(n.a);
-    return {...n,i,sh:n.sh||r.sh,y,yok,coll,e:y?eraOf(y):null};
+    return {...n,i,sh:n.sh||r.sh||catalogue.authors?.[n.s]?.sh,y,yok,coll,e:y?eraOf(y):null};
   });
   BYS={};NODES.forEach(n=>BYS[n.s]=n);
   // unknown years borrow the average of their neighbours, twice over
@@ -436,8 +437,8 @@ $("#shsel").addEventListener("change",e=>{scopeShelf(e.target.value);});
 const panel=$("#panel"),pbody=$("#pbody");
 function syncPanelAccess(){const open=panel.classList.contains("open"),shelf=document.body.classList.contains("shelf-comparison");$("#explorer").inert=open&&(innerWidth<=1150||shelf);$("#atlas").inert=open&&(innerWidth<=760||shelf);}
 addEventListener("resize",syncPanelAccess);
-function openPanel(t,sub){stashJourney();$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");panel.inert=false;const key=location.hash.slice(1).split("=")[0],mode=({v:"verse",t:"topic",p:"path",paths:"path",journey:"path",topics:"topic",shelves:"shelves","shelf-evidence":"shelves"})[key]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));if(innerWidth<=640)document.querySelector("#mnav .on")?.scrollIntoView({block:"nearest",inline:"nearest"});$("#pt").innerHTML=t;$("#ps").innerHTML=sub||"";panel.classList.add("open");document.body.classList.add("popen");syncPanelAccess();requestAnimationFrame(resize);$("#pt").focus({preventScroll:true});renderAuthorIndex();}
-$("#px").onclick=()=>{stashJourney();$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;draw();
+function openPanel(t,sub){stashJourney();$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");panel.inert=false;const key=location.hash.slice(1).split("=")[0],mode=networkLayout!=="timeline"?"sky":({v:"verse",t:"topic",p:"path",paths:"path",journey:"path",topics:"topic",shelves:"shelves","shelf-evidence":"shelves"})[key]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));if(innerWidth<=640)document.querySelector("#mnav .on")?.scrollIntoView({block:"nearest",inline:"nearest"});$("#pt").innerHTML=t;$("#ps").innerHTML=sub||"";panel.classList.add("open");document.body.classList.add("popen");syncPanelAccess();requestAnimationFrame(resize);$("#pt").focus({preventScroll:true});renderAuthorIndex();}
+$("#px").onclick=()=>{if(networkLayout!=="timeline"){FOCUS=null;history.pushState(null,"",networkHash(networkLayout,""));route();return;}stashJourney();$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;draw();
   history.pushState(null,"","#");$("#map-title").textContent="The citation network";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m==="sky"));fitNodes(NODES.filter(n=>!hidden(n)).map(n=>n.i));renderAuthorIndex();requestAnimationFrame(resize);restoreExplorerFocus();};
 const shard=s=>gz(BLOB+"/v1/reception/"+s+".json.gz");
 let _COMMS=null;
@@ -461,11 +462,13 @@ let __PSEQ=0;   // dossier sequence guard (owner 2026-09-05: two quick opens rac
 async function openAuthor(slug,push=true){
   const n=BYS[slug];if(!n){++__PSEQ;openPanel("Author not found","This link does not match the citation index.");pbody.innerHTML='<p class="loading">Close this panel and search the author index for another spelling.</p>';return;}
   const __my=++__PSEQ;
+  if(networkLayout!=="timeline")window.MOFaithConstellations.showAuthor(slug);
   // the sky TRAVELS to a found star (owner 2026-08-29 'fix how the search bar works'):
   // a search means 'take me there' · center the century window and the vertical band
   fitNodes([n.i,...ADJ[n.i].slice().sort((a,b)=>b[1]-a[1]).slice(0,60).map(x=>x[0])]);
   FOCUS=n.i;SUBSET=null;PATHV=null;window.__JDIR=null;draw();
-  if(push)history.pushState(null,"","#a="+slug);
+  if(push)history.pushState(null,"",networkLayout==="timeline"?"#a="+slug:networkHash(networkLayout,slug));
+  syncNetworkControls();
   // SIGNED GRAPH (2026-09-02): a star whose received citations are largely refutations
   // is a battleground, not an authority · say so where the reader first looks
   const ctr=(n.ctr&&n.nin>=40)?` · <span style="color:var(--fg)" title="${n.nin} of ${n.win} received citations are refutations">contested ${Math.round(n.ctr*100)}%</span>`:"";
@@ -710,7 +713,8 @@ $("#mnav").addEventListener("click",e=>{
   const el=e.target.closest("[data-m]");if(!el)return;e.preventDefault();
   document.querySelectorAll("#mnav a").forEach(x=>x.classList.toggle("on",x===el));
   const m=el.dataset.m;
-  if(m==="shelves")openShelfMaps();
+  if(m!=="shelves"){networkLayout="timeline";setConstellationMode(false);syncNetworkControls();}
+  if(m==="shelves")openShelfMaps("english-divines","authors");
   if(m==="sky"){$("#px").click();}
   if(m==="path")openPathPicker();
   if(m==="topic")openTopicIndex();
@@ -772,21 +776,46 @@ async function openTopicIndex(push=true){
   $('#web-topic-query').oninput=()=>{topicLimit=60;render();};$('#web-topics-more').onclick=()=>{topicLimit+=60;render();};render();
 }
 
+let networkLayout="timeline";
+function networkHash(layout,author){const view=window.MOFaithConstellations.state().view;return "#shelves=citations/"+(view==="contested"?view:"cited")+"?"+new URLSearchParams({arrange:layout,...(author?{author}: {})});}
+function syncNetworkControls(){
+ document.querySelectorAll('[data-network-layout]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.networkLayout===networkLayout)));
+ $('#network-show-all').hidden=FOCUS==null;
+ $('#network-author-map').hidden=FOCUS==null;
+}
+function changeNetworkLayout(layout){
+ const author=FOCUS!=null?NODES[FOCUS]?.s:"";
+ history.pushState(null,'',layout==='timeline'?(author?'#a='+author:'#'):networkHash(layout,author));route();
+ document.body.dataset.view='map';
+}
+document.querySelectorAll('[data-network-layout]').forEach(b=>b.onclick=()=>changeNetworkLayout(b.dataset.networkLayout));
+$('#network-author-map').onclick=()=>{panel.inert=true;panel.classList.remove('open');document.body.classList.remove('popen');document.body.dataset.view='map';$('#atlas').inert=false;$('#explorer').inert=false;requestAnimationFrame(resize);};
+$('#network-show-all').onclick=()=>{FOCUS=null;history.pushState(null,'',networkLayout==='timeline'?'#':networkHash(networkLayout,''));route();};
+window.addEventListener('faith-web-author',e=>{if(e.detail?.slug)openAuthor(e.detail.slug);});
 function setConstellationMode(on){
  document.body.classList.toggle('web-constellation-mode',on);
+ if(!on)document.body.classList.remove("web-citation-layout");
  const host=document.getElementById('faith-web-constellations');if(host)host.hidden=!on;
  if(!on){$('#atlas').inert=false;$('#explorer').inert=false;}
 }
 function openShelfMaps(shelf='citations',kind='cited',push=true,options={}){
  ++__PSEQ;panel.inert=true;panel.classList.remove('open');document.body.classList.remove('popen','shelf-comparison');
- $('#atlas').inert=true;$('#explorer').inert=true;setConstellationMode(true);
+ const citation=shelf==='citations';networkLayout=citation?(options.arrange||'rings'):'timeline';
+ setConstellationMode(true);document.body.classList.toggle('web-citation-layout',citation);
+ $('#atlas').inert=false;$('#explorer').inert=false;
+ $('#map-title').textContent=citation?'The citation network':'Scripture connections';
+ $('#map-summary').textContent=citation?NODES.length.toLocaleString()+' entries · '+EDGES.length.toLocaleString()+' recorded connections':'';
  if(push)history.pushState(null,'','#shelves='+encodeURIComponent(shelf)+'/'+kind);
- window.MOFaithConstellations.open({shelf,view:kind,arrange:options.arrange||'',entry:options.entry||'',query:options.query||''});
+ window.MOFaithConstellations.open({shelf,view:kind,arrange:options.arrange||'',entry:options.entry||'',query:options.query||'',author:options.author||''});
+ FOCUS=null;syncNetworkControls();
+ if(citation&&options.author)openAuthor(options.author,false);
+ document.body.dataset.view='map';
 }
+
 function route(){
-  stashJourney();const h=location.hash.slice(1);setConstellationMode(h==='shelves'||h.startsWith('shelves='));const kind=h.split("=")[0],mode=({v:"verse",t:"topic",topics:"topic",shelves:"shelves","shelf-evidence":"shelves",paths:"path",p:"path",journey:"path"})[kind]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));if(innerWidth<=640)document.querySelector("#mnav .on")?.scrollIntoView({block:"nearest",inline:"nearest"});
-  if(!h){$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;renderAuthorIndex();requestAnimationFrame(resize);draw();return;}
-  if(h==="shelves"||h.startsWith("shelves=")){const [path,query=""]=(h.startsWith("shelves=")?h.slice(8):"citations/cited").split("?"),[sh,kind]=path.split("/"),params=new URLSearchParams(query);openShelfMaps(decodeURIComponent(sh),kind||"authors",false,{entry:params.get("entry")||"",query:params.get("q")||"",page:+params.get("page")||0,arrange:params.get("arrange")||""});return;}
+  stashJourney();const h=location.hash.slice(1);setConstellationMode(h==='shelves'||h.startsWith('shelves='));if(!(h==='shelves'||h.startsWith('shelves=')))networkLayout="timeline";syncNetworkControls();const kind=h.split("=")[0],mode=({v:"verse",t:"topic",topics:"topic",shelves:"shelves","shelf-evidence":"shelves",paths:"path",p:"path",journey:"path"})[kind]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));if(innerWidth<=640)document.querySelector("#mnav .on")?.scrollIntoView({block:"nearest",inline:"nearest"});
+  if(!h){$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;syncNetworkControls();renderAuthorIndex();requestAnimationFrame(resize);draw();return;}
+  if(h==="shelves"||h.startsWith("shelves=")){const [path,query=""]=(h.startsWith("shelves=")?h.slice(8):"citations/cited").split("?"),[sh,kind]=path.split("/"),params=new URLSearchParams(query);openShelfMaps(decodeURIComponent(sh),kind||"authors",false,{entry:params.get("entry")||"",query:params.get("q")||"",page:+params.get("page")||0,arrange:params.get("arrange")||"",author:params.get("author")||""});return;}
   if(h.startsWith('shelf-evidence=')){const [path,query='']=h.slice(15).split('?'),[sh,kind]=path.split('/'),q=new URLSearchParams(query);openShelfEvidence(decodeURIComponent(sh),kind||'authors',false,{entry:q.get('entry')||'',query:q.get('q')||'',page:+q.get('page')||0});return;}
   if(h.startsWith('journey=')){const [path,query='']=h.slice(8).split('?'),params=new URLSearchParams(query);openJourney(path.split(',').filter(Boolean).map(decodeURIComponent),params.get('direction')||'in',{work:params.get('work')||'',targetWork:params.get('targetWork')||'',reference:params.get('reference')||'',via:(params.get('via')||'').split(',').filter(Boolean),push:false});return;}
   if(h==="paths"){openPathPicker(false);return;}if(h==="topics"){openTopicIndex(false);return;}
