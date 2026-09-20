@@ -328,7 +328,7 @@
         if (ac !== bc) return ac - bc;
       }
       const an = surname(a.author), bn = surname(b.author);
-      return an.localeCompare(bn) || cmpTitle(a.title, b.title);
+      return an.localeCompare(bn) || compareWorks(a, b);
     });
     // A shelf with no named series cannot be known until its works are in, so the
     // address is read here rather than at startup: a reader who arrived on
@@ -728,6 +728,10 @@
     return f ? String(f(w) || "").trim() : "";
   }
 
+  function compareWorks(a, b) {
+    return cmpTitle(a.title, b.title) || cmpTitle(a.volume || "", b.volume || "");
+  }
+
   function row(w, mark) {
     const second = w.titleLatin && w.titleLatin !== w.title ? w.titleLatin : "";
     const second2 = second ? `<span class="brow-la">${escapeHtml(second)}</span>` : "";
@@ -1022,7 +1026,7 @@
     const inVolume = onShelf && Boolean(chosen) && shelf.printed === true;
     const printed = inVolume
       ? scoped.slice().sort((a, b) => (a.order == null ? Infinity : a.order) - (b.order == null ? Infinity : b.order)
-        || cmpTitle(a.title, b.title))
+        || compareWorks(a, b))
       : [];
 
     const allGroups = [];
@@ -1059,10 +1063,9 @@
     const ins = [...inCounts.entries()].sort((a, b) => b[1] - a[1]);
 
     const cs = new Map();
-    let undated = 0;
     works.forEach((w) => {
       const c = cent(w);
-      if (c) cs.set(c, (cs.get(c) || 0) + 1); else undated += 1;
+      if (c) cs.set(c, (cs.get(c) || 0) + 1);
     });
     const cents = [...cs.entries()].sort((a, b) => a[0] - b[0]);
 
@@ -1114,7 +1117,7 @@
       `<label class="faith-room-select" data-room-denom-wrap hidden><span data-room-denom-label>Denomination</span><select data-room-denom></select></label>`,
     ].filter(Boolean).join("");
     const filters = controls
-      ? `<div class="faith-room-filters">${controls}${undated ? `<p class="faith-room-undated">${undated.toLocaleString()} works carry no date</p>` : ""}</div>`
+      ? `<div class="faith-room-filters">${controls}<p class="faith-room-undated" data-room-undated hidden></p></div>`
       : "";
 
     // Counted by AUTHOR and not by work: the rail sits over a list of
@@ -1259,6 +1262,12 @@
     }
 
     root.querySelector("[data-room-count]").innerHTML = counted;
+    const undatedNote = root.querySelector("[data-room-undated]");
+    if (undatedNote) {
+      const n = scoped.filter(w => !cent(w)).length;
+      undatedNote.hidden = !n;
+      undatedNote.textContent = `${n.toLocaleString()} ${n === 1 ? "work has" : "works have"} no date`;
+    }
     root.querySelector("[data-room-rail]").innerHTML = rail;
     root.querySelector("[data-room-list]").innerHTML = body;
     // The grid of volumes is one screen of tiles and has nothing to

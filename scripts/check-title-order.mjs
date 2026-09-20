@@ -99,6 +99,18 @@ expect("mixed-width Arabic",
   ["Vol. 100", "Vol. 9", "Vol. 10", "Vol. 1"],
   ["Vol. 1", "Vol. 9", "Vol. 10", "Vol. 100"]);
 
+
+// Generic catalogue titles carry their number in the separate volume field.
+const roomSource = await readFile(path.join(ROOT, "assets/js/faith-room.js"), "utf8");
+const workComparator = roomSource.match(/function compareWorks\(a, b\) \{[\s\S]*?\n  \}/);
+if (!workComparator) throw new Error("Room work comparator missing");
+const compareWorks = new Function("cmpTitle", `${workComparator[0]}; return compareWorks;`)(compareTitles);
+for (const volumes of [["Vol. 1", "Vol. 2", "Vol. 10"], ["Tomus I", "Tomus II", "Tomus IX"]]) {
+  const works = [volumes[2], volumes[0], volumes[1]].map(volume => ({ title: "Works", volume }));
+  const got = works.sort(compareWorks).map(w => w.volume);
+  if (got.join("|") !== volumes.join("|")) failures.push(`Separate volume fields: ${got.join(", ")}`);
+}
+
 if (failures.length) {
   console.error(`✗ ${SOURCE}: ${failures.length} ordering(s) wrong.\n`);
   for (const f of failures) console.error(`  ${f}\n`);
@@ -131,4 +143,4 @@ if (stragglers.length) {
   process.exit(1);
 }
 
-console.log(`✓ title order: 7 orderings, ${CALLERS.length} surfaces routed through the comparator.`);
+console.log(`✓ title order: 9 orderings, ${CALLERS.length} surfaces routed through the comparator.`);
