@@ -200,3 +200,5 @@ body.web-citation-layout #faith-web-constellations .cn-view-btn+.cn-view-btn{mar
 #faith-web-constellations .cn-links{max-height:52vh;overflow:auto;padding:0;list-style:none}#faith-web-constellations .cn-index-btn,#faith-web-constellations .cn-link-btn{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--border);border-radius:0;padding:12px 14px;background:none;font:inherit;line-height:1.4;color:var(--fg)}#faith-web-constellations .cn-index-btn:hover,#faith-web-constellations .cn-index-btn.is-selected{background:var(--hl)}#faith-web-constellations .cn-index-sub{display:block;margin-top:5px;font-size:13px;color:var(--muted)}.relation-show-all{margin:10px 0;padding:8px 12px;font:13px var(--body);border:1px solid var(--border);color:var(--fg);background:var(--card)}
 
 #faith-web-constellations .cn-panel{--cn-ink:var(--fg);--cn-paper:var(--card);--cn-accent:var(--fg);--cn-edge:var(--muted);--cn-ghost:var(--muted)}
+
+@media(max-width:640px){body.web-citation-layout #faith-web-constellations .cn-controls{display:flex}body.web-citation-layout #faith-web-constellations .cn-control{width:100%}}

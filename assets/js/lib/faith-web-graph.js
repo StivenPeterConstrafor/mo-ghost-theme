@@ -19,6 +19,7 @@
     const keep=[...new Set([at,...incoming.map(e=>e[0]),...outgoing.map(e=>e[1])])];
     const remap=new Map(keep.map((i,j)=>[i,j]));
     const chosen=[...new Set([...incoming,...outgoing])];
-    return {cats:graph.cats,nodes:keep.map(i=>graph.nodes[i]),edges:chosen.map(e=>[remap.get(e[0]),remap.get(e[1]),e[2],e[3]]),focus:slug};
+    const used=new Set(keep.map(i=>graph.nodes[i].e)),cats=[],catMap=new Map();graph.cats.forEach((c,i)=>{if(used.has(i)){catMap.set(i,cats.length);cats.push(c);}});
+    return {cats,nodes:keep.map(i=>({...graph.nodes[i],e:catMap.get(graph.nodes[i].e)??-1})),edges:chosen.map(e=>[remap.get(e[0]),remap.get(e[1]),e[2],e[3]]),focus:slug};
   };
 })(window);
