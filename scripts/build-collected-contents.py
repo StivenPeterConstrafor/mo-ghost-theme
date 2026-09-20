@@ -47,7 +47,12 @@ def build(catalogue,metadata):
         parts=volume.split(' · ',1)
         summary=parts[1].strip() if len(parts)>1 else ''
         # These words are published catalogue descriptions, not generated summaries.
-        if not summary and items:summary='; '.join(i['title'] for i in items[:3])
+        if not summary and items:
+            def preview_title(item):
+                title=item['title']
+                translated=re.search(r'\(((?:A|An|The) .+)\)\.?$',title)
+                return (translated.group(1) if translated else title).rstrip('.')
+            summary='; '.join(preview_title(i) for i in items[:3])
         if slug=='luther-wa-schriften-55-ii':
             # The published outline places every entry on 1028; do not invent section anchors.
             summary='Psalm texts and notes; description of the Dresden scholia manuscript; editorial material'

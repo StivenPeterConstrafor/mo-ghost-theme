@@ -13,7 +13,7 @@
     preview:slug=>{const w=works[slug];return w?.summary?'<span class="frcw-preview"><span>Includes: </span>'+esc(excerpt(w.summary))+'</span>':'';},
     disclosure:slug=>{const w=works[slug];if(!w)return '';
       if(!w.sections.length)return '<p class="frcw-unindexed">Section links are not yet available for this volume.</p>';
-      return '<details class="frcw-contents"><summary>View contents <span>('+w.sections.length+' sections)</span></summary><div class="frcw-pane"><p class="frcw-note">Main sections from the reader’s contents.</p><ol class="frcw-list">'+w.sections.map(s=>'<li><div><a class="frcw-link" href="'+esc(reader(slug,s.page))+'"><span>'+esc(s.title)+'</span><small>p. '+esc(s.page)+'</small></a></div></li>').join('')+'</ol></div><a class="frcw-reader" href="'+esc(reader(slug))+'">Open full reader contents</a></details>';
+      return '<details class="frcw-contents"><summary>View contents <span>('+w.sections.length+(w.sections.length===1?' section':' sections')+')</span></summary><div class="frcw-pane"><p class="frcw-note">Main sections from the reader’s contents.</p><ol class="frcw-list">'+w.sections.map(s=>'<li><div><a class="frcw-link" href="'+esc(reader(slug,s.page))+'"><span>'+esc(s.title)+'</span><small>p. '+esc(s.page)+'</small></a></div></li>').join('')+'</ol></div><a class="frcw-reader" href="'+esc(reader(slug))+'">Open full reader contents</a></details>';
     }
   };
   window.MOCollectedContents=api;
