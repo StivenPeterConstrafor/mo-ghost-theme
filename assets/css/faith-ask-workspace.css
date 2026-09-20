@@ -1344,3 +1344,31 @@ html:not(.mo-embedded) .fra {
   top: var(--mo-head, 61px);
   height: calc(100dvh - var(--mo-head, 61px));
 }
+
+/* Preserve the reader-side conversation geometry while using the site palette. */
+@media(min-width:1100px){
+ html.fra-docked,html.fra-docked body{overflow:visible!important}
+ #fra-workspace.fra-docked{inset:calc(var(--mo-head,85px) + var(--phh,64px)) 0 0 auto!important;width:var(--fr-rail-width,460px);height:calc(100dvh - var(--mo-head,85px) - var(--phh,64px))!important;grid-template-columns:minmax(0,1fr);border-left:1px solid var(--fra-border);box-shadow:none}
+ .fra-docked .fra-sidebar{display:none}.fra-docked #fra-history-toggle{display:flex}
+ .fra-docked .fra-header{height:60px;padding:8px 12px;gap:2px}
+ .fra-docked .fra-heading strong{font-size:15px}.fra-docked .fra-heading>span{font-size:11px}
+ .fra-docked .fra-header .fra-icon{width:36px;height:40px;padding:8px}
+ .fra-docked .fra-feed{padding:24px 20px}.fra-docked .fra-question{font-size:22px;line-height:1.4}
+ .fra-docked .fra-answer{font-size:16px;line-height:1.75}
+ .fra-docked .fra-welcome{min-height:0;padding:18px 0;align-items:flex-start;justify-content:flex-start;text-align:left}.fra-docked .fra-welcome h1{font-size:30px}.fra-docked .fra-welcome-mark{display:none}
+ .fra-docked .fra-welcome p{font-size:15px;line-height:1.6}
+ .fra-docked .fra-suggestions{grid-template-columns:minmax(0,1fr);flex-direction:column;gap:0;margin-top:22px}
+ .fra-docked .fra-suggestions button{max-width:100%;border:0;border-bottom:1px solid var(--fra-border);border-radius:0;padding:12px 0;font-size:13px}
+ .fra-docked .fra-compose-area{padding:10px 14px 14px}.fra-docked .fra-compose-foot>span:last-child{display:none}
+ .fra-docked .fra-compose-foot>span:first-child{max-width:100%}
+ .fra-docked #fra-input{font-size:16px;min-height:48px}.fra-docked .fra-composer{padding:9px;border-radius:12px}
+ .fra-docked .fra-popover{width:100%}.fra-docked .fra-mode-menu span{font-size:12px}
+ .fra-docked .fra-menu{top:55px;right:42px}
+ .fra-docked.fra-history-open .fra-sidebar{display:flex;position:absolute;inset:0 auto 0 0;width:min(310px,90%);z-index:12}
+ .fra-docked.fra-history-open .fra-history-scrim{display:block;position:absolute;inset:0;background:#0005;z-index:11}
+ .fra-docked.fra-history-open .fra-mobile-only{display:flex}
+ .fra-docked.fra-with-reader .fra-mobile-tabs{display:flex;flex:none;gap:20px;padding:0 20px;border-bottom:1px solid var(--fra-border)}
+ .fra-docked .fra-mobile-tabs button{min-height:40px;font-size:13px}.fra-docked .fra-mobile-tabs button.active{box-shadow:inset 0 -2px var(--fra-fg)}
+ .fra-docked.fra-show-reader .fra-chat{display:none}.fra-docked .fra-reader{width:100%;border-left:0}
+}
+.fra-docked .fra-split { display: none !important; }
