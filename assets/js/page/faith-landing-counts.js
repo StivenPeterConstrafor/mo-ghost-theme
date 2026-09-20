@@ -9,7 +9,7 @@
    document.querySelectorAll('[data-landing-total]').forEach(el=>el.textContent=all.length.toLocaleString());
    document.querySelectorAll('[data-landing-tradition]').forEach(el=>{
      const tradition=el.dataset.landingTradition;
-     const n=all.filter(w=>String(w.tradition||'').trim()===tradition).length;
+     const n=all.filter(w=>{const t=String(w.tradition||'').trim();const parent=window.MOCorpora.traditionParent?.(t,w.corpus);return (parent==='Protestant'&&['Puritan','Anglican'].includes(t)?'English Divines':t)===tradition;}).length;
      if(n)el.textContent=n.toLocaleString()+' works';
    });
  });

@@ -695,9 +695,9 @@
   // elsewhere; this one has to be unmistakable about what it does and
   // does not rule out.
   const COMPARE_CITE_NONE =
-    "Neither of these two cites the other five times or more, and five is the floor for this graph. A pair under it is not published at all, so this means fewer than five in each direction, possibly none. It is not a finding that they never named each other.";
+    "No citation between these authors is recorded in the current index. This does not establish that they never cited one another.";
   const COMPARE_CITE_ONE_WAY =
-    "The other direction is not in the graph, which puts it under five citations rather than at none.";
+    "No citation in the other direction is recorded in the current index.";
 
   /* The opt-in exact count, and the cost is stated before it is spent.
    * Measured on the wire 2026-09-04: 15 KB for Jerome, 19 KB for
@@ -746,9 +746,9 @@
   };
   const CITE_REGION_BLURB = {
     cited:
-      "Every point is an author the indexed library has been read for, filed under the tradition the library shelves them in. A point's size is how much the rest of the library cites them. A line runs from an author to somebody they cite.",
+      "Authors are grouped by tradition. Larger points have more recorded citations. Lines connect authors to sources they cite.",
     contested:
-      "Every point is an author the indexed library has been read for, filed under the tradition the library shelves them in. A point's size is how much the rest of the library cites them at all, so a large point in this view is somebody both cited and argued with. A line runs from an author to somebody they cite.",
+      "Authors are grouped by tradition. Larger points have more recorded citations. Inspect a point to compare its citations and refutations.",
   };
 
   /* Three corrections, kept apart because they correct different
@@ -757,17 +757,17 @@
    * map, where a count read on its own says something the data does
    * not, and it is the one that must never be dropped. */
   const CITE_SCOPE_CAVEAT =
-    "Every figure here is counted inside the indexed corpus rather than being an absolute ranking. This library is heavily Protestant and scholastic, so the totals partly measure who it happens to hold.";
+    "Counts describe the indexed library, not an author’s influence across all Christian writing.";
   const CITE_TRADITION_CAVEAT =
-    "A wedge is where the library shelves an author, not a claim about the person. A few authors are shelved in more than one place and are drawn under the one that holds most of them.";
+    "Authors are grouped under the shelf containing the most of their indexed works.";
   const CITE_CONTESTED_CAVEAT =
     "Being argued with is not a verdict. It is not the same as being ignored either. Several of the figures nearest this centre are also among the most cited in the library, which is why size here is total citations rather than refutations. A large count can also come from a single opponent, so every figure below is given with the number of authors behind it. A point refuted by fewer than three authors is drawn as a hollow ring.";
 
   const CITE_LINE_KEY = {
     cited:
-      "Solid lines are citations. The heavier the line, the more of them. Dashed lines are the pairs where refutations outnumber agreements.",
+      "Thicker lines represent more citations. Dashed lines mark connections where more than half are classified as refutations.",
     contested:
-      "Dashed lines are the pairs where refutations outnumber agreements. Solid lines are pairs that are mostly agreement with an argument inside them, which is what the heaviest disputes in this library turn out to be.",
+      "Dashed lines mark connections where more than half the citations are classified as refutations. Other citations may report, qualify or support a source.",
   };
 
   const CITE_VIEWS_NOTE =
@@ -2471,8 +2471,8 @@
         `${fmt(c.total)} ${c.total === 1 ? "citation" : "citations"}`,
       ];
       if (c.ref) {
-        lines.push(`${fmt(c.pos)} positive, ${fmt(c.ref)} refutations (${pct(c.share)})`);
-        if (c.argument) lines.push("Refutations outnumber agreements");
+        lines.push(`${fmt(c.pos)} other citations, ${fmt(c.ref)} refutations (${pct(c.share)})`);
+        if (c.argument) lines.push("More than half are refutations");
       } else {
         lines.push("No refutations in this pair");
       }
@@ -2530,7 +2530,7 @@
       };
       lines.push(say(f.nameA, f.nameB, f.ab));
       lines.push(say(f.nameB, f.nameA, f.ba));
-      if (!f.any) lines.push("Fewer than five citations either way, possibly none");
+      if (!f.any) lines.push("No citation recorded in either direction");
       return lines;
     }
     if (f.edge >= 0) {
@@ -3278,7 +3278,7 @@
     if (!dossierEl) return;
     dossierEl.textContent = "";
     dossierEl.appendChild(
-      textEl("p", "cn-dossier-empty", "Choose a point to see what stands behind it.")
+      textEl("p", "cn-dossier-empty", "Choose a point to see its citations and sources.")
     );
   }
 
@@ -4075,7 +4075,7 @@
       li.className = "cn-link cn-link--flat";
       li.appendChild(textEl("span", "cn-link-name", `${from} cites ${to}`));
       li.appendChild(
-        textEl("span", "cn-link-meta", "Under five citations, so not in this graph")
+        textEl("span", "cn-link-meta", "No citation recorded in this direction")
       );
       ul.appendChild(li);
       return;
@@ -4105,8 +4105,8 @@
       const pos = Math.max(0, e[2] - e[3]);
       parts.push(
         isArgument(e)
-          ? `${d[1]} on ${d[2]} is mostly argument: ${fmt(pos)} agreements against ${fmt(e[3])} refutations.`
-          : `${d[1]} on ${d[2]} is mostly agreement with an argument inside it: ${fmt(pos)} positive against ${fmt(e[3])} refutations, which is ${pct(e[3] / e[2])} of the pair.`
+          ? `${d[1]} citing ${d[2]}: ${fmt(e[3])} refutations and ${fmt(pos)} other citations.`
+          : `${d[1]} citing ${d[2]}: ${fmt(e[3])} refutations (${pct(e[3] / e[2])}) and ${fmt(pos)} other citations.`
       );
     });
     if (!parts.length) return;
@@ -4410,10 +4410,10 @@
   function compareAnnouncement(f) {
     if (f.cite) {
       if (!f.any) {
-        return `${f.nameA} and ${f.nameB} compared. Neither cites the other five times or more, so this pair is not in the graph.`;
+        return `${f.nameA} and ${f.nameB} compared. No citation between them is recorded in this index.`;
       }
       const say = (from, to, ei) => {
-        if (ei < 0) return `${from} cites ${to} fewer than five times.`;
+        if (ei < 0) return `No citation from ${from} to ${to} is recorded.`;
         const e = edges[ei];
         return `${from} cites ${to} ${fmt(e[2])} times, ${e[3] ? `${fmt(e[3])} of them refutations` : "none of them refutations"}.`;
       };
@@ -4467,6 +4467,7 @@
     selected = i;
     selectedEdge = -1;
     hoveredEdge = -1;
+    syncWebAddress();
     renderDossier(i);
     if (i >= 0 && nodes[i]) {
       announce(`${nodes[i].a || "Point"} selected.`);
@@ -5273,8 +5274,13 @@
     renderLegend();
     renderCaption();
     if (indexBuilt) {
-      if (indexFilter) indexFilter.value = "";
+      if (indexFilter) indexFilter.value = requested?.query || "";
       renderIndex();
+    }
+    if(requested?.entry){
+      const at=nodes.findIndex(n=>n.a===requested.entry||n.t===requested.entry||n.fk===requested.entry);
+      requested.entry="";
+      if(at>=0)select(at,{centre:true});
     }
     draw();
   }
@@ -5609,8 +5615,7 @@
           e[0] >= 0 &&
           e[1] >= 0 &&
           e[0] < nodes.length &&
-          e[1] < nodes.length &&
-          e[0] !== e[1]
+          e[1] < nodes.length
       )
       .map((e) => [e[0], e[1], numOf(e[2]), numOf(e[3])]);
 
@@ -6006,6 +6011,7 @@
   function syncWebAddress(){
     if(!document.body.classList.contains("web-constellation-mode")||!shelfSlug||!view)return;
     const q=new URLSearchParams({arrange:layout});
+    if(selected>=0&&nodes[selected])q.set("entry",nodes[selected].t||nodes[selected].a||"");
     history.replaceState(null,"","#shelves="+encodeURIComponent(shelfSlug)+"/"+view+"?"+q);
   }
   window.MOFaithConstellations={open(spec){
