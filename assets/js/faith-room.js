@@ -951,7 +951,7 @@
   const pageLede = document.querySelector(".bhero-lede");
   const originalHeading = pageHeading?.textContent || "";
   const originalLede = pageLede?.textContent || "";
-  function render() {
+  function updateRoomContext() {
     const narrowed = isAll && !!(filter || tradition || denomination || party || century || collection || letter || page > 1);
     const openers = document.querySelector("[data-faith-openers]");
     if (openers) openers.classList.toggle("is-filtered", narrowed);
@@ -960,6 +960,10 @@
       if (pageHeading) pageHeading.textContent = name || originalHeading;
       if (pageLede) pageLede.textContent = name ? "Browse the works below, or search for an author or title." : originalLede;
     }
+  }
+
+  function render() {
+    updateRoomContext();
     renderShelfResearch();
     // The denomination filter can move the reader from one series to
     // another, or off the Fathers entirely, between renders. A volume
@@ -1477,4 +1481,5 @@
     });
   }
 
+  updateRoomContext();
 })();

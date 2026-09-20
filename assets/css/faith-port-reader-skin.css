@@ -1510,3 +1510,41 @@ html[data-lh] .app #reading :is(.row:not(.rapp) > .en, .row:not(.rapp) > .la,
   }
   body:has(> .site-header.is-hidden) .ph.fr-reader-head .aapop { --fr-menu-head: 0px; }
 }
+
+/* Phone reading: retain each existing Latin/original-English pair at full width. */
+@media (max-width: 640px) {
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading {
+    font-size: var(--rdszm, 17px) !important;
+  }
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading .row,
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading .row.seg .sp {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading :is(.row, .sp) > :is(.la, .en) {
+    grid-column: 1;
+    padding-inline: 0;
+    border-inline: 0;
+    min-width: 0;
+    max-width: none;
+    overflow-wrap: break-word;
+  }
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading .row.soloen > .la,
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading .row.solola > .en {
+    display: none;
+  }
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading :is(.row:not(.rhead):not(.rapp), .sp) > .la::before {
+    content: var(--source-label, "Original");
+    display: block;
+    color: var(--muted);
+    font: 12px/1.5 var(--font-body);
+    margin: 8px 0;
+  }
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading :is(.row:not(.rhead):not(.rapp), .sp) > .en::before {
+    content: "English";
+    display: block;
+    color: var(--muted);
+    font: 12px/1.5 var(--font-body);
+    margin: 8px 0;
+  }
+}
