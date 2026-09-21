@@ -10,8 +10,6 @@
 <meta name="twitter:description" content="Ask a question of the library and read a cited answer. Every claim opens the page it came from." />
 <link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=d62ee4eca7750274" />
 {{/contentFor}}
-{{> "faith-received/_tfr-rail"}}
-<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
 {{!-- /the-faith-received/ask/ — the Ask workspace.
 
      WHAT THIS PAGE IS. Almost nothing. The corpus owner's engine
@@ -66,6 +64,8 @@
      means a URL that ALSO carries ?ask= opens once, not twice. --}}
 
 <main class="faith-received faith-ask-page">
+{{> "faith-received/_tfr-rail"}}
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
   {{> "faith-received/_beta-gate"}}
   <noscript>
     <div class="container" style="padding:64px 0">

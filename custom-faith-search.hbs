@@ -7,8 +7,6 @@
 <meta name="twitter:title" content="Search The Faith Received" />
 <meta name="twitter:description" content="Search across every creed, confession, catechism, and classic work in The Faith Received." />
 {{/contentFor}}
-{{> "faith-received/_tfr-rail"}}
-<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
 {{!-- /the-faith-received/search/ — six modes, one page, per the data
      owner's 2026-09-03 brief: Find, Ask, Full text, Meaning, Scripture,
      Tradition. Find/Full text/Tradition run on the real Pagefind index
@@ -58,6 +56,9 @@
       {{/if}}
     </div>
   </section>
+{{> "faith-received/_tfr-rail"}}
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+
 
   {{!-- BETA GATE, tools branch. Every mode on this page is a research
        tool, the search box in the hero above included, so the gate

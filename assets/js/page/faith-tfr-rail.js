@@ -25,11 +25,14 @@
 
   const drawerFor = (name) => rail.querySelector(`[data-tfr-drawer-for="${name}"]`);
 
+  /* `hidden` is display:none, which cancels a transition, so it is only
+     used before the first interaction. After that the drawer is opened
+     and closed by width alone and stays in the layout at zero. */
   function close(toggle) {
     const d = drawerFor(toggle.dataset.tfrDrawer);
     if (!d) return;
     toggle.setAttribute("aria-expanded", "false");
-    d.hidden = true;
+    d.classList.remove("is-open");
     rail.classList.remove("tfr-rail--open");
   }
 
@@ -43,7 +46,16 @@
     closeAll(toggle);
     toggle.setAttribute("aria-expanded", "true");
     d.hidden = false;
+    // A frame between removing `hidden` and adding the class, or the
+    // element goes from display:none straight to its open width and the
+    // slide never runs.
+    window.requestAnimationFrame(() => d.classList.add("is-open"));
     rail.classList.add("tfr-rail--open");
+    // The rail is one non-wrapping line, so an opened drawer can run off
+    // the end on a narrow screen. Bring it into view.
+    window.setTimeout(() => {
+      if (d.scrollIntoView) d.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }, 300);
   }
 
   toggles.forEach((t) => {

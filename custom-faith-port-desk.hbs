@@ -23,8 +23,6 @@
 <link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=908031c3f00ccf98">
 {{/if}}
 {{/contentFor}}
-{{> "faith-received/_tfr-rail"}}
-<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
 {{#if @member}}
 
 {{!-- /the-faith-received/desk/ — the writing desk, ported.
@@ -95,5 +93,8 @@
 </div>
 
 {{else}}
-<main class="faith-received"><section class="bhero bhero--tool"><div class="bhero-inner container"><h1>Desk</h1></div></section>{{> "faith-received/_beta-gate"}}</main>
+<main class="faith-received"><section class="bhero bhero--tool"><div class="bhero-inner container"><h1>Desk</h1></div></section>
+{{> "faith-received/_tfr-rail"}}
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+{{> "faith-received/_beta-gate"}}</main>
 {{/if}}

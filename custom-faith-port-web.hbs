@@ -27,8 +27,6 @@
 <link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=908031c3f00ccf98">
 {{/contentFor}}
 
-{{> "faith-received/_tfr-rail"}}
-<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
 {{!-- /the-faith-received/web/ — the citation atlas, ported.
 
      THE CORPUS SITE'S /web INSIDE THIS SITE. Same shape as the ported
@@ -89,6 +87,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   <p class="index-note">Counts describe indexed citation records. Alternate witnesses can record the same citation.</p>
 </aside>
 <main id="atlas" aria-label="Citation map">
+{{> "faith-received/_tfr-rail"}}
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
   <div id="map-heading"><div><h2 id="map-title">The citation network</h2><p id="map-summary" role="status">Loading connections…</p></div><div class="map-top-controls"><label for="map-density" class="sr-only">Points on the map</label><select id="map-density"><option value="20">20 most cited</option><option value="60" selected>60 most cited</option><option value="200">200 most cited</option><option value="0">All entries</option></select><button id="map-help-button" aria-expanded="false" aria-controls="map-help">How to read this</button></div></div>
   <div id="map-help" hidden><p>Each point is an author or collection. Lines are recorded citations; larger points have higher PageRank. Horizontal position follows time. Vertical spacing is arranged for readability; proximity does not imply agreement. The overview starts with the 60 authors cited by the most other authors. The complete index remains searchable.</p><p>Point colors identify historical periods. In an author’s map, ochre lines lead to sources and green lines to citing authors; the labels and positions show the same direction. Some dates are estimated for placement. Shelf filters include connected authors outside that shelf. Selecting an author shows up to eight sources on the left and eight citing authors on the right. The panel lists all available relationships.</p></div>
 <section id="faith-web-constellations" aria-label="Constellation layouts" hidden>

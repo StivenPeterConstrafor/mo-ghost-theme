@@ -22,8 +22,6 @@
 <link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=908031c3f00ccf98">
 {{/if}}
 {{/contentFor}}
-{{> "faith-received/_tfr-rail"}}
-<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
 {{#if @member}}
 <div class="faith-port-pins-page">
 <p class="wrap"><a href="/dashboard/faith-received/">View earlier account bookmarks</a></p>
@@ -37,6 +35,9 @@
 
 </div>
 {{else}}
-<main class="faith-received"><section class="bhero bhero--tool"><div class="bhero-inner container"><p class="bhero-kicker"><a href="/the-faith-received/all-works/?collection=all">The Faith Received</a></p><h1>Notebooks</h1></div></section>{{> "faith-received/_beta-gate"}}</main>
+<main class="faith-received"><section class="bhero bhero--tool"><div class="bhero-inner container"><p class="bhero-kicker"><a href="/the-faith-received/all-works/?collection=all">The Faith Received</a></p><h1>Notebooks</h1></div></section>
+{{> "faith-received/_tfr-rail"}}
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+{{> "faith-received/_beta-gate"}}</main>
 {{/if}}
 {{!-- Source corpus page, kept inside MereO default; edits and data remain on the Ghost/Cloudflare port. --}}
