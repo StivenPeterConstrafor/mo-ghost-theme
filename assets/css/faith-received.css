@@ -17803,3 +17803,49 @@ body.research-page {
   border-bottom-color: currentColor;
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   THE COMMENTARY PREVIEW WAS UPSIDE DOWN IN A 180px SLOT
+   ══════════════════════════════════════════════════════════════════════
+
+   Ian, of the Commentaries tab on a chapter: "This is very clearly
+   busted. Needs a major update." Two separate rules, both from the
+   ported Scripture CSS, both correct where they were written and both
+   wrong here.
+
+   ONE: THE LABEL WAS ROTATED. bible.in01.css has
+   `.peekbtn.on { transform: rotate(180deg) }`, which is how you turn a
+   chevron from ⌄ to ⌃. Our commentary rows label that button with the
+   WORD "Preview", so opening a preview printed the word upside down.
+   The corpus site hit this itself and fixed it the same way on its
+   research excerpts, research-experience.css:93: transform none, an
+   underline instead. This does that for the Scripture surfaces, where
+   the button is also a word.
+
+   TWO: THE PREVIEW OPENED INSIDE THE BUTTON COLUMN.
+   `.scripture-page .peekwrap { flex-basis: 100%; width: 100% }` assumes
+   the preview is a flex child of the work row, where 100% is the row.
+   It is not: the script inserts it inside .work-actions, which is its
+   own flex container capped at `max-width: 180px`. So 100% resolved to
+   180px and the embedded reader, an iframe up to 540px tall, rendered
+   as a column of text five words wide beside an empty half-screen. The
+   row is `align-items: center`, which then floated the work's title to
+   the vertical middle of that column, which is the large gap on the
+   left of Ian's screenshot.
+
+   The actions block keeps its 180px cap while it is only buttons, and
+   takes the full width for as long as it holds an open preview. Stated
+   with :has so nothing has to be toggled in script. ---------------- */
+.scripture-page .peekbtn.on,
+.research .peekbtn.on {
+  transform: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.scripture-page .scripture-work { flex-wrap: wrap; }
+.scripture-page .scripture-work:has(.peekwrap.on) { align-items: flex-start; }
+.scripture-page .scripture-work > .work-actions:has(.peekwrap.on) {
+  max-width: none;
+  flex: 1 1 100%;
+  justify-content: flex-start;
+}
+
