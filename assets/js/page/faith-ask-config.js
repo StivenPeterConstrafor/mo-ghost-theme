@@ -31,7 +31,7 @@
  *   custom-faith-port-bible.hbs      (/the-faith-received/bible/)
  *   custom-faith-port-index.hbs
  *   custom-faith-port-desk.hbs       (/the-faith-received/desk/)
- *   custom-faith-port-web.hbs        (/the-faith-received/web/)
+ *   custom-faith-port-web.hbs        (/the-faith-received/constellations/)
  */
 (function () {
   "use strict";

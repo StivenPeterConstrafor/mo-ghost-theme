@@ -3581,7 +3581,7 @@
   }
 
   function webLink(label, hash) {
-    const a=textEl("a", "cn-open-source", label);a.href=`/the-faith-received/web/${hash}`;return a;
+    const a=textEl("a", "cn-open-source", label);a.href=`/the-faith-received/constellations/${hash}`;return a;
   }
   function renderCiteDossier(i) {
     const node = nodes[i];

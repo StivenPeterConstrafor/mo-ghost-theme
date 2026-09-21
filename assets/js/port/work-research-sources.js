@@ -191,7 +191,7 @@
       if(!data.matches.length)note(body,!author?'An author name is not supplied for this edition.':data.failed.length?'An exact author match could not be established from the indexes that loaded.':'No exact author record for “'+author+'” appears in the available indexes.');
     }
     function positionsLinks(body, matches) {
-      for(const match of matches){body.appendChild(link('Read '+match.a+'’s positions · '+shelves[match.sh],positionsURL(match,slug)));body.appendChild(link('Follow sources cited','/the-faith-received/web/#journey='+encodeURIComponent(match.s)+'?'+new URLSearchParams({direction:'out',work:slug})));body.appendChild(link('Explore later citations','/the-faith-received/web/#journey='+encodeURIComponent(match.s)+'?'+new URLSearchParams({direction:'in',targetWork:slug})));}
+      for(const match of matches){body.appendChild(link('Read '+match.a+'’s positions · '+shelves[match.sh],positionsURL(match,slug)));body.appendChild(link('Follow sources cited','/the-faith-received/constellations/#journey='+encodeURIComponent(match.s)+'?'+new URLSearchParams({direction:'out',work:slug})));body.appendChild(link('Explore later citations','/the-faith-received/constellations/#journey='+encodeURIComponent(match.s)+'?'+new URLSearchParams({direction:'in',targetWork:slug})));}
     }
     if(author)lazy(frame,'This author’s positions',async body => {
       const draw=async()=>{

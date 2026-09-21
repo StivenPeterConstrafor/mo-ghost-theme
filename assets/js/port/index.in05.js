@@ -932,7 +932,7 @@ function render(){
       +`<a class=scomp-l href="/the-faith-received/bible/?sh=${_SH}"><span class=n>\u2727 Scripture</span><span class=d>Every citation of Scripture across the shelf \u2014 book by book, chapter by chapter, opening on the verse itself.</span></a>`
       +`<a class=scomp-l href="/the-faith-received/fathers/?sh=${_SH}"><span class=n>\u2727 Authors</span><span class=d>Each author\u2019s room: their topics, their positions in their own words, their reception.</span></a>`
       +`<a class=scomp-l href="/the-faith-received/topics/?sh=${_SH}"><span class=n>\u2727 Topics</span><span class=d>The doctrines this shelf treats, era by era, with the passages that carry them.</span></a>`
-      +`<a class=scomp-l href="/the-faith-received/web/"><span class=n>\u2727 The Web</span><span class=d>Fifteen centuries of citation as one sky \u2014 who reads whom, traced passage by passage.</span></a>`
+      +`<a class=scomp-l href="/the-faith-received/constellations/"><span class=n>\u2727 The Web</span><span class=d>Fifteen centuries of citation as one sky \u2014 who reads whom, traced passage by passage.</span></a>`
       +'</div>';
       sw.appendChild(cb);}}
     // MINED SHELF SKIES (owner 2026-08-20): every shelf gets its own constellations, drawn

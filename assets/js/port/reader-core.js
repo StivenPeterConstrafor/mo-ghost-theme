@@ -4261,7 +4261,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
       if(rz.cls==="A"&&rz.work_slug)
         return '<a class="rpm-chip rpm-go" href="/the-faith-received/read/?w='+encodeURIComponent(rz.work_slug)+'" target=_blank title="'+tt+' — open the cited work">'+inner+' ↗</a>';
       return '<span class=rpm-chip'+(tt?' title="'+tt+'"':"")+'>'+inner+'</span>';}).join("")
-      +'<a class="rpm-chip rpm-web" href="/the-faith-received/web/#a='+encodeURIComponent(String((window.DATA&&DATA.author)||"").trim())+'" target=_blank title="This author in the Web of Theology">✧ Web</a></div>';
+      +'<a class="rpm-chip rpm-web" href="/the-faith-received/constellations/#a='+encodeURIComponent(String((window.DATA&&DATA.author)||"").trim())+'" target=_blank title="This author in the Web of Theology">✧ Web</a></div>';
     defs.forEach(x=>{h+='<div class=rpm-def><i>'+esc(String(x.term).slice(0,40))+'</i> — '+esc(String(x.definition).slice(0,120))+'</div>';});
     return h+'</div>';}
   async function load(pg){

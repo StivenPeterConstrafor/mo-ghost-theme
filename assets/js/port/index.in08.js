@@ -11,7 +11,7 @@
   sheet.setAttribute("role","dialog");sheet.setAttribute("aria-modal","true");sheet.setAttribute("aria-label","Site sections");
   sheet.innerHTML='<div class=ss-scrim></div><nav class=ss-panel aria-label="Site sections">'+
     [['/#confessions','Confessions'],['/the-faith-received/bible/','Scripture'],['/the-faith-received/fathers/','\u25cc Authors'],['/the-faith-received/fathers/#works','\u25a4 Works'],
-     ['/the-faith-received/topics/','\u2318 Topics'],['/the-faith-received/web/','\u2727 The Web'],['/the-faith-received/desk/','\u270e Desk'],['/the-faith-received/pins/','\u25a4 Notebook']]
+     ['/the-faith-received/topics/','\u2318 Topics'],['/the-faith-received/constellations/','\u2727 The Web'],['/the-faith-received/desk/','\u270e Desk'],['/the-faith-received/pins/','\u25a4 Notebook']]
     .map(x=>'<a href="'+x[0]+'">'+x[1]+'</a>').join("")+'</nav>';
   document.body.appendChild(sheet);
   const sectionsButton=bar.querySelector('[data-a="sections"]');
