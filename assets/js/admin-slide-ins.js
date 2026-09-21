@@ -22,6 +22,7 @@
   const pagesSelect = form.querySelector('[name="pages_type"]');
   const tagField = form.querySelector("[data-tag-field]");
   const tagInput = form.querySelector('[name="tag_slug"]');
+  const faithHint = form.querySelector("[data-faith-hint]");
   const triggerSelect = form.querySelector('[name="trigger"]');
   const triggerValueField = form.querySelector("[data-trigger-value-field]");
   const triggerValueInput = form.querySelector('[name="trigger_value"]');
@@ -52,9 +53,14 @@
 
   let editingId = null;
 
-  pagesSelect.addEventListener("change", () => {
+  // The works/landing split is not self-evident from the option label,
+  // so the definition appears under the select the moment a Faith
+  // Received target is picked.
+  function updatePagesUI() {
     tagField.hidden = pagesSelect.value !== "tag";
-  });
+    if (faithHint) faithHint.hidden = pagesSelect.value.indexOf("faith-received") !== 0;
+  }
+  pagesSelect.addEventListener("change", updatePagesUI);
 
   // Audience checkbox logic: "everyone" clears the rest, picking specifics clears "everyone"
   audienceBoxes.forEach((box) => {
@@ -377,12 +383,11 @@
       if (pages.indexOf("tag:") === 0) {
         pagesSelect.value = "tag";
         tagInput.value = pages.slice(4);
-        tagField.hidden = false;
       } else {
         pagesSelect.value = pages;
         tagInput.value = "";
-        tagField.hidden = true;
       }
+      updatePagesUI();
     } else {
       editingId = null;
       form.querySelectorAll("input:not([type=file]):not([type=hidden]), textarea, select").forEach((el) => {
@@ -395,7 +400,7 @@
       });
       setImage("");
       setExcludePaths("");
-      tagField.hidden = true;
+      updatePagesUI();
       triggerValueInput.value = "3";
       updateTriggerUI();
     }
@@ -436,10 +441,17 @@
     items.forEach((item) => {
       const statusClass = item.active ? "is-active" : "is-inactive";
       const statusLabel = item.active ? "Active" : "Inactive";
-      const target = item.pages === "all" ? "All pages" :
-        item.pages === "homepage" ? "Homepage" :
-        item.pages === "posts" ? "All posts" :
-        item.pages.indexOf("tag:") === 0 ? `Tag: ${item.pages.slice(4)}` : item.pages;
+      const pageLabels = {
+        all: "All pages",
+        homepage: "Homepage",
+        posts: "All posts",
+        "faith-received": "The Faith Received",
+        "faith-received-works": "The Faith Received: works",
+        "faith-received-landing": "The Faith Received: landing pages",
+      };
+      const target = item.pages.indexOf("tag:") === 0
+        ? `Tag: ${item.pages.slice(4)}`
+        : pageLabels[item.pages] || item.pages;
       const audLabels = {
         everyone: "Everyone", "not-signed-in": "Not signed in",
         "signed-in": "Signed in", free: "Free", paid: "Paid"

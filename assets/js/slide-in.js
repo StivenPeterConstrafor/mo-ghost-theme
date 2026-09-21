@@ -58,6 +58,52 @@
   }
   const currentPath = normalizePath(window.location.pathname);
 
+  // ── The Faith Received ────────────────────────────────────────
+  // TFR is a section of routed theme pages, so its pages are neither
+  // the homepage nor posts and no page type before these three could
+  // reach one: the only way to put a slide-in on a work was "All
+  // pages" plus an exclusion for the rest of the site.
+  //
+  // A work is a page that renders a text. Every one of them — the
+  // hundred-odd generated documents and the library reader — carries
+  // <main class="article faith-doc …">, written by
+  // scripts/build-faith-received.mjs, so the marker is maintained by
+  // the same thing that creates the pages. Two exceptions:
+  //
+  //   - faith-doc--topic is a topic anthology (/topics/prayer/ and its
+  //     twelve siblings): passages gathered out of many works, a way
+  //     into the collection rather than a text of its own. It counts
+  //     as a landing page.
+  //   - the two ported readers carry no faith-doc class. custom-faith-
+  //     port-read renders <main id="reading"> and custom-faith-port-
+  //     readen renders <main class="reader">. Both are matched on those
+  //     markers rather than on their paths, because one template serves
+  //     several routes and the routes move: port-read is currently
+  //     mounted at both /read/ and /review/, and /readen/ arrived after
+  //     this was first written. A marker follows the template; a path
+  //     list would have to be chased.
+  //
+  // Everything else under /the-faith-received/ is a landing page:
+  // browse, the rooms, the shelves, search, Ask, the topic index, the
+  // memorize tools, the atlas, the desk. A new landing page needs no
+  // change here, and neither does a new route onto an existing reader.
+  //
+  // NOTE: the class tests must be selectors or classList checks, never
+  // substring matches. /the-faith-received/doctrines/ renders
+  // <main class="faith-received faith-doctrines-page"> and "faith-doc"
+  // is a substring of "faith-doctrines-page".
+  const FAITH_ROOT = "/the-faith-received/";
+  const isFaith = currentPath.indexOf(FAITH_ROOT) === 0;
+
+  function detectFaithWork() {
+    if (document.querySelector("main#reading, main.reader")) return true;
+    const doc = document.querySelector("main.faith-doc");
+    return !!doc && !doc.classList.contains("faith-doc--topic");
+  }
+
+  const isFaithWork = isFaith && detectFaithWork();
+  const isFaithLanding = isFaith && !isFaithWork;
+
   const memberEmail = document.body.getAttribute("data-member-email") || "";
   const memberStatus = document.body.getAttribute("data-member-status") || "";
   const isMember = !!memberEmail;
@@ -93,6 +139,9 @@
     if (p === "all") return true;
     if (p === "homepage") return isHome;
     if (p === "posts") return isPost;
+    if (p === "faith-received") return isFaith;
+    if (p === "faith-received-works") return isFaithWork;
+    if (p === "faith-received-landing") return isFaithLanding;
     if (p.indexOf("tag:") === 0) {
       const slug = p.slice(4);
       return isPost && pageTags.indexOf(slug) >= 0;
