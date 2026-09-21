@@ -121,8 +121,11 @@
       const travel = (total - view) ? scroller.scrollLeft / (total - view) : 0;
       // One transform does both: scale to the visible fraction, then slide
       // it across the track by however far is left over.
+      // Against the track's own width, which is a fixed 64px, not the
+      // rail's: the thumb lives in the little bar, not along the page.
+      const track = cue.clientWidth || 64;
       thumb.style.transform =
-        `translateX(${travel * view * (1 - ratio)}px) scaleX(${ratio})`;
+        `translateX(${travel * track * (1 - ratio)}px) scaleX(${ratio})`;
     }
     function schedule() {
       if (queued) return;

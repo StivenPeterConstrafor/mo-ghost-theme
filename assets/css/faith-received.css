@@ -17518,12 +17518,19 @@ a.fr-btn:hover,
    of it as the view is of the whole line. It appears only when there is
    something to scroll to, so the rail is unmarked at rest. */
 .tfr-rail { position: relative; }
+/* A SHORT TRACK, NOT A FULL-WIDTH RULE. At the rail's own width the
+   thumb is the visible fraction of a long line, so it came out around
+   70% of the viewport: a terracotta bar almost as wide as the page,
+   which reads as a border rather than as a scrollbar. Sixty-four pixels
+   at the right-hand end, where the overflow is. */
 .tfr-rail-scroll {
   position: absolute;
-  left: 0;
-  bottom: 0;
+  right: 22px;
+  bottom: 3px;
   height: 2px;
-  width: 100%;
+  width: 64px;
+  border-radius: 2px;
+  background: var(--color-rule, #e5ded5);
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
@@ -17532,8 +17539,9 @@ a.fr-btn:hover,
 .tfr-rail-scroll span {
   display: block;
   height: 100%;
+  width: 100%;
   background: var(--color-secondary, #c1593c);
-  opacity: 0.55;
+  opacity: 0.7;
   border-radius: 2px;
   transform-origin: left center;
   transition: transform 0.12s linear;
