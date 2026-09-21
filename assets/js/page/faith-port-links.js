@@ -43,6 +43,15 @@
     const links = node.matches?.('a[href]') ? [node] : [];
     links.push(...(node.querySelectorAll?.('a[href]') || []));
     for (const link of links) {
+      /* Links we authored for THIS site are already correct and must not
+         be re-mapped as though they came from the corpus site. The case
+         that forced this: the rail's Bible link is /bible/, our own
+         reader at the site root, and the route table turns a bare
+         /bible/ into /the-faith-received/bible/ because that is what the
+         corpus site's /bible means. That target 404s here. The rewriter
+         cannot tell the two apart from the path alone, so the markup
+         says which ones it owns. */
+      if (link.closest('[data-keep-href]')) continue;
       const raw = link.getAttribute('href');
       if (!raw || raw.startsWith('#')) continue;
       const next = localURL(raw, root.location.origin);
