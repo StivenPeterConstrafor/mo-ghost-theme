@@ -36,6 +36,7 @@
 (function () {
   const FAITH_ROOT = "/the-faith-received/";
   const ENDPOINT = "https://mo-forms.mo-podcast-feed.workers.dev/tfr-survey";
+  const EVENT_ENDPOINT = `${ENDPOINT}/event`;
 
   const KEY_STATE = "mo_tfr_survey";
   const KEY_DONE = "mo_tfr_survey_done";
@@ -233,6 +234,27 @@
     if (!email) return "anon";
     const status = document.body.getAttribute("data-member-status") || "";
     return status === "paid" || status === "comped" ? "paid" : "free";
+  }
+
+  /*
+   * Two counters: the bar was opened, the bar was turned off. Both land
+   * on a daily total in D1 and record nothing about who pressed them.
+   *
+   * Fire and forget, and silent on failure. This is telemetry behind a
+   * button a reader pressed for their own reasons; nothing they are
+   * doing should stall or break because a counter did. keepalive is set
+   * so the dismissal still sends when the click is the last thing that
+   * happens before they leave the page.
+   */
+  function count(kind) {
+    try {
+      fetch(EVENT_ENDPOINT, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ kind }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch (_) { /* nothing here is worth interrupting a reader for */ }
   }
 
   // ── Markup ──────────────────────────────────────────────────────
@@ -581,6 +603,7 @@
 
   // ── Open / close ────────────────────────────────────────────────
   function open() {
+    count("open");
     root.classList.add("is-open");
     tab.setAttribute("aria-expanded", "true");
     mountTurnstile();
@@ -626,6 +649,7 @@
       return;
     }
     if (e.target.closest("[data-fr-off]")) {
+      count("dismiss");
       writeFlag(KEY_OFF);
       forget();
       root.remove();

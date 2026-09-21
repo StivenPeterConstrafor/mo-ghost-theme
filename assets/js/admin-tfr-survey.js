@@ -34,6 +34,7 @@
     comments: root.querySelector("[data-survey-comments]"),
     memberStatus: root.querySelector("[data-survey-status-breakdown]"),
     pages: root.querySelector("[data-survey-pages]"),
+    engagement: root.querySelector("[data-survey-engagement]"),
   };
 
   function el(tag, cls, text) {
@@ -156,6 +157,35 @@
       totalsEl.appendChild(card);
     });
     totalsEl.hidden = false;
+
+    // The three engagement numbers. Each says "—" rather than 0 when it
+    // genuinely has no answer: a dead counter and a quiet week look
+    // identical otherwise, which is the whole reason this board carries
+    // a staleness line at all.
+    PANELS.engagement.textContent = "";
+    [
+      ["Expansions", d.opens === null || d.opens === undefined ? "—" : num(d.opens)],
+      ["Turned it off", d.dismissals === null || d.dismissals === undefined ? "—" : num(d.dismissals)],
+      ["Median completion", d.medianCompletion === null || d.medianCompletion === undefined
+        ? "—" : `${d.medianCompletion}%`],
+      ["Opened \u2192 submitted", d.submitRate === null || d.submitRate === undefined
+        ? "—" : `${d.submitRate}%`],
+    ].forEach((pair) => {
+      const card = el("div", "admin-tfr-total");
+      card.appendChild(el("span", "admin-tfr-total-value", pair[1]));
+      card.appendChild(el("span", "admin-tfr-total-label", pair[0]));
+      PANELS.engagement.appendChild(card);
+    });
+    const enote = root.querySelector("[data-survey-engagement-note]");
+    if (enote) {
+      enote.textContent = d.opens === null || d.opens === undefined
+        ? "Open and dismissal counts are unavailable — the counter table could not be read."
+        : `Expansions counts every time the panel was opened, so one reader opening it twice is two. `
+          + `Median completion is the middle share of the questions answered by the ${num(d.completionsCounted || 0)} `
+          + `responses that carry a completion figure; it says nothing about people who abandoned the survey, `
+          + `because nothing is written until they submit — that is what opened→submitted is for. `
+          + `Both counters are daily totals with nothing recorded about who produced them.`;
+    }
 
     scale(PANELS.liking, d.liking);
     scale(PANELS.usefulness, d.usefulness);

@@ -61,6 +61,16 @@
 
             <div class="admin-tfr-totals" data-survey-totals hidden></div>
 
+            {{!-- Engagement, first, because it is the denominator for
+                  everything below it. The answers tell you what readers
+                  think; these tell you how many readers the bar reached
+                  at all, and how many shut it. --}}
+            <section class="admin-tfr-section">
+              <h2 class="admin-tfr-section-title"><em>The bar itself</em></h2>
+              <p class="admin-tfr-section-note" data-survey-engagement-note>Opens and dismissals are daily totals with nothing recorded about who produced them, so they cannot be cross-tabbed against the answers.</p>
+              <div class="admin-tfr-totals" data-survey-engagement></div>
+            </section>
+
             {{!-- One section per question, in the order they are asked,
                   so this page reads the way the survey does. Each is
                   filled by assets/js/admin-tfr-survey.js; the headings
