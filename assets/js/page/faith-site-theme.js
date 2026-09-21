@@ -4,6 +4,12 @@
   if (!path.startsWith('/the-faith-received/')) return;
   if (/^\/the-faith-received\/(?:read|reader|readen|review)(?:\/|$)/.test(path)) return;
   document.documentElement.classList.add('fr-ghost-site');
+  // Source canvases and SVG palettes also read this attribute. Keep it aligned
+  // with the publication surface without changing the stored reading preference.
+  const html = document.documentElement;
+  const siteTheme = () => { if (html.dataset.theme !== 'light') html.dataset.theme = 'light'; };
+  siteTheme();
+  new MutationObserver(siteTheme).observe(html, {attributes:true, attributeFilter:['data-theme']});
   function navigation() {
     const nav = document.getElementById('topnav');
     if (!nav) return;
