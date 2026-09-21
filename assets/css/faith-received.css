@@ -17119,6 +17119,26 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
    sheets are more specific than a bare class and this file, though it loads
    after them, would otherwise lose. */
 
+/* .fr-btn is the system's own class -- the one to reach for when a
+   button has no other home -- and until 2026-09-21 it was the only
+   selector in the list that nothing in the theme used, because it
+   carried the four properties below and no geometry, so a bare .fr-btn
+   rendered as text with a hairline round it. Everything else in this
+   block brings its own padding from the rule it already had. Given
+   here, once, so the class means something on its own. */
+.fr-btn,
+a.fr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.2;
+  min-height: 44px;
+  padding: 11px 22px;
+  cursor: pointer;
+}
+
 .fr-btn,
 a.fr-btn,
 /* ── Library, rooms and browse ─────────────────────────────────────────── */
