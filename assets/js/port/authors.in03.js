@@ -118,7 +118,11 @@ const page=$("#page");
 const PAGE=location.pathname.includes("compare")?"compare":location.pathname.includes("topics")?"topics":(location.pathname.includes("bible")?"bible":"fathers");
 
 document.body.classList.toggle('research-enhanced',PAGE!=='bible');
-$('#research-ask').onclick=()=>window.FRAsk?.open();
+/* Guarded: #research-ask lives in the ported navigation bar, which the
+   Topics page no longer carries. The throw here was killing the rest
+   of this file, so the page rendered its loading ellipsis and stopped.
+   The rail's Research drawer is the way to Ask now. */
+if($('#research-ask'))$('#research-ask').onclick=()=>window.FRAsk?.open();
 /* read a passage in place: canon XML sliced at the column */
 const XMLCACHE={};
 async function passageOf(slug,col){

@@ -17512,9 +17512,91 @@ a.fr-btn:hover,
 }
 .tfr-rail-drawer a[aria-current="page"] { color: var(--color-secondary, #c1593c); }
 
+/* THAT THE RAIL SCROLLS HAS TO BE VISIBLE. With Research open the line
+   runs past the viewport, and nothing said so: the row simply ended.
+   A hairline along the bottom of the rail, the thumb as wide a fraction
+   of it as the view is of the whole line. It appears only when there is
+   something to scroll to, so the rail is unmarked at rest. */
+.tfr-rail { position: relative; }
+.tfr-rail-scroll {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.tfr-rail-scroll.is-live { opacity: 1; }
+.tfr-rail-scroll span {
+  display: block;
+  height: 100%;
+  background: var(--color-secondary, #c1593c);
+  opacity: 0.55;
+  border-radius: 2px;
+  transform-origin: left center;
+  transition: transform 0.12s linear;
+}
+
 @media (max-width: 640px) {
   .tfr-rail-inner { gap: 0 16px; }
   .tfr-rail-items { gap: 0 16px; }
   .tfr-rail-link, .tfr-rail-brand { font-size: 12px; letter-spacing: 0.06em; }
-  .tfr-rail-drawer.is-open { max-width: 70vw; margin-left: 14px; }
+  .tfr-rail-drawer.is-open { margin-left: 14px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THE TFR HOME'S BUTTONS ARE TFR BUTTONS
+   ══════════════════════════════════════════════════════════════════════
+   Ian, 2026-09-21: "Every button on TFR Home needs to be updated to be a
+   TFR style button."
+
+   The landing page was using Mere Orthodoxy's own .btn-primary and
+   .btn-ghost pills, which are the magazine's furniture: filled primary
+   orange, fully rounded. Inside the library they should be the library's
+   button, the same one the rail and the reader use.
+
+   SCOPED TO .faith-landing, never to .btn. Those classes belong to the
+   whole site and restyling them here would repaint the magazine.
+
+   THE HERO INVERTS, because it sits on a photograph. Off-black on a dark
+   image is invisible, so there the outline and the ink are white and the
+   fill on hover is the terracotta. Same button, read against its
+   ground. -------------------------------------------------------- */
+.faith-landing .btn,
+.faith-landing a.btn {
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--color-dark, #2d2927);
+  background: transparent;
+  border: 1px solid var(--color-dark, #2d2927);
+  border-radius: 3px;
+  box-shadow: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.faith-landing .btn:hover,
+.faith-landing a.btn:hover,
+.faith-landing .btn:focus-visible {
+  background: transparent;
+  color: var(--color-secondary, #c1593c);
+  border-color: var(--color-secondary, #c1593c);
+  text-decoration: none;
+}
+
+.faith-landing .lp-hero .btn,
+.faith-landing .lp-hero a.btn {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.55);
+  background: transparent;
+}
+.faith-landing .lp-hero .btn:hover,
+.faith-landing .lp-hero a.btn:hover,
+.faith-landing .lp-hero .btn:focus-visible {
+  background: var(--color-secondary, #c1593c);
+  border-color: var(--color-secondary, #c1593c);
+  color: #fff;
 }

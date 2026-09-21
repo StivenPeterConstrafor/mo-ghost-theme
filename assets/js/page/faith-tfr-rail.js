@@ -95,6 +95,51 @@
     closeAll(null);
   });
 
+  /* THE SCROLL CUE. The rail is one line that can run past the viewport
+     once a drawer opens, and nothing said so; the row just ended. This
+     is a hairline whose thumb is as wide a fraction of the rail as the
+     view is of the whole line, shown only when there is somewhere to
+     scroll. Built here rather than in the markup because it is a fact
+     about the layout, not about the navigation. */
+  const scroller = rail.querySelector(".tfr-rail-inner");
+  if (scroller) {
+    const cue = document.createElement("div");
+    cue.className = "tfr-rail-scroll";
+    cue.setAttribute("aria-hidden", "true");
+    const thumb = document.createElement("span");
+    cue.appendChild(thumb);
+    rail.appendChild(cue);
+
+    let queued = false;
+    function paint() {
+      queued = false;
+      const total = scroller.scrollWidth;
+      const view = scroller.clientWidth;
+      if (total - view < 4) { cue.classList.remove("is-live"); return; }
+      cue.classList.add("is-live");
+      const ratio = view / total;
+      const travel = (total - view) ? scroller.scrollLeft / (total - view) : 0;
+      // One transform does both: scale to the visible fraction, then slide
+      // it across the track by however far is left over.
+      thumb.style.transform =
+        `translateX(${travel * view * (1 - ratio)}px) scaleX(${ratio})`;
+    }
+    function schedule() {
+      if (queued) return;
+      queued = true;
+      window.requestAnimationFrame(paint);
+    }
+    scroller.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    if (window.ResizeObserver) new ResizeObserver(schedule).observe(scroller);
+    // A drawer changes the line's length, so repaint after it settles.
+    toggles.forEach((t) => t.addEventListener("click", () => {
+      window.setTimeout(schedule, 60);
+      window.setTimeout(schedule, 340);
+    }));
+    schedule();
+  }
+
   /* Mark where we are, so the rail says which part of the library the
      reader is standing in. Prefix match, because a surface may carry a
      query or a hash. The brand is exempt: every page is under it, and
