@@ -58,48 +58,79 @@
     return null;
   }
 
-  /* WHAT THE ENGLISH WAS TRANSLATED FROM.
+  /* WHAT THE ENGLISH WAS TRANSLATED FROM, ONCE THE PAGE IS SURE.
    *
-   * For the machine-translated collections the panel does not print a
-   * word until it knows the source language, and it learns that from
-   * data-fr-original-lang on <html>. The OLD reader set that attribute;
-   * the ported one does not, so without this the panel would wait its
-   * eight seconds and then stay silent on every Migne and native work.
-   * Silence is the right failure and the wrong outcome: those are
+   * For the machine-translated collections the panel prints nothing
+   * until it knows the source language, which it reads from
+   * data-fr-original-lang on <html>. The old reader set that; the
+   * ported one does not, so without this the panel waits its eight
+   * seconds and stays silent on every Migne and native work, which are
    * exactly the works whose English a machine wrote.
    *
-   * Not hardcoded per corpus. The ported reader already labels its
-   * source lane with the language of THIS work, Greek on a Patrologia
-   * Graeca volume and Latin on a Latina one, so the page is asked
-   * rather than the slug. A work with no source lane publishes nothing
-   * and the panel stays quiet, which is the behaviour the old reader
-   * had for a work that never answered. */
-  function publishLanguage() {
+   * The language is not taken from the slug. The ported reader labels
+   * its source lane with the language of the work in front of you, so
+   * the page is asked instead of a table being guessed at.
+   *
+   * BUT THE LABEL LIES FOR THE FIRST TWO SECONDS. It is rendered from
+   * the template default before the work's own data arrives. Measured
+   * on pg-3860: "Latin" at 806ms with the text already loading, and
+   * "Greek" only at 2034ms. A first reading published "AI translated
+   * from Latin" over a Greek work, which is the disclosure stating a
+   * falsehood about the text under it, the one outcome worth more than
+   * a few seconds of waiting.
+   *
+   * So the label has to hold still. It is read only once the work's
+   * text is on the page, and then only after it has said the same thing
+   * for five ticks together. If it never settles, nothing is published
+   * and the panel keeps its silence, which is what the old reader did
+   * for a work that never answered. */
+  const SETTLE = 5;       // consecutive equal readings, 250ms apart
+  const GIVE_UP = 48;     // 12s, comfortably past the 2s measured above
+
+  function laneLanguage() {
     const el = document.getElementById("m-par");
     const lang = el && !el.hidden ? (el.textContent || "").trim() : "";
-    if (!/^[A-Za-z][A-Za-z ]{1,20}$/.test(lang)) return false;
-    if (/^english$/i.test(lang)) return false;
-    document.documentElement.dataset.frOriginalLang = lang;
-    return true;
+    if (!/^[A-Za-z][A-Za-z ]{1,20}$/.test(lang)) return "";
+    return /^english$/i.test(lang) ? "" : lang;
   }
 
-  function watchLanguage() {
-    if (publishLanguage()) return;
-    // The toolbar is built with the work, so this is a short wait, and a
-    // bounded one: the panel gives up at eight seconds and so does this.
-    let tries = 0;
-    const timer = window.setInterval(() => {
-      if (publishLanguage() || ++tries > 28) window.clearInterval(timer);
-    }, 250);
+  function loaded() {
+    const reading = document.getElementById("reading");
+    return !!reading && (reading.innerText || "").trim().length > 200;
+  }
+
+  // Resolves to the settled language, or "" if the page never settles.
+  function settledLanguage() {
+    return new Promise((done) => {
+      let last = "";
+      let same = 0;
+      let ticks = 0;
+      const timer = window.setInterval(() => {
+        ticks += 1;
+        const now = loaded() ? laneLanguage() : "";
+        same = now && now === last ? same + 1 : 0;
+        last = now;
+        if (same >= SETTLE) { window.clearInterval(timer); done(now); return; }
+        if (ticks >= GIVE_UP) { window.clearInterval(timer); done(""); }
+      }, 250);
+    });
   }
 
   function show(corpus, id) {
     mount.dataset.frStatusCorpus = corpus;
     mount.dataset.frStatusWork = id;
-    // Before starting the panel, so a work whose lane is already
-    // labelled draws at once instead of waiting on the observer.
-    if (corpus !== "eebo" && corpus !== "mo") watchLanguage();
-    if (window.FRWorkStatus && window.FRWorkStatus.run) window.FRWorkStatus.run();
+    const go = () => {
+      if (window.FRWorkStatus && window.FRWorkStatus.run) window.FRWorkStatus.run();
+    };
+    // EEBO is a transcription and the curated set is human translation;
+    // neither asks what a machine worked from, so neither waits.
+    if (corpus === "eebo" || corpus === "mo") { go(); return; }
+    // The panel starts its own eight-second clock the moment it runs, so
+    // it is started AFTER the language is settled rather than before.
+    settledLanguage().then((lang) => {
+      if (lang) document.documentElement.dataset.frOriginalLang = lang;
+      go();
+    });
   }
 
   const w = slug();
