@@ -1406,7 +1406,7 @@ html:not(.mo-embedded) .fra {
 #fra-workspace .fra-welcome p { max-width:42ch; font-size:17px; line-height:1.6; }
 #fra-workspace .fra-welcome-mark { color:var(--fra-fg); margin-bottom:24px; }
 #fra-workspace .fra-suggestions { display:flex; flex-direction:column; width:100%; max-width:540px; gap:0; margin:28px auto 0; border-top:1px solid var(--fra-border); }
-#fra-workspace .fra-suggestions button { display:flex; flex-direction:column; align-items:flex-start; text-align:left; width:100%; border:0; border-bottom:1px solid var(--fra-border); border-radius:0; padding:15px 6px; gap:4px; transition:padding .16s ease,background .16s ease; }
+#fra-workspace .fra-suggestions button { display:flex; flex-direction:column; align-items:flex-start; text-align:left; width:100%; border:0; border-bottom:1px solid var(--fra-border); border-radius:0; padding:15px 6px; gap:4px; transition:background .16s ease; }
 #fra-workspace .fra-suggestions button span { font-size:15px; font-weight:600; }
 #fra-workspace .fra-suggestions button small { font-size:13px; line-height:1.45; color:var(--fra-muted); }
 #fra-workspace .fra-turn { margin-bottom:52px; }
@@ -1483,7 +1483,7 @@ html:not(.mo-embedded) .fra {
 @keyframes fra-command-enter { from { opacity:0; transform:translateY(-6px) scale(.99); } to { opacity:1; transform:none; } }
 @keyframes fra-status-pulse { 0%,100% { opacity:.45; } 50% { opacity:1; } }
 @media(hover:hover) {
-  #fra-workspace .fra-suggestions button:hover { padding-left:12px; background:var(--fra-bg); }
+  #fra-workspace .fra-suggestions button:hover { background:var(--fra-bg); }
   #fra-workspace .fra-receipt:hover { background:var(--fra-bg); }
   #fra-workspace .fra-receipt:hover>svg:last-child { transform:rotate(-90deg) translateY(3px); }
 }
@@ -1516,3 +1516,9 @@ html:not(.mo-embedded) .fra {
 @media(prefers-reduced-motion:reduce) { #fra-workspace *,#fra-workspace *::before,#fra-workspace *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
 
 #fra-workspace { --fra-action:var(--color-secondary,var(--fra-fg)); }
+
+/* Keep Ask navigation singular and the composer input borderless. */
+#fra-workspace .fra-header > :is(.fr-quick,.fr-explore) { display:none; }
+#fra-workspace #fra-input:focus-visible { outline:none; box-shadow:none; }
+#fra-workspace .fra-suggestions button span { letter-spacing:0; text-transform:none; }
+#fra-workspace .fra-source-preview { min-height:44px; }

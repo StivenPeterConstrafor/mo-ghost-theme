@@ -180,14 +180,16 @@
     if(turn.status==='running')return {kind:'running',label:humanStage(turn.stage||'Researching')};
     if(turn.status==='paused'||['paused','needs_input','limit_reached'].includes(turn.serverJob?.status))return {kind:'paused',label:'Research paused'};
     if(['error','interrupted','stopped'].includes(turn.status))return {kind:'attention',label:turn.status==='stopped'?'Research stopped':'Needs attention'};
-    return {kind:'complete',label:deliveryIncomplete(turn)?'Check answer delivery':researchMode(turn.mode)==='deep'?'Research complete':'Answer ready'};
+    if(deliveryIncomplete(turn))return {kind:'attention',label:'Check answer delivery'};
+    if(turn.status!=='complete')return {kind:'idle',label:'Waiting for research'};
+    return {kind:'complete',label:researchMode(turn.mode)==='deep'?'Research complete':'Answer ready'};
   }
   function sourceGroups(sources){
     const groups=new Map();
     for(const [i,s] of sources.entries()){
       // Separate edition slugs stay separate, even when their displayed titles match.
       let key=s.slug;
-      if(!key&&sourceHref(s)){const u=new URL(sourceHref(s),location.origin);key=u.origin+u.pathname+'?'+(u.searchParams.get('w')||'');}
+      if(!key&&sourceHref(s)){const u=new URL(sourceHref(s),location.origin);u.hash='';for(const field of ['p','page','section','heading','hl','ask_chat'])u.searchParams.delete(field);u.searchParams.sort();key=u.href;}
       key=key||'unlocated-'+i;
       if(!groups.has(key))groups.set(key,{key,source:s,passages:[]});
       groups.get(key).passages.push(s);
@@ -196,7 +198,7 @@
   }
   function sourceCollectionHTML(sources){
     const groups=sourceGroups(sources);
-    const receipts=groups.slice(0,3).map(g=>{const s=g.source,href=sourceHref(s);return href?'<button class="fra-receipt" data-preview-source="'+esc(href)+'" data-preview-title="'+esc(titleOf(s))+'">'+icon('book')+'<span><strong>'+esc(titleOf(s))+'</strong><small>'+esc(s.author||s.cit||s.cite||'Read source')+'</small></span>'+icon('chevron')+'</button>':'';}).join('');
+    const receipts=groups.slice(0,3).map(g=>{const s=g.source,href=sourceHref(s);return href?'<button class="fra-receipt" data-preview-source="'+esc(href)+'" data-preview-title="'+esc(titleOf(s))+'">'+icon('book')+'<span><strong>'+esc(titleOf(s))+'</strong><small>'+esc(s.author||catalogBySlug.get(s.slug)?.author||s.cit||s.cite||'Read source')+'</small></span>'+icon('chevron')+'</button>':'';}).join('');
     return '<div class="fra-receipts" aria-label="Source previews">'+receipts+'</div><details class="fra-sources"><summary><span>All sources</span><small>'+sources.length+' passage'+(sources.length===1?'':'s')+' · '+groups.length+' work'+(groups.length===1?'':'s')+'</small></summary><div class="fra-source-groups">'+groups.map((g,i)=>'<details class="fra-source-work"'+(i===0?' open':'')+'><summary><span>'+esc(titleOf(g.source))+'</span><small>'+g.passages.length+' passage'+(g.passages.length===1?'':'s')+'</small></summary>'+g.passages.map(sourceCard).join('')+'</details>').join('')+'</div></details>';
   }
   function commandMatches(query,items){
@@ -225,9 +227,9 @@
     const dialog=$('#fra-command-dialog');if(dialog.open)return;
     commandFocus=document.activeElement;$('#fra-command-input').value='';renderCommands();dialog.showModal();$('#fra-command-input').focus();
   }
-  function closeCommands(){const d=$('#fra-command-dialog');if(d?.open)d.close();}
+  function closeCommands(restore=true){if(!restore)commandFocus=null;const d=$('#fra-command-dialog');if(d?.open)d.close();}
   async function runCommand(id){
-    closeCommands();
+    closeCommands(false);
     if(id.startsWith('chat:')){await switchChat(id.slice(5));$('#fra-input').focus();return;}
     if(id==='history'){showConversations();return;}
     const targets={new:'fra-new',scope:'fra-scope-toggle',mode:'fra-mode-toggle',library:'fra-home'};
