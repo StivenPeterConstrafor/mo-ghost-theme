@@ -118,7 +118,13 @@ const page=$("#page");
 const PAGE=location.pathname.includes("compare")?"compare":location.pathname.includes("topics")?"topics":(location.pathname.includes("bible")?"bible":"fathers");
 
 document.body.classList.toggle('research-enhanced',PAGE!=='bible');
-$('#research-ask').onclick=()=>window.FRAsk?.open();
+/* Guarded, 2026-09-21: #research-ask was the Ask button in the ported
+   navigation bar, which the TFR rail replaced on this page. Ask is not
+   lost, the rail's Research drawer opens the same overlay in place
+   (faith-tfr-rail.js). Unguarded this threw on load and took the whole
+   Scripture tool down with it, which is exactly how the author room and
+   Topics pages broke when their bar came off. */
+if($('#research-ask'))$('#research-ask').onclick=()=>window.FRAsk?.open();
 /* read a passage in place: canon XML sliced at the column */
 const XMLCACHE={};
 async function passageOf(slug,col){
@@ -2019,7 +2025,8 @@ function route(){
   const navmark=k=>document.querySelectorAll("#topnav a[data-p]").forEach(a=>a.classList.toggle("on",a.dataset.p===k));
   const names={bible:"Scripture",topics:"Topics",fathers:"Authors",compare:"Compare"};
   document.title=names[PAGE]+" · The Faith Received";
-  $("#pgname").textContent=names[PAGE];
+  // Same removal as #research-ask above; the page name is in document.title.
+  if($("#pgname"))$("#pgname").textContent=names[PAGE];
   if(h==="t"||h.startsWith("t/")){location.replace("/the-faith-received/topics/"+(h==="t"?"":"#"+h.slice(2)));return;}
   if(h==="f"){location.replace("/the-faith-received/fathers/");return;}
   if(h.startsWith("a/")){location.replace("/the-faith-received/fathers/#"+h.slice(2));return;}

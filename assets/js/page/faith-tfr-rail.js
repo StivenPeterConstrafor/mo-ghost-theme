@@ -154,6 +154,31 @@
     schedule();
   }
 
+  /* ASK OPENS HERE WHEN IT CAN.
+   *
+   * The Scripture tool, the author room and the compare desk all load
+   * ask-workspace.js, which puts Ask on the page as an overlay: it knows
+   * what work or passage you are looking at, and closing it puts you back
+   * where you were. Those three used to reach it through a button in the
+   * ported navigation bar, which the rail has now replaced.
+   *
+   * Following the link instead would leave the page to ask a question
+   * about it, which is the wrong trade. So where the overlay exists, the
+   * Research drawer's Ask opens it; everywhere else the href stands and
+   * the reader goes to the Ask workspace, which is why this is an
+   * enhancement on a real link rather than a button.
+   */
+  rail.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest('a[href^="/the-faith-received/ask/"]');
+    if (!a || !rail.contains(a)) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return; // open-in-new-tab still works
+    const ask = window.FRAsk;
+    if (!ask || typeof ask.open !== "function") return;           // no overlay here: follow the link
+    e.preventDefault();
+    closeAll(null);
+    ask.open();
+  });
+
   /* Mark where we are, so the rail says which part of the library the
      reader is standing in. Prefix match, because a surface may carry a
      query or a hash. The brand is exempt: every page is under it, and
