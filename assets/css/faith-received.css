@@ -18786,13 +18786,25 @@ body.has-fr-survey { padding-bottom: 34px; }
 
 #reading .fr-sec-head { position: relative; }
 
-/* In the gutter, beside the heading rather than inside it: the heading
-   row is a two-lane grid, and a real child in it would take a cell and
-   push the Latin or the English out of line. Absolutely positioned
-   children take no cell. */
+/* At the RIGHT end of the heading row, not in the left gutter where it
+   first went -- and it went there invisibly. Each .folio is
+   content-visibility:auto, which implies paint containment, so anything
+   drawn outside a folio's box is clipped; a caret 36px into the gutter
+   sat in the DOM, answered to aria, and painted nothing
+   (elementFromPoint at its centre returned MAIN).
+
+   Inside the row, the right end is the only place with room in every
+   reading mode. Measured on Cur Deus homo: English-only leaves 125px
+   either side of the text, Latin-only 86px, and parallel leaves nothing
+   on the left at all -- the Latin lane starts flush with the row -- but
+   65px on the right. A 32px caret fits in all three. It also matches
+   the apparatus fold, whose caret already sits at the right.
+
+   Absolutely positioned, because the row is a two-lane grid and a real
+   child would take a cell and push a lane out of line. */
 #reading .fr-sec-toggle {
   position: absolute;
-  left: -2.25rem;
+  right: 0;
   top: 0.1em;
   width: 32px;
   height: 32px;
@@ -18834,13 +18846,11 @@ body.has-fr-survey { padding-bottom: 34px; }
   transform: translate(-1px, 0) rotate(-45deg);
 }
 
-/* A phone has no gutter: the reading column's inset there is 12px. The
-   caret moves to the heading's right edge, the heading gives up the
-   room for it, and the target grows to a thumb's width. */
+/* A phone is one lane edge to edge, so there is no free space inside
+   the row: the heading gives up 40px on its right for the caret, and
+   the target grows to a thumb's width. */
 html.g-mobile #reading .fr-sec-head { padding-right: 40px; }
 html.g-mobile #reading .fr-sec-toggle {
-  left: auto;
-  right: 0;
   width: 40px;
   height: 40px;
   opacity: 0.6;
