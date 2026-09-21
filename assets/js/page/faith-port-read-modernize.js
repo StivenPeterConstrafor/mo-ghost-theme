@@ -252,6 +252,13 @@
       const wanted = archaic();
       btn.hidden = !wanted && !on;
       place();
+      /* THE ROW GOES WITH THE BUTTON. In the Aa panel the toggle is
+         wrapped in a labelled row, and `hidden` on the button leaves the
+         word "Spelling" sitting in the panel with nothing beside it,
+         which reads as a control that failed to load rather than one
+         this page has no use for. Only applies on the narrow placement;
+         on the toolbar the button has no wrapper. */
+      if (row && btn.parentElement === row) row.hidden = btn.hidden;
       if (on && wanted) apply();
     }, 120);
   }
