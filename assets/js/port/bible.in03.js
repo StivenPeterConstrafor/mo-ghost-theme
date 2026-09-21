@@ -1447,8 +1447,8 @@ function hideGloss(delay=200){clearTimeout(glossT);glossT=setTimeout(()=>{if(glo
 let JUMPV=null;
 const JABBR={gen:"Genesis",ex:"Exodus",exod:"Exodus",lev:"Leviticus",num:"Numbers",deut:"Deuteronomy",dt:"Deuteronomy",josh:"Joshua",judg:"Judges",sam:"Samuel",kgs:"Kings",chr:"Chronicles",chron:"Chronicles",neh:"Nehemiah",esth:"Esther",ps:"Psalms",psa:"Psalms",psalm:"Psalms",prov:"Proverbs",eccl:"Ecclesiastes",song:"Song of Solomon",cant:"Song of Solomon",isa:"Isaiah",jer:"Jeremiah",lam:"Lamentations",ezek:"Ezekiel",dan:"Daniel",hos:"Hosea",obad:"Obadiah",jon:"Jonah",mic:"Micah",nah:"Nahum",hab:"Habakkuk",zeph:"Zephaniah",hag:"Haggai",zech:"Zechariah",zach:"Zechariah",mal:"Malachi",mt:"Matthew",matt:"Matthew",mk:"Mark",lk:"Luke",jn:"John",rom:"Romans",cor:"Corinthians",gal:"Galatians",eph:"Ephesians",phil:"Philippians",col:"Colossians",thess:"Thessalonians",tim:"Timothy",tit:"Titus",phlm:"Philemon",heb:"Hebrews",jas:"James",pet:"Peter",rev:"Revelation of John",apoc:"Revelation of John",wis:"Wisdom",sap:"Wisdom",sir:"Sirach",eccli:"Sirach",ecclus:"Sirach",tob:"Tobit",jdt:"Judith",bar:"Baruch",macc:"Maccabees",mach:"Maccabees"};
 function jumpParse(q,books){
-  const m=String(q).trim().match(/^([123]|I{1,3}(?=\s))?\s*\.?\s*([A-Za-z .']+?)\s*(\d{1,3})?(?:\s*[:.,]\s*(\d{1,3}))?$/);
-  if(!m||!m[2]||m[3]&&Number(m[3])<1||m[4]&&Number(m[4])<1)return null;
+  const m=String(q).trim().match(/^([123]|I{1,3}(?=\s))?\s*\.?\s*([A-Za-z .']+?)\s*(\d{1,3})?(?:\s*[:.,]\s*(\d{1,3}(?:\s*[-–—]\s*\d{1,3})?))?$/);
+  if(!m||!m[2]||m[3]&&Number(m[3])<1||m[4]&&!FRScripture.verseSelection(m[4]).length)return null;
   const fold=s2=>String(s2).toLowerCase().replace(/[^a-z0-9]/g,"");
   const pfx=m[1]?({1:"i",2:"ii",3:"iii",i:"i",ii:"ii",iii:"iii"}[String(m[1]).toLowerCase()]):"";
   const raw=m[2].replace(/[.']/g," ").trim().toLowerCase();
@@ -1458,9 +1458,9 @@ function jumpParse(q,books){
   if(!B&&ab&&!pfx)B=books.find(b=>fold(b.book)===fold(ab));
   if(!B)return null;
   if(B.chapters?.length===1&&m[3]&&!m[4]&&+m[3]>1)return {slug:B.slug,ch:1,v:+m[3]};
-  return {slug:B.slug,ch:m[3]?+m[3]:0,v:m[4]?+m[4]:null};
+  return {slug:B.slug,ch:m[3]?+m[3]:0,v:m[4]?(/[-–—]/.test(m[4])?m[4].replace(/\s/g,'').replace(/[–—]/g,'-'):+m[4]):null};
 }
-let BIBLE_STATE={view:'read',verse:null},BIBLE_RUN=0;
+let BIBLE_STATE={selection:null,view:'read',verse:null},BIBLE_RUN=0;
 function bibleNav(books,B,ch){
   const i=books.indexOf(B),chapters=B?.chapters||[];
   const prev=ch?(chapters.find(x=>x.c===ch-1)?[B.slug,ch-1]:i>0?[books[i-1].slug,books[i-1].chapters.at(-1).c]:null):null;
@@ -1469,7 +1469,7 @@ function bibleNav(books,B,ch){
 }
 function bindBibleNav(books,B,ch){
   const form=$('#bible-jump');form.onsubmit=e=>{e.preventDefault();const r=jumpParse($('#jgo').value,books),b=r&&books.find(x=>x.slug===r.slug);
-    if(!r||r.ch&&!b.chapters.some(x=>x.c===r.ch)||r.v&&(!r.ch||r.v<1)){$('#jump-feedback').textContent='Enter a book and chapter, such as Romans 8:28.';$('#jgo').setAttribute('aria-invalid','true');return;}
+    if(!r||r.ch&&!b.chapters.some(x=>x.c===r.ch)||r.v&&(!r.ch||!FRScripture.verseSelection(r.v).length)){$('#jump-feedback').textContent='Enter a book and chapter, such as Romans 8:28.';$('#jgo').setAttribute('aria-invalid','true');return;}
     const dest=FRScripture.bibleURL(r.slug,r.ch,r.v);if(location.hash.slice(1)===dest.split('#')[1])route();else location.hash=dest.split('#')[1];};
   if(B){$('#bible-book').onchange=e=>location.hash='b/'+e.target.value+'/1';$('#bible-chapter').onchange=e=>location.hash='b/'+B.slug+(+e.target.value?'/'+e.target.value:'');}
 }
@@ -1552,7 +1552,7 @@ async function bookPageMain(bslug,c){
   let verseDesk=null;
   const loadVerseDesk=()=>{if(!c||verseDesk)return;verseDesk=FRVerseResearch.mount($('#verse-research-desk'),{book:B,chapter:c,verses:d.verses||[],books:bk.books,catalogue:catalog,verse:BIBLE_STATE.verse,eligible:facOK,changePassage:()=>{const control=$('#jgo')||$('#bible-book');control?.focus({preventScroll:true});control?.scrollIntoView({block:'center'});},inheritedFilters:[...FACS].map(k=>FACL.find(x=>x[0]===k)?.[1]||k),changeSourceFilters:()=>{const filters=page.querySelector('.bible-filters');if(filters){filters.open=true;filters.querySelector('summary')?.focus({preventScroll:true});filters.scrollIntoView({block:'center'});}},getRoster,readURL:readerHref,locationLabel:(w,p)=>pgl(w)+' '+p,text:v=>esv?.[String(v)]||d.verses.find(x=>+x.v===+v)?.t,translationLabel:v=>esv?.[String(v)]?'English Standard Version':B.txt?'Douay-Rheims':'American Standard Version',loadUnits:w=>window.FRResearchData?window.FRResearchData.loadUnits(w):J(BLOB+'/v1/mine/units/'+encodeURIComponent(w)+'.json'),onVerse:v=>{BIBLE_STATE.verse=v;history.replaceState(null,'',FRScripture.bibleURL(bslug,c,v,'desk'));},showRelated:k=>setView(k),ask:(q,rows)=>window.FRAsk?.open(FRVerseResearch.comparisonRequest(q,rows)),signal:researchEvents.signal});};
   const scrollToVerseDesk=()=>requestAnimationFrame(()=>{if(run!==BIBLE_RUN||BIBLE_STATE.view!=='desk')return;const host=$('#verse-research-desk'),header=document.querySelector('header.site');if(host)window.scrollTo({top:Math.max(0,host.getBoundingClientRect().top+window.scrollY-(header?.getBoundingClientRect().height||0)-16),behavior:'auto'});});
-  const setView=k=>{BIBLE_STATE.view=k;page.querySelectorAll('[data-pane]').forEach(el=>el.hidden=el.dataset.pane!==k);page.querySelectorAll('[data-bible-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.bibleView===k)));history.replaceState(null,'',FRScripture.bibleURL(bslug,c,BIBLE_STATE.verse,k==='read'?null:k));if(k==='desk'){loadVerseDesk();scrollToVerseDesk();}};
+  const setView=k=>{BIBLE_STATE.view=k;page.querySelectorAll('[data-pane]').forEach(el=>el.hidden=el.dataset.pane!==k);page.querySelectorAll('[data-bible-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.bibleView===k)));history.replaceState(null,'',FRScripture.bibleURL(bslug,c,BIBLE_STATE.selection||BIBLE_STATE.verse,k==='read'?null:k));if(k==='desk'){loadVerseDesk();scrollToVerseDesk();}};
   page.querySelectorAll('[data-bible-view]').forEach(b=>b.onclick=()=>setView(b.dataset.bibleView));
   page.querySelectorAll('[data-annotation]').forEach(el=>el.addEventListener('toggle',()=>{if(el.open&&!el.dataset.loaded){el.dataset.loaded='1';FRScripture.renderVolumes(el.querySelector('.annotation-destinations'),annotations[+el.dataset.annotation],bslug,c,[...(d?.verses||[]).flatMap(v=>v.rows||[]),...(d?.ch_rows||[])]).catch(()=>{el.dataset.loaded='';el.querySelector('.annotation-destinations').innerHTML='<p>Volumes could not load. Close and reopen this work to retry.</p>';});}}));
   if(!c)return;
@@ -1562,13 +1562,20 @@ async function bookPageMain(bslug,c){
   let MORE=null;const loadMore=()=>MORE||(MORE=gzJ(BLOB+`/v1/bible/all/${bslug}/${c}.more.json.gz`).catch(()=>{MORE=null;return null;}));
   const merged=new Set();const mergeMore=async key=>{const m=await loadMore();if(!m)return false;if(merged.has(key))return true;merged.add(key);
     if(key==='ch'){d.ch_rows=(d.ch_rows||[]).concat(m.ch_rows||[]);d.ch_full=true;}else{const v=byVerse.get(+key);if(v){v.rows=(v.rows||[]).concat((m.verses||{})[String(key)]||[]);v.full=true;}}return true;};
-  const openVerse=(vn,force)=>{const v=byVerse.get(vn);if(!v)return;const btn=page.querySelector(`[data-v="${vn}"]`),dest=$('#pv'+vn);if(!btn)return;const open=force||btn.getAttribute('aria-expanded')!=='true';btn.setAttribute('aria-expanded',String(open));const rows=(v.rows||[]).filter(facOK);dest.innerHTML=open?`<div class="vpanel">${panelHTML(rows,v.full?(v.rows||[]).length:(facAll()?v.n:rows.length),mkHl(B.book,c,vn),{key:vn,full:!!v.full})}</div>`:'';if(open){BIBLE_STATE.verse=vn;history.replaceState(null,'',FRScripture.bibleURL(bslug,c,vn));}};
+  const openVerse=(vn,force)=>{const v=byVerse.get(vn);if(!v)return;const btn=page.querySelector(`[data-v="${vn}"]`),dest=$('#pv'+vn);if(!btn)return;const open=force||btn.getAttribute('aria-expanded')!=='true';btn.setAttribute('aria-expanded',String(open));const rows=(v.rows||[]).filter(facOK);dest.innerHTML=open?`<div class="vpanel">${panelHTML(rows,v.full?(v.rows||[]).length:(facAll()?v.n:rows.length),mkHl(B.book,c,vn),{key:vn,full:!!v.full})}</div>`:'';if(open){BIBLE_STATE.verse=vn;if(!FRScripture.verseSelection(BIBLE_STATE.selection).includes(vn)){BIBLE_STATE.selection=null;page.querySelectorAll('.is-passage').forEach(el=>el.classList.remove('is-passage'));$('#verse-feedback').textContent='';}history.replaceState(null,'',FRScripture.bibleURL(bslug,c,BIBLE_STATE.selection||vn));}};
   const openChapter=open=>{const dest=$('#pvch'),whole=page.querySelector('[data-ch]');if(whole)whole.setAttribute('aria-expanded',String(open));const rows=d.ch_rows.filter(facOK);dest.innerHTML=open?`<div class="vpanel">${panelHTML(rows,d.ch_full?(d.ch_rows||[]).length:(facAll()?d.ch_n:rows.length),mkHl(B.book,c,0),{key:'ch',full:!!d.ch_full})}</div>`:'';};
   page.onclick=async e=>{const more=e.target.closest('[data-load-all]');if(more){more.disabled=true;more.textContent='Loading…';const key=more.dataset.loadAll;const ok=await mergeMore(key);if(run!==BIBLE_RUN)return;if(!ok){more.disabled=false;more.textContent='The complete list is not available yet. Try again';return;}if(key==='ch')openChapter(true);else openVerse(+key,true);return;}
-    const desk=e.target.closest('[data-open-desk]');if(desk){BIBLE_STATE.verse=+desk.dataset.openDesk;setView('desk');verseDesk?.setVerse(BIBLE_STATE.verse);return;}const button=e.target.closest('[data-v]');if(button){openVerse(+button.dataset.v);return;}const whole=e.target.closest('[data-ch]');if(whole){openChapter(whole.getAttribute('aria-expanded')!=='true');}};
+    const desk=e.target.closest('[data-open-desk]');if(desk){BIBLE_STATE.selection=null;page.querySelectorAll('.is-passage').forEach(el=>el.classList.remove('is-passage'));$('#verse-feedback').textContent='';BIBLE_STATE.verse=+desk.dataset.openDesk;setView('desk');verseDesk?.setVerse(BIBLE_STATE.verse);return;}const button=e.target.closest('[data-v]');if(button){openVerse(+button.dataset.v);return;}const whole=e.target.closest('[data-ch]');if(whole){openChapter(whole.getAttribute('aria-expanded')!=='true');}};
   if(view==='desk'){loadVerseDesk();scrollToVerseDesk();}
   const requested=BIBLE_STATE.verse||JUMPV;JUMPV=null;
-  if(requested){const v=byVerse.get(+requested);if(v){if(view==='read'){openVerse(+requested,true);requestAnimationFrame(()=>$('#v'+requested)?.scrollIntoView({block:'start'}));}}else{$('#verse-feedback').textContent='Verse '+requested+' is not in this chapter. Choose one of the verses below.';}}
+  const selection=FRScripture.verseSelection(BIBLE_STATE.selection);
+  if(selection.length>1){
+    if(selection.every(v=>byVerse.has(v))){
+      selection.forEach(v=>$('#v'+v)?.classList.add('is-passage'));
+      $('#verse-feedback').textContent='Selected '+B.book+' '+c+':'+selection[0]+'–'+selection.at(-1)+'. Open citations beside a verse to study its sources.';
+      if(view==='read')requestAnimationFrame(()=>$('#v'+selection[0])?.scrollIntoView({block:'start'}));
+    }else $('#verse-feedback').textContent='This chapter does not contain all the requested verses. Choose from the verses below.';
+  }else if(requested){const v=byVerse.get(+requested);if(v){if(view==='read'){openVerse(+requested,true);requestAnimationFrame(()=>$('#v'+requested)?.scrollIntoView({block:'start'}));}}else{$('#verse-feedback').textContent='Verse '+requested+' is not in this chapter. Choose one of the verses below.';}}
 }
 
 /* ── routing ── */
@@ -2006,7 +2013,7 @@ function route(){
   const [hashPath,hashQuery=""]=location.hash.slice(1).split("?");
   const h=decodeURIComponent(hashPath);
   const hashParams=new URLSearchParams(hashQuery);
-  BIBLE_STATE={view:["read","desk","commentaries","annotations"].includes(hashParams.get("view"))?hashParams.get("view"):"read",verse:Number(hashParams.get("v"))||null};
+  BIBLE_STATE={selection:FRScripture.verseSelection(hashParams.get('v')).length>1?hashParams.get('v'):null,view:["read","desk","commentaries","annotations"].includes(hashParams.get("view"))?hashParams.get("view"):"read",verse:FRScripture.verseSelection(hashParams.get("v"))[0]||null};
   ++BIBLE_RUN;++RESEARCH_RUN;researchEvents.abort();researchEvents=new AbortController();hideGloss(0);
   page.onclick=null;page.onmouseover=null;page.onmouseout=null;
   const navmark=k=>document.querySelectorAll("#topnav a[data-p]").forEach(a=>a.classList.toggle("on",a.dataset.p===k));

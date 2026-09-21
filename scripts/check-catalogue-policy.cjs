@@ -39,3 +39,4 @@ assert.equal(policy.authorGroup('Augustine of Hippo',[{kind:'work'},{kind:'prefa
 policy.setCanonical({works:[{slug:'pg-9',author:'A named author',title:'A work',tradition:'Greek Fathers'}]});
 assert.equal(policy.catalogue('pg',[{corpus:'pg',id:'9',author:'PG 2 (anthology)'}])[0].author,'A named author');
 console.log('Author curation: name variants, anthology labels, anonymous and editorial groups preserve source records.');
+assert.equal(policy.catalogue('mo',[{id:'test-edition',tradition:'Reformed'}])[0].tradition,'Continental Reformed');

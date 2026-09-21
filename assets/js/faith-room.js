@@ -83,6 +83,7 @@
   let works = [];
   let tradition = params.get("tradition") || "";
   let denomination = params.get("denomination") || "";
+  if (denomination === "Reformed") { denomination = ""; tradition = "Continental Reformed"; }
   let century = parseInt(params.get("century"), 10) || 0;
   // Only meaningful on the all-works page, where more than one
   // collection is in the room at once.

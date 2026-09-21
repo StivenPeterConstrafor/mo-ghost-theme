@@ -25,7 +25,7 @@
     return works.filter(displayWork).map(work => ({...work, authorOriginal:work.authorOriginal || work.author, author:authorName(work.author)}));
   }
   function catalogue(corpus, original) {
-    if (corpus === 'mo') return normalize(original).map(work => ({...work, supplement:true}));
+    if (corpus === 'mo') return normalize(original).map(work => ({...work, tradition:work.tradition === 'Reformed' ? 'Continental Reformed' : work.tradition, supplement:true}));
     if (corpus === 'confessions' || !canonical) return normalize(original);
     const old = new Map(original.map(w => [workSlug(w), w]));
     return normalize(canonical.filter(w => corpusOf(w.slug) === corpus).map(w => {

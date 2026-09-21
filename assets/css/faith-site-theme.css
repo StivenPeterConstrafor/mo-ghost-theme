@@ -111,3 +111,6 @@ html.fr-ghost-site #page ::selection { background: var(--hl); color: var(--fg); 
   html.fr-ghost-site #research-ask { padding-inline: 10px; }
   html.fr-ghost-site body.research-page #page { padding: 28px 20px 56px; }
 }
+
+html.fr-ghost-site .scripture-page .vv { scroll-margin-top: calc(var(--mo-head, 85px) + 84px); }
+html.fr-ghost-site .scripture-page .vv.is-passage { background: var(--hl); }
