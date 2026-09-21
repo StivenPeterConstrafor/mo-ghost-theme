@@ -18722,3 +18722,53 @@ body.has-fr-survey { padding-bottom: 34px; }
   outline: 2px solid var(--color-dark, #2d2927);
   outline-offset: 2px;
 }
+
+
+/* ── The editorial apparatus folds ────────────────────────────────
+   Ian, 2026-09-21, on a column of editorial notes: "I don't care about
+   this. I want to collapse it and move on."
+
+   assets/js/page/faith-reader-folds.js wraps the body of each apparatus
+   section and turns its heading into a toggle. Closed by default, and
+   the reader's choice is remembered, so opening it once opens it for
+   every column after. The heading stays visible either way: this is
+   folding the editor's notes out of the way, not hiding them. */
+.fr-fold-head {
+  margin: 0;
+  /* The heading was the block's own <h4>; it keeps its type and loses
+     only the space it used to reserve under itself when closed. */
+}
+.fr-fold-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.fr-fold-toggle:hover { color: var(--color-secondary, #c1593c); }
+.fr-fold-toggle:focus-visible {
+  outline: 2px solid var(--color-dark, #2d2927);
+  outline-offset: 3px;
+}
+.fr-fold-caret {
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  flex: none;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  opacity: 0.6;
+  transition: transform 0.15s ease;
+}
+.fr-fold.is-open .fr-fold-caret { transform: rotate(45deg); }
+/* Closed, the section is its heading and nothing else, so the text that
+   follows it starts where the notes used to. */
+.fr-fold:not(.is-open) { margin-bottom: 0; padding-bottom: 0; }
+.fr-fold-body[hidden] { display: none; }
