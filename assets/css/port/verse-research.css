@@ -26,6 +26,57 @@
 
 /* organized (2026-09-10): bounded panes, author → work folds, save buttons */
 .vr-pane{max-height:min(62vh,760px);overflow:auto;overscroll-behavior:contain;border:1px solid var(--border);border-radius:6px;padding:0 14px}
+
+/* ── The verse desk reads as a desk ────────────────────────────────
+   Ian: "The inline scrolling box is a mess. It needs to work more like
+   a desk, similar to Ask and Connections."
+
+   It was two scrolls fighting. Measured on Romans 8: .vr-pane rendered
+   936x589 with a scrollHeight of 4843, so eight screens of sources were
+   being dragged through a 589px window that was itself sitting in a
+   page that scrolled. Every wheel gesture had to decide which of the
+   two it meant, and the desk's own controls left the screen while the
+   reader was still inside the list.
+
+   ONE SCROLL, AND THE CONTROLS STAY. The pane gives up its height cap
+   and its inner scroller, so the page scrolls a single list; and the
+   verse, the mode switcher and the filters stay put at the top while it
+   does. That is what makes it a desk rather than a box: the thing you
+   are working with stays in front of you.
+
+   Sticky offset is --mo-head, the masthead plus the TFR rail where one
+   exists, because a bare number would sit under whichever of those the
+   page happens to have. */
+.vr-pane {
+  max-height: none;
+  overflow: visible;
+  overscroll-behavior: auto;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+.vr-desk .vr-heading,
+.vr-desk .vr-verse,
+.vr-desk .vr-toolbar,
+.vr-desk .vr-filter-area {
+  position: sticky;
+  z-index: 3;
+  background: var(--bg);
+}
+.vr-desk .vr-heading { top: var(--mo-head, 61px); padding-top: 12px; }
+.vr-desk .vr-verse { top: calc(var(--mo-head, 61px) + 58px); margin-top: 0; padding: 4px 0; }
+.vr-desk .vr-toolbar { top: calc(var(--mo-head, 61px) + 58px); margin-bottom: 0; }
+.vr-desk .vr-filter-area { top: calc(var(--mo-head, 61px) + 106px); padding: 12px 0; margin: 0; }
+
+/* The verse itself is the one thing worth re-reading, so it keeps its
+   place above the list rather than sticking; on a phone there is not
+   enough height to pin four things and still see a result. */
+@media (max-width: 640px) {
+  .vr-desk .vr-verse,
+  .vr-desk .vr-filter-area { position: static; }
+  .vr-desk .vr-toolbar { top: var(--mo-head, 61px); }
+}
 .vr-work{border-top:1px dotted var(--border);margin:0 0 0 4px}.vr-work:first-child{border-top:0}.vr-work>summary{display:flex;align-items:baseline;gap:10px;min-height:40px;padding:6px 0;cursor:pointer;font-size:14px;list-style:none}.vr-work>summary::-webkit-details-marker{display:none}.vr-work>summary::before{content:'+';width:12px;flex:none;color:var(--muted);font-family:var(--sans,system-ui)}.vr-work[open]>summary::before{content:'−'}.vr-work>summary>span{flex:1;min-width:0}.vr-work>summary small{color:var(--muted);font-variant-numeric:tabular-nums}
 .vr-work-head{display:flex;align-items:baseline;gap:10px;padding:8px 0 0;font-size:14px}.vr-work-head>span{flex:1;min-width:0;color:var(--muted)}
 .vr-desk .pinb{font:500 12.5px/1.2 var(--sans,system-ui);color:var(--muted);border:1px solid var(--border);border-radius:3px;background:transparent;padding:4px 8px;cursor:pointer;white-space:nowrap;min-height:0}.vr-desk .pinb:hover{color:var(--fg);border-color:var(--fg)}.vr-desk .pinb.on{color:var(--bg);background:var(--fg);border-color:var(--fg)}.vr-desk .pinb:disabled{opacity:.6;cursor:wait}.vr-desk .pinb-work{margin-left:auto}
