@@ -44,7 +44,7 @@
   function authorGroup(name, works = []) {
     const anthology = /^(PG|PL|PO)\s+(\d+)\s*\(anthology\)$/i.exec(name);
     if (anthology) return {kind:'collection', label:`${anthology[1].toUpperCase()} ${anthology[2]}: collected and editorial material`};
-    if (/^(?:Anonymous|Unknown author|Unattributed)(?:$|\s*\()/i.test(name)) return {kind:'unattributed', label:name};
+    if (/^(?:Anonymous|Unknown author|Uncertain author|Unattributed)(?:$|\s*\()/i.test(name)) return {kind:'unattributed', label:name};
     if (works.length && works.every(w => ['preface','apparatus'].includes(w.kind))) return {kind:'editorial', label:name};
     return {kind:'author', label:name};
   }

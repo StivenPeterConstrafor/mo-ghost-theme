@@ -1,5 +1,7 @@
 /* The port's research UI inherits Ian's existing publication tokens.
    Scope on the body prevents a saved reader theme from repainting the site. */
+html.fr-ghost-site:root[data-theme],
+html.fr-ghost-site:root:not([data-theme]),
 html.fr-ghost-site body {
   --bg: var(--color-page, #f6f3f2);
   --bg-warm: var(--color-cream, #f5efe1);
@@ -68,6 +70,8 @@ html.fr-ghost-site #topnav {
 }
 html.fr-ghost-site #topnav a {
   display: inline-flex;
+  flex: 0 0 auto;
+  white-space: nowrap;
   align-items: center;
   min-height: 44px;
   color: var(--muted);
