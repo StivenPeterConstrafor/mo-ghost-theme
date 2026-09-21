@@ -75,6 +75,13 @@ const BUNDLES = [
       // one. It returns immediately unless <meta name="tfr-events-url"> is
       // present, so the cost on non-TFR pages is a null check.
       "assets/js/faith-events.js",
+      // The TFR reader survey — the slide-up bar on every TFR landing
+      // page. Here for the same reason faith-events.js is: adding it to
+      // the ~100 custom-faith-*.hbs templates would guarantee a missed
+      // one, and a missed one is a landing page with no bar that nobody
+      // would notice. It returns on its first test for any path outside
+      // /the-faith-received/.
+      "assets/js/faith-survey.js",
       "assets/js/boot/breadcrumb-schema.js",
       "assets/js/site-settings.js",
       // nav-dropdowns.js is loaded standalone in default.hbs right

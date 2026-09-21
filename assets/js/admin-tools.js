@@ -91,6 +91,16 @@ const ADMIN_TOOLS = [
 
   // Projects
   { id: "tfr", label: "Faith Received", group: "Projects", pages: ["tfr"], routes: { admin: ["/tfr"] } },
+  // Its own grant rather than a second page on "tfr". The issue inbox
+  // that grant opens carries reader names, addresses and free text; the
+  // survey carries none of the three and never will, so whoever is
+  // reading the survey should not have to be trusted with the other.
+  //
+  // The route prefix has to be separate too, and is: toolsForRoute
+  // matches `prefix` or `prefix + "/"`, so "/tfr" does NOT cover
+  // "/tfr-survey" — an unlisted route would have been denied outright
+  // rather than quietly riding the neighbouring grant.
+  { id: "tfr-survey", label: "TFR Survey", group: "Projects", pages: ["tfr-survey"], routes: { admin: ["/tfr-survey"] } },
   {
     id: "migration",
     label: "Migration",

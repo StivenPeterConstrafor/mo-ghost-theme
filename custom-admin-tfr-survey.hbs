@@ -1,0 +1,136 @@
+{{!< default}}
+{{#contentFor "moHead"}}
+<title>TFR Survey Results | MO Admin</title>
+<meta name="robots" content="noindex, nofollow" />
+<meta name="description" content="Internal Mere Orthodoxy staff tool." />
+<meta property="og:title" content="TFR Survey Results | MO Admin" />
+<meta property="og:description" content="Internal Mere Orthodoxy staff tool." />
+<meta name="twitter:title" content="TFR Survey Results | MO Admin" />
+<meta name="twitter:description" content="Internal Mere Orthodoxy staff tool." />
+{{/contentFor}}
+{{!-- /admin/tfr-survey/ — what readers said in the bar at the foot of
+     every Faith Received landing page.
+
+     Reads GET /tfr-survey/results on mo-admin, claimed by the
+     "tfr-survey" grant in the admin registry. Its own grant rather than
+     a second page on "tfr": the issue inbox that grant opens carries
+     reader names and addresses, and this carries none, so the two are
+     grantable apart.
+
+     NOTHING HERE IDENTIFIES A RESPONDENT and nothing can be made to.
+     The table has no name column, no email column and no member id;
+     member_status is one of three words. That is why the free-text
+     answers can be printed in full on an admin board without the
+     handling the issue inbox next door needs.
+
+     The page skeleton renders for any signed-in member; nothing is
+     disclosed until the fetch succeeds, same as the rest of /admin/. --}}
+
+<main class="admin-page admin-workspace">
+
+  {{#if @member}}
+
+    {{> "admin-sidebar" active="tfr-survey"}}
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <h1 class="admin-topbar-title"><em>TFR Survey</em> Results</h1>
+        <p class="admin-topbar-sub">Eight questions asked from the bar at the foot of every Faith Received landing page. Answers are anonymous: no name, no address, no member record.</p>
+      </header>
+
+      <section class="admin-body">
+        <div class="container">
+          <div class="admin-tfr"
+               data-tfr-survey
+               data-admin-url="{{@custom.admin_worker_url}}">
+
+            <div class="admin-tfr-controls">
+              <label class="dashboard-form-field">
+                <span class="dashboard-form-label">Window</span>
+                <select data-survey-range>
+                  <option value="7">Last 7 days</option>
+                  <option value="30">Last 30 days</option>
+                  <option value="90">Last 90 days</option>
+                  <option value="0" selected>All time</option>
+                </select>
+              </label>
+              {{!-- A quiet week and a dead collector look identical
+                    without this. The status line carries the response
+                    count and the time of the most recent answer. --}}
+              <p class="admin-tfr-status" data-survey-status role="status" aria-live="polite">Loading…</p>
+            </div>
+
+            <div class="admin-tfr-totals" data-survey-totals hidden></div>
+
+            {{!-- One section per question, in the order they are asked,
+                  so this page reads the way the survey does. Each is
+                  filled by assets/js/admin-tfr-survey.js; the headings
+                  are here so the shape of the page is legible before
+                  any data lands, and so an empty one reads as "nobody
+                  answered this" rather than as a missing panel. --}}
+            <section class="admin-tfr-section">
+              <h2 class="admin-tfr-section-title"><em>1. How much do you like it?</em></h2>
+              <div data-survey-liking></div>
+            </section>
+
+            <section class="admin-tfr-section">
+              <h2 class="admin-tfr-section-title"><em>2. How useful will it be?</em></h2>
+              <div data-survey-usefulness></div>
+            </section>
+
+            <section class="admin-tfr-section">
+              <h2 class="admin-tfr-section-title"><em>3. How they see themselves using it</em></h2>
+              <p class="admin-tfr-section-note">Multiple answers allowed, so these add to more than the response count.</p>
+              <div data-survey-uses></div>
+            </section>
+
+            <section class="admin-tfr-section">
+              <h2 class="admin-tfr-section-title"><em>4. Tradition</em></h2>
+              <p class="admin-tfr-section-note">Same four options as the 2026 subscriber survey, so the two are comparable.</p>
+              <div data-survey-tradition></div>
+            </section>
+
+            <section class="admin-tfr-section">
+              <h2 class="admin-tfr-section-title"><em>5. Relationship to the church</em></h2>
+              <p class="admin-tfr-section-note">Same eight options as the welcome survey at /welcome/. Multiple answers allowed.</p>
+              <div data-survey-role></div>
+            </section>
+
+            <section class="admin-tfr-section">
+              <h2 class="admin-tfr-section-title"><em>6. Age range</em></h2>
+              <div data-survey-age></div>
+            </section>
+
+            <section class="admin-tfr-section">
+              <h2 class="admin-tfr-section-title"><em>7. Gender</em></h2>
+              <div data-survey-gender></div>
+            </section>
+
+            <section class="admin-tfr-section">
+              <h2 class="admin-tfr-section-title"><em>8. What they like about it</em></h2>
+              <p class="admin-tfr-section-note">The open answer, printed as written.</p>
+              <div data-survey-comments></div>
+            </section>
+
+            {{!-- Context rather than a question: who was answering, and
+                  from where. Last because it is the part nobody asked
+                  for and the part that explains the rest. --}}
+            <section class="admin-tfr-section">
+              <h2 class="admin-tfr-section-title"><em>Who answered, and where from</em></h2>
+              <p class="admin-tfr-section-note">Membership standing is recorded as one of three words and is not a key to anything. Pages are the landing page the bar was opened from.</p>
+              <div data-survey-status-breakdown></div>
+              <div data-survey-pages></div>
+            </section>
+
+          </div>
+        </div>
+      </section>
+    </div>
+
+  {{else}}
+    {{> "admin-denied"}}
+  {{/if}}
+
+</main>
+
+<script src="{{asset "js/admin-sidebar.js"}}"></script>
+<script src="{{asset "js/admin-tfr-survey.js"}}"></script>

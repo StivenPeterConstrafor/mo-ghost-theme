@@ -17139,6 +17139,9 @@ a.fr-btn,
 .tfr-gate-signin-btn,
 .faith-here-acts button,
 .faith-resume button,
+/* ── The reader survey's two secondary controls ────────────────────────── */
+.fr-survey-back,
+.fr-survey-skip,
 /* ── The ported reader's Research rail and its selection popover ───────── */
 #notebook .nb-passage-actions button,
 #notebook .nb-work-primary button,
@@ -17178,6 +17181,8 @@ a.fr-btn:hover,
 .tfr-gate-signin-btn:hover,
 .faith-here-acts button:hover,
 .faith-resume button:hover,
+.fr-survey-back:hover,
+.fr-survey-skip:hover,
 #notebook .nb-passage-actions button:hover,
 #notebook .nb-work-primary button:hover,
 #notebook .nb-book-ask:hover,
@@ -17218,6 +17223,10 @@ a.fr-btn:hover,
 .faith-reader .faith-tool[aria-pressed="true"],
 .faith-here-acts button[aria-pressed="true"],
 .tfr-review-btn--primary,
+/* The survey's one CTA. Next and Submit are the same button wearing two
+   words, so it is filled at both ends of the flow rather than becoming a
+   different control on the last question. */
+.fr-survey-next,
 #notebook .nb-reading-place #nbSaveReadingPlace,
 #selpop button.pb[aria-pressed="true"] {
   background: var(--tfr-btn, var(--color-dark));
@@ -17240,6 +17249,8 @@ a.fr-btn:hover,
 .pins-act:disabled,
 .desk-act:disabled,
 .faith-resume button:disabled,
+.fr-survey-next:disabled,
+.fr-survey-skip:disabled,
 #notebook .nb-work-primary button:disabled,
 #notebook .nb-reading-place button:disabled {
   opacity: 0.42;
@@ -17260,6 +17271,9 @@ a.fr-btn:hover,
 .tfr-issue-btn:focus-visible,
 .tfr-review-btn:focus-visible,
 .tfr-gate-signin-btn:focus-visible,
+.fr-survey-back:focus-visible,
+.fr-survey-skip:focus-visible,
+.fr-survey-next:focus-visible,
 #notebook .nb-work-primary button:focus-visible,
 #notebook .nb-reading-place button:focus-visible {
   outline: 2px solid var(--tfr-btn, var(--color-dark));
@@ -18085,3 +18099,316 @@ body.research-page {
 body.research-page .research-room .rail { display: none; }
 body.research-page .research-room .rgrid { grid-template-columns: minmax(0, 1fr); }
 
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE READER SURVEY
+   ══════════════════════════════════════════════════════════════════════════
+
+   A slim terracotta rule across the foot of every Faith Received landing
+   page with one tab on it. Pressing the tab slides a panel up over it;
+   eight questions go by one at a time. assets/js/faith-survey.js builds
+   all of this and decides which pages get it.
+
+   WHY THE ORANGE IS MIXED DARKER THAN THE TOKEN. --color-secondary
+   (#c1593c) is the library's terracotta and the tab has to carry white
+   type at 13px. White on #c1593c measures 4.41:1, which misses AA for
+   normal-size text by a hair and would have been invisible to everyone
+   except the people it fails. Mixed 88% with black it measures a little
+   over 5:1 and is still plainly the same colour. Derived from the token
+   rather than pinned to a new hex, so it follows the palette if the
+   palette moves.
+
+   THE PANEL DOES NOT USE `hidden`. It slides, and display:none cannot be
+   transitioned from. Parked below the fold with visibility:hidden
+   instead, which takes it out of the accessibility tree and out of the
+   tab order exactly as `hidden` would.
+
+   THE BAR STAYS LIT UNDER THE OPEN PANEL. The panel sits on top of the
+   rule rather than over it, so the orange line is still the last thing
+   on the page while the questions are up — the panel reads as having
+   come out of the bar rather than as having landed on it. */
+
+.fr-survey {
+  --fr-survey-bar-h: 8px;
+  --fr-survey-orange: color-mix(in srgb, var(--color-secondary, #c1593c) 88%, #000);
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100;
+  /* Below .fr-report-overlay (1200). A modal dialog asking for a bug
+     report outranks a bar asking for an opinion. */
+  pointer-events: none;
+}
+.fr-survey > * { pointer-events: auto; }
+
+/* ── The bar and its tab ──────────────────────────────────────────── */
+.fr-survey-bar {
+  position: relative;
+  height: var(--fr-survey-bar-h);
+  background: var(--fr-survey-orange);
+}
+.fr-survey-tab {
+  position: absolute;
+  bottom: 100%;
+  right: clamp(16px, 5vw, 48px);
+  margin: 0;
+  padding: 5px 18px 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: var(--color-white, #fff);
+  background: var(--fr-survey-orange);
+  border: 0;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+}
+.fr-survey-tab:hover { background: var(--color-dark, #2d2927); }
+.fr-survey-tab:focus-visible {
+  outline: 2px solid var(--color-dark, #2d2927);
+  outline-offset: 2px;
+}
+/* Open, the tab is the thing the panel came out of rather than a second
+   way in. It stays put so the panel has somewhere to have come from. */
+.fr-survey.is-open .fr-survey-tab { visibility: hidden; }
+
+/* ── The panel ────────────────────────────────────────────────────── */
+.fr-survey-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--fr-survey-bar-h);
+  max-height: min(80vh, 640px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--color-page, #f6f3f2);
+  border-top: 1px solid var(--color-rule, #d9c6a7);
+  box-shadow: 0 -14px 40px rgba(45, 41, 39, 0.16);
+  transform: translateY(101%);
+  visibility: hidden;
+  transition: transform 0.28s ease, visibility 0.28s;
+}
+.fr-survey.is-open .fr-survey-panel {
+  transform: translateY(0);
+  visibility: visible;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fr-survey-panel { transition: none; }
+}
+
+.fr-survey-inner {
+  position: relative;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 30px clamp(18px, 4vw, 32px) 22px;
+}
+.fr-survey-close {
+  position: absolute;
+  top: 8px;
+  right: clamp(8px, 2vw, 16px);
+  width: 40px;
+  height: 40px;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--color-muted, #6b6660);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.fr-survey-close:hover { color: var(--color-dark, #2d2927); }
+
+/* ── One question ─────────────────────────────────────────────────── */
+.fr-survey-q {
+  /* Body face, not IM Fell. The display face is for title pages and the
+     names of works; a survey is a working surface. */
+  font-family: var(--font-body);
+  font-size: clamp(18px, 2.2vw, 21px);
+  line-height: 1.35;
+  margin: 0 0 4px;
+  padding-right: 44px;
+  color: var(--color-dark, #2d2927);
+}
+.fr-survey-hint {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: var(--color-muted, #6b6660);
+}
+.fr-survey-q + .fr-survey-scale,
+.fr-survey-q + .fr-survey-options,
+.fr-survey-q + .fr-survey-text { margin-top: 16px; }
+
+/* The 1-5 scales. The number is the label; the words at each end say
+   which way is up, because a bare 1 and 5 do not. */
+.fr-survey-scale {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+.fr-survey-scale-end {
+  font-size: 13px;
+  color: var(--color-muted, #6b6660);
+}
+.fr-survey-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 44px;
+  font-size: 16px;
+  color: var(--color-dark, #2d2927);
+  border: 1px solid var(--color-rule, #d9c6a7);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.fr-survey-dot input { position: absolute; opacity: 0; pointer-events: none; }
+.fr-survey-dot:hover { border-color: var(--color-dark, #2d2927); }
+/* The radio is hidden and the box is what you see, so the focus ring has
+   to be moved onto the box or a keyboard tabs through five numbered
+   targets with nothing to show which one it is on. Stated on the
+   adjacent span rather than with :has(), which would put the ring on
+   browsers that support it and leave the rest with none. */
+.fr-survey-dot input:focus-visible + span,
+.fr-survey-option input:focus-visible + span {
+  outline: 2px solid var(--color-dark, #2d2927);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+.fr-survey-option.is-on input:focus-visible + span,
+.fr-survey-dot.is-on input:focus-visible + span {
+  outline-color: var(--color-white, #fff);
+  outline-offset: 2px;
+}
+
+/* ── Option lists ─────────────────────────────────────────────────── */
+.fr-survey-options { display: grid; gap: 8px; }
+@media (min-width: 560px) {
+  .fr-survey-options--two { grid-template-columns: 1fr 1fr; }
+}
+.fr-survey-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 9px 13px;
+  font-size: 15px;
+  line-height: 1.3;
+  color: var(--color-dark, #2d2927);
+  border: 1px solid var(--color-rule, #d9c6a7);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.fr-survey-option:hover { border-color: var(--color-dark, #2d2927); }
+.fr-survey-option input { flex: 0 0 auto; margin: 0; accent-color: var(--color-secondary, #c1593c); }
+
+/* Chosen is filled, the same step the rest of the library's controls
+   take for "on" (see THE TFR BUTTON above). The native control keeps
+   its own colour so a chosen box is not one undifferentiated block. */
+.fr-survey-option.is-on,
+.fr-survey-dot.is-on {
+  background: var(--fr-survey-orange);
+  border-color: var(--fr-survey-orange);
+  color: var(--color-white, #fff);
+}
+.fr-survey-option.is-on input { accent-color: var(--color-white, #fff); }
+
+.fr-survey-text {
+  display: block;
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding: 11px 13px;
+  color: var(--color-dark, #2d2927);
+  background: var(--color-white, #fff);
+  border: 1px solid var(--color-rule, #d9c6a7);
+  border-radius: 3px;
+  resize: vertical;
+}
+.fr-survey-text:focus {
+  outline: 2px solid var(--fr-survey-orange);
+  outline-offset: 1px;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────── */
+.fr-survey-msg {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--color-muted, #6b6660);
+}
+.fr-survey-msg.is-bad { color: var(--color-secondary, #c1593c); }
+
+.fr-survey-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-rule, #d9c6a7);
+}
+.fr-survey-count {
+  font-size: 13px;
+  color: var(--color-muted, #6b6660);
+}
+.fr-survey-actions { display: flex; align-items: center; gap: 8px; }
+
+/* Geometry only. Ink, fill and line come from THE TFR BUTTON block
+   above, which these three are listed in. */
+.fr-survey-back,
+.fr-survey-skip,
+.fr-survey-next {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.2;
+  min-height: 44px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+.fr-survey-back[hidden] { display: none; }
+
+.fr-survey-turnstile:not(:empty) { margin-top: 14px; }
+
+/* The way out, stated plainly and kept quiet. A bar nobody can dismiss
+   is a bar that gets resented rather than answered. */
+.fr-survey-off {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-muted, #6b6660);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.fr-survey-off:hover { color: var(--color-dark, #2d2927); }
+
+.fr-survey-done { padding: 12px 0 8px; }
+.fr-survey-done .fr-survey-next { margin-top: 16px; }
+
+/* The tab overhangs whatever the page ends with. Thirty-four pixels is
+   the bar plus the tab, so the last line of a page clears it. Pages
+   that pin themselves to the viewport (the ported dictionary at narrow
+   widths) do not read body padding and keep the overlap; the bar is
+   eight pixels there and the tab is in the corner. */
+body.has-fr-survey { padding-bottom: 34px; }
+
+@media (max-width: 640px) {
+  .fr-survey-inner { padding: 26px 18px 18px; }
+  .fr-survey-panel { max-height: 86vh; }
+  .fr-survey-dot { min-width: 44px; }
+  /* The end labels take a line of their own rather than squeezing the
+     five targets down to fit beside them. */
+  .fr-survey-scale { gap: 6px; }
+  .fr-survey-scale-end { flex-basis: 100%; }
+  .fr-survey-foot { justify-content: flex-end; }
+  .fr-survey-count { flex-basis: 100%; }
+}
