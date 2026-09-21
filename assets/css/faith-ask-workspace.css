@@ -34,6 +34,23 @@
 .fra {
   /* Imported readers redefine --font-body. Ask keeps the site UI face. */
   --font-body: "Source Serif Pro", Georgia, serif;
+  /* THE HOVER AND CHOSEN INK, DARK ENOUGH TO READ.
+     --color-primary-text is #b45f3d at the root, and this panel uses it as
+     TYPE in fourteen places: every header icon's hover, "Saved research",
+     "Expand Ask", the mode and scope toggles, the source link, and the
+     aria-pressed form of "Search the whole library". Measured on the live
+     reader (pld-2741, 2026-09-21) it comes out 4.09:1 on the panel's own
+     ground and 3.94:1 on the cream the docked bar sits over, so every one of
+     those states failed AA at 11-13px: point at a control and its label got
+     FAINTER than it was at rest. The token is right, the value was tuned for
+     larger type elsewhere on the site.
+
+     85% of the brand terracotta toward the house off-black is 4.58:1 on the
+     reader's cream and 4.72:1 on the panel — the same hue a shade deeper, not
+     a second orange. Scoped to .fra so nothing outside Ask moves, and stated
+     before .fra[data-theme="dark"], which sets its own lifted value and still
+     wins on source order. */
+  --color-primary-text: color-mix(in srgb, var(--color-secondary, #c1593c) 85%, var(--color-dark, #2d2927));
   --fra-bg: var(--color-page);
   --fra-card: var(--color-page);
   --fra-fg: var(--color-dark);
@@ -1226,18 +1243,28 @@ html.fra-open .fra-launcher { display: none; }
   display: inline-block;
   width: 12px;
   letter-spacing: 0;
-  color: var(--color-card-border);
+  /* Was --color-card-border. See the note on the counts below: a hairline
+     token cannot carry the one mark that says whether this is open. */
+  color: var(--color-muted);
   transition: transform 0.15s ease;
 }
 .fra-shelves[open] > summary::before { transform: rotate(90deg); }
 .fra-shelves > summary:hover { color: var(--color-primary-text); }
+/* A HAIRLINE COLOUR WAS BEING ASKED TO BE TYPE. These read "Choose one or
+   more" — the only thing telling a reader the shelf and group lists take more
+   than one pick — and they were inked with --color-card-border, the token for
+   1px rules. Measured on the live reader (2026-09-21): 1.51:1 in light and
+   sepia, 1.43:1 in dark, at 11px. Not dim, INVISIBLE. --color-muted is the
+   panel's quiet-type token, 6.18:1 in dark and already what the label beside
+   it uses; the count stays distinct by sitting at the far end in sentence
+   case with no tracking, which is what separated them to begin with. */
 #fra-shelf-count,
 #fra-group-count {
   margin-left: auto;
   font-size: 11px;
   letter-spacing: 0;
   text-transform: none;
-  color: var(--color-card-border);
+  color: var(--color-muted);
 }
 
 /* Two columns of checkboxes, each a row of its own. Inline labels are
@@ -1386,7 +1413,7 @@ html:not(.mo-embedded) .fra {
 #fra-workspace .fra-sidebar { width:252px; flex-basis:252px; padding:24px 16px 16px; background:var(--fra-bg); }
 #fra-workspace .fra-brand { padding:0 8px 24px; }
 #fra-workspace .fra-brand a { font-family:var(--fra-display,inherit); font-size:23px; font-weight:500; }
-#fra-workspace .fra-new { width:100%; min-height:44px; justify-content:center; gap:8px; padding:10px 14px; border:0; border-radius:9px; color:var(--fra-card); background:var(--fra-action); font-size:14px; transition:transform .14s ease,opacity .14s ease; }
+#fra-workspace .fra-new { width:100%; min-height:44px; justify-content:center; gap:8px; padding:10px 14px; border:0; border-radius:9px; color:var(--fra-action-ink,var(--fra-card)); background:var(--fra-action); font-size:14px; transition:transform .14s ease,opacity .14s ease; }
 #fra-workspace .fra-new:active { transform:scale(.985); }
 #fra-workspace .fra-history-search { margin:14px 0 18px; border:1px solid var(--fra-border); border-radius:8px; min-height:44px; padding:0 10px; background:var(--fra-card); }
 #fra-workspace .fra-history-search input { font-size:14px; min-width:0; }
@@ -1459,7 +1486,7 @@ html:not(.mo-embedded) .fra {
 #fra-workspace #fra-input { min-height:52px; font-size:17px; line-height:1.55; padding:6px; }
 #fra-workspace .fra-compose-tools { gap:5px; }
 #fra-workspace .fra-compose-tools>button { font-size:13px; min-height:40px; border-radius:7px; }
-#fra-workspace .fra-compose-tools .fra-send { width:42px; height:42px; background:var(--fra-action); color:var(--fra-card); border:0; border-radius:50%; transition:transform .14s ease,opacity .14s ease; }
+#fra-workspace .fra-compose-tools .fra-send { width:42px; height:42px; background:var(--fra-action); color:var(--fra-action-ink,var(--fra-card)); border:0; border-radius:50%; transition:transform .14s ease,opacity .14s ease; }
 #fra-workspace .fra-send:disabled { opacity:.35; }
 #fra-workspace .fra-send:not(:disabled):active { transform:scale(.92); }
 #fra-workspace .fra-compose-foot { font-size:11px; padding-top:9px; gap:10px; }
@@ -1522,7 +1549,25 @@ html:not(.mo-embedded) .fra {
 @media(max-height:600px) { #fra-workspace .fra-welcome { padding:16px 0; } #fra-workspace .fra-welcome h1 { font-size:30px; } #fra-workspace .fra-command { top:12px; max-height:calc(100dvh - 24px); } }
 @media(prefers-reduced-motion:reduce) { #fra-workspace *,#fra-workspace *::before,#fra-workspace *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
 
-#fra-workspace { --fra-action:var(--color-secondary,var(--fra-fg)); }
+/* THE ONE FILLED BUTTON IN ASK, AND WHAT SITS ON IT.
+   "New conversation" and the send key are painted --fra-action (the brand
+   terracotta) with --fra-card as their ink, and --fra-card is the PAGE colour,
+   which flips with the theme. So in dark the label went near-black on
+   terracotta. Measured at 390px on the live reader (pld-2741, 2026-09-21):
+   3.80:1 in dark, 3.99:1 in light and sepia, at 14px. Both fail AA.
+
+   The ink is named separately now. In daylight it is white, which is what
+   every other filled button in The Faith Received uses. In dark the fill
+   lifts to the same terracotta the reader's dark scheme uses and the page
+   colour becomes the ink on purpose rather than by inheritance: 6.68:1. */
+#fra-workspace {
+  --fra-action: var(--color-secondary, var(--fra-fg));
+  --fra-action-ink: var(--color-white, #fff);
+}
+#fra-workspace[data-theme="dark"] {
+  --fra-action: color-mix(in srgb, var(--color-secondary, #c1593c) 65%, #fff);
+  --fra-action-ink: var(--color-page);
+}
 
 /* Keep Ask navigation singular and the composer input borderless. */
 #fra-workspace .fra-header > :is(.fr-quick,.fr-explore) { display:none; }

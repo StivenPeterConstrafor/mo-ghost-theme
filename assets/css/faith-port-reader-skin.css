@@ -68,6 +68,59 @@
   /* Was #B0B0AA, a cool grey, on volume pills and related-passage
      hovers. Our tan rule. */
   --accent-soft: #d9c6a7;
+
+  /* ── ONE TERRACOTTA WAS DOING TWO JOBS ────────────────────────────
+     Ian, 2026-09-21: "Buttons where text becomes unreadable on click."
+
+     --color-secondary (#c1593c) is the brand terracotta and it is right
+     as a GROUND: the filled, chosen control. This file also spent it as
+     INK — the hover colour of every toolbar button, the Outline tab that
+     is current, "Remove highlight" — and as ink it is too light to read.
+     Measured on the live reader (pld-2741, 2026-09-21, contrast computed
+     from the composited ground rather than from the declared colour):
+
+       hover ink on the cream toolbar, light       3.85:1   at 13-14px
+       hover ink on the cream toolbar, sepia       3.85:1
+       hover ink on the near-black toolbar, dark   3.19:1
+       "Outline" tab, current, dark                3.19:1   at 11.5px
+
+     All of them fail AA (4.5:1). The dark ones fail it badly enough to
+     answer the report directly: point at a control in the dark reader and
+     its label goes from 11.5:1 to 3.19:1 — it gets FAINTER when you touch
+     it, which is exactly backwards.
+
+     So the colour is split by job rather than by guesswork.
+
+     --fr-ink-hot is the terracotta when it is TYPE. In daylight it is the
+     brand colour taken 85% of the way to the house off-black: 4.58:1 on
+     the toolbar's cream, 4.72:1 on the Ask panel, the same hue a shade
+     deeper and not a second orange. In dark it goes the other way, to the
+     lifted terracotta this file already mixes for #aboutOv: 5.60:1 on the
+     near-black bar.
+
+     --fr-fill / --fr-fill-ink are the terracotta when it is a GROUND. In
+     daylight they are unchanged, the brand colour under white. In dark the
+     fill lifts and the ink becomes the page, which is 6.95:1 and is also
+     what the port itself assumes — read.in01.css:1180 already writes
+     `[data-theme="dark"] .tgl[aria-pressed=true]{color:var(--bg)}` for a
+     lighter fill it never got.
+
+     NOT CHANGED, and stated so the next person does not go looking: white
+     on the undarkened #c1593c is 4.41:1, a 0.09 miss. That is the filled
+     state of every button in The Faith Received, on every surface
+     including a photograph, and moving it is a decision about the brand
+     rather than a fix to the reader. It is reported, not smuggled in. */
+  --fr-ink-hot: color-mix(in srgb, var(--color-secondary, #c1593c) 85%, var(--color-dark, #2d2927));
+  --fr-fill: var(--color-secondary, #c1593c);
+  --fr-fill-ink: var(--color-white, #fff);
+}
+
+/* Dark only under the explicit toggle, never under the OS preference: see
+   "Dark mode is not shipped, so it must not arrive by accident" below. */
+:root[data-theme="dark"] {
+  --fr-ink-hot: color-mix(in srgb, var(--color-secondary, #c1593c) 65%, #fff);
+  --fr-fill: color-mix(in srgb, var(--color-secondary, #c1593c) 65%, #fff);
+  --fr-fill-ink: var(--bg, #1a1a18);
 }
 
 /* ── The reader inside the shell ────────────────────────────────────
@@ -475,7 +528,7 @@ html nav.frthumb {
 #app .nav-node.on {
   background: transparent;
   border-radius: 0;
-  border-left-color: var(--color-secondary, #c1593c);
+  border-left-color: var(--fr-ink-hot, var(--color-secondary, #c1593c));
 }
 #app .nav-node:hover { background: var(--hl); }
 
@@ -504,12 +557,15 @@ html nav.frthumb {
    prose, which is a house-style decision rather than a bug fix. */
 #app .aapop .aaseg .tgl[aria-pressed="true"],
 #app .aapop .aaseg .tgl.on {
-  background: var(--color-secondary, #c1593c);
-  border-color: var(--color-secondary, #c1593c);
-  color: #fff;
+  background: var(--fr-fill, var(--color-secondary, #c1593c));
+  border-color: var(--fr-fill, var(--color-secondary, #c1593c));
+  color: var(--fr-fill-ink, #fff);
 }
-#app .nav-vt button.on { color: var(--color-secondary, #c1593c); }
-html nav.frthumb button.on { color: var(--color-secondary, #c1593c); }
+/* The Outline / Pages tabs and the phone's dock: these are TYPE, so they
+   take the ink terracotta. Measured at 3.19:1 in dark and 4.09:1 in sepia
+   on the raw brand colour — see the token note at the top of this file. */
+#app .nav-vt button.on { color: var(--fr-ink-hot, var(--color-secondary, #c1593c)); }
+html nav.frthumb button.on { color: var(--fr-ink-hot, var(--color-secondary, #c1593c)); }
 
 /* ── One radius, no shadows ─────────────────────────────────────────
    Twelve pill shapes and nine card shadows across the tool layer. The
@@ -1058,8 +1114,8 @@ mark.fr-hlx[data-hl="slate"] { background: #e5ecf3; }
   color: var(--fg);
 }
 #selpop button.sw.is-clear:hover {
-  border-color: var(--color-secondary, #c1593c);
-  color: var(--color-secondary, #c1593c);
+  border-color: var(--fr-ink-hot, var(--color-secondary, #c1593c));
+  color: var(--fr-ink-hot, var(--color-secondary, #c1593c));
 }
 html.mo-embedded .faith-port-read-page { height: 100dvh; }
 html.mo-embedded .ph { top: 0; }
@@ -1275,8 +1331,12 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
 #app .ph.fr-reader-head .ctr > .seg.lanes > button:hover,
 #app .ph.fr-reader-head #nbCount:hover {
   background: transparent;
-  border-color: var(--color-secondary, #c1593c);
-  color: var(--color-secondary, #c1593c);
+  /* Hover is the one state here that is terracotta TYPE rather than a
+     terracotta ground, so it takes the ink form. On the raw brand colour
+     this row measured 3.85:1 in light and sepia and 3.19:1 in dark, which
+     made pointing at a button the thing that dimmed its label. */
+  border-color: var(--fr-ink-hot, var(--color-secondary, #c1593c));
+  color: var(--fr-ink-hot, var(--color-secondary, #c1593c));
 }
 
 /* CHOSEN: filled, one step past hover. Flow, the lane you are reading, an
@@ -1286,9 +1346,9 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
 #app .ph.fr-reader-head .ctr > .tgl[aria-pressed="true"],
 #app .ph.fr-reader-head .ctr > .aaw > .tgl[aria-expanded="true"],
 #app .ph.fr-reader-head #nbCount[aria-expanded="true"] {
-  background: var(--color-secondary, #c1593c);
-  border-color: var(--color-secondary, #c1593c);
-  color: var(--color-white, #fff);
+  background: var(--fr-fill, var(--color-secondary, #c1593c));
+  border-color: var(--fr-fill, var(--color-secondary, #c1593c));
+  color: var(--fr-fill-ink, var(--color-white, #fff));
 }
 
 #app .ph.fr-reader-head .phl > .sbt:focus-visible,
@@ -1297,7 +1357,7 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
 #app .ph.fr-reader-head .ctr > .aaw > .tgl:focus-visible,
 #app .ph.fr-reader-head .ctr > .seg.pnav > button:focus-visible,
 #app .ph.fr-reader-head .ctr > .seg.lanes > button:focus-visible {
-  outline: 2px solid var(--color-secondary, #c1593c);
+  outline: 2px solid var(--fr-ink-hot, var(--color-secondary, #c1593c));
   outline-offset: 2px;
 }
 

@@ -4019,6 +4019,41 @@ $("#scroll").addEventListener("scroll",()=>{const s=$("#scroll");$("#prog").styl
    deep links, saved fr_mode values). At least one TEXT lane stays on — turning the last one off
    flips the other on, so the reading column can never go empty. */
 window.LN={en:true,la:true,fx:false};   // owner 2026-08-17: the Latin lane shows by DEFAULT ("no latin" report) — this is a Latin library
+/* Keep your place across a relayout. Call before changing anything that reflows
+   the reading column and call the returned function after: it notes how far
+   down the scrollport a visible row is sitting and puts that same row back at
+   that same height once the new layout has settled.
+
+   The height matters. The lane switch used to end in scrollIntoView(block:
+   "start"), which drags the row's TOP to the top of the scrollport — and the
+   row it picks is the first one still showing, whose top is usually well above
+   the fold. On a work with long paragraph rows that threw the reader 850 to 900
+   pixels for a button that was only meant to add a column. Offset arithmetic
+   moves nobody who was not already moving.
+
+   Measured against the scrollport's own top edge rather than the viewport's, so
+   the sums hold whether or not the chrome is showing; a fixed 120px assumption
+   is wrong by the height of the bars in one of the two states. */
+function frKeepPlace(){
+  const sc=document.getElementById("scroll"),rd=$("#reading");
+  if(!sc||!rd)return ()=>{};
+  const edge=sc.getBoundingClientRect().top;
+  const row=[...rd.querySelectorAll(".row[id]")].find(r=>r.getBoundingClientRect().bottom>edge+8);
+  if(!row)return ()=>{};
+  const at=row.getBoundingClientRect().top-edge,serial=window.__readerNavSerial||0;
+  const fix=()=>{
+    if(serial!==(window.__readerNavSerial||0)||!row.isConnected)return;
+    const d=(row.getBoundingClientRect().top-sc.getBoundingClientRect().top)-at;
+    if(d){sc.scrollTop+=d;if(window.__frScrollSettled)window.__frScrollSettled();}
+  };
+  // Twice: once now, before the frame is painted, because a style change has
+  // already reflowed by the time we can measure it and correcting on the next
+  // animation frame instead lets the browser paint the displaced text first —
+  // a 95px flash that reads as exactly the jump this is here to prevent. Then
+  // again on the next frame for the reflow that has not happened yet: a lane
+  // rebuild, an off-screen section re-rendering, a web font arriving late.
+  return ()=>{fix();requestAnimationFrame(fix);};
+}
 function applyLanes(){
   // An English source is already read in the English lane. A parallel preference
   // carried from a Latin work must not open two English versions side by side.
@@ -4041,17 +4076,18 @@ function applyLanes(){
   // and phones don't grow into desktops mid-read; a rebuild restores columns).
   if(LN.en&&LN.la&&matchMedia("(max-width:880px)").matches&&window.__frZipStacks)window.__frZipStacks();
   // keep your place: the row that was under the top of the viewport stays there across the relayout
-  if(window.__frAnchorRow&&window.__frAnchorRow.isConnected){
-    const navigation=window.__readerNavSerial||0,anchor=window.__frAnchorRow;
-    requestAnimationFrame(()=>{if(navigation===(window.__readerNavSerial||0)&&anchor?.isConnected)anchor.scrollIntoView({block:"start"});});}
+  if(window.__frKeepPlace)window.__frKeepPlace();
 }
 function mode(m){                                          // legacy presets → lane states
   if(m==="en")Object.assign(LN,{en:true,la:false,fx:false});
   else if(m==="par")Object.assign(LN,{en:true,la:true,fx:false});
   else if(m==="study")Object.assign(LN,{en:true,la:true,fx:true});
   applyLanes();}
+// A lane button relays the column out from under the reader, so the place has to
+// be taken before the click lands — by the time applyLanes runs, the old layout
+// it needs to measure is gone.
 document.addEventListener("pointerdown",ev=>{if(ev.target.closest&&ev.target.closest(".ph .seg,[data-t]"))
-  window.__frAnchorRow=[...reading.querySelectorAll(".row[id]")].find(r=>r.getBoundingClientRect().bottom>120);},true);
+  window.__frKeepPlace=frKeepPlace();},true);
 $("#m-en").onclick=()=>{LN.en=!LN.en;if(!LN.en&&!LN.la)LN.la=true;applyLanes();};
 $("#m-par").onclick=()=>{LN.la=!LN.la;if(!LN.en&&!LN.la)LN.en=true;applyLanes();};
 $("#m-study")&&($("#m-study").onclick=()=>{LN.fx=!LN.fx;applyLanes();});
@@ -4148,7 +4184,46 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
       const s=document.getSelection();if(s&&!s.isCollapsed)return;
       if(!HTML.classList.contains("mh-hide")&&sc.scrollTop<90)return;   // at the top, chrome stays
       HTML.classList.toggle("mh-hide");acc=0;
-    });})();
+    });
+    // Both bars are fixed, but the page reserves their height in padding, so
+    // this state does not merely uncover the prose, it re-lays the scroller out
+    // 152px higher on a desktop and 120px on a phone. Every line the reader was
+    // looking at leapt with it, both ways, unasked: read down and the text fled
+    // upward, nudge back up 24px and it was thrown down again. Pin the prose
+    // instead — give back whatever the box moved, every frame of the .28s
+    // slide, so the line under the eye stays where the eye left it while the
+    // chrome comes and goes.
+    //
+    // Driven by the box's size rather than by the class because the class has
+    // four other doors — the contents sidebar, Find, a lane change that
+    // re-anchors, a tap on the prose — and a reduced-motion reader gets no
+    // transition to listen for. Measured off the scroller's own top edge, which
+    // is the one landmark scrolling does not move; measuring the prose instead
+    // makes the sample stale by however far the reader travelled since the last
+    // resize, and the correction then hurls them that whole distance.
+    //
+    // Read scrollTop live rather than trusting y0. The scroll steps run before
+    // the observer callbacks in the same frame, so a reader who is still moving
+    // has already scrolled past what y0 remembers, and landing them on y0+d
+    // spends the correction undoing their own gesture: a 480px drag arrived as
+    // 87px. Re-point y0 at what landed, though, so the correction stays
+    // invisible to the accumulator above, which would otherwise read the 152px
+    // handed back as a 152px scroll and re-trigger the hide it was correcting.
+    // Every keep-your-place correction in this file moves the scroller on the
+    // reader's behalf, and the accumulator above cannot tell that from a
+    // gesture: changing the body font scrolled 300px to hold the line still,
+    // which then read as 300px of reading and hid the chrome for it. Anything
+    // that moves the scroller itself says so through here.
+    window.__frScrollSettled=()=>{y0=sc.scrollTop;acc=0;};
+    if(typeof ResizeObserver==="function"){
+      let edge=sc.getBoundingClientRect().top;
+      new ResizeObserver(()=>{
+        const now=sc.getBoundingClientRect().top,d=now-edge;
+        edge=now;
+        if(d)sc.scrollTop+=d;
+        window.__frScrollSettled();
+      }).observe(sc);
+    }})();
   window.__frThumbSync=()=>{
     const hasScan=(typeof DATA!=="undefined")&&!!(DATA&&DATA.has_pages),enOnly=app.classList.contains("en-only")||DATA?.src_lang==='en';
     B.study.style.display=hasScan?"":"none";
@@ -4592,7 +4667,10 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
 })();
 const _mobSz=matchMedia("(max-width:880px)").matches;   // phones read smaller by default — more text per screen
 let rdsz=+lsGet(_mobSz?"fr_rdsz_m":"fr_rdsz")||(_mobSz?17:21),imz=+lsGet("fr_imz")||100;
-function applySz(){const rd=$("#reading");rd.style.fontSize=rdsz+"px";rd.style.setProperty("--rdszm",rdsz+"px");if($("#tzs"))$("#tzs").value=rdsz;lsSet(_mobSz?"fr_rdsz_m":"fr_rdsz",rdsz);}
+// Type size, line spacing and body font all reflow the column under the reader,
+// and none of the three used to put them back: a step of line spacing carried
+// the line they were on 128px up the screen. Same treatment the lanes get.
+function applySz(){const put=frKeepPlace(),rd=$("#reading");rd.style.fontSize=rdsz+"px";rd.style.setProperty("--rdszm",rdsz+"px");if($("#tzs"))$("#tzs").value=rdsz;lsSet(_mobSz?"fr_rdsz_m":"fr_rdsz",rdsz);put();}
 function applyImz(){app.style.setProperty("--imz",imz+"%");if($("#izs"))$("#izs").value=imz;lsSet("fr_imz",imz);}
 $("#tzs").oninput=e=>{rdsz=+e.target.value;applySz();};
 $("#szDn")&&($("#szDn").onclick=()=>{rdsz=Math.max(14,rdsz-1);applySz();});
@@ -4637,16 +4715,18 @@ applySz();applyImz();
 const THEMES=["light","sepia","dark"],thIcon=t=>t==="sepia"?"☼":t==="dark"?"☾":"◐";
 function applyTheme(t){document.documentElement.setAttribute("data-theme",t);lsSet("fr_theme",t);for(const id of ["th","thTop"]){const b=$("#"+id);if(b){b.textContent=thIcon(t);b.title="Reading theme: "+t+" — click to change";}}}
 // Kindle-style reading options: body font (Serif / Sans / Easy=Atkinson Hyperlegible) + line spacing
-function applyFont(f){if(f==="serif")document.documentElement.removeAttribute("data-font");
+function applyFont(f){const put=frKeepPlace();
+  if(f==="serif")document.documentElement.removeAttribute("data-font");
   else document.documentElement.setAttribute("data-font",f);
   lsSet("fr_font",f);
   const M={serif:"fSerif",sans:"fSans",easy:"fEasy"};
-  Object.entries(M).forEach(([k,id])=>{const b=$("#"+id);if(b)b.setAttribute("aria-pressed",k===f?"true":"false");});}
-function applyLH(l){if(l==="normal")document.documentElement.removeAttribute("data-lh");
+  Object.entries(M).forEach(([k,id])=>{const b=$("#"+id);if(b)b.setAttribute("aria-pressed",k===f?"true":"false");});put();}
+function applyLH(l){const put=frKeepPlace();
+  if(l==="normal")document.documentElement.removeAttribute("data-lh");
   else document.documentElement.setAttribute("data-lh",l);
   lsSet("fr_lh",l);
   const M={compact:"lhC",normal:"lhN",relaxed:"lhR"};
-  Object.entries(M).forEach(([k,id])=>{const b=$("#"+id);if(b)b.setAttribute("aria-pressed",k===l?"true":"false");});}
+  Object.entries(M).forEach(([k,id])=>{const b=$("#"+id);if(b)b.setAttribute("aria-pressed",k===l?"true":"false");});put();}
 (function(){
   const f=lsGet("fr_font")||"serif",l=lsGet("fr_lh")||"normal";
   applyFont(f);applyLH(l);
