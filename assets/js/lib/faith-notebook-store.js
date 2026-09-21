@@ -259,7 +259,7 @@
     return safe || readerUrl(e);
   }
 
-  /* ── Constellations: the shared wire format ──────────────────── *
+  /* ── Connections: the shared wire format ──────────────────── *
    *
    * Not ours. The four sister corpora already share one, and honouring
    * it means a constellation built on Patrologia Latina's own site

@@ -262,7 +262,7 @@
 /* Touch widths: the inline action links inside a citation or a card
    head become real targets. Not done at desktop widths, where a mouse
    is precise and 44px rows would double the height of every statement
-   in a column. Same split .cn-legend-item makes on the Constellations
+   in a column. Same split .cn-legend-item makes on the Connections
    panel. */
 @media (max-width: 940px) {
   .cmp-read,
@@ -3959,7 +3959,7 @@ mark.faith-find-hit.is-current {
 }
 
 /* Relations drawn between two passages. Read-only here: drawing one is
-   the reader panel's job and Constellations', but hiding them would
+   the reader panel's job and Connections', but hiding them would
    make a passage look like it stood alone. */
 .notebook-edges {
   list-style: none;
@@ -13680,7 +13680,7 @@ a.fr-plan-open {
   .ps-pager-btn:last-of-type { justify-self: end; }
 }
 
-/* ══ Constellations ═══════════════════════════════════════════════
+/* ══ Connections ═══════════════════════════════════════════════
    The map workspace on /the-faith-received/research/. Markup in
    partials/faith-received/_constellations-panel.hbs, behaviour in
    assets/js/page/faith-constellations.js; that file's header carries
@@ -14740,7 +14740,7 @@ a.cn-row-title { color: var(--color-primary-text); }
    and the hero carried the name of the tool and a sentence saying what
    it was for. Inside a tab strip the name is on the tab, but the
    sentence is real orienting copy and had nowhere to go, so it moved
-   into the panel — matched to .cn-head, which the Constellations panel
+   into the panel — matched to .cn-head, which the Connections panel
    has always used for exactly this, down to the 720px measure and the
    hairline under it. The title is an h2 and NOT --font-display: the
    display face belongs to the h1, and the only h1 on the page is the
@@ -15999,7 +15999,7 @@ a.cn-row-title { color: var(--color-primary-text); }
   /* 18px apart rather than 8: at this width these wrap to one per line
      and adjacent targets that close together are a mis-tap (MOBILE M4).
      Matched to the .cn-legend rule above, which solves the same
-     problem on the Constellations panel. */
+     problem on the Connections panel. */
   .cmp-tool-acts,
   .pins-bar { gap: 10px; }
   .cmp-col { flex-basis: 88vw; }
@@ -17083,7 +17083,7 @@ a.fr-btn,
 .faith-memorize-nav-btn,
 .fa-search-btn,
 .ps-pager-btn,
-/* ── Constellations, compare, pins, desk ───────────────────────────────── */
+/* ── Connections, compare, pins, desk ───────────────────────────────── */
 .cn-view-btn,
 .cn-zoom-btn,
 .cn-link-btn,

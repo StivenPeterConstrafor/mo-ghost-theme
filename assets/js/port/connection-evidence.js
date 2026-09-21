@@ -140,7 +140,7 @@
   }
   function researchNote(kind,label,sources,extra={}){
     const unique=[...new Map(sources.filter(s=>s?.url).map(s=>[s.url,s])).values()];
-    return {type:'note',label,text:label+'\n\n'+unique.map(s=>s.cite+'\n'+s.url).join('\n\n'),cite:label,url:extra.url||'/the-faith-received/constellations/',research:{kind,sources:unique,verses:extra.verses||[],topics:extra.topics||[],authors:[...new Set(unique.map(s=>s.author).filter(Boolean).concat(extra.authors||[]))],...extra.research}};
+    return {type:'note',label,text:label+'\n\n'+unique.map(s=>s.cite+'\n'+s.url).join('\n\n'),cite:label,url:extra.url||'/the-faith-received/connections/',research:{kind,sources:unique,verses:extra.verses||[],topics:extra.topics||[],authors:[...new Set(unique.map(s=>s.author).filter(Boolean).concat(extra.authors||[]))],...extra.research}};
   }
   function pageWindow(items,page=0,size=5){const pages=Math.max(1,Math.ceil(items.length/size)),current=Math.max(0,Math.min(Number(page)||0,pages-1)),start=current*size;return {page:current,pages,start,end:Math.min(items.length,start+size),items:items.slice(start,start+size)};}
   // Confirmed alternate witnesses. Do not group editions by title similarity.
@@ -227,7 +227,7 @@
       try{if(on)await N.unsave(slug,page);else if(isWork)await N.saveWork({slug,title:b.dataset.title,author:b.dataset.author});else await N.savePassage({slug,page,title:b.dataset.title,author:b.dataset.author,label:b.dataset.label});}
       catch(err){b.title=(err&&err.message)||'This could not be saved.';b.disabled=false;return;}
       const now=!on;host.querySelectorAll(isWork?`[data-save-work="${CSS.escape(slug)}"]`:`[data-save-passage="${CSS.escape(slug)}"][data-page="${CSS.escape(String(page))}"]`).forEach(x=>{x.classList.toggle('on',now);x.setAttribute('aria-pressed',String(now));x.textContent=now?'Saved':(x.hasAttribute('data-save-work')?'Save work':'Save passage');x.disabled=false;});b.disabled=false;});}
-    if(find('.ce-save'))find('.ce-save').onclick=()=>save(find('.ce-save'),researchNote('citation-connection',citing.a+' cites '+target.a,[...selected.values()],{url:'/the-faith-received/constellations/#e='+encodeURIComponent(citing.s)+','+encodeURIComponent(target.s),authors:[citing.a,target.a],research:{direction:'citation',citing:citing.s,target:target.s}}));
+    if(find('.ce-save'))find('.ce-save').onclick=()=>save(find('.ce-save'),researchNote('citation-connection',citing.a+' cites '+target.a,[...selected.values()],{url:'/the-faith-received/connections/#e='+encodeURIComponent(citing.s)+','+encodeURIComponent(target.s),authors:[citing.a,target.a],research:{direction:'citation',citing:citing.s,target:target.s}}));
     find('.ce-records').innerHTML='<p class="ce-note" role="status">Preparing source editions…</p>';
     (async()=>{try{const catalogue=await root.FRResearchData?.corpus?.();if(!host.isConnected)return;for(const w of groups.keys()){const meta=catalogue?.works?.get(w);if(!meta)continue;workMetadata.set(w,meta);const title=meta.title_en||meta.title||works[w]||w,volume=meta.volume||'';works[w]=title+(volume&&!title.includes(volume)?' · '+volume:'');}find('[data-ce-work]').querySelectorAll('option').forEach(option=>{if(option.value)option.textContent=(works[option.value]||option.value)+' ('+count(groups.get(option.value))+')';});}catch(_){}if(!host.isConnected)return;paint();updateSelection();locateTargets();if(!targetToRestore)onReady?.();})();
     return {sources:()=>[...selected.values()],capture};
@@ -235,7 +235,7 @@
   const comparisonRuns=new WeakMap();
   async function mountComparison(host,options){
     const run=(comparisonRuns.get(host)||0)+1;comparisonRuns.set(host,run);const current=()=>host.isConnected&&comparisonRuns.get(host)===run;
-    const {kind,left,right,leftRows,rightRows,weight,relation=null,leftLink='',rightLink='',fallback=false,relatedTopics=[],url='/the-faith-received/constellations/'}=options;
+    const {kind,left,right,leftRows,rightRows,weight,relation=null,leftLink='',rightLink='',fallback=false,relatedTopics=[],url='/the-faith-received/connections/'}=options;
     const name=n=>String(n.displayName||n.t||n.a||n.name||n.label||''),isTopic=kind==='doctrines'||kind==='topics';let alive=true,selected=new Map(),verseSources=new Map();
     const title=name(left)+' · '+name(right);
     host.classList.add('connection-evidence');

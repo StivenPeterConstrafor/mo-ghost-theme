@@ -37,7 +37,7 @@
  .scripture-tabs{gap:20px}.scripture-tabs button{font-size:13px}.bible-reading-tools{gap:0 18px;margin-bottom:12px}.bible-reading-tools>span{width:100%;margin-top:10px}.scripture-page .vv .txt{font-size:16px;line-height:1.8}.scripture-page .vv{padding-left:32px}.scripture-page .vv .no{left:-10px}.scripture-page .vpanel{margin-left:-32px;padding:12px}
  .scripture-work{flex-direction:column;align-items:start;gap:10px}.work-actions{max-width:none;justify-content:start}.scripture-work .work-title,.annotation-set strong{font-size:16px}.annotation-set>summary{gap:12px}.annotation-action{font-size:11px}.annotation-volume{flex-direction:column;gap:10px}.annotation-volume>a{align-self:flex-start}.annotation-destinations{padding:0 12px 12px}
 }
-/* The Web is a navigable graph with a reading panel, in the same two themes. */
+/* Connections is a navigable graph with a reading panel, in the same two themes. */
 .web-page{--sky:var(--bg);--ink-l:var(--fg);--mut-l:var(--muted);--fnt-l:var(--muted);--bdr-l:var(--border);--card-l:var(--card);--gold:var(--fg);background:var(--bg)}
 .web-page header.site{padding:10px 20px;gap:16px;align-items:center;background:var(--card);border-bottom:1px solid var(--border);color:var(--fg);backdrop-filter:none;right:0!important}
 .web-page header.site .brand{font-size:19px}.web-page header.site .brand i{font-style:normal}.web-page header.site nav{gap:20px}.web-page header.site nav a{font-size:14px;letter-spacing:0;text-transform:none;min-height:44px;display:flex;align-items:center;padding:0}

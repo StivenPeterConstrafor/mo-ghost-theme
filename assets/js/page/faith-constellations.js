@@ -1,12 +1,12 @@
 /* Integration update, 2026-09-19: this renderer is mounted only inside /web.
- * Citation data comes from MOFaithWebGraph (the Web's current authors/edges),
+ * Citation data comes from MOFaithWebGraph (Connections's current authors/edges),
  * including small citation pairs and self-citations. Historical notes below
  * describing the retired mine/citations export and its five-citation floor
  * no longer describe the data source. Shelf Scripture exports are unchanged.
  */
 /*
- * Constellations — the map workspace on
- * /the-faith-received/research/ (the "Constellations" tab).
+ * Connections — the map workspace on
+ * /the-faith-received/research/ (the "Connections" tab).
  *
  * WHAT IT DRAWS. Every shelf in the library has been read for the
  * Scripture it quotes, and each author, work and doctrinal topic
@@ -374,7 +374,7 @@
  * the panel is the same shape as Bookmarks in that respect. Adding
  * data-feature-gate would tell a free reader they cannot have something
  * the worker hands to anyone with curl. Note for whoever revisits this:
- * the page's own "For members" list does name Constellations, so if it
+ * the page's own "For members" list does name Connections, so if it
  * is meant to be paid-only the gate belongs on the worker route first
  * and here second.
  *
@@ -3581,7 +3581,7 @@
   }
 
   function webLink(label, hash) {
-    const a=textEl("a", "cn-open-source", label);a.href=`/the-faith-received/constellations/${hash}`;return a;
+    const a=textEl("a", "cn-open-source", label);a.href=`/the-faith-received/connections/${hash}`;return a;
   }
   function renderCiteDossier(i) {
     const node = nodes[i];
@@ -6037,7 +6037,7 @@
     else if(selected>=0&&nodes[selected])q.set("entry",nodes[selected].t||nodes[selected].a||"");
     history.replaceState(null,"",`#shelves=${encodeURIComponent(shelfSlug)}/${view}?${q}`);
   }
-  window.MOFaithConstellations={state(){return {view,layout,author:focusedAuthor};},showAuthor(slug){
+  window.MOFaithConnections={state(){return {view,layout,author:focusedAuthor};},showAuthor(slug){
     focusedAuthor=slug||"";
     if(mapReady&&shelfSlug===CITE_SLUG)loadCitations();
   },open(spec){

@@ -2,7 +2,7 @@
  * /the-faith-received/research/ — the tab shell, and nothing else.
  *
  * Seven workspaces on one page (Ask, Power Search, Compare, Bookmarks,
- * Notebook, Constellations, the Desk); this file decides which one is on
+ * Notebook, Connections, the Desk); this file decides which one is on
  * screen. The mechanism is deliberately the same one
  * faith-tfr-search.js's showMode() uses on the Search page —
  * [data-research-mode] buttons toggle `is-active`/`aria-selected`,

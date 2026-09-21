@@ -1,4 +1,4 @@
-/* Navigation helpers shared by Scripture and the Web. Published metadata is read only. */
+/* Navigation helpers shared by Scripture and Connections. Published metadata is read only. */
 (function(root){
   'use strict';
   const base='https://mo-tfr-library.mo-podcast-feed.workers.dev';
@@ -65,7 +65,7 @@
     }
     return [...authors.values()].map(a=>({...a,works:[...a.works.values()].map(w=>({...w,pages:[...w.pages].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true}))}))})).sort((a,b)=>b.records-a.records||a.author.localeCompare(b.author));
   }
-  const webVerseURL=(book,ch,state={})=>'/the-faith-received/constellations/#v='+encodeURIComponent(book)+'/'+ch+'?'+new URLSearchParams({verse:state.verse||1,...state.author?{author:state.author}:{},...state.query?{q:state.query}:{},...state.page?{page:state.page}:{}});
+  const webVerseURL=(book,ch,state={})=>'/the-faith-received/connections/#v='+encodeURIComponent(book)+'/'+ch+'?'+new URLSearchParams({verse:state.verse||1,...state.author?{author:state.author}:{},...state.query?{q:state.query}:{},...state.page?{page:state.page}:{}});
   async function renderWebVerse(host,chapter,options={}){
     const E=root.FRConnectionEvidence,verses=chapter.verses||[],book=options.book,ch=options.ch;
     let verse=verses.find(v=>String(v.v)===String(options.verse))||verses[0],author=options.author||'',query=options.query||'',page=+options.page||0;

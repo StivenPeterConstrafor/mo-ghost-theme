@@ -131,7 +131,7 @@
       ["Scripture", `bible/?sh=${code}`, "Find where these works cite a biblical book, chapter or verse."],
       ["Authors", `author/?sh=${code}`, "Read each author’s works, topics and reception."],
       ["Topics", `topics/?sh=${code}`, "Find theological topics and the passages that discuss them."],
-      ["The Web", `web/#shelves=${name === "Continental Reformed" ? "reformed" : name.toLowerCase().replace(/ /g,"-")}/authors`, "Explore this shelf’s Scripture connections and follow citations between authors."]
+      ["Connections", `web/#shelves=${name === "Continental Reformed" ? "reformed" : name.toLowerCase().replace(/ /g,"-")}/authors`, "Explore this shelf’s Scripture connections and follow citations between authors."]
     ];
     studyRoot.innerHTML = `<div class="faith-shelf-study-head"><div><h2>Study this shelf</h2><p>${escapeHtml(name)}</p></div>`
       + `<a class="faith-shelf-ask" href="${base}ask/?trad=${encodeURIComponent(name)}">Ask this shelf</a></div>`

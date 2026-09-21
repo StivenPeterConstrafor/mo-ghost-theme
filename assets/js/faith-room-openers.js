@@ -133,7 +133,7 @@
       `<a href="${base}bible/?sh=${sh}">Scripture</a>` +
       `<a href="${base}author/?sh=${sh}">Authors</a>` +
       `<a href="${base}topics/?sh=${sh}">Topics</a>` +
-      `<a href="${base}web/#shelves=${trad === "Continental Reformed" ? "reformed" : trad.toLowerCase().replace(/ /g,"-")}/authors">The Web</a>` +
+      `<a href="${base}web/#shelves=${trad === "Continental Reformed" ? "reformed" : trad.toLowerCase().replace(/ /g,"-")}/authors">Connections</a>` +
       `<a href="${base}dictionary/">Dictionnaire de Théologie Catholique</a>` +
       `</nav></details>`;
   }

@@ -122,7 +122,7 @@
   // "Copy all" and this panel's produce the same text.
   const formatEntry = (e) => (NB ? NB.formatEntry(e) : "");
 
-  // ── Constellations ────────────────────────────────────────────
+  // ── Connections ────────────────────────────────────────────
   //
   // A note on its own is a clipping. A note joined to another note by
   // a claim — this supports that, this contests it — is an argument,

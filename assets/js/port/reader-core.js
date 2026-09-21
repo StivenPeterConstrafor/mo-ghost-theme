@@ -1588,8 +1588,20 @@ function aboutOpening(text){
   }
   return s;
 }
-function openAbout(){ aboutFor().then(d=>{
-  let ov=document.getElementById("aboutOv"); if(ov)ov.remove();
+/* MereO delta (Ian, 2026-09-21: "buttons that open but don't close").
+   ⓘ About is a toggle, and it never behaved like one. A second press re-entered
+   this function, removed the overlay and built an identical one in its place, so
+   the only control on screen that names the panel could not put it away; Escape
+   and a click on the backdrop were the only exits. Worse, the old
+   remove()-and-rebuild dropped the node without calling its close(), so the
+   Escape listener that node had registered on window stayed bound — one leaked
+   listener per press, each holding a detached overlay.
+   Closing runs the overlay's own close() so the listener goes with it. */
+function openAbout(){
+  const shown=document.getElementById("aboutOv");
+  if(shown){ (shown.__frClose||(()=>shown.remove()))(); const b=$("#rdAbout"); if(b)b.focus({preventScroll:true}); return; }
+  aboutFor().then(d=>{
+  let ov=document.getElementById("aboutOv"); if(ov)ov.__frClose?ov.__frClose():ov.remove();
   ov=document.createElement("div"); ov.id="aboutOv"; ov.className="about-ov";
   const a=d.author,b=(typeof d.blurb==="string")?{blurb:d.blurb}:d.blurb;   // blurbs.json carries plain strings for newer works
   // THE WORK COMES FIRST AND NOTHING PRINTS AN EMPTY LABEL (Ian, 2026-09-18: "These About
@@ -1637,6 +1649,7 @@ function openAbout(){ aboutFor().then(d=>{
   function esk(e){if(e.key==="Escape")close();}
   ov.addEventListener("click",e=>{if(e.target===ov)close();});
   ov.querySelector(".about-x").onclick=close; addEventListener("keydown",esk);
+  ov.__frClose=close;   // the toggle above closes through this, so `esk` is unbound with it
 }).catch(()=>{}); }
 function wireAbout(){ const b=$("#rdAbout"); if(b)b.onclick=openAbout; enrichSub(); }
 // TEI PATH (2026-08-10): fetches the per-lane TEI sidecars, pre-segments them by <pb>, and hands
@@ -3923,7 +3936,14 @@ function setFolio(pg){if(!pg||cur===pg.n)return;cur=pg.n;syncReaderHeader(pg.n);
     if(!_sv&&SECMAP){const _ks=Object.keys(SECMAP).map(Number).filter(n2=>n2<=pg.n);if(_ks.length)_sv=SECMAP[Math.max(..._ks)];}
     const t=_sv?String(_sv).slice(0,90):"";
     if(pl.textContent!==t){pl.textContent=t;}
-    if(!pl.onclick)pl.onclick=()=>{app.classList.remove("nosb");const n=$(".nav-node.on");if(n)n.scrollIntoView({block:"center"});};}}
+    /* MereO delta: the section label opens the outline, and used to only ever open
+       it — app.classList.remove("nosb") with nothing on the other side. Pressing it
+       again did nothing at all, which is the same thing ☰ next to it does in one
+       press, so it goes through setContentsOpen like ☰ and the thumb bar's Contents
+       do. Opening still centres the current node; closing is now reachable here. */
+    if(!pl.onclick)pl.onclick=()=>{const wasOpen=!app.classList.contains("nosb");
+      setContentsOpen(!wasOpen,true);
+      if(!wasOpen){const n=$(".nav-node.on");if(n)n.scrollIntoView({block:"center"});}};}}
   try{const lr=JSON.parse(lsGet("fr_lastread")||"{}");
     {const _q=new URLSearchParams(location.search);const _k=_q.get("ws")||_q.get("w")||DATA.slug||DATA.workspace;
      lr[_k]={page:pg.n,slug:DATA.slug||"",title:DATA.title||"",author:DATA.author||"",ts:Date.now(),...(DATA.pld_source_view?{pldpart:DATA.pld_source_view.id}:{} )};
@@ -4089,10 +4109,17 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
     else{LN.en=true;}                            // from Latin-only → Both
     applyLanes();};
   B.study.onclick=()=>{LN.fx=!LN.fx;applyLanes();};                   // "Scan" = toggle the facsimile
-  B.find.onclick=()=>{if(window.__frOpenSearch)window.__frOpenSearch();};
-  if(B.ask)B.ask.onclick=()=>{if(window.__openAsk)window.__openAsk("");};
+  /* MereO delta: Search, Research and Ask were open-only on the thumb bar, so a
+     second tap on a lit button did nothing and the panel had to be dismissed from
+     its own ✕. Contents and Scan beside them have always toggled; these three now
+     match. The toggles are the same ones the desktop ⌕ / Research / Ask buttons
+     use, so a control means the same thing at both widths. Each keeps its old
+     open-only call as the fallback, because the globals are published by
+     read-tools.js and ask-workspace.js, which load after this. */
+  B.find.onclick=()=>{if(window.__frToggleSearch)window.__frToggleSearch();else if(window.__frOpenSearch)window.__frOpenSearch();};
+  if(B.ask)B.ask.onclick=()=>{if(window.FRAsk?.isOpen?.())window.FRAsk.close();else if(window.__openAsk)window.__openAsk("");};
   B.toc.onclick=()=>setContentsOpen(app.classList.contains("nosb"),true);
-  B.nb.onclick=()=>{if(window.__frOpenNotebook)window.__frOpenNotebook();};
+  B.nb.onclick=()=>{if(window.__frToggleNotebook)window.__frToggleNotebook();else if(window.__frOpenNotebook)window.__frOpenNotebook();};
   // chrome auto-hide while reading down (phones): accumulate same-direction travel so tiny
   // jitters don't flap it; near the top it is always shown. A tap on the prose toggles it
   // (the Books model) — interactive elements, active selections, and review mode excluded.
@@ -4142,8 +4169,16 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
     const jumpBox=document.createElement('form');jumpBox.className='reader-jump-form';
     jumpBox.innerHTML='<label id="reader-jump-label" for="reader-jump">Go to page</label><div><input id="reader-jump" type="text" autocomplete="off" aria-describedby="reader-jump-status"><button type="submit">Go</button></div><p id="reader-jump-status" role="status"></p>';
     pop.prepend(jumpBox);
-    jumpBox.onsubmit=e=>{e.preventDefault();const value=$('#reader-jump').value.trim(),pg=DATA?.pages.find(p=>String(p.n)===value);if(pg){pop.classList.remove('on');$('#reader-jump').blur();$('#aaBtn').setAttribute('aria-expanded','false');$('#reader-jump-status').textContent='';goReaderReference(pg);}else{$('#reader-jump-status').textContent='That reference is not available in this work.';}};
-    $('#reader-location').onclick=e=>{e.stopPropagation();$('#reader-jump').value=String(cur??'');pop.classList.add('on');$('#aaBtn').setAttribute('aria-expanded','true');$('#reader-jump').focus();$('#reader-jump').select();};
+    jumpBox.onsubmit=e=>{e.preventDefault();const value=$('#reader-jump').value.trim(),pg=DATA?.pages.find(p=>String(p.n)===value);if(pg){pop.classList.remove('on');delete pop.dataset.locJump;$('#reader-jump').blur();$('#aaBtn').setAttribute('aria-expanded','false');$('#reader-jump-status').textContent='';goReaderReference(pg);}else{$('#reader-jump-status').textContent='That reference is not available in this work.';}};
+    /* MereO delta: the location button is a toggle now. It only ever ADDED `on`,
+       and it stops the click reaching the document handler that would otherwise
+       dismiss the menu, so once opened from here the panel could not be closed
+       from here. The press it opened it with is tracked on the panel, because
+       when the menu was opened by Aa instead, closing it is not what the reader
+       asked for: that press focuses the page field, and the one after it closes. */
+    $('#reader-location').onclick=e=>{e.stopPropagation();
+      if(pop.classList.contains('on')&&pop.dataset.locJump==='1'){pop.classList.remove('on');delete pop.dataset.locJump;$('#aaBtn').setAttribute('aria-expanded','false');$('#reader-location').focus({preventScroll:true});return;}
+      $('#reader-jump').value=String(cur??'');pop.classList.add('on');pop.dataset.locJump='1';$('#aaBtn').setAttribute('aria-expanded','true');$('#reader-jump').focus();$('#reader-jump').select();};
     pop.insertBefore(row,pop.firstChild);
     row.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
       const tgt=$("#"+b.dataset.x);if(tgt)tgt.click();});
@@ -4159,7 +4194,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
 // text-size + facsimile-zoom controls (persisted), like server.py's image slider
 // "Aa" settings popover open/close
 (function(){const b=$("#aaBtn"),p=$("#aaPop");if(!b||!p)return;
-  const set=on=>{if(on)$("#reader-jump").value=String(cur??'');p.classList.toggle("on",on);b.setAttribute("aria-expanded",on?"true":"false");};
+  const set=on=>{if(on)$("#reader-jump").value=String(cur??'');if(!on)delete p.dataset.locJump;/* whoever opened it, this closed it */p.classList.toggle("on",on);b.setAttribute("aria-expanded",on?"true":"false");};
   b.onclick=e=>{e.stopPropagation();set(!p.classList.contains("on"));};
   document.addEventListener("click",e=>{if(p.classList.contains("on")&&!p.contains(e.target)&&e.target!==b)set(false);});
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&p.classList.contains("on")){set(false);b.focus();}});})();
@@ -4261,7 +4296,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
       if(rz.cls==="A"&&rz.work_slug)
         return '<a class="rpm-chip rpm-go" href="/the-faith-received/read/?w='+encodeURIComponent(rz.work_slug)+'" target=_blank title="'+tt+' — open the cited work">'+inner+' ↗</a>';
       return '<span class=rpm-chip'+(tt?' title="'+tt+'"':"")+'>'+inner+'</span>';}).join("")
-      +'<a class="rpm-chip rpm-web" href="/the-faith-received/constellations/#a='+encodeURIComponent(String((window.DATA&&DATA.author)||"").trim())+'" target=_blank title="This author in the Web of Theology">✧ Web</a></div>';
+      +'<a class="rpm-chip rpm-web" href="/the-faith-received/connections/#a='+encodeURIComponent(String((window.DATA&&DATA.author)||"").trim())+'" target=_blank title="This author in Connections of Theology">✧ Web</a></div>';
     defs.forEach(x=>{h+='<div class=rpm-def><i>'+esc(String(x.term).slice(0,40))+'</i> — '+esc(String(x.definition).slice(0,120))+'</div>';});
     return h+'</div>';}
   async function load(pg){

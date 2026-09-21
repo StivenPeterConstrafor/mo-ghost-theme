@@ -90,6 +90,16 @@
   const contextWork = () => new URLSearchParams(location.search).get('w') || window.__FR_SLUG__ || '';
   const dockMedia=matchMedia('(min-width:1100px)');let expandedReaderAsk=false;
   const readerPage=()=>!!document.getElementById('reading');
+  /* MereO delta (Ian, 2026-09-21): a conversation belongs to the book on
+     screen when it was started there or is scoped to it. Ask in the reader
+     is about THIS book, so every path that reuses an existing conversation
+     has to ask this question first — including the stored active one. */
+  const belongsHere=c=>!readerPage()||c.contextWork===contextWork()||(c.scope?.works||[]).includes(contextWork());
+  /* The catalogue does not carry the curated works (ANF and the Fathers
+     set are absent from works-index.json), so titleOf falls back to the
+     raw slug and the rail names the book "anf-justin-sole-government".
+     The reader has already put the real title in #wt: use it. */
+  const readerTitle=()=>readerPage()?(document.getElementById('wt')?.textContent||'').trim():'';
   const passagePrompt=(q,p)=>p&&p.text?q+'\n\nSelected passage from '+(p.cite||'the current book')+':\n'+p.text+'\nSource: '+(p.url||''):q;
   function syncPresentation(){
     if(!panel)return;const docked=visible&&readerPage()&&dockMedia.matches&&!expandedReaderAsk;
@@ -443,7 +453,7 @@
     const historyHTML=list.length?loose.map(row).join('')+folders.map(name=>'<details class="fra-folder" data-folder="'+esc(name)+'"'+(foldersClosed.has(name)&&!historyFilter?'':' open')+'><summary><span>'+esc(name)+'</span><small>'+list.filter(c=>folderOf(c)===name).length+'</small><button type="button" class="fra-folder-rename" data-folder-rename="'+esc(name)+'" aria-label="Rename folder '+esc(name)+'">'+icon('edit')+'</button></summary>'+list.filter(c=>folderOf(c)===name).map(row).join('')+'</details>').join('')+(showArchived?'<button type="button" id="fra-delete-archived" class="fra-danger fra-delete-archived">Delete all archived</button>':''):'<p class="fra-empty-history">'+(historyFilter?'No matching conversations.':showArchived?'No archived conversations.':'Your conversations will appear here.')+'</p>';
     const host=$('#fra-history-list');if(host.dataset.html!==historyHTML){const focused=document.activeElement&&document.activeElement.dataset.chat;host.innerHTML=historyHTML;host.dataset.html=historyHTML;if(focused){const b=host.querySelector('[data-chat="'+CSS.escape(focused)+'"]');if(b)b.focus();}}
   }
-  function scopeText(c){const s=c.scope||{},parts=scopeParts(s);if(parts.length===1){if((s.groups||[]).length===1)return scopeGroups.find(g=>g.id===s.groups[0])?.name||'Selected group';if(scopeShelves(s).length===1)return scopeShelves(s)[0];if((s.authors||[]).length===1)return 'Works by '+s.authors[0];if((s.works||[]).length===1)return titleOf({slug:s.works[0]});}return parts.join(' · ')||'Whole library';}
+  function scopeText(c){const s=c.scope||{},parts=scopeParts(s);if(parts.length===1){if((s.groups||[]).length===1)return scopeGroups.find(g=>g.id===s.groups[0])?.name||'Selected group';if(scopeShelves(s).length===1)return scopeShelves(s)[0];if((s.authors||[]).length===1)return 'Works by '+s.authors[0];if((s.works||[]).length===1){const slug=s.works[0],named=titleOf({slug});return named===slug&&slug===contextWork()&&readerTitle()||named;}}return parts.join(' · ')||'Whole library';}
   function turnModeLabel(t){
     const automatic=t.approach?t.approach.automatic===true:(t.steps||[]).some(s=>s.label==='Using Deep research for this question');
     return (modes[researchMode(automatic?'deep':t.mode)])[0]+(automatic?' · Selected for this question':'');
@@ -1009,10 +1019,13 @@
     fitViewport();
     try{
       await init();
-      if(!opts.id&&!opts.fresh&&!current&&S.meta){const last=(await S.meta('active-conversation'))?.value;if(conversations.some(c=>c.id===last&&!c.archived))opts={...opts,id:last};}
+      /* belongsHere: without it the last conversation was restored whatever
+         book you opened, so the rail sat in Augustine's Genesis naming
+         Justin Martyr (Ian, 2026-09-21; seen at /read/?w=pld-2741). */
+      if(!opts.id&&!opts.fresh&&!current&&S.meta){const last=(await S.meta('active-conversation'))?.value;if(conversations.some(c=>c.id===last&&!c.archived&&belongsHere(c)))opts={...opts,id:last};}
       if(opts.id&&conversations.some(c=>c.id===opts.id))await switchChat(opts.id);
       else if(opts.fresh||!current||readerPage()&&selected()?.contextWork!==contextWork()){
-        const recent=conversations.find(c=>!c.archived&&(!readerPage()||c.contextWork===contextWork()||(c.scope?.works||[]).includes(contextWork())));
+        const recent=conversations.find(c=>!c.archived&&belongsHere(c));
         if(!opts.fresh&&!opts.q&&!opts.works&&recent)current=recent.id;else await newConversation(opts);
       }
       if(!selected())await newConversation(opts);

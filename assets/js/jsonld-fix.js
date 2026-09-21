@@ -20,7 +20,7 @@
  *      anchors inside `[data-byline]`), rebuild the Article block
  *      with `author` as one or more Person entries, and add
  *      `articleSection` from non-byline tags.
- *   2. On the homepage: enrich the WebSite block with a
+ *   2. On the homepage: enrich ConnectionsSite block with a
  *      potentialAction SearchAction so crawlers know about /search/.
  *
  * Runs synchronously at parse time so JSON-LD is in the DOM before

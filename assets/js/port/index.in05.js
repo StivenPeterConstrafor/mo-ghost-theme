@@ -43,7 +43,7 @@ function workRow(w){
   // get a typographic placeholder (no scan exists). Title-page number from the index.
   const slug=w.slug||w.workspace;
   const _bl=BLURBS[slug];const popHTML=(_bl&&_bl.blurb)?`<div class=pop>${esc(_bl.blurb)}</div>`:""; if(_bl&&_bl.blurb)r.classList.add("haspop");
-  const _cbase=w.img_base||(BLOB?`${BLOB}/v1/works/${encodeURIComponent(slug)}/p/`:"");   // re-slugged facsimile (Confessio) → img_base points at the WebPs' real (old-slug) path
+  const _cbase=w.img_base||(BLOB?`${BLOB}/v1/works/${encodeURIComponent(slug)}/p/`:"");   // re-slugged facsimile (Confessio) → img_base points at ConnectionsPs' real (old-slug) path
   const thumb=(_cbase&&(w.has_pages||w.pdf_pages))?`<img class=cover loading=lazy alt="${esc(w.title||slug)} — title page" src="${_cbase}${w.title_page||1}.webp">`:"";
   if(!thumb)r.classList.add("nocov");   // born-digital: no facsimile exists → text-forward card, no generic cover image
   // collected-works volumes (Scotus Opera Omnia, Suárez Opera …): the title says nothing — surface
@@ -923,7 +923,7 @@ function render(){
     // RESEARCH DOORS, EVERY SHELF (owner 2026-08-29 "why does this exist ... an old
     // artifact, and none of the newer shelves have links to scripture, authors, etc").
     // The Patrologia-only overlay block is retired: all nine shelves open the SAME unified
-    // research pages, filtered to the shelf - Scripture, authors, topics, and the Web.
+    // research pages, filtered to the shelf - Scripture, authors, topics, and Connections.
     {const _SH={"Latin Fathers":"pl","Greek Fathers":"gf","Eastern Fathers":"po","English Divines":"ed",
       "Medieval":"md","Roman Catholic":"rc","Lutheran":"lu","Reformed":"rf","Humanism and Law":"hl"}[SEL_TRAD];
      if(_SH){
@@ -932,7 +932,7 @@ function render(){
       +`<a class=scomp-l href="/the-faith-received/bible/?sh=${_SH}"><span class=n>\u2727 Scripture</span><span class=d>Every citation of Scripture across the shelf \u2014 book by book, chapter by chapter, opening on the verse itself.</span></a>`
       +`<a class=scomp-l href="/the-faith-received/fathers/?sh=${_SH}"><span class=n>\u2727 Authors</span><span class=d>Each author\u2019s room: their topics, their positions in their own words, their reception.</span></a>`
       +`<a class=scomp-l href="/the-faith-received/topics/?sh=${_SH}"><span class=n>\u2727 Topics</span><span class=d>The doctrines this shelf treats, era by era, with the passages that carry them.</span></a>`
-      +`<a class=scomp-l href="/the-faith-received/constellations/"><span class=n>\u2727 The Web</span><span class=d>Fifteen centuries of citation as one sky \u2014 who reads whom, traced passage by passage.</span></a>`
+      +`<a class=scomp-l href="/the-faith-received/connections/"><span class=n>\u2727 Connections</span><span class=d>Fifteen centuries of citation as one sky \u2014 who reads whom, traced passage by passage.</span></a>`
       +'</div>';
       sw.appendChild(cb);}}
     // MINED SHELF SKIES (owner 2026-08-20): every shelf gets its own constellations, drawn
@@ -1952,7 +1952,7 @@ function fetchReview(){if(REVIEW_COV||!BLOB)return;
     if(t==="sky"){renderSkyTab();return;}
     if(t==="ask"){askIntro();const ai=$("#askInput");if(ai){if(q.value.trim())ai.value=q.value.trim();try{ai.focus();}catch(e){}}}else run();};   // switching to Ask never runs — it carries the typed query into the composer and waits for the button
   $("#tabText").onclick=()=>setTab("text");{const _l=$("#tabLem");if(_l)_l.onclick=()=>setTab("lem");}   // lemma tab retired 2026-08-20 (index 404)
-  /* Constellations tab removed from the Search/Ask overlay (owner 2026-08-22: "no constellation in the ask panel none of it"). The map itself still lives on the shelf and PL research doors; it was the bulk inside the ask composer that did not belong. Retired the same way the lemma tab was: button gone, guarded handler left inert. */
+  /* Connections tab removed from the Search/Ask overlay (owner 2026-08-22: "no constellation in the ask panel none of it"). The map itself still lives on the shelf and PL research doors; it was the bulk inside the ask composer that did not belong. Retired the same way the lemma tab was: button gone, guarded handler left inert. */
   {const a=$("#tabAsk");if(a)a.onclick=()=>setTab("ask");}
   q.addEventListener("input",()=>{if(TAB==="ask")return;clearTimeout(deb);deb=setTimeout(run,260);});
   // deep link: /?tq=<query> opens the overlay in Tradition mode (reader cite-chips land here)

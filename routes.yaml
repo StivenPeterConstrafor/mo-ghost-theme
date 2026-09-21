@@ -411,6 +411,11 @@ routes:
   # The citation atlas, ported: every author a point placed by time, every
   # recorded citation an edge, with the passages behind each connection.
   # Hash-routed: #a=<author> dossier, #t=<topic>, #v=<book>/<ch>, #shelves=.
+  /the-faith-received/connections/:
+    template: custom-faith-port-web
+  # Two former addresses for the same page, kept so shared links live.
+  # /web/ was the original; /constellations/ was its name for a few hours
+  # on 2026-09-21 before Ian settled on Connections.
   /the-faith-received/constellations/:
     template: custom-faith-port-web
   # The atlas was at /web/ until 2026-09-21. Ian renamed it to match what
