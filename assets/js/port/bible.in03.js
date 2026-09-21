@@ -1527,7 +1527,19 @@ async function bibleHome(){
   const NT=new Set(['Matthew','Mark','Luke','John','Acts','Romans','I Corinthians','II Corinthians','Galatians','Ephesians','Philippians','Colossians','I Thessalonians','II Thessalonians','I Timothy','II Timothy','Titus','Philemon','Hebrews','James','I Peter','II Peter','I John','II John','III John','Jude','Revelation of John']);
   const groups={ot:[],nt:[],dc:[]};d.books.forEach(b=>groups[b.txt?'dc':NT.has(b.book)?'nt':'ot'].push(b));
   const grid=(id,title,rows)=>`<section id="${id}" class="bible-books"><h2>${title}</h2><div class="bookgrid">${rows.map(b=>`<a class="bk" href="#b/${esc(b.slug)}"><span class="t">${esc(b.book)}</span><span class="n">${b.chapters.length} ${b.chapters.length===1?'chapter':'chapters'}</span></a>`).join('')}</div></section>`;
-  page.innerHTML=`<h1 class="index">Scripture</h1><p class="bible-intro">Read a chapter, explore its citations, and open the commentaries alongside the text.</p>${bibleNav(d.books)}<nav class="bible-sections" aria-label="Testaments"><a href="#old-testament">Old Testament</a><a href="#new-testament">New Testament</a><a href="#deuterocanon">Deuterocanon</a></nav>${grid('old-testament','Old Testament',groups.ot)}${grid('new-testament','New Testament',groups.nt)}${grid('deuterocanon','Deuterocanon',groups.dc)}<p class="hint">Each chapter identifies its English translation. Deuterocanonical books use Douay-Rheims; Psalm citations follow the index’s Gallican-to-Hebrew remapping.</p>`;
+  // Everything above the books is one thing -- the page's name, what it
+  // is for, the way into a passage, and the three testaments -- so it is
+  // one <header> rather than four siblings stacked on the same ground.
+  // The books then begin against a visible edge instead of continuing a
+  // column that never stopped. Ian, 2026-09-21: "Just move everything
+  // above the books into a header."
+  //
+  // Wrapping is safe: every rule in scripture-navigation.css and
+  // bible.in01.css that reaches these nodes is a descendant selector
+  // (.scripture-page .bible-intro, .bible-jump > label, h1.index), and
+  // bindBibleNav plus the .bible-sections handler below both query the
+  // page rather than its direct children.
+  page.innerHTML=`<header class="bible-head"><h1 class="index">Scripture</h1><p class="bible-intro">Read a chapter, explore its citations, and open the commentaries alongside the text.</p>${bibleNav(d.books)}<nav class="bible-sections" aria-label="Testaments"><a href="#old-testament">Old Testament</a><a href="#new-testament">New Testament</a><a href="#deuterocanon">Deuterocanon</a></nav></header>${grid('old-testament','Old Testament',groups.ot)}${grid('new-testament','New Testament',groups.nt)}${grid('deuterocanon','Deuterocanon',groups.dc)}<p class="hint">Each chapter identifies its English translation. Deuterocanonical books use Douay-Rheims; Psalm citations follow the index’s Gallican-to-Hebrew remapping.</p>`;
   bindBibleNav(d.books);
   page.querySelectorAll('.bible-sections a').forEach(a=>a.onclick=e=>{e.preventDefault();document.getElementById(a.hash.slice(1)).scrollIntoView({block:'start'});});
 }

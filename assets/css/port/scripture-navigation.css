@@ -76,3 +76,44 @@
 .web-page #legend{left:20px;right:auto;transform:none;max-width:56vw;white-space:normal;background:var(--card);border:1px solid var(--border);border-radius:6px;backdrop-filter:none;padding:4px;gap:0}
 .web-page #intro{background:var(--card);border-color:var(--border);backdrop-filter:none;border-radius:8px;padding:18px}.web-page #tip{backdrop-filter:none;box-shadow:none}.web-page .lensb.on{box-shadow:none}
 @media(min-width:641px){.web-page.popen #legend{max-width:calc(100vw - 560px)}.web-page #web-zoom{bottom:210px}}
+
+/* THE SCRIPTURE INDEX OPENS WITH A HEADER.
+
+   Ian, 2026-09-21: "Just move everything above the books into a header."
+   The name, the line saying what the page is for, the way into a
+   passage and the three testaments were four siblings stacked on the
+   same ground as the canon below them, so the books began where the
+   introduction happened to stop. bible.in03.js now wraps the four in
+   <header class="bible-head"> and this gives that header an edge.
+
+   THE BLEED CANNOT OVERFLOW, and that is worth stating because the
+   obvious version of it does. .scripture-page is max-width:1000px with
+   36px/32px padding; pulling a child out by -32px either side makes it
+   64px wider than the column, which on a viewport under about 1064px
+   would push a horizontal scrollbar onto the page. It does not here
+   because .scripture-page computes box-sizing:border-box (measured on
+   the live page, 2026-09-21), so its 1000px already contains the
+   padding and a child at margin-inline:-32px lands exactly on the
+   element's own edges. Do not lift this block onto a content-box
+   container without changing the numbers.
+
+   --card rather than a new colour: it is the raised surface in both the
+   light and dark reading palettes, so the band follows the theme button
+   without a second rule. */
+.scripture-page .bible-head {
+  margin: -36px -32px 32px;
+  padding: 36px 32px 0;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+.scripture-page .bible-head h1 { margin-bottom: 12px; }
+.scripture-page .bible-head .bible-intro { margin-bottom: 22px; }
+/* The testament links become the foot of the band, so the header's own
+   rule is the one under them. Two rules a pixel apart read as a mistake. */
+.scripture-page .bible-head .bible-sections { margin: 22px 0 0; border-bottom: 0; }
+
+@media (max-width: 640px) {
+  /* Matched to the narrow padding above, 24px/16px. */
+  .scripture-page .bible-head { margin: -24px -16px 24px; padding: 24px 16px 0; }
+  .scripture-page .bible-head .bible-intro { margin-bottom: 18px; }
+}
