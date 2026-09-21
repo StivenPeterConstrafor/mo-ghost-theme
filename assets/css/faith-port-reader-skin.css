@@ -1710,3 +1710,55 @@ html[data-lh] .app #reading :is(.row:not(.rapp) > .en, .row:not(.rapp) > .la,
 #app.fr-work-unavailable #rdAbout,
 #app.fr-work-unavailable #fac,
 #app.fr-work-unavailable #dragbar { display: none !important; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   THE DOCK SCROLLS, AND THE DISCLOSURE KEEPS ITS MARGINS
+   ══════════════════════════════════════════════════════════════════════
+
+   Ian, on the reader at 390px:
+     "Bottom of the page toolbar should scroll horizontally with good
+      margins instead of being crammed together like that."
+     "Translation transparency shouldn't be full width but should have
+      margins on either side."
+
+   THE DOCK. Seven cells were being divided into 390px less 8px of
+   padding, with a 2px gap: measured, the buttons sat at 4, 59, 114,
+   169, 223, 278 and 333, which is 55px each for an icon and a word.
+   Nothing could grow and the labels were set at 11.5px to survive it,
+   so an eighth control could never be added, which is the wall the Aa
+   button has been standing outside of.
+
+   Letting the row scroll turns a fixed division into a queue: each cell
+   takes the width its label actually needs, the first five or six are
+   on screen, and the rest are a thumb-drag away. The edge padding goes
+   up to 14px so the first and last cells are not flush against the
+   glass, and the gap to 10px so two labels are not read as one.
+
+   THE DISCLOSURE. It ran 0 to 390, edge to edge, while the text it sits
+   above is inset. Being the only full-bleed element on the page made it
+   read as a system banner rather than as a note about this work. It now
+   takes the reading column's own inset, so its left edge lines up with
+   the first letter beneath it. ----------------------------------- */
+@media (max-width: 640px) {
+  html.g-mobile nav.frthumb {
+    justify-content: flex-start;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 10px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  html.g-mobile nav.frthumb::-webkit-scrollbar { display: none; }
+  /* Each cell at its natural width. Without this the flex children
+     still share the line and the scroll never engages. */
+  html.g-mobile nav.frthumb > * {
+    flex: 0 0 auto;
+    min-width: max-content;
+  }
+  html.g-mobile nav.frthumb button { padding: 5px 6px; }
+
+  .faith-reader-status { margin-left: 12px; margin-right: 12px; }
+}
+
