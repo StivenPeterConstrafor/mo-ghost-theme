@@ -18638,8 +18638,19 @@ body.has-fr-survey { padding-bottom: 34px; }
   gap: 6px;
 }
 /* The caret has to stay on the title's line, not drop under it with the
-   facts, or the summary reads as three unrelated rows. */
-.faith-reader-status.is-rail .fr-tt-caret { order: -1; margin-left: auto; }
+   facts, or the summary reads as three unrelated rows.
+
+   AND IT HAS TO GIVE UP margin-left:auto. In the wide panel the caret is
+   the LAST item and that margin is what pushes it to the far edge. Here
+   it is the first, and an auto left margin on the first flex item pushes
+   the whole row right -- which is why the title came out right-justified
+   against a left-aligned panel. Stated as 0 rather than left unset,
+   because the base rule would otherwise win. */
+.faith-reader-status.is-rail .fr-tt-caret {
+  order: -1;
+  margin-left: 0;
+  margin-right: 6px;
+}
 
 .faith-reader-status.is-rail .fr-tt-body { padding: 0 16px 14px; }
 .faith-reader-status.is-rail .fr-ai-note { padding-left: 10px; margin-bottom: 12px; }
