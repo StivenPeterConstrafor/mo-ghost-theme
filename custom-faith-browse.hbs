@@ -26,13 +26,11 @@
       <input type="search" name="q" placeholder="Search the whole library" aria-label="Search" />
       <button type="submit">Search</button>
     </form>
-    <p class="tfr-browse-all tfr-browse-all--hero"><a class="tfr-browse-btn" href="/the-faith-received/all-works/?collection=all">Browse Full Library</a></p>
-      {{!-- Also linked far below as "Dictionnaire de Theologie
-           Catholique" inside the Roman Catholic block, where it names a
-           work in the catalogue. This is the other thing: the way to the
-           tool, beside the other way into the library, where Read puts
-           it now. --}}
-      <p class="tfr-browse-all"><a class="tfr-browse-btn" href="/the-faith-received/dictionary/">Dictionary</a></p>
+          {{!-- One row, two buttons. They were two paragraphs, which stacked
+           them. The Dictionary is also linked far below as "Dictionnaire
+           de Theologie Catholique" inside the Roman Catholic block, where
+           it names a work in the catalogue; this is the way to the tool. --}}
+      <p class="tfr-browse-all tfr-browse-all--hero"><a class="tfr-browse-btn" href="/the-faith-received/all-works/?collection=all">Browse Full Library</a><a class="tfr-browse-btn" href="/the-faith-received/dictionary/">Dictionary</a></p>
   </div>
 </section>
 {{> "faith-received/_tfr-rail"}}
