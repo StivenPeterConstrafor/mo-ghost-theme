@@ -800,6 +800,19 @@ html:not(.fr-plain) .app.teiflow:not(.no-facs):not(.only-en):not(.only-la) #read
    footer is a sibling of <main>, not of #app, so no combinator from
    #app can reach it. */
 body:has(#app.faith-port-read-page) .site-footer { display: none; }
+/* THE ATLAS IS THE SAME KIND OF PAGE AND NEEDS THE SAME RULE. /web/ is a
+   full-viewport app: its body is exactly one screen tall and everything
+   in it is positioned, so the footer, still in normal flow, collapsed to
+   the top and drew ITSELF UNDER THE MASTHEAD, above the page it belongs
+   beneath. Measured before and after: footer at y=0 with a body 900px
+   tall on a 900px viewport.
+
+   Checked every other surface rather than assuming this was general: the
+   desk, bookmarks, topics, the author room, search, compare and
+   all-works all place it correctly at the foot of a scrolling page, and
+   the reader already suppresses it by the rule above. Only the atlas was
+   wrong. */
+body.web-page .site-footer { display: none; }
 
 /* ═══ MOBILE: two layout faults that are arithmetic, not guesswork ═══ */
 
