@@ -454,6 +454,7 @@ async function topicsIndex(){
   // work with the author so its useful"): the per-corpus directory is the
   // slug -> {title, author} table
   let _WD=null;
+  const _wname=(WD,cat,w)=>{const d=(WD&&WD[w])||{},m=(cat&&cat.bySlug&&cat.bySlug.get(w))||{};return {t:d.t||(cat&&cat.titles&&cat.titles[w])||m.title_en||m.title||w,a:d.a||m.author||''};};
   const _wd=async()=>{if(_WD)return _WD;
     try{const d3=await gzJ(BLOB+"/v1/works-dir/pl.json.gz");_WD={};(d3.works||[]).forEach(x2=>{_WD[x2.w]={t:x2.t,a:x2.a};});}
     catch(e){_WD={};}return _WD;};
@@ -528,8 +529,8 @@ async function topicsIndex(){
       irSelected=slug;markHeading();const request=++irRequest;
       const address=new URL(location.href);address.searchParams.set('ir',slug);history.replaceState(history.state,'',address);
       bd.setAttribute('aria-busy','true');bd.innerHTML='<p class="rx-note" role="status">Loading index entries…</p>';
-      const [d2,_CM,WD]=await Promise.all([
-        J(BLOB+"/v1/mine/pld_topic/"+slug+".json").catch(()=>null),_cmap(),_wd()]);
+      const [d2,_CM,WD,catIR]=await Promise.all([
+        J(BLOB+"/v1/mine/pld_topic/"+slug+".json").catch(()=>null),_cmap(),_wd(),getWorkCatalogue().catch(()=>null)]);
       if(request!==irRequest||run!==RESEARCH_RUN||!bd.isConnected)return;
       bd.setAttribute('aria-busy','false');
       if(!d2){bd.innerHTML='<div class="ir-empty"><h3>These index entries could not load</h3><p>Try loading this heading again.</p><button type="button" class="rx-button" data-ir-retry>Retry loading</button></div>';return;}
@@ -552,8 +553,7 @@ async function topicsIndex(){
               if(!byW.has(k2))byW.set(k2,{sl:sl2,v:r2.v,rows:[]});
               byW.get(k2).rows.push({c:r2.c,h:h2});});
             const wrows=[...byW.values()].map(g2=>{
-              const wd2=(g2.sl&&WD[g2.sl])||{};
-              const label=wd2.t?wd2.t:(g2.sl?g2.sl:"");
+              const label=g2.sl?_wname(WD,catIR,g2.sl).t:"";
               const cols=g2.rows.map(r2=>g2.sl
                 ?`<button type="button" class="readbtn" data-pvw="${esc(g2.sl)}" data-c="${r2.c}" data-h="${esc(r2.h||"")}" style="font-size:.8rem;padding:.1rem .3rem">${r2.c}</button>`
                 :(r2.h?`<a class="readbtn" href="${esc(r2.h)}" style="font-size:.8rem;padding:.1rem .3rem">${r2.c}</a>`
@@ -579,9 +579,9 @@ async function topicsIndex(){
   viWrap.addEventListener("toggle",async()=>{
     if(!viWrap.open||_viLoaded)return;_viLoaded=true;
     viHost.innerHTML='<p class="loading">\u2026</p>';
-    const [si2,WD]=await Promise.all([J(BLOB+"/v1/mine/pld_subjects/index.json").catch(()=>null),_wd()]);
+    const [si2,WD,cat2]=await Promise.all([J(BLOB+"/v1/mine/pld_subjects/index.json").catch(()=>null),_wd(),getWorkCatalogue().catch(()=>null)]);
     if(!si2||!(si2.works||[]).length){viHost.innerHTML='<p class="loading">Unavailable.</p>';return;}
-    const vworks=(si2.works||[]).map(x2=>({w:x2.w,n:x2.n||0,t:(WD[x2.w]||{}).t||x2.w,a:(WD[x2.w]||{}).a||""}))
+    const vworks=(si2.works||[]).map(x2=>({w:x2.w,n:x2.n||0,..._wname(WD,cat2,x2.w)}))
       .sort((x2,y2)=>y2.n-x2.n);
     const tot2=vworks.reduce((a3,x2)=>a3+x2.n,0);
     viHost.innerHTML=`<h2 class="sect">Indices per volume \u00b7 printed at the back of each work <span class="tn" style="font-family:var(--body);font-size:.74rem;color:var(--faint)">${vworks.length.toLocaleString()} works \u00b7 ${tot2.toLocaleString()} entries</span></h2>
@@ -610,7 +610,7 @@ async function topicsIndex(){
         body3.querySelector("#viEnts").innerHTML=hits.map(x2=>`<div class="irw" style="display:flex;flex-wrap:wrap;align-items:baseline;gap:.4rem;padding:.14rem 0;border-bottom:1px dotted var(--border)">
           <span style="font-size:.88rem">${esc(x2.t)}</span>
           <span style="display:flex;gap:.2rem">${(x2.refs||[]).map(r3=>`<button type="button" class="readbtn" data-pvw="${esc(b4.dataset.w)}" data-c="${r3.c}" data-h="${esc(r3.h||"")}" style="font-size:.78rem;padding:.08rem .3rem">${r3.c}</button>`).join(" ")}</span></div>`).join("");};
-      body3.innerHTML=`<div class="volhead" style="margin:.5rem 0 .2rem">${esc(wd3.t||b4.dataset.w)} \u2014 ${esc(wd3.a||"")} \u00b7 ${ents.length.toLocaleString()} entries \u00b7 tap a column to preview</div>
+      body3.innerHTML=`<div class="volhead" style="margin:.5rem 0 .2rem">${esc(_wname(WD,cat2,b4.dataset.w).t)} \u2014 ${esc(_wname(WD,cat2,b4.dataset.w).a)} \u00b7 ${ents.length.toLocaleString()} entries \u00b7 tap a column to preview</div>
         <label class="rx-search" style="display:block;margin:.2rem 0 .4rem">Search this index<input type="search" id="viEQ" placeholder="grace, baptism\u2026"></label>
         <div id="viEnts"></div>`;
       paintE("");
