@@ -1646,3 +1646,48 @@ html:not(.mo-embedded) .fra {
   #fra-workspace.fra-docked .fra-heading strong { font-size: 15px; }
   #fra-workspace.fra-docked .fra-reader-bar { padding: 0 12px; }
 }
+
+/* THE USAGE METER, in the composer's status line.
+   Ian: "make sure that there is a usage meter on every instance of chat
+   that shows usage for that user."
+
+   It sits beside "Saved in this browser" because that row is already
+   where the workspace states facts about itself rather than about the
+   answer. Quiet by default: this is a number you glance at, not a
+   warning, until it is spent. */
+.fra-usage {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--fra-muted, #6b6660);
+  white-space: nowrap;
+}
+.fra-usage[hidden] { display: none; }
+.fra-usage-bar {
+  display: inline-block;
+  width: 56px;
+  height: 4px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.22;
+  overflow: hidden;
+}
+.fra-usage-bar > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: currentColor;
+  opacity: 1;
+  transition: width 0.25s ease;
+}
+/* Spent: the one state worth a colour, because the next question will
+   be refused by the worker and the reader should not be surprised. */
+.fra-usage--spent { color: var(--color-secondary, #c1593c); font-weight: 600; }
+.fra-usage--spent .fra-usage-bar { opacity: 0.35; }
+
+@media (max-width: 640px) {
+  /* The hint and the meter cannot both fit; the count is the useful one. */
+  .fra-compose-foot .fra-key-hint { display: none; }
+}
+

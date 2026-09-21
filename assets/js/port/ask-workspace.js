@@ -377,8 +377,69 @@
   // One arrival path for every finished answer: chat answers (the worker's 'finished' broadcast, os:true keeps the opt-in
   // OS notice) and deep-research jobs (the job watcher's leave-running transition, os:false — inside the app only:
   // toast, unread mark, live-region announcement).
+  /* MereO delta (Ian, 2026-09-21): "make sure that there is a usage meter
+     on every instance of chat that shows usage for that user."
+
+     There was none on any live instance. A meter exists in the theme, but
+     it belongs to faith-ask.js and _ask-panel.hbs, the single-shot panel
+     this workspace replaced on 2026-09-14, and no template renders that
+     partial any more. This file is the Ask that actually runs, on the
+     reader, the Bible, Connections, the desk, search, the author rooms
+     and the research page, and it never asked the worker how much of
+     anything the reader had used.
+
+     IT PRINTS WHAT THE SERVER SAYS AND NOTHING ELSE. No cap is written
+     here. The quota lives in the worker, and a number hardcoded in a
+     client is a number that goes stale the first time the worker changes
+     its mind, while still looking authoritative on screen.
+
+     IT HIDES RATHER THAN GUESSES. No `mine`, no numeric `used`, no cap
+     above zero, or a failed request: the meter stays hidden. A meter
+     reading "0 of 0" is worse than no meter, and GET /ask/usage is
+     member-gated, so a signed-out reader legitimately has nothing to
+     show. Same rule faith-ask.js used.
+
+     Shape, from that renderer and confirmed against the library
+     worker's own /v1/ask/usage: {mine:{used,cap,unavailable}|null,
+     global:{pctUsed,resetsAt,unavailable}}. */
+  async function loadUsage(){
+    const el=document.getElementById('fra-usage');
+    if(!el)return;
+    const url=CFG.apiBase+'/ask/usage';
+    let data=null;
+    try{
+      /* The same bearer the spending route gets. MOAuth.fetch attaches it
+         and refuses a host that is not on the page's allowlist; tokenFor
+         is the fallback the send path uses for the SharedWorker case. */
+      let res;
+      if(window.MOAuth&&window.MOAuth.fetch)res=await window.MOAuth.fetch(url);
+      else{
+        const tok=window.MOAuth&&window.MOAuth.tokenFor?await window.MOAuth.tokenFor(url):null;
+        res=await fetch(url,tok?{headers:{Authorization:'Bearer '+tok}}:undefined);
+      }
+      if(res&&res.ok)data=await res.json();
+    }catch(_){ /* a meter is not worth an error; it stays hidden */ }
+    const mine=data&&data.mine;
+    if(!mine||mine.unavailable||typeof mine.used!=='number'||!(mine.cap>0)){
+      el.hidden=true;
+      return;
+    }
+    el.hidden=false;
+    const used=Math.max(0,mine.used),cap=mine.cap;
+    const pct=Math.min(100,Math.round((used/cap)*100));
+    const text=document.getElementById('fra-usage-text');
+    const fill=document.getElementById('fra-usage-fill');
+    if(text)text.textContent=used+' of '+cap+' used';
+    if(fill)fill.style.width=pct+'%';
+    // At the cap the row says so plainly; the worker is what actually
+    // refuses, this only stops the reader being surprised by it.
+    el.classList.toggle('fra-usage--spent',used>=cap);
+    el.title=used>=cap?'You have used this month\u2019s questions.':'';
+  }
+
   async function answerFinished(data,{os=false}={}){
         await refresh();await mirror();
+        loadUsage();   // MereO delta: a question was just spent.
         const c=conversations.find(c=>c.id===data.id);if(!c)return;const status=c.turns.find(t=>t.id===data.turnId)?.status||data.status;
         if(visible&&current===c.id&&document.visibilityState==='visible'){await S.update(c.id,c=>{c.unread=false;});announce(status==='complete'?'Answer complete':'Research needs attention');}
         else{toast((status==='complete'?'Answer ready: ':'Research needs attention: ')+c.t,c.id);
@@ -687,7 +748,7 @@
       '<button class="fra-new" id="fra-new">'+icon('plus')+'New conversation</button><label class="fra-history-search">'+icon('search')+'<input id="fra-history-search" type="search" placeholder="Search conversations" aria-label="Search conversations"></label><div class="fra-history-label"><span>Conversations</span><button id="fra-show-archived" aria-pressed="false">Archived</button></div><nav id="fra-history-list" aria-label="Conversations"></nav><div class="fra-sidebar-foot"><a href="/the-faith-received/pins/">Collections</a><a href="/the-faith-received/desk/">Open Desk</a><div data-cgpt-link></div><button id="fra-notify" aria-pressed="false">'+icon('bell')+'Completion notifications</button><p>Conversations are saved in this browser. Deep research also saves progress on the server.</p></div></aside>'+
       '<main class="fra-main"><header class="fra-header"><button class="fra-icon" id="fra-history-toggle" aria-label="Show conversations" aria-expanded="false">'+icon('menu')+'</button><div class="fra-heading"><strong id="fra-title">New conversation</strong><span id="fra-context">Whole library</span></div><button type="button" id="fra-state" class="fra-state" hidden><i aria-hidden="true"></i><span></span></button><button class="fra-icon" id="fra-command-toggle" aria-label="Search conversations and actions" title="Search conversations and actions (⌘K / Ctrl+K)">'+icon('search')+'</button><button class="fra-icon" id="fra-theme" aria-label="Change reading theme">'+icon('sun')+'</button><button class="fra-icon" id="fra-more-toggle" aria-label="Conversation options" aria-expanded="false">•••</button><a class="fra-home" id="fra-home" href="'+esc(CFG.libraryPath)+'" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a><button class="fra-icon" id="fra-close" aria-label="Return to reading">'+icon('close')+'</button><div class="fra-menu" id="fra-more" hidden><button id="fra-rename">Rename conversation</button><button id="fra-export">Download conversation</button><button id="fra-folder">Move to folder…</button><div id="fra-folder-pick" class="fra-folder-pick" hidden><label>Folder<input id="fra-folder-name" list="fra-folder-list" maxlength="60" placeholder="New or existing folder" autocomplete="off"></label><datalist id="fra-folder-list"></datalist><div class="fra-confirm-row"><button id="fra-folder-save">Move</button><button id="fra-folder-clear">No folder</button></div></div><button id="fra-archive">Archive conversation</button><button id="fra-delete" class="fra-danger">Delete conversation</button><div id="fra-confirm" class="fra-confirm" hidden><span id="fra-confirm-text">Delete this conversation? This cannot be undone.</span><div class="fra-confirm-row"><button id="fra-confirm-yes" class="fra-danger">Delete</button><button id="fra-confirm-no">Keep</button></div></div></div></header>'+
       '<nav class="fra-reader-bar" id="fra-reader-bar" hidden aria-label="Reader research"><button id="fra-reader-notes">Saved research</button><button id="fra-expand">Expand Ask</button></nav><div class="fra-mobile-tabs" hidden><button id="fra-chat-tab" class="active">Conversation</button><button id="fra-read-tab">Read source</button></div><div class="fra-body"><section class="fra-chat"><div id="fra-feed" class="fra-feed"><div id="fra-welcome" class="fra-welcome"><div class="fra-welcome-mark">'+icon('book')+'</div><h1>Ask the Library</h1><p>Explore an idea, understand a passage, or follow a question through the texts.</p><div class="fra-suggestions"></div></div><div id="fra-thread"></div></div>'+
-      '<footer class="fra-compose-area"><button id="fra-jump" class="fra-jump" hidden>Latest answer ↓</button><aside class="fra-passage" id="fra-passage" hidden aria-label="Selected passage"><div><span id="fra-passage-cite"></span><button id="fra-passage-clear" aria-label="Remove selected passage">'+icon('close')+'</button></div><blockquote id="fra-passage-text"></blockquote></aside><div class="fra-composer"><label class="fra-compose-label" for="fra-input">Your question</label><textarea id="fra-input" rows="1" disabled placeholder="Ask anything" aria-label="Message the library"></textarea><div class="fra-compose-tools"><button id="fra-mode-toggle" aria-expanded="false"><span id="fra-mode-name">Ask</span>'+icon('chevron')+'</button><button id="fra-scope-toggle" aria-expanded="false"><span id="fra-scope-name">Scope</span>'+icon('chevron')+'</button><span class="fra-grow"></span><button id="fra-send" class="fra-send" aria-label="Send message" disabled>'+icon('send')+'</button></div><div class="fra-mode-menu fra-popover" id="fra-modes" hidden>'+Object.entries(modes).map(([key,value])=>'<button data-mode="'+key+'"><strong>'+value[0]+'</strong><span>'+value[1]+'</span></button>').join('')+'</div><section class="fra-popover fra-scope" id="fra-scope" aria-label="Research scope" hidden></section></div><div class="fra-compose-foot"><span id="fra-save-state">Saved in this browser</span><button class="fra-history-link" data-show-conversations>Saved questions</button><span class="fra-key-hint">Enter to send · Shift+Enter for a new line</span></div></footer></section>'+
+      '<footer class="fra-compose-area"><button id="fra-jump" class="fra-jump" hidden>Latest answer ↓</button><aside class="fra-passage" id="fra-passage" hidden aria-label="Selected passage"><div><span id="fra-passage-cite"></span><button id="fra-passage-clear" aria-label="Remove selected passage">'+icon('close')+'</button></div><blockquote id="fra-passage-text"></blockquote></aside><div class="fra-composer"><label class="fra-compose-label" for="fra-input">Your question</label><textarea id="fra-input" rows="1" disabled placeholder="Ask anything" aria-label="Message the library"></textarea><div class="fra-compose-tools"><button id="fra-mode-toggle" aria-expanded="false"><span id="fra-mode-name">Ask</span>'+icon('chevron')+'</button><button id="fra-scope-toggle" aria-expanded="false"><span id="fra-scope-name">Scope</span>'+icon('chevron')+'</button><span class="fra-grow"></span><button id="fra-send" class="fra-send" aria-label="Send message" disabled>'+icon('send')+'</button></div><div class="fra-mode-menu fra-popover" id="fra-modes" hidden>'+Object.entries(modes).map(([key,value])=>'<button data-mode="'+key+'"><strong>'+value[0]+'</strong><span>'+value[1]+'</span></button>').join('')+'</div><section class="fra-popover fra-scope" id="fra-scope" aria-label="Research scope" hidden></section></div><div class="fra-compose-foot"><span id="fra-save-state">Saved in this browser</span><span class="fra-usage" id="fra-usage" hidden><span id="fra-usage-text"></span><span class="fra-usage-bar" aria-hidden="true"><i id="fra-usage-fill"></i></span></span><button class="fra-history-link" data-show-conversations>Saved questions</button><span class="fra-key-hint">Enter to send · Shift+Enter for a new line</span></div></footer></section>'+
       '<div class="fra-split" id="fra-split" role="separator" aria-orientation="vertical" aria-label="Resize the source pane" aria-valuemin="28" aria-valuemax="76" tabindex="0" title="Drag to resize the source pane · double-click to reset"></div><section class="fra-reader" hidden><header><button class="fra-icon" id="fra-source-back" aria-label="Back to conversation">'+icon('back')+'</button><div class="fra-source-heading"><span id="fra-source-title">Source passage</span><small id="fra-source-location"></small></div><a id="fra-source-open" target="_blank" rel="noopener">Open reader</a><button class="fra-icon" id="fra-source-close" aria-label="Close source">'+icon('close')+'</button></header><div class="fra-source-viewport"><div id="fra-source-status" class="fra-source-status" role="status" hidden>Loading passage…</div><iframe id="fra-source-frame" title="Read the cited source" referrerpolicy="same-origin"></iframe></div></section></div></main>';
     panel.insertAdjacentHTML('beforeend','<dialog id="fra-command-dialog" class="fra-command" aria-labelledby="fra-command-title"><header><h2 id="fra-command-title">Find a conversation or action</h2><button type="button" class="fra-icon" data-command-close aria-label="Close command search">'+icon('close')+'</button></header><label class="fra-command-search">'+icon('search')+'<input id="fra-command-input" type="search" placeholder="Search conversations and actions" role="combobox" aria-label="Search conversations and actions" aria-autocomplete="list" aria-controls="fra-command-results" aria-expanded="false" autocomplete="off"></label><div id="fra-command-results" role="listbox" aria-label="Conversations and actions"></div><footer><span id="fra-command-count" role="status"></span><span>↑ ↓ Navigate · Enter Open · Esc Close</span></footer></dialog>');
     document.body.appendChild(panel);
@@ -1017,6 +1078,8 @@
     if(!panel)build();if(!visible)focusBefore=document.activeElement;window.FRReaderResearch?.close(false);visible=true;document.documentElement.classList.add('fra-open');/* The workspace is a fixed overlay, but the PAGE BEHIND IT still scrolled: html.fra-open{overflow:hidden} was written in the stylesheet and close() removed the class, but nothing ever added it, so on a phone you could drag the overlay and reveal the library underneath — the view changing scope under your thumb (owner, 2026-09-12; confirmed in the browser at 390px: documentScrolls was true). */panel.hidden=false;document.documentElement.classList.add('fra-open');syncPresentation();
     const theme=localStorage.getItem('fr_theme');panel.dataset.theme=theme==='dark'||!theme&&matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
     fitViewport();
+    // MereO delta: the reader's count, every time the workspace opens.
+    loadUsage();
     try{
       await init();
       /* belongsHere: without it the last conversation was restored whatever
