@@ -966,6 +966,51 @@ html.mo-embedded .site-footer,
 html.mo-embedded #mobile-nav { display: none !important; }
 html.mo-embedded { --mo-head: 0px; }
 
+/* ── The curated authors the ported room has no roster for ───────
+   Drawn by assets/js/page/faith-author-curated.js only when the shell
+   found nothing. Deliberately plain: a name, a line of context, and the
+   works. It is a gap-filler, not a second author room, and looking like
+   one would invite it to grow into one. */
+.fr-curated-author {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 56px 24px 96px;
+  font-family: var(--font-body, "Source Serif Pro", Georgia, serif);
+}
+.fr-ca-name {
+  font-family: var(--font-display, "EB Garamond", Georgia, serif);
+  font-weight: 400;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.1;
+  margin: 0 0 10px;
+  color: var(--fg, #2d2927);
+}
+.fr-ca-meta {
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  color: var(--muted, #6b6660);
+  margin: 0 0 28px;
+}
+.fr-ca-count {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-secondary, #c1593c);
+  margin: 0 0 14px;
+}
+.fr-ca-works { list-style: none; padding: 0; margin: 0; }
+.fr-ca-works li { border-top: 1px solid var(--border, #d8d8d3); }
+.fr-ca-work {
+  display: block;
+  padding: 16px 0;
+  font-family: var(--font-display, "EB Garamond", Georgia, serif);
+  font-size: 21px;
+  line-height: 1.3;
+  color: var(--fg, #2d2927);
+  text-decoration: none;
+}
+.fr-ca-work:hover { color: var(--color-secondary, #c1593c); text-decoration: none; }
+
 /* ── Highlights that cover the words, not the paragraph ──────────
    read-tools.js wraps the selected characters in <mark class="fr-hlx">.
    The port's own .row[data-hl] tints an entire row, which is what Ian
