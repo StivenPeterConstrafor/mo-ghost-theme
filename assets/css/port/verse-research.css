@@ -76,6 +76,24 @@
 .bible-pane[data-pane="desk"] .vr-desk > .vr-heading { top: 0; padding: 8px 0 4px; }
 .bible-pane[data-pane="desk"] .vr-desk > .vr-toolbar { top: 96px; margin-top: 0; }
 
+/* AND THE PANE GIVES UP ITS OWN SCROLLER. This is the rule I dropped
+   when I rewrote the block above, which is why the desk looked
+   unchanged after two deploys: .vr-pane still carried
+   max-height:min(62vh,760px) and overflow:auto from line 28, so the
+   sources were back inside a 62vh box nested in the scrolling desk.
+   Two scrollers again, which was the original complaint.
+
+   Stated here rather than by editing line 28, because the pane is used
+   outside the desk too and only the desk owns the scrolling. */
+.bible-pane[data-pane="desk"] .vr-pane {
+  max-height: none;
+  overflow: visible;
+  overscroll-behavior: auto;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
 @media (max-width: 640px) {
   .bible-pane[data-pane="desk"] .vr-desk {
     position: static;
