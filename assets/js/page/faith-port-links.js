@@ -17,7 +17,10 @@
     if (path === `${prefix}reader/` || path === `${prefix}reader`) {
       const corpus = u.searchParams.get('c') || 'tfr';
       const work = u.searchParams.get('w');
-      if (work && ['tfr','confessions','eebo','pld','pg','po'].includes(corpus)) {
+      // 'mo' is the curated set. It was missing, so every curated work
+      // fell through to the old reader and took its forward, which is
+      // the hop Ian saw. Its slugs carry no corpus prefix, same as tfr.
+      if (work && ['tfr','confessions','mo','eebo','pld','pg','po'].includes(corpus)) {
         u.searchParams.set('w', ['eebo','pld','pg','po'].includes(corpus) && !work.startsWith(`${corpus}-`) ? `${corpus}-${work}` : work);
         u.searchParams.delete('c');
         return `${prefix}read/${u.search}${u.hash}`;

@@ -62,6 +62,37 @@
 (function () {
   "use strict";
 
+  /* EVERY WORK ROW LINKS STRAIGHT TO THE READER IT OPENS IN.
+   *
+   * Ian, 2026-09-21: "When I click on a work, it starts to load the old
+   * reader before it loads the new one. This happens on desktop too.
+   * This is completely unnecessary."
+   *
+   * He was watching a real page load. Measured on the live site: the
+   * old reader at /the-faith-received/reader/ answered at 120ms, painted
+   * its own masthead, its Contents button and the word "Loading...",
+   * and only at 481ms did its script forward to /read/. On a phone that
+   * is a whole screen of the wrong reader before the right one starts.
+   *
+   * These five adapters are where the address is decided, so the hop
+   * ends here rather than being papered over with a faster redirect.
+   *
+   * THE PREFIX RULE IS NOT INVENTED HERE. It is the one already written
+   * in faith-port-links.js, which does this same translation for links
+   * that arrive from the corpus site: the four Migne-and-EEBO
+   * collections carry their corpus as a slug prefix, and tfr, mo and
+   * confessions works are already unique on their own. Kept identical
+   * so a link built here and a link rewritten there cannot disagree.
+   */
+  const PREFIXED = ["eebo", "pld", "pg", "po"];
+  function readerURL(corpus, id) {
+    const raw = String(id == null ? "" : id);
+    const slug = PREFIXED.includes(corpus) && !raw.startsWith(`${corpus}-`)
+      ? `${corpus}-${raw}`
+      : raw;
+    return `/the-faith-received/read/?w=${encodeURIComponent(slug)}`;
+  }
+
   const BLOB = "https://mo-tfr-library.mo-podcast-feed.workers.dev";
   // Our own R2, behind mo-tfr-library. The scripture index and our
   // own editions are served from here.
@@ -606,7 +637,7 @@
         eyebrow: w.y ? String(w.y) : "",
         place: w.p || "",
         extent: 0,
-        url: `/the-faith-received/reader/?c=eebo&w=${encodeURIComponent(w.i)}`,
+        url: readerURL("eebo", w.i),
       }),
     },
     {
@@ -646,7 +677,7 @@
         tradition: moTradition(w),
         eyebrow: w.eyebrow || "",
         extent: w.n_sections || 0,
-        url: `/the-faith-received/reader/?c=mo&w=${encodeURIComponent(w.slug)}`,
+        url: readerURL("mo", w.slug),
       }),
     },
     {
@@ -695,7 +726,7 @@
         order: w.po == null ? 1e9 + w._i : w.po,
         columns: Array.isArray(w.c) && w.c.length === 2 ? w.c : null,
         editorial: w.cd === "MOD",
-        url: `/the-faith-received/reader/?c=pld&w=${encodeURIComponent(w._id)}`,
+        url: readerURL("pld", w._id),
       }),
     },
     {
@@ -822,7 +853,7 @@
         // already in Migne's order — PG 44 opens on the title page, the table
         // of contents and Fabricius's notice, exactly as the volume does.
         order: w._i,
-        url: `/the-faith-received/reader/?c=pg&w=${encodeURIComponent(w._id)}`,
+        url: readerURL("pg", w._id),
       }),
     },
     {
@@ -961,7 +992,7 @@
         // inside it. A tome that names no fascicle sorts last rather than
         // first, where a missing number would otherwise put it.
         order: (parseInt(w.fasc, 10) || 9999) * 100000 + w._i,
-        url: `/the-faith-received/reader/?c=po&w=${encodeURIComponent(w._id)}`,
+        url: readerURL("po", w._id),
       }),
     }
   ];
