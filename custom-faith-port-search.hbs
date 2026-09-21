@@ -23,8 +23,21 @@
 <div class="faith-port-search-page">
 
 <a class="skip-link" href="#main">Skip to text</a><main class="main" id="main"><link rel="stylesheet" href="{{asset "css/port/search.in04.css"}}&amp;frv=f6bb85f15374fe45">
-<nav class="search-site-nav" aria-label="Site navigation"><a class="fr-home-link" data-fr-home href="/the-faith-received/all-works/?collection=all" aria-label="Back to library"><span class="fr-home-wide">← The Faith Received</span><span class="fr-home-compact"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</span></a><a href="/the-faith-received/pins/">Collections</a><a href="/the-faith-received/dictionary/">Dictionary</a><button type="button" id="searchTheme" aria-label="Change reading theme">Theme</button></nav>
-<h1 style="color:var(--accent);text-wrap:balance">Search The Faith Received</h1>
+
+{{!-- The header this page had only in its signed-out branch. The
+     member view opened straight onto the mode tabs with a bare h1
+     and no header at all, which is what Ian was looking at. Same
+     .bhero as every other landing surface, then the rail. --}}
+<section class="bhero bhero--tool">
+  <div class="bhero-inner container">
+    <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Search</p>
+    <h1>Search</h1>
+    <p class="bhero-sub">Every creed, confession, catechism and work in the library. Look for a work, a passage, a Scripture reference, or ask a question and follow the citations.</p>
+  </div>
+</section>
+{{> "faith-received/_tfr-rail"}}
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+
 <div class="smodes-wrap"><div class="smodes" role="group" aria-label="Search mode">
   <button data-m="title" class="active sm-core" aria-pressed="true" title="Find a work, author, or section">Works</button>
   <button data-m="full" class="sm-core" aria-pressed="false" title="Find passages in the texts">Passages</button>
