@@ -18412,3 +18412,87 @@ body.has-fr-survey { padding-bottom: 34px; }
   .fr-survey-foot { justify-content: flex-end; }
   .fr-survey-count { flex-basis: 100%; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   THE BROWSE BANDS FOLD
+   ══════════════════════════════════════════════════════════════════════
+
+   Ian: "make every section collapsable and starting collapsed."
+
+   Six bands, each now a <details> that opens on its own heading. Closed
+   on load, so the page arrives as six lines and a search box instead of
+   the 3,900px scroll it had become: the whole library, every shelf, the
+   fathers, the creeds and thirty authors, all expanded at once, with
+   the reader having asked for none of it.
+
+   NATIVE <details>, NOT A TOGGLE. It keeps the state in the element,
+   answers to Enter and Space, is announced as expanded or collapsed,
+   and finds text inside a closed section when the browser searches the
+   page. A div and a click handler would be all of that written again,
+   worse, and it would need script to work at all.
+
+   THE SUMMARY IS THE HEADING IT REPLACED. Same .bhead class, same label
+   and h2, so the closed page reads as the section titles it always had.
+   What is added is the affordance: a marker that turns, and a cursor.
+   ------------------------------------------------------------------ */
+.bfold > summary.bhead {
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 0 18px;
+  /* The default triangle is replaced by the chevron below, and on
+     WebKit it needs removing twice. */
+  list-style: none;
+  position: relative;
+  padding-right: 34px;
+}
+.bfold > summary.bhead::-webkit-details-marker { display: none; }
+.bfold > summary.bhead::marker { content: ""; }
+
+/* The label and the headline sit on one line while the band is shut, so
+   a closed page is a list of six titles rather than twelve stacked
+   lines. They return to their own rows once it opens, where the h2 is
+   doing the work of a section heading again. */
+.bfold > summary.bhead > .blabel { margin: 0; flex: none; }
+.bfold > summary.bhead > h2 { margin: 0; }
+.bfold[open] > summary.bhead {
+  display: block;
+  margin-bottom: 26px;
+}
+.bfold[open] > summary.bhead > h2 { margin-top: 6px; }
+
+/* The marker. A chevron drawn from two borders, pointing down when the
+   band is shut and up when it is open, on the baseline of the label. */
+.bfold > summary.bhead::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  top: 0.45em;
+  width: 9px;
+  height: 9px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transform-origin: center;
+  opacity: 0.5;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+.bfold[open] > summary.bhead::after { transform: rotate(-135deg); }
+.bfold > summary.bhead:hover::after,
+.bfold > summary.bhead:focus-visible::after { opacity: 1; }
+.bfold > summary.bhead:focus-visible {
+  outline: 2px solid var(--color-secondary, #c1593c);
+  outline-offset: 6px;
+  border-radius: 2px;
+}
+
+/* A shut band does not need a band's worth of air. 92px top and bottom
+   around a single line reads as six paragraphs of nothing; it returns
+   the moment the section opens. */
+.bband:has(> .container > .bfold:not([open])) { padding: 34px 0; }
+
+@media (max-width: 640px) {
+  .bfold > summary.bhead { gap: 0 12px; padding-right: 28px; }
+  .bband:has(> .container > .bfold:not([open])) { padding: 26px 0; }
+}
+
