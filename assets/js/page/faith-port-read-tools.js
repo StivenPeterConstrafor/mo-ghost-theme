@@ -369,15 +369,43 @@
 
   /* ---- The popover ------------------------------------------------- */
 
+  /* ONE MENU AT A TIME.
+   *
+   * Tools and Aa are two popovers hanging off the same corner of the same
+   * toolbar, and each one's dismissal is a document-level click handler:
+   * reader-core watches for a click outside #aaPop, this file closes Tools
+   * on any click at all. Both openers call stopPropagation, so neither
+   * handler ever sees the other's button — press Aa with Tools open and
+   * you get two menus stacked on top of each other, which is most of what
+   * "a lot of jumpiness when you open things" looks like on the toolbar.
+   *
+   * Each opener closes the other here rather than in reader-core.js:
+   * #aaPop has a public state (the `on` class plus aria-expanded on
+   * #aaBtn) and this file already owns Tools. The listeners are added
+   * after reader-core has assigned its own onclick properties, so they
+   * run second and read the state that handler just set.
+   */
+  const aaPop = $("aaPop"), aaBtn = $("aaBtn");
+  function closeAa() {
+    if (!aaPop) return;
+    aaPop.classList.remove("on");
+    delete aaPop.dataset.locJump;
+    if (aaBtn) aaBtn.setAttribute("aria-expanded", "false");
+  }
   function open(on) {
     btn.setAttribute("aria-expanded", on ? "true" : "false");
     pop.classList.toggle("is-open", on);
+    if (on) closeAa();
     if (!on) note("");
   }
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
     open(btn.getAttribute("aria-expanded") !== "true");
   });
+  // Anything that leaves #aaPop open shuts Tools: the Aa button itself, and
+  // the location button, which opens the same panel on its page field.
+  if (aaBtn) aaBtn.addEventListener("click", () => { if (aaPop && aaPop.classList.contains("on")) open(false); });
+  if ($("reader-location")) $("reader-location").addEventListener("click", () => { if (aaPop && aaPop.classList.contains("on")) open(false); });
   pop.addEventListener("click", (e) => e.stopPropagation());
   document.addEventListener("click", () => open(false));
   document.addEventListener("keydown", (e) => {

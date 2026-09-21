@@ -98,9 +98,40 @@
     return lexiconPromise;
   }
 
+  /* HEADINGS ARE ENGLISH TOO, AND THEY ARE NOT IN THE ENGLISH LANE.
+   *
+   * Ian, of the Westminster Shorter Catechism: the Modernizer works "on
+   * the questions/headers" -- meaning it did not. Measured on the live
+   * reader: that work renders 216 .en lanes and 210 .csub headings, and
+   * ZERO of the headings sit inside a lane. Every catechism question is
+   * a heading, so the answers modernized and the questions did not, which
+   * on a catechism is most of the text a reader looks at. Charnock has
+   * the same shape with 28 section titles.
+   *
+   * Widening the net without breaking the rule above it: a heading is
+   * taken only when it is outside the source lane, and only when the
+   * language it declares is English. Checked before writing this: the
+   * Migne works carry none of these heading classes at all, so no Latin
+   * can be reached this way, and the lang test is the belt to that
+   * brace. A heading already inside .en is left to the lane, so nothing
+   * is walked twice. */
+  const HEADS = ".csub, .rhead, #reading h1, #reading h2, #reading h3, #reading h4";
+
+  function englishHeading(el) {
+    if (el.closest(".la") || el.closest(".en")) return false;
+    const declared = el.closest("[lang]");
+    const lang = declared ? String(declared.getAttribute("lang") || "").toLowerCase() : "";
+    return !lang || lang === "en" || lang.indexOf("en-") === 0;
+  }
+
   function lanes() {
     const r = readingNow();
-    return r ? Array.prototype.slice.call(r.querySelectorAll(".en")) : [];
+    if (!r) return [];
+    const zones = Array.prototype.slice.call(r.querySelectorAll(".en"));
+    Array.prototype.slice.call(r.querySelectorAll(HEADS)).forEach((h) => {
+      if (englishHeading(h)) zones.push(h);
+    });
+    return zones;
   }
 
   function eachText(zone, fn) {

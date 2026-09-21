@@ -617,8 +617,18 @@ function __initSearch(){
       }catch(e){}
     }catch(e){aEl.innerHTML='<div class=rsa-body>Ask unavailable. Please try again.</div>';ASK.push({role:"assistant",content:"(unavailable)",sources:[]});}}
   // masthead trigger (all modes)
-  const btn=el("button","tgl");btn.id="rsBtn";btn.title="Search (⌘K or /)";btn.setAttribute("aria-label","Search");btn.textContent="⌕";btn.onclick=open;
+  /* MereO delta (Ian, 2026-09-21: "buttons that open but don't close"). ⌕ was bound
+     to open, which in the default "this work" mode calls findOpen() — and findOpen
+     only ever sets FIND.open=true. Pressing ⌕ with the find bar already up refocused
+     it and left it up; the bar could only be dismissed by its own × or Escape. The
+     keyboard doors (⌘K, /) and every caller that means "open" keep calling open();
+     only the button and the phone's Search key get the toggle. */
+  const toggle=()=>{if(ov.classList.contains("open")){close();return;}
+    if(mode==="this"&&FIND.open){findClear();return;}
+    open();};
+  const btn=el("button","tgl");btn.id="rsBtn";btn.title="Search (⌘K or /)";btn.setAttribute("aria-label","Search");btn.textContent="⌕";btn.onclick=toggle;
   window.__frOpenSearch=findOpen;   // thumb-bar hook (mobile shell)
+  window.__frToggleSearch=toggle;   // thumb-bar hook: a lit Search key closes what it opened
   const ctr=document.querySelector(".ctr");if(ctr)ctr.insertBefore(btn,ctr.firstChild);
   window._frSearch=findOpen;
 }
@@ -1514,7 +1524,13 @@ function __initReaderTools(){
   addEventListener("keydown",e=>{if(e.key==="Escape"){closeNotebook();
     const app=document.querySelector(".app");   // Contents sheet = .app without 'nosb' (Opus audit P0: no exit)
     if(app&&!app.classList.contains("nosb"))app.classList.add("nosb");}});
-  {const nb=$("#nbCount");if(nb){nb.style.cursor="pointer";nb.title="Open research: work analysis, search, passages, saved items, and conversations";nb.onclick=openNotebook;}}
+  /* MereO delta: the Research pill was bound straight to openNotebook, so it opened
+     and then meant nothing. On a desktop the panel docks beside the text with no
+     scrim to click through, which left its own ✕ and Escape as the only exits from
+     a control that carries aria-expanded and therefore promises to close. */
+  const toggleNotebook=()=>notebook.classList.contains('open')?closeNotebook():openNotebook();
+  window.__frToggleNotebook=toggleNotebook;   // thumb-bar hook (mobile shell)
+  {const nb=$("#nbCount");if(nb){nb.style.cursor="pointer";nb.title="Research: work analysis, search, passages, saved items, and conversations";nb.onclick=toggleNotebook;}}
   // fingerprint anchors — full W3C TextQuoteSelector triple (the Hypothesis pattern):
   // exact = the row's first 60 EN chars; sfx = the next 32; pfx = the previous row's last 32.
   // A corpus edit can change any one of these and the entry still re-attaches via the others.

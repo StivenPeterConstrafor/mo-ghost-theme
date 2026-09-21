@@ -20,6 +20,7 @@
     }
     return page;
   }
+  const shown=()=>native?sheet.matches(':popover-open'):sheet.classList.contains('rm-open');
   function close(restore=true){if(native){if(sheet.matches(':popover-open'))sheet.hidePopover();}else sheet.classList.remove('rm-open');if(active){active.setAttribute('aria-expanded','false');if(restore&&active.isConnected)active.focus({preventScroll:true});}}
   function open(button,host){
     const notes=notesIn(host);if(!notes.length)return;document.dispatchEvent(new CustomEvent('fr-apparatus-open',{detail:{kind:'margin'}}));
@@ -39,7 +40,25 @@
   }
   function marker(host,notes,inline){
     let button=inline?host.previousElementSibling:host.querySelector(':scope > .rm-marker');
-    if(!button?.matches('.rm-marker')){button=document.createElement('button');button.type='button';button.className='rm-marker'+(inline?' rm-inline':'');button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls',sheet.id);button.setAttribute('aria-expanded','false');button.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();open(button,host);});if(inline)host.before(button);else host.prepend(button);}
+    if(!button?.matches('.rm-marker')){button=document.createElement('button');button.type='button';button.className='rm-marker'+(inline?' rm-inline':'');button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls',sheet.id);button.setAttribute('aria-expanded','false');
+      /* MereO delta (Ian, 2026-09-21: "buttons that open but don't close"). The
+         marker carries aria-expanded, so it says it is a toggle, and it was bound
+         straight to open(): pressing it again rebuilt the same sheet in place and
+         nothing appeared to happen. Measured on eebo-266, which carries 157 of
+         these markers; three presses in a row all left it open.
+         WHY THE STATE IS READ AT POINTERDOWN. The sheet is popover=auto, and the
+         browser's own light dismiss runs at the document on pointerdown, before
+         this click. By the time a click handler could ask, the sheet is already
+         hidden, a toggle reads "closed" and re-opens it: closed and re-opened
+         inside one press, which looks exactly like a button that does nothing.
+         The press is judged from what was true when it began. Keyboard activation
+         sends no pointerdown and no light dismiss, so it reads the state directly. */
+      let armed=false;
+      button.addEventListener('pointerdown',()=>{armed=active===button&&shown();});
+      button.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();
+        const shut=e.detail===0?(active===button&&shown()):armed;armed=false;
+        if(shut){close();return;}
+        open(button,host);});if(inline)host.before(button);else host.prepend(button);}
     const label=notes.length===1?'Margin note':'Margin notes';const count=notes.length>1?' '+notes.length:'';
     let full=button.querySelector('.rm-marker-label');
     if(!full){full=document.createElement('span');full.className='rm-marker-label';const compact=document.createElement('span');compact.className='rm-marker-compact';compact.setAttribute('aria-hidden','true');compact.textContent='note';button.replaceChildren(full,compact);}

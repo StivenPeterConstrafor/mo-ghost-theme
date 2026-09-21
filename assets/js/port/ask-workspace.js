@@ -1040,6 +1040,15 @@
       $('#fra-input').disabled=false;
       if(opts.autoSend&&opts.q)await send(opts.q);
       else if(!matchMedia('(pointer:coarse)').matches)$('#fra-input').focus();
+      /* MereO delta: on a touch screen nothing used to take focus, deliberately, so
+         the keyboard would not spring up. But the Escape handler is bound to the
+         panel, and syncPresentation() marks every other body child inert the moment
+         the workspace is modal — including the thumb bar that opened it. Focus sat
+         on a now-inert button, Escape never reached the panel, and on a phone the
+         ✕ inside the workspace was the only way out of it. Focus goes to that ✕
+         instead: inside the panel, no keyboard, and the trap has something to hold.
+         Same pattern read-tools.js uses for the Research panel. */
+      else if(!panel.classList.contains('fra-docked'))$('#fra-close')?.focus({preventScroll:true});
       if(opts.view==='history')showConversations();
       if(window.cgptLink)window.cgptLink.mount();
     }catch(e){$('#fra-save-state').textContent=storageError||e.message;announce(storageError||e.message);}
@@ -1052,7 +1061,14 @@
     else document.body.appendChild(launcher);
   }
   function bootstrap(){
-    const launcher=document.createElement('button');launcher.id='fra-launcher';launcher.className='fra-launcher';launcher.innerHTML=icon('chat')+'<span>Ask</span>';launcher.onclick=()=>open();if(CFG.launcher!==false)mountLauncher(launcher);
+    /* MereO delta (Ian, 2026-09-21: "buttons that open but don't close"). The
+       launcher was open-only. That is invisible wherever the workspace is modal,
+       because syncPresentation() marks every other body child inert and the button
+       cannot be reached at all; but on the reader at 1100px and up Ask DOCKS beside
+       the book, nothing is inert, and the button that opened it sat there taking
+       presses and doing nothing. Standalone /ask/ is excluded: there the workspace
+       is the page, and faith-ask-open.js turns a close into leaving the page. */
+    const launcher=document.createElement('button');launcher.id='fra-launcher';launcher.className='fra-launcher';launcher.innerHTML=icon('chat')+'<span>Ask</span>';launcher.onclick=()=>{if(visible&&!ASK_PATH_RE.test(location.pathname))return close();return open();};if(CFG.launcher!==false)mountLauncher(launcher);
     const notices=document.createElement('div');notices.id='fra-notices';document.body.appendChild(notices);
     const announcer=document.createElement('div');announcer.id='fra-announcer';announcer.className='fra-sr';announcer.setAttribute('role','status');announcer.setAttribute('aria-live','polite');document.body.appendChild(announcer);
     init().then(()=>researchJobs()).catch(()=>{launcher.title='Open Ask to check conversation storage';});

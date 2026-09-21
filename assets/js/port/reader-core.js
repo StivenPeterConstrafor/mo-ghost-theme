@@ -4109,15 +4109,22 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
     else{LN.en=true;}                            // from Latin-only → Both
     applyLanes();};
   B.study.onclick=()=>{LN.fx=!LN.fx;applyLanes();};                   // "Scan" = toggle the facsimile
-  /* MereO delta: Search, Research and Ask were open-only on the thumb bar, so a
-     second tap on a lit button did nothing and the panel had to be dismissed from
-     its own ✕. Contents and Scan beside them have always toggled; these three now
-     match. The toggles are the same ones the desktop ⌕ / Research / Ask buttons
-     use, so a control means the same thing at both widths. Each keeps its old
-     open-only call as the fallback, because the globals are published by
-     read-tools.js and ask-workspace.js, which load after this. */
+  /* MereO delta: Search and Research were open-only on the thumb bar, so a second
+     tap on a lit button did nothing and the panel had to be dismissed from its own
+     ✕. Contents and Scan beside them have always toggled; these two now match, and
+     through the same toggles the desktop ⌕ and Research buttons use, so a control
+     means the same thing at both widths. Each keeps its old open-only call as the
+     fallback, because the globals are published by read-tools.js, which loads
+     after this.
+     ASK IS DELIBERATELY NOT TOGGLED HERE, and a toggle on this line would be dead
+     code. ask-workspace.js listens for clicks on `.frthumb [data-t="ask"]` in the
+     CAPTURE phase and calls stopImmediatePropagation, so this handler never runs
+     for a real tap. It does not need to: below 1100px the workspace is modal and
+     syncPresentation() marks the thumb bar inert while it is open, so the button
+     cannot be pressed at all. What that left missing was a keyboard exit, and
+     that is fixed in ask-workspace.js by giving the panel the focus. */
   B.find.onclick=()=>{if(window.__frToggleSearch)window.__frToggleSearch();else if(window.__frOpenSearch)window.__frOpenSearch();};
-  if(B.ask)B.ask.onclick=()=>{if(window.FRAsk?.isOpen?.())window.FRAsk.close();else if(window.__openAsk)window.__openAsk("");};
+  if(B.ask)B.ask.onclick=()=>{if(window.__openAsk)window.__openAsk("");};
   B.toc.onclick=()=>setContentsOpen(app.classList.contains("nosb"),true);
   B.nb.onclick=()=>{if(window.__frToggleNotebook)window.__frToggleNotebook();else if(window.__frOpenNotebook)window.__frOpenNotebook();};
   // chrome auto-hide while reading down (phones): accumulate same-direction travel so tiny
