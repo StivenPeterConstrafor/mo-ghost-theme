@@ -43,9 +43,40 @@
  * wording and the behaviour they had, including waiting for the work
  * to name the language it was translated from.
  */
-(function () {
+(function (root) {
   const mount = document.querySelector("[data-fr-status]");
   if (!mount) return;
+
+  /* THE PORTED READER ASKS FOR THIS PANEL BY HAND.
+   *
+   * Ian, 2026-09-21: "we lost our AI disclosure on works. We need to
+   * re-integrate that into the new reader." It was never ported: this
+   * file is loaded by the old reader template alone, and the panel
+   * mounts on markup only that template carries.
+   *
+   * It cannot simply be added to the new one, because it reads the work
+   * out of the address and the two readers address a work differently.
+   * The old reader says ?c=pg&w=3860, corpus and bare id. The new one
+   * says ?w=pg-3860, one prefixed slug and no corpus at all. Read here
+   * unchanged, a new-reader URL would resolve every work to the default
+   * corpus, tfr, which is in the machine-translated set: the Shepherd
+   * of Hermas, a historic human translation, would be labelled as
+   * machine output. That is the one error this panel must never make.
+   *
+   * So the mount may name the work itself. When it does, its values win
+   * and the address is not consulted; when it does not, nothing changes
+   * for the old reader. faith-port-work-status.js is what fills them in,
+   * and it defers this run until it has, because telling mo from tfr
+   * takes a fetch. */
+  if (mount.hasAttribute("data-fr-status-defer") && !mount.dataset.frStatusWork) {
+    root.FRWorkStatus = {
+      run() { mount.removeAttribute("data-fr-status-defer"); start(); },
+    };
+    return;
+  }
+  start();
+
+  function start() {
 
   const baseMeta = document.querySelector('meta[name="tfr-library-base"]');
   const BASE = ((baseMeta && baseMeta.getAttribute("content")) || "").replace(/\/+$/, "");
@@ -81,8 +112,8 @@
     return d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
   }
 
-  const corpus = param("c") || "tfr";
-  const workId = param("w");
+  const corpus = mount.dataset.frStatusCorpus || param("c") || "tfr";
+  const workId = mount.dataset.frStatusWork || param("w");
   if (!workId) return;
 
   // Two states, not three. "Under review" is a third thing to keep
@@ -263,4 +294,5 @@
     })
     .catch(() => { /* the notice in the body stands on its own */ });
   }
-}());
+  }
+}(typeof window === "undefined" ? this : window));

@@ -121,6 +121,23 @@
         </div>
         <div class="rvsum" id="rvsum"></div>
       </header>
+      {{!-- HOW THIS TEXT WAS MADE. Ian, 2026-09-21: "we lost our AI
+           disclosure on works. We need to re-integrate that into the new
+           reader." It was never ported; the panel and every word in it
+           live in faith-work-status.js, which only the old reader loaded.
+
+           ABOVE THE TEXT AND OUTSIDE #reading. Above, because a reader
+           deciding whether to trust a machine translation should meet
+           that fact before the translation, not in a note after it.
+           Outside, because the reader replaces #reading wholesale on
+           every page turn and a panel inside it would vanish on page two.
+
+           Deferred: the panel cannot name the collection from this
+           reader's address, and telling our curated works from the
+           machine-translated corpus takes a fetch.
+           faith-port-work-status.js does that and then starts it. --}}
+      <meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
+      <div class="faith-reader-status" data-fr-status data-fr-status-defer hidden></div>
       <main id="reading" aria-label="The text"><div class="loading">Loading the text…</div></main>
     </div>
     <div class="prog"><i id="prog"></i></div>
@@ -243,6 +260,11 @@
      than part of site.min.js, so a page that shows the button has to
      ask for it; the ported reader showed neither until now. --}}
 <script src="{{asset "js/faith-report-issue.js"}}"></script>
+{{!-- The disclosure panel, then the resolver that tells it which
+     collection this work is in. This order, because the resolver calls
+     into the panel the moment it knows. --}}
+<script src="{{asset "js/faith-work-status.js"}}"></script>
+<script src="{{asset "js/page/faith-port-work-status.js"}}"></script>
 {{!-- The ported reader restores your place silently, which is right,
      but leaves no way back to page 1. This adds only that door; the
      reader still owns the position itself. --}}
