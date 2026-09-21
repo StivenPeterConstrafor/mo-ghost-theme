@@ -224,6 +224,55 @@
   // paragraphs of the disclosure. Everything below it, the review
   // state, the report counts and the correction history, is the same
   // for every collection because it comes from the same table.
+  /*
+   * WHERE THE PANEL LIVES, decided once it has something to say.
+   *
+   * Ian, 2026-09-21: "can you move that entire thing to the top of the
+   * TOC sidebar?" Above the text it ran the full width of the reading
+   * pane while the text below sat in a centred measure, so it read as a
+   * system banner rather than a note about this work, and it pushed the
+   * text down on every page turn.
+   *
+   * ONLY WHERE THE SIDEBAR IS ACTUALLY ON SCREEN. Below 880px the
+   * reader has no sidebar -- it becomes a drawer behind a cell in the
+   * thumb dock -- and this is an AI disclosure. Putting it there on a
+   * phone would mean a reader could read a machine translation start to
+   * finish without ever being told, which is the one outcome the panel
+   * exists to prevent. On those widths it stays where it was, above the
+   * text, which is also where the reading column is full-bleed anyway
+   * and the width complaint does not arise.
+   *
+   * Moved rather than copied: one node, so the fetch that fills it and
+   * the Report hook inside it cannot end up bound to a stale twin.
+   */
+  function place(node, tries) {
+    if (document.documentElement.classList.contains("g-mobile")) return;
+    /* INSIDE #nav, NOT ABOVE IT. The sidebar's own top sits about
+       thirty pixels under the fixed toolbar -- measured on the live
+       reader, and true of the Outline/Library tabs before this panel
+       existed, so it is the reader's condition and not something the
+       panel introduced. A block pinned above #nav would put its title
+       permanently in that dead strip; inside #nav it is the first thing
+       in the scroller, gets exactly the treatment the tabs already get,
+       and scrolls clear the moment anyone moves. #nav survives a page
+       turn (checked: a marker in it outlives #reading being replaced),
+       so the panel is not rebuilt out from under its own fetch. */
+    const rail = document.querySelector("#app .sidebar #nav");
+    if (rail) {
+      if (node.parentElement === rail) return;
+      node.classList.add("is-rail");
+      rail.insertBefore(node, rail.firstChild);
+      return;
+    }
+    // The rail is built by the port's own reader-core, and this panel
+    // waits on a fetch, so it is normally there first -- but "normally"
+    // is not a guarantee worth a silent full-width panel above the text
+    // if the order ever changes. Retried briefly, then left where it is,
+    // which is the old arrangement and not a broken one.
+    const left = tries === undefined ? 20 : tries;
+    if (left > 0) window.setTimeout(() => place(node, left - 1), 150);
+  }
+
   function draw(intro) {
   mount.innerHTML =
     `<details class="fr-tt">`
@@ -240,8 +289,17 @@
     + `<p class="fr-ai-note-body">${intro.body}</p>`
     + `</div>`
     + `<div class="fr-tt-rows" data-tt-rows></div>`
+    // The way to say this work is wrong, at the foot of the one block
+    // on the page about whether it can be trusted. Ian, 2026-09-21: the
+    // control was buried in the Aa menu among the type controls, where
+    // nobody would look for it. [data-report-issue] is the hook
+    // faith-report-issue.js listens for anywhere on the page, so this
+    // needs no script of its own.
+    + `<button type="button" class="fr-tt-report" data-report-issue>`
+    + `\u2691 Report a problem with this work</button>`
     + `</div></details>`;
   mount.hidden = false;
+  place(mount);
 
   const factsEl = mount.querySelector("[data-tt-facts]");
   const rowsEl = mount.querySelector("[data-tt-rows]");

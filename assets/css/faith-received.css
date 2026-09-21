@@ -17169,6 +17169,8 @@ a.fr-btn,
 /* ── The reader survey's two secondary controls ────────────────────────── */
 .fr-survey-back,
 .fr-survey-skip,
+/* ── Translation transparency, in the rail ─────────────────────────────── */
+.fr-tt-report,
 /* ── The ported reader's Research rail and its selection popover ───────── */
 #notebook .nb-passage-actions button,
 #notebook .nb-work-primary button,
@@ -17210,6 +17212,7 @@ a.fr-btn:hover,
 .faith-resume button:hover,
 .fr-survey-back:hover,
 .fr-survey-skip:hover,
+.fr-tt-report:hover,
 #notebook .nb-passage-actions button:hover,
 #notebook .nb-work-primary button:hover,
 #notebook .nb-book-ask:hover,
@@ -17300,6 +17303,7 @@ a.fr-btn:hover,
 .tfr-gate-signin-btn:focus-visible,
 .fr-survey-back:focus-visible,
 .fr-survey-skip:focus-visible,
+.fr-tt-report:focus-visible,
 .fr-survey-next:focus-visible,
 #notebook .nb-work-primary button:focus-visible,
 #notebook .nb-reading-place button:focus-visible {
@@ -18576,3 +18580,102 @@ body.has-fr-survey { padding-bottom: 34px; }
   .bfold > summary.bhead { padding-right: 30px; }
   .bband:has(> .container > .bfold:not([open])) { padding: 26px 0; }
 }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   TRANSLATION TRANSPARENCY, IN THE RAIL
+   ══════════════════════════════════════════════════════════════════════
+
+   Ian, 2026-09-21: "can you move that entire thing to the top of the TOC
+   sidebar?" and "You'll need to resize/rework it to make it fit."
+
+   Above the text it was 1,428px wide while the text under it was 960,
+   centred, so the one block on the page that is not full-bleed was the
+   text itself. It read as a site-wide banner rather than a note about
+   this work, and it pushed the opening lines down the screen.
+
+   faith-work-status.js moves the node into .sidebar and adds .is-rail.
+   It is a MOVE, not a copy, and it only happens where the sidebar is
+   really on screen -- below 880px the sidebar is a drawer behind the
+   thumb dock, and an AI disclosure nobody can see is not a disclosure.
+   There it stays above the text.
+
+   WHAT HAS TO CHANGE FOR 300px. The panel was laid out for a wide
+   column: a summary line that puts three or four facts beside a title,
+   and label/value rows on a 130px grid. At 300px, less its padding, the
+   value column would have been about 120px -- roughly eighteen
+   characters -- so "The translation committee has not reviewed this work
+   yet" would have set as a ten-line ribbon. The rows stack, which is
+   what the existing 640px rule already does; the rest is type scale and
+   spacing, not a second design. */
+
+.faith-reader-status.is-rail {
+  /* Negative inline margins so the panel's rule spans the rail's full
+     width while its text keeps the same inset as the list below it.
+     #nav carries 8px of padding; the panel wants to read as a band, not
+     as another indented item. */
+  margin: -8px -8px 8px;
+  border-bottom: 1px solid var(--color-rule, #d9c6a7);
+  flex: none;
+}
+.faith-reader-status.is-rail .fr-tt {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.faith-reader-status.is-rail .fr-tt-head {
+  padding: 12px 16px;
+  gap: 4px;
+  /* Title and facts stack: side by side they had 300px between them and
+     the facts wrapped under the title anyway, badly. */
+  flex-wrap: wrap;
+}
+.faith-reader-status.is-rail .fr-tt-title { font-size: 11px; }
+.faith-reader-status.is-rail .fr-tt-facts {
+  flex-basis: 100%;
+  font-size: 12px;
+  line-height: 1.45;
+  gap: 6px;
+}
+/* The caret has to stay on the title's line, not drop under it with the
+   facts, or the summary reads as three unrelated rows. */
+.faith-reader-status.is-rail .fr-tt-caret { order: -1; margin-left: auto; }
+
+.faith-reader-status.is-rail .fr-tt-body { padding: 0 16px 14px; }
+.faith-reader-status.is-rail .fr-ai-note { padding-left: 10px; margin-bottom: 12px; }
+.faith-reader-status.is-rail .fr-ai-note-head { font-size: 13px; }
+.faith-reader-status.is-rail .fr-ai-note-body {
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+/* Stacked, for the reason in the block comment: a 130px label column
+   leaves eighteen characters for the answer. */
+.faith-reader-status.is-rail .fr-tt-row {
+  grid-template-columns: 1fr;
+  gap: 3px;
+  padding: 8px 0;
+}
+.faith-reader-status.is-rail .fr-tt-label { font-size: 10px; padding-top: 0; }
+.faith-reader-status.is-rail .fr-tt-value,
+.faith-reader-status.is-rail .fr-tt-empty { font-size: 13px; line-height: 1.5; }
+
+/* The way out, and the reason the panel is worth finding. Full width of
+   the rail so it cannot be mistaken for a caption on the row above it;
+   geometry only, since the ink and the line come from THE TFR BUTTON. */
+.fr-tt-report {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+/* Above the text, where it still is on a phone, the button has no rail
+   to fill and should not stretch across the reading measure. */
+.faith-reader-status:not(.is-rail) .fr-tt-report { width: auto; }
