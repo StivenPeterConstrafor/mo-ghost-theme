@@ -50,19 +50,56 @@
    * handler and the two placements can never disagree about state.
    */
   const NARROW = 700;
-  const pop = document.getElementById("rdToolsPop");
   const bar = btn.parentElement;
   const next = btn.nextElementSibling;
 
+  /* IT USED TO MOVE INTO THE TOOLS POPOVER, WHICH HAS NO OPENER ON A
+   * PHONE. Ian, 2026-09-21: "I don't see the english modernizer on
+   * mobile." He could not: #rdTools, the button that opens
+   * #rdToolsPop, is display:none at 390px, so the toggle was moved out
+   * of an overflowing toolbar and into a drawer nothing can open. The
+   * control existed, answered to its handler, and was unreachable.
+   *
+   * This is the second time. The reader's Report button went the same
+   * route, toolbar to Tools to unreachable, and ended up in the Aa
+   * panel, which is the ONE popover whose opener survives at this
+   * width: #aaBtn is the only visible control in the top bar on a
+   * phone. The Modernizer belongs there for the same reason.
+   *
+   * It goes in as an .aarow, the panel's own label-plus-control unit,
+   * rather than dropped in loose: every other reading setting in that
+   * panel is a labelled row and one bare button among them reads as a
+   * mistake. "Spelling" is what it does to the text, and "English" and
+   * "Latin" are already taken by the lane sizes two rows above. */
+  const aaPop = document.getElementById("aaPop");
+  let row = null;
+  function aaRow() {
+    if (row) return row;
+    row = document.createElement("div");
+    row.className = "aarow";
+    const label = document.createElement("span");
+    label.textContent = "Spelling";
+    row.appendChild(label);
+    return row;
+  }
+
   function place() {
     const narrow = window.innerWidth <= NARROW;
-    if (narrow && pop && btn.parentElement !== pop) {
-      btn.classList.add("rdt");
-      // Above the status line, which must stay last.
-      const say = document.getElementById("rdToolsSay");
-      pop.insertBefore(btn, say || null);
-    } else if (!narrow && btn.parentElement === pop) {
+    if (narrow && aaPop && btn.parentElement !== row) {
       btn.classList.remove("rdt");
+      const r = aaRow();
+      r.appendChild(btn);
+      // Before the Problem row, which is a report rather than a reading
+      // setting and reads best as the last thing in the panel. Found by
+      // its Report button rather than by position, so adding a row after
+      // it later does not silently put Spelling in the wrong place.
+      if (r.parentElement !== aaPop) {
+        const report = aaPop.querySelector(".aarow:last-child");
+        aaPop.insertBefore(r, report || null);
+      }
+    } else if (!narrow && btn.parentElement === row) {
+      btn.classList.remove("rdt");
+      if (row.parentElement) row.parentElement.removeChild(row);
       bar.insertBefore(btn, next || null);
     }
   }
