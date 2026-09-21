@@ -17355,3 +17355,135 @@ a.fr-btn:hover,
 
 /* Keep Vercel core totals comparable when a shelf also holds native English editions. */
 .fro-shelf-extra { display: block; font-size: 0.85em; font-weight: 400; line-height: 1.4; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   THE FAITH RECEIVED RAIL
+   ══════════════════════════════════════════════════════════════════════
+
+   Markup: partials/faith-received/_tfr-rail.hbs. Behaviour:
+   assets/js/page/faith-tfr-rail.js.
+
+   A skinny band between Mere Orthodoxy's masthead and the page. It has
+   to read as a second, quieter order of navigation: the masthead is the
+   magazine, this is the library inside it. So it takes the body face at
+   a small size rather than the display face, sits on the page colour
+   rather than a fill of its own, and is separated by rules rather than
+   by a block of colour, which would make two mastheads.
+
+   THE DRAWER OPENS ALONG THE RAIL. Not a dropdown: a dropdown covers
+   the first thing on the page, and on a library index that is the
+   content the reader came for. Opening in the band pushes the page down
+   a line and covers nothing. --------------------------------------- */
+.tfr-rail {
+  background: var(--color-page, #f7f4ef);
+  border-bottom: 1px solid var(--color-rule, #e5ded5);
+  font-family: var(--font-body);
+}
+.tfr-rail-inner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 28px;
+  min-height: 46px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+/* The brand is the only display-face thing here, and it is the door
+   back to the library's front page. */
+.tfr-rail-brand {
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.01em;
+  color: var(--color-dark, #2d2927);
+  text-decoration: none;
+  white-space: nowrap;
+  margin-right: 4px;
+}
+.tfr-rail-brand:hover { color: var(--color-secondary, #c1593c); text-decoration: none; }
+
+.tfr-rail-items {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 22px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tfr-rail-group { position: relative; margin: 0; }
+
+/* One treatment for the links and the toggles, because to a reader they
+   are the same kind of thing: a way further in. The button is stripped
+   of its buttonness rather than the link being dressed up as one. */
+.tfr-rail-link {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-muted, #6b6660);
+  background: none;
+  border: 0;
+  padding: 11px 0;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.14s;
+}
+.tfr-rail-link:hover,
+.tfr-rail-link:focus-visible { color: var(--color-secondary, #c1593c); text-decoration: none; }
+.tfr-rail-link[aria-current="page"],
+.tfr-rail-link.is-current { color: var(--color-dark, #2d2927); }
+
+/* The caret states which items open, so nobody clicks Read expecting to
+   arrive somewhere. It turns when the drawer is open. */
+.tfr-rail-toggle::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 7px;
+  vertical-align: 2px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.16s;
+}
+.tfr-rail-toggle[aria-expanded="true"]::after { transform: rotate(-135deg); }
+
+/* The drawer itself: a full-width row under the items, so it can hold
+   eight destinations without pushing the rail off the side of a phone. */
+.tfr-rail-drawer {
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 20px;
+  padding: 2px 0 12px;
+  margin-top: -2px;
+}
+.tfr-rail-drawer[hidden] { display: none; }
+.tfr-rail-drawer a {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-dark, #2d2927);
+  text-decoration: none;
+  padding: 6px 0;
+  border-bottom: 1px solid transparent;
+  white-space: nowrap;
+}
+.tfr-rail-drawer a:hover,
+.tfr-rail-drawer a:focus-visible {
+  color: var(--color-secondary, #c1593c);
+  border-bottom-color: var(--color-secondary, #c1593c);
+  text-decoration: none;
+}
+.tfr-rail-drawer a[aria-current="page"] { color: var(--color-secondary, #c1593c); }
+
+@media (max-width: 640px) {
+  .tfr-rail-inner { gap: 0 16px; }
+  .tfr-rail-items { gap: 0 14px; }
+  .tfr-rail-link { font-size: 12px; letter-spacing: 0.06em; }
+  .tfr-rail-brand { font-size: 15px; flex: 1 0 100%; padding-top: 6px; }
+  .tfr-rail-drawer { gap: 0 14px; }
+}
