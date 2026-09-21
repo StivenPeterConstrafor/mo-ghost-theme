@@ -6717,6 +6717,13 @@ mark.faith-find-hit.is-current {
 
 .bband { padding: 92px 0; border-top: 1px solid var(--color-card-border); }
 .bband--cream { background: var(--color-cream); }
+/* Shelves, which is the long one. Ian, 2026-09-21: light gray. A neutral
+   here rather than a fourth warm tone: the band runs the height of eight
+   shelves and the cream it used to wear made the page read as one
+   unbroken parchment from the hero down. Mixed from --color-dark so it
+   is the page's own grey rather than a stock one, and kept light enough
+   that the rules and muted type inside it keep their contrast. */
+.bband--gray { background: color-mix(in srgb, var(--color-dark, #2d2927) 6%, #fff); }
 .bband--dark { background: var(--color-dark); color: #fff; border-top: 0; }
 .bhead { margin: 0 0 44px; max-width: 44ch; }
 .blabel { font-family: var(--font-body); font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
