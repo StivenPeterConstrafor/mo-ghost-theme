@@ -57,6 +57,25 @@
      shows them, each with the page behind it. --}}
 <script src="{{asset "js/page/faith-port-surface-boot.js"}}&amp;frv=c6ea6e388eea3f2a" data-body-class="research-page"></script>
 <script src="{{asset "js/port/authors.in02.js"}}&amp;frv=d8b85f9e53267406"></script>
+{{!-- THE HEADER, BACK. Ian, 2026-09-21: "All author pages should have a
+     header again." They lost it when the ported author room replaced
+     our own: the room fills #page below and prints its own title, so
+     the page opened straight onto a breadcrumb with nothing above it
+     saying which part of the library you were standing in.
+
+     Same header the Topics page got back for the same reason, and the
+     same shape: kicker, name of the section, one line saying what the
+     rooms are for. It is the SECTION that is named here, not the
+     author. The room prints the author's own name a few lines down,
+     and a hero that repeated it would say the same thing twice and be
+     wrong on the index, which lists everybody. --}}
+<section class="bhero bhero--tool">
+  <div class="bhero-inner container">
+    <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Authors</p>
+    <h1>Authors</h1>
+    <p class="bhero-sub">Read the tradition by the people who wrote it. Each author&rsquo;s room gathers their works, the positions drawn from them, the Scripture they cite, and the authors who cite them.</p>
+  </div>
+</section>
 {{> "faith-received/_tfr-rail"}}
 <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
 <script src="{{asset "js/port/scripture-tools.js"}}&amp;frv=1f7a52f7eeb12682"></script>
