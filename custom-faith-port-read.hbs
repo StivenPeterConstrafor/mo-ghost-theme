@@ -8,6 +8,9 @@
      our nav is fixed at top:0 like the reader's toolbar, so the toolbar
      needs to know how tall ours is. Both are done here; must load first. --}}
 <script src="{{asset "js/page/faith-port-read-boot.js"}}&amp;frv=af6a3529073948b4"></script>
+{{!-- Reads ?p= before the engine rewrites the address away; see the
+     file for why a missed locus must not look like page one. --}}
+<script src="{{asset "js/page/faith-port-read-locus.js"}}"></script>
 <meta charset="utf-8">
 <meta name="theme-color" content="#FAF8F3" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#211E1A" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="The Faith Received">

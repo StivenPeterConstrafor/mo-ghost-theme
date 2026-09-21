@@ -18042,3 +18042,17 @@ body.research-page {
   }
 }
 
+/* A citation that points outside its own work. The note says what was
+   asked for and what the edition holds; it is not an error banner,
+   because nothing failed and the work on screen is the right one. */
+.fr-locus-miss {
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--color-secondary, #c1593c);
+  background: var(--color-page, #f7f4ef);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--color-dark, #2d2927);
+}
+
