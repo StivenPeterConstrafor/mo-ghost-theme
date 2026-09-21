@@ -171,6 +171,11 @@ routes:
     template: custom-welcome
   /admin/tfr/:
     template: custom-admin-tfr
+  # Reader survey results. Its own page and its own admin grant
+  # ("tfr-survey"); /admin/tfr/ next door carries reader PII and
+  # this does not, so the two are grantable apart.
+  /admin/tfr-survey/:
+    template: custom-admin-tfr-survey
   /admin/migration/:
     template: custom-admin-migration
   /admin/editorial/:
