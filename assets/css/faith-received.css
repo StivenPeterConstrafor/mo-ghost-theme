@@ -17915,36 +17915,88 @@ body.research-page {
    opens as a panel under the rail, one destination per row at a
    thumb-sized height. The desktop behaviour is untouched.
    ------------------------------------------------------------------ */
+/* ONE LINE ON A PHONE TOO, AND THE BRAND KEEPS "| Home".
+   Ian, 2026-09-21: "on mobile navrail, The Faith Received should be The
+   Faith Received | Home and it should be on the same line as the rest of
+   the options."
+
+   This reverses the two-line arrangement described above, so the reason
+   that arrangement existed has to be answered rather than forgotten. It
+   existed because the six items need about 381px and a 390px phone
+   offers 358: put them behind a brand and the last of them sit off the
+   right edge, which was fine except that NOTHING SAID SO. The fix was to
+   give the items the whole width.
+
+   The items still do not fit beside the brand -- no type size makes
+   "The Faith Received | Home" plus six items measure 358px, so this is
+   not a sizing problem that can be solved by shrinking. What can be
+   fixed is the part that was actually broken: the silence.
+
+   So the brand is pinned and does not scroll, the items scroll under it
+   in what is left, and a fade on the right edge is permanently on at
+   this width -- not only while a drawer is open, which is what made the
+   cue useless before. The row also gets momentum scrolling and enough
+   end padding that the last item never stops flush against the glass.
+   ------------------------------------------------------------------ */
 @media (max-width: 640px) {
   .tfr-rail-inner {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     overflow-x: visible;
-    gap: 0;
+    gap: 0 12px;
     padding-left: 16px;
     padding-right: 16px;
     min-height: 0;
+    align-items: center;
   }
-  /* Its own line, and quieter: it is a label here, not a destination
-     competing with the six. */
+  /* Pinned: it is the way back and must not be the thing that scrolls
+     away. flex:none over min-width:0 so it never gets squeezed. */
   .tfr-rail-brand {
-    flex: 1 1 100%;
+    flex: 0 0 auto;
     position: static;
-    padding: 7px 0 1px;
-    font-size: 11px;
-    letter-spacing: 0.08em;
+    padding: 9px 0 10px;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
   }
-  .tfr-rail-home { display: none; }
+  .tfr-rail-home { display: inline; }
 
+  /* min-width:0 is what lets a flex item shrink below its content and
+     scroll. Without it the row forces the bar wider than the phone and
+     the page itself scrolls sideways instead. */
   .tfr-rail-items {
-    flex: 1 1 100%;
+    flex: 1 1 auto;
+    min-width: 0;
     gap: 0 15px;
     overflow-x: auto;
     scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
     /* The row is the scroller now, so its own edge padding has to be
        inside it or the last item stops flush against the glass. */
-    padding-right: 8px;
+    padding-right: 20px;
   }
   .tfr-rail-items::-webkit-scrollbar { display: none; }
+  /* The row is narrow now, so its children have to be told not to
+     shrink. Flex items default to flex-shrink:1, and .tfr-rail-group
+     additionally carries min-width:0, which together let the four
+     drawer items compress to nothing and paint on top of each other --
+     "RESCRIPTCSRE" where Read, Scripture, Topics and Research should
+     be. They keep their natural width and the ROW scrolls, which is the
+     whole arrangement. */
+  .tfr-rail-items > li { flex: 0 0 auto; }
+  .tfr-rail-group { min-width: auto; }
+
+  /* The cue. Sits over the right edge of the rail and is not a scroll
+     target itself, so a thumb landing on it still drags the row. */
+  .tfr-rail::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 34px;
+    pointer-events: none;
+    background: linear-gradient(to right, transparent, var(--color-page, #f6f3f2) 72%);
+  }
   .tfr-rail-link { padding: 9px 0 10px; font-size: 12px; }
 
   /* THE PANEL. Positioned against .tfr-rail, which is the nearest
