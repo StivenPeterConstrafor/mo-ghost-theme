@@ -17932,24 +17932,40 @@ body.research-page {
    not a sizing problem that can be solved by shrinking. What can be
    fixed is the part that was actually broken: the silence.
 
-   So the brand is pinned and does not scroll, the items scroll under it
-   in what is left, and a fade on the right edge is permanently on at
-   this width -- not only while a drawer is open, which is what made the
-   cue useless before. The row also gets momentum scrolling and enough
-   end padding that the last item never stops flush against the glass.
+   So the whole rail becomes one row that scrolls together -- brand
+   included. Ian, 2026-09-21: "the whole thing needs to scroll, including
+   the TFR | Home. It's just part of the rail with everything else. It's
+   not pinned still or anything." A first pass pinned the brand and
+   scrolled only the items; that made the brand a fixed label with a
+   moving list beside it, which is two components where the rail is one.
+
+   What answers the original problem is not the pinning, it is the cue:
+   a fade on the right edge that is permanently on at this width, rather
+   than appearing only while a drawer is open. That plus momentum
+   scrolling and enough end padding that the last item never stops flush
+   against the glass.
    ------------------------------------------------------------------ */
 @media (max-width: 640px) {
+  /* THE INNER IS THE SCROLLER, so everything in it moves together.
+     It is unpositioned, which matters: the drawers are absolutely
+     positioned against .tfr-rail, and an overflow ancestor that is NOT
+     in an abspos element's containing-block chain does not clip it. So
+     the panel still escapes this row. */
   .tfr-rail-inner {
     flex-wrap: nowrap;
-    overflow-x: visible;
-    gap: 0 12px;
+    gap: 0 14px;
     padding-left: 16px;
-    padding-right: 16px;
+    padding-right: 20px;
     min-height: 0;
     align-items: center;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
-  /* Pinned: it is the way back and must not be the thing that scrolls
-     away. flex:none over min-width:0 so it never gets squeezed. */
+  .tfr-rail-inner::-webkit-scrollbar { display: none; }
+
+  /* Part of the row, not furniture beside it: it scrolls with the rest
+     and keeps "| Home". flex:none so it is never squeezed instead. */
   .tfr-rail-brand {
     flex: 0 0 auto;
     position: static;
@@ -17960,21 +17976,11 @@ body.research-page {
   }
   .tfr-rail-home { display: inline; }
 
-  /* min-width:0 is what lets a flex item shrink below its content and
-     scroll. Without it the row forces the bar wider than the phone and
-     the page itself scrolls sideways instead. */
   .tfr-rail-items {
-    flex: 1 1 auto;
-    min-width: 0;
+    flex: 0 0 auto;
     gap: 0 15px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    /* The row is the scroller now, so its own edge padding has to be
-       inside it or the last item stops flush against the glass. */
-    padding-right: 20px;
+    overflow-x: visible;
   }
-  .tfr-rail-items::-webkit-scrollbar { display: none; }
   /* The row is narrow now, so its children have to be told not to
      shrink. Flex items default to flex-shrink:1, and .tfr-rail-group
      additionally carries min-width:0, which together let the four
