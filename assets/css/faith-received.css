@@ -17849,3 +17849,102 @@ body.research-page {
   justify-content: flex-start;
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   THE RAIL ON A PHONE
+   ══════════════════════════════════════════════════════════════════════
+
+   Ian: "The navrail works horribly on mobile. needs major work."
+
+   MEASURED AT 390px BEFORE TOUCHING ANYTHING. The brand, "The Faith
+   Received | Home", is 203px of a 390px viewport. That leaves 147px for
+   six items that need 381px, so Search was half visible and Read,
+   Scripture, Topics and Research were off the right edge entirely. They
+   were reachable, the row scrolls sideways, but nothing on screen said
+   so: the scroll cue only appears while a drawer is open, and no drawer
+   can be opened when its toggle is past the edge. On a phone the rail
+   was the brand and one and a half words.
+
+   SO THE BRAND TAKES ITS OWN LINE and the six items get the whole width.
+   At 12px they measure 381px against 390 less 32 of padding, which fits
+   with the row still able to scroll a little if a font loads wide.
+   "| Home" is dropped there: the brand is on its own line and already
+   reads as the way back, and it is the 50px that decides whether the
+   items fit.
+
+   THE DRAWER DROPS RATHER THAN SLIDES, on this width only. Ian asked
+   for the horizontal slide and it is right on a desktop, where opening
+   Research has 700px of rail to travel along. At 390px there is no line
+   to slide into: the drawer would open into a 40px gutter and scroll,
+   which is how the items got lost in the first place. So on a phone it
+   opens as a panel under the rail, one destination per row at a
+   thumb-sized height. The desktop behaviour is untouched.
+   ------------------------------------------------------------------ */
+@media (max-width: 640px) {
+  .tfr-rail-inner {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    gap: 0;
+    padding-left: 16px;
+    padding-right: 16px;
+    min-height: 0;
+  }
+  /* Its own line, and quieter: it is a label here, not a destination
+     competing with the six. */
+  .tfr-rail-brand {
+    flex: 1 1 100%;
+    position: static;
+    padding: 7px 0 1px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+  .tfr-rail-home { display: none; }
+
+  .tfr-rail-items {
+    flex: 1 1 100%;
+    gap: 0 15px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* The row is the scroller now, so its own edge padding has to be
+       inside it or the last item stops flush against the glass. */
+    padding-right: 8px;
+  }
+  .tfr-rail-items::-webkit-scrollbar { display: none; }
+  .tfr-rail-link { padding: 9px 0 10px; font-size: 12px; }
+
+  /* THE PANEL. Positioned against .tfr-rail, which is the nearest
+     positioned ancestor and sits OUTSIDE the scrolling row, so the
+     panel is not clipped by it. */
+  .tfr-rail-drawer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    z-index: 30;
+    width: auto !important;
+    margin-left: 0 !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    overflow: visible;
+    background: var(--color-page, #f7f4ef);
+    border-bottom: 1px solid var(--color-rule, #e5ded5);
+    box-shadow: 0 14px 28px -18px rgba(0, 0, 0, 0.45);
+    display: none;
+    transition: none;
+  }
+  .tfr-rail-drawer.is-open { display: flex; opacity: 1; }
+  .tfr-rail-drawer a {
+    padding: 13px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--color-rule, #e5ded5);
+    border-top: 0;
+  }
+  .tfr-rail-drawer a:last-child { border-bottom: 0; }
+  .tfr-rail-drawer a:hover,
+  .tfr-rail-drawer a:focus-visible { border-bottom-color: var(--color-rule, #e5ded5); }
+
+  /* The cue described a drawer that scrolled sideways. Neither is true
+     here, and a hairline under a dropped panel reads as a stray rule. */
+  .tfr-rail-scroll { display: none; }
+}
+

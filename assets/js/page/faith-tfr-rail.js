@@ -25,6 +25,15 @@
 
   const drawerFor = (name) => rail.querySelector(`[data-tfr-drawer-for="${name}"]`);
 
+  /* ON A PHONE THE DRAWER DROPS, so there is no width to animate.
+     Measured at 390px: the brand alone is 203px and the six items need
+     381, so nothing can slide along a line that has no room left. The
+     CSS at <=640px positions the drawer as a panel under the rail; this
+     keeps the script from writing inline widths that would fight it.
+     Read per call rather than cached, because a phone rotating from
+     portrait to landscape crosses this boundary without reloading. */
+  const dropped = () => window.matchMedia("(max-width: 640px)").matches;
+
   /* `hidden` is display:none, which cancels a transition, so it is only
      used before the first interaction. After that the drawer is opened
      and closed by width alone and stays in the layout at zero. */
@@ -32,6 +41,12 @@
     const d = drawerFor(toggle.dataset.tfrDrawer);
     if (!d) return;
     toggle.setAttribute("aria-expanded", "false");
+    if (dropped()) {
+      d.classList.remove("is-open");
+      d.style.width = "";
+      rail.classList.remove("tfr-rail--open");
+      return;
+    }
     // From its current measured width, so the closing curve describes
     // the same distance the opening one did.
     d.style.width = `${d.scrollWidth}px`;
@@ -52,6 +67,12 @@
     closeAll(toggle);
     toggle.setAttribute("aria-expanded", "true");
     d.hidden = false;
+    if (dropped()) {
+      d.style.width = "";
+      window.requestAnimationFrame(() => d.classList.add("is-open"));
+      rail.classList.add("tfr-rail--open");
+      return;
+    }
     // A frame between removing `hidden` and animating, or the element
     // goes from display:none straight to its open width and the slide
     // never runs.
