@@ -70,7 +70,12 @@
       + `<span class="tfr-issue-type">${escapeHtml(row.issue_type || "")}</span>`
       + `<span class="tfr-issue-when">${escapeHtml(when(row.created_at))}</span>`
       + `</div>`
-      + `<p class="tfr-issue-work">${escapeHtml(row.work_name || "")}</p>${
+      // Title, then the author when the report carried one. Em dash
+      // rather than a second line: an editor scanning the inbox reads
+      // "which work" as one fact, and a bare title is ambiguous across
+      // a library with four Pastoral Rules in it.
+      + `<p class="tfr-issue-work">${escapeHtml(row.work_name || "")}`
+      + `${row.author ? ` <span class="tfr-issue-author">&mdash; ${escapeHtml(row.author)}</span>` : ""}</p>${
        row.page_url ? `<p class="tfr-issue-where">${safeLink(row.page_url)}</p>` : ""
        }<p class="tfr-issue-who">${escapeHtml(name)} &middot; `
       + `<a href="mailto:${escapeHtml(row.email || "")}">${escapeHtml(row.email || "")}</a></p>`

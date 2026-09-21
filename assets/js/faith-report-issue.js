@@ -47,6 +47,25 @@
     return (document.title || "").replace(/\s+—\s+The Faith Received.*$/, "").trim();
   }
 
+  /*
+   * WHO WROTE IT, alongside what it is called. Ian, 2026-09-21: "The
+   * form should always automatically include title and author name."
+   *
+   * A report saying "Pastoral Rule" leaves an editor to work out which
+   * Pastoral Rule and whose; the reader always knew, and was never
+   * asked. The reader prints the author in its reference line as
+   * #reader-author, which is a link to that author's page, so the name
+   * is taken from there rather than from the slug or the catalogue.
+   *
+   * Empty off a work page, and empty for anonymous works, both of which
+   * are correct: the field is then simply not sent.
+   */
+  function authorName() {
+    const el = document.querySelector("#reader-author, [data-faith-work-author]");
+    const t = el && el.textContent ? el.textContent.trim() : "";
+    return t.slice(0, 160);
+  }
+
   function param(name) {
     try { return new URLSearchParams(window.location.search).get(name) || ""; }
     catch (_) { return ""; }
@@ -81,6 +100,7 @@
     if (overlay) return;
     lastFocused = document.activeElement;
     const here = workName();
+    const whom = authorName();
     const onWork = !!here;
 
     overlay = document.createElement("div");
@@ -106,6 +126,9 @@
       `<label class="fr-report-field"><span>Work name</span>` +
       `<input type="text" name="workName" value="${escapeHtml(here)}" ` +
       `placeholder="${onWork ? "" : "The work or page this is about"}" required></label>` +
+      `<label class="fr-report-field"><span>Author</span>` +
+      `<input type="text" name="author" value="${escapeHtml(whom)}" ` +
+      `placeholder="Who wrote it, if you know"></label>` +
       `<label class="fr-report-field"><span>Issue type</span>` +
       `<select name="issueType" required>` +
       `<option value="">Choose one</option>${ 

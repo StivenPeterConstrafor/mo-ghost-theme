@@ -209,7 +209,12 @@
   resolve.then((source) => {
     if (!source) return;
     draw({
-      title: "Translation Transparency",
+      // "Transparency", not "Translation Transparency". Ian,
+      // 2026-09-21. In the rail the longer name wrapped to two lines
+      // and spent them both saying what the panel below it says
+      // anyway; the first fact on the summary line is already "AI
+      // translated from Latin".
+      title: "Transparency",
       fact: `AI translated from ${escapeHtml(source)}`,
       head: "This English was translated by a machine.",
       body: `The English on this page was produced from the ${escapeHtml(source)} by `
@@ -297,6 +302,12 @@
     // needs no script of its own.
     + `<button type="button" class="fr-tt-report" data-report-issue>`
     + `\u2691 Report a problem with this work</button>`
+    // The standing policy behind the panel: how works are made, who
+    // reviews them, what gets corrected. The panel says what is true of
+    // THIS work; this says what is true of all of them. Ian,
+    // 2026-09-21: a button under Report, to our Commitment.
+    + `<a class="fr-tt-commit" href="/the-faith-received/transparency/">`
+    + `Our commitment to transparency</a>`
     + `</div></details>`;
   mount.hidden = false;
   place(mount);

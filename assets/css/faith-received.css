@@ -18687,6 +18687,38 @@ body.has-fr-survey { padding-bottom: 34px; }
   cursor: pointer;
 }
 
-/* Above the text, where it still is on a phone, the button has no rail
+/* Above the text, where it still is on a phone, the buttons have no rail
    to fill and should not stretch across the reading measure. */
-.faith-reader-status:not(.is-rail) .fr-tt-report { width: auto; }
+.faith-reader-status:not(.is-rail) .fr-tt-report,
+.faith-reader-status:not(.is-rail) .fr-tt-commit { width: auto; }
+
+/* The standing policy, under the report button. Quieter than Report on
+   purpose: reporting is the thing a reader might need to DO from here,
+   and the commitment is background they can read at leisure. A link
+   wearing a button's geometry rather than a second boxed control, so
+   the panel ends with one action and one door rather than two
+   competing buttons. */
+.fr-tt-commit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 40px;
+  margin-top: 8px;
+  padding: 8px 14px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.3;
+  color: var(--color-muted, #6b6660);
+  text-align: center;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.fr-tt-commit:hover {
+  color: var(--color-secondary, #c1593c);
+  text-decoration: underline;
+}
+.fr-tt-commit:focus-visible {
+  outline: 2px solid var(--color-dark, #2d2927);
+  outline-offset: 2px;
+}
