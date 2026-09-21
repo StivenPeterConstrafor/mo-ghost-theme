@@ -32,7 +32,13 @@
     const d = drawerFor(toggle.dataset.tfrDrawer);
     if (!d) return;
     toggle.setAttribute("aria-expanded", "false");
-    d.classList.remove("is-open");
+    // From its current measured width, so the closing curve describes
+    // the same distance the opening one did.
+    d.style.width = `${d.scrollWidth}px`;
+    window.requestAnimationFrame(() => {
+      d.classList.remove("is-open");
+      d.style.width = "0px";
+    });
     rail.classList.remove("tfr-rail--open");
   }
 
@@ -46,16 +52,23 @@
     closeAll(toggle);
     toggle.setAttribute("aria-expanded", "true");
     d.hidden = false;
-    // A frame between removing `hidden` and adding the class, or the
-    // element goes from display:none straight to its open width and the
-    // slide never runs.
-    window.requestAnimationFrame(() => d.classList.add("is-open"));
+    // A frame between removing `hidden` and animating, or the element
+    // goes from display:none straight to its open width and the slide
+    // never runs.
+    window.requestAnimationFrame(() => {
+      d.classList.add("is-open");
+      d.style.width = `${d.scrollWidth}px`;
+      // Once it has arrived, hand the width back to the content, so a
+      // resize or a font swap does not leave it clipped at an old number.
+      window.setTimeout(() => {
+        if (d.classList.contains("is-open")) d.style.width = "auto";
+      }, 320);
+    });
     rail.classList.add("tfr-rail--open");
-    // The rail is one non-wrapping line, so an opened drawer can run off
-    // the end on a narrow screen. Bring it into view.
-    window.setTimeout(() => {
-      if (d.scrollIntoView) d.scrollIntoView({ block: "nearest", inline: "nearest" });
-    }, 300);
+    /* NO scrollIntoView. It was the jump: measured on the live rail, the
+       width settled at 120ms and then scrollLeft went 0 to 177 in a
+       single frame at 300ms. The rail scrolls under the pinned brand if
+       the reader wants it to; nothing yanks it. */
   }
 
   toggles.forEach((t) => {

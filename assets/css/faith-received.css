@@ -17447,39 +17447,48 @@ a.fr-btn:hover,
 .tfr-rail-link[aria-current="page"],
 .tfr-rail-link.is-current { color: var(--color-dark, #2d2927); }
 
+/* Sideways, because that is the way the drawer goes: > to open it out
+   along the rail, < to pull it back. A down-caret promised a dropdown. */
 .tfr-rail-toggle::after {
   content: "";
   display: inline-block;
   width: 5px;
   height: 5px;
   margin-left: 7px;
-  vertical-align: 2px;
+  vertical-align: 1px;
   border-right: 1px solid currentColor;
   border-bottom: 1px solid currentColor;
-  transform: rotate(45deg);
-  transition: transform 0.16s;
+  transform: rotate(-45deg);
+  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-.tfr-rail-toggle[aria-expanded="true"]::after { transform: rotate(-135deg); }
+.tfr-rail-toggle[aria-expanded="true"]::after { transform: rotate(135deg); }
 
 /* THE DRAWER, OPENING SIDEWAYS. Width, not height: a closed drawer is
    zero wide and clipped, an open one is its natural width. Animating
    max-width rather than width because the content decides how wide it
    should be and no number here would know. */
+/* WIDTH, MEASURED, NOT max-width. Animating max-width toward a guess
+   like 80vw means the drawer reaches its real width partway through and
+   then sits still: measured on the live rail, 0 to 680px in 120ms of a
+   280ms transition, so the slide stopped dead two thirds early. The
+   script sets the exact pixel width it is going to, and the easing then
+   describes the whole movement. */
 .tfr-rail-drawer {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
   gap: 0 18px;
-  max-width: 0;
+  width: 0;
   overflow: hidden;
   opacity: 0;
-  transition: max-width 0.28s ease, opacity 0.18s ease, margin 0.28s ease;
   margin-left: 0;
+  transition: width 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+              opacity 0.22s ease,
+              margin-left 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-.tfr-rail-drawer.is-open {
-  max-width: 80vw;
-  opacity: 1;
-  margin-left: 20px;
+.tfr-rail-drawer.is-open { opacity: 1; margin-left: 20px; }
+@media (prefers-reduced-motion: reduce) {
+  .tfr-rail-drawer { transition: none; }
 }
 /* hidden is removed by the script the moment it opens; keeping the
    attribute honest for anyone reading the DOM with scripts off. */

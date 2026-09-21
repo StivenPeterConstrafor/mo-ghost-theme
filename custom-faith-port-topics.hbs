@@ -24,12 +24,25 @@
 
 <script src="{{asset "js/page/faith-port-surface-boot.js"}}&amp;frv=c6ea6e388eea3f2a" data-body-class="research-page"></script>
 <script src="{{asset "js/port/authors.in02.js"}}&amp;frv=d8b85f9e53267406"></script>
-{{> "faith-received/_research-navigation"}}
 <script src="{{asset "js/port/scripture-tools.js"}}&amp;frv=1f7a52f7eeb12682"></script>
 <link rel="stylesheet" href="{{asset "css/port/verse-research.css"}}&amp;frv=36c580339a9e6d52">
 <script src="{{asset "js/port/verse-research.js"}}&amp;frv=ece7d3e92915d12e"></script>
 <link rel="stylesheet" href="{{asset "css/port/connection-evidence.css"}}&amp;frv=62ef89e4148c2cda">
 <script src="{{asset "js/port/connection-evidence.js"}}&amp;frv=9dc93fa0151853e0"></script>
+{{!-- The header this page lost when it was ported. Ian, 2026-09-21:
+     "the Topics page needs to be updated to have a header again (image,
+     headline, etc) and the new navrail. Leave the new Topics body the
+     same." So this is the header and the rail only; #page below is the
+     ported body, untouched, and it still fills itself. --}}
+<section class="bhero bhero--tool">
+  <div class="bhero-inner container">
+    <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Topics</p>
+    <h1>Topics</h1>
+    <p class="bhero-sub">Read the tradition by question rather than by author. Each topic gathers the passages where the library argues it, and links straight into the text.</p>
+  </div>
+</section>
+{{> "faith-received/_tfr-rail"}}
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
 <main id="page"><p class="loading">…</p></main>
 <script src="{{asset "js/port/authors.in03.js"}}&amp;frv=158705037f932485"></script>
 <script src="{{asset "js/port/authors.in04.js"}}&amp;frv=8d00fd258d7820ab"></script>
