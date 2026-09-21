@@ -58,9 +58,47 @@
     return null;
   }
 
+  /* WHAT THE ENGLISH WAS TRANSLATED FROM.
+   *
+   * For the machine-translated collections the panel does not print a
+   * word until it knows the source language, and it learns that from
+   * data-fr-original-lang on <html>. The OLD reader set that attribute;
+   * the ported one does not, so without this the panel would wait its
+   * eight seconds and then stay silent on every Migne and native work.
+   * Silence is the right failure and the wrong outcome: those are
+   * exactly the works whose English a machine wrote.
+   *
+   * Not hardcoded per corpus. The ported reader already labels its
+   * source lane with the language of THIS work, Greek on a Patrologia
+   * Graeca volume and Latin on a Latina one, so the page is asked
+   * rather than the slug. A work with no source lane publishes nothing
+   * and the panel stays quiet, which is the behaviour the old reader
+   * had for a work that never answered. */
+  function publishLanguage() {
+    const el = document.getElementById("m-par");
+    const lang = el && !el.hidden ? (el.textContent || "").trim() : "";
+    if (!/^[A-Za-z][A-Za-z ]{1,20}$/.test(lang)) return false;
+    if (/^english$/i.test(lang)) return false;
+    document.documentElement.dataset.frOriginalLang = lang;
+    return true;
+  }
+
+  function watchLanguage() {
+    if (publishLanguage()) return;
+    // The toolbar is built with the work, so this is a short wait, and a
+    // bounded one: the panel gives up at eight seconds and so does this.
+    let tries = 0;
+    const timer = window.setInterval(() => {
+      if (publishLanguage() || ++tries > 28) window.clearInterval(timer);
+    }, 250);
+  }
+
   function show(corpus, id) {
     mount.dataset.frStatusCorpus = corpus;
     mount.dataset.frStatusWork = id;
+    // Before starting the panel, so a work whose lane is already
+    // labelled draws at once instead of waiting on the observer.
+    if (corpus !== "eebo" && corpus !== "mo") watchLanguage();
     if (window.FRWorkStatus && window.FRWorkStatus.run) window.FRWorkStatus.run();
   }
 
