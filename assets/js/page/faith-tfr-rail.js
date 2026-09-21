@@ -113,19 +113,28 @@
     let queued = false;
     function paint() {
       queued = false;
+      const openDrawer = rail.querySelector(".tfr-rail-drawer.is-open");
       const total = scroller.scrollWidth;
       const view = scroller.clientWidth;
-      if (total - view < 4) { cue.classList.remove("is-live"); return; }
+      // Only while a drawer is open: the bar describes that drawer, so
+      // with none open there is nothing for it to be the length of.
+      if (!openDrawer || total - view < 4) { cue.classList.remove("is-live"); return; }
+
+      // Span the drawer, clipped to what of it is actually on screen.
+      const railBox = rail.getBoundingClientRect();
+      const box = openDrawer.getBoundingClientRect();
+      const left = Math.max(0, box.left - railBox.left);
+      const right = Math.min(railBox.width, box.right - railBox.left);
+      const width = Math.max(24, right - left);
+      cue.style.left = `${left}px`;
+      cue.style.width = `${width}px`;
+
       cue.classList.add("is-live");
       const ratio = view / total;
       const travel = (total - view) ? scroller.scrollLeft / (total - view) : 0;
-      // One transform does both: scale to the visible fraction, then slide
-      // it across the track by however far is left over.
-      // Against the track's own width, which is a fixed 64px, not the
-      // rail's: the thumb lives in the little bar, not along the page.
-      const track = cue.clientWidth || 64;
+      // Against the track's own width, which is now the drawer's.
       thumb.style.transform =
-        `translateX(${travel * track * (1 - ratio)}px) scaleX(${ratio})`;
+        `translateX(${travel * width * (1 - ratio)}px) scaleX(${ratio})`;
     }
     function schedule() {
       if (queued) return;
@@ -135,9 +144,11 @@
     scroller.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
     if (window.ResizeObserver) new ResizeObserver(schedule).observe(scroller);
-    // A drawer changes the line's length, so repaint after it settles.
+    // A drawer changes the line's length and the bar's span, so repaint
+    // as it opens and again once it has arrived.
     toggles.forEach((t) => t.addEventListener("click", () => {
       window.setTimeout(schedule, 60);
+      window.setTimeout(schedule, 180);
       window.setTimeout(schedule, 340);
     }));
     schedule();

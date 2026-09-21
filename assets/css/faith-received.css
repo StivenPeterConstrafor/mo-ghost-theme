@@ -17518,17 +17518,18 @@ a.fr-btn:hover,
    of it as the view is of the whole line. It appears only when there is
    something to scroll to, so the rail is unmarked at rest. */
 .tfr-rail { position: relative; }
-/* A SHORT TRACK, NOT A FULL-WIDTH RULE. At the rail's own width the
-   thumb is the visible fraction of a long line, so it came out around
-   70% of the viewport: a terracotta bar almost as wide as the page,
-   which reads as a border rather than as a scrollbar. Sixty-four pixels
-   at the right-hand end, where the overflow is. */
+/* UNDER THE DRAWER IT DESCRIBES. It began as a full-width rule, which
+   read as a border; then as a 64px stub at the right-hand end, which
+   Ian rightly called a weird spot, since it sat nowhere near the thing
+   that scrolls. It now spans the open drawer and sits directly beneath
+   it, so the bar is visibly the drawer's own. The script sets left and
+   width from the drawer's box on every paint. */
 .tfr-rail-scroll {
   position: absolute;
-  right: 22px;
-  bottom: 3px;
+  bottom: 2px;
   height: 2px;
-  width: 64px;
+  left: 0;
+  width: 0;
   border-radius: 2px;
   background: var(--color-rule, #e5ded5);
   opacity: 0;
