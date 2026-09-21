@@ -383,6 +383,13 @@ html.fra-open .fra-launcher { display: none; }
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-muted);
+  /* One line, like the name above it. The header has a fixed height, so
+     a work title long enough to wrap pushed its second line straight
+     out of the header — which is every work title once Ask docks into
+     a 390px rail (Ian, 2026-09-21). */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fra-icon,
@@ -1522,3 +1529,75 @@ html:not(.mo-embedded) .fra {
 #fra-workspace #fra-input:focus-visible { outline:none; box-shadow:none; }
 #fra-workspace .fra-suggestions button span { letter-spacing:0; text-transform:none; }
 #fra-workspace .fra-source-preview { min-height:44px; }
+
+/* ── Ask docked beside the book ──────────────────────────────────────
+   Two things went wrong once Ask opened inside a work, both visible at
+   1440px on /read/?w=pld-2741 (Ian, 2026-09-21).
+
+   1. The refinement block above is written for the full-page /ask/
+      workspace and carries #fra-workspace specificity, so it beat the
+      .fra-docked rules further up this file. A 490px rail was handed a
+      72px header with a 24px gutter, an 8px gap and six 44px controls:
+      the conversation's name had 113px left and truncated to
+      "New conversa...". Restating the docked metrics at matching
+      specificity is the fix; the full-page workspace is untouched
+      because every selector here is scoped to .fra-docked.
+
+   2. .fra-reader-bar has no rules in this stylesheet at all. The port's
+      own ask-workspace.css defines it, and the reader template does not
+      load that file, so the nav computed to display:block and its two
+      buttons sat jammed together against the panel's left edge under
+      the truncated title. Style it here or it is unstyled everywhere
+      Ask docks. */
+#fra-workspace .fra-reader-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex: none;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--fra-border);
+}
+#fra-workspace .fra-reader-bar button {
+  min-height: 42px;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--fra-muted);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+/* The same hover ink as the header icons above, so the two rows agree. */
+#fra-workspace .fra-reader-bar button:hover { color: var(--color-primary-text); }
+
+@media (min-width: 1100px) {
+  #fra-workspace.fra-docked .fra-header { height: 60px; min-height: 60px; padding: 8px 10px; gap: 2px; align-items: center; }
+  #fra-workspace.fra-docked .fra-header .fra-icon,
+  #fra-workspace.fra-docked .fra-header #fra-history-toggle,
+  #fra-workspace.fra-docked .fra-header #fra-theme,
+  #fra-workspace.fra-docked .fra-header #fra-more-toggle,
+  #fra-workspace.fra-docked .fra-header #fra-close { min-width: 36px; min-height: 40px; padding: 0 6px; }
+  /* Back to the library keeps its href and its aria-label; in the rail
+     the word itself costs 60px of the conversation's name. */
+  #fra-workspace.fra-docked .fra-home { font-size: 0; gap: 0; min-width: 36px; min-height: 40px; padding: 0 6px; }
+  #fra-workspace.fra-docked .fra-home svg { width: 18px; height: 18px; }
+  /* The status pill is the one header child that cannot shrink: it is
+     nowrap, so flexbox takes the whole shortfall out of the name, which
+     has min-width:0. At a 390px rail the name measured 35px wide and
+     spilled over the controls the moment a question was asked. In the
+     rail the dot carries the state (it pulses while research runs and
+     becomes a tick when the answer lands), the button keeps its full
+     aria-label, and the words live in the compose foot underneath. */
+  #fra-workspace.fra-docked .fra-state { max-width: none; padding: 6px; min-height: 30px; min-width: 0; }
+  #fra-workspace.fra-docked .fra-state span { display: none; }
+  /* Conversation search is the third way into the same drawer here (the
+     history toggle two controls to the left opens it with its own
+     search box) and Cmd/Ctrl+K still opens the palette. In a 390px rail
+     it is 38px taken from the book's name. */
+  #fra-workspace.fra-docked #fra-command-toggle { display: none; }
+  #fra-workspace.fra-docked .fra-heading strong { font-size: 15px; }
+  #fra-workspace.fra-docked .fra-reader-bar { padding: 0 12px; }
+}
