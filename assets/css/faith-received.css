@@ -11849,6 +11849,21 @@ body.faith-toc-open .faith-dock { display: none; }
    the corrections if there are any. */
 .faith-reader-status { margin: 16px 0 4px; }
 .faith-reader-status[hidden] { display: none; }
+/* ON A PHONE IT TAKES THE READING COLUMN'S INSET. Ian: "Translation
+   transparency shouldn't be full width but should have margins on
+   either side." It ran 0 to 390 while the text beneath it starts at 12,
+   and being the only full-bleed element on the page made it read as a
+   system banner rather than a note about this work.
+
+   Stated HERE rather than in the reader skin, where it was written
+   first and never applied: the rule above is a margin SHORTHAND, so it
+   sets left and right to zero, and faith-received.css loads after the
+   skin. Equal specificity, later file, shorthand wins. The fix is not
+   more specificity, it is putting the exception beside the rule it is
+   an exception to. */
+@media (max-width: 640px) {
+  .faith-reader-status { margin-left: 12px; margin-right: 12px; }
+}
 
 .fr-ai-note {
   border: 1px solid var(--color-card-border);

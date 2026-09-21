@@ -1759,7 +1759,6 @@ html[data-lh] .app #reading :is(.row:not(.rapp) > .en, .row:not(.rapp) > .la,
   }
   html.g-mobile nav.frthumb button { padding: 5px 6px; }
 
-  .faith-reader-status { margin-left: 12px; margin-right: 12px; }
 
   /* Reading settings, once it has joined the dock. The dock styles its
      own children by element rather than by class, so the only thing
