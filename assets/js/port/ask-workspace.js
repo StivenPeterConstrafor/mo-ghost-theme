@@ -420,15 +420,33 @@
       if(res&&res.ok)data=await res.json();
     }catch(_){ /* a meter is not worth an error; it stays hidden */ }
     const mine=data&&data.mine;
-    if(!mine||mine.unavailable||typeof mine.used!=='number'||!(mine.cap>0)){
+    // A number is the whole requirement. A cap is not: an uncapped
+    // account still has a count worth showing, and hiding the meter
+    // from the people who administer the feature is how it went
+    // unnoticed that there was no meter at all.
+    if(!mine||mine.unavailable||typeof mine.used!=='number'){
       el.hidden=true;
       return;
     }
     el.hidden=false;
-    const used=Math.max(0,mine.used),cap=mine.cap;
-    const pct=Math.min(100,Math.round((used/cap)*100));
+    const used=Math.max(0,mine.used);
+    const cap=mine.cap>0?mine.cap:null;
     const text=document.getElementById('fra-usage-text');
     const fill=document.getElementById('fra-usage-fill');
+    const bar=el.querySelector('.fra-usage-bar');
+    if(cap===null){
+      /* MereO delta (Ian, 2026-09-21): "Put the meter on my account too,
+         just not the cap." Uncapped accounts report used with cap null.
+         The bar is hidden rather than drawn empty or full: a bar with no
+         denominator is a picture of a limit that does not exist. */
+      if(text)text.textContent=used+(used===1?' question':' questions')+' this month';
+      if(bar)bar.hidden=true;
+      el.classList.remove('fra-usage--spent');
+      el.title='No limit on this account.';
+      return;
+    }
+    if(bar)bar.hidden=false;
+    const pct=Math.min(100,Math.round((used/cap)*100));
     if(text)text.textContent=used+' of '+cap+' used';
     if(fill)fill.style.width=pct+'%';
     // At the cap the row says so plainly; the worker is what actually
