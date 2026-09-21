@@ -1493,11 +1493,19 @@ html[data-lh] .app #reading :is(.row:not(.rapp) > .en, .row:not(.rapp) > .la,
 }
 :root[data-theme="dark"] #notebook a:not([class]) { color: var(--fg); }
 
-/* A toolbar that scrolls sideways cannot contain an absolute dropdown:
-   overflow-x:auto also clips its vertical overflow. Anchor the phone's
-   reading-settings sheet to the viewport instead of the clipped toolbar. */
-@media (max-width: 640px) {
-  .ph.fr-reader-head .aapop {
+/* Toolbar scrolling must not clip its open settings or tools. Keep the
+   toolbar above the contents/research panes while one of its menus is open. */
+#app .ph.fr-reader-head .ctr:has(.aapop.on, .aapop.is-open) {
+  overflow: visible;
+}
+#app .ph.fr-reader-head:has(.aapop.on, .aapop.is-open) {
+  z-index: 10030;
+}
+
+/* Tablet readers use the same compact toolbar as phones. Position its
+   settings below both mastheads, within the available reading viewport. */
+@media (max-width: 1099px) {
+  #app .ph.fr-reader-head .aapop {
     --fr-menu-head: var(--mo-head, 61px);
     position: fixed;
     top: calc(var(--fr-menu-head) + var(--phh, 58px) + 8px);
@@ -1508,7 +1516,12 @@ html[data-lh] .app #reading :is(.row:not(.rapp) > .en, .row:not(.rapp) > .la,
     max-height: calc(100dvh - var(--fr-menu-head) - var(--phh, 58px) - 80px);
     overflow: auto;
   }
-  body:has(> .site-header.is-hidden) .ph.fr-reader-head .aapop { --fr-menu-head: 0px; }
+  body:has(> .site-header.is-hidden) #app .ph.fr-reader-head .aapop { --fr-menu-head: 0px; }
+}
+@media (max-width: 640px) {
+  #app .aapop .aarow { grid-template-columns: 80px minmax(0, 1fr); column-gap: 8px; }
+  #app .aapop .aaseg { flex-wrap: wrap; }
+  #app .aapop .aaseg .tgl { min-height: 44px; }
 }
 
 /* Phone reading: retain each existing Latin/original-English pair at full width. */

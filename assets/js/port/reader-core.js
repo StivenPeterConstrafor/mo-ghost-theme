@@ -4162,7 +4162,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
   const set=on=>{if(on)$("#reader-jump").value=String(cur??'');p.classList.toggle("on",on);b.setAttribute("aria-expanded",on?"true":"false");};
   b.onclick=e=>{e.stopPropagation();set(!p.classList.contains("on"));};
   document.addEventListener("click",e=>{if(p.classList.contains("on")&&!p.contains(e.target)&&e.target!==b)set(false);});
-  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&p.classList.contains("on"))set(false);});})();
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&p.classList.contains("on")){set(false);b.focus();}});})();
 // Flow (continuous reading) — default ON; remembered across works
 (function(){const on=lsGet("fr_flow")!=="0";app.classList.toggle("rflow",on);
   const b=$("#rdFlow");if(b){const sync=()=>{const flow=app.classList.contains("rflow");b.textContent=flow?"Flow":"Pages";b.setAttribute("aria-pressed",String(flow));b.title=flow?"Continuous reading. Switch to page view.":"Page view. Switch to continuous reading.";$("#readerFlowView")?.setAttribute("aria-pressed",String(flow));$("#readerPageView")?.setAttribute("aria-pressed",String(!flow));};sync();
