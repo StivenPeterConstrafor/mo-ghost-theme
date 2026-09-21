@@ -12917,9 +12917,19 @@ a.fr-plan-open {
    classes so this beats `.bband`'s own 92px, the same way
    .bband.faith-ask-band does the same job. */
 .bband.faith-research-band {
-  padding: 0 0 88px;
+  /* WAS 88px, AND IT WAS HALF OF A 220px HOLE. Ian, of the space between
+     the Ask door and the membership heading: "There's a huge gap here
+     that needs to be closed." Three paddings were stacking with nothing
+     between them: the workspace's own 44px bottom, this band's 88, and
+     the join band's 88 on top of that. Each is right on its own and the
+     sum is a screenful of cream. This band and the join each give up
+     most of theirs; the workspace keeps its 44, which is the padding
+     that belongs to the panel rather than to the seam. */
+  padding: 0 0 24px;
   border-top: 0;
 }
+.faith-join--after-tools { padding-top: 36px; }
+@media (max-width: 640px) { .faith-join--after-tools { padding-top: 28px; } }
 /* .faith-search-modes (the Search page's mode strip, reused here for
    its horizontal scroll at 375px and its active-tab underline) sets
    `padding: 0` and `margin: 0 0 24px`. The bottom margin is kept: it is

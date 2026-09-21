@@ -412,7 +412,23 @@
   {{> "faith-received/_beta-gate"}}
 
 
-<section class="faith-join">
+{{!-- THE MEMBERSHIP PITCH, FOR THE PEOPLE IT IS FOR.
+
+     Ian, 2026-09-21: "This should show for signed in free subscribers
+     but be hidden for signed in paid members."
+
+     A paying member was being shown a price list for the thing they
+     already pay for, directly under the tools their payment buys. Two
+     nested matches rather than one because comped members are paid
+     members in every sense that matters here: they have the tools and
+     there is nothing for them to buy. Signed-out visitors still see it,
+     since for them it is the only account prompt on the page.
+
+     The pricing cards are inside the same condition. They are the other
+     half of this block, and hiding the heading while leaving three
+     price columns underneath would be worse than leaving both. --}}
+{{#match @member.status "paid"}}{{else}}{{#match @member.status "comped"}}{{else}}
+<section class="faith-join faith-join--after-tools">
   <div class="container">
     <p class="blabel">Become a member</p>
     <h2>Use the tools and support the work.</h2>
@@ -429,6 +445,7 @@
 </section>
 
 {{> "membership-pricing"}}
+{{/match}}{{/match}}
 {{> "faith-received/_beta-band"}}
 </main>
 {{!-- The sitewide membership CTA used to sit here. It was pulled on
