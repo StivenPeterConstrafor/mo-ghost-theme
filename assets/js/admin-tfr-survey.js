@@ -27,6 +27,7 @@
     usefulness: root.querySelector("[data-survey-usefulness]"),
     uses: root.querySelector("[data-survey-uses]"),
     tradition: root.querySelector("[data-survey-tradition]"),
+    denomination: root.querySelector("[data-survey-denomination]"),
     role: root.querySelector("[data-survey-role]"),
     age: root.querySelector("[data-survey-age]"),
     gender: root.querySelector("[data-survey-gender]"),
@@ -160,6 +161,16 @@
     scale(PANELS.usefulness, d.usefulness);
     bars(PANELS.uses, d.uses, d.total);
     bars(PANELS.tradition, d.tradition, d.total);
+    // Base is the Protestant count, not the response count: this
+    // question was only put to them. Dividing by everyone would read as
+    // though most Protestants had skipped it.
+    bars(PANELS.denomination, d.denomination, d.protestants || 0);
+    const dnote = root.querySelector("[data-survey-denomination-note]");
+    if (dnote) {
+      dnote.textContent = `Asked only of readers who said Protestant${
+        d.protestants ? ` — ${num(d.protestants)} of ${num(d.total)} responses` : ""
+      }. Percentages are of that group. Same nine options as the welcome survey at /welcome/.`;
+    }
     bars(PANELS.role, d.churchRole, d.total);
     bars(PANELS.age, d.ageRange, d.total);
     bars(PANELS.gender, d.gender, d.total);

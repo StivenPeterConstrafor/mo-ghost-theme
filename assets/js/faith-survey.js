@@ -113,6 +113,34 @@
       q: "What tradition are you part of?",
       options: ["Protestant", "Catholic", "Eastern Orthodox", "Other"],
     },
+    // Asked only of Protestants. "Protestant" is four in five of the
+    // subscriber base and on its own it says almost nothing — the
+    // interesting split in this audience is Presbyterian against Baptist
+    // against Anglican, which is the split /admin/audience/ reports on.
+    //
+    // Nine options, not the welcome survey's ten: /welcome/ asks
+    // denomination with no tradition question before it, so it needs
+    // "Not Protestant" as the way out. Here the branch has already
+    // established the answer and that option could only ever contradict
+    // it. The nine that remain are word-for-word the welcome survey's,
+    // which is what the join needs.
+    {
+      key: "denomination",
+      type: "single",
+      q: "What is your denomination?",
+      showIf: (a) => a.tradition === "Protestant",
+      options: [
+        "Presbyterian",
+        "Baptist",
+        "Non-Denominational",
+        "Anglican",
+        "Lutheran",
+        "Methodist",
+        "Episcopal",
+        "Pentecostal",
+        "Other",
+      ],
+    },
     {
       key: "church_role",
       type: "multi",
@@ -148,7 +176,23 @@
       placeholder: "Anything at all. This one is the most useful to us.",
     },
   ];
-  const TOTAL = QUESTIONS.length;
+  /*
+   * The questions this reader will actually be asked, in order.
+   *
+   * One of them is conditional, so the list is recomputed rather than
+   * fixed: answering "Protestant" grows it from eight to nine, and
+   * changing that answer on the way back shrinks it again. `index` is a
+   * position in THIS list, never in QUESTIONS.
+   *
+   * The count in the footer follows it. The welcome survey does the
+   * same thing for the same reason — a bar that counts questions nobody
+   * will see reads as broken — except that it can prune once on load
+   * and this cannot, because the answer that decides it is given
+   * mid-flow.
+   */
+  function active() {
+    return QUESTIONS.filter((q) => !q.showIf || q.showIf(answers));
+  }
 
   // ── State ───────────────────────────────────────────────────────
   //
@@ -162,7 +206,7 @@
     if (saved && typeof saved === "object") {
       answers = saved.answers && typeof saved.answers === "object" ? saved.answers : {};
       const n = parseInt(saved.index, 10);
-      if (n >= 0 && n < TOTAL) index = n;
+      if (n >= 0 && n < active().length) index = n;
     }
   } catch (_) { answers = {}; }
 
@@ -244,7 +288,8 @@
 
   // ── Rendering one question ──────────────────────────────────────
   function render() {
-    const item = QUESTIONS[index];
+    const item = active()[index];
+    if (!item) return;
     const chosen = answers[item.key];
     let html = `<p class="fr-survey-q" id="fr-survey-q">${escapeHtml(item.q)}</p>`;
     if (item.hint) html += `<p class="fr-survey-hint">${escapeHtml(item.hint)}</p>`;
@@ -284,10 +329,16 @@
     }
 
     body.innerHTML = html;
-    countEl.textContent = `Question ${index + 1} of ${TOTAL}`;
+    const total = active().length;
+    countEl.textContent = `Question ${index + 1} of ${total}`;
     backBtn.hidden = index === 0;
-    nextBtn.textContent = index === TOTAL - 1 ? "Submit" : "Next";
+    nextBtn.textContent = index === total - 1 ? "Submit" : "Next";
     say("");
+  }
+
+  /** True when the reader is standing on the last active question. */
+  function onLast() {
+    return index >= active().length - 1;
   }
 
   // The chosen class is what colours an option; the input underneath is
@@ -314,7 +365,8 @@
 
   /** Read whatever is on screen into `answers`. Nothing chosen clears the key. */
   function capture() {
-    const item = QUESTIONS[index];
+    const item = active()[index];
+    if (!item) return;
     if (item.type === "text") {
       const el = body.querySelector("[data-fr-input]");
       const v = el ? el.value.trim().slice(0, 2000) : "";
@@ -333,9 +385,25 @@
   }
 
   function go(delta, keep) {
-    if (keep) capture(); else delete answers[QUESTIONS[index].key];
-    const next = index + delta;
-    if (next < 0 || next >= TOTAL) return;
+    const here = active()[index];
+    if (keep) capture(); else if (here) delete answers[here.key];
+
+    // The answer just captured can change which questions exist: going
+    // back to Tradition and changing Protestant to Catholic takes
+    // Denomination out of the flow. Drop the answer it is no longer
+    // asking for, or a denomination would be filed against a Catholic
+    // because of a choice they changed their mind about.
+    QUESTIONS.forEach((q) => {
+      if (q.showIf && !q.showIf(answers)) delete answers[q.key];
+    });
+
+    // Recomputed AFTER that, so stepping off Tradition onto a freshly
+    // created Denomination lands on the right question.
+    const list = active();
+    const at = list.indexOf(here);
+    const from = at === -1 ? index : at;
+    const next = from + delta;
+    if (next < 0 || next >= list.length) return;
     index = next;
     persist();
     render();
@@ -407,6 +475,7 @@
         usefulness: answers.usefulness ?? null,
         uses: answers.uses || [],
         tradition: answers.tradition || null,
+        denomination: answers.denomination || null,
         church_role: answers.church_role || [],
         age_range: answers.age_range || null,
         gender: answers.gender || null,
@@ -496,12 +565,17 @@
     if (e.target.closest("[data-fr-skip]")) {
       // Skipping the last question still submits: "skip" means "I have
       // nothing to say to this", not "throw away the other seven".
-      if (index === TOTAL - 1) { delete answers[QUESTIONS[index].key]; submit(); return; }
+      if (onLast()) {
+        const here = active()[index];
+        if (here) delete answers[here.key];
+        submit();
+        return;
+      }
       go(1, false);
       return;
     }
     if (e.target.closest("[data-fr-next]")) {
-      if (index === TOTAL - 1) submit(); else go(1, true);
+      if (onLast()) submit(); else go(1, true);
       return;
     }
     if (e.target.closest("[data-fr-off]")) {
