@@ -439,15 +439,37 @@
          just not the cap." Uncapped accounts report used with cap null.
          The bar is hidden rather than drawn empty or full: a bar with no
          denominator is a picture of a limit that does not exist. */
-      if(text)text.textContent=used+(used===1?' question':' questions')+' this month';
-      if(bar)bar.hidden=true;
-      el.classList.remove('fra-usage--spent');
-      el.title='No limit on this account.';
+      /* Ian: "I thought it'd be more like a bar that fills up."
+       *
+       * On a capped account it is one, below. On an uncapped one his own
+       * usage has no denominator, so there is nothing to fill: a bar
+       * would be a drawing of a limit that does not exist.
+       *
+       * But a real ceiling does apply to him, and it is the one that
+       * actually bites: GLOBAL_DAILY_BUDGET_USD, the library's shared
+       * spend for the day. budget.js says so in as many words, that it
+       * "is now the binding constraint rather than this per-member cap",
+       * and that when it is hit every reader is blocked until UTC
+       * midnight with the reason invisible to them. So on an account
+       * with no cap of its own the bar shows THAT, labelled as the
+       * library's, with his own count beside it as plain text.
+       *
+       * Two quantities in one row, so each is named: the count is his
+       * and monthly, the bar is everyone's and daily. */
+      const g=data&&data.global;
+      const pct=g&&!g.unavailable&&typeof g.pctUsed==='number'?Math.max(0,Math.min(100,g.pctUsed)):null;
+      if(text)text.innerHTML='<b>'+used+'</b> this month'+(pct===null?'':' \u00b7 library <b>'+pct+'%</b>');
+      if(bar)bar.hidden=pct===null;
+      if(fill&&pct!==null)fill.style.width=pct+'%';
+      el.classList.toggle('fra-usage--spent',pct!==null&&pct>=90);
+      el.title=pct===null
+        ?'Questions you have asked this month. No limit on this account.'
+        :'You have asked '+used+' questions this month, with no limit on this account. The bar is the library\u2019s shared daily budget, which resets at midnight UTC and blocks everyone when it is spent.';
       return;
     }
     if(bar)bar.hidden=false;
     const pct=Math.min(100,Math.round((used/cap)*100));
-    if(text)text.textContent=used+' of '+cap+' used';
+    if(text)text.innerHTML='<b>'+used+'</b> of '+cap+' used';
     if(fill)fill.style.width=pct+'%';
     // At the cap the row says so plainly; the worker is what actually
     // refuses, this only stops the reader being surprised by it.
@@ -766,7 +788,7 @@
       '<button class="fra-new" id="fra-new">'+icon('plus')+'New conversation</button><label class="fra-history-search">'+icon('search')+'<input id="fra-history-search" type="search" placeholder="Search conversations" aria-label="Search conversations"></label><div class="fra-history-label"><span>Conversations</span><button id="fra-show-archived" aria-pressed="false">Archived</button></div><nav id="fra-history-list" aria-label="Conversations"></nav><div class="fra-sidebar-foot"><a href="/the-faith-received/pins/">Collections</a><a href="/the-faith-received/desk/">Open Desk</a><div data-cgpt-link></div><button id="fra-notify" aria-pressed="false">'+icon('bell')+'Completion notifications</button><p>Conversations are saved in this browser. Deep research also saves progress on the server.</p></div></aside>'+
       '<main class="fra-main"><header class="fra-header"><button class="fra-icon" id="fra-history-toggle" aria-label="Show conversations" aria-expanded="false">'+icon('menu')+'</button><div class="fra-heading"><strong id="fra-title">New conversation</strong><span id="fra-context">Whole library</span></div><button type="button" id="fra-state" class="fra-state" hidden><i aria-hidden="true"></i><span></span></button><button class="fra-icon" id="fra-command-toggle" aria-label="Search conversations and actions" title="Search conversations and actions (⌘K / Ctrl+K)">'+icon('search')+'</button><button class="fra-icon" id="fra-theme" aria-label="Change reading theme">'+icon('sun')+'</button><button class="fra-icon" id="fra-more-toggle" aria-label="Conversation options" aria-expanded="false">•••</button><a class="fra-home" id="fra-home" href="'+esc(CFG.libraryPath)+'" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a><button class="fra-icon" id="fra-close" aria-label="Return to reading">'+icon('close')+'</button><div class="fra-menu" id="fra-more" hidden><button id="fra-rename">Rename conversation</button><button id="fra-export">Download conversation</button><button id="fra-folder">Move to folder…</button><div id="fra-folder-pick" class="fra-folder-pick" hidden><label>Folder<input id="fra-folder-name" list="fra-folder-list" maxlength="60" placeholder="New or existing folder" autocomplete="off"></label><datalist id="fra-folder-list"></datalist><div class="fra-confirm-row"><button id="fra-folder-save">Move</button><button id="fra-folder-clear">No folder</button></div></div><button id="fra-archive">Archive conversation</button><button id="fra-delete" class="fra-danger">Delete conversation</button><div id="fra-confirm" class="fra-confirm" hidden><span id="fra-confirm-text">Delete this conversation? This cannot be undone.</span><div class="fra-confirm-row"><button id="fra-confirm-yes" class="fra-danger">Delete</button><button id="fra-confirm-no">Keep</button></div></div></div></header>'+
       '<nav class="fra-reader-bar" id="fra-reader-bar" hidden aria-label="Reader research"><button id="fra-reader-notes">Saved research</button><button id="fra-expand">Expand Ask</button></nav><div class="fra-mobile-tabs" hidden><button id="fra-chat-tab" class="active">Conversation</button><button id="fra-read-tab">Read source</button></div><div class="fra-body"><section class="fra-chat"><div id="fra-feed" class="fra-feed"><div id="fra-welcome" class="fra-welcome"><div class="fra-welcome-mark">'+icon('book')+'</div><h1>Ask the Library</h1><p>Explore an idea, understand a passage, or follow a question through the texts.</p><div class="fra-suggestions"></div></div><div id="fra-thread"></div></div>'+
-      '<footer class="fra-compose-area"><button id="fra-jump" class="fra-jump" hidden>Latest answer ↓</button><aside class="fra-passage" id="fra-passage" hidden aria-label="Selected passage"><div><span id="fra-passage-cite"></span><button id="fra-passage-clear" aria-label="Remove selected passage">'+icon('close')+'</button></div><blockquote id="fra-passage-text"></blockquote></aside><div class="fra-composer"><label class="fra-compose-label" for="fra-input">Your question</label><textarea id="fra-input" rows="1" disabled placeholder="Ask anything" aria-label="Message the library"></textarea><div class="fra-compose-tools"><button id="fra-mode-toggle" aria-expanded="false"><span id="fra-mode-name">Ask</span>'+icon('chevron')+'</button><button id="fra-scope-toggle" aria-expanded="false"><span id="fra-scope-name">Scope</span>'+icon('chevron')+'</button><span class="fra-grow"></span><button id="fra-send" class="fra-send" aria-label="Send message" disabled>'+icon('send')+'</button></div><div class="fra-mode-menu fra-popover" id="fra-modes" hidden>'+Object.entries(modes).map(([key,value])=>'<button data-mode="'+key+'"><strong>'+value[0]+'</strong><span>'+value[1]+'</span></button>').join('')+'</div><section class="fra-popover fra-scope" id="fra-scope" aria-label="Research scope" hidden></section></div><div class="fra-compose-foot"><span id="fra-save-state">Saved in this browser</span><span class="fra-usage" id="fra-usage" hidden><span id="fra-usage-text"></span><span class="fra-usage-bar" aria-hidden="true"><i id="fra-usage-fill"></i></span></span><button class="fra-history-link" data-show-conversations>Saved questions</button><span class="fra-key-hint">Enter to send · Shift+Enter for a new line</span></div></footer></section>'+
+      '<footer class="fra-compose-area"><button id="fra-jump" class="fra-jump" hidden>Latest answer ↓</button><aside class="fra-passage" id="fra-passage" hidden aria-label="Selected passage"><div><span id="fra-passage-cite"></span><button id="fra-passage-clear" aria-label="Remove selected passage">'+icon('close')+'</button></div><blockquote id="fra-passage-text"></blockquote></aside><div class="fra-composer"><label class="fra-compose-label" for="fra-input">Your question</label><textarea id="fra-input" rows="1" disabled placeholder="Ask anything" aria-label="Message the library"></textarea><div class="fra-compose-tools"><button id="fra-mode-toggle" aria-expanded="false"><span id="fra-mode-name">Ask</span>'+icon('chevron')+'</button><button id="fra-scope-toggle" aria-expanded="false"><span id="fra-scope-name">Scope</span>'+icon('chevron')+'</button><span class="fra-grow"></span><button id="fra-send" class="fra-send" aria-label="Send message" disabled>'+icon('send')+'</button></div><div class="fra-mode-menu fra-popover" id="fra-modes" hidden>'+Object.entries(modes).map(([key,value])=>'<button data-mode="'+key+'"><strong>'+value[0]+'</strong><span>'+value[1]+'</span></button>').join('')+'</div><section class="fra-popover fra-scope" id="fra-scope" aria-label="Research scope" hidden></section></div><div class="fra-compose-foot"><span id="fra-save-state">Saved in this browser</span><span class="fra-usage" id="fra-usage" hidden><span id="fra-usage-text"></span><span class="fra-usage-bar" aria-hidden="true"><i id="fra-usage-fill"></i></span></span><span class="fra-key-hint">Enter to send · Shift+Enter for a new line</span></div></footer></section>'+
       '<div class="fra-split" id="fra-split" role="separator" aria-orientation="vertical" aria-label="Resize the source pane" aria-valuemin="28" aria-valuemax="76" tabindex="0" title="Drag to resize the source pane · double-click to reset"></div><section class="fra-reader" hidden><header><button class="fra-icon" id="fra-source-back" aria-label="Back to conversation">'+icon('back')+'</button><div class="fra-source-heading"><span id="fra-source-title">Source passage</span><small id="fra-source-location"></small></div><a id="fra-source-open" target="_blank" rel="noopener">Open reader</a><button class="fra-icon" id="fra-source-close" aria-label="Close source">'+icon('close')+'</button></header><div class="fra-source-viewport"><div id="fra-source-status" class="fra-source-status" role="status" hidden>Loading passage…</div><iframe id="fra-source-frame" title="Read the cited source" referrerpolicy="same-origin"></iframe></div></section></div></main>';
     panel.insertAdjacentHTML('beforeend','<dialog id="fra-command-dialog" class="fra-command" aria-labelledby="fra-command-title"><header><h2 id="fra-command-title">Find a conversation or action</h2><button type="button" class="fra-icon" data-command-close aria-label="Close command search">'+icon('close')+'</button></header><label class="fra-command-search">'+icon('search')+'<input id="fra-command-input" type="search" placeholder="Search conversations and actions" role="combobox" aria-label="Search conversations and actions" aria-autocomplete="list" aria-controls="fra-command-results" aria-expanded="false" autocomplete="off"></label><div id="fra-command-results" role="listbox" aria-label="Conversations and actions"></div><footer><span id="fra-command-count" role="status"></span><span>↑ ↓ Navigate · Enter Open · Esc Close</span></footer></dialog>');
     document.body.appendChild(panel);
@@ -1048,7 +1070,27 @@
       case 'fra-expand':expandedReaderAsk=!expandedReaderAsk;syncPresentation();fitInput();break;
       case 'fra-passage-clear':await S.update(current,c=>{delete c.draftPassage;});await refresh();break;
       case 'fra-new':await flushDraft();await newConversation();panel.classList.remove('fra-history-open');$('#fra-history-toggle').setAttribute('aria-expanded','false');$('#fra-input').focus();break;
-      case 'fra-history-toggle':panel.classList.toggle('fra-history-open');b.setAttribute('aria-expanded',String(panel.classList.contains('fra-history-open')));if(panel.classList.contains('fra-history-open'))focusConversations();break;
+      /* MereO delta (Ian, 2026-09-21): "we already have a hamburger menu
+         for that and it doesn't even work. It should work though."
+         It did nothing on a wide screen, and the class was not the
+         problem: BOTH rules that act on fra-history-open live inside
+         max-width queries (800px, and 1150px beside the reader), so
+         above those widths the class flipped and the sidebar's own
+         display:flex stood. The button toggled a state nothing drew.
+         Asking the SIDEBAR whether it is on screen, rather than asking
+         a media query, means this keeps working wherever those
+         breakpoints move to: on screen, put it away; off screen, bring
+         it back. fra-history-collapsed is the wide-screen half and is
+         cleared whenever it opens, so the two never fight. */
+      case 'fra-history-toggle':{
+        const side=panel.querySelector('.fra-sidebar');
+        const shown=side&&getComputedStyle(side).display!=='none';
+        panel.classList.toggle('fra-history-collapsed',shown);
+        panel.classList.toggle('fra-history-open',!shown);
+        b.setAttribute('aria-expanded',String(!shown));
+        if(!shown)focusConversations();
+        break;
+      }
       case 'fra-show-archived':showArchived=!showArchived;b.setAttribute('aria-pressed',String(showArchived));renderHistory();break;
       case 'fra-mode-toggle':togglePopover('fra-modes');break;
       case 'fra-scope-toggle':if($('#fra-scope').hidden)openScope();else togglePopover('fra-scope',false);break;

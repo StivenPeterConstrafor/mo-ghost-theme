@@ -1660,14 +1660,22 @@ html:not(.mo-embedded) .fra {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: var(--fra-muted, #6b6660);
+  /* NOT the muted grey its neighbours wear. The footer is four quiet
+     status items and the meter was the fifth, which is why Ian read
+     right past his own count. It is the one item here that is a
+     measurement, so it carries the body ink and its number is bold. */
+  color: var(--fra-ink, #2d2927);
   white-space: nowrap;
 }
+.fra-usage b { font-weight: 600; }
 .fra-usage[hidden] { display: none; }
 .fra-usage-bar {
   display: inline-block;
-  width: 56px;
-  height: 4px;
+  /* Ian: "I thought it'd be more like a bar that fills up." It was 56x4,
+     which at a glance is a dash. "Saved questions" left the footer at his
+     request and the width went here. */
+  width: 110px;
+  height: 7px;
   border-radius: 2px;
   background: currentColor;
   opacity: 0.22;
@@ -1677,6 +1685,7 @@ html:not(.mo-embedded) .fra {
   display: block;
   height: 100%;
   width: 0;
+  border-radius: inherit;
   background: currentColor;
   opacity: 1;
   transition: width 0.25s ease;
@@ -1690,4 +1699,18 @@ html:not(.mo-embedded) .fra {
   /* The hint and the meter cannot both fit; the count is the useful one. */
   .fra-compose-foot .fra-key-hint { display: none; }
 }
+.fra-usage-bar[hidden] { display: none; }
+
+/* THE HAMBURGER PUTS THE SIDEBAR AWAY ON A WIDE SCREEN.
+   Ian: "we already have a hamburger menu for that and it doesn't even
+   work. It should work though."
+
+   The port only ever taught fra-history-open to REVEAL a sidebar that
+   its own media queries had hidden, so above 800px (or 1150px beside
+   the reader) the button toggled a class no rule drew. This is the
+   other half: the state that hides a sidebar which is otherwise shown.
+
+   The script clears this class whenever it opens the list, so it never
+   competes with fra-history-open. */
+#fra-workspace.fra-history-collapsed .fra-sidebar { display: none; }
 
