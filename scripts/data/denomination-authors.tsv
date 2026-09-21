@@ -1,0 +1,3237 @@
+# The Faith Received — author denominations
+#
+# name <TAB> body <TAB> party <TAB> confidence <TAB> note
+#
+# BODY    the church he belonged to. One of: Anglican, Presbyterian,
+#         Congregational, Baptist, Quaker, Continental Reformed,
+#         Lutheran, Anabaptist, Arminian, Bohemian Brethren,
+#         Waldensian, Socinian, Roman Catholic, Eastern Orthodox.
+# PARTY   Puritan or Conformist, or blank. Cuts across the bodies.
+# CONF    h  certain — a man whose church is not in question
+#         m  confident — the standard account, held without hedging
+#         l  inferred — from his associations, his printers, his dates
+#                and what he wrote, not from a settled biography.
+#            Read these as a first pass that wants checking.
+#
+# Either column may be blank, but not both. A man whose body is genuinely
+# contested gets his party and no body, which is truer than a guess:
+# John Lilburne wrote as a Leveller, was gathered with Separatists and
+# died a Quaker, and filing him under any one of them misstates the
+# other two.
+#
+# The name is matched on the key in assets/js/faith-denominations.js:
+# life dates and cataloguers' apparatus stripped, surname-first names
+# put back in reading order. So one line covers "Owen, John, 1616-1683"
+# in Early English Books and "John Owen" in the Latin Library.
+#
+# A NOTE ON "ANGLICAN". It means the established Church of England,
+# and carries no party with it. William Perkins was a beneficed
+# clergyman of that church and is filed as one; his Puritan party says
+# the rest. Only a man who actually left — to a gathered church, a
+# presbytery, a meeting — takes a different body.
+
+# ── The establishment ─────────────────────────────────────────────
+Andrewes, Lancelot	Anglican	Conformist	h
+Allestree, Richard	Anglican	Conformist	h
+Burnet, Gilbert	Anglican	Conformist	h
+Comber, Thomas	Anglican	Conformist	h
+Donne, John, 1572-1631	Anglican	Conformist	h
+Featley, Daniel	Anglican	Conformist	h	Calvinist conformist; sat at Westminster but defended episcopacy
+Fuller, Thomas	Anglican	Conformist	h
+Gauden, John	Anglican	Conformist	h
+Hall, Joseph	Anglican	Conformist	h	Calvinist in doctrine, episcopalian in polity
+Hammond, Henry	Anglican	Conformist	h
+Hardy, Nathaniel	Anglican	Conformist	m	Dean of Rochester
+Heylyn, Peter	Anglican	Conformist	h	Laud's apologist
+Horneck, Anthony	Anglican	Conformist	m	German-born, ordained in the Church of England
+Jackson, Thomas, 1579-1640	Anglican	Conformist	m	President of Corpus Christi, Oxford; anti-Calvinist
+Jewel, John	Anglican	Conformist	h
+Laud, William	Anglican	Conformist	h
+Long, Thomas	Anglican	Conformist	m
+Morton, Thomas, 1564-1659	Anglican	Conformist	h
+More, Henry, 1614-1687	Anglican	Conformist	h	Cambridge Platonist
+Patrick, Simon	Anglican	Conformist	h	Latitudinarian
+Pelling, Edward	Anglican	Conformist	m
+Pierce, Thomas	Anglican	Conformist	m	Anti-Calvinist controversialist
+Sanderson, Robert	Anglican	Conformist	h
+Sherlock, William	Anglican	Conformist	h
+Stillingfleet, Edward	Anglican	Conformist	h
+Taylor, Jeremy	Anglican	Conformist	h
+Tillotson, John	Anglican	Conformist	h
+Ussher, James	Anglican	Conformist	h	Church of Ireland; Calvinist in doctrine
+Wake, William	Anglican	Conformist	h
+Whitby, Daniel, 1638-1726	Anglican	Conformist	h
+Wilkins, John	Anglican	Conformist	h
+Williams, John, 1636?-1709	Anglican	Conformist	m	Bishop of Chichester, 1636?-1709
+Sutcliffe, Matthew, 1550?-1629	Anglican	Conformist	m	Dean of Exeter, anti-presbyterian controversialist
+Spelman, Henry	Anglican	Conformist	m	Lay antiquary, defender of church rights
+Ford, Simon	Anglican	Conformist	m	Conformed at the Restoration
+Price, Daniel	Anglican	Conformist	m	Chaplain to Prince Henry
+Reading, John	Anglican	Conformist	m	Royalist divine of Dover
+Williams, Gryffith	Anglican	Conformist	m	Bishop of Ossory
+Broughton, Richard	Roman Catholic		m	Secular priest and controversialist
+Parsons, Robert, 1546-1610	Roman Catholic		h	Jesuit
+Erasmus, Desiderius	Roman Catholic		h
+
+# ── Puritans who stayed in the Church of England ──────────────────
+# Beneficed or licensed clergy of the establishment, whatever their
+# quarrel with its ceremonies. The body is the church that paid them.
+Perkins, William	Anglican	Puritan	h
+Sibbes, Richard	Anglican	Puritan	h
+Preston, John, 1587-1628	Anglican	Puritan	h
+Reynolds, Edward	Anglican	Puritan	h	Westminster divine who conformed in 1662; Bishop of Norwich
+Bernard, Richard	Anglican	Puritan	m
+Taylor, Thomas, 1576-1632	Anglican	Puritan	m	1576-1632
+Smith, Henry, 1550?-1591	Anglican	Puritan	m	"Silver-tongued" Smith, 1550?-1591
+Dod, John	Anglican	Puritan	h
+Dent, Arthur	Anglican	Puritan	m
+Bolton, Robert	Anglican	Puritan	h
+Byfield, Nicholas	Anglican	Puritan	m
+Baynes, Paul	Anglican	Puritan	m
+Fenner, William	Anglican	Puritan	m
+Harris, Robert	Anglican	Puritan	m
+Whately, William	Anglican	Puritan	m	"The roaring boy of Banbury"
+Gouge, William	Anglican	Puritan	h	Westminster divine
+Downame, George	Anglican	Puritan	m	Bishop of Derry; Calvinist
+Willet, Andrew	Anglican	Puritan	m
+Bradshaw, William	Anglican	Puritan	m	Nonconformist in ceremony, not in separation
+Hieron, Samuel	Anglican	Puritan	m
+Crashaw, William	Anglican	Puritan	m
+Sclater, William, 1575-1626	Anglican	Puritan	m
+Broughton, Hugh	Anglican	Puritan	m	Hebraist; nonconforming but never separated
+Adams, Thomas, fl. 1612-1653	Anglican	Puritan	m	fl. 1612-1653
+Cowper, William, 1568-1619	Anglican	Puritan	m	Bishop of Galloway, 1568-1619
+Gifford, George	Anglican	Puritan	m
+Cooper, Thomas, fl. 1626	Anglican	Puritan	l	fl. 1626
+Younge, Richard	Anglican	Puritan	l	Lay moralist of Essex
+Woodward, Ezekias	Anglican	Puritan	l
+Walker, George, 1581?-1651	Anglican	Puritan	m	Westminster divine
+Clapham, Henoch	Anglican	Puritan	l
+Norden, John	Anglican	Puritan	l	Lay surveyor and devotional writer
+Andrewes, John	Anglican	Puritan	l	fl. 1615; not Lancelot
+Vicars, John	Anglican	Puritan	m	Parliamentarian chronicler
+Guild, William	Anglican	Puritan	l	Aberdeen; conformed to episcopacy under the Covenant
+Bell, Thomas, fl. 1593-1610	Anglican	Puritan	l	fl. 1593-1610; convert from Rome
+Burton, William, d. 1616	Anglican	Puritan	l	d. 1616
+Tuke, Thomas	Anglican	Puritan	l
+Clarke, Samuel, 1599-1682	Anglican	Puritan	m	1599-1682, the martyrologist
+
+# ── The English Reformation and the Marian martyrs ────────────────
+# Before the parties hardened. Filed to the establishment they built.
+Becon, Thomas	Anglican		m	Edwardian reformer
+Bale, John	Anglican		m
+Coverdale, Miles	Anglican		m
+Tyndale, William	Anglican		m	Died before the settlement; filed to the church his Bible made
+Bradford, John	Anglican		m	Marian martyr
+Hooper, John	Anglican	Puritan	m	Vestments controversy; the first English nonconformist
+Crowley, Robert	Anglican	Puritan	m
+Foxe, John	Anglican	Puritan	m
+Fulke, William	Anglican	Puritan	m
+Joye, George	Anglican		m
+Wilcox, Thomas, 1549?-1608	Anglican	Puritan	m	Admonition to the Parliament
+Cartwright, Thomas, 1535-1603	Presbyterian	Puritan	h	The Admonition controversy
+
+# ── Presbyterians ─────────────────────────────────────────────────
+Prynne, William	Presbyterian	Puritan	h
+Baxter, Richard	Presbyterian	Puritan	m	Called himself a "meer Catholick"; reckoned with the Presbyterians at the ejection
+Calamy, Edmund, 1600-1666	Presbyterian	Puritan	h	1600-1666
+Marshall, Stephen	Presbyterian	Puritan	h
+Love, Christopher	Presbyterian	Puritan	h
+Watson, Thomas, d. 1686	Presbyterian	Puritan	h	d. 1686
+Collinges, John	Presbyterian	Puritan	h
+Gataker, Thomas	Presbyterian	Puritan	m	Westminster divine
+Manton, Thomas	Presbyterian	Puritan	h
+Case, Thomas	Presbyterian	Puritan	h
+Jenkyn, William	Presbyterian	Puritan	h
+Sedgwick, Obadiah	Presbyterian	Puritan	m
+Vines, Richard	Presbyterian	Puritan	h
+Burges, Cornelius	Presbyterian	Puritan	h
+Burgess, Anthony	Presbyterian	Puritan	h	d. 1664, Westminster divine
+Cawdrey, Daniel	Presbyterian	Puritan	h
+Ley, John	Presbyterian	Puritan	m	Westminster divine
+Geree, John	Presbyterian	Puritan	m
+Brinsley, John, 1600-1665	Presbyterian	Puritan	m	1600-1665, of Yarmouth
+Crofton, Zachary	Presbyterian	Puritan	h
+Rutherford, Samuel	Presbyterian	Puritan	h
+Gillespie, George	Presbyterian	Puritan	h
+Calderwood, David	Presbyterian	Puritan	h
+Knox, John	Presbyterian	Puritan	h
+Boyd, Zacharie	Presbyterian	Puritan	m
+Rous, Francis, 1579-1659	Presbyterian	Puritan	m	Lay; Provost of Eton
+Flavel, John	Presbyterian	Puritan	h
+Shower, John	Presbyterian	Puritan	m
+Slater, Samuel	Presbyterian	Puritan	l	d. 1704
+Alleine, Richard	Presbyterian	Puritan	m	Ejected 1662
+Humfrey, John	Presbyterian	Puritan	m	Ejected, then an advocate of comprehension
+Brooks, Thomas	Congregational	Puritan	m
+Lightfoot, John, 1602-1675	Anglican	Puritan	m	Westminster divine and Hebraist; Erastian, and conformed in 1662
+
+# ── Congregationalists and Independents ───────────────────────────
+Owen, John, 1616-1683	Congregational	Puritan	h
+Goodwin, Thomas, 1600-1680	Congregational	Puritan	h
+Burroughs, Jeremiah	Congregational	Puritan	h	One of the five Dissenting Brethren
+Bridge, William	Congregational	Puritan	h	Dissenting Brother
+Caryl, Joseph	Congregational	Puritan	h
+Cotton, John, 1584-1652	Congregational	Puritan	h	New England
+Hooker, Thomas	Congregational	Puritan	h	New England
+Shepard, Thomas	Congregational	Puritan	h	New England
+Willard, Samuel	Congregational	Puritan	h	New England
+Goodwin, John	Congregational	Puritan	m	Arminian Independent; not Thomas
+Burton, Henry	Congregational	Puritan	m	Turned Independent after 1641
+Strong, William	Congregational	Puritan	m	d. 1654
+Homes, Nathanael	Congregational	Puritan	m	Millenarian
+Ainsworth, Henry	Congregational	Puritan	h	Separatist at Amsterdam
+Canne, John	Congregational	Puritan	m	Separatist
+Beverley, Thomas	Congregational	Puritan	l	Millenarian nonconformist
+Bagshaw, Edward, 1629-1671	Congregational	Puritan	l	1629-1671, nonconformist controversialist
+Ness, Christopher	Congregational	Puritan	m
+Brayne, John	Congregational	Puritan	l
+Sherwin, William	Congregational	Puritan	l	Millenarian
+Dury, John	Presbyterian	Puritan	m	Irenicist; ordained a Presbyterian in the Netherlands
+
+# ── Baptists ──────────────────────────────────────────────────────
+Bunyan, John	Baptist	Puritan	m	Open-communion; his Bedford church was Independent and Baptist at once
+Keach, Benjamin	Baptist	Puritan	h	Particular Baptist
+Tombes, John	Baptist	Puritan	h	Antipaedobaptist
+Collier, Thomas	Baptist	Puritan	m	fl. 1691, General Baptist
+Richardson, Samuel	Baptist	Puritan	m	fl. 1643-1658, Particular Baptist
+Horn, John	Baptist	Puritan	l	1614-1676
+Allen, William, d. 1686	Baptist	Puritan	l	d. 1686
+
+# ── Quakers ───────────────────────────────────────────────────────
+Fox, George, 1624-1691	Quaker		h
+Whitehead, George	Quaker		h
+Farnworth, Richard	Quaker		h
+Penn, William	Quaker		h
+Penington, Isaac, 1616-1679	Quaker		h
+Keith, George	Quaker		m	Quaker until the 1690s, then ordained in the Church of England
+
+# ── The continent ─────────────────────────────────────────────────
+Calvin, Jean	Continental Reformed		h
+Bèze, Théodore de	Continental Reformed		h
+Bullinger, Heinrich	Continental Reformed		h
+Du Moulin, Pierre	Continental Reformed		h	Huguenot
+Mornay, Philippe de	Continental Reformed		h	Huguenot
+Luther, Martin	Lutheran		h
+Böhme, Jakob	Lutheran		m	Lutheran by baptism and burial, mystic by everything else
+Niclaes, Hendrik	Anabaptist		m	Family of Love
+
+# ── Party without a body ──────────────────────────────────────────
+# Men whose church is genuinely contested. Recording the party alone
+# is truer than picking one of the three they each belonged to.
+Lilburne, John		Puritan	l	Leveller, gathered with Separatists, died a Quaker
+Ross, Alexander	Anglican	Conformist	l	Royalist polymath
+Brathwaite, Richard	Anglican	Conformist	l	Lay poet and moralist
+Quarles, Francis	Anglican	Conformist	m	Royalist poet
+Stafford, Richard	Anglican		l	1663-1703, nonjuring pamphleteer
+Hart, John	Anglican	Puritan	l	D.D.; devotional compiler
+Gearing, William	Anglican	Puritan	l
+
+# ── Scoped to one catalogue ───────────────────────────────────────
+# The Latin Library catalogues everybody without life dates, so where
+# the library holds two men of a name its undated form cannot reach
+# either row. A "tfr:" prefix says which man that catalogue means.
+tfr:John Owen	Congregational	Puritan	h	Nine works incl. the Declaration of Faith and Order owned by the Congregational churches; not the epigrammatist
+tfr:William Ames	Congregational	Puritan	h	Medulla; the Latin Library's is the Marrow's author
+tfr:Franciscus Junius	Continental Reformed		h	Junius the elder, of Leiden
+tfr:John Forbes	Anglican	Conformist	m	Forbes of Corse, the Aberdeen doctor
+tfr:Thomas Bedford	Anglican	Puritan	l
+
+# ══ Second pass ═══════════════════════════════════════════════════
+# The next hundred and forty by volume. Names are written in the form
+# Early English Books catalogues them, because that is the catalogue
+# these men are in.
+
+# ── Anglican, conforming ──────────────────────────────────────────
+Lloyd, William, 1627-1717	Anglican	Conformist	h	Nonjuror
+Kidder, Richard, 1633-1703	Anglican	Conformist	h
+Bradford, Samuel, 1652-1731	Anglican	Conformist	m
+Carleton, George, 1559-1628	Anglican	Conformist	h	British delegate to Dort
+King, Henry, 1592-1669	Anglican	Conformist	h	Bishop of Chichester
+King, John, 1559?-1621	Anglican	Conformist	h	Bishop of London
+Leslie, Henry, 1580-1661	Anglican	Conformist	m	Bishop of Down and Connor
+Leslie, Charles, 1650-1722	Anglican	Conformist	h	Nonjuror
+Laney, Benjamin, 1591-1675	Anglican	Conformist	h
+Tenison, Thomas, 1636-1715	Anglican	Conformist	h	Archbishop of Canterbury
+Norris, John, 1657-1711	Anglican	Conformist	h
+Womock, Laurence, 1612-1685	Anglican	Conformist	m	Anti-Calvinist; Bishop of St David's
+Ferne, H. (Henry), 1602-1662	Anglican	Conformist	h	Royalist; Bishop of Chester
+Sherlock, R. (Richard), 1612-1689	Anglican	Conformist	m
+Steward, Richard, 1593?-1651	Anglican	Conformist	m	Dean of the Chapel Royal in exile
+Fullwood, Francis, d. 1693	Anglican	Conformist	m
+Hodges, Thomas, d. 1688	Anglican	Conformist	m
+Camfield, Benjamin, 1638-1693	Anglican	Conformist	m
+Wettenhall, Edward, 1636-1713	Anglican	Conformist	m	Bishop of Cork
+Seller, Abednego, 1646?-1705	Anglican	Conformist	m	Nonjuror
+Woodward, Josiah, 1660-1712	Anglican	Conformist	m	Societies for the Reformation of Manners
+Walker, Anthony, d. 1692	Anglican	Conformist	m
+Rogers, Nehemiah, 1593-1660	Anglican	Conformist	m
+Rogers, Thomas, d. 1616	Anglican	Conformist	m	Expositor of the Thirty-nine Articles
+Sydenham, Humphrey, 1591-1650?	Anglican	Conformist	m
+Hakewill, George, 1578-1649	Anglican	Conformist	m
+Babington, Gervase, 1550-1610	Anglican	Conformist	m	Bishop of Worcester
+Playfere, Thomas, 1561?-1609	Anglican	Conformist	m
+Powel, Gabriel, 1576-1611	Anglican	Conformist	m
+Purchas, Samuel, 1577?-1626	Anglican	Conformist	m
+Bunny, Edmund, 1540-1619	Anglican	Conformist	m
+Parsons, Bartholomew, 1574-1642	Anglican	Conformist	l
+Sclater, William, 1609-1661	Anglican	Conformist	m	The son; royalist, not the Puritan father
+Reeve, Thomas, 1594-1672	Anglican	Conformist	m
+Elys, Edmund, ca. 1634-ca. 1707	Anglican	Conformist	m
+Gardiner, Samuel, b. 1563 or 4	Anglican	Conformist	l
+Loe, William, d. 1645	Anglican	Conformist	l
+Philipps, Fabian, 1601-1690	Anglican	Conformist	l	Lay royalist
+Hayward, John, Sir, 1564?-1627	Anglican	Conformist	l	Lay historian
+Taylor, John, 1580-1653	Anglican	Conformist	l	The Water Poet; royalist
+Harris, John, 1667?-1719	Anglican	Conformist	l
+James I, King of England, 1566-1625	Anglican	Conformist	m	Raised in the Kirk, governed as Supreme Governor of the Church of England
+Charles I, King of England, 1600-1649	Anglican	Conformist	h
+Bugg, Francis, 1640-1724?	Anglican		l	Left the Quakers and spent thirty years attacking them
+
+# ── Anglican, Puritan ─────────────────────────────────────────────
+Dering, Edward, 1540?-1576	Anglican	Puritan	h
+Downame, John, d. 1652	Anglican	Puritan	h
+Ball, John, 1585-1640	Anglican	Puritan	h
+Pemble, William, 1592?-1623	Anglican	Puritan	h
+Dyke, Jeremiah, 1584-1639	Anglican	Puritan	m
+Trapp, John, 1601-1669	Anglican	Puritan	m
+Bernard, Nicholas, d. 1661	Anglican	Puritan	m	Ussher's chaplain and biographer
+Cooke, Alexander, 1564-1632	Anglican	Puritan	m
+Abbot, Robert, 1588?-1662?	Anglican	Puritan	m
+Torshell, Samuel, 1604-1650	Anglican	Puritan	m
+Wilson, Thomas, 1563-1622	Anglican	Puritan	m
+Smith, Samuel, 1588-1665	Anglican	Puritan	m
+Wither, George, 1588-1667	Anglican	Puritan	m	Lay poet; parliamentarian
+Brinsley, John, fl. 1581-1624	Anglican	Puritan	m	The schoolmaster; father of the Yarmouth preacher
+Balmford, James, b. 1556	Anglican	Puritan	l
+Greenwood, Henry, b. 1544 or 5	Anglican	Puritan	l
+Granger, Thomas, b. 1578	Anglican	Puritan	l
+Gaule, John, 1604?-1687	Anglican	Puritan	l
+Ward, Richard, 1601 or 2-1684	Anglican	Puritan	l
+Barton, William, 1598?-1678	Anglican	Puritan	l	Psalm versifier
+
+# ── Presbyterian ──────────────────────────────────────────────────
+Bates, William, 1625-1699	Presbyterian	Puritan	h
+Howe, John, 1630-1705	Presbyterian	Puritan	h
+Poole, Matthew, 1624-1679	Presbyterian	Puritan	h
+Annesley, Samuel, 1620?-1696	Presbyterian	Puritan	h
+Alleine, Joseph, 1634-1668	Presbyterian	Puritan	h
+Vincent, Thomas, 1634-1678	Presbyterian	Puritan	h
+Vincent, Nathanael, 1639?-1697	Presbyterian	Puritan	m
+Heywood, Oliver, 1629-1702	Presbyterian	Puritan	h
+Swinnock, George, 1627-1673	Presbyterian	Puritan	h
+Gouge, Thomas, 1605-1681	Presbyterian	Puritan	h	Son of William Gouge
+Ashe, Simeon, d. 1662	Presbyterian	Puritan	h
+Newcomen, Matthew, 1610?-1669	Presbyterian	Puritan	h	Smectymnuus
+Palmer, Herbert, 1601-1647	Presbyterian	Puritan	h	Westminster divine
+Cheynell, Francis, 1608-1665	Presbyterian	Puritan	h
+Hill, Thomas, d. 1653	Presbyterian	Puritan	m	Westminster divine, Master of Trinity
+Jeanes, Henry, 1611-1662	Presbyterian	Puritan	m
+Leigh, Edward, 1602-1671	Presbyterian	Puritan	m	Lay member of the Westminster Assembly
+Roberts, Francis, 1609-1675	Presbyterian	Puritan	m
+Horton, Thomas, d. 1673	Presbyterian	Puritan	m
+Hollingworth, Richard, 1607-1656	Presbyterian	Puritan	m
+Hall, Thomas, 1610-1665	Presbyterian	Puritan	m
+Firmin, Giles, 1614-1697	Presbyterian	Puritan	m
+Bakewell, Thomas, b. 1618 or 19	Presbyterian	Puritan	m	Wrote against the Antinomians and the Independents
+Burgess, Daniel, 1645-1713	Presbyterian	Puritan	m
+Durham, James, 1622-1658	Presbyterian	Puritan	h	Church of Scotland
+Dickson, David, 1583?-1663	Presbyterian	Puritan	h	Church of Scotland
+Rollock, Robert, 1555?-1599	Presbyterian	Puritan	h	First Principal of Edinburgh
+Fenner, Dudley, 1558?-1587	Presbyterian	Puritan	h
+Udal, John, 1560?-1592	Presbyterian	Puritan	h
+
+# ── Congregational and Independent ────────────────────────────────
+Mather, Cotton, 1663-1728	Congregational	Puritan	h	New England
+Mather, Richard, 1596-1669	Congregational	Puritan	h	New England
+Norton, John, 1606-1663	Congregational	Puritan	h	New England
+Davenport, John, 1597-1670	Congregational	Puritan	h	New Haven
+Greenhill, William, 1591-1671	Congregational	Puritan	h	Dissenting Brother
+Gale, Theophilus, 1628-1678	Congregational	Puritan	h
+Chauncy, Isaac, 1632-1712	Congregational	Puritan	h
+Mead, Matthew, 1630?-1699	Congregational	Puritan	h
+Lockyer, Nicholas, 1611-1685	Congregational	Puritan	h
+Venning, Ralph, 1621?-1674	Congregational	Puritan	m
+Jacob, Henry, 1563-1624	Congregational	Puritan	h	The Jacob church, 1616
+Robinson, John, 1575?-1625	Congregational	Puritan	h	Pastor to the Pilgrims at Leiden
+Barrow, Henry, 1550?-1593	Congregational	Puritan	h	Separatist; hanged 1593
+Penry, John, 1559-1593	Congregational	Puritan	h	Separatist; hanged 1593
+Dell, William, d. 1664	Congregational	Puritan	m	Army chaplain
+Saltmarsh, John, d. 1647	Congregational	Puritan	m	Army chaplain; antinomian
+Sterry, Peter, 1613-1672	Congregational	Puritan	m	Chaplain to Cromwell
+Erbery, William, 1604-1654	Congregational	Puritan	l	Latterly a Seeker
+
+# ── Baptist ───────────────────────────────────────────────────────
+Powell, Vavasor, 1617-1670	Baptist	Puritan	m	Welsh; Fifth Monarchist
+Purnell, Robert, d. 1666	Baptist	Puritan	m	Broadmead, Bristol
+Williams, Roger, 1604?-1683	Baptist	Puritan	l	Baptist for a few months in 1639 and a Seeker after; no body holds him for long
+
+# ── Quaker ────────────────────────────────────────────────────────
+Naylor, James, 1617?-1660	Quaker		h
+Burrough, Edward, 1634-1662	Quaker		h
+Howgill, Francis, 1618-1669	Quaker		h
+Hubberthorn, Richard, 1628-1662	Quaker		h
+
+# ── The continent ─────────────────────────────────────────────────
+Mornay, Philippe de, seigneur du Plessis-Marly, 1549-1623	Continental Reformed		h	Huguenot
+Du Bartas, Guillaume de Salluste, seigneur, 1544-1590	Continental Reformed		h	Huguenot
+Espagne, Jean d', 1591-1659	Continental Reformed		m	French minister of the Westminster chapel
+Rhegius, Urbanus, 1489-1541	Lutheran		h
+Comenius, Johann Amos, 1592-1670	Bohemian Brethren		h	Last bishop of the Unity of the Brethren
+
+# ── Rome ──────────────────────────────────────────────────────────
+Fisher, John, Saint, 1469-1535	Roman Catholic		h
+More, Thomas, Sir, Saint, 1478-1535	Roman Catholic		h
+Allen, William, 1532-1594	Roman Catholic		h	Cardinal; not the Particular Baptist of the same name
+Smith, Richard, 1566-1655	Roman Catholic		h	Bishop of Chalcedon
+Floyd, John, 1572-1649	Roman Catholic		h	Jesuit
+Drexel, Jeremias, 1581-1638	Roman Catholic		h	Jesuit
+Bossuet, Jacques Bénigne, 1627-1704	Roman Catholic		h
+Luis, de Granada, 1504-1588	Roman Catholic		h	Dominican
+Anderton, Lawrence	Roman Catholic		m	Jesuit
+
+# ── Party without a body ──────────────────────────────────────────
+Milton, John, 1608-1674	Congregational	Puritan	l	Independent in the 1640s; by the end he communicated with no church at all
+
+# ══ Third pass ════════════════════════════════════════════════════
+
+# ── Anglican, conforming ──────────────────────────────────────────
+Hobbes, Thomas, 1588-1679	Anglican	Conformist	m	Erastian; conformed and is buried in a parish church
+L'Estrange, Roger, Sir, 1616-1704	Anglican	Conformist	h	Lay; Tory pamphleteer
+Abbot, George, 1562-1633	Anglican	Conformist	h	Archbishop of Canterbury
+Abbot, Robert, 1560-1618	Anglican	Conformist	h	Bishop of Salisbury; not the Puritan of 1588?-1662?
+Wallis, John, 1616-1703	Anglican	Conformist	h
+Sharp, John, 1645-1714	Anglican	Conformist	h	Archbishop of York
+Dodwell, Henry, 1641-1711	Anglican	Conformist	h	Nonjuror
+Parker, Samuel, 1640-1688	Anglican	Conformist	h
+Hopkins, Ezekiel, 1634-1690	Anglican	Conformist	h	Bishop of Derry
+Mayne, Jasper, 1604-1672	Anglican	Conformist	h
+Warmstry, Thomas, 1610-1665	Anglican	Conformist	h
+Boughen, Edward, 1587?-1660?	Anglican	Conformist	h
+Crakanthorpe, Richard, 1567-1624	Anglican	Conformist	h
+Edwards, John, 1637-1716	Anglican	Conformist	h	Calvinist, and a conformist all the same
+Payne, William, 1650-1696	Anglican	Conformist	m
+Meggott, Richard, d. 1692	Anglican	Conformist	m
+Hickeringill, Edmund, 1631-1708	Anglican	Conformist	m
+Waterhouse, Edward, 1619-1670	Anglican	Conformist	m
+Hill, Samuel, 1648-1716	Anglican	Conformist	m
+Stephens, Edward, d. 1706	Anglican	Conformist	m
+Gregory, Francis, 1625?-1707	Anglican	Conformist	m
+Annand, William, 1633-1689	Anglican	Conformist	m	Scottish Episcopalian
+Jones, Henry, 1605-1682	Anglican	Conformist	m	Bishop of Meath
+Webbe, George, 1581-1642	Anglican	Conformist	m	Bishop of Limerick
+Fenton, Roger, 1565-1616	Anglican	Conformist	m
+Sheldon, Richard, d. 1642?	Anglican	Conformist	m	Convert from Rome
+Benefield, Sebastian, 1559-1630	Anglican	Conformist	m
+Price, Sampson, 1585 or 6-1630	Anglican	Conformist	m
+Holyday, Barten, 1593-1661	Anglican	Conformist	m
+Mason, Henry, 1573?-1647	Anglican	Conformist	m
+Weemes, John, 1579?-1636	Anglican	Conformist	m	Scot who conformed to episcopacy
+Swadlin, Thomas, 1600-1670	Anglican	Conformist	m	Royalist
+Gatford, Lionel, d. 1665	Anglican	Conformist	m
+Bunny, Francis, 1543-1617	Anglican	Conformist	m
+Dove, John, 1560 or 61-1618	Anglican	Conformist	m
+Page, Samuel, 1574-1630	Anglican	Conformist	m
+Rawlinson, John, 1576-1630	Anglican	Conformist	m
+Fletcher, Phineas, 1582-1650	Anglican	Conformist	m	Poet and parson
+Stokes, David, 1591?-1669	Anglican	Conformist	m
+Bradley, Thomas, 1597-1670	Anglican	Conformist	m
+Hyde, Edward, 1607-1659	Anglican	Conformist	m	The divine, not the Earl of Clarendon
+Véron, John, d. 1563	Anglican		m	French-born; Edwardian and Elizabethan controversialist
+Harward, Simon, fl. 1572-1614	Anglican	Conformist	l
+Carpenter, Richard, d. 1670?	Anglican	Conformist	l	Crossed to Rome and back more than once; died conforming
+Lloyd, Lodowick, fl. 1573-1610	Anglican	Conformist	l	Lay; court official
+Rich, Barnabe, 1540?-1617	Anglican	Conformist	l	Lay soldier
+Stow, John, 1525?-1605	Anglican	Conformist	l	Lay chronicler
+Anderson, Anthony, d. 1593	Anglican	Conformist	l
+Jackson, Thomas, d. 1646	Anglican	Conformist	l
+Topsell, Edward, 1572-1625?	Anglican	Conformist	l
+Aylett, Robert, 1583-1655?	Anglican	Conformist	l	Lay
+Wilkinson, Robert, Dr. in Divinity	Anglican	Conformist	l
+Davies, John, 1565?-1618	Anglican	Conformist	l	Lay poet, of Hereford
+Herring, Francis, d. 1628	Anglican	Conformist	l	Lay physician
+Peacham, Henry, 1576?-1643?	Anglican	Conformist	l	Lay
+Swan, John, d. 1671	Anglican	Conformist	l
+Evans, Arise, b. 1607	Anglican	Conformist	l	Royalist prophet
+Mayhew, R. (Richard)	Anglican	Conformist	l
+Wall, Thomas	Anglican	Conformist	l
+R. H., 1609-1678	Anglican	Conformist	l	Anti-Roman controversialist; the initials are all the catalogue gives
+Elyot, Thomas, Sir, 1490?-1546	Anglican		l	Lay humanist who went with Henry's settlement
+
+# ── Anglican, Puritan ─────────────────────────────────────────────
+Ward, Samuel, 1577-1640	Anglican	Puritan	h	Of Ipswich
+White, John, 1575-1648	Anglican	Puritan	h	The patriarch of Dorchester
+D. R. (Daniel Rogers), 1573-1652	Anglican	Puritan	h
+Cleaver, Robert, 1561 or 2-ca. 1625	Anglican	Puritan	h
+Gilby, Anthony, ca. 1510-1585	Anglican	Puritan	h	Geneva exile
+Lever, Thomas, 1521-1577	Anglican	Puritan	h
+Greenham, Richard	Anglican	Puritan	h
+Turner, William, d. 1568	Anglican	Puritan	m	Marian exile
+Brabourne, Theophilus, b. 1590	Anglican	Puritan	m	Sabbatarian
+Wotton, Anthony, 1561?-1626	Anglican	Puritan	m
+Draxe, Thomas, d. 1618	Anglican	Puritan	m
+Horne, Robert, 1565-1640	Anglican	Puritan	m
+Bourne, Immanuel, 1590-1672	Anglican	Puritan	m
+Mayer, John, 1583-1664	Anglican	Puritan	m
+Jenison, Robert, 1584?-1652	Anglican	Puritan	m
+Scott, Thomas, 1580?-1626	Anglican	Puritan	m	Anti-Spanish pamphleteer
+Stoughton, John, d. 1639	Anglican	Puritan	m
+Fisher, Edward, fl. 1627-1655	Anglican	Puritan	m	The Marrow of Modern Divinity
+Sparke, Thomas, 1548-1616	Anglican	Puritan	m
+Leigh, William, 1550-1639	Anglican	Puritan	m
+Stock, Richard, 1569?-1626	Anglican	Puritan	m
+Elton, Edward, d. 1624	Anglican	Puritan	m
+Crompton, William, 1599?-1642	Anglican	Puritan	m
+Darrel, John, b. ca. 1562	Anglican	Puritan	m
+Teate, Faithful, b. 1621	Anglican	Puritan	m	Church of Ireland
+Polhill, Edward, 1622-1694?	Anglican	Puritan	m	Lay Calvinist
+Richardson, Charles, fl. 1612-1617	Anglican	Puritan	l
+Jerome, Stephen, fl. 1604-1650	Anglican	Puritan	l
+Barlow, John, b. 1580 or 81	Anglican	Puritan	l
+Carpenter, John, d. 1621	Anglican	Puritan	l
+Deacon, John, 17th cent	Anglican	Puritan	l
+Etherington, John, fl. 1641-1645	Anglican	Puritan	l
+Sheppard, William, d. 1675?	Anglican	Puritan	l	Lay lawyer; Cromwell's draftsman
+Smith, George, 1602 or 3-1658	Anglican	Puritan	l
+W. B. (William Blake), fl. 1650-1670	Anglican	Puritan	l
+Gibbon, Charles, fl. 1589-1604	Anglican	Puritan	l	Lay
+Phelpes, Charles	Anglican	Puritan	l
+
+# ── The English Reformation ───────────────────────────────────────
+Frith, John, 1503-1533	Anglican		m	Burned 1533; filed with Tyndale to the church their work made
+Sternhold, Thomas, d. 1549	Anglican		m
+Taverner, Richard, 1505?-1575	Anglican		m
+
+# ── Presbyterian ──────────────────────────────────────────────────
+Henderson, Alexander, 1583?-1646	Presbyterian	Puritan	h	Church of Scotland
+Baillie, Robert, 1599-1662	Presbyterian	Puritan	h	Church of Scotland
+Hutcheson, George, 1615-1674	Presbyterian	Puritan	h	Church of Scotland
+Gray, Andrew, 1633-1656	Presbyterian	Puritan	h	Church of Scotland
+Brown, John, 1610?-1679	Presbyterian	Puritan	h	Of Wamphray
+Edwards, Thomas, 1599-1647	Presbyterian	Puritan	h	Gangraena
+Seaman, Lazarus, d. 1675	Presbyterian	Puritan	h	Westminster divine
+Spurstowe, William, 1605?-1666	Presbyterian	Puritan	h	Smectymnuus
+Jacombe, Thomas, 1622-1687	Presbyterian	Puritan	h
+Doolittle, Thomas, 1632?-1707	Presbyterian	Puritan	h
+Williams, Daniel, 1643?-1716	Presbyterian	Puritan	h
+Ambrose, Isaac, 1604-1664	Presbyterian	Puritan	h
+Forbes, John, 1568?-1634	Presbyterian	Puritan	m	Exiled for the Aberdeen Assembly; not Forbes of Corse
+Taylor, Francis, 1590-1656	Presbyterian	Puritan	m	Westminster divine
+Byfield, Richard, 1598?-1664	Presbyterian	Puritan	m	Westminster divine
+Reyner, Edward, 1600-1668	Presbyterian	Puritan	m
+Bond, John, 1612-1676	Presbyterian	Puritan	m
+Wilkinson, Henry, 1616-1690	Presbyterian	Puritan	m
+Mocket, Thomas, 1602-1670?	Presbyterian	Puritan	m
+Shawe, John, 1608-1672	Presbyterian	Puritan	m
+Stockton, Owen, 1630-1680	Presbyterian	Puritan	m
+Shaw, Samuel, 1635-1696	Presbyterian	Puritan	m	Ejected 1662
+Tomlyns, Samuel, 1632 or 3-1700	Presbyterian	Puritan	m	Ejected 1662
+
+# ── Congregational and Independent ────────────────────────────────
+Ames, William, 1576-1633	Congregational	Puritan	h	The Marrow of Sacred Divinity
+Johnson, Francis, 1562-1618	Congregational	Puritan	h	Separatist at Amsterdam
+Nye, Philip, 1596?-1672	Congregational	Puritan	h	Dissenting Brother
+Eaton, Samuel, 1596?-1665	Congregational	Puritan	h
+Cradock, Walter, 1606?-1659	Congregational	Puritan	h	Welsh
+Barker, Matthew, 1619-1698	Congregational	Puritan	h
+Pynchon, William, 1590-1662	Congregational	Puritan	m	New England
+Rogers, John, 1627-1665?	Congregational	Puritan	m	Fifth Monarchist
+Tillinghast, John, 1604-1655	Congregational	Puritan	m	Fifth Monarchist
+Lee, Samuel, 1625-1691	Congregational	Puritan	m
+Durant, John, b. 1620	Congregational	Puritan	m
+Price, John, Citizen of London	Congregational	Puritan	m	Of John Goodwin's gathered church
+Walker, Henry, Ironmonger	Congregational	Puritan	l
+
+# ── Baptist ───────────────────────────────────────────────────────
+Knollys, Hanserd, 1599?-1691	Baptist	Puritan	h	Particular Baptist
+Grantham, Thomas, 1634-1692	Baptist	Puritan	h	General Baptist
+Barber, Edward, d. 1674?	Baptist	Puritan	h	General Baptist
+Hobson, Paul	Baptist	Puritan	h
+Saller, William, d. ca. 1680	Baptist	Puritan	h	Seventh Day Baptist
+Chidley, Samuel	Baptist	Puritan	m
+Moore, Thomas, Senior	Baptist	Puritan	l	General Baptist
+Moore, Thomas, Junior	Baptist	Puritan	l
+Adis, Henry	Baptist	Puritan	l
+
+# ── Quaker ────────────────────────────────────────────────────────
+Fox, Margaret Askew Fell, 1614-1702	Quaker		h
+Dewsbury, William, 1621-1688	Quaker		h
+Parnel, James, 1637?-1656	Quaker		h
+Bishop, George, d. 1668	Quaker		h
+Crook, John, 1617-1699	Quaker		h
+Rigge, Ambrose, 1635?-1705	Quaker		h
+Smith, Humphrey, d. 1663	Quaker		h
+Smith, William, b. 1615 or 16	Quaker		m
+
+# ── The continent ─────────────────────────────────────────────────
+Vermigli, Pietro Martire, 1499-1562	Continental Reformed		h
+Ochino, Bernardino, 1487-1564	Continental Reformed		m	Italian reformer; his last years strained the label
+Hemmingsen, Niels, 1513-1600	Lutheran		h	Danish
+
+# ── Rome ──────────────────────────────────────────────────────────
+Bellarmino, Roberto Francesco Romolo, Saint, 1542-1621	Roman Catholic		h	Jesuit
+Southwell, Robert, Saint, 1561?-1595	Roman Catholic		h	Jesuit; martyred 1595
+Martin, Gregory, d. 1582	Roman Catholic		h	The Rheims New Testament
+Knott, Edward, 1582-1656	Roman Catholic		h	Jesuit
+Gordon, James, 1541-1620	Roman Catholic		h	Jesuit
+Rastell, John, 1532-1577	Roman Catholic		h	Jesuit
+Preston, Thomas, 1563-1640	Roman Catholic		h	Benedictine, writing as Roger Widdrington
+Birchley, William, 1613-1669	Roman Catholic		h	John Austin, under a pen name
+Paynell, Thomas	Roman Catholic		m	Augustinian canon
+
+# ── Party without a body ──────────────────────────────────────────
+Overton, Richard, fl. 1646		Puritan	l	Leveller and mortalist; gathered with Baptists without settling
+Winstanley, Gerrard, b. 1609		Puritan	l	Digger; ended among the Quakers
+
+# ══ Fourth pass ═══════════════════════════════════════════════════
+
+# ── Anglican, conforming ──────────────────────────────────────────
+Minister of the Church of England	Anglican	Conformist	h	The catalogue's own description is the answer
+Glanvill, Joseph, 1636-1680	Anglican	Conformist	h
+Jane, William, 1645-1707	Anglican	Conformist	h
+Clagett, William, 1646-1688	Anglican	Conformist	h
+Stratford, Nicholas, 1633-1707	Anglican	Conformist	h	Bishop of Chester
+Milbourne, Luke, 1649-1720	Anglican	Conformist	h
+Brady, Nicholas, 1659-1726	Anglican	Conformist	h
+Cartwright, Thomas, 1634-1689	Anglican	Conformist	h	Bishop of Chester; not the Elizabethan Presbyterian
+Towerson, Gabriel, 1635?-1697	Anglican	Conformist	h
+Hale, Matthew, Sir, 1609-1676	Anglican	Conformist	h	Lay; Lord Chief Justice
+Lucas, Richard, 1648-1715	Anglican	Conformist	h
+Calamy, Benjamin, 1642-1686	Anglican	Conformist	h	Conformed, unlike his father
+Moore, John, 1646-1714	Anglican	Conformist	h	Bishop of Ely
+Stanhope, George, 1660-1728	Anglican	Conformist	h
+Mason, Francis, 1566?-1621	Anglican	Conformist	h
+Parr, Richard, 1617-1691	Anglican	Conformist	m
+Boteler, Edward, d. 1670	Anglican	Conformist	m
+Smith, Thomas, 1638-1710	Anglican	Conformist	m	Nonjuror
+Hole, Matthew, 1639 or 40-1730	Anglican	Conformist	m
+Cave, John, d. 1690	Anglican	Conformist	m
+Turner, John, b. 1649 or 50	Anglican	Conformist	m
+Chetwynd, John, 1623-1692	Anglican	Conformist	m
+Littleton, Adam, 1627-1694	Anglican	Conformist	m
+Worthington, John, 1618-1671	Anglican	Conformist	m
+Ellis, Clement, 1630-1700	Anglican	Conformist	m
+Patrick, John, 1632-1695	Anglican	Conformist	m
+Hesketh, Henry, 1637?-1710	Anglican	Conformist	m
+Dove, Henry, 1640-1695	Anglican	Conformist	m
+Young, Edward, 1641 or 2-1705	Anglican	Conformist	m
+Jeffery, John, 1647-1720	Anglican	Conformist	m
+Butler, Lilly	Anglican	Conformist	m
+Lawson, George, d. 1678	Anglican	Conformist	m
+Towers, William, 1617?-1666	Anglican	Conformist	m
+R. B. (Robert Boreman), d. 1675	Anglican	Conformist	m
+Allington, John, d. 1682	Anglican	Conformist	m	Sequestered under the Commonwealth
+Udal, Ephraim, d. 1647	Anglican	Conformist	m
+Symmons, Edward	Anglican	Conformist	m	Royalist
+Wall, John, 1588-1666	Anglican	Conformist	m
+Featley, John, 1605?-1666	Anglican	Conformist	m
+Squire, John, ca. 1588-1653	Anglican	Conformist	m
+Pestell, Thomas, 1584?-1659?	Anglican	Conformist	m
+Higgons, Theophilus, 1578?-1659	Anglican	Conformist	m	Returned from Rome
+Hampton, Christopher, 1552-1625	Anglican	Conformist	m	Archbishop of Armagh
+Denison, John, d. 1629	Anglican	Conformist	m
+Woolton, John, 1535?-1594	Anglican	Conformist	m	Bishop of Exeter
+White, Thomas, ca. 1550-1624	Anglican	Conformist	m
+Some, Robert, 1542-1609	Anglican	Conformist	m
+Prime, John, 1550-1596	Anglican	Conformist	m
+Hacket, Roger, 1559-1621	Anglican	Conformist	m
+Covell, William, d. 1614?	Anglican	Conformist	m
+Terry, John, 1555?-1625	Anglican	Conformist	m
+Rudd, Anthony, 1549 or 50-1615	Anglican	Conformist	m	Bishop of St David's
+Maxey, Anthony, d. 1618	Anglican	Conformist	m
+Meriton, George, d. 1624	Anglican	Conformist	m
+White, John, 1570-1615	Anglican	Conformist	m	Controversialist; not the patriarch of Dorchester
+Prys, Edmund, 1544-1623	Anglican	Conformist	m	Welsh
+Ailesbury, Thomas, fl. 1622-1659	Anglican	Conformist	m
+Hunnis, William, d. 1597	Anglican	Conformist	m
+Goodman, Godfrey, 1583-1656	Anglican	Conformist	m	Bishop of Gloucester; died professing Rome
+Selden, John, 1584-1654	Anglican	Conformist	m	Lay; Erastian
+Gailhard, J. (Jean)	Anglican	Conformist	l
+Care, Henry, 1646-1688	Anglican	Conformist	l	Lay journalist
+Denton, William, 1605-1691	Anglican	Conformist	l	Lay physician
+Atwood, William, d. 1705?	Anglican	Conformist	l	Lay
+Bull, Digby	Anglican	Conformist	l
+Walker, William, 1623-1684	Anglican	Conformist	l
+Powell, Thomas, 1608-1660	Anglican	Conformist	l	Welsh
+Lupton, Donald, d. 1676	Anglican	Conformist	l
+Gore, John, Rector of Wendenlofts, Essex	Anglican	Conformist	l
+Fawkner, Antony, b. 1601 or 2	Anglican	Conformist	l
+Robertson, Bartholomew, fl. 1620	Anglican	Conformist	l
+Lever, Christopher, fl. 1627	Anglican	Conformist	l
+D. T. (Daniel Tuvill), d. 1660	Anglican	Conformist	l	Lay
+Est, William, 1546 or 7-1625	Anglican	Conformist	l
+Wright, Leonard, b. 1555 or 6	Anglican	Conformist	l
+Davies, John, Sir, 1569-1626	Anglican	Conformist	l	Lay
+Gascoigne, George, 1542?-1577	Anglican	Conformist	l	Lay poet
+Whetstone, George, 1544?-1587?	Anglican	Conformist	l	Lay
+Holinshed, Raphael, d. 1580?	Anglican	Conformist	l	Lay chronicler
+Speed, John, 1552?-1629	Anglican	Conformist	l	Lay historian
+Drayton, Michael, 1563-1631	Anglican	Conformist	l	Lay poet
+Breton, Nicholas, 1545?-1626?	Anglican	Conformist	l	Lay poet
+Rowlands, Samuel, 1570?-1630?	Anglican	Conformist	l	Lay
+Dekker, Thomas, ca. 1572-1632	Anglican	Conformist	l	Lay dramatist
+Middleton, Thomas, d. 1627	Anglican	Conformist	l	Lay dramatist
+Heywood, Thomas, d. 1641	Anglican	Conformist	l	Lay dramatist
+Jonson, Ben, 1573?-1637	Anglican	Conformist	l	Lay; a Roman Catholic for twelve years in the middle
+Bullein, William, d. 1576	Anglican	Conformist	l	Lay physician
+Cotta, John, 1575?-1650?	Anglican	Conformist	l	Lay physician
+Willymat, William, d. 1615	Anglican	Conformist	l
+Worship, William	Anglican	Conformist	l
+Eburne, Richard	Anglican	Conformist	l
+Maxwell, James, b. 1581	Anglican	Conformist	l
+Morton, Thomas, of Berwick	Anglican	Conformist	l
+Ubaldini, Petruccio, 1524?-1600?	Anglican		l	Italian exile in England
+Leland, John, 1506?-1552	Anglican		l
+
+# ── Anglican, Puritan ─────────────────────────────────────────────
+Rogers, Richard, 1550?-1618	Anglican	Puritan	h	Seven Treatises
+Hildersam, Arthur, 1563-1632	Anglican	Puritan	h
+Culverwell, Ezekiel, 1553 or 4-1631	Anglican	Puritan	h
+Charke, William, d. 1617	Anglican	Puritan	h
+Brightman, Thomas, 1562-1607	Anglican	Puritan	h
+Bownd, Nicholas, d. 1613	Anglican	Puritan	h	Sabbatarian
+Stubbes, Phillip	Anglican	Puritan	h	Lay; The Anatomy of Abuses
+Prichard, Rhys, 1579-1644	Anglican	Puritan	m	Welsh
+Attersoll, William, d. 1640	Anglican	Puritan	m
+Dillingham, Francis, d. 1625	Anglican	Puritan	m
+Hayne, Thomas, 1582-1645	Anglican	Puritan	m
+Tymme, Thomas, d. 1620	Anglican	Puritan	m
+Traske, John, d. ca. 1638	Anglican	Puritan	m	Sabbatarian
+Yates, John, d. ca. 1660	Anglican	Puritan	m
+Denison, Stephen, d. 1649 or 50	Anglican	Puritan	m
+Bedford, Thomas, d. 1653	Anglican	Puritan	m
+Randall, John, 1570-1622	Anglican	Puritan	m
+Jemmat, William, 1596?-1678	Anglican	Puritan	m
+Sedgwick, John, 1600 or 1601-1643	Anglican	Puritan	m
+Grosse, Alexander, 1596?-1654	Anglican	Puritan	m
+Parr, Elnathan, d. 1622	Anglican	Puritan	m
+Chibald, William, 1575-1641	Anglican	Puritan	m
+Wing, John, of Flushing, Zealand	Anglican	Puritan	m
+Sprint, John, d. 1623	Anglican	Puritan	m	Conformed in the end
+Holland, Henry, 1555 or 6-1603	Anglican	Puritan	m
+Bulkley, Edward, d. 1621?	Anglican	Puritan	m
+Temple, William, Sir, 1555-1627	Anglican	Puritan	m	Ramist; Travers's ally
+Traheron, Bartholomew, 1510?-1558?	Anglican	Puritan	m	Marian exile
+Ponet, John, 1516?-1556	Anglican	Puritan	m	Marian exile
+Jones, William, b. 1581 or 2	Anglican	Puritan	l
+Barnes, Thomas, Minister of St. Margaret's, New Fish Street, London	Anglican	Puritan	l
+Jelinger, Christopher	Anglican	Puritan	l
+Kem, Samuel, 1604-1670	Anglican	Puritan	l
+Strode, William, 1600 or 1601-1645	Anglican	Puritan	l	Lay; MP
+Graunt, John, of Bucklersbury	Anglican	Puritan	l
+Vaughan, Edward, preacher at St. Mary Woolnoth	Anglican	Puritan	l
+H. A. (Henry Arthington)	Anglican	Puritan	l
+Allen, Robert, fl. 1596-1612	Anglican	Puritan	l
+Harrison, William, d. 1625	Anglican	Puritan	l
+Preston, Richard, d. ca. 1624	Anglican	Puritan	l
+Chishull, John	Presbyterian	Puritan	l
+
+# ── The English Reformation ───────────────────────────────────────
+Henry VIII, King of England, 1491-1547	Anglican		m	Supreme Head of the church he made
+Ridley, Lancelot, d. 1576	Anglican		m
+Tracy, Richard, d. 1569	Anglican		m
+
+# ── Presbyterian ──────────────────────────────────────────────────
+Tuckney, Anthony, 1599-1670	Presbyterian	Puritan	h	Westminster divine
+Bolton, Samuel, 1606-1654	Presbyterian	Puritan	h	Westminster divine
+Blake, Thomas, 1597?-1657	Presbyterian	Puritan	h
+Nalton, James, 1600-1662	Presbyterian	Puritan	h
+Heyrick, Richard, 1600-1667	Presbyterian	Puritan	h
+Gilpin, Richard, 1625-1700	Presbyterian	Puritan	h
+Alsop, Vincent, 1629 or 30-1703	Presbyterian	Puritan	h
+Cruso, Timothy, 1656?-1697	Presbyterian	Puritan	h
+Newcome, Henry, 1627-1695	Presbyterian	Puritan	h
+Steele, Richard, 1629-1692	Presbyterian	Puritan	h
+Henry, Matthew, 1662-1714	Presbyterian	Puritan	h
+Owen, James, 1654-1706	Presbyterian	Puritan	h	Welsh
+Rule, Gilbert, 1629?-1701	Presbyterian	Puritan	h	Church of Scotland
+Binning, Hugh, 1627-1653	Presbyterian	Puritan	h	Church of Scotland
+Hughes, George, 1603-1667	Presbyterian	Puritan	h
+Travers, Walter, 1547 or 8-1635	Presbyterian	Puritan	h	Hooker's opposite number at the Temple
+Paget, John, d. 1640	Presbyterian	Puritan	h	The English Reformed church at Amsterdam
+Maynard, John, 1600-1665	Presbyterian	Puritan	m	Westminster divine
+Strickland, John, 1600 or 1601-1670	Presbyterian	Puritan	m
+Robinson, Ralph, 1614-1655	Presbyterian	Puritan	m
+Hall, Edmund, 1619 or 20-1687	Presbyterian	Puritan	m
+Shaw, John, 1614-1689	Presbyterian	Puritan	m
+Ryther, John, 1634?-1681	Presbyterian	Puritan	m
+Thomas, William, 1593-1667	Presbyterian	Puritan	m	Ejected 1662
+Bury, Edward, 1616-1700	Presbyterian	Puritan	m	Ejected 1662
+Mall, Thomas, b. 1629 or 30	Presbyterian	Puritan	m	Ejected 1662
+Clark, Samuel, 1626-1701	Presbyterian	Puritan	m	Ejected 1662
+Lukin, H. (Henry), 1628-1719	Presbyterian	Puritan	m
+Menzeis, John, 1624-1684	Presbyterian	Puritan	m	Scot; changed sides more than once
+Simson, Archibald, 1564-1628	Presbyterian	Puritan	m	Church of Scotland
+Struther, William, 1578-1633	Presbyterian	Puritan	m	Church of Scotland
+Burthogge, Richard, 1638?-ca. 1700	Presbyterian	Puritan	l
+
+# ── Congregational and Independent ────────────────────────────────
+Eliot, John, 1604-1690	Congregational	Puritan	h	New England; the Indian Bible
+Weld, Thomas, 1590?-1662	Congregational	Puritan	h	New England
+Peters, Hugh, 1598-1660	Congregational	Puritan	h	Executed 1660
+Charnock, Stephen, 1628-1680	Congregational	Puritan	h
+Cole, Thomas, 1627?-1697	Congregational	Puritan	h
+Sedgwick, William, 1609 or 10-1669?	Congregational	Puritan	m
+Cradock, Samuel, 1621?-1706	Congregational	Puritan	m
+Troughton, William, 1614?-1677?	Congregational	Puritan	m
+Edwards, Charles, 1627 or 8-1691?	Congregational	Puritan	m	Welsh
+Cardel, John	Congregational	Puritan	l
+Bradshaw, Ellis	Congregational	Puritan	l
+Cross, Walter, M.A.	Congregational	Puritan	l
+
+# ── Baptist ───────────────────────────────────────────────────────
+Smyth, John, d. 1612	Baptist	Puritan	h	The se-Baptist; the first English Baptist church
+Ives, Jeremiah, fl. 1653-1674	Baptist	Puritan	h	General Baptist
+Bampfield, Francis, 1615 or 16-1683	Baptist	Puritan	h	Seventh Day Baptist
+Tillam, Thomas	Baptist	Puritan	m	Seventh Day Baptist
+Lawrence, Richard, d. 1684	Baptist	Puritan	l
+
+# ── Quaker ────────────────────────────────────────────────────────
+Barclay, Robert, 1648-1690	Quaker		h	The Apology
+Crisp, Stephen, 1628-1692	Quaker		h
+Bayly, William, d. 1675	Quaker		h
+Taylor, Thomas, 1618-1682	Quaker		h	Not the Puritan of 1576-1632
+Fisher, Samuel, 1605-1665	Quaker		h	Baptist first, then convinced
+J. P. (John Perrot), d. 1671?	Quaker		h
+Smith, William, d. 1673	Quaker		h
+
+# ── Socinian ──────────────────────────────────────────────────────
+Nye, Stephen, 1648?-1719	Socinian		h	Wrote the history of the Unitarians and was one
+
+# ── The continent ─────────────────────────────────────────────────
+Zwingli, Ulrich, 1484-1531	Continental Reformed		h
+Ursinus, Zacharias, 1534-1583	Continental Reformed		h	The Heidelberg Catechism
+Brès, Guy de, 1522-1567	Continental Reformed		h	The Belgic Confession
+Marlorat, Augustin, 1506-1562	Continental Reformed		h	Huguenot; hanged at Rouen
+L'Espine, Jean de, ca. 1506-1597	Continental Reformed		h	Huguenot
+Serres, Jean de, 1540?-1598	Continental Reformed		h	Huguenot
+La Primaudaye, Pierre de, b. ca. 1545	Continental Reformed		m	Huguenot
+Primrose, Gilbert, ca. 1580-1642	Continental Reformed		m	Minister of the French church in London
+Strigel, Victorinus, 1524-1569	Lutheran		h	Philippist
+Rivius, Johann, 1500-1553	Lutheran		m
+
+# ── Rome ──────────────────────────────────────────────────────────
+Gardiner, Stephen, 1483?-1555	Roman Catholic		h	Bishop of Winchester under Mary
+Harding, Thomas, 1516-1572	Roman Catholic		h	Jewel's opponent
+Tunstall, Cuthbert, 1474-1559	Roman Catholic		h
+Alcock, John, 1430-1500	Roman Catholic		h	Bishop of Ely
+Whitford, Richard, fl. 1495-1555?	Roman Catholic		h	Syon Abbey
+Smith, Richard, 1500-1563	Roman Catholic		h	Not the Bishop of Chalcedon
+Bishop, William, 1554?-1624	Roman Catholic		h	Bishop of Chalcedon
+Du Perron, Jacques Davy, 1556-1618	Roman Catholic		h	Cardinal
+S. N. (Sylvester Norris), 1572-1630	Roman Catholic		h	Jesuit
+Sergeant, John, 1622-1707	Roman Catholic		h
+Gother, John, d. 1704	Roman Catholic		h
+Ellis, Philip, 1652-1726	Roman Catholic		h	Benedictine
+Heigham, John, fl. 1639	Roman Catholic		h
+Kellison, Matthew	Roman Catholic		h	President of Douai
+Arias, Francisco	Roman Catholic		h	Jesuit
+Rodríguez, Alfonso, 1526-1616	Roman Catholic		h	Jesuit
+Albertus, Magnus, Saint, 1193?-1280	Roman Catholic		h
+Thomas, à Kempis, 1380-1471	Roman Catholic		h
+Bernard, of Clairvaux, Saint, 1090 or 91-1153	Roman Catholic		m	Pre-Reformation Western church
+Huggarde, Miles	Roman Catholic		h	Marian polemicist
+Gwynneth, John	Roman Catholic		m
+Lodge, Thomas, 1558?-1625	Roman Catholic		m	Converted; lay physician
+Agrippa von Nettesheim, Heinrich Cornelius, 1486?-1535	Roman Catholic		m
+Lemnius, Levinus, 1505-1568	Roman Catholic		m	Dutch physician and priest
+Guevara, Antonio de, Bp., d. 1545?	Roman Catholic		h	Franciscan; Bishop of Mondoñedo
+Lindsay, David, Sir, fl. 1490-1555	Roman Catholic		m	Scots makar; satirised the church he died in
+
+# ══ Fifth pass ════════════════════════════════════════════════════
+
+# ── Anglican, conforming ──────────────────────────────────────────
+Du Moulin, Peter, 1601-1684	Anglican	Conformist	h	Son of the Huguenot; prebendary of Canterbury
+L'Estrange, Hamon, 1605-1660	Anglican	Conformist	h	Lay
+Mossom, Robert, d. 1679	Anglican	Conformist	h	Bishop of Derry
+Clarendon, Edward Hyde, Earl of, 1609-1674	Anglican	Conformist	h	Lay; Lord Chancellor
+Thomas, William, 1613-1689	Anglican	Conformist	h	Bishop of Worcester; not the ejected man of 1593-1667
+Basier, Isaac, 1607-1676	Anglican	Conformist	h
+Lucy, William, 1594-1677	Anglican	Conformist	h	Bishop of St David's
+Crossman, Samuel, 1624?-1684	Anglican	Conformist	h
+Croft, Herbert, 1603-1691	Anglican	Conformist	h	Bishop of Hereford
+Nalson, John, 1638?-1686	Anglican	Conformist	h
+Compton, Henry, 1632-1713	Anglican	Conformist	h	Bishop of London
+Manningham, Thomas, 1651?-1722	Anglican	Conformist	h
+Fleetwood, William, 1656-1723	Anglican	Conformist	h
+King, William, 1650-1729	Anglican	Conformist	h	Archbishop of Dublin
+Talbot, William, 1658 or 9-1730	Anglican	Conformist	h
+Wharton, Henry, 1664-1695	Anglican	Conformist	h	Anglia Sacra
+Divine of the Church of England	Anglican	Conformist	h	The catalogue's own description is the answer
+Bridges, John, d. 1618	Anglican	Conformist	h	Marprelate's target
+Cosin, Richard, 1549?-1597	Anglican	Conformist	h	Civilian; prosecuted the Puritan classes
+Balcanquhall, Walter, 1586?-1645	Anglican	Conformist	h	British delegate to Dort
+Godwin, Francis, 1562-1633	Anglican	Conformist	h	Bishop of Hereford
+Valentine, Henry, d. 1643	Anglican	Conformist	m
+Sandys, George, 1578-1644	Anglican	Conformist	m	Lay poet
+Grantham, Thomas, d. 1664	Anglican	Conformist	m	Not the General Baptist of 1634-1692
+Standfast, Richard, 1608?-1684	Anglican	Conformist	m
+Gell, Robert, 1595-1665	Anglican	Conformist	m
+Howe, Obadiah, 1615 or 16-1683	Anglican	Conformist	m	Conformed in 1662
+Knell, Paul, 1615?-1664	Anglican	Conformist	m	Royalist
+Barksdale, Clement, 1609-1687	Anglican	Conformist	m
+Porter, Edmund, 1595-1670	Anglican	Conformist	m
+Hallywell, Henry, d. 1703?	Anglican	Conformist	m
+Elborow, Thomas	Anglican	Conformist	m
+Smythies, William, d. 1715	Anglican	Conformist	m
+Beaulieu, Luke, 1644 or 5-1723	Anglican	Conformist	m	Huguenot who took English orders
+Falkner, William, d. 1682	Anglican	Conformist	m
+Goodman, John, 1625 or 6-1690	Anglican	Conformist	m
+Stainforth, William, d. 1713	Anglican	Conformist	m
+Pittis, Thomas, 1636-1687	Anglican	Conformist	m
+Mackenzie, George, Sir, 1636-1691	Anglican	Conformist	m	Lay; Scottish Episcopalian
+Gipps, Thomas, d. 1709	Anglican	Conformist	m
+Warren, Erasmus	Anglican	Conformist	m
+Wyvill, Christopher, 1651?-1711	Anglican	Conformist	m
+Halley, George, 1655 or 6-1708	Anglican	Conformist	m
+Bold, S. (Samuel), 1649-1737	Anglican	Conformist	m
+Jones, David, 1663-1724?	Anglican	Conformist	m
+Pead, Devel, d. 1727	Anglican	Conformist	m
+Tate, Nahum, 1652-1715	Anglican	Conformist	m	Lay; Poet Laureate
+Dering, Edward, Sir, 1598-1644	Anglican	Conformist	m	Lay; MP
+Ascham, Roger, 1515-1568	Anglican	Conformist	m	Lay
+Wilson, Thomas, 1525?-1581	Anglican	Conformist	m	Lay; Secretary of State
+Merbecke, John, ca. 1510-ca. 1585	Anglican	Conformist	m
+Gosson, Stephen, 1554-1624	Anglican	Conformist	m
+Chardon, John, d. 1601	Anglican	Conformist	m
+Trigge, Francis, 1547?-1606	Anglican	Conformist	m
+Nash, Thomas, 1567-1601	Anglican	Conformist	m	Lay; wrote against Martin Marprelate
+Spenser, Edmund, 1552?-1599	Anglican	Conformist	m	Lay poet
+Meres, Francis, 1565-1647	Anglican	Conformist	m
+Symonds, William, 1556-1616?	Anglican	Conformist	m
+Cowell, John, 1554-1611	Anglican	Conformist	m	Lay civilian
+Panke, John	Anglican	Conformist	m
+Dawes, Lancelot, 1580-1653	Anglican	Conformist	m
+Hoby, Edward, Sir, 1560-1617	Anglican	Conformist	m	Lay
+Myriell, Thomas, d. 1629	Anglican	Conformist	m
+Owen, David, d. 1623	Anglican	Conformist	m
+Roberts, Alexander, d. 1620	Anglican	Conformist	m
+Stafford, Anthony	Anglican	Conformist	m
+Day, John, 1566-1628	Anglican	Conformist	m
+Forbes, Patrick, 1564-1635	Anglican	Conformist	m	Bishop of Aberdeen
+Rogers, Francis, d. 1638	Anglican	Conformist	m
+Brerewood, Edward, 1565?-1613	Anglican	Conformist	m	Lay
+Garey, Samuel, 1582 or 3-1646	Anglican	Conformist	m
+Sutton, Thomas, 1585-1623	Anglican	Conformist	m
+Cade, Anthony, 1564?-1641	Anglican	Conformist	m
+Lindsay, David, d. 1641?	Anglican	Conformist	m	Scottish bishop
+Slatyer, William, 1587-1647	Anglican	Conformist	m
+Sibthorp, Christopher, Sir, d. 1632	Anglican	Conformist	m	Lay; Irish judge
+Chaloner, Edward, 1590 or 91-1625	Anglican	Conformist	m
+Bargrave, Isaac, 1586-1643	Anglican	Conformist	m
+Gee, John, 1596-1639	Anglican	Conformist	m	Left Rome
+Goffe, Thomas, 1591-1629	Anglican	Conformist	m
+Vicars, Thomas, d. 1638	Anglican	Conformist	m
+Kellett, Edward, 1583-1641	Anglican	Conformist	m
+Tozer, Henry, 1602-1650	Anglican	Conformist	m
+Reeve, Edmund, d. 1660	Anglican	Conformist	m
+Saint German, Christopher, 1460?-1540	Anglican		m	Lay lawyer of the Henrician settlement
+Mardeley, John	Anglican		m
+Askew, Anne, 1521-1546	Anglican		m	Burned at Smithfield, 1546
+Browne, Edward	Anglican	Conformist	l
+Spencer, Benjamin, b. 1595?	Anglican	Conformist	l
+Monson, John, Sir, 1600-1683	Anglican	Conformist	l	Lay
+Ramesey, William, 1627-1675 or 6	Anglican	Conformist	l	Lay astrologer
+Harrington, James, 1611-1677	Anglican	Conformist	l	Lay political theorist
+Stubbe, Henry, 1632-1676	Anglican	Conformist	l	Lay
+Layton, Henry, 1622-1705	Anglican	Conformist	l	Lay
+Lathom, Paul	Anglican	Conformist	l
+Nicholets, Charles	Presbyterian	Puritan	l
+Cotton, Robert, Sir, 1571-1631	Anglican	Conformist	l	Lay antiquary
+Munday, Anthony, 1553-1633	Anglican	Conformist	l	Lay
+Waring, Robert, 1614-1658	Anglican	Conformist	l
+Knell, Thomas	Anglican	Conformist	l
+Palfreyman, Thomas, d. 1589?	Anglican	Conformist	l
+Drant, Thomas, b. 1601 or 2	Anglican	Conformist	l
+Scot, Reginald, 1538?-1599	Anglican	Conformist	l	Lay
+Banister, John, 1540-1610	Anglican	Conformist	l	Lay surgeon
+Hooker, John, 1526?-1601	Anglican	Conformist	l	Lay
+Nicholls, John, 1555-1584?	Anglican	Conformist	l
+Bentley, Thomas, student of Gray's Inn	Anglican	Conformist	l	Lay
+Hutchins, Edward, 1558?-1629	Anglican	Conformist	l
+Fulbeck, William, 1560-1603?	Anglican	Conformist	l	Lay lawyer
+Fraunce, Abraham, fl. 1587-1633	Anglican	Conformist	l	Lay
+Markham, Gervase, 1568?-1637	Anglican	Conformist	l	Lay
+Mavericke, Radford, b. 1560 or 61	Anglican	Conformist	l
+Pinner, Charles	Anglican	Conformist	l
+Hayward, John, D.D.	Anglican	Conformist	l
+Salteren, George	Anglican	Conformist	l	Lay
+Nixon, Anthony	Anglican	Conformist	l	Lay
+Cleland, James, d. 1627	Anglican	Conformist	l
+Hubbock, William, b. 1560	Anglican	Conformist	l
+Middleton, Richard, d. 1641	Anglican	Conformist	l
+Preston, John, minister of East Ogwell	Anglican	Conformist	l	Not the master of Emmanuel
+Swetnam, Joseph, fl. 1617	Anglican	Conformist	l	Lay
+Cannon, Nathanael, 1581 or 2-1664	Anglican	Conformist	l
+Lithgow, William, 1582-1645?	Anglican	Conformist	l	Lay traveller
+Scot, Patrick	Anglican	Conformist	l
+R. B. (Richard Baddeley)	Anglican	Conformist	l
+Brookes, Matthew, fl. 1626-1657	Anglican	Conformist	l
+Hampton, William, 1599 or 1600-1677	Anglican	Conformist	l
+Symmer, Archibald	Anglican	Conformist	l
+
+# ── Anglican, Puritan ─────────────────────────────────────────────
+Bayly, Lewis, d. 1631	Anglican	Puritan	h	The Practice of Piety
+Crook, Samuel, 1575-1649	Anglican	Puritan	h
+Beard, Thomas, d. 1632	Anglican	Puritan	h	Cromwell's schoolmaster
+Rogers, John, 1572?-1636	Anglican	Puritan	h	Of Dedham
+Smart, Peter, 1569-1652?	Anglican	Puritan	h	Preached against Cosin's ceremonies at Durham
+Nichols, Josias, 1555?-1639	Anglican	Puritan	h
+Pagit, Eusebius, 1547?-1617	Anglican	Puritan	h
+Knewstubs, John, 1544-1624	Anglican	Puritan	h	Spoke for the Puritans at Hampton Court
+Sampson, Thomas, 1517?-1589	Anglican	Puritan	h	Deprived in the vestiarian controversy
+Pilkington, James, 1520?-1576	Anglican	Puritan	h	Bishop of Durham; Marian exile
+Bentham, Joseph, 1594?-1671	Anglican	Puritan	m
+Gove, R. (Richard), 1587-1668	Anglican	Puritan	m
+Gurnay, Edmund, d. 1648	Anglican	Puritan	m
+Mosse, Miles, fl. 1580-1614	Anglican	Puritan	m
+Stoughton, Thomas	Anglican	Puritan	m
+Finch, Henry, Sir, d. 1625	Anglican	Puritan	m	Lay
+Lynde, Humphrey, Sir	Anglican	Puritan	m	Lay controversialist
+Northbrooke, John	Anglican	Puritan	m
+Shutte, Christopher, d. 1626	Anglican	Puritan	m
+Carter, Bezaleel, d. 1629	Anglican	Puritan	m
+Sadler, John, 1615-1674	Anglican	Puritan	l	Lay
+Hunt, James, 17th cent	Anglican	Puritan	l
+Harby, Thomas	Anglican	Puritan	l
+Starbuck, William	Anglican	Puritan	l
+Bray, William, 17th cent	Anglican	Puritan	l
+Hunter, Josiah, minister in York	Anglican	Puritan	l
+Hake, Edward, fl. 1560-1604	Anglican	Puritan	l	Lay
+Rogers, John, fl. 1560-1580	Anglican	Puritan	l
+Tomkys, John	Anglican	Puritan	l
+Lupton, Thomas	Anglican	Puritan	l
+Gibson, Thomas, M.A.	Anglican	Puritan	l
+Cotton, Roger	Anglican	Puritan	l
+Phillips, George, fl. 1597	Anglican	Puritan	l
+Top, Alexander	Anglican	Puritan	l
+Holbrooke, William	Anglican	Puritan	l
+
+# ── Presbyterian ──────────────────────────────────────────────────
+Arrowsmith, John, 1602-1659	Presbyterian	Puritan	h	Westminster divine
+Jackson, Arthur, 1593?-1666	Presbyterian	Puritan	h
+Bastwick, John, 1593-1654	Presbyterian	Puritan	h	One of the three who lost their ears
+Bagshawe, William, 1628-1702	Presbyterian	Puritan	h	The Apostle of the Peak
+Fergusson, James, 1621-1667	Presbyterian	Puritan	h	Church of Scotland
+Shields, Alexander, 1660?-1700	Presbyterian	Puritan	h	Covenanter
+Bruce, Robert, 1554-1631	Presbyterian	Puritan	h	Church of Scotland
+Davidson, John, ca. 1549-1603	Presbyterian	Puritan	h	Church of Scotland
+Fielde, John, d. 1588	Presbyterian	Puritan	h	Admonition to the Parliament
+Leighton, Alexander, 1568-1649	Presbyterian	Puritan	h
+Marprelate, Martin, pseud	Presbyterian	Puritan	m	The pen name of the presbyterian tracts, whoever held it
+Hodges, Thomas, 1599 or 1600-1672	Presbyterian	Puritan	m
+Stevart, Adam	Presbyterian	Puritan	m	Scot; wrote against the Independents
+Valentine, Thomas, 1585 or 6-1665?	Presbyterian	Puritan	m	Westminster divine
+Newton, George, 1602-1681	Presbyterian	Puritan	m
+Bryan, John, d. 1676	Presbyterian	Puritan	m	Ejected 1662
+Sheffeild, John, d. 1680	Presbyterian	Puritan	m
+Lyford, William, 1598-1653	Presbyterian	Puritan	m
+Gilbert, Claudius, d. 1696?	Presbyterian	Puritan	m
+Ferguson, Robert, d. 1714	Presbyterian	Puritan	m
+Taylor, Nathanael, d. 1702	Presbyterian	Puritan	m
+Hume, Alexander, 1560?-1609	Presbyterian	Puritan	m	Church of Scotland
+Trepidantium Malleus	Presbyterian	Puritan	l	The pen name of Samuel Young
+Porter, Thomas, d. 1667	Presbyterian	Puritan	l
+Whitfield, Thomas, Minister of the Gospel	Presbyterian	Puritan	l
+Lauder, William, 1520?-1573	Presbyterian	Puritan	l	Scots makar turned Reformed minister
+
+# ── Congregational and Independent ────────────────────────────────
+Chauncy, Charles, 1592-1672	Congregational	Puritan	h	President of Harvard
+Hooke, William, 1600 or 1601-1678	Congregational	Puritan	h	New England
+Simpson, Sidrach, 1600?-1655	Congregational	Puritan	h	Dissenting Brother
+Cobbet, Thomas, 1608-1685	Congregational	Puritan	h	New England
+Moodey, Joshua, 1633?-1697	Congregational	Puritan	h	New England
+Palmer, Anthony, 1618?-1679	Congregational	Puritan	h
+Petto, Samuel, 1624?-1711	Congregational	Puritan	h
+Symonds, Joseph	Congregational	Puritan	m
+Aspinwall, William, fl. 1648-1662	Congregational	Puritan	m	Fifth Monarchist
+Harrison, Thomas, 1619-1682	Congregational	Puritan	m
+Dyer, William, d. 1696	Congregational	Puritan	m
+Haworth, William	Congregational	Puritan	m
+Buckler, Edward, 1610-1706	Congregational	Puritan	l
+
+# ── Baptist ───────────────────────────────────────────────────────
+Helwys, Thomas, 1550?-1616?	Baptist	Puritan	h	The first Baptist church on English soil
+Barbon, Praisegod, 1596?-1679	Baptist	Puritan	h
+Chamberlen, Peter, 1601-1683	Baptist	Puritan	m	Seventh Day Baptist
+Marlow, Isaac	Baptist	Puritan	m	Particular Baptist; against congregational singing
+
+# ── Quaker ────────────────────────────────────────────────────────
+Lawson, Thomas, 1630-1691	Quaker		h
+Clark, Henry, 17th cent	Quaker		m
+
+# ── Socinian ──────────────────────────────────────────────────────
+Biddle, John, 1615-1662	Socinian		h	The father of English Unitarianism
+
+# ── Arminian ──────────────────────────────────────────────────────
+Le Clerc, Jean, 1657-1736	Arminian		h	Remonstrant, at Amsterdam
+
+# ── The continent ─────────────────────────────────────────────────
+Junius, Franciscus, 1545-1602	Continental Reformed		h	The elder, of Leiden
+Ramus, Petrus, 1515-1572	Continental Reformed		h	Killed in the St Bartholomew's Day massacre
+Languet, Hubert, 1518-1581	Continental Reformed		h	Huguenot
+Scultetus, Abraham, 1566-1624	Continental Reformed		h	Heidelberg
+Drelincourt, Charles, 1595-1669	Continental Reformed		h	Huguenot, at Charenton
+Werdmüller, Otto, 1511-1552	Continental Reformed		h	Zurich
+Corro, Antonio del, 1527-1591	Continental Reformed		m	Spanish exile; suspected of heterodoxy by both sides
+Perrin, J. P. (Jean Paul)	Continental Reformed		m	Wrote the Waldensian history
+Sleidanus, Johannes, 1506-1556	Lutheran		h	The historian of the Reformation
+Wied, Hermann von	Lutheran		m	The Cologne Consultation, drafted by Bucer and Melanchthon
+Hamilton, Patrick, 1504?-1528	Lutheran		m	Scotland's protomartyr; Lutheran in doctrine
+
+# ── Rome ──────────────────────────────────────────────────────────
+Campion, Edmund, Saint, 1540-1581	Roman Catholic		h	Jesuit; martyred 1581
+Garnet, Henry, 1555-1606	Roman Catholic		h	Jesuit
+Canisius, Petrus, Saint, 1521-1597	Roman Catholic		h	Jesuit
+Lessius, Leonardus, 1554-1623	Roman Catholic		h	Jesuit
+Becanus, Martinus, 1563-1624	Roman Catholic		h	Jesuit
+Sabran, Lewis, 1652-1732	Roman Catholic		h	Jesuit
+Bristow, Richard, 1538-1581	Roman Catholic		h	Douai
+Worthington, Thomas, 1549-1627	Roman Catholic		h	President of Douai
+Sander, Nicholas, 1530?-1581	Roman Catholic		h
+Leslie, John, 1527-1596	Roman Catholic		h	Bishop of Ross
+Verstegan, Richard, ca. 1550-1640	Roman Catholic		h
+Champney, Anthony, 1569?-1643?	Roman Catholic		h
+Weston, Edward, 1566-1635	Roman Catholic		h
+Osório, Jerónimo, 1506-1580	Roman Catholic		h	Bishop of Silves
+Du Vair, Guillaume, 1556-1621	Roman Catholic		h
+Francis, de Sales, Saint, 1567-1622	Roman Catholic		h
+Vives, Juan Luis, 1492-1540	Roman Catholic		h
+Longland, John, 1473-1547	Roman Catholic		h	Bishop of Lincoln
+Mirk, John, fl. 1403?	Roman Catholic		h
+Walker, Obadiah, 1616-1699	Roman Catholic		m	Converted under James II
+Bayly, Thomas, d. 1657?	Roman Catholic		m	Converted
+Wright, Thomas, d. 1624	Roman Catholic		m	Left the Jesuits, stayed Catholic
+Tedder, William	Roman Catholic		m	Recanted at Paul's Cross and returned
+Doughty, Thomas, fl. 1618-1638	Roman Catholic		m
+Boaistuau, Pierre, d. 1566	Roman Catholic		m
+Lefèvre, Raoul, fl. 1460	Roman Catholic		m
+Rastell, John, d. 1536	Roman Catholic		m	The printer; father of the Jesuit
+Skelton, John, 1460?-1529	Roman Catholic		m
+Lupset, Thomas, 1495?-1530	Roman Catholic		m
+Ratramnus, monk of Corbie, d. ca. 868	Roman Catholic		m	Pre-schism Western church
+De Dominis, Marco Antonio, 1560-1624	Roman Catholic		m	Crossed to England and went back; died in the Castel Sant'Angelo
+
+# ── Party without a body ──────────────────────────────────────────
+Robinson, Henry, 1605?-1664?		Puritan	l	Lay; wrote for toleration and joined no church
+Gorton, Samuel, 1592 or 3-1677		Puritan	l	Founded his own sect in Rhode Island
+Hartlib, Samuel, d. 1662		Puritan	l	Lay
+Cook, John, d. 1660		Puritan	l	Lay; prosecuted the King
+Coppin, Richard, fl. 1646-1659		Puritan	l	Universalist; tried with the Ranters
+Webster, John, 1610-1682		Puritan	l	Seeker
+
+# ══ Sixth pass ════════════════════════════════════════════════════
+
+# ── Anglican, conforming ──────────────────────────────────────────
+Thornborough, John, 1551-1641	Anglican	Conformist	h	Bishop of Worcester
+Rainbowe, Edward, 1608-1684	Anglican	Conformist	h	Bishop of Carlisle
+Ironside, Gilbert, 1588-1671	Anglican	Conformist	h	Bishop of Bristol
+Hall, George, 1612?-1668	Anglican	Conformist	h	Bishop of Chester
+Griffith, Matthew, 1599?-1665	Anglican	Conformist	h	Royalist
+Haywood, William, 1599 or 1600-1663	Anglican	Conformist	h	Laudian
+Holdsworth, Richard, 1590-1649	Anglican	Conformist	h
+Ryves, Bruno, 1596-1677	Anglican	Conformist	h
+Filmer, Robert, Sir, d. 1653	Anglican	Conformist	h	Lay; Patriarcha
+Hewit, John, 1614-1658	Anglican	Conformist	h	Royalist; beheaded 1658
+Brownrig, Ralph, 1592-1659	Anglican	Conformist	h	Bishop of Exeter
+Boyle, Robert, 1627-1691	Anglican	Conformist	h	Lay
+Spencer, John, 1630-1693	Anglican	Conformist	h	Dean of Ely
+Lake, John, 1624-1689	Anglican	Conformist	h	Nonjuror
+Addison, Lancelot, 1632-1703	Anglican	Conformist	h
+Saywell, William, 1643-1701	Anglican	Conformist	h
+Bisbie, Nathaniel, 1635-1695	Anglican	Conformist	h	Nonjuror
+Grenville, Denis, 1637-1703	Anglican	Conformist	h	Nonjuror
+Milner, John, 1628-1702	Anglican	Conformist	h	Nonjuror
+Grascome, Samuel, 1641-1708?	Anglican	Conformist	h	Nonjuror
+Vesey, John, 1636-1716	Anglican	Conformist	h	Archbishop of Tuam
+Nicholls, William, 1664-1712	Anglican	Conformist	h
+Wesley, Samuel, 1662-1735	Anglican	Conformist	h
+Bray, Thomas, 1658-1730	Anglican	Conformist	h	Founded the SPCK
+Blackall, Offspring, 1654-1716	Anglican	Conformist	h	Bishop of Exeter
+Nowel, Alexander, 1507?-1602	Anglican	Conformist	h	Dean of St Paul's; his catechism
+Presbyter of the Church of England	Anglican	Conformist	h	The catalogue's own description is the answer
+Price, William, d. 1666	Anglican	Conformist	m
+Sherman, John, d. 1663	Anglican	Conformist	m
+Ellis, John, 1606?-1681	Anglican	Conformist	m
+Watson, Richard, 1612-1685	Anglican	Conformist	m
+Shute, Josias, 1588-1643	Anglican	Conformist	m
+Gregory, John, 1607-1646	Anglican	Conformist	m
+Terry, Edward, 1590-1660	Anglican	Conformist	m
+Raleigh, Walter, Sir, 1552?-1618	Anglican	Conformist	m	Lay
+Jenkins, David, 1582-1663	Anglican	Conformist	m	Lay judge; royalist
+Durham, William, 1611-1684	Anglican	Conformist	m
+Dillingham, William, 1617?-1689	Anglican	Conformist	m
+Hinckley, John, 1617?-1695	Anglican	Conformist	m
+Templer, John, d. 1693	Anglican	Conformist	m
+Willis, Thomas, 1619 or 20-1692	Anglican	Conformist	m
+H. S. (Henry Savage), 1604?-1672	Anglican	Conformist	m
+Wolley, Edward, 1603-1684	Anglican	Conformist	m
+Lane, Edward, 1605-1685	Anglican	Conformist	m
+Oldisworth, Giles, 1619-1678	Anglican	Conformist	m
+Dixon, Robert, d. 1688	Anglican	Conformist	m
+Bushel, Seth, 1621-1684	Anglican	Conformist	m
+Jekyll, Thomas, 1646-1698	Anglican	Conformist	m
+Shelton, William, d. 1699	Anglican	Conformist	m
+Hascard, Gregory	Anglican	Conformist	m
+Garrett, Walter	Anglican	Conformist	m
+Godwyn, Morgan, fl. 1685	Anglican	Conformist	m	Wrote for the baptism of slaves
+Salgado, James, fl. 1680	Anglican	Conformist	m	Spanish priest who conformed
+Dorrington, Theophilus, d. 1715	Anglican	Conformist	m
+Gaskarth, John, d. 1732	Anglican	Conformist	m
+Pearson, Richard, d. 1734	Anglican	Conformist	m
+Bryan, Matthew, d. 1699	Anglican	Conformist	m	Nonjuror
+Masters, Samuel, 1645 or 6-1693	Anglican	Conformist	m
+Woodroffe, Benjamin, 1638-1711	Anglican	Conformist	m
+Johnston, Joseph, d. 1723	Anglican	Conformist	m
+Altham, Michael, 1633-1705	Anglican	Conformist	m
+Jenks, Benjamin, 1646-1724	Anglican	Conformist	m
+Mackqueen, John, d. 1734	Anglican	Conformist	m	Scottish Episcopalian
+Gardiner, James, 1637-1705	Anglican	Conformist	m	Bishop of Lincoln
+Cockburn, John, 1652-1729	Anglican	Conformist	m	Scottish Episcopalian
+Bury, Arthur, 1624-1713	Anglican	Conformist	m	Rector of Exeter College; The Naked Gospel was burned for Socinianism
+Burches, George, d. 1658	Anglican	Conformist	l
+Barton, Thomas, 1599 or 1600-1682 or 3	Anglican	Conformist	l
+Straight, John, 1605?-1680	Anglican	Conformist	l
+J. B. (John Bulwer), fl. 1648-1654	Anglican	Conformist	l	Lay physician
+Beaumont, Francis, 1584-1616	Anglican	Conformist	l	Lay dramatist
+Godolphin, John, 1617-1678	Anglican	Conformist	l	Lay civilian
+Thomas, Michael, rector of Stockton	Anglican	Conformist	l
+Ramsey, John, Minister of East Rudham	Anglican	Conformist	l
+R. P. (Robert Perrot)	Anglican	Conformist	l
+Ogilby, John, 1600-1676	Anglican	Conformist	l	Lay
+Seppens, Robert	Anglican	Conformist	l
+Meriton, George, 1634-1711	Anglican	Conformist	l	Lay; not the divine of d. 1624
+Gibbon, John, 1629-1718	Anglican	Conformist	l	Lay herald
+Sharpe, Lewes	Anglican	Conformist	l
+J. B. (John Butler)	Anglican	Conformist	l
+Lougher, John, d. 1686	Anglican	Conformist	l
+Peck, Samuel	Anglican	Conformist	l
+R. B., 1632?-1725?	Anglican	Conformist	l	Nathaniel Crouch, writing as Richard Burton
+Wilson, Thomas, 17th cent	Anglican	Conformist	l
+Milward, Matthias, fl. 1603-1641	Anglican	Conformist	l
+Raban, Edward, d. 1658	Anglican	Conformist	l	Lay printer
+Reynolds, John, d. 1693?	Anglican	Conformist	l
+Patten, William, fl. 1548-1580	Anglican	Conformist	l	Lay
+Sherry, Richard, ca. 1506-ca. 1555	Anglican	Conformist	l
+Charles II, King of England, 1630-1685	Anglican	Conformist	m	Received into the Roman church on his deathbed
+Scoloker, Anthony, fl. 1548	Anglican		m	Lay printer
+Lynne, Walter	Anglican		m	Lay printer
+Thomas, William, Clerk of the Council to Edward VI	Anglican		m	Lay
+Salesbury, William, 1520?-1600?	Anglican		m	The Welsh New Testament
+
+# ── Anglican, Puritan ─────────────────────────────────────────────
+Scudder, Henry, d. 1659?	Anglican	Puritan	h	Westminster divine
+Gurnall, William, 1617-1679	Anglican	Puritan	h	The Christian in Complete Armour; conformed in 1662
+Abbot, George, 1604-1649	Anglican	Puritan	m	Lay; MP, called "the Puritan"
+Maton, Robert, 1607-1653?	Anglican	Puritan	m	Millenarian
+Marbury, Edward, 1581-ca. 1655	Anglican	Puritan	m
+Thorowgood, Thomas, d. ca. 1669	Anglican	Puritan	m
+Goodwin, Philip, d. 1699	Anglican	Puritan	m	Not Thomas or John Goodwin
+Resbury, Richard, 1607-1674	Anglican	Puritan	m
+Dingley, Robert, 1619-1660	Anglican	Puritan	m
+Old, John, fl. 1545-1555	Anglican	Puritan	m	Marian exile
+Copland, Patrick, ca. 1570-ca. 1655	Anglican	Puritan	m
+Brinkelow, Henry, d. 1546	Anglican	Puritan	m	Lay satirist of the Edwardian church
+Freake, William	Anglican	Puritan	l
+Duke, Francis	Anglican	Puritan	l
+Peck, Francis, d. 1651	Anglican	Puritan	l
+Eachard, John, 17th cent	Anglican	Puritan	l
+Howet, Enoch	Anglican	Puritan	l
+Powell, Walter, b. 1590 or 91	Anglican	Puritan	l
+Hussey, William, minister of Chiselhurst	Anglican	Puritan	l
+Smyth, Zeph. (Zephaniah), fl. 1646-1648	Anglican	Puritan	l
+Townsend, Sampson	Anglican	Puritan	l
+Moore, Samuel, b. 1617	Anglican	Puritan	l
+Holland, Hezekiah, fl. 1638-1661	Anglican	Puritan	l
+Boun, Abraham	Anglican	Puritan	l
+Parker, William, fl. 1651-1658	Anglican	Puritan	l
+Austen, Ralph, d. 1676	Anglican	Puritan	l	Lay
+Willington, George	Anglican	Puritan	l
+Strong, James, 1618 or 19-1694	Anglican	Puritan	l
+West, Robert, b. ca. 1613	Anglican	Puritan	l
+Jones, Andrew, M.A.	Anglican	Puritan	l
+Hough, Roger	Anglican	Puritan	l
+Pack, Samuel	Anglican	Puritan	l
+Pits, John	Anglican	Puritan	l
+Udal, Thomas	Anglican	Puritan	l
+Corbet, Jeffrey	Anglican	Puritan	l	Lay
+Nicolls, Philip	Anglican	Puritan	l
+
+# ── Presbyterian ──────────────────────────────────────────────────
+Ford, Thomas, 1598-1674	Presbyterian	Puritan	h
+Bowles, Edward, 1613-1662	Presbyterian	Puritan	h
+Gee, Edward, 1613-1660	Presbyterian	Puritan	h
+Whitlock, John, 1625-1709	Presbyterian	Puritan	h
+Mayo, Richard, 1631?-1695	Presbyterian	Puritan	h
+Janeway, James, 1636?-1674	Presbyterian	Puritan	h
+Corbet, John, 1620-1680	Presbyterian	Puritan	h
+Sylvester, Matthew, 1636 or 7-1708	Presbyterian	Puritan	h	Baxter's editor
+Hill, Joseph, 1625-1707	Presbyterian	Puritan	h
+Pendlebury, Henry, 1626-1695	Presbyterian	Puritan	h
+Rogers, Timothy, 1658-1728	Presbyterian	Puritan	h
+Boyse, J. (Joseph), 1660-1728	Presbyterian	Puritan	h	Dublin
+Calamy, Edmund, 1671-1732	Presbyterian	Puritan	h	The historian of the ejection; grandson of the Westminster divine
+Fleming, Robert, 1630-1694	Presbyterian	Puritan	h	Church of Scotland
+Williamson, David, d. 1706	Presbyterian	Puritan	h	Church of Scotland
+Wilson, Thomas, 1601-1653	Presbyterian	Puritan	m
+Paget, Thomas, d. 1660	Presbyterian	Puritan	m
+Wilkinson, Henry, 1610-1675	Presbyterian	Puritan	m	Not the man of 1616-1690
+Woodcock, Francis, 1614?-1651	Presbyterian	Puritan	m
+Hickes, Gaspar, 1605-1677	Presbyterian	Puritan	m	Westminster divine
+Ram, Robert, d. 1657	Presbyterian	Puritan	m
+Goode, William, b. 1599 or 1600	Presbyterian	Puritan	m	Westminster divine
+Hudson, Samuel, 17th cent	Presbyterian	Puritan	m
+Wells, John, 1623-1676	Presbyterian	Puritan	m
+R. D. (Roger Drake), 1608-1669	Presbyterian	Puritan	m
+Woodbridge, Benjamin, 1622-1684	Presbyterian	Puritan	m
+Chambers, Humphrey, 1598 or 9-1662	Presbyterian	Puritan	m	Westminster divine
+Walker, Clement, 1595-1651	Presbyterian	Puritan	m	Lay; MP
+Sydenham, Cuthbert, 1622-1654	Presbyterian	Puritan	m
+Farmer, Ralph	Presbyterian	Puritan	m	Of Bristol; wrote against the Quakers
+Froysell, Thomas, d. ca. 1672	Presbyterian	Puritan	m
+Norman, John, 1622-1669	Presbyterian	Puritan	m
+Danson, Thomas, d. 1694	Presbyterian	Puritan	m
+Hurst, Henry, 1629-1690	Presbyterian	Puritan	m
+Lamb, Philip, d. 1689	Presbyterian	Puritan	m
+Rolle, Samuel, fl. 1657-1678	Presbyterian	Puritan	m
+Truman, Joseph, 1631-1671	Presbyterian	Puritan	m
+Barret, John, 1631-1713	Presbyterian	Puritan	m
+Troughton, John, 1637?-1681	Presbyterian	Puritan	m
+Stephens, Nathaniel, 1606?-1678	Presbyterian	Puritan	m
+Ranew, Nathanael, 1602?-1678	Presbyterian	Puritan	m
+Batt, Timothy, 1613-1692	Presbyterian	Puritan	l
+Bridges, Walter	Presbyterian	Puritan	l
+Masterson, Geo. (George)	Presbyterian	Puritan	l
+Baxter, Benjamin, Preacher of the Gospel	Presbyterian	Puritan	l
+Stoddon, Samuel	Presbyterian	Puritan	l
+Dunton, John, 1627 or 8-1676	Presbyterian	Puritan	l
+Harrison, Michael, Minister at Potters-Pury	Presbyterian	Puritan	l
+Brown, David, fl. 1650-1652	Presbyterian	Puritan	l
+Row, James, 17th cent	Presbyterian	Puritan	l	Church of Scotland
+
+# ── Congregational and Independent ────────────────────────────────
+Parker, Thomas, 1595-1677	Congregational	Puritan	h	New England
+Allin, John, 1596-1671	Congregational	Puritan	h	New England
+Fitch, James, 1622-1702	Congregational	Puritan	h	New England
+Oakes, Urian, 1631-1681	Congregational	Puritan	h	President of Harvard
+Torrey, Samuel, 1632-1707	Congregational	Puritan	h	New England
+Mather, Increase, 1639-1723	Congregational	Puritan	h	New England
+Morton, Charles, 1627-1698	Congregational	Puritan	h	New England
+Sewall, Samuel, 1652-1730	Congregational	Puritan	h	New England; lay judge
+Feake, Christopher, fl. 1645-1660	Congregational	Puritan	h	Fifth Monarchist
+Rowe, John, 1626-1677	Congregational	Puritan	h
+Carter, William, 1605-1658	Congregational	Puritan	m
+Du Moulin, Lewis, 1606-1680	Congregational	Puritan	m	Son of the Huguenot; an Independent, unlike his brother Peter
+Cary, Mary	Congregational	Puritan	m	Fifth Monarchist
+Armitage, Timothy, d. 1655	Congregational	Puritan	m
+Ford, Stephen, d. 1694	Congregational	Puritan	m
+J. F. (James Forbs), 1629?-1712	Congregational	Puritan	m
+Spencer, John, 1601-1671	Congregational	Puritan	l	Not the Dean of Ely
+Batchiler, John, ca. 1615-1674	Congregational	Puritan	l
+Robotham, John, fl. 1654	Congregational	Puritan	l
+Higgenson, Thomas	Congregational	Puritan	l
+Whiting, Nathaneel, 1617?-1682	Congregational	Puritan	l
+
+# ── Baptist ───────────────────────────────────────────────────────
+Kiffin, William, 1616-1701	Baptist	Puritan	h	Particular Baptist
+Blackwood, Christopher	Baptist	Puritan	h
+Griffith, John, 1622?-1700	Baptist	Puritan	h	General Baptist
+Danvers, Henry, d. 1687	Baptist	Puritan	h
+De Laune, Thomas, d. 1685	Baptist	Puritan	h	Died in Newgate
+Collins, Hercules, d. 1702	Baptist	Puritan	h	Particular Baptist
+Lawrence, Henry, 1600-1664	Baptist	Puritan	m	Lay; president of Cromwell's council
+Killcop, Thomas	Baptist	Puritan	m
+Loveday, Samuel, 1619-1677	Baptist	Puritan	m	General Baptist
+Spittlehouse, John	Baptist	Puritan	m	Fifth Monarchist
+Haggar, Henry	Baptist	Puritan	m
+Hammon, George	Baptist	Puritan	m	General Baptist
+
+# ── Quaker ────────────────────────────────────────────────────────
+Ellwood, Thomas, 1639-1713	Quaker		h	Milton's reader
+Gibson, William, 1629-1684	Quaker		h
+Rudyard, Thomas, d. 1692	Quaker		h
+Shewen, William, 1631?-1695	Quaker		h
+Rogers, William, d. ca. 1709	Quaker		h	The Wilkinson-Story separation
+Tomlinson, William	Quaker		m
+
+# ── Socinian ──────────────────────────────────────────────────────
+Crell, Johann, 1590-1633	Socinian		h	Racovian
+
+# ── The continent ─────────────────────────────────────────────────
+Dailé, Jean, 1594-1670	Continental Reformed		h	Huguenot, at Charenton
+Jurieu, Pierre, 1637-1713	Continental Reformed		h	Huguenot, in exile at Rotterdam
+Allix, Pierre, 1641-1717	Continental Reformed		h	Huguenot; took English orders after the Revocation
+Marcourt, Antoine de, d. ca. 1560	Continental Reformed		h	The Placards of 1534
+Lambert, Franz, 1486-1530	Continental Reformed		m	Lambert of Avignon; the Homberg synod
+Osiander, Andreas, 1498-1552	Lutheran		h
+Hegendorph, Christoph, 1500-1540	Lutheran		h
+Gnaphaeus, Gulielmus, 1493-1568	Lutheran		m
+Hart, Henry, fl. 1549	Anabaptist		m	Kentish freewiller
+
+# ── Rome ──────────────────────────────────────────────────────────
+Fisher, John, 1569-1641	Roman Catholic		h	The Jesuit John Percy; not the martyred bishop
+Harris, Paul, 1573-1635?	Roman Catholic		h	Secular priest in Dublin
+Mumford, J. (James), 1606-1666	Roman Catholic		h	Jesuit
+Cressy, Serenus, 1605-1674	Roman Catholic		h	Benedictine; converted from the Church of England
+Senault, Jean-François, 1601-1672	Roman Catholic		h	Oratorian
+Walsh, Peter, 1618?-1688	Roman Catholic		h	Franciscan
+E. W. (Edward Worsley), 1605-1676	Roman Catholic		h	Jesuit
+Godden, Thomas, 1624-1688	Roman Catholic		h
+Warner, John, 1628-1692	Roman Catholic		h	Jesuit
+Corker, James Maurus, 1636-1715	Roman Catholic		h	Benedictine
+Darrell, William, 1651-1721	Roman Catholic		h	Jesuit
+John XXI, Pope, d. 1277	Roman Catholic		h
+Denis, the Carthusian, 1402-1471	Roman Catholic		h
+Hilton, Walter, d. 1396	Roman Catholic		h
+Raymond, of Capua, 1330-1399	Roman Catholic		h	Catherine of Siena's confessor
+Colet, John, 1467?-1519	Roman Catholic		h	Dean of St Paul's before the breach
+William, of Ockham, ca. 1285-ca. 1349	Roman Catholic		h
+Savonarola, Girolamo, 1452-1498	Roman Catholic		h
+Peryn, William	Roman Catholic		h	Dominican
+Harpsfield, John, 1516-1578	Roman Catholic		h
+Chaucer, Geoffrey, d. 1400	Roman Catholic		m	Lay
+Gower, John, 1325?-1408	Roman Catholic		m	Lay
+Caxton, William, ca. 1422-1491	Roman Catholic		m	Lay printer
+Froissart, Jean, 1338?-1410?	Roman Catholic		m
+Parker, Henry, d. 1470	Roman Catholic		m
+Chertsey, Andrew	Roman Catholic		m
+Ryckes, John	Roman Catholic		m
+Lefèvre d'Étaples	Roman Catholic		m
+Boece, Hector, 1465?-1536	Roman Catholic		m
+Clerk, John, d. 1552	Roman Catholic		m
+
+# ── Party without a body ──────────────────────────────────────────
+Skippon, Philip, d. 1660		Puritan	l	Lay; Major-General
+Walwyn, William, 1600-1681		Puritan	l	Leveller
+Sikes, George		Puritan	l	Wrote the life of Sir Henry Vane
+Tutchin, John, 1661?-1707		Puritan	l	Lay; Whig pamphleteer
+Eleanor, Lady, d. 1652		Puritan	l	Lady Eleanor Davies, prophetess
+Tichborne, Robert, Sir, d. 1682		Puritan	l	Lay; regicide
+
+# ══ Seventh pass ══════════════════════════════════════════════════
+# The Elizabethan and Jacobean tail: parish clergy, lay writers, the
+# recusant presses abroad, and the continental Reformed in English.
+
+# ── Rome ──────────────────────────────────────────────────────────
+Standish, John, 1507?-1570	Roman Catholic		h
+Bonner, Edmund, 1500?-1569	Roman Catholic		h	Bishop of London under Mary
+Feckenham, John de, 1518?-1585	Roman Catholic		h	Last Abbot of Westminster
+Watson, Thomas, 1513-1584	Roman Catholic		h	Bishop of Lincoln under Mary; not the Presbyterian
+Dorman, Thomas, d. 1577?	Roman Catholic		h
+Hozjusz, Stanisław, 1504-1579	Roman Catholic		h	Cardinal
+Stapleton, Thomas, 1535-1598	Roman Catholic		h	Douai and Louvain
+Rainolds, William, 1544?-1594	Roman Catholic		h	Brother of the Puritan John Rainolds
+Estella, Diego de, 1524-1578	Roman Catholic		h	Franciscan
+Loarte, Gaspar de, 1498-1578	Roman Catholic		h	Jesuit
+Pinelli, Luca, 1542-1607	Roman Catholic		h	Jesuit
+Buckland, Ralph, 1564-1611	Roman Catholic		h
+Woodward, Philip, ca. 1557-1610	Roman Catholic		h
+Androzzi, Fulvio, 1523-1575	Roman Catholic		h	Jesuit
+Colleton, John, 1548-1635	Roman Catholic		h	Archpriest
+Fitzherbert, Thomas, 1552-1640	Roman Catholic		h	Jesuit
+Coffin, Edward, 1571-1626	Roman Catholic		h	Jesuit
+Richeome, Lovis, 1544-1625	Roman Catholic		h	Jesuit
+Falconer, John, 1577-1656	Roman Catholic		h	Jesuit
+Hoskins, Anthony, 1568-1615	Roman Catholic		h	Jesuit
+John, of Avila, Saint, 1499?-1569	Roman Catholic		h
+Lechmere, Edmund, d. 1640?	Roman Catholic		h
+Juan de Santa María, fray, d. 1622	Roman Catholic		h	Franciscan
+Camus, Jean-Pierre, 1584-1652	Roman Catholic		h	Bishop of Belley
+Caussin, Nicolas, 1583-1651	Roman Catholic		h	Jesuit
+Fonseca, Cristóbal de, 1550?-1621	Roman Catholic		h	Augustinian
+Scupoli, Lorenzo, 1530-1610	Roman Catholic		h	Theatine
+Almond, Oliver	Roman Catholic		h
+Wadsworth, James, 1572?-1623	Roman Catholic		h	Converted
+Matthew, Toby, Sir, 1577-1655	Roman Catholic		h	Converted; son of the Archbishop of York
+Wilson, John, ca. 1575-ca. 1645?	Roman Catholic		h	The English Martyrologe
+Anghiera, Pietro Martire d', 1457-1526	Roman Catholic		h
+Charron, Pierre, 1541-1603	Roman Catholic		h
+Robert, Gruffydd, 1522-ca. 1610	Roman Catholic		h	Welsh exile at Milan
+Adrichem, Christiaan van, 1533-1585	Roman Catholic		h
+Parsons, Robert, 1546-1610. Christian directory	Roman Catholic		h	Jesuit
+Cancellar, James	Roman Catholic		m	Marian
+Evans, Lewis, fl. 1574	Roman Catholic		m	Crossed twice
+Constable, Henry, 1562-1613	Roman Catholic		m	Converted
+Flecknoe, Richard, d. 1678?	Roman Catholic		m
+Paradin, Claude, 16th cent	Roman Catholic		m
+Machiavelli, Niccolò, 1469-1527	Roman Catholic		m	Lay
+Bruni, Leonardo, 1369-1444	Roman Catholic		m	Lay
+Petrarca, Francesco, 1304-1374	Roman Catholic		m
+Guicciardini, Francesco, 1483-1540	Roman Catholic		m	Lay
+Pasquier, Etienne, 1529-1615	Roman Catholic		m	Lay
+Matthieu, Pierre, 1563-1621	Roman Catholic		m	Lay
+António, Prior of Crato, 1531-1595	Roman Catholic		m	Lay
+Aelfric, Abbot of Eynsham	Roman Catholic		m	Pre-Conquest English church
+
+# ── The continent ─────────────────────────────────────────────────
+Teellinck, Willem, 1579-1629	Continental Reformed		h	The Dutch Further Reformation
+Polyander à Kerckhoven, Johannes, 1568-1646	Continental Reformed		h	Leiden; Synopsis Purioris Theologiae
+Polanus von Polansdorf, Amandus, 1561-1610	Continental Reformed		h	Basel
+Taffin, Jean, 1529-1602	Continental Reformed		h
+Chassanion, Jean de, 1531-1598	Continental Reformed		h	Huguenot
+La Place, Pierre de, 1520-1572	Continental Reformed		h	Killed in the St Bartholomew's Day massacre
+Estienne, Henri, 1531-1598	Continental Reformed		h	Huguenot printer
+Gentillet, Innocent, ca. 1535-ca. 1595	Continental Reformed		h	Huguenot
+Valera, Cipriano de, 1532?-1625	Continental Reformed		h	Spanish exile; the Reina-Valera Bible
+La Placette, Jean, 1629-1718	Continental Reformed		h	Huguenot
+Loque, Bertrand de	Continental Reformed		h	Huguenot
+Rouspeau, Yves	Continental Reformed		m	Huguenot
+Bédé de la Gormandière, Jean	Continental Reformed		m	Huguenot
+Münster, Sebastian, 1489-1552	Continental Reformed		m	Hebraist at Basel
+Benedetto, da Mantova, fl. 1534-1541	Continental Reformed		m	The Beneficio di Cristo
+Paré, Ambroise, 1510?-1590	Continental Reformed		m	Lay surgeon; Huguenot
+Bünting, Heinrich, 1545-1606	Lutheran		h
+Luther, Martin, 1483-1546. aut	Lutheran		h	A catalogue variant of the same man
+Tilenus, Daniel, 1563-1633	Arminian		m	Began Reformed and ended with the Remonstrants
+
+# ── Anglican, conforming ──────────────────────────────────────────
+Saravia, Adrien, 1530-1612	Anglican	Conformist	h	Dutch-born; defended episcopacy against Beza
+Smith, Miles, d. 1624	Anglican	Conformist	h	Translator of the King James Bible; Bishop of Gloucester
+Lake, Arthur, 1569-1626	Anglican	Conformist	h	Bishop of Bath and Wells
+Bedel, William, 1571-1642	Anglican	Conformist	h	Bishop of Kilmore; the Irish Bible
+Potter, Christopher, 1591-1646	Anglican	Conformist	h
+Skinner, Robert, 1591-1670	Anglican	Conformist	h	Bishop of Worcester
+Shelford, Robert, 1562 or 3-1627	Anglican	Conformist	h	Laudian
+Pocklington, John	Anglican	Conformist	h	Laudian
+Dow, Christopher, B.D.	Anglican	Conformist	h	Laudian
+Sybthorpe, Robert, d. 1662	Anglican	Conformist	h	Laudian
+Widdowes, Giles, 1558?-1645	Anglican	Conformist	h	Wrote against the Puritans
+Ormerod, Oliver, 1580?-1626	Anglican	Conformist	h	The Picture of a Puritan
+Burghley, William Cecil, Baron, 1520-1598	Anglican	Conformist	h	Lay; Lord Treasurer
+University of Oxford	Anglican	Conformist	h
+Morgan, William, ca. 1545-1604	Anglican	Conformist	h	The Welsh Bible
+Curteys, Richard, 1532?-1582	Anglican	Conformist	m	Bishop of Chichester
+James, William, 1542-1617	Anglican	Conformist	m	Bishop of Durham
+Hill, Adam, d. 1595	Anglican	Conformist	m
+Fotherby, Martin, 1549 or 50-1620	Anglican	Conformist	m	Bishop of Salisbury
+Field, Theophilus, 1574-1636	Anglican	Conformist	m	Bishop of Hereford
+Willan, Robert, d. 1630	Anglican	Conformist	m
+Bowle, John, d. 1637	Anglican	Conformist	m	Bishop of Rochester
+Hodson, Phineas, d. 1646	Anglican	Conformist	m
+Burges, John, 1561?-1635	Anglican	Conformist	m	A nonconformist who conformed
+Robartes, Foulke, 1580?-1650	Anglican	Conformist	m
+Anyan, Thomas, 1580 or 81-1632	Anglican	Conformist	m
+Chetwynd, Edward, 1577-1639	Anglican	Conformist	m
+Collins, Samuel, 1576-1651	Anglican	Conformist	m
+Walkington, Thomas, d. 1621	Anglican	Conformist	m
+Sanderson, Thomas, 1560 or 61-1614	Anglican	Conformist	m
+Rollenson, Francis, ca. 1565-1630	Anglican	Conformist	m
+Gordon, John, 1544-1619	Anglican	Conformist	m	Dean of Salisbury
+Hill, Robert, d. 1623	Anglican	Conformist	m
+Wakeman, Robert, 1575 or 6-1629	Anglican	Conformist	m
+Doughty, John, 1598-1672	Anglican	Conformist	m
+Fitz-Geffry, Charles, 1575?-1638	Anglican	Conformist	m
+Downe, John, 1570?-1631	Anglican	Conformist	m
+Hoard, Samuel, 1599-1658	Anglican	Conformist	m	Wrote against absolute reprobation
+Watts, William, 1590?-1649	Anglican	Conformist	m
+Birckbek, Simon, 1584-1656	Anglican	Conformist	m
+Hanmer, Meredith, 1543-1604	Anglican	Conformist	m
+Wilkinson, William, d. 1613	Anglican	Conformist	m	Against the Family of Love
+James, Thomas, 1573?-1629	Anglican	Conformist	m	Bodley's first librarian
+Reeve, Tho. (Thomas), 1583 or 4-1651	Anglican	Conformist	m
+Lindsay, David, 1565?-1627	Anglican	Conformist	m	Scottish bishop
+Baron, Robert, 1593?-1639	Anglican	Conformist	m	One of the Aberdeen doctors
+Kyffin, Maurice, d. 1599	Anglican	Conformist	m	Welsh
+Tejeda, Fernando de, fl. 1623	Anglican	Conformist	m	Spanish priest who conformed
+Camden, William, 1551-1623	Anglican	Conformist	m	Lay antiquary
+Coke, Edward, Sir, 1552-1634	Anglican	Conformist	m	Lay; Lord Chief Justice
+Bacon, Francis, 1561-1626	Anglican	Conformist	m	Lay
+Lambarde, William, 1536-1601	Anglican	Conformist	m	Lay
+Ridley, Thomas, Sir, 1550?-1629	Anglican	Conformist	m	Lay civilian
+Austin, William, 1587-1634	Anglican	Conformist	m	Lay
+Baker, Richard, Sir, 1568-1645	Anglican	Conformist	m	Lay
+Hutchinson, Roger, d. 1555	Anglican		m	Edwardian
+Menewe, Gracious	Anglican		m
+Grafton, Richard, d. 1572?	Anglican		m	Lay printer
+Day, Richard, b. 1552	Anglican		m
+Fleming, Abraham, 1552?-1607	Anglican	Conformist	l
+Ling, Nicholas, fl. 1563	Anglican	Conformist	l	Lay
+Baker, Humfrey, fl. 1557-1587	Anglican	Conformist	l	Lay
+Painter, William, 1540?-1594	Anglican	Conformist	l	Lay
+Copland, Robert, fl. 1508-1547	Anglican	Conformist	l	Lay printer
+Sutton, J., fl. 1567-1573	Anglican	Conformist	l
+Batman, Stephen, d. 1584	Anglican	Conformist	l
+Conway, John, Sir, d. 1603	Anglican	Conformist	l	Lay
+Fenton, Geoffrey, Sir, 1539?-1608	Anglican	Conformist	l	Lay
+Carlile, Christopher, d. 1588?	Anglican	Conformist	l
+Brasbridge, Thomas, fl. 1590	Anglican	Conformist	l
+Bishop, John, d. 1613	Anglican	Conformist	l	Lay
+Cogan, Thomas, 1545?-1607	Anglican	Conformist	l	Lay physician
+Florio, John, 1553?-1625	Anglican	Conformist	l	Lay
+Keltridge, John	Anglican	Conformist	l
+Phillips, John, fl. 1570-1591	Anglican	Conformist	l
+Openshaw, Robert, b. 1554 or 5	Anglican	Conformist	l
+Robinson, Richard, citizen of London	Anglican	Conformist	l	Lay
+Fisher, William, student of divinity	Anglican	Conformist	l
+White, Peter, Vicar of Eaton Socon	Anglican	Conformist	l
+Fetherston, Christopher	Anglican	Conformist	l
+Harvey, Richard, 1560-1623?	Anglican	Conformist	l
+Averell, W. (William)	Anglican	Conformist	l	Lay
+Chub, William	Anglican	Conformist	l
+Greene, Robert, 1558?-1592	Anglican	Conformist	l	Lay
+Horne, William	Anglican	Conformist	l
+Scott, Thomas, preacher at the Rolls Chapel	Anglican	Conformist	l
+Wither, George, 1540-1605	Anglican	Conformist	l	Not the poet of 1588-1667
+Crompton, Richard, fl. 1573-1599	Anglican	Conformist	l	Lay
+Hooke, Christopher	Anglican	Conformist	l
+Moffett, Peter, d. 1617	Anglican	Conformist	l
+Welwood, William, fl. 1578-1622	Anglican	Conformist	l	Lay civilian
+Cottesford, Samuel	Anglican	Conformist	l
+Daman, William, ca. 1540-1591	Anglican	Conformist	l	Lay musician
+Fletcher, Giles, 1549?-1611	Anglican	Conformist	l	Lay
+Barnes, Barnabe, 1569?-1609	Anglican	Conformist	l	Lay
+Myddelton, William, 1556?-1621	Anglican	Conformist	l	Lay; Welsh
+Lowe, Peter, ca. 1550-ca. 1612	Anglican	Conformist	l	Lay surgeon
+Barker, Peter, preacher of Gods word	Anglican	Conformist	l
+Pie, Thomas, 1560-1610	Anglican	Conformist	l
+Ingmethorpe, Thomas	Anglican	Conformist	l
+West, William, fl. 1568-1594	Anglican	Conformist	l	Lay
+Moffett, Thomas, 1553-1604	Anglican	Conformist	l	Lay physician
+Perceval, Richard, 1550-1620	Anglican	Conformist	l	Lay
+Thomas, Lewis, b. 1567 or 8	Anglican	Conformist	l
+Fulbecke, William, 1560-1603?	Anglican	Conformist	l	Lay lawyer
+Perrott, James, Sir, 1571-1637	Anglican	Conformist	l	Lay
+Vaughan, William, 1577-1641	Anglican	Conformist	l	Lay
+Westerman, William	Anglican	Conformist	l
+Younger, William, b. 1572 or 3	Anglican	Conformist	l
+Gill, Alexander, 1565-1635	Anglican	Conformist	l	Lay schoolmaster
+Malynes, Gerard, fl. 1586-1641	Anglican	Conformist	l	Lay
+Deloney, Thomas, 1543?-1600	Anglican	Conformist	l	Lay
+Hull, John, 1569 or 70-1627	Anglican	Conformist	l
+Nicholson, Samuel, fl. 1600-1602	Anglican	Conformist	l
+Leighton, William, Sir, fl. 1603-1614	Anglican	Conformist	l	Lay
+Burt, Thomas, preacher of the word	Anglican	Conformist	l
+Corderoy, Jeremy, b. 1562 or 3	Anglican	Conformist	l
+Godskall, James	Anglican	Conformist	l
+Hopkins, John, fl. 1604-1609	Anglican	Conformist	l
+Wolcomb, Robert, b. 1567 or 8	Anglican	Conformist	l
+Kilby, Richard, d. 1617	Anglican	Conformist	l
+Milles, Tho. (Thomas), 1550?-1627?	Anglican	Conformist	l	Lay
+Stoneham, Mathew	Anglican	Conformist	l
+Gray, Robert, 16th/17th cent	Anglican	Conformist	l
+Johnson, Robert, chaplain to the Bishop of Lincoln	Anglican	Conformist	l
+Mayo, John K.	Anglican	Conformist	l
+Woodwall, William	Anglican	Conformist	l
+Alliston, Joseph	Anglican	Conformist	l
+Dunster, John	Anglican	Conformist	l
+Fletcher, Giles, 1588?-1623	Anglican	Conformist	l	Lay poet
+Graile, Edmond, b. ca. 1577	Anglican	Conformist	l
+Hopton, Arthur, 1587 or 8-1614	Anglican	Conformist	l	Lay
+Seller, John, 1592 or 3-1648	Anglican	Conformist	l
+Webb, Richard, preacher of God's word	Anglican	Conformist	l
+Daborne, Robert, d. 1628	Anglican	Conformist	l	Lay dramatist
+Moore, John, d. 1619	Anglican	Conformist	l
+Newhouse, Thomas, d. 1611	Anglican	Conformist	l
+Gibson, Abraham, b. 1586 or 7	Anglican	Conformist	l
+Pemberton, William, d. 1622	Anglican	Conformist	l
+Rolte, John	Anglican	Conformist	l
+Bury, John, 1580-1667	Anglican	Conformist	l
+Forsyth, James, fl. 1615-1619	Anglican	Conformist	l
+Case, William, 1584 or 5-1634	Anglican	Conformist	l
+Hay, Peter, gentleman of North-Britaine	Anglican	Conformist	l	Lay
+Carpenter, Richard, 1575-1627	Anglican	Conformist	l	Not the convert of d. 1670?
+Sym, John	Anglican	Conformist	l
+Harrison, John, fl. 1610-1638	Anglican	Conformist	l
+Ley, Roger, b. 1593 or 4	Anglican	Conformist	l
+Oldmayne, Timothy	Anglican	Conformist	l
+Gibson, Samuel	Anglican	Conformist	l
+Lewis, John, b. 1595 or 6	Anglican	Conformist	l
+Styles, Christopher	Anglican	Conformist	l
+Goldwell, Charles	Anglican	Conformist	l
+Lovell, Robert, curate of Allhallows, Barking	Anglican	Conformist	l
+Proctor, Thomas, fl. 1621	Anglican	Conformist	l
+Stint, Thomas	Anglican	Conformist	l
+Meredith, John, b. 1579 or 80	Anglican	Conformist	l
+Balmford, Samuel, d. 1659?	Anglican	Conformist	l
+Dalton, Edward	Anglican	Conformist	l
+Mico, John	Anglican	Conformist	l
+Rogers, Henry, ca. 1585-1658	Anglican	Conformist	l
+Taylor, Augustine	Anglican	Conformist	l
+Wastel, Simon, d. 1632	Anglican	Conformist	l
+Darcie, Abraham, fl. 1625	Anglican	Conformist	l	Lay
+Randal, John, b. 1594 or 5	Anglican	Conformist	l
+Everinden, Humphrey	Anglican	Conformist	l
+Hart, James, of Northampton	Anglican	Conformist	l	Lay physician
+Phillips, John, d. 1640	Anglican	Conformist	l
+Udny, Alexander, minister of Hauking in Kent	Anglican	Conformist	l
+Waker, John	Anglican	Conformist	l
+Wilson, John, d. 1630	Anglican	Conformist	l
+Jay, George	Anglican	Conformist	l
+Jackson, John, 1600-1648	Anglican	Conformist	l
+Spencer, Thomas, fl. 1628-1629	Anglican	Conformist	l
+Foster, William, 1591-1643	Anglican	Conformist	l
+Parkinson, John, 1567-1650	Anglican	Conformist	l	Lay apothecary
+Smith, John, 1563-1616	Anglican	Conformist	l
+Cobbes, Edmund, b. 1592 or 3	Anglican	Conformist	l
+Delamain, Richard, fl. 1631	Anglican	Conformist	l	Lay
+Harsnett, Adam, 1579 or 80-1639	Anglican	Conformist	l
+Richards, Nathanael, ca. 1600-1652	Anglican	Conformist	l	Lay
+Craven, Isaac, d. 1660	Anglican	Conformist	l
+Fludd, Robert, 1574-1637	Anglican	Conformist	l	Lay physician
+Morray, William	Anglican	Conformist	l
+Bloys, William, 17th cent	Anglican	Conformist	l
+Harflete, Henry, fl. 1653	Anglican	Conformist	l	Lay
+Day, John, 1574-1640?	Anglican	Conformist	l	Lay dramatist
+Monlas, John	Anglican	Conformist	l
+Wigmore, Michael, 1588 or 9-1664?	Anglican	Conformist	l
+Blaxton, John	Anglican	Conformist	l
+Clarke, John, d. 1658	Anglican	Conformist	l
+Powell, Robert, fl. 1636-1652	Anglican	Conformist	l	Lay
+Buck, James	Anglican	Conformist	l
+Rous, Francis, b. 1615	Anglican	Conformist	l	Lay
+Goodwin, Thomas, 1586 or 7-1642	Anglican	Conformist	l	The antiquary; not the Congregationalist
+Logie, Andrew	Anglican	Conformist	l	Aberdeen
+
+# ── Anglican, Puritan ─────────────────────────────────────────────
+Whittingham, William, d. 1579	Anglican	Puritan	h	Geneva exile; the Geneva Bible
+Humphrey, Laurence, 1525 or 6-1589	Anglican	Puritan	h	Marian exile; vestiarian
+Chaderton, Laurence, 1536?-1640	Anglican	Puritan	h	First Master of Emmanuel
+Whitaker, William, 1548-1595	Anglican	Puritan	h	Regius Professor at Cambridge
+Kethe, William, d. 1608?	Anglican	Puritan	h	Geneva exile; the psalms
+Norton, Thomas, 1532-1584	Anglican	Puritan	h	Lay; translated Calvin's Institutes
+Capel, Richard, 1586-1656	Anglican	Puritan	h
+Carter, John, 1554-1635	Anglican	Puritan	h
+Dyke, Daniel, d. 1614	Anglican	Puritan	h
+Hinde, William, 1569?-1629	Anglican	Puritan	h
+Parker, Robert, 1564-1614	Anglican	Puritan	h	Exiled for nonconformity
+Kingsmill, Andrew, 1538-1569	Anglican	Puritan	m
+Golding, Arthur, 1536-1606	Anglican	Puritan	m	Lay translator
+Bull, Henry, d. 1575?	Anglican	Puritan	m
+Stockwood, John, d. 1610	Anglican	Puritan	m
+Bird, Samuel, d. 1604	Anglican	Puritan	m
+Pigg, Oliver, b. ca. 1551	Anglican	Puritan	m
+Andrewes, Bartimaeus	Anglican	Puritan	m
+Bredwell, Stephen	Anglican	Puritan	m
+Herring, Theodore, 1596-1645	Anglican	Puritan	m
+Cotton, Clement	Anglican	Puritan	m	Englished Calvin's sermons
+Rudyerd, Benjamin, Sir, 1572-1658	Anglican	Puritan	m	Lay; MP
+Rogers, John, of Chacombe	Anglican	Puritan	m
+Hughes, Lewes, fl. 1620	Anglican	Puritan	l
+
+# ── Presbyterian ──────────────────────────────────────────────────
+Throckmorton, Job, 1545-1601	Presbyterian	Puritan	h	Almost certainly Martin Marprelate's hand
+Melville, James, 1556-1614	Presbyterian	Puritan	h	Church of Scotland
+Welch, John, 1568?-1622	Presbyterian	Puritan	h	Church of Scotland
+Pont, Robert, 1524-1606	Presbyterian	Puritan	h	Church of Scotland
+Simson, Patrick, 1556-1618	Presbyterian	Puritan	h	Church of Scotland
+Fergusson, David, d. 1598	Presbyterian	Puritan	h	Church of Scotland
+Buchanan, George, 1506-1582	Presbyterian	Puritan	h	Lay; tutor to James VI
+Byfield, Adoniram, d. 1660	Presbyterian	Puritan	h	Scribe to the Westminster Assembly
+Stoughton, William, fl. 1584	Presbyterian	Puritan	m
+Adamson, John, d. 1653	Presbyterian	Puritan	m	Church of Scotland
+Narne, William, 1583?-1653	Presbyterian	Puritan	m	Church of Scotland
+Hume, Alexander, schoolmaster	Presbyterian	Puritan	l	Church of Scotland
+
+# ── Congregational and Independent ────────────────────────────────
+Browne, Robert, ca. 1550-1633	Congregational	Puritan	h	The Brownists took his name
+Greenwood, John, d. 1593	Congregational	Puritan	h	Separatist; hanged 1593
+Whitfield, Henry, 1597-1660?	Congregational	Puritan	h	New England
+Norris, Edward, 1584-1659	Congregational	Puritan	m	New England
+
+# ── Baptist ───────────────────────────────────────────────────────
+Murton, John	Baptist	Puritan	h	General Baptist, with Helwys
+Busher, Leonard	Baptist	Puritan	h	Religion's Peace, the first English plea for toleration
+
+# ── Socinian ──────────────────────────────────────────────────────
+Kett, Francis, d. 1589	Socinian		m	Burned at Norwich for denying the divinity of Christ
+
+# ── Party without a body ──────────────────────────────────────────
+Everard, John, 1575?-1650?		Puritan	l	Mystic; tried repeatedly, settled nowhere
+
+# ══ Eighth pass ═══════════════════════════════════════════════════
+
+# ── Anglican, conforming ──────────────────────────────────────────
+Piers, William, 1580-1670	Anglican	Conformist	h	Laudian; Bishop of Bath and Wells
+Westfield, Thomas, 1573-1644	Anglican	Conformist	h	Bishop of Bristol
+Warner, John, 1581-1666	Anglican	Conformist	h	Bishop of Rochester; not the Jesuit
+Maxwell, John, 1590?-1647	Anglican	Conformist	h	Scottish bishop; the 1637 prayer book
+Chappell, William, 1582-1649	Anglican	Conformist	h	Bishop of Cork
+Barwick, John, 1612-1664	Anglican	Conformist	h	Dean of St Paul's
+Brough, W. (William), d. 1671	Anglican	Conformist	h
+Herbert, George, 1593-1633	Anglican	Conformist	h	The Country Parson
+Browne, Thomas, Sir, 1605-1682	Anglican	Conformist	h	Lay physician
+Walton, Izaak, 1593-1683	Anglican	Conformist	h	Lay
+Dugdale, William, Sir, 1605-1686	Anglican	Conformist	h	Lay antiquary
+Duport, James, 1606-1679	Anglican	Conformist	h
+Perrinchief, Richard, 1623?-1673	Anglican	Conformist	h
+Rust, George, d. 1670	Anglican	Conformist	h	Bishop of Dromore
+Honyman, Andrew, 1619-1676	Anglican	Conformist	h	Scottish bishop
+Sheridan, William, 1636-1711	Anglican	Conformist	h	Bishop of Kilmore; nonjuror
+True son of the Church of England	Anglican	Conformist	h	The catalogue's own description is the answer
+Sparke, Edward, d. 1692	Anglican	Conformist	m
+Vertue, Henry, d. 1660	Anglican	Conformist	m
+Cartwright, William, 1611-1643	Anglican	Conformist	m
+Somner, William, 1598-1669	Anglican	Conformist	m	Lay antiquary
+Langbaine, Gerard, 1609-1658	Anglican	Conformist	m
+Gardiner, Richard, 1591-1670	Anglican	Conformist	m
+Isaacson, Henry, 1581-1654	Anglican	Conformist	m
+Spelman, John, Sir, 1594-1643	Anglican	Conformist	m	Lay
+Cowley, Abraham, 1618-1667	Anglican	Conformist	m	Lay poet
+Killigrew, Henry, 1613-1700	Anglican	Conformist	m
+Stampe, William, 1611-1653?	Anglican	Conformist	m
+Towgood, Richard, 1595?-1683	Anglican	Conformist	m
+Bewick, John, d. 1671	Anglican	Conformist	m
+Grimston, Harbottle, Sir, 1603-1685	Anglican	Conformist	m	Lay
+Harwood, Richard, d. 1669	Anglican	Conformist	m
+Pagitt, Ephraim, 1574 or 5-1647	Anglican	Conformist	m	Heresiography
+Sheringham, Robert, 1602-1678	Anglican	Conformist	m
+Brunsell, Samuel, 1619 or 20-1688	Anglican	Conformist	m
+Greaves, John, 1602-1652	Anglican	Conformist	m	Lay
+Harvey, Christopher, 1597-1663	Anglican	Conformist	m
+Wodenote, Theophilus, d. 1662	Anglican	Conformist	m
+Elderfield, Christopher, 1607-1652	Anglican	Conformist	m
+Gunton, Simon, 1609-1676	Anglican	Conformist	m
+Howel, James, 1594?-1666	Anglican	Conformist	m	Lay
+Willan, Edward	Anglican	Conformist	m
+Chafie, Thomas	Anglican	Conformist	m	Wrote against the Seventh Day men
+Charleton, Walter, 1619-1707	Anglican	Conformist	m	Lay physician
+Scattergood, Antony, 1611-1687	Anglican	Conformist	m
+Ashwell, George, 1612-1695	Anglican	Conformist	m
+Bogan, Zachary, 1625-1659	Anglican	Conformist	m
+Gardiner, Samuel, 1619 or 20-1686	Anglican	Conformist	m	Not the Elizabethan
+Day, William, ca. 1605-1684	Anglican	Conformist	m
+Hibbert, Henry, 1601 or 2-1678	Anglican	Conformist	m
+Marshall, Thomas, 1621-1685	Anglican	Conformist	m
+Washbourne, Thomas, 1606-1687	Anglican	Conformist	m
+Hotchkis, Thomas	Anglican	Conformist	m
+Chewney, Nicholas, 1609 or 10-1685	Anglican	Conformist	m
+Wright, Abraham, 1611-1690	Anglican	Conformist	m
+Ingelo, Nathaniel, 1621?-1683	Anglican	Conformist	m
+Parry, Benjamin, 1634-1678	Anglican	Conformist	m
+Smith, Thomas, 1623 or 4-1661	Anglican	Conformist	m	Wrote against the Quakers
+Creed, William, 1614 or 15-1663	Anglican	Conformist	m
+Lloyd, David, 1635-1692	Anglican	Conformist	m
+Martin, John, 1619-1693	Anglican	Conformist	m
+Rowland, John, 1606-1660	Anglican	Conformist	m
+Sudbury, John, 1604-1684	Anglican	Conformist	m
+Walsall, Francis, d. 1661	Anglican	Conformist	m
+Howel, William, 1631 or 2-1683	Anglican	Conformist	m
+Foulis, Henry, ca. 1635-1669	Anglican	Conformist	m
+Hackett, Thomas, d. 1697	Anglican	Conformist	m
+Riland, John, 1619?-1673	Anglican	Conformist	m
+Clifford, James, 1622-1698	Anglican	Conformist	m
+Goad, J. (John), 1616-1689	Anglican	Conformist	m
+Smallwood, Allan, 1608-1686	Anglican	Conformist	m
+Bagshaw, Henry, 1632-1709	Anglican	Conformist	m
+Woodford, Samuel, 1636-1700	Anglican	Conformist	m
+Ellis, John, 1599?-1665	Anglican	Conformist	m	Not the man of 1606?-1681
+Basset, William, 1644-1695	Anglican	Conformist	m
+Bréval, Monsieur de (François Durant), d. 1707	Anglican	Conformist	m	Huguenot who took English orders
+D'Assigny, Marius, 1643-1717	Anglican	Conformist	m	Huguenot who took English orders
+Seignior, George, d. 1678	Anglican	Conformist	m
+Crompe, John	Anglican	Conformist	l
+Vincent, Philip, b. 1600	Anglican	Conformist	l
+Hodson, William, fl. 1625-1640	Anglican	Conformist	l
+Nicanor, Lysimachus, 1603-1641	Anglican	Conformist	l	A pen name for a Scottish episcopalian satire
+Parks, William, curat of Chelaston	Anglican	Conformist	l
+Eglesfield, James, b. 1601 or 2	Anglican	Conformist	l
+Hill, Augustine, d. 1660	Anglican	Conformist	l
+Darton, Nicholas, 1603-1649?	Anglican	Conformist	l
+Jones, Thomas, of Hereford	Anglican	Conformist	l
+Quintyne, Michael	Anglican	Conformist	l
+Vincent, Humfrey	Anglican	Conformist	l
+Fenwick, William, 1616 or 17-ca. 1682	Anglican	Conformist	l
+Giles, Mascall, 1595 or 6-1652	Anglican	Conformist	l
+Pigot, John	Anglican	Conformist	l
+Bales, Peter, 1547-1610?	Anglican	Conformist	l	Lay
+Harcourt, Daniel	Anglican	Conformist	l
+Jordan, Thomas, 1612?-1685?	Anglican	Conformist	l	Lay
+Sheppard, S. (Samuel)	Anglican	Conformist	l	Lay
+Head, Richard, Rev	Anglican	Conformist	l
+Palmer, George, b. 1596 or 7	Anglican	Conformist	l
+Mercurius Melancholicus, fl. 1648	Anglican	Conformist	l	A royalist newsbook pen name
+Mercurius Elenticus	Anglican	Conformist	l	A royalist newsbook pen name
+Nicholas, Edward	Anglican	Conformist	l
+One that feares God, and honors his King	Anglican	Conformist	l
+Rocket, John	Anglican	Conformist	l
+Bradshaw, John, 17th cent	Anglican	Conformist	l
+Hoddesdon, John, fl. 1650	Anglican	Conformist	l
+Houghton, William, preacher at Bicknor in Kent	Anglican	Conformist	l
+Rich, Jeremiah, d. 1660?	Anglican	Conformist	l	Lay stenographer
+Robins, Thomas, fl. 1672-1685	Anglican	Conformist	l
+Saunders, Richard, d. 1692	Anglican	Conformist	l
+Elmeston, John	Anglican	Conformist	l
+Baiteman, George	Anglican	Conformist	l
+Hall, John, of Richmond	Anglican	Conformist	l	Lay
+Plat, Hugh, Sir, 1552-1611?	Anglican	Conformist	l	Lay
+Vilvain, Robert, 1575?-1663	Anglican	Conformist	l	Lay physician
+Gayton, Edmund, 1608-1666	Anglican	Conformist	l	Lay
+Robinson, John, Preacher at East-Thorpe	Anglican	Conformist	l	Not the pastor at Leiden
+Davies, Athanasius, b. 1620 or 21	Anglican	Conformist	l
+Houghton, Aylmer	Anglican	Conformist	l
+Langley, William, b. 1609 or 10	Anglican	Conformist	l
+Stanley, Thomas, 1625-1678	Anglican	Conformist	l	Lay
+Cragge, John, M.A.	Anglican	Conformist	l
+Harvey, William, minister of the Word	Anglican	Conformist	l
+Wade, Christopher, 17th cent	Anglican	Conformist	l	Wrote against the Quakers
+Wharton, George, Sir, 1617-1681	Anglican	Conformist	l	Lay
+Durham, William, d. 1686	Anglican	Conformist	l	Not the man of 1611-1684
+Guillim, John, 1565-1621	Anglican	Conformist	l	Lay herald
+Howard, Robert, Sir, 1626-1698	Anglican	Conformist	l	Lay
+Stephens, Thomas, fl. 1648-1677	Anglican	Conformist	l
+Goddard, Thomas	Anglican	Conformist	l
+King, John, D.D.	Anglican	Conformist	l
+Trenchfield, Caleb, 1624 or 5-1671	Anglican	Conformist	l
+Winter, John, 1621?-1698?	Anglican	Conformist	l
+Bradley, Samuel	Anglican	Conformist	l
+Glover, Henry, b. 1624 or 5	Anglican	Conformist	l
+Ireland, Thomas, Sir	Anglican	Conformist	l	Lay
+Flower, Christopher, 1621 or 2-1699	Anglican	Conformist	l
+Wilson, Joseph, d. 1678	Anglican	Conformist	l
+Pichard, Thomas	Anglican	Conformist	l
+Johnson, James, 1639 or 40-1704	Anglican	Conformist	l
+
+# ── Anglican, Puritan ─────────────────────────────────────────────
+Ward, Samuel, 1572-1643	Anglican	Puritan	h	Master of Sidney Sussex; British delegate to Dort
+Marbury, Francis, d. 1611	Anglican	Puritan	m
+Pricke, Robert, d. ca. 1608	Anglican	Puritan	m
+Estwick, Nicolas	Anglican	Puritan	m
+Eaton, John, 1574 or 5-1641	Anglican	Puritan	m	Antinomian
+Gage, Thomas, 1603?-1656	Anglican	Puritan	m	A Dominican who turned Protestant
+Culmer, Richard, d. 1662	Anglican	Puritan	m	Broke the windows at Canterbury
+Rogers, Timothy, 1598-1650?	Anglican	Puritan	m	Not the Presbyterian of 1658-1728
+Carter, John, d. 1655	Anglican	Puritan	m	The younger
+Rushworth, John, 1612?-1690	Anglican	Puritan	m	Lay
+Graile, John	Anglican	Puritan	m
+Secker, William, d. 1681?	Anglican	Puritan	m
+Billingsley, Nicholas, 1633-1709	Anglican	Puritan	m
+Turner, John, 17th cent	Anglican	Puritan	l
+Wolfall, Thomas	Anglican	Puritan	l
+Calver, Edward, fl. 1649	Anglican	Puritan	l
+Beech, William	Anglican	Puritan	l
+Benbrigge, John	Anglican	Puritan	l
+Knutton, Immanuel, d. 1655	Anglican	Puritan	l
+Prime, H.	Anglican	Puritan	l
+Ward, John, d. 1665	Anglican	Puritan	l
+Barnett, Nehemiah, b. 1614 or 15	Anglican	Puritan	l
+Bond, Samson	Anglican	Conformist	l
+Burroughes, Thomas, b. 1611 or 12	Anglican	Puritan	l
+Lavor, Henry	Anglican	Puritan	l
+Pope, James, fl. 1675	Anglican	Puritan	l
+Tookey, Thomas, d. 1656	Anglican	Puritan	l
+Ley, William, b. 1620 or 21	Anglican	Puritan	l
+Burt, Nathaniel, fl. 1644-1655	Anglican	Puritan	l
+Jones, John, of Neyath, Brecon	Anglican	Puritan	l
+Carpenter, Henry, 1605 or 6-1662	Anglican	Puritan	l
+North, John	Anglican	Puritan	l
+Ady, Thomas	Anglican	Puritan	l	Lay
+Garbutt, Richard	Anglican	Puritan	l
+Allen, John, 17th cent	Anglican	Puritan	l
+Malpas, Thomas	Anglican	Puritan	l
+Pressick, George	Anglican	Puritan	l
+Worden, Thomas	Anglican	Puritan	l
+Waite, John, fl. 1666	Anglican	Conformist	l
+
+# ── Presbyterian ──────────────────────────────────────────────────
+Smectymnuus	Presbyterian	Puritan	h	Marshall, Calamy, Young, Newcomen and Spurstowe
+Coleman, Thomas, 1598-1647	Presbyterian	Puritan	h	Westminster divine; the Erastian
+Staunton, Edmund, 1600-1671	Presbyterian	Puritan	h	Westminster divine
+Whittaker, Jeremiah, 1599-1654	Presbyterian	Puritan	h	Westminster divine
+Young, Thomas, 1587-1655	Presbyterian	Puritan	h	Smectymnuus; Milton's tutor
+Forbes, John, 1593-1648	Presbyterian	Puritan	h	Exiled Scot at Delft
+Angier, John, 1605-1677	Presbyterian	Puritan	h
+Petrie, Alexander, 1594?-1662	Presbyterian	Puritan	h	Scots church at Rotterdam
+Douglas, Robert, 1594-1674	Presbyterian	Puritan	h	Church of Scotland
+Guthrie, James, 1612?-1661	Presbyterian	Puritan	h	Church of Scotland; hanged 1661
+Nisbet, Alexander, 1623-1669	Presbyterian	Puritan	h	Church of Scotland
+Wood, James, 1608-1664	Presbyterian	Puritan	h	Church of Scotland
+Bruce, Michael, 1634 or 5-1693	Presbyterian	Puritan	h	Covenanter
+Stewart, James, Sir, 1635-1713	Presbyterian	Puritan	h	Lay; Naphtali
+Hickman, Henry, d. 1692	Presbyterian	Puritan	h
+White, Thomas, Presbyterian minister in London	Presbyterian	Puritan	h	The catalogue names his church
+Geree, Stephen, 1594-1656?	Presbyterian	Puritan	m	Brother of John Geree
+Downing, Calybute, 1606-1644	Presbyterian	Puritan	m
+White, John, 1590-1645	Presbyterian	Puritan	m	Lay; MP, called "Century White"
+Cranford, James, d. 1657	Presbyterian	Puritan	m
+Lawrence, George, 1615-1695?	Presbyterian	Puritan	m
+Rathband, William, d. 1695	Presbyterian	Puritan	m
+Stalham, John, d. 1681	Presbyterian	Puritan	m
+Brownsword, William, b. 1625 or 6	Presbyterian	Puritan	m
+Colvill, William, d. 1675	Presbyterian	Puritan	m	Church of Scotland
+Drayton, Thomas, d. 1658?	Presbyterian	Puritan	m
+Hanmer, Jonathan, 1606-1687	Presbyterian	Puritan	m
+Warren, John, minister of Hatfield Broad Oak, Essex	Presbyterian	Puritan	m
+Finch, Martin, 1628?-1698	Presbyterian	Puritan	m
+Stedman, Rowland, 1630?-1673	Presbyterian	Puritan	m
+Oldfield, John, 1627?-1682	Presbyterian	Puritan	m
+Wilcock, James, d. 1662	Presbyterian	Puritan	l
+Hardwick, Humphrey, b. 1601 or 2	Presbyterian	Puritan	l
+Palmer, Thomas, b. ca. 1620	Presbyterian	Puritan	l
+Miller, Joshua, 17th cent	Presbyterian	Puritan	l
+Church, Josiah	Presbyterian	Puritan	l
+Douglas, Thomas, fl. 1661	Presbyterian	Puritan	l
+
+# ── Congregational and Independent ────────────────────────────────
+Chidley, Katherine	Congregational	Puritan	h	Wrote for the Independents against Edwards
+Winthrop, John, 1588-1649	Congregational	Puritan	h	Lay; Governor of Massachusetts
+Ward, Nathaniel, 1578-1652	Congregational	Puritan	h	New England; the Body of Liberties
+Stone, Samuel, 1602-1663	Congregational	Puritan	h	New England
+Stoughton, William, 1632-1701	Congregational	Puritan	h	New England
+Mitchel, Jonathan, 1624-1668	Congregational	Puritan	h	New England
+Whiting, Samuel, 1597-1679	Congregational	Puritan	h	New England
+Bartlet, William, 1609 or 10-1682	Congregational	Puritan	h
+Archer, John, Master of Art	Congregational	Puritan	m	Millenarian
+Larkham, Thomas, 1602-1669	Congregational	Puritan	m
+Tickell, John, d. 1694	Congregational	Puritan	m
+Eyre, William, 1612 or 13-1670	Congregational	Puritan	m
+Murcot, John, 1625-1654	Congregational	Puritan	m
+Bellers, Fulk, b. 1605 or 6	Congregational	Puritan	m
+Hammond, Samuel, d. 1665	Congregational	Puritan	m
+Polwheile, Theophilus, d. 1689	Congregational	Puritan	m
+Stuckley, Lewis, 1621 or 2-1687	Congregational	Puritan	m
+Jennings, Theodore	Congregational	Puritan	l
+
+# ── Baptist ───────────────────────────────────────────────────────
+How, Samuel	Baptist	Puritan	h	The Sufficiency of the Spirit's Teaching
+Cornwell, Francis	Baptist	Puritan	h
+Denne, Henry, 1606 or 7-1660?	Baptist	Puritan	h	General Baptist
+Cox, Benjamin, fl. 1646	Baptist	Puritan	h	Particular Baptist
+Jessey, Henry, 1603-1663	Baptist	Puritan	h
+Caffyn, Matthew, 1628-1714	Baptist	Puritan	h	General Baptist
+Cheare, Abraham, d. 1668	Baptist	Puritan	h
+Pendarves, John, 1622-1656	Baptist	Puritan	h
+Jeffery, William, 1616-1693	Baptist	Puritan	h	General Baptist
+Hardcastle, Thomas, d. 1678?	Baptist	Puritan	h
+Lamb, Thomas, d. 1686	Baptist	Puritan	m	General Baptist
+Garner, Robert	Baptist	Puritan	m
+Drapes, Edward	Baptist	Puritan	m
+Chillenden, Edmund, fl. 1656	Baptist	Puritan	m
+Ockford, James	Baptist	Puritan	m	Seventh Day
+Hicks, Thomas, 17th cent	Baptist	Puritan	m	Wrote against the Quakers
+Wright, Joseph, 1623-1703	Baptist	Puritan	m	General Baptist
+Ritor, Andrew	Baptist	Puritan	m
+Turner, John, prisoner of our Lord Jesus Christ	Baptist	Puritan	l
+Timson, John	Baptist	Puritan	l
+Kaye, William	Baptist	Puritan	l
+
+# ── Quaker ────────────────────────────────────────────────────────
+Benson, Gervase, d. 1679	Quaker		h
+Parker, Alexander, 1628-1689	Quaker		h
+Salthouse, Thomas, 1630-1691	Quaker		h
+Coale, Josiah, 1632?-1668	Quaker		h
+Caton, William, 1636-1665	Quaker		h
+Hookes, Ellis, d. 1681	Quaker		h	First recording clerk of the Society
+Morford, Thomas, d. 1693	Quaker		h
+Fisher, Samuel, 1616 or 17-1681	Quaker		m	Not the Baptist-turned-Quaker of 1605-1665
+Rich, Robert, d. 1679	Quaker		m	Of the Perrot separation
+Speed, Thomas, b. 1622 or 3	Quaker		m
+Vernon, John, fl. 1666	Quaker		m
+Higgins, John, 1633-1667	Quaker		m
+Lawrence, Thomas, 1645?-1714	Quaker		m
+Harrison, Joseph	Quaker		l
+Helling, Joseph	Quaker		l
+
+# ── The continent ─────────────────────────────────────────────────
+Vedel, Nicolaus, 1596-1642	Continental Reformed		h	Deventer and Franeker
+Wolleb, Johannes, 1586-1629	Continental Reformed		h	Basel; the Compendium
+Valdés, Juan de, d. 1541	Continental Reformed		m	Spanish evangelical at Naples
+Adam, Melchior, d. 1622	Continental Reformed		m	German biographer of the reformers
+Thaddaeus, Joannes, fl. 1630	Continental Reformed		m
+Jonstonus, Joannes, 1603-1675	Continental Reformed		m	Scots-Polish
+Sennert, Daniel, 1572-1637	Lutheran		m	Lay physician at Wittenberg
+Gifftheil, Ludwig Friedrich, d. 1661	Lutheran		m	German enthusiast
+
+# ── Rome ──────────────────────────────────────────────────────────
+Carre, Thomas, 1599-1674	Roman Catholic		h	Miles Pinkney, of the Paris seminary
+Turberville, Henry, d. 1678	Roman Catholic		h
+Vane, Thomas, fl. 1652	Roman Catholic		h	Converted from the Church of England
+Franciscus a Sancta Clara, 1598-1680	Roman Catholic		h	Franciscan; Christopher Davenport
+Smith, Nicholas, d. 1680	Roman Catholic		h
+White, Thomas, 1593-1676	Roman Catholic		h	Thomas Blacklo
+Teresa, of Avila, Saint, 1515-1582	Roman Catholic		h
+Pascal, Blaise, 1623-1662	Roman Catholic		h	Jansenist
+Quarré, Jean-Hugues, 1580-1656	Roman Catholic		h
+Merke, Thomas, d. 1409	Roman Catholic		h	Bishop of Carlisle
+La Serre, M. de (Jean-Puget), ca. 1600-1665	Roman Catholic		m	Lay
+Blount, Thomas, 1618-1679	Roman Catholic		m	Lay lexicographer
+Della Valle, Pietro, 1586-1652	Roman Catholic		m	Lay
+
+# ── Party without a body ──────────────────────────────────────────
+Vane, Henry, Sir, 1612?-1662		Puritan	h	Lay; beheaded 1662, and of no settled church
+Pordage, John, 1607-1681		Puritan	l	Behmenist
+Pinnel, Henry		Puritan	l	Army chaplain; Behmenist
+Crab, Roger, 1621?-1680		Puritan	l	Hermit
+Culpeper, Nicholas, 1616-1654		Puritan	l	Lay physician
+Freeman, Francis		Puritan	l
+Freize, James		Puritan	l
+Allen, William, Adjutant-general of the army in Ireland		Puritan	l	Lay
+
+# ══ Ninth pass ════════════════════════════════════════════════════
+
+# ── Anglican, conforming ──────────────────────────────────────────
+Brevint, Daniel, 1616-1695	Anglican	Conformist	h	Dean of Lincoln
+Lowth, Simon, 1630?-1720	Anglican	Conformist	h	Nonjuror
+Stradling, George, 1621-1688	Anglican	Conformist	h
+Traherne, Thomas, d. 1674	Anglican	Conformist	h
+Pococke, Edward, 1604-1691	Anglican	Conformist	h	Laudian Professor of Arabic
+Tenison, Richard, 1640?-1705	Anglican	Conformist	h	Bishop of Meath
+Burkitt, William, 1650-1703	Anglican	Conformist	h
+Maurice, Henry, 1648-1691	Anglican	Conformist	h
+Hooper, George, 1640-1727	Anglican	Conformist	h	Bishop of Bath and Wells
+Gower, Humphrey, 1638-1711	Anglican	Conformist	h
+Wagstaffe, Thomas, 1645-1712	Anglican	Conformist	h	Nonjuror bishop
+Atterbury, Francis, 1662-1732	Anglican	Conformist	h
+Jenkin, Robert, 1656-1727	Anglican	Conformist	h	Nonjuror
+Dopping, Anthony, 1643-1697	Anglican	Conformist	h	Bishop of Meath
+Monro, Alexander, d. 1715?	Anglican	Conformist	h	Scottish Episcopalian; nonjuror
+Strype, John, 1643-1737	Anglican	Conformist	h	The historian of the English Reformation
+Trimnell, Charles, 1663-1723	Anglican	Conformist	h	Bishop of Norwich
+Fuller, Ignatius, 1624 or 5-1711	Anglican	Conformist	m
+Rawlet, John, 1642-1686	Anglican	Conformist	m
+Wolseley, Charles, Sir, 1630?-1714	Anglican	Conformist	m	Lay
+Gataker, Charles, 1614 or 15-1680	Anglican	Conformist	m	Son of the Westminster divine
+Sal, Andrew, 1612-1682	Anglican	Conformist	m	A Jesuit who conformed in Ireland
+Scrivener, Matthew	Anglican	Conformist	m
+Stopford, Joshua, 1636-1675	Anglican	Conformist	m
+Locke, John, 1632-1704	Anglican	Conformist	m	Lay
+Armstrong, John, 1634 or 5-1698	Anglican	Conformist	m
+March, John, 1640-1692	Anglican	Conformist	m
+Tanner, Thomas, 1630-1682	Anglican	Conformist	m
+Jones, Thomas, 1622?-1682	Anglican	Conformist	m
+Adams, William, 1650-1685	Anglican	Conformist	m
+Brome, James, d. 1719	Anglican	Conformist	m
+Neville, Robert, 1640 or 1-1694	Anglican	Conformist	m
+Tonge, Ezerel, 1621-1680	Anglican	Conformist	m	Of the Popish Plot
+Cawdrey, Zachary, 1616-1684	Anglican	Conformist	m
+Barne, Miles, d. 1709?	Anglican	Conformist	m
+Hopkins, William, 1647-1700	Anglican	Conformist	m
+Jenner, David, d. 1691	Anglican	Conformist	m
+Roderick, Richard, 1647 or 8-1730	Anglican	Conformist	m
+Standish, John, d. 1686	Anglican	Conformist	m	Not the Marian
+Taylor, Zachary, 1653-1705	Anglican	Conformist	m
+Hall, Timothy, 1637?-1690	Anglican	Conformist	m	Bishop of Oxford
+Resbury, Nathanael, 1643-1711	Anglican	Conformist	m
+Bohun, Edmund, 1645-1699	Anglican	Conformist	m	Lay
+Cooke, Shadrach, 1655?-1724?	Anglican	Conformist	m	Nonjuror
+Ellesby, James, b. 1644 or 5	Anglican	Conformist	m
+Heyrick, Thomas, d. 1694	Anglican	Conformist	m
+Canaries, James	Anglican	Conformist	m	Scottish Episcopalian
+Bainbrigg, Thomas, 1636-1703	Anglican	Conformist	m
+Hellier, Henry, 1662?-1697	Anglican	Conformist	m
+Cressener, Drue, 1638?-1718	Anglican	Conformist	m
+Leightonhouse, Walter, 1656-1701	Anglican	Conformist	m
+Lambe, John, 1648 or 9-1708	Anglican	Conformist	m
+Willes, John, 1646 or 7-1700	Anglican	Conformist	m
+Cary, Thomas, 1648 or 9-1711	Anglican	Conformist	m
+Walker, Thomas, 1658 or 9-1716	Anglican	Conformist	m
+Wood, Anthony à, 1632-1695	Anglican	Conformist	m	Lay antiquary
+Burscough, Robert, 1651-1709	Anglican	Conformist	m
+Russel, Robert, fl. 1692	Anglican	Conformist	m
+Watts, Thomas, 1665-1739	Anglican	Conformist	m
+Campion, Abraham, d. 1701	Anglican	Conformist	m
+Adams, John, 1662-1720	Anglican	Conformist	m
+Arwaker, Edmund	Anglican	Conformist	m
+Falle, Philip, 1656-1742	Anglican	Conformist	m
+Knaggs, Thomas, 1660 or 1-1724	Anglican	Conformist	m
+Turner, William, 1653-1701	Anglican	Conformist	m
+De Luzancy, H. C. (Hippolyte du Chastelet), d. 1713	Anglican	Conformist	m	Left the Roman church for the English
+Hayley, William, 1657-1715	Anglican	Conformist	m
+Smalwood, James, d. 1719	Anglican	Conformist	m
+Isham, Z. (Zacheus), 1651-1705	Anglican	Conformist	m
+Pratt, Samuel, 1659?-1723	Anglican	Conformist	m
+Savage, J. (John), 1645-1721	Anglican	Conformist	m
+Whiston, William, 1667-1752	Anglican	Conformist	m	Expelled from Cambridge for Arianism in 1710
+Ottee, Robert, d. 1690	Anglican	Conformist	l
+Briggs, Jos. (Joseph)	Anglican	Conformist	l
+Hayter, Richard, 1611?-1684	Anglican	Conformist	l
+Plot, Robert, 1640-1696	Anglican	Conformist	l	Lay
+Turner, Bryan, 1634 or 5-1698	Anglican	Conformist	l
+Barrow, John, 1650 or 51-1684	Anglican	Conformist	l
+Phillips, Nicholas	Anglican	Conformist	l
+Topham, George, d. 1694	Anglican	Conformist	l
+Lawrence, William, 1613 or 14-1681 or 2	Anglican	Conformist	l	Lay
+Robotham, Charles, 1625 or 6-1700	Anglican	Conformist	l
+Wales, Samuel	Anglican	Conformist	l
+Allen, William, fl. 1681-1697	Anglican	Conformist	l	Neither the cardinal nor the Baptist
+Coleraine, Hugh Hare, Baron, 1606?-1667	Anglican	Conformist	l	Lay
+Tyrrell, James, 1642-1718	Anglican	Conformist	l	Lay
+Wray, William, 1650?-1692	Anglican	Conformist	l
+Jones, James, fl. 1683-1684	Anglican	Conformist	l
+Wade, John, b. 1643	Anglican	Conformist	l
+Werge, Richard, 1624 or 5-1687	Anglican	Conformist	l
+Bolton, William, 1650 or 51-1691	Anglican	Conformist	l
+Hughes, William, b. 1624 or 5	Anglican	Conformist	l
+Warner, James	Anglican	Conformist	l
+Buckingham, George Villiers, Duke of, 1628-1687	Anglican	Conformist	l	Lay
+Gostwyke, William, 1650-1703	Anglican	Conformist	l
+Banks, R. R. (Richard R.)	Anglican	Conformist	l
+Oakes, John, d. 1689?	Anglican	Conformist	l
+Raymond, George, A.M.	Anglican	Conformist	l
+Smith, Humphry, b. 1654 or 5	Anglican	Conformist	l
+Wilson, Timothy, 1642-1705	Anglican	Conformist	l
+Gallaway, William, fl. 1692-1697	Anglican	Conformist	l
+Perkins, Joseph, b. 1658	Anglican	Conformist	l
+Powell, Joseph, d. 1698	Anglican	Conformist	l
+Edwards, Thomas, fl. 1693-1699	Anglican	Conformist	l
+White, Richard, b. 1636	Anglican	Conformist	l
+Bramston, William, d. 1735	Anglican	Conformist	l
+Moor, Thomas, fl. 1695-1697	Anglican	Conformist	l
+Day, George, d. 1697	Anglican	Conformist	l
+Holland, Richard, 1679-1706	Anglican	Conformist	l
+Crokey, Benjamin	Anglican	Conformist	l
+Ravenhill, W. L. D.	Anglican	Conformist	l
+Sauvage, John	Anglican	Conformist	l
+Smith, Lawrence, 1656-1728	Anglican	Conformist	l
+Lanquet, Thomas, 1521-1545	Anglican		l
+Wase, Christopher, 1625?-1690	Anglican	Conformist	l	Lay
+Pitt, Francis, 1578 or 9-1644	Anglican	Conformist	l
+Anti-Papist	Anglican	Conformist	l
+Oates, Titus, 1649-1705	Anglican	Conformist	l	Lay; of the Popish Plot
+
+# ── Anglican, Puritan ─────────────────────────────────────────────
+Smart, Ithiel, 1598 or 9-1661	Anglican	Puritan	m
+Stonham, Benjamin	Anglican	Puritan	l
+Howson, Robert	Anglican	Puritan	l
+Owen, Jonathan	Anglican	Puritan	l
+Dowriche, Hugh, b. 1552 or 3	Anglican	Puritan	l
+Brooke, John, d. 1582	Anglican	Puritan	l
+Willis, Ralph, fl. 1653	Anglican	Puritan	l
+Hunt, Richard	Anglican	Puritan	l
+Spencer, John, Gentleman	Anglican	Puritan	l	Lay
+Calfine, Giles	Anglican	Puritan	l
+
+# ── Presbyterian ──────────────────────────────────────────────────
+McWard, Robert, 1633?-1687	Presbyterian	Puritan	h	Covenanter, in exile at Rotterdam
+Lawrence, Edward, 1623-1695	Presbyterian	Puritan	h
+Quick, John, 1636-1706	Presbyterian	Puritan	h
+Welch, John, ca. 1624-1681	Presbyterian	Puritan	h	Covenanter; not his great-grandfather
+Forrester, Thomas, 1635?-1706	Presbyterian	Puritan	h	Church of Scotland
+Renwick, James, 1662-1688	Presbyterian	Puritan	h	The last Covenanter martyr
+Defoe, Daniel, 1661?-1731	Presbyterian	Puritan	h	Lay
+Craghead, Robert	Presbyterian	Puritan	h	Irish Presbyterian
+Lorimer, William, d. 1721	Presbyterian	Puritan	h
+Scandrett, Stephen, 1631?-1706	Presbyterian	Puritan	m
+Hickes, John, 1633-1685	Presbyterian	Puritan	m	Hanged after Monmouth's rising
+Pearse, Edward, 1633?-1674?	Presbyterian	Puritan	m
+Stubbes, Henry, 1606?-1678	Presbyterian	Puritan	m
+Alleine, William, 1614-1677	Presbyterian	Puritan	m
+Fairfax, John, 1623-1700	Presbyterian	Puritan	m
+Palmer, Samuel, d. 1724	Presbyterian	Puritan	m
+Harley, Edward, Sir, 1624-1700	Presbyterian	Puritan	m	Lay
+Wedderburn, Alexander, d. 1678	Presbyterian	Puritan	m
+Dunton, John, 1659-1733	Presbyterian	Puritan	m	Lay bookseller
+Fuller, Francis, 1637?-1701	Presbyterian	Puritan	m
+Kirkwood, James, 1650?-1709	Presbyterian	Puritan	m	Church of Scotland
+Spademan, John, d. 1708	Presbyterian	Puritan	m
+Doolittle, Samuel	Presbyterian	Puritan	m	Son of Thomas Doolittle
+Tilsley, John, 1614-1684	Presbyterian	Puritan	m
+Vilant, William	Presbyterian	Puritan	l
+Houschone, William	Presbyterian	Puritan	l
+Shute, Giles, b. 1650 or 51	Presbyterian	Puritan	l
+Park, Robert, d. 1689?	Presbyterian	Puritan	l
+Harrison, Thomas, fl. 1700	Presbyterian	Puritan	l
+Craig, Mungo	Presbyterian	Puritan	l
+Kello, John, d. 1570	Presbyterian	Puritan	l	Church of Scotland
+
+# ── Congregational and Independent ────────────────────────────────
+Mather, Samuel, 1626-1671	Congregational	Puritan	h
+Mather, Nathanael, 1631-1697	Congregational	Puritan	h
+Hubbard, William, 1621 or 2-1704	Congregational	Puritan	h	New England
+Allen, James, 1632-1710	Congregational	Puritan	h	New England
+Stoddard, Solomon, 1643-1729	Congregational	Puritan	h	New England
+Clarkson, David, 1622-1686	Congregational	Puritan	h	Owen's colleague
+Bragge, Robert, 1627-1704	Congregational	Puritan	h
+Lobb, Stephen, d. 1699	Congregational	Puritan	h
+Coles, Elisha, 1640?-1680	Congregational	Puritan	m	Lay; God's Sovereignty
+Faldo, John, 1633-1690	Congregational	Puritan	m	Wrote against the Quakers
+Allen, Thomas, 1608-1673	Congregational	Puritan	m
+Ashwood, Bartholomew, 1622-1680	Congregational	Puritan	m
+Pomfret, Samuel, d. 1722	Congregational	Puritan	m
+Gibbs, John, 1627?-1699	Congregational	Puritan	m
+Goodwin, Thomas, 1650?-1716?	Congregational	Puritan	m	Son of the Dissenting Brother
+
+# ── Baptist ───────────────────────────────────────────────────────
+Coxe, Nehemiah	Baptist	Puritan	h	Particular Baptist; edited the 1689 Confession
+Bampfield, Thomas, 1623?-1693	Baptist	Puritan	h	Seventh Day; brother of Francis
+Stennett, Joseph, 1663-1713	Baptist	Puritan	h	Seventh Day
+Veil, Charles-Marie de, 1630-1685	Baptist		m	Born a Jew, then Catholic, then Anglican, then Baptist
+
+# ── Quaker ────────────────────────────────────────────────────────
+Parke, James, 1636-1696	Quaker		h
+Vaughton, John, 1644-1712	Quaker		h
+Whitehead, Anne, 1624-1686	Quaker		h
+Penington, John, 1655-1710	Quaker		h	Son of Isaac
+Claridge, Richard, 1649-1723	Quaker		h	Conformist, then Baptist, then convinced
+Gordon, Robert, fl. 1669-1675	Quaker		m
+Leeds, Daniel, 1652-1720	Quaker		m	Convinced, then disowned and writing against them
+Helmont, Franciscus Mercurius van, 1614-1699	Quaker		l	Kabbalist; close to the Friends without quite being one
+Axford, John	Quaker		l
+
+# ── The continent ─────────────────────────────────────────────────
+Gombauld, Jean Ogier de, d. 1666	Continental Reformed		m	Huguenot
+Lortie, André, d. 1706	Continental Reformed		m	Huguenot
+Lombard, André	Continental Reformed		l	Huguenot
+
+# ── Rome ──────────────────────────────────────────────────────────
+Maimbourg, Lovis, 1610-1686	Roman Catholic		h	Jesuit
+Boutauld, Michel, 1604-1689	Roman Catholic		h	Jesuit
+Gobinet, Charles, 1614-1690	Roman Catholic		h
+Betham, John, d. 1709	Roman Catholic		h
+Du Pin, Lovis Ellies, 1657-1719	Roman Catholic		h	Gallican
+Richelieu, Armand Jean du Plessis, duc de, 1585-1642	Roman Catholic		h	Cardinal
+Christopherson, John, d. 1558	Roman Catholic		h	Bishop of Chichester under Mary
+Jacobus, de Voragine, ca. 1229-1298	Roman Catholic		h	The Golden Legend
+Love, Nicholas, fl. 1410	Roman Catholic		h	The Mirror of the Blessed Life of Jesus Christ
+Peter, of Blois, ca. 1135-ca. 1212	Roman Catholic		h
+Alcock, John, 1430-1500, attributed name. aut	Roman Catholic		h	A catalogue variant of the same man
+Confederate Catholics. Supreme Council	Roman Catholic		h
+Dionysius Exiguus, d. ca. 540	Roman Catholic		m	Pre-schism Western church
+Dufour de Longuerue, Lovis, 1652-1733	Roman Catholic		m
+Barclay, John, 1582-1621	Roman Catholic		m	Lay
+Zárate, Agustin de, b. 1514	Roman Catholic		m	Lay
+John, of Garland, ca. 1195-ca. 1272	Roman Catholic		m
+Alexander, ab Alexandro, d. 1523	Roman Catholic		m	Lay
+Littleton, Thomas, Sir, d. 1481	Roman Catholic		m	Lay
+Malory, Thomas, Sir, 15th cent	Roman Catholic		m	Lay
+Lily, William, 1468?-1522	Roman Catholic		m	Lay
+Marshall, George, poet	Roman Catholic		l	Marian
+
+# ── Party without a body ──────────────────────────────────────────
+Sidney, Algernon, 1622-1683		Puritan	l	Lay; beheaded 1683
+Brereton, William, Sir, 1604-1661		Puritan	l	Lay; parliamentarian commander
+Lead, Jane, 1623-1704		Puritan	l	Philadelphian; Behmenist
+Marsin, M.		Puritan	l
+Harris, John, fl. 1647		Puritan	l
+Harris, John, Gent		Puritan	l
+
+# ══ Tenth pass ════════════════════════════════════════════════════
+# The pre-1570 tail: the medieval presses, the Marian reaction, the
+# exiles, and the continental reformers in English translation.
+
+# ── Rome ──────────────────────────────────────────────────────────
+Jacobus, de Gruytrode, d. 1472?	Roman Catholic		h	Carthusian
+Bernardino, da Siena, Saint, 1380-1444	Roman Catholic		h	Franciscan
+Atkinson, William, d. 1509	Roman Catholic		h
+Hayton, Frère, ca. 1235-ca. 1314	Roman Catholic		h
+Edmund, of Abingdon, Saint, Archbishop of Canterbury	Roman Catholic		h
+Gascoigne, Thomas, 1403-1458	Roman Catholic		h
+Ullerston, Richard, d. 1423	Roman Catholic		h
+Eck, Johann, 1486-1543	Roman Catholic		h	Luther's opponent at Leipzig
+Abel, Thomas, d. 1540	Roman Catholic		h	Executed for defending Catherine of Aragon
+Nausea, Friedrich, d. 1552	Roman Catholic		h	Bishop of Vienna
+Bonde, William, fl. 1526-27	Roman Catholic		h	Syon Abbey
+Chedsey, William	Roman Catholic		h	Marian
+Proctor, John, 1521?-1584	Roman Catholic		h	Marian
+Brooks, James, 1512-1560	Roman Catholic		h	Bishop of Gloucester under Mary
+Pollard, Leonard, d. 1556	Roman Catholic		h	Marian
+Edgeworth, Roger, d. 1560	Roman Catholic		h
+Elizabeth, of Schönau, Saint, 1129-1165	Roman Catholic		h
+Kennedy, Quintin, 1520-1564	Roman Catholic		h	Abbot of Crossraguel
+Winzet, Ninian, 1518-1592	Roman Catholic		h	Scottish exile
+Davidson, John, ca. 1520-1572	Roman Catholic		h	Principal of Glasgow; not the Presbyterian
+Cabasilas, Nicolaus, 14th cent	Eastern Orthodox		h
+Guise, Charles de, Cardinal de Lorraine, 1525-1574	Roman Catholic		h
+Hannapes, Nicolas de, patriarch of Jerusalem, 1225?-1291	Roman Catholic		h
+Erasmus, Desiderius, d. 1536. Enchiridion militis Christiani	Roman Catholic		h	A catalogue variant of the same man
+Pole, Reginald, 1500-1558	Roman Catholic		h	Cardinal; Archbishop under Mary
+Staphylus, Fridericus	Roman Catholic		h	Left the Lutherans for Rome
+Frarinus, Petrus	Roman Catholic		h
+Heskyns, Thomas	Roman Catholic		h
+Martial, John, 1534-1597	Roman Catholic		h
+Clynnog, Morys, ca. 1521-1581	Roman Catholic		h	Welsh exile
+Baptista, Mantuanus, 1448-1516	Roman Catholic		h	Carmelite
+Stanbridge, John, 1463-1510	Roman Catholic		m
+Arnold, Richard, d. 1521?	Roman Catholic		m	Lay
+Doesborch, Jan van, d. 1536	Roman Catholic		m	Lay printer
+Dunbar, William, 1460?-1520?	Roman Catholic		m
+Brant, Sebastian, 1458-1521	Roman Catholic		m	Lay
+Holt, John, fl. 1495	Roman Catholic		m
+Mancinus, Dominicus, fl. 1478-1491	Roman Catholic		m
+Linacre, Thomas, 1460-1524	Roman Catholic		m
+Joannes, de Mediolano	Roman Catholic		m
+Nicolaus, Pergaminus	Roman Catholic		m
+Fabyan, Robert, d. 1513	Roman Catholic		m	Lay
+Isidore, of Seville, Saint, d. 636	Roman Catholic		m	Pre-schism Western church
+Bede, the Venerable, Saint, 673-735	Roman Catholic		m	Pre-schism Western church
+Pinder, Ulrich, d. 1510 or 1519	Roman Catholic		m
+Valla, Lorenzo, 1406-1457	Roman Catholic		m
+Marsilius, of Padua, d. 1342?	Roman Catholic		m
+Fitzherbert, John, d. 1531	Roman Catholic		m	Lay
+Vigo, Giovanni da, 1450?-1525	Roman Catholic		m	Lay surgeon
+Vergil, Polydore, 1470?-1555	Roman Catholic		m
+Ulric, Saint, Bishop of Augsburg, 890-973	Roman Catholic		m	Pre-schism Western church
+Christine, de Pisan, ca. 1364-ca. 1431	Roman Catholic		m	Lay
+Boorde, Andrew, 1490?-1549	Roman Catholic		m	Carthusian turned physician
+Langland, William, 1330?-1400?	Roman Catholic		m
+Wimbledon, Thomas	Roman Catholic		m
+King, Robert, d. 1557	Roman Catholic		m	First Bishop of Oxford
+Bush, Paul, 1490-1558	Roman Catholic		m	First Bishop of Bristol; resigned under Elizabeth
+Glanville, Ranulf de, 1130-1190	Roman Catholic		m	Lay
+Felice, Costanzo	Roman Catholic		m
+Perkins, John, d. 1545	Roman Catholic		m	Lay lawyer
+Berners, John Bourchier, Lord, 1466 or 7-1533	Roman Catholic		m	Lay
+Castiglione, Baldassarre, conte, 1478-1529	Roman Catholic		m	Lay
+Lanfranco, of Milan, 13th cent	Roman Catholic		m
+Larke, John	Roman Catholic		m
+Palingenio Stellato, Marcello, ca. 1500-ca. 1543	Roman Catholic		m
+Bandello, Matteo, 1485-1561	Roman Catholic		m
+Fortescue, John, Sir, 1394?-1476?	Roman Catholic		m	Lay
+Thevet, André, 1502-1590	Roman Catholic		m
+La Marche, Olivier de, ca. 1426-1502	Roman Catholic		m	Lay
+Bodonius, Stephanus	Roman Catholic		m
+Smyth, Thomas, servaunt to the Quenes most excellent majestie	Roman Catholic		l	Marian
+Gosynhyll, Edward	Roman Catholic		l	Lay
+Beeard, Richard	Roman Catholic		l	Marian
+
+# ── Lutheran ──────────────────────────────────────────────────────
+Barnes, Robert, 1495-1540	Lutheran		h	Burned 1540; England's Lutheran
+Bugenhagen, Johann, 1485-1558	Lutheran		h
+Melanchthon, Philipp, 1497-1560. Apologia Confessionis Augustanae	Lutheran		h	A catalogue variant of the same man
+Alesius, Alexander, 1500-1565	Lutheran		h	Scot at Wittenberg
+Sarcerius, Erasmus, 1501-1559	Lutheran		h
+Jonas, Justus, 1493-1555	Lutheran		h
+Aepinus, Johann, 1499-1553	Lutheran		h
+Sachs, Hans, 1494-1576	Lutheran		h	Lay
+Spangenberg, Johann	Lutheran		h
+Alber, Erasmus, ca. 1500-1553	Lutheran		h
+Corvinus, Antonius, 1501-1553	Lutheran		h
+Chytraeus, David, 1531-1600	Lutheran		h	Formula of Concord
+Pedersen, Christiern, 1480?-1554	Lutheran		m	Danish
+Hutten, Ulrich von, 1488-1523	Lutheran		m	Lay
+Carion, Johannes, 1499-1537 or 8	Lutheran		m
+Ferrarius, Johannes, 1485 or 6-1558	Lutheran		m
+Wedderburn, Robert, ca. 1510-ca. 1557	Lutheran		m	The Gude and Godlie Ballatis
+
+# ── The continent, Reformed ───────────────────────────────────────
+Vadianus, Joachim, 1484-1551	Continental Reformed		h	St Gallen
+Bibliander, Theodorus, ca. 1504-1564	Continental Reformed		h	Zurich
+Vergerio, Pietro Paolo, 1498-1565	Continental Reformed		h	A bishop who left Rome
+Mainardi, Agostino, 1487-1563	Continental Reformed		h	Italian exile at Chiavenna
+Micronius, Marten, d. 1559	Continental Reformed		h	The Dutch stranger church in London
+Des Gallars, Nicolas, ca. 1520-ca. 1580	Continental Reformed		h	Calvin's colleague; the French church in London
+Curione, Celio Secondo, 1503-1569	Continental Reformed		h	Italian exile at Basel
+Montenay, Georgette de, 1540-ca. 1581	Continental Reformed		h	Huguenot
+Bomelius, Henricus, 1500?-1570	Continental Reformed		m
+Brunfels, Otto, 1488-1534	Continental Reformed		m
+Brunfels, Otto, 1488-1534. Precationes Biblicae	Continental Reformed		m	A catalogue variant of the same man
+Marguerite, Queen, consort of Henry II, King of Navarre, 1492-1549	Continental Reformed		m	Evangelical, and never quite a Protestant
+Heyden, Cornelius van der	Continental Reformed		m
+DuVal, P. (Pierre)	Continental Reformed		m
+Julius, of Milan	Continental Reformed		m	Giulio da Milano
+[Giulio, da Milano]	Continental Reformed		m	A catalogue variant of the same man
+Werdmüller, O.	Continental Reformed		h	A catalogue variant of Otto Werdmüller
+Fabricius, Joannes, Montanus, 1527-1566	Continental Reformed		m
+Grifoni, Giovanni Andrea	Continental Reformed		m
+Noot, Jan van der, ca. 1538-ca. 1596	Continental Reformed		m
+
+# ── The English Reformation and the Marian exile ──────────────────
+Fox, Edward, 1496?-1538	Anglican		h	Bishop of Hereford; the Henrician case
+Gest, Edmund	Anglican	Conformist	h	Edmund Guest, Bishop of Salisbury
+Grindal, Edmund, 1519?-1583	Anglican	Puritan	h	Archbishop; sequestered for refusing to suppress prophesyings
+Goodman, Christopher, 1520?-1603	Anglican	Puritan	h	Marian exile at Geneva
+Horne, Robert, 1519?-1580	Anglican	Puritan	h	Bishop of Winchester; Marian exile. Not the man of 1565-1640
+English Church (Geneva, Switzerland)	Anglican	Puritan	h	The Marian exile congregation
+Whittingham, William, d. 1579, attrib. name	Anglican	Puritan	h	A catalogue variant of the same man
+Scory, John, d. 1585	Anglican	Puritan	m	Marian exile; Bishop of Hereford
+Philpot, John, 1516-1555	Anglican	Puritan	m	Burned at Smithfield
+Saunders, Laurence, d. 1555, attributed author	Anglican	Puritan	m	Burned at Coventry
+Pownall, Robert, 1520-1571	Anglican	Puritan	m	Marian exile
+Old, John, fl. 1545-1555, attributed name. aut	Anglican	Puritan	m	A catalogue variant of the same man
+Morwen, Peter	Anglican	Puritan	m
+Brice, Thomas, d. 1570	Anglican	Puritan	m
+Cole, Thomas, d. 1571	Anglican	Puritan	m	Not the Congregationalist of 1627?-1697
+Calfhill, James, 1530?-1570	Anglican	Puritan	m
+Barthlet, John	Anglican	Puritan	m
+Gough, John, fl. 1561-1570	Anglican	Puritan	m
+Matthew, Simon, d. 1541	Anglican		m	Henrician
+Starkey, Thomas, d. 1538	Anglican		m	Henrician
+Fyloll, Jasper	Anglican		m
+Wyse, Nicholas	Anglican		m
+Morison, Richard, Sir, d. 1556	Anglican		m	Lay Henrician
+Fish, Simon, d. 1531. Supplicacyon for the beggers	Anglican		m	A catalogue variant of the same man
+Hugh, William, d. 1549	Anglican		m
+Catharine Parr, Queen, consort of Henry VIII, King of England, 1512-1548	Anglican		m
+Cope, Anthony, Sir, d. 1551	Anglican		m	Lay
+Gerrard, Philip	Anglican		m
+Allen, Edmund, 1519?-1559	Anglican		m
+Hall, Edward, d. 1547	Anglican		m	Lay chronicler
+Lambert, John, d. 1538	Anglican		m	Burned 1538
+Somerset, Edward Seymour, Duke of, 1506?-1552	Anglican		m	Lay; Lord Protector
+Tyndale, William, d. 1536. Obedience of a Christian man	Anglican		m	A catalogue variant of the same man
+Joye, George, d. 1553, attributed name. aut	Anglican		m	A catalogue variant of the same man
+Baldwin, William, ca. 1518-1563?	Anglican		m	Lay
+Wyatt, Thomas, Sir, 1503?-1542	Anglican		m	Lay
+Becke, Edmund, 16th cent	Anglican		m
+Redman, John, 1499-1551	Anglican		m
+Grey, Jane, Lady, 1537-1554	Anglican		m
+Lancaster, Thomas, d. 1583	Anglican		m	Archbishop of Armagh
+Alley, William, 1510?-1570	Anglican	Conformist	m	Bishop of Exeter
+Rush, Anthony, 1537-1577	Anglican	Conformist	m
+Drant, Thomas, d. 1578?	Anglican	Conformist	m	Not the man of b. 1601 or 2
+Goodale, John, attributed name. aut	Anglican		l
+Grime, John	Anglican		l
+Johnson, John, professor of holy divinite	Anglican		l
+Some, Thomas, b. ca. 1510	Anglican		l
+Burdet, Robert	Anglican		l	Lay
+Harrison, James, fl. 1547	Anglican		l
+Bancrafte, George, fl. 1548	Anglican		l
+Bonner, Richard	Anglican		l
+Broke, Thomas	Anglican		l
+Moone, Peter	Anglican		l
+Punt, William	Anglican		l
+Ramsay, John, 1496?-1551	Anglican		l
+Barrett, Henry, 16th cent	Anglican		l
+Harrys, William	Anglican		l
+Hurlestone, Randall. aut	Anglican		l
+Brasier, Richard	Anglican		l
+Coucheman, Giles	Anglican		l
+Ruddoke, Thomas	Anglican		l
+Wingfield, Henry	Anglican		l
+Churchson, John	Anglican		l
+Angel, John, fl. 1555	Anglican		l
+Dorcastor, Nicholas	Anglican		l
+Hall, John, b. 1529 or 30	Anglican		l
+Wever, R.	Anglican		l
+Heasse, Robert, d. 1594	Anglican		l
+Pyrrye, C.	Anglican		l
+Emsley, Dennis, attributed name. aut	Anglican		l
+Bradford, John, serving-man	Anglican	Puritan	l	Not the Marian martyr
+Lambert, John, Minister of Elham	Anglican	Puritan	l
+Samuel, William, fl. 1551-1569	Anglican	Puritan	l
+Edwardes, Roger	Anglican	Puritan	l
+Wager, Lewis, fl. 1566	Anglican	Puritan	l
+Fisher, Jasper, b. 1591	Anglican	Conformist	l
+Langton, Christopher, 1521-1578	Anglican	Conformist	l	Lay physician
+Tilney, Edmund, d. 1610, attributed author	Anglican	Conformist	l	Lay
+Cuningham, William, b. 1531	Anglican	Conformist	l	Lay physician
+Gale, Thomas, 1507-1587	Anglican	Conformist	l	Lay surgeon
+Brooke, Arthur, d. 1563	Anglican	Conformist	l	Lay
+Maplet, John, d. 1592	Anglican	Conformist	l
+Fulwood, William	Anglican	Conformist	l	Lay
+Awdelay, John, fl. 1559-1577	Anglican	Conformist	l	Lay printer
+Partridge, John, fl. 1566-1573	Anglican	Conformist	l	Lay
+Securis, John	Anglican	Conformist	l	Lay
+Bernard, John, d. 1567?	Anglican	Conformist	l
+
+# ── Scotland ──────────────────────────────────────────────────────
+Hay, George, d. 1588	Presbyterian	Puritan	h	Church of Scotland
+Norvell, Robert	Presbyterian	Puritan	l
+Stewart, William, d. 1569	Presbyterian	Puritan	l
+
+# ── Anabaptist ────────────────────────────────────────────────────
+Champneys, John, fl. 1548	Anabaptist		m	Edwardian freewiller
+
+# ══ Eleventh pass ═════════════════════════════════════════════════
+# The Elizabethan one-work tail. Most of these men printed once and
+# left no biography; where the only evidence is that an English
+# clergyman was licensed to print in England, the body is the
+# establishment and the confidence is `l`. A Puritan party is recorded
+# only where something says so — a prophesying, a deprivation, a
+# Geneva printer, an Admonition ally.
+
+# ── Anglican, conforming ──────────────────────────────────────────
+Haddon, Walter, 1516-1572	Anglican	Conformist	h	Lay civilian
+Tooker, William, 1558?-1621	Anglican	Conformist	h
+Lively, Edward, 1545?-1605	Anglican	Conformist	m	King James Bible translator
+Alison, Richard, controversialist	Anglican	Conformist	m	Wrote against the Brownists
+Chamberlaine, Bartholomew, 1545 or 6-1621	Anglican	Conformist	m
+Turnbull, Richard, d. 1593	Anglican	Conformist	m
+Case, John, d. 1600	Anglican	Conformist	m	Lay
+Swinburne, Henry, 1560?-1623	Anglican	Conformist	m	Lay civilian
+Chamber, John, 1546-1604	Anglican	Conformist	m
+Rider, John, 1562-1632	Anglican	Conformist	m	Bishop of Killaloe
+Savage, Francis, d. 1638	Anglican	Conformist	m	Left Rome
+Sanford, John, 1564 or 5-1629	Anglican	Conformist	m
+Thorne, William, 1568 or 9-1630	Anglican	Conformist	m
+Kyffin, Edward	Anglican	Conformist	m	Welsh psalms
+More, George, Sir, 1553?-1632	Anglican	Conformist	m	Lay
+Hutton, Leonard	Anglican	Conformist	m
+Jones, John, physician	Anglican	Conformist	l	Lay
+Langham, William	Anglican	Conformist	l	Lay
+Barker, Christopher, 1529-1599	Anglican	Conformist	l	Lay; Queen's Printer
+Madox, Richard, 1546-1583	Anglican	Conformist	l
+Averell, William	Anglican	Conformist	l	Lay
+Barrough, Philip, fl. 1590	Anglican	Conformist	l	Lay
+Heath, Thomas, astronomer	Anglican	Conformist	l	Lay
+Hudson, John, M.A., Oxon	Anglican	Conformist	l
+Peele, George, 1556-1596	Anglican	Conformist	l	Lay dramatist
+Bostocke, Richard	Anglican	Conformist	l	Lay
+Herbert, William, Sir, 1553?-1593	Anglican	Conformist	l	Lay
+Whitney, Geffrey, 1548?-1601?	Anglican	Conformist	l	Lay
+[Lightfoot, William]	Anglican	Conformist	l
+Colfe, Isaac, 1558 or 9-1597	Anglican	Conformist	l
+Harvey, John, 1564-1592	Anglican	Conformist	l	Lay
+Kempe, William	Anglican	Conformist	l	Lay schoolmaster
+Ocland, Christopher, d. 1590?	Anglican	Conformist	l	Lay
+Pasquil, of England, Cavaliero	Anglican	Conformist	l	An anti-Martinist pen name
+Tyrrell, Anthony, 1552-1610?	Anglican	Conformist	l	A priest who recanted, more than once
+Daunce, Edward	Anglican	Conformist	l	Lay
+Marlowe, Christopher, 1564-1593	Anglican	Conformist	l	Lay dramatist
+Barwick, Humfrey	Anglican	Conformist	l	Lay
+Manwood, John, d. 1610	Anglican	Conformist	l	Lay
+Parker, John, 1534-1592	Anglican	Conformist	l
+Powel, John, gent	Anglican	Conformist	l	Lay
+Clement, Francis	Anglican	Conformist	l
+Becon, Richard	Anglican	Conformist	l	Lay
+Blundeville, Thomas, fl. 1561	Anglican	Conformist	l	Lay
+Clerke, William, fl. 1595	Anglican	Conformist	l
+Lyly, John, 1554?-1606	Anglican	Conformist	l	Lay dramatist
+[Perry, Henry]	Anglican	Conformist	l	Welsh
+Johnson, Richard, 1573-1659?	Anglican	Conformist	l	Lay
+Lok, Henry	Anglican	Conformist	l	Lay poet
+Morley, Thomas, 1557-1603?	Anglican	Conformist	l	Lay musician
+Albott, Robert, fl. 1600	Anglican	Conformist	l	Lay
+Alison, Richard, fl. 1588-1606	Anglican	Conformist	l	Lay musician
+Cornwallis, William, Sir, d. 1631?	Anglican	Conformist	l	Lay
+Floyd, Thomas, M.A., of Jesus College, Oxford	Anglican	Conformist	l
+More, George	Anglican	Conformist	l
+Roberts, Huw, b. 1558 or 9	Anglican	Conformist	l	Welsh
+Yonger, William	Anglican	Conformist	l
+Maxey, Edward, Gent	Anglican	Conformist	l	Lay
+Byrchensha, Raph	Anglican	Conformist	l	Lay
+Carew, Richard, 1555-1620	Anglican	Conformist	l	Lay
+Higins, John, controversialist	Anglican	Conformist	l
+Segar, William, Sir, d. 1633	Anglican	Conformist	l	Lay herald
+Tyrer, Ralph, d. 1627	Anglican	Conformist	l
+Jorden, Edward, 1569-1632	Anglican	Conformist	l	Lay physician
+Knolles, Richard, 1550?-1610	Anglican	Conformist	l	Lay
+Mavericke, Radford, b. 1561?	Anglican	Conformist	l	A catalogue variant of the same man
+Barnfield, Richard, 1574-1627	Anglican	Conformist	l	Lay poet
+Hill, William, Doctor in Divinity, attributed name	Anglican	Conformist	l
+Hedlambe, John	Anglican		l
+Pritchard, Thomas, fl. 1579	Anglican		l
+Ramsay, Laurence	Anglican		l
+Hergest, William	Anglican		l
+Knight, Edward	Anglican		l
+Record, Robert, 1510?-1558	Anglican		l	Lay
+Yates, James, servingman	Anglican		l	Lay
+Day, Thomas, fl. 1583	Anglican		l
+Gee, Alexander	Anglican		l
+Thorne, Henry, fl. 1567-1584	Anglican		l
+Allin, Ralph	Anglican		l
+Cotes, William, b. ca. 1560	Anglican		l
+Prid, W.	Anglican		l
+Bankes, Thomas, 1555 or 6-1631	Anglican		l
+Massy, William, d. 1610	Anglican		l
+Overton, John, Master of Arts	Anglican		l
+Harris, Edward, fl.1587-1590	Anglican		l
+Lyster, John, fl. 1588	Anglican		l
+Morgan, John, fl. 1588	Anglican		l
+Stile, Christopher	Anglican		l
+Saintbarb, Richard	Anglican		l
+Watts, Thomas, fl. 1571-1589	Anglican		l
+Beatniffe, John	Anglican		l
+Butterfield, Swithun, d. 1611	Anglican		l
+Finch, Richard, minister of East Ham	Anglican		l
+Less, Nicholas	Anglican		l
+Newnham, John	Anglican		l
+R., James (James Rowbotham), attributed name. aut	Anglican		l
+Barne, Thomas	Anglican		l
+Temple, Robert, Bachelor in Divinity	Anglican		l
+Whiting, Giles	Anglican		l
+Lewes, Richard	Anglican		l
+Fletcher, Anthony	Anglican		l
+Smith, John, minister at Reading	Anglican		l
+Nun, Thomas, 1556 or 7-1599	Anglican		l
+Press, Symon, b. 1558 or 9	Anglican		l
+Broxup, William	Anglican		l
+Price, Henry, 1566 or 7-1600	Anglican		l
+Roche, Robert, 1575 or 6-1629	Anglican		l
+Bentley, James	Anglican		l
+Bradley, Francis, fl. 1600	Anglican		l
+Birkenhead, Michael	Anglican		l
+Willoughbie, John	Anglican		l
+Rhodes, John, minister of Enborne	Anglican		l
+
+# ── Anglican, Puritan ─────────────────────────────────────────────
+Hutton, Matthew, 1529-1606	Anglican	Puritan	m	Archbishop of York; a Calvinist
+Stubbes, John, 1543-1591	Anglican	Puritan	h	Lost his right hand for a pamphlet
+Gilpin, Bernard, 1517-1583	Anglican	Puritan	h	The Apostle of the North
+Wiburn, Perceval, d. 1606	Anglican	Puritan	h
+Bentham, Thomas, 1513-1579	Anglican	Puritan	h	Marian exile; Bishop of Coventry
+Field, John	Anglican	Puritan	h	The Admonition to the Parliament
+Frewen, John, 1558-1628	Anglican	Puritan	h
+More, John, d. 1592	Anglican	Puritan	h	The Apostle of Norwich
+Holland, Thomas, 1539-1612	Anglican	Puritan	h	King James Bible translator; a Calvinist
+Hastings, Francis, Sir, d. 1610	Anglican	Puritan	h	Lay; MP
+Wentworth, Peter, ca. 1530-1596	Anglican	Puritan	h	Lay; MP
+Bisse, James, 1551 or 2-1607	Anglican	Puritan	m
+Woodes, Nathaniel, fl. 1580	Anglican	Puritan	m	The Conflict of Conscience
+Waldegrave, Robert, 1554-1604, attributed name. aut	Anglican	Puritan	m	Printed the Marprelate tracts
+Renniger, Michael, 1530-1609	Anglican	Puritan	m	Marian exile
+Settle, Thomas	Anglican	Puritan	m
+Cottesford, Thomas	Anglican	Puritan	m	Marian exile
+Dowriche, Anne, fl. 1589	Anglican	Puritan	m
+Marten, Anthony, d. 1597	Anglican	Puritan	m
+Rosdell, Christopher, b. 1553 or 4	Anglican	Puritan	m
+Mayo, John, fl. 1607-1629	Anglican	Puritan	m
+Linaker, Robert, 1550 or 51-1618	Anglican	Puritan	m
+Cawdry, Robert	Anglican	Puritan	m	Deprived for nonconformity
+Deacon, John, fl. 1585-1616	Anglican	Puritan	m
+Rhodes, John, fl. 1606	Anglican	Puritan	m
+Dod, Henry	Anglican	Puritan	m
+Estey, George, 1560 or 61-1601	Anglican	Puritan	m
+Holland, Robert, 1557-ca. 1622	Anglican	Puritan	m	Welsh
+Travers, Robert, fl. 1561-1572	Anglican	Puritan	l
+Chauncie, William	Anglican	Puritan	l
+Shakelton, Francis	Anglican	Puritan	l
+Baker, John, minister	Anglican	Puritan	l
+Hopkinson, William	Anglican	Puritan	l
+Lovell, Thomas	Anglican	Puritan	l
+Tayler, Francis, preacher	Anglican	Puritan	l
+Gybson, Thomas, fl. 1583	Anglican	Puritan	l
+Jones, Philip, fl. 1589	Anglican	Puritan	l
+Bate, John, M.A.	Anglican	Puritan	l
+Humpston, Robert, d. 1606	Anglican	Puritan	l
+Deios, Laurence, d. 1618	Anglican	Puritan	l
+Pearston, Thomas	Anglican	Puritan	l
+Holme, John	Anglican	Puritan	l
+Butler, of Oundle	Anglican	Puritan	l
+Barker, Lawrence, d. 1603	Anglican	Puritan	l
+Leake, Richard	Anglican	Puritan	l
+Perneby, William	Anglican	Puritan	l
+Gibbons, Nicholas	Anglican	Puritan	l
+Golburne, John	Anglican	Puritan	l
+Carew, Thomas, Preacher	Anglican	Puritan	l
+Manning, James, minister at Wellingborough	Anglican	Puritan	l
+Widley, George, b. 1566 or 7	Anglican	Puritan	l
+Askew, Egeon, b. 1576	Anglican	Puritan	l
+
+# ── Scotland ──────────────────────────────────────────────────────
+Craig, John, 1512?-1600	Presbyterian	Puritan	h	Church of Scotland; the King's Confession
+Balnaves, Henry, Sir, d. 1579	Presbyterian	Puritan	h	Lay
+Napier, John, 1550-1617	Presbyterian	Puritan	h	Lay
+Udal, John, 1560?-1592. Demonstration of the trueth of that discipline	Presbyterian	Puritan	h	A catalogue variant of the same man
+Colville, John, 1542?-1605	Presbyterian	Puritan	m
+Hume, David, 1560?-1630?	Presbyterian	Puritan	m	Of Godscroft
+Fowler, William, 1560?-1612	Presbyterian	Puritan	l
+Blake, David, fl. 1600	Presbyterian	Puritan	l
+Howesoun, John	Presbyterian	Puritan	l
+
+# ── Congregational ────────────────────────────────────────────────
+Harrison, Robert, d. 1585?	Congregational	Puritan	h	With Browne at Norwich and Middelburg
+
+# ── The continent ─────────────────────────────────────────────────
+Marnix van St. Aldegonde, Philips van, 1538-1598	Continental Reformed		h
+Paleario, Aonio, 1503-1570	Continental Reformed		h	Burned at Rome
+Boquin, Pierre, d. 1582	Continental Reformed		h	Heidelberg
+Tossanus, Daniel, 1541-1602	Continental Reformed		h	Heidelberg
+Loyseleur, Pierre, ca. 1530-1590	Continental Reformed		h	Villiers, chaplain to William the Silent
+Hotman, François, 1524-1590	Continental Reformed		h	Huguenot; Francogallia
+La Nove, François de, 1531-1591	Continental Reformed		h	Huguenot
+Beroald, Matthieu, d. 1576	Continental Reformed		h
+Bastingius, Jeremais, 1551-1595. aut	Continental Reformed		h	On the Heidelberg Catechism
+Sohn, Georg, 1152?-1589	Continental Reformed		h	Heidelberg
+Virel, Matthieu	Continental Reformed		h
+Kimedoncius, Jacobus, d. 1596	Continental Reformed		h	Heidelberg
+La Faye, Antoine de, 1540-1615	Continental Reformed		h	Geneva
+Merlin, Pierre, ca. 1535-1603	Continental Reformed		h	Huguenot
+Bèze, Théodore de, 1519-1605. Psalmorum Davidis	Continental Reformed		h	A catalogue variant of the same man
+L'Espine, Jean de, ca. 1506-1597. Sommaire des principaux poincts	Continental Reformed		h	A catalogue variant of the same man
+Cope, Michael, fl. 1557-1564	Continental Reformed		m
+Batt, Barthélemy, 1515-1559	Continental Reformed		m
+Wittewronghelus, Jacobus	Continental Reformed		m
+Ewich, Johann von, 1525-1588	Continental Reformed		m
+Devoyon, Simon	Continental Reformed		m
+Wecker, Johann Jacob, 1528-1586	Continental Reformed		m
+Coignet, Matthieu, sieur de La Thuillerie, 1514-1586	Continental Reformed		m	Huguenot
+Erondelle, Pierre, fl. 1586-1609	Continental Reformed		m	Huguenot in London
+Salnar	Continental Reformed		m	The Harmony of Confessions
+Constant, Léonard, d. 1610	Continental Reformed		m
+Frégeville, Jean de	Continental Reformed		m
+Hurault, Michel, d. 1592	Continental Reformed		m	Huguenot
+Colynet, Antony	Continental Reformed		m
+Wurstisen, Christian, 1544-1588	Continental Reformed		m	Basel
+Brucioli, Antonio, 1487-1566	Continental Reformed		m	Italian evangelical
+Hainault, Jean de	Continental Reformed		m
+Meteren, Emmanuel van, 1535-1612	Continental Reformed		m	Lay
+Rennecher, Hermann	Continental Reformed		m
+Du Chesne, Joseph, ca. 1544-1609	Continental Reformed		m	Huguenot
+Linschoten, Jan Huygen van, 1563-1611	Continental Reformed		l	Lay
+Habermann, Johann, 1516-1590	Lutheran		h
+Palladius, Peder, 1503-1560	Lutheran		h	Danish
+Codomann, Lorenz, 1529-1590. Annales sacræ Scripturæ	Lutheran		m
+
+# ── Rome ──────────────────────────────────────────────────────────
+Hide, Thomas, 1524-1597	Roman Catholic		h
+Flinton, George	Roman Catholic		h
+Burne, Nicol	Roman Catholic		h	Scottish convert
+Blackwood, Adam, 1539-1613	Roman Catholic		h	Scottish exile
+Geoffrey, of Monmouth, Bishop of St. Asaph, 1100?-1154	Roman Catholic		h
+Bartholomaeus, Anglicus, 13th cent	Roman Catholic		h	Franciscan
+González de Mendoza, Juan, 1545-1618	Roman Catholic		h	Augustinian
+Digby, Everard, Sir, 1578-1606	Roman Catholic		h	Lay; executed for the Gunpowder Plot
+Pico della Mirandola, Giovanni, 1463-1494	Roman Catholic		h
+Bucke, John	Roman Catholic		h
+Lipsius, Justus, 1547-1606	Roman Catholic		h
+Lansperger, Johannes Justus, 1489-1539	Roman Catholic		h	Carthusian
+Bruno, Vincenzo, 1532-1594	Roman Catholic		h	Jesuit
+Ledisma, Jacobus, 1519-1575	Roman Catholic		h	Jesuit
+Goślicki, Wawrzyniec, 1530-1607	Roman Catholic		h	Polish bishop
+Contarini, Gasparo, 1483-1542	Roman Catholic		h	Cardinal
+Hill, Edmund Thomas, ca. 1563-1644	Roman Catholic		h	Benedictine
+Bagshaw, Christopher, d. 1625?	Roman Catholic		h	Appellant
+Bennett, John, fl. 1588-1623	Roman Catholic		h
+Ely, Humphrey, d. 1604	Roman Catholic		h
+Charnock, Robert, b. 1561	Roman Catholic		h	Appellant
+Acosta, José de, 1540-1600	Roman Catholic		h	Jesuit
+Fraser, John, d. 1605	Roman Catholic		h	Scottish Jesuit
+Warford, William, 1560-1608	Roman Catholic		h	Jesuit
+Alonso, de Madrid	Roman Catholic		h
+Clarke, Thomas, seminary priest of the English college at Rhemes	Roman Catholic		h	Recanted at Paul's Cross
+Loarte, Gaspar	Roman Catholic		h	A catalogue variant of Gaspar de Loarte
+Loarte, Gaspare, d. 1578	Roman Catholic		h	A catalogue variant of the same man
+Santillana, Iñigo López de Mendoza, marqués de, 1398-1458	Roman Catholic		m	Lay
+Cartigny, Jean de, 1520?-1578	Roman Catholic		m
+[Peckham, George], Sir	Roman Catholic		m	Lay
+Belloy, Pierre de, ca. 1540-1613	Roman Catholic		m	Lay
+Nicolay, Nicolas de, 1517-1583	Roman Catholic		m	Lay
+Arcaeus, Franciscus, 1493-1573?	Roman Catholic		m	Lay
+Tartaglia, Niccolò, d. 1557	Roman Catholic		m	Lay
+Cortés, Martín, 1532-1589	Roman Catholic		m	Lay
+Filippe, Bartholomeu	Roman Catholic		m
+Fourquevaux, Raimond de Beccarie de Pavy, baron de, 1509-1574	Roman Catholic		m	Lay
+Caumont, Jean de	Roman Catholic		m
+Florence, of Worcester, d. 1118	Roman Catholic		m	Pre-schism Western church
+Huarte, Juan, 1529?-1588	Roman Catholic		m	Lay
+Leroy, Lovis, d. 1577	Roman Catholic		m	Lay
+Tasso, Torquato, 1544-1595	Roman Catholic		m	Lay
+Hurault, Jacques	Roman Catholic		m	Lay
+Commynes, Philippe de, ca. 1447-1511	Roman Catholic		m	Lay
+Poyntz, Adrian	Roman Catholic		m
+Lopes, Duarte	Roman Catholic		m	Lay
+Bruto, Giovanni Michele, ca. 1515-1594	Roman Catholic		m	Lay
+Gerard, Pierre	Roman Catholic		m
+Teixera, José, 1543-1620	Roman Catholic		m
+De Vos, M., artist	Roman Catholic		m	Lay
+Torquemada, Antonio de, fl. 1553-1570	Roman Catholic		m	Lay
+[Pietro da Lucca]	Roman Catholic		m
+Affinati, Giacomo	Roman Catholic		m
+
+# ══ Twelfth pass ══════════════════════════════════════════════════
+
+# ── Rome ──────────────────────────────────────────────────────────
+Radford, John, 1561-1630	Roman Catholic		h
+Blackwell, George, 1546 or 7-1613	Roman Catholic		h	Archpriest
+Fitzsimon, Henry, b. 1566	Roman Catholic		h	Jesuit
+Gregory I, Pope, ca. 540-604	Roman Catholic		h	Pre-schism Western church
+Maihew, Edward, 1570-1625	Roman Catholic		h	Benedictine
+Azpilcueta, Martín de, 1492?-1586	Roman Catholic		h
+Benoît, de Canfield, 1562-1610	Roman Catholic		h	Capuchin
+Leech, Humphrey, 1571-1629	Roman Catholic		h	Left the Church of England for the Jesuits
+Tichborne, John, d. 1638	Roman Catholic		h
+Bonaventure, Saint, Cardinal, ca. 1217-1274	Roman Catholic		h
+Owen, Thomas, 1557-1618	Roman Catholic		h	Jesuit
+Puente, Luis de la, 1554-1624	Roman Catholic		h	Jesuit
+Warmington, William, b. 1555 or 6	Roman Catholic		h
+Walpole, Michael, 1570-1624?	Roman Catholic		h	Jesuit
+Michaelis, Sébastien, 1543?-1618	Roman Catholic		h	Dominican
+Bruno, Vincenzo, S.J.	Roman Catholic		h	A catalogue variant of the same man
+Geninges, John, d. 1660	Roman Catholic		h	Franciscan
+Carier, Benjamin, 1566-1614	Roman Catholic		h	A royal chaplain who went over to Rome
+Coster, Franciscus, 1532-1619	Roman Catholic		h	Jesuit
+Ribadeneyra, Pedro de, 1526-1611	Roman Catholic		h	Jesuit
+Véron, François, 1575-1649	Roman Catholic		h	Jesuit
+Véron, François, 1575-1649. Adrian Hucher	Roman Catholic		h	A catalogue variant of the same man
+Coton, Pierre, 1564-1626	Roman Catholic		h	Jesuit; confessor to Henri IV
+Chambers, Sabine, 1560?-1633	Roman Catholic		h	Jesuit
+Borja, Francisco de, Saint, 1510-1572	Roman Catholic		h	Jesuit
+Marcos, de Lisboa, Bishop of Porto, 1511-1591	Roman Catholic		h	Franciscan
+Barclay, William, 1546 or 7-1608	Roman Catholic		h	Lay civilian
+Anderton, James, fl. 1624	Roman Catholic		h
+Stanney, William	Roman Catholic		h	Franciscan
+Sweet, John, 1570-1632	Roman Catholic		h	Jesuit
+Villegas, Alfonso de	Roman Catholic		h
+Loyer, Pierre le, 1550-1634	Roman Catholic		m	Lay
+Numan, Philippe, d. 1617	Roman Catholic		m
+Copinger, John, b. 1571 or 2	Roman Catholic		m
+Haren, Jean	Roman Catholic		m	Left the Reformed ministry and returned to Rome
+Beringer, Joachim	Roman Catholic		m
+Worseley, Edw	Roman Catholic		m
+Brisset, Georges	Roman Catholic		m
+Baynes Roger, 1546-1623	Roman Catholic		m
+Griffin, George Augustus	Roman Catholic		m
+Berzetti, Nicolas	Roman Catholic		m
+Everard, John, b. 1587	Roman Catholic		m	Not the mystic of 1575?-1650?
+Fracastoro, Girolamo, 1478-1553	Roman Catholic		m	Lay
+Bradwardine, Thomas, 1290?-1349	Roman Catholic		h	Archbishop of Canterbury
+Victor, Saint, Bishop of Vita, d. ca. 505	Roman Catholic		m	Pre-schism Western church
+Angelus, Christophorus, d. 1638	Eastern Orthodox		h	A Greek refugee in England
+
+# ── The continent ─────────────────────────────────────────────────
+Bucanus, Guillaume	Continental Reformed		h	Lausanne
+Casmann, Otto, d. 1607	Continental Reformed		m
+Vignier, Nicolas	Continental Reformed		m	Huguenot
+Tremoille, Charlotte Brabantina, Duchess of, 1580-1631	Continental Reformed		m	Huguenot
+Cro, François de	Continental Reformed		m	Huguenot
+L'Espine, Jean de, ca. 1506-1597. Traité de l'apostasie	Continental Reformed		h	A catalogue variant of the same man
+Appelius, Joannes	Continental Reformed		m
+Mayerne, Lovis Turquet de, d. 1618	Continental Reformed		m	Huguenot
+Heinsius, Daniel, 1580-1655	Continental Reformed		h	Leiden
+Osiander, Lucas, 1571-1638	Lutheran		h
+Johann Georg I, Elector of Saxony, 1585-1656	Lutheran		h	Lay
+Wirsung, Christof, 1500?-1571	Lutheran		m	Lay
+Croce, Giovanni, ca. 1557-1609	Roman Catholic		m	Lay musician
+
+# ── Separatists and Baptists ──────────────────────────────────────
+Clyfton, Richard, d. 1616	Congregational	Puritan	h	Scrooby; then Amsterdam
+L'Écluse, Jean de	Congregational	Puritan	h	The Ancient Church at Amsterdam
+Fowler, John, Brownist	Congregational	Puritan	h	The catalogue names his party
+Lawne, Christopher. aut	Congregational	Puritan	m	A separatist who turned on the separation
+Ainsworth, John, fl. 1609-1613	Congregational	Puritan	m
+Euring, William	Congregational	Puritan	m
+Wilkinson, John, dissenter	Congregational	Puritan	m
+Helwys, Thomas, 1550?-1616?, attributed name. aut	Baptist	Puritan	h	A catalogue variant of the same man
+
+# ── Anglican, Puritan ─────────────────────────────────────────────
+Airay, Henry, 1560?-1616	Anglican	Puritan	h	Provost of Queen's, Oxford
+Negus, William, 1559?-1616	Anglican	Puritan	h	Suspended for nonconformity
+Whetenhall, Thomas	Anglican	Puritan	h	A lay plea against the abuses of the church
+Fuller, Nicholas, 1543-1620	Anglican	Puritan	h	Lay; argued against the High Commission
+Knollys, Francis, Sir, d. 1643	Anglican	Puritan	m	Lay
+Draxe, Thomas, d. 1608	Anglican	Puritan	m	A catalogue variant of the same man
+Middleton, William, d. 1613	Anglican	Puritan	m
+Hutton, Thomas, 1566-1639	Anglican	Puritan	m
+Sprint, John, d. 1623. Anatomy of the controversie	Anglican	Puritan	m	A catalogue variant of the same man
+Taylor, Thomas. 1576-1632	Anglican	Puritan	m	A catalogue variant of the same man
+Hayne, Thomas, 1582-1645, attributed name. aut	Anglican	Puritan	m	A catalogue variant of the same man
+Perkins, William, 1558-1602. Treatise tending unto a declaration	Anglican	Puritan	h	A catalogue variant of the same man
+Whitaker, Alexander, 1585-1617	Anglican	Puritan	m	Virginia
+Shaw, John, 1559-1625	Anglican	Puritan	m
+Abernethy, John, d. 1639	Anglican	Puritan	m	Bishop of Caithness
+Gee, Edward, 1565-1618	Anglican	Puritan	m
+Jefferay, Richard, b. 1567	Anglican	Puritan	l
+Racster, John	Anglican	Puritan	l
+Closse, George	Anglican	Puritan	l
+Swynnerton, John	Anglican	Puritan	l
+Humfrey, Richard	Anglican	Puritan	l
+James, Edward	Anglican	Puritan	l
+Philips, Edward	Anglican	Puritan	l
+Bury, George	Anglican	Puritan	l
+Creswell, George	Anglican	Puritan	l
+Walker, Ralph, preacher of the word	Anglican	Puritan	l
+Woodcoke, Richard	Anglican	Puritan	l
+Hopkins, Thomas, minister at Yeardley	Anglican	Puritan	l
+Hoskin, John, minister of Gods holy word	Anglican	Puritan	l
+Oxley, Thomas	Anglican	Puritan	l
+Bedle, Thomas	Anglican	Puritan	l
+Gawton, Richard	Anglican	Puritan	l
+Milles, Robert	Anglican	Puritan	l
+Smyth, Richard, preacher in Barnstaple, Devon	Anglican	Puritan	l
+Swift, John, fl. 1612	Anglican	Puritan	l
+Tomlinson, Francis	Anglican	Puritan	l
+Cheaste, Thomas	Anglican	Puritan	l
+Fosset, Thomas	Anglican	Puritan	l
+Hilliard, John	Anglican	Puritan	l
+Powell, Thomas, b. 1579 or 80	Anglican	Puritan	l
+Sheerwood, Rihcard	Anglican	Puritan	l
+Webster, William, treatise writer	Anglican	Puritan	l
+[Jenkinson, Daniel]	Anglican	Puritan	l
+Baughe, Thomas, b. 1577 or 8	Anglican	Puritan	l
+Chadwich, John	Anglican	Puritan	l
+Hill, John, preacher of Gods word at Dublin	Anglican	Puritan	l
+Bruch, Richard, minister of Gods word	Anglican	Puritan	l
+Evans, Edward, b. 1573	Anglican	Puritan	l
+Grenfield, Nathaniel, b. 1588 or 9	Anglican	Puritan	l
+Hastler, Thomas	Anglican	Puritan	l
+Howes, Thomas, preacher at King's Lynn	Anglican	Puritan	l
+Hugget, Anthony	Anglican	Puritan	l
+Swaine, Richard	Anglican	Puritan	l
+Gibbons, Samuel	Anglican	Puritan	l
+Gostwick, Roger, b. 1567 or 8	Anglican	Puritan	l
+Jackson, William, lecturer at Whittington College	Anglican	Puritan	l
+Kitchener, Nathanael, d. 1620	Anglican	Puritan	l
+Langley, Henry, d. 1636	Anglican	Puritan	l
+Littleton, Edmund	Anglican	Puritan	l
+Price, Gabriel	Anglican	Puritan	l
+Walker, John, dwelling at Leeds in Yorkshire	Anglican	Puritan	l
+Wylshman, Walter, 1571 or 2-1636	Anglican	Puritan	l
+Delawne, Nathaniel	Anglican	Puritan	l
+King, William, preacher of the word of God	Anglican	Puritan	l
+Man, Abraham	Anglican	Puritan	l
+Dighton, Thomas	Anglican	Puritan	l
+Dighton, Thomas, fl. 1618-1619	Anglican	Puritan	l
+Jackson, Abraham, 1589-1646?	Anglican	Puritan	l
+Pickford, John, 1588-1664?	Anglican	Puritan	l
+Thompson, Henry, fl. 1618	Anglican	Puritan	l
+Thompson, Thomas, b. 1574?	Anglican	Puritan	l
+Warren, John, Vicar of Great Clacton	Anglican	Puritan	l
+Bankes, Lawrence	Anglican	Puritan	l
+Mandevill, Robert, 1578-1618	Anglican	Puritan	l
+Medeley, Thomas	Anglican	Puritan	l
+Newman, John, fl. 1619	Anglican	Puritan	l
+Yarrow, Robert	Anglican	Puritan	l
+Chambers, Richard, b. 1583	Anglican	Puritan	l
+Dyke, William	Anglican	Puritan	l
+Elborough, Jeremiah	Anglican	Puritan	l
+Innes, William, fl. 1620	Anglican	Puritan	l
+Bird, Josias, d. 1666	Anglican	Puritan	l
+Browne, Gregory	Anglican	Puritan	l
+Bull, John, fl. 1613	Anglican	Puritan	l
+Holyoake, Francis, 1567-1653	Anglican	Conformist	m
+
+# ── Anglican, conforming ──────────────────────────────────────────
+Meredeth, Richard, 1559-1621	Anglican	Conformist	m	Bishop of Leighlin
+Milbourne, Richard, d. 1624	Anglican	Conformist	m	Bishop of Carlisle
+Pelling, John, 1561 or 2-1621	Anglican	Conformist	m
+Benson, George, 1568 or 9-1648	Anglican	Conformist	m
+Tynley, Robert, 1561 or 2-1616	Anglican	Conformist	m
+Milward, John, 1556-1609	Anglican	Conformist	m
+Casaubon, Isaac, 1559-1614	Anglican	Conformist	h	A Huguenot scholar who died in the Church of England
+Copley, John, 1577-1662	Anglican	Conformist	m	A priest who conformed
+Salkeld, John, 1576-1660	Anglican	Conformist	m	A Jesuit who conformed
+Harding, John, fl. 1620	Anglican	Conformist	m	Recanted at Paul's Cross
+Harris, Richard, d. 1613?	Anglican	Conformist	m
+Sorocold, Thomas, 1561-1617	Anglican	Conformist	m
+Spenser, John, 1559-1614	Anglican	Conformist	m	President of Corpus Christi, Oxford
+Sandys, Edwin, Sir, 1561-1629	Anglican	Conformist	m	Lay
+Kilbye, Richard, 1560 or 61-1620	Anglican	Conformist	m	King James Bible translator
+Potter, Barnaby, 1577-1642	Anglican	Conformist	m	Bishop of Carlisle
+Tillesley, Richard, 1582-1621	Anglican	Conformist	m
+Sharpe, Leonel, 1559-1631	Anglican	Conformist	m
+Sempill, James, Sir, 1566-1625	Anglican	Conformist	m	Lay; Scottish
+Eaton, Richard, 1563?-1617	Anglican	Conformist	m
+Hoskins, John, 1579-1631	Anglican	Conformist	m
+Neville, Alexander, 1544-1614	Anglican	Conformist	m	Lay
+Bastard, Thomas, 1565 or 6-1618	Anglican	Conformist	m
+Lily, Peter, d. 1615	Anglican	Conformist	m
+Wilkes, William, d. 1637	Anglican	Conformist	m
+Pullein, Thomas	Anglican	Conformist	m
+Gainsford, Thomas, d. 1624?	Anglican	Conformist	l	Lay
+Dallington, Robert, 1561-1637	Anglican	Conformist	l	Lay
+Martyn, William, 1562-1617	Anglican	Conformist	l	Lay
+Crooke, Helkiah, 1576-1635	Anglican	Conformist	l	Lay physician
+Pulton, Ferdinando, 1536-1618	Anglican	Conformist	l	Lay
+Ortelius, Abraham, 1527-1598	Roman Catholic		m	Lay
+Montaigne, Michel de, 1533-1592	Roman Catholic		m	Lay
+Bodin, Jean, 1530-1596	Roman Catholic		m	Lay
+Ravenscroft, Thomas, 1592?-1635?	Anglican	Conformist	l	Lay musician
+Coperario, John, 1570 (ca.)-1626	Anglican	Conformist	l	Lay musician
+Strode, George, utter-barister of the Middle Temple	Anglican	Conformist	l	Lay
+Russell, Elizabeth Cooke Hoby, Lady, ca. 1540-1609	Anglican	Puritan	m	Lay
+Leigh, Dorothy	Anglican	Puritan	m	Lay
+Speght, Rachel	Anglican	Puritan	m	Lay
+Sowernam, Ester	Anglican	Conformist	l	Lay; a pen name
+Gibson, John, fl. 1579-1599	Anglican		l
+Leech, James, fl. 1605	Anglican		l
+White, Thomas, fl. 1605	Anglican		l
+Birny, William, 1563-1619	Anglican		l
+Chapman, Alexander, 1576 or 7-1629	Anglican		l
+Freeman, John, fl. 1611	Anglican		l
+Ayscu, Edward	Anglican		l
+Murray, John, 1575?-1632, attributed name. aut	Anglican		l
+Newman, Arthur	Anglican		l
+Raymonde, Henry	Anglican		l
+Univocè-catholicus	Anglican		l
+Bailey, William, of Stapleford Abbat, Essex	Anglican		l
+Mabb, John	Anglican		l
+Powel, Daniel	Anglican		l
+Tye, William	Anglican		l
+Hart, William, Sir, Lord Justice of Scotland	Anglican	Conformist	l	Lay
+Biddulph, William	Anglican		l
+Buddle, George, b. ca. 1568	Anglican		l
+Denakol	Anglican		l
+Eudes, Morton	Anglican		l
+Grahame, Simion, ca. 1570-1614	Anglican		l	Lay
+Lennard, Samson, d. 1633	Anglican		l	Lay
+Linton, Anthony	Anglican		l
+Morley, Henry, d. 1616	Anglican		l
+Wybarne, Joseph	Anglican		l	Lay
+[Morgan, Nicholas, of Crolane]	Anglican		l	Lay
+Collins, Thomas, fl. 1610-1615	Anglican		l
+Ireland, Thomas, b. 1577 or 8	Anglican		l
+Marcelline, George	Anglican		l	Lay
+Muschet, George, poet	Anglican		l
+Snawsel, Robert	Anglican		l
+Wolfe, John	Anglican		l
+Cartwright, John, of Magdalen College, Oxford	Anglican		l
+Chandos, Grey Brydges, Baron, d. 1621	Anglican	Conformist	l	Lay
+Chandon, Grey Brydges, Baron, d. 1621	Anglican	Conformist	l	A catalogue variant of the same man
+Jackson, John, fl. 1611	Anglican		l
+Langhorne, Lancelot	Anglican		l
+Savile, Thomas, fl. 1595-1613	Anglican		l
+Spicer, John	Anglican		l
+Burton, Francis, fl. 1603-1617	Anglican		l
+Davis, Francis, fl. 1612	Anglican		l
+Mason, James, M.A.	Anglican		l
+Monipennie, John	Anglican		l
+Pownall, Nathaniel, 1583 or 4-1610	Anglican		l
+Sturtevant, Simon	Anglican		l	Lay
+Fletcher, Joseph, 1577?-1637	Anglican		l
+Jourdain, Silvester, d. 1650	Anglican		l	Lay
+Niccols, Richard, of the Inner Temple	Anglican		l	Lay
+Anderson, James, d. 1603	Presbyterian	Puritan	l	Church of Scotland
+Avity, Pierre d', sieur de Montmartin, 1573-1635	Roman Catholic		m	Lay
+Cooper, John, fl. 1626	Anglican		l
+Jones, John, 1574 or 5-1636	Anglican		l
+Martin, James, fl. 1615-1630	Anglican		l
+Passe, Crispijn van de, d. 1670	Continental Reformed		l	Lay engraver
+Singleton, Isaac, b. 1582 or 3	Anglican		l
+Wentworth, Paul	Anglican	Puritan	l	Lay
+Bonnivet, Henri Marc de Gouffier, Marquis de	Roman Catholic		m	Lay
+Ford, William, b. 1559	Anglican		l
+Hungerford, Anthony, Sir, 1564-1627	Anglican	Conformist	m	Lay; left Rome
+Nid, Gervase, d. 1629	Anglican		l
+Peretto, Francesco	Roman Catholic		l
+Stinnet, William	Anglican		l
+Willis, Timothy	Anglican		l	Lay
+Colt, Nicholas, d. 1642	Anglican		l
+Comyns, John, b. 1587 or 8	Anglican		l
+Sonibancke, Charles, 1564-1638	Anglican		l
+Turner, John, 1660-1720	Anglican	Conformist	m
+Young, Thomas, student of Staple Inn	Anglican		l	Lay
+[Lesk, William]	Anglican		l
+Baret, Michael	Anglican		l	Lay
+Carliell, Robert, d. 1622?	Anglican		l	Lay
+Maier, Michael, 1568?-1622	Lutheran		l	Lay
+Basse, William, d. ca. 1653	Anglican		l	Lay
+Popham, Edward, gentleman	Anglican		l	Lay
+White, Francis, b. 1588 or 9	Anglican		l
+Wiseman, William, Sir, d. 1643	Anglican	Conformist	l	Lay
+Wood, John, d. 1625	Anglican		l	Lay
+Phayer, Thomas, 1510?-1560	Anglican		l	Lay
+Lescarbot, Marc	Roman Catholic		m	Lay
+Benvenuto, Italian	Roman Catholic		l	Lay
+Fougasses, Thomas de	Roman Catholic		m	Lay
+Pomarius, Petrus	Continental Reformed		l
+
+# ══ Thirteenth pass ═══════════════════════════════════════════════
+# The identifiable men left in the tail. Everything after this is
+# covered by the prior in assets/js/faith-denominations.js, not by a
+# line here — see the note at the foot of this file.
+
+# ── Rome ──────────────────────────────────────────────────────────
+Sweetnam, John, 1581-1622	Roman Catholic		h	Jesuit
+Gregory XV, Pope, 1554-1623	Roman Catholic		h
+Balsamo, Ignazio, 1543-1618	Roman Catholic		h	Jesuit
+Outreman, Philippe d', 1585-1652	Roman Catholic		h	Jesuit
+Molina, Antonio de, d. 1619?	Roman Catholic		h	Carthusian
+Musket, George, 1583-1645	Roman Catholic		h
+Pattenson, Matthew	Roman Catholic		h
+Daza, Antonio	Roman Catholic		h	Franciscan
+Cepari, Virgilio, ca. 1563-1631	Roman Catholic		h	Jesuit
+Binet, Etienne, 1569-1639	Roman Catholic		h	Jesuit
+Cambi, Bartolomeo, 1558-1617	Roman Catholic		h	Franciscan
+Hugo, Herman, 1588-1629	Roman Catholic		h	Jesuit
+Ignatius, of Loyola, Saint, 1491-1556	Roman Catholic		h
+Francis, of Assisi, Saint, 1182-1226	Roman Catholic		h
+Peter, of Alcantara, Saint, 1499-1562	Roman Catholic		h	Franciscan
+Piatti, Girolamo, 1545-1591	Roman Catholic		h	Jesuit
+Porter, Jerome, d. 1632	Roman Catholic		h	Benedictine
+Torsellino, Orazio, 1545-1599	Roman Catholic		h	Jesuit
+Maffei, Giovanni Pietro, 1536?-1603	Roman Catholic		h	Jesuit
+Łęczycki, Mikołaj, 1574-1652	Roman Catholic		h	Jesuit
+Lacroix, François de, 1582-1644	Roman Catholic		h	Jesuit
+Rodrigues, João, 1558-1633	Roman Catholic		h	Jesuit
+Hawkins, Henry, 1571?-1646	Roman Catholic		h	Jesuit
+Abbot, John, fl. 1623	Roman Catholic		h	Not the archbishop's family
+Smith, William, Priest	Roman Catholic		h
+John of the Crosse, a Catholique gentleman	Roman Catholic		h	The catalogue names his church
+Hugh, of Saint-Victor, 1096?-1141	Roman Catholic		h
+Eadmer, d. 1124?	Roman Catholic		h
+Jocelin, fl. 1200	Roman Catholic		h
+Scot, Michael, ca. 1175-ca. 1234	Roman Catholic		m
+Flamel, Nicolas, d. 1418	Roman Catholic		m	Lay
+Dodoens, Rembert, 1517-1585	Roman Catholic		m	Lay
+Touris, William	Roman Catholic		m
+Barry, Gerat	Roman Catholic		m	Lay
+Gerard, John, 1545-1612	Anglican	Conformist	l	Lay herbalist; not the Jesuit
+Favyn, André	Roman Catholic		m	Lay
+Fernández de Ribera, Rodrigo, 1579-1631	Roman Catholic		m	Lay
+Fit John, John	Roman Catholic		l
+Leigh, Valentine, fl. 1562	Roman Catholic		l	Lay
+
+# ── The continent ─────────────────────────────────────────────────
+Friedrich III, Elector Palatine, 1515-1576	Continental Reformed		h	Commissioned the Heidelberg Catechism
+Geveren, Sheltco à	Continental Reformed		m
+Goulart, Simon, 1543-1628	Continental Reformed		h	Geneva
+Bogerman, Johannes, 1576-1637	Continental Reformed		h	President of the Synod of Dort
+Mestrezat, Jean, 1592-1657	Continental Reformed		h	Huguenot, at Charenton
+Souterius, Daniel	Continental Reformed		m
+Eglises réformées de France. Synode national	Continental Reformed		h
+González de Montes, R. (Raimundo), 16th cent	Continental Reformed		m	Spanish exile on the Inquisition
+Guillemard, Jean	Continental Reformed		m	Huguenot
+Caesar, Philipp, d. 1585	Continental Reformed		m
+Heresbach, Conrad, 1496-1576	Continental Reformed		m
+Francke, Christian, b. 1549	Continental Reformed		l	Changed sides repeatedly
+Nicolás, Juan de	Continental Reformed		m	A Spanish friar who turned Protestant
+Marolois, Samuel	Continental Reformed		l	Lay
+Etten, Hendrik van	Roman Catholic		l	Lay
+Nicolai, Philipp, 1556-1608	Lutheran		h
+Aslakssøn, Cort, 1564-1624	Lutheran		h	Danish
+Huberinus, Caspar	Lutheran		h
+Gustaf II Adolf, King of Sweden, 1594-1632	Lutheran		h	Lay
+Wedderburn, John, ca. 1500-1556	Lutheran		m	The Gude and Godlie Ballatis
+
+# ── New England and the separation ────────────────────────────────
+Bradford, William, 1588-1657	Congregational	Puritan	h	Governor of Plymouth
+Cushman, Robert, 1579?-1625	Congregational	Puritan	h	Plymouth
+
+# ── Scotland ──────────────────────────────────────────────────────
+Boyd, Robert, 1578-1627	Presbyterian	Puritan	h	Boyd of Trochrig
+Hewat, Peter, d. 1645	Presbyterian	Puritan	m	Church of Scotland
+Kennedy, John, fl. 1626	Presbyterian	Puritan	m	Church of Scotland
+Crawfurd, Patrick	Presbyterian	Puritan	l	Church of Scotland
+Wishart, William, parson of Restalrigg	Presbyterian	Puritan	l	Church of Scotland
+Forbes, Walter, 17th century	Presbyterian	Puritan	l	Church of Scotland
+
+# ── Anglican, conforming ──────────────────────────────────────────
+Maynwaring, Roger, 1590-1653	Anglican	Conformist	h	Preached for the forced loan; Bishop of St David's
+Senhouse, Richard, d. 1626	Anglican	Conformist	m	Bishop of Carlisle
+Wright, Robert, d. 1626	Anglican	Conformist	m
+Goad, Thomas, 1576-1638	Anglican	Conformist	h	British delegate to Dort
+Rawley, William, 1588?-1667	Anglican	Conformist	m	Bacon's chaplain
+Eedes, Richard, 1555-1604	Anglican	Conformist	m	Dean of Worcester
+Stradling, John, Sir, 1563-1637	Anglican	Conformist	m	Lay
+Doddridge, John, Sir, 1555-1628	Anglican	Conformist	m	Lay judge
+Herbert of Cherbury, Edward Herbert, Baron, 1583-1648	Anglican	Conformist	m	Lay
+Burton, Robert, 1577-1640	Anglican	Conformist	h	The Anatomy of Melancholy
+Shakespeare, William, 1564-1616	Anglican	Conformist	l	Lay
+Dee, John, 1527-1608	Anglican	Conformist	l	Lay
+Melton, John, Sir, d. 1640	Anglican	Conformist	l	Lay
+Weever, John, 1576-1632	Anglican	Conformist	l	Lay antiquary
+Gunter, Edmund, 1581-1626	Anglican	Conformist	l	Lay
+Tomkins, Thomas, 1572-1656	Anglican	Conformist	l	Lay musician
+Smith, John, 1580-1631	Anglican	Conformist	l	Lay; of Virginia
+Norton, Robert, d. 1635	Anglican	Conformist	l	Lay
+Nash, Thomas, 1588-1648	Anglican	Conformist	l	Lay
+Bushel, Thomas, 1594-1674	Anglican	Conformist	l	Lay
+Cholmley, Hugh, ca. 1574-1641	Anglican	Conformist	l	Lay
+Lincoln, Elizabeth Clinton, Countess of, 1574?-1630?	Anglican	Puritan	m	Lay
+Jocelin, Elizabeth, 1596-1622	Anglican	Puritan	m	Lay
+Linlithgow, Eleanor Livingston, Countess of, d. 1637	Anglican	Conformist	l	Lay
+Owen, Lewis, 1572-1633	Anglican	Conformist	m	Wrote against the Jesuits
+Wilkinson, Henry, 1566-1647	Anglican	Puritan	m	Not the men of 1610-1675 or 1616-1690
+Egerton, Stephen, 1555?-1621?	Anglican	Puritan	h	Of Blackfriars; a leader of the London Puritans
+Carter, Oliver, 1540?-1605	Anglican	Puritan	m
+Walsall, John	Anglican	Puritan	m
+Sharpe, James, 1577?-1630	Anglican	Conformist	m
+Synge, George, 1594-1653	Anglican	Conformist	m	Bishop of Cloyne
+Parr, Richard, 1591 or 2-1644	Anglican	Conformist	m	Bishop of Sodor and Man
+Fisher, Ambrose, d. 1617	Anglican	Conformist	m
+Broad, Thomas, 1577 or 8-1635	Anglican	Puritan	m
+Paybody, Thomas, b. 1597 or 8	Anglican	Conformist	m	Defended kneeling at communion
+Davies, John, 1567-1644	Anglican	Conformist	m	Of Mallwyd; the Welsh Bible revision
+Thomas, Oliver, 1598-1653?	Anglican	Puritan	m	Welsh
+Richardson, Gabriel, d. 1642	Anglican	Conformist	m
+Sparke, William, 1587-1641	Anglican	Conformist	m
+Fuller, William, 1579 or 80-1659	Anglican	Conformist	m	Dean of Ely
+Scott, William, ca. 1566-1642	Anglican	Conformist	l
+Holland, Henry, 1583-1650?	Anglican	Conformist	l	Lay
+
+# ══ Where this table stops, and why ═══════════════════════════════
+#
+# 2,913 men are named above. Of the Protestant works in the library,
+# 98% now carry a church. What is left unnamed is not a Protestant
+# work missing its denomination: it is an Early English Books work
+# whose author nobody has placed in any communion at all, so it sits
+# outside every tradition and never reaches this facet.
+#
+# Those remaining authors are, almost to a man, one printed sheet
+# each: a single assize sermon, a single funeral sermon, a single
+# pamphlet, by a man with a name, a parish and nothing else. The only
+# fact about them is that they printed in English, in England, between
+# 1473 and 1700.
+#
+# That fact WOULD support a rule — call them all Church of England and
+# be done — and the rule would be right about most of them. It is not
+# written here on purpose. Applying it would move some three thousand
+# works into Anglican on no evidence, push that one bucket to more
+# than half the library, and quietly file every recusant, Quaker and
+# Baptist among them under the church they were being fined for
+# refusing to attend. A facet that says 98% and shows its working is
+# worth more than one that says 100% and cannot.
+#
+# So the next pass is not more lines like the last hundred. It is
+# evidence: a printer, a parish register, a licensing record, an
+# ejection list. Add a line when you have one.

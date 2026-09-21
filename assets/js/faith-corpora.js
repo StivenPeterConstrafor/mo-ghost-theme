@@ -360,11 +360,32 @@
       // was expelled from it, so it belongs under Protestant and beside
       // Reformed rather than inside it.
       Arminian: "Protestant",
+      // Both predate the Reformation and both kept a confessional line
+      // of their own through it, which is why they are their own
+      // denominations above and not filed under Reformed. They are
+      // still Protestant: the Waldensians adopted a Reformed confession
+      // at Chanforan in 1532 and the Brethren were a Protestant body
+      // from Luther's decade onward. Left unparented they stood at the
+      // top of the tradition facet as peers of the whole Western
+      // church, and then contradicted themselves — the same two
+      // appeared under Protestant as soon as a work of theirs came from
+      // a catalogue with no tradition field, so Comenius sat in one
+      // place and the Bohemian Confession in another.
+      Waldensian: "Protestant",
+      "Bohemian Brethren": "Protestant",
       // "Eastern Orthodox" and "The Whole Church" take no parent. Both
       // are top-level traditions in their own right.
     },
     tfr: {
       Reformed: "Protestant",
+      // lib/faith-catalogue.js renames the Latin Library's "Reformed" to
+      // "Continental Reformed" as it canonicalises a record, and this map
+      // was never told. The renamed value had no parent, so 423 works —
+      // Alsted, Chamier, Turretin, Voetius — stood at the top of the
+      // tradition facet as a peer of Protestant instead of inside it.
+      // Both spellings are kept: the rename happens in one layer and the
+      // raw value still arrives from others.
+      "Continental Reformed": "Protestant",
       Lutheran: "Protestant",
       // 756 works, and `party` splits 730 of them Puritan and 2
       // Anglican. Until that second level is wired the whole shelf
@@ -406,7 +427,8 @@
       // Book, Augsburg — file under Protestant with the rest. Left at
       // the top they stood beside Protestant as "Anglican (2)",
       // "Reformed (8)", "Lutheran (2)": the same denominations twice.
-      Reformed: "Protestant", Lutheran: "Protestant", Anglican: "Protestant",
+      Reformed: "Protestant", "Continental Reformed": "Protestant",
+      Lutheran: "Protestant", Anglican: "Protestant",
       "Reformed Baptist": "Protestant", Evangelical: "Protestant",
     },
   };
@@ -1071,6 +1093,13 @@
       }),
       loadAuthorTraditions(c),
       subset,
+      // The denomination table, awaited here rather than in each
+      // surface, so every page that loads a corpus gets works already
+      // carrying a church and a party and no facet has to know the
+      // table exists. A missing table resolves to nothing rather than
+      // rejecting: the library stays browsable on whatever its
+      // catalogues already said.
+      window.MODenom ? window.MODenom.ready().catch(() => null) : Promise.resolve(null),
     ])
       .then(([d, byAuthor, keep]) => c.pick(d)
         // A corpus may disown rows in its own catalogue — see `exclude`
@@ -1098,6 +1127,29 @@
           // written as the tradition, which split one shelf in three.
           if (!w.party && byAuthor && w.author) {
             w.party = byAuthor.get(w.author) || "";
+          }
+          // The two axes the catalogues do not carry: the church body
+          // and the party inside it. Resolved once here, where the work
+          // is built, because the facets recount the whole library on
+          // every keystroke. Both may be empty, and an empty one means
+          // nobody has placed this work yet — not that it belongs
+          // nowhere.
+          if (window.MODenom) {
+            const den = window.MODenom.of(w);
+            w.denomination = den.body;
+            if (den.party) w.party = den.party;
+            // Early English Books has no tradition field, so a work
+            // placed as Quaker or Baptist would still sit under no
+            // communion and drop out of a facet it now belongs in. Only
+            // an EMPTY tradition is filled: an earlier cut replaced any
+            // tradition with no communion above it, which read
+            // "Medieval" as a gap and reassigned 317 works off the
+            // medieval shelf on the strength of their authors being
+            // Catholic — true of the men, and a destruction of the
+            // period axis the shelf is built on.
+            if (den.body && !w.tradition) {
+              w.tradition = window.MODenom.communion(den.body) || "";
+            }
           }
           return w;
         })

@@ -83,15 +83,23 @@
   let works = [];
   let tradition = params.get("tradition") || "";
   let denomination = params.get("denomination") || "";
-  if (denomination === "Reformed") { denomination = ""; tradition = "Continental Reformed"; }
+  // /the-faith-received/browse/ has shipped ?denomination=Reformed since
+  // the shelf cards were written, and it means the continental Reformed.
+  // This once sent the reader to tradition=Continental Reformed, which
+  // worked only while that value was orphaned at the top level; it is a
+  // church under Protestant now, so the address has to say so or the
+  // bookmark lands on nothing.
+  if (denomination === "Reformed") { denomination = "Continental Reformed"; tradition = "Protestant"; }
   let century = parseInt(params.get("century"), 10) || 0;
   // Only meaningful on the all-works page, where more than one
   // collection is in the room at once.
   let collection = params.get("in") || "";
   let filter = params.get("q") || "";
   let letter = params.get("letter") || "";
-  // The third level under English Divines: Puritan, Anglican, or the
-  // Westminster Assembly's roster. See FAMILY below.
+  // The party a work's author stood in, cutting across the churches:
+  // Puritan, Conformist, or the Westminster Assembly's roster. See the
+  // note above PARTIES below, and assets/js/faith-denominations.js for
+  // why the party is its own axis and not a denomination.
   let party = params.get("party") || "";
   // A ?scope= written by the old "Search in" select is read and dropped:
   // the box now searches authors first and titles second on its own
@@ -342,13 +350,30 @@
         if (vol || params.get("view") === shelf.view) view = shelf.view;
       }
     }
-    // An address written before English Divines had parties: a tradition
-    // or denomination of Puritan or Anglican means the family, with the
-    // party kept as the third level.
-    if (FAMILY[tradition] || FAMILY[denomination]) {
-      party = FAMILY[tradition] ? tradition : denomination;
-      denomination = ENGLISH;
-      tradition = "";
+    // Addresses written before the churches had their own field.
+    //
+    // "English Divines" was a nationality standing in for a
+    // denomination and is gone; a link naming it now means Protestant
+    // with no church chosen. "Reformed" meant the continental Reformed
+    // and has to keep meaning it — /the-faith-received/browse/ has
+    // shipped that link since the shelf cards were written.
+    //
+    // A tradition or denomination of Puritan or Anglican was, in the
+    // older scheme, a party. Puritan still is. Anglican is now a church,
+    // so it moves to the denomination rather than the party: a reader
+    // who bookmarked the Anglicans gets the Anglicans.
+    if (tradition === ENGLISH || denomination === ENGLISH) {
+      if (tradition === ENGLISH) tradition = "Protestant";
+      denomination = "";
+    }
+    if (tradition === "Puritan" || denomination === "Puritan") {
+      party = "Puritan";
+      if (tradition === "Puritan") tradition = "Protestant";
+      denomination = "";
+    }
+    if (tradition === "Anglican" || denomination === "Anglican") {
+      denomination = "Anglican";
+      tradition = "Protestant";
     }
     // A denomination named without its parent, in a room that offers more
     // than one tradition, would filter the list and hide the select that
@@ -358,7 +383,7 @@
       const w0 = tops.size > 1 ? works.find((w) => denomOf(w) === denomination) : null;
       if (w0) tradition = topTrad(w0);
     }
-    if (works.some((w) => denomOf(w) === ENGLISH)) loadRoster();
+    if (works.some((w) => topTrad(w) === "Protestant")) loadRoster();
     rebuildShelfOrder();
     render();
   });
@@ -526,19 +551,36 @@
   // one, and the party is a third level beneath that. The Assembly is
   // not a party but a body: its roster is v1/schools.json's explicit list
   // of works by its members, most of them Puritan, so a work can be both.
-  const FAMILY = { Puritan: "English Divines", Anglican: "English Divines" };
+  // Kept only to read the addresses that still name it. Nothing files
+  // under it any more.
   const ENGLISH = "English Divines";
   const ASSEMBLY = "Westminster Assembly";
-  const PARTIES = ["Puritan", "Anglican", ASSEMBLY];
+  // Puritan and Conformist cut across the churches; the Assembly is a
+  // roster rather than a party, and a work can be on it and Puritan
+  // both. It sits with the parties because it answers the same question
+  // — where did this man stand — and a reader looking for the Assembly
+  // looks where he looked for the Puritans.
+  const PARTIES = ["Puritan", "Conformist", ASSEMBLY];
+  // Under Protestant the denomination is the church body, which is its
+  // own field now: see assets/js/faith-denominations.js for why the
+  // tradition string could not do the job. Under anything else it is
+  // still the child tradition, because Migne's two series are what
+  // "within The Fathers" means and no denomination table has an opinion
+  // about them.
   function denomOf(w) {
-    const t = trad(w);
-    return FAMILY[t] && topTrad(w) === "Protestant" ? FAMILY[t] : t;
+    if (topTrad(w) === "Protestant") return String(w.denomination || "");
+    return trad(w);
   }
-  // The party a work carries itself: Early English Books says it as the
-  // tradition, the Latin Library in a field of its own.
+  // Stamped on the work when its corpus loads, from the same table —
+  // but lib/faith-catalogue.js rebuilds a record from the raw index as
+  // it canonicalises, and takes `party` from there, so the stamp does
+  // not always survive. The raw value is the source's own vocabulary,
+  // where "Anglican" is a PARTY meaning a conformist; here Anglican is
+  // a church and the party is Conformist. Translated on read, which is
+  // the one place both spellings arrive.
   function partyOf(w) {
-    if (denomOf(w) !== ENGLISH) return "";
-    return FAMILY[trad(w)] ? trad(w) : String(w.party || "").trim();
+    const p = String(w.party || "").trim();
+    return p === "Anglican" ? "Conformist" : p;
   }
   // The Assembly's roster, keyed the way a loaded record is, `corpus|id`.
   // An Early English Books slug in the roster is `eebo-30376`; the room's
@@ -592,7 +634,6 @@
   function partiesUnder(list) {
     const c = new Map();
     list.forEach((w) => {
-      if (denomOf(w) !== ENGLISH) return;
       const p = partyOf(w);
       if (p) c.set(p, (c.get(p) || 0) + 1);
       if (inAssembly(w)) c.set(ASSEMBLY, (c.get(ASSEMBLY) || 0) + 1);
@@ -1089,14 +1130,17 @@
     // Denominations are offered only once their parent is chosen, and
     // only where that parent actually has children here.
     const denoms = tradition ? denomsUnder(works, tradition) : [];
-    // The parties are offered where English Divines is the denomination
-    // in hand: chosen, or the only one the room has (Early English Books
-    // offers no tradition select, so nothing is ever "chosen" there).
+    // The parties are offered wherever the works in hand hold more than
+    // one, whatever church they file under. That is the whole point of a
+    // second axis: a reader can ask for the Puritans and get the
+    // Presbyterians, the Congregationalists, the Baptists and the
+    // conforming Calvinists together, which one list cannot do. Counted
+    // before the party filter itself, so the numbers beside Puritan and
+    // Conformist describe what choosing one would actually give.
     const inHand = works.filter((w) => (!tradition || topTrad(w) === tradition)
+      && (!denomination || denomOf(w) === denomination)
       && (!collection || w.corpus === collection));
-    const englishOnly = !denomination && inHand.length > 0
-      && inHand.every((w) => { const d = denomOf(w); return !d || d === ENGLISH; });
-    const parties = denomination === ENGLISH || englishOnly ? partiesUnder(inHand) : [];
+    const parties = partiesUnder(inHand);
 
     function select(name, label, all, options, current) {
       if (options.length < 2) return "";
@@ -1329,10 +1373,10 @@
     // party in hand, hidden when there is none to offer.
     const pNav = root.querySelector(".faith-room-parties");
     if (pNav) {
-      const all = inHand.filter((w) => denomOf(w) === ENGLISH).length;
+      const all = inHand.length;
       const tab = (key, label, n) => `<button type="button" class="faith-view-toggle-tab" data-room-party-tab="${escapeHtml(key)}" role="tab">${escapeHtml(label)} <em class="faith-room-party-n">${n.toLocaleString()}</em></button>`;
       const want = parties.length
-        ? tab("", "All English Divines", all) + parties.map(([p, n]) => tab(p, p, n)).join("")
+        ? tab("", "All parties", all) + parties.map(([p, n]) => tab(p, p, n)).join("")
         : "";
       if (pNav.innerHTML !== want) pNav.innerHTML = want;
       pNav.hidden = !parties.length;
