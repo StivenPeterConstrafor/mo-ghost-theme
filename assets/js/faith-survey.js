@@ -349,6 +349,39 @@
   // contents rather than the container, so binding inside it would add
   // one more listener per question and run the handler eight times on
   // the last one.
+  /*
+   * A one-answer question advances itself.
+   *
+   * Ian, 2026-09-21: "if they click an answer and it isn't multiple
+   * choice, automatically proceed to the next question." On a question
+   * that takes exactly one answer, pressing Next afterwards is a second
+   * tap that carries no information -- the answer already said
+   * everything the step was asking.
+   *
+   * ONLY RADIOS. Checkboxes are the multi-select questions, where
+   * advancing on the first tick would take the other options away
+   * before the reader had finished, and the text box has nothing to
+   * advance on.
+   *
+   * NEVER OFF THE LAST QUESTION. Auto-advancing there means
+   * auto-submitting, which would send the survey out from under
+   * somebody who was still deciding.
+   *
+   * GOING BACK DOES NOT BOUNCE THEM FORWARD AGAIN. `change` only fires
+   * on a real interaction; re-rendering an already-chosen option with
+   * `checked` fires nothing. So Back lands on the answer and stays
+   * there, and only a fresh choice moves.
+   *
+   * The delay is the point, not an implementation detail: the fill has
+   * to be seen landing on the thing they picked, or the panel reads as
+   * having jumped on its own.
+   */
+  const ADVANCE_MS = 260;
+  let advanceTimer = null;
+  function cancelAdvance() {
+    if (advanceTimer) { window.clearTimeout(advanceTimer); advanceTimer = null; }
+  }
+
   body.addEventListener("change", (e) => {
     const input = e.target;
     if (!input || !input.name) return;
@@ -358,6 +391,18 @@
       body.querySelectorAll(".fr-survey-option, .fr-survey-dot")
         .forEach((el) => el.classList.remove("is-on"));
       box.classList.add("is-on");
+
+      if (!onLast()) {
+        cancelAdvance();
+        advanceTimer = window.setTimeout(() => {
+          advanceTimer = null;
+          // Re-checked on arrival rather than trusted from 260ms ago:
+          // the reader may have pressed Back, Skip or the close button
+          // in the meantime, and this must not move them then.
+          if (!root.classList.contains("is-open") || finished) return;
+          if (box.isConnected && input.checked && !onLast()) go(1, true);
+        }, ADVANCE_MS);
+      }
     } else {
       box.classList.toggle("is-on", input.checked);
     }
@@ -406,6 +451,7 @@
     if (next < 0 || next >= list.length) return;
     index = next;
     persist();
+    cancelAdvance();
     render();
   }
 
@@ -549,6 +595,7 @@
     // mid-question and comes back should find their answer where they
     // left it, not an empty one.
     if (!finished && body.childNodes.length) { capture(); persist(); }
+    cancelAdvance();
     root.classList.remove("is-open");
     tab.setAttribute("aria-expanded", "false");
     document.removeEventListener("keydown", onKey);
