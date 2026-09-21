@@ -22,8 +22,10 @@
 {{#if @member}}
 <div class="faith-port-search-page">
 
-<a class="skip-link" href="#main">Skip to text</a><main class="main" id="main"><link rel="stylesheet" href="{{asset "css/port/search.in04.css"}}&amp;frv=f6bb85f15374fe45">
-
+{{!-- OUTSIDE the port's <main class="main">, which is a narrow
+     reading column: the header and the rail rendered inside it came
+     out the width of the search form instead of the width of the
+     page. Full-bleed here, the tool below keeps its column. --}}
 {{!-- The header this page had only in its signed-out branch. The
      member view opened straight onto the mode tabs with a bare h1
      and no header at all, which is what Ian was looking at. Same
@@ -37,6 +39,8 @@
 </section>
 {{> "faith-received/_tfr-rail"}}
 <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+<a class="skip-link" href="#main">Skip to text</a><main class="main" id="main"><link rel="stylesheet" href="{{asset "css/port/search.in04.css"}}&amp;frv=f6bb85f15374fe45">
+
 
 <div class="smodes-wrap"><div class="smodes" role="group" aria-label="Search mode">
   <button data-m="title" class="active sm-core" aria-pressed="true" title="Find a work, author, or section">Works</button>

@@ -17595,16 +17595,50 @@ a.fr-btn:hover,
   text-decoration: none;
 }
 
+/* ON A DARK GROUND THE BUTTON INVERTS. Both the hero photograph and the
+   .lp-band--dark sections. The terracotta outline that reads well on
+   cream nearly vanishes on #2d2927 -- Ian, of the Study band: "This
+   button only shows up on highlight." White outline, white ink, and the
+   terracotta arrives as a fill on hover, which is the same escalation
+   the light version makes in the other direction. */
 .faith-landing .lp-hero .btn,
-.faith-landing .lp-hero a.btn {
+.faith-landing .lp-hero a.btn,
+.faith-landing .lp-band--dark .btn,
+.faith-landing .lp-band--dark a.btn {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.55);
   background: transparent;
 }
 .faith-landing .lp-hero .btn:hover,
 .faith-landing .lp-hero a.btn:hover,
-.faith-landing .lp-hero .btn:focus-visible {
+.faith-landing .lp-hero .btn:focus-visible,
+.faith-landing .lp-band--dark .btn:hover,
+.faith-landing .lp-band--dark a.btn:hover,
+.faith-landing .lp-band--dark .btn:focus-visible {
   background: var(--color-secondary, #c1593c);
   border-color: var(--color-secondary, #c1593c);
   color: #fff;
 }
+
+/* THE ONE FILLED BUTTON. Ian: "Fill Begin Reading in with orange." It is
+   the page's single call to action and the only thing on the hero that
+   should be a colour rather than an outline; everything else there is
+   secondary to it. The primary orange, not the library's terracotta,
+   because this is the front door and the magazine's own accent is what
+   says "start here". */
+.faith-landing .lp-hero .btn-primary,
+.faith-landing .lp-hero a.btn-primary {
+  background: var(--color-primary, #ee7d51);
+  border-color: var(--color-primary, #ee7d51);
+  color: #fff;
+}
+.faith-landing .lp-hero .btn-primary:hover,
+.faith-landing .lp-hero a.btn-primary:hover,
+.faith-landing .lp-hero .btn-primary:focus-visible {
+  background: var(--color-secondary, #c1593c);
+  border-color: var(--color-secondary, #c1593c);
+  color: #fff;
+}
+
+/* "| Home" is a quieter half of the same label. */
+.tfr-rail-home { opacity: 0.55; font-weight: 400; }

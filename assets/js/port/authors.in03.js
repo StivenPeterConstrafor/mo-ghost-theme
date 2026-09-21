@@ -2023,7 +2023,8 @@ function route(){
   const navmark=k=>document.querySelectorAll("#topnav a[data-p]").forEach(a=>a.classList.toggle("on",a.dataset.p===k));
   const names={bible:"Scripture",topics:"Topics",fathers:"Authors",compare:"Compare"};
   document.title=names[PAGE]+" · The Faith Received";
-  $("#pgname").textContent=names[PAGE];
+  // #pgname was in the ported nav bar too; same removal, same throw.
+  if($("#pgname"))$("#pgname").textContent=names[PAGE];
   if(h==="t"||h.startsWith("t/")){location.replace("/the-faith-received/topics/"+(h==="t"?"":"#"+h.slice(2)));return;}
   if(h==="f"){location.replace("/the-faith-received/author/");return;}
   if(h.startsWith("a/")){location.replace("/the-faith-received/author/#"+h.slice(2));return;}
