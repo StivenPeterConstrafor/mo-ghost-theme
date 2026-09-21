@@ -18772,3 +18772,81 @@ body.has-fr-survey { padding-bottom: 34px; }
    follows it starts where the notes used to. */
 .fr-fold:not(.is-open) { margin-bottom: 0; padding-bottom: 0; }
 .fr-fold-body[hidden] { display: none; }
+
+
+/* ── Books and chapters fold ──────────────────────────────────────
+   Ian, 2026-09-21: "Do it all. Chapters and books."
+   assets/js/page/faith-reader-folds.js finds each section from the
+   reader's own outline, puts a caret on its heading row, and hides
+   everything up to the next section of equal or higher rank.
+
+   Scoped under #reading because the port's own row rules are written
+   with an id and would otherwise win on specificity. */
+#reading .fr-sec-hid { display: none !important; }
+
+#reading .fr-sec-head { position: relative; }
+
+/* In the gutter, beside the heading rather than inside it: the heading
+   row is a two-lane grid, and a real child in it would take a cell and
+   push the Latin or the English out of line. Absolutely positioned
+   children take no cell. */
+#reading .fr-sec-toggle {
+  position: absolute;
+  left: -2.25rem;
+  top: 0.1em;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: inherit;
+  opacity: 0.4;
+  cursor: pointer;
+  transition: opacity 0.15s, color 0.15s;
+}
+#reading .fr-sec-toggle::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translate(0, -2px) rotate(45deg);
+  transition: transform 0.15s ease;
+}
+#reading .fr-sec-head:hover .fr-sec-toggle { opacity: 0.75; }
+#reading .fr-sec-toggle:hover,
+#reading .fr-sec-toggle:focus-visible {
+  opacity: 1;
+  color: var(--color-secondary, #c1593c);
+}
+#reading .fr-sec-toggle:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+/* Folded: the caret points at the heading, and stays visible enough to
+   be found again without hovering, since the section under it is gone. */
+#reading .fr-sec-head.is-collapsed .fr-sec-toggle { opacity: 0.85; }
+#reading .fr-sec-head.is-collapsed .fr-sec-toggle::before {
+  transform: translate(-1px, 0) rotate(-45deg);
+}
+
+/* A phone has no gutter: the reading column's inset there is 12px. The
+   caret moves to the heading's right edge, the heading gives up the
+   room for it, and the target grows to a thumb's width. */
+html.g-mobile #reading .fr-sec-head { padding-right: 40px; }
+html.g-mobile #reading .fr-sec-toggle {
+  left: auto;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  opacity: 0.6;
+}
+
+@media print {
+  #reading .fr-sec-hid { display: revert !important; }
+  #reading .fr-sec-toggle { display: none; }
+}

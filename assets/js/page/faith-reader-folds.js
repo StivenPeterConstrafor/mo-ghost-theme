@@ -16,16 +16,9 @@
  * what is inside and one press opens it, and once opened it STAYS open
  * for that reader — see the store below.
  *
- * WHAT THIS DOES NOT DO YET. Chapters and books do not fold, because on
- * this reader they are not marked as sections: a chapter head is a
- * `.row.prow` carrying a Latin cell and an English cell, indistinguish-
- * able in the DOM from the paragraph rows under it, and a logical
- * section runs across several `.folio` page shells rather than living
- * inside one. Folding those means grouping rows across folio boundaries
- * and keeping citations, scan-sync and the outline's "show current" all
- * pointing at the right place. That is a real piece of work and it is
- * not this one. Anything that wants folding can opt in meanwhile by
- * carrying `data-fr-fold` with a heading as its first child.
+ * CHAPTERS AND BOOKS FOLD TOO — the second half of this file. Ian,
+ * 2026-09-21: "Do it all. Chapters and books." See SECTIONS below for
+ * how a section is found, which is the part that had to be got right.
  *
  * Re-run on every render: the reader replaces #reading wholesale on a
  * page turn, so a one-shot pass would fold the first column a reader
@@ -121,5 +114,350 @@
     // No MutationObserver is not a reason to leave the first column
     // folded and the rest not: fall back to folding what is there.
     sweep(reading);
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     SECTIONS: every book and chapter folds
+     ══════════════════════════════════════════════════════════════════
+
+     HOW A SECTION IS FOUND. Not from the text. The heading markup is not
+     consistent across works: Pastoral Rule marks its chapter heads
+     `.row.rhead`, while Cur Deus homo -- the same collection, the same
+     reader -- has none, and every one of its 153 rows carries the same
+     data-caps attribute, heads and prose alike. Any rule written against
+     the DOM was right on one work and wrong on the next.
+
+     The reader's own OUTLINE already knows. Each entry in the sidebar is
+     a .nav-node with the page it starts on, its title, and a depth that
+     the reader has already harmonised (Book at 1, Chapter at 2, and so
+     on). Clicking one lands on the exact heading row through
+     FRReaderNavigation.exactHeading, and for Migne works
+     FRPldReading.renderedHeading. This uses the same two resolvers with
+     the same inputs, so a fold starts exactly where a click on the
+     outline lands. Checked on Cur Deus homo: 48 of 48 entries resolve,
+     with Preface and Book One at depth 1 and the chapters at 2.
+
+     A SECTION ENDS AT THE NEXT OUTLINE ENTRY OF EQUAL OR HIGHER RANK, so
+     folding a book folds its chapters and folding a chapter folds only
+     itself. The end is located by that entry's PAGE as well as its
+     heading row, because on a long work the reader renders placeholder
+     folios that it only hydrates near the viewport -- and a hidden folio
+     is never near the viewport. A range that ran to "the next heading
+     found in the DOM" would, on a placeholder, swallow the next chapter
+     and never give it back.
+
+     RESOLVED WHILE VISIBLE, THEN STAMPED. exactHeading only matches a
+     heading that has client rects, so a chapter inside a folded book
+     would stop resolving the moment the book closed. Each pass unhides
+     everything, stamps any heading not yet found, and re-applies the
+     folds -- one synchronous task, so nothing paints in between.
+
+     GOING TO A PLACE OPENS WHAT IS OVER IT. The reader navigates by
+     scrollIntoView on a folio or a row, which is a silent no-op on a
+     display:none node -- the same failure that once left every outline
+     click dead on the confessions. So jump() and the anchor navigator
+     are wrapped: before they run, any fold covering the destination
+     opens. A reader never lands on nothing.
+
+     Open by default. This is the text itself, not the apparatus; a
+     reader folds what they are done with. Remembered for the session,
+     per work, so a page turn or a reload does not undo it, and forgotten
+     after, so nobody returns next week to a work with its middle
+     missing and no memory of why. */
+
+  const nav = document.querySelector("#nav");
+  const dataOf = () => {
+    try { return typeof DATA !== "undefined" ? DATA : null; }
+    catch (_) { return null; }
+  };
+  const slug = () => {
+    const d = dataOf();
+    if (d && d.slug) return String(d.slug);
+    try { return new URLSearchParams(window.location.search).get("w") || ""; }
+    catch (_) { return ""; }
+  };
+  const storeKey = () => `mo_tfr_folds:${slug()}`;
+
+  let collapsed = new Set();
+  try {
+    const saved = JSON.parse(window.sessionStorage.getItem(storeKey()) || "[]");
+    if (Array.isArray(saved)) collapsed = new Set(saved.map(Number).filter((n) => n >= 0));
+  } catch (_) { collapsed = new Set(); }
+  function saveCollapsed() {
+    try { window.sessionStorage.setItem(storeKey(), JSON.stringify([...collapsed])); }
+    catch (_) { /* private mode: folds still work, they just do not persist */ }
+  }
+
+  /* The outline as the reader drew it. Depth comes from the nd1..nd5
+     class renderOutline writes after harmonising sibling ranks. */
+  function entries() {
+    if (!nav) return [];
+    return [...nav.querySelectorAll(".nav-node")].map((n) => ({
+      i: Number(n.dataset.idx),
+      page: String(n.dataset.page || ""),
+      depth: Number(((n.className.match(/\bnd(\d)\b/) || [])[1]) || 1),
+      title: ((n.querySelector(".nn-t") || n).textContent || "").trim(),
+    })).filter((e) => Number.isFinite(e.i) && e.page);
+  }
+
+  /* jump()'s own fallback, kept word for word in its thresholds: when
+     neither resolver claims a title, score heading subtitles and then
+     row openings by shared words, and accept only a strong match. */
+  const norm = (t) => String(t || "").toLowerCase().replace(/<[^>]+>/g, "")
+    .replace(/[^a-z0-9]+/g, " ").trim();
+  function fuzzy(folio, title) {
+    const nt = norm(String(title).replace(/^[^—]{0,16}—\s*/, ""));
+    if (nt.length < 6) return null;
+    const words = nt.split(" ").filter((w) => w.length > 2);
+    const score = (txt) => {
+      const ht = norm(txt);
+      if (!ht) return 0;
+      const hit = words.length ? words.filter((w) => ht.includes(w)).length / words.length : 0;
+      const pref = (ht.startsWith(nt.slice(0, 18)) || nt.startsWith(ht.slice(0, 18))) ? 1 : 0;
+      return Math.max(hit, pref);
+    };
+    let best = null;
+    let bs = 0;
+    folio.querySelectorAll(".row.rhead .csub").forEach((h) => {
+      if (!h.getClientRects().length) return;
+      const sc = score(h.textContent);
+      if (sc > bs) { bs = sc; best = h; }
+    });
+    if (bs < 0.6) {
+      folio.querySelectorAll(".row:not(.rhead)").forEach((r) => {
+        if (!r.getClientRects().length) return;
+        const sc = score((r.textContent || "").slice(0, 260));
+        if (sc > bs) { bs = sc; best = r; }
+      });
+    }
+    return best && bs >= 0.6 ? best : null;
+  }
+
+  function resolve(folio, title) {
+    const d = dataOf();
+    let h = null;
+    try { h = window.FRReaderNavigation && window.FRReaderNavigation.exactHeading(d, folio, title); }
+    catch (_) { h = null; }
+    if (!h && /^pld-/.test((d && d.slug) || "")) {
+      try { h = window.FRPldReading && window.FRPldReading.renderedHeading(folio, title); }
+      catch (_) { h = null; }
+    }
+    if (!h) h = fuzzy(folio, title);
+    if (!h || h === folio) return null;
+    const row = h.closest ? (h.closest(".row") || h) : null;
+    // Only a direct child of the folio can bound a range; anything
+    // deeper is a heading nested in something the fold cannot split.
+    return row && row.parentElement === folio ? row : null;
+  }
+
+  // Folios a resolution has already been tried on, per entry. Keyed on
+  // the folio ELEMENT, so a re-render (a new element) is tried again and
+  // a failure is not retried a thousand times on every pass.
+  const tried = new WeakMap();
+
+  function stamp(list, folioByPage) {
+    list.forEach((e) => {
+      const folio = folioByPage.get(e.page);
+      if (!folio) return;
+      if (folio.querySelector(`[data-fr-sec="${e.i}"]`)) return;
+      let t = tried.get(folio);
+      if (!t) { t = new Set(); tried.set(folio, t); }
+      if (t.has(e.i)) return;
+      t.add(e.i);
+      const row = resolve(folio, e.title);
+      if (!row || row.dataset.frSec) return;
+      row.dataset.frSec = String(e.i);
+      row.classList.add("fr-sec-head");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "fr-sec-toggle";
+      btn.dataset.frSecToggle = String(e.i);
+      btn.setAttribute("aria-label", `Fold ${e.title}`);
+      btn.setAttribute("aria-expanded", "true");
+      row.appendChild(btn);
+    });
+  }
+
+  function hide(el) { el.classList.add("fr-sec-hid"); }
+
+  /* Everything after `head`, in document order, up to where the next
+     section of equal or higher rank begins. */
+  function hideRange(head, endRow, endFolio) {
+    const reading = head.closest("#reading");
+    const folio = head.parentElement;
+    // The next section starts on this same page and its heading could
+    // not be found, so where this one ends is unknowable. Fold nothing
+    // rather than guess: hiding too little leaves a section open, while
+    // hiding too much takes away the start of the NEXT section, which is
+    // text the reader did not ask to fold. Seen on pg-3860, where the
+    // second entry's title ("Proems") matches nothing printed on the page.
+    if (!endRow && endFolio === folio) return;
+    for (let s = head.nextElementSibling; s; s = s.nextElementSibling) {
+      if (endRow && (s === endRow || s.contains(endRow))) return;
+      hide(s);
+    }
+    if (endFolio === folio) return;
+    for (let u = folio.nextElementSibling; u && u.parentElement === reading; u = u.nextElementSibling) {
+      if (u.classList.contains("fmark")) {
+        const n = u.nextElementSibling;
+        // The page marker that heads the next section's page stays.
+        if (n && (n === endFolio || (endRow && n.contains(endRow)))) return;
+        hide(u);
+        continue;
+      }
+      if (u === endFolio || (endRow && u.contains(endRow))) {
+        if (endRow && u.contains(endRow)) {
+          for (const c of u.children) {
+            if (c === endRow || c.contains(endRow)) break;
+            hide(c);
+          }
+        }
+        return;
+      }
+      hide(u);
+    }
+  }
+
+  let observer = null;
+  let applying = false;
+
+  function apply() {
+    const reading = document.querySelector("#reading");
+    if (!reading || !nav || applying) return;
+    applying = true;
+    if (observer) observer.disconnect();
+    try {
+      // Everything visible first, so the resolvers can see every heading.
+      reading.querySelectorAll(".fr-sec-hid").forEach((el) => el.classList.remove("fr-sec-hid"));
+
+      const list = entries();
+      const folioByPage = new Map();
+      reading.querySelectorAll(".folio").forEach((f) => {
+        const pg = String(f.dataset.page || "");
+        if (pg && !folioByPage.has(pg)) folioByPage.set(pg, f);
+      });
+      stamp(list, folioByPage);
+
+      const rowOf = new Map();
+      reading.querySelectorAll("[data-fr-sec]").forEach((r) => rowOf.set(Number(r.dataset.frSec), r));
+
+      list.forEach((e, k) => {
+        const head = rowOf.get(e.i);
+        if (!head) return;
+        const open = !collapsed.has(e.i);
+        head.classList.toggle("is-collapsed", !open);
+        const btn = head.querySelector(":scope > .fr-sec-toggle");
+        if (btn) {
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+          btn.setAttribute("aria-label", `${open ? "Fold" : "Unfold"} ${e.title}`);
+        }
+        if (open) return;
+        let next = null;
+        for (let j = k + 1; j < list.length; j += 1) {
+          if (list[j].depth <= e.depth) { next = list[j]; break; }
+        }
+        const endRow = next ? (rowOf.get(next.i) || null) : null;
+        const endFolio = next
+          ? (endRow ? endRow.parentElement : (folioByPage.get(next.page) || null))
+          : null;
+        // A later section whose page has not streamed in yet: fold only
+        // what is here now; the next pass extends it when the page lands.
+        if (next && !endFolio) {
+          for (let s = head.nextElementSibling; s; s = s.nextElementSibling) hide(s);
+          return;
+        }
+        hideRange(head, endRow, endFolio);
+      });
+
+      // A heading hidden inside a folded parent must not keep its own
+      // row visible; hideRange already hid it. Nothing more to do.
+    } finally {
+      applying = false;
+      if (observer) observer.observe(reading, { childList: true, subtree: true });
+    }
+  }
+
+  let pending = 0;
+  function schedule() {
+    if (pending) return;
+    pending = window.setTimeout(() => { pending = 0; apply(); }, 120);
+  }
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest && e.target.closest(".fr-sec-toggle");
+    if (!btn) return;
+    // The reader listens for clicks on rows (selection, citations). A
+    // fold is not a reading action; keep it from reaching them.
+    e.preventDefault();
+    e.stopPropagation();
+    const i = Number(btn.dataset.frSecToggle);
+    if (collapsed.has(i)) collapsed.delete(i); else collapsed.add(i);
+    saveCollapsed();
+    apply();
+    btn.focus({ preventScroll: true });
+  }, true);
+
+  /* Opening the folds over a destination before the reader goes there. */
+  function openOver(page) {
+    if (!collapsed.size || !page) return;
+    const reading = document.querySelector("#reading");
+    if (!reading) return;
+    const folios = [...reading.querySelectorAll(".folio")];
+    const order = new Map();
+    folios.forEach((f, n) => { if (!order.has(String(f.dataset.page))) order.set(String(f.dataset.page), n); });
+    const at = order.get(String(page));
+    if (at === undefined) return;
+    const list = entries();
+    let changed = false;
+    list.forEach((e, k) => {
+      if (!collapsed.has(e.i)) return;
+      const from = order.get(e.page);
+      // Same page counts: a book and its first chapter usually share
+      // one, and landing on a folded chapter head would be a dead click.
+      if (from === undefined || at < from) return;
+      let next = null;
+      for (let j = k + 1; j < list.length; j += 1) {
+        if (list[j].depth <= e.depth) { next = list[j]; break; }
+      }
+      const to = next ? order.get(next.page) : undefined;
+      if (to === undefined || at < to) { collapsed.delete(e.i); changed = true; }
+    });
+    if (changed) { saveCollapsed(); apply(); }
+  }
+
+  function wrap(name, pageFrom) {
+    const orig = window[name];
+    if (typeof orig !== "function" || orig.__frFoldWrapped) return !!(orig && orig.__frFoldWrapped);
+    const wrapped = function (...args) {
+      try { openOver(pageFrom(...args)); } catch (_) { /* never block navigation */ }
+      return orig.apply(this, args);
+    };
+    wrapped.__frFoldWrapped = true;
+    window[name] = wrapped;
+    return true;
+  }
+  const pageFromHref = (href) => {
+    try {
+      const u = new URL(String(href), window.location.href);
+      const m = u.hash.match(/^#b(\d+)-/);
+      return (m && m[1]) || u.searchParams.get("p") || "";
+    } catch (_) { return ""; }
+  };
+  (function hook(tries) {
+    const a = wrap("jump", (p) => p);
+    const b = wrap("__frNavigateReaderAnchor", pageFromHref);
+    if ((!a || !b) && tries > 0) window.setTimeout(() => hook(tries - 1), 250);
+  }(40));
+
+  const readingEl = document.querySelector("#reading");
+  if (readingEl && nav) {
+    try {
+      observer = new MutationObserver(schedule);
+      observer.observe(readingEl, { childList: true, subtree: true });
+      // The outline is drawn after the text starts streaming; redraws of
+      // it (its own carets) change which entries exist.
+      new MutationObserver(schedule).observe(nav, { childList: true, subtree: true });
+    } catch (_) { /* no MutationObserver: fold what is there now */ }
+    schedule();
   }
 }());
