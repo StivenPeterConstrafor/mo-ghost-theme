@@ -53,7 +53,7 @@
     return {works:[...new Set([...works].map(w=>w.replace(/^@eebo:/,'eebo-')))]};
   }
   function scopeParts(s){const counts=[scopeShelves(s).length,(s.authors||[]).length,(s.works||[]).length,(s.groups||[]).length];return counts.map((n,i)=>n?n+' '+[['shelf','shelves'],['author','authors'],['work','works'],['group','groups']][i][n===1?0:1]:'').filter(Boolean);}
-  function scopeButton(s){const parts=scopeParts(s);return parts.length>1?parts.reduce((n,p)=>n+Number(p.split(' ')[0]),0)+' selections':parts[0]||'Scope';}
+  function scopeButton(s){const parts=scopeParts(s);return parts.length>1?parts.reduce((n,p)=>n+Number(p.split(' ')[0]),0)+' selections':parts[0]||'Whole library';}
   const icons = {
     chat: '<path d="M20 11.5a8 8 0 0 1-8 8H5l-4 3v-11a8 8 0 0 1 8-8h3a8 8 0 0 1 8 8Z"/>',
     menu: '<path d="M4 6h16M4 12h16M4 18h16"/>', plus: '<path d="M12 5v14M5 12h14"/>',
@@ -174,6 +174,80 @@
     const cite=s.cit||s.cite||(s.page!=null?'p. '+s.page:href?'Read passage':'Source location unavailable');
     return '<div class="fra-source-row"><'+tag+(href?sourceAttributes(href)+' aria-label="Open source in a new tab: '+esc((s.author?s.author+' · ':'')+titleOf(s)+' · '+cite)+'"':'')+' class="fra-source"><span>'+(s.author?'<span class="fra-source-author">'+esc(s.author)+'</span>':'')+'<strong class="fra-source-name">'+esc(titleOf(s))+'</strong>'+(s.quote?'<q class="fra-source-quote">'+esc(s.quote)+'</q>':'')+'</span><small>'+esc(cite)+(href?' ↗':'')+'</small></'+tag+'>'+(href?'<button class="fra-source-preview" data-preview-source="'+esc(href)+'" data-preview-title="'+esc(titleOf(s))+'">Read here</button>':'')+'</div>';
   }
+  // Ask interface patterns adapted to the existing engine. No simulated activity.
+  function researchState(turn){
+    if(!turn)return {kind:'idle',label:'Ready for a question'};
+    if(turn.status==='running')return {kind:'running',label:humanStage(turn.stage||'Researching')};
+    if(turn.status==='paused'||['paused','needs_input','limit_reached'].includes(turn.serverJob?.status))return {kind:'paused',label:'Research paused'};
+    if(['error','interrupted','stopped'].includes(turn.status))return {kind:'attention',label:turn.status==='stopped'?'Research stopped':'Needs attention'};
+    return {kind:'complete',label:deliveryIncomplete(turn)?'Check answer delivery':researchMode(turn.mode)==='deep'?'Research complete':'Answer ready'};
+  }
+  function sourceGroups(sources){
+    const groups=new Map();
+    for(const [i,s] of sources.entries()){
+      // Separate edition slugs stay separate, even when their displayed titles match.
+      let key=s.slug;
+      if(!key&&sourceHref(s)){const u=new URL(sourceHref(s),location.origin);key=u.origin+u.pathname+'?'+(u.searchParams.get('w')||'');}
+      key=key||'unlocated-'+i;
+      if(!groups.has(key))groups.set(key,{key,source:s,passages:[]});
+      groups.get(key).passages.push(s);
+    }
+    return [...groups.values()];
+  }
+  function sourceCollectionHTML(sources){
+    const groups=sourceGroups(sources);
+    const receipts=groups.slice(0,3).map(g=>{const s=g.source,href=sourceHref(s);return href?'<button class="fra-receipt" data-preview-source="'+esc(href)+'" data-preview-title="'+esc(titleOf(s))+'">'+icon('book')+'<span><strong>'+esc(titleOf(s))+'</strong><small>'+esc(s.author||s.cit||s.cite||'Read source')+'</small></span>'+icon('chevron')+'</button>':'';}).join('');
+    return '<div class="fra-receipts" aria-label="Source previews">'+receipts+'</div><details class="fra-sources"><summary><span>All sources</span><small>'+sources.length+' passage'+(sources.length===1?'':'s')+' · '+groups.length+' work'+(groups.length===1?'':'s')+'</small></summary><div class="fra-source-groups">'+groups.map((g,i)=>'<details class="fra-source-work"'+(i===0?' open':'')+'><summary><span>'+esc(titleOf(g.source))+'</span><small>'+g.passages.length+' passage'+(g.passages.length===1?'':'s')+'</small></summary>'+g.passages.map(sourceCard).join('')+'</details>').join('')+'</div></details>';
+  }
+  function commandMatches(query,items){
+    const fold=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    const words=fold(query).trim().split(/\s+/).filter(Boolean);
+    return items.filter(item=>words.every(w=>fold(item.label+' '+item.detail).includes(w))).slice(0,12);
+  }
+  let commandItems=[],commandIndex=0,commandFocus=null;
+  function renderCommands(){
+    const actions=[
+      {id:'new',label:'New conversation',detail:'Start a new question'},
+      {id:'scope',label:'Search within',detail:'Choose shelves, authors or works'},
+      {id:'mode',label:'Research mode',detail:'Ask or Deep research'},
+      {id:'history',label:'Browse conversations',detail:'Search saved questions'},
+      {id:'library',label:'Open library',detail:'Return to the works'}
+    ];
+    const chats=conversations.filter(c=>!c.archived&&(c.turns.length||String(c.draft||'').trim())).map(c=>({id:'chat:'+c.id,label:c.t,detail:folderOf(c)||'Conversation'}));
+    const query=$('#fra-command-input').value;
+    commandItems=commandMatches(query,query.trim()?[...chats,...actions]:[...actions,...chats]);commandIndex=0;
+    $('#fra-command-results').innerHTML=commandItems.length?commandItems.map((item,i)=>'<button type="button" role="option" id="fra-command-option-'+i+'" data-command="'+esc(item.id)+'" tabindex="-1" aria-selected="'+(i===0)+'">'+icon(item.id.startsWith('chat:')?'chat':item.id==='new'?'plus':item.id==='library'?'book':'search')+'<span><strong>'+esc(item.label)+'</strong><small>'+esc(item.detail)+'</small></span><span class="fra-command-enter" aria-hidden="true">↵</span></button>').join(''):'<p class="fra-command-empty">No matching conversations or actions.</p>';
+    $('#fra-command-input').setAttribute('aria-expanded','true');
+    if(commandItems.length)$('#fra-command-input').setAttribute('aria-activedescendant','fra-command-option-0');else $('#fra-command-input').removeAttribute('aria-activedescendant');
+    $('#fra-command-count').textContent=commandItems.length+' result'+(commandItems.length===1?'':'s');
+  }
+  function openCommands(){
+    const dialog=$('#fra-command-dialog');if(dialog.open)return;
+    commandFocus=document.activeElement;$('#fra-command-input').value='';renderCommands();dialog.showModal();$('#fra-command-input').focus();
+  }
+  function closeCommands(){const d=$('#fra-command-dialog');if(d?.open)d.close();}
+  async function runCommand(id){
+    closeCommands();
+    if(id.startsWith('chat:')){await switchChat(id.slice(5));$('#fra-input').focus();return;}
+    if(id==='history'){showConversations();return;}
+    const targets={new:'fra-new',scope:'fra-scope-toggle',mode:'fra-mode-toggle',library:'fra-home'};
+    if(targets[id])$('#'+targets[id]).click();
+  }
+  function bindCommands(){
+    const dialog=$('#fra-command-dialog'),input=$('#fra-command-input');
+    input.addEventListener('input',renderCommands);
+    dialog.addEventListener('close',()=>{input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');if(commandFocus?.isConnected)commandFocus.focus({preventScroll:true});});
+    dialog.addEventListener('click',e=>{const b=e.target.closest('[data-command]');if(b){runCommand(b.dataset.command).catch(error=>toast(error.message));return;}if(e.target===dialog||e.target.closest('[data-command-close]'))closeCommands();});
+    dialog.addEventListener('keydown',e=>{
+      e.stopPropagation();
+      if(e.key==='Escape'){e.preventDefault();closeCommands();return;}
+      if(e.target!==input)return;
+      if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)&&commandItems.length){e.preventDefault();commandIndex=e.key==='Home'?0:e.key==='End'?commandItems.length-1:(commandIndex+(e.key==='ArrowDown'?1:-1)+commandItems.length)%commandItems.length;dialog.querySelectorAll('[role=option]').forEach((b,i)=>b.setAttribute('aria-selected',String(i===commandIndex)));const selected=$('#fra-command-option-'+commandIndex);input.setAttribute('aria-activedescendant',selected.id);selected.scrollIntoView({block:'nearest'});}
+      if(e.key==='Enter'&&commandItems.length){e.preventDefault();runCommand(commandItems[commandIndex].id).catch(error=>toast(error.message));}
+    });
+    document.addEventListener('keydown',e=>{if(visible&&(e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();e.stopImmediatePropagation();if(dialog.open)closeCommands();else openCommands();}},true);
+  }
+
   function citationKey(value){return String(value??'').replace(/^[[(]|[\])]$/g,'').trim().replace(/\b(PL|PG|PO)\s*(\d+)\s*[:·]\s*0*(\d+)([a-z]*)/gi,(_,ns,v,c,suffix)=>ns.toUpperCase()+' '+BigInt(v)+':'+BigInt(c)+suffix.toUpperCase()).replace(/^\d+$/,n=>String(BigInt(n)));}
   function inline(text, sources) {
     const held = [];
@@ -379,6 +453,7 @@
   function renderHeader(){const c=selected();if(!c)return;
     const passage=$('#fra-passage');passage.hidden=!c.draftPassage;$('#fra-passage-cite').textContent=c.draftPassage?.cite||'';$('#fra-passage-text').textContent=c.draftPassage?.text||'';
     if(ASK_PATH_RE.test(location.pathname)){const u=new URL(location.href);if(u.searchParams.get('chat')!==c.id){u.searchParams.set('chat',c.id);u.searchParams.delete('q');u.searchParams.delete('ask');history.replaceState(history.state,'',u);}}
+    const latest=running(c)||c.turns[c.turns.length-1],state=researchState(latest),stateButton=$('#fra-state');stateButton.hidden=!latest;stateButton.dataset.state=state.kind;stateButton.querySelector('span').textContent=state.label;stateButton.setAttribute('aria-label',state.label+'. View research activity');
     $('#fra-title').textContent=c.t;$('#fra-context').textContent=(folderOf(c)?folderOf(c)+' · ':'')+scopeText(c);$('#fra-mode-name').textContent=modes[researchMode(c.mode)][0];
     $('#fra-scope-name').textContent=scopeButton(c.scope||{});$('#fra-context').title=scopeText(c);
     $('#fra-archive').textContent=c.archived?'Restore conversation':'Archive conversation';
@@ -481,11 +556,12 @@
     const signature=c.id+'|'+c.turns.map(t=>t.id).join('|');
     if(thread.dataset.signature!==signature){
       thread.dataset.signature=signature;
-      thread.innerHTML=c.turns.map(t=>'<article class="fra-turn" data-turn="'+esc(t.id)+'"><h2 class="fra-question">'+esc(t.q)+'</h2>'+(t.passage?'<details class="fra-quoted"><summary>Selected passage · '+esc(t.passage.cite||'This book')+'</summary><blockquote>'+esc(t.passage.text)+'</blockquote>'+(safeURL(t.passage.url)?'<a href="'+esc(safeURL(t.passage.url))+'">Read passage</a>':'')+'</details>':'')+'<div class="fra-turn-meta">'+esc((modes[researchMode(t.mode)])[0])+'</div><div class="fra-progress" role="status"></div><div class="fra-answer"></div><div class="fra-turn-extra"></div><div class="fra-actions"></div></article>').join('');
+      thread.innerHTML=c.turns.map(t=>'<article class="fra-turn" data-turn="'+esc(t.id)+'"><h2 class="fra-question">'+esc(t.q)+'</h2>'+(t.passage?'<details class="fra-quoted"><summary>Selected passage · '+esc(t.passage.cite||'This book')+'</summary><blockquote>'+esc(t.passage.text)+'</blockquote>'+(safeURL(t.passage.url)?'<a href="'+esc(safeURL(t.passage.url))+'">Read passage</a>':'')+'</details>':'')+'<div class="fra-turn-meta">'+esc((modes[researchMode(t.mode)])[0])+'</div><div class="fra-progress" role="status"></div><div class="fra-answer-label" hidden>'+icon('book')+'<span>Answer</span></div><div class="fra-answer"></div><div class="fra-turn-extra"></div><div class="fra-actions"></div></article>').join('');
     }
     for(const t of c.turns){
       const node=thread.querySelector('[data-turn="'+CSS.escape(t.id)+'"]'),answer=node.querySelector('.fra-answer');
       node.querySelector('.fra-turn-meta').textContent=turnModeLabel(t);
+      node.dataset.state=t.status;node.querySelector('.fra-answer-label').hidden=!shownAnswer(t);
       const answerText=shownAnswer(t),sourceKey=JSON.stringify((t.src||[]).map(s=>[s.slug,s.page,s.link,s.cit,s.cite,titleOf(s)]));
       if(answer.dataset.text!==answerText||answer.dataset.catalog!==String(catalogRevision)||answer.dataset.sources!==sourceKey){answer.dataset.sources=sourceKey;answer.dataset.catalog=String(catalogRevision);updateAnswer(answer,markdown(answerText,t.src||[]));answer.dataset.text=answerText;renderOutline(node,t,answer);}
       const progress=node.querySelector('.fra-progress');
@@ -509,7 +585,7 @@
           (t.steps&&t.steps.length?'<details class="fra-activity"><summary>Research activity · '+t.steps.length+' steps</summary><ol>'+t.steps.map(s=>'<li>'+esc(humanStage(s.label))+'</li>').join('')+'</ol></details>':'')+
           (t.gaps?'<details class="fra-activity"><summary>Gaps in the evidence</summary><ul class="fra-gaps">'+String(t.gaps).split('\n').filter(g=>g.trim()).map(g=>'<li>'+esc(g)+'</li>').join('')+'</ul></details>':'')+
           (t.stats?'<p class="fra-coverage">'+esc(t.stats.unique||0)+' passages found'+(t.stats.capped?' · Scan capped; this is not complete coverage.':' · '+esc(t.stats.pages)+' pages loaded.')+'</p>':'')+
-          ((t.src||[]).length?'<details class="fra-sources"><summary>'+t.src.length+' source passage'+(t.src.length===1?'':'s')+'</summary><div>'+t.src.map(sourceCard).join('')+'</div></details>':'');
+          ((t.src||[]).length?sourceCollectionHTML(t.src):'');
         extra.querySelectorAll('details').forEach(d=>{if(openDetails.includes(d.classList.contains('fra-sources')?'sources':d.querySelector('summary').textContent.replace(/ ·.*$/,'')))d.open=true;});
       }
       const actions=node.querySelector('.fra-actions');
@@ -597,11 +673,13 @@
     panel=document.createElement('section');panel.id='fra-workspace';panel.className='fra'+(standalone?' fra-standalone':'');panel.hidden=true;panel.setAttribute('role',standalone?'main':'dialog');panel.setAttribute('aria-label','Ask the Library');if(!standalone)panel.setAttribute('aria-modal','true');
     panel.innerHTML='<div class="fra-history-scrim" data-history-close></div><aside class="fra-sidebar" tabindex="-1"><div class="fra-brand"><a href="'+esc(CFG.libraryPath)+'">The Faith Received</a><button class="fra-icon fra-mobile-only" data-history-close aria-label="Close conversations">'+icon('close')+'</button></div>'+(standalone&&Array.isArray(CFG.nav)&&CFG.nav.length?'<nav class="fra-site-nav" aria-label="Library sections">'+CFG.nav.map(([h,t])=>'<a href="'+esc(h)+'">'+esc(t)+'</a>').join('')+'</nav>':'')+''+
       '<button class="fra-new" id="fra-new">'+icon('plus')+'New conversation</button><label class="fra-history-search">'+icon('search')+'<input id="fra-history-search" type="search" placeholder="Search conversations" aria-label="Search conversations"></label><div class="fra-history-label"><span>Conversations</span><button id="fra-show-archived" aria-pressed="false">Archived</button></div><nav id="fra-history-list" aria-label="Conversations"></nav><div class="fra-sidebar-foot"><a href="/the-faith-received/pins/">Collections</a><a href="/the-faith-received/desk/">Open Desk</a><div data-cgpt-link></div><button id="fra-notify" aria-pressed="false">'+icon('bell')+'Completion notifications</button><p>Conversations are saved in this browser. Deep research also saves progress on the server.</p></div></aside>'+
-      '<main class="fra-main"><header class="fra-header"><button class="fra-icon" id="fra-history-toggle" aria-label="Show conversations" aria-expanded="false">'+icon('menu')+'</button><div class="fra-heading"><strong id="fra-title">New conversation</strong><span id="fra-context">Whole library</span></div><button class="fra-icon" id="fra-theme" aria-label="Change reading theme">'+icon('sun')+'</button><button class="fra-icon" id="fra-more-toggle" aria-label="Conversation options" aria-expanded="false">•••</button><a class="fra-home" id="fra-home" href="'+esc(CFG.libraryPath)+'" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a><button class="fra-icon" id="fra-close" aria-label="Return to reading">'+icon('close')+'</button><div class="fra-menu" id="fra-more" hidden><button id="fra-rename">Rename conversation</button><button id="fra-export">Download conversation</button><button id="fra-folder">Move to folder…</button><div id="fra-folder-pick" class="fra-folder-pick" hidden><label>Folder<input id="fra-folder-name" list="fra-folder-list" maxlength="60" placeholder="New or existing folder" autocomplete="off"></label><datalist id="fra-folder-list"></datalist><div class="fra-confirm-row"><button id="fra-folder-save">Move</button><button id="fra-folder-clear">No folder</button></div></div><button id="fra-archive">Archive conversation</button><button id="fra-delete" class="fra-danger">Delete conversation</button><div id="fra-confirm" class="fra-confirm" hidden><span id="fra-confirm-text">Delete this conversation? This cannot be undone.</span><div class="fra-confirm-row"><button id="fra-confirm-yes" class="fra-danger">Delete</button><button id="fra-confirm-no">Keep</button></div></div></div></header>'+
+      '<main class="fra-main"><header class="fra-header"><button class="fra-icon" id="fra-history-toggle" aria-label="Show conversations" aria-expanded="false">'+icon('menu')+'</button><div class="fra-heading"><strong id="fra-title">New conversation</strong><span id="fra-context">Whole library</span></div><button type="button" id="fra-state" class="fra-state" hidden><i aria-hidden="true"></i><span></span></button><button class="fra-icon" id="fra-command-toggle" aria-label="Search conversations and actions" title="Search conversations and actions (⌘K / Ctrl+K)">'+icon('search')+'</button><button class="fra-icon" id="fra-theme" aria-label="Change reading theme">'+icon('sun')+'</button><button class="fra-icon" id="fra-more-toggle" aria-label="Conversation options" aria-expanded="false">•••</button><a class="fra-home" id="fra-home" href="'+esc(CFG.libraryPath)+'" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a><button class="fra-icon" id="fra-close" aria-label="Return to reading">'+icon('close')+'</button><div class="fra-menu" id="fra-more" hidden><button id="fra-rename">Rename conversation</button><button id="fra-export">Download conversation</button><button id="fra-folder">Move to folder…</button><div id="fra-folder-pick" class="fra-folder-pick" hidden><label>Folder<input id="fra-folder-name" list="fra-folder-list" maxlength="60" placeholder="New or existing folder" autocomplete="off"></label><datalist id="fra-folder-list"></datalist><div class="fra-confirm-row"><button id="fra-folder-save">Move</button><button id="fra-folder-clear">No folder</button></div></div><button id="fra-archive">Archive conversation</button><button id="fra-delete" class="fra-danger">Delete conversation</button><div id="fra-confirm" class="fra-confirm" hidden><span id="fra-confirm-text">Delete this conversation? This cannot be undone.</span><div class="fra-confirm-row"><button id="fra-confirm-yes" class="fra-danger">Delete</button><button id="fra-confirm-no">Keep</button></div></div></div></header>'+
       '<nav class="fra-reader-bar" id="fra-reader-bar" hidden aria-label="Reader research"><button id="fra-reader-notes">Saved research</button><button id="fra-expand">Expand Ask</button></nav><div class="fra-mobile-tabs" hidden><button id="fra-chat-tab" class="active">Conversation</button><button id="fra-read-tab">Read source</button></div><div class="fra-body"><section class="fra-chat"><div id="fra-feed" class="fra-feed"><div id="fra-welcome" class="fra-welcome"><div class="fra-welcome-mark">'+icon('book')+'</div><h1>Ask the Library</h1><p>Explore an idea, understand a passage, or follow a question through the texts.</p><div class="fra-suggestions"></div></div><div id="fra-thread"></div></div>'+
-      '<footer class="fra-compose-area"><button id="fra-jump" class="fra-jump" hidden>Latest answer ↓</button><aside class="fra-passage" id="fra-passage" hidden aria-label="Selected passage"><div><span id="fra-passage-cite"></span><button id="fra-passage-clear" aria-label="Remove selected passage">'+icon('close')+'</button></div><blockquote id="fra-passage-text"></blockquote></aside><div class="fra-composer"><textarea id="fra-input" rows="1" disabled placeholder="Ask anything" aria-label="Message the library"></textarea><div class="fra-compose-tools"><button id="fra-mode-toggle" aria-expanded="false"><span id="fra-mode-name">Ask</span>'+icon('chevron')+'</button><button id="fra-scope-toggle" aria-expanded="false"><span id="fra-scope-name">Scope</span>'+icon('chevron')+'</button><span class="fra-grow"></span><button id="fra-send" class="fra-send" aria-label="Send message" disabled>'+icon('send')+'</button></div><div class="fra-mode-menu fra-popover" id="fra-modes" hidden>'+Object.entries(modes).map(([key,value])=>'<button data-mode="'+key+'"><strong>'+value[0]+'</strong><span>'+value[1]+'</span></button>').join('')+'</div><section class="fra-popover fra-scope" id="fra-scope" aria-label="Research scope" hidden></section></div><div class="fra-compose-foot"><span id="fra-save-state">Saved in this browser</span><button class="fra-history-link" data-show-conversations>Saved questions</button><span>Sources open in a new tab.</span></div></footer></section>'+
+      '<footer class="fra-compose-area"><button id="fra-jump" class="fra-jump" hidden>Latest answer ↓</button><aside class="fra-passage" id="fra-passage" hidden aria-label="Selected passage"><div><span id="fra-passage-cite"></span><button id="fra-passage-clear" aria-label="Remove selected passage">'+icon('close')+'</button></div><blockquote id="fra-passage-text"></blockquote></aside><div class="fra-composer"><label class="fra-compose-label" for="fra-input">Your question</label><textarea id="fra-input" rows="1" disabled placeholder="Ask anything" aria-label="Message the library"></textarea><div class="fra-compose-tools"><button id="fra-mode-toggle" aria-expanded="false"><span id="fra-mode-name">Ask</span>'+icon('chevron')+'</button><button id="fra-scope-toggle" aria-expanded="false"><span id="fra-scope-name">Scope</span>'+icon('chevron')+'</button><span class="fra-grow"></span><button id="fra-send" class="fra-send" aria-label="Send message" disabled>'+icon('send')+'</button></div><div class="fra-mode-menu fra-popover" id="fra-modes" hidden>'+Object.entries(modes).map(([key,value])=>'<button data-mode="'+key+'"><strong>'+value[0]+'</strong><span>'+value[1]+'</span></button>').join('')+'</div><section class="fra-popover fra-scope" id="fra-scope" aria-label="Research scope" hidden></section></div><div class="fra-compose-foot"><span id="fra-save-state">Saved in this browser</span><button class="fra-history-link" data-show-conversations>Saved questions</button><span class="fra-key-hint">Enter to send · Shift+Enter for a new line</span></div></footer></section>'+
       '<div class="fra-split" id="fra-split" role="separator" aria-orientation="vertical" aria-label="Resize the source pane" aria-valuemin="28" aria-valuemax="76" tabindex="0" title="Drag to resize the source pane · double-click to reset"></div><section class="fra-reader" hidden><header><button class="fra-icon" id="fra-source-back" aria-label="Back to conversation">'+icon('back')+'</button><div class="fra-source-heading"><span id="fra-source-title">Source passage</span><small id="fra-source-location"></small></div><a id="fra-source-open" target="_blank" rel="noopener">Open reader</a><button class="fra-icon" id="fra-source-close" aria-label="Close source">'+icon('close')+'</button></header><div class="fra-source-viewport"><div id="fra-source-status" class="fra-source-status" role="status" hidden>Loading passage…</div><iframe id="fra-source-frame" title="Read the cited source" referrerpolicy="same-origin"></iframe></div></section></div></main>';
+    panel.insertAdjacentHTML('beforeend','<dialog id="fra-command-dialog" class="fra-command" aria-labelledby="fra-command-title"><header><h2 id="fra-command-title">Find a conversation or action</h2><button type="button" class="fra-icon" data-command-close aria-label="Close command search">'+icon('close')+'</button></header><label class="fra-command-search">'+icon('search')+'<input id="fra-command-input" type="search" placeholder="Search conversations and actions" role="combobox" aria-label="Search conversations and actions" aria-autocomplete="list" aria-controls="fra-command-results" aria-expanded="false" autocomplete="off"></label><div id="fra-command-results" role="listbox" aria-label="Conversations and actions"></div><footer><span id="fra-command-count" role="status"></span><span>↑ ↓ Navigate · Enter Open · Esc Close</span></footer></dialog>');
     document.body.appendChild(panel);
+    bindCommands();
     panel.addEventListener('click',handleClick);
     panel.addEventListener('toggle',e=>{const d=e.target;if(!(d instanceof HTMLDetailsElement)||!d.classList.contains('fra-folder')||historyFilter)return;const name=d.dataset.folder;if(d.open)foldersClosed.delete(name);else foldersClosed.add(name);if(S.setMeta)S.setMeta('folders-closed',[...foldersClosed]).catch(()=>{});},true);
     /* MereO delta, NOW EXPRESSED AS CONFIG: this handler used to navigate to
@@ -835,6 +913,8 @@
     if(link&&(link.target==='_blank'||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button>0))return;
     if(link){const u=new URL(link.href,location.origin);if(u.origin===location.origin){e.preventDefault();if(/^\/read/.test(u.pathname)||link.classList.contains('fra-cite')||link.classList.contains('fra-source')){openSource(link.href,link.getAttribute('title')||link.querySelector('.fra-source-name')?.textContent||link.textContent.trim(),true,false,link);}else if(conversations.some(running)){openSource(link.href,link.textContent.trim());}else{await close();location.href=localURL(link.href);}}return;}
     if(!b)return;
+    if(b.id==='fra-command-toggle'){openCommands();return;}
+    if(b.id==='fra-state'){const c=selected(),t=running(c)||c.turns[c.turns.length-1],node=t&&panel.querySelector('[data-turn="'+CSS.escape(t.id)+'"]');const activity=node?.querySelector('.fra-activity'),target=t?.status==='running'?node?.querySelector('.fra-progress'):activity||node;if(activity&&t?.status!=='running')activity.open=true;target?.scrollIntoView({block:'center',behavior:'auto'});return;}
     if(b.hasAttribute('data-show-conversations')){showConversations();return;}
     if(b.dataset.previewSource){await flushDraft();await openSource(b.dataset.previewSource,b.dataset.previewTitle,true,false,b);return;}
     if(b.dataset.chat){await switchChat(b.dataset.chat);return;}
@@ -949,8 +1029,8 @@
       if(window.cgptLink)window.cgptLink.mount();
     }catch(e){$('#fra-save-state').textContent=storageError||e.message;announce(storageError||e.message);}
   }
-  async function close(){if(!panel||!visible)return;await flushDraft();forgetSource();visible=false;panel.hidden=true;expandedReaderAsk=false;document.documentElement.classList.remove('fra-open');syncPresentation();const focusTarget=focusBefore?.isConnected&&focusBefore.getClientRects().length&&!focusBefore.closest('[inert]')?focusBefore:[...document.querySelectorAll('#fra-launcher,.frthumb [data-t="ask"]')].find(e=>e.getClientRects().length&&!e.closest('[inert]'));focusTarget?.focus({preventScroll:true});await mirror();}
-  window.FRAsk={open,close,isOpen:()=>visible,markdown,readURL,sourceHref,sourceCard,sourceVisitURL,turnModeLabel,offersDeep,shownAnswer,shownError,deliveryIncomplete};
+  async function close(){if(!panel||!visible)return;closeCommands();await flushDraft();forgetSource();visible=false;panel.hidden=true;expandedReaderAsk=false;document.documentElement.classList.remove('fra-open');syncPresentation();const focusTarget=focusBefore?.isConnected&&focusBefore.getClientRects().length&&!focusBefore.closest('[inert]')?focusBefore:[...document.querySelectorAll('#fra-launcher,.frthumb [data-t="ask"]')].find(e=>e.getClientRects().length&&!e.closest('[inert]'));focusTarget?.focus({preventScroll:true});await mirror();}
+  window.FRAsk={open,close,isOpen:()=>visible,markdown,readURL,sourceHref,sourceCard,sourceVisitURL,sourceGroups,sourceCollectionHTML,researchState,commandMatches,turnModeLabel,offersDeep,shownAnswer,shownError,deliveryIncomplete};
   function mountLauncher(launcher){
     const modes=document.querySelector('.desk-workspace-bar .desk-modes');
     if(modes){launcher.classList.add('fra-in-toolbar');modes.after(launcher);}
