@@ -1,31 +1,48 @@
 /*
  * Contributors page — full-list loader + alphabet/threshold filter.
  *
- * Supports two modes, set via data-mode on the grid element:
+ * A page may hold more than one grid. Every `[data-contributors-grid]`
+ * is configured independently via data attributes, and the Content API
+ * roster is fetched once and applied to all of them:
  *
- *   "curated"  — /contributors/. Shows only the writers listed in
- *                data-curated. No alphabet rail. A "+ View All" link
- *                points to /contributors/all/.
+ *   data-mode="curated"      — /contributors/. Shows only the writers
+ *                              the grid names. No alphabet rail. A
+ *                              "+ View All" link points to
+ *                              /contributors/all/.
+ *   data-mode="all"          — /contributors/all/. Shows every
+ *                              contributor with at least one post,
+ *                              sorted by last name. Alphabet rail and
+ *                              empty-state are wired up. At most one
+ *                              grid per page may be in this mode.
  *
- *   "all"      — /contributors/all/. Shows every contributor with at
- *                least one post, sorted by last name. Alphabet rail
- *                and empty-state are wired up.
+ *   data-curated             — last-name spec (see parseCuratedSpec).
+ *   data-curated-slugs       — exact tag slugs, comma separated. Takes
+ *                              precedence over data-curated. Use this
+ *                              whenever a named writer shares a surname
+ *                              with someone who is not on the list.
+ *   data-exclude-slugs       — exact tag slugs to drop from this grid,
+ *                              so a writer listed in a section above
+ *                              isn't listed again below.
+ *   data-heading="h3"        — render card names as h3 instead of h2,
+ *                              for pages where a section h2 sits above
+ *                              the grid.
  *
  * Ghost's {{#get "tags"}} helper returns a single page of the Content
  * API (max 100 tags), which truncates the roster once the corpus has
  * more than 100 public tags. This script fetches every page, filters
  * to contributor tags (slug prefix "author-") with at least one post,
- * rebuilds the grid, and wires up the alphabet rail on the "all" page.
+ * rebuilds each grid, and wires up the alphabet rail on the "all" page.
  *
  * If the Content API key isn't present or the fetch fails, the
  * server-rendered first page stays in place.
  */
 (function () {
-  const grid = document.querySelector("[data-contributors-grid]");
-  if (!grid) return;
+  const grids = Array.prototype.slice.call(document.querySelectorAll("[data-contributors-grid]"));
+  if (!grids.length) return;
 
-  const mode = grid.getAttribute("data-mode") || "all";
-  const curatedSpec = grid.getAttribute("data-curated") || "";
+  // The alphabet rail, empty state and letter filter belong to the one
+  // grid in "all" mode. /contributors/ has none.
+  const allGrid = grids.filter((g) => { return gridMode(g) === "all"; })[0] || null;
 
   const rail = document.querySelector("[data-contributors-rail]");
   const railInner = document.querySelector("[data-contributors-rail-inner]");
@@ -41,17 +58,37 @@
     loadFullRoster();
   } else {
     // No API access — wire up the existing SSR cards as-is.
-    if (mode === "curated") filterSSRToCurated();
+    filterSSR();
     initFilter();
+  }
+
+  function gridMode(grid) {
+    return grid.getAttribute("data-mode") || "all";
+  }
+
+  // Read one grid's configuration off its data attributes.
+  function gridConfig(grid) {
+    return {
+      mode: gridMode(grid),
+      curated: grid.getAttribute("data-curated") || "",
+      slugs: splitList(grid.getAttribute("data-curated-slugs")),
+      exclude: splitList(grid.getAttribute("data-exclude-slugs")),
+      heading: grid.getAttribute("data-heading") === "h3" ? "h3" : "h2"
+    };
+  }
+
+  function splitList(value) {
+    if (!value) return [];
+    return value.split(",").map((s) => { return s.trim(); }).filter(Boolean);
   }
 
   function loadFullRoster() {
     const apiBase = `${window.location.origin || ""}/ghost/api/content/tags/`;
     function pageUrl(page) {
-      return `${apiBase}?key=${encodeURIComponent(API_KEY) 
-        }&filter=${encodeURIComponent("visibility:public") 
+      return `${apiBase}?key=${encodeURIComponent(API_KEY)
+        }&filter=${encodeURIComponent("visibility:public")
         }&include=count.posts` +
-        `&order=${encodeURIComponent("name asc") 
+        `&order=${encodeURIComponent("name asc")
         }&limit=100&page=${page}`;
     }
     fetch(pageUrl(1), { cache: "default" })
@@ -74,25 +111,40 @@
       })
       .then((tags) => {
         if (tags) {
-          let authors = tags.filter((t) => {
+          const authors = tags.filter((t) => {
             return t && t.slug && t.slug.indexOf("author-") === 0 &&
               t.count && t.count.posts > 0;
           }).sort((a, b) => {
             const la = lastName(a.name), lb = lastName(b.name);
             return la.localeCompare(lb) || a.name.localeCompare(b.name);
           });
-
-          if (mode === "curated" && curatedSpec) {
-            authors = filterToCurated(authors, curatedSpec);
-          }
-
-          if (authors.length) {
-            grid.innerHTML = authors.map(renderCard).join("");
-          }
+          grids.forEach((grid) => { renderGrid(grid, authors); });
+        } else {
+          filterSSR();
         }
         initFilter();
       })
       .catch(() => { initFilter(); });
+  }
+
+  // Replace one grid's SSR contents with its slice of the roster. A
+  // slice that comes back empty leaves the SSR markup alone rather than
+  // blanking the section — an API hiccup or a renamed tag should not
+  // read as "nobody writes here".
+  function renderGrid(grid, authors) {
+    const cfg = gridConfig(grid);
+    let list = authors;
+    if (cfg.exclude.length) {
+      list = list.filter((t) => { return cfg.exclude.indexOf(t.slug) === -1; });
+    }
+    if (cfg.slugs.length) {
+      list = list.filter((t) => { return cfg.slugs.indexOf(t.slug) > -1; });
+    } else if (cfg.mode === "curated" && cfg.curated) {
+      list = filterToCurated(list, cfg.curated);
+    }
+    if (list.length) {
+      grid.innerHTML = list.map((t) => { return renderCard(t, cfg.heading); }).join("");
+    }
   }
 
   // ── Curated filtering ────────────────────────────────────────
@@ -115,59 +167,63 @@
     });
   }
 
+  function matchesSpec(name, matchers) {
+    const authorLast = lastName(name).toLowerCase();
+    const authorFirst = firstName(name).toLowerCase();
+    for (let i = 0; i < matchers.length; i++) {
+      const m = matchers[i];
+      if (authorLast !== m.last) continue;
+      if (m.prefix && authorFirst.indexOf(m.prefix) !== 0) continue;
+      return true;
+    }
+    return false;
+  }
+
   function filterToCurated(authors, spec) {
     const matchers = parseCuratedSpec(spec);
     const matched = [];
     const used = {}; // track which authors have been matched
 
-    // For each author, check if any matcher accepts them.
     authors.forEach((author) => {
-      const authorLast = lastName(author.name).toLowerCase();
-      const authorFirst = firstName(author.name).toLowerCase();
-
-      for (let i = 0; i < matchers.length; i++) {
-        const m = matchers[i];
-        if (authorLast !== m.last) continue;
-        if (m.prefix && authorFirst.indexOf(m.prefix) !== 0) continue;
-        // Match found.
-        const key = author.slug;
-        if (!used[key]) {
-          matched.push(author);
-          used[key] = true;
-        }
-        break;
-      }
+      if (!matchesSpec(author.name, matchers)) return;
+      if (used[author.slug]) return;
+      matched.push(author);
+      used[author.slug] = true;
     });
 
     return matched;
   }
 
-  // SSR fallback: hide non-curated cards from the server-rendered grid.
-  function filterSSRToCurated() {
-    if (!curatedSpec) return;
-    const matchers = parseCuratedSpec(curatedSpec);
-    const cards = Array.prototype.slice.call(grid.querySelectorAll(".contributor-card"));
-    cards.forEach((card) => {
-      const nameEl = card.querySelector(".contributor-card-name");
-      const name = nameEl ? nameEl.textContent.trim() : "";
-      const authorLast = lastName(name).toLowerCase();
-      const authorFirst = firstName(name).toLowerCase();
-      let isMatch = false;
-      for (let i = 0; i < matchers.length; i++) {
-        const m = matchers[i];
-        if (authorLast !== m.last) continue;
-        if (m.prefix && authorFirst.indexOf(m.prefix) !== 0) continue;
-        isMatch = true;
-        break;
-      }
-      card.style.display = isMatch ? "" : "none";
+  // SSR fallback: hide the cards each grid shouldn't be showing.
+  function filterSSR() {
+    grids.forEach((grid) => {
+      const cfg = gridConfig(grid);
+      if (cfg.mode !== "curated") return;
+      const matchers = cfg.slugs.length ? [] : parseCuratedSpec(cfg.curated);
+      const cards = Array.prototype.slice.call(grid.querySelectorAll(".contributor-card"));
+      cards.forEach((card) => {
+        const slug = card.getAttribute("data-tag-slug") || "";
+        const nameEl = card.querySelector(".contributor-card-name");
+        const name = nameEl ? nameEl.textContent.trim() : "";
+        let show;
+        if (cfg.exclude.indexOf(slug) > -1) {
+          show = false;
+        } else if (cfg.slugs.length) {
+          show = cfg.slugs.indexOf(slug) > -1;
+        } else if (matchers.length) {
+          show = matchesSpec(name, matchers);
+        } else {
+          show = true;
+        }
+        card.style.display = show ? "" : "none";
+      });
     });
   }
 
   // ── Filter (alphabet rail — only on "all" page) ──────────────
   function initFilter() {
-    if (mode !== "all" || !rail || !grid) return;
-    const cards = Array.prototype.slice.call(grid.querySelectorAll(".contributor-card"));
+    if (!allGrid || !rail || !railInner) return;
+    const cards = Array.prototype.slice.call(allGrid.querySelectorAll(".contributor-card"));
     if (!cards.length) return;
 
     // Stamp each card with the last-name initial.
@@ -238,7 +294,8 @@
     return tokens.slice(0, -1).join(" ");
   }
 
-  function renderCard(tag) {
+  function renderCard(tag, headingTag) {
+    const h = headingTag === "h3" ? "h3" : "h2";
     const initial = (tag.name || "").trim().charAt(0).toUpperCase();
     const portrait = (tag.feature_image && window.MOSafeHref.isSafe(tag.feature_image))
       ? `<img src="${escapeAttr(tag.feature_image)}" alt="${escapeAttr(tag.name)}" />`
@@ -252,8 +309,8 @@
       `<a href="${escapeAttr(window.MOSafeHref.sanitize(tag.url, "#"))}" class="contributor-card contributor-card--candidate" data-tag-slug="${escapeAttr(tag.slug)}" data-count="${count}">` +
         `<div class="contributor-card-portrait" aria-hidden="true">${portrait}</div>` +
         `<div class="contributor-card-body">` +
-          `<h2 class="contributor-card-name"><em>${escapeHtml(tag.name)}</em></h2>${ 
-          bio 
+          `<${h} class="contributor-card-name"><em>${escapeHtml(tag.name)}</em></${h}>${
+          bio
           }<p class="contributor-card-count">${count} ${essayWord}</p>` +
         `</div>` +
       `</a>`

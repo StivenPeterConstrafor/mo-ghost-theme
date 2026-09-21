@@ -1,9 +1,20 @@
 {{!-- Renders the byline sub-label under a contributor's name.
 
-     For the nine people on the About page (Team + Editorial Board),
-     emit their specific role. Everyone else falls through to the
-     generic "Contributor" label, guarded by {{#if description}} so
-     tags with no bio don't get a naked sub-label.
+     Three tiers, in precedence order:
+
+       1. The nine people on the About page (Team + Editorial Board)
+          get their specific role.
+       2. The contributing writers announced 2026-09-21 get
+          "Contributing Writer". This list is the same one rendered as
+          the top section of custom-contributors.hbs and the two must
+          be kept in step.
+       3. Everyone else falls through to "New Contributor" (exactly one
+          published essay) or the generic "Contributor" label, the
+          latter guarded by {{#if description}} so tags with no bio
+          don't get a naked sub-label.
+
+     Ghost's match helper has no regex operator and no list membership
+     test, so tier 2 is an explicit {{else}} chain like tier 1.
 
      Expects to be called inside a {{#foreach tags}} scope so `slug`
      and `description` resolve to the current tag. --}}
@@ -16,5 +27,23 @@
 {{else}}{{#match slug "author-matthew-loftus"}}<div class="meta-author-sub">Editorial Board Member</div>
 {{else}}{{#match slug "author-susannah-black-roberts"}}<div class="meta-author-sub">Editorial Board Member</div>
 {{else}}{{#match slug "author-tessa-carman"}}<div class="meta-author-sub">Editorial Board Member</div>
+{{else}}{{#match slug "author-haley-byrd-wilt"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-katelyn-walls-shelton"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-hayden-nesbit"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-elizabeth-stice"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-amy-mantravadi"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-myles-werntz"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-brewer-eberly"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-daniel-k-williams"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-haley-baumeister"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-sarah-reardon"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-joshua-heavin"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-eddie-larow"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-cameron-shaffer"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-wyatt-graham"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-rachel-roth-aldhizer"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-john-ehrett"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-jeff-bilbro"}}<div class="meta-author-sub">Contributing Writer</div>
+{{else}}{{#match slug "author-john-shelton"}}<div class="meta-author-sub">Contributing Writer</div>
 {{else}}{{#get "posts" filter="tag:{{slug}}" limit="1" as |gposts pagination|}}{{#match pagination.total "=" 1}}<div class="meta-author-sub meta-new-contributor">New Contributor</div>{{else}}{{#if description}}<div class="meta-author-sub">Contributor</div>{{/if}}{{/match}}{{/get}}
-{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}
+{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}{{/match}}

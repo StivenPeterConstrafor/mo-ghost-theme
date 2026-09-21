@@ -8,10 +8,23 @@
 <meta name="twitter:description" content="The writers, editors, and scholars who publish at Mere Orthodoxy." />
 {{/contentFor}}
 {{!-- custom-contributors: Curated list of main Mere Orthodoxy
-     contributors. The data-curated attribute tells contributors.js
-     to filter the full roster to only these writers. Format:
+     contributors, in two sections.
+
+     Section 1 is the contributing writers announced 2026-09-21 in
+     /a-writers-covenant-and-mere-orthodoxys-new-contributors/. It is
+     curated by exact tag slug (data-curated-slugs) rather than by last
+     name, because five of the eighteen share a surname with someone
+     who is not on the list (two Sheltons, five Williamses, three
+     Grahams). The same roster drives the "Contributing Writer" byline
+     label in partials/author-title.hbs; keep the two in step.
+
+     Section 2 is everyone else, curated by last name via data-curated.
+     Format:
        LastName           — match all contributors with that last name
        LastName:Prefix    — match only when the first name starts with Prefix
+     data-exclude-slugs drops the section-1 writers so nobody is listed
+     twice; it is by slug for the same reason as above.
+
      A "+ View All Contributors" link at the bottom points to
      /contributors/all/ for the full alphabetical directory.
      Wired to /contributors/ in routes.yaml. --}}
@@ -30,35 +43,84 @@
       {{!-- No alphabet rail on the curated page — the list is short
            enough to scan. The full /contributors/all/ page has the rail. --}}
 
-      <div class="contributors-grid" data-contributors-grid data-mode="curated"
-           data-curated="Aldhizer,Anderson:Matthew Lee,Arndt,Brown,Carman:Tessa,Clark:Bruce,Clark:Charlie,Clark:James,East,Eberly,Edwards:B,Ehrett,Emerson,Graham,Gravely,Harber,Harp,Hawkins,Heavin,Hutchinson,James,Kamel,Krycho,LaPine,Laverty,Leithart,Littlejohn,Loftus,Lucchese,Mantravadi,Meador,Miller:M,Miller:P,Minich,Nesbit,Olmstead,Pechersky,Peter,Rishmawy,Roberts,Sacasas,Sanders,Sargeant,Shaffer,Shelton:J,Shelton:K,Shutt,Siljak,Smith,Spencer,Stice,Troutt,Wait,Wax,Wedgeworth,Werntz,Wilcoxen,Wildeman,Williams,Wood">
-        {{!-- SSR fallback: render all public tags. JS replaces this
-             with the curated subset once the Content API responds. --}}
-        {{#get "tags" filter="visibility:public" order="name asc" limit="200" include="count.posts"}}
-          {{#foreach tags}}
-            {{#if count.posts}}
-              <a href="{{url}}" class="contributor-card contributor-card--candidate" data-tag-slug="{{slug}}" data-count="{{count.posts}}">
-                <div class="contributor-card-portrait" aria-hidden="true">
-                  {{#if feature_image}}
-                    <img src="{{img_url feature_image size="s"}}" alt="{{name}}" loading="lazy" width="120" height="120" />
-                  {{else}}
-                    <span class="contributor-card-initial">{{name}}</span>
-                  {{/if}}
-                </div>
-                <div class="contributor-card-body">
-                  <h2 class="contributor-card-name"><em>{{name}}</em></h2>
-                  {{#if description}}
-                    <p class="contributor-card-bio">{{description}}</p>
-                  {{/if}}
-                  <p class="contributor-card-count">
-                    {{count.posts}}
-                    {{#match count.posts "=" 1}}essay{{else}}essays{{/match}}
-                  </p>
-                </div>
-              </a>
-            {{/if}}
-          {{/foreach}}
-        {{/get}}
+      <div class="contributors-section">
+        <div class="section-intro contributors-section-intro">
+          <p class="eyebrow">Contributing Writers</p>
+          <h2 class="contributors-section-title"><em>The contributing writers.</em></h2>
+        </div>
+
+        <div class="contributors-grid" data-contributors-grid data-mode="curated" data-heading="h3"
+             data-curated-slugs="author-haley-byrd-wilt,author-katelyn-walls-shelton,author-hayden-nesbit,author-elizabeth-stice,author-amy-mantravadi,author-myles-werntz,author-brewer-eberly,author-daniel-k-williams,author-haley-baumeister,author-sarah-reardon,author-joshua-heavin,author-eddie-larow,author-cameron-shaffer,author-wyatt-graham,author-rachel-roth-aldhizer,author-john-ehrett,author-jeff-bilbro,author-john-shelton">
+          {{!-- SSR: the roster is fixed and small, so fetch it by slug
+               directly. JS re-renders this grid in last-name order once
+               the Content API responds; this pass is name order. --}}
+          {{#get "tags" filter="slug:[author-haley-byrd-wilt,author-katelyn-walls-shelton,author-hayden-nesbit,author-elizabeth-stice,author-amy-mantravadi,author-myles-werntz,author-brewer-eberly,author-daniel-k-williams,author-haley-baumeister,author-sarah-reardon,author-joshua-heavin,author-eddie-larow,author-cameron-shaffer,author-wyatt-graham,author-rachel-roth-aldhizer,author-john-ehrett,author-jeff-bilbro,author-john-shelton]" order="name asc" limit="20" include="count.posts"}}
+            {{#foreach tags}}
+              {{!-- Gated on count.posts to match the JS path, which drops
+                   postless tags — so SSR can't flash a "0 essays" row. --}}
+              {{#if count.posts}}
+                <a href="{{url}}" class="contributor-card contributor-card--candidate" data-tag-slug="{{slug}}" data-count="{{count.posts}}">
+                  <div class="contributor-card-portrait" aria-hidden="true">
+                    {{#if feature_image}}
+                      <img src="{{img_url feature_image size="s"}}" alt="{{name}}" loading="lazy" width="120" height="120" />
+                    {{else}}
+                      <span class="contributor-card-initial">{{name}}</span>
+                    {{/if}}
+                  </div>
+                  <div class="contributor-card-body">
+                    <h3 class="contributor-card-name"><em>{{name}}</em></h3>
+                    {{#if description}}
+                      <p class="contributor-card-bio">{{description}}</p>
+                    {{/if}}
+                    <p class="contributor-card-count">
+                      {{count.posts}}
+                      {{#match count.posts "=" 1}}essay{{else}}essays{{/match}}
+                    </p>
+                  </div>
+                </a>
+              {{/if}}
+            {{/foreach}}
+          {{/get}}
+        </div>
+      </div>
+
+      <div class="contributors-section">
+        <div class="section-intro contributors-section-intro">
+          <p class="eyebrow">Editors &amp; Contributors</p>
+          <h2 class="contributors-section-title"><em>The editors and contributors.</em></h2>
+        </div>
+
+        <div class="contributors-grid" data-contributors-grid data-mode="curated" data-heading="h3"
+             data-curated="Aldhizer,Anderson:Matthew Lee,Arndt,Brown,Carman:Tessa,Clark:Bruce,Clark:Charlie,Clark:James,East,Eberly,Edwards:B,Ehrett,Emerson,Graham,Gravely,Harber,Harp,Hawkins,Heavin,Hutchinson,James,Kamel,Krycho,LaPine,Laverty,Leithart,Littlejohn,Loftus,Lucchese,Mantravadi,Meador,Miller:M,Miller:P,Minich,Nesbit,Olmstead,Pechersky,Peter,Rishmawy,Roberts,Sacasas,Sanders,Sargeant,Shaffer,Shelton:J,Shelton:K,Shutt,Siljak,Smith,Spencer,Stice,Troutt,Wait,Wax,Wedgeworth,Werntz,Wilcoxen,Wildeman,Williams,Wood"
+             data-exclude-slugs="author-haley-byrd-wilt,author-katelyn-walls-shelton,author-hayden-nesbit,author-elizabeth-stice,author-amy-mantravadi,author-myles-werntz,author-brewer-eberly,author-daniel-k-williams,author-haley-baumeister,author-sarah-reardon,author-joshua-heavin,author-eddie-larow,author-cameron-shaffer,author-wyatt-graham,author-rachel-roth-aldhizer,author-john-ehrett,author-jeff-bilbro,author-john-shelton">
+          {{!-- SSR fallback: render all public tags. JS replaces this
+               with the curated subset once the Content API responds. --}}
+          {{#get "tags" filter="visibility:public" order="name asc" limit="200" include="count.posts"}}
+            {{#foreach tags}}
+              {{#if count.posts}}
+                <a href="{{url}}" class="contributor-card contributor-card--candidate" data-tag-slug="{{slug}}" data-count="{{count.posts}}">
+                  <div class="contributor-card-portrait" aria-hidden="true">
+                    {{#if feature_image}}
+                      <img src="{{img_url feature_image size="s"}}" alt="{{name}}" loading="lazy" width="120" height="120" />
+                    {{else}}
+                      <span class="contributor-card-initial">{{name}}</span>
+                    {{/if}}
+                  </div>
+                  <div class="contributor-card-body">
+                    <h3 class="contributor-card-name"><em>{{name}}</em></h3>
+                    {{#if description}}
+                      <p class="contributor-card-bio">{{description}}</p>
+                    {{/if}}
+                    <p class="contributor-card-count">
+                      {{count.posts}}
+                      {{#match count.posts "=" 1}}essay{{else}}essays{{/match}}
+                    </p>
+                  </div>
+                </a>
+              {{/if}}
+            {{/foreach}}
+          {{/get}}
+        </div>
       </div>
 
       {{!-- Link to the full alphabetical directory --}}

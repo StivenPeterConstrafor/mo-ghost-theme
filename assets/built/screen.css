@@ -5728,10 +5728,31 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
   margin-top: 48px;
 }
 
+/* Section headers on the curated /contributors/ page, which carries two
+   rosters: the contributing writers, then everyone else. Each grid gets
+   an eyebrow plus a display heading. The heading is deliberately a step
+   below .section-heading (clamp 30-48px) so it reads as a department
+   head under the hero's h1 rather than competing with it. Cards inside
+   these sections render their names as h3 (data-heading="h3") so the
+   heading order stays h1 > h2 > h3. */
+.contributors-section + .contributors-section { margin-top: 72px; }
+.contributors-section-intro { margin-bottom: 32px; }
+.contributors-section-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(26px, 2.6vw, 34px);
+  line-height: 1.15;
+  color: var(--color-dark);
+  margin: 0;
+}
+.contributors-section-title em { font-style: italic; }
+
 @media (max-width: 760px) {
   .contributors-rail-label { font-size: 10px; }
   .contributors-rail-inner { gap: 2px; }
   .contributors-rail-pill { padding: 6px 10px; min-width: 32px; font-size: 11px; }
+  .contributors-section + .contributors-section { margin-top: 56px; }
+  .contributors-section-intro { margin-bottom: 24px; }
 }
 
 /* Editorial two-column list, no card chrome. Mirrors the .week-grid
