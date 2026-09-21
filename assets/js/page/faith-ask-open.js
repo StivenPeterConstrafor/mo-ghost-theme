@@ -112,7 +112,7 @@
    * usually what sent you here. A direct visit or an off-site referrer
    * has no reading to return to, so it falls back to the library.
    */
-  const LIBRARY = "/the-faith-received/";
+  const LIBRARY = "/the-faith-received/all-works/?collection=all";
 
   function leave() {
     let sameOrigin = false;

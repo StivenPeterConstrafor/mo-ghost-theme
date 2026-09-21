@@ -953,7 +953,7 @@ body:has(#app.faith-port-read-page) { background: var(--bg); }
    removed as dead markup (see custom-faith-port-read.hbs). Hidden rather
    than left as a fifth control that does nothing when tapped. Restore it
    together with a panel that is actually mounted. */
-nav.frthumb [data-t="nb"] { display: none !important; }
+/* The Research panel is mounted again; its dock button uses __frOpenNotebook. */
 
 /* ── The reader, embedded in someone else's panel ───────────────────
    The Ask workspace opens a cited work in an iframe. The masthead and
@@ -996,8 +996,8 @@ mark.fr-hlx[data-hl="slate"] { background: #e5ecf3; }
    an amber chip that means "remove amber" reads as "apply amber". */
 #selpop button.sw.is-clear {
   background: transparent;
-  border: 1px solid var(--color-dark, #2d2927);
-  color: var(--color-dark, #2d2927);
+  border: 1px solid var(--fg);
+  color: var(--fg);
 }
 #selpop button.sw.is-clear:hover {
   border-color: var(--color-secondary, #c1593c);
@@ -1155,10 +1155,10 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
   box-sizing: border-box;
   height: 40px;
   min-height: 40px;
-  border: 1px solid var(--color-dark, #2d2927);
+  border: 1px solid var(--fg);
   border-radius: 3px;
   background: transparent;
-  color: var(--color-dark, #2d2927);
+  color: var(--fg);
 }
 
 /* One box, dividers inside it. The parts give up their own radius so the
@@ -1177,7 +1177,7 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
   color: inherit;
 }
 #app .ph.fr-reader-head .ctr > .seg.pnav > button + button {
-  border-left: 1px solid var(--color-dark, #2d2927);
+  border-left: 1px solid var(--fg);
 }
 #app .ph.fr-reader-head .ctr > .seg.lanes { gap: 6px; }
 /* The page field IS the group's box. A bordered input inside a bordered
@@ -1185,7 +1185,7 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
    has to be answered in kind or three sides come out terracotta and the
    fourth stays tan. */
 #app .ph.fr-reader-head .ctr > .seg.pgjump {
-  border-right: 1px solid var(--color-dark, #2d2927) !important;
+  border-right: 1px solid var(--fg) !important;
   padding: 0 8px;
   gap: 4px;
 }
@@ -1195,10 +1195,13 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: var(--color-dark, #2d2927);
+  color: var(--fg);
 }
+/* --fg, not the site's --color-dark: that ink is light-only, and in the dark scheme it set the page
+   box and its total near-black on a near-black bar — '/ 698' unreadable (owner, 2026-09-19). The
+   skin's own ink flips with the scheme; in light it is the same #2d2927. Same for the borders above. */
 #app .ph.fr-reader-head .ctr .pgjump .pg-total {
-  color: var(--color-dark, #2d2927);
+  color: var(--muted);
 }
 /* The arrows sat in a group pulled 10px into its neighbour, which reads
    as kerning when the group has no edge and as a collision once it has. */
@@ -1472,3 +1475,120 @@ html[data-lh] .app #reading :is(.row:not(.rapp) > .en, .row:not(.rapp) > .la,
     font-size: 13px;
   }
 }
+
+/* ── The Research drawer in the dark scheme (09-19) ──────────────────
+   Ian's site sheet inks every notebook control — "Search this work",
+   "Ask about this book", "Start a conversation", the work-overview
+   links, the destinations, the selection popover — with --tfr-btn and
+   falls back to --color-dark (#2d2927), a token the dark scheme never
+   changes. On the near-black drawer that ink is invisible (contrast
+   1.03). Scoped to the drawer and the popover, never :root (see the
+   note above #aboutOv): the drawer only exists on reader pages, whose
+   dark scheme is real. */
+:root[data-theme="dark"] #notebook,
+:root[data-theme="dark"] #selpop {
+  --tfr-btn: var(--fg);
+  --tfr-btn-ink: var(--bg);
+  --color-dark: var(--fg);
+}
+:root[data-theme="dark"] #notebook a:not([class]) { color: var(--fg); }
+
+/* Toolbar scrolling must not clip its open settings or tools. Keep the
+   toolbar above the contents/research panes while one of its menus is open. */
+#app .ph.fr-reader-head .ctr:has(.aapop.on, .aapop.is-open) {
+  overflow: visible;
+}
+#app .ph.fr-reader-head:has(.aapop.on, .aapop.is-open) {
+  z-index: 10030;
+}
+
+/* Tablet readers use the same compact toolbar as phones. Position its
+   settings below both mastheads, within the available reading viewport. */
+@media (max-width: 1099px) {
+  #app .ph.fr-reader-head .aapop {
+    --fr-menu-head: var(--mo-head, 61px);
+    position: fixed;
+    top: calc(var(--fr-menu-head) + var(--phh, 58px) + 8px);
+    right: 12px;
+    left: auto;
+    width: 340px;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - var(--fr-menu-head) - var(--phh, 58px) - 80px);
+    overflow: auto;
+  }
+  body:has(> .site-header.is-hidden) #app .ph.fr-reader-head .aapop { --fr-menu-head: 0px; }
+}
+@media (max-width: 640px) {
+  #app .aapop .aarow { grid-template-columns: 80px minmax(0, 1fr); column-gap: 8px; }
+  #app .aapop .aaseg { flex-wrap: wrap; }
+  #app .aapop .aaseg .tgl { min-height: 44px; }
+}
+
+/* Phone reading: retain each existing Latin/original-English pair at full width. */
+@media (max-width: 640px) {
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading {
+    font-size: var(--rdszm, 17px) !important;
+  }
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading .row,
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading .row.seg .sp {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading :is(.row, .sp) > :is(.la, .en) {
+    grid-column: 1;
+    padding-inline: 0;
+    border-inline: 0;
+    min-width: 0;
+    max-width: none;
+    overflow-wrap: break-word;
+  }
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading .row.soloen > .la,
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading .row.solola > .en {
+    display: none;
+  }
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading :is(.row:not(.rhead):not(.rapp), .sp) > .la::before {
+    content: var(--source-label, "Original");
+    display: block;
+    color: var(--muted);
+    font: 12px/1.5 var(--font-body);
+    margin: 8px 0;
+  }
+  #app:not(.grcwork):not(.en-only):not(.only-en):not(.only-la) #reading :is(.row:not(.rhead):not(.rapp), .sp) > .en::before {
+    content: "English";
+    display: block;
+    color: var(--muted);
+    font: 12px/1.5 var(--font-body);
+    margin: 8px 0;
+  }
+}
+
+/* One mobile interaction layout through the reader's own 880px breakpoint.
+   Keep the open-section link separate from a full-size expansion target. */
+@media (max-width: 880px) {
+  #app #nav .nav-node { align-items: center; gap: 8px; min-height: 56px; margin-block: 4px; padding: 4px 4px 4px calc(8px + var(--nav-depth, 0) * 12px) !important; }
+  #app #nav .nav-node .nav-open { order: 1; min-height: 48px; padding: 8px 4px; font-size: 16px; line-height: 1.45; color: var(--fg); }
+  #app #nav .nav-node button.cv { order: 2; align-self: center; flex: 0 0 48px; width: 48px; height: 48px; min-height: 48px; margin: 0; padding: 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--fg); touch-action: manipulation; }
+  #app #nav .nav-node button.cv svg { width: 18px; height: 18px; pointer-events: none; }
+  #app #nav .nav-node .cv.leaf { display: none; }
+  #app #nav .nav-node .nn-la { order: 3; }
+  #app #nav .nav-vt button { min-height: 48px; }
+  html.g-mobile nav.frthumb { min-height: 60px; padding: 3px 4px calc(3px + env(safe-area-inset-bottom)); gap: 2px; }
+  html.g-mobile nav.frthumb button { min-width: 0; min-height: 54px; padding: 5px 1px; gap: 3px; font-size: 12px; line-height: 1.15; border-radius: 4px; }
+  html.g-mobile nav.frthumb button .lb { font-size: 12px; line-height: 1.15; }
+  html.g-mobile nav.frthumb button .ic { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; font-size: 20px; line-height: 1; }
+  html.g-mobile nav.frthumb button .ic svg { display: block; width: 20px; height: 20px; }
+  html.g-mobile nav.frthumb button.on { background: var(--hl); color: var(--fg); }
+  html.g-mobile nav.frthumb button:focus-visible { outline: 2px solid var(--fg); outline-offset: -2px; }
+  html.g-mobile #app .sidebar { bottom: calc(60px + env(safe-area-inset-bottom)); }
+  html.g-mobile #app .reader-reference { min-width: 0; overflow: hidden; }
+  html.g-mobile #app #reader-volume { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; white-space: normal; overflow-wrap: anywhere; }
+}
+#app .contents-toolbar { display: flex; align-items: center; justify-content: space-between; flex: none; gap: 12px; padding: 0 12px 0 16px; border-bottom: 1px solid var(--border); color: var(--fg); }
+#app .contents-toolbar button { width: 48px; height: 48px; padding: 0; border: 0; background: none; color: inherit; font-size: 28px; touch-action: manipulation; }
+@media (min-width: 1100px) { #app .contents-toolbar { display: none; } }
+#app.fr-work-unavailable .sidebar,
+#app.fr-work-unavailable .ph .ctr,
+#app.fr-work-unavailable #sbT,
+#app.fr-work-unavailable #rdAbout,
+#app.fr-work-unavailable #fac,
+#app.fr-work-unavailable #dragbar { display: none !important; }

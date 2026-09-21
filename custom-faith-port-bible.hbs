@@ -1,11 +1,13 @@
 {{!< default}}
 {{#contentFor "moHead"}}
+<script defer src="{{asset "js/page/faith-port-downloads.js"}}&amp;frv=2b1f79b352c6db15"></script>
+<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=22fa8b0f2bf4941d"></script>
 <title>Scripture | The Faith Received | Mere Orthodoxy</title>
 <meta name="description" content="The whole Bible to read, chapter by chapter, and under every chapter the library’s own witness: each recorded citation, opening on the verse itself." />
 {{!-- The family identity the engine reads before it starts, and our
      masthead's height as --mo-head, so anything fixed can sit under it.
      Same two jobs as on the ported reader; must load first. --}}
-<script src="{{asset "js/page/faith-port-read-boot.js"}}"></script>
+<script src="{{asset "js/page/faith-port-read-boot.js"}}&amp;frv=af6a3529073948b4"></script>
 {{!-- Nothing in this port goes to Vercel Blob (owner 2026-09-10); any
      Blob address that arrives inside data is rebased onto the library
      worker at the fetch boundary. Before any module that can fetch. --}}
@@ -14,13 +16,13 @@
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap">
 <link rel="stylesheet" href="{{asset "css/port/bible.in01.css"}}&amp;frv=118616d0f4f884f3">
 <link rel="stylesheet" href="{{asset "css/port/scripture-navigation.css"}}&amp;frv=7be6dc0e2f11ae7c">
-<link rel="stylesheet" href="{{asset "css/port/research-experience.css"}}&amp;frv=c0dbbd883907a1bc">
-<script src="{{asset "js/port/research-tools.js"}}&amp;frv=f9f1901f4fa12a78"></script>
-<script src="{{asset "js/port/bible.in01.js"}}&amp;frv=ee6de72d22f48fe7"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}&amp;frv=8618bdf9072bb354"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=e7d3c7adbe5a3ffc"></script><script src="{{asset "js/page/faith-ask-config.js"}}"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=f3461573eea75a1c"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=215f1ef6dc2e579f"></script>
+<link rel="stylesheet" href="{{asset "css/port/research-experience.css"}}&amp;frv=01ed7f5c4ddf5c2e">
+<script src="{{asset "js/port/research-tools.js"}}&amp;frv=2f6252c7486b9aca"></script>
+<script src="{{asset "js/port/bible.in01.js"}}&amp;frv=ee6de72d22f48fe7"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=d62ee4eca7750274"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=d2003c82432d7011"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=16c1caf696083c4b"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>
 {{!-- Our colour, loaded last so it wins; then the offsets that start
      this page under our masthead. Keep both last. --}}
-<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}">
-<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}">
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=b216a81e4e2cd814">
+<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=908031c3f00ccf98">
 {{/contentFor}}
 
 {{!-- /the-faith-received/bible/ — Scripture, ported.
@@ -45,36 +47,14 @@
      This is not the Scripture Index at /scripture/, which answers "who
      cites this passage". This page answers "what does the passage say,
      and what did they say about it". The two link to each other. --}}
-<script src="{{asset "js/page/faith-port-surface-boot.js"}}" data-body-class="research-page"></script>
-<!-- DIRECTION CONTRACT
-THESIS: A research library that leads from authors and questions to inspectable passages.
-OWN-WORLD: Inherit Academic Monochrome, EB Garamond, Source Serif Pro, ruled stone sheets, and the shared black dark theme.
-STORY: Find an author or topic, compare available evidence, follow actual connections, and open or save the source.
-FIRST VIEWPORT: Clear page identity above a searchable directory; author rooms pair a compact topic rail with a reading workspace. Phones use native tabs and stacked evidence. Topic comparison has a persistent selection action.
-FORM: Code-led extension of the established library; no new visual-world seed. Counts keep their units; samples disclose coverage; uncertain attributions remain separate. Scripture navigation is preserved.
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
--->
+<script src="{{asset "js/page/faith-port-surface-boot.js"}}&amp;frv=c6ea6e388eea3f2a" data-body-class="research-page"></script>
 <script src="{{asset "js/port/bible.in02.js"}}&amp;frv=d8b85f9e53267406"></script>
-<header class="site">
-  <div class="brand"><span class="research-page-name"> · <span id="pgname" style="font-style:italic">Latin Fathers</span></span> <button id="thBtn" aria-label="Change reading theme" title="Light / dark" style="font:inherit;background:none;border:0;cursor:pointer;color:var(--muted);padding:.1rem .3rem">☾</button></div>
-  <nav id="topnav" aria-label="Research navigation">
-    <a href="/the-faith-received/bible/" data-p="bible">Scripture</a>
-    {{!-- /the-faith-received/authors/ is the port's own path and has no
-          template here, so it can never be routed. /all-works/ is the
-          same door: By author is its default view. --}}
-    <a href="/the-faith-received/all-works/" data-p="fathers">Authors</a>
-    <a href="/the-faith-received/fathers/#works" data-p="works">Works</a>
-    <a href="/the-faith-received/topics/" data-p="topics">Topics</a>
-    <a href="/the-faith-received/web/" data-p="web">Web</a>
-    <a href="/the-faith-received/compare/" data-p="compare">Compare</a>
-    <a href="/the-faith-received/pins/">Notebook</a>
-  </nav><button id="research-ask" type="button">Ask</button>
-</header>
-<script src="{{asset "js/port/scripture-tools.js"}}&amp;frv=a2d1172c59c08a2a"></script>
+{{> "faith-received/_research-navigation"}}
+<script src="{{asset "js/port/scripture-tools.js"}}&amp;frv=1f7a52f7eeb12682"></script>
 <link rel="stylesheet" href="{{asset "css/port/verse-research.css"}}&amp;frv=36c580339a9e6d52">
 <script src="{{asset "js/port/verse-research.js"}}&amp;frv=ece7d3e92915d12e"></script>
-<link rel="stylesheet" href="{{asset "css/port/connection-evidence.css"}}&amp;frv=20656c5c1335c942">
-<script src="{{asset "js/port/connection-evidence.js"}}&amp;frv=b3e4670587c9f87f"></script>
+<link rel="stylesheet" href="{{asset "css/port/connection-evidence.css"}}&amp;frv=62ef89e4148c2cda">
+<script src="{{asset "js/port/connection-evidence.js"}}&amp;frv=9dc93fa0151853e0"></script>
 <main id="page"><p class="loading">…</p></main>
-<script src="{{asset "js/port/bible.in03.js"}}&amp;frv=a7adb6d2123d41c0"></script>
+<script src="{{asset "js/port/bible.in03.js"}}&amp;frv=5b3b28de662104e1"></script>
 <script src="{{asset "js/port/bible.in04.js"}}&amp;frv=8d00fd258d7820ab"></script>

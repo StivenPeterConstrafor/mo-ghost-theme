@@ -97,3 +97,17 @@ if (dead.length) {
 }
 
 console.log(`✓ Ask skin: all ${used.size} .fra-* selectors match the engine's markup`);
+
+
+// All entry points use the same MereO skin, including overlays on reader/research pages.
+const mismatchedTemplates = [];
+for (const name of fs.readdirSync(ROOT).filter(n => /^custom-faith.*\.hbs$/.test(n))) {
+  const template = read(path.join(ROOT, name)).replace(/{{!--[\s\S]*?--}}/g, "");
+  if (!/<script[^>]*js\/port\/ask-workspace\.js/.test(template)) continue;
+  if (!template.includes('asset "built/faith-ask-workspace.min.css"') || template.includes('asset "css/port/ask-workspace.css"')) mismatchedTemplates.push(name);
+}
+if (mismatchedTemplates.length) {
+  console.error("Ask entry points must load the shared MereO skin: " + mismatchedTemplates.join(", "));
+  process.exit(1);
+}
+console.log("✓ All Ask entry points use the shared MereO stylesheet");

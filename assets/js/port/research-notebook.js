@@ -52,7 +52,7 @@
     const edges=array(payload.e).map(row=>{if(!Array.isArray(row)||!Number.isInteger(row[0])||!Number.isInteger(row[1])||!items[row[0]]||!items[row[1]])return {a:'unresolved',b:'unresolved',rel:str(row?.[2]),unresolved:true};return {a:itemKey(items[row[0]]),b:itemKey(items[row[1]]),rel:str(row[2])};});
     return {name:str(payload.n)||'Shared collection',memo:str(payload.m),items,edges};
   }
-  function sharePlan(collection,origin='https://thefaithreceived.vercel.app',maxLength=8000){
+  function sharePlan(collection,origin=root.location?.origin||'https://mereorthodoxy.com',maxLength=8000){
     const payload=sharePayload(collection),contents=JSON.stringify(payload,null,2),compact=JSON.stringify(payload),filename=(str(collection.name)||'research-collection').replace(/[^a-z0-9 -]/gi,'').slice(0,80)||'research-collection';
     if(compact.length>maxLength)return {kind:'file',contents,filename:filename+'.json',payload};
     const encoded=root.btoa(unescape(encodeURIComponent(compact))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');

@@ -1478,7 +1478,7 @@ function __initReaderTools(){
     dump("Highlights",hl,e=>typeof e==="string"?e:JSON.stringify(e));
     try{ // pinned parallels involving THIS work, from the collections store
       const C=JSON.parse(lsGet("fr_collections_v1")||"[]");const rows=[];
-      C.forEach(c=>(c.items||[]).forEach(i=>{if(i.slug===WORK_SLUG)rows.push("- **fol. "+i.page+"** (collection: "+c.name+") \u2014 https://thefaithreceived.vercel.app/read?w="+i.slug+"%23b"+i.page+"-0");}));
+      C.forEach(c=>(c.items||[]).forEach(i=>{if(i.slug===WORK_SLUG)rows.push("- **fol. "+i.page+"** (collection: "+c.name+") \u2014 "+location.origin+"/the-faith-received/read/?w="+i.slug+"%23b"+i.page+"-0");}));
       if(rows.length)md+="\n## Pinned parallels (this work)\n\n"+rows.join("\n")+"\n";
     }catch(e){}
     const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([md],{type:"text/markdown"}));

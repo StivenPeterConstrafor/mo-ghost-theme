@@ -6188,6 +6188,18 @@ mark.faith-find-hit.is-current {
   height: 1px;
   background: var(--color-secondary);
 }
+/* The parties within English Divines: a second row of tabs directly
+   under By author / By year — one rule between the two rows, not two —
+   with the count set small beside each name, as the corpus site sets it. */
+.faith-room-views + .faith-room-parties { margin-top: -28px; border-top: 0; }
+.faith-room-parties[hidden] { display: none; }
+.faith-room-party-n {
+  font-style: normal;
+  font-size: var(--tfr-micro);
+  color: var(--color-muted);
+  margin-left: 4px;
+}
+.faith-view-toggle-tab.is-active .faith-room-party-n { color: var(--color-primary); }
 .faith-view-toggle-tab--link::before {
   content: "→";
   display: inline-block;
@@ -6844,6 +6856,28 @@ mark.faith-find-hit.is-current {
 .faith-room-printed--loc .brow-la,
 .faith-room-printed--loc .brow-m { grid-column: 2; }
 
+/* The printed volume, set to read down the page (2026-09-19). The gutter is
+   a column of numbers: tabular, the volume prefix a shade lighter than the
+   columns, and an empty cell where a row has nothing to cite so the titles
+   stay in their own column. Migne's apparatus — prefaces, indexes, the
+   editors' dissertations — is a step quieter than the fathers' own works,
+   which is what a reader running down the volume is looking for. */
+.faith-room-printed .brow-c { font-size: 13.5px; padding-top: 3px; color: var(--color-muted); }
+.faith-room-printed .brow-c-v { opacity: 0.72; letter-spacing: 0.02em; }
+.faith-room-printed .brow-c--blank::after { content: "\00b7"; opacity: 0.35; }
+.faith-room-printed .brow-t { font-size: 19px; line-height: 1.25; }
+.faith-room-printed .brow-a { font-family: var(--font-body); font-size: 14px; color: var(--color-muted); white-space: normal; }
+.faith-room-printed .brow-kind { margin-left: 4px; font-size: 10.5px; letter-spacing: 0.16em; vertical-align: 0.12em; }
+.faith-room-printed li.is-editorial .brow-t { font-size: 17px; color: color-mix(in srgb, currentColor 72%, var(--color-muted)); }
+.faith-room-printed li.is-editorial .brow-la { font-size: 14px; }
+.faith-room-printed li:hover { background: color-mix(in srgb, var(--color-card-border) 22%, transparent); }
+.faith-room-printed a { margin: 0 -10px; padding-left: 10px; padding-right: 10px; border-radius: 6px; }
+.faith-room-printed--loc a { grid-template-columns: 92px minmax(0, 1fr); }
+@media (max-width: 640px) {
+  .faith-room-printed .brow-c--blank { display: none; }
+  .faith-room-printed a { margin: 0; padding-left: 0; padding-right: 0; }
+}
+
 /* The volume's byline: whose works Migne bound here. */
 .faith-room-vol-by {
   margin: 4px 0 0;
@@ -6855,7 +6889,8 @@ mark.faith-find-hit.is-current {
   font-size: 0.75em;
   color: var(--color-muted);
 }
-.brow-a::before { content: "\2014"; margin: 0 0.35em 0 0.5em; }
+/* The dash is in the row's own text now (faith-room.js volRow, 2026-09-19), so it copies with the name. */
+.brow-a { margin-left: 0.1em; }
 /* Migne's own apparatus — a preface, a notice, an admonition — as against
    the father it surrounds. Named, not hidden: it is part of the volume. */
 .brow-kind {
@@ -7390,6 +7425,21 @@ mark.faith-find-hit.is-current {
   color: var(--color-muted);
   margin: 0;
 }
+/* A search that found a name is drawn in two sections — the authors it
+   named, then the other works it matched by title — under headings set
+   like the count line, so the page keeps one voice. */
+.faith-room-section {
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 0 0 22px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-card-border);
+}
+.faith-room-section:first-child { padding-top: 0; border-top: 0; }
 
 /* The rail reads as a line of type, not a row of buttons. */
 .faith-room-letters {
@@ -16745,6 +16795,21 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   font-size: var(--tfr-micro); font-style: italic; color: var(--color-muted);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+/* A shelf's subsets — the parties within English Divines — set under the
+   shelf's own link as a line of small doors, each into the room cut to
+   that party. Inline, so the shelf's block link rule does not make them
+   rows of their own. */
+.fro-shelf-subs {
+  display: block; margin: -6px 0 14px;
+  font-size: var(--tfr-micro); letter-spacing: 0.04em; color: var(--color-muted);
+}
+.fro-shelf-subs-l { text-transform: uppercase; letter-spacing: 0.16em; margin-right: 10px; }
+.fro-shelf .fro-shelf-sub {
+  display: inline; padding: 0; color: var(--color-dark);
+  border-bottom: 1px solid var(--color-rule);
+}
+.fro-shelf .fro-shelf-sub:hover { color: var(--color-primary); border-color: var(--color-primary); }
+.fro-shelf-sub b { color: var(--color-primary); font-weight: 600; }
 
 @media (max-width: 640px) {
   .faith-room-openers { margin-bottom: 40px; }
@@ -17204,3 +17269,89 @@ a.fr-btn:hover,
 #notebook .nb-destinations a {
   color: var(--tfr-btn, var(--color-dark));
 }
+
+/* Browse: the collections grid carries group labels (2026-09-19 — English Divines / The Fathers / Latin divinity / the churches' own
+   words) and one "All … Early English Books" line; both span the grid rather than sit in a card's cell. */
+.bcolls--grouped .bcoll-group{grid-column:1/-1;margin:.9rem 0 .1rem}
+.bcolls--grouped .bcoll-group:first-child{margin-top:0}
+.bcolls--grouped .tfr-browse-all{grid-column:1/-1;margin:-.4rem 0 .4rem}
+
+/* Shelf research doors retain the source shelf while using MereO's type and rules. */
+.fro-study { margin-top: .65rem; border-top: 1px solid var(--border, #ddd2c4); padding-top: .5rem; }
+.fro-study summary { cursor: pointer; font-size: .85rem; }
+.fro-study nav { display: flex; flex-wrap: wrap; gap: .5rem 1rem; padding: .75rem 0 .25rem; }
+.fro-study nav a { font-size: .85rem; text-decoration: underline; text-underline-offset: .2em; }
+.faith-surface-links { display: flex; flex-wrap: wrap; gap: .65rem 1.25rem; margin-top: 1.5rem; }
+.faith-surface-links a { text-decoration: underline; text-underline-offset: .2em; }
+.bhero .faith-surface-links a { color: inherit; }
+
+/* Opened shelf: research and reference sit before the author/volume catalogue. */
+.faith-shelf-research { margin-bottom: 2.5rem; }
+.faith-shelf-research[hidden] { display: none; }
+.faith-shelf-study-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.faith-shelf-study-head h2,
+.faith-shelf-reference h2 { margin: 0 0 .35rem; font: 500 1.1rem/1.4 var(--font-display); color: var(--color-dark); }
+.faith-shelf-study-head p { margin: 0; font-size: .85rem; color: var(--color-muted); }
+.faith-shelf-ask { flex-shrink: 0; padding: .5rem .85rem; border: 1px solid var(--color-primary); border-radius: 4px; color: var(--color-dark); font-size: .9rem; }
+.faith-shelf-ask:hover { background: var(--color-dark); color: var(--color-white, #fff); }
+.faith-shelf-study-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.faith-shelf-study-card { display: flex; flex-direction: column; gap: .45rem; padding: 1.15rem 1.35rem; border: 1px solid var(--color-rule); border-radius: 4px; background: var(--color-white, #fff); color: var(--color-dark); text-decoration: none; }
+.faith-shelf-study-card strong { font: 500 1.3rem/1.25 var(--font-display); }
+.faith-shelf-study-card > span { color: var(--color-darkgrey); line-height: 1.65; font-style: italic; }
+.faith-shelf-study-card:hover { border-color: var(--color-primary); text-decoration: none; }
+.faith-shelf-study-card:hover strong { text-decoration: underline; text-underline-offset: .2em; }
+.faith-shelf-reference { margin-top: 1.75rem; }
+.faith-shelf-reference h2 { margin-bottom: .75rem; }
+.faith-shelf-study-card .faith-shelf-reference-action { font-size: .85rem; font-style: normal; color: var(--color-dark); text-decoration: underline; text-underline-offset: .2em; }
+.faith-shelf-study-card:focus-visible,
+.faith-shelf-ask:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+@media (max-width: 640px) {
+  .faith-shelf-study-grid { grid-template-columns: 1fr; }
+  .faith-shelf-study-card { padding: 1rem; }
+  .faith-shelf-study-head { align-items: flex-start; }
+}
+
+.faith-research-links{display:flex;justify-content:space-between;gap:20px;padding:0 0 18px;border-bottom:1px solid var(--color-rule);margin-bottom:14px}
+.faith-research-links a{color:var(--color-dark);text-decoration:underline;text-underline-offset:4px}
+
+.faith-landing .lp-shelf-caption{display:block;font-size:12px;line-height:1.4;color:var(--color-muted);margin:8px 0 14px}
+.faith-landing .lp-shelf-plate{display:block;height:210px}
+.faith-landing .lp-shelf-plate img{object-position:top center}
+@media(max-width:640px){.faith-landing .lp-shelf-plate{display:block;height:180px}}
+
+/* Contents belong to their collected volume, before the reader opens. */
+.faith-room .frcw-preview{display:block;grid-column:1/-1;max-width:80ch;margin-top:5px;color:var(--color-muted);font:14px/1.55 var(--font-body);text-transform:none;letter-spacing:normal}
+.faith-room .frcw-preview>span{color:var(--color-dark)}
+.faith-room .frcw-contents{margin:0 0 14px}
+.faith-room .frcw-contents>summary{display:list-item;width:fit-content;max-width:100%;min-height:36px;padding:6px 0;font:14px/1.5 var(--font-body);color:var(--color-primary-text);cursor:pointer}
+.faith-room .frcw-contents>summary span{color:var(--color-muted)}
+.faith-room .frcw-contents>summary:focus-visible{outline:2px solid var(--color-dark);outline-offset:3px}
+.faith-room .frcw-pane{max-height:380px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--color-muted) var(--color-page);border-block:1px solid var(--color-rule);padding:8px 14px;background:var(--color-cream)}
+.faith-room .frcw-note{margin:2px 0 8px;font:12px/1.5 var(--font-body);color:var(--color-muted)}
+.faith-room .frcw-list{list-style:none;margin:0;padding:0}
+.faith-room .frcw-list li{margin:0;border-top:1px solid var(--color-rule)}
+.faith-room .frcw-list li:first-child{border-top:0}
+.faith-room .frcw-list .frcw-link{display:flex;gap:16px;justify-content:space-between;align-items:baseline;padding:10px 0;font:14px/1.5 var(--font-body);color:var(--color-dark);text-transform:none;letter-spacing:normal}
+.faith-room .frcw-link>span{min-width:0;overflow-wrap:anywhere}
+.faith-room .frcw-link small{flex:none;white-space:nowrap;color:var(--color-muted);font-size:12px;font-variant-numeric:tabular-nums}
+.faith-room .frcw-link:hover>span{text-decoration:underline;text-underline-offset:3px}
+.faith-room .frcw-reader{display:inline-block!important;padding:9px 0!important;font:13px/1.5 var(--font-body);color:var(--color-primary-text);text-decoration:underline}
+.faith-room .frcw-unindexed{margin:0 0 14px;font-size:13px;color:var(--color-muted)}
+@media(max-width:640px){.faith-room .frcw-pane{max-height:50vh;padding-inline:10px}.faith-room .frcw-preview{font-size:14px}}
+.faith-room .frcw-volume.frb-row{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:start}
+.faith-room .frcw-volume.frb-row>a{grid-column:1;grid-row:1;min-width:0}
+.faith-room .frcw-volume.frb-row>.frb-mark{grid-column:2;grid-row:1;margin:5px 0 0}
+.faith-room .frcw-volume.frb-row>.frcw-contents,.faith-room .frcw-volume.frb-row>.frcw-unindexed{grid-column:1/-1;grid-row:2}
+
+.faith-room .fro-card .frcw-preview{font-size:12px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* A selected shelf starts with its own tools and works, not the whole catalogue again. */
+.fro-catalogue-return{display:none}
+.faith-room-openers.is-filtered .fro-continue,.faith-room-openers.is-filtered .fro-shelves{display:none}
+.faith-room-openers.is-filtered .fro-catalogue-return{display:block;margin:0 0 24px}
+.fro-catalogue-return a{display:inline-flex;align-items:center;min-height:44px;color:var(--color-dark);text-decoration:underline;text-underline-offset:3px}
+.faith-room [data-faith-room]{scroll-margin-top:80px}
+@media(max-width:640px){.faith-room [data-room-letter],.faith-room .faith-room-pager button,.faith-room .frcw-contents>summary{min-height:44px;min-width:44px}}
+
+/* Keep Vercel core totals comparable when a shelf also holds native English editions. */
+.fro-shelf-extra { display: block; font-size: 0.85em; font-weight: 400; line-height: 1.4; }

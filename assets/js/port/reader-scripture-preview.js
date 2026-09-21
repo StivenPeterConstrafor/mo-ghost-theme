@@ -15,7 +15,7 @@
     const content=panel.querySelector('.rsp-content'),bible=panel.querySelector('.rsp-bible'),commentaries=panel.querySelector('.rsp-commentaries');
     const base=String(root.__FR_BLOB_BASE__||'https://mo-tfr-library.mo-podcast-feed.workers.dev').replace(/\/$/,'');
     let booksPromise,active=null,pinned=false,serial=0,hoverTimer,leaveTimer,suppressFocus=false;
-    const chapters=new Map();
+    const chapters=new Map(),pendingChapters=new Map();
     const edition=panel.querySelector('.rsp-edition');
     const ESV_PROXY='https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/chapter/ESV/';
     const ESV_ORDER=['genesis','exodus','leviticus','numbers','deuteronomy','joshua','judges','ruth','1samuel','2samuel','1kings','2kings','1chronicles','2chronicles','ezra','nehemiah','esther','job','psalms','proverbs','ecclesiastes','songofsolomon','isaiah','jeremiah','lamentations','ezekiel','daniel','hosea','joel','amos','obadiah','jonah','micah','nahum','habakkuk','zephaniah','haggai','zechariah','malachi','matthew','mark','luke','john','acts','romans','1corinthians','2corinthians','galatians','ephesians','philippians','colossians','1thessalonians','2thessalonians','1timothy','2timothy','titus','philemon','hebrews','james','1peter','2peter','1john','2john','3john','jude','revelation'];
@@ -23,15 +23,21 @@
       const id=ESV_ORDER.indexOf(bookKey(book))+1;if(!id)return null;
       const cacheKey='esv:'+id+'/'+chapterN;
       if(chapters.has(cacheKey))return chapters.get(cacheKey);
-      try{
-        const rows=await json(ESV_PROXY+id+'/'+chapterN+'/');
-        if(!Array.isArray(rows)||!rows.length)return null;
-        const verses={};rows.forEach(r=>{verses[String(r.verse)]=String(r.text||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();});
-        const chapter={verses};chapters.set(cacheKey,chapter);
-        if(chapters.size>64)chapters.delete(chapters.keys().next().value);
-        return chapter;
-      }catch(_){return null;}
+      if(pendingChapters.has(cacheKey))return pendingChapters.get(cacheKey);
+      const pending=(async()=>{
+        try{
+          const rows=await json(ESV_PROXY+id+'/'+chapterN+'/');
+          if(!Array.isArray(rows)||!rows.length)return null;
+          const verses={};rows.forEach(r=>{verses[String(r.verse)]=String(r.text||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();});
+          const chapter={verses};chapters.set(cacheKey,chapter);
+          if(chapters.size>64)chapters.delete(chapters.keys().next().value);
+          return chapter;
+        }catch(_){return null;}
+        finally{pendingChapters.delete(cacheKey);}
+      })();
+      pendingChapters.set(cacheKey,pending);return pending;
     }
+
     async function json(url){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);try{const response=await root.fetch(url,{signal:controller.signal});if(!response.ok)throw Error('Scripture could not load.');return await response.json();}finally{clearTimeout(timer);}}
     function books(){if(!booksPromise)booksPromise=Promise.all([json(base+'/v1/bible/asv/books.json'),json(base+'/v1/bible/all/books.json')]).then(([asv,all])=>({asv,all:Array.isArray(all?.books)?all.books:[]})).catch(error=>{booksPromise=null;throw error;});return booksPromise;}
     function queryOf(anchor){try{return anchor.dataset.scriptureRef||new URL(anchor.href,root.location.href).searchParams.get('q')||'';}catch(_){return '';}}
@@ -59,7 +65,7 @@
         if(request!==serial)return false;
         edition.textContent=usedESV?'English Standard Version':'American Standard Version';
         const result=selectedVerses(chapter,ref.verses);
-        content.innerHTML=(result.excerpt?'<p class="rsp-status">Opening verses</p>':'')+(anchor.dataset.xrefFollowing==='true'?'<p class="rsp-status">The citation continues beyond this verse. Open the chapter to read on.</p>':'')+result.verses.map(v=>'<p class="rsp-verse"><sup>'+v.n+'</sup> '+esc(v.text)+'</p>').join('')+(result.missing.length?'<p class="rsp-status">'+(result.missing.length===1?'Verse ':'Verses ')+esc(result.missing.join(', '))+' '+(result.missing.length===1?'is':'are')+' not present in this ASV chapter. The citation is kept as printed.</p>':'')+(!result.verses.length&&!result.missing.length?'<p>No verse text is available for this chapter.</p>':'');
+        content.innerHTML=(result.excerpt?'<p class="rsp-status">Opening verses</p>':'')+(anchor.dataset.xrefFollowing==='true'?'<p class="rsp-status">The citation continues beyond this verse. Open the chapter to read on.</p>':'')+result.verses.map(v=>'<p class="rsp-verse"><sup>'+v.n+'</sup> '+esc(v.text)+'</p>').join('')+(result.missing.length?'<p class="rsp-status">'+(result.missing.length===1?'Verse ':'Verses ')+esc(result.missing.join(', '))+' '+(result.missing.length===1?'is':'are')+' not present in this '+(usedESV?'ESV':'ASV')+' chapter. The citation is kept as printed.</p>':'')+(!result.verses.length&&!result.missing.length?'<p>No verse text is available for this chapter.</p>':'');
         place();return true;
       }catch(_){if(request!==serial)return false;content.innerHTML='<p>Scripture could not load. Your place in the book is unchanged.</p><button type="button" class="rsp-retry">Retry passage</button>';content.querySelector('.rsp-retry').onclick=()=>show(anchor,pinned);place();return true;}
     }

@@ -1,0 +1,116 @@
+/* The port's research UI inherits Ian's existing publication tokens.
+   Scope on the body prevents a saved reader theme from repainting the site. */
+html.fr-ghost-site:root[data-theme],
+html.fr-ghost-site:root:not([data-theme]),
+html.fr-ghost-site body {
+  --bg: var(--color-page, #f6f3f2);
+  --bg-warm: var(--color-cream, #f5efe1);
+  --card: #fffdfa;
+  --card-bg: #fffdfa;
+  --panel: #fffdfa;
+  --paper: #fffdfa;
+  --fg: var(--color-dark, #2d2927);
+  --head: var(--color-dark, #2d2927);
+  --ink: var(--color-dark, #2d2927);
+  --muted: var(--color-muted, #6b6660);
+  --faint: var(--color-muted, #6b6660);
+  --border: var(--color-rule, #d9c6a7);
+  --line: var(--color-rule, #d9c6a7);
+  --hl: var(--color-cream, #f5efe1);
+  --highlight: var(--color-cream, #f5efe1);
+  --sidebar: var(--color-cream, #f5efe1);
+  --sidebar-bg: var(--color-cream, #f5efe1);
+  --accent: var(--color-secondary, #c1593c);
+  --accent-soft: var(--color-rule, #d9c6a7);
+  --body: var(--font-body, 'Source Serif Pro', Georgia, serif);
+  --sans: var(--font-body, 'Source Serif Pro', Georgia, serif);
+  --serif: var(--font-display, 'IM Fell Great Primer', Georgia, serif);
+  --display: var(--font-display, 'IM Fell Great Primer', Georgia, serif);
+  --masthead: var(--color-cream, #f5efe1);
+  --masthead-ink: var(--color-dark, #2d2927);
+  color: var(--fg);
+  background: var(--bg);
+}
+html.fr-ghost-site body > header.site {
+  background: var(--bg);
+  color: var(--fg);
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+html.fr-ghost-site body.research-page > header.site {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-height: 64px;
+  padding: 8px max(24px, calc((100vw - 1320px) / 2));
+  top: var(--mo-head, 85px);
+  z-index: 18;
+}
+html.fr-ghost-site .research-library-home {
+  flex: 0 0 auto;
+  color: var(--fg);
+  font: 18px/1.4 var(--font-body);
+  text-decoration: none;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+html.fr-ghost-site #topnav {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: 22px;
+  margin: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  white-space: nowrap;
+}
+html.fr-ghost-site #topnav a {
+  display: inline-flex;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  align-items: center;
+  min-height: 44px;
+  color: var(--muted);
+  font: 16px/1.4 var(--font-body);
+  text-decoration: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 6px 0;
+}
+html.fr-ghost-site #topnav a.on,
+html.fr-ghost-site #topnav a[aria-current='page'] { color: var(--fg); border-bottom-color: var(--accent); }
+html.fr-ghost-site #topnav a.on::after { display: none; }
+html.fr-ghost-site #topnav a:hover,
+html.fr-ghost-site .research-library-home:hover { color: var(--accent); }
+html.fr-ghost-site #research-ask { flex: 0 0 auto; min-height: 44px; padding: 7px 14px; border: 1px solid var(--border); border-radius: 4px; background: var(--card); color: var(--fg); font: 16px var(--font-body); }
+html.fr-ghost-site #thBtn,
+html.fr-ghost-site #pinsTheme,
+html.fr-ghost-site #themeBtn,
+html.fr-ghost-site button[aria-label='Change reading theme'] { display: none !important; }
+html.fr-ghost-site body.research-page #page { max-width: 1320px; margin: 0 auto; padding: 42px 24px 72px; background: var(--bg); color: var(--fg); }
+html.fr-ghost-site #page h1 { color: var(--fg); font: 400 clamp(34px, 4vw, 48px)/1.18 var(--font-display); letter-spacing: 0; margin-bottom: 18px; }
+html.fr-ghost-site #page h2,
+html.fr-ghost-site #page h3 { color: var(--fg); font-family: var(--font-display); }
+html.fr-ghost-site #page :is(input,select,textarea) { color: var(--fg); background: var(--card); border-color: var(--border); font-family: var(--font-body); min-height: 44px; }
+html.fr-ghost-site #page input::placeholder { color: var(--muted); opacity: 1; }
+html.fr-ghost-site #page button { font-family: var(--font-body); }
+html.fr-ghost-site :is(#page,#topnav,.research-library-home) :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+html.fr-ghost-site #page ::selection { background: var(--hl); color: var(--fg); }
+@media (max-width: 900px) {
+  html.fr-ghost-site body.research-page > header.site { padding-inline: 20px; gap: 18px; }
+  html.fr-ghost-site #topnav { gap: 18px; }
+}
+@media (max-width: 640px) {
+  html.fr-ghost-site body.research-page > header.site { position: sticky; top: var(--mo-head, 61px); padding: 4px 16px; gap: 16px; min-height: 56px; }
+  html.fr-ghost-site .research-library-home { font-size: 16px; }
+  html.fr-ghost-site #topnav { width: auto; order: initial; }
+  html.fr-ghost-site #research-ask { padding-inline: 10px; }
+  html.fr-ghost-site body.research-page #page { padding: 28px 20px 56px; }
+}
+
+html.fr-ghost-site .scripture-page .vv { scroll-margin-top: calc(var(--mo-head, 85px) + 84px); }
+html.fr-ghost-site .scripture-page .vv.is-passage { background: var(--hl); }

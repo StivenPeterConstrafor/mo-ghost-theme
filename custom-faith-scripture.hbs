@@ -19,7 +19,7 @@
 
   <section class="bhero bhero--tool">
   <div class="bhero-inner container">
-    <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/scripture/">Scripture Index</a></p>
+    <p class="bhero-kicker"><a href="/the-faith-received/all-works/?collection=all">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/scripture/">Scripture Index</a></p>
     <h1>Scripture Index</h1>
     <p class="bhero-sub">Every biblical passage that the historic creeds, catechisms, and library cite or expound. Pick a book; jump to the reference.</p>
     {{!-- This page answers "who cites this passage". The obvious next
@@ -69,7 +69,7 @@
      this points at it. Set the tag and the shipped source indexes stop
      being used; unset it, or let the fetch fail, and they come back. --}}
 <meta name="tfr-scripture-index" content="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/index/scripture-books.json" />
-<script src="{{asset "js/faith-indexes.js"}}"></script>
+<script src="{{asset "js/faith-indexes.js"}}&amp;frv=97e45fef0407f81b"></script>
 {{!-- The library-wide citation totals. Still its own fetch and its own
      panel: it draws the lede, the canon density strip, the tradition
      chips and the jump control, and it hands the per-book citation

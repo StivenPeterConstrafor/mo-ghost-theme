@@ -1,11 +1,13 @@
 {{!< default}}
 {{#contentFor "moHead"}}
+<script defer src="{{asset "js/page/faith-port-downloads.js"}}&amp;frv=2b1f79b352c6db15"></script>
+<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=22fa8b0f2bf4941d"></script>
 <title>{{#if title}}{{title}} | {{/if}}The Faith Received | Mere Orthodoxy</title>
 {{!-- THE FAMILY IDENTITY AND THE MASTHEAD OFFSET, before the engine runs.
      reader-core.js consumes window.__FR_SITE__ at its first statement, and
      our nav is fixed at top:0 like the reader's toolbar, so the toolbar
      needs to know how tall ours is. Both are done here; must load first. --}}
-<script src="{{asset "js/page/faith-port-read-boot.js"}}"></script>
+<script src="{{asset "js/page/faith-port-read-boot.js"}}&amp;frv=af6a3529073948b4"></script>
 <meta charset="utf-8">
 <meta name="theme-color" content="#FAF8F3" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#211E1A" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="The Faith Received">
@@ -15,35 +17,35 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer:ital@0;1&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Old+Standard+TT:ital,wght@0,400;0,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
-<link rel="stylesheet" href="{{asset "css/port/prdl-system.css"}}">  <!-- shared design system (one source for all four sites); the inline tokens below still win, so this is additive -->
-<link rel="stylesheet" href="{{asset "css/port/read.in01.css"}}">
-<link rel="stylesheet" href="{{asset "css/port/work-research.css"}}">
-<script defer src="{{asset "js/port/work-research.js"}}"></script>
-<script defer src="{{asset "js/port/reader-bookmarks.js"}}"></script>
+<link rel="stylesheet" href="{{asset "css/port/prdl-system.css"}}&amp;frv=773f88d15ebcac8e">  <!-- shared design system (one source for all four sites); the inline tokens below still win, so this is additive -->
+<link rel="stylesheet" href="{{asset "css/port/read.in01.css"}}&amp;frv=d17e84a8b323b04a">
+<link rel="stylesheet" href="{{asset "css/port/work-research.css"}}&amp;frv=2752d3b8f4712425">
+<script defer src="{{asset "js/port/work-research.js"}}&amp;frv=d365d11383a739d4"></script>
+<script defer src="{{asset "js/port/reader-bookmarks.js"}}&amp;frv=4e92a8363e3e9697"></script>
 {{!-- The three the corpus site's reader loads and this one did not, which is why PL
       columns, the Greek parallel lanes and the PL editorial notes all behaved
       differently here. reader-core.js calls FRMigneNavigation for every column it
       opens, so these must load before it, in this order. --}}
-<script src="{{asset "js/port/migne-navigation.js"}}"></script>
-<script src="{{asset "js/port/pg-parallel.js"}}"></script>
-<script src="{{asset "js/port/pld-reading.js"}}"></script>
-<script src="{{asset "js/port/reader-navigation.js"}}"></script>
-<script src="{{asset "js/port/reader-source-outline.js"}}"></script>
-<script src="{{asset "js/port/reader-contents.js"}}"></script>
-<link rel="stylesheet" href="{{asset "css/port/reader-contents.css"}}">
-<link rel="stylesheet" href="{{asset "css/port/work-research-sources.css"}}">
-<script defer src="{{asset "js/port/work-research-sources.js"}}"></script>
-<link rel="stylesheet" href="{{asset "css/port/desk-workflow.css"}}">
-<link rel="stylesheet" href="{{asset "css/port/reader-margins.css"}}"><script defer src="{{asset "js/port/reader-margins.js"}}"></script>
-<link rel="stylesheet" href="{{asset "css/port/reader-footnotes.css"}}"><script defer src="{{asset "js/port/reader-footnotes.js"}}"></script>
-<link rel="stylesheet" href="{{asset "css/port/reader-scripture-preview.css"}}"><script defer src="{{asset "js/port/reader-scripture-preview.js"}}"></script>
-<script src="{{asset "js/port/read.in01.js"}}"></script>{{!-- read.in01.js ends by setting window.__FR_FB__ to the corpus site's own
+<script src="{{asset "js/port/migne-navigation.js"}}&amp;frv=01eadc1811ddc5c9"></script>
+<script src="{{asset "js/port/pg-parallel.js"}}&amp;frv=2642e7f9cef505b9"></script>
+<script src="{{asset "js/port/pld-reading.js"}}&amp;frv=42310bb7ef661c18"></script>
+<script src="{{asset "js/port/reader-navigation.js"}}&amp;frv=749e603cd55e3f46"></script>
+<script src="{{asset "js/port/reader-source-outline.js"}}&amp;frv=e279535bb9854a04"></script>
+<script src="{{asset "js/port/reader-contents.js"}}&amp;frv=e2f9a9506698188b"></script>
+<link rel="stylesheet" href="{{asset "css/port/reader-contents.css"}}&amp;frv=be9cf4f6fae0f5a5">
+<link rel="stylesheet" href="{{asset "css/port/work-research-sources.css"}}&amp;frv=c681ab35bad0d33a">
+<script defer src="{{asset "js/port/work-research-sources.js"}}&amp;frv=3a1db7f498566ec4"></script>
+<link rel="stylesheet" href="{{asset "css/port/desk-workflow.css"}}&amp;frv=d30e48aba012c5c2">
+<link rel="stylesheet" href="{{asset "css/port/reader-margins.css"}}&amp;frv=1db8200a0e7ddcd1"><script defer src="{{asset "js/port/reader-margins.js"}}&amp;frv=b52eea671a09c1c6"></script>
+<link rel="stylesheet" href="{{asset "css/port/reader-footnotes.css"}}&amp;frv=17ad80959a8b50ce"><script defer src="{{asset "js/port/reader-footnotes.js"}}&amp;frv=02bf9e1cb9320c19"></script>
+<link rel="stylesheet" href="{{asset "css/port/reader-scripture-preview.css"}}&amp;frv=78f84b854c76833d"><script defer src="{{asset "js/port/reader-scripture-preview.js"}}&amp;frv=40162fe09ed2d10a"></script>
+<script src="{{asset "js/port/read.in01.js"}}&amp;frv=642a00fc293a16d2"></script>{{!-- read.in01.js ends by setting window.__FR_FB__ to the corpus site's own
       Firebase project. read-tools.js would sign our readers into it and mirror
       their notebook there; our CSP refuses the gstatic imports, so today it only
       logs three CSP errors per load and mislabels the notebook "sync
       unavailable". This drops the config while the window between the two files
-      is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}"><script defer src="{{asset "js/port/ask-store.js"}}"></script><script src="{{asset "js/page/faith-ask-config.js"}}"></script><script defer src="{{asset "js/port/ask-workspace.js"}}"></script><script src="{{asset "js/port/research-data.js"}}"></script><script src="{{asset "js/port/research-notebook.js"}}"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
-<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}">
+      is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=d62ee4eca7750274"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=d2003c82432d7011"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=16c1caf696083c4b"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=b216a81e4e2cd814">
 {{/contentFor}}
 
 {{!-- /the-faith-received/read/ — the ported page-native reader.
@@ -65,16 +67,17 @@
      lives in assets/css/faith-port-reader-skin.css and must stay the last
      stylesheet, because it restores values two of his own sheets
      overwrite. --}}
-<script src="{{asset "js/port/read.in02.js"}}"></script>
+<script src="{{asset "js/port/read.in02.js"}}&amp;frv=a1e63cdd1b6ab3d6"></script>
 <div class="app no-facs nosb faith-port-read-page" id="app">
   <aside class="sidebar">
     <div class="work"><div class="wt" id="wt">…</div><div class="wmeta" id="wmeta"></div>{{!-- COinS removed: it advertised thefaithreceived.vercel.app as publisher. --}}</div>
+    <div class="contents-toolbar"><span>Contents</span><button id="contentsClose" type="button" aria-label="Close contents">×</button></div>
     <nav class="nav" id="nav"></nav>
   </aside>
   <div class="scroll" id="scroll">
     <div class="main">
       <a class="skiplink" href="#reading">Skip to the text</a>
-      <header class="ph fr-reader-head"><div class="phl"><button id="sbT" class="sbt" title="Collapse / show the contents sidebar" aria-label="Toggle sidebar">☰</button><a id="mhHome" class="mh-home" href="/the-faith-received/all-works/" title="Back to the library" aria-label="Back to the library"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="m14 6-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Library</span></a><div class="reader-identity"><h1 id="h1">Loading…</h1><div class="reader-reference"><a id="reader-author" href="/the-faith-received/all-works/"></a><span id="reader-volume"></span><button id="reader-location" type="button" title="Go to a place in this work"></button></div><div class="sub" id="sub"></div><div class="ploc" id="phLoc" aria-live="polite" title="Current section — click to open the outline"></div></div><button id="rdAbout" class="tgl" title="About this work & its author — what it is and who wrote it">ⓘ About</button></div>
+      <header class="ph fr-reader-head"><div class="phl"><button id="sbT" class="sbt" title="Collapse / show the contents sidebar" aria-label="Toggle sidebar">☰</button><a id="mhHome" class="mh-home" href="/the-faith-received/all-works/?collection=all" title="Back to the library" aria-label="Back to the library"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="m14 6-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Library</span></a><div class="reader-identity"><h1 id="h1">Loading…</h1><div class="reader-reference"><a id="reader-author" href="/the-faith-received/all-works/?collection=all"></a><span id="reader-volume"></span><button id="reader-location" type="button" title="Go to a place in this work"></button></div><div class="sub" id="sub"></div><div class="ploc" id="phLoc" aria-live="polite" title="Current section — click to open the outline"></div></div><button id="rdAbout" class="tgl" title="About this work & its author — what it is and who wrote it">ⓘ About</button></div>
         <div class="ctr">
           <div class="seg pnav" role="group" aria-label="Page"><button id="pPrev" title="Previous page (←)">‹</button><button id="pNext" title="Next page (→)">›</button></div><div class="seg pgjump"><input type="text" id="pgJump" inputmode="text" autocomplete="off" title="Jump to page" aria-label="Page number"><span class="pg-total" id="pgTotal"></span></div>
           <div class="seg lanes" role="group" aria-label="What to show — combine freely">
@@ -214,28 +217,28 @@
      setting a global here would need inline script, which the CSP
      forbids. --}}
 <div id="frPortAssets" hidden
-     data-read-tools="{{asset "js/port/read-tools.js"}}"
-     data-ask-jobs="{{asset "js/port/ask-jobs.js"}}"></div>
-<script src="{{asset "js/port/reader-core.js"}}"></script>
+     data-read-tools="{{asset "js/port/read-tools.js"}}&amp;frv=8ae33809b62afe23"
+     data-ask-jobs="{{asset "js/port/ask-jobs.js"}}&amp;frv=408f593670c4a344"></div>
+<script src="{{asset "js/port/reader-core.js"}}&amp;frv=aadbcd613c6a9352"></script>
 {{!-- The reader's Tools popover writes to OUR stores: the mo-kit bookmark
      All Works draws its row stars from, and the notebook the desk reads. --}}
 <script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
-<script src="{{asset "js/lib/faith-notebook-store.js"}}"></script>
-<script src="{{asset "js/page/faith-port-read-tools.js"}}"></script>
+<script src="{{asset "js/lib/faith-notebook-store.js"}}&amp;frv=015482171f240662"></script>
+<script src="{{asset "js/page/faith-port-read-tools.js"}}&amp;frv=8a21c23315db032e"></script>
 {{!-- The Research rail's Work tab. read-tools.js owns the panel; this names the
      work in it and routes the four shortcuts the restore left unbound. --}}
-<script src="{{asset "js/page/faith-port-read-research.js"}}"></script>
+<script src="{{asset "js/page/faith-port-read-research.js"}}&amp;frv=c43c19e15a24c585"></script>
 {{!-- Find in this work belongs to read-tools.js: it builds #findbar and owns
      window._frSearch. This file adds only the door the port leaves unbound,
      Ctrl/⌘+Shift+F, and routes it there. It used to be a second find whose
      bar collided with the port's on the id "findbar" and, once opened, broke
      the toolbar's Search for the rest of the session. --}}
-<script src="{{asset "js/page/faith-port-read-find.js"}}"></script>
+<script src="{{asset "js/page/faith-port-read-find.js"}}&amp;frv=20f0e69e8899d894"></script>
 {{!-- The English Modernizer. Same engine the Dynamic Reader uses, so a
      word is modernized the same way everywhere on the site. --}}
 <script src="{{asset "js/faith-modernize.js"}}"></script>
-<script src="{{asset "js/page/faith-port-read-modernize.js"}}"></script>
-<script src="{{asset "js/port/cgpt-link.js"}}"></script>
+<script src="{{asset "js/page/faith-port-read-modernize.js"}}&amp;frv=9d72eb5206abe75d"></script>
+<script src="{{asset "js/port/cgpt-link.js"}}&amp;frv=386401f14f087d18"></script>
 {{!-- Binds [data-report-issue] above. It is a per-page script rather
      than part of site.min.js, so a page that shows the button has to
      ask for it; the ported reader showed neither until now. --}}
@@ -243,5 +246,5 @@
 {{!-- The ported reader restores your place silently, which is right,
      but leaves no way back to page 1. This adds only that door; the
      reader still owns the position itself. --}}
-<script src="{{asset "js/page/faith-port-read-restart.js"}}"></script>
+<script src="{{asset "js/page/faith-port-read-restart.js"}}&amp;frv=bf42730f800bc4a5"></script>
 {{ghost_foot}}

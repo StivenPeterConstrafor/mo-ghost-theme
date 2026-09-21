@@ -80,3 +80,125 @@ body.research-page header.site.glass { top: var(--mo-head, 85px); }
   .faith-port-desk-page #docs,
   .faith-port-desk-page #rail { top: var(--mo-head, 85px); }
 }
+
+/* ── When the masthead hides, the pinned bar follows it to the top ──────
+   header-behaviors.js puts .is-hidden on the masthead as you scroll down
+   and slides it out of the window. The bars above are pinned at
+   --mo-head, the masthead's height, so without this an 85px band of the
+   page scrolled past ABOVE the bar while the bar hung mid-window (the
+   author room, 2026-09-19). The bar is a later sibling of the masthead,
+   so the masthead's own class is the whole signal — the reader rail
+   does the same. Matched to the masthead's transition so the two move
+   as one gesture; parked when the reader has asked for no motion. */
+body.web-page .site-header.is-hidden ~ header.site,
+body.research-page .site-header.is-hidden ~ header.site,
+body.research-page .site-header.is-hidden ~ header.site.glass,
+.faith-port-desk-page .site-header.is-hidden ~ #docs,
+.faith-port-desk-page .site-header.is-hidden ~ #rail { top: 0; }
+body.web-page header.site,
+body.research-page header.site,
+body.research-page header.site.glass,
+.faith-port-desk-page #docs,
+.faith-port-desk-page #rail { transition: top 0.25s ease; }
+@media (prefers-reduced-motion: reduce) {
+  body.web-page header.site,
+  body.research-page header.site,
+  body.research-page header.site.glass,
+  .faith-port-desk-page #docs,
+  .faith-port-desk-page #rail { transition: none; }
+}
+/* ── The dictionary ──────────────────────────────────────────────────
+   The corpus page laid itself out as a flex column on the body — its
+   top bar, the search band, then two panes that fill the rest of the
+   window and scroll inside themselves. Inside this site the body is
+   Ghost's, so the template wraps the page and the wrapper takes the
+   column: the window's height less our masthead, which is fixed above
+   it. The panes scroll within it, as they did. */
+.faith-port-dtc-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - var(--mo-head, 85px));
+  min-height: 0;
+}
+
+/* The standalone English reader is a page inside Ghost, not the body.
+   Inherit the port's existing light/dark tokens on its actual wrapper. */
+.faith-port-readen-page { background: var(--bg); color: var(--fg); }
+.faith-port-readen-page .reader,
+.faith-port-readen-page .work { color: var(--fg); }
+.faith-port-readen-page .masthead { top: var(--mo-head, 85px); }
+.faith-port-readen-page .reader-home { color: var(--fg); font: inherit; white-space: nowrap; }
+.faith-port-readen-page .sidebar {
+  top: calc(var(--mo-head, 85px) + 3.1rem);
+  height: calc(100dvh - var(--mo-head, 85px) - 3.1rem);
+}
+@media (max-width: 760px) {
+  .faith-port-readen-page .sidebar { top: var(--mo-head, 61px); height: calc(100dvh - var(--mo-head, 61px)); }
+  .faith-port-readen-page .scrim { top: var(--mo-head, 61px); }
+}
+
+/* A persistent exit from every atlas hash view, outside its mode router. */
+body.web-page .faith-atlas-home {
+  flex: 0 0 auto;
+  color: var(--fg);
+  font: inherit;
+  white-space: nowrap;
+  text-decoration: none;
+  padding: .5rem 0;
+}
+body.web-page .faith-atlas-home:hover { text-decoration: underline; text-underline-offset: .2em; }
+body.web-page .faith-atlas-home:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+/* Ian's constellation layouts share Web's navigation and evidence routes. */
+#faith-web-constellations[hidden]{display:none!important}
+#faith-web-constellations{position:relative;flex:1;min-height:0;overflow:visible;overscroll-behavior:contain;padding:28px clamp(18px,3vw,48px);background:var(--bg);color:var(--fg);--color-page:var(--bg);--color-white:var(--card);--color-dark:var(--fg);--color-muted:var(--muted);--color-rule:var(--border);--color-card-border:var(--border);--font-body:"Source Serif Pro",Georgia,serif;--cn-ink:var(--fg);--cn-paper:var(--card)}
+#faith-web-constellations .cn-panel{max-width:1500px;margin:auto}
+#faith-web-constellations .cn-head{max-width:none;margin:0 0 20px}
+#faith-web-constellations .cn-lede{max-width:78ch}
+#faith-web-constellations .cn-controls{gap:14px 28px}
+#faith-web-constellations .cn-view-btn{border:0;border-bottom:2px solid transparent;border-radius:0;padding:8px 3px;background:none;color:var(--muted)}
+#faith-web-constellations .cn-view-btn.is-active{color:var(--fg);border-bottom-color:var(--accent)}
+#faith-web-constellations .cn-view-btn:disabled{display:none}
+#faith-web-constellations .cn-stage{background:var(--card)}
+#faith-web-constellations .cn-open-source{display:block;margin:12px 0;text-decoration:underline;text-underline-offset:3px}
+#faith-web-constellations .cn-index-list{max-height:50vh;overflow:auto}
+body.web-constellation-mode :is(#graph-frame,#period-key,#map-caption,#connection-discovery,#map-help,#map-help-button,#map-density,label[for="map-density"]){display:none!important}
+body.web-citation-layout #faith-web-constellations :is(.cn-head,.cn-aside,.cn-index,.cn-controls>.cn-control:first-child,.cn-controls>.cn-control:nth-child(3)){display:none}
+body.web-citation-layout #faith-web-constellations .cn-body{display:block}
+body.web-citation-layout #faith-web-constellations .cn-stage{height:max(350px,52vh)}
+body.web-citation-layout #faith-web-constellations{padding-top:0}
+body.web-constellation-mode:not(.web-citation-layout) #map-heading{display:none}
+#network-layouts{position:fixed;z-index:26;top:var(--mast);left:var(--rail);right:0;display:flex;gap:18px;align-items:center;min-height:47px;padding:0 28px;background:var(--bg);border-bottom:1px solid var(--border)}
+#network-layouts button{font:14px var(--body);color:var(--muted);border:0;border-bottom:2px solid transparent;background:none;border-radius:0;padding:12px 0;white-space:nowrap}
+#network-layouts button[aria-pressed="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+#network-show-all{margin-left:auto}#network-show-all[hidden]{display:none}
+body.web-page #atlas{top:calc(var(--mast) + 47px)}
+body.web-page.popen #network-layouts{right:var(--details)}
+@media(max-width:1150px) and (min-width:761px){body.web-page.popen #network-layouts{left:0}}
+@media(max-width:760px){
+ #network-layouts{left:0;top:calc(var(--mast) + 45px);padding:0 16px;gap:16px;overflow-x:auto}
+ body.web-page #atlas,body.web-page.popen #atlas{top:calc(var(--mast) + 92px)}
+ body.web-page.popen #network-layouts,body.web-page[data-view="browse"] #network-layouts{display:none}
+ #network-layouts button{font-size:13px}
+}
+@media(max-width:640px){#faith-web-constellations{padding:20px 16px}#faith-web-constellations .cn-controls{gap:12px}#faith-web-constellations .cn-control:first-child{width:100%}#faith-web-constellations .cn-select{width:100%}}
+
+@media(max-width:640px){
+ #faith-web-constellations .cn-controls{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+ #faith-web-constellations .cn-control:first-child,#faith-web-constellations .cn-control:last-child{grid-column:1/-1}
+ #faith-web-constellations .cn-views{gap:4px 10px}
+ #faith-web-constellations .cn-view-btn{font-size:14px;min-height:38px}
+ #faith-web-constellations .cn-view-btn+.cn-view-btn{margin-left:0}
+ #faith-web-constellations .cn-control-label{margin-bottom:4px}
+ #faith-web-constellations .cn-stage{min-height:360px}
+}
+
+#network-author-map{font:13px var(--body);color:var(--fg);text-decoration:underline;background:none;border:0;padding:12px 0 0}#network-author-map[hidden]{display:none}
+body.web-citation-layout #faith-web-constellations .cn-views{gap:6px}
+body.web-citation-layout #faith-web-constellations .cn-view-btn+.cn-view-btn{margin-left:10px}
+
+#faith-web-constellations .cn-links{max-height:52vh;overflow:auto;padding:0;list-style:none}#faith-web-constellations .cn-index-btn,#faith-web-constellations .cn-link-btn{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--border);border-radius:0;padding:12px 14px;background:none;font:inherit;line-height:1.4;color:var(--fg)}#faith-web-constellations .cn-index-btn:hover,#faith-web-constellations .cn-index-btn.is-selected{background:var(--hl)}#faith-web-constellations .cn-index-sub{display:block;margin-top:5px;font-size:13px;color:var(--muted)}.relation-show-all{margin:10px 0;padding:8px 12px;font:13px var(--body);border:1px solid var(--border);color:var(--fg);background:var(--card)}
+
+#faith-web-constellations .cn-panel{--cn-ink:var(--fg);--cn-paper:var(--card);--cn-accent:var(--fg);--cn-edge:var(--muted);--cn-ghost:var(--muted)}
+
+@media(max-width:640px){body.web-citation-layout #faith-web-constellations .cn-controls{display:flex}body.web-citation-layout #faith-web-constellations .cn-control{width:100%}}

@@ -7,36 +7,19 @@
 <meta name="twitter:title" content="The Faith Received" />
 <meta name="twitter:description" content="The creeds, confessions, catechisms, and classic works of the Christian tradition, free to read in a reader built for study." />
 {{/contentFor}}
-{{!-- /the-faith-received/ — the project's landing page.
 
-     Rebuilt 2026-08-20. This was a nine-section tab shell; it is now a
-     landing page, and the browsing it used to hold lives at
-     /the-faith-received/browse/. The band language is documented in
-     website/handoffs/TFR-REDESIGN.md.
-
-     The twelve works under "In the collection" are hard-set here rather
-     than harvested by faith-start.js: they are an editorial selection,
-     not the first twelve of anything. --}}
 
 <main class="faith-received faith-landing">
 <!-- ── Hero ─────────────────────────────────────────────────────── -->
 <section class="lp-hero">
   <div class="container">
     <p class="hero-kicker"><span class="dot"></span> The Faith Received <span class="faith-beta">Beta</span></p>
-    {{!-- The space after the <br /> is load-bearing: the break is
-          display:none below 700px, and without a space beside it the
-          two text nodes ran together as "isthe". --}}
+    
     <h1>The Christian tradition is<br /> the <em>Christian&rsquo;s inheritance.</em></h1>
-    <p class="lp-hero-sub">The Faith Received gathers the creeds, confessions, and classic works of the Christian tradition into a single library, designed to be publicly available, practically usable, and beautifully readable.</p>
+    <p class="lp-hero-sub">Read Christian theology from the early church to the early modern period. Search the works, compare translations with the original texts, and follow their sources.</p>
     <div class="lp-ctas">
-      <a href="/the-faith-received/browse/" class="btn btn-primary btn-lg">Begin reading</a>
-      {{!-- Where this goes depends on whether the thing it points at is
-            on the page. The pricing section below carries
-            id="become-a-member" and is gated to paid and comped
-            members, so for them the anchor does not exist and this
-            button scrolled nowhere at all. A member who has already
-            paid still wants a way to support the work, so they get
-            /membership/ instead of a dead jump. --}}
+      <a href="/the-faith-received/all-works/?collection=all" class="btn btn-primary btn-lg">Begin reading</a>
+      
       {{#match @member.status "paid"}}
       <a href="/membership/" class="btn btn-ghost btn-lg">Support the work</a>
       {{else}}
@@ -56,19 +39,19 @@
   <div class="container">
     <p class="lp-num">Where to start</p>
     <div class="lp-doors">
-      <a class="lp-door" href="/the-faith-received/browse/">
+      <a class="lp-door" href="/the-faith-received/all-works/?collection=all">
         <h3>Read</h3>
         <p>Find any work in the library by name.</p>
         <span class="faith-card-link">The library <span class="faith-card-arrow">&rarr;</span></span>
       </a>
-      <a class="lp-door" href="/the-faith-received/scripture/">
+      <a class="lp-door" href="/the-faith-received/bible/">
         <h3>Scripture</h3>
-        <p>A whole Bible commentary using historic primary sources.</p>
+        <p>Find passages in the library that cite a book, chapter or verse.</p>
         <span class="faith-card-link">The index <span class="faith-card-arrow">&rarr;</span></span>
       </a>
       <a class="lp-door" href="/the-faith-received/topics/">
         <h3>Topics</h3>
-        <p>What the church has said on every major topic.</p>
+        <p>Find authors and passages on a theological topic.</p>
         <span class="faith-card-link">The index <span class="faith-card-arrow">&rarr;</span></span>
       </a>
       <a class="lp-door" href="/the-faith-received/research/">
@@ -87,13 +70,13 @@
   <div class="container">
     <div class="lp-split">
       <div class="lp-plate lp-plate--art">
-        <img src="{{asset "images/tfr/vermeer-martha-mary.jpg"}}" alt="" loading="lazy" />
+        <img src="{{asset "images/tfr/vermeer-martha-mary.jpg"}}&amp;frv=062ac06617a3408c" alt="" loading="lazy" />
       </div>
       <div class="lp-split-text">
         <p class="lp-num">Devotional</p>
-        <h2 class="lp-head">The tradition was written to be read.</h2>
-        <p class="lp-body">The church wrote for use rather than for the archive. Treatises and commentaries, catechisms and confessions, disputations, sermons and prayers, all of it set down for people who needed to know what to believe and how to say it. Most of it has been out of reach: untranslated, out of print, or shelved in libraries you cannot walk into. It is here now. Read it a page at a time.</p>
-        <a href="/the-faith-received/browse/" class="btn btn-primary">Start reading</a>
+        <h2 class="lp-head">Read a little each day.</h2>
+        <p class="lp-body">Choose a sermon, prayer, catechism or longer work. Make a reading plan, save passages and return to where you left off.</p>
+        <a href="/the-faith-received/all-works/?collection=all" class="btn btn-primary">Start reading</a>
       </div>
     </div>
   </div>
@@ -102,94 +85,29 @@
 <!-- ── III. The corpus in numbers ────────────────────────────────── -->
 <section class="lp-band lp-stats-band">
   <div class="container">
-    {{!-- Recounted from the live catalogues 2026-09-11. Every figure
-          here is a sum somebody can reproduce, which the old ones were
-          not.
-
-          WORKS 30,748. The eight collections faith-corpora.js
-          registers, counted the way that file counts them: the Latin
-          Library 2,383 (v1/works-index.json with its own `exclude`
-          predicate applied, which drops the 17,064 textless pointer
-          rows), Patrologia Latina 8,967, Patrologia Graeca 2,976,
-          Patrologia Orientalis 400, Early English Books 15,569,
-          Creeds/Confessions/Catechisms 260, English Editions 69,
-          Augustine of Hippo 124. The shelf below shows six of the
-          eight. English Editions has no reading room of its own, and
-          its works are the ones named above under "In the collection";
-          Augustine's plate was pulled on 2026-09-11 by Ian, though the
-          collection and its reading room both remain.
-
-          This replaces 69,074, which counted the FULL Early English
-          Books catalogue, all 53,832 rows of it, newsbooks and ballads
-          and proclamations and weaving manuals included. We filter that
-          to the 15,569 theological works
-          (assets/data/faith-received/eebo-theological.json, `kept`), so
-          69,074 was never a number of things a visitor could open.
-
-          PAGES 2.1M. 2,158,284, the sum of n_pages across all 19,447
-          rows of v1/works-index.json: 1,095,614 for the Latin Library
-          itself and 1,062,670 carried on the pointer rows, which is how
-          the page counts for PL, PG, PO and EEBO reach us. It is a
-          floor rather than a total, because the roughly 11,700 EEBO
-          works with no pointer row report no page count at all.
-
-          ENGLISH TRANSLATIONS 13,167. Works carrying an English layer
-          we made: the Latin Library 1,517, Patrologia Latina 8,736 and
-          Patrologia Graeca 2,790 (an English title in their own
-          nav.json, `te` and `e` respectively), Augustine 124.
-
-          The Latin Library figure is 1,517 and not 2,242. The larger
-          number was every work with en_chars above zero less the 10
-          flagged en_only, but 735 works in that shelf carry English and
-          NO Latin at all: the English Divines, Baxter, Watson, Perkins,
-          Andrewes, who wrote in English and were never translated by
-          anybody. The en_only flag finds only 10 of them, so it
-          undercounts by 725 and cannot be used here. The test that
-          actually finds a translation is la_chars > 0.
-
-          The label says English translations and not "first
-          translations". Nothing in any catalogue records whether a
-          translation is the first ever made into English, so a count of
-          firsts is not a number we can stand behind. The claim survives
-          as prose under "Academics" below, which is the right register
-          for it. Do not turn that hedge back into a figure. --}}
+    
     <div class="lp-stats">
-      <div class="lp-stat"><b>30,748</b><span>Works</span></div>
-      <div class="lp-stat"><b>2.1M</b><span>Pages</span></div>
-      {{!-- 13,167, not 13,892. The larger figure counted 735 Latin Library
-            works that carry English and no Latin at all: the English
-            Divines, Baxter, Watson, Perkins, Andrewes, writing in English
-            in the first place. Nobody translated them. Only 10 of those
-            carry the en_only flag, so the flag undercounts by 725 and
-            cannot be used to find them; the test is la_chars > 0.
-
-            Labelled "English translations" and not "First translations".
-            No catalogue anywhere records whether a translation is the
-            first ever made into English, so a precise count of firsts is
-            not a claim we can defend. The Academics paragraph below keeps
-            "most of which are now in English for the first time" as
-            prose, which is a scholarly generalisation and true. --}}
-      <div class="lp-stat"><b>13,167</b><span>English translations</span></div>
-      <div class="lp-stat"><b>Free</b><span>Every page</span></div>
+      <div class="lp-stat"><b data-landing-total>Library</b><span>Works available to read</span></div>
+      <div class="lp-stat"><b>English</b><span>Translations and original works</span></div>
+      <div class="lp-stat"><b>Sources</b><span>Original texts and available scans</span></div>
+      <div class="lp-stat"><b>Free</b><span>Read the library</span></div>
     </div>
 
-    {{!-- Who it is for, under the numbers and on the same ground: the
-          counts say how large the library is, these say who it is
-          large for. --}}
+    
     <div class="lp-for">
       <h2 class="lp-for-head">Who The Faith Received Is For</h2>
       <div class="lp-for-cols">
         <div class="lp-for-col">
           <h3>Laity</h3>
-          <p>Have the creeds, catechisms, confessions, and riches of church history always in your pocket. Reference, memorize, and explore the great Christian tradition.</p>
+          <p>Read creeds, catechisms, sermons and other works of Christian theology.</p>
         </div>
         <div class="lp-for-col">
           <h3>Pastors</h3>
-          <p>Prepare your sermons and counsel your people with the width and depth of historical Christian thought.</p>
+          <p>Find historical commentaries and theological sources for preaching, teaching and pastoral work.</p>
         </div>
         <div class="lp-for-col">
           <h3>Academics</h3>
-          <p>Explore a vast library of primary theological sources across the Christian traditions, most of which are now in English for the first time.</p>
+          <p>Search primary sources, compare authors and check translations against original texts and available scans.</p>
         </div>
       </div>
     </div>
@@ -262,10 +180,10 @@
         <p class="faith-card-desc">The foundational work of Reformed systematic theology, covering God, Scripture, Christ, salvation, and the Church across four books.</p>
         <span class="faith-card-link">Read <span class="faith-card-arrow">&rarr;</span></span>
       </a>
-      <a class="faith-card" href="/the-faith-received/reader/?c=mo&amp;w=charnock-attributes">
-        <p class="faith-card-date">Stephen Charnock</p><p class="faith-card-era">1682</p>
-        <h3 class="faith-card-title"><em>The Existence and Attributes of God</em></h3>
-        <p class="faith-card-desc">A comprehensive Puritan treatise on the divine perfections. Fourteen discourses exploring God’s existence, eternity, immutability, omnipresence, and other attributes.</p>
+      <a class="faith-card" href="/the-faith-received/read/?w=polanus-amandus-polanus-syntagma-theologiae-christianae-liber-i-de-the">
+        <p class="faith-card-date">Amandus Polanus</p><p class="faith-card-era">1615</p>
+        <h3 class="faith-card-title"><em>Syntagma Theologiae Christianae</em></h3>
+        <p class="faith-card-desc">Polanus’s systematic account of Reformed theology. Begin with Book I, on Scripture and the foundations of theology.</p>
         <span class="faith-card-link">Read <span class="faith-card-arrow">&rarr;</span></span>
       </a>
       <a class="faith-card" href="/the-faith-received/reader/?c=mo&amp;w=belgic">
@@ -275,7 +193,7 @@
         <span class="faith-card-link">Read <span class="faith-card-arrow">&rarr;</span></span>
       </a>
     </div>
-    <p class="lp-more"><a class="lp-more-link" href="/the-faith-received/browse/">Browse the whole library <span class="faith-card-arrow">&rarr;</span></a></p>
+    <p class="lp-more"><a class="lp-more-link" href="/the-faith-received/all-works/?collection=all">Browse the whole library <span class="faith-card-arrow">&rarr;</span></a></p>
   </div>
 </section>
 
@@ -289,9 +207,9 @@
       </div>
       <div class="lp-split-text">
         <p class="lp-num">Study</p>
-        <h2 class="lp-head">Over a million pages unlocked for the first time.</h2>
-        <p class="lp-body">This theology has sat in folio in a handful of research libraries where only a few specialists could read it. The English now runs beside the Latin with the scanned page beside both.</p>
-        <a href="/the-faith-received/research/" class="btn btn-primary">Search the library</a>
+        <h2 class="lp-head">Study the texts and their sources.</h2>
+        <p class="lp-body">Read an English translation alongside the original text. Where page scans are available, open them in the reader to check the source.</p>
+        <a href="/the-faith-received/search/?m=title" class="btn btn-primary">Search the library</a>
       </div>
     </div>
   </div>
@@ -303,126 +221,93 @@
     <p class="lp-num">The collections</p>
     <div class="lp-shelf">
       <a href="/the-faith-received/confessions/">
-        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/confessions-plate.jpg"}}" alt="" loading="lazy" /></span>
+        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/confessions-plate.jpg"}}&amp;frv=d5079868e939f3fc" alt="" loading="lazy" /></span>
         <h4>Creeds, Confessions, &amp; Catechisms</h4>
-        <p>260 documents</p>
+        <p><span data-landing-corpus="confessions">Confessional documents</span></p>
         <p class="lp-shelf-desc">The confessional record from the second century to the twentieth. The conciliar acts sit alongside it.</p>
         <p class="lp-shelf-who">Nicaea &middot; Chalcedon &middot; Augsburg &middot; Trent &middot; Westminster</p>
       </a>
-      {{!-- The Migne column plate was hotlinked from the source
-            project's blob. It is served byte for byte by our own worker
-            at /pg/scan/ + the catalogue's own path, which is the
-            rewrite faith-reader.js applies to every PG scan
-            (SCAN_SOURCES there). Same 281,228 bytes, our host, checked
-            2026-09-11. --}}
+      
       <a href="/the-faith-received/patrologia-graeca/">
         <span class="lp-shelf-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/pg/scan/migne/047/00109_dialogus-historicus-latin/mg047_0110.jpg" alt="" loading="lazy" /></span>
         <h4>Patrologia Graeca</h4>
-        <p>2,976 works</p>
+        <p><span data-landing-tradition="Greek Fathers">Greek Christian writings</span></p>
         <p class="lp-shelf-desc">Migne&rsquo;s Greek fathers, the Apostolic Fathers to the fall of Constantinople.</p>
         <p class="lp-shelf-who">John Chrysostom &middot; Origen &middot; Athanasius &middot; Basil the Great &middot; Gregory of Nazianzus</p>
       </a>
       <a href="/the-faith-received/patrologia-latina/">
-        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/pl-plate.jpg"}}" alt="" loading="lazy" /></span>
+        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/pl-plate.jpg"}}&amp;frv=eff2a8784cd2e0bc" alt="" loading="lazy" /></span>
         <h4>Patrologia Latina</h4>
-        <p>8,967 works</p>
+        <p><span data-landing-tradition="Latin Fathers">Latin Christian writings</span></p>
         <p class="lp-shelf-desc">Migne&rsquo;s Latin fathers and medievals, Tertullian to Innocent III.</p>
         <p class="lp-shelf-who">Augustine &middot; Jerome &middot; Ambrose &middot; Bernard of Clairvaux &middot; Peter Damian</p>
       </a>
-      {{!-- No plate here, and this one is deliberate rather than a
-            missing file. The tile used to hotlink a Patrologia
-            Orientalis facsimile from a third-party blob. Those
-            facsimiles are licensed and must not be published, so there
-            is no version of that image this page may show, ours or
-            anyone's. The typographic tile below is the same
-            .lp-shelf-plate--set treatment the collections that were
-            never scanned already use. --}}
+      
       <a href="/the-faith-received/patrologia-orientalis/">
-        <span class="lp-shelf-plate lp-shelf-plate--set"><em>Patrologia<br />Orientalis</em></span>
-        <h4>Patrologia Orientalis</h4>
-        <p>400 works</p>
+        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/po-title-1907.jpg"}}" width="2456" height="3761" alt="Patrologia Orientalis, volume 1, 1907 title page" loading="lazy" /></span>
+        <span class="lp-shelf-caption">Patrologia Orientalis, volume 1, 1907</span>
+        <h4>Eastern Fathers</h4>
+        <p><span data-landing-tradition="Eastern Fathers">Eastern Christian writings</span></p>
         <p class="lp-shelf-desc">The Christian East: Syriac, Coptic, Armenian, Ethiopic and Arabic.</p>
         <p class="lp-shelf-who">Severus of Antioch &middot; Philoxenus of Mabbug &middot; Jacob of Edessa &middot; Bar Hebraeus &middot; Mark of Ephesus</p>
       </a>
       <a href="/the-faith-received/latin-library/">
-        <span class="lp-shelf-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/works/alsted-theologia-scholastica-didactica/p/5.webp" alt="" loading="lazy" /></span>
+        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/suarez-title.webp"}}" alt="Francisco Suárez, Opera Omnia, volume 1, 1856 title page" loading="lazy" /></span>
+        <span class="lp-shelf-caption">Francisco Suárez, Opera Omnia, volume 1, 1856</span>
         <h4>The Latin Library</h4>
-        <p>2,383 works</p>
+        <p><span data-landing-corpus="tfr">Latin theological works</span></p>
         <p class="lp-shelf-desc">Scholastic and reformation divinity in Latin with English alongside.</p>
         <p class="lp-shelf-who">Thomas Aquinas &middot; Martin Luther &middot; John Calvin &middot; Duns Scotus &middot; Francisco Su&aacute;rez</p>
       </a>
-      <a href="/the-faith-received/early-english-books/">
-        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/eebo-plate.jpg"}}" alt="" loading="lazy" /></span>
-        <h4>Early English Books</h4>
-        <p>15,569 works</p>
-        <p class="lp-shelf-desc">Nearly everything printed in English before 1700, sermons and controversy alike.</p>
+      <a href="/the-faith-received/all-works/?denomination=English%20Divines">
+        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/eebo-plate.jpg"}}&amp;frv=58e14119e44c1e7d" alt="" loading="lazy" /></span>
+        <h4>English Divines</h4>
+        <p><span data-landing-tradition="English Divines">English theological works</span></p>
+        <p class="lp-shelf-desc">Sermons, biblical commentaries and theological works by English-speaking writers, including Puritans and Anglicans.</p>
         <p class="lp-shelf-who">John Owen &middot; Richard Baxter &middot; John Bunyan &middot; William Perkins &middot; Richard Hooker</p>
       </a>
-      {{!-- Augustine of Hippo is a registered collection with a reading
-            room of its own at /the-faith-received/augustine/, but Ian
-            pulled its plate off this shelf on 2026-09-11. The room and
-            the collection are untouched; only the homepage card is
-            gone. Do not "restore" it as a missing-seventh-shelf fix. --}}
+      
+      <a href="/the-faith-received/all-works/?collection=all&amp;tradition=Continental%20Reformed">
+        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/chamier-title.webp"}}&amp;frv=2f6fb22d1ba1b6b5" alt="Daniel Chamier, Panstratia Catholica, 1627 title page" loading="lazy" /></span>
+        <span class="lp-shelf-caption">Daniel Chamier, Panstratia Catholica, 1627</span>
+        <h4>Reformed</h4><p data-landing-tradition="Continental Reformed">Browse the works</p>
+        <p class="lp-shelf-desc">Reformed theology, biblical interpretation and debates over doctrine, sacraments and church government.</p><p class="lp-shelf-who">John Calvin · Theodore Beza · Amandus Polanus · Daniel Chamier</p>
+      </a>
+      <a href="/the-faith-received/all-works/?denomination=Roman%20Catholic">
+        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/bellarmine-title.webp"}}&amp;frv=4e619b2ae555eb4e" alt="Robert Bellarmine, Disputationes de Controversiis, 1621 title page" loading="lazy" /></span>
+        <span class="lp-shelf-caption">Robert Bellarmine, Disputationes de Controversiis, 1621</span>
+        <h4>Roman Catholic</h4><p data-landing-tradition="Roman Catholic">Browse the works</p>
+        <p class="lp-shelf-desc">Catholic theology, biblical commentary and controversies over the Church, grace and the sacraments.</p><p class="lp-shelf-who">Robert Bellarmine · Francisco Suárez · Thomas Cajetan · Domingo Báñez</p>
+      </a>
+      <a href="/the-faith-received/all-works/?denomination=Lutheran">
+        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/gerhard-title.webp"}}&amp;frv=62d4208c2c67d407" alt="Johann Gerhard, Confessio Catholica, 1634 title page" loading="lazy" /></span>
+        <span class="lp-shelf-caption">Johann Gerhard, Confessio Catholica, 1634</span>
+        <h4>Lutheran</h4><p data-landing-tradition="Lutheran">Browse the works</p>
+        <p class="lp-shelf-desc">Lutheran teaching on justification, the sacraments and the Church, with commentaries and works of systematic theology.</p><p class="lp-shelf-who">Martin Luther · Philip Melanchthon · Martin Chemnitz · Johann Gerhard</p>
+      </a>
     </div>
-    <p class="tfr-browse-all tfr-browse-all--under"><a class="tfr-browse-btn" href="/the-faith-received/all-works/">Browse Full Library</a></p>
+    <p class="tfr-browse-all tfr-browse-all--under"><a class="tfr-browse-btn" href="/the-faith-received/all-works/?collection=all">Browse Full Library</a></p>
   </div>
 </section>
 
 <!-- ── VI. Everything ────────────────────────────────────────────── -->
 <section class="lp-band lp-band--rule">
   <div class="container">
-    <p class="lp-num">Everything in the library</p>
+    <p class="lp-num">Explore the library</p>
     <ul class="lp-features">
-      {{!-- These three carried the old, unreproducible counts and had
-            to move with the hero above, which is the only place on this
-            page the derivations are written down. The collections
-            figure is gone rather than corrected: the shelf above shows
-            seven reading rooms, the registry holds eight entries, and a
-            bare number here could only disagree with one of them. --}}
-      <li><b>The Library</b> <span>&middot; 30,748 works across eight collections</span></li>
-      {{!-- 13,167, matching the hero. This line said 13,892, which
-            counted 735 Latin Library works that carry English and no
-            Latin: the English Divines, who wrote in English and were
-            never translated. Both numbers have to move together. --}}
-      <li><b>English translations</b> <span>&middot; 13,167 works we put into English</span></li>
-      <li><b>Creeds &amp; Catechisms</b> <span>&middot; 260 documents</span></li>
-      <li><b>Topics</b> <span>&middot; 43 doctrinal loci</span></li>
-      <li><a href="/the-faith-received/doctrines/"><b>Every doctrine</b> <span>&middot; ~190 topics, ranked by who wrote on it most</span></a></li>
-      <li><a href="/the-faith-received/glossary/"><b>Glossary</b> <span>&middot; look up a term across the library</span></a></li>
-      {{!-- The old line stopped at "translated as it is read", which was
-            true of the first build and is now half of it: the rebuilt
-            DTC pairs the French and the English paragraph by paragraph
-            and lets a reader take either lane on its own. See the lane
-            switch in assets/js/faith-dictionary.js. --}}
-      <li><a href="/the-faith-received/dictionary/"><b>Dictionary</b> <span>&middot; the Dictionnaire de Théologie Catholique in French and English</span></a></li>
-      <li><b>Scripture</b> <span>&middot; 8.1M citations traced to the line</span></li>
-
-      {{!-- The research tools were missing from this list entirely,
-            which left the page selling a reading library and never
-            naming the things that make it a research one. Added per
-            Ian 2026-09-11. --}}
-      <li><a href="/the-faith-received/research/"><b>Ask</b> <span>&middot; a question answered from the library itself</span></a></li>
-      <li><a href="/the-faith-received/research/"><b>Power Search</b> <span>&middot; search by meaning rather than by word</span></a></li>
-      <li><a href="/the-faith-received/research/"><b>Compare</b> <span>&middot; up to four authors on one topic side by side</span></a></li>
-      <li><a href="/the-faith-received/research/"><b>Constellations</b> <span>&middot; who reaches for the same passages</span></a></li>
-      <li><b>Author pages</b> <span>&middot; what they wrote and who cites them</span></li>
-
-      <li><b>Devotional</b> <span>&middot; build a reading plan</span></li>
-      <li><b>Search</b> <span>&middot; a word or a phrase across every work</span></li>
-      <li><b>Citations</b> <span>&middot; type a reference to open the page</span></li>
-      <li><b>In the reader</b> <span>&middot; English, Latin, or both</span></li>
-      <li><b>Page scans</b> <span>&middot; check the transcription</span></li>
-      <li><b>Notebook</b> <span>&middot; highlight a passage and keep a note on it</span></li>
-      <li><b>Modern spelling</b> <span>&middot; for the older English</span></li>
-      {{!-- The notebook saves the text; bookmarks save the place. The
-            list carried only the first half of that pair, and only the
-            automatic half of the second: Continue reading is the place
-            you stopped, a bookmark is a place you chose. Bookmarks are
-            on every section in the reader and on the work rows across
-            browse, the author pages, the reading rooms and the
-            centuries, per the header of assets/js/faith-bookmark.js. --}}
-      <li><b>Bookmarks</b> <span>&middot; mark a place yourself</span></li>
-      <li><b>Continue reading</b> <span>&middot; picks up where you left off</span></li>
+      <li><a href="/the-faith-received/all-works/?collection=all"><b>Library</b> <span>· Browse works by author, title, period or tradition.</span></a></li>
+      <li><a href="/the-faith-received/search/?m=title"><b>Search</b> <span>· Find a title, phrase, concept or biblical reference.</span></a></li>
+      <li><a href="/the-faith-received/ask/"><b>Ask</b> <span>· Ask a question and follow the cited sources.</span></a></li>
+      <li><a href="/the-faith-received/bible/"><b>Scripture</b> <span>· Find where authors cite a biblical passage.</span></a></li>
+      <li><a href="/the-faith-received/author/"><b>Authors</b> <span>· Read an author’s works, topics and reception.</span></a></li>
+      <li><a href="/the-faith-received/topics/"><b>Topics</b> <span>· Explore theological topics and their source passages.</span></a></li>
+      <li><a href="/the-faith-received/compare/"><b>Compare</b> <span>· Read authors side by side on a topic.</span></a></li>
+      <li><a href="/the-faith-received/web/"><b>The Web</b> <span>· Explore citations and connections between authors, works and topics.</span></a></li>
+      <li><a href="/the-faith-received/dictionary/"><b>Dictionary</b> <span>· Read the Dictionnaire de Théologie Catholique in French and English.</span></a></li>
+      <li><a href="/the-faith-received/glossary/"><b>Glossary</b> <span>· Look up theological terms.</span></a></li>
+      <li><a href="/the-faith-received/pins/"><b>Collections and notebook</b> <span>· Save works, passages and notes.</span></a></li>
+      <li><a href="/the-faith-received/desk/"><b>Desk</b> <span>· Write with your saved sources.</span></a></li>
+      <li><a href="/the-faith-received/devotional/"><b>Reading plans</b> <span>· Plan daily readings from the library.</span></a></li>
     </ul>
   </div>
 </section>
@@ -442,17 +327,7 @@
      signed in at all, it is gone. -->
 {{> "faith-received/_beta-gate"}}
 
-{{!-- The pricing cards, which is what a reader who has got this far
-     down the landing page should be offered. They were here all
-     along and the only thing wrong with them was that they had no
-     gate, so a member who had already paid was shown the price of
-     what they had bought. I removed them and put the sitewide essay
-     CTA here instead, which was the wrong repair twice over: it
-     dropped the offer that belongs on this page, and "Loved this
-     essay?" is not true of a library.
 
-     Same paid/comped gate as the feature list above, so the two
-     halves of this page agree about who is being sold to. --}}
 {{#match @member.status "paid"}}{{else}}
 {{#match @member.status "comped"}}{{else}}
 <section class="faith-join" id="become-a-member">
@@ -485,9 +360,7 @@
      shape for the thing it is. -->
 <section class="lp-band lp-band--rule lp-transparency">
   <div class="container container-narrow">
-    {{!-- No kicker here. Every other band on this page carries one,
-          but "Transparency" above "Our Commitment to Transparency"
-          says the word twice before the sentence starts. --}}
+    
     <h2 class="lp-head">Our Commitment to Transparency</h2>
     <p>Artificial intelligence was used to translate many of these works. We believe trust comes through transparency. We are committed to always disclosing when artificial intelligence was used, and to continuing to improve these translations over time.</p>
     <p class="lp-beta-act">
@@ -498,12 +371,14 @@
 </main>
 
 
-<script src="{{asset "js/faith-report-issue.js"}}"></script>
-<script src="{{asset "js/page/membership-toggle.js"}}"></script>
-<script src="{{asset "js/page/membership-cards.js"}}"></script>
+<script src="{{asset "js/faith-report-issue.js"}}&amp;frv=2eba378a50b0274e"></script>
+<script src="{{asset "js/page/membership-toggle.js"}}&amp;frv=2c4f9e088ba77ef3"></script>
+<script src="{{asset "js/page/membership-cards.js"}}&amp;frv=0031a360f4bd09eb"></script>
 
 
 <meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
-<script src="{{asset "js/faith-corpora.js"}}"></script>
-<script src="{{asset "js/faith-received.js"}}"></script>
-<script src="{{asset "js/faith-resolve.js"}}"></script>
+<script src="{{asset "js/faith-corpora.js"}}&amp;frv=b48d8a444ef91d76"></script>
+<script src="{{asset "js/faith-received.js"}}&amp;frv=d57e85b56e1fa684"></script>
+<script src="{{asset "js/faith-resolve.js"}}&amp;frv=65b814be7034de6d"></script>
+
+<script src="{{asset "js/page/faith-landing-counts.js"}}&amp;frv=360fae522ba6993c"></script>

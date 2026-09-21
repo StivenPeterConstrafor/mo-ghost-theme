@@ -1,11 +1,13 @@
 {{!< default}}
 {{#contentFor "moHead"}}
-<title>Constellations | The Faith Received | Mere Orthodoxy</title>
-<meta name="description" content="Fifteen centuries of citation as one map: who reads whom, and the recorded passages behind every connection." />
+<script defer src="{{asset "js/page/faith-port-downloads.js"}}&amp;frv=2b1f79b352c6db15"></script>
+<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=22fa8b0f2bf4941d"></script>
+<title>The Web | The Faith Received | Mere Orthodoxy</title>
+<meta name="description" content="Explore citations between authors and connections across Scripture, topics and works. Open the passages behind each connection." />
 {{!-- The family identity the engine reads before it starts, and our
      masthead's height as --mo-head, so anything fixed can sit under it.
      Same two jobs as on the ported reader; must load first. --}}
-<script src="{{asset "js/page/faith-port-read-boot.js"}}"></script>
+<script src="{{asset "js/page/faith-port-read-boot.js"}}&amp;frv=af6a3529073948b4"></script>
 {{!-- Nothing in this port goes to Vercel Blob (owner 2026-09-10); any
      Blob address that arrives inside data is rebased onto the library
      worker at the fetch boundary. Before any module that can fetch. --}}
@@ -15,14 +17,14 @@
 <link rel="stylesheet" href="{{asset "css/port/web.in01.css"}}&amp;frv=72d0d0b74046db2c">
 <link rel="stylesheet" href="{{asset "css/port/scripture-navigation.css"}}&amp;frv=7be6dc0e2f11ae7c">
 <link rel="stylesheet" href="{{asset "css/port/constellations.css"}}&amp;frv=44041063b9a5d90f">
-<link rel="stylesheet" href="{{asset "css/port/shelf-constellations.css"}}&amp;frv=4810b0739b0fa607"><script src="{{asset "js/port/shelf-constellations.js"}}&amp;frv=bd591792b1f3cf4d"></script>
-<script src="{{asset "js/port/research-tools.js"}}&amp;frv=f9f1901f4fa12a78"></script>
-<script src="{{asset "js/port/scripture-tools.js"}}&amp;frv=a2d1172c59c08a2a"></script>
-<script src="{{asset "js/port/web.in01.js"}}&amp;frv=ee6de72d22f48fe7"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}&amp;frv=8618bdf9072bb354"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=e7d3c7adbe5a3ffc"></script><script src="{{asset "js/page/faith-ask-config.js"}}"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=f3461573eea75a1c"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=215f1ef6dc2e579f"></script><script src="{{asset "js/port/pld-reading.js"}}&amp;frv=42310bb7ef661c18"></script><script src="{{asset "js/port/connection-evidence.js"}}&amp;frv=b3e4670587c9f87f"></script><link rel="stylesheet" href="{{asset "css/port/connection-evidence.css"}}&amp;frv=20656c5c1335c942">
+<link rel="stylesheet" href="{{asset "css/port/shelf-constellations.css"}}&amp;frv=4810b0739b0fa607"><script src="{{asset "js/port/shelf-constellations.js"}}&amp;frv=368024d5d259e3e6"></script>
+<script src="{{asset "js/port/research-tools.js"}}&amp;frv=2f6252c7486b9aca"></script>
+<script src="{{asset "js/port/scripture-tools.js"}}&amp;frv=1f7a52f7eeb12682"></script>
+<script src="{{asset "js/port/web.in01.js"}}&amp;frv=ee6de72d22f48fe7"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=d62ee4eca7750274"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=d2003c82432d7011"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=16c1caf696083c4b"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script><script src="{{asset "js/port/pld-reading.js"}}&amp;frv=42310bb7ef661c18"></script><script src="{{asset "js/port/connection-evidence.js"}}&amp;frv=9dc93fa0151853e0"></script><link rel="stylesheet" href="{{asset "css/port/connection-evidence.css"}}&amp;frv=62ef89e4148c2cda">
 {{!-- Our colour, loaded last so it wins; then the offsets that start
      this page under our masthead. Keep both last. --}}
-<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}">
-<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}">
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=b216a81e4e2cd814">
+<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=908031c3f00ccf98">
 {{/contentFor}}
 
 {{!-- /the-faith-received/web/ — the citation atlas, ported.
@@ -43,7 +45,7 @@
      below sets both before this markup parses. The atlas is a
      full-viewport instrument (body overflow hidden), as it is on the
      corpus site; faith-port-surfaces.css starts it under our masthead. --}}
-<script src="{{asset "js/page/faith-port-surface-boot.js"}}" data-body-class="web-page" data-view="browse"></script>
+<script src="{{asset "js/page/faith-port-surface-boot.js"}}&amp;frv=c6ea6e388eea3f2a" data-body-class="web-page" data-view="browse"></script>
 <!-- THESIS: A citation atlas for finding relationships and reading their evidence.
 OWN-WORLD: Inherits Academic Monochrome, EB Garamond headings, Source Serif Pro controls, ruled lists and neutral reading sheets.
 STORY: Find an author, see who cites whom, inspect recorded passages, open the text.
@@ -51,19 +53,26 @@ FIRST VIEWPORT: A compact masthead, a 320px searchable author index, and a bound
 FORM: Code-led scoped replacement inside the established library world; no new visual-world seed.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance -->
 <header class="site">
-  <div class="brand"><span>Constellations</span></div>
+  <a class="faith-atlas-home" href="/the-faith-received/all-works/?collection=all" aria-label="Back to library"><span aria-hidden="true">←</span> Library</a>
+  <div class="brand"><span>The Web</span></div>
   <nav id="mnav" aria-label="Research navigation">
-    <a href="#" data-m="sky" class="on">Explore</a>
+    <a href="#" data-m="sky" class="on">Citation network</a>
     <a href="#paths" data-m="path">Paths</a>
     <a href="#topics" data-m="topic">Topics</a>
-    <a href="#shelves" data-m="shelves">Shelf maps</a>
+    <a href="#shelves=english-divines/authors" data-m="shelves">Scripture maps</a>
     <a href="#v=romans/8" data-m="verse">Scripture</a>
   </nav>
   <button id="atlas-ask" type="button">Ask</button><button id="web-theme" aria-label="Change reading theme">Theme</button>
 </header>
+<nav id="network-layouts" aria-label="Citation network layout">
+  <button type="button" data-network-layout="timeline" aria-pressed="true">Timeline</button>
+  <button type="button" data-network-layout="rings" aria-pressed="false">Rings</button>
+  <button type="button" data-network-layout="regions" aria-pressed="false">By tradition</button>
+  <button type="button" id="network-show-all" hidden>Show all authors</button>
+</nav>
 <div id="mobile-view" aria-label="Explore view"><button data-view="browse" aria-pressed="true">Browse authors</button><button data-view="map" aria-pressed="false">View map</button></div>
 <aside id="explorer" aria-label="Browse the citation index">
-  <div class="explorer-head"><h1>Constellations</h1><p>Find who an author reads, who reads them, and the texts behind each connection.</p>
+  <div class="explorer-head"><h1>The Web</h1><p>Find who an author reads, who reads them, and the texts behind each connection.</p>
     <div id="find"><label for="q">Find an author</label><input id="q" type="search" placeholder="Find an author…" autocomplete="off"><div id="findlist"></div></div>
     <details id="map-filters"><summary>Filter the index <span id="filter-count"></span></summary>
       <div id="lens"><label for="shsel">Shelf and its connections</label><select id="shsel"><option value="">Every shelf</option></select>
@@ -75,11 +84,14 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   </div>
   <div class="index-tools"><p id="index-count" role="status">Loading citation index…</p><label class="sr-only" for="index-sort">Sort authors</label><select id="index-sort"><option value="readers">Most cited by others</option><option value="citations">Most citations received</option><option value="name">Name A–Z</option></select></div>
   <div id="author-index"></div><button id="index-more" hidden>Show more authors</button>
-  <p class="index-note">Counts describe the indexed corpus. A citation can agree, question, or refute.</p>
+  <p class="index-note">Counts describe indexed citation records. Alternate witnesses can record the same citation.</p>
 </aside>
 <main id="atlas" aria-label="Citation map">
   <div id="map-heading"><div><h2 id="map-title">The citation network</h2><p id="map-summary" role="status">Loading connections…</p></div><div class="map-top-controls"><label for="map-density" class="sr-only">Points on the map</label><select id="map-density"><option value="20">20 most cited</option><option value="60" selected>60 most cited</option><option value="200">200 most cited</option><option value="0">All entries</option></select><button id="map-help-button" aria-expanded="false" aria-controls="map-help">How to read this</button></div></div>
   <div id="map-help" hidden><p>Each point is an author or collection. Lines are recorded citations; larger points have higher PageRank. Horizontal position follows time. Vertical spacing is arranged for readability; proximity does not imply agreement. The overview starts with the 60 authors cited by the most other authors. The complete index remains searchable.</p><p>Point colors identify historical periods. In an author’s map, ochre lines lead to sources and green lines to citing authors; the labels and positions show the same direction. Some dates are estimated for placement. Shelf filters include connected authors outside that shelf. Selecting an author shows up to eight sources on the left and eight citing authors on the right. The panel lists all available relationships.</p></div>
+<section id="faith-web-constellations" aria-label="Constellation layouts" hidden>
+  {{> "faith-received/_constellations-panel"}}
+</section>
   <div id="graph-frame"><canvas id="sky" role="img" aria-label="Citation map. Browse authors provides the same author navigation without using the map."></canvas>
   <div id="map-empty" hidden>No entries match these filters. <button type="button">Clear filters</button></div>
   <div id="web-zoom" aria-label="Graph controls"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="zoom-reset">Fit map</button></div></div>
@@ -90,5 +102,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 <div id="tip"></div><div id="legend" hidden></div><div id="fstat" hidden></div><div id="intro" hidden></div>
 <div id="brush" hidden><div id="brushc"><canvas id="brushcv"></canvas></div></div>
 <aside id="panel" aria-label="Connection details" inert><div class="ph"><h2 id="pt" tabindex="-1">Connection details</h2><div class="sub" id="ps"></div>
-  <button class="x" id="px" aria-label="Close details">×</button></div><div id="pbody"></div></aside>
-<script src="{{asset "js/port/web.in02.js"}}&amp;frv=4f51b1cdb42c86ae"></script>
+  <button type="button" id="network-author-map" hidden>View this author’s map</button><button class="x" id="px" aria-label="Close details">×</button></div><div id="pbody"></div></aside>
+
+<script data-shelves="{{asset "data/faith-received/web-author-shelves.json"}}&amp;frv=ef3e2e56c60291d0" src="{{asset "js/lib/faith-web-graph.js"}}&amp;frv=ea7281e18c37a0a1"></script>
+<script src="{{asset "js/port/web.in02.js"}}&amp;frv=059bd99b22ce2f49"></script>

@@ -291,7 +291,7 @@ function researchLayout(){
  if(page.classList.contains('research-room')&&!page.querySelector('.rx-profile')){const bar=page.querySelector('.ridbar');if(bar){const d=disclosure('rx-profile','About this author');for(const e of [bar.querySelector('.deck'),bar.querySelector('.stats'),page.querySelector('.rx-author-bio')])if(e)d.appendChild(e);bar.after(d);}}
 }
 researchPhone.addEventListener('change',()=>page.querySelectorAll('.rx-secondary,.rx-intro-detail,.rx-profile').forEach(d=>d.open=!researchPhone.matches));
-function researchError(message){page.innerHTML=`<h1>${esc(message)}</h1><p>Your place is saved in the address bar.</p><button class="rx-button" id="retry-research">Retry loading</button> <a href="/${PAGE}">Browse ${PAGE==='topics'?'topics':'authors'}</a>`;$('#retry-research').onclick=route;}
+function researchError(message){page.innerHTML=`<h1>${esc(message)}</h1><p>Your place is saved in the address bar.</p><button class="rx-button" id="retry-research">Retry loading</button> <a href="/the-faith-received/${PAGE === 'fathers' ? 'author' : PAGE}/">Browse ${PAGE==='topics'?'topics':'authors'}</a>`;$('#retry-research').onclick=route;}
 function getRoster(){if(!ROSTER_PROMISE)ROSTER_PROMISE=Promise.all(Object.keys(RX.shelves).map(async sh=>{try{const d=await J(BLOB+'/v1/bible/'+sh+'/rooms/index.json');return {sh,rows:(d.authors||[]).map(r=>({...r,sh})),ok:true};}catch(_){return {sh,rows:[],ok:false};}})).then(parts=>({rows:parts.flatMap(p=>p.rows),missing:parts.filter(p=>!p.ok).map(p=>p.sh)}));return ROSTER_PROMISE;}
 async function authorsIndex(){
  /* AUTHORS BY TRADITION (owner 2026-09-09 "replace /fathers to be authors, group authors by
@@ -378,7 +378,7 @@ async function worksIndex(){
  const run=researchStart('research-directory research-works'),request=++WORKS_INDEX_RUN,sh=WV.sh;
  const [directory,catalogue]=await Promise.all([gzJ(BLOB+'/v1/works-dir/'+sh+'.json.gz?d='+bust()),getWorkCatalogue(),kinds()]);if(run!==RESEARCH_RUN||request!==WORKS_INDEX_RUN)return;
  const rows=(directory.works||[]).map(w=>catalogueWork(w,catalogue));
- page.innerHTML=`<div class="research-intro"><div><h1>Works</h1><p>Browse works with research records, grouped by author or volume. Edition references follow the library catalogue.</p></div><a class="rx-text-link" href="/the-faith-received/library/">Search the full library</a></div><form class="rx-filters" role="search" onsubmit="return false"><label class="rx-search">Find a work<input id="q" type="search" placeholder="Title, author, or PL / PG / PO volume" value="${esc(WV.q)}"></label><label class="rx-primary-filter">Shelf<select id="wsh">${WSH.map(([k,label])=>`<option value="${k}">${label}</option>`).join('')}</select></label><label>Group works<select id="work-group"><option value="author">By author</option><option value="volume">By volume or edition</option><option value="kind">By kind of work</option></select></label></form><div class="rx-results-line"><p id="dircount" role="status"></p><button class="rx-text-link" id="works-collapse">Collapse all</button></div><p class="rx-note">Open a group to browse its works. PL and PG references use columns; PO follows its recorded tomes.${catalogue.ok?'':' Edition metadata could not load. <button class="rx-text-link" id="catalogue-retry">Retry edition details</button>'}</p><div id="dir" class="rx-fold-list"></div>`;
+ page.innerHTML=`<div class="research-intro"><div><h1>Works</h1><p>Browse works with research records, grouped by author or volume. Edition references follow the library catalogue.</p></div><a class="rx-text-link" href="/the-faith-received/all-works/?collection=all">Search the full library</a></div><form class="rx-filters" role="search" onsubmit="return false"><label class="rx-search">Find a work<input id="q" type="search" placeholder="Title, author, or PL / PG / PO volume" value="${esc(WV.q)}"></label><label class="rx-primary-filter">Shelf<select id="wsh">${WSH.map(([k,label])=>`<option value="${k}">${label}</option>`).join('')}</select></label><label>Group works<select id="work-group"><option value="author">By author</option><option value="volume">By volume or edition</option><option value="kind">By kind of work</option></select></label></form><div class="rx-results-line"><p id="dircount" role="status"></p><button class="rx-text-link" id="works-collapse">Collapse all</button></div><p class="rx-note">Open a group to browse its works. PL and PG references use columns; PO follows its recorded tomes.${catalogue.ok?'':' Edition metadata could not load. <button class="rx-text-link" id="catalogue-retry">Retry edition details</button>'}</p><div id="dir" class="rx-fold-list"></div>`;
  researchLayout();$('#wsh').value=sh;$('#work-group').value=WV.g;
  const render=()=>{const ref=RX.seriesRef(WV.q),q=RX.fold(ref?ref.rest:WV.q),tokens=q.split(/\s+/).filter(Boolean);const found=rows.filter(w=>{const actual=RX.seriesRef(w.volume);return (!ref||actual&&actual.series===ref.series&&(ref.volume==null||actual.volume===ref.volume))&&tokens.every(t=>RX.fold([w.t,w.originalTitle,w.a,w.volume].join(' ')).includes(t));});
  const count=mountWorkGroups($('#dir'),found,WV.g,{query:q});$('#dircount').textContent=fmtR(found.length)+' works · '+fmtR(count)+' '+({author:'authors',volume:'volumes',kind:'kinds of work'}[WV.g]);};
@@ -454,6 +454,7 @@ async function topicsIndex(){
   // work with the author so its useful"): the per-corpus directory is the
   // slug -> {title, author} table
   let _WD=null;
+  const _wname=(WD,cat,w)=>{const d=(WD&&WD[w])||{},m=(cat&&cat.bySlug&&cat.bySlug.get(w))||{};return {t:d.t||(cat&&cat.titles&&cat.titles[w])||m.title_en||m.title||w,a:d.a||m.author||''};};
   const _wd=async()=>{if(_WD)return _WD;
     try{const d3=await gzJ(BLOB+"/v1/works-dir/pl.json.gz");_WD={};(d3.works||[]).forEach(x2=>{_WD[x2.w]={t:x2.t,a:x2.a};});}
     catch(e){_WD={};}return _WD;};
@@ -528,8 +529,8 @@ async function topicsIndex(){
       irSelected=slug;markHeading();const request=++irRequest;
       const address=new URL(location.href);address.searchParams.set('ir',slug);history.replaceState(history.state,'',address);
       bd.setAttribute('aria-busy','true');bd.innerHTML='<p class="rx-note" role="status">Loading index entries…</p>';
-      const [d2,_CM,WD]=await Promise.all([
-        J(BLOB+"/v1/mine/pld_topic/"+slug+".json").catch(()=>null),_cmap(),_wd()]);
+      const [d2,_CM,WD,catIR]=await Promise.all([
+        J(BLOB+"/v1/mine/pld_topic/"+slug+".json").catch(()=>null),_cmap(),_wd(),getWorkCatalogue().catch(()=>null)]);
       if(request!==irRequest||run!==RESEARCH_RUN||!bd.isConnected)return;
       bd.setAttribute('aria-busy','false');
       if(!d2){bd.innerHTML='<div class="ir-empty"><h3>These index entries could not load</h3><p>Try loading this heading again.</p><button type="button" class="rx-button" data-ir-retry>Retry loading</button></div>';return;}
@@ -552,8 +553,7 @@ async function topicsIndex(){
               if(!byW.has(k2))byW.set(k2,{sl:sl2,v:r2.v,rows:[]});
               byW.get(k2).rows.push({c:r2.c,h:h2});});
             const wrows=[...byW.values()].map(g2=>{
-              const wd2=(g2.sl&&WD[g2.sl])||{};
-              const label=wd2.t?wd2.t:(g2.sl?g2.sl:"");
+              const label=g2.sl?_wname(WD,catIR,g2.sl).t:"";
               const cols=g2.rows.map(r2=>g2.sl
                 ?`<button type="button" class="readbtn" data-pvw="${esc(g2.sl)}" data-c="${r2.c}" data-h="${esc(r2.h||"")}" style="font-size:.8rem;padding:.1rem .3rem">${r2.c}</button>`
                 :(r2.h?`<a class="readbtn" href="${esc(r2.h)}" style="font-size:.8rem;padding:.1rem .3rem">${r2.c}</a>`
@@ -579,9 +579,9 @@ async function topicsIndex(){
   viWrap.addEventListener("toggle",async()=>{
     if(!viWrap.open||_viLoaded)return;_viLoaded=true;
     viHost.innerHTML='<p class="loading">\u2026</p>';
-    const [si2,WD]=await Promise.all([J(BLOB+"/v1/mine/pld_subjects/index.json").catch(()=>null),_wd()]);
+    const [si2,WD,cat2]=await Promise.all([J(BLOB+"/v1/mine/pld_subjects/index.json").catch(()=>null),_wd(),getWorkCatalogue().catch(()=>null)]);
     if(!si2||!(si2.works||[]).length){viHost.innerHTML='<p class="loading">Unavailable.</p>';return;}
-    const vworks=(si2.works||[]).map(x2=>({w:x2.w,n:x2.n||0,t:(WD[x2.w]||{}).t||x2.w,a:(WD[x2.w]||{}).a||""}))
+    const vworks=(si2.works||[]).map(x2=>({w:x2.w,n:x2.n||0,..._wname(WD,cat2,x2.w)}))
       .sort((x2,y2)=>y2.n-x2.n);
     const tot2=vworks.reduce((a3,x2)=>a3+x2.n,0);
     viHost.innerHTML=`<h2 class="sect">Indices per volume \u00b7 printed at the back of each work <span class="tn" style="font-family:var(--body);font-size:.74rem;color:var(--faint)">${vworks.length.toLocaleString()} works \u00b7 ${tot2.toLocaleString()} entries</span></h2>
@@ -610,7 +610,7 @@ async function topicsIndex(){
         body3.querySelector("#viEnts").innerHTML=hits.map(x2=>`<div class="irw" style="display:flex;flex-wrap:wrap;align-items:baseline;gap:.4rem;padding:.14rem 0;border-bottom:1px dotted var(--border)">
           <span style="font-size:.88rem">${esc(x2.t)}</span>
           <span style="display:flex;gap:.2rem">${(x2.refs||[]).map(r3=>`<button type="button" class="readbtn" data-pvw="${esc(b4.dataset.w)}" data-c="${r3.c}" data-h="${esc(r3.h||"")}" style="font-size:.78rem;padding:.08rem .3rem">${r3.c}</button>`).join(" ")}</span></div>`).join("");};
-      body3.innerHTML=`<div class="volhead" style="margin:.5rem 0 .2rem">${esc(wd3.t||b4.dataset.w)} \u2014 ${esc(wd3.a||"")} \u00b7 ${ents.length.toLocaleString()} entries \u00b7 tap a column to preview</div>
+      body3.innerHTML=`<div class="volhead" style="margin:.5rem 0 .2rem">${esc(_wname(WD,cat2,b4.dataset.w).t)} \u2014 ${esc(_wname(WD,cat2,b4.dataset.w).a)} \u00b7 ${ents.length.toLocaleString()} entries \u00b7 tap a column to preview</div>
         <label class="rx-search" style="display:block;margin:.2rem 0 .4rem">Search this index<input type="search" id="viEQ" placeholder="grace, baptism\u2026"></label>
         <div id="viEnts"></div>`;
       paintE("");
@@ -1447,8 +1447,8 @@ function hideGloss(delay=200){clearTimeout(glossT);glossT=setTimeout(()=>{if(glo
 let JUMPV=null;
 const JABBR={gen:"Genesis",ex:"Exodus",exod:"Exodus",lev:"Leviticus",num:"Numbers",deut:"Deuteronomy",dt:"Deuteronomy",josh:"Joshua",judg:"Judges",sam:"Samuel",kgs:"Kings",chr:"Chronicles",chron:"Chronicles",neh:"Nehemiah",esth:"Esther",ps:"Psalms",psa:"Psalms",psalm:"Psalms",prov:"Proverbs",eccl:"Ecclesiastes",song:"Song of Solomon",cant:"Song of Solomon",isa:"Isaiah",jer:"Jeremiah",lam:"Lamentations",ezek:"Ezekiel",dan:"Daniel",hos:"Hosea",obad:"Obadiah",jon:"Jonah",mic:"Micah",nah:"Nahum",hab:"Habakkuk",zeph:"Zephaniah",hag:"Haggai",zech:"Zechariah",zach:"Zechariah",mal:"Malachi",mt:"Matthew",matt:"Matthew",mk:"Mark",lk:"Luke",jn:"John",rom:"Romans",cor:"Corinthians",gal:"Galatians",eph:"Ephesians",phil:"Philippians",col:"Colossians",thess:"Thessalonians",tim:"Timothy",tit:"Titus",phlm:"Philemon",heb:"Hebrews",jas:"James",pet:"Peter",rev:"Revelation of John",apoc:"Revelation of John",wis:"Wisdom",sap:"Wisdom",sir:"Sirach",eccli:"Sirach",ecclus:"Sirach",tob:"Tobit",jdt:"Judith",bar:"Baruch",macc:"Maccabees",mach:"Maccabees"};
 function jumpParse(q,books){
-  const m=String(q).trim().match(/^([123]|I{1,3}(?=\s))?\s*\.?\s*([A-Za-z .']+?)\s*(\d{1,3})?(?:\s*[:.,]\s*(\d{1,3}))?$/);
-  if(!m||!m[2]||m[3]&&Number(m[3])<1||m[4]&&Number(m[4])<1)return null;
+  const m=String(q).trim().match(/^([123]|I{1,3}(?=\s))?\s*\.?\s*([A-Za-z .']+?)\s*(\d{1,3})?(?:\s*[:.,]\s*(\d{1,3}(?:\s*[-–—]\s*\d{1,3})?))?$/);
+  if(!m||!m[2]||m[3]&&Number(m[3])<1||m[4]&&!FRScripture.verseSelection(m[4]).length)return null;
   const fold=s2=>String(s2).toLowerCase().replace(/[^a-z0-9]/g,"");
   const pfx=m[1]?({1:"i",2:"ii",3:"iii",i:"i",ii:"ii",iii:"iii"}[String(m[1]).toLowerCase()]):"";
   const raw=m[2].replace(/[.']/g," ").trim().toLowerCase();
@@ -1458,9 +1458,9 @@ function jumpParse(q,books){
   if(!B&&ab&&!pfx)B=books.find(b=>fold(b.book)===fold(ab));
   if(!B)return null;
   if(B.chapters?.length===1&&m[3]&&!m[4]&&+m[3]>1)return {slug:B.slug,ch:1,v:+m[3]};
-  return {slug:B.slug,ch:m[3]?+m[3]:0,v:m[4]?+m[4]:null};
+  return {slug:B.slug,ch:m[3]?+m[3]:0,v:m[4]?(/[-–—]/.test(m[4])?m[4].replace(/\s/g,'').replace(/[–—]/g,'-'):+m[4]):null};
 }
-let BIBLE_STATE={view:'read',verse:null},BIBLE_RUN=0;
+let BIBLE_STATE={selection:null,view:'read',verse:null},BIBLE_RUN=0;
 function bibleNav(books,B,ch){
   const i=books.indexOf(B),chapters=B?.chapters||[];
   const prev=ch?(chapters.find(x=>x.c===ch-1)?[B.slug,ch-1]:i>0?[books[i-1].slug,books[i-1].chapters.at(-1).c]:null):null;
@@ -1469,7 +1469,7 @@ function bibleNav(books,B,ch){
 }
 function bindBibleNav(books,B,ch){
   const form=$('#bible-jump');form.onsubmit=e=>{e.preventDefault();const r=jumpParse($('#jgo').value,books),b=r&&books.find(x=>x.slug===r.slug);
-    if(!r||r.ch&&!b.chapters.some(x=>x.c===r.ch)||r.v&&(!r.ch||r.v<1)){$('#jump-feedback').textContent='Enter a book and chapter, such as Romans 8:28.';$('#jgo').setAttribute('aria-invalid','true');return;}
+    if(!r||r.ch&&!b.chapters.some(x=>x.c===r.ch)||r.v&&(!r.ch||!FRScripture.verseSelection(r.v).length)){$('#jump-feedback').textContent='Enter a book and chapter, such as Romans 8:28.';$('#jgo').setAttribute('aria-invalid','true');return;}
     const dest=FRScripture.bibleURL(r.slug,r.ch,r.v);if(location.hash.slice(1)===dest.split('#')[1])route();else location.hash=dest.split('#')[1];};
   if(B){$('#bible-book').onchange=e=>location.hash='b/'+e.target.value+'/1';$('#bible-chapter').onchange=e=>location.hash='b/'+B.slug+(+e.target.value?'/'+e.target.value:'');}
 }
@@ -1552,7 +1552,7 @@ async function bookPageMain(bslug,c){
   let verseDesk=null;
   const loadVerseDesk=()=>{if(!c||verseDesk)return;verseDesk=FRVerseResearch.mount($('#verse-research-desk'),{book:B,chapter:c,verses:d.verses||[],books:bk.books,catalogue:catalog,verse:BIBLE_STATE.verse,eligible:facOK,changePassage:()=>{const control=$('#jgo')||$('#bible-book');control?.focus({preventScroll:true});control?.scrollIntoView({block:'center'});},inheritedFilters:[...FACS].map(k=>FACL.find(x=>x[0]===k)?.[1]||k),changeSourceFilters:()=>{const filters=page.querySelector('.bible-filters');if(filters){filters.open=true;filters.querySelector('summary')?.focus({preventScroll:true});filters.scrollIntoView({block:'center'});}},getRoster,readURL:readerHref,locationLabel:(w,p)=>pgl(w)+' '+p,text:v=>esv?.[String(v)]||d.verses.find(x=>+x.v===+v)?.t,translationLabel:v=>esv?.[String(v)]?'English Standard Version':B.txt?'Douay-Rheims':'American Standard Version',loadUnits:w=>window.FRResearchData?window.FRResearchData.loadUnits(w):J(BLOB+'/v1/mine/units/'+encodeURIComponent(w)+'.json'),onVerse:v=>{BIBLE_STATE.verse=v;history.replaceState(null,'',FRScripture.bibleURL(bslug,c,v,'desk'));},showRelated:k=>setView(k),ask:(q,rows)=>window.FRAsk?.open(FRVerseResearch.comparisonRequest(q,rows)),signal:researchEvents.signal});};
   const scrollToVerseDesk=()=>requestAnimationFrame(()=>{if(run!==BIBLE_RUN||BIBLE_STATE.view!=='desk')return;const host=$('#verse-research-desk'),header=document.querySelector('header.site');if(host)window.scrollTo({top:Math.max(0,host.getBoundingClientRect().top+window.scrollY-(header?.getBoundingClientRect().height||0)-16),behavior:'auto'});});
-  const setView=k=>{BIBLE_STATE.view=k;page.querySelectorAll('[data-pane]').forEach(el=>el.hidden=el.dataset.pane!==k);page.querySelectorAll('[data-bible-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.bibleView===k)));history.replaceState(null,'',FRScripture.bibleURL(bslug,c,BIBLE_STATE.verse,k==='read'?null:k));if(k==='desk'){loadVerseDesk();scrollToVerseDesk();}};
+  const setView=k=>{BIBLE_STATE.view=k;page.querySelectorAll('[data-pane]').forEach(el=>el.hidden=el.dataset.pane!==k);page.querySelectorAll('[data-bible-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.bibleView===k)));history.replaceState(null,'',FRScripture.bibleURL(bslug,c,BIBLE_STATE.selection||BIBLE_STATE.verse,k==='read'?null:k));if(k==='desk'){loadVerseDesk();scrollToVerseDesk();}};
   page.querySelectorAll('[data-bible-view]').forEach(b=>b.onclick=()=>setView(b.dataset.bibleView));
   page.querySelectorAll('[data-annotation]').forEach(el=>el.addEventListener('toggle',()=>{if(el.open&&!el.dataset.loaded){el.dataset.loaded='1';FRScripture.renderVolumes(el.querySelector('.annotation-destinations'),annotations[+el.dataset.annotation],bslug,c,[...(d?.verses||[]).flatMap(v=>v.rows||[]),...(d?.ch_rows||[])]).catch(()=>{el.dataset.loaded='';el.querySelector('.annotation-destinations').innerHTML='<p>Volumes could not load. Close and reopen this work to retry.</p>';});}}));
   if(!c)return;
@@ -1562,13 +1562,20 @@ async function bookPageMain(bslug,c){
   let MORE=null;const loadMore=()=>MORE||(MORE=gzJ(BLOB+`/v1/bible/all/${bslug}/${c}.more.json.gz`).catch(()=>{MORE=null;return null;}));
   const merged=new Set();const mergeMore=async key=>{const m=await loadMore();if(!m)return false;if(merged.has(key))return true;merged.add(key);
     if(key==='ch'){d.ch_rows=(d.ch_rows||[]).concat(m.ch_rows||[]);d.ch_full=true;}else{const v=byVerse.get(+key);if(v){v.rows=(v.rows||[]).concat((m.verses||{})[String(key)]||[]);v.full=true;}}return true;};
-  const openVerse=(vn,force)=>{const v=byVerse.get(vn);if(!v)return;const btn=page.querySelector(`[data-v="${vn}"]`),dest=$('#pv'+vn);if(!btn)return;const open=force||btn.getAttribute('aria-expanded')!=='true';btn.setAttribute('aria-expanded',String(open));const rows=(v.rows||[]).filter(facOK);dest.innerHTML=open?`<div class="vpanel">${panelHTML(rows,v.full?(v.rows||[]).length:(facAll()?v.n:rows.length),mkHl(B.book,c,vn),{key:vn,full:!!v.full})}</div>`:'';if(open){BIBLE_STATE.verse=vn;history.replaceState(null,'',FRScripture.bibleURL(bslug,c,vn));}};
+  const openVerse=(vn,force)=>{const v=byVerse.get(vn);if(!v)return;const btn=page.querySelector(`[data-v="${vn}"]`),dest=$('#pv'+vn);if(!btn)return;const open=force||btn.getAttribute('aria-expanded')!=='true';btn.setAttribute('aria-expanded',String(open));const rows=(v.rows||[]).filter(facOK);dest.innerHTML=open?`<div class="vpanel">${panelHTML(rows,v.full?(v.rows||[]).length:(facAll()?v.n:rows.length),mkHl(B.book,c,vn),{key:vn,full:!!v.full})}</div>`:'';if(open){BIBLE_STATE.verse=vn;if(!FRScripture.verseSelection(BIBLE_STATE.selection).includes(vn)){BIBLE_STATE.selection=null;page.querySelectorAll('.is-passage').forEach(el=>el.classList.remove('is-passage'));$('#verse-feedback').textContent='';}history.replaceState(null,'',FRScripture.bibleURL(bslug,c,BIBLE_STATE.selection||vn));}};
   const openChapter=open=>{const dest=$('#pvch'),whole=page.querySelector('[data-ch]');if(whole)whole.setAttribute('aria-expanded',String(open));const rows=d.ch_rows.filter(facOK);dest.innerHTML=open?`<div class="vpanel">${panelHTML(rows,d.ch_full?(d.ch_rows||[]).length:(facAll()?d.ch_n:rows.length),mkHl(B.book,c,0),{key:'ch',full:!!d.ch_full})}</div>`:'';};
   page.onclick=async e=>{const more=e.target.closest('[data-load-all]');if(more){more.disabled=true;more.textContent='Loading…';const key=more.dataset.loadAll;const ok=await mergeMore(key);if(run!==BIBLE_RUN)return;if(!ok){more.disabled=false;more.textContent='The complete list is not available yet. Try again';return;}if(key==='ch')openChapter(true);else openVerse(+key,true);return;}
-    const desk=e.target.closest('[data-open-desk]');if(desk){BIBLE_STATE.verse=+desk.dataset.openDesk;setView('desk');verseDesk?.setVerse(BIBLE_STATE.verse);return;}const button=e.target.closest('[data-v]');if(button){openVerse(+button.dataset.v);return;}const whole=e.target.closest('[data-ch]');if(whole){openChapter(whole.getAttribute('aria-expanded')!=='true');}};
+    const desk=e.target.closest('[data-open-desk]');if(desk){BIBLE_STATE.selection=null;page.querySelectorAll('.is-passage').forEach(el=>el.classList.remove('is-passage'));$('#verse-feedback').textContent='';BIBLE_STATE.verse=+desk.dataset.openDesk;setView('desk');verseDesk?.setVerse(BIBLE_STATE.verse);return;}const button=e.target.closest('[data-v]');if(button){openVerse(+button.dataset.v);return;}const whole=e.target.closest('[data-ch]');if(whole){openChapter(whole.getAttribute('aria-expanded')!=='true');}};
   if(view==='desk'){loadVerseDesk();scrollToVerseDesk();}
   const requested=BIBLE_STATE.verse||JUMPV;JUMPV=null;
-  if(requested){const v=byVerse.get(+requested);if(v){if(view==='read'){openVerse(+requested,true);requestAnimationFrame(()=>$('#v'+requested)?.scrollIntoView({block:'start'}));}}else{$('#verse-feedback').textContent='Verse '+requested+' is not in this chapter. Choose one of the verses below.';}}
+  const selection=FRScripture.verseSelection(BIBLE_STATE.selection);
+  if(selection.length>1){
+    if(selection.every(v=>byVerse.has(v))){
+      selection.forEach(v=>$('#v'+v)?.classList.add('is-passage'));
+      $('#verse-feedback').textContent='Selected '+B.book+' '+c+':'+selection[0]+'–'+selection.at(-1)+'. Open citations beside a verse to study its sources.';
+      if(view==='read')requestAnimationFrame(()=>$('#v'+selection[0])?.scrollIntoView({block:'start'}));
+    }else $('#verse-feedback').textContent='This chapter does not contain all the requested verses. Choose from the verses below.';
+  }else if(requested){const v=byVerse.get(+requested);if(v){if(view==='read'){openVerse(+requested,true);requestAnimationFrame(()=>$('#v'+requested)?.scrollIntoView({block:'start'}));}}else{$('#verse-feedback').textContent='Verse '+requested+' is not in this chapter. Choose one of the verses below.';}}
 }
 
 /* ── routing ── */
@@ -2006,7 +2013,7 @@ function route(){
   const [hashPath,hashQuery=""]=location.hash.slice(1).split("?");
   const h=decodeURIComponent(hashPath);
   const hashParams=new URLSearchParams(hashQuery);
-  BIBLE_STATE={view:["read","desk","commentaries","annotations"].includes(hashParams.get("view"))?hashParams.get("view"):"read",verse:Number(hashParams.get("v"))||null};
+  BIBLE_STATE={selection:FRScripture.verseSelection(hashParams.get('v')).length>1?hashParams.get('v'):null,view:["read","desk","commentaries","annotations"].includes(hashParams.get("view"))?hashParams.get("view"):"read",verse:FRScripture.verseSelection(hashParams.get("v"))[0]||null};
   ++BIBLE_RUN;++RESEARCH_RUN;researchEvents.abort();researchEvents=new AbortController();hideGloss(0);
   page.onclick=null;page.onmouseover=null;page.onmouseout=null;
   const navmark=k=>document.querySelectorAll("#topnav a[data-p]").forEach(a=>a.classList.toggle("on",a.dataset.p===k));

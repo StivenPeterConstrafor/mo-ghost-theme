@@ -443,7 +443,7 @@
     // Carried so the work opens with the word already found in it,
     // rather than leaving the reader to type it a second time.
     if (term) url += `&q=${encodeURIComponent(term)}`;
-    return (c ? url : "/the-faith-received/") + hash;
+    return (c ? url : "/the-faith-received/all-works/?collection=all") + hash;
   }
 
   window.MOAuthorSearch = {

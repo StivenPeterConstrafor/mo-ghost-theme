@@ -14,9 +14,21 @@
 
   <section class="bhero bhero--tool">
     <div class="bhero-inner container">
-      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/all-works/">All works</a></p>
+      <p class="bhero-kicker"><a href="/the-faith-received/all-works/?collection=all">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/all-works/?collection=all">All works</a></p>
       <h1 class="bhero-title">Every work in the library</h1>
-      <p class="bhero-lede">All five collections in one table of contents, in chronological order. Narrow it by century, by tradition or by collection, or search for a name or a title.</p>
+      <p class="bhero-lede">Browse the library by author or century. Filter by shelf, denomination, or party, or search for an author or title.</p>
+      <nav class="faith-surface-links" aria-label="Library research tools">
+        <a href="/the-faith-received/search/">Search</a>
+        <a href="/the-faith-received/ask/">Ask</a>
+        <a href="/the-faith-received/author/">Authors</a>
+        <a href="/the-faith-received/bible/">Scripture</a>
+        <a href="/the-faith-received/topics/">Topics</a>
+        <a href="/the-faith-received/web/">The Web</a>
+        <a href="/the-faith-received/compare/">Compare</a>
+        <a href="/the-faith-received/pins/">Notebooks</a>
+        <a href="/the-faith-received/desk/">Desk</a>
+        <a href="/the-faith-received/dictionary/">Dictionary</a>
+      </nav>
     </div>
   </section>
 
@@ -42,13 +54,15 @@
 
 <script src="{{asset "js/faith-corpora.js"}}"></script>
 <script src="{{asset "js/faith-century.js"}}"></script>
-<script src="{{asset "js/faith-room.js"}}"></script>
+<script data-contents="{{asset "data/faith-received/collected-work-contents.json"}}&amp;frv=16b5a319b51384d7" src="{{asset "js/faith-collected-contents.js"}}&amp;frv=95473b5afaf6e54c"></script>
+<script src="{{asset "js/faith-room.js"}}&amp;frv=0c69bcb6e8bffe91"></script>
 {{!-- Continue reading and the shelves. Loads the same seven catalogues the
      room does, and MOCorpora caches by id, so this costs no second fetch. --}}
-<script src="{{asset "js/faith-room-openers.js"}}"></script>
+<script src="{{asset "js/faith-room-openers.js"}}&amp;frv=8640f4c92bd6e564"></script>
 {{!-- Bookmark a work from its row. The store first: it is the same
      mo-kit bookmark the reader's Save button and the Bookmark button at
      the foot of a section write, so a work saved here and a section
      saved inside it are one record, not two. --}}
 <script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
-<script src="{{asset "js/faith-work-bookmark-rows.js"}}"></script>
+<script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>
+<script src="{{asset "js/faith-work-bookmark-rows.js"}}&amp;frv=0cac2063424667d5"></script>

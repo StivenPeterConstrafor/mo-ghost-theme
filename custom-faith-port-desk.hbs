@@ -1,11 +1,14 @@
 {{!< default}}
 {{#contentFor "moHead"}}
+<script defer src="{{asset "js/page/faith-port-downloads.js"}}&amp;frv=2b1f79b352c6db15"></script>
+{{#if @member}}
+<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=22fa8b0f2bf4941d"></script>
 <title>Desk | The Faith Received | Mere Orthodoxy</title>
 <meta name="description" content="Write with the library beside you: a paper, and a rail of your saved passages, notes, highlights and Ask conversations to insert with their citations." />
 {{!-- The family identity the engine reads before it starts, and our
      masthead's height as --mo-head, so anything fixed can sit under it.
      Same two jobs as on the ported reader; must load first. --}}
-<script src="{{asset "js/page/faith-port-read-boot.js"}}"></script>
+<script src="{{asset "js/page/faith-port-read-boot.js"}}&amp;frv=af6a3529073948b4"></script>
 {{!-- Nothing in this port goes to Vercel Blob (owner 2026-09-10); any
      Blob address that arrives inside data is rebased onto the library
      worker at the fetch boundary. Before any module that can fetch. --}}
@@ -13,12 +16,14 @@
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="{{asset "css/port/desk.in01.css"}}&amp;frv=4a14bec0d6dd0315">
 <link rel="stylesheet" href="{{asset "css/port/desk-workflow.css"}}&amp;frv=d30e48aba012c5c2"><script src="{{asset "js/port/desk-workflow.js"}}&amp;frv=71ddf6e483fa9932"></script>
-<script src="{{asset "js/port/desk.in01.js"}}&amp;frv=ee6de72d22f48fe7"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "css/port/ask-workspace.css"}}&amp;frv=8618bdf9072bb354"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=e7d3c7adbe5a3ffc"></script><script src="{{asset "js/page/faith-ask-config.js"}}"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=f3461573eea75a1c"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=215f1ef6dc2e579f"></script><script defer src="{{asset "js/port/personal-research.js"}}&amp;frv=b87e1145b10874db"></script><link rel="stylesheet" href="{{asset "css/port/personal-research.css"}}&amp;frv=6f95e2290678aac4">
+<script src="{{asset "js/port/desk.in01.js"}}&amp;frv=ee6de72d22f48fe7"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=d62ee4eca7750274"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=d2003c82432d7011"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=16c1caf696083c4b"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script><script defer src="{{asset "js/port/personal-research.js"}}&amp;frv=b87e1145b10874db"></script><link rel="stylesheet" href="{{asset "css/port/personal-research.css"}}&amp;frv=6f95e2290678aac4">
 {{!-- Our colour, loaded last so it wins; then the offsets that start
      this page under our masthead. Keep both last. --}}
-<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}">
-<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}">
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=b216a81e4e2cd814">
+<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=908031c3f00ccf98">
+{{/if}}
 {{/contentFor}}
+{{#if @member}}
 
 {{!-- /the-faith-received/desk/ — the writing desk, ported.
 
@@ -42,7 +47,7 @@
      masthead, the same move the ported reader makes with
      .faith-port-read-page. Ask inserts go to the ask-dev worker's
      /v1/ask, the route the site's own Ask already uses. --}}
-<script src="{{asset "js/page/faith-port-surface-boot.js"}}" data-body-class="desk-page"></script>
+<script src="{{asset "js/page/faith-port-surface-boot.js"}}&amp;frv=c6ea6e388eea3f2a" data-body-class="desk-page"></script>
 <div class="faith-port-desk-page">
 <header>
   <button class="hbtn" id="docsTog" aria-label="Your documents"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 5h14M5 12h14M5 19h14"/></svg></button>
@@ -53,7 +58,7 @@
 </header>
 <nav class="desk-workspace-bar" aria-label="Desk workspace"><div class="desk-modes"><button id="deskWriteMode" aria-pressed="true">Write</button><button id="deskResearchMode" aria-pressed="false">Research</button></div><label id="deskPaperContext" hidden>Paper<select id="deskPaper" aria-label="Current paper"></select></label><label class="desk-notebook-context">Notebook<select id="paperNotebook" aria-label="Notebook for this paper"></select></label><details class="desk-new-notebook"><summary>New notebook</summary><form id="newNotebookForm"><label>Notebook name<input id="newNotebookName" required autocomplete="off" placeholder="e.g. Grace and freedom"></label><button type="submit">Create notebook</button></form></details><span id="deskContextStatus" role="status"></span></nav>
 <main id="deskMain">
-  <aside id="docs"><a class="fr-home-link desk-panel-home" data-fr-home href="/the-faith-received/library/" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a>
+  <aside id="docs"><a class="fr-home-link desk-panel-home" data-fr-home href="/the-faith-received/all-works/?collection=all" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a>
     <div class="desk-rail-head"><span class="ds-h">Your documents</span><button class="hbtn desk-rail-close" id="closeDocuments" aria-label="Close documents">×</button></div>
     <button id="newDoc">＋ New document</button>
     <div id="docList"></div>
@@ -71,7 +76,7 @@
     </div>
     <div id="ed" contenteditable="true" spellcheck="true" role="textbox" aria-multiline="true" aria-label="Document text"></div><div id="deskSaveState" role="status" aria-live="polite">Saved in this browser</div>
   </section>
-  <aside id="rail"><a class="fr-home-link desk-panel-home" data-fr-home href="/the-faith-received/library/" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a>
+  <aside id="rail"><a class="fr-home-link desk-panel-home" data-fr-home href="/the-faith-received/all-works/?collection=all" aria-label="Back to library"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>Library</a>
     <div class="desk-rail-head"><span class="ds-h">Your research</span><button class="hbtn desk-rail-close" id="closeResearch" aria-label="Close research">×</button></div>
     <div class="desk-research-links"><a href="/the-faith-received/pins/">Manage notebooks</a><a href="/the-faith-received/search/">Find sources</a></div>
     <button type="button" class="desk-personal-entry" id="deskPersonalOpen">Explore this notebook</button>
@@ -86,3 +91,7 @@
 </main><section id="deskPersonal" hidden><div class="desk-personal-top"><button type="button" id="deskPersonalBack" hidden>Back to writing</button><a href="/the-faith-received/pins/">Manage notebooks</a></div><div id="deskPersonalHost"></div></section><button id="deskScrim" hidden aria-label="Close side panel"></button>
 <script src="{{asset "js/port/desk.in02.js"}}&amp;frv=1494a7160b50afbc"></script>
 </div>
+
+{{else}}
+<main class="faith-received"><section class="bhero bhero--tool"><div class="bhero-inner container"><h1>Desk</h1></div></section>{{> "faith-received/_beta-gate"}}</main>
+{{/if}}

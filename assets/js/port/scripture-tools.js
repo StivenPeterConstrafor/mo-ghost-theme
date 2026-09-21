@@ -5,6 +5,12 @@
   const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const readerURL=(work,page)=>'/the-faith-received/read/?w='+encodeURIComponent(work)+(page!=null&&page!==''?'#b'+encodeURIComponent(String(page))+'-0':'');
   const bibleURL=(book,ch,verse,view)=>'/the-faith-received/bible/#b/'+encodeURIComponent(book)+(ch?'/'+ch:'')+((verse||view)?'?'+new URLSearchParams({...verse?{v:verse}:{},...view?{view}: {}}):'');
+  function verseSelection(value){
+    const m=String(value??'').trim().replace(/[–—]/g,'-').match(/^(\d{1,3})(?:\s*-\s*(\d{1,3}))?$/);
+    if(!m)return [];const first=Number(m[1]),last=Number(m[2]||m[1]);
+    if(first<1||last<first||last>200)return [];
+    return Array.from({length:last-first+1},(_,i)=>first+i);
+  }
   const roman=s=>{let n=0,last=0;for(const c of String(s).toUpperCase().split('').reverse()){const v={I:1,V:5,X:10,L:50,C:100}[c];if(!v)return 0;n+=v<last?-v:v;last=v;}return n;};
   const aliases={genesis:['genesis','geneseos'],exodus:['exodus','exodum'],leviticus:['leviticus','leviticum'],numbers:['numbers','numeri','numeros'],deuteronomy:['deuteronomy','deuteronomium'],psalms:['psalms','psalmorum','psalter'],romans:['romans','romanos'],matthew:['matthew','matthaeum','matthaei'],mark:['mark','marcum','marci'],luke:['luke','lucam','lucae'],john:['john','joannem','ioannem'],acts:['acts','acta apostolorum'],hebrews:['hebrews','hebraeos'],james:['james','jacobi'], 'revelation-of-john':['revelation','apocalypse','apocalypsis'], 'song-of-solomon':['song of solomon','song of songs','canticles','canticum'],sirach:['sirach','ecclesiasticus'],wisdom:['wisdom','sapientia']};
   function bookMatch(title,slug){
@@ -97,6 +103,6 @@
     find('[data-verse-query]').oninput=e=>{query=e.target.value;page=0;renderAuthors();};find('[data-authors-prev]').onclick=()=>{page--;renderAuthors();find('.web-verse-authors').scrollIntoView({block:'start'});};find('[data-authors-next]').onclick=()=>{page++;renderAuthors();find('.web-verse-authors').scrollIntoView({block:'start'});};showVerse();return {state};
   }
 
-  const api={verseGroups,webVerseURL,renderWebVerse,escape,readerURL,bibleURL,roman,bookMatch,locate,family,catalogue,volumes,renderVolumes};
+  const api={verseSelection,verseGroups,webVerseURL,renderWebVerse,escape,readerURL,bibleURL,roman,bookMatch,locate,family,catalogue,volumes,renderVolumes};
   if(typeof module==='object'&&module.exports)module.exports=api;else root.FRScripture=api;
 })(typeof window==='undefined'?globalThis:window);

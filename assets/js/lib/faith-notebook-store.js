@@ -239,7 +239,7 @@
   // stores is a printed page number. It stores an anchor, which is the
   // block's own id, and that goes in the fragment.
   function readerUrl(e) {
-    if (!e || !e.work) return "/the-faith-received/";
+    if (!e || !e.work) return "/the-faith-received/all-works/?collection=all";
     const q = e.corpus === "tfr"
       ? `?w=${encodeURIComponent(e.work)}`
       : `?c=${encodeURIComponent(e.corpus)}&w=${encodeURIComponent(e.work)}`;

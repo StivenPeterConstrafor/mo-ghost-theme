@@ -105,7 +105,7 @@
     if (all) return Promise.resolve(all);
     const list = (window.MOCorpora && window.MOCorpora.all) || [];
     return Promise.all(list.map((c) =>
-      window.MOCorpora.load(c.id).catch(() => [])))
+      window.MOFaithCatalogue.load(c.id).catch(() => [])))
       .then((sets) => {
         all = sets.flat();
         fillSelect("[data-bs-collection]", tally(all, (w) => w.corpus), (id) => {

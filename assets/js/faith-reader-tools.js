@@ -142,7 +142,7 @@
   const loadEdges = () => (NB ? NB.loadEdges() : []);
   const saveEdges = (list) => { if (NB) NB.saveEdges(list); };
   const fromTuple = (t) => (NB ? NB.fromTuple(t) : null);
-  const readerUrl = (e) => (NB ? NB.readerUrl(e) : "/the-faith-received/");
+  const readerUrl = (e) => (NB ? NB.readerUrl(e) : "/the-faith-received/all-works/?collection=all");
   const encodeShare = (entries, edges, name) => (NB ? NB.encodeShare(entries, edges, name) : "");
   const decodeShare = (hash) => (NB ? NB.decodeShare(hash) : null);
 

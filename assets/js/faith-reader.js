@@ -5130,7 +5130,7 @@
       `<p class="faith-pending-note">${escapeHtml(c.label)} &mdash; ${escapeHtml(c.short || "")}</p>` +
       `<p class="faith-pending-actions">` +
       `<a href="/the-faith-received/?collection=${encodeURIComponent(c.id)}">Browse ${escapeHtml(c.label)}</a>` +
-      `<a href="/the-faith-received/">The Faith Received</a>` +
+      `<a href="/the-faith-received/all-works/?collection=all">The Faith Received</a>` +
       `</p></div>`;
   }
 

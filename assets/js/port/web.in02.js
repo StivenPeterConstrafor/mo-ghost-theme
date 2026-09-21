@@ -34,6 +34,7 @@ async function boot(){
   // Shelf metadata is required for the same date/shelf fallbacks. Start it with
   // the graph, rather than adding a second network wave before the first draw.
   const rost={};
+  const catalogueShelves=J(window.MOFaithWebShelfURL).catch(()=>({authors:{}}));
   const rostersReady=Promise.all(Object.keys(SHN).map(sh=>J(BLOB+`/v1/bible/${sh}/rooms/index.json`)
     .then(d=>{(d.authors||d||[]).forEach(r=>{if(r&&r.s&&(!rost[r.s]||(r.w||0)>rost[r.s].w))rost[r.s]={y:r.y,e:r.e,sh,w:r.w||0};});}).catch(()=>{})));
   const [g,e,bios]=await graphReady;
@@ -45,7 +46,7 @@ async function boot(){
     .map(f=>J(BLOB+"/v1/authors/"+f+".json").catch(()=>({}))))
     .then(shards=>{shards.forEach(d=>Object.entries(d).forEach(([k,v])=>{if(!window.__BIOS[k])window.__BIOS[k]=v;}));});
   // era + years from the shelf rosters: the rooms know their people
-  await rostersReady;
+  const [,catalogue]=await Promise.all([rostersReady,catalogueShelves]);
   window.__ROOMS=rost;   // who actually HAS a room · the dossier's room door checks first
   const shsel=$("#shsel");
   if(shsel)Object.entries(SHN).forEach(([k,l])=>{const o=document.createElement("option");
@@ -65,7 +66,7 @@ async function boot(){
     if(!y){const e0=n.e||r.e;if(e0&&ERAMID[e0])y=ERAMID[e0]+Math.round((hash(n.s)-.5)*120);}
     // an anthology filed under its own title is a COLLECTION, not a person
     const coll=n.a.length>42||/gospels?|versions?|variants?|fragments|anthology|apocryph|texts on|documents relatifs|miracles de/i.test(n.a);
-    return {...n,i,sh:n.sh||r.sh,y,yok,coll,e:y?eraOf(y):null};
+    return {...n,i,sh:n.sh||r.sh||catalogue.authors?.[n.s]?.sh,y,yok,coll,e:y?eraOf(y):null};
   });
   BYS={};NODES.forEach(n=>BYS[n.s]=n);
   // unknown years borrow the average of their neighbours, twice over
@@ -77,7 +78,7 @@ async function boot(){
     if(c)n.y=Math.round(s/c);
   });
   NODES.forEach(n=>{if(!n.y)n.y=1000;if(!n.e)n.e=eraOf(n.y);});
-  EDGES=e.edges;EXAMPLE_EDGES=EDGES.slice().sort((a,b)=>b[2]-a[2]);
+  EDGES=e.edges;window.MOFaithWebGraph=window.MOFaithWebGraphAdapter(NODES,EDGES,SHN);EXAMPLE_EDGES=EDGES.slice().sort((a,b)=>b[2]-a[2]);
   prepAmb();                     // the ambient index must exist before the first draw
   layout();READY=true;
   $("#legend").innerHTML=Object.entries(ERAL).map(([k,l])=>
@@ -436,8 +437,8 @@ $("#shsel").addEventListener("change",e=>{scopeShelf(e.target.value);});
 const panel=$("#panel"),pbody=$("#pbody");
 function syncPanelAccess(){const open=panel.classList.contains("open"),shelf=document.body.classList.contains("shelf-comparison");$("#explorer").inert=open&&(innerWidth<=1150||shelf);$("#atlas").inert=open&&(innerWidth<=760||shelf);}
 addEventListener("resize",syncPanelAccess);
-function openPanel(t,sub){stashJourney();$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");panel.inert=false;const key=location.hash.slice(1).split("=")[0],mode=({v:"verse",t:"topic",p:"path",paths:"path",journey:"path",topics:"topic",shelves:"shelves"})[key]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));$("#pt").innerHTML=t;$("#ps").innerHTML=sub||"";panel.classList.add("open");document.body.classList.add("popen");syncPanelAccess();requestAnimationFrame(resize);$("#pt").focus({preventScroll:true});renderAuthorIndex();}
-$("#px").onclick=()=>{stashJourney();$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;draw();
+function openPanel(t,sub){stashJourney();$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");panel.inert=false;const key=location.hash.slice(1).split("=")[0],mode=networkLayout!=="timeline"?"sky":({v:"verse",t:"topic",p:"path",paths:"path",journey:"path",topics:"topic",shelves:"shelves","shelf-evidence":"shelves"})[key]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));if(innerWidth<=640)document.querySelector("#mnav .on")?.scrollIntoView({block:"nearest",inline:"nearest"});$("#pt").innerHTML=t;$("#ps").innerHTML=sub||"";panel.classList.add("open");document.body.classList.add("popen");syncPanelAccess();requestAnimationFrame(resize);$("#pt").focus({preventScroll:true});renderAuthorIndex();}
+$("#px").onclick=()=>{if(networkLayout!=="timeline"){FOCUS=null;history.pushState(null,"",networkHash(networkLayout,""));route();return;}stashJourney();$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;draw();
   history.pushState(null,"","#");$("#map-title").textContent="The citation network";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m==="sky"));fitNodes(NODES.filter(n=>!hidden(n)).map(n=>n.i));renderAuthorIndex();requestAnimationFrame(resize);restoreExplorerFocus();};
 const shard=s=>gz(BLOB+"/v1/reception/"+s+".json.gz");
 let _COMMS=null;
@@ -461,11 +462,13 @@ let __PSEQ=0;   // dossier sequence guard (owner 2026-09-05: two quick opens rac
 async function openAuthor(slug,push=true){
   const n=BYS[slug];if(!n){++__PSEQ;openPanel("Author not found","This link does not match the citation index.");pbody.innerHTML='<p class="loading">Close this panel and search the author index for another spelling.</p>';return;}
   const __my=++__PSEQ;
+  if(networkLayout!=="timeline")window.MOFaithConstellations.showAuthor(slug);
   // the sky TRAVELS to a found star (owner 2026-08-29 'fix how the search bar works'):
   // a search means 'take me there' · center the century window and the vertical band
   fitNodes([n.i,...ADJ[n.i].slice().sort((a,b)=>b[1]-a[1]).slice(0,60).map(x=>x[0])]);
   FOCUS=n.i;SUBSET=null;PATHV=null;window.__JDIR=null;draw();
-  if(push)history.pushState(null,"","#a="+slug);
+  if(push)history.pushState(null,"",networkLayout==="timeline"?"#a="+slug:networkHash(networkLayout,slug));
+  syncNetworkControls();
   // SIGNED GRAPH (2026-09-02): a star whose received citations are largely refutations
   // is a battleground, not an authority · say so where the reader first looks
   const ctr=(n.ctr&&n.nin>=40)?` · <span style="color:var(--fg)" title="${n.nin} of ${n.win} received citations are refutations">contested ${Math.round(n.ctr*100)}%</span>`:"";
@@ -536,11 +539,12 @@ async function openAuthor(slug,push=true){
     <div class="relation-tools"><label for="relation-query">Find a connection<input id="relation-query" type="search" placeholder="Filter connected authors"></label></div>
     <p id="relation-feedback" role="status"></p><h3 class="psect" id="relations-in-count">Cited by ${inn.length} authors</h3><div class="web-pane" data-relations="in"></div>
     <h3 class="psect" id="relations-out-count">Cites ${out.length} authors</h3><div class="web-pane" data-relations="out"></div>`;
-  const relationPages={in:0,out:0};
+  const relationPages={in:0,out:0},relationAll={in:false,out:false};
   function renderRelations(){const term=$('#relation-query').value.trim().toLowerCase();let total=0;
-   for(const [dir,label,all] of [['in','Cited by',inn],['out','Cites',out]]){const rows=all.filter(r=>!term||String(r.a).toLowerCase().includes(term)),box=pbody.querySelector('[data-relations="'+dir+'"]'),win=FRConnectionEvidence.pageWindow(rows,relationPages[dir],12);relationPages[dir]=win.page;total+=rows.length;
+   for(const [dir,label,all] of [['in','Cited by',inn],['out','Cites',out]]){const rows=all.filter(r=>!term||String(r.a).toLowerCase().includes(term)),box=pbody.querySelector('[data-relations="'+dir+'"]'),win=FRConnectionEvidence.pageWindow(rows,relationPages[dir],relationAll[dir]?Math.max(1,rows.length):12);relationPages[dir]=win.page;total+=rows.length;
     $('#relations-'+dir+'-count').textContent=label+' '+rows.length+(term?' of '+all.length:'')+' authors';
-    box.innerHTML=win.items.map(r=>eRow(r,dir)).join('')+(win.pages>1?`<nav class="ce-pager" aria-label="${label} author pages"><button data-relation-page="${win.page-1}"${win.page===0?' disabled':''}>Previous</button><span>Page ${win.page+1} of ${win.pages}</span><button data-relation-page="${win.page+1}"${win.page+1===win.pages?' disabled':''}>Next</button></nav>`:'');
+    box.innerHTML=(rows.length>12?`<button type="button" class="relation-show-all">${relationAll[dir]?'Show 12 at a time':'Show all '+rows.length+' authors'}</button>`:'')+win.items.map(r=>eRow(r,dir)).join('')+(win.pages>1?`<nav class="ce-pager" aria-label="${label} author pages"><button data-relation-page="${win.page-1}"${win.page===0?' disabled':''}>Previous</button><span>Page ${win.page+1} of ${win.pages}</span><button data-relation-page="${win.page+1}"${win.page+1===win.pages?' disabled':''}>Next</button></nav>`:'');
+    const allButton=box.querySelector('.relation-show-all');if(allButton)allButton.onclick=()=>{relationAll[dir]=!relationAll[dir];relationPages[dir]=0;renderRelations();};
     box.querySelectorAll('[data-relation-page]').forEach(button=>button.onclick=()=>{relationPages[dir]=Number(button.dataset.relationPage);renderRelations();box.scrollIntoView({block:'start'});});
     box.querySelectorAll('[data-edge]').forEach(button=>button.onclick=()=>{const [c,t]=button.dataset.edge.split('|');openEdge(c,t,slug);});box.querySelectorAll('[data-go]').forEach(button=>button.onclick=()=>openAuthor(button.dataset.go));FRShelfMap.bindPreviews(box);
    }$('#relation-feedback').textContent=total?'':'No connected authors match this name. Try another spelling.';
@@ -710,25 +714,26 @@ $("#mnav").addEventListener("click",e=>{
   const el=e.target.closest("[data-m]");if(!el)return;e.preventDefault();
   document.querySelectorAll("#mnav a").forEach(x=>x.classList.toggle("on",x===el));
   const m=el.dataset.m;
-  if(m==="shelves")openShelfMaps();
+  if(m!=="shelves"){networkLayout="timeline";setConstellationMode(false);syncNetworkControls();}
+  if(m==="shelves")openShelfMaps("english-divines","authors");
   if(m==="sky"){$("#px").click();}
   if(m==="path")openPathPicker();
   if(m==="topic")openTopicIndex();
   if(m==="verse")openVerse("romans",8);
 });
-async function openShelfMaps(shelf='english-divines',kind='authors',push=true,options={}){
- const token=++__PSEQ;if(push)history.pushState(null,'','#shelves='+encodeURIComponent(shelf)+'/'+kind);
- openPanel('Shelf connections','Explore Scripture citation patterns and topics recorded together.');document.body.classList.add('shelf-comparison');$('#atlas').inert=true;$('#explorer').inert=true;pbody.innerHTML='<p class="loading" role="status">Loading shelf maps…</p>';
+async function openShelfEvidence(shelf='english-divines',kind='authors',push=true,options={}){
+ setConstellationMode(false);const token=++__PSEQ;if(push)history.pushState(null,'','#shelf-evidence='+encodeURIComponent(shelf)+'/'+kind);
+ openPanel('Scripture evidence','Inspect the source passages behind this constellation.');document.body.classList.add('shelf-comparison');$('#atlas').inert=true;$('#explorer').inert=true;pbody.innerHTML='<p class="loading" role="status">Loading shelf maps…</p>';
  const idx=await J(BLOB+'/v1/mine/constellations/index.json').catch(()=>null);if(token!==__PSEQ)return;
  const shelves=idx?.shelves||[],entry=shelves.find(s=>s.slug===shelf||s.s===shelf)||shelves.find(s=>s.shelf==='English Divines')||shelves[0];
- if(!entry){pbody.innerHTML='<p class="index-note">Shelf maps could not load.</p><button class="pbtn" id="shelf-retry">Retry shelf maps</button>';$('#shelf-retry').onclick=()=>openShelfMaps(shelf,kind,false);return;}
+ if(!entry){pbody.innerHTML='<p class="index-note">Shelf maps could not load.</p><button class="pbtn" id="shelf-retry">Retry shelf maps</button>';$('#shelf-retry').onclick=()=>openShelfEvidence(shelf,kind,false);return;}
  const slugOf=s=>s.slug||s.s||s.shelf.toLowerCase().replace(/[^a-z0-9]+/g,'-'),sl=slugOf(entry),labels={authors:'Authors',works:'Works',doctrines:'Topics'},available=Object.keys(labels).filter(k=>Object.prototype.hasOwnProperty.call(entry.have||{},k));
- if(!available.includes(kind))kind=available[0]||'';history.replaceState(null,'','#shelves='+encodeURIComponent(sl)+(kind?'/'+kind:'')+((options.entry||options.query||options.page)?'?'+new URLSearchParams({entry:options.entry||'',q:options.query||'',page:options.page||0}):''));
- pbody.innerHTML=`<div class="shelf-map-controls"><label>Shelf or group<select id="shelf-map-shelf">${shelves.map(s=>`<option value="${esc(slugOf(s))}">${esc(s.shelf)}</option>`).join('')}</select></label><label>Explore connections between<select id="shelf-map-kind"${available.length?"":" disabled"}>${available.length?available.map(k=>`<option value="${k}">${labels[k]}</option>`).join(''):'<option>No maps published</option>'}</select></label></div><div id="shelf-map-host"><p class="loading" role="status">Loading this constellation…</p></div>`;
- $('#shelf-map-shelf').value=sl;$('#shelf-map-kind').value=kind;$('#shelf-map-shelf').onchange=e=>openShelfMaps(e.target.value,kind);$('#shelf-map-kind').onchange=e=>openShelfMaps(sl,e.target.value);
+ if(!available.includes(kind))kind=available[0]||'';history.replaceState(null,'','#shelf-evidence='+encodeURIComponent(sl)+(kind?'/'+kind:'')+((options.entry||options.query||options.page)?'?'+new URLSearchParams({entry:options.entry||'',q:options.query||'',page:options.page||0}):''));
+ pbody.innerHTML=`<p><a class="faith-constellation-return" href="#shelves=${encodeURIComponent(sl)}/${kind}?${new URLSearchParams({entry:options.entry||''})}">← Back to constellation</a></p><div class="shelf-map-controls"><label>Shelf or group<select id="shelf-map-shelf">${shelves.map(s=>`<option value="${esc(slugOf(s))}">${esc(s.shelf)}</option>`).join('')}</select></label><label>Explore connections between<select id="shelf-map-kind"${available.length?"":" disabled"}>${available.length?available.map(k=>`<option value="${k}">${labels[k]}</option>`).join(''):'<option>No maps published</option>'}</select></label></div><div id="shelf-map-host"><p class="loading" role="status">Loading this constellation…</p></div>`;
+ $('#shelf-map-shelf').value=sl;$('#shelf-map-kind').value=kind;$('#shelf-map-shelf').onchange=e=>openShelfEvidence(e.target.value,kind);$('#shelf-map-kind').onchange=e=>openShelfEvidence(sl,e.target.value);
  if(!available.length){$('#shelf-map-host').innerHTML='<p class="index-note">No constellation exports are published for this group. Choose another shelf or group.</p>';return;}
  const base=BLOB+'/v1/mine/constellations/'+sl+'/',d=await J(base+kind+'.json').catch(()=>null);if(token!==__PSEQ)return;
- if(!d){$('#shelf-map-host').innerHTML='<p class="index-note">This constellation could not load. Your shelf and map selection are kept.</p><button class="pbtn" id="shelf-graph-retry">Retry constellation</button>';$('#shelf-graph-retry').onclick=()=>openShelfMaps(sl,kind,false);return;}
+ if(!d){$('#shelf-map-host').innerHTML='<p class="index-note">This constellation could not load. Your shelf and map selection are kept.</p><button class="pbtn" id="shelf-graph-retry">Retry constellation</button>';$('#shelf-graph-retry').onclick=()=>openShelfEvidence(sl,kind,false);return;}
  if(!d.nodes?.length){$('#shelf-map-host').innerHTML='<p class="index-note">This export contains no '+(kind==='doctrines'?'topics':kind)+'. Choose another map or shelf.</p>';return;}
  const K={name:n=>n.t||n.a,size:n=>n.n,unit:'Scripture citations',href:n=>kind==='works'&&n.w?FRScripture.readerURL(n.w):kind==='authors'?'/the-faith-received/fathers/?q='+encodeURIComponent(n.a):'',goLabel:kind==='works'?'Open work':'View works',rowLabel:kind==='authors'?'Available works':kind==='works'?'Recorded Scripture chapters':'Available topic passages',ask:(n,nm)=>'/the-faith-received/ask/?q='+encodeURIComponent('Explore '+nm+' in '+entry.shelf)};
  /* CONNECTIONS YOU CAN ACT ON (owner 2026-09-11 "change the usability of our
@@ -757,7 +762,7 @@ async function openShelfMaps(shelf='english-divines',kind='authors',push=true,op
         if(!ab&&!ba)acts.push({label:'No recorded citation between them — similarity only',href:null,note:1});}}
     return acts.filter(x=>x.go||x.href);};
  }
- FRShelfMap.render($('#shelf-map-host'),d,K,{kind,shelf:sl,rowsUrl:base+kind+'.rows.json',blob:BLOB,focus:options.entry,query:options.query,page:options.page,onSelect:state=>{if(token===__PSEQ)history.pushState(null,'','#shelves='+encodeURIComponent(sl)+'/'+kind+'?'+new URLSearchParams({entry:state.entry,q:state.query,page:state.page}));}});pbody.scrollTop=0;
+ FRShelfMap.render($('#shelf-map-host'),d,K,{kind,shelf:sl,rowsUrl:base+kind+'.rows.json',blob:BLOB,focus:options.entry,query:options.query,page:options.page,onSelect:state=>{if(token===__PSEQ)history.pushState(null,'','#shelf-evidence='+encodeURIComponent(sl)+'/'+kind+'?'+new URLSearchParams({entry:state.entry,q:state.query,page:state.page}));}});pbody.scrollTop=0;
 }
 
 async function openTopicIndex(push=true){
@@ -772,10 +777,48 @@ async function openTopicIndex(push=true){
   $('#web-topic-query').oninput=()=>{topicLimit=60;render();};$('#web-topics-more').onclick=()=>{topicLimit+=60;render();};render();
 }
 
+let networkLayout="timeline";
+function networkHash(layout,author){const view=window.MOFaithConstellations.state().view;return "#shelves=citations/"+(view==="contested"?view:"cited")+"?"+new URLSearchParams({arrange:layout,...(author?{author}: {})});}
+function syncNetworkControls(){
+ document.querySelectorAll('[data-network-layout]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.networkLayout===networkLayout)));
+ $('#network-show-all').hidden=FOCUS==null;
+ $('#network-author-map').hidden=FOCUS==null;
+}
+function showNetworkMap(){document.body.dataset.view="map";document.querySelectorAll("#mobile-view button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.view==="map")));}
+function changeNetworkLayout(layout){
+ const author=FOCUS!=null?NODES[FOCUS]?.s:"";
+ history.pushState(null,'',layout==='timeline'?(author?'#a='+author:'#'):networkHash(layout,author));route();
+ showNetworkMap();
+}
+document.querySelectorAll('[data-network-layout]').forEach(b=>b.onclick=()=>changeNetworkLayout(b.dataset.networkLayout));
+$('#network-author-map').onclick=()=>{panel.inert=true;panel.classList.remove('open');document.body.classList.remove('popen');showNetworkMap();$('#atlas').inert=false;$('#explorer').inert=false;requestAnimationFrame(resize);};
+$('#network-show-all').onclick=()=>{FOCUS=null;history.pushState(null,'',networkLayout==='timeline'?'#':networkHash(networkLayout,''));route();};
+window.addEventListener('faith-web-author',e=>{if(e.detail?.slug)openAuthor(e.detail.slug);});
+function setConstellationMode(on){
+ document.body.classList.toggle('web-constellation-mode',on);
+ if(!on)document.body.classList.remove("web-citation-layout");
+ const host=document.getElementById('faith-web-constellations');if(host)host.hidden=!on;
+ if(!on){$('#atlas').inert=false;$('#explorer').inert=false;}
+}
+function openShelfMaps(shelf='citations',kind='cited',push=true,options={}){
+ ++__PSEQ;panel.inert=true;panel.classList.remove('open');document.body.classList.remove('popen','shelf-comparison');
+ const citation=shelf==='citations';networkLayout=citation?(options.arrange||'rings'):'timeline';
+ setConstellationMode(true);document.body.classList.toggle('web-citation-layout',citation);
+ $('#atlas').inert=false;$('#explorer').inert=false;
+ $('#map-title').textContent=citation?'The citation network':'Scripture connections';
+ $('#map-summary').textContent=citation?NODES.length.toLocaleString()+' entries · '+EDGES.length.toLocaleString()+' recorded connections':'';
+ if(push)history.pushState(null,'','#shelves='+encodeURIComponent(shelf)+'/'+kind);
+ window.MOFaithConstellations.open({shelf,view:kind,arrange:options.arrange||'',entry:options.entry||'',query:options.query||'',author:options.author||''});
+ FOCUS=null;syncNetworkControls();
+ if(citation&&options.author)openAuthor(options.author,false);
+ showNetworkMap();
+}
+
 function route(){
-  stashJourney();const h=location.hash.slice(1);const kind=h.split("=")[0],mode=({v:"verse",t:"topic",topics:"topic",shelves:"shelves",paths:"path",p:"path",journey:"path"})[kind]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));
-  if(!h){$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;renderAuthorIndex();requestAnimationFrame(resize);draw();return;}
-  if(h==="shelves"||h.startsWith("shelves=")){const [path,query=""]=(h.startsWith("shelves=")?h.slice(8):"english-divines/authors").split("?"),[sh,kind]=path.split("/"),params=new URLSearchParams(query);openShelfMaps(decodeURIComponent(sh),kind||"authors",false,{entry:params.get("entry")||"",query:params.get("q")||"",page:+params.get("page")||0});return;}
+  stashJourney();const h=location.hash.slice(1);setConstellationMode(h==='shelves'||h.startsWith('shelves='));if(!(h==='shelves'||h.startsWith('shelves=')))networkLayout="timeline";syncNetworkControls();const kind=h.split("=")[0],mode=({v:"verse",t:"topic",topics:"topic",shelves:"shelves","shelf-evidence":"shelves",paths:"path",p:"path",journey:"path"})[kind]||"sky";document.querySelectorAll("#mnav [data-m]").forEach(a=>a.classList.toggle("on",a.dataset.m===mode));if(innerWidth<=640)document.querySelector("#mnav .on")?.scrollIntoView({block:"nearest",inline:"nearest"});
+  if(!h){$("#atlas").inert=false;$("#explorer").inert=false;document.body.classList.remove("shelf-comparison");++__PSEQ;panel.inert=true;panel.classList.remove("open");document.body.classList.remove("popen");FOCUS=null;SUBSET=null;PATHV=null;window.__JDIR=null;syncNetworkControls();renderAuthorIndex();requestAnimationFrame(resize);draw();return;}
+  if(h==="shelves"||h.startsWith("shelves=")){const [path,query=""]=(h.startsWith("shelves=")?h.slice(8):"citations/cited").split("?"),[sh,kind]=path.split("/"),params=new URLSearchParams(query);openShelfMaps(decodeURIComponent(sh),kind||"authors",false,{entry:params.get("entry")||"",query:params.get("q")||"",page:+params.get("page")||0,arrange:params.get("arrange")||"",author:params.get("author")||""});return;}
+  if(h.startsWith('shelf-evidence=')){const [path,query='']=h.slice(15).split('?'),[sh,kind]=path.split('/'),q=new URLSearchParams(query);openShelfEvidence(decodeURIComponent(sh),kind||'authors',false,{entry:q.get('entry')||'',query:q.get('q')||'',page:+q.get('page')||0});return;}
   if(h.startsWith('journey=')){const [path,query='']=h.slice(8).split('?'),params=new URLSearchParams(query);openJourney(path.split(',').filter(Boolean).map(decodeURIComponent),params.get('direction')||'in',{work:params.get('work')||'',targetWork:params.get('targetWork')||'',reference:params.get('reference')||'',via:(params.get('via')||'').split(',').filter(Boolean),push:false});return;}
   if(h==="paths"){openPathPicker(false);return;}if(h==="topics"){openTopicIndex(false);return;}
   const [k,v]=h.split("=");

@@ -1,3 +1,9 @@
+/* Integration update, 2026-09-19: this renderer is mounted only inside /web.
+ * Citation data comes from MOFaithWebGraph (the Web's current authors/edges),
+ * including small citation pairs and self-citations. Historical notes below
+ * describing the retired mine/citations export and its five-citation floor
+ * no longer describe the data source. Shelf Scripture exports are unchanged.
+ */
 /*
  * Constellations — the map workspace on
  * /the-faith-received/research/ (the "Constellations" tab).
@@ -510,13 +516,8 @@
   function readerUrlFromSlug(slug) {
     const s = typeof slug === "string" ? slug.trim() : "";
     if (!s) return "";
-    for (let i = 0; i < PREFIXES.length; i++) {
-      const p = PREFIXES[i];
-      if (p.re.test(s)) {
-        return `${READER}?c=${p.corpus}&w=${encodeURIComponent(s.slice(p.cut))}`;
-      }
-    }
-    return `${READER}?w=${encodeURIComponent(s)}`;
+    if(s.startsWith("mo-"))return `${READER}?c=mo&w=${encodeURIComponent(s.slice(3))}`;
+    return `/the-faith-received/read/?w=${encodeURIComponent(s)}`;
   }
 
   // The source href is "/read?w=<id>", sometimes with a "#b1-0" block
@@ -536,7 +537,13 @@
 
   function readerUrlFromSourceHref(h) {
     const slug = slugFromSourceHref(h);
-    return slug ? readerUrlFromSlug(slug) : "";
+    if(!slug)return "";
+    const result = new URL(readerUrlFromSlug(slug), location.origin);
+    try { const source = new URL(h, location.origin);
+      source.searchParams.forEach((v,k)=>{if(k!=="w"&&k!=="c")result.searchParams.set(k,v);});
+      result.hash=source.hash;
+    } catch (_) { /* keep the work link when source parameters are invalid */ }
+    return result.pathname+result.search+result.hash;
   }
 
   /* ── Author pages ─────────────────────────────────────────────────
@@ -575,8 +582,11 @@
   }
 
   function authorPageUrl(name) {
-    const key = fold(name);
-    return key ? `${AUTHOR_PAGE}?a=${encodeURIComponent(key)}` : "";
+    if(!name)return "";
+    const graph=window.MOFaithWebGraph;
+    const match=graph?.nodes.find(n=>fold(n.a)===fold(name));
+    const room=match&&window.__ROOMS?.[match.fk];
+    return room ? `${AUTHOR_PAGE}?sh=${encodeURIComponent(room.sh)}#${encodeURIComponent(match.fk)}` : `${AUTHOR_PAGE}?q=${encodeURIComponent(name)}`;
   }
 
   /* Which views have an author behind every point, and therefore an
@@ -666,9 +676,9 @@
   };
   const LINK_GLOSS = {
     authors:
-      "A line joins two authors who reach for the same passages, not merely the same books.",
-    works: "A line joins two works that reach for the same passages, not merely the same books.",
-    doctrines: "A line joins two topics that rest on the same texts.",
+      "A line connects authors with similar patterns of Scripture citation.",
+    works: "A line connects works with similar patterns of Scripture citation.",
+    doctrines: "A line connects topics supported by similar sets of source texts.",
     cited:
       "A line runs from an author to someone they cite. It counts every citation the reception index holds for that pair.",
     contested:
@@ -694,9 +704,9 @@
   // elsewhere; this one has to be unmistakable about what it does and
   // does not rule out.
   const COMPARE_CITE_NONE =
-    "Neither of these two cites the other five times or more, and five is the floor for this graph. A pair under it is not published at all, so this means fewer than five in each direction, possibly none. It is not a finding that they never named each other.";
+    "No citation between these authors is recorded in the current index. This does not establish that they never cited one another.";
   const COMPARE_CITE_ONE_WAY =
-    "The other direction is not in the graph, which puts it under five citations rather than at none.";
+    "No citation in the other direction is recorded in the current index.";
 
   /* The opt-in exact count, and the cost is stated before it is spent.
    * Measured on the wire 2026-09-04: 15 KB for Jerome, 19 KB for
@@ -730,9 +740,8 @@
   const CITE_SLUG = "citations";
   const CITE_LABEL = "Citations between authors";
   const CITE_VIEWS = ["cited", "contested"];
-  const CITE_URL = `${WORKER}/v1/mine/citations/all.json`;
   const CITE_FLOOR_NOTE =
-    "Pairs below five citations are not in this graph, so any count of how many authors cite or refute somebody is a floor rather than a total.";
+    "The Links control changes how many connections are drawn; author totals use the full citation index.";
 
   /* The blurb for each ring map. Said in the geometry's own terms,
    * because the plane means something here that it does not mean
@@ -740,15 +749,15 @@
    * measurement, and the rings are decades of it. */
   const CITE_BLURB = {
     cited:
-      "Every point is an author the indexed library has been read for, placed by how often the rest of that library cites them. The most cited sit at the centre and the least cited at the rim. Each ring inward is ten times as many citations. The wedges group authors by the tradition the library shelves them in. A line runs from an author to somebody they cite.",
+      "Authors are grouped by tradition. Each ring inward represents ten times as many citations. Lines run from an author to a source they cite.",
     contested:
-      "Every point is an author the indexed library has been read for, placed by how often the rest of that library argues with them. The most refuted sit at the centre and the never refuted at the rim. Each ring inward is ten times as many refutations. The wedges group authors by the tradition the library shelves them in. This measures who the arguments were with, not who was wrong.",
+      "Each ring inward represents ten times as many recorded refutations. This measures disagreement in this library, not whether an author was right or wrong.",
   };
   const CITE_REGION_BLURB = {
     cited:
-      "Every point is an author the indexed library has been read for, filed under the tradition the library shelves them in. A point's size is how much the rest of the library cites them. A line runs from an author to somebody they cite.",
+      "Authors are grouped by tradition. Larger points have more recorded citations. Lines connect authors to sources they cite.",
     contested:
-      "Every point is an author the indexed library has been read for, filed under the tradition the library shelves them in. A point's size is how much the rest of the library cites them at all, so a large point in this view is somebody both cited and argued with. A line runs from an author to somebody they cite.",
+      "Authors are grouped by tradition. Larger points have more recorded citations. Inspect a point to compare its citations and refutations.",
   };
 
   /* Three corrections, kept apart because they correct different
@@ -757,23 +766,22 @@
    * map, where a count read on its own says something the data does
    * not, and it is the one that must never be dropped. */
   const CITE_SCOPE_CAVEAT =
-    "Every figure here is counted inside the indexed corpus rather than being an absolute ranking. This library is heavily Protestant and scholastic, so the totals partly measure who it happens to hold.";
+    "Counts describe the indexed library, not an author’s influence across all Christian writing.";
   const CITE_TRADITION_CAVEAT =
-    "A wedge is where the library shelves an author, not a claim about the person. A few authors are shelved in more than one place and are drawn under the one that holds most of them.";
+    "Authors are grouped under the shelf containing the most of their indexed works.";
   const CITE_CONTESTED_CAVEAT =
-    "Being argued with is not a verdict. It is not the same as being ignored either. Several of the figures nearest this centre are also among the most cited in the library, which is why size here is total citations rather than refutations. A large count can also come from a single opponent, so every figure below is given with the number of authors behind it. A point refuted by fewer than three authors is drawn as a hollow ring.";
+    "Point size represents total citations. Hollow points have fewer than three distinct refuting authors. Select an author to see who cites or refutes them.";
 
   const CITE_LINE_KEY = {
     cited:
-      "Solid lines are citations. The heavier the line, the more of them. Dashed lines are the pairs where refutations outnumber agreements.",
+      "Thicker lines represent more citations. Dashed lines mark connections where more than half are classified as refutations.",
     contested:
-      "Dashed lines are the pairs where refutations outnumber agreements. Solid lines are pairs that are mostly agreement with an argument inside them, which is what the heaviest disputes in this library turn out to be.",
+      "Dashed lines mark connections where more than half the citations are classified as refutations. Other citations may report, qualify or support a source.",
   };
 
   const CITE_VIEWS_NOTE =
-    "Citations between authors covers the whole indexed library at once, so the shelf list does not apply to it and neither do the three Scripture views.";
-  const CITE_ARRANGE_NOTE =
-    "By similarity is unavailable here. The citation graph carries no coordinates of its own, so there is no embedding to lay these authors out in.";
+    "These are the same authors and recorded citations shown in the citation map.";
+  const CITE_ARRANGE_NOTE = "Similarity is available for individual Scripture maps.";
 
   /* ── Copy for the merged shelf ────────────────────────────────────
    *
@@ -785,9 +793,9 @@
    */
   const ALL_BLURB = {
     authors:
-      "Every author the library has been read for, on one plate, each filed under the part of Scripture they quote most. A name found on more than one shelf is drawn once.",
+      "Authors are grouped by the part of Scripture they cite most. Names appearing on several shelves are shown once.",
     doctrines:
-      "Every doctrinal topic the library has been read for, on one plate, each filed under the head of doctrine it belongs to. A topic found on more than one shelf is drawn once.",
+      "Topics are grouped by doctrine. Topics appearing on several shelves are shown once.",
   };
 
   /* The honest sentence about the edges, and the reason for it. Every
@@ -2472,8 +2480,8 @@
         `${fmt(c.total)} ${c.total === 1 ? "citation" : "citations"}`,
       ];
       if (c.ref) {
-        lines.push(`${fmt(c.pos)} positive, ${fmt(c.ref)} refutations (${pct(c.share)})`);
-        if (c.argument) lines.push("Refutations outnumber agreements");
+        lines.push(`${fmt(c.pos)} other citations, ${fmt(c.ref)} refutations (${pct(c.share)})`);
+        if (c.argument) lines.push("More than half are refutations");
       } else {
         lines.push("No refutations in this pair");
       }
@@ -2531,7 +2539,7 @@
       };
       lines.push(say(f.nameA, f.nameB, f.ab));
       lines.push(say(f.nameB, f.nameA, f.ba));
-      if (!f.any) lines.push("Fewer than five citations either way, possibly none");
+      if (!f.any) lines.push("No citation recorded in either direction");
       return lines;
     }
     if (f.edge >= 0) {
@@ -3279,7 +3287,7 @@
     if (!dossierEl) return;
     dossierEl.textContent = "";
     dossierEl.appendChild(
-      textEl("p", "cn-dossier-empty", "Choose a point to see what stands behind it.")
+      textEl("p", "cn-dossier-empty", "Choose a point to see its citations and sources.")
     );
   }
 
@@ -3371,6 +3379,7 @@
     const cat = cats.find((c) => c && c.k === key);
     dossierEl.appendChild(textEl("p", "cn-dossier-kicker", cat && cat.l ? cat.l : "Unclassified"));
     dossierEl.appendChild(dossierTitle(node, node.t || node.a || "Untitled"));
+    if(!isAll)dossierEl.appendChild(webLink("Read Scripture evidence", `#shelf-evidence=${encodeURIComponent(shelfSlug)}/${view}?${new URLSearchParams({entry:node.t||node.a||""})}`));
     if (node.sub) dossierEl.appendChild(textEl("p", "cn-dossier-sub", node.sub));
 
     // Only on the merged shelf, where one point can stand for the same
@@ -3552,7 +3561,7 @@
     dossierEl.appendChild(textEl("p", "cn-dossier-heading", heading));
     const ul = document.createElement("ul");
     ul.className = "cn-links";
-    const shown = order.slice(0, CITE_LIST_CAP);
+    const shown = order;
     shown.forEach((ei) => {
       const e = edges[ei];
       if (!e) return;
@@ -3571,6 +3580,9 @@
     );
   }
 
+  function webLink(label, hash) {
+    const a=textEl("a", "cn-open-source", label);a.href=`/the-faith-received/web/${hash}`;return a;
+  }
   function renderCiteDossier(i) {
     const node = nodes[i];
     if (!node) return;
@@ -3581,6 +3593,7 @@
       textEl("p", "cn-dossier-kicker", key ? catLabel(key) : "Unclassified")
     );
     dossierEl.appendChild(dossierTitle(node, node.a || "Untitled"));
+    if(node.fk)dossierEl.appendChild(webLink("Follow citations and read sources", `#a=${encodeURIComponent(node.fk)}`));
     if (nodes.length > 1) dossierEl.appendChild(compareButton(i));
 
     const by = refuters.length > i ? refuters[i] : 0;
@@ -3676,7 +3689,7 @@
         textEl(
           "p",
           "cn-links-none",
-          "No pair involving this author reaches five citations, so none of them is in the graph."
+          "No citation connections are recorded for this entry."
         )
       );
     }
@@ -3694,6 +3707,8 @@
     }
     const c = f.cite;
     dossierEl.textContent = "";
+    const pair=edges[j];
+    if(pair&&nodes[pair[0]].fk&&nodes[pair[1]].fk)dossierEl.appendChild(webLink("Read the recorded passages", `#e=${encodeURIComponent(nodes[pair[0]].fk)},${encodeURIComponent(nodes[pair[1]].fk)}`));
     dossierEl.appendChild(
       textEl("p", "cn-dossier-kicker", c.argument ? "Argument" : "Citation")
     );
@@ -3714,7 +3729,7 @@
         "p",
         "cn-dossier-sub",
         c.ref
-          ? `${fmt(c.pos)} of them positive and ${fmt(c.ref)} refutations, which is ${pct(c.share)} of the pair.`
+          ? `${fmt(c.ref)} refutations (${pct(c.share)}) and ${fmt(c.pos)} other citations.`
           : "None of them is a refutation."
       )
     );
@@ -3723,7 +3738,7 @@
         textEl(
           "p",
           "cn-link-gloss",
-          "Refutations outnumber agreements here, which is what the dashed line on the map marks."
+          "More than half of these citations are classified as refutations. The dashed line marks that proportion."
         )
       );
     } else if (c.ref) {
@@ -3734,7 +3749,7 @@
         textEl(
           "p",
           "cn-link-gloss",
-          "Mostly agreement with an argument inside it, so the line is drawn solid. A pair can be both a debt and a dispute. The heaviest ones in this library are."
+          "Some citations are classified as refutations. Other citations may report, qualify or support the source; read the passages to judge."
         )
       );
     }
@@ -4069,7 +4084,7 @@
       li.className = "cn-link cn-link--flat";
       li.appendChild(textEl("span", "cn-link-name", `${from} cites ${to}`));
       li.appendChild(
-        textEl("span", "cn-link-meta", "Under five citations, so not in this graph")
+        textEl("span", "cn-link-meta", "No citation recorded in this direction")
       );
       ul.appendChild(li);
       return;
@@ -4099,8 +4114,8 @@
       const pos = Math.max(0, e[2] - e[3]);
       parts.push(
         isArgument(e)
-          ? `${d[1]} on ${d[2]} is mostly argument: ${fmt(pos)} agreements against ${fmt(e[3])} refutations.`
-          : `${d[1]} on ${d[2]} is mostly agreement with an argument inside it: ${fmt(pos)} positive against ${fmt(e[3])} refutations, which is ${pct(e[3] / e[2])} of the pair.`
+          ? `${d[1]} citing ${d[2]}: ${fmt(e[3])} refutations and ${fmt(pos)} other citations.`
+          : `${d[1]} citing ${d[2]}: ${fmt(e[3])} refutations (${pct(e[3] / e[2])}) and ${fmt(pos)} other citations.`
       );
     });
     if (!parts.length) return;
@@ -4404,10 +4419,10 @@
   function compareAnnouncement(f) {
     if (f.cite) {
       if (!f.any) {
-        return `${f.nameA} and ${f.nameB} compared. Neither cites the other five times or more, so this pair is not in the graph.`;
+        return `${f.nameA} and ${f.nameB} compared. No citation between them is recorded in this index.`;
       }
       const say = (from, to, ei) => {
-        if (ei < 0) return `${from} cites ${to} fewer than five times.`;
+        if (ei < 0) return `No citation from ${from} to ${to} is recorded.`;
         const e = edges[ei];
         return `${from} cites ${to} ${fmt(e[2])} times, ${e[3] ? `${fmt(e[3])} of them refutations` : "none of them refutations"}.`;
       };
@@ -4461,7 +4476,11 @@
     selected = i;
     selectedEdge = -1;
     hoveredEdge = -1;
+    syncWebAddress();
     renderDossier(i);
+    if(citeMode&&nodes[i]?.fk&&!opts?.fromWeb){
+      window.dispatchEvent(new CustomEvent("faith-web-author",{detail:{slug:nodes[i].fk}}));
+    }
     if (i >= 0 && nodes[i]) {
       announce(`${nodes[i].a || "Point"} selected.`);
       if (opts && opts.centre) centreOn(i);
@@ -4483,6 +4502,7 @@
     // the merged shelf, where nothing was fetched on load.
     ensureFingerprints();
     renderLinkDossier(j);
+    if(citeMode){const pair=edges[j];location.hash=`e=${encodeURIComponent(nodes[pair[0]].fk)},${encodeURIComponent(nodes[pair[1]].fk)}`;}
     syncIndexSelection();
     announce(
       f.cite
@@ -4919,7 +4939,7 @@
     }
 
     const total = order.length;
-    const shown = order.slice(0, INDEX_CAP);
+    const shown = order;
 
     shown.forEach((i) => {
       const li = document.createElement("li");
@@ -5267,8 +5287,13 @@
     renderLegend();
     renderCaption();
     if (indexBuilt) {
-      if (indexFilter) indexFilter.value = "";
+      if (indexFilter) indexFilter.value = requested?.query || "";
       renderIndex();
+    }
+    if(requested?.entry){
+      const at=nodes.findIndex(n=>n.a===requested.entry||n.t===requested.entry||n.fk===requested.entry);
+      requested.entry="";
+      if(at>=0)select(at,{centre:true});
     }
     draw();
   }
@@ -5285,7 +5310,9 @@
     setStatus("Reading the citation graph…");
     let payload;
     try {
-      payload = await getJSON(CITE_URL);
+      payload = window.MOFaithWebGraph;
+      if(focusedAuthor&&payload)payload=window.MOFaithWebFocus(payload,focusedAuthor);
+      if (!payload) throw new Error("The citation index is still loading.");
     } catch (err) {
       console.error("[faith-constellations] could not load the citation graph", err);
       if (token !== loadToken) return;
@@ -5304,7 +5331,11 @@
     }
     if (token !== loadToken) return;
     setStatus("");
+    if(focusedAuthor)budgetKey="all";
     adopt(adaptCitations(payload, view));
+    if(focusedAuthor){const at=nodes.findIndex(n=>n.fk===focusedAuthor);if(at>=0)select(at,{fromWeb:true});}
+    root.dataset.focusedAuthor=focusedAuthor;
+    root.dataset.visibleAuthors=String(nodes.length);
     renderViewButtons();
     renderLayoutButtons();
   }
@@ -5586,6 +5617,7 @@
         n: numOf(n && n.n),
         pos: numOf(n && n.pos),
         ref: numOf(n && n.ref),
+        refBy: n && typeof n.refBy === "number" ? n.refBy : null,
         src: numOf(n && n.src),
       };
       const at = n && typeof n.e === "number" ? catMap[n.e] : -1;
@@ -5602,8 +5634,7 @@
           e[0] >= 0 &&
           e[1] >= 0 &&
           e[0] < nodes.length &&
-          e[1] < nodes.length &&
-          e[0] !== e[1]
+          e[1] < nodes.length
       )
       .map((e) => [e[0], e[1], numOf(e[2]), numOf(e[3])]);
 
@@ -5616,7 +5647,7 @@
     nodes.forEach((n, i) => {
       if (which === "contested") {
         n.sub = n.ref
-          ? `${fmt(n.ref)} ${n.ref === 1 ? "refutation" : "refutations"} from ${fmt(refBy[i])} ${refBy[i] === 1 ? "author" : "authors"}`
+          ? `${fmt(n.ref)} ${n.ref === 1 ? "refutation" : "refutations"} from ${fmt(n.refBy ?? refBy[i])} ${(n.refBy ?? refBy[i]) === 1 ? "author" : "authors"}`
           : "Never refuted";
       } else {
         n.sub = n.pos
@@ -5666,6 +5697,7 @@
     }
     const heavy = (p, q) => (edges[q][2] || 0) - (edges[p][2] || 0) || p - q;
     for (let i = 0; i < nn; i++) {
+      if(nodes[i].refBy!=null)refuters[i]=nodes[i].refBy;
       if (inAdj[i]) inAdj[i].sort(heavy);
       if (outAdj[i]) outAdj[i].sort(heavy);
     }
@@ -5869,6 +5901,7 @@
     if (next === LAYOUT_RINGS && !onCiteShelf()) return;
     if (next === layout) return;
     layout = next;
+    syncWebAddress();
     renderLayoutButtons();
     // The selection is kept across the switch on purpose: watching the
     // point you chose move from the blob to its section, or back, is the
@@ -5906,6 +5939,7 @@
   function setView(next) {
     if (!next || next === view) return;
     view = next;
+    syncWebAddress();
     allMissed = 0;
     renderViewButtons();
     renderLayoutButtons();
@@ -5920,6 +5954,7 @@
     const wasAll = isAll;
     const wasCite = shelfSlug === CITE_SLUG;
     const isCite = slug === CITE_SLUG;
+    if(slug!==shelfSlug)clearSelection();
     shelfSlug = slug;
     isAll = slug === ALL_SLUG;
     allMissed = 0;
@@ -5969,6 +6004,7 @@
     if (avail.indexOf(view) < 0) view = avail[0] || "";
     renderViewButtons();
     renderLayoutButtons();
+    syncWebAddress();
     if (!view) {
       showError("This shelf has not been mined yet.");
       clearMap();
@@ -5991,6 +6027,31 @@
   if (budgetSel) budgetSel.addEventListener("change", () => setBudget(budgetSel.value));
   shelfSel.addEventListener("change", () => setShelf(shelfSel.value));
 
+  let requested = null;
+  let focusedAuthor = "";
+  let mapReady = false;
+  function syncWebAddress(){
+    if(!document.body.classList.contains("web-constellation-mode")||!shelfSlug||!view)return;
+    const q=new URLSearchParams({arrange:layout});
+    if(focusedAuthor)q.set("author",focusedAuthor);
+    else if(selected>=0&&nodes[selected])q.set("entry",nodes[selected].t||nodes[selected].a||"");
+    history.replaceState(null,"",`#shelves=${encodeURIComponent(shelfSlug)}/${view}?${q}`);
+  }
+  window.MOFaithConstellations={state(){return {view,layout,author:focusedAuthor};},showAuthor(slug){
+    focusedAuthor=slug||"";
+    if(mapReady&&shelfSlug===CITE_SLUG)loadCitations();
+  },open(spec){
+    requested=spec;focusedAuthor=spec.author||"";
+    if(mapReady){
+      const slug=spec.shelf||CITE_SLUG;
+      const known=slug===CITE_SLUG||slug===ALL_SLUG||shelves.some(s=>s.slug===slug);
+      const next=known?slug:CITE_SLUG;
+      if(availableViews(next).includes(spec.view))view=spec.view;
+      shelfSel.value=next;setShelf(next);
+      if(spec.arrange)setLayout(spec.arrange);
+    }
+    onResize();
+  }};
   async function boot() {
     readPalette();
     renderLayoutButtons();
@@ -6050,7 +6111,7 @@
     let wantView = "";
     let wantLayout = "";
     try {
-      const q = new URLSearchParams(window.location.search);
+      const q = requested ? new URLSearchParams({shelf:requested.shelf||"",view:requested.view||"",arrange:requested.arrange||""}) : new URLSearchParams(window.location.search);
       wantShelf = q.get("shelf") || "";
       wantView = q.get("view") || "";
       wantLayout = q.get("arrange") || "";
@@ -6075,7 +6136,9 @@
     const first = known ? wantShelf : (citeOK ? CITE_SLUG : shelves[0].slug);
     shelfSel.value = first;
     if (wantView && availableViews(first).indexOf(wantView) >= 0) view = wantView;
+    mapReady=true;
     setShelf(first);
+    if(wantLayout)setLayout(wantLayout);
   }
 
   /* ── Waking up ────────────────────────────────────────────────────
@@ -6156,6 +6219,8 @@
   // these plus the observer above costs nothing.
   if (typeof ResizeObserver === "function") new ResizeObserver(onResize).observe(stageEl);
   window.addEventListener("resize", onResize);
+  new MutationObserver(()=>{readPalette();draw();}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{readPalette();draw();});
 
   // And immediately, for the case where this partial is dropped on a
   // page of its own rather than behind a tab.
