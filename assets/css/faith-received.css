@@ -17654,3 +17654,32 @@ a.fr-btn:hover,
 
 /* "| Home" is a quieter half of the same label. */
 .tfr-rail-home { opacity: 0.55; font-weight: 400; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   IM FELL IS FOR TITLE PAGES, NOT FOR TOOLS
+   ══════════════════════════════════════════════════════════════════════
+
+   Ian, of the Connections page: "Just lots of IM Fell where it shouldn't
+   be." Measured across the ported surfaces: Connections 4 headings in
+   it, the Scripture tool 4, Topics 8, and the author room 43. On a
+   working surface every panel title, every section head and every
+   sidebar label was wearing the face reserved for a title page.
+
+   The corpus owner reached the same conclusion inside his own app and
+   wrote it down in index.in01.css: "the antique IM Fell retires from the
+   app but academic professional quality". His replacement is the stack
+   below, so using it keeps the two halves of the site agreeing rather
+   than inventing a third opinion.
+
+   SCOPED TO THE PORTED TOOLS, by the body class their boot script sets:
+   web-page is Connections, research-page is the Scripture tool, Topics
+   and the author room. Our own surfaces carry neither, so the Faith
+   Received home, the shelves, the Scripture Index and the reader keep
+   IM Fell on the one heading that earns it, the title of the thing you
+   came to read. ------------------------------------------------------ */
+body.web-page,
+body.research-page {
+  --font-display: ui-serif, "New York", "Iowan Old Style", Palatino, Georgia, serif;
+  --display: ui-serif, "New York", "Iowan Old Style", Palatino, Georgia, serif;
+}
+
