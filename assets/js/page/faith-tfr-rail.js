@@ -173,7 +173,7 @@
     if (!a || !rail.contains(a)) return;
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return; // open-in-new-tab still works
     const ask = window.FRAsk;
-    if (!ask || typeof ask.open !== "function") return;           // no overlay here: follow the link
+    if (!ask || typeof ask.open !== "function") return; // no overlay here: follow the link
     e.preventDefault();
     closeAll(null);
     ask.open();
