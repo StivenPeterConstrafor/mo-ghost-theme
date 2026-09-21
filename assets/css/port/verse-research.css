@@ -54,28 +54,28 @@
   position: sticky;
   top: calc(var(--mo-head, 61px) + 8px);
   height: calc(100dvh - var(--mo-head, 61px) - 24px);
-  display: flex;
-  flex-direction: column;
-  margin: 8px 0 24px;
-}
-.bible-pane[data-pane="desk"] .vr-desk > div:has(.vr-pane) {
-  flex: 1 1 auto;
-  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  margin: 8px 0 24px;
+  padding-right: 4px;
 }
-/* Everything else in the column is the desk's furniture and keeps its
-   own height, so the controls never leave the screen. */
-.bible-pane[data-pane="desk"] .vr-desk > .vr-heading,
-.bible-pane[data-pane="desk"] .vr-desk > .vr-verse,
-.bible-pane[data-pane="desk"] .vr-desk > .vr-actions,
-.bible-pane[data-pane="desk"] .vr-desk > .vr-toolbar,
-.bible-pane[data-pane="desk"] .vr-desk > .vr-filter-area,
-.bible-pane[data-pane="desk"] .vr-desk > .vr-selection { flex: 0 0 auto; }
-.bible-pane[data-pane="desk"] .vr-desk > .vr-verse { margin: 12px 0; }
 
-/* A phone has no room to hold a header still AND show a result under
-   it, so there the desk goes back to being a page with one scroll. */
+/* THE DESK ITSELF IS THE SCROLLER, and the two controls worth keeping
+   in front of you stick to its top. Making the results block the
+   scroller instead, which is what I tried first, left it 137px tall:
+   the heading, the verse, the actions, the filters, the selection, the
+   coverage line and the related list are all siblings, and each one
+   kept its own height out of a single viewport. Scrolling the whole
+   column and pinning two things gives the sources the rest of it. */
+.bible-pane[data-pane="desk"] .vr-desk > .vr-heading,
+.bible-pane[data-pane="desk"] .vr-desk > .vr-toolbar {
+  position: sticky;
+  z-index: 3;
+  background: var(--bg);
+}
+.bible-pane[data-pane="desk"] .vr-desk > .vr-heading { top: 0; padding: 8px 0 4px; }
+.bible-pane[data-pane="desk"] .vr-desk > .vr-toolbar { top: 96px; margin-top: 0; }
+
 @media (max-width: 640px) {
   .bible-pane[data-pane="desk"] .vr-desk {
     position: static;
