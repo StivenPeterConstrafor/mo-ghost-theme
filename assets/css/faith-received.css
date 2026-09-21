@@ -18056,3 +18056,32 @@ body.research-page {
   color: var(--color-dark, #2d2927);
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   THE AUTHOR ROOM LOSES ITS TOPICS SIDEBAR
+   ══════════════════════════════════════════════════════════════════════
+
+   Ian: "idk why Topics gets a left side bar when it has a category
+   already. Remove that sidebar from author pages."
+
+   He is right that it is a duplicate. The room's tab strip already
+   carries Topics with its own count, and choosing a topic there renders
+   the same panel the sidebar rendered. The sidebar was the corpus
+   site's way in before the tabs existed, and the port brought both.
+
+   HIDDEN, NOT DELETED. The markup is written by authors.in03.js, and
+   three of its bindings reach for these nodes without a guard:
+   #room-topic-drawer is opened and closed at two points and #tsearch
+   takes an input listener directly. Cutting the markup out of the
+   template string would throw on load and take the whole room with it,
+   which is exactly how the page broke when the ported navigation bar
+   was removed. display:none costs one hidden subtree and cannot fail.
+
+   The port already does this below 640px, research-experience.css:86,
+   for the same reason: at that width the tabs are the only sensible
+   way in. This is that rule at every width.
+
+   The grid collapses with it. .rgrid is 210px plus the pane; left
+   alone, the pane would keep starting 248px in from an empty column. */
+body.research-page .research-room .rail { display: none; }
+body.research-page .research-room .rgrid { grid-template-columns: minmax(0, 1fr); }
+
