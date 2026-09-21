@@ -14,11 +14,12 @@
   const workSlug = work => typeof work !== 'object' ? String(work || '') : ['eebo','pld','pg','po'].includes(work.corpus) && !String(work.id).startsWith(`${work.corpus}-`) ? `${work.corpus}-${work.id}` : String(work.slug || work.id || '');
   function setWorkIdentity(fold, groups) { duplicates = fold || {}; workgroups = groups?.works || {}; }
   const displayWork = work => publicWork(work) && (!duplicates[workSlug(work)] || Boolean(workgroups[workSlug(work)]));
+  const preferredAuthors = {'Irenaeus of Lyons':'Irenaeus of Lyon','Maran, Prudent':'Prudent Maran','Fabricius, Johann Albert':'Johann Albert Fabricius','Cave, William':'William Cave'};
   function setAliases(data) {
     aliases = data.aliases || {};
-    keys = new Map(Object.entries(aliases).map(([before, after]) => [fold(before), fold(after)]));
+    keys = new Map(Object.entries({...aliases, ...preferredAuthors}).map(([before, after]) => [fold(before), fold(preferredAuthors[after] || after)]));
   }
-  const authorName = value => aliases[value] || String(value || '');
+  const authorName = value => { const name = aliases[value] || String(value || ''); return preferredAuthors[name] || name; };
   const authorKey = value => keys.get(fold(value)) || fold(value);
   function normalize(works) {
     return works.filter(displayWork).map(work => ({...work, authorOriginal:work.authorOriginal || work.author, author:authorName(work.author)}));
@@ -33,12 +34,19 @@
       const volume = series ? series[1] : String(w.volume || '');
       return {...previous, corpus, id:corpus === 'tfr' ? w.slug : w.slug.replace(`${corpus}-`, ''),
         slug:w.slug, title:w.title_en || w.title, titleLatin:w.title_en && w.title_en !== w.title ? w.title : previous.titleLatin || '',
-        author:authorName(previous.author).includes(' (') ? authorName(previous.author) : w.author_en || w.author, volume, tradition:w.tradition === 'Reformed' ? 'Continental Reformed' : w.tradition, party:w.party || '',
+        author:aliases[previous.author]?.includes(' (') ? authorName(previous.author) : w.author_en || w.author, volume, tradition:w.tradition === 'Reformed' ? 'Continental Reformed' : w.tradition, party:w.party || '',
         eyebrow:series ? w.volume : w.tradition, extent:w.n_pages || previous.extent || 0,
-        order:w.po ?? previous.order, cols:w.cols || previous.cols,
+        order:w.po ?? previous.order, cols:w.cols || previous.cols, kind:w.kind || previous.kind,
         url:`/the-faith-received/read/?w=${encodeURIComponent(w.slug)}`,
       };
     }));
+  }
+  function authorGroup(name, works = []) {
+    const anthology = /^(PG|PL|PO)\s+(\d+)\s*\(anthology\)$/i.exec(name);
+    if (anthology) return {kind:'collection', label:`${anthology[1].toUpperCase()} ${anthology[2]}: collected and editorial material`};
+    if (/^(?:Anonymous|Unknown author|Unattributed)(?:$|\s*\()/i.test(name)) return {kind:'unattributed', label:name};
+    if (works.length && works.every(w => ['preface','apparatus'].includes(w.kind))) return {kind:'editorial', label:name};
+    return {kind:'author', label:name};
   }
   function countLabel(works) {
     const extra = works.filter(work => work.supplement).length, core = works.length - extra;
@@ -48,7 +56,7 @@
   }
   const loaded = new Map();
   let ready = Promise.resolve();
-  const api = {publicWork, displayWork, workSlug, authorName, authorKey, normalize, setAliases, setWorkIdentity, setCanonical, catalogue, libraryIds, countLabel,
+  const api = {publicWork, displayWork, workSlug, authorName, authorKey, normalize, setAliases, setWorkIdentity, setCanonical, catalogue, libraryIds, countLabel, authorGroup,
     load(id) {
       if (!loaded.has(id)) loaded.set(id, Promise.all([root.MOCorpora.load(id), ready]).then(([works]) => catalogue(id, works)));
       return loaded.get(id);

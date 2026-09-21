@@ -831,7 +831,8 @@
   function block(name, list, markOf) {
     const wide = list.length >= WIDE_AT ? " btrad--wide" : "";
     const key = fold(name);
-    name = authorLabel(name);
+    const group = window.MOFaithCatalogue.authorGroup(name, list);
+    name = authorLabel(group.label);
     const rows = list.map((w) => row(w, markOf ? markOf(w) : undefined)).join("");
     const n = list.length;
 
@@ -851,7 +852,7 @@
     // The author's own page used to hang off the heading. A link inside
     // a summary is a coin toss between navigating and toggling, so it
     // moved into the open panel, where it can say what it is.
-    const all = key && name !== "Unattributed"
+    const all = key && group.kind === "author"
       ? `<a class="btrad-all" href="/the-faith-received/author/?a=${encodeURIComponent(key)}">About ${escapeHtml(name)} &rarr;</a>`
       : "";
     // Dates beside the name, office beneath it — the shape the shelf
@@ -863,7 +864,7 @@
     const office = note && note.office
       ? `<span class="btrad-office">${escapeHtml(note.office)}</span>` : "";
     return `<details class="btrad${wide}">
-  <summary class="btrad-sum"><h3>${escapeHtml(name)}${dates}<span class="btrad-n">${n.toLocaleString()} work${n === 1 ? "" : "s"}</span></h3>${office}</summary>
+  <summary class="btrad-sum"><h3>${escapeHtml(name)}${dates}<span class="btrad-n">${n.toLocaleString()} ${group.kind === "collection" ? (n === 1 ? "entry" : "entries") : (n === 1 ? "work" : "works")}</span></h3>${office}</summary>
   <ul class="blist">${rows}</ul>${all}
 </details>`;
   }
@@ -1056,7 +1057,9 @@
     // works, under their authors. Stable, so each half keeps its A-Z.
     const authorHit = (g) => Boolean(tiers) && g.works.some((w) => tiers.get(w) === AUTHOR);
     const anyAuthor = Boolean(tiers) && allGroups.some(authorHit);
-    if (anyAuthor) allGroups.sort((a, b) => Number(authorHit(b)) - Number(authorHit(a)));
+    const groupOrder = {author:0, unattributed:1, collection:2, editorial:3};
+    allGroups.forEach(g => { g.kind = window.MOFaithCatalogue.authorGroup(g.name, g.works).kind; });
+    allGroups.sort((a, b) => groupOrder[a.kind] - groupOrder[b.kind] || (anyAuthor ? Number(authorHit(b)) - Number(authorHit(a)) : 0));
 
     const pages = inVolume ? 1 : Math.max(1, Math.ceil(allGroups.length / PAGE_SIZE));
     if (page > pages) page = pages;
@@ -1178,13 +1181,17 @@
           return `<div class="btrads faith-room-blocks faith-room-blocks--fold">`
             + `${col(list.slice(0, half))}${col(list.slice(half))}</div>`;
         };
-        if (!anyAuthor) return blocks(groups);
-        // A search that found a name is drawn in two sections: the
-        // authors it named, then the other works it matched by title.
-        const named = groups.filter(authorHit);
-        const others = groups.filter((g) => !authorHit(g));
-        return (named.length ? `<h3 class="faith-room-section">Matching authors</h3>${blocks(named)}` : "")
-          + (others.length ? `<h3 class="faith-room-section">Other matching works</h3>${blocks(others)}` : "");
+        const headings = {author:'Authors', unattributed:'Unattributed works', collection:'Collections and editorial material', editorial:'Editors and reference material'};
+        return Object.keys(groupOrder).map(kind => {
+          const section = groups.filter(g => g.kind === kind);
+          if (!section.length) return "";
+          if (kind === 'author' && anyAuthor) {
+            const named = section.filter(authorHit), others = section.filter(g => !authorHit(g));
+            return (named.length ? `<h3 class="faith-room-section">Matching authors</h3>${blocks(named)}` : "")
+              + (others.length ? `<h3 class="faith-room-section">Other matching works</h3>${blocks(others)}` : "");
+          }
+          return `<h3 class="faith-room-section">${headings[kind]}</h3>${blocks(section)}`;
+        }).join("");
         })()
         : `<p class="faith-room-status">Nothing matches that. Try another name or title.</p>`;
     // An address that names no volume in this collection is the one

@@ -29,3 +29,13 @@ assert.equal(policy.normalize([{corpus:'eebo',id:'7'},{corpus:'tfr',id:'baxter-w
 console.log('Vercel duplicate folding: repeated import removed, explicit edition-group witness retained.');
 
 assert.equal(policy.catalogue('mo',[{id:'didache'},{id:'edwards-resolutions'},{id:'native-addition-not-featured'}]).length,3);
+assert.equal(policy.authorName('Irenaeus of Lyons'),'Irenaeus of Lyon');
+assert.equal(policy.authorName('Maran, Prudent'),'Prudent Maran');
+assert.deepEqual(policy.authorGroup('PG 2 (anthology)'),{kind:'collection',label:'PG 2: collected and editorial material'});
+assert.equal(policy.authorGroup('Anonymous (Church of Smyrna)').kind,'unattributed');
+assert.equal(policy.authorGroup('Pseudo-Justin Martyr').kind,'author');
+assert.equal(policy.authorGroup('Prudent Maran',[{kind:'preface'},{kind:'apparatus'}]).kind,'editorial');
+assert.equal(policy.authorGroup('Augustine of Hippo',[{kind:'work'},{kind:'preface'}]).kind,'author');
+policy.setCanonical({works:[{slug:'pg-9',author:'A named author',title:'A work',tradition:'Greek Fathers'}]});
+assert.equal(policy.catalogue('pg',[{corpus:'pg',id:'9',author:'PG 2 (anthology)'}])[0].author,'A named author');
+console.log('Author curation: name variants, anthology labels, anonymous and editorial groups preserve source records.');

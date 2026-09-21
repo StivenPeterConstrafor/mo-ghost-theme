@@ -26,27 +26,8 @@
 
 {{#if @member}}
 <script src="{{asset "js/page/faith-port-surface-boot.js"}}&amp;frv=c6ea6e388eea3f2a" data-body-class="research-page"></script>
-<!-- DIRECTION CONTRACT
-THESIS: A research library that leads from authors and questions to inspectable passages.
-OWN-WORLD: Inherit Academic Monochrome, EB Garamond, Source Serif Pro, ruled stone sheets, and the shared black dark theme.
-STORY: Find an author or topic, compare available evidence, follow actual connections, and open or save the source.
-FIRST VIEWPORT: Clear page identity above a searchable directory; author rooms pair a compact topic rail with a reading workspace. Phones use native tabs and stacked evidence. Topic comparison has a persistent selection action.
-FORM: Code-led extension of the established library; no new visual-world seed. Counts keep their units; samples disclose coverage; uncertain attributions remain separate. Scripture navigation is preserved.
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
--->
 <script src="{{asset "js/port/authors.in02.js"}}&amp;frv=d8b85f9e53267406"></script>
-<header class="site">
-  <div class="brand"><span class="research-page-name"> · <span id="pgname" style="font-style:italic">Latin Fathers</span></span> <button id="thBtn" aria-label="Change reading theme" title="Light / dark" style="font:inherit;background:none;border:0;cursor:pointer;color:var(--muted);padding:.1rem .3rem">☾</button></div>
-  <nav id="topnav" aria-label="Research navigation">
-    <a href="/the-faith-received/bible/" data-p="bible">Scripture</a>
-    <a href="/the-faith-received/author/" data-p="fathers">Authors</a>
-    <a href="/the-faith-received/author/#works" data-p="works">Works</a>
-    <a href="/the-faith-received/topics/" data-p="topics">Topics</a>
-    <a href="/the-faith-received/web/" data-p="web">Web</a>
-    <a href="/the-faith-received/compare/" data-p="compare">Compare</a>
-    <a href="/the-faith-received/pins/">Notebook</a>
-  </nav><button id="research-ask" type="button">Ask</button>
-</header>
+{{> "faith-received/_research-navigation"}}
 <script src="{{asset "js/port/scripture-tools.js"}}&amp;frv=a2d1172c59c08a2a"></script>
 <link rel="stylesheet" href="{{asset "css/port/verse-research.css"}}&amp;frv=36c580339a9e6d52">
 <script src="{{asset "js/port/verse-research.js"}}&amp;frv=ece7d3e92915d12e"></script>
