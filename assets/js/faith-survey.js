@@ -242,7 +242,7 @@
   root.innerHTML =
     `<div class="fr-survey-bar">` +
       `<button type="button" class="fr-survey-tab" data-fr-open ` +
-        `aria-expanded="false" aria-controls="fr-survey-panel">Survey</button>` +
+        `aria-expanded="false" aria-controls="fr-survey-panel">Tell Us What You Think</button>` +
     `</div>` +
     // No `hidden` attribute: the panel slides, and display:none cannot
     // be transitioned from. The stylesheet parks it below the fold with
