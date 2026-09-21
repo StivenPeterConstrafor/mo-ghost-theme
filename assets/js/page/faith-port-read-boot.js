@@ -48,7 +48,16 @@
     // offsetHeight, not the rect: a header mid-transition reports a
     // fractional height and the toolbar lands a pixel into the nav.
     const px = h && h.offsetHeight ? h.offsetHeight : FALLBACK;
-    document.documentElement.style.setProperty("--mo-head", `${px}px`);
+    /* THE RAIL COUNTS AS HEAD. Every full-viewport surface -- the reader,
+       Ask, the desk, the web -- is positioned and sized from --mo-head,
+       which until now meant the masthead alone. The TFR rail now sits
+       between the masthead and the page on the tools as well, so a
+       surface that reserved only the masthead's height would start
+       underneath the rail and cover it. Measured together, because to
+       everything downstream they are one band of chrome. */
+    const rail = document.querySelector(".tfr-rail");
+    const railPx = rail && rail.offsetHeight ? rail.offsetHeight : 0;
+    document.documentElement.style.setProperty("--mo-head", `${px + railPx}px`);
   }
 
   // Published before first paint so the toolbar is never briefly over
@@ -102,6 +111,10 @@
   // toolbar sat 24px inside our nav. Watch the element, not the window.
   const header = document.querySelector("header.site-header, header.site, .site-header");
   if (header && window.ResizeObserver) new ResizeObserver(measure).observe(header);
+  // The rail wraps on a narrow screen and grows when a drawer opens, so
+  // it is watched the same way the header is.
+  const railEl = document.querySelector(".tfr-rail");
+  if (railEl && window.ResizeObserver) new ResizeObserver(measure).observe(railEl);
 
   // --phh is the READER TOOLBAR's height, and the sidebar and the fixed
   // chrome are positioned from it. The engine sets it once, so a toolbar

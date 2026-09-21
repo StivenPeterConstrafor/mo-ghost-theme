@@ -18,7 +18,12 @@
   function measure() {
     const header = document.querySelector("header.site-header");
     if (!header) return;
-    const px = Math.round(header.getBoundingClientRect().height);
+    // The rail counts as head: .fra is fixed and offset by --mo-head, so
+    // a workspace that reserved only the masthead would open on top of
+    // the rail. Same reasoning as faith-port-read-boot.js.
+    const rail = document.querySelector(".tfr-rail");
+    const px = Math.round(header.getBoundingClientRect().height)
+      + (rail ? Math.round(rail.getBoundingClientRect().height) : 0);
     if (px > 0) document.documentElement.style.setProperty("--mo-head", `${px}px`);
   }
   measure();
@@ -29,6 +34,8 @@
   window.addEventListener("resize", measure);
   const header = document.querySelector("header.site-header");
   if (header && window.ResizeObserver) new ResizeObserver(measure).observe(header);
+  const railEl = document.querySelector(".tfr-rail");
+  if (railEl && window.ResizeObserver) new ResizeObserver(measure).observe(railEl);
 })();
 
 /*
