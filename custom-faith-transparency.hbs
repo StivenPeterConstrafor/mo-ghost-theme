@@ -25,11 +25,16 @@
       <p class="bhero-sub">What artificial intelligence did here, what we do to keep it honest, and every work it touched.</p>
     </div>
   </section>
+  {{!-- Ian, 2026-09-21: "it also needs the navrail." This page is a
+       landing page in the library and had none, so it was a dead end:
+       everything in the masthead is the magazine. --}}
+  {{> "faith-received/_tfr-rail"}}
+  <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
 
   <section class="bband faith-feature-body">
     <div class="container container-narrow faith-tp">
 
-      <p class="faith-tp-lede">We understand the gravity of a project like The Faith Received. It is no light thing to publish nearly 70,000 primary sources of the Christian faith in one place, over 2,000 of which are translated into English for the first time. A project of this scope and scale never would have been possible without the help of artificial intelligence.</p>
+      <p class="faith-tp-lede">We understand the gravity of a project like The Faith Received. It is no light thing to publish nearly 20,000 primary sources of the Christian faith in one place, around 15,000 of which were translated into English by a machine, many of them for the first time. A project of this scope and scale never would have been possible without the help of artificial intelligence.</p>
 
       <p>But we are not ignorant of the promises and the perils of using this technology in this way. It matters that the quality of these translations is good, not that they simply exist. Which is why we do not see The Faith Received as a static resource, but as a living project, and one that requires radical transparency and openness to iteration.</p>
 
@@ -70,7 +75,10 @@
       </ol>
 
       <p class="faith-tp-act">
-        <button type="button" class="btn btn-primary" data-report-issue>Report an issue</button>
+        {{!-- The library's own button, not the magazine's pill. .tfr-review-btn
+            is in the TFR button family (faith-received.css), which is what
+            every other control inside The Faith Received wears. --}}
+        <button type="button" class="tfr-review-btn" data-report-issue>Report an issue</button>
       </p>
 
       {{!-- The list. Closed by default: it runs to thousands of
