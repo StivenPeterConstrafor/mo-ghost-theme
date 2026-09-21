@@ -89,11 +89,36 @@
   const SETTLE = 5;
   const GIVE_UP = 48;
 
+  /* THE LANE IS NOT ALWAYS LABELLED WITH A LANGUAGE.
+   *
+   * The first version of this accepted any word-shaped label, on the
+   * assumption that the source lane names a language. It does not
+   * always: pg-11 labels its lane "Page transcription", and the panel
+   * duly printed "AI translated from Page transcription" over Origen.
+   * Ian caught it on his phone the same afternoon.
+   *
+   * That is the same class of error as naming the wrong language, and
+   * it comes from asking what shape the label is instead of what it
+   * says. So the answer has to BE a language: anything outside this
+   * list publishes nothing and the panel keeps its silence, which is
+   * the correct outcome for a lane that is a scan rather than a
+   * source text.
+   *
+   * The list is the languages the library actually holds originals in.
+   * A combined lane such as "Greek · Latin" is deliberately absent: it
+   * names two things, and "translated from Greek · Latin" is not a
+   * sentence about where this English came from. */
+  const LANGUAGES = new Set([
+    "latin", "greek", "hebrew", "syriac", "arabic", "armenian", "coptic",
+    "ethiopic", "geez", "ge'ez", "georgian", "church slavonic",
+    "old church slavonic", "slavonic", "german", "french", "italian", "spanish",
+  ]);
+
   function laneLanguage() {
     const el = document.getElementById("m-par");
     const lang = el && !el.hidden ? (el.textContent || "").trim() : "";
-    if (!/^[A-Za-z][A-Za-z ]{1,20}$/.test(lang)) return "";
-    return /^english$/i.test(lang) ? "" : lang;
+    if (!lang) return "";
+    return LANGUAGES.has(lang.toLowerCase()) ? lang : "";
   }
 
   function loaded() {
