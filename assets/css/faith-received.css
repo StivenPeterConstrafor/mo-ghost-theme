@@ -17395,7 +17395,16 @@ a.fr-btn:hover,
 }
 .tfr-rail-inner::-webkit-scrollbar { display: none; }
 
+/* PINNED, because the rail scrolls sideways. Opening Research pushes
+   eight children along the line and the row runs past the viewport; the
+   brand was the first thing off the end, leaving the rail beginning
+   mid-word. It stays put and the items travel under it. */
 .tfr-rail-brand {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--color-page, #f7f4ef);
+  padding-right: 18px;
   font-family: var(--font-body);
   font-size: 13px;
   letter-spacing: 0.1em;
