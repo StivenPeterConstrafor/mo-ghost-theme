@@ -1760,5 +1760,19 @@ html[data-lh] .app #reading :is(.row:not(.rapp) > .en, .row:not(.rapp) > .la,
   html.g-mobile nav.frthumb button { padding: 5px 6px; }
 
   .faith-reader-status { margin-left: 12px; margin-right: 12px; }
+
+  /* Reading settings, once it has joined the dock. The dock styles its
+     own children by element rather than by class, so the only thing
+     this has to undo is the .tgl box the button wears in the head. */
+  html.g-mobile nav.frthumb #aaBtn.frthumb-aa {
+    border: 0;
+    background: none;
+    padding: 5px 6px;
+  }
+  html.g-mobile nav.frthumb #aaBtn.frthumb-aa .ic {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
 }
 
