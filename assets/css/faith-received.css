@@ -17948,3 +17948,50 @@ body.research-page {
   .tfr-rail-scroll { display: none; }
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   THE DICTIONARY'S ALPHABET ON A PHONE
+   ══════════════════════════════════════════════════════════════════════
+
+   Ian: "the dictionary also looks horrible on mobile."
+
+   Measured at 390px: twenty-six letter buttons at 26x29px on a single
+   row 756px wide inside a 364px window, with the scrollbar hidden. So
+   A to M were on screen at half the size a thumb can hit, N to Z were
+   past the edge, and the only clue that they existed was to try
+   dragging a row of letters sideways.
+
+   The port chose that deliberately, dtc.in01.css:114 turns the wrapped
+   set into a nowrap scroller below 640px. It is the wrong trade here: a
+   row that scrolls saves a hundred pixels of height and costs half the
+   alphabet.
+
+   A grid instead, which is what an alphabet index wants to be: as many
+   columns as fit at 40px, so roughly eight across at this width and
+   four rows, each cell a full 44px target. Nothing hides and nothing
+   scrolls. ------------------------------------------------------- */
+@media (max-width: 640px) {
+  .faith-port-dtc-page .alpha {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 4px;
+    /* .sband is a wrapping flex row and .alpha is flex:none in the port,
+       so without this the grid is sized by its content and the columns
+       have nothing to divide. */
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: visible;
+  }
+  .faith-port-dtc-page .alpha button {
+    min-height: 44px;
+    padding: 0;
+    font-size: 0.82rem;
+    border: 1px solid var(--color-rule, #e5ded5);
+    border-radius: 6px;
+  }
+  /* A letter with no entries stays in place and stops asking to be
+     pressed; removing it would reflow the grid every time the filter
+     changes. */
+  .faith-port-dtc-page .alpha button:disabled { border-color: transparent; }
+}
+
