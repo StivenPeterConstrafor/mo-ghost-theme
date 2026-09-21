@@ -277,3 +277,29 @@ body.research-page .pinb{min-height:0;min-width:0;font:500 12.5px/1.2 var(--sans
 .research-topic .rx-author-fold>summary small{line-height:1.6}
 @media(max-width:640px){.research-topic .rx-voice-body{padding:0 4px 18px}.research-topic .rx-author-fold>summary{padding-inline:4px}.research-topic .rx-source>div{gap:4px 12px}.research-topic .rx-source .rx-text-link,.research-topic .rx-source button{min-height:44px;font-size:13px}.research-topic .rx-compare-choice{right:0}.research-topic .rx-excerpt>p{font-size:17px}.research-topic .rx-comparison .rx-voice{max-height:76dvh;overflow:auto;padding-inline:4px;overscroll-behavior:contain}.research-topic .rx-topic-authors{max-height:calc(100dvh - 230px)}}
 .research-topic .crumbs{margin-bottom:6px}.research-topic .rx-topic-heading{margin-bottom:10px}.research-topic .rx-coverage{padding-block:4px;margin-bottom:12px}.research-topic .rx-view-tabs{margin-bottom:12px}.research-topic .rx-filters{padding-block:12px}.research-topic #compare-help{margin:8px 0 12px}.research-topic .rx-comparison .rx-voice{max-height:76dvh;overflow:auto;overscroll-behavior:contain;padding-inline:8px}
+
+/* NOT A QUOTATION (owner 2026-09-21). Every line of mined text on these
+   surfaces is a machine-written summary of a passage; the verbatim words
+   are not in the mine. Two things carry that: a note at the head of each
+   panel, and a label on every entry. Both are set apart from the text
+   they describe so neither reads as part of the source.
+
+   The statement text itself is left at full strength. It is what a
+   reader scans down a list of a thousand entries, and dimming it to
+   make a point would cost more than it buys: the label above each one
+   already says what it is. */
+.rx-paraphrase-note{
+  border-left:2px solid var(--border);
+  padding:8px 0 8px 12px;
+  margin:10px 0 14px;
+  max-width:75ch;
+}
+.rx-evidence-kind{
+  display:block;
+  margin:12px 0 5px;
+  font:11.5px/1.5 var(--body);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.rx-excerpt>p::before,.rx-excerpt>p::after{content:none}

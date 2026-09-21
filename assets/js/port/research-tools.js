@@ -77,7 +77,18 @@ function statementHTML(r,o={},ui){
   const hl=r.pageSummary||o.evidenceKind||!r.q?'':String(r.q).replace(/\s+/g,' ').slice(0,120);
   const title=o.title?o.title(r):(r.wt||r.w||'Source work'),pg=page(r.p),href=(r.w&&pg!==null)?readerHrefHl(r.w,r.p,hl):(safeReaderURL(r.h)||(r.w?readerHref(r.w,r.p):null));
   const text=r.q||r.g||(r.pageSummary?'Indexed source page. Open the text to read its context.':'');
-  return `<article class="rx-excerpt"${r.id?` data-evidence-id="${esc(r.id)}"`:""}>${o.evidenceKind&&!r.pageSummary?'<span class="rx-evidence-kind">Extracted statement</span>':''}${r.pageSummary?'<span class="rx-evidence-kind">Page summary</span>':''}<p>${esc(text)}</p>${r.q&&r.g?`<details class="rx-context"><summary>Read page annotation</summary><p>${esc(r.g)}</p></details>`:''}<div class="rx-source"><span>${esc(title)}${pg!==null?' · '+pgl(r.w)+' '+esc(String(pg)):''}</span><div>${href?`<a class="rx-text-link" target="_blank" rel="noopener" href="${esc(href)}">Read the passage</a>`:''}${r.w?(pg!==null?previewBtn(r.w,r.p,hl):'')+pinBtn(r.w,r.p,title,r.a||o.author||'',r.q||r.g):''}</div></div>${o.extra?o.extra(r):(o.annotation&&r.s?`<span class="rx-annotation">Annotation: ${esc(r.s)}</span>`:'')}</article>`;}
+  // NOT A QUOTATION (owner 2026-09-21). Every line of mined text on this
+  // site is a machine-written summary of a passage: the verbatim words
+  // are not in the mine at all, only a paraphrase of what the passage
+  // says. Set in a block under a citation, that reads as the author's
+  // own words, and readers took it as one. So every statement carries
+  // its kind, always — the label used to be optional (`o.evidenceKind`)
+  // and most surfaces left it off, which is how the topic panes came to
+  // show paraphrase dressed as quotation. Do not make it conditional
+  // again. When the mine carries real quotations, change the words here
+  // and the claim becomes true everywhere at once.
+  const kind=r.pageSummary?'Summary of the indexed page':'Summary of the cited passage — not a quotation';
+  return `<article class="rx-excerpt"${r.id?` data-evidence-id="${esc(r.id)}"`:""}><span class="rx-evidence-kind">${esc(kind)}</span><p>${esc(text)}</p>${r.q&&r.g?`<details class="rx-context"><summary>Read page annotation</summary><p>${esc(r.g)}</p></details>`:''}<div class="rx-source"><span>${esc(title)}${pg!==null?' · '+pgl(r.w)+' '+esc(String(pg)):''}</span><div>${href?`<a class="rx-text-link" target="_blank" rel="noopener" href="${esc(href)}">Read the passage</a>`:''}${r.w?(pg!==null?previewBtn(r.w,r.p,hl):'')+pinBtn(r.w,r.p,title,r.a||o.author||'',r.q||r.g):''}</div></div>${o.extra?o.extra(r):(o.annotation&&r.s?`<span class="rx-annotation">Annotation: ${esc(r.s)}</span>`:'')}</article>`;}
 function workFoldsHTML(rows,o={},ui){const esc=htmlEscape,fmtR=n=>Number(n).toLocaleString(),{foldOpen,workSaveBtn}=ui,sectionFoldsHTML=ui.sectionFoldsHTML||((rs,render)=>rs.map(render).join(''));const g=new Map();rows.forEach(r=>{const w=r.w||'';if(!g.has(w))g.set(w,[]);g.get(w).push(r);});
   const ranked=[...g.entries()].sort((x,y)=>y[1].length-x[1].length||String(x[0]).localeCompare(String(y[0]))),largest=ranked[0]?.[0];
   const groups=orderedWorks(ranked,([w,rs])=>({...rs[0],w,t:o.title?o.title(rs[0]):rs[0].wt||rs[0].t||w}));
