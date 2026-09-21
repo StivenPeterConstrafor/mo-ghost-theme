@@ -84,8 +84,10 @@
    * for five ticks together. If it never settles, nothing is published
    * and the panel keeps its silence, which is what the old reader did
    * for a work that never answered. */
-  const SETTLE = 5;       // consecutive equal readings, 250ms apart
-  const GIVE_UP = 48;     // 12s, comfortably past the 2s measured above
+  // SETTLE: consecutive equal readings, 250ms apart.
+  // GIVE_UP: 12s, comfortably past the 2s measured above.
+  const SETTLE = 5;
+  const GIVE_UP = 48;
 
   function laneLanguage() {
     const el = document.getElementById("m-par");
