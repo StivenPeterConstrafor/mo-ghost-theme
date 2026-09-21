@@ -17995,3 +17995,35 @@ body.research-page {
   .faith-port-dtc-page .alpha button:disabled { border-color: transparent; }
 }
 
+/* THE DICTIONARY SHELL WAS SITTING ON TOP OF THE NAVIGATION.
+   Same page, second defect, and the one that made it look broken rather
+   than merely cramped.
+
+   dtc.in01.css:109 pins the whole page with `position: fixed; inset: 0`
+   below 820px, to stop iOS rubber-banding the body while the two panes
+   scroll inside themselves. On the corpus site that page WAS the body,
+   so inset:0 meant the window. Here it means the window too, and the
+   window already has Mere Orthodoxy's masthead and the TFR rail in the
+   top 127px of it. So the dictionary was painted over both: at 390px
+   the rail showed its brand line and its six items were underneath the
+   search band.
+
+   faith-port-surfaces.css already computes the right size,
+   `height: calc(100dvh - var(--mo-head))`, but `inset: 0` sets top AND
+   bottom, and a box cannot honour both insets and a height. The height
+   was correct and the offset was zero, which is exactly the overlap.
+
+   Stated as top and bottom rather than a height, so it needs no number
+   of its own and follows the rail if the rail ever changes height.
+   Matched to the port's own 820px so there is no band of widths where
+   one rule applies and the other does not. */
+@media (max-width: 820px) {
+  .faith-port-dtc-page {
+    top: var(--mo-head, 85px);
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+  }
+}
+
