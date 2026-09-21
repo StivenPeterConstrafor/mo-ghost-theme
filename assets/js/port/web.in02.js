@@ -837,7 +837,10 @@ function route(){
 addEventListener("hashchange",route);
 addEventListener("popstate",route);
 
-$('#web-theme').onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme==='dark'||(!r.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);r.dataset.theme=dark?'light':'dark';localStorage.setItem('fr_theme',r.dataset.theme);draw();drawBrush();};
+/* Guarded 2026-09-21: button removed with the ported bar. It toggled a
+   dark mode that faith-site-theme.js pins back to light on every research
+   surface, so it had already stopped working. */
+if($('#web-theme'))$('#web-theme').onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme==='dark'||(!r.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);r.dataset.theme=dark?'light':'dark';localStorage.setItem('fr_theme',r.dataset.theme);draw();drawBrush();};
 new MutationObserver(()=>{if(READY){draw();drawBrush();}}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if(READY){draw();drawBrush();}});
 $('#zoom-in').onclick=()=>{const mid=(view.y0+view.y1)/2,span=Math.max(100,(view.y1-view.y0)*.7);view.y0=mid-span/2;view.y1=mid+span/2;draw();};
@@ -866,7 +869,9 @@ function connectionExamples(){
 function renderConnectionExamples(){if(!indexReady)return;const examples=connectionExamples();$('#connection-examples').innerHTML=examples.map(([a,b,n])=>`<button data-connection="${esc(NODES[a].s)}|${esc(NODES[b].s)}"><span>${esc(NODES[a].a)} <small>cites</small> ${esc(NODES[b].a)}</span><small>${fmt(n)} recorded citations <span aria-hidden="true">→</span></small></button>`).join('')||'<p class="index-note">No recorded connections in this selection.</p>';}
 function initExplorer(){
  indexReady=true;if(innerWidth<=760)$("#map-density").value="20";
- $("#atlas-ask").onclick=()=>$("#fra-launcher")?.click();Object.entries(ERAL).forEach(([k,v])=>$('#era-select').insertAdjacentHTML('beforeend',`<option value="${k}">${esc(v)}</option>`));
+ /* Guarded 2026-09-21: the ported bar is gone and with it this button,
+    which only forwarded to #fra-launcher, the floating Ask already here. */
+ if($("#atlas-ask"))$("#atlas-ask").onclick=()=>$("#fra-launcher")?.click();Object.entries(ERAL).forEach(([k,v])=>$('#era-select').insertAdjacentHTML('beforeend',`<option value="${k}">${esc(v)}</option>`));
  $('#q').addEventListener('input',()=>{indexQuery=FRConnectionEvidence.fold($('#q').value);indexLimit=40;renderAuthorIndex();});
  $('#map-density').onchange=()=>{draw();};
  $('#index-sort').onchange=()=>{indexLimit=40;renderAuthorIndex();};

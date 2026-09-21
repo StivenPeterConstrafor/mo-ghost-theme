@@ -58,6 +58,13 @@
     const rail = document.querySelector(".tfr-rail");
     const railPx = rail && rail.offsetHeight ? rail.offsetHeight : 0;
     document.documentElement.style.setProperty("--mo-head", `${px + railPx}px`);
+    /* AND THE MASTHEAD ALONE. --mo-head is the whole band, masthead plus
+       rail, which is what a surface below the rail wants. The RAIL
+       itself needs the other number: on a page whose body does not
+       scroll, the rail has to be fixed under the masthead, and it cannot
+       be positioned from a variable that already includes its own
+       height. Connections is the first surface to need it. */
+    document.documentElement.style.setProperty("--mo-mast", `${px}px`);
   }
 
   // Published before first paint so the toolbar is never briefly over

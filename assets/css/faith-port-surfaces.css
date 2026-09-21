@@ -18,13 +18,66 @@
    positions from --mast follows. Nothing else is repositioned by hand: an
    earlier draft pinned #panel to --mo-head as well, which put its head
    under the bar on a desktop and broke the bottom sheet on a phone. */
-body.web-page { --mast: calc(var(--mo-head, 85px) + 56px); }
-body.web-page header.site {
-  top: var(--mo-head, 85px);
-  height: 56px;
-  padding: 8px 24px;
+/* 2026-09-21: THE PORTED BAR IS GONE AND THE RAIL STANDS IN ITS PLACE.
+   Ian: "Rework it into the rail with the modes moved into the page."
+
+   So --mast is no longer a sum. --mo-head is already the whole band,
+   our masthead plus the rail, measured together by
+   faith-port-read-boot.js, and there is no longer a 56px bar under it
+   for the panes to clear.
+
+   THE RAIL HAS TO BE FIXED HERE, which it is on no other surface. This
+   body is the screen: height 100dvh, overflow hidden, and our masthead
+   is fixed above it, so a rail in normal flow would sit at y=0 behind
+   the masthead. That is exactly what Ian saw the first time and called
+   "completely the wrong spot".
+
+   It is positioned from --mo-mast, the masthead ALONE, because
+   --mo-head already contains the rail's own height and a box cannot be
+   placed from a number that includes itself. faith-port-read-boot.js
+   publishes both. */
+body.web-page { --mast: var(--mo-head, 85px); }
+body.web-page .tfr-rail {
+  position: fixed;
+  top: var(--mo-mast, 61px);
+  left: 0;
+  right: 0;
+  /* Over the atlas and the explorer, which are 25 and 30, and over the
+     details panel when it opens. */
+  z-index: 31;
 }
-body.web-page header.site > nav { margin-left: 0; }
+
+/* THE VIEW MODES, now in the explorer head under the title. They were
+   the one part of the ported bar worth keeping: the tool has no other
+   way to reach Paths or Scripture maps. Set as a wrapping row rather
+   than the bar's sideways scroller, because here there is a column to
+   wrap inside of and nothing is hidden off an edge. */
+body.web-page .explorer-head #mnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 14px 0 0;
+}
+body.web-page .explorer-head #mnav a {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted, #6b6660);
+  text-decoration: none;
+  padding: 7px 0;
+  border-bottom: 1px solid transparent;
+  white-space: nowrap;
+}
+body.web-page .explorer-head #mnav a:hover,
+body.web-page .explorer-head #mnav a:focus-visible {
+  color: var(--color-secondary, #c1593c);
+  border-bottom-color: currentColor;
+}
+body.web-page .explorer-head #mnav a.on {
+  color: var(--fg, #2d2927);
+  border-bottom-color: currentColor;
+}
 /* The skin positions the READER's toolbar, `.ph`, under our masthead with a bare
    `.ph { top: var(--mo-head) }`. The atlas names its details-panel head `.ph` as
    well, and that one is position:relative, so the same rule slid it down over the
@@ -39,15 +92,10 @@ body.web-page.mh-hide, body.web-page.mh-mini { padding-top: 0 !important; }
      it there. Here --mast is a sum, so the bar keeps one row: the page
      name goes (the explorer's own heading says it), and the mode
      navigation scrolls sideways under the thumb instead of wrapping. */
-  /* the page turns the bar into a two-row grid on a phone; under a fixed
-     height that second row spilled over the panel head, so: one flex row */
-  body.web-page header.site { display: flex; flex-wrap: nowrap; gap: 10px; padding: 8px 12px; }
-  body.web-page header.site .brand { display: none; }
-  body.web-page header.site > nav {
-    order: initial; width: auto; flex: 1 1 auto; min-width: 0;
-    overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
-  }
-  body.web-page header.site > nav::-webkit-scrollbar { display: none; }
+  /* The rules that flattened the ported bar into one row here were
+     deleted with the bar on 2026-09-21. The modes now wrap inside the
+     explorer column, which has a width to wrap in, and the rail below
+     handles its own narrow layout. */
 }
 
 /* ── Scripture ──────────────────────────────────────────────────────────

@@ -52,18 +52,33 @@ STORY: Find an author, see who cites whom, inspect recorded passages, open the t
 FIRST VIEWPORT: A compact masthead, a 320px searchable author index, and a bounded chronological map. Mobile starts with the readable index; Map is one tap away. Selecting an author fits their connections beside an evidence panel.
 FORM: Code-led scoped replacement inside the established library world; no new visual-world seed.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance -->
-<header class="site">
-  <a class="faith-atlas-home" href="/the-faith-received/all-works/?collection=all" aria-label="Back to library"><span aria-hidden="true">←</span> Library</a>
-  <div class="brand"><span>Connections</span></div>
-  <nav id="mnav" aria-label="Research navigation">
-    <a href="#" data-m="sky" class="on">Citation network</a>
-    <a href="#paths" data-m="path">Paths</a>
-    <a href="#topics" data-m="topic">Topics</a>
-    <a href="#shelves=english-divines/authors" data-m="shelves">Scripture maps</a>
-    <a href="#v=romans/8" data-m="verse">Scripture</a>
-  </nav>
-  <button id="atlas-ask" type="button">Ask</button><button id="web-theme" aria-label="Change reading theme">Theme</button>
-</header>
+{{!-- THE RAIL, AND THE MODES BACK IN THE PAGE.
+
+     Ian, 2026-09-21: "Rework it into the rail with the modes moved into
+     the page."
+
+     What stood here was the corpus site's own bar: a Library link, a
+     "Connections" wordmark, five mode links and two buttons, fixed
+     across the top. On the corpus site it was the masthead. Here it was
+     a third navigation under two others, it repeated the page title the
+     explorer prints twelve pixels below it, and at 390px its last item
+     ran 24px past the right edge.
+
+     The five links are NOT navigation, which is why they could not
+     simply be deleted with the bar: they are the atlas's view modes,
+     and the tool has no other way to reach Paths or Scripture maps.
+     They move down into the explorer head, under the title and the
+     line that says what this page is, where they read as what they are.
+     The element moves whole, so #mnav and its data-m attributes are
+     untouched and web.in02.js keeps working.
+
+     THE TWO BUTTONS ARE GONE. "Ask" only forwarded a click to
+     #fra-launcher, the floating Ask button already on this page, and
+     "Theme" toggled a dark mode that faith-site-theme.js pins back to
+     light on every research surface within one frame; its own
+     MutationObserver undid the button. Both bindings are guarded in
+     web.in02.js rather than left to throw. --}}
+{{> "faith-received/_tfr-rail"}}
 <nav id="network-layouts" aria-label="Citation network layout">
   <button type="button" data-network-layout="timeline" aria-pressed="true">Timeline</button>
   <button type="button" data-network-layout="rings" aria-pressed="false">Rings</button>
@@ -73,6 +88,15 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 <div id="mobile-view" aria-label="Explore view"><button data-view="browse" aria-pressed="true">Browse authors</button><button data-view="map" aria-pressed="false">View map</button></div>
 <aside id="explorer" aria-label="Browse the citation index">
   <div class="explorer-head"><h1>Connections</h1><p>The entire library mapped by citation. Find who an author reads, who reads them, and the texts behind each link.</p>
+    {{!-- The atlas's view modes, moved out of the ported bar. Same
+          element, same ids, so nothing that drives them had to change. --}}
+    <nav id="mnav" aria-label="Map view">
+      <a href="#" data-m="sky" class="on">Citation network</a>
+      <a href="#paths" data-m="path">Paths</a>
+      <a href="#topics" data-m="topic">Topics</a>
+      <a href="#shelves=english-divines/authors" data-m="shelves">Scripture maps</a>
+      <a href="#v=romans/8" data-m="verse">Scripture</a>
+    </nav>
     <div id="find"><label for="q">Find an author</label><input id="q" type="search" placeholder="Find an author…" autocomplete="off"><div id="findlist"></div></div>
     <details id="map-filters"><summary>Filter the index <span id="filter-count"></span></summary>
       <div id="lens"><label for="shsel">Shelf and its connections</label><select id="shsel"><option value="">Every shelf</option></select>
