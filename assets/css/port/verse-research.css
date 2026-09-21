@@ -27,55 +27,64 @@
 /* organized (2026-09-10): bounded panes, author → work folds, save buttons */
 .vr-pane{max-height:min(62vh,760px);overflow:auto;overscroll-behavior:contain;border:1px solid var(--border);border-radius:6px;padding:0 14px}
 
-/* ── The verse desk reads as a desk ────────────────────────────────
+/* ── The verse desk is a desk, not a page ──────────────────────────
    Ian: "The inline scrolling box is a mess. It needs to work more like
-   a desk, similar to Ask and Connections."
+   a desk, similar to Ask and Connections." Then, of the first attempt:
+   "Verse desk has not, in fact, been updated."
 
-   It was two scrolls fighting. Measured on Romans 8: .vr-pane rendered
-   936x589 with a scrollHeight of 4843, so eight screens of sources were
-   being dragged through a 589px window that was itself sitting in a
-   page that scrolled. Every wheel gesture had to decide which of the
-   two it meant, and the desk's own controls left the screen while the
-   reader was still inside the list.
+   He was right. The first pass only removed the inner scroller, which
+   left the desk as five thousand pixels of page. Ask and Connections
+   are WORKSPACES: they take the screen, hold their controls still, and
+   scroll only their results. That is what this does now.
 
-   ONE SCROLL, AND THE CONTROLS STAY. The pane gives up its height cap
-   and its inner scroller, so the page scrolls a single list; and the
-   verse, the mode switcher and the filters stay put at the top while it
-   does. That is what makes it a desk rather than a box: the thing you
-   are working with stays in front of you.
+   Measured on Genesis 1:1 before rebuilding: the desk ran 5,490px tall
+   inside a 6,727px page, its results block alone 4,802px, so the verse
+   being studied and the mode switcher were a thousand pixels above
+   whatever the reader was looking at.
 
-   Sticky offset is --mo-head, the masthead plus the TFR rail where one
-   exists, because a bare number would sit under whichever of those the
-   page happens to have. */
-.vr-pane {
-  max-height: none;
-  overflow: visible;
-  overscroll-behavior: auto;
-  border: 0;
-  border-radius: 0;
-  padding: 0;
-}
+   STICKY, NOT FIXED. Fixed would cover the four pane tabs above it, and
+   Reading desk is one of them: the reader has to be able to get back to
+   Read chapter. Sticky pins the desk under the chrome once the tabs
+   scroll past and leaves them reachable.
 
-.vr-desk .vr-heading,
-.vr-desk .vr-verse,
-.vr-desk .vr-toolbar,
-.vr-desk .vr-filter-area {
+   The results block is the only scroller. It is unnamed in his markup,
+   so it is selected by what it contains rather than by a class of its
+   own, which also means a rename upstream cannot silently unstyle it. */
+.bible-pane[data-pane="desk"] .vr-desk {
   position: sticky;
-  z-index: 3;
-  background: var(--bg);
+  top: calc(var(--mo-head, 61px) + 8px);
+  height: calc(100dvh - var(--mo-head, 61px) - 24px);
+  display: flex;
+  flex-direction: column;
+  margin: 8px 0 24px;
 }
-.vr-desk .vr-heading { top: var(--mo-head, 61px); padding-top: 12px; }
-.vr-desk .vr-verse { top: calc(var(--mo-head, 61px) + 58px); margin-top: 0; padding: 4px 0; }
-.vr-desk .vr-toolbar { top: calc(var(--mo-head, 61px) + 58px); margin-bottom: 0; }
-.vr-desk .vr-filter-area { top: calc(var(--mo-head, 61px) + 106px); padding: 12px 0; margin: 0; }
+.bible-pane[data-pane="desk"] .vr-desk > div:has(.vr-pane) {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* Everything else in the column is the desk's furniture and keeps its
+   own height, so the controls never leave the screen. */
+.bible-pane[data-pane="desk"] .vr-desk > .vr-heading,
+.bible-pane[data-pane="desk"] .vr-desk > .vr-verse,
+.bible-pane[data-pane="desk"] .vr-desk > .vr-actions,
+.bible-pane[data-pane="desk"] .vr-desk > .vr-toolbar,
+.bible-pane[data-pane="desk"] .vr-desk > .vr-filter-area,
+.bible-pane[data-pane="desk"] .vr-desk > .vr-selection { flex: 0 0 auto; }
+.bible-pane[data-pane="desk"] .vr-desk > .vr-verse { margin: 12px 0; }
 
-/* The verse itself is the one thing worth re-reading, so it keeps its
-   place above the list rather than sticking; on a phone there is not
-   enough height to pin four things and still see a result. */
+/* A phone has no room to hold a header still AND show a result under
+   it, so there the desk goes back to being a page with one scroll. */
 @media (max-width: 640px) {
-  .vr-desk .vr-verse,
-  .vr-desk .vr-filter-area { position: static; }
-  .vr-desk .vr-toolbar { top: var(--mo-head, 61px); }
+  .bible-pane[data-pane="desk"] .vr-desk {
+    position: static;
+    height: auto;
+    display: block;
+  }
+  .bible-pane[data-pane="desk"] .vr-desk > div:has(.vr-pane) {
+    overflow: visible;
+  }
 }
 .vr-work{border-top:1px dotted var(--border);margin:0 0 0 4px}.vr-work:first-child{border-top:0}.vr-work>summary{display:flex;align-items:baseline;gap:10px;min-height:40px;padding:6px 0;cursor:pointer;font-size:14px;list-style:none}.vr-work>summary::-webkit-details-marker{display:none}.vr-work>summary::before{content:'+';width:12px;flex:none;color:var(--muted);font-family:var(--sans,system-ui)}.vr-work[open]>summary::before{content:'−'}.vr-work>summary>span{flex:1;min-width:0}.vr-work>summary small{color:var(--muted);font-variant-numeric:tabular-nums}
 .vr-work-head{display:flex;align-items:baseline;gap:10px;padding:8px 0 0;font-size:14px}.vr-work-head>span{flex:1;min-width:0;color:var(--muted)}
