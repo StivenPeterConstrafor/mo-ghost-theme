@@ -36,16 +36,57 @@ const readerHref=FRScripture.readerURL;   // ONE reader — /read hydrates eebo 
 const _esvId=n2=>{let k=String(n2).toLowerCase().replace(/^(i{1,3})\s/,m2=>({i:"1 ",ii:"2 ",iii:"3 "})[m2.trim()]||m2)
     .replace(/revelation of john/,"revelation").replace(/^psalm$/,"psalms").replace(/song of songs|canticles/,"song of solomon").trim();
   const i=ESV_ORDER.indexOf(k);return i<0?null:i+1;};
-const esvCache={};
-async function esvChapter(bookName,ch){
+/* ─────────────────────────────────────────────────────────────────────
+   THE FIVE TRANSLATIONS
+
+   Ian, 2026-09-21: "Carry over the verse tools and keep all five
+   translations." Our own reader at /bible/ offered five and let the
+   reader choose; this tool hard-coded one, ESV, and printed its name as
+   a label. Keeping five is the condition on retiring the old reader, so
+   the fetch is now by code and the label is a control.
+
+   The endpoint is the same for all five: the ask-dev worker's
+   /v1/chapter/<CODE>/<bookId>/<chapter>/. Verified 2026-09-21, all five
+   return 200 with verse arrays.
+
+   EACH ONE MARKS UP ITS TEXT DIFFERENTLY, and stripping tags naively
+   corrupts three of them:
+     NIV    section headings arrive inside the first verse, separated by
+            <br/>. Strip the tag and "Jesus Teaches Nicodemus" runs into
+            "Now there was a man", one word.
+     CSB17  footnote markers as <sup>Ⓒ</sup>. The tag has to go WITH its
+            contents or a circled letter lands mid-sentence.
+     KJV    Strong's numbers as <S>2258</S>, between almost every word.
+   So the text is cleaned per-pattern before the general strip, not by it.
+
+   BASE is not a translation: it is whatever the corpus shard already
+   holds for the chapter, American Standard for most of the canon and
+   Douay-Rheims for the deuterocanon. It is offered because it is the
+   text the citation index was built against, and it needs no fetch. */
+const TRANSLATIONS=[["ESV","English Standard Version"],["CSB17","Christian Standard Bible"],["NIV","New International Version"],["NASB","New American Standard Bible"],["KJV","King James Version"]];
+const TRANS_KEY="fr.bible.translation";
+const transName=code=>(TRANSLATIONS.find(t2=>t2[0]===code)||[])[1]||null;
+let TRANS=(()=>{try{const v2=localStorage.getItem(TRANS_KEY);return v2==="base"||transName(v2)?v2:"ESV";}catch(_e){return "ESV";}})();
+const setTrans=code=>{TRANS=code;try{localStorage.setItem(TRANS_KEY,code);}catch(_e){}};
+const transText=t2=>String(t2||"")
+  .replace(/<br\s*\/?>/gi," ")
+  .replace(/<sup>[\s\S]*?<\/sup>/gi,"")
+  .replace(/<S>[^<]*<\/S>/gi,"")
+  .replace(/<[^>]+>/g,"")
+  .replace(/\s+/g," ").trim();
+const chapterCache={};
+async function chapterIn(code,bookName,ch){
+  if(code==="base")return null;
   const id=_esvId(bookName);if(!id)return null;
-  const ck=id+"/"+ch;
-  if(!(ck in esvCache))esvCache[ck]=fetch(`https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/chapter/ESV/${id}/${ch}/`)
+  const ck=code+"/"+id+"/"+ch;
+  if(!(ck in chapterCache))chapterCache[ck]=fetch(`https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/chapter/${encodeURIComponent(code)}/${id}/${ch}/`)
     .then(r=>r.ok?r.json():null)
     .then(a2=>{if(!Array.isArray(a2)||!a2.length)return null;
-      const vs={};a2.forEach(x2=>{vs[String(x2.verse)]=String(x2.text||"").replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim();});
-      return vs;}).catch(()=>null);
-  return esvCache[ck];
+      const vs={};a2.forEach(x2=>{const t3=transText(x2.text);if(t3)vs[String(x2.verse)]=t3;});
+      // An empty result is a failure, not an empty chapter: returning {}
+      // would blank the text instead of falling back to the base.
+      return Object.keys(vs).length?vs:null;}).catch(()=>null);
+  return chapterCache[ck];
 }
 
 const aslug=a=>String(a).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60);
@@ -1545,24 +1586,70 @@ async function bookPageMain(bslug,c){
   const annotations=annot.filter(e=>{const k=FRScripture.family(e.w);if(seen.has(k))return false;seen.add(k);return true;});
   const dedicatedHTML=dedicated.map(e=>{const anchor=(c&&e.an&&e.an[c])||e.sp;return `<article class="scripture-work"><div><a class="work-title" href="${readerHref(e.w,anchor)}" target="_blank" rel="noopener">${esc(e.t)}</a><span>${esc(aName(e.a))}</span><small>${e.c1?'Chapters '+e.c1+(e.c2!==e.c1?'–'+e.c2:''):(KNAME[e.k]||'Commentary')}</small></div><div class="work-actions">${anchor?readBtn(e.w,anchor):`<a class="readbtn" href="${readerHref(e.w)}" target="_blank" rel="noopener">Browse work</a>`}</div></article>`;}).join('');
   const annotHTML=annotations.map((e,i)=>`<details class="annotation-set" data-annotation="${i}"><summary><span><strong>${esc(e.t)}</strong><small>${esc(aName(e.a))}</small></span><span class="annotation-action">Find passage</span></summary><div class="annotation-destinations"></div></details>`).join('');
-  let d=null,esv=null;if(c){[d,esv]=await Promise.all([gzJ(BLOB+`/v1/bible/all/${bslug}/${c}.json.gz`),esvChapter(B.book,c)]);if(run!==BIBLE_RUN)return;}
+  // BASE NAME: what the shard itself holds, which is also what shows if
+  // a chosen translation fails to load. Named once, used by the picker,
+  // the verse tools and the desk, so the three cannot disagree.
+  const baseName=B.txt?'Douay-Rheims':'American Standard Version';
+  let d=null,alt=null;if(c){[d,alt]=await Promise.all([gzJ(BLOB+`/v1/bible/all/${bslug}/${c}.json.gz`),chapterIn(TRANS,B.book,c)]);if(run!==BIBLE_RUN)return;}
+  // The picker shows what is ON THE PAGE, not what was asked for. A
+  // chapter missing from a translation falls back to the base text, and
+  // a control still reading ESV over American Standard words would be
+  // telling the reader something untrue about what they are reading.
+  const shownTrans=alt?TRANS:"base";
+  const shownName=alt?transName(TRANS):baseName;
+  const verseTextOf=vn=>alt?.[String(vn)]||(d?.verses||[]).find(x2=>+x2.v===+vn)?.t||"";
+  const askQ=vn=>{const t3=verseTextOf(vn);const q2=t3.length>240?t3.slice(0,240).replace(/\s+\S*$/,'')+'\u2026':t3;
+    return `What does the historic Christian tradition say about ${B.book} ${c}:${vn} \u201c${q2}\u201d?`;};
   const view=c?(BIBLE_STATE.view||'read'):(BIBLE_STATE.view==='annotations'?'annotations':'commentaries');
   const tabs=[...(c?[['read','Read chapter'],['desk','Reading desk']]:[]),['commentaries','Commentaries'],['annotations','Annotations']];
-  const verses=d?(d.verses||[]).map(v=>{const n=facAll()?(v.n||0):(v.rows||[]).filter(facOK).length;return `<article class="vv" id="v${v.v}"><a class="no" href="${FRScripture.bibleURL(bslug,c,v.v)}" aria-label="Link to ${esc(B.book)} ${c}:${v.v}">${v.v}</a><div class="txt">${esc(esv?.[String(v.v)]||v.t)}${n?`<button class="verse-citations" data-v="${v.v}" aria-expanded="false" aria-controls="pv${v.v}">${n.toLocaleString()} citations</button>`:'<span class="verse-empty">'+(!facAll()&&v.n?'No citations match these filters':'No indexed citations')+'</span>'}<button type="button" class="verse-desk-link" data-open-desk="${v.v}">Open verse desk</button></div><div class="verse-panel" id="pv${v.v}"></div></article>`;}).join(''):'';
+  const verses=d?(d.verses||[]).map(v=>{const n=facAll()?(v.n||0):(v.rows||[]).filter(facOK).length;return `<article class="vv" id="v${v.v}"><a class="no" href="${FRScripture.bibleURL(bslug,c,v.v)}" aria-label="Link to ${esc(B.book)} ${c}:${v.v}">${v.v}</a><div class="txt">${esc(alt?.[String(v.v)]||v.t)}${n?`<button class="verse-citations" data-v="${v.v}" aria-expanded="false" aria-controls="pv${v.v}">${n.toLocaleString()} citations</button>`:'<span class="verse-empty">'+(!facAll()&&v.n?'No citations match these filters':'No indexed citations')+'</span>'}<button type="button" class="verse-desk-link" data-open-desk="${v.v}">Open verse desk</button><span class="verse-tools"><a class="verse-tool" data-verse-tool="ask" data-v="${v.v}" href="/the-faith-received/ask/?ask=${encodeURIComponent(askQ(v.v))}">Ask</a><a class="verse-tool" href="/the-faith-received/search/?q=${encodeURIComponent(String(alt?.[String(v.v)]||v.t||'').slice(0,120))}">Search</a><button type="button" class="verse-tool" data-verse-tool="copy" data-v="${v.v}">Copy</button></span></div><div class="verse-panel" id="pv${v.v}"></div></article>`;}).join(''):'';
   page.innerHTML=`<div class="crumbs"><a href="/the-faith-received/bible/">Scripture</a>${c?` · <a href="#b/${bslug}">${esc(B.book)}</a>`:''}</div><h1 class="headline">${esc(B.book)}${c?' '+c:''}</h1>${bibleNav(bk.books,B,c)}${scriptureFacets()}${!c?`<section class="bible-chapter-grid" aria-label="Choose a chapter"><h2>Choose a chapter</h2><div>${B.chapters.map(x=>`<a href="#b/${bslug}/${x.c}" aria-label="${esc(B.book)} ${x.c}">${x.c}</a>`).join('')}</div></section>`:''}<nav class="scripture-tabs" aria-label="Chapter views">${tabs.map(([k,label])=>`<button data-bible-view="${k}" aria-pressed="${view===k}">${label}${k==='read'||k==='desk'?'':` <span>${k==='annotations'?annotations.length:dedicated.length}</span>`}</button>`).join('')}</nav>
-  ${c?`<section class="bible-pane" data-pane="read"${view==='read'?'':' hidden'}><div class="bible-reading-tools"><span>${esv?'English Standard Version':B.txt?'Douay-Rheims':'American Standard Version'}</span><a href="/the-faith-received/connections/#v=${bslug}/${c}">Explore connections</a><button id="ask-chapter">Ask about chapter</button></div><p id="verse-feedback" role="status"></p>${d.ch_rows?.length?`<button class="chapter-citations" data-ch="1" aria-expanded="false">Whole-chapter citations · ${(facAll()?d.ch_n:d.ch_rows.filter(facOK).length)||0}</button><div id="pvch"></div>`:''}<div class="bible-verses">${verses}</div><nav class="bible-end-nav" aria-label="Continue reading">${c>1?`<a href="#b/${bslug}/${c-1}">Previous chapter</a>`:""}<a href="#b/${bslug}">Choose chapter</a>${B.chapters.some(x=>x.c===c+1)?`<a href="#b/${bslug}/${c+1}">Next chapter</a>`:""}</nav></section>`:''}
+  ${c?`<section class="bible-pane" data-pane="read"${view==='read'?'':' hidden'}><div class="bible-reading-tools"><label class="bible-translation"><span>Translation</span><select id="bible-translation">${[...TRANSLATIONS,["base",baseName]].map(t2=>`<option value="${t2[0]}"${t2[0]===shownTrans?' selected':''}>${esc(t2[1])}</option>`).join('')}</select></label>${alt||TRANS==='base'?'':`<span class="bible-translation-note">${esc(transName(TRANS)||'That translation')} has no text for this chapter. Showing ${esc(baseName)}.</span>`}<a href="/the-faith-received/connections/#v=${bslug}/${c}">Explore connections</a><button id="ask-chapter">Ask about chapter</button></div><p id="verse-feedback" role="status"></p>${d.ch_rows?.length?`<button class="chapter-citations" data-ch="1" aria-expanded="false">Whole-chapter citations · ${(facAll()?d.ch_n:d.ch_rows.filter(facOK).length)||0}</button><div id="pvch"></div>`:''}<div class="bible-verses">${verses}</div><nav class="bible-end-nav" aria-label="Continue reading">${c>1?`<a href="#b/${bslug}/${c-1}">Previous chapter</a>`:""}<a href="#b/${bslug}">Choose chapter</a>${B.chapters.some(x=>x.c===c+1)?`<a href="#b/${bslug}/${c+1}">Next chapter</a>`:""}</nav></section>`:''}
   ${c?`<section class="bible-pane" data-pane="desk"${view==='desk'?'':' hidden'}><div id="verse-research-desk"></div></section>`:''}
   <section class="bible-pane" data-pane="commentaries"${view==='commentaries'?'':' hidden'}><h2>Commentaries on ${esc(B.book)}${c?' '+c:''}</h2><p class="scripture-status">Open a work or preview its passage here.</p>${dedicatedHTML||'<p class="scripture-status">No dedicated works match the current source filters.</p>'}</section>
   <section class="bible-pane" data-pane="annotations"${view==='annotations'?'':' hidden'}><h2>Whole-Bible annotations</h2><p class="scripture-status">Choose a work to find ${esc(B.book)}${c?' '+c:''} in its available volumes. Book and chapter links follow the volume’s table of contents. Where contents are unavailable, indexed citations can lead to a passage.</p>${annotHTML||'<p class="scripture-status">No annotation sets match the current source filters.</p>'}</section>`;
   bindBibleNav(bk.books,B,c);
   let verseDesk=null;
-  const loadVerseDesk=()=>{if(!c||verseDesk)return;verseDesk=FRVerseResearch.mount($('#verse-research-desk'),{book:B,chapter:c,verses:d.verses||[],books:bk.books,catalogue:catalog,verse:BIBLE_STATE.verse,eligible:facOK,changePassage:()=>{const control=$('#jgo')||$('#bible-book');control?.focus({preventScroll:true});control?.scrollIntoView({block:'center'});},inheritedFilters:[...FACS].map(k=>FACL.find(x=>x[0]===k)?.[1]||k),changeSourceFilters:()=>{const filters=page.querySelector('.bible-filters');if(filters){filters.open=true;filters.querySelector('summary')?.focus({preventScroll:true});filters.scrollIntoView({block:'center'});}},getRoster,readURL:readerHref,locationLabel:(w,p)=>pgl(w)+' '+p,text:v=>esv?.[String(v)]||d.verses.find(x=>+x.v===+v)?.t,translationLabel:v=>esv?.[String(v)]?'English Standard Version':B.txt?'Douay-Rheims':'American Standard Version',loadUnits:w=>window.FRResearchData?window.FRResearchData.loadUnits(w):J(BLOB+'/v1/mine/units/'+encodeURIComponent(w)+'.json'),onVerse:v=>{BIBLE_STATE.verse=v;history.replaceState(null,'',FRScripture.bibleURL(bslug,c,v,'desk'));},showRelated:k=>setView(k),ask:(q,rows)=>window.FRAsk?.open(FRVerseResearch.comparisonRequest(q,rows)),signal:researchEvents.signal});};
+  const loadVerseDesk=()=>{if(!c||verseDesk)return;verseDesk=FRVerseResearch.mount($('#verse-research-desk'),{book:B,chapter:c,verses:d.verses||[],books:bk.books,catalogue:catalog,verse:BIBLE_STATE.verse,eligible:facOK,changePassage:()=>{const control=$('#jgo')||$('#bible-book');control?.focus({preventScroll:true});control?.scrollIntoView({block:'center'});},inheritedFilters:[...FACS].map(k=>FACL.find(x=>x[0]===k)?.[1]||k),changeSourceFilters:()=>{const filters=page.querySelector('.bible-filters');if(filters){filters.open=true;filters.querySelector('summary')?.focus({preventScroll:true});filters.scrollIntoView({block:'center'});}},getRoster,readURL:readerHref,locationLabel:(w,p)=>pgl(w)+' '+p,text:v=>alt?.[String(v)]||d.verses.find(x=>+x.v===+v)?.t,translationLabel:v=>alt?.[String(v)]?transName(TRANS):baseName,loadUnits:w=>window.FRResearchData?window.FRResearchData.loadUnits(w):J(BLOB+'/v1/mine/units/'+encodeURIComponent(w)+'.json'),onVerse:v=>{BIBLE_STATE.verse=v;history.replaceState(null,'',FRScripture.bibleURL(bslug,c,v,'desk'));},showRelated:k=>setView(k),ask:(q,rows)=>window.FRAsk?.open(FRVerseResearch.comparisonRequest(q,rows)),signal:researchEvents.signal});};
   const scrollToVerseDesk=()=>requestAnimationFrame(()=>{if(run!==BIBLE_RUN||BIBLE_STATE.view!=='desk')return;const host=$('#verse-research-desk'),header=document.querySelector('header.site');if(host)window.scrollTo({top:Math.max(0,host.getBoundingClientRect().top+window.scrollY-(header?.getBoundingClientRect().height||0)-16),behavior:'auto'});});
   const setView=k=>{BIBLE_STATE.view=k;page.querySelectorAll('[data-pane]').forEach(el=>el.hidden=el.dataset.pane!==k);page.querySelectorAll('[data-bible-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.bibleView===k)));history.replaceState(null,'',FRScripture.bibleURL(bslug,c,BIBLE_STATE.selection||BIBLE_STATE.verse,k==='read'?null:k));if(k==='desk'){loadVerseDesk();scrollToVerseDesk();}};
   page.querySelectorAll('[data-bible-view]').forEach(b=>b.onclick=()=>setView(b.dataset.bibleView));
   page.querySelectorAll('[data-annotation]').forEach(el=>el.addEventListener('toggle',()=>{if(el.open&&!el.dataset.loaded){el.dataset.loaded='1';FRScripture.renderVolumes(el.querySelector('.annotation-destinations'),annotations[+el.dataset.annotation],bslug,c,[...(d?.verses||[]).flatMap(v=>v.rows||[]),...(d?.ch_rows||[])]).catch(()=>{el.dataset.loaded='';el.querySelector('.annotation-destinations').innerHTML='<p>Volumes could not load. Close and reopen this work to retry.</p>';});}}));
   if(!c)return;
   $('#ask-chapter').onclick=()=>window.FRAsk?.open({q:'Explain '+B.book+' '+c+' using the commentaries and cite the relevant passages.'});
+  /* Switching translation re-runs the route rather than repainting the
+     verses in place. The chapter's citations, the desk and the verse
+     panels all quote the text, so a partial swap would leave half the
+     page in one translation and half in another. */
+  const tsel=$('#bible-translation');
+  if(tsel)tsel.onchange=()=>{setTrans(tsel.value);route();};
+
+  /* THE VERSE TOOLS, carried over from our own reader at /bible/.
+     Ask, Search, Copy: the same three, in the same order.
+
+     Ask does better here than it did there. On /bible/ it had to hand
+     the question to the Ask page through ?ask=, because that page is
+     public and the gate is server-side. This page loads ask-workspace,
+     so the overlay opens over the chapter and closing it puts the
+     reader back on the verse. The href-based hand-off remains as the
+     fallback for the case where the overlay did not load.
+
+     Search still hands off, and still loses the query for a signed-out
+     reader: the search page decides at first paint whether to render
+     its tools, so ?q= has nothing to seed. That was true of the old
+     reader too and is written down rather than papered over here. */
+  page.querySelectorAll('[data-verse-tool="ask"]').forEach(a2=>{a2.onclick=e2=>{
+    if(e2.metaKey||e2.ctrlKey||e2.shiftKey||e2.button)return;   // let a tab open
+    if(!window.FRAsk?.open)return;                              // no overlay: follow the href
+    e2.preventDefault();window.FRAsk.open({q:askQ(a2.dataset.v)});
+  };});
+  page.querySelectorAll('[data-verse-tool="copy"]').forEach(b=>{b.onclick=()=>{
+    const vn=b.dataset.v;
+    const payload=`\u201c${verseTextOf(vn)}\u201d \u2014 ${B.book} ${c}:${vn} (${shownName})`;
+    const done=()=>{b.textContent='Copied';setTimeout(()=>{b.textContent='Copy';},1400);};
+    if(navigator.clipboard?.writeText)navigator.clipboard.writeText(payload).then(done,()=>{b.textContent='Press \u2318C';});
+    else b.textContent='Press \u2318C';
+  };});
   const byVerse=new Map((d.verses||[]).map(v=>[+v.v,v]));
   // the rows beyond the shard's caps (60 per chapter, 1,000 per verse) live in one companion shard per chapter
   let MORE=null;const loadMore=()=>MORE||(MORE=gzJ(BLOB+`/v1/bible/all/${bslug}/${c}.more.json.gz`).catch(()=>{MORE=null;return null;}));

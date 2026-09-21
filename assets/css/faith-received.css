@@ -17683,3 +17683,88 @@ body.research-page {
   --display: ui-serif, "New York", "Iowan Old Style", Palatino, Georgia, serif;
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   THE TRANSLATION PICKER AND THE VERSE TOOLS
+   ══════════════════════════════════════════════════════════════════════
+
+   Ian: "Carry over the verse tools and keep all five translations."
+   Both come from our own reader at /bible/, which this tool replaces.
+
+   The picker sits where the translation's name used to be printed, in
+   the reading-tools bar above the chapter, because that is where a
+   reader already looks to find out what text they are reading. It is a
+   native select: five entries plus the base, no room for a menu and no
+   reason to build one. -------------------------------------------- */
+.bible-reading-tools .bible-translation {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+.bible-reading-tools .bible-translation > span {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted, #6b6259);
+}
+.bible-reading-tools .bible-translation select {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--color-rule, #e5ded5);
+  border-radius: 3px;
+  padding: 0.2rem 0.4rem;
+  max-width: 100%;
+}
+/* Said out loud rather than silently: a chapter a translation does not
+   carry still reads, in the base text, and the reader is told which. */
+.bible-translation-note {
+  font-size: 0.85rem;
+  color: var(--color-muted, #6b6259);
+  font-style: italic;
+}
+
+/* THE TOOLS ON A VERSE. Ask, Search, Copy, the same three the old
+   reader had. They are quiet until the verse is under the cursor or
+   holds focus, because a chapter is thirty verses and ninety standing
+   buttons is not a page anyone reads.
+
+   ON TOUCH THERE IS NO HOVER, so the query below shows them outright
+   rather than leaving a third of the tools unreachable on a phone,
+   which is exactly how the reader's Feedback button went missing twice.
+   Focus-within is listed alongside hover for the keyboard, where there
+   is no cursor to hover with. ------------------------------------- */
+.bible-verses .vv .verse-tools {
+  display: inline-flex;
+  gap: 0.5rem;
+  margin-left: 0.5rem;
+  vertical-align: baseline;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.bible-verses .vv:hover .verse-tools,
+.bible-verses .vv:focus-within .verse-tools {
+  opacity: 1;
+}
+@media (hover: none) {
+  .bible-verses .vv .verse-tools { opacity: 1; }
+}
+.bible-verses .vv .verse-tool {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted, #6b6259);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  padding: 0 0 1px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.bible-verses .vv .verse-tool:hover,
+.bible-verses .vv .verse-tool:focus-visible {
+  color: var(--color-accent, #a4451f);
+  border-bottom-color: currentColor;
+}
+
