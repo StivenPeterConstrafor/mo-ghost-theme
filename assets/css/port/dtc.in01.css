@@ -2,7 +2,7 @@
    those rules are scoped to .faith-port-dtc-page, the wrapper the template puts round the page,
    and the wrapper takes the flex column the body had (faith-port-surfaces.css). */
 
-@import url('https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer:ital@0;1&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 :root{--bg:#F0F0ED;--fg:#1C1C1A;--muted:#5A5A56;--accent:#1C1C1A;--accent2:#3A3A36;--accent-soft:#B0B0AA;
   --border:#D8D8D3;--card-bg:#FFFFFF;--masthead:#FFFFFF;--masthead-ink:#1C1C1A;--highlight:#EFEFEA;
   --font-display:'IM Fell Great Primer',Georgia,serif;--font-body:'Source Serif Pro',Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
@@ -41,6 +41,9 @@
 .hw mark{background:color-mix(in oklab,var(--accent) 20%,transparent);color:inherit;border-radius:2px;padding:0 .04em}
 .lether{position:sticky;top:0;background:var(--bg);font:400 1rem/1 var(--font-display);color:var(--accent);padding:.55rem 1.3rem .3rem;border-bottom:1px solid var(--border);z-index:2}
 .empty{padding:1.2rem 1.3rem;color:var(--muted);font:italic .9rem/1.5 var(--font-body)}
+.more{display:block;width:calc(100% - 2.6rem);margin:.9rem 1.3rem 1.4rem;padding:.65rem .8rem;border:1px solid var(--border);border-radius:10px;background:var(--card-bg);color:var(--accent2);font:600 .82rem/1.2 var(--sans);cursor:pointer;text-align:center}
+.more:hover{background:var(--highlight)}
+.more small{display:block;margin-top:.28rem;font:400 .7rem/1.3 var(--sans);color:var(--muted)}
 /* article pane */
 .art{display:flex;flex-direction:column;min-width:0;overflow:hidden}
 .art .inner{max-width:72rem;margin:0 auto}

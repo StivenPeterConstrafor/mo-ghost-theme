@@ -20,12 +20,12 @@
      is the only thing search can hold on to. /the-faith-received/dtc/,
      the port's own copy, stays out of the sitemap. --}}
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232A231D'/%3E%3Ctext x='33' y='46' font-family='Georgia,serif' font-style='italic' font-size='40' fill='%23F4EDE0' text-anchor='middle'%3ED%3C/text%3E%3Crect x='14' y='52' width='36' height='3' rx='1.5' fill='%23A94F35'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="{{asset "css/port/dtc.in01.css"}}&amp;frv=217a9e2900c1b62f">
+<link rel="stylesheet" href="{{asset "css/port/dtc.in01.css"}}&amp;frv=8aa57b8a1e8a7829">
 <script src="{{asset "js/port/dtc.in01.js"}}&amp;frv=169d27c0fd6ecde8"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=e199b0c78468ac78"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=836f3a0927ee3c21"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=49d7f6797e86ad6d"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>
 {{!-- Our colour, loaded last so it wins; then the offsets that start
      this page under our masthead. Keep both last. --}}
 <link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=6c50ba89fbe19b53">
-<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=f10540e2441414d3">
+<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=ff42239b92b45119">
 {{/contentFor}}
 
 {{> "faith-received/_tfr-rail"}}
@@ -64,13 +64,21 @@
 <div class="main">
   <div class="list" id="list" role="listbox" aria-label="Articles"></div>
   <div class="art" id="art"><div class="artscroll"><div class="inner">
-    <div class="welcome">The <b>Dictionary of Catholic Theology</b> (<i>Dictionnaire de théologie catholique</i>; Vacant, Mangenot, Amann; Paris, 1899–1950)
-    is the largest reference work of Catholic theology ever completed: 1,916 signed articles on every doctrine,
-    controversy, council, and theologian, each with its literature. Search a headword in English or French,
-    or browse by letter.</div>
+    {{!-- 2026-09-22, Ian: the intro broke into one line per inline run
+         (`.welcome` is also the subscriber /welcome/ page's class, and
+         screen.css makes that a flex column), it was set in italics
+         throughout, and it said too little about the work. Fuller copy,
+         upright, in paragraphs. The unbreaking is in
+         faith-port-surfaces.css. --}}
+    <div class="welcome">
+      <p>The <b>Dictionary of Catholic Theology</b> (Dictionnaire de théologie catholique) is the largest reference work of Catholic theology ever completed. Alfred Vacant began it in 1899. Eugène Mangenot and then Émile Amann carried it through to 1950, when the last of its fifteen volumes was published in Paris.</p>
+      <p>Its 1,916 articles are signed by the scholars who wrote them. They cover the whole field: doctrines, controversies, councils, religious orders, and the theologians themselves, from the Fathers to the twentieth century. The long entries are monographs in their own right, and each one closes with its literature, which is often the quickest way into the older scholarship on a question.</p>
+      <p>The work was finished before the Second Vatican Council, so it records both the tradition and the way Catholic theology understood itself in the first half of the twentieth century. The articles are in French, with an English translation alongside them wherever one is ready.</p>
+      <p>Search a headword in English or French, or browse by letter.</p>
+    </div>
   </div></div></div>
 </div>
-<script src="{{asset "js/port/dtc.in02.js"}}&amp;frv=1d45ec633eb48ea0"></script>
+<script src="{{asset "js/port/dtc.in02.js"}}&amp;frv=168ccf49ecde41a3"></script>
 {{!-- Phones: the dictionary flows in the page; this keeps the reader's
      place in the list across opening and closing an entry. --}}
 <script src="{{asset "js/page/faith-dtc-mobile-flow.js"}}&amp;frv=898940d035a5a709"></script>

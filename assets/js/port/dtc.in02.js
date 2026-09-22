@@ -5,6 +5,9 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fold=s=>String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 let IDX=[],LETTER=null,QY="",CUR=null,SEEALSO={},LANEPREF=null;
+// 2026-09-22, Ian: the list used to stop dead at 600 and tell you to narrow
+// the search. It pages now, as far as you want to go.
+const PAGE=600;let SHOWN=PAGE;
 let SZ=parseFloat(localStorage.getItem("dtc_sz"))||1.02;
 document.documentElement.style.setProperty("--dtcsz",SZ+"rem");
 document.addEventListener("click",e=>{const pp=document.getElementById("olPop");
@@ -35,7 +38,7 @@ function paintList(){
   const f=fold(QY.trim());
   let html="",lastL="";
   if(!rows.length){$("#list").innerHTML='<div class=empty>No headword matches. Full-text search of the articles arrives with the English translation.</div>';return;}
-  for(const a of rows.slice(0,600)){
+  for(const a of rows.slice(0,SHOWN)){
     if(!QY&&a[2]!==lastL){lastL=a[2];html+=`<div class=lether>${esc(lastL)}</div>`;}
     const en=a[5]||a[1];
     let t=esc(en);
@@ -44,7 +47,7 @@ function paintList(){
     const frDiff=fold(a[1])!==fold(en)?esc(a[1])+" · ":"";
     html+=`<button class="hw${CUR===a[0]?" on":""}" data-id="${esc(a[0])}">${t}<small>${frDiff}${(a[3]/1000).toFixed(0)}k${a[4]?" · English ready":""}</small></button>`;
   }
-  if(rows.length>600)html+=`<div class=empty>…and ${rows.length-600} more — narrow the search.</div>`;
+  if(rows.length>SHOWN)html+=`<button class=more id=more>Load more<small>${rows.length-SHOWN} more of ${rows.length}</small></button>`;
   $("#list").innerHTML=html;
 }
 function cell(p){const t=String(p??"").trim();return t?tok(t):'<span style="color:var(--border)">\u2014</span>';}
@@ -151,11 +154,15 @@ function closeArt(){document.body.classList.remove("reading");CUR=null;
   const url=new URL(location.href);url.hash="";url.searchParams.delete("paragraph");history.replaceState(history.state,"",url);
   document.title="Dictionary of Catholic Theology \u00b7 The Faith Received";
   requestAnimationFrame(()=>{$("#list").scrollTop=LISTPOS;paintList();});}
-$("#list").addEventListener("click",e=>{const b=e.target.closest(".hw");
+$("#list").addEventListener("click",e=>{
+  // Keep the reader's place: the repaint appends, so the old scroll offset
+  // still points at the row they were looking at.
+  if(e.target.closest("#more")){const sc=$("#list").scrollTop;SHOWN+=PAGE;paintList();$("#list").scrollTop=sc;return;}
+  const b=e.target.closest(".hw");
   if(b){LISTPOS=$("#list").scrollTop;openArt(b.dataset.id);}});
 $("#alpha").addEventListener("click",e=>{const b=e.target.closest("button[data-l]");if(!b||b.disabled)return;
-  LETTER=(LETTER===b.dataset.l?null:b.dataset.l);paintAlpha();paintList();});
-$("#q").addEventListener("input",()=>{QY=$("#q").value;paintList();});
+  LETTER=(LETTER===b.dataset.l?null:b.dataset.l);SHOWN=PAGE;paintAlpha();paintList();});
+$("#q").addEventListener("input",()=>{QY=$("#q").value;SHOWN=PAGE;paintList();});
 fetch("https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/dictionary/index.json"+VER).then(r=>r.json()).then(d=>{
   IDX=d.articles||[];SEEALSO=d.seealso||{};
   paintAlpha();paintList();

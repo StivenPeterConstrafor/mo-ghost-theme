@@ -250,3 +250,26 @@ body.web-citation-layout #faith-web-constellations .cn-view-btn+.cn-view-btn{mar
 #faith-web-constellations .cn-panel{--cn-ink:var(--fg);--cn-paper:var(--card);--cn-accent:var(--fg);--cn-edge:var(--muted);--cn-ghost:var(--muted)}
 
 @media(max-width:640px){body.web-citation-layout #faith-web-constellations .cn-controls{display:flex}body.web-citation-layout #faith-web-constellations .cn-control{width:100%}}
+
+/* ── Dictionary of Catholic Theology ─────────────────────────────────
+   Ian, 2026-09-22: no display face on a working surface. The port set
+   IM Fell on the masthead, the letter rules and every article heading;
+   this page is a reference tool, not a title page. One line retires it
+   everywhere on the surface, and dtc.in01.css no longer fetches the
+   family. Deleting this declaration puts it back.
+
+   `.welcome` is also the class on the subscriber /welcome/ page, where
+   screen.css makes it a flex column. screen.css loads after the page's
+   own CSS, so every inline run in the dictionary's intro became its own
+   line ("The", the bold title, "(", the French title). Scoped one class
+   deeper here so it wins on specificity wherever the two files land. */
+.faith-port-dtc-page { --font-display: 'Source Serif Pro', Georgia, serif; }
+.faith-port-dtc-page .welcome {
+  display: block;
+  flex: none;
+  min-height: 0;
+  font-style: normal;
+  max-width: 40rem;
+}
+.faith-port-dtc-page .welcome p { margin: 0 0 1rem; }
+.faith-port-dtc-page .welcome p:last-child { margin-bottom: 0; }
