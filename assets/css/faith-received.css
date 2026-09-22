@@ -6466,7 +6466,11 @@ mark.faith-find-hit.is-current {
   color: #fff;
 }
 .lp-hero h1 em { font-style: normal; }
-@media (max-width: 700px) { .lp-hero h1 br { display: none; } }
+/* The <br /> used to be hidden below 700px. It is not a desktop
+   ornament: it sits between the two halves of the sentence, which is
+   exactly where a phone wants the break too. What was wrong on a phone
+   was the size of the type, not the break. See THE HERO ON A PHONE at
+   the end of this file. */
 .lp-hero-sub {
   font-family: var(--font-body);
   font-size: 18px;
@@ -19195,4 +19199,62 @@ html.g-mobile #reading .fr-sec-toggle {
 }
 @media (prefers-reduced-motion: reduce) {
   .lp-hero h1 .highlight { background-size: 100% 100%; animation: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THE HERO ON A PHONE
+   ══════════════════════════════════════════════════════════════════════
+   Ian, 2026-09-22: "We also need to do some cleanup to this header on
+   mobile. buttons need to be the same size. headline should be two
+   lines, not four. etc."
+
+   TWO LINES. The sentence has a natural break in the middle of it and
+   the template writes one, but the phone rule above used to hide the
+   <br /> and then hand 32px type to a 350px column, so each half wrapped
+   again: four lines, and a highlight broken into two ragged bands of
+   different widths. The break is now kept at every width and the type is
+   sized to fit beside it. Measured on the live page: the longer half,
+   "the Christian's inheritance." including the highlight's 0.14em of
+   padding either side, costs 11.1px of line for every 1px of type. The
+   column is the viewport less the container's 40px of gutter, so 7.4vw
+   leaves a dozen pixels in hand at 320px and twenty-five at 390px, and
+   still reaches the 32px floor of --tfr-display-l by the time the phone
+   is a small tablet. The slack is deliberate: Georgia stands in for IM
+   Fell while the webfont loads and sets wider, and a headline that fits
+   by two pixels would spend that moment on three lines.
+
+   max-width GOES. 22ch is about 352px at 32px of IM Fell, which cleared
+   a 350px column by two pixels and would have clamped the line again the
+   moment the type got smaller. The container's gutter is the measure
+   here; a second one that close to it is a trap.
+
+   ONE BUTTON SIZE. "Begin Reading" was 188px and "Support the Work"
+   221px, each shrink-wrapped to its own label and stacked, which read as
+   two unrelated controls. Stacked full-width they are the same button
+   twice, which is what they are. Their padding, labels and destinations
+   are untouched.
+
+   AND THE LINK UNDER THEM gets a touch target. It is 17px of text, 27px
+   tall, sitting directly below two 55px buttons; the padding takes it
+   past 44px without moving the underline, which follows the text rather
+   than the box. */
+@media (max-width: 640px) {
+  .lp-hero h1 {
+    font-size: clamp(22px, 7.4vw, 32px);
+    line-height: 1.12;
+    max-width: none;
+  }
+  .lp-hero-sub { margin-bottom: 30px; }
+  .lp-ctas {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .lp-ctas .btn,
+  .lp-ctas a.btn { width: 100%; }
+  .lp-hero-about { margin-top: 16px; }
+  .lp-hero-about a {
+    display: inline-block;
+    padding: 11px 8px;
+  }
 }
