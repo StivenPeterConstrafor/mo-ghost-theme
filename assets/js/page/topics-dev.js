@@ -155,11 +155,36 @@
       .then((d) => { TREAT = d || { loci: {} }; return TREAT; });
   }
   const LABEL_TO_SH = new Map(TRADS.map(([k, lab]) => [lab.toLowerCase(), k]));
-  const shOf = (e) => {
+  LABEL_TO_SH.set("english divines", "ed"); // the worker's label for that shelf
+  const shelfOf = (e) => {
     const v = String(e.sh || e.trad || "");
     return v.length <= 3 ? v : (LABEL_TO_SH.get(v.toLowerCase()) || v);
   };
-  const tradLabel = (k) => (TRADS.find((t) => t[0] === k) || [k, k])[1];
+
+  /* NO "ENGLISH DIVINES" (Ian, 2026-09-22, on a reader who found Benjamin
+   * Keach filed under English Divines rather than Baptist). That shelf is
+   * a nationality, not a church. Its authors are placed by the library's
+   * denomination table (assets/js/faith-denominations.js, MODenom), so
+   * the groups, Compare's columns and Trace's rows read Anglican,
+   * Presbyterian, Congregational, Baptist and so on. A man the table
+   * files as Continental Reformed, Lutheran or Roman Catholic joins that
+   * shelf. Anyone it does not place stays together as "Other English
+   * writers" rather than being guessed into a church. Every grouping
+   * reads its key from shOf, so this one function is the whole change. */
+  const DEN = window.MODenom;
+  const ED_TO_SHELF = { "Continental Reformed": "rf", Lutheran: "lu", "Roman Catholic": "rc" };
+  const ED_ORDER = ["Anglican", "Presbyterian", "Congregational", "Baptist", "Quaker", "Anabaptist", "Arminian", "Bohemian Brethren", "Waldensian", "Socinian"];
+  const bodyOf = (name) => (DEN && DEN.loaded() && name ? DEN.of({ author: String(name) }).body || "" : "");
+  const shOf = (e) => {
+    const k = shelfOf(e);
+    if (k !== "ed") return k;
+    const b = bodyOf(e.author || e.a);
+    return ED_TO_SHELF[b] || (b ? `ed:${b}` : "ed");
+  };
+  const expandOrder = (order) => order.flatMap((k) => (k === "ed" ? [...ED_ORDER.map((b) => `ed:${b}`), "ed"] : [k]));
+  const baseOf = (k) => String(k).split(":")[0];
+  const tradLabel = (k) => (String(k).startsWith("ed:") ? String(k).slice(3)
+    : k === "ed" ? "Other English writers" : (TRADS.find((t) => t[0] === k) || [k, k])[1]);
 
   // Confession groups: the early church before the schism of 1054 (the
   // data files the ancient creeds and councils under "Roman Catholic"),
@@ -316,7 +341,7 @@
     const proofs = (a.scripture || []).filter((x) => LIB_TO_BOOK.has(x.b)).slice(0, 12);
     const t = S.recalledTranslation();
     li.innerHTML =
-      `<p class="td-article-doc">${[a.year, cgroup(a) === "early" ? "The early church" : a.trad, a.doc].filter(Boolean).map(esc).join(" · ")}${a.doc_type ? ` <span class="td-type">${esc(a.doc_type)}</span>` : ""}</p>` +
+      `<p class="td-article-doc">${[a.year, a.doc].filter(Boolean).map(esc).join(" · ")}${a.doc_type ? ` <span class="td-type">${esc(a.doc_type)}</span>` : ""}</p>` +
       `<h${opts && opts.short ? 5 : 4} class="td-article-h">${esc(a.article_display || a.article || "")}</h${opts && opts.short ? 5 : 4}>${ 
       text ? `<blockquote class="sd-quote td-article-text">${esc(long ? `${head} …` : text)}</blockquote>` : "" 
       }<p class="td-article-foot">${long ? `<button type="button" class="sd-clear" data-td-more aria-expanded="false">Read the whole article</button>` : ""}` +
@@ -454,10 +479,10 @@
     const pid = `tdt-${Math.random().toString(36).slice(2, 9)}`;
     const href = S.sourceHref(e.href, e.w, e.p);
     const who = e.author_id
-      ? `<button type="button" class="td-author-link" data-author="${esc(e.author_id)}" data-name="${esc(e.author || "")}" data-trad="${esc(tradLabel(shOf(e)))}" data-cen="${esc(Number(e.cen) || "")}">${esc(e.author || "")}</button>`
+      ? `<button type="button" class="td-author-link" data-author="${esc(e.author_id)}" data-name="${esc(e.author || "")}" data-trad="${esc(shOf(e) === "ed" ? "" : tradLabel(shOf(e)))}" data-cen="${esc(Number(e.cen) || "")}">${esc(e.author || "")}</button>`
       : `<span class="td-treat-author">${esc(e.author || "")}</span>`;
     li.innerHTML =
-      `<p class="td-treat-who">${who} <span class="sd-source-meta">${[e.trad_label || tradLabel(shOf(e)), S.centuryLabel(e.cen)].filter(Boolean).map(esc).join(" · ")}</span></p>` +
+      `<p class="td-treat-who">${who} <span class="sd-source-meta">${[S.centuryLabel(e.cen)].filter(Boolean).map(esc).join(" · ")}</span></p>` +
       `<h5 class="td-treat-h"><span class="td-treat-work">${esc(e.title || e.w)}</span>${showHeading(e.heading) ? `<span class="td-treat-sec">${esc(e.heading)}</span>` : ""}</h5>${ 
       e.excerpt && !(opts && opts.bare) ? `<blockquote class="sd-quote td-treat-excerpt"${e.lang ? ` lang="${esc(e.lang)}"` : ""}>${esc(e.excerpt)} …</blockquote>` : "" 
       }<div class="td-treat-actions"><button type="button" class="sd-preview-btn" data-label="Read the section" aria-expanded="false" aria-controls="${pid}">Read the section</button>` +
@@ -469,7 +494,7 @@
 
   function renderTreatments($view) {
     const list = ((TREAT && TREAT.loci && TREAT.loci[state.id]) || []).slice();
-    const order = ["gf", "pl", "po", "md", "rc", "lu", "rf", "ed", "hl"];
+    const order = expandOrder(["gf", "pl", "po", "md", "rc", "lu", "rf", "ed", "hl"]);
     const keys = order.filter((k) => list.some((e) => shOf(e) === k));
     $view.innerHTML =
       `<div data-td-tchips></div><div class="td-treat-groups"></div>` +
@@ -565,11 +590,11 @@
     // quotation; keep it when it has exactly that shape.
     const href = /^\/the-faith-received\/reader\/\?c=[a-z]+&w=[^&#"]+&(?:p=\d+&)?q=[^#"]*$/.test(String(row.href || ""))
       ? row.href : S.sourceHref(row.href, row.w, row.p);
-    const meta = [row.wt, row.locus, row.trad, S.centuryLabel(row.cen)].filter(Boolean).map(esc).join(" · ");
+    const meta = [row.wt, row.locus, S.centuryLabel(row.cen)].filter(Boolean).map(esc).join(" · ");
     li.innerHTML =
       `<blockquote class="sd-quote"${row.lang ? ` lang="${esc(row.lang)}"` : ""}>${esc(row.quote)}</blockquote>` +
       `<div class="sd-source-head td-quote-foot"><div class="sd-source-id">` +
-        `<button type="button" class="td-author-link" data-author="${esc(row.author_id || "")}" data-name="${esc(row.a || "")}" data-trad="${esc(row.trad || "")}" data-cen="${esc(row.cen || "")}">${esc(row.a || "")}</button>` +
+        `<button type="button" class="td-author-link" data-author="${esc(row.author_id || "")}" data-name="${esc(row.a || "")}" data-trad="${esc(shOf(row) === "ed" ? "" : tradLabel(shOf(row)))}" data-cen="${esc(row.cen || "")}">${esc(row.a || "")}</button>` +
         `<span class="sd-source-meta">${meta}</span>` +
       `</div><button type="button" class="sd-preview-btn" data-label="More context" aria-expanded="false" aria-controls="${pid}">More context</button></div>` +
       `<div class="sd-preview" id="${pid}" hidden></div>`;
@@ -603,7 +628,7 @@
         const secs = w.secs || [];
         li.innerHTML =
           `<div class="td-work-head"><a class="td-work-title" href="${esc(href)}">${esc(w.t || w.w)}</a>` +
-          `<span class="sd-source-meta">${[w.a, w.school || w.trad].filter(Boolean).map(esc).join(" · ")}</span></div>${ 
+          `<span class="sd-source-meta">${[w.a].filter(Boolean).map(esc).join(" · ")}</span></div>${ 
           secs.length ? `<details class="td-secs"><summary>${plural(secs.length, "section", "sections")} on this topic</summary><ol class="sd-sources"></ol></details>` : ""}`;
         const $secs = li.querySelector(".td-secs ol");
         if ($secs) secs.forEach((s) => $secs.appendChild(previewItem({ title: s.t, heading: s.t, w: w.w, p: s.p, href: s.href, meta: s.p ? `p. ${s.p}` : "" })));
@@ -616,8 +641,8 @@
   function renderTeachCompare($view) {
     const d = state.data;
     const list = (TREAT && TREAT.loci && TREAT.loci[state.id]) || [];
-    const present = new Set([...list.map(shOf), ...(d.authors || []).map((a) => a.sh)]);
-    const avail = TRADS.filter(([k]) => present.has(k));
+    const present = new Set([...list.map((e) => shOf(e)), ...(d.authors || []).map((a) => shOf(a))]);
+    const avail = expandOrder(TRADS.map(([k]) => k)).filter((k) => present.has(k)).map((k) => [k, tradLabel(k)]);
     const pick = ["rc", "lu", "rf"].filter((k) => present.has(k));
     while (pick.length < Math.min(3, avail.length)) pick.push(avail.find(([k]) => !pick.includes(k))[0]);
     const select = (i) => `<label class="sd-filter"><span class="sd-filter-label">Tradition ${i + 1}</span><select data-td-cmp="${i}">${
@@ -634,7 +659,7 @@
       const hosts = $cols.querySelectorAll("[data-td-col]");
       keys.forEach((k, i) => {
         const ts = list.filter((e) => shOf(e) === k);
-        const authors = (d.authors || []).filter((a) => a.sh === k).slice(0, 6);
+        const authors = (d.authors || []).filter((a) => shOf(a) === k).slice(0, 6);
         hosts[i].innerHTML = `<h5 class="td-cmp-sub">Classic treatments</h5>${ts.length ? `<ol class="td-treats"></ol>` : `<p class="sd-muted">None chosen yet.</p>`}` +
           `<h5 class="td-cmp-sub">Who wrote most on it</h5>${authors.length ? `<ol class="td-cmp-authors">${authors.map((a) =>
             `<li><button type="button" class="td-author-link" data-author="${esc(a.id)}">${esc(a.a)}</button> <span class="sd-muted">${esc(S.centuryLabel(a.cen))}</span></li>`).join("")}</ol>` : `<p class="sd-muted">None indexed.</p>`}`;
@@ -650,9 +675,10 @@
   const phone = window.matchMedia("(max-width: 640px)");
   function renderTeachTrace($view) {
     const authors = (state.data.authors || []).filter((a) => Number(a.y) > 0);
-    const order = ["gf", "pl", "po", "md", "rc", "lu", "rf", "ed", "hl"];
+    const shelves = ["gf", "pl", "po", "md", "rc", "lu", "rf", "ed", "hl"];
+    const order = expandOrder(shelves);
     const cenOf = (x) => Math.floor((x - 1) / 100) + 1;
-    let items = authors.map((a) => ({ x: Number(a.y) + 40, row: a.sh, n: Number(a.n) || 0, label: a.a, id: a.id, a }));
+    let items = authors.map((a) => ({ x: Number(a.y) + 40, row: shOf(a), n: Number(a.n) || 0, label: a.a, id: a.id, a }));
     // On a phone, 370 authors are 370 specks on a 300px strip. One point
     // per tradition per century instead; tapping it lists who is in it.
     const grouped = phone.matches;
@@ -674,7 +700,7 @@
     timeline($view.querySelector("[data-td-tl]"), items, {
       label: "Authors by date",
       rows: order.filter((k) => items.some((d) => d.row === k)).map((k) => [k, tradLabel(k)]),
-      colour: (k) => `var(--td-c-${order.includes(k) ? k : "x"})`,
+      colour: (k) => `var(--td-c-${shelves.includes(baseOf(k)) ? baseOf(k) : "x"})`,
       pointLabel: (d) => (grouped
         ? `${tradLabel(d.row)}, ${S.centuryLabel(cenOf(d.x))}: ${plural(d.people.length, "author", "authors")}`
         : `${d.label}, ${S.centuryLabel(cenOf(d.x))}`),
@@ -801,7 +827,7 @@
       `<header class="sd-panel-head">` +
         `<p class="sd-eyebrow">On ${esc(locus.label.toLowerCase())}</p>` +
         `<h2 class="sd-panel-ref" tabindex="-1">${esc(a ? a.a : "Author")}</h2>` +
-        `<p class="sd-source-meta td-panel-meta">${a ? [a.trad, a.y ? `b. ${a.y}` : S.centuryLabel(a.cen), a.n ? `${fmt(a.n)} positions here` : ""].filter(Boolean).map(esc).join(" · ") : ""}</p>` +
+        `<p class="sd-source-meta td-panel-meta">${a ? [a.sh ? (shOf(a) === "ed" ? "" : tradLabel(shOf(a))) : a.trad, a.y ? `b. ${a.y}` : S.centuryLabel(a.cen), a.n ? `${fmt(a.n)} positions here` : ""].filter(Boolean).map(esc).join(" · ") : ""}</p>` +
         `<button type="button" class="sd-close" aria-label="Close author panel">Close</button>` +
       `</header>` +
       `<h3 class="sd-h3">Their works on this topic</h3><ol class="td-side-works"></ol>` +
@@ -910,7 +936,9 @@
   });
   narrow.addEventListener("change", () => { if ($panel.isConnected) closePanel(null); });
 
-  loadLoci().then(route).catch(() => {
+  // The denomination table must be in before the first render, or the
+  // English groups paint once as "Other English writers" and then split.
+  Promise.all([loadLoci(), DEN ? DEN.ready() : null]).then(route).catch(() => {
     $root.innerHTML = `<p class="bible-status is-error" role="alert">The topics did not load. Reload the page to try again.</p>`;
   });
 })();
