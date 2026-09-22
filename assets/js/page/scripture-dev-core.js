@@ -1,5 +1,5 @@
 /*
- * /the-faith-received/scripture-dev/ — shared core for the Scripture reader and Verse Desk.
+ * /the-faith-received/scripture/ — shared core for the Scripture reader and Verse Desk.
  *
  * Two pages load this: the chapter reader (scripture-dev.js) and the
  * Verse Desk (scripture-dev-desk.js). Everything both of them need lives
@@ -110,11 +110,50 @@
   }
   const refKey = (book, c, v) => `${book.slug}.${c}${v ? `.${v}` : ""}`;
   // "Psalm 23:1", not "Psalms 23:1": a single psalm takes the singular.
+  /* Addresses from before the swap (Ian, 2026-09-22: this reader became
+   * /the-faith-received/scripture/). Links across the site still use the
+   * old forms, so the reader reads them rather than breaking them:
+   *   ?book=John&chapter=3#v16      the old Scripture Index and /bible/
+   *   #ref-john-3 | #ref-i-corinthians-13   the old Index's anchors
+   *   #b/<library slug>/<c>?v=16    the ported Bible (scripture-tools'
+   *                                 bibleURL), after the forwarder
+   * Book names and library slugs both resolve ("I Corinthians",
+   * "i-corinthians", "1 Corinthians", "revelation-of-john"). */
+  const ROMAN = { i: "1", ii: "2", iii: "3" };
+  function bookFrom(raw) {
+    let n = String(raw || "").trim().toLowerCase().replace(/[\s_]+/g, "-")
+      .replace(/^(iii|ii|i)-/, (m, r) => `${ROMAN[r]}-`)
+      .replace(/^(?:the-)?revelation(?:-of-(?:st\.?-?)?john)?$/, "revelation")
+      .replace(/^(?:song-of-songs|canticles)$/, "song-of-solomon")
+      .replace(/^psalm$/, "psalms");
+    if (BOOK_BY_SLUG.has(n)) return BOOK_BY_SLUG.get(n);
+    n = n.replace(/^([123])(?=[a-z])/, "$1-");
+    return BOOK_BY_SLUG.get(n) || BOOKS.find((b) => b.lib === raw) || null;
+  }
+  function legacyRef(loc) {
+    const l = loc || window.location;
+    const qs = new URLSearchParams(l.search);
+    const hash = String(l.hash || "").replace(/^#/, "");
+    const mk = (b, c, v) => {
+      const book = bookFrom(b);
+      const cc = parseInt(c, 10);
+      if (!book || !(cc >= 1 && cc <= book.chapters)) return null;
+      const vv = parseInt(v, 10);
+      return { book, c: cc, v: vv > 0 ? vv : 0 };
+    };
+    let m = hash.match(/^b\/([a-z0-9-]+)(?:\/(\d+))?(?:\?(.*))?$/i);
+    if (m) return mk(m[1], m[2] || 1, new URLSearchParams(m[3] || "").get("v"));
+    m = hash.match(/^ref-(.+)-(\d+)$/i);
+    if (m) return mk(m[1], m[2], 0);
+    if (qs.get("book")) return mk(qs.get("book"), qs.get("chapter") || 1, (hash.match(/^v(\d+)$/) || [])[1]);
+    return null;
+  }
+
   const refLabel = (book, c, v) => `${book.slug === "psalms" && c ? "Psalm" : book.name} ${c}${v ? `:${v}` : ""}`;
   const readerHref = (book, c, v, t) =>
-    `/the-faith-received/scripture-dev/?ref=${refKey(book, c, v)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
+    `/the-faith-received/scripture/?ref=${refKey(book, c, v)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
   const deskHref = (book, c, v, t) =>
-    `/the-faith-received/scripture-dev/desk/?ref=${refKey(book, c, v)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
+    `/the-faith-received/scripture/desk/?ref=${refKey(book, c, v)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
 
   // The library's links are relative to its own reader ("/read?w=…").
   // Ours lives under /the-faith-received/read/. Anything that is not
@@ -487,12 +526,12 @@
   window.MOScriptureDev = {
     commentaryStrip, cleanChapter,
     TRANSLATIONS, BOOKS, BOOK_BY_SLUG, esc, fmt, plural,
-    parseRef, refKey, refLabel, readerHref, deskHref, sourceHref,
+    parseRef, legacyRef, refKey, refLabel, readerHref, deskHref, sourceHref,
     translationInfo, recalledTranslation, rememberTranslation,
     fetchChapterHtml, markVerses, verseTextFrom, fetchVerseText,
     fetchVerse, fetchCommentaries, fetchPassage,
     emptyFilters, activeCount, filterBar, sourceItem, centuryLabel,
-    // For /the-faith-received/topics-dev/, which reads the same worker.
+    // For /the-faith-received/topics/, which reads the same worker.
     api, VERSE_API,
   };
 })();

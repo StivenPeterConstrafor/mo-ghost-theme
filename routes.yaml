@@ -410,22 +410,18 @@ routes:
   # #notebook, #constellations.
   /the-faith-received/research/:
     template: custom-faith-research
-  # Development pages for the Scripture reader and Verse Desk rebuild
-  # (Ian, 2026-09-22). Beside the live tools, which they do not touch.
-  # One route serves every verse: the verse is ?ref=<book>.<c>.<v>.
-  /the-faith-received/scripture-dev/:
-    template: custom-scripture-dev
-  /the-faith-received/scripture-dev/desk/:
-    template: custom-scripture-dev-desk
+  # The Scripture reader and Verse Desk (Ian, 2026-09-22: the rebuild
+  # replaced the old Scripture Index and the ported Bible). One route
+  # serves every verse: ?ref=<book>.<c>.<v>. The reader also reads the
+  # old Index's ?book=&chapter= and #ref- addresses.
   /the-faith-received/scripture/:
-    template: custom-faith-scripture
-  # The corpus site's Scripture room, ported: the whole Bible to read (ESV
-  # through the ask-dev worker's /v1/chapter proxy) with the library's
-  # recorded citations under every chapter, from R2. /scripture/ above is
-  # the index of who cites a passage; this is the passage and what they
-  # said. #b/<book>/<chapter> opens a chapter.
+    template: custom-scripture-dev
+  /the-faith-received/scripture/desk/:
+    template: custom-scripture-dev-desk
+  # The ported Bible's address, kept because links across the site still
+  # build it (#b/<book>/<c>?v=); it forwards to the Scripture reader.
   /the-faith-received/bible/:
-    template: custom-faith-port-bible
+    template: custom-faith-bible-forward
   # The citation atlas, ported: every author a point placed by time, every
   # recorded citation an edge, with the passages behind each connection.
   # Hash-routed: #a=<author> dossier, #t=<topic>, #v=<book>/<ch>, #shelves=.
@@ -457,12 +453,11 @@ routes:
   /the-faith-received/doctrines/:
     template: custom-faith-doctrines
   # Topics rebuilt as a systematic theology from the primary sources
-  # (Ian, 2026-09-22). Development page beside the live Topics. One
-  # route: ?t=<locus id> opens a locus, &view= picks the tab.
-  /the-faith-received/topics-dev/:
-    template: custom-faith-topics-dev
+  # (Ian, 2026-09-22); replaced the ported Topics index the same day.
+  # One route: ?t=<locus id> opens a locus, &c= and &view= pick the tabs.
+  # Old #<topic slug> links resolve to their locus.
   /the-faith-received/topics/:
-    template: custom-faith-port-topics
+    template: custom-faith-topics-dev
   /the-faith-received/topics/god-and-trinity/:
     template: custom-faith-topic-god-and-trinity
   /the-faith-received/topics/scripture-and-revelation/:

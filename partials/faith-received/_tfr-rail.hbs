@@ -13,7 +13,7 @@
      the tools, which are full-viewport applications with their own
      chrome and their own way back.
 
-     SIX ITEMS, THREE OF WHICH OPEN. Read, Scripture and Research carry
+     SIX ITEMS, TWO OF WHICH OPEN. Read and Research carry
      more than one destination, so they are buttons that open a drawer
      along the rail rather than links that guess which destination you
      meant. Search and Topics go straight there, because there is only
@@ -44,18 +44,10 @@
         </div>
       </li>
 
-      <li class="tfr-rail-group">
-        <button type="button" class="tfr-rail-link tfr-rail-toggle" data-tfr-drawer="scripture" aria-expanded="false" aria-controls="tfrDrawerScripture">Scripture</button>
-        <div class="tfr-rail-drawer" id="tfrDrawerScripture" data-tfr-drawer-for="scripture" hidden>
-          <a href="/the-faith-received/scripture/">Index</a>
-          {{!-- The ported Scripture tool, now that routes.yaml carries it.
-               The comment here used to say the opposite and point at
-               /bible/, our own reader, because that route was still dark.
-               It resolves now, and Ian's call is that his is the Bible
-               the site uses. --}}
-          <a href="/the-faith-received/bible/">Bible</a>
-        </div>
-      </li>
+      {{!-- Scripture is one page now (Ian, 2026-09-22): the rebuilt reader
+           replaced the Index and the ported Bible, so the drawer that
+           chose between them is gone and the item goes straight there. --}}
+      <li><a class="tfr-rail-link" href="/the-faith-received/scripture/">Scripture</a></li>
 
       <li><a class="tfr-rail-link" href="/the-faith-received/topics/">Topics</a></li>
 

@@ -30,7 +30,15 @@
 (function () {
   "use strict";
 
-  const TOOL = "/the-faith-received/bible/";
+  // Since 2026-09-22 the Scripture reader is /the-faith-received/scripture/
+  // (the rebuilt one; Ian retired the ported Bible and the old Index). This
+  // script now serves both old Bible addresses, /bible/ and
+  // /the-faith-received/bible/, and sends every form of either to it.
+  const TOOL = "/the-faith-received/scripture/";
+  // Library slugs name numbered books with roman numerals and call the
+  // last book "revelation-of-john"; the reader's addresses do not.
+  const READABLE = (slug) => slug.replace(/^iii-/, "3-").replace(/^ii-/, "2-").replace(/^i-/, "1-").replace(/^revelation-of-john$/, "revelation");
+  const dest = (slug, ch, verse) => `${TOOL}?ref=${READABLE(slug)}.${ch}${verse ? `.${verse}` : ""}`;
   const SLUG = {
     GEN: "genesis", EXO: "exodus", LEV: "leviticus", NUM: "numbers",
     DEU: "deuteronomy", JOS: "joshua", JDG: "judges", RUT: "ruth",
@@ -72,7 +80,14 @@
     const own = hash.match(/^([A-Za-z0-9]+)\.(\d+)$/);
     if (own) {
       const slug = SLUG[own[1].toUpperCase()];
-      if (slug) return `${TOOL}#b/${slug}/${own[2]}`;
+      if (slug) return dest(slug, own[2]);
+    }
+    // The ported Bible's own form: #b/<library slug>[/<chapter>][?v=16].
+    const port = hash.match(/^b\/([a-z0-9-]+)(?:\/(\d+))?(?:\?(.*))?$/i);
+    if (port) {
+      let v = "";
+      try { v = new URLSearchParams(port[3] || "").get("v") || ""; } catch (_) { v = ""; }
+      return dest(port[1].toLowerCase(), port[2] || 1, /^\d+$/.test(v) ? v : "");
     }
     let params;
     try { params = new URLSearchParams(window.location.search); }
@@ -83,7 +98,7 @@
       // #v12 on the old address named a verse; the tool takes it as a
       // query on the passage.
       const verse = (hash.match(/^v(\d+)$/) || [])[1];
-      return `${TOOL}#b/${slug}/${ch}${verse ? `?v=${verse}` : ""}`;
+      return dest(slug, ch, verse);
     }
     return TOOL;
   }

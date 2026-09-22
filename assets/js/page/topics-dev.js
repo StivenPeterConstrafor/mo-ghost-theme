@@ -1,5 +1,5 @@
 /*
- * /the-faith-received/topics-dev/ — a systematic theology from the
+ * /the-faith-received/topics/ — a systematic theology from the
  * primary sources (Ian, 2026-09-22).
  *
  * TWO VIEWS, ONE ROUTE.
@@ -43,7 +43,7 @@
   const $root = document.querySelector("[data-td-root]");
   if (!$root) return;
 
-  const BASE = "/the-faith-received/topics-dev/";
+  const BASE = "/the-faith-received/topics/";
   const VIEWS = [["read", "Read"], ["compare", "Compare"], ["trace", "Trace"], ["scripture", "Scripture"]];
   const TRADS = [["rc", "Roman Catholic"], ["lu", "Lutheran"], ["rf", "Continental Reformed"], ["ed", "English Divines"], ["hl", "Humanism and Law"],
     ["pl", "Latin Fathers"], ["gf", "Greek Fathers"], ["md", "Medieval"], ["po", "Eastern Fathers"]];
@@ -91,7 +91,7 @@
 
   // ── The contents page ─────────────────────────────────────────
   function renderContents() {
-    document.title = "Topics (dev) | The Faith Received | Mere Orthodoxy";
+    document.title = "Topics | The Faith Received | Mere Orthodoxy";
     $root.classList.remove("has-topic");
     $root.innerHTML =
       `<header class="td-head td-head--contents">` +
@@ -178,7 +178,7 @@
     state.cview = VIEWS.some((v) => v[0] === cview) ? cview : "read";
     state.data = null;
     state.conf = null;
-    document.title = `${locus.label} | Topics (dev) | The Faith Received | Mere Orthodoxy`;
+    document.title = `${locus.label} | Topics | The Faith Received | Mere Orthodoxy`;
     $root.classList.add("has-topic");
     const tabs = (block, cur) => `<nav class="td-tabs" aria-label="${block === "c" ? "Ways to read the confessions" : "Ways to read the teachers"}">${VIEWS.map(([k, lab]) =>
       `<a class="td-tab" href="${esc(topicHref(id, block === "w" ? k : state.view, block === "c" ? k : state.cview))}" data-block="${block}" data-view="${k}"${k === cur ? ' aria-current="true"' : ""}>${lab}</a>`).join("")}</nav>`;
@@ -874,7 +874,17 @@
   // ── Routing ───────────────────────────────────────────────────
   function route() {
     const qs = new URLSearchParams(location.search);
-    const t = qs.get("t");
+    let t = qs.get("t");
+    // The old Topics page linked topics as #<topic slug> (the mined topic2
+    // slugs); links across the site still do. Resolve to the locus that
+    // holds that slug, as its own topic or as an alias.
+    if (!t && location.hash.length > 1) {
+      const slug = decodeURIComponent(location.hash.slice(1)).replace(/^t=/, "").toLowerCase();
+      for (const [id, hit] of INDEX) {
+        if (hit.locus.t2 === slug || (hit.locus.aliases || []).includes(slug)) { t = id; break; }
+      }
+      if (t) history.replaceState(null, "", topicHref(t));
+    }
     if (t && INDEX.has(t)) {
       const ok = (v) => (VIEWS.some((x) => x[0] === v) ? v : "read");
       if (t === state.id && $main && $main.isConnected) {

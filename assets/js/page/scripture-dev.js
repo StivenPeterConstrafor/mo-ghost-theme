@@ -1,5 +1,5 @@
 /*
- * /the-faith-received/scripture-dev/ — the chapter reader with a verse sidebar.
+ * /the-faith-received/scripture/ — the chapter reader with a verse sidebar.
  *
  * The chapter is typeset exactly as the old /bible/ page set it (the
  * .bible-* rules still ship in screen.css), and every verse is a
@@ -85,7 +85,7 @@
     $prev.disabled = book.num === 1 && c === 1;
     $next.disabled = book.num === 66 && c === book.chapters;
     writeUrl(push);
-    document.title = `${S.refLabel(book, c)} | Scripture (dev) | Mere Orthodoxy`;
+    document.title = `${S.refLabel(book, c)} | Scripture | The Faith Received | Mere Orthodoxy`;
 
     // closePanel() clears state.v, so the verse asked for is held here
     // and reopened once the chapter has arrived.
@@ -340,6 +340,6 @@
     if (r) load(r.book, r.c, r.v, false);
   });
 
-  const start = S.parseRef(new URLSearchParams(location.search).get("ref"));
+  const start = S.parseRef(new URLSearchParams(location.search).get("ref")) || S.legacyRef();
   load(start ? start.book : S.BOOK_BY_SLUG.get("genesis"), start ? start.c : 1, start ? start.v : 0, false);
 })();

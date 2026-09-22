@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   /the-faith-received/topics-dev/ — Topics as a systematic theology.
+   /the-faith-received/topics/ — Topics as a systematic theology.
 
    Loaded after scripture-dev.css, whose sd- parts (filters, TFR
    buttons, source rows, previews, chart bars, the panel) this page
@@ -8,7 +8,7 @@
 
    Scoped under .sd where an element also carries .container, because
    screen.min.css loads after page CSS and its .container padding and
-   max-width win ties (found on /scripture-dev/, 2026-09-22).
+   max-width win ties (found on /the-faith-received/scripture/, 2026-09-22).
 
    SCROLLING. The contents column and the source sidebar scroll on
    their own (sidebars are the recorded exception). Nothing else caps

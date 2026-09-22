@@ -1,0 +1,16 @@
+{{!< default}}
+{{#contentFor "moHead"}}
+{{!-- /the-faith-received/bible/ forwards to the Scripture reader at
+     /the-faith-received/scripture/ (Ian, 2026-09-22: the rebuilt reader
+     replaced the ported Bible and the old Index). Links across the site
+     still build this address (the port's bibleURL, #b/<book>/<c>?v=),
+     so the route stays and translates them. In the head so nothing
+     paints first. --}}
+<script src="{{asset "js/page/faith-bible-forward.js"}}&amp;frv=89ef99d0b532b000"></script>
+<meta name="robots" content="noindex, follow" />
+<link rel="canonical" href="https://mereorthodoxy.com/the-faith-received/scripture/" />
+<title>Scripture | The Faith Received | Mere Orthodoxy</title>
+{{/contentFor}}
+<main class="bible">
+  <p class="container bible-status"><a href="/the-faith-received/scripture/">Open the Scripture reader</a></p>
+</main>
