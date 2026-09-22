@@ -6461,7 +6461,7 @@ mark.faith-find-hit.is-current {
     url(/assets/images/mo-header-bg.jpg) center 30%/cover no-repeat,
     var(--color-dark);
   color: #fff;
-  padding: 132px 0 124px;
+  padding: 108px 0 100px;
   text-align: center;
 }
 .lp-hero .hero-kicker { justify-content: center; color: #ffffffcc; }
@@ -7032,7 +7032,7 @@ mark.faith-find-hit.is-current {
 @media (max-width: 640px) {
   /* Both new heroes and bands were missing what .faith-hero and .bband
      already do at this width. */
-  .lp-hero { padding: 64px 0 56px; }
+  .lp-hero { padding: 56px 0 48px; }
   .lp-band { padding: 56px 0; }
 }
 @media (max-width: 900px) { .lp-plates { grid-template-columns: 1fr; } }
