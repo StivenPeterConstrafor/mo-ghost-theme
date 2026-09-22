@@ -14,24 +14,24 @@
  * (Turretin, Heppe), with all 43 of the library's loci and all 179 mined
  * topics placed in it (the small ones as aliases). Ian delegated the call.
  *
- * A LOCUS PAGE, TOP TO BOTTOM.
- *   1. What the church confessed: the confession articles on the locus,
- *      earliest first, each previewable in its own words.
- *   2. Four tabs:
- *        Read       the tradition in its own words (verified quotations
- *                   only, filterable), then the works that treat it.
- *        Compare    two or three traditions side by side.
- *        Trace      the locus century by century, by tradition.
- *        Scripture  the passages cited where the locus is treated, each
- *                   one step from its Verse Desk.
+ * A LOCUS PAGE: two blocks with the same four tabs (Ian, 2026-09-22).
+ *   What the church confessed   creeds, confessions, catechisms and
+ *                               councils only (no papal letters or local
+ *                               synods), their articles in their own words.
+ *   What its teachers wrote     the classic treatments in each tradition's
+ *                               major works (assets/data/faith-received/
+ *                               treatments.json, machine-ranked and meant
+ *                               to be edited), each section read in place.
+ *   Tabs: Read, Compare (traditions side by side), Trace (a timeline in
+ *   the manner of Connections: one strip, a row per tradition, points by
+ *   date), Scripture (proof-texts, each to its Verse Desk).
  *
- * QUOTATIONS ARE QUOTATIONS. The worker returns only quotations verified
- * against the page (the mined position statements are machine-written
- * and never shown as a quote; Ian's ruling, 2026-09-11). "More context"
- * reads the page itself.
+ * The earlier stream of single verified sentences was dropped: sentences
+ * cut from their argument, chosen by what verified rather than by what
+ * mattered. Verified quotations remain in the author sidebar.
  *
- * Data: mo-tfr-verse /v1/topic, /v1/topic/sources, /v1/topic/scripture,
- * /v1/verse/passage. Shared parts (filters, buttons, charts, the panel)
+ * Data: mo-tfr-verse /v1/topic, /v1/topic/confessions, /v1/topic/sources
+ * (sidebar), /v1/topic/scripture, /v1/verse/passage (max= for sections). Shared parts (filters, buttons, charts, the panel)
  * come from scripture-dev-core.js, so Topics works like the Scripture
  * reader and the Verse Desk.
  */
@@ -45,7 +45,7 @@
 
   const BASE = "/the-faith-received/topics-dev/";
   const VIEWS = [["read", "Read"], ["compare", "Compare"], ["trace", "Trace"], ["scripture", "Scripture"]];
-  const TRADS = [["rc", "Roman Catholic"], ["lu", "Lutheran"], ["rf", "Continental Reformed"], ["ed", "English Divines"],
+  const TRADS = [["rc", "Roman Catholic"], ["lu", "Lutheran"], ["rf", "Continental Reformed"], ["ed", "English Divines"], ["hl", "Humanism and Law"],
     ["pl", "Latin Fathers"], ["gf", "Greek Fathers"], ["md", "Medieval"], ["po", "Eastern Fathers"]];
   const narrow = window.matchMedia("(max-width: 899px)");
   // The contents are a column only at 1100px and up (topics-dev.css);
@@ -53,7 +53,8 @@
   // screen opens on 1,900px of contents above the topic.
   const wide = window.matchMedia("(min-width: 1100px)");
 
-  const topicHref = (id, view) => `${BASE}?t=${encodeURIComponent(id)}${view && view !== "read" ? `&view=${view}` : ""}`;
+  const topicHref = (id, view, cview) => `${BASE}?t=${encodeURIComponent(id)}${
+    cview && cview !== "read" ? `&c=${cview}` : ""}${view && view !== "read" ? `&view=${view}` : ""}`;
   const compact = (n) => {
     const x = Number(n || 0);
     if (x >= 1e6) return `${(x / 1e6).toFixed(1).replace(/\.0$/, "")}M`;
@@ -131,22 +132,56 @@
   }
 
   // ── A locus ───────────────────────────────────────────────────
-  const state = { id: "", view: "read", data: null };
-  let pendingPreset = null; // a filter to apply as Read opens (Trace sets it)
+  /* Two blocks, each with the same four ways in (Ian, 2026-09-22):
+   *   What the church confessed        creeds, confessions, catechisms,
+   *                                    councils; never papal letters or
+   *                                    local synods. &c=<view>
+   *   What the church's teachers wrote the classic treatments of the
+   *                                    topic in each tradition's major
+   *                                    works. &view=<view>
+   * Trace in both is a timeline in the manner of Connections: one strip,
+   * rows by tradition, each point placed by its date. */
+  const state = { id: "", view: "read", cview: "read", data: null, conf: null };
   let $main = null;
   let $side = null;
   const $panel = document.createElement("section");
   $panel.className = "sd-panel td-panel";
 
-  function renderLocus(id, view) {
+  let TREAT = null;
+  function loadTreatments() {
+    if (TREAT) return Promise.resolve(TREAT);
+    const url = window.moAssetUrl ? window.moAssetUrl("/assets/data/faith-received/treatments.json") : "/assets/data/faith-received/treatments.json";
+    return fetch(url, { credentials: "omit" }).then((r) => (r.ok ? r.json() : { loci: {} })).catch(() => ({ loci: {} }))
+      .then((d) => { TREAT = d || { loci: {} }; return TREAT; });
+  }
+  const LABEL_TO_SH = new Map(TRADS.map(([k, lab]) => [lab.toLowerCase(), k]));
+  const shOf = (e) => {
+    const v = String(e.sh || e.trad || "");
+    return v.length <= 3 ? v : (LABEL_TO_SH.get(v.toLowerCase()) || v);
+  };
+  const tradLabel = (k) => (TRADS.find((t) => t[0] === k) || [k, k])[1];
+
+  // Confession groups: the early church before the schism of 1054 (the
+  // data files the ancient creeds and councils under "Roman Catholic"),
+  // then Rome, Wittenberg and the Reformed.
+  const CGROUPS = [["early", "The early church"], ["rc", "Roman Catholic"], ["lu", "Lutheran"], ["rf", "Reformed"]];
+  const cgroup = (a) => (Number(a.year) && Number(a.year) < 1054 ? "early"
+    : a.trad === "Roman Catholic" ? "rc" : a.trad === "Lutheran" ? "lu" : "rf");
+  const cgroupLabel = (k) => (CGROUPS.find((g) => g[0] === k) || [k, k])[1];
+
+  function renderLocus(id, view, cview) {
     const hit = INDEX.get(id);
     if (!hit) { renderContents(); return; }
     const { locus, part, parent } = hit;
     state.id = id;
     state.view = VIEWS.some((v) => v[0] === view) ? view : "read";
+    state.cview = VIEWS.some((v) => v[0] === cview) ? cview : "read";
     state.data = null;
+    state.conf = null;
     document.title = `${locus.label} | Topics (dev) | The Faith Received | Mere Orthodoxy`;
     $root.classList.add("has-topic");
+    const tabs = (block, cur) => `<nav class="td-tabs" aria-label="${block === "c" ? "Ways to read the confessions" : "Ways to read the teachers"}">${VIEWS.map(([k, lab]) =>
+      `<a class="td-tab" href="${esc(topicHref(id, block === "w" ? k : state.view, block === "c" ? k : state.cview))}" data-block="${block}" data-view="${k}"${k === cur ? ' aria-current="true"' : ""}>${lab}</a>`).join("")}</nav>`;
     $root.innerHTML =
       `<nav class="td-toc" aria-label="Topics">` +
         `<details class="td-toc-drawer"${wide.matches ? " open" : ""}><summary>Contents</summary>` +
@@ -158,108 +193,306 @@
         `<header class="td-head">` +
           `<p class="sd-eyebrow">Part ${esc(part.n)} · ${esc(part.label)}${parent ? ` · <a href="${esc(topicHref(parent.id))}">${esc(parent.label)}</a>` : ""}</p>` +
           `<h2 class="td-title">${esc(locus.label)}</h2>` +
-          `<p class="td-counts sd-muted" data-td-counts>Gathering the sources…</p>${ 
-          (locus.children || []).length ? `<p class="td-kids">Within this topic: ${locus.children.map((ch) => `<a href="${esc(topicHref(ch.id))}">${esc(ch.label)}</a>`).join(" · ")}</p>` : "" 
-        }</header>` +
-        `<section class="td-confessions" aria-labelledby="td-h-conf">` +
-          `<h2 class="sd-h2" id="td-h-conf">What the church confessed</h2>` +
-          `<div data-td-conf><p class="sd-muted">Loading the confessions…</p></div>` +
+          `<p class="td-counts sd-muted" data-td-counts>Gathering the sources…</p>${
+            (locus.children || []).length ? `<p class="td-kids">Within this topic: ${locus.children.map((ch) => `<a href="${esc(topicHref(ch.id))}">${esc(ch.label)}</a>`).join(" · ")}</p>` : ""
+          }</header>` +
+        `<section class="td-block" aria-labelledby="td-h-conf">` +
+          `<h3 class="td-block-h" id="td-h-conf">Creeds, Confessions, and Catechisms</h3>` +
+          `<p class="sd-muted td-note">The creeds, confessions, catechisms and councils, in their own words.</p>` +
+          `${tabs("c", state.cview)}<div class="td-view" data-td-cview></div>` +
         `</section>` +
-        // Real links that change the URL, so a nav with aria-current
-        // rather than a half-built ARIA tab widget.
-        `<nav class="td-tabs" aria-label="Ways to read ${esc(locus.label)}">${VIEWS.map(([k, lab]) =>
-          `<a class="td-tab" href="${esc(topicHref(id, k))}" data-view="${k}"${k === state.view ? ' aria-current="page"' : ""}>${lab}</a>`).join("")}</nav>` +
-        `<div class="td-view" data-td-view></div>` +
+        `<section class="td-block" aria-labelledby="td-h-teach">` +
+          `<h3 class="td-block-h" id="td-h-teach">Works</h3>` +
+          `<p class="sd-muted td-note">The classic treatments of this topic in each tradition's major works, read in place.</p>` +
+          `${tabs("w", state.view)}<div class="td-view" data-td-view></div>` +
+        `</section>` +
       `</div>` +
-      `<aside class="td-side sd-side" data-td-side hidden aria-label="Source"></aside>`;
+      `<aside class="td-side sd-side" data-td-side hidden aria-label="Author"></aside>`;
     $main = $root.querySelector("[data-td-main]");
     $side = $root.querySelector("[data-td-side]");
-    $root.querySelector(".td-tabs").addEventListener("click", (e) => {
+    $main.querySelectorAll(".td-tabs").forEach((nav) => nav.addEventListener("click", (e) => {
       const a = e.target.closest(".td-tab");
       if (!a) return;
       e.preventDefault();
-      setView(a.dataset.view, true);
-    });
+      if (a.dataset.block === "c") setCView(a.dataset.view, true); else setView(a.dataset.view, true);
+    }));
     const cur = $root.querySelector('.td-toc a[aria-current="page"]');
     if (cur && wide.matches) cur.scrollIntoView({ block: "center" });
 
-    S.api("/v1/topic", { id, t2: locus.t2 }).then((d) => {
+    setCView(state.cview, false);
+    setView(state.view, false);
+    loadConfessions(id, hit);
+    Promise.all([S.api("/v1/topic", { id, t2: locus.t2 }), loadTreatments()]).then(([d]) => {
       if (state.id !== id) return;
       if (!d) throw new Error("no topic");
       state.data = d;
       const c = d.counts || {};
       $main.querySelector("[data-td-counts]").textContent =
-        [c.quotations ? `${fmt(c.quotations)} verified quotations` : "", c.authors ? plural(c.authors, "author", "authors") : "",
-          c.works ? plural(c.works, "treatise", "treatises") : ""].filter(Boolean).join(" · ");
-      renderConfessions(d.confessions || []);
+        [c.authors ? plural(c.authors, "author", "authors") : "", c.works ? plural(c.works, "treatise", "treatises") : ""].filter(Boolean).join(" · ");
       setView(state.view, false);
     }).catch(() => {
       if (state.id !== id) return;
       $main.querySelector("[data-td-counts]").innerHTML = `This topic did not load. <button type="button" class="sd-clear" data-td-retry>Try again</button>`;
-      $main.querySelector("[data-td-retry]").addEventListener("click", () => renderLocus(id, state.view));
-      $main.querySelector("[data-td-conf]").innerHTML = "";
+      $main.querySelector("[data-td-retry]").addEventListener("click", () => renderLocus(id, state.view, state.cview));
     });
+  }
+
+  // A child locus with no articles of its own borrows its parent's,
+  // and says so.
+  function loadConfessions(id, hit) {
+    const get = (lid) => S.api("/v1/topic/confessions", { id: lid, limit: 500 });
+    get(id).then((d) => {
+      if (d && (d.articles || []).length) return { d, from: null };
+      if (hit.parent) return get(hit.parent.id).then((pd) => ({ d: pd, from: hit.parent }));
+      return { d, from: null };
+    }).then(({ d, from }) => {
+      if (state.id !== id) return;
+      state.conf = { d: d || { articles: [], scripture: [] }, from };
+      setCView(state.cview, false);
+    }).catch(() => {
+      if (state.id !== id) return;
+      state.conf = { d: null, from: null, error: true };
+      setCView(state.cview, false);
+    });
+  }
+
+  function syncTabs(block, view) {
+    $main.querySelectorAll(`.td-tab[data-block="${block}"]`).forEach((a) => {
+      if (a.dataset.view === view) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+      a.setAttribute("href", topicHref(state.id, a.dataset.block === "w" ? a.dataset.view : state.view, a.dataset.block === "c" ? a.dataset.view : state.cview));
+    });
+  }
+  function writeUrl(push) {
+    const url = topicHref(state.id, state.view, state.cview);
+    if (location.pathname + location.search !== url) history[push ? "pushState" : "replaceState"](null, "", url);
   }
 
   function setView(view, push) {
     state.view = view;
-    $root.querySelectorAll(".td-tab").forEach((a) => {
-      if (a.dataset.view === view) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
-    });
-    const url = topicHref(state.id, view);
-    if (location.pathname + location.search !== url) history[push ? "pushState" : "replaceState"](null, "", url);
+    syncTabs("w", view); syncTabs("c", state.cview);
+    writeUrl(push);
     const $view = $main.querySelector("[data-td-view]");
     if (!state.data) { $view.innerHTML = `<p class="sd-muted">Loading…</p>`; return; }
-    if (view === "compare") renderCompare($view);
-    else if (view === "trace") renderTrace($view);
-    else if (view === "scripture") renderScripture($view);
-    else { renderRead($view, pendingPreset); pendingPreset = null; }
+    if (view === "compare") renderTeachCompare($view);
+    else if (view === "trace") renderTeachTrace($view);
+    else if (view === "scripture") renderScripture($view, null);
+    else renderTreatments($view);
   }
 
-  // ── Confessions ───────────────────────────────────────────────
-  function renderConfessions(list, from) {
-    const $c = $main.querySelector("[data-td-conf]");
-    if (!list.length) {
-      // A child locus falls back to its parent's articles (Simplicity to
-      // the Divine Attributes), labelled as such.
-      const hit = INDEX.get(state.id);
-      if (!from && hit && hit.parent) {
-        const pid = state.id;
-        $c.innerHTML = `<p class="sd-muted">Loading…</p>`;
-        S.api("/v1/topic", { id: hit.parent.id, t2: hit.parent.t2 }).then((d) => {
-          if (state.id !== pid) return;
-          renderConfessions((d && d.confessions) || [], hit.parent);
-        }).catch(() => renderConfessions([], hit.parent));
-        return;
-      }
-      // The gap is in the mapping, not the library: say so.
-      $c.innerHTML = `<p class="sd-muted">No confession article is linked to this topic yet. The sources below are the teachers of the church.</p>`;
+  function setCView(view, push) {
+    state.cview = view;
+    syncTabs("c", view); syncTabs("w", state.view);
+    writeUrl(push);
+    const $view = $main.querySelector("[data-td-cview]");
+    const c = state.conf;
+    if (!c) { $view.innerHTML = `<p class="sd-muted">Loading the confessions…</p>`; return; }
+    if (c.error) {
+      $view.innerHTML = `<p class="sd-muted">The confessions did not load. <button type="button" class="sd-clear" data-td-cretry>Try again</button></p>`;
+      $view.querySelector("[data-td-cretry]").addEventListener("click", () => { state.conf = null; setCView(state.cview, false); loadConfessions(state.id, INDEX.get(state.id)); });
       return;
     }
-    const trads = [...new Set(list.map((x) => x.trad).filter(Boolean))];
-    $c.innerHTML =
-      `${trads.length > 1 ? `<div class="td-chips" role="group" aria-label="Filter confessions by tradition">` +
-        `<button type="button" class="td-chip" aria-pressed="true" data-trad="">All (${list.length})</button>${
-          trads.map((t) => `<button type="button" class="td-chip" aria-pressed="false" data-trad="${esc(t)}">${esc(t)} (${list.filter((x) => x.trad === t).length})</button>`).join("")}</div>` : "" 
-      }${from ? `<p class="sd-muted td-note">From <a href="${esc(topicHref(from.id))}">${esc(from.label)}</a>, which this topic belongs to.</p>` : ""}` +
-      `<ol class="sd-sources td-conf-list"></ol>` +
-      `<p class="sd-muted td-conf-note">These are the articles linked to this topic so far; not every confession's article on it is mapped yet.</p>`;
-    const $list = $c.querySelector(".td-conf-list");
-    list.forEach((cf) => {
-      const li = previewItem({
-        title: `${cf.year ? `${cf.year} · ` : ""}${cf.doc || ""}`,
-        sub: confessionTitle(cf),
-        meta: cf.trad || "",
-        heading: cf.article || "",
-        w: cf.w, p: cf.p, href: cf.href,
-      });
-      li.dataset.trad = cf.trad || "";
-      $list.appendChild(li);
+    const arts = (c.d && c.d.articles) || [];
+    if (!arts.length) {
+      $view.innerHTML = `<p class="sd-muted">No creed, confession or catechism article is linked to this topic yet.</p>`;
+      return;
+    }
+    const from = c.from ? `<p class="sd-muted td-note">From <a href="${esc(topicHref(c.from.id))}">${esc(c.from.label)}</a>, which this topic belongs to.</p>` : "";
+    if (view === "compare") renderConfCompare($view, arts, from);
+    else if (view === "trace") renderConfTrace($view, arts, from);
+    else if (view === "scripture") renderScripture($view, (c.d.scripture || []), from);
+    else renderConfRead($view, arts, from);
+  }
+
+  // ── Confessions: Read ─────────────────────────────────────────
+  function articleItem(a, i, opts) {
+    const li = document.createElement("li");
+    li.className = "td-article";
+    if (i != null) li.id = `td-art-${i}`;
+    const text = String(a.text || "").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/^#+\s*/gm, "").trim();
+    const short = opts && opts.short ? 280 : 700;
+    const long = text.length > short + 80;
+    const head = text.slice(0, short).replace(/\s+\S*$/, "");
+    const href = S.sourceHref(a.href, a.w, a.p);
+    const proofs = (a.scripture || []).filter((x) => LIB_TO_BOOK.has(x.b)).slice(0, 12);
+    const t = S.recalledTranslation();
+    li.innerHTML =
+      `<p class="td-article-doc">${[a.year, cgroup(a) === "early" ? "The early church" : a.trad, a.doc].filter(Boolean).map(esc).join(" · ")}${a.doc_type ? ` <span class="td-type">${esc(a.doc_type)}</span>` : ""}</p>` +
+      `<h${opts && opts.short ? 5 : 4} class="td-article-h">${esc(a.article_display || a.article || "")}</h${opts && opts.short ? 5 : 4}>${ 
+      text ? `<blockquote class="sd-quote td-article-text">${esc(long ? `${head} …` : text)}</blockquote>` : "" 
+      }<p class="td-article-foot">${long ? `<button type="button" class="sd-clear" data-td-more aria-expanded="false">Read the whole article</button>` : ""}` +
+        `${href ? `<a class="sd-read-link" href="${esc(href)}">Read in context</a>` : ""}</p>${ 
+      proofs.length ? `<p class="td-proof-chips"><span class="sd-filter-label">Proofs</span> ${proofs.map((x) => {
+        const book = LIB_TO_BOOK.get(x.b);
+        const c = Number(x.c) || 1;
+        const v = Number(x.v) || 0;
+        return `<a href="${esc(S.deskHref(book, c, v, t === "ESV" ? "" : t))}">${esc(S.refLabel(book, c, v))}${x.v2 ? `–${Number(x.v2) || ""}` : ""}</a>`;
+      }).join("")}</p>` : ""}`;
+    const $more = li.querySelector("[data-td-more]");
+    if ($more) $more.addEventListener("click", () => {
+      const open = $more.getAttribute("aria-expanded") !== "true";
+      $more.setAttribute("aria-expanded", String(open));
+      $more.textContent = open ? "Show less" : "Read the whole article";
+      li.querySelector(".td-article-text").textContent = open ? `${text}${a.clipped_end ? " …" : ""}` : `${head} …`;
     });
-    $c.querySelectorAll(".td-chip").forEach((b) => b.addEventListener("click", () => {
-      $c.querySelectorAll(".td-chip").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-      $list.querySelectorAll("li").forEach((li) => { li.hidden = Boolean(b.dataset.trad) && li.dataset.trad !== b.dataset.trad; });
-    }));
+    return li;
+  }
+
+  function chipsFor(keys, labelOf, countOf, onPick) {
+    const wrap = document.createElement("div");
+    wrap.className = "td-chips";
+    wrap.setAttribute("role", "group");
+    wrap.innerHTML = `<button type="button" class="td-chip" aria-pressed="true" data-k="">All (${countOf("")})</button>${
+      keys.map((k) => `<button type="button" class="td-chip" aria-pressed="false" data-k="${esc(k)}">${esc(labelOf(k))} (${countOf(k)})</button>`).join("")}`;
+    wrap.addEventListener("click", (e) => {
+      const b = e.target.closest(".td-chip");
+      if (!b) return;
+      wrap.querySelectorAll(".td-chip").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      onPick(b.dataset.k);
+    });
+    return wrap;
+  }
+
+  function renderConfRead($view, arts, from) {
+    $view.innerHTML = `${from}<div data-td-cchips></div><ol class="td-articles"></ol>` +
+      `<p class="sd-muted td-conf-note">The articles linked to this topic so far, earliest first.</p>`;
+    const $ol = $view.querySelector(".td-articles");
+    // Catechisms give an article per question, so some topics hold
+    // hundreds (the Law, 291). Thirty at a time, with Show more.
+    let filterK = "";
+    let shown = 0;
+    const $more = document.createElement("button");
+    $more.type = "button";
+    $more.className = "sd-more";
+    const pool = () => arts.map((a, i) => [a, i]).filter(([a]) => !filterK || cgroup(a) === filterK);
+    const page = (reset) => {
+      if (reset) { $ol.innerHTML = ""; shown = 0; }
+      const list = pool();
+      const upto = pendingArticle != null ? Math.max(shown + 30, list.findIndex(([, i]) => i === pendingArticle) + 1) : shown + 30;
+      list.slice(shown, upto).forEach(([a, i]) => $ol.appendChild(articleItem(a, i)));
+      shown = Math.min(upto, list.length);
+      $more.hidden = shown >= list.length;
+      $more.textContent = `Show more (${fmt(list.length - shown)} left)`;
+    };
+    $ol.after($more);
+    $more.addEventListener("click", () => page(false));
+    const keys = CGROUPS.map((g) => g[0]).filter((k) => arts.some((a) => cgroup(a) === k));
+    if (keys.length > 1) {
+      $view.querySelector("[data-td-cchips]").appendChild(chipsFor(keys, cgroupLabel,
+        (k) => (k ? arts.filter((a) => cgroup(a) === k).length : arts.length),
+        (k) => { filterK = k; page(true); }));
+    }
+    // Compare's "All N in Read" opens here on its tradition. Pressed only
+    // once the chips exist (pressing first found nothing to press).
+    const want = pendingCGroup;
+    pendingCGroup = null;
+    const chip = want && $view.querySelector(`.td-chip[data-k="${want}"]`);
+    if (chip) chip.click(); else page(true);
+    if (pendingArticle != null) {
+      const el = $view.querySelector(`#td-art-${pendingArticle}`);
+      pendingArticle = null;
+      if (el) { el.classList.add("is-picked"); el.scrollIntoView({ block: "start" }); }
+    }
+  }
+  let pendingArticle = null;
+  let pendingCGroup = null; // a tradition to open Read on (Compare sets it)
+
+  // ── Confessions: Compare ──────────────────────────────────────
+  function renderConfCompare($view, arts, from) {
+    const keys = CGROUPS.map((g) => g[0]).filter((k) => arts.some((a) => cgroup(a) === k));
+    $view.innerHTML = `${from}<div class="td-cmp" style="--td-cols:${Math.min(4, keys.length)}">${keys.map((k) =>
+      `<section class="td-cmp-col"><h4 class="td-cmp-h">${esc(cgroupLabel(k))}</h4><ol class="td-articles" data-g="${k}"></ol></section>`).join("")}</div>`;
+    // Five per tradition, so the columns stay side by side; the rest are
+    // one click away in Read, already filtered to that tradition.
+    keys.forEach((k) => {
+      const $ol = $view.querySelector(`.td-articles[data-g="${k}"]`);
+      const mine = arts.filter((a) => cgroup(a) === k);
+      mine.slice(0, 5).forEach((a) => $ol.appendChild(articleItem(a, null, { short: true })));
+      if (mine.length > 5) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "sd-clear td-cmp-all";
+        b.textContent = `All ${fmt(mine.length)} in Read`;
+        b.addEventListener("click", () => { pendingCGroup = k; setCView("read", true); });
+        $ol.after(b);
+      }
+    });
+  }
+
+  // ── Confessions: Trace ────────────────────────────────────────
+  function renderConfTrace($view, arts, from) {
+    const docs = new Map();
+    arts.forEach((a, i) => {
+      const k = `${a.doc}|${a.year}`;
+      if (!docs.has(k)) docs.set(k, { x: Number(a.year) || 0, row: cgroup(a), label: `${a.year || ""} ${a.doc}`.trim(), n: 0, i });
+      docs.get(k).n += 1;
+    });
+    const items = [...docs.values()].filter((d) => d.x);
+    $view.innerHTML = `${from}<p class="sd-muted td-note">Each point is a document, placed by its date and sized by how many of its articles treat this topic. Select one to read it.</p><div data-td-tl></div>`;
+    timeline($view.querySelector("[data-td-tl]"), items, {
+      rows: CGROUPS.filter(([k]) => items.some((d) => d.row === k)),
+      colour: (k) => `var(--td-g-${k})`,
+      pointLabel: (d) => `${d.label}: ${plural(d.n, "article", "articles")}`,
+      onPick(d) { pendingArticle = d.i; setCView("read", true); },
+    });
+  }
+
+  // ── Teachers: Read (classic treatments) ───────────────────────
+  // Migne's section "headings" are the volume's title page in capitals
+  // ("S. AURELII AUGUSTINI HIPPONENSIS EPISCOPI, DE PECCATORUM…"); the
+  // work's title already says it, better.
+  const showHeading = (h) => {
+    const t = String(h || "").trim();
+    if (!t) return false;
+    const letters = t.replace(/[^A-Za-z]/g, "");
+    const caps = letters.replace(/[^A-Z]/g, "").length;
+    return !(t.length > 40 && letters.length && caps / letters.length > 0.6);
+  };
+
+  function treatmentItem(e, opts) {
+    const li = document.createElement("li");
+    li.className = "td-treat";
+    const pid = `tdt-${Math.random().toString(36).slice(2, 9)}`;
+    const href = S.sourceHref(e.href, e.w, e.p);
+    const who = e.author_id
+      ? `<button type="button" class="td-author-link" data-author="${esc(e.author_id)}" data-name="${esc(e.author || "")}" data-trad="${esc(tradLabel(shOf(e)))}" data-cen="${esc(Number(e.cen) || "")}">${esc(e.author || "")}</button>`
+      : `<span class="td-treat-author">${esc(e.author || "")}</span>`;
+    li.innerHTML =
+      `<p class="td-treat-who">${who} <span class="sd-source-meta">${[e.trad_label || tradLabel(shOf(e)), S.centuryLabel(e.cen)].filter(Boolean).map(esc).join(" · ")}</span></p>` +
+      `<h5 class="td-treat-h"><span class="td-treat-work">${esc(e.title || e.w)}</span>${showHeading(e.heading) ? `<span class="td-treat-sec">${esc(e.heading)}</span>` : ""}</h5>${ 
+      e.excerpt && !(opts && opts.bare) ? `<blockquote class="sd-quote td-treat-excerpt"${e.lang ? ` lang="${esc(e.lang)}"` : ""}>${esc(e.excerpt)} …</blockquote>` : "" 
+      }<div class="td-treat-actions"><button type="button" class="sd-preview-btn" data-label="Read the section" aria-expanded="false" aria-controls="${pid}">Read the section</button>` +
+        `${href ? `<a class="sd-read-link" href="${esc(href)}">Read in context</a>` : ""}</div>` +
+      `<div class="sd-preview" id="${pid}" hidden></div>`;
+    wirePreview(li, () => S.api("/v1/verse/passage", { w: e.w, p: e.p, t: e.heading || "", max: 6000 }), href);
+    return li;
+  }
+
+  function renderTreatments($view) {
+    const list = ((TREAT && TREAT.loci && TREAT.loci[state.id]) || []).slice();
+    const order = ["gf", "pl", "po", "md", "rc", "lu", "rf", "ed", "hl"];
+    const keys = order.filter((k) => list.some((e) => shOf(e) === k));
+    $view.innerHTML =
+      `<div data-td-tchips></div><div class="td-treat-groups"></div>` +
+      `<details class="td-all-works"><summary>The leading treatises on this topic (${fmt((state.data.works || []).length)} of ${fmt((state.data.counts || {}).works || (state.data.works || []).length)})</summary><div data-td-works></div></details>`;
+    const $groups = $view.querySelector(".td-treat-groups");
+    if (!list.length) {
+      $groups.innerHTML = `<p class="sd-muted">No classic treatments are chosen for this topic yet. Every treatise the library holds on it is listed below.</p>`;
+      $view.querySelector(".td-all-works").open = true;
+    }
+    keys.forEach((k) => {
+      const sec = document.createElement("section");
+      sec.className = "td-treat-group";
+      sec.dataset.k = k;
+      sec.innerHTML = `<h4 class="sd-h3">${esc(tradLabel(k))}</h4><ol class="td-treats"></ol>`;
+      list.filter((e) => shOf(e) === k).forEach((e) => sec.querySelector("ol").appendChild(treatmentItem(e)));
+      $groups.appendChild(sec);
+    });
+    if (keys.length > 1) {
+      $view.querySelector("[data-td-tchips]").appendChild(chipsFor(keys, tradLabel,
+        (k) => (k ? list.filter((e) => shOf(e) === k).length : list.length),
+        (k) => $groups.querySelectorAll(".td-treat-group").forEach((g) => { g.hidden = Boolean(k) && g.dataset.k !== k; })));
+    }
+    renderWorks($view.querySelector("[data-td-works]"), state.data.works || []);
   }
 
   /* A titled item that opens the text at its page, in place. Used for
@@ -321,80 +554,6 @@
     });
   }
 
-  // ── Read: in their own words, then the works ──────────────────
-  function renderRead($view, preset) {
-    const d = state.data;
-    $view.innerHTML =
-      `<section aria-labelledby="td-h-words">` +
-        `<h2 class="sd-h2" id="td-h-words">In their own words</h2>` +
-        `<p class="sd-muted td-note">Quotations checked against the page they come from. Select an author to see all of theirs.</p>` +
-        `<div data-td-filters></div>` +
-        `<label class="sd-filter td-order"><span class="sd-filter-label">Order</span><select data-td-order>` +
-          `<option value="representative">Representative: each tradition's leading voices first</option>` +
-          `<option value="chronological">Earliest first</option></select></label>` +
-        `<p class="sd-count" data-td-scount role="status"></p>` +
-        `<ol class="sd-sources" data-td-rows></ol>` +
-        `<button type="button" class="sd-more" data-td-more hidden>Show more</button>` +
-      `</section>` +
-      `<section aria-labelledby="td-h-works">` +
-        `<h2 class="sd-h2" id="td-h-works">Where it is treated</h2>` +
-        `<p class="sd-muted td-note">The treatises and chapters given to this topic, earliest first. Open any to read the section in place.</p>` +
-        `<div data-td-works></div>` +
-      `</section>`;
-    const bar = S.filterBar($view.querySelector("[data-td-filters]"), {
-      search: true,
-      searchLabel: "Search the quotations",
-      searchPlaceholder: "A word, an author, a work",
-      onChange: () => sources(false),
-    });
-    const $rows = $view.querySelector("[data-td-rows]");
-    const $more = $view.querySelector("[data-td-more]");
-    const $count = $view.querySelector("[data-td-scount]");
-    const $order = $view.querySelector("[data-td-order]");
-    $order.addEventListener("change", () => sources(false));
-    let run = 0;
-    let offset = 0;
-    $more.addEventListener("click", () => sources(true));
-    function sources(more) {
-      const my = more ? run : ++run;
-      if (!more) { offset = 0; $rows.innerHTML = `<li class="sd-muted">Loading…</li>`; }
-      $more.disabled = true;
-      const f = bar.filters;
-      S.api("/v1/topic/sources", { t2: INDEX.get(state.id).locus.t2, tr: f.tr, au: f.au, cen: f.cen, q: f.q, order: $order.value, offset, limit: 20 }).then((r) => {
-        if (my !== run) return;
-        $more.disabled = false;
-        if (!more) $rows.innerHTML = "";
-        if (!r || !r.total) {
-          $count.textContent = "No verified quotations are indexed for this topic yet.";
-          $more.hidden = true;
-          return;
-        }
-        bar.update(r.facets);
-        $count.innerHTML = S.activeCount(f)
-          ? `<strong>${fmt(r.matched)}</strong> of ${plural(r.total, "quotation", "quotations")} match`
-          : `<strong>${fmt(r.total)}</strong> verified ${r.total === 1 ? "quotation" : "quotations"}`;
-        (r.rows || []).forEach((row) => $rows.appendChild(quoteItem(row)));
-        if (!(r.rows || []).length && !more) $rows.innerHTML = `<li class="sd-muted">Nothing matches these filters.</li>`;
-        offset = r.next_offset || 0;
-        $more.hidden = !r.next_offset;
-        $more.textContent = r.next_offset ? `Show more (${fmt(r.matched - r.next_offset)} left)` : "Show more";
-      }).catch(() => {
-        if (my !== run) return;
-        $more.disabled = false;
-        $count.innerHTML = `<span class="sd-muted">Quotations did not load.</span> <button type="button" class="sd-clear" data-td-retry>Try again</button>`;
-        $count.querySelector("[data-td-retry]").addEventListener("click", () => sources(false));
-        if (!more) $rows.innerHTML = "";
-      });
-    }
-    // A preset (a century chosen in Trace) is applied here, once the list
-    // exists: bar.set() fires the load itself. Applied earlier, it ran
-    // before $rows was declared and the tab stayed empty.
-    const keys = preset ? Object.keys(preset) : [];
-    if (keys.length) keys.forEach((k) => bar.set(k, preset[k]));
-    else sources(false);
-    renderWorks($view.querySelector("[data-td-works]"), d.works || []);
-  }
-
   /* One verified quotation. The quote is the author's own words, so it
    * is shown at once; "More context" reads the whole page around it. The
    * author's name opens the sidebar with everything they say here. */
@@ -422,7 +581,7 @@
 
   function renderWorks($host, works) {
     if (!works.length) {
-      $host.innerHTML = `<p class="sd-muted">No treatise in the library is catalogued under this topic by itself. Its sources are the quotations above.</p>`;
+      $host.innerHTML = `<p class="sd-muted">No treatise in the library is catalogued under this topic by itself.</p>`;
       return;
     }
     // Earliest first, grouped by century, so the reading list is also a
@@ -434,7 +593,7 @@
       byCen.get(k).push(w);
     });
     const keys = [...byCen.keys()].sort((a, b) => (a || 99) - (b || 99));
-    $host.innerHTML = keys.map((k) => `<section class="td-cen-group"><h3 class="sd-h3">${k ? esc(S.centuryLabel(k).replace(" c.", " century")) : "Undated"}</h3><ol class="td-works" data-cen="${k}"></ol></section>`).join("");
+    $host.innerHTML = keys.map((k) => `<section class="td-cen-group"><h5 class="sd-h3">${k ? esc(S.centuryLabel(k).replace(" c.", " century")) : "Undated"}</h5><ol class="td-works" data-cen="${k}"></ol></section>`).join("");
     keys.forEach((k) => {
       const $ol = $host.querySelector(`.td-works[data-cen="${k}"]`);
       byCen.get(k).forEach((w) => {
@@ -453,127 +612,171 @@
     });
   }
 
-  // ── Compare: traditions side by side ──────────────────────────
-  function renderCompare($view) {
+  // ── Teachers: Compare ─────────────────────────────────────────
+  function renderTeachCompare($view) {
     const d = state.data;
-    const present = new Set((d.facets && d.facets.tradition || []).map((x) => String(x.k)));
+    const list = (TREAT && TREAT.loci && TREAT.loci[state.id]) || [];
+    const present = new Set([...list.map(shOf), ...(d.authors || []).map((a) => a.sh)]);
     const avail = TRADS.filter(([k]) => present.has(k));
     const pick = ["rc", "lu", "rf"].filter((k) => present.has(k));
     while (pick.length < Math.min(3, avail.length)) pick.push(avail.find(([k]) => !pick.includes(k))[0]);
     const select = (i) => `<label class="sd-filter"><span class="sd-filter-label">Tradition ${i + 1}</span><select data-td-cmp="${i}">${
       avail.map(([k, lab]) => `<option value="${k}"${pick[i] === k ? " selected" : ""}>${esc(lab)}</option>`).join("")}</select></label>`;
-    $view.innerHTML =
-      `<h2 class="sd-h2">Compare the traditions</h2>` +
-      `<p class="sd-muted td-note">What each tradition confessed on this topic, who taught it most, and a few of their own words.</p>${ 
-      avail.length ? `<div class="sd-filter-row td-cmp-pick">${pick.map((_, i) => select(i)).join("")}</div>` : "" 
-      }<div class="td-cmp" data-td-cmp-cols></div>`;
+    $view.innerHTML = avail.length
+      ? `<div class="sd-filter-row td-cmp-pick">${pick.map((_, i) => select(i)).join("")}</div><div class="td-cmp" data-td-cmp-cols></div>`
+      : `<p class="sd-muted">Not enough traditions are indexed on this topic to compare.</p>`;
+    if (!avail.length) return;
     const paint = () => {
       const keys = [...$view.querySelectorAll("[data-td-cmp]")].map((s) => s.value);
       const $cols = $view.querySelector("[data-td-cmp-cols]");
       $cols.style.setProperty("--td-cols", String(Math.max(1, keys.length)));
-      $cols.innerHTML = keys.map((k) => `<section class="td-cmp-col" data-k="${esc(k)}"><h3 class="td-cmp-h">${esc((TRADS.find((t) => t[0] === k) || [k, k])[1])}</h3><div data-td-col></div></section>`).join("");
+      $cols.innerHTML = keys.map((k) => `<section class="td-cmp-col"><h4 class="td-cmp-h">${esc(tradLabel(k))}</h4><div data-td-col></div></section>`).join("");
       const hosts = $cols.querySelectorAll("[data-td-col]");
-      keys.forEach((k, i) => fillColumn(hosts[i], k));
+      keys.forEach((k, i) => {
+        const ts = list.filter((e) => shOf(e) === k);
+        const authors = (d.authors || []).filter((a) => a.sh === k).slice(0, 6);
+        hosts[i].innerHTML = `<h5 class="td-cmp-sub">Classic treatments</h5>${ts.length ? `<ol class="td-treats"></ol>` : `<p class="sd-muted">None chosen yet.</p>`}` +
+          `<h5 class="td-cmp-sub">Who wrote most on it</h5>${authors.length ? `<ol class="td-cmp-authors">${authors.map((a) =>
+            `<li><button type="button" class="td-author-link" data-author="${esc(a.id)}">${esc(a.a)}</button> <span class="sd-muted">${esc(S.centuryLabel(a.cen))}</span></li>`).join("")}</ol>` : `<p class="sd-muted">None indexed.</p>`}`;
+        const $ol = hosts[i].querySelector(".td-treats");
+        if ($ol) ts.forEach((e) => $ol.appendChild(treatmentItem(e, { bare: true })));
+      });
     };
     $view.querySelectorAll("[data-td-cmp]").forEach((s) => s.addEventListener("change", paint));
-    if (!avail.length) { $view.querySelector("[data-td-cmp-cols]").innerHTML = `<p class="sd-muted">Not enough traditions are indexed on this topic to compare.</p>`; return; }
     paint();
   }
 
-  // The confession data says only "Reformed". The British and Irish
-  // formularies go to English Divines, the rest to Continental Reformed,
-  // so the two columns do not repeat each other.
-  const BRITISH = /westminster|thirty-nine|39 articles|irish|savoy|lambeth|scots|scottish/i;
-  const CONF_TRAD = {
-    rc: (c) => c.trad === "Roman Catholic",
-    lu: (c) => c.trad === "Lutheran",
-    rf: (c) => c.trad === "Reformed" && !BRITISH.test(`${c.doc} ${c.w}`),
-    ed: (c) => c.trad === "Reformed" && BRITISH.test(`${c.doc} ${c.w}`),
-  };
-  function fillColumn($col, k) {
-    const d = state.data;
-    const lab = (TRADS.find((t) => t[0] === k) || [k, k])[1];
-    const conf = CONF_TRAD[k] ? (d.confessions || []).filter(CONF_TRAD[k]) : [];
-    const authors = (d.authors || []).filter((a) => a.sh === k).slice(0, 6);
-    $col.innerHTML =
-      `<h4 class="td-cmp-sub">Confessed</h4>${ 
-      conf.length ? `<ol class="sd-sources" data-td-cc></ol>` : `<p class="sd-muted">No ${esc(lab)} confession article on this topic.</p>` 
-      }<h4 class="td-cmp-sub">Taught most by</h4>${ 
-      authors.length ? `<ol class="td-cmp-authors">${authors.map((a) =>
-        `<li><button type="button" class="td-author-link" data-author="${esc(a.id)}">${esc(a.a)}</button> <span class="sd-muted">${esc(`${fmt(a.n)} passages`)}</span></li>`).join("")}</ol>` : `<p class="sd-muted">None indexed.</p>` 
-      }<h4 class="td-cmp-sub">In their words</h4><ol class="sd-sources" data-td-cq><li class="sd-muted">Loading…</li></ol>`;
-    const $cc = $col.querySelector("[data-td-cc]");
-    if ($cc) conf.slice(0, 4).forEach((cf) => $cc.appendChild(previewItem({ title: [cf.year, cf.doc].filter(Boolean).join(" · "), sub: confessionTitle(cf), heading: cf.article || "", w: cf.w, p: cf.p, href: cf.href })));
-    const $cq = $col.querySelector("[data-td-cq]");
-    S.api("/v1/topic/sources", { t2: INDEX.get(state.id).locus.t2, tr: k, offset: 0, limit: 4 }).then((r) => {
-      $cq.innerHTML = "";
-      ((r && r.rows) || []).forEach((row) => $cq.appendChild(quoteItem(row)));
-      if (!$cq.children.length) $cq.innerHTML = `<li class="sd-muted">No verified quotations yet.</li>`;
-    }).catch(() => { $cq.innerHTML = `<li class="sd-muted">Did not load.</li>`; });
+  // ── Teachers: Trace (the timeline) ────────────────────────────
+  const phone = window.matchMedia("(max-width: 640px)");
+  function renderTeachTrace($view) {
+    const authors = (state.data.authors || []).filter((a) => Number(a.y) > 0);
+    const order = ["gf", "pl", "po", "md", "rc", "lu", "rf", "ed", "hl"];
+    const cenOf = (x) => Math.floor((x - 1) / 100) + 1;
+    let items = authors.map((a) => ({ x: Number(a.y) + 40, row: a.sh, n: Number(a.n) || 0, label: a.a, id: a.id, a }));
+    // On a phone, 370 authors are 370 specks on a 300px strip. One point
+    // per tradition per century instead; tapping it lists who is in it.
+    const grouped = phone.matches;
+    if (grouped) {
+      const g = new Map();
+      items.forEach((d) => {
+        const key = `${d.row}|${cenOf(d.x)}`;
+        if (!g.has(key)) g.set(key, { x: (cenOf(d.x) - 1) * 100 + 50, row: d.row, n: 0, people: [] });
+        const b = g.get(key);
+        b.n += d.n;
+        b.people.push(d);
+      });
+      items = [...g.values()];
+    }
+    $view.innerHTML =
+      `<p class="sd-muted td-note">Everyone the library holds on ${esc(INDEX.get(state.id).locus.label.toLowerCase())}, placed by when they wrote, a row for each tradition, and sized by how much they wrote on it. ${grouped ? "Each point is a century; select one to see who wrote then." : "Select anyone to read what they said."}</p>` +
+      `<div data-td-tl></div><div class="td-tl-people" data-td-people></div>`;
+    const $people = $view.querySelector("[data-td-people]");
+    timeline($view.querySelector("[data-td-tl]"), items, {
+      label: "Authors by date",
+      rows: order.filter((k) => items.some((d) => d.row === k)).map((k) => [k, tradLabel(k)]),
+      colour: (k) => `var(--td-c-${order.includes(k) ? k : "x"})`,
+      pointLabel: (d) => (grouped
+        ? `${tradLabel(d.row)}, ${S.centuryLabel(cenOf(d.x))}: ${plural(d.people.length, "author", "authors")}`
+        : `${d.label}, ${S.centuryLabel(cenOf(d.x))}`),
+      authorPoints: !grouped,
+      onPick(d) {
+        $people.innerHTML = `<h5 class="sd-h3">${esc(tradLabel(d.row))}, ${esc(S.centuryLabel(cenOf(d.x)))}</h5><ol class="td-cmp-authors">${
+          d.people.sort((a, b) => b.n - a.n).map((p) => `<li><button type="button" class="td-author-link" data-author="${esc(p.id)}" data-name="${esc(p.label)}">${esc(p.label)}</button></li>`).join("")}</ol>`;
+        $people.scrollIntoView({ block: "nearest" });
+      },
+    });
   }
 
-  // ── Trace: century by century ─────────────────────────────────
-  function renderTrace($view) {
-    const d = state.data;
-    const rows = d.trace || [];
-    if (!rows.length) { $view.innerHTML = `<p class="sd-muted">There is not enough dated material to trace this topic.</p>`; return; }
-    const present = new Set(rows.flatMap((r) => (r.by || []).map((b) => String(b.k))));
-    // Colour belongs to the tradition, not the order it appears in, so
-    // Lutheran is the same colour on every topic.
-    const ORDER = ["gf", "pl", "po", "md", "rc", "lu", "rf", "ed", "hl"];
-    const tradKeys = [...ORDER.filter((k) => present.has(k)), ...[...present].filter((k) => !ORDER.includes(k))];
-    const colour = (k) => `var(--td-c-${ORDER.includes(String(k)) ? k : "x"})`;
-    const label = (k) => { const t = rows.flatMap((r) => r.by || []).find((b) => String(b.k) === String(k)); return t ? t.label : k; };
-    $view.innerHTML =
-      `<h2 class="sd-h2">Trace the topic through the centuries</h2>` +
-      `<p class="sd-muted td-note">How the library's passages on ${esc(INDEX.get(state.id).locus.label.toLowerCase())} divide among the traditions, century by century. Each bar shows shares; the number is how many passages that century holds, and the library holds far more from some centuries than others. Select a century to read its verified quotations.</p>` +
-      `<ul class="td-legend">${tradKeys.map((k) => `<li><span class="td-swatch" style="background:${colour(k)}"></span>${esc(label(k))}</li>`).join("")}</ul>` +
-      `<ol class="td-trace">${rows.map((r) =>
-        `<li><button type="button" class="td-trace-row" data-cen="${esc(r.cen)}" aria-label="${esc(r.label || S.centuryLabel(r.cen))}: ${fmt(r.total)} passages, ${esc((r.by || []).map((b) => `${b.label} ${fmt(b.n)}`).join(", "))}. Read this century's quotations.">` +
-          `<span class="td-trace-label">${esc(r.label || S.centuryLabel(r.cen))}</span>` +
-          `<span class="td-trace-track">${(r.by || []).map((b) =>
-            `<span class="td-trace-seg" style="flex:${Math.max(0, Number(b.n) || 0)};background:${colour(b.k)}" title="${esc(b.label)}: ${fmt(b.n)}"></span>`).join("")}</span>` +
-          `<span class="td-trace-n">${compact(r.total)}</span>` +
-        `</button></li>`).join("")}</ol>`;
-    $view.querySelectorAll(".td-trace-row").forEach((b) => b.addEventListener("click", () => {
-      pendingPreset = { cen: b.dataset.cen };
-      setView("read", true);
-    }));
+  /* One strip of time, a row per tradition, each point placed by its
+   * date: the Connections timeline, for one topic. Points are buttons
+   * positioned in percent, so the strip is as wide as the page on any
+   * screen and every point can be reached by keyboard. */
+  function timeline($host, items, o) {
+    if (!items.length) { $host.innerHTML = `<p class="sd-muted">Nothing here is dated closely enough to place on a timeline.</p>`; return; }
+    const xs = items.map((d) => d.x);
+    const lo = Math.floor(Math.min(...xs) / 100) * 100;
+    const hi = Math.ceil((Math.max(...xs) + 1) / 100) * 100;
+    const span = Math.max(100, hi - lo);
+    const pos = (x) => ((x - lo) / span) * 100;
+    const maxN = Math.max(...items.map((d) => d.n || 1)) || 1;
+    const size = (n) => Math.round(8 + 18 * Math.sqrt((n || 1) / maxN));
+    const step = span > 1200 ? 200 : 100;
+    const ticks = [];
+    for (let y = lo; y <= hi; y += step) ticks.push(y);
+    $host.innerHTML =
+      `<div class="td-tl" role="group" aria-label="${esc(o.label || "Timeline")}. Arrow keys move along a row.">${ 
+        o.rows.map(([k, lab]) => `<div class="td-tl-row"><span class="td-tl-label">${esc(lab)}</span><div class="td-tl-track">${
+          items.filter((d) => d.row === k).sort((a, b) => (b.n || 0) - (a.n || 0)).map((d) => {
+            const s = size(d.n);
+            return `<button type="button" class="td-tl-pt${d.id ? " td-author-link" : ""}"${d.id ? ` data-author="${esc(d.id)}" data-name="${esc(d.label)}"` : ""} data-i="${items.indexOf(d)}" style="left:${pos(d.x).toFixed(2)}%;width:${s}px;height:${s}px;background:${o.colour(k)}" title="${esc(o.pointLabel(d))}" aria-label="${esc(o.pointLabel(d))}"></button>`;
+          }).join("")}</div></div>`).join("") 
+        }<div class="td-tl-row td-tl-axis"><span class="td-tl-label"></span><div class="td-tl-track">${ticks.map((y) =>
+          `<span class="td-tl-tick" style="left:${pos(y).toFixed(2)}%">${y === 0 ? "AD 1" : y}</span>`).join("")}</div></div>` +
+      `</div>`;
+    if (!o.authorPoints) {
+      $host.addEventListener("click", (e) => {
+        const b = e.target.closest(".td-tl-pt");
+        if (b) o.onPick(items[Number(b.dataset.i)]);
+      });
+    }
+    // One tab stop per row, arrow keys along it (roving tabindex): with
+    // every point a stop, getting past 370 authors took 370 presses.
+    $host.querySelectorAll(".td-tl-track").forEach((track) => {
+      const pts = [...track.querySelectorAll(".td-tl-pt")].sort((a, b) => parseFloat(a.style.left) - parseFloat(b.style.left));
+      pts.forEach((p, i) => p.setAttribute("tabindex", i ? "-1" : "0"));
+      track.addEventListener("keydown", (e) => {
+        const i = pts.indexOf(document.activeElement);
+        if (i < 0) return;
+        const j = e.key === "ArrowRight" ? i + 1 : e.key === "ArrowLeft" ? i - 1 : e.key === "Home" ? 0 : e.key === "End" ? pts.length - 1 : null;
+        if (j == null || !pts[j]) return;
+        e.preventDefault();
+        pts[i].setAttribute("tabindex", "-1");
+        pts[j].setAttribute("tabindex", "0");
+        pts[j].focus();
+      });
+    });
   }
 
   // ── Scripture: the proof-texts ────────────────────────────────
   const LIB_TO_BOOK = new Map(S.BOOKS.map((b) => [b.lib, b]));
-  function renderScripture($view) {
+  /* rows given: a confession block's proofs (cited in N articles);
+   * rows null: the teachers' proof-texts from /v1/topic/scripture. */
+  function renderScripture($view, given, from) {
     const {locus} = INDEX.get(state.id);
-    $view.innerHTML =
-      `<h2 class="sd-h2">Scripture on ${esc(locus.label.toLowerCase())}</h2>` +
-      `<p class="sd-muted td-note">The passages the tradition cites where it treats this topic, those most particular to it first. Each opens its Verse Desk.</p>` +
+    const conf = Boolean(given);
+    $view.innerHTML = `${from || "" 
+      }<p class="sd-muted td-note">${conf
+        ? "The proof-texts the confessions cite in their articles on this topic, most cited first. Each opens its Verse Desk."
+        : `The passages the teachers cite where they treat ${esc(locus.label.toLowerCase())}, those most particular to it first. Each opens its Verse Desk.`}</p>` +
       `<ol class="td-proofs" data-td-proofs><li class="sd-muted">Loading…</li></ol>` +
       `<button type="button" class="sd-more" data-td-pmore hidden>Show more</button>`;
     const $ol = $view.querySelector("[data-td-proofs]");
     const $more = $view.querySelector("[data-td-pmore]");
-    S.api("/v1/topic/scripture", { id: state.id, t2: locus.t2, limit: 60 }).then((r) => {
+    const load = conf ? Promise.resolve({ rows: given }) : S.api("/v1/topic/scripture", { id: state.id, t2: locus.t2, limit: 60 });
+    load.then((r) => {
       const rows = ((r && r.rows) || []).filter((x) => LIB_TO_BOOK.has(x.b));
       if (!rows.length) { $ol.innerHTML = `<li class="sd-muted">No passages are linked to this topic yet.</li>`; return; }
-      const max = Math.max(...rows.map((r) => Number(r.n) || 0)) || 1;
+      const max = Math.max(...rows.map((x) => Number(x.n) || 0)) || 1;
       let shown = 0;
       const t = S.recalledTranslation();
       const page = () => {
         rows.slice(shown, shown + 15).forEach((x) => {
           const book = LIB_TO_BOOK.get(x.b);
-          x.c = Number(x.c) || 1;
-          x.v = Number(x.v) || 0;
+          const c = Number(x.c) || 1;
+          const v = Number(x.v) || 0;
           const li = document.createElement("li");
           li.className = "td-proof";
           li.innerHTML =
-            `<div class="td-proof-head"><a class="td-proof-ref" href="${esc(S.deskHref(book, x.c, x.v, t === "ESV" ? "" : t))}">${esc(S.refLabel(book, x.c, x.v))}</a>` +
-            `<span class="sd-cbar-track td-proof-bar"><span class="sd-cbar-fill" style="width:${Math.max(2, Math.round((x.n / max) * 100))}%"></span></span>` +
-            `<span class="sd-cbar-n td-proof-n">cited ${fmt(x.n)}×</span></div>` +
+            `<div class="td-proof-head"><a class="td-proof-ref" href="${esc(S.deskHref(book, c, v, t === "ESV" ? "" : t))}">${esc(S.refLabel(book, c, v))}</a>` +
+            `<span class="sd-cbar-track td-proof-bar"><span class="sd-cbar-fill" style="width:${Math.max(2, Math.round(((Number(x.n) || 0) / max) * 100))}%"></span></span>` +
+            `<span class="sd-cbar-n td-proof-n">${conf ? `in ${plural(Number(x.n) || 0, "article", "articles")}` : `cited ${fmt(x.n)}×`}</span></div>` +
             `<p class="td-proof-text sd-muted">…</p>`;
           $ol.appendChild(li);
-          S.fetchVerseText(t, book, x.c, x.v)
-            .then((txt) => { li.querySelector(".td-proof-text").textContent = txt || ""; })
-            .catch(() => { li.querySelector(".td-proof-text").textContent = ""; });
+          if (v) {
+            S.fetchVerseText(t, book, c, v)
+              .then((txt) => { li.querySelector(".td-proof-text").textContent = txt || ""; })
+              .catch(() => { li.querySelector(".td-proof-text").textContent = ""; });
+          } else li.querySelector(".td-proof-text").textContent = "";
         });
         shown += 15;
         $more.hidden = shown >= rows.length;
@@ -589,7 +792,7 @@
     const d = state.data;
     // The topic's author list holds its top 400; anyone else is known
     // from the quotation that was clicked.
-    const a = (d && d.authors || []).find((x) => x.id === authorId) || ($from && $from.dataset.name ? {
+    const a = ((d && d.authors) || []).find((x) => x.id === authorId) || ($from && $from.dataset.name ? {
       id: authorId, a: $from.dataset.name, trad: $from.dataset.trad,
       cen: Number($from.dataset.cen) || 0, n: 0,
     } : null);
@@ -604,7 +807,7 @@
       `<h3 class="sd-h3">Their works on this topic</h3><ol class="td-side-works"></ol>` +
       `<h3 class="sd-h3">In their words</h3><ol class="sd-sources" data-td-arows><li class="sd-muted">Loading…</li></ol>` +
       `<button type="button" class="sd-more" data-td-amore hidden>Show more</button>`;
-    const works = (d.works || []).filter((w) => a && w.a === a.a);
+    const works = ((d && d.works) || []).filter((w) => a && w.a === a.a);
     const $w = $panel.querySelector(".td-side-works");
     $w.innerHTML = works.length
       ? works.map((w) => `<li><a href="${esc(S.sourceHref(w.href, w.w))}">${esc(w.t)}</a></li>`).join("")
@@ -627,8 +830,13 @@
     $more.addEventListener("click", () => load(true));
     load(false);
     if (narrow.matches) {
-      const host = $from && ($from.closest("li") || $from);
-      if (host) host.appendChild($panel);
+      // Never inside a button: a timeline point opens the panel under
+      // the whole timeline (inside the dot it measured 34px wide).
+      const li = $from && $from.closest("li");
+      const tl = $from && $from.closest(".td-tl");
+      if (li) li.appendChild($panel);
+      else if (tl) tl.after($panel);
+      else if ($from) $from.after($panel);
       $side.hidden = true;
       $root.classList.remove("has-side");
     } else {
@@ -668,12 +876,15 @@
     const qs = new URLSearchParams(location.search);
     const t = qs.get("t");
     if (t && INDEX.has(t)) {
-      if (t === state.id && state.data) {
-        const v = qs.get("view");
-        setView(VIEWS.some((x) => x[0] === v) ? v : "read", false);
+      const ok = (v) => (VIEWS.some((x) => x[0] === v) ? v : "read");
+      if (t === state.id && $main && $main.isConnected) {
+        const c = ok(qs.get("c"));
+        const v = ok(qs.get("view"));
+        if (c !== state.cview) setCView(c, false);
+        if (v !== state.view) setView(v, false);
         return;
       }
-      renderLocus(t, qs.get("view") || "read");
+      renderLocus(t, ok(qs.get("view")), ok(qs.get("c")));
     } else {
       state.id = "";
       // An unknown ?t= shows the contents under their own address.

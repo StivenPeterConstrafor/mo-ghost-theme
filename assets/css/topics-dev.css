@@ -211,3 +211,74 @@
   .td-tab { padding: 12px 9px; letter-spacing: 0.03em; }
   .td-proof-head { grid-template-columns: 1fr auto; }
 }
+
+/* ═══ Two blocks: what the church confessed / what its teachers wrote
+   (Ian, 2026-09-22). Each has the same four tabs. ═══════════════════ */
+.sd .td-root { --td-g-early: #8c3b2a; --td-g-rc: #7a2f4f; --td-g-lu: #2f5d7c; --td-g-rf: #3d6b45; }
+.td-block { padding-top: 40px; }
+.td-block + .td-block { margin-top: 24px; border-top: 1px solid var(--color-rule); }
+.td-block-h { font-family: var(--font-body); font-size: 26px; font-weight: 600; margin: 0 0 6px; }
+.td-block .td-tabs { margin-top: 16px; }
+
+/* Confession articles: the article's own words, open on the page. */
+.td-articles { list-style: none; margin: 0; padding: 0; }
+.td-article { padding: 18px 0; border-bottom: 1px solid var(--color-rule); scroll-margin-top: calc(var(--sd-top, 0px) + 16px); }
+.td-article:last-child { border-bottom: 0; }
+.td-article.is-picked { background: rgba(238, 125, 81, 0.07); box-shadow: -12px 0 0 rgba(238, 125, 81, 0.07), 12px 0 0 rgba(238, 125, 81, 0.07); }
+.td-article-doc { font-size: 14px; font-style: italic; margin: 0; }
+.td-type { font-style: normal; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-muted); margin-left: 6px; }
+.td-article-h { font-family: var(--font-body); font-size: 19px; font-weight: 600; margin: 4px 0 10px; }
+.td-article-text { font-size: 16px; }
+.td-article-foot { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: center; margin: 8px 0 0; font-size: 14px; }
+.td-article-foot .sd-clear { min-height: 44px; }
+.td-proof-chips { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; margin: 6px 0 0; font-size: 14px; }
+.td-proof-chips a { color: var(--sd-accent); padding: 6px 0; }
+.td-cmp .td-article-h { font-size: 16px; }
+.td-cmp .td-article-text { font-size: 15px; }
+
+/* Classic treatments: who, the work and its section, the opening words,
+   and the whole section read in place. */
+.td-treat-group + .td-treat-group { margin-top: 12px; }
+.td-treats { list-style: none; margin: 0; padding: 0; }
+.td-treat { padding: 16px 0; border-bottom: 1px solid var(--color-rule); }
+.td-treat:last-child { border-bottom: 0; }
+.td-treat-who { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0 10px; }
+.td-treat-author { font-size: 15px; font-weight: 600; }
+.td-treat-h { font-family: var(--font-body); font-weight: 400; margin: 2px 0 10px; display: flex; flex-direction: column; gap: 2px; }
+.td-treat-work { font-size: 18px; font-style: italic; }
+.td-treat-sec { font-size: 15px; color: var(--color-muted); }
+.td-treat-excerpt { font-size: 16px; }
+.td-treat-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin-top: 10px; }
+.td-all-works { margin-top: 28px; border-top: 1px solid var(--color-rule); }
+.td-all-works > summary { cursor: pointer; padding: 14px 0; min-height: 44px; font-size: 15px; color: var(--sd-accent); }
+.td-cmp .td-treat-work { font-size: 16px; }
+
+/* The timeline: Connections' strip, for one topic. A row per tradition,
+   points placed by date in percent, sized by weight. Not a scroll box:
+   it is as wide as the column and takes its own height. */
+.td-tl { margin: 8px 0 0; }
+.td-tl-row { display: grid; grid-template-columns: 150px 1fr; align-items: center; min-height: 44px; border-bottom: 1px solid rgba(45, 41, 39, 0.06); }
+.td-tl-label { font-size: 13px; color: var(--color-muted); padding-right: 12px; }
+.td-tl-track { position: relative; height: 44px; margin: 0 14px; }
+.td-tl-pt {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.7); padding: 0; min-height: 0;
+  opacity: 0.8; cursor: pointer; transition: opacity 0.12s, transform 0.12s;
+}
+.td-tl-pt:hover, .td-tl-pt:focus-visible { opacity: 1; transform: translate(-50%, -50%) scale(1.25); z-index: 2; outline: 2px solid var(--color-dark); outline-offset: 1px; }
+.td-tl-axis { border-bottom: 0; min-height: 28px; }
+.td-tl-axis .td-tl-track { height: 28px; }
+.td-tl-tick { position: absolute; top: 4px; transform: translateX(-50%); font-size: 12px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  .td-tl-row { grid-template-columns: 1fr; }
+  .td-tl-label { padding: 8px 0 0; }
+  .td-tl-tick:nth-child(even) { display: none; }
+  .td-block-h { font-size: 22px; }
+}
+
+/* Review fixes (2026-09-22, rework) */
+/* Every point gets a hit area of at least 24px, whatever its size. */
+.td-tl-pt::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; }
+.td-tl-people:not(:empty) { margin-top: 16px; padding-top: 4px; border-top: 1px solid var(--color-rule); }
+.td-cmp-all { margin-top: 8px; min-height: 44px; }
+.td-block-h { margin-top: 0; }
