@@ -410,6 +410,13 @@ routes:
   # #notebook, #constellations.
   /the-faith-received/research/:
     template: custom-faith-research
+  # Development pages for the Scripture reader and Verse Desk rebuild
+  # (Ian, 2026-09-22). Beside the live tools, which they do not touch.
+  # One route serves every verse: the verse is ?ref=<book>.<c>.<v>.
+  /scripture-dev/:
+    template: custom-scripture-dev
+  /scripture-dev/desk/:
+    template: custom-scripture-dev-desk
   /the-faith-received/scripture/:
     template: custom-faith-scripture
   # The corpus site's Scripture room, ported: the whole Bible to read (ESV

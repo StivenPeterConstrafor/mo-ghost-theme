@@ -1,0 +1,26 @@
+{{!< default}}
+{{#contentFor "moHead"}}
+<title>Verse Desk (dev) | Mere Orthodoxy</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="stylesheet" href="{{asset "css/scripture-dev.css"}}&amp;frv=37526edaa1fcdf64" />
+{{/contentFor}}
+{{!-- /scripture-dev/desk/?ref=<book>.<c>.<v> — the Verse Desk.
+
+     One route and one template for every verse in the Bible. The verse
+     is read from ?ref=, so no URL exists per verse and nothing has to be
+     generated when the library grows. Without a valid ref the page
+     offers a chooser. Development page (Ian, 2026-09-22); the live
+     Scripture tools are untouched. --}}
+
+<main class="bible sd sd-desk-page">
+
+{{> "faith-received/_tfr-rail"}}
+
+  <div class="container sd-desk" data-sd-desk>
+    <p class="bible-status" role="status">Loading the Verse Desk&hellip;</p>
+  </div>
+</main>
+
+<script src="{{asset "js/page/scripture-dev-core.js"}}&amp;frv=a5193b1179a43570"></script>
+<script src="{{asset "js/page/scripture-dev-desk.js"}}&amp;frv=403b4b2e1136c21c"></script>
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>

@@ -1,0 +1,389 @@
+/* ═══════════════════════════════════════════════════════════════
+   /scripture-dev/ and /scripture-dev/desk/ — reader + Verse Desk.
+
+   The chapter itself is styled by the old /bible/ rules that still ship
+   in screen.css (.bible-controls, .bible-chapter-content, .bible-verse),
+   so the text reads exactly as that page did. This file adds only what
+   is new: the two-column layout, the verse sidebar, the commentary
+   strip, the source rows and previews, and the Desk.
+
+   Everything is prefixed sd- so nothing here can collide with the
+   ported surfaces' class names or be caught by the no-scroll-box
+   release block at the end of faith-received.css.
+
+   SCROLLING. Two things scroll on their own, both by Ian's call
+   (2026-09-22): the sidebar, a column beside the text (the recorded
+   sidebar exception), and the commentary strip, sideways. Nothing else
+   caps its height; previews take the room they need.
+
+   No display face on working surfaces: the sidebar and the Desk are
+   set in the body face. The chapter heading keeps the old page's
+   display italic, because that page is what is being matched.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* --sd-accent: the dark terracotta pulled toward ink so 11px labels and
+   14px links pass AA on the page ground (~5.4:1; #b45f3d was ~4.1:1).
+   --sd-top: where sticky things park. The site header is fixed and
+   hides on scroll-down (header-behaviors.js adds .is-hidden); the script
+   measures its height into --sd-nav-h, and the rule further down drops
+   the offset to zero while it is hidden. */
+.sd {
+  --sd-accent: color-mix(in srgb, var(--color-secondary, #c1593c) 75%, var(--color-dark, #2d2927));
+  --sd-gap: 40px;
+  --sd-top: var(--sd-nav-h, 0px);
+}
+.site-header.is-hidden ~ main.sd,
+.site-header.is-hidden ~ * main.sd { --sd-top: 0px; }
+@media (prefers-reduced-motion: reduce) {
+  .site-header.is-hidden ~ main.sd,
+  .site-header.is-hidden ~ * main.sd { --sd-top: var(--sd-nav-h, 0px); }
+}
+.sd .bible-controls { top: var(--sd-top); transition: top 0.25s ease; }
+.sd .bible-control-label { color: var(--sd-accent); }
+/* The bar's selects: 16px so iOS does not zoom on focus, 44px to tap. */
+.sd .bible-control select { font-size: 16px; min-height: 44px; }
+.sd .bible-nav-btn { width: 44px; height: 44px; }
+.sd-hint { text-align: center; font-size: 14px; margin: -8px 0 24px; }
+.sd-chapter-h1 { margin: 0; font-weight: 400; }
+.sd-chapter-h1 .bible-chapter-eyebrow { display: block; }
+.sd-chapter-h1 .bible-chapter-heading { display: block; }
+.sd-muted { color: var(--color-muted); }
+
+/* ── The bar under the rail ─────────────────────────────────── */
+.sd-bar-inner { justify-content: flex-start; }
+/* THE TFR BUTTON (faith-received.css, "THE TFR BUTTON", Ian 2026-09-18):
+   quiet at rest (off-black outline and ink, 3px), filled on hover, and
+   filled when pressed or the one CTA. Restated here for these sd- classes
+   rather than appended to that block, so this dev page changes nothing
+   that live pages load. */
+.sd-comm-toggle,
+.sd-btn,
+.sd-more,
+.sd-preview-btn,
+.sd-close {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--tfr-btn, var(--color-dark));
+  background: transparent;
+  border: 1px solid var(--tfr-btn, var(--color-dark));
+  border-radius: 3px;
+  padding: 10px 14px;
+  min-height: 44px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.sd-comm-toggle:hover, .sd-comm-toggle:focus-visible,
+.sd-btn:hover, .sd-btn:focus-visible,
+.sd-more:hover, .sd-more:focus-visible,
+.sd-preview-btn:hover, .sd-preview-btn:focus-visible,
+.sd-close:hover, .sd-close:focus-visible,
+.sd-comm-toggle[aria-expanded="true"],
+.sd-preview-btn[aria-expanded="true"],
+.sd-btn {
+  background: var(--tfr-btn, var(--color-dark));
+  color: var(--tfr-btn-ink, var(--color-white, #fff));
+  border-color: var(--tfr-btn, var(--color-dark));
+}
+.sd-btn:hover, .sd-btn:focus-visible { background: var(--sd-accent); border-color: var(--sd-accent); }
+.sd-comm-toggle { align-self: flex-end; margin-left: auto; }
+.sd-comm-toggle span { font-weight: 400; letter-spacing: 0.04em; }
+
+/* ── Commentaries: filters, then one line that scrolls sideways ── */
+.sd-comm-panel { border-bottom: 1px solid var(--color-rule); background: var(--color-page); padding: 18px 0 20px; }
+.sd-comm-panel > * { max-width: 1200px; margin-left: auto; margin-right: auto; padding-left: 28px; padding-right: 28px; }
+.sd-comm-panel > .sd-comm-strip { padding-left: 28px; padding-right: 28px; }
+.sd-comm-status { margin: 10px 0 0; font-size: 14px; }
+.sd-comm-strip {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0 0 10px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 28px;
+}
+.sd-comm { flex: 0 0 auto; width: 240px; scroll-snap-align: start; }
+.sd-comm-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--color-rule);
+  background: var(--color-white, #fff);
+  color: var(--color-dark);
+  text-decoration: none;
+  transition: border-color 0.14s;
+}
+a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn, var(--color-dark)); }
+.sd-comm-title { font-size: 15px; line-height: 1.3; font-style: italic; }
+.sd-comm-author { font-size: 13px; }
+.sd-comm-meta { font-size: 12px; color: var(--color-muted); margin-top: auto; }
+
+/* ── Filters ─────────────────────────────────────────────────── */
+.sd-filters { display: grid; gap: 12px; }
+.sd-filters[hidden] { display: none; }
+.sd-filter-row { display: flex; flex-wrap: wrap; gap: 12px 18px; }
+.sd-filter, .sd-search { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.sd-filter { flex: 1 1 140px; }
+.sd-filter-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--sd-accent);
+  font-weight: 600;
+}
+.sd-filter select,
+.sd-filter input,
+.sd-search input,
+.sd-ask textarea {
+  font-family: var(--font-body);
+  font-size: 16px; /* 16px keeps iOS from zooming on focus */
+  color: var(--color-dark);
+  background: var(--color-white, #fff);
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  padding: 8px 10px;
+  min-height: 44px;
+  width: 100%;
+  max-width: 100%;
+}
+.sd-filter select:focus, .sd-filter input:focus, .sd-search input:focus, .sd-ask textarea:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 0;
+  border-color: var(--color-primary);
+}
+.sd-filter select:disabled { color: var(--color-muted); }
+.sd-clear {
+  justify-self: start;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--sd-accent);
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ── Two columns: the text, and the verse sidebar ───────────── */
+.sd-layout { display: block; padding-top: 48px; padding-bottom: 72px; }
+.sd-text { max-width: 720px; margin: 0 auto; min-width: 0; }
+@media (min-width: 900px) {
+  .sd-layout.has-side {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
+    gap: var(--sd-gap);
+    align-items: start;
+    max-width: 1240px;
+  }
+  .sd-layout.has-side .sd-text { margin: 0; justify-self: center; width: 100%; }
+  /* The sidebar exception: a column that scrolls on its own, held
+     under the sticky bar. --sd-bar-h is measured by the script. */
+  .sd-side {
+    position: sticky;
+    top: calc(var(--sd-top) + var(--sd-bar-h, 72px) + 16px);
+    max-height: calc(100vh - var(--sd-top) - var(--sd-bar-h, 72px) - 32px);
+    transition: top 0.25s ease, max-height 0.25s ease;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-left: 1px solid var(--color-rule);
+    padding: 4px 4px 24px 28px;
+  }
+  /* 400px is too narrow for three filters abreast; stack them. */
+  .sd-side .sd-filter { flex-basis: 100%; }
+}
+.sd-attribution { text-align: center; padding-bottom: 48px; }
+
+/* The old page's .bible-verse wash, kept; the open verse is marked a
+   little more firmly so the reader can see what the sidebar describes. */
+.sd-chapter-content .bible-verse.is-active { background: rgba(238, 125, 81, 0.18); box-shadow: 0 2px 0 var(--color-primary); }
+
+/* ── The verse panel (sidebar on wide screens, inline on narrow) ── */
+.sd-panel {
+  font-family: var(--font-body);
+  color: var(--color-dark);
+  scroll-margin-top: calc(var(--sd-top) + var(--sd-bar-h, 72px) + 12px);
+}
+.sd-panel-ref:focus { outline: none; }
+.sd-panel-ref:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 2px; }
+.sd-panel-head { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: start; margin-bottom: 14px; }
+.sd-eyebrow {
+  grid-column: 1;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--sd-accent);
+  font-weight: 600;
+  margin: 0;
+}
+.sd-panel-ref { grid-column: 1; font-family: var(--font-body); font-size: 26px; line-height: 1.2; font-weight: 600; margin: 2px 0 0; }
+.sd-desk-link {
+  grid-column: 1;
+  font-size: 15px;
+  color: var(--sd-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  margin-top: 4px;
+  justify-self: start;
+  padding: 6px 0;
+}
+.sd-desk-link::after { content: " \2192"; }
+.sd-close { grid-column: 2; grid-row: 1 / span 3; align-self: start; }
+.sd-count { font-size: 16px; margin: 0 0 16px; }
+.sd-count strong { font-size: 22px; font-weight: 600; }
+.sd-h3 {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  font-weight: 600;
+  margin: 26px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--color-rule);
+}
+.sd-panel-foot { margin: 22px 0 0; font-size: 15px; }
+.sd-panel-foot a { color: var(--sd-accent); }
+
+/* Narrow: the panel sits in the text, under the verse's paragraph. It
+   must not inherit the chapter's reading type or the verse's pointer. */
+.sd-chapter-content .sd-panel {
+  display: block;
+  font-size: 16px;
+  line-height: 1.55;
+  text-indent: 0;
+  margin: 8px 0 28px;
+  padding: 18px 16px 20px;
+  background: var(--color-white, #fff);
+  border: 1px solid var(--color-rule);
+  border-top: 3px solid var(--color-primary);
+  cursor: auto;
+}
+
+/* ── Source rows and previews ────────────────────────────────── */
+.sd-sources { list-style: none; margin: 0; padding: 0; }
+.sd-source { padding: 12px 0; border-bottom: 1px solid var(--color-rule); }
+.sd-source:last-child { border-bottom: 0; }
+.sd-source-head { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
+.sd-source-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sd-source-title { font-size: 16px; font-style: italic; line-height: 1.3; overflow-wrap: anywhere; }
+.sd-source-meta { font-size: 13px; color: var(--color-muted); line-height: 1.4; }
+.sd-source-gist { font-size: 14px; color: var(--color-muted); line-height: 1.5; margin: 6px 0 0; }
+.sd-preview-btn { flex: 0 0 auto; padding: 8px 12px; }
+.sd-preview { margin-top: 10px; }
+.sd-quote {
+  margin: 0;
+  padding: 2px 0 2px 16px;
+  border-left: 3px solid var(--color-primary);
+  font-size: 16px;
+  line-height: 1.6;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.sd-preview-foot { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--color-muted); margin: 8px 0 0; }
+.sd-read-link { color: var(--sd-accent); font-weight: 600; }
+.sd-read-link::after { content: " \2192"; }
+.sd-more { margin-top: 14px; width: 100%; }
+.sd-more:disabled { opacity: 0.5; cursor: progress; }
+
+/* ── The Verse Desk ──────────────────────────────────────────── */
+.sd-desk { max-width: 880px; padding-top: 48px; padding-bottom: 96px; font-family: var(--font-body); color: var(--color-dark); }
+.sd-desk-head { border-bottom: 1px solid var(--color-rule); padding-bottom: 28px; }
+.sd-desk-title { font-family: var(--font-body); font-size: clamp(32px, 5vw, 44px); font-weight: 600; line-height: 1.1; margin: 6px 0 18px; }
+.sd-desk-verse { margin: 0; font-size: 21px; line-height: 1.7; max-width: 720px; }
+.sd-desk-trans { font-size: 13px; margin: 8px 0 0; }
+.sd-desk-nav { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 18px; font-size: 15px; }
+.sd-desk-nav a { color: var(--sd-accent); padding: 6px 0; }
+.sd-desk-sec { padding-top: 36px; }
+.sd-h2 { font-family: var(--font-body); font-size: 22px; font-weight: 600; margin: 0 0 14px; }
+
+.sd-parallel { margin: 0; display: grid; gap: 0; }
+.sd-parallel-row { display: grid; grid-template-columns: 64px 1fr; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--color-rule); }
+.sd-parallel-row:last-child { border-bottom: 0; }
+.sd-parallel dt { font-size: 12px; letter-spacing: 0.14em; font-weight: 600; color: var(--sd-accent); padding-top: 4px; }
+.sd-parallel dd { margin: 0; font-size: 17px; line-height: 1.6; }
+
+.sd-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px 32px; margin: 4px 0 22px; }
+.sd-chart { margin: 0; }
+.sd-chart figcaption { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-muted); font-weight: 600; margin-bottom: 8px; }
+.sd-chart ul { list-style: none; margin: 0; padding: 0; }
+.sd-cbar {
+  display: grid;
+  grid-template-columns: minmax(90px, 38%) 1fr 52px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 4px;
+  background: none;
+  border: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-dark);
+  text-align: left;
+  cursor: pointer;
+}
+.sd-cbar:hover, .sd-cbar:focus-visible { background: rgba(238, 125, 81, 0.08); }
+.sd-cbar.is-on { background: rgba(238, 125, 81, 0.16); }
+.sd-cbar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sd-cbar-track { height: 10px; background: rgba(45, 41, 39, 0.06); }
+.sd-cbar-fill { display: block; height: 100%; background: var(--color-primary); }
+.sd-cbar-n { text-align: right; font-variant-numeric: tabular-nums; color: var(--color-muted); }
+
+.sd-desk .sd-comm-strip { padding-bottom: 10px; }
+.sd-jump { font-size: 15px; margin: 16px 0 0; }
+.sd-jump a, .sd-panel-foot a { color: var(--sd-accent); }
+.sd-ask { display: grid; gap: 8px; max-width: 720px; }
+.sd-ask textarea { resize: vertical; line-height: 1.5; }
+.sd-ask-note { font-size: 13px; margin: 0; }
+.sd-ask .sd-btn { justify-self: start; }
+.sd-chooser { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-end; margin-top: 24px; }
+.sd-chooser .sd-filter { flex: 0 1 180px; }
+
+/* Tablets: keep the bar on one row. */
+@media (min-width: 641px) and (max-width: 899px) {
+  .sd-bar .bible-control:nth-child(3) select { max-width: 200px; }
+}
+
+/* ── Phones ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* screen.css sets html, body { overflow-x: hidden } at this width,
+     which makes body a scroll container that never scrolls, so the
+     sticky bar stuck to nothing and scrolled away. clip hides overflow
+     without creating the container (iOS 16+). */
+  body:has(.sd) { overflow-x: clip; }
+  .sd-comm-strip { scroll-padding-inline: 16px; }
+  .sd-cbar { min-height: 44px; }
+  /* The bar is sticky, so on a phone it must stay two rows: book,
+     chapter and the arrows; then translation and Commentaries. Four
+     wrapped rows took a quarter of the screen. */
+  .sd-bar-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: end;
+    gap: 8px 12px;
+    padding: 10px 16px;
+  }
+  .sd-bar-inner > .bible-control:nth-child(1) { grid-column: 1; grid-row: 1; }
+  .sd-bar-inner > .bible-control--chapter { grid-column: 2; grid-row: 1; }
+  .sd-bar-inner > .bible-controls-nav { grid-column: 3; grid-row: 1; }
+  .sd-bar-inner > .bible-control:nth-child(3) { grid-column: 1; grid-row: 2; }
+  .sd-bar-inner > .sd-comm-toggle { grid-column: 2 / span 2; grid-row: 2; margin-left: 0; padding: 8px 10px; }
+  .sd-bar-inner .bible-control select { width: 100%; }
+  .sd-bar-inner .bible-control--chapter select { min-width: 56px; }
+  .sd-comm-panel > *, .sd-comm-panel > .sd-comm-strip { padding-left: 16px; padding-right: 16px; }
+  .sd-comm { width: 78vw; max-width: 280px; }
+  .sd-layout { padding-top: 32px; }
+  .sd-desk { padding-top: 32px; }
+  .sd-desk-verse { font-size: 19px; }
+  .sd-parallel-row { grid-template-columns: 1fr; gap: 2px; }
+  .sd-cbar { grid-template-columns: minmax(80px, 34%) 1fr 44px; }
+  .sd-source-head { flex-wrap: wrap; }
+}

@@ -1,0 +1,61 @@
+{{!< default}}
+{{#contentFor "moHead"}}
+<title>Scripture (dev) | Mere Orthodoxy</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="stylesheet" href="{{asset "css/scripture-dev.css"}}&amp;frv=37526edaa1fcdf64" />
+{{/contentFor}}
+{{!-- /scripture-dev/ — the Scripture reader, rebuilt for review.
+
+     A development page beside the live Scripture tools, which it does
+     not touch (Ian, 2026-09-22). The whole chapter is typeset as the old
+     /bible/ page set it, every verse is a button, and a verse opens a
+     sidebar of what the library says about it, with a link to that
+     verse's Verse Desk at /scripture-dev/desk/?ref=<book>.<c>.<v>.
+
+     Address: ?ref=john.3 or ?ref=john.3.16, &t=NIV for a translation.
+     Text from mo-bible (bolls.life); citations from mo-tfr-verse.
+     Scripts are external files: the site CSP forbids inline script. --}}
+
+<main class="bible sd sd-reader" data-sd-reader>
+
+{{> "faith-received/_tfr-rail"}}
+
+  {{!-- The bar under the rail: where you are, and the way anywhere
+       else. Sticky, so a reader deep in a chapter can still move. --}}
+  <nav class="bible-controls sd-bar" aria-label="Passage and translation">
+    <div class="container bible-controls-inner sd-bar-inner">
+      <label class="bible-control">
+        <span class="bible-control-label">Book</span>
+        <select data-sd-book aria-label="Book"></select>
+      </label>
+      <label class="bible-control bible-control--chapter">
+        <span class="bible-control-label">Chapter</span>
+        <select data-sd-chapter aria-label="Chapter"></select>
+      </label>
+      <label class="bible-control">
+        <span class="bible-control-label">Translation</span>
+        <select data-sd-translation aria-label="Translation"></select>
+      </label>
+      <button type="button" class="sd-comm-toggle" data-sd-comm-toggle aria-expanded="false" aria-controls="sdCommPanel">Commentaries <span data-sd-comm-count></span></button>
+      <div class="bible-controls-nav">
+        <button type="button" class="bible-nav-btn" data-sd-prev aria-label="Previous chapter"><span aria-hidden="true">&larr;</span></button>
+        <button type="button" class="bible-nav-btn" data-sd-next aria-label="Next chapter"><span aria-hidden="true">&rarr;</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <section class="sd-comm-panel" id="sdCommPanel" data-sd-comm-panel hidden aria-label="Commentaries"></section>
+
+  <div class="container sd-layout" data-sd-layout>
+    <article class="bible-chapter sd-text" data-sd-text>
+      <p class="bible-status" role="status">Loading scripture&hellip;</p>
+    </article>
+    <aside class="sd-side" data-sd-side hidden aria-label="Verse"></aside>
+  </div>
+
+  <p class="container bible-attribution sd-attribution" data-sd-attribution></p>
+</main>
+
+<script src="{{asset "js/page/scripture-dev-core.js"}}&amp;frv=a5193b1179a43570"></script>
+<script src="{{asset "js/page/scripture-dev.js"}}&amp;frv=d96ea04ea7940055"></script>
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
