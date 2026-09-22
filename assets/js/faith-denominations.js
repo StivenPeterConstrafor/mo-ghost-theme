@@ -144,7 +144,13 @@
   // whole library. An ambiguous name with no dates on it stays
   // unplaced, which is the right answer: nobody knows which man it is.
   function authorKey(name) {
-    let s = String(name == null ? "" : name).trim();
+    // EEBO writes its names as catalogue entries, ending in a full stop:
+    // "Keach, Benjamin, 1640-1704." The date strip below is anchored at
+    // the end, so the stop hid the dates and the name matched nothing
+    // (Keach, Bunyan, Perkins, Owen all fell back to no church).
+    // Punctuation goes at the last step anyway, so this changes only
+    // names that missed. Same line in scripts/build-denominations.mjs.
+    let s = String(name == null ? "" : name).trim().replace(/\.+$/, "").trim();
     if (!s) return "";
     // Everything a cataloguer adds after the name: life dates, floruit,
     // "d.", "b. ca.", the query marks on an uncertain year.

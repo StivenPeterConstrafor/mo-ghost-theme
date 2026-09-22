@@ -63,7 +63,12 @@ const CONF = new Set(["h", "m", "l"]);
 // must agree or every key the builder writes misses at runtime; the
 // check at the foot of this file asserts a sample of them do.
 function authorKey(name) {
-  let s = String(name == null ? "" : name).trim();
+  // EEBO writes its names as catalogue entries, ending in a full stop:
+  // "Keach, Benjamin, 1640-1704." The date strip below is anchored at the
+  // end, so the stop hid the dates and the name matched nothing (Keach,
+  // Bunyan, Perkins, Owen all fell back to no church). Punctuation goes
+  // anyway at the last step, so this changes only names that missed.
+  let s = String(name == null ? "" : name).trim().replace(/\.+$/, "").trim();
   if (!s) return "";
   s = s.replace(/,\s*(?:(?:b|d|fl|ca|c)\.\s*)*\d{3,4}\??(?:\s*or\s*\d{1,4})?\s*(?:-\s*(?:(?:b|d|fl|ca|c)\.\s*)*\d{0,4}\??(?:\s*or\s*\d{1,4})?)?\s*$/i, "");
   // Only where what stands before it is initials. "R. F. (Richard
