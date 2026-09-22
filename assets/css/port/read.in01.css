@@ -899,7 +899,9 @@ sup.fnref:hover{color:var(--accent2);text-decoration:underline;text-underline-of
    space. Such sections switch to INDEPENDENT COLUMN FLOW: each lane stacks naturally, so both
    read smoothly; side-by-side correspondence is preserved approximately, anchors keep working
    (the row id moves onto the English cell, which is what deep links point at). ── */
-.stkwrap{display:grid;grid-template-columns:1fr 1fr;gap:0 2.1rem;align-items:start}
+/* the stacked lanes keep the ROW split (owner 2026-09-22, pg-1924 page 27): at 1fr 1fr the Latin flow ran under the lane divider
+   (the .rz drag rule sits in the gutter of the .88/1.12 row split) and the rule crossed every Latin line */
+.stkwrap{display:grid;grid-template-columns:var(--laf,.88fr) var(--enf,1.12fr);gap:0 2.1rem;align-items:start}
 .stkwrap>.stk{min-width:0}
 .stkwrap>.stk>.la,.stkwrap>.stk>.en{margin:0 0 .7rem;max-width:none}
 /* lane-size sliders must reach cells lifted OUT of rows (stacked runs + phone zip) —

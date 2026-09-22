@@ -2849,6 +2849,7 @@ function build(){
         if(LAp.length===ENp.length&&LAp.length>1&&LAp.every(x=>x.e)&&ENp.every(x=>x.e)){
           for(let j=0;j<LAp.length;j++){
             const row=el("div","row prow");
+            if(LAp[j].e.getAttribute("rend")==="flow")row.classList.add("pflow");   // unpaired printed paragraphs (stacked below)
             row.innerHTML=`<div class="la" lang="la">${_cellHtml(LAp[j])}</div><div class="en" lang="en">${_cellHtml(ENp[j])}</div>`;
             sec.appendChild(row);}
         }else{
@@ -2906,6 +2907,18 @@ function build(){
       (b?b.notes:[]).forEach(e=>notesEN.push(teiNote(e)));
     }
     let bi=0;sec.querySelectorAll(".row").forEach(rw=>{if(!rw.classList.contains("rhead"))rw.id="b"+pg.n+"-"+(bi++);});
+    // UNPAIRED FLOWS (owner 2026-09-15, PG 78 col. 63): rows the PG aligner could not pair (printed-paragraphs basis) stack as two
+    // independent columns — each lane keeps its printed paragraphs in order and no row asserts a pairing (the gappy-page rescue's
+    // structure; deep-link ids move to the cell that carries text).
+    try{const flows=[...sec.querySelectorAll(".row.pflow")];let run=[];
+      const flush=()=>{if(!run.length)return;const w=el("div","stkwrap flow"),c1=el("div","stk stk-la"),c2=el("div","stk stk-en");
+        run[0].parentNode.insertBefore(w,run[0]);
+        run.forEach(r=>{const la=r.querySelector(".la"),en=r.querySelector(".en"),hasEn=!!(en&&en.textContent.replace(/\u00a0/g,"").trim()),hasLa=!!(la&&la.textContent.replace(/\u00a0/g,"").trim());
+          const tgt=hasEn?en:(hasLa?la:null);if(tgt&&r.id){tgt.id=r.id;r.removeAttribute("id");}
+          if(hasLa)c1.appendChild(la);if(hasEn)c2.appendChild(en);r.remove();});
+        w.appendChild(c1);w.appendChild(c2);run=[];};
+      flows.forEach(r=>{if(run.length&&r.previousElementSibling!==run[run.length-1])flush();run.push(r);});flush();
+      if(flows.length)sec.classList.add("sec-stacked");}catch(e){}
     // REF MIRROR (owner 2026-08-18 hover parity): when the source cell of a paired row
     // carries footnote anchors and the English cell carries none, mirror the anchors at
     // the English paragraph's end — hover pops the English note via the band pairing.
@@ -5274,6 +5287,12 @@ async function loadPgCanon(ws){
   _healDeep(vtx);_healDeep(pggap);
   const doc=new DOMParser().parseFromString(xml,"application/xml");
   if(doc.querySelector("parsererror"))throw new Error("canon parse");
+  // Preserve old links when a verified plate is moved to its owning work.
+  {const oldPage=frReaderBlockReference(location.hash)?.page||new URLSearchParams(location.search).get('p');
+    const move=[...doc.querySelectorAll('ref[type="relocated-opening"]')].find(el=>el.getAttribute('n')===String(oldPage));
+    const target=(move?.getAttribute('target')||'').match(/^(pg-\d+)#(\d+)$/);
+    if(target&&target[1]!==ws){const url=new URL(location.href);url.searchParams.set('w',target[1]);url.searchParams.delete('ws');url.searchParams.set('p',target[2]);url.hash='b'+target[2]+'-0';location.replace(url);return new Promise(()=>{});}}
+
   // CANON TEXT HEAL (owner 2026-08-27 screenshots): line-break hyphens kept inside Greek
   // words (ὕαπι-ζόμενοι) — Greek never hyphenates internally, join them; plus the
   // Migne-OCR garble chars ({ } ¡) that are never legitimate in the canon.
@@ -5408,9 +5427,19 @@ async function loadPgCanon(ws){
     let n=+(el.getAttribute("n")||0);if(!n){const m=(el.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}
     if(!n)return;const t=el.textContent.replace(/\s+/g," ").trim();if(!t)return;
     (enParasByCol[n]=enParasByCol[n]||[]).push(el.localName==="head"?"\u0001H"+t:t);});
+  // MACHINE ENGLISH FILLS WHAT THE SIDECAR DOES NOT SPEAK FOR (2026-09-21, pg-48 col. 115, pg-2193 col. 31): a column whose only
+  // English is the older #machine translation rendered an EMPTY English lane in the column and printed-paragraph bases, which pair
+  // from this map alone. Its printed <p>s join the map, uncarved, with the carved lane's continuation rule and caps-head law.
+  {let _lm=0;[...doc.querySelectorAll('div[type="translation"]:not([resp="#site-sidecar"]) p')].forEach(pp=>{
+    let n=+(pp.getAttribute("n")||0);if(!n){const m=(pp.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}
+    if(!n)n=_lm;else _lm=n;if(!n||_sidecarCols.has(n))return;
+    const t=pp.textContent.replace(/\s+/g," ").trim();if(!t)return;const _wh=_capsHead(t);
+    (enParasByCol[n]=enParasByCol[n]||[]).push(_wh?"\u0001H"+_wh:t);});}
   // page spans (n -> next pb) for span-union of vtx and EN lanes
   const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=window.FRPgParallel.printedColumns(doc);
   const _pgOwned=new Set(Object.keys(_canonOpenings).filter(k=>_canonOpenings[k].verified));
+  // Roman-numbered preliminaries have their own scan and must not borrow ordinary column zones.
+  const _pgFrontLabels=Object.fromEntries([...doc.querySelectorAll('pb[type="front-matter"][label]')].map(pb=>[pb.getAttribute("n"),pb.getAttribute("label")]));
   // Older links could name a following work's column while retaining this work's ID.
   // Resolve only a verified overrun into the immediately following catalogue work.
   if(_pgOwned.size){
@@ -5577,6 +5606,7 @@ async function loadPgCanon(ws){
       pvUrl:!!pvUrl,fill:Object.keys(pgpvFill).length};
   }
   let _colLa=[],_colEn=[];
+  let _pvFill=null;   // page -> paragraphs for pages whose reading lanes carry no text (A PAGE WITH NO SOURCE TEXT, built before the walk)
   // READING-SURFACE TIDY (owner 2026-08-18 'page transcription good + read cleanly'):
   // join line-break hyphens (the facsimile shows the break; the reading text joins the
   // word — standard editorial practice), strip Migne margin letters and OCR bullets,
@@ -5600,6 +5630,13 @@ async function loadPgCanon(ws){
     t=t.replace(_MKRE,(m,pre,cls,ep)=>pre+(cls?"\u0002"+cls.trim()+"\u0003":"")+"\u0002"+ep+"\u0003 ");
     return t.replace(/\*([^*\n]{2,600}?)\*/g,"\u0004$1\u0005");};
   const flushCol=()=>{
+    // A PAGE WITH NO SOURCE TEXT (owner 2026-09-22, pg-1924 page 27, Greek view: the English of Fabricius' Notitia beside an empty
+    // lane; 666 pages in 151 works on the live canon carry English and no source text). The page reads its own scan: _pvFill holds its
+    // canon opening's Greek, else its pageview Greek zone when column-sized, else its canon (secondary) Latin, else its pageview Latin
+    // zone. Only a page with no text of its own at flush time is filled; the choke-point carve below paragraphs the Greek.
+    if(_pvFill&&pages.length&&!_colLa.some(t=>String(t||"").replace(/[^A-Za-z\u0370-\u03ff\u1f00-\u1fff]/g,"").length>=20)){
+      const _fp=_pvFill[pages[pages.length-1]];
+      if(_fp&&_fp.length&&_colEn.join(" ").length>=120){_colLa.length=0;_fp.forEach(t=>_colLa.push(t));_colLa._zoned=true;_colLa._prune=false;}}
     // CHOKE-POINT CARVE (owner 2026-09-03 PG audit): a dozen builders feed _colLa (canon
     // walk, zones, vtx, pggap, pageview, grcla) and several push whole columns raw — the
     // walls and fused running-titles land here regardless of path. Carve once, for the
@@ -5627,6 +5664,10 @@ async function loadPgCanon(ws){
       src2=_colLa.filter(t=>{const g2=(t.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;
         const l2=(t.match(/[A-Za-z]/g)||[]).length;
         return !(t.length>60&&l2>3*g2);});
+      // A PRUNE THAT EMPTIES THE PAGE IS NO PRUNE (owner 2026-09-22, pg-2193 page 33, Allatius' Latin diatriba: every paragraph was
+      // pruned as bleed and the Greek view set the English beside an empty lane). With no Greek zone and no Greek left, the Latin is
+      // the page's own text, not a facing column's bleed.
+      if(!src2.some(t=>String(t||"").replace(/[^A-Za-z\u0370-\u03ff\u1f00-\u1fff]/g,"").length>=20))src2=_colLa;
     }
     // SEGMENT AT THE PRINTED RUBRICS (owner 2026-08-31 pg-2239): the aligner re-chunks by
     // sentences, which FUSED day-rubrics into paragraphs. Both lanes now split at their
@@ -5640,6 +5681,19 @@ async function loadPgCanon(ws){
       // aligner re-fused them into the walls it was meant to prevent
       const gl=c.replace(/[^\u0370-\u03FF\u1F00-\u1FFF]/g,"");
       return c.length>=6&&c.length<=160&&gl.length>=6&&gl===gl.toUpperCase();};
+    // LOPSIDED PAIRS ARE NO PAIRS (owner 2026-09-22, pg-1924 page 27, Latin view: the sentence stretch cut the page's Latin into 18
+    // pieces of equal length for 18 catalogue entries of 18 to 2,200 letters -- 'Ejus concio in quadragesima...' faced 'Syri. VII,
+    // p. 292.' with a gap under every English line). When a quarter of the stretched rows are lopsided (one cell over four times the
+    // other), the stretch paired nothing: each lane keeps its own paragraphs and they flow as two independent columns -- the Greek ·
+    // Latin view's unpaired-flow rendering (rows marked flow, equal block counts kept, the row builder stacks them).
+    const _pairOrFlow=(laArr,enArr)=>{
+      const pr=_alignPair(laArr,enArr),_t=x=>String(x||"").replace(/\u00A0/g," ").trim();
+      const both=pr.filter(([l,e])=>_t(l)&&_t(e));
+      const bad=both.filter(([l,e])=>{const a=_t(l).length,b=_t(e).length;return Math.max(a,b)>=240&&Math.max(a,b)>4*Math.min(a,b);}).length;
+      if(both.length<3||bad<Math.max(2,both.length/4))return pr;
+      const L=laArr.map(_t).filter(Boolean).flatMap(x=>x.length>900?_chunkText(x,700):[x]),E=enArr.map(_t).filter(Boolean),out=[];
+      for(let i=0;i<Math.max(L.length,E.length);i++){const p=[L[i]||"",E[i]||""];p.flow=true;out.push(p);}
+      return out;};
     let _pairs;
     if(_colLa._aligned){_pairs=_colLa.map((text,i)=>[text,_colEn[i]||" "]);}
     else {
@@ -5651,7 +5705,7 @@ async function loadPgCanon(ws){
         _pairs=[];
         for(let i=0;i<sE.length;i++){
           if(i>0)_pairs.push([hL[i],hE[i]]);   // the head pair rides through to the head branch below
-          _pairs.push(..._alignPair(sL[i],sE[i]));
+          _pairs.push(..._pairOrFlow(sL[i],sE[i]));
         }
       }else if(hE.length>1){
         // the LA lane has no matching caps rubric (p.189's "Die tertia" prints lowercase):
@@ -5667,11 +5721,11 @@ async function loadPgCanon(ws){
           si+=take.length;
           if(i>0)_pairs.push(["\u00A0",hE[i]]);
           const laSeg=take.join(" ").trim();
-          if(laSeg||sE[i].length)_pairs.push(..._alignPair(laSeg?[laSeg]:[],sE[i]));
+          if(laSeg||sE[i].length)_pairs.push(..._pairOrFlow(laSeg?[laSeg]:[],sE[i]));
         }
-      }else _pairs=_alignPair(src2,_enM.map(x=>(typeof x==="string"&&x.charCodeAt(0)===1)?x.slice(2):x));
+      }else _pairs=_pairOrFlow(src2,_enM.map(x=>(typeof x==="string"&&x.charCodeAt(0)===1)?x.slice(2):x));
     }
-    _pairs.forEach(([l,e])=>{
+    _pairs.forEach(([l,e],_pi)=>{const _fl=_colLa._flow||!!_pairs[_pi].flow;
       // A DIVISION HEADING IS A HEADING, not a paragraph (owner 2026-08-20: "make sure
       // inline headers etc for pg are good"). The English sidecar marks the printed heads
       // — HOMILY III. On the firmament — and rendering them as body text left the reading
@@ -5704,13 +5758,13 @@ async function loadPgCanon(ws){
       // (renders as a quiet solo row, never a page-collapsing mismatch)
       // punctuation-only residue (a lone '.' after a watermark strip) is not a row
       if(!(String(l||"").replace(/[^A-Za-z0-9\u0370-\u1FFF]/g,""))&&!(String(e||"").replace(/[^A-Za-z0-9\u0370-\u1FFF]/g,"")))return;
-      const el2=laD.createElement("p");el2.textContent=_mk(_tidy(l))||"\u00A0";if(_colLa._flow)el2.setAttribute("rend","flow");laB.appendChild(el2);
+      const el2=laD.createElement("p");el2.textContent=_mk(_tidy(l))||"\u00A0";if(_fl)el2.setAttribute("rend","flow");laB.appendChild(el2);
       // harvest residue is not reading text (owner 2026-09-03 pg-1445): the site EN pages
       // carry '[alt-version omitted]' markers and bare apparatus cue letters ('A its
       // punishment', 'therefore: B *But you shall\u2026', 'shown A For by the fire') \u2014 strip
       // the marker always, a lone A\u2013F only in cue positions (after :;, before a function
       // word, or block-initial before lowercase) so the article 'A Christian' survives
-      const e2=enD.createElement("p");e2.textContent=(e?_mk(e.replace(/\bDigitized\s+by\s+Google\b/gi," ").replace(/\s*\[alt-version omitted\]\s*/g," ").replace(/(^|[a-z][;:] )[A-F] (?=[A-Z\u201c"*])/g,"$1").replace(/([a-z][.,;:] )[A-F] (?=\u0004)/g,"$1").replace(/^[A-F] (?=[a-z])/,"").replace(/\b[A-F] (?=\u0004?(?:For|But|And|When|Then|Thus|Yet|Nor|Therefore|Moreover|Wherefore|The|This|That|These|Those|Saint|Holy)\b)/g,"").replace(/([.!?\u201d"]) [A-F]$/,"$1").replace(/([a-z])-\s+([a-z])/g,"$1$2").replace(/\s*[\u2022\ufffd]+\s*/g," ").replace(/\s+([.,;:!?\u00bb)])/g,"$1").replace(/\s{2,}/g," ").trim()):"")||"\u00A0";if(_colLa._flow)e2.setAttribute("rend","flow");enB.appendChild(e2);});
+      const e2=enD.createElement("p");e2.textContent=(e?_mk(e.replace(/\bDigitized\s+by\s+Google\b/gi," ").replace(/\s*\[alt-version omitted\]\s*/g," ").replace(/(^|[a-z][;:] )[A-F] (?=[A-Z\u201c"*])/g,"$1").replace(/([a-z][.,;:] )[A-F] (?=\u0004)/g,"$1").replace(/^[A-F] (?=[a-z])/,"").replace(/\b[A-F] (?=\u0004?(?:For|But|And|When|Then|Thus|Yet|Nor|Therefore|Moreover|Wherefore|The|This|That|These|Those|Saint|Holy)\b)/g,"").replace(/([.!?\u201d"]) [A-F]$/,"$1").replace(/([a-z])-\s+([a-z])/g,"$1$2").replace(/\s*[\u2022\ufffd]+\s*/g," ").replace(/\s+([.,;:!?\u00bb)])/g,"$1").replace(/\s{2,}/g," ").trim()):"")||"\u00A0";if(_fl)e2.setAttribute("rend","flow");enB.appendChild(e2);});
     const _pr=_colLa._prune;_colLa=[];_colEn=[];_colLa._prune=_pr;};
   // PG READABILITY (owner 2026-09-03 audit: canon columns render as 2-5k-char walls with
   // the printed running titles fused in): carve UPPERCASE-GREEK rubric runs out as their
@@ -5753,6 +5807,7 @@ async function loadPgCanon(ws){
     // it was injecting pageview Greek into the Latin witness on every even column)
     if(src!=="grc"){_colLa._prune=false;return;}
     const canonicalOpening=_canonOpenings[String(n)];
+    if(_pgFrontLabels[n]&&canonicalOpening){_carveGr(canonicalOpening.grc||canonicalOpening.la||"",_colLa);_colLa._zoned=true;_colLa._prune=false;return;}
     if(canonicalOpening?.grc&&(window.__pgSpread?.has(n)||Object.keys(canonicalOpening.columns).length===1)){
       _carveGr(canonicalOpening.grc,_colLa);_colLa._zoned=true;_colLa._prune=false;
       // A PAGE PRINTS ONCE (owner 2026-09-17 'just get it right page by page'): the opening's Greek was just carved for the PAGE, so
@@ -5981,7 +6036,7 @@ async function loadPgCanon(ws){
       const pvUrl3=_pvR2(pvW3?((pvW3.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null);
       if(pvUrl3)try{
         window.__pgpvCache=window.__pgpvCache||{};
-        window.__pgpvCache[pvUrl3]=window.__pgpvCache[pvUrl3]||fetch(pvUrl3+(pvUrl3.includes("?")?"&":"?")+"v="+encodeURIComponent(window.__FR_VER||"pg-source-20260914")).then(r=>r.ok?r.text():null).catch(()=>null);
+        window.__pgpvCache[pvUrl3]=window.__pgpvCache[pvUrl3]||fetch(pvUrl3+(pvUrl3.includes("?")?"&":"?")+"v="+encodeURIComponent((window.__FR_VER||"pg-source")+"-20260922-finish")).then(r=>r.ok?r.text():null).catch(()=>null);
         const pvXml3=await window.__pgpvCache[pvUrl3];
         if(pvXml3){
           const pv3=new DOMParser().parseFromString(pvXml3,"application/xml");
@@ -6006,10 +6061,15 @@ async function loadPgCanon(ws){
                 .map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim(),
               grc:[...sf.querySelectorAll("zone")].filter(z=>(z.getAttribute("type")||"").includes("ColGreek"))
                 .map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim()}))
-              .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&x.n>=lo3&&x.n<=hi3&&(!_pgOwned.size||_pgOwned.has(String(x.n)))).sort((a,b)=>a.n-b.n);
+              .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&x.n>=lo3&&x.n<=hi3&&(!_pgOwned.size||_pgOwned.has(String(x.n)))&&(!Object.keys(_pgFrontLabels).length||_canonOpenings[String(x.n)])).sort((a,b)=>a.n-b.n);
             // The source site's vision text is already in the primary TEI columns.
             // Raw pageview zones are a fallback, never an unconditional replacement.
-            for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)],_pvLat=sf.lat,_pvGrc=sf.grc;
+            for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)]||{};
+              if(_pgFrontLabels[sf.n]){sf.lat=canon.la||"";sf.grc=canon.grc||"";}
+              const _pvLat=_pgFrontLabels[sf.n]?"":sf.lat,_pvGrc=_pgFrontLabels[sf.n]?"":sf.grc;
+              // A PAGE WITH NO CANON OPENING (2026-09-21, pg-2466 col. 725): after a page-true re-key the reading division carries nothing
+              // for this plate while the English does and the volume pageview prints its Greek — an undefined opening used to throw
+              // out of this loop and the page showed English alone. An empty opening lets the plate's own zones carry the page.
               // COMPLETE PER PAGE (owner 2026-09-17 'just make sure the latin and greek is shown completely per page'): the canon
               // sometimes carries a FRAGMENT of a column -- pg-3288 page 1583 keeps 820 of the 2,936 Latin letters the plate prints
               // (the rest never came over). A canon lane that covers less than 70% of the page's zone for its script yields to the
@@ -6017,7 +6077,7 @@ async function loadPgCanon(ws){
               const _gL=t=>(String(t||"").match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length,_lL=t=>(String(t||"").match(/[A-Za-z]/g)||[]).length;
               const _grcShort=!!(canon?.grc)&&_gL(_pvGrc)>=200&&_gL(canon.grc)<0.7*_gL(_pvGrc);
               const _laShort=!!(canon?.la)&&_lL(_pvLat)>=200&&_lL(canon.la)<0.7*_lL(_pvLat);
-              if(canon?.grc&&!_grcShort)sf.grc=canon.grcRich||canon.grc;if(canon?.la&&!_laShort)sf.lat=canon.laRich||canon.la;if(canon){sf.grcParas=canon.grcParas||[];sf.laParas=canon.laParas||[];sf.colParas=canon.colParas||[];
+              if(canon?.grc&&!_grcShort)sf.grc=canon.grcRich||canon.grc;if(canon?.la&&!_laShort)sf.lat=canon.laRich||canon.la;if(canon){sf.grcParas=canon.grcParas||[];sf.laParas=canon.laParas||[];sf.colParas=canon.colParas||[];   // an EMPTY opening ({}) must still reach the zone-lane rules below
               if(_grcShort){sf.grcParas=[];sf.colParas=sf.colParas.filter(c=>c.lang!=="grc");}
               if(_laShort){const _shL=t=>{const w=String(t||"").toLowerCase().replace(/[^a-z\s]/g," ").split(/\s+/).filter(x=>x.length>=3);const o=new Set();for(let i=0;i+4<=w.length;i++)o.add(w.slice(i,i+4).join(" "));return o;};
                 const _A2=_shL(_pvLat),_B2=_shL(canon.la);let _c2=0;_A2.forEach(x=>{if(_B2.has(x))_c2++;});
@@ -6085,7 +6145,12 @@ async function loadPgCanon(ws){
                   const _enMarked=_colEn.map(e=>typeof e==="string"&&e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e);
                   const _enParas=[...(enParasByCol[sf.n]||[]),...(enParasByCol[sf.n+1]||[])].map(e=>e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e);
                   const _byCol=(sf.colParas||[]).map(c=>({n:c.n,lang:c.lang,paras:c.lang==="grc"?(c.paras||[]).map(_healGrc):(c.paras||[]),en:(enParasByCol[+c.n]||[]).map(e=>e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e)}));
-                  const aligned=window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_enMarked.join(" "),{grc:(sf.grcParas||[]).map(_healGrc),la:sf.laParas||[],en:_enParas,byCol:_byCol});
+                  // PAGEVIEW LATIN IS A LANE (owner 2026-09-22, pg-1924 page 27 'something deeply wrong with this interface'): a page with no
+                  // canon opening at all -- Fabricius' Notitia, Latin only -- reached the aligner as a bare string, and every basis reads
+                  // paragraph lists, so the printed-paragraphs basis set the English beside an empty Latin lane. With neither Greek nor Latin
+                  // paragraphs, the page's own zone Latin is carved into paragraphs, as the zone Greek already is (PAGEVIEW GREEK IS A LANE).
+                  const _laP=((sf.laParas||[]).length||(sf.grcParas||[]).length)?(sf.laParas||[]):_paras3(lt);
+                  const aligned=window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_enMarked.join(" "),{grc:(sf.grcParas||[]).map(_healGrc),la:_laP,en:_enParas,byCol:_byCol});
                   // Keep printed headings visible in their own lane, without guessing
                   // their counterparts. Their opening remains a usable outline target.
                   const marked=aligned.rows.map(r=>r.en).join(" ");
@@ -6118,6 +6183,42 @@ async function loadPgCanon(ws){
     // SECONDARY-ONLY CANON (owner 2026-08-18: index/anthology docs whose whole body is one
     // witness div rendered BLANK — the walk skips witness divs): when no reading content
     // exists outside witness divs, the largest witness div IS the document — walk it.
+    // A PAGE WITH NO SOURCE TEXT (see flushCol): the reading lanes' pages that carry no text while their English does. The volume
+    // pageview is fetched only when one of them needs a zone (the Greek and Latin views already fetch it for every page).
+    if(src==="grc"&&!_latBuilt&&body)try{
+      const _ptx={},_plist=[];let _pc=null;
+      (function tw(node){for(const ch of node.children){const ty=ch.getAttribute?ch.getAttribute("type"):null;
+        if(ch.localName==="div"){if(window.FRMigneNavigation.isReadingDivision(ty))tw(ch);continue;}
+        if(ch.localName==="pb"){const nn=+ch.getAttribute("n");if(nn){_pc=nn;if(!(nn in _ptx)){_ptx[nn]=0;_plist.push(nn);}}}
+        else if((ch.localName==="p"||ch.localName==="head")&&_pc)_ptx[_pc]+=(ch.textContent.match(/[A-Za-z\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;}})(body);
+      const _front=n=>typeof _pgFrontLabels==="object"&&_pgFrontLabels&&_pgFrontLabels[n];
+      const _need=_plist.filter(n=>_ptx[n]<40&&[...(enByCol[n]||[]),...(enByCol[n+1]||[])].join(" ").length>=120&&!_front(n));
+      if(_need.length){
+        _pvFill={};const _zw=[];
+        for(const n of _need){const op=_canonOpenings[String(n)];if(op&&(op.grcParas||[]).length)_pvFill[n]=op.grcParas.slice();else _zw.push(n);}
+        const pvW4=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
+        const pvUrl4=_pvR2(pvW4?((pvW4.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null);
+        let pv4=null;
+        if(_zw.length&&pvUrl4){window.__pgpvCache=window.__pgpvCache||{};
+          window.__pgpvCache[pvUrl4]=window.__pgpvCache[pvUrl4]||fetch(pvUrl4+(pvUrl4.includes("?")?"&":"?")+"v="+encodeURIComponent(window.__FR_VER||"pg-source-20260914")).then(r=>r.ok?r.text():null).catch(()=>null);
+          const x4=await window.__pgpvCache[pvUrl4];if(x4)pv4=new DOMParser().parseFromString(x4,"application/xml");}
+        // the zone lane's own furniture strip: the printed column number, the running title, '(cod.' crumbs, Migne's margin letters
+        const _zLat=t=>{t=String(t).replace(/^\d[\d:. ]*\s+/,"");
+          for(let _st=0;_st<3;_st++){const _b4=t;
+            t=t.replace(/^[A-Z\u00c6\u0152][A-Z\u00c6\u0152\d .,'\u2019:-]{5,60}?\s(?=\(|[A-Z\u00c6\u0152]?[a-z\u00e6\u0153])/,"");
+            t=t.replace(/^(?:\(cod\.?[^)]{0,16}\)?\.?\s*){1,4}/,"");if(t===_b4)break;}
+          t=t.replace(/(^|[.!?;:\u00bb]\s+)E(?=\s+[a-z\u00e6\u0153])/g,"$1\uE000").replace(/\s[A-E](?=\s+[a-z\u00e6\u0153])/g,"").replace(/\s[A-E](?=\s+[a-z\u00e6\u0153])/g,"").replace(/\uE000/g,"E");
+          return t.replace(/\bDigitized\s+by\s+Google\b/gi," ").replace(/\s+/g," ").trim();};
+        for(const n of _zw){const op=_canonOpenings[String(n)],sf4=pv4?pv4.querySelector('surface[n="'+n+'"]'):null;
+          const zt=ty=>sf4?[...sf4.querySelectorAll("zone")].filter(z=>(z.getAttribute("type")||"").includes(ty)).map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim():"";
+          const g4=_healGrc(zt("ColGreek").replace(/^\d+\s+[^\u0370-\u03ff]{0,120}?(?=[\u0370-\u03ff])/,"").replace(/\s+\d+\s*$/,"")),l4=_zLat(zt("ColLatin"));
+          const gl=(g4.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length,ll=(l4.match(/[A-Za-z]/g)||[]).length;
+          if(gl>=600&&gl>=0.25*ll)_pvFill[n]=[g4];
+          else if(op&&(op.laParas||[]).length)_pvFill[n]=op.laParas.slice();
+          else if(ll>=200)_pvFill[n]=_chunkText(l4,700);
+          else if(gl>=40)_pvFill[n]=[g4];}
+      }
+    }catch(e){window.__pvFillErr=String(e&&e.stack||e).slice(0,300);}
     let wroot=body;
     if(body){
       const rd=[...body.children].some(ch=>!(ch.localName==="div"&&["translation","secondary","diplomatic"].includes(ch.getAttribute("type")||"")));
@@ -6139,7 +6240,7 @@ async function loadPgCanon(ws){
     const zsh=t=>{t=(t||"").replace(/[^\u0370-\u03ff\u1f00-\u1fff]/g,"");const o=new Set();
       for(let i=0;i+12<=t.length;i+=3)o.add(t.slice(i,i+12));return o;};
     const kids=[...laB.childNodes];let pgN2=null,buf2=[],els=[];
-    const arb=()=>{if(pgN2==null||!els.length)return;if(window.__vtxApplied&&window.__vtxApplied.has(pgN2))return;
+    const arb=()=>{if(pgN2==null||!els.length||_pgFrontLabels[pgN2])return;if(window.__vtxApplied&&window.__vtxApplied.has(pgN2))return;
       const zn3=_pgZone[pgN2];if(!zn3||zn3.length<200)return;
       const A=zsh(buf2.join(" ")),Z2=zsh(zn3);
       if(!A.size)return;
@@ -6378,7 +6479,7 @@ async function loadPgCanon(ws){
   window.__pldCanonDocs={la:laD,en:enD};
   const _aula=author;author=await _auEn(author);
   return {slug:ws,title,title_en:title,author:author||author_gr,author_la:_aula&&_aula!==author?_aula:undefined,volume:vol?("PG "+vol):"",
-    pg_columns:_printedColumns,pg_source:src,
+    pg_columns:_printedColumns,pg_source:src,pg_page_labels:_pgFrontLabels,
     tradition:"Greek Fathers",has_pages:true,has_tei:true,tei_v:0,en_only:false,
     n_pages:pages.length,structure:structure,base:null,spine_nav:structure.length>1,
     pages:pages.map(n=>({n,la:"",en:"",img:facs[n]||null,thumb:facs[n]||null}))};

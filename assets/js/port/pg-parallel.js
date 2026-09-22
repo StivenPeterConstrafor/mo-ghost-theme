@@ -33,7 +33,7 @@ function sourceColumns(doc){
  const scripts=t=>{const g=(t.match(/\p{Script=Greek}/gu)||[]).length,l=(t.match(/\p{Script=Latin}/gu)||[]).length,letters=(t.match(/\p{L}/gu)||[]).length;return {g,l,letters,pure:g/Math.max(letters,1)>=.85?'grc':l/Math.max(letters,1)>=.85?'la':null};};
  const cands=new Map();   // opening key + column -> candidate witnesses in role order
  for(const [key,opening]of Object.entries(out))for(const [column,candidates]of Object.entries(opening.columns)){const list=[];
-  for(const role of ['verified','reading','secondary','supplement']){const t=(candidates[role]||[]).join(' ').replace(/\s+/g,' ').trim(),s=scripts(t);if(s.g+s.l<(role==='verified'?1:100))continue;if(role==='secondary'&&s.pure==='grc')continue;list.push({role,t,...s,mixedSecondary:role==='secondary'&&!s.pure});}
+  for(const role of ['verified','reading','secondary','supplement']){const t=(candidates[role]||[]).join(' ').replace(/\s+/g,' ').trim(),s=scripts(t);if(s.g+s.l<(role==='verified'?1:100)||s.g+s.l<s.letters*.5)continue;if(role==='secondary'&&s.pure==='grc')continue;list.push({role,t,...s,mixedSecondary:role==='secondary'&&!s.pure});}
   // (a MIXED secondary column -- the Onomasticon's Greek lemma + Latin gloss, PG 28 cols. 1619-1622 -- used to be refused as 'not the
   //  Latin witness' and the page showed nothing at all; it now enters the page-true split below, never the lane resolution.)
   cands.set(key+'|'+column,list);}
@@ -167,6 +167,7 @@ function cleanEnglish(value){
  return dropGutterLetters(text(value).replace(/\s*Continue:\s*Ask about[\s\S]*?search the corpus[\s\S]*?Topics[\s\S]*?The Tradition[\s\S]*?next work\s*→\s*$/,'').trim());
 }
 function location(data,opening){
+ const label=data?.pg_page_labels?.[text(opening)];if(label)return label;
  const map=data?.pg_columns?.[text(opening)];if(!map)return null;const mode=data.pg_source||'grc',cols=[...new Set((mode==='grcla'?[...(map.grc||[]),...(map.la||[])]:map[mode]||[]).map(text))];if(!cols.length)return null;
  cols.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));return cols.length===1?'col. '+cols[0]:'cols. '+cols.join('–');
 }
