@@ -17051,6 +17051,31 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   .faith-room-blocks--fold .btrads-col { display: contents; }
 }
 
+/* 2026-09-22 (forwarded reader note, via Ian: "fix the spacing and text
+   issues"). Two faults. (1) The generic `.btrad h3` rule for /browse/
+   draws a border under every h3, and nothing here took it back, so a
+   rule ran between each author's name and their office: the office read
+   as the first line of the next author. The rule now belongs to the
+   row (border-top on .btrad), and the name and office sit together
+   above it. (2) Name, dates, count and office were all 11px
+   (--tfr-micro) on desktop, too small to scan two thousand names. */
+.faith-room-blocks--fold .btrad-sum h3 {
+  border-bottom: 0;
+  padding: 14px 0 4px 26px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.faith-room-blocks--fold .btrad-sum h3:last-child { padding-bottom: 14px; }
+.faith-room-blocks--fold .btrad-dates,
+.faith-room-blocks--fold .btrad-n { font-size: 13px; }
+.faith-room-blocks--fold .btrad-office {
+  margin: 0;
+  padding: 0 0 14px 26px;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
 /* ── Back to the first page ───────────────────────────────────────
    The ported reader restores your place without asking, which is right.
    This is the way out of that, and it appears only when a restore has
