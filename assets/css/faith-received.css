@@ -18991,3 +18991,63 @@ html.g-mobile #reading .fr-sec-toggle {
   overflow-y: visible !important;
   overscroll-behavior: auto !important;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   SUPPORT THE WORK, AND A ONE-TIME GIFT
+   ══════════════════════════════════════════════════════════════════════
+   Ian, 2026-09-22: a Support the Work button under "Who The Faith
+   Received Is For", scrolling to the membership section, with the header's
+   Support doing the same (faith-support-scroll.js), and a one-time gift to
+   the site's Anedot page under the membership section.
+
+   #support wraps membership and the gift, so the anchor exists for
+   members too: they see no pricing, only the gift. It clears the fixed
+   header when scrolled to, like the page's other anchors (96px). */
+.faith-landing #support { scroll-margin-top: 96px; }
+
+/* The "who it's for" band is a photograph under a dark wash, so its
+   button takes the same white outline as the hero and the dark bands. */
+.lp-for-act {
+  margin: 48px 0 0;
+  text-align: center;
+}
+.faith-landing .lp-stats-band .btn,
+.faith-landing .lp-stats-band a.btn {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.55);
+  background: transparent;
+}
+.faith-landing .lp-stats-band .btn:hover,
+.faith-landing .lp-stats-band a.btn:hover,
+.faith-landing .lp-stats-band .btn:focus-visible {
+  background: var(--color-secondary, #c1593c);
+  border-color: var(--color-secondary, #c1593c);
+  color: #fff;
+}
+
+/* The gift sits in the same area as the pricing above it: same ground,
+   centred, a rule between them so it reads as the other way to give
+   rather than a new section. */
+.tfr-give {
+  padding: 8px 0 88px;
+  text-align: center;
+}
+.tfr-give .container-narrow {
+  border-top: 1px solid var(--color-rule, #e5ded5);
+  padding-top: 48px;
+}
+.tfr-give .lp-head { margin: 0 0 12px; }
+.tfr-give p {
+  max-width: 560px;
+  margin: 0 auto;
+  color: var(--color-muted, #6b6660);
+}
+.tfr-give .tfr-give-act { margin-top: 24px; }
+/* Members see no pricing above, so the gift opens the section itself. */
+.faith-landing #support > .tfr-give:first-child { padding-top: 72px; }
+.faith-landing #support > .tfr-give:first-child .container-narrow { border-top: 0; padding-top: 0; }
+@media (max-width: 640px) {
+  .tfr-give { padding-bottom: 64px; }
+  .tfr-give .container-narrow { padding-top: 36px; }
+  .lp-for-act { margin-top: 36px; }
+}

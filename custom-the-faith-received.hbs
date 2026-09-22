@@ -20,15 +20,9 @@
     <div class="lp-ctas">
       <a href="/the-faith-received/browse/" class="btn btn-primary btn-lg">Begin reading</a>
       
-      {{#match @member.status "paid"}}
-      <a href="/membership/" class="btn btn-ghost btn-lg">Support the work</a>
-      {{else}}
-      {{#match @member.status "comped"}}
-      <a href="/membership/" class="btn btn-ghost btn-lg">Support the work</a>
-      {{else}}
-      <a href="#become-a-member" class="btn btn-ghost btn-lg">Support the work</a>
-      {{/match}}
-      {{/match}}
+      {{!-- #support is on the page for everyone now: membership for
+           readers who aren't members, a one-time gift for everyone. --}}
+      <a href="#support" class="btn btn-ghost btn-lg" data-hm-goal="support-hero">Support the work</a>
     </div>
   </div>
 </section>
@@ -110,6 +104,9 @@
           <p>Search primary sources, compare authors and check translations against original texts and available scans.</p>
         </div>
       </div>
+      {{!-- Ian, 2026-09-22: a Support the Work button here, down to the
+           membership section at the foot of the page. --}}
+      <p class="lp-for-act"><a href="#support" class="btn btn-ghost btn-lg" data-hm-goal="support-who">Support the work</a></p>
     </div>
   </div>
 </section>
@@ -328,6 +325,11 @@
 {{> "faith-received/_beta-gate"}}
 
 
+{{!-- #support: where every Support the Work link on this page lands,
+     and the header's Support button too (faith-support-scroll.js).
+     Readers who aren't members see membership first; everyone sees the
+     one-time gift under it. --}}
+<div id="support" class="tfr-support">
 {{#match @member.status "paid"}}{{else}}
 {{#match @member.status "comped"}}{{else}}
 <section class="faith-join" id="become-a-member">
@@ -349,6 +351,25 @@
 {{> "membership-pricing"}}
 {{/match}}
 {{/match}}
+
+{{!-- Ian, 2026-09-22: a one-time donation under the membership section,
+     to the same Anedot page as every other donate link on the site. --}}
+<section class="tfr-give" aria-labelledby="tfr-give-head">
+  <div class="container container-narrow">
+    {{#match @member.status "paid"}}
+    <h2 class="lp-head" id="tfr-give-head">Support the work</h2>
+    <p>Thank you for being a member. If you'd like to give more, a one-time gift goes directly to this work.</p>
+    {{else}}{{#match @member.status "comped"}}
+    <h2 class="lp-head" id="tfr-give-head">Support the work</h2>
+    <p>Thank you for being a member. If you'd like to give more, a one-time gift goes directly to this work.</p>
+    {{else}}
+    <h2 class="lp-head" id="tfr-give-head">Rather give once?</h2>
+    <p>A one-time gift supports The Faith Received without a membership.</p>
+    {{/match}}{{/match}}
+    <p class="tfr-give-act"><a class="btn btn-primary btn-lg" href="https://secure.anedot.com/institute-for-christianity-and-common-life/donate" data-hm-goal="tfr-give-once">Make a one-time gift</a></p>
+  </div>
+</section>
+</div>
 
 <!-- ── VII. Beta ─────────────────────────────────────────────────── -->
 {{> "faith-received/_beta-band"}}
@@ -372,6 +393,7 @@
 
 
 <script src="{{asset "js/faith-report-issue.js"}}&amp;frv=2eba378a50b0274e"></script>
+<script src="{{asset "js/page/faith-support-scroll.js"}}" defer></script>
 <script src="{{asset "js/page/membership-toggle.js"}}&amp;frv=2c4f9e088ba77ef3"></script>
 <script src="{{asset "js/page/membership-cards.js"}}&amp;frv=0031a360f4bd09eb"></script>
 
