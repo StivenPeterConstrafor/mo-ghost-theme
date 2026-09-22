@@ -211,7 +211,16 @@ body.web-page .faith-atlas-home:focus-visible { outline: 2px solid currentColor;
 #faith-web-constellations .cn-open-source{display:block;margin:12px 0;text-decoration:underline;text-underline-offset:3px}
 #faith-web-constellations .cn-index-list{max-height:50vh;overflow:auto}
 body.web-constellation-mode :is(#graph-frame,#period-key,#map-caption,#connection-discovery,#map-help,#map-help-button,#map-density,label[for="map-density"]){display:none!important}
-body.web-citation-layout #faith-web-constellations :is(.cn-head,.cn-aside,.cn-index,.cn-controls>.cn-control:first-child,.cn-controls>.cn-control:nth-child(3)){display:none}
+body.web-citation-layout #faith-web-constellations :is(.cn-head,.cn-aside,.cn-index){display:none}
+/* The shelf picker and the arrangement pair, which the citation graph
+   does not offer: one shelf, and the arrangement is the page's own tab
+   strip. Addressed by what they CONTAIN, not by their position. The
+   two controls beside them are moved out of this row into
+   .map-top-controls (see the block at the end of this file), which
+   renumbers everything left behind; :nth-child(3) used to name the
+   arrangement and would now name nothing. */
+body.web-citation-layout #faith-web-constellations .cn-controls>.cn-control:has([data-cn-shelf]),
+body.web-citation-layout #faith-web-constellations .cn-controls>.cn-control:has([data-cn-layout]){display:none}
 body.web-citation-layout #faith-web-constellations .cn-body{display:block}
 body.web-citation-layout #faith-web-constellations .cn-stage{height:max(350px,52vh)}
 body.web-citation-layout #faith-web-constellations{padding-top:0}
@@ -321,8 +330,8 @@ body.web-citation-layout #faith-web-constellations .cn-view-btn+.cn-view-btn{mar
    is that pattern and not a hole in the accessible name. */
 body.web-citation-layout #faith-web-constellations .cn-controls { margin: 0; }
 body.web-citation-layout #map-heading .map-top-controls { align-items: center; gap: 18px; flex-wrap: wrap; }
-body.web-citation-layout .map-top-controls .cn-control { display: flex; align-items: center; min-width: 0; }
-body.web-citation-layout .map-top-controls .cn-control-label {
+body.web-citation-layout #map-heading .map-top-controls .cn-control { display: flex; align-items: center; min-width: 0; }
+body.web-citation-layout #map-heading .map-top-controls .cn-control-label {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -333,8 +342,8 @@ body.web-citation-layout .map-top-controls .cn-control-label {
   white-space: nowrap;
   clip-path: inset(50%);
 }
-body.web-citation-layout .map-top-controls .cn-views { display: flex; align-items: center; flex-wrap: nowrap; gap: 0; }
-body.web-citation-layout .map-top-controls .cn-view-btn {
+body.web-citation-layout #map-heading .map-top-controls .cn-views { display: flex; align-items: center; flex-wrap: nowrap; gap: 0; }
+body.web-citation-layout #map-heading .map-top-controls .cn-view-btn {
   font: 12px var(--body);
   color: var(--muted);
   background: none;
@@ -345,14 +354,14 @@ body.web-citation-layout .map-top-controls .cn-view-btn {
   min-height: 44px;
   white-space: nowrap;
 }
-body.web-citation-layout .map-top-controls .cn-view-btn.is-active { color: var(--fg); border-bottom-color: var(--accent); }
-body.web-citation-layout .map-top-controls .cn-view-btn + .cn-view-btn { margin-left: 18px; }
+body.web-citation-layout #map-heading .map-top-controls .cn-view-btn.is-active { color: var(--fg); border-bottom-color: var(--accent); }
+body.web-citation-layout #map-heading .map-top-controls .cn-view-btn + .cn-view-btn { margin-left: 18px; }
 /* .map-top-controls select sets `background` as a shorthand, which
    takes the chevron off a control that still carries appearance:none.
    Re-declared here rather than reverting to appearance:auto, which
    hands the whole widget back to the platform and loses the hairline
    border with it. */
-body.web-citation-layout .map-top-controls .cn-select {
+body.web-citation-layout #map-heading .map-top-controls .cn-select {
   appearance: none;
   -webkit-appearance: none;
   font: 12px var(--body);
