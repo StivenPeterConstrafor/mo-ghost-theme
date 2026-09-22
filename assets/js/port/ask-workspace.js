@@ -294,7 +294,20 @@
     return esc(out).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*\*([^*]+)\*\*\*/g,'<strong><em>$1</em></strong>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\*([^*]+)\*/g,'<em>$1</em>').replace(/\*{2,}/g,'').replace(/\u0001(\d+)\u0002/g, (_, n) => held[+n]);
   }
   function markdown(text, sources = []) {
-    const lines = String(text || '').split('\n'), out = []; let list = '', code = false, codeLines = [], codeLang = '', paragraph = [];
+    /* MereO delta (Ian, 2026-09-22: "fix the duplicate tag too"): a line of
+       nothing but page tags that the line above already ends with is the same
+       citation twice, and painted a second chip under the quotation. The
+       worker now drops it (polishAnswer, mo-workers ca41261); this also
+       cleans answers already saved in the browser. A tag directly under a
+       quotation, or a different tag, stays. */
+    const lines = String(text || '').split('\n');
+    for (let i = lines.length - 1; i > 0; i--) {
+      const tags = /^\s*((?:\[[^\]\s]+\/p[^\]\s]+\][\s,;]*)+)$/.exec(lines[i]); if (!tags) continue;
+      let j = i - 1; while (j >= 0 && !lines[j].trim()) j--;
+      if (j < 0 || /^\s{0,3}>/.test(lines[j])) continue;
+      if ((tags[1].match(/\[[^\]\s]+\]/g) || []).every(tag => lines[j].includes(tag))) lines.splice(j + 1, i - j);
+    }
+    const out = []; let list = '', code = false, codeLines = [], codeLang = '', paragraph = [];
     /* MereO delta: keep the fence's language, and turn a mermaid fence
        into a diagram node for assets/js/lib/faith-diagrams.js to render
        (Ian, 2026-09-14). Everything else is still a code block, and an
