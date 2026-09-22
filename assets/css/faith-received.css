@@ -19145,3 +19145,23 @@ html.g-mobile #reading .fr-sec-toggle {
 }
 .lp-hero-about a:hover,
 .lp-hero-about a:focus-visible { color: #fff; text-decoration-color: #fff; }
+
+/* The masthead's terracotta sweep, on the library's own headline (Ian,
+   2026-09-22: "I want this same highlight animation"). Same paint, same
+   easing and the same keyframes as .hero-headline .highlight in
+   screen.css, which is where the motif is defined; only the selector is
+   new, so the two cannot drift into running the same motif at two
+   speeds. */
+.lp-hero h1 .highlight {
+  background-image: linear-gradient(90deg, rgba(193, 89, 60, 0.78) 0%, rgba(193, 89, 60, 0.78) 100%);
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  background-position: 0 0;
+  padding: 0 0.14em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  animation: hero-highlight-sweep 0.55s 0.25s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-hero h1 .highlight { background-size: 100% 100%; animation: none; }
+}
