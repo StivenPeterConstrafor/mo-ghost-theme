@@ -18135,14 +18135,44 @@ body.research-page {
    of its own and follows the rail if the rail ever changes height.
    Matched to the port's own 820px so there is no band of widths where
    one rule applies and the other does not. */
+/* ...and then the whole fixed shell went (Ian, 2026-09-22, with a phone
+   screenshot: the entry sat in a 300px box under the alphabet, the Ask
+   button and the survey tab over its last lines, and the site footer
+   showing through above it). Below 820px the dictionary is no longer an
+   app pinned over the page with two panes scrolling inside it. That was
+   the corpus site's answer to iOS rubber-banding, and here it is the
+   scroll box Ian has ruled out everywhere ("everything needs to happen
+   inline"). It flows: the list is the page, an open entry replaces the
+   list and is the page, and the window scrolls.
+   js/page/faith-dtc-mobile-flow.js carries the one thing CSS cannot:
+   saving and restoring the window's place when an entry opens and
+   closes, which the port kept on the list pane's own scrollTop. */
 @media (max-width: 820px) {
   .faith-port-dtc-page {
-    top: var(--mo-head, 85px);
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: static;
+    inset: auto;
     height: auto;
+    min-height: 0;
+    display: block;
   }
+  .faith-port-dtc-page .main { position: static; display: block; overflow: visible; height: auto; }
+  .faith-port-dtc-page .list { position: static; inset: auto; overflow: visible; height: auto; }
+  .faith-port-dtc-page .art {
+    position: static; inset: auto; transform: none; transition: none; box-shadow: none;
+    display: none; overflow: visible; height: auto;
+  }
+  .faith-port-dtc-page .artscroll {
+    overflow: visible; height: auto;
+    /* Room for the floating Ask button and the survey tab, so they never
+       sit over the last lines of an entry. */
+    padding-bottom: calc(120px + env(safe-area-inset-bottom));
+  }
+  /* Reading: the entry is the page. The search band and the alphabet
+     belong to the list, so they step aside with it. */
+  body.reading .faith-port-dtc-page .list,
+  body.reading .faith-port-dtc-page .sband { display: none; }
+  body.reading .faith-port-dtc-page .art { display: block; }
+  .faith-port-dtc-page .list { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 }
 
 /* A citation that points outside its own work. The note says what was
