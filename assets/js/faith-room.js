@@ -632,6 +632,8 @@
       })
       .catch(() => { rosterState = "failed"; render(); });
   }
+  // UNUSED since the party tabs were removed (2026-09-22); kept beside
+  // the rest of the party axis, which still filters from ?party=.
   // Which parties the works in hand can answer, with counts. Asked of the
   // English Divines actually present, so a room with no Anglicans offers
   // no Anglican option.
@@ -1134,17 +1136,6 @@
     // Denominations are offered only once their parent is chosen, and
     // only where that parent actually has children here.
     const denoms = tradition ? denomsUnder(works, tradition) : [];
-    // The parties are offered wherever the works in hand hold more than
-    // one, whatever church they file under. That is the whole point of a
-    // second axis: a reader can ask for the Puritans and get the
-    // Presbyterians, the Congregationalists, the Baptists and the
-    // conforming Calvinists together, which one list cannot do. Counted
-    // before the party filter itself, so the numbers beside Puritan and
-    // Conformist describe what choosing one would actually give.
-    const inHand = works.filter((w) => (!tradition || topTrad(w) === tradition)
-      && (!denomination || denomOf(w) === denomination)
-      && (!collection || w.corpus === collection));
-    const parties = partiesUnder(inHand);
 
     function select(name, label, all, options, current) {
       if (options.length < 2) return "";
@@ -1279,13 +1270,18 @@
         + `<button type="button" class="faith-view-toggle-tab" data-room-shelf-tab data-room-view="${shelf ? shelf.view : "volume"}" role="tab">${escapeHtml(shelf ? shelf.tab : "By volume")}</button>`
         + `</nav>`
       : ""
-      // The parties within English Divines, as a row of tabs under the
-      // views — the corpus site's own control for that shelf (All ·
-      // Puritan · Anglican · Westminster Assembly, each with its count).
-      // Written into the shell once and filled by render, like the
-      // views; shown only where English Divines is the denomination in
-      // hand.
-       }<nav class="faith-view-toggle faith-room-parties" role="tablist" aria-label="Within English writers" hidden></nav>`;
+      // The party TABS are gone (Ian, 2026-09-22: "I'm not sure we need
+      // this"). They asked a question the shelf pages already answer —
+      // /the-faith-received/puritans/ and /anglicans/ are those two
+      // parties, each with its own page — and the third tab was not a
+      // party at all but the Westminster Assembly's roster.
+      //
+      // The party AXIS stays underneath: `?party=` still filters, and
+      // the canonicaliser above still turns an older ?tradition=Puritan
+      // link into it, so every link anyone has bookmarked still lands
+      // where it did. The count line says which party is in hand, and
+      // picking any tradition or denomination clears it.
+       }`;
 
     // What the count reports is whatever the reader is looking at: the
     // works in the collection, the volumes on the shelf, or the works
@@ -1373,24 +1369,6 @@
       if (dSpan && dSpan.textContent !== dLabel) dSpan.textContent = dLabel;
       dWrap.hidden = !denoms.length;
     }
-    // The party tabs: rewritten only when the set differs, marked for the
-    // party in hand, hidden when there is none to offer.
-    const pNav = root.querySelector(".faith-room-parties");
-    if (pNav) {
-      const all = inHand.length;
-      const tab = (key, label, n) => `<button type="button" class="faith-view-toggle-tab" data-room-party-tab="${escapeHtml(key)}" role="tab">${escapeHtml(label)} <em class="faith-room-party-n">${n.toLocaleString()}</em></button>`;
-      const want = parties.length
-        ? tab("", "All parties", all) + parties.map(([p, n]) => tab(p, p, n)).join("")
-        : "";
-      if (pNav.innerHTML !== want) pNav.innerHTML = want;
-      pNav.hidden = !parties.length;
-      pNav.querySelectorAll("[data-room-party-tab]").forEach((b) => {
-        const on = b.getAttribute("data-room-party-tab") === party;
-        b.classList.toggle("is-active", on);
-        b.setAttribute("aria-selected", on ? "true" : "false");
-      });
-    }
-
     // Keep the selects in step with the state without replacing them.
     [["in", collection], ["cent", century || ""], ["trad", tradition],
       ["denom", denomination]].forEach(([k, v]) => {
@@ -1478,21 +1456,6 @@
     // which would otherwise filter to nothing.
     onPick("trad", (v) => { tradition = v; denomination = ""; party = ""; });
     onPick("denom", (v) => { denomination = v; party = ""; });
-    // The party tabs are rebuilt by render, so the click is caught on
-    // the nav, which is not.
-    const pNav = root.querySelector(".faith-room-parties");
-    if (pNav) {
-      pNav.addEventListener("click", (e) => {
-        const b = e.target.closest("[data-room-party-tab]");
-        if (!b) return;
-        const next = b.getAttribute("data-room-party-tab") || "";
-        if (next === party) return;
-        party = next;
-        letter = "";
-        page = 1;
-        render();
-      });
-    }
     // Switching views drops the other view's place in the shelf: a
     // letter means nothing inside a volume, and a volume means nothing
     // under an A-Z.
