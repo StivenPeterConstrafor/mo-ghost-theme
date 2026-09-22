@@ -142,14 +142,14 @@ function openArt(id,push){
   $("#art").innerHTML='<div class=inner><div class=welcome>Loading…</div></div>';
   fetch("https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/dictionary/a/"+encodeURIComponent(id)+".json"+VER).then(r=>r.json()).then(d=>{
     if(CUR!==id)return;d.id=id;renderArt(d,paragraph);
-    document.title=d.t+" — Dictionnaire de Théologie Catholique";
+    document.title=d.t+" · Dictionary of Catholic Theology";
 
   }).catch(()=>{$("#art").innerHTML='<div class=artbar></div><div class=artscroll><div class=inner><div class=welcome>Could not load this article.</div></div></div>';});
 }
 let LISTPOS=0;
 function closeArt(){document.body.classList.remove("reading");CUR=null;
   const url=new URL(location.href);url.hash="";url.searchParams.delete("paragraph");history.replaceState(history.state,"",url);
-  document.title="Dictionnaire de Th\u00e9ologie Catholique \u2014 The Faith Received";
+  document.title="Dictionary of Catholic Theology \u00b7 The Faith Received";
   requestAnimationFrame(()=>{$("#list").scrollTop=LISTPOS;paintList();});}
 $("#list").addEventListener("click",e=>{const b=e.target.closest(".hw");
   if(b){LISTPOS=$("#list").scrollTop;openArt(b.dataset.id);}});

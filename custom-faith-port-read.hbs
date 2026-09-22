@@ -1,13 +1,13 @@
 {{!< default}}
 {{#contentFor "moHead"}}
 <script defer src="{{asset "js/page/faith-port-downloads.js"}}&amp;frv=2b1f79b352c6db15"></script>
-<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=22fa8b0f2bf4941d"></script>
+<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=de68ed46eea11d31"></script>
 <title>{{#if title}}{{title}} | {{/if}}The Faith Received | Mere Orthodoxy</title>
 {{!-- THE FAMILY IDENTITY AND THE MASTHEAD OFFSET, before the engine runs.
      reader-core.js consumes window.__FR_SITE__ at its first statement, and
      our nav is fixed at top:0 like the reader's toolbar, so the toolbar
      needs to know how tall ours is. Both are done here; must load first. --}}
-<script src="{{asset "js/page/faith-port-read-boot.js"}}&amp;frv=af6a3529073948b4"></script>
+<script src="{{asset "js/page/faith-port-read-boot.js"}}&amp;frv=b21c9bfa1961da14"></script>
 {{!-- Reads ?p= before the engine rewrites the address away; see the
      file for why a missed locus must not look like page one. --}}
 <script src="{{asset "js/page/faith-port-read-locus.js"}}"></script>
@@ -37,9 +37,9 @@
 <script src="{{asset "js/port/reader-contents.js"}}&amp;frv=e2f9a9506698188b"></script>
 <link rel="stylesheet" href="{{asset "css/port/reader-contents.css"}}&amp;frv=be9cf4f6fae0f5a5">
 <link rel="stylesheet" href="{{asset "css/port/work-research-sources.css"}}&amp;frv=c681ab35bad0d33a">
-<script defer src="{{asset "js/port/work-research-sources.js"}}&amp;frv=3a1db7f498566ec4"></script>
+<script defer src="{{asset "js/port/work-research-sources.js"}}&amp;frv=90ac1ea145934b5f"></script>
 <link rel="stylesheet" href="{{asset "css/port/desk-workflow.css"}}&amp;frv=d30e48aba012c5c2">
-<link rel="stylesheet" href="{{asset "css/port/reader-margins.css"}}&amp;frv=1db8200a0e7ddcd1"><script defer src="{{asset "js/port/reader-margins.js"}}&amp;frv=b52eea671a09c1c6"></script>
+<link rel="stylesheet" href="{{asset "css/port/reader-margins.css"}}&amp;frv=1db8200a0e7ddcd1"><script defer src="{{asset "js/port/reader-margins.js"}}&amp;frv=9fcfef63420088eb"></script>
 <link rel="stylesheet" href="{{asset "css/port/reader-footnotes.css"}}&amp;frv=17ad80959a8b50ce"><script defer src="{{asset "js/port/reader-footnotes.js"}}&amp;frv=02bf9e1cb9320c19"></script>
 <link rel="stylesheet" href="{{asset "css/port/reader-scripture-preview.css"}}&amp;frv=78f84b854c76833d"><script defer src="{{asset "js/port/reader-scripture-preview.js"}}&amp;frv=40162fe09ed2d10a"></script>
 <script src="{{asset "js/port/read.in01.js"}}&amp;frv=642a00fc293a16d2"></script>{{!-- read.in01.js ends by setting window.__FR_FB__ to the corpus site's own
@@ -47,8 +47,8 @@
       their notebook there; our CSP refuses the gstatic imports, so today it only
       logs three CSP errors per load and mislabels the notebook "sync
       unavailable". This drops the config while the window between the two files
-      is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=d62ee4eca7750274"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=d2003c82432d7011"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=edb7793b9f3ebd36"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
-<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=b216a81e4e2cd814">
+      is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=e199b0c78468ac78"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=836f3a0927ee3c21"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=edb7793b9f3ebd36"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=6c50ba89fbe19b53">
 {{/contentFor}}
 
 {{!-- /the-faith-received/read/ — the ported page-native reader.
@@ -237,14 +237,14 @@
      setting a global here would need inline script, which the CSP
      forbids. --}}
 <div id="frPortAssets" hidden
-     data-read-tools="{{asset "js/port/read-tools.js"}}&amp;frv=8ae33809b62afe23"
+     data-read-tools="{{asset "js/port/read-tools.js"}}&amp;frv=b1cc437367296716"
      data-ask-jobs="{{asset "js/port/ask-jobs.js"}}&amp;frv=408f593670c4a344"></div>
-<script src="{{asset "js/port/reader-core.js"}}&amp;frv=aadbcd613c6a9352"></script>
+<script src="{{asset "js/port/reader-core.js"}}&amp;frv=7dcb67655f3e898a"></script>
 {{!-- The reader's Tools popover writes to OUR stores: the mo-kit bookmark
      All Works draws its row stars from, and the notebook the desk reads. --}}
 <script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
-<script src="{{asset "js/lib/faith-notebook-store.js"}}&amp;frv=015482171f240662"></script>
-<script src="{{asset "js/page/faith-port-read-tools.js"}}&amp;frv=8a21c23315db032e"></script>
+<script src="{{asset "js/lib/faith-notebook-store.js"}}&amp;frv=587241ea81038bf2"></script>
+<script src="{{asset "js/page/faith-port-read-tools.js"}}&amp;frv=d244f0bfc3782ee8"></script>
 {{!-- The Research rail's Work tab. read-tools.js owns the panel; this names the
      work in it and routes the four shortcuts the restore left unbound. --}}
 <script src="{{asset "js/page/faith-port-read-research.js"}}&amp;frv=c43c19e15a24c585"></script>
@@ -257,7 +257,7 @@
 {{!-- The English Modernizer. Same engine the Dynamic Reader uses, so a
      word is modernized the same way everywhere on the site. --}}
 <script src="{{asset "js/faith-modernize.js"}}"></script>
-<script src="{{asset "js/page/faith-port-read-modernize.js"}}&amp;frv=9d72eb5206abe75d"></script>
+<script src="{{asset "js/page/faith-port-read-modernize.js"}}&amp;frv=820108894edb0ef9"></script>
 <script src="{{asset "js/port/cgpt-link.js"}}&amp;frv=386401f14f087d18"></script>
 {{!-- Binds [data-report-issue] above. It is a per-page script rather
      than part of site.min.js, so a page that shows the button has to

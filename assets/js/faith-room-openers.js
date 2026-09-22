@@ -134,7 +134,7 @@
       `<a href="${base}author/?sh=${sh}">Authors</a>` +
       `<a href="${base}topics/?sh=${sh}">Topics</a>` +
       `<a href="${base}web/#shelves=${trad === "Continental Reformed" ? "reformed" : trad.toLowerCase().replace(/ /g,"-")}/authors">Connections</a>` +
-      `<a href="${base}dictionary/">Dictionnaire de Théologie Catholique</a>` +
+      `<a href="${base}dictionary/">Dictionary of Catholic Theology</a>` +
       `</nav></details>`;
   }
 

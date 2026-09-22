@@ -146,7 +146,7 @@
       + `<nav class="faith-shelf-study-grid" aria-label="Study ${escapeHtml(name)}">${
        doors.map(([label, href, description]) => `<a class="faith-shelf-study-card" href="${base}${href}"><strong>${label}</strong><span>${description}</span></a>`).join("")
        }</nav><div class="faith-shelf-reference"><h2>Reference</h2>`
-      + `<a class="faith-shelf-study-card" href="${base}dictionary/"><strong>Dictionnaire de Théologie Catholique</strong>`
+      + `<a class="faith-shelf-study-card" href="${base}dictionary/"><strong>Dictionary of Catholic Theology</strong>`
       + `<span>The French theological dictionary (Vacant–Mangenot–Amann, 1899–1950). Search a headword and read the article in French and English.</span>`
       + `<span class="faith-shelf-reference-action">Open dictionary</span></a></div>`;
   }
