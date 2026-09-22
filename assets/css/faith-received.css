@@ -18860,3 +18860,98 @@ html.g-mobile #reading .fr-sec-toggle {
   #reading .fr-sec-hid { display: revert !important; }
   #reading .fr-sec-toggle { display: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   NO SCROLL BOXES INSIDE THE PAGE
+   ══════════════════════════════════════════════════════════════════════
+   Ian, 2026-09-22, on the search results sitting in a box with its own
+   scrollbar: "I hate that. I don't want that anywhere on the site.
+   Everything needs to happen inline."
+
+   Every box below capped its own height and scrolled inside itself
+   while sitting in the page's flow, so a reader had two scrollbars, a
+   wheel that stopped half way down, and results cut off at 70% of the
+   screen. Here they all take their natural height and the page scrolls.
+
+   Most of them are ported rules (assets/css/port/*), which are the
+   bones and get re-copied from upstream, so they are overridden here,
+   in the skin, rather than edited there. !important because the port
+   sheets are linked later in the body and several carry three-class
+   selectors; this block has to win regardless of either.
+
+   DELIBERATELY NOT HERE, because they float over the page rather than
+   sit in it, and a floating panel taller than the screen could never be
+   reached: dropdowns and popovers (.omni, #findlist, .fr-explore>nav,
+   .fra-popover, .fra-scope, .fra-mode-menu, #fra-work-results,
+   .ol-pop, .aapop, .pr-picker-content, .cd-topic-picker .cd-topics,
+   .faith-dictionary-contents-pop), the Report and survey panels, the
+   reading-controls dock, the notebook drawer (.nb-settings,
+   #nbSelectionText), the topic drawer (#room-topic-drawer), and the
+   Ask textarea. Anything added to this list must be inline content;
+   anything floating stays out.
+   ------------------------------------------------------------------ */
+#results,
+.worklist,
+.inslist,
+.inschips,
+.tpx-list,
+.wsc-list,
+.csf-list,
+.topiclist,
+.gloss,
+.passage,
+.vpanel-pane,
+.rx-pane,
+.rx-position-body,
+.rx-position-compare .rx-cmp-col,
+.research-topic .rx-topic-authors,
+.research-topic .rx-comparison .rx-voice,
+.research-directory .rx-author-fold .rx-directory,
+.research-room .chstrip,
+.ir-index .ir-headings,
+.ir-index .ir-detail,
+.cd-saved-list,
+.room-scripture-pane,
+.vr-pane,
+.ce-pane,
+.ce-next-list,
+.web-pane,
+.web-topic-contributors > div,
+.sat-list,
+.sat-neighbours,
+.pins-list,
+.pins-main .cons,
+.pins-work-results,
+.fr-library .vol-browser .spine,
+.fr-library .vol-browser .volgrid,
+.rl-full > div,
+.nc-quote,
+.pr-provenance pre,
+.collection-research pre,
+.desk-rail-body,
+.faith-room .frcw-pane,
+#faith-web-constellations .cn-index-list,
+#faith-web-constellations .cn-links,
+#fra-workspace .fra-source-groups,
+.fra-activity ol,
+.fra-passage blockquote {
+  max-height: none !important;
+  overflow-y: visible !important;
+  overscroll-behavior: auto !important;
+}
+/* The topic drawer is the one .topiclist that floats: put its cap back. */
+#room-topic-drawer .topiclist {
+  max-height: 55dvh !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+}
+/* These two were given a fixed height as well as a cap. */
+.cd-pane,
+.room-scripture-pane {
+  height: auto !important;
+}
+.cd-pane {
+  max-height: none !important;
+  overflow-y: visible !important;
+  overscroll-behavior: auto !important;
+}
