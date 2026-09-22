@@ -64,6 +64,36 @@
   };
   root.MOFaithCatalogue = api;
   if (typeof module === 'object' && module.exports) module.exports = api;
+
+  /* WHAT A READER IS SHOWN FOR A TRADITION (Ian, 2026-09-22: "we need to do
+   * a better job labeling works"; a reader found Benjamin Keach under
+   * "English Divines" rather than Baptist). Display only: the data, the
+   * filters and every comparison keep the source value, so nothing that
+   * matches on "English Divines" breaks. Call these where a label is
+   * PRINTED, never where one is compared.
+   *
+   *   MOFaithLabel.shelf(label)          a shelf, filter or group name.
+   *     "English Divines" is a nationality, not a church; the shelf is
+   *     named "English writers". Everything else passes through.
+   *   MOFaithLabel.of(label, who)        the label for one author or work.
+   *     `who` is an author name or a work ({author, corpus, id}). On the
+   *     English shelf, the church the denomination table places him in
+   *     (Anglican, Presbyterian, Baptist...) when faith-denominations.js
+   *     is on the page and loaded; otherwise the shelf name above. */
+  const SHELF_NAMES = {'english divines': 'English writers'};
+  const shelfName = label => SHELF_NAMES[String(label || '').trim().toLowerCase()] || label;
+  root.MOFaithLabel = {
+    shelf: shelfName,
+    of(label, who) {
+      const D = root.MODenom;
+      if (who && D && D.loaded && D.loaded() && /^english divines$/i.test(String(label || '').trim())) {
+        const work = typeof who === 'object' ? who : {author: String(who)};
+        const {body} = D.of(work) || {};
+        if (body) return body;
+      }
+      return shelfName(label);
+    },
+  };
   if (!root.document || !root.location.pathname.startsWith('/the-faith-received/')) return;
   const readJSON = url => fetch(url, {cache:'no-cache'}).then(response => { if (!response.ok) throw Error('Catalogue identity unavailable'); return response.json(); });
   const libraryBase = 'https://mo-tfr-library.mo-podcast-feed.workers.dev';
