@@ -34,3 +34,5 @@ Seventeen public catalogue/index JSON files were copied by the corpus owner into
 The guard traverses 67 runtime modules. Both worker bundles compile. Regression checks cover denied hosts and redirects, R2 misses, concurrent request isolation, old external settings, model failures, truncated answers, reranking, and missing scan requests. No new worker was deployed during this change, and no new live AI answer was generated. Binding availability and answer quality must therefore be checked in step 4 before the theme rollout.
 
 The owner's Vercel application and its full-edition source store were not changed.
+
+Local browser verification: All works loaded its shelf counts under both CSPs with no browser error logs. The Didache opened with its English text, and Tuckney opened with its Latin text. The production workers were not deployed in this pass; new Ask requests wait for the backend policy handshake. Six browser-runtime regression tests, seventeen worker tests, the theme build/lint and both worker bundles passed.
