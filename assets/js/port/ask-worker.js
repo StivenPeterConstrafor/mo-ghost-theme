@@ -1,3 +1,4 @@
+importScripts("/assets/js/page/faith-cloudflare-runtime.js");
 /* One stream owner per origin, independent of which conversation is on screen.
    SharedWorker survives panel close and page changes while another site port is open.
    Browsers may suspend it: persisted interrupted states never masquerade as completion. */

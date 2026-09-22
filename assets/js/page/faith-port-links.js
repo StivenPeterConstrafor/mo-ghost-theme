@@ -10,6 +10,19 @@
   function localURL(raw, origin) {
     let u;
     try { u = new URL(raw, origin); } catch (_) { return raw; }
+    const families={'eebo-backup.vercel.app':'eebo','pld-patrologia-latina.vercel.app':'pld','patrologia-graeca.vercel.app':'pg','patrologia-orientalis.vercel.app':'po','aquinas-studies.vercel.app':'aq'};
+    const family=families[u.hostname];
+    if(family){
+      const work=/^\/read\/([^/]+?)(?:\.html)?\/?$/.exec(u.pathname);
+      if(work){
+        let id=decodeURIComponent(work[1]);if(!id.startsWith(`${family}-`))id=`${family}-${id}`;
+        u.searchParams.set('w',id);
+        const anchor=/^#(?:b|c)([^-]+)(?:-0)?$/.exec(u.hash);
+        return `${prefix}read/${u.search}${anchor?`#b${anchor[1]}-0`:u.hash}`;
+      }
+      if(/^\/(?:bible|topics)(?:\.html)?\/?$/.test(u.pathname))return `${prefix+(u.pathname.includes('bible')?'bible':'topics')}/?sh=${family.replace('pld','pl')}${u.hash}`;
+      return `${prefix}all-works/?collection=${family==='aq'?'tfr':family}`;
+    }
     const source = u.origin === 'https://thefaithreceived.vercel.app';
     if (!source && u.origin !== origin) return raw;
     const path = u.pathname;
@@ -57,6 +70,11 @@
         else for (const node of record.addedNodes) if (node.nodeType === 1) rewrite(node);
       }
     }).observe(document.body, {subtree:true, childList:true, attributes:true, attributeFilter:['href']});
+    document.addEventListener('click',event=>{
+      const link=event.target.closest?.('a[href]');if(!link)return;
+      rewrite(link);
+      try{const url=new URL(link.href);if(/(^|\.)(?:vercel\.app|vercel\.sh|vercel-storage\.com|openrouter\.ai)$/.test(url.hostname)){event.preventDefault();link.title='This source link is not available in the Mere Orthodoxy library.';}}catch{}
+    },true);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, {once:true});
   else start();

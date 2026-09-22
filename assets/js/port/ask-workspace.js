@@ -13,7 +13,7 @@
   //   assetBase        where ask-worker.js / ask-jobs.js live            ('/'; MereO '/assets/js/port/')
   //   launcher         false → no floating Ask button (the host mounts its own door via FRAsk.open)
   //   nav              [[href,label],…] for the standalone page's site sections; false → none
-  const CFG=Object.assign({apiBase:'/api',dataBase:'https://0ss8v4l06kodnhp0.public.blob.vercel-storage.com',readPath:'/read',askPath:'/ask',libraryPath:'/',assetBase:'/',launcher:true,nav:[['/','Library'],['/authors','Authors'],['/bible','Scripture'],['/topics','Topics'],['/search','Search'],['/pins','Notebooks'],['/desk','Desk']]},window.FRAskConfig||{});
+  const CFG=Object.assign({apiBase:'https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1',dataBase:'https://mo-tfr-library.mo-podcast-feed.workers.dev',readPath:'/the-faith-received/read/',askPath:'/the-faith-received/ask/',libraryPath:'/the-faith-received/all-works/?collection=all',assetBase:'/assets/js/port/',launcher:true,nav:[['/','Library'],['/authors','Authors'],['/bible','Scripture'],['/topics','Topics'],['/search','Search'],['/pins','Notebooks'],['/desk','Desk']]},window.FRAskConfig||{});
   const S = FRChatStore, BASE = CFG.dataBase.replace(/\/$/,'');
   const ASK_PATH_RE=new RegExp('^'+CFG.askPath.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\/$/,'')+'(?:\\.html|/)?$');
   const modes = {
@@ -388,8 +388,8 @@
        answered by a worker without our member-bearer handling. Bump both
        together whenever ask-worker.js changes. The PATH comes from
        CFG.assetBase; only the version is ours. */
-    try { worker=new SharedWorker(CFG.assetBase+'ask-worker.js?v=7g',{name:'fr-ask-v7g'});port=worker.port;port.start(); }
-    catch(_){workerKind='tab';worker=new Worker(CFG.assetBase+'ask-worker.js?v=7g');port=worker;}
+    try { worker=new SharedWorker(CFG.assetBase+'ask-worker.js?v=cf-only-20260921',{name:'fr-ask-cf-only-20260921'});port=worker.port;port.start(); }
+    catch(_){workerKind='tab';worker=new Worker(CFG.assetBase+'ask-worker.js?v=cf-only-20260921');port=worker;}
     port.onmessage=async({data})=>{
       if(data.type==='reply'){const r=replies.get(data.rid);if(r){clearTimeout(r.timer);replies.delete(data.rid);data.error?r.reject(new Error(data.error)):r.resolve();}}
       else if(data.type==='updated')scheduleRefresh();

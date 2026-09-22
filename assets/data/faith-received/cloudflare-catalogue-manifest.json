@@ -1,0 +1,74 @@
+{
+  "destination": "v1/catalogues/",
+  "verified": "2026-09-21",
+  "files": {
+    "augustine/nav.json": {
+      "bytes": 954403,
+      "sha256": "ebb18f39add4e1be6bcf1dcda0908c994afbc31f8253e69426d2b9a1b9251794"
+    },
+    "augustine/refindex.json": {
+      "bytes": 931473,
+      "sha256": "793e2234492e092ba9d0e15d72e0cdcf0491252898f06d921c668606abd4f907"
+    },
+    "eebo/anglicans.json": {
+      "bytes": 3756,
+      "sha256": "a2341136aa12338c92ffb3a5e749ed6cbe04fe820a749362a30adf4e359291e2"
+    },
+    "eebo/catalogue.json": {
+      "bytes": 10693793,
+      "sha256": "7f2f086aa5d96c2e2e9aa8932247c19e978adacb3a5a9a21e5d4a3184913d1ce"
+    },
+    "eebo/facets.json": {
+      "bytes": 1392,
+      "sha256": "f8432bd4988890ae314d04e69215bedfab014ad3c6651e2d49cf0e3e6fe05cb3"
+    },
+    "eebo/puritans.json": {
+      "bytes": 6328,
+      "sha256": "cc94f35fce625f504e4675ead52e6719755fcba9b57293ca0e4b91ef3dd13ebb"
+    },
+    "eebo/scripture.json": {
+      "bytes": 3365092,
+      "sha256": "f8f298f33208b1bf2d4e60c4e8dad6eae9f8d3d4ba22516cb6c4032decebd849"
+    },
+    "pg/deepindex.json": {
+      "bytes": 3686302,
+      "sha256": "fcf670432006eeb2a8a0284aa216f4c8e70923bdaa69b0b6f4871d7aa371fff0"
+    },
+    "pg/nav.json": {
+      "bytes": 1139826,
+      "sha256": "b91d85fc356a6618cc206ec6998dc652400701cf04caa06afb3a19e3cb149e2d"
+    },
+    "pg/refindex.json": {
+      "bytes": 3254841,
+      "sha256": "b96b2c8a392a23750349e33c397c8536e54e1a8efcad32fdc2a2ebffdba6ac60"
+    },
+    "pg/voltoc.json": {
+      "bytes": 1970864,
+      "sha256": "293891afed837af0c3c457b31d031ccd12e0136a11ef8843bee794e1c6e172dc"
+    },
+    "pld/nav.json": {
+      "bytes": 5656702,
+      "sha256": "6b249e7668bdcbfafb58b2277688fe5bfb6ca89a443142056b4c55a037fa115d"
+    },
+    "pld/refindex.json": {
+      "bytes": 7473846,
+      "sha256": "c810244c6bcfb6ae51e356e6e76489ee781ff0f082b8321187c602d9adbd57f0"
+    },
+    "pld/topics.json": {
+      "bytes": 1067784,
+      "sha256": "f62e084bbeadc46dfcea07f51fc6e9244bff0dff08fa3b0e760124e7b3dc45eb"
+    },
+    "po/nav.json": {
+      "bytes": 73129,
+      "sha256": "b115f3bae937e41e8db33d04391aec2418e310fa6b0e35e3c341aa53b12bce4f"
+    },
+    "po/refindex.json": {
+      "bytes": 528658,
+      "sha256": "2e45b3cc2908e8e70640aaa4ef744cc882a36ca45f609a10b6350303e660da59"
+    },
+    "po/topics.json": {
+      "bytes": 60195,
+      "sha256": "f78e887024a599ef662bd81c35664496234bceed991452ecd9658df8fa78371b"
+    }
+  }
+}
