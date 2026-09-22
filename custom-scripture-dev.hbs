@@ -29,21 +29,43 @@
 {{> "faith-received/_tfr-rail"}}
 
   {{!-- The bar under the rail: where you are, and the way anywhere
-       else. Sticky, so a reader deep in a chapter can still move. --}}
+       else. Sticky, so a reader deep in a chapter can still move.
+
+       Ian, 2026-09-22: three tabs instead of one long book selector, so
+       the Apocrypha is a division a reader can see rather than seven
+       names buried at the bottom of a list of 73. The tabs choose the
+       division; the Book select beside them is scoped to whichever
+       division is showing. Tabs activate on click or Enter, not on
+       arrow, because activating one loads a chapter. --}}
   <nav class="bible-controls sd-bar" aria-label="Passage and translation">
+    <div class="container sd-canon">
+      <div class="faith-view-toggle sd-canon-tabs" role="tablist" aria-label="Division of the Bible" data-sd-tabs>
+        <button type="button" class="faith-view-toggle-tab is-active" role="tab" id="sd-tab-ot" data-sd-tab="ot" aria-selected="true" aria-controls="sd-book-panel">Old Testament</button>
+        <button type="button" class="faith-view-toggle-tab" role="tab" id="sd-tab-nt" data-sd-tab="nt" aria-selected="false" aria-controls="sd-book-panel">New Testament</button>
+        <button type="button" class="faith-view-toggle-tab" role="tab" id="sd-tab-ap" data-sd-tab="ap" aria-selected="false" aria-controls="sd-book-panel">Apocrypha</button>
+      </div>
+    </div>
     <div class="container bible-controls-inner sd-bar-inner">
-      <label class="bible-control">
-        <span class="bible-control-label">Book</span>
-        <select data-sd-book aria-label="Book"></select>
-      </label>
+      <div class="bible-control sd-book-panel" id="sd-book-panel" role="tabpanel" aria-labelledby="sd-tab-ot" data-sd-book-panel>
+        <label class="bible-control-label" for="sd-book">Book</label>
+        <select id="sd-book" data-sd-book></select>
+      </div>
       <label class="bible-control bible-control--chapter">
         <span class="bible-control-label">Chapter</span>
         <select data-sd-chapter aria-label="Chapter"></select>
       </label>
-      <label class="bible-control">
+      <label class="bible-control" data-sd-translation-control>
         <span class="bible-control-label">Translation</span>
         <select data-sd-translation aria-label="Translation"></select>
       </label>
+      {{!-- The deuterocanon has one text and mo-bible cannot serve it,
+           so on those books the picker is replaced by the name of the
+           text actually on screen. A disabled dropdown would be a dead
+           control that never says why. --}}
+      <p class="bible-control sd-fixed-text" data-sd-fixed-text hidden>
+        <span class="bible-control-label">Text</span>
+        <span class="sd-fixed-text-name" data-sd-fixed-text-name></span>
+      </p>
       <button type="button" class="sd-comm-toggle" data-sd-comm-toggle aria-expanded="false" aria-controls="sdCommPanel">Commentaries <span data-sd-comm-count></span></button>
       <div class="bible-controls-nav">
         <button type="button" class="bible-nav-btn" data-sd-prev aria-label="Previous chapter"><span aria-hidden="true">&larr;</span></button>

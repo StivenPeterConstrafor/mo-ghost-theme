@@ -8,7 +8,8 @@
  *
  * On the page, top to bottom (Ian, 2026-09-22):
  *   - the verse in the reader's translation, with its neighbours;
- *   - the verse in all five translations;
+ *   - the verse in all five translations, except in the deuterocanon,
+ *     which has one text and gets a line saying which;
  *   - every citation: the count, charts by century and tradition that
  *     double as filters, the filters and a search, the top five works,
  *     and the full list twenty at a time;
@@ -43,6 +44,19 @@
   const label = S.refLabel(book, c, v);
   document.title = `${label} | Verse Desk | The Faith Received | Mere Orthodoxy`;
 
+  // The deuterocanon is in none of the five translations, and mo-bible
+  // has no book number for it, so that section is replaced by the one
+  // line that says so rather than left as five rows that all fail.
+  const transSection = book.ap
+    ? `<section class="sd-desk-sec" aria-labelledby="sd-h-trans">` +
+        `<h2 class="sd-h2" id="sd-h-trans">The text</h2>` +
+        `<p class="sd-muted">${esc(S.APOCRYPHA_TEXT)}, from the library's own index. The five translations this reader offers do not carry the deuterocanon.</p>` +
+      `</section>`
+    : `<section class="sd-desk-sec" aria-labelledby="sd-h-trans">` +
+        `<h2 class="sd-h2" id="sd-h-trans">In five translations</h2>` +
+        `<dl class="sd-parallel" data-sd-parallel></dl>` +
+      `</section>`;
+
   $root.innerHTML =
     `<header class="sd-desk-head">` +
       `<h2 class="sd-desk-title">${esc(label)}</h2>` +
@@ -55,10 +69,7 @@
       `</nav>` +
     `</header>` +
 
-    `<section class="sd-desk-sec" aria-labelledby="sd-h-trans">` +
-      `<h2 class="sd-h2" id="sd-h-trans">In five translations</h2>` +
-      `<dl class="sd-parallel" data-sd-parallel></dl>` +
-    `</section>` +
+    `${transSection}` +
 
     `<section class="sd-desk-sec" aria-labelledby="sd-h-cite">` +
       `<h2 class="sd-h2" id="sd-h-cite">Citations</h2>` +
@@ -96,25 +107,30 @@
   // ── The verse, its neighbours, and five translations ──────────
   const $verse = $root.querySelector("[data-sd-verse]");
   const $verseTrans = $root.querySelector("[data-sd-verse-trans]");
-  const info = S.translationInfo(t);
-  S.fetchChapterHtml(t, book, c).then((html) => {
-    const box = document.createElement("div");
-    const clean = S.cleanChapter(html);
-    if (clean === null) throw new Error("sanitiser unavailable");
-    box.innerHTML = clean;
-    S.markVerses(box);
-    const text = S.verseTextFrom(box, v);
-    const last = Math.max(0, ...Array.prototype.map.call(box.querySelectorAll(".bible-verse"), (el) => Number(el.dataset.v) || 0));
-    $verse.textContent = text || `${label} is not in the ${info ? info.short : t}.`;
-    $verseTrans.textContent = info ? info.name : "";
+  const short = S.textShort(book, t);
+  /* A canonical verse is read out of its chapter, which the Desk needs
+   * anyway for the parallel translations. An apocryphal one is not: the
+   * citation worker already returns the verse's text, and the chapter
+   * index gives the chapter's last verse, so two small responses do the
+   * work of a chapter file the size of a photograph. */
+  const verseAndLast = book.ap
+    ? S.fetchApocryphaVerse(book, c, v)
+    : S.chapterNode(t, book, c).then((box) => ({
+      text: S.verseTextFrom(box, v),
+      last: Math.max(0, ...Array.prototype.map.call(box.querySelectorAll(".bible-verse"), (el) => Number(el.dataset.v) || 0)),
+    }));
+  verseAndLast.then((d) => {
+    const text = d.text || "";
+    $verse.textContent = text || `${label} is not in the ${short}.`;
+    $verseTrans.textContent = S.textName(book, t);
     const $ask = $root.querySelector("#sd-ask-q");
     if (!$ask.value) {
       const quote = text.length > 240 ? `${text.slice(0, 240).replace(/\s+\S*$/, "")}…` : text;
       $ask.value = `What does the historic Christian tradition say about ${label}${quote ? ` (“${quote}”)` : ""}?`;
     }
-    neighbours(last);
+    neighbours(d.last || 0);
   }).catch(() => {
-    $verse.innerHTML = `<span class="sd-muted">The verse did not load in the ${esc(info ? info.short : t)}.</span>`;
+    $verse.innerHTML = `<span class="sd-muted">The verse did not load in the ${esc(short)}.</span>`;
     neighbours(0);
   });
 
@@ -125,14 +141,16 @@
   function neighbours(last) {
     const $p = $root.querySelector("[data-sd-prev]");
     const $n = $root.querySelector("[data-sd-next]");
+    const chain = S.chainOf(book);
+    const at = chain.indexOf(book);
     let prev = null;
     if (v > 1) prev = [book, c, v - 1];
     else if (c > 1) prev = [book, c - 1, 0];
-    else if (book.num > 1) { const b = S.BOOKS[book.num - 2]; prev = [b, b.chapters, 0]; }
+    else if (at > 0) { const b = chain[at - 1]; prev = [b, b.chapters, 0]; }
     let next = null;
     if (!last || v < last) next = [book, c, v + 1];
     else if (c < book.chapters) next = [book, c + 1, 1];
-    else if (book.num < 66) next = [S.BOOKS[book.num], 1, 1];
+    else if (at < chain.length - 1) next = [chain[at + 1], 1, 1];
     // The last verse of the previous chapter is not known here, so that
     // step goes to the chapter in the reader rather than to a guess.
     if (prev) {
@@ -148,15 +166,17 @@
   }
 
   const $parallel = $root.querySelector("[data-sd-parallel]");
-  $parallel.innerHTML = S.TRANSLATIONS.map((x) =>
-    `<div class="sd-parallel-row"><dt title="${esc(x[2])}">${esc(x[1])}</dt><dd data-code="${esc(x[0])}"><span class="sd-muted">Loading…</span></dd></div>`,
-  ).join("");
-  S.TRANSLATIONS.forEach((x) => {
-    const $dd = $parallel.querySelector(`dd[data-code="${x[0]}"]`);
-    S.fetchVerseText(x[0], book, c, v)
-      .then((txt) => { $dd.textContent = txt || "Not in this translation."; })
-      .catch(() => { $dd.innerHTML = `<span class="sd-muted">Did not load.</span>`; });
-  });
+  if ($parallel) {
+    $parallel.innerHTML = S.TRANSLATIONS.map((x) =>
+      `<div class="sd-parallel-row"><dt title="${esc(x[2])}">${esc(x[1])}</dt><dd data-code="${esc(x[0])}"><span class="sd-muted">Loading…</span></dd></div>`,
+    ).join("");
+    S.TRANSLATIONS.forEach((x) => {
+      const $dd = $parallel.querySelector(`dd[data-code="${x[0]}"]`);
+      S.fetchVerseText(x[0], book, c, v)
+        .then((txt) => { $dd.textContent = txt || "Not in this translation."; })
+        .catch(() => { $dd.innerHTML = `<span class="sd-muted">Did not load.</span>`; });
+    });
+  }
 
   // ── Citations ─────────────────────────────────────────────────
   const $count = $root.querySelector("[data-sd-count]");
@@ -264,8 +284,14 @@
   S.commentaryStrip($root.querySelector("[data-sd-comm]"), { book, c });
 
   // ── The chooser, for a Desk opened without a verse ────────────
+  // Grouped by division, the same three the reader's tabs give: a flat
+  // list of 73 would bury the seven that were just added.
   function renderChooser() {
-    const opts = S.BOOKS.map((b) => `<option value="${b.slug}">${esc(b.name)}</option>`).join("");
+    const opts = S.SECTIONS.map((s) =>
+      `<optgroup label="${esc(s.label)}">${
+        s.books.map((b) => `<option value="${b.slug}">${esc(b.name)}</option>`).join("")
+      }</optgroup>`,
+    ).join("");
     $root.innerHTML =
       `<header class="sd-desk-head"><h2 class="sd-desk-title">Choose a verse</h2></header>` +
       `<form class="sd-chooser" action="/the-faith-received/scripture/desk/" method="get">` +

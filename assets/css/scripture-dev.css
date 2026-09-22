@@ -61,7 +61,72 @@
 .sd-muted { color: var(--color-muted); }
 
 /* ── The bar under the rail ─────────────────────────────────── */
-.sd-bar-inner { justify-content: flex-start; }
+.sd .sd-bar-inner { justify-content: flex-start; }
+
+/* ── The three divisions ────────────────────────────────────── */
+/* Old Testament / New Testament / Apocrypha, above the controls
+   (Ian, 2026-09-22). The markup is the house tab strip
+   (.faith-view-toggle, shared with the Heidelberg reader and the
+   search page's modes), so this block says only what differs here:
+   no hairlines of its own, because the control bar already draws one
+   under the whole thing, and the active mark on the tab's own bottom
+   edge rather than 13px below it, which the overflow container would
+   clip. Body face, upright: this is a working surface.
+
+   Scoped `.sd .sd-canon-tabs .faith-view-toggle-tab` (three classes)
+   on purpose. scripture-dev.css is linked from the template's moHead
+   and so loads BEFORE built/faith-received.min.css; at equal
+   specificity that file would win, and one class deeper these do. */
+.sd .sd-canon { padding: 12px 28px 0; }
+.sd .sd-canon-tabs {
+  margin: 0;
+  padding: 0;
+  border-top: 0;
+  border-bottom: 0;
+  gap: 26px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.sd .sd-canon-tabs::-webkit-scrollbar { display: none; }
+.sd .sd-canon-tabs .faith-view-toggle-tab {
+  flex: 0 0 auto;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 16px;
+  padding: 11px 0 13px;
+}
+/* Darkest is current, the ordinary tab signal, with the accent kept
+   for the underline: --color-primary on this ground is under AA. The
+   selector reads the ARIA rather than a second class, so the mark and
+   the announced state cannot disagree. */
+.sd .sd-canon-tabs .faith-view-toggle-tab[aria-selected="true"] { color: var(--color-dark); }
+.sd .sd-canon-tabs .faith-view-toggle-tab[aria-selected="true"]::after {
+  bottom: 0;
+  height: 2px;
+  background: var(--sd-accent);
+}
+
+/* The Book control is a div now, not a label, because the tabs point
+   aria-controls at it and a label is not a tabpanel. */
+.sd .sd-book-panel { min-width: 0; }
+
+/* [hidden] is display:none in the UA sheet, and that loses to
+   .bible-control's display:inline-flex. Without this rule the control
+   the page hides stays on screen beside the one that replaced it. */
+.sd .bible-control[hidden] { display: none; }
+/* The deuterocanon's text, where the translation picker sits on every
+   other book: a fact in the same place and the same size as the value
+   it replaces, not a dropdown that refuses to open. */
+.sd .sd-fixed-text { margin: 0; }
+.sd .sd-fixed-text-name {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-dark);
+  padding: 4px 0;
+  border-bottom: 1px solid transparent;
+}
 /* THE TFR BUTTON (faith-received.css, "THE TFR BUTTON", Ian 2026-09-18):
    quiet at rest (off-black outline and ink, 3px), filled on hover, and
    filled when pressed or the one CTA. Restated here for these sd- classes
@@ -378,21 +443,35 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
   .sd-cbar { min-height: 44px; }
   /* The bar is sticky, so on a phone it must stay two rows: book,
      chapter and the arrows; then translation and Commentaries. Four
-     wrapped rows took a quarter of the screen. */
-  .sd-bar-inner {
+     wrapped rows took a quarter of the screen.
+
+     Scoped `.sd .sd-bar-inner` (2026-09-22). Written as `.sd-bar-inner`
+     these rules never once applied: screen.css sets
+     `.bible-controls-inner { display: flex }` at the same specificity
+     and loads after this file, so the phone bar has been falling back
+     to five wrapped rows the whole time. Checked in the browser with
+     getComputedStyle, which is the only way this shows up. */
+  .sd .sd-bar-inner {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
     align-items: end;
     gap: 8px 12px;
     padding: 10px 16px;
   }
-  .sd-bar-inner > .bible-control:nth-child(1) { grid-column: 1; grid-row: 1; }
-  .sd-bar-inner > .bible-control--chapter { grid-column: 2; grid-row: 1; }
-  .sd-bar-inner > .bible-controls-nav { grid-column: 3; grid-row: 1; }
-  .sd-bar-inner > .bible-control:nth-child(3) { grid-column: 1; grid-row: 2; }
-  .sd-bar-inner > .sd-comm-toggle { grid-column: 2 / span 2; grid-row: 2; margin-left: 0; padding: 8px 10px; }
-  .sd-bar-inner .bible-control select { width: 100%; }
-  .sd-bar-inner .bible-control--chapter select { min-width: 56px; }
+  /* Placed by class, not by position: the translation control and the
+     one that replaces it on an apocryphal book share row 2, and only
+     one of the two is ever in the flow. */
+  .sd .sd-bar-inner > .sd-book-panel { grid-column: 1; grid-row: 1; }
+  .sd .sd-bar-inner > .bible-control--chapter { grid-column: 2; grid-row: 1; }
+  .sd .sd-bar-inner > .bible-controls-nav { grid-column: 3; grid-row: 1; }
+  .sd .sd-bar-inner > [data-sd-translation-control],
+  .sd .sd-bar-inner > .sd-fixed-text { grid-column: 1; grid-row: 2; }
+  .sd .sd-canon { padding: 8px 16px 0; }
+  .sd .sd-canon-tabs { gap: 20px; }
+  .sd .sd-canon-tabs .faith-view-toggle-tab { padding: 12px 0 14px; }
+  .sd .sd-bar-inner > .sd-comm-toggle { grid-column: 2 / span 2; grid-row: 2; margin-left: 0; padding: 8px 10px; }
+  .sd .sd-bar-inner .bible-control select { width: 100%; }
+  .sd .sd-bar-inner .bible-control--chapter select { min-width: 56px; }
   .sd-comm { width: 78vw; max-width: 280px; }
   .sd .sd-layout { padding-top: 56px; }
   .sd .sd-desk { padding-top: 32px; }

@@ -8,6 +8,13 @@
  * tradition, author and century, a search over its citations, and the
  * five works that cite it most, each previewable in place.
  *
+ * Three tabs above the controls choose the division of the Bible, and
+ * the Book select holds that division's books. The Apocrypha is one of
+ * them and carries every feature the canon does: chapter navigation,
+ * the citation panel with its filters, search, top works and previews,
+ * the commentaries, the Verse Desk and the addresses. Its text is the
+ * one thing that differs, because mo-bible has no deuterocanon.
+ *
  * Address: ?ref=john.3 or ?ref=john.3.16 (&t=NIV). A verse in the
  * address opens with the sidebar showing it, so a Verse Desk's "Back to
  * the chapter" lands where the reader left.
@@ -26,8 +33,13 @@
 
   const $root = document.querySelector("[data-sd-reader]");
   if (!$root) return;
+  const $tabs = Array.prototype.slice.call($root.querySelectorAll("[data-sd-tab]"));
+  const $bookPanel = $root.querySelector("[data-sd-book-panel]");
   const $book = $root.querySelector("[data-sd-book]");
   const $chapter = $root.querySelector("[data-sd-chapter]");
+  const $transControl = $root.querySelector("[data-sd-translation-control]");
+  const $fixedText = $root.querySelector("[data-sd-fixed-text]");
+  const $fixedTextName = $root.querySelector("[data-sd-fixed-text-name]");
   const $trans = $root.querySelector("[data-sd-translation]");
   const $prev = $root.querySelector("[data-sd-prev]");
   const $next = $root.querySelector("[data-sd-next]");
@@ -66,24 +78,78 @@
 
   // ── Controls ──────────────────────────────────────────────────
   $trans.innerHTML = S.TRANSLATIONS.map((t) => `<option value="${t[0]}">${esc(t[1])} · ${esc(t[2])}</option>`).join("");
-  $book.innerHTML = S.BOOKS.map((b) => `<option value="${b.slug}">${esc(b.name)}</option>`).join("");
   function fillChapters(book) {
     let h = "";
     for (let n = 1; n <= book.chapters; n++) h += `<option value="${n}">${n}</option>`;
     $chapter.innerHTML = h;
   }
 
+  // ── The three divisions ───────────────────────────────────────
+  // The tabs choose a division; the Book select holds that division's
+  // books and nothing else. Painting the select is the whole of what a
+  // tab does to the page besides loading a chapter, so the two are one
+  // function and can never drift apart.
+  let section = "";
+  function fillBooks(k) {
+    if (section === k) return;
+    section = k;
+    const div = S.SECTIONS.find((s) => s.k === k) || S.SECTIONS[0];
+    $book.innerHTML = div.books.map((b) => `<option value="${b.slug}">${esc(b.name)}</option>`).join("");
+    $tabs.forEach((t) => {
+      const on = t.dataset.sdTab === k;
+      t.classList.toggle("is-active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      if (on && $bookPanel) $bookPanel.setAttribute("aria-labelledby", t.id);
+    });
+  }
+
+  /* Activation is on click and on Enter or Space, which a <button>
+   * already gives us, and never on an arrow key: choosing a division
+   * loads a chapter, and arrows that loaded would fire a chapter fetch
+   * per keypress. Arrows move focus only, the manual-activation tab
+   * pattern. Every tab stays in the natural tab order, so a reader who
+   * never presses an arrow can still reach all three. */
+  $tabs.forEach(($t) => {
+    $t.addEventListener("click", () => {
+      const k = $t.dataset.sdTab;
+      if (state.book && state.book.section === k) return;
+      const div = S.SECTIONS.find((s) => s.k === k);
+      if (div && div.books.length) load(div.books[0], 1, 0, true);
+    });
+  });
+  const TAB_DELTA = { ArrowRight: 1, ArrowLeft: -1 };
+  $tabs.forEach(($t, i) => {
+    $t.addEventListener("keydown", (e) => {
+      let next = -1;
+      if (Object.prototype.hasOwnProperty.call(TAB_DELTA, e.key)) next = (i + TAB_DELTA[e.key] + $tabs.length) % $tabs.length;
+      else if (e.key === "Home") next = 0;
+      else if (e.key === "End") next = $tabs.length - 1;
+      if (next < 0) return;
+      e.preventDefault();
+      $tabs[next].focus();
+    });
+  });
+
   // ── The chapter ───────────────────────────────────────────────
   function load(book, c, v, push) {
     const my = ++loadRun;
     const changedChapter = !state.book || state.book !== book || state.c !== c;
     state.book = book; state.c = c; state.v = v || 0;
+    fillBooks(book.section);
     $book.value = book.slug;
     fillChapters(book);
     $chapter.value = String(c);
     $trans.value = state.t;
-    $prev.disabled = book.num === 1 && c === 1;
-    $next.disabled = book.num === 66 && c === book.chapters;
+    // The deuterocanon has one text, so the picker is replaced by its
+    // name. Nothing is disabled: the control the page cannot honour is
+    // not shown at all.
+    if ($transControl) $transControl.hidden = Boolean(book.ap);
+    if ($fixedText) $fixedText.hidden = !book.ap;
+    if ($fixedTextName && book.ap) $fixedTextName.textContent = S.APOCRYPHA_TEXT;
+    const chain = S.chainOf(book);
+    const at = chain.indexOf(book);
+    $prev.disabled = at === 0 && c === 1;
+    $next.disabled = at === chain.length - 1 && c === book.chapters;
     writeUrl(push);
     document.title = `${S.refLabel(book, c)} | Scripture | The Faith Received | Mere Orthodoxy`;
 
@@ -96,27 +162,31 @@
     const keepPanel = !changedChapter && Boolean(wantVerse) && $panel.isConnected;
     if (changedChapter) closePanel(true);
     $text.innerHTML = `<p class="bible-status" role="status">Loading ${esc(S.refLabel(book, c))}…</p>`;
-    const info = S.translationInfo(state.t);
-    $attr.textContent = info ? `${info.name} (${info.short}), served through bolls.life.` : "";
+    // Where the text on screen comes from, and on an apocryphal book the
+    // one line saying why the translations above are not offered.
+    $attr.textContent = book.ap
+      ? `${S.APOCRYPHA_TEXT}, from the library's own index. The five translations this reader offers do not carry the deuterocanon.`
+      : `${S.textName(book, state.t)} (${S.textShort(book, state.t)}), served through bolls.life.`;
 
     if (changedChapter || !comm) loadCommentaries();
 
-    return S.fetchChapterHtml(state.t, book, c).then((html) => {
+    return S.chapterNode(state.t, book, c).then((node) => {
       if (my !== loadRun) return;
-      const clean = S.cleanChapter(html);
-      if (clean === null) throw new Error("sanitiser unavailable");
       $text.innerHTML =
         `<header class="bible-chapter-header">` +
           `<h2 class="sd-chapter-h1"><span class="bible-chapter-eyebrow">${esc(book.name)}</span> ` +
           `<span class="bible-chapter-heading">Chapter ${c}</span></h2>` +
         `</header>` +
         `<p class="sd-hint sd-muted"${hinted ? " hidden" : ""}>Select any verse to see where the library cites it.</p>` +
-        `<div class="bible-chapter-content sd-chapter-content">${clean}</div>`;
-      S.markVerses($text.querySelector(".sd-chapter-content"));
+        `<div class="bible-chapter-content sd-chapter-content"></div>`;
+      const $host = $text.querySelector(".sd-chapter-content");
+      while (node.firstChild) $host.appendChild(node.firstChild);
       if (wantVerse) openVerse(wantVerse, { scroll: true, keep: keepPanel });
     }).catch(() => {
       if (my !== loadRun) return;
-      $text.innerHTML = `<p class="bible-status is-error" role="alert">${esc(S.refLabel(book, c))} could not be loaded in the ${esc(info ? info.short : state.t)}. Try another translation or reload the page.</p>`;
+      $text.innerHTML = book.ap
+        ? `<p class="bible-status is-error" role="alert">${esc(S.refLabel(book, c))} could not be loaded. Reload the page to try again.</p>`
+        : `<p class="bible-status is-error" role="alert">${esc(S.refLabel(book, c))} could not be loaded in the ${esc(S.textShort(book, state.t))}. Try another translation or reload the page.</p>`;
     });
   }
 
@@ -126,11 +196,15 @@
     history[push ? "pushState" : "replaceState"](null, "", url);
   }
 
+  // The arrows walk the book's own chain: Genesis to Revelation as one
+  // run, the apocrypha as its own. See chainOf in the core.
   function step(delta) {
     let b = state.book;
+    const chain = S.chainOf(b);
+    const at = chain.indexOf(b);
     let n = state.c + delta;
-    if (n < 1) { b = S.BOOKS[b.num - 2]; if (!b) return; n = b.chapters; }
-    else if (n > b.chapters) { b = S.BOOKS[b.num]; if (!b) return; n = 1; }
+    if (n < 1) { b = chain[at - 1]; if (!b) return; n = b.chapters; }
+    else if (n > b.chapters) { b = chain[at + 1]; if (!b) return; n = 1; }
     load(b, n, 0, true);
   }
 

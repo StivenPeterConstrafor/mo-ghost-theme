@@ -8,7 +8,10 @@
  *
  * TWO DATA SOURCES, NEVER MIXED.
  *   - Scripture text comes from mo-bible (bolls.life), in the reader's
- *     chosen translation. It is display text and nothing else.
+ *     chosen translation. It is display text and nothing else. The
+ *     deuterocanon is the one exception: mo-bible has no book number
+ *     for those seven books and no translation that carries them, so
+ *     their text is read from the library's own chapter file instead.
  *   - Citations come from mo-tfr-verse, a read-only worker over the
  *     library's per-verse shards. It merges the capped shard with its
  *     .more companion server-side, so the counts, filters and top five
@@ -41,7 +44,13 @@
   const VERSE_API = "https://mo-tfr-verse.mo-podcast-feed.workers.dev";
   const bibleMeta = document.querySelector('meta[name="mo-bible-base"]');
   const BIBLE_BASE = ((bibleMeta && bibleMeta.content) || "https://mo-bible.mo-podcast-feed.workers.dev").replace(/\/$/, "");
+  const libMeta = document.querySelector('meta[name="tfr-library-base"]');
+  const LIBRARY_BASE = ((libMeta && libMeta.content) || "https://mo-tfr-library.mo-podcast-feed.workers.dev").replace(/\/$/, "");
   const LS_TRANSLATION = "mo-scripture-dev:translation";
+  // The one text the deuterocanon has here. mo-bible refuses any book
+  // number outside 1–66 and none of its translations carries these
+  // books, so their text comes from the library's own index instead.
+  const APOCRYPHA_TEXT = "Douay-Rheims";
 
   // Ian, 2026-09-22: ESV, NIV, CSB, KJV, NASB. Codes are bolls.life's
   // (CSB is CSB17 there). ESV first because it is the default.
@@ -58,7 +67,7 @@
   // URLs; the library slug is what the citation shards are keyed by
   // (the library names its books as the ASV does: "I Samuel",
   // "Revelation of John").
-  const BOOKS = [
+  const CANON = [
     ["genesis", "Genesis", 50], ["exodus", "Exodus", 40], ["leviticus", "Leviticus", 27],
     ["numbers", "Numbers", 36], ["deuteronomy", "Deuteronomy", 34], ["joshua", "Joshua", 24],
     ["judges", "Judges", 21], ["ruth", "Ruth", 4], ["1-samuel", "1 Samuel", 31, "i-samuel"],
@@ -85,8 +94,46 @@
     ["1-john", "1 John", 5, "i-john"], ["2-john", "2 John", 1, "ii-john"],
     ["3-john", "3 John", 1, "iii-john"], ["jude", "Jude", 1],
     ["revelation", "Revelation", 22, "revelation-of-john"],
-  ].map((b, i) => ({ slug: b[0], name: b[1], chapters: b[2], lib: b[3] || b[0], num: i + 1 }));
+  ].map((b, i) => ({
+    slug: b[0], name: b[1], chapters: b[2], lib: b[3] || b[0],
+    num: i + 1, section: i < 39 ? "ot" : "nt", ap: false,
+  }));
+
+  /* The deuterocanon, added 2026-09-22 on Ian's call ("bring in the
+   * apocrypha … Apocrypha gets all the same features as the rest of the
+   * Bible"). Seven books, and only these seven: the library's citation
+   * index carries Tobit through 2 Maccabees and nothing else, so 1 and 2
+   * Esdras, Susanna, Bel and the Dragon and the Prayer of Manasseh are
+   * not offered rather than offered and broken.
+   *
+   * `num` is 0 because there is no bolls book number for them. Every
+   * citation feature reads `lib`, which mo-tfr-verse already answers for
+   * these books, so citations, commentaries, filters and passage
+   * previews work here exactly as they do in the canon. Only the text
+   * differs: see fetchApocryphaChapter below. */
+  const APOCRYPHA = [
+    ["tobit", "Tobit", 14], ["judith", "Judith", 16], ["wisdom", "Wisdom", 19],
+    ["sirach", "Sirach", 51], ["baruch", "Baruch", 6],
+    ["1-maccabees", "1 Maccabees", 16, "i-maccabees"],
+    ["2-maccabees", "2 Maccabees", 15, "ii-maccabees"],
+  ].map((b) => ({
+    slug: b[0], name: b[1], chapters: b[2], lib: b[3] || b[0],
+    num: 0, section: "ap", ap: true,
+  }));
+
+  const BOOKS = CANON.concat(APOCRYPHA);
   const BOOK_BY_SLUG = new Map(BOOKS.map((b) => [b.slug, b]));
+  const SECTIONS = [
+    { k: "ot", label: "Old Testament", books: CANON.slice(0, 39) },
+    { k: "nt", label: "New Testament", books: CANON.slice(39) },
+    { k: "ap", label: "Apocrypha", books: APOCRYPHA },
+  ];
+  /* The run of books the arrows walk. Genesis through Revelation is one
+   * chain, as it was before the deuterocanon arrived, so Malachi 4 still
+   * steps into Matthew 1. The apocrypha is its own chain: Revelation is
+   * not followed by Tobit in any canon, and pretending otherwise in a
+   * next-chapter arrow would be a claim we do not make. */
+  const chainOf = (book) => (book && book.ap ? APOCRYPHA : CANON);
 
   function esc(s) {
     return String(s == null ? "" : s)
@@ -102,7 +149,9 @@
   function parseRef(raw) {
     const m = String(raw || "").trim().toLowerCase().match(/^([a-z0-9-]+)\.(\d{1,3})(?:\.(\d{1,3}))?$/);
     if (!m) return null;
-    const book = BOOK_BY_SLUG.get(m[1]);
+    // bookFrom as the fallback so a library slug in an address resolves
+    // too ("i-maccabees.1" as well as "1-maccabees.1").
+    const book = BOOK_BY_SLUG.get(m[1]) || bookFrom(m[1]);
     const c = parseInt(m[2], 10);
     if (!book || !(c >= 1 && c <= book.chapters)) return null;
     const v = m[3] ? parseInt(m[3], 10) : 0;
@@ -125,7 +174,12 @@
       .replace(/^(iii|ii|i)-/, (m, r) => `${ROMAN[r]}-`)
       .replace(/^(?:the-)?revelation(?:-of-(?:st\.?-?)?john)?$/, "revelation")
       .replace(/^(?:song-of-songs|canticles)$/, "song-of-solomon")
-      .replace(/^psalm$/, "psalms");
+      .replace(/^psalm$/, "psalms")
+      // The deuterocanon's other names, so a link written in Douay or
+      // Vulgate style lands rather than falling back to Genesis.
+      .replace(/^(?:ecclesiasticus|ben-sira|sirach-the-son-of-sirach)$/, "sirach")
+      .replace(/^(?:tobias)$/, "tobit")
+      .replace(/^(?:the-)?wisdom(?:-of-solomon)?$/, "wisdom");
     if (BOOK_BY_SLUG.has(n)) return BOOK_BY_SLUG.get(n);
     n = n.replace(/^([123])(?=[a-z])/, "$1-");
     return BOOK_BY_SLUG.get(n) || BOOKS.find((b) => b.lib === raw) || null;
@@ -150,10 +204,15 @@
   }
 
   const refLabel = (book, c, v) => `${book.slug === "psalms" && c ? "Psalm" : book.name} ${c}${v ? `:${v}` : ""}`;
+  // An apocryphal book has one text, so &t= would be a promise the page
+  // cannot keep. It is dropped from the address rather than carried and
+  // ignored; the reader's remembered choice still lives in localStorage
+  // and comes back the moment a canonical book is opened.
+  const tailT = (book, t) => (t && !(book && book.ap) ? `&t=${encodeURIComponent(t)}` : "");
   const readerHref = (book, c, v, t) =>
-    `/the-faith-received/scripture/?ref=${refKey(book, c, v)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
+    `/the-faith-received/scripture/?ref=${refKey(book, c, v)}${tailT(book, t)}`;
   const deskHref = (book, c, v, t) =>
-    `/the-faith-received/scripture/desk/?ref=${refKey(book, c, v)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
+    `/the-faith-received/scripture/desk/?ref=${refKey(book, c, v)}${tailT(book, t)}`;
 
   // The library's links are relative to its own reader ("/read?w=…").
   // Ours lives under /the-faith-received/read/. Anything that is not
@@ -274,19 +333,105 @@
       }).join(" ").replace(/\s+/g, " ").trim();
   }
 
-  // One verse's text in one translation, by rendering the chapter off
-  // screen and reading the verse back out. Used by the Desk's parallel
-  // translations, which want five chapters and one verse from each.
-  function fetchVerseText(code, book, c, v) {
+  // ── Scripture text (the deuterocanon) ───────────────────────────
+  /* mo-bible cannot serve these books: it refuses any book number
+   * outside 1–66, and none of its translations carries the
+   * deuterocanon. The text comes from the library's citation file for
+   * the chapter instead, which carries every verse's text beside its
+   * citation rows. The key ends .json.gz and the body is plain JSON:
+   * these keys arrive already decoded, so this reads r.json() and must
+   * never inflate (scripts/check-gz-readers.mjs).
+   *
+   * The file is the whole chapter's citations too, so it is the largest
+   * thing either page fetches: about 250 KB on the wire for the worst
+   * chapter, cached a day at the edge and once more here. Only the
+   * reader asks for it, because only the reader shows a whole chapter.
+   * The Desk wants one verse and takes it from the citations response,
+   * which carries that verse's text already. */
+  const apocryphaCache = new Map();
+  function fetchApocryphaChapter(book, c) {
+    const key = `${book.lib}/${c}`;
+    if (apocryphaCache.has(key)) return apocryphaCache.get(key);
+    const p = fetch(`${LIBRARY_BASE}/v1/bible/all/${encodeURIComponent(book.lib)}/${encodeURIComponent(c)}.json.gz`, { credentials: "omit" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      // Only the verse numbers and their text are kept, so the chapter's
+      // citation rows are not held in memory for the life of the page.
+      .then((d) => {
+        const verses = ((d && d.verses) || [])
+          .map((x) => ({ v: parseInt(x && x.v, 10) || 0, t: String((x && x.t) || "").trim() }))
+          .filter((x) => x.v > 0 && x.t)
+          .sort((a, b) => a.v - b.v);
+        if (!verses.length) throw new Error("empty chapter");
+        return verses;
+      });
+    p.catch(() => apocryphaCache.delete(key));
+    apocryphaCache.set(key, p);
+    return p;
+  }
+
+  /* The same shape markVerses() leaves behind, built as nodes rather
+   * than parsed from markup: this text is plain, so it is set with
+   * textContent and never goes near innerHTML. One paragraph holds the
+   * chapter, as bolls sends a prose chapter, so the page's typesetting
+   * and the phone's "panel after the verse" placement both behave as
+   * they do everywhere else. */
+  function apocryphaChapterNode(verses) {
+    const box = document.createElement("div");
+    const p = document.createElement("p");
+    verses.forEach((x, i) => {
+      const span = document.createElement("span");
+      span.className = "bible-verse";
+      span.dataset.v = String(x.v);
+      span.id = `v${x.v}`;
+      span.setAttribute("tabindex", "0");
+      span.setAttribute("role", "button");
+      const sup = document.createElement("sup");
+      sup.className = "v";
+      sup.setAttribute("aria-hidden", "true");
+      sup.textContent = String(x.v);
+      span.appendChild(sup);
+      span.appendChild(document.createTextNode(` ${x.t}`));
+      if (i) p.appendChild(document.createTextNode(" "));
+      p.appendChild(span);
+    });
+    box.appendChild(p);
+    return box;
+  }
+
+  /* One chapter, marked up and ready to show, from whichever source the
+   * book has. Both pages go through here so neither has to know which
+   * books mo-bible can serve. */
+  function chapterNode(code, book, c) {
+    if (book.ap) return fetchApocryphaChapter(book, c).then(apocryphaChapterNode);
     return fetchChapterHtml(code, book, c).then((html) => {
       const box = document.createElement("div");
       const clean = cleanChapter(html);
       if (clean === null) throw new Error("sanitiser unavailable");
       box.innerHTML = clean;
       markVerses(box);
-      return verseTextFrom(box, v);
+      return box;
     });
   }
+
+  // One verse's text in one translation, by rendering the chapter off
+  // screen and reading the verse back out. Used by the Desk's parallel
+  // translations, which want five chapters and one verse from each.
+  function fetchVerseText(code, book, c, v) {
+    return chapterNode(code, book, c).then((box) => verseTextFrom(box, v));
+  }
+
+  // The name of the text a book is read in. Everything in the canon is
+  // the reader's chosen translation; the deuterocanon has exactly one.
+  const textName = (book, code) => {
+    if (book && book.ap) return APOCRYPHA_TEXT;
+    const t = translationInfo(code);
+    return t ? t.name : String(code || "");
+  };
+  const textShort = (book, code) => {
+    if (book && book.ap) return APOCRYPHA_TEXT;
+    const t = translationInfo(code);
+    return t ? t.short : String(code || "");
+  };
 
   // ── Citations (mo-tfr-verse) ────────────────────────────────────
   function api(path, params) {
@@ -311,6 +456,22 @@
   const fetchPassage = (row, book, c, v) => api("/v1/verse/passage", {
     w: row.w, p: row.p, h: row.h, b: book.lib, c, v,
   });
+
+  /* One deuterocanonical verse for the Desk, and the chapter's last
+   * verse so its Next can stop at the right place. The citation worker
+   * returns the verse's own text beside its citations (it does so even
+   * when nothing cites the verse), and the chapter index is a few
+   * hundred bytes, so this is two small responses rather than the
+   * chapter file the reader fetches. */
+  function fetchApocryphaVerse(book, c, v) {
+    return Promise.all([
+      api("/v1/verse", { b: book.lib, c, v, limit: 1 }),
+      api("/v1/verse/chapter", { b: book.lib, c }),
+    ]).then((r) => {
+      const nums = r[1] && r[1].verses ? Object.keys(r[1].verses).map(Number).filter((n) => n > 0) : [];
+      return { text: (r[0] && r[0].text) || "", last: nums.length ? Math.max.apply(null, nums) : 0 };
+    });
+  }
 
   // ── Filters ─────────────────────────────────────────────────────
   // One filter state shape everywhere: tradition (shelf codes), author
@@ -528,9 +689,11 @@
   window.MOScriptureDev = {
     commentaryStrip, cleanChapter,
     TRANSLATIONS, BOOKS, BOOK_BY_SLUG, esc, fmt, plural,
+    CANON, APOCRYPHA, SECTIONS, chainOf, APOCRYPHA_TEXT, textName, textShort,
     parseRef, legacyRef, refKey, refLabel, readerHref, deskHref, sourceHref,
     translationInfo, recalledTranslation, rememberTranslation,
     fetchChapterHtml, markVerses, verseTextFrom, fetchVerseText,
+    fetchApocryphaChapter, apocryphaChapterNode, chapterNode, fetchApocryphaVerse,
     fetchVerse, fetchCommentaries, fetchPassage,
     emptyFilters, activeCount, filterBar, sourceItem, centuryLabel,
     // For /the-faith-received/topics/, which reads the same worker.
