@@ -273,3 +273,16 @@ body.web-citation-layout #faith-web-constellations .cn-view-btn+.cn-view-btn{mar
 }
 .faith-port-dtc-page .welcome p { margin: 0 0 1rem; }
 .faith-port-dtc-page .welcome p:last-child { margin-bottom: 0; }
+
+/* ── /the-faith-received/pins/, the ported notebook ──────────────────
+   The page wears the same .bhero header as every other TFR landing
+   surface now, and the header carries the title. pins.in02.js opens its
+   own render with "<h1>Notebook</h1>" written into #app, which left two
+   titles stacked one on the other. Only that one is hidden: the shared
+   collection's <h1> names the collection being previewed and sits
+   inside .ed-head, so the child combinator leaves it alone.
+
+   Suppressed here rather than in the ported file because that file is
+   the corpus owner's and is replaced whole on his next drop. Deleting
+   this rule puts the second title back. */
+.faith-port-pins-page #app > h1 { display: none; }

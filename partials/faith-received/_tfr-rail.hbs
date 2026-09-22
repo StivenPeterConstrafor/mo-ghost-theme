@@ -54,17 +54,23 @@
       <li class="tfr-rail-group">
         <button type="button" class="tfr-rail-link tfr-rail-toggle" data-tfr-drawer="research" aria-expanded="false" aria-controls="tfrDrawerResearch">Research</button>
         <div class="tfr-rail-drawer tfr-rail-drawer--wide" id="tfrDrawerResearch" data-tfr-drawer-for="research" hidden>
-          {{!-- Each goes to the page that owns it. Power Search and
-               Notebook have no standalone page, so they deep-link to the
-               mode on the surface that carries them: both of those pages
-               route on the hash. --}}
+          {{!-- Each goes to the page that owns it. Power Search,
+               Bookmarks and Notebook have no standalone page, so they
+               deep-link to the mode on the surface that carries them:
+               both of those pages route on the hash. --}}
           <a href="/the-faith-received/ask/">Ask</a>
           <a href="/the-faith-received/search/#power">Power Search</a>
           <a href="/the-faith-received/compare/">Compare</a>
           {{!-- Called Connections, goes to Connections: Ian's instruction
                was to keep the name and change the destination. --}}
           <a href="/the-faith-received/connections/">Connections</a>
-          <a href="/the-faith-received/pins/">Bookmarks</a>
+          {{!-- Was /the-faith-received/pins/, which is the ported
+               notebook and a different store from the Bookmarks panel on
+               the Research desk. Ian, 2026-09-22: "Bookmark and Notebook
+               in the navrail need to be the same thing as those on the
+               research page." Both items now name the same two panels
+               the Research desk shows; /pins/ forwards here as well. --}}
+          <a href="/the-faith-received/research/#bookmarks">Bookmarks</a>
           <a href="/the-faith-received/research/#notebook">Notebook</a>
           <a href="/the-faith-received/desk/">Desk</a>
         </div>
