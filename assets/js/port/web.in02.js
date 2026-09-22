@@ -823,12 +823,18 @@ window.addEventListener('faith-web-author',e=>{if(e.detail?.slug)openAuthor(e.de
    maps in #mnav) hide #map-heading outright and need all four controls
    back in the panel's own row; leaving two of them inside a hidden
    heading would simply delete them from that mode. */
-let __cnHome=null;
+let __cnHome=null,__cnPair=null;
+/* Resolved once and CACHED, because the lookup starts from
+   [data-cn-root] and the two controls spend most of their life outside
+   it. Re-running it while they are away finds nothing, which silently
+   turns the move into a one-way trip. */
 function citationControlPair(){
+ if(__cnPair)return __cnPair;
  const root=document.querySelector('#faith-web-constellations [data-cn-root]');if(!root)return null;
  const views=root.querySelector('[data-cn-view]'),links=root.querySelector('[data-cn-links-group]');
  const a=views&&views.closest('.cn-control'),b=links&&links.closest('.cn-control');
- return a&&b?[a,b]:null;
+ if(a&&b)__cnPair=[a,b];
+ return __cnPair;
 }
 function placeCitationControls(on){
  const pair=citationControlPair(),slot=document.querySelector('#map-heading .map-top-controls');
