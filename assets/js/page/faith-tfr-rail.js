@@ -274,15 +274,45 @@
      query or a hash. The brand is exempt: every page is under it, and
      marking it on all of them would say nothing. */
   const here = `${window.location.pathname.replace(/\/+$/, "")}/`;
+  /* Two rail items can now share a path and differ only by hash:
+     Bookmarks is /research/#bookmarks and Notebook is
+     /research/#notebook, both panels of the Research desk. The matcher
+     compared paths alone, so standing on /research/ lit BOTH of them
+     and drew one underline across the pair.
+
+     A link that names a panel is current only when that panel is the
+     one open. The Research page's hash is `#<mode>` with the panel's
+     own state after the first "&" (the grammar is at the top of
+     assets/js/page/faith-research.js), so the mode is everything before
+     it. A link with no hash keeps the old rule. */
+  const mode = window.location.hash.replace(/^#/, "").split("&")[0];
   Array.prototype.slice.call(rail.querySelectorAll("a[href]")).forEach((a) => {
-    const href = a.getAttribute("href").split("#")[0].split("?")[0];
+    const raw = a.getAttribute("href");
+    const href = raw.split("#")[0].split("?")[0];
+    const wants = raw.indexOf("#") >= 0 ? raw.split("#")[1].split("&")[0] : "";
     if (!href || href === "/the-faith-received/") return;
     const path = `${href.replace(/\/+$/, "")}/`;
-    if (here === path) {
-      a.setAttribute("aria-current", "page");
-      const group = a.closest(".tfr-rail-group");
-      const toggle = group && group.querySelector("[data-tfr-drawer]");
-      if (toggle) toggle.classList.add("is-current");
-    }
+    if (here !== path) return;
+    if (wants && wants !== mode) return;
+    a.setAttribute("aria-current", "page");
+    const group = a.closest(".tfr-rail-group");
+    const toggle = group && group.querySelector("[data-tfr-drawer]");
+    if (toggle) toggle.classList.add("is-current");
+  });
+
+  /* The hash changes without a page load on the Research desk, so the
+     mark has to follow it. Re-running the same pass is cheaper than
+     tracking which link was marked last. */
+  window.addEventListener("hashchange", () => {
+    const now = window.location.hash.replace(/^#/, "").split("&")[0];
+    Array.prototype.slice.call(rail.querySelectorAll("a[href]")).forEach((a) => {
+      const raw = a.getAttribute("href");
+      if (raw.indexOf("#") < 0) return;
+      const href = raw.split("#")[0].split("?")[0];
+      if (`${href.replace(/\/+$/, "")}/` !== here) return;
+      const wants = raw.split("#")[1].split("&")[0];
+      if (wants === now) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
+    });
   });
 })();
