@@ -58,19 +58,7 @@
 {{> "faith-received/_beta-band"}}
 </main>
 
-<script>
-  (function () {
-    // ?doc= names a paper and travels as it is. The fragment on the old
-    // address carried nothing, so it is not preserved.
-    var search = String(window.location.search || "");
-    var target = "/the-faith-received/research/" + search + "#desk";
-
-    // The link is corrected before the redirect fires, so that a reader
-    // whose navigation is blocked or slow still has the right one under
-    // the cursor.
-    var a = document.querySelector("[data-desk-forward]");
-    if (a) a.setAttribute("href", target);
-
-    window.location.replace(target);
-  })();
-</script>
+{{!-- A file, not an inline block: the CSP has no 'unsafe-inline'
+     for scripts, so the inline version this replaces was refused on
+     every load and the forward never happened. --}}
+<script src="{{asset "js/page/faith-desk-forward.js"}}"></script>

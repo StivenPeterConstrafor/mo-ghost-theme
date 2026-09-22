@@ -67,20 +67,7 @@
 {{> "faith-received/_beta-band"}}
 </main>
 
-<script>
-  (function () {
-    // The old address kept its state in the fragment; the new one keeps
-    // the same state after a mode segment. Anything that is not ours
-    // (an empty hash, or "#compare" already) still lands on the tab.
-    var hash = String(window.location.hash || "").replace(/^#/, "");
-    var target = "/the-faith-received/research/#compare" + (hash && hash !== "compare" ? "&" + hash : "");
-
-    // The link is corrected before the redirect fires, so that a reader
-    // whose navigation is blocked or slow still has the right one under
-    // the cursor.
-    var a = document.querySelector("[data-cmp-forward]");
-    if (a) a.setAttribute("href", target);
-
-    window.location.replace(target);
-  })();
-</script>
+{{!-- A file, not an inline block: the CSP has no 'unsafe-inline'
+     for scripts, so the inline version this replaces was refused on
+     every load and the forward never happened. --}}
+<script src="{{asset "js/page/faith-compare-forward.js"}}"></script>
