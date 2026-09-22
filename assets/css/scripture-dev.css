@@ -102,8 +102,6 @@
 
 /* ── Commentaries: filters, then one line that scrolls sideways ── */
 .sd-comm-panel { border-bottom: 1px solid var(--color-rule); background: var(--color-page); padding: 18px 0 20px; }
-.sd-comm-panel > * { max-width: 1200px; margin-left: auto; margin-right: auto; padding-left: 28px; padding-right: 28px; }
-.sd-comm-panel > .sd-comm-strip { padding-left: 28px; padding-right: 28px; }
 .sd-comm-status { margin: 10px 0 0; font-size: 14px; }
 .sd-comm-strip {
   list-style: none;
@@ -114,7 +112,6 @@
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
-  scroll-padding-inline: 28px;
 }
 .sd-comm { flex: 0 0 auto; width: 240px; scroll-snap-align: start; }
 .sd-comm-card {
@@ -368,7 +365,6 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
      sticky bar stuck to nothing and scrolled away. clip hides overflow
      without creating the container (iOS 16+). */
   body:has(.sd) { overflow-x: clip; }
-  .sd-comm-strip { scroll-padding-inline: 16px; }
   .sd-cbar { min-height: 44px; }
   /* The bar is sticky, so on a phone it must stay two rows: book,
      chapter and the arrows; then translation and Commentaries. Four
@@ -387,7 +383,6 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
   .sd-bar-inner > .sd-comm-toggle { grid-column: 2 / span 2; grid-row: 2; margin-left: 0; padding: 8px 10px; }
   .sd-bar-inner .bible-control select { width: 100%; }
   .sd-bar-inner .bible-control--chapter select { min-width: 56px; }
-  .sd-comm-panel > *, .sd-comm-panel > .sd-comm-strip { padding-left: 16px; padding-right: 16px; }
   .sd-comm { width: 78vw; max-width: 280px; }
   .sd-layout { padding-top: 56px; }
   .sd-desk { padding-top: 32px; }

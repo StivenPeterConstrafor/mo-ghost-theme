@@ -137,7 +137,7 @@
   // ── Commentaries dropdown ─────────────────────────────────────
   function loadCommentaries() {
     $commCount.textContent = "";
-    comm = S.commentaryStrip($commPanel, { book: state.book, c: state.c }, (n) => {
+    comm = S.commentaryStrip($commPanel.querySelector("[data-sd-comm-host]"), { book: state.book, c: state.c }, (n) => {
       $commCount.textContent = n ? `(${fmt(n)})` : "";
     });
   }

@@ -2,7 +2,7 @@
 {{#contentFor "moHead"}}
 <title>Scripture (dev) | Mere Orthodoxy</title>
 <meta name="robots" content="noindex, nofollow" />
-<link rel="stylesheet" href="{{asset "css/scripture-dev.css"}}&amp;frv=f4404c87aa2ff416" />
+<link rel="stylesheet" href="{{asset "css/scripture-dev.css"}}&amp;frv=d663c84db38e224c" />
 {{/contentFor}}
 {{!-- /the-faith-received/scripture-dev/ — the Scripture reader, rebuilt for review.
 
@@ -44,7 +44,11 @@
     </div>
   </nav>
 
-  <section class="sd-comm-panel" id="sdCommPanel" data-sd-comm-panel hidden aria-label="Commentaries"></section>
+  {{!-- Same .container as the bar above, so the filters, the count and
+       the strip line up with Book/Chapter/Translation. --}}
+  <section class="sd-comm-panel" id="sdCommPanel" data-sd-comm-panel hidden aria-label="Commentaries">
+    <div class="container" data-sd-comm-host></div>
+  </section>
 
   <div class="container sd-layout" data-sd-layout>
     <article class="bible-chapter sd-text" data-sd-text>
@@ -57,5 +61,5 @@
 </main>
 
 <script src="{{asset "js/page/scripture-dev-core.js"}}&amp;frv=7979f1ca8ccd73a9"></script>
-<script src="{{asset "js/page/scripture-dev.js"}}&amp;frv=2d1175e72bbe1f2c"></script>
+<script src="{{asset "js/page/scripture-dev.js"}}&amp;frv=df4893df6d118dab"></script>
 <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
