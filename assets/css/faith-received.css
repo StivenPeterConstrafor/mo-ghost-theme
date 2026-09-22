@@ -9679,6 +9679,14 @@ a.fa-tp-work-link:hover { color: var(--color-primary); text-decoration: underlin
   font-size: var(--tfr-body);
   color: var(--color-muted);
 }
+/* Saved dictionary articles sit under their own heading on the
+   dashboard: entries in one reference work, not works on a shelf. */
+.faith-saved-head {
+  margin: 38px 0 14px;
+  font: 400 1.15rem/1.3 var(--font-body, Georgia, serif);
+  color: var(--color-dark);
+}
+.faith-saved-list:first-child + .faith-saved-head { margin-top: 30px; }
 .faith-saved-list { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 44px; }
 .faith-saved-list li { break-inside: avoid; border-bottom: 1px solid var(--color-card-border); }
 .faith-saved-list a { display: block; padding: 14px 0; text-decoration: none; color: inherit; }

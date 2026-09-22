@@ -68,20 +68,52 @@
       wanted.get(corpusId).add(slug);
     });
 
-    return Promise.all([...wanted.keys()].map((id) =>
+    /* Two things this list used to drop on the floor, both of which a
+       member had deliberately saved:
+
+       CONFESSIONS. The reader opens a creed or confession with no `?c=`
+       at all, so saving one stores it as "tfr:tfr:<slug>" and the Latin
+       Library catalogue has never heard of it. The Research page's
+       panel already retries those against the confessions catalogue;
+       this page did not, so every confession anyone had saved was
+       invisible here. Same retry, same rule.
+
+       DICTIONARY ARTICLES. "tfr:dtc:<id>" resolves through
+       assets/js/lib/faith-dictionary-refs.js rather than a catalogue,
+       for the reason stated in that file: making the dictionary an
+       eighth corpus would put its 1,916 articles into Browse and every
+       index. */
+    const DICT = window.MODictionaryRefs;
+    const CONFESSIONS = "confessions";
+    const catalogueIds = [...wanted.keys()].filter((id) => !(DICT && id === DICT.CORPUS));
+    if (wanted.has("tfr") && catalogueIds.indexOf(CONFESSIONS) < 0) catalogueIds.push(CONFESSIONS);
+
+    const dictIds = DICT && wanted.has(DICT.CORPUS) ? [...wanted.get(DICT.CORPUS)] : [];
+    const dictRows = dictIds.length
+      ? DICT.load().then((by) => (by ? dictIds.map((id) => by.get(id)).filter(Boolean) : []))
+          .catch(() => [])
+      : Promise.resolve([]);
+
+    return Promise.all([Promise.all(catalogueIds.map((id) =>
       window.MOFaithCatalogue.load(id).then((works) => ({ id, works })).catch(() => ({ id, works: [] }))
-    )).then((sets) => {
+    )), dictRows]).then(([sets, articles]) => {
       const rows = [];
+      const found = new Set();
       sets.forEach(({ id, works }) => {
-        const slugs = wanted.get(id);
+        // A confession saved as "tfr:" is looked for under the id the
+        // bookmark actually carries, not under the catalogue it was
+        // finally found in.
+        const slugs = wanted.get(id) || (id === CONFESSIONS ? wanted.get("tfr") : null);
+        if (!slugs) return;
         const corpus = window.MOCorpora.get(id);
         works.forEach((w) => {
-          if (!slugs.has(String(w.id))) return;
+          if (!slugs.has(String(w.id)) || found.has(String(w.id))) return;
+          found.add(String(w.id));
           rows.push({ w, corpus });
         });
       });
 
-      if (!rows.length) {
+      if (!rows.length && !articles.length) {
         list.innerHTML =
           `<p class="faith-saved-empty">Your saved works could not be found in the library. ` +
           `They may have been renamed at the source.</p>`;
@@ -91,6 +123,24 @@
       rows.sort((a, b) => String(a.w.author || "").localeCompare(String(b.w.author || ""))
         || cmpTitle(a.w.title, b.w.title));
 
+      // Dictionary articles last and under their own heading: they are
+      // entries in one reference work, not works on a shelf, and
+      // sorting them in among the works by an author they do not have
+      // would have put every one of them at the top.
+      const dict = articles.length
+        ? `<h2 class="faith-saved-head">${escapeHtml(DICT.LABEL)}</h2>` +
+          `<ol class="faith-saved-list">${articles
+            .slice()
+            .sort((a, b) => cmpTitle(a.title, b.title))
+            .map((a) => `<li><a href="${escapeHtml(DICT.resumeUrl(a.id))}">` +
+              `<span class="faith-saved-title">${escapeHtml(a.title)}</span>` +
+              `${a.titleLatin ? `<span class="faith-saved-author">${escapeHtml(a.titleLatin)}</span>` : ""}` +
+              `${DICT.hasResume(a.id) ? `<span class="faith-saved-shelf">Where you stopped</span>` : ""}` +
+              `</a></li>`).join("")}</ol>`
+        : "";
+
+      if (!rows.length) { list.innerHTML = dict; return; }
+
       list.innerHTML = `<ol class="faith-saved-list">${rows.map(({ w, corpus }) => {
         const author = w.author
           ? `<span class="faith-saved-author">${escapeHtml(w.author)}</span>` : "";
@@ -99,7 +149,7 @@
         return `<li><a href="${escapeHtml(w.url)}">` +
           `<span class="faith-saved-title">${escapeHtml(w.title || w.id)}</span>` +
           `${author}${shelf}</a></li>`;
-      }).join("")}</ol>`;
+      }).join("")}</ol>${dict}`;
     });
   }
 })();

@@ -54,4 +54,9 @@
 <meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
 <script src="{{asset "js/faith-denominations.js"}}"></script>
 <script src="{{asset "js/faith-corpora.js"}}"></script>
+{{!-- Saved dictionary articles, and the place in one. Both before
+      faith-saved.js, which reads them: page scripts run before
+      site.min.js, so nothing bundled can be assumed here. --}}
+<script src="{{asset "js/lib/faith-position-store.js"}}"></script>
+<script src="{{asset "js/lib/faith-dictionary-refs.js"}}"></script>
 <script src="{{asset "js/faith-saved.js"}}"></script>

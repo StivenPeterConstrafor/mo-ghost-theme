@@ -20,6 +20,52 @@ document.addEventListener("keydown",e=>{
   if(e.key==="[")$("#pPrev")&&$("#pPrev").click();
   if(e.key==="]")$("#pNext")&&$("#pNext").click();
 });
+/* ── Our two stores ───────────────────────────────────────────────────
+   An article is bookmarked exactly as a work is, `tfr:dtc:<id>` in the
+   mo-kit KV (faith-work-bookmarks.js), and where you stopped in one is
+   kept exactly as it is for a work, under corpus "dtc" in
+   faith-position-store.js. Both are optional at load: they are page
+   scripts, and MOAuth arrives with site.min.js, which runs after every
+   page script. So nothing here assumes either exists yet. */
+const DTC_CORPUS="dtc";
+const BM=()=>window.MOFaithBookmarks;
+const POS=()=>window.MOFaithPosition;
+function bmId(id){const b=BM();return b?b.idFor(DTC_CORPUS,id):"";}
+// Availability is only knowable once MOAuth exists. Ask again on load
+// rather than hiding the button forever because we asked too early.
+function whenBookmarks(cb){
+  const go=()=>{const b=BM();cb(!!(b&&b.available()));};
+  if(document.readyState==="complete")go();else window.addEventListener("load",go,{once:true});
+}
+function rememberPlace(id,paragraph){
+  const p=POS();if(!p||!id)return;
+  try{p.set(DTC_CORPUS,id,{anchor:"sec"+(paragraph||0)});}catch(e){}
+}
+/* The most recent article in this browser, for the Continue line. The
+   store keys records "<corpus>|<work>" and stamps each with `t`, which
+   is the same recency the reader's own Continue uses. */
+function lastPlace(){
+  const p=POS();if(!p)return null;
+  let best=null;
+  try{
+    const map=p.load()||{};
+    Object.keys(map).forEach(k=>{
+      if(k.indexOf(DTC_CORPUS+"|")!==0)return;
+      const rec=map[k];if(!rec||typeof rec!=="object")return;
+      if(!best||(rec.t||0)>(best.t||0))best={id:k.slice(DTC_CORPUS.length+1),t:rec.t||0,a:rec.a||""};
+    });
+  }catch(e){return null;}
+  return best;
+}
+function paintResume(){
+  const el=$("#resume");if(!el)return;
+  const last=lastPlace();
+  if(!last||!IDX.length){el.hidden=true;return;}
+  const row=IDX.find(a=>String(a[0])===String(last.id));
+  if(!row){el.hidden=true;return;}
+  el.innerHTML=`<button class=rz data-id="${esc(last.id)}">Pick up where you left off<span>${esc(row[5]||row[1])}</span></button>`;
+  el.hidden=false;
+}
 function paintAlpha(){
   const has={};IDX.forEach(a=>has[a[2]]=1);
   $("#alpha").innerHTML="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(L=>
@@ -101,6 +147,7 @@ function renderArt(d,initialParagraph=0){
           <button data-l=en class="${l==="en"?"on":""}" ${hasEn?"":"disabled"}>English</button>
           <button data-l=fr class="${l==="fr"?"on":""}">Fran\u00e7ais</button>
         </span>
+        <button class=dtc-bmk id=bmk aria-pressed=false hidden>Bookmark</button>
         ${olHtml}
         <span class=szc><button id=szDn title="Smaller text">A\u2212</button><button id=szUp title="Larger text">A+</button></span>
         ${hasEn?"":'<span class=pend>ENGLISH TRANSLATION IN PROGRESS</span>'}
@@ -131,8 +178,23 @@ function renderArt(d,initialParagraph=0){
     for(const event of ['wheel','touchmove','pointerdown','keydown'])asc.addEventListener(event,()=>{follow=true;},{passive:true});
     asc.tabIndex=0;
     asc.onscroll=()=>{$("#art").classList.toggle("scrolled",asc.scrollTop>10);
-      if(timer)return;timer=setTimeout(()=>{timer=0;if(!asc.isConnected||CUR!==d.id||!follow)return;remember();writePlace(paragraph);},400);};
+      if(timer)return;timer=setTimeout(()=>{timer=0;if(!asc.isConnected||CUR!==d.id||!follow)return;remember();writePlace(paragraph);rememberPlace(d.id,paragraph);},400);};
     $("#art").querySelectorAll(".lane-t button").forEach(b=>b.onclick=()=>{if(!b.disabled){remember();LANEPREF=b.dataset.l;writePlace(paragraph,LANEPREF);paint(b.dataset.l);}});
+    /* Bookmark this article. Same store, same id shape and same 200 cap
+       as a bookmarked work, so one reader cannot end up with two
+       records of the same thing. subscribe() keeps the button honest
+       when the same id is un-bookmarked on another surface. */
+    const bmk=$("#bmk");
+    if(bmk)whenBookmarks(ok=>{
+      if(!ok)return;                      // signed out, or not a paid member
+      const b=BM(),id=bmId(d.id);
+      if(!b||!id)return;
+      const show=on=>{bmk.hidden=false;bmk.setAttribute("aria-pressed",on?"true":"false");
+        bmk.textContent=on?"Bookmarked":"Bookmark";};
+      b.ready().then(()=>{if(CUR===d.id)show(b.has(id)===true);}).catch(()=>{});
+      bmk.onclick=()=>{b.toggle(id).then(on=>{if(CUR===d.id)show(!!on);}).catch(()=>{});};
+      if(b.subscribe)b.subscribe(()=>{if(CUR===d.id)show(b.has(id)===true);});
+    });
     $("#art").classList.remove("scrolled");
     asc.scrollTop=0;
     if(paragraph>0)document.getElementById('sec'+paragraph)?.scrollIntoView({block:'start'});
@@ -145,6 +207,7 @@ function openArt(id,push){
   if(push===false&&['both','en','fr'].includes(params.searchParams.get('lang')))LANEPREF=params.searchParams.get('lang');
   if(push!==false){params.searchParams.delete('paragraph');params.hash=encodeURIComponent(id);history.replaceState(history.state,'',params);}
   CUR=id;paintList();
+  rememberPlace(id,paragraph);
   document.body.classList.add("reading");
   $("#art").innerHTML='<div class=inner><div class=welcome>Loading…</div></div>';
   fetch("https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/dictionary/a/"+encodeURIComponent(id)+".json"+VER).then(r=>r.json()).then(d=>{
@@ -157,19 +220,21 @@ let LISTPOS=0;
 function closeArt(){document.body.classList.remove("reading");CUR=null;
   const url=new URL(location.href);url.hash="";url.searchParams.delete("paragraph");history.replaceState(history.state,"",url);
   document.title="Dictionary of Catholic Theology \u00b7 The Faith Received";
-  requestAnimationFrame(()=>{$("#list").scrollTop=LISTPOS;paintList();});}
+  requestAnimationFrame(()=>{$("#list").scrollTop=LISTPOS;paintList();paintResume();});}
 $("#list").addEventListener("click",e=>{
   // Keep the reader's place: the repaint appends, so the old scroll offset
   // still points at the row they were looking at.
   if(e.target.closest("#more")){const sc=$("#list").scrollTop;SHOWN+=PAGE;paintList();$("#list").scrollTop=sc;return;}
   const b=e.target.closest(".hw");
   if(b){LISTPOS=$("#list").scrollTop;openArt(b.dataset.id);}});
+$("#resume")&&$("#resume").addEventListener("click",e=>{const b=e.target.closest(".rz");
+  if(b)openArt(b.dataset.id);});
 $("#alpha").addEventListener("click",e=>{const b=e.target.closest("button[data-l]");if(!b||b.disabled)return;
   LETTER=(LETTER===b.dataset.l?null:b.dataset.l);SHOWN=PAGE;paintAlpha();paintList();});
 $("#q").addEventListener("input",()=>{QY=$("#q").value;SHOWN=PAGE;paintList();});
 fetch("https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/dictionary/index.json"+VER).then(r=>r.json()).then(d=>{
   IDX=d.articles||[];SEEALSO=d.seealso||{};
-  paintAlpha();paintList();
+  paintAlpha();paintList();paintResume();
   const h=decodeURIComponent(location.hash.slice(1));
   if(h)openArt(h,false);
 }).catch(()=>{$("#list").innerHTML='<div class=empty>The dictionary index is not published yet.</div>';});

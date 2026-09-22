@@ -378,11 +378,20 @@
     if (wants.some((w) => w.corpus === "tfr") && ids.indexOf(CONFESSION_FALLBACK) < 0) {
       ids.push(CONFESSION_FALLBACK);
     }
-    return Promise.all(ids.map((id) =>
+    /* The dictionary is not a corpus and deliberately is not one: every
+       surface that iterates MOCorpora.all would then carry its 1,916
+       articles, Browse and the indexes among them. It resolves through
+       its own file instead, and lands in the same map so build() does
+       not have to know the difference. See assets/js/lib/faith-dictionary-refs.js. */
+    const DICT = window.MODictionaryRefs;
+    const wantsDict = DICT && wants.some((w) => w.corpus === DICT.CORPUS);
+    return Promise.all(ids.filter((id) => !(DICT && id === DICT.CORPUS)).map((id) =>
       MO.load(id)
         .then((works) => [id, works])
         .catch(() => [id, []])
-    )).then((pairs) => new Map(pairs));
+    ).concat(wantsDict ? [DICT.load().then((by) => [DICT.CORPUS, by ? [...by.values()] : []])
+      .catch(() => [DICT.CORPUS, []])] : []))
+      .then((pairs) => new Map(pairs));
   }
 
   function build(wants, catalogues) {
@@ -394,7 +403,9 @@
       indexOf.set(id, byId);
     });
 
+    const DICT = window.MODictionaryRefs;
     const labelOf = (id) => {
+      if (DICT && id === DICT.CORPUS) return DICT.LABEL;
       const c = MO && MO.get ? MO.get(id) : null;
       return (c && c.label) || "The library";
     };
@@ -410,8 +421,13 @@
       // carried, which is what the bookmark id records — NOT the
       // confessions fallback, which is a catalogue we retry against and
       // not an address the reader ever used.
-      const resume = hasResume(want.corpus, want.work);
-      const places = placesFor(want.corpus, want.work);
+      const isDict = !!(DICT && want.corpus === DICT.CORPUS);
+      const resume = isDict ? DICT.hasResume(want.work) : hasResume(want.corpus, want.work);
+      // The places list builds each link by appending a locator to the
+      // row's URL, which the dictionary's URL cannot take: the article
+      // id is already the fragment. A dictionary row therefore carries
+      // its one place in its own link (see url below) and lists none.
+      const places = isDict ? [] : placesFor(want.corpus, want.work);
       const marked = places.some((p) => p.kind === "mark");
       if (hit) {
         return {
@@ -427,8 +443,9 @@
           eyebrow: plainEyebrow(hit),
           corpusLabel: labelOf(corpusId),
           // The catalogue's own url. Built by the same rule the worker
-          // uses; never reconstructed here.
-          url: hit.url,
+          // uses; never reconstructed here. A dictionary row asks its
+          // own file, which folds the stop into the link.
+          url: isDict ? DICT.resumeUrl(want.work) : hit.url,
         };
       }
       return {

@@ -20,7 +20,7 @@
      is the only thing search can hold on to. /the-faith-received/dtc/,
      the port's own copy, stays out of the sitemap. --}}
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232A231D'/%3E%3Ctext x='33' y='46' font-family='Georgia,serif' font-style='italic' font-size='40' fill='%23F4EDE0' text-anchor='middle'%3ED%3C/text%3E%3Crect x='14' y='52' width='36' height='3' rx='1.5' fill='%23A94F35'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="{{asset "css/port/dtc.in01.css"}}&amp;frv=8aa57b8a1e8a7829">
+<link rel="stylesheet" href="{{asset "css/port/dtc.in01.css"}}&amp;frv=18252685b0cb254b">
 <script src="{{asset "js/port/dtc.in01.js"}}&amp;frv=169d27c0fd6ecde8"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=e199b0c78468ac78"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=836f3a0927ee3c21"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=49d7f6797e86ad6d"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>
 {{!-- Our colour, loaded last so it wins; then the offsets that start
      this page under our masthead. Keep both last. --}}
@@ -61,6 +61,10 @@
   <span class="count" id="count"></span>
   <nav class="alpha" id="alpha" aria-label="Alphabet"></nav>
 </div>
+{{!-- Where you left off. Filled by the engine from the same position
+     store the reader uses (corpus "dtc"); hidden while an article is
+     open, because then you are already in one. --}}
+<div class="dtc-resume" id="resume" hidden></div>
 <div class="main">
   <div class="list" id="list" role="listbox" aria-label="Articles"></div>
   <div class="art" id="art"><div class="artscroll"><div class="inner">
@@ -78,7 +82,12 @@
     </div>
   </div></div></div>
 </div>
-<script src="{{asset "js/port/dtc.in02.js"}}&amp;frv=67e395d90d7c5921"></script>
+{{!-- An article is bookmarked and remembered exactly as a work is:
+     the mo-kit store under "tfr:dtc:<id>", and the place in it under
+     corpus "dtc". Both before the engine, which writes to them. --}}
+<script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
+<script src="{{asset "js/lib/faith-position-store.js"}}"></script>
+<script src="{{asset "js/port/dtc.in02.js"}}&amp;frv=97cc0a8c05c19906"></script>
 {{!-- Phones: the dictionary flows in the page; this keeps the reader's
      place in the list across opening and closing an entry. --}}
 <script src="{{asset "js/page/faith-dtc-mobile-flow.js"}}&amp;frv=898940d035a5a709"></script>
