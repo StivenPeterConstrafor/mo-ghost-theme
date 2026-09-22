@@ -51,6 +51,19 @@ jobs:
         # sniffs the gzip magic first, and real endpoints still parse.
         run: npm run check:gz
 
+      - name: Verify no page script reaches for an element the page lacks
+        # 2026-09-21: the search page's own nav bar was removed in favour
+        # of the shared rail, and the line that bound its Theme button
+        # stayed behind. Unguarded and at the top level of the file, it
+        # threw before anything below it ran, so the mode tabs, the
+        # Search button and the results list were never wired. Every tab
+        # on /the-faith-received/search/ was dead for a day while the
+        # page looked entirely normal.
+        #
+        # Deleting markup is the half that gets remembered. This checks
+        # the other half.
+        run: node scripts/check-page-dom-contract.mjs
+
       - name: Verify Daily Liturgy Scripture references parse
         # A hand-entered reading the parser can't read renders as
         # "Could not parse reference" on /daily-liturgy/read/ and

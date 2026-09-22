@@ -21,7 +21,12 @@ document.addEventListener('click',function(e){
     w.classList.toggle('open',open);w.hidden=!open;t.setAttribute('aria-expanded',open?'true':'false');return;}
 
 });
-document.getElementById('searchTheme').onclick=function(){var themes=['light','sepia','dark'],current=document.documentElement.dataset.theme||'light',next=themes[(themes.indexOf(current)+1)%3];document.documentElement.dataset.theme=next;try{localStorage.setItem('fr_theme',next);}catch(_){}this.title='Current theme: '+next;};
+/* The reading-theme button this bound to lived in the page's own nav bar, which
+   f437129 removed in favour of the shared rail. Unguarded, it took the whole
+   file down with it: a TypeError here is thrown at the top level, so every
+   line below stopped running and the mode tabs, the Search button and the
+   result list were never wired at all. The saved theme is still applied on
+   load by search.in02.js; only the toggle is gone, and it went on purpose. */
 function focusQuery(){if(!matchMedia('(max-width:640px)').matches)qEl.focus();}
 function mdHeadings(s){return (s||'').replace(/⟦h⟧([\s\S]{1,300}?)⟦\/?h⟧/g,'<b>$1</b>');}
 var FRB='https://mo-tfr-library.mo-podcast-feed.workers.dev';
