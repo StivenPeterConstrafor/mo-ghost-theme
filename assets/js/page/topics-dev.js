@@ -94,9 +94,6 @@
     $root.classList.remove("has-topic");
     $root.innerHTML =
       `<header class="td-head td-head--contents">` +
-        `<p class="sd-eyebrow">The Faith Received</p>` +
-        `<h1 class="td-title">Topics</h1>` +
-        `<p class="td-lede">The whole of Christian doctrine in the classic order of the loci, from Scripture and God to the Last Things, told in the words of the creeds, the confessions, and the church's teachers across twenty centuries.</p>` +
         `<label class="sd-search td-find"><span class="sd-filter-label">Find a topic</span><input type="search" data-td-find placeholder="Justification, the Trinity, baptism…" autocomplete="off"></label>` +
         `<p class="sd-muted td-find-empty" data-td-find-empty hidden>No topic matches. Try a broader word.</p>` +
       `</header>` +
@@ -160,7 +157,7 @@
       `<div class="td-main" data-td-main>` +
         `<header class="td-head">` +
           `<p class="sd-eyebrow">Part ${esc(part.n)} · ${esc(part.label)}${parent ? ` · <a href="${esc(topicHref(parent.id))}">${esc(parent.label)}</a>` : ""}</p>` +
-          `<h1 class="td-title">${esc(locus.label)}</h1>` +
+          `<h2 class="td-title">${esc(locus.label)}</h2>` +
           `<p class="td-counts sd-muted" data-td-counts>Gathering the sources…</p>${ 
           (locus.children || []).length ? `<p class="td-kids">Within this topic: ${locus.children.map((ch) => `<a href="${esc(topicHref(ch.id))}">${esc(ch.label)}</a>`).join(" · ")}</p>` : "" 
         }</header>` +

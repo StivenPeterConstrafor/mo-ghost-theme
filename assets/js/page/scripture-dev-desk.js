@@ -45,8 +45,7 @@
 
   $root.innerHTML =
     `<header class="sd-desk-head">` +
-      `<p class="sd-eyebrow">Verse Desk</p>` +
-      `<h1 class="sd-desk-title">${esc(label)}</h1>` +
+      `<h2 class="sd-desk-title">${esc(label)}</h2>` +
       `<blockquote class="sd-desk-verse" data-sd-verse><span class="sd-muted">Loading the verse…</span></blockquote>` +
       `<p class="sd-desk-trans sd-muted" data-sd-verse-trans></p>` +
       `<nav class="sd-desk-nav" aria-label="Verse navigation">` +
@@ -268,7 +267,7 @@
   function renderChooser() {
     const opts = S.BOOKS.map((b) => `<option value="${b.slug}">${esc(b.name)}</option>`).join("");
     $root.innerHTML =
-      `<header class="sd-desk-head"><p class="sd-eyebrow">Verse Desk</p><h1 class="sd-desk-title">Choose a verse</h1></header>` +
+      `<header class="sd-desk-head"><h2 class="sd-desk-title">Choose a verse</h2></header>` +
       `<form class="sd-chooser" action="/the-faith-received/scripture-dev/desk/" method="get">` +
         `<label class="sd-filter"><span class="sd-filter-label">Book</span><select name="b">${opts}</select></label>` +
         `<label class="sd-filter"><span class="sd-filter-label">Chapter</span><input name="c" type="number" min="1" max="150" value="1" inputmode="numeric" required></label>` +
