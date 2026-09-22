@@ -49,6 +49,17 @@
   const WORKER = (body.getAttribute("data-kit-worker-url") || "").replace(/\/$/, "");
   const status = body.getAttribute("data-member-status") || "";
   const paid = status === "paid" || status === "comped";
+  /* Who may keep a work. Saving is one of the research tools, so it
+     follows the same tier as the rest of them: an account during the
+     beta, a membership after it. Before 2026-09-22 this was paid-only
+     while Ask, search and Compare were open to any signed-in member,
+     which meant a free member could ask the library a question and then
+     could not keep the work the answer sent them to.
+
+     The constant is declared once, in assets/js/boot/tfr-tier.js. */
+  const signedIn = status === "paid" || status === "comped" || status === "free";
+  const beta = window.MO_TFR_BETA_OPEN_TO_ALL_MEMBERS !== false;
+  const allowed = beta ? signedIn : paid;
 
   // The one place the id is shaped. Mirrors readerUrlFor()'s vocabulary
   // in website/workers/tfr-library/lib/collections.js: the corpus is
@@ -73,7 +84,7 @@
   // worker both produce "no bookmarks", and every surface has to be
   // able to tell them apart before it decides what to say.
   function available() {
-    return !!(paid && WORKER && window.MOAuth);
+    return !!(allowed && WORKER && window.MOAuth);
   }
 
   const ids = new Set();

@@ -69,7 +69,13 @@
    * and the rest back behind paid membership. Nothing else in this file
    * has to change.
    */
-  const TFR_BETA_OPEN_TO_ALL_MEMBERS = true;
+  /* Declared in assets/js/boot/tfr-tier.js, which is in boot.min.js and
+     has therefore already run. Defaults to the beta if boot failed to
+     load: a reader who is wrongly offered a tool gets a 401 from the
+     worker, and a reader who is wrongly refused one gets nothing at
+     all, so of the two failures this is the one that keeps the site
+     usable. */
+  const TFR_BETA_OPEN_TO_ALL_MEMBERS = window.MO_TFR_BETA_OPEN_TO_ALL_MEMBERS !== false;
 
   /* One tool, two tiers, one shape. Every research tool is gated the
      same way and flips at the same moment, so they are built from one

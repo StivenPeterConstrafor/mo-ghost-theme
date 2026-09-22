@@ -62,6 +62,11 @@ const BUNDLES = [
       // a comparator published from site.min.js would not exist yet at
       // the moment faith-room.js sorts a room.
       "assets/js/lib/faith-title-order.js",
+      // The Faith Received's research tier. In boot because the files
+      // that read it run before site.min.js: feature-gate.js is IN that
+      // bundle, and faith-work-bookmarks.js is loaded by pages ahead of
+      // it. See assets/js/boot/tfr-tier.js.
+      "assets/js/boot/tfr-tier.js",
       "assets/js/vendor/purify.min.js",
     ],
   },
