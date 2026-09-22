@@ -31,6 +31,14 @@
   const narrow = window.matchMedia("(max-width: 820px)");
   const jump = (y) => window.scrollTo({ top: y, behavior: "instant" });
   let listY = 0;
+  let clickY = null;
+  // Taken on the click itself, in the capture phase, before the port
+  // handles it: the port repaints the list on the way into an entry, the
+  // page is briefly shorter, and a position read after that is clamped
+  // (2000 came back as 328).
+  document.addEventListener("click", (e) => {
+    if (e.target.closest && e.target.closest("#list .hw")) clickY = window.scrollY;
+  }, true);
   let reading = document.body.classList.contains("reading");
   new MutationObserver(() => {
     const now = document.body.classList.contains("reading");
@@ -38,7 +46,8 @@
     reading = now;
     if (!narrow.matches) return;
     if (now) {
-      listY = window.scrollY;
+      listY = clickY != null ? clickY : window.scrollY;
+      clickY = null;
       const el = document.querySelector(".faith-port-dtc-page");
       jump(Math.max(0, (el ? el.getBoundingClientRect().top + window.scrollY : 0) - 8));
     } else {
