@@ -3,8 +3,11 @@
 {{!-- /bible/ forwards to the Scripture tool. In the head so the old
      reader never paints; see the file for the address translation. --}}
 <script src="{{asset "js/page/faith-bible-forward.js"}}"></script>
+{{!-- SEO audit 2026-09-22 (L1): this page also sent a canonical to
+     /the-faith-received/scripture/, on top of Ghost's own self-canonical
+     and this noindex. Google discards conflicting canonicals, and a
+     noindex page cannot pass one anyway, so the page keeps one signal. --}}
 <meta name="robots" content="noindex, follow" />
-<link rel="canonical" href="https://mereorthodoxy.com/the-faith-received/scripture/" />
 <title>Read the Bible | Mere Orthodoxy</title>
 <meta name="description" content="A distraction-free Scripture reader with cross-references into the creeds, confessions, and classic works of The Faith Received." />
 <meta property="og:title" content="Read the Bible" />
