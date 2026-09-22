@@ -286,3 +286,137 @@ body.web-citation-layout #faith-web-constellations .cn-view-btn+.cn-view-btn{mar
    the corpus owner's and is replaced whole on his next drop. Deleting
    this rule puts the second title back. */
 .faith-port-pins-page #app > h1 { display: none; }
+/* ── Rings and Tradition wear Timeline's chrome ───────────────────────
+   Ian, 2026-09-22: "Rings and Tradition need to be as native to the
+   page as Timeline."
+
+   Timeline is the ported atlas dressed in our house style. Its two
+   controls sit in .map-top-controls at the top right of #map-heading,
+   its zoom is one bordered inline row in the bottom right of the plot,
+   and everything under the plot is an 11px muted line.
+
+   Rings and Tradition are the same page showing a different engine
+   (js/page/faith-constellations.js inside #faith-web-constellations),
+   and they arrived wearing that engine's own workspace chrome: a
+   left-aligned pair of labelled control groups stacked above the plot,
+   three zoom boxes stacked inside its top right corner, and a
+   paragraph block underneath. Two instruments in one frame.
+
+   Nothing below restyles a third path. The two controls that survive
+   on the citation graph are MOVED into .map-top-controls, Timeline's
+   own slot (placeCitationControls in js/port/web.in02.js), and the
+   zoom and the caption are given the measurements constellations.css
+   already gives #web-zoom and #map-caption. Change either of those and
+   change these with them.
+
+   Scoped to body.web-citation-layout throughout. The Scripture shelf
+   maps (Scripture maps in #mnav) hide #map-heading outright and keep
+   the engine's own four-control row, which is the right chrome there
+   because that mode has no Timeline to agree with. */
+
+/* The two survivors in Timeline's slot. Their small-caps labels are
+   clipped rather than deleted: both groups take their accessible name
+   from those elements through aria-labelledby, and Timeline's own
+   #map-density is named the same way by an .sr-only <label>, so this
+   is that pattern and not a hole in the accessible name. */
+body.web-citation-layout #faith-web-constellations .cn-controls { margin: 0; }
+body.web-citation-layout #map-heading .map-top-controls { align-items: center; gap: 18px; flex-wrap: wrap; }
+body.web-citation-layout .map-top-controls .cn-control { display: flex; align-items: center; min-width: 0; }
+body.web-citation-layout .map-top-controls .cn-control-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+body.web-citation-layout .map-top-controls .cn-views { display: flex; align-items: center; flex-wrap: nowrap; gap: 0; }
+body.web-citation-layout .map-top-controls .cn-view-btn {
+  font: 12px var(--body);
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 12px 0;
+  min-height: 44px;
+  white-space: nowrap;
+}
+body.web-citation-layout .map-top-controls .cn-view-btn.is-active { color: var(--fg); border-bottom-color: var(--accent); }
+body.web-citation-layout .map-top-controls .cn-view-btn + .cn-view-btn { margin-left: 18px; }
+/* .map-top-controls select sets `background` as a shorthand, which
+   takes the chevron off a control that still carries appearance:none.
+   Re-declared here rather than reverting to appearance:auto, which
+   hands the whole widget back to the platform and loses the hairline
+   border with it. */
+body.web-citation-layout .map-top-controls .cn-select {
+  appearance: none;
+  -webkit-appearance: none;
+  font: 12px var(--body);
+  color: var(--fg);
+  min-height: 44px;
+  max-width: 200px;
+  padding: 8px 30px 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background-color: var(--card);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 16px) calc(50% + 1px), calc(100% - 11px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+/* The zoom row, in #web-zoom's corner with #web-zoom's measurements
+   (constellations.css, body.web-page #web-zoom). One bordered group in
+   the bottom right of the plot, not three boxes stacked in its top
+   right. */
+body.web-citation-layout #faith-web-constellations .cn-zoom {
+  top: auto;
+  left: auto;
+  right: 20px;
+  bottom: 20px;
+  flex-direction: row;
+  gap: 1px;
+  padding: 1px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+}
+body.web-citation-layout #faith-web-constellations .cn-zoom-btn {
+  width: auto;
+  min-width: 40px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--fg);
+  font: 13px var(--body);
+}
+body.web-citation-layout #faith-web-constellations .cn-zoom-btn:hover { background: var(--hl); }
+body.web-citation-layout #faith-web-constellations .cn-zoom-btn--wide { padding: 0 12px; }
+
+/* Everything under the plot at #map-caption's weight: 11px, muted, one
+   line-height. The count keeps its letterspaced capitals, which is
+   what #map-key does on Timeline, and loses the darker colour and the
+   semibold that made this block read as a second lede. */
+body.web-citation-layout #faith-web-constellations .cn-caption { margin: 10px 0 0; gap: 4px 14px; }
+body.web-citation-layout #faith-web-constellations :is(.cn-caption-count, .cn-caption-blurb, .cn-caption-key, .cn-caption-caveat, .cn-views-note, .cn-hint) {
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--muted);
+}
+body.web-citation-layout #faith-web-constellations .cn-caption-caveat { margin-top: 2px; padding-left: 0; border-left: 0; }
+body.web-citation-layout #faith-web-constellations .cn-hint { margin: 10px 0 0; }
+
+@media (max-width: 760px) {
+  body.web-citation-layout #map-heading .map-top-controls { gap: 8px; flex-direction: column; align-items: flex-end; }
+  body.web-citation-layout #faith-web-constellations .cn-zoom { right: 16px; bottom: 16px; }
+}

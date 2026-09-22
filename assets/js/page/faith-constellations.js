@@ -641,12 +641,23 @@
   // are. The authors and works views are filed by Scripture; the
   // doctrines view is filed by head of doctrine, and calling that "By
   // Scripture" would be a label that lies.
+  //
+  // The citation views say "Tradition" and the Scripture views keep
+  // their "By " (Ian, 2026-09-22). On the citation graph this
+  // arrangement is also a TAB on /the-faith-received/connections/,
+  // where it sits beside Timeline and Rings and Ian named it; one
+  // choice reached two ways has to say one word. The Scripture views
+  // are only ever this control, where the button sits in a
+  // prepositional set with "In rings" and "By similarity" and a bare
+  // noun would read as a fragment. "Scripture" alone would also
+  // collide with the page's own Scripture view, which is a different
+  // thing entirely.
   const REGION_BTN_LABEL = {
     authors: "By Scripture",
     works: "By Scripture",
     doctrines: "By doctrine",
-    cited: "By tradition",
-    contested: "By tradition",
+    cited: "Tradition",
+    contested: "Tradition",
   };
   const ROWS_HEADING = {
     authors: "Principal works",

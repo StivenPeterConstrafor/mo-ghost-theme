@@ -24,7 +24,7 @@
 {{!-- Our colour, loaded last so it wins; then the offsets that start
      this page under our masthead. Keep both last. --}}
 <link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=b216a81e4e2cd814">
-<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=60371b1cc58019cd">
+<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=d78c3fe4c431a26b">
 {{/contentFor}}
 
 {{!-- /the-faith-received/connections/ — the citation atlas, ported.
@@ -83,7 +83,13 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 <nav id="network-layouts" aria-label="Citation network layout">
   <button type="button" data-network-layout="timeline" aria-pressed="true">Timeline</button>
   <button type="button" data-network-layout="rings" aria-pressed="false">Rings</button>
-  <button type="button" data-network-layout="regions" aria-pressed="false">By tradition</button>
+  {{!-- "Tradition", not "By tradition" (Ian, 2026-09-22). These three
+        are tabs beside Timeline and Rings, and a tab is named after
+        what it shows. The ?arrange= value stays "regions": deep links
+        are bookmarkable and a label is not an address. The same choice
+        reached through the engine's own arrangement control says the
+        same word; see REGION_BTN_LABEL in js/page/faith-constellations.js. --}}
+  <button type="button" data-network-layout="regions" aria-pressed="false">Tradition</button>
   <button type="button" id="network-show-all" hidden>Show all authors</button>
 </nav>
 <div id="mobile-view" aria-label="Explore view"><button data-view="browse" aria-pressed="true">Browse authors</button><button data-view="map" aria-pressed="false">View map</button></div>
@@ -130,4 +136,4 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   <button type="button" id="network-author-map" hidden>View this author’s map</button><button class="x" id="px" aria-label="Close details">×</button></div><div id="pbody"></div></aside>
 
 <script data-shelves="{{asset "data/faith-received/web-author-shelves.json"}}&amp;frv=ef3e2e56c60291d0" src="{{asset "js/lib/faith-web-graph.js"}}&amp;frv=ea7281e18c37a0a1"></script>
-<script src="{{asset "js/port/web.in02.js"}}&amp;frv=95d426c7185e8703"></script>
+<script src="{{asset "js/port/web.in02.js"}}&amp;frv=e2c688efc352c53f"></script>

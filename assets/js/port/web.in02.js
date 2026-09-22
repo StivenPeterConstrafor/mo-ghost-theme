@@ -796,16 +796,64 @@ document.querySelectorAll('[data-network-layout]').forEach(b=>b.onclick=()=>chan
 $('#network-author-map').onclick=()=>{panel.inert=true;panel.classList.remove('open');document.body.classList.remove('popen');showNetworkMap();$('#atlas').inert=false;$('#explorer').inert=false;requestAnimationFrame(resize);};
 $('#network-show-all').onclick=()=>{FOCUS=null;history.pushState(null,'',networkLayout==='timeline'?'#':networkHash(networkLayout,''));route();};
 window.addEventListener('faith-web-author',e=>{if(e.detail?.slug)openAuthor(e.detail.slug);});
+/* RINGS AND TRADITION WEAR TIMELINE'S CHROME.
+
+   Ian, 2026-09-22: "Rings and Tradition need to be as native to the
+   page as Timeline."
+
+   Timeline puts its two controls in .map-top-controls, top right of
+   #map-heading. Rings and Tradition are drawn by a different engine
+   (js/page/faith-constellations.js) that ships its own labelled
+   control row above its own plot, so the same page offered its
+   controls in two places depending on which tab was open.
+
+   Rather than dressing a second row to look like the first, the two
+   controls that survive on the citation graph — the view pair and the
+   links threshold — are MOVED into Timeline's slot and moved back when
+   the citation layout ends. faith-port-surfaces.css gives them the
+   measurements Timeline's own controls have there.
+
+   Safe to move: faith-constellations.js resolves its whole DOM
+   contract once, at bind time, into closure variables (see its § DOM
+   contract) and never re-queries, so a node that leaves [data-cn-root]
+   keeps working. Its listeners are on the buttons themselves. Nothing
+   here touches a data-cn-* attribute.
+
+   The move must be reversible. The Scripture shelf maps (Scripture
+   maps in #mnav) hide #map-heading outright and need all four controls
+   back in the panel's own row; leaving two of them inside a hidden
+   heading would simply delete them from that mode. */
+let __cnHome=null;
+function citationControlPair(){
+ const root=document.querySelector('#faith-web-constellations [data-cn-root]');if(!root)return null;
+ const views=root.querySelector('[data-cn-view]'),links=root.querySelector('[data-cn-links-group]');
+ const a=views&&views.closest('.cn-control'),b=links&&links.closest('.cn-control');
+ return a&&b?[a,b]:null;
+}
+function placeCitationControls(on){
+ const pair=citationControlPair(),slot=document.querySelector('#map-heading .map-top-controls');
+ if(!pair||!slot)return;
+ if(on){
+  /* Homes recorded before anything moves, so the second element's
+     anchor is not the first element's old position. */
+  if(!__cnHome)__cnHome=pair.map(el=>[el.parentNode,el.nextSibling]);
+  pair.forEach(el=>{if(el.parentNode!==slot)slot.appendChild(el);});
+ }else if(__cnHome){
+  pair.forEach((el,i)=>{const [parent,next]=__cnHome[i];if(parent)parent.insertBefore(el,next&&next.parentNode===parent?next:null);});
+  __cnHome=null;
+ }
+}
+function setCitationLayout(on){document.body.classList.toggle('web-citation-layout',on);placeCitationControls(on);}
 function setConstellationMode(on){
  document.body.classList.toggle('web-constellation-mode',on);
- if(!on)document.body.classList.remove("web-citation-layout");
+ if(!on)setCitationLayout(false);
  const host=document.getElementById('faith-web-constellations');if(host)host.hidden=!on;
  if(!on){$('#atlas').inert=false;$('#explorer').inert=false;}
 }
 function openShelfMaps(shelf='citations',kind='cited',push=true,options={}){
  ++__PSEQ;panel.inert=true;panel.classList.remove('open');document.body.classList.remove('popen','shelf-comparison');
  const citation=shelf==='citations';networkLayout=citation?(options.arrange||'rings'):'timeline';
- setConstellationMode(true);document.body.classList.toggle('web-citation-layout',citation);
+ setConstellationMode(true);setCitationLayout(citation);
  $('#atlas').inert=false;$('#explorer').inert=false;
  $('#map-title').textContent=citation?'The citation network':'Scripture connections';
  $('#map-summary').textContent=citation?NODES.length.toLocaleString()+' entries · '+EDGES.length.toLocaleString()+' recorded connections':'';
