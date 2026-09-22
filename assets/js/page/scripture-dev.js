@@ -200,6 +200,7 @@
     }
   }
 
+  let groupedMatches = null;
   function renderPanel(v) {
     const {book} = state;
     const {c} = state;
@@ -226,6 +227,7 @@
       closePanel();
       if (span) span.focus({ preventScroll: true });
     });
+    groupedMatches = S.groupedSources($panel.querySelector("[data-sd-rows]"), {book, c, v});
     bar = S.filterBar($panel.querySelector("[data-sd-filters]"), {
       search: true,
       searchLabel: "Search this verse's citations",
@@ -247,7 +249,6 @@
     const $count = $panel.querySelector("[data-sd-count]");
     const $top = $panel.querySelector("[data-sd-top]");
     const $matches = $panel.querySelector("[data-sd-matches]");
-    const $rows = $panel.querySelector("[data-sd-rows]");
     const $more = $panel.querySelector("[data-sd-more]");
     if (!more) $top.innerHTML = `<li class="sd-muted">Loading…</li>`;
     $more.disabled = true;
@@ -271,11 +272,12 @@
           $top.appendChild(S.sourceItem(w, ctx, { count: w.n, pickRow: () => firstRowOf(w.w, v) }));
         });
         if (!(d.top_works || []).length) $top.innerHTML = `<li class="sd-muted">Nothing matches these filters.</li>`;
-        $rows.innerHTML = "";
+        groupedMatches.set([], d.matched);
       }
       $matches.hidden = !filtered;
       if (filtered) {
-        (d.rows || []).forEach((r) => $rows.appendChild(S.sourceItem(r, ctx)));
+        if (more) groupedMatches.append(d.rows || [], d.matched);
+        else groupedMatches.set(d.rows || [], d.matched);
         rowsOffset = d.next_offset || 0;
         $more.hidden = !d.next_offset;
       }

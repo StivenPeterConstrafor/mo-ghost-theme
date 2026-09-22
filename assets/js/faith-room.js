@@ -793,7 +793,7 @@
     const sub = m && m.length > ADDRESS ? `<span class="brow-sub">${escapeHtml(m)}</span>` : "";
     const preview=window.MOCollectedContents?.preview(w.id)||"";
     const details=window.MOCollectedContents?.disclosure(w.id)||"";
-    const inner = `<span class="brow-t">${escapeHtml(w.title || w.id)}</span>${sub}${second2}${vol}${preview}`;
+    const inner = `<span class="brow-t">${escapeHtml(w.title || w.id)}</span>${sub}${second2}${vol}${window.MOFaithCatalogue?.metadataHTML(w, {hideVolume:true}) || ""}${preview}`;
     if (w.readable !== false && w.url) {
       return `<li${contents?' class="frcw-volume"':""}><a href="${escapeHtml(w.url)}">${inner}</a>${details}</li>`;
     }

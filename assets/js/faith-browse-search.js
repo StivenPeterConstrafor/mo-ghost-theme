@@ -207,10 +207,10 @@
         return w._fa.includes(q);
       }
       if (scope === "title") {
-        if (w._ft === undefined) w._ft = fold(`${w.title || ""} ${w.titleLatin || ""}`);
+        if (w._ft === undefined) w._ft = fold(`${w.title || ""} ${w.titleLatin || ""} ${w.volumeLabel || w.volume || ""}`);
         return w._ft.includes(q);
       }
-      if (w._fq === undefined) w._fq = fold(`${w.author || ""} ${w.title || ""} ${w.titleLatin || ""}`);
+      if (w._fq === undefined) w._fq = fold(`${w.author || ""} ${w.title || ""} ${w.titleLatin || ""} ${w.volumeLabel || w.volume || ""}`);
       return w._fq.includes(q);
     });
   }
@@ -271,7 +271,7 @@
       `<a class="bsearch-hit-title" data-hit-for="${escapeHtml(`${w.corpus}:${w.id}`)}" ` +
       `href="${escapeHtml(hitUrl(w, loc))}">${escapeHtml(w.title || w.id)}</a>${ 
       w.author ? `<span class="bsearch-hit-author">${escapeHtml(w.author)}</span>` : "" 
-      }<span class="bsearch-hit-where">${escapeHtml(c ? c.label : w.corpus)}${
+      }${window.MOFaithCatalogue?.metadataHTML(w) || ""}<span class="bsearch-hit-where">${escapeHtml(c ? c.label : w.corpus)}${
         w.tradition ? ` · ${escapeHtml(w.tradition)}` : ""}</span>${ 
       extra || ""}</li>`;
   }
@@ -353,6 +353,33 @@
        authorPager(pages)}</div>`;
   }
 
+  function catalogueCards(rows) {
+    const families = new Map();
+    for (const work of rows) {
+      const meta = window.MOFaithCatalogue?.metadata(work);
+      if (!meta?.family) continue;
+      if (!families.has(meta.family)) families.set(meta.family, []);
+      families.get(meta.family).push(work);
+    }
+    const rendered = new Set();
+    return rows.map(work => {
+      const meta = window.MOFaithCatalogue?.metadata(work), siblings = families.get(meta?.family) || [];
+      const formats = new Map();
+      for (const item of siblings) {
+        const {format} = window.MOFaithCatalogue.metadata(item);
+        if (!formats.has(format)) formats.set(format, []);
+        formats.get(format).push(item);
+      }
+      if (formats.size < 2 || !formats.has('Facsimile') || !formats.has('Born-digital text')) return card(work);
+      if (rendered.has(meta.family)) return '';
+      rendered.add(meta.family);
+      return `<li class="bsearch-edition-family"><h3>${escapeHtml(work.title)}</h3><p class="bsearch-hit-author">${escapeHtml(work.author)}</p><p class="bsearch-edition-note">Two recorded editions. Their volume divisions may differ.</p>${['Born-digital text','Facsimile'].map(format => {
+        const volumes = formats.get(format).slice().sort((a,b) => String(a.volumeLabel || a.volume || '').localeCompare(String(b.volumeLabel || b.volume || ''),undefined,{numeric:true}));
+        return `<details class="bsearch-edition-set"><summary><strong>${format === 'Facsimile' ? 'Facsimile edition' : 'Born-digital edition'}</strong><span>${volumes.length} ${volumes.some(w => /\b(?:pars|part)\b/i.test(w.volumeLabel || w.volume || '')) ? (volumes.length === 1 ? 'part' : 'volumes and parts') : (volumes.length === 1 ? 'volume' : 'volumes')}</span></summary><ol class="bsearch-list">${volumes.map(w => card(w)).join('')}</ol></details>`;
+      }).join('')}</li>`;
+    }).join('');
+  }
+
   const PAGE = 60;
   let shown = PAGE;
 
@@ -368,7 +395,7 @@
     // about a person.
     const people = scopeEl.value === "title" ? "" : authorBlock();
     out.innerHTML = hits.length
-      ? `${people}<ol class="bsearch-list">${slice.map((w) => card(w)).join("")}</ol>${
+      ? `${people}<ol class="bsearch-list">${catalogueCards(slice)}</ol>${
         hits.length > slice.length
           ? `<button type="button" class="bsearch-more" data-bs-more>Show more</button>` : ""}`
       : `${people}<p class="bsearch-msg">No author or title in the library uses that word. `

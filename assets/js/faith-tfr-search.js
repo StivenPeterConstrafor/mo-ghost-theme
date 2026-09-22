@@ -1159,6 +1159,11 @@
       if (c && c.label) bits.push(c.label);
       meta.textContent = bits.join(" \u00b7 ");
       li.appendChild(meta);
+      const edition = document.createElement("div");
+      edition.className = "faith-search-result-edition";
+      const paintEdition = () => { edition.innerHTML = window.MOFaithCatalogue?.metadataHTML(it) || ""; };
+      paintEdition(); Promise.resolve(window.MOFaithCatalogue?.ready).then(paintEdition);
+      li.appendChild(edition);
       worksResults.appendChild(li);
     });
   }

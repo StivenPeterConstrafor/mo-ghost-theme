@@ -282,7 +282,7 @@
         const vol = w.volume ? `<span class="fa-work-vol">${escapeHtml(w.volume)}</span>` : "";
         const eraTag = era && !volIsYear
           ? `<span class="fa-work-era">${escapeHtml(era)}</span>` : "";
-        const inner = `<span class="fa-work-t">${escapeHtml(w.title || w.id)}</span>${second}${vol}${eraTag}`;
+        const inner = `<span class="fa-work-t">${escapeHtml(w.title || w.id)}</span>${second}${vol}${eraTag}${window.MOFaithCatalogue?.metadataHTML(w, {hideVolume:true}) || ""}`;
         return w.readable !== false && w.url
           ? `<li><a href="${escapeHtml(w.url)}">${inner}</a></li>`
           : `<li class="fa-work-pending"><span>${inner}</span></li>`;

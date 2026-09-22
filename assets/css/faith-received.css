@@ -18961,3 +18961,8 @@ html.g-mobile #reading .fr-sec-toggle {
   overflow-y: visible !important;
   overscroll-behavior: auto !important;
 }
+
+/* Edition identity is visible wherever a held work is listed. */
+.faith-work-edition{display:block;font-family:var(--font-body);font-size:.92rem;line-height:1.55;color:var(--color-dark);margin:7px 0 4px;text-transform:none;letter-spacing:normal;font-variant-numeric:tabular-nums}.faith-work-witnesses{display:flex;gap:6px 10px;flex-wrap:wrap;margin:7px 0;font-family:var(--font-body);font-size:.76rem;line-height:1.4;letter-spacing:normal;text-transform:none;color:var(--color-muted)}.faith-work-witnesses>span{display:inline-block;border:1px solid var(--color-border);border-radius:3px;padding:3px 7px}.bsearch-hit>.faith-work-witnesses{justify-content:center}a>.faith-work-edition,a>.faith-work-witnesses{grid-column:1/-1}.sd-work-edition .faith-work-witnesses{margin-bottom:0}.sd-source-edition:empty{display:none}
+
+.bsearch-edition-family{grid-column:1/-1;list-style:none!important;text-align:left;padding:20px 0}.bsearch-edition-family>h3{margin:0;font-size:1.45rem}.bsearch-edition-note{font-size:.9rem;color:var(--color-muted);margin:8px 0 20px}.bsearch-edition-set{border-block-start:1px solid var(--color-border)}.bsearch-edition-set>summary{display:flex;justify-content:space-between;gap:20px;align-items:center;min-height:58px;padding:12px 0;cursor:pointer}.bsearch-edition-set>summary>span{font-size:.85rem;color:var(--color-muted)}.bsearch-edition-set .bsearch-list{margin-top:12px}.bsearch-edition-family>.bsearch-hit-author{margin:8px 0}

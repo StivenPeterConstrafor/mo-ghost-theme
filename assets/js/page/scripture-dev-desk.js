@@ -166,6 +166,7 @@
   const $more = $root.querySelector("[data-sd-more]");
   const $allH = $root.querySelector("[data-sd-all-h]");
   const ctx = { book, c, v };
+  const grouped = S.groupedSources($rows, ctx);
   let run = 0;
   let offset = 0;
   const bar = S.filterBar($root.querySelector("[data-sd-filters]"), {
@@ -180,7 +181,7 @@
     if (!more) {
       offset = 0;
       $top.innerHTML = `<li class="sd-muted" role="status">Loading…</li>`;
-      $rows.innerHTML = "";
+      grouped.set([], 0);
     }
     $more.disabled = true;
     S.fetchVerse(book, c, v, bar.filters, offset, 20).then((d) => {
@@ -212,7 +213,8 @@
         });
         if (!(d.top_works || []).length) $top.innerHTML = `<li class="sd-muted">Nothing matches these filters.</li>`;
       }
-      (d.rows || []).forEach((r) => $rows.appendChild(S.sourceItem(r, ctx)));
+      if (more) grouped.append(d.rows || [], d.matched);
+      else grouped.set(d.rows || [], d.matched);
       offset = d.next_offset || 0;
       $more.hidden = !d.next_offset;
       $more.textContent = d.next_offset ? `Show more (${fmt(d.matched - d.next_offset)} left)` : "Show more";

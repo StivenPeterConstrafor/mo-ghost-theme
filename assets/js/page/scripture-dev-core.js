@@ -374,58 +374,112 @@
   };
 
   function sourceItem(row, ctx, extra) {
-    const li = document.createElement("li");
-    li.className = "sd-source";
+    const li = document.createElement('li');
+    li.className = 'sd-source';
     const href = sourceHref(row.h, row.w, row.p);
-    const meta = [row.a, row.trad, centuryLabel(row.cen)].filter(Boolean).map(esc).join(" · ");
+    const compact = !!(extra && extra.compact);
+    const meta = (compact ? [HOW[row.how] || row.how] : [row.a, row.trad, centuryLabel(row.cen)]).filter(Boolean).map(esc).join(' · ');
     const pid = `sdp-${Math.random().toString(36).slice(2, 9)}`;
-    li.innerHTML =
-      `<div class="sd-source-head">` +
-        `<div class="sd-source-id">` +
-          `<span class="sd-source-title">${esc(row.t || row.w)}</span>` +
-          `<span class="sd-source-meta">${meta}${extra && extra.count ? ` · ${plural(extra.count, "citation", "citations")}` : ""}${!extra && row.how ? ` · ${esc(HOW[row.how] || row.how)}` : ""}</span>` +
-        `</div>` +
-        `<button type="button" class="sd-preview-btn" aria-expanded="false" aria-controls="${pid}">Preview</button>` +
-      `</div>${ 
-      row.g && !(extra && extra.count) ? `<p class="sd-source-gist">${esc(gist(row.g))}</p>` : "" 
-      }<div class="sd-preview" id="${pid}" hidden></div>`;
-    const $btn = li.querySelector(".sd-preview-btn");
-    const $pv = li.querySelector(".sd-preview");
+    const heading = compact ? (row.p === undefined || row.p === null || row.p === '' ? 'Location not recorded' : `Location ${String(row.p)}`) : (row.t || row.w);
+    li.innerHTML = `<div class="sd-source-head"><div class="sd-source-id"><span class="sd-source-title">${esc(heading)}</span><span class="sd-source-meta">${meta}${extra && extra.count ? ` · ${plural(extra.count, 'citation', 'citations')}` : ''}${!compact && !extra && row.how ? ` · ${esc(HOW[row.how] || row.how)}` : ''}</span></div><button type="button" class="sd-preview-btn" aria-expanded="false" aria-controls="${pid}">Preview passage</button></div>${row.g && !(extra && extra.count) ? `<p class="sd-summary-label">Indexed page summary</p><p class="sd-source-gist">${esc(gist(row.g))}</p>` : ''}<div class="sd-preview" id="${pid}" hidden></div>`;
+    const edition = document.createElement('div'); edition.className = 'sd-source-edition';edition.hidden = compact;li.querySelector('.sd-source-id').appendChild(edition);
+    const updateEdition = () => { edition.innerHTML = window.MOFaithCatalogue?.metadataHTML(row.w, {hideExtent:true}) || ''; };updateEdition();Promise.resolve(window.MOFaithCatalogue?.ready).then(updateEdition);
+    const button = li.querySelector('.sd-preview-btn');
+    const preview = li.querySelector('.sd-preview');
     let loaded = false;
-    $btn.addEventListener("click", () => {
-      const open = $btn.getAttribute("aria-expanded") !== "true";
-      $btn.setAttribute("aria-expanded", String(open));
-      $btn.textContent = open ? "Hide" : "Preview";
-      $pv.hidden = !open;
-      if (!open || loaded) return;
-      loaded = true;
-      $pv.innerHTML = `<p class="sd-muted" role="status">Finding the passage…</p>`;
+    let loading = false;
+    function loadPreview() {
+      if (loaded || loading) return;
+      loading = true;
+      preview.innerHTML = '<p class="sd-muted" role="status">Finding the source passage…</p>';
       const pick = extra && extra.pickRow ? extra.pickRow() : Promise.resolve(row);
-      pick.then((r) => fetchPassage(r || row, ctx.book, ctx.c, ctx.v).then((d) => ({ d, r: r || row })))
-        .then(({ d, r }) => {
-          const link = sourceHref((d && d.href) || r.h, r.w, r.p) || href;
-          const read = link ? `<a class="sd-read-link" href="${esc(link)}">Read in context</a>` : "";
-          if (d && d.found && d.text) {
-            // The worker trims to the neighbourhood of the reference and
-            // says which ends it cut; mark them so a clipped sentence is
-            // not read as the author's whole thought.
-            const text = `${d.clipped_start ? "… " : ""}${d.text}${d.clipped_end ? " …" : ""}`;
-            $pv.innerHTML =
-              `<blockquote class="sd-quote"${d.lang ? ` lang="${esc(d.lang)}"` : ""}>${esc(text)}</blockquote>` +
-              `<p class="sd-preview-foot">${d.locator ? `<span>${esc(d.locator)}</span>` : ""}${read}</p>`;
-          } else {
-            const why = d && d.reason === "licensed"
-              ? "This edition's text is licensed, so it cannot be previewed here."
-              : "The passage could not be extracted from this edition.";
-            $pv.innerHTML = `<p class="sd-muted">${why}</p><p class="sd-preview-foot">${read}</p>`;
-          }
-        })
-        .catch(() => {
-          loaded = false;
-          $pv.innerHTML = `<p class="sd-muted">The passage did not load. Select Hide, then Preview, to try again.</p>`;
-        });
+      pick.then((r) => {
+        // A top-work total is not a source location. Never preview a guessed page.
+        if (!r || (extra && extra.count && (r.p === undefined || r.p === null || r.p === ''))) throw new Error('No indexed source location');
+        return fetchPassage(r, ctx.book, ctx.c, ctx.v).then((d) => ({ d, r }));
+      }).then(({ d, r }) => {
+        const link = sourceHref((d && d.href) || r.h, r.w, r.p) || href;
+        const read = link ? `<a class="sd-read-link" href="${esc(link)}">Read in context</a>` : '';
+        if (d && d.found && d.text) {
+          const text = `${d.clipped_start ? '… ' : ''}${d.text}${d.clipped_end ? ' …' : ''}`;
+          preview.innerHTML = `<p class="sd-summary-label">Source passage${d.lang ? ` · ${esc(d.lang)}` : ''}</p><blockquote class="sd-quote"${d.lang ? ` lang="${esc(d.lang)}"` : ''}>${esc(text)}</blockquote><p class="sd-preview-foot">${d.locator ? `<span>${esc(d.locator)}</span>` : ''}${read}</p>`;
+        } else {
+          const why = d && d.reason === 'licensed' ? 'This edition’s text is licensed, so it cannot be previewed here.' : 'A source passage could not be extracted at this reference. The indexed summary above is not a quotation.';
+          preview.innerHTML = `<p class="sd-muted">${why}</p><p class="sd-preview-foot">${read}</p>`;
+        }
+        loaded = true;
+      }).catch(() => {
+        preview.innerHTML = `<p class="sd-muted" role="status">The source passage could not load.</p><button type="button" class="sd-clear" data-preview-retry>Retry preview</button>${href ? `<p><a class="sd-read-link" href="${esc(href)}">Read in context</a></p>` : ''}`;
+        preview.querySelector('[data-preview-retry]').addEventListener('click', loadPreview);
+      }).finally(() => { loading = false; });
+    }
+    button.addEventListener('click', () => {
+      const open = button.getAttribute('aria-expanded') !== 'true';
+      button.setAttribute('aria-expanded', String(open));
+      button.textContent = open ? 'Close preview' : 'Preview passage';
+      preview.hidden = !open;
+      if (open) loadPreview();
     });
     return li;
+  }
+
+  // Shared by All citations and the chapter sidebar's filtered matches.
+  // Groups start closed. Existing preview nodes survive pagination and reordering.
+  function groupedSources(host, ctx) {
+    let rows = [];
+    let by = 'author';
+    let order = 'name';
+    let nodes = new WeakMap();
+    const controls = document.createElement('div');
+    controls.className = 'sd-source-organization';
+    controls.innerHTML = '<label class="sd-filter">Group citations<select data-group-sources><option value="author">By author</option><option value="work">By work</option></select></label><label class="sd-filter">Order sources<select data-order-sources><option value="name">Name, A–Z</option><option value="century">Earliest century first</option><option value="count">Most loaded citations</option></select></label><button type="button" class="sd-clear" data-collapse-sources>Collapse all</button><p class="sd-muted" data-source-coverage role="status"></p>';
+    host.before(controls);
+    host.classList.add('sd-grouped-sources');
+    function record(row) {
+      if (!nodes.has(row)) nodes.set(row, sourceItem(row, ctx, { compact: true }));
+      return nodes.get(row);
+    }
+    function render(total) {
+      const open = new Set(Array.from(host.querySelectorAll('details[open][data-source-key]'), (el) => el.dataset.sourceKey));
+      const groups = window.FRScriptureSources.group(rows, { by, order });
+      const fragment = document.createDocumentFragment();
+      const workFold = (work, parent) => {
+        const key = `${parent}/${work.key}`;
+        const details = document.createElement('details');
+        details.className = 'sd-work-group'; details.dataset.sourceKey = key; details.open = open.has(key);
+        details.innerHTML = `<summary><span><strong>${esc(work.title)}</strong><small>${work.authors.map(esc).join(', ')}</small></span><span>${plural(work.rows.length, 'loaded citation', 'loaded citations')}</span></summary>`;
+        const edition = document.createElement('div'); edition.className = 'sd-work-edition'; edition.innerHTML = window.MOFaithCatalogue?.metadataHTML(work.work, {hideExtent:true}) || ''; details.querySelector('summary>span').appendChild(edition);
+        const list = document.createElement('ol'); list.className = 'sd-sources sd-work-citations';
+        work.rows.forEach((row) => list.appendChild(record(row)));
+        details.appendChild(list);
+        return details;
+      };
+      groups.forEach((group) => {
+        const item = document.createElement('li');
+        if (by === 'work') {
+          item.appendChild(workFold(group.works[0], group.key));
+        } else {
+          const details = document.createElement('details');
+          details.className = 'sd-author-group'; details.dataset.sourceKey = group.key; details.open = open.has(group.key);
+          details.innerHTML = `<summary><strong>${esc(group.label)}</strong><span>${plural(group.works.length, 'work', 'works')} · ${plural(group.rows.length, 'loaded citation', 'loaded citations')}</span></summary>`;
+          group.works.forEach((work) => details.appendChild(workFold(work, group.key)));
+          item.appendChild(details);
+        }
+        fragment.appendChild(item);
+      });
+      host.replaceChildren(fragment);
+      controls.querySelector('[data-source-coverage]').textContent = `${fmt(rows.length)} of ${fmt(total)} citations loaded. Works are ordered by title and volume; references by source location.`;
+      controls.querySelector('[data-collapse-sources]').disabled = !rows.length;
+    }
+    let total = 0;
+    Promise.resolve(window.MOFaithCatalogue?.ready).then(() => { if (host.isConnected) render(total); });
+    controls.querySelector('[data-group-sources]').addEventListener('change', (e) => { by = e.target.value; render(total); });
+    controls.querySelector('[data-order-sources]').addEventListener('change', (e) => { order = e.target.value; render(total); });
+    controls.querySelector('[data-collapse-sources]').addEventListener('click', () => host.querySelectorAll('details[open]').forEach((el) => { el.open = false; }));
+    return {
+      set(next, count) { rows = next || []; total = Number(count) || 0; nodes = new WeakMap(); host.replaceChildren(); render(total); },
+      append(next, count) { rows.push(...(next || [])); total = Number(count) || total; render(total); },
+    };
   }
 
   /* Commentaries for a book, filtered to those that cover the chapter.
@@ -491,7 +545,7 @@
     translationInfo, recalledTranslation, rememberTranslation,
     fetchChapterHtml, markVerses, verseTextFrom, fetchVerseText,
     fetchVerse, fetchCommentaries, fetchPassage,
-    emptyFilters, activeCount, filterBar, sourceItem, centuryLabel,
+    emptyFilters, activeCount, filterBar, sourceItem, groupedSources, centuryLabel,
     // For /the-faith-received/topics-dev/, which reads the same worker.
     api, VERSE_API,
   };
