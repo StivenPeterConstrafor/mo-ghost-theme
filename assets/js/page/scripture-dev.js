@@ -1,5 +1,5 @@
 /*
- * /scripture-dev/ — the chapter reader with a verse sidebar.
+ * /the-faith-received/scripture-dev/ — the chapter reader with a verse sidebar.
  *
  * The chapter is typeset exactly as the old /bible/ page set it (the
  * .bible-* rules still ship in screen.css), and every verse is a

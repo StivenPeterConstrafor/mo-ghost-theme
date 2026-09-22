@@ -413,9 +413,9 @@ routes:
   # Development pages for the Scripture reader and Verse Desk rebuild
   # (Ian, 2026-09-22). Beside the live tools, which they do not touch.
   # One route serves every verse: the verse is ?ref=<book>.<c>.<v>.
-  /scripture-dev/:
+  /the-faith-received/scripture-dev/:
     template: custom-scripture-dev
-  /scripture-dev/desk/:
+  /the-faith-received/scripture-dev/desk/:
     template: custom-scripture-dev-desk
   /the-faith-received/scripture/:
     template: custom-faith-scripture

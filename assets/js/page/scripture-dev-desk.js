@@ -1,5 +1,5 @@
 /*
- * /scripture-dev/desk/?ref=john.3.16 — the Verse Desk.
+ * /the-faith-received/scripture-dev/desk/?ref=john.3.16 — the Verse Desk.
  *
  * One template serves every verse in the Bible: the verse is the query
  * string, not the path, so no page exists per verse and none has to be
@@ -269,7 +269,7 @@
     const opts = S.BOOKS.map((b) => `<option value="${b.slug}">${esc(b.name)}</option>`).join("");
     $root.innerHTML =
       `<header class="sd-desk-head"><p class="sd-eyebrow">Verse Desk</p><h1 class="sd-desk-title">Choose a verse</h1></header>` +
-      `<form class="sd-chooser" action="/scripture-dev/desk/" method="get">` +
+      `<form class="sd-chooser" action="/the-faith-received/scripture-dev/desk/" method="get">` +
         `<label class="sd-filter"><span class="sd-filter-label">Book</span><select name="b">${opts}</select></label>` +
         `<label class="sd-filter"><span class="sd-filter-label">Chapter</span><input name="c" type="number" min="1" max="150" value="1" inputmode="numeric" required></label>` +
         `<label class="sd-filter"><span class="sd-filter-label">Verse</span><input name="v" type="number" min="1" max="176" value="1" inputmode="numeric" required></label>${ 

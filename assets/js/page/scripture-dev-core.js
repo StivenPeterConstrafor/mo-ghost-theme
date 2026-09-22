@@ -1,5 +1,5 @@
 /*
- * /scripture-dev/ — shared core for the Scripture reader and Verse Desk.
+ * /the-faith-received/scripture-dev/ — shared core for the Scripture reader and Verse Desk.
  *
  * Two pages load this: the chapter reader (scripture-dev.js) and the
  * Verse Desk (scripture-dev-desk.js). Everything both of them need lives
@@ -112,9 +112,9 @@
   // "Psalm 23:1", not "Psalms 23:1": a single psalm takes the singular.
   const refLabel = (book, c, v) => `${book.slug === "psalms" && c ? "Psalm" : book.name} ${c}${v ? `:${v}` : ""}`;
   const readerHref = (book, c, v, t) =>
-    `/scripture-dev/?ref=${refKey(book, c, v)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
+    `/the-faith-received/scripture-dev/?ref=${refKey(book, c, v)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
   const deskHref = (book, c, v, t) =>
-    `/scripture-dev/desk/?ref=${refKey(book, c, v)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
+    `/the-faith-received/scripture-dev/desk/?ref=${refKey(book, c, v)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
 
   // The library's links are relative to its own reader ("/read?w=…").
   // Ours lives under /the-faith-received/read/. Anything that is not
