@@ -2,6 +2,14 @@
 {{#contentFor "moHead"}}
 <title>Welcome | Mere Orthodoxy</title>
 <meta name="robots" content="noindex, nofollow" />
+{{!-- SEO audit 2026-09-22 (L8): noindex keeps this out of search, but it
+     is still shared and linked in the welcome email, and without these it
+     previewed as the bare site title. --}}
+<meta property="og:title" content="Welcome to Mere Orthodoxy" />
+<meta name="twitter:title" content="Welcome to Mere Orthodoxy" />
+<meta name="description" content="Tell us what brought you to Mere Orthodoxy so we can point you to the work you came for." />
+<meta property="og:description" content="Tell us what brought you to Mere Orthodoxy so we can point you to the work you came for." />
+<meta name="twitter:description" content="Tell us what brought you to Mere Orthodoxy so we can point you to the work you came for." />
 {{/contentFor}}
 {{!-- /welcome/ — the post-signup welcome survey.
 

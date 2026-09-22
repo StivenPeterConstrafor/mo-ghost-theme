@@ -10,6 +10,12 @@
 <div class="tag-page" data-tag-slug="{{#tag}}{{slug}}{{/tag}}">
 
     {{#tag}}
+    {{!-- SEO audit 2026-09-22 (M3): both headers used to render on every
+         tag page and CSS hid one, so all 998 tag pages shipped two h1s.
+         The same condition the CSS used (slug starts with "author-") now
+         decides which header is built at all. The CSS swap stays, so the
+         classes keep working if this ever renders both again. --}}
+    {{#match slug "~^" "author-"}}
     <header class="contributor-header tag-page-contributor">
         <div class="contributor-header-inner">
             <div class="contributor-portrait" aria-hidden="true">
@@ -28,6 +34,7 @@
             </div>
         </div>
     </header>
+    {{else}}
     <header class="archive-header tag-page-archive">
         <div class="archive-header-inner">
             <p class="eyebrow">Filed under</p>
@@ -37,6 +44,7 @@
             {{/if}}
         </div>
     </header>
+    {{/match}}
     {{/tag}}
 
     <section class="archive-body">

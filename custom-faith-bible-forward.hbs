@@ -7,8 +7,11 @@
      so the route stays and translates them. In the head so nothing
      paints first. --}}
 <script src="{{asset "js/page/faith-bible-forward.js"}}&amp;frv=89ef99d0b532b000"></script>
+{{!-- SEO audit 2026-09-22 (L1): this page also sent a canonical to
+     /the-faith-received/scripture/. A noindex page cannot pass a
+     canonical, and Google discards conflicting pairs, so the page keeps
+     one signal: do not index it, follow the link out. --}}
 <meta name="robots" content="noindex, follow" />
-<link rel="canonical" href="https://mereorthodoxy.com/the-faith-received/scripture/" />
 <title>Scripture | The Faith Received | Mere Orthodoxy</title>
 {{/contentFor}}
 <main class="bible">

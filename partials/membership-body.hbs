@@ -13,7 +13,12 @@
           </p>
         </div>
         <div class="mb-hero-image" aria-hidden="true">
-          <img src="{{asset "images/membership-hero.jpg"}}" alt="Stack of Mere Orthodoxy journals" fetchpriority="high" />
+          {{!-- SEO audit 2026-09-22 (M8): this promo sits well down the page and
+               carried fetchpriority="high", so it raced the post's own feature
+               image for bandwidth on every article. Lazy, with its real
+               dimensions so it reserves its space instead of shifting the
+               layout when it arrives. --}}
+          <img src="{{asset "images/membership-hero.jpg"}}" alt="Stack of Mere Orthodoxy journals" loading="lazy" decoding="async" width="1600" height="1066" />
         </div>
       </div>
       <div class="section-intro section-intro-light mb-hero-intro">
