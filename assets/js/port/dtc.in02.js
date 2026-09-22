@@ -41,6 +41,47 @@ function rememberPlace(id,paragraph){
   const p=POS();if(!p||!id)return;
   try{p.set(DTC_CORPUS,id,{anchor:"sec"+(paragraph||0)});}catch(e){}
 }
+/* ── The notebook ─────────────────────────────────────────────────────
+   Highlight a passage in an article and keep it, exactly as the reader
+   keeps one from a work. The store is MOFaithNotebook
+   (js/lib/faith-notebook-store.js), which is what the Notebook tab of
+   /the-faith-received/research/ shows. NOT window.FRResearchNotebook,
+   which is also on this page for the Ask workspace and is a different
+   store, behind /pins/ and /desk/.
+
+   Like the two stores above it is a page script, so it may not have run
+   yet; every use of it is guarded rather than assumed.
+
+   ART is the article on screen and LANE the lane it is painted in.
+   Both are needed at the moment of a selection, and paint() replaces
+   #art wholesale on every lane switch, so they are held here rather
+   than closed over. */
+const NB=()=>window.MOFaithNotebook;
+let ART=null,LANE=null;
+/* The paragraph a selection started in. Every block the body renders
+   carries id="sec<n>" — a <p> in the single-lane views, the .pp or
+   .hpair wrapper in the parallel one — so the index is the block's own
+   id and not a count of anything. */
+function paraIndex(node){
+  const el=node&&node.nodeType===1?node:(node&&node.parentElement);
+  const sec=el&&el.closest?el.closest('[id^="sec"]'):null;
+  const n=sec?parseInt(sec.id.slice(3),10):0;
+  return Number.isFinite(n)?n:0;
+}
+/* An ABSOLUTE address for a paragraph of an article, in the shape this
+   page already addresses itself by (see writePlace): the article in the
+   fragment, the paragraph and the lane in the query. It has to be
+   absolute and it has to be stored, because MOFaithNotebook's fallback
+   builds a /the-faith-received/reader/ url, and the reader loads
+   nothing for a dictionary article. */
+function articleUrl(id,paragraph,lane){
+  const url=new URL(location.href);
+  url.search="";
+  url.searchParams.set("paragraph",String(paragraph||0));
+  if(["both","en","fr"].includes(lane))url.searchParams.set("lang",lane);
+  url.hash=encodeURIComponent(id);
+  return url.href;
+}
 /* The most recent article in this browser, for the Continue line. The
    store keys records "<corpus>|<work>" and stamps each with `t`, which
    is the same recency the reader's own Continue uses. */
@@ -110,6 +151,8 @@ const isHead=p=>{const t=p.replace(/\u27e6[^\u27e7]+\u27e7/g,"").trim();
   return t.length<170&&/^([IVXLC]+|\d+\u00b0?)[.)\u2014\u00b0]?\s+\S/.test(t)&&t.length<150;};
 function renderArt(d,initialParagraph=0){
   let paragraph=initialParagraph;
+  // The headword as the page shows it: English where there is one.
+  ART={id:d.id,head:d.te&&d.te!==d.t?d.te:d.t};
   const writePlace=(i,l=LANEPREF)=>{const url=new URL(location.href);url.hash=encodeURIComponent(d.id);url.searchParams.set("paragraph",String(i));if(["both","en","fr"].includes(l))url.searchParams.set("lang",l);history.replaceState(history.state,"",url);};
   const FR=Array.isArray(d.fr)?d.fr:String(d.fr||"").split(/\n\n+/);
   const EN=Array.isArray(d.en)?d.en:null;
@@ -122,6 +165,7 @@ function renderArt(d,initialParagraph=0){
   const frLen=FR.join(" ").length;
   const heads=FR.map((f,i)=>isHead(f)?i:-1).filter(i=>i>=0);
   const paint=l=>{
+    LANE=l;
     let body="";
     if(l==="both"&&hasEn){
       body=FR.map((f,i)=>isHead(f)
@@ -206,7 +250,9 @@ function openArt(id,push){
   const paragraph=push===false&&/^\d+$/.test(raw||'')?Number(raw):0;
   if(push===false&&['both','en','fr'].includes(params.searchParams.get('lang')))LANEPREF=params.searchParams.get('lang');
   if(push!==false){params.searchParams.delete('paragraph');params.hash=encodeURIComponent(id);history.replaceState(history.state,'',params);}
-  CUR=id;paintList();
+  // Cleared until renderArt sets it again, so nothing selected while the
+  // next article loads is attributed to the last one.
+  CUR=id;ART=null;paintList();
   rememberPlace(id,paragraph);
   document.body.classList.add("reading");
   $("#art").innerHTML='<div class=inner><div class=welcome>Loading…</div></div>';
@@ -217,7 +263,10 @@ function openArt(id,push){
   }).catch(()=>{$("#art").innerHTML='<div class=artbar></div><div class=artscroll><div class=inner><div class=welcome>Could not load this article.</div></div></div>';});
 }
 let LISTPOS=0;
-function closeArt(){document.body.classList.remove("reading");CUR=null;
+// ART goes with it: the closed article's markup stays in #art, and a
+// selection made after closing must not be offered as a passage of an
+// article the reader is no longer in.
+function closeArt(){document.body.classList.remove("reading");CUR=null;ART=null;
   const url=new URL(location.href);url.hash="";url.searchParams.delete("paragraph");history.replaceState(history.state,"",url);
   document.title="Dictionary of Catholic Theology \u00b7 The Faith Received";
   requestAnimationFrame(()=>{$("#list").scrollTop=LISTPOS;paintList();paintResume();});}
@@ -238,3 +287,100 @@ fetch("https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/dictionary/index.js
   const h=decodeURIComponent(location.hash.slice(1));
   if(h)openArt(h,false);
 }).catch(()=>{$("#list").innerHTML='<div class=empty>The dictionary index is not published yet.</div>';});
+/* ── Highlight → Save to notebook ─────────────────────────────────────
+   Ported from buildSelectionSave() in assets/js/faith-reader-tools.js,
+   which is the reader's version of this act, so that keeping a passage
+   of an article is the same gesture and the same button as keeping a
+   passage of a work. The button's class is styled site-wide in
+   faith-received.css; nothing new is needed for it here.
+
+   Not gated. Saving is not gated in the reader either, and an article
+   of this dictionary is public.
+
+   KNOWN, and accepted: MOFaithNotebook's constellation share encodes
+   only the four sister corpora (tfr · pld · po · pg), so a dictionary
+   entry lists and links in the notebook but does not ride along in a
+   share link. */
+function dtcSelectionSave(){
+  const pop=document.createElement("button");
+  pop.type="button";
+  pop.className="faith-save-pop";
+  pop.hidden=true;
+  pop.textContent="Save to notebook";
+  document.body.appendChild(pop);
+  let pending=null;
+  const hide=()=>{pop.hidden=true;pending=null;};
+  // Only on an empty selection: the popover has to survive the mouseup
+  // that produced it.
+  document.addEventListener("selectionchange",()=>{
+    const sel=window.getSelection();
+    if(!sel||sel.isCollapsed)hide();
+  });
+  /* A mousedown outside the selection collapses it, selectionchange
+     then hides the button, and `pending` is null by the time the click
+     runs — the button does nothing and the reader cannot tell why.
+     Refusing the default keeps the selection alive through the click. */
+  pop.addEventListener("mousedown",e=>{e.preventDefault();});
+  function offer(){
+    const nb=NB();
+    const inner=document.querySelector("#art .artscroll .inner");
+    // No store yet, no article open, or an article still loading: the
+    // welcome text and the headword list are not passages of anything.
+    if(!nb||!inner||!ART)return hide();
+    const sel=window.getSelection();
+    if(!sel||sel.isCollapsed||!sel.rangeCount)return hide();
+    const range=sel.getRangeAt(0);
+    if(!inner.contains(range.commonAncestorContainer))return hide();
+    /* The range, not the selection: Selection.toString() returns empty
+       when the document does not have focus, which is every automated
+       check of this feature and some real ones. */
+    const text=range.toString().trim();
+    if(text.length<4)return hide();
+    /* A selection running across two paragraphs is cited to the first,
+       which is where a reader would cite it from. The stored index is
+       the block's own, the printed one counts from 1, because there is
+       no paragraph nought on a page. */
+    const n=paraIndex(range.startContainer);
+    pending=nb.newEntry({
+      kind:nb.KINDS.SELECTION,
+      corpus:DTC_CORPUS,
+      work:ART.id,
+      title:ART.head,
+      cite:ART.head+", paragraph "+(n+1),
+      anchor:"sec"+n,
+      url:articleUrl(ART.id,n,LANE),
+      text
+    });
+    const r=range.getBoundingClientRect();
+    pop.hidden=false;
+    pop.style.top=Math.max(8,r.top+window.scrollY-42)+"px";
+    pop.style.left=Math.max(8,r.left+window.scrollX)+"px";
+    return undefined;
+  }
+  // A beat after the event: the selection is not final until the browser
+  // has finished with the gesture that made it.
+  const offerSoon=()=>window.setTimeout(offer,10);
+  /* On the document, not on the article: paint() replaces #art whole on
+     every lane switch, and a selection that ends outside the article is
+     a mouseup outside it. Containment is decided above, by the range. */
+  document.addEventListener("mouseup",offerSoon);
+  // A phone selects by long-press and drag and never fires mouseup.
+  document.addEventListener("touchend",offerSoon);
+  // A keyboard selects with shift+arrows, which is neither. Not while
+  // the reader is typing in the search field: Shift is also how a
+  // capital letter gets in there.
+  document.addEventListener("keyup",e=>{
+    if(!e.shiftKey&&e.key!=="Shift")return;
+    const t=e.target;
+    if(t&&t.closest&&t.closest("input, textarea, select, [contenteditable]"))return;
+    offerSoon();
+  });
+  pop.addEventListener("click",()=>{
+    const nb=NB();
+    if(!pending||!nb)return;
+    nb.add(pending);
+    pop.textContent="Saved";
+    window.setTimeout(()=>{pop.textContent="Save to notebook";hide();},900);
+  });
+}
+dtcSelectionSave();

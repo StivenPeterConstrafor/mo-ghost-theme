@@ -84,10 +84,15 @@
 </div>
 {{!-- An article is bookmarked and remembered exactly as a work is:
      the mo-kit store under "tfr:dtc:<id>", and the place in it under
-     corpus "dtc". Both before the engine, which writes to them. --}}
+     corpus "dtc". Both before the engine, which writes to them.
+     The third is the notebook a highlighted passage is saved to, the
+     same one the reader writes to and the Notebook tab of
+     /the-faith-received/research/ shows. Not the Ask workspace's
+     research-notebook.js above, which is a different store. --}}
 <script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
 <script src="{{asset "js/lib/faith-position-store.js"}}"></script>
-<script src="{{asset "js/port/dtc.in02.js"}}&amp;frv=97cc0a8c05c19906"></script>
+<script src="{{asset "js/lib/faith-notebook-store.js"}}"></script>
+<script src="{{asset "js/port/dtc.in02.js"}}&amp;frv=f08fdeeeb013707f"></script>
 {{!-- Phones: the dictionary flows in the page; this keeps the reader's
      place in the list across opening and closing an entry. --}}
 <script src="{{asset "js/page/faith-dtc-mobile-flow.js"}}&amp;frv=898940d035a5a709"></script>
