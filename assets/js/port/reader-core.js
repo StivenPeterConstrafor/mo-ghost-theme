@@ -3344,7 +3344,9 @@ function build(){
     prev=null;
     for(const cur of R.querySelectorAll(".folio")){
       if(!prev){prev=cur;continue;}
-      if(DATA&&DATA.pg_source){prev=cur;continue;}   // THE PAGE IS THE UNIT (above): no PG view carries a page's rows onto the previous page
+      // THE PAGE IS THE UNIT (above) -- the continuation row too: a PG page's first paragraph is often most of the page (PG 142 col.
+      // 699 kept 4 letters when it joined the page before); the page ends where its print ends, mid-sentence if the print does.
+      if(DATA&&DATA.pg_source){prev=cur;continue;}
       const pk=[...prev.children].filter(x=>!x.classList.contains("apptog")&&!x.classList.contains("rapp"));
       const pr=pk[pk.length-1],cr=[...cur.children].find(x=>!x.classList.contains("ixchip"));
       if(pr&&cr&&pr.classList.contains("row")&&pr.classList.contains("tail")
@@ -6287,6 +6289,63 @@ async function loadPgCanon(ws){
   [...new Set(Object.keys(enByCol).map(Number).filter(n=>!seen.has(n)&&!(window.__enUsed&&window.__enUsed.has(n))).map(n=>n%2===0&&!seen.has(n-1)?n-1:n))].sort((a,b)=>a-b).forEach(n=>{
     if(n%2===1&&window.__pgPbNext[n]===undefined&&!seen.has(n+1))window.__pgPbNext[n]=n+2;addPb(n);});
   flushCol();
+  // COMPLETE PER PAGE in the Greek view (owner 2026-09-17 "just make sure the latin and greek is shown completely per page"; census
+  // 2026-09-22: 8,558 printed pages whose only work carries under 30% of its plate's text -- pg-2466 col. 175 holds 769 letters of a
+  // 1,192-letter Greek column). The Greek . Latin view's rule, in the Greek view, after the walk (when every page is known): a page
+  // whose Greek carries under 70% of its own plate's Greek zone reads that zone. Only a page that is its whole opening -- a work that
+  // makes the even column a page of its own (pg-293 keys its Greek there) would print the zone twice -- never front matter or a page
+  // the site's columns built, and only a page with English beside it.
+  if(_pgZone&&src==="grc"){
+    const _gr=t=>(String(t||"").match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length,_pset=new Set(pages),_enL={};
+    {let c0=null;for(const k of [...enB.childNodes]){if(k.localName==="pb")c0=+k.getAttribute("n");
+      else if(k.localName==="p"&&c0!=null)_enL[c0]=(_enL[c0]||0)+(k.textContent||"").trim().length;}}
+    let pn=null,pbN=null,els=[];
+    const _pt={},_pl=[];{let c1=null;for(const k of [...laB.childNodes]){if(k.localName==="pb"){c1=+k.getAttribute("n");if(!(c1 in _pt)){_pt[c1]="";_pl.push(c1);}}
+      else if(k.localName==="p"&&c1!=null)_pt[c1]+=" "+(k.textContent||"");}}
+    const _caps=t=>{const L=String(t).replace(/[^\u0370-\u03ff\u1f00-\u1fff]/g,"");return L&&L===L.toUpperCase();};
+    const _capsTail=t=>{const w=String(t).split(/\s+/);let k=w.length;while(k>0&&_caps(w[k-1]))k--;   // a running title closing the zone
+      return w.slice(k).join("").replace(/[^\u0370-\u03ff\u1f00-\u1fff]/g,"").length>=12?w.slice(0,k).join(" "):String(t);};
+    // the column foot's apparatus the OCR folded into the Greek zone (pg-2466 col. 175 ends 'ευστοχήσειε. εὑρεῖν. Β περισταίη. ἐκείνου.'):
+    // what follows the last sentence of 40+ Greek letters is dropped from what the zone adds when it is two or more fragments (a lone
+    // short closing sentence stays)
+    const _appTail=t=>{const fr=String(t).split(/(?<=[.\u00b7;\u0387])\s+/);let j=fr.length-1;
+      while(j>=0&&_gr(fr[j])<40)j--;return j>=0&&fr.length-1-j>=2?fr.slice(0,j+1).join(" "):String(t);};
+    const _capsHead=t=>{const w=String(t).split(/\s+/);let k=0;while(k<w.length&&_caps(w[k]))k++;
+      return w.slice(0,k).join("").replace(/[^\u0370-\u03ff\u1f00-\u1fff]/g,"").length>=12?w.slice(k).join(" "):String(t);};
+    const done=()=>{
+      if(pn==null||pn%2!==1||_pset.has(pn+1))return;
+      if((typeof _pgFrontLabels==="object"&&_pgFrontLabels&&_pgFrontLabels[pn])||(window.__vtxApplied&&window.__vtxApplied.has(pn)))return;
+      const zg=String(_pgZone[pn]||""),gz=_gr(zg);if(gz<600||(_enL[pn]||0)<120)return;
+      const gc=els.reduce((n,e)=>n+_gr(e.textContent),0);if(gc>=0.7*gz)return;
+      // MERGE, don't replace: the canon's own paragraphs stay (the zone OCR can clip a column's first line -- pg-2466 col. 175 keeps
+      // 'Ὁ δὲ Μονομαχάτος…'); the plate adds what lies BEFORE the canon's first words and AFTER its last, located on accent-free
+      // Greek letters. A canon the zone cannot place is replaced only when it is a scrap (< 30% of the zone).
+      const _nz=t=>{const o=[],m=[],s0=String(t||"");for(let i=0;i<s0.length;i++){
+          const c=s0[i].normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\u03c2/g,"\u03c3");
+          for(const ch of c)if(ch>="\u03b1"&&ch<="\u03c9"){o.push(ch);m.push(i);}}return [o.join(""),m];};
+      const ct=els.map(e=>e.textContent||"").join(" "),[cz]=_nz(ct),[zz,zm]=_nz(zg);
+      const hd=cz.slice(0,40),tl=cz.slice(-40),hi=hd.length>=30?zz.indexOf(hd):-1,ti=tl.length>=30?zz.lastIndexOf(tl):-1;
+      const mkP=t=>{const e=laD.createElement("p");e.textContent=_tidy(t);return e;};
+      if((hi>=0||ti>=0)&&!(hi>=0&&ti>=0&&ti<hi)){   // each end on its own: a zone that clipped the column's first line still places the canon's last words
+        let pre=hi>0?_capsHead(zg.slice(0,zm[hi]).trim()):"",end=ti>=0?ti+tl.length-1:-1,suf=end>=0&&end+1<zz.length?_appTail(_capsTail(zg.slice(zm[end]+1).trim())):"";
+        // a page break set a paragraph early or late is not missing text: what the zone adds must not open the next page or close the previous
+        const _ix=_pl.indexOf(pn),_nxT=_ix>=0&&_ix+1<_pl.length?_nz(_pt[_pl[_ix+1]])[0]:"",_pvT=_ix>0?_nz(_pt[_pl[_ix-1]])[0]:"";
+        const sufH=_nz(suf)[0].slice(0,40),preT=_nz(pre)[0].slice(-40);
+        if(sufH.length>=30&&_nxT.includes(sufH))suf="";
+        if(preT.length>=30&&_pvT.includes(preT))pre="";
+        if(_gr(pre)+_gr(suf)<100)return;
+        const first=els.length?els[0]:(pbN?pbN.nextSibling:null),after=els.length?els[els.length-1].nextSibling:(pbN?pbN.nextSibling:null);
+        if(_gr(pre)>=40)_chunkText(pre,900).forEach(t=>laB.insertBefore(mkP(t),first||null));
+        if(_gr(suf)>=40)_chunkText(suf,900).forEach(t=>laB.insertBefore(mkP(t),after||null));
+      }else if(gc<0.3*gz){
+        const ref=els.length?els[els.length-1].nextSibling:(pbN?pbN.nextSibling:null);
+        els.forEach(e=>e.remove());_chunkText(zg,900).forEach(t=>laB.insertBefore(mkP(t),ref||null));
+      }else return;
+      window.__pgZoneComplete=(window.__pgZoneComplete||0)+1;};
+    [...laB.childNodes].forEach(k=>{if(k.localName==="pb"){done();pn=+k.getAttribute("n");pbN=k;els=[];}
+      else if(k.localName==="p"&&pn!=null)els.push(k);});
+    done();
+  }
   // FACS-CARRIER PRUNE (owner 2026-08-18 'vtx/en/facs should track by design'): Migne
   // canons emit <pb> for the PAGE (facs carrier) and key the Greek to the column
   // <milestone> right after it — the pb's own column is the facing LATIN column. A pb
