@@ -19117,3 +19117,18 @@ html.g-mobile #reading .fr-sec-toggle {
   text-underline-offset: 3px;
 }
 .faith-mf-link:hover { color: var(--color-secondary, #c1593c); }
+
+/* "About The Faith Received ->", centred under the hero's buttons.
+   The kicker's soft white, so it reads as part of the hero's type and
+   not as a third button. */
+.lp-hero-about { margin: 28px 0 0; text-align: center; }
+.lp-hero-about a {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: #ffffffcc;
+  text-decoration: underline;
+  text-decoration-color: #ffffff66;
+  text-underline-offset: 4px;
+}
+.lp-hero-about a:hover,
+.lp-hero-about a:focus-visible { color: #fff; text-decoration-color: #fff; }
