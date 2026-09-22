@@ -19122,6 +19122,15 @@ html.g-mobile #reading .fr-sec-toggle {
   max-width: 760px;
   margin-inline: auto;
 }
+/* The whole bio, as on About. The three-line clamp is the
+   /contributors/ default, where the grid is dense and the bios are
+   long; here there are two people and a clamp cut both off mid
+   sentence. */
+.faith-mf-people .contributor-card-bio {
+  display: block;
+  -webkit-line-clamp: none;
+  overflow: visible;
+}
 
 /* "About The Faith Received ->", centred under the hero's buttons.
    The kicker's soft white, so it reads as part of the hero's type and
