@@ -19258,3 +19258,37 @@ html.g-mobile #reading .fr-sec-toggle {
     padding: 11px 8px;
   }
 }
+
+/* A SOLID BUTTON ON A LIGHT BAND. Ian, 2026-09-22, of the one-time gift
+   and the transparency link: "make those two solid."
+
+   They were already marked .btn-primary, but `.faith-landing .btn` gives
+   every button on this page the hollow treatment and outranks a bare
+   class, so the intent in the markup never reached the screen. This is
+   the opt-in that says it out loud, rather than raising the specificity
+   of .btn-primary and quietly solidifying the two band buttons further
+   up the page that nobody asked about.
+
+   Terracotta, not the hero's orange. White on --color-primary is about
+   2.9:1, which is under the floor for text; white on --color-secondary
+   is 4.4:1, and it is already the colour a hollow button fills with on
+   hover, so a solid button and a hovered hollow one now agree. The hero
+   keeps its orange: it sits on a photograph and it is the front door.
+
+   The sweep tokens still apply to the background-image underneath, so
+   hover deepens rather than wipes, which is the right escalation for a
+   button that is already filled. */
+.faith-landing .btn.btn-solid,
+.faith-landing a.btn.btn-solid {
+  background-color: var(--color-secondary, #c1593c);
+  border-color: var(--color-secondary, #c1593c);
+  color: #fff;
+}
+.faith-landing .btn.btn-solid:hover,
+.faith-landing a.btn.btn-solid:hover,
+.faith-landing .btn.btn-solid:focus-visible,
+.faith-landing a.btn.btn-solid:focus-visible {
+  background-color: color-mix(in srgb, var(--color-secondary, #c1593c) 86%, #000);
+  border-color: color-mix(in srgb, var(--color-secondary, #c1593c) 86%, #000);
+  color: #fff;
+}
