@@ -492,5 +492,7 @@
     fetchChapterHtml, markVerses, verseTextFrom, fetchVerseText,
     fetchVerse, fetchCommentaries, fetchPassage,
     emptyFilters, activeCount, filterBar, sourceItem, centuryLabel,
+    // For /the-faith-received/topics-dev/, which reads the same worker.
+    api, VERSE_API,
   };
 })();

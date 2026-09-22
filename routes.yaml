@@ -456,6 +456,11 @@ routes:
   # same pattern as /the-faith-received/author/?a=.
   /the-faith-received/doctrines/:
     template: custom-faith-doctrines
+  # Topics rebuilt as a systematic theology from the primary sources
+  # (Ian, 2026-09-22). Development page beside the live Topics. One
+  # route: ?t=<locus id> opens a locus, &view= picks the tab.
+  /the-faith-received/topics-dev/:
+    template: custom-faith-topics-dev
   /the-faith-received/topics/:
     template: custom-faith-port-topics
   /the-faith-received/topics/god-and-trinity/:

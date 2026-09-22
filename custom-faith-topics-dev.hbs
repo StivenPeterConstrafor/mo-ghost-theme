@@ -1,0 +1,29 @@
+{{!< default}}
+{{#contentFor "moHead"}}
+<title>Topics (dev) | The Faith Received | Mere Orthodoxy</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="stylesheet" href="{{asset "css/scripture-dev.css"}}&amp;frv=ac9ec2f2af087555" />
+<link rel="stylesheet" href="{{asset "css/topics-dev.css"}}&amp;frv=620e2bd02a294795" />
+{{/contentFor}}
+{{!-- /the-faith-received/topics-dev/ — Topics rebuilt as a systematic
+     theology from the primary sources (Ian, 2026-09-22). Development
+     page beside the live /the-faith-received/topics/, which it does not
+     touch.
+
+     One route. With no ?t= it is the contents: the loci in their
+     classic order (assets/data/faith-received/loci.json). ?t=<locus id>
+     opens one locus with the contents beside it; &view= picks the tab
+     (read, compare, trace, scripture). Data from mo-tfr-verse. --}}
+
+<main class="bible sd td-page">
+
+{{> "faith-received/_tfr-rail"}}
+
+  <div class="container td-root" data-td-root>
+    <p class="bible-status" role="status">Loading the topics&hellip;</p>
+  </div>
+</main>
+
+<script src="{{asset "js/page/scripture-dev-core.js"}}&amp;frv=c896fa4b307cd72c"></script>
+<script src="{{asset "js/page/topics-dev.js"}}&amp;frv=e346ac80f82a37b6"></script>
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>

@@ -1,0 +1,213 @@
+/* ═══════════════════════════════════════════════════════════════
+   /the-faith-received/topics-dev/ — Topics as a systematic theology.
+
+   Loaded after scripture-dev.css, whose sd- parts (filters, TFR
+   buttons, source rows, previews, chart bars, the panel) this page
+   reuses so it works like the Scripture reader and the Verse Desk.
+   Only the layout and the parts unique to Topics live here (td-).
+
+   Scoped under .sd where an element also carries .container, because
+   screen.min.css loads after page CSS and its .container padding and
+   max-width win ties (found on /scripture-dev/, 2026-09-22).
+
+   SCROLLING. The contents column and the source sidebar scroll on
+   their own (sidebars are the recorded exception). Nothing else caps
+   its height.
+   ═══════════════════════════════════════════════════════════════ */
+
+.sd .td-root {
+  max-width: 1240px;
+  padding-top: 72px;
+  padding-bottom: 96px;
+  font-family: var(--font-body);
+  color: var(--color-dark);
+  /* Trace colours belong to the tradition, so Lutheran is the same on
+     every topic (design review, 2026-09-22). The Fathers and medievals
+     are one warm family in steps; Rome, Wittenberg, Geneva and England,
+     which fill the widest rows, are four clearly different hues. Every
+     swatch is at least 3:1 against the page ground. */
+  --td-c-gf: #8c3b2a; --td-c-pl: #a8572b; --td-c-po: #6e4a2e; --td-c-md: #7d6a3c;
+  --td-c-rc: #7a2f4f; --td-c-lu: #2f5d7c; --td-c-rf: #3d6b45; --td-c-ed: #2d2927;
+  --td-c-hl: #6b6660; --td-c-x: #857a70;
+  /* Topics has no sticky bar, so the shared sidebar must not leave room
+     for one. */
+  --sd-bar-h: 0px;
+}
+.td-title { font-family: var(--font-body); font-weight: 600; font-size: clamp(34px, 5vw, 48px); line-height: 1.1; margin: 6px 0 12px; }
+.td-lede { font-size: 19px; line-height: 1.6; max-width: 680px; margin: 0 0 24px; }
+.td-note { font-size: 15px; margin: -6px 0 16px; max-width: 680px; }
+.td-counts { font-size: 15px; margin: 0; }
+.td-kids { font-size: 15px; margin: 10px 0 0; }
+.td-kids a, .td-head a { color: var(--sd-accent); }
+.td-roman { color: var(--sd-accent); font-weight: 600; margin-right: 6px; }
+
+/* ── The contents page ───────────────────────────────────────── */
+.td-head--contents { max-width: 720px; margin: 0 auto 40px; text-align: center; }
+.td-head--contents .td-lede { margin-left: auto; margin-right: auto; }
+.td-find { max-width: 420px; margin: 0 auto; text-align: left; }
+.td-find-empty { margin-top: 12px; }
+.td-parts { columns: 2 360px; column-gap: 56px; max-width: 1000px; margin: 0 auto; }
+.td-part { break-inside: avoid; margin: 0 0 36px; }
+.td-part-h { font-family: var(--font-body); font-size: 20px; font-weight: 600; margin: 0 0 8px; padding-bottom: 8px; border-bottom: 1px solid var(--color-rule); }
+.td-loci { list-style: none; margin: 0; padding: 0; }
+.td-locus { margin: 0; }
+.td-locus-link {
+  display: block;
+  padding: 9px 0;
+  font-size: 17px;
+  color: var(--color-dark);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(45, 41, 39, 0.06);
+}
+.td-locus-link:hover, .td-locus-link:focus-visible { color: var(--sd-accent); text-decoration: underline; text-underline-offset: 3px; }
+.td-locus--child .td-locus-link { padding-left: 20px; font-size: 15px; color: var(--color-muted); }
+
+/* ── A topic: contents | topic | sidebar ─────────────────────── */
+.td-toc-drawer > summary {
+  font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600;
+  color: var(--sd-accent); cursor: pointer; padding: 14px 0; min-height: 44px; list-style-position: inside;
+}
+.td-toc-list, .td-toc-list ol { list-style: none; margin: 0; padding: 0; }
+.td-toc-part { margin: 0 0 14px; }
+.td-toc-part-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.td-toc-list a { display: block; padding: 8px 0 8px 10px; min-height: 36px; font-size: 14px; color: var(--color-muted); text-decoration: none; border-left: 2px solid transparent; }
+.td-toc-kids a { padding-left: 22px; font-size: 13px; }
+.td-toc-list a:hover, .td-toc-list a:focus-visible { color: var(--color-dark); }
+.td-toc-list a[aria-current="page"] { color: var(--color-dark); font-weight: 600; border-left-color: var(--sd-accent); }
+.td-toc-all { font-size: 14px; margin: 8px 0 0; }
+.td-toc-all a { color: var(--sd-accent); }
+
+.td-main { min-width: 0; }
+.td-head { padding-bottom: 20px; border-bottom: 1px solid var(--color-rule); }
+.td-confessions { padding-top: 28px; }
+.td-source-sub { font-size: 15px; line-height: 1.4; }
+.td-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+.td-chip {
+  font-family: var(--font-body); font-size: 14px; min-height: 44px; padding: 8px 14px;
+  color: var(--tfr-btn, var(--color-dark)); background: transparent;
+  border: 1px solid var(--tfr-btn, var(--color-dark)); border-radius: 3px; cursor: pointer;
+}
+.td-chip[aria-pressed="true"], .td-chip:hover, .td-chip:focus-visible {
+  background: var(--tfr-btn, var(--color-dark)); color: var(--tfr-btn-ink, #fff);
+}
+
+.td-tabs { display: flex; gap: 0; margin: 36px 0 24px; box-shadow: inset 0 -1px 0 var(--color-rule); overflow-x: auto; }
+.td-tab {
+  flex: 0 0 auto; padding: 12px 18px; min-height: 44px; font-size: 13px; letter-spacing: 0.14em;
+  text-transform: uppercase; font-weight: 600; color: var(--color-muted); text-decoration: none;
+  border-bottom: 3px solid transparent;
+}
+.td-tab:hover, .td-tab:focus-visible { color: var(--color-dark); }
+.td-tab[aria-current="page"] { color: var(--color-dark); border-bottom-color: var(--sd-accent); }
+.td-view > section + section { margin-top: 44px; }
+.td-view .sd-h2 { margin-top: 0; }
+
+.td-quote-item .sd-quote { margin-bottom: 10px; }
+.td-quote-foot { align-items: center; }
+.td-author-link {
+  font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--color-dark);
+  background: none; border: 0; padding: 4px 0; min-height: 44px; text-align: left; cursor: pointer;
+  text-decoration: underline; text-decoration-color: var(--color-rule); text-underline-offset: 3px;
+}
+.td-author-link:hover, .td-author-link:focus-visible { color: var(--sd-accent); text-decoration-color: currentColor; }
+
+.td-works { list-style: none; margin: 0; padding: 0; }
+.td-work { padding: 12px 0; border-bottom: 1px solid var(--color-rule); }
+.td-work:last-child { border-bottom: 0; }
+.td-work-head { display: flex; flex-direction: column; gap: 3px; }
+.td-work-title { display: inline-block; padding: 8px 0; font-size: 17px; font-style: italic; color: var(--color-dark); text-decoration: none; }
+.td-work-title:hover, .td-work-title:focus-visible { color: var(--sd-accent); text-decoration: underline; }
+.td-secs { margin-top: 8px; }
+.td-secs > summary { font-size: 14px; color: var(--sd-accent); cursor: pointer; padding: 12px 0; min-height: 44px; }
+.td-secs .sd-sources { padding-left: 14px; border-left: 2px solid var(--color-rule); }
+
+.td-cmp-pick { margin-bottom: 20px; }
+.td-cmp { display: grid; grid-template-columns: repeat(var(--td-cols, 3), minmax(0, 1fr)); gap: 28px; }
+.td-cmp-col { min-width: 0; }
+.td-cmp-h { font-family: var(--font-body); font-size: 18px; font-weight: 600; margin: 0 0 4px; padding-bottom: 8px; border-bottom: 3px solid var(--sd-accent); }
+.td-cmp-sub { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-muted); font-weight: 600; margin: 20px 0 6px; }
+.td-cmp-authors { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.td-cmp-authors li { padding: 3px 0; }
+
+.td-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 16px; padding: 0; font-size: 13px; }
+.td-swatch { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; }
+.td-trace { list-style: none; margin: 0; padding: 0; }
+.td-trace-row {
+  display: grid; grid-template-columns: 120px 1fr 56px; align-items: center; gap: 12px;
+  width: 100%; min-height: 44px; padding: 4px; background: none; border: 0; cursor: pointer;
+  font-family: var(--font-body); font-size: 14px; color: var(--color-dark); text-align: left;
+}
+.td-trace-row:hover, .td-trace-row:focus-visible { background: rgba(238, 125, 81, 0.08); }
+/* Every bar is full width and shows shares: on a linear scale the 16th
+   and 17th centuries filled the chart and 18 rows were slivers. */
+.td-trace-track { display: flex; height: 16px; width: 100%; }
+.td-trace-seg { display: block; height: 100%; min-width: 1px; }
+.td-trace-n { text-align: right; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+
+.td-proofs { list-style: none; margin: 0; padding: 0; }
+.td-proof { padding: 12px 0; border-bottom: 1px solid var(--color-rule); }
+.td-proof-head { display: grid; grid-template-columns: 170px 1fr 92px; align-items: center; gap: 12px; }
+.td-proof-ref { display: inline-block; padding: 10px 0; font-size: 17px; font-weight: 600; color: var(--color-dark); }
+.td-proof-ref:hover, .td-proof-ref:focus-visible { color: var(--sd-accent); }
+.td-proof-bar { display: block; height: 10px; }
+.td-proof-text { margin: 6px 0 0; font-size: 15px; line-height: 1.55; }
+
+.td-panel-meta { margin-top: 4px; grid-column: 1; }
+.td-side-works { list-style: none; margin: 0; padding: 0; font-size: 15px; }
+.td-side-works li { padding: 4px 0; }
+.td-side-works a { color: var(--color-dark); font-style: italic; }
+
+/* Wide: contents column, the topic, and the sidebar when open. */
+@media (min-width: 1100px) {
+  .sd .td-root.has-topic { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 48px; align-items: start; }
+  .sd .td-root.has-topic.has-side { grid-template-columns: 220px minmax(0, 1fr) minmax(320px, 380px); gap: 36px; }
+  .td-toc {
+    position: sticky; top: calc(var(--sd-top, 0px) + 16px);
+    max-height: calc(100vh - var(--sd-top, 0px) - 32px);
+    overflow-y: auto; overscroll-behavior: contain; padding-right: 8px;
+  }
+  .td-toc-drawer > summary { pointer-events: none; list-style: none; }
+  .td-toc-drawer > summary::-webkit-details-marker { display: none; }
+}
+/* Mid: the contents fold into a drawer above the topic. */
+@media (min-width: 900px) and (max-width: 1099px) {
+  .sd .td-root.has-topic.has-side { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); gap: 32px; align-items: start; }
+  .sd .td-root.has-topic.has-side .td-toc { grid-column: 1 / -1; }
+}
+.td-toc { margin-bottom: 20px; }
+@media (max-width: 1099px) {
+  .td-toc { border-bottom: 1px solid var(--color-rule); }
+}
+/* The panel on phones sits in the flow under what opened it. */
+.td-main .sd-panel {
+  display: block; margin: 12px 0 24px; padding: 18px 16px 20px; background: var(--color-white, #fff);
+  border: 1px solid var(--color-rule); border-top: 3px solid var(--color-primary);
+}
+
+@media (max-width: 899px) {
+  .td-cmp { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .sd .td-root { padding-top: 40px; }
+  .td-parts { columns: 1; }
+  .td-trace-row { grid-template-columns: 84px 1fr 44px; min-height: 44px; }
+  .td-proof-head { grid-template-columns: 1fr 44px; }
+  .td-proof-bar { display: none; }
+  .td-tab { padding: 12px 12px; letter-spacing: 0.08em; }
+}
+
+/* Review fixes, 2026-09-22 */
+.td-order { max-width: 420px; margin-top: 12px; }
+.td-conf-note { font-size: 13px; margin: 10px 0 0; }
+.td-proof-n { white-space: nowrap; }
+/* Compare: quote footers stack in narrow columns, and the columns stack
+   whenever the author sidebar takes the room. */
+.td-cmp .td-quote-foot { flex-direction: column; align-items: flex-start; gap: 8px; }
+.sd .td-root.has-side .td-cmp { grid-template-columns: 1fr; }
+/* The sidebar parks where the contents column does. */
+.td-root .sd-side { top: calc(var(--sd-top, 0px) + 16px); max-height: calc(100vh - var(--sd-top, 0px) - 32px); }
+@media (max-width: 640px) {
+  .sd .td-root { padding-bottom: 56px; }
+  .td-tab { padding: 12px 9px; letter-spacing: 0.03em; }
+  .td-proof-head { grid-template-columns: 1fr auto; }
+}

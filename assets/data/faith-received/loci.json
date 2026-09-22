@@ -1,0 +1,781 @@
+{
+ "version": "2026-09-22",
+ "note": "Ian delegated the ordering, 2026-09-22. Classic Reformed-scholastic loci order (Turretin, Heppe). id = topics.json locus id where one exists; t2 = topic2 slug (mined positions, authors). Revised after design review 2026-09-22: attribute aliases under The Divine Attributes; Religion and True Worship to the Christian Life (Decalogue matters); Part VIII names the Magistrate; the Last Things locus is Death and Judgment. `find` = plain words a reader might search.",
+ "parts": [
+  {
+   "id": "prolegomena",
+   "n": "I",
+   "label": "Prolegomena",
+   "loci": [
+    {
+     "id": "prolegomena",
+     "label": "Theological Method",
+     "t2": "prolegomena-theological-method",
+     "works": true,
+     "aliases": [
+      "reason",
+      "revelation",
+      "tradition",
+      "heresy"
+     ],
+     "find": [
+      "theology",
+      "method",
+      "reason and faith",
+      "natural theology"
+     ]
+    },
+    {
+     "id": "de-scriptura",
+     "label": "Holy Scripture",
+     "t2": "scripture",
+     "works": true,
+     "aliases": [
+      "the-word-of-god",
+      "the-word",
+      "prophecy",
+      "prophets"
+     ],
+     "find": [
+      "bible",
+      "word of god",
+      "canon",
+      "inspiration",
+      "inerrancy",
+      "authority of scripture"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "god",
+   "n": "II",
+   "label": "God",
+   "loci": [
+    {
+     "id": "de-existentia-dei",
+     "label": "The Existence of God",
+     "t2": "the-existence-of-god",
+     "works": true,
+     "aliases": [
+      "causality",
+      "motion"
+     ],
+     "find": [
+      "proofs",
+      "arguments for god",
+      "five ways"
+     ]
+    },
+    {
+     "id": "de-deo",
+     "label": "The Nature of God",
+     "t2": "god",
+     "works": true,
+     "aliases": [],
+     "find": [
+      "god",
+      "divine nature",
+      "essence"
+     ]
+    },
+    {
+     "id": "de-attributis-distinctio",
+     "label": "The Divine Attributes",
+     "t2": "the-divine-attributes-their-distinction",
+     "works": true,
+     "children": [
+      {
+       "id": "de-simplicitate",
+       "label": "Divine Simplicity",
+       "t2": "divine-simplicity",
+       "works": true
+      },
+      {
+       "id": "de-aeternitate",
+       "label": "The Eternity of God",
+       "t2": "the-eternity-of-god",
+       "works": true
+      },
+      {
+       "id": "de-immensitate",
+       "label": "Omnipresence and Immensity",
+       "t2": "divine-omnipresence-immensity",
+       "works": true
+      },
+      {
+       "id": "de-potentia-dei",
+       "label": "Omnipotence",
+       "t2": "omnipotence-absolute-power",
+       "works": true
+      },
+      {
+       "id": "de-scientia-dei",
+       "label": "God's Knowledge",
+       "t2": "god-s-knowledge-middle-knowledge",
+       "works": true
+      },
+      {
+       "id": "de-voluntate-dei",
+       "label": "The Will of God",
+       "t2": "the-will-of-god",
+       "works": true
+      }
+     ],
+     "aliases": [
+      "god-s-will",
+      "time",
+      "goodness",
+      "good",
+      "wisdom",
+      "justice-of-god",
+      "divine-justice",
+      "mercy",
+      "love-of-god"
+     ],
+     "find": [
+      "attributes",
+      "perfections",
+      "holiness",
+      "immutability",
+      "impassibility",
+      "love of god"
+     ]
+    },
+    {
+     "id": "de-trinitate",
+     "label": "The Trinity",
+     "t2": "the-trinity",
+     "works": true,
+     "children": [
+      {
+       "id": "de-processionibus",
+       "label": "The Divine Processions",
+       "t2": "the-divine-processions-eternal-generation",
+       "works": true
+      },
+      {
+       "id": "de-relationibus",
+       "label": "Relations and Persons",
+       "t2": "subsistent-relations-the-divine-persons",
+       "works": true
+      },
+      {
+       "id": "de-filioque",
+       "label": "The Filioque",
+       "t2": "the-filioque-the-procession-of-the-spirit",
+       "works": true
+      }
+     ],
+     "find": [
+      "triune",
+      "three persons",
+      "consubstantial",
+      "homoousios",
+      "nicene"
+     ]
+    },
+    {
+     "id": "de-praedestinatione",
+     "label": "Predestination",
+     "t2": "predestination",
+     "works": true,
+     "aliases": [
+      "election",
+      "election-predestination",
+      "reprobation",
+      "salvation-of-infants",
+      "salvation-of-the-unevangelized"
+     ],
+     "find": [
+      "election",
+      "reprobation",
+      "decree",
+      "decrees",
+      "calvinism",
+      "arminianism"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "creation",
+   "n": "III",
+   "label": "Creation and Providence",
+   "loci": [
+    {
+     "id": "de-creatione",
+     "label": "Creation",
+     "t2": "creation",
+     "works": true,
+     "aliases": [
+      "nature",
+      "history"
+     ],
+     "find": [
+      "creation",
+      "ex nihilo",
+      "genesis",
+      "six days"
+     ]
+    },
+    {
+     "id": "de-angelis",
+     "label": "Angels",
+     "t2": "angels",
+     "works": true,
+     "aliases": [
+      "satan",
+      "temptation"
+     ],
+     "find": [
+      "demons",
+      "devil",
+      "satan"
+     ]
+    },
+    {
+     "id": "de-providentia",
+     "label": "Providence",
+     "t2": "providence",
+     "works": true,
+     "aliases": [
+      "miracles"
+     ],
+     "find": [
+      "sovereignty",
+      "governance",
+      "evil",
+      "concurrence"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "humanity",
+   "n": "IV",
+   "label": "Humanity and Sin",
+   "loci": [
+    {
+     "id": "de-homine",
+     "label": "Humanity",
+     "t2": "man-anthropology",
+     "works": true,
+     "aliases": [
+      "the-soul",
+      "the-image-of-god",
+      "the-body",
+      "the-intellect",
+      "the-will",
+      "the-soul-intellect-and-will"
+     ],
+     "find": [
+      "image of god",
+      "imago dei",
+      "soul",
+      "anthropology",
+      "human nature"
+     ]
+    },
+    {
+     "id": "de-libero-arbitrio",
+     "label": "Free Will",
+     "t2": "free-will",
+     "works": true,
+     "find": [
+      "free will",
+      "bondage of the will",
+      "liberty of the will"
+     ]
+    },
+    {
+     "id": "de-peccato",
+     "label": "Sin",
+     "t2": "sin",
+     "works": true,
+     "aliases": [
+      "original-sin",
+      "pride",
+      "despair",
+      "hypocrisy",
+      "punishment"
+     ],
+     "find": [
+      "original sin",
+      "the fall",
+      "fall",
+      "concupiscence",
+      "depravity"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "covenant",
+   "n": "V",
+   "label": "Covenant, Law and Gospel",
+   "loci": [
+    {
+     "id": "de-foedere",
+     "label": "Covenant",
+     "t2": "covenant",
+     "works": true,
+     "aliases": [
+      "salvation-history",
+      "circumcision"
+     ],
+     "find": [
+      "covenant of works",
+      "covenant of grace",
+      "federal"
+     ]
+    },
+    {
+     "id": "de-lege",
+     "label": "The Law",
+     "t2": "the-law",
+     "works": true,
+     "aliases": [
+      "natural-law",
+      "conscience",
+      "justice",
+      "law-and-gospel",
+      "restitution",
+      "contracts"
+     ],
+     "find": [
+      "decalogue",
+      "ten commandments",
+      "moral law",
+      "natural law"
+     ]
+    },
+    {
+     "id": "de-evangelio",
+     "label": "The Gospel",
+     "t2": "the-gospel",
+     "works": true,
+     "find": [
+      "law and gospel",
+      "good news"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "christ",
+   "n": "VI",
+   "label": "Christ",
+   "loci": [
+    {
+     "id": "de-christo",
+     "label": "The Person and Work of Christ",
+     "t2": "christ-christology",
+     "works": true,
+     "aliases": [
+      "incarnation",
+      "the-cross",
+      "redemption",
+      "sacrifice",
+      "reconciliation",
+      "salvation-redemption",
+      "the-virgin-mary"
+     ],
+     "find": [
+      "christology",
+      "atonement",
+      "incarnation",
+      "two natures",
+      "hypostatic union",
+      "offices of christ",
+      "ascension",
+      "descent into hell",
+      "cross",
+      "satisfaction"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "salvation",
+   "n": "VII",
+   "label": "Salvation",
+   "loci": [
+    {
+     "id": "de-spiritu-sancto",
+     "label": "The Holy Spirit",
+     "t2": "the-holy-spirit",
+     "works": true,
+     "aliases": [
+      "union-with-christ"
+     ],
+     "find": [
+      "pneumatology",
+      "spirit",
+      "holy ghost",
+      "indwelling"
+     ]
+    },
+    {
+     "id": "de-gratia",
+     "label": "Grace",
+     "t2": "grace",
+     "works": true,
+     "aliases": [
+      "calling",
+      "effectual-calling",
+      "regeneration",
+      "conversion",
+      "salvation",
+      "salvation-grace"
+     ],
+     "find": [
+      "effectual calling",
+      "regeneration",
+      "new birth",
+      "conversion",
+      "irresistible grace"
+     ]
+    },
+    {
+     "id": "de-fide",
+     "label": "Faith",
+     "t2": "faith",
+     "works": true,
+     "aliases": [
+      "assurance",
+      "assurance-of-salvation"
+     ],
+     "find": [
+      "belief",
+      "saving faith",
+      "assurance"
+     ]
+    },
+    {
+     "id": "repentance",
+     "label": "Repentance",
+     "t2": "repentance",
+     "works": false,
+     "aliases": [
+      "conversion-repentance",
+      "contrition",
+      "confession",
+      "forgiveness"
+     ],
+     "find": [
+      "penitence",
+      "contrition",
+      "conversion"
+     ]
+    },
+    {
+     "id": "de-justificatione",
+     "label": "Justification",
+     "t2": "justification",
+     "works": true,
+     "aliases": [
+      "adoption",
+      "merit",
+      "good-works-merit",
+      "works"
+     ],
+     "find": [
+      "imputation",
+      "righteousness",
+      "sola fide",
+      "faith alone",
+      "forgiveness",
+      "merit"
+     ]
+    },
+    {
+     "id": "de-sanctificatione",
+     "label": "Sanctification and Good Works",
+     "t2": "sanctification",
+     "works": true,
+     "aliases": [
+      "good-works",
+      "good-works-sanctification",
+      "good-works-necessity",
+      "perseverance",
+      "perseverance-of-the-saints",
+      "obedience",
+      "apostasy"
+     ],
+     "find": [
+      "holiness",
+      "good works",
+      "perseverance",
+      "growth in grace"
+     ]
+    },
+    {
+     "id": "de-libertate-christiana",
+     "label": "Christian Liberty",
+     "t2": "christian-liberty",
+     "works": true,
+     "find": [
+      "adiaphora",
+      "conscience",
+      "freedom"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "church",
+   "n": "VIII",
+   "label": "Church, Sacraments and Magistrate",
+   "loci": [
+    {
+     "id": "de-ecclesia",
+     "label": "The Church",
+     "t2": "the-church",
+     "works": true,
+     "aliases": [
+      "ministry",
+      "ministry-holy-orders",
+      "ministry-orders",
+      "holy-orders",
+      "ordination",
+      "preaching",
+      "excommunication",
+      "schism",
+      "antichrist",
+      "persecution",
+      "martyrdom",
+      "simony"
+     ],
+     "find": [
+      "ecclesiology",
+      "ministry",
+      "bishops",
+      "presbyters",
+      "church government",
+      "marks of the church",
+      "discipline",
+      "papacy"
+     ]
+    },
+    {
+     "id": "de-sacramentis",
+     "label": "The Sacraments",
+     "t2": "sacraments",
+     "works": true,
+     "aliases": [
+      "confirmation",
+      "anointing-of-the-sick",
+      "penance",
+      "repentance-penance",
+      "absolution",
+      "indulgences"
+     ],
+     "find": [
+      "sacrament",
+      "means of grace",
+      "ordinances",
+      "seven sacraments"
+     ]
+    },
+    {
+     "id": "de-baptismo",
+     "label": "Baptism",
+     "t2": "baptism",
+     "works": true,
+     "find": [
+      "infant baptism",
+      "paedobaptism",
+      "credobaptism",
+      "regeneration"
+     ]
+    },
+    {
+     "id": "de-coena",
+     "label": "The Lord's Supper",
+     "t2": "the-lord-s-supper",
+     "works": true,
+     "aliases": [
+      "the-eucharist",
+      "the-mass",
+      "the-lord-s-sacrament"
+     ],
+     "find": [
+      "eucharist",
+      "communion",
+      "holy communion",
+      "mass",
+      "transubstantiation",
+      "real presence"
+     ]
+    },
+    {
+     "id": "de-magistratu",
+     "label": "The Civil Magistrate",
+     "t2": "the-civil-magistrate",
+     "works": true,
+     "aliases": [
+      "peace"
+     ],
+     "find": [
+      "state",
+      "government",
+      "civil authority",
+      "two kingdoms",
+      "church and state"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "life",
+   "n": "IX",
+   "label": "The Christian Life",
+   "loci": [
+    {
+     "id": "de-religione",
+     "label": "Religion and True Worship",
+     "t2": "religion-true-worship",
+     "works": true,
+     "aliases": [
+      "idolatry",
+      "sabbath",
+      "oaths",
+      "oaths-and-vows",
+      "oaths-and-perjury",
+      "vows",
+      "fasting"
+     ],
+     "find": [
+      "worship",
+      "sabbath",
+      "lord's day",
+      "oaths",
+      "vows",
+      "fasting",
+      "idolatry",
+      "regulative principle"
+     ]
+    },
+    {
+     "id": "de-virtutibus",
+     "label": "Virtues and Moral Theology",
+     "t2": "virtues-moral-theology",
+     "works": true,
+     "aliases": [
+      "charity",
+      "charity-love",
+      "love",
+      "patience",
+      "humility",
+      "fear-of-god",
+      "almsgiving",
+      "hope",
+      "vocation",
+      "monasticism"
+     ],
+     "find": [
+      "ethics",
+      "virtue",
+      "love",
+      "charity",
+      "hope",
+      "vocation"
+     ]
+    },
+    {
+     "id": "de-oratione",
+     "label": "Prayer",
+     "t2": "prayer",
+     "works": true,
+     "aliases": [
+      "the-lord-s-prayer"
+     ],
+     "find": [
+      "lord's prayer",
+      "intercession",
+      "devotion"
+     ]
+    },
+    {
+     "id": "marriage",
+     "label": "Marriage",
+     "t2": "marriage",
+     "works": false,
+     "aliases": [
+      "matrimony",
+      "marriage-and-divorce",
+      "divorce",
+      "marriage-celibacy",
+      "marriage-and-family"
+     ],
+     "find": [
+      "divorce",
+      "celibacy",
+      "family",
+      "matrimony"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "last-things",
+   "n": "X",
+   "label": "Last Things",
+   "loci": [
+    {
+     "id": "de-novissimis",
+     "label": "Death and Judgment",
+     "t2": "last-things",
+     "works": true,
+     "aliases": [
+      "judgment",
+      "hell",
+      "purgatory",
+      "salvation-last-things",
+      "death"
+     ],
+     "find": [
+      "eschatology",
+      "death",
+      "judgment",
+      "hell",
+      "purgatory",
+      "second coming",
+      "millennium",
+      "antichrist"
+     ]
+    },
+    {
+     "id": "de-resurrectione",
+     "label": "The Resurrection",
+     "t2": "resurrection",
+     "works": true,
+     "find": [
+      "resurrection of the body",
+      "general resurrection"
+     ]
+    },
+    {
+     "id": "de-vita-aeterna",
+     "label": "Eternal Life",
+     "t2": "eternal-life",
+     "works": true,
+     "aliases": [
+      "beatitude",
+      "beatitude-eternal-life",
+      "beatitude-happiness",
+      "the-beatific-vision",
+      "salvation-eternal-life"
+     ],
+     "find": [
+      "heaven",
+      "beatific vision",
+      "glorification",
+      "new creation"
+     ]
+    }
+   ]
+  }
+ ]
+}
