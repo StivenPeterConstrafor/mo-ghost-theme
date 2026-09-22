@@ -25,7 +25,13 @@
       const top = el ? el.getBoundingClientRect().top + window.scrollY : 0;
       window.scrollTo(0, Math.max(0, top - 8));
     } else {
-      requestAnimationFrame(() => window.scrollTo(0, listY));
+      // The port repaints the list on close (in its own rAF), so the page
+      // is short for a moment; restore after the repaint, and once more
+      // in case the repaint lands late.
+      const back = () => window.scrollTo(0, listY);
+      requestAnimationFrame(() => requestAnimationFrame(back));
+      setTimeout(back, 150);
+      setTimeout(back, 400);
     }
   }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
 })();
