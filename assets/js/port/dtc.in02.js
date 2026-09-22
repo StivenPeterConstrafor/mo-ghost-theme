@@ -68,7 +68,11 @@ function renderArt(d,initialParagraph=0){
   const FR=Array.isArray(d.fr)?d.fr:String(d.fr||"").split(/\n\n+/);
   const EN=Array.isArray(d.en)?d.en:null;
   const hasEn=EN&&EN.length===FR.length;
-  const lane=hasEn?"both":"fr";
+  // 2026-09-22, Ian: an article opens in English when there is an English
+  // translation of it, not in the parallel lanes. The toggle is still
+  // there, a lane chosen from it holds for the session (LANEPREF), and
+  // ?lang= still wins. Articles with no English still open in French.
+  const lane=hasEn?"en":"fr";
   const frLen=FR.join(" ").length;
   const heads=FR.map((f,i)=>isHead(f)?i:-1).filter(i=>i>=0);
   const paint=l=>{
