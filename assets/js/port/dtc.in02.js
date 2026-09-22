@@ -37,7 +37,7 @@ function paintList(){
   $("#count").textContent=`${rows.length} of ${IDX.length} articles`;
   const f=fold(QY.trim());
   let html="",lastL="";
-  if(!rows.length){$("#list").innerHTML='<div class=empty>No headword matches. Full-text search of the articles arrives with the English translation.</div>';return;}
+  if(!rows.length){$("#list").innerHTML='<div class=empty>No headword matches. The search reads headwords, not the text of the articles.</div>';return;}
   for(const a of rows.slice(0,SHOWN)){
     if(!QY&&a[2]!==lastL){lastL=a[2];html+=`<div class=lether>${esc(lastL)}</div>`;}
     const en=a[5]||a[1];
@@ -45,7 +45,7 @@ function paintList(){
     if(f){const i=fold(en).indexOf(f);
       if(i>=0)t=esc(en.slice(0,i))+"<mark>"+esc(en.slice(i,i+QY.trim().length))+"</mark>"+esc(en.slice(i+QY.trim().length));}
     const frDiff=fold(a[1])!==fold(en)?esc(a[1])+" · ":"";
-    html+=`<button class="hw${CUR===a[0]?" on":""}" data-id="${esc(a[0])}">${t}<small>${frDiff}${(a[3]/1000).toFixed(0)}k${a[4]?" · English ready":""}</small></button>`;
+    html+=`<button class="hw${CUR===a[0]?" on":""}" data-id="${esc(a[0])}">${t}<small>${frDiff}${(a[3]/1000).toFixed(0)}k</small></button>`;
   }
   if(rows.length>SHOWN)html+=`<button class=more id=more>Load more<small>${rows.length-SHOWN} more of ${rows.length}</small></button>`;
   $("#list").innerHTML=html;
