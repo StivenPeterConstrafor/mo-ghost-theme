@@ -343,6 +343,10 @@ body.web-citation-layout #map-heading .map-top-controls .cn-control-label {
   clip-path: inset(50%);
 }
 body.web-citation-layout #map-heading .map-top-controls .cn-views { display: flex; align-items: center; flex-wrap: nowrap; gap: 0; }
+/* Scoped through #map-heading, and both of the properties named last
+   are there because of it: constellations.css styles `#map-heading
+   button` for the "How to read this" link, so without them a tab in
+   this slot carries that link's underline and its 100px cap. */
 body.web-citation-layout #map-heading .map-top-controls .cn-view-btn {
   font: 12px var(--body);
   color: var(--muted);
@@ -353,6 +357,8 @@ body.web-citation-layout #map-heading .map-top-controls .cn-view-btn {
   padding: 12px 0;
   min-height: 44px;
   white-space: nowrap;
+  text-decoration: none;
+  max-width: none;
 }
 body.web-citation-layout #map-heading .map-top-controls .cn-view-btn.is-active { color: var(--fg); border-bottom-color: var(--accent); }
 body.web-citation-layout #map-heading .map-top-controls .cn-view-btn + .cn-view-btn { margin-left: 18px; }
