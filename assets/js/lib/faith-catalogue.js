@@ -20,8 +20,8 @@
       if (group.kind !== 'edition') continue;
       const keep = Array.isArray(group.keep) ? group.keep : [group.keep];
       const others = group.others || [];
-      for (const slug of keep.filter(Boolean)) witnessRelations.set(slug, {label:keep.length === 1 && others.length === 1 ? 'Second witness held' : 'Alternate edition held', exact:keep.length === 1 && others.length === 1, distinct:true, family:group.work});
-      for (const slug of others) witnessRelations.set(slug, {label:keep.length + others.length === 2 ? 'Second witness' : 'Alternate edition', exact:keep.length + others.length === 2, distinct:true, family:group.work});
+      for (const slug of keep.filter(Boolean)) witnessRelations.set(slug, {label:keep.length === 1 && others.length === 1 ? 'Second witness held' : 'Alternate edition held', exact:keep.length === 1 && others.length === 1, distinct:true, family:group.work,familyTitle:canonicalBySlug.get(keep[0])?.title || group.work});
+      for (const slug of others) witnessRelations.set(slug, {label:keep.length + others.length === 2 ? 'Second witness' : 'Alternate edition', exact:keep.length + others.length === 2, distinct:true, family:group.work,familyTitle:canonicalBySlug.get(keep[0])?.title || group.work});
     }
     for (const group of data?.complementary_witnesses || []) {
       const fac = group.fac || [], dig = group.dig || [];
@@ -29,7 +29,7 @@
       for (const [members, other, format, label] of [[fac,dig,'Facsimile',fac.length === 1 && dig.length === 1 ? 'Digital witness held' : 'Related born-digital edition'],[dig,fac,'Born-digital text',fac.length === 1 && dig.length === 1 ? 'Facsimile witness held' : 'Related facsimile edition']]) {
         for (const slug of members) if (other.length) {
           const previous = witnessRelations.get(slug);
-          witnessRelations.set(slug,{...previous,label:previous?.exact ? previous.label : label,exact:!!previous?.exact || fac.length === 1 && dig.length === 1,distinct:true,family,format});
+          witnessRelations.set(slug,{...previous,label:previous?.exact ? previous.label : label,exact:!!previous?.exact || fac.length === 1 && dig.length === 1,distinct:true,family,familyTitle:group.title,format});
         }
       }
     }
@@ -45,7 +45,7 @@
     const witness = witnessRelations.get(slug);
     if (witness?.format) format = witness.format;
     const extent = Number(original.n_pages || row.extent) || 0;
-    return {family:witness?.family || '', extent, extentLabel:extent && format ? `${extent.toLocaleString()} ${format === 'Facsimile' ? 'pages' : 'sections'}` : '', volume, edition:editionLabel, format, witness:witness?.label || '', witnessExact:!!witness?.exact, labels:[volume,editionLabel && editionLabel !== volume ? editionLabel : '',format,witness?.label].filter(Boolean)};
+    return {family:witness?.family || '', familyTitle:witness?.familyTitle || '', extent, extentLabel:extent && format ? `${extent.toLocaleString()} ${format === 'Facsimile' ? 'pages' : 'sections'}` : '', volume, edition:editionLabel, format, witness:witness?.label || '', witnessExact:!!witness?.exact, labels:[volume,editionLabel && editionLabel !== volume ? editionLabel : '',format,witness?.label].filter(Boolean)};
   }
   const escapeText = value => String(value || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function metadataHTML(work, options = {}) {

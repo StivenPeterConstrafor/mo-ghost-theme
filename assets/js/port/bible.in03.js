@@ -281,6 +281,7 @@ const foldOpen=(w,rows)=>{const r=(rows||[]).find(x=>x&&RX.page(x.p)!=null);cons
 const previewBtn=(w,p,hl)=>w&&p!=null&&p!==""?`<button class="peekbtn" data-pk="${esc(w)}|${esc(p)}|${esc(hl||'')}" aria-label="Preview source passage" aria-expanded="false">Preview source</button>`:"";
 const readBtn=(w,p,hl)=>(w&&p!=null&&p!=="")?`<a class="readbtn" target="_blank" rel="noopener" href="${readerHrefHl(w,p,hl)}">Open ↗</a><button class="peekbtn" data-pk="${esc(w)}|${p}|${esc(hl||'')}" aria-label="Preview source passage" aria-expanded="false" title="Read the passage here">Preview</button>`:"";   // owner 2026-09-02 "open inline, peeking, opening in a tab" (supersedes 08-31 never-inline)
 // PEEK: the passage slides open right under its row — the reader itself, embedded
+let previewSequence=0;
 document.addEventListener("click",async e=>{
   const ov=e.target.closest(".openvol");
   if(ov){e.preventDefault();
@@ -292,13 +293,17 @@ document.addEventListener("click",async e=>{
     window.open(readerHref(w,pg),"_blank","noopener");return;}
   const b=e.target.closest(".peekbtn");if(!b)return;
   e.preventDefault();
-  let wrap=b.parentElement.querySelector(":scope > .peekwrap")||b.closest(".rx-excerpt,.vpr,.ev,.m")?.querySelector(".peekwrap");
-  if(wrap){const on=wrap.classList.toggle("on");b.classList.toggle("on",on);b.setAttribute("aria-expanded",String(on));return;}
+  const host=b.closest('.scripture-work,.annotation-volume,.rx-excerpt,.vpr,.ev')||b.parentElement;
+  let wrap=host.querySelector(':scope > .peekwrap');
+  const setOpen=on=>{wrap.classList.toggle('on',on);wrap.inert=!on;b.classList.toggle('on',on);b.setAttribute('aria-expanded',String(on));};
+  if(wrap){setOpen(!wrap.classList.contains('on'));return;}
   const [w,p,hl]=String(b.dataset.pk).split("|");
-  wrap=document.createElement("div");wrap.className="peekwrap";
-  wrap.innerHTML=`<div><iframe src="${readerHrefHl(w,p,hl)}" title="Passage"></iframe></div>`;
-  (b.closest(".rx-excerpt,.vpr,.ev")||b.parentElement).appendChild(wrap);
-  requestAnimationFrame(()=>{wrap.classList.add("on");b.classList.add("on");b.setAttribute("aria-expanded","true");});
+  const href=readerHrefHl(w,p||null,hl),title=host.querySelector('.work-title,strong')?.textContent||'Source passage';
+  wrap=document.createElement("div");wrap.className="peekwrap";wrap.id='source-preview-'+(++previewSequence);wrap.inert=true;b.setAttribute('aria-controls',wrap.id);
+  wrap.innerHTML=`<div><div class="peekhead"><strong>Mini reader · ${esc(title)}</strong><a href="${esc(href)}" target="_blank" rel="noopener">Open full reader ↗</a><button type="button" data-close-preview>Close preview</button></div><iframe src="${esc(href)}" title="Mini reader: ${esc(title)}"></iframe></div>`;
+  host.appendChild(wrap);
+  wrap.querySelector('[data-close-preview]').onclick=()=>{setOpen(false);b.focus();};
+  requestAnimationFrame(()=>setOpen(true));
 });
 const mkHl=(book,c,v)=>{const st=String(book||"").replace(/^[0-9IVX]+\s+/,"").slice(0,3);return st?`${st}|${c}|${v||0}`:"";};
 /* ── SAVE TO NOTEBOOK (owner 2026-09-10 "save works … specific passages, on all surfaces cleanly"): ONE path,

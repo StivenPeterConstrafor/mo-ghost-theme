@@ -26,3 +26,12 @@ The existing Cloudflare library endpoint supplies works-index, workgroups, and w
 ## Delivery
 
 Owner-fork branch: fix/scripture-citation-groups. Merge/deploy through Ian’s normal theme workflow. This branch does not replace the separate Cloudflare-only runtime deployment handoff; those Worker changes still need their own rollout status checked.
+
+
+## Preview and edition follow-up, 22 September 2026
+
+Preview now opens the canonical reader in a bounded frame with an Open full reader link and Close preview control. The chapter commentary strip owns one full-width reader below the strip; it never mounts inside the 240px card. Citation previews keep their exact indexed work/location, and top-work summaries first resolve a real citation. The existing reader's `mo-embedded` mode hides the outer site chrome. The older Bible page now mounts its preview below the complete work row rather than the 180px action column.
+
+The shared Scripture ordering helper keeps editions separate and orders numeric and Roman-numbered volumes within each format. Known born-digital editions come before their facsimiles. Commentary cards and citation groups show published volume, edition and witness labels; unknown relationships are not called second witnesses. No catalogue content, worker, storage endpoint, or API changed.
+
+Validation: seven edition/grouping regressions passed, including Pétau and Gerhard; theme lint and the full build passed. The isolated theme preview loaded 78 real Matthew 1 commentary entries and opened a full-width mini-reader container beneath the strip. The local cross-origin reader frame itself could not be verified as populated, so this remains a same-origin live check after Ian merges. Vercel's same-origin implementation was verified with Aquinas at desktop and 390px, in light and dark themes, without horizontal overflow.

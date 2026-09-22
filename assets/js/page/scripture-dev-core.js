@@ -30,8 +30,8 @@
  * is the passage the worker resolves from the work itself (Ian's ruling,
  * 2026-09-11: direct quotes only).
  *
- * NO SCROLL BOXES. Previews open in the page flow and take their own
- * height. The commentary strip scrolls sideways by Ian's request, and
+ * Canonical source previews use a bounded mini reader below the source row.
+ * The main citation list remains in the page flow. The commentary strip scrolls sideways by Ian's request, and
  * the reader's sidebar scrolls on its own (sidebars are the recorded
  * exception, 2026-09-22). Nothing else here caps its height.
  */
@@ -125,7 +125,7 @@
     if (m) return `/the-faith-received/read/?${m[1]}${m[2] || ""}`;
     m = raw.match(/^\/the-faith-received\/read\/\?w=[^#]*(#[A-Za-z0-9_.:-]*)?$/);
     if (m) return raw;
-    if (w) return `/the-faith-received/read/?w=${encodeURIComponent(w)}${p ? `#b${encodeURIComponent(p)}-0` : ""}`;
+    if (w) return `/the-faith-received/read/?w=${encodeURIComponent(w)}${p !== undefined && p !== null && p !== '' ? `#b${encodeURIComponent(p)}-0` : ""}`;
     return "";
   }
 
@@ -364,14 +364,17 @@
   /* A work, with a Preview toggle that opens the passage below itself.
    * `row` is a citation row (or a top-work entry, which has the same
    * w/t/a/h keys plus a count). The preview reads the author's words at
-   * the cited place from the worker and sets them as a quotation; if the
-   * worker cannot place them, it says so and offers the reader link,
-   * rather than falling back to the machine-written gist. */
+   * the cited place in the canonical reader, preserving navigation and language
+   * controls. Missing locations are never replaced with a guessed first page. */
   // The library cuts gists at a fixed length, often mid-word. Say so.
   const gist = (g) => {
     const t = String(g).trim();
     return /[.!?)"\u201d\u2019]$/.test(t) ? t : `${t}\u2026`;
   };
+
+  function miniReader(href, title) {
+    return `<section class="sd-mini-reader" aria-label="Mini reader: ${esc(title)}"><div class="sd-mini-head"><strong>${esc(title)}</strong><a href="${esc(href)}" target="_blank" rel="noopener">Open full reader ↗</a><button type="button" class="sd-clear" data-close-mini>Close preview</button></div><iframe src="${esc(href)}" title="Mini reader: ${esc(title)}"></iframe></section>`;
+  }
 
   function sourceItem(row, ctx, extra) {
     const li = document.createElement('li');
@@ -396,17 +399,12 @@
       pick.then((r) => {
         // A top-work total is not a source location. Never preview a guessed page.
         if (!r || (extra && extra.count && (r.p === undefined || r.p === null || r.p === ''))) throw new Error('No indexed source location');
-        return fetchPassage(r, ctx.book, ctx.c, ctx.v).then((d) => ({ d, r }));
-      }).then(({ d, r }) => {
-        const link = sourceHref((d && d.href) || r.h, r.w, r.p) || href;
-        const read = link ? `<a class="sd-read-link" href="${esc(link)}">Read in context</a>` : '';
-        if (d && d.found && d.text) {
-          const text = `${d.clipped_start ? '… ' : ''}${d.text}${d.clipped_end ? ' …' : ''}`;
-          preview.innerHTML = `<p class="sd-summary-label">Source passage${d.lang ? ` · ${esc(d.lang)}` : ''}</p><blockquote class="sd-quote"${d.lang ? ` lang="${esc(d.lang)}"` : ''}>${esc(text)}</blockquote><p class="sd-preview-foot">${d.locator ? `<span>${esc(d.locator)}</span>` : ''}${read}</p>`;
-        } else {
-          const why = d && d.reason === 'licensed' ? 'This edition’s text is licensed, so it cannot be previewed here.' : 'A source passage could not be extracted at this reference. The indexed summary above is not a quotation.';
-          preview.innerHTML = `<p class="sd-muted">${why}</p><p class="sd-preview-foot">${read}</p>`;
-        }
+        return r;
+      }).then((r) => {
+        const link = sourceHref(r.h, r.w, r.p) || href;
+        if (!link) throw new Error('Reader location unavailable');
+        preview.innerHTML = miniReader(link, row.t || row.w || 'Source passage');
+        preview.querySelector('[data-close-mini]').addEventListener('click', () => { button.click(); button.focus(); });
         loaded = true;
       }).catch(() => {
         preview.innerHTML = `<p class="sd-muted" role="status">The source passage could not load.</p><button type="button" class="sd-clear" data-preview-retry>Retry preview</button>${href ? `<p><a class="sd-read-link" href="${esc(href)}">Read in context</a></p>` : ''}`;
@@ -441,7 +439,7 @@
     }
     function render(total) {
       const open = new Set(Array.from(host.querySelectorAll('details[open][data-source-key]'), (el) => el.dataset.sourceKey));
-      const groups = window.FRScriptureSources.group(rows, { by, order });
+      const groups = window.FRScriptureSources.group(rows, { by, order, metadata: window.MOFaithCatalogue?.metadata });
       const fragment = document.createDocumentFragment();
       const workFold = (work, parent) => {
         const key = `${parent}/${work.key}`;
@@ -493,20 +491,21 @@
     host.innerHTML =
       `<div class="sd-comm-filters"></div>` +
       `<p class="sd-comm-status sd-muted" role="status"></p>` +
-      `<ul class="sd-comm-strip" aria-label="Commentaries"></ul>`;
+      `<ul class="sd-comm-strip" aria-label="Commentaries"></ul><div class="sd-comm-reader" hidden></div>`;
     const $status = host.querySelector(".sd-comm-status");
     const $strip = host.querySelector(".sd-comm-strip");
     let run = 0;
     const load = (f) => {
       const my = ++run;
       $status.textContent = "Loading commentaries…";
-      fetchCommentaries(ctx.book, ctx.c, f).then((d) => {
+      fetchCommentaries(ctx.book, ctx.c, f).then(async (d) => {
+        await window.MOFaithCatalogue?.ready;
         // A strip replaced by the next chapter's must not report here.
         if (my !== run || !$strip.isConnected) return;
         if (!d) { $status.textContent = "No commentaries are catalogued for this book yet."; $strip.innerHTML = ""; return; }
         bar.update(d.facets);
         if (onCount) onCount(d.total);
-        const items = d.items || [];
+        const items = (d.items || []).slice().sort((a,b) => window.FRScriptureSources.compareWorks(a,b,window.MOFaithCatalogue?.metadata));
         $status.textContent = items.length
           ? (activeCount(f)
             ? `${plural(d.matched, "commentary", "commentaries")} of ${fmt(d.total)} match`
@@ -520,12 +519,25 @@
           const inner =
             `<span class="sd-comm-title">${esc(e.t)}</span>` +
             `<span class="sd-comm-author">${esc(e.a || "")}</span>` +
+            `${window.MOFaithCatalogue?.metadataHTML(e.w, {hideExtent:true}) || ""}` +
             `<span class="sd-comm-meta">${esc(range)}${meta ? ` · ${meta}` : ""}</span>`;
           // No usable link: show the card, but do not point it back here.
           return href
-            ? `<li class="sd-comm"><a class="sd-comm-card" href="${esc(href)}">${inner}</a></li>`
+            ? `<li class="sd-comm"><a class="sd-comm-card" href="${esc(href)}">${inner}</a><button type="button" class="sd-preview-btn" data-comm-preview="${esc(e.w)}" aria-expanded="false">Preview</button></li>`
             : `<li class="sd-comm"><span class="sd-comm-card">${inner}</span></li>`;
         }).join("");
+        const pane = host.querySelector('.sd-comm-reader'); pane.hidden = true; pane.replaceChildren();
+        let selected = null;
+        $strip.querySelectorAll('[data-comm-preview]').forEach(button => button.addEventListener('click', () => {
+          const open = selected !== button || pane.hidden;
+          if (selected) { selected.setAttribute('aria-expanded','false'); selected.textContent='Preview'; }
+          pane.hidden = !open;
+          if (!open) { pane.replaceChildren(); selected=null; return; }
+          selected=button;button.setAttribute('aria-expanded','true');button.textContent='Close preview';
+          const entry=items.find(e=>e.w===button.dataset.commPreview);
+          pane.innerHTML=miniReader(sourceHref(entry.href,entry.w),entry.t);
+          pane.querySelector('[data-close-mini]').addEventListener('click',()=>{button.click();button.focus();});
+        }));
       }).catch(() => {
         if (my !== run || !$strip.isConnected) return;
         $status.hidden = false;
