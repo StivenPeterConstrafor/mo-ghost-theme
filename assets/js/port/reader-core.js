@@ -6337,7 +6337,7 @@ async function loadPgCanon(ws){
         const first=els.length?els[0]:(pbN?pbN.nextSibling:null),after=els.length?els[els.length-1].nextSibling:(pbN?pbN.nextSibling:null);
         if(_gr(pre)>=40)_chunkText(pre,900).forEach(t=>laB.insertBefore(mkP(t),first||null));
         if(_gr(suf)>=40)_chunkText(suf,900).forEach(t=>laB.insertBefore(mkP(t),after||null));
-      }else if(gc<0.3*gz){
+      }else if(gc<0.3*gz&&_zoneReplace){   // replacing is the zone-arbitration's call: pure-Greek bodies keep their text (owner 2026-08-18, pg-3223's dirty vol-34 zones)
         const ref=els.length?els[els.length-1].nextSibling:(pbN?pbN.nextSibling:null);
         els.forEach(e=>e.remove());_chunkText(zg,900).forEach(t=>laB.insertBefore(mkP(t),ref||null));
       }else return;
