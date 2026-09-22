@@ -51,6 +51,7 @@
     // the same distance the opening one did.
     d.style.width = `${d.scrollWidth}px`;
     window.requestAnimationFrame(() => {
+      if (toggle.getAttribute("aria-expanded") === "true") return; // reopened since
       d.classList.remove("is-open");
       d.style.width = "0px";
     });
@@ -67,9 +68,30 @@
     closeAll(toggle);
     toggle.setAttribute("aria-expanded", "true");
     d.hidden = false;
+    /* ON A PHONE, AT ONCE -- not in the next animation frame.
+       Ian, 2026-09-21: "The navrail subcategories aren't working on
+       mobile." The dropped panel has `transition: none` and is-open is
+       what switches it from display:none to flex, so the frame bought no
+       animation at all. What it did buy was two failures, both measured
+       on the live Connections page at 375px:
+
+       - DELAY. On the port surfaces (Connections, Compare, Search) the
+         first seconds after load are heavy start-up work, frames arrive
+         late, and a tap that set aria-expanded left the panel shut for
+         well over 450ms. A reader sees nothing happen.
+
+       - A RACE, which the delay turns into the common case. close() is
+         synchronous here, so a second tap -- the natural response to a
+         first one that did nothing -- closed a drawer that had not opened
+         yet, and then the late frame opened it anyway. Tap, tap: toggle
+         reads closed, panel is showing, and every tap after that is out
+         of step. Reproduced with open-then-close: expanded=false,
+         drawer open.
+
+       Adding the class in the same task removes both. */
     if (dropped()) {
       d.style.width = "";
-      window.requestAnimationFrame(() => d.classList.add("is-open"));
+      d.classList.add("is-open");
       rail.classList.add("tfr-rail--open");
       return;
     }
@@ -77,6 +99,10 @@
     // goes from display:none straight to its open width and the slide
     // never runs.
     window.requestAnimationFrame(() => {
+      // The slide does need its frame on a desktop, but a drawer closed
+      // before that frame arrives must stay closed: the same race as the
+      // phone, just rarer, since a desktop frame is rarely late.
+      if (toggle.getAttribute("aria-expanded") !== "true") return;
       d.classList.add("is-open");
       d.style.width = `${d.scrollWidth}px`;
       // Once it has arrived, hand the width back to the content, so a
