@@ -323,22 +323,26 @@
         out.push('<div class="fra-table" tabindex="0" role="region" aria-label="Answer table"><table><thead><tr>'+cells(l).map(c=>'<th>'+inline(c.trim(),sources)+'</th>').join('')+'</tr></thead><tbody>');i++;
         while(i+1<lines.length&&lines[i+1].includes('|'))out.push('<tr>'+cells(lines[++i]).map(c=>'<td>'+inline(c.trim(),sources)+'</td>').join('')+'</tr>');out.push('</tbody></table></div>');continue;
       }
-      const h=/^(#{1,6})\s+(.+)$/.exec(l), li=/^\s*([-*]|\d+[.)])\s+(.+)$/.exec(l);
-      if(h){flush();closeList();out.push('<h3>'+inline(h[2],sources)+'</h3>');}
-      else if(li){flush();const kind=/\d/.test(li[1])?'ol':'ul';if(list!==kind){closeList();list=kind;const ordinal=kind==='ol'?Number(li[1].replace(/[.)]$/,'')):1;out.push('<'+kind+(ordinal!==1?' start="'+ordinal+'"':'')+'>');}out.push('<li>'+inline(li[2],sources)+'</li>');}
       /* MereO delta (Ian, 2026-09-15): allow up to three spaces before the
          marker. CommonMark does, and the model indents its quotations
          under the list item they belong to, so the strict /^>/ left every
          one of them as a literal "> " in the middle of a paragraph.
-         UPSTREAM HAS THIS NOW: the owner's 2026-09-13 file already writes
-         / {0,3}>/, so there is nothing to re-apply. The note stays so the
-         next re-vendoring does not read the match as a coincidence and
-         "simplify" it back to /^>/. */
-      else if(/^ {0,3}>\s?/.test(l)){
-        flush();closeList();const quoted=[l.replace(/^ {0,3}>\s?/,'')];
-        while(i+1<lines.length&&/^ {0,3}>\s?/.test(lines[i+1]))quoted.push(lines[++i].replace(/^ {0,3}>\s?/,''));
+         EXTENDED 2026-09-22 (upstream has the same change, tfr-backend
+         tools/ask_workspace/ask-workspace.js): the model also indents a
+         quotation four spaces or more ('    > "whose body and blood …"' in the
+         Real Presence answer) or opens it inside a list item ("2. > …"),
+         and both still showed a literal ">". Any indent now, and a list-held
+         quotation is a quotation. Do not narrow this back to / {0,3}>/. */
+      const q=/^\s*(?:(?:[-*]|\d+[.)])\s+)?>\s?/.exec(l);
+      if(q){
+        flush();closeList();const quoted=[l.slice(q[0].length)];
+        while(i+1<lines.length&&/^\s*>\s?/.test(lines[i+1]))quoted.push(lines[++i].replace(/^\s*>\s?/,''));
         out.push('<blockquote>'+quoted.join('\n').split(/\n\s*\n/).map(p=>'<p>'+inline(p,sources).replace(/\n/g,'<br>')+'</p>').join('')+'</blockquote>');
+        continue;
       }
+      const h=/^(#{1,6})\s+(.+)$/.exec(l), li=/^\s*([-*]|\d+[.)])\s+(.+)$/.exec(l);
+      if(h){flush();closeList();out.push('<h3>'+inline(h[2],sources)+'</h3>');}
+      else if(li){flush();const kind=/\d/.test(li[1])?'ol':'ul';if(list!==kind){closeList();list=kind;const ordinal=kind==='ol'?Number(li[1].replace(/[.)]$/,'')):1;out.push('<'+kind+(ordinal!==1?' start="'+ordinal+'"':'')+'>');}out.push('<li>'+inline(li[2],sources)+'</li>');}
       else if(!l.trim()||/^\s*[-*_]{3,}\s*$/.test(l)){flush();closeList();}
       else{closeList();paragraph.push(l);}
     }
