@@ -18889,6 +18889,12 @@ html.g-mobile #reading .fr-sec-toggle {
    #nbSelectionText), the topic drawer (#room-topic-drawer), and the
    Ask textarea. Anything added to this list must be inline content;
    anything floating stays out.
+
+   SIDEBARS ARE THE OTHER EXCEPTION. Ian, 2026-09-22: "Sidebars are
+   the exception to this rule." A column beside the content that scrolls
+   on its own stays that way: the Dictionary's entry list (.list in the
+   .main grid), Connections' #explorer, the reader's outline, and the
+   like.
    ------------------------------------------------------------------ */
 #results,
 .worklist,
