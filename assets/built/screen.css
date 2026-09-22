@@ -14935,10 +14935,27 @@ body.mo-search-open { overflow: hidden; }
    shifts the hero overlay, article header, and accent glow to the
    season's color. Muted, editorial-grade hues — dark enough for
    white text, warm enough to sit beside the MO brand palette.
+
+   "Members-only" describes where the control lives, not a gate.
+   The picker is on the dashboard, which is behind membership, but
+   assets/js/boot/liturgical-class.js reads localStorage and applies
+   the class for anyone who has set one, signed in or not. Nothing
+   applies without a stored preference, so a visitor who has never
+   touched the picker sees the brand palette.
+
+   Dark mode does not fight this and must not be made to. It is
+   scoped to html[data-theme="dark"] body.post-template .article-body
+   further down this file: the reading body flips, the plate above it
+   keeps its season. The two surfaces are disjoint, so neither wins.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Season palettes ─────────────────────────────────────────── */
+/* ── Season palettes ─────────────────────────────────────────────
+   --lc-rgb is the same colour as --lc-bg, written as bare channels
+   so a surface can mix its own alpha against it: rgb(var(--lc-rgb)
+   / 0.3). The Faith Received's plates need that because each one
+   fades its photograph at its own rate. Keep the two in step. */
 body.lc-advent {
+  --lc-rgb: 28 37 56;
   --lc-bg: #1c2538;
   --lc-hero-top: rgba(28, 37, 56, 0.70);
   --lc-hero-bot: rgb(28, 37, 56);
@@ -14947,6 +14964,7 @@ body.lc-advent {
   --lc-dot: #6e8fbe;
 }
 body.lc-christmas {
+  --lc-rgb: 28 46 30;
   --lc-bg: #1c2e1e;
   --lc-hero-top: rgba(28, 46, 30, 0.70);
   --lc-hero-bot: rgb(28, 46, 30);
@@ -14955,6 +14973,7 @@ body.lc-christmas {
   --lc-dot: #c44040;
 }
 body.lc-epiphany {
+  --lc-rgb: 53 44 24;
   --lc-bg: #352c18;
   --lc-hero-top: rgba(53, 44, 24, 0.70);
   --lc-hero-bot: rgb(53, 44, 24);
@@ -14963,6 +14982,7 @@ body.lc-epiphany {
   --lc-dot: #c4a037;
 }
 body.lc-lent {
+  --lc-rgb: 40 32 48;
   --lc-bg: #282030;
   --lc-hero-top: rgba(40, 32, 48, 0.70);
   --lc-hero-bot: rgb(40, 32, 48);
@@ -14971,6 +14991,7 @@ body.lc-lent {
   --lc-dot: #8a5cb0;
 }
 body.lc-easter {
+  --lc-rgb: 50 42 26;
   --lc-bg: #322a1a;
   --lc-hero-top: rgba(50, 42, 26, 0.70);
   --lc-hero-bot: rgb(50, 42, 26);
@@ -14979,6 +15000,7 @@ body.lc-easter {
   --lc-dot: #d4b84e;
 }
 body.lc-pentecost {
+  --lc-rgb: 53 28 30;
   --lc-bg: #351c1e;
   --lc-hero-top: rgba(53, 28, 30, 0.70);
   --lc-hero-bot: rgb(53, 28, 30);
@@ -14987,6 +15009,7 @@ body.lc-pentecost {
   --lc-dot: #c43e42;
 }
 body.lc-ordinary {
+  --lc-rgb: 30 42 32;
   --lc-bg: #1e2a20;
   --lc-hero-top: rgba(30, 42, 32, 0.70);
   --lc-hero-bot: rgb(30, 42, 32);
@@ -15110,6 +15133,70 @@ body[class*="lc-"] .article-header {
 }
 body[class*="lc-"] .article-header::before {
   background: radial-gradient(ellipse, var(--lc-accent-article), transparent 65%);
+}
+
+/* ── The Faith Received's own header plates ──────────────────────
+   TFR's ~80 document pages (creeds, confessions, Augustine, Calvin)
+   already take the season, because they are built on .article-header
+   and the rule above names it. Its landing page and its 37 tool and
+   room pages did not, for one reason only: their plates are called
+   .lp-hero and .bhero (assets/css/faith-received.css, the landing
+   and browse block) and nothing above names either one. It was never
+   a shadowed variable, a missing wrapper class or a route the boot
+   script skips. body.lc-* and --lc-bg are both present on every TFR
+   page today, including the ported reader; they were simply unread.
+
+   WHAT THE SEASON IS ALLOWED TO TOUCH. The plate at the top of the
+   page, and nothing else. That is already the rule everywhere else
+   in this file: the hero and the article header take the colour, the
+   reading body, the cream bands and the footer stay brand dark. So
+   the TFR cream bands, the .bband--dark mid-page bands and the join
+   strip are deliberately left alone here.
+
+   AND NOT THE READER. The ported reader and the research surfaces
+   under html.fr-ghost-site are paper, and the reader's toolbar
+   carries contrast measured against a known ground (the ratios are
+   written out in assets/css/faith-port-reader-skin.css). A seasonal
+   tint under that toolbar would invalidate every one of those
+   measurements, seven seasons across three reading themes, and a
+   season on the reading surface itself would colour the text of
+   Augustine. The chrome above the reader is our own .site-header,
+   which is not seasonal on any page of the site. Leaving the reader
+   alone is the consistent answer, not an omission.
+
+   EACH PLATE KEEPS ITS OWN ALPHA RAMP AND ITS OWN PHOTOGRAPH. Only
+   the hue of the overlay moves. That is why these compose from
+   --lc-rgb rather than from --lc-hero-top and --lc-hero-bot:
+   .lp-hero fades 0.72 to 0.94 over its skyline, .bhero fades 0.30
+   to 0.88 over the Durand, and neither is the site hero's 0.70 to
+   1.0. Reusing the hero's two tokens would have flattened both
+   photographs.
+
+   The var() fallbacks are the brand dark. If --lc-rgb ever goes
+   missing the declaration still resolves, and the plate paints
+   exactly what it paints today rather than dropping to transparent
+   and leaving white type on white.
+
+   SPECIFICITY, NOT ORDER, IS WHAT MAKES THESE WIN.
+   faith-received.min.css is linked AFTER screen.min.css in
+   default.hbs, so a bare .lp-hero over there (0,1,0) beats an
+   equal-weight rule here. body[class*="lc-"] .lp-hero is (0,2,1).
+   Keep the body prefix on both. */
+body[class*="lc-"] .lp-hero {
+  background:
+    linear-gradient(to bottom,
+      rgb(var(--lc-rgb, 45 41 39) / 0.72),
+      rgb(var(--lc-rgb, 45 41 39) / 0.94) 72%),
+    url("../images/mo-header-bg.jpg") center 30%/cover no-repeat,
+    var(--lc-bg, #2d2927);
+}
+body[class*="lc-"] .bhero {
+  background:
+    linear-gradient(
+      rgb(var(--lc-rgb, 45 41 39) / 0.30),
+      rgb(var(--lc-rgb, 45 41 39) / 0.88) 78%),
+    url("../images/tfr/durand-thanatopsis.jpg") center 42%/cover no-repeat,
+    var(--lc-bg, #2d2927);
 }
 
 
