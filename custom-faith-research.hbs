@@ -140,6 +140,16 @@
         <button type="button" class="faith-view-toggle-tab" data-research-mode="compare" role="tab" aria-selected="false" aria-controls="research-panel-compare" id="research-tab-compare">Compare</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="bookmarks" role="tab" aria-selected="false" aria-controls="research-panel-bookmarks" id="research-tab-bookmarks">Bookmarks</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="notebook" role="tab" aria-selected="false" aria-controls="research-panel-notebook" id="research-tab-notebook">Notebook</button>
+        {{!-- Sixth, between what you have kept and what you write from
+              it, because that is where it is used: the map is how you
+              find the next author worth keeping. The mode is
+              "connections", matching the label and the standalone page.
+              It answered to "constellations" until 2026-09-19, when the
+              tab was removed entirely; nothing in this theme links to
+              that old hash and a bare #constellations now falls through
+              to Ask, which is what showMode() does with any address it
+              does not know. --}}
+        <button type="button" class="faith-view-toggle-tab" data-research-mode="connections" role="tab" aria-selected="false" aria-controls="research-panel-connections" id="research-tab-connections">Connections</button>
         <button type="button" class="faith-view-toggle-tab" data-research-mode="desk" role="tab" aria-selected="false" aria-controls="research-panel-desk" id="research-tab-desk">Desk</button>
       </nav>
 
@@ -390,6 +400,42 @@
         </div>
       </div>
 
+      {{!-- ── Connections ────────────────────────────────────────────
+           The same partial the citation atlas renders at
+           /the-faith-received/connections/, wrapped here the way
+           Bookmarks and the Notebook are. The standalone page stays;
+           this is a second door, not a replacement, and the two never
+           meet: the partial appears once per page, so the ids it
+           carries (cn-shelf, cn-index-filter and the three control
+           labels) stay unique in both places.
+
+           HOW IT WAKES. faith-constellations.js calls
+           root.closest("[data-research-panel]") and puts a
+           MutationObserver on this element's `hidden` attribute, which
+           is the attribute faith-research.js already toggles. That is
+           the same lazy mount Compare and the Desk use, and the reason
+           it is a MutationObserver rather than the ResizeObserver
+           beside it is written out at the foot of that file: a
+           ResizeObserver is not delivered for a tab the browser is not
+           painting, so a panel that woke on RO alone would sit blank.
+           Nothing is fetched before the tab is opened, because the
+           stage measures 0x0 while this div is hidden.
+
+           ONE SHELF LIST SHORT OF THE ATLAS, and the lede says so. The
+           citation map is not a route: it is window.MOFaithWebGraph,
+           which the atlas engine builds and nothing else does. On this
+           page it is absent, so citeSlugFree() withholds that shelf
+           rather than offering a map that could only fail, and the
+           sixteen Scripture shelves are the whole list. The rail at the
+           top of this page already links the atlas, so the map that is
+           missing here is one click away. --}}
+      <div data-research-panel="connections" role="tabpanel" id="research-panel-connections" aria-labelledby="research-tab-connections" hidden>
+        <div class="research-workspace">
+          <div class="research-workspace-inner">
+           {{> "faith-received/_constellations-panel" lede="Choose a shelf and see how its authors, works and topics divide by the Scripture they quote. Select a point to read its sources."}}
+          </div>
+        </div>
+      </div>
 
       {{!-- ── The Desk ───────────────────────────────────────────────
            Like Compare, the partial ships its own .research-workspace

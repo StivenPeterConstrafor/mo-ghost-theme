@@ -1,12 +1,22 @@
-/* Integration update, 2026-09-19: this renderer is mounted only inside /web.
- * Citation data comes from MOFaithWebGraph (Connections's current authors/edges),
- * including small citation pairs and self-citations. Historical notes below
- * describing the retired mine/citations export and its five-citation floor
- * no longer describe the data source. Shelf Scripture exports are unchanged.
+/* Integration update, 2026-09-19: citation data comes from MOFaithWebGraph
+ * (Connections's current authors/edges), including small citation pairs and
+ * self-citations. Historical notes below describing the retired
+ * mine/citations export and its five-citation floor no longer describe the
+ * data source. Shelf Scripture exports are unchanged.
+ *
+ * 2026-09-22: TWO HOSTS AGAIN. That integration also made this renderer
+ * mount only inside the atlas; the Connections tab of the research desk
+ * has it back (Ian: "add Connections back onto the Research page"). The
+ * split is the graph and nothing else. MOFaithWebGraph is written by
+ * js/port/web.in02.js and by nothing else, so the citation shelf is
+ * offered where the atlas engine is running and withheld where it is
+ * not; see citeSlugFree(). Every Scripture shelf works identically in
+ * both places, because those are public routes on the worker.
  */
 /*
- * Connections — the map workspace on
- * /the-faith-received/research/ (the "Connections" tab).
+ * Connections — the map, on /the-faith-received/connections/ inside the
+ * citation atlas and as the "Connections" tab of
+ * /the-faith-received/research/.
  *
  * WHAT IT DRAWS. Every shelf in the library has been read for the
  * Scripture it quotes, and each author, work and doctrinal topic
@@ -5134,8 +5144,20 @@
   // Same rule as allSlugFree: a real shelf answering to this slug wins,
   // and the synthetic entry is simply not offered rather than two
   // things sharing one ?shelf= value.
+  //
+  // AND THE GRAPH HAS TO BE IN THE BROWSER. The citation map is the one
+  // entry in this list with no route behind it: loadCitations() reads
+  // window.MOFaithWebGraph, and the only thing that ever writes that is
+  // the atlas engine (js/port/web.in02.js) on
+  // /the-faith-received/connections/. Offered anywhere else it is a
+  // shelf whose every outcome is loadCitations()'s error line, and
+  // since boot() lands on this slug by preference it would be the first
+  // thing a reader saw. The Connections tab of the research desk is
+  // exactly that case: no atlas engine, sixteen Scripture shelves, and
+  // the map the graph draws is one click away in the rail. The
+  // Scripture shelves are self-contained and unaffected either way.
   function citeSlugFree() {
-    return !shelves.some((s) => s && s.slug === CITE_SLUG);
+    return !!window.MOFaithWebGraph && !shelves.some((s) => s && s.slug === CITE_SLUG);
   }
 
   // The real shelves that carry a view, in the index's own order. The
@@ -6151,6 +6173,9 @@
     // picture of the tradition arguing with itself, where the first
     // alphabetical shelf is an arbitrary slice nobody asked for. A
     // ?shelf= in the query still wins, so shared links are unaffected.
+    // Where it was not offered at all, the first shelf the index lists
+    // is the fallback, and the index lists them largest first, so that
+    // is English Divines rather than the top of an alphabet.
     const first = known ? wantShelf : (citeOK ? CITE_SLUG : shelves[0].slug);
     shelfSel.value = first;
     if (wantView && availableViews(first).indexOf(wantView) >= 0) view = wantView;

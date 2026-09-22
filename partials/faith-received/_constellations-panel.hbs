@@ -118,12 +118,23 @@
 
      Rendered on a page of its own rather than in a tab strip, wrap it
      in a <section class="bband"> and give the page its own hero.
-     Nothing in here depends on the tab shell. --}}
+     Nothing in here depends on the tab shell.
+
+     ONE PARAMETER, `lede`. The sentence under the heading, because what
+     this panel can show depends on where it is standing and a lede that
+     names a map the host cannot draw is a lie in the largest type on
+     the plate. The citation graph is the case: it is not a route of its
+     own, it is window.MOFaithWebGraph, which only the atlas engine on
+     /the-faith-received/connections/ builds, so on the Research desk
+     the shelf list is the sixteen Scripture shelves and nothing else
+     (citeSlugFree() in faith-constellations.js enforces that, and the
+     two have to keep saying the same thing). Omit it and the default
+     below stands, which is written for the atlas. --}}
 <div class="cn-panel" data-cn-root>
 
   <header class="cn-head">
     <h2 class="cn-title">Connections</h2>
-    <p class="cn-lede">Map citations by tradition, or choose a shelf to compare its use of Scripture. Select a point to read its sources.</p>
+    <p class="cn-lede">{{#if lede}}{{lede}}{{else}}Map citations by tradition, or choose a shelf to compare its use of Scripture. Select a point to read its sources.{{/if}}</p>
   </header>
 
   {{!-- The controls. A <select> for the shelves rather than sixteen
@@ -270,4 +281,4 @@
       No dependency on anything bundled — window.MOSafeHref ships in
       boot.min.js in <head>, and page-template scripts run before
       site.min.js (FRONTEND §6.18). --}}
-<script src="{{asset "js/page/faith-constellations.js"}}&amp;frv=c3c3dc0b21fe2346"></script>
+<script src="{{asset "js/page/faith-constellations.js"}}&amp;frv=f31277cf7d0c2027"></script>
