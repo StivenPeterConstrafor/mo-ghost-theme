@@ -87,10 +87,16 @@ html.fr-ghost-site #topnav a.on::after { display: none; }
 html.fr-ghost-site #topnav a:hover,
 html.fr-ghost-site .research-library-home:hover { color: var(--accent); }
 html.fr-ghost-site #research-ask { flex: 0 0 auto; min-height: 44px; padding: 7px 14px; border: 1px solid var(--border); border-radius: 4px; background: var(--card); color: var(--fg); font: 16px var(--font-body); }
+/* Ask's own sun button (#fra-theme, aria-label "Change reading theme") is
+   NOT hidden here. Ian, 2026-09-22: "I don't know why my chat is stuck in
+   dark mode. I need to be able to change it." The Ask panel takes its theme
+   from the stored reading preference (fr_theme), not from this page, so a
+   reader who chose dark in the reader got a dark Ask with its only toggle
+   hidden. The other tools follow the page theme and keep theirs hidden. */
 html.fr-ghost-site #thBtn,
 html.fr-ghost-site #pinsTheme,
 html.fr-ghost-site #themeBtn,
-html.fr-ghost-site button[aria-label='Change reading theme'] { display: none !important; }
+html.fr-ghost-site button[aria-label='Change reading theme']:not(#fra-theme) { display: none !important; }
 html.fr-ghost-site body.research-page #page { max-width: 1320px; margin: 0 auto; padding: 42px 24px 72px; background: var(--bg); color: var(--fg); }
 html.fr-ghost-site #page h1 { color: var(--fg); font: 400 clamp(34px, 4vw, 48px)/1.18 var(--font-display); letter-spacing: 0; margin-bottom: 18px; }
 html.fr-ghost-site #page h2,
