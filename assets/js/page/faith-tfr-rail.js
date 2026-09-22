@@ -34,6 +34,35 @@
      portrait to landscape crosses this boundary without reloading. */
   const dropped = () => window.matchMedia("(max-width: 640px)").matches;
 
+  /* ON A PHONE THE OPEN PANEL LIVES OUTSIDE THE SCROLLING ROW.
+     Ian, 2026-09-22: "Nothing happens when I tap Read on iPhone Brave."
+     In the markup each drawer sits inside .tfr-rail-inner, which on a
+     phone is the sideways scroller (overflow-x: auto). The CSS relied on
+     the panel escaping it: it is positioned against .tfr-rail, and by
+     the spec an overflow box outside an abspos element's containing-
+     block chain does not clip it. Chrome honours that, which is why
+     every desktop and emulated check passed. iOS WebKit, which is every
+     browser on an iPhone including Brave, clips it to the touch-scrolling
+     row anyway: the tap lands, the caret turns, and the panel opens
+     inside a 40px strip where nothing of it shows.
+
+     So on a phone the open drawer is moved to be a direct child of
+     .tfr-rail, where no scroller surrounds it in any engine, and put
+     back in its group when it closes or the width crosses to desktop,
+     where it has to sit inline to slide along the line. Every lookup
+     here is rail-scoped, so the move changes nothing else. */
+  const homes = new Map();
+  function lift(d) {
+    if (d.parentNode === rail) return;
+    homes.set(d, d.parentNode);
+    rail.appendChild(d);
+  }
+  function restore(d) {
+    const home = homes.get(d);
+    if (home && d.parentNode !== home) home.appendChild(d);
+    homes.delete(d);
+  }
+
   /* `hidden` is display:none, which cancels a transition, so it is only
      used before the first interaction. After that the drawer is opened
      and closed by width alone and stays in the layout at zero. */
@@ -44,9 +73,11 @@
     if (dropped()) {
       d.classList.remove("is-open");
       d.style.width = "";
+      restore(d);
       rail.classList.remove("tfr-rail--open");
       return;
     }
+    restore(d);
     // From its current measured width, so the closing curve describes
     // the same distance the opening one did.
     d.style.width = `${d.scrollWidth}px`;
@@ -91,10 +122,12 @@
        Adding the class in the same task removes both. */
     if (dropped()) {
       d.style.width = "";
+      lift(d);
       d.classList.add("is-open");
       rail.classList.add("tfr-rail--open");
       return;
     }
+    restore(d);
     // A frame between removing `hidden` and animating, or the element
     // goes from display:none straight to its open width and the slide
     // never runs.
@@ -135,6 +168,16 @@
     close(openToggle);
     openToggle.focus();
   });
+
+  // Rotating a phone across 640px changes which way a drawer opens and
+  // where it has to live, so an open one closes and goes home first.
+  const phoneQuery = window.matchMedia("(max-width: 640px)");
+  const onCross = () => {
+    closeAll(null);
+    homes.forEach((home, d) => restore(d));
+  };
+  if (phoneQuery.addEventListener) phoneQuery.addEventListener("change", onCross);
+  else if (phoneQuery.addListener) phoneQuery.addListener(onCross);
 
   // A click anywhere else is a decision not to use the drawer.
   document.addEventListener("click", (e) => {
