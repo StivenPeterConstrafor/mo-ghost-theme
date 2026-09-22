@@ -269,7 +269,15 @@
     });
     out = out.replace(/\[([a-zA-Z0-9_-]+)\/p([^\]\s]+)\]|\[W\s*([a-zA-Z0-9_-]+):([^\]\s]+)\]/g, (_, a, p, b, q, at, whole) => {
       const slug = a || b, page = p || q, s = sources.find(s => s.slug === slug && [s.page,...(s.anchors||[])].some(n=>citationKey(n)===citationKey(page)));
-      if(!s)return hold('<span class="fra-unverified-cite" title="This reference was not supplied with the answer">Unverified reference</span>');
+      /* MereO delta (Ian, 2026-09-22): real citations were rendering as
+         "Unverified reference". The tool paths list only the pages the model
+         opened in full as sources, but the model may also cite a page it saw
+         in a search result, so a correct [slug/pN] to a work the library
+         holds found no match and lost its link. A work in the catalogue is a
+         real address: link it, and say in the title that the page was not
+         among the passages sent with the answer. Only a work the catalogue
+         does not know stays "Unverified reference". */
+      if(!s){const w=catalogBySlug.get(slug);if(!w)return hold('<span class="fra-unverified-cite" title="This reference was not supplied with the answer">Unverified reference</span>');const href=readURL(slug,page,quoteBefore(whole,at));return hold('<a class="fra-cite fra-cite-unsent"'+sourceAttributes(href)+' title="Open in a new tab: '+esc((w.author?w.author+' · ':'')+(w.title||slug))+'. This page was not among the passages sent with the answer, so check it against the claim.">'+esc('p. '+page)+'</a>');}
       // MereO delta (see quoteBefore above): the words just quoted become ?hl=.
       const said = s.quote || quoteBefore(whole, at);
       return hold('<a class="fra-cite"'+sourceAttributes(sourceHref({...s,quote:said}))+' title="Open source in a new tab: '+esc((s.author?s.author+' · ':'')+titleOf(s))+'">'+esc(s.cit || s.cite || ('p. '+page))+'</a>');
