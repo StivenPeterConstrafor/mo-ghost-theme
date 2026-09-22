@@ -179,7 +179,11 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
 }
 
 /* ── Two columns: the text, and the verse sidebar ───────────── */
-.sd-layout { display: block; padding-top: 88px; padding-bottom: 72px; }
+/* Scoped under .sd: these elements also carry .container, and
+   screen.min.css (loaded AFTER this file) sets .container { padding: 0 28px;
+   max-width: 1180px }, which silently zeroed the top padding and the
+   Desk's width at equal specificity. */
+.sd .sd-layout { display: block; padding-top: 88px; padding-bottom: 72px; }
 .sd-text { max-width: 720px; margin: 0 auto; min-width: 0; }
 @media (min-width: 900px) {
   .sd-layout.has-side {
@@ -205,7 +209,7 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
   /* 400px is too narrow for three filters abreast; stack them. */
   .sd-side .sd-filter { flex-basis: 100%; }
 }
-.sd-attribution { text-align: center; padding-bottom: 48px; }
+.sd .sd-attribution { text-align: center; padding-bottom: 48px; }
 
 /* The old page's .bible-verse wash, kept; the open verse is marked a
    little more firmly so the reader can see what the sidebar describes. */
@@ -300,7 +304,7 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
 .sd-more:disabled { opacity: 0.5; cursor: progress; }
 
 /* ── The Verse Desk ──────────────────────────────────────────── */
-.sd-desk { max-width: 880px; padding-top: 48px; padding-bottom: 96px; font-family: var(--font-body); color: var(--color-dark); }
+.sd .sd-desk { max-width: 880px; padding-top: 48px; padding-bottom: 96px; font-family: var(--font-body); color: var(--color-dark); }
 .sd-desk-head { border-bottom: 1px solid var(--color-rule); padding-bottom: 28px; }
 .sd-desk-title { font-family: var(--font-body); font-size: clamp(32px, 5vw, 44px); font-weight: 600; line-height: 1.1; margin: 6px 0 18px; }
 .sd-desk-verse { margin: 0; font-size: 21px; line-height: 1.7; max-width: 720px; }
@@ -384,8 +388,8 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
   .sd-bar-inner .bible-control select { width: 100%; }
   .sd-bar-inner .bible-control--chapter select { min-width: 56px; }
   .sd-comm { width: 78vw; max-width: 280px; }
-  .sd-layout { padding-top: 56px; }
-  .sd-desk { padding-top: 32px; }
+  .sd .sd-layout { padding-top: 56px; }
+  .sd .sd-desk { padding-top: 32px; }
   .sd-desk-verse { font-size: 19px; }
   .sd-parallel-row { grid-template-columns: 1fr; gap: 2px; }
   .sd-cbar { grid-template-columns: minmax(80px, 34%) 1fr 44px; }
