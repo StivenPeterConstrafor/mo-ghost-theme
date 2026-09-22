@@ -19245,13 +19245,23 @@ html.g-mobile #reading .fr-sec-toggle {
     max-width: none;
   }
   .lp-hero-sub { margin-bottom: 30px; }
+  /* Stacked, both the same width, and that width is the LONGER LABEL's
+     rather than the column's. Ian, 2026-09-22: "they should have been
+     the smaller size, not the bigger size. They're full screen now on
+     mobile."
+
+     A grid does the equalising on its own: one auto column is as wide
+     as its widest item, and the two buttons then stretch to it. So they
+     match each other without a hard width, they grow or shrink with the
+     label and the type, and they stop well short of the screen edge. */
   .lp-ctas {
-    flex-direction: column;
-    align-items: stretch;
+    display: grid;
+    grid-auto-flow: row;
+    justify-content: center;
     gap: 12px;
   }
   .lp-ctas .btn,
-  .lp-ctas a.btn { width: 100%; }
+  .lp-ctas a.btn { width: auto; }
   .lp-hero-about { margin-top: 16px; }
   .lp-hero-about a {
     display: inline-block;
