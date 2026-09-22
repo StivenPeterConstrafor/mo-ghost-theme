@@ -5353,7 +5353,16 @@ async function loadPgCanon(ws){
       else if(tag==='div')visit(child);
     }};
     const body=doc.querySelector('body');if(body)visit(body);
-    if(window.FRMigneNavigation.sourceForOpening(opening.join(' '))==='la')src='la';
+    // A GREEK WORK STAYS IN THE GREEK VIEW (owner 2026-09-22 "good to deploy for the public"; pg-3328 opens with a Latin page, so the
+    // whole of De sacerdotio opened in the Latin view and every Greek page -- col. 843 on -- showed English beside an empty lane).
+    // The Greek view keeps a Latin page's own text and fills an empty page from its plate; the first opening decides only when the
+    // work's reading text is under 30% Greek.
+    let _g0=0,_l0=0;
+    (function _cnt0(node){for(const ch of node.children){const ty=ch.getAttribute?ch.getAttribute("type"):null;
+      if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
+      if(ch.localName==="p"){const t=ch.textContent;_l0+=(t.match(/[A-Za-z]/g)||[]).length;_g0+=(t.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;}
+      else if(ch.localName==="div")_cnt0(ch);}})(doc.querySelector("body")||doc.documentElement);
+    if(window.FRMigneNavigation.sourceForOpening(opening.join(' '))==='la'&&_g0<0.3*(_g0+_l0))src='la';
   }
   const mk=()=>{const d=document.implementation.createDocument(null,"TEI",null);
     const tx=d.createElement("text");d.documentElement.appendChild(tx);return [d,tx];};
@@ -5668,6 +5677,10 @@ async function loadPgCanon(ws){
       // pruned as bleed and the Greek view set the English beside an empty lane). With no Greek zone and no Greek left, the Latin is
       // the page's own text, not a facing column's bleed.
       if(!src2.some(t=>String(t||"").replace(/[^A-Za-z\u0370-\u03ff\u1f00-\u1fff]/g,"").length>=20))src2=_colLa;
+      // A PAGE WITHOUT A GREEK COLUMN KEEPS ITS LATIN (owner 2026-09-22, pg-2175 col. 71, the Latin 'Ex adversariis Leichianis'
+      // front matter): the bleed prune is for a Greek page carrying its facing column's Latin; a page whose Greek is a crumb
+      // (< 200 letters) has no Greek column, and its Latin is the page's own text.
+      else if(_colLa.reduce((n,t)=>n+(String(t||"").match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length,0)<200)src2=_colLa;
     }
     // SEGMENT AT THE PRINTED RUBRICS (owner 2026-08-31 pg-2239): the aligner re-chunks by
     // sentences, which FUSED day-rubrics into paragraphs. Both lanes now split at their
@@ -5798,7 +5811,10 @@ async function loadPgCanon(ws){
     // EN under BOTH columns of the opening — consume every EN column in [n .. nextPb-1],
     // and mark them so the tail loop can't re-append them as orphan pages.
     _colEn=[];{
-      const nx=(window.__pgPbNext&&window.__pgPbNext[n])||n+1;
+      // A PAGE IS TWO COLUMNS (owner 2026-09-22, pg-2572 col. 725 carried 336,492 characters of English: its reading lane skips from
+      // 725 to a far column, and the span union swallowed every English column in between). Columns past the opening are later
+      // pages' English; the orphan-opening loop gives them pages of their own, and their plates fill the source lane.
+      const nx=Math.min((window.__pgPbNext&&window.__pgPbNext[n])||n+1,n+2);
       for(let k=n;k<nx;k++){if(enByCol[k]&&enByCol[k].length){_colEn.push(...enByCol[k]);(window.__enUsed=window.__enUsed||new Set()).add(k);}}
       if(!_colEn.length&&enByCol[n])_colEn=(enByCol[n]||[]).slice();
     }
@@ -6051,6 +6067,8 @@ async function loadPgCanon(ws){
           if(!cols3.length)cols3.push(...Object.keys(enByCol).map(Number).filter(Boolean));
           if(cols3.length){
             const lo3=Math.min(...cols3)-1,hi3=Math.max(...cols3)+1;
+            // ORPHAN OPENINGS (see the Greek-view fill): English openings past the reading lanes' window are this work's pages too
+            const _orph3=new Set(Object.keys(enByCol).map(Number).filter(n=>n&&(enByCol[n]||[]).join(" ").length>=120).map(n=>n%2?n:n-1).filter(p=>p<lo3||p>hi3));
             const _paras3=t=>{const out=[];let cur="";
               t.split(/(?<=[.;!?])\s+/).forEach(sn=>{
                 if(cur&&cur.length+sn.length>700){out.push(cur);cur=sn;}
@@ -6061,7 +6079,7 @@ async function loadPgCanon(ws){
                 .map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim(),
               grc:[...sf.querySelectorAll("zone")].filter(z=>(z.getAttribute("type")||"").includes("ColGreek"))
                 .map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim()}))
-              .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&x.n>=lo3&&x.n<=hi3&&(!_pgOwned.size||_pgOwned.has(String(x.n)))&&(!Object.keys(_pgFrontLabels).length||_canonOpenings[String(x.n)])).sort((a,b)=>a.n-b.n);
+              .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&((x.n>=lo3&&x.n<=hi3)||_orph3.has(x.n))&&(!_pgOwned.size||_pgOwned.has(String(x.n)))&&(!Object.keys(_pgFrontLabels).length||_canonOpenings[String(x.n)])).sort((a,b)=>a.n-b.n);
             // The source site's vision text is already in the primary TEI columns.
             // Raw pageview zones are a fallback, never an unconditional replacement.
             for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)]||{};
@@ -6193,6 +6211,9 @@ async function loadPgCanon(ws){
         else if((ch.localName==="p"||ch.localName==="head")&&_pc)_ptx[_pc]+=(ch.textContent.match(/[A-Za-z\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;}})(body);
       const _front=n=>typeof _pgFrontLabels==="object"&&_pgFrontLabels&&_pgFrontLabels[n];
       const _need=_plist.filter(n=>_ptx[n]<40&&[...(enByCol[n]||[]),...(enByCol[n+1]||[])].join(" ").length>=120&&!_front(n));
+      // ORPHAN OPENINGS (owner 2026-09-22 "exceeds patrologia-graeca site"; pg-2175 cols 695–1461 read as English beside an empty lane):
+      // an opening whose English exists but whose reading lanes carry no page marker is appended after the walk; its plate fills it too.
+      _need.push(...[...new Set(Object.keys(enByCol).map(Number).filter(Boolean).map(n=>n%2?n:n-1))].filter(p=>!(p in _ptx)&&!((p+1) in _ptx)&&[...(enByCol[p]||[]),...(enByCol[p+1]||[])].join(" ").length>=120&&!_front(p)));
       if(_need.length){
         _pvFill={};const _zw=[];
         for(const n of _need){const op=_canonOpenings[String(n)];if(op&&(op.grcParas||[]).length)_pvFill[n]=op.grcParas.slice();else _zw.push(n);}
@@ -6257,7 +6278,10 @@ async function loadPgCanon(ws){
   }
   // columns whose English exists but whose source lane never page-broke: append them in
   // column order so no translation is silently dropped (pg-658 lost 43 of 63 columns).
-  Object.keys(enByCol).map(Number).filter(n=>!seen.has(n)&&!(window.__enUsed&&window.__enUsed.has(n))).sort((a,b)=>a-b).forEach(n=>{addPb(n);});
+  // ORPHAN OPENINGS (owner 2026-09-22): an orphan column opens its PAGE -- the odd column of the opening, unless that column is already
+  // a page -- and the page takes both columns' English (one opening, one page; before, cols 801 and 802 became two English-only folios).
+  [...new Set(Object.keys(enByCol).map(Number).filter(n=>!seen.has(n)&&!(window.__enUsed&&window.__enUsed.has(n))).map(n=>n%2===0&&!seen.has(n-1)?n-1:n))].sort((a,b)=>a-b).forEach(n=>{
+    if(n%2===1&&window.__pgPbNext[n]===undefined&&!seen.has(n+1))window.__pgPbNext[n]=n+2;addPb(n);});
   flushCol();
   // FACS-CARRIER PRUNE (owner 2026-08-18 'vtx/en/facs should track by design'): Migne
   // canons emit <pb> for the PAGE (facs carrier) and key the Greek to the column
