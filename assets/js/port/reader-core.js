@@ -3316,6 +3316,9 @@ function build(){
     let prev=null;
     for(const cur of secs){
       if(!prev){prev=cur;continue;}
+      // THE PAGE IS THE UNIT in every PG view (owner 2026-09-17 "just make sure the latin and greek is shown completely per page";
+      // 2026-09-22: pg-131 col. 1337 and pg-1676 col. 241 were stacked flows folded whole into the page before, read as empty pages)
+      if(DATA&&DATA.pg_source){prev=cur;continue;}
       if(cur.classList.contains("frontmatter")!==prev.classList.contains("frontmatter")){prev=cur;continue;}
       const kidsP=[...prev.children].filter(x=>!x.classList.contains("apptog")&&!x.classList.contains("rapp"));
       const kidsC=[...cur.children].filter(x=>!x.classList.contains("ixchip"));
@@ -3341,6 +3344,7 @@ function build(){
     prev=null;
     for(const cur of R.querySelectorAll(".folio")){
       if(!prev){prev=cur;continue;}
+      if(DATA&&DATA.pg_source){prev=cur;continue;}   // THE PAGE IS THE UNIT (above): no PG view carries a page's rows onto the previous page
       const pk=[...prev.children].filter(x=>!x.classList.contains("apptog")&&!x.classList.contains("rapp"));
       const pr=pk[pk.length-1],cr=[...cur.children].find(x=>!x.classList.contains("ixchip"));
       if(pr&&cr&&pr.classList.contains("row")&&pr.classList.contains("tail")
