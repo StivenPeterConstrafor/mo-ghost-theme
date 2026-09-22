@@ -31,6 +31,68 @@
   --radius-lg: 14px;
   --shadow-card: 0 1px 2px rgba(45, 41, 39, 0.04), 0 6px 20px rgba(45, 41, 39, 0.06);
   --shadow-card-hover: 0 2px 4px rgba(45, 41, 39, 0.05), 0 14px 38px rgba(45, 41, 39, 0.12);
+
+  /* ── THE BUTTON SWEEP ──────────────────────────────────────────
+     Ian, 2026-09-22, looking at three buttons stacked down one page:
+     "All three of these buttons do different things. We need to
+     standardize what our buttons do across the board. I like them
+     filling in orange when they are hollow like these. Even better if
+     the swipe to fill like the animation in the header."
+
+     THE MOTIF IS THE MASTHEAD'S. `.hero-headline .highlight` paints a
+     terracotta band across the headline, left to right, once, on load
+     (@keyframes hero-highlight-sweep, further down this file). A hollow
+     button now does the same thing under the pointer. Same paint, same
+     easing, so the two read as one gesture at two scales.
+
+     A TRANSITION, NOT AN ANIMATION. The hero's sweep runs once and
+     stops. A hover has to unwind when the pointer leaves, and an
+     animation reversed on mouseout either snaps back or needs a second
+     set of keyframes to undo the first. Transitioning background-size
+     on a two-stop gradient draws the same wipe and reverses itself for
+     free. 0.28s rather than the hero's 0.55s, because a hover answers a
+     hand and a hero answers a page load.
+
+     THE PAINT AND THE TIMING ARE TOKENS, not literals, because the rule
+     that uses them is stated twice: once here for the site's own .btn
+     family, once at the end of assets/css/faith-received.css for The
+     Faith Received's. That file is separate on purpose (see the note in
+     scripts/build-theme.mjs), so a shared token is the only thing that
+     can stop the two drifting into running one motif at two speeds.
+
+     THE FILL IS OPAQUE --color-secondary, not the hero's 78% band. A
+     white label on the translucent version is about 3.2:1 over cream;
+     on the solid terracotta it is 4.4:1, which is the value this
+     stylesheet already used for .btn-primary:hover and for the TFR
+     hero's hollow buttons. Reused rather than invented. */
+  --btn-sweep-fill: var(--color-secondary);
+  --btn-sweep-ink: var(--color-white);
+  --btn-sweep-ease: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --btn-sweep-ms: 0.28s;
+  --btn-sweep-image: linear-gradient(90deg, var(--btn-sweep-fill) 0%, var(--btn-sweep-fill) 100%);
+  --btn-sweep-transition:
+    background-size var(--btn-sweep-ms) var(--btn-sweep-ease),
+    color 0.15s var(--btn-sweep-ease),
+    border-color 0.15s var(--btn-sweep-ease),
+    transform 0.1s,
+    box-shadow 0.15s;
+}
+
+/* Reduced motion resolves the sweep to a plain instant fill, exactly as
+   .hero-headline .highlight resolves to an already-painted band. One
+   token, so every rule built on the sweep obeys without restating it. */
+@media (prefers-reduced-motion: reduce) {
+  :root { --btn-sweep-ms: 0s; }
+}
+
+/* The Daily Liturgy keeps its own accent. The sweep is the motion, not
+   the colour: overriding one token on the page is what lets a liturgical
+   surface fill copper while still moving like everything else. The
+   literal fallback is load-bearing for the same reason .btn-copper's is,
+   since --dl-copper is declared on .daily-liturgy-page and not on :root. */
+.daily-liturgy-page,
+.dlr-page {
+  --btn-sweep-fill: var(--dl-copper, #96694C);
 }
 
 .q { font-family: var(--font-body); }
@@ -412,14 +474,59 @@ img { max-width: 100%; height: auto; }
 }
 .btn:hover { text-decoration: none; transform: translateY(-1px); }
 
-.btn-primary { background: var(--color-primary); color: var(--color-white); box-shadow: 0 8px 20px -8px rgba(238,125,81,0.55); }
-.btn-primary:hover { background: var(--color-secondary); }
-.btn-dark { background: var(--color-dark); color: var(--color-white); }
-.btn-dark:hover { background: #1a1816; }
-.btn-ghost { background: transparent; color: var(--color-white); border: 1px solid rgba(255,255,255,0.35); }
-.btn-ghost:hover { background: rgba(255,255,255,0.08); }
-.btn-outline { background: transparent; color: var(--color-dark); border: 1px solid var(--color-dark); }
-.btn-outline:hover { background: var(--color-dark); color: var(--color-white); }
+/* ── THERE ARE TWO BUTTONS ──────────────────────────────────────────
+   SOLID: a filled ground, white ink, no line of its own. It is the one
+   thing on a surface allowed to be a colour, so a surface gets one. On
+   hover the ground steps darker and the button lifts a pixel.
+
+   HOLLOW: no ground, a 1px line and ink in whatever reads against what
+   it stands on. On hover the terracotta sweeps in from the left, the
+   ink turns white and the line turns terracotta. .btn-outline is the
+   hollow button for a light ground and .btn-ghost for a dark one; they
+   differ in their resting colour and in nothing else.
+
+   Every hollow button in the theme is one of these two, or is a class
+   listed in the sweep rule below. Nothing else should invent a third
+   hover. Sizes stay where they were: .btn-lg, .btn-sm and .btn-pill are
+   scale, not behaviour, and a button's geometry is not what Ian was
+   asking about. */
+.btn-primary { background-color: var(--color-primary); color: var(--color-white); box-shadow: 0 8px 20px -8px rgba(238,125,81,0.55); }
+.btn-primary:hover { background-color: var(--color-secondary); }
+.btn-dark { background-color: var(--color-dark); color: var(--color-white); }
+.btn-dark:hover { background-color: #1a1816; }
+.btn-ghost { color: var(--color-white); border: 1px solid rgba(255,255,255,0.35); }
+.btn-outline { color: var(--color-dark); border: 1px solid var(--color-dark); }
+
+/* The sweep, stated once for the site. background-color stays
+   transparent throughout and the gradient does all the work, so a
+   button that sits on a photograph keeps showing the photograph until
+   the wipe reaches it. .btn-ghost-light and .btn-outline-copper are the
+   Daily Liturgy's pair and join here rather than keeping the two
+   bespoke hovers they had; the copper comes from the page's token
+   override at the top of this file. */
+.btn-ghost,
+.btn-outline,
+.btn-ghost-light,
+.btn-outline-copper {
+  background-color: transparent;
+  background-image: var(--btn-sweep-image);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 0% 100%;
+  transition: var(--btn-sweep-transition);
+}
+.btn-ghost:hover,
+.btn-ghost:focus-visible,
+.btn-outline:hover,
+.btn-outline:focus-visible,
+.btn-ghost-light:hover,
+.btn-ghost-light:focus-visible,
+.btn-outline-copper:hover,
+.btn-outline-copper:focus-visible {
+  background-size: 100% 100%;
+  color: var(--btn-sweep-ink);
+  border-color: var(--btn-sweep-fill);
+}
 .btn-lg { padding: 16px 32px; font-size: 16px; }
 
 /* -------- Breadcrumb (article) -------- */
@@ -10987,23 +11094,19 @@ label.site-form-field-check {
   color: #fff;
 }
 .btn-copper:hover { background: var(--dl-copper-light, #b8866a); }
-/* Ghost-light button (hero only) */
+/* Ghost-light button (hero only). Resting colours only: the ground, the
+   hover and the sweep are the shared hollow-button rule near .btn, and
+   `background-color` rather than `background` because the shorthand
+   would wipe the gradient that rule paints with. */
 .btn-ghost-light {
-  background: transparent;
   color: rgba(255, 255, 255, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.25);
 }
-.btn-ghost-light:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  color: #fff;
-}
 /* Copper outline button */
 .btn-outline-copper {
-  background: transparent;
   color: var(--dl-copper);
   border: 1px solid var(--color-rule);
 }
-.btn-outline-copper:hover { border-color: var(--dl-copper); }
 
 /* Two-path band */
 .dl-paths {

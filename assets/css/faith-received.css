@@ -17204,10 +17204,22 @@ a.fr-btn,
 #notebook .nb-highlight-colors button,
 #selpop button.pb {
   color: var(--tfr-btn, var(--color-dark));
-  background: transparent;
+  background-color: transparent;
+  /* THE HOLLOW BUTTON FILLS, AND THE FILL SWEEPS. 2026-09-22. This
+     family used to fill --tfr-btn (off-black on a daylight surface) the
+     instant the pointer arrived, while the landing page's .btn hollows
+     three inches away only changed their ink. One behaviour now: the
+     terracotta wipes in from the left on the masthead headline's
+     easing. Every term is a --btn-sweep-* token from screen.css, where
+     the motif lives, including the reduced-motion case, which drops the
+     duration to zero and leaves a plain instant fill. */
+  background-image: var(--btn-sweep-image);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 0% 100%;
   border: 1px solid var(--tfr-btn, var(--color-dark));
   border-radius: 3px;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition: var(--btn-sweep-transition);
 }
 
 .fr-btn:hover,
@@ -17243,9 +17255,9 @@ a.fr-btn:hover,
 #notebook .nb-reading-place button:hover,
 #notebook .nb-work-search-form button:hover,
 #selpop button.pb:hover {
-  background: var(--tfr-btn, var(--color-dark));
-  color: var(--tfr-btn-ink, var(--color-white, #fff));
-  border-color: var(--tfr-btn, var(--color-dark));
+  background-size: 100% 100%;
+  color: var(--btn-sweep-ink, #fff);
+  border-color: var(--btn-sweep-fill, #c1593c);
   text-decoration: none;
 }
 
@@ -17342,18 +17354,22 @@ a.fr-btn:hover,
 .bhero-btn,
 .bsearch button {
   color: var(--tfr-btn-ink, var(--color-white, #fff));
-  background: transparent;
+  background-color: transparent;
+  background-image: var(--btn-sweep-image);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 0% 100%;
   border: 1px solid rgba(255, 255, 255, 0.36);
   border-radius: 3px;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition: var(--btn-sweep-transition);
 }
 .bhero-btn:hover,
 .bhero-btn:focus-visible,
 .bsearch button:hover,
 .bsearch button:focus-visible {
-  background: var(--tfr-btn, var(--color-dark));
-  border-color: var(--tfr-btn, var(--color-dark));
-  color: var(--tfr-btn-ink, var(--color-white, #fff));
+  background-size: 100% 100%;
+  border-color: var(--btn-sweep-fill, #c1593c);
+  color: var(--btn-sweep-ink, #fff);
 }
 
 /* THE TEXT AFFORDANCES TAKE THE INK AND NOT THE BOX. See the note at the top of
@@ -17698,21 +17714,32 @@ a.fr-btn:hover,
   text-transform: uppercase;
   font-weight: 600;
   color: var(--color-dark, #2d2927);
-  background: transparent;
+  background-color: transparent;
+  background-image: var(--btn-sweep-image);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 0% 100%;
   border: 1px solid var(--color-dark, #2d2927);
   border-radius: 3px;
   box-shadow: none;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition: var(--btn-sweep-transition);
 }
+/* 2026-09-22: this hover used to change the ink and the line and leave
+   the ground alone, which is why the landing page's three hollow
+   buttons each did something different from one another and from the
+   feedback button beside them. It now fills, and it fills the way the
+   masthead headline paints itself: left to right, on the same easing.
+   Every term comes from the --btn-sweep-* tokens in screen.css, which
+   is where the motif is defined. */
 .faith-landing .btn:hover,
 .faith-landing a.btn:hover,
 .faith-landing .btn:focus-visible,
 .tfr-browse-all--hero .btn:hover,
 .tfr-browse-all--hero a.btn:hover,
 .tfr-browse-all--hero .btn:focus-visible {
-  background: transparent;
-  color: var(--color-secondary, #c1593c);
-  border-color: var(--color-secondary, #c1593c);
+  background-size: 100% 100%;
+  color: var(--btn-sweep-ink, #fff);
+  border-color: var(--btn-sweep-fill, #c1593c);
   text-decoration: none;
 }
 
@@ -17730,8 +17757,12 @@ a.fr-btn:hover,
 .tfr-browse-all--hero a.btn {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.55);
-  background: transparent;
+  background-color: transparent;
 }
+/* The fill was already the terracotta here; what it gains is the wipe.
+   background-color stays transparent and the gradient carries the
+   colour, so the photograph behind the button keeps showing through
+   until the sweep reaches it. */
 .faith-landing .lp-hero .btn:hover,
 .faith-landing .lp-hero a.btn:hover,
 .faith-landing .lp-hero .btn:focus-visible,
@@ -17741,9 +17772,9 @@ a.fr-btn:hover,
 .tfr-browse-all--hero .btn:hover,
 .tfr-browse-all--hero a.btn:hover,
 .tfr-browse-all--hero .btn:focus-visible {
-  background: var(--color-secondary, #c1593c);
-  border-color: var(--color-secondary, #c1593c);
-  color: #fff;
+  background-size: 100% 100%;
+  border-color: var(--btn-sweep-fill, #c1593c);
+  color: var(--btn-sweep-ink, #fff);
 }
 
 /* THE ONE FILLED BUTTON. Ian: "Fill Begin Reading in with orange." It is
@@ -19039,14 +19070,14 @@ html.g-mobile #reading .fr-sec-toggle {
 .faith-landing .lp-stats-band a.btn {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.55);
-  background: transparent;
+  background-color: transparent;
 }
 .faith-landing .lp-stats-band .btn:hover,
 .faith-landing .lp-stats-band a.btn:hover,
 .faith-landing .lp-stats-band .btn:focus-visible {
-  background: var(--color-secondary, #c1593c);
-  border-color: var(--color-secondary, #c1593c);
-  color: #fff;
+  background-size: 100% 100%;
+  border-color: var(--btn-sweep-fill, #c1593c);
+  color: var(--btn-sweep-ink, #fff);
 }
 
 /* The gift sits in the same area as the pricing above it: same ground,
