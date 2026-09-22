@@ -38,7 +38,9 @@
   .site-header.is-hidden ~ main.sd,
   .site-header.is-hidden ~ * main.sd { --sd-top: var(--sd-nav-h, 0px); }
 }
-.sd .bible-controls { top: var(--sd-top); transition: top 0.25s ease; }
+/* Ian, 2026-09-22: the bar does not follow the reader on any screen; it
+   sits at the top of the page. (screen.css makes .bible-controls sticky.) */
+.sd .bible-controls { position: static; }
 .sd .bible-control-label { color: var(--sd-accent); }
 /* The bar's selects: 16px so iOS does not zoom on focus, 44px to tap. */
 .sd .bible-control select { font-size: 16px; min-height: 44px; }
@@ -195,11 +197,11 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
   }
   .sd-layout.has-side .sd-text { margin: 0; justify-self: center; width: 100%; }
   /* The sidebar exception: a column that scrolls on its own, held
-     under the sticky bar. --sd-bar-h is measured by the script. */
+     under the site header (the bar above it scrolls away). */
   .sd-side {
     position: sticky;
-    top: calc(var(--sd-top) + var(--sd-bar-h, 72px) + 16px);
-    max-height: calc(100vh - var(--sd-top) - var(--sd-bar-h, 72px) - 32px);
+    top: calc(var(--sd-top) + 16px);
+    max-height: calc(100vh - var(--sd-top) - 32px);
     transition: top 0.25s ease, max-height 0.25s ease;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -219,7 +221,7 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
 .sd-panel {
   font-family: var(--font-body);
   color: var(--color-dark);
-  scroll-margin-top: calc(var(--sd-top) + var(--sd-bar-h, 72px) + 12px);
+  scroll-margin-top: calc(var(--sd-top) + 12px);
 }
 .sd-panel-ref:focus { outline: none; }
 .sd-panel-ref:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 2px; }
@@ -372,8 +374,7 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
   /* Ian, 2026-09-22: on a phone the bar does not need to follow the
      reader; it sits at the top of the page and scrolls away. The panel
      then only needs to clear the fixed site header, not the bar. */
-  .sd .bible-controls { position: static; }
-  .sd-panel { scroll-margin-top: calc(var(--sd-top) + 12px); }
+
   .sd-cbar { min-height: 44px; }
   /* The bar is sticky, so on a phone it must stay two rows: book,
      chapter and the arrows; then translation and Commentaries. Four
