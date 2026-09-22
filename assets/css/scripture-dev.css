@@ -45,8 +45,17 @@
 .sd .bible-nav-btn { width: 44px; height: 44px; }
 .sd-hint { text-align: center; font-size: 14px; margin: -8px 0 24px; }
 .sd-chapter-h1 { margin: 0; font-weight: 400; }
-.sd-chapter-h1 .bible-chapter-eyebrow { display: block; }
-.sd-chapter-h1 .bible-chapter-heading { display: block; }
+.sd-chapter-h1 .bible-chapter-eyebrow { display: block; margin: 0 0 12px; }
+/* Ian, 2026-09-22: no IM Fell italic on the chapter. Body face, upright,
+   the same voice as the rest of the working surface. */
+.sd-chapter-h1 .bible-chapter-heading {
+  display: block;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(30px, 3.6vw, 42px);
+  letter-spacing: -0.005em;
+}
 .sd-muted { color: var(--color-muted); }
 
 /* ── The bar under the rail ─────────────────────────────────── */
@@ -173,7 +182,7 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
 }
 
 /* ── Two columns: the text, and the verse sidebar ───────────── */
-.sd-layout { display: block; padding-top: 48px; padding-bottom: 72px; }
+.sd-layout { display: block; padding-top: 88px; padding-bottom: 72px; }
 .sd-text { max-width: 720px; margin: 0 auto; min-width: 0; }
 @media (min-width: 900px) {
   .sd-layout.has-side {
@@ -380,7 +389,7 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
   .sd-bar-inner .bible-control--chapter select { min-width: 56px; }
   .sd-comm-panel > *, .sd-comm-panel > .sd-comm-strip { padding-left: 16px; padding-right: 16px; }
   .sd-comm { width: 78vw; max-width: 280px; }
-  .sd-layout { padding-top: 32px; }
+  .sd-layout { padding-top: 56px; }
   .sd-desk { padding-top: 32px; }
   .sd-desk-verse { font-size: 19px; }
   .sd-parallel-row { grid-template-columns: 1fr; gap: 2px; }

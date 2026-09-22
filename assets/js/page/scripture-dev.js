@@ -108,7 +108,7 @@
       $text.innerHTML =
         `<header class="bible-chapter-header">` +
           `<h1 class="sd-chapter-h1"><span class="bible-chapter-eyebrow">${esc(book.name)}</span> ` +
-          `<span class="bible-chapter-heading"><em>Chapter ${c}</em></span></h1>` +
+          `<span class="bible-chapter-heading">Chapter ${c}</span></h1>` +
         `</header>` +
         `<p class="sd-hint sd-muted"${hinted ? " hidden" : ""}>Select any verse to see where the library cites it.</p>` +
         `<div class="bible-chapter-content sd-chapter-content">${clean}</div>`;
