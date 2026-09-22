@@ -1,10 +1,10 @@
 {{!< default}}
 {{#contentFor "moHead"}}
-<title>Manifesto | The Faith Received</title>
+<title>About The Faith Received</title>
 <meta name="description" content="The Faith Received unites the texts of Christian theology across times, places, and traditions to be read, studied, and shared. What it is, why it exists, and how the texts were made." />
-<meta property="og:title" content="Manifesto | The Faith Received" />
+<meta property="og:title" content="About The Faith Received" />
 <meta property="og:description" content="The Faith Received unites the texts of Christian theology across times, places, and traditions to be read, studied, and shared. What it is, why it exists, and how the texts were made." />
-<meta name="twitter:title" content="Manifesto | The Faith Received" />
+<meta name="twitter:title" content="About The Faith Received" />
 <meta name="twitter:description" content="The Faith Received unites the texts of Christian theology across times, places, and traditions to be read, studied, and shared. What it is, why it exists, and how the texts were made." />
 {{/contentFor}}
 {{!-- /the-faith-received/manifesto/ — what The Faith Received is, why it
@@ -20,8 +20,8 @@
 
   <section class="bhero bhero--tool">
     <div class="bhero-inner container">
-      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Manifesto</p>
-      <h1>The Faith Received</h1>
+      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> About</p>
+      <h1>About The Faith Received</h1>
     </div>
   </section>
   {{> "faith-received/_tfr-rail"}}
@@ -30,7 +30,7 @@
   <section class="bband faith-feature-body">
     <article class="container container-narrow faith-tp faith-mf">
 
-      <h2>What?</h2>
+      <h2>What is The Faith Received?</h2>
 
       <p class="faith-tp-lede">The Faith Received is a new platform uniting the texts of Christian theology across times, places, and traditions to be read, studied, and shared.</p>
 
@@ -42,7 +42,7 @@
 
       <p>Bringing these traditions into a common place of study allows readers to understand their relationships more fully. We want Christians to know their own traditions more deeply and to encounter other traditions through their writings.</p>
 
-      <h2>Why?</h2>
+      <h2>Why did we make The Faith Received?</h2>
 
       <p>Some of these works are familiar to us. Augustine&rsquo;s <em>Confessions</em>, Calvin&rsquo;s <em>Institutes</em>, Aquinas&rsquo;s <em>Summa theologiae</em>, and Luther&rsquo;s <em>On the Bondage of the Will</em> come to mind. However, there are many works, such as disputation sets, theological courses, and moral examinations, that remain unfamiliar even to many seminary graduates and scholars.</p>
 
@@ -58,7 +58,7 @@
 
       <p>Our hope is a renewed culture of theological learning that enriches all traditions and invites them to drink from the deep wells of tradition.</p>
 
-      <h2>How?</h2>
+      <h2>How did we make The Faith Received?</h2>
 
       <p>The texts were either sourced from publicly available Latin and Greek repositories or transcribed from facsimiles page by page. The texts were then translated by an array of machine learning models fine-tuned for translation, and then underwent a series of cleanups to align the source language, the English, and the facsimile.</p>
 
@@ -68,12 +68,58 @@
 
       <p>Moreover, all texts were mined for theological positions, Scripture references, author connections, and more, which forms the bedrock of TFR&rsquo;s Ask feature. While we do not view chatbots as a sufficient substitute for theological discipleship, we do see value in creating a natural language interface for asking complex theological questions to enable creative and ambitious paths to wander.</p>
 
+      {{!-- Both are the library's own button. The first pass made the
+            second a bare link, and the prose-link rule underlined the
+            first one's label inside its own box. --}}
       <p class="faith-mf-act">
         <a class="fr-btn" href="/the-faith-received/browse/">Begin reading</a>
-        <a class="faith-mf-link" href="/the-faith-received/transparency/">Our commitment to transparency</a>
+        <a class="fr-btn" href="/the-faith-received/transparency/">Our commitment to transparency</a>
       </p>
 
     </article>
+  </section>
+
+  {{!-- THE SIGNATURE. Ian, 2026-09-22: the manifesto is signed, and the
+        people who built the thing stand under it. Same cards as the
+        About page's team, with the portrait taken from each person's
+        Ghost author-* tag. The bio is the tag's own description rather
+        than copy repeated here, so it stays in step with the
+        contributors page; About hardcodes its bios only because it also
+        prints a role, and the role here is the label above. --}}
+  <section class="bband bband--cream faith-mf-sign">
+    <div class="container">
+      <div class="section-intro">
+        <p class="eyebrow">Principal Architects</p>
+      </div>
+      <div class="contributors-grid faith-mf-people">
+        {{#get "tags" filter="slug:author-ian-harber" limit="1"}}
+          {{#foreach tags}}
+          <div class="contributor-card contributor-card--static">
+            <div class="contributor-card-portrait" aria-hidden="true">
+              {{#if feature_image}}<img src="{{img_url feature_image size="s"}}" alt="Ian Harber" />{{else}}<span class="contributor-card-initial">Ian Harber</span>{{/if}}
+            </div>
+            <div class="contributor-card-body">
+              <h3 class="contributor-card-name"><a href="{{url}}"><em>Ian Harber</em></a></h3>
+              {{#if description}}<p class="contributor-card-bio">{{description}}</p>{{/if}}
+            </div>
+          </div>
+          {{/foreach}}
+        {{/get}}
+        {{#get "tags" filter="slug:author-stiven-peter" limit="1"}}
+          {{#foreach tags}}
+          <div class="contributor-card contributor-card--static">
+            <div class="contributor-card-portrait" aria-hidden="true">
+              {{#if feature_image}}<img src="{{img_url feature_image size="s"}}" alt="Stiven Peter" />{{else}}<span class="contributor-card-initial">Stiven Peter</span>{{/if}}
+            </div>
+            <div class="contributor-card-body">
+              <h3 class="contributor-card-name"><a href="{{url}}"><em>Stiven Peter</em></a></h3>
+              {{#if description}}<p class="contributor-card-bio">{{description}}</p>{{/if}}
+            </div>
+          </div>
+          {{/foreach}}
+        {{/get}}
+      </div>
+    </div>
   </section>
 
 {{> "faith-received/_beta-band"}}

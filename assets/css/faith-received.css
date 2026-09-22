@@ -19095,13 +19095,16 @@ html.g-mobile #reading .fr-sec-toggle {
   margin: 40px 0 14px;
 }
 .faith-mf h2:first-child { margin-top: 0; }
-.faith-mf p a {
+/* Prose links only. Without the :not() the rule reached inside the
+   buttons at the foot of the page and underlined their labels in their
+   own boxes. */
+.faith-mf p a:not(.fr-btn) {
   color: inherit;
   text-decoration: underline;
   text-decoration-color: var(--color-secondary, #c1593c);
   text-underline-offset: 3px;
 }
-.faith-mf p a:hover { color: var(--color-secondary, #c1593c); }
+.faith-mf p a:not(.fr-btn):hover { color: var(--color-secondary, #c1593c); }
 .faith-mf-act {
   display: flex;
   flex-wrap: wrap;
@@ -19109,14 +19112,16 @@ html.g-mobile #reading .fr-sec-toggle {
   gap: 14px 22px;
   margin-top: 36px !important;
 }
-.faith-mf-link {
-  font-family: var(--font-body);
-  font-size: 15px;
-  color: var(--color-muted, #6b6660);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+/* The signature: who built it, under the argument. Two cards on the
+   About page's own grid, which is built for three or four across, so
+   they are held to the prose measure rather than stretched over the
+   width of the band. */
+.faith-mf-sign .section-intro { margin-bottom: 22px; }
+.faith-mf-people {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  max-width: 760px;
+  margin-inline: auto;
 }
-.faith-mf-link:hover { color: var(--color-secondary, #c1593c); }
 
 /* "About The Faith Received ->", centred under the hero's buttons.
    The kicker's soft white, so it reads as part of the hero's type and
