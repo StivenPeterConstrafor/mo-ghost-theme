@@ -2,7 +2,7 @@ async function __initReview(){
   let me={};try{me=await jget("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/me");}catch(e){}
   if(!me.owner)return;
   document.body.classList.add("review");
-  if($("#sub"))$("#sub").textContent=[DATA.author,DATA.tradition||DATA.group].filter(Boolean).concat(["owner review — double-click a page to edit it (⌘↵ save · esc cancel) · OK / Needs / Redo per page"]).join(" · ");
+  if($("#sub"))$("#sub").textContent=[DATA.author,(DATA.tradition&&window.MOFaithLabel?window.MOFaithLabel.of(DATA.tradition,DATA.author):DATA.tradition)||DATA.group].filter(Boolean).concat(["owner review — double-click a page to edit it (⌘↵ save · esc cancel) · OK / Needs / Redo per page"]).join(" · ");
   let prog={};try{prog=await jget("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/progress");}catch(e){}
   const okS=new Set(prog.ok_pages||[]),ndS=new Set(prog.needs_agent_pages||[]),vwS=new Set(prog.viewed_pages||[]),agS=new Set(prog.agent_pages||[]);
   const statusOf=n=>okS.has(n)?"ok":ndS.has(n)?"needs":vwS.has(n)?"viewed":"new";
@@ -471,7 +471,7 @@ function __initSearch(){
       const res=(lib&&lib.results)||[];
       let h=res.length?("<div class=rsn>"+res.length+" results across the library"+(SCOPE.tr?" — "+esc(SCOPE.tr)+" works":"")+"</div>"+res.map(x=>{const w=m[x.slug]||{};
         const en=(window.__TEN||{})[x.slug]||"";
-        return '<a class=rsr href="/the-faith-received/read/?w='+encodeURIComponent(x.slug)+"#b"+x.page+'-0"><span class=rst>'+esc(en||w.title||x.slug)+(w.tradition?'<span class=rtrad>'+esc(w.tradition)+'</span>':'')+"</span><span class=rsm>"+esc(w.author||"")+(w.author?" · ":"")+"pg. "+x.page+"</span></a>";}).join("")):"<div class=rsn>No library results"+(SCOPE.tr?" among "+esc(SCOPE.tr)+" works":"")+".</div>";
+        return '<a class=rsr href="/the-faith-received/read/?w='+encodeURIComponent(x.slug)+"#b"+x.page+'-0"><span class=rst>'+esc(en||w.title||x.slug)+"</span><span class=rsm>"+esc(w.author||"")+(w.author?" · ":"")+"pg. "+x.page+"</span></a>";}).join("")):"<div class=rsn>No library results"+(SCOPE.tr?" among "+esc(SCOPE.tr)+" works":"")+".</div>";
       const NAME={pl:"Patrologia Latina — Latin Fathers",pg:"Patrologia Graeca — Greek Fathers",po:"Patrologia Orientalis — Eastern Fathers"};
       const BASE={pl:"https://pld-patrologia-latina.vercel.app",pg:"https://patrologia-graeca.vercel.app",po:"https://patrologia-orientalis.vercel.app"};
       order.forEach((c,i)=>{const rs=(((pats[i]||{}).results)||[]).filter(x=>x.score>=(c==="pg"?0.55:0.6));

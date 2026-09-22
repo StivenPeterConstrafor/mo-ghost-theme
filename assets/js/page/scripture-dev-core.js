@@ -365,11 +365,13 @@
           const cur = f[k][0] || "";
           const first = s.options[0].outerHTML;
           const seen = new Set();
+          // Printed tradition names go through MOFaithLabel ("English Divines" shows as "English writers"); values stay the worker's.
+          const shown = (v) => (k === "tr" && window.MOFaithLabel ? window.MOFaithLabel.shelf(v) : v);
           const opt = list.map((x) => {
             seen.add(String(x.k));
-            return `<option value="${esc(x.k)}"${String(x.k) === cur ? " selected" : ""}>${esc(x.label || x.k)} (${fmt(x.n)})</option>`;
+            return `<option value="${esc(x.k)}"${String(x.k) === cur ? " selected" : ""}>${esc(shown(x.label || x.k))} (${fmt(x.n)})</option>`;
           });
-          if (cur && !seen.has(cur)) opt.unshift(`<option value="${esc(cur)}" selected>${esc(cur)} (0)</option>`);
+          if (cur && !seen.has(cur)) opt.unshift(`<option value="${esc(cur)}" selected>${esc(shown(cur))} (0)</option>`);
           s.innerHTML = first + opt.join("");
           s.value = cur;
           s.disabled = !list.length && !cur;
@@ -416,7 +418,7 @@
     const li = document.createElement("li");
     li.className = "sd-source";
     const href = sourceHref(row.h, row.w, row.p);
-    const meta = [row.a, row.trad, centuryLabel(row.cen)].filter(Boolean).map(esc).join(" · ");
+    const meta = [row.a, centuryLabel(row.cen)].filter(Boolean).map(esc).join(" · ");
     const pid = `sdp-${Math.random().toString(36).slice(2, 9)}`;
     li.innerHTML =
       `<div class="sd-source-head">` +
@@ -501,7 +503,7 @@
         $strip.innerHTML = items.map((e) => {
           const href = sourceHref(e.href, e.w);
           const range = e.c1 ? `Chapters ${e.c1}${e.c2 && e.c2 !== e.c1 ? `–${e.c2}` : ""}` : (e.annotation ? "Annotations" : (e.kind || "Commentary"));
-          const meta = [e.trad, centuryLabel(e.cen)].filter(Boolean).map(esc).join(" · ");
+          const meta = [centuryLabel(e.cen)].filter(Boolean).map(esc).join(" · ");
           const inner =
             `<span class="sd-comm-title">${esc(e.t)}</span>` +
             `<span class="sd-comm-author">${esc(e.a || "")}</span>` +

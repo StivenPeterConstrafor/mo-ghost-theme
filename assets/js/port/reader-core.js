@@ -1,4 +1,6 @@
 
+// The About panel names one author's church (MOFaithLabel.of); start the denomination table now so it is in hand by the time a reader opens it.
+if(window.MODenom)window.MODenom.ready();
 const $=s=>document.querySelector(s),el=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
 // guarded storage: Safari private mode / quota-exceeded throws on writes — never let that kill a save path
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
@@ -1633,7 +1635,9 @@ function openAbout(){
   h+='</div><button class="about-x" title="Close (esc)" aria-label="Close">✕</button></div><div class="about-body">';
   if(b&&b.blurb)h+='<div class="about-work"><p>'+esc(house(b.blurb))+'</p></div>';
   if(DATA.author){
-    const life=[(a&&a.dates&&!/unknown/i.test(a.dates))?a.dates:null,a&&a.tradition].filter(Boolean).join(" · ");
+    // One author: his church where the denomination table knows it, never the "English Divines" shelf (MOFaithLabel, lib/faith-catalogue.js).
+    const trad=a&&a.tradition?(window.MOFaithLabel?window.MOFaithLabel.of(a.tradition,DATA.author):a.tradition):null;
+    const life=[(a&&a.dates&&!/unknown/i.test(a.dates))?a.dates:null,trad].filter(Boolean).join(" · ");
     const opening=(a&&a.bio)?aboutOpening(house(a.bio)):"";
     h+='<div class="about-who"><h3>'+esc(DATA.author)+'</h3>';
     if(life)h+='<p class="about-life">'+esc(life)+'</p>';
@@ -4499,7 +4503,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
     const pinned=isPinned(w.slug,+w.page);
     const aff=w.score?Math.max(8,Math.round((w.score-0.55)/0.45*100)):null;
     return '<a class=rsr data-x="'+esc(w.slug)+'|'+w.page+'" href="/the-faith-received/read/?w='+encodeURIComponent(w.slug)+'#b'+w.page+'-0" target=_blank rel=noopener>'
-      +'<span class=rst>'+esc(m.title||w.slug)+(m.tradition?'<span class=rtrad>'+esc(m.tradition)+'</span>':'')+'</span>'
+      +'<span class=rst>'+esc(m.title||w.slug)+'</span>'
       +'<span class=rsm>'+esc(m.author||"")+(m.author?" · ":"")+'pg. '+w.page
       +'<button class=rp-peek data-pk="'+esc(w.slug)+'|'+w.page+'" title="Peek — read it right here">⌄</button></span>'
       +(aff?'<span class=rsaff style="width:'+Math.min(100,aff)+'%" title="affinity '+w.score+'"></span>':'')

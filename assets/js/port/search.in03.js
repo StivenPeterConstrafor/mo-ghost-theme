@@ -6,7 +6,7 @@ function scopeSummary(){
   if(cc&&cc.getAttribute('data-c'))bits.push(cc.textContent.trim());
   if(FAC.author)bits.push(FAC.author);
   if(FAC.work)bits.push('1 work');
-  if(FAC.trad)bits.push(FRSearch.label(FAC.trad));if(FAC.collection)bits.push('Confessions');
+  if(FAC.trad)bits.push(FRSearch.display(FAC.trad));if(FAC.collection)bits.push('Confessions');
   if(typeof SCOPE!=='undefined'&&SCOPE&&SCOPE.author)bits.push(SCOPE.author);
   var el=document.getElementById('stSum');
   if(el)el.textContent=[FAC.author,FAC.work||FAC.workQuery,FAC.collection,FAC.group].filter(Boolean).length?' · active':'';var scope=document.getElementById('activeSearchScope'),parts=[({westminster:'Westminster Divines',puritan:'Puritans',anglican:'Anglicans'})[FAC.group],FAC.author?'Author: '+FAC.author:'',FAC.work||FAC.workQuery?'Work filter applied':'',FAC.collection?'Confessions':''].filter(Boolean);if(scope){scope.hidden=!parts.length;scope.textContent=parts.join(' · ');}
@@ -90,7 +90,7 @@ function navMap(cb){if(NAV)return cb(NAV);
     IDX=rows.filter(function(w){return w.slug;}).map(function(w){return {d:w.slug,k:'work',t:w.title_en||w.title||w.slug,o:w.title||'',a:w.author||'',al:w.author_la||''};});
     buildFacetLists();var q2=_navq;_navq=null;q2.forEach(function(f){f(NAV);});
   }).catch(function(){CATALOG_ERROR=true;NAV={};WLIST=[];IDX=[];WORKS_BY_SLUG={};var q2=_navq||[];_navq=null;q2.forEach(function(f){f(NAV);});});}
-function docCite(d){var e=NAV&&NAV[d];if(!e)return 'The Faith Received';var parts=[];if(ORDER==='relevance'&&e.a)parts.push(esc(e.a));if(e.v)parts.push(esc(e.v));if(e.tr)parts.push(esc(FRSearch.label(e.tr)));return parts.join(' · ');}
+function docCite(d){var e=NAV&&NAV[d];if(!e)return 'The Faith Received';var parts=[];if(ORDER==='relevance'&&e.a)parts.push(esc(e.a));if(e.v)parts.push(esc(e.v));return parts.join(' · ');}
 function docTitle(d){var e=NAV&&NAV[d];return e?esc(e.t||d):esc(d||'');}
 
 /* ---- Facets: author / work / tradition — narrow any result set ---- */
@@ -112,7 +112,7 @@ function buildFacetLists(){
   var vs=document.getElementById('fTrad');
   if(vs&&vs.options.length<=1){
     var opts=['<option value="">All shelves</option>'];
-    FRSearch.shelves.forEach(function(v){opts.push('<option value="'+esc(v.value)+'">'+esc(v.label)+'</option>');});
+    FRSearch.shelves.forEach(function(v){opts.push('<option value="'+esc(v.value)+'">'+esc(FRSearch.display(v.label))+'</option>');});
     vs.innerHTML=opts.join('');vs.value=FAC.trad;}
 }
 function facetInit(){
@@ -130,7 +130,7 @@ function facetInit(){
   if(fw)fw.addEventListener('input',upd);
   if(fv)fv.addEventListener('change',upd);document.getElementById('fCollection').onchange=upd;document.getElementById('fGroup').onchange=upd;
   if(fc)fc.onclick=function(){if(fa)fa.value='';if(fw)fw.value='';if(fv)fv.value='';document.getElementById('fCollection').value='';document.getElementById('fGroup').value='';FAC.groupSlugs=null;upd();};}
-document.getElementById('fTrad').innerHTML='<option value="">All shelves</option>'+FRSearch.shelves.map(function(s){return '<option value="'+esc(s.value)+'">'+esc(s.label)+'</option>';}).join('');
+document.getElementById('fTrad').innerHTML='<option value="">All shelves</option>'+FRSearch.shelves.map(function(s){return '<option value="'+esc(s.value)+'">'+esc(FRSearch.display(s.label))+'</option>';}).join('');
 facetInit();
 
 /* ---- Title mode: works-index first, then the lazy 154k section-heading tier ---- */
@@ -234,7 +234,7 @@ function searchUnavailable(label,query){setPager(0,0,function(){});ct.textConten
 function renderMeaning(q){var my=++seq,pools=[],expanded=false,expanding=false,groups=[];ct.textContent='Finding related passages…';res.innerHTML='';
  navMap(function(){if(my!==seq)return;var params=new URLSearchParams({q:q,k:FAC.collection?'80':'25'}),endpoint='https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/xsearch?';if(FAC.collection){endpoint='https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/vsearch?';params.set('collection',FAC.collection);if(FAC.work)params.set('w',FAC.work);}else if(FAC.trad==='English Divines')params.set('c','tfr');else if(FAC.trad==='Medieval')params.set('c','aq,tfr');else if(FAC.trad)params.set('trad',FAC.trad);
   fetch(endpoint+params,{signal:AbortSignal.timeout(25000)}).then(function(r){if(!r.ok)throw Error('Search unavailable');return r.json();}).then(function(data){if(my!==seq)return;pools=[FRSearch.meaningCandidates(data,WORKS_BY_SLUG)];refresh();}).catch(function(){if(my===seq)searchUnavailable('Search by idea',q);});
-  function refresh(){var rows=FRSearch.fuseMeaning(pools).filter(function(r){return facetOk(r.slug);});groups=FRSearch.meaningGroups(rows);REDRAW=paint;ct.textContent=rows.length+' ranked passages in '+groups.length+' works'+(FAC.trad?' · '+FRSearch.label(FAC.trad):'');paint(RESULT_PAGE);}
+  function refresh(){var rows=FRSearch.fuseMeaning(pools).filter(function(r){return facetOk(r.slug);});groups=FRSearch.meaningGroups(rows);REDRAW=paint;ct.textContent=rows.length+' ranked passages in '+groups.length+' works'+(FAC.trad?' · '+FRSearch.display(FAC.trad):'');paint(RESULT_PAGE);}
   function paint(page){var ordered=FRSearch.orderWorks(groups,ORDER,WORKS_BY_SLUG,{},FRResearch.workOrder),win=FRSearch.pageWindow(groups.length,page);setPager(groups.length,win.page,paint,'works');res.innerHTML='<details class="search-guidance"><summary>About these ranked results</summary><p>Expand a work to read its indexed passages. Use Search more passages for a broader candidate set. Neither list is an exhaustive match count.</p></details>';
    ordered.slice(win.start,win.end).forEach(function(g,i){var fold=document.createElement('details');fold.className='scripture-work meaning-work';fold.dataset.work=g.slug;fold.open=i===0;fold.innerHTML='<summary>'+docTitle(g.slug)+'<span>'+docCite(g.slug)+' · '+g.locations.length+' ranked '+(g.locations.length===1?'passage':'passages')+'</span></summary><div class="meaning-locations"></div>';
     locationPager(fold.querySelector('.meaning-locations'),g.locations.length,function(start,end,host){g.locations.slice(start,end).forEach(function(p){var a=document.createElement('a');a.className='sr';a.href=rdHref(p.slug,p.page);a.innerHTML='<div class="sr-cite">'+esc(p.citation||(p.page!=null?'Location '+p.page:'Work-level match'))+'</div>'+(p.excerpt?'<div class="sr-ex">'+esc(p.excerpt)+'</div>':'<div class="sr-ex"></div>')+'<small>'+esc(p.page==null?'Open work; exact reader location unavailable':'Read passage')+'</small>';host.appendChild(a);if(!p.excerpt&&p.page!=null){var span=a.querySelector('.sr-ex');excerpt(p.slug,p.page).then(function(text){if(my===seq&&span.isConnected&&text)span.textContent=text+'…';});}});},3);res.appendChild(fold);
@@ -310,7 +310,7 @@ function renderTradition(q){var my=++seq;
             var open='<a class="sr trad-hit trad-'+h.corpus.toLowerCase()+'"'+(h.link?' href="'+esc(h.link)+'"'+(home?'':' target="_blank" rel="noopener"'):'')+'>';
             var slm=home&&h.link?(h.link.match(/w=([a-z0-9-]+)/)||[]):null;
             return open+'<div class="sr-cite"><span class="trad-badge tb-'+h.corpus.toLowerCase()+'">'+(CORPUS_BADGE[h.corpus]||h.corpus)+'</span> '+
-              esc(h.cit||'')+(h.trad?' <span class="tr-trad">'+esc(h.trad)+'</span>':'')+(h.corpus==='PL'?' <span class="trad-badge" style="color:var(--muted);border-color:var(--border)" title="A companion site that currently asks for sign-in">companion · sign-in</span>':'')+' <span class="sr-n">· '+Math.round((h.score||0)*100)+'%</span></div>'+
+              esc(h.cit||'')+(h.corpus==='PL'?' <span class="trad-badge" style="color:var(--muted);border-color:var(--border)" title="A companion site that currently asks for sign-in">companion · sign-in</span>':'')+' <span class="sr-n">· '+Math.round((h.score||0)*100)+'%</span></div>'+
               (h.tx?('<div class="sr-ex">'+esc(h.tx)+'…</div>')
                 :(home&&slm&&slm[1]?('<div class="sr-ex" data-ex="'+esc(slm[1])+'|'+(h.page||'')+'"></div>')
                 :(h.page?('<div class="sr-ex">p. '+h.page+'</div>'):'')))+'</a>';
@@ -334,7 +334,7 @@ function renderScripture(q){var my=++seq;ct.textContent='Loading Scripture refer
   if(my!==seq)return;var records=FRSearch.scriptureRecords(data,ref);navMap(function(){if(my!==seq)return;var groups=FRSearch.scriptureGroups(records.rows,FAC,WORKS_BY_SLUG,WORK_ALIASES),name=(books.find(function(b){return b.slug===ref.book;})||{}).book||ref.book,label=name+' '+ref.ch+(ref.selection?':'+ref.selection:'');
    var locations=groups.reduce(function(n,g){return n+g.locations.length;},0);ct.textContent=locations.toLocaleString()+' source locations · '+groups.length.toLocaleString()+' works · '+label+(records.partial?' · published selection':'');
    function paint(page){var ordered=FRSearch.orderWorks(groups,ORDER,WORKS_BY_SLUG,{},FRResearch.workOrder),win=FRSearch.pageWindow(groups.length,page);setPager(groups.length,win.page,paint,'works');res.innerHTML='<div class="scripture-context"><a href="'+scriptureAtlas(ref)+'">Read '+esc(ref.verses.length===1?label:name+' '+ref.ch)+' in Scripture</a><details><summary>Coverage</summary><p>These are indexed citations, including quotations and references. They do not establish agreement or a continuous commentary.</p>'+(records.partial?'<p class="search-warning">The published file contains a selection of the indexed references. These results are not exhaustive.</p>':'')+'</details></div>';
-    ordered.slice(win.start,win.end).forEach(function(g,i){var fold=document.createElement('details');fold.className='scripture-work';fold.dataset.work=g.slug;fold.dataset.author=g.author;fold.dataset.shelf=g.shelf;fold.open=i===0;fold.innerHTML='<summary>'+esc(ORDER==='relevance'&&g.author?g.author+' · ':'')+esc(g.title)+'<span>'+(g.volume?esc(g.volume)+' · ':'')+g.locations.length+' source location'+(g.locations.length===1?'':'s')+' · '+esc(g.shelf)+(g.available?'':' · Work not currently available')+'</span></summary><div class="scripture-locations"></div>';var list=fold.querySelector('.scripture-locations');locationPager(list,g.locations.length,function(start,end,target){g.locations.slice(start,end).forEach(function(loc){var a=document.createElement(g.available?'a':'div');a.className='sr';if(g.available)a.href=rdHref(g.slug,loc.page);a.innerHTML='<div class="sr-cite">'+esc(loc.verses.length?'Verse'+(loc.verses.length>1?'s ':' ')+loc.verses.join(', '):'Chapter reference')+' · '+esc(loc.page)+'</div><div>'+esc(g.title)+'</div>';target.appendChild(a);});},10);res.appendChild(fold);});if(!groups.length)res.insertAdjacentHTML('beforeend','<p>No available records match these filters. Try another shelf or clear the filters.</p>');
+    ordered.slice(win.start,win.end).forEach(function(g,i){var fold=document.createElement('details');fold.className='scripture-work';fold.dataset.work=g.slug;fold.dataset.author=g.author;fold.dataset.shelf=g.shelf;fold.open=i===0;fold.innerHTML='<summary>'+esc(ORDER==='relevance'&&g.author?g.author+' · ':'')+esc(g.title)+'<span>'+(g.volume?esc(g.volume)+' · ':'')+g.locations.length+' source location'+(g.locations.length===1?'':'s')+(g.available?'':' · Work not currently available')+'</span></summary><div class="scripture-locations"></div>';var list=fold.querySelector('.scripture-locations');locationPager(list,g.locations.length,function(start,end,target){g.locations.slice(start,end).forEach(function(loc){var a=document.createElement(g.available?'a':'div');a.className='sr';if(g.available)a.href=rdHref(g.slug,loc.page);a.innerHTML='<div class="sr-cite">'+esc(loc.verses.length?'Verse'+(loc.verses.length>1?'s ':' ')+loc.verses.join(', '):'Chapter reference')+' · '+esc(loc.page)+'</div><div>'+esc(g.title)+'</div>';target.appendChild(a);});},10);res.appendChild(fold);});if(!groups.length)res.insertAdjacentHTML('beforeend','<p>No available records match these filters. Try another shelf or clear the filters.</p>');
    organizePage();}REDRAW=paint;paint(RESULT_PAGE);
   });
  }).catch(function(error){if(my!==seq)return;if(/requested verse|does not match/.test(error.message)){ct.textContent=error.message;res.innerHTML='';}else searchUnavailable('Scripture search',q);});}
@@ -456,9 +456,9 @@ function corporaRow(){
   var main=ASK_CORPORA.filter(function(c2){return c2[0]!=='English Divines';});
   return '<details class="wsc-grp" open><summary>Shelves</summary><div class="ask-corpora" id="askCorp">'
     +main.map(function(c2){
-      return '<button type="button" data-tr="'+esc(c2[0])+'"'+(ASKTRAD===c2[0]?' class="on"':'')+'>'+esc(c2[1])+'</button>';}).join('')
-    +'</div><div class="asw-sub"><span class="asw-sublb">English Divines</span><div class="ask-corpora">'
-    +'<button type="button" data-tr="English Divines"'+(ASKTRAD==='English Divines'?' class="on"':'')+'>All divines</button>'
+      return '<button type="button" data-tr="'+esc(c2[0])+'"'+(ASKTRAD===c2[0]?' class="on"':'')+'>'+esc(FRSearch.display(c2[1]))+'</button>';}).join('')
+    +'</div><div class="asw-sub"><span class="asw-sublb">'+esc(FRSearch.display('English Divines'))+'</span><div class="ask-corpora">'
+    +'<button type="button" data-tr="English Divines"'+(ASKTRAD==='English Divines'?' class="on"':'')+'>All English writers</button>'
     +['Puritan','Anglican'].map(function(p2){return '<button type="button" data-py="'+p2+'"'+(ASKPARTY===p2?' class="on"':'')+'>'+p2+'s</button>';}).join('')
     +'</div></div>'
     +'<div class="ask-corpora" style="margin-top:.4rem"><button type="button" id="askNb"'+(ASKNB?' class="on"':'')+' title="Give the answer your saved notes and highlights">📓 With my notebook</button></div></details>';}
@@ -580,7 +580,7 @@ function askHint(lastQ,turnData){var m=res.querySelector('#askMore');if(!m)retur
   var allTr=['Reformed','Lutheran','Roman Catholic','Greek Fathers','Latin Fathers','Medieval'];
   var absent=allTr.filter(function(t2){return !trads[t2];});
   if(Object.keys(trads).length&&absent.length)
-    chips.push({t:'How do the '+esc(absent[0])+' answer?',q:'How would the '+absent[0]+' tradition answer the same question?'});
+    chips.push({t:'How do the '+esc(FRSearch.display(absent[0]))+' answer?',q:'How would the '+absent[0]+' tradition answer the same question?'});
   ((td.graph&&td.graph.loci)||[]).slice(0,1).forEach(function(l2){
     chips.push({t:'Deeper on '+esc(String(l2)),q:'Go deeper on '+String(l2)+' — the key distinctions and the classic passages.'});});
   chips.push({t:'⟲ Research deeper',deep:true,q:lastQ});
@@ -730,7 +730,7 @@ function zeroHtml(q,mode){
 })();
 
 function ensureSearchGroups(){if(FAC.group!=='westminster')return Promise.resolve();if(!SCOPE_SCHOOLS)SCOPE_SCHOOLS=FRResearchData.json('/v1/schools.json').then(function(data){var slugs=data['Westminster Assembly']?.slugs;if(!Array.isArray(slugs)||!slugs.length)throw Error('Westminster membership is unavailable.');return slugs.map(function(s){return s.replace(/^@eebo:/,'eebo-');});}).catch(function(e){SCOPE_SCHOOLS=null;throw e;});return SCOPE_SCHOOLS.then(function(slugs){FAC.groupSlugs=slugs;});}
-function organizePage(){if(ORDER==='relevance'){groupControls();return;}var nodes=Array.from(res.children).filter(function(n){return n.dataset.work;}),shelves=new Map(),authors=new Map();nodes.forEach(function(node){var w=WORKS_BY_SLUG[node.dataset.work]||{},author=w.author||node.dataset.author||'No named author',sh=FRSearch.label(w.tradition||node.dataset.shelf)||'Indexed sources',parent=res;if(ORDER==='shelf'&&!FAC.trad){if(!shelves.has(sh)){var d=document.createElement('details');d.className='result-shelf';d.open=true;var summary=document.createElement('summary');summary.textContent=sh;d.appendChild(summary);res.appendChild(d);shelves.set(sh,d);}parent=shelves.get(sh);}var key=(ORDER==='shelf'?sh:'')+'|'+author;if(!authors.has(key)){var group=document.createElement('details');group.className='result-author';group.open=authors.size===0;var head=document.createElement('summary');head.textContent=author;group.appendChild(head);parent.appendChild(group);authors.set(key,{node:group,head:head,works:new Set()});}var a=authors.get(key);a.works.add(node.dataset.work);a.head.textContent=author+' · '+a.works.size+' '+(a.works.size===1?'work':'works')+' on this page';a.node.appendChild(node);});groupControls();}
+function organizePage(){if(ORDER==='relevance'){groupControls();return;}var nodes=Array.from(res.children).filter(function(n){return n.dataset.work;}),shelves=new Map(),authors=new Map();nodes.forEach(function(node){var w=WORKS_BY_SLUG[node.dataset.work]||{},author=w.author||node.dataset.author||'No named author',sh=FRSearch.label(w.tradition||node.dataset.shelf)||'Indexed sources',parent=res;if(ORDER==='shelf'&&!FAC.trad){if(!shelves.has(sh)){var d=document.createElement('details');d.className='result-shelf';d.open=true;var summary=document.createElement('summary');summary.textContent=FRSearch.display(sh);d.appendChild(summary);res.appendChild(d);shelves.set(sh,d);}parent=shelves.get(sh);}var key=(ORDER==='shelf'?sh:'')+'|'+author;if(!authors.has(key)){var group=document.createElement('details');group.className='result-author';group.open=authors.size===0;var head=document.createElement('summary');head.textContent=author;group.appendChild(head);parent.appendChild(group);authors.set(key,{node:group,head:head,works:new Set()});}var a=authors.get(key);a.works.add(node.dataset.work);a.head.textContent=author+' · '+a.works.size+' '+(a.works.size===1?'work':'works')+' on this page';a.node.appendChild(node);});groupControls();}
 function groupControls(){var host=document.getElementById('groupControls');if(!host){host=document.createElement('div');host.id='groupControls';host.className='group-controls';res.before(host);}host.hidden=!res.querySelector('details');if(!host.childNodes.length){['Expand all','Collapse all'].forEach(function(label,i){var b=document.createElement('button');b.type='button';b.textContent=label;b.setAttribute('aria-controls','results');b.onclick=function(){res.querySelectorAll('details').forEach(function(d){d.open=i===0;});};host.appendChild(b);});}}
 function setPager(total,page,draw,noun){
  var host=document.getElementById('resultsPager');if(!host){host=document.createElement('nav');host.id='resultsPager';host.className='results-pager';host.setAttribute('aria-label','Search result pages');res.before(host);}host.hidden=total===0;if(!total)return;

@@ -2,6 +2,8 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.FRResearch=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
  const shelves={pl:'Latin Fathers',gf:'Greek Fathers',po:'Eastern Fathers',ed:'English Divines',md:'Medieval',rc:'Roman Catholic',lu:'Lutheran',rf:'Continental Reformed',hl:'Humanism and Law'};
+ /* What a reader is SHOWN for a shelf code (MOFaithLabel, lib/faith-catalogue.js). `shelves` keeps the source names; print through this. With `who` (one author or work) it names his church where the denomination table knows it. */
+ const shelfName=(code,who)=>{const v=shelves[code];if(!v)return v;const L=(typeof globalThis!=='undefined'?globalThis:{}).MOFaithLabel;return L?(who?L.of(v,who):L.shelf(v)):v;};
  const shelfMaps={pl:'latin-fathers',gf:'greek-fathers',po:'eastern-fathers',ed:'english-divines',md:'medieval',rc:'roman-catholic',lu:'lutheran',rf:'reformed',hl:'humanism-and-law'};
  const topicURL=(slug='',sh='')=>'/the-faith-received/topics/'+(shelves[sh]?'?sh='+encodeURIComponent(sh):'')+(slug?'#'+encodeURIComponent(slug):'');
  // Map weights are not page counts. Only the published count label has that meaning.
@@ -105,5 +107,5 @@ function workFoldsHTML(rows,o={},ui){const esc=htmlEscape,fmtR=n=>Number(n).toLo
   if(rows.length>result.total||(!result.has_more&&rows.length!==result.total))throw Error('The evidence total does not match the loaded records');
   return {...state,rows,started:true,cursor:result.next_cursor,cursors:[...(state.cursors||[]),...(result.next_cursor?[result.next_cursor]:[])],done:!result.has_more,total:result.total};
  }
- return {topicWindow,mergeTopicEvidence,statementHTML,workFoldsHTML,shelves,shelfMaps,topicURL,scopedTopics,mergePageRefs,mapAuthorPages,eras,fold,authorScore,isRawTopic,topicKey,topicNames,topicVocabulary,cleanTopics,era,page,authorURL,roster,voices,connections,safeReaderURL,volumeNumber,seriesRef,edition,volumeLabel,workOrder,workFamily,orderedWorks,setWorkCatalogue,orderWork};
+ return {topicWindow,mergeTopicEvidence,statementHTML,workFoldsHTML,shelves,shelfName,shelfMaps,topicURL,scopedTopics,mergePageRefs,mapAuthorPages,eras,fold,authorScore,isRawTopic,topicKey,topicNames,topicVocabulary,cleanTopics,era,page,authorURL,roster,voices,connections,safeReaderURL,volumeNumber,seriesRef,edition,volumeLabel,workOrder,workFamily,orderedWorks,setWorkCatalogue,orderWork};
 });
