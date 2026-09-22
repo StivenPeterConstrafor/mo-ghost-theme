@@ -126,6 +126,10 @@
   studyRoot.setAttribute("aria-label", "Shelf research and reference");
   studyRoot.hidden = true;
   root.insertAdjacentElement("beforebegin", studyRoot);
+  // Printed shelf names go through the one display rule ("English
+  // Divines" reads "English writers"). Values, URLs and matching keep
+  // the data's own name.
+  const shelfName = (t) => (window.MOFaithLabel ? window.MOFaithLabel.shelf(t) : t);
   function renderShelfResearch() {
     const code = RESEARCH_SHELVES[shelfTradition || denomination || tradition]
       || RESEARCH_COLLECTIONS[collection || collectionId];
@@ -141,9 +145,9 @@
       ["Topics", `topics/?sh=${code}`, "Find theological topics and the passages that discuss them."],
       ["Connections", `web/#shelves=${name === "Continental Reformed" ? "reformed" : name.toLowerCase().replace(/ /g,"-")}/authors`, "Explore this shelf’s Scripture connections and follow citations between authors."]
     ];
-    studyRoot.innerHTML = `<div class="faith-shelf-study-head"><div><h2>Study this shelf</h2><p>${escapeHtml(name)}</p></div>`
+    studyRoot.innerHTML = `<div class="faith-shelf-study-head"><div><h2>Study this shelf</h2><p>${escapeHtml(shelfName(name))}</p></div>`
       + `<a class="faith-shelf-ask" href="${base}ask/?trad=${encodeURIComponent(name)}">Ask this shelf</a></div>`
-      + `<nav class="faith-shelf-study-grid" aria-label="Study ${escapeHtml(name)}">${
+      + `<nav class="faith-shelf-study-grid" aria-label="Study ${escapeHtml(shelfName(name))}">${
        doors.map(([label, href, description]) => `<a class="faith-shelf-study-card" href="${base}${href}"><strong>${label}</strong><span>${description}</span></a>`).join("")
        }</nav><div class="faith-shelf-reference"><h2>Reference</h2>`
       + `<a class="faith-shelf-study-card" href="${base}dictionary/"><strong>Dictionary of Catholic Theology</strong>`
@@ -1000,7 +1004,7 @@
     if (openers) openers.classList.toggle("is-filtered", narrowed);
     if (isAll) {
       const name = RESEARCH_NAMES[RESEARCH_SHELVES[denomination || tradition]] || "";
-      if (pageHeading) pageHeading.textContent = name || originalHeading;
+      if (pageHeading) pageHeading.textContent = shelfName(name) || originalHeading;
       if (pageLede) pageLede.textContent = name ? "Browse the works below, or search for an author or title." : originalLede;
     }
   }
@@ -1161,7 +1165,7 @@
       select("cent", "Century", "All centuries",
         cents.map(([c, n]) => [c, cLabel(c), n]), century || ""),
       select("trad", "Tradition", "All traditions",
-        trads.map(([t, n]) => [t, t, n]), tradition),
+        trads.map(([t, n]) => [t, shelfName(t), n]), tradition),
       // Always in the shell, shown only when it has something to offer.
       // Built here rather than injected on change, because the shell is
       // written once and rewriting it mid-gesture is what tore the
@@ -1188,7 +1192,7 @@
     // true of the page and false of the list under it once the filter had
     // cut the library down to one shelf, so a shelf in hand names itself.
     const label = isAll
-      ? denomination || tradition || (collection && window.MOCorpora.get(collection)?.label) || "the whole library"
+      ? shelfName(denomination || tradition) || (collection && window.MOCorpora.get(collection)?.label) || "the whole library"
       : (corpus ? corpus.label : "the collection");
     // The rail files by the author's surname, which is the other view's
     // question. Inside a volume it would be a second index over at most
@@ -1281,7 +1285,7 @@
       // Written into the shell once and filled by render, like the
       // views; shown only where English Divines is the denomination in
       // hand.
-       }<nav class="faith-view-toggle faith-room-parties" role="tablist" aria-label="Within English Divines" hidden></nav>`;
+       }<nav class="faith-view-toggle faith-room-parties" role="tablist" aria-label="Within English writers" hidden></nav>`;
 
     // What the count reports is whatever the reader is looking at: the
     // works in the collection, the volumes on the shelf, or the works
@@ -1362,7 +1366,7 @@
     if (dWrap && dSel) {
       const [dLabel, dAll] = childLabel(tradition);
       const dOpts = denoms.map(([t, n]) =>
-        `<option value="${escapeHtml(t)}">${escapeHtml(t)} (${n.toLocaleString()})</option>`).join("");
+        `<option value="${escapeHtml(t)}">${escapeHtml(shelfName(t))} (${n.toLocaleString()})</option>`).join("");
       const want = denoms.length ? `<option value="">${escapeHtml(dAll)}</option>${dOpts}` : "";
       if (dSel.innerHTML !== want) dSel.innerHTML = want;
       const dSpan = root.querySelector("[data-room-denom-label]");

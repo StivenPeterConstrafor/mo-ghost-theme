@@ -974,6 +974,9 @@
     const useRaw = parentCounts.length < 2 && rawCounts.length >= 2;
     const tradCounts = useRaw ? rawCounts : parentCounts;
 
+    // Printed shelf names go through the one display rule ("English
+    // Divines" reads "English writers"); option values stay the data.
+    const shelfText = (t) => (window.MOFaithLabel ? window.MOFaithLabel.shelf(String(t)) : String(t));
     const select = (name, label, all, opts, fmt) => {
       if (opts.length < 2) return "";
       const o = opts.map(([v, n]) =>
@@ -1020,7 +1023,7 @@
       `It does not search the full text of the work.">${scopeOpts}</select></label></div>` +
       `<div class="faith-refs-selects">${
         select("collection", "Collection", "All collections", counts("corpus"), cLabel)}${
-        select("tradition", "Tradition", "All traditions", tradCounts)}${
+        select("tradition", "Tradition", "All traditions", tradCounts, shelfText)}${
         // Always in the shell, shown only when the chosen tradition has
         // something under it.
         `<label class="faith-refs-select" data-refs-denom-wrap hidden><span data-refs-denom-label>Denomination</span><select data-refs-denom></select></label>`}${
@@ -1090,7 +1093,7 @@
       const [label, all] = CHILD_LABEL[state.tradition] || ["Within", "All"];
       const want = kids.length
         ? `<option value="">${escapeHtml(all)}</option>${kids.map(([t, n]) =>
-          `<option value="${escapeHtml(t)}">${escapeHtml(t)} (${n.toLocaleString()})</option>`).join("")}`
+          `<option value="${escapeHtml(t)}">${escapeHtml(shelfText(t))} (${n.toLocaleString()})</option>`).join("")}`
         : "";
       if (sel.innerHTML !== want) sel.innerHTML = want;
       const lab = el.querySelector("[data-refs-denom-label]");

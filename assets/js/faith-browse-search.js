@@ -112,7 +112,7 @@
           const c = window.MOCorpora.get(id);
           return c ? c.label : id;
         });
-        fillSelect("[data-bs-tradition]", tally(all, topTradOf), null);
+        fillSelect("[data-bs-tradition]", tally(all, topTradOf), shelfName);
         fillSelect("[data-bs-century]", tally(all, century, true), (n) =>
           (window.MOCentury ? window.MOCentury.label(n) : String(n)));
         return all;
@@ -137,6 +137,12 @@
     });
     if (byValue) return [...m.entries()].sort((a, b) => Number(a[0]) - Number(b[0]));
     return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 40);
+  }
+
+  // Printed shelf names go through the one display rule ("English
+  // Divines" reads "English writers"). Option values stay the data.
+  function shelfName(t) {
+    return window.MOFaithLabel ? window.MOFaithLabel.shelf(String(t)) : String(t);
   }
 
   function fillSelect(sel, pairs, fmt) {
@@ -190,7 +196,7 @@
     const [label, allLabel] = CHILD_LABEL[parent] || ["Within", "All"];
     const want = kids.length
       ? `<option value="">${escapeHtml(allLabel)}</option>${kids.map(([t, n]) =>
-        `<option value="${escapeHtml(t)}">${escapeHtml(t)} (${n.toLocaleString()})</option>`).join("")}`
+        `<option value="${escapeHtml(t)}">${escapeHtml(shelfName(t))} (${n.toLocaleString()})</option>`).join("")}`
       : "";
     if (sel.innerHTML !== want) sel.innerHTML = want;
     const lab = panel.querySelector("[data-bs-denom-label]");
@@ -271,8 +277,7 @@
       `<a class="bsearch-hit-title" data-hit-for="${escapeHtml(`${w.corpus}:${w.id}`)}" ` +
       `href="${escapeHtml(hitUrl(w, loc))}">${escapeHtml(w.title || w.id)}</a>${ 
       w.author ? `<span class="bsearch-hit-author">${escapeHtml(w.author)}</span>` : "" 
-      }<span class="bsearch-hit-where">${escapeHtml(c ? c.label : w.corpus)}${
-        w.tradition ? ` · ${escapeHtml(w.tradition)}` : ""}</span>${ 
+      }<span class="bsearch-hit-where">${escapeHtml(c ? c.label : w.corpus)}</span>${ 
       extra || ""}</li>`;
   }
 

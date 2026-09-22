@@ -445,7 +445,7 @@
     return Promise.all(keys.map((sh) => getJSON(`${BASE}/v1/bible/${sh}/rooms/index.json`)
       .then((d) => ({ sh, rows: d && Array.isArray(d.authors) ? d.authors : null }))))
       .then((parts) => {
-        rosterMissing = parts.filter((p) => !p.rows).map((p) => SHELVES[p.sh]);
+        rosterMissing = parts.filter((p) => !p.rows).map((p) => shelfText(p.sh));
         const rows = [];
         parts.forEach((p) => {
           (p.rows || []).forEach((r) => {
@@ -468,8 +468,21 @@
     return (roster || []).filter((r) => r.s === slug)[0] || null;
   }
 
+  // Printed through the one display rule (lib/faith-catalogue.js): a
+  // shelf name reads "English writers" for "English Divines", and one
+  // author's label is his church where the denomination table is on the
+  // page. SHELVES itself stays the data.
+  function shelfText(sh) {
+    const t = SHELVES[sh] || "";
+    return window.MOFaithLabel && t ? window.MOFaithLabel.shelf(t) : t;
+  }
+  function authorShelf(r) {
+    const t = SHELVES[r.sh] || "";
+    return window.MOFaithLabel && t ? window.MOFaithLabel.of(t, r.a) : t;
+  }
+
   function whenOf(r) {
-    return [r.y ? `c. ${r.y}` : "", SHELVES[r.sh] || ""].filter(Boolean).join(" · ");
+    return [r.y ? `c. ${r.y}` : "", authorShelf(r)].filter(Boolean).join(" · ");
   }
 
   /* ── Author rooms and topics ─────────────────────────────────── */
@@ -823,7 +836,7 @@
       .forEach((r) => {
         const o = el("option");
         o.value = r.a;
-        o.label = `${SHELVES[r.sh] || ""} · ${fmt(r.w)} works`;
+        o.label = `${authorShelf(r)} · ${fmt(r.w)} works`;
         addList.appendChild(o);
       });
   }

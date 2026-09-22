@@ -1206,10 +1206,17 @@
     return !hiddenCats[catKeyOf(node)];
   }
 
+  // Printed shelf and section names go through the one display rule
+  // ("English Divines" reads "English writers"). Keys, slugs and every
+  // comparison keep the data's own name.
+  function shelfText(t) {
+    return window.MOFaithLabel && t ? window.MOFaithLabel.shelf(t) : t;
+  }
+
   function catLabel(key) {
     const c = cats.find((x) => x && x.k === key);
-    if (c && c.l) return c.l;
-    return key || "Unclassified";
+    if (c && c.l) return shelfText(c.l);
+    return shelfText(key) || "Unclassified";
   }
 
   function rankOf(key) {
@@ -3377,7 +3384,7 @@
 
     const key = catKeyOf(node);
     const cat = cats.find((c) => c && c.k === key);
-    dossierEl.appendChild(textEl("p", "cn-dossier-kicker", cat && cat.l ? cat.l : "Unclassified"));
+    dossierEl.appendChild(textEl("p", "cn-dossier-kicker", cat && cat.l ? shelfText(cat.l) : "Unclassified"));
     dossierEl.appendChild(dossierTitle(node, node.t || node.a || "Untitled"));
     if(!isAll)dossierEl.appendChild(webLink("Read Scripture evidence", `#shelf-evidence=${encodeURIComponent(shelfSlug)}/${view}?${new URLSearchParams({entry:node.t||node.a||""})}`));
     if (node.sub) dossierEl.appendChild(textEl("p", "cn-dossier-sub", node.sub));
@@ -3389,13 +3396,13 @@
     // mergeShelfPayloads for why a total is not available).
     if (Array.isArray(node._shelves) && node._shelves.length > 1) {
       dossierEl.appendChild(
-        textEl("p", "cn-dossier-shelves", `On ${node._shelves.length} shelves: ${node._shelves.join(", ")}.`)
+        textEl("p", "cn-dossier-shelves", `On ${node._shelves.length} shelves: ${node._shelves.map(shelfText).join(", ")}.`)
       );
       dossierEl.appendChild(
         textEl(
           "p",
           "cn-dossier-shelves-note",
-          `The figures above are from ${node._shelfOf || "one shelf"}, which holds the most of this ${NODE_NOUN[view] || "point"}. The shelves overlap, so adding them together would count the same books twice.`
+          `The figures above are from ${shelfText(node._shelfOf) || "one shelf"}, which holds the most of this ${NODE_NOUN[view] || "point"}. The shelves overlap, so adding them together would count the same books twice.`
         )
       );
     }
@@ -4828,7 +4835,7 @@
       if (typeof slot === "number") dot.style.background = catColors[slot % catColors.length];
       else dot.classList.add("cn-legend-dot--ring");
       btn.appendChild(dot);
-      btn.appendChild(textEl("span", "cn-legend-label", c.l || "Unclassified"));
+      btn.appendChild(textEl("span", "cn-legend-label", shelfText(c.l) || "Unclassified"));
 
       btn.addEventListener("click", () => {
         const off = !hiddenCats[c.k];
@@ -5080,7 +5087,7 @@
         ? "in the library's citation graph"
         : isAll
           ? "across all shelves"
-          : `on the ${(shelves.find((s) => s.slug === shelfSlug) || {}).shelf || "this"} shelf`;
+          : `on the ${shelfText((shelves.find((s) => s.slug === shelfSlug) || {}).shelf) || "this"} shelf`;
       canvas.setAttribute("aria-label", `Map of ${count} ${where}.`);
     }
   }
@@ -5195,7 +5202,7 @@
       return;
     }
     const names = avail.map((v) => (VIEW_LABEL[v] || v).toLowerCase());
-    const shelfName = (shelves.find((x) => x.slug === shelfSlug) || {}).shelf || "This shelf";
+    const shelfName = shelfText((shelves.find((x) => x.slug === shelfSlug) || {}).shelf) || "This shelf";
     viewsNote.hidden = false;
     viewsNote.textContent = names.length
       ? `${shelfName} has been mined for ${names.length === 1 ? names[0] : names.join(" and ")} only.`
@@ -6099,7 +6106,7 @@
     shelves.forEach((s) => {
       const opt = document.createElement("option");
       opt.value = s.slug;
-      opt.textContent = s.shelf || s.slug;
+      opt.textContent = shelfText(s.shelf) || s.slug;
       shelfSel.appendChild(opt);
     });
     shelfSel.disabled = false;

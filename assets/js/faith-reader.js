@@ -3044,6 +3044,14 @@
     return room;
   }
 
+  // The label for THIS work's tradition: the church the denomination
+  // table places its author in where the shelf is only a nationality,
+  // otherwise the shelf name (MOFaithLabel in lib/faith-catalogue.js).
+  function workLabel(label, m) {
+    const L = window.MOFaithLabel;
+    return L ? L.of(label, { author: String(m.author || "").replace(/\.\s*$/, ""), corpus: corpusId, id: slug, tradition: label }) : label;
+  }
+
   function buildTags(m) {
     const host = document.querySelector("[data-fr-tags]");
     if (!host) return;
@@ -3070,7 +3078,10 @@
       const trad = MO && MO.traditionLabel ? MO.traditionLabel(rawTrad) : rawTrad;
       const parent = MO && MO.traditionParent ? MO.traditionParent(trad, corpusId) : "";
       if (parent) add("tradition", parent);
-      add("denomination", trad);
+      // The tag names this work's church, not the shelf's nationality:
+      // Keach on the English shelf reads "Baptist". Display only; the
+      // link still carries the catalogue's value.
+      add("denomination", workLabel(trad, m), trad);
     }
 
     // The century, derived the same way the rooms derive it, so the
@@ -3087,6 +3098,15 @@
     // meta.json ships and nothing on the site had ever shown.
     add("kind", m.doc_type || "");
     add("region", m.region || "");
+
+    // The denomination table arrives after the header is first painted.
+    // Paint once more when it lands, so the tag is the church and not
+    // the shelf name it fell back to.
+    const D = window.MODenom;
+    if (D && !D.loaded() && !m._denRepaint) {
+      m._denRepaint = true;
+      D.ready().then(() => { if (D.loaded()) buildTags(m); });
+    }
 
     host.innerHTML = tags.map((t) =>
       `<li><a class="faith-reader-tag faith-reader-tag--${escapeHtml(t.kind)}" ` +
@@ -3183,7 +3203,7 @@
     }
 
     if (traditionEl && m.tradition) {
-      traditionEl.textContent = m.tradition;
+      traditionEl.textContent = workLabel(m.tradition, m);
       traditionEl.href = "/the-faith-received/#traditions";
     }
     if (translatorEl) {

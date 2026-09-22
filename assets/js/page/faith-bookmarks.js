@@ -253,6 +253,26 @@
     return `<ul class="bookmarks-places">${items}</ul>`;
   }
 
+  // A list row does not carry a tradition label (Ian, 2026-09-22: labels
+  // in lists are decoration, and "English Divines" named a nationality).
+  // Several catalogues use the tradition as their eyebrow, so the parts
+  // of it that name one are dropped; a series eyebrow ("PL 32", a year,
+  // a document type) is kept.
+  const TOP_TRADITIONS = new Set(["english divines", "protestant", "roman catholic",
+    "eastern orthodox", "the whole church", "the fathers"]);
+  function plainEyebrow(hit) {
+    const MO = window.MOCorpora;
+    const trad = String(hit.tradition || "").trim().toLowerCase();
+    const isTrad = (part) => {
+      const t = part.toLowerCase();
+      if (!t) return true;
+      if (t === trad || TOP_TRADITIONS.has(t)) return true;
+      return !!(MO && MO.traditionParent && MO.traditionParent(part));
+    };
+    return String(hit.eyebrow || "").split(" · ")
+      .map((p) => p.trim()).filter((p) => !isTrad(p)).join(" · ");
+  }
+
   function rowMarkup(r) {
     const meta = [r.author, r.eyebrow].filter(Boolean).map(esc).join(" &middot; ");
     // Sanitize first, then add the locator: a page number and an
@@ -404,7 +424,7 @@
           work: want.work,
           title: hit.title || hit.id,
           author: hit.author || "",
-          eyebrow: hit.eyebrow || "",
+          eyebrow: plainEyebrow(hit),
           corpusLabel: labelOf(corpusId),
           // The catalogue's own url. Built by the same rule the worker
           // uses; never reconstructed here.

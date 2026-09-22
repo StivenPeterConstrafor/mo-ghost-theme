@@ -122,13 +122,17 @@
     "Continental Reformed": "rf", "English Divines": "ed", "Lutheran": "lu",
     "Humanism and Law": "hl"
   };
+  // Printed shelf names go through the one display rule ("English
+  // Divines" reads "English writers"). Keys, links and matching keep
+  // the data's own name.
+  const shelfName = (t) => (window.MOFaithLabel ? window.MOFaithLabel.shelf(t) : t);
   function studyShelf(name) {
     const sh = RESEARCH_SHELVES[name];
     if (!sh) return "";
     const base = "/the-faith-received/";
     const trad = name === "Reformed" ? "Continental Reformed" : name;
     return `<details class="fro-study"><summary>Study this shelf</summary>` +
-      `<nav aria-label="Study ${esc(name)}">` +
+      `<nav aria-label="Study ${esc(shelfName(name))}">` +
       `<a href="${base}ask/?trad=${encodeURIComponent(trad)}">Ask this shelf</a>` +
       `<a href="${base}bible/?sh=${sh}">Scripture</a>` +
       `<a href="${base}author/?sh=${sh}">Authors</a>` +
@@ -261,7 +265,7 @@
 
       return `<li class="fro-shelf"><a href="${esc(href)}">` +
         `<span class="fro-shelf-row">` +
-        `<span class="fro-shelf-name">${esc(s.name)}</span>` +
+        `<span class="fro-shelf-name">${esc(shelfName(s.name))}</span>` +
         `<span class="fro-shelf-n"><b>${num(core)}</b> ${core === 1 ? "work" : "works"}${extra ? `<small class="fro-shelf-extra">+ ${num(extra)} English editions</small>` : ""}</span>` +
         `</span>${under}</a>${within}${studyShelf(s.name)}</li>`;
     }).join("");

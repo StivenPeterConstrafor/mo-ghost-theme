@@ -225,7 +225,7 @@
           ? `${live.authors.toLocaleString()} authors · ${live.works.toLocaleString()} works · ${live.pages.toLocaleString()} pages`
           : "";
         const statLine = stat ? `<p class="bcoll-n">${stat}</p>` : "";
-        return `<article class="bcoll"><h3 class="bcoll-name"><a href="${escapeHtml(g.route)}">${escapeHtml(g.label)}</a></h3>${statLine}<p class="bcoll-what">${g.blurb} Part of ${escapeHtml(g.parent)}.</p><p class="bcoll-who">${g.who}</p></article>`;
+        return `<article class="bcoll"><h3 class="bcoll-name"><a href="${escapeHtml(g.route)}">${escapeHtml(g.label)}</a></h3>${statLine}<p class="bcoll-what">${g.blurb} Part of the ${escapeHtml(window.MOFaithLabel ? window.MOFaithLabel.shelf(g.parent) : g.parent)} shelf.</p><p class="bcoll-who">${g.who}</p></article>`;
       }).join("");
       grid.innerHTML = html;
     }).catch((err) => {
