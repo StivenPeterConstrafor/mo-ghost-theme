@@ -22,6 +22,17 @@
      The drawer is markup, not a fetch: every destination is known at
      build time, so the rail works before any script runs and the script
      only opens and closes things. --}}
+{{!-- GATED, 2026-09-22 (Ian): "if someone clicks on one anywhere in
+     TFR, they should get a small subscribe form pop-up that works
+     properly". Each research link carries data-feature-gate, which
+     assets/js/feature-gate.js intercepts in the capture phase for anyone
+     without an account: the modal opens instead of the page, and the
+     link still works the moment they have one. Reading links, Scripture,
+     Topics and the Dictionary carry nothing and stay open.
+
+     The tier these resolve to lives in ONE place, feature-gate.js's
+     TFR_BETA_OPEN_TO_ALL_MEMBERS, checked against both library workers
+     by website/workers/scripts/check-tfr-tier.mjs. --}}
 <nav class="tfr-rail" aria-label="The Faith Received" data-keep-href>
   <div class="container tfr-rail-inner">
 
@@ -30,7 +41,7 @@
     <a class="tfr-rail-brand" href="/the-faith-received/">The Faith Received <span class="tfr-rail-home">| Home</span></a>
 
     <ul class="tfr-rail-items">
-      <li><a class="tfr-rail-link" href="/the-faith-received/search/">Search</a></li>
+      <li><a class="tfr-rail-link" href="/the-faith-received/search/" data-feature-gate="tfr-search">Search</a></li>
 
       <li class="tfr-rail-group">
         <button type="button" class="tfr-rail-link tfr-rail-toggle" data-tfr-drawer="read" aria-expanded="false" aria-controls="tfrDrawerRead">Read</button>
@@ -58,21 +69,21 @@
                Bookmarks and Notebook have no standalone page, so they
                deep-link to the mode on the surface that carries them:
                both of those pages route on the hash. --}}
-          <a href="/the-faith-received/ask/">Ask</a>
-          <a href="/the-faith-received/search/#power">Power Search</a>
-          <a href="/the-faith-received/compare/">Compare</a>
+          <a href="/the-faith-received/ask/" data-feature-gate="ask">Ask</a>
+          <a href="/the-faith-received/search/#power" data-feature-gate="tfr-search">Power Search</a>
+          <a href="/the-faith-received/compare/" data-feature-gate="tfr-compare">Compare</a>
           {{!-- Called Connections, goes to Connections: Ian's instruction
                was to keep the name and change the destination. --}}
-          <a href="/the-faith-received/connections/">Connections</a>
+          <a href="/the-faith-received/connections/" data-feature-gate="tfr-connections">Connections</a>
           {{!-- Was /the-faith-received/pins/, which is the ported
                notebook and a different store from the Bookmarks panel on
                the Research desk. Ian, 2026-09-22: "Bookmark and Notebook
                in the navrail need to be the same thing as those on the
                research page." Both items now name the same two panels
                the Research desk shows; /pins/ forwards here as well. --}}
-          <a href="/the-faith-received/research/#bookmarks">Bookmarks</a>
-          <a href="/the-faith-received/research/#notebook">Notebook</a>
-          <a href="/the-faith-received/desk/">Desk</a>
+          <a href="/the-faith-received/research/#bookmarks" data-feature-gate="tfr-bookmarks">Bookmarks</a>
+          <a href="/the-faith-received/research/#notebook" data-feature-gate="tfr-notebook">Notebook</a>
+          <a href="/the-faith-received/desk/" data-feature-gate="tfr-desk">Desk</a>
         </div>
       </li>
     </ul>

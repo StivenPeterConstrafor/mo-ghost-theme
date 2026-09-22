@@ -35,6 +35,13 @@
  * article-gift.js) don't ALSO fire alongside the gate.
  */
 (function () {
+  /* Bound once. This file ships in site.min.js AND is loaded again by
+     its own <script> tag on the pages whose own scripts need it before
+     the bundle arrives, so without this the document ends up with two
+     capture handlers and one click opens two modals. */
+  if (window.__moFeatureGate) return;
+  window.__moFeatureGate = true;
+
   let STATUS = (document.body.getAttribute("data-member-status") || "anonymous").toLowerCase();
 
   // QA override: ?gate=force on any URL forces STATUS to anonymous
