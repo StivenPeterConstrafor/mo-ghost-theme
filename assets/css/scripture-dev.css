@@ -369,6 +369,11 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
      sticky bar stuck to nothing and scrolled away. clip hides overflow
      without creating the container (iOS 16+). */
   body:has(.sd) { overflow-x: clip; }
+  /* Ian, 2026-09-22: on a phone the bar does not need to follow the
+     reader; it sits at the top of the page and scrolls away. The panel
+     then only needs to clear the fixed site header, not the bar. */
+  .sd .bible-controls { position: static; }
+  .sd-panel { scroll-margin-top: calc(var(--sd-top) + 12px); }
   .sd-cbar { min-height: 44px; }
   /* The bar is sticky, so on a phone it must stay two rows: book,
      chapter and the arrows; then translation and Commentaries. Four
