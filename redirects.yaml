@@ -41,7 +41,265 @@
 # Ghost's default /author/{slug}/ URLs aren't used by this theme —
 # guest authors live as tags, not Ghost users. Send any stragglers to
 # the tag-style contributor page.
-- from: ^/author/(.*)/?$
+# ── Legacy HubSpot author slugs (SEO audit 2026-09-22, H2) ──────────
+# The generic /author/{slug}/ rule below assumes the old slug matches an
+# author- tag. For 76 slugs captured on the HubSpot site it does not, so
+# those URLs 301'd into a 404. Every backlink to a contributor page from
+# the old site landed there.
+#
+# These must stay ABOVE the generic rule: Ghost takes the first match.
+#
+# Mapped by matching the old slug (initial + surname, e.g. jmeador) to
+# the contributor's author- tag. `ianm` is the one inference: Ian Mosley
+# is the only Ian M. in the tag list.
+- from: ^/author/abertodatti/?$
+  to: /tag/author-andrew-bertodatti/
+  permanent: true
+- from: ^/author/ahales/?$
+  to: /tag/author-ashley-hales/
+  permanent: true
+- from: ^/author/arenn/?$
+  to: /tag/author-aaron-renn/
+  permanent: true
+- from: ^/author/auten/?$
+  to: /tag/author-brian-auten/
+  permanent: true
+- from: ^/author/beberly/?$
+  to: /tag/author-brewer-eberly/
+  permanent: true
+- from: ^/author/bkristian/?$
+  to: /tag/author-bonnie-kristian/
+  permanent: true
+- from: ^/author/blambert/?$
+  to: /tag/author-brianna-lambert/
+  permanent: true
+- from: ^/author/bmckernan/?$
+  to: /tag/author-bonnie-mckernan/
+  permanent: true
+- from: ^/author/cbenson/?$
+  to: /tag/author-christopher-benson/
+  permanent: true
+- from: ^/author/cchalk/?$
+  to: /tag/author-casey-chalk/
+  permanent: true
+- from: ^/author/charlie/?$
+  to: /tag/author-charlie-clark/
+  permanent: true
+- from: ^/author/chris-martin-1/?$
+  to: /tag/author-chris-martin/
+  permanent: true
+- from: ^/author/cnorvell/?$
+  to: /tag/author-christine-norvell/
+  permanent: true
+- from: ^/author/cslowey/?$
+  to: /tag/author-collin-slowey/
+  permanent: true
+- from: ^/author/emiller/?$
+  to: /tag/author-eric-miller/
+  permanent: true
+- from: ^/author/estice/?$
+  to: /tag/author-elizabeth-stice/
+  permanent: true
+- from: ^/author/garyh/?$
+  to: /tag/author-gary-hartenburg/
+  permanent: true
+- from: ^/author/gharp/?$
+  to: /tag/author-gillis-harp/
+  permanent: true
+- from: ^/author/ianm/?$
+  to: /tag/author-ian-mosley/
+  permanent: true
+- from: ^/author/iolson/?$
+  to: /tag/author-ian-olson/
+  permanent: true
+- from: ^/author/isabel/?$
+  to: /tag/author-isabel-chenot/
+  permanent: true
+- from: ^/author/jackson-shepard/?$
+  to: /tag/author-jackson-shepard/
+  permanent: true
+- from: ^/author/jake/?$
+  to: /tag/author-jake-meador/
+  permanent: true
+- from: ^/author/jaskonas/?$
+  to: /tag/author-jon-askonas/
+  permanent: true
+- from: ^/author/jeger/?$
+  to: /tag/author-john-eger/
+  permanent: true
+- from: ^/author/jlaughon/?$
+  to: /tag/author-joseph-laughon/
+  permanent: true
+- from: ^/author/jmann/?$
+  to: /tag/author-jeremy-mann/
+  permanent: true
+- from: ^/author/jmeador/?$
+  to: /tag/author-jake-meador/
+  permanent: true
+- from: ^/author/jmeeks/?$
+  to: /tag/author-j-brandon-meeks/
+  permanent: true
+- from: ^/author/jminich/?$
+  to: /tag/author-joseph-minich/
+  permanent: true
+- from: ^/author/joshpauling/?$
+  to: /tag/author-josh-pauling/
+  permanent: true
+- from: ^/author/jrhea/?$
+  to: /tag/author-joseph-rhea/
+  permanent: true
+- from: ^/author/jtomes/?$
+  to: /tag/author-jonathan-tomes/
+  permanent: true
+- from: ^/author/khargaden/?$
+  to: /tag/author-kevin-hargaden/
+  permanent: true
+- from: ^/author/kshelton/?$
+  to: /tag/author-katelyn-walls-shelton/
+  permanent: true
+- from: ^/author/kylekeating/?$
+  to: /tag/author-kyle-keating/
+  permanent: true
+- from: ^/author/kylewilliams/?$
+  to: /tag/author-kyle-williams/
+  permanent: true
+- from: ^/author/lara-dentremont/?$
+  to: /tag/author-lara-d-entremont/
+  permanent: true
+- from: ^/author/luke-simon-1/?$
+  to: /tag/author-luke-simon/
+  permanent: true
+- from: ^/author/matthew-joss/?$
+  to: /tag/author-matthew-joss/
+  permanent: true
+- from: ^/author/matthewleeanderson/?$
+  to: /tag/author-matthew-lee-anderson/
+  permanent: true
+- from: ^/author/meast/?$
+  to: /tag/author-mitch-east/
+  permanent: true
+- from: ^/author/miles/?$
+  to: /tag/author-miles-smith/
+  permanent: true
+- from: ^/author/mkremer/?$
+  to: /tag/author-mark-kremer/
+  permanent: true
+- from: ^/author/mlapine/?$
+  to: /tag/author-matthew-lapine/
+  permanent: true
+- from: ^/author/mndaita/?$
+  to: /tag/author-musembi-wa-ndaita/
+  permanent: true
+- from: ^/author/myles/?$
+  to: /tag/author-myles-werntz/
+  permanent: true
+- from: ^/author/ncartagena/?$
+  to: /tag/author-nathan-luis-cartagena/
+  permanent: true
+- from: ^/author/oliver-odonovan/?$
+  to: /tag/author-oliver-o-donovan/
+  permanent: true
+- from: ^/author/rhyslaverty/?$
+  to: /tag/author-rhys-laverty/
+  permanent: true
+- from: ^/author/ruben/?$
+  to: /tag/author-ruben-alvarado/
+  permanent: true
+- from: ^/author/samueljames/?$
+  to: /tag/author-samuel-james/
+  permanent: true
+- from: ^/author/susannah-black/?$
+  to: /tag/author-susannah-black-roberts/
+  permanent: true
+- from: ^/author/tessa/?$
+  to: /tag/author-tessa-carman/
+  permanent: true
+- from: ^/author/tsuffield/?$
+  to: /tag/author-t-m-suffield/
+  permanent: true
+- from: ^/author/tthieke/?$
+  to: /tag/author-tara-thieke/
+  permanent: true
+- from: ^/author/vpechersky/?$
+  to: /tag/author-vika-pechersky/
+  permanent: true
+- from: ^/author/wgraham/?$
+  to: /tag/author-wyatt-graham/
+  permanent: true
+- from: ^/author/zackholbrook/?$
+  to: /tag/author-zack-holbrook/
+  permanent: true
+- from: ^/author/zhollifield/?$
+  to: /tag/author-zach-hollifield/
+  permanent: true
+
+# No author- tag exists for these, so there is nothing to point them at.
+# They go to the full contributor index rather than a 404, and each one
+# wants a human decision: some are ambiguous first names (alastair,
+# derek, todd, harold, beauchamp, cdavis), the rest are contributors who
+# never got a tag on the new site (michael-sacasas, susannah-black's solo
+# work, austin-gravely, calebiwait, david-ingold, matthew-miller).
+- from: ^/author/alastair/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/atwclw/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/austin-gravely/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/bboyce/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/beauchamp/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/bebelvedere/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/calebiwait/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/cdavis/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/david-ingold/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/derek/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/dgmoore/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/drakeboyce/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/harold/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/matthew-miller/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/michael-sacasas/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/misscate/?$
+  to: /contributors/all/
+  permanent: false
+- from: ^/author/todd/?$
+  to: /contributors/all/
+  permanent: false
+
+# The house account is not a contributor; its tag does not exist.
+- from: ^/author/mere-orthodoxy/?$
+  to: /about/
+  permanent: true
+
+# Pagination-safe: /author/x/page/2 used to be rewritten to
+# /tag/author-x//page/2, which 404s. Anything after the slug is dropped
+# and the reader lands on page 1.
+- from: ^/author/([^/]+)(/.*)?$
   to: /tag/author-$1/
   permanent: true
 
