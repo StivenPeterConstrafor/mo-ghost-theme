@@ -1,0 +1,83 @@
+{{!< default}}
+{{#contentFor "moHead"}}
+<title>Manifesto | The Faith Received</title>
+<meta name="description" content="The Faith Received unites the texts of Christian theology across times, places, and traditions to be read, studied, and shared. What it is, why it exists, and how the texts were made." />
+<meta property="og:title" content="Manifesto | The Faith Received" />
+<meta property="og:description" content="The Faith Received unites the texts of Christian theology across times, places, and traditions to be read, studied, and shared. What it is, why it exists, and how the texts were made." />
+<meta name="twitter:title" content="Manifesto | The Faith Received" />
+<meta name="twitter:description" content="The Faith Received unites the texts of Christian theology across times, places, and traditions to be read, studied, and shared. What it is, why it exists, and how the texts were made." />
+{{/contentFor}}
+{{!-- /the-faith-received/manifesto/ — what The Faith Received is, why it
+     exists, and how its texts were made. Ian's text, 2026-09-22, with
+     spelling and punctuation corrected and the wording left as written.
+     The corrections are listed in the commit that added this page.
+
+     Same shell as the Transparency page (custom-faith-transparency.hbs):
+     the tool hero, the rail, and the .faith-tp prose measure, so the two
+     standing statements about the project read as a pair. --}}
+
+<main class="faith-received faith-feature">
+
+  <section class="bhero bhero--tool">
+    <div class="bhero-inner container">
+      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Manifesto</p>
+      <h1>The Faith Received</h1>
+    </div>
+  </section>
+  {{> "faith-received/_tfr-rail"}}
+  <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+
+  <section class="bband faith-feature-body">
+    <article class="container container-narrow faith-tp faith-mf">
+
+      <h2>What?</h2>
+
+      <p class="faith-tp-lede">The Faith Received is a new platform uniting the texts of Christian theology across times, places, and traditions to be read, studied, and shared.</p>
+
+      <p>We want to make the full extent of two millennia of Christian thought available to all Christians.</p>
+
+      <p>The Faith Received is for the pastor, the layman, the student, and the scholar. We want to help a new generation of Christians encounter their theological inheritance.</p>
+
+      <p>The library draws on the definitive collections of the Latin and Greek Fathers published by Jacques-Paul Migne, alongside the Eastern Christian writings gathered by René Graffin and François Nau. Alongside the Church Fathers is a curated collection of medieval, Reformed, Roman Catholic, and Lutheran theology. From Scotus to Suárez, Calvin to Calov, Chemnitz to Le Blanc, these authors are chosen for their importance in shaping the theological conversation we inherit today.</p>
+
+      <p>Bringing these traditions into a common place of study allows readers to understand their relationships more fully. We want Christians to know their own traditions more deeply and to encounter other traditions through their writings.</p>
+
+      <h2>Why?</h2>
+
+      <p>Some of these works are familiar to us. Augustine&rsquo;s <em>Confessions</em>, Calvin&rsquo;s <em>Institutes</em>, Aquinas&rsquo;s <em>Summa theologiae</em>, and Luther&rsquo;s <em>On the Bondage of the Will</em> come to mind. However, there are many works, such as disputation sets, theological courses, and moral examinations, that remain unfamiliar even to many seminary graduates and scholars.</p>
+
+      <p>Abraham Calov was a major voice of Lutheran orthodoxy. Gisbertus Voetius helped shape generations of Dutch Reformed theology. The Salmanticenses produced one of the great bodies of Catholic scholastic theology. <a href="https://heritagebooks.org/products/anthony-tuckney-1599-1670-cho" rel="noopener">Anthony Tuckney helped shape the Westminster Larger Catechism</a>, yet his <em>Praelectiones theologicae</em> has remained inaccessible to generations of readers. Christians are influenced by these authors throughout their education without ever having the opportunity to read them at length.</p>
+
+      <p>These gaps have many causes. Latin has become less widely taught. Translation requires specialized labor and funding. Publishers must curate whom they can bring to market. As a result, theological education suffers by compressing the tradition through a small selection of its authors and works.</p>
+
+      <p>Unfortunately, the authors we cannot read become increasingly remote, and a tradition can become unfamiliar even to its own heirs.</p>
+
+      <p>Translation can change that. The <a href="https://www.thegospelcoalition.org/article/why-you-should-read-bavinck/" rel="noopener">renewed English reception of Herman Bavinck</a> stemmed in large part from the new English translation of his <em>Reformed Dogmatics</em>.</p>
+
+      <p>We hope to make that same kind of encounter possible across a much wider body of Christian theology. Works that have long remained beyond the reach of most readers are now available for study, teaching, and reflection.</p>
+
+      <p>Our hope is a renewed culture of theological learning that enriches all traditions and invites them to drink from the deep wells of tradition.</p>
+
+      <h2>How?</h2>
+
+      <p>The texts were either sourced from publicly available Latin and Greek repositories or transcribed from facsimiles page by page. The texts were then translated by an array of machine learning models fine-tuned for translation, and then underwent a series of cleanups to align the source language, the English, and the facsimile.</p>
+
+      <p>The majority of these texts engage in technical language, which allows for easier conceptual clarity in translation.</p>
+
+      <p>The decision to combine the English translation with the source language demonstrates the advantage of a digitally native text that can continually improve in quality.</p>
+
+      <p>Moreover, all texts were mined for theological positions, Scripture references, author connections, and more, which forms the bedrock of TFR&rsquo;s Ask feature. While we do not view chatbots as a sufficient substitute for theological discipleship, we do see value in creating a natural language interface for asking complex theological questions to enable creative and ambitious paths to wander.</p>
+
+      <p class="faith-mf-act">
+        <a class="fr-btn" href="/the-faith-received/browse/">Begin reading</a>
+        <a class="faith-mf-link" href="/the-faith-received/transparency/">Our commitment to transparency</a>
+      </p>
+
+    </article>
+  </section>
+
+{{> "faith-received/_beta-band"}}
+</main>
+{{> "faith-received/_library-cta"}}
+
+<script src="{{asset "js/faith-report-issue.js"}}"></script>

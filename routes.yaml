@@ -384,6 +384,10 @@ routes:
   # Feature pages
   /the-faith-received/transparency/:
     template: custom-faith-transparency
+  # What the project is, why it exists, and how the texts were made.
+  # Ian's text, 2026-09-22. Linked from the TFR homepage hero.
+  /the-faith-received/manifesto/:
+    template: custom-faith-manifesto
   /the-faith-received/search/:
     template: custom-faith-port-search
   # A question answered from the library with citations - POSTs to

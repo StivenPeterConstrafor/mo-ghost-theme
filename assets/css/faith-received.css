@@ -19051,3 +19051,44 @@ html.g-mobile #reading .fr-sec-toggle {
   .tfr-give .container-narrow { padding-top: 36px; }
   .lp-for-act { margin-top: 36px; }
 }
+
+
+/* ── The manifesto (/the-faith-received/manifesto/) ───────────────
+   Sits on the Transparency page's .faith-tp prose measure so the two
+   standing statements about the project read as a pair. Only the
+   section heads and the links are its own.
+
+   Body face for the heads, not IM Fell: this is argument to be read
+   through, and the display face is kept for title pages and the names
+   of works. */
+.faith-mf h2 {
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-dark);
+  margin: 40px 0 14px;
+}
+.faith-mf h2:first-child { margin-top: 0; }
+.faith-mf p a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--color-secondary, #c1593c);
+  text-underline-offset: 3px;
+}
+.faith-mf p a:hover { color: var(--color-secondary, #c1593c); }
+.faith-mf-act {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 22px;
+  margin-top: 36px !important;
+}
+.faith-mf-link {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-muted, #6b6660);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.faith-mf-link:hover { color: var(--color-secondary, #c1593c); }
