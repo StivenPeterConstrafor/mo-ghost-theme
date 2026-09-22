@@ -50,15 +50,16 @@
      rather than the top. Same vocabulary as writePlace() there. */
   function url(id, place) {
     const q = [];
-    if (place && place.paragraph > 0) q.push("paragraph=" + encodeURIComponent(place.paragraph));
-    if (place && /^(both|en|fr)$/.test(place.lang || "")) q.push("lang=" + encodeURIComponent(place.lang));
-    return PAGE + (q.length ? "?" + q.join("&") : "") + "#" + encodeURIComponent(id);
+    if (place && place.paragraph > 0) q.push(`paragraph=${encodeURIComponent(place.paragraph)}`);
+    if (place && /^(both|en|fr)$/.test(place.lang || "")) q.push(`lang=${encodeURIComponent(place.lang)}`);
+    const query = q.length ? `?${q.join("&")}` : "";
+    return `${PAGE}${query}#${encodeURIComponent(id)}`;
   }
 
   let index = null;
   function load() {
     if (index) return index;
-    index = fetch(base() + "/v1/dictionary/index.json")
+    index = fetch(`${base()}/v1/dictionary/index.json`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         const rows = (d && d.articles) || [];

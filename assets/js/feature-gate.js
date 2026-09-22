@@ -64,6 +64,30 @@
    */
   const TFR_BETA_OPEN_TO_ALL_MEMBERS = true;
 
+  /* One tool, two tiers, one shape. Every research tool is gated the
+     same way and flips at the same moment, so they are built from one
+     factory rather than written out twice each: what changes between
+     them is the sentence that names the tool, never the tier.
+
+     `body` is what a reader sees when they click a tool they cannot use
+     yet. It says what the tool does before it asks for anything, since
+     a modal that only asks is a toll booth. */
+  function betaFeature(title, does) {
+    return TFR_BETA_OPEN_TO_ALL_MEMBERS
+      ? {
+        requires: "subscriber",
+        eyebrow: "Free during the beta",
+        title,
+        body: `${does} It is free while the beta runs, and the rest of the research tools come with it. Give us an email address and we will send a sign-in link.`,
+      }
+      : {
+        requires: "member",
+        eyebrow: "Members Only",
+        title,
+        body: `${does} Members get the research tools, the print journal, Discord, and a growing library of benefits. Support the work to unlock it all.`,
+      };
+  }
+
   const BETA_ASK_FEATURE = TFR_BETA_OPEN_TO_ALL_MEMBERS
     ? {
       requires: "subscriber",
@@ -122,6 +146,46 @@
      * a button that 403s with no explanation.
      */
     ask: BETA_ASK_FEATURE,
+
+    /* The rest of the research tools, gated 2026-09-22 on Ian's call:
+       "all research tools should be subscriber only", and "if someone
+       clicks on one anywhere in TFR, they should get a small subscribe
+       form pop-up that works properly".
+
+       WHAT IS NOT HERE, and deliberately. Reading is not a tool: the
+       texts, Browse, the rooms, the Dictionary's articles, Topics,
+       Scripture, the Glossary and the author pages stay open to anyone.
+       The gate is on what you do WITH the library, not on the library.
+
+       Each of these needs a server counterpart or it is theatre. The
+       search and Ask routes are gated in mo-tfr-library and
+       mo-tfr-ask-dev; bookmarks are gated in mo-kit; the notebook and
+       Desk are this browser's localStorage and have no server to gate.
+       See website/workers/scripts/check-tfr-tier.mjs. */
+    "tfr-search": betaFeature(
+      "Search needs an account",
+      "Search every work in the library by title, by passage, by Scripture reference, or by meaning."
+    ),
+    "tfr-compare": betaFeature(
+      "Compare needs an account",
+      "Put two authors side by side on the same question and read them against each other."
+    ),
+    "tfr-connections": betaFeature(
+      "Connections needs an account",
+      "Follow the citation map: who reads whom across the whole library, and the texts behind each link."
+    ),
+    "tfr-bookmarks": betaFeature(
+      "Saving a work needs an account",
+      "Keep the works you are reading, and the place you stopped in each one."
+    ),
+    "tfr-notebook": betaFeature(
+      "The notebook needs an account",
+      "Clip a passage as you read, keep it with its citation, and come back to the exact paragraph."
+    ),
+    "tfr-desk": betaFeature(
+      "Desk needs an account",
+      "Write with your saved sources beside you, each one still linked to the text it came from."
+    ),
   };
 
   function hasAccess(feature) {
@@ -252,8 +316,24 @@
     );
   }
 
+  /* Escape closes it, and Tab stays inside it. The dialog is
+     aria-modal, which tells a screen reader the rest of the page is
+     inert, but it does not make the browser agree: without this, Tab
+     walks straight out of the modal and into the page behind, where a
+     keyboard reader is then tabbing through a tool they were just told
+     they cannot use yet. Lifted from faith-report-issue.js, which is
+     the only dialog in the theme that had it. */
   function escHandler(e) {
-    if (e.key === "Escape") dismissModal();
+    if (e.key === "Escape") { dismissModal(); return; }
+    if (e.key !== "Tab" || !modalEl) return;
+    const f = modalEl.querySelectorAll(
+      'a[href], button:not([disabled]), input, select, textarea'
+    );
+    if (!f.length) return;
+    const first = f[0];
+    const last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   }
 
   function dismissModal(immediate) {
