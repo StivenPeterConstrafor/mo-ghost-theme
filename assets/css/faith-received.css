@@ -19605,3 +19605,32 @@ html.g-mobile #reading .fr-sec-toggle {
   .fro-fold .fro-shelf-list { grid-template-columns: minmax(0, 1fr); padding: 14px 14px 0; }
   .fro-fold .fro-foot { padding: 12px 16px 14px; }
 }
+
+/* ── The landing's shelves: four to a line, smaller (Ian, 2026-09-23:
+   "Shrink these down and make this section 4 to a line") ──
+   Wide screens only; the tablet (two across) and phone (one list)
+   layouts above stand. The plate captions ("Patrologia Orientalis,
+   volume 1, 1907") are dropped here: three cards had one and seven did
+   not, so the titles never lined up across a row. The same words are
+   each plate's alt text. */
+@media (min-width: 901px) {
+  .faith-landing .lp-shelf { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px 22px; }
+  .faith-landing .lp-shelf-plate { height: 140px; margin-bottom: 12px; }
+  .faith-landing .lp-shelf-caption { display: none; }
+  .faith-landing .lp-shelf h4 { font-size: 18px; line-height: 1.25; margin: 0 0 3px; }
+  .faith-landing .lp-shelf p { font-size: 12.5px; }
+  .faith-landing .lp-shelf .lp-shelf-desc { font-size: 13px; line-height: 1.5; margin-top: 6px; }
+  .faith-landing .lp-shelf .lp-shelf-who {
+    font-size: 12px;
+    line-height: 1.5;
+    margin-top: 6px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+}
+@media (min-width: 1101px) {
+  .faith-landing .lp-shelf { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .faith-landing .lp-shelf-plate { height: 120px; }
+}
