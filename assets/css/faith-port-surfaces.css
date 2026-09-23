@@ -1053,3 +1053,6 @@ body.dtc-page .site-footer { display: none; }
   .faith-port-dtc-page.dtc-wide-list .main > .list > .hw { border-bottom: 1px solid var(--ar-line); }
   .faith-port-dtc-page.dtc-wide-list .main > .list > .more { width: auto; max-width: 320px; justify-self: center; }
 }
+/* An author's works are always alphabetical now (faith-author-order.js),
+   so the port's "Order works" choice has nothing left to choose. */
+main.research-room:has(.rx-profile) .rx-filters label:has(> #room-work-order) { display: none; }

@@ -110,7 +110,10 @@
   function section(entry, author) {
     const wrap = el("section", "ar-more");
     wrap.id = "ar-more";
-    const x = entry.x || [];
+    // Alphabetical, a leading "The" or "A" ignored, as the room's own list.
+    const T = window.MOTitleOrder;
+    const byTitle = (p, q) => (T && T.compareTitlesAlpha ? T.compareTitlesAlpha(p[2], q[2]) : p[2].localeCompare(q[2]));
+    const x = (entry.x || []).slice().sort(byTitle);
     if (x.length) {
       wrap.appendChild(el("h3", "ar-more-title", `More in the library · ${num(x.length)}`));
       wrap.appendChild(el("p", "rx-note", "Held in the library and ready to read. These have no research record yet, so their citations and positions are not in this room."));
@@ -118,7 +121,7 @@
       x.forEach((row) => list.appendChild(card(row)));
       wrap.appendChild(list);
     }
-    const e = entry.e || [];
+    const e = (entry.e || []).slice().sort(byTitle);
     if (e.length) {
       const det = el("details", "ar-more-other");
       det.appendChild(el("summary", null, `Indexes, editors’ notices and other hands in these volumes · ${num(e.length)}`));

@@ -89,5 +89,60 @@
     return x.localeCompare(y, undefined, { numeric: true });
   }
 
-  window.MOTitleOrder = { compareTitles, normalise, romanToInt };
+  /*
+   * WHERE A NAME FILES. Ian, 2026-09-23: every list of authors and works
+   * in alphabetical order. The library's convention, which a reader
+   * already knows from any patristic index:
+   *   - a writer before 1500 files under the name they are known by:
+   *     Augustine of Hippo at A, Basil the Great at B, Justin Martyr at
+   *     J, John Chrysostom at J. Taking the last word filed them at
+   *     Hippo, Great, Martyr;
+   *   - a writer from 1500 files by surname: John Calvin at C, and a
+   *     particle opens the surname ("Louis Le Blanc de Beaulieu" at Le
+   *     Blanc);
+   *   - a name the catalogue already inverts ("Keach, Benjamin,
+   *     1640-1704") files at what comes before the comma.
+   * "Saint" and brackets (the cataloguer's conjecture) do not count.
+   * `early` is the caller's: the century the writer belongs to.
+   * The key is a sort key, not a display string.
+   */
+  const PARTICLE = /^(?:le|la|les|du|de|del|della|delle|di|da|dos|van|von|der|den|ten|ter)$/i;
+  const STRUCK = { "ł": "l", "ø": "o", "đ": "d", "ð": "d", "þ": "t", "æ": "a", "œ": "o", "ß": "s" };
+  function foldName(s) {
+    return String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+      .replace(/[łøđðþæœß]/g, (c) => STRUCK[c] || c)
+      .replace(/[^a-z0-9]+/g, " ").trim();
+  }
+  function fileAs(name, early) {
+    const raw = String(name || "").trim().replace(/^\[+/, "").replace(/\]+$/, "").trim()
+      .replace(/^(?:saint|st\.?)\s+/i, "");
+    if (!raw) return "\uffff";
+    if (raw.indexOf(",") > 0 || early) return foldName(raw) || "\uffff";
+    const n = raw.replace(/\s*\([^()]*\)\s*$/, "").trim() || raw;
+    const parts = n.split(/\s+/);
+    if (parts.length < 2) return foldName(n);
+    let at = parts.length - 1;
+    for (let i = 1; i < parts.length - 1; i++) {
+      if (PARTICLE.test(parts[i]) && /^[A-ZÀ-Þ]/.test(parts[i]) && /^[A-ZÀ-Þ]/.test(parts[i + 1])) { at = i; break; }
+    }
+    return foldName(`${parts.slice(at).join(" ")} ${parts.slice(0, at).join(" ")}`);
+  }
+  function compareNames(a, earlyA, b, earlyB) {
+    const x = fileAs(a, earlyA), y = fileAs(b, earlyB);
+    return COLLATOR ? COLLATOR.compare(x, y) : x.localeCompare(y);
+  }
+  // The letter a name files under, for an A-Z rail: "#" if it opens on
+  // anything but a letter.
+  function initialOf(name, early) {
+    const c = fileAs(name, early).charAt(0).toUpperCase();
+    return /[A-Z]/.test(c) ? c : "#";
+  }
+  // A title's sort key ignores a leading article: "The First Apology"
+  // at F. Volume numbering is still compareTitles' job.
+  function compareTitlesAlpha(a, b) {
+    const strip = (t) => String(t || "").replace(/^[^A-Za-z\u00C0-\u024F0-9]+/, "").replace(/^(?:the|a|an)\s+/i, "");
+    return compareTitles(strip(a), strip(b));
+  }
+
+  window.MOTitleOrder = { compareTitles, compareTitlesAlpha, normalise, romanToInt, fileAs, compareNames, initialOf };
 })();

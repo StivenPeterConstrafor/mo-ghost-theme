@@ -347,12 +347,25 @@
 
   Promise.all([source, notes, window.MOCollectedContents?.ready]).then(([list, noteMap]) => {
     authorNotes = noteMap;
-    // Sort by the name the reader is scanning for, then by title so a
-    // multi-volume set reads in order rather than in catalogue order.
+    // Alphabetical, by where each author files, then by title (Ian,
+    // 2026-09-23: every list of authors and works in alphabetical
+    // order). The whole library used to go by century first, which also
+    // split one author's works: Justin's Hortatory Address sat after his
+    // Second Apology because it is dated a century later. A writer's
+    // century decides only HOW the name files (MOTitleOrder.fileAs):
+    // before 1500 by the name they are known by, after by surname.
+    authorCentury = new Map();
+    list.forEach((w) => {
+      const name = (w.author || "").trim();
+      const c = cent(w);
+      if (!name || !c) return;
+      const had = authorCentury.get(name);
+      if (!had || c < had) authorCentury.set(name, c);
+    });
+    const T = window.MOTitleOrder;
     works = list.slice().sort((a, b) => {
-      if (isAll) {
-        const ac = cent(a) || 9999, bc = cent(b) || 9999;
-        if (ac !== bc) return ac - bc;
+      if (T && T.compareNames) {
+        return T.compareNames(a.author, isEarly(a.author), b.author, isEarly(b.author)) || compareWorks(a, b);
       }
       const an = surname(a.author), bn = surname(b.author);
       return an.localeCompare(bn) || compareWorks(a, b);
@@ -521,6 +534,8 @@
   // inside the glyph and do not decompose, so they are mapped by hand.
   const STRUCK = { Ł: "L", Ø: "O", Đ: "D", Ð: "D", Þ: "T", Æ: "A", Œ: "O", ẞ: "S" };
   function initial(name) {
+    const T = window.MOTitleOrder;
+    if (T && T.initialOf) return T.initialOf(name, isEarly(name));
     const c = surname(name)
       .normalize("NFD")
       .replace(/\p{M}/gu, "")
@@ -828,7 +843,19 @@
   }
 
   function compareWorks(a, b) {
-    return cmpTitle(a.title, b.title) || cmpTitle(a.volume || "", b.volume || "");
+    // A leading "The", "A" or "An" does not file a title: "The First
+    // Apology" at F. Self-contained on purpose: check-title-order.mjs
+    // lifts this function out and runs it with only cmpTitle.
+    const bare = (t) => String(t || "").replace(/^[^A-Za-z\u00C0-\u024F0-9]+/, "").replace(/^(?:the|a|an)\s+/i, "");
+    return cmpTitle(bare(a.title), bare(b.title)) || cmpTitle(a.volume || "", b.volume || "");
+  }
+
+  // The earliest century an author's works are dated to, by name; set
+  // once the catalogue is in. Before 1500 a name files as it is known.
+  let authorCentury = new Map();
+  function isEarly(name) {
+    const c = authorCentury.get((name || "").trim());
+    return Boolean(c) && c <= 15;
   }
 
   function row(w, mark) {
