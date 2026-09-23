@@ -84,8 +84,35 @@
     if (links.childNodes.length) stats.appendChild(links);
   }
 
+  /* A WORK's page (/author/#w/<id>) is the same engine in another
+     view, and its head is a run of loose siblings: title, author line,
+     cover, numbers. They are gathered into one panel (moved, not copied:
+     #wcover is filled after load and is found by its id wherever it
+     sits), and the numbers are boxed as on the author's page. Added
+     2026-09-23: "do the same for... whatever page type this is too". */
+  function gatherWorkHead(main) {
+    if (!main || main.querySelector(":scope > .ar-work-head")) return;
+    const headline = main.querySelector(":scope > .headline");
+    const stats = main.querySelector(":scope > .stats");
+    if (!headline || !stats) return;
+    const panel = document.createElement("div");
+    panel.className = "ar-work-head";
+    headline.before(panel);
+    ["headline", "deck"].forEach((cls) => {
+      const el = main.querySelector(`:scope > .${cls}`);
+      if (el) panel.appendChild(el);
+    });
+    const cover = main.querySelector(":scope > #wcover");
+    if (cover) panel.appendChild(cover);
+    panel.appendChild(stats);
+  }
+
   function scan() {
     document.querySelectorAll("main.research-room .rx-profile .stats").forEach(regroup);
+    document.querySelectorAll("main.research-work").forEach((main) => {
+      gatherWorkHead(main);
+      main.querySelectorAll(":scope > .ar-work-head .stats").forEach(regroup);
+    });
   }
 
   const page = document.getElementById("page") || document.body;

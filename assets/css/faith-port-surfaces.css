@@ -588,3 +588,83 @@ main.research-room:has(.rx-profile) .rx-work-row .rx-work-actions {
   main.research-room:has(.rx-profile) .rx-filters { padding: 14px 16px; }
   main.research-room:has(.rx-profile) .rx-work-list > .rx-work-row { padding: 16px 16px 12px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   A WORK'S PAGE (/author/#w/<id>): THE SAME TREATMENT (Ian, 2026-09-23)
+   ══════════════════════════════════════════════════════════════════════
+   Title, author line and numbers in one thin-line panel (gathered by
+   faith-author-stats.js), the numbers as boxes, the signature quote as a
+   card, and each topic, and the authorities, as a box whose claims are
+   rows inside it. */
+main.research-work {
+  --ar-line: var(--border, #d9c6a7);
+  --ar-line-strong: #b9a37e;
+  --ar-panel: #fbf8f3;
+  --ar-card: #fff;
+}
+main.research-work .ar-work-head {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-panel);
+  padding: 22px 26px 10px;
+  margin: 0 0 18px;
+}
+main.research-work .ar-work-head .headline { margin-top: 0; }
+main.research-work .ar-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 220px));
+  gap: 10px;
+  margin: 12px 0 10px;
+}
+main.research-work .ar-stat {
+  display: flex; flex-direction: column; gap: 2px;
+  border: 1px solid var(--ar-line); border-radius: 3px; background: var(--ar-card);
+  padding: 12px 16px 10px;
+}
+main.research-work .ar-stat b { font-size: 26px; line-height: 1.1; font-weight: 500; color: var(--ink, #2d2927); font-variant-numeric: tabular-nums; }
+main.research-work .ar-stat > span { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted, #6b6660); }
+main.research-work .ar-links { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; }
+
+/* The signature quote: a card, the whole width. */
+main.research-work > .sig {
+  max-width: none;
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-card);
+  padding: 16px 22px;
+  margin: 0 0 8px;
+}
+
+/* Each topic, and the authorities, as a box. The summary is the box's
+   header; the claims are rows below it. */
+main.research-work details.wdet {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-card);
+  margin: 0 0 14px;
+  overflow: hidden;
+}
+main.research-work details.wdet > summary {
+  background: var(--ar-panel);
+  padding: 12px 20px;
+  min-height: 44px;
+}
+main.research-work details.wdet[open] > summary { border-bottom: 1px solid var(--ar-line); }
+main.research-work details.wdet > .ev,
+main.research-work details.wdet > div {
+  /* The port writes padding inline on each claim; the box needs its own. */
+  padding: 14px 20px !important;
+  margin: 0;
+  border-bottom: 1px solid var(--ar-line);
+}
+main.research-work details.wdet > .ev:last-child,
+main.research-work details.wdet > div:last-child { border-bottom: 0; }
+
+@media (max-width: 640px) {
+  main.research-work .ar-work-head { padding: 16px 16px 8px; }
+  main.research-work .ar-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  main.research-work > .sig { padding: 14px 16px; }
+  main.research-work details.wdet > summary { padding: 12px 16px; }
+  main.research-work details.wdet > .ev,
+  main.research-work details.wdet > div { padding: 12px 16px !important; }
+}

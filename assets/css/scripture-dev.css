@@ -551,3 +551,120 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
 .sd-ov-snip { grid-area: snip; font-size: 13px; line-height: 1.45; color: var(--color-muted); font-style: italic; }
 .sd-ov-snip:empty { display: none; }
 .sd-ov-hint { font-size: 13px; margin: 0; }
+
+/* The reader's sidebar stays where it is (Ian, 2026-09-23: "the side
+   panel doesn't need to be sticky. It can stay where it is."). It scrolls
+   with the page, and so is no longer a box that scrolls on its own
+   either: the sidebar exception to "no in-page scroll boxes" is not
+   needed once it is not held in place. Topics keeps its own sticky
+   author panel; this is the Scripture reader only. */
+@media (min-width: 900px) {
+  .sd-reader .sd-side {
+    position: static;
+    top: auto;
+    max-height: none;
+    overflow: visible;
+    overscroll-behavior: auto;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   THE VERSE DESK: THIN-LINE BOXES, THE WHOLE WIDTH (Ian, 2026-09-23)
+   ══════════════════════════════════════════════════════════════════
+   The Desk was one 880px column on a wide page. It now uses up to
+   1,320px: the verse in a panel, the five translations as cards side by
+   side, the count and the two charts in boxes, the filters in a box, the
+   citations as cards two across, and Ask in a box. Every rule is under
+   .sd-desk: the reader's sidebar uses the same .sd-source lists and
+   keeps them compact. */
+@media (min-width: 1100px) {
+  .sd .sd-desk { max-width: 1320px; }
+}
+.sd-desk .sd-desk-head {
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: #fbf8f3;
+  padding: 26px 30px 20px;
+}
+.sd-desk .sd-desk-verse { max-width: 860px; }
+.sd-desk .sd-desk-sec { margin-top: 36px; }
+
+/* The translations: a card each, side by side. */
+.sd-desk .sd-parallel { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
+.sd-desk .sd-parallel-row,
+.sd-desk .sd-parallel-row:last-child {
+  display: block;
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: #fff;
+  padding: 14px 18px 16px;
+}
+.sd-desk .sd-parallel dt { padding: 0 0 6px; }
+
+/* The count, boxed. */
+.sd-desk .sd-count {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: #fff;
+  padding: 12px 18px;
+}
+.sd-desk .sd-count strong { font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* The charts, each in a box. */
+.sd-desk .sd-charts { gap: 14px; margin-top: 14px; }
+.sd-desk .sd-chart {
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: #fff;
+  padding: 16px 18px 12px;
+}
+
+/* The filters, in a box. */
+.sd-desk .sd-filters {
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: #fbf8f3;
+  padding: 16px 20px;
+  margin: 0 0 18px;
+}
+
+/* Citations as cards, two across where there is room. A preview opens
+   inside its own card, and cards align to their tops so an open one
+   does not stretch its neighbour. */
+.sd-desk .sd-sources {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 12px;
+  align-items: start;
+  border: 0;
+}
+.sd-desk .sd-sources > .sd-source,
+.sd-desk .sd-sources > .sd-source:last-child {
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: #fff;
+  padding: 14px 18px;
+  margin: 0;
+}
+
+/* Ask, in a box. */
+.sd-desk .sd-ask {
+  max-width: none;
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: #fbf8f3;
+  padding: 18px 20px;
+}
+.sd-desk .sd-ask textarea { max-width: 860px; }
+
+@media (max-width: 640px) {
+  .sd-desk .sd-desk-head { padding: 18px 16px 14px; }
+  .sd-desk .sd-parallel,
+  .sd-desk .sd-sources { grid-template-columns: minmax(0, 1fr); }
+  .sd-desk .sd-filters, .sd-desk .sd-ask { padding: 14px 16px; }
+  .sd-desk .sd-sources > .sd-source, .sd-desk .sd-sources > .sd-source:last-child { padding: 12px 14px; }
+}
