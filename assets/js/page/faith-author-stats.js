@@ -125,8 +125,17 @@
     if (fixed !== t) note.textContent = fixed;
   }
 
+  /* The port writes "(1 works)" in an author's "Also on" line. */
+  function oneWork() {
+    document.querySelectorAll(".rx-editions a").forEach((a) => {
+      const t = a.textContent;
+      if (/\(1 works\)$/.test(t)) a.textContent = t.replace(/\(1 works\)$/, "(1 work)");
+    });
+  }
+
   function scan() {
     orderNote();
+    oneWork();
     document.querySelectorAll(".rx-author-bio > summary").forEach(aboutLabel);
     document.querySelectorAll("main.research-room .rx-profile .stats").forEach(regroup);
     document.querySelectorAll("main.research-work").forEach((main) => {

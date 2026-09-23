@@ -19452,7 +19452,7 @@ html.g-mobile #reading .fr-sec-toggle {
 /* Power Search: the search box keeps a readable width; the column does
    not, so results can use the room. */
 .faith-research-band #research-panel-power-search .research-column { max-width: none; }
-.faith-research-band .ps-controls { max-width: 860px; }
+.faith-research-band .cmp-topic-head:empty { display: none; }
 
 /* Bookmarks: each saved work a card. */
 .faith-research-band .bookmarks-rows {
@@ -19472,8 +19472,9 @@ html.g-mobile #reading .fr-sec-toggle {
   padding: 16px 18px 14px;
 }
 .faith-research-band .bookmarks-row[hidden] { display: none; }
-.faith-research-band .bookmarks-places { margin: 0; }
-.faith-research-band .bookmarks-foot-note { max-width: 75ch; margin-top: 18px; }
+.faith-research-band .bookmarks-places { flex: none; width: auto; margin: 0; order: 1; }
+.faith-research-band .bookmarks-row-side { order: 2; }
+.faith-research-band .bookmarks-foot-note { max-width: 75ch; margin: 18px 0 0; }
 
 /* Notebook: each entry a card, two across when there is room. */
 .faith-research-band .notebook-entries {
