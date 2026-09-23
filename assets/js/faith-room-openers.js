@@ -288,10 +288,13 @@
         + ` works each. They are in the Tradition filter below.</p>`
       : "";
 
-    return `<div class="fro-block fro-shelves">` +
-      `<h2 class="fro-h">Browse the shelves` +
-      `<span class="fro-tally">${num(list.length)} shelves</span></h2>` +
-      `<ul class="fro-shelf-list">${rows}</ul>${foot}</div>`;
+    // A fold, closed on arrival (Ian, 2026-09-23: "make this section
+    // collapsible and start it collapsed"): the shelves are a way in, and
+    // the catalogue below is what most readers came for.
+    return `<details class="fro-block fro-shelves fro-fold">` +
+      `<summary class="fro-fold-sum"><h2 class="fro-h">Browse the shelves` +
+      `<span class="fro-tally">${num(list.length)} shelves</span></h2></summary>` +
+      `<ul class="fro-shelf-list">${rows}</ul>${foot}</details>`;
   }
 
   /* ---- Render ------------------------------------------------------ */
