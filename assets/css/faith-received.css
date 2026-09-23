@@ -17320,10 +17320,28 @@ a.fr-btn:hover,
   border: 1px solid var(--tfr-btn, var(--color-dark));
   border-radius: 3px;
 }
-.tfr-browse-btn:hover {
-  background: var(--color-dark);
-  border-color: var(--color-dark);
-  color: var(--tfr-btn-ink, var(--color-white, #fff));
+/* The dark CTA sweeps like the rest of the library's buttons: terracotta
+   wipes in over the ink from the left. Its hover used to be the dark it
+   already was, so pointing at it did nothing visible. The shared filled
+   rule above uses the `background` shorthand for the pressed states, so
+   the sweep is stated on its own, after it. */
+.tfr-browse-btn {
+  background-color: var(--tfr-btn, var(--color-dark));
+  background-image: var(--btn-sweep-image);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 0% 100%;
+  transition: var(--btn-sweep-transition);
+}
+.tfr-browse-btn:hover,
+.tfr-browse-btn:focus-visible {
+  /* Restated: an older .tfr-browse-btn:hover (line ~7977) uses the
+     shorthand at this same weight, which would set the image to none. */
+  background-color: var(--tfr-btn, var(--color-dark));
+  background-image: var(--btn-sweep-image);
+  background-size: 100% 100%;
+  border-color: var(--btn-sweep-fill, #c1593c);
+  color: var(--btn-sweep-ink, #fff);
 }
 
 /* Disabled keeps the outline and loses its conviction. Not display:none and not
@@ -17818,9 +17836,18 @@ a.fr-btn:hover,
 .faith-landing .lp-hero a.btn-primary,
 .tfr-browse-all--hero .btn-primary,
 .tfr-browse-all--hero a.btn-primary {
-  background: var(--color-primary, #ee7d51);
+  /* Ian, 2026-09-23: "These buttons need the fill animation." The filled
+     button sweeps too: the terracotta wipes in over the orange from the
+     left, on the same token every hollow button uses. Longhands, not the
+     `background` shorthand, which would reset the sweep image to none. */
+  background-color: var(--color-primary, #ee7d51);
+  background-image: var(--btn-sweep-image);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 0% 100%;
   border-color: var(--color-primary, #ee7d51);
   color: #fff;
+  transition: var(--btn-sweep-transition);
 }
 .faith-landing .lp-hero .btn-primary:hover,
 .faith-landing .lp-hero a.btn-primary:hover,
@@ -17828,7 +17855,9 @@ a.fr-btn:hover,
 .tfr-browse-all--hero .btn-primary:hover,
 .tfr-browse-all--hero a.btn-primary:hover,
 .tfr-browse-all--hero .btn-primary:focus-visible {
-  background: var(--color-secondary, #c1593c);
+  background-color: var(--color-primary, #ee7d51);
+  background-image: var(--btn-sweep-image);
+  background-size: 100% 100%;
   border-color: var(--color-secondary, #c1593c);
   color: #fff;
 }
