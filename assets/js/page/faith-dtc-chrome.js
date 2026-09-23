@@ -99,44 +99,78 @@
   wide.addEventListener("change", () => { if (!wide.matches) setWide(false); });
   setWide(false);
 
-  /* "PICK UP WHERE YOU LEFT OFF" GETS AN ×. Ian, 2026-09-23: "little
-     X's on these to delete them from this bar." The bar shows the most
-     recent article with a remembered place; the × forgets that place
-     (the position store's own clear, the record the reader and the
-     Research hub read too) and the engine repaints the bar, which then
-     offers the next most recent, or hides. The engine rewrites #resume
-     on every paint, so the × is added back by an observer. Bookmarks are
-     a different store and are not touched. */
+  /* "PICK UP WHERE YOU LEFT OFF": A ROW, EACH WITH AN ×. Ian,
+     2026-09-23: "little X's on these to delete them from this bar", then
+     "this should be a whole row of works that goes across horizontally."
+     The engine's paintResume() drew only the most recent article. It is
+     a global the engine calls by name (after the index loads, after an
+     article closes), so it is replaced here: the most recent articles
+     with a remembered place, newest first, as a row of cards. Each card
+     is still a .rz button with data-id, so the engine's own click
+     handler on #resume opens it; the × beside it forgets that place in
+     the position store (the record the reader and the Research hub read
+     too) and the row redraws. Bookmarks are a different store and are
+     not touched. Built with textContent; no HTML strings. */
   const resume = page.querySelector("#resume");
-  function addClose() {
-    if (!resume) return;
-    const rz = resume.querySelector(":scope > .rz");
-    if (!rz || resume.querySelector(".rz-x")) return;
-    const wrap = document.createElement("span");
-    wrap.className = "rz-wrap";
-    rz.before(wrap);
-    wrap.appendChild(rz);
-    const x = document.createElement("button");
-    x.type = "button";
-    x.className = "rz-x";
-    x.textContent = "×";
-    const title = (rz.querySelector("span") || rz).textContent.trim();
-    x.setAttribute("aria-label", `Remove ${title} from Pick up where you left off`);
-    x.title = "Remove";
-    x.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const { id } = rz.dataset;
-      const store = window.MOFaithPosition;
-      try { if (store && id) store.clear("dtc", id); } catch (err) { /* nothing to forget */ }
-      if (typeof window.paintResume === "function") window.paintResume();
-      else resume.hidden = true;
-    });
-    wrap.appendChild(x);
+  const MAX_RESUME = 6;
+  function recentPlaces() {
+    const store = window.MOFaithPosition;
+    if (!store || typeof store.load !== "function") return [];
+    let map = {};
+    try { map = store.load() || {}; } catch (e) { return []; }
+    return Object.keys(map)
+      .filter((k) => k.indexOf("dtc|") === 0 && map[k] && typeof map[k] === "object")
+      .map((k) => ({ id: k.slice(4), t: map[k].t || 0 }))
+      .sort((p, q) => q.t - p.t);
   }
-  if (resume) {
-    new MutationObserver(addClose).observe(resume, { childList: true });
-    addClose();
+  function titleOf(id) {
+    let idx = [];
+    // The engine's index (a top-level `let` in dtc.in02.js).
+    try { idx = typeof IDX !== "undefined" && Array.isArray(IDX) ? IDX : []; } catch (e) { idx = []; }
+    const row = idx.find((a) => String(a[0]) === String(id));
+    return row ? String(row[5] || row[1] || "") : "";
+  }
+  function paintResumeRow() {
+    if (!resume) return;
+    const items = recentPlaces().map((p) => ({ id: p.id, title: titleOf(p.id) }))
+      .filter((p) => p.title).slice(0, MAX_RESUME);
+    resume.replaceChildren();
+    if (!items.length) { resume.hidden = true; return; }
+    const label = document.createElement("p");
+    label.className = "rz-label";
+    label.textContent = "Pick up where you left off";
+    const row = document.createElement("div");
+    row.className = "rz-row";
+    items.forEach((it) => {
+      const wrap = document.createElement("span");
+      wrap.className = "rz-wrap";
+      const open = document.createElement("button");
+      open.type = "button";
+      open.className = "rz";
+      open.dataset.id = it.id;
+      open.textContent = it.title;
+      const x = document.createElement("button");
+      x.type = "button";
+      x.className = "rz-x";
+      x.textContent = "×";
+      x.title = "Remove";
+      x.setAttribute("aria-label", `Remove ${it.title} from Pick up where you left off`);
+      x.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const store = window.MOFaithPosition;
+        try { if (store) store.clear("dtc", it.id); } catch (err) { /* nothing to forget */ }
+        paintResumeRow();
+      });
+      wrap.append(open, x);
+      row.appendChild(wrap);
+    });
+    resume.append(label, row);
+    resume.hidden = false;
+  }
+  if (resume && typeof window.paintResume === "function") {
+    window.paintResume = paintResumeRow;
+    paintResumeRow();
   }
 
   /* AN × ON EACH ENTRY. Ian, 2026-09-23: "an X at the top right of each
