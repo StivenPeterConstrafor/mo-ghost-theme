@@ -16819,14 +16819,27 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
 }
 
 /* ---- Browse the shelves ---- */
+/* Ian, 2026-09-23: "I just generally find this section to be messy."
+   Three faults, all of them spacing. (1) The shelves sat in a grid with
+   no row gap, so the only thing between one row and the next was a rule:
+   nine shelves read as stripes. (2) Each shelf was a block, so the
+   "Study this shelf" line fell wherever its own content ended, and
+   English writers carries an extra line of parties: its disclosure sat
+   33px below the two beside it and the row looked broken. The shelf is a
+   flex column now and the disclosure is pushed to the bottom, so a row
+   of shelves ends on one line whatever is inside it. (3) The parties
+   wrapped mid-name ("Westminster / Assembly"). */
 .fro-shelf-list {
   list-style: none; margin: 0; padding: 0;
-  display: grid; gap: 0 48px;
+  display: grid; gap: 30px 56px; align-items: stretch;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
-.fro-shelf { border-top: 1px solid var(--color-rule); }
+.fro-shelf {
+  display: flex; flex-direction: column;
+  border-top: 1px solid var(--color-rule);
+}
 .fro-shelf a {
-  display: block; padding: 14px 0;
+  display: block; padding: 13px 0 0;
   text-decoration: none; color: inherit;
 }
 .fro-shelf a:hover .fro-shelf-name { color: var(--color-primary); }
@@ -16837,7 +16850,7 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
 .fro-shelf-n { font-size: var(--tfr-micro); color: var(--color-muted); white-space: nowrap; }
 .fro-shelf-n b { color: var(--color-primary); font-weight: 600; }
 .fro-shelf-who {
-  display: block; margin-top: 3px;
+  display: block; margin-top: 5px;
   font-size: var(--tfr-micro); font-style: italic; color: var(--color-muted);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
@@ -16846,12 +16859,15 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
    that party. Inline, so the shelf's block link rule does not make them
    rows of their own. */
 .fro-shelf-subs {
-  display: block; margin: -6px 0 14px;
+  display: block; margin: 10px 0 0; line-height: 1.9;
   font-size: var(--tfr-micro); letter-spacing: 0.04em; color: var(--color-muted);
 }
 .fro-shelf-subs-l { text-transform: uppercase; letter-spacing: 0.16em; margin-right: 10px; }
 .fro-shelf .fro-shelf-sub {
+  /* A party's name and its count are one thing: "Westminster Assembly
+     906" broke after "Westminster" and read as two doors. */
   display: inline; padding: 0; color: var(--color-dark);
+  white-space: nowrap;
   border-bottom: 1px solid var(--color-rule);
 }
 .fro-shelf .fro-shelf-sub:hover { color: var(--color-primary); border-color: var(--color-primary); }
@@ -16865,7 +16881,7 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
 }
 .fro-foot {
   grid-column: 1 / -1;
-  margin: 14px 0 0; padding-top: 14px;
+  margin: 26px 0 0; padding-top: 16px;
   border-top: 1px solid var(--color-rule);
   font-size: var(--tfr-micro); color: var(--color-muted);
 }
@@ -17403,6 +17419,17 @@ a.fr-btn:hover,
 
 /* Shelf research doors retain the source shelf while using MereO's type and rules. */
 .fro-study { margin-top: .65rem; border-top: 1px solid var(--border, #ddd2c4); padding-top: .5rem; }
+/* Inside a shelf: the disclosure is the foot of the card, so it sits at
+   the bottom (margin-top: auto) and every shelf in a row ends on one
+   line. Its rule is the theme's, not the fallback #ddd2c4 this block
+   arrived with. */
+.fro-shelf .fro-study {
+  margin: 16px 0 0; padding-top: 10px;
+  border-top: 1px solid var(--color-rule);
+  margin-top: auto;
+}
+.fro-shelf .fro-study > summary { color: var(--color-muted); }
+.fro-shelf .fro-study[open] > summary { color: var(--color-dark); }
 .fro-study summary { cursor: pointer; font-size: .85rem; }
 .fro-study nav { display: flex; flex-wrap: wrap; gap: .5rem 1rem; padding: .75rem 0 .25rem; }
 .fro-study nav a { font-size: .85rem; text-decoration: underline; text-underline-offset: .2em; }
