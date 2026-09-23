@@ -939,7 +939,9 @@
     const li = el("li", "faith-search-hit");
     const a = linkTo(slug, "faith-search-hit-link");
     const meta = el("p", "faith-search-hit-meta");
-    meta.appendChild(el("span", "faith-search-hit-type", [tradition, label].filter(Boolean).join(" · ") || "The Latin Library"));
+    const shelf = tradition ? (window.MOFaithLabel ? window.MOFaithLabel.shelf(tradition) : tradition) : "";
+    const type = [shelf, label].filter(Boolean).join(" · ");
+    if (type) meta.appendChild(el("span", "faith-search-hit-type", type));
     if (author) meta.appendChild(el("span", "faith-search-hit-author", author));
     a.appendChild(meta);
     const h = el("h3", "faith-search-hit-title");

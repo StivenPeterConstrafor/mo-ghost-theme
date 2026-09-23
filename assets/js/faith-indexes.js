@@ -19,6 +19,18 @@
 
 (function () {
   "use strict";
+  // ONE LIBRARY (owner, 2026-09-23: "take out the whole latin library vs english things"). The library is one library,
+  // shelved by tradition. "The Latin Library" is the name of the pipeline most of it came through, and it holds English
+  // works (Davenant, Baxter, the Westminster minutes); Early English Books and the English Editions are the same
+  // library's English shelves. So where a reader is told what a work is, the label is its shelf, never tfr / eebo / mo.
+  // The printed series (Patrologia Latina, Graeca, Orientalis) and the confessions keep their own names.
+  const ONE_LIBRARY = new Set(["tfr", "eebo", "mo", "mo-english"]);
+  const shelfOf = (w) => {
+    const t = String((w && w.tradition) || "").trim();
+    if (!t) return "";
+    const L = window.MOFaithLabel;
+    return L && L.of ? L.of(t, w) : t;
+  };
 
   if (!window.MOCorpora) return;
 
@@ -1022,7 +1034,7 @@
       `title="Keyword searches the title, the tradition and the quoted passage. ` +
       `It does not search the full text of the work.">${scopeOpts}</select></label></div>` +
       `<div class="faith-refs-selects">${
-        select("collection", "Collection", "All collections", counts("corpus"), cLabel)}${
+        select("collection", "Collection", "All collections", counts("corpus").filter(([id]) => !ONE_LIBRARY.has(id)), cLabel)}${
         select("tradition", "Tradition", "All traditions", tradCounts, shelfText)}${
         // Always in the shell, shown only when the chosen tradition has
         // something under it.

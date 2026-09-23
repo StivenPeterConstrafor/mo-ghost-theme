@@ -266,7 +266,8 @@
       return `<li class="fro-shelf"><a href="${esc(href)}">` +
         `<span class="fro-shelf-row">` +
         `<span class="fro-shelf-name">${esc(shelfName(s.name))}</span>` +
-        `<span class="fro-shelf-n"><b>${num(core)}</b> ${core === 1 ? "work" : "works"}${extra ? `<small class="fro-shelf-extra">+ ${num(extra)} English editions</small>` : ""}</span>` +
+        // One library: the English editions are works on the shelf like any other, counted with it.
+        `<span class="fro-shelf-n"><b>${num(core + extra)}</b> ${core + extra === 1 ? "work" : "works"}</span>` +
         `</span>${under}</a>${within}${studyShelf(s.name)}</li>`;
     }).join("");
 

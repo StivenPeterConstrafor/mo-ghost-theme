@@ -88,6 +88,18 @@
  */
 (function () {
   "use strict";
+  // ONE LIBRARY (owner, 2026-09-23: "take out the whole latin library vs english things"). The library is one library,
+  // shelved by tradition. "The Latin Library" is the name of the pipeline most of it came through, and it holds English
+  // works (Davenant, Baxter, the Westminster minutes); Early English Books and the English Editions are the same
+  // library's English shelves. So where a reader is told what a work is, the label is its shelf, never tfr / eebo / mo.
+  // The printed series (Patrologia Latina, Graeca, Orientalis) and the confessions keep their own names.
+  const ONE_LIBRARY = new Set(["tfr", "eebo", "mo", "mo-english"]);
+  const shelfOf = (w) => {
+    const t = String((w && w.tradition) || "").trim();
+    if (!t) return "";
+    const L = window.MOFaithLabel;
+    return L && L.of ? L.of(t, w) : t;
+  };
 
   const LIBRARY = (document.querySelector('meta[name="tfr-library-base"]') || {}).content
     || "https://mo-tfr-library.mo-podcast-feed.workers.dev";
@@ -250,7 +262,7 @@
     const li = el("li", "ps-work");
     const best = entry.passages[0] || {};
 
-    const label = CORPUS_LABELS[best.corpus] || best.tradition || "";
+    const label = (ONE_LIBRARY.has(best.corpus) ? shelfOf(best) : CORPUS_LABELS[best.corpus]) || shelfOf(best) || "";
     if (label) li.appendChild(el("p", "ps-work-trad", label));
 
     const titleP = el("p", "ps-work-title");

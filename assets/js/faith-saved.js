@@ -10,6 +10,18 @@
  * before anyone opens it.
  */
 (function () {
+  // ONE LIBRARY (owner, 2026-09-23: "take out the whole latin library vs english things"). The library is one library,
+  // shelved by tradition. "The Latin Library" is the name of the pipeline most of it came through, and it holds English
+  // works (Davenant, Baxter, the Westminster minutes); Early English Books and the English Editions are the same
+  // library's English shelves. So where a reader is told what a work is, the label is its shelf, never tfr / eebo / mo.
+  // The printed series (Patrologia Latina, Graeca, Orientalis) and the confessions keep their own names.
+  const ONE_LIBRARY = new Set(["tfr", "eebo", "mo", "mo-english"]);
+  const shelfOf = (w) => {
+    const t = String((w && w.tradition) || "").trim();
+    if (!t) return "";
+    const L = window.MOFaithLabel;
+    return L && L.of ? L.of(t, w) : t;
+  };
   /* One shelf order for the whole library, so a multi-volume set reads
    1, 2, 3 rather than 1, 10, 11, 2. window.MOTitleOrder ships in boot,
    which runs before every page script; the fallback is the ordering
@@ -144,8 +156,9 @@
       list.innerHTML = `<ol class="faith-saved-list">${rows.map(({ w, corpus }) => {
         const author = w.author
           ? `<span class="faith-saved-author">${escapeHtml(w.author)}</span>` : "";
-        const shelf = corpus
-          ? `<span class="faith-saved-shelf">${escapeHtml(corpus.label)}</span>` : "";
+        const where = corpus && !ONE_LIBRARY.has(corpus.id) ? corpus.label : shelfOf(w);
+        const shelf = where
+          ? `<span class="faith-saved-shelf">${escapeHtml(where)}</span>` : "";
         return `<li><a href="${escapeHtml(w.url)}">` +
           `<span class="faith-saved-title">${escapeHtml(w.title || w.id)}</span>` +
           `${author}${shelf}</a></li>`;
