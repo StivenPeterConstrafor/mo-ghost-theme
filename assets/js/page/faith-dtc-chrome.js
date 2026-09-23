@@ -14,6 +14,7 @@
  * per-reader convenience); if storage is blocked both start open.
  * Wide screens only: on a phone the dictionary already flows as one
  * column (faith-dtc-mobile-flow.js), and the strip is hidden there.
+ * A third control expands the index over the article (see below).
  */
 (function () {
   "use strict";
@@ -58,4 +59,43 @@
     });
   });
   paint();
+
+  /* EXPAND THE INDEX. Ian, 2026-09-23: "a way to expand and shrink the
+     TOC to the section where the article is in the middle. That way
+     you can get a bigger browsing experience, especially when you click
+     a letter." Expanded, the list takes the article's place and its
+     headwords run in columns. Picking a letter opens it expanded;
+     picking a headword shrinks it back so the article has its room.
+     Not remembered: it is a browsing moment, not a setting. */
+  const expand = strip.querySelector("[data-dtc-expand]");
+  const wide = window.matchMedia("(min-width: 761px)");
+  function setWide(on) {
+    const want = !!on && wide.matches;
+    page.classList.toggle("dtc-wide-list", want);
+    if (expand) {
+      expand.textContent = want ? "Shrink index" : "Expand index";
+      expand.setAttribute("aria-pressed", String(want));
+    }
+    if (want && state.list) {
+      state.list = false;
+      paint();
+    }
+  }
+  if (expand) expand.addEventListener("click", () => setWide(!page.classList.contains("dtc-wide-list")));
+  const alpha = page.querySelector("#alpha");
+  if (alpha) {
+    alpha.addEventListener("click", (e) => {
+      if (e.target.closest && e.target.closest("button[data-l]")) setWide(true);
+    });
+  }
+  const list = page.querySelector("#list");
+  if (list) {
+    list.addEventListener("click", (e) => {
+      if (e.target.closest && e.target.closest(".hw")) setWide(false);
+    });
+  }
+  // Hiding the index also ends the expanded view.
+  if (buttons.list) buttons.list.addEventListener("click", () => { if (state.list) setWide(false); });
+  wide.addEventListener("change", () => { if (!wide.matches) setWide(false); });
+  setWide(false);
 })();

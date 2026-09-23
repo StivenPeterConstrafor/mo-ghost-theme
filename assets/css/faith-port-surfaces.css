@@ -1036,3 +1036,20 @@ body.dtc-page .site-footer { display: none; }
   .faith-port-dtc-page.dtc-no-list .main { grid-template-columns: minmax(0, 1fr); }
   .faith-port-dtc-page.dtc-no-list .main > .list { display: none; }
 }
+/* The index expanded over the article: headwords in columns, each
+   letter's heading across the full width (faith-dtc-chrome.js). */
+@media (min-width: 761px) {
+  .faith-port-dtc-page.dtc-wide-list .main { grid-template-columns: minmax(0, 1fr); }
+  .faith-port-dtc-page.dtc-wide-list .main > .art { display: none; }
+  .faith-port-dtc-page.dtc-wide-list .main > .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    align-content: start;
+    column-gap: 28px;
+    border-right: 0;
+    padding: 0 1.4rem 2rem;
+  }
+  .faith-port-dtc-page.dtc-wide-list .main > .list > :not(.hw) { grid-column: 1 / -1; }
+  .faith-port-dtc-page.dtc-wide-list .main > .list > .hw { border-bottom: 1px solid var(--ar-line); }
+  .faith-port-dtc-page.dtc-wide-list .main > .list > .more { width: auto; max-width: 320px; justify-self: center; }
+}

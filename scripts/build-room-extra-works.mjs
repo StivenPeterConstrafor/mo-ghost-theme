@@ -27,7 +27,8 @@
  *    one does not (listed there, linked from here, never copied).
  * faith-author-works.js adds both to the room's Works tab. A room with
  * nothing missing is absent. counts.json holds just the x counts, for
- * the Authors directory (faith-room-counts.js).
+ * the Authors directory, and dir.json the same works as Works-directory
+ * rows (both applied by faith-room-counts.js).
  *
  * HOW A ROOM IS MATCHED TO ITS CATALOGUE NAME. Not by spelling. Every
  * work a room already holds is a catalogue row, and that row's author is
@@ -230,6 +231,26 @@ for (const sh of Object.keys(outs)) {
   }
 }
 writeFileSync(new URL("counts.json", OUT), JSON.stringify({ v: 1, generated: new Date().toISOString().slice(0, 10), counts }));
+
+// The same works as Works-directory rows, for /author/#works
+// (faith-room-counts.js appends them to v1/works-dir/<sh>.json.gz as it
+// loads): { sh: [{ w, t, a, vs }] }. `a` is the room's own name, so a
+// work joins its author's existing group; `vs` is what the card prints
+// where the port prints an edition (PG 30, a year, "In English").
+const SERIES_LABEL = { pg: "PG", pld: "PL", po: "PO" };
+const byRoom = new Map(rooms.map((room) => [room.id, room]));
+const dir = {};
+for (const sh of Object.keys(outs)) {
+  for (const [slug, entry] of Object.entries(outs[sh])) {
+    const room = byRoom.get(`${sh}/${slug}`);
+    if (!room || !entry.x) continue;
+    for (const [c, id, t, n] of entry.x) {
+      const vs = SERIES_LABEL[c] ? (n ? `${SERIES_LABEL[c]} ${n}` : SERIES_LABEL[c]) : c === "mo" ? "In English" : (n ? String(n) : "");
+      (dir[sh] = dir[sh] || []).push({ w: keyOf(c, id), t, a: room.d.a, vs });
+    }
+  }
+}
+writeFileSync(new URL("dir.json", OUT), JSON.stringify({ v: 1, generated: new Date().toISOString().slice(0, 10), dir }));
 report.sort((a, b) => (b[2] - b[1]) - (a[2] - a[1]));
 console.log(`${short} rooms short, ${added} works added. Largest gaps:`);
 for (const [r, had, now] of report.slice(0, 25)) console.log(`  ${r}: ${had} -> ${now}`);
