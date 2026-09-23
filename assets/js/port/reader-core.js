@@ -6024,6 +6024,29 @@ async function loadPgCanon(ws){
     // the witness repeats as ONE DIV PER COLUMN BLOCK — walk them all, in document order (gap openings interleaved by column number)
     [...doc.querySelectorAll(src==="la"?'div[type="secondary"]':'div[type="diplomatic"]')].forEach(d2=>(src==="la"?walk2g:walk2)(d2,0));
     if(src==="la")_emitGaps(null);
+    // ORPHAN OPENINGS IN THE WITNESS VIEWS (owner 2026-09-23 "we want all the pages catalogued and linked"): the whole-page
+    // transcription (ocr) and the rich-Latin view walk their witness lane only, so an English-keyed page the lane does not carry
+    // (pg-1692 col. 1487) opened with an empty source column. Such a page reads its plate: both printed columns in the page
+    // transcription, the Latin column first in the Latin view. The fill applies in flushCol, to a page with no text of its own.
+    try{
+      const _shown=new Set(pages),_frontW=n=>typeof _pgFrontLabels==="object"&&_pgFrontLabels&&_pgFrontLabels[n];
+      const _needW=[...new Set(Object.keys(enByCol).map(Number).filter(Boolean).map(n=>n%2?n:n-1))].filter(p=>!_shown.has(p)&&!_shown.has(p+1)&&[...(enByCol[p]||[]),...(enByCol[p+1]||[])].join(" ").length>=120&&!_frontW(p));
+      if(_needW.length){
+        const pvW5=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
+        const pvUrl5=pvW5?((pvW5.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null;
+        if(pvUrl5){window.__pgpvCache=window.__pgpvCache||{};
+          window.__pgpvCache[pvUrl5]=window.__pgpvCache[pvUrl5]||fetch(pvUrl5+(pvUrl5.includes("?")?"&":"?")+"v="+encodeURIComponent(window.__FR_VER||"pg-source-20260914")).then(r=>r.ok?r.text():null).catch(()=>null);
+          const x5=await window.__pgpvCache[pvUrl5];
+          if(x5){const pv5=new DOMParser().parseFromString(x5,"application/xml");_pvFill=_pvFill||{};
+            for(const n of _needW){const sf5=pv5.querySelector('surface[n="'+n+'"]');if(!sf5)continue;
+              const zt5=ty=>[...sf5.querySelectorAll("zone")].filter(z=>(z.getAttribute("type")||"").includes(ty)).map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim();
+              const g5=_healGrc(zt5("ColGreek").replace(/^\d+\s+[^\u0370-\u03ff]{0,120}?(?=[\u0370-\u03ff])/,"").replace(/\s+\d+\s*$/,"")),l5=zt5("ColLatin").replace(/\bDigitized\s+by\s+Google\b/gi," ").trim();
+              const gl5=(g5.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length,ll5=(l5.match(/[A-Za-z]/g)||[]).length,o5=[];
+              if(src!=="la"&&gl5>=40)o5.push(g5);
+              if(ll5>=200)_chunkText(l5,700).forEach(t=>o5.push(t));
+              if(src==="la"&&!o5.length&&gl5>=40)o5.push(g5);
+              if(o5.length)_pvFill[n]=o5;}}}}
+    }catch(e){window.__pvFillErr2=String(e&&e.stack||e).slice(0,300);}
   }else{
     const body=doc.querySelector("body");
     const walk=(node,depth)=>{for(const ch of node.children){
@@ -6215,7 +6238,9 @@ async function loadPgCanon(ws){
     // exists outside witness divs, the largest witness div IS the document — walk it.
     // A PAGE WITH NO SOURCE TEXT (see flushCol): the reading lanes' pages that carry no text while their English does. The volume
     // pageview is fetched only when one of them needs a zone (the Greek and Latin views already fetch it for every page).
-    if(src==="grc"&&!_latBuilt&&body)try{
+    // 09-23: the Latin view too (owner "all the pages catalogued and linked"): a work whose rich facing-Latin lane keeps the Latin view
+    // off the pageview path appended its ORPHAN OPENINGS (English-keyed pages, e.g. pg-1692 col. 1487) with an empty source lane
+    if((src==="grc"||src==="la"||src==="ocr")&&!_latBuilt&&body)try{
       const _ptx={},_plist=[];let _pc=null;
       (function tw(node){for(const ch of node.children){const ty=ch.getAttribute?ch.getAttribute("type"):null;
         if(ch.localName==="div"){if(window.FRMigneNavigation.isReadingDivision(ty))tw(ch);continue;}
@@ -6228,7 +6253,10 @@ async function loadPgCanon(ws){
       _need.push(...[...new Set(Object.keys(enByCol).map(Number).filter(Boolean).map(n=>n%2?n:n-1))].filter(p=>!(p in _ptx)&&!((p+1) in _ptx)&&[...(enByCol[p]||[]),...(enByCol[p+1]||[])].join(" ").length>=120&&!_front(p)));
       if(_need.length){
         _pvFill={};const _zw=[];
-        for(const n of _need){const op=_canonOpenings[String(n)];if(op&&(op.grcParas||[]).length)_pvFill[n]=op.grcParas.slice();else _zw.push(n);}
+        for(const n of _need){const op=_canonOpenings[String(n)];
+          if(src==="la"){if(op&&(op.laParas||[]).length)_pvFill[n]=op.laParas.slice();else _zw.push(n);continue;}
+          if(src==="ocr"){_zw.push(n);continue;}                 // the page transcription reads the plate itself
+          if(op&&(op.grcParas||[]).length)_pvFill[n]=op.grcParas.slice();else _zw.push(n);}
         const pvW4=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
         const pvUrl4=_pvR2(pvW4?((pvW4.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null);
         let pv4=null;
@@ -6246,6 +6274,11 @@ async function loadPgCanon(ws){
           const zt=ty=>sf4?[...sf4.querySelectorAll("zone")].filter(z=>(z.getAttribute("type")||"").includes(ty)).map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim():"";
           const g4=_healGrc(zt("ColGreek").replace(/^\d+\s+[^\u0370-\u03ff]{0,120}?(?=[\u0370-\u03ff])/,"").replace(/\s+\d+\s*$/,"")),l4=_zLat(zt("ColLatin"));
           const gl=(g4.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length,ll=(l4.match(/[A-Za-z]/g)||[]).length;
+          if(src==="ocr"){const o4=[];if(gl>=40)o4.push(g4);if(ll>=200)_chunkText(l4,700).forEach(t=>o4.push(t));if(o4.length)_pvFill[n]=o4;continue;}
+          if(src==="la"){                                   // the Latin view reads the plate's Latin first
+            if(ll>=200)_pvFill[n]=_chunkText(l4,700);
+            else if(gl>=40)_pvFill[n]=[g4];
+            continue;}
           if(gl>=600&&gl>=0.25*ll)_pvFill[n]=[g4];
           else if(op&&(op.laParas||[]).length)_pvFill[n]=op.laParas.slice();
           else if(ll>=200)_pvFill[n]=_chunkText(l4,700);
