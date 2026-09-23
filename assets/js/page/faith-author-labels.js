@@ -18,8 +18,9 @@
  *   - a religious order: the library's schools list (v1/schools.json:
  *     Jesuits, Dominicans, Franciscans, Augustinians);
  *   - otherwise the shelf and the century: a Greek or Latin father before
- *     800 is of the Early Church, a Greek writer after it Byzantine, a
- *     Latin one Medieval; Lutheran and Reformed shelves say so.
+ *     800 is of the Early Church, a Greek writer after it (to 1453)
+ *     Byzantine, a Latin one (to 1500) Medieval; Lutheran and Reformed
+ *     shelves say so. Undated, or later than that, the shelf name stands.
  * Where none of these knows, the shelf name stands, as before.
  *
  * ON THE ROOM: the "Tradition" box says the tradition (Protestant, Roman
@@ -104,9 +105,13 @@
     else if (body === "Roman Catholic" || order || sh === "rc") tradition = "Roman Catholic";
     else if (sh === "lu" || sh === "rf") tradition = "Protestant";
     else if (sh === "md") tradition = year >= 1517 ? "Roman Catholic" : "Medieval Church";
-    else if (sh === "pl") tradition = year > 800 ? "Medieval Church" : "Early Church";
-    else if (sh === "gf") tradition = year > 800 ? "Byzantine" : "Early Church";
-    else if (sh === "po") tradition = year > 800 ? "Eastern Christian" : "Early Church";
+    // The fathers' shelves also hold later editors and scholars (Leo
+    // Allatius, 1586; Garnier's Jesuit editions) and writers the
+    // catalogue does not date. For them the century says nothing sure, so
+    // the shelf's own name stands rather than a guess.
+    else if (sh === "pl" && year && year < 1500) tradition = year > 800 ? "Medieval Church" : "Early Church";
+    else if (sh === "gf" && year && year < 1453) tradition = year > 800 ? "Byzantine" : "Early Church";
+    else if (sh === "po" && year && year < 1500) tradition = year > 800 ? "Eastern Christian" : "Early Church";
     else tradition = SHELF[sh] || "";
     // A medieval writer placed "Roman Catholic" by the table still wrote
     // before there was a Protestant to tell him apart from.
@@ -125,7 +130,7 @@
       detail = "Lutheran";
     } else if (sh === "rf") {
       detail = "Reformed";
-    } else if (CHURCH_OF[sh] && tradition !== "Medieval Church") {
+    } else if (CHURCH_OF[sh] && tradition !== "Medieval Church" && tradition !== SHELF[sh]) {
       detail = CHURCH_OF[sh];
       detailLabel = "Church";
     }
