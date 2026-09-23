@@ -88,6 +88,19 @@
       if (e.target.closest && e.target.closest("button[data-l]")) setWide(true);
     });
   }
+  // On a phone the alphabet is a scrolling rail (faith-received.css), and
+  // the engine rewrites it on every letter, which would jump the rail
+  // back to A. The chosen letter is brought back into view instead.
+  if (alpha) {
+    new MutationObserver(() => {
+      if (wide.matches) return;
+      const on = alpha.querySelector("button.on");
+      if (!on) return;
+      const a = alpha.getBoundingClientRect();
+      const b = on.getBoundingClientRect();
+      alpha.scrollLeft = Math.max(0, alpha.scrollLeft + (b.left - a.left) - (alpha.clientWidth - b.width) / 2);
+    }).observe(alpha, { childList: true });
+  }
   const list = page.querySelector("#list");
   if (list) {
     list.addEventListener("click", (e) => {

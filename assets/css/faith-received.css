@@ -19701,3 +19701,35 @@ html.g-mobile #reading .fr-sec-toggle {
   color: var(--color-dark);
 }
 .faith-ask-door-card li:first-child { border-top: 0; padding-top: 0; }
+
+/* ── Dictionary on a phone: the alphabet is one scrolling rail ──
+   Ian, 2026-09-23: "make the alphabet here a single horizontal scrolling
+   rail." Replaces the four-row grid above (which took half the first
+   screen). Each letter keeps a 44px target; the right edge fades so the
+   rail reads as continuing, and faith-dtc-chrome.js keeps the chosen
+   letter in view when the engine redraws the rail. A deliberate
+   exception to the no-nested-scroll rule, by Ian's request. */
+@media (max-width: 760px) {
+  .faith-port-dtc-page .alpha {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    padding: 2px 28px 4px 0;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+  }
+  .faith-port-dtc-page .alpha::-webkit-scrollbar { display: none; }
+  .faith-port-dtc-page .alpha button {
+    flex: 0 0 44px;
+    min-height: 44px;
+    scroll-snap-align: start;
+  }
+}
