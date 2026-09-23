@@ -16,7 +16,9 @@
     if(host==='mo-tfr.mo-podcast-feed.workers.dev')return LIB+u.pathname+u.search+u.hash;
     if(Object.hasOwn(BLOBS,host)){
       let path=u.pathname;
-      if(!BLOBS[host]&&/^\/tei\/(?:pld|pg|po)\//.test(path))path=`/v1${path}`;
+      // tei/pgpv: the Greek Fathers' volume pageviews (the plate's own text, which the reader shows where a page's text is thin or
+      // absent) live on R2 under v1/ like the canons -- without it MereO's reader showed empty source lanes that Vercel fills (09-23)
+      if(!BLOBS[host]&&/^\/tei\/(?:pld|pg|po|pgpv)\//.test(path))path=`/v1${path}`;
       return LIB+BLOBS[host]+path+u.search+u.hash;
     }
     if(FAMILIES[host]){

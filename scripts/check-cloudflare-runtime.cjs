@@ -9,6 +9,7 @@ test('every source catalogue family resolves to the migrated Cloudflare metadata
 });
 test('legacy scan and TEI addresses retain paths without reaching Blob',()=>{
   assert.equal(runtime.dataURL('https://0ss8v4l06kodnhp0.public.blob.vercel-storage.com/tei/pld/42.xml',origin),lib+'/v1/tei/pld/42.xml');
+  assert.equal(runtime.dataURL('https://0ss8v4l06kodnhp0.public.blob.vercel-storage.com/tei/pgpv/055.xml',origin),lib+'/v1/tei/pgpv/055.xml');
   assert.equal(runtime.dataURL('https://xmw4yslyv6oq3m7i.public.blob.vercel-storage.com/migne/52/183.jpg',origin),lib+'/pg/scan/migne/52/183.jpg');
   assert.throws(()=>runtime.dataURL('https://unknown.vercel.app/api',origin),/not used/);
   assert.throws(()=>runtime.dataURL('https://openrouter.ai/api/v1',origin),/not used/);
