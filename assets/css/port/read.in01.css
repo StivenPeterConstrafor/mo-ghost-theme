@@ -1853,6 +1853,9 @@ html.g-mobile .app.only-en #reading .row .en,html.g-mobile .app.only-la #reading
 #reading .capsrun{font-variant:small-caps;text-transform:lowercase;letter-spacing:.035em;font-size:1.02em}
 #reading .capsrun.blk{display:block;margin:.7em 0 .55em;line-height:1.45;text-align:left;text-indent:0;text-wrap:balance}
 #reading .capsrun.grub{font-variant:normal;text-transform:none;letter-spacing:.05em;font-weight:600}
+/* ENGLISH HEADINGS (owner 2026-09-23 "beautiful ... reading"): a section head the canon's English marks rend="heading" (the site's heads)
+   opens its paragraph on its own line, set as a heading. Display only: tools/pg_english_tei_rich.py keeps the element a <p>. */
+#reading .en .enhead{display:block;margin:.1em 0 .5em;font-weight:600;letter-spacing:.012em;line-height:1.42;text-indent:0;text-wrap:balance}
 /* untranslated Latin editorial apparatus (Migne's edition notes): quiet register */
 #reading .laonly{font-size:.86em;color:var(--muted);border-left:2px solid var(--rule-soft,#e4dcc8);padding-left:.7rem;margin-top:.55rem}
 #reading .laonly p{text-indent:0}

@@ -3075,6 +3075,27 @@ function build(){
           if(last){frag.appendChild(document.createTextNode(t.slice(last)));nd.replaceWith(frag);}
         });});};
       fix();setTimeout(fix,2500);setTimeout(fix,6000);
+      // ENGLISH HEADINGS (owner 2026-09-23): an English paragraph that OPENS with a head the canon marks rend="heading" sets the head
+      // on its own line (span.enhead). All-caps heads stay with the caps pass above; head rows (.rhead) are already heads. The pairing
+      // is not touched: the head was paired as part of its paragraph and stays in it.
+      if(Array.isArray(window.__enHeadings)&&window.__enHeadings.length){
+        const _nz=x=>String(x||"").replace(/\*/g,"").replace(/\s+/g," ").trim(),HB=new Map();
+        window.__enHeadings.forEach(h=>{const k=h.slice(0,12);(HB.get(k)||HB.set(k,[]).get(k)).push(h);});
+        HB.forEach(v=>v.sort((a,b)=>b.length-a.length));
+        const hfix=()=>{document.querySelectorAll('#reading .en p:not([data-enh]), #reading .en:not(:has(p)):not([data-enh])').forEach(el2=>{
+          el2.setAttribute('data-enh','1');if(el2.closest('.rhead'))return;
+          const txt=_nz(el2.textContent);const h=(HB.get(txt.slice(0,12))||[]).find(x=>txt===x||txt.startsWith(x+" "));if(!h||txt===h&&el2.querySelector('.enhead'))return;
+          const tw=document.createTreeWalker(el2,NodeFilter.SHOW_TEXT,null);let acc="",nd,endNode=null,endOff=0;
+          outer:while((nd=tw.nextNode())){const t=nd.textContent;
+            for(let i=0;i<t.length;i++){const c=t[i];if(c==="*")continue;
+              if(/\s/.test(c)){if(acc&&!acc.endsWith(" "))acc+=" ";continue;}
+              acc+=c;if(acc===h){endNode=nd;endOff=i+1;break outer;}
+              if(!h.startsWith(acc))return;}}
+          if(!endNode)return;
+          const rg=document.createRange();rg.setStart(el2,0);rg.setEnd(endNode,endOff);
+          const sp=document.createElement("span");sp.className="enhead";sp.appendChild(rg.extractContents());el2.insertBefore(sp,el2.firstChild);
+          const nx=sp.nextSibling;if(nx&&nx.nodeType===3)nx.textContent=nx.textContent.replace(/^\s+/,"");});};
+        hfix();setTimeout(hfix,2500);setTimeout(hfix,6000);}
       // GREEK RUBRIC ENTRANCES (owner 2026-08-18 'inline chapter divisions'): Migne prints
       // section rubrics (ΛΟΓΟΣ Β΄. / ΚΕΦΑΛΑΙΟΝ Αʹ.) INSIDE the flowing paragraph in 25
       // PG works with no head elements. Closed rubric vocabulary + sentence-boundary
@@ -5423,6 +5444,9 @@ async function loadPgCanon(ws){
   // THE SITE SIDECAR WINS PER COLUMN (owner 2026-09-15, PG 78 col. 61 default view: 'PART THREE…' printed twice): a work that carries both
   // the old machine English and the site's column-keyed English showed both for the same column. Where the sidecar speaks for a column,
   // the machine lane's paragraphs for that column stay out of the English lane.
+  // the English section heads the canon marks (rend="heading"), for the display pass (readingEditionPass: ENGLISH HEADINGS)
+  window.__enHeadings=[...new Set([...doc.querySelectorAll('div[type="translation"] p[rend="heading"], div[type="translation"] hi[rend="heading"]')]
+    .map(e=>e.textContent.replace(/\*/g,"").replace(/\s+/g," ").trim()).filter(t=>t.length>=4&&/[a-z]/.test(t)))];
   const _sidecarCols=new Set([...doc.querySelectorAll('div[type="translation"][resp="#site-sidecar"] p, div[type="translation"][resp="#site-sidecar"] head')].map(el=>{
     let n=+(el.getAttribute("n")||0);if(!n){const m=(el.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}return n;}).filter(Boolean));
   [...doc.querySelectorAll('div[type="translation"] p')].forEach(pp=>{
