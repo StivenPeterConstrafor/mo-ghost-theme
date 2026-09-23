@@ -271,7 +271,7 @@
         return t.length > 90 ? `${t.slice(0, 88).replace(/\s+\S*$/, "")}…` : t;
       };
       const wholeLine = whole
-        ? `<p class="sd-muted sd-ov-whole">${esc(plural(whole, "citation"))} of the chapter as a whole.</p>`
+        ? `<p class="sd-muted sd-ov-whole">${esc(plural(whole, "citation", "citations"))} of the chapter as a whole.</p>`
         : "";
       const rows = top.map(([v, n]) =>
         `<li><button type="button" class="sd-ov-verse" data-v="${v}" data-w="${Math.max(3, Math.round((n / max) * 100))}">` +
