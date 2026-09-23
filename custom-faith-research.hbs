@@ -429,12 +429,12 @@
            sixteen Scripture shelves are the whole list. The rail at the
            top of this page already links the atlas, so the map that is
            missing here is one click away. --}}
+      {{!-- 2026-09-23: the tab is now a door to the full atlas, as Ask's
+           is (Ian: "It should do something similar to Ask"). The comment
+           above describes the embedded panel it replaced, which is kept in
+           the theme and rendered by nothing. --}}
       <div data-research-panel="connections" role="tabpanel" id="research-panel-connections" aria-labelledby="research-tab-connections" hidden>
-        <div class="research-workspace">
-          <div class="research-workspace-inner">
-           {{> "faith-received/_constellations-panel" lede="Choose a shelf and see how its authors, works and topics divide by the Scripture they quote. Select a point to read its sources."}}
-          </div>
-        </div>
+        {{> "faith-received/_connections-door"}}
       </div>
 
       {{!-- ── The Desk ───────────────────────────────────────────────

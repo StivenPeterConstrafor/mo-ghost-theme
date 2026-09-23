@@ -1,0 +1,35 @@
+{{!-- The Connections tab on the Research hub: a door, as Ask's is.
+
+     Ian, 2026-09-23: "why didn't connections open up to the full screen
+     version? It should do something similar to Ask where it explains what
+     it is and then opens up to the full thing through a button." The tab
+     used to embed _constellations-panel.hbs, a single shelf's Scripture
+     map that could not draw the citation network (window.MOFaithWebGraph
+     exists only on the atlas page). The full atlas is
+     /the-faith-received/connections/; this says what it is and opens it.
+     The panel partial stays in the theme, rendered by nothing here.
+     Same layout and classes as _ask-door.hbs. House voice: no comma
+     splices, no em dashes. --}}
+<div class="faith-ask-door faith-connections-door">
+  <h2 class="faith-ask-door-title">The library, mapped by citation.</h2>
+  <p class="faith-ask-door-body">Connections draws the citations in the library as a map. It shows whom each author read, who read them in turn, and the passages behind every link. It lets you see how the tradition talks to itself before you open the books.</p>
+  <div class="faith-ask-door-cards">
+    <section class="faith-ask-door-card">
+      <h3>What it shows</h3>
+      <ul>
+        <li>The citation network: who cites whom across the centuries, laid out by date, in rings or by tradition.</li>
+        <li>Paths: the chain of citations that connects one author to another.</li>
+        <li>Topics, Scripture maps and Scripture: the same links read by subject, by shelf and by verse.</li>
+      </ul>
+    </section>
+    <section class="faith-ask-door-card">
+      <h3>How to read it</h3>
+      <ul>
+        <li>Every point and every line opens the passages behind it.</li>
+        <li>A missing line does not mean two authors never met. It means the library has not recorded a citation between them.</li>
+        <li>The map points to the evidence. The passages are the evidence.</li>
+      </ul>
+    </section>
+  </div>
+  <a class="fr-plan-open" href="/the-faith-received/connections/">Open Connections</a>
+</div>
