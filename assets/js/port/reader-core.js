@@ -3335,8 +3335,12 @@ function build(){
       if((t1||t2)&&(t1.length<=6&&t2.length<=6)&&(!t1||JUNK.test(t1))&&(!t2||JUNK.test(t2)))r.classList.add("furn");
     }));
     // cross-page run continuation
-    let prev=null;
+    let prev=null,_seamIdx=null;
     for(const cur of secs){
+      // WINDOWED READER (2026-09-23, Davenant Treatise p.135 read into p.49, Contzen p.300 into p.50; reported by the Ask session): a
+      // 400+ page work mounts only the folios near the reader, so the folio before this one in the DOM can be pages away -- a seam
+      // joins only the true next page
+      {const _i=+cur.dataset.idx,_adj=_seamIdx==null||!Number.isFinite(_i)||_i===_seamIdx+1;_seamIdx=_i;if(!_adj){prev=cur;continue;}}
       if(!prev){prev=cur;continue;}
       // THE PAGE IS THE UNIT in every PG view (owner 2026-09-17 "just make sure the latin and greek is shown completely per page";
       // 2026-09-22: pg-131 col. 1337 and pg-1676 col. 241 were stacked flows folded whole into the page before, read as empty pages)
@@ -3363,8 +3367,9 @@ function build(){
     // ROW-path seam merge (owner 2026-08-10 "smooth this out"): a sentence split across the
     // leaf on ORDINARY rows carries .tail/.cont marks — merge the continuation's cells into
     // the tail row with an inline page anchor, same treatment the stacked runs get.
-    prev=null;
+    prev=null;_seamIdx=null;
     for(const cur of R.querySelectorAll(".folio")){
+      {const _i=+cur.dataset.idx,_adj=_seamIdx==null||!Number.isFinite(_i)||_i===_seamIdx+1;_seamIdx=_i;if(!_adj){prev=cur;continue;}}   // WINDOWED READER (above)
       if(!prev){prev=cur;continue;}
       // THE PAGE IS THE UNIT (above) -- the continuation row too: a PG page's first paragraph is often most of the page (PG 142 col.
       // 699 kept 4 letters when it joined the page before); the page ends where its print ends, mid-sentence if the print does.
