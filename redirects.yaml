@@ -4,6 +4,20 @@
 # is NOT included in theme deploys. Upload once via Ghost Admin ->
 # Settings -> Labs -> Redirects -> Upload redirects file. Re-upload only
 # when redirects change.
+#
+# THIS FILE IS NOT THE FILE GHOST ACCEPTS. Ghost's YAML parser wants a
+# map keyed by status code:
+#
+#   301:
+#     '^/from/?$': '/to/'
+#   302:
+#     '^/other/?$': '/elsewhere/'
+#
+# It rejects this list-of-objects form outright ("YAML input is
+# invalid"), which is how 2026-09-23's upload failed the first time.
+# This stays the source of truth because it holds the reasoning; convert
+# before uploading, and keep the converted copy out of the theme (it is
+# in the MOCA at website/uploads/redirects.yaml).
 
 # ── Author-prefixed posts from old HubSpot/WordPress site ───────────
 # Old site had /author-slug/post-slug/ paths. Ghost uses flat /{slug}/.
@@ -49,187 +63,191 @@
 #
 # These must stay ABOVE the generic rule: Ghost takes the first match.
 #
+# Each one ends (/.*)?$ rather than /?$ so a paginated old URL comes with
+# it: /author/jmeador/page/2/ used to fall past these to the generic rule
+# and land on /tag/author-jmeador/, which does not exist.
+#
 # Mapped by matching the old slug (initial + surname, e.g. jmeador) to
 # the contributor's author- tag. `ianm` is the one inference: Ian Mosley
 # is the only Ian M. in the tag list.
-- from: ^/author/abertodatti/?$
+- from: ^/author/abertodatti(/.*)?$
   to: /tag/author-andrew-bertodatti/
   permanent: true
-- from: ^/author/ahales/?$
+- from: ^/author/ahales(/.*)?$
   to: /tag/author-ashley-hales/
   permanent: true
-- from: ^/author/arenn/?$
+- from: ^/author/arenn(/.*)?$
   to: /tag/author-aaron-renn/
   permanent: true
-- from: ^/author/auten/?$
+- from: ^/author/auten(/.*)?$
   to: /tag/author-brian-auten/
   permanent: true
-- from: ^/author/beberly/?$
+- from: ^/author/beberly(/.*)?$
   to: /tag/author-brewer-eberly/
   permanent: true
-- from: ^/author/bkristian/?$
+- from: ^/author/bkristian(/.*)?$
   to: /tag/author-bonnie-kristian/
   permanent: true
-- from: ^/author/blambert/?$
+- from: ^/author/blambert(/.*)?$
   to: /tag/author-brianna-lambert/
   permanent: true
-- from: ^/author/bmckernan/?$
+- from: ^/author/bmckernan(/.*)?$
   to: /tag/author-bonnie-mckernan/
   permanent: true
-- from: ^/author/cbenson/?$
+- from: ^/author/cbenson(/.*)?$
   to: /tag/author-christopher-benson/
   permanent: true
-- from: ^/author/cchalk/?$
+- from: ^/author/cchalk(/.*)?$
   to: /tag/author-casey-chalk/
   permanent: true
-- from: ^/author/charlie/?$
+- from: ^/author/charlie(/.*)?$
   to: /tag/author-charlie-clark/
   permanent: true
-- from: ^/author/chris-martin-1/?$
+- from: ^/author/chris-martin-1(/.*)?$
   to: /tag/author-chris-martin/
   permanent: true
-- from: ^/author/cnorvell/?$
+- from: ^/author/cnorvell(/.*)?$
   to: /tag/author-christine-norvell/
   permanent: true
-- from: ^/author/cslowey/?$
+- from: ^/author/cslowey(/.*)?$
   to: /tag/author-collin-slowey/
   permanent: true
-- from: ^/author/emiller/?$
+- from: ^/author/emiller(/.*)?$
   to: /tag/author-eric-miller/
   permanent: true
-- from: ^/author/estice/?$
+- from: ^/author/estice(/.*)?$
   to: /tag/author-elizabeth-stice/
   permanent: true
-- from: ^/author/garyh/?$
+- from: ^/author/garyh(/.*)?$
   to: /tag/author-gary-hartenburg/
   permanent: true
-- from: ^/author/gharp/?$
+- from: ^/author/gharp(/.*)?$
   to: /tag/author-gillis-harp/
   permanent: true
-- from: ^/author/ianm/?$
+- from: ^/author/ianm(/.*)?$
   to: /tag/author-ian-mosley/
   permanent: true
-- from: ^/author/iolson/?$
+- from: ^/author/iolson(/.*)?$
   to: /tag/author-ian-olson/
   permanent: true
-- from: ^/author/isabel/?$
+- from: ^/author/isabel(/.*)?$
   to: /tag/author-isabel-chenot/
   permanent: true
-- from: ^/author/jackson-shepard/?$
+- from: ^/author/jackson-shepard(/.*)?$
   to: /tag/author-jackson-shepard/
   permanent: true
-- from: ^/author/jake/?$
+- from: ^/author/jake(/.*)?$
   to: /tag/author-jake-meador/
   permanent: true
-- from: ^/author/jaskonas/?$
+- from: ^/author/jaskonas(/.*)?$
   to: /tag/author-jon-askonas/
   permanent: true
-- from: ^/author/jeger/?$
+- from: ^/author/jeger(/.*)?$
   to: /tag/author-john-eger/
   permanent: true
-- from: ^/author/jlaughon/?$
+- from: ^/author/jlaughon(/.*)?$
   to: /tag/author-joseph-laughon/
   permanent: true
-- from: ^/author/jmann/?$
+- from: ^/author/jmann(/.*)?$
   to: /tag/author-jeremy-mann/
   permanent: true
-- from: ^/author/jmeador/?$
+- from: ^/author/jmeador(/.*)?$
   to: /tag/author-jake-meador/
   permanent: true
-- from: ^/author/jmeeks/?$
+- from: ^/author/jmeeks(/.*)?$
   to: /tag/author-j-brandon-meeks/
   permanent: true
-- from: ^/author/jminich/?$
+- from: ^/author/jminich(/.*)?$
   to: /tag/author-joseph-minich/
   permanent: true
-- from: ^/author/joshpauling/?$
+- from: ^/author/joshpauling(/.*)?$
   to: /tag/author-josh-pauling/
   permanent: true
-- from: ^/author/jrhea/?$
+- from: ^/author/jrhea(/.*)?$
   to: /tag/author-joseph-rhea/
   permanent: true
-- from: ^/author/jtomes/?$
+- from: ^/author/jtomes(/.*)?$
   to: /tag/author-jonathan-tomes/
   permanent: true
-- from: ^/author/khargaden/?$
+- from: ^/author/khargaden(/.*)?$
   to: /tag/author-kevin-hargaden/
   permanent: true
-- from: ^/author/kshelton/?$
+- from: ^/author/kshelton(/.*)?$
   to: /tag/author-katelyn-walls-shelton/
   permanent: true
-- from: ^/author/kylekeating/?$
+- from: ^/author/kylekeating(/.*)?$
   to: /tag/author-kyle-keating/
   permanent: true
-- from: ^/author/kylewilliams/?$
+- from: ^/author/kylewilliams(/.*)?$
   to: /tag/author-kyle-williams/
   permanent: true
-- from: ^/author/lara-dentremont/?$
+- from: ^/author/lara-dentremont(/.*)?$
   to: /tag/author-lara-d-entremont/
   permanent: true
-- from: ^/author/luke-simon-1/?$
+- from: ^/author/luke-simon-1(/.*)?$
   to: /tag/author-luke-simon/
   permanent: true
-- from: ^/author/matthew-joss/?$
+- from: ^/author/matthew-joss(/.*)?$
   to: /tag/author-matthew-joss/
   permanent: true
-- from: ^/author/matthewleeanderson/?$
+- from: ^/author/matthewleeanderson(/.*)?$
   to: /tag/author-matthew-lee-anderson/
   permanent: true
-- from: ^/author/meast/?$
+- from: ^/author/meast(/.*)?$
   to: /tag/author-mitch-east/
   permanent: true
-- from: ^/author/miles/?$
+- from: ^/author/miles(/.*)?$
   to: /tag/author-miles-smith/
   permanent: true
-- from: ^/author/mkremer/?$
+- from: ^/author/mkremer(/.*)?$
   to: /tag/author-mark-kremer/
   permanent: true
-- from: ^/author/mlapine/?$
+- from: ^/author/mlapine(/.*)?$
   to: /tag/author-matthew-lapine/
   permanent: true
-- from: ^/author/mndaita/?$
+- from: ^/author/mndaita(/.*)?$
   to: /tag/author-musembi-wa-ndaita/
   permanent: true
-- from: ^/author/myles/?$
+- from: ^/author/myles(/.*)?$
   to: /tag/author-myles-werntz/
   permanent: true
-- from: ^/author/ncartagena/?$
+- from: ^/author/ncartagena(/.*)?$
   to: /tag/author-nathan-luis-cartagena/
   permanent: true
-- from: ^/author/oliver-odonovan/?$
+- from: ^/author/oliver-odonovan(/.*)?$
   to: /tag/author-oliver-o-donovan/
   permanent: true
-- from: ^/author/rhyslaverty/?$
+- from: ^/author/rhyslaverty(/.*)?$
   to: /tag/author-rhys-laverty/
   permanent: true
-- from: ^/author/ruben/?$
+- from: ^/author/ruben(/.*)?$
   to: /tag/author-ruben-alvarado/
   permanent: true
-- from: ^/author/samueljames/?$
+- from: ^/author/samueljames(/.*)?$
   to: /tag/author-samuel-james/
   permanent: true
-- from: ^/author/susannah-black/?$
+- from: ^/author/susannah-black(/.*)?$
   to: /tag/author-susannah-black-roberts/
   permanent: true
-- from: ^/author/tessa/?$
+- from: ^/author/tessa(/.*)?$
   to: /tag/author-tessa-carman/
   permanent: true
-- from: ^/author/tsuffield/?$
+- from: ^/author/tsuffield(/.*)?$
   to: /tag/author-t-m-suffield/
   permanent: true
-- from: ^/author/tthieke/?$
+- from: ^/author/tthieke(/.*)?$
   to: /tag/author-tara-thieke/
   permanent: true
-- from: ^/author/vpechersky/?$
+- from: ^/author/vpechersky(/.*)?$
   to: /tag/author-vika-pechersky/
   permanent: true
-- from: ^/author/wgraham/?$
+- from: ^/author/wgraham(/.*)?$
   to: /tag/author-wyatt-graham/
   permanent: true
-- from: ^/author/zackholbrook/?$
+- from: ^/author/zackholbrook(/.*)?$
   to: /tag/author-zack-holbrook/
   permanent: true
-- from: ^/author/zhollifield/?$
+- from: ^/author/zhollifield(/.*)?$
   to: /tag/author-zach-hollifield/
   permanent: true
 
@@ -239,60 +257,60 @@
 # derek, todd, harold, beauchamp, cdavis), the rest are contributors who
 # never got a tag on the new site (michael-sacasas, susannah-black's solo
 # work, austin-gravely, calebiwait, david-ingold, matthew-miller).
-- from: ^/author/alastair/?$
+- from: ^/author/alastair(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/atwclw/?$
+- from: ^/author/atwclw(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/austin-gravely/?$
+- from: ^/author/austin-gravely(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/bboyce/?$
+- from: ^/author/bboyce(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/beauchamp/?$
+- from: ^/author/beauchamp(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/bebelvedere/?$
+- from: ^/author/bebelvedere(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/calebiwait/?$
+- from: ^/author/calebiwait(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/cdavis/?$
+- from: ^/author/cdavis(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/david-ingold/?$
+- from: ^/author/david-ingold(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/derek/?$
+- from: ^/author/derek(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/dgmoore/?$
+- from: ^/author/dgmoore(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/drakeboyce/?$
+- from: ^/author/drakeboyce(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/harold/?$
+- from: ^/author/harold(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/matthew-miller/?$
+- from: ^/author/matthew-miller(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/michael-sacasas/?$
+- from: ^/author/michael-sacasas(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/misscate/?$
+- from: ^/author/misscate(/.*)?$
   to: /contributors/all/
   permanent: false
-- from: ^/author/todd/?$
+- from: ^/author/todd(/.*)?$
   to: /contributors/all/
   permanent: false
 
 # The house account is not a contributor; its tag does not exist.
-- from: ^/author/mere-orthodoxy/?$
+- from: ^/author/mere-orthodoxy(/.*)?$
   to: /about/
   permanent: true
 
