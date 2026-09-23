@@ -704,6 +704,16 @@
      shelf; a value with no parent is a top level and matches the
      communion, as before. The answer is cached per value because
      matches() runs per work per keystroke. */
+  /* One shelf, three spellings. Early English Books files its works by
+     party (Puritan, Anglican); the main collection files the same men
+     under "English Divines" and carries the party in its own field. The
+     shelf cards and the landing counts already read the three as one
+     family (faith-room-openers.js FAMILY), so a shelf ask has to as
+     well, or the shelf's own card counts 4,426 and its list shows
+     4,424. */
+  const SHELF_FAMILY = { Puritan: "English Divines", Anglican: "English Divines" };
+  const shelfFamilyOf = (w) => { const t = trad(w); return SHELF_FAMILY[t] || t; };
+
   const askedForShelf = new Map();
   function isShelfAsk(t) {
     if (!askedForShelf.has(t)) {
@@ -722,7 +732,7 @@
   // The filters. The box is answered separately, by tierOf, because a
   // search is not a filter: it has an order.
   function matches(w) {
-    if (tradition && (isShelfAsk(tradition) ? trad(w) !== tradition : topTrad(w) !== tradition)) return false;
+    if (tradition && (isShelfAsk(tradition) ? shelfFamilyOf(w) !== tradition : topTrad(w) !== tradition)) return false;
     if (denomination && denomOf(w) !== denomination) return false;
     if (party && !inParty(w, party)) return false;
     if (century && cent(w) !== century) return false;
