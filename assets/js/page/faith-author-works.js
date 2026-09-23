@@ -14,8 +14,10 @@
  * (over 3 MB for EEBO alone) on every author page.
  *
  * On the room this script:
- *   - adds "More in the library" under the room's own works, as the same
- *     cards, each opening in the reader;
+ *   - (the works themselves join the room's own list: faith-room-counts.js
+ *     appends them to the room's data as it loads, so there is one
+ *     alphabetical list, searched and paged by the port. Ian, 2026-09-23:
+ *     "merge the two works lists on the author page into one");
  *   - folds the editorial matter the Migne catalogues file under an author
  *     (indexes, editors' notices, title pages, other writers bound into
  *     the volume) into one closed group, so it is there but not counted;
@@ -76,25 +78,6 @@
     if (text != null) e.textContent = text;
     return e;
   }
-  function card(row) {
-    const [corpus, id, title] = row;
-    const href = readerURL(corpus, id);
-    const art = el("article", "rx-work-row ar-more-row");
-    art.dataset.title = title.toLowerCase();
-    const body = el("div");
-    const h = el("h3");
-    const a = el("a", null, title);
-    a.href = href;
-    h.appendChild(a);
-    body.append(h, el("p", "rx-work-reference", reference(row) || "Edition details not recorded"));
-    const actions = el("div", "rx-work-actions");
-    const read = el("a", "rx-text-link", "Read work");
-    read.href = href;
-    read.setAttribute("aria-label", `Read ${title}`);
-    actions.appendChild(read);
-    art.append(body, actions);
-    return art;
-  }
   function otherLine(o, author) {
     const p = el("p", "ar-more-shelves");
     o.forEach(([sh, slug, n], i) => {
@@ -110,17 +93,11 @@
   function section(entry, author) {
     const wrap = el("section", "ar-more");
     wrap.id = "ar-more";
-    // Alphabetical, a leading "The" or "A" ignored, as the room's own list.
+    // The works themselves are in the room's own list now (merged by
+    // faith-room-counts.js as the room loads); what stays here is the
+    // editorial matter and the other shelves.
     const T = window.MOTitleOrder;
     const byTitle = (p, q) => (T && T.compareTitlesAlpha ? T.compareTitlesAlpha(p[2], q[2]) : p[2].localeCompare(q[2]));
-    const x = (entry.x || []).slice().sort(byTitle);
-    if (x.length) {
-      wrap.appendChild(el("h3", "ar-more-title", `More in the library · ${num(x.length)}`));
-      wrap.appendChild(el("p", "rx-note", "Held in the library and ready to read. These have no research record yet, so their citations and positions are not in this room."));
-      const list = el("div", "rx-work-list ar-more-list");
-      x.forEach((row) => list.appendChild(card(row)));
-      wrap.appendChild(list);
-    }
     const e = (entry.e || []).slice().sort(byTitle);
     if (e.length) {
       const det = el("details", "ar-more-other");
@@ -141,20 +118,15 @@
     return wrap;
   }
 
-  // The room's own search box and kind filter reach the added works too.
+  // The room's own search box and kind filter reach the editorial list too.
   function filter(view) {
     const wrap = view.querySelector("#ar-more");
     if (!wrap) return;
     const q = ((view.querySelector("#room-work-q") || {}).value || "").trim().toLowerCase();
     const kind = (view.querySelector("#room-work-kind") || {}).value || "";
-    let shown = 0;
-    wrap.querySelectorAll(".ar-more-row, .ar-more-other li").forEach((row) => {
-      const on = !kind && (!q || row.dataset.title.includes(q));
-      row.hidden = !on;
-      if (on && row.classList.contains("ar-more-row")) shown++;
+    wrap.querySelectorAll(".ar-more-other li").forEach((row) => {
+      row.hidden = !(!kind && (!q || row.dataset.title.includes(q)));
     });
-    const list = wrap.querySelector(".ar-more-list");
-    if (list) wrap.classList.toggle("is-empty", !shown);
   }
 
   function setCounts(room, total) {
@@ -207,7 +179,9 @@
       const view = list && list.closest(".view");
       if (view && !view.querySelector("#ar-more")) {
         const after = view.querySelector("#room-works-more") || list;
-        after.after(section(entry, author));
+        const more = section(entry, author);
+        if (!more.childElementCount) return;
+        after.after(more);
         const q = view.querySelector("#room-work-q");
         const kind = view.querySelector("#room-work-kind");
         if (q) q.addEventListener("input", () => filter(view));

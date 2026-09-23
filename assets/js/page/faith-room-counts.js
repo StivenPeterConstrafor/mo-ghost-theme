@@ -33,6 +33,7 @@
   "use strict";
 
   const ROSTER = /^https:\/\/mo-tfr-library\.mo-podcast-feed\.workers\.dev\/v1\/bible\/([a-z]{2})\/rooms\/index\.json(?:\?|$)/;
+  const ROOM = /^https:\/\/mo-tfr-library\.mo-podcast-feed\.workers\.dev\/v1\/bible\/([a-z]{2})\/rooms\/([^/?]+)\.json(?:\?|$)/;
   const WORKS_DIR = /^https:\/\/mo-tfr-library\.mo-podcast-feed\.workers\.dev\/v1\/works-dir\/([a-z]{2})\.json\.gz(?:\?|$)/;
   const original = window.fetch;
   if (typeof original !== "function") return;
@@ -56,6 +57,12 @@
   // lose "Explore work": that page is the research record, which these
   // works do not have yet.
   const added = new Set();
+
+  // A room names a Migne or EEBO work "<corpus>-<id>", anything else by
+  // its bare slug (the same rule as scripts/build-room-extra-works.mjs).
+  const keyOf = (c, id) => (["eebo", "pld", "pg", "po"].indexOf(c) >= 0 ? `${c}-${id}` : String(id));
+  const SERIES = { pg: "PG", pld: "PL", po: "PO" };
+  const editionOf = (c, n) => (SERIES[c] ? (n ? `${SERIES[c]} ${n}` : SERIES[c]) : c === "mo" ? "In English" : (n ? String(n) : ""));
 
   function rewrite(res, edit) {
     return res.clone().json().then((d) => {
@@ -89,6 +96,32 @@
         });
       });
     }
+    // An author's room: the works the research record leaves out join
+    // the room's own list (Ian, 2026-09-23: "merge the two works lists on
+    // the author page into one"), so the port sorts, searches, filters
+    // and pages them with the rest. n_works is left alone: it is the
+    // research count, and faith-author-works.js adds the extras to the
+    // numbers the reader sees.
+    const room = ROOM.exec(url);
+    if (room && room[2] !== "index") {
+      const [, sh, slug] = room;
+      return Promise.all([original.apply(this, args), load(`${sh}.json`, "rooms")]).then(([res, all]) => {
+        const entry = all && all[decodeURIComponent(slug)];
+        const x = entry && entry.x;
+        if (!res.ok || !x || !x.length) return res;
+        return rewrite(res, (d) => {
+          if (!Array.isArray(d.works)) return false;
+          const have = new Set(d.works.map((w) => w && w.w));
+          x.forEach(([corpus, id, title, n]) => {
+            const w = keyOf(corpus, id);
+            if (have.has(w)) return;
+            d.works.push({ w, t: title, v: null, vs: editionOf(corpus, n), np: 0, nc: 0 });
+            added.add(w);
+          });
+          return true;
+        });
+      });
+    }
     const works = WORKS_DIR.exec(url);
     if (works) {
       const sh = works[1];
@@ -110,12 +143,12 @@
     return original.apply(this, args);
   };
 
-  /* On the Works directory: the added works have no research page, so
+  /* On the Works directory and an author's room: the added works have no research page, so
      their "Explore work" link is removed; and the intro no longer says
      the list is only works with research records. */
   function tidy() {
     if (added.size) {
-      document.querySelectorAll("main.research-works .rx-work-row a[href*='#w/']").forEach((a) => {
+      document.querySelectorAll("main.research-works .rx-work-row a[href*='#w/'], main.research-room .rx-work-row a[href*='#w/']").forEach((a) => {
         const key = decodeURIComponent((a.getAttribute("href") || "").split("#w/")[1] || "");
         if (added.has(key)) a.remove();
       });
