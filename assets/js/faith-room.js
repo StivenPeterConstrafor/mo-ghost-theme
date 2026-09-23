@@ -1393,7 +1393,10 @@
     // under the reader: an open dropdown vanished the moment it was
     // touched, because choosing an option rebuilt the element.
     if (!root.querySelector("[data-room-shell]")) {
-      root.innerHTML = `<div data-room-shell>${views}<div class="faith-room-head"><div class="faith-room-searchbar"><input type="search" class="faith-room-filter" data-room-filter placeholder="Search an author or a title&hellip;" value="${escapeHtml(filter)}" aria-label="Search this collection by author or title" /></div><p class="faith-room-count" data-room-count></p></div><div data-room-controls>${filters}</div><div data-room-rail></div><div data-room-list></div><div data-room-pager></div></div>`;
+      // The search, count, filters and letter rail sit in one thin-line
+      // panel (.faith-room-panel), as the controls on every other TFR
+      // surface do (Ian, 2026-09-23).
+      root.innerHTML = `<div data-room-shell>${views}<div class="faith-room-panel"><div class="faith-room-head"><div class="faith-room-searchbar"><input type="search" class="faith-room-filter" data-room-filter placeholder="Search an author or a title&hellip;" value="${escapeHtml(filter)}" aria-label="Search this collection by author or title" /></div><p class="faith-room-count" data-room-count></p></div><div data-room-controls>${filters}</div><div data-room-rail></div></div><div data-room-list></div><div data-room-pager></div></div>`;
       wireOnce();
     }
 

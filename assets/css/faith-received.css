@@ -19637,3 +19637,30 @@ html.g-mobile #reading .fr-sec-toggle {
   .faith-landing .lp-shelf-plate { height: 110px; }
   .faith-landing .lp-shelf h4 { font-size: 17px; }
 }
+
+/* ── Collection pages and All Works: the controls in one panel ──
+   Search, count, filters and the letter rail in a thin-line cream panel
+   (faith-room.js wraps them in .faith-room-panel), the same treatment as
+   the controls on the author, work, Scripture and research surfaces.
+   Ian, 2026-09-23: these pages "don't look like they have any of the
+   design updates". */
+.faith-room-panel {
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: #fbf8f3;
+  padding: 18px 22px 8px;
+  margin: 0 0 28px;
+}
+.faith-room-panel .faith-room-head { margin-bottom: 14px; }
+.faith-room-panel .faith-room-filters { margin-bottom: 12px; }
+.faith-room-panel .faith-room-filter { background: var(--color-white, #fff); }
+.faith-room-panel .faith-room-letters {
+  border-bottom: 0;
+  margin: 0 -22px;
+  padding: 10px 22px 6px;
+}
+.faith-room-panel [data-room-rail]:empty { display: none; }
+@media (max-width: 640px) {
+  .faith-room-panel { padding: 14px 14px 6px; }
+  .faith-room-panel .faith-room-letters { margin: 0 -14px; padding: 8px 14px 4px; }
+}
