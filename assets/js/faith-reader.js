@@ -18,6 +18,20 @@
 
 (function () {
   "use strict";
+
+  // Text from the library worker can carry HTML entities in plain-text
+  // fields ("Thomas &agrave; Kempis" in the English Editions records), and
+  // escapeHtml prints them as written. Decoded the same way every
+  // catalogue is (MOCorpora.decode, faith-corpora.js), so the header says
+  // what the catalogue card beside it says. Ian, 2026-09-23.
+  function decodedMeta(o) {
+    const decode = window.MOCorpora && window.MOCorpora.decode;
+    if (!decode) return o;
+    for (const k of Object.keys(o)) {
+      if (typeof o[k] === "string") o[k] = decode(o[k]);
+    }
+    return o;
+  }
   // ONE LIBRARY (owner, 2026-09-23: "take out the whole latin library vs english things"). The library is one library,
   // shelved by tradition. "The Latin Library" is the name of the pipeline most of it came through, and it holds English
   // works (Davenant, Baxter, the Westminster minutes); Early English Books and the English Editions are the same
@@ -361,12 +375,12 @@
       })
       .then((data) => {
         const m = data.meta || {};
-        meta = {
+        meta = decodedMeta({
           title: m.title,
           author: m.author,
           date: m.year ? String(m.year) : "",
           description: [m.place, m.publisher, m.extent].filter(Boolean).join(" · "),
-        };
+        });
         populateHeader(meta);
         const nodes = data.toc || [];
         buildTocLinks(nodes);
@@ -423,11 +437,11 @@
           if (!Array.isArray(s.rows)) s.rows = [];
         });
         data.sections = nestByHeadings(liftUnnamedSections(divideFlatSections(data.sections)));
-        meta = {
+        meta = decodedMeta({
           title: data.title || slug,
           author: data.author || data.work || (ONE_LIBRARY.has(corpus.id) ? "" : corpus.label),
           description: data.titleLatin && data.titleLatin !== data.title ? data.titleLatin : "",
-        };
+        });
         populateHeader(meta);
         buildLangToggle();
         buildExtractToc(data.sections);
@@ -456,11 +470,11 @@
           throw new Error("no readable sections");
         }
         data.sections = nestByHeadings(liftUnnamedSections(divideFlatSections(data.sections)));
-        meta = {
+        meta = decodedMeta({
           title: data.title || slug,
           author: data.work || (ONE_LIBRARY.has(corpus.id) ? "" : corpus.label),
           description: "",
-        };
+        });
         populateHeader(meta);
         return joinEnglishLayer(data).then((joined) => {
           // The lanes are decided after the join, not before. A corpus
