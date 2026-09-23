@@ -220,31 +220,26 @@
 <!-- ── V. The shelf ──────────────────────────────────────────────── -->
 <section class="lp-band">
   <div class="container">
-    <p class="lp-num">The collections</p>
+    <p class="lp-num">The shelves</p>
     <div class="lp-shelf">
-      <a href="/the-faith-received/confessions/">
-        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/confessions-plate.jpg"}}&amp;frv=d5079868e939f3fc" alt="" loading="lazy" /></span>
-        <h4>Creeds, Confessions, &amp; Catechisms</h4>
-        <p><span data-landing-corpus="confessions">Confessional documents</span></p>
-        <p class="lp-shelf-desc">The confessional record from the second century to the twentieth. The conciliar acts sit alongside it.</p>
-        <p class="lp-shelf-who">Nicaea &middot; Chalcedon &middot; Augsburg &middot; Trent &middot; Westminster</p>
-      </a>
-      
-      <a href="/the-faith-received/patrologia-graeca/">
-        <span class="lp-shelf-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/pg/scan/migne/047/00109_dialogus-historicus-latin/mg047_0110.jpg" alt="" loading="lazy" /></span>
-        <h4>Patrologia Graeca</h4>
-        <p><span data-landing-tradition="Greek Fathers">Greek Christian writings</span></p>
-        <p class="lp-shelf-desc">Migne&rsquo;s Greek fathers, the Apostolic Fathers to the fall of Constantinople.</p>
-        <p class="lp-shelf-who">John Chrysostom &middot; Origen &middot; Athanasius &middot; Basil the Great &middot; Gregory of Nazianzus</p>
-      </a>
+      {{!-- The corpus owner's shelves (thefaithreceived.vercel.app, 2026-09-22): the nine traditions in his order,
+           then the confessions, which his site also keeps apart from the shelves. "The Latin Library" is retired
+           as a shelf there; its works sit on the tradition shelves (Medieval, Roman Catholic, Reformed, Lutheran,
+           Humanism and Law). The room at /latin-library/ still resolves. --}}
       <a href="/the-faith-received/patrologia-latina/">
         <span class="lp-shelf-plate"><img src="{{asset "images/tfr/pl-plate.jpg"}}&amp;frv=eff2a8784cd2e0bc" alt="" loading="lazy" /></span>
-        <h4>Patrologia Latina</h4>
+        <h4>Latin Fathers</h4>
         <p><span data-landing-tradition="Latin Fathers">Latin Christian writings</span></p>
         <p class="lp-shelf-desc">Migne&rsquo;s Latin fathers and medievals, Tertullian to Innocent III.</p>
         <p class="lp-shelf-who">Augustine &middot; Jerome &middot; Ambrose &middot; Bernard of Clairvaux &middot; Peter Damian</p>
       </a>
-      
+      <a href="/the-faith-received/patrologia-graeca/">
+        <span class="lp-shelf-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/pg/scan/migne/047/00109_dialogus-historicus-latin/mg047_0110.jpg" alt="" loading="lazy" /></span>
+        <h4>Greek Fathers</h4>
+        <p><span data-landing-tradition="Greek Fathers">Greek Christian writings</span></p>
+        <p class="lp-shelf-desc">Migne&rsquo;s Greek fathers, the Apostolic Fathers to the fall of Constantinople.</p>
+        <p class="lp-shelf-who">John Chrysostom &middot; Origen &middot; Athanasius &middot; Basil the Great &middot; Gregory of Nazianzus</p>
+      </a>
       <a href="/the-faith-received/patrologia-orientalis/">
         <span class="lp-shelf-plate"><img src="{{asset "images/tfr/po-title-1907.jpg"}}" width="2456" height="3761" alt="Patrologia Orientalis, volume 1, 1907 title page" loading="lazy" /></span>
         <span class="lp-shelf-caption">Patrologia Orientalis, volume 1, 1907</span>
@@ -253,27 +248,12 @@
         <p class="lp-shelf-desc">The Christian East: Syriac, Coptic, Armenian, Ethiopic and Arabic.</p>
         <p class="lp-shelf-who">Severus of Antioch &middot; Philoxenus of Mabbug &middot; Jacob of Edessa &middot; Bar Hebraeus &middot; Mark of Ephesus</p>
       </a>
-      <a href="/the-faith-received/latin-library/">
-        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/suarez-title.webp"}}" alt="Francisco Suárez, Opera Omnia, volume 1, 1856 title page" loading="lazy" /></span>
-        <span class="lp-shelf-caption">Francisco Suárez, Opera Omnia, volume 1, 1856</span>
-        <h4>The Latin Library</h4>
-        <p><span data-landing-corpus="tfr">Latin theological works</span></p>
-        <p class="lp-shelf-desc">Scholastic and reformation divinity in Latin with English alongside.</p>
-        <p class="lp-shelf-who">Thomas Aquinas &middot; Martin Luther &middot; John Calvin &middot; Duns Scotus &middot; Francisco Su&aacute;rez</p>
-      </a>
-      <a href="/the-faith-received/all-works/?denomination=English%20Divines">
-        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/eebo-plate.jpg"}}&amp;frv=58e14119e44c1e7d" alt="" loading="lazy" /></span>
-        <h4>English writers</h4>
-        <p><span data-landing-tradition="English Divines">English theological works</span></p>
-        <p class="lp-shelf-desc">Sermons, biblical commentaries and theological works by English-speaking writers, including Puritans and Anglicans.</p>
-        <p class="lp-shelf-who">John Owen &middot; Richard Baxter &middot; John Bunyan &middot; William Perkins &middot; Richard Hooker</p>
-      </a>
-      
-      <a href="/the-faith-received/all-works/?collection=all&amp;tradition=Continental%20Reformed">
-        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/chamier-title.webp"}}&amp;frv=2f6fb22d1ba1b6b5" alt="Daniel Chamier, Panstratia Catholica, 1627 title page" loading="lazy" /></span>
-        <span class="lp-shelf-caption">Daniel Chamier, Panstratia Catholica, 1627</span>
-        <h4>Reformed</h4><p data-landing-tradition="Continental Reformed">Browse the works</p>
-        <p class="lp-shelf-desc">Reformed theology, biblical interpretation and debates over doctrine, sacraments and church government.</p><p class="lp-shelf-who">John Calvin · Theodore Beza · Amandus Polanus · Daniel Chamier</p>
+      <a href="/the-faith-received/all-works/?collection=all&amp;tradition=Medieval">
+        <span class="lp-shelf-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/works/duns-scotus-opera-t01/p/5.webp" alt="John Duns Scotus, Opera Omnia, volume 1, 1891 title page" loading="lazy" /></span>
+        <span class="lp-shelf-caption">John Duns Scotus, Opera Omnia, volume 1, 1891</span>
+        <h4>Medieval</h4><p data-landing-tradition="Medieval">Browse the works</p>
+        <p class="lp-shelf-desc">The scholastics: the Sentences, the summas and their commentators, from the twelfth century to the fifteenth.</p>
+        <p class="lp-shelf-who">Thomas Aquinas &middot; Albert the Great &middot; John Duns Scotus &middot; Bonaventure &middot; Johannes Capreolus</p>
       </a>
       <a href="/the-faith-received/all-works/?denomination=Roman%20Catholic">
         <span class="lp-shelf-plate"><img src="{{asset "images/tfr/bellarmine-title.webp"}}&amp;frv=4e619b2ae555eb4e" alt="Robert Bellarmine, Disputationes de Controversiis, 1621 title page" loading="lazy" /></span>
@@ -281,11 +261,43 @@
         <h4>Roman Catholic</h4><p data-landing-tradition="Roman Catholic">Browse the works</p>
         <p class="lp-shelf-desc">Catholic theology, biblical commentary and controversies over the Church, grace and the sacraments.</p><p class="lp-shelf-who">Robert Bellarmine · Francisco Suárez · Thomas Cajetan · Domingo Báñez</p>
       </a>
+      <a href="/the-faith-received/all-works/?collection=all&amp;tradition=Continental%20Reformed">
+        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/chamier-title.webp"}}&amp;frv=2f6fb22d1ba1b6b5" alt="Daniel Chamier, Panstratia Catholica, 1627 title page" loading="lazy" /></span>
+        <span class="lp-shelf-caption">Daniel Chamier, Panstratia Catholica, 1627</span>
+        <h4>Continental Reformed</h4><p data-landing-tradition="Continental Reformed">Browse the works</p>
+        <p class="lp-shelf-desc">Reformed theology, biblical interpretation and debates over doctrine, sacraments and church government.</p><p class="lp-shelf-who">John Calvin · Theodore Beza · Amandus Polanus · Daniel Chamier</p>
+      </a>
+      <a href="/the-faith-received/all-works/?denomination=English%20Divines">
+        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/eebo-plate.jpg"}}&amp;frv=58e14119e44c1e7d" alt="" loading="lazy" /></span>
+        {{!-- "English writers", never "English Divines": the shelf is a
+             nationality, not a church, and a reader found Benjamin Keach
+             filed under it. The filter value keeps the data's own name.
+             Same rule as MOFaithLabel.shelf(); PR #35 restored the raw
+             value here. --}}
+        <h4>English writers</h4>
+        <p><span data-landing-tradition="English Divines">English theological works</span></p>
+        <p class="lp-shelf-desc">Sermons, biblical commentaries and theological works by English-speaking writers, including Puritans and Anglicans.</p>
+        <p class="lp-shelf-who">John Owen &middot; Richard Baxter &middot; John Bunyan &middot; William Perkins &middot; Richard Hooker</p>
+      </a>
       <a href="/the-faith-received/all-works/?denomination=Lutheran">
         <span class="lp-shelf-plate"><img src="{{asset "images/tfr/gerhard-title.webp"}}&amp;frv=62d4208c2c67d407" alt="Johann Gerhard, Confessio Catholica, 1634 title page" loading="lazy" /></span>
         <span class="lp-shelf-caption">Johann Gerhard, Confessio Catholica, 1634</span>
         <h4>Lutheran</h4><p data-landing-tradition="Lutheran">Browse the works</p>
         <p class="lp-shelf-desc">Lutheran teaching on justification, the sacraments and the Church, with commentaries and works of systematic theology.</p><p class="lp-shelf-who">Martin Luther · Philip Melanchthon · Martin Chemnitz · Johann Gerhard</p>
+      </a>
+      <a href="/the-faith-received/all-works/?collection=all&amp;tradition=Humanism%20and%20Law">
+        <span class="lp-shelf-plate"><img src="https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/works/christian-wolff-jus-naturae-methodo-scientifica-pertractatum/p/1.webp" alt="Christian Wolff, Jus Naturae, 1740 title page" loading="lazy" /></span>
+        <span class="lp-shelf-caption">Christian Wolff, Jus Naturae, 1740</span>
+        <h4>Humanism and Law</h4><p data-landing-tradition="Humanism and Law">Browse the works</p>
+        <p class="lp-shelf-desc">Natural law, jurisprudence and the humanists, read beside the theologians who argued with them.</p>
+        <p class="lp-shelf-who">Gottfried Wilhelm Leibniz &middot; Christian Wolff &middot; William Blackstone &middot; John Selden &middot; Alberico Gentili</p>
+      </a>
+      <a href="/the-faith-received/confessions/">
+        <span class="lp-shelf-plate"><img src="{{asset "images/tfr/confessions-plate.jpg"}}&amp;frv=d5079868e939f3fc" alt="" loading="lazy" /></span>
+        <h4>Creeds, Confessions, &amp; Catechisms</h4>
+        <p><span data-landing-corpus="confessions">Confessional documents</span></p>
+        <p class="lp-shelf-desc">The confessional record from the second century to the twentieth. The conciliar acts sit alongside it.</p>
+        <p class="lp-shelf-who">Nicaea &middot; Chalcedon &middot; Augsburg &middot; Trent &middot; Westminster</p>
       </a>
     </div>
     <p class="tfr-browse-all tfr-browse-all--under"><a class="tfr-browse-btn" href="/the-faith-received/all-works/?collection=all">Browse Full Library</a></p>
