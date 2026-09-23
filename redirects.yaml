@@ -321,6 +321,63 @@
   to: /tag/author-$1/
   permanent: true
 
+# ── Import duplicates (SEO audit M9, 2026-09-23) ────────────────────
+# The HubSpot import created 13 posts twice, the second copy under a -2
+# slug: same title, same date, same text, checked word for word. The
+# copies were unpublished (draft, not deleted) and their addresses send
+# readers to the original, so any link to a copy still lands.
+- from: ^/jake-reading-the-pan-africanists-kenneth-kaunda-6-2/?$
+  to: /jake-reading-the-pan-africanists-kenneth-kaunda-6/
+  permanent: true
+
+- from: ^/passages-season-1-episode-9-2/?$
+  to: /passages-season-1-episode-9/
+  permanent: true
+
+- from: ^/passages-season-1-episode-8-2/?$
+  to: /passages-season-1-episode-8/
+  permanent: true
+
+- from: ^/passages-season-1-episode-7-2/?$
+  to: /passages-season-1-episode-7/
+  permanent: true
+
+- from: ^/passages-season-1-episode-6-2/?$
+  to: /passages-season-1-episode-6/
+  permanent: true
+
+- from: ^/passages-episode-5-2/?$
+  to: /passages-episode-5/
+  permanent: true
+
+- from: ^/passages-passages-season-1-episode-2-2/?$
+  to: /passages-passages-season-1-episode-2/
+  permanent: true
+
+- from: ^/passages-season-1-episode-3-2/?$
+  to: /passages-season-1-episode-3/
+  permanent: true
+
+- from: ^/trivial-notes-sermon-2-7-2/?$
+  to: /trivial-notes-sermon-2-7/
+  permanent: true
+
+- from: ^/trivial-trivial-link-2021-2-2/?$
+  to: /trivial-trivial-link-2021-2/
+  permanent: true
+
+- from: ^/trivial-65-2-2/?$
+  to: /trivial-65-2/
+  permanent: true
+
+- from: ^/suzania-112-2-2/?$
+  to: /suzania-112-2/
+  permanent: true
+
+- from: ^/suzania-32-2-2/?$
+  to: /suzania-32-2/
+  permanent: true
+
 # ── RSS / Feed ──────────────────────────────────────────────────────
 # Old WordPress/HubSpot feed URLs → Ghost's built-in RSS.
 - from: ^/feed/?$
