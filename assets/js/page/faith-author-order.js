@@ -41,7 +41,6 @@
   // ── 2 and 3: works by title ──────────────────────────────────────
   if (R && typeof R.workOrder === "function" && typeof R.orderWork === "function") {
     const originalOrder = R.workOrder;
-    const family = typeof R.workFamily === "function" ? R.workFamily : null;
     const series = typeof R.seriesRef === "function" ? R.seriesRef : () => null;
     const titleOf = (w) => w.t || w.title || w.originalTitle || w.w || "";
 
@@ -51,15 +50,13 @@
       .replace(/(?:[,.·:;\s]+)?\b(?:vol(?:ume)?s?|tome?|tomus|band|bd|part|pars)\.?\s+(?:\d+|[ivxlcdm]+)\b.*$/i, "")
       .trim();
 
+    // By the set's title; two volumes of one set (the same title once
+    // "Vol. 3" is taken off) keep the set's own order. A catalogue group
+    // is not enough to go on: Bellarmine's group holds both his
+    // Disputations and his Complete Works, which are two titles.
     const alphaOrder = (a, b) => {
       const x = R.orderWork(a);
       const y = R.orderWork(b);
-      // Two volumes of one set: the set's own order.
-      if (family) {
-        const fx = family(x);
-        const fy = family(y);
-        if (fx && fx === fy && /^group:/.test(fx)) return originalOrder(a, b);
-      }
       return T.compareTitlesAlpha(setTitle(x), setTitle(y)) || originalOrder(a, b);
     };
 
@@ -90,7 +87,12 @@
       return r.a;
     }
   };
-  const sortKey = (r) => T.fileAs(shownName(r), Boolean(EARLY[r.e]));
+  // A volume anthology ("PG 10 (anthology)") is not an author: it files
+  // after Z, in volume order, rather than opening the Greek shelf.
+  const isAnthology = (r) => /-anthology$/.test(String(r.s || "")) || /\banthology\b/i.test(String(r.a || ""));
+  const sortKey = (r) => (isAnthology(r)
+    ? `\uffff${T.normalise ? T.normalise(shownName(r)) : shownName(r)}`
+    : T.fileAs(shownName(r), Boolean(EARLY[r.e])));
 
   const portPaneList = window.paneList;
   if (typeof portPaneList === "function") {
@@ -99,7 +101,10 @@
       const isAuthors = box && box.closest && box.closest(".rx-author-fold") && Array.isArray(items);
       if (isAuthors && sortSel && sortSel.value === "a") {
         const keyed = items.map((r) => [sortKey(r), r]);
-        keyed.sort((p, q) => (p[0] < q[0] ? -1 : p[0] > q[0] ? 1 : 0));
+        const byKey = typeof Intl !== "undefined" && Intl.Collator
+          ? new Intl.Collator(undefined, { numeric: true, sensitivity: "base" }).compare
+          : (p, q) => (p < q ? -1 : p > q ? 1 : 0);
+        keyed.sort((p, q) => byKey(p[0], q[0]));
         items = keyed.map((k) => k[1]);
       }
       return portPaneList.call(this, box, items, ...rest);

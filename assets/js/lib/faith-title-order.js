@@ -118,7 +118,8 @@
       .replace(/^(?:saint|st\.?)\s+/i, "");
     if (!raw) return "\uffff";
     if (raw.indexOf(",") > 0 || early) return foldName(raw) || "\uffff";
-    const n = raw.replace(/\s*\([^()]*\)\s*$/, "").trim() || raw;
+    // "Robert Baron of St Andrews": the place is not the surname.
+    const n = raw.replace(/\s*\([^()]*\)\s*$/, "").replace(/\s+of\s+.+$/i, "").trim() || raw;
     const parts = n.split(/\s+/);
     if (parts.length < 2) return foldName(n);
     let at = parts.length - 1;

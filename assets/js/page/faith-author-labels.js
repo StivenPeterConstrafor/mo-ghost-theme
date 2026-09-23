@@ -172,6 +172,9 @@
       const strong = main && main.querySelector("strong");
       const small = main && main.querySelector("small");
       if (!strong || !small) return;
+      // A volume anthology has no one tradition, and its only date is
+      // the year Migne printed it.
+      if (/\banthology\b/i.test(strong.textContent)) { row.dataset.moLabel = "1"; return; }
       let sh = "";
       try { sh = new URL(main.href, location.href).searchParams.get("sh") || ""; } catch (e) { /* none */ }
       const parts = small.textContent.split(" · ");
