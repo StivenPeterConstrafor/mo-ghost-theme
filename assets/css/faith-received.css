@@ -19606,8 +19606,8 @@ html.g-mobile #reading .fr-sec-toggle {
   .fro-fold .fro-foot { padding: 12px 16px 14px; }
 }
 
-/* ── The landing's shelves: four to a line, smaller (Ian, 2026-09-23:
-   "Shrink these down and make this section 4 to a line") ──
+/* ── The landing's shelves: five to a line, smaller (Ian, 2026-09-23:
+   "Shrink these down", then "5 to a line") ──
    Wide screens only; the tablet (two across) and phone (one list)
    layouts above stand. The plate captions ("Patrologia Orientalis,
    volume 1, 1907") are dropped here: three cards had one and seven did
@@ -19630,7 +19630,10 @@ html.g-mobile #reading .fr-sec-toggle {
     overflow: hidden;
   }
 }
+/* Five across (Ian, 2026-09-23: "actually make those ... 5 to a line"):
+   the ten shelves are two even rows. */
 @media (min-width: 1101px) {
-  .faith-landing .lp-shelf { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .faith-landing .lp-shelf-plate { height: 120px; }
+  .faith-landing .lp-shelf { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 24px 18px; }
+  .faith-landing .lp-shelf-plate { height: 110px; }
+  .faith-landing .lp-shelf h4 { font-size: 17px; }
 }
