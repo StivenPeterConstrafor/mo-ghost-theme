@@ -107,7 +107,15 @@
     panel.appendChild(stats);
   }
 
+  /* Ian, 2026-09-23: 'change all "Read about [author]" to just "About
+     [author]"'. The port writes the summary; only its text changes. */
+  function aboutLabel(summary) {
+    const t = summary.textContent;
+    if (/^Read about /.test(t)) summary.textContent = t.replace(/^Read about /, "About ");
+  }
+
   function scan() {
+    document.querySelectorAll(".rx-author-bio > summary").forEach(aboutLabel);
     document.querySelectorAll("main.research-room .rx-profile .stats").forEach(regroup);
     document.querySelectorAll("main.research-work").forEach((main) => {
       gatherWorkHead(main);

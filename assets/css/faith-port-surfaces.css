@@ -578,6 +578,50 @@ main.research-room:has(.rx-profile) .rx-work-row .rx-work-actions {
   padding-top: 10px;
 }
 
+/* "More in the library": the works the research record leaves out,
+   added by faith-author-works.js as the same cards, under a thin rule. */
+main.research-room:has(.rx-profile) .ar-more {
+  border-top: 1px solid var(--ar-line);
+  margin-top: 30px;
+  padding-top: 22px;
+}
+main.research-room:has(.rx-profile) .ar-more-title { margin: 0 0 4px; font-size: 22px; font-weight: 500; }
+main.research-room:has(.rx-profile) .ar-more > .rx-note { margin: 0 0 6px; max-width: 75ch; }
+main.research-room:has(.rx-profile) .ar-more.is-empty > .ar-more-title,
+main.research-room:has(.rx-profile) .ar-more.is-empty > .rx-note,
+main.research-room:has(.rx-profile) .ar-more.is-empty > .ar-more-list { display: none; }
+main.research-room:has(.rx-profile) .ar-more-other {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-panel);
+  margin: 18px 0 0;
+  padding: 0;
+}
+main.research-room:has(.rx-profile) .ar-more-other > summary {
+  cursor: pointer;
+  padding: 12px 20px;
+  font-size: 15px;
+}
+main.research-room:has(.rx-profile) .ar-more-other > ul {
+  list-style: none;
+  margin: 0;
+  padding: 4px 20px 14px;
+  border-top: 1px solid var(--ar-line);
+  columns: 2 320px;
+  column-gap: 32px;
+}
+main.research-room:has(.rx-profile) .ar-more-other li {
+  break-inside: avoid;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--ar-line);
+  font-size: 15px;
+}
+main.research-room:has(.rx-profile) .ar-more-ref { flex: none; color: var(--muted, #6b6660); font-size: 13px; }
+main.research-room:has(.rx-profile) .ar-more-shelves { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 16px 0 0; font-size: 15px; }
+
 @media (max-width: 640px) {
   main.research-room:has(.rx-profile) .rx-profile { padding: 14px 16px 4px; }
   main.research-room:has(.rx-profile) .rx-profile .rx-author-bio { margin: 10px -16px 0; padding: 4px 16px; }
