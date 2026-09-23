@@ -1815,3 +1815,111 @@ html[data-lh] .app #reading :is(.row:not(.rapp) > .en, .row:not(.rapp) > .la,
   background: var(--nbx-panel);
   padding: 12px 14px;
 }
+
+/* ── Contents and toolbar fold away; contents expand (Ian, 2026-09-23) ──
+   The dictionary's three controls, for the reader (faith-port-read-
+   chrome.js). The row is the toolbar's last line, so --phh (measured
+   from .ph) makes room for it. Desktop only; the phone has its thumb
+   bar. */
+.fr-reader-head .fr-read-strip {
+  flex: 1 1 100%;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 4px 0 6px;
+  border-top: 1px solid var(--border, #d9c6a7);
+}
+.fr-read-fold {
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted, #6b6660);
+  cursor: pointer;
+}
+.fr-read-fold:hover,
+.fr-read-fold:focus-visible { color: var(--fg, #2d2927); }
+html.g-mobile .fr-read-strip,
+html.g-mobile .fr-read-restore,
+html.g-mobile .fr-read-toc { display: none !important; }
+
+/* Hide toolbar: the scrolled-away state (above), pinned. */
+html.fr-bar-hidden header.site-header { transform: translateY(-101%); }
+html.fr-bar-hidden #app .ph.fr-reader-head { transform: translateY(calc(-101% - var(--mo-head, 61px))); }
+html.fr-bar-hidden body { padding-top: env(safe-area-inset-top, 0px) !important; }
+html.fr-bar-hidden #app { padding-top: env(safe-area-inset-top, 0px); }
+html.fr-bar-hidden .faith-port-read-page { height: 100dvh; }
+html.fr-bar-hidden #app .sidebar { top: 0; }
+.fr-read-restore {
+  position: fixed;
+  top: 10px;
+  right: 16px;
+  z-index: 60;
+  padding: 6px 12px;
+  border: 1px solid var(--border, #d9c6a7);
+  border-radius: 3px;
+  background: var(--card, #fffdfa);
+  color: var(--fg, #2d2927);
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.fr-read-restore[hidden] { display: none; }
+
+/* Expand contents: the outline as thin-line cards over the text, one per
+   top-level section, read across in rows; the overlay scrolls down. */
+.fr-read-toc {
+  position: absolute;
+  inset: var(--phh, 64px) 0 0 0;
+  z-index: 40;
+  overflow-y: auto;
+  background: var(--bg, #f6f3f2);
+  padding: 18px 28px 64px;
+}
+html.fr-bar-hidden .fr-read-toc { top: 0; }
+.fr-read-toc[hidden] { display: none; }
+.fr-read-toc-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 14px;
+}
+.fr-read-toc-head h2 { margin: 0; font-size: 20px; font-weight: 500; }
+.fr-read-toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+.fr-read-toc-card {
+  border: 1px solid var(--border, #d9c6a7);
+  border-radius: 3px;
+  background: var(--card, #fffdfa);
+  padding: 12px 16px 8px;
+}
+.fr-read-toc-card ul { list-style: none; margin: 6px 0 0; padding: 0; }
+.fr-read-toc-card li { border-top: 1px solid var(--border, #d9c6a7); }
+.fr-read-toc-entry {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 6px 0;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--fg, #2d2927);
+  cursor: pointer;
+}
+.fr-read-toc-entry.fr-read-toc-title { font-size: 16px; font-weight: 600; padding-top: 2px; }
+.fr-read-toc-entry:hover,
+.fr-read-toc-entry:focus-visible { color: var(--accent, #b0573a); }
+.fr-read-toc-entry.is-current { color: var(--accent, #b0573a); }
+.fr-read-toc-empty { color: var(--muted, #6b6660); }
