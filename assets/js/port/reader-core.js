@@ -5263,7 +5263,13 @@ async function loadPgCanon(ws){
   let _pgZone=null;   // page-keyed ColGreek zones (set when the body is mixed)
   const _healGrc=s=>String(s)
     .replace(/([\u0370-\u03FF\u1F00-\u1FFF])-\s?(?=[\u0370-\u03FF\u1F00-\u1FFF])/g,"$1")
-    .replace(/\u00A1/g,"i").replace(/[{}]/g,"");
+    .replace(/\u00A1/g,"i").replace(/[{}]/g,"")
+    // ZONE GREEK AS READING TEXT (owner 2026-09-23 "clean, readable ... reading"): the plate's OCR keeps Migne's margin letters -- a
+    // lone capital A-E (Greek or Latin) between words ('μὴ Β συναναμίγνυσθαι') -- a closing 'NOTE.'/'ΝΟΤΕ.' and dotted leaders
+    // read as 'ο ο ο'; reading text drops them (the English lane already drops its cue letters, owner 2026-09-03)
+    .replace(/(^|\s)[\u0391-\u0395A-E](?=\s+[\u03b1-\u03c9\u1f00-\u1fff])/g,"$1")
+    .replace(/(?:\s+\u03bf){3,}(?=\s|$)/g,"")
+    .replace(/\s+(?:NOTE|NOT\u00c6|\u039d\u039f\u03a4\u0395)[.:]?\s*$/,"");
 
   let _zoneReplace=true;   // false = CLEAN body (owner 2026-08-18 pg-3223: dirty vol-34 zones
                            // were OVERWRITING a 99%-Greek body with Latin+apparatus glue) —
