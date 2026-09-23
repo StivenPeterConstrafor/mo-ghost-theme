@@ -17342,6 +17342,7 @@ a.fr-btn:hover,
   background-size: 100% 100%;
   border-color: var(--btn-sweep-fill, #c1593c);
   color: var(--btn-sweep-ink, #fff);
+  text-decoration: none;
 }
 
 /* Disabled keeps the outline and loses its conviction. Not display:none and not
@@ -17860,6 +17861,7 @@ a.fr-btn:hover,
   background-size: 100% 100%;
   border-color: var(--color-secondary, #c1593c);
   color: #fff;
+  text-decoration: none;
 }
 
 /* "| Home" is a quieter half of the same label. */
