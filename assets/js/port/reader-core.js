@@ -6063,7 +6063,7 @@ async function loadPgCanon(ws){
       const _needW=[...new Set(Object.keys(enByCol).map(Number).filter(Boolean).map(n=>n%2?n:n-1))].filter(p=>!_shown.has(p)&&!_shown.has(p+1)&&[...(enByCol[p]||[]),...(enByCol[p+1]||[])].join(" ").length>=120&&!_frontW(p));
       if(_needW.length){
         const pvW5=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
-        const pvUrl5=pvW5?((pvW5.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null;
+        const pvUrl5=_pvR2(pvW5?((pvW5.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null);   // R2: v1/tei/pgpv, as the other pageview reads
         if(pvUrl5){window.__pgpvCache=window.__pgpvCache||{};
           window.__pgpvCache[pvUrl5]=window.__pgpvCache[pvUrl5]||fetch(pvUrl5+(pvUrl5.includes("?")?"&":"?")+"v="+encodeURIComponent(window.__FR_VER||"pg-source-20260914")).then(r=>r.ok?r.text():null).catch(()=>null);
           const x5=await window.__pgpvCache[pvUrl5];
