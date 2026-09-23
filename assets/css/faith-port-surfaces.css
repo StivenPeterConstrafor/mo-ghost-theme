@@ -460,11 +460,21 @@ body.web-citation-layout #faith-web-constellations .cn-hint { margin: 10px 0 0; 
    Scoped to an author room (main.research-room with a profile): the
    Scripture room shares .research-room and has no .rx-profile. The port
    keeps its structure; this is only the skin. */
-main.research-room:has(.rx-profile) {
+/* The thin-line tokens, for every surface that carries boxes. Built
+   from the port's own theme variables, so a card is the port's card
+   colour and a panel sits between card and page, in light and dark
+   alike (a literal #fff card glared on the dark theme). */
+main.research-room:has(.rx-profile),
+main.research-work,
+main.research-directory,
+main.research-compare,
+.faith-port-search-page,
+.faith-port-dtc-page,
+body.web-page {
   --ar-line: var(--border, #d9c6a7);
-  --ar-line-strong: #b9a37e;
-  --ar-panel: #fbf8f3;
-  --ar-card: #fff;
+  --ar-line-strong: color-mix(in srgb, var(--border, #d9c6a7) 60%, var(--ink, #2d2927));
+  --ar-panel: color-mix(in srgb, var(--card, #fff) 55%, var(--bg, #f3ede3));
+  --ar-card: var(--card, #fff);
 }
 
 main.research-room:has(.rx-profile) .rx-profile {
@@ -640,12 +650,7 @@ main.research-room:has(.rx-profile) .ar-more-shelves { display: flex; flex-wrap:
    faith-author-stats.js), the numbers as boxes, the signature quote as a
    card, and each topic, and the authorities, as a box whose claims are
    rows inside it. */
-main.research-work {
-  --ar-line: var(--border, #d9c6a7);
-  --ar-line-strong: #b9a37e;
-  --ar-panel: #fbf8f3;
-  --ar-card: #fff;
-}
+
 main.research-work .ar-work-head {
   border: 1px solid var(--ar-line);
   border-radius: 3px;
@@ -711,4 +716,267 @@ main.research-work details.wdet > div:last-child { border-bottom: 0; }
   main.research-work details.wdet > summary { padding: 12px 16px; }
   main.research-work details.wdet > .ev,
   main.research-work details.wdet > div { padding: 12px 16px !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THIN-LINE BOXES, SECOND PASS (Ian, 2026-09-23: "Do all of them")
+   ══════════════════════════════════════════════════════════════════════
+   The same treatment the author room, a work's page, Scripture, Topics
+   and the Verse Desk have: controls in a panel, each group a box, each
+   item a card, the whole width. Tokens (--ar-*) are set once near the
+   top of the author-room block. Skin only: no port markup changes. */
+
+/* ── The Authors and Works directories (/author/, /author/#works) ── */
+main.research-directory .rx-filters {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-panel);
+  padding: 18px 22px;
+  margin: 18px 0 12px;
+}
+main.research-directory .rx-fold-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 0;
+  margin-top: 14px;
+}
+main.research-directory .rx-fold-list > .rx-fold {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-card);
+}
+main.research-directory .rx-fold-list > .rx-fold[hidden] { display: none; }
+main.research-directory .rx-fold-list > .rx-fold > summary { padding: 16px 22px; min-height: 0; }
+main.research-directory .rx-fold-list > .rx-fold[open] > summary {
+  background: var(--ar-panel);
+  border-bottom: 1px solid var(--ar-line);
+  border-radius: 3px 3px 0 0;
+}
+main.research-directory .rx-fold-list > .rx-fold > .rx-fold-body {
+  border: 0;
+  background: transparent;
+  padding: 16px 22px 20px;
+}
+main.research-directory .rx-fold-list > .rx-more { align-self: flex-start; }
+
+/* Authors: a grid of cards, name and dates, the counts as small boxes,
+   the actions along the foot. */
+main.research-directory .rx-author-fold .rx-directory {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+main.research-directory .rx-author-fold .rx-directory > :not(.rx-author-row) { grid-column: 1 / -1; }
+main.research-directory .rx-author-row {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-card);
+  padding: 14px 18px 10px;
+  transition: border-color 0.15s ease;
+}
+main.research-directory .rx-author-row:hover { border-color: var(--ar-line-strong); }
+main.research-directory .rx-author-row .rx-author-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+}
+main.research-directory .rx-author-row .rx-author-main > span:first-child { display: flex; flex-direction: column; gap: 2px; }
+main.research-directory .rx-author-row .rx-author-main strong { font-size: 19px; line-height: 1.3; font-weight: 500; }
+main.research-directory .rx-author-row .rx-counts { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+main.research-directory .rx-author-row .rx-counts > span {
+  border: 1px solid var(--ar-line);
+  border-radius: 2px;
+  padding: 2px 8px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+main.research-directory .rx-author-row .rx-author-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  border-top: 1px solid var(--ar-line);
+  padding: 8px 0 0;
+}
+main.research-directory .rx-author-row .rx-editions { font-size: 13px; margin: 0; }
+
+/* Works: each group's works as cards, like the author room's. */
+main.research-works .rx-work-fold > .rx-fold-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 12px;
+}
+main.research-works .rx-work-fold > .rx-fold-body > :not(.rx-work-row) { grid-column: 1 / -1; }
+main.research-works .rx-work-fold > .rx-fold-body > .rx-work-row {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-card);
+  padding: 16px 18px 12px;
+}
+main.research-works .rx-work-row h3 { margin: 0 0 4px; font-size: 18px; line-height: 1.3; }
+main.research-works .rx-work-row .rx-work-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 4px 16px;
+  width: auto;
+  margin: 0;
+  border-top: 1px solid var(--ar-line);
+  padding-top: 8px;
+}
+/* A group inside a group (volume, then author) is a plain fold inside
+   the box, not a second box. */
+main.research-works .rx-fold-body .rx-fold { border: 0; border-top: 1px solid var(--ar-line); background: transparent; }
+
+/* ── Compare (/compare/) ─────────────────────────────────────────── */
+main.research-compare .cd-authors {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-panel);
+  padding: 16px 20px;
+  margin: 16px 0 0;
+}
+main.research-compare .cd-chip { background: var(--ar-card); }
+main.research-compare .cd-tools {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-panel);
+  padding: 16px 20px;
+  margin: 12px 0 0;
+}
+main.research-compare .cd-topic-picker {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-card);
+  margin: 12px 0 0;
+}
+main.research-compare .cd-topic-picker > summary { padding: 12px 18px; }
+main.research-compare .cd-topic-head {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-panel);
+  padding: 16px 20px;
+  margin: 16px 0 14px;
+}
+main.research-compare .cd-topic-head h3 { margin-top: 0; }
+main.research-compare .cd-topic-head .rx-note { margin-bottom: 0; }
+main.research-compare .cd-col-head {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-panel);
+  padding: 12px 16px 10px;
+  margin: 0 0 10px;
+}
+main.research-compare .cd-col-head h4 { margin-top: 0; }
+main.research-compare .cd-pane { border-radius: 3px; background: var(--ar-card); }
+main.research-compare .cd-saved { border: 1px solid var(--ar-line); border-radius: 3px; background: var(--ar-card); padding: 0 16px; }
+
+/* ── Search (/search/) ───────────────────────────────────────────── */
+.faith-port-search-page main.main { max-width: 1320px; }
+.faith-port-search-page #results { display: flex; flex-direction: column; gap: 12px; }
+.faith-port-search-page #results > details.result-shelf {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-card);
+  margin: 0;
+  padding: 0;
+}
+.faith-port-search-page #results > details.result-shelf > summary { padding: 14px 20px; }
+.faith-port-search-page #results > details.result-shelf[open] > summary {
+  background: var(--ar-panel);
+  border-bottom: 1px solid var(--ar-line);
+  border-radius: 3px 3px 0 0;
+}
+.faith-port-search-page details.result-author {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-card);
+  margin: 12px 16px;
+}
+.faith-port-search-page details.result-author > summary { padding: 12px 16px; border: 0; }
+.faith-port-search-page details.result-author[open] > summary { border-bottom: 1px solid var(--ar-line); }
+.faith-port-search-page details.result-author > .search-work-block { padding: 4px 16px 10px; }
+.faith-port-search-page .results-pager {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-panel);
+  padding: 8px 12px;
+}
+
+/* ── Connections (/connections/) ─────────────────────────────────── */
+body.web-page #connection-examples > button {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-card);
+  padding: 14px 18px;
+  text-align: left;
+}
+body.web-page #connection-examples > button:hover { border-color: var(--ar-line-strong); }
+
+/* ── Dictionary of Catholic Theology: an entry ───────────────────── */
+/* The article ran the full 1,150px of its pane, justified. It reads in
+   a page card at a book's measure now, under a boxed head. */
+.faith-port-dtc-page .art .inner { max-width: 1000px; margin: 0 auto; }
+.faith-port-dtc-page .art .inner > h1 {
+  border: 1px solid var(--ar-line);
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+  background: var(--ar-panel);
+  margin: 0;
+  padding: 22px 28px 6px;
+}
+.faith-port-dtc-page .art .inner > .frlemma {
+  border: 1px solid var(--ar-line);
+  border-top: 0;
+  border-bottom: 0;
+  background: var(--ar-panel);
+  margin: 0;
+  padding: 0 28px 6px;
+}
+.faith-port-dtc-page .art .inner > .meta {
+  border: 1px solid var(--ar-line);
+  border-top: 0;
+  border-radius: 0 0 3px 3px;
+  background: var(--ar-panel);
+  margin: 0 0 18px;
+  padding: 6px 28px 16px;
+}
+.faith-port-dtc-page .art .inner > .body {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-card);
+  padding: 32px 44px;
+}
+.faith-port-dtc-page .art .inner > .body > * { max-width: 72ch; margin-left: auto; margin-right: auto; }
+.faith-port-dtc-page .art .inner > .srcnote { border-radius: 3px; margin-top: 18px; }
+
+@media (max-width: 640px) {
+  main.research-directory .rx-filters { padding: 14px 16px; }
+  main.research-directory .rx-fold-list > .rx-fold > summary { padding: 14px 16px; }
+  main.research-directory .rx-fold-list > .rx-fold > .rx-fold-body { padding: 12px 12px 14px; }
+  main.research-compare .cd-authors,
+  main.research-compare .cd-tools,
+  main.research-compare .cd-topic-head { padding: 12px 14px; }
+  .faith-port-search-page details.result-author { margin: 10px 8px; }
+  .faith-port-dtc-page .art .inner > h1,
+  .faith-port-dtc-page .art .inner > .frlemma,
+  .faith-port-dtc-page .art .inner > .meta { padding-left: 16px; padding-right: 16px; }
+  .faith-port-dtc-page .art .inner > .body { padding: 20px 18px; }
 }

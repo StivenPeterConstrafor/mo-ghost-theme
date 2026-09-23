@@ -19364,3 +19364,185 @@ html.g-mobile #reading .fr-sec-toggle {
   border-color: color-mix(in srgb, var(--color-secondary, #c1593c) 86%, #000);
   color: #fff;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   RESEARCH HUB: THIN-LINE BOXES, THE WHOLE WIDTH (Ian, 2026-09-23)
+   ══════════════════════════════════════════════════════════════════════
+   Power Search, Compare, Bookmarks, Notebook and Connections. Three
+   things were wrong together:
+   - each panel's head sat in a centred 720px column while its body ran
+     1,124px from the left edge, so title and content did not line up;
+   - Bookmarks and the Notebook broke out full-bleed a second time inside
+     the workspace's own breakout, which drew the doubled white band;
+   - everything was hairline rows on white, with nothing boxed.
+   Now: heads span the workspace and align with it, the workspace ground
+   is the page's (so white boxes read as boxes), controls sit in a cream
+   panel, and each saved work, entry, column and empty state is a card.
+   Ask and the Desk are left alone: they are a conversation and a page,
+   and both are built around their own white ground. */
+.faith-research-band {
+  --rh-line: var(--color-rule, #d9c6a7);
+  --rh-panel: #fbf8f3;
+  --rh-card: var(--color-white, #fff);
+}
+#research-panel-power-search > .research-workspace,
+#research-panel-compare > .research-workspace,
+#research-panel-bookmarks > .research-workspace,
+#research-panel-notebook > .research-workspace,
+#research-panel-connections > .research-workspace {
+  background: transparent;
+  border-top: 0;
+  border-bottom: 0;
+}
+.faith-research-band .research-workspace .bookmarks-workspace,
+.faith-research-band .research-workspace .notebook-workspace {
+  margin-left: 0;
+  margin-right: 0;
+  background: transparent;
+  border: 0;
+}
+.faith-research-band .research-workspace .bookmarks-workspace-inner,
+.faith-research-band .research-workspace .notebook-workspace-inner {
+  max-width: none;
+  padding: 0;
+}
+.faith-research-band .rpanel-head:not(.rpanel-head--tight),
+.faith-research-band .bookmarks-head,
+.faith-research-band .notebook-head,
+.faith-research-band .cn-head {
+  max-width: none;
+  margin: 0 0 20px;
+}
+.faith-research-band .rpanel-lede,
+.faith-research-band .cn-lede { max-width: 75ch; }
+.faith-research-band .bookmarks-list,
+.faith-research-band .notebook-list { max-width: none; margin: 0; }
+
+/* Controls: one cream panel each. */
+.faith-research-band .cmp-authorbar,
+.faith-research-band .cmp-tools,
+.faith-research-band .pins-bar,
+.faith-research-band .cn-controls,
+.faith-research-band .ps-scope {
+  border: 1px solid var(--rh-line);
+  border-radius: 3px;
+  background: var(--rh-panel);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.faith-research-band .ps-scope { padding: 10px 16px; margin-top: 12px; }
+
+/* Empty states: a box that says what to do. */
+.faith-research-band .cmp-empty,
+.faith-research-band .ps-empty,
+.faith-research-band .bookmarks-empty,
+.faith-research-band .notebook-empty {
+  max-width: none;
+  border: 1px solid var(--rh-line);
+  border-radius: 3px;
+  background: var(--rh-card);
+  padding: 24px 28px;
+  margin: 0 0 16px;
+}
+.faith-research-band .cmp-empty > p,
+.faith-research-band .ps-empty > p,
+.faith-research-band .bookmarks-empty > p,
+.faith-research-band .notebook-empty > p { max-width: 75ch; }
+
+/* Power Search: the search box keeps a readable width; the column does
+   not, so results can use the room. */
+.faith-research-band #research-panel-power-search .research-column { max-width: none; }
+.faith-research-band .ps-controls { max-width: 860px; }
+
+/* Bookmarks: each saved work a card. */
+.faith-research-band .bookmarks-rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 12px;
+  border-top: 0;
+}
+.faith-research-band .bookmarks-row {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--rh-line);
+  border-radius: 3px;
+  background: var(--rh-card);
+  padding: 16px 18px 14px;
+}
+.faith-research-band .bookmarks-row[hidden] { display: none; }
+.faith-research-band .bookmarks-places { margin: 0; }
+.faith-research-band .bookmarks-foot-note { max-width: 75ch; margin-top: 18px; }
+
+/* Notebook: each entry a card, two across when there is room. */
+.faith-research-band .notebook-entries {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 12px;
+  border-top: 0;
+}
+.faith-research-band .notebook-entry {
+  border: 1px solid var(--rh-line);
+  border-radius: 3px;
+  background: var(--rh-card);
+  padding: 18px 20px;
+}
+.faith-research-band .notebook-entry[hidden] { display: none; }
+
+/* Compare: the topic head in a panel, each author's column a card. */
+.faith-research-band .cmp-topic-head {
+  border: 1px solid var(--rh-line);
+  border-radius: 3px;
+  background: var(--rh-panel);
+  padding: 16px 20px;
+  margin: 0 0 14px;
+}
+.faith-research-band .cmp-col {
+  border: 1px solid var(--rh-line);
+  border-radius: 3px;
+  background: var(--rh-card);
+  padding: 0 0 8px;
+}
+.faith-research-band .cmp-col-head {
+  background: var(--rh-panel);
+  border-bottom: 1px solid var(--rh-line);
+  border-radius: 3px 3px 0 0;
+  padding: 12px 16px;
+  margin: 0;
+}
+.faith-research-band .cmp-col-body { padding: 0 16px; }
+.faith-research-band .cmp-saved {
+  border: 1px solid var(--rh-line);
+  border-radius: 3px;
+  background: var(--rh-card);
+  padding: 4px 18px;
+}
+
+/* Connections: the dossier beside the map, and the index, as boxes. */
+.faith-research-band .cn-aside {
+  border: 1px solid var(--rh-line);
+  border-radius: 3px;
+  background: var(--rh-card);
+  padding: 16px 18px;
+  align-self: start;
+}
+.faith-research-band .cn-index {
+  border: 1px solid var(--rh-line);
+  border-radius: 3px;
+  background: var(--rh-card);
+  padding: 0 18px;
+}
+
+@media (max-width: 640px) {
+  .faith-research-band .bookmarks-rows,
+  .faith-research-band .notebook-entries { grid-template-columns: minmax(0, 1fr); }
+  .faith-research-band .cmp-authorbar,
+  .faith-research-band .cmp-tools,
+  .faith-research-band .pins-bar,
+  .faith-research-band .cn-controls { padding: 12px 14px; }
+  .faith-research-band .cmp-empty,
+  .faith-research-band .ps-empty,
+  .faith-research-band .bookmarks-empty,
+  .faith-research-band .notebook-empty { padding: 18px 16px; }
+}

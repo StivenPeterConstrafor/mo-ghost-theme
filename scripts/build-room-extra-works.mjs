@@ -26,7 +26,8 @@
  * o: the person's other rooms, and how many works each holds that this
  *    one does not (listed there, linked from here, never copied).
  * faith-author-works.js adds both to the room's Works tab. A room with
- * nothing missing is absent.
+ * nothing missing is absent. counts.json holds just the x counts, for
+ * the Authors directory (faith-room-counts.js).
  *
  * HOW A ROOM IS MATCHED TO ITS CATALOGUE NAME. Not by spelling. Every
  * work a room already holds is a catalogue row, and that row's author is
@@ -220,6 +221,15 @@ for (const sh of SHELVES) {
   writeFileSync(new URL(`${sh}.json`, OUT), body);
   console.log(`${sh}: ${Object.keys(outs[sh]).length} rooms, ${(body.length / 1024).toFixed(0)} KB`);
 }
+// The number each room's count is short by, for the Authors directory
+// (faith-room-counts.js adds it to the roster as it loads): { sh: { slug: n } }.
+const counts = {};
+for (const sh of Object.keys(outs)) {
+  for (const [slug, entry] of Object.entries(outs[sh])) {
+    if (entry.x && entry.x.length) (counts[sh] = counts[sh] || {})[slug] = entry.x.length;
+  }
+}
+writeFileSync(new URL("counts.json", OUT), JSON.stringify({ v: 1, generated: new Date().toISOString().slice(0, 10), counts }));
 report.sort((a, b) => (b[2] - b[1]) - (a[2] - a[1]));
 console.log(`${short} rooms short, ${added} works added. Largest gaps:`);
 for (const [r, had, now] of report.slice(0, 25)) console.log(`  ${r}: ${had} -> ${now}`);

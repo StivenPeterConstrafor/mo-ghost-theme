@@ -114,7 +114,19 @@
     if (/^Read about /.test(t)) summary.textContent = t.replace(/^Read about /, "About ");
   }
 
+  /* The directory's note described the old counts. They now include
+     every work the library holds (faith-room-counts.js), so the note
+     says so. The port rewrites it on every paint; this follows. */
+  function orderNote() {
+    const note = document.getElementById("author-order-note");
+    if (!note) return;
+    const t = note.textContent;
+    const fixed = t.replace("Counts are the works each author has in the research rooms", "Counts are every work the library holds by each author");
+    if (fixed !== t) note.textContent = fixed;
+  }
+
   function scan() {
+    orderNote();
     document.querySelectorAll(".rx-author-bio > summary").forEach(aboutLabel);
     document.querySelectorAll("main.research-room .rx-profile .stats").forEach(regroup);
     document.querySelectorAll("main.research-work").forEach((main) => {

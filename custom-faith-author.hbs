@@ -11,6 +11,8 @@
 {{!-- Nothing in this port goes to Vercel Blob (owner 2026-09-10); any
      Blob address that arrives inside data is rebased onto the library
      worker at the fetch boundary. Before any module that can fetch. --}}
+{{!-- Before any port script: corrects the roster's work counts as it is fetched (faith-room-counts.js). --}}
+<script src="{{asset "js/page/faith-room-counts.js"}}&amp;frv=d67ca64ae953c26a"></script>
 <script src="{{asset "js/port/fr-noblob.js"}}&amp;frv=a66e16a29a40a4eb"></script>
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap">
@@ -26,8 +28,8 @@
 <script src="{{asset "js/page/faith-author-curated.js"}}"></script>
 {{!-- Our colour, loaded last so it wins; then the offsets that start
      this page under our masthead. Keep both last. --}}
-<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=6c50ba89fbe19b53">
-<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=c443ecca64268803">
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=145cf254fa54f6ac">
+<link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=aedecb122db15d61">
 {{/contentFor}}
 
 {{!-- /the-faith-received/author/ — every author's room, ported.
@@ -89,5 +91,5 @@
 <script src="{{asset "js/port/authors.in04.js"}}&amp;frv=8d00fd258d7820ab"></script>
 {{!-- The profile's numbers as stat boxes (Ian, 2026-09-23). After the port,
      whose .stats it regroups; see the file header. --}}
-<script src="{{asset "js/page/faith-author-stats.js"}}&amp;frv=8efe16ed298b747a"></script>
+<script src="{{asset "js/page/faith-author-stats.js"}}&amp;frv=c81cf9d276023ff3"></script>
 <script src="{{asset "js/page/faith-author-works.js"}}&amp;frv=71c82cdc5bbe6517"></script>
