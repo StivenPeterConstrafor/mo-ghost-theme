@@ -1031,8 +1031,7 @@ body.dtc-page .site-footer { display: none; }
   }
   .faith-port-dtc-page .dtc-fold:hover,
   .faith-port-dtc-page .dtc-fold:focus-visible { color: var(--ink, #2d2927); }
-  .faith-port-dtc-page.dtc-no-top > .top,
-  .faith-port-dtc-page.dtc-no-top > .sband { display: none; }
+  .faith-port-dtc-page.dtc-no-top > .top { display: none; }
   .faith-port-dtc-page.dtc-no-list .main { grid-template-columns: minmax(0, 1fr); }
   .faith-port-dtc-page.dtc-no-list .main > .list { display: none; }
 }
@@ -1041,18 +1040,99 @@ body.dtc-page .site-footer { display: none; }
 @media (min-width: 761px) {
   .faith-port-dtc-page.dtc-wide-list .main { grid-template-columns: minmax(0, 1fr); }
   .faith-port-dtc-page.dtc-wide-list .main > .art { display: none; }
+  /* Newspaper columns, not a grid: a grid row took the height of the
+     button's 44px minimum, so a headword that wrapped to two lines ran
+     into the one below it. In columns each headword is as tall as it
+     is, and within a letter they read down, as a printed index does. */
   .faith-port-dtc-page.dtc-wide-list .main > .list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    align-content: start;
+    display: block;
+    columns: 260px;
     column-gap: 28px;
     border-right: 0;
     padding: 0 1.4rem 2rem;
   }
-  .faith-port-dtc-page.dtc-wide-list .main > .list > :not(.hw) { grid-column: 1 / -1; }
-  .faith-port-dtc-page.dtc-wide-list .main > .list > .hw { border-bottom: 1px solid var(--ar-line); }
-  .faith-port-dtc-page.dtc-wide-list .main > .list > .more { width: auto; max-width: 320px; justify-self: center; }
+  .faith-port-dtc-page.dtc-wide-list .main > .list > :not(.hw) { column-span: all; }
+  .faith-port-dtc-page.dtc-wide-list .main > .list > .lether { position: static; margin-top: 10px; }
+  .faith-port-dtc-page.dtc-wide-list .main > .list > .hw {
+    break-inside: avoid;
+    height: auto;
+    border-bottom: 1px solid var(--ar-line);
+  }
+  .faith-port-dtc-page.dtc-wide-list .main > .list > .more { width: auto; max-width: 320px; margin: 18px auto; }
 }
 /* An author's works are always alphabetical now (faith-author-order.js),
    so the port's "Order works" choice has nothing left to choose. */
 main.research-room:has(.rx-profile) .rx-filters label:has(> #room-work-order) { display: none; }
+
+/* "Pick up where you left off": room around it, and an × on the card's
+   corner (faith-dtc-chrome.js). */
+.faith-port-dtc-page .dtc-resume:not([hidden]) { padding: 16px 1.4rem 14px; }
+.faith-port-dtc-page .dtc-resume .rz-wrap { position: relative; display: inline-block; }
+.faith-port-dtc-page .dtc-resume .rz { padding-right: 2.2rem; }
+.faith-port-dtc-page .dtc-resume .rz-x {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted, #6b6660);
+  font: 400 18px/1 var(--sans, sans-serif);
+  cursor: pointer;
+}
+.faith-port-dtc-page .dtc-resume .rz-x:hover,
+.faith-port-dtc-page .dtc-resume .rz-x:focus-visible { background: var(--highlight, #efe6d8); color: var(--ink, #2d2927); }
+
+/* One bar: title, then search, count and alphabet on the same line, the
+   search box narrow (Ian, 2026-09-23). The band keeps its class so the
+   port's and the phone layout's rules for it still apply. */
+.faith-port-dtc-page > .top { align-items: center; row-gap: 8px; }
+.faith-port-dtc-page > .top > .sband {
+  flex: 0 1 auto;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  gap: 12px;
+}
+.faith-port-dtc-page > .top #q {
+  flex: 0 1 240px;
+  width: 240px;
+  min-width: 160px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.95rem;
+  border-radius: 8px;
+}
+@media (max-width: 760px) {
+  .faith-port-dtc-page > .top > .sband { flex: 1 1 100%; margin-left: 0; }
+  .faith-port-dtc-page > .top #q { flex: 1 1 auto; width: auto; }
+}
+
+/* The entry's own ×, top right of its head (faith-dtc-chrome.js). */
+.faith-port-dtc-page .art .inner { position: relative; }
+.faith-port-dtc-page .art .inner > .dtc-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted, #6b6660);
+  font: 400 22px/1 var(--sans, sans-serif);
+  cursor: pointer;
+}
+.faith-port-dtc-page .art .inner > .dtc-close:hover,
+.faith-port-dtc-page .art .inner > .dtc-close:focus-visible { border-color: var(--ar-line); background: var(--ar-card); color: var(--ink, #2d2927); }

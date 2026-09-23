@@ -98,4 +98,76 @@
   if (buttons.list) buttons.list.addEventListener("click", () => { if (state.list) setWide(false); });
   wide.addEventListener("change", () => { if (!wide.matches) setWide(false); });
   setWide(false);
+
+  /* "PICK UP WHERE YOU LEFT OFF" GETS AN ×. Ian, 2026-09-23: "little
+     X's on these to delete them from this bar." The bar shows the most
+     recent article with a remembered place; the × forgets that place
+     (the position store's own clear, the record the reader and the
+     Research hub read too) and the engine repaints the bar, which then
+     offers the next most recent, or hides. The engine rewrites #resume
+     on every paint, so the × is added back by an observer. Bookmarks are
+     a different store and are not touched. */
+  const resume = page.querySelector("#resume");
+  function addClose() {
+    if (!resume) return;
+    const rz = resume.querySelector(":scope > .rz");
+    if (!rz || resume.querySelector(".rz-x")) return;
+    const wrap = document.createElement("span");
+    wrap.className = "rz-wrap";
+    rz.before(wrap);
+    wrap.appendChild(rz);
+    const x = document.createElement("button");
+    x.type = "button";
+    x.className = "rz-x";
+    x.textContent = "×";
+    const title = (rz.querySelector("span") || rz).textContent.trim();
+    x.setAttribute("aria-label", `Remove ${title} from Pick up where you left off`);
+    x.title = "Remove";
+    x.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const { id } = rz.dataset;
+      const store = window.MOFaithPosition;
+      try { if (store && id) store.clear("dtc", id); } catch (err) { /* nothing to forget */ }
+      if (typeof window.paintResume === "function") window.paintResume();
+      else resume.hidden = true;
+    });
+    wrap.appendChild(x);
+  }
+  if (resume) {
+    new MutationObserver(addClose).observe(resume, { childList: true });
+    addClose();
+  }
+
+  /* AN × ON EACH ENTRY. Ian, 2026-09-23: "an X at the top right of each
+     dictionary entry to close it out." The engine's closeArt() ends the
+     reading state (hash, title, list place, resume bar) but, on a wide
+     screen, leaves the article standing in the pane: its own close
+     button is the phone's back arrow. So after closeArt() the pane gets
+     the dictionary's opening text back, from <template id="dtc-welcome">
+     in the page (the same partial the pane starts with), cloned, never
+     parsed from a string. */
+  const art = page.querySelector("#art");
+  const welcome = document.getElementById("dtc-welcome");
+  function addEntryClose() {
+    if (!art) return;
+    const inner = art.querySelector(".artscroll > .inner");
+    if (!inner || !inner.querySelector(":scope > h1") || inner.querySelector(":scope > .dtc-close")) return;
+    const x = document.createElement("button");
+    x.type = "button";
+    x.className = "dtc-close";
+    x.textContent = "×";
+    x.title = "Close";
+    x.setAttribute("aria-label", "Close this entry");
+    x.addEventListener("click", () => {
+      if (typeof window.closeArt === "function") window.closeArt();
+      if (welcome && welcome.content) art.replaceChildren(welcome.content.cloneNode(true));
+      art.classList.remove("scrolled");
+    });
+    inner.prepend(x);
+  }
+  if (art) {
+    new MutationObserver(addEntryClose).observe(art, { childList: true, subtree: true });
+    addEntryClose();
+  }
 })();
