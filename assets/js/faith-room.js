@@ -1303,7 +1303,9 @@
     // A search says what it matched; a party says which it is.
     const matching = filter ? ` matching &ldquo;${escapeHtml(filter)}&rdquo;` : "";
     const within = party ? ` &middot; ${escapeHtml(party)}` : "";
-    let counted = `${window.MOFaithCatalogue.countLabel(scoped)}${matching} in ${escapeHtml(label)}${within}`;
+    // One library: English editions are counted as works (MOFaithCatalogue.countLabel adds "+ N English editions").
+    const oneCount = (list) => `${list.length.toLocaleString()} work${list.length === 1 ? "" : "s"}`;
+    let counted = `${oneCount(scoped)}${matching} in ${escapeHtml(label)}${within}`;
     if (party === ASSEMBLY && rosterState !== "ready") counted = "";
     if (onGrid) {
       const shelved = new Set();
@@ -1319,7 +1321,7 @@
       // An address that names nothing here. The collection's own total
       // is the true thing to print: a bare zero beside its name would
       // read as an empty shelf rather than a bad link.
-      counted = `${window.MOFaithCatalogue.countLabel(filtered)}${matching} in ${escapeHtml(label)}${within}`;
+      counted = `${oneCount(filtered)}${matching} in ${escapeHtml(label)}${within}`;
     }
 
     // The search box and the selects are built once and left alone.

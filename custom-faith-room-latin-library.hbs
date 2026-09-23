@@ -3,7 +3,7 @@
 <title>The library &mdash; The Faith Received</title>
 <meta name="robots" content="noindex" />
 <link rel="canonical" href="/the-faith-received/all-works/?collection=all" />
-<meta http-equiv="refresh" content="0; url=/the-faith-received/all-works/?collection=all" />
+<noscript><meta http-equiv="refresh" content="0; url=/the-faith-received/all-works/?collection=all" /></noscript>
 {{/contentFor}}
 {{!-- /the-faith-received/latin-library/ — RETIRED (owner, 2026-09-23: "take out the whole latin library vs english
      things"). "The Latin Library" was the name of a pipeline, not a collection a reader should meet: it holds English
@@ -19,11 +19,4 @@
     </div>
   </section>
 </main>
-<script>
-  (function () {
-    var q = new URLSearchParams(window.location.search);
-    q.delete("collection"); q.delete("in");
-    var keep = q.toString();
-    window.location.replace("/the-faith-received/all-works/?collection=all" + (keep ? "&" + keep : "") + window.location.hash);
-  })();
-</script>
+<script src="{{asset "js/faith-room-retired.js"}}"></script>
