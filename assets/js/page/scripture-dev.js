@@ -318,19 +318,38 @@
       if (spans.length) spans[spans.length - 1].after($panel);
       hideOverview();
       $side.hidden = true;
+      $side.style.marginTop = "";
       $layout.classList.remove("has-side");
     } else {
       hideOverview();
       $side.appendChild($panel);
       $side.hidden = false;
       $layout.classList.add("has-side");
+      alignSide(v);
     }
+  }
+
+  /* The sidebar does not stick (Ian, 2026-09-23: "the side panel doesn't
+     need to be sticky. It can stay where it is."), so a verse far down
+     the chapter would open its panel at the top of the column, out of
+     sight, and the click would look like it did nothing. The panel is
+     pushed down to start level with the verse instead: it still stays
+     where it is as the page scrolls. The overview goes back to the top. */
+  function alignSide(v) {
+    $side.style.marginTop = "";
+    const span = v && $text.querySelector(`.bible-verse[data-v="${v}"]`);
+    if (!span) return;
+    const room = $text.getBoundingClientRect().bottom - $side.getBoundingClientRect().top - 240;
+    const drop = span.getBoundingClientRect().top - $side.getBoundingClientRect().top;
+    const px = Math.round(Math.min(drop, room));
+    if (px > 0) $side.style.marginTop = `${px}px`;
   }
 
   function closePanel(silent) {
     state.v = 0;
     $text.querySelectorAll(".bible-verse.is-active").forEach((el) => el.classList.remove("is-active"));
     $panel.remove();
+    $side.style.marginTop = "";
     if (!silent && !narrow.matches) {
       showOverview();
     } else if (!$ov.isConnected) {
