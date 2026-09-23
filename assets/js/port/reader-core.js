@@ -2901,7 +2901,8 @@ function build(){
           }else{
             row.innerHTML=`<div class="la" lang="la">${laHtml}</div><div class="en" lang="en">${enB.map(x=>teiCell(x,pg.n)).join("")}</div>`;
           }
-          if(row.innerHTML)sec.appendChild(row);}}
+          // a row with nothing to read (empty lanes: pg-604 col. 1123 opened on a blank band above its title, 09-23) is not drawn
+          if(row.innerHTML&&(row.textContent.trim()||row.querySelector("img,figure,svg,table,.pganchor")))sec.appendChild(row);}}
       if(isEdit)for(let ri=_rowsBefore;ri<sec.children.length;ri++)sec.children[ri].classList.add("redit");
       (a?a.notes:[]).forEach(e=>notesLA.push(teiNote(e)));
       (b?b.notes:[]).forEach(e=>notesEN.push(teiNote(e)));
