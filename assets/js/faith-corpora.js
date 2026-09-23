@@ -1044,6 +1044,64 @@
     po: "/the-faith-received/patrologia-orientalis/",
   };
 
+
+  /* ── HTML entities in plain-text fields ──────────────────────────────
+     Ian, 2026-09-23: "Thomas &agrave; Kempis" on the shelves, and "make
+     sure code snippets like this are taken care of sitewide".
+
+     Some upstream catalogues carry HTML entities in fields that are
+     plain text: the English Editions index spells the author "Thomas
+     &agrave; Kempis", four Patrologia Graeca titles carry "&amp;", and
+     one has "&amp;ealig;" (a misspelt &aelig;, escaped a second time).
+     Every renderer escapes what it prints, as it should, so the entity
+     reached the page as literal text.
+
+     Decoded ONCE, here, where every catalogue enters the site, so no
+     renderer has to know. Deliberately not a DOM decoder: the strings
+     are data, and a table plus the numeric forms covers what the
+     catalogues actually hold without handing them to the HTML parser.
+     An entity this table does not know is left exactly as it was. */
+  const NAMED = {
+    amp: "&", lt: "<", gt: ">", quot: "\"", apos: "'", nbsp: " ",
+    agrave: "à", aacute: "á", acirc: "â", atilde: "ã", auml: "ä", aring: "å", aelig: "æ",
+    Agrave: "À", Aacute: "Á", Acirc: "Â", Atilde: "Ã", Auml: "Ä", Aring: "Å", AElig: "Æ",
+    egrave: "è", eacute: "é", ecirc: "ê", euml: "ë", Egrave: "È", Eacute: "É", Ecirc: "Ê", Euml: "Ë",
+    igrave: "ì", iacute: "í", icirc: "î", iuml: "ï", Igrave: "Ì", Iacute: "Í", Icirc: "Î", Iuml: "Ï",
+    ograve: "ò", oacute: "ó", ocirc: "ô", otilde: "õ", ouml: "ö", oslash: "ø", oelig: "œ",
+    Ograve: "Ò", Oacute: "Ó", Ocirc: "Ô", Otilde: "Õ", Ouml: "Ö", Oslash: "Ø", OElig: "Œ",
+    ugrave: "ù", uacute: "ú", ucirc: "û", uuml: "ü", Ugrave: "Ù", Uacute: "Ú", Ucirc: "Û", Uuml: "Ü",
+    ccedil: "ç", Ccedil: "Ç", ntilde: "ñ", Ntilde: "Ñ", szlig: "ß", yacute: "ý", yuml: "ÿ",
+    middot: "·", ndash: "–", mdash: "—", hellip: "…", lsquo: "‘", rsquo: "’",
+    ldquo: "“", rdquo: "”", laquo: "«", raquo: "»", sect: "§", para: "¶", deg: "°",
+    // Not entities, but what the catalogues actually wrote for &aelig;.
+    ealig: "æ", Ealig: "Æ",
+  };
+  const ENTITY = /&(#\d{1,6}|#x[0-9a-fA-F]{1,6}|[A-Za-z]{2,8});/g;
+  function decodeEntities(value) {
+    if (typeof value !== "string" || value.indexOf("&") === -1) return value;
+    let out = value;
+    // Twice-escaped values ("&amp;agrave;") unwind one layer per pass.
+    for (let pass = 0; pass < 3; pass++) {
+      const next = out.replace(ENTITY, (whole, body) => {
+        if (body[0] === "#") {
+          const code = body[1] === "x" || body[1] === "X"
+            ? parseInt(body.slice(2), 16) : parseInt(body.slice(1), 10);
+          return code > 0 && code < 0x110000 ? String.fromCodePoint(code) : whole;
+        }
+        return Object.prototype.hasOwnProperty.call(NAMED, body) ? NAMED[body] : whole;
+      });
+      if (next === out) break;
+      out = next;
+    }
+    return out;
+  }
+  function decodeWork(w) {
+    for (const k of Object.keys(w)) {
+      if (typeof w[k] === "string") w[k] = decodeEntities(w[k]);
+    }
+    return w;
+  }
+
   const byId = new Map(CORPORA.map((c) => [c.id, c]));
 
   // Author-keyed tradition lists, loaded once per corpus that has
@@ -1112,7 +1170,10 @@
         // this theme already carries separately.
         .filter((raw) => !c.exclude || !c.exclude(raw))
         .map((raw) => {
-          const w = c.normalize(raw);
+          // Entities decoded before anything keys off a string: the author
+          // lists below match on the name, and "Thomas &agrave; Kempis" matches
+          // nobody.
+          const w = decodeWork(c.normalize(raw));
           // Tradition comes from the work where the catalogue carries
           // one, and from the collection's own character where it does
           // not — Migne's volumes are the Latin Fathers whether or not
@@ -1170,6 +1231,9 @@
 
   window.MOCorpora = {
     all: CORPORA,
+    // For any renderer that reads text from somewhere other than a
+    // catalogue and meets the same problem.
+    decode: decodeEntities,
     get: (id) => byId.get(id),
     load: loadCorpus,
     // The page for a collection, or "" if it has none.

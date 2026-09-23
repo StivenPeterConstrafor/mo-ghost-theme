@@ -89,7 +89,7 @@
       note: "The book that invented the inner life as a subject worth writing about." },
     { slug: "athanasius-incarnation", eyebrow: "Athanasius", title: "On the Incarnation",
       note: "Why God became man, argued by the man who would not let it go." },
-    { slug: "imitation-of-christ", eyebrow: "&agrave; Kempis", title: "The Imitation of Christ",
+    { slug: "imitation-of-christ", eyebrow: "à Kempis", title: "The Imitation of Christ",
       note: "Four centuries of readers have called this the book to keep by the bed." },
     { slug: "belgic", eyebrow: "1561", title: "The Belgic Confession",
       note: "Written by a man who was hanged for it four years later." },
