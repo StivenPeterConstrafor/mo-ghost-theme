@@ -18,6 +18,18 @@
 
 (function () {
   "use strict";
+  // ONE LIBRARY (owner, 2026-09-23: "take out the whole latin library vs english things"). The library is one library,
+  // shelved by tradition. "The Latin Library" is the name of the pipeline most of it came through, and it holds English
+  // works (Davenant, Baxter, the Westminster minutes); Early English Books and the English Editions are the same
+  // library's English shelves. So where a reader is told what a work is, the label is its shelf, never tfr / eebo / mo.
+  // The printed series (Patrologia Latina, Graeca, Orientalis) and the confessions keep their own names.
+  const ONE_LIBRARY = new Set(["tfr", "eebo", "mo", "mo-english"]);
+  const shelfOf = (w) => {
+    const t = String((w && w.tradition) || "").trim();
+    if (!t) return "";
+    const L = window.MOFaithLabel;
+    return L && L.of ? L.of(t, w) : t;
+  };
 
   // ── Config ────────────────────────────────────────────────────
   const baseMeta = document.querySelector('meta[name="tfr-library-base"]');
@@ -413,7 +425,7 @@
         data.sections = nestByHeadings(liftUnnamedSections(divideFlatSections(data.sections)));
         meta = {
           title: data.title || slug,
-          author: data.author || data.work || corpus.label,
+          author: data.author || data.work || (ONE_LIBRARY.has(corpus.id) ? "" : corpus.label),
           description: data.titleLatin && data.titleLatin !== data.title ? data.titleLatin : "",
         };
         populateHeader(meta);
@@ -446,7 +458,7 @@
         data.sections = nestByHeadings(liftUnnamedSections(divideFlatSections(data.sections)));
         meta = {
           title: data.title || slug,
-          author: data.work || corpus.label,
+          author: data.work || (ONE_LIBRARY.has(corpus.id) ? "" : corpus.label),
           description: "",
         };
         populateHeader(meta);
@@ -3135,7 +3147,10 @@
     // which shelf it sits on.
     const bits = [];
     if (m.n_pages) bits.push(`${m.n_pages.toLocaleString()} pages`);
-    if (corpus && corpus.label) bits.push(`in ${corpus.label}`);
+    if (corpus && ONE_LIBRARY.has(corpus.id)) {
+      const s = shelfOf(m);
+      if (s) bits.push(`on the ${s} shelf`);
+    } else if (corpus && corpus.label) bits.push(`in ${corpus.label}`);
     return bits.length ? `${bits.join(" ")}.` : "";
   }
 
@@ -3192,7 +3207,11 @@
     // The kicker names the collection this work sits in, and links to
     // its collection page rather than to the project's front door.
     const collEl = document.querySelector("[data-fr-collection]");
-    if (collEl && corpus) {
+    if (collEl && corpus && ONE_LIBRARY.has(corpus.id)) {
+      // The kicker names the work's shelf; the library has no "Latin Library" to send the reader to.
+      collEl.textContent = shelfOf(m) || "The library";
+      collEl.href = "/the-faith-received/all-works/?collection=all";
+    } else if (collEl && corpus) {
       collEl.textContent = corpus.label;
       // MOCorpora.room is a function on the module, not a field on
       // the corpus, so `corpus.room` was undefined and this link never

@@ -122,8 +122,8 @@
   // which source answered.
   const CORPUS_LABEL = {
     pld: "Patrologia Latina",
-    tfr: "the Latin Library",
-    eebo: "Early English Books",
+    tfr: "the library",
+    eebo: "the library",
     ed: "the English Divines",
     gf: "the Greek Fathers",
     hl: "Humanism and Law",
@@ -358,7 +358,7 @@
      everything on the page. */
 
   function provenance(d, shelfTotal) {
-    const from = (d.corpora || []).map(([c]) => CORPUS_LABEL[c] || c);
+    const from = [...new Set((d.corpora || []).map(([c]) => CORPUS_LABEL[c] || c))];
     if (!from.length) return "";
     const list = from.length === 1
       ? from[0]

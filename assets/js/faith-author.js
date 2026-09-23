@@ -18,6 +18,18 @@
  * ways and a URL should survive all of them.
  */
 (function () {
+  // ONE LIBRARY (owner, 2026-09-23: "take out the whole latin library vs english things"). The library is one library,
+  // shelved by tradition. "The Latin Library" is the name of the pipeline most of it came through, and it holds English
+  // works (Davenant, Baxter, the Westminster minutes); Early English Books and the English Editions are the same
+  // library's English shelves. So where a reader is told what a work is, the label is its shelf, never tfr / eebo / mo.
+  // The printed series (Patrologia Latina, Graeca, Orientalis) and the confessions keep their own names.
+  const ONE_LIBRARY = new Set(["tfr", "eebo", "mo", "mo-english"]);
+  const shelfOf = (w) => {
+    const t = String((w && w.tradition) || "").trim();
+    if (!t) return "";
+    const L = window.MOFaithLabel;
+    return L && L.of ? L.of(t, w) : t;
+  };
   /* One shelf order for the whole library, so a multi-volume set reads
    1, 2, 3 rather than 1, 10, 11, 2. window.MOTitleOrder ships in boot,
    which runs before every page script; the fallback is the ordering
@@ -178,6 +190,21 @@
       }
     });
 
+    // The library's own collections are one shelf on an author's page, headed by the author's tradition (Davenant's
+    // Latin-Library and Early-English-Books works had been two lists under two collection names).
+    {
+      const lib = byCorpus.filter((g) => ONE_LIBRARY.has(g.corpus.id));
+      if (lib.length) {
+        const works = lib.flatMap((g) => g.works).sort((a, b) =>
+          (century(a) || 9999) - (century(b) || 9999) || cmpTitle(a.title, b.title));
+        const merged = { corpus: { id: "", label: shelfOf(works.find((w) => w.tradition) || {}) || "In the library" }, works };
+        const at = byCorpus.indexOf(lib[0]);
+        const rest = byCorpus.filter((g) => !lib.includes(g));
+        rest.splice(Math.min(at, rest.length), 0, merged);
+        byCorpus.splice(0, byCorpus.length, ...rest);
+      }
+    }
+
     const all = byCorpus.reduce((n, g) => n + g.works.length, 0);
     if (!all && !entry) {
       root.innerHTML =
@@ -287,7 +314,7 @@
           ? `<li><a href="${escapeHtml(w.url)}">${inner}</a></li>`
           : `<li class="fa-work-pending"><span>${inner}</span></li>`;
       }).join("");
-      const room = window.MOCorpora.room(g.corpus.id);
+      const room = g.corpus.id ? window.MOCorpora.room(g.corpus.id) : "";
       const head = room
         ? `<a href="${escapeHtml(room)}">${escapeHtml(g.corpus.label)}</a>`
         : escapeHtml(g.corpus.label);

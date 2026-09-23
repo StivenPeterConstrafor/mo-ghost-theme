@@ -33,6 +33,18 @@
 
 (function () {
   "use strict";
+  // ONE LIBRARY (owner, 2026-09-23: "take out the whole latin library vs english things"). The library is one library,
+  // shelved by tradition. "The Latin Library" is the name of the pipeline most of it came through, and it holds English
+  // works (Davenant, Baxter, the Westminster minutes); Early English Books and the English Editions are the same
+  // library's English shelves. So where a reader is told what a work is, the label is its shelf, never tfr / eebo / mo.
+  // The printed series (Patrologia Latina, Graeca, Orientalis) and the confessions keep their own names.
+  const ONE_LIBRARY = new Set(["tfr", "eebo", "mo", "mo-english"]);
+  const shelfOf = (w) => {
+    const t = String((w && w.tradition) || "").trim();
+    if (!t) return "";
+    const L = window.MOFaithLabel;
+    return L && L.of ? L.of(t, w) : t;
+  };
   /* One shelf order for the whole library, so a multi-volume set reads
    1, 2, 3 rather than 1, 10, 11, 2. window.MOTitleOrder ships in boot,
    which runs before every page script; the fallback is the ordering
@@ -94,6 +106,8 @@
   // Only meaningful on the all-works page, where more than one
   // collection is in the room at once.
   let collection = params.get("in") || "";
+  // An old ?in=tfr / eebo / mo link names a collection this page no longer offers: it opens on the whole library.
+  if (ONE_LIBRARY.has(collection)) collection = "";
   let filter = params.get("q") || "";
   let letter = params.get("letter") || "";
   // The party a work's author stood in, cutting across the churches:
@@ -1149,7 +1163,7 @@
     const cLabel = (c) => (window.MOCentury ? window.MOCentury.label(c) : `${c}`);
     const controls = [
       isAll ? select("in", "Collection", "All collections",
-        ins.map(([id, n]) => {
+        ins.filter(([id]) => !ONE_LIBRARY.has(id)).map(([id, n]) => {
           const c = window.MOCorpora.get(id);
           return [id, c ? c.label : id, n];
         }), collection) : "",
@@ -1289,7 +1303,9 @@
     // A search says what it matched; a party says which it is.
     const matching = filter ? ` matching &ldquo;${escapeHtml(filter)}&rdquo;` : "";
     const within = party ? ` &middot; ${escapeHtml(party)}` : "";
-    let counted = `${window.MOFaithCatalogue.countLabel(scoped)}${matching} in ${escapeHtml(label)}${within}`;
+    // One library: English editions are counted as works (MOFaithCatalogue.countLabel adds "+ N English editions").
+    const oneCount = (list) => `${list.length.toLocaleString()} work${list.length === 1 ? "" : "s"}`;
+    let counted = `${oneCount(scoped)}${matching} in ${escapeHtml(label)}${within}`;
     if (party === ASSEMBLY && rosterState !== "ready") counted = "";
     if (onGrid) {
       const shelved = new Set();
@@ -1305,7 +1321,7 @@
       // An address that names nothing here. The collection's own total
       // is the true thing to print: a bare zero beside its name would
       // read as an empty shelf rather than a bad link.
-      counted = `${window.MOFaithCatalogue.countLabel(filtered)}${matching} in ${escapeHtml(label)}${within}`;
+      counted = `${oneCount(filtered)}${matching} in ${escapeHtml(label)}${within}`;
     }
 
     // The search box and the selects are built once and left alone.

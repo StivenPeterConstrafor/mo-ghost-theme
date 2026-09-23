@@ -20,6 +20,18 @@
  * this is where it plugs in: the scope stays, the fetching moves.
  */
 (function () {
+  // ONE LIBRARY (owner, 2026-09-23: "take out the whole latin library vs english things"). The library is one library,
+  // shelved by tradition. "The Latin Library" is the name of the pipeline most of it came through, and it holds English
+  // works (Davenant, Baxter, the Westminster minutes); Early English Books and the English Editions are the same
+  // library's English shelves. So where a reader is told what a work is, the label is its shelf, never tfr / eebo / mo.
+  // The printed series (Patrologia Latina, Graeca, Orientalis) and the confessions keep their own names.
+  const ONE_LIBRARY = new Set(["tfr", "eebo", "mo", "mo-english"]);
+  const shelfOf = (w) => {
+    const t = String((w && w.tradition) || "").trim();
+    if (!t) return "";
+    const L = window.MOFaithLabel;
+    return L && L.of ? L.of(t, w) : t;
+  };
   const form = document.querySelector(".bsearch");
   const hero = document.querySelector(".bhero");
   if (!form || !hero) return;
@@ -108,7 +120,8 @@
       window.MOFaithCatalogue.load(c.id).catch(() => [])))
       .then((sets) => {
         all = sets.flat();
-        fillSelect("[data-bs-collection]", tally(all, (w) => w.corpus), (id) => {
+        // The library's own collections are shelves (the Tradition select), not a collection to pick.
+        fillSelect("[data-bs-collection]", tally(all, (w) => (ONE_LIBRARY.has(w.corpus) ? "" : w.corpus)), (id) => {
           const c = window.MOCorpora.get(id);
           return c ? c.label : id;
         });
@@ -277,7 +290,7 @@
       `<a class="bsearch-hit-title" data-hit-for="${escapeHtml(`${w.corpus}:${w.id}`)}" ` +
       `href="${escapeHtml(hitUrl(w, loc))}">${escapeHtml(w.title || w.id)}</a>${ 
       w.author ? `<span class="bsearch-hit-author">${escapeHtml(w.author)}</span>` : "" 
-      }<span class="bsearch-hit-where">${escapeHtml(c ? c.label : w.corpus)}</span>${ 
+      }<span class="bsearch-hit-where">${escapeHtml(c && !ONE_LIBRARY.has(c.id) ? c.label : (shelfOf(w) || ""))}</span>${ 
       extra || ""}</li>`;
   }
 
