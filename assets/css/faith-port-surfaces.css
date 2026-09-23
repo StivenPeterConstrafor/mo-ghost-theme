@@ -768,8 +768,8 @@ main.research-directory .rx-fold-list > .rx-more { align-self: flex-start; }
    pair repeated it and is dropped here (both are on the room). */
 main.research-directory .rx-author-fold .rx-directory {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 0 28px;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 0 24px;
   margin: 0;
   padding: 0;
   border: 0;
@@ -822,11 +822,13 @@ main.research-directory .rx-author-row .rx-counts > span {
 }
 main.research-directory .rx-author-row .rx-counts > span:first-child { display: inline; }
 main.research-directory .rx-author-row .rx-author-actions { display: none; }
-main.research-directory .rx-author-row .rx-editions { font-size: 12px; line-height: 1.35; margin: 2px 0 0; color: var(--muted, #6b6660); }
+/* "Also on Latin Fathers (2 works)" made every row in a band as tall as
+   its longest; the other shelves are listed on the author's own page. */
+main.research-directory .rx-author-row .rx-editions { display: none; }
 /* The index's own head repeats the page hero ("Authors" twice, and the
    same sentence about rooms). Ian, 2026-09-23: "redundant". The works
    index keeps its head: it is a different page under the same hero. */
-main.research-directory:not(.research-works) > .research-intro { display: none; }
+body.research-enhanced main#page.research-directory:not(.research-works) > .research-intro { display: none; }
 
 /* Works: each group's works as cards, like the author room's. */
 main.research-works .rx-work-fold > .rx-fold-body {
