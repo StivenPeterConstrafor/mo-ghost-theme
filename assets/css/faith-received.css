@@ -19664,3 +19664,40 @@ html.g-mobile #reading .fr-sec-toggle {
   .faith-room-panel { padding: 14px 14px 6px; }
   .faith-room-panel .faith-room-letters { margin: 0 -14px; padding: 8px 14px 4px; }
 }
+
+/* ── The Ask door, in the thin-line style (Ian, 2026-09-23) ──
+   The statement across the width, then two cards (what Ask does, what
+   it does not do), then the door. On the Research hub, the Ask page and
+   Search, wherever _ask-door.hbs is rendered. */
+.faith-ask-door { max-width: none; padding: 8px 0 24px; }
+.faith-ask-door .faith-ask-door-body { max-width: 75ch; }
+.faith-ask-door-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+  margin: 18px 0 22px;
+}
+.faith-ask-door-card {
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: var(--color-white, #fff);
+  padding: 18px 22px 14px;
+}
+.faith-ask-door-card h3 {
+  margin: 0 0 10px;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro, 12px);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.faith-ask-door-card ul { list-style: none; margin: 0; padding: 0; }
+.faith-ask-door-card li {
+  padding: 9px 0;
+  border-top: 1px solid var(--color-rule);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--color-dark);
+}
+.faith-ask-door-card li:first-child { border-top: 0; padding-top: 0; }
