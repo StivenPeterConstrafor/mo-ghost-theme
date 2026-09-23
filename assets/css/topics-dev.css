@@ -282,3 +282,77 @@
 .td-tl-people:not(:empty) { margin-top: 16px; padding-top: 4px; border-top: 1px solid var(--color-rule); }
 .td-cmp-all { margin-top: 8px; min-height: 44px; }
 .td-block-h { margin-top: 0; }
+
+/* ══════════════════════════════════════════════════════════════════
+   THIN-LINE BOXES, THE WHOLE WIDTH (Ian, 2026-09-23, after the author
+   room: "do the same for the Scripture and Topics pages")
+   ══════════════════════════════════════════════════════════════════ */
+
+/* The contents: each part of the system is a box, three across on a
+   wide screen. Columns rather than a grid because the parts differ so
+   much in length (God has twelve loci, Christ one) that a grid's equal
+   rows would leave holes; a part never breaks across a column. */
+.sd .td-root:not(.has-topic) { max-width: 1320px; }
+.td-parts { max-width: none; column-gap: 20px; }
+@media (min-width: 1100px) { .td-parts { columns: 3 300px; } }
+.td-part {
+  break-inside: avoid;
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: #fbf8f3;
+  padding: 16px 20px 12px;
+  margin: 0 0 20px;
+}
+.td-part-h { margin: 0 -20px 10px; padding: 0 20px 10px; }
+
+/* A topic: the page may use a wide screen. */
+@media (min-width: 1100px) { .sd .td-root.has-topic { max-width: 1320px; } }
+
+/* Its header is a panel, its numbers boxes. */
+.td-head:not(.td-head--contents) {
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: #fbf8f3;
+  padding: 20px 24px 18px;
+  margin-bottom: 8px;
+}
+.td-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0 0; }
+.td-stat {
+  display: flex; flex-direction: column; gap: 2px;
+  border: 1px solid var(--color-rule); border-radius: 3px; background: #fff;
+  padding: 12px 16px 10px;
+}
+.td-stat b { font-size: 24px; line-height: 1.1; font-weight: 500; font-variant-numeric: tabular-nums; }
+.td-stat span { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted); }
+.td-head .td-kids { margin-top: 14px; }
+
+/* Each block's heading gets room to breathe above it. */
+.td-block { padding-top: 12px; }
+
+/* Articles and treatments as cards, not hairline rows. */
+.td-articles, .td-treats { display: flex; flex-direction: column; gap: 12px; }
+.td-article, .td-treat {
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: #fff;
+  padding: 18px 22px;
+}
+.td-article:last-child, .td-treat:last-child { border-bottom: 1px solid var(--color-rule); }
+.td-article.is-picked { box-shadow: none; border-color: var(--sd-accent); }
+.td-treat-group > .sd-h3 { margin-top: 18px; }
+
+/* On a wide screen with no author panel open, the treatments sit two
+   across: they are short (a heading and an opening paragraph), and one
+   column of them left most of the page empty. */
+@media (min-width: 1280px) {
+  .sd .td-root.has-topic:not(.has-side) .td-treats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+}
+
+@media (max-width: 640px) {
+  .td-part { padding: 14px 16px 10px; }
+  .td-part-h { margin: 0 -16px 10px; padding: 0 16px 10px; }
+  .td-head:not(.td-head--contents) { padding: 16px 16px 14px; }
+  .td-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .td-stat b { font-size: 21px; }
+  .td-article, .td-treat { padding: 16px; }
+}

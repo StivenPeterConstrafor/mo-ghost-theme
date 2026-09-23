@@ -182,6 +182,7 @@
       const $host = $text.querySelector(".sd-chapter-content");
       while (node.firstChild) $host.appendChild(node.firstChild);
       if (wantVerse) openVerse(wantVerse, { scroll: true, keep: keepPanel });
+      else showOverview();
     }).catch(() => {
       if (my !== loadRun) return;
       $text.innerHTML = book.ap
@@ -221,6 +222,86 @@
     $commPanel.hidden = !open;
   });
 
+  // ── The chapter overview ──────────────────────────────────────
+  // Ian, 2026-09-23: "use the whole width". With no verse open, the
+  // right of a wide page was empty. The sidebar now holds the chapter as
+  // the library sees it: how often it is cited, how many of its verses
+  // are, and the most-cited verses, each a way into its verse. Opening a
+  // verse swaps this for the verse panel; closing the panel brings it
+  // back. On a phone there is no sidebar, so there is no overview.
+  const $ov = document.createElement("section");
+  $ov.className = "sd-overview";
+  $ov.setAttribute("aria-label", "This chapter in the library");
+  let ovRun = 0;
+
+  function hideOverview() {
+    ovRun++;
+    $ov.remove();
+  }
+
+  function showOverview() {
+    if (narrow.matches || state.v || !state.book) return;
+    const { book, c } = state;
+    const my = ++ovRun;
+    const head =
+      `<header class="sd-panel-head">` +
+        `<p class="sd-eyebrow">This chapter in the library</p>` +
+        `<h2 class="sd-panel-ref">${esc(S.refLabel(book, c))}</h2>` +
+      `</header>`;
+    $ov.innerHTML = `${head}<p class="sd-muted">Counting citations…</p>`;
+    if (!$ov.isConnected) $side.appendChild($ov);
+    $side.hidden = false;
+    $layout.classList.add("has-side");
+    S.api("/v1/verse/chapter", { b: book.lib, c }).then((d) => {
+      if (my !== ovRun || state.book !== book || state.c !== c) return;
+      const verses = (d && d.verses) || {};
+      const counts = Object.keys(verses).map(Number).filter((n) => n > 0)
+        .map((v) => [v, Number(verses[v]) || 0]);
+      const cited = counts.filter((x) => x[1] > 0);
+      const whole = Number(d && d.ch_n) || 0;
+      const total = counts.reduce((a, x) => a + x[1], 0) + whole;
+      if (!total) {
+        $ov.innerHTML = `${head}<p class="sd-muted">Nothing in the library cites this chapter yet.</p>`;
+        return;
+      }
+      const top = cited.slice().sort((a, b) => b[1] - a[1] || a[0] - b[0]).slice(0, 8);
+      const max = top.length ? top[0][1] : 1;
+      const snip = (v) => {
+        const t = S.verseTextFrom($text, v);
+        return t.length > 90 ? `${t.slice(0, 88).replace(/\s+\S*$/, "")}…` : t;
+      };
+      const wholeLine = whole
+        ? `<p class="sd-muted sd-ov-whole">${esc(plural(whole, "citation"))} of the chapter as a whole.</p>`
+        : "";
+      const rows = top.map(([v, n]) =>
+        `<li><button type="button" class="sd-ov-verse" data-v="${v}" data-w="${Math.max(3, Math.round((n / max) * 100))}">` +
+          `<span class="sd-ov-ref">${esc(S.refLabel(book, c, v))}</span>` +
+          `<span class="sd-ov-meter" aria-hidden="true"><i></i></span>` +
+          `<span class="sd-ov-n">${fmt(n)}</span>` +
+          `<span class="sd-ov-snip">${esc(snip(v))}</span>` +
+        `</button></li>`).join("");
+      $ov.innerHTML = `${head}<div class="sd-ov-stats">` +
+          `<div class="sd-ov-stat"><b>${fmt(total)}</b><span>${total === 1 ? "citation" : "citations"}</span></div>` +
+          `<div class="sd-ov-stat"><b>${fmt(cited.length)} of ${fmt(counts.length)}</b><span>verses cited</span></div>` +
+        `</div>${wholeLine}` +
+        `<h3 class="sd-h3">Most-cited verses</h3>` +
+        `<ol class="sd-ov-top">${rows}</ol>` +
+        `<p class="sd-muted sd-ov-hint">Select any verse in the text to see who cites it.</p>`;
+      $ov.querySelectorAll(".sd-ov-verse").forEach((b) => {
+        const bar = b.querySelector(".sd-ov-meter i");
+        if (bar) bar.style.width = `${b.dataset.w}%`;
+      });
+    }).catch(() => {
+      if (my !== ovRun) return;
+      $ov.innerHTML = `${head}<p class="sd-muted">The library's citations for this chapter did not load.</p>`;
+    });
+  }
+
+  $ov.addEventListener("click", (e) => {
+    const b = e.target.closest(".sd-ov-verse");
+    if (b) openVerse(Number(b.dataset.v), { scroll: true, focus: true });
+  });
+
   // ── The verse panel ───────────────────────────────────────────
   const $panel = document.createElement("section");
   $panel.className = "sd-panel";
@@ -235,9 +316,11 @@
       // chapter. Straight after the verse's own last span instead.
       const spans = $text.querySelectorAll(`.bible-verse[data-v="${v}"]`);
       if (spans.length) spans[spans.length - 1].after($panel);
+      hideOverview();
       $side.hidden = true;
       $layout.classList.remove("has-side");
     } else {
+      hideOverview();
       $side.appendChild($panel);
       $side.hidden = false;
       $layout.classList.add("has-side");
@@ -248,8 +331,12 @@
     state.v = 0;
     $text.querySelectorAll(".bible-verse.is-active").forEach((el) => el.classList.remove("is-active"));
     $panel.remove();
-    $side.hidden = true;
-    $layout.classList.remove("has-side");
+    if (!silent && !narrow.matches) {
+      showOverview();
+    } else if (!$ov.isConnected) {
+      $side.hidden = true;
+      $layout.classList.remove("has-side");
+    }
     if (!silent) writeUrl(false);
   }
 
@@ -395,7 +482,16 @@
     closePanel();
     if (span) span.focus({ preventScroll: true });
   });
-  narrow.addEventListener("change", () => { if ($panel.isConnected && state.v) placePanel(state.v); });
+  narrow.addEventListener("change", () => {
+    if ($panel.isConnected && state.v) { placePanel(state.v); return; }
+    if (narrow.matches) {
+      hideOverview();
+      $side.hidden = true;
+      $layout.classList.remove("has-side");
+    } else {
+      showOverview();
+    }
+  });
 
   $book.addEventListener("change", () => load(S.BOOK_BY_SLUG.get($book.value), 1, 0, true));
   $chapter.addEventListener("change", () => load(state.book, parseInt($chapter.value, 10), 0, true));

@@ -480,3 +480,74 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
   .sd-cbar { grid-template-columns: minmax(80px, 34%) 1fr 44px; }
   .sd-source-head { flex-wrap: wrap; }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   THIN-LINE BOXES, THE WHOLE WIDTH (Ian, 2026-09-23, after the author
+   room: "do the same for the Scripture and Topics pages")
+   ══════════════════════════════════════════════════════════════════
+   On a wide screen the chapter is a page in a thin-line card, and the
+   sidebar beside it is always there: the chapter overview when no verse
+   is open (scripture-dev.js, showOverview), the verse panel when one is.
+   Before this the right of the page was empty until a verse was clicked,
+   and the layout jumped when it was. */
+@media (min-width: 900px) {
+  .sd .sd-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); gap: var(--sd-gap); align-items: start; max-width: 1240px; }
+  .sd .sd-layout:not(.has-side) { grid-template-columns: minmax(0, 1fr); }
+  .sd .sd-text {
+    max-width: none;
+    margin: 0;
+    width: 100%;
+    background: #fffdf9;
+    border: 1px solid var(--color-rule);
+    border-radius: 3px;
+    padding: 34px 44px 40px;
+  }
+  .sd .sd-layout:not(.has-side) .sd-text { max-width: 820px; margin: 0 auto; }
+  /* The chapter keeps its reading measure inside the wider card. */
+  .sd .sd-text .sd-chapter-content { max-width: 680px; margin: 0 auto; }
+  .sd .sd-side {
+    border: 1px solid var(--color-rule);
+    border-radius: 3px;
+    background: #fbf8f3;
+    padding: 18px 20px 24px;
+  }
+}
+
+/* The overview: two stat boxes, then the most-cited verses as a list of
+   meters, each a button into its verse. */
+.sd-ov-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0 0 10px; }
+.sd-ov-stat {
+  display: flex; flex-direction: column; gap: 2px;
+  border: 1px solid var(--color-rule); border-radius: 3px; background: #fff;
+  padding: 12px 14px 10px;
+}
+.sd-ov-stat b { font-size: 24px; line-height: 1.1; font-weight: 500; font-variant-numeric: tabular-nums; }
+.sd-ov-stat span { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted); }
+.sd-ov-whole { font-size: 13px; margin: 0 0 14px; }
+.sd-ov-top { list-style: none; margin: 0 0 12px; padding: 0; border-top: 1px solid var(--color-rule); }
+.sd-ov-top li { border-bottom: 1px solid var(--color-rule); }
+.sd-ov-verse {
+  display: grid;
+  grid-template-columns: 4.6em minmax(0, 1fr) auto;
+  grid-template-areas: "ref meter n" "snip snip snip";
+  align-items: center;
+  gap: 4px 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 2px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sd-ov-verse:hover .sd-ov-ref, .sd-ov-verse:focus-visible .sd-ov-ref { color: var(--sd-accent); }
+.sd-ov-verse:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 2px; }
+.sd-ov-ref { grid-area: ref; font-weight: 600; font-size: 14px; white-space: nowrap; }
+.sd-ov-meter { grid-area: meter; height: 6px; background: rgba(45, 41, 39, 0.07); border-radius: 3px; overflow: hidden; }
+.sd-ov-meter i { display: block; height: 100%; width: 0; background: var(--sd-accent); border-radius: 3px; }
+.sd-ov-n { grid-area: n; font-size: 13px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.sd-ov-snip { grid-area: snip; font-size: 13px; line-height: 1.45; color: var(--color-muted); font-style: italic; }
+.sd-ov-snip:empty { display: none; }
+.sd-ov-hint { font-size: 13px; margin: 0; }

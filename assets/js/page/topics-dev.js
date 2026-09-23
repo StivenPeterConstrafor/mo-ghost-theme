@@ -218,7 +218,15 @@
         `<header class="td-head">` +
           `<p class="sd-eyebrow">Part ${esc(part.n)} · ${esc(part.label)}${parent ? ` · <a href="${esc(topicHref(parent.id))}">${esc(parent.label)}</a>` : ""}</p>` +
           `<h2 class="td-title">${esc(locus.label)}</h2>` +
-          `<p class="td-counts sd-muted" data-td-counts>Gathering the sources…</p>${
+          // The topic's numbers as boxes (Ian, 2026-09-23: thin-line boxes,
+          // the whole width). Each fills in as its source arrives; the
+          // counts line below is kept for the error and retry.
+          `<div class="td-stats" data-td-stats aria-live="polite">` +
+            `<div class="td-stat" data-k="conf"><b>…</b><span>Confessional articles</span></div>` +
+            `<div class="td-stat" data-k="authors"><b>…</b><span>Authors</span></div>` +
+            `<div class="td-stat" data-k="works"><b>…</b><span>Treatises</span></div>` +
+          `</div>` +
+          `<p class="td-counts sd-muted" data-td-counts hidden></p>${
             (locus.children || []).length ? `<p class="td-kids">Within this topic: ${locus.children.map((ch) => `<a href="${esc(topicHref(ch.id))}">${esc(ch.label)}</a>`).join(" · ")}</p>` : ""
           }</header>` +
         `<section class="td-block" aria-labelledby="td-h-conf">` +
@@ -252,12 +260,16 @@
       if (!d) throw new Error("no topic");
       state.data = d;
       const c = d.counts || {};
-      $main.querySelector("[data-td-counts]").textContent =
-        [c.authors ? plural(c.authors, "author", "authors") : "", c.works ? plural(c.works, "treatise", "treatises") : ""].filter(Boolean).join(" · ");
+      setStat("authors", c.authors || 0);
+      setStat("works", c.works || 0);
       setView(state.view, false);
     }).catch(() => {
       if (state.id !== id) return;
-      $main.querySelector("[data-td-counts]").innerHTML = `This topic did not load. <button type="button" class="sd-clear" data-td-retry>Try again</button>`;
+      const $counts = $main.querySelector("[data-td-counts]");
+      $counts.hidden = false;
+      $counts.innerHTML = `This topic did not load. <button type="button" class="sd-clear" data-td-retry>Try again</button>`;
+      setStat("authors", null);
+      setStat("works", null);
       $main.querySelector("[data-td-retry]").addEventListener("click", () => renderLocus(id, state.view, state.cview));
     });
   }
@@ -273,12 +285,21 @@
     }).then(({ d, from }) => {
       if (state.id !== id) return;
       state.conf = { d: d || { articles: [], scripture: [] }, from };
+      setStat("conf", ((d && d.articles) || []).length);
       setCView(state.cview, false);
     }).catch(() => {
       if (state.id !== id) return;
       state.conf = { d: null, from: null, error: true };
+      setStat("conf", null);
       setCView(state.cview, false);
     });
+  }
+
+  // One stat box in the topic's header. null is "did not load": a dash,
+  // never a zero, which would claim nobody wrote on the topic.
+  function setStat(k, n) {
+    const $b = $main && $main.querySelector(`[data-td-stats] [data-k="${k}"] b`);
+    if ($b) $b.textContent = n == null ? "–" : fmt(n);
   }
 
   function syncTabs(block, view) {
