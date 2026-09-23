@@ -76,17 +76,14 @@
      * not be renamed or bundled. */
     assetBase: "/assets/js/port/",
 
-    /* KEEP THE FLOATING ASK BUTTON. We mount our own door on the Ask page
-     * itself (faith-ask-open.js opens the workspace there), which is the case
-     * his `launcher: false` is written for, but the launcher is the ONLY way
-     * into Ask on the five other pages that load this engine: the reader, the
-     * Bible, the desk, the atlas and the index. It is also already skinned and
-     * positioned by us, in assets/css/faith-ask-workspace.css (.fra-launcher,
-     * .fra-in-toolbar) and assets/css/faith-port-reader-skin.css, which parks
-     * it in the reader toolbar and hides it on mobile where the thumb bar
-     * carries Ask instead. Setting this false would delete that door and strand
-     * Ask behind a URL people would have to know. */
-    launcher: true,
+    /* NO FLOATING ASK BUTTON. Ian, 2026-09-23: "just remove this little
+     * ask floater" (it sat under the survey tab). It was kept earlier as the
+     * only door into Ask on the reader, Bible, desk, atlas and index pages;
+     * the doors that remain are the rail's Research > Ask, the reader's
+     * research panel ("Ask about this work"), the phone reader's thumb bar,
+     * and /the-faith-received/ask/ itself, all of which call FRAsk.open or
+     * link to the page and none of which needs the launcher. */
+    launcher: false,
 
     /* NO SECOND NAV BAR. The engine can render its own Library/Authors/
      * Scripture/Topics/Search row down the sidebar of the standalone page.
