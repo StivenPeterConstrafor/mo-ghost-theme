@@ -415,7 +415,9 @@
         // Prominence (total pages) is the default per the shelf-front
         // spec; A-Z is one click away. Neither is the true citation-graph
         // influence ranking that spec asked for — see the file header.
-        let sortMode = "prominence";
+        // A-Z first (Ian, 2026-09-23: every list alphabetical);
+        // prominence is still in the menu.
+        let sortMode = "az";
 
         const authorPages = new Map();
         deduped.forEach((w) => {
@@ -431,7 +433,9 @@
           const ordered = scoped.slice().sort((a, b) => {
             const an = a.author.trim() || "Unattributed", bn = b.author.trim() || "Unattributed";
             if (sortMode === "az") {
-              return surname(an).localeCompare(surname(bn)) || cmpTitle(a.title, b.title);
+              const T = window.MOTitleOrder;
+              const byTitle = T && T.compareTitlesAlpha ? T.compareTitlesAlpha(a.title, b.title) : cmpTitle(a.title, b.title);
+              return surname(an).localeCompare(surname(bn)) || byTitle;
             }
             const diff = (authorPages.get(bn) || 0) - (authorPages.get(an) || 0);
             return diff || (b.pages - a.pages) || cmpTitle(a.title, b.title);
@@ -454,11 +458,13 @@
             : '<p class="faith-room-status">Nothing matches that.</p>';
 
           if (!detail.querySelector("[data-shelf-shell]")) {
-            detail.innerHTML = '<div data-shelf-shell><div class="faith-room-head"><div class="faith-room-searchbar">'
+            // The controls in the same thin-line panel as the collection
+            // pages (.faith-room-panel).
+            detail.innerHTML = '<div data-shelf-shell><div class="faith-room-panel"><div class="faith-room-head"><div class="faith-room-searchbar">'
               + '<input type="search" class="faith-room-filter" data-shelf-filter placeholder="Search an author or a title&hellip;" aria-label="Search this group" />'
               + '<label class="faith-room-select"><span>Sort</span><select data-shelf-sort aria-label="Sort order">'
-              + '<option value="prominence">By prominence</option><option value="az">A&ndash;Z</option></select></label>'
-              + '</div><p class="faith-room-count" data-shelf-count></p></div>'
+              + '<option value="az" selected>A&ndash;Z</option><option value="prominence">By prominence</option></select></label>'
+              + '</div><p class="faith-room-count" data-shelf-count></p></div></div>'
               + '<div data-shelf-list></div><div data-shelf-pager></div></div>';
             const input = detail.querySelector("[data-shelf-filter]");
             let t = null;

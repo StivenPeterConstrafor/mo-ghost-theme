@@ -77,7 +77,9 @@
   let comm = null;
 
   // ── Controls ──────────────────────────────────────────────────
-  $trans.innerHTML = S.TRANSLATIONS.map((t) => `<option value="${t[0]}">${esc(t[1])} · ${esc(t[2])}</option>`).join("");
+  // Just the abbreviation (Ian, 2026-09-23); the full name is the
+  // option's title.
+  $trans.innerHTML = S.TRANSLATIONS.map((t) => `<option value="${t[0]}" title="${esc(t[2])}">${esc(t[1])}</option>`).join("");
   function fillChapters(book) {
     let h = "";
     for (let n = 1; n <= book.chapters; n++) h += `<option value="${n}">${n}</option>`;
