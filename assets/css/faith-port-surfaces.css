@@ -1000,3 +1000,39 @@ body.web-page #connection-examples > button:hover { border-color: var(--ar-line-
   .faith-port-dtc-page .art .inner > .meta { padding-left: 16px; padding-right: 16px; }
   .faith-port-dtc-page .art .inner > .body { padding: 20px 18px; }
 }
+
+/* ── Dictionary: no footer; the index and top bar fold (Ian, 2026-09-23) ──
+   The dictionary is a full-window reading tool; the site footer under it
+   was a second scroll to nowhere. The fold strip and its two states are
+   driven by faith-dtc-chrome.js. Wide screens only: phones already get
+   one flowing column. */
+body.dtc-page .site-footer { display: none; }
+.faith-port-dtc-page .dtc-chrome { display: none; }
+@media (min-width: 761px) {
+  .faith-port-dtc-page .dtc-chrome {
+    display: flex;
+    flex: none;
+    gap: 20px;
+    align-items: center;
+    padding: 6px 1.4rem;
+    border-bottom: 1px solid var(--ar-line);
+    background: var(--ar-panel);
+  }
+  .faith-port-dtc-page .dtc-fold {
+    background: none;
+    border: 0;
+    padding: 4px 0;
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted, #6b6660);
+    cursor: pointer;
+  }
+  .faith-port-dtc-page .dtc-fold:hover,
+  .faith-port-dtc-page .dtc-fold:focus-visible { color: var(--ink, #2d2927); }
+  .faith-port-dtc-page.dtc-no-top > .top,
+  .faith-port-dtc-page.dtc-no-top > .sband { display: none; }
+  .faith-port-dtc-page.dtc-no-list .main { grid-template-columns: minmax(0, 1fr); }
+  .faith-port-dtc-page.dtc-no-list .main > .list { display: none; }
+}
