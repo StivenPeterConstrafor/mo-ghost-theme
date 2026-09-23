@@ -1923,3 +1923,9 @@ html.fr-bar-hidden .fr-read-toc { top: 0; }
 .fr-read-toc-entry:focus-visible { color: var(--accent, #b0573a); }
 .fr-read-toc-entry.is-current { color: var(--accent, #b0573a); }
 .fr-read-toc-empty { color: var(--muted, #6b6660); }
+/* A flat outline: one ruled list across the width, entries in rows. */
+.fr-read-toc-grid.fr-read-toc-flat { gap: 0 28px; align-items: stretch; }
+.fr-read-toc-flat > .fr-read-toc-entry {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border, #d9c6a7);
+}

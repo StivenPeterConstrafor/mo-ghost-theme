@@ -126,9 +126,27 @@
       overlay.appendChild(p);
       return;
     }
-    const top = Math.min(...nodes.map(depthOf));
+    const depths = nodes.map(depthOf);
+    const top = Math.min(...depths);
     const grid = document.createElement("div");
     grid.className = "fr-read-toc-grid";
+    // A flat outline (every entry at one level: Irenaeus's 173 chapters)
+    // is a ruled list across the width, as the dictionary's expanded
+    // index is, rather than 173 cards of one line each.
+    if (depths.every((d) => d === top)) {
+      grid.classList.add("fr-read-toc-flat");
+      nodes.forEach((node) => {
+        const link = node.querySelector("a.nn-t") || node.querySelector("a");
+        const title = ((link || node).textContent || "").trim();
+        if (!title) return;
+        const entry = button(title, "fr-read-toc-entry");
+        if (node.classList.contains("on")) entry.classList.add("is-current");
+        entry.addEventListener("click", () => { setExpanded(false); (link || node).click(); });
+        grid.appendChild(entry);
+      });
+      overlay.appendChild(grid);
+      return;
+    }
     let card = null;
     let list = null;
     nodes.forEach((node) => {
