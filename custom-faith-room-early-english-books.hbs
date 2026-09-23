@@ -19,7 +19,7 @@
     <div class="bhero-inner container">
       <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/early-english-books/">Library</a></p>
       <h1>Early English Books</h1>
-      <p class="bhero-sub">The English divines the library holds, 1473&ndash;1700 &mdash; the corpus site&rsquo;s shelf, Puritan, Anglican and the Westminster Assembly within it. Every work sorted by author. Jump by letter, or search an author or a title.</p>
+      <p class="bhero-sub">The English writers the library holds, 1473 to 1700, with the Puritans, the conformists and the Westminster Assembly within it, and their Latin works beside the English. Every work sorted by author. Jump by letter, or search an author or a title.</p>
     </div>
   </section>
 
@@ -36,11 +36,22 @@
 
 
 
+{{!-- 2026-09-23: this room was the eebo collection alone, so the 770
+     Latin works by English writers that sit in the tfr collection
+     (Twisse's Opera, Robert Baron's disputations) appeared nowhere but
+     The Latin Library. When that room was dissolved into shelves they
+     would have had no home at all. The shelf meta makes this room the
+     whole English shelf, the same way Patrologia Latina is the whole
+     Latin Fathers shelf: 3,654 here plus those 770. --}}
 <meta name="tfr-room-collection" content="eebo" />
+<meta name="tfr-room-shelf" content="English Divines" />
+{{!-- Not "Early English Books": the room now also holds 770 Latin
+     works by English writers, which are not in that corpus. --}}
+<meta name="tfr-room-name" content="the English shelf" />
 <meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
 <script src="{{asset "js/faith-denominations.js"}}"></script>
 <script src="{{asset "js/faith-corpora.js"}}"></script>
 <script src="{{asset "js/faith-century.js"}}"></script>
 <script data-contents="{{asset "data/faith-received/collected-work-contents.json"}}&amp;frv=16b5a319b51384d7" src="{{asset "js/faith-collected-contents.js"}}&amp;frv=95473b5afaf6e54c"></script>
-<script src="{{asset "js/faith-room.js"}}&amp;frv=bb37b132d2674a66"></script>
+<script src="{{asset "js/faith-room.js"}}&amp;frv=efbda667e7ef8e5f"></script>
 <script src="{{asset "js/faith-resolve.js"}}"></script>

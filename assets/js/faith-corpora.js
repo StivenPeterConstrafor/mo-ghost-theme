@@ -1031,7 +1031,12 @@
   // than on each corpus so the routes are readable as a set, and so a
   // route rename is one edit.
   const CORPUS_ROOM = {
-    tfr: "/the-faith-received/latin-library/",
+    // 2026-09-23: the tfr collection no longer has one room. Its works
+    // are shelved by tradition (medieval, roman-catholic, lutheran,
+    // continental-reformed, humanism-and-law, and the English writers in
+    // early-english-books), so the collection AS a collection is the
+    // all-works page cut to it.
+    tfr: "/the-faith-received/all-works/?in=tfr",
     confessions: "/the-faith-received/confessions/",
     eebo: "/the-faith-received/early-english-books/",
     pld: "/the-faith-received/patrologia-latina/",

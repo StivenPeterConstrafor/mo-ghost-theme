@@ -1,0 +1,60 @@
+{{!< default}}
+{{#contentFor "moHead"}}
+<title>Roman Catholic &mdash; The Faith Received</title>
+<meta name="description" content="Every Roman Catholic work in The Faith Received: the Tridentine theologians, the Jesuit and Dominican schools, and the controversial divinity of the Counter-Reformation." />
+<meta property="og:title" content="Roman Catholic — The Faith Received" />
+<meta name="twitter:title" content="Roman Catholic — The Faith Received" />
+{{/contentFor}}
+{{!-- /the-faith-received/roman-catholic/ — the Roman Catholic shelf, whole.
+
+     One page per shelf. Until 2026-09-23 these five traditions had no
+     room of their own: they were filtered views of The Latin Library
+     (/latin-library/?tradition=Roman Catholic), which held all six traditions
+     at once and was therefore named after a language rather than
+     anything a reader was looking for. The data owner's word for that
+     was that the Latin Library "has been departed, because everything
+     else has been shifted to other shelfs". This is that shelf.
+
+     faith-room.js reads the collection from tfr-room-collection and
+     the shelf from tfr-room-shelf below. Where a shelf meta is present
+     the room is the WHOLE shelf: its own collection plus every work
+     under that tradition in the collections that carry more than one
+     (English Editions), so the count here agrees with the count on the
+     card the reader clicked.
+
+     Generated as a set with the collection rooms: if one changes,
+     change them all. --}}
+
+<main class="faith-received faith-room">
+
+  <section class="bhero bhero--tool">
+    <div class="bhero-inner container">
+      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/browse/">Library</a></p>
+      <h1>Roman Catholic</h1>
+      <p class="bhero-sub">Catholic divinity after Trent. Bellarmine, Su&aacute;rez, Cajetan and the controversies over the Church, grace and the sacraments. Every work on the shelf, sorted by author. Jump by letter, or search for a name or a title.</p>
+    </div>
+  </section>
+
+  <section class="bband faith-room-body">
+    <div class="container" data-faith-room></div>
+  </section>
+
+{{> "faith-received/_beta-band"}}
+</main>
+{{!-- Sitewide membership CTA. Same partial and same gate as the rest
+     of the site: hidden for paid and comped members, shown to free
+     subscribers and anonymous visitors. --}}
+{{> "faith-received/_library-cta"}}
+
+
+
+<meta name="tfr-room-collection" content="tfr" />
+<meta name="tfr-room-shelf" content="Roman Catholic" />
+<meta name="tfr-room-name" content="Roman Catholic" />
+<meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
+<script src="{{asset "js/faith-denominations.js"}}"></script>
+<script src="{{asset "js/faith-corpora.js"}}"></script>
+<script src="{{asset "js/faith-century.js"}}"></script>
+<script data-contents="{{asset "data/faith-received/collected-work-contents.json"}}&amp;frv=16b5a319b51384d7" src="{{asset "js/faith-collected-contents.js"}}&amp;frv=95473b5afaf6e54c"></script>
+<script src="{{asset "js/faith-room.js"}}&amp;frv=efbda667e7ef8e5f"></script>
+<script src="{{asset "js/faith-resolve.js"}}"></script>
