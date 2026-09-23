@@ -48,11 +48,16 @@
     if (works.length && works.every(w => ['preface','apparatus'].includes(w.kind))) return {kind:'editorial', label:name};
     return {kind:'author', label:name};
   }
+  /* ONE NUMBER (owner, 2026-09-23: "take out the whole latin library vs
+     english things"; PR #37 did the same at the two call sites it could
+     reach). This said "8,967 works + 22 English editions", which split a
+     shelf in two on the reader's behalf along the line he asked us to
+     stop drawing: an English edition of a work on the shelf is a work on
+     the shelf. `supplement` still marks them, and anything that needs to
+     tell them apart can still ask. */
   function countLabel(works) {
-    const extra = works.filter(work => work.supplement).length, core = works.length - extra;
-    const base = core ? `${core.toLocaleString()} work${core === 1 ? '' : 's'}` : '';
-    const added = extra ? `${extra.toLocaleString()} English edition${extra === 1 ? '' : 's'}` : '';
-    return [base, added].filter(Boolean).join(' + ') || '0 works';
+    const n = works.length;
+    return n ? `${n.toLocaleString()} work${n === 1 ? '' : 's'}` : '0 works';
   }
   const loaded = new Map();
   let ready = Promise.resolve();

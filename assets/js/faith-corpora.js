@@ -498,12 +498,17 @@
   const CORPORA = [
     {
       id: "tfr",
-      // Named "The Faith Received" on the source site, but that is the
-      // name of this whole library — a collection inside it can't
-      // carry it too. Paired with Early English Books: each named by
-      // language and medium.
-      label: "The Latin Library",
-      short: "Latin divinity, 1100–1700",
+      // Named "The Faith Received" on the source site, and that is what
+      // it is: the library's main collection, not a language. It was
+      // "The Latin Library", paired with Early English Books, until the
+      // data owner asked for the Latin-vs-English split to go (2026-09-23,
+      // via PR #37): it holds English works too (Davenant's Treatise on
+      // Justification, Baxter, the Westminster minutes), so the name was
+      // false as well as unhelpful. A reader meets the SHELF now (its
+      // tradition); this label is what an admin page and any renderer we
+      // missed will print, so it must not reintroduce the split.
+      label: "The Faith Received",
+      short: "Divinity in Latin and English, 1100–1700",
       base: BLOB,
       catalogue: "/v1/works-index.json",
       pick: (d) => d.works || [],

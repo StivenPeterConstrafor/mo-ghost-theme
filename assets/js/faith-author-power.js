@@ -125,8 +125,12 @@
   const EMBEDDED = new Set(["tfr", "pld", "mo", "eebo", "pg"]);
   const PAGED_CORPORA = new Set(["tfr", "eebo"]);
 
+  // tfr/eebo/mo are in ONE_LIBRARY above, so a row from them is labelled
+  // by its shelf and never reaches this map. These names stay only for the
+  // printed series; tfr's is here so a future caller that misses the
+  // ONE_LIBRARY check cannot print the retired name.
   const CORPUS_LABELS = {
-    tfr: "The Latin Library",
+    tfr: "The Faith Received",
     eebo: "Early English Books",
     mo: "English Editions",
     pld: "Patrologia Latina",

@@ -404,10 +404,24 @@
     });
 
     const DICT = window.MODictionaryRefs;
+    /* The shelf a saved work sits on, which is what the row says and
+       what the groups are headed by. It was the collection ("The Latin
+       Library", "Early English Books"), the pipeline the work arrived
+       through, until the owner asked for that split to go (2026-09-23,
+       PR #37). The dictionary keeps its own name, and a work whose
+       tradition we do not have falls back to the collection rather than
+       to nothing, so no row is ever unlabelled. */
     const labelOf = (id) => {
       if (DICT && id === DICT.CORPUS) return DICT.LABEL;
       const c = MO && MO.get ? MO.get(id) : null;
       return (c && c.label) || "The library";
+    };
+    const shelfOf = (id, hit) => {
+      if (DICT && id === DICT.CORPUS) return DICT.LABEL;
+      const t = String((hit && hit.tradition) || "").trim();
+      const L = window.MOFaithLabel;
+      if (t) return (L && L.of ? L.of(t, hit) : t);
+      return labelOf(id);
     };
 
     return wants.map((want) => {
@@ -441,7 +455,7 @@
           title: hit.title || hit.id,
           author: hit.author || "",
           eyebrow: plainEyebrow(hit),
-          corpusLabel: labelOf(corpusId),
+          corpusLabel: shelfOf(corpusId, hit),
           // The catalogue's own url. Built by the same rule the worker
           // uses; never reconstructed here. A dictionary row asks its
           // own file, which folds the stop into the link.
@@ -459,7 +473,7 @@
         title: want.work,
         author: "",
         eyebrow: "",
-        corpusLabel: labelOf(want.corpus),
+        corpusLabel: shelfOf(want.corpus, null),
         url: constructedUrl(want.corpus, want.work),
       };
     });

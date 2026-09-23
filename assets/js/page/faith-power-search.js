@@ -155,13 +155,24 @@
   // Reader-facing collection names, from the adapter registry in
   // assets/js/faith-corpora.js. Same reasoning as above for the copy.
   const CORPUS_LABELS = {
-    tfr: "The Latin Library",
-    eebo: "Early English Books",
-    mo: "English Editions",
+    tfr: "The Faith Received",
     pld: "Patrologia Latina",
     pg: "Patrologia Graeca",
     po: "Patrologia Orientalis",
   };
+
+  /* ONE LIBRARY (owner, 2026-09-23: "take out the whole latin library vs
+     english things"). tfr, eebo and mo are the pipelines works arrived
+     through, not shelves: the same author's Latin and English works were
+     landing in three different buckets of a filter called "Collection",
+     and one of the buckets was named after a language the works are not
+     all in. They collapse to one value here, the way the library page's
+     Collection filter drops them entirely; a reader who wants a shelf
+     uses Tradition, which is the facet beside this one. The printed
+     series keep their own names, because Patrologia Latina IS the book a
+     reader means. */
+  const ONE_LIBRARY = new Set(["tfr", "eebo", "mo", "mo-english"]);
+  const corpusKey = (id) => (ONE_LIBRARY.has(String(id)) ? "tfr" : String(id || ""));
 
   // The sentinel for "this result has no value on this dimension." It
   // is a real, selectable filter value with its own count rather than
@@ -349,7 +360,7 @@
 
   function dimensionKeys(r, dim) {
     if (dim === "century") return centuryKeys(r);
-    const v = dim === "corpus" ? r.corpus : r.tradition;
+    const v = dim === "corpus" ? corpusKey(r.corpus) : r.tradition;
     return [v || UNKNOWN];
   }
 
@@ -423,6 +434,7 @@
       return "Not recorded";
     }
     if (dim === "century") return `${ordinal(Number(key))} century`;
+    // Keys arrive merged by corpusKey, so tfr/eebo/mo are one value here.
     if (dim === "corpus") return CORPUS_LABELS[key] || key;
     return key;
   }
@@ -526,7 +538,8 @@
     const li = document.createElement("li");
     li.className = "ps-work";
 
-    const tradLabel = r.tradition || CORPUS_LABELS[r.corpus] || "";
+    // The shelf first; the collection only when the work has no shelf.
+    const tradLabel = r.tradition || CORPUS_LABELS[corpusKey(r.corpus)] || "";
     if (tradLabel) {
       const meta = document.createElement("p");
       meta.className = "ps-work-trad";

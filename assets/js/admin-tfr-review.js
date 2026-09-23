@@ -92,7 +92,11 @@
   // start talking to those: one backend, or none.
   const COLLECTIONS = {
     tfr: {
-      label: "The Latin Library",
+      // Renamed with the reader-facing labels, 2026-09-23: the split this
+      // named ("Latin" vs Early English Books) is gone from the site, and
+      // an admin reading a review queue should see the same names a reader
+      // does.
+      label: "The Faith Received",
       path: "/v1/works-index.json",
       pick: (d) => (d && d.works) || [],
       // 17,064 rows in this catalogue are pointers at the four sister
