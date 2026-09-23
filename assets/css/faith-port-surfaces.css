@@ -1067,8 +1067,45 @@ main.research-room:has(.rx-profile) .rx-filters label:has(> #room-work-order) { 
 /* "Pick up where you left off": a row of the recent articles, each a
    card with its own × (faith-dtc-chrome.js), with room around it. */
 .faith-port-dtc-page .dtc-resume:not([hidden]) { padding: 16px 1.4rem 14px; }
-.faith-port-dtc-page .dtc-resume .rz-label {
+.faith-port-dtc-page .dtc-resume .rz-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin: 0 0 8px;
+}
+.faith-port-dtc-page .dtc-resume.is-folded .rz-head { margin-bottom: 0; }
+.faith-port-dtc-page .dtc-resume .rz-fold {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted, #6b6660);
+  cursor: pointer;
+}
+.faith-port-dtc-page .dtc-resume .rz-fold::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease, margin 0.15s ease;
+}
+/* Down when open, pointing right when folded, as the All Works fold. */
+.faith-port-dtc-page .dtc-resume.is-folded .rz-fold::before { transform: rotate(-45deg); margin-top: 0; margin-left: -3px; }
+.faith-port-dtc-page .dtc-resume .rz-fold:hover,
+.faith-port-dtc-page .dtc-resume .rz-fold:focus-visible { border-color: var(--ar-line); color: var(--ink, #2d2927); }
+.faith-port-dtc-page .dtc-resume .rz-row[hidden] { display: none; }
+.faith-port-dtc-page .dtc-resume .rz-label {
+  margin: 0;
   font: 600 0.76rem/1.3 var(--sans, sans-serif);
   color: var(--accent2, #7a4a2a);
 }

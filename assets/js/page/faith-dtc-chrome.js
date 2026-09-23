@@ -113,6 +113,11 @@
      not touched. Built with textContent; no HTML strings. */
   const resume = page.querySelector("#resume");
   const MAX_RESUME = 6;
+  // Folded or open, remembered in this browser (Ian, 2026-09-23: "an
+  // arrow in the corner that expands and collapses it"). Open by default.
+  const RESUME_KEY = "fr_dtc_resume_folded";
+  let resumeFolded = false;
+  try { resumeFolded = window.localStorage.getItem(RESUME_KEY) === "1"; } catch (e) { /* open */ }
   function recentPlaces() {
     const store = window.MOFaithPosition;
     if (!store || typeof store.load !== "function") return [];
@@ -136,11 +141,33 @@
       .filter((p) => p.title).slice(0, MAX_RESUME);
     resume.replaceChildren();
     if (!items.length) { resume.hidden = true; return; }
+    const head = document.createElement("div");
+    head.className = "rz-head";
     const label = document.createElement("p");
     label.className = "rz-label";
     label.textContent = "Pick up where you left off";
     const row = document.createElement("div");
     row.className = "rz-row";
+    row.id = "rz-row";
+    row.hidden = resumeFolded;
+    const fold = document.createElement("button");
+    fold.type = "button";
+    fold.className = "rz-fold";
+    fold.setAttribute("aria-controls", "rz-row");
+    const paintFold = () => {
+      fold.setAttribute("aria-expanded", String(!resumeFolded));
+      fold.setAttribute("aria-label", resumeFolded ? "Show recent entries" : "Hide recent entries");
+      fold.title = resumeFolded ? "Show" : "Hide";
+      resume.classList.toggle("is-folded", resumeFolded);
+    };
+    fold.addEventListener("click", () => {
+      resumeFolded = !resumeFolded;
+      row.hidden = resumeFolded;
+      paintFold();
+      try { window.localStorage.setItem(RESUME_KEY, resumeFolded ? "1" : "0"); } catch (e) { /* not remembered */ }
+    });
+    paintFold();
+    head.append(label, fold);
     items.forEach((it) => {
       const wrap = document.createElement("span");
       wrap.className = "rz-wrap";
@@ -165,7 +192,7 @@
       wrap.append(open, x);
       row.appendChild(wrap);
     });
-    resume.append(label, row);
+    resume.append(head, row);
     resume.hidden = false;
   }
   if (resume && typeof window.paintResume === "function") {
