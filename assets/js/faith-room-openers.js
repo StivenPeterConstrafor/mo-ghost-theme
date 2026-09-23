@@ -226,8 +226,14 @@
       // reached as a denomination under it, one without is a tradition
       // in its own right.
       const q = new URLSearchParams({ collection: "all" });
-      if (s.parent) { q.set("tradition", s.parent); q.set("denomination", s.name); }
-      else { q.set("tradition", s.name); }
+      // The shelf by name, parent or child. This used to send a child
+      // shelf as tradition=<parent>&denomination=<name>, which works
+      // only where the child is also a church: "English Divines" is not
+      // one (its works are Anglican, Presbyterian, Congregational), so
+      // that door opened on all 5,140 Protestant works under a card
+      // promising 4,426. faith-room.js reads a child tradition as the
+      // shelf it names.
+      q.set("tradition", s.name);
       // Three shelves have a room of their own, and a room is the better
       // door: it opens on an index of AUTHORS, each with dates and
       // office, and it offers the volume view beside it, because Migne is

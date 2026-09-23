@@ -687,6 +687,28 @@
     return [...seen.entries()].sort((a, b) => b[1] - a[1]);
   }
 
+  /* A TRADITION VALUE CAN NAME A SHELF (2026-09-23). The filter used to
+     read every tradition as a top level, so asking for "English Divines"
+     answered with its communion, Protestant: 5,140 works where the shelf
+     card beside it promised 4,426. There was no other way to ask for that
+     shelf. The denomination axis is the church a man belonged to
+     (Anglican, Presbyterian), which is a different question, and the
+     English works carry those values, never "English Divines".
+
+     So: a value with a parent of its own is a shelf and matches the
+     shelf; a value with no parent is a top level and matches the
+     communion, as before. The answer is cached per value because
+     matches() runs per work per keystroke. */
+  const askedForShelf = new Map();
+  function isShelfAsk(t) {
+    if (!askedForShelf.has(t)) {
+      const parent = window.MOCorpora && window.MOCorpora.traditionParent
+        ? window.MOCorpora.traditionParent(t) : "";
+      askedForShelf.set(t, !!parent && parent !== t);
+    }
+    return askedForShelf.get(t);
+  }
+
   // Derived once per work on load, not per keystroke.
   function cent(w) {
     return w._c === undefined ? (w._c = window.MOCentury ? window.MOCentury.of(w) : 0) : w._c;
@@ -695,7 +717,7 @@
   // The filters. The box is answered separately, by tierOf, because a
   // search is not a filter: it has an order.
   function matches(w) {
-    if (tradition && topTrad(w) !== tradition) return false;
+    if (tradition && (isShelfAsk(tradition) ? trad(w) !== tradition : topTrad(w) !== tradition)) return false;
     if (denomination && denomOf(w) !== denomination) return false;
     if (party && !inParty(w, party)) return false;
     if (century && cent(w) !== century) return false;
