@@ -1932,6 +1932,10 @@ function renderTrueIndex(items,kind){
   return `<div class="ixtrue${dense?" ixdense":""}"><h3 class="csub inflow ixtrueh">${esc(heading)}</h3><div class="ixtruel">${rows}</div></div>`;
 }
 function build(){
+  // ONE BUILD AT A TIME (2026-09-23, pg-362: 612 folios for 376 pages, 236 printed twice): build() re-runs when the TEI lanes or the
+  // rest of the shards land, while the previous build is still streaming folios in chunks. Its pending chunks then appended their
+  // pages into the new build's column. Each build takes a generation number; a chunk of a superseded build stops.
+  const _buildGen=(window.__frBuildGen=(window.__frBuildGen||0)+1);
   _structSorted=null;   // recompute spine index for this work
   const _entitle=DATA.title_en||DATA.title;   // English primary; the original Latin goes to the subtitle line
   document.title="The Faith Received — "+_entitle;
@@ -3571,7 +3575,8 @@ function build(){
   // rAF pauses in background tabs, stranding big works at ~140 folios (2026-07-20) — fall back to
   // setTimeout when hidden so the column keeps building even while the reader isn't looking.
   const _sched=cb=>{if(document.hidden)setTimeout(cb,200);else requestAnimationFrame(cb);};
-  (function chunk(){const end=Math.min(pages.length,_i+90);for(;_i<end;_i++)(TEI_ON?renderFolioTEI:renderFolio)(pages[_i],_i);   // TEI PATH (2026-08-10)
+  (function chunk(){if(_buildGen!==window.__frBuildGen)return;   // superseded by a newer build (ONE BUILD AT A TIME, above)
+    const end=Math.min(pages.length,_i+90);for(;_i<end;_i++)(TEI_ON?renderFolioTEI:renderFolio)(pages[_i],_i);   // TEI PATH (2026-08-10)
     if(_i<pages.length){_sched(chunk);} else {readingEditionPass();window.__readerBuilt=true;buildNav();if(window._afterBuild)window._afterBuild();}})();
   if(pages.length<=FIRST){readingEditionPass();window.__readerBuilt=true;buildNav();if(window._afterBuild)window._afterBuild();}
   // rebuild a single folio's rows in place (used by the owner inline editor for optimistic update)
@@ -5847,6 +5852,17 @@ async function loadPgCanon(ws){
     // spread-folio: the even milestone is the same physical page — no flush, no new page,
     // the opening's Greek keeps flowing into the current folio
     if(window.__pgSpread&&!window.__pgSpread.has(n)){seen.add(n);return;}
+    // A PAGE IS TWO COLUMNS, in every PG work (owner 2026-09-17 "the page is the unit", 2026-09-23 "some works are greek only, latin
+    // only, both, some alternate"): Migne prints an opening as two columns, n (odd) and n+1. The spread rule above covered one class
+    // (pbs stepping by 2 with the English on them); everywhere else the right column's milestone opened a folio of its own -- pg-237
+    // col. 1520 read as its own page, and where the milestone sits before the left column's text (pg-293 col. 833: <pb 833/>
+    // <milestone 834/> Greek … Latin) the page's Greek was filed under 834 and 833 stood empty. The right column continues the page
+    // it belongs to, whatever its language; its English joins the folio. Links to the even column land on the opening
+    // (FRMigneNavigation.openingKey).
+    {const _last=pages.length?pages[pages.length-1]:null;
+     if(!window.__pgSpread&&_last!=null&&_last%2===1&&n===_last+1){seen.add(n);
+       if(enByCol[n]&&enByCol[n].length&&!(window.__enUsed&&window.__enUsed.has(n))){_colEn.push(...enByCol[n]);(window.__enUsed=window.__enUsed||new Set()).add(n);}
+       return;}}
     flushCol();seen.add(n);pages.push(n);
     for(const [D,B] of [[laD,laB],[enD,enB]]){const pb=D.createElement("pb");pb.setAttribute("n",String(n));B.appendChild(pb);}
     // EN SPAN-UNION (owner 2026-08-18 'matching vol by col'): opening-keyed canons carry
