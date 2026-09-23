@@ -1040,25 +1040,43 @@ body.dtc-page .site-footer { display: none; }
 @media (min-width: 761px) {
   .faith-port-dtc-page.dtc-wide-list .main { grid-template-columns: minmax(0, 1fr); }
   .faith-port-dtc-page.dtc-wide-list .main > .art { display: none; }
-  /* Newspaper columns, not a grid: a grid row took the height of the
-     button's 44px minimum, so a headword that wrapped to two lines ran
-     into the one below it. In columns each headword is as tall as it
-     is, and within a letter they read down, as a printed index does. */
+  /* Columns inside each letter, never across the pane. The pane is a
+     fixed-height scroller: columns set on it overflowed sideways and
+     the spanning letter headings collapsed onto the rows. Each letter's
+     headwords sit in their own .hw-group (faith-dtc-chrome.js), which
+     grows to its content, and the columns are set there. A grid was
+     tried first and a grid row took the button's 44px minimum, so a
+     two-line headword ran into the next; in columns each headword is
+     as tall as it is. Within a letter they read down, as an index. */
   .faith-port-dtc-page.dtc-wide-list .main > .list {
     display: block;
-    columns: 260px;
-    column-gap: 28px;
     border-right: 0;
     padding: 0 1.4rem 2rem;
   }
-  .faith-port-dtc-page.dtc-wide-list .main > .list > :not(.hw) { column-span: all; }
-  .faith-port-dtc-page.dtc-wide-list .main > .list > .lether { position: static; margin-top: 10px; }
-  .faith-port-dtc-page.dtc-wide-list .main > .list > .hw {
+  .faith-port-dtc-page.dtc-wide-list .main > .list > .lether {
+    position: static;
+    margin: 18px 0 6px;
+    padding: 6px 0 6px;
+  }
+  .faith-port-dtc-page.dtc-wide-list .main > .list > .lether:first-child { margin-top: 6px; }
+  .faith-port-dtc-page.dtc-wide-list .hw-group {
+    columns: 260px;
+    column-gap: 28px;
+  }
+  .faith-port-dtc-page.dtc-wide-list .hw-group > .hw {
+    display: block;
     break-inside: avoid;
     height: auto;
+    min-height: 0;
     border-bottom: 1px solid var(--ar-line);
   }
-  .faith-port-dtc-page.dtc-wide-list .main > .list > .more { width: auto; max-width: 320px; margin: 18px auto; }
+  .faith-port-dtc-page.dtc-wide-list .main > .list > .more {
+    position: static;
+    display: block;
+    width: auto;
+    max-width: 320px;
+    margin: 24px auto 8px;
+  }
 }
 /* An author's works are always alphabetical now (faith-author-order.js),
    so the port's "Order works" choice has nothing left to choose. */

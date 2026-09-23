@@ -99,6 +99,37 @@
   wide.addEventListener("change", () => { if (!wide.matches) setWide(false); });
   setWide(false);
 
+  /* THE EXPANDED INDEX IS LAID OUT A LETTER AT A TIME. The list is a
+     fixed-height scroll pane; columns set on the pane itself overflowed
+     sideways out of sight and the letter headings that spanned them
+     collapsed onto the rows (Ian, 2026-09-23: "messy messy messy"). So
+     each letter's headwords are gathered into a box of their own
+     (.hw-group), which has no height limit, and the columns are set on
+     that. The engine redraws the list with innerHTML on every letter,
+     search and "Load more", so this regroups after each redraw. Its
+     clicks are delegated from #list (closest(".hw")), so a headword
+     one box deeper still opens. */
+  function groupList() {
+    if (!list || list.querySelector(":scope > .hw-group") && !list.querySelector(":scope > .hw")) return;
+    let group = null;
+    Array.from(list.children).forEach((el) => {
+      if (el.classList.contains("hw")) {
+        if (!group) {
+          group = document.createElement("div");
+          group.className = "hw-group";
+          el.before(group);
+        }
+        group.appendChild(el);
+      } else if (!el.classList.contains("hw-group")) {
+        group = null;
+      }
+    });
+  }
+  if (list) {
+    new MutationObserver(groupList).observe(list, { childList: true });
+    groupList();
+  }
+
   /* "PICK UP WHERE YOU LEFT OFF": A ROW, EACH WITH AN ×. Ian,
      2026-09-23: "little X's on these to delete them from this bar", then
      "this should be a whole row of works that goes across horizontally."
