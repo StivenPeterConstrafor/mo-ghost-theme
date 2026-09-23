@@ -370,18 +370,23 @@
     }
     // Addresses written before the churches had their own field.
     //
-    // "English Divines" was a nationality standing in for a
-    // denomination and is gone; a link naming it now means Protestant
-    // with no church chosen. "Reformed" meant the continental Reformed
-    // and has to keep meaning it — /the-faith-received/browse/ has
-    // shipped that link since the shelf cards were written.
+    // "English Divines" is a SHELF, and since 2026-09-23 the filter can
+    // hold one: a tradition with a parent matches that tradition rather
+    // than its communion (see isShelfAsk). This used to send such a link
+    // to Protestant with no church chosen, which is why the shelf card
+    // promised 4,426 works and its own link opened on all 5,140
+    // Protestant works. An older link naming it as a DENOMINATION means
+    // the same shelf, so it lands there too. "Reformed" meant the
+    // continental Reformed and has to keep meaning it —
+    // /the-faith-received/browse/ has shipped that link since the shelf
+    // cards were written.
     //
     // A tradition or denomination of Puritan or Anglican was, in the
     // older scheme, a party. Puritan still is. Anglican is now a church,
     // so it moves to the denomination rather than the party: a reader
     // who bookmarked the Anglicans gets the Anglicans.
     if (tradition === ENGLISH || denomination === ENGLISH) {
-      if (tradition === ENGLISH) tradition = "Protestant";
+      tradition = ENGLISH;
       denomination = "";
     }
     if (tradition === "Puritan" || denomination === "Puritan") {
