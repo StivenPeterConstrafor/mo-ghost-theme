@@ -1,42 +1,46 @@
 {{!< default}}
 {{#contentFor "moHead"}}
-{{!-- IN THE HEAD so the forward happens before anything paints. --}}
-<script src="{{asset "js/page/faith-latin-library-forward.js"}}&amp;frv=9cd55af00ffbaf07"></script>
-<meta name="robots" content="noindex, follow" />
 <title>The Latin Library &mdash; The Faith Received</title>
-<meta name="description" content="The Latin Library is now six shelves: Medieval, Roman Catholic, Continental Reformed, Lutheran, Humanism and Law, and the English writers." />
+<meta name="description" content="The whole table of contents for The Latin Library in The Faith Received: every work, every author, in one place." />
+<meta property="og:title" content="The Latin Library — The Faith Received" />
+<meta name="twitter:title" content="The Latin Library — The Faith Received" />
 {{/contentFor}}
-{{!-- /the-faith-received/latin-library/ — six shelves now, so this
-     forwards.
+{{!-- /the-faith-received/latin-library/ — The Latin Library, whole.
 
-     This was one room holding six traditions, named after the language
-     its books are printed in rather than anything a reader looks for,
-     and every tradition in it was also a shelf card elsewhere on the
-     site pointing back at this same room with a ?tradition= filter.
-     Each of those is now a room of its own. See
-     assets/js/page/faith-latin-library-forward.js for the mapping; the
-     tradition in the query string is what decides, so old links land on
-     the shelf they asked for rather than all being dumped in one place.
+     One page per collection. faith-room.js reads which one from the
+     tfr-room-collection meta below, sorts every work by its author's
+     last name, pages at fifty, and draws the rail and the filter.
 
-     Kept as a route rather than deleted: /browse/, the home page and
-     every bookmark made since the room shipped point here, and a 404
-     would lose all of them. noindex, because the shelves are the pages
-     search should hold. --}}
+     Generated as a set: if one changes, change them all. --}}
 
 <main class="faith-received faith-room">
+
   <section class="bhero bhero--tool">
     <div class="bhero-inner container">
-      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a></p>
-      <h1>The Latin Library is now six shelves</h1>
-      <p class="bhero-sub">Taking you to the right one. If nothing happens, choose a shelf below.</p>
-      <ul class="blist">
-        <li><a href="/the-faith-received/medieval/">Medieval</a></li>
-        <li><a href="/the-faith-received/roman-catholic/">Roman Catholic</a></li>
-        <li><a href="/the-faith-received/continental-reformed/">Continental Reformed</a></li>
-        <li><a href="/the-faith-received/lutheran/">Lutheran</a></li>
-        <li><a href="/the-faith-received/humanism-and-law/">Humanism and Law</a></li>
-        <li><a href="/the-faith-received/early-english-books/">English writers</a></li>
-      </ul>
+      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/latin-library/">Library</a></p>
+      <h1>The Latin Library</h1>
+      <p class="bhero-sub">Latin divinity, 1100&ndash;1700. Every work in the collection, sorted by author. Jump by letter, or search for a name or a title.</p>
     </div>
   </section>
+
+  <section class="bband faith-room-body">
+    <div class="container" data-faith-room></div>
+  </section>
+
+{{> "faith-received/_beta-band"}}
 </main>
+{{!-- Sitewide membership CTA. Same partial and same gate as the rest
+     of the site: hidden for paid and comped members, shown to free
+     subscribers and anonymous visitors. --}}
+{{> "faith-received/_library-cta"}}
+
+
+
+<meta name="tfr-room-collection" content="tfr" />
+<meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
+<script src="{{asset "js/faith-denominations.js"}}"></script>
+<script src="{{asset "js/faith-corpora.js"}}"></script>
+<script src="{{asset "js/faith-century.js"}}"></script>
+<script data-contents="{{asset "data/faith-received/collected-work-contents.json"}}&amp;frv=16b5a319b51384d7" src="{{asset "js/faith-collected-contents.js"}}&amp;frv=95473b5afaf6e54c"></script>
+<script src="{{asset "js/faith-room.js"}}&amp;frv=7d88301d84c04183"></script>
+<script src="{{asset "js/faith-resolve.js"}}"></script>

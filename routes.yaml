@@ -337,21 +337,6 @@ routes:
   # for links that still carry ?collection=.
   /the-faith-received/latin-library/:
     template: custom-faith-room-latin-library
-  # 2026-09-23: the six traditions that shared The Latin Library each
-  # have a room now. latin-library stays as a forwarder, because
-  # /browse/, the home page and every bookmark point at it. The English
-  # shelf is early-english-books, which picked up the 770 Latin works by
-  # English writers when it became a shelf room.
-  /the-faith-received/medieval/:
-    template: custom-faith-room-medieval
-  /the-faith-received/roman-catholic/:
-    template: custom-faith-room-roman-catholic
-  /the-faith-received/continental-reformed/:
-    template: custom-faith-room-continental-reformed
-  /the-faith-received/lutheran/:
-    template: custom-faith-room-lutheran
-  /the-faith-received/humanism-and-law/:
-    template: custom-faith-room-humanism-and-law
   /the-faith-received/early-english-books/:
     template: custom-faith-room-early-english-books
   /the-faith-received/patrologia-latina/:

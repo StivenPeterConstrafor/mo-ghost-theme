@@ -76,13 +76,6 @@
   // collections that carry more than one. The single-tradition
   // collections (eebo, and the Migne series themselves) can contribute
   // nothing to another shelf and are not fetched.
-  // What this room calls itself in its own count line. The collection's
-  // label was the only answer until 2026-09-23, when five shelves of the
-  // tfr collection became rooms: "357 works in The Latin Library" on a
-  // page headed Medieval would name a room that no longer exists. The
-  // Migne rooms set nothing here and keep their collection's label.
-  const nameMeta = document.querySelector('meta[name="tfr-room-name"]');
-  const roomName = (nameMeta && nameMeta.getAttribute("content") || "").trim();
   const shelfMeta = document.querySelector('meta[name="tfr-room-shelf"]');
   const shelfTradition = (shelfMeta && shelfMeta.getAttribute("content") || "").trim();
   const MIXED = ["mo", "tfr"];
@@ -1191,7 +1184,7 @@
     // cut the library down to one shelf, so a shelf in hand names itself.
     const label = isAll
       ? shelfName(denomination || tradition) || (collection && window.MOCorpora.get(collection)?.label) || "the whole library"
-      : (roomName || (corpus ? corpus.label : "the collection"));
+      : (corpus ? corpus.label : "the collection");
     // The rail files by the author's surname, which is the other view's
     // question. Inside a volume it would be a second index over at most
     // a few dozen works.
