@@ -435,3 +435,156 @@ body.web-citation-layout #faith-web-constellations .cn-hint { margin: 10px 0 0; 
   body.web-citation-layout #map-heading .map-top-controls { gap: 8px; flex-direction: column; align-items: flex-end; }
   body.web-citation-layout #faith-web-constellations .cn-zoom { right: 16px; bottom: 16px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   THE AUTHOR ROOM: THIN-LINE BOXES, THE WHOLE WIDTH
+   ══════════════════════════════════════════════════════════════════════
+
+   Ian, 2026-09-23: "Can we get a little more styling on these author
+   pages? Some thin-line boxes? Use the whole width, etc etc?"
+
+   The room was a column of text on a 1,320px page: the profile a single
+   line of numbers with the right half empty, and the works a list of
+   full-width rows whose title sat at one edge and whose Read / Explore /
+   Save sat at the other, a screen apart. Now:
+
+   - the profile is one thin-line panel: dates and office, then the
+     numbers as a row of stat boxes across the full width
+     (faith-author-stats.js regroups the port's run-on stats line into
+     them), the author's links, the biography, and the shelves as the
+     panel's foot;
+   - the filters sit in a box of their own;
+   - the works are a grid of cards, three or four across, each with its
+     actions along its foot, so title and action are one glance.
+
+   Scoped to an author room (main.research-room with a profile): the
+   Scripture room shares .research-room and has no .rx-profile. The port
+   keeps its structure; this is only the skin. */
+main.research-room:has(.rx-profile) {
+  --ar-line: var(--border, #d9c6a7);
+  --ar-line-strong: #b9a37e;
+  --ar-panel: #fbf8f3;
+  --ar-card: #fff;
+}
+
+main.research-room:has(.rx-profile) .rx-profile {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-panel);
+  padding: 22px 26px 6px;
+  margin: 0;
+}
+main.research-room:has(.rx-profile) .rx-profile:has(+ .rx-note) { border-radius: 3px 3px 0 0; }
+main.research-room:has(.rx-profile) .rx-profile .deck { font-size: 16px; margin: 0 0 12px; }
+main.research-room:has(.rx-profile) .rx-profile .rx-author-bio {
+  max-width: none;
+  border-top: 1px solid var(--ar-line);
+  margin: 10px -26px 0;
+  padding: 4px 26px;
+}
+main.research-room:has(.rx-profile) .rx-profile .rx-author-bio > p { max-width: 75ch; }
+main.research-room:has(.rx-profile) .rx-profile + .rx-note {
+  max-width: none;
+  border: 1px solid var(--ar-line);
+  border-top: 0;
+  border-radius: 0 0 3px 3px;
+  background: var(--ar-card);
+  margin: 0 0 32px;
+  padding: 12px 26px;
+}
+
+/* The numbers, boxed. .stats keeps its class, so anything that reads it
+   still finds it; faith-author-stats.js only regroups what is inside. */
+main.research-room:has(.rx-profile) .ar-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 4px 0 12px;
+}
+main.research-room:has(.rx-profile) .ar-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-card);
+  padding: 12px 16px 10px;
+}
+main.research-room:has(.rx-profile) .ar-stat b {
+  font-size: 26px;
+  line-height: 1.1;
+  font-weight: 500;
+  color: var(--ink, #2d2927);
+  font-variant-numeric: tabular-nums;
+}
+main.research-room:has(.rx-profile) .ar-stat > span {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted, #6b6660);
+}
+/* A tradition is a word, not a count. */
+main.research-room:has(.rx-profile) .ar-stat--word b { font-size: 19px; line-height: 1.35; padding-top: 5px; }
+main.research-room:has(.rx-profile) .ar-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  font-size: 14px;
+}
+
+main.research-room:has(.rx-profile) .rx-filters {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-panel);
+  padding: 18px 22px;
+  margin: 18px 0 14px;
+}
+
+/* Works as cards. The port lays each row out as title-left,
+   actions-right; the card stacks them and pins the actions to its foot,
+   so a row of cards ends on one line whatever the titles' lengths. */
+main.research-room:has(.rx-profile) .rx-work-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 14px;
+  border: 0;
+  margin-top: 8px;
+}
+main.research-room:has(.rx-profile) .rx-work-list > .rx-work-row {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 0;
+  margin: 0;
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-card);
+  padding: 18px 20px 14px;
+  transition: border-color 0.15s ease;
+}
+main.research-room:has(.rx-profile) .rx-work-list > .rx-work-row:hover { border-color: var(--ar-line-strong); }
+main.research-room:has(.rx-profile) .rx-work-row h3 { margin: 0 0 4px; font-size: 19px; line-height: 1.3; }
+main.research-room:has(.rx-profile) .rx-work-row .rx-work-actions {
+  align-self: stretch;
+  width: auto;
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 4px 16px;
+  margin: 0;
+  border-top: 1px solid var(--ar-line);
+  padding-top: 10px;
+}
+
+@media (max-width: 640px) {
+  main.research-room:has(.rx-profile) .rx-profile { padding: 14px 16px 4px; }
+  main.research-room:has(.rx-profile) .rx-profile .rx-author-bio { margin: 10px -16px 0; padding: 4px 16px; }
+  main.research-room:has(.rx-profile) .rx-profile + .rx-note { padding: 10px 16px; margin-bottom: 24px; }
+  /* Two across on a phone rather than one tall stack. */
+  main.research-room:has(.rx-profile) .ar-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  main.research-room:has(.rx-profile) .ar-stat b { font-size: 22px; }
+  main.research-room:has(.rx-profile) .rx-filters { padding: 14px 16px; }
+  main.research-room:has(.rx-profile) .rx-work-list > .rx-work-row { padding: 16px 16px 12px; }
+}
