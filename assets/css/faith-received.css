@@ -6949,6 +6949,10 @@ mark.faith-find-hit.is-current {
 .btrad-all { display: inline-block; margin-top: 18px; font-family: var(--font-body); font-size: 11px;
   letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-secondary); text-decoration: none; }
 .btrad-all:hover { text-decoration: none; color: var(--color-primary-text); }
+/* The same link closing a whole band (Browse's authors). On the dark band
+   the hover colour would be dark on dark, so it lightens instead. */
+.bfold-all { margin-top: 28px; }
+.bband--dark .bfold-all:hover { color: var(--color-white, #fff); }
 
 /* A reference work under a shelf, rather than a work on it. The DTC is
    the only one so far. Set apart from the work rows above it by a rule
