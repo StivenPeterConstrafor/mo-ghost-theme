@@ -85,12 +85,32 @@ function denomFor(denoms, name, ys) {
   return dated.length === 1 ? denoms[dated[0]] : null;
 }
 
-function place(sh, y, body, order) {
+const CORPORATE = /\b(?:council|councils|synod|assembly|divines|academy|collegium|conimbricense|salmanticenses|salamanticenses|wirceburgensis|acta)\b|\((?:ed|hrsg)\.?\)|\bhrsg\b|migne cols|'s ten books/i;
+// The Greek Fathers shelf after 800 is the Byzantine church, with a few
+// Latins printed beside it: popes writing to Constantinople, a Roman
+// librarian, a Latin archbishop. They are medieval Latins, not Byzantine.
+const LATIN_IN_PG = /^pope\b|\bof milan\b|bibliothecari|bibliotecari/i;
+// Syriac writers the Greek shelf carries. Their church is not Eastern
+// Orthodox and has no page yet.
+const NOT_BYZANTINE = /\bbar kepha\b|\bbar hebraeus\b/i;
+
+function place(sh, y, body, order, name) {
   if (BODY_PAGE[body]) return BODY_PAGE[body];
   const early = y && y < 800;
   if (["pl", "gf", "po"].includes(sh) && early) return "the-whole-church";
-  if (sh === "gf" && y && y < 1453) return "eastern-orthodox";
+  // A Greek patriarch is Orthodox whatever shelf printed him: Gennadius
+  // Scholarios sits on the Medieval shelf.
+  if (y && y >= 800 && /\bpatriarch of (?:constantinople|alexandria|antioch|jerusalem)\b/i.test(name)
+    && !LATIN_IN_PG.test(name) && body !== "Roman Catholic") return "eastern-orthodox";
+  if (sh === "gf" && y && y < 1453) {
+    if (LATIN_IN_PG.test(name)) return y < 1500 ? "medieval-church" : "";
+    if (NOT_BYZANTINE.test(name)) return "";
+    return "eastern-orthodox";
+  }
   if (body === "Roman Catholic" || order || sh === "rc") {
+    // Gerson and Tostado sit on the Roman Catholic shelf but wrote a
+    // century before the Reformation: born before 1450, medieval.
+    if (y && y < 1450 && y >= 800) return "medieval-church";
     if (sh === "rc" || (y && y >= 1500)) return "roman-catholic";
     if (y && y >= 800 && ["pl", "md"].includes(sh)) return "medieval-church";
     return "";
@@ -124,6 +144,11 @@ rosters.forEach((d, i) => {
     // Not people: anonymous buckets, anthologies, and conciliar acts
     // (the Council of Trent has a room, and is not an author).
     if (/^(?:anonymous|unknown|uncertain|unattributed|acts of)\b|\banthology\b|synaxarion/i.test(e.a)) return;
+    // Nor bodies: councils, synods, assemblies, colleges and their
+    // editors have rooms, but an Authors list is a list of people.
+    if (CORPORATE.test(e.a)) return;
+    // A volume filed under five names at once is a volume, not a man.
+    if ((e.a.match(/,/g) || []).length >= 3) return;
     const k = fold(e.a);
     const had = seen.get(k);
     if (!had || (e.w || 0) > (had.w || 0)) seen.set(k, { ...e, sh });
@@ -142,7 +167,7 @@ async function worker() {
     let dates = (ll && ll.dates) || "";
     const pre = denomFor(denoms, e.a, years(dates).length ? years(dates) : (e.y ? [e.y] : []));
     const order = orders.get(fold(e.a)) || "";
-    const slug = place(e.sh, e.y || years(dates)[0] || 0, pre && pre[0], order);
+    const slug = place(e.sh, e.y || years(dates)[0] || 0, pre && pre[0], order, e.a);
     if (!slug) continue;
     if (!dates) {
       const room = await get(`${LIBRARY}/v1/bible/${e.sh}/rooms/${e.s}.json`).catch(() => null);
@@ -159,7 +184,7 @@ async function worker() {
     if (/^unknown$/i.test(dates.trim())) dates = "";
     const ys = years(dates);
     const d = denomFor(denoms, e.a, ys.length ? ys : (e.y ? [e.y] : [])) || pre;
-    const final = place(e.sh, e.y || ys[0] || 0, d && d[0], order);
+    const final = place(e.sh, e.y || ys[0] || 0, d && d[0], order, e.a);
     if (!final) continue;
     const detail = [d && d[1], order].filter(Boolean).join(", ");
     (out[final] = out[final] || []).push({

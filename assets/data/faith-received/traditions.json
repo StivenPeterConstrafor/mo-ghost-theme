@@ -45,7 +45,7 @@
         "The Fourth Lateran Council of 1215 used the language of transubstantiation for the Eucharist. It also required every believer to confess once a year. The councils of Constance and Basel tried to reform the church from above. Their failure is part of the story the Reformation tells."
       ],
       "docs": { "labels": [], "note": "The councils and papal documents of these centuries are filed with the Roman Catholic documents.", "noteLink": "roman-catholic" },
-      "authors": { "heading": "Medieval writers", "note": "Latin writers from 800 to 1500 on the Medieval and Latin Fathers shelves." },
+      "authors": { "heading": "Medieval writers", "note": "Latin writers from 800 to the eve of the Reformation." },
       "allWorks": { "q": "tradition=Medieval", "label": "the Medieval shelf" },
       "related": ["the-whole-church", "roman-catholic", "protestant"]
     },
@@ -61,7 +61,7 @@
         "Mere Orthodoxy writes as Protestants. We read Rome’s theologians because they are serious readers of Scripture and the fathers. The Reformers argued with them at length. Understanding a Protestant confession means reading what it answered."
       ],
       "docs": { "labels": ["Roman Catholic"] },
-      "authors": { "heading": "Authors", "note": "Catholic writers after 1500. Their religious order is shown where the library knows it." },
+      "authors": { "heading": "Authors", "note": "Catholic writers from the eve of the Reformation onward. Their religious order is shown where the library knows it." },
       "allWorks": { "q": "tradition=Roman Catholic", "label": "Roman Catholic" },
       "related": ["medieval-church", "eastern-orthodox", "protestant"]
     },
