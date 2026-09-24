@@ -180,10 +180,18 @@
 
   let collapsed = new Set();
   let allShut = false;
-  try {
-    const saved = JSON.parse(window.sessionStorage.getItem(storeKey()) || "[]");
-    if (Array.isArray(saved)) collapsed = new Set(saved.map(Number).filter((n) => n >= 0));
-  } catch (_) { collapsed = new Set(); }
+  // Read once the work is known: this file now runs before reader-core
+  // (see the template), when DATA does not exist yet, and a forwarded
+  // work's slug is not the one in the address.
+  let loaded = false;
+  function loadCollapsed() {
+    if (loaded || !dataOf()) return;
+    loaded = true;
+    try {
+      const saved = JSON.parse(window.sessionStorage.getItem(storeKey()) || "[]");
+      if (Array.isArray(saved)) saved.map(Number).filter((n) => n >= 0).forEach((n) => collapsed.add(n));
+    } catch (_) { /* nothing saved */ }
+  }
   function saveCollapsed() {
     try { window.sessionStorage.setItem(storeKey(), JSON.stringify([...collapsed])); }
     catch (_) { /* private mode: folds still work, they just do not persist */ }
@@ -382,6 +390,7 @@
       btn.setAttribute("aria-expanded", "true");
       row.appendChild(btn);
     });
+    return found.length;
   }
 
   // During a pass, hide() records what should be hidden; the pass then
@@ -471,8 +480,10 @@
   function apply() {
     const reading = document.querySelector("#reading");
     if (!reading || !nav || applying) return;
+    loadCollapsed();
     applying = true;
     if (observer) observer.disconnect();
+    let stamped = 0;
     try {
       const list = entries();
       const folioByPage = new Map();
@@ -499,7 +510,7 @@
       });
       if (needsStamp) {
         reading.querySelectorAll(".fr-sec-hid").forEach((el) => el.classList.remove("fr-sec-hid"));
-        stamp(list, folioByPage);
+        stamped = stamp(list, folioByPage);
       }
       const target = new Set();
       sink = target;
@@ -575,12 +586,27 @@
       applying = false;
       if (observer) observer.observe(reading, { childList: true, subtree: true });
     }
+    // New heading rows: the heading design sets them now, in this same
+    // frame, so a row never paints plain and then grows into a card.
+    if (stamped) {
+      try { document.dispatchEvent(new CustomEvent("fr-folds-stamped")); } catch (_) { /* old engine */ }
+    }
   }
 
-  let pending = 0;
+  /* Before the next paint, not 120ms after it. The text paints first
+     and the folds stamp its heading rows, which the heading design then
+     boxes; a timer let the plain rows paint and then jump into cards
+     (Ian, 2026-09-24: "there's a jump on load when it loads the new
+     header cards"). A frame callback still coalesces a burst of
+     mutations into one pass. The timer stays as the fallback for a
+     background tab, where frames do not run. */
+  let pending = false;
   function schedule() {
     if (pending) return;
-    pending = window.setTimeout(() => { pending = 0; apply(); }, 120);
+    pending = true;
+    const run = () => { if (!pending) return; pending = false; apply(); };
+    try { window.requestAnimationFrame(run); } catch (_) { /* no frames */ }
+    window.setTimeout(run, 120);
   }
 
   document.addEventListener("click", (e) => {
@@ -693,6 +719,7 @@
       const here = sectionHere();
       const list = entries();
       allShut = !open;
+      loaded = true;
       collapsed = open ? new Set() : new Set(list.map((e) => e.i));
       saveCollapsed();
       if (!open) {

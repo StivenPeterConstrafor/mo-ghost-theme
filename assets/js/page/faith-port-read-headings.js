@@ -519,12 +519,39 @@
     });
   }
 
-  let queued = 0;
+  /* WHEN. In the same task the rows arrive, before anything paints
+     (Ian, 2026-09-24: "there's a jump on load when it loads the new
+     header cards ... These should be default and just appear on load").
+     This used to run 160ms after the text, so every heading painted
+     plain and then grew into its box, pushing the page down. A mutation
+     callback runs before the next paint, and the folds tell this file
+     the moment they stamp a heading row (fr-folds-stamped), so the rows
+     they find are set in that same frame. The pass reads no layout, so
+     running it often costs DOM work only; the records its own writes
+     cause are dropped, not fed back into another pass. */
+  let observer = null;
+  let running = false;
+  const run = () => {
+    if (running) return;
+    running = true;
+    try { pass(); } finally {
+      running = false;
+      if (observer) observer.takeRecords();
+    }
+  };
+  let queued = false;
   const schedule = () => {
     if (queued) return;
-    queued = window.setTimeout(() => { queued = 0; pass(); }, 160);
+    queued = true;
+    const go = () => { if (!queued) return; queued = false; run(); };
+    try { window.requestAnimationFrame(go); } catch (_) { /* no frames */ }
+    window.setTimeout(go, 160);
   };
-  if (window.MutationObserver) new MutationObserver(schedule).observe(scroll, { childList: true, subtree: true });
+  if (window.MutationObserver) {
+    observer = new MutationObserver(run);
+    observer.observe(scroll, { childList: true, subtree: true });
+  }
+  document.addEventListener("fr-folds-stamped", run);
   document.addEventListener("fr-folds-change", schedule);
-  schedule();
+  run();
 }());

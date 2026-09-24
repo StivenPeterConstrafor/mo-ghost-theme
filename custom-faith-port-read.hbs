@@ -267,6 +267,15 @@
      data-read-tools="{{asset "js/port/read-tools.js"}}&amp;frv=cdbc1c0f876774ba"
      data-ask-jobs="{{asset "js/port/ask-jobs.js"}}&amp;frv=408f593670c4a344"></div>
 <script src="{{asset "js/faith-denominations.js"}}"></script>
+{{!-- Before reader-core.js, not deferred: both watch #reading from the
+     start, so the rows the reader draws are folded and set as headings
+     before they first paint. Deferred, they ran ~700ms after the text and
+     every heading jumped into its card (Ian, 2026-09-24). --}}
+{{!-- The editorial apparatus folds. Ian, 2026-09-21: "I don't care
+     about this. I want to collapse it and move on." --}}
+<script src="{{asset "js/page/faith-reader-folds.js"}}&amp;frv=cdf951aaeabaaebe"></script>
+{{!-- Section headings, one hierarchy: eyebrow, title, subtitle, argument, in three tiers (card, hairline, plain) (Ian, 2026-09-24). After the folds, which tag the heading rows. --}}
+<script src="{{asset "js/page/faith-port-read-headings.js"}}&amp;frv=ee7e7d9a357b2878"></script>
 <script src="{{asset "js/port/reader-core.js"}}&amp;frv=a4dee4376dfee82f"></script>
 {{!-- The reader's Tools popover writes to OUR stores: the mo-kit bookmark
      All Works draws its row stars from, and the notebook the desk reads. --}}
@@ -294,11 +303,6 @@
 {{!-- The disclosure panel, then the resolver that tells it which
      collection this work is in. This order, because the resolver calls
      into the panel the moment it knows. --}}
-{{!-- The editorial apparatus folds. Ian, 2026-09-21: "I don't care
-     about this. I want to collapse it and move on." --}}
-<script src="{{asset "js/page/faith-reader-folds.js"}}&amp;frv=f850b8959837b51d" defer></script>
-{{!-- Section headings, one hierarchy: eyebrow, title, subtitle, argument, in three tiers (card, hairline, plain) (Ian, 2026-09-24). After the folds, which tag the heading rows. --}}
-<script src="{{asset "js/page/faith-port-read-headings.js"}}&amp;frv=42c984d8a85b05b6" defer></script>
 <script src="{{asset "js/faith-work-status.js"}}&amp;frv=4a4321aacf25984d"></script>
 <script src="{{asset "js/page/faith-port-work-status.js"}}"></script>
 {{!-- Reading settings joins the dock on a phone; see the file head. --}}
