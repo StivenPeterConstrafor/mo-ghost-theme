@@ -107,7 +107,10 @@
     save: [{ d: "M6 3h12v18l-6-4-6 4z" }],
     report: [{ d: "M5 21V4M5 4h11l-2 4 2 4H5" }],
     top: [{ d: "M12 19V5M5 12l7-7 7 7" }],
-    lang: [{ d: "M3 5h9M7.5 3v2M5 11c2.5-1.5 4-3.5 5-6M6 7.5c1.2 2 3 3.5 5.5 4.5" }, { d: "M12.5 21l4-9 4 9M14 18h5" }],
+    // Two columns of text side by side: the original and the English.
+    lang: [{ tag: "rect", x: "3", y: "4", width: "8", height: "16", rx: "1" }, { tag: "rect", x: "13", y: "4", width: "8", height: "16", rx: "1" }, { d: "M5.5 8h3M5.5 11h3M5.5 14h3M15.5 8h3M15.5 11h3M15.5 14h3" }],
+    theme: [{ tag: "circle", cx: "12", cy: "12", r: "8" }, { d: "M12 4a8 8 0 0 1 0 16z", fill: "currentColor" }],
+    flow: [{ d: "M5 6h14M5 10h14M5 14h14M5 18h9" }],
     scan: [{ tag: "rect", x: "4", y: "3", width: "16", height: "18", rx: "1" }, { d: "M8 7h8M8 11h8M8 15h5" }],
   };
 
@@ -274,12 +277,12 @@
       ["view", document.getElementById("rdFlow")],
       ["view", q(".fr-tb-folds")],
       ["view", document.getElementById("thTop")],
-      ["view", q(".fr-tb-focus")],
       ["copy", document.getElementById("rdCopyText")],
       ["copy", document.getElementById("rdCopyLink")],
       ["copy", document.getElementById("rdKeep")],
       ["copy", document.getElementById("rdNote")],
       ["work", q(".fr-tb-report")],
+      ["work", q(".fr-tb-focus")],
       ["work", q(".fr-tb-top")],
       ["research", document.getElementById("frAuth")],
     ];
@@ -396,8 +399,15 @@
     const lang = cell("x-lang", "Both", "lang");
     lang.addEventListener("click", cycleLane);
     langBtns.push(lang);
+    // Theme and Flow/Pages left the Aa panel (Ian, 2026-09-23: "Having
+    // dark mode in Aa is now redundant" / "Same with Flow/Pages"), so the
+    // phone reaches them here, as the desktop does in its drawer.
+    const flow = proxy("x-flow", "Pages", "flow", "#rdFlow");
+    const theme = proxy("x-theme", "Theme", "theme", "#thTop");
     proxies = {
       lang,
+      flow,
+      theme,
       transparency: cell("x-tt", "Transparency", "transparency"),
       folds: proxy("x-folds", "Collapse", "folds", ".fr-tb-folds"),
       copyText: proxy("x-copy", "Copy text", "copy", "#rdCopyText"),
@@ -413,6 +423,10 @@
 
   function syncProxies() {
     if (!proxies) return;
+    const fl = document.getElementById("rdFlow");
+    const flowing = !fl || fl.getAttribute("aria-pressed") !== "false";
+    // The label says what a press does.
+    proxies.flow.querySelector(".lb").textContent = flowing ? "Pages" : "Flow";
     const f = window.FRReaderFolds;
     const open = !f || f.anyOpen();
     proxies.folds.querySelector(".lb").textContent = open ? "Collapse" : "Expand";

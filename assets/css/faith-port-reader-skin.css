@@ -2688,3 +2688,34 @@ html.g-mobile.mh-hide #sbScrim,
 html.g-mobile.mh-hide .nb-scrim,
 html.g-mobile.mh-hide #notebook.notebook,
 html.g-mobile.mh-hide aside.relpanel { top: var(--fr-rail-h, 0px); }
+
+/* ── THE RAIL IS FIXED TO THE TOP OF THE TOOLBAR (Ian, 2026-09-23) ────
+   "The navrail should always be affixed to the top of the toolbar." On a
+   phone the toolbar used to leave by its own height plus the masthead's
+   while the rail rose by the masthead's alone, so the two crossed on
+   the way out and back. Now the toolbar rises by exactly what the rail
+   does: they move as one piece, and the toolbar stays under the rail,
+   as it does on a desktop. The dock at the bottom still leaves. */
+html.g-mobile.mh-hide:not(.fr-bar-hidden) #app .ph.fr-reader-head,
+html.g-mobile.mh-mini:not(.fr-bar-hidden) #app .ph.fr-reader-head {
+  transform: translateY(calc(-1 * var(--mo-mast, 61px)));
+}
+html.g-mobile.mh-hide #app.faith-port-read-page .sidebar,
+html.g-mobile.mh-mini #app.faith-port-read-page .sidebar {
+  top: calc(var(--fr-rail-h, 0px) + var(--fr-ph-h, 56px));
+}
+
+/* Theme and Flow/Pages are tools now (the bar's drawer, the dock's
+   drawer); the Aa panel keeps text settings only. */
+#app .aapop .aarow:has(#th),
+#app .aapop .aarow:has(#readerFlowView) { display: none; }
+
+/* ── NOTHING MOVES WHILE THE PAGE LOADS (Ian, 2026-09-23) ─────────────
+   "Loading needs to happen near instantly and without any jumpiness."
+   The tools used to paint on the bar and then vanish into the drawer
+   when faith-port-read-drawer.js ran at the end of the page, and the
+   dock painted seven buttons before becoming four. Until they are moved
+   they are not drawn: a tool is hidden while it is still a direct child
+   of the bar, and the dock is invisible until it has its final shape. */
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > :is(.seg.lanes, #m-modern, #rdFlow, #rdRel, #thTop, #frAuth, .fr-tb-focus, .fr-tb-report, .fr-tb-top, .fr-tb-folds) { display: none; }
+html.g-mobile nav.frthumb:not(.fr-m3) { visibility: hidden; }

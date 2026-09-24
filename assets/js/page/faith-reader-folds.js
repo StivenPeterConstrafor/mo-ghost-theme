@@ -179,6 +179,7 @@
   const storeKey = () => `mo_tfr_folds:${slug()}`;
 
   let collapsed = new Set();
+  let allShut = false;
   try {
     const saved = JSON.parse(window.sessionStorage.getItem(storeKey()) || "[]");
     if (Array.isArray(saved)) collapsed = new Set(saved.map(Number).filter((n) => n >= 0));
@@ -278,7 +279,10 @@
     });
   }
 
-  function hide(el) { el.classList.add("fr-sec-hid"); }
+  // During a pass, hide() records what should be hidden; the pass then
+  // changes only the elements whose state differs (see apply()).
+  let sink = null;
+  function hide(el) { if (sink) sink.add(el); else el.classList.add("fr-sec-hid"); }
 
   /* Everything after `head`, in document order, up to where the next
      section of equal or higher rank begins. */
@@ -327,16 +331,35 @@
     applying = true;
     if (observer) observer.disconnect();
     try {
-      // Everything visible first, so the resolvers can see every heading.
-      reading.querySelectorAll(".fr-sec-hid").forEach((el) => el.classList.remove("fr-sec-hid"));
-
       const list = entries();
       const folioByPage = new Map();
       reading.querySelectorAll(".folio").forEach((f) => {
         const pg = String(f.dataset.page || "");
         if (pg && !folioByPage.has(pg)) folioByPage.set(pg, f);
       });
-      stamp(list, folioByPage);
+      // Collapse all holds for outline entries drawn after it was pressed
+      // (long works add entries as the reader moves).
+      if (allShut) list.forEach((e) => collapsed.add(e.i));
+
+      /* THE FOLDS COME OFF ONLY WHEN A HEADING STILL HAS TO BE FOUND.
+         The resolvers read layout, so they need every heading visible.
+         This used to unhide the whole work and re-lay it out on EVERY
+         pass, and a pass runs on every change the reader makes to the
+         text. On a 956-page work with everything folded that was a full
+         layout of 1.6 million pixels per pass while pages streamed in,
+         and the page stopped answering (2026-09-23: "Expand didn't"). */
+      const needsStamp = list.some((e) => {
+        const f = folioByPage.get(e.page);
+        if (!f || f.querySelector(`[data-fr-sec="${e.i}"]`)) return false;
+        const t = tried.get(f);
+        return !(t && t.has(e.i));
+      });
+      if (needsStamp) {
+        reading.querySelectorAll(".fr-sec-hid").forEach((el) => el.classList.remove("fr-sec-hid"));
+        stamp(list, folioByPage);
+      }
+      const target = new Set();
+      sink = target;
 
       const rowOf = new Map();
       reading.querySelectorAll("[data-fr-sec]").forEach((r) => rowOf.set(Number(r.dataset.frSec), r));
@@ -369,9 +392,14 @@
         hideRange(head, endRow, endFolio);
       });
 
-      // A heading hidden inside a folded parent must not keep its own
-      // row visible; hideRange already hid it. Nothing more to do.
+      // Change only what differs: no churn, and no layout read above.
+      sink = null;
+      reading.querySelectorAll(".fr-sec-hid").forEach((el) => {
+        if (!target.has(el)) el.classList.remove("fr-sec-hid");
+      });
+      target.forEach((el) => { if (!el.classList.contains("fr-sec-hid")) el.classList.add("fr-sec-hid"); });
     } finally {
+      sink = null;
       applying = false;
       if (observer) observer.observe(reading, { childList: true, subtree: true });
     }
@@ -391,7 +419,7 @@
     e.preventDefault();
     e.stopPropagation();
     const i = Number(btn.dataset.frSecToggle);
-    if (collapsed.has(i)) collapsed.delete(i); else collapsed.add(i);
+    if (collapsed.has(i)) { collapsed.delete(i); allShut = false; } else collapsed.add(i);
     saveCollapsed();
     apply();
     btn.focus({ preventScroll: true });
@@ -420,7 +448,7 @@
         if (list[j].depth <= e.depth) { next = list[j]; break; }
       }
       const to = next ? order.get(next.page) : undefined;
-      if (to === undefined || at < to) { collapsed.delete(e.i); changed = true; }
+      if (to === undefined || at < to) { collapsed.delete(e.i); allShut = false; changed = true; }
     });
     if (changed) { saveCollapsed(); apply(); }
   }
@@ -473,13 +501,18 @@
     return here ? Number(here.dataset.frSec) : null;
   }
   window.FRReaderFolds = {
+    // Asked of the state the reader chose, not re-derived from the
+    // outline: the outline gains entries as the reader moves, and a new
+    // entry is not a fold the reader opened.
     anyOpen() {
+      if (allShut) return false;
       const list = entries();
       return !list.length || list.some((e) => !collapsed.has(e.i));
     },
     setAll(open) {
       const here = sectionHere();
       const list = entries();
+      allShut = !open;
       collapsed = open ? new Set() : new Set(list.map((e) => e.i));
       saveCollapsed();
       if (!open) {

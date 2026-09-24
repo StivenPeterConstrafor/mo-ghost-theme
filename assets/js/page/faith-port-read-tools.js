@@ -269,8 +269,16 @@
       }
       if (rail.parentElement !== reading) reading.appendChild(rail);
       host = row;
-      rail.style.top =
-        `${row.getBoundingClientRect().top - reading.getBoundingClientRect().top}px`;
+      const box = reading.getBoundingClientRect();
+      rail.style.top = `${row.getBoundingClientRect().top - box.top}px`;
+      // Beside the text, not at the column's far edge (Ian, 2026-09-23:
+      // "Move these icons closer into the text so it's right next to the
+      // text"). The row spans the column; the words start where its first
+      // visible lane starts, so the rail sits a hair to the left of that.
+      const lane = [...row.children].find((c) => c !== rail && c.getClientRects().length
+        && (c.textContent || "").trim()) || row;
+      const left = lane.getBoundingClientRect().left - box.left - 30;
+      rail.style.left = `${Math.max(0, Math.round(left))}px`;
       rail.hidden = false;
     });
 
