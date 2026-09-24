@@ -162,6 +162,16 @@ const MAPS = {
     "28": "sacraments baptism supper", "29": "baptism", "30": "supper",
     "31": "last resurrection", "32": "last",
   },
+  // Page 1 is Schaff's introductory note, not an article, and is filed
+  // under nothing on purpose. Perseverance files under Sanctification as
+  // in the 1689; the Sabbath under worship, as the 1689's chapter 22.
+  "new-hampshire-confession": {
+    "1": "", "2": "scripture", "3": "god trinity", "4": "man sin", "5": "grace christ",
+    "6": "justification", "7": "gospel", "8": "grace spirit", "9": "repentance faith",
+    "10": "predestination", "11-12": "sanctification", "13": "law gospel", "14": "church",
+    "15": "sacraments baptism supper", "16": "worship", "17": "magistrate",
+    "18": "justification last", "19": "last resurrection life",
+  },
   "thirty-nine-articles": {
     "1": "trinity god", "2-3": "christ", "4": "christ resurrection", "5": "spirit",
     "6": "scripture", "7": "scripture law", "8": "method", "9": "sin", "10": "freewill",

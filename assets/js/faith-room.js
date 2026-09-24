@@ -350,7 +350,17 @@
           .then((sets) => sets.flat().filter((w) =>
             String(w.tradition || "").trim() === shelfTradition))
         : [],
-    ]).then(([own, guests]) => own.concat(guests));
+      // Curated works that also stand in this collection. The confessions
+      // catalogue is the corpus owner's and we do not write it, so a
+      // confession we add ourselves (the New Hampshire Confession, 1833)
+      // lives in English Editions and names this page in its `also_in`.
+      // Only the confessions page asks, so no other room pays for the
+      // extra catalogue.
+      collectionId === "confessions"
+        ? window.MOFaithCatalogue.load("mo").catch(() => [])
+          .then((mo) => mo.filter((w) => (w.alsoIn || []).includes(collectionId)))
+        : [],
+    ]).then(([own, guests, curated]) => own.concat(guests, curated));
 
   // Name, dates and office for the authors this collection has them for,
   // keyed by name. The Patrologia rooms are an index of names, and a name

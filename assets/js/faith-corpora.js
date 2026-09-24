@@ -430,6 +430,11 @@
       Reformed: "Protestant", "Continental Reformed": "Protestant",
       Lutheran: "Protestant", Anglican: "Protestant",
       "Reformed Baptist": "Protestant", Evangelical: "Protestant",
+      // The New Hampshire Confession (1833), the collection's first
+      // work filed simply as Baptist. Under Protestant with the rest,
+      // as the confessions collection already files its Baptist
+      // documents.
+      Baptist: "Protestant",
     },
   };
 
@@ -705,6 +710,12 @@
         eyebrow: w.eyebrow || "",
         extent: w.n_sections || 0,
         url: readerURL("mo", w.slug),
+        // Other collection pages that also shelve this work. The index
+        // entry says so (`also_in: ["confessions"]`) and faith-room.js
+        // reads it, so a curated confession with no twin in the
+        // confessions catalogue still stands on the Creeds,
+        // Confessions, & Catechisms page.
+        alsoIn: Array.isArray(w.also_in) ? w.also_in.map(String) : [],
       }),
     },
     {
