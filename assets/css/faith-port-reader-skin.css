@@ -2900,3 +2900,33 @@ html.g-mobile nav.frthumb [data-t="x-keep"].on .ic path { fill: currentColor; }
 
 /* The words a passage link points at (faith-port-read-passage-link.js). */
 ::highlight(fr-passage-link) { background-color: rgba(193, 89, 60, 0.28); color: inherit; }
+
+/* ── DESKTOP: THE RAIL IS FIXED TOO (Ian, 2026-09-23) ─────────────────
+   "The navbar still isn't fixed to the top of the toolbar and it
+   scrolls behind it at the top of the page." On a desktop the rail was
+   the one piece of chrome in the page's flow: the masthead and toolbar
+   are fixed and move by transform, the rail moved by the body's padding
+   animating, which is layout, a frame behind the compositor, and any
+   scroll or elastic bounce of the page itself carried the rail under
+   the fixed bars. Now it is fixed under the masthead and moves by the
+   same transform, on the same curve and time, as the masthead and the
+   toolbar; #app keeps its place below it with a margin; and the reader
+   page itself cannot scroll or bounce (the text scrolls in #scroll). */
+html:not(.g-mobile):has(#app.faith-port-read-page),
+html:not(.g-mobile) body:has(#app.faith-port-read-page) { overflow: hidden; overscroll-behavior: none; }
+html:not(.g-mobile) body:has(#app.faith-port-read-page) .tfr-rail {
+  position: fixed;
+  top: var(--mo-mast, 61px);
+  left: 0;
+  right: 0;
+  z-index: 45;
+  transition: transform 0.28s var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+}
+html:not(.g-mobile).mh-mini body:has(#app.faith-port-read-page) .tfr-rail,
+html:not(.g-mobile).mh-hide body:has(#app.faith-port-read-page) .tfr-rail {
+  transform: translateY(calc(-1 * var(--mo-mast, 61px)));
+}
+html:not(.g-mobile) #app.faith-port-read-page { margin-top: var(--fr-rail-h, 0px); }
+@media (prefers-reduced-motion: reduce) {
+  html:not(.g-mobile) body:has(#app.faith-port-read-page) .tfr-rail { transition: none; }
+}
