@@ -19727,6 +19727,13 @@ html.g-mobile #reading .fr-sec-toggle {
     mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
   }
   .faith-port-dtc-page .alpha::-webkit-scrollbar { display: none; }
+  /* Flex items default to min-width: auto, so the bar and the band grew
+     to the rail's full 1,300px and clipped it instead of letting it
+     scroll. Held to the screen. */
+  .faith-port-dtc-page > .top,
+  .faith-port-dtc-page > .top > .sband,
+  .faith-port-dtc-page .alpha { min-width: 0; max-width: 100%; }
+  .faith-port-dtc-page > .top > .sband { overflow: hidden; }
   .faith-port-dtc-page .alpha button {
     flex: 0 0 44px;
     min-height: 44px;
