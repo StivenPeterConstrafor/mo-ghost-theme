@@ -20158,3 +20158,81 @@ main.research-room .ar-stat b a.ar-trad-link:hover,
 main.research-room .ar-stat b a.ar-trad-link:focus-visible {
   color: var(--color-secondary, #c1593c); text-decoration-color: currentColor;
 }
+
+/* ── ABOUT: THREE PIECES, ONE TOGGLE (Ian, 2026-09-24) ─────────────────
+   custom-faith-manifesto.hbs + page/faith-manifesto-tabs.js. A joined
+   three-button group in the thin-line shape (tan rule, 3px corners, one
+   divider between buttons, terracotta fill on the chosen one), then the
+   chosen piece: its title and byline, then the prose. Stacks on a phone. */
+.faith-mf-tabs {
+  display: flex;
+  border: 1px solid var(--color-card-border, #d9c6a7);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 0 0 44px;
+  background: var(--color-white, #fffdfa);
+}
+.faith-mf-tabs[hidden] { display: none; }
+.faith-mf-tabs > button {
+  flex: 1 1 0;
+  min-height: 52px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-dark, #2d2927);
+  font: 15px/1.3 var(--font-body, "Source Serif Pro", Georgia, serif);
+  text-align: center;
+  cursor: pointer;
+}
+.faith-mf-tabs > button + button { border-left: 1px solid var(--color-card-border, #d9c6a7); }
+.faith-mf-tabs > button:hover { color: var(--color-secondary, #c1593c); }
+.faith-mf-tabs > button[aria-selected="true"] {
+  background: var(--color-secondary, #c1593c);
+  color: #fff;
+}
+.faith-mf-tabs > button:focus-visible { outline: 2px solid var(--color-secondary, #c1593c); outline-offset: -4px; }
+.faith-mf-tabs > button[aria-selected="true"]:focus-visible { outline-color: #fff; }
+.faith-mf-panel[hidden] { display: none; }
+html:not(.faith-mf-tabbed) .faith-mf-panel + .faith-mf-panel { margin-top: 72px; padding-top: 48px; border-top: 1px solid var(--color-card-border, #d9c6a7); }
+.faith-mf-head { margin: 0 0 32px; }
+.faith-mf .faith-mf-title {
+  font-family: var(--font-body);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0 0 8px;
+}
+.faith-mf-by {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-secondary, #c1593c);
+}
+/* The pieces' own section heads, one level under the title. Scoped to
+   the panel's own children, so the author card's name keeps its style. */
+.faith-mf-panel > h3 {
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-dark);
+  margin: 40px 0 14px;
+}
+@media (max-width: 640px) {
+  .faith-mf-tabs { flex-direction: column; }
+  .faith-mf-tabs > button + button { border-left: 0; border-top: 1px solid var(--color-card-border, #d9c6a7); }
+  .faith-mf .faith-mf-title { font-size: 25px; }
+}
+/* Each letter's author at its foot, from the contributor's own Ghost tag:
+   the same card as the contributors page, the bio in full (the grid
+   clamps it to three lines; a letter's signature should not be cut). */
+.faith-mf-author {
+  margin: 48px 0 0;
+  padding-top: 28px;
+  border-top: 1px solid var(--color-card-border, #d9c6a7);
+}
+.faith-mf-author .contributor-card { max-width: 560px; }
+.faith-mf-author .contributor-card-bio { display: block; -webkit-line-clamp: unset; line-clamp: unset; overflow: visible; }
