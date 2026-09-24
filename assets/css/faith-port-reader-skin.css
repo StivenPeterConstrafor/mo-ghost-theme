@@ -2507,6 +2507,8 @@ html.g-mobile nav.frthumb.fr-m3 > button { flex: 1 1 0; min-width: 0; transition
 html.g-mobile nav.frthumb.fr-m3.fr-m3-open > [data-t="toc"],
 html.g-mobile nav.frthumb.fr-m3.fr-m3-open > [data-t="find"] { opacity: 0; pointer-events: none; }
 html.g-mobile nav.frthumb.fr-m3 > .fr-mtools-drawer {
+  min-width: 0;
+  width: auto;
   position: absolute;
   left: 0;
   top: 0;

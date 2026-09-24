@@ -388,10 +388,12 @@
     mTools.setAttribute("aria-expanded", open ? "true" : "false");
     mTools.classList.toggle("on", open);
     bar.classList.toggle("fr-m3-open", open);
-    window.requestAnimationFrame(() => {
-      mDrawer.classList.toggle("is-open", mOpen);
-      if (!mOpen) window.setTimeout(() => { if (!mOpen) mDrawer.scrollLeft = 0; }, SLIDE_MS);
-    });
+    // A forced style flush rather than a frame: the reveal must start
+    // from the closed clip, and a late frame on a busy phone is a tap
+    // that seems to do nothing.
+    void mDrawer.offsetWidth;
+    mDrawer.classList.toggle("is-open", open);
+    if (!open) window.setTimeout(() => { if (!mOpen) mDrawer.scrollLeft = 0; }, SLIDE_MS);
   }
 
   // ── Transparency, a dialog in the middle of the screen ───────────
