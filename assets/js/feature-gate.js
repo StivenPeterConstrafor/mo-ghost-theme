@@ -225,24 +225,130 @@
     return true;
   }
 
+  // Declared before anything below can open a modal: gateArrival() runs
+  // at load, and a `let` read before its line is a ReferenceError.
+  let modalEl = null;
+  let modalOpener = null;
+
+  /* DOORS BY ADDRESS (Ian, 2026-09-24: "Anywhere any one of these
+     tools shows up in other places around TFR, they need to be met with
+     a subscribe pop-up").
+
+     A link is a door to a tool because of where it goes, not because
+     someone remembered to mark it. There are links to the tools in
+     sixty-odd files, most of them built in JS (the shelf rows, the port
+     engines, the author and Scripture pages), and every one written
+     tomorrow would be another chance to forget the attribute. So a link
+     with no data-feature-gate of its own is gated by its address: any
+     same-origin <a> whose path is one of the tool pages below is
+     treated exactly as if it carried the matching attribute. An explicit
+     data-feature-gate always wins, and data-feature-gate="open" (a name
+     not in FEATURES) is how a link opts out.
+
+     Keys are the first path segment under /the-faith-received/. The
+     Research desk routes on its hash, so it is read separately; a bare
+     /research/ is NOT gated, because for a signed-out reader that page
+     is the one that explains the tools and carries the sign-up form.
+     /scripture/desk/ is the Verse Desk, which is Scripture (reading),
+     and does not match: only the FIRST segment is compared. */
+  const TFR_ROOT = "/the-faith-received/";
+  const TFR_TOOL_ROUTES = {
+    "ask": "ask",
+    "ask-workspace": "ask",
+    "search": "tfr-search",
+    "compare": "tfr-compare",
+    "connections": "tfr-connections",
+    "constellations": "tfr-connections",
+    "web": "tfr-connections",
+    "desk": "tfr-desk",
+    // /pins/ forwards to /research/#notebook.
+    "pins": "tfr-notebook",
+  };
+  // The Research desk's modes (faith-research.js), by the hash that
+  // opens each one. "#compare&a=…" is mode "compare": the mode is the
+  // first "&" segment, as faith-research.js reads it.
+  const TFR_RESEARCH_MODES = {
+    "ask": "ask",
+    "power-search": "tfr-search",
+    "compare": "tfr-compare",
+    "bookmarks": "tfr-bookmarks",
+    "notebook": "tfr-notebook",
+    "connections": "tfr-connections",
+    "constellations": "tfr-connections",
+    "desk": "tfr-desk",
+  };
+  function modeOfHash(hash) {
+    return String(hash || "").replace(/^#/, "").split("&")[0];
+  }
+  function gateForLink(a) {
+    const raw = a.getAttribute("href");
+    if (!raw) return null;
+    let u;
+    try { u = new URL(raw, window.location.href); } catch (err) { return null; }
+    if (u.origin !== window.location.origin) return null;
+    if (u.pathname.indexOf(TFR_ROOT) !== 0) return null;
+    const seg = u.pathname.slice(TFR_ROOT.length).split("/")[0];
+    if (seg === "research") return TFR_RESEARCH_MODES[modeOfHash(u.hash)] || null;
+    return TFR_TOOL_ROUTES[seg] || null;
+  }
+
+  // The element that decides, and the feature name it resolves to.
+  function gateOf(target) {
+    if (!target || !target.closest) return null;
+    const marked = target.closest("[data-feature-gate]");
+    if (marked) return { el: marked, name: marked.getAttribute("data-feature-gate") };
+    const a = target.closest("a[href]");
+    if (a) {
+      const name = gateForLink(a);
+      if (name) return { el: a, name };
+    }
+    return null;
+  }
+
+  function intercept(e) {
+    const g = gateOf(e.target);
+    if (!g) return;
+    const feature = FEATURES[g.name];
+    if (!feature) return;
+    if (hasAccess(feature)) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    showModal(g.name, feature, g.el);
+  }
+
+  document.addEventListener("click", intercept, true);
+  // A middle-click opens a link in a new tab without ever firing
+  // "click", which would land the reader on the refusing page anyway.
   document.addEventListener(
-    "click",
-    (e) => {
-      const btn = e.target.closest("[data-feature-gate]");
-      if (!btn) return;
-      const name = btn.getAttribute("data-feature-gate");
-      const feature = FEATURES[name];
-      if (!feature) return;
-      if (hasAccess(feature)) return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      showModal(name, feature, btn);
-    },
+    "auxclick",
+    (e) => { if (e.button === 1) intercept(e); },
     true
   );
 
-  let modalEl = null;
-  let modalOpener = null;
+  /* ARRIVING AT A GATED TOOL BY ADDRESS. A reader who follows a shared
+     /research/#compare link (or types it) has not clicked anything, so
+     the click gate never runs. Any element carrying data-gate-hash names
+     the hash that opens it; when the page's hash names that element and
+     the reader cannot use its tool, the modal opens as if they had
+     clicked it. The Research page's signed-out tab strip is the one that
+     does this (custom-faith-research.hbs). Runs once at load and on
+     every later hash change. This file ships at the foot of the page, so
+     the markup is already parsed. */
+  function gateArrival() {
+    const mode = modeOfHash(window.location.hash);
+    if (!mode) return;
+    const els = document.querySelectorAll("[data-gate-hash][data-feature-gate]");
+    for (let i = 0; i < els.length; i++) {
+      if (els[i].getAttribute("data-gate-hash") !== mode) continue;
+      const name = els[i].getAttribute("data-feature-gate");
+      const feature = FEATURES[name];
+      if (feature && !hasAccess(feature)) showModal(name, feature, els[i]);
+      return;
+    }
+  }
+  gateArrival();
+  window.addEventListener("hashchange", gateArrival);
+
 
   function showModal(featureName, feature, opener) {
     dismissModal(true);

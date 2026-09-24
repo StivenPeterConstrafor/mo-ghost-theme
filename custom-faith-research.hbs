@@ -136,11 +136,11 @@
             address; renaming one breaks every link anybody has
             shared. --}}
       <nav class="faith-view-toggle faith-search-modes faith-research-tabs" data-research-tabs role="tablist" aria-label="Research workspace">
-        <button type="button" class="faith-view-toggle-tab is-active" data-research-mode="ask" role="tab" aria-selected="true" aria-controls="research-panel-ask" id="research-tab-ask">Ask</button>
-        <button type="button" class="faith-view-toggle-tab" data-research-mode="power-search" role="tab" aria-selected="false" aria-controls="research-panel-power-search" id="research-tab-power-search">Power Search</button>
-        <button type="button" class="faith-view-toggle-tab" data-research-mode="compare" role="tab" aria-selected="false" aria-controls="research-panel-compare" id="research-tab-compare">Compare</button>
-        <button type="button" class="faith-view-toggle-tab" data-research-mode="bookmarks" role="tab" aria-selected="false" aria-controls="research-panel-bookmarks" id="research-tab-bookmarks">Bookmarks</button>
-        <button type="button" class="faith-view-toggle-tab" data-research-mode="notebook" role="tab" aria-selected="false" aria-controls="research-panel-notebook" id="research-tab-notebook">Notebook</button>
+        <button type="button" class="faith-view-toggle-tab is-active" data-research-mode="ask" data-gate-hash="ask" data-feature-gate="ask" role="tab" aria-selected="true" aria-controls="research-panel-ask" id="research-tab-ask">Ask</button>
+        <button type="button" class="faith-view-toggle-tab" data-research-mode="power-search" data-gate-hash="power-search" data-feature-gate="tfr-search" role="tab" aria-selected="false" aria-controls="research-panel-power-search" id="research-tab-power-search">Power Search</button>
+        <button type="button" class="faith-view-toggle-tab" data-research-mode="compare" data-gate-hash="compare" data-feature-gate="tfr-compare" role="tab" aria-selected="false" aria-controls="research-panel-compare" id="research-tab-compare">Compare</button>
+        <button type="button" class="faith-view-toggle-tab" data-research-mode="bookmarks" data-gate-hash="bookmarks" data-feature-gate="tfr-bookmarks" role="tab" aria-selected="false" aria-controls="research-panel-bookmarks" id="research-tab-bookmarks">Bookmarks</button>
+        <button type="button" class="faith-view-toggle-tab" data-research-mode="notebook" data-gate-hash="notebook" data-feature-gate="tfr-notebook" role="tab" aria-selected="false" aria-controls="research-panel-notebook" id="research-tab-notebook">Notebook</button>
         {{!-- Sixth, between what you have kept and what you write from
               it, because that is where it is used: the map is how you
               find the next author worth keeping. The mode is
@@ -150,8 +150,8 @@
               that old hash and a bare #constellations now falls through
               to Ask, which is what showMode() does with any address it
               does not know. --}}
-        <button type="button" class="faith-view-toggle-tab" data-research-mode="connections" role="tab" aria-selected="false" aria-controls="research-panel-connections" id="research-tab-connections">Connections</button>
-        <button type="button" class="faith-view-toggle-tab" data-research-mode="desk" role="tab" aria-selected="false" aria-controls="research-panel-desk" id="research-tab-desk">Desk</button>
+        <button type="button" class="faith-view-toggle-tab" data-research-mode="connections" data-gate-hash="connections" data-feature-gate="tfr-connections" role="tab" aria-selected="false" aria-controls="research-panel-connections" id="research-tab-connections">Connections</button>
+        <button type="button" class="faith-view-toggle-tab" data-research-mode="desk" data-gate-hash="desk" data-feature-gate="tfr-desk" role="tab" aria-selected="false" aria-controls="research-panel-desk" id="research-tab-desk">Desk</button>
       </nav>
 
       {{!-- ── Ask ────────────────────────────────────────────────────
@@ -454,6 +454,36 @@
 
     </div>
   </section>
+  {{else}}
+  {{!-- THE TABS, FOR A READER WHO CANNOT OPEN THEM YET (Ian, 2026-09-24:
+       "Anywhere any one of these tools shows up ... they need to be met
+       with a subscribe pop-up"). The same seven names in the same order
+       and the same strip styling, so the page shows what is here; each
+       one opens the subscribe modal instead of a panel, because there
+       are no panels in this branch. Plain buttons in a nav rather than
+       role="tab": a tab with no tabpanel is a promise the markup cannot
+       keep. No data-research-mode, so faith-research.js (not loaded for
+       this reader anyway) could never bind them.
+
+       data-gate-hash is what makes a shared link land properly:
+       feature-gate.js reads the hash on arrival, and /research/#compare
+       opens the Compare modal at once rather than leaving the reader
+       looking for a tool that is not on the page. The names match the
+       member branch's data-research-mode values above; keep them in
+       step, since every one is a public address. --}}
+  <section class="bband faith-feature-body faith-research-band faith-research-band--gated">
+    <div class="container">
+      <nav class="faith-view-toggle faith-search-modes faith-research-tabs" aria-label="Research workspaces">
+        <button type="button" class="faith-view-toggle-tab" data-gate-hash="ask" data-feature-gate="ask">Ask</button>
+        <button type="button" class="faith-view-toggle-tab" data-gate-hash="power-search" data-feature-gate="tfr-search">Power Search</button>
+        <button type="button" class="faith-view-toggle-tab" data-gate-hash="compare" data-feature-gate="tfr-compare">Compare</button>
+        <button type="button" class="faith-view-toggle-tab" data-gate-hash="bookmarks" data-feature-gate="tfr-bookmarks">Bookmarks</button>
+        <button type="button" class="faith-view-toggle-tab" data-gate-hash="notebook" data-feature-gate="tfr-notebook">Notebook</button>
+        <button type="button" class="faith-view-toggle-tab" data-gate-hash="connections" data-feature-gate="tfr-connections">Connections</button>
+        <button type="button" class="faith-view-toggle-tab" data-gate-hash="desk" data-feature-gate="tfr-desk">Desk</button>
+      </nav>
+    </div>
+  </section>
   {{/if}}
 
   {{> "faith-received/_beta-gate"}}
@@ -543,7 +573,7 @@
      site.min.js (FRONTEND §6.18); the only bundle globals any of them
      touch are window.MOAuth and window.MOSafeHref, which ship in
      boot.min.js in <head> and are therefore already on the page. --}}
-<script src="{{asset "js/feature-gate.js"}}&amp;frv=cc43e1d7b7caa0b0"></script>
+<script src="{{asset "js/feature-gate.js"}}&amp;frv=04114b4ed2773dce"></script>
 <script src="{{asset "js/page/faith-ask.js"}}&amp;frv=27bc2986608b7653"></script>
 <script src="{{asset "js/page/faith-power-search.js"}}&amp;frv=f59eb524f6da7b9d"></script>
 <script src="{{asset "js/page/faith-research.js"}}&amp;frv=87c0bb7553ef696b"></script>
