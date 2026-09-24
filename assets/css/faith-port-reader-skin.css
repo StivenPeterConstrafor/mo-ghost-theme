@@ -2645,3 +2645,14 @@ html:not(.g-mobile) #app.only-en .ph.fr-reader-head .fr-tools-drawer #m-en {
   padding: 0 6px 0 0;
 }
 html:not(.g-mobile) #app.only-en .ph.fr-reader-head .fr-tools-drawer #m-en + button { margin-left: 0; border-radius: 3px 0 0 3px; }
+
+/* Aa is a default button again, joined to Tools (Ian, 2026-09-23:
+   "break out Aa tools to be a 4th default button"). Desktop: Search,
+   then the drawer when open, then Aa | Tools. Phone: Contents, Search,
+   Text, Tools; the open drawer lies over the first three. */
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tools-drawer { order: 8; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .aaw:not(.rdtw) { order: 9; margin-left: 16px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .aaw:not(.rdtw) > .tgl { border-radius: 3px 0 0 3px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw { order: 10; margin-left: -1px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw > .tgl { border-radius: 0 3px 3px 0; }
+html.g-mobile nav.frthumb.fr-m3.fr-m3-open > #aaBtn { opacity: 0; pointer-events: none; }

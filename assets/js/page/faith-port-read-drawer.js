@@ -10,9 +10,9 @@
  * middle of their screen", closed by its × or by Transparency again.
  *
  * DESKTOP. The toolbar keeps the contents toggle, the title, the page
- * controls, Search and Tools. Everything else moves into a drawer that
- * sits just before Tools: the reading lanes; Flow, Collapse all, theme,
- * Aa and Hide bar; the four actions that were Tools' own menu (Copy
+ * controls, Search, Aa and Tools. Everything else moves into a drawer
+ * that sits just before Aa and Tools: the reading lanes; Flow, Collapse
+ * all, theme and Hide bar; the four actions that were Tools' own menu (Copy
  * text, Copy link, Keep, Save to notebook); Report and Top; Research.
  * The elements are MOVED, not copied, so the engine's handlers, ids and
  * pressed states come with them; the old Tools menu is never opened.
@@ -20,8 +20,8 @@
  * (faith-tfr-rail.js), and the page controls fold away while it is open
  * so the tools have the bar.
  *
- * PHONE (html.g-mobile). The thumb bar is Contents, Search and Tools.
- * Its other buttons (Text, English, + Latin, Scan, Research, Ask) move
+ * PHONE (html.g-mobile). The thumb bar is Contents, Search, Text (Aa)
+ * and Tools. Its other buttons (English, + Latin, Scan, Research, Ask) move
  * into a drawer in the bar, and the desktop tools that make sense on a
  * phone join them as buttons that press the real control. Contents and
  * Search fold away while the drawer is open. Going back across 880px
@@ -175,7 +175,6 @@
       ["view", document.getElementById("rdFlow")],
       ["view", q(".fr-tb-folds")],
       ["view", document.getElementById("thTop")],
-      ["view", q(".aaw:not(.rdtw)")],
       ["view", q(".fr-tb-focus")],
       ["copy", document.getElementById("rdCopyText")],
       ["copy", document.getElementById("rdCopyLink")],
@@ -206,8 +205,9 @@
     const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
     const sbt = document.getElementById("sbT");
     const rs = document.getElementById("rsBtn");
+    const aaw = ctr.querySelector(".aaw:not(.rdtw)");
     // The title fades while the drawer is open; a sliver is kept.
-    const used = (sbt ? sbt.offsetWidth : 36) + 24 + 24
+    const used = (aaw ? aaw.offsetWidth : 44) + (sbt ? sbt.offsetWidth : 36) + 24 + 24
       + (rs ? rs.offsetWidth : 36) + 16
       + (toolsWrap ? toolsWrap.offsetWidth : 80) + 16 + 16;
     return Math.max(160, Math.floor(w - pad - used));
@@ -323,9 +323,7 @@
 
   function mMembers() {
     if (!bar) return [];
-    const aa = document.getElementById("aaBtn");
     return [
-      aa && aa.classList.contains("frthumb-aa") ? aa : null,
       bar.querySelector('[data-t="en"]'),
       bar.querySelector('[data-t="par"]'),
       bar.querySelector('[data-t="study"]'),
@@ -366,9 +364,10 @@
       const el = proxies[k];
       if (el.parentElement !== mDrawer) mDrawer.appendChild(el);
     });
-    // The docked Text button first, as it was in the dock.
+    // Text (Aa) is the dock's fourth button, beside Tools (Ian,
+    // 2026-09-23: "break out Aa tools to be a 4th default button").
     const aa = document.getElementById("aaBtn");
-    if (aa && aa.parentElement === mDrawer && mDrawer.firstChild !== aa) mDrawer.insertBefore(aa, mDrawer.firstChild);
+    if (aa && aa.classList.contains("frthumb-aa") && aa.nextElementSibling !== mTools) bar.insertBefore(aa, mTools);
     syncProxies();
   }
 

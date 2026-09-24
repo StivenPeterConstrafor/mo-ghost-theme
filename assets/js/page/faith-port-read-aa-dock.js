@@ -26,9 +26,9 @@
   "use strict";
 
   // The reader's own phone width (html.g-mobile), since the dock became
-  // three buttons and a Tools drawer (faith-port-read-drawer.js,
-  // 2026-09-23): the Text button lives in that drawer at every width
-  // the dock is shown.
+  // Contents, Search, Text and Tools (faith-port-read-drawer.js,
+  // 2026-09-23): the Text button sits beside Tools at every width the
+  // dock is shown.
   const NARROW = 880;
   const btn = document.getElementById("aaBtn");
   if (!btn) return;
@@ -48,8 +48,8 @@
       if (!bar.contains(btn)) {
         btn.classList.add("frthumb-aa");
         btn.innerHTML = dockShape;
-        const slot = bar.querySelector(".fr-mtools-drawer");
-        if (slot) slot.insertBefore(btn, slot.firstChild);
+        const tools = bar.querySelector(':scope > [data-t="tools"]');
+        if (tools) bar.insertBefore(btn, tools);
         else bar.insertBefore(btn, bar.firstChild);
       }
     } else if (!narrow() && home && btn.parentElement !== home) {
