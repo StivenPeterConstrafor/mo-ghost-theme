@@ -19907,3 +19907,8 @@ body .research-workspace .cmp-col > .cmp-note { margin: 0; padding: 12px 16px 4p
   body:has(#app.faith-port-read-page) select option:hover,
   body:has(#app.faith-port-read-page) select option:focus-visible { background: var(--hl); }
 }
+
+/* The phone rules above take every card's left border off with
+   !important (the old lattice drew them as dividers). The thin-line
+   boxes in the landing's collection keep all four sides. */
+#collection .faith-card-grid > .faith-card { border-left: 1px solid var(--color-card-border, #d9c6a7) !important; }
