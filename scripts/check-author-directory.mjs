@@ -53,6 +53,14 @@ function resolve(a) {
   return `room ${t}`;
 }
 
+// --links <file>: resolve one ?a= value per line (decoded) and print where each lands.
+const li = process.argv.indexOf("--links");
+if (li > 0) {
+  const lines = readFileSync(process.argv[li + 1], "utf8").split("\n").map((l) => l.trim()).filter(Boolean);
+  let bad = 0;
+  for (const l of lines) { const a = decodeURIComponent(l); const r = resolve(a); if (!r) bad++; console.log(`${(r || "NO PAGE").padEnd(44)} ${a}`); }
+  process.exit(bad ? 1 : 0);
+}
 const all = new Set();
 const add = (s) => { s = String(s || "").replace(/&agrave;/g, "à").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim(); if (s) all.add(s); };
 const titles = await j(`${B}/v1/index/works-titles.json`);

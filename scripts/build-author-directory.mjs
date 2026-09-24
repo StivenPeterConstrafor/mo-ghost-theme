@@ -91,7 +91,7 @@ const heldBy = new Map(); // work key -> room id
 for (const sh of SHELVES) {
   const ix = await j(`${B}/v1/bible/${sh}/rooms/index.json`);
   const got = await pool(ix.authors, 16, (a) =>
-    j(`${B}/v1/bible/${sh}/rooms/${encodeURIComponent(a.s)}.json`).then((d) => ({ sh, s: a.s, a: a.a, y: a.y, d })).catch(() => ({ sh, s: a.s, a: a.a, y: a.y, d: null })));
+    j(`${B}/v1/bible/${sh}/rooms/${encodeURIComponent(a.s)}.json`).then((d) => ({ sh, s: a.s, a: a.a, y: a.y, w: a.w, d })).catch(() => ({ sh, s: a.s, a: a.a, y: a.y, w: a.w, d: null })));
   for (const room of got) {
     room.id = `${sh}/${room.s}`;
     rooms.push(room);
@@ -145,9 +145,17 @@ const roomByPlain = (name) => {
   if (!cands.length) cands = roomsByCore.get(core(plain(name))) || roomsByCore.get(core(name)) || [];
   if (!cands.length) return null;
   const ys = years(name);
-  if (!ys.length) return cands.length === 1 ? cands[0] : null;
+  // One person can have a room on two shelves (Chrysostom: Greek and
+  // Eastern Fathers): rooms of one name and one birth year are one
+  // person, and the fullest room is their page.
+  const one = (rs) => {
+    if (rs.length === 1) return rs[0];
+    if (rs.length > 1 && new Set(rs.map((r) => `${words(r.a)}|${r.y || 0}`)).size === 1) return [...rs].sort((a, b) => (b.w || 0) - (a.w || 0))[0];
+    return null;
+  };
+  if (!ys.length) return one(cands);
   const near = cands.filter((r) => r.y && ys.some((y) => Math.abs(y - r.y) <= 20 || (y > r.y && y - r.y <= 95)));
-  return near.length === 1 ? near[0] : null;
+  return one(near);
 };
 for (const w of works) {
   if (target.has(w.name) || PLACEHOLDER.test(w.name)) continue;
@@ -239,7 +247,7 @@ for (const r of rooms) { roomFold.set(fold(r.s), r.id); roomFold.set(fold(r.a), 
 const lookup = (n) => names[fold(n)] || roomFold.get(fold(n)) || roomFold.get(fold(plain(n))) || (roomByPlain(n) || {}).id || "";
 for (const w of works) {
   const t = lookup(w.name);
-  if (t) for (const v of w.variants) if (!PLACEHOLDER.test(v)) put(fold(v), t);
+  if (t) for (const v of w.variants) if (!PLACEHOLDER.test(v)) { put(fold(v), t); put(fold(plain(v)), t); }
 }
 const local = JSON.parse(readFileSync(new URL("../assets/data/faith-received/english-author-aliases.json", import.meta.url), "utf8")).aliases || {};
 for (const [k, v] of [...Object.entries(ALIASES), ...Object.entries(local)]) {

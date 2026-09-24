@@ -44,6 +44,8 @@
     var s = String(raw || "").replace(/\[|\]/g, "").replace(/\([^)]*\)/g, " ").trim();
     if (s.indexOf(",") < 0) return s.replace(/\b(?:b\.|d\.|ca?\.|fl\.)?\s*\d{3,4}\??(?:\s*[-–]\s*\d{0,4}\??)?/g, " ").replace(/\s+/g, " ").trim();
     var parts = s.split(",").map(function (p) { return p.trim(); }).filter(function (p) { return p && !DATE_PART.test(p); });
+    // "Raleigh, Sir, Walter": the title goes before the forename.
+    if (parts.length >= 3 && /^(?:sir|dame|lady|lord)$/i.test(parts[1]) && /^\p{Lu}/u.test(parts[2])) return parts[1] + " " + parts[2] + " " + parts[0];
     if (parts.length >= 2 && /^\p{Lu}/u.test(parts[1]) && parts[1].split(/\s+/).length <= 3) return parts[1] + " " + parts[0];
     if (parts.length >= 2 && /^(?:à|a|de|van|von|of|le|la|du|des)\b/i.test(parts[1]) && parts[1].split(/\s+/).length <= 3) return parts[0] + " " + parts[1];
     return parts.join(" ");
