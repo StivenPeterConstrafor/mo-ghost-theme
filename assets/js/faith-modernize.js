@@ -1517,7 +1517,16 @@ function edits(S, bounds) {
     // opens an inference ("Whence this reason is also confirmed")
     if (k === "whence") {
       if (i > 0 && joined(i) && norm(i - 1) === "from") { put(i, i, cased(i, "where")); continue; }
-      put(i, i, cased(i, term[i] !== "?" && clauseStart(i) ? "hence" : "from where"));
+      // "hence" when it opens an inference: after a full stop, a colon or
+      // a semicolon, or after a comma before "it follows", "it is"...;
+      // after a bare comma it is relative ("the name of Theology, whence it
+      // takes its origin" is "from where")
+      const g = gap(i);
+      const nx = i + 1 < n && joined(i + 1) ? norm(i + 1) : "";
+      const nx2 = i + 2 < n && joined(i + 2) ? norm(i + 2) : "";
+      const inference = i === 0 || /[.;:!?(]/.test(g) || (/,/.test(g) &&
+        (/^(also|arises|follows|appears|comes|we|they)$/.test(nx) || (nx === "it" && /^(follows|is|appears|seems|comes|was)$/.test(nx2))));
+      put(i, i, cased(i, term[i] !== "?" && inference ? "hence" : "from where"));
       continue;
     }
     // "from thence" is "from there", not "from from there"; "note thence"
