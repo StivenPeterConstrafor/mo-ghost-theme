@@ -19817,6 +19817,13 @@ html.g-mobile #reading .fr-sec-toggle {
    Connections place their rail themselves (faith-port-reader-skin.css,
    faith-port-surfaces.css) and are left to it. --mo-mast is the
    masthead's height, published by header-behaviors.js. */
+/* STICKY NEEDS THE PAGE TO BE THE SCROLLER. The site sets overflow-x:
+   hidden on html AND body; with both set, body becomes a scroll box of
+   its own that never scrolls, and a sticky child sticks to it, which is
+   to say not at all: on a phone the rail scrolled away with the page
+   (measured at -778px). clip hides sideways overflow the same way
+   without making body a scroll box. */
+body:has(> .tfr-rail):not(:has(#app.faith-port-read-page)):not(.web-page) { overflow-x: clip; }
 body:not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail {
   position: sticky;
   top: var(--mo-mast, 85px);
