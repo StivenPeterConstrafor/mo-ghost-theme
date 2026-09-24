@@ -2491,67 +2491,103 @@ html:not(.g-mobile) #app .ph.fr-reader-head .reader-identity { transition: opaci
 html.g-mobile .fr-td-say { top: auto; bottom: calc(76px + env(safe-area-inset-bottom)); }
 
 /* ── THE PHONE'S DOCK: CONTENTS, SEARCH, TOOLS ───────────────────────
-   Three cells at rest. Tools opens a drawer between Search and Tools by
-   width, on the rail's curve, and Contents and Search fold away while
-   it is open so the drawer has the bar; the drawer scrolls sideways. */
+   Three cells at rest. Tools reveals a drawer that lies over Contents
+   and Search (faith-port-read-drawer.js sets its right edge at Tools),
+   unrolled leftward out of Tools by clip-path on the rail's curve.
+   Nothing in the dock changes size, so nothing re-lays out while it
+   moves. The drawer scrolls sideways. */
 html.g-mobile nav.frthumb.fr-m3 {
-  overflow: hidden;
+  overflow: visible;
   justify-content: space-around;
   gap: 0;
   padding-left: 6px;
   padding-right: 6px;
 }
-html.g-mobile nav.frthumb.fr-m3 > button {
-  flex: 1 1 0;
-  min-width: 0;
-  max-width: 200px;
-  transition: max-width 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
-              flex-grow 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
-              opacity 0.22s ease, padding 0.3s ease;
-}
+html.g-mobile nav.frthumb.fr-m3 > button { flex: 1 1 0; min-width: 0; transition: opacity 0.22s ease; }
 html.g-mobile nav.frthumb.fr-m3.fr-m3-open > [data-t="toc"],
-html.g-mobile nav.frthumb.fr-m3.fr-m3-open > [data-t="find"] {
-  flex-grow: 0;
-  max-width: 0;
-  opacity: 0;
-  padding-left: 0;
-  padding-right: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-html.g-mobile nav.frthumb.fr-m3.fr-m3-open > [data-t="tools"] { flex: 0 0 64px; }
+html.g-mobile nav.frthumb.fr-m3.fr-m3-open > [data-t="find"] { opacity: 0; pointer-events: none; }
 html.g-mobile nav.frthumb.fr-m3 > .fr-mtools-drawer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: env(safe-area-inset-bottom, 0px);
   display: flex;
-  align-items: stretch;
-  flex: 0 1 auto;
-  min-width: 0;
-  gap: 4px;
-  width: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: width 0.3s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.22s ease;
-}
-html.g-mobile nav.frthumb.fr-m3 > .fr-mtools-drawer.is-open { opacity: 1; }
-html.g-mobile nav.frthumb.fr-m3 > .fr-mtools-drawer.is-open.is-settled {
+  align-items: center;
+  gap: 2px;
+  padding: 3px 4px 3px 8px;
+  background: var(--card-bg, var(--card, #fffdfa));
   overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent);
-  mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent);
+  clip-path: inset(0 0 0 100%);
+  visibility: hidden;
+  transition: clip-path 0.3s cubic-bezier(0.22, 0.61, 0.36, 1), visibility 0s linear 0.3s;
+  will-change: clip-path;
+}
+html.g-mobile nav.frthumb.fr-m3 > .fr-mtools-drawer.is-open {
+  clip-path: inset(0 0 0 0);
+  visibility: visible;
+  transition: clip-path 0.3s cubic-bezier(0.22, 0.61, 0.36, 1), visibility 0s;
 }
 html.g-mobile nav.frthumb.fr-m3 > .fr-mtools-drawer::-webkit-scrollbar { display: none; }
 html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer > button {
   flex: 0 0 auto;
-  min-width: 58px;
+  min-width: 60px;
   padding: 5px 6px;
 }
 html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer > button[hidden] { display: none; }
 html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer > button:disabled { opacity: 0.45; }
 html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer #aaBtn.frthumb-aa { border: 0; background: none; }
+/* A hairline where the drawer meets Tools, so the edge reads. */
+html.g-mobile nav.frthumb.fr-m3 > .fr-mtools-drawer.is-open { box-shadow: inset -1px 0 0 var(--border, #d9c6a7); }
 @media (prefers-reduced-motion: reduce) {
   html.g-mobile nav.frthumb.fr-m3 > button,
   html.g-mobile nav.frthumb.fr-m3 > .fr-mtools-drawer { transition: none; }
+}
+
+/* ── THE PHONE READER DOES NOT MOVE ITS BOX (Ian, 2026-09-23) ────────
+   "everything on mobile is super jumpy ... Scrolling. The navrail
+   still moves behind the top." Hiding the chrome on a phone animated
+   the body's and #app's padding and the page's height: the whole reader
+   re-laid out every frame for .28s, and reader-core's keep-your-place
+   observer (it watches the scroller's top edge) wrote scrollTop on every
+   one of those frames, against the reader's own momentum. On a phone
+   the page is now the whole screen from the top, fixed chrome lies over
+   it, and the scroller starts its text below the chrome with its own
+   padding. Hiding and showing are transforms only: the masthead up by
+   its height, the rail up by the masthead's (so it pins at the top,
+   above everything), the toolbar up and out behind the rail. The
+   scroller's box never moves, so the observer never corrects, and
+   nothing lays out while the chrome slides. */
+html.g-mobile body:has(#app.faith-port-read-page) { padding-top: 0 !important; }
+html.g-mobile #app.faith-port-read-page,
+html.g-mobile.mh-hide #app.faith-port-read-page,
+html.g-mobile.mh-mini #app.faith-port-read-page { height: 100dvh; padding-top: 0; transition: none; }
+html.g-mobile body:has(#app.faith-port-read-page),
+html.g-mobile #app.faith-port-read-page { transition: none; }
+html.g-mobile #app.faith-port-read-page #scroll {
+  padding-top: calc(var(--mo-head, 61px) + var(--phh, 56px));
+  scroll-padding-top: calc(var(--mo-head, 61px) + var(--phh, 56px));
+}
+html.g-mobile body:has(#app.faith-port-read-page) .tfr-rail {
+  position: fixed;
+  top: var(--mo-mast, 61px);
+  left: 0;
+  right: 0;
+  z-index: 45;
+  transition: transform 0.28s var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+  will-change: transform;
+}
+html.g-mobile.mh-hide body:has(#app.faith-port-read-page) .tfr-rail,
+html.g-mobile.mh-mini body:has(#app.faith-port-read-page) .tfr-rail {
+  transform: translateY(calc(-1 * var(--mo-mast, 61px)));
+}
+html.g-mobile header.site-header,
+html.g-mobile #app .ph.fr-reader-head { will-change: transform; }
+@media (prefers-reduced-motion: reduce) {
+  html.g-mobile body:has(#app.faith-port-read-page) .tfr-rail { transition: none; }
 }
 
 /* ── TRANSPARENCY, IN THE MIDDLE OF THE SCREEN (phone) ───────────────
@@ -2592,3 +2628,20 @@ html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer #aaBtn.frthumb-aa { border: 0;
 .fr-tt-box .faith-reader-status { margin: 0; }
 .fr-tt-box .faith-reader-status[hidden] { display: block; }
 html.g-mobile.fr-tt-modal-open nav.frthumb { z-index: 58; }
+
+/* Desktop drawer, fitted: the title gives way while the tools are out,
+   and the drawer's buttons sit a little closer, so the whole set fits a
+   1280px bar without scrolling. When English is the only reading it is
+   a label, not a pressed button (as it was on the bar). */
+html:not(.g-mobile) #app .ph.fr-reader-head.fr-tools-open .reader-identity { opacity: 0; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tools-drawer { gap: 10px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer button,
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .aaw > .tgl { padding: 0 10px; }
+html:not(.g-mobile) #app.only-en .ph.fr-reader-head .fr-tools-drawer #m-en {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  pointer-events: none;
+  padding: 0 6px 0 0;
+}
+html:not(.g-mobile) #app.only-en .ph.fr-reader-head .fr-tools-drawer #m-en + button { margin-left: 0; border-radius: 3px 0 0 3px; }

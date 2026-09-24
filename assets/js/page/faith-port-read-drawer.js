@@ -206,7 +206,8 @@
     const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
     const sbt = document.getElementById("sbT");
     const rs = document.getElementById("rsBtn");
-    const used = (sbt ? sbt.offsetWidth : 36) + 24 + 90
+    // The title fades while the drawer is open; a sliver is kept.
+    const used = (sbt ? sbt.offsetWidth : 36) + 24 + 24
       + (rs ? rs.offsetWidth : 36) + 16
       + (toolsWrap ? toolsWrap.offsetWidth : 80) + 16 + 16;
     return Math.max(160, Math.floor(w - pad - used));
@@ -371,18 +372,27 @@
     syncProxies();
   }
 
+  /* On a phone the drawer does not animate its width. A width change
+     re-lays the dock out every frame, and on a phone that is what read as
+     "jumpy" (Ian, 2026-09-23). It lies over Contents and Search, from the
+     bar's left edge to Tools, and is revealed by clip-path from Tools
+     leftward: the same unrolling out of the button, drawn by the
+     compositor with nothing moving underneath. */
   function setMobile(open) {
     if (!bar || !mDrawer) return;
     mOpen = open;
     if (open) {
       fillMobile();
-      const pad = 16;
-      mDrawer.style.maxWidth = `${Math.max(120, bar.clientWidth - mTools.offsetWidth - pad * 2)}px`;
+      mDrawer.hidden = false;
+      mDrawer.style.right = `${Math.max(0, bar.clientWidth - mTools.offsetLeft)}px`;
     }
     mTools.setAttribute("aria-expanded", open ? "true" : "false");
     mTools.classList.toggle("on", open);
     bar.classList.toggle("fr-m3-open", open);
-    slide(mDrawer, open);
+    window.requestAnimationFrame(() => {
+      mDrawer.classList.toggle("is-open", mOpen);
+      if (!mOpen) window.setTimeout(() => { if (!mOpen) mDrawer.scrollLeft = 0; }, SLIDE_MS);
+    });
   }
 
   // ── Transparency, a dialog in the middle of the screen ───────────
