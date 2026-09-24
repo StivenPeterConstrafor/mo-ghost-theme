@@ -11188,6 +11188,14 @@ body.faith-toc-open .faith-dock { display: none; }
   font-size: 14px;
   color: var(--color-muted);
 }
+/* the volume of a multi-volume set, set like the author line */
+.bsearch-hit-vol {
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
 .bsearch-hit-where,
 .bsearch-hit-times {
   font-family: var(--font-body);
