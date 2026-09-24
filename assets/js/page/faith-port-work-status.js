@@ -114,9 +114,36 @@
     "old church slavonic", "slavonic", "german", "french", "italian", "spanish",
   ]);
 
+  /* ONLY A WORK WITH BOTH LANES IS A TRANSLATION (Stiven, 2026-09-24: the
+   * Westminster minutes, an English original, were showing "AI translated
+   * from Latin"). The ported reader hides the source-language button with
+   * display:none for an English-only work, which is not the `hidden`
+   * attribute, so the button's template label ("Latin") was read as the
+   * source. The page is asked whether a source lane AND an English lane are
+   * in front of the reader: the reader stamps data-fr-lanes ("source en",
+   * "en" or "source") once its metadata lands, and the two buttons must
+   * both be visible. Anything else publishes nothing. */
+  function shown(el) {
+    return !!el && !el.hidden && window.getComputedStyle(el).display !== "none";
+  }
+  /* AQUINAS IS THE EXCEPTION (Stiven, 2026-09-24): every work that shows a
+   * source lane and an English lane carries a machine translation, EXCEPT
+   * Thomas Aquinas' works, whose English is a human translation. So the
+   * disclosure is published on every two-lane work but his: the reader's
+   * own metadata names the author, and his slugs begin "aq-". */
+  function humanTranslated() {
+    const author = String((window.DATA && window.DATA.author) || "").trim();
+    if (/thomas aquinas/i.test(author)) return true;
+    return /^aq-/.test(String(param("w") || ""));
+  }
   function laneLanguage() {
+    if (humanTranslated()) return "";
+    const lanes = document.documentElement.getAttribute("data-fr-lanes");
+    if (lanes !== null && lanes.trim() !== "source en") return "";
+    const en = document.getElementById("m-en");
+    if (en && !shown(en)) return "";
     const el = document.getElementById("m-par");
-    const lang = el && !el.hidden ? (el.textContent || "").trim() : "";
+    const lang = shown(el) ? (el.textContent || "").trim() : "";
     if (!lang) return "";
     return LANGUAGES.has(lang.toLowerCase()) ? lang : "";
   }
