@@ -132,9 +132,15 @@
    * disclosure is published on every two-lane work but his: the reader's
    * own metadata names the author, and his slugs begin "aq-". */
   function humanTranslated() {
-    const author = String((window.DATA && window.DATA.author) || "").trim();
+    // MereO fix on merge: `param` is not defined in this file, so every
+    // polling tick threw and no translated work ever got its disclosure;
+    // the file's own slug() reads ?w=. DATA is reader-core's top-level
+    // binding (a script-scope const, not a window property).
+    let data = null;
+    try { data = (typeof DATA !== "undefined" && DATA) || window.DATA || null; } catch (_) { data = window.DATA || null; }
+    const author = String((data && data.author) || "").trim();
     if (/thomas aquinas/i.test(author)) return true;
-    return /^aq-/.test(String(param("w") || ""));
+    return /^aq-/.test(String(slug() || ""));
   }
   function laneLanguage() {
     if (humanTranslated()) return "";
