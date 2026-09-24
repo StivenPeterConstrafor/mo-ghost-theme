@@ -20258,3 +20258,18 @@ html:not(.faith-mf-tabbed) .faith-mf-panel + .faith-mf-panel { margin-top: 72px;
   .faith-mf-tab-tfr { display: inline; }
   .faith-mf-tabs { margin-bottom: 32px; }
 }
+/* Each letter's head (title, byline, role) in the thin-line card the rest
+   of TFR uses (Ian, 2026-09-24): white ground, tan hairline, 3px corners,
+   a terracotta rule down the left like the Topics head. */
+.faith-mf-head {
+  margin: 0 0 36px;
+  padding: 26px 30px 24px;
+  background: var(--color-white, #fffdfa);
+  border: 1px solid var(--color-card-border, #d9c6a7);
+  border-left: 3px solid var(--color-secondary, #c1593c);
+  border-radius: 3px;
+}
+.faith-mf-head .faith-mf-by { color: var(--color-secondary, #c1593c); }
+@media (max-width: 640px) {
+  .faith-mf-head { padding: 20px 18px 18px; }
+}
