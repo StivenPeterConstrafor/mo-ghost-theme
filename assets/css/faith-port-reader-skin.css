@@ -3030,49 +3030,6 @@ html:not(#fr-x) body:has(#app.faith-port-read-page) .fra {
    of its paragraph, so it takes the text's own paragraph style. */
 html.g-mobile .fr-tb-paras { display: none !important; }
 
-/* ── SECTION HEADINGS IN THE TEXT (Ian, 2026-09-24) ──────────────────
-   "Anything that would be in the TOC ... a better delineation between
-   sections in the work itself." Every heading the reader prints (the
-   csub heads of the TEI and curated works) and every short heading row
-   the outline resolves to (the Latin Fathers, which carry no heading
-   element; faith-reader-folds.js tags those fr-sec-headrow) opens its
-   section the thin-line way: a tan hairline across the column, room
-   above and below, and the heading centred in the reading face at a
-   step up. Nothing moves in the markup. */
-#reading h3.csub {
-  margin: 2.4em 0 1em;
-  padding-top: 1.1em;
-  border-top: 1px solid var(--border, #d9c6a7);
-  text-align: center;
-  font-family: var(--font-body, "Source Serif Pro", Georgia, serif);
-  font-size: 1.12em;
-  font-weight: 600;
-  line-height: 1.35;
-  letter-spacing: 0.02em;
-  color: var(--fg);
-}
-/* The rule is drawn on each language lane, not on the row: the row
-   starts left of the text (the lane is inset for the gutter controls),
-   so a rule on the row overhung the column. The engine's own paragraph
-   rules outrank a plain selector, hence the !important on alignment. */
-#reading .row.fr-sec-headrow { margin-top: 2.4em; }
-#reading .row.fr-sec-headrow > :is(.en, .la) {
-  padding-top: 1.1em;
-  border-top: 1px solid var(--border, #d9c6a7);
-}
-#reading .row.fr-sec-headrow > :is(.en, .la) p {
-  text-align: center !important;
-  text-indent: 0 !important;
-  font-weight: 600;
-}
-/* The fold's caret sits on the heading's line, clear of the rule. */
-#reading .row.fr-sec-headrow > .fr-sec-toggle { margin-top: 1.1em; }
-/* A heading row that carries its argument (CHAPTER V.-- On the general
-   custom of enemies...; LIBER PRIMUS. Paganos reprehendit...): the same
-   rule and centring, the text at its own weight so a long argument does
-   not read as a block of bold. */
-#reading .row.fr-sec-headrow--long > :is(.en, .la) p { font-weight: 400; }
-
 /* ── THE PRAYER BOOK (1928 BCP) ──────────────────────────────────────
    Ian, 2026-09-24: "clean up its format to make it more intuitive as a
    BCP." A work whose meta carries `liturgy: true` puts .liturgy on #app
@@ -3080,24 +3037,16 @@ html.g-mobile .fr-tb-paras { display: none !important; }
    one thing each (scripts/build-english-editions-pages.mjs, liturgyRow):
    italic is a rubric, the book's directions, printed red in a prayer
    book and set here in the terracotta ink, a step smaller; bold is the
-   people's part in a versicle, a litany or a vow. Headings inside an
-   office ("The Collect", "Psalm 1. Beatus vir") are #### and sit lighter
-   than the office and division heads above them: no hairline, left, the
-   body size. Prose is not indented, as a prayer book sets it. */
+   people's part in a versicle, a litany or a vow. Its headings take
+   the tiers in "SECTION HEADINGS: ONE HIERARCHY" at the end of this file
+   (an office is a card, what sits inside it a hairline or a plain head).
+   Prose is not indented, as a prayer book sets it. */
 #app.liturgy #reading .en em {
   font-size: 0.9em;
   color: var(--fr-ink-hot, #a4503a);
 }
 #app.liturgy #reading .en strong { font-weight: 600; }
 #app.liturgy #reading .en p { text-indent: 0; }
-#app.liturgy #reading .row.rhead.hl4 h3.csub {
-  margin: 1.8em 0 0.5em;
-  padding-top: 0;
-  border-top: 0;
-  text-align: left;
-  font-size: 1em;
-  letter-spacing: 0.01em;
-}
 /* Psalms, canticles and versicles are verse lines ("| " in the page
    markdown). The reader stacks a page's rows into one column
    (.stkwrap), which lifts the cells out of .row.rverse and with them the
@@ -3113,103 +3062,337 @@ html.g-mobile .fr-tb-paras { display: none !important; }
    turned lines, so the two never read as one. */
 #app.liturgy #reading .en .verse .vl.ind { padding-left: 2.4em; text-indent: 0; }
 
-/* ── SECTION HEADINGS, TFR STYLE (Ian, 2026-09-24) ───────────────────
-   "Something more in line with the design style we've done across the
-   rest of TFR like on the Topics page." Replaces the centred heading
-   above. faith-port-read-headings.js splits a heading's division label
-   from its title; set here the way a Topics page sets its head:
+/* ══ SECTION HEADINGS: ONE HIERARCHY (Ian, 2026-09-24) ═══════════════
+   "I like the little boxes you've been using ... There still just seems
+   to be some inconsistency about what is a header, subheader, and
+   eyebrow." faith-port-read-headings.js splits every heading into its
+   parts and gives it a tier; this sets each part ONE way everywhere:
 
-     a tan hairline across the column
-     BOOK I · CHAPTER I       11.5px caps, 0.22em, terracotta (--fr-ink-hot)
-     The title                large, the reading face, 600
-     A subtitle               italic, muted
+     EYEBROW   .fr-hd-eye    11.5px caps, 0.22em, terracotta ink; group
+                             separators print as " · "
+     TITLE     .fr-hd-title  the reading face at 600, never caps or
+                             small caps (capitals recased word by word)
+     SUBTITLE  .fr-hd-sub    italic, muted
+     ARGUMENT  .fr-hd-arg    italic, muted, the terracotta rule at left
 
-   Left-aligned like the Topics head. The words are untouched; only the
-   separator between label and title is hidden. */
-#reading h3.csub,
-#reading .row.fr-sec-headrow > :is(.en, .la) p {
+   and each tier one way:
+
+     .fr-hd-card  the top of the outline (book, part, article, chapter,
+                  homily, Lord's Day, an office of the prayer book): the
+                  TFR thin-line box, as the Topics page sets its head.
+                  A title, subtitle or argument printed as its own line
+                  continues the box below it, the two joined like the
+                  toolbar's button groups (.fr-hd-open + .fr-hd-cont).
+     .fr-hd-t2    what sits under those (an office's psalms and
+                  collects, sections, heads the outline does not list):
+                  a tan hairline over eyebrow and title.
+     .fr-hd-t3    the most numerous (a catechism's questions, the
+                  prayer book's inner heads): eyebrow and title, no rule.
+
+   Every box sits on the reading column's own edges: the heading element
+   is the lane's own content (a p or h3 inside .en/.la) or, where the
+   engine puts the h3 straight in the row, sized to the lane's measure.
+   The fold caret is placed inside the box by anchor positioning, so it
+   follows the box in every lane mode without a measurement.
+
+   The face is the reading face (--fr-read-font, the Aa control's choice),
+   not the engine's --font-body, which is EB Garamond in this reader: the
+   headings are the text's own, and an h3 in its own row measures its 66ch
+   in the same face as the lane, so its box and the text share an edge. */
+
+#app #reading .fr-hd {
   text-align: left !important;
   text-indent: 0 !important;
-  font-family: var(--font-body, "Source Serif Pro", Georgia, serif);
-  font-size: 1.42em;
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: 0;
-  color: var(--fg);
-}
-#reading h3.csub { margin: 2.6em 0 0.7em; padding-top: 1.3em; }
-#reading .row.fr-sec-headrow { margin-top: 2.6em; }
-#reading .row.fr-sec-headrow > :is(.en, .la) { padding-top: 1.3em; }
-#reading .row.fr-sec-headrow > :is(.en, .la) p { margin: 0 0 0.35em; }
-/* A heading row that carries its argument reads lighter and smaller. */
-#reading .row.fr-sec-headrow--long > :is(.en, .la) p { font-size: 1.16em; font-weight: 500; line-height: 1.4; }
-
-#reading .fr-hd-eye {
-  display: block;
-  margin: 0 0 0.7em;
-  font-family: var(--font-body, "Source Serif Pro", Georgia, serif);
-  font-size: 11.5px;
-  font-weight: 600;
+  font-family: var(--fr-read-font, "Source Serif Pro", Georgia, serif);
+  font-weight: 400;
   font-style: normal;
-  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg);
+  line-height: 1.3;
+  box-shadow: none;
+}
+/* An h3 the engine puts straight in its row (the curated confessions,
+   the catechisms, the prayer book) takes the lane's size and measure, so
+   its box lines up with the text under it: read.in01.css caps it at 66ch
+   of its own size, and the English lane is 66ch at 1.04em x --ensz. */
+#app #reading h3.fr-hd { font-size: 1em; }
+#app #reading .row.rhead > h3.fr-hd { font-size: calc(1.04em * var(--ensz, 1)); }
+/* The engine's short rules above and below a main head (read.in01.css,
+   .hmain .csub::before/::after) would sit inside the box. */
+#app #reading .row.rhead h3.fr-hd::before,
+#app #reading .row.rhead h3.fr-hd::after { content: none; display: none; }
+/* Its own row carries no margin of its own; the tier sets the room. */
+#app #reading .row.rhead:has(> h3.fr-hd),
+#app #reading .row.fr-sec-headrow { margin-top: 0; }
+#app #reading .row.rhead:has(> h3.fr-hd) { padding-top: 0.01px; }
+
+/* ── The parts ── */
+#app #reading .fr-hd .fr-hd-eye,
+#app #reading .fr-hd-sublabel {
+  display: block;
+  margin: 0 0 0.6em;
+  font: 600 11.5px/1.45 var(--fr-read-font, "Source Serif Pro", Georgia, serif);
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--fr-ink-hot, var(--color-secondary, #c1593c));
 }
-#reading .fr-hd-title { display: block; }
-#reading .fr-hd-sep { display: none; }
-/* "Book I - Chapter I": the gap between the groups prints as a dot. */
-#reading .fr-hd-dot { font-size: 0; }
-#reading .fr-hd-dot::after { content: "·"; font-size: 11.5px; margin: 0 0.5em 0 0.28em; }
-
-/* A heading that is only its label ("CHAPTER II.") with a short line
-   under it: the label is the eyebrow, the line under it the title. */
-#reading .fr-hd.fr-hd-labelonly { margin-bottom: 0; }
-#reading .fr-hd.fr-hd-labelonly .fr-hd-eye { margin-bottom: 0; }
-#reading .row.fr-sec-headrow > :is(.en, .la) p.fr-hd-labelonly { margin-bottom: 0.35em; }
-#reading .fr-hd-promoted {
-  text-align: left !important;
-  text-indent: 0 !important;
-  font-size: 1.42em;
-  font-weight: 600;
-  line-height: 1.25;
-  font-style: normal;
-  color: var(--fg);
-  margin: 0 0 0.9em;
+#app #reading .fr-hd .fr-hd-eye * {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
 }
+#app #reading .fr-hd.fr-hd-labelonly .fr-hd-eye { margin-bottom: 0; }
+/* "Book I - Chapter I": the gap between groups, however it was printed
+   and whatever spaces it held, is one dot with equal room either side.
+   The gap's own characters are zero-width AND zero-spaced: letter-spacing
+   is inherited as a length, so three hidden characters used to add three
+   letter-spaces ("BOOK I  · CHAPTER I"). The letter before the dot
+   brings its own 0.22em, hence the smaller margin on the left. */
+#app #reading .fr-hd .fr-hd-eye .fr-hd-dot { font-size: 0; letter-spacing: 0; }
+#app #reading .fr-hd .fr-hd-eye .fr-hd-dot::after {
+  content: "\00B7";
+  font-size: 11.5px;
+  letter-spacing: 0;
+  margin: 0 0.5em 0 0.28em;
+}
+/* A catechism question numbered bare ("1. What is ...?") reads "Q. 1",
+   as the Westminster catechisms print it. Generated, not in the text. */
+#app #reading .fr-hd .fr-hd-eye.fr-hd-qn::before { content: "Q.\00A0"; }
+#app #reading .fr-hd .fr-hd-sep { display: none; }
 
-/* The subtitle under a titled heading. */
-#reading .fr-hd-sub,
-#reading .fr-hd-sublabel {
+#app #reading .fr-hd .fr-hd-title,
+#app #reading .fr-hd-promoted:not(h3) {
+  display: block;
+  font-family: var(--fr-read-font, "Source Serif Pro", Georgia, serif);
+  font-weight: 600;
+  font-style: normal;
+  font-variant: normal;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.25;
+  color: var(--fg);
+  text-wrap: balance;
+}
+#app #reading .fr-hd-promoted { text-align: left !important; text-indent: 0 !important; margin-block: 0; }
+/* The engine sets all-capital runs as small caps (.capsrun); inside a
+   title that made a caps title a different kind of heading from its
+   neighbours. Here it is ordinary type, recased by the spans below. */
+#app #reading .fr-hd .fr-hd-title .capsrun,
+#app #reading .fr-hd-promoted .capsrun,
+#app #reading .fr-hd-sub .capsrun.blk {
+  display: inline;
+  margin: 0;
+  font-size: inherit;
+}
+#app #reading .fr-hd .fr-hd-title .capsrun,
+#app #reading .fr-hd-promoted .capsrun,
+#app #reading .fr-hd-sub .capsrun {
+  font-variant: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
+/* Headline case for words printed in capitals (headings.js, recase):
+   lowered, first letter raised; short connectives lowered whole. */
+#app #reading .fr-hd-wc { display: inline-block; text-transform: lowercase; }
+#app #reading .fr-hd-wc::first-letter { text-transform: uppercase; }
+#app #reading .fr-hd-wl { text-transform: lowercase; }
+#app #reading .fr-hd-nb { white-space: nowrap; }
+/* A title the page prints wholly in italic (the Heidelberg questions)
+   stands upright like every other title. */
+#app #reading .fr-hd-upright :is(em, i) { font-style: normal; }
+
+/* The same heading in two languages inside one h3: the second is a quiet
+   line under the first, not a second eyebrow and title. */
+#app:not(.only-la) #reading .fr-hd-bi > .hla {
+  order: 2;
+  margin-top: 0.35em;
+  font: italic 400 0.86em/1.4 var(--fr-read-font, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+}
+#app:not(.only-la) #reading .fr-hd-bi > .hla .fr-hd-eye { display: none; }
+#app:not(.only-la) #reading .fr-hd-bi > .hla .fr-hd-title { font: inherit; color: inherit; }
+
+#app #reading .fr-hd-sub {
   text-align: left !important;
   text-indent: 0 !important;
   font-style: italic;
-  font-size: 1.04em;
+  font-size: 1.02em;
   line-height: 1.45;
-  color: var(--muted, #6b6660);
-  margin: -0.2em 0 1.3em;
+  color: var(--muted);
+  margin-block: 0.1em 1.2em;
 }
-#reading .fr-hd-sublabel {
-  font-style: normal;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
-/* A printed argument under the heading (EEBO's "*The second general
-   Principle ... proposed"): the Topics page's quoted-article shape, a
-   terracotta rule at the left, italic, a step smaller. */
-#reading .fr-hd-arg {
+#app #reading .fr-hd-arg {
   text-align: left !important;
   text-indent: 0 !important;
   font-style: italic;
   font-size: 0.94em;
   line-height: 1.6;
-  color: var(--muted, #6b6660);
+  color: var(--muted);
   padding-left: 1em;
   border-left: 2px solid var(--fr-ink-hot, var(--color-secondary, #c1593c));
-  margin: 0.2em 0 1.6em;
+  margin-block: 0.3em 1.6em;
+}
+
+/* ── Tier 1: the card ── */
+#app #reading .fr-hd.fr-hd-card,
+#app #reading .fr-hd-cont {
+  background: var(--card, #fffdfa);
+  border: 1px solid var(--border, #d9c6a7);
+  border-radius: 3px;
+}
+#app #reading .fr-hd.fr-hd-card {
+  padding: 16px 52px 16px 20px;
+  margin-block: 2.2em 1.2em;
+}
+/* Sizes go on the title, not the heading element: an h3 in its own row
+   is measured in its own font (66ch), so sizing it would widen its box. */
+#app #reading .fr-hd-card .fr-hd-title,
+#app #reading .fr-hd-promoted.fr-hd-in-card:not(h3),
+#app #reading h3.fr-hd-promoted.fr-hd-in-card .fr-hd-title { font-size: 1.42em; }
+/* A heading row that carries its argument after the label (CHAPTER V.--
+   On the general custom ...; LIBER PRIMUS. Paganos reprehendit ...): the
+   words after the label are an argument, not a title, and read lighter. */
+#app #reading .row.fr-sec-headrow--long .fr-hd-card .fr-hd-title { font-size: 1.1em; line-height: 1.45; }
+#app #reading .row.fr-sec-headrow--long .fr-hd-card .fr-hd-title { font-weight: 500; }
+/* Opened at the bottom and continued on the line below. */
+#app #reading .fr-hd.fr-hd-card.fr-hd-open {
+  border-bottom-width: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  padding-bottom: 8px;
+  /* Flush, whatever paragraph margin the engine's lane rules give. */
+  margin-bottom: 0 !important;
+}
+#app #reading .fr-hd-cont {
+  border-top-width: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  padding: 0 52px 16px 20px;
+  margin-block: 0 1.2em;
+  margin-top: 0 !important;
+  text-indent: 0 !important;
+  text-align: left !important;
+}
+#app #reading .fr-hd-sub.fr-hd-cont { margin-top: 0; }
+#app #reading .fr-hd-sublabel.fr-hd-cont { margin-block: 0 1.2em; padding-top: 2px; }
+/* An argument inside the box keeps its terracotta rule, drawn as a
+   background so the box keeps its own thin line at the edge. */
+#app #reading .fr-hd-arg.fr-hd-cont {
+  border-left: 1px solid var(--border, #d9c6a7);
+  padding: 2px 52px 16px 36px;
+  background:
+    linear-gradient(var(--fr-ink-hot, #c1593c), var(--fr-ink-hot, #c1593c)) 20px 2px / 2px calc(100% - 18px) no-repeat,
+    var(--card, #fffdfa);
+}
+/* Two rows joined: no gap between them, and in the side-by-side view both
+   lanes of each row run to one height so the Latin and English boxes end
+   together. The Latin lane's own rule stands aside for the box. */
+#app #reading .row.fr-hd-joinrow { margin-bottom: 0 !important; padding-bottom: 0 !important; }
+#app #reading .row.fr-hd-controw { margin-top: 0 !important; padding-top: 0 !important; }
+#app #reading .row.fr-hd-joinrow,
+#app #reading .row.fr-hd-controw { align-items: stretch; }
+/* Only side by side: in a one-lane view the other lane is display:none
+   (read.in01.css), and a display here would bring it back. */
+#app:not(.only-en):not(.only-la) #reading .fr-hd-lanefill { display: flex; flex-direction: column; }
+#app #reading .fr-hd-lanefill > .fr-hd,
+#app #reading .fr-hd-lanefill > .fr-hd-cont { flex: 1 1 auto; }
+#app #reading .row > .la:has(> .fr-hd-card, > .fr-hd-cont) { border-left-color: transparent; }
+
+/* ── Tier 2: the hairline ── */
+#app #reading .fr-hd.fr-hd-t2 {
+  border-top: 1px solid var(--border, #d9c6a7);
+  padding: 16px 40px 0 0;
+  margin-block: 2em 0.8em;
+}
+#app #reading .fr-hd-t2 .fr-hd-title,
+#app #reading .fr-hd-promoted.fr-hd-in-t2:not(h3),
+#app #reading h3.fr-hd-promoted.fr-hd-in-t2 .fr-hd-title { font-size: 1.2em; }
+#app #reading .fr-hd-promoted:is(.fr-hd-in-t2, .fr-hd-in-t3) { margin-block: 0 0.8em; padding: 0 40px 0 0; }
+
+/* ── Tier 3: the plain head ── */
+#app #reading .fr-hd.fr-hd-t3 {
+  padding: 0 40px 0 0;
+  margin-block: 1.6em 0.45em;
+}
+#app #reading .fr-hd-t3 .fr-hd-eye { margin-bottom: 0.35em; }
+#app #reading .fr-hd-t3 .fr-hd-title,
+#app #reading .fr-hd-promoted.fr-hd-in-t3:not(h3),
+#app #reading h3.fr-hd-promoted.fr-hd-in-t3 .fr-hd-title { font-size: 1.04em; line-height: 1.4; }
+
+/* ── The fold caret, inside the heading ──
+   faith-reader-folds.js appends it to the row, which is wider than the
+   reading column in single-lane views (the lane is centred at 66ch), so
+   it floated off the column's right edge. Anchored to the first heading
+   in the row's last visible lane, it sits in the box's top-right corner,
+   level with the eyebrow, in every lane mode and at every size. Without
+   anchor positioning it keeps its old place at the row's end. */
+@supports (anchor-name: --a) {
+  #app #reading .fr-hd-anchor { anchor-name: --fr-hd; }
+  #app #reading .row.fr-sec-head:has(.fr-hd-anchor) > .fr-sec-toggle {
+    position-anchor: --fr-hd;
+    left: auto;
+    bottom: auto;
+    top: calc(anchor(top) + 8px);
+    right: calc(anchor(right) + 10px);
+  }
+  #app #reading .row.fr-sec-head:has(.fr-hd-anchor.fr-hd-t2) > .fr-sec-toggle { top: calc(anchor(top) + 8px); right: anchor(right); }
+  #app #reading .row.fr-sec-head:has(.fr-hd-anchor.fr-hd-t3) > .fr-sec-toggle { top: calc(anchor(top) - 7px); right: anchor(right); }
+  /* The phone gave the whole row 40px on its right for the caret; the
+     caret now sits in the heading's own right padding. */
+  html.g-mobile #app #reading .fr-sec-head:has(.fr-hd-anchor) { padding-right: 0; }
+  /* A label row whose fold would close nothing (headings.js) gives the
+     box's one caret to the title row under it. */
+  #app #reading .row.fr-hd-onecaret > .fr-sec-toggle { display: none; }
+  /* A thumb's target (44px) in the heading's own right padding, centred
+     on the eyebrow line. */
+  html.g-mobile #app #reading .row.fr-sec-head:has(.fr-hd-anchor) > .fr-sec-toggle { width: 44px; height: 44px; }
+  html.g-mobile #app #reading .row.fr-sec-head:has(.fr-hd-anchor.fr-hd-card) > .fr-sec-toggle { top: anchor(top); right: calc(anchor(right) + 4px); }
+  html.g-mobile #app #reading .row.fr-sec-head:has(.fr-hd-anchor.fr-hd-t2) > .fr-sec-toggle { top: anchor(top); right: calc(anchor(right) - 4px); }
+  html.g-mobile #app #reading .row.fr-sec-head:has(.fr-hd-anchor.fr-hd-t3) > .fr-sec-toggle { top: calc(anchor(top) - 14px); right: calc(anchor(right) - 4px); }
+}
+
+/* A phone's column is a third as wide: the card's title steps down so a
+   long chapter title is not eight lines of display type. */
+html.g-mobile #app #reading .fr-hd-card .fr-hd-title,
+html.g-mobile #app #reading .fr-hd-promoted.fr-hd-in-card:not(h3),
+html.g-mobile #app #reading h3.fr-hd-promoted.fr-hd-in-card .fr-hd-title { font-size: 1.24em; }
+html.g-mobile #app #reading .fr-hd-t2 .fr-hd-title,
+html.g-mobile #app #reading .fr-hd-promoted.fr-hd-in-t2:not(h3),
+html.g-mobile #app #reading h3.fr-hd-promoted.fr-hd-in-t2 .fr-hd-title { font-size: 1.12em; }
+html.g-mobile #app #reading .fr-hd.fr-hd-card { padding: 16px 52px 16px 16px; }
+html.g-mobile #app #reading .fr-hd-cont { padding-left: 16px; padding-right: 52px; }
+html.g-mobile #app #reading .fr-hd-arg.fr-hd-cont { padding-left: 32px; background-position: 16px 2px, 0 0; }
+
+/* A phone shows the two languages stacked inside each row (Latin, then
+   English), so a heading row's Latin box and the next row's Latin line
+   are not neighbours: each heading closes its own box, and the line under
+   it is set plain. Horizontal margins are never set in this block: the
+   engine centres an h3 in its row with margin-inline:auto. */
+html.g-mobile #app:not(.only-en):not(.only-la) #reading .fr-hd.fr-hd-card.fr-hd-open {
+  border-bottom-width: 1px;
+  border-radius: 3px;
+  padding-bottom: 16px;
+  margin-bottom: 0.8em !important;
+}
+html.g-mobile #app:not(.only-en):not(.only-la) #reading .fr-hd-cont {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+html.g-mobile #app:not(.only-en):not(.only-la) #reading .fr-hd-arg.fr-hd-cont {
+  border-left: 2px solid var(--fr-ink-hot, var(--color-secondary, #c1593c));
+  padding-left: 1em;
+}
+/* Sepia's page is darker than light's: the terracotta eyebrow measured
+   4.27:1 on it (4.87:1 in a card). A step toward the house dark brings the
+   eyebrow over 4.5:1 on both without leaving the terracotta. */
+:root[data-theme="sepia"] #app #reading .fr-hd .fr-hd-eye,
+:root[data-theme="sepia"] #app #reading .fr-hd-sublabel {
+  color: color-mix(in srgb, var(--fr-ink-hot, #c1593c) 86%, var(--color-dark, #2d2927));
 }
 
 /* ── AA: READING AIDS AT THE TOP (Ian, 2026-09-24) ─────────────────────
