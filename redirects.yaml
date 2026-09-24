@@ -419,3 +419,10 @@
 - from: ^/llms\.txt$
   to: /assets/llms.txt
   permanent: true
+
+# ── The Faith Received: Browse became Curated (2026-09-24) ───────────
+# Ian: "Change the URL of this page to /curated". Query strings and the
+# #traditions fragment carry across.
+- from: ^/the-faith-received/browse/?$
+  to: /the-faith-received/curated/
+  permanent: true

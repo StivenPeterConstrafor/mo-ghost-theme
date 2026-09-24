@@ -56,7 +56,7 @@
       if (!ids.length) {
         list.innerHTML =
           `<p class="faith-saved-empty">Nothing saved yet. ` +
-          `<a href="/the-faith-received/browse/">Browse the library</a> and use Save on any work.</p>`;
+          `<a href="/the-faith-received/curated/">Browse the library</a> and use Save on any work.</p>`;
         return null;
       }
       return render(ids);

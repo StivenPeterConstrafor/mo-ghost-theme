@@ -201,7 +201,7 @@
       `<p class="bookmarks-empty-note">Use the bookmark on any work in the library, or the ` +
       `Bookmark button at the foot of a section while you are reading. It will appear here with ` +
       `the collection it came from and a link straight back to it.</p>` +
-      `<p class="bookmarks-empty-act"><a class="bookmarks-empty-link" href="/the-faith-received/browse/">Browse the library</a></p>` +
+      `<p class="bookmarks-empty-act"><a class="bookmarks-empty-link" href="/the-faith-received/curated/">Browse the library</a></p>` +
       `</div>`;
   }
 

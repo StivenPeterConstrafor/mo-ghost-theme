@@ -95,7 +95,7 @@
   let works = [];
   let tradition = params.get("tradition") || "";
   let denomination = params.get("denomination") || "";
-  // /the-faith-received/browse/ has shipped ?denomination=Reformed since
+  // /the-faith-received/curated/ has shipped ?denomination=Reformed since
   // the shelf cards were written, and it means the continental Reformed.
   // This once sent the reader to tradition=Continental Reformed, which
   // worked only while that value was orphaned at the top level; it is a
@@ -397,7 +397,7 @@
     // Protestant works. An older link naming it as a DENOMINATION means
     // the same shelf, so it lands there too. "Reformed" meant the
     // continental Reformed and has to keep meaning it —
-    // /the-faith-received/browse/ has shipped that link since the shelf
+    // /the-faith-received/curated/ has shipped that link since the shelf
     // cards were written.
     //
     // A tradition or denomination of Puritan or Anglican was, in the

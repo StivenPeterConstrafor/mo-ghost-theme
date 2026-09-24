@@ -336,7 +336,7 @@
       `<p class="notebook-empty-lede">Nothing in the notebook yet.</p>` +
       `<p class="notebook-empty-note">Open a work in the reader and select any passage. ` +
       `Choose Save to notebook and it is kept here, with its citation and a link back to the exact block.</p>` +
-      `<p class="notebook-empty-act"><a class="notebook-empty-link" href="/the-faith-received/browse/">Browse the library</a></p>` +
+      `<p class="notebook-empty-act"><a class="notebook-empty-link" href="/the-faith-received/curated/">Browse the library</a></p>` +
       `</div>`;
   }
 

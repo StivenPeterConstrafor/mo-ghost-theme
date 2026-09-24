@@ -314,6 +314,13 @@ routes:
   # so an old bookmark lands on the same page rather than a 404.
   /the-faith-received/library/:
     template: custom-faith-centuries
+  # The Curated page (was /browse/; Ian, 2026-09-24: "Change the URL of this
+  # page to /curated"). Every link in the theme points here. /browse/ stays
+  # as a route so an old link still lands on the page if the redirect below
+  # (redirects.yaml, uploaded separately) is not in place; with it in place
+  # the redirect answers first.
+  /the-faith-received/curated/:
+    template: custom-faith-browse
   /the-faith-received/browse/:
     template: custom-faith-browse
   # The research desk, ported from the corpus owner's own site (2026-09-10)

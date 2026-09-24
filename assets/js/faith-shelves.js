@@ -24,7 +24,7 @@
  * plus these seven) live in one place: v1/mine/constellations/index.json.
  *
  * The nine top-level traditions already have a home — the "By
- * tradition" band on /the-faith-received/browse/, and the tradition /
+ * tradition" band on /the-faith-received/curated/, and the tradition /
  * denomination filters every room page offers via faith-room.js. This
  * module does not repeat them. It only gives the seven finer groups —
  * genuinely new browsing, not reachable any other way today — a card
@@ -213,7 +213,7 @@
 
   const ORDER = ["puritan", "anglican", "westminster-assembly", "jesuits", "franciscans", "dominicans", "augustinians"];
 
-  // ── The grid on /the-faith-received/browse/ ─────────────────────
+  // ── The grid on /the-faith-received/curated/ ─────────────────────
   function renderGrid() {
     grid.innerHTML = '<p class="faith-room-status">Loading&hellip;</p>';
     getJSON("/v1/mine/constellations/index.json").then((d) => {
