@@ -3493,3 +3493,15 @@ html.g-mobile #app #reading h3.fr-hd-promoted.fr-hd-in-card .fr-hd-title { font-
 html.g-mobile #app #reading .fr-hd-t2 .fr-hd-title,
 html.g-mobile #app #reading .fr-hd-promoted.fr-hd-in-t2:not(h3),
 html.g-mobile #app #reading h3.fr-hd-promoted.fr-hd-in-t2 .fr-hd-title { font-size: 1.04em; }
+
+/* Label-driven chapters (faith-port-read-contents-overlay.js): the
+   column a chapter starts on, and any verse reference printed with its
+   label, under the entry. */
+#nav .nav-node .nn-col {
+  display: block;
+  flex-basis: 100%;
+  margin: 1px 0 0 1.6rem;
+  font-size: 0.78em;
+  font-style: italic;
+  color: var(--muted, #7a6f63);
+}

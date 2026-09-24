@@ -414,7 +414,7 @@
     [/^(?:question|quaestio|q)$/i, "q"],
     [/^(?:article|articulus|art)$/i, "art"],
     [/^(?:letter|epist(?:le|ola)|ep)$/i, "ep"],
-    [/^(?:dissertatio|tract(?:atus|ate)?|lectio|distinctio|dist|λόγος|λογος|oratio)$/i, "div"],
+    [/^(?:dissertatio|discourse|tract(?:atus|ate)?|lectio|distinctio|dist|λόγος|λογος|oratio)$/i, "div"],
   ];
   const WORDNUM = "one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty".split(" ");
   function numOf(t) {
@@ -454,7 +454,11 @@
     let n = 0;
     for (const row of folio.querySelectorAll(":scope > .row")) {
       if (claimed && claimed.has(row)) continue;
-      const lanes = [...row.querySelectorAll(":scope > :is(.en, .la), :scope > :is(.en, .la) > :is(h3, p):first-child")];
+      // Any paragraph of the row may carry the label: a homily can begin
+      // in the middle of a row that opens on the last lines of the one
+      // before (po-327, Homily V). The fold then starts at that row and
+      // hides only what follows it, so nothing before the label is hidden.
+      const lanes = [...row.querySelectorAll(":scope > :is(.en, .la, .gr), :scope > :is(.en, .la, .gr) > :is(h3, p), :scope > p")];
       const texts = (lanes.length ? lanes : [row]).map((el) => (el.textContent || "").slice(0, 120));
       if (!texts.some((t) => labelKey(t) === want)) continue;
       if (!row.getClientRects().length) continue;

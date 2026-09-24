@@ -168,11 +168,180 @@
     return out;
   }
 
+  /* CHAPTERS FROM PRINTED LABELS, for any work whose only contents are
+     its pages or columns (Ian, 2026-09-24, on Jerome's Matthew: the
+     inline "[ Cap. I. I, 3.]" labels ARE the chapters, and "that needs
+     to be a rule across all works that are like this").
+
+     THE RULE, decided from the text as rendered, never from a list:
+     - the work has no outline of its own (DATA.structure empty), so its
+       sidebar would list only columns or pages, and is not a confession;
+     - at least 3 paragraphs OPEN on a division label and number, in
+       brackets ("[ Cap. II.]"), in capitals ("CAPUT XIII.", "HOMILY
+       IV", "ΚΕΦΑΛΑΙΟΝ Β΄."), or title-cased and ending on a stop
+       ("Chapter IV."), with the numbers rising in order at least twice.
+       A lowercase citation ("cf. cap. VI.") is never a label.
+     Such a work is drawn through the confession contents path (the
+     engine's renderConfessionContents, reached by answering
+     isConfession), with one entry per label: "Chapter I", book-level
+     labels as parents. Only the chapter number makes the entry; a
+     verse reference after it ("I, 3" in "Cap. I. I, 3.") is detail, not
+     an entry. The page box still reaches every column.
+     faith-reader-folds.js folds on the same rows (its label resolver
+     reads "Chapter I" and "[ Cap. I" as the same chapter), so folding
+     chapter N hides what the chapter N entry covers. */
+  const LKIND = [
+    [/^(?:chap(?:ter)?|cap(?:ut|itulum)?|κεφ(?:άλαιον|αλαιον)?)$/i, "Chapter", 2],
+    [/^(?:book|booke|lib(?:er)?)$/i, "Book", 1],
+    [/^(?:part|pars)$/i, "Part", 1],
+    [/^(?:homil(?:y|ia)|ὁμιλία|ομιλια)$/i, "Homily", 2],
+    [/^(?:sermon|sermo)$/i, "Sermon", 2],
+    [/^(?:question|quaestio)$/i, "Question", 2],
+    [/^(?:article|articulus|art)$/i, "Article", 2],
+    [/^(?:letter|epist(?:le|ola))$/i, "Letter", 2],
+    [/^(?:tract(?:atus|ate)?)$/i, "Tractate", 2],
+    [/^(?:dissertatio)$/i, "Discourse", 2],
+    [/^(?:λόγος|λογος)$/i, "Discourse", 2],
+  ];
+  const ORDW = { primus: 1, prima: 1, primum: 1, secundus: 2, secunda: 2, secundum: 2, tertius: 3, tertia: 3, tertium: 3, quartus: 4, quarta: 4, quartum: 4, quintus: 5, quinta: 5, quintum: 5, sextus: 6, sexta: 6, septimus: 7, septima: 7, octavus: 8, octava: 8, nonus: 9, nona: 9, decimus: 10, decima: 10, first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10 };
+  const GREEK = { α: 1, β: 2, γ: 3, δ: 4, ε: 5, ϛ: 6, ζ: 7, η: 8, θ: 9, ι: 10, κ: 20, λ: 30, μ: 40, ν: 50, ξ: 60, ο: 70, π: 80, ρ: 100 };
+  function lnum(t) {
+    const w = String(t).replace(/[.ʹ΄']+$/, "");
+    if (/^\d+$/.test(w)) return Number(w);
+    if (/^[IVXLCDM]+$/.test(w)) {
+      const v = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };
+      let n = 0;
+      for (let k = 0; k < w.length; k += 1) { const x = v[w[k]]; const y = v[w[k + 1]] || 0; n += x < y ? -x : x; }
+      return n;
+    }
+    if (ORDW[w.toLowerCase()]) return ORDW[w.toLowerCase()];
+    if (/^[Α-Ωα-ω]{1,4}$/.test(w)) {
+      let n = 0;
+      for (const ch of w.toLowerCase()) { if (!GREEK[ch]) return null; n += GREEK[ch]; }
+      return n;
+    }
+    return null;
+  }
+  const ROMAN = (n) => {
+    let out = "";
+    [[1000, "M"], [900, "CM"], [500, "D"], [400, "CD"], [100, "C"], [90, "XC"], [50, "L"], [40, "XL"], [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]]
+      .forEach(([v, r]) => { while (n >= v) { out += r; n -= v; } });
+    return out;
+  };
+  const LNUM = "([IVXLCDM]+|\\d+|[Α-Ω]{1,4}[ʹ΄']|[A-Za-z]+)";
+  const LABEL_FORMS = [
+    new RegExp(`^\\s*\\[\\s*([A-Za-z]+)\\.?\\s*${LNUM}\\.?([^\\]\\n]{0,40})\\]`),
+    new RegExp(`^\\s*(CAPUT|CAPITULUM|CAP|CHAPTER|CHAP|HOMILY|HOMILIA|SERMO|SERMON|LIBER|BOOK|DISSERTATIO|ARTICULUS|ARTICLE|QUAESTIO|QUESTION|EPISTOLA|EPISTLE|TRACTATUS|ΚΕΦΑΛΑΙΟΝ|ΛΟΓΟΣ|ΟΜΙΛΙΑ)\\.?\\s+${LNUM}\\.?()(?=[\\s!:,;—–-]|$)`, "u"),
+    new RegExp(`^\\s*(Caput|Capitulum|Chapter|Chap|Cap|Homily|Homilia|Sermo|Liber|Book|Article|Articulus|Quaestio|Dissertatio)\\.?\\s+([IVXLCDM]+|\\d+)(?:\\.|:|\\s*[—–]|(?=\\s*$))()`),
+  ];
+  function labelOf(text) {
+    for (const re of LABEL_FORMS) {
+      const m = re.exec(text);
+      if (!m) continue;
+      const kind = LKIND.find(([k]) => k.test(m[1]));
+      const n = kind ? lnum(m[2]) : null;
+      if (!kind || !n) continue;
+      return { name: kind[1], depth: kind[2], n, detail: clean(m[3] || "").replace(/^[.,\s]+|[.,\s]+$/g, "") };
+    }
+    return null;
+  }
+  let lcache = null;
+  function labelRows(reading) {
+    const rows = reading.querySelectorAll(".folio > .row[id]");
+    if (lcache && lcache.n === rows.length && lcache.reading === reading) return lcache.out;
+    const found = [];
+    rows.forEach((row) => {
+      if (row.matches(".rhead") || row.closest(".pld-editorial")) return;
+      const page = (/^b(.+)-\d+$/.exec(row.id) || [])[1];
+      if (page == null) return;
+      const ps = row.querySelectorAll(":scope > :is(.en, .la, .gr) > p, :scope > p");
+      for (const p of ps) {
+        const lab = labelOf((p.textContent || "").slice(0, 120));
+        if (lab) { found.push({ row, page, ...lab }); break; }
+      }
+    });
+    let rises = 0;
+    const last = new Map();
+    found.forEach((f) => {
+      const prev = last.get(f.name);
+      if (prev != null && f.n > prev) rises += 1;
+      last.set(f.name, f.n);
+    });
+    const ok = found.length >= 3 && rises >= 2;
+    const books = found.some((f) => f.depth === 1);
+    const pre = /^pld-/.test(slug()) ? "col." : "p.";
+    const out = ok ? found.map((f) => ({
+      title: `${f.name} ${ROMAN(f.n)}`,
+      page: f.page,
+      anchor: f.row.id,
+      depth: books ? f.depth : 1,
+      element: f.row,
+      frDetail: f.detail,
+      frCol: `${pre} ${f.page}`,
+    })) : [];
+    lcache = { n: rows.length, reading, out };
+    return out;
+  }
+  function data() {
+    try { return typeof DATA !== "undefined" ? DATA : null; } catch (_) { return null; }
+  }
+  const baseConf = api.isConfession;
+  function labelWork(d) {
+    if (!d || (Array.isArray(d.structure) && d.structure.length)) return false;
+    const reading = document.getElementById("reading");
+    return !!reading && labelRows(reading).length >= 3;
+  }
+  if (typeof baseConf === "function") {
+    api.isConfession = function (d) {
+      if (baseConf.call(this, d)) return true;
+      try { return labelWork(d); } catch (_) { return false; }
+    };
+  }
+
+  // The starting column beside each chapter entry, and its verse detail.
+  const byAnchor = new Map();
+  function decorate() {
+    const nav = document.getElementById("nav");
+    if (!nav || !byAnchor.size) return;
+    nav.querySelectorAll(".nav-node a.nn-t:not([data-fr-col])").forEach((a) => {
+      let h = "";
+      try { h = decodeURIComponent(new URL(a.href, window.location.href).hash.slice(1)); } catch (_) { h = ""; }
+      const r = byAnchor.get(h);
+      if (!r) return;
+      a.dataset.frCol = "1";
+      const sp = document.createElement("span");
+      sp.className = "nn-col";
+      sp.textContent = r.frDetail ? `${r.frCol} · ${r.frDetail}` : r.frCol;
+      a.after(sp);
+    });
+  }
+  let watching = false;
+  function watchNav() {
+    const nav = document.getElementById("nav");
+    if (!nav || watching) return;
+    watching = true;
+    if (window.MutationObserver) new MutationObserver(decorate).observe(nav, { childList: true, subtree: true });
+  }
+  document.addEventListener("DOMContentLoaded", () => { watchNav(); decorate(); });
+
   const base = api.contents;
   api.contents = function (...args) {
     const [reading] = args;
     const rows = base.apply(this, args);
     const rule = RULES[slug()];
+    if (!rule && reading) {
+      try {
+        const d = data();
+        if (d && !baseConf.call(api, d) && labelWork(d)) {
+          const out = labelRows(reading);
+          byAnchor.clear();
+          out.forEach((r) => byAnchor.set(r.anchor, r));
+          // The engine draws the entries right after this returns.
+          window.setTimeout(() => { watchNav(); decorate(); }, 0);
+          return out;
+        }
+      } catch (_) { return rows; }
+    }
     if (!rule || !reading) return rows;
     try { return overlay(rows, reading, rule); } catch (_) { return rows; }
   };
