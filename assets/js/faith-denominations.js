@@ -53,9 +53,15 @@
 (function () {
   "use strict";
 
-  const URL_ = (window.moAssetUrl
+  // The table is data, not code: it is rebuilt and redeployed without a
+  // theme version bump, and the versioned URL is cached for a year, so a
+  // corrected table took the old label to readers for hours (the Westminster
+  // Assembly stayed "Anglican" six hours after the fix reached the server,
+  // 2026-09-24). An hourly key on top of the theme version bounds that.
+  const HOUR = Math.floor(Date.now() / 3600000);
+  const URL_ = `${window.moAssetUrl
     ? window.moAssetUrl("/assets/data/faith-received/denominations.json")
-    : "/assets/data/faith-received/denominations.json");
+    : "/assets/data/faith-received/denominations.json"}${window.moAssetUrl ? "&" : "?"}h=${HOUR}`;
 
   // Display order for the facet. Not by how much sits in each: a
   // reader scanning for his own church finds it faster in an order
