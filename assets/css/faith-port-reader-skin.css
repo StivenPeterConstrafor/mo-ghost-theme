@@ -2784,3 +2784,109 @@ html:not(.g-mobile).fr-bar-hidden .fr-read-toc { top: 0; }
   font-weight: 500;
 }
 .fr-read-toc-grid > .fr-read-toc-part:first-child { margin-top: 0; }
+
+/* ── THE CONTENTS SIDEBAR, THIN-LINE (Ian, 2026-09-23) ───────────────
+   "Redo this sidebar to be in line with our new design style." Same
+   pieces, the toolbar's grammar:
+   - Expand contents is a hairline button, not a caption;
+   - the Outline / Pages / Index / Library tabs are one joined group,
+     the open tab filled, as the Research panel's tabs are;
+   - the search field is a hairline box and Expand all / Collapse all /
+     Show current a joined row of small buttons instead of underlined
+     words;
+   - the entry count is a small-caps note, and entries are set a size
+     down with room between them. Desktop; the phone's drawer keeps its
+     48px targets. */
+html:not(.g-mobile) #app aside.sidebar {
+  --sb-line: var(--border, #d9c6a7);
+  --sb-fill: var(--fr-fill, #b0573a);
+  --sb-fill-ink: var(--fr-fill-ink, #fff);
+}
+html:not(.g-mobile) #app aside.sidebar .fr-sb-actions { padding: 14px 16px 0; }
+html:not(.g-mobile) #app aside.sidebar .fr-sb-actions .fr-read-fold {
+  width: 100%;
+  height: 32px;
+  border: 1px solid var(--sb-line);
+  border-radius: 3px;
+  background: var(--card, #fffdfa);
+  color: var(--fg);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  padding: 0 12px;
+}
+html:not(.g-mobile) #app aside.sidebar .fr-sb-actions .fr-read-fold:hover { border-color: var(--sb-fill); color: var(--sb-fill); }
+html:not(.g-mobile) #app aside.sidebar #nav .nav-vt {
+  gap: 0;
+  margin: 12px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--sidebar-bg, var(--sidebar));
+}
+html:not(.g-mobile) #app aside.sidebar #nav .nav-vt button {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 30px;
+  padding: 0 4px;
+  border: 1px solid var(--sb-line);
+  border-radius: 0;
+  background: var(--card, #fffdfa);
+  color: var(--fg);
+  font: 12.5px/1 var(--font-body, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0;
+  box-shadow: none;
+}
+html:not(.g-mobile) #app aside.sidebar #nav .nav-vt button + button { margin-left: -1px; }
+html:not(.g-mobile) #app aside.sidebar #nav .nav-vt button:first-child { border-radius: 3px 0 0 3px; }
+html:not(.g-mobile) #app aside.sidebar #nav .nav-vt button:last-child { border-radius: 0 3px 3px 0; }
+html:not(.g-mobile) #app aside.sidebar #nav .nav-vt button:hover:not(.on) { border-color: var(--sb-fill); color: var(--sb-fill); position: relative; z-index: 1; }
+html:not(.g-mobile) #app aside.sidebar #nav .nav-vt button.on {
+  background: var(--sb-fill);
+  border-color: var(--sb-fill);
+  color: var(--sb-fill-ink);
+  position: relative;
+  z-index: 2;
+}
+html:not(.g-mobile) #app aside.sidebar #nav .rc-contents-tools {
+  padding: 12px 0 12px;
+  margin: 0 0 10px;
+  border-bottom: 1px solid var(--sb-line);
+}
+html:not(.g-mobile) #app aside.sidebar #nav .rc-contents-label input {
+  min-height: 0;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--sb-line);
+  border-radius: 3px;
+  background: var(--card, #fffdfa);
+  font-size: 14px;
+}
+html:not(.g-mobile) #app aside.sidebar #nav .rc-contents-label input:focus-visible { outline: none; border-color: var(--sb-fill); }
+html:not(.g-mobile) #app aside.sidebar #nav .rc-contents-actions { gap: 0; flex-wrap: nowrap; margin-top: 8px; }
+html:not(.g-mobile) #app aside.sidebar #nav .rc-contents-actions button {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--sb-line);
+  border-radius: 0;
+  background: var(--card, #fffdfa);
+  color: var(--fg);
+  font-size: 12px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+html:not(.g-mobile) #app aside.sidebar #nav .rc-contents-actions button + button { margin-left: -1px; }
+html:not(.g-mobile) #app aside.sidebar #nav .rc-contents-actions button:first-child { border-radius: 3px 0 0 3px; }
+html:not(.g-mobile) #app aside.sidebar #nav .rc-contents-actions button:last-child { border-radius: 0 3px 3px 0; }
+html:not(.g-mobile) #app aside.sidebar #nav .rc-contents-actions button:hover:not(:disabled) { border-color: var(--sb-fill); color: var(--sb-fill); position: relative; z-index: 1; }
+html:not(.g-mobile) #app aside.sidebar #nav .rc-contents-actions button:disabled { color: var(--muted); opacity: 0.6; }
+html:not(.g-mobile) #app aside.sidebar #nav .rc-contents-count {
+  margin: 10px 0 0;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+html:not(.g-mobile) #app aside.sidebar #nav .nav-node .nn-t { font-size: 14px; line-height: 1.4; }
+html:not(.g-mobile) #app aside.sidebar #nav .nav-node { padding-top: 5px; padding-bottom: 5px; }
