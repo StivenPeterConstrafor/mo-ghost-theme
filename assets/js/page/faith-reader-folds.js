@@ -190,15 +190,23 @@
   }
 
   /* The outline as the reader drew it. Depth comes from the nd1..nd5
-     class renderOutline writes after harmonising sibling ranks. */
+     class renderOutline writes after harmonising sibling ranks. The title
+     is the engine's own: faith-port-read-toc-titles.js rewrites what the
+     entry shows ("Chap. VIII. The Second general Rule proposed") and
+     keeps the engine's text on data-fr-title-original, which is what the
+     heading resolvers below were written against. */
   function entries() {
     if (!nav) return [];
-    return [...nav.querySelectorAll(".nav-node")].map((n) => ({
-      i: Number(n.dataset.idx),
-      page: String(n.dataset.page || ""),
-      depth: Number(((n.className.match(/\bnd(\d)\b/) || [])[1]) || 1),
-      title: ((n.querySelector(".nn-t") || n).textContent || "").trim(),
-    })).filter((e) => Number.isFinite(e.i) && e.page);
+    return [...nav.querySelectorAll(".nav-node")].map((n) => {
+      const t = n.querySelector(".nn-t") || n;
+      const own = t.dataset ? t.dataset.frTitleOriginal : null;
+      return {
+        i: Number(n.dataset.idx),
+        page: String(n.dataset.page || ""),
+        depth: Number(((n.className.match(/\bnd(\d)\b/) || [])[1]) || 1),
+        title: String(own != null ? own : (t.textContent || "")).trim(),
+      };
+    }).filter((e) => Number.isFinite(e.i) && e.page);
   }
 
   /* jump()'s own fallback, kept word for word in its thresholds: when
