@@ -449,6 +449,54 @@
     if ((!a || !b) && tries > 0) window.setTimeout(() => hook(tries - 1), 250);
   }(40));
 
+  /* Expand all / Collapse all, for the toolbar (Ian, 2026-09-23).
+     faith-port-read-chrome.js owns the button; this owns the state.
+     Collapse all folds every book and chapter and closes the editorial
+     notes. Expand all opens every book and chapter and leaves the notes
+     as they are: closed is their default by Ian's call (see the top of
+     this file), and each has its own toggle. The section the reader is
+     in stays on screen, or its nearest visible parent does. */
+  const changed = () => {
+    try { document.dispatchEvent(new CustomEvent("fr-folds-change")); } catch (_) { /* old engine */ }
+  };
+  document.addEventListener("click", (e) => {
+    if (e.target.closest && e.target.closest(".fr-sec-toggle")) window.setTimeout(changed, 0);
+  });
+  function sectionHere() {
+    const sc = document.getElementById("scroll");
+    const line = (sc ? sc.getBoundingClientRect().top : 0) + 120;
+    let here = null;
+    document.querySelectorAll("#reading [data-fr-sec]").forEach((h) => {
+      const r = h.getBoundingClientRect();
+      if (r.height && r.top <= line) here = h;
+    });
+    return here ? Number(here.dataset.frSec) : null;
+  }
+  window.FRReaderFolds = {
+    anyOpen() {
+      const list = entries();
+      return !list.length || list.some((e) => !collapsed.has(e.i));
+    },
+    setAll(open) {
+      const here = sectionHere();
+      const list = entries();
+      collapsed = open ? new Set() : new Set(list.map((e) => e.i));
+      saveCollapsed();
+      if (!open) {
+        document.querySelectorAll('#reading .fr-fold-toggle[aria-expanded="true"]').forEach((b) => b.click());
+      }
+      apply();
+      if (here !== null) {
+        let target = null;
+        document.querySelectorAll("#reading [data-fr-sec]").forEach((h) => {
+          if (Number(h.dataset.frSec) <= here && h.getClientRects().length) target = h;
+        });
+        if (target) target.scrollIntoView({ block: "start" });
+      }
+      changed();
+    },
+  };
+
   const readingEl = document.querySelector("#reading");
   if (readingEl && nav) {
     try {

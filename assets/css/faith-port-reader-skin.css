@@ -421,16 +421,29 @@ aside.relpanel {
    rail takes the space with them rather than leaving a band of nothing
    where the toolbar used to be. */
 @media (min-width: 1100px) {
-  html.fr-research-docked #notebook {
+  /* The docked top is the panel's top whether or not it is open yet.
+     read-tools.js adds .open and html.fr-research-docked in the same
+     frame, so a top that waited for the docked class started the slide
+     at the masthead's line and then eased down 65px to the toolbar's
+     (Ian, 2026-09-23: "sliding in tall and then popping down"). Closed,
+     the panel is off screen, so where its top sits costs nothing.
+     `html #notebook.notebook` is (1,1,1), level with the port's docked
+     rule and later. The top still eases when the bars scroll away. */
+  html #notebook.notebook {
     top: calc(var(--mo-head, 61px) + var(--phh, 64px));
     transition: transform .18s ease-out, top .28s var(--ease, ease);
   }
-  html.fr-research-docked.mh-hide #notebook,
-  html.fr-research-docked.mh-mini #notebook {
+  /* The masthead scrolls away and the reader's toolbar stays (see the
+     pinned toolbar at the end of this file): the rail sits under it. */
+  html.mh-hide #notebook.notebook,
+  html.mh-mini #notebook.notebook {
+    top: var(--phh, 64px);
+  }
+  html.fr-bar-hidden #notebook.notebook {
     top: env(safe-area-inset-top, 0px);
   }
   @media (prefers-reduced-motion: reduce) {
-    html.fr-research-docked #notebook { transition: transform .18s ease-out; }
+    html #notebook.notebook { transition: transform .18s ease-out; }
   }
 }
 
@@ -1855,38 +1868,57 @@ html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pnav > button + button {
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pgjump { border-right: 1px solid var(--tb-line) !important; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pnav { padding: 0; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pnav > button { padding: 0 11px; }
-/* order: page | read in | view | tools | research */
+/* order: page | read in | view | settings, tools, report | research | top
+   (Ian, 2026-09-23: Aa beside Tools, Report a problem out of the Aa menu
+   on Tools' other side, Collapse all in the view group, Top far right) */
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pnav { order: 1; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pgjump { order: 2; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes { order: 3; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rdFlow { order: 4; }
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rsBtn { order: 5; }
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .aaw:not(.rdtw) { order: 6; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-folds { order: 5; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rsBtn { order: 6; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #thTop { order: 7; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-focus { order: 8; }
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw { order: 9; }
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #frAuth { order: 10; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .aaw:not(.rdtw) { order: 9; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw { order: 10; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-report { order: 11; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #frAuth { order: 12; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-top { order: 13; }
 /* joins: members after the first overlap by the hairline */
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pgjump,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-folds,
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rsBtn,
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .aaw:not(.rdtw),
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #thTop,
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-focus { margin-left: -1px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-focus,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-report { margin-left: -1px; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes { gap: 0; margin-left: 16px; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes > button + button { margin-left: -1px; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rdFlow,
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw,
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #frAuth { margin-left: 16px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .aaw:not(.rdtw),
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #frAuth,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-top { margin-left: 16px; }
 /* group corners */
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pnav,
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes > button:first-child,
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rdFlow { border-radius: 3px 0 0 3px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rdFlow,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .aaw:not(.rdtw) > .tgl { border-radius: 3px 0 0 3px; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pgjump,
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes > button:last-child,
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-focus { border-radius: 0 3px 3px 0; }
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw > .tgl,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-focus,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-report { border-radius: 0 3px 3px 0; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw > .tgl { border-radius: 0; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-top,
 html:not(.g-mobile) #app .ph.fr-reader-head #nbCount,
 html:not(.g-mobile) #app .ph.fr-reader-head .phl > .sbt { border-radius: 3px; }
+/* The lens is drawn (faith-port-read-chrome.js); a square box, centred. */
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rsBtn { width: var(--tb-h); padding: 0; justify-content: center; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rsBtn > .fr-tb-lens { display: block; flex: none; }
+/* Report a problem has its own button here; the Aa row is for phones. */
+html:not(.g-mobile) #app .ph.fr-reader-head #aaPop .aarow-report { display: none; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-report,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-top,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-folds { white-space: nowrap; cursor: pointer; }
 /* the one accented control */
 html:not(.g-mobile) #app .ph.fr-reader-head #nbCount { border-color: var(--fr-ink-hot, #b0573a); color: var(--fr-ink-hot, #b0573a); }
 /* the source row: the same joined group */
@@ -1911,9 +1943,12 @@ html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rsBtn { margin-right: 0; }
 html:not(.g-mobile) #app.only-en .ph.fr-reader-head .ctr > .seg.lanes > #m-en { border-color: transparent; background: transparent; margin-right: 6px; padding: 0 4px; }
 html:not(.g-mobile) #app.only-en .ph.fr-reader-head .ctr > .seg.lanes > #m-en + button { margin-left: 0; border-radius: 3px 0 0 3px; }
 /* Hover and chosen keep the terracotta steps of the boxed toolbar. */
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-focus:hover { border-color: var(--fr-ink-hot, #b0573a); color: var(--fr-ink-hot, #b0573a); position: relative; z-index: 1; }
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-focus { cursor: pointer; font: inherit; font-size: 13px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > :is(.fr-tb-focus, .fr-tb-report, .fr-tb-top, .fr-tb-folds):hover { border-color: var(--fr-ink-hot, #b0573a); color: var(--fr-ink-hot, #b0573a); position: relative; z-index: 1; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > :is(.fr-tb-focus, .fr-tb-report, .fr-tb-top, .fr-tb-folds) { cursor: pointer; font: inherit; font-size: 13px; }
 html.g-mobile .fr-tb-focus,
+html.g-mobile .fr-tb-report,
+html.g-mobile .fr-tb-top,
+html.g-mobile .fr-tb-folds,
 html.g-mobile .fr-sb-actions { display: none !important; }
 
 /* Expand contents: a quiet button at the top of the contents sidebar. */
@@ -2017,3 +2052,257 @@ html.fr-bar-hidden .fr-read-toc { top: 0; }
 }
 html.g-mobile .fr-read-restore,
 html.g-mobile .fr-read-toc { display: none !important; }
+
+/* ── THE TOOLBAR STAYS WHEN THE MASTHEAD GOES (Ian, 2026-09-23) ──────
+   "on scroll down, when the Mere O menu bar goes away, can you have the
+   reader toolbar stick to the top of the screen instead of disappearing?"
+   Desktop only: on a phone the thumb bar is the reader's controls and
+   the head still leaves. Scrolling down (html.mh-mini) takes our
+   masthead away as before; the reader's toolbar rises by the masthead's
+   height, to the top of the screen, instead of by its own as well. #app
+   keeps the toolbar's padding so the text starts under it. The port's
+   mini bar hides the title (read.in01.css `html.mh-mini .ph h1`); here
+   it stays, so the bar does not change shape as it pins. Hide bar
+   (html.fr-bar-hidden) still takes everything away. */
+html.mh-mini:not(.g-mobile):not(.fr-bar-hidden) #app .ph.fr-reader-head,
+html.mh-hide:not(.g-mobile):not(.fr-bar-hidden) #app .ph.fr-reader-head {
+  transform: translateY(calc(-1 * var(--mo-head, 61px)));
+}
+html.mh-mini:not(.g-mobile):not(.fr-bar-hidden) #app,
+html.mh-hide:not(.g-mobile):not(.fr-bar-hidden) #app {
+  padding-top: var(--phh, 64px);
+}
+html.mh-mini:not(.g-mobile) #app .ph.fr-reader-head h1 { display: block; }
+
+/* ── THE RESEARCH PANEL, THIN-LINE (Ian, 2026-09-23) ─────────────────
+   "refine the Research sidebar on the reader with the new design." The
+   cards above gave it the room's boxes; its controls still spoke the
+   older system, every button an ink outline and the one CTA filled
+   solid. Now they speak the toolbar's:
+   - the five tabs are one joined group, the open tab filled;
+   - every button is a tan hairline on the card, 3px corners, the TFR
+     hover sweep kept (its :hover rules outrank these);
+   - the work's three doors (Search, Ask, Edition details) are one ruled
+     list, and Save work / Save reading place one joined pair, filled
+     only when the work is saved, so filled always means "on";
+   - fields are hairline boxes, and the search field and its button join;
+   - the head and the foot links take the quiet small caps of the
+     contents sidebar's Expand contents.
+   `html #notebook …` selectors are (1,1,2) and up, one element past the
+   TFR BUTTON block's (1,1,1) in faith-received.css, whichever file
+   loads last. */
+#notebook { --nbx-h: 34px; --nbx-fill: var(--tfr-btn, var(--color-secondary, #c1593c)); --nbx-fill-ink: var(--tfr-btn-ink, #fff); }
+
+/* head */
+html #notebook .nb-head {
+  min-height: 0;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--nbx-line);
+  font: 500 11px/1.2 var(--font-body, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted, #6b6660);
+}
+html #notebook .nb-head .nb-x {
+  width: 30px;
+  height: 30px;
+  min-height: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--nbx-line);
+  border-radius: 3px;
+  background: var(--nbx-card);
+  color: var(--fg);
+  font: 18px/1 var(--font-body, Georgia, serif);
+  letter-spacing: 0;
+  padding: 0 0 2px;
+}
+html #notebook .nb-head .nb-x:hover { border-color: var(--nbx-fill); color: var(--nbx-fill); }
+
+/* tabs: one joined group */
+html #notebook .nb-tabs {
+  gap: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--nbx-line);
+  overflow: visible;
+}
+html #notebook .nb-tabs button {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  height: 32px;
+  padding: 0 6px;
+  border: 1px solid var(--nbx-line);
+  border-radius: 0;
+  background: var(--nbx-card);
+  color: var(--fg);
+  font: 13px/1 var(--font-body, Georgia, serif);
+  white-space: nowrap;
+}
+html #notebook .nb-tabs button + button { margin-left: -1px; }
+html #notebook .nb-tabs button:first-child { border-radius: 3px 0 0 3px; }
+html #notebook .nb-tabs button:last-child { border-radius: 0 3px 3px 0; }
+html #notebook .nb-tabs button:hover { border-color: var(--nbx-fill); color: var(--nbx-fill); position: relative; z-index: 1; }
+html #notebook .nb-tabs button[aria-selected="true"] {
+  background: var(--nbx-fill);
+  border-color: var(--nbx-fill);
+  color: var(--nbx-fill-ink);
+  position: relative;
+  z-index: 2;
+}
+html #notebook .nb-tabs button::after { content: none; }
+
+/* the notebook picker */
+html #notebook .nb-project { padding: 10px 16px 12px; gap: 12px; align-items: end; }
+html #notebook .nb-project label {
+  font: 500 10.5px/1.2 var(--font-body, Georgia, serif);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted, #6b6660);
+}
+html #notebook :is(#nbProjectPick, #nbSearch, #nbWorkSearchQuery) {
+  height: var(--nbx-h);
+  min-height: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--nbx-line);
+  border-radius: 3px;
+  background: var(--nbx-card);
+  color: var(--fg);
+  font: 14px/1.2 var(--font-body, Georgia, serif);
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 0 10px;
+  margin-top: 5px;
+}
+html #notebook :is(#nbSearch, #nbWorkSearchQuery) { margin-top: 0; }
+html #notebook :is(#nbProjectPick, #nbSearch, #nbWorkSearchQuery):focus-visible {
+  outline: none;
+  border-color: var(--nbx-fill);
+}
+html #notebook #nbProjectDesk { font-size: 12px; text-underline-offset: 3px; }
+
+/* every button: the hairline */
+html #notebook .nb-passage-actions button,
+html #notebook .nb-work-primary button,
+html #notebook .nb-reading-place button,
+html #notebook .nb-work-search-form button,
+html #notebook .nb-tools button,
+html #notebook .nb-highlight-colors button,
+html #notebook .nb-book-ask {
+  min-height: var(--nbx-h);
+  height: auto;
+  box-sizing: border-box;
+  border: 1px solid var(--nbx-line);
+  border-radius: 3px;
+  background-color: var(--nbx-card);
+  color: var(--fg);
+  font: 13px/1.3 var(--font-body, Georgia, serif);
+  padding: 7px 12px;
+}
+
+/* the work's doors: one ruled list */
+html #notebook .nb-work-primary {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 12px;
+  border: 1px solid var(--nbx-line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+html #notebook .nb-work-primary button {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--nbx-line);
+  border-radius: 0;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+html #notebook .nb-work-primary button::after { content: "\203A"; font-size: 16px; line-height: 1; opacity: 0.6; }
+html #notebook .nb-work-primary > button:first-child { border-top: 0; }
+
+/* save work | save reading place: one joined pair */
+html #notebook .nb-reading-place > div { gap: 0; flex-wrap: nowrap; }
+html #notebook .nb-reading-place > div > button { flex: 1 1 auto; }
+html #notebook .nb-reading-place > div > button + button { margin-left: -1px; }
+html #notebook .nb-reading-place > div > button:not(:last-child) { border-radius: 3px 0 0 3px; }
+html #notebook .nb-reading-place > div > button + button { border-radius: 0 3px 3px 0; }
+html #notebook .nb-reading-place > div > button:hover { position: relative; z-index: 1; }
+/* The TFR block fills this one with the `background` shorthand at (2,1,0),
+   which also drops the sweep; both are put back, and its hover with them. */
+html #notebook .nb-reading-place #nbSaveReadingPlace {
+  background-color: var(--nbx-card);
+  background-image: var(--btn-sweep-image);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 0% 100%;
+  transition: var(--btn-sweep-transition);
+  color: var(--fg);
+  border-color: var(--nbx-line);
+}
+html #notebook .nb-reading-place #nbSaveReadingPlace:hover {
+  background-size: 100% 100%;
+  color: var(--btn-sweep-ink, #fff);
+  border-color: var(--btn-sweep-fill, #c1593c);
+}
+html #notebook .nb-reading-place #nbSaveWork[aria-pressed="true"] {
+  background: var(--nbx-fill);
+  border-color: var(--nbx-fill);
+  color: var(--nbx-fill-ink);
+  position: relative;
+  z-index: 1;
+}
+html #notebook .nb-reading-place p { font-size: 12px; }
+
+/* search: the field and its button join */
+html #notebook .nb-work-search-form label {
+  display: block;
+  margin: 0 0 6px;
+  font: 500 10.5px/1.2 var(--font-body, Georgia, serif);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted, #6b6660);
+}
+html #notebook .nb-work-search-form > div { display: flex; gap: 0; }
+html #notebook .nb-work-search-form #nbWorkSearchQuery { flex: 1 1 auto; min-width: 0; border-radius: 3px 0 0 3px; }
+html #notebook .nb-work-search-form button { margin-left: -1px; border-radius: 0 3px 3px 0; white-space: nowrap; }
+
+/* passage tools: an even grid; the colours one joined row */
+html #notebook .nb-passage-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+html #notebook .nb-passage-actions button { width: 100%; text-align: left; }
+html #notebook .nb-highlight-colors { display: flex; flex-wrap: wrap; gap: 0; border: 0; padding: 0; margin: 12px 0 0; }
+html #notebook .nb-highlight-colors legend {
+  width: 100%;
+  margin: 0 0 6px;
+  font: 500 10.5px/1.2 var(--font-body, Georgia, serif);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted, #6b6660);
+}
+html #notebook .nb-highlight-colors button { border-radius: 0; }
+html #notebook .nb-highlight-colors button + button { margin-left: -1px; }
+html #notebook .nb-highlight-colors legend + button { border-radius: 3px 0 0 3px; }
+html #notebook .nb-highlight-colors button:last-child { border-radius: 0 3px 3px 0; }
+html #notebook .nb-highlight-colors button:hover { position: relative; z-index: 1; }
+
+/* the single wide buttons */
+html #notebook .nb-book-ask { width: 100%; margin-top: 12px; }
+
+/* settings exports */
+html #notebook .nb-tools { gap: 6px; }
+
+/* foot: the quiet small caps */
+html #notebook .nb-destinations { gap: 18px; padding: 10px 16px max(10px, env(safe-area-inset-bottom)); border-top: 1px solid var(--nbx-line); }
+html #notebook .nb-destinations a {
+  min-height: 28px;
+  font: 500 10.5px/1.2 var(--font-body, Georgia, serif);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--muted, #6b6660);
+}
+html #notebook .nb-destinations a:hover { color: var(--fg); }
+html #notebook .nb-tools button:hover { border-color: var(--nbx-fill); color: var(--nbx-fill); }

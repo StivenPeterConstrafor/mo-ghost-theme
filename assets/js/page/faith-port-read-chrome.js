@@ -54,6 +54,86 @@
   const bBar = button("Hide bar", "fr-tb-focus");
   bBar.title = "Hide the toolbar";
   if (ctr) ctr.appendChild(bBar);
+
+  /* Ian, 2026-09-23, three more for the bar:
+     - Report a problem, out of the Aa menu and beside Tools. The Aa row
+       stays for phones, where Tools is hidden and Aa is the one menu on
+       screen (see the note on that row in the template); on desktop
+       CSS hides it so the choice is made once.
+     - Back to top, at the far right.
+     - Expand all / Collapse all, over the books, chapters and notes
+       faith-reader-folds.js folds. That file owns the state
+       (window.FRReaderFolds) and loads deferred, so it is looked up on
+       use and the label is set once it has run. */
+  const bReport = button("Report a problem", "fr-tb-report");
+  bReport.setAttribute("data-report-issue", "");
+  bReport.title = "Tell us about a problem with this work: a bad scan, wrong text, a broken link";
+  const bTop = button("Top", "fr-tb-top");
+  bTop.title = "Back to the top of the work";
+  bTop.setAttribute("aria-label", "Back to top");
+  const bFolds = button("Collapse all", "fr-tb-folds");
+  bFolds.title = "Fold or unfold every book and chapter";
+  if (ctr) ctr.append(bReport, bTop, bFolds);
+
+  const scroller = document.getElementById("scroll");
+  bTop.addEventListener("click", () => {
+    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (scroller) scroller.scrollTo({ top: 0, behavior: smooth ? "smooth" : "auto" });
+    window.scrollTo({ top: 0, behavior: smooth ? "smooth" : "auto" });
+  });
+
+  const folds = () => window.FRReaderFolds;
+  function paintFolds() {
+    const f = folds();
+    const open = !f || f.anyOpen();
+    bFolds.textContent = open ? "Collapse all" : "Expand all";
+  }
+  bFolds.addEventListener("click", () => {
+    const f = folds();
+    if (!f) return;
+    f.setAll(!f.anyOpen());
+    paintFolds();
+  });
+  document.addEventListener("fr-folds-change", paintFolds);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", paintFolds);
+  else paintFolds();
+
+  /* The search glyph. The port writes "⌕", whose side bearings in the
+     reading face sit it left of centre and low in a square box; a drawn
+     lens centres exactly. The port never rewrites the label. */
+  function lens() {
+    const rs = document.getElementById("rsBtn");
+    if (!rs || rs.querySelector(".fr-tb-lens")) return Boolean(rs);
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 16 16");
+    svg.setAttribute("width", "15");
+    svg.setAttribute("height", "15");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("class", "fr-tb-lens");
+    const c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", "6.75");
+    c.setAttribute("cy", "6.75");
+    c.setAttribute("r", "4.75");
+    const l = document.createElementNS(NS, "path");
+    l.setAttribute("d", "M10.25 10.25 14 14");
+    [c, l].forEach((n) => {
+      n.setAttribute("fill", "none");
+      n.setAttribute("stroke", "currentColor");
+      n.setAttribute("stroke-width", "1.5");
+      n.setAttribute("stroke-linecap", "round");
+      svg.appendChild(n);
+    });
+    rs.replaceChildren(svg);
+    return true;
+  }
+  // read-tools.js, which builds #rsBtn, is injected by reader-core.js
+  // after this file runs; wait for it.
+  if (!lens() && ctr) {
+    const mo = new MutationObserver(() => { if (lens()) mo.disconnect(); });
+    mo.observe(ctr, { childList: true });
+    window.setTimeout(() => mo.disconnect(), 30000);
+  }
   const bExpand = button("Expand contents", "fr-read-fold");
   bExpand.setAttribute("aria-controls", "fr-read-toc");
   if (sidebar) {
