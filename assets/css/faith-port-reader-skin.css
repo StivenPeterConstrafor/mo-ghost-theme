@@ -3335,6 +3335,39 @@ html.g-mobile .fr-tb-paras { display: none !important; }
 #app #reading .fr-hd-promoted.fr-hd-in-t3:not(h3),
 #app #reading h3.fr-hd-promoted.fr-hd-in-t3 .fr-hd-title { font-size: 1.04em; line-height: 1.4; }
 
+/* ── A division printed at the head of a paragraph ──
+   (faith-port-read-headings.js, inlineDivisions.) "[ Cap. I. I, 3.]
+   Liber generationis ...": the label becomes the eyebrow, on its own
+   line over the paragraph, and a chapter or book takes the tier-two
+   hairline above it. A section or question ("§. 1.", "Q. 1.") takes the
+   eyebrow only. The paragraph stays body text: its size, its measure.
+   The brackets are hidden, never removed. */
+#app #reading p.fr-il { text-indent: 0 !important; }
+#app #reading p.fr-il--major {
+  border-top: 1px solid var(--border, #d9c6a7);
+  padding-top: 16px;
+  margin-top: 2em;
+}
+#app #reading p.fr-il--minor { margin-top: 1.4em; }
+#app #reading .fr-il-eye {
+  display: block;
+  margin: 0 0 0.5em;
+  font: 600 11.5px/1.45 var(--fr-read-font, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fr-ink-hot, var(--color-secondary, #c1593c));
+}
+#app #reading .fr-il-eye * {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+}
+#app #reading .fr-il-br { display: none; }
+:root[data-theme="sepia"] #app #reading .fr-il-eye {
+  color: color-mix(in srgb, var(--fr-ink-hot, #c1593c) 86%, var(--color-dark, #2d2927));
+}
+
 /* ── The fold caret, inside the heading ──
    faith-reader-folds.js appends it to the row, which is wider than the
    reading column in single-lane views (the lane is centred at 66ch), so

@@ -237,8 +237,119 @@
   function freshUnits() {
     const out = [];
     document.querySelectorAll("#reading h3.csub:not([data-fr-hd])").forEach((h) => out.push(h));
-    document.querySelectorAll("#reading .row.fr-sec-headrow > :is(.en, .la) > p:first-child:not([data-fr-hd])").forEach((p) => out.push(p));
+    document.querySelectorAll("#reading .row.fr-sec-headrow > :is(.en, .la) > p:first-child:not([data-fr-hd])").forEach((p) => {
+      // The folds found this row after its label was set inline: the
+      // row is a heading, so it takes the heading setting instead.
+      if (p.classList.contains("fr-il")) undoInline(p);
+      out.push(p);
+    });
+    titleRow(out);
+    inlineDivisions(out);
     return out;
+  }
+
+  /* ── Divisions printed in the text itself ───────────────────────────
+     Ian, 2026-09-24: "the headers just clearly didn't make it over to
+     every work". Many works carry no heading markup at all: Jerome on
+     Matthew (pld-5644) opens each chapter inside a paragraph, "[ Cap.
+     I. I, 3.] Liber generationis ...", and the Oriental and Greek texts
+     print "HOMILY IV", "CAPUT XIII.", "ΚΕΦΑΛΑΙΟΝ Β΄." at the head of a
+     paragraph. Surveyed 2026-09-24 on 78 works across every corpus:
+     every h3.csub was already set; these paragraph labels were not.
+
+     ONLY A CLEAR DIVISION. A label word AND a numeral, in brackets, in
+     capitals, or ending on a stop, colon or dash: never "1. They deceive
+     them" (a numbered paragraph), never "Book I contains" (prose), never
+     "Psalm 14.1." (a citation). A short line that is a label and a title
+     ("HOMILY IV Anamnesis of the previous homily") is a heading and is
+     set as one, through the same split and tiers as every other. A
+     paragraph that merely OPENS on its label keeps its text and takes the
+     lighter setting: the label as an eyebrow over the text, a hairline
+     above for a chapter or book, none for a section or question. The
+     characters never change; the brackets are hidden, not removed. */
+  const IL_WORD = "(?:cap(?:ut|itulum)?|chap(?:ter)?|lib(?:er)?|book|sect(?:io|ion)?|art(?:iculus|icle)?|quaest(?:io)?|question|dist(?:inctio)?|hom(?:ilia|ily)?|serm(?:o|on)?|epist(?:ola|le)?|lectio|pars|part|dissertatio|tract(?:atus)?)";
+  const IL_ORD = "PRIM(?:US|A|UM)|SECUND(?:US|A|UM)|TERTI(?:US|A|UM)|QUART(?:US|A|UM)|QUINT(?:US|A|UM)|SEXT(?:US|A|UM)|SEPTIM(?:US|A|UM)|OCTAV(?:US|A|UM)|NON(?:US|A|UM)|DECIM(?:US|A|UM)|FIRST|SECOND|THIRD|FOURTH|FIFTH|SIXTH|SEVENTH|EIGHTH|NINTH|TENTH";
+  const IL_FORMS = [
+    // "[ Cap. I. I, 3.]"
+    ["bracket", new RegExp(`^(\\s*)(\\[\\s*(?:${IL_WORD}|§)\\.?\\s*[IVXLCDM\\d][^\\]\\n]{0,40}\\])`, "i")],
+    // "CAPUT XIII.", "HOMILY II!", "DISSERTATIO NONA", "ΚΕΦΑΛΑΙΟΝ Β΄."
+    ["caps", new RegExp(`^(\\s*)((?:CAPUT|CAPITULUM|CAP\\.|CHAPTER|CHAP\\.|HOMILY|HOMILIA|SERMO|SERMON|LIBER|BOOK|DISSERTATIO|ARTICULUS|ARTICLE|QUAESTIO|QUESTION|LECTIO|DISTINCTIO|EPISTOLA|EPISTLE|TRACTATUS|ΚΕΦΑΛΑΙΟΝ|ΛΟΓΟΣ|ΟΜΙΛΙΑ)\\s+(?:[IVXLCDM]+\\.?|\\d+\\.?|[Α-Ω]{1,4}[ʹ΄']\\.?|(?:${IL_ORD})\\.?))(?=[\\s!:,;—–-]|$)`, "u")],
+    // "Chapter IV.", "Caput XXXV": title case, only on a stop, colon, dash or the end
+    ["title", /^(\s*)((?:Caput|Capitulum|Chapter|Chap\.|Cap\.|Homily|Homilia|Sermo|Liber|Book|Article|Articulus|Quaestio|Lectio|Distinctio|Dissertatio)\s+(?:[IVXLCDM]+|\d+)(?:\.|:|\s*[—–]|(?=\s*$)))/],
+    // "§ 3.", "§. 1.", "sect. 9."
+    ["minor", /^(\s*)(§\s*\.?\s*\d+\s*\.?)(?=\s|$)/],
+    ["minor", /^(\s*)((?:sect|sectio)\.?\s*\d+\.)(?=\s)/i],
+    // "Q. 1." (a disputation's questions)
+    ["minor", /^(\s*)(Q\.\s*\d+\.)(?=\s)/],
+  ];
+  const IL_SKIP = ".rhead, .fr-sec-headrow, .footnotes, .appbank, .pld-editorial, .rapp, .rtoc, .ctoc, .margin, blockquote, .fr-hd, .fr-hd-cont, [data-fr-hd-next]";
+  function undoInline(p) {
+    p.querySelectorAll(".fr-il-eye, .fr-il-br").forEach((sp) => sp.replaceWith(...sp.childNodes));
+    p.normalize();
+    p.classList.remove("fr-il", "fr-il--minor", "fr-il--major");
+    p.dataset.frIl = "0";
+  }
+  // A cheap look at the opening before the exact one: most paragraphs
+  // start with none of these characters.
+  const IL_QUICK = /^\s*(?:\[|§|Q\.|[CcHhLlBbDdAaSsEeTtQ][a-zA-Z]{2,}|[ΚΛΟ])/u;
+  function inlineDivisions(out) {
+    document.querySelectorAll("#reading .folio > .row > :is(.en, .la, .gr) > p:not([data-fr-il]):not([data-fr-hd]), #reading .folio > .row > p:not([data-fr-il]):not([data-fr-hd])").forEach((p) => {
+      p.dataset.frIl = "0";
+      if (!IL_QUICK.test((p.textContent || "").slice(0, 24)) || p.closest(IL_SKIP)) return;
+      const text = textOf(p);
+      let form = "";
+      let m = null;
+      for (const [f, re] of IL_FORMS) {
+        m = re.exec(text);
+        if (m && m[2]) { form = f; break; }
+      }
+      if (!form) return;
+      const len = clean(text).length;
+      // A short line that is a label and a title: a heading like any other.
+      const h = HEAD.exec(text);
+      if (len < 200 && form !== "bracket" && h && h[2]) {
+        p.dataset.frIl = "head";
+        out.push(p);
+        return;
+      }
+      unmodernize(p);
+      const lead = m[1].length;
+      const eye = wrap(p, lead, lead + m[2].length, "fr-il-eye");
+      if (!eye) return;
+      if (form === "bracket") {
+        const et = textOf(eye);
+        const close = et.lastIndexOf("]");
+        if (close >= 0) wrap(eye, close, close + 1, "fr-il-br");
+        const open = et.indexOf("[");
+        if (open >= 0) wrap(eye, open, open + 1, "fr-il-br");
+      }
+      p.dataset.frIl = form;
+      p.classList.add("fr-il", form === "minor" ? "fr-il--minor" : "fr-il--major");
+    });
+  }
+
+  /* A work's own title, printed as a plain first row ("Evangelium
+     secundum Matthaeum" / "The Gospel according to Matthew"): the top
+     tier, a card. Only the first row of the work's first page, only in
+     the Migne and other source-lane layouts (.prow), and only a line
+     short enough to be a title in every lane. */
+  function titleRow(out) {
+    let first = null;
+    try { first = typeof DATA !== "undefined" && DATA && Array.isArray(DATA.pages) && DATA.pages.length ? String(DATA.pages[0].n) : null; }
+    catch (_) { first = null; }
+    if (first == null) return;
+    const folio = document.querySelector(`#reading .folio[data-page="${CSS.escape(first)}"]`);
+    const row = folio && folio.querySelector(":scope > .row");
+    if (!row || row.dataset.frTitleRow || !row.matches(".prow") || row.matches(".rhead, .fr-sec-headrow")) return;
+    row.dataset.frTitleRow = "0";
+    const lanes = [...row.querySelectorAll(":scope > :is(.en, .la, .gr)")];
+    if (!lanes.length) return;
+    const ps = lanes.map((l) => l.querySelectorAll(":scope > p"));
+    if (ps.some((list) => list.length !== 1)) return;
+    const units = ps.map((list) => list[0]);
+    if (units.some((p) => { const t = clean(textOf(p)); return !t || t.length > 140 || /^\d/.test(t) || p.dataset.frHd || p.dataset.frIl; })) return;
+    row.dataset.frTitleRow = "1";
+    units.forEach((p) => { p.dataset.frIl = "title"; out.push(p); });
   }
   // The language texts inside a heading element: an h3 can carry the
   // English (.hen) and the Latin (.hla) of one heading side by side.
@@ -292,6 +403,10 @@
 
   function kindOfNext(n) {
     if (!n || n.none) return "";
+    // A paragraph that opens on its own division label ("§. 1. The
+    // Church is ...") is the next division, never this heading's line.
+    const il = n.dataset ? n.dataset.frIl : "";
+    if (il && il !== "0" && il !== "title") return "";
     const text = clean(textOf(n));
     if (!text) return "";
     if (isHeading(n)) {
@@ -327,6 +442,7 @@
 
   /* ── Tiers ──────────────────────────────────────────────────────── */
   function tierOf(el) {
+    if (el.dataset.frIl === "title") return "card";
     if (el.classList.contains("fr-hd-q")) return "t3";
     const row = el.closest(".row");
     const lit = app && app.classList.contains("liturgy");
@@ -341,17 +457,23 @@
     const word = eye ? ((clean(textOf(eye)).match(LABEL_WORD) || [])[1] || "") : "";
     // Only the heading at the top of a fold row speaks for the outline
     // entry; a second heading in the same row is not in the outline.
-    const own = row && row.dataset.frSec != null && firstUnitOf(row) === el;
+    // Per LANE: a two-language heading row carries one heading in each,
+    // and asking the row gave the Latin a card and the English a
+    // hairline (Suárez, the Stromata).
+    const own = row && row.dataset.frSec != null && firstUnitOf(laneOf(el) || row) === el;
     const depth = own ? Number(row.dataset.frDepth || 0) : 0;
     if (word) {
       if (MINOR_WORD.test(word)) return "t2";
+      // A disputation's questions found in the text ("Q. 19. An expediat
+      // ..."), not in the outline: the plain head, like a catechism's.
+      if (el.dataset.frIl === "head" && /^(?:q|question|quaestio)$/i.test(word)) return "t3";
       return depth >= 3 ? "t2" : "card";
     }
     if (own) return depth >= 3 ? "t2" : "card";
     return "t2";
   }
-  function firstUnitOf(row) {
-    return row.querySelector("h3.csub[data-fr-hd], :scope > :is(.en, .la) > p[data-fr-hd]");
+  function firstUnitOf(box) {
+    return box.querySelector("h3.csub[data-fr-hd], :scope > :is(.en, .la) > p[data-fr-hd], :scope > p[data-fr-hd]");
   }
 
   /* ── One heading ────────────────────────────────────────────────── */
