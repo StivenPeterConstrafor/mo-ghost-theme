@@ -161,8 +161,8 @@
   function docRow(w, tag) {
     const kind = [kindOf(w), tag].filter(Boolean).join(" · ");
     const inner = `<span class="tfr-trad-yr">${esc(whenOf(w))}</span>`
-      + `<span class="tfr-trad-t">${esc(titleOf(w))}</span>`
-      + (kind ? `<span class="tfr-trad-kind">${esc(kind)}</span>` : "");
+      + `<span class="tfr-trad-t">${esc(titleOf(w))}</span>${
+       kind ? `<span class="tfr-trad-kind">${esc(kind)}</span>` : ""}`;
     return w.url
       ? `<li><a href="${esc(w.url)}">${inner}</a></li>`
       : `<li><span class="tfr-trad-row">${inner}</span></li>`;
@@ -192,10 +192,10 @@
   function authorRow(a) {
     const bits = [a.x].filter(Boolean).join(" · ");
     return `<li><a href="${BASE}author/?a=${encodeURIComponent(a.s)}">`
-      + `<span class="tfr-trad-an">${esc(a.n)}</span>`
-      + (a.d ? ` <span class="tfr-trad-ad">${esc(a.d)}</span>` : "")
-      + (bits ? `<span class="tfr-trad-ax">${esc(bits)}</span>` : "")
-      + `<span class="tfr-trad-aw">${n(a.w || 0, "work", "works")}</span></a></li>`;
+      + `<span class="tfr-trad-an">${esc(a.n)}</span>${
+       a.d ? ` <span class="tfr-trad-ad">${esc(a.d)}</span>` : ""
+       }${bits ? `<span class="tfr-trad-ax">${esc(bits)}</span>` : ""
+       }<span class="tfr-trad-aw">${n(a.w || 0, "work", "works")}</span></a></li>`;
   }
   const byBirth = (a, b) => (a.y || 9999) - (b.y || 9999) || a.n.localeCompare(b.n);
 
@@ -246,9 +246,9 @@
         .filter(Boolean).join(" · ");
       const kids = list.filter((k) => k.parent === t.slug);
       return `<li><a class="tfr-trad-ix" href="${tradHref(t.slug)}"><span class="tfr-trad-ixn">${esc(t.name)}</span>`
-        + `<span class="tfr-trad-ixd">${esc(t.dek)}</span>${meta ? `<span class="tfr-trad-ixm">${esc(meta)}</span>` : ""}</a>`
-        + (kids.length ? `<ol class="tfr-trad-index tfr-trad-index--sub">${kids.map(row).join("")}</ol>` : "")
-        + "</li>";
+        + `<span class="tfr-trad-ixd">${esc(t.dek)}</span>${meta ? `<span class="tfr-trad-ixm">${esc(meta)}</span>` : ""}</a>${
+         kids.length ? `<ol class="tfr-trad-index tfr-trad-index--sub">${kids.map(row).join("")}</ol>` : ""
+         }</li>`;
     };
     root.innerHTML = `<ol class="tfr-trad-index">${top.map(row).join("")}</ol>`;
   }
@@ -268,8 +268,8 @@
     const related = [parent, inFamily].concat((t.related || []).map((s) => bySlug.get(s)))
       .filter((x, i, a) => x && a.indexOf(x) === i && x !== t);
 
-    const overview = `<section class="tfr-trad-sec tfr-trad-overview" aria-labelledby="trad-overview"><h2 id="trad-overview">Overview</h2>`
-      + (t.overview || []).map((p) => `<p>${esc(p)}</p>`).join("") + "</section>";
+    const overview = `<section class="tfr-trad-sec tfr-trad-overview" aria-labelledby="trad-overview"><h2 id="trad-overview">Overview</h2>${
+       (t.overview || []).map((p) => `<p>${esc(p)}</p>`).join("")}</section>`;
     const rel = related.length
       ? `<nav class="tfr-trad-related" aria-label="Related traditions"><span class="tfr-trad-eyebrow">Related traditions</span>`
         + `<span class="tfr-trad-joined">${related.map((r) => `<a href="${tradHref(r.slug)}">${esc(r.name)}</a>`).join("")}</span></nav>` : "";
@@ -290,7 +290,7 @@
     let mergedFrom = "";
     const pull = cfg.merge === "children" ? kids : cfg.merge === "family" ? family : [];
     pull.forEach((k) => {
-      (authorsBy[k.slug] || []).forEach((a) => authors.push(Object.assign({}, a, { x: [k.name, a.x].filter(Boolean).join(", ") })));
+      (authorsBy[k.slug] || []).forEach((a) => authors.push({ ...a, x: [k.name, a.x].filter(Boolean).join(", ")}));
     });
     if (cfg.merge === "family" && family.length) {
       mergedFrom = `With the ${family.map((f) => f.name).join(" and ")} writers.`;
