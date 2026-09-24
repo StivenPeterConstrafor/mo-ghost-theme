@@ -19912,3 +19912,13 @@ body .research-workspace .cmp-col > .cmp-note { margin: 0; padding: 12px 16px 4p
    !important (the old lattice drew them as dividers). The thin-line
    boxes in the landing's collection keep all four sides. */
 #collection .faith-card-grid > .faith-card { border-left: 1px solid var(--color-card-border, #d9c6a7) !important; }
+
+/* A thin terracotta scrollbar in every open menu, always drawn, so a
+   long list says it scrolls (Ian, 2026-09-24). The -webkit- form, not
+   scrollbar-color: only a custom -webkit-scrollbar keeps a Mac's
+   overlay scrollbar on screen when nothing is scrolling. */
+@supports (appearance: base-select) {
+  body:has(.tfr-rail) select::picker(select)::-webkit-scrollbar { width: 4px; }
+  body:has(.tfr-rail) select::picker(select)::-webkit-scrollbar-track { background: transparent; }
+  body:has(.tfr-rail) select::picker(select)::-webkit-scrollbar-thumb { background: var(--color-secondary, #c1593c); border-radius: 2px; }
+}
