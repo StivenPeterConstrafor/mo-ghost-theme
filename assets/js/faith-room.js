@@ -163,10 +163,16 @@
       + `<a class="faith-shelf-ask" href="${base}ask/?trad=${encodeURIComponent(name)}">Ask this shelf</a></div>`
       + `<nav class="faith-shelf-study-grid" aria-label="Study ${escapeHtml(shelfName(name))}">${
        doors.map(([label, href, description]) => `<a class="faith-shelf-study-card" href="${base}${href}"><strong>${label}</strong><span>${description}</span></a>`).join("")
-       }</nav><div class="faith-shelf-reference"><h2>Reference</h2>`
-      + `<a class="faith-shelf-study-card" href="${base}dictionary/"><strong>Dictionary of Catholic Theology</strong>`
-      + `<span>The French theological dictionary (Vacant–Mangenot–Amann, 1899–1950). Search a headword and read the article in French and English.</span>`
-      + `<span class="faith-shelf-reference-action">Open dictionary</span></a></div>`;
+       }</nav>${
+      // The Dictionary of Catholic Theology on the Roman Catholic shelf
+      // only (Ian, 2026-09-24: "We don't need the DCT on all of the
+      // shelf pages").
+      code === "rc"
+        ? `<div class="faith-shelf-reference"><h2>Reference</h2>`
+          + `<a class="faith-shelf-study-card" href="${base}dictionary/"><strong>Dictionary of Catholic Theology</strong>`
+          + `<span>The French theological dictionary (Vacant–Mangenot–Amann, 1899–1950). Search a headword and read the article in French and English.</span>`
+          + `<span class="faith-shelf-reference-action">Open dictionary</span></a></div>`
+        : ""}`;
   }
   renderShelfResearch();
 

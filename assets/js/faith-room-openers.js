@@ -131,6 +131,8 @@
     if (!sh) return "";
     const base = "/the-faith-received/";
     const trad = name === "Reformed" ? "Continental Reformed" : name;
+    // The DCT on the Roman Catholic shelf only (Ian, 2026-09-24).
+    const dct = sh === "rc" ? `<a href="${base}dictionary/">Dictionary of Catholic Theology</a>` : "";
     return `<details class="fro-study"><summary>Study this shelf</summary>` +
       `<nav aria-label="Study ${esc(shelfName(name))}">` +
       `<a href="${base}ask/?trad=${encodeURIComponent(trad)}">Ask this shelf</a>` +
@@ -138,7 +140,7 @@
       `<a href="${base}author/?sh=${sh}">Authors</a>` +
       `<a href="${base}topics/?sh=${sh}">Topics</a>` +
       `<a href="${base}web/#shelves=${trad === "Continental Reformed" ? "reformed" : trad.toLowerCase().replace(/ /g,"-")}/authors">Connections</a>` +
-      `<a href="${base}dictionary/">Dictionary of Catholic Theology</a>` +
+      `${dct}` +
       `</nav></details>`;
   }
 
