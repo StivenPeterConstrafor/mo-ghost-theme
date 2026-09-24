@@ -1217,3 +1217,295 @@ main.research-room:has(.rx-profile) .rx-filters label:has(> #room-work-order) { 
 }
 .faith-port-dtc-page .art .inner > .dtc-close:hover,
 .faith-port-dtc-page .art .inner > .dtc-close:focus-visible { border-color: var(--ar-line); background: var(--ar-card); color: var(--ink, #2d2927); }
+
+/* ── Search results: thin-line tree (Ian, 2026-09-24) ─────────────────
+   "Major alignment issues": shelf, author and work were boxes inside
+   boxes with three left edges, the browser's triangles, underlined
+   controls and a boxed pager. Now one card level (the shelf); author and
+   work are hairline rows inside it, each level one step (--sr-step) in
+   from the last; folds turn a thin terracotta chevron on the right, as
+   on Topics; a passage is an eyebrow reference, the snippet, and an
+   arrow link. The two blocks above in this file (Search) still set the
+   shelf card; this block wins on source order and on its own
+   specificity where the port's #results rules outrank a class. */
+.faith-port-search-page {
+  --sr-pad: 20px;
+  --sr-step: 18px;
+  --sr-accent: var(--tfr-btn, var(--color-secondary, #c1593c));
+}
+.faith-port-search-page .bhero-kicker a { color: inherit; }
+
+/* Folds: no browser triangle anywhere in the results. */
+.faith-port-search-page #results summary { list-style: none; position: relative; cursor: pointer; }
+.faith-port-search-page #results summary::-webkit-details-marker { display: none; }
+.faith-port-search-page #results summary::marker { content: ""; }
+.faith-port-search-page #results details > summary::after {
+  content: "";
+  position: absolute;
+  right: var(--sr-pad);
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--sr-accent);
+  border-bottom: 1.5px solid var(--sr-accent);
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform 0.15s ease;
+}
+.faith-port-search-page #results details:not([open]) > summary::after { transform: translateY(-30%) rotate(-45deg); }
+.faith-port-search-page #results summary:focus-visible { outline: 2px solid var(--sr-accent); outline-offset: -2px; border-radius: 3px; }
+
+/* Level 1: the shelf, the one card. */
+.faith-port-search-page #results { gap: 14px; }
+.faith-port-search-page #results > details.result-shelf,
+.faith-port-search-page #results > details.scripture-work {
+  border: 1px solid var(--ar-line);
+  border-radius: 3px;
+  background: var(--ar-card);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.faith-port-search-page #results > details.result-shelf > summary {
+  font: 600 19px/1.35 var(--font-body, Georgia, serif);
+  letter-spacing: 0;
+  color: var(--fg, #2d2927);
+  min-height: 0;
+  padding: 16px calc(var(--sr-pad) + 24px) 16px var(--sr-pad);
+  background: var(--ar-panel);
+  border-radius: 0;
+}
+.faith-port-search-page #results > details.result-shelf[open] > summary { border-bottom: 1px solid var(--ar-line); }
+
+/* Level 2: the author, a hairline row inside the shelf. */
+.faith-port-search-page #results details.result-author {
+  border: 0;
+  border-top: 1px solid var(--ar-line);
+  border-radius: 0;
+  background: none;
+  margin: 0;
+  padding: 0;
+}
+.faith-port-search-page #results details.result-shelf[open] > summary + details.result-author { border-top: 0; }
+.faith-port-search-page #results details.result-author > summary {
+  font: 600 16px/1.4 var(--font-body, Georgia, serif);
+  color: var(--fg, #2d2927);
+  min-height: 0;
+  padding: 13px calc(var(--sr-pad) + 24px) 13px calc(var(--sr-pad) + var(--sr-step));
+  border: 0;
+}
+.faith-port-search-page #results details.result-author[open] > summary { border-bottom: 0; }
+.faith-port-search-page #results details.result-author > summary::after { right: calc(var(--sr-pad) + 2px); width: 6px; height: 6px; }
+.faith-port-search-page #results details.result-author > .search-work-block { margin: 0; }
+.faith-port-search-page #results { padding-left: 0; padding-right: 0; }
+
+/* Level 3: the work, a hairline row that starts at its own indent. */
+.faith-port-search-page #results .scripture-work,
+.faith-port-search-page #results details.result-author > .scripture-work {
+  border: 0;
+  border-top: 1px solid var(--ar-line);
+  padding: 0;
+  margin: 0 0 0 calc(var(--sr-pad) + var(--sr-step) * 2);
+}
+.faith-port-search-page #results > details.scripture-work { margin: 0; }
+.faith-port-search-page #results .scripture-work > summary {
+  font: 600 16px/1.4 var(--font-body, Georgia, serif);
+  color: var(--fg, #2d2927);
+  min-height: 0;
+  padding: 12px calc(var(--sr-pad) + 24px) 12px 0;
+}
+.faith-port-search-page #results > details.scripture-work > summary { padding-left: var(--sr-pad); }
+.faith-port-search-page #results .scripture-work > summary span {
+  display: block;
+  margin-top: 3px;
+  font: 400 13px/1.45 var(--font-ui, Georgia, serif);
+  color: var(--muted, #6f6a64);
+}
+.faith-port-search-page #results .scripture-work > summary::after { right: var(--sr-pad); width: 6px; height: 6px; }
+.faith-port-search-page #results .scripture-work:not([open]) > summary { padding-bottom: 12px; }
+
+/* Level 4: the passage, under its work's title. */
+.faith-port-search-page #results .meaning-locations,
+.faith-port-search-page #results .exact-locations,
+.faith-port-search-page #results .search-work-block,
+.faith-port-search-page #results .matched-section-list { padding: 0 var(--sr-pad) 6px 0; }
+.faith-port-search-page #results > details.scripture-work > .meaning-locations,
+.faith-port-search-page #results > details.scripture-work > .exact-locations { padding-left: var(--sr-pad); }
+.faith-port-search-page #results .search-work-block { padding-left: calc(var(--sr-pad) + var(--sr-step) * 2); }
+.faith-port-search-page #results .search-result {
+  position: relative;
+  display: block;
+  border: 0;
+  border-top: 1px solid var(--ar-line);
+}
+/* Save sits at the foot of the row, on the arrow link's line, so the
+   snippet keeps the full width (a side column squeezed it on a phone). */
+.faith-port-search-page #results .search-result > .search-save { position: absolute; right: 0; bottom: 0; }
+.faith-port-search-page #results .search-result > .sr { padding-right: 0; }
+.faith-port-search-page #results .search-result:not(:has(.sr-ex)) > .sr { padding-right: 110px; }
+.faith-port-search-page #results .search-work-block > .search-result:first-child { border-top: 0; }
+.faith-port-search-page #results .sr,
+.faith-port-search-page #results .sr:hover {
+  display: block;
+  margin: 0;
+  padding: 12px 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  transform: none;
+  box-shadow: none;
+  color: var(--fg, #2d2927);
+  text-decoration: none;
+}
+.faith-port-search-page #results .sr .sr-cite {
+  font: 600 11px/1.5 var(--font-ui, Georgia, serif);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sr-accent);
+  margin: 0 0 4px;
+  overflow-wrap: anywhere;
+}
+.faith-port-search-page #results .sr .sr-cite:empty { display: none; }
+.faith-port-search-page #results .sr .sr-cite .sr-sec { letter-spacing: 0.08em; }
+.faith-port-search-page #results .sr > div:not(.sr-cite):not(.sr-ex) {
+  font: 600 16px/1.4 var(--font-body, Georgia, serif);
+}
+.faith-port-search-page #results .sr-ex {
+  font: 400 15.5px/1.6 var(--font-body, Georgia, serif);
+  color: var(--fg, #2d2927);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.faith-port-search-page #results .sr-ex:empty { display: none; }
+.faith-port-search-page #results .sr > small[hidden] { display: none; }
+.faith-port-search-page #results .mo-sr-go {
+  display: inline-block;
+  margin-top: 8px;
+  font: 600 13px/1.4 var(--font-ui, Georgia, serif);
+  color: var(--sr-accent);
+}
+.faith-port-search-page #results .sr:hover .mo-sr-go,
+.faith-port-search-page #results .sr:focus-visible .mo-sr-go { text-decoration: underline; text-underline-offset: 3px; }
+.faith-port-search-page #results .sr:hover .sr-ex { color: var(--fg, #2d2927); }
+.faith-port-search-page #results .sr:focus-visible { outline: 2px solid var(--sr-accent); outline-offset: 2px; }
+.faith-port-search-page #results .sr-compact .sr-ex,
+.faith-port-search-page #results.sr-compact .sr-ex { display: none; }
+.faith-port-search-page #results.sr-compact .sr { padding: 9px 0; }
+.faith-port-search-page #results.sr-compact .mo-sr-go { margin-top: 2px; }
+
+/* Save: a quiet text affordance at the row's foot, not an underlined link. */
+.faith-port-search-page #results .search-save {
+  min-height: 44px;
+  margin: 0;
+  padding: 12px 0 14px 8px;
+  border: 0;
+  background: none;
+  color: var(--muted, #6f6a64);
+  font: 400 13px/1.4 var(--font-ui, Georgia, serif);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.faith-port-search-page #results .search-save:hover,
+.faith-port-search-page #results .search-save:focus-visible { color: var(--sr-accent); }
+.faith-port-search-page #results .search-save[aria-pressed="true"] { color: var(--sr-accent); }
+
+/* Nested folds inside a work (matching sections, the guidance note). */
+.faith-port-search-page #results details.matching-sections { margin: 0 0 8px; }
+.faith-port-search-page #results details.matching-sections > summary {
+  font: 600 13px/1.4 var(--font-ui, Georgia, serif);
+  color: var(--sr-accent);
+  min-height: 0;
+  padding: 8px 32px 8px 0;
+}
+.faith-port-search-page #results details.matching-sections > summary::after { right: 6px; width: 5px; height: 5px; }
+.faith-port-search-page #results details.search-guidance { margin: 0; }
+.faith-port-search-page #results details.search-guidance > summary {
+  display: inline-block;
+  font: 400 13px/1.4 var(--font-ui, Georgia, serif);
+  color: var(--muted, #6f6a64);
+  min-height: 0;
+  padding: 4px 22px 4px 0;
+}
+.faith-port-search-page #results details.search-guidance > summary::after { right: 4px; width: 5px; height: 5px; }
+.faith-port-search-page #results details.search-guidance > p { max-width: 68ch; margin: 4px 0 6px; font-size: 14px; }
+
+/* Location pager inside a work. */
+.faith-port-search-page #results .location-pager { border-top: 1px solid var(--ar-line); padding: 8px 0; }
+.faith-port-search-page #results .location-pager button {
+  min-height: 34px;
+  padding: 4px 12px;
+  border: 1px solid var(--sr-accent);
+  border-radius: 3px;
+  background: none;
+  color: var(--sr-accent);
+  font: 400 13px/1 var(--font-ui, Georgia, serif);
+}
+
+/* The toolbar: count, then the joined group, then Compact on its own. */
+.faith-port-search-page .count-row { display: flex; align-items: center; gap: 10px 12px; flex-wrap: wrap; margin: 6px 0 12px; }
+.faith-port-search-page .count-row #count { flex: 1 1 220px; width: auto; margin: 0; font-size: 13px; }
+.faith-port-search-page .count-row .group-controls { display: inline-flex; flex-wrap: nowrap; gap: 0; margin: 0; }
+.faith-port-search-page .count-row .group-controls[hidden] { display: none; }
+.faith-port-search-page .count-row .group-controls button,
+.faith-port-search-page .count-row .group-controls #meaningBroaden,
+.faith-port-search-page .count-row #densityBtn {
+  min-height: 36px;
+  margin: 0;
+  padding: 6px 14px;
+  border: 1px solid var(--sr-accent);
+  border-radius: 0;
+  background: none;
+  color: var(--sr-accent);
+  font: 400 13px/1.2 var(--font-ui, Georgia, serif);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.faith-port-search-page .count-row .group-controls > button + button { margin-left: -1px; }
+.faith-port-search-page .count-row .group-controls > button:first-child { border-radius: 3px 0 0 3px; }
+.faith-port-search-page .count-row .group-controls > button:last-child { border-radius: 0 3px 3px 0; }
+.faith-port-search-page .count-row .group-controls > button:only-child { border-radius: 3px; }
+.faith-port-search-page .count-row #densityBtn { border-radius: 3px; flex: none; }
+.faith-port-search-page .count-row .group-controls button:hover:not(:disabled),
+.faith-port-search-page .count-row .group-controls button:focus-visible,
+.faith-port-search-page .count-row #densityBtn:hover,
+.faith-port-search-page .count-row #densityBtn[aria-pressed="true"] {
+  position: relative;
+  background: var(--sr-accent);
+  color: var(--tfr-btn-ink, #fff);
+}
+.faith-port-search-page .count-row .group-controls button:disabled { opacity: 0.55; cursor: default; }
+
+/* The pager: a plain row, and none at all for a single page. */
+.faith-port-search-page .results-pager {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+.faith-port-search-page .results-pager:has(> button:first-child:disabled):has(> button:last-child:disabled) { display: none; }
+.faith-port-search-page .results-pager button {
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--sr-accent);
+  border-radius: 3px;
+  background: none;
+  color: var(--sr-accent);
+  font: 400 13px/1.2 var(--font-ui, Georgia, serif);
+}
+.faith-port-search-page .results-pager button:hover:not(:disabled) { background: var(--sr-accent); color: var(--tfr-btn-ink, #fff); }
+.faith-port-search-page .results-pager button:disabled { border-color: var(--ar-line); color: var(--muted, #6f6a64); opacity: 1; }
+
+@media (max-width: 640px) {
+  .faith-port-search-page { --sr-pad: 14px; --sr-step: 12px; }
+  .faith-port-search-page #results > details.result-shelf > summary { font-size: 17px; }
+  .faith-port-search-page #results details.result-author { margin: 0; }
+  /* Phone: Expand · Collapse joined with Compact beside them, and
+     Search more passages on its own line under them. */
+  .faith-port-search-page .count-row { column-gap: 0; justify-content: flex-start; }
+  .faith-port-search-page .count-row #count { flex-basis: 100%; }
+  .faith-port-search-page .count-row .group-controls:not([hidden]) { display: contents; }
+  .faith-port-search-page .count-row #densityBtn { order: 3; margin-left: 10px; }
+  .faith-port-search-page .count-row .group-controls #meaningBroaden { order: 4; flex-basis: 100%; margin: 8px 0 0; border-radius: 3px; }
+  .faith-port-search-page .count-row .group-controls > button:nth-last-child(2):has(+ #meaningBroaden) { border-radius: 0 3px 3px 0; }
+}
