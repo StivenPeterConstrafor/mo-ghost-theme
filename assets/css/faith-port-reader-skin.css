@@ -2673,3 +2673,18 @@ html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer > [data-t="en"],
 html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer > [data-t="par"] { display: none !important; }
 html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .fr-td-lang { min-width: 108px; justify-content: center; }
 .fr-td-lang[hidden], .fr-td-scan[hidden] { display: none !important; }
+
+/* The phone's panels start under the chrome that is showing (Ian,
+   2026-09-23, QA): with the page now full-screen under fixed chrome the
+   contents drawer, placed from #app's top, began under the rail and its
+   close button could not be pressed. Below the chrome at rest; below
+   the rail alone when the chrome has scrolled away. */
+html.g-mobile #app.faith-port-read-page .sidebar {
+  top: calc(var(--mo-head, 61px) + var(--fr-ph-h, 56px));
+}
+html.g-mobile.mh-hide #app.faith-port-read-page .sidebar,
+html.g-mobile.mh-mini #app.faith-port-read-page .sidebar { top: var(--fr-rail-h, 0px); }
+html.g-mobile.mh-hide #sbScrim,
+html.g-mobile.mh-hide .nb-scrim,
+html.g-mobile.mh-hide #notebook.notebook,
+html.g-mobile.mh-hide aside.relpanel { top: var(--fr-rail-h, 0px); }

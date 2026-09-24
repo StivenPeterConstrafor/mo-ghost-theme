@@ -335,7 +335,11 @@
   }, true);
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape" || mobile() || !desktopOpen()) return;
-    if (document.querySelector("#aaPop.on")) return; // Aa's own Escape first
+    // One Escape closes the top layer only. Anything open over the bar
+    // (Aa's menu, the report form, Research, the contents overlay, Find)
+    // takes its own Escape first.
+    if (document.querySelector("#aaPop.on, .fr-report-overlay, #frTtModal:not([hidden]), #notebook.open, #fr-read-toc:not([hidden])")) return;
+    if (e.target && e.target.closest && e.target.closest("#findbar, input, textarea, select")) return;
     setDesktop(false);
     if (toolsBtn) toolsBtn.focus({ preventScroll: true });
   });
@@ -559,6 +563,16 @@
   // ════════════════════════════════════════════════════════════════
   // WIDTH CHANGES
   // ════════════════════════════════════════════════════════════════
+  // The toolbar's own height, published on <html> for the phone layout's
+  // fixed panels. The engine keeps a --phh of its own on #app that lags
+  // the toolbar on a phone (measured 28px against a 56px bar).
+  function publishPh() {
+    const h = Math.round(ph.getBoundingClientRect().height);
+    if (h > 0) html.style.setProperty("--fr-ph-h", `${h}px`);
+  }
+  publishPh();
+  if (window.ResizeObserver) new ResizeObserver(publishPh).observe(ph);
+
   // Only a change across 880px (html.g-mobile) moves anything; <html>
   // also changes class on every scroll (mh-mini), which is ignored.
   let was = null;
