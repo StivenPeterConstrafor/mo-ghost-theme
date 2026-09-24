@@ -730,9 +730,9 @@ function matchWordCase(src, repl) {
 // (U+0304) far more often than as a precomposed letter: 27,686 of them
 // in a 6M-word sample, none of which the old engine could see, because
 // its word pattern stopped at the combining mark and cut "cō|maundement"
-// in two. Over a consonant the stroke is a whole syllable ("sacram̄t").
+// in two. Over a consonant the stroke is a whole syllable ("sacram\u0304t").
 // ꝭ is the -es/-is ending ("ordꝭ", "imagꝭ"), ꝯ is con/com.
-const MARKS_RE = /[̄̃āēīōūȳĀĒĪŌŪꝭꝯ]/;
+const MARKS_RE = /[\u0304\u0303āēīōūȳĀĒĪŌŪꝭꝯ]/;
 const VOWEL_MACRON = dict({ "ā": "a", "ē": "e", "ī": "i", "ō": "o", "ū": "u", "ȳ": "y" });
 
 function markOptions(w) {
@@ -747,7 +747,7 @@ function markOptions(w) {
       parts.push(buf); buf = "";
       const v = VOWEL_MACRON[lc];
       parts.push([`${v}n`, `${v}m`]);
-    } else if ((c === "̄" || c === "̃") && buf) {
+    } else if ((c === "\u0304" || c === "\u0303") && buf) {
       const prev = buf.slice(-1);
       buf = buf.slice(0, -1);
       parts.push(buf); buf = "";
@@ -760,7 +760,7 @@ function markOptions(w) {
     } else if (c === "ꝯ") {
       parts.push(buf); buf = "";
       parts.push(buf.length || parts.length > 2 ? ["us", "con", "com"] : ["con", "com", "us"]);
-    } else if (c === "̄" || c === "̃") {
+    } else if (c === "\u0304" || c === "\u0303") {
       // a stray mark with nothing before it
     } else {
       buf += c;
@@ -869,7 +869,8 @@ function spellWord(lo) {
 // The legacy entry point: spelling only, word by word, no context. Kept
 // for callers that still run it after modernizeText(); on text that
 // modernizeText() has already produced it changes nothing.
-const WORD_RE = /[A-Za-zÀ-ÖØ-öø-ɏ̀-ͯꝭꝯ]+/g;
+// eslint-disable-next-line no-misleading-character-class -- EEBO macrons are combining marks (U+0304)
+const WORD_RE = /[A-Za-zÀ-ÖØ-öø-ɏ\u0300-\u036fꝭꝯ]+/g;
 function modernizeSpelling(text) {
   if (!text) return text;
   // Since the token engine, modernizeText() does the spelling too, and in
@@ -1015,7 +1016,8 @@ function estBase(lo) {
 
 // ─── Tokens ─────────────────────────────────────────────────────────────
 
-const TOKEN_RE = /[A-Za-zÀ-ÖØ-öø-ɏ̀-ͯꝭꝯ]+(?:['’][A-Za-zÀ-ÖØ-öø-ɏ̀-ͯꝭꝯ]+)*|&c(?![A-Za-z])|&/g;
+// eslint-disable-next-line no-misleading-character-class -- EEBO macrons are combining marks (U+0304)
+const TOKEN_RE = /[A-Za-zÀ-ÖØ-öø-ɏ\u0300-\u036fꝭꝯ]+(?:['’][A-Za-zÀ-ÖØ-öø-ɏ\u0300-\u036fꝭꝯ]+)*|&c(?![A-Za-z])|&/g;
 const APOS = /['’]/;
 
 function tokenize(S, bounds) {
@@ -1038,7 +1040,7 @@ function tokenize(S, bounds) {
 // Apostrophes the token regex could not include: the one in front of
 // 'tis and 'em, the one behind tho' and th'.
 function elide(t, S) {
-  let lo = t.lo;
+  const { lo } = t;
   const before = S.charAt(t.a - 1);
   const after = S.charAt(t.b);
   if (APOS.test(before) && /^(tis|twas|twere|twill|twould|em|gainst|mongst)$/.test(lo)) {
@@ -1104,6 +1106,7 @@ function edits(S, bounds) {
     // An old spelling of a grammar word is that grammar word: "Wherfor"
     // is "wherefore", "doeste" is "dost", "seeste" is "seest". Respell
     // first, so the rules below see the word they are written for.
+    // eslint-disable-next-line no-misleading-character-class -- EEBO macrons are combining marks (U+0304)
     if (KNOWN && !grammarish(t.key) && /^[a-zà-ɏ\u0300-\u036f]+$/.test(t.key) && !MARKS_RE.test(t.key)) {
       const sp = spellWord(t.key);
       if (sp && sp.indexOf(" ") < 0 && grammarish(sp)) t.key = ALIAS[sp] || sp;
@@ -1111,7 +1114,7 @@ function edits(S, bounds) {
   }
   const gap = (i) => S.slice(i > 0 ? toks[i - 1].eb : 0, toks[i].ea);
   const gapAfter = (i) => S.slice(toks[i].eb, i + 1 < n ? toks[i + 1].ea : S.length);
-  const ws = (g) => /^[ \t ]*$/.test(g) || /^\s+$/.test(g);
+  const ws = (g) => /^[ \t\u00a0]*$/.test(g) || /^\s+$/.test(g);
   const joined = (i) => i > 0 && ws(gap(i)); // i is glued to i-1 by whitespace only
   // the canonical spelling of a neighbour, for decisions
   const norm = (i) => {
@@ -1187,8 +1190,8 @@ function edits(S, bounds) {
   // What does this "ye" mean? "the", "you".
   const yeReading = (i) => {
     const t = toks[i];
-    if (t.lo !== "ye" && t.lo !== "yͤ") return "you"; // yee, yée
-    if (t.split === 1 || t.lo === "yͤ") return "the";
+    if (t.lo !== "ye" && t.lo !== "y\u0364") return "you"; // yee, yée
+    if (t.split === 1 || t.lo === "y\u0364") return "the";
     const nx = i + 1 < n && joined(i + 1) ? norm(i + 1) : "";
     if (nx === "same" || nx === "selfsame") return "the";
     if (i > 0 && joined(i) && PREP_THE.has(norm(i - 1)) && nx &&
@@ -1395,7 +1398,7 @@ function edits(S, bounds) {
     }
 
     // thē is "them" or "then"
-    if (t.lo.normalize("NFC") === "thē" || t.lo === "thẽ") {
+    if (t.lo.normalize("NFC") === "thē" || t.lo === "the\u0303") {
       const p = i > 0 && joined(i) ? norm(i - 1) : "";
       const nx = i + 1 < n && joined(i + 1) ? norm(i + 1) : "";
       // "then" after "and", "but", a form of "be", or at the head of a
@@ -1564,6 +1567,7 @@ function edits(S, bounds) {
 
     // a word the printer broke after an abbreviation mark: "mē cyonyd",
     // "commā ded", "seruaū tes"
+    // eslint-disable-next-line no-misleading-character-class -- EEBO macrons are combining marks (U+0304)
     if (i + 1 < n && /[āēīōū\u0304]$/.test(t.s.normalize("NFC")) && gap(i + 1) === " " &&
         /^[a-z]/.test(toks[i + 1].s) && KNOWN && (toks[i + 1].lo.length <= 4 || !COMMON.has(toks[i + 1].key)) && !MACRON_SHORT[t.lo.normalize("NFC")]) {
       const glued = `${t.lo}${toks[i + 1].lo}`;
@@ -1666,7 +1670,7 @@ function modernizeParagraphs(paragraphs) {
 
 /* Does this text want the Modernizer? The pronouns and auxiliaries, the
  * -eth verbs, the superscript abbreviations and the printed spellings. */
-const ARCHAIC_RE = /\b(thou|thee|thy|thine|ye|yee|hath|doth|dost|saith|art thou|unto|[a-z]{3,}eth|onely|selfe|haue|vpon|vnto)\b|&c|[̄ſ]/i;
+const ARCHAIC_RE = /\b(thou|thee|thy|thine|ye|yee|hath|doth|dost|saith|art thou|unto|[a-z]{3,}eth|onely|selfe|haue|vpon|vnto)\b|&c|[\u0304ſ]/i;
 function hasArchaicLanguage(text) {
   return ARCHAIC_RE.test(text);
 }
