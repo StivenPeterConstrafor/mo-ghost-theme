@@ -3112,3 +3112,102 @@ html.g-mobile .fr-tb-paras { display: none !important; }
 /* The people's answer to a petition sits in from the petition's own
    turned lines, so the two never read as one. */
 #app.liturgy #reading .en .verse .vl.ind { padding-left: 2.4em; text-indent: 0; }
+
+/* ── SECTION HEADINGS, TFR STYLE (Ian, 2026-09-24) ───────────────────
+   "Something more in line with the design style we've done across the
+   rest of TFR like on the Topics page." Replaces the centred heading
+   above. faith-port-read-headings.js splits a heading's division label
+   from its title; set here the way a Topics page sets its head:
+
+     a tan hairline across the column
+     BOOK I · CHAPTER I       11.5px caps, 0.22em, terracotta (--fr-ink-hot)
+     The title                large, the reading face, 600
+     A subtitle               italic, muted
+
+   Left-aligned like the Topics head. The words are untouched; only the
+   separator between label and title is hidden. */
+#reading h3.csub,
+#reading .row.fr-sec-headrow > :is(.en, .la) p {
+  text-align: left !important;
+  text-indent: 0 !important;
+  font-family: var(--font-body, "Source Serif Pro", Georgia, serif);
+  font-size: 1.42em;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0;
+  color: var(--fg);
+}
+#reading h3.csub { margin: 2.6em 0 0.7em; padding-top: 1.3em; }
+#reading .row.fr-sec-headrow { margin-top: 2.6em; }
+#reading .row.fr-sec-headrow > :is(.en, .la) { padding-top: 1.3em; }
+#reading .row.fr-sec-headrow > :is(.en, .la) p { margin: 0 0 0.35em; }
+/* A heading row that carries its argument reads lighter and smaller. */
+#reading .row.fr-sec-headrow--long > :is(.en, .la) p { font-size: 1.16em; font-weight: 500; line-height: 1.4; }
+
+#reading .fr-hd-eye {
+  display: block;
+  margin: 0 0 0.7em;
+  font-family: var(--font-body, "Source Serif Pro", Georgia, serif);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-style: normal;
+  line-height: 1.4;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fr-ink-hot, var(--color-secondary, #c1593c));
+}
+#reading .fr-hd-title { display: block; }
+#reading .fr-hd-sep { display: none; }
+/* "Book I - Chapter I": the gap between the groups prints as a dot. */
+#reading .fr-hd-dot { font-size: 0; }
+#reading .fr-hd-dot::after { content: "·"; font-size: 11.5px; margin: 0 0.5em 0 0.28em; }
+
+/* A heading that is only its label ("CHAPTER II.") with a short line
+   under it: the label is the eyebrow, the line under it the title. */
+#reading .fr-hd.fr-hd-labelonly { margin-bottom: 0; }
+#reading .fr-hd.fr-hd-labelonly .fr-hd-eye { margin-bottom: 0; }
+#reading .row.fr-sec-headrow > :is(.en, .la) p.fr-hd-labelonly { margin-bottom: 0.35em; }
+#reading .fr-hd-promoted {
+  text-align: left !important;
+  text-indent: 0 !important;
+  font-size: 1.42em;
+  font-weight: 600;
+  line-height: 1.25;
+  font-style: normal;
+  color: var(--fg);
+  margin: 0 0 0.9em;
+}
+
+/* The subtitle under a titled heading. */
+#reading .fr-hd-sub,
+#reading .fr-hd-sublabel {
+  text-align: left !important;
+  text-indent: 0 !important;
+  font-style: italic;
+  font-size: 1.04em;
+  line-height: 1.45;
+  color: var(--muted, #6b6660);
+  margin: -0.2em 0 1.3em;
+}
+#reading .fr-hd-sublabel {
+  font-style: normal;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* A printed argument under the heading (EEBO's "*The second general
+   Principle ... proposed"): the Topics page's quoted-article shape, a
+   terracotta rule at the left, italic, a step smaller. */
+#reading .fr-hd-arg {
+  text-align: left !important;
+  text-indent: 0 !important;
+  font-style: italic;
+  font-size: 0.94em;
+  line-height: 1.6;
+  color: var(--muted, #6b6660);
+  padding-left: 1em;
+  border-left: 2px solid var(--fr-ink-hot, var(--color-secondary, #c1593c));
+  margin: 0.2em 0 1.6em;
+}

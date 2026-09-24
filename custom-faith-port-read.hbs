@@ -3,6 +3,12 @@
 <script defer src="{{asset "js/page/faith-port-downloads.js"}}&amp;frv=2b1f79b352c6db15"></script>
 <script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=de68ed46eea11d31"></script>
 <title>{{#if title}}{{title}} | {{/if}}The Faith Received | Mere Orthodoxy</title>
+{{!-- RETIRED WORKS FORWARD FIRST. ?w=<a retired English Edition> is
+     rewritten to the copy that replaced it, with the same question or
+     article, before anything below reads the address. See
+     assets/js/lib/faith-work-forwards.js. --}}
+<script src="{{asset "js/lib/faith-work-forwards.js"}}"></script>
+<script src="{{asset "js/page/faith-work-forward.js"}}"></script>
 {{!-- THE FAMILY IDENTITY AND THE MASTHEAD OFFSET, before the engine runs.
      reader-core.js consumes window.__FR_SITE__ at its first statement, and
      our nav is fixed at top:0 like the reader's toolbar, so the toolbar
@@ -35,6 +41,11 @@
 <script src="{{asset "js/port/reader-navigation.js"}}&amp;frv=749e603cd55e3f46"></script>
 <script src="{{asset "js/port/reader-source-outline.js"}}&amp;frv=e279535bb9854a04"></script>
 <script src="{{asset "js/port/reader-contents.js"}}&amp;frv=e2f9a9506698188b"></script>
+{{!-- Our contents format on the catechisms and confessions that replaced
+     ours (one entry per question; "Article I. <title>"). Wraps
+     FRReaderNavigation.contents, so it must follow reader-navigation.js
+     and precede reader-core.js. --}}
+<script src="{{asset "js/page/faith-port-read-contents-overlay.js"}}"></script>
 <link rel="stylesheet" href="{{asset "css/port/reader-contents.css"}}&amp;frv=be9cf4f6fae0f5a5">
 <link rel="stylesheet" href="{{asset "css/port/work-research-sources.css"}}&amp;frv=c681ab35bad0d33a">
 <script defer src="{{asset "js/port/work-research-sources.js"}}&amp;frv=5d5d79a90120583d"></script>
@@ -48,7 +59,7 @@
       logs three CSP errors per load and mislabels the notebook "sync
       unavailable". This drops the config while the window between the two files
       is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=e199b0c78468ac78"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ccd1c7702c51c000"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=57fcccc70d2217c1"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
-<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=fc374d4542167024">
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=2aa8b8b18326e257">
 {{/contentFor}}
 
 {{!-- /the-faith-received/read/ — the ported page-native reader.
@@ -268,7 +279,7 @@
 <script src="{{asset "js/page/faith-port-read-find.js"}}&amp;frv=20f0e69e8899d894"></script>
 {{!-- The English Modernizer. Same engine the Dynamic Reader uses, so a
      word is modernized the same way everywhere on the site. --}}
-<script src="{{asset "js/faith-modernize.js"}}&amp;frv=74803a1c9e2b60b2"></script>
+<script src="{{asset "js/faith-modernize.js"}}&amp;frv=fb53cee7d78cf17a"></script>
 <script src="{{asset "js/page/faith-port-read-modernize.js"}}&amp;frv=fcf6043d56de1d33"></script>
 <script src="{{asset "js/port/cgpt-link.js"}}&amp;frv=386401f14f087d18"></script>
 {{!-- Binds [data-report-issue] above. It is a per-page script rather
@@ -281,6 +292,8 @@
 {{!-- The editorial apparatus folds. Ian, 2026-09-21: "I don't care
      about this. I want to collapse it and move on." --}}
 <script src="{{asset "js/page/faith-reader-folds.js"}}&amp;frv=94a12d93f038fba9" defer></script>
+{{!-- Section headings set the TFR way: eyebrow label, title, subtitle (Ian, 2026-09-24). After the folds, which tag the heading rows. --}}
+<script src="{{asset "js/page/faith-port-read-headings.js"}}&amp;frv=449b4f019b751b5d" defer></script>
 <script src="{{asset "js/faith-work-status.js"}}&amp;frv=4a4321aacf25984d"></script>
 <script src="{{asset "js/page/faith-port-work-status.js"}}"></script>
 {{!-- Reading settings joins the dock on a phone; see the file head. --}}
