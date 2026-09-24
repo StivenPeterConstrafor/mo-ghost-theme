@@ -203,7 +203,108 @@
      entry shows ("Chap. VIII. The Second general Rule proposed") and
      keeps the engine's text on data-fr-title-original, which is what the
      heading resolvers below were written against. */
+  /* SECTIONS FROM THE TEXT'S OWN LABELS, when the outline gives none.
+     Ian, 2026-09-24: "Collapse/Expand isn't working on Jerome". Jerome
+     on Matthew (pld-5644) has a contents by Migne column and no heading
+     rows; its chapters open inside paragraphs ("[ Cap. I. I, 3.] Liber
+     generationis ..."), which faith-port-read-headings.js marks as
+     inline divisions (p.fr-il) or short label headings. With no outline
+     entry, or none that resolves once every entry's page has been
+     tried, those labels become the sections: a book or part at 1, a
+     chapter, homily or letter at 2, a section or question at 3. Each is
+     keyed on its row's id, which the engine gives every row
+     (b<page>-<n>), so a fold survives a re-render. The label row stays
+     on screen when folded; the fold starts at the next row, so text in
+     the label's own row is never hidden. */
+  let labelMode = false;
+  const LAB_DEPTH = [
+    [/^(?:book|booke|lib(?:er)?|part|pars|tom(?:e|us)|vol(?:ume)?)\b/i, 1],
+    [/^(?:§|sect|sectio|q\.|q\b|question|quaestio)/i, 3],
+  ];
+  const LAB_P = ":is(.en, .la, .gr) > :is(p.fr-il, p.fr-hd[data-fr-il=\"head\"])";
+  function keyOf(id) {
+    let h = 7;
+    for (let k = 0; k < id.length; k += 1) h = (h * 31 + id.charCodeAt(k)) | 0;
+    return 1000000 + (Math.abs(h) % 1000000000);
+  }
+  function labelEntries() {
+    const out = [];
+    const reading = document.querySelector("#reading");
+    if (!reading) return out;
+    reading.querySelectorAll(".folio > .row[id]").forEach((row) => {
+      const p = row.querySelector(`:scope > ${LAB_P}, :scope > :is(p.fr-il, p.fr-hd[data-fr-il="head"])`);
+      if (!p || p.closest(".pld-editorial")) return;
+      const eye = p.querySelector(".fr-il-eye, .fr-hd-eye");
+      const label = String((eye || p).textContent || "").replace(/^[\s[(]+/, "").replace(/\s+/g, " ").trim();
+      let depth = 2;
+      for (const [re, d] of LAB_DEPTH) if (re.test(label)) { depth = d; break; }
+      out.push({ i: keyOf(row.id), page: String(row.parentElement.dataset.page || ""), depth, title: label.slice(0, 80), row, anchor: "" });
+    });
+    return out;
+  }
+  /* THE RULE, decided from the text as rendered, so a work added later
+     qualifies on its own (Ian, 2026-09-24: "that needs to be a rule
+     across all works that are like this"):
+     - at least 3 labels that parse as a division and number (Cap. I,
+       Caput II, ...), with the numbers rising at least twice in order,
+       so a stray "Liber I" in a preface never re-sections a work;
+     - and an outline that is missing, or of whose entries tried so far
+       (their page loaded) no more than 60% resolved to a heading. */
+  function labelsQualify(labs) {
+    if (labs.length < 3) return false;
+    const keys = labs.map((e) => labelKey(e.title)).filter(Boolean);
+    if (keys.length < 3) return false;
+    let rises = 0;
+    const last = new Map();
+    keys.forEach((k) => {
+      const m = /([a-z]+)(\d+)$/.exec(k);
+      if (!m) return;
+      const prev = last.get(m[1]);
+      if (prev != null && Number(m[2]) > prev) rises += 1;
+      last.set(m[1], Number(m[2]));
+    });
+    return rises >= 2;
+  }
+  function outlineIsPoor(list, folioByPage, allTried) {
+    if (!list.length) return true;
+    let triedN = 0;
+    let found = 0;
+    list.forEach((e) => {
+      const f = folioByPage.get(e.page);
+      const t = f && tried.get(f);
+      if (!(t && t.has(e.i))) return;
+      triedN += 1;
+      if (f.querySelector(`[data-fr-sec="${e.i}"]`)) found += 1;
+    });
+    if (!allTried && triedN < Math.min(list.length, 8)) return false;
+    return triedN > 0 && found / triedN <= 0.6;
+  }
+  function stampLabels(list) {
+    let n = 0;
+    list.forEach((e) => {
+      const { row } = e;
+      if (!row || row.dataset.frSec) return;
+      row.dataset.frSec = String(e.i);
+      row.dataset.frDepth = String(e.depth);
+      row.dataset.frLab = "1";
+      row.classList.add("fr-sec-head");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "fr-sec-toggle";
+      btn.dataset.frSecToggle = String(e.i);
+      btn.setAttribute("aria-label", `Fold ${e.title}`);
+      btn.setAttribute("aria-expanded", "true");
+      row.appendChild(btn);
+      n += 1;
+    });
+    return n;
+  }
+
   function entries() {
+    return labelMode ? labelEntries() : navEntries();
+  }
+
+  function navEntries() {
     if (!nav) return [];
     return [...nav.querySelectorAll(".nav-node")].map((n) => {
       const t = n.querySelector(".nn-t") || n;
@@ -313,6 +414,7 @@
     [/^(?:question|quaestio|q)$/i, "q"],
     [/^(?:article|articulus|art)$/i, "art"],
     [/^(?:letter|epist(?:le|ola)|ep)$/i, "ep"],
+    [/^(?:dissertatio|tract(?:atus|ate)?|lectio|distinctio|dist|λόγος|λογος|oratio)$/i, "div"],
   ];
   const WORDNUM = "one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty".split(" ");
   function numOf(t) {
@@ -550,15 +652,12 @@
     if (observer) observer.disconnect();
     let stamped = 0;
     try {
-      const list = entries();
+      let list = entries();
       const folioByPage = new Map();
       reading.querySelectorAll(".folio").forEach((f) => {
         const pg = String(f.dataset.page || "");
         if (pg && !folioByPage.has(pg)) folioByPage.set(pg, f);
       });
-      // Collapse all holds for outline entries drawn after it was pressed
-      // (long works add entries as the reader moves).
-      if (allShut) list.forEach((e) => collapsed.add(e.i));
 
       /* THE FOLDS COME OFF ONLY WHEN A HEADING STILL HAS TO BE FOUND.
          The resolvers read layout, so they need every heading visible.
@@ -567,7 +666,7 @@
          text. On a 956-page work with everything folded that was a full
          layout of 1.6 million pixels per pass while pages streamed in,
          and the page stopped answering (2026-09-23: "Expand didn't"). */
-      const needsStamp = list.some((e) => {
+      const needsStamp = !labelMode && list.some((e) => {
         const f = folioByPage.get(e.page);
         if (!f || f.querySelector(`[data-fr-sec="${e.i}"]`)) return false;
         const t = tried.get(f);
@@ -577,6 +676,42 @@
         reading.querySelectorAll(".fr-sec-hid").forEach((el) => el.classList.remove("fr-sec-hid"));
         stamped = stamp(list, folioByPage);
       }
+      // No outline, or an outline none of whose entries resolved on any
+      // page it names: fold by the labels printed in the text.
+      if (!labelMode) {
+        const labs = labelEntries();
+        const allTried = list.every((e) => {
+          const f = folioByPage.get(e.page);
+          const t = f && tried.get(f);
+          return !!(t && t.has(e.i));
+        });
+        if (labelsQualify(labs) && outlineIsPoor(list, folioByPage, allTried)) {
+          labelMode = true;
+          // Outline entries that did resolve give way: one set of
+          // sections, never two interleaved.
+          reading.querySelectorAll("[data-fr-sec]").forEach((r) => {
+            delete r.dataset.frSec;
+            delete r.dataset.frDepth;
+            r.classList.remove("fr-sec-head", "is-collapsed", "fr-sec-empty");
+            const bt = r.querySelector(":scope > .fr-sec-toggle");
+            if (bt) bt.remove();
+          });
+          reading.querySelectorAll(".fr-sec-hid").forEach((el) => el.classList.remove("fr-sec-hid"));
+          loaded = true;
+          collapsed = new Set();
+          try {
+            const saved = JSON.parse(window.sessionStorage.getItem(storeKey()) || "[]");
+            if (Array.isArray(saved)) saved.map(Number).filter((n) => n >= 1000000).forEach((n) => collapsed.add(n));
+          } catch (_) { /* nothing saved */ }
+        }
+      }
+      if (labelMode) {
+        list = labelEntries();
+        stamped += stampLabels(list);
+      }
+      // Collapse all holds for entries drawn after it was pressed (long
+      // works add outline entries, and label rows, as the reader moves).
+      if (allShut) list.forEach((e) => collapsed.add(e.i));
       const target = new Set();
       sink = target;
 
