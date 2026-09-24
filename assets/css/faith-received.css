@@ -20229,10 +20229,11 @@ html:not(.faith-mf-tabbed) .faith-mf-panel + .faith-mf-panel { margin-top: 72px;
 /* Each letter's author at its foot, from the contributor's own Ghost tag:
    the same card as the contributors page, the bio in full (the grid
    clamps it to three lines; a letter's signature should not be cut). */
-.faith-mf-author {
-  margin: 48px 0 0;
-  padding-top: 28px;
-  border-top: 1px solid var(--color-card-border, #d9c6a7);
-}
+/* One rule above the author, the card's own (Ian, 2026-09-24: "doesn't
+   need these double lines"). */
+.faith-mf-author { margin: 48px 0 0; }
 .faith-mf-author .contributor-card { max-width: 560px; }
 .faith-mf-author .contributor-card-bio { display: block; -webkit-line-clamp: unset; line-clamp: unset; overflow: visible; }
+/* "The Faith Received" on its own second line in every toggle button
+   (Ian, 2026-09-24), so the three read as a set. */
+.faith-mf-tab-tfr { display: block; }
