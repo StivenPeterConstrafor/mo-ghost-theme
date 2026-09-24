@@ -35,7 +35,7 @@
  *   node scripts/build-author-directory.mjs
  * then node scripts/check-author-directory.mjs.
  */
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, readFileSync, mkdirSync } from "node:fs";
 
 const B = "https://mo-tfr-library.mo-podcast-feed.workers.dev";
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/130 Safari/537.36";
@@ -227,6 +227,26 @@ for (const [key, p] of people) {
 // Several people of one name: the bare name opens the undated one, or a
 // list of them (the page reads `@@base`).
 for (const [key, p] of people) if (p.base && !people.has(p.base)) put(fold(p.base), `@@${p.base}`);
+
+// Every other spelling the site can write: each catalogue variant of a
+// work goes where its work's author went, and both sides of the two alias
+// tables go where either side went (the English aliases file is what All
+// Works prints and links, so "Keach, Benjamin" and "Benjamin Keach" are
+// one address). A name a room answers to by its own name also resolves
+// here, so a folded link (no commas, no dates left to read) still lands.
+const roomFold = new Map();
+for (const r of rooms) { roomFold.set(fold(r.s), r.id); roomFold.set(fold(r.a), r.id); }
+const lookup = (n) => names[fold(n)] || roomFold.get(fold(n)) || roomFold.get(fold(plain(n))) || (roomByPlain(n) || {}).id || "";
+for (const w of works) {
+  const t = lookup(w.name);
+  if (t) for (const v of w.variants) if (!PLACEHOLDER.test(v)) put(fold(v), t);
+}
+const local = JSON.parse(readFileSync(new URL("../assets/data/faith-received/english-author-aliases.json", import.meta.url), "utf8")).aliases || {};
+for (const [k, v] of [...Object.entries(ALIASES), ...Object.entries(local)]) {
+  const t = lookup(k) || lookup(v);
+  if (t) { put(fold(k), t); put(fold(v), t); }
+}
+for (const r of rooms) if (!/-anthology$/.test(r.s)) put(fold(r.a), r.id);
 
 mkdirSync(OUT, { recursive: true });
 const date = new Date().toISOString().slice(0, 10);
