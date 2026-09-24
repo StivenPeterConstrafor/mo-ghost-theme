@@ -247,13 +247,14 @@
   }
 
   function renderIndex(list, authors, counts) {
-    const top = list.filter((t) => !t.parent);
+    const visible = list.filter((t) => t.showInIndex !== false);
+    const top = visible.filter((t) => !t.parent);
     const row = (t) => {
       const a = (authors[t.slug] || []).length;
       const d = counts ? counts.get(t.slug) || 0 : null;
       const meta = [t.era, d ? n(d, "document", "documents") : "", a ? n(a, "author", "authors") : ""]
         .filter(Boolean).join(" · ");
-      const kids = list.filter((k) => k.parent === t.slug);
+      const kids = visible.filter((k) => k.parent === t.slug);
       return `<li><a class="tfr-trad-ix" href="${tradHref(t.slug)}"><span class="tfr-trad-ixn">${esc(t.name)}</span>`
         + `<span class="tfr-trad-ixd">${esc(t.dek)}</span>${meta ? `<span class="tfr-trad-ixm">${esc(meta)}</span>` : ""}</a>${
          kids.length ? `<ol class="tfr-trad-index tfr-trad-index--sub">${kids.map(row).join("")}</ol>` : ""
