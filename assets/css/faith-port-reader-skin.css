@@ -3292,6 +3292,18 @@ html.g-mobile .fr-tb-paras { display: none !important; }
    lanes of each row run to one height so the Latin and English boxes end
    together. The Latin lane's own rule stands aside for the box. */
 #app #reading .row.fr-hd-joinrow { margin-bottom: 0 !important; padding-bottom: 0 !important; }
+/* The row it continues onto folded away (a parent's fold, or a page
+   whose next row has not come back yet): the card closes on its own
+   line, bottom rule and corners restored (Ian, 2026-09-24: "When these
+   are collapsed, the bottom line disappears. It shouldn't"). */
+#app #reading .row.fr-sec-empty > .fr-sec-toggle { display: none; }
+#app #reading .row.fr-hd-joinrow:has(+ .row.fr-sec-hid) .fr-hd.fr-hd-card.fr-hd-open {
+  border-bottom-width: 1px;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  padding-bottom: 16px;
+  margin-bottom: 1.2em !important;
+}
 #app #reading .row.fr-hd-controw { margin-top: 0 !important; padding-top: 0 !important; }
 #app #reading .row.fr-hd-joinrow,
 #app #reading .row.fr-hd-controw { align-items: stretch; }

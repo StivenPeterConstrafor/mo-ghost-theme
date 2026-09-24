@@ -38,7 +38,7 @@
   //         printed under it ("Article I. Of Faith in the Holy Trinity").
   const RULES = {
     "rc-115-westminster-shorter-catechism-1647": { questions: true },
-    "rc-114-westminster-larger-catechism-1647": { questions: true },
+    "rc-114-westminster-larger-catechism-1647": { questions: true, caps: true },
     // Heidelberg prints its questions as "1. What is your only comfort…?"
     // with no "Q.", so only an unbroken run 1, 2, 3… counts, which keeps
     // an answer's own numbered list out of the contents.
@@ -84,6 +84,57 @@
     return out;
   }
 
+  /* LEVELS, so a catechism folds by its parts (Ian, 2026-09-24:
+     "heidelberg doesn't actually collapse all"). The flat list folded
+     each question by itself and nothing nested. A fold runs to the next
+     entry of equal or higher rank (faith-reader-folds.js), so the rank
+     is what makes Collapse all leave only the parts on screen.
+       Part headings ("First Part:", "Part II")          1
+       the line printed under a Part ("Of Man's Misery") 2, its child
+       Lord's Day, and any other heading inside a Part   2
+       a question: one below the grouping heading before it.
+     The work's title is 1 and counts as a grouping heading only when the
+     work has others; the Shorter, with none, stays flat as before. */
+  const PART = /^(?:(?:the\s+)?(?:first|second|third|fourth|fifth)\s+part|part\s+(?:[ivx]+|\d+|one|two|three))\b/i;
+  const DAY = /^lord['’]?s\s+day\b/i;
+  function levels(list, qset) {
+    const heads = list.filter((r) => !qset.has(r));
+    const grouped = heads.length > 1;
+    let group = 0; // depth of the grouping heading in force
+    let inPart = false;
+    let prevHead = null;
+    return list.map((r, i) => {
+      const t = clean(r.title).replace(/^§\s*/, "");
+      if (qset.has(r)) return { ...r, depth: grouped && group ? group + 1 : 1 };
+      let d;
+      if (i === 0 || r === heads[0]) d = 1;
+      else if (PART.test(t)) { d = 1; inPart = true; }
+      else if (DAY.test(t)) d = 2;
+      else if (prevHead && PART.test(clean(prevHead.title).replace(/^§\s*/, ""))
+        && String(prevHead.page) === String(r.page)) d = 2;
+      else d = inPart ? 2 : 1;
+      group = d;
+      prevHead = r;
+      return { ...r, depth: d };
+    });
+  }
+
+  // "HAVING SEEN WHAT THE SCRIPTURES PRINCIPALLY TEACH…": a whole
+  // paragraph in capitals, not a question, is a printed heading.
+  function capsHeads(reading) {
+    const out = [];
+    reading.querySelectorAll('[id^="b"]').forEach((row) => {
+      const page = (/^b(.+)-\d+$/.exec(row.id) || [])[1];
+      if (page == null || row.closest(".rowx,.appbank,.footnotes,.margin,.rtoc,.ctoc,.la,.stk-la")) return;
+      const en = row.classList.contains("en") ? row : (row.querySelector(".en") || row);
+      const t = clean(en.textContent);
+      if (t.length < 24 || t.length > 240 || /\?/.test(t) || /[a-z]/.test(t) || !/[A-Z]{4}/.test(t)) return;
+      const title = t.charAt(0) + t.slice(1).toLowerCase().replace(/\bgod\b/g, "God").replace(/\bscriptures\b/g, "Scriptures");
+      out.push({ title, page, anchor: row.id, depth: 1, element: row });
+    });
+    return out;
+  }
+
   const before = (a, b) => {
     if (!a.element || !b.element || a.element === b.element) return 0;
     return a.element.compareDocumentPosition(b.element) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
@@ -94,9 +145,10 @@
     if (rule.questions) {
       const qs = questions(reading, rule.questions);
       if (qs.length < 2) return rows;
-      // Headings stay (the title, the Larger's two parts); every entry
-      // sits at one level, which is how our copies listed them.
-      out = out.map((r) => ({ ...r, depth: 1 })).concat(qs).sort(before);
+      // A heading printed as a capitals paragraph (the Larger's second
+      // part) joins the contents as a heading.
+      const extra = rule.caps ? capsHeads(reading) : [];
+      out = levels(out.concat(extra, qs).sort(before), new Set(qs));
     }
     if (rule.titles) {
       const merged = [];

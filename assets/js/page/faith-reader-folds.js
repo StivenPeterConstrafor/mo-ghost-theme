@@ -200,7 +200,12 @@
     return [...nav.querySelectorAll(".nav-node")].map((n) => {
       const t = n.querySelector(".nn-t") || n;
       const own = t.dataset ? t.dataset.frTitleOriginal : null;
+      const a = n.querySelector("a.nn-t");
+      let anchor = "";
+      try { anchor = a ? decodeURIComponent(new URL(a.href, window.location.href).hash.slice(1)) : ""; }
+      catch (_) { anchor = ""; }
       return {
+        anchor,
         i: Number(n.dataset.idx),
         page: String(n.dataset.page || ""),
         depth: Number(((n.className.match(/\bnd(\d)\b/) || [])[1]) || 1),
@@ -214,7 +219,8 @@
      row openings by shared words, and accept only a strong match. */
   const norm = (t) => String(t || "").toLowerCase().replace(/<[^>]+>/g, "")
     .replace(/[^a-z0-9]+/g, " ").trim();
-  function fuzzy(folio, title) {
+  function fuzzy(folio, title, claimed) {
+    const taken = (el) => !!(claimed && claimed.has(el.closest(".row") || el));
     const nt = norm(String(title).replace(/^[^—]{0,16}—\s*/, ""));
     if (nt.length < 6) return null;
     const words = nt.split(" ").filter((w) => w.length > 2);
@@ -228,13 +234,13 @@
     let best = null;
     let bs = 0;
     folio.querySelectorAll(".row.rhead .csub").forEach((h) => {
-      if (!h.getClientRects().length) return;
+      if (!h.getClientRects().length || taken(h)) return;
       const sc = score(h.textContent);
       if (sc > bs) { bs = sc; best = h; }
     });
     if (bs < 0.6) {
       folio.querySelectorAll(".row:not(.rhead)").forEach((r) => {
-        if (!r.getClientRects().length) return;
+        if (!r.getClientRects().length || taken(r)) return;
         const sc = score((r.textContent || "").slice(0, 260));
         if (sc > bs) { bs = sc; best = r; }
       });
@@ -242,16 +248,61 @@
     return best && bs >= 0.6 ? best : null;
   }
 
-  function resolve(folio, title) {
+  /* The same title printed as a heading on this page, by exact text
+     (§, apostrophes and punctuation aside), the nth time it appears for
+     the nth entry of that title. exactHeading answers only for works
+     with a reviewed outline, and fuzzy() takes the FIRST best match, so
+     on the Heidelberg every "Lord's Day n" after the first on a page
+     scored "Lord's Day 1" (the words lord and day), found it already
+     claimed, and got no fold: Lord's Day 2, 3, 4, 6, 7, 9... */
+  const HEADS = ".rhead .csub, .rhead .cmain, .rhead .hen, .row.rhead";
+  function exactText(folio, title, nth) {
+    const want = norm(title);
+    if (!want) return null;
+    const seen = new Set();
+    let n = 0;
+    for (const h of folio.querySelectorAll(HEADS)) {
+      const row = h.closest(".row") || h;
+      if (seen.has(row) || !h.getClientRects().length) continue;
+      if (norm(h.textContent) !== want) continue;
+      seen.add(row);
+      if (n === nth) return h;
+      n += 1;
+    }
+    return null;
+  }
+
+  /* The entry's own link, when it names one element. The contents
+     overlay points every catechism question at its row (b<page>-<n>),
+     which is exact where fuzzy() is not: the Larger's "7. What is God?"
+     scored the answer to Q.5 (it has "what" and "God"), a row ABOVE the
+     part heading, so collapsing it hid the part heading. Trusted only
+     when the row opens with the title's own words, because the Migne
+     works point every entry on a column at that column's first block. */
+  function anchored(folio, e) {
+    if (!e.anchor) return null;
+    let el = null;
+    try { el = folio.querySelector(`#${CSS.escape(e.anchor)}`); }
+    catch (_) { el = null; }
+    if (!el || !el.getClientRects().length) return null;
+    if (/^h\d/.test(e.anchor)) return el;
+    const want = norm(e.title).slice(0, 40);
+    return want.length >= 6 && norm(el.textContent).slice(0, want.length + 8).includes(want) ? el : null;
+  }
+
+  function resolve(folio, title, nth, claimed, e) {
     const d = dataOf();
-    let h = null;
+    let h = e ? anchored(folio, e) : null;
+    if (h) return h.closest(".row") && h.closest(".row").parentElement === folio ? h.closest(".row") : null;
     try { h = window.FRReaderNavigation && window.FRReaderNavigation.exactHeading(d, folio, title); }
     catch (_) { h = null; }
+    if (h && claimed && claimed.has(h.closest ? (h.closest(".row") || h) : h)) h = null;
     if (!h && /^pld-/.test((d && d.slug) || "")) {
       try { h = window.FRPldReading && window.FRPldReading.renderedHeading(folio, title); }
       catch (_) { h = null; }
     }
-    if (!h) h = fuzzy(folio, title);
+    if (!h) h = exactText(folio, title, nth || 0);
+    if (!h) h = fuzzy(folio, title, claimed);
     if (!h || h === folio) return null;
     const row = h.closest ? (h.closest(".row") || h) : null;
     // Only a direct child of the folio can bound a range; anything
@@ -292,15 +343,21 @@
   function stamp(list, folioByPage) {
     const found = [];
     const claimed = new Set();
+    // Rows already stamped on an earlier pass are claimed too.
+    folioByPage.forEach((f) => f.querySelectorAll(":scope > [data-fr-sec]").forEach((r) => claimed.add(r)));
+    const nthOf = new Map();
     list.forEach((e) => {
       const folio = folioByPage.get(e.page);
       if (!folio) return;
+      const key = `${e.page}\u0000${norm(e.title)}`;
+      const nth = nthOf.get(key) || 0;
+      nthOf.set(key, nth + 1);
       if (folio.querySelector(`[data-fr-sec="${e.i}"]`)) return;
       let t = tried.get(folio);
       if (!t) { t = new Set(); tried.set(folio, t); }
       if (t.has(e.i)) return;
       t.add(e.i);
-      const row = resolve(folio, e.title);
+      const row = resolve(folio, e.title, nth, claimed, e);
       if (!row || row.dataset.frSec || claimed.has(row)) return;
       claimed.add(row);
       found.push([e, row]);
@@ -332,6 +389,22 @@
   let sink = null;
   function hide(el) { if (sink) sink.add(el); else el.classList.add("fr-sec-hid"); }
 
+  /* Where a fold starts hiding: after the head row, and after the line
+     its heading box continues onto (faith-port-read-headings.js joins a
+     card to the subtitle or title in the row below). Hiding that row
+     left the folded card with an open bottom and no bottom rule (Ian,
+     2026-09-24: "When these are collapsed, the bottom line disappears").
+     The heading's own lines are part of the heading and stay. */
+  function firstHidden(head) {
+    const n = head.nextElementSibling;
+    return n && head.classList.contains("fr-hd-joinrow") && n.classList.contains("fr-hd-controw")
+      // Never past the row where this section ends (a label and its
+      // title at one rank: "First Part:" / "Of Man's Misery" on the old
+      // flat outline).
+      && (n.dataset.frSec == null || Number(n.dataset.frDepth || 0) > Number(head.dataset.frDepth || 0))
+      ? n.nextElementSibling : n;
+  }
+
   /* Everything after `head`, in document order, up to where the next
      section of equal or higher rank begins. */
   function hideRange(head, endRow, endFolio) {
@@ -344,7 +417,7 @@
     // text the reader did not ask to fold. Seen on pg-3860, where the
     // second entry's title ("Proems") matches nothing printed on the page.
     if (!endRow && endFolio === folio) return;
-    for (let s = head.nextElementSibling; s; s = s.nextElementSibling) {
+    for (let s = firstHidden(head); s; s = s.nextElementSibling) {
       if (endRow && (s === endRow || s.contains(endRow))) return;
       hide(s);
     }
@@ -352,8 +425,11 @@
     for (let u = folio.nextElementSibling; u && u.parentElement === reading; u = u.nextElementSibling) {
       if (u.classList.contains("fmark")) {
         const n = u.nextElementSibling;
-        // The page marker that heads the next section's page stays.
-        if (n && (n === endFolio || (endRow && n.contains(endRow)))) return;
+        // The page marker that heads the next section's page stays, and
+        // that page's rows before the next heading still fold: returning
+        // here left the Heidelberg's Lord's Day 31 (page 10, above Third
+        // Part) open under a collapsed Second Part.
+        if (n && (n === endFolio || (endRow && n.contains(endRow)))) continue;
         hide(u);
         continue;
       }
@@ -441,19 +517,36 @@
           btn.setAttribute("aria-expanded", open ? "true" : "false");
           btn.setAttribute("aria-label", `${open ? "Fold" : "Unfold"} ${e.title}`);
         }
-        if (open) return;
         let next = null;
         for (let j = k + 1; j < list.length; j += 1) {
           if (list[j].depth <= e.depth) { next = list[j]; break; }
         }
-        const endRow = next ? (rowOf.get(next.i) || null) : null;
+        // A section with nothing of its own before the next one (the
+        // Heidelberg's "Of Man's Misery", the title line of a Part, with
+        // Lord's Day 2 right under it) shows no caret: it would fold
+        // nothing.
+        const nextRow = next ? rowOf.get(next.i) : null;
+        head.classList.toggle("fr-sec-empty", !!nextRow && head.nextElementSibling === nextRow);
+        if (open) return;
+        let endRow = next ? (rowOf.get(next.i) || null) : null;
         const endFolio = next
           ? (endRow ? endRow.parentElement : (folioByPage.get(next.page) || null))
           : null;
+        // The next section starts on this page but its heading was not
+        // found. Fold at least as far as the last heading that WAS found
+        // inside this section: everything before it is this section's
+        // own text, so nothing is hidden wrongly, and the section no
+        // longer stays wide open (the Heidelberg's Q.5 answer).
+        if (next && !endRow && endFolio === head.parentElement) {
+          for (let j = list.indexOf(next) - 1; j > k; j -= 1) {
+            const r = rowOf.get(list[j].i);
+            if (r && r.parentElement === endFolio) { endRow = r; break; }
+          }
+        }
         // A later section whose page has not streamed in yet: fold only
         // what is here now; the next pass extends it when the page lands.
         if (next && !endFolio) {
-          for (let s = head.nextElementSibling; s; s = s.nextElementSibling) hide(s);
+          for (let s = firstHidden(head); s; s = s.nextElementSibling) hide(s);
           // ...AND every page after it up to the next section's page, loaded
           // or not. Folding only the head's own page left the rest of a long
           // work's section on screen as unloaded placeholders; the reader
@@ -527,7 +620,11 @@
         if (list[j].depth <= e.depth) { next = list[j]; break; }
       }
       const to = next ? order.get(next.page) : undefined;
-      if (to === undefined || at < to) { collapsed.delete(e.i); allShut = false; changed = true; }
+      // The page where the next section starts counts too: the place may
+      // sit above that section's heading, and opening one fold too many
+      // is harmless where one too few lands on nothing (the Heidelberg's
+      // Lord's Days share pages).
+      if (to === undefined || at <= to) { collapsed.delete(e.i); allShut = false; changed = true; }
     });
     if (changed) { saveCollapsed(); apply(); }
   }
@@ -553,7 +650,11 @@
   (function hook(tries) {
     const a = wrap("jump", (p) => p);
     const b = wrap("__frNavigateReaderAnchor", pageFromHref);
-    if ((!a || !b) && tries > 0) window.setTimeout(() => hook(tries - 1), 250);
+    // The confessions' contents (reader-core renderConfessionContents)
+    // go by the restorer, not jump(): a catechism question inside a
+    // folded Part landed on nothing until this was wrapped too.
+    const c = wrap("__frRestoreReaderPosition", (o) => (o && o.page != null ? String(o.page) : ""));
+    if ((!a || !b || !c) && tries > 0) window.setTimeout(() => hook(tries - 1), 250);
   }(40));
 
   /* Expand all / Collapse all, for the toolbar (Ian, 2026-09-23).
