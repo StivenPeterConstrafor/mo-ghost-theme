@@ -25,7 +25,11 @@
 (function () {
   "use strict";
 
-  const NARROW = 640;
+  // The reader's own phone width (html.g-mobile), since the dock became
+  // three buttons and a Tools drawer (faith-port-read-drawer.js,
+  // 2026-09-23): the Text button lives in that drawer at every width
+  // the dock is shown.
+  const NARROW = 880;
   const btn = document.getElementById("aaBtn");
   if (!btn) return;
 
@@ -41,10 +45,12 @@
   function place() {
     const bar = dock();
     if (narrow() && bar) {
-      if (btn.parentElement !== bar) {
+      if (!bar.contains(btn)) {
         btn.classList.add("frthumb-aa");
         btn.innerHTML = dockShape;
-        bar.insertBefore(btn, bar.firstChild);
+        const slot = bar.querySelector(".fr-mtools-drawer");
+        if (slot) slot.insertBefore(btn, slot.firstChild);
+        else bar.insertBefore(btn, bar.firstChild);
       }
     } else if (!narrow() && home && btn.parentElement !== home) {
       btn.classList.remove("frthumb-aa");

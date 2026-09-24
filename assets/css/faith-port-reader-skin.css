@@ -2326,3 +2326,269 @@ html.mo-embedded .tfr-rail { display: none; }
 @media (max-width: 1439px) {
   html:not(.g-mobile) #app .ph.fr-reader-head .fr-tb-report .fr-tb-more { display: none; }
 }
+
+/* ── THE RAIL NEVER GOES UNDER THE TOOLBAR (Ian, 2026-09-23) ─────────
+   "the navrail is slipping behind the toolbar on scroll. That should
+   never happen." The toolbar is fixed at z-index 40 and the rail was in
+   flow with none, so any frame in which the two met (a slide, a stale
+   cached stylesheet, a drawer opening) put the rail underneath. It now
+   stacks above the toolbar, and our masthead above the rail so the
+   masthead's menus still drop over both. */
+body:has(#app.faith-port-read-page) .tfr-rail { position: relative; z-index: 45; }
+body:has(#app.faith-port-read-page) header.site-header { z-index: 50; }
+
+/* ── TOOLS HOLDS THE TOOLS (Ian, 2026-09-23) ─────────────────────────
+   faith-port-read-drawer.js moves every tool into #frToolsDrawer, just
+   before Tools, and opens it by width on the rail's own curve and
+   timing (.tfr-rail-drawer in faith-received.css). Visible at rest:
+   contents, title, page, Search, Tools. Desktop only; the phone's dock
+   has its own drawer below. */
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr { position: relative; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tools-drawer {
+  order: 9;
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: 12px;
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  margin-left: 0;
+  transition: width 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+              opacity 0.22s ease,
+              margin-left 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tools-drawer.is-open { opacity: 1; margin-left: 16px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tools-drawer.is-open.is-settled {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tools-drawer::-webkit-scrollbar { display: none; }
+.fr-tools-drawer[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tools-drawer { transition: none; }
+}
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-td-group { display: flex; align-items: center; flex: none; gap: 0; }
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-td-group:empty { display: none; }
+
+/* Every tool in the drawer: the toolbar's hairline. */
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer button,
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .aaw > .tgl {
+  flex: none;
+  height: var(--tb-h);
+  min-height: var(--tb-h);
+  margin: 0;
+  padding: 0 12px;
+  border: 1px solid var(--tb-line);
+  border-radius: 0;
+  background: var(--card, transparent);
+  color: var(--fg);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-td-group > * + *,
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .seg.lanes > button + button { margin-left: -1px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .seg.lanes { display: flex; gap: 0; padding: 0; border: 0; height: auto; background: none; overflow: visible; }
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-td-group > button:first-child,
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-td-group > .aaw:first-child > .tgl,
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-td-group > .seg:first-child > button:first-child { border-radius: 3px 0 0 3px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-td-group > button:last-child,
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-td-group > .aaw:last-child > .tgl,
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-td-group > .seg:last-child > button:last-child { border-radius: 0 3px 3px 0; }
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-td-group > button:only-child { border-radius: 3px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer button:hover,
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .aaw > .tgl:hover {
+  border-color: var(--fr-ink-hot, #b0573a);
+  color: var(--fr-ink-hot, #b0573a);
+  position: relative;
+  z-index: 1;
+}
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer [aria-pressed="true"],
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .aaw > .tgl[aria-expanded="true"] {
+  background: var(--fr-fill, #b0573a);
+  border-color: var(--fr-fill, #b0573a);
+  color: var(--fr-fill-ink, #fff);
+  position: relative;
+  z-index: 2;
+}
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer button:disabled { opacity: 0.45; cursor: default; }
+/* The old menu items keep their label and drop the description, which
+   became their tooltip. */
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .rdt > span { display: none; }
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .rdt > span.rdt-l { display: inline; }
+/* Research stays the one accent, now at the end of the drawer. */
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-td-research #nbCount { border-radius: 3px; }
+/* Aa's menu is anchored to the bar, not the drawer, so the drawer's
+   clip never cuts it. */
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .aaw { position: static; display: flex; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr .aapop { top: calc(100% + 8px); right: 0; }
+html:not(.g-mobile) #rdToolsPop { display: none !important; }
+
+/* Search and Tools, the two at rest. */
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rsBtn { margin-left: 16px; border-radius: 3px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw { margin-left: 16px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw > .tgl { border-radius: 3px; }
+html:not(.g-mobile) #app .ph.fr-reader-head #rdTools.fr-td-toggle { display: inline-flex; align-items: center; gap: 0; }
+html:not(.g-mobile) #app .ph.fr-reader-head #rdTools.fr-td-toggle::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 8px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(135deg);
+  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+html:not(.g-mobile) #app .ph.fr-reader-head #rdTools.fr-td-toggle[aria-expanded="true"]::after { transform: rotate(-45deg); }
+html:not(.g-mobile) #app .ph.fr-reader-head #rdTools.fr-td-toggle[aria-expanded="true"] {
+  border-color: var(--fr-ink-hot, #b0573a);
+  color: var(--fr-ink-hot, #b0573a);
+}
+
+/* While the drawer is open the page controls fold away, on the same
+   curve, and the title gives way. */
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pnav,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pgjump {
+  max-width: 260px;
+  transition: max-width 0.3s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.22s ease;
+}
+html:not(.g-mobile) #app .ph.fr-reader-head.fr-tools-open .ctr > .seg.pnav,
+html:not(.g-mobile) #app .ph.fr-reader-head.fr-tools-open .ctr > .seg.pgjump {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0;
+  border-width: 0 !important;
+  margin: 0;
+}
+html:not(.g-mobile) #app .ph.fr-reader-head .reader-identity { transition: opacity 0.22s ease; }
+
+/* The copy feedback, as a toast under the bar or over the dock. */
+.fr-td-say {
+  position: fixed;
+  left: 50%;
+  top: calc(var(--mo-head, 61px) + var(--phh, 64px) + 10px);
+  transform: translateX(-50%);
+  z-index: 10040;
+  margin: 0;
+  padding: 7px 14px;
+  border: 1px solid var(--border, #d9c6a7);
+  border-radius: 3px;
+  background: var(--card, #fffdfa);
+  color: var(--fg, #2d2927);
+  font-size: 13px;
+  pointer-events: none;
+}
+.fr-td-say:empty { display: none; }
+html.g-mobile .fr-td-say { top: auto; bottom: calc(76px + env(safe-area-inset-bottom)); }
+
+/* ── THE PHONE'S DOCK: CONTENTS, SEARCH, TOOLS ───────────────────────
+   Three cells at rest. Tools opens a drawer between Search and Tools by
+   width, on the rail's curve, and Contents and Search fold away while
+   it is open so the drawer has the bar; the drawer scrolls sideways. */
+html.g-mobile nav.frthumb.fr-m3 {
+  overflow: hidden;
+  justify-content: space-around;
+  gap: 0;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+html.g-mobile nav.frthumb.fr-m3 > button {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 200px;
+  transition: max-width 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+              flex-grow 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+              opacity 0.22s ease, padding 0.3s ease;
+}
+html.g-mobile nav.frthumb.fr-m3.fr-m3-open > [data-t="toc"],
+html.g-mobile nav.frthumb.fr-m3.fr-m3-open > [data-t="find"] {
+  flex-grow: 0;
+  max-width: 0;
+  opacity: 0;
+  padding-left: 0;
+  padding-right: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+html.g-mobile nav.frthumb.fr-m3.fr-m3-open > [data-t="tools"] { flex: 0 0 64px; }
+html.g-mobile nav.frthumb.fr-m3 > .fr-mtools-drawer {
+  display: flex;
+  align-items: stretch;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: 4px;
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: width 0.3s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.22s ease;
+}
+html.g-mobile nav.frthumb.fr-m3 > .fr-mtools-drawer.is-open { opacity: 1; }
+html.g-mobile nav.frthumb.fr-m3 > .fr-mtools-drawer.is-open.is-settled {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent);
+}
+html.g-mobile nav.frthumb.fr-m3 > .fr-mtools-drawer::-webkit-scrollbar { display: none; }
+html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer > button {
+  flex: 0 0 auto;
+  min-width: 58px;
+  padding: 5px 6px;
+}
+html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer > button[hidden] { display: none; }
+html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer > button:disabled { opacity: 0.45; }
+html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer #aaBtn.frthumb-aa { border: 0; background: none; }
+@media (prefers-reduced-motion: reduce) {
+  html.g-mobile nav.frthumb.fr-m3 > button,
+  html.g-mobile nav.frthumb.fr-m3 > .fr-mtools-drawer { transition: none; }
+}
+
+/* ── TRANSPARENCY, IN THE MIDDLE OF THE SCREEN (phone) ───────────────
+   The disclosure panel moves into this dialog on a phone. The scrim
+   stops at the dock, so Transparency can be pressed again to close it. */
+.fr-tt-modal[hidden] { display: none; }
+.fr-tt-modal { position: fixed; inset: 0; z-index: 57; display: flex; align-items: center; justify-content: center; padding: 20px 16px calc(84px + env(safe-area-inset-bottom)); }
+.fr-tt-scrim { position: absolute; inset: 0; background: rgba(34, 35, 32, 0.45); }
+.fr-tt-box {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  max-height: 100%;
+  overflow-y: auto;
+  border: 1px solid var(--border, #d9c6a7);
+  border-radius: 4px;
+  background: var(--card, #fffdfa);
+  color: var(--fg, #2d2927);
+  padding: 44px 16px 16px;
+}
+.fr-tt-x {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border, #d9c6a7);
+  border-radius: 3px;
+  background: var(--card, #fffdfa);
+  color: var(--fg, #2d2927);
+  font: 20px/1 Georgia, serif;
+  padding: 0 0 2px;
+  cursor: pointer;
+}
+.fr-tt-box .faith-reader-status { margin: 0; }
+.fr-tt-box .faith-reader-status[hidden] { display: block; }
+html.g-mobile.fr-tt-modal-open nav.frthumb { z-index: 58; }
