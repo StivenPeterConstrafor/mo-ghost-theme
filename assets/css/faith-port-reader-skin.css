@@ -316,9 +316,13 @@ footer.site-footer .nav {
    is removed, it just stops being the default for a third of visitors.
    The theme control itself should drop to Light/Sepia; that is a
    template change, tracked separately. */
+/* NOT SEPIA EITHER (Ian, 2026-09-23: "We've also lost the third light
+   tan background"). Written as not-dark, this matched sepia too, so on
+   any machine set to dark it repainted sepia in the light tokens: the
+   toggle's third state looked exactly like the first. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="dark"]),
-  :root[data-site]:not([data-theme="dark"]) {
+  :root:not([data-theme="dark"]):not([data-theme="sepia"]),
+  :root[data-site]:not([data-theme="dark"]):not([data-theme="sepia"]) {
     color-scheme: light;
     --bg: #f6f3f2;
     --bg-warm: #f1e0c9;
