@@ -46,7 +46,6 @@
   function slug() {
     try {
       // DATA is reader-core's top-level binding, shared across scripts.
-      // eslint-disable-next-line no-undef
       if (typeof DATA !== "undefined" && DATA && DATA.slug) return String(DATA.slug);
     } catch (_) { /* not booted yet */ }
     return new URLSearchParams(window.location.search).get("w") || "";
@@ -77,7 +76,6 @@
 
   const before = (a, b) => {
     if (!a.element || !b.element || a.element === b.element) return 0;
-    // eslint-disable-next-line no-bitwise
     return a.element.compareDocumentPosition(b.element) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
   };
 
@@ -109,8 +107,9 @@
   }
 
   const base = api.contents;
-  api.contents = function (reading) {
-    const rows = base.apply(this, arguments);
+  api.contents = function (...args) {
+    const [reading] = args;
+    const rows = base.apply(this, args);
     const rule = RULES[slug()];
     if (!rule || !reading) return rows;
     try { return overlay(rows, reading, rule); } catch (_) { return rows; }

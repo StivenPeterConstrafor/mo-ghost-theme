@@ -5,6 +5,7 @@
    "pages: old reader page -> [new page, anchor id on the new copy]. Every old copy here was one division per page (page 33 = Q. 33 / Article 33 / Chapter 33); anchors were read off the new copy as the live reader renders it (2026-09-24).",
    "legacy: the division id prefix the old per-work page used (/the-faith-received/westminster-shorter/#q-33).",
    "search: extra words the title index should match for the new copy (the old name).",
+  "research: the Research panel's Scripture list for the new copy also shows the old copy's citations (page/faith-port-read-research-overlay.js).",
    "Consumers: assets/js/lib/faith-work-forwards.js (generated block; run node scripts/build-work-forwards.mjs after editing), scripts/build-works-title-index.mjs, scripts/retire-works.mjs."
  ],
  "v": 1,
@@ -42,6 +43,7 @@
   "belgic": {
    "corpus": "mo",
    "to": "rc-057-belgic-confession-1561",
+   "research": true,
    "toCorpus": "confessions",
    "title": "The Belgic Confession",
    "toTitle": "The Belgic Confession (1561)",

@@ -29,6 +29,7 @@ for (const [old, w] of Object.entries(data.works || {})) {
   const row = { corpus: w.corpus || "mo", to: w.to };
   if (w.legacy) row.legacy = w.legacy;
   if (w.at) row.at = w.at;
+  if (w.research) row.research = true;
   if (w.pages && Object.keys(w.pages).length) row.pages = w.pages;
   slim.works[old] = row;
 }
