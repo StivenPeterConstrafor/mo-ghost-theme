@@ -416,3 +416,8 @@ details:not([open]) > .td-fold-sum::after { transform: translateY(-30%) rotate(-
 .td-cen-group:not([open]) > .td-fold-sum::after { bottom: 9px; transform: rotate(-45deg); }
 .td-treat-group > .td-fold-sum { margin-top: 18px; }
 .td-treat-group > .td-fold-sum > .sd-h3 { margin-top: 0; }
+/* The group's rule runs the full width, under the chevron too. */
+.td-treat-group > .td-fold-sum,
+.td-cen-group > .td-fold-sum { padding-right: 0; }
+.td-treat-group > .td-fold-sum > .sd-h3,
+.td-cen-group > .td-fold-sum > .sd-h3 { padding-right: 28px; }
