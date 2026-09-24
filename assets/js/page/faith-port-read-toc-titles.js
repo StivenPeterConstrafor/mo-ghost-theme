@@ -80,6 +80,7 @@
     "distinctio epistle epistola letter oration oratio discourse thesis proposition " +
     "aphorism canon session tome tomus volume concio exercitation meditation dialogue " +
     "lesson decade century canto stanza collatio controversy controversia " +
+    "metrum meter metre carmen poem prosa prose " +
     "κεφάλαιον λόγος ὁμιλία βιβλίον τόμος").split(" "));
   // Kind of division, for grouping siblings: "Chap." and "Chapter" are one kind.
   const FAMILY = [
@@ -98,6 +99,8 @@
     [/^(distinction|distinctio|dist)$/, "distinction"],
     [/^(epistle|epistola|epist|ep|letter)$/, "epistle"],
     [/^(oration|oratio|orat|λόγος)$/, "oration"],
+    [/^(metrum|meter|metre|carmen|poem)$/, "poem"],
+    [/^(prosa|prose)$/, "prose"],
   ];
   const KW = "chapter|chap|ch|capitulum|capit|caput|cap|c|booke|book|liber|lib|part|pars|pt|" +
     "section|sectio|sect|§|question|quaestio|quaest|quest|qu|q|article|articulus|art|a|" +
@@ -107,6 +110,7 @@
     "discourse|thesis|proposition|prop|aphorism|canon|session|sess|tome|tomus|tom|" +
     "volume|vol|exercitation|exercit|meditation|medit|dialogue|lesson|decade|century|" +
     "cent|canto|stanza|collatio|controversy|controversia|contr|" +
+    "metrum|metre|meter|carmen|poem|prosa|prose|" +
     "κεφάλαιον|κεφ|λόγος|ὁμιλία|βιβλίον|τόμος";
   const WORDNUM = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
     "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
@@ -127,6 +131,8 @@
   // Ordinal first: "The Second Part", "First Sermon".
   const ORDS = `(?:${TENS.slice(2).join("|")})(?:ieth|y[-\\s](?:${ORDNUM.slice(1, 10).join("|")}))|` +
     `${ORDNUM.slice(1).join("|")}`;
+  const STRAY_LEAD = new RegExp(`^\\d{1,4}\\s+(?=(?:${KW})\\.?\\s+(?:${NUM})(?=$|[\\s.,:;)\\]—–-]))`, "iu");
+  const STRAY_MID = new RegExp(`^((?:${KW})\\.?)\\s+\\d{1,4}\\s+(?=(?:[ivxlcdm]+j?|${WORDS}|(?:${LATORD.slice(1).join("|")})(?:us|a|um))(?=$|[\\s.,:;)\\]—–-]))`, "iu");
   const LABEL_ORD = new RegExp(`^\\s*(?:the\\s+)?(${ORDS})\\s+(${KW})(?=$|[\\s.,:;)\\]—–-])\\.?`, "iu");
 
   const romanToInt = (r) => {
@@ -189,6 +195,10 @@
      three labels in a row ("Part I. Chapter II. ...") make one label. */
   function parse(title) {
     let s = String(title || "").replace(/\s+/g, " ").trim();
+    // The Patrologia prints its note and column numbers into headings:
+    // "1 METRUM PRIMUM.", "METER 432 II.". A number before a label, or
+    // between a label word and its numeral, is not part of the label.
+    s = s.replace(STRAY_LEAD, "").replace(STRAY_MID, "$1 ");
     const labels = [];
     for (let k = 0; k < 3; k++) {
       let m = s.match(LABEL);
@@ -221,6 +231,30 @@
   /* ---------- text ---------- */
 
   const isPld = () => /^pld?-/.test(String((dataOf() || {}).slug || ""));
+
+  /* Latin division words in English, for English display only (the
+     English lane showing: English alone or beside the Latin). With the
+     Latin alone (#app.only-la) the contents keep the Latin words. */
+  const LAT_EN = {
+    liber: "Book", lib: "Book", caput: "Chapter", capitulum: "Chapter", cap: "Chapter",
+    capit: "Chapter", pars: "Part", sectio: "Section", quaestio: "Question",
+    quaest: "Question", articulus: "Article", sermo: "Sermon", serm: "Sermon",
+    concio: "Sermon", lectio: "Lecture", disputatio: "Disputation", homilia: "Homily",
+    epistola: "Letter", epist: "Letter", tractatus: "Treatise", distinctio: "Distinction",
+    metrum: "Poem", meter: "Poem", metre: "Poem", carmen: "Poem", prosa: "Prose",
+    oratio: "Oration", psalmus: "Psalm", tomus: "Volume", collatio: "Conference",
+    controversia: "Controversy",
+  };
+  const LAT_WORD = {
+    praefatio: "Preface", prefatio: "Preface", prologus: "Prologue", prooemium: "Preface",
+    procemium: "Preface", epilogus: "Epilogue", argumentum: "Argument", appendix: "Appendix",
+    index: "Index", dedicatio: "Dedication",
+  };
+  function englishShown() {
+    const app = document.getElementById("app");
+    if (app && app.classList.contains("only-la")) return false;
+    return !!document.querySelector('#reading [lang="en"]');
+  }
   function clean(t) {
     let s = String(t || "")
       .replace(/\p{Cc}/gu, " ")
@@ -471,7 +505,9 @@
   }
 
   let pending = 0;
+  let english = false;
   function run() {
+    english = englishShown();
     const list = rows();
     const labelled = [];
     for (const e of list) {
@@ -481,7 +517,6 @@
       e.labelRaw = e.full.slice(0, e.full.length - p.rest.length);
       labelled.push(e);
     }
-    if (!labelled.length) return;
     // A label behind a short run-in title ("Of Conscience.Cap. I. What
     // conscience is", the part's title printed on its first chapter)
     // counts when its siblings carry the same kind of label.
@@ -526,7 +561,13 @@
             if (numPick[s] === "roman") num = intToRoman(l.num.value);
             else if (numPick[s] === "arabic") num = String(l.num.value);
           }
-          const kw = kwPick[s] && family(kwPick[s].replace(/\.$/, "")) === l.fam ? kwPick[s] : l.kw;
+          let kw = kwPick[s] && family(kwPick[s].replace(/\.$/, "")) === l.fam ? kwPick[s] : l.kw;
+          // English display: the Latin division word in English, and a
+          // poem or prose section numbered 1, 2, 3 (Boethius).
+          if (english) {
+            kw = LAT_EN[kw.replace(/\.$/, "").toLowerCase()] || kw;
+            if ((l.fam === "poem" || l.fam === "prose") && l.num.value) num = String(l.num.value);
+          }
           return `${kw} ${num}`;
         }).join(". ");
         const rest = unshout(clean(e.parsed.rest));
@@ -545,16 +586,78 @@
       }
       for (const e of group) paint(e);
     }
-    if (pending) schedule(true);
+    if (english) {
+      for (const e of list) {
+        if (e.shown) continue;
+        const w = LAT_WORD[clean(e.full).replace(/[.:\s]+$/, "").toLowerCase()];
+        if (w) { e.shown = w; e.tip = e.full; }
+      }
+    }
+    nest(list);
+    for (const e of list) write(e);
+    if (pending || (!english && !document.querySelector("#reading .row"))) schedule(true);
   }
 
   function paint(e) {
     const short = e.source ? shortTitle(e.source) : "";
-    const shown = short ? `${e.label}. ${short}` : e.label;
-    const tip = e.source ? `${e.label}. ${e.source}` : e.full;
-    if (e.nn.textContent !== shown) e.nn.textContent = shown;
-    e.nn.dataset.frTocShown = shown;
-    if (e.node.getAttribute("title") !== tip) e.node.setAttribute("title", tip);
+    e.shown = short ? `${e.label}. ${short}` : e.label;
+    e.tip = e.source ? `${e.label}. ${e.source}` : e.full;
+  }
+  function write(e) {
+    e.node.classList.toggle("fr-toc-sub", !!e.sub);
+    if (!e.shown) {
+      // An English word from an earlier pass, now that only the Latin shows.
+      const nn = e.nn;
+      if (nn.dataset.frTocShown != null && nn.textContent === nn.dataset.frTocShown) {
+        nn.textContent = nn.dataset.frTitleOriginal;
+        delete nn.dataset.frTocShown;
+      }
+      return;
+    }
+    if (e.nn.textContent !== e.shown) e.nn.textContent = e.shown;
+    e.nn.dataset.frTocShown = e.shown;
+    if (e.node.getAttribute("title") !== e.tip) e.node.setAttribute("title", e.tip);
+  }
+
+  /* Books printed as flat siblings of their sections (Boethius: "1
+     METRUM PRIMUM.", "LIBER PRIMUS.", "9 PROSA PRIMA.", ...). The
+     Patrologia prints the book's title after its first section's
+     heading, so the outline lists "Metrum I" before "Liber I". When a
+     book entry follows a section numbered 1, the two
+     trade their words (both jump to the same place), and every entry
+     after a book is indented under it. Display only: each link keeps
+     its own original text for the click. */
+  function nest(list) {
+    const isBook = (e) => e.parsed && e.parsed.labels.length === 1 && e.parsed.labels[0].fam === "book";
+    for (const e of list) e.sub = false;
+    const books = list.filter(isBook);
+    if (!books.length) return;
+    const depth = books[0].depth;
+    if (books.some((b) => b.depth !== depth)) return;
+    // Only a flat outline: a book with its own children is already nested.
+    const flat = list.filter((e) => e.depth === depth);
+    if (flat.length !== list.length) return;
+    if (!flat.some((e) => e.parsed && !isBook(e))) return;
+    for (let k = 1; k < list.length; k++) {
+      const b = list[k], p = list[k - 1];
+      if (!isBook(b) || isBook(p) || !p.parsed || !p.shown || !b.shown) continue;
+      if (p.parsed.labels[0].num.value !== 1) continue;
+      if (k >= 2 && isBook(list[k - 2])) continue;
+      list[k - 1] = b; list[k] = p;
+      b.swapNode = p.node; p.swapNode = b.node;
+    }
+    let inBook = false;
+    for (const e of list) {
+      if (isBook(e)) { inBook = true; continue; }
+      if (inBook) e.sub = true;
+    }
+    // Swapped entries paint into each other's rows.
+    for (const e of list) {
+      if (!e.swapNode) continue;
+      e.node = e.swapNode;
+      e.nn = e.node.querySelector(".nn-t");
+      delete e.swapNode;
+    }
   }
 
   /* The engine reads the clicked entry's text to find the heading on the
@@ -585,5 +688,14 @@
   }
   new MutationObserver(() => { if (!swapping && !busy) schedule(false); })
     .observe(nav, { childList: true, subtree: true, characterData: true });
+  // Showing or hiding the English changes the contents' words.
+  const appEl = document.getElementById("app");
+  if (appEl) {
+    let wasEn = null;
+    new MutationObserver(() => {
+      const now = englishShown();
+      if (now !== wasEn) { wasEn = now; schedule(false); }
+    }).observe(appEl, { attributes: true, attributeFilter: ["class"] });
+  }
   schedule(false);
 })();

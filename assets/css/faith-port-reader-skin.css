@@ -3543,3 +3543,62 @@ html.g-mobile #app #reading h3.fr-hd-promoted.fr-hd-in-t2 .fr-hd-title { font-si
 #app #reading .row.fr-tp .fr-tp-meta .fr-hd-title { font-size: 1.08em !important; font-weight: 500; }
 #app #reading .row.fr-tp .fr-tp-line .fr-hd-eye { display: none; }
 
+/* ── ENGLISH LANE: MARKERS, VERSE, LABELS (faith-port-read-verse.js) ──
+   Display only; the text in the DOM is unchanged.
+   Migne's note and line markers ("myself 6 ,", "herself 16 (5) to") are
+   hidden with the space they left. */
+#app #reading .fr-nm { display: none; }
+/* A bare "1" under "1 METRUM PRIMUM.", a repeated "METER 1 I.", and a
+   book's label row once the book heads its first section's card. */
+#app #reading .row.fr-vx-hide { display: none !important; }
+/* The card that ran on into a hidden row closes on its own line. */
+#app #reading .row.fr-hd-joinrow:has(+ .row.fr-vx-hide) .fr-hd.fr-hd-card.fr-hd-open,
+#app #reading .row.fr-vx-bookhead .fr-hd.fr-hd-card.fr-hd-open {
+  border-bottom-width: 1px;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  padding-bottom: 16px;
+  margin-bottom: 1.2em !important;
+}
+/* The book, as its own heading above its first section's card. */
+#app #reading .row.fr-vx-bookhead > [data-fr-book]::before {
+  content: attr(data-fr-book);
+  display: block;
+  margin: 1.4em 0 0.2em;
+  font: 600 1.9em/1.2 var(--fr-read-font, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg);
+  text-align: left;
+}
+/* Latin labels shown in English: the original stays in the DOM. */
+#app #reading .fr-trx > .fr-trx-o { display: none; }
+#app #reading .fr-trx::before { content: attr(data-fr-en); }
+/* The printed argument, set as every argument on the site is. */
+#app #reading .fr-vx-arg {
+  display: block;
+  font-style: italic;
+  font-size: 0.94em;
+  line-height: 1.6;
+  color: var(--muted);
+  padding-left: 1em;
+  border-left: 2px solid var(--fr-ink-hot, var(--color-secondary, #c1593c));
+  margin-block: 0.3em 1.4em;
+  text-indent: 0;
+}
+#app #reading .fr-vx-arglabel { display: none; }
+#app #reading p.fr-vx-argp,
+#app #reading p.fr-vx-verse { text-indent: 0 !important; text-align: left !important; }
+/* Verse: one line per verse, a run-over line hanging under it. */
+#app #reading .fr-vl {
+  display: block;
+  padding-left: 1.6em;
+  text-indent: -1.6em;
+}
+#app #reading p.fr-vx-verse { padding-left: 0.8em; }
+/* Contents: sections under their book (faith-port-read-toc-titles.js). */
+#app #nav .nav-node.fr-toc-sub { padding-left: 1.5rem !important; }
+@media (max-width: 760px) {
+  #app #nav .nav-node.fr-toc-sub { padding-left: calc(20px + var(--nav-depth, 0) * 12px) !important; }
+  #app #reading .row.fr-vx-bookhead > [data-fr-book]::before { font-size: 1.6em; }
+}
