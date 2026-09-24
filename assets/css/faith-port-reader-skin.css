@@ -1915,7 +1915,9 @@ html:not(.g-mobile) #app .ph.fr-reader-head .phl > .sbt { border-radius: 3px; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rsBtn { width: var(--tb-h); padding: 0; justify-content: center; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rsBtn > .fr-tb-lens { display: block; flex: none; }
 /* Report a problem has its own button here; the Aa row is for phones. */
-html:not(.g-mobile) #app .ph.fr-reader-head #aaPop .aarow-report { display: none; }
+/* Report has its own button on both widths now (the bar's drawer and the
+   dock's), so the Aa panel's row goes everywhere. */
+#app .ph.fr-reader-head #aaPop .aarow-report { display: none; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-report,
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-top,
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-folds { white-space: nowrap; cursor: pointer; }
@@ -2586,8 +2588,11 @@ html.g-mobile.mh-hide body:has(#app.faith-port-read-page) .tfr-rail,
 html.g-mobile.mh-mini body:has(#app.faith-port-read-page) .tfr-rail {
   transform: translateY(calc(-1 * var(--mo-mast, 61px)));
 }
-html.g-mobile header.site-header,
-html.g-mobile #app .ph.fr-reader-head { will-change: transform; }
+/* NO will-change ON THE TOOLBAR. It makes the toolbar the containing
+   block for its fixed descendants, and the Aa panel is one: it was
+   placed from the toolbar's top instead of the screen's and its height
+   cap measured from the wrong line, so it ran off the bottom of a phone
+   (Ian, 2026-09-23). The rail has none inside it and keeps the hint. */
 @media (prefers-reduced-motion: reduce) {
   html.g-mobile body:has(#app.faith-port-read-page) .tfr-rail { transition: none; }
 }
