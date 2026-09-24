@@ -65,7 +65,14 @@
        faith-reader-folds.js folds. That file owns the state
        (window.FRReaderFolds) and loads deferred, so it is looked up on
        use and the label is set once it has run. */
-  const bReport = button("Report a problem", "fr-tb-report");
+  // "Report" with " a problem" dropped below 1440px (CSS), where the
+  // bar needs the room for the work's title.
+  const bReport = button("Report", "fr-tb-report");
+  const more = document.createElement("span");
+  more.className = "fr-tb-more";
+  more.textContent = " a problem";
+  bReport.appendChild(more);
+  bReport.setAttribute("aria-label", "Report a problem");
   bReport.setAttribute("data-report-issue", "");
   bReport.title = "Tell us about a problem with this work: a bad scan, wrong text, a broken link";
   const bTop = button("Top", "fr-tb-top");
@@ -76,10 +83,25 @@
   if (ctr) ctr.append(bReport, bTop, bFolds);
 
   const scroller = document.getElementById("scroll");
+  /* The reader renders pages around the one in view and loads earlier
+     ones as you scroll up, so scrolling #scroll to 0 lands on the top
+     of whatever is loaded (measured: 2085px to 1973px, not to 0). Top
+     goes to the work's first page through the reader's own jump(), then
+     to the very top once that page is the first one on screen. DATA is
+     the engine's bare global. */
+  function firstPage() {
+    try {
+      const d = typeof DATA !== "undefined" ? DATA : null;
+      return d && Array.isArray(d.pages) && d.pages[0] ? String(d.pages[0].n) : "";
+    } catch (e) { return ""; }
+  }
   bTop.addEventListener("click", () => {
-    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (scroller) scroller.scrollTo({ top: 0, behavior: smooth ? "smooth" : "auto" });
-    window.scrollTo({ top: 0, behavior: smooth ? "smooth" : "auto" });
+    const first = firstPage();
+    if (first && typeof window.jump === "function") window.jump(first);
+    window.setTimeout(() => {
+      const f = document.querySelector("#reading .folio");
+      if (scroller && (!first || (f && String(f.dataset.page) === first))) scroller.scrollTo({ top: 0 });
+    }, 350);
   });
 
   const folds = () => window.FRReaderFolds;

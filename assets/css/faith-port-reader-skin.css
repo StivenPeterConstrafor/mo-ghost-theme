@@ -437,7 +437,7 @@ aside.relpanel {
      pinned toolbar at the end of this file): the rail sits under it. */
   html.mh-hide #notebook.notebook,
   html.mh-mini #notebook.notebook {
-    top: var(--phh, 64px);
+    top: calc(var(--fr-rail-h, 0px) + var(--phh, 64px));
   }
   html.fr-bar-hidden #notebook.notebook {
     top: env(safe-area-inset-top, 0px);
@@ -2066,7 +2066,7 @@ html.g-mobile .fr-read-toc { display: none !important; }
    (html.fr-bar-hidden) still takes everything away. */
 html.mh-mini:not(.g-mobile):not(.fr-bar-hidden) #app .ph.fr-reader-head,
 html.mh-hide:not(.g-mobile):not(.fr-bar-hidden) #app .ph.fr-reader-head {
-  transform: translateY(calc(-1 * var(--mo-head, 61px)));
+  transform: translateY(calc(-1 * var(--mo-mast, var(--mo-head, 61px))));
 }
 html.mh-mini:not(.g-mobile):not(.fr-bar-hidden) #app,
 html.mh-hide:not(.g-mobile):not(.fr-bar-hidden) #app {
@@ -2306,3 +2306,23 @@ html #notebook .nb-destinations a {
 }
 html #notebook .nb-destinations a:hover { color: var(--fg); }
 html #notebook .nb-tools button:hover { border-color: var(--nbx-fill); color: var(--nbx-fill); }
+
+/* ── THE RAIL ON THE READER (Ian, 2026-09-23) ────────────────────────
+   The TFR rail sits above the toolbar (custom-faith-port-read.hbs) and
+   replaces the toolbar's "‹ Library" link. It is in flow under the
+   masthead and counted into --mo-head by faith-port-read-boot.js, which
+   also publishes --mo-mast, the masthead alone; the difference is the
+   rail. When the masthead scrolls away the body's padding goes, so the
+   rail rises to the top of the screen; the toolbar rises by the
+   masthead only (above) and pins under it, and the page is a screen
+   less the rail. Hide bar takes the rail too, and a framed reader (the
+   Ask source preview) has none. */
+html { --fr-rail-h: calc(var(--mo-head, 61px) - var(--mo-mast, var(--mo-head, 61px))); }
+#app .ph.fr-reader-head #mhHome { display: none; }
+html.mh-hide .faith-port-read-page,
+html.mh-mini .faith-port-read-page { height: calc(100dvh - var(--fr-rail-h, 0px)); }
+html.fr-bar-hidden .tfr-rail,
+html.mo-embedded .tfr-rail { display: none; }
+@media (max-width: 1439px) {
+  html:not(.g-mobile) #app .ph.fr-reader-head .fr-tb-report .fr-tb-more { display: none; }
+}
