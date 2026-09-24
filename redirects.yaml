@@ -466,3 +466,119 @@
 - from: ^/the-faith-received/augsburg/?$
   to: /the-faith-received/read/?w=lc-002-augsburg-confession-1530&from=augsburg
   permanent: true
+
+- from: ^/the-faith-received/augustine-confessions/?$
+  to: /the-faith-received/read/?w=pld-2722&from=augustine-confessions
+  permanent: true
+
+- from: ^/the-faith-received/calvin-institutes/?$
+  to: /the-faith-received/read/?w=calvin-institutes-of-the-christian-religion&from=calvin-institutes
+  permanent: true
+
+- from: ^/the-faith-received/charnock-attributes/?$
+  to: /the-faith-received/read/?w=eebo-39772&from=charnock-attributes
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-soul/?$
+  to: /the-faith-received/read/?w=pld-8499&from=anf-tertullian-soul
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-ad-martyras/?$
+  to: /the-faith-received/read/?w=pld-8490&from=anf-tertullian-ad-martyras
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-against-hermogenes/?$
+  to: /the-faith-received/read/?w=pld-8493&from=anf-tertullian-against-hermogenes
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-against-marcion/?$
+  to: /the-faith-received/read/?w=pld-8495&from=anf-tertullian-against-marcion
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-against-praxeas/?$
+  to: /the-faith-received/read/?w=pld-8496&from=anf-tertullian-against-praxeas
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-against-valentinians/?$
+  to: /the-faith-received/read/?w=pld-8497&from=anf-tertullian-against-valentinians
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-answer-jews/?$
+  to: /the-faith-received/read/?w=pld-8494&from=anf-tertullian-answer-jews
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-apology/?$
+  to: /the-faith-received/read/?w=pld-8498&from=anf-tertullian-apology
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-on-baptism/?$
+  to: /the-faith-received/read/?w=pld-8500&from=anf-tertullian-on-baptism
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-idolatry/?$
+  to: /the-faith-received/read/?w=pld-8506&from=anf-tertullian-idolatry
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-on-patience/?$
+  to: /the-faith-received/read/?w=pld-8511&from=anf-tertullian-on-patience
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-on-prayer/?$
+  to: /the-faith-received/read/?w=pld-8509&from=anf-tertullian-on-prayer
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-on-repentance/?$
+  to: /the-faith-received/read/?w=pld-8512&from=anf-tertullian-on-repentance
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-flesh-of-christ/?$
+  to: /the-faith-received/read/?w=pld-8501&from=anf-tertullian-flesh-of-christ
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-resurrection/?$
+  to: /the-faith-received/read/?w=pld-8515&from=anf-tertullian-resurrection
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-scorpiace/?$
+  to: /the-faith-received/read/?w=pld-8519&from=anf-tertullian-scorpiace
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-chaplet/?$
+  to: /the-faith-received/read/?w=pld-8502&from=anf-tertullian-chaplet
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-prescription/?$
+  to: /the-faith-received/read/?w=pld-8513&from=anf-tertullian-prescription
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-shows/?$
+  to: /the-faith-received/read/?w=pld-8516&from=anf-tertullian-shows
+  permanent: true
+
+- from: ^/the-faith-received/anf-tertullian-scapula/?$
+  to: /the-faith-received/read/?w=pld-8489&from=anf-tertullian-scapula
+  permanent: true
+
+- from: ^/the-faith-received/anf-clement-alexandria-exhortation/?$
+  to: /the-faith-received/read/?w=pg-119&from=anf-clement-alexandria-exhortation
+  permanent: true
+
+- from: ^/the-faith-received/anf-perpetua-felicitas/?$
+  to: /the-faith-received/read/?w=pld-1735&from=anf-perpetua-felicitas
+  permanent: true
+
+- from: ^/the-faith-received/anf-hermas-shepherd/?$
+  to: /the-faith-received/read/?w=pg-27&from=anf-hermas-shepherd
+  permanent: true
+
+- from: ^/the-faith-received/anf-clement-alexandria-rich-man/?$
+  to: /the-faith-received/read/?w=pg-125&from=anf-clement-alexandria-rich-man
+  permanent: true
+
+- from: ^/the-faith-received/anf-irenaeus-fragments/?$
+  to: /the-faith-received/read/?w=pg-2851&from=anf-irenaeus-fragments
+  permanent: true
+
+- from: ^/the-faith-received/anf-papias-fragments/?$
+  to: /the-faith-received/read/?w=pg-83&from=anf-papias-fragments
+  permanent: true
