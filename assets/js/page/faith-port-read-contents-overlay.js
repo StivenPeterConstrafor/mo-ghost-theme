@@ -39,6 +39,10 @@
   const RULES = {
     "rc-115-westminster-shorter-catechism-1647": { questions: true },
     "rc-114-westminster-larger-catechism-1647": { questions: true },
+    // Heidelberg prints its questions as "1. What is your only comfort…?"
+    // with no "Q.", so only an unbroken run 1, 2, 3… counts, which keeps
+    // an answer's own numbered list out of the contents.
+    "rc-061-heidelberg-catechism-1563": { questions: "numbered" },
     "rc-060-thirty-nine-articles-1562": { titles: true },
     "rc-126-london-baptist-confession-1677": { titles: true },
   };
@@ -58,8 +62,10 @@
   const Q = /^Q(?:uestion)?\.?\s*(\d{1,3})\.?\s+(.+?\?)(?=\s|$)/;
   const LABEL = /^(?:article|chapter)\s+[ivxlc\d]+\.?$/i;
 
-  function questions(reading) {
+  const NUMBERED = /^(\d{1,3})\.\s+(.+?\?)(?=\s|$)/;
+  function questions(reading, kind) {
     const out = [];
+    let last = 0;
     // The engine's block ids sit on the row in the two-lane layout and on
     // the English block itself in the flowing one; either way the id is
     // b<page>-<n>.
@@ -67,8 +73,12 @@
       const page = (/^b(.+)-\d+$/.exec(row.id) || [])[1];
       if (page == null || row.closest(".rowx,.appbank,.footnotes,.margin,.rtoc,.ctoc,.la,.stk-la")) return;
       const en = row.classList.contains("en") ? row : (row.querySelector(".en") || row);
-      const m = Q.exec(clean(en.textContent));
+      const m = (kind === "numbered" ? NUMBERED : Q).exec(clean(en.textContent));
       if (!m) return;
+      if (kind === "numbered") {
+        if (Number(m[1]) !== last + 1) return;
+        last = Number(m[1]);
+      }
       out.push({ title: `${m[1]}. ${unshout(m[2])}`, page, anchor: row.id, depth: 1, element: row });
     });
     return out;
@@ -82,7 +92,7 @@
   function overlay(rows, reading, rule) {
     let out = rows.slice();
     if (rule.questions) {
-      const qs = questions(reading);
+      const qs = questions(reading, rule.questions);
       if (qs.length < 2) return rows;
       // Headings stay (the title, the Larger's two parts); every entry
       // sits at one level, which is how our copies listed them.

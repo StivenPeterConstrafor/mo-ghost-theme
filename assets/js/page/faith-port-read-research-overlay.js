@@ -75,9 +75,10 @@
     const olds = MERGE.get(slug);
     const base = url.slice(0, url.indexOf("/v1/mine/work/"));
     return mine.then((res) => {
-      if (!res.ok) return res;
+      // No file of his at all: ours alone, moved onto his pages.
+      if (!res.ok && res.status !== 404) return res;
       return Promise.all([
-        res.clone().json(),
+        res.ok ? res.clone().json() : Promise.resolve({ w: slug, topics: [], books: [] }),
         Promise.all(olds.map((old) => nativeFetch(`${base}/v1/mine/work/${encodeURIComponent(old)}.json`)
           .then((r) => (r.ok ? r.json() : null)).catch(() => null))),
       ]).then(([his, ours]) => {

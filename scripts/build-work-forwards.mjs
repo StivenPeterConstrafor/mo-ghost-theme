@@ -30,6 +30,7 @@ for (const [old, w] of Object.entries(data.works || {})) {
   if (w.legacy) row.legacy = w.legacy;
   if (w.at) row.at = w.at;
   if (w.research) row.research = true;
+  if (w.anchors && Object.keys(w.anchors).length) row.anchors = w.anchors;
   if (w.pages && Object.keys(w.pages).length) row.pages = w.pages;
   slim.works[old] = row;
 }

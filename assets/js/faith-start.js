@@ -83,7 +83,7 @@
       note: "The oldest summary of the faith, learned at baptism for eighteen centuries." },
     { slug: "nicene-creed", eyebrow: "325 &amp; 381", title: "The Nicene Creed",
       note: "What the whole church settled about Christ and still confesses together." },
-    { slug: "heidelberg", eyebrow: "1563", title: "The Heidelberg Catechism",
+    { slug: "heidelberg", href: "/the-faith-received/read/?w=rc-061-heidelberg-catechism-1563", eyebrow: "1563", title: "The Heidelberg Catechism",
       note: "Warmest of the catechisms. Begins not with doctrine but with comfort." },
     { slug: "westminster-shorter", href: "/the-faith-received/read/?w=rc-115-westminster-shorter-catechism-1647", eyebrow: "1647", title: "The Westminster Shorter Catechism",
       note: "A hundred and seven questions that shaped English-speaking Protestantism." },
