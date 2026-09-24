@@ -241,8 +241,9 @@ const KNOWN_PHRASES = [
   [/\bthou dost\b/g, "you do"],
   [/\bThou didst\b/g, "You did"],
   [/\bthou didst\b/g, "you did"],
-  [/\bThou shalt\b/g, "You shall"],
-  [/\bthou shalt\b/g, "you shall"],
+  // shall becomes will throughout (Ian, 2026-09-24).
+  [/\bThou shalt\b/g, "You will"],
+  [/\bthou shalt\b/g, "you will"],
   [/\bThou canst\b/g, "You can"],
   [/\bthou canst\b/g, "you can"],
   [/\bThou couldst\b/g, "You could"],
@@ -292,8 +293,19 @@ const KNOWN_WORDS = [
   [/\bHadst\b/g, "Had"],
   [/\bsaidst\b/g, "said"],
   [/\bSaidst\b/g, "Said"],
-  [/\bshalt\b/g, "shall"],
-  [/\bShalt\b/g, "Shall"],
+  [/\bshalt\b/g, "will"],
+  [/\bShalt\b/g, "Will"],
+  // "shall" reads as a legal term now; modern English says "will"
+  // (Ian, 2026-09-24). "Shall we" becomes "Will we", which still reads.
+  [/\bshall\b/g, "will"],
+  [/\bShall\b/g, "Will"],
+  [/\bSHALL\b/g, "WILL"],
+  // The old spellings too, or the spelling pass turns "shal" back into
+  // "shall" after this rule has run.
+  [/\bshalbe\b/g, "will be"],
+  [/\bShalbe\b/g, "Will be"],
+  [/\bshal\b/g, "will"],
+  [/\bShal\b/g, "Will"],
   [/\bwilt\b/g, "will"],
   [/\bWilt\b/g, "Will"],
   [/\bcanst\b/g, "can"],
