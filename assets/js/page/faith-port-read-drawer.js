@@ -98,6 +98,7 @@
     return svg;
   }
   const ICONS = {
+    ask: [{ d: "M20 11a8 8 0 0 1-8 8H5l-3 3V11a9 9 0 0 1 18 0Z" }],
     tools: [{ d: "M4 7h9M17 7h3M4 17h3M11 17h9" }, { tag: "circle", cx: "15", cy: "7", r: "2" }, { tag: "circle", cx: "9", cy: "17", r: "2" }],
     transparency: [{ tag: "circle", cx: "12", cy: "12", r: "9" }, { d: "M12 11v6M12 7.5v.01" }],
     folds: [{ d: "M7 4l5 5 5-5M7 20l5-5 5 5" }],
@@ -283,15 +284,22 @@
   groups.read.append(dLang, dScan);
 
   // Ask, beside Research (Ian, 2026-09-23: "Also add Ask to the
-  // toolbar"). The same door the phone's dock uses: window.__openAsk
-  // (faith-port-read-tools.js) clicks the delegate ask-workspace.js opens on.
+  // toolbar"). Opened beside the text with this work in context, the way
+  // Research's "Ask about this book" opens it (read-tools.js). NOT
+  // window.__openAsk: its delegate takes a desktop to the separate Ask
+  // page and away from the book.
   const dAsk = document.createElement("button");
   dAsk.type = "button";
   dAsk.className = "fr-td-ask";
+  dAsk.setAttribute("data-feature-gate", "ask");
   dAsk.textContent = "Ask";
   dAsk.title = "Ask the library a question about this work";
   dAsk.addEventListener("click", () => {
-    if (typeof window.__openAsk === "function") window.__openAsk("");
+    let slug = "";
+    try { slug = new URLSearchParams(window.location.search).get("w") || ""; } catch (e) { slug = ""; }
+    if (window.FRAsk && typeof window.FRAsk.open === "function") {
+      window.FRAsk.open({ contextWork: slug, works: slug ? [slug] : [] });
+    }
   });
   painters.push(paintScan);
 
@@ -429,6 +437,19 @@
     // phone reaches them here, as the desktop does in its drawer.
     const flow = proxy("x-flow", "Pages", "flow", "#rdFlow");
     const modern = proxy("x-modern", "Modernize", "modern", "#m-modern");
+    modern.setAttribute("data-feature-gate", "tfr-modernize");
+    // Ask as our own cell: the dock's own Ask is taken by ask-workspace.js
+    // at the document before the subscribe gate can see the click.
+    const ask = cell("x-ask", "Ask", "ask");
+    ask.setAttribute("data-feature-gate", "ask");
+    ask.addEventListener("click", () => {
+      let slug = "";
+      try { slug = new URLSearchParams(window.location.search).get("w") || ""; } catch (e) { slug = ""; }
+      if (window.FRAsk && typeof window.FRAsk.open === "function") {
+        setMobile(false);
+        window.FRAsk.open({ contextWork: slug, works: slug ? [slug] : [] });
+      }
+    });
     const theme = proxy("x-theme", "Theme", "theme", "#thTop");
     proxies = {
       lang,
@@ -439,6 +460,7 @@
       folds: proxy("x-folds", "Collapse", "folds", ".fr-tb-folds"),
       copyLink: proxy("x-link", "Copy link", "link", "#rdCopyLink"),
       keep: proxy("x-keep", "Bookmark", "save", "#rdKeep"),
+      ask,
       report,
       top: proxy("x-top", "Top", "top", ".fr-tb-top"),
     };
@@ -461,7 +483,7 @@
     proxies.folds.querySelector(".lb").textContent = open ? "Collapse" : "Expand";
     const keep = document.getElementById("rdKeep");
     if (keep) {
-      proxies.keep.disabled = keep.disabled;
+      proxies.keep.setAttribute("data-feature-gate", "tfr-bookmarks");
       const kept = keep.getAttribute("aria-pressed") === "true";
       proxies.keep.classList.toggle("on", kept);
       proxies.keep.querySelector(".lb").textContent = kept ? "Bookmarked" : "Bookmark";

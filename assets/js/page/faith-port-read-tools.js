@@ -172,7 +172,9 @@
     if (label) label.textContent = on ? "Bookmarked" : "Bookmark";
   }
   if (!BM || !BM.available || !BM.available()) {
-    keep.disabled = true;
+    // Not disabled: a disabled button swallows the click, and the click
+    // is what raises the subscribe pop-up (data-feature-gate on the
+    // button; feature-gate.js). A signed-in reader never lands here.
     keep.title = "Sign in to bookmark a work";
   } else {
     // Disabled until the collection is known, because the id is what the

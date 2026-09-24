@@ -99,14 +99,14 @@
             <button id="m-par" aria-pressed="true" title="Latin source text — a toggle; read it beside the English, or alone with the scan">Latin</button>
             <button id="m-study" aria-pressed="false" title="Source facsimile — a toggle; the scan follows your scroll (drag the divider to resize)">Scan</button>
           </div>
-          <button id="m-modern" class="tgl" aria-pressed="false" hidden title="Rewrite the English into modern spelling and grammar. The source lane is never touched.">Modernize</button>
+          <button id="m-modern" class="tgl" aria-pressed="false" data-feature-gate="tfr-modernize" hidden title="Rewrite the English into modern spelling and grammar. The source lane is never touched.">Modernize</button>
           <button id="rdFlow" class="tgl" aria-pressed="true" title="Continuous reading — page divisions recede; paragraphs split by the original page breaks re-join. Click for page-by-page.">Flow</button>
           <button id="rdRel" class="tgl" aria-pressed="false" title="Related passages — where this page's themes appear elsewhere in the library and among the authors">✧ Related</button>
           <div class="aaw rdtw"><button id="rdTools" class="tgl" aria-haspopup="true" aria-expanded="false" title="Open the reader's tools">Tools</button>
             <div class="aapop rdtools" id="rdToolsPop" role="menu" aria-label="Reader tools">
               <button type="button" id="rdCopyText" class="rdt">Copy text<span>The passage in view, with its citation</span></button>
               <button type="button" id="rdCopyLink" class="rdt">Copy link<span>A link to this page of this work</span></button>
-              <button type="button" id="rdKeep" class="rdt" aria-pressed="false"><span class="rdt-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg></span><span class="rdt-l">Bookmark</span><span>Saved to your bookmarks</span></button>
+              <button type="button" id="rdKeep" class="rdt" aria-pressed="false" data-feature-gate="tfr-bookmarks"><span class="rdt-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg></span><span class="rdt-l">Bookmark</span><span>Saved to your bookmarks</span></button>
               <button type="button" id="rdNote" class="rdt">Save to notebook<span>The passage, with its citation, for the desk</span></button>
               <p class="rdt-say" id="rdToolsSay" role="status" aria-live="polite"></p>
             </div></div><button id="thTop" class="tgl" title="Theme — Light / Sepia / Dark" aria-label="Reading theme">◐</button><div class="aaw"><button id="aaBtn" class="tgl" aria-haspopup="true" aria-expanded="false" title="Reading settings — theme, text size, lane balance, scan zoom">Aa</button>
@@ -256,7 +256,7 @@
      All Works draws its row stars from, and the notebook the desk reads. --}}
 <script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
 <script src="{{asset "js/lib/faith-notebook-store.js"}}&amp;frv=587241ea81038bf2"></script>
-<script src="{{asset "js/page/faith-port-read-tools.js"}}&amp;frv=182325e63a259f14"></script>
+<script src="{{asset "js/page/faith-port-read-tools.js"}}&amp;frv=b4ab3083aac3e360"></script>
 {{!-- The Research rail's Work tab. read-tools.js owns the panel; this names the
      work in it and routes the four shortcuts the restore left unbound. --}}
 <script src="{{asset "js/page/faith-port-read-research.js"}}&amp;frv=6acdf77bce1393b4"></script>
@@ -297,7 +297,7 @@
      Search and Tools slides out of Tools; on a phone the dock is
      Contents, Search, Tools, and Transparency is a dialog. After the
      chrome file, whose buttons it moves. --}}
-<script src="{{asset "js/page/faith-port-read-drawer.js"}}&amp;frv=44fb262dbf3daa95"></script>
+<script src="{{asset "js/page/faith-port-read-drawer.js"}}&amp;frv=59accf7820e14393"></script>
 {{!-- The selection bar's Link and Copy carry the exact words, and a
      link that arrives with them marks them. --}}
 <script src="{{asset "js/page/faith-port-read-passage-link.js"}}&amp;frv=0e64c53de54bdf8c"></script>

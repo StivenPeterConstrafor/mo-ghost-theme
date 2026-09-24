@@ -195,6 +195,12 @@
       "The notebook needs an account",
       "Clip a passage as you read, keep it with its citation, and come back to the exact paragraph."
     ),
+    // The reader's Modernizer (Ian, 2026-09-23: "Modernize, Bookmark, and
+    // Ask should all pop up a message similar to this for non-subscribers").
+    "tfr-modernize": betaFeature(
+      "Modernize needs an account",
+      "Read early modern English in today's spelling, with the old verb endings brought up to date. Switch it off to see the words as the printer set them."
+    ),
     "tfr-desk": betaFeature(
       "Desk needs an account",
       "Write with your saved sources beside you, each one still linked to the text it came from."
