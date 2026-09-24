@@ -13,7 +13,7 @@
 {{!-- Our chapter contents on the PG copies of Justin, Irenaeus, Ignatius
      and the rest that replaced ours: answers the engine's /v1/pgtoc/
      request, so it must precede reader-core.js. --}}
-<script src="{{asset "js/page/faith-port-read-chapters-overlay.js"}}"></script>
+<script src="{{asset "js/page/faith-port-read-chapters-overlay.js"}}" data-chapters="{{asset "data/faith-received/work-chapters.json"}}"></script>
 {{!-- THE FAMILY IDENTITY AND THE MASTHEAD OFFSET, before the engine runs.
      reader-core.js consumes window.__FR_SITE__ at its first statement, and
      our nav is fixed at top:0 like the reader's toolbar, so the toolbar

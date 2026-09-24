@@ -46,13 +46,12 @@
   });
   if (!FILES.size) return;
 
-  // Same deploy stamp (?v=) as this script, so a new table is never
-  // served from a stale cache.
-  const self = (document.currentScript && document.currentScript.src) || "";
-  const SRC = /js\/page\/faith-port-read-chapters-overlay\.js/;
-  const DATA_URL = SRC.test(self)
-    ? self.replace(SRC, "data/faith-received/work-chapters.json")
-    : "/assets/data/faith-received/work-chapters.json";
+  // The table's own content-stamped URL, from the script tag
+  // (data-chapters="{{asset ...}}"): a stamp borrowed from this script
+  // would stay the same when only the table changes, and the CDN would
+  // keep serving the old table.
+  const me = document.currentScript;
+  const DATA_URL = (me && me.dataset && me.dataset.chapters) || "/assets/data/faith-received/work-chapters.json";
 
   let table = null;
   function load() {

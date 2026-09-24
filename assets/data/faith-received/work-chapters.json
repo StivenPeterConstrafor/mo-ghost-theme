@@ -1777,6 +1777,36 @@
 "c":1021,
 "l":1,
 "a":"b1021-1"
+},
+{
+"t":"Theophilus to Autolycus, Book III, Chapters XXVI-XXIX",
+"c":1159,
+"l":0,
+"a":"b1159-0"
+},
+{
+"t":"Chapter XXVI. Contrast Between Hebrew and Greek Writings",
+"c":1159,
+"l":2,
+"a":"b1159-2"
+},
+{
+"t":"Chapter XXVII. Roman Chronology to the Death of M. Aurelius",
+"c":1161,
+"l":2,
+"a":"b1161-1"
+},
+{
+"t":"Chapter XXVIII. Leading Chronological Epochs",
+"c":1163,
+"l":2,
+"a":"b1163-0"
+},
+{
+"t":"Chapter XXIX. Antiquity of Christianity",
+"c":1163,
+"l":2,
+"a":"b1163-2"
 }
 ],
 "span":[
@@ -1787,6 +1817,10 @@
 [
 973,
 1021
+],
+[
+1159,
+1163
 ]
 ]
 },
@@ -3071,6 +3105,3460 @@
 [
 1029,
 1043
+]
+]
+},
+"pg-2847":{
+"rows":[
+{
+"t":"Against Heresies, Books I-III",
+"c":437,
+"l":0,
+"a":"b437-0"
+},
+{
+"t":"Book I",
+"c":437,
+"l":1,
+"a":"b437-0"
+},
+{
+"t":"Preface",
+"c":437,
+"l":2,
+"a":"b437-0"
+},
+{
+"t":"Chapter I. Absurd ideas of the disciples of Valentinus as to the origin, name, order, and conjugal productions of their fancied Æons, with…",
+"c":445,
+"l":2,
+"a":"b445-0"
+},
+{
+"t":"Chapter II. The Propator was known to Monogenes alone. Ambition, disturbance, and danger into which Sophia fell; her shapeless offspring:…",
+"c":451,
+"l":2,
+"a":"b451-1"
+},
+{
+"t":"Chapter III. Texts of Holy Scripture used by these heretics to support their opinions",
+"c":465,
+"l":2,
+"a":"b465-1"
+},
+{
+"t":"Chapter IV. Account given by the heretics of the formation of Achamoth; origin of the visible world from her disturbances",
+"c":477,
+"l":2,
+"a":"b477-2"
+},
+{
+"t":"Chapter V. Formation of the Demiurge; description of him. He is the creator of everything outside of the Pleroma",
+"c":491,
+"l":2,
+"a":"b491-1"
+},
+{
+"t":"Chapter VI. The threefold kind of man feigned by these heretics: good works needless for them, though necessary to others: their abandoned…",
+"c":503,
+"l":2,
+"a":"b503-0"
+},
+{
+"t":"Chapter VII. The mother Achamoth, when all her seed are perfected, shall pass into the Pleroma, accompanied by those men who are…",
+"c":511,
+"l":2,
+"a":"b511-1"
+},
+{
+"t":"Chapter VIII. How the Valentinians pervert the Scriptures to support their own pious opinions",
+"c":519,
+"l":2,
+"a":"b519-1"
+},
+{
+"t":"Chapter IX. Refutation of the impious interpretations of these heretics",
+"c":537,
+"l":2,
+"a":"b537-4"
+},
+{
+"t":"Chapter X. Unity of the faith of the Church throughout the whole world",
+"c":549,
+"l":2,
+"a":"b549-1"
+},
+{
+"t":"Chapter XI. The opinions of Valentinus, with those of his disciples and others",
+"c":559,
+"l":2,
+"a":"b559-0"
+},
+{
+"t":"Chapter XII. The doctrines of the followers of Ptolemy and Colorbasus",
+"c":569,
+"l":2,
+"a":"b569-1"
+},
+{
+"t":"Chapter XIII. The deceitful arts and nefarious practices of Marcus",
+"c":577,
+"l":2,
+"a":"b577-1"
+},
+{
+"t":"Chapter XIV. The various hypotheses of Marcus and others. Theories respecting letters and syllables",
+"c":593,
+"l":2,
+"a":"b593-0"
+},
+{
+"t":"Chapter XV. Sige relates to Marcus the generation of the twenty-four elements and of Jesus. Exposure of these absurdities",
+"c":613,
+"l":2,
+"a":"b613-0"
+},
+{
+"t":"Chapter XVI. Absurd interpretations of the Marcosians",
+"c":627,
+"l":2,
+"a":"b627-1"
+},
+{
+"t":"Chapter XVII. The theory of the Marcosians, that created things were made after the image of things invisible",
+"c":637,
+"l":2,
+"a":"b637-0"
+},
+{
+"t":"Chapter XVIII. Passages from Moses, which the heretics pervert to the support of their hypothesis",
+"c":641,
+"l":2,
+"a":"b641-2"
+},
+{
+"t":"Chapter XIX. Passages of Scripture by which they attempt to prove that the Supreme Father was unknown before the coming of Christ",
+"c":651,
+"l":2,
+"a":"b651-0"
+},
+{
+"t":"Chapter XX. The apocryphal and spurious Scriptures of the Marcosians, with passages of the Gospels which they pervert",
+"c":653,
+"l":2,
+"a":"b653-0"
+},
+{
+"t":"Chapter XXI. The views of redemption entertained by these heretics",
+"c":657,
+"l":2,
+"a":"b657-1"
+},
+{
+"t":"Chapter XXII. Deviations of heretics from the truth",
+"c":669,
+"l":2,
+"a":"b669-1"
+},
+{
+"t":"Chapter XXIII. Doctrines and practices of Simon Magus and Menander",
+"c":669,
+"l":2,
+"a":"b669-7"
+},
+{
+"t":"Chapter XXIV. Doctrines of Saturninus and Basilides",
+"c":673,
+"l":2,
+"a":"b673-2"
+},
+{
+"t":"Chapter XXV. Doctrines of Carpocrates",
+"c":679,
+"l":2,
+"a":"b679-2"
+},
+{
+"t":"Chapter XXVI. Doctrines of Cerinthus, the Ebionites, and Nicolaitanes",
+"c":685,
+"l":2,
+"a":"b685-2"
+},
+{
+"t":"Chapter XXVII. Doctrines of Cerdo and Marcion",
+"c":687,
+"l":2,
+"a":"b687-2"
+},
+{
+"t":"Chapter XXVIII. Doctrines of Tatian, the Encratites, and others",
+"c":689,
+"l":2,
+"a":"b689-2"
+},
+{
+"t":"Chapter XXIX. Doctrines of various other Gnostic sects, and especially of the Barbeliotes or Borborians",
+"c":691,
+"l":2,
+"a":"b691-1"
+},
+{
+"t":"Chapter XXX. Doctrines of the Ophites and Sethians",
+"c":693,
+"l":2,
+"a":"b693-4"
+},
+{
+"t":"Chapter XXXI. Doctrines of the Cainites",
+"c":703,
+"l":2,
+"a":"b703-3"
+},
+{
+"t":"Book II",
+"c":707,
+"l":1,
+"a":"b707-10"
+},
+{
+"t":"Preface",
+"c":707,
+"l":2,
+"a":"b707-10"
+},
+{
+"t":"Chapter I. There is but one God: the impossibility of its being otherwise",
+"c":709,
+"l":2,
+"a":"b709-2"
+},
+{
+"t":"Chapter II. The world was not formed by angels, or by any other being, contrary to the will of the most high God, but was made by the…",
+"c":713,
+"l":2,
+"a":"b713-0"
+},
+{
+"t":"Chapter III. The Bythus and Pleroma of the Valentinians, as well as the God of Marcion, shown to be absurd; the world was actually created…",
+"c":715,
+"l":2,
+"a":"b715-7"
+},
+{
+"t":"Chapter IV. The absurdity of the supposed vacuum and defect of the heretics is demonstrated",
+"c":717,
+"l":2,
+"a":"b717-3"
+},
+{
+"t":"Chapter V. This world was not formed by any other beings within the territory which is contained by the Father",
+"c":721,
+"l":2,
+"a":"b721-1"
+},
+{
+"t":"Chapter VI. The angels and the Creator of the world could not have been ignorant of the Supreme God",
+"c":723,
+"l":2,
+"a":"b723-5"
+},
+{
+"t":"Chapter VII. Created things are not the images of those Æons who are within the Pleroma",
+"c":725,
+"l":2,
+"a":"b725-8"
+},
+{
+"t":"Chapter VIII. Created things are not a shadow of the Pleroma",
+"c":731,
+"l":2,
+"a":"b731-4"
+},
+{
+"t":"Chapter IX. There is but one Creator of the world, God the Father: this the constant belief of the Church",
+"c":733,
+"l":2,
+"a":"b733-1"
+},
+{
+"t":"Chapter X. Perverse interpretations of Scripture by the heretics: God created all things out of nothing, and not from pre-existent matter",
+"c":733,
+"l":2,
+"a":"b733-4"
+},
+{
+"t":"Chapter XI. The heretics, from their disbelief of the truth, have fallen into an abyss of error: reasons for investigating their systems",
+"c":735,
+"l":2,
+"a":"b735-7"
+},
+{
+"t":"Chapter XII. The Triacontad of the heretics errs both by defect and excess: Sophia could never have produced anything apart from her…",
+"c":737,
+"l":2,
+"a":"b737-2"
+},
+{
+"t":"Chapter XIII. The first order of production maintained by the heretics is altogether indefensible",
+"c":741,
+"l":2,
+"a":"b741-3"
+},
+{
+"t":"Chapter XIV. Valentinus and his followers derived the principles of their system from the heathen; the names only are changed",
+"c":749,
+"l":2,
+"a":"b749-1"
+},
+{
+"t":"Chapter XV. No account can be given of these productions",
+"c":757,
+"l":2,
+"a":"b757-1"
+},
+{
+"t":"Chapter XVI. The Creator of the world either produced of Himself the images of things to be made, or the Pleroma was formed after the…",
+"c":759,
+"l":2,
+"a":"b759-2"
+},
+{
+"t":"Chapter XVII. Inquiry into the production of the Æons: whatever its supposed nature, it is in every respect inconsistent; and on the…",
+"c":761,
+"l":2,
+"a":"b761-1"
+},
+{
+"t":"Chapter XVIII. Sophia was never really in ignorance or passion; her Enthymesis could not have been separated from herself, or exhibited…",
+"c":767,
+"l":2,
+"a":"b767-3"
+},
+{
+"t":"Chapter XIX. Absurdities of the heretics as to their own origin: their opinions respecting the Demiurge shown to be equally untenable and…",
+"c":771,
+"l":2,
+"a":"b771-1"
+},
+{
+"t":"Chapter XX. Futility of the arguments adduced to demonstrate the sufferings of the twelfth Æon, from the parables, the treachery of Judas,…",
+"c":775,
+"l":2,
+"a":"b775-7"
+},
+{
+"t":"Chapter XXI. The twelve apostles were not a type of the Æons",
+"c":779,
+"l":2,
+"a":"b779-1"
+},
+{
+"t":"Chapter XXII. The thirty Æons are not typified by the fact that Christ was baptized in His thirtieth year: He did not suffer in the…",
+"c":781,
+"l":2,
+"a":"b781-1"
+},
+{
+"t":"Chapter XXIII. The woman who suffered from an issue of blood was no type of the suffering Æon",
+"c":785,
+"l":2,
+"a":"b785-5"
+},
+{
+"t":"Chapter XXIV. Folly of the arguments derived by the heretics from numbers, letters, and syllables",
+"c":787,
+"l":2,
+"a":"b787-4"
+},
+{
+"t":"Chapter XXV. God is not to be sought after by means of letters, syllables, and numbers; necessity of humility in such investigations",
+"c":797,
+"l":2,
+"a":"b797-2"
+},
+{
+"t":"Chapter XXVI. “Knowledge puffeth up, but love edifieth.”",
+"c":799,
+"l":2,
+"a":"b799-2"
+},
+{
+"t":"Chapter XXVII. Proper mode of interpreting parables and obscure passages of Scripture",
+"c":801,
+"l":2,
+"a":"b801-1"
+},
+{
+"t":"Chapter XXVIII. Perfect knowledge cannot be attained in the present life: many questions must be submissively left in the hands of God",
+"c":803,
+"l":2,
+"a":"b803-1"
+},
+{
+"t":"Chapter XXIX. Refutation of the views of the heretics as to the future destiny of the soul and body",
+"c":811,
+"l":2,
+"a":"b811-5"
+},
+{
+"t":"Chapter XXX. Absurdity of their styling themselves spiritual, while the Demiurge is declared to be animal",
+"c":815,
+"l":2,
+"a":"b815-1"
+},
+{
+"t":"Chapter XXXI. Recapitulation and application of the foregoing arguments",
+"c":823,
+"l":2,
+"a":"b823-1"
+},
+{
+"t":"Chapter XXXII. Further exposure of the wicked and blasphemous doctrines of the heretics",
+"c":825,
+"l":2,
+"a":"b825-1"
+},
+{
+"t":"Chapter XXXIII. Absurdity of the doctrine of the transmigration of souls",
+"c":829,
+"l":2,
+"a":"b829-2"
+},
+{
+"t":"Chapter XXXIV. Souls can be recognised in the separate state, and are immortal although they once had a beginning",
+"c":833,
+"l":2,
+"a":"b833-1"
+},
+{
+"t":"Chapter XXXV. Refutation of Basilides, and of the opinion that the prophets uttered their predictions under the inspiration of different…",
+"c":837,
+"l":2,
+"a":"b837-1"
+},
+{
+"t":"Book III",
+"c":843,
+"l":1,
+"a":"b843-1"
+},
+{
+"t":"Preface",
+"c":843,
+"l":2,
+"a":"b843-1"
+},
+{
+"t":"Chapter I. The apostles did not commence to preach the Gospel, or to place anything on record until they were endowed with the gifts and…",
+"c":843,
+"l":2,
+"a":"b843-4"
+},
+{
+"t":"Chapter II. The heretics follow neither Scripture nor tradition",
+"c":845,
+"l":2,
+"a":"b845-2"
+},
+{
+"t":"Chapter III. A refutation of the heretics, from the fact that, in the various Churches, a perpetual succession of bishops was kept up",
+"c":847,
+"l":2,
+"a":"b847-3"
+},
+{
+"t":"Chapter IV. The truth is to be found nowhere else but in the Catholic Church, the sole depository of apostolical doctrine. Heresies are of…",
+"c":855,
+"l":2,
+"a":"b855-1"
+},
+{
+"t":"Chapter V. Christ and His apostles, without any fraud, deception, or hypocrisy, preached that one God, the Father, was the founder of all…",
+"c":857,
+"l":2,
+"a":"b857-2"
+},
+{
+"t":"Chapter VI. The Holy Ghost, throughout the Old Testament Scriptures, made mention of no other God or Lord, save him who is the true God",
+"c":859,
+"l":2,
+"a":"b859-4"
+},
+{
+"t":"Chapter VII. Reply to an objection founded on the words of St. Paul (2 Cor. iv. 4). St. Paul occasionally uses words not in their…",
+"c":863,
+"l":2,
+"a":"b863-4"
+},
+{
+"t":"Chapter VIII. Answer to an objection, arising from the words of Christ (Matt. vi. 24). God alone is to be really called God and Lord, for…",
+"c":865,
+"l":2,
+"a":"b865-4"
+},
+{
+"t":"Chapter IX. One and the same God, the Creator of heaven and earth, is He whom the prophets foretold, and who was declared by the Gospel.…",
+"c":867,
+"l":2,
+"a":"b867-6"
+},
+{
+"t":"Chapter X. Proofs of the foregoing, drawn from the Gospels of Mark and Luke",
+"c":871,
+"l":2,
+"a":"b871-5"
+},
+{
+"t":"Chapter XI. Proofs in continuation, extracted from St. John’s Gospel. The Gospels are four in number, neither more nor less. Mystic…",
+"c":879,
+"l":2,
+"a":"b879-1"
+},
+{
+"t":"Chapter XII. Doctrine of the rest of the apostles",
+"c":891,
+"l":2,
+"a":"b891-3"
+},
+{
+"t":"Chapter XIII. Refutation of the opinion, that Paul was the only apostle who had knowledge of the truth",
+"c":909,
+"l":2,
+"a":"b909-2"
+},
+{
+"t":"Chapter XIV. If Paul had known any mysteries unrevealed to the other apostles, Luke, his constant companion and fellow-traveller, could…",
+"c":913,
+"l":2,
+"a":"b913-0"
+},
+{
+"t":"Chapter XV. Refutation of the Ebionites, who disparaged the authority of St. Paul, from the writings of St. Luke, which must be received…",
+"c":917,
+"l":2,
+"a":"b917-1"
+},
+{
+"t":"Chapter XVI. Proofs from the apostolic writings, that Jesus Christ was one and the same, the only begotten Son of God, perfect God and…",
+"c":919,
+"l":2,
+"a":"b919-2"
+},
+{
+"t":"Chapter XVII. The apostles teach that it was neither Christ nor the Saviour, but the Holy Spirit, who did descend upon Jesus. The reason…",
+"c":929,
+"l":2,
+"a":"b929-1"
+},
+{
+"t":"Chapter XVIII. Continuation of the foregoing argument. Proofs from the writings of St. Paul, and from the words of Our Lord, that Christ…",
+"c":931,
+"l":2,
+"a":"b931-1"
+},
+{
+"t":"Chapter XIX. Jesus Christ was not a mere man, begotten from Joseph in the ordinary course of nature, but was very God, begotten of the…",
+"c":937,
+"l":2,
+"a":"b937-5"
+},
+{
+"t":"Chapter XX. God showed himself, by the fall of man, as patient, benign, merciful, mighty to save. Man is therefore most ungrateful, if,…",
+"c":941,
+"l":2,
+"a":"b941-2"
+},
+{
+"t":"Chapter XXI. A vindication of the prophecy in Isa. vii. 14 against the misinterpretations of Theodotion, Aquila, the Ebionites, and the…",
+"c":945,
+"l":2,
+"a":"b945-3"
+},
+{
+"t":"Chapter XXII. Christ assumed actual flesh, conceived and born of the Virgin",
+"c":955,
+"l":2,
+"a":"b955-2"
+},
+{
+"t":"Chapter XXIII. Arguments in opposition to Tatian, showing that it was consonant to divine justice and mercy that the first Adam should…",
+"c":959,
+"l":2,
+"a":"b959-3"
+},
+{
+"t":"Chapter XXIV. Recapitulation of the various arguments adduced against Gnostic impiety under all its aspects. The heretics, tossed about by…",
+"c":965,
+"l":2,
+"a":"b965-3"
+},
+{
+"t":"Chapter XXV. This world is ruled by the providence of one God, who is both endowed with infinite justice to punish the wicked, and with…",
+"c":967,
+"l":2,
+"a":"b967-3"
+}
+],
+"span":[
+[
+437,
+967
+]
+]
+},
+"pg-3748":{
+"rows":[
+{
+"t":"Against Heresies, Book IV",
+"c":973,
+"l":0,
+"a":"b973-4"
+},
+{
+"t":"Book IV",
+"c":973,
+"l":1,
+"a":"b973-4"
+},
+{
+"t":"Preface",
+"c":973,
+"l":2,
+"a":"b973-4"
+},
+{
+"t":"Chapter I. The Lord acknowledged but one God and Father",
+"c":975,
+"l":2,
+"a":"b975-5"
+},
+{
+"t":"Chapter II. Proofs from the plain testimony of Moses, and of the other prophets, whose words are the words of Christ, that there is But…",
+"c":975,
+"l":2,
+"a":"b975-11"
+},
+{
+"t":"Chapter III. Answer to the cavils of the Gnostics. We are not to suppose that the true God can be changed, or come to an end because the…",
+"c":979,
+"l":2,
+"a":"b979-2"
+},
+{
+"t":"Chapter IV. Answer to another objection, showing that the destruction of Jerusalem, which was the city of the great King, diminished…",
+"c":979,
+"l":2,
+"a":"b979-7"
+},
+{
+"t":"Chapter V. The author returns to his former argument, and shows that there was but one God announced by the law and prophets, whom Christ…",
+"c":983,
+"l":2,
+"a":"b983-2"
+},
+{
+"t":"Chapter VI. Explanation of the words of Christ,",
+"c":985,
+"l":2,
+"a":"b985-5"
+},
+{
+"t":"Chapter VII. Recapitulation of the foregoing argument, showing that Abraham, through the revelation of the Word, knew the Father, and the…",
+"c":989,
+"l":2,
+"a":"b989-6"
+},
+{
+"t":"Chapter VIII. Vain attempts of Marcion and his followers, who exclude Abraham from the salvation bestowed by Christ, who liberated not…",
+"c":993,
+"l":2,
+"a":"b993-0"
+},
+{
+"t":"Chapter IX. There is but one author, and one end to both covenants",
+"c":995,
+"l":2,
+"a":"b995-4"
+},
+{
+"t":"Chapter X. The Old Testament Scriptures, and those written by Moses in particular, do everywhere make mention of the Son of God, and…",
+"c":999,
+"l":2,
+"a":"b999-3"
+},
+{
+"t":"Chapter XI. The old prophets and righteous men knew beforehand of the advent of Christ, and earnestly desired to see and hear Him, He…",
+"c":1001,
+"l":2,
+"a":"b1001-2"
+},
+{
+"t":"Chapter XII. It clearly appears that there was but one author of both the old and the new law, from the fact that Christ condemned…",
+"c":1003,
+"l":2,
+"a":"b1003-3"
+},
+{
+"t":"Chapter XIII. Christ did not abrogate the natural precepts of the law, but rather fulfilled and extended them. He removed the yoke and…",
+"c":1005,
+"l":2,
+"a":"b1005-4"
+},
+{
+"t":"Chapter XIV. If God demands obedience from man, if He formed man, called him and placed him under laws, it was merely for man’s welfare;…",
+"c":1009,
+"l":2,
+"a":"b1009-7"
+},
+{
+"t":"Chapter XV. At first God deemed it sufficient to inscribe the natural law, or the Decalogue, upon the hearts of men; but afterwards He…",
+"c":1011,
+"l":2,
+"a":"b1011-5"
+},
+{
+"t":"Chapter XVI. Perfect righteousness was conferred neither by circumcision nor by any other legal ceremonies. The Decalogue, however, was…",
+"c":1013,
+"l":2,
+"a":"b1013-5"
+},
+{
+"t":"Chapter XVII. Proof that God did not appoint the Levitical dispensation for His own sake, or as requiring such service; for He does, in…",
+"c":1019,
+"l":2,
+"a":"b1019-1"
+},
+{
+"t":"Chapter XVIII. Concerning sacrifices and oblations, and those who truly offer them",
+"c":1023,
+"l":2,
+"a":"b1023-3"
+},
+{
+"t":"Chapter XIX. Earthly things may be the type of heavenly, but the latter cannot be the types of others still superior and unknown; nor can…",
+"c":1029,
+"l":2,
+"a":"b1029-1"
+},
+{
+"t":"Chapter XX. That one God formed all things in the world, by means of the Word and the Holy Spirit: and that although He is to us in this…",
+"c":1031,
+"l":2,
+"a":"b1031-2"
+},
+{
+"t":"Chapter XXI. Abraham’s faith was identical with ours; this faith was prefigured by the words and actions of the old patriarchs",
+"c":1043,
+"l":2,
+"a":"b1043-2"
+},
+{
+"t":"Chapter XXII. Christ did not come for the sake of the men of one age only, but for all who, living righteously and piously, had believed…",
+"c":1045,
+"l":2,
+"a":"b1045-8"
+},
+{
+"t":"Chapter XXIII. The patriarchs and prophets by pointing out the advent of Christ, fortified thereby, as it were, the way of posterity to…",
+"c":1047,
+"l":2,
+"a":"b1047-2"
+},
+{
+"t":"Chapter XXIV. The conversion of the Gentiles was more difficult than that of the Jews; the labours of those apostles, therefore who…",
+"c":1049,
+"l":2,
+"a":"b1049-1"
+},
+{
+"t":"Chapter XXV. Both covenants were prefigured in Abraham, and in the labour of Tamar; there was, however, but one and the same God to each…",
+"c":1049,
+"l":2,
+"a":"b1049-6"
+},
+{
+"t":"Chapter XXVI. The treasure hid in the Scriptures is Christ; the true exposition of the Scriptures is to be found in the Church alone",
+"c":1051,
+"l":2,
+"a":"b1051-3"
+},
+{
+"t":"Chapter XXVII. The sins of the men of old time, which incurred the displeasure of God, were, by His providence, committed to writing, that…",
+"c":1055,
+"l":2,
+"a":"b1055-8"
+},
+{
+"t":"Chapter XXVIII. Those persons prove themselves senseless who exaggerate the mercy of Christ, but are silent as to the judgment, and look…",
+"c":1061,
+"l":2,
+"a":"b1061-3"
+},
+{
+"t":"Chapter XXIX. Refutation of the arguments of the Marcionites, who attempted to show that God was the author of sin, because He blinded…",
+"c":1063,
+"l":2,
+"a":"b1063-0"
+},
+{
+"t":"Chapter XXX. Refutation of another argument adduced by the Marcionites, that God directed the Hebrews to spoil the Egyptians",
+"c":1063,
+"l":2,
+"a":"b1063-5"
+},
+{
+"t":"Chapter XXXI. We should not hastily impute as crimes to the men of old time those actions which the Scripture has not condemned, but…",
+"c":1067,
+"l":2,
+"a":"b1067-4"
+},
+{
+"t":"Chapter XXXII. That one God was the author of both Testaments, is confirmed by the authority of a presbyter who had been taught by the…",
+"c":1069,
+"l":2,
+"a":"b1069-5"
+},
+{
+"t":"Chapter XXXIII. Whosoever confesses that one God is the author of both Testaments, and diligently reads the Scriptures in company with the…",
+"c":1071,
+"l":2,
+"a":"b1071-3"
+},
+{
+"t":"Chapter XXXIV. Proof against the Marcionites, that the prophets referred in all their predictions to our Christ",
+"c":1083,
+"l":2,
+"a":"b1083-2"
+},
+{
+"t":"Chapter XXXV. A refutation of those who allege that the prophets uttered some predictions under the inspiration of the highest, others…",
+"c":1087,
+"l":2,
+"a":"b1087-0"
+},
+{
+"t":"Chapter XXXVI. The prophets were sent from one and the same Father from whom the Son was sent",
+"c":1089,
+"l":2,
+"a":"b1089-5"
+},
+{
+"t":"Chapter XXXVII. Men are possessed of free will, and endowed with the faculty of making a choice. It is not true, therefore, that some are…",
+"c":1099,
+"l":2,
+"a":"b1099-2"
+},
+{
+"t":"Chapter XXXVIII. Why man was not made perfect from the beginning",
+"c":1105,
+"l":2,
+"a":"b1105-0"
+},
+{
+"t":"Chapter XXXIX. Man is endowed with the faculty of distinguishing good and evil; so that, without compulsion, he has the power, by his own…",
+"c":1109,
+"l":2,
+"a":"b1109-5"
+},
+{
+"t":"Chapter XL. One and the same God the Father inflicts punishment on the reprobate, and bestows rewards on the elect",
+"c":1111,
+"l":2,
+"a":"b1111-1"
+},
+{
+"t":"Chapter XLI. Those persons who do not believe in God, but who are disobedient, are angels and sons of the devil, not indeed by nature, but…",
+"c":1117,
+"l":2,
+"a":"b1117-0"
+}
+],
+"span":[
+[
+973,
+1117
+]
+]
+},
+"pg-2849":{
+"rows":[
+{
+"t":"Against Heresies, Book V",
+"c":1119,
+"l":0,
+"a":"b1119-4"
+},
+{
+"t":"Book V",
+"c":1119,
+"l":1,
+"a":"b1119-4"
+},
+{
+"t":"Preface",
+"c":1119,
+"l":2,
+"a":"b1119-5"
+},
+{
+"t":"Chapter I. Christ alone is able to teach divine things, and to redeem us: He, the same, took flesh of the Virgin Mary, not merely in…",
+"c":1119,
+"l":2,
+"a":"b1119-9"
+},
+{
+"t":"Chapter II. When Christ visited us in His grace, He did not come to what did not belong to Him: also, by shedding His true blood for us,…",
+"c":1123,
+"l":2,
+"a":"b1123-2"
+},
+{
+"t":"Chapter III. The power and glory of God shine forth in the weakness of human flesh, as He will render our body a participator of the…",
+"c":1129,
+"l":2,
+"a":"b1129-0"
+},
+{
+"t":"Chapter IV. Those persons are deceived who feign another God the Father besides the Creator of the world; for he must have been feeble and…",
+"c":1131,
+"l":2,
+"a":"b1131-7"
+},
+{
+"t":"Chapter V. The prolonged life of the ancients, the translation of Elijah and of Enoch in their own bodies, as well as the preservation of…",
+"c":1133,
+"l":2,
+"a":"b1133-3"
+},
+{
+"t":"Chapter VI. God will bestow salvation upon the whole nature of man, consisting of body and soul in close union, since the Word took it…",
+"c":1135,
+"l":2,
+"a":"b1135-5"
+},
+{
+"t":"Chapter VII. Inasmuch as Christ did rise in our flesh, it follows that we shall be also raised in the same; since the resurrection…",
+"c":1139,
+"l":2,
+"a":"b1139-3"
+},
+{
+"t":"Chapter VIII. The gifts of the Holy Spirit which we receive prepare us for incorruption, render us spiritual, and separate us from carnal…",
+"c":1141,
+"l":2,
+"a":"b1141-2"
+},
+{
+"t":"Chapter IX. Showing how that passage of the apostle which the heretics pervert, should be understood; viz.,",
+"c":1143,
+"l":2,
+"a":"b1143-6"
+},
+{
+"t":"Chapter X. By a comparison drawn from the wild olive-tree, whose quality but not whose nature is changed by grafting, he proves more…",
+"c":1147,
+"l":2,
+"a":"b1147-1"
+},
+{
+"t":"Chapter XI. Treats upon the actions of carnal and of spiritual persons; also, that the spiritual cleansing is not to be referred to the…",
+"c":1149,
+"l":2,
+"a":"b1149-2"
+},
+{
+"t":"Chapter XII. Of the difference between life and death; of the breath of life and the vivifying Spirit: also how it is that the substance…",
+"c":1151,
+"l":2,
+"a":"b1151-1"
+},
+{
+"t":"Chapter XIII. In the dead who were raised by Christ we possess the highest proof of the resurrection; and our hearts are shown to be…",
+"c":1155,
+"l":2,
+"a":"b1155-5"
+},
+{
+"t":"Chapter XIV. Unless the flesh were to be saved, the Word would not have taken upon Him flesh of the same substance as ours: from this it…",
+"c":1159,
+"l":2,
+"a":"b1159-6"
+},
+{
+"t":"Chapter XV. Proofs of the resurrection from Isaiah and Ezekiel; the same God who created us will also raise us up",
+"c":1163,
+"l":2,
+"a":"b1163-3"
+},
+{
+"t":"Chapter XVI. Since our bodies return to the earth, it follows that they have their substance from it; also, by the advent of the Word, the…",
+"c":1167,
+"l":2,
+"a":"b1167-0"
+},
+{
+"t":"Chapter XVII. There is but one Lord and one God, the Father and Creator of all things, who has loved us in Christ, given us commandments,…",
+"c":1169,
+"l":2,
+"a":"b1169-1"
+},
+{
+"t":"Chapter XVIII. God the Father and His Word have formed all created things (which They use) by Their own power and wisdom, not out of…",
+"c":1171,
+"l":2,
+"a":"b1171-1"
+},
+{
+"t":"Chapter XIX. A comparison is instituted between the disobedient and sinning Eve and the Virgin Mary, her patroness. Various and discordant…",
+"c":1175,
+"l":2,
+"a":"b1175-1"
+},
+{
+"t":"Chapter XX. Those pastors are to be heard to whom the apostles committed the Churches, possessing one and the same doctrine of salvation;…",
+"c":1177,
+"l":2,
+"a":"b1177-0"
+},
+{
+"t":"Chapter XXI. Christ is the head of all things already mentioned. It was fitting that He should be sent by the Father, the Creator of all…",
+"c":1177,
+"l":2,
+"a":"b1177-6"
+},
+{
+"t":"Chapter XXII. The true Lord and the one God is declared by the law, and manifested by Christ His Son in the Gospel; whom alone we should…",
+"c":1181,
+"l":2,
+"a":"b1181-6"
+},
+{
+"t":"Chapter XXIII. The devil is well practised in falsehood, by which Adam having been led astray, sinned on the sixth day of the creation, in…",
+"c":1183,
+"l":2,
+"a":"b1183-6"
+},
+{
+"t":"Chapter XXIV. Of the constant falsehood of the devil, and of the powers and governments of the world, which we ought to obey, inasmuch as…",
+"c":1185,
+"l":2,
+"a":"b1185-6"
+},
+{
+"t":"Chapter XXV. The fraud, pride, and tyrannical kingdom of Antichrist, as described by Daniel and Paul",
+"c":1187,
+"l":2,
+"a":"b1187-6"
+},
+{
+"t":"Chapter XXVI. John and Daniel have predicted the dissolution and desolation of the Roman Empire, which shall precede the end of the world…",
+"c":1191,
+"l":2,
+"a":"b1191-6"
+},
+{
+"t":"Chapter XXVII. The future judgment by Christ. Communion with and separation from the divine being. The eternal punishment of unbelievers",
+"c":1195,
+"l":2,
+"a":"b1195-3"
+},
+{
+"t":"Chapter XXVIII. The distinction to be made between the righteous and the wicked. The future apostasy in the time of Antichrist, and the…",
+"c":1197,
+"l":2,
+"a":"b1197-3"
+},
+{
+"t":"Chapter XXIX. All things have been created for the service of man. The deceits, wickedness, and apostate power of Antichrist. This was…",
+"c":1201,
+"l":2,
+"a":"b1201-0"
+},
+{
+"t":"Chapter XXX. Although certain as to the number of the name of Antichrist, yet we should come to no rash conclusions as to the name itself,…",
+"c":1203,
+"l":2,
+"a":"b1203-1"
+},
+{
+"t":"Chapter XXXI. The preservation of our bodies is confirmed by the resurrection and ascension of Christ: the souls of the saints during the…",
+"c":1207,
+"l":2,
+"a":"b1207-3"
+},
+{
+"t":"Chapter XXXII. In that flesh in which the saints have suffered so many afflictions, they shall receive the fruits of their labours;…",
+"c":1209,
+"l":2,
+"a":"b1209-3"
+},
+{
+"t":"Chapter XXXIII. Further proofs of the same proposition, drawn from the promises made by Christ, when He declared that He would drink of…",
+"c":1211,
+"l":2,
+"a":"b1211-4"
+},
+{
+"t":"Chapter XXXIV. He fortifies his opinions with regard to the temporal and earthly kingdom of the saints after their resurrection, by the…",
+"c":1215,
+"l":2,
+"a":"b1215-1"
+},
+{
+"t":"Chapter XXXV. He contends that these testimonies already alleged cannot be understood allegorically of celestial blessings, but that they…",
+"c":1217,
+"l":2,
+"a":"b1217-6"
+},
+{
+"t":"Chapter XXXVI. Men shall be actually raised: the world shall not be annihilated; but there shall be various mansions for the saints,…",
+"c":1221,
+"l":2,
+"a":"b1221-1"
+}
+],
+"span":[
+[
+1119,
+1221
+]
+]
+},
+"pg-121":{
+"rows":[
+{
+"t":"The Stromata, Books I-IV",
+"c":687,
+"l":0,
+"a":"b687-0"
+},
+{
+"t":"Book I",
+"c":687,
+"l":1,
+"a":"b687-0"
+},
+{
+"t":"Chapter I. Preface—The Author’s Object—The Utility of Written Compositions",
+"c":687,
+"l":2,
+"a":"b687-0"
+},
+{
+"t":"Chapter II. Objection to the Number of Extracts from Philosophical Writings in These Books Anticipated and Answered",
+"c":709,
+"l":2,
+"a":"b709-0"
+},
+{
+"t":"Chapter III. Against the Sophists",
+"c":711,
+"l":2,
+"a":"b711-1"
+},
+{
+"t":"Chapter IV. Human Arts as Well as Divine Knowledge Proceed from God",
+"c":715,
+"l":2,
+"a":"b715-0"
+},
+{
+"t":"Chapter V. Philosophy the Handmaid of Theology",
+"c":717,
+"l":2,
+"a":"b717-3"
+},
+{
+"t":"Chapter VI. The Benefit of Culture",
+"c":727,
+"l":2,
+"a":"b727-1"
+},
+{
+"t":"Chapter VII. The Eclectic Philosophy Paves the Way for Divine Virtue",
+"c":731,
+"l":2,
+"a":"b731-3"
+},
+{
+"t":"Chapter VIII. The Sophistical Arts Useless",
+"c":735,
+"l":2,
+"a":"b735-1"
+},
+{
+"t":"Chapter IX. Human Knowledge Necessary for the Understanding of the Scriptures",
+"c":739,
+"l":2,
+"a":"b739-1"
+},
+{
+"t":"Chapter X. To Act Well of Greater Consequence Than to Speak Well",
+"c":743,
+"l":2,
+"a":"b743-1"
+},
+{
+"t":"Chapter XI. What is the Philosophy Which the Apostle Bids Us Shun?",
+"c":747,
+"l":2,
+"a":"b747-1"
+},
+{
+"t":"Chapter XII. The Mysteries of the Faith Not to Be Divulged to All",
+"c":753,
+"l":2,
+"a":"b753-0"
+},
+{
+"t":"Chapter XIII. All Sects of Philosophy Contain a Germ of Truth",
+"c":753,
+"l":2,
+"a":"b753-4"
+},
+{
+"t":"Chapter XIV. Succession of Philosophers in Greece",
+"c":757,
+"l":2,
+"a":"b757-1"
+},
+{
+"t":"Chapter XV. The Greek Philosophy in Great Part Derived from the Barbarians",
+"c":767,
+"l":2,
+"a":"b767-1"
+},
+{
+"t":"Chapter XVI. That the Inventors of Other Arts Were Mostly Barbarians",
+"c":783,
+"l":2,
+"a":"b783-4"
+},
+{
+"t":"Chapter XVII. On the Saying of the Saviour,",
+"c":795,
+"l":2,
+"a":"b795-0"
+},
+{
+"t":"Chapter XVIII. He Illustrates the Apostle’s Saying,",
+"c":803,
+"l":2,
+"a":"b803-0"
+},
+{
+"t":"Chapter XIX. That the Philosophers Have Attained to Some Portion of Truth",
+"c":805,
+"l":2,
+"a":"b805-3"
+},
+{
+"t":"Chapter XX. In What Respect Philosophy Contributes to the Comprehension of Divine Truth",
+"c":813,
+"l":2,
+"a":"b813-1"
+},
+{
+"t":"Chapter XXI. The Jewish Institutions and Laws of Far Higher Antiquity Than the Philosophy of the Greeks",
+"c":819,
+"l":2,
+"a":"b819-1"
+},
+{
+"t":"Chapter XXII. On the Greek Translation of the Old Testament",
+"c":889,
+"l":2,
+"a":"b889-4"
+},
+{
+"t":"Chapter XXIII. The Age, Birth, and Life of Moses",
+"c":895,
+"l":2,
+"a":"b895-1"
+},
+{
+"t":"Chapter XXIV. How Moses Discharged the Part of a Military Leader",
+"c":905,
+"l":2,
+"a":"b905-2"
+},
+{
+"t":"Chapter XXV. Plato an Imitator of Moses in Framing Laws",
+"c":911,
+"l":2,
+"a":"b911-5"
+},
+{
+"t":"Chapter XXVI. Moses Rightly Called a Divine Legislator, And, Though Inferior to Christ, Far Superior to the Great Legislators of the…",
+"c":915,
+"l":2,
+"a":"b915-0"
+},
+{
+"t":"Chapter XXVII. The Law, Even in Correcting and Punishing, Aims at the Good of Men",
+"c":917,
+"l":2,
+"a":"b917-3"
+},
+{
+"t":"Chapter XXVIII. The Fourfold Division of the Mosaic Law",
+"c":921,
+"l":2,
+"a":"b921-4"
+},
+{
+"t":"Chapter XXIX. The Greeks But Children Compared with the Hebrews",
+"c":925,
+"l":2,
+"a":"b925-1"
+},
+{
+"t":"Book II",
+"c":929,
+"l":1,
+"a":"b929-1"
+},
+{
+"t":"Chapter I. Introductory",
+"c":929,
+"l":2,
+"a":"b929-2"
+},
+{
+"t":"Chapter II. The Knowledge of God Can Be Attained Only Through Faith",
+"c":933,
+"l":2,
+"a":"b933-2"
+},
+{
+"t":"Chapter III. Faith Not a Product of Nature",
+"c":941,
+"l":2,
+"a":"b941-1"
+},
+{
+"t":"Chapter IV. Faith the Foundation of All Knowledge",
+"c":943,
+"l":2,
+"a":"b943-1"
+},
+{
+"t":"Chapter V. He Proves by Several Examples that the Greeks Drew from the Sacred Writers",
+"c":951,
+"l":2,
+"a":"b951-1"
+},
+{
+"t":"Chapter VI. The Excellence and Utility of Faith",
+"c":959,
+"l":2,
+"a":"b959-0"
+},
+{
+"t":"Chapter VII. The Utility of Fear. Objections Answered",
+"c":967,
+"l":2,
+"a":"b967-1"
+},
+{
+"t":"Chapter VIII. The Vagaries of Basilides and Valentinus as to Fear Being the Cause of Things",
+"c":971,
+"l":2,
+"a":"b971-1"
+},
+{
+"t":"Chapter IX. The Connection of the Christian Virtues",
+"c":975,
+"l":2,
+"a":"b975-1"
+},
+{
+"t":"Chapter X. To What the Philosopher Applies Himself",
+"c":981,
+"l":2,
+"a":"b981-2"
+},
+{
+"t":"Chapter XI. The Knowledge Which Comes Through Faith the Surest of All",
+"c":983,
+"l":2,
+"a":"b983-1"
+},
+{
+"t":"Chapter XII. Twofold Faith",
+"c":989,
+"l":2,
+"a":"b989-2"
+},
+{
+"t":"Chapter XIII. On First and Second Repentance",
+"c":993,
+"l":2,
+"a":"b993-2"
+},
+{
+"t":"Chapter XIV. How a Thing May Be Involuntary",
+"c":997,
+"l":2,
+"a":"b997-2"
+},
+{
+"t":"Chapter XV. On the Different Kinds of Voluntary Actions, and the Sins Thence Proceeding",
+"c":999,
+"l":2,
+"a":"b999-3"
+},
+{
+"t":"Chapter XVI. How We are to Explain the Passages of Scripture Which Ascribe to God Human Affections",
+"c":1011,
+"l":2,
+"a":"b1011-0"
+},
+{
+"t":"Chapter XVII. On the Various Kinds of Knowledge",
+"c":1013,
+"l":2,
+"a":"b1013-1"
+},
+{
+"t":"Chapter XVIII. The Mosaic Law the Fountain of All Ethics, and the Source from Which the Greeks Drew Theirs",
+"c":1015,
+"l":2,
+"a":"b1015-1"
+},
+{
+"t":"Chapter XIX. The True Gnostic is an Imitator of God, Especially in Beneficence",
+"c":1039,
+"l":2,
+"a":"b1039-2"
+},
+{
+"t":"Chapter XX. The True Gnostic Exercises Patience and Self-Restraint",
+"c":1047,
+"l":2,
+"a":"b1047-1"
+},
+{
+"t":"Chapter XXI. Opinions of Various Philosophers on the Chief Good",
+"c":1071,
+"l":2,
+"a":"b1071-1"
+},
+{
+"t":"Chapter XXII. Plato’s Opinion, that the Chief Good Consists in Assimilation to God, and Its Agreement with Scripture",
+"c":1079,
+"l":2,
+"a":"b1079-4"
+},
+{
+"t":"Chapter XXIII. On Marriage",
+"c":1085,
+"l":2,
+"a":"b1085-1"
+},
+{
+"t":"Book IV",
+"c":1213,
+"l":1,
+"a":"b1213-3"
+},
+{
+"t":"Chapter I. Order of Contents",
+"c":1213,
+"l":2,
+"a":"b1213-4"
+},
+{
+"t":"Chapter II. The Meaning of the Name Stromata or Miscellanies",
+"c":1217,
+"l":2,
+"a":"b1217-0"
+},
+{
+"t":"Chapter III. The True Excellence of Man",
+"c":1219,
+"l":2,
+"a":"b1219-1"
+},
+{
+"t":"Chapter IV. The Praises of Martyrdom",
+"c":1225,
+"l":2,
+"a":"b1225-6"
+},
+{
+"t":"Chapter V. On Contempt for Pain, Poverty, and Other External Things",
+"c":1231,
+"l":2,
+"a":"b1231-2"
+},
+{
+"t":"Chapter VI. Some Points in the Beatitudes",
+"c":1237,
+"l":2,
+"a":"b1237-5"
+},
+{
+"t":"Chapter VII. The Blessedness of the Martyr",
+"c":1253,
+"l":2,
+"a":"b1253-1"
+},
+{
+"t":"Chapter VIII. Women as Well as Men, Slaves as Well as Freemen, Candidates for the Martyr’s Crown",
+"c":1267,
+"l":2,
+"a":"b1267-4"
+},
+{
+"t":"Chapter IX. Christ’s Sayings Respecting Martyrdom",
+"c":1279,
+"l":2,
+"a":"b1279-4"
+},
+{
+"t":"Chapter X. Those Who Offered Themselves for Martyrdom Reproved",
+"c":1285,
+"l":2,
+"a":"b1285-1"
+},
+{
+"t":"Chapter XI. The Objection, Why Do You Suffer If God Cares for You, Answered",
+"c":1287,
+"l":2,
+"a":"b1287-1"
+},
+{
+"t":"Chapter XII. Basilides’ Idea of Martyrdom Refuted",
+"c":1289,
+"l":2,
+"a":"b1289-1"
+},
+{
+"t":"Chapter XIII. Valentinian’s Vagaries About the Abolition of Death Refuted",
+"c":1295,
+"l":2,
+"a":"b1295-3"
+},
+{
+"t":"Chapter XIV. The Love of All, Even of Our Enemies",
+"c":1301,
+"l":2,
+"a":"b1301-1"
+},
+{
+"t":"Chapter XV. On Avoiding Offence",
+"c":1303,
+"l":2,
+"a":"b1303-1"
+},
+{
+"t":"Chapter XVI. Passages of Scripture Respecting the Constancy, Patience, and Love of the Martyrs",
+"c":1305,
+"l":2,
+"a":"b1305-1"
+},
+{
+"t":"Chapter XVII. Passages from Clement’s Epistle to the Corinthians on Martyrdom",
+"c":1311,
+"l":2,
+"a":"b1311-0"
+},
+{
+"t":"Chapter XVIII. On Love, and the Repressing of Our Desires",
+"c":1319,
+"l":2,
+"a":"b1319-1"
+},
+{
+"t":"Chapter XX. A Good Wife",
+"c":1335,
+"l":2,
+"a":"b1335-1"
+},
+{
+"t":"Chapter XXI. Description of the Perfect Man, or Gnostic",
+"c":1339,
+"l":2,
+"a":"b1339-1"
+},
+{
+"t":"Chapter XXII. The True Gnostic Does Good, Not from Fear of Punishment or Hope of Reward, But Only for the Sake of Good Itself",
+"c":1345,
+"l":2,
+"a":"b1345-1"
+},
+{
+"t":"Chapter XXIII. The Same Subject Continued",
+"c":1355,
+"l":2,
+"a":"b1355-4"
+},
+{
+"t":"Chapter XXIV. The Reason and End of Divine Punishments",
+"c":1361,
+"l":2,
+"a":"b1361-1"
+},
+{
+"t":"Chapter XXV. True Perfection Consists in the Knowledge and Love of God",
+"c":1363,
+"l":2,
+"a":"b1363-1"
+},
+{
+"t":"Chapter XXVI. How the Perfect Man Treats the Body and the Things of the World",
+"c":1371,
+"l":2,
+"a":"b1371-7"
+}
+],
+"span":[
+[
+687,
+1371
+]
+]
+},
+"pg-124":{
+"rows":[
+{
+"t":"The Stromata, Books V-VIII",
+"c":9,
+"l":0,
+"a":"b9-0"
+},
+{
+"t":"Book V",
+"c":9,
+"l":1,
+"a":"b9-0"
+},
+{
+"t":"Chapter I. Introduction",
+"c":9,
+"l":2,
+"a":"b9-3"
+},
+{
+"t":"Chapter III. The Objects of Faith and Hope Perceived by the Mind Alone",
+"c":31,
+"l":2,
+"a":"b31-2"
+},
+{
+"t":"Chapter IV. Divine Things Wrapped Up in Figures Both in the Sacred and in Heathen Writers",
+"c":37,
+"l":2,
+"a":"b37-1"
+},
+{
+"t":"Chapter V. On the Symbols of Pythagoras",
+"c":45,
+"l":2,
+"a":"b45-4"
+},
+{
+"t":"Chapter VI. The Mystic Meaning of the Tabernacle and Its Furniture",
+"c":55,
+"l":2,
+"a":"b55-3"
+},
+{
+"t":"Chapter VII. The Egyptian Symbols and Enigmas of Sacred Things",
+"c":67,
+"l":2,
+"a":"b67-2"
+},
+{
+"t":"Chapter VIII. The Use of the Symbolic Style by Poets and Philosophers",
+"c":71,
+"l":2,
+"a":"b71-1"
+},
+{
+"t":"Chapter IX. Reasons for Veiling the Truth in Symbols",
+"c":87,
+"l":2,
+"a":"b87-1"
+},
+{
+"t":"Chapter X. The Opinion of the Apostles on Veiling the Mysteries of the Faith",
+"c":93,
+"l":2,
+"a":"b93-1"
+},
+{
+"t":"Chapter XI. Abstraction from Material Things Necessary in Order to Attain to the True Knowledge of God",
+"c":101,
+"l":2,
+"a":"b101-3"
+},
+{
+"t":"Chapter XII. God Cannot Be Embraced in Words or by the Mind",
+"c":115,
+"l":2,
+"a":"b115-1"
+},
+{
+"t":"Chapter XIII. The Knowledge of God a Divine Gift, According to the Philosophers",
+"c":123,
+"l":2,
+"a":"b123-3"
+},
+{
+"t":"Chapter XIV. Greek Plagiarism from the Hebrews",
+"c":129,
+"l":2,
+"a":"b129-0"
+},
+{
+"t":"Book VI",
+"c":207,
+"l":1,
+"a":"b207-0"
+},
+{
+"t":"Chapter I. Plan",
+"c":207,
+"l":2,
+"a":"b207-1"
+},
+{
+"t":"Chapter II. The Subject of Plagiarisms Resumed. The Greeks Plagiarized from One Another",
+"c":211,
+"l":2,
+"a":"b211-0"
+},
+{
+"t":"Chapter III. Plagiarism by the Greeks of the Miracles Related in the Sacred Books of the Hebrews",
+"c":243,
+"l":2,
+"a":"b243-1"
+},
+{
+"t":"Chapter IV. The Greeks Drew Many of Their Philosophical Tenets from the Egyptian and Indian Gymnosophists",
+"c":251,
+"l":2,
+"a":"b251-3"
+},
+{
+"t":"Chapter V. The Greeks Had Some Knowledge of the True God",
+"c":257,
+"l":2,
+"a":"b257-8"
+},
+{
+"t":"Chapter VI. The Gospel Was Preached to Jews and Gentiles in Hades",
+"c":265,
+"l":2,
+"a":"b265-1"
+},
+{
+"t":"Chapter VII. What True Philosophy Is, and Whence So Called",
+"c":275,
+"l":2,
+"a":"b275-1"
+},
+{
+"t":"Chapter VIII. Philosophy is Knowledge Given by God",
+"c":283,
+"l":2,
+"a":"b283-1"
+},
+{
+"t":"Chapter IX. The Gnostic Free of All Perturbations of the Soul",
+"c":291,
+"l":2,
+"a":"b291-1"
+},
+{
+"t":"Chapter X. The Gnostic Avails Himself of the Help of All Human Knowledge",
+"c":299,
+"l":2,
+"a":"b299-1"
+},
+{
+"t":"Chapter XI. The Mystical Meanings in the Proportions of Numbers, Geometrical Ratios, and Music",
+"c":303,
+"l":2,
+"a":"b303-1"
+},
+{
+"t":"Chapter XII. Human Nature Possesses an Adaptation for Perfection; The Gnostic Alone Attains It",
+"c":317,
+"l":2,
+"a":"b317-1"
+},
+{
+"t":"Chapter XIII. Degrees of Glory in Heaven Corresponding with the Dignities of the Church Below",
+"c":325,
+"l":2,
+"a":"b325-3"
+},
+{
+"t":"Chapter XIV. Degrees of Glory in Heaven",
+"c":329,
+"l":2,
+"a":"b329-2"
+},
+{
+"t":"Chapter XV. Different Degrees of Knowledge",
+"c":339,
+"l":2,
+"a":"b339-1"
+},
+{
+"t":"Chapter XVI. Gnostic Exposition of the Decalogue",
+"c":357,
+"l":2,
+"a":"b357-1"
+},
+{
+"t":"Chapter XVII. Philosophy Conveys Only an Imperfect Knowledge of God",
+"c":379,
+"l":2,
+"a":"b379-2"
+},
+{
+"t":"Chapter XVIII. The Use of Philosophy to the Gnostic",
+"c":395,
+"l":2,
+"a":"b395-0"
+},
+{
+"t":"Book VII",
+"c":401,
+"l":1,
+"a":"b401-2"
+},
+{
+"t":"Chapter I. The Gnostic a True Worshipper of God, and Unjustly Calumniated by Unbelievers as an Atheist",
+"c":401,
+"l":2,
+"a":"b401-2"
+},
+{
+"t":"Chapter II. The Son the Ruler and Saviour of All",
+"c":407,
+"l":2,
+"a":"b407-0"
+},
+{
+"t":"Chapter III. The Gnostic Aims at the Nearest Likeness Possible to God and His Son",
+"c":415,
+"l":2,
+"a":"b415-1"
+},
+{
+"t":"Chapter IV. The Heathens Made Gods Like Themselves, Whence Springs All Superstition",
+"c":427,
+"l":2,
+"a":"b427-0"
+},
+{
+"t":"Chapter V. The Holy Soul a More Excellent Temple Than Any Edifice Built by Man",
+"c":435,
+"l":2,
+"a":"b435-10"
+},
+{
+"t":"Chapter VI. Prayers and Praise from a Pure Mind, Ceaselessly Offered, Far Better Than Sacrifices",
+"c":439,
+"l":2,
+"a":"b439-1"
+},
+{
+"t":"Chapter VII. What Sort of Prayer the Gnostic Employs, and How It is Heard by God",
+"c":449,
+"l":2,
+"a":"b449-1"
+},
+{
+"t":"Chapter VIII. The Gnostic So Addicted to Truth as Not to Need to Use an Oath",
+"c":471,
+"l":2,
+"a":"b471-1"
+},
+{
+"t":"Chapter IX. Those Who Teach Others, Ought to Excel in Virtues",
+"c":473,
+"l":2,
+"a":"b473-1"
+},
+{
+"t":"Chapter X. Steps to Perfection",
+"c":477,
+"l":2,
+"a":"b477-2"
+},
+{
+"t":"Chapter XI. Description of the Gnostic’s Life",
+"c":483,
+"l":2,
+"a":"b483-4"
+},
+{
+"t":"Chapter XII. The True Gnostic is Beneficent, Continent, and Despises Worldly Things",
+"c":495,
+"l":2,
+"a":"b495-1"
+},
+{
+"t":"Chapter XIII. Description of the Gnostic Continued",
+"c":511,
+"l":2,
+"a":"b511-3"
+},
+{
+"t":"Chapter XIV. Description of the Gnostic Furnished by an Exposition of 1 Cor. vi. 1, Etc",
+"c":517,
+"l":2,
+"a":"b517-0"
+},
+{
+"t":"Chapter XV. The Objection to Join the Church on Account of the Diversity of Heresies Answered",
+"c":523,
+"l":2,
+"a":"b523-1"
+},
+{
+"t":"Chapter XVI. Scripture the Criterion by Which Truth and Heresy are Distinguished",
+"c":529,
+"l":2,
+"a":"b529-0"
+},
+{
+"t":"Chapter XVII. The Tradition of the Church Prior to that of the Heresies",
+"c":545,
+"l":2,
+"a":"b545-3"
+},
+{
+"t":"Chapter XVIII. The Distinction Between Clean and Unclean Animals in the Law Symbolical of the Distinction Between the Church, and Jews,…",
+"c":553,
+"l":2,
+"a":"b553-1"
+},
+{
+"t":"Book VIII",
+"c":557,
+"l":1,
+"a":"b557-2"
+},
+{
+"t":"Chapter I. The Object of Philosophical and Theological Inquiry—The Discovery of Truth",
+"c":557,
+"l":2,
+"a":"b557-2"
+},
+{
+"t":"Chapter II. The Necessity of Perspicuous Definition",
+"c":561,
+"l":2,
+"a":"b561-1"
+},
+{
+"t":"Chapter III. Demonstration Defined",
+"c":563,
+"l":2,
+"a":"b563-1"
+},
+{
+"t":"Chapter IV. To Prevent Ambiguity, We Must Begin with Clear Definition",
+"c":569,
+"l":2,
+"a":"b569-1"
+},
+{
+"t":"Chapter V. Application of Demonstration to Sceptical Suspense of Judgment",
+"c":579,
+"l":2,
+"a":"b579-0"
+},
+{
+"t":"Chapter VI. Definitions, Genera, and Species",
+"c":581,
+"l":2,
+"a":"b581-2"
+},
+{
+"t":"Chapter VII. On the Causes of Doubt or Assent",
+"c":587,
+"l":2,
+"a":"b587-1"
+},
+{
+"t":"Chapter VIII. The Method of Classifying Things and Names",
+"c":587,
+"l":2,
+"a":"b587-4"
+},
+{
+"t":"Chapter IX. On the Different Kinds of Cause",
+"c":591,
+"l":2,
+"a":"b591-1"
+}
+],
+"span":[
+[
+9,
+591
+]
+]
+},
+"pg-120":{
+"rows":[
+{
+"t":"The Instructor",
+"c":249,
+"l":0,
+"a":"b249-0"
+},
+{
+"t":"Book I",
+"c":249,
+"l":1,
+"a":"b249-0"
+},
+{
+"t":"Chapter I. Introduction",
+"c":249,
+"l":2,
+"a":"b249-0"
+},
+{
+"t":"Chapter II. Our Instructor’s Treatment of Our Sins",
+"c":251,
+"l":2,
+"a":"b251-1"
+},
+{
+"t":"Chapter III. The Philanthropy of the Instructor",
+"c":257,
+"l":2,
+"a":"b257-1"
+},
+{
+"t":"Chapter IV. Men and Women Alike Under the Instructor’s Charge",
+"c":259,
+"l":2,
+"a":"b259-7"
+},
+{
+"t":"Chapter VI. The Name Children Does Not Imply Instruction in Elementary Principles",
+"c":279,
+"l":2,
+"a":"b279-1"
+},
+{
+"t":"Chapter VII. Who the Instructor Is, and Respecting His Instruction",
+"c":311,
+"l":2,
+"a":"b311-5"
+},
+{
+"t":"Chapter VIII. Against Those Who Think that What is Just is Not Good",
+"c":325,
+"l":2,
+"a":"b325-0"
+},
+{
+"t":"Chapter IX. That It is the Prerogative of the Same Power to Be Beneficent and to Punish Justly. Also the Manner of the Instruction of the…",
+"c":339,
+"l":2,
+"a":"b339-1"
+},
+{
+"t":"Chapter X. That the Same God, by the Same Word, Restrains from Sin by Threatening, and Saves Humanity by Exhorting",
+"c":355,
+"l":2,
+"a":"b355-1"
+},
+{
+"t":"Chapter XI. That the Word Instructed by the Law and the Prophets",
+"c":363,
+"l":2,
+"a":"b363-3"
+},
+{
+"t":"Chapter XII. The Instructor Characterized by the Severity and Benignity of Paternal Affection",
+"c":367,
+"l":2,
+"a":"b367-0"
+},
+{
+"t":"Chapter XIII. Virtue Rational, Sin Irrational",
+"c":371,
+"l":2,
+"a":"b371-0"
+},
+{
+"t":"Book II",
+"c":377,
+"l":1,
+"a":"b377-1"
+},
+{
+"t":"Chapter I. Introduction",
+"c":377,
+"l":2,
+"a":"b377-2"
+},
+{
+"t":"Chapter II. On Drinking",
+"c":409,
+"l":2,
+"a":"b409-1"
+},
+{
+"t":"Chapter III. On Costly Vessels",
+"c":431,
+"l":2,
+"a":"b431-1"
+},
+{
+"t":"Chapter IV. How to Conduct Ourselves at Feasts",
+"c":439,
+"l":2,
+"a":"b439-1"
+},
+{
+"t":"Chapter V. On Laughter",
+"c":445,
+"l":2,
+"a":"b445-4"
+},
+{
+"t":"Chapter VI. On Filthy Speaking",
+"c":451,
+"l":2,
+"a":"b451-3"
+},
+{
+"t":"Chapter VII. Directions for Those Who Live Together",
+"c":455,
+"l":2,
+"a":"b455-2"
+},
+{
+"t":"Chapter VIII. On the Use of Ointments and Crowns",
+"c":465,
+"l":2,
+"a":"b465-1"
+},
+{
+"t":"Chapter X. Quænam de Procreatione Liberorum Tractanda Sint",
+"c":497,
+"l":2,
+"a":"b497-1"
+},
+{
+"t":"Chapter XI. On Clothes",
+"c":519,
+"l":2,
+"a":"b519-0"
+},
+{
+"t":"Chapter XIII. Against Excessive Fondness for Jewels and Gold Ornaments",
+"c":539,
+"l":2,
+"a":"b539-1"
+},
+{
+"t":"Book III",
+"c":555,
+"l":1,
+"a":"b555-0"
+},
+{
+"t":"Chapter I. On the True Beauty",
+"c":555,
+"l":2,
+"a":"b555-0"
+},
+{
+"t":"Chapter II. Against Embellishing the Body",
+"c":559,
+"l":2,
+"a":"b559-1"
+},
+{
+"t":"Chapter III. Against Men Who Embellish Themselves",
+"c":577,
+"l":2,
+"a":"b577-0"
+},
+{
+"t":"Chapter IV. With Whom We are to Associate",
+"c":591,
+"l":2,
+"a":"b591-2"
+},
+{
+"t":"Chapter V. Behaviour in the Baths",
+"c":599,
+"l":2,
+"a":"b599-1"
+},
+{
+"t":"Chapter VI. The Christian Alone Rich",
+"c":603,
+"l":2,
+"a":"b603-1"
+},
+{
+"t":"Chapter VII. Frugality a Good Provision for the Christian",
+"c":607,
+"l":2,
+"a":"b607-1"
+},
+{
+"t":"Chapter VIII. Similitudes and Examples a Most Important Part of Right Instruction",
+"c":611,
+"l":2,
+"a":"b611-1"
+},
+{
+"t":"Chapter IX. Why We are to Use the Bath",
+"c":617,
+"l":2,
+"a":"b617-1"
+},
+{
+"t":"Chapter X. The Exercises Suited to a Good Life",
+"c":619,
+"l":2,
+"a":"b619-3"
+},
+{
+"t":"Chapter XI. A Compendious View of the Christian Life",
+"c":625,
+"l":2,
+"a":"b625-2"
+},
+{
+"t":"Chapter XII. Continuation: with Texts from Scripture",
+"c":661,
+"l":2,
+"a":"b661-6"
+}
+],
+"span":[
+[
+249,
+661
+]
+]
+},
+"pg-106":{
+"rows":[
+{
+"t":"Address to the Greeks",
+"c":803,
+"l":0,
+"a":"b803-2"
+},
+{
+"t":"Chapter I. The Greeks Claim, Without Reason, the Invention of the Arts",
+"c":803,
+"l":1,
+"a":"b803-2"
+},
+{
+"t":"Chapter II. The Vices and Errors of the Philosophers",
+"c":805,
+"l":1,
+"a":"b805-6"
+},
+{
+"t":"Chapter III. Ridicule of the Philosophers",
+"c":809,
+"l":1,
+"a":"b809-1"
+},
+{
+"t":"Chapter IV. The Christians Worship God Alone",
+"c":811,
+"l":1,
+"a":"b811-1"
+},
+{
+"t":"Chapter V. The Doctrine of the Christians as to the Creation of the World",
+"c":813,
+"l":1,
+"a":"b813-2"
+},
+{
+"t":"Chapter VI. Christians’ Belief in the Resurrection",
+"c":817,
+"l":1,
+"a":"b817-1"
+},
+{
+"t":"Chapter VII. Concerning the Fall of Man",
+"c":819,
+"l":1,
+"a":"b819-1"
+},
+{
+"t":"Chapter VIII. The Demons Sin Among Mankind",
+"c":821,
+"l":1,
+"a":"b821-1"
+},
+{
+"t":"Chapter IX. They Give Rise to Superstitions",
+"c":825,
+"l":1,
+"a":"b825-3"
+},
+{
+"t":"Chapter X. Ridicule of the Heathen Divinities",
+"c":827,
+"l":1,
+"a":"b827-1"
+},
+{
+"t":"Chapter XI. The Sin of Men Due Not to Fate, But to Free-Will",
+"c":829,
+"l":1,
+"a":"b829-1"
+},
+{
+"t":"Chapter XII. The Two Kinds of Spirits",
+"c":829,
+"l":1,
+"a":"b829-2"
+},
+{
+"t":"Chapter XIII. Theory of the Soul’s Immortality",
+"c":833,
+"l":1,
+"a":"b833-1"
+},
+{
+"t":"Chapter XIV. The Demons Shall Be Punished More Severely Than Men",
+"c":835,
+"l":1,
+"a":"b835-0"
+},
+{
+"t":"Chapter XV. Necessity of a Union with the Holy Spirit",
+"c":837,
+"l":1,
+"a":"b837-1"
+},
+{
+"t":"Chapter XVI. Vain Display of Power by the Demons",
+"c":839,
+"l":1,
+"a":"b839-1"
+},
+{
+"t":"Chapter XVII. They Falsely Promise Health to Their Votaries",
+"c":841,
+"l":1,
+"a":"b841-1"
+},
+{
+"t":"Chapter XVIII. They Deceive, Instead of Healing",
+"c":845,
+"l":1,
+"a":"b845-1"
+},
+{
+"t":"Chapter XIX. Depravity Lies at the Bottom of Demon-Worship",
+"c":847,
+"l":1,
+"a":"b847-1"
+},
+{
+"t":"Chapter XX. Thanks are Ever Due to God",
+"c":851,
+"l":1,
+"a":"b851-0"
+},
+{
+"t":"Chapter XXI. Doctrines of the Christians and Greeks Respecting God Compared",
+"c":851,
+"l":1,
+"a":"b851-2"
+},
+{
+"t":"Chapter XXII. Ridicule of the Solemnities of the Greeks",
+"c":855,
+"l":1,
+"a":"b855-0"
+},
+{
+"t":"Chapter XXIII. Of the Pugilists and Gladiators",
+"c":857,
+"l":1,
+"a":"b857-1"
+},
+{
+"t":"Chapter XXIV. Of the Other Public Amusements",
+"c":857,
+"l":1,
+"a":"b857-3"
+},
+{
+"t":"Chapter XXV. Boastings and Quarrels of the Philosophers",
+"c":859,
+"l":1,
+"a":"b859-0"
+},
+{
+"t":"Chapter XXVI. Ridicule of the Studies of the Greeks",
+"c":861,
+"l":1,
+"a":"b861-1"
+},
+{
+"t":"Chapter XXVII. The Christians are Hated Unjustly",
+"c":863,
+"l":1,
+"a":"b863-2"
+},
+{
+"t":"Chapter XXVIII. Condemnation of the Greek Legislation",
+"c":865,
+"l":1,
+"a":"b865-2"
+},
+{
+"t":"Chapter XXIX. Account of Tatian’s Conversion",
+"c":865,
+"l":1,
+"a":"b865-3"
+},
+{
+"t":"Chapter XXX. How He Resolved to Resist the Devil",
+"c":867,
+"l":1,
+"a":"b867-1"
+},
+{
+"t":"Chapter XXXI. The Philosophy of the Christians More Ancient Than that of the Greeks",
+"c":867,
+"l":1,
+"a":"b867-3"
+},
+{
+"t":"Chapter XXXIII. Vindication of Christian Women",
+"c":873,
+"l":1,
+"a":"b873-0"
+},
+{
+"t":"Chapter XXXIV. Ridicule of the Statues Erected by the Greeks",
+"c":875,
+"l":1,
+"a":"b875-2"
+},
+{
+"t":"Chapter XXXV. Tatian Speaks as an Eye-Witness",
+"c":877,
+"l":1,
+"a":"b877-1"
+},
+{
+"t":"Chapter XXXVI. Testimony of the Chaldeans to the Antiquity of Moses",
+"c":879,
+"l":1,
+"a":"b879-0"
+},
+{
+"t":"Chapter XXXVII. Testimony of the Phœnicians",
+"c":879,
+"l":1,
+"a":"b879-2"
+},
+{
+"t":"Chapter XXXVIII. The Egyptians Place Moses in the Reign of Inachus",
+"c":879,
+"l":1,
+"a":"b879-3"
+},
+{
+"t":"Chapter XXXIX. Catalogue of the Argive Kings",
+"c":881,
+"l":1,
+"a":"b881-1"
+},
+{
+"t":"Chapter XL. Moses More Ancient and Credible Than the Heathen Heroes",
+"c":883,
+"l":1,
+"a":"b883-1"
+},
+{
+"t":"Chapter XLI. Moses Older Than Homer and All the Writers Before Him",
+"c":885,
+"l":1,
+"a":"b885-1"
+},
+{
+"t":"Chapter XLII. Concluding Statement as to the Author",
+"c":887,
+"l":1,
+"a":"b887-0"
+}
+],
+"span":[
+[
+803,
+887
+]
+]
+},
+"pg-108":{
+"rows":[
+{
+"t":"Theophilus to Autolycus",
+"c":1023,
+"l":0,
+"a":"b1023-1"
+},
+{
+"t":"Book I",
+"c":1023,
+"l":1,
+"a":"b1023-6"
+},
+{
+"t":"Chapter I. Autolycus an Idolater and Scorner of Christians",
+"c":1023,
+"l":2,
+"a":"b1023-8"
+},
+{
+"t":"Chapter II. That the Eyes of the Soul Must Be Purged Ere God Can Be Seen",
+"c":1025,
+"l":2,
+"a":"b1025-1"
+},
+{
+"t":"Chapter III. Nature of God",
+"c":1027,
+"l":2,
+"a":"b1027-2"
+},
+{
+"t":"Chapter IV. Attributes of God",
+"c":1029,
+"l":2,
+"a":"b1029-1"
+},
+{
+"t":"Chapter V. The Invisible God Perceived Through His Works",
+"c":1029,
+"l":2,
+"a":"b1029-2"
+},
+{
+"t":"Chapter VI. God is Known by His Works",
+"c":1033,
+"l":2,
+"a":"b1033-0"
+},
+{
+"t":"Chapter VII. We Shall See God When We Put on Immortality",
+"c":1033,
+"l":2,
+"a":"b1033-3"
+},
+{
+"t":"Chapter VIII. Faith Required in All Matters",
+"c":1035,
+"l":2,
+"a":"b1035-1"
+},
+{
+"t":"Chapter IX. Immoralities of the Gods",
+"c":1037,
+"l":2,
+"a":"b1037-1"
+},
+{
+"t":"Chapter X. Absurdities of Idolatry",
+"c":1039,
+"l":2,
+"a":"b1039-1"
+},
+{
+"t":"Chapter XI. The King to Be Honoured, God to Be Worshipped",
+"c":1039,
+"l":2,
+"a":"b1039-2"
+},
+{
+"t":"Chapter XII. Meaning of the Name Christian",
+"c":1041,
+"l":2,
+"a":"b1041-1"
+},
+{
+"t":"Chapter XIII. The Resurrection Proved by Examples",
+"c":1041,
+"l":2,
+"a":"b1041-2"
+},
+{
+"t":"Chapter XIV. Theophilus an Example of Conversion",
+"c":1043,
+"l":2,
+"a":"b1043-3"
+},
+{
+"t":"Book II",
+"c":1047,
+"l":1,
+"a":"b1047-5"
+},
+{
+"t":"Chapter I. Occasion of Writing This Book",
+"c":1047,
+"l":2,
+"a":"b1047-6"
+},
+{
+"t":"Chapter II. The Gods are Despised When They are Made; But Become Valuable When Bought",
+"c":1047,
+"l":2,
+"a":"b1047-7"
+},
+{
+"t":"Chapter III. What Has Become of the Gods?",
+"c":1049,
+"l":2,
+"a":"b1049-1"
+},
+{
+"t":"Chapter IV. Absurd Opinions of the Philosophers Concerning God",
+"c":1051,
+"l":2,
+"a":"b1051-1"
+},
+{
+"t":"Chapter V. Opinions of Homer and Hesiod Concerning the Gods",
+"c":1053,
+"l":2,
+"a":"b1053-1"
+},
+{
+"t":"Chapter VI. Hesiod on the Origin of the World",
+"c":1055,
+"l":2,
+"a":"b1055-1"
+},
+{
+"t":"Chapter VII. Fabulous Heathen Genealogies",
+"c":1057,
+"l":2,
+"a":"b1057-0"
+},
+{
+"t":"Chapter VIII. Opinions Concerning Providence",
+"c":1059,
+"l":2,
+"a":"b1059-1"
+},
+{
+"t":"Chapter IX. The Prophets Inspired by the Holy Ghost",
+"c":1063,
+"l":2,
+"a":"b1063-1"
+},
+{
+"t":"Chapter X. The World Created by God Through the Word",
+"c":1063,
+"l":2,
+"a":"b1063-2"
+},
+{
+"t":"Chapter XI. The Six Days’ Work Described",
+"c":1065,
+"l":2,
+"a":"b1065-2"
+},
+{
+"t":"Chapter XII. The Glory of the Six Days’ Work",
+"c":1069,
+"l":2,
+"a":"b1069-1"
+},
+{
+"t":"Chapter XIII. Remarks on the Creation of the World",
+"c":1071,
+"l":2,
+"a":"b1071-1"
+},
+{
+"t":"Chapter XIV. The World Compared to the Sea",
+"c":1075,
+"l":2,
+"a":"b1075-0"
+},
+{
+"t":"Chapter XV. Of the Fourth Day",
+"c":1075,
+"l":2,
+"a":"b1075-4"
+},
+{
+"t":"Chapter XVI. Of the Fifth Day",
+"c":1077,
+"l":2,
+"a":"b1077-2"
+},
+{
+"t":"Chapter XVII. Of the Sixth Day",
+"c":1079,
+"l":2,
+"a":"b1079-0"
+},
+{
+"t":"Chapter XVIII. The Creation of Man",
+"c":1081,
+"l":2,
+"a":"b1081-0"
+},
+{
+"t":"Chapter XIX. Man is Placed in Paradise",
+"c":1081,
+"l":2,
+"a":"b1081-2"
+},
+{
+"t":"Chapter XX. The Scriptural Account of Paradise",
+"c":1083,
+"l":2,
+"a":"b1083-1"
+},
+{
+"t":"Chapter XXI. Of the Fall of Man",
+"c":1083,
+"l":2,
+"a":"b1083-4"
+},
+{
+"t":"Chapter XXII. Why God is Said to Have Walked",
+"c":1087,
+"l":2,
+"a":"b1087-0"
+},
+{
+"t":"Chapter XXIII. The Truth of the Account in Genesis",
+"c":1087,
+"l":2,
+"a":"b1087-2"
+},
+{
+"t":"Chapter XXIV. The Beauty of Paradise",
+"c":1089,
+"l":2,
+"a":"b1089-1"
+},
+{
+"t":"Chapter XXV. God Was Justified in Forbidding Man to Eat of the Tree of Knowledge",
+"c":1091,
+"l":2,
+"a":"b1091-1"
+},
+{
+"t":"Chapter XXVI. God’s Goodness in Expelling Man from Paradise",
+"c":1091,
+"l":2,
+"a":"b1091-4"
+},
+{
+"t":"Chapter XXVII. The Nature of Man",
+"c":1093,
+"l":2,
+"a":"b1093-1"
+},
+{
+"t":"Chapter XXVIII. Why Eve Was Formed of Adam’s Rib",
+"c":1095,
+"l":2,
+"a":"b1095-1"
+},
+{
+"t":"Chapter XXIX. Cain’s Crime",
+"c":1097,
+"l":2,
+"a":"b1097-1"
+},
+{
+"t":"Chapter XXX. Cain’s Family and Their Inventions",
+"c":1097,
+"l":2,
+"a":"b1097-4"
+},
+{
+"t":"Chapter XXXI. The History After the Flood",
+"c":1099,
+"l":2,
+"a":"b1099-5"
+},
+{
+"t":"Chapter XXXII. How the Human Race Was Dispersed",
+"c":1103,
+"l":2,
+"a":"b1103-3"
+},
+{
+"t":"Chapter XXXIII. Profane History Gives No Account of These Matters",
+"c":1105,
+"l":2,
+"a":"b1105-1"
+},
+{
+"t":"Chapter XXXIV. The Prophets Enjoined Holiness of Life",
+"c":1105,
+"l":2,
+"a":"b1105-3"
+},
+{
+"t":"Chapter XXXV. Precepts from the Prophetic Books",
+"c":1107,
+"l":2,
+"a":"b1107-1"
+},
+{
+"t":"Chapter XXXVI. Prophecies of the Sibyl",
+"c":1109,
+"l":2,
+"a":"b1109-4"
+},
+{
+"t":"Chapter XXXVII. The Testimonies of the Poets",
+"c":1115,
+"l":2,
+"a":"b1115-16"
+},
+{
+"t":"Chapter XXXVIII. The Teachings of the Greek Poets and Philosophers Confirmatory of Those of the Hebrew Prophets",
+"c":1117,
+"l":2,
+"a":"b1117-24"
+},
+{
+"t":"Book III",
+"c":1121,
+"l":1,
+"a":"b1121-0"
+},
+{
+"t":"Chapter I. Autolycus Not Yet Convinced",
+"c":1121,
+"l":2,
+"a":"b1121-1"
+},
+{
+"t":"Chapter II. Profane Authors Had No Means of Knowing the Truth",
+"c":1121,
+"l":2,
+"a":"b1121-1"
+},
+{
+"t":"Chapter III. Their Contradictions",
+"c":1123,
+"l":2,
+"a":"b1123-1"
+},
+{
+"t":"Chapter IV. How Autolycus Had Been Misled by False Accusations Against the Christians",
+"c":1125,
+"l":2,
+"a":"b1125-1"
+},
+{
+"t":"Chapter V. Philosophers Inculcate Cannibalism",
+"c":1125,
+"l":2,
+"a":"b1125-2"
+},
+{
+"t":"Chapter VI. Other Opinions of the Philosophers",
+"c":1127,
+"l":2,
+"a":"b1127-2"
+},
+{
+"t":"Chapter VII. Varying Doctrine Concerning the Gods",
+"c":1129,
+"l":2,
+"a":"b1129-1"
+},
+{
+"t":"Chapter VIII. Wickedness Attributed to the Gods by Heathen Writers",
+"c":1133,
+"l":2,
+"a":"b1133-4"
+},
+{
+"t":"Chapter IX. Christian Doctrine of God and His Law",
+"c":1133,
+"l":2,
+"a":"b1133-5"
+},
+{
+"t":"Chapter X. Of Humanity to Strangers",
+"c":1135,
+"l":2,
+"a":"b1135-2"
+},
+{
+"t":"Chapter XI. Of Repentance",
+"c":1135,
+"l":2,
+"a":"b1135-3"
+},
+{
+"t":"Chapter XII. Of Righteousness",
+"c":1137,
+"l":2,
+"a":"b1137-2"
+},
+{
+"t":"Chapter XIII. Of Chastity",
+"c":1139,
+"l":2,
+"a":"b1139-1"
+},
+{
+"t":"Chapter XIV. Of Loving Our Enemies",
+"c":1139,
+"l":2,
+"a":"b1139-3"
+},
+{
+"t":"Chapter XV. The Innocence of the Christians Defended",
+"c":1141,
+"l":2,
+"a":"b1141-1"
+},
+{
+"t":"Chapter XVI. Uncertain Conjectures of the Philosophers",
+"c":1143,
+"l":2,
+"a":"b1143-0"
+},
+{
+"t":"Chapter XVII. Accurate Information of the Christians",
+"c":1143,
+"l":2,
+"a":"b1143-3"
+},
+{
+"t":"Chapter XVIII. Errors of the Greeks About the Deluge",
+"c":1145,
+"l":2,
+"a":"b1145-0"
+},
+{
+"t":"Chapter XIX. Accurate Account of the Deluge",
+"c":1145,
+"l":2,
+"a":"b1145-2"
+},
+{
+"t":"Chapter XX. Antiquity of Moses",
+"c":1147,
+"l":2,
+"a":"b1147-1"
+},
+{
+"t":"Chapter XXI. Of Manetho’s Inaccuracy",
+"c":1149,
+"l":2,
+"a":"b1149-1"
+},
+{
+"t":"Chapter XXII. Antiquity of the Temple",
+"c":1151,
+"l":2,
+"a":"b1151-1"
+},
+{
+"t":"Chapter XXIII. Prophets More Ancient Than Greek Writers",
+"c":1155,
+"l":2,
+"a":"b1155-0"
+},
+{
+"t":"Chapter XXIV. Chronology from Adam",
+"c":1155,
+"l":2,
+"a":"b1155-3"
+},
+{
+"t":"Chapter XXV. From Saul to the Captivity",
+"c":1157,
+"l":2,
+"a":"b1157-4"
+},
+{
+"t":"Chapter XXX. Why the Greeks Did Not Mention Our Histories (not in this copy)",
+"c":1167,
+"l":2,
+"a":"b1167-0"
+}
+],
+"span":[
+[
+1023,
+1167
+]
+]
+},
+"pg-30":{
+"rows":[
+{
+"t":"Letter to Diognetus",
+"c":1167,
+"l":0,
+"a":"b1167-0"
+},
+{
+"t":"Chapter I. Introduction",
+"c":1167,
+"l":1,
+"a":"b1167-3"
+},
+{
+"t":"Chapter II. The Folly of Idols",
+"c":1167,
+"l":1,
+"a":"b1167-5"
+},
+{
+"t":"Chapter III. The Worship of the Jews",
+"c":1171,
+"l":1,
+"a":"b1171-1"
+},
+{
+"t":"Chapter IV. Jewish Scruples",
+"c":1171,
+"l":1,
+"a":"b1171-3"
+},
+{
+"t":"Chapter V. The Character of Christians",
+"c":1173,
+"l":1,
+"a":"b1173-1"
+},
+{
+"t":"Chapter VI. Christians as the Soul of the World",
+"c":1175,
+"l":1,
+"a":"b1175-1"
+},
+{
+"t":"Chapter VII. The Divine Revelation",
+"c":1175,
+"l":1,
+"a":"b1175-4"
+},
+{
+"t":"Chapter VIII. The Knowledge of God",
+"c":1177,
+"l":1,
+"a":"b1177-4"
+},
+{
+"t":"Chapter IX. The Redemption",
+"c":1179,
+"l":1,
+"a":"b1179-1"
+},
+{
+"t":"Chapter X. The Call to Faith",
+"c":1181,
+"l":1,
+"a":"b1181-1"
+},
+{
+"t":"Chapter XI. The Teaching of the Word",
+"c":1183,
+"l":1,
+"a":"b1183-1"
+},
+{
+"t":"Chapter XII. The Tree of Knowledge and Life",
+"c":1183,
+"l":1,
+"a":"b1183-5"
+}
+],
+"span":[
+[
+1167,
+1183
+]
+]
+},
+"pg-2880":{
+"rows":[
+{
+"t":"On the Incarnation",
+"c":95,
+"l":0,
+"a":"b95-5"
+},
+{
+"t":"Chapter I. The purpose of the treatise: the Word’s becoming man",
+"c":95,
+"l":1,
+"a":"b95-5"
+},
+{
+"t":"Chapter II. False views of creation: Epicurean chance and Platonic pre-existing matter",
+"c":97,
+"l":1,
+"a":"b97-4"
+},
+{
+"t":"Chapter III. The true doctrine of creation out of nothing by God’s Word",
+"c":101,
+"l":1,
+"a":"b101-0"
+},
+{
+"t":"Chapter IV. Why the doctrine of creation is essential to understanding the Incarnation",
+"c":103,
+"l":1,
+"a":"b103-0"
+},
+{
+"t":"Chapter V. Humanity’s fall from grace into corruption and death",
+"c":103,
+"l":1,
+"a":"b103-4"
+},
+{
+"t":"Chapter VI. The dilemma of death: God’s image perishing in mankind",
+"c":105,
+"l":1,
+"a":"b105-3"
+},
+{
+"t":"Chapter VII. Why repentance alone could not solve humanity’s corruption",
+"c":107,
+"l":1,
+"a":"b107-2"
+},
+{
+"t":"Chapter VIII. The Word takes a human body to dwell among us",
+"c":109,
+"l":1,
+"a":"b109-1"
+},
+{
+"t":"Chapter IX. Christ’s death as a sufficient sacrifice for all",
+"c":111,
+"l":1,
+"a":"b111-0"
+},
+{
+"t":"Chapter X. The fitness of redemption to God’s goodness",
+"c":111,
+"l":1,
+"a":"b111-4"
+},
+{
+"t":"Chapter XI. The Incarnation as God’s remedy for human ignorance",
+"c":113,
+"l":1,
+"a":"b113-4"
+},
+{
+"t":"Chapter XII. God’s many provisions for mankind to know Him",
+"c":115,
+"l":1,
+"a":"b115-4"
+},
+{
+"t":"Chapter XIII. Why God could not remain silent while humanity worshipped idols",
+"c":117,
+"l":1,
+"a":"b117-3"
+},
+{
+"t":"Chapter XIV. Only the Image of God could restore God’s image in man",
+"c":119,
+"l":1,
+"a":"b119-3"
+},
+{
+"t":"Chapter XV. The Word meets humanity at their level through a body",
+"c":121,
+"l":1,
+"a":"b121-3"
+},
+{
+"t":"Chapter XVI. Drawing mankind to know God through His visible presence",
+"c":123,
+"l":1,
+"a":"b123-2"
+},
+{
+"t":"Chapter XVII. The Incarnation did not limit the Word’s universal presence",
+"c":125,
+"l":1,
+"a":"b125-0"
+},
+{
+"t":"Chapter XVIII. The divine power at work in Christ’s human actions",
+"c":127,
+"l":1,
+"a":"b127-0"
+},
+{
+"t":"Chapter XIX. Creation confesses Christ’s deity, especially in His death",
+"c":129,
+"l":1,
+"a":"b129-1"
+},
+{
+"t":"Chapter XX. Only the Creator could bestow incorruption and restore God’s likeness",
+"c":129,
+"l":1,
+"a":"b129-4"
+},
+{
+"t":"Chapter XXI. Why Christ’s death had to be public, not private",
+"c":131,
+"l":1,
+"a":"b131-3"
+},
+{
+"t":"Chapter XXII. Why Christ did not avoid death at the hands of the Jews",
+"c":133,
+"l":1,
+"a":"b133-4"
+},
+{
+"t":"Chapter XXIII. A public death was necessary to prove the Resurrection",
+"c":135,
+"l":1,
+"a":"b135-3"
+},
+{
+"t":"Chapter XXIV. Christ conquered death in every form, not just one",
+"c":137,
+"l":1,
+"a":"b137-1"
+},
+{
+"t":"Chapter XXV. Why the Cross was the fitting means of death",
+"c":137,
+"l":1,
+"a":"b137-4"
+},
+{
+"t":"Chapter XXVI. Why Christ rose on the third day",
+"c":139,
+"l":1,
+"a":"b139-4"
+},
+{
+"t":"Chapter XXVII. The Cross transforms the meaning of death for believers",
+"c":141,
+"l":1,
+"a":"b141-3"
+},
+{
+"t":"Chapter XXVIII. The proof of Christ’s victory: Christians despise death",
+"c":143,
+"l":1,
+"a":"b143-2"
+},
+{
+"t":"Chapter XXIX. The Cross as the cause of death’s overthrow",
+"c":145,
+"l":1,
+"a":"b145-1"
+},
+{
+"t":"Chapter XXX. The Resurrection proven by its visible effects",
+"c":147,
+"l":1,
+"a":"b147-1"
+},
+{
+"t":"Chapter XXXI. The power of Christ contrasted with the impotence of idols",
+"c":149,
+"l":1,
+"a":"b149-1"
+},
+{
+"t":"Chapter XXXII. God is known by His works, and Christ’s works prove His deity",
+"c":149,
+"l":1,
+"a":"b149-3"
+},
+{
+"t":"Chapter XXXIII. Jewish unbelief answered from their own Scriptures",
+"c":151,
+"l":1,
+"a":"b151-4"
+},
+{
+"t":"Chapter XXXIV. Old Testament prophecies of Christ’s passion and death",
+"c":153,
+"l":1,
+"a":"b153-2"
+},
+{
+"t":"Chapter XXXV. Prophecies of the Cross fulfilled in Christ alone",
+"c":155,
+"l":1,
+"a":"b155-1"
+},
+{
+"t":"Chapter XXXVI. Prophecies of Christ’s sovereignty and flight into Egypt",
+"c":157,
+"l":1,
+"a":"b157-1"
+},
+{
+"t":"Chapter XXXVII. Psalm 22 and the silencing of pagan oracles",
+"c":159,
+"l":1,
+"a":"b159-0"
+},
+{
+"t":"Chapter XXXVIII. Further prophecies of God coming in the flesh",
+"c":161,
+"l":1,
+"a":"b161-1"
+},
+{
+"t":"Chapter XXXIX. Daniel’s prophecy foretells the exact time of Christ’s coming",
+"c":163,
+"l":1,
+"a":"b163-1"
+},
+{
+"t":"Chapter XL. The end of prophecy and the conversion of the Gentiles",
+"c":165,
+"l":1,
+"a":"b165-0"
+},
+{
+"t":"Chapter XLI. If the Word orders the universe, why not also take a body?",
+"c":167,
+"l":1,
+"a":"b167-1"
+},
+{
+"t":"Chapter XLII. The Word’s union with a body reflects His relation to all creation",
+"c":169,
+"l":1,
+"a":"b169-1"
+},
+{
+"t":"Chapter XLIII. Why the Word came as a man rather than in some nobler form",
+"c":171,
+"l":1,
+"a":"b171-1"
+},
+{
+"t":"Chapter XLIV. Why God restored humanity through a body, not a mere command",
+"c":173,
+"l":1,
+"a":"b173-1"
+},
+{
+"t":"Chapter XLV. All creation bears witness to God through the Incarnation",
+"c":175,
+"l":1,
+"a":"b175-4"
+},
+{
+"t":"Chapter XLVI. The decline of idolatry, oracles, and magic since Christ came",
+"c":177,
+"l":1,
+"a":"b177-3"
+},
+{
+"t":"Chapter XLVII. Pagan oracles and demons dispelled by the sign of the Cross",
+"c":179,
+"l":1,
+"a":"b179-1"
+},
+{
+"t":"Chapter XLVIII. Christian virtue and martyrdom as evidence of Christ’s power",
+"c":181,
+"l":1,
+"a":"b181-1"
+},
+{
+"t":"Chapter XLIX. Christ’s works compared with the pagan gods",
+"c":183,
+"l":1,
+"a":"b183-1"
+},
+{
+"t":"Chapter L. The impotence of philosophers contrasted with Christ’s resurrection",
+"c":185,
+"l":1,
+"a":"b185-1"
+},
+{
+"t":"Chapter LI. The transformation of society through Christian virtue",
+"c":185,
+"l":1,
+"a":"b185-4"
+},
+{
+"t":"Chapter LII. Christ brings peace where demons stirred up wars",
+"c":187,
+"l":1,
+"a":"b187-4"
+},
+{
+"t":"Chapter LIII. Christ overthrew paganism by addressing the human conscience",
+"c":189,
+"l":1,
+"a":"b189-2"
+},
+{
+"t":"Chapter LIV. The Incarnate Word is known by His works, like the invisible God",
+"c":191,
+"l":1,
+"a":"b191-1"
+},
+{
+"t":"Chapter LV. Summary: the true King has silenced all rivals",
+"c":193,
+"l":1,
+"a":"b193-1"
+},
+{
+"t":"Chapter LVI. Search the Scriptures and look for Christ’s second coming",
+"c":193,
+"l":1,
+"a":"b193-5"
+},
+{
+"t":"Chapter LVII. Live a holy life to truly know the Scriptures",
+"c":195,
+"l":1,
+"a":"b195-2"
+}
+],
+"span":[
+[
+95,
+195
 ]
 ]
 }

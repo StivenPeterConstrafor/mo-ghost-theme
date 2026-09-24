@@ -622,3 +622,31 @@
 - from: ^/the-faith-received/anf-martyrdom-ignatius/?$
   to: /the-faith-received/read/?w=pg-69&from=anf-martyrdom-ignatius
   permanent: true
+
+- from: ^/the-faith-received/anf-irenaeus-against-heresies/?$
+  to: /the-faith-received/read/?w=pg-2847&from=anf-irenaeus-against-heresies
+  permanent: true
+
+- from: ^/the-faith-received/anf-clement-alexandria-stromata/?$
+  to: /the-faith-received/read/?w=pg-121&from=anf-clement-alexandria-stromata
+  permanent: true
+
+- from: ^/the-faith-received/anf-clement-alexandria-instructor/?$
+  to: /the-faith-received/read/?w=pg-120&from=anf-clement-alexandria-instructor
+  permanent: true
+
+- from: ^/the-faith-received/anf-tatian-address/?$
+  to: /the-faith-received/read/?w=pg-106&from=anf-tatian-address
+  permanent: true
+
+- from: ^/the-faith-received/anf-theophilus-autolycus/?$
+  to: /the-faith-received/read/?w=pg-108&from=anf-theophilus-autolycus
+  permanent: true
+
+- from: ^/the-faith-received/diognetus/?$
+  to: /the-faith-received/read/?w=pg-30&from=diognetus
+  permanent: true
+
+- from: ^/the-faith-received/athanasius-incarnation/?$
+  to: /the-faith-received/read/?w=pg-2880&from=athanasius-incarnation
+  permanent: true
