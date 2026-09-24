@@ -281,6 +281,18 @@
     dScan.setAttribute("aria-pressed", window.LN && window.LN.fx ? "true" : "false");
   }
   groups.read.append(dLang, dScan);
+
+  // Ask, beside Research (Ian, 2026-09-23: "Also add Ask to the
+  // toolbar"). The same door the phone's dock uses: window.__openAsk
+  // (faith-port-read-tools.js) clicks the delegate ask-workspace.js opens on.
+  const dAsk = document.createElement("button");
+  dAsk.type = "button";
+  dAsk.className = "fr-td-ask";
+  dAsk.textContent = "Ask";
+  dAsk.title = "Ask the library a question about this work";
+  dAsk.addEventListener("click", () => {
+    if (typeof window.__openAsk === "function") window.__openAsk("");
+  });
   painters.push(paintScan);
 
   function members() {
@@ -299,6 +311,7 @@
       ["work", q(".fr-tb-focus")],
       ["work", q(".fr-tb-top")],
       ["research", document.getElementById("frAuth")],
+      ["research", dAsk],
     ];
   }
 

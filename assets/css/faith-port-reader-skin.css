@@ -2761,3 +2761,26 @@ html.g-mobile .fr-tb-tt { display: none !important; }
    Above every reader layer, rail and masthead included. */
 #aboutOv.about-ov { z-index: 10045; align-items: flex-start; }
 #aboutOv.about-ov > .about-box { margin: auto; }
+
+/* Expand contents takes the page (Ian, 2026-09-23): fixed across the
+   whole window under the toolbar, over the sidebar and the text, with
+   the outline spread in columns across the width. Top-level parts are
+   headings across the grid. */
+html:not(.g-mobile) .fr-read-toc {
+  position: fixed;
+  inset: calc(var(--mo-head, 61px) + var(--fr-ph-h, 67px)) 0 0 0;
+  z-index: 35;
+  padding: 24px clamp(20px, 4vw, 56px) 72px;
+}
+html:not(.g-mobile).mh-mini .fr-read-toc { top: calc(var(--fr-rail-h, 0px) + var(--fr-ph-h, 67px)); }
+html:not(.g-mobile).fr-bar-hidden .fr-read-toc { top: 0; }
+.fr-read-toc-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.fr-read-toc-grid > .fr-read-toc-part {
+  grid-column: 1 / -1;
+  margin: 14px 0 0;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--border, #d9c6a7);
+  font-size: 19px;
+  font-weight: 500;
+}
+.fr-read-toc-grid > .fr-read-toc-part:first-child { margin-top: 0; }

@@ -236,6 +236,15 @@
       overlay.appendChild(grid);
       return;
     }
+    /* FULL PAGE (Ian, 2026-09-23: "Expand contents should go full page,
+       not whatever this is"). A work with one or two top-level parts
+       ("Opera") made one card holding everything, a narrow column down
+       the left of an empty screen. The cards are now one level down in
+       that case, and the top-level parts become headings across the
+       width, so the whole outline spreads over the page. */
+    const tops = depths.filter((d) => d === top).length;
+    const deeper = depths.some((d) => d > top);
+    const cardDepth = tops <= 2 && deeper ? top + 1 : top;
     let card = null;
     let list = null;
     nodes.forEach((node) => {
@@ -249,7 +258,12 @@
         setExpanded(false);
         (link || node).click();
       });
-      if (d <= top || !card) {
+      if (d < cardDepth) {
+        entry.classList.add("fr-read-toc-part");
+        grid.appendChild(entry);
+        card = null;
+        list = null;
+      } else if (d === cardDepth || !card) {
         card = document.createElement("section");
         card.className = "fr-read-toc-card";
         entry.classList.add("fr-read-toc-title");
@@ -259,7 +273,7 @@
       } else {
         if (!list) { list = document.createElement("ul"); card.appendChild(list); }
         const li = document.createElement("li");
-        li.style.paddingLeft = `${Math.max(0, d - top - 1) * 14}px`;
+        li.style.paddingLeft = `${Math.max(0, d - cardDepth - 1) * 14}px`;
         li.appendChild(entry);
         list.appendChild(li);
       }
