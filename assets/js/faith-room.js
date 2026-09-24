@@ -994,10 +994,23 @@
     });
   }
 
-  function block(name, list, markOf) {
+  // The tradition page's address for a tradition group's name. The page
+  // (custom-faith-tradition.hbs, assets/data/faith-received/traditions.json)
+  // resolves every spelling a heading can carry, so this only slugs.
+  const traditionHref = (name) => `/the-faith-received/tradition/?t=${encodeURIComponent(
+    String(name || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""))}`;
+
+  // `kind` is the group's kind as the grouping decided it. A tradition or
+  // century heading is not an author, and asking authorGroup about
+  // "Baptist" answers "author": that is how every tradition panel on the
+  // Confessions page came to link /author/?a=baptist, a page that cannot
+  // load (Ian, 2026-09-24). Only the author view asks authorGroup.
+  function block(name, list, markOf, kind) {
     const wide = list.length >= WIDE_AT ? " btrad--wide" : "";
     const key = fold(name);
-    const group = window.MOFaithCatalogue.authorGroup(name, list);
+    const group = kind === "tradition" || kind === "century"
+      ? { kind, label: name }
+      : window.MOFaithCatalogue.authorGroup(name, list);
     name = authorLabel(group.label);
     const rows = list.map((w) => row(w, markOf ? markOf(w) : undefined)).join("");
     const n = list.length;
@@ -1019,9 +1032,14 @@
     // a summary is a coin toss between navigating and toggling, so it
     // moved into the open panel, where it can say what it is: first in
     // it, directly under the name (Ian, 2026-09-24).
+    // A tradition's panel opens on its own page in the same place (Ian,
+    // 2026-09-24: "Looks like we need tradition pages!"). "Other" is the
+    // bucket for undeclared documents and has no page.
     const all = key && group.kind === "author"
       ? `<a class="btrad-all btrad-all--top" href="/the-faith-received/author/?a=${encodeURIComponent(key)}">About ${escapeHtml(name)} &rarr;</a>`
-      : "";
+      : group.kind === "tradition" && name !== "Other"
+        ? `<a class="btrad-all btrad-all--top" href="${traditionHref(name)}">About ${escapeHtml(name)} &rarr;</a>`
+        : "";
     // Dates beside the name, office beneath it — the shape the shelf
     // pages on the corpus site use, and the one a reader scanning two
     // thousand names needs to tell one Abbo from another.
@@ -1230,13 +1248,13 @@
     // works, under their authors. Stable, so each half keeps its A-Z.
     const authorHit = (g) => Boolean(tiers) && g.works.some((w) => tiers.get(w) === AUTHOR);
     const anyAuthor = Boolean(tiers) && allGroups.some(authorHit);
-    const groupOrder = {tradition:0, author:1, unattributed:2, collection:3, editorial:4};
+    const groupOrder = {tradition:0, century:0, author:1, unattributed:2, collection:3, editorial:4};
     // A century group sorts by its works' century; Undated goes last.
     const centuryRank = (g) => {
       const c = g.works.length ? Number(cent(g.works[0])) : NaN;
       return Number.isFinite(c) && c ? c : 99;
     };
-    allGroups.forEach(g => { g.kind = BY_TRADITION ? "tradition" : window.MOFaithCatalogue.authorGroup(g.name, g.works).kind; });
+    allGroups.forEach(g => { g.kind = centuryList ? "century" : BY_TRADITION ? "tradition" : window.MOFaithCatalogue.authorGroup(g.name, g.works).kind; });
     // Confessions read in the order they were written, inside a tradition
     // as inside a century (Ian, 2026-09-24). Undated documents close the
     // group, A-Z among themselves.
@@ -1351,7 +1369,7 @@
         // only what is below it, and the right one does not move at
         // all. On a phone they collapse back into one run in order.
         const col = (list) => `<div class="btrads-col">${list
-          .map((g) => block(g.name, g.works, onShelf ? shelf.mark : null))
+          .map((g) => block(g.name, g.works, onShelf ? shelf.mark : null, g.kind))
           .join("")}</div>`;
         const blocks = (list) => {
           const half = Math.ceil(list.length / 2);
