@@ -3012,3 +3012,16 @@ body:has(#app.faith-port-read-page) .fra .fra-compose-foot { margin-top: 4px; pa
 /* The subscribe pop-up (feature-gate.js) over every reader layer: the
    toolbar rises to 10030 with a menu open, Research is 10020. */
 body:has(#app.faith-port-read-page) .feature-gate-modal { z-index: 10060; }
+/* Our Ask skin (faith-ask-workspace.css) paints with the SITE tokens,
+   not Ask's own: --color-page for grounds, --color-dark for ink,
+   --color-cream for marks. Inside Ask on the reader those tokens are the
+   reader's theme, so every surface in it follows the page. */
+html:not(#fr-x) body:has(#app.faith-port-read-page) .fra {
+  --color-page: var(--card, var(--card-bg));
+  --color-white: var(--card, var(--card-bg));
+  --color-dark: var(--fg);
+  --color-muted: var(--muted);
+  --color-cream: var(--hl, var(--highlight));
+  --color-card-border: var(--border);
+  --color-rule: var(--border);
+}
