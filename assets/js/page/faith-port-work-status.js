@@ -126,7 +126,18 @@
   function shown(el) {
     return !!el && !el.hidden && window.getComputedStyle(el).display !== "none";
   }
+  /* ONLY AQUINAS WAS MACHINE-TRANSLATED (Stiven, 2026-09-24: "no works with a
+   * source lane and an English lane are machine translated unless it's
+   * Aquinas"). Everything else with both lanes carries a human translation,
+   * so the disclosure belongs on Thomas Aquinas' works alone: the reader's
+   * own metadata names the author, and his slugs begin "aq-". */
+  function machineTranslated() {
+    const author = String((window.DATA && window.DATA.author) || "").trim();
+    if (/thomas aquinas/i.test(author)) return true;
+    return /^aq-/.test(String(param("w") || ""));
+  }
   function laneLanguage() {
+    if (!machineTranslated()) return "";
     const lanes = document.documentElement.getAttribute("data-fr-lanes");
     if (lanes !== null && lanes.trim() !== "source en") return "";
     const en = document.getElementById("m-en");
