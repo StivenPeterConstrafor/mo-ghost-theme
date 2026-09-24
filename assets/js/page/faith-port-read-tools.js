@@ -168,11 +168,12 @@
     // description span with it, and the row would lose its second line
     // the first time anyone kept anything.
     const label = keep.querySelector(".rdt-l");
-    if (label) label.textContent = on ? "★ Kept" : "☆ Keep this work";
+    // "Bookmark", with a bookmark icon beside it (Ian, 2026-09-23).
+    if (label) label.textContent = on ? "Bookmarked" : "Bookmark";
   }
   if (!BM || !BM.available || !BM.available()) {
     keep.disabled = true;
-    keep.title = "Sign in to keep a work";
+    keep.title = "Sign in to bookmark a work";
   } else {
     // Disabled until the collection is known, because the id is what the
     // button acts on and an id built from a guess is the whole bug.

@@ -48,7 +48,7 @@
       logs three CSP errors per load and mislabels the notebook "sync
       unavailable". This drops the config while the window between the two files
       is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=e199b0c78468ac78"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ccd1c7702c51c000"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=49d7f6797e86ad6d"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
-<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=3cab74ee007933d1">
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=d43c32497bd8cdc1">
 {{/contentFor}}
 
 {{!-- /the-faith-received/read/ — the ported page-native reader.
@@ -106,7 +106,7 @@
             <div class="aapop rdtools" id="rdToolsPop" role="menu" aria-label="Reader tools">
               <button type="button" id="rdCopyText" class="rdt">Copy text<span>The passage in view, with its citation</span></button>
               <button type="button" id="rdCopyLink" class="rdt">Copy link<span>A link to this page of this work</span></button>
-              <button type="button" id="rdKeep" class="rdt" aria-pressed="false"><span class="rdt-l">☆ Keep this work</span><span>Saved to your bookmarks</span></button>
+              <button type="button" id="rdKeep" class="rdt" aria-pressed="false"><span class="rdt-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg></span><span class="rdt-l">Bookmark</span><span>Saved to your bookmarks</span></button>
               <button type="button" id="rdNote" class="rdt">Save to notebook<span>The passage, with its citation, for the desk</span></button>
               <p class="rdt-say" id="rdToolsSay" role="status" aria-live="polite"></p>
             </div></div><button id="thTop" class="tgl" title="Theme — Light / Sepia / Dark" aria-label="Reading theme">◐</button><div class="aaw"><button id="aaBtn" class="tgl" aria-haspopup="true" aria-expanded="false" title="Reading settings — theme, text size, lane balance, scan zoom">Aa</button>
@@ -219,7 +219,9 @@
 <div class="selpop" id="selpop" role="toolbar" aria-label="Selected passage tools">
   <button class="sw amber" data-hl="amber" title="Highlight this passage">Highlight</button>
   <button class="pb" id="spNote">Note</button>
-  <button class="pb" id="spClip">Clip</button>
+  <button class="pb" id="spClip" title="Save this passage to your notebook">Save</button>
+  <button class="pb" id="spCopy" title="Copy this passage with its citation and a link to it">Copy</button>
+  <button class="pb" id="spLink" title="Copy a link to exactly these words">Link</button>
   <button class="pb" id="spCard">Image</button>
   <button class="pb" id="spAsk" title="Discuss this passage beside the book">Ask</button>
   <button class="pb" id="spMore">More</button>
@@ -228,8 +230,6 @@
   <button class="sw slate" data-hl="slate" title="Highlight slate"></button>
   <button class="sw clear" data-hl="" title="Clear highlight"></button>
   <button class="pb" id="spTr">Translate</button>
-  <button class="pb" id="spCopy">Copy</button>
-  <button class="pb" id="spLink">Link</button>
   <button class="pb" id="spCite">Cite</button>
   <button class="pb" id="spBib">BibTeX</button>
   <button class="pb" id="spPar" title="Find this passage's parallels across the corpus">✧ Parallels</button>
@@ -256,7 +256,7 @@
      All Works draws its row stars from, and the notebook the desk reads. --}}
 <script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
 <script src="{{asset "js/lib/faith-notebook-store.js"}}&amp;frv=587241ea81038bf2"></script>
-<script src="{{asset "js/page/faith-port-read-tools.js"}}&amp;frv=c66c6720c0b42542"></script>
+<script src="{{asset "js/page/faith-port-read-tools.js"}}&amp;frv=182325e63a259f14"></script>
 {{!-- The Research rail's Work tab. read-tools.js owns the panel; this names the
      work in it and routes the four shortcuts the restore left unbound. --}}
 <script src="{{asset "js/page/faith-port-read-research.js"}}&amp;frv=6acdf77bce1393b4"></script>
@@ -297,5 +297,8 @@
      Search and Tools slides out of Tools; on a phone the dock is
      Contents, Search, Tools, and Transparency is a dialog. After the
      chrome file, whose buttons it moves. --}}
-<script src="{{asset "js/page/faith-port-read-drawer.js"}}&amp;frv=cf55d7fe42146a06"></script>
+<script src="{{asset "js/page/faith-port-read-drawer.js"}}&amp;frv=44fb262dbf3daa95"></script>
+{{!-- The selection bar's Link and Copy carry the exact words, and a
+     link that arrives with them marks them. --}}
+<script src="{{asset "js/page/faith-port-read-passage-link.js"}}&amp;frv=58eca31b2c5f3e8e"></script>
 {{ghost_foot}}

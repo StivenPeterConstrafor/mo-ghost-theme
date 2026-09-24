@@ -2890,3 +2890,13 @@ html:not(.g-mobile) #app aside.sidebar #nav .rc-contents-count {
 }
 html:not(.g-mobile) #app aside.sidebar #nav .nav-node .nn-t { font-size: 14px; line-height: 1.4; }
 html:not(.g-mobile) #app aside.sidebar #nav .nav-node { padding-top: 5px; padding-bottom: 5px; }
+
+/* Bookmark (was "Keep this work"): the icon beside its label, filled
+   once the work is bookmarked. */
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer #rdKeep > span.rdt-ic { display: inline-flex; }
+#rdKeep .rdt-ic svg { display: block; }
+#rdKeep[aria-pressed="true"] .rdt-ic path { fill: currentColor; }
+html.g-mobile nav.frthumb [data-t="x-keep"].on .ic path { fill: currentColor; }
+
+/* The words a passage link points at (faith-port-read-passage-link.js). */
+::highlight(fr-passage-link) { background-color: rgba(193, 89, 60, 0.28); color: inherit; }

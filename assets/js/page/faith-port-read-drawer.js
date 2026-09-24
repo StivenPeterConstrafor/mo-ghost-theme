@@ -305,7 +305,6 @@
       ["view", document.getElementById("thTop")],
       ["copy", document.getElementById("rdCopyLink")],
       ["copy", document.getElementById("rdKeep")],
-      ["copy", document.getElementById("rdNote")],
       ["work", q(".fr-tb-report")],
       ["work", q(".fr-tb-focus")],
       ["work", q(".fr-tb-top")],
@@ -439,8 +438,7 @@
       transparency: cell("x-tt", "Transparency", "transparency"),
       folds: proxy("x-folds", "Collapse", "folds", ".fr-tb-folds"),
       copyLink: proxy("x-link", "Copy link", "link", "#rdCopyLink"),
-      keep: proxy("x-keep", "Keep", "keep", "#rdKeep"),
-      save: proxy("x-save", "Save", "save", "#rdNote"),
+      keep: proxy("x-keep", "Bookmark", "save", "#rdKeep"),
       report,
       top: proxy("x-top", "Top", "top", ".fr-tb-top"),
     };
@@ -466,7 +464,7 @@
       proxies.keep.disabled = keep.disabled;
       const kept = keep.getAttribute("aria-pressed") === "true";
       proxies.keep.classList.toggle("on", kept);
-      proxies.keep.querySelector(".lb").textContent = kept ? "Kept" : "Keep";
+      proxies.keep.querySelector(".lb").textContent = kept ? "Bookmarked" : "Bookmark";
     }
     proxies.transparency.hidden = !ttReady();
     dTt.hidden = !ttReady();
