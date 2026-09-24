@@ -265,19 +265,16 @@
     });
     return rises >= 2;
   }
-  function outlineIsPoor(list, folioByPage, allTried) {
-    if (!list.length) return true;
-    let triedN = 0;
-    let found = 0;
-    list.forEach((e) => {
-      const f = folioByPage.get(e.page);
-      const t = f && tried.get(f);
-      if (!(t && t.has(e.i))) return;
-      triedN += 1;
-      if (f.querySelector(`[data-fr-sec="${e.i}"]`)) found += 1;
-    });
-    if (!allTried && triedN < Math.min(list.length, 8)) return false;
-    return triedN > 0 && found / triedN <= 0.6;
+  function outlineIsPoor(list) {
+    // Any outline at all keeps its own sections. A label-only work gets
+    // its outline from the labels (faith-port-read-contents-overlay.js),
+    // and the folds follow that outline, so contents and folds agree.
+    // Switching the folds alone under a partial outline (the Stromata,
+    // eebo-21686) made the two disagree.
+    if (list.length) return false;
+    // Decided only once the reader has drawn its sidebar: this file runs
+    // before the outline exists, and an empty list then means "not yet".
+    return !!window.__readerBuilt && !(nav && nav.querySelector(".nav-node"));
   }
   function stampLabels(list) {
     let n = 0;
@@ -689,7 +686,7 @@
           const t = f && tried.get(f);
           return !!(t && t.has(e.i));
         });
-        if (labelsQualify(labs) && outlineIsPoor(list, folioByPage, allTried)) {
+        if (labelsQualify(labs) && outlineIsPoor(list)) {
           labelMode = true;
           // Outline entries that did resolve give way: one set of
           // sections, never two interleaved.
