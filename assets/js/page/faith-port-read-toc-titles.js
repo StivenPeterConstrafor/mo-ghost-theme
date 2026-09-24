@@ -88,7 +88,7 @@
     [/^(part|pars|pt)$/, "part"],
     [/^(sect|section|sectio|§)$/, "section"],
     [/^(question|quaestio|quaest|quest|qu|q)$/, "question"],
-    [/^(article|articulus|art)$/, "article"],
+    [/^(article|articulus|art|a)$/, "article"],
     [/^(sermon|sermo|serm|concio|conc)$/, "sermon"],
     [/^(lecture|lectio|lect)$/, "lecture"],
     [/^(disputation|disputatio|disp)$/, "disputation"],
@@ -100,7 +100,7 @@
     [/^(oration|oratio|orat|λόγος)$/, "oration"],
   ];
   const KW = "chapter|chap|ch|capitulum|capit|caput|cap|c|booke|book|liber|lib|part|pars|pt|" +
-    "section|sectio|sect|§|question|quaestio|quaest|quest|qu|q|article|articulus|art|" +
+    "section|sectio|sect|§|question|quaestio|quaest|quest|qu|q|article|articulus|art|a|" +
     "sermon|sermo|serm|concio|conc|lecture|lectio|lect|disputation|disputatio|disp|" +
     "homily|homilia|hom|psalm|psalmus|ps|treatise|tractatus|tractate|tract|" +
     "distinction|distinctio|dist|epistle|epistola|epist|ep|letter|oration|oratio|orat|" +
@@ -181,9 +181,9 @@
     return k;
   };
 
-  // Old spellings of the division word print in the modern form, and a
-  // bare "C." is a chapter.
-  const SPELL = { booke: "book", c: "chap" };
+  // Old spellings of the division word print in the modern form; a bare
+  // "C." is a chapter and a bare "A." an article (Aquinas).
+  const SPELL = { booke: "book", c: "chap", a: "art" };
 
   /* Parse "CHAP. XII. The Eighth Direction..." into labels + rest. Up to
      three labels in a row ("Part I. Chapter II. ...") make one label. */
@@ -192,6 +192,9 @@
     const labels = [];
     for (let k = 0; k < 3; k++) {
       let m = s.match(LABEL);
+      // A one-letter label ("A.", "C.", "Q.") needs its period: "A 1662
+      // sermon" is not an article.
+      if (m && m[1].length === 1 && m[1] !== "§" && !m[2].includes(".")) m = null;
       if (m) m = { all: m[0], kw: m[1], num: m[3] };
       else {
         const o = s.match(LABEL_ORD);
@@ -225,13 +228,14 @@
       .replace(/[*_]+/g, "")
       .replace(/^#{1,6}\s*/, "")
       .replace(/\[[^\]]*\]/g, " ")
+      .replace(/\s+([.,;:?!])/g, "$1")
       .replace(/\s+/g, " ")
       .trim();
     // The Patrologia's inline footnote numbers ("in this way 64 .") and
-    // column numbers ("Book Four. 446. In which ...").
+    // column numbers ("BOOK FOUR 446 . In which ...").
     if (isPld()) {
       s = s.replace(/(^|[\p{L},;])\s+\d{1,4}(?=\s*(?:[.,;:]|$|\s+\p{Ll}))/gu, "$1")
-        .replace(/^\d{1,4}\.\s+(?=\p{Lu})/u, "");
+        .replace(/^\d{1,4}\.?\s+(?=\p{Lu})/u, "");
     }
     s = s.replace(/\s+([.,;:?!])/g, "$1").replace(/\s+/g, " ").trim();
     return s;
@@ -478,6 +482,20 @@
       labelled.push(e);
     }
     if (!labelled.length) return;
+    // A label behind a short run-in title ("Of Conscience.Cap. I. What
+    // conscience is", the part's title printed on its first chapter)
+    // counts when its siblings carry the same kind of label.
+    const kinds = new Set(labelled.map((e) => `${e.parent}|${e.parsed.labels[0].fam}`));
+    for (const e of list) {
+      if (e.parsed) continue;
+      const m = e.full.match(/^([^.:]{3,40}[.:])\s*(\S.*)$/u);
+      const p = m && parse(m[2]);
+      if (p && kinds.has(`${e.parent}|${p.labels[0].fam}`)) {
+        e.parsed = p;
+        e.labelRaw = m[2].slice(0, m[2].length - p.rest.length);
+        labelled.push(e);
+      }
+    }
     // Siblings: same parent, same kind of division.
     const groups = new Map();
     for (const e of labelled) {
