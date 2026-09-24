@@ -51,7 +51,7 @@
   // ── Where the controls go ────────────────────────────────────────
   const ctr = ph.querySelector(".ctr");
   const sidebar = document.querySelector("aside.sidebar");
-  const bBar = button("Hide bar", "fr-tb-focus");
+  const bBar = button("Hide toolbar", "fr-tb-focus");
   bBar.title = "Hide the toolbar";
   if (ctr) ctr.appendChild(bBar);
 
