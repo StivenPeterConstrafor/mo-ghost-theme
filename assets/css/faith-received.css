@@ -19840,3 +19840,70 @@ body:has(> .site-header.is-hidden):not(:has(#app.faith-port-read-page)):not(.web
 /* "About [author]" heads the open author panel on All Works, directly
    under the name, instead of trailing the list (Ian, 2026-09-24). */
 .btrad .btrad-all--top { display: block; margin: 4px 0 12px; }
+
+/* Compare: the loaded count and the quotation note under each column's
+   head sat flush against the card's edge while the head and the body
+   are inset 16px (Ian, 2026-09-24: "We need to fix the margins on
+   compare"). They take the same inset. */
+body .research-workspace .cmp-col > .cmp-progress { margin: 0; padding: 8px 16px; }
+body .research-workspace .cmp-col > .cmp-note { margin: 0; padding: 12px 16px 4px; }
+
+/* ── MENUS IN THE LIBRARY'S STYLE (Ian, 2026-09-24: "Is it possible to
+   style all of these menus with our style or is this stuck in browser
+   default style?") Where the browser supports customisable selects
+   (appearance: base-select; Chrome and Brave), every menu on a TFR page
+   opens as a hairline list in the reading face, the chosen item in
+   terracotta, with one chevron for all of them (the arrows the pages
+   drew themselves step aside). Safari and Firefox, and so every iPhone,
+   keep the system menu, which on a phone is the better control anyway.
+   The reader's menus take its theme. */
+@supports (appearance: base-select) {
+  body:has(.tfr-rail) select,
+  body:has(.tfr-rail) select::picker(select) { appearance: base-select; }
+  body:has(.tfr-rail) select { background-image: none; border-radius: 0; cursor: pointer; }
+  body:has(.tfr-rail) select::picker-icon {
+    content: "";
+    width: 6px;
+    height: 6px;
+    margin: 0 2px 0 12px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 0.15s ease;
+    opacity: 0.75;
+  }
+  body:has(.tfr-rail) select:open::picker-icon { transform: translateY(2px) rotate(225deg); }
+  body:has(.tfr-rail) select::picker(select) {
+    border: 1px solid var(--color-card-border, #d9c6a7);
+    border-radius: 3px;
+    background: var(--color-white, #fffdfa);
+    color: var(--color-dark, #2d2927);
+    padding: 4px 0;
+    margin-top: 4px;
+    box-shadow: 0 12px 28px -14px rgba(45, 41, 39, 0.4);
+    max-height: min(60vh, 440px);
+    overflow-y: auto;
+  }
+  body:has(.tfr-rail) select option {
+    padding: 7px 16px;
+    font: 14px/1.35 var(--font-body, "Source Serif Pro", Georgia, serif);
+    color: inherit;
+    background: transparent;
+  }
+  body:has(.tfr-rail) select option::checkmark { display: none; }
+  body:has(.tfr-rail) select option:hover,
+  body:has(.tfr-rail) select option:focus-visible { background: var(--color-cream, #f5efe1); outline: none; }
+  body:has(.tfr-rail) select option:checked { color: var(--color-secondary, #c1593c); font-weight: 600; }
+  body:has(.tfr-rail) select optgroup {
+    padding: 6px 0 2px;
+    font: 600 10.5px/1.3 var(--font-body, "Source Serif Pro", Georgia, serif);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-muted, #6b6660);
+  }
+  body:has(.tfr-rail) select optgroup option { text-transform: none; letter-spacing: 0; color: var(--color-dark, #2d2927); }
+  /* The reader's own theme inside it: dark and sepia too. */
+  body:has(#app.faith-port-read-page) select::picker(select) { background: var(--card); color: var(--fg); border-color: var(--border); }
+  body:has(#app.faith-port-read-page) select option:hover,
+  body:has(#app.faith-port-read-page) select option:focus-visible { background: var(--hl); }
+}
