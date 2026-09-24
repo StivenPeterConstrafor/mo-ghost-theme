@@ -177,7 +177,22 @@
   // tradition sits under a parent the shelf keeps its own name and the
   // parent becomes the group it prints under, so "English Divines" reads
   // as itself rather than disappearing into "Protestant".
-  function shelves(works, roster) {
+  // The shelves, in the TFR home's order and no others (Ian, 2026-09-24:
+  // "that section should be the exact same sections as on the home page.
+  // All 10."). Keep in step with "The shelves" in custom-the-faith-received.hbs.
+  const HOME_SHELVES = [
+    "Confessions", "Latin Fathers", "Greek Fathers", "Eastern Fathers", "Medieval",
+    "Roman Catholic", "Continental Reformed", ENGLISH, "Lutheran", "Humanism and Law",
+  ];
+  // The confessions are a collection of their own, not a tradition, so
+  // their card is built from that catalogue and opens its room.
+  const CONFESSIONS = {
+    label: "Creeds, Confessions, & Catechisms",
+    href: "/the-faith-received/confessions/",
+    who: "Nicaea · Chalcedon · Augsburg · Trent · Westminster",
+  };
+
+  function shelves(works, roster, confessions) {
     const by = new Map();
 
     works.forEach((w) => {
@@ -208,20 +223,27 @@
       if (a && !PLACEHOLDER.test(a)) s.authors.set(a, (s.authors.get(a) || 0) + 1);
     });
 
-    const all = Array.from(by.values()).sort((a, b) => b.n - a.n);
-    if (!all.length) return "";
-
-    // The long tail here is the confessions, which run from twelve works
-    // down to one and have a browse page of their own. A shelf list that
-    // ends in "Arminian · 1 work" reads as an index, not an invitation,
-    // so the small ones stay in the Tradition filter below and this
-    // block says how many are down there.
-    const MIN = 25;
-    const list = all.filter((s) => s.n >= MIN);
-    const rest = all.length - list.length;
+    if (!by.size) return "";
+    const list = HOME_SHELVES.map((name) => (name === "Confessions"
+      ? ((confessions || []).length ? { name, confessions: true, n: confessions.length, works: [], authors: new Map(), parties: new Map() } : null)
+      : by.get(name))).filter(Boolean);
     if (!list.length) return "";
 
     const rows = list.map((s) => {
+      if (s.confessions) {
+        return `<li class="fro-shelf"><a href="${esc(CONFESSIONS.href)}">` +
+          `<span class="fro-shelf-row">` +
+          `<span class="fro-shelf-name">${esc(CONFESSIONS.label)}</span>` +
+          `<span class="fro-shelf-n"><b>${num(s.n)}</b> ${s.n === 1 ? "document" : "documents"}</span>` +
+          `</span><span class="fro-shelf-who">${esc(CONFESSIONS.who)}</span></a>` +
+          // Its study doors: the confessions set side by side, and the
+          // topics, where every topic opens on what the confessions say.
+          `<details class="fro-study"><summary>Study this shelf</summary>` +
+          `<nav aria-label="Study ${esc(CONFESSIONS.label)}">` +
+          `<a href="/the-faith-received/research/#compare">Compare</a>` +
+          `<a href="/the-faith-received/topics/">Topics</a>` +
+          `</nav></details></li>`;
+      }
       const extra = s.works.filter(w => w.supplement).length;
       const core = s.n - extra;
       // The filter contract the room reads: a tradition with a parent is
@@ -283,12 +305,9 @@
     // tradition can sit on a shelf, so that total is always smaller than
     // the catalogue's own, and printing it a few inches above "30,682
     // works in the whole library" reads as one of the two being wrong.
-    const foot = rest
-      ? `<p class="fro-foot">${num(rest)} smaller `
-        + `${rest === 1 ? "tradition holds" : "traditions hold"}`
-        + ` fewer than ${num(MIN)}`
-        + ` works each. They are in the Tradition filter below.</p>`
-      : "";
+    // The smaller traditions are not shelves on the home page either;
+    // they are in the Tradition filter below.
+    const foot = `<p class="fro-foot">Smaller traditions are in the Tradition filter below.</p>`;
 
     // A fold, closed on arrival (Ian, 2026-09-23: "make this section
     // collapsible and start it collapsed"): the shelves are a way in, and
@@ -313,9 +332,10 @@
     Promise.all(ALL.map((id) => window.MOFaithCatalogue.load(id).catch(() => []))),
     loadRoster(),
     window.MOCollectedContents?.ready,
+    window.MOFaithCatalogue.load("confessions").catch(() => []),
   ])
-    .then(([sets, roster]) => {
-      const html = catalogueReturn + continueReading() + shelves(sets.flat(), roster);
+    .then(([sets, roster, , confessions]) => {
+      const html = catalogueReturn + continueReading() + shelves(sets.flat(), roster, confessions);
       if (html) root.innerHTML = html;
       else root.remove();
     })
