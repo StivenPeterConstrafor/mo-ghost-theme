@@ -6,6 +6,8 @@
 <script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=de68ed46eea11d31"></script>
 <title>Connections | The Faith Received | Mere Orthodoxy</title>
 <meta name="description" content="Explore citations between authors and connections across Scripture, topics and works. Open the passages behind each connection." />
+{{!-- The atlas is a research tool (Ian, 2026-09-24): its engine and styles are served to a signed-in member only, like Compare, Desk and Search. See the gate note above the body. --}}
+{{#if @member}}
 {{!-- The family identity the engine reads before it starts, and our
      masthead's height as --mo-head, so anything fixed can sit under it.
      Same two jobs as on the ported reader; must load first. --}}
@@ -27,6 +29,7 @@
      this page under our masthead. Keep both last. --}}
 <link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=169846d69ae1d3d2">
 <link rel="stylesheet" href="{{asset "css/faith-port-surfaces.css"}}&amp;frv=97c4ce381ac8fabb">
+{{/if}}
 {{/contentFor}}
 
 {{!-- /the-faith-received/connections/ — the citation atlas, ported.
@@ -47,6 +50,23 @@
      below sets both before this markup parses. The atlas is a
      full-viewport instrument (body overflow hidden), as it is on the
      corpus site; faith-port-surfaces.css starts it under our masthead. --}}
+{{!-- THE GATE (Ian, 2026-09-24: "Anywhere any one of these tools shows
+     up ... they need to be met with a subscribe pop-up"). Connections is
+     a research tool, so this page gates the way /compare/, /desk/ and
+     /search/ do: a signed-in member (free included, during the beta) is
+     served the atlas; anyone else gets the hero and the beta gate, and
+     the tfr-connections modal opens over it on arrival
+     (a hidden span carrying data-gate-on-arrival, read by feature-gate.js;
+     hidden and empty because the click gate would otherwise catch every
+     click inside it, the beta gate's own form included). /web/ and
+     /constellations/ render this template, so they are gated with it.
+     The doors to this page elsewhere are gated by their address in
+     feature-gate.js; this covers a direct visit or a shared link.
+
+     The rail sits outside the condition, one instance, so a signed-out
+     reader still has the rest of the library. --}}
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+{{#if @member}}
 <script src="{{asset "js/page/faith-port-surface-boot.js"}}&amp;frv=c6ea6e388eea3f2a" data-body-class="web-page" data-view="browse"></script>
 <!-- THESIS: A citation atlas for finding relationships and reading their evidence.
 OWN-WORLD: Inherits Academic Monochrome, EB Garamond headings, Source Serif Pro controls, ruled lists and neutral reading sheets.
@@ -80,7 +100,6 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
      light on every research surface within one frame; its own
      MutationObserver undid the button. Both bindings are guarded in
      web.in02.js rather than left to throw. --}}
-<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
 <nav id="network-layouts" aria-label="Citation network layout">
   <button type="button" data-network-layout="timeline" aria-pressed="true">Timeline</button>
   <button type="button" data-network-layout="rings" aria-pressed="false">Rings</button>
@@ -138,3 +157,6 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 <script data-shelves="{{asset "data/faith-received/web-author-shelves.json"}}&amp;frv=ef3e2e56c60291d0" src="{{asset "js/lib/faith-web-graph.js"}}&amp;frv=ea7281e18c37a0a1"></script>
 <script src="{{asset "js/port/web.in02.js"}}&amp;frv=a034b916c7e81d78"></script>
+{{else}}
+<main class="faith-received"><span hidden data-gate-on-arrival data-feature-gate="tfr-connections"></span><section class="bhero bhero--tool"><div class="bhero-inner container"><p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a></p><h1>Connections</h1><p class="bhero-sub">The entire library mapped by citation: who an author reads, who reads them, and the texts behind each link.</p></div></section>{{> "faith-received/_beta-gate"}}</main>
+{{/if}}

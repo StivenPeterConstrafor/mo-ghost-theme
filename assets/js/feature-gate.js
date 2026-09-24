@@ -335,6 +335,19 @@
      every later hash change. This file ships at the foot of the page, so
      the markup is already parsed. */
   function gateArrival() {
+    /* A whole page that is a tool (the Connections atlas, whose signed-out
+       branch is only the hero and the beta gate) marks itself with an
+       empty, hidden [data-gate-on-arrival][data-feature-gate] element,
+       and the modal opens over it on arrival, whatever the hash. Hidden
+       and empty on purpose: the click gate above matches
+       closest("[data-feature-gate]"), so the marker must never be an
+       ancestor of anything a reader clicks. */
+    const page = document.querySelector("[data-gate-on-arrival][data-feature-gate]");
+    if (page) {
+      const pname = page.getAttribute("data-feature-gate");
+      const pfeature = FEATURES[pname];
+      if (pfeature && !hasAccess(pfeature)) { if (!modalEl) showModal(pname, pfeature, null); return; }
+    }
     const mode = modeOfHash(window.location.hash);
     if (!mode) return;
     const els = document.querySelectorAll("[data-gate-hash][data-feature-gate]");
