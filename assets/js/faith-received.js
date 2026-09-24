@@ -1609,12 +1609,22 @@
   // Walk every text node descendant of `root` and run the modernizer
   // on its value. Preserves element structure (verse-ref buttons,
   // <em>, <strong>, <a>, etc.).
+  // A block at a time (FaithModernize.modernizeElement), with the
+  // lexicon and spelling map loaded first so the spelling modernizes too.
   function modernizeTextNodes(root) {
-    if (!window.FaithModernize) return;
+    const FM = window.FaithModernize;
+    if (!FM) return;
+    if (FM.modernizeElement && FM.loadData && !FM.hasLexicon) {
+      FM.loadData().catch(() => false).then(() => {
+        if (document.body.classList.contains("faith-modernized")) FM.modernizeElement(root);
+      });
+      return;
+    }
+    if (FM.modernizeElement) { FM.modernizeElement(root); return; }
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
     let node;
     while ((node = walker.nextNode())) {
-      const modern = window.FaithModernize.modernizeText(node.nodeValue);
+      const modern = FM.modernizeText(node.nodeValue);
       if (modern !== node.nodeValue) node.nodeValue = modern;
     }
   }

@@ -114,28 +114,13 @@
     placing = window.setTimeout(place, 150);
   });
 
+  // The lexicon and the spelling map, fetched once by the engine itself
+  // (FaithModernize.loadData), cache-busted through moAssetUrl.
   function loadLexicon() {
     if (lexiconPromise) return lexiconPromise;
-    const path = "/assets/data/faith-received/modern-words.txt";
-    const url = window.moAssetUrl ? window.moAssetUrl(path) : path;
-    lexiconPromise = fetch(url)
-      .then((r) => (r.ok ? r.text() : ""))
-      .then((text) => {
-        if (!text || !window.FaithModernize) return false;
-        // Common words above the rule, everything else below it. Only
-        // the common half may be produced by a rewrite; the whole of it
-        // decides whether a word was already modern.
-        const parts = text.split("\n---\n");
-        const common = parts[0].split("\n").filter(Boolean);
-        const rest = (parts[1] || "").split("\n").filter(Boolean);
-        window.FaithModernize.setLexicon(
-          new Set(common), new Set(common.concat(rest))
-        );
-        return true;
-      })
-      // Without it the grammar still modernizes and the macrons still
-      // expand; only the spelling stays as printed.
-      .catch(() => false);
+    lexiconPromise = window.FaithModernize && window.FaithModernize.loadData
+      ? window.FaithModernize.loadData().catch(() => false)
+      : Promise.resolve(false);
     return lexiconPromise;
   }
 
@@ -175,40 +160,20 @@
     return zones;
   }
 
-  function eachText(zone, fn) {
-    const walker = document.createTreeWalker(zone, NodeFilter.SHOW_TEXT, {
-      acceptNode(node) {
-        if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
-        const p = node.parentNode;
-        if (p && p.closest && p.closest(SKIP)) return NodeFilter.FILTER_REJECT;
-        return NodeFilter.FILTER_ACCEPT;
-      },
-    });
-    let node;
-    while ((node = walker.nextNode())) fn(node);
-  }
-
+  /* A block at a time, not a text node at a time (2026-09-24). Owen
+   * prints "Ye; if <i>Ye Mortify.</i>" and an early compositor's
+   * superscript "the" arrives as "y<i>e</i>": node by node the engine
+   * could see neither the "if" beside "Ye" nor that "y" and "e" are one
+   * word. modernizeElement groups the nodes by their block, keeps each
+   * node's original on node.frRaw, and skips the furniture in SKIP. */
   function apply() {
     if (!window.FaithModernize) return;
-    lanes().forEach((zone) => {
-      eachText(zone, (node) => {
-        if (node.frRaw == null) node.frRaw = node.nodeValue;
-        const next = window.FaithModernize.modernizeSpelling(
-          window.FaithModernize.modernizeText(node.frRaw)
-        );
-        if (next !== node.nodeValue) node.nodeValue = next;
-      });
-    });
+    lanes().forEach((zone) => window.FaithModernize.modernizeElement(zone, SKIP));
   }
 
   function restore() {
-    lanes().forEach((zone) => {
-      eachText(zone, (node) => {
-        if (node.frRaw != null && node.nodeValue !== node.frRaw) {
-          node.nodeValue = node.frRaw;
-        }
-      });
-    });
+    if (!window.FaithModernize) return;
+    lanes().forEach((zone) => window.FaithModernize.restoreElement(zone));
   }
 
   // Ask the text that is actually there. A work whose first archaic word

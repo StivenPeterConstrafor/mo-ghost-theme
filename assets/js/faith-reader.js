@@ -1757,25 +1757,13 @@
 
   function loadLexicon() {
     if (lexiconPromise) return lexiconPromise;
-    const url = window.moAssetUrl
-      ? window.moAssetUrl("/assets/data/faith-received/modern-words.txt")
-      : "/assets/data/faith-received/modern-words.txt";
-    lexiconPromise = fetch(url)
-      .then((r) => (r.ok ? r.text() : ""))
-      .then((text) => {
-        if (!text) return false;
-        // Common words above the rule, everything else below it. Only
-        // the common half may be produced by a rewrite; the whole of
-        // it decides whether a word was already modern.
-        const parts = text.split("\n---\n");
-        const common = parts[0].split("\n").filter(Boolean);
-        const rest = (parts[1] || "").split("\n").filter(Boolean);
-        window.FaithModernize.setLexicon(new Set(common), new Set(common.concat(rest)));
-        return true;
-      })
-      // Without it the grammar still modernizes and the macrons still
-      // expand; only the spelling stays as printed.
-      .catch(() => false);
+    // The engine fetches the lexicon and its spelling map itself
+    // (FaithModernize.loadData, 2026-09-24). Without them the grammar
+    // still modernizes and the macrons still expand; only the spelling
+    // stays as printed.
+    lexiconPromise = window.FaithModernize && window.FaithModernize.loadData
+      ? window.FaithModernize.loadData().catch(() => false)
+      : Promise.resolve(false);
     return lexiconPromise;
   }
 
@@ -1837,17 +1825,11 @@
     while ((node = walker.nextNode())) fn(node);
   }
 
+  // A block at a time, so a word split across an italic ("y<i>e</i>",
+  // "If <i>ye</i>") is decided whole. See FaithModernize.modernizeElement.
   function modernizeWithin(root) {
     if (!window.FaithModernize) return;
-    modernZones(root).forEach((zone) => {
-      eachModernizableText(zone, (node) => {
-        if (node.frRaw == null) node.frRaw = node.nodeValue;
-        const next = window.FaithModernize.modernizeSpelling(
-          window.FaithModernize.modernizeText(node.frRaw)
-        );
-        if (next !== node.nodeValue) node.nodeValue = next;
-      });
-    });
+    modernZones(root).forEach((zone) => window.FaithModernize.modernizeElement(zone, MODERN_SKIP));
   }
 
   function restoreWithin(root) {
