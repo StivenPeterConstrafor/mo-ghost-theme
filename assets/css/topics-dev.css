@@ -369,3 +369,50 @@
     margin: 0 0 24px;
   }
 }
+
+/* ── Folding sections (Ian, 2026-09-24) ───────────────────────────
+   The two blocks (Creeds, Confessions, and Catechisms; Works) and each
+   tradition or century group inside them are <details>, open to start.
+   The summary keeps the heading's own look; a thin chevron sits at the
+   right and turns when the section closes. */
+.td-fold-sum {
+  position: relative;
+  display: block;
+  list-style: none;
+  cursor: pointer;
+  padding-right: 32px;
+}
+.td-fold-sum::-webkit-details-marker { display: none; }
+.td-fold-sum::marker { content: ""; }
+.td-fold-sum::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--color-secondary, #c1593c);
+  border-bottom: 1.5px solid var(--color-secondary, #c1593c);
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform 0.15s ease;
+}
+details:not([open]) > .td-fold-sum::after { transform: translateY(-30%) rotate(-45deg); }
+.td-fold-sum:hover .td-block-h,
+.td-fold-sum:hover .sd-h3 { color: var(--color-secondary, #c1593c); }
+.td-fold-sum:focus-visible { outline: 2px solid var(--color-secondary, #c1593c); outline-offset: 3px; border-radius: 3px; }
+/* The block chevron lines up with its heading, not the note under it. */
+.td-block > .td-fold-sum::after { top: 20px; }
+.td-block:not([open]) { padding-bottom: 12px; }
+.td-block:not([open]) > .td-fold-sum .td-note { margin-bottom: 0; }
+/* Group headings: the rule under the name is the section's edge, so the
+   chevron sits on the name's line. */
+.td-treat-group > .td-fold-sum > .sd-h3,
+.td-cen-group > .td-fold-sum > .sd-h3 { margin-bottom: 8px; }
+.td-treat-group:not([open]) > .td-fold-sum > .sd-h3,
+.td-cen-group:not([open]) > .td-fold-sum > .sd-h3 { margin-bottom: 0; }
+.td-treat-group > .td-fold-sum::after,
+.td-cen-group > .td-fold-sum::after { top: auto; bottom: 12px; transform: rotate(45deg); }
+.td-treat-group:not([open]) > .td-fold-sum::after,
+.td-cen-group:not([open]) > .td-fold-sum::after { bottom: 9px; transform: rotate(-45deg); }
+.td-treat-group > .td-fold-sum { margin-top: 18px; }
+.td-treat-group > .td-fold-sum > .sd-h3 { margin-top: 0; }

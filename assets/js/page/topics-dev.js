@@ -229,16 +229,19 @@
           `<p class="td-counts sd-muted" data-td-counts hidden></p>${
             (locus.children || []).length ? `<p class="td-kids">Within this topic: ${locus.children.map((ch) => `<a href="${esc(topicHref(ch.id))}">${esc(ch.label)}</a>`).join(" · ")}</p>` : ""
           }</header>` +
-        `<section class="td-block" aria-labelledby="td-h-conf">` +
-          `<h3 class="td-block-h" id="td-h-conf">Creeds, Confessions, and Catechisms</h3>` +
-          `<p class="sd-muted td-note">The creeds, confessions, catechisms and councils, in their own words.</p>` +
+        // Both blocks fold (Ian, 2026-09-24). <details>, open to start:
+        // the heading and its note are the summary, so a closed block is
+        // one line with its chevron.
+        `<details class="td-block" open>` +
+          `<summary class="td-fold-sum"><h3 class="td-block-h" id="td-h-conf">Creeds, Confessions, and Catechisms</h3>` +
+          `<p class="sd-muted td-note">The creeds, confessions, catechisms and councils, in their own words.</p></summary>` +
           `${tabs("c", state.cview)}<div class="td-view" data-td-cview></div>` +
-        `</section>` +
-        `<section class="td-block" aria-labelledby="td-h-teach">` +
-          `<h3 class="td-block-h" id="td-h-teach">Works</h3>` +
-          `<p class="sd-muted td-note">The classic treatments of this topic in each tradition's major works, read in place.</p>` +
+        `</details>` +
+        `<details class="td-block" open>` +
+          `<summary class="td-fold-sum"><h3 class="td-block-h" id="td-h-teach">Works</h3>` +
+          `<p class="sd-muted td-note">The classic treatments of this topic in each tradition's major works, read in place.</p></summary>` +
           `${tabs("w", state.view)}<div class="td-view" data-td-view></div>` +
-        `</section>` +
+        `</details>` +
       `</div>` +
       `<aside class="td-side sd-side" data-td-side hidden aria-label="Author"></aside>`;
     $main = $root.querySelector("[data-td-main]");
@@ -526,10 +529,12 @@
       $view.querySelector(".td-all-works").open = true;
     }
     keys.forEach((k) => {
-      const sec = document.createElement("section");
+      // Each tradition folds, open to start (Ian, 2026-09-24).
+      const sec = document.createElement("details");
       sec.className = "td-treat-group";
+      sec.open = true;
       sec.dataset.k = k;
-      sec.innerHTML = `<h4 class="sd-h3">${esc(tradLabel(k))}</h4><ol class="td-treats"></ol>`;
+      sec.innerHTML = `<summary class="td-fold-sum"><h4 class="sd-h3">${esc(tradLabel(k))}</h4></summary><ol class="td-treats"></ol>`;
       list.filter((e) => shOf(e) === k).forEach((e) => sec.querySelector("ol").appendChild(treatmentItem(e)));
       $groups.appendChild(sec);
     });
@@ -639,7 +644,7 @@
       byCen.get(k).push(w);
     });
     const keys = [...byCen.keys()].sort((a, b) => (a || 99) - (b || 99));
-    $host.innerHTML = keys.map((k) => `<section class="td-cen-group"><h5 class="sd-h3">${k ? esc(S.centuryLabel(k).replace(" c.", " century")) : "Undated"}</h5><ol class="td-works" data-cen="${k}"></ol></section>`).join("");
+    $host.innerHTML = keys.map((k) => `<details class="td-cen-group" open><summary class="td-fold-sum"><h5 class="sd-h3">${k ? esc(S.centuryLabel(k).replace(" c.", " century")) : "Undated"}</h5></summary><ol class="td-works" data-cen="${k}"></ol></details>`).join("");
     keys.forEach((k) => {
       const $ol = $host.querySelector(`.td-works[data-cen="${k}"]`);
       byCen.get(k).forEach((w) => {
