@@ -3211,3 +3211,40 @@ html.g-mobile .fr-tb-paras { display: none !important; }
   border-left: 2px solid var(--fr-ink-hot, var(--color-secondary, #c1593c));
   margin: 0.2em 0 1.6em;
 }
+
+/* ── AA: READING AIDS AT THE TOP (Ian, 2026-09-24) ─────────────────────
+   "Move these tools to the top of Aa." Modernize and Split paragraphs
+   are moved into #frAaTools, the panel's first row, by
+   faith-port-read-drawer.js (placeInAa). A joined pair across the full
+   width of the panel, no label, a hairline under it to set it apart from
+   the type settings. The row disappears while both buttons are hidden
+   (Modernize shows only on early modern English). */
+#app .aapop .aarow.aarow-tools {
+  display: block;
+  padding: 2px 0 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border, #d9c6a7);
+}
+#app .aapop .aarow-tools .aaseg { display: flex; flex-wrap: nowrap; width: 100%; }
+#app .aapop .aarow-tools .aaseg > .tgl { flex: 1 1 0; justify-content: center; text-align: center; white-space: nowrap; }
+#app .aapop .aarow-tools .aaseg > [hidden] { display: none !important; }
+#app .aapop .aarow-tools:not(:has(.aaseg > :not([hidden]))) { display: none; }
+/* The phone hid Split paragraphs while it was a bar button with a dock
+   cell standing in for it; in Aa it is the control itself. */
+html.g-mobile #app .aapop .fr-tb-paras:not([hidden]) { display: inline-flex !important; }
+/* The pair in the thin-line joined-group shape (tan rule, 3px corners,
+   one divider), as it looked on the bar. */
+#app .aapop .aarow-tools .aaseg {
+  border: 1px solid var(--border, #d9c6a7);
+  border-radius: 3px;
+  overflow: hidden;
+  gap: 0;
+}
+#app .aapop .aarow-tools .aaseg > .tgl {
+  border: 0;
+  border-radius: 0;
+  min-height: 40px;
+  padding: 8px 12px;
+  margin: 0;
+}
+#app .aapop .aarow-tools .aaseg > .tgl:not([hidden]) ~ .tgl:not([hidden]) { border-left: 1px solid var(--border, #d9c6a7); }

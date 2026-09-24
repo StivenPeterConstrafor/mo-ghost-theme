@@ -308,8 +308,6 @@
     const q = (s) => ph.querySelector(s) || document.querySelector(s);
     return [
       ["read", q(".seg.lanes")],
-      ["read", document.getElementById("m-modern")],
-      ["read", q(".fr-tb-paras")],
       ["view", document.getElementById("rdFlow")],
       ["view", q(".fr-tb-folds")],
       ["view", document.getElementById("thTop")],
@@ -448,10 +446,8 @@
     // dark mode in Aa is now redundant" / "Same with Flow/Pages"), so the
     // phone reaches them here, as the desktop does in its drawer.
     const flow = proxy("x-flow", "Pages", "flow", "#rdFlow");
-    const modern = proxy("x-modern", "Modernize", "modern", "#m-modern");
-    modern.setAttribute("data-feature-gate", "tfr-modernize");
-    // Split paragraphs, beside Modernize (faith-port-read-paragraphs.js).
-    const paras = proxy("x-paras", "Paragraphs", "paras", ".fr-tb-paras");
+    // Modernize and Split paragraphs live at the top of Aa on both widths
+    // now (placeInAa), so the phone's Tools drawer has no cells for them.
     // Ask as our own cell: the dock's own Ask is taken by ask-workspace.js
     // at the document before the subscribe gate can see the click.
     const ask = cell("x-ask", "Ask", "ask");
@@ -467,8 +463,6 @@
     const theme = proxy("x-theme", "Theme", "theme", "#thTop");
     proxies = {
       lang,
-      modern,
-      paras,
       flow,
       theme,
       transparency: cell("x-tt", "Transparency", "transparency"),
@@ -490,12 +484,6 @@
     const flowing = !fl || fl.getAttribute("aria-pressed") !== "false";
     // The label says what a press does.
     proxies.flow.querySelector(".lb").textContent = flowing ? "Pages" : "Flow";
-    const pb = document.querySelector(".fr-tb-paras");
-    proxies.paras.hidden = !pb;
-    proxies.paras.classList.toggle("on", Boolean(pb) && pb.getAttribute("aria-pressed") === "true");
-    const mb = document.getElementById("m-modern");
-    proxies.modern.hidden = !mb || mb.hidden;
-    proxies.modern.classList.toggle("on", Boolean(mb) && mb.getAttribute("aria-pressed") === "true");
     const f = window.FRReaderFolds;
     const open = !f || f.anyOpen();
     proxies.folds.querySelector(".lb").textContent = open ? "Collapse" : "Expand";
@@ -677,7 +665,37 @@
   // Only a change across 880px (html.g-mobile) moves anything; <html>
   // also changes class on every scroll (mh-mini), which is ignored.
   let was = null;
+  /* Modernize and Split paragraphs at the top of the Aa panel (Ian,
+     2026-09-24: "Move these tools to the top of Aa"). They change how the
+     words read, which is what Aa is for, and Aa is on screen at every
+     width, so one home serves the desktop bar and the phone dock alike.
+     The real buttons are moved, as the drawer moves its members, so their
+     handlers, gates and pressed state come along. The row hides itself
+     (CSS :has) while both are hidden: Modernize shows only on early
+     modern English. */
+  function placeInAa() {
+    const pop = document.getElementById("aaPop");
+    if (!pop) return;
+    let row = document.getElementById("frAaTools");
+    if (!row) {
+      row = document.createElement("div");
+      row.id = "frAaTools";
+      row.className = "aarow aarow-tools";
+      const seg = document.createElement("div");
+      seg.className = "aaseg fr-aa-tools";
+      seg.setAttribute("role", "group");
+      seg.setAttribute("aria-label", "Reading aids");
+      row.appendChild(seg);
+    }
+    if (pop.firstElementChild !== row) pop.insertBefore(row, pop.firstElementChild);
+    const seg = row.firstElementChild;
+    [document.getElementById("m-modern"), document.querySelector(".fr-tb-paras")].forEach((el) => {
+      if (el && el.parentElement !== seg) { el.classList.add("tgl"); seg.appendChild(el); }
+    });
+  }
+
   function apply() {
+    placeInAa();
     const m = mobile();
     if (m) buildMobile();
     if (m === was) return;
