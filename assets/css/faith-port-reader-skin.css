@@ -3075,12 +3075,12 @@ html.g-mobile .fr-tb-paras { display: none !important; }
    office ("The Collect", "Psalm 1. Beatus vir") are #### and sit lighter
    than the office and division heads above them: no hairline, left, the
    body size. Prose is not indented, as a prayer book sets it. */
-#app.liturgy #reading .row .en em {
+#app.liturgy #reading .en em {
   font-size: 0.9em;
   color: var(--fr-ink-hot, #a4503a);
 }
-#app.liturgy #reading .row .en strong { font-weight: 600; }
-#app.liturgy #reading .row .en p { text-indent: 0; }
+#app.liturgy #reading .en strong { font-weight: 600; }
+#app.liturgy #reading .en p { text-indent: 0; }
 #app.liturgy #reading .row.rhead.hl4 h3.csub {
   margin: 1.8em 0 0.5em;
   padding-top: 0;
@@ -3089,4 +3089,17 @@ html.g-mobile .fr-tb-paras { display: none !important; }
   font-size: 1em;
   letter-spacing: 0.01em;
 }
-#app.liturgy #reading .row.rverse .verse { padding-left: 0; }
+/* Psalms, canticles and versicles are verse lines ("| " in the page
+   markdown). The reader stacks a page's rows into one column
+   (.stkwrap), which lifts the cells out of .row.rverse and with them the
+   hanging indent read.in01.css gives .vl there; set it again on the cell. */
+#app.liturgy #reading .en .verse { padding: 0.15em 0; }
+#app.liturgy #reading .en .verse .vl {
+  display: block;
+  line-height: 1.5;
+  padding-left: 1.4em;
+  text-indent: -1.4em;
+}
+/* The people's answer to a petition sits in from the petition's own
+   turned lines, so the two never read as one. */
+#app.liturgy #reading .en .verse .vl.ind { padding-left: 2.4em; text-indent: 0; }
