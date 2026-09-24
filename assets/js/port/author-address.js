@@ -55,9 +55,11 @@
   var DIRECTORY = "/assets/data/faith-received/authors/";
   // The directory's content hash, rewritten by build-author-directory.mjs.
   // Ghost serves /assets/** for a year and the theme's own ?v= does not
-  // change when only data does, so the data carries its own version.
+  // change when only data does, so the data carries its own version. It
+  // must be the `v` parameter: the CDN drops any other query string from
+  // its cache key and would serve the first copy it ever cached.
   var DATA_V = "c228649dec91";
-  var dataUrl = function (f) { return DIRECTORY + f + "?d=" + DATA_V; };
+  var dataUrl = function (f) { return DIRECTORY + f + "?v=" + DATA_V; };
   var api = { fold: fold, plain: plain, words: words, years: years, slug: slug, DATE_PART: DATE_PART, DIRECTORY: DIRECTORY, dataUrl: dataUrl };
   root.MOAuthorAddress = api;
   if (typeof location === "undefined" || typeof document === "undefined") return;

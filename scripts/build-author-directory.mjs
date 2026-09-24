@@ -263,7 +263,7 @@ let bytes = write("names.json", { names });
 bytes += write("people.json", { people: peopleOut });
 for (const [shard, entries] of Object.entries(out)) bytes += write(`w-${shard}.json`, { authors: entries });
 // Stamp the data's content hash into author-address.js, which the page
-// uses as the data's ?d= version (Ghost caches /assets/** for a year).
+// uses as the data's ?v= version (the only query the CDN keys on) (Ghost caches /assets/** for a year).
 {
   const { createHash } = await import("node:crypto");
   const { readdirSync } = await import("node:fs");
