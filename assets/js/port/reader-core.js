@@ -2089,6 +2089,8 @@ function build(){
   // read them as one continuous document structured by their own headings, with the §-folio running
   // header suppressed entirely.
   app.classList.toggle("flow",DATA.flow===true||DATA.collection==="reformed-confessions");
+  // a prayer book (meta.liturgy, the 1928 BCP) sets its italics as rubrics and the people's part in bold (skin CSS, #app.liturgy)
+  app.classList.toggle("liturgy",DATA.liturgy===true);
   {const mp=$("#m-par");if(mp)mp.style.display=enOnly?"none":"";}
   // witness (owner 2026-09-09): a facsimile work reads text AND scan — two witnesses; a digital work is the text alone
   $("#wmeta").textContent=[DATA.author,`${DATA.n_pages} ${DATA.has_pages?"folia":"sections"}`,DATA.source_only?(window.__SRCNAME||'Original'):enOnly||DATA.src_lang==='en'?"English":((window.__SRCNAME||"Latin")+" + English"),DATA.pld_source_view?.label,DATA.has_pages?"facsimile · text + page scans":"digital text"].filter(Boolean).join(" · ");
@@ -2459,7 +2461,6 @@ function build(){
     // GAPPY-PAGE RESCUE: if most rows pair a short cell against a very long one, the shared
     // row heights create dead space — re-flow this section as two independent columns.
     try{
-      const rws=[...sec.querySelectorAll(".row")].filter(r=>!r.classList.contains("rhead")&&!r.classList.contains("rtoc")&&!r.classList.contains("rapp"));
       // NEVER restructure sub-paired rows: a .row.seg holds .sp pairs, and lifting only its first
       // .la/.en shreds the pairing (owner screenshot 2026-08-09: boxed Latin cells, dead space).
       // A .row.seg holds .sp sub-pairs; lifting only its first .la/.en shreds the pairing. But
@@ -2490,7 +2491,11 @@ function build(){
         run.forEach(r=>{if(!r.childElementCount)r.remove();});
         stacked=true;run=[];
       };
-      rws.forEach(r=>{ if(isSeg(r)){flushRun();} else {run.push(r);} });
+      // A RUN ENDS AT A HEADING (2026-09-24, 1928 BCP): the run used to walk the rows with the heads filtered out, so two
+      // runs either side of a mid-page heading were stacked as one and the heading fell below the
+      // text it heads ("Psalm 23" printed after Psalm 23). Walk the page's rows in order and
+      // close the run at every head, TOC or apparatus row as well as at a sub-paired row.
+      [...sec.querySelectorAll(".row")].forEach(r=>{ if(isSeg(r)||r.classList.contains("rhead")||r.classList.contains("rtoc")||r.classList.contains("rapp")){flushRun();} else {run.push(r);} });
       flushRun();
       if(stacked)sec.classList.add("sec-stacked");
     }catch(e){}

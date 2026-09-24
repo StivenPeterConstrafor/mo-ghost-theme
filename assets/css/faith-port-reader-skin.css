@@ -3063,3 +3063,30 @@ html.g-mobile .fr-tb-paras { display: none !important; }
 }
 /* The fold's caret sits on the heading's line, clear of the rule. */
 #reading .row.fr-sec-headrow > .fr-sec-toggle { margin-top: 1.1em; }
+
+/* ── THE PRAYER BOOK (1928 BCP) ──────────────────────────────────────
+   Ian, 2026-09-24: "clean up its format to make it more intuitive as a
+   BCP." A work whose meta carries `liturgy: true` puts .liturgy on #app
+   (reader-core.js, beside .flow), and its page markdown uses emphasis for
+   one thing each (scripts/build-english-editions-pages.mjs, liturgyRow):
+   italic is a rubric, the book's directions, printed red in a prayer
+   book and set here in the terracotta ink, a step smaller; bold is the
+   people's part in a versicle, a litany or a vow. Headings inside an
+   office ("The Collect", "Psalm 1. Beatus vir") are #### and sit lighter
+   than the office and division heads above them: no hairline, left, the
+   body size. Prose is not indented, as a prayer book sets it. */
+#app.liturgy #reading .row .en em {
+  font-size: 0.9em;
+  color: var(--fr-ink-hot, #a4503a);
+}
+#app.liturgy #reading .row .en strong { font-weight: 600; }
+#app.liturgy #reading .row .en p { text-indent: 0; }
+#app.liturgy #reading .row.rhead.hl4 h3.csub {
+  margin: 1.8em 0 0.5em;
+  padding-top: 0;
+  border-top: 0;
+  text-align: left;
+  font-size: 1em;
+  letter-spacing: 0.01em;
+}
+#app.liturgy #reading .row.rverse .verse { padding-left: 0; }
