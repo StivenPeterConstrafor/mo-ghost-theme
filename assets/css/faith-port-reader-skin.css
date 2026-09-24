@@ -1815,3 +1815,202 @@ html[data-lh] .app #reading :is(.row:not(.rapp) > .en, .row:not(.rapp) > .la,
   background: var(--nbx-panel);
   padding: 12px 14px;
 }
+
+/* ── THE READER TOOLBAR, THIN-LINE (Ian, 2026-09-23) ─────────────────
+   "I also just sort of generally find the tool bar to be messy so we need
+   to figure out a way to use our new design style to clean it up." The
+   boxed toolbar above drew every control in an ink outline, each its own
+   box: nine boxes of equal weight in a row. Now, on desktop only (the
+   phone has its own bar):
+   - every control is a tan hairline, as the rest of TFR is;
+   - controls that belong together are ONE joined group, and groups are
+     spaced apart: page (arrows and the page box) | reading lanes |
+     view (Pages, Find, Aa, theme, Hide bar) | Tools | Research;
+   - Research, the one door out of the page, is the only accented
+     control;
+   - the source row under it is the same joined group.
+   Order is set with `order`; no element is moved, so the engine's
+   handlers and ids are untouched. The "Hide bar" button and the
+   contents overlay are faith-port-read-chrome.js. */
+html:not(.g-mobile) #app .ph.fr-reader-head { --tb-line: var(--border, #d9c6a7); --tb-h: 36px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr { gap: 0; align-items: center; }
+html:not(.g-mobile) #app .ph.fr-reader-head .phl > .sbt,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pnav,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pgjump,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes > button,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .tgl,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > button,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .aaw > .tgl,
+html:not(.g-mobile) #app .ph.fr-reader-head #nbCount,
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tb-focus {
+  height: var(--tb-h); min-height: var(--tb-h);
+  border: 1px solid var(--tb-line);
+  border-radius: 0;
+  background: var(--card, transparent);
+  color: var(--fg);
+  font-size: 13px;
+  padding: 0 12px;
+}
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pnav > button + button { border-left: 1px solid var(--tb-line); }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pgjump { border-right: 1px solid var(--tb-line) !important; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pnav { padding: 0; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pnav > button { padding: 0 11px; }
+/* order: page | read in | view | tools | research */
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pnav { order: 1; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pgjump { order: 2; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes { order: 3; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rdFlow { order: 4; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rsBtn { order: 5; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .aaw:not(.rdtw) { order: 6; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #thTop { order: 7; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-focus { order: 8; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw { order: 9; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #frAuth { order: 10; }
+/* joins: members after the first overlap by the hairline */
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pgjump,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rsBtn,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .aaw:not(.rdtw),
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #thTop,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-focus { margin-left: -1px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes { gap: 0; margin-left: 16px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes > button + button { margin-left: -1px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rdFlow,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #frAuth { margin-left: 16px; }
+/* group corners */
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pnav,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes > button:first-child,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rdFlow { border-radius: 3px 0 0 3px; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.pgjump,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes > button:last-child,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-focus { border-radius: 0 3px 3px 0; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw > .tgl,
+html:not(.g-mobile) #app .ph.fr-reader-head #nbCount,
+html:not(.g-mobile) #app .ph.fr-reader-head .phl > .sbt { border-radius: 3px; }
+/* the one accented control */
+html:not(.g-mobile) #app .ph.fr-reader-head #nbCount { border-color: var(--fr-ink-hot, #b0573a); color: var(--fr-ink-hot, #b0573a); }
+/* the source row: the same joined group */
+html:not(.g-mobile) #app .reader-witnesses [role="group"] { display: inline-flex; gap: 0; }
+html:not(.g-mobile) #app .reader-witnesses [role="group"] > button {
+  height: 32px; border: 1px solid var(--tb-line); border-radius: 0; background: var(--card, transparent); color: var(--fg); font-size: 13px; padding: 0 12px;
+}
+html:not(.g-mobile) #app .reader-witnesses [role="group"] > button + button { margin-left: -1px; }
+html:not(.g-mobile) #app .reader-witnesses [role="group"] > button:first-child { border-radius: 3px 0 0 3px; }
+html:not(.g-mobile) #app .reader-witnesses [role="group"] > button:last-child { border-radius: 0 3px 3px 0; }
+html:not(.g-mobile) #app .reader-witnesses [role="group"] > button[aria-pressed="true"] { background: var(--fr-fill, #b0573a); border-color: var(--fr-fill, #b0573a); color: var(--fr-fill-ink, #fff); position: relative; z-index: 1; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes > button[aria-pressed="true"],
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .tgl[aria-pressed="true"],
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .aaw > .tgl[aria-expanded="true"] { position: relative; z-index: 1; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes { overflow: visible; padding: 0; height: auto; align-items: center; }
+/* When English is the only reading it is a state, not a button (see
+   "the lane you are reading is a state" above): a label before the
+   group, not a member of it. */
+html:not(.g-mobile) #app.only-en .ph.fr-reader-head .ctr > .seg.lanes > #m-en { border-color: transparent; background: transparent; margin-right: 6px; padding: 0 4px; }
+html:not(.g-mobile) #app.only-en .ph.fr-reader-head .ctr > .seg.lanes > #m-en + button { margin-left: 0; border-radius: 3px 0 0 3px; }
+/* Hover and chosen keep the terracotta steps of the boxed toolbar. */
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-focus:hover { border-color: var(--fr-ink-hot, #b0573a); color: var(--fr-ink-hot, #b0573a); position: relative; z-index: 1; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .fr-tb-focus { cursor: pointer; font: inherit; font-size: 13px; }
+html.g-mobile .fr-tb-focus,
+html.g-mobile .fr-sb-actions { display: none !important; }
+
+/* Expand contents: a quiet button at the top of the contents sidebar. */
+.fr-sb-actions { padding: 8px 12px 0; }
+.fr-read-fold {
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted, #6b6660);
+  cursor: pointer;
+}
+.fr-read-fold:hover,
+.fr-read-fold:focus-visible { color: var(--fg, #2d2927); }
+
+/* Hide toolbar: the scrolled-away state (above), pinned. */
+html.fr-bar-hidden header.site-header { transform: translateY(-101%); }
+html.fr-bar-hidden #app .ph.fr-reader-head { transform: translateY(calc(-101% - var(--mo-head, 61px))); }
+html.fr-bar-hidden body { padding-top: env(safe-area-inset-top, 0px) !important; }
+html.fr-bar-hidden #app { padding-top: env(safe-area-inset-top, 0px); }
+html.fr-bar-hidden .faith-port-read-page { height: 100dvh; }
+html.fr-bar-hidden #app .sidebar { top: 0; }
+.fr-read-restore {
+  position: fixed;
+  top: 10px;
+  right: 16px;
+  z-index: 60;
+  padding: 6px 12px;
+  border: 1px solid var(--border, #d9c6a7);
+  border-radius: 3px;
+  background: var(--card, #fffdfa);
+  color: var(--fg, #2d2927);
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.fr-read-restore[hidden] { display: none; }
+
+/* Expand contents: the outline as thin-line cards over the text, one per
+   top-level section, read across in rows; the overlay scrolls down. */
+.fr-read-toc {
+  position: absolute;
+  inset: var(--phh, 64px) 0 0 0;
+  z-index: 40;
+  overflow-y: auto;
+  background: var(--bg, #f6f3f2);
+  padding: 18px 28px 64px;
+}
+html.fr-bar-hidden .fr-read-toc { top: 0; }
+.fr-read-toc[hidden] { display: none; }
+.fr-read-toc-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 14px;
+}
+.fr-read-toc-head h2 { margin: 0; font-size: 20px; font-weight: 500; }
+.fr-read-toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+.fr-read-toc-card {
+  border: 1px solid var(--border, #d9c6a7);
+  border-radius: 3px;
+  background: var(--card, #fffdfa);
+  padding: 12px 16px 8px;
+}
+.fr-read-toc-card ul { list-style: none; margin: 6px 0 0; padding: 0; }
+.fr-read-toc-card li { border-top: 1px solid var(--border, #d9c6a7); }
+.fr-read-toc-entry {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 6px 0;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--fg, #2d2927);
+  cursor: pointer;
+}
+.fr-read-toc-entry.fr-read-toc-title { font-size: 16px; font-weight: 600; padding-top: 2px; }
+.fr-read-toc-entry:hover,
+.fr-read-toc-entry:focus-visible { color: var(--accent, #b0573a); }
+.fr-read-toc-entry.is-current { color: var(--accent, #b0573a); }
+.fr-read-toc-empty { color: var(--muted, #6b6660); }
+/* A flat outline: one ruled list across the width, entries in rows. */
+.fr-read-toc-grid.fr-read-toc-flat { gap: 0 28px; align-items: stretch; }
+.fr-read-toc-flat > .fr-read-toc-entry {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border, #d9c6a7);
+}
+html.g-mobile .fr-read-restore,
+html.g-mobile .fr-read-toc { display: none !important; }
