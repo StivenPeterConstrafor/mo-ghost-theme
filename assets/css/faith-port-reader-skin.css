@@ -1902,6 +1902,9 @@ html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes > button[aria-pres
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .tgl[aria-pressed="true"],
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .aaw > .tgl[aria-expanded="true"] { position: relative; z-index: 1; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .seg.lanes { overflow: visible; padding: 0; height: auto; align-items: center; }
+/* The port gives #rsBtn a 1.6px right margin, which opened a double
+   line between Find and Aa in the joined view group. */
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > #rsBtn { margin-right: 0; }
 /* When English is the only reading it is a state, not a button (see
    "the lane you are reading is a state" above): a label before the
    group, not a member of it. */
