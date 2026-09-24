@@ -290,6 +290,10 @@
       `<a class="bsearch-hit-title" data-hit-for="${escapeHtml(`${w.corpus}:${w.id}`)}" ` +
       `href="${escapeHtml(hitUrl(w, loc))}">${escapeHtml(w.title || w.id)}</a>${ 
       w.author ? `<span class="bsearch-hit-author">${escapeHtml(w.author)}</span>` : "" 
+      }${
+      // A multi-volume set is five rows of one title: the volume tells them apart
+      // ("Vol. 2: The Votes of the Assembly and Minutes, Sessions 45–198 …").
+      w.volume ? `<span class="bsearch-hit-vol">${escapeHtml(String(w.volume))}</span>` : ""
       }<span class="bsearch-hit-where">${escapeHtml(c && !ONE_LIBRARY.has(c.id) ? c.label : (shelfOf(w) || ""))}</span>${ 
       extra || ""}</li>`;
   }
