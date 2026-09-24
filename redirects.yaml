@@ -602,3 +602,23 @@
 - from: ^/the-faith-received/anf-athenagoras-resurrection/?$
   to: /the-faith-received/read/?w=pg-107&from=anf-athenagoras-resurrection
   permanent: true
+
+- from: ^/the-faith-received/anf-ignatius-epistles/?$
+  to: /the-faith-received/read/?w=pg-65&from=anf-ignatius-epistles
+  permanent: true
+
+- from: ^/the-faith-received/anf-polycarp-philippians/?$
+  to: /the-faith-received/read/?w=pg-70&from=anf-polycarp-philippians
+  permanent: true
+
+- from: ^/the-faith-received/anf-clement-corinthians/?$
+  to: /the-faith-received/read/?w=pg-5&from=anf-clement-corinthians
+  permanent: true
+
+- from: ^/the-faith-received/anf-martyrdom-polycarp/?$
+  to: /the-faith-received/read/?w=pg-72&from=anf-martyrdom-polycarp
+  permanent: true
+
+- from: ^/the-faith-received/anf-martyrdom-ignatius/?$
+  to: /the-faith-received/read/?w=pg-69&from=anf-martyrdom-ignatius
+  permanent: true

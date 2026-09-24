@@ -1789,6 +1789,1290 @@
 1021
 ]
 ]
+},
+"pg-65":{
+"rows":[
+{
+"t":"Epistle to the Ephesians",
+"c":643,
+"l":0,
+"a":"b643-0"
+},
+{
+"t":"Chapter I. Praise of the Ephesians",
+"c":643,
+"l":1,
+"a":"b643-1"
+},
+{
+"t":"Chapter II. Congratulations and entreaties",
+"c":645,
+"l":1,
+"a":"b645-3"
+},
+{
+"t":"Chapter III. Exhortations to unity",
+"c":645,
+"l":1,
+"a":"b645-7"
+},
+{
+"t":"Chapter IV. The same continued",
+"c":647,
+"l":1,
+"a":"b647-1"
+},
+{
+"t":"Chapter V. The praise of unity",
+"c":647,
+"l":1,
+"a":"b647-2"
+},
+{
+"t":"Chapter VI. Have respect to the bishop as to Christ Himself",
+"c":649,
+"l":1,
+"a":"b649-3"
+},
+{
+"t":"Chapter VII. Beware of false teachers",
+"c":649,
+"l":1,
+"a":"b649-6"
+},
+{
+"t":"Chapter VIII. Renewed praise of the Ephesians",
+"c":651,
+"l":1,
+"a":"b651-0"
+},
+{
+"t":"Chapter IX. Ye have given no heed to false teachers",
+"c":651,
+"l":1,
+"a":"b651-4"
+},
+{
+"t":"Chapter X. Exhortations to prayer, humility, etc",
+"c":653,
+"l":1,
+"a":"b653-1"
+},
+{
+"t":"Chapter XI. An exhortation to fear God, etc",
+"c":653,
+"l":1,
+"a":"b653-3"
+},
+{
+"t":"Chapter XII. Praise of the Ephesians",
+"c":655,
+"l":1,
+"a":"b655-0"
+},
+{
+"t":"Chapter XIII. Exhortation to meet together frequently for the worship of God",
+"c":655,
+"l":1,
+"a":"b655-1"
+},
+{
+"t":"Chapter XIV. Exhortations to faith and love",
+"c":655,
+"l":1,
+"a":"b655-2"
+},
+{
+"t":"Chapter XV. Exhortation to confess Christ by silence as well as speech",
+"c":657,
+"l":1,
+"a":"b657-0"
+},
+{
+"t":"Chapter XVI. The fate of false teachers",
+"c":657,
+"l":1,
+"a":"b657-1"
+},
+{
+"t":"Chapter XVII. Beware of false doctrines",
+"c":657,
+"l":1,
+"a":"b657-2"
+},
+{
+"t":"Chapter XVIII. The glory of the cross",
+"c":659,
+"l":1,
+"a":"b659-0"
+},
+{
+"t":"Chapter XIX. Three celebrated mysteries",
+"c":659,
+"l":1,
+"a":"b659-0"
+},
+{
+"t":"Chapter XX. Exhortations to stedfastness and unity",
+"c":661,
+"l":1,
+"a":"b661-0"
+},
+{
+"t":"Chapter XXI. Conclusion",
+"c":661,
+"l":1,
+"a":"b661-1"
+},
+{
+"t":"Epistle to the Magnesians",
+"c":661,
+"l":0,
+"a":"b661-3"
+},
+{
+"t":"Chapter I. Reason of writing the epistle",
+"c":663,
+"l":1,
+"a":"b663-0"
+},
+{
+"t":"Chapter II. I rejoice in your messengers",
+"c":663,
+"l":1,
+"a":"b663-1"
+},
+{
+"t":"Chapter III. Honour your youthful bishop",
+"c":663,
+"l":1,
+"a":"b663-2"
+},
+{
+"t":"Chapter IV. Some wickedly act independently of the bishop",
+"c":665,
+"l":1,
+"a":"b665-1"
+},
+{
+"t":"Chapter V. Death is the fate of all such",
+"c":665,
+"l":1,
+"a":"b665-3"
+},
+{
+"t":"Chapter VI. Preserve harmony",
+"c":667,
+"l":1,
+"a":"b667-1"
+},
+{
+"t":"Chapter VII. Do nothing without the bishop and presbyters",
+"c":667,
+"l":1,
+"a":"b667-2"
+},
+{
+"t":"Chapter VIII. Caution against false doctrines",
+"c":669,
+"l":1,
+"a":"b669-0"
+},
+{
+"t":"Chapter IX. Let us live with Christ",
+"c":669,
+"l":1,
+"a":"b669-1"
+},
+{
+"t":"Chapter X. Beware of Judaizing",
+"c":669,
+"l":1,
+"a":"b669-2"
+},
+{
+"t":"Chapter XI. I write these things to warn you",
+"c":671,
+"l":1,
+"a":"b671-1"
+},
+{
+"t":"Chapter XII. Ye are superior to me",
+"c":671,
+"l":1,
+"a":"b671-1"
+},
+{
+"t":"Chapter XIII. Be established in faith and unity",
+"c":671,
+"l":1,
+"a":"b671-2"
+},
+{
+"t":"Chapter XIV. Your prayers requested",
+"c":673,
+"l":1,
+"a":"b673-1"
+},
+{
+"t":"Chapter XV. Salutations",
+"c":673,
+"l":1,
+"a":"b673-3"
+},
+{
+"t":"Epistle to the Trallians",
+"c":673,
+"l":0,
+"a":"b673-5"
+},
+{
+"t":"Chapter I. Acknowledgment of their excellence",
+"c":675,
+"l":1,
+"a":"b675-1"
+},
+{
+"t":"Chapter II. Be subject to the bishop, etc",
+"c":675,
+"l":1,
+"a":"b675-2"
+},
+{
+"t":"Chapter III. Honour the deacons, etc",
+"c":677,
+"l":1,
+"a":"b677-0"
+},
+{
+"t":"Chapter IV. I have need of humility",
+"c":677,
+"l":1,
+"a":"b677-0"
+},
+{
+"t":"Chapter V. I will not teach you profound doctrines",
+"c":679,
+"l":1,
+"a":"b679-0"
+},
+{
+"t":"Chapter VI. Abstain from the poison of heretics",
+"c":679,
+"l":1,
+"a":"b679-2"
+},
+{
+"t":"Chapter VII. The same continued",
+"c":679,
+"l":1,
+"a":"b679-4"
+},
+{
+"t":"Chapter VIII. Be on your guard against the snares of the devil",
+"c":681,
+"l":1,
+"a":"b681-1"
+},
+{
+"t":"Chapter IX. Reference to the history of Christ",
+"c":681,
+"l":1,
+"a":"b681-3"
+},
+{
+"t":"Chapter X. The reality of Christ’s passion",
+"c":681,
+"l":1,
+"a":"b681-5"
+},
+{
+"t":"Chapter XI. Avoid the deadly errors of the Docetæ",
+"c":683,
+"l":1,
+"a":"b683-0"
+},
+{
+"t":"Chapter XII. Continue in unity and love",
+"c":683,
+"l":1,
+"a":"b683-2"
+},
+{
+"t":"Chapter XIII. Conclusion",
+"c":683,
+"l":1,
+"a":"b683-4"
+},
+{
+"t":"Epistle to the Romans",
+"c":685,
+"l":0,
+"a":"b685-1"
+},
+{
+"t":"Chapter I. As a prisoner, I hope to see you",
+"c":685,
+"l":1,
+"a":"b685-2"
+},
+{
+"t":"Chapter II. Do not save me from martyrdom",
+"c":687,
+"l":1,
+"a":"b687-1"
+},
+{
+"t":"Chapter III. Pray rather that I may attain to martyrdom",
+"c":687,
+"l":1,
+"a":"b687-3"
+},
+{
+"t":"Chapter IV. Allow me to fall a prey to the wild beasts",
+"c":689,
+"l":1,
+"a":"b689-1"
+},
+{
+"t":"Chapter V. I desire to die",
+"c":689,
+"l":1,
+"a":"b689-10"
+},
+{
+"t":"Chapter VI. By death I shall attain true life",
+"c":691,
+"l":1,
+"a":"b691-0"
+},
+{
+"t":"Chapter VII. Reason of desiring to die",
+"c":691,
+"l":1,
+"a":"b691-5"
+},
+{
+"t":"Chapter VIII. Be ye favourable to me",
+"c":693,
+"l":1,
+"a":"b693-0"
+},
+{
+"t":"Chapter IX. Pray for the church in Syria",
+"c":695,
+"l":1,
+"a":"b695-1"
+},
+{
+"t":"Chapter X. Conclusion",
+"c":695,
+"l":1,
+"a":"b695-2"
+},
+{
+"t":"Epistle to the Philadelphians",
+"c":697,
+"l":0,
+"a":"b697-0"
+},
+{
+"t":"Chapter I. Introduction",
+"c":697,
+"l":1,
+"a":"b697-0"
+},
+{
+"t":"Chapter II. Maintain union with the bishop",
+"c":697,
+"l":1,
+"a":"b697-3"
+},
+{
+"t":"Chapter III. Avoid schismatics",
+"c":699,
+"l":1,
+"a":"b699-0"
+},
+{
+"t":"Chapter IV. Have but one Eucharist, etc",
+"c":699,
+"l":1,
+"a":"b699-6"
+},
+{
+"t":"Chapter V. Pray for me",
+"c":699,
+"l":1,
+"a":"b699-9"
+},
+{
+"t":"Chapter VI. Do not accept Judaism",
+"c":701,
+"l":1,
+"a":"b701-0"
+},
+{
+"t":"Chapter VII. I have exhorted you to unity",
+"c":701,
+"l":1,
+"a":"b701-2"
+},
+{
+"t":"Chapter VIII. The same continued",
+"c":703,
+"l":1,
+"a":"b703-0"
+},
+{
+"t":"Chapter IX. The Old Testament is good: the New Testament is better",
+"c":703,
+"l":1,
+"a":"b703-4"
+},
+{
+"t":"Chapter X. Congratulate the inhabitants of Antioch on the close of the persecution",
+"c":705,
+"l":1,
+"a":"b705-1"
+},
+{
+"t":"Chapter XI. Thanks and salutation",
+"c":705,
+"l":1,
+"a":"b705-2"
+},
+{
+"t":"Epistle to the Smyrnaeans",
+"c":707,
+"l":0,
+"a":"b707-1"
+},
+{
+"t":"Chapter I. Thanks to God for your faith",
+"c":707,
+"l":1,
+"a":"b707-2"
+},
+{
+"t":"Chapter II. Christ’s true passion",
+"c":707,
+"l":1,
+"a":"b707-3"
+},
+{
+"t":"Chapter III. Christ was possessed of a body after His resurrection",
+"c":709,
+"l":1,
+"a":"b709-2"
+},
+{
+"t":"Chapter IV. Beware of these heretics",
+"c":709,
+"l":1,
+"a":"b709-7"
+},
+{
+"t":"Chapter V. Their dangerous errors",
+"c":711,
+"l":1,
+"a":"b711-1"
+},
+{
+"t":"Chapter VI. Unbelievers in the blood of Christ shall be condemned",
+"c":711,
+"l":1,
+"a":"b711-3"
+},
+{
+"t":"Chapter VII. Let us stand aloof from such heretics",
+"c":713,
+"l":1,
+"a":"b713-0"
+},
+{
+"t":"Chapter VIII. Let nothing be done without the bishop",
+"c":713,
+"l":1,
+"a":"b713-1"
+},
+{
+"t":"Chapter IX. Honour the bishop",
+"c":713,
+"l":1,
+"a":"b713-3"
+},
+{
+"t":"Chapter X. Acknowledgment of their kindness",
+"c":715,
+"l":1,
+"a":"b715-1"
+},
+{
+"t":"Chapter XI. Request to them to send a messenger to Antioch",
+"c":715,
+"l":1,
+"a":"b715-2"
+},
+{
+"t":"Chapter XII. Salutations",
+"c":717,
+"l":1,
+"a":"b717-1"
+},
+{
+"t":"Chapter XIII. Conclusion",
+"c":717,
+"l":1,
+"a":"b717-2"
+},
+{
+"t":"Epistle to Polycarp",
+"c":717,
+"l":0,
+"a":"b717-9"
+},
+{
+"t":"Chapter I. Commendation and exhortation",
+"c":719,
+"l":1,
+"a":"b719-0"
+},
+{
+"t":"Chapter II. Exhortations",
+"c":719,
+"l":1,
+"a":"b719-0"
+},
+{
+"t":"Chapter III. Exhortations",
+"c":721,
+"l":1,
+"a":"b721-1"
+},
+{
+"t":"Chapter IV. Exhortations",
+"c":721,
+"l":1,
+"a":"b721-2"
+},
+{
+"t":"Chapter V. The duties of husbands and wives",
+"c":723,
+"l":1,
+"a":"b723-0"
+},
+{
+"t":"Chapter VI. The duties of the Christian flock",
+"c":723,
+"l":1,
+"a":"b723-6"
+},
+{
+"t":"Chapter VII. Request that Polycarp would send a messenger to Antioch",
+"c":725,
+"l":1,
+"a":"b725-0"
+},
+{
+"t":"Chapter VIII. Let other churches also send to Antioch",
+"c":725,
+"l":1,
+"a":"b725-1"
+}
+],
+"span":[
+[
+643,
+725
+]
+]
+},
+"pg-70":{
+"rows":[
+{
+"t":"Polycarp, Letter to the Philippians",
+"c":1005,
+"l":0,
+"a":"b1005-0"
+},
+{
+"t":"Chapter I. Praise of the Philippians",
+"c":1005,
+"l":1,
+"a":"b1005-1"
+},
+{
+"t":"Chapter II. An exhortation to virtue",
+"c":1005,
+"l":1,
+"a":"b1005-3"
+},
+{
+"t":"Chapter III. Expressions of personal unworthiness",
+"c":1007,
+"l":1,
+"a":"b1007-4"
+},
+{
+"t":"Chapter IV. Various exhortations",
+"c":1007,
+"l":1,
+"a":"b1007-8"
+},
+{
+"t":"Chapter V. The duties of deacons, youths, and virgins",
+"c":1009,
+"l":1,
+"a":"b1009-2"
+},
+{
+"t":"Chapter VI. The duties of presbyters and others",
+"c":1009,
+"l":1,
+"a":"b1009-8"
+},
+{
+"t":"Chapter VII. Avoid the Docetæ, and persevere in fasting and prayer",
+"c":1011,
+"l":1,
+"a":"b1011-4"
+},
+{
+"t":"Chapter VIII. Persevere in hope and patience",
+"c":1011,
+"l":1,
+"a":"b1011-9"
+},
+{
+"t":"Chapter IX. Patience inculcated",
+"c":1011,
+"l":1,
+"a":"b1011-12"
+}
+],
+"span":[
+[
+1005,
+1011
+]
+]
+},
+"pg-69":{
+"rows":[
+{
+"t":"Polycarp, Letter to the Philippians, Chapters X-XIV (Latin)",
+"c":1013,
+"l":0,
+"a":"b1013-0"
+},
+{
+"t":"Chapter X. Exhortation to the practice of virtue",
+"c":1013,
+"l":1,
+"a":"b1013-2"
+},
+{
+"t":"Chapter XI. Expression of grief on account of Valens",
+"c":1013,
+"l":1,
+"a":"b1013-5"
+},
+{
+"t":"Chapter XII. Exhortation to various graces",
+"c":1013,
+"l":1,
+"a":"b1013-10"
+},
+{
+"t":"Chapter XIII. Concerning the transmission of epistles",
+"c":1015,
+"l":1,
+"a":"b1015-2"
+},
+{
+"t":"Chapter XIV. Conclusion",
+"c":1015,
+"l":1,
+"a":"b1015-5"
+},
+{
+"t":"The Martyrdom of Ignatius",
+"c":979,
+"l":0,
+"a":"b979-0"
+},
+{
+"t":"Chapter I. Desire of Ignatius for martyrdom",
+"c":979,
+"l":1,
+"a":"b979-1"
+},
+{
+"t":"Chapter II. Ignatius is condemned by Trajan",
+"c":979,
+"l":1,
+"a":"b979-3"
+},
+{
+"t":"Chapter III. Ignatius sails to Smyrna",
+"c":983,
+"l":1,
+"a":"b983-0"
+},
+{
+"t":"Chapter IV. Ignatius writes to the churches",
+"c":983,
+"l":1,
+"a":"b983-2"
+},
+{
+"t":"Chapter V. Ignatius is brought to Rome",
+"c":983,
+"l":1,
+"a":"b983-4"
+},
+{
+"t":"Chapter VI. Ignatius is devoured by the beasts at Rome",
+"c":985,
+"l":1,
+"a":"b985-3"
+},
+{
+"t":"Chapter VII. Ignatius appears in a vision after his death",
+"c":987,
+"l":1,
+"a":"b987-1"
+}
+],
+"span":[
+[
+1013,
+1013
+],
+[
+979,
+985
+]
+]
+},
+"pg-5":{
+"rows":[
+{
+"t":"The First Epistle of Clement to the Corinthians",
+"c":199,
+"l":0,
+"a":"b199-0"
+},
+{
+"t":"Chapter I. The salutation. Praise of the Corinthians before the breaking forth of schism among them",
+"c":201,
+"l":1,
+"a":"b201-38"
+},
+{
+"t":"Chapter II. Praise of the Corinthians continued",
+"c":209,
+"l":1,
+"a":"b209-1"
+},
+{
+"t":"Chapter III. The sad state of the Corinthian church after sedition arose in it from envy and emulation",
+"c":213,
+"l":1,
+"a":"b213-0"
+},
+{
+"t":"Chapter IV. Many evils have already flowed from this source in ancient times",
+"c":215,
+"l":1,
+"a":"b215-1"
+},
+{
+"t":"Chapter V. No less evils have arisen from the same source in the most recent times. The martyrdom of Peter and Paul",
+"c":217,
+"l":1,
+"a":"b217-1"
+},
+{
+"t":"Chapter VI. Continuation. Several other martyrs",
+"c":219,
+"l":1,
+"a":"b219-1"
+},
+{
+"t":"Chapter VII. An exhortation to repentance",
+"c":221,
+"l":1,
+"a":"b221-1"
+},
+{
+"t":"Chapter VIII. Continuation respecting repentance",
+"c":225,
+"l":1,
+"a":"b225-1"
+},
+{
+"t":"Chapter IX. Examples of the saints",
+"c":227,
+"l":1,
+"a":"b227-1"
+},
+{
+"t":"Chapter X. Continuation of the above",
+"c":227,
+"l":1,
+"a":"b227-3"
+},
+{
+"t":"Chapter XI. Continuation. Lot",
+"c":229,
+"l":1,
+"a":"b229-0"
+},
+{
+"t":"Chapter XII. The rewards of faith and hospitality. Rahab",
+"c":231,
+"l":1,
+"a":"b231-1"
+},
+{
+"t":"Chapter XIII. An exhortation to humility",
+"c":235,
+"l":1,
+"a":"b235-0"
+},
+{
+"t":"Chapter XIV. We should obey God rather than the authors of sedition",
+"c":235,
+"l":1,
+"a":"b235-2"
+},
+{
+"t":"Chapter XV. We must adhere to those who cultivate peace, not to those who merely pretend to do so",
+"c":237,
+"l":1,
+"a":"b237-1"
+},
+{
+"t":"Chapter XVI. Christ as an example of humility",
+"c":239,
+"l":1,
+"a":"b239-1"
+},
+{
+"t":"Chapter XVII. The saints as examples of humility",
+"c":241,
+"l":1,
+"a":"b241-3"
+},
+{
+"t":"Chapter XVIII. David as an example of humility",
+"c":245,
+"l":1,
+"a":"b245-0"
+},
+{
+"t":"Chapter XIX. Imitating these examples, let us seek after peace",
+"c":247,
+"l":1,
+"a":"b247-1"
+},
+{
+"t":"Chapter XX. The peace and harmony of the universe",
+"c":247,
+"l":1,
+"a":"b247-3"
+},
+{
+"t":"Chapter XXI. Let us obey God, and not the authors of sedition",
+"c":255,
+"l":1,
+"a":"b255-0"
+},
+{
+"t":"Chapter XXII. These exhortations are confirmed by the Christian faith, which proclaims the misery of sinful conduct",
+"c":257,
+"l":1,
+"a":"b257-1"
+},
+{
+"t":"Chapter XXIII. Be humble, and believe that Christ will come again",
+"c":257,
+"l":1,
+"a":"b257-3"
+},
+{
+"t":"Chapter XXIV. God continually shows us in nature that there will be a resurrection",
+"c":259,
+"l":1,
+"a":"b259-2"
+},
+{
+"t":"Chapter XXV. The phœnix an emblem of our resurrection",
+"c":261,
+"l":1,
+"a":"b261-1"
+},
+{
+"t":"Chapter XXVI. We shall rise again, then, as the Scripture also testifies",
+"c":265,
+"l":1,
+"a":"b265-2"
+},
+{
+"t":"Chapter XXVII. In the hope of the resurrection, let us cleave to the omnipotent and omniscient God",
+"c":267,
+"l":1,
+"a":"b267-0"
+},
+{
+"t":"Chapter XXVIII. God sees all things: therefore let us avoid transgression",
+"c":267,
+"l":1,
+"a":"b267-5"
+},
+{
+"t":"Chapter XXIX. Let us also draw near to God in purity of heart",
+"c":269,
+"l":1,
+"a":"b269-1"
+},
+{
+"t":"Chapter XXX. Let us do those things that please God, and flee from those He hates, that we may be blessed",
+"c":269,
+"l":1,
+"a":"b269-3"
+},
+{
+"t":"Chapter XXXI. Let us see by what means we may obtain the divine blessing",
+"c":271,
+"l":1,
+"a":"b271-1"
+},
+{
+"t":"Chapter XXXII. We are justified not by our own works, but by faith",
+"c":271,
+"l":1,
+"a":"b271-2"
+},
+{
+"t":"Chapter XXXIII. But let us not give up the practice of good works and love. God Himself is an example to us of good works",
+"c":273,
+"l":1,
+"a":"b273-0"
+},
+{
+"t":"Chapter XXXIV. Great is the reward of good works with God. Joined together in harmony, let us implore that reward from Him",
+"c":275,
+"l":1,
+"a":"b275-1"
+},
+{
+"t":"Chapter XXXV. Immense is this reward. How shall we obtain it?",
+"c":277,
+"l":1,
+"a":"b277-1"
+},
+{
+"t":"Chapter XXXVI. All blessings are given to us through Christ",
+"c":279,
+"l":1,
+"a":"b279-3"
+},
+{
+"t":"Chapter XXXVII. Christ is our leader, and we His soldiers",
+"c":281,
+"l":1,
+"a":"b281-2"
+},
+{
+"t":"Chapter XXXVIII. Let the members of the Church submit themselves, and no one exalt himself above another",
+"c":283,
+"l":1,
+"a":"b283-1"
+},
+{
+"t":"Chapter XXXIX. There is no reason for self-conceit",
+"c":285,
+"l":1,
+"a":"b285-2"
+},
+{
+"t":"Chapter XL. Let us preserve in the Church the order appointed by God",
+"c":287,
+"l":1,
+"a":"b287-1"
+},
+{
+"t":"Chapter XLI. Continuation of the same subject",
+"c":289,
+"l":1,
+"a":"b289-1"
+},
+{
+"t":"Chapter XLII. The order of ministers in the Church",
+"c":291,
+"l":1,
+"a":"b291-1"
+},
+{
+"t":"Chapter XLIII. Moses of old stilled the contention which arose concerning the priestly dignity",
+"c":295,
+"l":1,
+"a":"b295-0"
+},
+{
+"t":"Chapter XLIV. The ordinances of the apostles, that there might be no contention respecting the priestly office",
+"c":295,
+"l":1,
+"a":"b295-3"
+},
+{
+"t":"Chapter XLV. It is the part of the wicked to vex the righteous",
+"c":299,
+"l":1,
+"a":"b299-1"
+},
+{
+"t":"Chapter XLVI. Let us cleave to the righteous: your strife is pernicious",
+"c":303,
+"l":1,
+"a":"b303-0"
+},
+{
+"t":"Chapter XLVII. Your recent discord is worse than the former which took place in the times of Paul",
+"c":305,
+"l":1,
+"a":"b305-1"
+},
+{
+"t":"Chapter XLVIII. Let us return to the practice of brotherly love",
+"c":307,
+"l":1,
+"a":"b307-2"
+},
+{
+"t":"Chapter XLIX. The praise of love",
+"c":309,
+"l":1,
+"a":"b309-1"
+},
+{
+"t":"Chapter L. Let us pray to be thought worthy of love",
+"c":311,
+"l":1,
+"a":"b311-1"
+},
+{
+"t":"Chapter LI. Let the partakers in strife acknowledge their sins",
+"c":313,
+"l":1,
+"a":"b313-1"
+},
+{
+"t":"Chapter LII. Such a confession is pleasing to God",
+"c":315,
+"l":1,
+"a":"b315-1"
+},
+{
+"t":"Chapter LIII. The love of Moses towards his people",
+"c":315,
+"l":1,
+"a":"b315-7"
+},
+{
+"t":"Chapter LIV. He who is full of love will incur every loss, that peace may be restored to the Church",
+"c":317,
+"l":1,
+"a":"b317-1"
+},
+{
+"t":"Chapter LV. Examples of such love",
+"c":319,
+"l":1,
+"a":"b319-1"
+},
+{
+"t":"Chapter LVI. Let us admonish and correct one another",
+"c":321,
+"l":1,
+"a":"b321-1"
+},
+{
+"t":"Chapter LVII. Let the authors of sedition submit themselves",
+"c":323,
+"l":1,
+"a":"b323-1"
+},
+{
+"t":"Chapter LVIII. Blessings sought for all that call upon God",
+"c":327,
+"l":1,
+"a":"b327-0"
+},
+{
+"t":"Chapter LIX. The Corinthians are exhorted speedily to send back word that peace has been restored. The benediction",
+"c":327,
+"l":1,
+"a":"b327-1"
+}
+],
+"span":[
+[
+199,
+327
+]
+]
+},
+"pg-72":{
+"rows":[
+{
+"t":"The Martyrdom of Polycarp",
+"c":1029,
+"l":0,
+"a":"b1029-0"
+},
+{
+"t":"Chapter I. Subject of which we write",
+"c":1029,
+"l":1,
+"a":"b1029-2"
+},
+{
+"t":"Chapter II. The wonderful constancy of the martyrs",
+"c":1031,
+"l":1,
+"a":"b1031-0"
+},
+{
+"t":"Chapter III. The constancy of Germanicus. The death of Polycarp is demanded",
+"c":1031,
+"l":1,
+"a":"b1031-3"
+},
+{
+"t":"Chapter IV. Quintus the apostate",
+"c":1031,
+"l":1,
+"a":"b1031-4"
+},
+{
+"t":"Chapter V. The departure and vision of Polycarp",
+"c":1033,
+"l":1,
+"a":"b1033-0"
+},
+{
+"t":"Chapter VI. Polycarp is betrayed by a servant",
+"c":1033,
+"l":1,
+"a":"b1033-1"
+},
+{
+"t":"Chapter VII. Polycarp is found by his pursuers",
+"c":1033,
+"l":1,
+"a":"b1033-2"
+},
+{
+"t":"Chapter VIII. Polycarp is brought into the city",
+"c":1035,
+"l":1,
+"a":"b1035-0"
+},
+{
+"t":"Chapter IX. Polycarp refuses to revile Christ",
+"c":1035,
+"l":1,
+"a":"b1035-1"
+},
+{
+"t":"Chapter X. Polycarp confesses himself a Christian",
+"c":1035,
+"l":1,
+"a":"b1035-3"
+},
+{
+"t":"Chapter XI. No threats have any effect on Polycarp",
+"c":1035,
+"l":1,
+"a":"b1035-4"
+},
+{
+"t":"Chapter XII. Polycarp is sentenced to be burned",
+"c":1037,
+"l":1,
+"a":"b1037-0"
+},
+{
+"t":"Chapter XIII. The funeral pile is erected",
+"c":1037,
+"l":1,
+"a":"b1037-1"
+},
+{
+"t":"Chapter XIV. The prayer of Polycarp",
+"c":1037,
+"l":1,
+"a":"b1037-2"
+},
+{
+"t":"Chapter XV. Polycarp is not injured by the fire",
+"c":1039,
+"l":1,
+"a":"b1039-0"
+},
+{
+"t":"Chapter XVI. Polycarp is pierced by a dagger",
+"c":1039,
+"l":1,
+"a":"b1039-0"
+},
+{
+"t":"Chapter XVII. The Christians are refused Polycarp’s body",
+"c":1039,
+"l":1,
+"a":"b1039-1"
+},
+{
+"t":"Chapter XVIII. The body of Polycarp is burned",
+"c":1041,
+"l":1,
+"a":"b1041-0"
+},
+{
+"t":"Chapter XIX. Praise of the martyr Polycarp",
+"c":1041,
+"l":1,
+"a":"b1041-1"
+},
+{
+"t":"Chapter XX. This epistle is to be transmitted to the brethren",
+"c":1041,
+"l":1,
+"a":"b1041-2"
+},
+{
+"t":"Chapter XXI. The date of the martyrdom",
+"c":1043,
+"l":1,
+"a":"b1043-0"
+},
+{
+"t":"Chapter XXII. Salutation",
+"c":1043,
+"l":1,
+"a":"b1043-1"
+}
+],
+"span":[
+[
+1029,
+1043
+]
+]
 }
 }
 }
