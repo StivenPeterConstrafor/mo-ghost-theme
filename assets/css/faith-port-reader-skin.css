@@ -3051,18 +3051,27 @@ html.g-mobile .fr-tb-paras { display: none !important; }
   letter-spacing: 0.02em;
   color: var(--fg);
 }
-#reading .row.fr-sec-headrow {
-  margin-top: 2.4em;
+/* The rule is drawn on each language lane, not on the row: the row
+   starts left of the text (the lane is inset for the gutter controls),
+   so a rule on the row overhung the column. The engine's own paragraph
+   rules outrank a plain selector, hence the !important on alignment. */
+#reading .row.fr-sec-headrow { margin-top: 2.4em; }
+#reading .row.fr-sec-headrow > :is(.en, .la) {
   padding-top: 1.1em;
   border-top: 1px solid var(--border, #d9c6a7);
 }
-#reading .row.fr-sec-headrow :is(p, .en, .la) {
-  text-align: center;
+#reading .row.fr-sec-headrow > :is(.en, .la) p {
+  text-align: center !important;
+  text-indent: 0 !important;
   font-weight: 600;
-  text-indent: 0;
 }
 /* The fold's caret sits on the heading's line, clear of the rule. */
 #reading .row.fr-sec-headrow > .fr-sec-toggle { margin-top: 1.1em; }
+/* A heading row that carries its argument (CHAPTER V.-- On the general
+   custom of enemies...; LIBER PRIMUS. Paganos reprehendit...): the same
+   rule and centring, the text at its own weight so a long argument does
+   not read as a block of bold. */
+#reading .row.fr-sec-headrow--long > :is(.en, .la) p { font-weight: 400; }
 
 /* ── THE PRAYER BOOK (1928 BCP) ──────────────────────────────────────
    Ian, 2026-09-24: "clean up its format to make it more intuitive as a

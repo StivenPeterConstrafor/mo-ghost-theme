@@ -264,6 +264,27 @@
   // a failure is not retried a thousand times on every pass.
   const tried = new WeakMap();
 
+  /* Is this resolved row a heading, and how long a one? Measured per
+     LANE, not on the row: a two-language row carries the heading twice
+     (Latin and English), so the old whole-row count put nearly every
+     chapter head of the Latin Fathers over the line and the section
+     styling never showed on them (Ian, 2026-09-24: "I don't see any
+     differences"). A short lane is a heading; a longer one that opens
+     with a division word (CHAPTER V.--, LIBER PRIMUS.) is a heading
+     with its argument, styled lighter; anything else is prose the
+     outline happens to point at, and is left alone. */
+  const DIVISION = /^[\s§*]*(?:chap(?:ter)?|cap(?:ut|itulum)?|book|lib(?:er)?|part|pars|sect(?:ion|io)?|article|art|quaestio|question|q|sermon|homil(?:y|ia)|psalm|epist(?:le|ola)|tract(?:ate|atus)?|distinctio|lectio|lecture|disputatio|disputation|oratio|oration|canon|dialogue|dialogus)\b\.?/i;
+  function headKind(row) {
+    if (row.querySelector("h1, h2, h3, h4, .csub")) return "";
+    const lanes = [...row.querySelectorAll(".en, .la, .gr, .lane")];
+    const texts = (lanes.length ? lanes : [row]).map((el) => (el.textContent || "").replace(/\s+/g, " ").trim()).filter(Boolean);
+    if (!texts.length) return "";
+    const len = Math.max(...texts.map((t) => t.length));
+    if (len < 200) return "short";
+    if (len < 420 && texts.some((t) => DIVISION.test(t))) return "long";
+    return "";
+  }
+
   // Reads first, writes after. resolve() measures (getClientRects), and
   // every button a write adds invalidates layout, so interleaving them
   // relaid the whole page once per entry: the 1928 BCP's 440 entries
@@ -293,9 +314,9 @@
       // (faith-port-reader-skin.css, "Section headings"). A row that
       // merely holds a heading element among prose is left to that
       // element's own style.
-      if (!row.querySelector("h1, h2, h3, h4, .csub") && (row.textContent || "").trim().length < 160) {
-        row.classList.add("fr-sec-headrow");
-      }
+      const kind = headKind(row);
+      if (kind) row.classList.add("fr-sec-headrow");
+      if (kind === "long") row.classList.add("fr-sec-headrow--long");
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "fr-sec-toggle";
