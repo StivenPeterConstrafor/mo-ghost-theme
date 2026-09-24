@@ -148,12 +148,15 @@
     const topicsSection=lazy(frame,'Topics in this work',async body => {
       const result=await overview();if(result.missing){missing(body,'A work topic overview has not been published for this edition.');return;}
       const topics=list(result.data.topics);
-      if(!topics.length){missing(body,'This published overview contains no topic entries.');return;}
-      note(body,'Page counts describe the index. Extracted statements and page links below are the selection supplied in this overview; they are not every recorded position.');
+      if(!topics.length){missing(body,list(result.data.books).length?'Topics have not been indexed for this work yet. Its Scripture citations are indexed under “Scripture in this work”.':'Topics have not been indexed for this work yet.');body.appendChild(link('Browse all topics','/the-faith-received/topics/'));return;}
+      // 09-24: curated creeds/confessions/catechisms carry topics filed from their own headings (scripts/build-heading-topics.mjs); ph = the heading printed on each page, twin = a mined edition of the same text.
+      const headings=result.data.topics_src==='headings';
+      note(body,headings?'Topics here are assigned from this document’s own article and question headings. No statements are extracted; each link opens that section.':'Page counts describe the index. Extracted statements and page links below are the selection supplied in this overview; they are not every recorded position.');
+      if(headings&&result.data.twin&&string(result.data.twin.w))body.appendChild(link('Statements extracted from another edition: '+(string(result.data.twin.t)||'this text'),'/the-faith-received/read/?w='+encodeURIComponent(string(result.data.twin.w))));
       paginate(body,topics,topic => {
         const parent=element('div'),positions=list(topic.pos).map(value=>({...value,kind:'position'})),pages=list(topic.pp).map(p=>({p,kind:'page'}));
-        const n=count(topic.n),description=(n!==null?n+' indexed pages. ':'')+positions.length+' supplied statements and '+pages.length+' supplied page links.';
-        group(parent,string(topic.t)||'Untitled topic',description,[...positions,...pages],row=>record(row.kind==='position'?string(row.q)||'Statement text not supplied':'Indexed source page',row.kind==='position'&&row.s?'Local annotation: '+row.s:'',row.p));
+        const n=count(topic.n),description=topic.src==='heading'?pages.length+(pages.length===1?' section':' sections')+' filed under this topic by heading.':(n!==null?n+' indexed pages. ':'')+positions.length+' supplied statements and '+pages.length+' supplied page links.';
+        group(parent,string(topic.t)||'Untitled topic',description,[...positions,...pages],row=>record(row.kind==='position'?string(row.q)||'Statement text not supplied':string(topic.ph&&topic.ph[row.p])||'Indexed source page',row.kind==='position'&&row.s?'Local annotation: '+row.s:'',row.p));
         return parent;
       },12,'topics');body.appendChild(workLink());
     },'positions');
@@ -161,7 +164,7 @@
     const scriptureSection=lazy(frame,'Scripture in this work',async body => {
       const result=await overview();if(result.missing){missing(body,'A work Scripture overview has not been published for this edition.');return;}
       const books=list(result.data.books);
-      if(!books.length){missing(body,'This published overview contains no Scripture entries.');return;}
+      if(!books.length){missing(body,result.data.topics_src==='headings'?'No Scripture references are printed in this edition’s text.':'This published overview contains no Scripture entries.');return;}
       let bible=[];
       try {const catalogue=await json('/v1/bible/all/books.json',data=>Array.isArray(data?.books));if(!catalogue.missing)bible=catalogue.data.books;else note(body,'The Scripture navigation index is not published; source-page links remain available.');}
       catch (_) {note(body,'Scripture navigation could not load; source-page links remain available.');body.appendChild(link('Browse Scripture','/the-faith-received/bible/'));}
