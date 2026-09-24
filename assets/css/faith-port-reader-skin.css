@@ -2947,3 +2947,64 @@ html #notebook .nb-reading-place #nbSaveWork[aria-pressed="true"]:hover {
   border-color: color-mix(in srgb, var(--fr-fill, #b0573a) 82%, #000);
   color: var(--fr-fill-ink, #fff);
 }
+
+/* The dock's own Ask is replaced by the drawer's gated Ask cell. */
+html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer > [data-t="ask"] { display: none !important; }
+.fr-para-rail button svg { display: block; }
+
+/* ── ASK BESIDE THE BOOK (Ian, 2026-09-23) ───────────────────────────
+   "Header too big. Margin too big. Question box too big. Needs to be in
+   new design style." and "Ask should expand with the same color mode as
+   the page." On the reader, Ask's colours are the reader's own tokens,
+   so it opens in whatever the page is in: light, sepia or dark. Its own
+   saved theme and the OS preference no longer decide it. The selector
+   carries two ids' weight to beat ask-workspace.css's
+   `:root[data-theme] :is(.fra, #fra-notices)` (1,2,0).
+   Sizes: a working title in the reading face, not a 52px display
+   headline; the welcome's margins cut; the question box a hairline box
+   with 3px corners and a shorter field. */
+html:not(#fr-x) body:has(#app.faith-port-read-page) .fra,
+html:not(#fr-x) body:has(#app.faith-port-read-page) .fra[data-theme] {
+  --fra-bg: var(--bg);
+  --fra-card: var(--card, var(--card-bg));
+  --fra-fg: var(--fg);
+  --fra-muted: var(--muted);
+  --fra-border: var(--border);
+  --fra-hl: var(--hl, var(--highlight));
+  --fra-detail: var(--muted);
+  --fra-detail-rule: var(--border);
+  color-scheme: inherit;
+}
+body:has(#app.faith-port-read-page) .fra .fra-header { min-height: 0; padding: 4px 8px; }
+body:has(#app.faith-port-read-page) .fra .fra-welcome { padding: 18px 0 20px; justify-content: flex-start; }
+body:has(#app.faith-port-read-page) .fra .fra-welcome h1 {
+  font: 500 22px/1.25 var(--font-body, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0;
+  margin: 0 0 6px;
+}
+body:has(#app.faith-port-read-page) .fra .fra-welcome p { font-size: 14px; line-height: 1.5; margin: 0 0 14px; max-width: none; }
+body:has(#app.faith-port-read-page) .fra .fra-suggestions { margin-top: 8px; }
+body:has(#app.faith-port-read-page) .fra .fra-suggestions button { padding: 9px 8px; font-size: 13px; }
+body:has(#app.faith-port-read-page) .fra .fra-compose-area { padding: 8px 14px 10px; }
+body:has(#app.faith-port-read-page) .fra .fra-composer {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 8px 10px 6px;
+  box-shadow: none;
+}
+body:has(#app.faith-port-read-page) .fra .fra-compose-label {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0 2px 2px;
+}
+body:has(#app.faith-port-read-page) .fra .fra-composer textarea {
+  min-height: 44px;
+  font-size: 15px;
+  line-height: 1.45;
+  padding: 4px 2px;
+}
+body:has(#app.faith-port-read-page) .fra .fra-compose-tools { margin-top: 2px; }
+body:has(#app.faith-port-read-page) .fra .fra-send { width: 32px; height: 32px; min-height: 32px; border-radius: 3px; }
+body:has(#app.faith-port-read-page) .fra .fra-compose-foot { margin-top: 4px; padding-top: 4px; }

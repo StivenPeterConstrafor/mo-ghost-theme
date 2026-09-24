@@ -246,7 +246,12 @@
     rail.hidden = true;
     rail.innerHTML =
       '<button type="button" data-a="link" title="Copy a link to this paragraph"' +
-      ' aria-label="Copy a link to this paragraph">\u00b6</button>' +
+      ' aria-label="Copy a link to this paragraph">' +
+      // A link icon, not a pilcrow (Ian, 2026-09-23).
+      '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"' +
+      ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/>' +
+      '<path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg></button>' +
       '<button type="button" data-a="copy" title="Copy this paragraph, with its citation"' +
       ' aria-label="Copy this paragraph, with its citation">\u29c9</button>';
     // NOT appended here. The engine renders each work by replacing the
@@ -288,9 +293,10 @@
     // The rail reports on its own face. The Tools popover's status line
     // is shut when the rail is in use, so saying it there says nothing.
     function flash(b, mark) {
-      const was = b.textContent;
+      // innerHTML, not textContent: the link button's face is an icon.
+      const was = b.innerHTML;
       b.textContent = mark;
-      setTimeout(() => { b.textContent = was; }, 1100);
+      setTimeout(() => { b.innerHTML = was; }, 1100);
     }
 
     rail.addEventListener("click", (e) => {
