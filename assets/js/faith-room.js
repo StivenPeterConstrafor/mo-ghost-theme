@@ -983,9 +983,10 @@
     //
     // The author's own page used to hang off the heading. A link inside
     // a summary is a coin toss between navigating and toggling, so it
-    // moved into the open panel, where it can say what it is.
+    // moved into the open panel, where it can say what it is: first in
+    // it, directly under the name (Ian, 2026-09-24).
     const all = key && group.kind === "author"
-      ? `<a class="btrad-all" href="/the-faith-received/author/?a=${encodeURIComponent(key)}">About ${escapeHtml(name)} &rarr;</a>`
+      ? `<a class="btrad-all btrad-all--top" href="/the-faith-received/author/?a=${encodeURIComponent(key)}">About ${escapeHtml(name)} &rarr;</a>`
       : "";
     // Dates beside the name, office beneath it — the shape the shelf
     // pages on the corpus site use, and the one a reader scanning two
@@ -997,7 +998,7 @@
       ? `<span class="btrad-office">${escapeHtml(note.office)}</span>` : "";
     return `<details class="btrad${wide}">
   <summary class="btrad-sum"><h3>${escapeHtml(name)}${dates}<span class="btrad-n">${n.toLocaleString()} ${group.kind === "collection" ? (n === 1 ? "entry" : "entries") : (n === 1 ? "work" : "works")}</span></h3>${office}</summary>
-  <ul class="blist">${rows}</ul>${all}
+  ${all}<ul class="blist">${rows}</ul>
 </details>`;
   }
 

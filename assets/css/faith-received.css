@@ -19836,3 +19836,7 @@ body:has(> .site-header.is-hidden):not(:has(#app.faith-port-read-page)):not(.web
 @media (prefers-reduced-motion: reduce) {
   body > .tfr-rail { transition: none; }
 }
+
+/* "About [author]" heads the open author panel on All Works, directly
+   under the name, instead of trailing the list (Ian, 2026-09-24). */
+.btrad .btrad-all--top { display: block; margin: 4px 0 12px; }
