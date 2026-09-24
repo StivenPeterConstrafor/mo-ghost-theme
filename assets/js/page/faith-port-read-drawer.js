@@ -512,6 +512,22 @@
   }
   document.addEventListener("fr-folds-change", syncProxies);
   document.addEventListener("fr-paras-change", syncProxies);
+  /* The controls a phone cell mirrors change on their own: Modernize
+     shows itself only once the text has loaded and turned out to be
+     early modern English (faith-port-read-modernize.js), Bookmark and
+     Flow change their pressed state. Watch them, or a cell keeps the
+     state it had when the drawer was built (Ian, 2026-09-24: "mobile
+     needs the modernizer"). */
+  const mirrored = new MutationObserver(() => syncProxies());
+  function watchMirrored() {
+    ["m-modern", "rdKeep", "rdFlow"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el && !el.dataset.frMirrored) {
+        el.dataset.frMirrored = "1";
+        mirrored.observe(el, { attributes: true, attributeFilter: ["hidden", "aria-pressed", "disabled"] });
+      }
+    });
+  }
 
   function mMembers() {
     if (!bar) return [];
@@ -552,6 +568,7 @@
   function fillMobile() {
     if (!bar || !mDrawer) return;
     gateResearch();
+    watchMirrored();
     mMembers().forEach((el) => { if (el.parentElement !== mDrawer) mDrawer.appendChild(el); });
     Object.keys(proxies).forEach((k) => {
       const el = proxies[k];
