@@ -388,6 +388,14 @@ routes:
     template: custom-faith-topics
   /the-faith-received/author/:
     template: custom-faith-author
+  # One page per tradition, keyed by ?t=<slug>; without ?t= it is the
+  # index of traditions (Ian, 2026-09-24). The Confessions page's
+  # "About <tradition>" links land here. /traditions/ is the plural a
+  # reader types. custom-faith-tradition.hbs + page/faith-tradition.js.
+  /the-faith-received/tradition/:
+    template: custom-faith-tradition
+  /the-faith-received/traditions/:
+    template: custom-faith-tradition
   # Feature pages
   /the-faith-received/transparency/:
     template: custom-faith-transparency

@@ -1,0 +1,271 @@
+{
+  "note": "The tradition pages (/the-faith-received/tradition/?t=<slug>). Edit freely: the prose is Mere Orthodoxy copy and is meant to be revised by hand. Order here is the order of the index, chronological by origin. `aliases` are every other spelling a link may carry. `docs.labels` are the tradition values in the confessions and curated collections that file on this page. `allWorks` is the query string for this tradition on /the-faith-received/all-works/; leave it out where All Works has no such filter (it carries no Quaker, Waldensian, Anabaptist or Bohemian Brethren works as of 2026-09-24). `family` puts a church inside another tradition's family (Presbyterian and Congregational in Reformed) and `merge` makes a page list its family's documents and authors with its own. Author lists are built by scripts/build-tradition-authors.mjs into tradition-authors.json.",
+  "traditions": [
+    {
+      "slug": "the-whole-church",
+      "name": "The Whole Church",
+      "aliases": ["whole-church", "ecumenical", "the-fathers", "fathers", "early-church", "patristic", "latin-fathers", "greek-fathers", "eastern-fathers"],
+      "dek": "The creeds East and West both receive and the writers of the early church.",
+      "overview": [
+        "Before there were Lutherans or Presbyterians there was the church of the apostles. For its first centuries it confessed one faith across the Roman world and beyond it. Its bishops met in council when that faith was contested. Its teachers wrote the sermons and commentaries that every later tradition still reads.",
+        "The Apostles’ Creed grew out of the baptismal confession of the church at Rome. The Council of Nicaea in 325 confessed against Arius that the Son is of one substance with the Father. The creed recited today as the Nicene Creed is traditionally received as the work of the Council of Constantinople in 381. Ephesus in 431 and Chalcedon in 451 guarded the unity of Christ’s person. Chalcedon confessed one Christ in two natures. They are united without confusion or change and without division or separation.",
+        "These are not the property of one communion. Rome and the Orthodox churches receive them. The Lutheran Book of Concord opens with the three ecumenical creeds. The Thirty-nine Articles commend the same three. The Reformers appealed to the fathers as witnesses to the faith they believed they were recovering.",
+        "This library files under The Whole Church only what East and West both received. The writers listed below are those of the first eight centuries. They include teachers the church later corrected beside the doctors every tradition honors."
+      ],
+      "docs": { "labels": ["The Whole Church", "Ecumenical"] },
+      "authors": { "heading": "Writers of the early church", "note": "Writers born before 800. From the shelves of the Latin, Greek and Eastern Fathers." },
+      "allWorks": { "q": "tradition=The Fathers", "label": "the Fathers" },
+      "related": ["eastern-orthodox", "medieval-church", "roman-catholic", "protestant"]
+    },
+    {
+      "slug": "eastern-orthodox",
+      "name": "Eastern Orthodox",
+      "aliases": ["orthodox", "byzantine", "greek-orthodox"],
+      "dek": "The churches of the Byzantine East and their heirs from Greece to Russia.",
+      "overview": [
+        "Eastern Orthodoxy is the church of the Greek-speaking East and of the peoples it evangelized. Its center was Constantinople. Constantine dedicated the city as his new capital in 330.",
+        "The East and the Latin West drifted apart over centuries. Language and politics divided them. So did the claims of the bishop of Rome and the Western addition of the filioque to the Nicene Creed. The mutual excommunications of 1054 are the conventional date of the schism. The sack of Constantinople by the Fourth Crusade in 1204 hardened it.",
+        "Orthodoxy holds that it has kept the faith of the seven ecumenical councils without addition. The last of them was the Second Council of Nicaea in 787. It defended the veneration of icons. Orthodox theology is shaped by the Cappadocian fathers and by Maximus the Confessor. In the fourteenth century Gregory Palamas taught that believers truly share in God’s energies. God’s essence remains beyond every creature.",
+        "Protestants and the Orthodox have met before. The patriarch Cyril Lukaris published a Calvinist confession in 1629. Orthodox synods condemned it from 1638 onward. The Synod of Jerusalem answered it in 1672 with the Confession of Dositheus."
+      ],
+      "docs": { "labels": ["Eastern Orthodox", "Orthodox"] },
+      "authors": { "heading": "Byzantine writers", "note": "Greek writers of the Patrologia Graeca from 800 to the fall of Constantinople in 1453." },
+      "allWorks": { "q": "tradition=Greek Fathers", "label": "the Greek Fathers" },
+      "related": ["the-whole-church", "roman-catholic"]
+    },
+    {
+      "slug": "medieval-church",
+      "name": "The Medieval Church",
+      "aliases": ["medieval", "medieval-west", "scholastic"],
+      "dek": "The Latin West from the Carolingians to the eve of the Reformation.",
+      "overview": [
+        "The medieval church is the Latin church of the West between the fathers and the Reformation. Its writers are claimed by Rome and by the Reformers alike. Luther was an Augustinian friar. Calvin quoted Bernard of Clairvaux with approval.",
+        "The monasteries kept learning alive through the early Middle Ages. Carolingian scholars such as Alcuin and Rabanus Maurus gathered the fathers into commentaries. Anselm of Canterbury asked why God became man. In the twelfth century the Victorines of Paris joined the study of Scripture to contemplation.",
+        "The universities produced scholasticism. Peter Lombard’s Sentences became the standard textbook of theology. Thomas Aquinas and Bonaventure taught at Paris in the thirteenth century. Duns Scotus pressed questions of will and knowledge that later theology inherited.",
+        "The Fourth Lateran Council of 1215 used the language of transubstantiation for the Eucharist. It also required every believer to confess once a year. The councils of Constance and Basel tried to reform the church from above. Their failure is part of the story the Reformation tells."
+      ],
+      "docs": { "labels": [], "note": "The councils and papal documents of these centuries are filed with the Roman Catholic documents.", "noteLink": "roman-catholic" },
+      "authors": { "heading": "Medieval writers", "note": "Latin writers from 800 to 1500 on the Medieval and Latin Fathers shelves." },
+      "allWorks": { "q": "tradition=Medieval", "label": "the Medieval shelf" },
+      "related": ["the-whole-church", "roman-catholic", "protestant"]
+    },
+    {
+      "slug": "roman-catholic",
+      "name": "Roman Catholic",
+      "aliases": ["catholic", "rome", "roman"],
+      "dek": "The Latin church in communion with the bishop of Rome.",
+      "overview": [
+        "The Roman Catholic Church is the church in communion with the bishop of Rome. It holds that the pope is the successor of Peter. It teaches that Christ gave him a primacy of jurisdiction over the whole church. Most of its documents in this library come from Denzinger’s Enchiridion. That sourcebook of Catholic dogma runs from the letters of the early popes to the middle of the twentieth century.",
+        "Rome answered the Reformation at the Council of Trent. The council met in three periods between 1545 and 1563. It defined justification against the Protestant teaching. It affirmed seven sacraments and the sacrifice of the Mass. It received Scripture and the apostolic traditions with equal reverence.",
+        "The Society of Jesus received papal approval in 1540. Its members carried the Catholic reform into schools and missions across the world. Its theologians include Robert Bellarmine and Francisco Suárez. The First Vatican Council defined papal infallibility in 1870.",
+        "Mere Orthodoxy writes as Protestants. We read Rome’s theologians because they are serious readers of Scripture and the fathers. The Reformers argued with them at length. Understanding a Protestant confession means reading what it answered."
+      ],
+      "docs": { "labels": ["Roman Catholic"] },
+      "authors": { "heading": "Authors", "note": "Catholic writers after 1500. Their religious order is shown where the library knows it." },
+      "allWorks": { "q": "tradition=Roman Catholic", "label": "Roman Catholic" },
+      "related": ["medieval-church", "eastern-orthodox", "protestant"]
+    },
+    {
+      "slug": "protestant",
+      "name": "Protestant",
+      "aliases": ["protestantism", "evangelical", "reformation"],
+      "dek": "The churches of the sixteenth-century Reformation and their heirs.",
+      "overview": [
+        "Protestantism takes its name from the Protestation of Speyer in 1529. There the evangelical princes and cities protested a decision of the imperial Diet to enforce the Edict of Worms against Luther’s cause.",
+        "The Reformation began as an argument about grace. Luther’s Ninety-five Theses of 1517 questioned the sale of indulgences. The argument soon reached the heart of the gospel. Sinners are justified by grace alone through faith alone on account of Christ alone. Scripture is the only infallible rule by which the church’s teaching is tested.",
+        "The Reformers did not think they were founding a new church. They believed they were recovering the faith of the apostles and the fathers. They kept the ancient creeds. They read Augustine closely. Mere Orthodoxy writes from within this tradition.",
+        "Protestantism divided almost at once. Lutherans and the Reformed could not agree on the Lord’s Supper at Marburg in 1529. England took its own path. The radical reformers rejected infant baptism. The churches below are listed in the order they arose. The documents on this page are those agreed between Protestant churches rather than held by one."
+      ],
+      "docs": { "labels": ["Protestant", "Evangelical"] },
+      "authors": { "heading": "Writers across the Protestant churches", "note": "Each church’s page lists its own.", "merge": "children", "fullList": false },
+      "allWorks": { "q": "tradition=Protestant", "label": "Protestant" },
+      "related": ["the-whole-church", "medieval-church", "roman-catholic"]
+    },
+    {
+      "slug": "waldensian",
+      "name": "Waldensian",
+      "parent": "protestant",
+      "era": "From c. 1173",
+      "aliases": ["waldensians", "vaudois"],
+      "dek": "A reforming movement three centuries older than the Reformation.",
+      "overview": [
+        "The Waldensians take their name from Valdes. He was a merchant of Lyon who gave away his wealth around 1173 to preach in poverty. His followers preached from vernacular Scripture without the leave of the bishops. The church condemned them in 1184.",
+        "They survived persecution in the Alpine valleys of Piedmont and Dauphiné. There they kept a network of itinerant preachers called barbes.",
+        "At the Synod of Chanforan in 1532 the barbes met the Reformed preacher Guillaume Farel. They resolved to join the Reformation. They also paid for Olivétan’s French Bible of 1535.",
+        "Their later history is one of massacre and endurance. The Piedmont Easter massacre of 1655 moved John Milton to write his sonnet “On the Late Massacre in Piedmont.” The Waldensian church survives in Italy today. Since 1975 it has been united with the Italian Methodists."
+      ],
+      "docs": { "labels": ["Waldensian"] },
+      "related": ["bohemian-brethren", "reformed"]
+    },
+    {
+      "slug": "bohemian-brethren",
+      "name": "Bohemian Brethren",
+      "parent": "protestant",
+      "era": "From 1457",
+      "aliases": ["unity-of-the-brethren", "unitas-fratrum", "moravian", "hussite"],
+      "dek": "The Unity of the Brethren in Bohemia and Moravia.",
+      "overview": [
+        "Jan Hus preached reform in Prague. The Council of Constance burned him as a heretic in 1415. His followers in Bohemia divided over how far reform should go.",
+        "The Unity of the Brethren gathered around 1457 at Kunvald in eastern Bohemia. It drew on the teaching of Petr Chelčický. In 1467 it chose its own ministers and so broke with the Utraquist church.",
+        "The Brethren presented their confession of 1535 to King Ferdinand. Luther printed it with a preface of his own in 1538. Later in the century the Brethren drew closer to the Reformed churches.",
+        "The Battle of White Mountain in 1620 ended Protestant Bohemia. The Brethren went into exile. John Amos Comenius was the last bishop of the old Unity. A remnant renewed the Unity at Herrnhut in Saxony in 1727 under Count Zinzendorf. It lives on as the Moravian Church."
+      ],
+      "docs": { "labels": ["Bohemian Brethren"] },
+      "related": ["waldensian", "lutheran", "reformed"]
+    },
+    {
+      "slug": "lutheran",
+      "name": "Lutheran",
+      "parent": "protestant",
+      "era": "From 1517",
+      "aliases": ["lutheranism", "evangelical-lutheran"],
+      "dek": "The churches of the Augsburg Confession.",
+      "overview": [
+        "Lutheranism begins with Martin Luther. He was an Augustinian friar and a professor of Scripture at Wittenberg. His Ninety-five Theses of 1517 set off the Reformation. At its center was his discovery that the righteousness of God revealed in the gospel is a gift received by faith.",
+        "Philip Melanchthon drafted the Augsburg Confession. The Lutheran princes presented it to Emperor Charles V in 1530. It remains the defining confession of the Lutheran churches. After Luther’s death his heirs quarreled over grace and the will and the Supper. The Formula of Concord settled those disputes in 1577. The Book of Concord gathered the Lutheran confessions in 1580.",
+        "Lutherans confess that the body and blood of Christ are truly present in the Supper. They distinguish law and gospel sharply. They kept much of the historic liturgy.",
+        "The seventeenth century produced Lutheran orthodoxy. Johann Gerhard’s Loci Theologici is its monument. Abraham Calov and Johannes Andreas Quenstedt carried it on."
+      ],
+      "docs": { "labels": ["Lutheran"] },
+      "allWorks": { "q": "tradition=Protestant&denomination=Lutheran", "label": "Lutheran" },
+      "related": ["reformed", "bohemian-brethren"]
+    },
+    {
+      "slug": "reformed",
+      "name": "Reformed",
+      "parent": "protestant",
+      "era": "From 1519",
+      "aliases": ["continental-reformed", "calvinist", "reformed-church"],
+      "dek": "The churches of Zurich and Geneva and the confessions that followed them.",
+      "overview": [
+        "The Reformed tradition began in the Swiss cities. Huldrych Zwingli began preaching through the Gospel of Matthew at Zurich in 1519. Heinrich Bullinger succeeded him in 1531. Martin Bucer led the reform at Strasbourg.",
+        "John Calvin gave the tradition its most influential voice. He published the Institutes of the Christian Religion in 1536 and revised it until 1559. Geneva under his ministry trained pastors for France and beyond.",
+        "The Reformed churches wrote many confessions rather than one. The French Confession of 1559 and the Belgic Confession of 1561 come from this first generation. So do the Heidelberg Catechism of 1563 and the Second Helvetic Confession of 1566. The Synod of Dort answered the Remonstrants in 1618 and 1619.",
+        "Reformed theology crossed to Britain. There it shaped the Church of England’s Articles. It also produced the Presbyterian and Congregational churches. This page gathers their documents and writers with those of the Continent."
+      ],
+      "docs": { "labels": ["Reformed", "Continental Reformed"], "merge": true },
+      "authors": { "merge": "family" },
+      "allWorks": { "q": "tradition=Protestant&denomination=Continental Reformed", "label": "Continental Reformed" },
+      "related": ["presbyterian", "congregational", "anglican", "lutheran", "arminian"]
+    },
+    {
+      "slug": "anabaptist",
+      "name": "Anabaptist",
+      "parent": "protestant",
+      "era": "From 1525",
+      "aliases": ["anabaptists", "mennonite", "radical-reformation"],
+      "dek": "The gathered churches of believers from the radical Reformation.",
+      "overview": [
+        "In Zurich in January 1525 a circle of Zwingli’s younger followers baptized one another as believers. Conrad Grebel baptized George Blaurock. Their opponents named them Anabaptists. The word means rebaptizers.",
+        "The Schleitheim Confession of 1527 set out their convictions. It called for the baptism of believers and for church discipline. It called for separation from the world. It forbade Christians to bear the sword or swear oaths.",
+        "Catholic and Protestant authorities alike persecuted them. Thousands were executed. Most Anabaptists were pacifists. The violent kingdom at Münster in 1534 and 1535 was used against them all the same.",
+        "Menno Simons was a former priest in Friesland. After 1536 he gathered the scattered Anabaptists of the Low Countries. The Mennonites take their name from him. Their Dordrecht Confession of 1632 is still in use. The Amish separated from the Mennonites in 1693. The English Baptists are a separate movement."
+      ],
+      "docs": { "labels": ["Anabaptist"] },
+      "related": ["baptist", "reformed"]
+    },
+    {
+      "slug": "anglican",
+      "name": "Anglican",
+      "parent": "protestant",
+      "era": "From 1534",
+      "aliases": ["church-of-england", "episcopal", "anglicanism"],
+      "dek": "The Church of England and the churches descended from it.",
+      "overview": [
+        "The English Reformation began with a king’s quarrel with Rome. The Act of Supremacy of 1534 made Henry VIII supreme head of the Church of England. Under Edward VI Archbishop Thomas Cranmer reformed its doctrine and worship. His Book of Common Prayer appeared in 1549 and again in 1552.",
+        "Elizabeth I restored the Protestant settlement in 1559 after Mary’s Catholic reign. The Thirty-nine Articles were agreed by Convocation in 1563. They took their final English form in 1571. With the Prayer Book and the Ordinal they define Anglican teaching.",
+        "Anglicanism kept bishops and a set liturgy with a Reformed confession of faith. Richard Hooker defended that settlement against the Puritans. The divines of the early seventeenth century gave it a devotional depth of its own. Lancelot Andrewes is the best known of them.",
+        "Not every English Protestant conformed. Puritans within the church pressed for further reform. The Act of Uniformity of 1662 drove some two thousand ministers from their livings. Many of them and their hearers joined the Presbyterians and Congregationalists of Old Dissent. The library marks each English writer as Puritan or Conformist where the record allows."
+      ],
+      "docs": { "labels": ["Anglican"] },
+      "allWorks": { "q": "tradition=Protestant&denomination=Anglican", "label": "Anglican" },
+      "related": ["reformed", "presbyterian", "congregational"]
+    },
+    {
+      "slug": "presbyterian",
+      "name": "Presbyterian",
+      "parent": "protestant",
+      "family": "reformed",
+      "era": "From 1560",
+      "aliases": ["presbyterians", "church-of-scotland", "kirk"],
+      "dek": "Reformed churches governed by elders rather than bishops.",
+      "overview": [
+        "Presbyterian churches are Reformed churches governed by elders. Ministers and ruling elders sit together in sessions and presbyteries and synods. No bishop rules over them.",
+        "John Knox brought the Genevan pattern to Scotland. The Scots Confession of 1560 was the first confession of the Reformed Kirk. Andrew Melville pressed a fully presbyterian order upon it. The National Covenant of 1638 bound Scots to resist Charles I’s changes to their worship.",
+        "The Westminster Assembly met from 1643 at the call of the English Parliament. It wrote the Westminster Confession of Faith and the Larger and Shorter Catechisms. The Church of Scotland adopted the Confession in 1647. It remains the standard of most confessional Presbyterian churches.",
+        "In the 1640s Parliament set up a presbyterian order in England. It took root in only a few places. After 1662 the English Presbyterians became one of the dissenting bodies. Richard Baxter is usually counted with them. He disliked every party name."
+      ],
+      "docs": { "labels": ["Presbyterian"] },
+      "allWorks": { "q": "tradition=Protestant&denomination=Presbyterian", "label": "Presbyterian" },
+      "related": ["reformed", "congregational", "anglican"]
+    },
+    {
+      "slug": "congregational",
+      "name": "Congregational",
+      "parent": "protestant",
+      "family": "reformed",
+      "era": "From c. 1580",
+      "aliases": ["congregationalist", "independent", "independents", "separatist"],
+      "dek": "The gathered churches of the Independents from the English Separatists to New England.",
+      "overview": [
+        "Congregationalists hold that each local church is complete under Christ. Its members covenant together. They call their own officers and exercise their own discipline. No bishop or presbytery stands over them.",
+        "The movement grew out of the English Separatists of the 1580s and 1590s. John Robinson’s congregation went into exile at Leiden. Members of it sailed on the Mayflower in 1620.",
+        "Puritans who had not separated from the Church of England carried the same order to Massachusetts Bay. John Cotton and Thomas Hooker were among its early ministers. The Cambridge Platform of 1648 set out its church order.",
+        "In England the Independents rose with Cromwell’s army. John Owen and Thomas Goodwin led them. The Savoy Declaration of 1658 adapted the Westminster Confession to their church order. After 1662 they were among the churches of Old Dissent."
+      ],
+      "docs": { "labels": ["Congregational"] },
+      "allWorks": { "q": "tradition=Protestant&denomination=Congregational", "label": "Congregational" },
+      "related": ["reformed", "presbyterian", "baptist"]
+    },
+    {
+      "slug": "baptist",
+      "name": "Baptist",
+      "parent": "protestant",
+      "era": "From 1609",
+      "aliases": ["baptists", "reformed-baptist", "particular-baptist", "general-baptist"],
+      "dek": "Churches of baptized believers gathered among the English Separatists from 1609.",
+      "overview": [
+        "Baptists hold that baptism belongs to those who profess faith in Christ. They hold that the church is a fellowship of such believers. They arose among the English Separatists.",
+        "John Smyth led a Separatist congregation into exile in Amsterdam. There in 1609 he baptized himself and then his congregation as believers. Thomas Helwys brought part of it home in 1612. It became the first Baptist church in England. These were General Baptists. They held that Christ died for all.",
+        "The Particular Baptists grew out of London’s Calvinist Independent congregations in the 1630s. They held that Christ died for the elect. By the early 1640s they baptized by immersion. Their First London Confession appeared in 1644. The Second London Confession of 1677 followed the Westminster Confession closely. Their churches affirmed it publicly in 1689.",
+        "The library’s English collection stops at 1700. Later Baptists such as John Gill and Charles Spurgeon are not in it yet."
+      ],
+      "docs": { "labels": ["Baptist", "Reformed Baptist"] },
+      "allWorks": { "q": "tradition=Protestant&denomination=Baptist", "label": "Baptist" },
+      "related": ["congregational", "anabaptist", "reformed"]
+    },
+    {
+      "slug": "arminian",
+      "name": "Arminian",
+      "parent": "protestant",
+      "era": "From 1610",
+      "aliases": ["remonstrant", "remonstrants", "arminianism"],
+      "dek": "The Remonstrants and the theology named for Jacobus Arminius.",
+      "overview": [
+        "Jacobus Arminius was a minister in Amsterdam. From 1603 he taught theology at Leiden. There he disputed the doctrine of unconditional predestination with his colleague Franciscus Gomarus. He died in 1609.",
+        "His followers set out their position in the Remonstrance of 1610. Its articles taught that God elects those he foresees will believe. They taught that Christ died for all. They held that grace may be resisted. They left open whether a true believer can fall away.",
+        "The Synod of Dort condemned the Remonstrants in 1619. Its canons answered each of their articles. Remonstrant ministers were put out of their pulpits. Many went into exile.",
+        "After 1625 the Remonstrants were tolerated again. They opened a seminary at Amsterdam in 1634. Simon Episcopius and Philippus van Limborch taught there. In England the name was applied to Laud’s party. John Wesley later called his magazine The Arminian Magazine."
+      ],
+      "docs": { "labels": ["Arminian", "Remonstrant"] },
+      "allWorks": { "q": "tradition=Protestant&denomination=Arminian", "label": "Arminian" },
+      "related": ["reformed", "anglican"]
+    },
+    {
+      "slug": "quaker",
+      "name": "Quaker",
+      "parent": "protestant",
+      "era": "From 1652",
+      "aliases": ["quakers", "friends", "society-of-friends", "religious-society-of-friends"],
+      "dek": "The Religious Society of Friends gathered by George Fox from 1652.",
+      "overview": [
+        "The Quakers arose in the north of England around 1652. George Fox and his fellow preachers gathered them from among the Seekers and other separatist groups.",
+        "Friends taught that Christ speaks directly to every person by his inward light. They met in silence and waited on the Spirit. They kept no outward sacraments and no ordained ministry.",
+        "They refused oaths and tithes. They suffered heavily for it after the Restoration. Robert Barclay’s Apology of 1676 gave their theology its classic statement. William Penn founded Pennsylvania in 1681 as a refuge for them and for others.",
+        "The confessional Protestant churches part with the Friends over the sacraments. They part with them too over the relation of the inward light to Scripture. The Puritans read the Quakers and answered them at length. Many of their works are in the library’s English collection."
+      ],
+      "docs": { "labels": ["Quaker"] },
+      "related": ["congregational", "baptist"]
+    }
+  ]
+}

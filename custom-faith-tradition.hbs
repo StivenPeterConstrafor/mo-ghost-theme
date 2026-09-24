@@ -1,0 +1,49 @@
+{{!< default}}
+{{!-- The TFR rail, first on the page and pinned under the masthead as on the reader (Ian, 2026-09-23). --}}
+{{> "faith-received/_tfr-rail"}}
+{{#contentFor "moHead"}}
+<title>Traditions | The Faith Received | Mere Orthodoxy</title>
+<meta name="description" content="The churches whose creeds, confessions and writers The Faith Received holds. An overview of each tradition with its documents and its authors in chronological order." />
+<meta property="og:title" content="Traditions | The Faith Received" />
+<meta property="og:description" content="The churches whose creeds, confessions and writers The Faith Received holds. An overview of each tradition with its documents and its authors in chronological order." />
+<meta name="twitter:title" content="Traditions | The Faith Received" />
+{{/contentFor}}
+{{!-- /the-faith-received/tradition/ — the traditions, and one page per
+     tradition at ?t=<slug>.
+
+     Ian, 2026-09-24, on the Confessions page's "About Baptist" link, which
+     opened an author page that could not load: "Looks like we need
+     tradition pages! What a great opportunity to do an overview of each
+     tradition, feature their confessions and catechisms and authors."
+
+     One template for all of them. assets/js/page/faith-tradition.js reads
+     ?t=, writes the name into the h1 and the dek under it, and draws the
+     overview, the documents and the authors into [data-trad-root]. The
+     prose lives in assets/data/faith-received/traditions.json, where it
+     can be revised without touching this file. Without ?t= the same page
+     is the index of traditions. --}}
+
+<main class="faith-received tfr-trad">
+
+  <section class="bhero bhero--tool">
+    <div class="bhero-inner container">
+      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/tradition/">Traditions</a></p>
+      <h1 data-trad-name>Traditions</h1>
+      <p class="bhero-sub" data-trad-dek>The churches whose creeds and confessions and writers the library holds. Each has an overview with its documents and its authors in the order they were written.</p>
+    </div>
+  </section>
+  <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+
+  <section class="bband tfr-trad-body">
+    <div class="container" data-trad-root><p class="tfr-trad-note">Loading&hellip;</p></div>
+  </section>
+
+{{> "faith-received/_beta-band"}}
+</main>
+{{> "faith-received/_library-cta"}}
+
+<meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
+<script src="{{asset "js/faith-denominations.js"}}"></script>
+<script src="{{asset "js/faith-corpora.js"}}&amp;frv=f6f5bcccf5d0a1fe"></script>
+<script src="{{asset "js/faith-century.js"}}"></script>
+<script src="{{asset "js/page/faith-tradition.js"}}&amp;frv=944c0411f465a062"></script>

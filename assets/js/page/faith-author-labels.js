@@ -137,6 +137,37 @@
     return { tradition, detail, detailLabel };
   }
 
+  // ── Links to the tradition pages ─────────────────────────────────
+  // The room's two words, tradition and church, open that tradition's
+  // page (2026-09-24). Only the words with a page link; an order, a
+  // party or "Greek" stays text. The directory's line is inside the
+  // row's own link, so it stays text there.
+  const TRAD_PAGE = {
+    "Protestant": "protestant", "Roman Catholic": "roman-catholic", "Early Church": "the-whole-church",
+    "Medieval Church": "medieval-church", "Byzantine": "eastern-orthodox",
+    "Anglican": "anglican", "Presbyterian": "presbyterian", "Congregational": "congregational",
+    "Baptist": "baptist", "Quaker": "quaker", "Reformed": "reformed", "Lutheran": "lutheran",
+    "Anabaptist": "anabaptist", "Arminian": "arminian", "Bohemian Brethren": "bohemian-brethren",
+    "Waldensian": "waldensian",
+  };
+  // Writes `text` into el, its first comma-separated word a link when that
+  // word has a page. Idempotent: the observer calls this on every redraw,
+  // and a write that changes nothing must not trigger another.
+  function writeLabel(el, text) {
+    const head = String(text).split(", ")[0];
+    const slug = TRAD_PAGE[head];
+    const href = slug ? `/the-faith-received/tradition/?t=${slug}` : "";
+    const a = el.querySelector("a.ar-trad-link");
+    if (el.textContent === text && (href ? a && a.getAttribute("href") === href : !a)) return;
+    el.textContent = "";
+    if (!href) { el.textContent = text; return; }
+    const link = document.createElement("a");
+    link.className = "ar-trad-link";
+    link.href = href;
+    link.textContent = head;
+    el.append(link, text.slice(head.length));
+  }
+
   // ── The room ─────────────────────────────────────────────────────
   function roomShelf() {
     return new URLSearchParams(location.search).get("sh") || "";
@@ -156,7 +187,7 @@
     const value = wordBox.querySelector("b");
     const church = value && value.querySelector("[data-author-church]");
     const target = church || value;
-    if (target && target.textContent !== L.tradition) target.textContent = L.tradition;
+    if (target) writeLabel(target, L.tradition);
     let detail = grid.querySelector(".ar-stat--detail");
     if (!L.detail) { if (detail) detail.remove(); return; }
     if (!detail) {
@@ -166,7 +197,8 @@
       wordBox.after(detail);
     }
     const [b, span] = [detail.querySelector("b"), detail.querySelector("span")];
-    if (b.textContent !== L.detail) b.textContent = L.detail;
+    if (L.detailLabel === "Denomination") writeLabel(b, L.detail);
+    else if (b.textContent !== L.detail) b.textContent = L.detail;
     if (span.textContent !== L.detailLabel) span.textContent = L.detailLabel;
   }
 
