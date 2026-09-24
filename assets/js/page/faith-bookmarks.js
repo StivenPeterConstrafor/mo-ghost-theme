@@ -110,6 +110,10 @@
   // library (15,569 works in EEBO alone) to answer a question about a
   // handful of ids.
   const CONFESSION_FALLBACK = "confessions";
+  // The same for our own English Editions: an earlier build of the reader
+  // saved them as "tfr:tfr:<slug>" too, and they are in neither the Latin
+  // Library nor the confessions. 31 KB.
+  const ENGLISH_FALLBACK = "mo";
 
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
@@ -360,12 +364,25 @@
 
   /* ── Loading ─────────────────────────────────────────────────── */
 
+  // A RETIRED work (lib/faith-work-forwards.js) is shown as the copy
+  // that replaced it, but keeps its own id: `id` is what Remove sends
+  // back to the worker, and the worker only knows the id it stored.
+  // Two old ids for the same work would be two rows; the second is
+  // dropped (its Remove still reaches the first's id only, so both are
+  // removed when the reader removes the one row).
   function parseIds(ids) {
+    const FWD = window.MOWorkForwards;
+    const seen = new Map();
     return ids.map((raw) => {
-      const parts = String(raw).split(":");
+      const now = (FWD && FWD.savedId(raw)) || String(raw);
+      const parts = now.split(":");
       const corpus = parts[1] || "tfr";
       const work = parts.slice(2).join(":");
-      return work ? { id: raw, corpus, work } : null;
+      if (!work) return null;
+      if (seen.has(now)) { seen.get(now).also.push(String(raw)); return null; }
+      const want = { id: raw, corpus, work, also: [] };
+      seen.set(now, want);
+      return want;
     }).filter(Boolean);
   }
 
@@ -377,6 +394,10 @@
     // might be one. See the CONFESSION_FALLBACK note in the header.
     if (wants.some((w) => w.corpus === "tfr") && ids.indexOf(CONFESSION_FALLBACK) < 0) {
       ids.push(CONFESSION_FALLBACK);
+    }
+    // And English Editions, which an earlier reader also saved as "tfr:".
+    if (wants.some((w) => w.corpus === "tfr") && ids.indexOf(ENGLISH_FALLBACK) < 0) {
+      ids.push(ENGLISH_FALLBACK);
     }
     /* The dictionary is not a corpus and deliberately is not one: every
        surface that iterates MOCorpora.all would then carry its 1,916
@@ -431,6 +452,10 @@
         hit = (indexOf.get(CONFESSION_FALLBACK) || new Map()).get(want.work);
         if (hit) corpusId = CONFESSION_FALLBACK;
       }
+      if (!hit && corpusId === "tfr") {
+        hit = (indexOf.get(ENGLISH_FALLBACK) || new Map()).get(want.work);
+        if (hit) corpusId = ENGLISH_FALLBACK;
+      }
       // The position was stored by the reader under the corpus the URL
       // carried, which is what the bookmark id records — NOT the
       // confessions fallback, which is a catalogue we retry against and
@@ -446,6 +471,7 @@
       if (hit) {
         return {
           id: want.id,
+          also: want.also || [],
           resolved: true,
           resume,
           places,
@@ -464,6 +490,7 @@
       }
       return {
         id: want.id,
+        also: want.also || [],
         resolved: false,
         resume,
         places,
@@ -530,20 +557,23 @@
     // The whole list, so a failed remove restores the row to the place
     // it was in rather than to the end.
     const before = rows.slice();
+    const gone = rows.find((r) => r.id === id);
     rows = rows.filter((r) => r.id !== id);
     armed = "";
     setStatus("");
     render();
-    window.MOAuth.fetch(`${WORKER}/bookmarks/remove`, {
+    // A retired work saved under two old ids is one row; both go.
+    const ids = [id].concat((gone && gone.also) || []);
+    Promise.all(ids.map((postId) => window.MOAuth.fetch(`${WORKER}/bookmarks/remove`, {
       method: "POST",
       mode: "cors",
       credentials: "omit",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ postId: id }),
+      body: JSON.stringify({ postId }),
     })
       .then((r) => {
         if (!r.ok) throw new Error(`remove ${r.status}`);
-      })
+      })))
       .catch(() => {
         // Optimistic, then reconciled, the same way the reader's own
         // Save button works: put the row back and say why, rather than

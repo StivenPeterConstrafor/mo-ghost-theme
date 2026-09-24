@@ -76,6 +76,22 @@ for (const group of (Array.isArray(au) ? au : [])) {
   }
 }
 
+/* Retired works (assets/data/faith-received/work-forwards.json) are gone
+ * from the English Editions catalogue, so their rows are already absent;
+ * their old names ride on the copy that replaced them as `alt`, so a
+ * search for "1689" still finds the London Baptist Confession (1677).
+ * Same rule as scripts/retire-works.mjs, which patches a live index. */
+{
+  const F = JSON.parse(readFileSync(new URL("../assets/data/faith-received/work-forwards.json", import.meta.url), "utf8")).works || {};
+  for (const [old, w] of Object.entries(F)) {
+    const m = /^(eebo|pld|pg|po)-(.+)$/.exec(w.to);
+    const [c, id] = m ? [m[1], m[2]] : /^aq-/.test(w.to) ? ["augustine", w.to.slice(3)] : [w.toCorpus || "tfr", w.to];
+    const row = rows.find((r) => r[0] === c && r[1] === id);
+    if (!row) { console.warn(`work-forwards: no title row for ${c}:${id} (from ${old})`); continue; }
+    const words = [w.title, w.search, old.replace(/-/g, " ")].filter(Boolean).join(" ");
+    if (!String(row[5] || "").includes(words)) row[5] = [row[5], words].filter(Boolean).join(" ");
+  }
+}
 const body=JSON.stringify({ v:2, n:rows.length, rows });
 writeFileSync(process.env.OUT, body);
 const { gzipSync } = await import("node:zlib");

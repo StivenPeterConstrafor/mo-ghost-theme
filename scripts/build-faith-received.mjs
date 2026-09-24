@@ -1610,6 +1610,7 @@ const memorizeLabel = (title) => `Memorize ${title.replace(/^The /, "the ")}`;
 // for the reading controls (Expand all / Collapse all), the
 // auto-open-on-anchor handler, and the print handler.
 const TEMPLATE_DIR = path.join(ROOT);
+const FORWARDS = JSON.parse(await readFile(path.join(ROOT, "assets/data/faith-received/work-forwards.json"), "utf8")).works || {};
 for (const m of MEMORIZE_TARGETS) {
   const meta = metaBlock(
     tfrTitle(memorizeLabel(m.title)),
@@ -1628,7 +1629,14 @@ for (const item of manifest) {
   const memorizeScript = item.slug === "heidelberg"
     ? `<script src="{{asset "js/faith-memorize.js"}}"></script>\n`
     : "";
-  const meta = metaBlock(tfrTitle(item.title), item.description);
+  // A RETIRED work (assets/data/faith-received/work-forwards.json) keeps
+  // its page only as a forward: the two scripts send the reader to the
+  // copy that replaced it, #q-33 mapped to the same question. Ghost's
+  // 301 in redirects.yaml does the same job once it is uploaded.
+  const retired = FORWARDS[item.slug]
+    ? `<script src="{{asset "js/lib/faith-work-forwards.js"}}"></script>\n<script src="{{asset "js/page/faith-work-forward.js"}}"></script>\n`
+    : "";
+  const meta = metaBlock(tfrTitle(item.title), item.description).replace("{{/contentFor}}", `${retired}{{/contentFor}}`);
   const tmpl = `{{!< default}}\n${meta}{{!-- Generated wrapper for /the-faith-received/${item.slug}/. Edit\n     scripts/build-faith-received.mjs (or the underlying partial) and\n     re-run \`node scripts/build-faith-received.mjs\` to regenerate. --}}\n{{> "faith-received/${item.slug}"}}\n<script src="{{asset "js/faith-modernize.js"}}"></script>\n<script src="{{asset "js/faith-received.js"}}"></script>\n${memorizeScript}`;
   await writeFile(path.join(TEMPLATE_DIR, `custom-faith-${item.slug}.hbs`), tmpl);
 

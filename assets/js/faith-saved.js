@@ -71,7 +71,13 @@
     // Group the wanted slugs by collection so each catalogue is fetched
     // once rather than once per work.
     const wanted = new Map();
-    ids.forEach((raw) => {
+    // A RETIRED work (lib/faith-work-forwards.js) is looked for as the
+    // copy that replaced it: "tfr:mo:westminster-shorter" is shown as the
+    // Westminster Shorter Catechism it now opens. Two old ids for one
+    // work collapse into one row because the slug set dedupes them.
+    const FWD = window.MOWorkForwards;
+    ids.forEach((id) => {
+      const raw = (FWD && FWD.savedId(id)) || id;
       const parts = raw.split(":");
       const corpusId = parts[1] || "tfr";
       const slug = parts.slice(2).join(":");
@@ -97,8 +103,15 @@
        index. */
     const DICT = window.MODictionaryRefs;
     const CONFESSIONS = "confessions";
+    const ENGLISH = "mo";
     const catalogueIds = [...wanted.keys()].filter((id) => !(DICT && id === DICT.CORPUS));
     if (wanted.has("tfr") && catalogueIds.indexOf(CONFESSIONS) < 0) catalogueIds.push(CONFESSIONS);
+    /* ENGLISH EDITIONS SAVED AS "tfr:". An earlier build of the reader
+       saved every unprefixed slug as "tfr:tfr:<slug>" without asking
+       whether it was one of ours, so a saved English Edition carries the
+       Latin Library's corpus and was found in neither catalogue. Retried
+       against ours the same way confessions are. 31 KB. */
+    if (wanted.has("tfr") && catalogueIds.indexOf(ENGLISH) < 0) catalogueIds.push(ENGLISH);
 
     const dictIds = DICT && wanted.has(DICT.CORPUS) ? [...wanted.get(DICT.CORPUS)] : [];
     const dictRows = dictIds.length
@@ -115,12 +128,14 @@
         // A confession saved as "tfr:" is looked for under the id the
         // bookmark actually carries, not under the catalogue it was
         // finally found in.
-        const slugs = wanted.get(id) || (id === CONFESSIONS ? wanted.get("tfr") : null);
-        if (!slugs) return;
+        const own = wanted.get(id);
+        const borrowed = (id === CONFESSIONS || id === ENGLISH) ? wanted.get("tfr") : null;
+        if (!own && !borrowed) return;
         const corpus = window.MOCorpora.get(id);
         works.forEach((w) => {
-          if (!slugs.has(String(w.id)) || found.has(String(w.id))) return;
-          found.add(String(w.id));
+          const k = String(w.id);
+          if (!((own && own.has(k)) || (borrowed && borrowed.has(k))) || found.has(k)) return;
+          found.add(k);
           rows.push({ w, corpus });
         });
       });

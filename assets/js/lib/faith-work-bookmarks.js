@@ -88,6 +88,7 @@
   }
 
   const ids = new Set();
+  const aliases = new Map();
   let loaded = false;
   let pending = null;
   const listeners = [];
@@ -114,6 +115,20 @@
         ((data && data.postIds) || []).forEach((raw) => {
           if (/^tfr:/.test(String(raw))) ids.add(String(raw));
         });
+        // A RETIRED work saved under its old id counts as saved on the
+        // copy that replaced it (lib/faith-work-forwards.js, loaded by
+        // the pages that have it). The old id is remembered so that
+        // un-saving the new copy removes it too.
+        const FWD = window.MOWorkForwards;
+        if (FWD) {
+          [...ids].forEach((raw) => {
+            const now = FWD.savedId(raw);
+            if (!now || now === raw) return;
+            ids.add(now);
+            if (!aliases.has(now)) aliases.set(now, []);
+            aliases.get(now).push(raw);
+          });
+        }
         loaded = true;
         return ids;
       })
@@ -166,6 +181,22 @@
     })
       .then((r) => {
         if (!r.ok) throw new Error(`bookmark ${r.status}`);
+        // Un-saving the new copy of a retired work takes its old ids
+        // with it, or the work would come back as saved on next load.
+        if (!on && aliases.has(key)) {
+          const old = aliases.get(key);
+          aliases.delete(key);
+          old.forEach((postId) => {
+            ids.delete(postId);
+            window.MOAuth.fetch(`${WORKER}/bookmarks/remove`, {
+              method: "POST",
+              mode: "cors",
+              credentials: "omit",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ postId }),
+            }).catch(() => { /* it resurfaces as saved; the reader can un-save again */ });
+          });
+        }
         return on;
       })
       .catch((err) => {

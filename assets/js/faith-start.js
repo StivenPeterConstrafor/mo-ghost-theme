@@ -39,7 +39,11 @@
   }
 
   function renderDaily(q) {
-    const url = `/the-faith-received/${encodeURIComponent(q.source)}/#${encodeURIComponent(q.anchor)}`;
+    // A retired catechism carries the url of the copy that replaced it
+    // (scripts/relink-retired-works.mjs); the question and answer are
+    // still quoted from this file.
+    const url = q.url
+      || `/the-faith-received/${encodeURIComponent(q.source)}/#${encodeURIComponent(q.anchor)}`;
     dailyEl.innerHTML =
       `<p class="faith-today-source">${escapeHtml(q.sourceLabel)} &middot; ${escapeHtml(q.year)}` +
       ` &middot; Question ${q.n}</p>` +
@@ -81,7 +85,7 @@
       note: "What the whole church settled about Christ and still confesses together." },
     { slug: "heidelberg", eyebrow: "1563", title: "The Heidelberg Catechism",
       note: "Warmest of the catechisms. Begins not with doctrine but with comfort." },
-    { slug: "westminster-shorter", eyebrow: "1647", title: "The Westminster Shorter Catechism",
+    { slug: "westminster-shorter", href: "/the-faith-received/read/?w=rc-115-westminster-shorter-catechism-1647", eyebrow: "1647", title: "The Westminster Shorter Catechism",
       note: "A hundred and seven questions that shaped English-speaking Protestantism." },
     { slug: "didache", eyebrow: "c. 50&ndash;120", title: "The Didache",
       note: "How the first Christians were taught to live, pray and gather." },
@@ -91,11 +95,11 @@
       note: "Why God became man, argued by the man who would not let it go." },
     { slug: "imitation-of-christ", eyebrow: "à Kempis", title: "The Imitation of Christ",
       note: "Four centuries of readers have called this the book to keep by the bed." },
-    { slug: "belgic", eyebrow: "1561", title: "The Belgic Confession",
+    { slug: "belgic", href: "/the-faith-received/read/?w=rc-057-belgic-confession-1561", eyebrow: "1561", title: "The Belgic Confession",
       note: "Written by a man who was hanged for it four years later." },
-    { slug: "thirty-nine-articles", eyebrow: "1571", title: "The Thirty-Nine Articles",
+    { slug: "thirty-nine-articles", href: "/the-faith-received/read/?w=rc-060-thirty-nine-articles-1562", eyebrow: "1571", title: "The Thirty-Nine Articles",
       note: "The settlement that made a national church out of a reformation." },
-    { slug: "1689", eyebrow: "1689", title: "The London Baptist Confession",
+    { slug: "1689", href: "/the-faith-received/read/?w=rc-126-london-baptist-confession-1677", eyebrow: "1689", title: "The London Baptist Confession",
       note: "Baptists borrowing Westminster's frame and quietly changing the walls." },
     { slug: "edwards-resolutions", eyebrow: "Edwards", title: "The Resolutions",
       note: "Seventy resolutions a nineteen-year-old wrote and reread weekly for life." },
@@ -103,7 +107,9 @@
 
   if (shelfEl) {
     shelfEl.innerHTML = SHELF.map((w) =>
-      `<a class="faith-card" href="/the-faith-received/${encodeURIComponent(w.slug)}/">` +
+      // href: a retired work opens the copy that replaced it
+      // (assets/data/faith-received/work-forwards.json).
+      `<a class="faith-card" href="${w.href || `/the-faith-received/${encodeURIComponent(w.slug)}/`}">` +
       `<p class="faith-card-date">${w.eyebrow}</p>` +
       `<h3 class="faith-card-title"><em>${escapeHtml(w.title)}</em></h3>` +
       `<p class="faith-card-desc">${escapeHtml(w.note)}</p>` +

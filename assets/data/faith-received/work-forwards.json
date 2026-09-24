@@ -1,0 +1,74 @@
+{
+ "_about": [
+   "Retired works and where they now live. Ian, 2026-09-24: where a work is in the library twice, Stiven's copy wins and ours is retired; every link to ours must still land.",
+   "Retired = removed from the English Editions catalogue (v1/mo/index.json) and the title index; the old R2 files (v1/mo/<slug>.json, v1/works/<slug>/) stay in place.",
+   "pages: old reader page -> [new page, anchor id on the new copy]. Every old copy here was one division per page (page 33 = Q. 33 / Article 33 / Chapter 33); anchors were read off the new copy as the live reader renders it (2026-09-24).",
+   "legacy: the division id prefix the old per-work page used (/the-faith-received/westminster-shorter/#q-33).",
+   "search: extra words the title index should match for the new copy (the old name).",
+   "Consumers: assets/js/lib/faith-work-forwards.js (generated block; run node scripts/build-work-forwards.mjs after editing), scripts/build-works-title-index.mjs, scripts/retire-works.mjs."
+ ],
+ "v": 1,
+ "works": {
+  "westminster-shorter": {
+   "corpus": "mo",
+   "to": "rc-115-westminster-shorter-catechism-1647",
+   "toCorpus": "confessions",
+   "title": "Westminster Shorter Catechism",
+   "toTitle": "Westminster Shorter Catechism (1647)",
+   "legacy": "q-",
+   "unit": "Q.",
+   "pages": {"1":["1","b1-0"],"2":["1","b1-2"],"3":["1","b1-4"],"4":["1","b1-6"],"5":["1","b1-8"],"6":["1","b1-10"],"7":["1","b1-12"],"8":["1","b1-14"],"9":["1","b1-16"],"10":["1","b1-18"],"11":["1","b1-20"],"12":["1","b1-22"],"13":["1","b1-24"],"14":["1","b1-26"],"15":["1","b1-28"],"16":["2","b2-0"],"17":["2","b2-2"],"18":["2","b2-4"],"19":["2","b2-6"],"20":["2","b2-8"],"21":["2","b2-10"],"22":["2","b2-12"],"23":["2","b2-14"],"24":["2","b2-16"],"25":["2","b2-18"],"26":["2","b2-20"],"27":["3","b3-0"],"28":["3","b3-2"],"29":["3","b3-4"],"30":["3","b3-6"],"31":["3","b3-8"],"32":["3","b3-10"],"33":["3","b3-12"],"34":["3","b3-14"],"35":["3","b3-16"],"36":["3","b3-18"],"37":["4","b4-0"],"38":["4","b4-2"],"39":["4","b4-4"],"40":["4","b4-6"],"41":["4","b4-8"],"42":["4","b4-10"],"43":["4","b4-12"],"44":["4","b4-14"],"45":["4","b4-16"],"46":["4","b4-18"],"47":["4","b4-20"],"48":["4","b4-22"],"49":["4","b4-24"],"50":["5","b5-0"],"51":["5","b5-2"],"52":["5","b5-4"],"53":["5","b5-6"],"54":["5","b5-8"],"55":["5","b5-10"],"56":["5","b5-12"],"57":["5","b5-14"],"58":["5","b5-16"],"59":["5","b5-18"],"60":["5","b5-20"],"61":["6","b6-0"],"62":["6","b6-2"],"63":["6","b6-4"],"64":["6","b6-6"],"65":["6","b6-8"],"66":["6","b6-10"],"67":["6","b6-12"],"68":["6","b6-14"],"69":["6","b6-16"],"70":["6","b6-18"],"71":["6","b6-20"],"72":["6","b6-22"],"73":["6","b6-24"],"74":["6","b6-26"],"75":["7","b7-0"],"76":["7","b7-2"],"77":["7","b7-4"],"78":["7","b7-6"],"79":["7","b7-8"],"80":["7","b7-10"],"81":["7","b7-12"],"82":["7","b7-14"],"83":["7","b7-16"],"84":["7","b7-18"],"85":["7","b7-20"],"86":["7","b7-22"],"87":["7","b7-24"],"88":["8","b8-0"],"89":["8","b8-2"],"90":["8","b8-4"],"91":["8","b8-6"],"92":["8","b8-8"],"93":["8","b8-10"],"94":["8","b8-12"],"95":["8","b8-14"],"96":["8","b8-16"],"97":["8","b8-18"],"98":["9","b9-0"],"99":["9","b9-2"],"100":["9","b9-4"],"101":["9","b9-6"],"102":["9","b9-8"],"103":["9","b9-10"],"104":["9","b9-12"],"105":["9","b9-14"],"106":["9","b9-16"],"107":["9","b9-18"]}
+  },
+  "westminster-larger": {
+   "corpus": "mo",
+   "to": "rc-114-westminster-larger-catechism-1647",
+   "toCorpus": "confessions",
+   "title": "Westminster Larger Catechism",
+   "toTitle": "Westminster Larger Catechism (1647)",
+   "legacy": "q-",
+   "unit": "Q.",
+   "pages": {"1":["1","b1-0"],"2":["1","b1-2"],"3":["1","b1-4"],"4":["1","b1-6"],"5":["1","b1-8"],"6":["1","b1-10"],"7":["1","b1-12"],"8":["1","b1-14"],"9":["1","b1-16"],"10":["1","b1-18"],"11":["2","b2-0"],"12":["2","b2-2"],"13":["2","b2-4"],"14":["2","b2-6"],"15":["2","b2-8"],"16":["2","b2-10"],"17":["2","b2-12"],"18":["2","b2-14"],"19":["3","b3-0"],"20":["3","b3-2"],"21":["3","b3-4"],"22":["3","b3-6"],"23":["3","b3-8"],"24":["3","b3-10"],"25":["3","b3-12"],"26":["3","b3-14"],"27":["4","b4-0"],"28":["4","b4-2"],"29":["4","b4-4"],"30":["4","b4-6"],"31":["4","b4-8"],"32":["4","b4-10"],"33":["4","b4-12"],"34":["4","b4-14"],"35":["5","b5-0"],"36":["5","b5-2"],"37":["5","b5-4"],"38":["5","b5-6"],"39":["5","b5-8"],"40":["5","b5-10"],"41":["5","b5-12"],"42":["5","b5-14"],"43":["6","b6-0"],"44":["6","b6-2"],"45":["6","b6-4"],"46":["6","b6-6"],"47":["6","b6-8"],"48":["6","b6-10"],"49":["6","b6-12"],"50":["7","b7-0"],"51":["7","b7-2"],"52":["7","b7-4"],"53":["7","b7-6"],"54":["7","b7-8"],"55":["7","b7-10"],"56":["8","b8-0"],"57":["8","b8-2"],"58":["8","b8-4"],"59":["8","b8-6"],"60":["8","b8-8"],"61":["8","b8-10"],"62":["8","b8-12"],"63":["8","b8-14"],"64":["9","b9-0"],"65":["9","b9-2"],"66":["9","b9-4"],"67":["9","b9-6"],"68":["9","b9-8"],"69":["9","b9-10"],"70":["9","b9-12"],"71":["9","b9-14"],"72":["10","b10-0"],"73":["10","b10-2"],"74":["10","b10-4"],"75":["10","b10-6"],"76":["10","b10-8"],"77":["11","b11-0"],"78":["11","b11-2"],"79":["11","b11-4"],"80":["11","b11-6"],"81":["11","b11-8"],"82":["12","b12-0"],"83":["12","b12-2"],"84":["12","b12-4"],"85":["12","b12-6"],"86":["12","b12-8"],"87":["12","b12-10"],"88":["13","b13-0"],"89":["13","b13-2"],"90":["13","b13-4"],"91":["13","b13-7"],"92":["13","b13-9"],"93":["13","b13-11"],"94":["14","b14-0"],"95":["14","b14-2"],"96":["14","b14-4"],"97":["14","b14-6"],"98":["14","b14-8"],"99":["14","b14-10"],"100":["15","b15-0"],"101":["15","b15-2"],"102":["15","b15-4"],"103":["15","b15-6"],"104":["15","b15-8"],"105":["15","b15-10"],"106":["16","b16-0"],"107":["16","b16-2"],"108":["16","b16-4"],"109":["16","b16-6"],"110":["17","b17-0"],"111":["17","b17-2"],"112":["17","b17-4"],"113":["17","b17-6"],"114":["18","b18-0"],"115":["18","b18-2"],"116":["18","b18-4"],"117":["18","b18-6"],"118":["18","b18-8"],"119":["19","b19-0"],"120":["19","b19-2"],"121":["19","b19-4"],"122":["19","b19-6"],"123":["19","b19-8"],"124":["19","b19-10"],"125":["20","b20-0"],"126":["20","b20-2"],"127":["20","b20-4"],"128":["20","b20-6"],"129":["20","b20-8"],"130":["21","b21-0"],"131":["21","b21-2"],"132":["21","b21-4"],"133":["21","b21-6"],"134":["21","b21-8"],"135":["21","b21-10"],"136":["22","b22-0"],"137":["22","b22-2"],"138":["22","b22-4"],"139":["22","b22-6"],"140":["23","b23-0"],"141":["23","b23-2"],"142":["23","b23-4"],"143":["23","b23-6"],"144":["24","b24-0"],"145":["24","b24-2"],"146":["25","b25-0"],"147":["25","b25-2"],"148":["25","b25-4"],"149":["25","b25-6"],"150":["25","b25-8"],"151":["25","b25-10"],"152":["26","b26-0"],"153":["26","b26-2"],"154":["26","b26-4"],"155":["26","b26-6"],"156":["26","b26-8"],"157":["26","b26-10"],"158":["27","b27-0"],"159":["27","b27-2"],"160":["27","b27-4"],"161":["27","b27-6"],"162":["27","b27-8"],"163":["27","b27-10"],"164":["28","b28-0"],"165":["28","b28-2"],"166":["28","b28-4"],"167":["28","b28-6"],"168":["28","b28-8"],"169":["29","b29-0"],"170":["29","b29-2"],"171":["29","b29-4"],"172":["29","b29-6"],"173":["30","b30-0"],"174":["30","b30-2"],"175":["30","b30-4"],"176":["30","b30-6"],"177":["31","b31-0"],"178":["31","b31-2"],"179":["31","b31-4"],"180":["31","b31-6"],"181":["31","b31-8"],"182":["31","b31-10"],"183":["31","b31-12"],"184":["32","b32-0"],"185":["32","b32-2"],"186":["32","b32-4"],"187":["32","b32-6"],"188":["32","b32-8"],"189":["32","b32-10"],"190":["32","b32-12"],"191":["33","b33-0"],"192":["33","b33-2"],"193":["33","b33-4"],"194":["34","b34-0"],"195":["34","b34-2"],"196":["34","b34-4"]}
+  },
+  "thirty-nine-articles": {
+   "corpus": "mo",
+   "to": "rc-060-thirty-nine-articles-1562",
+   "toCorpus": "confessions",
+   "title": "Thirty-Nine Articles of Religion",
+   "toTitle": "The Thirty-nine Articles (1562/63)",
+   "legacy": "article-",
+   "unit": "Article",
+   "pages": {"1":["1","h2-article-i"],"2":["1","h3-article-ii"],"3":["1","h4-article-iii"],"4":["1","h5-article-iv"],"5":["1","h6-article-v"],"6":["1","h7-article-vi"],"7":["2","h8-article-vii"],"8":["2","h9-article-viii"],"9":["2","h10-article-ix"],"10":["2","h11-article-x"],"11":["2","h12-article-xi"],"12":["2","h13-article-xii"],"13":["2","h14-article-xiii"],"14":["3","h15-article-xiv"],"15":["3","h16-article-xv"],"16":["3","h17-article-xvi"],"17":["3","h18-article-xvii"],"18":["4","h19-article-xviii"],"19":["4","h20-article-xix"],"20":["4","h21-article-xx"],"21":["4","h22-article-xxi"],"22":["4","h23-article-xxii"],"23":["4","h24-article-xxiii"],"24":["4","h25-article-xxiv"],"25":["4","h26-article-xxv"],"26":["5","h27-article-xxvi"],"27":["5","h28-article-xxvii"],"28":["5","h29-article-xxviii"],"29":["5","h30-article-xxix"],"30":["5","h31-article-xxx"],"31":["6","h32-article-xxxi"],"32":["6","h33-article-xxxii"],"33":["6","h34-article-xxxiii"],"34":["6","h35-article-xxxiv"],"35":["6","h36-article-xxxv"],"36":["6","h37-article-xxxvi"],"37":["7","h38-article-xxxvii"],"38":["7","h39-article-xxxviii"],"39":["7","h40-article-xxxix"]}
+  },
+  "belgic": {
+   "corpus": "mo",
+   "to": "rc-057-belgic-confession-1561",
+   "toCorpus": "confessions",
+   "title": "The Belgic Confession",
+   "toTitle": "The Belgic Confession (1561)",
+   "legacy": "article-",
+   "unit": "Article",
+   "pages": {"1":["1","h2-article-i-there-is-only-one-god"],"2":["1","h3-article-ii-by-what-means-god-is-made-kno"],"3":["1","h4-article-iii-the-written-word-of-god"],"4":["1","h5-article-iv-canonical-books-of-the-holy-s"],"5":["1","h6-article-v-whence-the-holy-scriptures-der"],"6":["2","h7-article-vi-the-difference-between-the-ca"],"7":["2","h8-article-vii-the-sufficiency-of-the-holy-"],"8":["2","h9-article-viii-god-is-one-in-essence-yet-d"],"9":["3","h10-article-ix-the-proof-of-the-foregoing-ar"],"10":["3","h11-article-x-jesus-christ-is-true-and-etern"],"11":["4","h12-article-xi-the-holy-spirit-is-true-and-e"],"12":["4","h13-article-xii-the-creation-of-all-things-e"],"13":["4","h14-article-xiii-the-providence-of-god-and-h"],"14":["5","h15-article-xiv-the-creation-and-fall-of-man"],"15":["5","h16-article-xv-original-sin"],"16":["6","h17-article-xvi-eternal-election"],"17":["6","h18-article-xvii-the-recovery-of-fallen-man"],"18":["6","h19-article-xviii-the-incarnation-of-jesus-c"],"19":["6","h20-article-xix-the-union-and-distinction-of"],"20":["7","h21-article-xx-god-has-manifested-his-justic"],"21":["7","h22-article-xxi-the-satisfaction-of-christ-o"],"22":["7","h23-article-xxii-our-justification-through-f"],"23":["8","h24-article-xxiii-wherein-our-justification-"],"24":["8","h25-article-xxiv-man-s-sanctification-and-go"],"25":["9","h26-article-xxv-the-abolishing-of-the-ceremo"],"26":["9","h27-article-xxvi-christ-s-intercession"],"27":["10","h28-article-xxvii-the-catholic-christian-chu"],"28":["10","h29-article-xxviii-every-one-is-bound-to-joi"],"29":["10","h30-article-xxix-the-marks-of-the-true-churc"],"30":["11","h31-article-xxx-the-government-of-the-church"],"31":["11","h32-article-xxxi-the-ministers-elders-and-de"],"32":["11","h33-article-xxxii-the-order-and-discipline-o"],"33":["11","h34-article-xxxiii-the-sacraments"],"34":["12","h35-article-xxxiv-holy-baptism"],"35":["12","h36-article-xxxv-the-holy-supper-of-our-lord"],"36":["13","h37-article-xxxvi-the-magistracy-civil-gover"],"37":["13","h38-article-xxxvii-the-last-judgment"]}
+  },
+  "1689": {
+   "corpus": "mo",
+   "to": "rc-126-london-baptist-confession-1677",
+   "toCorpus": "confessions",
+   "title": "London Baptist Confession",
+   "toTitle": "The London Baptist Confession (1677)",
+   "legacy": "chapter-",
+   "unit": "Chapter",
+   "pages": {"1":["1","h2-chapter-i"],"2":["2","h3-chapter-ii"],"3":["3","h4-chapter-iii"],"4":["3","h5-chapter-iv"],"5":["4","h6-chapter-v"],"6":["5","h7-chapter-vi"],"7":["5","h8-chapter-vii"],"8":["6","h9-chapter-viii"],"9":["7","h10-chapter-ix"],"10":["7","h11-chapter-x"],"11":["8","h12-chapter-xi"],"12":["8","h13-chapter-xii"],"13":["9","h14-chapter-xiii"],"14":["9","h15-chapter-xiv"],"15":["10","h16-chapter-xv"],"16":["10","h17-chapter-xvi"],"17":["11","h18-chapter-xvii"],"18":["11","h19-chapter-xviii"],"19":["12","h20-chapter-xix"],"20":["13","h21-chapter-xx"],"21":["13","h22-chapter-xxi"],"22":["14","h23-chapter-xxii"],"23":["15","h24-chapter-xxiii"],"24":["15","h25-chapter-xxiv"],"25":["15","h26-chapter-xxv"],"26":["16","h27-chapter-xxvi"],"27":["17","h28-chapter-xxvii"],"28":["17","h29-chapter-xxviii"],"29":["18","h30-chapter-xxix"],"30":["18","h31-chapter-xxx"],"31":["19","h32-chapter-xxxi"],"32":["19","h33-chapter-xxxii"]},
+   "search": "1689 Second London Baptist Confession of Faith"
+  },
+  "polanus-syntagma": {
+   "corpus": "mo",
+   "to": "polanus-amandus-polanus-syntagma-theologiae-christianae-liber-i-de-the",
+   "toCorpus": "tfr",
+   "title": "Syntagma Theologiae Christianae",
+   "toTitle": "System of Christian Theology, Book I - On the Principles of Theology (Hanau 1615)",
+   "legacy": ["book-1-chapter-", "book-1-ch-"],
+   "unit": "Chapter",
+   "pages": {"1":["1","b1-0"],"2":["2","b2-0"],"3":["3","b3-0"],"4":["4","b4-0"],"5":["5","b5-0"],"6":["12","b12-0"],"7":["15","b15-0"],"8":["16","b16-0"],"9":["17","b17-0"],"10":["18","b18-0"],"11":["19","b19-0"],"12":["20","b20-0"],"13":["21","b21-0"],"14":["24","b24-0"],"15":["25","b25-0"],"16":["26","b26-0"],"17":["30","b30-0"],"18":["35","b35-0"],"19":["36","b36-0"],"20":["37","b37-0"],"21":["40","b40-0"],"22":["41","b41-0"],"23":["42","b42-0"],"24":["45","b45-0"],"25":["46","b46-0"],"26":["51","b51-0"],"27":["54","b54-0"],"28":["55","b55-0"],"29":["56","b56-0"],"30":["57","b57-0"],"31":["63","b63-0"],"32":["64","b64-0"],"33":["76","b76-0"],"34":["84","b84-0"],"35":["92","b92-0"],"36":["97","b97-0"],"37":["98","b98-0"],"38":["104","b104-0"],"39":["106","b106-0"],"40":["107","b107-0"],"41":["108","b108-0"],"42":["109","b109-0"],"43":["116","b116-0"],"44":["120","b120-0"],"45":["126","b126-0"],"46":["146","b146-0"],"47":["154","b154-0"]}
+  }
+ }
+}

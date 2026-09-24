@@ -426,3 +426,35 @@
 - from: ^/the-faith-received/browse/?$
   to: /the-faith-received/curated/
   permanent: true
+
+# ── The Faith Received: retired English Editions (2026-09-24) ───────
+# Ian: where a work is in the library twice, Stiven's copy wins. Each old
+# per-work page goes to the copy that replaced it. `from=` names the old
+# work so the reader can map the old page's #q-33 / #article-23 /
+# #chapter-4 (which the browser carries across a redirect) to the same
+# division in the new copy (assets/js/page/faith-work-forward.js).
+# /<slug>/memorize/ is NOT matched and keeps working.
+# Map and anchors: assets/data/faith-received/work-forwards.json.
+- from: ^/the-faith-received/westminster-shorter/?$
+  to: /the-faith-received/read/?w=rc-115-westminster-shorter-catechism-1647&from=westminster-shorter
+  permanent: true
+
+- from: ^/the-faith-received/westminster-larger/?$
+  to: /the-faith-received/read/?w=rc-114-westminster-larger-catechism-1647&from=westminster-larger
+  permanent: true
+
+- from: ^/the-faith-received/thirty-nine-articles/?$
+  to: /the-faith-received/read/?w=rc-060-thirty-nine-articles-1562&from=thirty-nine-articles
+  permanent: true
+
+- from: ^/the-faith-received/belgic/?$
+  to: /the-faith-received/read/?w=rc-057-belgic-confession-1561&from=belgic
+  permanent: true
+
+- from: ^/the-faith-received/1689/?$
+  to: /the-faith-received/read/?w=rc-126-london-baptist-confession-1677&from=1689
+  permanent: true
+
+- from: ^/the-faith-received/polanus-syntagma/?$
+  to: /the-faith-received/read/?w=polanus-amandus-polanus-syntagma-theologiae-christianae-liber-i-de-the&from=polanus-syntagma
+  permanent: true

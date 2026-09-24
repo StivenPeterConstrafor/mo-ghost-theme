@@ -225,6 +225,35 @@
   // ── 3. Today's reading ────────────────────────────────────────
   initToday();
 
+  // The section `src.id` of our retired copy, as plain paragraphs. The
+  // data files wrote Polanus's chapters as "book-1-ch-N" while the copy
+  // says "book-1-chapter-N", so a miss is retried on the trailing number.
+  function todayFromOurCopy(src, contentEl) {
+    const LIB = "https://mo-tfr-library.mo-podcast-feed.workers.dev";
+    fetch(`${LIB}/v1/mo/${encodeURIComponent(src.mo)}.json`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((doc) => {
+        const secs = (doc && doc.sections) || [];
+        const want = String(src.id || "");
+        const num = (want.match(/(\d+)$/) || [])[1];
+        const prefix = want.replace(/\d+$/, "").replace(/-ch-$/, "-chapter-");
+        const sec = secs.find((x) => x.id === want)
+          || (num ? secs.find((x) => x.id === `${prefix}${num}`) : null);
+        if (!sec) return;
+        const paras = (sec.rows || [])
+          .filter((row) => row && row.kind !== "heading" && typeof row.en === "string" && row.en.trim())
+          .map((row) => row.en.replace(/[*_]{1,2}([^*_]+)[*_]{1,2}/g, "$1").trim());
+        if (!paras.length) return;
+        contentEl.textContent = "";
+        paras.forEach((t) => {
+          const para = document.createElement("p");
+          para.textContent = t;
+          contentEl.appendChild(para);
+        });
+      })
+      .catch(() => { /* the card still names the reading and links to it */ });
+  }
+
   function initToday() {
     const card = document.querySelector("[data-faith-today-card]");
     const status = document.querySelector("[data-faith-today-status]");
@@ -262,6 +291,16 @@
         if (sourceEl) sourceEl.textContent = labelParts[0] || "";
         if (titleEl) titleEl.textContent = labelParts.slice(1).join(" · ");
         if (linkEl) linkEl.setAttribute("href", pick.url);
+        // A RETIRED work (work-forwards.json) links to the copy that
+        // replaced it, whose reader page has no text in its HTML to scrape.
+        // The passage is still quoted from our own copy, which stays in
+        // R2 at v1/mo/<slug>.json, section for section.
+        if (contentEl && pick.src && pick.src.mo) {
+          todayFromOurCopy(pick.src, contentEl);
+          status.hidden = true;
+          card.hidden = false;
+          return;
+        }
         // Pull the actual passage text from the document partial via a
         // hidden scrape: fetch the document HTML, find the matching
         // anchor, render its content. Cheaper than maintaining a third

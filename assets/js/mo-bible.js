@@ -381,8 +381,10 @@
       const hits = data.index[key] || [];
       if (!hits.length) { $xrefs.hidden = true; $xrefsList.innerHTML = ""; return; }
       $xrefsList.innerHTML = hits.map((h) => {
-        let href = `/the-faith-received/${h.source}/`;
-        if (h.id) href += `#${h.id}`;
+        // A retired work's hit carries the url of the copy that replaced
+        // it, division for division (scripts/relink-retired-works.mjs).
+        let href = h.url || `/the-faith-received/${h.source}/`;
+        if (!h.url && h.id) href += `#${h.id}`;
         return (
           `<li class="bible-cross-ref">` +
             `<a class="bible-cross-ref-link" href="${href}">` +
