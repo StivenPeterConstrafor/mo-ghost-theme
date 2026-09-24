@@ -158,9 +158,9 @@
       head: "This is a transcription of the printed book, not a translation.",
       body: "The text comes from the Early English Books Text Creation Partnership, "
         + "which transcribed the printed page as it was set. Nothing on this page has "
-        + "been translated. Modernize, under Text Tools, rewrites the spelling and the "
-        + "older verb endings for reading; switching it off returns the words to the "
-        + "form the compositor set them in.",
+        + "been translated. Modernize, in Tools, rewrites the spelling and the older "
+        + "verb endings for reading. Switching it off returns the words to the form the "
+        + "compositor set them in.",
     });
     return;
   }
@@ -217,10 +217,13 @@
       title: "Transparency",
       fact: `AI translated from ${escapeHtml(source)}`,
       head: "This English was translated by a machine.",
+      // The controls it names are the reader's current ones (Ian,
+      // 2026-09-23): the language button and Scan, both in Tools.
       body: `The English on this page was produced from the ${escapeHtml(source)} by `
-        + "artificial intelligence, and has not yet been reviewed by the translation "
-        + "committee unless this panel says so. The original is beside it under Text Tools, "
-        + "with the page scan where one exists, so you can check any sentence yourself.",
+        + "artificial intelligence. It has not been reviewed by the translation committee "
+        + "unless this panel says so. To check any sentence yourself, open Tools and set "
+        + "the language button to Both. The original then sits beside the English. Where "
+        + "a scan of the printed page exists, Scan in Tools shows it too.",
     });
   });
 
