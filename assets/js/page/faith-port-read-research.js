@@ -41,6 +41,9 @@
     // "Loading…" sitting in the display face does not.
     if (title) title.textContent = t === "Loading…" ? "" : t;
     if (byline) byline.textContent = (author ? author.textContent : "").trim();
+    // "About [work title]", not "Edition details" (Ian, 2026-09-23).
+    const about = $("nbWorkAbout");
+    if (about) about.textContent = t && t !== "Loading…" ? `About ${t}` : "About this work";
   }
 
   if (title || byline) {
