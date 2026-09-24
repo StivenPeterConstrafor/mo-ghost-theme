@@ -252,6 +252,9 @@
    */
   function place(node, tries) {
     if (document.documentElement.classList.contains("g-mobile")) return;
+    // The ported reader shows the panel in a dialog from its toolbar's
+    // Transparency button (faith-port-read-drawer.js, 2026-09-23).
+    if (node.closest && node.closest(".fr-tt-box")) return;
     /* INSIDE #nav, NOT ABOVE IT. The sidebar's own top sits about
        thirty pixels under the fixed toolbar -- measured on the live
        reader, and true of the Outline/Library tabs before this panel

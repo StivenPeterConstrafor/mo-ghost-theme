@@ -49,7 +49,11 @@
    * BUTTON moves, not a copy of it, so there is one element and one
    * handler and the two placements can never disagree about state.
    */
-  const NARROW = 700;
+  // The Modernizer is a tool now on every width (Ian, 2026-09-23: "The
+  // english Modernizer also needs to be in the toolbar"): the bar's Tools
+  // drawer on a desktop, a cell in the dock's on a phone
+  // (faith-port-read-drawer.js). It no longer moves into the Aa panel.
+  const NARROW = 0;
   const bar = btn.parentElement;
   const next = btn.nextElementSibling;
 

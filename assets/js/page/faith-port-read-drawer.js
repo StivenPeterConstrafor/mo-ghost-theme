@@ -111,6 +111,7 @@
     lang: [{ tag: "rect", x: "3", y: "4", width: "8", height: "16", rx: "1" }, { tag: "rect", x: "13", y: "4", width: "8", height: "16", rx: "1" }, { d: "M5.5 8h3M5.5 11h3M5.5 14h3M15.5 8h3M15.5 11h3M15.5 14h3" }],
     theme: [{ tag: "circle", cx: "12", cy: "12", r: "8" }, { d: "M12 4a8 8 0 0 1 0 16z", fill: "currentColor" }],
     flow: [{ d: "M5 6h14M5 10h14M5 14h14M5 18h9" }],
+    modern: [{ d: "M4 17l4-10 4 10M5.5 13h5" }, { d: "M14 9.5c1-1.2 4.5-1.4 4.5 1.2V17M18.5 13c-3.5-.4-5 .6-5 2.1 0 1.8 3 2.2 5-.6" }],
     scan: [{ tag: "rect", x: "4", y: "3", width: "16", height: "18", rx: "1" }, { d: "M8 7h8M8 11h8M8 15h5" }],
   };
 
@@ -224,6 +225,19 @@
   });
   if (toolsWrap) ctr.insertBefore(drawer, toolsWrap);
   else ctr.appendChild(drawer);
+
+  // Transparency, on the bar itself: the AI disclosure a reader should
+  // be able to find without opening anything else first.
+  const dTt = document.createElement("button");
+  dTt.type = "button";
+  dTt.className = "fr-tb-tt";
+  dTt.textContent = "Transparency";
+  dTt.title = "How this text was made";
+  dTt.hidden = true;
+  dTt.setAttribute("aria-controls", "frTtModal");
+  dTt.setAttribute("aria-expanded", "false");
+  dTt.addEventListener("click", () => setTt(!ttOpen()));
+  ctr.appendChild(dTt);
 
   if (toolsBtn) {
     toolsBtn.textContent = "Tools";
@@ -403,9 +417,11 @@
     // dark mode in Aa is now redundant" / "Same with Flow/Pages"), so the
     // phone reaches them here, as the desktop does in its drawer.
     const flow = proxy("x-flow", "Pages", "flow", "#rdFlow");
+    const modern = proxy("x-modern", "Modernize", "modern", "#m-modern");
     const theme = proxy("x-theme", "Theme", "theme", "#thTop");
     proxies = {
       lang,
+      modern,
       flow,
       theme,
       transparency: cell("x-tt", "Transparency", "transparency"),
@@ -422,11 +438,15 @@
   }
 
   function syncProxies() {
+    dTt.hidden = !ttReady();
     if (!proxies) return;
     const fl = document.getElementById("rdFlow");
     const flowing = !fl || fl.getAttribute("aria-pressed") !== "false";
     // The label says what a press does.
     proxies.flow.querySelector(".lb").textContent = flowing ? "Pages" : "Flow";
+    const mb = document.getElementById("m-modern");
+    proxies.modern.hidden = !mb || mb.hidden;
+    proxies.modern.classList.toggle("on", Boolean(mb) && mb.getAttribute("aria-pressed") === "true");
     const f = window.FRReaderFolds;
     const open = !f || f.anyOpen();
     proxies.folds.querySelector(".lb").textContent = open ? "Collapse" : "Expand";
@@ -438,6 +458,7 @@
       proxies.keep.querySelector(".lb").textContent = kept ? "Kept" : "Keep";
     }
     proxies.transparency.hidden = !ttReady();
+    dTt.hidden = !ttReady();
     proxies.transparency.classList.toggle("on", ttOpen());
   }
   document.addEventListener("fr-folds-change", syncProxies);
@@ -545,7 +566,7 @@
   const ttReady = () => Boolean(status && status.querySelector(".fr-tt"));
   const ttOpen = () => !modal.hidden;
   function setTt(open) {
-    if (open && (!mobile() || !ttReady())) return;
+    if (open && !ttReady()) return;
     modal.hidden = !open;
     html.classList.toggle("fr-tt-modal-open", open);
     if (open) {
@@ -554,7 +575,10 @@
       x.focus({ preventScroll: true });
     } else if (proxies && proxies.transparency.isConnected && mOpen) {
       proxies.transparency.focus({ preventScroll: true });
+    } else if (!mobile() && dTt.isConnected) {
+      dTt.focus({ preventScroll: true });
     }
+    dTt.setAttribute("aria-expanded", open ? "true" : "false");
     syncProxies();
   }
   x.addEventListener("click", () => setTt(false));
@@ -562,16 +586,11 @@
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && ttOpen()) setTt(false); });
   if (status) new MutationObserver(syncProxies).observe(status, { childList: true });
 
+  // The disclosure lives in the dialog on both widths now (Ian,
+  // 2026-09-23: "Move Transparency disclaimer to this section", the
+  // toolbar). faith-work-status.js leaves it where it finds it.
   function placeStatus() {
-    if (!status) return;
-    if (mobile()) {
-      if (status.parentElement !== box) box.appendChild(status);
-    } else {
-      setTt(false);
-      // faith-work-status.js moves it into the sidebar on a desktop; on
-      // the way back from a phone it goes above the text, where it was.
-      if (status.parentElement === box) goHome(status);
-    }
+    if (status && status.parentElement !== box) box.appendChild(status);
   }
 
   // ════════════════════════════════════════════════════════════════
