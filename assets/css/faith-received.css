@@ -7950,6 +7950,28 @@ mark.faith-find-hit.is-current {
   cursor: pointer;
 }
 .faith-room-select select:hover { border-color: var(--color-secondary); }
+/* "Has page scans" (2026-09-24): a checkbox beside the selects, sat on
+   their baseline and as tall as one, labelled in the same small caps. */
+.faith-room-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--tfr-micro);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+.faith-room-check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--color-dark);
+  cursor: pointer;
+}
 .faith-room-filters .faith-room-undated {
   margin: 0 0 12px;
   font-size: var(--tfr-micro);

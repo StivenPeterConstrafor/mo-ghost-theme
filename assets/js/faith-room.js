@@ -140,6 +140,19 @@
   // the box now searches authors first and titles second on its own
   // (see tierOf), which is what the select was for.
   let page = Math.max(1, parseInt(params.get("page"), 10) || 1);
+  /* PAGE SCANS (Ian, 2026-09-24: "I feel like we should have a page just
+     of works that contain page scans"). `?scans=1` keeps only the works
+     whose reader shows the printed page beside the text, and
+     /the-faith-received/scans/ is this page with that filter fixed on
+     (its template sets the tfr-room-scans meta). Which works have scans
+     is a static list, assets/data/faith-received/scanned-works.json,
+     because the catalogue's has_pages says nothing true about it: every
+     PG row claims pages and 369 of them have none, and 25 Latin Library
+     works with scans are marked has_pages false or carry no img_base in
+     the index. The file says how it was built. */
+  const SCANS_PAGE = !!document.querySelector('meta[name="tfr-room-scans"]');
+  const scans = SCANS_PAGE || params.get("scans") === "1";
+  const SCANNED_URL = "/assets/data/faith-received/scanned-works.json?v=20260924a";
 
   // Research belongs inside an opened shelf as well as on its catalogue card.
   // These are the source library's nine shelf codes; the existing catalogue
@@ -386,7 +399,21 @@
       .catch(() => new Map())
     : Promise.resolve(new Map());
 
-  Promise.all([source, notes, window.MOCollectedContents?.ready]).then(([list, noteMap]) => {
+  // Resolves to null when the list cannot be had, and the room says so
+  // rather than quietly showing the whole library under a scans heading.
+  const scannedSet = scans
+    ? fetch(SCANNED_URL).then((r) => (r.ok ? r.json() : null))
+      .then((d) => (d && Array.isArray(d.works) ? new Set(d.works) : null))
+      .catch(() => null)
+    : Promise.resolve(null);
+
+  Promise.all([source, notes, window.MOCollectedContents?.ready, scannedSet]).then(([all, noteMap, , scanSet]) => {
+    if (scans && !scanSet) {
+      root.innerHTML = '<p class="faith-room-status">The list of works with page scans could not be loaded. Reload the page to try again.</p>';
+      return;
+    }
+    const slugOf = window.MOFaithCatalogue ? window.MOFaithCatalogue.workSlug : (w) => w.slug || w.id;
+    const list = scanSet ? all.filter((w) => scanSet.has(slugOf(w))) : all;
     authorNotes = noteMap;
     // Alphabetical, by where each author files, then by title (Ian,
     // 2026-09-23: every list of authors and works in alphabetical
@@ -859,6 +886,7 @@
     if (tradition) q.set("tradition", tradition);
     if (denomination) q.set("denomination", denomination);
     if (party) q.set("party", party);
+    if (scans && !SCANS_PAGE) q.set("scans", "1");
     if (century) q.set("century", String(century));
     if (collection) q.set("in", collection);
     if (letter) q.set("letter", letter);
@@ -1152,7 +1180,7 @@
   const originalHeading = pageHeading?.textContent || "";
   const originalLede = pageLede?.textContent || "";
   function updateRoomContext() {
-    const narrowed = isAll && !!(filter || tradition || denomination || party || century || collection || letter || page > 1);
+    const narrowed = isAll && !!(scans || filter || tradition || denomination || party || century || collection || letter || page > 1);
     const openers = document.querySelector("[data-faith-openers]");
     if (openers) openers.classList.toggle("is-filtered", narrowed);
     if (isAll) {
@@ -1331,6 +1359,11 @@
       // written once and rewriting it mid-gesture is what tore the
       // dropdowns out from under the reader before.
       `<label class="faith-room-select" data-room-denom-wrap hidden><span data-room-denom-label>Denomination</span><select data-room-denom></select></label>`,
+      // A filter over which works exist in the room, so it reloads the
+      // page rather than re-rendering: every count in the selects above
+      // is taken from the works in hand. Not offered on /scans/, which
+      // is this filter.
+      SCANS_PAGE ? "" : `<label class="faith-room-check"><input type="checkbox" data-room-scans${scans ? " checked" : ""} /><span>Has page scans</span></label>`,
     ].filter(Boolean).join("");
     const filters = controls
       ? `<div class="faith-room-filters">${controls}<p class="faith-room-undated" data-room-undated hidden></p></div>`
@@ -1458,7 +1491,7 @@
     // in the one volume they have opened.
     // A search says what it matched; a party says which it is.
     const matching = filter ? ` matching &ldquo;${escapeHtml(filter)}&rdquo;` : "";
-    const within = party ? ` &middot; ${escapeHtml(party)}` : "";
+    const within = (party ? ` &middot; ${escapeHtml(party)}` : "") + (scans ? " &middot; with page scans" : "");
     // One library: English editions are counted as works (MOFaithCatalogue.countLabel adds "+ N English editions").
     const oneCount = (list) => `${list.length.toLocaleString()} work${list.length === 1 ? "" : "s"}`;
     let counted = `${oneCount(scoped)}${matching} in ${escapeHtml(label)}${within}`;
@@ -1603,6 +1636,18 @@
 
   // Bound once, on elements that are never rebuilt.
   function wireOnce() {
+    const scansBox = root.querySelector("[data-room-scans]");
+    if (scansBox) {
+      scansBox.addEventListener("change", () => {
+        const q = new URLSearchParams(window.location.search);
+        if (scansBox.checked) q.set("scans", "1"); else q.delete("scans");
+        q.delete("page");
+        q.delete("letter");
+        // Only the query changes: same page, same origin, nothing a
+        // caller supplied, so there is no destination to validate.
+        window.location.search = q.toString();
+      });
+    }
     const input = root.querySelector("[data-room-filter]");
     if (input) {
       let t = null;

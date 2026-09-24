@@ -298,6 +298,9 @@ routes:
     template: custom-faith-fathers
   /the-faith-received/all-works/:
     template: custom-faith-centuries
+  # Works with page scans (2026-09-24): All Works with ?scans=1 fixed on.
+  /the-faith-received/scans/:
+    template: custom-faith-scans
   /the-faith-received/century/:
     template: custom-faith-centuries
   # /centuries/ added 2026-09-21 at Ian's request. The page already
