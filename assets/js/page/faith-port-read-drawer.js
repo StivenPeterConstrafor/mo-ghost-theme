@@ -106,7 +106,79 @@
     save: [{ d: "M6 3h12v18l-6-4-6 4z" }],
     report: [{ d: "M5 21V4M5 4h11l-2 4 2 4H5" }],
     top: [{ d: "M12 19V5M5 12l7-7 7 7" }],
+    lang: [{ d: "M3 5h9M7.5 3v2M5 11c2.5-1.5 4-3.5 5-6M6 7.5c1.2 2 3 3.5 5.5 4.5" }, { d: "M12.5 21l4-9 4 9M14 18h5" }],
+    scan: [{ tag: "rect", x: "4", y: "3", width: "16", height: "18", rx: "1" }, { d: "M8 7h8M8 11h8M8 15h5" }],
   };
+
+  /* ── One button for the reading languages ─────────────────────────
+     Ian, 2026-09-23: "make English and Latin/Greek one button that
+     toggle three times. English Only, Latin/Greek Only, Both." It sets
+     the engine's own lane state (window.LN) and runs its applyLanes(),
+     so the text, the stored preference and every other control follow;
+     the scan is left as it is. A work read in one language only has no
+     choice to make and the button hides. */
+  const NEXT = { en: "la", la: "both", both: "en" };
+  function dataOf() {
+    try { return typeof DATA !== "undefined" ? DATA : null; } catch (e) { return null; }
+  }
+  function srcName() {
+    const n = String(window.__SRCNAME || "Latin");
+    return /\u00b7/.test(n) ? "Greek/Latin" : n;
+  }
+  function laneState() {
+    const L = window.LN;
+    if (!L) return "both";
+    if (L.en && !L.la) return "en";
+    if (L.la && !L.en) return "la";
+    return "both";
+  }
+  function singleLane() {
+    const d = dataOf();
+    return Boolean(d && (d.src_lang === "en" || d.en_only === true || d.source_only === true))
+      || app.classList.contains("en-only");
+  }
+  function laneLabel(st) {
+    if (st === "en") return "English only";
+    if (st === "la") return `${srcName()} only`;
+    return "Both";
+  }
+  const langBtns = [];
+  const painters = [];
+  function paintLang() {
+    painters.forEach((f) => f());
+    const st = laneState();
+    const next = laneLabel(NEXT[st]);
+    langBtns.forEach((b) => {
+      const lb = b.querySelector(".lb") || b;
+      lb.textContent = b.classList.contains("fr-td-lang") ? laneLabel(st) : (st === "both" ? "Both" : st === "en" ? "English" : srcName());
+      b.hidden = singleLane();
+      b.title = `Reading ${laneLabel(st).toLowerCase()}. Press for ${next.toLowerCase()}.`;
+      b.setAttribute("aria-label", `Languages: ${laneLabel(st)}. Press for ${next}.`);
+    });
+  }
+  function cycleLane() {
+    const L = window.LN;
+    const to = NEXT[laneState()];
+    if (L && typeof window.applyLanes === "function") {
+      L.en = to !== "la";
+      L.la = to !== "en";
+      window.applyLanes();
+    }
+    paintLang();
+  }
+  const syncWas = window.__frThumbSync;
+  if (typeof syncWas === "function" && !syncWas.frLang) {
+    const wrapped = function (...args) {
+      const r = syncWas.apply(this, args);
+      paintLang();
+      return r;
+    };
+    wrapped.frLang = true;
+    window.__frThumbSync = wrapped;
+  }
+  // The source's name settles about two seconds in (the lane label says
+  // "Latin" for a Greek work until then).
+  [800, 2200, 5000].forEach((ms) => window.setTimeout(paintLang, ms));
 
   // Where the engine put each element we move, so it can go back.
   const homes = new Map();
@@ -166,6 +238,29 @@
     const desc = spans.length ? spans[spans.length - 1].textContent.trim() : "";
     if (desc && !b.title) b.title = desc;
   });
+
+  const dLang = document.createElement("button");
+  dLang.type = "button";
+  dLang.className = "fr-td-lang";
+  dLang.addEventListener("click", cycleLane);
+  langBtns.push(dLang);
+  const dScan = document.createElement("button");
+  dScan.type = "button";
+  dScan.className = "fr-td-scan";
+  dScan.textContent = "Scan";
+  dScan.title = "Show the source facsimile beside the text";
+  dScan.addEventListener("click", () => {
+    const b = document.getElementById("m-study");
+    if (b) b.click();
+    paintScan();
+  });
+  function paintScan() {
+    const d = dataOf();
+    dScan.hidden = !(d && d.has_pages);
+    dScan.setAttribute("aria-pressed", window.LN && window.LN.fx ? "true" : "false");
+  }
+  groups.read.append(dLang, dScan);
+  painters.push(paintScan);
 
   function members() {
     const q = (s) => ph.querySelector(s) || document.querySelector(s);
@@ -290,7 +385,11 @@
     const report = cell("x-report", "Report", "report");
     report.setAttribute("data-report-issue", "");
     report.setAttribute("aria-label", "Report a problem");
+    const lang = cell("x-lang", "Both", "lang");
+    lang.addEventListener("click", cycleLane);
+    langBtns.push(lang);
     proxies = {
+      lang,
       transparency: cell("x-tt", "Transparency", "transparency"),
       folds: proxy("x-folds", "Collapse", "folds", ".fr-tb-folds"),
       copyText: proxy("x-copy", "Copy text", "copy", "#rdCopyText"),
@@ -364,6 +463,8 @@
       const el = proxies[k];
       if (el.parentElement !== mDrawer) mDrawer.appendChild(el);
     });
+    // Languages first: the choice a reader makes most.
+    if (mDrawer.firstChild !== proxies.lang) mDrawer.insertBefore(proxies.lang, mDrawer.firstChild);
     // Text (Aa) is the dock's fourth button, beside Tools (Ian,
     // 2026-09-23: "break out Aa tools to be a 4th default button").
     const aa = document.getElementById("aaBtn");

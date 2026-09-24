@@ -2658,3 +2658,13 @@ html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .aaw:not(.rdtw) > .tgl { bord
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw { order: 10; margin-left: -1px; }
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > .rdtw > .tgl { border-radius: 0 3px 3px 0; }
 html.g-mobile nav.frthumb.fr-m3.fr-m3-open > #aaBtn { opacity: 0; pointer-events: none; }
+
+/* One language button (Ian, 2026-09-23): English only, Latin/Greek only,
+   Both. faith-port-read-drawer.js drives the engine's own lanes; the
+   engine's two lane buttons stay in the DOM, out of sight, because
+   other code reads them. */
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .seg.lanes { display: none !important; }
+html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer > [data-t="en"],
+html.g-mobile nav.frthumb.fr-m3 .fr-mtools-drawer > [data-t="par"] { display: none !important; }
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .fr-td-lang { min-width: 108px; justify-content: center; }
+.fr-td-lang[hidden], .fr-td-scan[hidden] { display: none !important; }
