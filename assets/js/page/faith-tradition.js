@@ -204,6 +204,16 @@
       ? `${BASE}all-works/?${new URLSearchParams(t.allWorks.q).toString()}` : "";
   }
 
+  // Every section folds (Ian, 2026-09-24: "make each section here
+  // collapsible/expandable"). A <details> open to start; the heading is
+  // the summary, and a thin terracotta chevron at the right turns when
+  // it closes. The Topics page's fold, in this page's own classes.
+  function sec(id, heading, body, cls) {
+    return `<details class="tfr-trad-sec${cls ? ` ${cls}` : ""}" open>`
+      + `<summary class="tfr-trad-sum"><h2 id="${id}">${heading}</h2></summary>`
+      + `<div class="tfr-trad-secbody">${body}</div></details>`;
+  }
+
   function authorsHtml(t, list, mergedFrom) {
     const cfg = t.authors || {};
     const heading = cfg.heading || "Authors";
@@ -211,8 +221,8 @@
     const browse = all
       ? `<p class="tfr-trad-more"><a class="btrad-all" href="${esc(all)}">Browse ${esc(t.allWorks.label || t.name)} in All Works &rarr;</a></p>` : "";
     if (!list.length) {
-      return `<section class="tfr-trad-sec" aria-labelledby="trad-authors"><h2 id="trad-authors">${esc(heading)}</h2>`
-        + `<p class="tfr-trad-note">No author of this tradition has a room in the library yet.</p>${browse}</section>`;
+      return sec("trad-authors", esc(heading),
+        `<p class="tfr-trad-note">No author of this tradition has a room in the library yet.</p>${browse}`);
     }
     const TOP = 30;
     const many = list.length > TOP + 10;
@@ -224,9 +234,8 @@
     const full = many && cfg.fullList !== false
       ? `<div class="faith-room-blocks faith-room-blocks--fold tfr-trad-folds"><details class="btrad"><summary class="btrad-sum"><h3>All ${list.length.toLocaleString()} authors in order of birth</h3></summary>`
         + `<ol class="tfr-trad-authors">${list.slice().sort(byBirth).map(authorRow).join("")}</ol></details></div>` : "";
-    return `<section class="tfr-trad-sec" aria-labelledby="trad-authors"><h2 id="trad-authors">${esc(heading)}</h2>`
-      + `<p class="tfr-trad-note">${esc(lede)}${note ? ` ${esc(note)}` : ""}</p>`
-      + `<ol class="tfr-trad-authors">${shown.map(authorRow).join("")}</ol>${full}${browse}</section>`;
+    return sec("trad-authors", esc(heading), `<p class="tfr-trad-note">${esc(lede)}${note ? ` ${esc(note)}` : ""}</p>`
+      + `<ol class="tfr-trad-authors">${shown.map(authorRow).join("")}</ol>${full}${browse}`);
   }
 
   function setMeta(title, desc, slug) {
@@ -268,19 +277,20 @@
     const related = [parent, inFamily].concat((t.related || []).map((s) => bySlug.get(s)))
       .filter((x, i, a) => x && a.indexOf(x) === i && x !== t);
 
-    const overview = `<section class="tfr-trad-sec tfr-trad-overview" aria-labelledby="trad-overview"><h2 id="trad-overview">Overview</h2>${
-       (t.overview || []).map((p) => `<p>${esc(p)}</p>`).join("")}</section>`;
+    const overview = sec("trad-overview", "Overview",
+      `<div class="tfr-trad-prose">${(t.overview || []).map((p) => `<p>${esc(p)}</p>`).join("")}</div>`, "tfr-trad-overview");
     const rel = related.length
-      ? `<nav class="tfr-trad-related" aria-label="Related traditions"><span class="tfr-trad-eyebrow">Related traditions</span>`
-        + `<span class="tfr-trad-joined">${related.map((r) => `<a href="${tradHref(r.slug)}">${esc(r.name)}</a>`).join("")}</span></nav>` : "";
+      ? sec("trad-related", "Related traditions", `<nav class="tfr-trad-related" aria-labelledby="trad-related">`
+        + `<span class="tfr-trad-joined">${related.map((r) => `<a href="${tradHref(r.slug)}">${esc(r.name)}</a>`).join("")}</span></nav>`)
+      : "";
     const churches = kids.length
-      ? `<section class="tfr-trad-sec" aria-labelledby="trad-churches"><h2 id="trad-churches">The ${esc(t.name)} churches</h2>`
-        + `<p class="tfr-trad-note">In the order they arose.</p><ol class="tfr-trad-index">${kids.map((k) => {
+      ? sec("trad-churches", `The ${esc(t.name)} churches`,
+        `<p class="tfr-trad-note">In the order they arose.</p><ol class="tfr-trad-index">${kids.map((k) => {
           const a = (authorsBy[k.slug] || []).length;
           const meta = [k.era, a ? n(a, "author", "authors") : ""].filter(Boolean).join(" · ");
           return `<li><a class="tfr-trad-ix" href="${tradHref(k.slug)}"><span class="tfr-trad-ixn">${esc(k.name)}</span>`
             + `<span class="tfr-trad-ixd">${esc(k.dek)}</span>${meta ? `<span class="tfr-trad-ixm">${esc(meta)}</span>` : ""}</a></li>`;
-        }).join("")}</ol></section>` : "";
+        }).join("")}</ol>`) : "";
 
     // Authors: this church's own, plus its family's where the page says
     // so (Reformed gathers Presbyterian and Congregational), or every
@@ -300,8 +310,8 @@
 
     const docsId = "trad-docs";
     root.innerHTML = `<div class="tfr-trad-page">${overview}${rel}${churches}`
-      + `<section class="tfr-trad-sec" aria-labelledby="${docsId}"><h2 id="${docsId}">Creeds, confessions and catechisms</h2>`
-      + `<div data-trad-docs><p class="tfr-trad-note">Loading the documents&hellip;</p></div></section>`
+      + `${sec(docsId, "Creeds, confessions and catechisms",
+        `<div data-trad-docs><p class="tfr-trad-note">Loading the documents&hellip;</p></div>`)}`
       + `${authorsHtml(t, authors, mergedFrom)}</div>`;
 
     const docsBox = root.querySelector("[data-trad-docs]");
