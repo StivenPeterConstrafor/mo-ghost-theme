@@ -18,12 +18,13 @@
  * This replaces faith-author-curated.js, which drew the ten curated
  * authors the same way; they are in the directory like everyone else.
  *
- * It draws a plain page on purpose, in the library's thin-line manner:
- * the header names the author, then About (when the library has a
- * biography), then the works by collection, each opening the reader. It
- * is not a second room: no positions, no Scripture, no reception, because
- * nothing has been mined from these works. When a room is built for one
- * of them, the rosters match first and this never runs.
+ * An author page is drawn in the room's own markup and classes, so it
+ * reads exactly as a room does (see drawAuthor): the shared Authors
+ * hero, crumbs, name, the profile card with its stat boxes, and the
+ * joined tabs. Only tabs with a real source appear: Works always,
+ * Scripture and Reception when the library has data for them, Search.
+ * When a room is built for one of these authors, the rosters match
+ * first and this never runs.
  */
 (function () {
   "use strict";
@@ -104,55 +105,366 @@
     return s;
   }
 
+  // ── An author's page, in the room's own dress ─────────────────────
+  // Ian, 2026-09-24, on Boethius: "Why is his author page like this and
+  // not like everyone else's?" So it is drawn with the room's markup and
+  // classes (crumbs, .ridbar h1, the .rx-profile card with its .ar-stat
+  // boxes and the About disclosure, the joined .pseg tabs, .rx-work-row,
+  // .bkrow, .rrow), inside a <main class="research research-room"> of
+  // its own, so every rule of the room's skin applies unchanged. Only
+  // tabs with a real source are drawn:
+  //   Works      always, from the directory, by collection;
+  //   Scripture  when the works' research files (v1/mine/work/<slug>.json,
+  //              the reader's Research panel) carry Scripture citations;
+  //   Reception  when the citation graph (v1/graph/nb/<key>.json) names
+  //              authors who cite him, or whom he cites;
+  //   Search     his name as the author filter on the search page.
+  // No Positions, Topics or Connections: those are the room's own mined
+  // surfaces. The tab is kept in ?tab=, never the hash, because a hash
+  // is the port's room address and would send it looking for a room.
+  const LIB = "https://mo-tfr-library.mo-podcast-feed.workers.dev";
+  const MINE_CAP = 60; // research files fetched for one author, at most
+  const SHELF_OF = { "Latin Fathers": "pl", "Greek Fathers": "gf", "English Divines": "ed", "Eastern Fathers": "po", Reformed: "rf" };
+  const SHELF_NAME = { pl: "Latin Fathers", gf: "Greek Fathers", ed: "English writers", po: "Eastern Fathers", rf: "Continental Reformed" };
+  const workSlug = (c, id) => new URL(readerHref(c, id), location.origin).searchParams.get("w");
+  const libJson = (k) => fetch(`${LIB}/${k}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const n0 = (n) => Number(n || 0).toLocaleString();
+
+  function ownMain() {
+    let m = document.getElementById("frAuthorOwn");
+    if (m) m.remove();
+    m = el("main", "research research-room fr-own-room");
+    m.id = "frAuthorOwn";
+    const page = document.getElementById("page");
+    page.parentNode.insertBefore(m, page);
+    return m;
+  }
+  function statBox(value, label, word) {
+    const d = el("div", word ? "ar-stat ar-stat--word" : "ar-stat");
+    const b = el("b");
+    if (value instanceof Node) b.appendChild(value); else b.textContent = value;
+    d.append(b, el("span", "", label));
+    return d;
+  }
+
   function drawAuthor(key, person, entry) {
     const [name, dates, trad] = person || [want, "", ""];
     const bio = (entry && entry.b) || null;
     const works = (entry && entry.w) || [];
-    const lab = (bio && bio.t) || label(trad, name, dates) || "";
-    header(name, [dates, lab].filter(Boolean).join("  ·  "));
-    const s = host();
+    const sh = SHELF_OF[trad] || "";
+    document.title = `${name} | The Faith Received | Mere Orthodoxy`;
+    const room = ownMain();
 
-    if (bio && (bio.bio || bio.s)) {
-      const about = el("div", "fr-own-block fr-own-about");
-      about.appendChild(el("h2", "fr-own-h", "About"));
-      if (bio.s) about.appendChild(el("p", "fr-own-lede", bio.s));
-      if (bio.bio) about.appendChild(el("p", "fr-own-bio", bio.bio));
-      s.appendChild(about);
+    // Crumbs and name, as the room prints them.
+    const crumbs = el("div", "crumbs");
+    crumbs.appendChild(link("/the-faith-received/author/", "Authors"));
+    const shelfName = SHELF_NAME[sh];
+    if (shelfName) {
+      crumbs.appendChild(document.createTextNode(" · "));
+      crumbs.appendChild(link(`/the-faith-received/author/?sh=${sh}`, shelfName));
     }
+    room.appendChild(crumbs);
+    const bar = el("div", "ridbar");
+    bar.appendChild(el("h1", "", name));
+    room.appendChild(bar);
 
-    const block = el("div", "fr-own-block");
-    block.appendChild(el("h2", "fr-own-h", works.length === 1 ? "One work in the library" : `${works.length.toLocaleString()} works in the library`));
-    for (const [c, title] of COLLECTIONS) {
-      const rows = works.filter((w) => w[0] === c);
-      if (!rows.length) continue;
-      const group = el("div", "fr-own-group");
-      group.appendChild(el("h3", "fr-own-coll", `${title}  ·  ${rows.length.toLocaleString()}`));
-      const ul = el("ul", "fr-own-works");
-      for (const [wc, id, t, y] of rows) {
-        const li = el("li");
-        const a = link(readerHref(wc, id), "", "fr-own-work");
-        a.appendChild(el("span", "fr-own-t", t));
-        const m = metaOf(wc, y);
-        if (m) a.appendChild(el("span", "fr-own-m", m));
-        li.appendChild(a);
-        ul.appendChild(li);
+    // The card: dates, the short dek, the boxes, the biography.
+    const card = el("details", "rx-profile");
+    card.open = true;
+    card.appendChild(el("summary", "", "About this author"));
+    const deckText = dates || (bio && bio.d) || "";
+    if (deckText) card.appendChild(el("div", "deck", deckText));
+    if (bio && bio.s) card.appendChild(el("p", "fr-own-dek", bio.s));
+    const stats = el("div", "stats");
+    const grid = el("div", "ar-stats");
+    grid.appendChild(statBox(n0(works.length), works.length === 1 ? "work" : "works"));
+    const pagesBox = statBox("", "pages");
+    pagesBox.hidden = true;
+    grid.appendChild(pagesBox);
+    const citesBox = statBox("", "Scripture citations");
+    citesBox.hidden = true;
+    grid.appendChild(citesBox);
+    const L = window.MOAuthorLabels ? window.MOAuthorLabels.labelFor(name, sh, dates) : { tradition: "", detail: "", detailLabel: "" };
+    // "English writers" is the shelf, not a tradition: the directory's own
+    // rule (a writer before 1500 is Medieval or Early Church, whatever
+    // shelf EEBO put him on; else his church) says it better when it can.
+    if (!L.tradition || L.tradition === SHELF_NAME.ed) L.tradition = label(trad, name, dates) || L.tradition;
+    if (L.tradition) {
+      const b = el("span");
+      if (window.MOAuthorLabels) window.MOAuthorLabels.writeLabel(b, L.tradition); else b.textContent = L.tradition;
+      grid.appendChild(statBox(b, "Tradition", true));
+    }
+    if (L.detail) {
+      const b = el("span");
+      if (window.MOAuthorLabels && L.detailLabel === "Denomination") window.MOAuthorLabels.writeLabel(b, L.detail); else b.textContent = L.detail;
+      const box = statBox(b, L.detailLabel, true);
+      box.classList.add("ar-stat--detail");
+      grid.appendChild(box);
+    }
+    const y = Number((String(dates || "").match(/\d{3,4}/) || [])[0] || 0);
+    if (y) {
+      const c = Math.floor((y - 1) / 100) + 1;
+      const sfx = c % 10 === 1 && c !== 11 ? "st" : c % 10 === 2 && c !== 12 ? "nd" : c % 10 === 3 && c !== 13 ? "rd" : "th";
+      grid.appendChild(statBox(`${c}${sfx}`, "Century", true));
+    }
+    stats.appendChild(grid);
+    card.appendChild(stats);
+    if (bio && bio.bio) {
+      const more = el("details", "rx-author-bio");
+      more.appendChild(el("summary", "", bio.s ? `More about ${name}` : `About ${name}`));
+      more.appendChild(el("p", "", bio.bio));
+      card.appendChild(more);
+    }
+    room.appendChild(card);
+
+    // The tabs.
+    const pane = el("section", "pane");
+    const seg = el("div", "pseg");
+    seg.setAttribute("role", "tablist");
+    const body = el("div", "pbody");
+    body.id = "frOwnBody";
+    body.setAttribute("role", "tabpanel");
+    pane.append(seg, body);
+    const grid2 = el("div", "rgrid fr-own-grid");
+    grid2.appendChild(pane);
+    room.appendChild(grid2);
+
+    const tabs = [];
+    function addTab(id, text, draw) {
+      const b = el("button", "", text);
+      b.type = "button";
+      b.id = `frSeg-${id}`;
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-controls", "frOwnBody");
+      b.addEventListener("click", () => show(id, true));
+      tabs.push({ id, b, draw });
+      seg.appendChild(b);
+      return b;
+    }
+    function show(id, user) {
+      const t = tabs.find((x) => x.id === id) || tabs[0];
+      for (const x of tabs) {
+        const on = x === t;
+        x.b.classList.toggle("on", on);
+        x.b.setAttribute("aria-selected", on ? "true" : "false");
       }
-      group.appendChild(ul);
-      block.appendChild(group);
+      body.setAttribute("aria-labelledby", t.b.id);
+      body.textContent = "";
+      const view = el("div", "view");
+      t.draw(view);
+      body.appendChild(view);
+      try {
+        const u = new URL(location.href);
+        if (u.searchParams.get("a") !== key) u.searchParams.set("a", key);
+        if (t.id === "works") u.searchParams.delete("tab"); else u.searchParams.set("tab", t.id);
+        if (u.href !== location.href) history.replaceState(history.state, "", u);
+      } catch (_) { /* the page still stands */ }
+      if (user) t.b.focus({ preventScroll: true });
     }
-    s.appendChild(block);
 
-    const more = el("p", "fr-own-more");
-    more.appendChild(link(`/the-faith-received/all-works/?collection=all&q=${encodeURIComponent(name)}`, `${name} in All Works`, "fr-own-link"));
-    more.appendChild(document.createTextNode("  ·  "));
-    more.appendChild(link("/the-faith-received/author/", "Every author", "fr-own-link"));
-    s.appendChild(more);
+    // Works, by collection, in the room's rows.
+    const pagesOf = {};
+    addTab("works", `Works · ${n0(works.length)}`, (view) => {
+      view.appendChild(el("h2", "", "Works"));
+      view.appendChild(el("p", "pane-meta", `${works.length === 1 ? "One work" : `${n0(works.length)} works`} in the library. Open a work to begin reading.`));
+      const filters = el("div", "rx-filters");
+      const lab = el("label", "rx-search", "Find a work");
+      const q = el("input");
+      q.type = "search";
+      q.placeholder = "Search titles";
+      lab.appendChild(q);
+      filters.appendChild(lab);
+      if (works.length > 6) view.appendChild(filters);
+      const count = el("p", "rx-note", "");
+      count.setAttribute("role", "status");
+      const list = el("div", "fr-own-works-list");
+      view.append(count, list);
+      const draw = () => {
+        const f = A.fold(q.value);
+        list.textContent = "";
+        let shown = 0;
+        for (const [c, title] of COLLECTIONS) {
+          const rows = works.filter((w) => w[0] === c && (!f || A.fold(w[2]).includes(f)));
+          if (!rows.length) continue;
+          shown += rows.length;
+          const head = el("div", "volhead", `${title} `);
+          head.appendChild(el("span", "", `· ${n0(rows.length)}`));
+          list.appendChild(head);
+          const ul = el("div", "rx-work-list");
+          for (const [wc, id, t, yv] of rows) {
+            const href = readerHref(wc, id);
+            const row = el("article", "rx-work-row");
+            const main = el("div");
+            const h3 = el("h3");
+            h3.appendChild(link(href, t));
+            main.appendChild(h3);
+            const np = pagesOf[workSlug(wc, id)];
+            const ref = [metaOf(wc, yv), np ? `${n0(np)} indexed page${np === 1 ? "" : "s"}` : ""].filter(Boolean).join(" · ");
+            if (ref) main.appendChild(el("p", "rx-work-reference", ref));
+            const act = el("div", "rx-work-actions");
+            const read = link(href, "Read work", "rx-text-link");
+            read.setAttribute("aria-label", `Read ${t}`);
+            act.appendChild(read);
+            row.append(main, act);
+            ul.appendChild(row);
+          }
+          list.appendChild(ul);
+        }
+        count.textContent = `${shown === 1 ? "1 matching work" : `${n0(shown)} matching works`}`;
+        count.hidden = !f;
+      };
+      q.addEventListener("input", draw);
+      draw();
+    });
 
-    // One address per person: the key, whatever spelling the link used.
-    try {
-      const u = new URL(location.href);
-      if (u.searchParams.get("a") !== key) { u.searchParams.set("a", key); history.replaceState(history.state, "", u); }
-    } catch (_) { /* the page still stands */ }
+    // Scripture and Reception arrive with their data; drawn only if it is there.
+    const wantTab = new URLSearchParams(location.search).get("tab") || "works";
+    show("works");
+    const books = new Map();
+    let cites = 0;
+    let indexed = 0;
+    const targets = works.slice(0, MINE_CAP).map((w) => workSlug(w[0], w[1]));
+    const mine = (async () => {
+      let i = 0;
+      const next = async () => {
+        while (i < targets.length) {
+          const slug = targets[i++];
+          const d = await libJson(`v1/mine/work/${encodeURIComponent(slug)}.json`);
+          if (!d) continue;
+          indexed++;
+          if (d.np) pagesOf[slug] = d.np;
+          for (const bk of d.books || []) {
+            const nm = bk.name || bk.b;
+            if (!nm || !bk.n) continue;
+            const had = books.get(nm) || { n: 0, works: [] };
+            had.n += bk.n;
+            had.works.push([slug, d.t, bk.n]);
+            books.set(nm, had);
+            cites += bk.n;
+          }
+        }
+      };
+      await Promise.all(Array.from({ length: 6 }, next));
+    })();
+    const graph = libJson(`v1/graph/nb/${encodeURIComponent(key)}.json`);
+
+    Promise.all([mine, graph]).then(([, nb]) => {
+      const allPages = works.length && works.length <= MINE_CAP && works.every((w) => pagesOf[workSlug(w[0], w[1])]);
+      if (allPages) {
+        pagesBox.querySelector("b").textContent = n0(Object.values(pagesOf).reduce((a, b) => a + b, 0));
+        pagesBox.hidden = false;
+      }
+      if (cites) {
+        citesBox.querySelector("b").textContent = n0(cites);
+        citesBox.hidden = false;
+        addTab("scripture", "Scripture", (view) => {
+          view.appendChild(el("div", "pane-topic", "Scripture"));
+          const partial = works.length > indexed;
+          view.appendChild(el("div", "pane-meta", `${n0(books.size)} book${books.size === 1 ? "" : "s"} · ${n0(cites)} citation${cites === 1 ? "" : "s"}${partial ? ` · from the ${n0(indexed)} of ${n0(works.length)} works indexed so far` : ""}`));
+          const g = el("div", "bkgrid");
+          const rows = [...books.entries()].sort((a, b) => b[1].n - a[1].n);
+          const max = rows.length ? rows[0][1].n : 1;
+          rows.forEach(([nm, v], k) => {
+            const r = el("div", "bkrow");
+            r.title = v.works.sort((a, b) => b[2] - a[2]).map(([, t, n]) => `${t} · ${n}`).join("\n");
+            r.appendChild(el("b", "", nm));
+            const bar = el("i");
+            bar.style.width = `${Math.max(1, Math.round((v.n / max) * 50))}%`;
+            bar.style.animationDelay = `${Math.min(k, 30) * 20}ms`;
+            r.appendChild(bar);
+            r.appendChild(el("span", "n", n0(v.n)));
+            g.appendChild(r);
+          });
+          view.appendChild(g);
+        });
+      }
+      const inb = ((nb && nb.cited_by) || []).filter((x) => x && x.a && x.w);
+      const outb = ((nb && nb.cites) || []).filter((x) => x && x.a && x.w);
+      if (inb.length || outb.length) {
+        const sum = (xs) => xs.reduce((a, x) => a + x.w, 0);
+        addTab("reception", inb.length ? `Reception · ${n0(sum(inb))}` : "Reception", (view) => {
+          view.appendChild(el("div", "pane-topic", "Reception"));
+          const meta = el("div", "pane-meta");
+          const parts = [];
+          if (inb.length) parts.push(`cited ${n0(sum(inb))} times by ${n0(inb.length)} author${inb.length === 1 ? "" : "s"}`);
+          if (outb.length) parts.push(`draws on ${n0(outb.length)} author${outb.length === 1 ? "" : "s"} across ${n0(sum(outb))} citation${sum(outb) === 1 ? "" : "s"}`);
+          meta.textContent = parts.join(" · ");
+          view.appendChild(meta);
+          const bar = el("div", "fr-own-rbar");
+          const rin = el("button", "chip", `His reception · ${n0(sum(inb))}`);
+          rin.id = "rin";
+          const rout = el("button", "chip", `His sources · ${n0(sum(outb))}`);
+          rout.id = "rout";
+          const rq = el("input");
+          rq.type = "search";
+          rq.id = "rq";
+          rq.placeholder = "Find an author…";
+          bar.append(rin, rout, rq);
+          view.appendChild(bar);
+          const paneR = el("div", "rx-pane rx-reception-pane");
+          view.appendChild(paneR);
+          let dir = inb.length ? "in" : "out";
+          const paint = () => {
+            rin.classList.toggle("on", dir === "in");
+            rout.classList.toggle("on", dir === "out");
+            rin.setAttribute("aria-pressed", dir === "in" ? "true" : "false");
+            rout.setAttribute("aria-pressed", dir === "out" ? "true" : "false");
+            const f = A.fold(rq.value);
+            const xs = (dir === "in" ? inb : outb).filter((x) => !f || A.fold(x.a).includes(f)).sort((a, b) => b.w - a.w);
+            paneR.textContent = "";
+            const head = el("div", "volhead", dir === "in" ? `Cited by · ${n0(sum(xs))} ` : `His sources · ${n0(sum(xs))} `);
+            head.appendChild(el("span", "", `${n0(xs.length)} author${xs.length === 1 ? "" : "s"}`));
+            paneR.appendChild(head);
+            for (const x of xs) {
+              const row = el("div", "rrow fr-own-rrow");
+              const line = el("div", "fr-own-rline");
+              const nm = el("span", "nm");
+              nm.appendChild(link(`/the-faith-received/author/?a=${encodeURIComponent(x.s || x.a)}`, x.a));
+              line.appendChild(nm);
+              if (x.opp) line.appendChild(el("span", "rera", `refutes ${dir === "in" ? "him" : ""} ${n0(x.opp)}`.replace("  ", " ")));
+              line.appendChild(el("span", "rn", `${n0(x.w)} citation${x.w === 1 ? "" : "s"}`));
+              row.appendChild(line);
+              paneR.appendChild(row);
+            }
+            if (!xs.length) paneR.appendChild(el("p", "rx-note", "No author by that name here."));
+          };
+          rin.disabled = !inb.length;
+          rout.disabled = !outb.length;
+          rin.addEventListener("click", () => { dir = "in"; paint(); });
+          rout.addEventListener("click", () => { dir = "out"; paint(); });
+          rq.addEventListener("input", paint);
+          paint();
+        });
+      }
+      addTab("search", "Search", (view) => {
+        view.appendChild(el("div", "pane-topic", `Search ${name}`));
+        view.appendChild(el("div", "pane-meta", `Searches the passages of ${works.length === 1 ? "this one work" : `these ${n0(works.length)} works`} on the library's search page.`));
+        const form = el("form", "srow");
+        form.action = "/the-faith-received/search/";
+        form.method = "get";
+        const q = el("input");
+        q.type = "search";
+        q.name = "q";
+        q.required = true;
+        q.placeholder = "A word, a phrase, a question…";
+        q.setAttribute("aria-label", `Search ${name}`);
+        const au = el("input");
+        au.type = "hidden";
+        au.name = "author";
+        au.value = name;
+        const go = el("button", "", "Find");
+        go.type = "submit";
+        form.append(q, au, go);
+        view.appendChild(form);
+      });
+      // The tab the address asked for, once it exists; otherwise the
+      // works again, so their rows carry the page counts (unless the
+      // reader has moved on or started typing a filter).
+      const on = tabs.find((x) => x.b.classList.contains("on"));
+      const typing = body.querySelector(".rx-search input");
+      if (wantTab !== "works" && tabs.some((x) => x.id === wantTab)) show(wantTab);
+      else if (on && on.id === "works" && !(typing && typing.value) && document.activeElement !== typing) show("works");
+    });
   }
 
   function drawList(title, sub, people, note) {
@@ -206,6 +518,7 @@
     if (!t) return; // a room: the shell has it
     document.documentElement.classList.add("fr-author-own");
     if (window.MODenom && window.MODenom.ready) await window.MODenom.ready();
+    if (window.MOAuthorLabels) await window.MOAuthorLabels.ready.catch(() => null);
     if (t.startsWith("@@")) {
       const base = t.slice(2);
       const d = await json("people.json");

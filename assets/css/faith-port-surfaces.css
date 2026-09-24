@@ -1733,3 +1733,127 @@ main.research-room :is(.rx-profile, .rx-author-bio, .rx-secondary, .rx-position-
   main.research-room .rx-results-line { flex-wrap: wrap; gap: 8px; }
   main.research-room .view div:has(> #rin) > #rq { flex-basis: 100%; margin: 10px 0 0; }
 }
+
+/* Positions in the thin-line manner (Ian, 2026-09-24, on Anselm's
+   Positions tab). The loci heads were large spaced caps and each topic a
+   25px display-face title. Now: the loci head a terracotta small-caps
+   eyebrow with its count right and muted; each topic a hairline row at
+   body-heading size, its meta line small and muted, a thin terracotta
+   chevron on the right as on Topics; an opened topic's works are
+   thin-line cards. */
+main.research-room .rx-loci-jump a:hover { color: var(--room-accent); border-bottom-color: var(--room-accent); }
+/* body.research-enhanced's h3 rules outrank a bare class. */
+body main.research-room .rx-loci-group > h3.rx-loci-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 30px 0 0;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--room-line);
+  font: 600 12px/1.4 var(--font-body, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--room-accent);
+}
+body main.research-room .rx-loci-group:first-child > h3.rx-loci-head { margin-top: 8px; }
+body main.research-room .rx-loci-group > h3.rx-loci-head small {
+  flex: none;
+  font: 400 12px/1.4 var(--font-body, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-muted, #6b6660);
+  font-variant-numeric: tabular-nums;
+}
+main.research-room .rx-loci-list { border-top: 0; }
+main.research-room .rx-position-topic { border-bottom: 1px solid var(--room-line); }
+main.research-room .rx-position-topic > summary {
+  position: relative;
+  min-height: 0;
+  padding: 14px 32px 14px 0;
+  gap: 12px;
+}
+main.research-room .rx-position-topic > summary strong {
+  font: 600 1.15em/1.3 var(--font-body, "Source Serif Pro", Georgia, serif);
+  color: var(--room-ink);
+}
+main.research-room .rx-position-topic > summary:hover strong { color: var(--room-accent); text-decoration: none; }
+main.research-room .rx-position-topic > summary small { font-size: 13px; margin-top: 3px; color: var(--color-muted, #6b6660); }
+main.research-room .rx-position-topic > summary::after {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  margin: 0;
+  border-color: var(--room-accent);
+  transform: translateY(-30%) rotate(-45deg);
+}
+main.research-room .rx-position-topic[open] > summary::after { transform: translateY(-70%) rotate(45deg); }
+main.research-room .rx-position-topic[open] > summary { padding-bottom: 12px; }
+main.research-room .rx-position-body { padding: 0 0 18px; }
+main.research-room .rx-position-body .cd-work {
+  border: 1px solid var(--room-line);
+  border-radius: 3px;
+  background: var(--room-card);
+  padding: 0 16px;
+  margin: 0 0 10px;
+}
+main.research-room .rx-position-body .cd-work:first-child { border-top: 1px solid var(--room-line); }
+main.research-room .rx-position-body .cd-work > summary { font-size: 15px; padding: 12px 0; align-items: center; }
+main.research-room .rx-position-body .cd-work > summary::before { color: var(--room-accent); }
+main.research-room .rx-position-body .cd-work > summary strong { font-weight: 600; }
+main.research-room .rx-position-body .cd-work > summary small { color: var(--color-muted, #6b6660); }
+main.research-room .rx-position-body .cd-work[open] > summary { border-bottom: 1px solid var(--room-line); }
+main.research-room .rx-position-body .rx-excerpt { border-color: var(--room-line); }
+main.research-room .rx-position-body .rx-evidence-kind {
+  font: 600 11px/1.4 var(--font-body, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--room-accent);
+}
+main.research-room #positions-count { font-size: 14px; color: var(--color-muted, #6b6660); }
+
+/* ── An author with no room, in the room's dress (faith-author-page.js).
+   Ian, 2026-09-24, on Boethius: "Why is his author page like this and
+   not like everyone else's?" The page draws the room's own markup in a
+   <main class="research research-room"> of its own, so every rule above
+   applies. These rules only place that main as the port places #page,
+   and cover what a room has and it does not (no topic rail). */
+html.fr-author-own main#frAuthorOwn { max-width: 1180px; width: 100%; margin: 0 auto; padding: 44px 32px 100px; min-width: 0; box-sizing: border-box; }
+main#frAuthorOwn .fr-own-grid { display: block; margin-top: 26px; }
+main#frAuthorOwn .ar-stat[hidden] { display: none; }
+main#frAuthorOwn .fr-own-dek { font: 17px/1.55 var(--font-body, "Source Serif Pro", Georgia, serif); color: var(--room-ink); margin: 0 0 14px; max-width: 75ch; }
+main#frAuthorOwn .fr-own-works-list > .volhead:first-child { margin-top: 18px; }
+main#frAuthorOwn .fr-own-works-list .rx-work-list { margin-top: 0; }
+main#frAuthorOwn .fr-own-rbar { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0.6rem 0 0.2rem; }
+main#frAuthorOwn .fr-own-rbar #rq { font: inherit; }
+main#frAuthorOwn .fr-own-rline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  min-height: 44px;
+  padding: 0.34rem 0;
+  border-bottom: 1px solid var(--room-line);
+}
+main#frAuthorOwn .fr-own-rline .nm a { color: var(--room-ink); text-decoration: none; }
+main#frAuthorOwn .fr-own-rline .nm a:hover { color: var(--room-accent); }
+main#frAuthorOwn .bkrow { cursor: default; }
+main#frAuthorOwn form.srow { display: flex; gap: 0; margin-top: 12px; max-width: 640px; }
+main#frAuthorOwn form.srow input[type="search"] { flex: 1 1 auto; min-width: 0; border-radius: 3px 0 0 3px; }
+main#frAuthorOwn form.srow button {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--room-accent);
+  border-radius: 0 3px 3px 0;
+  background: var(--room-accent);
+  color: #fff;
+  font: 15px/1 var(--font-body, "Source Serif Pro", Georgia, serif);
+  cursor: pointer;
+}
+@media (max-width: 640px) {
+  html.fr-author-own main#frAuthorOwn { padding: 18px 16px 80px; }
+  main#frAuthorOwn h1 { font-size: 34px; margin-bottom: 2px; }
+  main#frAuthorOwn .fr-own-grid { margin-top: 8px; }
+  main.research-room .rx-position-topic > summary strong { font-size: 1.05em; }
+  body main.research-room .rx-loci-group > h3.rx-loci-head { flex-wrap: wrap; gap: 2px 12px; }
+}

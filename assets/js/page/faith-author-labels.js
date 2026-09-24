@@ -173,7 +173,9 @@
     return new URLSearchParams(location.search).get("sh") || "";
   }
   function paintRoom() {
-    const room = document.querySelector("main.research-room");
+    // The port's own room only: an author with no room draws a
+    // main.research-room of its own (faith-author-page.js), with its labels.
+    const room = document.querySelector("main#page.research-room");
     const profile = room && room.querySelector(".rx-profile");
     const grid = profile && profile.querySelector(".ar-stats");
     if (!grid) return;
@@ -228,6 +230,8 @@
     paintRoom();
     paintDirectory();
   }
+  // For faith-author-page.js, which draws the rooms' boxes for authors with no room.
+  window.MOAuthorLabels = { ready, labelFor, writeLabel };
   ready.then(() => {
     const page = document.getElementById("page") || document.body;
     new MutationObserver(paint).observe(page, { childList: true, subtree: true, characterData: true });
