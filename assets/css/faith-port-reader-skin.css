@@ -3431,3 +3431,20 @@ html.g-mobile #app .aapop .fr-tb-paras:not([hidden]) { display: inline-flex !imp
   margin: 0;
 }
 #app .aapop .aarow-tools .aaseg > .tgl:not([hidden]) ~ .tgl:not([hidden]) { border-left: 1px solid var(--border, #d9c6a7); }
+
+/* Heading titles a step smaller (Ian, 2026-09-24: "shrink the font size
+   on those headlines"). Same selectors as the heading block above, later
+   so they win. Box titles 1.42 -> 1.18em, tier two 1.2 -> 1.08em. */
+#app #reading .fr-hd-card .fr-hd-title,
+#app #reading .fr-hd-promoted.fr-hd-in-card:not(h3),
+#app #reading h3.fr-hd-promoted.fr-hd-in-card .fr-hd-title { font-size: 1.18em; }
+#app #reading .row.fr-sec-headrow--long .fr-hd-card .fr-hd-title { font-size: 1.02em; }
+#app #reading .fr-hd-t2 .fr-hd-title,
+#app #reading .fr-hd-promoted.fr-hd-in-t2:not(h3),
+#app #reading h3.fr-hd-promoted.fr-hd-in-t2 .fr-hd-title { font-size: 1.08em; }
+html.g-mobile #app #reading .fr-hd-card .fr-hd-title,
+html.g-mobile #app #reading .fr-hd-promoted.fr-hd-in-card:not(h3),
+html.g-mobile #app #reading h3.fr-hd-promoted.fr-hd-in-card .fr-hd-title { font-size: 1.1em; }
+html.g-mobile #app #reading .fr-hd-t2 .fr-hd-title,
+html.g-mobile #app #reading .fr-hd-promoted.fr-hd-in-t2:not(h3),
+html.g-mobile #app #reading h3.fr-hd-promoted.fr-hd-in-t2 .fr-hd-title { font-size: 1.04em; }
