@@ -11375,7 +11375,10 @@ body.faith-toc-open .faith-dock { display: none; }
 .fr-report-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  /* Above every reader layer: the Research rail is 10020 and the reader's
+     toolbar rises to 10030 while one of its menus is open. At 1200 an open
+     Aa panel covered this dialog's close button on a phone. */
+  z-index: 10050;
   background: rgba(45, 41, 39, 0.45);
   display: flex;
   align-items: center;
@@ -11392,9 +11395,22 @@ body.faith-toc-open .faith-dock { display: none; }
   /* Taller than a short phone in landscape, so it scrolls inside
      itself rather than off the screen. */
   max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
   overflow-y: auto;
-  padding: 22px 24px 24px;
+  overscroll-behavior: contain;
+  padding: 0 24px 24px;
 }
+/* The head stays at the top of the dialog as it scrolls, so its close
+   button is always in reach. */
+.fr-report > .fr-report-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-page);
+  padding: 22px 0 8px;
+}
+.fr-report > .fr-report-done { padding-top: 22px; }
+.fr-report-close { min-width: 40px; min-height: 40px; }
 .fr-report-head {
   display: flex;
   align-items: baseline;

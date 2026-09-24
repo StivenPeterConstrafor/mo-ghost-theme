@@ -172,8 +172,25 @@
       } catch (_) { /* the form still sends; the worker decides */ }
     }
 
+    /* No keyboard on open on a touch screen (Ian, 2026-09-23: "Can't
+       close out of the report form"). Focusing the first field raised
+       the keyboard at once, iOS slid the fixed dialog under it and the
+       close button went off the top of the visible screen. On a touch
+       screen the dialog takes the focus instead; the reader taps the
+       field they want. */
     const firstField = overlay.querySelector('input[name="firstName"]');
-    if (firstField) firstField.focus();
+    const coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    const dialog = overlay.querySelector(".fr-report");
+    if (firstField && !coarse) firstField.focus();
+    else if (dialog) { dialog.tabIndex = -1; dialog.focus({ preventScroll: true }); }
+    // Anything that raised it may have a menu open (the reader's Aa and
+    // Tools panels stack above ordinary dialogs while open). Close them.
+    document.querySelectorAll(".aapop.on, .aapop.is-open").forEach((p) => {
+      p.classList.remove("on", "is-open");
+    });
+    document.querySelectorAll('#aaBtn[aria-expanded="true"], #rdTools[aria-haspopup][aria-expanded="true"]').forEach((b) => {
+      b.setAttribute("aria-expanded", "false");
+    });
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();

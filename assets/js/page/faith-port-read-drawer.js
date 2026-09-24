@@ -243,6 +243,9 @@
   const dLang = document.createElement("button");
   dLang.type = "button";
   dLang.className = "fr-td-lang";
+  // reader-core takes the reading place on pointerdown over [data-t]
+  // before a lane change relays the column; this one wants that too.
+  dLang.dataset.t = "x-lang";
   dLang.addEventListener("click", cycleLane);
   langBtns.push(dLang);
   const dScan = document.createElement("button");
