@@ -1151,6 +1151,12 @@
   async function open(opts={}){
     // MereO: use the same Ghost member state as the server-rendered beta gate.
     // Embedded Ask doors remain available, but lead signed-out readers to sign in.
+    // MereO 2026-09-24 (Ian: every door to a tool meets the subscribe pop-up):
+    // this is the one function every Ask door goes through (the buttons, the
+    // Cmd/Ctrl+Shift+A shortcut, a ?ask= address), so a reader who cannot use
+    // Ask gets feature-gate.js's modal here instead of being sent to /ask/.
+    // The redirect below stays as the fallback for a page without the bundle.
+    if (window.MOFeatureGate && window.MOFeatureGate.open('ask')) return;
     if (!document.body.hasAttribute('data-member-status')) {
       const destination = new URL(CFG.askPath, location.origin);
       if (opts.q) destination.searchParams.set('q', opts.q);

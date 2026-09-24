@@ -265,7 +265,7 @@ function _findBar(){
       +'<button id="findPrev" aria-label="Previous match" title="Previous match (Shift+Enter)">↑</button>'
       +'<button id="findNext" aria-label="Next match" title="Next match (Enter)">↓</button>'
       +'<button id="findX" aria-label="Close search" title="Close search (Escape)">×</button>'
-      +'<div class="findmeta"><span id="findCount" role="status" aria-live="polite"></span><span id="findHelp">In shown, loaded text</span><button type="button" id="findWholeWork">Search whole work</button></div>';
+      +'<div class="findmeta"><span id="findCount" role="status" aria-live="polite"></span><span id="findHelp">In shown, loaded text</span><button type="button" id="findWholeWork" data-feature-gate="tfr-research">Search whole work</button></div>';
     const reading=$("#reading");if(reading)reading.before(b);else document.body.appendChild(b);
     const input=$("#findInput");
     input.addEventListener("input",()=>{clearTimeout(FIND._inputTimer);FIND._inputTimer=setTimeout(()=>{findSet(input.value.trim()?[input.value.trim()]:[]);findScrollCur();},160);});
@@ -1402,6 +1402,11 @@ function __initReaderTools(){
   for(const [key,id] of [['work','WorkPanel'],['search','WorkSearch'],['passage','Passage'],['saved','Saved'],['chats','Chats']])($('#nb'+id+'Tab')||{}).onclick=()=>researchTab(key);
   $('.nb-tabs')?.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const keys=['work','search','passage','saved','chats'],tabs=[...$('.nb-tabs').querySelectorAll('button')],i=tabs.indexOf(document.activeElement),n=e.key==='Home'?0:e.key==='End'?keys.length-1:(i+(e.key==='ArrowRight'?1:keys.length-1))%keys.length;researchTab(keys[n]);tabs[n].focus();tabs[n].scrollIntoView({block:'nearest',inline:'nearest'});});
   async function openNotebook(view){
+    /* MereO 2026-09-24: the Research panel is a research tool. Every way
+       in (Save, More, Image, Search whole work, ?research=work) comes
+       through here, so a reader without an account gets the subscribe
+       pop-up from feature-gate.js instead of the panel. */
+    if(window.MOFeatureGate&&window.MOFeatureGate.open('tfr-research'))return;
     nbFocus=document.activeElement;if(window.FRAsk?.isOpen?.())await window.FRAsk.close();
     captureSelection();renderNotebook();paintPassage();researchTab(view);
     notebook.inert=false;notebook.classList.add('open');notebook.setAttribute('aria-hidden','false');$('#nbScrim')?.classList.add('open');$('#nbCount')?.setAttribute('aria-expanded','true');syncNotebookLayout();
@@ -1417,7 +1422,12 @@ function __initReaderTools(){
   window.__frSearchWork=async query=>{await openNotebook('search');($('#nbWorkSearchQuery')||{}).value=String(query||'');await runReaderSearch();};
   window.__frOpenNotebook=openNotebook;   // thumb-bar hook (mobile shell)
   window.FRReaderResearch={open:openNotebook,close:closeNotebook,passage:()=>passage&&({...passage}),navigate(url){return window.__frNavigateReaderAnchor?.(url)===true;}};
-  if(new URLSearchParams(location.search).get('research')==='work')queueMicrotask(()=>openNotebook('work'));
+  if(new URLSearchParams(location.search).get('research')==='work'){
+    /* After DOMContentLoaded, so site.min.js (and with it MOFeatureGate) has
+       run and a reader without an account meets the gate, not the panel. */
+    const openWork=()=>openNotebook('work');
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',openWork,{once:true});else queueMicrotask(openWork);
+  }
   const nbEl=key=>document.getElementById(String(key).slice(WSID.length+1));   // scoped storage key → its DOM row
   document.documentElement.classList.add('fr-research-tools');
   function gotoRow(id){if(!sideMedia.matches)closeNotebook();let t=nbEl(id);if(!t){const rowid=String(id).slice(WSID.length+1),pg=(rowid.match(/^b(.+)-\d+$/)||[])[1];if(pg)window.__ensurePage?.(pg);t=nbEl(id);}if(!t)return;

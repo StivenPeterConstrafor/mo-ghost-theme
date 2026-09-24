@@ -145,6 +145,12 @@
     const name = ((titleEl || a).textContent || "").replace(/\s+/g, " ").trim().slice(0, 120);
     if (name) btn.setAttribute("data-frb-title", name);
     btn.setAttribute("data-frb-id", id);
+    // Bookmarks is a research tool (Ian, 2026-09-24: every door to one
+    // meets the subscribe pop-up). feature-gate.js catches the click for
+    // a reader without an account before the handler below runs; the
+    // redirect in that handler is only the fallback for a page without
+    // the bundle.
+    btn.setAttribute("data-feature-gate", "tfr-bookmarks");
     paint(btn, BM.has(id));
 
     if (!buttons.has(id)) buttons.set(id, []);

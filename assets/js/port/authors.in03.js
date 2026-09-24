@@ -266,9 +266,9 @@ let SAVED=new Set();const refreshSaved=()=>{try{SAVED=window.FRResearchNotebook?
 addEventListener('fr-notebook-updated',refreshSaved);addEventListener('storage',e=>{if(e.key==='fr_collections_v1')refreshSaved();});
 const refKey=(w,p)=>'fr|'+w+'|'+(p==null||p===''?'':String(p));
 const pinBtn=(w,p,title,author,label)=>{if(!w)return "";const page=FRResearch.page(p);if(page==null)return "";const on=SAVED.has(refKey(w,page));
-  return `<button type="button" class="pinb${on?" on":""}" data-save-passage="${esc(w)}" data-page="${esc(String(page))}" data-title="${esc(String(title||"").slice(0,90))}" data-author="${esc(String(author||"").slice(0,60))}" data-label="${esc(String(label||"").slice(0,240))}" aria-pressed="${on}" title="${on?'Saved in your notebook · click to remove':'Save this passage to your notebook'}">${on?"Saved":"Save passage"}</button>`;};
+  return `<button type="button" class="pinb${on?" on":""}" data-feature-gate="tfr-notebook" data-save-passage="${esc(w)}" data-page="${esc(String(page))}" data-title="${esc(String(title||"").slice(0,90))}" data-author="${esc(String(author||"").slice(0,60))}" data-label="${esc(String(label||"").slice(0,240))}" aria-pressed="${on}" title="${on?'Saved in your notebook · click to remove':'Save this passage to your notebook'}">${on?"Saved":"Save passage"}</button>`;};
 const workSaveBtn=(w,title,author)=>{if(!w)return "";const on=SAVED.has(refKey(w,null));
-  return `<button type="button" class="pinb pinb-work${on?" on":""}" data-save-work="${esc(w)}" data-title="${esc(String(title||"").slice(0,120))}" data-author="${esc(String(author||"").slice(0,60))}" aria-pressed="${on}" title="${on?'Saved for later reading · click to remove':'Save this work for later reading'}">${on?"Saved":"Save work"}</button>`;};
+  return `<button type="button" class="pinb pinb-work${on?" on":""}" data-feature-gate="tfr-notebook" data-save-work="${esc(w)}" data-title="${esc(String(title||"").slice(0,120))}" data-author="${esc(String(author||"").slice(0,60))}" aria-pressed="${on}" title="${on?'Saved for later reading · click to remove':'Save this work for later reading'}">${on?"Saved":"Save work"}</button>`;};
 document.addEventListener("click",async e=>{
   const b=e.target.closest("[data-save-passage],[data-save-work]");if(!b)return;e.preventDefault();e.stopPropagation();
   const N=window.FRResearchNotebook;if(!N?.saveWork){b.title='The notebook could not load. Reload and try again.';return;}
@@ -888,6 +888,8 @@ async function room(slug,arg){
     other.state.set(t.t,{rows:positionRows(full?.pos||ot?.pos||[]),total:ot?.npos||0,loading:false});refreshPositions();
   }
   async function setCompare(row){
+    // MereO 2026-09-24: putting a second author beside this one is Compare, a research tool.
+    if(row&&window.MOFeatureGate&&window.MOFeatureGate.open('tfr-compare')){const inp=$('#positions-compare');if(inp)inp.value='';return;}
     if(!row){positionCompare=null;drawPositions();if(VIEW==='p')setHash(positionRoute(positionTopic));return;}
     const room=await J(BLOB+`/v1/bible/${row.sh}/rooms/${row.s}.json`).catch(()=>null);if(run!==RESEARCH_RUN)return;
     if(!room){positionCompare=null;drawPositions();return;}
@@ -925,7 +927,7 @@ async function room(slug,arg){
       const order=(a,b)=>headOf(a.t)-headOf(b.t)||((LOCUS_HEAD[RX.fold(a.t.t)]||[0,99])[1]-(LOCUS_HEAD[RX.fold(b.t.t)]||[0,99])[1])||(b.t.npos||0)-(a.t.npos||0);
       hits.sort(order);
       const groups=[];hits.forEach(h=>{const hi=headOf(h.t);const g=groups.find(x=>x.hi===hi)||(groups.push({hi,label:hi<LOCI_HEADS.length?LOCI_HEADS[hi][0]:hi===LOCI_HEADS.length?'Other topics':'Unreviewed extraction labels',items:[]}),groups[groups.length-1]);g.items.push(h);});
-      const cmpLink=positionCompare?` <a class="rx-text-link" href="#${encodeURIComponent(slug)}/with/${encodeURIComponent(positionCompare.s)}">Full comparison with ${esc(positionCompare.a)}</a> · <a class="rx-text-link" href="${cdURL({a:[slug,positionCompare.s],sel:positionTopic?tslugOf(positionTopic):'',g:positionGroup,s:positionAnnotation,q:positionPhrase})}">Open in the comparison desk</a>`:'';
+      const cmpLink=positionCompare?` <a class="rx-text-link" data-feature-gate="tfr-compare" href="#${encodeURIComponent(slug)}/with/${encodeURIComponent(positionCompare.s)}">Full comparison with ${esc(positionCompare.a)}</a> · <a class="rx-text-link" href="${cdURL({a:[slug,positionCompare.s],sel:positionTopic?tslugOf(positionTopic):'',g:positionGroup,s:positionAnnotation,q:positionPhrase})}">Open in the comparison desk</a>`:'';
       $('#positions-work-link').dataset.cmp=cmpLink;
       $('#positions-count').textContent=fmtR(hits.length)+(hits.length===1?' topic · ':' topics · ')+fmtR(hits.reduce((n,x)=>n+x.t.npos||0,0))+' indexed positions · '+fmtR(hits.reduce((n,x)=>n+x.rows.length,0))+' statements loaded'+(positionCompare?' · compared with '+positionCompare.a:'');
       $('#positions-work-link').innerHTML=(positionWork?`<a class="rx-text-link" href="${workResearchHref(positionWork)}">Explore this work in the reader</a>`:'')+cmpLink;
@@ -938,7 +940,7 @@ async function room(slug,arg){
         const theirRows=positionCompare?(cmp?.rows||[]).filter(r=>positionMatches(r,{phrase:positionPhrase,annotation:positionAnnotation})):[];
         const theirs=positionCompare?`<div class="rx-cmp-col"><h4 class="rx-cmp-head">${esc(positionCompare.a)} <small>${cmpTopic?fmtR(cmp?.total??cmpTopic.npos??0)+' positions':'no positions on this topic'}</small></h4>${cmp?.loading?'<p class="rx-note">Loading…</p>':foldsHTML(grouped(theirRows,positionCompare.works),otherStatement,t.key+'|theirs')||(cmpTopic?'<p class="rx-note">Opens when this topic is opened.</p>':'')}</div>`:'';
         return `<details class="rx-fold rx-position-topic" data-position-topic="${i}"${open?' open':''}><summary><span><strong>${esc(t.t)}${t.via?.length?' <i class="cd-via" aria-hidden="true">+</i>':''}</strong><small>${t.via?.length?'includes '+t.via.map(esc).join(', ')+' · ':''}${coverage}${rows.length?' · '+fmtR(rows.length)+' statements loaded':''}${state.loading?' · loading…':''}${state.error?' · index unavailable, showing the room selection':''}</small></span></summary>
-          <div class="rx-position-body${positionCompare?' rx-position-compare':''}">${RX.isRawTopic(t.t)?'<p class="rx-note">Unreviewed extraction label.</p>':''}<div class="rx-cmp-col rx-cmp-mine">${positionCompare?`<h4 class="rx-cmp-head">${esc(d.a)} <small>${fmtR(rows.length)} loaded</small></h4>`:''}${mine}${state.contract&&!state.done&&!state.halted?`<div class="rx-position-sentinel" data-position-sentinel="${i}">${state.loading?'Loading more…':'Scroll for more'}</div>`:state.halted?`<p class="rx-note">The index stopped answering at ${fmtR((state.indexedRows||[]).length)} of ${fmtR(total)}. <button class="rx-text-link" data-position-retry="${i}">Try again</button></p>`:''}${`<p class="rx-note rx-position-foot">${state.contract&&state.done?'Complete index loaded. ':''}${TSLUG.get(RX.fold(t.t))?`<a class="rx-text-link" href="/the-faith-received/topics/#${encodeURIComponent(TSLUG.get(RX.fold(t.t)))}">All authors on this topic</a> · <a class="rx-text-link" href="/the-faith-received/connections/#t=${encodeURIComponent(TSLUG.get(RX.fold(t.t)))}">This topic in the citation web</a>`:`<a class="rx-text-link" href="/the-faith-received/connections/#a=${encodeURIComponent(slug)}">This author in the citation web</a>`}${positionCompare?` · <a class="rx-text-link" href="#${encodeURIComponent(slug)}/with/${encodeURIComponent(positionCompare.s)}/topic/${encodeURIComponent(tslugOf(t.t))}">Full comparison on this topic</a>`:''}</p>`}</div>${theirs}</div></details>`;}).join('')}</section>`).join('')||'<div class="rx-empty"><h3>No topics match</h3><p>Try another topic name or reset the filters.</p></div>';
+          <div class="rx-position-body${positionCompare?' rx-position-compare':''}">${RX.isRawTopic(t.t)?'<p class="rx-note">Unreviewed extraction label.</p>':''}<div class="rx-cmp-col rx-cmp-mine">${positionCompare?`<h4 class="rx-cmp-head">${esc(d.a)} <small>${fmtR(rows.length)} loaded</small></h4>`:''}${mine}${state.contract&&!state.done&&!state.halted?`<div class="rx-position-sentinel" data-position-sentinel="${i}">${state.loading?'Loading more…':'Scroll for more'}</div>`:state.halted?`<p class="rx-note">The index stopped answering at ${fmtR((state.indexedRows||[]).length)} of ${fmtR(total)}. <button class="rx-text-link" data-position-retry="${i}">Try again</button></p>`:''}${`<p class="rx-note rx-position-foot">${state.contract&&state.done?'Complete index loaded. ':''}${TSLUG.get(RX.fold(t.t))?`<a class="rx-text-link" href="/the-faith-received/topics/#${encodeURIComponent(TSLUG.get(RX.fold(t.t)))}">All authors on this topic</a> · <a class="rx-text-link" href="/the-faith-received/connections/#t=${encodeURIComponent(TSLUG.get(RX.fold(t.t)))}">This topic in the citation web</a>`:`<a class="rx-text-link" href="/the-faith-received/connections/#a=${encodeURIComponent(slug)}">This author in the citation web</a>`}${positionCompare?` · <a class="rx-text-link" data-feature-gate="tfr-compare" href="#${encodeURIComponent(slug)}/with/${encodeURIComponent(positionCompare.s)}/topic/${encodeURIComponent(tslugOf(t.t))}">Full comparison on this topic</a>`:''}</p>`}</div>${theirs}</div></details>`;}).join('')}</section>`).join('')||'<div class="rx-empty"><h3>No topics match</h3><p>Try another topic name or reset the filters.</p></div>';
       // scroll-driven index paging: a sentinel at the foot of every open topic pulls the next page
       $('#positions-list').querySelectorAll('[data-position-topic]').forEach(d=>d.querySelectorAll('.rx-cmp-col,.rx-position-body').forEach((box,k)=>{const y=scrolls.get(d.dataset.positionTopic+':'+k);if(y)box.scrollTop=y;}));
       (window.__posIOs||[]).forEach(io=>io.disconnect());window.__posIOs=[];
@@ -1163,7 +1165,7 @@ async function room(slug,arg){
             ${r.tw.map(x2=>x2.length===3?`<a class="pill" href="${readerHref(x2[0])}" style="font-size:.72rem;padding:.05rem .5rem">${esc(x2[1])} <i>${x2[2]}</i></a>`:`<span class="pill" style="font-size:.72rem;padding:.05rem .5rem">${esc(x2[0])} <i>${x2[1]}</i></span>`).join(" ")}</div>`:""}
           ${(r.sm||[]).map(s2=>`<div class="ev"><div class="q" style="font-size:.9rem">${esc(s2.sf)}${s2.loc?` — <i>${esc(s2.loc)}</i>`:""}${s2.twt?` <span style="color:var(--faint)">→ ${esc(s2.twt)}</span>`:""}</div>
             <div class="m"><span class="wk">${esc(s2.ct)}</span><span>${pgl(s2.cw)} ${s2.p??"?"}</span>${readBtn(s2.cw,s2.p,s2.sf)}${pinBtn(s2.cw,s2.p,s2.ct,r.a,(s2.sf||'')+(s2.loc?' — '+s2.loc:''))}</div></div>`).join("")}
-          ${r.n>(r.sm||[]).length?`<button class="chip" style="margin-top:.35rem" data-full="${esc(r.fk||"")}">All ${r.n.toLocaleString()} citations</button>`:""}${r.fk?` <a class="chip" style="margin-top:.35rem" href="#${encodeURIComponent(slug)}/with/${encodeURIComponent(r.fk)}">Compare the two authors</a>`:""}
+          ${r.n>(r.sm||[]).length?`<button class="chip" style="margin-top:.35rem" data-full="${esc(r.fk||"")}">All ${r.n.toLocaleString()} citations</button>`:""}${r.fk?` <a class="chip" style="margin-top:.35rem" data-feature-gate="tfr-compare" href="#${encodeURIComponent(slug)}/with/${encodeURIComponent(r.fk)}">Compare the two authors</a>`:""}
         </div></details>`;
       pbody.innerHTML=`<div class="view"><div class="pane-topic">Reception</div>
         <div class="pane-meta">cited <b>${RECD.in.n.toLocaleString()}</b> times by <b>${RECD.in.na}</b> authors · draws on <b>${RECD.out.na}</b> authors across <b>${RECD.out.n.toLocaleString()}</b> citations</div>
@@ -1875,11 +1877,11 @@ async function pairPage(slugA,slugB,topicSeg){
   const pickerHTML=`<label class="rx-search rx-compare-pick rx-pair-pick">Compare ${esc(ra.a)} with<input id="pair-pick" type="search" placeholder="${rb?esc('Another author instead of '+rb.a):'Choose a second author'}" list="pair-pick-list" autocomplete="off"><datalist id="pair-pick-list"></datalist></label>`;
   const bindPicker=()=>{const rows=RX.roster(roster.rows).filter(r=>r.s!==slugA),dl=$('#pair-pick-list'),inp=$('#pair-pick');if(!dl||!inp)return;
     const fill=q=>{const f=RX.fold(q||'');dl.innerHTML=rows.filter(r=>!f||RX.fold(r.a).includes(f)).slice(0,30).map(r=>`<option value="${esc(r.a)}">${esc(RX.shelfName(r.sh))} · ${fmtR(r.w)} works</option>`).join('');};
-    const go=r=>{location.hash='#'+encodeURIComponent(slugA)+'/with/'+encodeURIComponent(r.s);};
+    const go=r=>{if(window.MOFeatureGate&&window.MOFeatureGate.open('tfr-compare'))return;location.hash='#'+encodeURIComponent(slugA)+'/with/'+encodeURIComponent(r.s);};
     fill('');inp.oninput=e=>{fill(e.target.value);const f=RX.fold(e.target.value);const exact=rows.find(r=>RX.fold(r.a)===f);if(exact)go(exact);};
     inp.onchange=e=>{const f=RX.fold(e.target.value);if(!f)return;const hit=rows.find(r=>RX.fold(r.a)===f)||rows.filter(r=>RX.fold(r.a).includes(f))[0];if(hit)go(hit);};};
   if(!rb){const A0=await J(BLOB+`/v1/bible/${ra.sh}/rooms/${slugA}.json`).catch(()=>null);if(run!==RESEARCH_RUN)return;
-    const nb=(A0?.neighbours||[]).slice(0,12).map(n=>{const r=roster.rows.find(x=>x.a===n.a)||null;return r?`<a class="chip" href="#${encodeURIComponent(slugA)}/with/${encodeURIComponent(r.s)}">${esc(n.a)} <small>${fmtR(n.n)}</small></a>`:'';}).join(' ');
+    const nb=(A0?.neighbours||[]).slice(0,12).map(n=>{const r=roster.rows.find(x=>x.a===n.a)||null;return r?`<a class="chip" data-feature-gate="tfr-compare" href="#${encodeURIComponent(slugA)}/with/${encodeURIComponent(r.s)}">${esc(n.a)} <small>${fmtR(n.n)}</small></a>`:'';}).join(' ');
     page.innerHTML=`<div class="crumbs"><a href="/the-faith-received/author/#">Authors</a> · <a href="${RX.authorURL(ra)}">${esc(ra.a)}</a></div><div class="ridbar"><h1>Compare ${esc(ra.a)}</h1><div class="stats">Choose a second author. The comparison shows every citation between the two, their shared topics side by side, and the Scripture both cite.</div></div><div class="view rx-pair"><div class="rx-filters">${pickerHTML}</div>${nb?`<h3 class="rx-loci-head">Most connected authors<small>by citations either way</small></h3><p class="rx-pair-neighbours">${nb}</p>`:''}</div>`;
     researchLayout();bindPicker();document.title=`Compare ${ra.a} · The Faith Received`;return;}
   const [A,B,recA,recB]=await Promise.all([
@@ -2044,6 +2046,17 @@ function route(){
   if(!h){const token=RESEARCH_RUN;authorsIndex().catch(()=>{if(token===RESEARCH_RUN)researchError("Authors could not load");});return;}
   const seg=h.split("/");
   const token=RESEARCH_RUN;
+  /* MereO 2026-09-24: #A/with/B is the Compare tool. A reader without an
+     account who arrives on one (a shared link) gets the subscribe pop-up
+     over A's own page. The doors to it inside this page carry
+     data-feature-gate and never change the hash for that reader. At first
+     load this runs before site.min.js, so the modal waits for it. */
+  if(seg[1]==="with"&&!(window.MOFeatureGate?window.MOFeatureGate.allowed('tfr-compare'):document.body.hasAttribute('data-member-status'))){
+    history.replaceState(null,'',location.pathname+location.search+'#'+seg[0]);
+    const gate=()=>window.MOFeatureGate&&window.MOFeatureGate.open('tfr-compare');
+    if(window.MOFeatureGate)gate();else document.addEventListener('DOMContentLoaded',gate,{once:true});
+    room(seg[0],"").catch(()=>{if(token===RESEARCH_RUN)researchError("This author could not load");});return;
+  }
   if(seg[1]==="with"){pairPage(seg[0],seg[2]||"",seg[3]==="topic"?seg.slice(4).join("/"):"").catch(()=>{if(token===RESEARCH_RUN)researchError("This comparison could not load");});return;}
   room(seg[0],seg.slice(1).join("/")).catch(()=>{if(token===RESEARCH_RUN)researchError("This author could not load");});
 }

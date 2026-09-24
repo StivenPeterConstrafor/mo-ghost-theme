@@ -349,6 +349,31 @@
   gateArrival();
   window.addEventListener("hashchange", gateArrival);
 
+  /* For doors that are not clicks: a keyboard shortcut, a ?ask= address,
+     a function other code calls (FRAsk.open, the reader's research
+     panel). open() shows the modal and returns true when the reader
+     cannot use the feature, and returns false (doing nothing) when they
+     can, so a caller writes `if (window.MOFeatureGate &&
+     MOFeatureGate.open("ask")) return;` at the top of the function the
+     tool opens through.
+
+     A bundle global, so it exists only once site.min.js has run. Page
+     scripts run BEFORE the bundle (FRONTEND §6.18): anything calling
+     this at parse time must wait for DOMContentLoaded, and every caller
+     must guard for its absence. */
+  window.MOFeatureGate = {
+    allowed(name) {
+      const feature = FEATURES[name];
+      return !feature || hasAccess(feature);
+    },
+    open(name, opener) {
+      const feature = FEATURES[name];
+      if (!feature || hasAccess(feature)) return false;
+      showModal(name, feature, opener || document.activeElement);
+      return true;
+    },
+  };
+
 
   function showModal(featureName, feature, opener) {
     dismissModal(true);

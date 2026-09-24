@@ -294,8 +294,10 @@ fetch("https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/dictionary/index.js
    passage of a work. The button's class is styled site-wide in
    faith-received.css; nothing new is needed for it here.
 
-   Not gated. Saving is not gated in the reader either, and an article
-   of this dictionary is public.
+   Gated since 2026-09-24 (Ian: every door to a research tool meets the
+   subscribe pop-up). The article stays public; keeping a passage from it
+   is the Notebook, and the reader's Save is gated the same way. A reader
+   without an account gets feature-gate.js's modal, not a save.
 
    KNOWN, and accepted: MOFaithNotebook's constellation share encodes
    only the four sister corpora (tfr · pld · po · pg), so a dictionary
@@ -305,6 +307,7 @@ function dtcSelectionSave(){
   const pop=document.createElement("button");
   pop.type="button";
   pop.className="faith-save-pop";
+  pop.setAttribute("data-feature-gate","tfr-notebook");
   pop.hidden=true;
   pop.textContent="Save to notebook";
   document.body.appendChild(pop);

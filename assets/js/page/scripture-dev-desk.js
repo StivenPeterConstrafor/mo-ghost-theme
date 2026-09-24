@@ -92,7 +92,10 @@
         `<label class="sd-filter-label" for="sd-ask-q">Your question</label>` +
         `<textarea id="sd-ask-q" name="ask" rows="3"></textarea>` +
         `<p class="sd-muted sd-ask-note">Ask opens in the library's research workspace. It is open to members.</p>` +
-        `<button type="submit" class="sd-btn">Ask</button>` +
+        // Gated like every other Ask door (Ian, 2026-09-24): feature-gate.js
+        // stops the submit click for a reader without an account and opens
+        // the subscribe pop-up instead of sending them to /ask/.
+        `<button type="submit" class="sd-btn" data-feature-gate="ask">Ask</button>` +
       `</form>` +
     `</section>` +
 
