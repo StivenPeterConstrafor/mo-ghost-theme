@@ -29,21 +29,16 @@ await mkdir(OUT_DIR, { recursive: true });
 // without this script learning about them, so a regeneration silently
 // stripped them. Done here, once, on the finished HTML, so the nine
 // render paths that each write their own </main> cannot drift apart.
-const RAIL_INCLUDE = `{{!-- The TFR rail, under the page head as on every other TFR page. --}}
+// The rail is the first thing on the page, pinned under the masthead as on
+// the reader (Ian, 2026-09-23: "Move the navrail to the top of every TFR
+// landing page the way it is on the reader"). It used to follow the page's
+// header section.
+const RAIL_INCLUDE = `{{!-- The TFR rail, first on the page and pinned under the masthead as on the reader (Ian, 2026-09-23). --}}
 {{> "faith-received/_tfr-rail"}}
 <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>`;
 function finishPage(html) {
   let out = html;
-  if (!out.includes("_tfr-rail")) {
-    const m = out.match(/<section class="(?:article-header|hero faith-feature-hero)[^"]*"/);
-    if (m) {
-      const end = out.indexOf("</section>", m.index);
-      if (end >= 0) {
-        const at = end + "</section>".length;
-        out = `${out.slice(0, at)}\n${RAIL_INCLUDE}${out.slice(at)}`;
-      }
-    }
-  }
+  if (!out.includes("_tfr-rail")) out = `${RAIL_INCLUDE}\n${out}`;
   if (!out.includes("_beta-band")) {
     const close = out.lastIndexOf("</main>");
     if (close >= 0) {

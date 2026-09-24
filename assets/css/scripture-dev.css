@@ -30,13 +30,14 @@
 .sd {
   --sd-accent: color-mix(in srgb, var(--color-secondary, #c1593c) 75%, var(--color-dark, #2d2927));
   --sd-gap: 40px;
-  --sd-top: var(--sd-nav-h, 0px);
+  /* Plus the TFR rail, which now sticks under the header on these pages. */
+  --sd-top: calc(var(--sd-nav-h, 0px) + var(--tfr-rail-h, 0px));
 }
 .site-header.is-hidden ~ main.sd,
-.site-header.is-hidden ~ * main.sd { --sd-top: 0px; }
+.site-header.is-hidden ~ * main.sd { --sd-top: var(--tfr-rail-h, 0px); }
 @media (prefers-reduced-motion: reduce) {
   .site-header.is-hidden ~ main.sd,
-  .site-header.is-hidden ~ * main.sd { --sd-top: var(--sd-nav-h, 0px); }
+  .site-header.is-hidden ~ * main.sd { --sd-top: calc(var(--sd-nav-h, 0px) + var(--tfr-rail-h, 0px)); }
 }
 /* Ian, 2026-09-22: the bar does not follow the reader on any screen; it
    sits at the top of the page. (screen.css makes .bible-controls sticky.) */

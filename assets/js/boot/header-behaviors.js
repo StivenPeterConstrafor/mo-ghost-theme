@@ -34,9 +34,18 @@
     }
     const h = header.getBoundingClientRect().height;
     document.body.style.paddingTop = `${h}px`;
+    /* The TFR rail sits first on every TFR page and sticks under this
+       header (faith-received.css). It needs the header's height to park
+       at, and anything else that parks under the chrome needs the rail's
+       too; both are published here, where the header is measured. */
+    const root = document.documentElement;
+    root.style.setProperty("--mo-mast", `${h}px`);
+    const rail = document.querySelector(".tfr-rail");
+    const railH = rail ? rail.getBoundingClientRect().height : 0;
+    root.style.setProperty("--tfr-rail-h", `${railH}px`);
     // Anchor jumps (href="#x") should land the target at the bottom
-    // edge of the fixed nav.
-    document.documentElement.style.scrollPaddingTop = `${h}px`;
+    // edge of the fixed nav, and of the rail under it.
+    root.style.scrollPaddingTop = `${h + railH}px`;
   }
   syncOffset();
   window.addEventListener('resize', syncOffset);

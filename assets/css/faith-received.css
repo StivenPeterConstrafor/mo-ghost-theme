@@ -19806,3 +19806,26 @@ html.g-mobile #reading .fr-sec-toggle {
 #collection .faith-card-title { font-size: 19px; line-height: 1.25; margin: 8px 0 6px; }
 #collection .faith-card-desc { flex: 1; font-size: 14px; line-height: 1.55; margin: 0; }
 #collection .faith-card-link { margin-top: 14px; }
+
+/* ── THE RAIL, FIRST AND PINNED (Ian, 2026-09-23) ─────────────────────
+   "Move the navrail to the top of every TFR landing page the way it is
+   on the reader." Every TFR page now opens with the rail, directly under
+   the masthead, and it stays there as the page scrolls. When the
+   masthead slides away (header-behaviors.js, .is-hidden) the rail rises
+   by the masthead's height on the masthead's own transition, so the two
+   move as one and the rail ends at the top of the screen. The reader and
+   Connections place their rail themselves (faith-port-reader-skin.css,
+   faith-port-surfaces.css) and are left to it. --mo-mast is the
+   masthead's height, published by header-behaviors.js. */
+body:not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail {
+  position: sticky;
+  top: var(--mo-mast, 85px);
+  z-index: 19;
+  transition: transform 0.25s ease;
+}
+body:has(> .site-header.is-hidden):not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail {
+  transform: translateY(calc(-1 * var(--mo-mast, 85px)));
+}
+@media (prefers-reduced-motion: reduce) {
+  body > .tfr-rail { transition: none; }
+}
