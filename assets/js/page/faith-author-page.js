@@ -170,7 +170,8 @@
 
     // The card: dates, the short dek, the boxes, the biography.
     const card = el("details", "rx-profile");
-    card.open = true;
+    // Open on a wide screen, closed on a phone, as the room's card is.
+    card.open = !(window.matchMedia && window.matchMedia("(max-width: 640px)").matches);
     card.appendChild(el("summary", "", "About this author"));
     const deckText = dates || (bio && bio.d) || "";
     if (deckText) card.appendChild(el("div", "deck", deckText));

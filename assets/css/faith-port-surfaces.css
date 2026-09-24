@@ -1742,8 +1742,9 @@ main.research-room :is(.rx-profile, .rx-author-bio, .rx-secondary, .rx-position-
    chevron on the right as on Topics; an opened topic's works are
    thin-line cards. */
 main.research-room .rx-loci-jump a:hover { color: var(--room-accent); border-bottom-color: var(--room-accent); }
-/* body.research-enhanced's h3 rules outrank a bare class. */
-body main.research-room .rx-loci-group > h3.rx-loci-head {
+/* The site theme's `html.fr-ghost-site #page h3` (an id) outranks a class. */
+body main.research-room .rx-loci-group > h3.rx-loci-head,
+html.fr-ghost-site #page .rx-loci-group > h3.rx-loci-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -1818,7 +1819,13 @@ main.research-room #positions-count { font-size: 14px; color: var(--color-muted,
    <main class="research research-room"> of its own, so every rule above
    applies. These rules only place that main as the port places #page,
    and cover what a room has and it does not (no topic rail). */
-html.fr-author-own main#frAuthorOwn { max-width: 1180px; width: 100%; margin: 0 auto; padding: 44px 32px 100px; min-width: 0; box-sizing: border-box; }
+/* What faith-site-theme.css gives the port's main#page, for this main. */
+html.fr-author-own main#frAuthorOwn { max-width: 1320px; width: 100%; margin: 0 auto; padding: 42px 24px 72px; min-width: 0; box-sizing: border-box; background: var(--bg); color: var(--fg); }
+html.fr-ghost-site main#frAuthorOwn h1 { color: var(--fg); font: 400 clamp(34px, 4vw, 48px)/1.18 var(--font-display); letter-spacing: 0; margin-bottom: 18px; }
+html.fr-ghost-site main#frAuthorOwn h3 { color: var(--fg); font-family: var(--font-display); }
+html.fr-ghost-site main#frAuthorOwn :is(input, select, textarea) { color: var(--fg); background: var(--card); border-color: var(--border); font-family: var(--font-body); min-height: 44px; }
+html.fr-ghost-site main#frAuthorOwn input::placeholder { color: var(--muted); opacity: 1; }
+html.fr-ghost-site main#frAuthorOwn button { font-family: var(--font-body); }
 main#frAuthorOwn .fr-own-grid { display: block; margin-top: 26px; }
 main#frAuthorOwn .ar-stat[hidden] { display: none; }
 main#frAuthorOwn .fr-own-dek { font: 17px/1.55 var(--font-body, "Source Serif Pro", Georgia, serif); color: var(--room-ink); margin: 0 0 14px; max-width: 75ch; }
@@ -1851,7 +1858,7 @@ main#frAuthorOwn form.srow button {
   cursor: pointer;
 }
 @media (max-width: 640px) {
-  html.fr-author-own main#frAuthorOwn { padding: 18px 16px 80px; }
+  html.fr-author-own main#frAuthorOwn { padding: 28px 20px 56px; }
   main#frAuthorOwn h1 { font-size: 34px; margin-bottom: 2px; }
   main#frAuthorOwn .fr-own-grid { margin-top: 8px; }
   main.research-room .rx-position-topic > summary strong { font-size: 1.05em; }
