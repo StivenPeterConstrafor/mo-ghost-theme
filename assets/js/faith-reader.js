@@ -3237,7 +3237,7 @@
 
     if (traditionEl && m.tradition) {
       traditionEl.textContent = workLabel(m.tradition, m);
-      traditionEl.href = "/the-faith-received/#traditions";
+      traditionEl.href = "/the-faith-received/curated/#traditions";
     }
     if (translatorEl) {
       if (m.translator) {

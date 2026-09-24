@@ -199,7 +199,7 @@ function header(doc, hasToc) {
   // tab; the sub-tab itself doesn't deep-link so we land users on the
   // tab and let them pick from there.
   const traditionPills = (TRADITION_TAGS[doc.slug] || [])
-    .map((slug) => `<a href="/the-faith-received/#traditions" class="article-topic-tag">${escape(TRADITION_LABELS[slug] || slug)}</a>`)
+    .map((slug) => `<a href="/the-faith-received/curated/#traditions" class="article-topic-tag">${escape(TRADITION_LABELS[slug] || slug)}</a>`)
     .join("");
   return `
   <section class="article-header faith-doc-header${isLibrary ? " faith-doc-header--library" : ""}">
