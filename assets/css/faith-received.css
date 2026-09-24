@@ -19734,9 +19734,32 @@ html.g-mobile #reading .fr-sec-toggle {
   .faith-port-dtc-page > .top > .sband,
   .faith-port-dtc-page .alpha { min-width: 0; max-width: 100%; }
   .faith-port-dtc-page > .top > .sband { overflow: hidden; }
+  /* The drawn scroll bar under the rail (faith-dtc-chrome.js). */
+  .faith-port-dtc-page .alpha-track {
+    flex: 1 1 100%;
+    position: relative;
+    height: 3px;
+    margin: 2px 0 0;
+    border-radius: 2px;
+    background: var(--color-rule, #e5ded5);
+    overflow: hidden;
+  }
+  .faith-port-dtc-page .alpha-track[hidden] { display: none; }
+  .faith-port-dtc-page .alpha-thumb {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: 2px;
+    background: var(--color-secondary, #b0573a);
+  }
   .faith-port-dtc-page .alpha button {
     flex: 0 0 44px;
     min-height: 44px;
     scroll-snap-align: start;
   }
+}
+
+@media (min-width: 761px) {
+  .faith-port-dtc-page .alpha-track { display: none; }
 }

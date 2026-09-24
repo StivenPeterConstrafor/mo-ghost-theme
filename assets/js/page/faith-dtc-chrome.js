@@ -101,6 +101,35 @@
       alpha.scrollLeft = Math.max(0, alpha.scrollLeft + (b.left - a.left) - (alpha.clientWidth - b.width) / 2);
     }).observe(alpha, { childList: true });
   }
+  /* A SCROLL BAR UNDER THE RAIL. Ian, 2026-09-23: "give it a scroll bar
+     at the bottom to indicate visually that it scrolls." Phones hide a
+     native scroll bar until a finger is on the rail, and iOS ignores
+     scroll-bar styling, so this is drawn: a thin track under the letters
+     with a thumb sized to the part in view and moved as the rail
+     scrolls. Decorative (aria-hidden); the rail itself is the control.
+     Shown only on a phone (faith-received.css). */
+  if (alpha) {
+    const track = document.createElement("div");
+    track.className = "alpha-track";
+    track.setAttribute("aria-hidden", "true");
+    const thumb = document.createElement("span");
+    thumb.className = "alpha-thumb";
+    track.appendChild(thumb);
+    alpha.after(track);
+    const paintTrack = () => {
+      const max = alpha.scrollWidth - alpha.clientWidth;
+      const w = track.clientWidth;
+      if (max <= 0 || !w) { track.hidden = true; return; }
+      track.hidden = false;
+      const tw = Math.max(28, Math.round(w * (alpha.clientWidth / alpha.scrollWidth)));
+      thumb.style.width = `${tw}px`;
+      thumb.style.transform = `translateX(${Math.round((w - tw) * (alpha.scrollLeft / max))}px)`;
+    };
+    alpha.addEventListener("scroll", paintTrack, { passive: true });
+    window.addEventListener("resize", paintTrack);
+    new MutationObserver(() => requestAnimationFrame(paintTrack)).observe(alpha, { childList: true });
+    requestAnimationFrame(paintTrack);
+  }
   const list = page.querySelector("#list");
   if (list) {
     list.addEventListener("click", (e) => {
