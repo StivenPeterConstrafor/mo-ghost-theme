@@ -2719,3 +2719,19 @@ html.g-mobile.mh-mini #app.faith-port-read-page .sidebar {
    of the bar, and the dock is invisible until it has its final shape. */
 html:not(.g-mobile) #app .ph.fr-reader-head .ctr > :is(.seg.lanes, #m-modern, #rdFlow, #rdRel, #thTop, #frAuth, .fr-tb-focus, .fr-tb-report, .fr-tb-top, .fr-tb-folds) { display: none; }
 html.g-mobile nav.frthumb:not(.fr-m3) { visibility: hidden; }
+
+/* A FOLDED PLACEHOLDER IS PARKED, NOT HIDDEN. The reader loads an
+   unloaded page (.fph) when it is near the viewport, and its scroll
+   fallback measures each placeholder's box to decide. display:none gives
+   a zero box at the top of the screen, which reads as "near": the first
+   scroll after Collapse all loaded every folded page of a long work.
+   Parked far above the column, a folded placeholder is never near. */
+#reading .fph.fr-sec-hid {
+  display: block !important;
+  position: absolute !important;
+  top: -400000px !important;
+  left: 0 !important;
+  width: 1px !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

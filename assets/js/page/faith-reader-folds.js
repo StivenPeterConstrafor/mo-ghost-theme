@@ -322,6 +322,25 @@
     }
   }
 
+  // Position in the work of a page, and of an element in #reading: a
+  // rendered folio by its page, an unloaded placeholder (.fph) by its index.
+  let pageOrder = null;
+  function pageIdx(page) {
+    if (!pageOrder) {
+      const d = dataOf();
+      if (!d || !Array.isArray(d.pages)) return null;
+      pageOrder = new Map(d.pages.map((p, i) => [String(p.n), i]));
+    }
+    const k = pageOrder.get(String(page));
+    return k === undefined ? null : k;
+  }
+  function idxOf(el) {
+    if (!el || !el.classList) return null;
+    if (el.classList.contains("fph")) return Number(el.dataset.i);
+    if (el.classList.contains("folio")) return pageIdx(el.dataset.page);
+    return null;
+  }
+
   let observer = null;
   let applying = false;
 
@@ -387,6 +406,18 @@
         // what is here now; the next pass extends it when the page lands.
         if (next && !endFolio) {
           for (let s = head.nextElementSibling; s; s = s.nextElementSibling) hide(s);
+          // ...AND every page after it up to the next section's page, loaded
+          // or not. Folding only the head's own page left the rest of a long
+          // work's section on screen as unloaded placeholders; the reader
+          // loaded each one as it came into view, this pass folded it, the
+          // next came into view, and with Collapse all on a 956-page work
+          // the page stopped answering while every page loaded in turn.
+          const stop = pageIdx(next.page);
+          for (let u = head.parentElement.nextElementSibling; u && u.parentElement === reading; u = u.nextElementSibling) {
+            const k = idxOf(u);
+            if (k !== null && stop !== null && k >= stop) break;
+            hide(u);
+          }
           return;
         }
         hideRange(head, endRow, endFolio);
