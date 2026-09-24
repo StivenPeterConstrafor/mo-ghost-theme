@@ -298,6 +298,70 @@
     return want.length >= 6 && norm(el.textContent).slice(0, want.length + 8).includes(want) ? el : null;
   }
 
+  /* The same division by its LABEL, when the outline and the page print
+     it in different languages: Polanus's outline reads "Book I -
+     Chapter XIII - On the Theology of Wayfarers", the page "Liber I -
+     Caput XIII - De Theologia viatorum", and neither text nor fuzzy
+     words match. Both reduce to book 1, chapter 13. Only a row that
+     OPENS on its label counts, and only one whose whole label agrees. */
+  const KIND = [
+    [/^(?:chap(?:ter)?|cap(?:ut|itulum)?|κεφ(?:άλαιον|αλαιον)?)$/i, "ch"],
+    [/^(?:book|booke|lib(?:er)?)$/i, "bk"],
+    [/^(?:part|pars)$/i, "pt"],
+    [/^(?:homil(?:y|ia)|ὁμιλία|ομιλια)$/i, "hom"],
+    [/^(?:sermon|sermo)$/i, "serm"],
+    [/^(?:question|quaestio|q)$/i, "q"],
+    [/^(?:article|articulus|art)$/i, "art"],
+    [/^(?:letter|epist(?:le|ola)|ep)$/i, "ep"],
+  ];
+  const WORDNUM = "one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty".split(" ");
+  function numOf(t) {
+    const w = String(t).toLowerCase().replace(/[.ʹ΄']+$/, "");
+    if (/^\d+$/.test(w)) return Number(w);
+    if (/^[ivxlcdm]+$/.test(w)) {
+      const v = { i: 1, v: 5, x: 10, l: 50, c: 100, d: 500, m: 1000 };
+      let n = 0;
+      for (let k = 0; k < w.length; k += 1) {
+        const a = v[w[k]];
+        const b = v[w[k + 1]] || 0;
+        n += a < b ? -a : a;
+      }
+      return n;
+    }
+    const wn = WORDNUM.indexOf(w);
+    return wn >= 0 ? wn + 1 : null;
+  }
+  const GROUP_RE = /^[\s[(]*([A-Za-zΑ-Ωα-ωά-ώ]+)\.?\s+([ivxlcdm]+|\d+|[a-z]+)\b\.?[\s\-–—.,:;]*/i;
+  function labelKey(text) {
+    let t = String(text || "").replace(/^§\s*/, "");
+    const parts = [];
+    for (let g = 0; g < 3; g += 1) {
+      const m = GROUP_RE.exec(t);
+      if (!m) break;
+      const kind = (KIND.find(([re]) => re.test(m[1])) || [])[1];
+      const n = kind ? numOf(m[2]) : null;
+      if (!kind || !n) break;
+      parts.push(kind + n);
+      t = t.slice(m[0].length);
+    }
+    return parts.join(".");
+  }
+  function labelMatch(folio, title, nth, claimed) {
+    const want = labelKey(title);
+    if (!want) return null;
+    let n = 0;
+    for (const row of folio.querySelectorAll(":scope > .row")) {
+      if (claimed && claimed.has(row)) continue;
+      const lanes = [...row.querySelectorAll(":scope > :is(.en, .la), :scope > :is(.en, .la) > :is(h3, p):first-child")];
+      const texts = (lanes.length ? lanes : [row]).map((el) => (el.textContent || "").slice(0, 120));
+      if (!texts.some((t) => labelKey(t) === want)) continue;
+      if (!row.getClientRects().length) continue;
+      if (n === (nth || 0)) return row;
+      n += 1;
+    }
+    return null;
+  }
+
   function resolve(folio, title, nth, claimed, e) {
     const d = dataOf();
     let h = e ? anchored(folio, e) : null;
@@ -310,6 +374,7 @@
       catch (_) { h = null; }
     }
     if (!h) h = exactText(folio, title, nth || 0);
+    if (!h) h = labelMatch(folio, title, 0, claimed);
     if (!h) h = fuzzy(folio, title, claimed);
     if (!h || h === folio) return null;
     const row = h.closest ? (h.closest(".row") || h) : null;
