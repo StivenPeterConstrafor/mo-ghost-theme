@@ -114,39 +114,55 @@
     return r;
   }
 
-  let tries = 0;
-  (function look() {
+  /* The reader redraws a paragraph after landing on it (its edition
+     pass, footnotes, the folds), which empties a range drawn over the old
+     text nodes. So the mark is kept: for the first minute, and
+     whenever the paragraph changes, a collapsed range is found again. */
+  let range = null;
+  let scrolled = false;
+  let done = false;
+  function mark() {
+    if (done) return true;
+    if (range && !range.collapsed && range.toString()) return true;
     const row = document.getElementById(rowId);
-    const range = row && rangeFor(row, want);
-    if (!range) {
-      tries += 1;
-      if (tries < 60) window.setTimeout(look, 250);
-      return;
-    }
+    range = row && rangeFor(row, want);
+    if (!range) return false;
     CSS.highlights.set("fr-passage-link", new Highlight(range));
-    // The words are marked; take them out of the address so the engine's
-    // own links built from it (Cite, BibTeX) do not carry them.
-    try {
-      const u = new URL(window.location.href);
-      u.searchParams.delete("hl");
-      window.history.replaceState(window.history.state, "", u.href);
-    } catch (err) { /* the address keeps them; harmless */ }
-    // After the engine's own landing on the anchor, then to the words.
-    window.setTimeout(() => {
-      const box = range.getBoundingClientRect();
-      const sc = document.getElementById("scroll");
-      if (sc && box.height) {
-        const mid = sc.getBoundingClientRect().top + sc.clientHeight / 2;
-        sc.scrollBy({ top: box.top - mid, behavior: "smooth" });
-      }
-    }, 400);
-    const clear = () => {
-      const sel = window.getSelection();
-      if (sel && !sel.isCollapsed) {
-        CSS.highlights.delete("fr-passage-link");
-        document.removeEventListener("selectionchange", clear);
-      }
-    };
-    document.addEventListener("selectionchange", clear);
-  }());
+    if (!scrolled) {
+      scrolled = true;
+      // The words are marked; take them out of the address so the
+      // engine's own links built from it (Cite, BibTeX) do not carry them.
+      try {
+        const u = new URL(window.location.href);
+        u.searchParams.delete("hl");
+        window.history.replaceState(window.history.state, "", u.href);
+      } catch (err) { /* the address keeps them; harmless */ }
+      // After the engine's own landing on the anchor, then to the words.
+      window.setTimeout(() => {
+        if (!range) return;
+        const box = range.getBoundingClientRect();
+        const sc = document.getElementById("scroll");
+        if (sc && box.height) {
+          const mid = sc.getBoundingClientRect().top + sc.clientHeight / 2;
+          sc.scrollBy({ top: box.top - mid, behavior: "smooth" });
+        }
+      }, 600);
+    }
+    return true;
+  }
+  const started = Date.now();
+  const tick = window.setInterval(() => {
+    mark();
+    if (Date.now() - started > 60000) window.clearInterval(tick);
+  }, 250);
+  const stop = () => {
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed) {
+      done = true;
+      window.clearInterval(tick);
+      CSS.highlights.delete("fr-passage-link");
+      document.removeEventListener("selectionchange", stop);
+    }
+  };
+  document.addEventListener("selectionchange", stop);
 }());
