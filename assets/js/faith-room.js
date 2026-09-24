@@ -73,6 +73,27 @@
   const meta = document.querySelector('meta[name="tfr-room-collection"]');
   const collectionId = ((meta && meta.getAttribute("content")) ||
     params.get("collection") || "tfr").replace(/[^a-z0-9_-]/gi, "");
+  /* THE CREEDS AND CONFESSIONS GROUP BY TRADITION, NOT AUTHOR (Ian,
+     2026-09-24: "it doesn't make sense to have these all labeled under
+     unattributed ... give the option of splitting by tradition or by
+     chronology"). A confession has no author to file under, so on that
+     collection the first view is By tradition, in the order the church's
+     history reads them, and the second stays By century. */
+  const BY_TRADITION = collectionId === "confessions";
+  const TRADITION_RANK = [
+    "The Whole Church", "Ecumenical", "Orthodox", "Eastern Orthodox", "Oriental Orthodox",
+    "Roman Catholic", "Waldensian", "Bohemian Brethren", "Protestant", "Lutheran", "Reformed",
+    "Continental Reformed", "Anglican", "Presbyterian", "Congregational", "Baptist",
+    "Anabaptist", "Remonstrant", "Methodist",
+  ];
+  const traditionOf = (w) => {
+    const t = String((w && w.tradition) || "").trim() || "Other";
+    return window.MOFaithLabel && window.MOFaithLabel.shelf ? window.MOFaithLabel.shelf(t) : t;
+  };
+  const traditionRank = (name) => {
+    const k = TRADITION_RANK.indexOf(name);
+    return k < 0 ? TRADITION_RANK.length : k;
+  };
 
   // A room is a collection. A SHELF is a tradition, and the two stopped
   // being the same thing on 2026-09-17, when the Fathers in English were
@@ -1150,7 +1171,11 @@
     // been; the volume view is either the grid of volumes or one volume
     // opened, and on the grid there is no list of works to page
     // through.
-    const onShelf = Boolean(shelf) && view !== "author";
+    // On the creeds and confessions the century view is a list too (Ian,
+    // 2026-09-24: "the same format as author, except just centuries"):
+    // one fold per century, not a grid of centuries to choose from.
+    const centuryList = BY_TRADITION && Boolean(shelf) && shelf.view === "century" && view === "century";
+    const onShelf = Boolean(shelf) && view !== "author" && !centuryList;
     const onGrid = onShelf && !vol;
     const chosen = onShelf && vol ? shelfOrder.find((s) => s.v === vol) : null;
     const scoped = onShelf
@@ -1170,7 +1195,9 @@
     const allGroups = [];
     const byName = new Map();
     (inVolume ? [] : scoped).forEach((w) => {
-      const name = (w.author || "").trim() || "Unattributed";
+      const name = centuryList
+        ? (cent(w) ? (window.MOCentury ? window.MOCentury.label(Number(cent(w))) : `${cent(w)}th century`) : "Undated")
+        : BY_TRADITION ? traditionOf(w) : ((w.author || "").trim() || "Unattributed");
       // By NAME, not by consecutive run. A run only merged neighbours,
       // and the catalogue's several "Unknown author" spellings interleave
       // in the sort, so one page of the Latin Fathers printed twenty-two
@@ -1190,9 +1217,17 @@
     // works, under their authors. Stable, so each half keeps its A-Z.
     const authorHit = (g) => Boolean(tiers) && g.works.some((w) => tiers.get(w) === AUTHOR);
     const anyAuthor = Boolean(tiers) && allGroups.some(authorHit);
-    const groupOrder = {author:0, unattributed:1, collection:2, editorial:3};
-    allGroups.forEach(g => { g.kind = window.MOFaithCatalogue.authorGroup(g.name, g.works).kind; });
-    allGroups.sort((a, b) => groupOrder[a.kind] - groupOrder[b.kind] || (anyAuthor ? Number(authorHit(b)) - Number(authorHit(a)) : 0));
+    const groupOrder = {tradition:0, author:1, unattributed:2, collection:3, editorial:4};
+    // A century group sorts by its works' century; Undated goes last.
+    const centuryRank = (g) => {
+      const c = g.works.length ? Number(cent(g.works[0])) : NaN;
+      return Number.isFinite(c) && c ? c : 99;
+    };
+    allGroups.forEach(g => { g.kind = BY_TRADITION ? "tradition" : window.MOFaithCatalogue.authorGroup(g.name, g.works).kind; });
+    allGroups.sort((a, b) => groupOrder[a.kind] - groupOrder[b.kind]
+      || (centuryList ? centuryRank(a) - centuryRank(b) : 0)
+      || (BY_TRADITION && !centuryList ? traditionRank(a.name) - traditionRank(b.name) || a.name.localeCompare(b.name) : 0)
+      || (anyAuthor ? Number(authorHit(b)) - Number(authorHit(a)) : 0));
 
     const pages = inVolume ? 1 : Math.max(1, Math.ceil(allGroups.length / PAGE_SIZE));
     if (page > pages) page = pages;
@@ -1315,6 +1350,7 @@
             return (named.length ? `<h3 class="faith-room-section">Matching authors</h3>${blocks(named)}` : "")
               + (others.length ? `<h3 class="faith-room-section">Other matching works</h3>${blocks(others)}` : "");
           }
+          if (kind === 'tradition') return blocks(section);
           return `<h3 class="faith-room-section">${headings[kind]}</h3>${blocks(section)}`;
         }).join("");
         })()
@@ -1351,7 +1387,7 @@
     // hidden, and the block below keeps its name and its state in step.
     const views = `${shelf || isAll
       ? `<nav class="faith-view-toggle faith-room-views" role="tablist" aria-label="How to browse this collection"${shelf ? "" : " hidden"}>`
-        + `<button type="button" class="faith-view-toggle-tab" data-room-view="author" role="tab">By author</button>`
+        + `<button type="button" class="faith-view-toggle-tab" data-room-view="author" role="tab">${BY_TRADITION ? "By tradition" : "By author"}</button>`
         + `<button type="button" class="faith-view-toggle-tab" data-room-shelf-tab data-room-view="${shelf ? shelf.view : "volume"}" role="tab">${escapeHtml(shelf ? shelf.tab : "By volume")}</button>`
         + `</nav>`
       : ""
