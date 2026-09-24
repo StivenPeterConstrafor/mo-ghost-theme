@@ -147,12 +147,12 @@
      (its template sets the tfr-room-scans meta). Which works have scans
      is a static list, assets/data/faith-received/scanned-works.json,
      because the catalogue's has_pages says nothing true about it: every
-     PG row claims pages and 369 of them have none, and 25 Latin Library
+     PG row claims pages and 369 of them have none, and 40 Latin Library
      works with scans are marked has_pages false or carry no img_base in
-     the index. The file says how it was built. */
+     the index. scripts/build-scanned-works.mjs rebuilds it. */
   const SCANS_PAGE = !!document.querySelector('meta[name="tfr-room-scans"]');
   const scans = SCANS_PAGE || params.get("scans") === "1";
-  const SCANNED_URL = "/assets/data/faith-received/scanned-works.json?v=20260924a";
+  const SCANNED_URL = "/assets/data/faith-received/scanned-works.json?v=20260924b";
 
   // Research belongs inside an opened shelf as well as on its catalogue card.
   // These are the source library's nine shelf codes; the existing catalogue
