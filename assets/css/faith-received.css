@@ -20237,3 +20237,11 @@ html:not(.faith-mf-tabbed) .faith-mf-panel + .faith-mf-panel { margin-top: 72px;
 /* "The Faith Received" on its own second line in every toggle button
    (Ian, 2026-09-24), so the three read as a set. */
 .faith-mf-tab-tfr { display: block; }
+/* The author's role under the byline, a step quieter (Ian, 2026-09-24). */
+.faith-mf .faith-mf-role {
+  margin: 6px 0 0;
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--color-muted, #6b6660);
+}
