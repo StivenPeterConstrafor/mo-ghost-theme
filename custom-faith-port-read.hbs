@@ -64,7 +64,7 @@
       logs three CSP errors per load and mislabels the notebook "sync
       unavailable". This drops the config while the window between the two files
       is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=e199b0c78468ac78"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ccd1c7702c51c000"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=57fcccc70d2217c1"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
-<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=58634c20119df682">
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=bcba6f5a79303917">
 {{/contentFor}}
 
 {{!-- /the-faith-received/read/ — the ported page-native reader.
@@ -323,11 +323,13 @@
 {{!-- Split paragraphs: a tool beside Modernize, off by default. Before the
      drawer script, which moves its button into Tools. --}}
 <script src="{{asset "js/page/faith-port-read-paragraphs.js"}}&amp;frv=8e7ae22604dd3c81"></script>
+{{!-- Hide editorial notes, a Tools button (Ian, 2026-09-24). Before the drawer, which moves it. --}}
+<script src="{{asset "js/page/faith-port-read-editorial.js"}}&amp;frv=493f407956a6c190"></script>
 {{!-- Tools holds the tools: every toolbar control but contents, page,
      Search and Tools slides out of Tools; on a phone the dock is
      Contents, Search, Tools, and Transparency is a dialog. After the
      chrome file, whose buttons it moves. --}}
-<script src="{{asset "js/page/faith-port-read-drawer.js"}}&amp;frv=d0b27a17562cdd86"></script>
+<script src="{{asset "js/page/faith-port-read-drawer.js"}}&amp;frv=dda64672adb3d1a4"></script>
 {{!-- The selection bar's Link and Copy carry the exact words, and a
      link that arrives with them marks them. --}}
 <script src="{{asset "js/page/faith-port-read-passage-link.js"}}&amp;frv=0e64c53de54bdf8c"></script>

@@ -113,6 +113,7 @@
     theme: [{ tag: "circle", cx: "12", cy: "12", r: "8" }, { d: "M12 4a8 8 0 0 1 0 16z", fill: "currentColor" }],
     flow: [{ d: "M5 6h14M5 10h14M5 14h14M5 18h9" }],
     paras: [{ d: "M4 5h16M4 9h11M4 15h16M4 19h9" }],
+    ednotes: [{ d: "M5 4h14v16H5zM8 8h8M8 12h8M8 16h5" }],
     modern: [{ d: "M4 17l4-10 4 10M5.5 13h5" }, { d: "M14 9.5c1-1.2 4.5-1.4 4.5 1.2V17M18.5 13c-3.5-.4-5 .6-5 2.1 0 1.8 3 2.2 5-.6" }],
     scan: [{ tag: "rect", x: "4", y: "3", width: "16", height: "18", rx: "1" }, { d: "M8 7h8M8 11h8M8 15h5" }],
   };
@@ -310,6 +311,7 @@
       ["read", q(".seg.lanes")],
       ["view", document.getElementById("rdFlow")],
       ["view", q(".fr-tb-folds")],
+      ["view", q(".fr-tb-ednotes")],
       ["view", document.getElementById("thTop")],
       ["copy", document.getElementById("rdCopyLink")],
       ["copy", document.getElementById("rdKeep")],
@@ -467,6 +469,8 @@
       theme,
       transparency: cell("x-tt", "Transparency", "transparency"),
       folds: proxy("x-folds", "Collapse", "folds", ".fr-tb-folds"),
+      // Hide editorial notes (faith-port-read-editorial.js).
+      ednotes: proxy("x-ednotes", "Ed. notes", "ednotes", ".fr-tb-ednotes"),
       copyLink: proxy("x-link", "Copy link", "link", "#rdCopyLink"),
       keep: proxy("x-keep", "Bookmark", "save", "#rdKeep"),
       ask,
@@ -487,6 +491,13 @@
     const f = window.FRReaderFolds;
     const open = !f || f.anyOpen();
     proxies.folds.querySelector(".lb").textContent = open ? "Collapse" : "Expand";
+    const ed = document.querySelector(".fr-tb-ednotes");
+    if (proxies.ednotes) {
+      proxies.ednotes.hidden = !ed || ed.hidden;
+      const edOn = Boolean(ed) && ed.getAttribute("aria-pressed") === "true";
+      proxies.ednotes.classList.toggle("on", edOn);
+      proxies.ednotes.querySelector(".lb").textContent = edOn ? "Show notes" : "Hide notes";
+    }
     const keep = document.getElementById("rdKeep");
     if (keep) {
       proxies.keep.setAttribute("data-feature-gate", "tfr-bookmarks");
@@ -500,6 +511,7 @@
   }
   document.addEventListener("fr-folds-change", syncProxies);
   document.addEventListener("fr-paras-change", syncProxies);
+  document.addEventListener("fr-ednotes-change", syncProxies);
   /* The controls a phone cell mirrors change on their own: Modernize
      shows itself only once the text has loaded and turned out to be
      early modern English (faith-port-read-modernize.js), Bookmark and
