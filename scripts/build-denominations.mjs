@@ -166,8 +166,14 @@ const LL_BODY = [
   [/\bbaptist\b/i, "Baptist"],
   [/\bquaker|society of friends/i, "Quaker"],
   [/\bmennonite|anabaptist/i, "Anabaptist"],
-  [/\bremonstrant|arminian\b/i, "Arminian"],
-  [/\bsocinian|unitarian/i, "Socinian"],
+  // Not after "anti-", "contra-" or "counter-". The records describe
+  // Dort's own delegates as "Dutch Contra-Remonstrant" and William Twisse
+  // as "anti-Arminian", and the hyphen is a word boundary, so Lubbertus,
+  // Walaeus, Hommius and Twisse were all filed Arminian: the men who
+  // condemned Arminius listed as his church. Lubbertus is also
+  // "anti-Socinian", which the next line would then have taken instead.
+  [/(?<!(?:anti|contra|counter)-)\b(?:remonstrant|arminian)\b/i, "Arminian"],
+  [/(?<!anti-)\b(?:socinian|unitarian)/i, "Socinian"],
   [/bohemian brethren|unitas fratrum|moravian|hussite/i, "Bohemian Brethren"],
   [/waldensian|vaudois/i, "Waldensian"],
   [/scottish episcopalian|episcopalian/i, "Anglican"],
