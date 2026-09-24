@@ -321,7 +321,16 @@
     ];
   }
 
+  // Research asks a signed-out reader to subscribe (feature-gate.js).
+  function gateResearch() {
+    const nb = document.getElementById("nbCount");
+    if (nb && !nb.hasAttribute("data-feature-gate")) nb.setAttribute("data-feature-gate", "tfr-research");
+    const dock = document.querySelector('nav.frthumb [data-t="nb"]');
+    if (dock && !dock.hasAttribute("data-feature-gate")) dock.setAttribute("data-feature-gate", "tfr-research");
+  }
+
   function fillDesktop() {
+    gateResearch();
     members().forEach(([g, el]) => {
       if (!el) return;
       remember(el);
@@ -429,6 +438,7 @@
     const report = cell("x-report", "Report", "report");
     report.setAttribute("data-report-issue", "");
     report.setAttribute("aria-label", "Report a problem");
+    report.setAttribute("data-feature-gate", "tfr-report");
     const lang = cell("x-lang", "Both", "lang");
     lang.addEventListener("click", cycleLane);
     langBtns.push(lang);
@@ -532,6 +542,7 @@
 
   function fillMobile() {
     if (!bar || !mDrawer) return;
+    gateResearch();
     mMembers().forEach((el) => { if (el.parentElement !== mDrawer) mDrawer.appendChild(el); });
     Object.keys(proxies).forEach((k) => {
       const el = proxies[k];

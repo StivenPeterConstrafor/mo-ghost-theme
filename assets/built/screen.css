@@ -26128,3 +26128,18 @@ body:has(.welcome-page) .site-header { position: static; flex: 0 0 auto; }
 @media (max-width: 640px) {
   .pref-row { gap: 16px; }
 }
+
+/* "Already a subscriber? Sign in" at the foot of the feature gate
+   (feature-gate.js, 2026-09-23). */
+.feature-gate-modal-signin {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-muted, #6b6660);
+}
+.feature-gate-modal-signin a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.feature-gate-modal-signin a:hover { color: var(--color-secondary, #c1593c); }

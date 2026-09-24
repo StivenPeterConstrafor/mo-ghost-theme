@@ -201,6 +201,14 @@
       "Modernize needs an account",
       "Read early modern English in today's spelling, with the old verb endings brought up to date. Switch it off to see the words as the printer set them."
     ),
+    "tfr-research": betaFeature(
+      "Research needs an account",
+      "Open the research beside the text: the work's topics and Scripture, and your own notes and saved passages."
+    ),
+    "tfr-report": betaFeature(
+      "Reporting a problem needs an account",
+      "Tell us about a bad scan, a wrong word or a broken link, and we will look at it."
+    ),
     "tfr-desk": betaFeature(
       "Desk needs an account",
       "Write with your saved sources beside you, each one still linked to the text it came from."
@@ -288,6 +296,23 @@
       innerWrap.innerHTML = memberInner(feature);
     }
     while (innerWrap.firstChild) panel.appendChild(innerWrap.firstChild);
+
+    /* "Already a subscriber? Sign in" at the foot of every gate (Ian,
+       2026-09-23). Only for someone signed out: a signed-in free reader
+       meeting a members-only tool is already signed in. The link opens
+       Ghost's own sign-in (Portal) and closes this dialog. */
+    if (STATUS === "anonymous") {
+      const signin = document.createElement("p");
+      signin.className = "feature-gate-modal-signin";
+      signin.append(feature.requires === "member" ? "Already a member? " : "Already a subscriber? ");
+      const a = document.createElement("a");
+      a.href = "#/portal/signin";
+      a.setAttribute("data-portal", "signin");
+      a.setAttribute("data-fg-dismiss", "");
+      a.textContent = "Sign in";
+      signin.appendChild(a);
+      panel.appendChild(signin);
+    }
 
     overlay.append(backdrop, panel);
 

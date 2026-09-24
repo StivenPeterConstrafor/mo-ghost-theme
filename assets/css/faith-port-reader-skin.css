@@ -3008,3 +3008,7 @@ body:has(#app.faith-port-read-page) .fra .fra-composer textarea {
 body:has(#app.faith-port-read-page) .fra .fra-compose-tools { margin-top: 2px; }
 body:has(#app.faith-port-read-page) .fra .fra-send { width: 32px; height: 32px; min-height: 32px; border-radius: 3px; }
 body:has(#app.faith-port-read-page) .fra .fra-compose-foot { margin-top: 4px; padding-top: 4px; }
+
+/* The subscribe pop-up (feature-gate.js) over every reader layer: the
+   toolbar rises to 10030 with a menu open, Research is 10020. */
+body:has(#app.faith-port-read-page) .feature-gate-modal { z-index: 10060; }

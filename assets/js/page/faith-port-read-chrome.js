@@ -70,10 +70,13 @@
   const bReport = button("Report", "fr-tb-report");
   const more = document.createElement("span");
   more.className = "fr-tb-more";
-  more.textContent = " a problem";
+  // No leading space: the button is a flex row with its own gap, and a
+  // space as well read "Report  a problem".
+  more.textContent = "a problem";
   bReport.appendChild(more);
   bReport.setAttribute("aria-label", "Report a problem");
   bReport.setAttribute("data-report-issue", "");
+  bReport.setAttribute("data-feature-gate", "tfr-report");
   bReport.title = "Tell us about a problem with this work: a bad scan, wrong text, a broken link";
   const bTop = button("Top", "fr-tb-top");
   bTop.title = "Back to the top of the work";
