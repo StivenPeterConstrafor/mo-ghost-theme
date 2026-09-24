@@ -264,7 +264,13 @@
   // a failure is not retried a thousand times on every pass.
   const tried = new WeakMap();
 
+  // Reads first, writes after. resolve() measures (getClientRects), and
+  // every button a write adds invalidates layout, so interleaving them
+  // relaid the whole page once per entry: the 1928 BCP's 440 entries
+  // froze the browser for about five seconds on load (Ian, 2026-09-24).
   function stamp(list, folioByPage) {
+    const found = [];
+    const claimed = new Set();
     list.forEach((e) => {
       const folio = folioByPage.get(e.page);
       if (!folio) return;
@@ -274,7 +280,11 @@
       if (t.has(e.i)) return;
       t.add(e.i);
       const row = resolve(folio, e.title);
-      if (!row || row.dataset.frSec) return;
+      if (!row || row.dataset.frSec || claimed.has(row)) return;
+      claimed.add(row);
+      found.push([e, row]);
+    });
+    found.forEach(([e, row]) => {
       row.dataset.frSec = String(e.i);
       row.dataset.frDepth = String(e.depth);
       row.classList.add("fr-sec-head");
