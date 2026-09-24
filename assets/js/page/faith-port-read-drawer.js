@@ -53,31 +53,32 @@
   // Width from 0 to the content's own, then handed back to the content
   // so a font swap does not leave it clipped; closing runs the same
   // distance back. `hidden` is used only before the first open.
+  // Forced style flushes rather than animation frames: a frame can
+  // arrive late (or, in a background tab, not at all), and a click that
+  // waits on one looks like a click that did nothing.
   function slide(drawer, open) {
     drawer.dataset.want = open ? "open" : "shut";
+    window.clearTimeout(drawer.frSettle);
     if (open) {
       drawer.hidden = false;
       drawer.classList.remove("is-settled");
-      window.requestAnimationFrame(() => {
+      drawer.style.width = "0px";
+      void drawer.offsetWidth;
+      drawer.classList.add("is-open");
+      drawer.style.width = `${drawer.scrollWidth}px`;
+      drawer.frSettle = window.setTimeout(() => {
         if (drawer.dataset.want !== "open") return;
-        drawer.classList.add("is-open");
-        drawer.style.width = `${drawer.scrollWidth}px`;
-        window.setTimeout(() => {
-          if (drawer.dataset.want !== "open") return;
-          drawer.style.width = "auto";
-          drawer.classList.add("is-settled");
-        }, SLIDE_MS);
-      });
+        drawer.style.width = "auto";
+        drawer.classList.add("is-settled");
+      }, SLIDE_MS);
       return;
     }
     drawer.classList.remove("is-settled");
     drawer.scrollLeft = 0;
     drawer.style.width = `${drawer.getBoundingClientRect().width}px`;
-    window.requestAnimationFrame(() => {
-      if (drawer.dataset.want === "open") return;
-      drawer.classList.remove("is-open");
-      drawer.style.width = "0px";
-    });
+    void drawer.offsetWidth;
+    drawer.classList.remove("is-open");
+    drawer.style.width = "0px";
   }
 
   function icon(d) {
