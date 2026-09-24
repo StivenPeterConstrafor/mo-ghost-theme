@@ -53,7 +53,12 @@
   var words = function (s) { return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").split(/[^a-z]+/).filter(function (w) { return w.length > 1; }).sort().join(" "); };
   var slug = function (s) { return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); };
   var DIRECTORY = "/assets/data/faith-received/authors/";
-  var api = { fold: fold, plain: plain, words: words, years: years, slug: slug, DATE_PART: DATE_PART, DIRECTORY: DIRECTORY };
+  // The directory's content hash, rewritten by build-author-directory.mjs.
+  // Ghost serves /assets/** for a year and the theme's own ?v= does not
+  // change when only data does, so the data carries its own version.
+  var DATA_V = "c228649dec91";
+  var dataUrl = function (f) { return DIRECTORY + f + "?d=" + DATA_V; };
+  var api = { fold: fold, plain: plain, words: words, years: years, slug: slug, DATE_PART: DATE_PART, DIRECTORY: DIRECTORY, dataUrl: dataUrl };
   root.MOAuthorAddress = api;
   if (typeof location === "undefined" || typeof document === "undefined") return;
 
@@ -65,14 +70,13 @@
     var pl = plain(a);
     var wantFolds = [fold(a), fold(pl)];
     var wantWords = words(pl);
-    var asset = function (p) { return root.moAssetUrl ? root.moAssetUrl(p) : p; };
     // The page script waits on this; it resolves to the directory target
     // ("@key", "@@base") or "" for a name the library does not know.
     var miss = null;
     api.miss = new Promise(function (res) { miss = res; });
     var toDirectory = function () {
       document.documentElement.classList.add("fr-author-own");
-      fetch(asset(DIRECTORY + "names.json")).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (d) {
+      fetch(dataUrl("names.json")).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (d) {
         var names = (d && d.names) || {};
         var t = names[fold(a)] || names[fold(pl)] || names[fold(slug(pl))] || "";
         if (t && t.charAt(0) !== "@") {

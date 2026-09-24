@@ -29,9 +29,7 @@
   "use strict";
   const A = window.MOAuthorAddress;
   if (!A || !A.miss) return;
-  const DIR = A.DIRECTORY;
-  const asset = (p) => (window.moAssetUrl ? window.moAssetUrl(p) : p);
-  const json = (p) => fetch(asset(DIR + p)).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const json = (p) => fetch(A.dataUrl(p)).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   const want = new URLSearchParams(location.search).get("a") || "";
 
   const COLLECTIONS = [

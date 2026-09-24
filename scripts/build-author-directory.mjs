@@ -262,5 +262,16 @@ const write = (f, body) => { const s = JSON.stringify({ v: 1, generated: date, .
 let bytes = write("names.json", { names });
 bytes += write("people.json", { people: peopleOut });
 for (const [shard, entries] of Object.entries(out)) bytes += write(`w-${shard}.json`, { authors: entries });
+// Stamp the data's content hash into author-address.js, which the page
+// uses as the data's ?d= version (Ghost caches /assets/** for a year).
+{
+  const { createHash } = await import("node:crypto");
+  const { readdirSync } = await import("node:fs");
+  const h = createHash("sha1");
+  for (const f of readdirSync(OUT).filter((x) => x.endsWith(".json")).sort()) h.update(readFileSync(new URL(f, OUT)));
+  const addr = new URL("../assets/js/port/author-address.js", import.meta.url);
+  const src = readFileSync(addr, "utf8").replace(/var DATA_V = "[^"]*";/, `var DATA_V = "${h.digest("hex").slice(0, 12)}";`);
+  writeFileSync(addr, src);
+}
 const roomNames = new Set([...target.values()].filter((t) => !t.startsWith("@")));
 console.log(`${Object.keys(names).length.toLocaleString()} spellings; ${roomNames.size} rooms reached by a catalogue name; ${people.size.toLocaleString()} authors without a room; ${(bytes / 1024).toFixed(0)} KB written`);
