@@ -250,6 +250,18 @@
    * is also the quickest way in. The counts are the facet counts, which
    * already honour the OTHER filters, so choosing a century leaves the
    * tradition chart showing that century's traditions. */
+  /* Each chart folds (Ian, 2026-09-23: "Can you make these
+   * collapsable?"). A <details> per chart, open by default, and the
+   * choice is kept per browser: the charts are redrawn on every filter
+   * change, so the state lives here rather than in the element. */
+  const FOLD_KEY = "fr_sd_charts_closed";
+  let closed = {};
+  try { closed = JSON.parse(window.localStorage.getItem(FOLD_KEY) || "{}") || {}; } catch (e) { closed = {}; }
+  // Display only: the shelf name "English Divines" is never shown.
+  const trLabel = (x) => {
+    const raw = x.label || x.k;
+    try { return window.MOFaithLabel && window.MOFaithLabel.shelf ? window.MOFaithLabel.shelf(raw) : raw; } catch (e) { return raw; }
+  };
   function charts(facets) {
     const block = (title, k, list) => {
       // Every century (they are the story); traditions are few anyway.
@@ -257,20 +269,27 @@
       if (!rows.length) return "";
       const max = Math.max(...rows.map((x) => x.n)) || 1;
       const cur = bar.filters[k][0] || "";
-      return `<figure class="sd-chart"><figcaption>${esc(title)}${k === "cen" ? ` <span class="sd-muted">· select a bar to filter</span>` : ""}</figcaption><ul>${ 
+      return `<details class="sd-chart" data-sd-chart="${k}"${closed[k] ? "" : " open"}><summary>${esc(title)}${k === "cen" ? ` <span class="sd-muted">· select a bar to filter</span>` : ""}</summary><ul>${ 
         rows.map((x) =>
           `<li><button type="button" class="sd-cbar${String(x.k) === cur ? " is-on" : ""}" data-k="${k}" data-val="${esc(x.k)}" aria-pressed="${String(x.k) === cur}">` +
-            `<span class="sd-cbar-label">${esc(x.label || x.k)}</span>` +
+            `<span class="sd-cbar-label">${esc(k === "tr" ? trLabel(x) : (x.label || x.k))}</span>` +
             `<span class="sd-cbar-track"><span class="sd-cbar-fill" style="width:${Math.max(2, Math.round((x.n / max) * 100))}%"></span></span>` +
             `<span class="sd-cbar-n">${fmt(x.n)}</span>` +
           `</button></li>`,
         ).join("") 
-        }</ul></figure>`;
+        }</ul></details>`;
     };
     $charts.innerHTML =
       block("By century", "cen", facets && facets.century) +
       block("By tradition", "tr", facets && facets.tradition);
   }
+  // toggle does not bubble; captured on the container.
+  $charts.addEventListener("toggle", (e) => {
+    const d = e.target;
+    if (!d || !d.dataset || !d.dataset.sdChart) return;
+    closed[d.dataset.sdChart] = !d.open;
+    try { window.localStorage.setItem(FOLD_KEY, JSON.stringify(closed)); } catch (err) { /* not kept */ }
+  }, true);
   $charts.addEventListener("click", (e) => {
     const b = e.target.closest(".sd-cbar");
     if (!b) return;

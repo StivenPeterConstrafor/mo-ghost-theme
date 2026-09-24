@@ -668,3 +668,39 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
   .sd-desk .sd-filters, .sd-desk .sd-ask { padding: 14px 16px; }
   .sd-desk .sd-sources > .sd-source, .sd-desk .sd-sources > .sd-source:last-child { padding: 12px 14px; }
 }
+
+/* The charts fold (Ian, 2026-09-23). The caption is the summary, with a
+   chevron at its right; closed, a chart is its caption alone, and the
+   pair align to their tops so an open one does not stretch its
+   neighbour. */
+.sd-charts { align-items: start; }
+.sd-chart > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  list-style: none;
+  cursor: pointer;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  font-weight: 600;
+}
+.sd-chart > summary::-webkit-details-marker { display: none; }
+.sd-chart > summary::after {
+  content: "";
+  margin-left: auto;
+  align-self: center;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 0.15s ease;
+}
+.sd-chart:not([open]) > summary::after { transform: rotate(-45deg); }
+.sd-chart[open] > summary { margin-bottom: 8px; }
+.sd-chart > summary:hover { color: var(--color-dark); }
+.sd-chart > summary:focus-visible { outline: 2px solid var(--color-secondary, #c1593c); outline-offset: 3px; }
+.sd-desk .sd-chart:not([open]) { padding-bottom: 16px; }
+@media (prefers-reduced-motion: reduce) { .sd-chart > summary::after { transition: none; } }
