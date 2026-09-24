@@ -268,7 +268,16 @@
       const row = resolve(folio, e.title);
       if (!row || row.dataset.frSec) return;
       row.dataset.frSec = String(e.i);
+      row.dataset.frDepth = String(e.depth);
       row.classList.add("fr-sec-head");
+      // A row that IS the heading (the Latin Fathers carry no heading
+      // element: the head is a short row of its own) is styled as one
+      // (faith-port-reader-skin.css, "Section headings"). A row that
+      // merely holds a heading element among prose is left to that
+      // element's own style.
+      if (!row.querySelector("h1, h2, h3, h4, .csub") && (row.textContent || "").trim().length < 160) {
+        row.classList.add("fr-sec-headrow");
+      }
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "fr-sec-toggle";

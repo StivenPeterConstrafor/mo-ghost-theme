@@ -3029,3 +3029,37 @@ html:not(#fr-x) body:has(#app.faith-port-read-page) .fra {
 /* Split paragraphs (faith-port-read-paragraphs.js): each piece is a clone
    of its paragraph, so it takes the text's own paragraph style. */
 html.g-mobile .fr-tb-paras { display: none !important; }
+
+/* ── SECTION HEADINGS IN THE TEXT (Ian, 2026-09-24) ──────────────────
+   "Anything that would be in the TOC ... a better delineation between
+   sections in the work itself." Every heading the reader prints (the
+   csub heads of the TEI and curated works) and every short heading row
+   the outline resolves to (the Latin Fathers, which carry no heading
+   element; faith-reader-folds.js tags those fr-sec-headrow) opens its
+   section the thin-line way: a tan hairline across the column, room
+   above and below, and the heading centred in the reading face at a
+   step up. Nothing moves in the markup. */
+#reading h3.csub {
+  margin: 2.4em 0 1em;
+  padding-top: 1.1em;
+  border-top: 1px solid var(--border, #d9c6a7);
+  text-align: center;
+  font-family: var(--font-body, "Source Serif Pro", Georgia, serif);
+  font-size: 1.12em;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+}
+#reading .row.fr-sec-headrow {
+  margin-top: 2.4em;
+  padding-top: 1.1em;
+  border-top: 1px solid var(--border, #d9c6a7);
+}
+#reading .row.fr-sec-headrow :is(p, .en, .la) {
+  text-align: center;
+  font-weight: 600;
+  text-indent: 0;
+}
+/* The fold's caret sits on the heading's line, clear of the rule. */
+#reading .row.fr-sec-headrow > .fr-sec-toggle { margin-top: 1.1em; }
