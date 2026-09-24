@@ -766,6 +766,19 @@
     return askedForShelf.get(t);
   }
 
+  // The year a document is dated to, for the confessions' chronological
+  // order: the catalogue's date, else the year its title prints, else the
+  // middle of its century. Undated sorts last.
+  function yearOf(w) {
+    if (w._y !== undefined) return w._y;
+    const hit = String(w.date || w.eyebrow || "").match(/\b(\d{3,4})\b/)
+      || String(w.title || "").match(/\((?:c\.\s*)?(\d{2,4})\b[^)]*\)/);
+    const y = hit ? parseInt(hit[1], 10) : 0;
+    const c = cent(w);
+    w._y = y > 0 && y < 2100 ? y : (c ? c * 100 - 50 : 9999);
+    return w._y;
+  }
+
   // Derived once per work on load, not per keystroke.
   function cent(w) {
     return w._c === undefined ? (w._c = window.MOCentury ? window.MOCentury.of(w) : 0) : w._c;
@@ -1224,6 +1237,10 @@
       return Number.isFinite(c) && c ? c : 99;
     };
     allGroups.forEach(g => { g.kind = BY_TRADITION ? "tradition" : window.MOFaithCatalogue.authorGroup(g.name, g.works).kind; });
+    // Confessions read in the order they were written, inside a tradition
+    // as inside a century (Ian, 2026-09-24). Undated documents close the
+    // group, A-Z among themselves.
+    if (BY_TRADITION) allGroups.forEach((g) => { g.works.sort((a, b) => yearOf(a) - yearOf(b) || compareWorks(a, b)); });
     allGroups.sort((a, b) => groupOrder[a.kind] - groupOrder[b.kind]
       || (centuryList ? centuryRank(a) - centuryRank(b) : 0)
       || (BY_TRADITION && !centuryList ? traditionRank(a.name) - traditionRank(b.name) || a.name.localeCompare(b.name) : 0)
