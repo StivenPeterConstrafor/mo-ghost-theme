@@ -582,3 +582,23 @@
 - from: ^/the-faith-received/anf-papias-fragments/?$
   to: /the-faith-received/read/?w=pg-83&from=anf-papias-fragments
   permanent: true
+
+- from: ^/the-faith-received/anf-justin-first-apology/?$
+  to: /the-faith-received/read/?w=pg-105&from=anf-justin-first-apology
+  permanent: true
+
+- from: ^/the-faith-received/anf-justin-second-apology/?$
+  to: /the-faith-received/read/?w=pg-105&from=anf-justin-second-apology
+  permanent: true
+
+- from: ^/the-faith-received/anf-justin-dialogue-trypho/?$
+  to: /the-faith-received/read/?w=pg-105&from=anf-justin-dialogue-trypho
+  permanent: true
+
+- from: ^/the-faith-received/anf-athenagoras-plea/?$
+  to: /the-faith-received/read/?w=pg-107&from=anf-athenagoras-plea
+  permanent: true
+
+- from: ^/the-faith-received/anf-athenagoras-resurrection/?$
+  to: /the-faith-received/read/?w=pg-107&from=anf-athenagoras-resurrection
+  permanent: true

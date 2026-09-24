@@ -1,0 +1,1794 @@
+{
+"_about":[
+"Our chapter contents on Stiven's PG copies of the Ante-Nicene works that replaced ours (Ian, 2026-09-24: his copy wins; where our format is better his copy gets it).",
+"files[<pg id>].rows: {t: entry title, c: column, l: level (0 work, 1 book or chapter, 2 chapter in a book), a: the paragraph id where it starts, b<column>-<n>, read off the live reader}. span: column ranges where his own contents entries are replaced by ours.",
+"Read by assets/js/page/faith-port-read-chapters-overlay.js. Built from the chapter maps of the round-3 duplicate cleanup (every opening read against his English)."
+],
+"v":1,
+"files":{
+"pg-105":{
+"rows":[
+{
+"t":"The First Apology",
+"c":329,
+"l":0,
+"a":"b329-0"
+},
+{
+"t":"Chapter I. Address",
+"c":329,
+"l":1,
+"a":"b329-0"
+},
+{
+"t":"Chapter II. Justice demanded",
+"c":329,
+"l":1,
+"a":"b329-1"
+},
+{
+"t":"Chapter III. Claim of judicial investigation",
+"c":329,
+"l":1,
+"a":"b329-2"
+},
+{
+"t":"Chapter IV. Christians unjustly condemned for their mere name",
+"c":331,
+"l":1,
+"a":"b331-1"
+},
+{
+"t":"Chapter V. Christians charged with atheism",
+"c":335,
+"l":1,
+"a":"b335-0"
+},
+{
+"t":"Chapter VI. Charge of atheism refuted",
+"c":335,
+"l":1,
+"a":"b335-3"
+},
+{
+"t":"Chapter VII. Each Christian must be tried by his own life",
+"c":337,
+"l":1,
+"a":"b337-0"
+},
+{
+"t":"Chapter VIII. Christians confess their faith in God",
+"c":337,
+"l":1,
+"a":"b337-1"
+},
+{
+"t":"Chapter IX. Folly of idol worship",
+"c":339,
+"l":1,
+"a":"b339-1"
+},
+{
+"t":"Chapter X. How God is to be served",
+"c":339,
+"l":1,
+"a":"b339-2"
+},
+{
+"t":"Chapter XI. What kingdom Christians look for",
+"c":341,
+"l":1,
+"a":"b341-1"
+},
+{
+"t":"Chapter XII. Christians live as under God’s eye",
+"c":341,
+"l":1,
+"a":"b341-2"
+},
+{
+"t":"Chapter XIII. Christians serve God rationally",
+"c":345,
+"l":1,
+"a":"b345-1"
+},
+{
+"t":"Chapter XIV. The demons misrepresent Christian doctrine",
+"c":347,
+"l":1,
+"a":"b347-1"
+},
+{
+"t":"Chapter XV. What Christ himself taught",
+"c":349,
+"l":1,
+"a":"b349-1"
+},
+{
+"t":"Chapter XVI. Concerning patience and swearing",
+"c":351,
+"l":1,
+"a":"b351-1"
+},
+{
+"t":"Chapter XVII. Christ taught civil obedience",
+"c":353,
+"l":1,
+"a":"b353-3"
+},
+{
+"t":"Chapter XVIII. Proof of immortality and the resurrection",
+"c":355,
+"l":1,
+"a":"b355-1"
+},
+{
+"t":"Chapter XIX. The resurrection possible",
+"c":355,
+"l":1,
+"a":"b355-2"
+},
+{
+"t":"Chapter XX. Heathen analogies to Christian doctrine",
+"c":357,
+"l":1,
+"a":"b357-2"
+},
+{
+"t":"Chapter XXI. Analogies to the history of Christ",
+"c":359,
+"l":1,
+"a":"b359-0"
+},
+{
+"t":"Chapter XXII. Analogies to the sonship of Christ",
+"c":361,
+"l":1,
+"a":"b361-0"
+},
+{
+"t":"Chapter XXIII. The argument",
+"c":363,
+"l":1,
+"a":"b363-1"
+},
+{
+"t":"Chapter XXIV. Varieties of heathen worship",
+"c":363,
+"l":1,
+"a":"b363-2"
+},
+{
+"t":"Chapter XXV. False Gods abandoned by Christians",
+"c":365,
+"l":1,
+"a":"b365-2"
+},
+{
+"t":"Chapter XXVI. Magicians not trusted by Christians",
+"c":367,
+"l":1,
+"a":"b367-1"
+},
+{
+"t":"Chapter XXVII. Guilt of exposing children",
+"c":369,
+"l":1,
+"a":"b369-1"
+},
+{
+"t":"Chapter XXVIII. God’s care for men",
+"c":371,
+"l":1,
+"a":"b371-1"
+},
+{
+"t":"Chapter XXIX. Continence of Christians",
+"c":373,
+"l":1,
+"a":"b373-0"
+},
+{
+"t":"Chapter XXX. Was Christ not a magician?",
+"c":373,
+"l":1,
+"a":"b373-1"
+},
+{
+"t":"Chapter XXXI. Of the Hebrew prophets",
+"c":375,
+"l":1,
+"a":"b375-0"
+},
+{
+"t":"Chapter XXXII. Christ predicted by Moses",
+"c":377,
+"l":1,
+"a":"b377-1"
+},
+{
+"t":"Chapter XXXIII. Manner of Christ’s birth predicted",
+"c":379,
+"l":1,
+"a":"b379-3"
+},
+{
+"t":"Chapter XXXIV. Place of Christ’s birth foretold",
+"c":381,
+"l":1,
+"a":"b381-4"
+},
+{
+"t":"Chapter XXXV. Other fulfilled prophecies",
+"c":383,
+"l":1,
+"a":"b383-1"
+},
+{
+"t":"Chapter XXXVI. Different modes of prophecy",
+"c":385,
+"l":1,
+"a":"b385-0"
+},
+{
+"t":"Chapter XXXVII. Utterances of the Father",
+"c":385,
+"l":1,
+"a":"b385-1"
+},
+{
+"t":"Chapter XXXVIII. Utterances of the Son",
+"c":385,
+"l":1,
+"a":"b385-3"
+},
+{
+"t":"Chapter XXXIX. Direct predictions by the Spirit",
+"c":387,
+"l":1,
+"a":"b387-1"
+},
+{
+"t":"Chapter XL. Christ’s advent foretold",
+"c":387,
+"l":1,
+"a":"b387-3"
+},
+{
+"t":"Chapter XLI. The crucifixion predicted",
+"c":391,
+"l":1,
+"a":"b391-0"
+},
+{
+"t":"Chapter XLII. Prophecy using the past tense",
+"c":391,
+"l":1,
+"a":"b391-1"
+},
+{
+"t":"Chapter XLIII. Responsibility asserted",
+"c":391,
+"l":1,
+"a":"b391-2"
+},
+{
+"t":"Chapter XLIV. Not nullified by prophecy",
+"c":393,
+"l":1,
+"a":"b393-3"
+},
+{
+"t":"Chapter XLV. Christ’s session in heaven foretold",
+"c":395,
+"l":1,
+"a":"b395-4"
+},
+{
+"t":"Chapter XLVI. The Word in the world before Christ",
+"c":397,
+"l":1,
+"a":"b397-2"
+},
+{
+"t":"Chapter XLVII. Desolation of Judæa foretold",
+"c":399,
+"l":1,
+"a":"b399-1"
+},
+{
+"t":"Chapter XLVIII. Christ’s work and death foretold",
+"c":399,
+"l":1,
+"a":"b399-3"
+},
+{
+"t":"Chapter XLIX. His rejection by the Jews foretold",
+"c":399,
+"l":1,
+"a":"b399-5"
+},
+{
+"t":"Chapter L. His humiliation predicted",
+"c":401,
+"l":1,
+"a":"b401-1"
+},
+{
+"t":"Chapter LI. The majesty of Christ",
+"c":403,
+"l":1,
+"a":"b403-1"
+},
+{
+"t":"Chapter LII. Certain fulfilment of prophecy",
+"c":403,
+"l":1,
+"a":"b403-3"
+},
+{
+"t":"Chapter LIII. Summary of the prophecies",
+"c":405,
+"l":1,
+"a":"b405-2"
+},
+{
+"t":"Chapter LIV. Origin of heathen mythology",
+"c":407,
+"l":1,
+"a":"b407-3"
+},
+{
+"t":"Chapter LV. Symbols of the cross",
+"c":411,
+"l":1,
+"a":"b411-0"
+},
+{
+"t":"Chapter LVI. The demons still mislead men",
+"c":413,
+"l":1,
+"a":"b413-0"
+},
+{
+"t":"Chapter LVII. And cause persecution",
+"c":413,
+"l":1,
+"a":"b413-1"
+},
+{
+"t":"Chapter LVIII. And raise up heretics",
+"c":415,
+"l":1,
+"a":"b415-0"
+},
+{
+"t":"Chapter LIX. Plato’s obligation to Moses",
+"c":415,
+"l":1,
+"a":"b415-2"
+},
+{
+"t":"Chapter LX. Plato’s doctrine of the cross",
+"c":417,
+"l":1,
+"a":"b417-0"
+},
+{
+"t":"Chapter LXI. Christian baptism",
+"c":419,
+"l":1,
+"a":"b419-2"
+},
+{
+"t":"Chapter LXII. Its imitation by demons",
+"c":421,
+"l":1,
+"a":"b421-2"
+},
+{
+"t":"Chapter LXIII. How God appeared to Moses",
+"c":423,
+"l":1,
+"a":"b423-1"
+},
+{
+"t":"Chapter LXIV. Further misrepresentations of the truth",
+"c":425,
+"l":1,
+"a":"b425-3"
+},
+{
+"t":"Chapter LXV. Administration of the sacraments",
+"c":427,
+"l":1,
+"a":"b427-0"
+},
+{
+"t":"Chapter LXVI. Of the Eucharist",
+"c":427,
+"l":1,
+"a":"b427-2"
+},
+{
+"t":"Chapter LXVII. Weekly worship of the Christians",
+"c":429,
+"l":1,
+"a":"b429-1"
+},
+{
+"t":"Chapter LXVIII. Conclusion",
+"c":431,
+"l":1,
+"a":"b431-1"
+},
+{
+"t":"The Second Apology",
+"c":439,
+"l":0,
+"a":"b439-3"
+},
+{
+"t":"Chapter I. Introduction",
+"c":443,
+"l":1,
+"a":"b443-0"
+},
+{
+"t":"Chapter II. Urbicus condemns the Christians to death",
+"c":443,
+"l":1,
+"a":"b443-1"
+},
+{
+"t":"Chapter III. Justin accuses Crescens of ignorant prejudice against the Christians",
+"c":449,
+"l":1,
+"a":"b449-0"
+},
+{
+"t":"Chapter IV. Why the Christians do not kill themselves",
+"c":449,
+"l":1,
+"a":"b449-2"
+},
+{
+"t":"Chapter V. How the angels transgressed",
+"c":451,
+"l":1,
+"a":"b451-1"
+},
+{
+"t":"Chapter VI. Names of God and of Christ, their meaning and power",
+"c":453,
+"l":1,
+"a":"b453-0"
+},
+{
+"t":"Chapter VII. The world preserved for the sake of Christians. Man’s responsibility",
+"c":455,
+"l":1,
+"a":"b455-0"
+},
+{
+"t":"Chapter VIII. All have been hated in whom the Word has dwelt",
+"c":457,
+"l":1,
+"a":"b457-1"
+},
+{
+"t":"Chapter IX. Eternal punishment not a mere threat",
+"c":459,
+"l":1,
+"a":"b459-0"
+},
+{
+"t":"Chapter X. Christ compared with Socrates",
+"c":459,
+"l":1,
+"a":"b459-2"
+},
+{
+"t":"Chapter XI. How Christians view death",
+"c":461,
+"l":1,
+"a":"b461-1"
+},
+{
+"t":"Chapter XII. Christians proved innocent by their contempt of death",
+"c":463,
+"l":1,
+"a":"b463-1"
+},
+{
+"t":"Chapter XIII. How the Word has been in all men",
+"c":465,
+"l":1,
+"a":"b465-1"
+},
+{
+"t":"Chapter XIV. Justin prays that this appeal be published",
+"c":467,
+"l":1,
+"a":"b467-1"
+},
+{
+"t":"Chapter XV. Conclusion",
+"c":467,
+"l":1,
+"a":"b467-2"
+},
+{
+"t":"Dialogue with Trypho",
+"c":471,
+"l":0,
+"a":"b471-0"
+},
+{
+"t":"Chapter I. Introduction",
+"c":471,
+"l":1,
+"a":"b471-12"
+},
+{
+"t":"Chapter II. Justin describes his studies in philosophy",
+"c":475,
+"l":1,
+"a":"b475-2"
+},
+{
+"t":"Chapter III. Justin narrates the manner of his conversion",
+"c":477,
+"l":1,
+"a":"b477-4"
+},
+{
+"t":"Chapter IV. The soul of itself cannot see God",
+"c":483,
+"l":1,
+"a":"b483-0"
+},
+{
+"t":"Chapter V. The soul is not in its own nature immortal",
+"c":485,
+"l":1,
+"a":"b485-13"
+},
+{
+"t":"Chapter VI. These things were unknown to Plato and other philosophers",
+"c":489,
+"l":1,
+"a":"b489-2"
+},
+{
+"t":"Chapter VII. The knowledge of truth to be sought from the prophets alone",
+"c":491,
+"l":1,
+"a":"b491-0"
+},
+{
+"t":"Chapter VIII. Justin by his colloquy is kindled with love to Christ",
+"c":491,
+"l":1,
+"a":"b491-4"
+},
+{
+"t":"Chapter IX. The Christians have not believed groundless stories",
+"c":493,
+"l":1,
+"a":"b493-2"
+},
+{
+"t":"Chapter X. Trypho blames the Christians for this alone—the non-observance of the law And when they ceased, I again addressed them thus:—",
+"c":495,
+"l":1,
+"a":"b495-1"
+},
+{
+"t":"Chapter XI. The law abrogated; the New Testament promised and given by God",
+"c":497,
+"l":1,
+"a":"b497-1"
+},
+{
+"t":"Chapter XII. The Jews violate the eternal law, and interpret ill that of Moses",
+"c":499,
+"l":1,
+"a":"b499-1"
+},
+{
+"t":"Chapter XIII. Isaiah teaches that sins are forgiven through Christ’s blood",
+"c":499,
+"l":1,
+"a":"b499-3"
+},
+{
+"t":"Chapter XIV. Righteousness is not placed in Jewish rites, but in the conversion of the heart given in baptism by Christ",
+"c":503,
+"l":1,
+"a":"b503-3"
+},
+{
+"t":"Chapter XV. In what the true fasting consists",
+"c":507,
+"l":1,
+"a":"b507-0"
+},
+{
+"t":"Chapter XVI. Circumcision given as a sign, that the Jews might be driven away for their evil deeds done to Christ and the Christians",
+"c":509,
+"l":1,
+"a":"b509-0"
+},
+{
+"t":"Chapter XVII. The Jews sent persons through the whole earth to spread calumnies on Christians",
+"c":511,
+"l":1,
+"a":"b511-1"
+},
+{
+"t":"Chapter XVIII. Christians would observe the law, if they did not know why it was instituted",
+"c":515,
+"l":1,
+"a":"b515-0"
+},
+{
+"t":"Chapter XIX. Circumcision unknown before Abraham. The law was given by Moses on account of the hardness of their hearts",
+"c":515,
+"l":1,
+"a":"b515-1"
+},
+{
+"t":"Chapter XX. Why choice of meats was prescribed",
+"c":517,
+"l":1,
+"a":"b517-1"
+},
+{
+"t":"Chapter XXI. Sabbaths were instituted on account of the people’s sins, and not for a work of righteousness",
+"c":519,
+"l":1,
+"a":"b519-1"
+},
+{
+"t":"Chapter XXII. So also were sacrifices and oblations",
+"c":521,
+"l":1,
+"a":"b521-1"
+},
+{
+"t":"Chapter XXIII. The opinion of the Jews regarding the law does an injury to God",
+"c":525,
+"l":1,
+"a":"b525-2"
+},
+{
+"t":"Chapter XXIV. The Christians’ circumcision far more excellent",
+"c":527,
+"l":1,
+"a":"b527-2"
+},
+{
+"t":"Chapter XXV. The Jews boast in vain that they are sons of Abraham",
+"c":529,
+"l":1,
+"a":"b529-0"
+},
+{
+"t":"Chapter XXVI. No salvation to the Jews except through Christ",
+"c":531,
+"l":1,
+"a":"b531-1"
+},
+{
+"t":"Chapter XXVII. Why God taught the same things by the prophets as by Moses",
+"c":531,
+"l":1,
+"a":"b531-4"
+},
+{
+"t":"Chapter XXVIII. True righteousness is obtained by Christ",
+"c":533,
+"l":1,
+"a":"b533-5"
+},
+{
+"t":"Chapter XXIX. Christ is useless to those who observe the law",
+"c":537,
+"l":1,
+"a":"b537-0"
+},
+{
+"t":"Chapter XXX. Christians possess the true righteousness",
+"c":537,
+"l":1,
+"a":"b537-3"
+},
+{
+"t":"Chapter XXXI. If Christ’s power be now so great, how much greater at the second advent!",
+"c":539,
+"l":1,
+"a":"b539-1"
+},
+{
+"t":"Chapter XXXII. Trypho objecting that Christ is described as glorious by Daniel, Justin distinguishes two advents",
+"c":541,
+"l":1,
+"a":"b541-4"
+},
+{
+"t":"Chapter XXXIII. Ps. cx. is not spoken of Hezekiah. He proves that Christ was first humble, then shall be glorious",
+"c":545,
+"l":1,
+"a":"b545-1"
+},
+{
+"t":"Chapter XXXIV. Nor does Ps. lxxii. apply to Solomon, whose faults Christians shudder at",
+"c":545,
+"l":1,
+"a":"b545-3"
+},
+{
+"t":"Chapter XXXV. Heretics confirm the Catholics in the faith",
+"c":549,
+"l":1,
+"a":"b549-1"
+},
+{
+"t":"Chapter XXXVI. He proves that Christ is called Lord of Hosts",
+"c":553,
+"l":1,
+"a":"b553-1"
+},
+{
+"t":"Chapter XXXVII. The same is proved from other Psalms",
+"c":555,
+"l":1,
+"a":"b555-1"
+},
+{
+"t":"Chapter XXXVIII. It is an annoyance to the Jew that Christ is said to be adored. Justin confirms it, however, from Ps. xlv",
+"c":555,
+"l":1,
+"a":"b555-4"
+},
+{
+"t":"Chapter XXXIX. The Jews hate the Christians who believe this. How great the distinction is between both!",
+"c":559,
+"l":1,
+"a":"b559-5"
+},
+{
+"t":"Chapter XL. He returns to the Mosaic laws, and proves that they were figures of the things which pertain to Christ",
+"c":561,
+"l":1,
+"a":"b561-3"
+},
+{
+"t":"Chapter XLI. The oblation of fine flour was a figure of the Eucharist",
+"c":563,
+"l":1,
+"a":"b563-1"
+},
+{
+"t":"Chapter XLII. The bells on the priest’s robe were a figure of the apostles",
+"c":565,
+"l":1,
+"a":"b565-1"
+},
+{
+"t":"Chapter XLIII. He concludes that the law had an end in Christ, who was born of the Virgin",
+"c":565,
+"l":1,
+"a":"b565-4"
+},
+{
+"t":"Chapter XLIV. The Jews in vain promise themselves salvation, which cannot be obtained except through Christ",
+"c":569,
+"l":1,
+"a":"b569-1"
+},
+{
+"t":"Chapter XLV. Those who were righteous before and under the law shall be saved by Christ",
+"c":571,
+"l":1,
+"a":"b571-1"
+},
+{
+"t":"Chapter XLVI. Trypho asks whether a man who keeps the law even now will be saved. Justin proves that it contributes nothing to righteousness",
+"c":573,
+"l":1,
+"a":"b573-1"
+},
+{
+"t":"Chapter XLVII. Justin communicates with Christians who observe the law. Not a few Catholics do otherwise",
+"c":575,
+"l":1,
+"a":"b575-2"
+},
+{
+"t":"Chapter XLVIII. Before the divinity of Christ is proved, he Trypho demands that it be settled that He is Christ",
+"c":579,
+"l":1,
+"a":"b579-0"
+},
+{
+"t":"Chapter XLIX. To those who object that Elijah has not yet come, he replies that he is the precursor of the first advent",
+"c":581,
+"l":1,
+"a":"b581-1"
+},
+{
+"t":"Chapter L. It is proved from Isaiah that John is the precursor of Christ",
+"c":585,
+"l":1,
+"a":"b585-2"
+},
+{
+"t":"Chapter LI. It is proved that this prophecy has been fulfilled",
+"c":587,
+"l":1,
+"a":"b587-3"
+},
+{
+"t":"Chapter LII. Jacob predicted two advents of Christ",
+"c":589,
+"l":1,
+"a":"b589-1"
+},
+{
+"t":"Chapter LIII. Jacob predicted that Christ would ride on an ass, and Zechariah confirms it",
+"c":591,
+"l":1,
+"a":"b591-2"
+},
+{
+"t":"Chapter LIV. What the blood of the grape signifies",
+"c":593,
+"l":1,
+"a":"b593-3"
+},
+{
+"t":"Chapter LV. Trypho asks that Christ be proved God, but without metaphor. Justin promises to do so",
+"c":595,
+"l":1,
+"a":"b595-0"
+},
+{
+"t":"Chapter LVI. God who appeared to Moses is distinguished from God the Father",
+"c":595,
+"l":1,
+"a":"b595-4"
+},
+{
+"t":"Chapter LVII. The Jew objects, why is He said to have eaten, if He be God? Answer of Justin",
+"c":605,
+"l":1,
+"a":"b605-1"
+},
+{
+"t":"Chapter LVIII. The same is proved from the visions which appeared to Jacob",
+"c":605,
+"l":1,
+"a":"b605-6"
+},
+{
+"t":"Chapter LIX. God distinct from the Father conversed with Moses",
+"c":611,
+"l":1,
+"a":"b611-0"
+},
+{
+"t":"Chapter LX. Opinions of the Jews with regard to Him who appeared in the bush",
+"c":611,
+"l":1,
+"a":"b611-2"
+},
+{
+"t":"Chapter LXI. Wisdom is begotten of the Father, as fire from fire",
+"c":613,
+"l":1,
+"a":"b613-2"
+},
+{
+"t":"Chapter LXII. The words “Let Us make man” agree with the testimony of Proverbs",
+"c":617,
+"l":1,
+"a":"b617-0"
+},
+{
+"t":"Chapter LXIII. It is proved that this God was incarnate",
+"c":619,
+"l":1,
+"a":"b619-2"
+},
+{
+"t":"Chapter LXIV. Justin adduces other proofs to the Jew, who denies that he needs this Christ",
+"c":621,
+"l":1,
+"a":"b621-2"
+},
+{
+"t":"Chapter LXV. The Jew objects that God does not give His glory to another. Justin explains the passage",
+"c":625,
+"l":1,
+"a":"b625-1"
+},
+{
+"t":"Chapter LXVI. He proves from Isaiah that God was born from a virgin",
+"c":627,
+"l":1,
+"a":"b627-1"
+},
+{
+"t":"Chapter LXVII. Trypho compares Jesus with Perseus; and would prefer to say that He was elected to be Christ on account of observance of…",
+"c":629,
+"l":1,
+"a":"b629-0"
+},
+{
+"t":"Chapter LXVIII. He complains of the obstinacy of Trypho; he answers his objection; he convicts the Jews of bad faith",
+"c":631,
+"l":1,
+"a":"b631-11"
+},
+{
+"t":"Chapter LXIX. The devil, since he emulates the truth, has invented fables about Bacchus, Hercules, and Æsculapius",
+"c":635,
+"l":1,
+"a":"b635-3"
+},
+{
+"t":"Chapter LXX. So also the mysteries of Mithras are distorted from the prophecies of Daniel and Isaiah",
+"c":639,
+"l":1,
+"a":"b639-1"
+},
+{
+"t":"Chapter LXXI. The Jews reject the interpretation of the LXX., from which, moreover, they have taken away some passages",
+"c":641,
+"l":1,
+"a":"b641-1"
+},
+{
+"t":"Chapter LXXII. Passages have been removed by the Jews from Esdras and Jeremiah",
+"c":643,
+"l":1,
+"a":"b643-2"
+},
+{
+"t":"Chapter LXXIII. The words “From the wood” have been cut out of Ps. xcvi",
+"c":645,
+"l":1,
+"a":"b645-1"
+},
+{
+"t":"Chapter LXXIV. The beginning of Ps. xcvi. is attributed to the Father by Trypho. But it refers to Christ by these words:",
+"c":649,
+"l":1,
+"a":"b649-0"
+},
+{
+"t":"Chapter LXXV. It is proved that Jesus was the name of God in the book of Exodus",
+"c":651,
+"l":1,
+"a":"b651-0"
+},
+{
+"t":"Chapter LXXVI. From other passages the same majesty and government of Christ are proved",
+"c":651,
+"l":1,
+"a":"b651-2"
+},
+{
+"t":"Chapter LXXVII. He returns to explain the prophecy of Isaiah",
+"c":655,
+"l":1,
+"a":"b655-1"
+},
+{
+"t":"Chapter LXXVIII. He proves that this prophecy harmonizes with Christ alone, from what is afterwards written",
+"c":657,
+"l":1,
+"a":"b657-1"
+},
+{
+"t":"Chapter LXXIX. He proves against Trypho that the wicked angels have revolted from God",
+"c":661,
+"l":1,
+"a":"b661-1"
+},
+{
+"t":"Chapter LXXX. The opinion of Justin with regard to the reign of a thousand years. Several Catholics reject it",
+"c":663,
+"l":1,
+"a":"b663-1"
+},
+{
+"t":"Chapter LXXXI. He endeavours to prove this opinion from Isaiah and the Apocalypse",
+"c":667,
+"l":1,
+"a":"b667-1"
+},
+{
+"t":"Chapter LXXXII. The prophetical gifts of the Jews were transferred to the Christians",
+"c":669,
+"l":1,
+"a":"b669-1"
+},
+{
+"t":"Chapter LXXXIII. It is proved that the Psalm,",
+"c":671,
+"l":1,
+"a":"b671-1"
+},
+{
+"t":"Chapter LXXXIV. That prophecy, “Behold, a virgin,” etc., suits Christ alone",
+"c":673,
+"l":1,
+"a":"b673-0"
+},
+{
+"t":"Chapter LXXXV. He proves that Christ is the Lord of Hosts from Ps. xxiv., and from his authority over demons",
+"c":675,
+"l":1,
+"a":"b675-1"
+},
+{
+"t":"Chapter LXXXVI. There are various figures in the Old Testament of the wood of the cross by which Christ reigned",
+"c":679,
+"l":1,
+"a":"b679-2"
+},
+{
+"t":"Chapter LXXXVII. Trypho maintains in objection these words:",
+"c":681,
+"l":1,
+"a":"b681-3"
+},
+{
+"t":"Chapter LXXXVIII. Christ has not received the Holy Spirit on account of poverty",
+"c":685,
+"l":1,
+"a":"b685-1"
+},
+{
+"t":"Chapter LXXXIX. The cross alone is offensive to Trypho on account of the curse, yet it proves that Jesus is Christ",
+"c":687,
+"l":1,
+"a":"b687-3"
+},
+{
+"t":"Chapter XC. The stretched-out hands of Moses signified beforehand the cross",
+"c":689,
+"l":1,
+"a":"b689-2"
+},
+{
+"t":"Chapter XCI. The cross was foretold in the blessings of Joseph, and in the serpent that was lifted up",
+"c":691,
+"l":1,
+"a":"b691-1"
+},
+{
+"t":"Chapter XCII. Unless the scriptures be understood through God’s great grace, God will not appear to have taught always the same…",
+"c":693,
+"l":1,
+"a":"b693-3"
+},
+{
+"t":"Chapter XCIII. The same kind of righteousness is bestowed on all. Christ comprehends it in two precepts",
+"c":697,
+"l":1,
+"a":"b697-0"
+},
+{
+"t":"Chapter XCIV. In what sense he who hangs on a tree is cursed",
+"c":699,
+"l":1,
+"a":"b699-1"
+},
+{
+"t":"Chapter XCV. Christ took upon Himself the curse due to us",
+"c":701,
+"l":1,
+"a":"b701-3"
+},
+{
+"t":"Chapter XCVI. That curse was a prediction of the things which the Jews would do",
+"c":703,
+"l":1,
+"a":"b703-0"
+},
+{
+"t":"Chapter XCVII. Other predictions of the cross of Christ",
+"c":703,
+"l":1,
+"a":"b703-2"
+},
+{
+"t":"Chapter XCVIII. Predictions of Christ in Ps. xxii",
+"c":705,
+"l":1,
+"a":"b705-1"
+},
+{
+"t":"Chapter XCIX. In the commencement of the Psalm are Christ’s dying words",
+"c":707,
+"l":1,
+"a":"b707-1"
+},
+{
+"t":"Chapter C. In what sense Christ is called Jacob, and Israel, and Son of Man",
+"c":709,
+"l":1,
+"a":"b709-0"
+},
+{
+"t":"Chapter CI. Christ refers all things to the Father",
+"c":711,
+"l":1,
+"a":"b711-1"
+},
+{
+"t":"Chapter CII. The prediction of the events which happened to Christ when He was born. Why God permitted it",
+"c":711,
+"l":1,
+"a":"b711-4"
+},
+{
+"t":"Chapter CIII. The Pharisees are the bulls: the roaring lion is Herod or the devil",
+"c":715,
+"l":1,
+"a":"b715-1"
+},
+{
+"t":"Chapter CIV. Circumstances of Christ’s death are predicted in this Psalm",
+"c":719,
+"l":1,
+"a":"b719-1"
+},
+{
+"t":"Chapter CV. The Psalm also predicts the crucifixion and the subject of the last prayers of Christ on Earth",
+"c":719,
+"l":1,
+"a":"b719-2"
+},
+{
+"t":"Chapter CVI. Christ’s resurrection is foretold in the conclusion of the Psalm",
+"c":721,
+"l":1,
+"a":"b721-3"
+},
+{
+"t":"Chapter CVII. The same is taught from the history of Jonah",
+"c":723,
+"l":1,
+"a":"b723-2"
+},
+{
+"t":"Chapter CVIII. The resurrection of Christ did not convert the Jews. But through the whole world they have sent men to accuse Christ",
+"c":725,
+"l":1,
+"a":"b725-2"
+},
+{
+"t":"Chapter CIX. The conversion of the Gentiles has been predicted by Micah",
+"c":727,
+"l":1,
+"a":"b727-1"
+},
+{
+"t":"Chapter CX. A portion of the prophecy already fulfilled in the Christians: the rest shall be fulfilled at the second advent",
+"c":729,
+"l":1,
+"a":"b729-0"
+},
+{
+"t":"Chapter CXI. The two advents were signified by the two goats. Other figures of the first advent, in which the Gentiles are freed by the…",
+"c":731,
+"l":1,
+"a":"b731-1"
+},
+{
+"t":"Chapter CXII. The Jews expound these signs jejunely and feebly, and take up their attention only with insignificant matters",
+"c":733,
+"l":1,
+"a":"b733-1"
+},
+{
+"t":"Chapter CXIII. Joshua was a figure of Christ",
+"c":735,
+"l":1,
+"a":"b735-1"
+},
+{
+"t":"Chapter CXIV. Some rules for discerning what is said about Christ. The circumcision of the Jews is very different from that which…",
+"c":737,
+"l":1,
+"a":"b737-1"
+},
+{
+"t":"Chapter CXV. Prediction about the Christians in Zechariah. The malignant way which the Jews have in disputations",
+"c":741,
+"l":1,
+"a":"b741-0"
+},
+{
+"t":"Chapter CXVI. It is shown how this prophecy suits the Christians",
+"c":743,
+"l":1,
+"a":"b743-1"
+},
+{
+"t":"Chapter CXVII. Malachi’s prophecy concerning the sacrifices of the Christians. It cannot be taken as referring to the prayers of Jews of…",
+"c":745,
+"l":1,
+"a":"b745-1"
+},
+{
+"t":"Chapter CXVIII. He exhorts to repentance before Christ comes; in whom Christians, since they believe, are far more religious than Jews",
+"c":749,
+"l":1,
+"a":"b749-1"
+},
+{
+"t":"Chapter CXIX. Christians are the holy people promised to Abraham. They have been called like Abraham",
+"c":751,
+"l":1,
+"a":"b751-2"
+},
+{
+"t":"Chapter CXX. Christians were promised to Isaac, Jacob, and Judah",
+"c":753,
+"l":1,
+"a":"b753-1"
+},
+{
+"t":"Chapter CXXI. From the fact that the Gentiles believe in Jesus, it is evident that He is Christ",
+"c":755,
+"l":1,
+"a":"b755-2"
+},
+{
+"t":"Chapter CXXII. The Jews understand this of the proselytes without reason",
+"c":759,
+"l":1,
+"a":"b759-0"
+},
+{
+"t":"Chapter CXXIII. Ridiculous interpretations of the Jews. Christians are the true Israel",
+"c":759,
+"l":1,
+"a":"b759-3"
+},
+{
+"t":"Chapter CXXIV. Christians are the sons of God",
+"c":763,
+"l":1,
+"a":"b763-4"
+},
+{
+"t":"Chapter CXXV. He explains what force the word Israel has, and how it suits Christ",
+"c":765,
+"l":1,
+"a":"b765-2"
+},
+{
+"t":"Chapter CXXVI. The various names of Christ according to both natures. It is shown that He is God, and appeared to the patriarchs",
+"c":767,
+"l":1,
+"a":"b767-6"
+},
+{
+"t":"Chapter CXXVII. These passages of Scripture do not apply to the Father, but to the Word",
+"c":771,
+"l":1,
+"a":"b771-1"
+},
+{
+"t":"Chapter CXXVIII. The Word is sent not as an inanimate power, but as a person begotten of the Father’s substance",
+"c":773,
+"l":1,
+"a":"b773-1"
+},
+{
+"t":"Chapter CXXIX. That is confirmed from other passages of Scripture",
+"c":777,
+"l":1,
+"a":"b777-0"
+},
+{
+"t":"Chapter CXXX. He returns to the conversion of the Gentiles, and shows that it was foretold",
+"c":777,
+"l":1,
+"a":"b777-2"
+},
+{
+"t":"Chapter CXXXI. How much more faithful to God the Gentiles are who are converted to Christ than the Jews",
+"c":779,
+"l":1,
+"a":"b779-1"
+},
+{
+"t":"Chapter CXXXII. How great the power was of the name of Jesus in the Old Testament",
+"c":781,
+"l":1,
+"a":"b781-3"
+},
+{
+"t":"Chapter CXXXIII. The hard-heartedness of the Jews, for whom the Christians pray",
+"c":783,
+"l":1,
+"a":"b783-2"
+},
+{
+"t":"Chapter CXXXIV. The marriages of Jacob are a figure of the Church",
+"c":785,
+"l":1,
+"a":"b785-2"
+},
+{
+"t":"Chapter CXXXV. Christ is king of Israel, and Christians are the Israelitic race",
+"c":787,
+"l":1,
+"a":"b787-5"
+},
+{
+"t":"Chapter CXXXVI. The Jews, in rejecting Christ, rejected God who sent him",
+"c":789,
+"l":1,
+"a":"b789-2"
+},
+{
+"t":"Chapter CXXXVII. He exhorts the Jews to be converted",
+"c":791,
+"l":1,
+"a":"b791-0"
+},
+{
+"t":"Chapter CXXXVIII. Noah is a figure of Christ, who has regenerated us by water, and faith, and wood: i.e., the cross. (not in this copy)",
+"c":791,
+"l":1,
+"a":"b791-2"
+},
+{
+"t":"Chapter CXXXIX. The blessings, and also the curse, pronounced by Noah were prophecies of the future (not in this copy)",
+"c":791,
+"l":1,
+"a":"b791-2"
+},
+{
+"t":"Chapter CXL. In Christ all are free. The Jews hope for salvation in vain because they are sons of Abraham (not in this copy)",
+"c":791,
+"l":1,
+"a":"b791-2"
+},
+{
+"t":"Chapter CXLI. Free-will in men and angels (not in this copy)",
+"c":791,
+"l":1,
+"a":"b791-2"
+},
+{
+"t":"Chapter CXLII. The Jews return thanks, and leave Justin (not in this copy)",
+"c":791,
+"l":1,
+"a":"b791-2"
+}
+],
+"span":[
+[
+329,
+431
+],
+[
+439,
+467
+],
+[
+471,
+791
+]
+]
+},
+"pg-107":{
+"rows":[
+{
+"t":"A Plea for the Christians",
+"c":889,
+"l":0,
+"a":"b889-1"
+},
+{
+"t":"Chapter I. Injustice Shown Towards the Christians",
+"c":889,
+"l":1,
+"a":"b889-3"
+},
+{
+"t":"Chapter II. Claim to Be Treated as Others are When Accused",
+"c":893,
+"l":1,
+"a":"b893-1"
+},
+{
+"t":"Chapter III. Charges Brought Against the Christians",
+"c":895,
+"l":1,
+"a":"b895-3"
+},
+{
+"t":"Chapter IV. The Christians are Not Atheists, But Acknowledge One Only God",
+"c":897,
+"l":1,
+"a":"b897-0"
+},
+{
+"t":"Chapter V. Testimony of the Poets to the Unity of God",
+"c":899,
+"l":1,
+"a":"b899-1"
+},
+{
+"t":"Chapter VI. Opinions of the Philosophers as to the One God",
+"c":901,
+"l":1,
+"a":"b901-0"
+},
+{
+"t":"Chapter VII. Superiority of the Christian Doctrine Respecting God",
+"c":903,
+"l":1,
+"a":"b903-1"
+},
+{
+"t":"Chapter VIII. Absurdities of Polytheism",
+"c":903,
+"l":1,
+"a":"b903-3"
+},
+{
+"t":"Chapter IX. The Testimony of the Prophets",
+"c":905,
+"l":1,
+"a":"b905-4"
+},
+{
+"t":"Chapter X. The Christians Worship the Father, Son, and Holy Ghost",
+"c":907,
+"l":1,
+"a":"b907-1"
+},
+{
+"t":"Chapter XI. The Moral Teaching of the Christians Repels the Charge Brought Against Them",
+"c":911,
+"l":1,
+"a":"b911-0"
+},
+{
+"t":"Chapter XII. Consequent Absurdity of the Charge of Atheism",
+"c":913,
+"l":1,
+"a":"b913-1"
+},
+{
+"t":"Chapter XIII. Why the Christians Do Not Offer Sacrifices",
+"c":915,
+"l":1,
+"a":"b915-1"
+},
+{
+"t":"Chapter XIV. Inconsistency of Those Who Accuse the Christians",
+"c":915,
+"l":1,
+"a":"b915-8"
+},
+{
+"t":"Chapter XV. The Christians Distinguish God from Matter",
+"c":919,
+"l":1,
+"a":"b919-0"
+},
+{
+"t":"Chapter XVI. The Christians Do Not Worship the Universe",
+"c":919,
+"l":1,
+"a":"b919-2"
+},
+{
+"t":"Chapter XVII. The Names of the Gods and Their Images are But of Recent Date",
+"c":921,
+"l":1,
+"a":"b921-1"
+},
+{
+"t":"Chapter XVIII. The Gods Themselves Have Been Created, as the Poets Confess",
+"c":925,
+"l":1,
+"a":"b925-1"
+},
+{
+"t":"Chapter XIX. The Philosophers Agree with the Poets Respecting the Gods",
+"c":927,
+"l":1,
+"a":"b927-6"
+},
+{
+"t":"Chapter XX. Absurd Representations of the Gods",
+"c":929,
+"l":1,
+"a":"b929-3"
+},
+{
+"t":"Chapter XXI. Impure Loves Ascribed to the Gods",
+"c":931,
+"l":1,
+"a":"b931-6"
+},
+{
+"t":"Chapter XXII. Pretended Symbolical Explanations",
+"c":935,
+"l":1,
+"a":"b935-30"
+},
+{
+"t":"Chapter XXIII. Opinions of Thales and Plato",
+"c":941,
+"l":1,
+"a":"b941-0"
+},
+{
+"t":"Chapter XXIV. Concerning the Angels and Giants",
+"c":945,
+"l":1,
+"a":"b945-0"
+},
+{
+"t":"Chapter XXV. The Poets and Philosophers Have Denied a Divine Providence",
+"c":947,
+"l":1,
+"a":"b947-4"
+},
+{
+"t":"Chapter XXVI. The Demons Allure Men to the Worship of Images",
+"c":949,
+"l":1,
+"a":"b949-12"
+},
+{
+"t":"Chapter XXVII. Artifices of the Demons",
+"c":951,
+"l":1,
+"a":"b951-4"
+},
+{
+"t":"Chapter XXVIII. The Heathen Gods Were Simply Men",
+"c":953,
+"l":1,
+"a":"b953-1"
+},
+{
+"t":"Chapter XXIX. Proof of the Same from the Poets",
+"c":957,
+"l":1,
+"a":"b957-1"
+},
+{
+"t":"Chapter XXX. Reasons Why Divinity Has Been Ascribed to Men",
+"c":957,
+"l":1,
+"a":"b957-19"
+},
+{
+"t":"Chapter XXXI. Confutation of the Other Charges Brought Against the Christians",
+"c":961,
+"l":1,
+"a":"b961-1"
+},
+{
+"t":"Chapter XXXII. Elevated Morality of the Christians",
+"c":963,
+"l":1,
+"a":"b963-1"
+},
+{
+"t":"Chapter XXXIII. Chastity of the Christians with Respect to Marriage",
+"c":965,
+"l":1,
+"a":"b965-0"
+},
+{
+"t":"Chapter XXXIV. The Vast Difference in Morals Between the Christians and Their Accusers",
+"c":967,
+"l":1,
+"a":"b967-1"
+},
+{
+"t":"Chapter XXXV. The Christians Condemn and Detest All Cruelty",
+"c":967,
+"l":1,
+"a":"b967-4"
+},
+{
+"t":"Chapter XXXVI. Bearing of the Doctrine of the Resurrection on the Practices of the Christians",
+"c":969,
+"l":1,
+"a":"b969-1"
+},
+{
+"t":"Chapter XXXVII. Entreaty to Be Fairly Judged",
+"c":971,
+"l":1,
+"a":"b971-1"
+},
+{
+"t":"On the Resurrection of the Dead",
+"c":973,
+"l":0,
+"a":"b973-0"
+},
+{
+"t":"Chapter I. Defence of the Truth Should Precede Discussions Regarding It",
+"c":973,
+"l":1,
+"a":"b973-8"
+},
+{
+"t":"Chapter II. A Resurrection is Not Impossible",
+"c":977,
+"l":1,
+"a":"b977-1"
+},
+{
+"t":"Chapter III. He Who Could Create, Can Also Raise Up the Dead",
+"c":979,
+"l":1,
+"a":"b979-1"
+},
+{
+"t":"Chapter IV. Objection from the Fact that Some Human Bodies Have Become Part of Others",
+"c":981,
+"l":1,
+"a":"b981-1"
+},
+{
+"t":"Chapter V. Reference to the Processes of Digestion and Nutrition",
+"c":981,
+"l":1,
+"a":"b981-4"
+},
+{
+"t":"Chapter VI. Everything that is Useless or Hurtful is Rejected",
+"c":983,
+"l":1,
+"a":"b983-1"
+},
+{
+"t":"Chapter VII. The Resurrection-Body Different from the Present",
+"c":985,
+"l":1,
+"a":"b985-3"
+},
+{
+"t":"Chapter VIII. Human Flesh Not the Proper or Natural Food of Men",
+"c":987,
+"l":1,
+"a":"b987-3"
+},
+{
+"t":"Chapter IX. Absurdity of Arguing from Man’s Impotency",
+"c":989,
+"l":1,
+"a":"b989-4"
+},
+{
+"t":"Chapter X. It Cannot Be Shown that God Does Not Will a Resurrection",
+"c":991,
+"l":1,
+"a":"b991-1"
+},
+{
+"t":"Chapter XI. Recapitulation",
+"c":993,
+"l":1,
+"a":"b993-0"
+},
+{
+"t":"Chapter XII. Argument for the Resurrection from the Purpose Contemplated in Man’s Creation",
+"c":995,
+"l":1,
+"a":"b995-1"
+},
+{
+"t":"Chapter XIII. Continuation of the Argument",
+"c":999,
+"l":1,
+"a":"b999-1"
+},
+{
+"t":"Chapter XIV. The Resurrection Does Not Rest Solely on the Fact of a Future Judgment",
+"c":999,
+"l":1,
+"a":"b999-11"
+},
+{
+"t":"Chapter XV. Argument for the Resurrection from the Nature of Man",
+"c":1003,
+"l":1,
+"a":"b1003-1"
+},
+{
+"t":"Chapter XVI. Analogy of Death and Sleep, and Consequent Argument for the Resurrection",
+"c":1005,
+"l":1,
+"a":"b1005-1"
+},
+{
+"t":"Chapter XVII. The Series of Changes We Can Now Trace in Man Renders a Resurrection Probable",
+"c":1007,
+"l":1,
+"a":"b1007-1"
+},
+{
+"t":"Chapter XVIII. Judgment Must Have Reference Both to Soul and Body: There Will Therefore Be a Resurrection",
+"c":1007,
+"l":1,
+"a":"b1007-5"
+},
+{
+"t":"Chapter XIX. Man Would Be More Unfavourably Situated Than the Beasts If There Were No Resurrection",
+"c":1011,
+"l":1,
+"a":"b1011-1"
+},
+{
+"t":"Chapter XX. Man Must Be Possessed Both of a Body and Soul Hereafter, that the Judgment Passed Upon Him May Be Just",
+"c":1013,
+"l":1,
+"a":"b1013-1"
+},
+{
+"t":"Chapter XXI. Continuation of the Argument",
+"c":1013,
+"l":1,
+"a":"b1013-3"
+},
+{
+"t":"Chapter XXII. Continuation of the Argument",
+"c":1017,
+"l":1,
+"a":"b1017-1"
+},
+{
+"t":"Chapter XXIII. Continuation of the Argument",
+"c":1017,
+"l":1,
+"a":"b1017-4"
+},
+{
+"t":"Chapter XXIV. Argument for the Resurrection from the Chief End of Man",
+"c":1019,
+"l":1,
+"a":"b1019-3"
+},
+{
+"t":"Chapter XXV. Argument Continued and Concluded",
+"c":1021,
+"l":1,
+"a":"b1021-1"
+}
+],
+"span":[
+[
+889,
+971
+],
+[
+973,
+1021
+]
+]
+}
+}
+}

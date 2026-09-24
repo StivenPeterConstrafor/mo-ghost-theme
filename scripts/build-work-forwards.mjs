@@ -26,10 +26,17 @@ for (const [old, w] of Object.entries(data.works || {})) {
   if (!w || typeof w.to !== "string" || !w.to) throw new Error(`work-forwards: ${old} has no "to"`);
   if (old === w.to) throw new Error(`work-forwards: ${old} forwards to itself`);
   if (data.works[w.to]) throw new Error(`work-forwards: ${old} -> ${w.to}, which is itself retired`);
+  // A split work names other files in the third element of a row.
+  for (const tab of [w.pages, w.anchors, w.at ? { at: w.at } : null]) {
+    for (const [k, v] of Object.entries(tab || {})) {
+      if (v && v[2] && (data.works[v[2]] || v[2] === old)) throw new Error(`work-forwards: ${old} ${k} -> ${v[2]}, which is retired`);
+    }
+  }
   const row = { corpus: w.corpus || "mo", to: w.to };
   if (w.legacy) row.legacy = w.legacy;
   if (w.at) row.at = w.at;
   if (w.research) row.research = true;
+  if (w.contents) row.contents = true;
   if (w.anchors && Object.keys(w.anchors).length) row.anchors = w.anchors;
   if (w.pages && Object.keys(w.pages).length) row.pages = w.pages;
   slim.works[old] = row;

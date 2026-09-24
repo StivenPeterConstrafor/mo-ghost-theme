@@ -44,7 +44,7 @@
     const from = q.get("from") || "";
     let old = "";
     if (F.get(w)) old = w;
-    else if (from && F.get(from) && F.get(from).to === w) old = from;
+    else if (from && F.get(from) && F.targets(from).indexOf(w) >= 0) old = from;
     if (!old) {
       if (from) {
         q.delete("from");
