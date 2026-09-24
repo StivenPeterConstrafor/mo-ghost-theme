@@ -2721,7 +2721,7 @@ html.g-mobile.mh-mini #app.faith-port-read-page .sidebar {
    dock painted seven buttons before becoming four. Until they are moved
    they are not drawn: a tool is hidden while it is still a direct child
    of the bar, and the dock is invisible until it has its final shape. */
-html:not(.g-mobile) #app .ph.fr-reader-head .ctr > :is(.seg.lanes, #m-modern, #rdFlow, #rdRel, #thTop, #frAuth, .fr-tb-focus, .fr-tb-report, .fr-tb-top, .fr-tb-folds) { display: none; }
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > :is(.seg.lanes, #m-modern, #rdFlow, #rdRel, #thTop, #frAuth, .fr-tb-focus, .fr-tb-report, .fr-tb-top, .fr-tb-folds, .fr-tb-paras) { display: none; }
 html.g-mobile nav.frthumb:not(.fr-m3) { visibility: hidden; }
 
 /* A FOLDED PLACEHOLDER IS PARKED, NOT HIDDEN. The reader loads an
@@ -3025,3 +3025,7 @@ html:not(#fr-x) body:has(#app.faith-port-read-page) .fra {
   --color-card-border: var(--border);
   --color-rule: var(--border);
 }
+
+/* Split paragraphs (faith-port-read-paragraphs.js): each piece is a clone
+   of its paragraph, so it takes the text's own paragraph style. */
+html.g-mobile .fr-tb-paras { display: none !important; }

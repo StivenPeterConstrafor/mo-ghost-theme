@@ -112,6 +112,7 @@
     lang: [{ tag: "rect", x: "3", y: "4", width: "8", height: "16", rx: "1" }, { tag: "rect", x: "13", y: "4", width: "8", height: "16", rx: "1" }, { d: "M5.5 8h3M5.5 11h3M5.5 14h3M15.5 8h3M15.5 11h3M15.5 14h3" }],
     theme: [{ tag: "circle", cx: "12", cy: "12", r: "8" }, { d: "M12 4a8 8 0 0 1 0 16z", fill: "currentColor" }],
     flow: [{ d: "M5 6h14M5 10h14M5 14h14M5 18h9" }],
+    paras: [{ d: "M4 5h16M4 9h11M4 15h16M4 19h9" }],
     modern: [{ d: "M4 17l4-10 4 10M5.5 13h5" }, { d: "M14 9.5c1-1.2 4.5-1.4 4.5 1.2V17M18.5 13c-3.5-.4-5 .6-5 2.1 0 1.8 3 2.2 5-.6" }],
     scan: [{ tag: "rect", x: "4", y: "3", width: "16", height: "18", rx: "1" }, { d: "M8 7h8M8 11h8M8 15h5" }],
   };
@@ -308,6 +309,7 @@
     return [
       ["read", q(".seg.lanes")],
       ["read", document.getElementById("m-modern")],
+      ["read", q(".fr-tb-paras")],
       ["view", document.getElementById("rdFlow")],
       ["view", q(".fr-tb-folds")],
       ["view", document.getElementById("thTop")],
@@ -448,6 +450,8 @@
     const flow = proxy("x-flow", "Pages", "flow", "#rdFlow");
     const modern = proxy("x-modern", "Modernize", "modern", "#m-modern");
     modern.setAttribute("data-feature-gate", "tfr-modernize");
+    // Split paragraphs, beside Modernize (faith-port-read-paragraphs.js).
+    const paras = proxy("x-paras", "Paragraphs", "paras", ".fr-tb-paras");
     // Ask as our own cell: the dock's own Ask is taken by ask-workspace.js
     // at the document before the subscribe gate can see the click.
     const ask = cell("x-ask", "Ask", "ask");
@@ -464,6 +468,7 @@
     proxies = {
       lang,
       modern,
+      paras,
       flow,
       theme,
       transparency: cell("x-tt", "Transparency", "transparency"),
@@ -485,6 +490,9 @@
     const flowing = !fl || fl.getAttribute("aria-pressed") !== "false";
     // The label says what a press does.
     proxies.flow.querySelector(".lb").textContent = flowing ? "Pages" : "Flow";
+    const pb = document.querySelector(".fr-tb-paras");
+    proxies.paras.hidden = !pb;
+    proxies.paras.classList.toggle("on", Boolean(pb) && pb.getAttribute("aria-pressed") === "true");
     const mb = document.getElementById("m-modern");
     proxies.modern.hidden = !mb || mb.hidden;
     proxies.modern.classList.toggle("on", Boolean(mb) && mb.getAttribute("aria-pressed") === "true");
@@ -503,6 +511,7 @@
     proxies.transparency.classList.toggle("on", ttOpen());
   }
   document.addEventListener("fr-folds-change", syncProxies);
+  document.addEventListener("fr-paras-change", syncProxies);
 
   function mMembers() {
     if (!bar) return [];
