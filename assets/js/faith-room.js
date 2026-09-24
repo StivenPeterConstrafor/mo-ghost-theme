@@ -358,7 +358,11 @@
       // extra catalogue.
       collectionId === "confessions"
         ? window.MOFaithCatalogue.load("mo").catch(() => [])
-          .then((mo) => mo.filter((w) => (w.alsoIn || []).includes(collectionId)))
+          .then((mo) => mo.filter((w) => (w.alsoIn || []).includes(collectionId))
+            // Every document on this page prints its year after its title,
+            // "The London Baptist Confession (1677)", so a guest does too.
+            .map((w) => (/^\d{3,4}$/.test(String(w.eyebrow || "")) && !/\(\d{3,4}/.test(w.title || "")
+              ? { ...w, title: `${w.title} (${w.eyebrow})` } : w)))
         : [],
     ]).then(([own, guests, curated]) => own.concat(guests, curated));
 

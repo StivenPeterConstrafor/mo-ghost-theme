@@ -693,6 +693,10 @@
       short: "The creeds, the confessions, and the fathers in English",
       base: LIBRARY,
       catalogue: "/v1/mo/index.json",
+      // Our own index, and the one we add works to. The worker serves it
+      // with a day's max-age, so a returning reader would not see a new
+      // work until tomorrow; it is 31 KB, so ask for it fresh each time.
+      revalidate: true,
       pick: (d) => d.works || [],
       lanes: [{ id: "en", label: "English" }],
       modernize: true,
@@ -1161,7 +1165,7 @@
       : Promise.resolve(null);
 
     const p = Promise.all([
-      fetch(c.base + c.catalogue).then((r) => {
+      fetch(c.base + c.catalogue, c.revalidate ? { cache: "no-cache" } : undefined).then((r) => {
         if (!r.ok) throw new Error(`${id} catalogue ${r.status}`);
         return r.json();
       }),
@@ -1249,6 +1253,11 @@
     load: loadCorpus,
     // The page for a collection, or "" if it has none.
     room: (id) => CORPUS_ROOM[id] || "",
+    // The church a creed or confession belongs to, by the same patterns
+    // and slug corrections the confessions collection files under. The
+    // tradition pages run the curated collection's documents through it
+    // too, so its Westminster catechisms file as Presbyterian there.
+    confessionTradition: (title, given, slug) => confessionTradition(title, given, slug),
     // The parent of a tradition, or "" if it has none. Callers pass the
     // corpus a work came from; the all-works page passes nothing and
     // gets the union, which is safe because no value has two parents.
