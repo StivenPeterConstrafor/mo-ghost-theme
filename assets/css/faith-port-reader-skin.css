@@ -2930,3 +2930,20 @@ html:not(.g-mobile) #app.faith-port-read-page { margin-top: var(--fr-rail-h, 0px
 @media (prefers-reduced-motion: reduce) {
   html:not(.g-mobile) body:has(#app.faith-port-read-page) .tfr-rail { transition: none; }
 }
+
+/* PRESSED STAYS READABLE UNDER THE POINTER (Ian, 2026-09-23: "text
+   unreadable when selected and hovering"). The hover rules paint the
+   text terracotta, and on a pressed button that is terracotta on a
+   terracotta fill. A pressed or selected control keeps its fill ink and
+   darkens a step on hover. Selectors restate the pressed rules plus
+   :hover, so they outrank both. */
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer [aria-pressed="true"]:hover,
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .aaw > .tgl[aria-expanded="true"]:hover,
+html:not(.g-mobile) #app .ph.fr-reader-head .ctr > [aria-pressed="true"]:hover,
+html:not(.g-mobile) #app .reader-witnesses [role="group"] > button[aria-pressed="true"]:hover,
+html #notebook .nb-tabs button[aria-selected="true"]:hover,
+html #notebook .nb-reading-place #nbSaveWork[aria-pressed="true"]:hover {
+  background: color-mix(in srgb, var(--fr-fill, #b0573a) 82%, #000);
+  border-color: color-mix(in srgb, var(--fr-fill, #b0573a) 82%, #000);
+  color: var(--fr-fill-ink, #fff);
+}
