@@ -54,8 +54,15 @@
     if (c === "mo") return "In English";
     return y ? String(y) : "";
   };
-  const label = (trad, name) => {
+  // The shelf-plus-century rule faith-author-labels.js applies to rooms:
+  // a writer before 1500 is not an "English writer" because EEBO printed
+  // him in translation (Thomas a Kempis).
+  const label = (trad, name, dates) => {
     const D = window.MODenom;
+    const y = Number((String(dates || "").match(/\d{3,4}/) || [])[0] || 0);
+    if (y && y < 1500 && /^(english divines|latin fathers|greek fathers)$/i.test(trad || "")) {
+      return y < 800 ? "Early Church" : /^greek/i.test(trad) && y < 1453 ? "Byzantine" : "Medieval";
+    }
     if (/^english divines$/i.test(trad || "")) {
       const body = D && D.loaded && D.loaded() ? D.body({ author: name, corpus: "eebo" }) : "";
       return body || "English writers";
@@ -92,7 +99,7 @@
   function host() {
     let s = document.getElementById("frAuthorOwn");
     if (s) { s.textContent = ""; return s; }
-    s = el("section", "fr-own container");
+    s = el("section", "fr-own");
     s.id = "frAuthorOwn";
     const main = document.getElementById("page");
     main.parentNode.insertBefore(s, main);
@@ -103,7 +110,7 @@
     const [name, dates, trad] = person || [want, "", ""];
     const bio = (entry && entry.b) || null;
     const works = (entry && entry.w) || [];
-    const lab = label((bio && bio.t) || trad, name) || "";
+    const lab = (bio && bio.t) || label(trad, name, dates) || "";
     header(name, [dates, lab].filter(Boolean).join("  ·  "));
     const s = host();
 

@@ -1517,10 +1517,11 @@ main.research-room:has(.rx-profile) .rx-filters label:has(> #room-work-order) { 
    and their works by collection in thin-line rows. The shell's own
    output (#page) is hidden, since it would draw the directory under it. */
 html.fr-author-own main#page { display: none; }
-.fr-own { max-width: 860px; margin: 0 auto; padding: 8px 24px 96px; font-family: var(--font-body, "Source Serif Pro", Georgia, serif); color: var(--fg, #2d2927); }
+.fr-own { max-width: 860px; margin: 0 auto; padding: 40px 24px 96px; font-family: var(--font-body, "Source Serif Pro", Georgia, serif); color: var(--fg, #2d2927); }
 .fr-own-block { margin: 0 0 44px; }
-.fr-own-h,
-.fr-own-coll {
+/* body.research-enhanced h2/h3 (the port) outrank a bare class. */
+section.fr-own h2.fr-own-h,
+section.fr-own h3.fr-own-coll {
   font-family: var(--font-body, "Source Serif Pro", Georgia, serif);
   font-weight: 600;
   font-size: 12px;
@@ -1529,7 +1530,7 @@ html.fr-author-own main#page { display: none; }
   color: var(--color-secondary, #c1593c);
   margin: 0 0 14px;
 }
-.fr-own-coll { margin: 28px 0 8px; color: var(--muted, #6b6660); letter-spacing: 0.16em; }
+section.fr-own h3.fr-own-coll { margin: 28px 0 8px; color: var(--muted, #6b6660); letter-spacing: 0.16em; }
 .fr-own-lede { font-size: 19px; line-height: 1.5; margin: 0 0 14px; }
 .fr-own-bio { font-size: 16px; line-height: 1.65; margin: 0 0 14px; color: var(--fg, #2d2927); }
 .fr-own-works { list-style: none; padding: 0; margin: 0; border-bottom: 1px solid var(--border, #d8d8d3); }
@@ -1541,7 +1542,7 @@ html.fr-author-own main#page { display: none; }
 .fr-own-more { font-size: 15px; margin: 8px 0 0; }
 .fr-own-link { color: var(--color-secondary, #c1593c); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 @media (max-width: 640px) {
-  .fr-own { padding: 4px 16px 72px; }
+  .fr-own { padding: 28px 16px 72px; }
   .fr-own-work { flex-direction: column; gap: 2px; }
   .fr-own-t { font-size: 17px; }
 }
