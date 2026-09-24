@@ -1546,3 +1546,190 @@ section.fr-own h3.fr-own-coll { margin: 28px 0 8px; color: var(--muted, #6b6660)
   .fr-own-work { flex-direction: column; gap: 2px; }
   .fr-own-t { font-size: 17px; }
 }
+
+/* ── THE AUTHOR ROOM IN THE LIBRARY'S DRESS (Ian, 2026-09-24: "Get the
+   author page design up to speed with everything else.") ──────────────
+   Skin only: the ported research shell's markup is untouched, every rule
+   is scoped to its room (main.research-room) and states only what makes
+   it read as the rest of TFR: the joined thin-line group for tabs,
+   toggles and actions (the About page's .faith-mf-tabs), 3px thin-line
+   boxes and fields, terracotta small-caps eyebrows, terracotta Scripture
+   bars, a hairline chevron on the disclosures. The shelf names the port
+   prints are relabelled by assets/js/page/faith-author-skin.js. */
+main.research-room {
+  --room-line: var(--color-card-border, #d9c6a7);
+  --room-accent: var(--color-secondary, #c1593c);
+  --room-ink: var(--color-dark, #2d2927);
+  --room-card: var(--color-white, #fffdfa);
+}
+
+/* Tabs: one joined group, the chosen one filled. 1px gaps over a tan
+   ground draw the dividers, so a phone's grid wraps without doubling. */
+main.research-room .pseg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  padding: 0;
+  margin: 8px 0 28px;
+  border: 1px solid var(--room-line);
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--room-line);
+  align-items: stretch;
+  /* The port's phone strip scrolls sideways behind a fading mask; the
+     joined group wraps instead, so neither is wanted. */
+  overflow: hidden;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+main.research-room .pseg button {
+  flex: 1 1 auto;
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 0;
+  background: var(--room-card);
+  color: var(--room-ink);
+  font: 15px/1.25 var(--font-body, "Source Serif Pro", Georgia, serif);
+  text-align: center;
+  white-space: nowrap;
+}
+main.research-room .pseg button:hover { color: var(--room-accent); background: var(--room-card); }
+main.research-room .pseg button.on,
+main.research-room .pseg button.on:hover { background: var(--room-accent); color: #fff; border: 0; }
+main.research-room .pseg button:focus-visible { outline: 2px solid var(--room-accent); outline-offset: -4px; }
+main.research-room .pseg button.on:focus-visible { outline-color: #fff; }
+
+/* Eyebrows: section labels and field labels in terracotta small caps. */
+main.research-room .rx-filters label,
+main.research-room .rx-filters .rx-search,
+main.research-room .view > label {
+  font: 600 11px/1.4 var(--font-body, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--room-accent);
+}
+main.research-room .rx-reception-pane .volhead,
+main.research-room .volhead {
+  font: 600 12px/1.4 var(--font-body, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--room-accent);
+  margin: 26px 0 10px;
+}
+main.research-room .volhead:first-child { margin-top: 6px; }
+main.research-room .volhead span { font-size: 11px !important; letter-spacing: 0.14em; color: var(--color-muted, #6b6660) !important; }
+
+/* Fields: thin line, 3px, the reading face, no inherited eyebrow. */
+main.research-room input[type="search"],
+main.research-room input[type="text"],
+main.research-room select {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--room-line);
+  border-radius: 3px;
+  background-color: var(--room-card);
+  color: var(--room-ink);
+  font: 15px/1.3 var(--font-body, "Source Serif Pro", Georgia, serif);
+  letter-spacing: 0;
+  text-transform: none;
+}
+main.research-room input[type="search"]:focus,
+main.research-room select:focus { outline: none; border-color: var(--room-accent); }
+/* A long choice ("All works in this room") stays on one line and the
+   chevron sits at the right edge, not after the words. */
+main.research-room select { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+@supports (appearance: base-select) {
+  main.research-room select { display: flex !important; align-items: center; justify-content: space-between; border-radius: 3px; }
+  main.research-room select::picker-icon { margin: 0 2px 0 auto !important; flex: none; }
+}
+
+/* Boxes: 1px tan, 3px corners, everywhere the room draws one. */
+main.research-room .rx-profile,
+main.research-room .rx-filters,
+main.research-room .ar-stat,
+main.research-room .rx-pane,
+main.research-room .rx-work-row,
+main.research-room .rx-work-list > *,
+main.research-room .cd-work { border-radius: 3px; }
+
+/* Scripture: the book bars in terracotta. */
+main.research-room .bkrow i { background: var(--room-accent); opacity: 0.85; }
+main.research-room .bkrow:hover i { opacity: 1; }
+
+/* Actions (Open all · Collapse all · Reset filters) and the reception
+   toggle (His reception · His sources): joined thin-line groups. */
+main.research-room .rx-result-actions,
+main.research-room .rx-results-line > span { display: inline-flex; flex-wrap: nowrap; gap: 0; }
+main.research-room .rx-results-line .rx-text-link,
+main.research-room .view button.chip#rin,
+main.research-room .view button.chip#rout {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1px solid var(--room-line);
+  border-radius: 0;
+  background: var(--room-card);
+  color: var(--room-ink);
+  font: 14px/1.2 var(--font-body, "Source Serif Pro", Georgia, serif);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+main.research-room .rx-results-line .rx-text-link + .rx-text-link,
+main.research-room .view button.chip#rout { margin-left: -1px; }
+main.research-room .rx-results-line .rx-text-link:first-of-type,
+main.research-room .view button.chip#rin { border-radius: 3px 0 0 3px; }
+main.research-room .rx-results-line .rx-text-link:last-of-type,
+main.research-room .view button.chip#rout { border-radius: 0 3px 3px 0; }
+main.research-room .rx-results-line .rx-text-link:only-of-type { border-radius: 3px; }
+main.research-room .rx-results-line .rx-text-link:hover,
+main.research-room .view button.chip#rin:hover,
+main.research-room .view button.chip#rout:hover { position: relative; z-index: 1; border-color: var(--room-accent); color: var(--room-accent); }
+main.research-room .view button.chip.on#rin,
+main.research-room .view button.chip.on#rout { position: relative; z-index: 1; background: var(--room-accent); border-color: var(--room-accent); color: #fff; }
+main.research-room .view div:has(> #rin) { gap: 0 !important; align-items: center; }
+main.research-room .view div:has(> #rin) > #rq {
+  flex: 1 1 220px;
+  margin-left: 12px;
+  min-height: 38px;
+  border: 1px solid var(--room-line) !important;
+  border-radius: 3px !important;
+  background: var(--room-card) !important;
+  font: 15px/1.3 var(--font-body, "Source Serif Pro", Georgia, serif) !important;
+  padding: 0 12px !important;
+}
+
+/* Disclosures: a hairline chevron instead of the browser's triangle. */
+main.research-room :is(.rx-profile, .rx-author-bio, .rx-secondary, .rx-position-coverage, .rx-historical) > summary {
+  list-style: none;
+  position: relative;
+  padding-left: 20px;
+  cursor: pointer;
+}
+main.research-room :is(.rx-profile, .rx-author-bio, .rx-secondary, .rx-position-coverage, .rx-historical) > summary::-webkit-details-marker { display: none; }
+main.research-room :is(.rx-profile, .rx-author-bio, .rx-secondary, .rx-position-coverage, .rx-historical) > summary::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-70%) rotate(-45deg);
+  transition: transform 0.15s ease;
+  opacity: 0.75;
+}
+main.research-room :is(.rx-profile, .rx-author-bio, .rx-secondary, .rx-position-coverage, .rx-historical)[open] > summary::before { transform: translateY(-70%) rotate(45deg); }
+
+@media (max-width: 640px) {
+  main.research-room .pseg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; padding: 0; position: static; }
+  main.research-room .pseg button { min-height: 44px; padding: 8px 6px; font-size: 13px; white-space: normal; }
+  main.research-room .pseg button:last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
+  main.research-room .pseg button:last-child:nth-child(3n + 2) { grid-column: span 2; }
+  main.research-room .rx-results-line { flex-wrap: wrap; gap: 8px; }
+  main.research-room .view div:has(> #rin) > #rq { flex-basis: 100%; margin: 10px 0 0; }
+}
