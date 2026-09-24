@@ -324,6 +324,59 @@
   }
   document.addEventListener("DOMContentLoaded", () => { watchNav(); decorate(); });
 
+  /* FRONT MATTER, one group (Ian, 2026-09-24, on Calvin's Institutes:
+     "All of the front matter ... should be under a header and be
+     collapsible"). For any work whose outline runs through two or more
+     entries before its first main division (Book I, Part I, Chapter 1,
+     Liber I, Article I, Question 1, Lord's Day 1, Homily I) and then
+     follows at least two of that division, those entries nest under one
+     "Front Matter" entry at the division's rank. Decided from the
+     outline, never from a list; an outline that already opens on "Front
+     Matter", or has no clear run of divisions, is left alone. The
+     engine's own outline (readerDisplayOutline) is untouched unless the
+     rule applies. faith-reader-folds.js folds the group on a heading row
+     it adds before the first page's text. */
+  const MAIN = /^(?:the\s+)?(?:book|part|liber|pars|chapter|chap\.?|caput|cap\.|article|articulus|question|quaestio|lord['’]?s\s+day|homily|homilia|sermon|sermo|tractate|tractatus|letter|epistle|epistola)\s+(?:[ivxlcdm]+|\d+|one|two|three|four|five|six|seven|eight|nine|ten|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\b/i;
+  const kindOfMain = (t) => (MAIN.exec(clean(t)) ? clean(t).toLowerCase().replace(/^the\s+/, "").split(/[\s.]/)[0] : "");
+  function frontMatter(src) {
+    if (!Array.isArray(src) || src.length < 4) return null;
+    // An outline that already groups its front matter ("Front Matter",
+    // "Front matter: Parts I–II") keeps its own.
+    if (src.slice(0, 3).some((e) => /^front\s*matter\b/i.test(clean(e && e.title)))) return null;
+    const m = src.findIndex((e) => kindOfMain(e.title));
+    if (m < 2) return null;
+    const d = Math.max(1, Number(src[m].depth) || 1);
+    if (src.slice(0, m).some((e) => (Number(e.depth) || 1) > d + 1 || (Number(e.depth) || 1) < d)) return null;
+    const kind = kindOfMain(src[m].title);
+    const same = src.slice(m).filter((e) => (Number(e.depth) || 1) === d && kindOfMain(e.title) === kind).length;
+    if (same < 2) return null;
+    const head = { ...src[0], title: "Front Matter", depth: d, navFullTitle: "Front Matter", frFrontMatter: true };
+    delete head.navSourcePath;
+    delete head.navSourceKey;
+    return [head, ...src.slice(0, m).map((e) => ({ ...e, depth: (Number(e.depth) || 1) + 1 })), ...src.slice(m)];
+  }
+  const baseOutline = api.outline;
+  if (typeof baseOutline === "function") {
+    const memo = new WeakMap();
+    api.outline = function (d, ...rest) {
+      const own = baseOutline.call(this, d, ...rest);
+      try {
+        if (!d || baseConf.call(api, d)) return own;
+        let src = own;
+        if (!src) {
+          let tei = null;
+          try { tei = typeof TEI_PAGES === "undefined" ? null : TEI_PAGES; } catch (_) { tei = null; }
+          src = (window.FRSourceOutline && window.FRSourceOutline.outline(d, tei)) || d.structure;
+        }
+        if (!src || typeof src !== "object") return own;
+        if (memo.has(src)) return memo.get(src) || own;
+        const fm = frontMatter(src);
+        memo.set(src, fm);
+        return fm || own;
+      } catch (_) { return own; }
+    };
+  }
+
   const base = api.contents;
   api.contents = function (...args) {
     const [reading] = args;

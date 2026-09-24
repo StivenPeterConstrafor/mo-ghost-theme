@@ -577,8 +577,51 @@
     }
   }
 
+  /* ── A title page ────────────────────────────────────────────────
+     Ian, 2026-09-24, on Calvin: "Institutes", "Of", "The Christian
+     Religion", "By", "John Calvin", "Translated by", "Henry Beveridge"
+     each came out as its own section head, hairline after hairline. A
+     run of three or more short lines (under 60 characters, headings or
+     paragraphs, nothing longer between them) at the very start of a
+     work is its title page: one centred block, the title larger, the
+     connectives ("Of", "By", "Translated by") small and italic. Only
+     the first row of the work's first page; the words are untouched. */
+  const TP_CONN = /^(?:of|by|and|with|in|to|for|the|on|translated(?:\s+(?:from|into)\s+\w+)?(?:\s+by)?|edited(?:\s+by)?|by\s+the|written\s+by)[.:,]?$/i;
+  function titlePage() {
+    let first = null;
+    try { first = typeof DATA !== "undefined" && DATA && Array.isArray(DATA.pages) && DATA.pages.length ? String(DATA.pages[0].n) : null; }
+    catch (_) { first = null; }
+    if (first == null) return;
+    const folio = document.querySelector(`#reading .folio[data-page="${CSS.escape(first)}"]`);
+    const row = folio && folio.querySelector(":scope > .row:not(.fr-fm-row)");
+    if (!row || row.dataset.frTp) return;
+    row.dataset.frTp = "0";
+    const lane = row.querySelector(":scope > .en") || row.querySelector(":scope > .la") || row;
+    const run = [];
+    for (const el of lane.children) {
+      if (!el.matches("h1, h2, h3, h4, p")) break;
+      const t = clean(textOf(el));
+      if (!t) continue;
+      if (t.length > 60) break;
+      run.push(el);
+    }
+    if (run.length < 3) return;
+    row.dataset.frTp = "1";
+    row.classList.add("fr-tp");
+    let byline = false;
+    run.forEach((el) => {
+      const t = clean(textOf(el));
+      el.classList.add("fr-tp-line");
+      if (TP_CONN.test(t)) {
+        el.classList.add("fr-tp-conn");
+        if (/\bby$/i.test(t.replace(/[.:,]$/, ""))) byline = true;
+      } else el.classList.add(byline ? "fr-tp-meta" : "fr-tp-title");
+    });
+  }
+
   /* ── The pass ───────────────────────────────────────────────────── */
   function pass() {
+    titlePage();
     const fresh = freshUnits();
     fresh.forEach((el) => {
       el.dataset.frHd = "1";

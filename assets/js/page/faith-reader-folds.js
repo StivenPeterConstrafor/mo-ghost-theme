@@ -533,7 +533,8 @@
       if (!t) { t = new Set(); tried.set(folio, t); }
       if (t.has(e.i)) return;
       t.add(e.i);
-      const row = resolve(folio, e.title, nth, claimed, e);
+      let row = resolve(folio, e.title, nth, claimed, e);
+      if (!row && e === list[0] && /^front\s*matter$/i.test(e.title)) row = frontRow(folio);
       if (!row || row.dataset.frSec || claimed.has(row)) return;
       claimed.add(row);
       found.push([e, row]);
@@ -559,6 +560,32 @@
       row.appendChild(btn);
     });
     return found.length;
+  }
+
+  /* "Front Matter" heads a group (faith-port-read-contents-overlay.js
+     adds it to outlines whose front matter runs before Book I) but is
+     printed nowhere, so the fold gets a heading row of its own before the
+     first page's text: a card whose words are drawn by CSS from its
+     aria-label, so they are not part of the text (Find, search and
+     passage links never see them). Only for the outline's first entry. */
+  function frontRow(folio) {
+    const had = folio.querySelector(":scope > .fr-fm-row");
+    if (had) return had;
+    const first = folio.querySelector(":scope > .row");
+    if (!first) return null;
+    const row = document.createElement("div");
+    row.className = "row fr-fm-row";
+    row.dataset.frSynthetic = "1";
+    row.setAttribute("role", "heading");
+    row.setAttribute("aria-level", "2");
+    row.setAttribute("aria-label", "Front Matter");
+    const card = document.createElement("div");
+    card.className = "fr-fm-card";
+    card.dataset.label = "Front Matter";
+    card.setAttribute("aria-hidden", "true");
+    row.appendChild(card);
+    folio.insertBefore(row, first);
+    return row;
   }
 
   // During a pass, hide() records what should be hidden; the pass then

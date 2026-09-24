@@ -3505,3 +3505,41 @@ html.g-mobile #app #reading h3.fr-hd-promoted.fr-hd-in-t2 .fr-hd-title { font-si
   font-style: italic;
   color: var(--muted, #7a6f63);
 }
+
+/* ── Front Matter group and title page (Ian, 2026-09-24) ──
+   faith-reader-folds.js adds .fr-fm-row before a work's first page when
+   its outline opens with the synthetic "Front Matter" group; the label
+   is drawn from data-label, so it is not part of the text. A title page
+   (.fr-tp, faith-port-read-headings.js) is one centred block with no
+   rules or boxes between its lines. */
+#app #reading .row.fr-fm-row { display: block; padding: 0; }
+#app #reading .fr-fm-card {
+  max-width: var(--measure, 66ch);
+  margin: 1.4em auto 1.2em;
+  padding: 16px 52px 16px 20px;
+  background: var(--card, #fffdfa);
+  border: 1px solid var(--border, #d9c6a7);
+  border-radius: 3px;
+  font: 400 1em/1.3 var(--fr-read-font, "Source Serif Pro", Georgia, serif);
+  color: var(--ink, inherit);
+}
+#app #reading .fr-fm-card::before { content: attr(data-label); font-size: 1.18em; font-weight: 600; }
+#app #reading .row.fr-tp .fr-tp-line,
+#app #reading .row.fr-tp .fr-tp-line.fr-hd {
+  border: 0 !important;
+  background: none !important;
+  padding: 0 !important;
+  margin: 0.15em 0 !important;
+  text-align: center !important;
+  text-indent: 0 !important;
+  font-style: normal;
+}
+#app #reading .row.fr-tp .fr-tp-line:first-child { margin-top: 1.2em !important; }
+#app #reading .row.fr-tp .fr-tp-title,
+#app #reading .row.fr-tp .fr-tp-title .fr-hd-title { font-size: 1.5em !important; font-weight: 600; line-height: 1.25; }
+#app #reading .row.fr-tp .fr-tp-conn,
+#app #reading .row.fr-tp .fr-tp-conn .fr-hd-title { font-size: 0.9em !important; font-style: italic; font-weight: 400; color: var(--muted, #7a6f63); }
+#app #reading .row.fr-tp .fr-tp-meta,
+#app #reading .row.fr-tp .fr-tp-meta .fr-hd-title { font-size: 1.08em !important; font-weight: 500; }
+#app #reading .row.fr-tp .fr-tp-line .fr-hd-eye { display: none; }
+
