@@ -1,6 +1,4 @@
 
-// The About panel names one author's church (MOFaithLabel.of); start the denomination table now so it is in hand by the time a reader opens it.
-if(window.MODenom)window.MODenom.ready();
 const $=s=>document.querySelector(s),el=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
 // guarded storage: Safari private mode / quota-exceeded throws on writes — never let that kill a save path
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
@@ -199,7 +197,7 @@ function linkScriptureHTML(html){
     const references=scriptureReferences(text);
     for(const segment of segments){let value='',cursor=segment.start;for(const ref of references){const start=Math.max(segment.start,ref.start),end=Math.min(segment.end,ref.end);if(start>=end)continue;
         value+=text.slice(cursor,start);const part=text.slice(start,end),fallback=/[,-]/.test(ref.selection)?ref.book+' '+ref.chapter:ref.query;
-        value+=part.trim()?'<a class="xref" target="_blank" rel="noopener" data-scripture-ref="'+esc(ref.query).replace(/"/g,'&quot;')+'" href="/the-faith-received/search/?m=scripture&amp;q='+encodeURIComponent(fallback)+'"'+(ref.following?' data-xref-following="true"':'')+' title="Read Scripture">'+part+'</a>':part;cursor=end;}
+        value+=part.trim()?'<a class="xref" target="_blank" rel="noopener" data-scripture-ref="'+esc(ref.query).replace(/"/g,'&quot;')+'" href="/search?m=scripture&amp;q='+encodeURIComponent(fallback)+'"'+(ref.following?' data-xref-following="true"':'')+' title="Read Scripture">'+part+'</a>':part;cursor=end;}
       output[segment.index]=value+text.slice(cursor,segment.end);}
     run=[];
   };
@@ -236,7 +234,7 @@ function scriptureDOMText(root){
 }
 function setScriptureAnchor(anchor,reference){
   const fallback=/[,-]/.test(reference.selection)?reference.book+' '+reference.chapter:reference.query;
-  anchor.classList.add('xref');anchor.setAttribute('data-scripture-ref',reference.query);anchor.setAttribute('href','/the-faith-received/search/?m=scripture&q='+encodeURIComponent(fallback));
+  anchor.classList.add('xref');anchor.setAttribute('data-scripture-ref',reference.query);anchor.setAttribute('href','/search?m=scripture&q='+encodeURIComponent(fallback));
   anchor.setAttribute('target','_blank');anchor.setAttribute('rel','noopener');anchor.setAttribute('title','Read Scripture');
   if(reference.following)anchor.setAttribute('data-xref-following','true');else anchor.removeAttribute('data-xref-following');
 }
@@ -432,6 +430,7 @@ function appBank(laN,enN){
   if(frReaderBlockReference(location.hash)||location.hash.length>1)return;
   let page=new URLSearchParams(location.search).get("p");
   if(!page)try{const ws=new URLSearchParams(location.search).get("ws")||new URLSearchParams(location.search).get("w"),saved=JSON.parse(localStorage.getItem("fr_lastread")||"{}");
+    // A plain volume opens the complete reading view; explicit saved-source links retain their layer.
     const last=saved[ws]?.page;if(last!=null&&(!/^\d+$/.test(String(last))||Number(last)>3))page=String(last);
   }catch(_){}
   if(page)window.__frInitialReference=String(page);
@@ -451,71 +450,9 @@ function appBank(laN,enN){
   // #reading and the marks with it — the bar kept counting detached nodes and nothing was highlighted.
   // mark() is idempotent (text already inside a mark is skipped) and runs again whenever the reading is
   // rebuilt; × clears the marks AND drops hl from the URL so no later rebuild or reload brings it back.
-  // MereO delta (Ian, 2026-09-14 "highlight the exact quote that's being
-  // pulled when it's open"): when hl carries a whole quoted passage, mark
-  // the passage, not three words from it. Ask sends the sentence it
-  // quoted, and the word behaviour below scatters marks down the page
-  // wherever those words recur, which is the opposite of showing someone
-  // the line they just read in the answer.
-  //
-  // The exact pass is tried first and the word pass is the fallback, so
-  // nothing regresses: a citation door still sends a name, and a quote
-  // the model modernised or stitched with an ellipsis will not be found
-  // verbatim and lands on the old behaviour rather than on nothing.
-  //
-  // Matching ignores case, punctuation and line breaks, because the
-  // reading is folio text with hyphenation and the quote is not. It does
-  // NOT fold the long s: these transcriptions print it as an f, and so
-  // does the quote, so the two already agree. Offsets are mapped back to
-  // the original text nodes, which is what lets a passage that crosses
-  // rows be marked as one run.
-  const phraseNorm=s=>String(s||"").toLowerCase().replace(/[^\p{L}\p{N}\s]/gu," ").replace(/\s+/g," ").trim();
-  const PHRASE=/\s/.test(q.trim())&&q.trim().length>=24?phraseNorm(q):"";
-  function markPhrase(){
-    const nodes=[];const walk=document.createTreeWalker(reading,NodeFilter.SHOW_TEXT,null);let n;
-    while((n=walk.nextNode())){
-      if(!n.parentElement||!n.parentElement.closest(".row .en,.row .la"))continue;
-      if(n.parentElement.closest("mark,.pganchor,.fmark"))continue;
-      nodes.push(n);}
-    if(!nodes.length)return 0;
-    // one entry per kept character, carrying the node and offset it came
-    // from; whitespace collapses to a single space so folio line breaks
-    // and the quote's spacing compare equal.
-    const chars=[];let prevSpace=true;
-    for(const node of nodes){const t=node.textContent;
-      for(let i=0;i<t.length;i++){const c=t[i].toLowerCase();
-        if(/\s/.test(c)){if(!prevSpace){chars.push({node,off:i,ch:" "});prevSpace=true;}continue;}
-        if(!/[\p{L}\p{N}]/u.test(c))continue;
-        chars.push({node,off:i,ch:c});prevSpace=false;}}
-    const hay=chars.map(c=>c.ch).join("");
-    const segs=[];let from=0,found=0,at;
-    while(found<40&&(at=hay.indexOf(PHRASE,from))>=0){
-      const run=chars.slice(at,at+PHRASE.length);
-      for(let i=0,first=true;i<run.length;first=false){
-        const node=run[i].node;let j=i;
-        while(j<run.length&&run[j].node===node)j++;
-        segs.push({node,start:run[i].off,end:run[j-1].off+1,cont:!first});i=j;}
-      found++;from=at+PHRASE.length;}
-    if(!segs.length)return 0;
-    // Split each node from its last segment backwards, so the offsets of
-    // the earlier ones are still the offsets of the node that holds them.
-    const byNode=new Map();
-    for(const s of segs){if(!byNode.has(s.node))byNode.set(s.node,[]);byNode.get(s.node).push(s);}
-    for(const [node,list] of byNode){
-      list.sort((a,b)=>b.start-a.start);
-      for(const s of list){
-        if(s.start>=node.length||s.end>node.length)continue;
-        node.splitText(s.end);
-        const target=node.splitText(s.start);
-        const m=document.createElement("mark");
-        m.className=s.cont?"hlq hlq-cont":"hlq";
-        m.textContent=target.textContent;
-        target.replaceWith(m);}}
-    return found;}
   function mark(){
     busy=true;
     try{
-      if(!(PHRASE&&markPhrase())){
       const walker=document.createTreeWalker(reading,NodeFilter.SHOW_TEXT,null);
       const todo=[];let n;
       while((n=walker.nextNode())&&todo.length<1200){
@@ -525,11 +462,7 @@ function appBank(laN,enN){
         terms.forEach(w=>{html=html.replace(new RegExp("("+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"[a-zà-ÿ]*)","gi"),"<mark class=hlq>$1</mark>");});
         if(html.indexOf("<mark")<0)return;
         const span=document.createElement("span");span.innerHTML=html;node.replaceWith(span);});
-      }
-      // A run that crosses rows is several <mark>s and one hit: the
-      // continuations are marked but not counted, or the bar would say
-      // 1/4 for a single passage.
-      marks=[...reading.querySelectorAll("mark.hlq:not(.hlq-cont)")];
+      marks=[...reading.querySelectorAll("mark.hlq")];
     }finally{setTimeout(()=>{busy=false;},0);}
     return marks.length;}
   // start on the cited page: the first mark at or after its folio (or its page-turn anchor inside the previous row)
@@ -1258,7 +1191,7 @@ function coinsOf(D){
     ["rft.btitle",D.title||""],["rft.title",D.title||""],["rft.au",D.author||""],
     ["rft.pub","The Faith Received"],["rft.language","lat"]];
   if(D.volume)kv.push(["rft.volume",D.volume]);
-  if(D.slug)kv.push(["rft_id",location.origin+"/the-faith-received/read/?w="+encodeURIComponent(D.slug)]);
+  if(D.slug)kv.push(["rft_id","https://thefaithreceived.vercel.app/read?w="+encodeURIComponent(D.slug)]);
   return "url_ver=Z39.88-2004&"+kv.filter(([k,v])=>v).map(([k,v])=>k+"="+encodeURIComponent(v)).join("&");
 }
 const app=$("#app");let DATA=null,STRUCT=false,cur=null,pickFolio=()=>{},_tick=false,_navClickT=0,SECMAP=null,_EN_TITLES=null,_navView="outline";
@@ -1322,7 +1255,8 @@ function frResolveSourceHeading(position){
 }
 function frResolveReaderAnchor(position){
   if(position.sourcePath)return frResolveSourceHeading(position);
-  if(position.page!=null)window.__ensurePage?.(position.page);
+  const opening=position.page==null?null:(window.FRMigneNavigation?.openingKey(DATA,position.page)??position.page);
+  if(opening!=null)window.__ensurePage?.(opening);
   const visible=node=>{if(node?.closest?.('.frontmatter'))document.getElementById('app')?.classList.add('show-fm');return node?.isConnected&&node.getClientRects().length?node:null;};
   // A search occurrence is temporary UI; keep its canonical body ID as the saved location.
   if(position.focusId)return visible(document.getElementById(position.focusId));
@@ -1331,7 +1265,8 @@ function frResolveReaderAnchor(position){
   if(!block||block.index!=='0'||!window.__readerBuilt)return null;
   return Array.from(document.querySelectorAll('#reading .pganchor')).filter(node=>String(node.dataset.page)===block.page).map(visible).find(Boolean)
     ||visible(document.getElementById('b'+block.page+'-1'))
-    ||Array.from(document.querySelectorAll('#reading .folio:not(.rolled)')).filter(node=>String(node.dataset.page)===block.page).map(visible).find(Boolean)||null;
+    ||Array.from(document.querySelectorAll('#reading .folio:not(.rolled)')).filter(node=>String(node.dataset.page)===block.page).map(visible).find(Boolean)
+    ||(String(opening)!==block.page?Array.from(document.querySelectorAll('#reading .folio:not(.rolled)')).filter(node=>String(node.dataset.page)===String(opening)).map(visible).find(Boolean):null)||null;
 }
 function frReaderNavigationLanded(position){
   if(window.__readerLandedSerial===position.serial)return;window.__readerLandedSerial=position.serial;
@@ -1356,7 +1291,7 @@ function restoreReaderPosition(position){
       const delta=target.getBoundingClientRect().top-sc.getBoundingClientRect().top;
       // The mobile masthead can grow after fonts load. Keep source-heading arrivals
       // below its current bottom instead of freezing the initial desktop-sized gap.
-      const header=position.sourcePath&&document.querySelector?.('.ph');
+      const header=(position.sourcePath||target.classList?.contains('pganchor')||frReaderBlockReference(position.id)?.index==='0')&&document.querySelector?.('.ph');
       if(header)offset=Math.max(14,header.getBoundingClientRect().bottom-sc.getBoundingClientRect().top+14);
       if(offset==null)offset=delta;
       const drift=delta-offset;if(Math.abs(drift)>2){sc.scrollTop+=drift;stable=0;}else stable++;
@@ -1427,7 +1362,8 @@ window.__frNavigateReaderAnchor=href=>{
 // Real reading movement wins over arrival targets and late hydration corrections.
 (function(){const cancel=e=>{const sc=document.getElementById('scroll');if(!sc?.contains(e.target))return;cancelReaderNavigation();};
   document.addEventListener('wheel',cancel,{capture:true,passive:true});document.addEventListener('touchmove',cancel,{capture:true,passive:true});
-  document.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End'].includes(e.key)&&!e.target.closest('input,textarea,select,[contenteditable]'))cancel(e);},true);
+  document.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End'].includes(e.key)&&!e.target.closest('input,textarea,select,[contenteditable]')){if(e.target===document.body||e.target===document.documentElement)cancelReaderNavigation();else cancel(e);}},true);
+  document.getElementById('scroll')?.addEventListener('pointerdown',e=>{if(e.target===e.currentTarget)cancelReaderNavigation();},{passive:true});
 })();
 // Citation and research anchors may resolve to a merged Flow row spanning several pages. Start
 // a row that is taller than the available reading viewport so its cited opening is visible;
@@ -1442,16 +1378,22 @@ function frAnchorBlock(target){
 window.__frPlaceReaderAnchor=(target,opts={})=>{
   if(!target)return null;
   const block=opts.block||frAnchorBlock(target);
-  target.scrollIntoView({block,behavior:opts.behavior||'auto'});
+  target.scrollIntoView({block,behavior:opts.behavior||'instant'});
+  if(block==='start'){
+    const sc=document.getElementById('scroll'),header=document.querySelector?.('.ph');
+    if(sc?.contains(target)&&header){const top=Math.max(sc.getBoundingClientRect().top,header.getBoundingClientRect().bottom)+12;sc.scrollTop+=target.getBoundingClientRect().top-top;}
+  }
   return block;
 };
 window.__frAnchorBlock=frAnchorBlock;
 function jump(p,ttl){
+  const requested=p;p=window.FRMigneNavigation?.openingKey(DATA,p)??p;
   // WINDOWED RENDERING (owner 2026-08-20, Baxter "A Safe Religion" on mobile: inline TOC
   // links did nothing): the target folio may still be a placeholder — hydrate it, and its
   // neighbours, BEFORE looking for it. No-op on small works.
   try{if(window.__ensurePage)window.__ensurePage(p);}catch(e){}
   let t=$("#reading").querySelector(`.folio[data-page="${p}"]`);
+  if(String(requested)!==String(p)){const inline=$("#reading").querySelector(`.pganchor.an-en[data-page="${requested}"],.pganchor[data-page="${requested}"]`);if(inline?.getClientRects().length)t=inline;}
   // reading-edition merge can leave a folio empty (its body ran on from the previous page) —
   // the inline page anchor is then the true position of the page start
   if(t&&!t.getBoundingClientRect().height){const a=$("#reading").querySelector(`.pganchor.an-en[data-page="${p}"],.pganchor[data-page="${p}"]`);if(a)t=a;}
@@ -1483,7 +1425,7 @@ function jump(p,ttl){
       if(bs<0.6)t.querySelectorAll(".row:not(.rhead)").forEach(r=>{if(!r.getClientRects().length)return;
         const sc=score((r.textContent||"").slice(0,260));if(sc>bs){bs=sc;best=r;}});
       if(best&&bs>=0.6)tgt=best.closest(".row")||best;}}
-  tgt.scrollIntoView({behavior:"auto",block:"start"});window.__frJumpEl=tgt;return tgt;}  // page starts at "pg. N", clear of the masthead (scroll-margin-top)
+  window.__frPlaceReaderAnchor(tgt,{block:"start"});window.__frJumpEl=tgt;return tgt;}  // page starts at "pg. N", clear of the masthead (scroll-margin-top)
 // ---- canonical locators ----
 // Scanned works cite by PRINTED PAGE ("p. N"). Born-digital (SCTA) works have no page image,
 // so they're cited by their place in the spine — the scholastic locator (lib./dist./q./art./
@@ -1524,6 +1466,7 @@ function readerOutlineHref(row){
   return url.href;
 }
 function locOf(n){
+  if(typeof INDEX_PAGES!=='undefined'&&(INDEX_PAGES?.has(n)||INDEX_PAGES?.has(String(n))))return 'Index · '+(DATA?.has_pages?'p. ':'§ ')+n;
   if(n==='editorial')return 'Editorial notes';
   if(DATA?.pld_source_view?.combined&&DATA.pld_source_view.hasColumns===false)return 'Section '+n;
   if(DATA?.pld_source_view?.notes)return DATA.pld_source_view.columnNotes?'Editorial notes, col. '+n:'Notes, section '+n;
@@ -1562,98 +1505,34 @@ function loadAbout(){ if(_aboutP)return _aboutP; if(!BLOB){_aboutP=Promise.resol
   return _aboutP; }
 function aboutFor(){ return loadAbout().then(d=>({blurb:d.blurbs[DATA.slug]||null, author:d.authors[DATA.author]||d.authors[DATA.author_la]||null})); }
 function enrichSub(){ aboutFor().then(d=>{ if(!d.author&&!d.blurb)return;
-  const au='<a class=subau href="/the-faith-received/author/?a='+encodeURIComponent(DATA.author)+'" title="All works by '+esc(DATA.author)+'">'+esc(DATA.author)+'</a>'
+  const au='<a class=subau href="/?a='+encodeURIComponent(DATA.author)+'" title="All works by '+esc(DATA.author)+'">'+esc(DATA.author)+'</a>'
     +((d.author&&d.author.dates&&!/unknown/i.test(d.author.dates))?(" ("+esc(d.author.dates)+")"):"");
   const bits=[au];
   if(DATA.volume)bits.push(esc(DATA.volume));
   if(d.blurb&&d.blurb.genre)bits.push(esc(d.blurb.genre));
   const s=$("#sub"); if(!s)return; s.innerHTML=bits.join(" · ");
 }).catch(()=>{}); }
-// The opening sentence of a biography, taken whole. A character truncation would cut mid-word
-// and an ellipsis would promise a "more" that this panel does not have, so the split is by
-// sentence and the guards are the ones the catalogue actually trips: "c. 878–c. 899", "St
-// Anthony's College", "J.G. Fatati", "(Magister 1605)". A full stop only ends a sentence when
-// the token before it is not a known abbreviation or a bare initial AND what follows opens
-// like a new sentence. A very short opening ("Jesuit dogmatic theologian.") takes the sentence
-// after it as well, capped at two, so no author is introduced by three words.
-const ABOUT_ABBR=/(?:^|[\s([.–—-])(?:st|ss|mr|mrs|ms|dr|fr|prof|rev|bp|abp|ca|cca|cf|fl|e\.g|i\.e|vol|vols|ch|chap|pt|no|nos|vs|etc|jr|sr|al|ep|epp|lib|cap|col|cols|op|trans|ed|eds|q|qq|art|[A-Za-z])\.$/;
-function aboutOpening(text){
-  const s=String(text||"").trim(); if(!s)return "";
-  const re=/[.!?](?=["')\]]?(?:\s|$))/g; let m,taken=0;
-  while((m=re.exec(s))){
-    const head=s.slice(0,m.index+1);
-    if(ABOUT_ABBR.test(head))continue;                              // an abbreviation, not an ending
-    const rest=s.slice(m.index+1).replace(/^["')\]]?\s+/,"");
-    if(rest&&!/^[A-Z“"'(\d]/.test(rest))continue;              // mid-sentence full stop
-    taken++;
-    if(head.split(/\s+/).length>=12||taken>=2)return head;
-  }
-  return s;
-}
-/* MereO delta (Ian, 2026-09-21: "buttons that open but don't close").
-   ⓘ About is a toggle, and it never behaved like one. A second press re-entered
-   this function, removed the overlay and built an identical one in its place, so
-   the only control on screen that names the panel could not put it away; Escape
-   and a click on the backdrop were the only exits. Worse, the old
-   remove()-and-rebuild dropped the node without calling its close(), so the
-   Escape listener that node had registered on window stayed bound — one leaked
-   listener per press, each holding a detached overlay.
-   Closing runs the overlay's own close() so the listener goes with it. */
-function openAbout(){
-  const shown=document.getElementById("aboutOv");
-  if(shown){ (shown.__frClose||(()=>shown.remove()))(); const b=$("#rdAbout"); if(b)b.focus({preventScroll:true}); return; }
-  aboutFor().then(d=>{
-  let ov=document.getElementById("aboutOv"); if(ov)ov.__frClose?ov.__frClose():ov.remove();
-  ov=document.createElement("div"); ov.id="aboutOv"; ov.className="about-ov";
+function openAbout(){ const priorFocus=document.activeElement;aboutFor().then(d=>{
+  let ov=document.getElementById("aboutOv"); if(ov)ov.remove();
+  ov=document.createElement("div"); ov.id="aboutOv"; ov.className="about-ov";ov.setAttribute("role","dialog");ov.setAttribute("aria-modal","true");ov.setAttribute("aria-label","Edition details");
+  $("#aaPop")?.classList.remove("on");$("#aaBtn")?.setAttribute("aria-expanded","false");
   const a=d.author,b=(typeof d.blurb==="string")?{blurb:d.blurb}:d.blurb;   // blurbs.json carries plain strings for newer works
-  // THE WORK COMES FIRST AND NOTHING PRINTS AN EMPTY LABEL (Ian, 2026-09-18: "These About
-  // blocks on works are an absolute mess. They need to be incredibly simplified"). The panel
-  // used to stack two encyclopedia entries: author name, a three-fact metadata run, the full
-  // biography, an italic significance line, a "Key works:" list, a lowercase genre line, and
-  // only then the blurb for the work the reader had actually opened. On charnock-attributes —
-  // no blurb, no author entry — it rendered 242px of two empty .about-sec shells, the second
-  // of them nothing but a top rule.
-  //
-  // WHAT IS CUT AND WHY. `affiliation` is a second career summary in a panel that is not about
-  // a career. `key_works` is a shelf, and the author page IS that shelf. `significance` is
-  // measurably not what its name says: 821 of 1,876 entries in the Latin Fathers author shard
-  // describe the WORK rather than the person ("The letters and decrees held here assert…"),
-  // so it cannot be trusted as author context. `genre` is lowercase, sometimes parenthetical
-  // ("collected theological works (exegetical / didactic / polemical)"), and always redundant
-  // with the blurb's own first clause; every entry in v1/blurbs.json carries a blurb (1,664 of
-  // 1,664 when this was measured, 1,733 of 1,733 an hour later as the catalogue was filled),
-  // so genre never appears on a work that would otherwise have nothing said about it.
-  //
-  // The biography stays as ONE SENTENCE. aboutOpening() is an abbreviation-aware split, not a
-  // character truncation: measured over all 2,585 bios in the core and Latin shards it never
-  // returns under 8 words and runs past 70 in 15 of them. The full life, the affiliation, the
-  // significance and the key works are all on the author page, which the footer links to.
-  const house=s=>String(s||"").replace(/\s+—\s+/g,", ").replace(/(\d)\s*—\s*(\d)/g,"$1–$2").replace(/—/g,", ");
-  const headMeta=[(DATA.title_en&&DATA.title_en!==DATA.title)?DATA.title:null,DATA.volume].filter(Boolean).join(" · ");
-  let h='<div class="about-box" role="dialog" aria-modal="true" aria-label="About this work"><div class="about-h"><div><h2>'+esc(DATA.title_en||DATA.title)+'</h2>';
-  if(headMeta)h+='<div class="ah-meta">'+esc(headMeta)+'</div>';
-  h+='</div><button class="about-x" title="Close (esc)" aria-label="Close">✕</button></div><div class="about-body">';
-  if(b&&b.blurb)h+='<div class="about-work"><p>'+esc(house(b.blurb))+'</p></div>';
-  if(DATA.author){
-    // One author: his church where the denomination table knows it, never the "English Divines" shelf (MOFaithLabel, lib/faith-catalogue.js).
-    const trad=a&&a.tradition?(window.MOFaithLabel?window.MOFaithLabel.of(a.tradition,DATA.author):a.tradition):null;
-    const life=[(a&&a.dates&&!/unknown/i.test(a.dates))?a.dates:null,trad].filter(Boolean).join(" · ");
-    const opening=(a&&a.bio)?aboutOpening(house(a.bio)):"";
-    h+='<div class="about-who"><h3>'+esc(DATA.author)+'</h3>';
-    if(life)h+='<p class="about-life">'+esc(life)+'</p>';
-    // .about-bio, NOT .about-note: read.in01.css:133 already owns .about-note and would set
-    // this at .72rem, muted, under a dashed rule. Nothing emits that class any more, but a
-    // dead rule in a vendored sheet still paints.
-    if(opening)h+='<p class="about-bio">'+esc(opening)+'</p>';
-    h+='<a class="about-more" href="/the-faith-received/author/?a='+encodeURIComponent(DATA.author)+'">More by '+esc(DATA.author)+'</a></div>';
-  }
-  h+='</div></div>';    // no machine fallback sentence, no generated-orientation eyebrow (user 2026-07-20): the work, then the author, period.
+  const authLine=[a&&a.dates,a&&a.tradition,a&&a.affiliation].filter(Boolean).join(" · ");
+  let h='<div class="about-box"><div class="about-h"><div><h2>'+esc(DATA.title_en||DATA.title)+'</h2><div class="ah-meta">'+esc([(DATA.title_en&&DATA.title_en!==DATA.title)?DATA.title:null,DATA.author,DATA.volume].filter(Boolean).join(" · "))+'</div></div><button class="about-x" aria-label="Close edition details" title="Close (esc)">✕</button></div><div class="about-body">';
+  // WHO first — situate the person, then the work
+  h+='<div class="about-sec"><h3>'+esc(DATA.author)+'</h3>';
+  if(authLine)h+='<div class="about-tags">'+esc(authLine)+'</div>';
+  if(a&&a.bio)h+='<div class="about-prose"><p>'+esc(a.bio)+'</p></div>';
+  if(a&&a.significance)h+='<div class="about-sig">'+esc(a.significance)+'</div>';
+  if(a&&a.key_works&&a.key_works.length)h+='<div class="about-kw"><b>Key works:</b> '+esc(a.key_works.join(" · "))+'</div>';
+  h+='</div><div class="about-sec">';
+  if(b&&b.blurb){ if(b.genre)h+='<div class="about-tags"><b>'+esc(b.genre)+'</b></div>'; h+='<div class="about-prose"><p>'+esc(b.blurb)+'</p></div>'; }
+  h+='</div></div>';    // no machine fallback sentence, no generated-orientation eyebrow (user 2026-07-20): author + work, period.
   ov.innerHTML=h; document.body.appendChild(ov);
-  const close=()=>{ov.remove();removeEventListener("keydown",esk);};
-  function esk(e){if(e.key==="Escape")close();}
+  const close=()=>{ov.remove();removeEventListener("keydown",esk);const target=priorFocus?.getClientRects().length?priorFocus:$("#aaBtn");target?.focus({preventScroll:true});};
+  function esk(e){if(e.key==="Escape"){e.preventDefault();close();}else if(e.key==="Tab"){e.preventDefault();ov.querySelector(".about-x").focus();}}
   ov.addEventListener("click",e=>{if(e.target===ov)close();});
-  ov.querySelector(".about-x").onclick=close; addEventListener("keydown",esk);
-  ov.__frClose=close;   // the toggle above closes through this, so `esk` is unbound with it
+  ov.querySelector(".about-x").onclick=close;ov.querySelector(".about-x").focus();addEventListener("keydown",esk);
 }).catch(()=>{}); }
 function wireAbout(){ const b=$("#rdAbout"); if(b)b.onclick=openAbout; enrichSub(); }
 // TEI PATH (2026-08-10): fetches the per-lane TEI sidecars, pre-segments them by <pb>, and hands
@@ -1679,7 +1558,7 @@ let APPARATUS_MODE="anchored";
 // this patch — verified meta.json.index_pages absent even on the flagship Luther-WA publish),
 // else via the looksLikeTailIndex() stopgap below, per §2.2's explicit stopgap authorization.
 let INDEX_PAGES=null;
-const teiNorm=v=>{const s=String(v==null?"":v).trim(),i=parseInt(s,10);return isNaN(i)?s:String(i);};  // strips zero-padding so pb@n="0017" keys the same as pg.n===17
+const teiNorm=v=>{const s=String(v==null?"":v).trim();return /^\d+$/.test(s)?s.replace(/^0+(?=\d)/,""):s;};  // strips zero-padding so pb@n="0017" keys the same as pg.n===17
 function teiSegment(doc){
   const map={};if(!doc)return map;
   const pbEl=doc.querySelector("pb");
@@ -1949,11 +1828,17 @@ function renderTrueIndex(items,kind){
   return `<div class="ixtrue${dense?" ixdense":""}"><h3 class="csub inflow ixtrueh">${esc(heading)}</h3><div class="ixtruel">${rows}</div></div>`;
 }
 function build(){
+  // ONE BUILD AT A TIME (2026-09-23, pg-362: 612 folios for 376 pages, 236 printed twice): build() re-runs when the TEI lanes or the
+  // rest of the shards land, while the previous build is still streaming folios in chunks. Its pending chunks then appended their
+  // pages into the new build's column. Each build takes a generation number; a chunk of a superseded build stops.
+  const _buildGen=(window.__frBuildGen=(window.__frBuildGen||0)+1);
   _structSorted=null;   // recompute spine index for this work
   const _entitle=DATA.title_en||DATA.title;   // English primary; the original Latin goes to the subtitle line
   document.title="The Faith Received — "+_entitle;
   $("#wt").textContent=_entitle;$("#wt").title=_entitle;$("#h1").textContent=_entitle;
   app.classList.toggle('source-en',DATA.src_lang==='en');
+  app.classList.toggle('source-only',DATA.source_only===true);
+  renderSourceView();
   if(DATA.src_lang==='en')applyLanes();
   {const c=$("#coins");if(c)c.title=coinsOf(DATA);}   // Zotero/Mendeley COinS — reference managers auto-detect this citation
   // English-only works (e.g. Baxter's Methodus — no Latin parallel; the Ramist diagrams live in the
@@ -2089,13 +1974,14 @@ function build(){
   // read them as one continuous document structured by their own headings, with the §-folio running
   // header suppressed entirely.
   app.classList.toggle("flow",DATA.flow===true||DATA.collection==="reformed-confessions");
-  // a prayer book (meta.liturgy, the 1928 BCP) sets its italics as rubrics and the people's part in bold (skin CSS, #app.liturgy)
+  // a prayer book (meta.liturgy, the 1928 BCP on Mere Orthodoxy) sets its italics as rubrics and the people's part in bold (the
+  // theme's skin CSS, #app.liturgy) — Ian's main 2026-09-24, carried here so the port never loses it (research-shell drift rule)
   app.classList.toggle("liturgy",DATA.liturgy===true);
   {const mp=$("#m-par");if(mp)mp.style.display=enOnly?"none":"";}
   // witness (owner 2026-09-09): a facsimile work reads text AND scan — two witnesses; a digital work is the text alone
   $("#wmeta").textContent=[DATA.author,`${DATA.n_pages} ${DATA.has_pages?"folia":"sections"}`,DATA.source_only?(window.__SRCNAME||'Original'):enOnly||DATA.src_lang==='en'?"English":((window.__SRCNAME||"Latin")+" + English"),DATA.pld_source_view?.label,DATA.has_pages?"facsimile · text + page scans":"digital text"].filter(Boolean).join(" · ");
   {const bits=[(DATA.title_en&&DATA.title_en!==DATA.title)?esc(DATA.title):null,
-     DATA.author?('<a class=subau href="/the-faith-received/author/?a='+encodeURIComponent(DATA.author)+'" title="All works by '+esc(DATA.author)+'">'+esc(DATA.author)+'</a>'):null,
+     DATA.author?('<a class=subau href="/?a='+encodeURIComponent(DATA.author)+'" title="All works by '+esc(DATA.author)+'">'+esc(DATA.author)+'</a>'):null,
      DATA.volume?esc(DATA.volume):null].filter(Boolean);
    $("#sub").innerHTML=bits.join(" · ");}   // the author byline is an action: → the library, filtered to them
   wireAbout();   // fetch blurb+bio → enrich the subtitle (dates·genre) + wire the About button/link
@@ -2279,16 +2165,17 @@ function build(){
     }
     const ttl=title??(node&&node.querySelector&&node.querySelector(".nn-t")?node.querySelector(".nn-t").textContent:null);
     const request=rememberReaderChoice(p,ttl||'');
+    const renderedPage=window.FRMigneNavigation?.openingKey(DATA,p)??p;
     // shard-streaming guard (2026-07-20, same fix as the pager): if the target folio hasn't rendered
     // yet on a large work, queue it as the settle target and pull the remaining shards — a bare jump()
     // was a silent no-op that left the reader at page 1.
-    if(!$("#reading").querySelector(`.folio[data-page="${p}"]`)&&DATA&&p>=1&&p<=(DATA.n_pages||0)){
+    if(!$("#reading").querySelector(`.folio[data-page="${renderedPage}"]`)&&DATA&&(DATA.__loadRest||DATA.pages.some(page=>String(page.n)===String(renderedPage)))){
       window.__frTgt=p;window.__frUserScrolled=false;
       if(DATA.__loadRest)DATA.__loadRest().catch(()=>{});
       // retry until the folio renders (progressive build may still be streaming DOM), then jump
       let k=0;const iv=setInterval(()=>{
         if(request!==window.__readerNavSerial){clearInterval(iv);return;}
-        if($("#reading").querySelector(`.folio[data-page="${p}"]`)){clearInterval(iv);jump(p,ttl);}
+        if($("#reading").querySelector(`.folio[data-page="${renderedPage}"]`)){clearInterval(iv);jump(p,ttl);}
         else if(++k>120)clearInterval(iv);},250);
     }
     jump(p,ttl);   // jump + light up the clicked node directly (scroll-spy is suppressed briefly so the jump's scroll can't re-pick a neighbouring entry)
@@ -2301,7 +2188,7 @@ function build(){
     // scrolled the fmark/heading made corrections ping-pong — "navs are snapping").
     {let k=0,st=0,cj=0;window.__frUserScrolled=false;const iv=setInterval(()=>{
       if(request!==window.__readerNavSerial||window.__frUserScrolled||++k>12||st>=2||cj>=4){clearInterval(iv);return;}
-      const t=(window.__frJumpEl&&window.__frJumpEl.isConnected)?window.__frJumpEl:$("#reading").querySelector(`.folio[data-page="${p}"]`);
+      const t=(window.__frJumpEl&&window.__frJumpEl.isConnected)?window.__frJumpEl:$("#reading").querySelector(`.folio[data-page="${renderedPage}"]`);
       if(t){const off=Math.abs(t.getBoundingClientRect().top-((document.querySelector('.ph')?.offsetHeight||64)+14));
         if(off>(cj?120:40)){jump(p,ttl);cj++;st=0;}else st++;}
     },260);}
@@ -2328,7 +2215,7 @@ function build(){
     {const ff=fm.querySelector(".ff");ff.title="Click to copy the citation for this page";
      ff.onclick=()=>{const a=(Array.isArray(DATA.author)?DATA.author.join(", "):(DATA.author||"")),
        cite=[a,[DATA.title,DATA.volume].filter(Boolean).join(", "),locOf(pg.n)].filter(Boolean).join(", ")
-         +" — "+location.origin+"/the-faith-received/read/?w="+encodeURIComponent(DATA.slug||"")+(DATA.pld_source_view?'&pldpart='+DATA.pld_source_view.id:'')+"#b"+pg.n+"-0";
+         +" — "+location.origin+"/read?w="+encodeURIComponent(DATA.slug||"")+(DATA.pld_source_view?'&pldpart='+DATA.pld_source_view.id:'')+"#b"+pg.n+"-0";
        navigator.clipboard.writeText(cite).then(()=>{const old=ff.textContent;ff.textContent="✓ copied";
          setTimeout(()=>{ff.textContent=old;},1200);}).catch(()=>{});};}
     R.appendChild(fm);
@@ -2461,6 +2348,7 @@ function build(){
     // GAPPY-PAGE RESCUE: if most rows pair a short cell against a very long one, the shared
     // row heights create dead space — re-flow this section as two independent columns.
     try{
+      const rws=[...sec.querySelectorAll(".row")].filter(r=>!r.classList.contains("rhead")&&!r.classList.contains("rtoc")&&!r.classList.contains("rapp"));
       // NEVER restructure sub-paired rows: a .row.seg holds .sp pairs, and lifting only its first
       // .la/.en shreds the pairing (owner screenshot 2026-08-09: boxed Latin cells, dead space).
       // A .row.seg holds .sp sub-pairs; lifting only its first .la/.en shreds the pairing. But
@@ -2491,12 +2379,16 @@ function build(){
         run.forEach(r=>{if(!r.childElementCount)r.remove();});
         stacked=true;run=[];
       };
-      // A RUN ENDS AT A HEADING (2026-09-24, 1928 BCP): the run used to walk the rows with the heads filtered out, so two
-      // runs either side of a mid-page heading were stacked as one and the heading fell below the
-      // text it heads ("Psalm 23" printed after Psalm 23). Walk the page's rows in order and
-      // close the run at every head, TOC or apparatus row as well as at a sub-paired row.
-      [...sec.querySelectorAll(".row")].forEach(r=>{ if(isSeg(r)||r.classList.contains("rhead")||r.classList.contains("rtoc")||r.classList.contains("rapp")){flushRun();} else {run.push(r);} });
-      flushRun();
+      // A RUN IS DOM-CONSECUTIVE (owner 2026-09-23, the Tetrapolitan Confession p. 11): rws has the head rows filtered out,
+      // so two prose rows with a chapter head between them looked consecutive and one run pulled every later paragraph
+      // above its own heading — the heads stacked, empty, at the foot of the page. A run is cut wherever the next row is
+      // not the DOM neighbour of the last one, and every run is taken before any row moves.
+      const runs=[];
+      rws.forEach(r=>{ if(isSeg(r)){if(run.length)runs.push(run);run=[];return;}
+        if(run.length&&r.previousElementSibling!==run[run.length-1]){runs.push(run);run=[];}
+        run.push(r); });
+      if(run.length)runs.push(run);
+      runs.forEach(x=>{run=x;flushRun();});
       if(stacked)sec.classList.add("sec-stacked");
     }catch(e){}
     // SMOOTH READING (owner 2026-08-09: "the reading experience must be perfect").
@@ -2871,6 +2763,7 @@ function build(){
         if(LAp.length===ENp.length&&LAp.length>1&&LAp.every(x=>x.e)&&ENp.every(x=>x.e)){
           for(let j=0;j<LAp.length;j++){
             const row=el("div","row prow");
+            if(LAp[j].e.getAttribute("rend")==="flow")row.classList.add("pflow");   // unpaired printed paragraphs (stacked below)
             row.innerHTML=`<div class="la" lang="la">${_cellHtml(LAp[j])}</div><div class="en" lang="en">${_cellHtml(ENp[j])}</div>`;
             sec.appendChild(row);}
         }else{
@@ -2922,12 +2815,25 @@ function build(){
           }else{
             row.innerHTML=`<div class="la" lang="la">${laHtml}</div><div class="en" lang="en">${enB.map(x=>teiCell(x,pg.n)).join("")}</div>`;
           }
-          if(row.innerHTML)sec.appendChild(row);}}
+          // a row with nothing to read (empty lanes: pg-604 col. 1123 opened on a blank band above its title, 09-23) is not drawn
+          if(row.innerHTML&&(row.textContent.trim()||row.querySelector("img,figure,svg,table,.pganchor")))sec.appendChild(row);}}
       if(isEdit)for(let ri=_rowsBefore;ri<sec.children.length;ri++)sec.children[ri].classList.add("redit");
       (a?a.notes:[]).forEach(e=>notesLA.push(teiNote(e)));
       (b?b.notes:[]).forEach(e=>notesEN.push(teiNote(e)));
     }
     let bi=0;sec.querySelectorAll(".row").forEach(rw=>{if(!rw.classList.contains("rhead"))rw.id="b"+pg.n+"-"+(bi++);});
+    // UNPAIRED FLOWS (owner 2026-09-15, PG 78 col. 63): rows the PG aligner could not pair (printed-paragraphs basis) stack as two
+    // independent columns — each lane keeps its printed paragraphs in order and no row asserts a pairing (the gappy-page rescue's
+    // structure; deep-link ids move to the cell that carries text).
+    try{const flows=[...sec.querySelectorAll(".row.pflow")];let run=[];
+      const flush=()=>{if(!run.length)return;const w=el("div","stkwrap flow"),c1=el("div","stk stk-la"),c2=el("div","stk stk-en");
+        run[0].parentNode.insertBefore(w,run[0]);
+        run.forEach(r=>{const la=r.querySelector(".la"),en=r.querySelector(".en"),hasEn=!!(en&&en.textContent.replace(/\u00a0/g,"").trim()),hasLa=!!(la&&la.textContent.replace(/\u00a0/g,"").trim());
+          const tgt=hasEn?en:(hasLa?la:null);if(tgt&&r.id){tgt.id=r.id;r.removeAttribute("id");}
+          if(hasLa)c1.appendChild(la);if(hasEn)c2.appendChild(en);r.remove();});
+        w.appendChild(c1);w.appendChild(c2);run=[];};
+      flows.forEach(r=>{if(run.length&&r.previousElementSibling!==run[run.length-1])flush();run.push(r);});flush();
+      if(flows.length)sec.classList.add("sec-stacked");}catch(e){}
     // REF MIRROR (owner 2026-08-18 hover parity): when the source cell of a paired row
     // carries footnote anchors and the English cell carries none, mirror the anchors at
     // the English paragraph's end — hover pops the English note via the band pairing.
@@ -3083,6 +2989,27 @@ function build(){
           if(last){frag.appendChild(document.createTextNode(t.slice(last)));nd.replaceWith(frag);}
         });});};
       fix();setTimeout(fix,2500);setTimeout(fix,6000);
+      // ENGLISH HEADINGS (owner 2026-09-23): an English paragraph that OPENS with a head the canon marks rend="heading" sets the head
+      // on its own line (span.enhead). All-caps heads stay with the caps pass above; head rows (.rhead) are already heads. The pairing
+      // is not touched: the head was paired as part of its paragraph and stays in it.
+      if(Array.isArray(window.__enHeadings)&&window.__enHeadings.length){
+        const _nz=x=>String(x||"").replace(/\*/g,"").replace(/\s+/g," ").trim(),HB=new Map();
+        window.__enHeadings.forEach(h=>{const k=h.slice(0,12);(HB.get(k)||HB.set(k,[]).get(k)).push(h);});
+        HB.forEach(v=>v.sort((a,b)=>b.length-a.length));
+        const hfix=()=>{document.querySelectorAll('#reading .en p:not([data-enh]), #reading .en:not(:has(p)):not([data-enh])').forEach(el2=>{
+          el2.setAttribute('data-enh','1');if(el2.closest('.rhead'))return;
+          const txt=_nz(el2.textContent);const h=(HB.get(txt.slice(0,12))||[]).find(x=>txt===x||txt.startsWith(x+" "));if(!h||txt===h&&el2.querySelector('.enhead'))return;
+          const tw=document.createTreeWalker(el2,NodeFilter.SHOW_TEXT,null);let acc="",nd,endNode=null,endOff=0;
+          outer:while((nd=tw.nextNode())){const t=nd.textContent;
+            for(let i=0;i<t.length;i++){const c=t[i];if(c==="*")continue;
+              if(/\s/.test(c)){if(acc&&!acc.endsWith(" "))acc+=" ";continue;}
+              acc+=c;if(acc===h){endNode=nd;endOff=i+1;break outer;}
+              if(!h.startsWith(acc))return;}}
+          if(!endNode)return;
+          const rg=document.createRange();rg.setStart(el2,0);rg.setEnd(endNode,endOff);
+          const sp=document.createElement("span");sp.className="enhead";sp.appendChild(rg.extractContents());el2.insertBefore(sp,el2.firstChild);
+          const nx=sp.nextSibling;if(nx&&nx.nodeType===3)nx.textContent=nx.textContent.replace(/^\s+/,"");});};
+        hfix();setTimeout(hfix,2500);setTimeout(hfix,6000);}
       // GREEK RUBRIC ENTRANCES (owner 2026-08-18 'inline chapter divisions'): Migne prints
       // section rubrics (ΛΟΓΟΣ Β΄. / ΚΕΦΑΛΑΙΟΝ Αʹ.) INSIDE the flowing paragraph in 25
       // PG works with no head elements. Closed rubric vocabulary + sentence-boundary
@@ -3322,9 +3249,19 @@ function build(){
       if((t1||t2)&&(t1.length<=6&&t2.length<=6)&&(!t1||JUNK.test(t1))&&(!t2||JUNK.test(t2)))r.classList.add("furn");
     }));
     // cross-page run continuation
-    let prev=null;
+    let prev=null,_seamIdx=null;
     for(const cur of secs){
+      // WINDOWED READER (2026-09-23, Davenant Treatise p.135 read into p.49, Contzen p.300 into p.50; reported by the Ask session): a
+      // 400+ page work mounts only the folios near the reader, so the folio before this one in the DOM can be pages away -- a seam
+      // joins only the true next page
+      {const _i=+cur.dataset.idx,_adj=_seamIdx==null||!Number.isFinite(_i)||_i===_seamIdx+1;_seamIdx=_i;if(!_adj){prev=cur;continue;}}
       if(!prev){prev=cur;continue;}
+      if(prev.querySelector(".pld-editorial")||cur.querySelector(".pld-editorial")){prev=cur;continue;}
+      // THE PAGE IS THE UNIT in every PG view (owner 2026-09-17 "just make sure the latin and greek is shown completely per page";
+      // 2026-09-22: in the Greek view pg-131 col. 1337 and pg-2018 col. 739 were stacked flows folded whole into the page before and
+      // read as empty pages with hidden chips). The Greek · Latin view already kept its opening boundaries; the Greek and Latin
+      // views of a PG work now do too: a page's flow stays on its own folio, under its own scan.
+      if(DATA.pg_source){prev=cur;continue;}   // preserve aligned source-opening boundaries and their citation IDs
       if(cur.classList.contains("frontmatter")!==prev.classList.contains("frontmatter")){prev=cur;continue;}
       const kidsP=[...prev.children].filter(x=>!x.classList.contains("apptog")&&!x.classList.contains("rapp"));
       const kidsC=[...cur.children].filter(x=>!x.classList.contains("ixchip"));
@@ -3347,9 +3284,14 @@ function build(){
     // ROW-path seam merge (owner 2026-08-10 "smooth this out"): a sentence split across the
     // leaf on ORDINARY rows carries .tail/.cont marks — merge the continuation's cells into
     // the tail row with an inline page anchor, same treatment the stacked runs get.
-    prev=null;
+    prev=null;_seamIdx=null;
     for(const cur of R.querySelectorAll(".folio")){
+      {const _i=+cur.dataset.idx,_adj=_seamIdx==null||!Number.isFinite(_i)||_i===_seamIdx+1;_seamIdx=_i;if(!_adj){prev=cur;continue;}}   // WINDOWED READER (above)
       if(!prev){prev=cur;continue;}
+      if(prev.querySelector(".pld-editorial")||cur.querySelector(".pld-editorial")){prev=cur;continue;}
+      // THE PAGE IS THE UNIT (above) -- the continuation row too: a PG page's first paragraph is often most of the page (PG 142 col.
+      // 699 kept 4 letters when it joined the page before); the page ends where its print ends, mid-sentence if the print does.
+      if(DATA.pg_source){prev=cur;continue;}
       const pk=[...prev.children].filter(x=>!x.classList.contains("apptog")&&!x.classList.contains("rapp"));
       const pr=pk[pk.length-1],cr=[...cur.children].find(x=>!x.classList.contains("ixchip"));
       if(pr&&cr&&pr.classList.contains("row")&&pr.classList.contains("tail")
@@ -3388,7 +3330,7 @@ function build(){
     R.querySelectorAll(".row.furn").forEach(r=>{const t=((r.querySelector(".la")||{}).textContent||"")+" "+((r.querySelector(".en")||{}).textContent||"");if(t.replace(/p\.\s*\d+/g,"").trim().length>12)r.classList.remove("furn");});
     R.querySelectorAll(".folio.rolled").forEach(f=>{const m=f.previousElementSibling;if(m&&m.classList&&m.classList.contains("fmark"))m.classList.add("rolled");});
     // a BLANK leaf (title verso, blank page: no rows at all) has nothing to head either — its chip would stack on the next page's (owner 2026-09-04)
-    R.querySelectorAll(".folio:not(.titlepage)").forEach(f=>{if(f.querySelector(".row,.stkwrap"))return;const m=f.previousElementSibling;if(m&&m.classList&&m.classList.contains("fmark"))m.classList.add("rolled");});
+    R.querySelectorAll(".folio:not(.titlepage)").forEach(f=>{if(f.querySelector(".row,.stkwrap,.pld-editorial"))return;const m=f.previousElementSibling;if(m&&m.classList&&m.classList.contains("fmark"))m.classList.add("rolled");});
     // RUNNING-HEAD ECHO HEADS (owner 2026-09-04, Urraburu Psych. II p.13 "DISPUTATIO PRIMA." printed as the leaf's
     // running head AND as the display head): within one folio, a head row whose Latin (or English) repeats the
     // text of a head row earlier in the same consecutive run of heads is the echo — hide it, keep the first.
@@ -3466,11 +3408,21 @@ function build(){
       if(i<0||i>=pages.length||hydrated[i])return;
       hydrated[i]=true;
       const ph = phs[i]; if(!ph||!ph.isConnected)return;
+      // MANUAL SCROLL ANCHORING (owner 2026-09-15 'reading on mobile snaps back up or down'): a placeholder ABOVE the viewport is
+      // replaced by a folio of a different height (the estimate is characters ÷ line width); Chrome's scroll anchoring absorbs the
+      // difference, Safari has none, so on the phone the text under the thumb jumped by the delta on every neighbour hydration.
+      // The scroll container is moved by exactly the height change when the hydrated block sits wholly above the viewport.
+      const _noAnchor = !(window.CSS && CSS.supports && CSS.supports('overflow-anchor: auto'));   // Safari: no native scroll anchoring
+      const _scTop = sc ? sc.getBoundingClientRect().top : 0;
+      const _wasAbove = _noAnchor && ph.getBoundingClientRect().bottom <= _scTop + 1;
+      const _hBefore = _wasAbove ? ph.offsetHeight : 0;
       const mark = R.childNodes.length;
       try{ RENDER(pages[i], i); }catch(e){ console.warn('[window] folio',i,e); }
       const added = [...R.childNodes].slice(mark);   // renderFolio* appends to R
       added.forEach(n=>R.insertBefore(n, ph));
       ph.remove(); phs[i]=null;
+      if(_wasAbove){ const _hAfter = added.reduce((a,n)=>a+(n.getBoundingClientRect?n.getBoundingClientRect().height:0),0); const _d = _hAfter - _hBefore;
+        if(Math.abs(_d) > 1){ if(sc) sc.scrollTop += _d; else window.scrollBy(0,_d); } }
       const sec = added.find(n=>n.classList&&n.classList.contains('folio'));
       if(window.__afterHydrate)window.__afterHydrate(sec||null);
     };
@@ -3547,7 +3499,8 @@ function build(){
   // rAF pauses in background tabs, stranding big works at ~140 folios (2026-07-20) — fall back to
   // setTimeout when hidden so the column keeps building even while the reader isn't looking.
   const _sched=cb=>{if(document.hidden)setTimeout(cb,200);else requestAnimationFrame(cb);};
-  (function chunk(){const end=Math.min(pages.length,_i+90);for(;_i<end;_i++)(TEI_ON?renderFolioTEI:renderFolio)(pages[_i],_i);   // TEI PATH (2026-08-10)
+  (function chunk(){if(_buildGen!==window.__frBuildGen)return;   // superseded by a newer build (ONE BUILD AT A TIME, above)
+    const end=Math.min(pages.length,_i+90);for(;_i<end;_i++)(TEI_ON?renderFolioTEI:renderFolio)(pages[_i],_i);   // TEI PATH (2026-08-10)
     if(_i<pages.length){_sched(chunk);} else {readingEditionPass();window.__readerBuilt=true;buildNav();if(window._afterBuild)window._afterBuild();}})();
   if(pages.length<=FIRST){readingEditionPass();window.__readerBuilt=true;buildNav();if(window._afterBuild)window._afterBuild();}
   // rebuild a single folio's rows in place (used by the owner inline editor for optimistic update)
@@ -3580,7 +3533,7 @@ function build(){
         if(syn.length>=3){DATA.structure=syn;STRUCT=true;}
       }catch(e){}
     }
-    const nav=$("#nav");window.FRReaderContents?.capture(nav);nav.innerHTML="";
+    const nav=$("#nav");if(window.FRReaderContents?.release)window.FRReaderContents.release(nav);else window.FRReaderContents?.capture(nav);nav.innerHTML="";
     // NEVER A DEAD END ON A PHONE (owner 2026-08-31 "when I'm in a confession I can't get
     // out"): the brand home link is hidden on small screens, so the contents sheet opens
     // with the ways OUT — home, and the section this work belongs to. Library-tab work
@@ -3591,16 +3544,7 @@ function build(){
       home.style.cssText="display:flex;gap:.4rem;flex-wrap:wrap;padding:.15rem 0 .5rem;border-bottom:1px solid var(--border);margin-bottom:.4rem";
       const mk=(href,label)=>`<a href="${href}" style="font:600 .78rem/1 var(--sans);color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:.45rem .7rem">${label}</a>`;
       const conf=window.FRReaderNavigation?.isConfession(DATA)||/confessio|catechis|bekenntnis|helvetic|augsburg|westminster-confession|dennison/i.test((DATA.slug||"")+" "+(DATA.title||""));
-      /* MereO delta: the first two chips were written for a site where
-         "/" IS the library. Here "/" is the Mere Orthodoxy homepage, so
-         "Library" landed a reader on our front page and "All
-         confessions" landed them there with a fragment that does not
-         exist. The toolbar's own back-link already goes to the real
-         library and goes there correctly, so those two are dropped
-         rather than repointed — three controls labelled "Library" was
-         itself the problem. Scripture is /scripture/ here, not /bible/.
-         Re-apply when re-vendoring. */
-      home.innerHTML=mk("/the-faith-received/fathers/","Authors")+mk("/the-faith-received/scripture/","Scripture");
+      home.innerHTML=mk("/","\u2302 Library")+ (conf?mk("/#confessions","\u274d All confessions"):"")+mk("/fathers","Authors")+mk("/bible","Scripture");
       nav.appendChild(home);
     }
     // A facsimile work with an authoritative outline can be browsed two ways: the OUTLINE tree
@@ -3641,34 +3585,19 @@ function build(){
   // extra scroll-to-letter step is layered ON TOP of goNav rather than inside it, so goNav's own
   // poll-until-rendered contract (2560ish) stays exactly as every other nav destination uses it.
   function renderIndexNav(nav){
-    const KIND_LABEL={quaestionum:"Index Quaestionum",errata:"Errata",citations:"Index of Citations",topical:"Index",alphabetic:"Index",contents:"Contents"};
-    const box=el("div","nav-index");
-    [...INDEX_PAGES.entries()].forEach(([page,kind])=>{
-      const row=el("div","nav-node nd1 ixnavrow");
-      row.dataset.page=page;
-      row.innerHTML=`<span class="cv leaf">▾</span><span class="nn-t">${esc(KIND_LABEL[kind]||"Index")}</span>`;
-      row.onclick=()=>goNav(+page,row);
-      box.appendChild(row);
-      if(kind==="alphabetic"){
-        const rail=el("div","ixnav-az");
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(L=>{
-          const chip=el("button","ixnav-chip");chip.type="button";chip.textContent=L;
-          chip.onclick=ev=>{ev.stopPropagation();
-            goNav(+page,row);
-            // same plain-then-zero-padded data-page lookup the .pgo jump handler already uses
-            // (readingEditionPass, ~3288) — INDEX_PAGES' key comes from teiNorm() (padding
-            // stripped) while .folio's own data-page mirrors pg.n, which isn't always in the
-            // same padded/unpadded form across works.
-            let k=0;const iv=setInterval(()=>{
-              const sec=document.querySelector(`.folio[data-page="${page}"]`)||document.querySelector(`.folio[data-page="${String(page).padStart(4,"0")}"]`);
-              const hit=sec&&[...sec.querySelectorAll(".ixletter")].find(h=>h.textContent.trim()===L);
-              if(hit){clearInterval(iv);hit.scrollIntoView({behavior:"smooth",block:"start"});}
-              else if(++k>40)clearInterval(iv);
-            },200);};
-          rail.appendChild(chip);
-        });
-        box.appendChild(rail);
-      }
+    const box=el('div','nav-index');
+    const groups=FRReaderNavigation.indexSections([...INDEX_PAGES.entries()],readerDisplayOutline(),DATA.pages);
+    const intro=el('p','index-guidance');intro.textContent='Open an index section or choose one of its pages.';box.appendChild(intro);
+    groups.forEach((group,i)=>{
+      const fold=el('details','index-section');fold.open=i===0;
+      const summary=el('summary');summary.textContent=group.title;summary.title=group.sourceTitle;fold.appendChild(summary);
+      const count=el('p','index-guidance');count.textContent=group.pages.length+' '+(group.pages.length===1?'page':'pages');fold.appendChild(count);
+      const pages=el('div','index-page-links');
+      group.pages.forEach(page=>{
+        const link=el('a','index-page-link');link.dataset.page=page;link.href=readerOutlineHref({page});
+        link.textContent=(DATA.has_pages?'Page ':'Section ')+page;
+        link.onclick=e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();goNav(page,link);};pages.appendChild(link);
+      });fold.appendChild(pages);box.appendChild(fold);
     });
     nav.appendChild(box);
   }
@@ -3676,7 +3605,7 @@ function build(){
   // author-sorted list in the drawer; the open work is marked. Index cached across views.
   function renderLibrary(nav){
     const box=el("div","nav-lib");
-    box.innerHTML='<input class="nl-q" placeholder="Filter by title or author…" autocomplete=off spellcheck=false><div class="nl-list"><div class="nl-msg">Loading the library…</div></div>';
+    box.innerHTML='<input class="nl-q" type="search" aria-label="Filter library by title or author" placeholder="Filter by title or author…" autocomplete=off spellcheck=false><div class="nl-list"><div class="nl-msg">Loading the library…</div></div>';
     nav.appendChild(box);
     const list=box.querySelector(".nl-list"),inp=box.querySelector(".nl-q");
     const norm=s=>(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");  // Suárez matches "suarez"
@@ -3688,15 +3617,15 @@ function build(){
       let h="",lastA=null;
       m.slice(0,900).forEach(w=>{
         const a=w._confession?"Confessions":w.author||"No named author";
-        if(a!==lastA){h+='<div class="nl-au'+(t?" open":"")+'" data-au="'+esc(a)+'"><span class="nl-cv">▸</span>'+esc(a)+'</div>';lastA=a;}
-        h+='<a class="nl-w'+(DATA&&w.slug===DATA.slug?" here":"")+'" href="/the-faith-received/read/?w='+encodeURIComponent(w.slug)+'">'
+        if(a!==lastA){h+='<button type="button" class="nl-au'+(t?" open":"")+'" aria-expanded="'+(t?'true':'false')+'" data-au="'+esc(a)+'"><span class="nl-cv" aria-hidden="true">▸</span>'+esc(a)+'</button>';lastA=a;}
+        h+='<a class="nl-w'+(DATA&&w.slug===DATA.slug?" here":"")+'" href="/read?w='+encodeURIComponent(w.slug)+'">'
           +'<span class="nl-t">'+esc(w.title_en||w.title||w.slug)+(w.volume?' <span class="nl-v">· '+esc(String(w.volume))+'</span>':'')+'</span></a>';
       });
       list.innerHTML=h||'<div class="nl-msg">No matches.</div>';
       if(!t)list.classList.add("nl-collapsed");else list.classList.remove("nl-collapsed");
-      list.querySelectorAll(".nl-au").forEach(g=>{g.onclick=()=>g.classList.toggle("open");});
+      list.querySelectorAll(".nl-au").forEach(g=>{g.onclick=()=>g.setAttribute("aria-expanded",String(g.classList.toggle("open")));});
       // keep the current work's author expanded
-      if(DATA){let group=list.querySelector("a.here")?.previousElementSibling;while(group&&!group.classList.contains("nl-au"))group=group.previousElementSibling;if(group)group.classList.add("open");}
+      if(DATA){let group=list.querySelector("a.here")?.previousElementSibling;while(group&&!group.classList.contains("nl-au"))group=group.previousElementSibling;if(group){group.classList.add("open");group.setAttribute("aria-expanded","true");}}
       if(m.length>900)list.insertAdjacentHTML("beforeend",'<div class="nl-msg">'+(m.length-900)+' more — narrow the filter</div>');
     };
     const go=ws=>{if(!box.isConnected)return;paint(ws,inp.value);inp.oninput=()=>paint(ws,inp.value);};
@@ -3712,7 +3641,7 @@ function build(){
         ]);
         const ws=FRReaderNavigation.catalogue(d,te,confs?.confessions||[]);if(confs)window.__WORKSLIST=ws;go(ws);
         if(!confs&&box.isConnected){list.insertAdjacentHTML('afterbegin','<p class="nl-msg">The confession catalogue could not load. <button type="button" class="nl-retry">Retry loading</button></p>');list.querySelector('.nl-retry').onclick=load;}
-      }catch(error){if(!box.isConnected)return;list.innerHTML='<div class="nl-msg" role="status">The library could not load. <button type="button" class="nl-retry">Retry loading</button> <a href="/the-faith-received/all-works/?collection=all">Open library</a></div>';list.querySelector('.nl-retry').onclick=load;}
+      }catch(error){if(!box.isConnected)return;list.innerHTML='<div class="nl-msg" role="status">The library could not load. <button type="button" class="nl-retry">Retry loading</button> <a href="/">Open library</a></div>';list.querySelector('.nl-retry').onclick=load;}
     };load();
   }
   // Confessions can carry chapter rubrics in the text that their brief metadata outline omits.
@@ -3867,11 +3796,7 @@ function build(){
       }
       const a=el("div","fol"+(TP&&pg.n<TP?" frontmatter":""));a.dataset.page=pg.n;
       const w=(pg.en||"").replace(/[#*\[\]^]/g,"").trim().split(/\s+/).slice(0,10).join(" ");
-      // Migne is cited by column and has no folios, so the rail says what the
-      // pager and the margin say. locOf() already knows which word the volume
-      // takes; before today it was asked everywhere but here.
-      const face=(/^P[LG]\s*\d/i.test(DATA?.volume||"")?`col. ${pg.n}`:`fol. ${pg.n}`);
-      a.innerHTML=`${pg.thumb?`<img src="${pg.thumb}" loading="lazy" alt="">`:""}<div><div class="fn">${face}</div><div class="fp">${esc(w)}…</div></div>`;a.onclick=()=>goNav(pg.n);curBody.appendChild(a);});
+      a.innerHTML=`${pg.thumb?`<img src="${pg.thumb}" loading="lazy" alt="">`:""}<div><div class="fn">fol. ${pg.n}</div><div class="fp">${esc(w)}…</div></div>`;a.onclick=()=>goNav(pg.n);curBody.appendChild(a);});
   }
 }
 // PAGE DENOMINATOR IN THE SAME UNIT AS THE INPUT (owner 2026-09-04 '191 / 70'): the
@@ -3914,7 +3839,18 @@ function renderSourceView(){
 function syncReaderHeader(n){
  if(!DATA)return;
  const author=$("#reader-author"),volume=$("#reader-volume"),place=$("#reader-location");
- author.textContent=DATA.author||"";author.href="/the-faith-received/author/?a="+encodeURIComponent(DATA.author||"");
+ const guide=$("#reader-introduction"),intro=DATA.reader_introduction;
+ if(guide){guide.hidden=!intro||(intro.start!=null&&Number(n)<Number(intro.start))||(intro.end!=null&&Number(n)>=Number(intro.end));
+  if(intro&&guide.dataset.work!==DATA.slug){
+   guide.dataset.work=DATA.slug;guide.replaceChildren();
+   const label=document.createElement('span');label.textContent=intro.label||'Printed chapter summaries';if(intro.note)label.title=intro.note;guide.appendChild(label);
+   for(const target of intro.targets){const link=document.createElement('a');link.textContent=target.label;
+    const url=new URL(location.href);url.searchParams.set('p',String(target.page));url.hash='b'+target.page+'-0';link.href=url.pathname+url.search+url.hash;
+    link.onclick=e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();history.replaceState(null,'',link.href);
+     window.__frRestoreReaderPosition({page:target.page,title:target.title,choice:true});};guide.appendChild(link);}
+  }
+ }
+ author.textContent=DATA.author||"";author.href="/?a="+encodeURIComponent(DATA.author||"");
  volume.textContent=String(DATA.volume||"").replace(/\b(P[LG]|PO)\s*(\d+)/g,"$1 $2");
  place.textContent=locOf(n);place.setAttribute('aria-label','Go to a place in this work, currently '+locOf(n));
  const column=DATA.pld_source_view?.hasColumns!==false&&(!DATA.pld_source_view?.notes||DATA.pld_source_view?.columnNotes)&&/^P[LG]\s*\d/i.test(DATA.volume||""),unit=column?'column':DATA.has_pages?'page':'section';
@@ -3930,6 +3866,51 @@ function syncReaderHeader(n){
  $("#source-size label").title=source+' text size';
  if(DATA.pld_source_view?.sourceName){window.__SRCNAME=source;$("#m-par").textContent=source;}
  $("#m-par").disabled=DATA.source_only===true;$("#m-par").title=DATA.source_only?'Source edition notes in their original language':'Show '+source+' text';$("#m-en").title='Show English translation';
+ syncEdition(n);
+}
+// THE OTHER EDITION (owner 2026-09-22: "our vercel site highlights / indicates two editions of the same work"; the same day,
+// reading the facsimile of Gerhard's Confessio: "I dont see these works digitized"). The library badged a work held both as a
+// facsimile and as a born-digital text (v1/work-relations.json complementary_witnesses), but the reader said nothing. Now
+// the header links to the page being read in the other edition. Page links (v1/witnesses/<slug>.json, tools/
+// build_witness_pages.py) come from the text: each page was matched to the page of the other edition that shares its Latin;
+// a page without its own link uses the nearest linked page before it. Two small requests, and only for a work in a group.
+let _edition=null;
+function editionFor(slug){
+ if(_edition&&_edition.slug===slug)return _edition.p;
+ const V=window.__FR_VER?("?v="+window.__FR_VER):"";   // the library's own URL for the file, so a visit from it is a cache hit
+ const p=!BLOB||!slug||/^(pld|pg|po|eebo)-/.test(slug)?Promise.resolve(null):fetch(BLOB+"/v1/work-relations.json"+V).then(r=>r.ok?r.json():null).then(rel=>{
+  const g=(rel?.complementary_witnesses||[]).find(x=>(x.fac||[]).includes(slug)||(x.dig||[]).includes(slug));
+  if(!g)return null;
+  const kind=(g.fac||[]).includes(slug)?"fac":"dig",side=(kind==="fac"?g.dig:g.fac)||[];
+  const first=((g.volumes||{})[slug]||[])[0]?.[0]||side[0];
+  return fetch(BLOB+"/v1/witnesses/"+encodeURIComponent(slug)+".json"+V).then(r=>r.ok?r.json():null).catch(()=>null)
+   .then(w=>({kind,others:w?.others||side,first,map:(w?.map||[]).filter(x=>typeof x[0]==="number"&&typeof x[2]==="number").sort((a,b)=>a[0]-b[0])}));
+ }).catch(()=>null);
+ _edition={slug,p};return p;
+}
+function syncEdition(n){
+ const slug=DATA?.slug;if(!slug)return;
+ editionFor(slug).then(e=>{
+  if(!DATA||DATA.slug!==slug)return;
+  const row=document.getElementById("reader-editions");if(!row)return;
+  if(!e||!e.first){row.hidden=true;return;}
+  const m=e.map,k=Number(n);let lo=0,hi=m.length-1,at=-1;
+  while(lo<=hi){const mid=(lo+hi)>>1;if(m[mid][0]<=k){at=mid;lo=mid+1;}else hi=mid-1;}
+  const hit=at>=0?m[at]:m[0],other=hit?e.others[hit[1]]:e.first,page=hit?hit[2]:null;
+  if(!other){row.hidden=true;return;}
+  const fac=e.kind==="fac",unit=fac?"section":"page";
+  if(row.dataset.work!==slug){row.dataset.work=slug;
+   row.innerHTML='<span>Edition</span><span class="ed-on" aria-current="true"></span><a></a><span class="ed-where"></span>';
+   row.children[1].textContent=fac?"Facsimile":"Digital text";
+   row.children[1].title=fac?"You are reading the facsimile: the printed page, with its scan beside the text.":"You are reading the born-digital text: the Latin with its English translation.";}
+  const a=row.querySelector("a");
+  a.href="/read?w="+encodeURIComponent(other)+(page!=null?"&p="+encodeURIComponent(page)+"#b"+encodeURIComponent(page)+"-0":"");
+  a.textContent=(fac?"Digital text":"Facsimile")+" \u21c4";
+  a.title=(fac?"This work is also held as a born-digital text: the Latin with its English translation.":"This work is also held in facsimile: the printed page, with its scan beside the text.")+(page!=null?" Opens "+unit+" "+page+", where this page's text is.":"");
+  a.setAttribute("aria-label",(fac?"Open this passage in the born-digital text":"Open this passage in the facsimile")+(page!=null?", "+unit+" "+page:""));
+  row.querySelector(".ed-where").textContent=page!=null?unit+" "+page:"";
+  row.hidden=false;
+ });
 }
 function pgDenom(){const ns=(DATA&&DATA.pages||[]).map(x=>+x.n).filter(Number.isFinite);
   if(DATA?.pld_source_view?.notes){if(!DATA.pld_source_view.columnNotes)return {txt:String(DATA.pages.length),tip:'Notes sections'};const last=Math.max(...ns);return {txt:String(last),tip:'Last indexed note starting column: '+last};}
@@ -3945,14 +3926,7 @@ function setFolio(pg){if(!pg||cur===pg.n)return;cur=pg.n;syncReaderHeader(pg.n);
     if(!_sv&&SECMAP){const _ks=Object.keys(SECMAP).map(Number).filter(n2=>n2<=pg.n);if(_ks.length)_sv=SECMAP[Math.max(..._ks)];}
     const t=_sv?String(_sv).slice(0,90):"";
     if(pl.textContent!==t){pl.textContent=t;}
-    /* MereO delta: the section label opens the outline, and used to only ever open
-       it — app.classList.remove("nosb") with nothing on the other side. Pressing it
-       again did nothing at all, which is the same thing ☰ next to it does in one
-       press, so it goes through setContentsOpen like ☰ and the thumb bar's Contents
-       do. Opening still centres the current node; closing is now reachable here. */
-    if(!pl.onclick)pl.onclick=()=>{const wasOpen=!app.classList.contains("nosb");
-      setContentsOpen(!wasOpen,true);
-      if(!wasOpen){const n=$(".nav-node.on");if(n)n.scrollIntoView({block:"center"});}};}}
+    if(!pl.onclick)pl.onclick=()=>{app.classList.remove("nosb");const n=$(".nav-node.on");if(n)n.scrollIntoView({block:"center"});};}}
   try{const lr=JSON.parse(lsGet("fr_lastread")||"{}");
     {const _q=new URLSearchParams(location.search);const _k=_q.get("ws")||_q.get("w")||DATA.slug||DATA.workspace;
      lr[_k]={page:pg.n,slug:DATA.slug||"",title:DATA.title||"",author:DATA.author||"",ts:Date.now(),...(DATA.pld_source_view?{pldpart:DATA.pld_source_view.id}:{} )};
@@ -4016,7 +3990,21 @@ function setFolio(pg){if(!pg||cur===pg.n)return;cur=pg.n;syncReaderHeader(pg.n);
     nav.querySelectorAll(".nav-node,.fol").forEach(f=>{const fp=String(f.dataset.page);if(outline){if(f.classList.contains("nd-hidden"))return;if(Number.isFinite(Number(fp))&&Number(fp)<=Number(pg.n)&&(!active||Number(fp)>Number(active.dataset.page)))active=f;}else if(fp===String(pg.n))active=f;});
     nav.querySelectorAll(".nav-node,.fol").forEach(f=>f.classList.toggle("on",f===active));
   }}}
-$("#scroll").addEventListener("scroll",()=>{const s=$("#scroll");$("#prog").style.width=(s.scrollTop/(s.scrollHeight-s.clientHeight)*100)+"%";
+// Keep a shareable address for deliberate reading movement. Initial deep-link
+// settling and background reflow must never replace the requested destination.
+let frReadingURLTimer=0;
+function frScheduleReadingURL(){
+  if(frReadingURLTimer)return;
+  frReadingURLTimer=setTimeout(()=>{frReadingURLTimer=0;
+    if(!DATA||!window.__frUserScrolled||window.__readerChoice||window.__readerPendingPosition||window.__readerNavigationSuspended)return;
+    try{
+      const api=window.FRReaderBookmarks;if(!api)return;
+      const url=api.locationURL(location.href,api.capture());
+      if(url&&url!==location.href)history.replaceState(history.state,'',url);
+    }catch(_){/* A temporarily unrendered passage keeps its last known link. */}
+  },400);
+}
+$("#scroll").addEventListener("scroll",()=>{const s=$("#scroll");$("#prog").style.width=(s.scrollTop/(s.scrollHeight-s.clientHeight)*100)+"%";frScheduleReadingURL();
   if(!_tick){_tick=true;requestAnimationFrame(()=>{pickFolio();_tick=false;});}},{passive:true});
 // Read · Parallel · Study. Read = English-primary single column; Parallel = EN∥LA (rows are
 // locus-paired, so the columns stay in sync inherently); Study = Parallel + the source scan.
@@ -4028,47 +4016,16 @@ $("#scroll").addEventListener("scroll",()=>{const s=$("#scroll");$("#prog").styl
    deep links, saved fr_mode values). At least one TEXT lane stays on — turning the last one off
    flips the other on, so the reading column can never go empty. */
 window.LN={en:true,la:true,fx:false};   // owner 2026-08-17: the Latin lane shows by DEFAULT ("no latin" report) — this is a Latin library
-/* Keep your place across a relayout. Call before changing anything that reflows
-   the reading column and call the returned function after: it notes how far
-   down the scrollport a visible row is sitting and puts that same row back at
-   that same height once the new layout has settled.
-
-   The height matters. The lane switch used to end in scrollIntoView(block:
-   "start"), which drags the row's TOP to the top of the scrollport — and the
-   row it picks is the first one still showing, whose top is usually well above
-   the fold. On a work with long paragraph rows that threw the reader 850 to 900
-   pixels for a button that was only meant to add a column. Offset arithmetic
-   moves nobody who was not already moving.
-
-   Measured against the scrollport's own top edge rather than the viewport's, so
-   the sums hold whether or not the chrome is showing; a fixed 120px assumption
-   is wrong by the height of the bars in one of the two states. */
-function frKeepPlace(){
-  const sc=document.getElementById("scroll"),rd=$("#reading");
-  if(!sc||!rd)return ()=>{};
-  const edge=sc.getBoundingClientRect().top;
-  const row=[...rd.querySelectorAll(".row[id]")].find(r=>r.getBoundingClientRect().bottom>edge+8);
-  if(!row)return ()=>{};
-  const at=row.getBoundingClientRect().top-edge,serial=window.__readerNavSerial||0;
-  const fix=()=>{
-    if(serial!==(window.__readerNavSerial||0)||!row.isConnected)return;
-    const d=(row.getBoundingClientRect().top-sc.getBoundingClientRect().top)-at;
-    if(d){sc.scrollTop+=d;if(window.__frScrollSettled)window.__frScrollSettled();}
-  };
-  // Twice: once now, before the frame is painted, because a style change has
-  // already reflowed by the time we can measure it and correcting on the next
-  // animation frame instead lets the browser paint the displaced text first —
-  // a 95px flash that reads as exactly the jump this is here to prevent. Then
-  // again on the next frame for the reflow that has not happened yet: a lane
-  // rebuild, an off-screen section re-rendering, a web font arriving late.
-  return ()=>{fix();requestAnimationFrame(fix);};
-}
 function applyLanes(){
+  // The row under the top of the viewport is remembered before the relayout when nothing captured it (keyboard activation,
+  // a scripted click): a lane switch used to land three columns away in that case (PG 3059, 2026-09-14).
+  if(!(window.__frAnchorRow&&window.__frAnchorRow.isConnected)&&typeof document!=="undefined"){const host=document.getElementById&&document.getElementById("reading");if(host&&typeof host.querySelectorAll==="function"&&window.__readerBuilt){try{window.__frAnchorRow=[...host.querySelectorAll(".row[id]")].find(r=>r.getBoundingClientRect&&r.getBoundingClientRect().bottom>120)||null;}catch(_){}}}
   // An English source is already read in the English lane. A parallel preference
   // carried from a Latin work must not open two English versions side by side.
   const englishSource=DATA?.src_lang==='en';
   const singleLane=englishSource||DATA?.en_only===true||app.classList.contains('en-only');
   if(singleLane){LN.en=true;LN.la=false;}
+  if(DATA?.source_only){LN.en=false;LN.la=true;}
   if(!LN.en&&!LN.la)LN.en=true;
   if(!(DATA&&DATA.has_pages))LN.fx=false;                 // born-digital: no scan exists
   app.classList.toggle("only-en",LN.en&&!LN.la);
@@ -4077,7 +4034,7 @@ function applyLanes(){
   const P={en:LN.en,par:LN.la,study:LN.fx};
   ["en","par","study"].forEach(x=>{const b=$("#m-"+x);if(b)b.setAttribute("aria-pressed",!!P[x]);});
   if(!LN.fx){app.classList.remove("facs-only");const fe=$("#facsExp");if(fe){fe.setAttribute("aria-pressed","false");fe.textContent="⤢";}}  // dropping the scan drops facsimile-only too
-  if(!singleLane)lsSet("fr_lanes2",JSON.stringify(LN));if(window.__frThumbSync)window.__frThumbSync();
+  if(!singleLane&&!DATA?.source_only)lsSet("fr_lanes2",JSON.stringify(LN));if(window.__frThumbSync)window.__frThumbSync();
   // PHONE PARALLEL (owner 2026-08-10 "work on this on mobile"): stacked runs render la-column-
   // then-en-column — pages of Latin before any English on a phone. Zip them into la∥en pairs,
   // paragraph by paragraph, whenever both lanes are on at phone width. One-way per stkwrap
@@ -4085,18 +4042,17 @@ function applyLanes(){
   // and phones don't grow into desktops mid-read; a rebuild restores columns).
   if(LN.en&&LN.la&&matchMedia("(max-width:880px)").matches&&window.__frZipStacks)window.__frZipStacks();
   // keep your place: the row that was under the top of the viewport stays there across the relayout
-  if(window.__frKeepPlace)window.__frKeepPlace();
+  if(window.__frAnchorRow&&window.__frAnchorRow.isConnected){
+    const navigation=window.__readerNavSerial||0,anchor=window.__frAnchorRow;
+    requestAnimationFrame(()=>{if(navigation===(window.__readerNavSerial||0)&&anchor?.isConnected)window.__frPlaceReaderAnchor(anchor,{block:"start"});});}
 }
 function mode(m){                                          // legacy presets → lane states
   if(m==="en")Object.assign(LN,{en:true,la:false,fx:false});
   else if(m==="par")Object.assign(LN,{en:true,la:true,fx:false});
   else if(m==="study")Object.assign(LN,{en:true,la:true,fx:true});
   applyLanes();}
-// A lane button relays the column out from under the reader, so the place has to
-// be taken before the click lands — by the time applyLanes runs, the old layout
-// it needs to measure is gone.
 document.addEventListener("pointerdown",ev=>{if(ev.target.closest&&ev.target.closest(".ph .seg,[data-t]"))
-  window.__frKeepPlace=frKeepPlace();},true);
+  window.__frAnchorRow=[...reading.querySelectorAll(".row[id]")].find(r=>r.getBoundingClientRect().bottom>120);},true);
 $("#m-en").onclick=()=>{LN.en=!LN.en;if(!LN.en&&!LN.la)LN.la=true;applyLanes();};
 $("#m-par").onclick=()=>{LN.la=!LN.la;if(!LN.en&&!LN.la)LN.en=true;applyLanes();};
 $("#m-study")&&($("#m-study").onclick=()=>{LN.fx=!LN.fx;applyLanes();});
@@ -4109,7 +4065,7 @@ function setContentsOpen(open,restoreFocus=false){
   if(!open&&restoreFocus){const target=document.documentElement.classList.contains('g-mobile')?document.querySelector('.frthumb [data-t="toc"]'):$('#sbT');target?.focus({preventScroll:true});}
 }
 $("#sbT").onclick=()=>setContentsOpen(app.classList.contains('nosb'),true);
-if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,true);
+$("#contentsClose").onclick=()=>setContentsOpen(false,true);
 // mobile: scrim behind the open sidebar + tap-to-dismiss; nav taps auto-close the sheet
 (function(){const sc=document.createElement("div");sc.id="sbScrim";app.appendChild(sc);
   sc.onclick=()=>setContentsOpen(false);
@@ -4142,7 +4098,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
   document.body.appendChild(bar);
   const B={};bar.querySelectorAll("button").forEach(b=>{B[b.dataset.t]=b;
     b.style.touchAction="manipulation";
-    });
+    b.addEventListener("touchend",e=>{e.preventDefault();b.onclick&&b.onclick();},{passive:false});});
   // Lane model (2026-07-19, after user confusion): "English" is an absolute switch — always
   // lands on English-only (and exits the scan). "Latin" cycles Both → Latin-only → Both, so
   // every state is reachable in ≤2 taps and the highlights literally mean "this lane is visible".
@@ -4154,24 +4110,10 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
     else{LN.en=true;}                            // from Latin-only → Both
     applyLanes();};
   B.study.onclick=()=>{LN.fx=!LN.fx;applyLanes();};                   // "Scan" = toggle the facsimile
-  /* MereO delta: Search and Research were open-only on the thumb bar, so a second
-     tap on a lit button did nothing and the panel had to be dismissed from its own
-     ✕. Contents and Scan beside them have always toggled; these two now match, and
-     through the same toggles the desktop ⌕ and Research buttons use, so a control
-     means the same thing at both widths. Each keeps its old open-only call as the
-     fallback, because the globals are published by read-tools.js, which loads
-     after this.
-     ASK IS DELIBERATELY NOT TOGGLED HERE, and a toggle on this line would be dead
-     code. ask-workspace.js listens for clicks on `.frthumb [data-t="ask"]` in the
-     CAPTURE phase and calls stopImmediatePropagation, so this handler never runs
-     for a real tap. It does not need to: below 1100px the workspace is modal and
-     syncPresentation() marks the thumb bar inert while it is open, so the button
-     cannot be pressed at all. What that left missing was a keyboard exit, and
-     that is fixed in ask-workspace.js by giving the panel the focus. */
-  B.find.onclick=()=>{if(window.__frToggleSearch)window.__frToggleSearch();else if(window.__frOpenSearch)window.__frOpenSearch();};
+  B.find.onclick=()=>{if(window.__frOpenSearch)window.__frOpenSearch();};
   if(B.ask)B.ask.onclick=()=>{if(window.__openAsk)window.__openAsk("");};
   B.toc.onclick=()=>setContentsOpen(app.classList.contains("nosb"),true);
-  B.nb.onclick=()=>{if(window.__frToggleNotebook)window.__frToggleNotebook();else if(window.__frOpenNotebook)window.__frOpenNotebook();};
+  B.nb.onclick=()=>{if(window.__frOpenNotebook)window.__frOpenNotebook();};
   // chrome auto-hide while reading down (phones): accumulate same-direction travel so tiny
   // jitters don't flap it; near the top it is always shown. A tap on the prose toggles it
   // (the Books model) — interactive elements, active selections, and review mode excluded.
@@ -4193,46 +4135,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
       const s=document.getSelection();if(s&&!s.isCollapsed)return;
       if(!HTML.classList.contains("mh-hide")&&sc.scrollTop<90)return;   // at the top, chrome stays
       HTML.classList.toggle("mh-hide");acc=0;
-    });
-    // Both bars are fixed, but the page reserves their height in padding, so
-    // this state does not merely uncover the prose, it re-lays the scroller out
-    // 152px higher on a desktop and 120px on a phone. Every line the reader was
-    // looking at leapt with it, both ways, unasked: read down and the text fled
-    // upward, nudge back up 24px and it was thrown down again. Pin the prose
-    // instead — give back whatever the box moved, every frame of the .28s
-    // slide, so the line under the eye stays where the eye left it while the
-    // chrome comes and goes.
-    //
-    // Driven by the box's size rather than by the class because the class has
-    // four other doors — the contents sidebar, Find, a lane change that
-    // re-anchors, a tap on the prose — and a reduced-motion reader gets no
-    // transition to listen for. Measured off the scroller's own top edge, which
-    // is the one landmark scrolling does not move; measuring the prose instead
-    // makes the sample stale by however far the reader travelled since the last
-    // resize, and the correction then hurls them that whole distance.
-    //
-    // Read scrollTop live rather than trusting y0. The scroll steps run before
-    // the observer callbacks in the same frame, so a reader who is still moving
-    // has already scrolled past what y0 remembers, and landing them on y0+d
-    // spends the correction undoing their own gesture: a 480px drag arrived as
-    // 87px. Re-point y0 at what landed, though, so the correction stays
-    // invisible to the accumulator above, which would otherwise read the 152px
-    // handed back as a 152px scroll and re-trigger the hide it was correcting.
-    // Every keep-your-place correction in this file moves the scroller on the
-    // reader's behalf, and the accumulator above cannot tell that from a
-    // gesture: changing the body font scrolled 300px to hold the line still,
-    // which then read as 300px of reading and hid the chrome for it. Anything
-    // that moves the scroller itself says so through here.
-    window.__frScrollSettled=()=>{y0=sc.scrollTop;acc=0;};
-    if(typeof ResizeObserver==="function"){
-      let edge=sc.getBoundingClientRect().top;
-      new ResizeObserver(()=>{
-        const now=sc.getBoundingClientRect().top,d=now-edge;
-        edge=now;
-        if(d)sc.scrollTop+=d;
-        window.__frScrollSettled();
-      }).observe(sc);
-    }})();
+    });})();
   window.__frThumbSync=()=>{
     const hasScan=(typeof DATA!=="undefined")&&!!(DATA&&DATA.has_pages),enOnly=app.classList.contains("en-only")||DATA?.src_lang==='en';
     B.study.style.display=hasScan?"":"none";
@@ -4260,16 +4163,8 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
     const jumpBox=document.createElement('form');jumpBox.className='reader-jump-form';
     jumpBox.innerHTML='<label id="reader-jump-label" for="reader-jump">Go to page</label><div><input id="reader-jump" type="text" autocomplete="off" aria-describedby="reader-jump-status"><button type="submit">Go</button></div><p id="reader-jump-status" role="status"></p>';
     pop.prepend(jumpBox);
-    jumpBox.onsubmit=e=>{e.preventDefault();const value=$('#reader-jump').value.trim(),pg=DATA?.pages.find(p=>String(p.n)===value);if(pg){pop.classList.remove('on');delete pop.dataset.locJump;$('#reader-jump').blur();$('#aaBtn').setAttribute('aria-expanded','false');$('#reader-jump-status').textContent='';goReaderReference(pg);}else{$('#reader-jump-status').textContent='That reference is not available in this work.';}};
-    /* MereO delta: the location button is a toggle now. It only ever ADDED `on`,
-       and it stops the click reaching the document handler that would otherwise
-       dismiss the menu, so once opened from here the panel could not be closed
-       from here. The press it opened it with is tracked on the panel, because
-       when the menu was opened by Aa instead, closing it is not what the reader
-       asked for: that press focuses the page field, and the one after it closes. */
-    $('#reader-location').onclick=e=>{e.stopPropagation();
-      if(pop.classList.contains('on')&&pop.dataset.locJump==='1'){pop.classList.remove('on');delete pop.dataset.locJump;$('#aaBtn').setAttribute('aria-expanded','false');$('#reader-location').focus({preventScroll:true});return;}
-      $('#reader-jump').value=String(cur??'');pop.classList.add('on');pop.dataset.locJump='1';$('#aaBtn').setAttribute('aria-expanded','true');$('#reader-jump').focus();$('#reader-jump').select();};
+    jumpBox.onsubmit=e=>{e.preventDefault();const value=$('#reader-jump').value.trim(),opening=window.FRMigneNavigation?.openingKey(DATA,value)??value,pg=DATA?.pages.find(p=>String(p.n)===String(opening));if(pg){pop.classList.remove('on');$('#reader-jump').blur();$('#aaBtn').setAttribute('aria-expanded','false');$('#reader-jump-status').textContent='';goReaderReference(pg);}else{$('#reader-jump-status').textContent='That reference is not available in this work.';}};
+    $('#reader-location').onclick=e=>{e.stopPropagation();$('#reader-jump').value=String(cur??'');pop.classList.add('on');$('#aaBtn').setAttribute('aria-expanded','true');$('#reader-jump').focus();$('#reader-jump').select();};
     pop.insertBefore(row,pop.firstChild);
     row.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
       const tgt=$("#"+b.dataset.x);if(tgt)tgt.click();});
@@ -4285,10 +4180,10 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
 // text-size + facsimile-zoom controls (persisted), like server.py's image slider
 // "Aa" settings popover open/close
 (function(){const b=$("#aaBtn"),p=$("#aaPop");if(!b||!p)return;
-  const set=on=>{if(on)$("#reader-jump").value=String(cur??'');if(!on)delete p.dataset.locJump;/* whoever opened it, this closed it */p.classList.toggle("on",on);b.setAttribute("aria-expanded",on?"true":"false");};
+  const set=on=>{if(on)$("#reader-jump").value=String(cur??'');p.classList.toggle("on",on);b.setAttribute("aria-expanded",on?"true":"false");};
   b.onclick=e=>{e.stopPropagation();set(!p.classList.contains("on"));};
   document.addEventListener("click",e=>{if(p.classList.contains("on")&&!p.contains(e.target)&&e.target!==b)set(false);});
-  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&p.classList.contains("on")){set(false);b.focus();}});})();
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&p.classList.contains("on"))set(false);});})();
 // Flow (continuous reading) — default ON; remembered across works
 (function(){const on=lsGet("fr_flow")!=="0";app.classList.toggle("rflow",on);
   const b=$("#rdFlow");if(b){const sync=()=>{const flow=app.classList.contains("rflow");b.textContent=flow?"Flow":"Pages";b.setAttribute("aria-pressed",String(flow));b.title=flow?"Continuous reading. Switch to page view.":"Page view. Switch to continuous reading.";$("#readerFlowView")?.setAttribute("aria-pressed",String(flow));$("#readerPageView")?.setAttribute("aria-pressed",String(!flow));};sync();
@@ -4321,13 +4216,13 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
   let pn=null,lastPg=null,relatedSerial=0,relatedController=null;
   const localRelatedPreview=()=>['localhost','127.0.0.1','::1','[::1]'].includes(location.hostname);
   const relatedSlug=()=>new URLSearchParams(location.search).get('w')||DATA?.slug||'';
-  function liveRelatedReader(pg){const url=new URL('/the-faith-received/read/',location.origin);url.searchParams.set('w',relatedSlug());if(pg!=null){url.searchParams.set('p',String(pg));url.hash='b'+String(pg)+'-0';}return url.href;}
+  function liveRelatedReader(pg){const url=new URL('/read','https://thefaithreceived.vercel.app');url.searchParams.set('w',relatedSlug());if(pg!=null){url.searchParams.set('p',String(pg));url.hash='b'+String(pg)+'-0';}return url.href;}
   function cancelRelated(){relatedSerial++;relatedController?.abort();relatedController=null;}
   async function relatedJSON(url,signal){const response=await fetch(url,{signal});if(!response.ok){const error=Error('Related service returned HTTP '+response.status);error.status=response.status;throw error;}let data;try{data=await response.json();}catch(_){throw Error('The related service returned an unreadable response.');}if(!data||typeof data!=='object'||Array.isArray(data)||data.error)throw Error('The related service could not return results.');return data;}
   function relatedState(kind,pg,error,retry){
     const box=$('#rpB'),preview=kind==='preview',missing=kind==='missing',auth=error?.status===401||error?.status===403;
     const message=preview?'Related passages use the live library. This local preview does not include its search service.':missing?'No similarity results are available for this page yet. You can still search the library or ask about this passage.':auth?'Your library session needs renewing. Open the live reader to sign in, then try again.':'Related passages could not load. Your place in the book is unchanged.';
-    box.innerHTML='<div class="rp-note" role="status">'+esc(message)+'</div><div class="rp-act">'+(preview||auth?'<a href="'+esc(liveRelatedReader(pg))+'" target="_blank" rel="noopener">Open this page on the live site</a>':'')+(!preview?'<button type="button" class="rp-refresh" id="rpRetry">Retry related passages</button><a href="/the-faith-received/ask/?q='+encodeURIComponent('Help me understand '+(DATA?.title||relatedSlug())+', '+locOf(pg)+'.')+'" target="_blank" rel="noopener">Ask about this page</a>':'')+'<a href="https://thefaithreceived.vercel.app/?q='+encodeURIComponent(DATA?.author||DATA?.title||relatedSlug())+'" target="_blank" rel="noopener">Search the library</a></div>';
+    box.innerHTML='<div class="rp-note" role="status">'+esc(message)+'</div><div class="rp-act">'+(preview||auth?'<a href="'+esc(liveRelatedReader(pg))+'" target="_blank" rel="noopener">Open this page on the live site</a>':'')+(!preview?'<button type="button" class="rp-refresh" id="rpRetry">Retry related passages</button><a href="/ask?q='+encodeURIComponent('Help me understand '+(DATA?.title||relatedSlug())+', '+locOf(pg)+'.')+'" target="_blank" rel="noopener">Ask about this page</a>':'')+'<a href="https://thefaithreceived.vercel.app/?q='+encodeURIComponent(DATA?.author||DATA?.title||relatedSlug())+'" target="_blank" rel="noopener">Search the library</a></div>';
     const button=box.querySelector('#rpRetry');if(button)button.onclick=retry;
   }
   function panel(){if(pn)return pn;
@@ -4385,9 +4280,9 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
       const inner=esc(String(a.surface).slice(0,26))+(a.intent==="DISAGREES"?" ⚔":a.intent==="AUTHORITY"?" ✓":"");
       const tt=esc((a.locator?a.locator+" · ":"")+(a.intent||""));
       if(rz.cls==="A"&&rz.work_slug)
-        return '<a class="rpm-chip rpm-go" href="/the-faith-received/read/?w='+encodeURIComponent(rz.work_slug)+'" target=_blank title="'+tt+' — open the cited work">'+inner+' ↗</a>';
+        return '<a class="rpm-chip rpm-go" href="/read?w='+encodeURIComponent(rz.work_slug)+'" target=_blank title="'+tt+' — open the cited work">'+inner+' ↗</a>';
       return '<span class=rpm-chip'+(tt?' title="'+tt+'"':"")+'>'+inner+'</span>';}).join("")
-      +'<a class="rpm-chip rpm-web" href="/the-faith-received/connections/#a='+encodeURIComponent(String((window.DATA&&DATA.author)||"").trim())+'" target=_blank title="This author in Connections of Theology">✧ Web</a></div>';
+      +'<a class="rpm-chip rpm-web" href="/web#a='+encodeURIComponent(String((window.DATA&&DATA.author)||"").trim())+'" target=_blank title="This author in the Web of Theology">✧ Web</a></div>';
     defs.forEach(x=>{h+='<div class=rpm-def><i>'+esc(String(x.term).slice(0,40))+'</i> — '+esc(String(x.definition).slice(0,120))+'</div>';});
     return h+'</div>';}
   async function load(pg){
@@ -4404,7 +4299,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
       if(mh&&current()&&String(lastPg)===String(pg)&&!b.querySelector(".rp-mined")){const w=document.createElement("div");w.innerHTML=mh;b.insertBefore(w.firstChild,b.firstChild);}});
     _mineIn();
     let d;
-    try{d=await relatedJSON('https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/related?'+new URLSearchParams({s:relatedSlug(),p:String(pg)}),controller.signal);}catch(error){if(current()){relatedState('error',pg,error,()=>load(pg));_mineIn();}return;}finally{clearTimeout(timeout);if(relatedController===controller)relatedController=null;}
+    try{d=await relatedJSON('/api/related?'+new URLSearchParams({s:relatedSlug(),p:String(pg)}),controller.signal);}catch(error){if(current()){relatedState('error',pg,error,()=>load(pg));_mineIn();}return;}finally{clearTimeout(timeout);if(relatedController===controller)relatedController=null;}
     if(!current())return;
     if(!Array.isArray(d.works)||!Array.isArray(d.fathers)){relatedState('error',pg,null,()=>load(pg));_mineIn();return;}
     if(d.missing){relatedState('missing',pg,null,()=>load(pg));_mineIn();return;}
@@ -4442,7 +4337,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
     if(wrap){const on=wrap.classList.toggle("on");pk.classList.toggle("on",on);return;}
     const [w,pp]=String(pk.dataset.pk).split("|");
     wrap=document.createElement("div");wrap.className="rp-peekwrap";
-    wrap.innerHTML='<div><iframe loading=lazy src="/the-faith-received/read/?w='+encodeURIComponent(w)+'#b'+pp+'-0" title=Passage></iframe></div>';
+    wrap.innerHTML='<div><iframe loading=lazy src="/read?w='+encodeURIComponent(w)+'#b'+pp+'-0" title=Passage></iframe></div>';
     host.insertAdjacentElement("afterend",wrap);
     requestAnimationFrame(()=>{wrap.classList.add("on");pk.classList.add("on");});
   });
@@ -4507,8 +4402,8 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
   function card(w,m){
     const pinned=isPinned(w.slug,+w.page);
     const aff=w.score?Math.max(8,Math.round((w.score-0.55)/0.45*100)):null;
-    return '<a class=rsr data-x="'+esc(w.slug)+'|'+w.page+'" href="/the-faith-received/read/?w='+encodeURIComponent(w.slug)+'#b'+w.page+'-0" target=_blank rel=noopener>'
-      +'<span class=rst>'+esc(m.title||w.slug)+'</span>'
+    return '<a class=rsr data-x="'+esc(w.slug)+'|'+w.page+'" href="/read?w='+encodeURIComponent(w.slug)+'#b'+w.page+'-0" target=_blank rel=noopener>'
+      +'<span class=rst>'+esc(m.title||w.slug)+(m.tradition?'<span class=rtrad>'+esc(m.tradition)+'</span>':'')+'</span>'
       +'<span class=rsm>'+esc(m.author||"")+(m.author?" · ":"")+'pg. '+w.page
       +'<button class=rp-peek data-pk="'+esc(w.slug)+'|'+w.page+'" title="Peek — read it right here">⌄</button></span>'
       +(aff?'<span class=rsaff style="width:'+Math.min(100,aff)+'%" title="affinity '+w.score+'"></span>':'')
@@ -4517,14 +4412,14 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
     cancelRelated();
     const b=$("#rpB");$("#rpPg").textContent="pinned parallels";txtMode=true;
     const P=pins();
-    if(!P.length){b.innerHTML='<div class=rp-note>Nothing pinned yet — ☆ a result to keep it here.</div><a class=rp-copy href="/the-faith-received/pins/" style="text-align:center;text-decoration:none">▤ Open collections</a><button class=rp-refresh id=rpRe>↻ Back to parallels for this page</button>';}
+    if(!P.length){b.innerHTML='<div class=rp-note>Nothing pinned yet — ☆ a result to keep it here.</div><a class=rp-copy href="/pins" style="text-align:center;text-decoration:none">▤ Open collections</a><button class=rp-refresh id=rpRe>↻ Back to parallels for this page</button>';}
     else{
-      b.innerHTML='<a class=rp-copy href="/the-faith-received/pins/" style="text-align:center;text-decoration:none">▤ Open collections — group, share, manage</a>'
+      b.innerHTML='<a class=rp-copy href="/pins" style="text-align:center;text-decoration:none">▤ Open collections — group, share, manage</a>'
         +'<button class=rp-copy id=rpCopy>⧉ Copy as citation list</button>'
         +P.map(x=>card({slug:x.slug,page:x.page},{title:x.title,author:x.author,tradition:x.tradition})).join("")
         +'<button class=rp-refresh id=rpRe>↻ Back to parallels for this page</button>';
       const c=$("#rpCopy");if(c)c.onclick=()=>{
-        const txt=P.map(x=>(x.author?x.author+", ":"")+(x.title||x.slug)+", pg. "+x.page+" — "+location.origin+"/the-faith-received/read/?w="+x.slug+"%23b"+x.page+"-0").join("\n");
+        const txt=P.map(x=>(x.author?x.author+", ":"")+(x.title||x.slug)+", pg. "+x.page+" — https://thefaithreceived.vercel.app/read?w="+x.slug+"%23b"+x.page+"-0").join("\n");
         navigator.clipboard.writeText(txt).then(()=>{c.textContent="✓ copied";setTimeout(()=>{c.textContent="⧉ Copy as citation list";},1200);});};
       hydrate(b);}
     const re=$("#rpRe");if(re)re.onclick=()=>{txtMode=false;if(cur)load(cur);};}
@@ -4532,7 +4427,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
     const base=f.src==='PO'?'https://patrologia-orientalis.vercel.app':f.src==='AQ'?'https://aquinas-studies.vercel.app':'https://pld-patrologia-latina.vercel.app';
     const frag=f.src==='AQ'?'#'+(f.anchor||''):'#b'+(f.anchor||'');   // Aquinas anchors are r-ids (#r123), PL/PO are #b<page>
     const inner='<span class=cit>'+esc(f.cit||f.src)+(f.era?' <span class=era>s. '+_rom(f.era)+'</span>':'')+'</span><span class=tx>'+esc(f.tx)+'…</span>';
-    return f.doc?'<a class=rp-f href="'+base+'/the-faith-received/read/'+encodeURIComponent(f.doc)+'.html'+frag+'" target=_blank style="display:block;text-decoration:none;color:inherit">'+inner+'</a>'
+    return f.doc?'<a class=rp-f href="'+base+'/read/'+encodeURIComponent(f.doc)+'.html'+frag+'" target=_blank style="display:block;text-decoration:none;color:inherit">'+inner+'</a>'
                 :'<div class=rp-f>'+inner+'</div>';}
   // ── auto-saved parallels: every lookup that returns results is kept, no action needed
   // (owner 2026-07-21: "allow me to save these parallels automatically"). localStorage, cap 40,
@@ -4600,8 +4495,8 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
     let lib=null,pl=null;
     const controller=new AbortController();relatedController=controller;const timeout=setTimeout(()=>controller.abort(),20000);let failure;
     try{[lib,pl]=await Promise.all([
-      relatedJSON("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/vsearch?q="+encodeURIComponent(q.slice(0,480))+"&k=12&sparse=1",controller.signal),
-      (lsGet("fr_srchpl")!=="0"?relatedJSON("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/vsearch?q="+encodeURIComponent(q.slice(0,480))+"&k=4&corpus=pl",controller.signal).catch(()=>null):Promise.resolve(null))]);}catch(error){failure=error;}finally{clearTimeout(timeout);if(relatedController===controller)relatedController=null;}
+      relatedJSON("/api/vsearch?q="+encodeURIComponent(q.slice(0,480))+"&k=12&sparse=1",controller.signal),
+      (lsGet("fr_srchpl")!=="0"?relatedJSON("/api/vsearch?q="+encodeURIComponent(q.slice(0,480))+"&k=4&corpus=pl",controller.signal).catch(()=>null):Promise.resolve(null))]);}catch(error){failure=error;}finally{clearTimeout(timeout);if(relatedController===controller)relatedController=null;}
     if(request!==relatedSerial||!txtMode||!pn?.classList.contains('on'))return;
     if(!lib||!Array.isArray(lib.results)){relatedState('error',cur,failure,()=>loadText(q));return;}
     const wb={};(window.__WORKS||[]).forEach(w=>wb[w.slug]=w);
@@ -4676,10 +4571,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
 })();
 const _mobSz=matchMedia("(max-width:880px)").matches;   // phones read smaller by default — more text per screen
 let rdsz=+lsGet(_mobSz?"fr_rdsz_m":"fr_rdsz")||(_mobSz?17:21),imz=+lsGet("fr_imz")||100;
-// Type size, line spacing and body font all reflow the column under the reader,
-// and none of the three used to put them back: a step of line spacing carried
-// the line they were on 128px up the screen. Same treatment the lanes get.
-function applySz(){const put=frKeepPlace(),rd=$("#reading");rd.style.fontSize=rdsz+"px";rd.style.setProperty("--rdszm",rdsz+"px");if($("#tzs"))$("#tzs").value=rdsz;lsSet(_mobSz?"fr_rdsz_m":"fr_rdsz",rdsz);put();}
+function applySz(){const rd=$("#reading");rd.style.fontSize=rdsz+"px";rd.style.setProperty("--rdszm",rdsz+"px");if($("#tzs"))$("#tzs").value=rdsz;lsSet(_mobSz?"fr_rdsz_m":"fr_rdsz",rdsz);}
 function applyImz(){app.style.setProperty("--imz",imz+"%");if($("#izs"))$("#izs").value=imz;lsSet("fr_imz",imz);}
 $("#tzs").oninput=e=>{rdsz=+e.target.value;applySz();};
 $("#szDn")&&($("#szDn").onclick=()=>{rdsz=Math.max(14,rdsz-1);applySz();});
@@ -4724,18 +4616,16 @@ applySz();applyImz();
 const THEMES=["light","sepia","dark"],thIcon=t=>t==="sepia"?"☼":t==="dark"?"☾":"◐";
 function applyTheme(t){document.documentElement.setAttribute("data-theme",t);lsSet("fr_theme",t);for(const id of ["th","thTop"]){const b=$("#"+id);if(b){b.textContent=thIcon(t);b.title="Reading theme: "+t+" — click to change";}}}
 // Kindle-style reading options: body font (Serif / Sans / Easy=Atkinson Hyperlegible) + line spacing
-function applyFont(f){const put=frKeepPlace();
-  if(f==="serif")document.documentElement.removeAttribute("data-font");
+function applyFont(f){if(f==="serif")document.documentElement.removeAttribute("data-font");
   else document.documentElement.setAttribute("data-font",f);
   lsSet("fr_font",f);
   const M={serif:"fSerif",sans:"fSans",easy:"fEasy"};
-  Object.entries(M).forEach(([k,id])=>{const b=$("#"+id);if(b)b.setAttribute("aria-pressed",k===f?"true":"false");});put();}
-function applyLH(l){const put=frKeepPlace();
-  if(l==="normal")document.documentElement.removeAttribute("data-lh");
+  Object.entries(M).forEach(([k,id])=>{const b=$("#"+id);if(b)b.setAttribute("aria-pressed",k===f?"true":"false");});}
+function applyLH(l){if(l==="normal")document.documentElement.removeAttribute("data-lh");
   else document.documentElement.setAttribute("data-lh",l);
   lsSet("fr_lh",l);
   const M={compact:"lhC",normal:"lhN",relaxed:"lhR"};
-  Object.entries(M).forEach(([k,id])=>{const b=$("#"+id);if(b)b.setAttribute("aria-pressed",k===l?"true":"false");});put();}
+  Object.entries(M).forEach(([k,id])=>{const b=$("#"+id);if(b)b.setAttribute("aria-pressed",k===l?"true":"false");});}
 (function(){
   const f=lsGet("fr_font")||"serif",l=lsGet("fr_lh")||"normal";
   applyFont(f);applyLH(l);
@@ -4749,18 +4639,27 @@ else{const b=$("#th");if(b)b.textContent="◐";}})();   /* OS dark by default; t
 const _thCycle=()=>{const cur=document.documentElement.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");applyTheme(THEMES[(THEMES.indexOf(cur)+1)%THEMES.length]);};
 $("#th")&&($("#th").onclick=_thCycle);
 $("#thTop")&&($("#thTop").onclick=_thCycle);   /* masthead theme switch — light/dark reachable without opening Aa (owner 2026-09-05) */
+// SCROLL ANCHORING FOR SAFARI (owner 2026-09-15 'reading on mobile snaps back up or down'). Chrome keeps the text under the
+// reader's eye still when content ABOVE the viewport changes height (overflow-anchor); Safari has no such thing, so every
+// late hydration above the fold — a folio placeholder, a Patrologia column's English sidecar, a facsimile row — pushed the
+// page by the delta. This watches every top-level block of the reading column: when a block that sits wholly above the
+// viewport grows or shrinks, the scroll container moves by exactly that amount. Chrome (native anchoring) is left alone.
+(function(){
+  if(window.CSS&&CSS.supports&&CSS.supports('overflow-anchor: auto'))return;
+  const sc=document.getElementById('scroll'),reading=document.getElementById('reading');if(!sc||!reading)return;
+  const heights=new WeakMap();let pending=0;const queue=new Map();
+  const flush=()=>{pending=0;let delta=0;const top=sc.getBoundingClientRect().top;
+    for(const [node,h]of queue){const prev=heights.get(node);heights.set(node,h);if(prev==null||!node.isConnected)continue;
+      const r=node.getBoundingClientRect();if(r.bottom<=top+1)delta+=h-prev;}
+    queue.clear();if(Math.abs(delta)>0.5)sc.scrollTop+=delta;};
+  const ro=new ResizeObserver(entries=>{for(const e of entries){const h=e.borderBoxSize&&e.borderBoxSize[0]?e.borderBoxSize[0].blockSize:e.contentRect.height;queue.set(e.target,h);}
+    if(!pending)pending=requestAnimationFrame(flush);});
+  const watch=node=>{if(node&&node.nodeType===1&&!heights.has(node)){heights.set(node,node.getBoundingClientRect().height);ro.observe(node);}};
+  [...reading.children].forEach(watch);
+  new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.parentNode===reading)watch(n);}).observe(reading,{childList:true});
+  window.__frScrollAnchorPolyfill=true;
+})();
 // keep the content offset equal to the fixed masthead's height (it wraps taller on narrow screens)
-/* MereO note: --phh stays the TOOLBAR's height, exactly as upstream.
-   An earlier delta added our masthead to it, reasoning that --phh means
-   "fixed chrome above the text" and this site has two headers. It does,
-   but .app already begins below our masthead — the shell reserves that
-   space in flow — so adding it again double-counted: .app's padding-top
-   became 158 where the toolbar is 73, and the sidebar and reading column
-   both started 85px lower than they should, leaving a band of nothing
-   under the toolbar and pushing the sidebar past the fold. The toolbar
-   is positioned against our masthead by `top: var(--mo-head)` in
-   faith-port-reader-skin.css, which is the right place for that offset
-   because the toolbar is fixed to the viewport and .app is not. */
 function setPhh(){const p=$(".ph");if(p)document.documentElement.style.setProperty("--phh",p.offsetHeight+"px");}
 addEventListener("resize",setPhh);new ResizeObserver(setPhh).observe($(".ph"));setTimeout(setPhh,60);setTimeout(setPhh,600);
 // seamless facsimile navigation: plain wheel = pan (down/across), Ctrl/Cmd+wheel = zoom the scan
@@ -4850,7 +4749,7 @@ if(fst){
       // in scan mode the SCAN is the page: step by the pages array and set it directly —
       // stepFolio's text-scroll can land the scroll-spy back on the boundary page.
       {const pgs=(typeof DATA!=="undefined"&&DATA)?DATA.pages:null;
-       const i2=pgs?pgs.findIndex(x=>+x.n===+cur):-9;
+       const i2=pgs?pgs.findIndex(x=>String(x.n)===String(cur)):-9;
        const nx=pgs?pgs[i2+(dx<0?1:-1)]:null;
        Object.assign(window.__swDbg,{pgsN:pgs?pgs.length:null,i2,nxn:nx?nx.n:null,curv:(typeof cur!=="undefined")?cur:"nd"});
        if(nx){window.__folioLock=Date.now()+1600;if(typeof jump==="function")jump(nx.n);
@@ -4882,7 +4781,7 @@ if(fst){
       const rg=sc.querySelector("input"),nEl=sc.querySelector("#fscN");
       const sync=()=>{const pgs=(typeof DATA!=="undefined"&&DATA)?DATA.pages:null;if(!pgs||!pgs.length)return;
         rg.max=String(pgs.length-1);
-        const ci=(typeof cur!=="undefined"&&cur!=null)?pgs.findIndex(x=>+x.n===+cur):-1;   // cur is the page NUMBER
+        const ci=(typeof cur!=="undefined"&&cur!=null)?pgs.findIndex(x=>String(x.n)===String(cur)):-1;   // cur is the page NUMBER
         const cur2=ci>=0?ci:0;
         rg.value=String(cur2);const column=/^(PG|PL)\b/.test(DATA.volume||"");rg.setAttribute("aria-label",column?"Go to column":"Go to page");nEl.textContent=(column?"col. ":"p. ")+(pgs[cur2]?pgs[cur2].n:"");};
       rg.addEventListener("input",()=>{const pgs=(typeof DATA!=="undefined"&&DATA)?DATA.pages:null;if(!pgs)return;
@@ -4919,7 +4818,7 @@ $("#pPrev").onclick=()=>stepFolio(-1);$("#pNext").onclick=()=>stepFolio(1);
    if(nx){rememberReaderChoice(nx.n);window.__folioLock=Date.now()+1600;jump(nx.n);setTimeout(()=>setFolio(nx),80);
      if(window.__jumpSettle)setTimeout(()=>window.__jumpSettle(nx.n),900);}};
  if(a)a.onclick=()=>stepScan(-1);if(b)b.onclick=()=>stepScan(1);}   // page-turn from the scan header (the only nav on a phone's full-screen scan)
-{const pj=$("#pgJump");if(pj){const go=e=>{const value=e.target.value.trim(),exact=DATA&&DATA.pages.find(x=>String(x.n)===value),p=/^\d+$/.test(value)?Number(value):null;
+{const pj=$("#pgJump");if(pj){const go=e=>{const value=e.target.value.trim(),opening=window.FRMigneNavigation?.openingKey(DATA,value)??value,exact=DATA&&DATA.pages.find(x=>String(x.n)===String(opening)),p=/^\d+$/.test(value)?Number(value):null;
    if(exact)goReaderReference(exact);   // exact printed label; a new choice replaces the arrival target
    else if(p&&DATA&&p>=1&&p<=(DATA.n_pages||0)){
      // folio lives in a shard that hasn't loaded yet (large works stream in chunks):
@@ -4985,8 +4884,8 @@ const light=$("#light"),limg=$("#limg");$("#fimg").onclick=function(){if(!this.s
  f.onload=()=>{f.style.visibility="visible";const ff=$("#ffol");if(ff)ff.textContent=ff.textContent.replace(/ — scan unavailable$/,"");_fitInk();};}
 addEventListener("keydown",e=>{if(e.key==="Escape")light.classList.remove("open");});
 // ---- owner review layer: inline edit + progress + mark + redo, over server.py's APIs ----
-const REVIEW=location.pathname==="/the-faith-received/review/"&&!BLOB;   // local server: the /api/* admin review machinery (initReview)
-const CLOUD_REVIEW=location.pathname==="/the-faith-received/review/"&&BLOB;  // deployed (Blob): a clear "Review mode" banner over the live reader — owner review = masthead ✎/✓/⚑/⟳ + double-click (Blob-authoritative)
+const REVIEW=location.pathname==="/review"&&!BLOB;   // local server: the /api/* admin review machinery (initReview)
+const CLOUD_REVIEW=location.pathname==="/review"&&BLOB;  // deployed (Blob): a clear "Review mode" banner over the live reader — owner review = masthead ✎/✓/⚑/⟳ + double-click (Blob-authoritative)
 const stripPM=s=>(s||"").replace(/\[\[p\.\d+\]\]/g,"").trim();
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function jget(p){const r=await fetch(p);if(!r.ok)throw new Error(p+" → "+r.status);return r.json();}
@@ -5001,7 +4900,7 @@ function rerenderFolio(sec,pi){if(typeof TEI_ON!=="undefined"&&TEI_ON){console.w
 // build() paints. __frTools resolves when the file lands; the boot awaits it lazily.
 window.__frToolsReady=new Promise(res=>{window.__frToolsRes=res;});
 window.__frLoadTools=()=>{if(window.__frToolsTag)return;window.__frToolsTag=1;
-  const sc=document.createElement("script");sc.src=(document.getElementById("frPortAssets")||{dataset:{}}).dataset.readTools||("/assets/js/port/read-tools.js?v="+encodeURIComponent(window.__FR_VER||"local"));document.body.appendChild(sc);};
+  const sc=document.createElement("script");sc.src="/read-tools.js?v="+encodeURIComponent(window.__FR_VER||"local");document.body.appendChild(sc);};
 function _lateInit(name){return async function(){await window.__frToolsReady;return window[name].apply(null,arguments);};}
 const initReview=_lateInit("__initReview"),initSearch=_lateInit("__initSearch"),initReaderTools=_lateInit("__initReaderTools");
 async function jfetch(u,tries){for(let i=0;;i++){try{const r=await fetch(u);if(!r.ok){const e=new Error("HTTP "+r.status+" "+u);if(r.status===404)e.no_retry=1;throw e;}return await r.json();}catch(e){if(e.no_retry||i>=(tries||1))throw e;await new Promise(z=>setTimeout(z,400*(i+1)));}}}
@@ -5040,32 +4939,21 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
         rows=sp.toc.map(e=>{
           const lvl=Math.min(+e.lvl||0,4);
           const cur=e.id===meId&&lvl===0;
-          let cc="";
-          if(lvl===0&&e.id!=null&&ranges[e.id]&&seenWork!==e.id){const c=ranges[e.id];
-            cc=`<span class=vnc>${c[0]===c[1]?c[0]:c[0]+"&#8211;"+c[1]}</span>`;}
-          else if(e.c!=null)cc=`<span class=vnc>${e.c}</span>`;
+          const column=window.FRMigneNavigation?.indexLabel(e,ranges[e.id],lvl===0&&e.id!=null&&seenWork!==e.id)??String(e.c??'');
+          const cc=column?`<span class=vnc>${esc(column)}</span>`:'';
           if(lvl===0)seenWork=e.id;
           const body=`${cc}<span class=vnt>${esc(e.t||"")}</span>`;
           const fm=lvl===0&&_fm(e.t)?" vnfm":"";
           if(e.id==null)return `<span class="vnrow vnd${lvl} off${fm}">${body}</span>`;
-          return `<a class="vnrow vnd${lvl}${cur?" on":""}${fm}" target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${e.id}${e.c!=null?`#b${e.c}-0`:""}">${body}</a>`;
+          return `<a class="vnrow vnd${lvl}${cur?" on":""}${fm}" href="/read?w=${prefix}-${e.id}${e.c!=null?`#b${e.c}-0`:""}">${body}</a>`;
         }).join("");
-      }else rows=sp.works.map((x,xi)=>{
+      }else rows=sp.works.map(x=>{
         const cur=+x.id===meId;
-        // The enumeration beside the columns. Migne printed 46 pieces into PL 140 in an
-        // order, and nine of them carry no column range in the catalogue, so a list
-        // showing only ranges broke into ragged groups and stopped reading as a
-        // sequence. The number is the volume's own order; the range sits beside it
-        // where the catalogue has one, and an em dash holds the place where it does not.
-        const nn=`<span class=vni>${xi+1}</span>`;
-        const cc=x.c?`<span class=vnc>${x.c[0]===x.c[1]?x.c[0]:x.c[0]+"&#8211;"+x.c[1]}</span>`:`<span class="vnc vnc-none">&#8212;</span>`;
-        return `<a class="vnrow vnrow--num${cur?" on":""}${_fm(x.t)?" vnfm":""}" target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${x.id}">${nn}${cc}<span class=vnt>${esc(x.t||(prefix+"-"+x.id))}</span></a>`;}).join("");
-      // Folded, as it is on the corpus site. Forty-six rows standing open between the
-      // reader and the outline is why the volume could only be reached by scrolling
-      // past it; a summary that names the volume puts it in front of them instead.
-      box.innerHTML=`<details class="vncontents"><summary class="vnhead">Browse ${volWord} ${volN}</summary><div class=vnhead><span>Volume navigation</span>`+
-        `<span class=vnnav>${sp.prev?`<a target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${sp.prev.first}" title="${volWord} ${sp.prev.vol}">&#8249; ${volWord} ${sp.prev.vol}</a>`:""}`+
-        `${sp.next?`<a target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${sp.next.first}" title="${volWord} ${sp.next.vol}">${volWord} ${sp.next.vol} &#8250;</a>`:""}</span></div><div class="vnlist">`+rows+`</div></details>`;
+        const cc=x.c?`<span class=vnc>${x.c[0]===x.c[1]?x.c[0]:x.c[0]+"&#8211;"+x.c[1]}</span>`:"";
+        return `<a class="vnrow${cur?" on":""}${_fm(x.t)?" vnfm":""}" href="/read?w=${prefix}-${x.id}">${cc}<span class=vnt>${esc(x.t||(prefix+"-"+x.id))}</span></a>`;}).join("");
+      box.innerHTML=`<details class="vncontents"><summary class="vnhead">Browse ${volWord} ${volN}</summary><div class="vnhead"><span>Volume navigation</span>`+
+        `<span class=vnnav>${sp.prev?`<a href="/read?w=${prefix}-${sp.prev.first}" title="${volWord} ${sp.prev.vol}">&#8249; ${volWord} ${sp.prev.vol}</a>`:""}`+
+        `${sp.next?`<a href="/read?w=${prefix}-${sp.next.first}" title="${volWord} ${sp.next.vol}">${volWord} ${sp.next.vol} &#8250;</a>`:""}</span></div><div class="vnlist">`+rows+'</div></details>';
       nav.appendChild(box);
       // NEVER scrollIntoView here: #nav is the SHARED scroll container — centering the
       // volume row dragged the outline 8,800px away from the reader's position on every
@@ -5079,7 +4967,8 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
     if(R&&!document.getElementById("volnext")){
       const nx=i>=0?sp.works[i+1]:null;
       const band=document.createElement("div");band.id="volnext";
-      const nxUrl=nx?`/the-faith-received/read/?w=${prefix}-${nx.id}`:(sp.next?`/the-faith-received/read/?w=${prefix}-${sp.next.first}`:null);
+      let nxUrl=nx?`/read?w=${prefix}-${nx.id}`:(sp.next?`/read?w=${prefix}-${sp.next.first}`:null);
+      if(nxUrl&&prefix==='pg'){const source=new URL(location.href).searchParams.get('src');if(['grc','grcla','la','ocr'].includes(source))nxUrl+='&src='+source;if(nx?.c?.[0]!=null){const start=encodeURIComponent(String(nx.c[0]));nxUrl+='&p='+start+'#b'+start+'-0';}}
       band.innerHTML=nx
         ?`<span class=vk>Next in ${volWord} ${volN}</span><a href="${nxUrl}">${esc(nx.t||"")} &#8250;</a>`
         :(sp.next?`<span class=vk>End of ${volWord} ${volN}</span><a href="${nxUrl}">Continue into ${volWord} ${sp.next.vol} &#8250;</a>`:"");
@@ -5092,16 +4981,24 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
         hint.style.cssText="text-align:center;font:600 .72rem/1 var(--sans);color:var(--muted);margin:-1.6rem 0 2.4rem;opacity:.7";
         hint.textContent="keep scrolling to continue";
         band.after(hint);
+        const pane=document.getElementById('scroll');
+        window.__frVolumeTravelCleanup?.();
+        const events=new AbortController();let observer;
+        window.__frVolumeTravelCleanup=()=>{events.abort();observer?.disconnect();};
         let armed=false,acc=0,fired=false;
-        try{new IntersectionObserver(es=>{es.forEach(x=>{armed=x.isIntersecting;if(!x.isIntersecting)acc=0;});},{threshold:.9}).observe(band);}catch(e){}
+        try{observer=new IntersectionObserver(es=>{es.forEach(x=>{armed=x.isIntersecting;if(!x.isIntersecting)acc=0;});},{root:pane,threshold:.9});observer.observe(band);}catch(e){}
+        const eligible=ev=>armed&&!fired&&band.isConnected&&pane?.contains(ev.target)&&
+          pane.scrollHeight-pane.clientHeight-pane.scrollTop<8&&
+          !String(window.getSelection?.()||'')&&!document.querySelector('#aaPop.on,.notebook.open')&&app.classList.contains('nosb');
         const go=()=>{if(fired)return;fired=true;hint.textContent="continuing\u2026";location.href=nxUrl;};
-        window.addEventListener("wheel",ev=>{if(!armed||fired)return;
-          if(ev.deltaY>0){acc+=ev.deltaY;if(acc>350)go();}else acc=0;},{passive:true});
+        pane?.addEventListener("wheel",ev=>{if(!eligible(ev)){acc=0;return;}
+          if(ev.deltaY>0){acc+=ev.deltaY;if(acc>350)go();}else acc=0;},{passive:true,signal:events.signal});
         let ty=null;
-        window.addEventListener("touchstart",ev=>{ty=ev.touches[0].clientY;},{passive:true});
-        window.addEventListener("touchmove",ev=>{if(!armed||fired||ty==null)return;
-          const dy=ty-ev.touches[0].clientY;
-          if(dy>0){acc+=dy;ty=ev.touches[0].clientY;if(acc>350)go();}},{passive:true});
+        pane?.addEventListener("touchstart",ev=>{ty=ev.touches[0]?.clientY;acc=0;},{passive:true,signal:events.signal});
+        pane?.addEventListener("touchmove",ev=>{if(ty==null)return;
+          const y=ev.touches[0]?.clientY,dy=ty-y;ty=y;
+          if(!eligible(ev)){acc=0;return;}
+          if(dy>0){acc+=dy;if(acc>350)go();}else acc=0;},{passive:true,signal:events.signal});
       }
     }
   });};
@@ -5120,23 +5017,15 @@ function wireSrcSel(options,cur){
     const u=new URL(location.href);
     box.innerHTML='<div class=sshead>Source column</div>'+options.map(o=>{
       u.searchParams.set("src",o.v);
-      return `<a class="ssopt${o.v===cur?" on":""}" href="${u.pathname+u.search}">${o.l}</a>`;}).join("");
+      return `<a class="ssopt${o.v===cur?" on":""}" href="${u.pathname+u.search+u.hash}">${o.l}</a>`;}).join("");
     nav.insertBefore(box,nav.firstChild);
   },600);
   setTimeout(()=>clearInterval(t),30000);
 }
-  // PORTED WHOLE from the corpus site (2026-09-17). The copy this replaced was cut
-  // before the PL source views existed, so it knew nothing of pld_source_view,
-  // pld_editorial, the ?pldpart= address or FRPldReading — and the editorial notes,
-  // which are the point of the Patrologia Latina reader, could not appear here at all.
-  // Two lines differ from the corpus copy and only two: this site reads the canon from
-  // /v1/tei/pld/ on R2 rather than tei/pld/ on Blob, and its reader lives under
-  // /the-faith-received/read/. Keep it that way — everything else must stay identical,
-  // or the two readers drift again.
 async function loadPldCanon(ws){
   const id=ws.slice(4);
   const [xml,toc]=await Promise.all([
-    ((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/v1/tei/pld/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/v1/tei/pld/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})),
+    ((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/tei/pld/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/tei/pld/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})),
     fetch(BLOB+"/v1/pldtoc/"+id+".json").then(r=>r.ok?r.json():{}).catch(()=>({}))]);
   let doc=new DOMParser().parseFromString(xml,"application/xml"),sourceView=null;
   if(doc.querySelector("parsererror"))throw new Error("canon parse");
@@ -5255,7 +5144,7 @@ async function loadPldCanon(ws){
           const vol2=romN(rom);if(!vol2||vol2>221)return m;
           const doc2=idx["PL"+vol2+":"+col];
           if(doc2==null)return m;
-          return `<a class=plref target="_blank" rel="noopener" href="/the-faith-received/read/?w=pld-${doc2}#b${col}-0" title="PL ${vol2}, col. ${col}">${rom}${sep}${col}</a>`;});
+          return `<a class=plref target="_blank" rel="noopener" href="/read?w=pld-${doc2}#b${col}-0" title="PL ${vol2}, col. ${col}">${rom}${sep}${col}</a>`;});
       });};
     window.__plrRefidx.then(idx=>{if(!idx)return;
       const tick=()=>linkify(idx);
@@ -5355,27 +5244,22 @@ function _alignPair(laArr,enArr){
 async function pgZoneSidecar(id){
   window.__pgzCache=window.__pgzCache||{};
   if(!(id in window.__pgzCache)){
-    window.__pgzCache[id]=fetch(BLOB+"/v1/pgzone/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null);
+    window.__pgzCache[id]=fetch(BLOB+"/v1/pgzone/"+id+".json?v="+encodeURIComponent(window.__FR_VER||"pg-source-20260914")).then(r=>r.ok?r.json():null).catch(()=>null);
   }
   return window.__pgzCache[id];
 }
 async function loadPgCanon(ws){
-  const id=ws.slice(3),pgVersion="";   // this site reads the PG canon from R2 under /v1/ and
-  // versions nothing by query: every pg fetch below has always been bare and the store's own
-  // cache headers decide. Kept as an empty string so the lines stay identical to the corpus
-  // site's, which is the copy this region is ported from.
-  // THE VOLUME PAGEVIEW IS ON R2 UNDER /v1/ LIKE EVERYTHING ELSE. Its URL comes out of
-  // the TEI as the Vercel Blob address it was written with, and fr-noblob.js rebases the
-  // HOST onto the library worker but leaves the path alone, so this asked the worker for
-  // /tei/pgpv/089.xml and got a 404. The pageview is where Migne's facing Latin lives, one
-  // MainText_ColLatin zone per opening, so losing it made the Greek + Latin view fall back
-  // to Greek alone — silently, with the label still reading Greek. Same /v1/ adaptation the
-  // canon fetch above already carries. (/v1/tei/pgpv/089.xml is 5,417,500 chars.)
-  const _pvR2=u=>u?String(u).replace(/\/(?!v1\/)tei\//,"/v1/tei/"):u;
+  const id=ws.slice(3),pgVersion="?v="+encodeURIComponent((window.__FR_VER||"pg-source")+"-20260922-finish");
   let _pgZone=null;   // page-keyed ColGreek zones (set when the body is mixed)
   const _healGrc=s=>String(s)
     .replace(/([\u0370-\u03FF\u1F00-\u1FFF])-\s?(?=[\u0370-\u03FF\u1F00-\u1FFF])/g,"$1")
-    .replace(/\u00A1/g,"i").replace(/[{}]/g,"");
+    .replace(/\u00A1/g,"i").replace(/[{}]/g,"")
+    // ZONE GREEK AS READING TEXT (owner 2026-09-23 "clean, readable ... reading"): the plate's OCR keeps Migne's margin letters -- a
+    // lone capital A-E (Greek or Latin) between words ('μὴ Β συναναμίγνυσθαι') -- a closing 'NOTE.'/'ΝΟΤΕ.' and dotted leaders
+    // read as 'ο ο ο'; reading text drops them (the English lane already drops its cue letters, owner 2026-09-03)
+    .replace(/(^|\s)[\u0391-\u0395A-E](?=\s+[\u03b1-\u03c9\u1f00-\u1fff])/g,"$1")
+    .replace(/(?:\s+\u03bf){3,}(?=\s|$)/g,"")
+    .replace(/\s+(?:NOTE|NOT\u00c6|\u039d\u039f\u03a4\u0395)[.:]?\s*$/,"");
 
   let _zoneReplace=true;   // false = CLEAN body (owner 2026-08-18 pg-3223: dirty vol-34 zones
                            // were OVERWRITING a 99%-Greek body with Latin+apparatus glue) —
@@ -5385,7 +5269,7 @@ async function loadPgCanon(ws){
   const _pfc=window.__pgFetchCache[id]=window.__pgFetchCache[id]||{};
   const _cached=(k,mk)=>(_pfc[k]=_pfc[k]||mk().catch(e=>{delete _pfc[k];throw e;}));
   const [xml,toc,vtx,pgen,pggap]=await Promise.all([
-    _cached("xml",()=>((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/v1/tei/pg/"+id+".xml"+pgVersion).then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/v1/tei/pg/"+id+".xml"+pgVersion).then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();}))),
+    _cached("xml",()=>((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/tei/pg/"+id+".xml"+pgVersion).then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/tei/pg/"+id+".xml"+pgVersion).then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();}))),
     _cached("toc",()=>fetch(BLOB+"/v1/pgtoc/"+id+".json"+pgVersion).then(r=>r.ok?r.json():null).catch(()=>null)),
     // the PG site's own cleaned vision transcription, per column (owner 2026-08-17
     // 'let the reader just copy the page') — staged for mixed works; absent elsewhere
@@ -5405,6 +5289,12 @@ async function loadPgCanon(ws){
   _healDeep(vtx);_healDeep(pggap);
   const doc=new DOMParser().parseFromString(xml,"application/xml");
   if(doc.querySelector("parsererror"))throw new Error("canon parse");
+  // Preserve old links when a verified plate is moved to its owning work.
+  {const oldPage=frReaderBlockReference(location.hash)?.page||new URLSearchParams(location.search).get('p');
+    const move=[...doc.querySelectorAll('ref[type="relocated-opening"]')].find(el=>el.getAttribute('n')===String(oldPage));
+    const target=(move?.getAttribute('target')||'').match(/^(pg-\d+)#(\d+)$/);
+    if(target&&target[1]!==ws){const url=new URL(location.href);url.searchParams.set('w',target[1]);url.searchParams.delete('ws');url.searchParams.set('p',target[2]);url.hash='b'+target[2]+'-0';location.replace(url);return new Promise(()=>{});}}
+
   // CANON TEXT HEAL (owner 2026-08-27 screenshots): line-break hyphens kept inside Greek
   // words (ὕαπι-ζόμενοι) — Greek never hyphenates internally, join them; plus the
   // Migne-OCR garble chars ({ } ¡) that are never legitimate in the canon.
@@ -5465,7 +5355,16 @@ async function loadPgCanon(ws){
       else if(tag==='div')visit(child);
     }};
     const body=doc.querySelector('body');if(body)visit(body);
-    if(window.FRMigneNavigation.sourceForOpening(opening.join(' '))==='la')src='la';
+    // A GREEK WORK STAYS IN THE GREEK VIEW (owner 2026-09-22 "good to deploy for the public"; pg-3328 opens with a Latin page, so the
+    // whole of De sacerdotio opened in the Latin view and every Greek page -- col. 843 on -- showed English beside an empty lane).
+    // The Greek view keeps a Latin page's own text and fills an empty page from its plate; the first opening decides only when the
+    // work's reading text is under 30% Greek.
+    let _g0=0,_l0=0;
+    (function _cnt0(node){for(const ch of node.children){const ty=ch.getAttribute?ch.getAttribute("type"):null;
+      if(ch.localName==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
+      if(ch.localName==="p"){const t=ch.textContent;_l0+=(t.match(/[A-Za-z]/g)||[]).length;_g0+=(t.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;}
+      else if(ch.localName==="div")_cnt0(ch);}})(doc.querySelector("body")||doc.documentElement);
+    if(window.FRMigneNavigation.sourceForOpening(opening.join(' '))==='la'&&_g0<0.3*(_g0+_l0))src='la';
   }
   const mk=()=>{const d=document.implementation.createDocument(null,"TEI",null);
     const tx=d.createElement("text");d.documentElement.appendChild(tx);return [d,tx];};
@@ -5513,6 +5412,9 @@ async function loadPgCanon(ws){
   // THE SITE SIDECAR WINS PER COLUMN (owner 2026-09-15, PG 78 col. 61 default view: 'PART THREE…' printed twice): a work that carries both
   // the old machine English and the site's column-keyed English showed both for the same column. Where the sidecar speaks for a column,
   // the machine lane's paragraphs for that column stay out of the English lane.
+  // the English section heads the canon marks (rend="heading"), for the display pass (readingEditionPass: ENGLISH HEADINGS)
+  window.__enHeadings=[...new Set([...doc.querySelectorAll('div[type="translation"] p[rend="heading"], div[type="translation"] hi[rend="heading"]')]
+    .map(e=>e.textContent.replace(/\*/g,"").replace(/\s+/g," ").trim()).filter(t=>t.length>=4&&/[a-z]/.test(t)))];
   const _sidecarCols=new Set([...doc.querySelectorAll('div[type="translation"][resp="#site-sidecar"] p, div[type="translation"][resp="#site-sidecar"] head')].map(el=>{
     let n=+(el.getAttribute("n")||0);if(!n){const m=(el.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}return n;}).filter(Boolean));
   [...doc.querySelectorAll('div[type="translation"] p')].forEach(pp=>{
@@ -5539,9 +5441,23 @@ async function loadPgCanon(ws){
     let n=+(el.getAttribute("n")||0);if(!n){const m=(el.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}
     if(!n)return;const t=el.textContent.replace(/\s+/g," ").trim();if(!t)return;
     (enParasByCol[n]=enParasByCol[n]||[]).push(el.localName==="head"?"\u0001H"+t:t);});
+  // MACHINE ENGLISH FILLS WHAT THE SIDECAR DOES NOT SPEAK FOR (2026-09-21, pg-48 col. 115, pg-2193 col. 31): a column whose only
+  // English is the older #machine translation rendered an EMPTY English lane in the column and printed-paragraph bases, which pair
+  // from this map alone. Its printed <p>s join the map, uncarved, with the carved lane's continuation rule and caps-head law.
+  {let _lm=0;[...doc.querySelectorAll('div[type="translation"]:not([resp="#site-sidecar"]) p')].forEach(pp=>{
+    let n=+(pp.getAttribute("n")||0);if(!n){const m=(pp.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}
+    if(!n)n=_lm;else _lm=n;if(!n||_sidecarCols.has(n))return;
+    const t=pp.textContent.replace(/\s+/g," ").trim();if(!t)return;const _wh=_capsHead(t);
+    (enParasByCol[n]=enParasByCol[n]||[]).push(_wh?"\u0001H"+_wh:t);});}
   // page spans (n -> next pb) for span-union of vtx and EN lanes
-  const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=window.FRPgParallel.printedColumns(doc);
+  window.__pgNotes=(()=>{try{const m={};let cur=null;const alt=new Set(["translation","secondary","diplomatic","witness","edition","contents"]);
+  const walk=n=>{for(const ch of n.children||[]){if(ch.localName==="div"){if(alt.has(ch.getAttribute("type")||""))continue;walk(ch);continue;}
+    if(ch.localName==="pb")cur=ch.getAttribute("n")||cur;else if(ch.localName==="note"&&cur&&(ch.getAttribute("place")||"foot")!=="margin"){(m[cur]||(m[cur]=[])).push((ch.textContent||"").replace(/\s+/g," ").trim());}}};
+  walk(doc.querySelector("body")||doc.documentElement);return m;}catch(e){return {};}})();
+const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=window.FRPgParallel.printedColumns(doc);
   const _pgOwned=new Set(Object.keys(_canonOpenings).filter(k=>_canonOpenings[k].verified));
+  // Roman-numbered preliminaries have their own scan and must not borrow ordinary column zones.
+  const _pgFrontLabels=Object.fromEntries([...doc.querySelectorAll('pb[type="front-matter"][label]')].map(pb=>[pb.getAttribute("n"),pb.getAttribute("label")]));
   // Older links could name a following work's column while retaining this work's ID.
   // Resolve only a verified overrun into the immediately following catalogue work.
   if(_pgOwned.size){
@@ -5648,7 +5564,7 @@ async function loadPgCanon(ws){
             }
           }else{
           const pvW0=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
-          const pvUrl0=_pvR2(pvW0?((pvW0.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null);
+          const pvUrl0=pvW0?((pvW0.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null;
           if(pvUrl0){
             try{
               window.__pgpvCache=window.__pgpvCache||{};
@@ -5678,7 +5594,7 @@ async function loadPgCanon(ws){
       const n=+x.getAttribute("n");if(n)bodyCols.add(n);});
     const gaps=Object.keys(enByCol).map(Number).filter(n=>!bodyCols.has(n)).sort((a,b)=>a-b);
     const pvW=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
-    const pvUrl=_pvR2(pvW?((pvW.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null);
+    const pvUrl=pvW?((pvW.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null;
     let gapsLeft=gaps;
     if(gaps.length&&_pgZone){
       gapsLeft=[];
@@ -5708,6 +5624,7 @@ async function loadPgCanon(ws){
       pvUrl:!!pvUrl,fill:Object.keys(pgpvFill).length};
   }
   let _colLa=[],_colEn=[];
+  let _pvFill=null;   // page -> paragraphs for pages whose reading lanes carry no text (A PAGE WITH NO SOURCE TEXT, built before the walk)
   // READING-SURFACE TIDY (owner 2026-08-18 'page transcription good + read cleanly'):
   // join line-break hyphens (the facsimile shows the break; the reading text joins the
   // word — standard editorial practice), strip Migne margin letters and OCR bullets,
@@ -5731,6 +5648,13 @@ async function loadPgCanon(ws){
     t=t.replace(_MKRE,(m,pre,cls,ep)=>pre+(cls?"\u0002"+cls.trim()+"\u0003":"")+"\u0002"+ep+"\u0003 ");
     return t.replace(/\*([^*\n]{2,600}?)\*/g,"\u0004$1\u0005");};
   const flushCol=()=>{
+    // A PAGE WITH NO SOURCE TEXT (owner 2026-09-22, pg-1924 page 27, Greek view: the English of Fabricius' Notitia beside an empty
+    // lane; 666 pages in 151 works on the live canon carry English and no source text). The page reads its own scan: _pvFill holds its
+    // canon opening's Greek, else its pageview Greek zone when column-sized, else its canon (secondary) Latin, else its pageview Latin
+    // zone. Only a page with no text of its own at flush time is filled; the choke-point carve below paragraphs the Greek.
+    if(_pvFill&&pages.length&&!_colLa.some(t=>String(t||"").replace(/[^A-Za-z\u0370-\u03ff\u1f00-\u1fff]/g,"").length>=20)){
+      const _fp=_pvFill[pages[pages.length-1]];
+      if(_fp&&_fp.length&&_colEn.join(" ").length>=120){_colLa.length=0;_fp.forEach(t=>_colLa.push(t));_colLa._zoned=true;_colLa._prune=false;}}
     // CHOKE-POINT CARVE (owner 2026-09-03 PG audit): a dozen builders feed _colLa (canon
     // walk, zones, vtx, pggap, pageview, grcla) and several push whole columns raw — the
     // walls and fused running-titles land here regardless of path. Carve once, for the
@@ -5758,6 +5682,14 @@ async function loadPgCanon(ws){
       src2=_colLa.filter(t=>{const g2=(t.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;
         const l2=(t.match(/[A-Za-z]/g)||[]).length;
         return !(t.length>60&&l2>3*g2);});
+      // A PRUNE THAT EMPTIES THE PAGE IS NO PRUNE (owner 2026-09-22, pg-2193 page 33, Allatius' Latin diatriba: every paragraph was
+      // pruned as bleed and the Greek view set the English beside an empty lane). With no Greek zone and no Greek left, the Latin is
+      // the page's own text, not a facing column's bleed.
+      if(!src2.some(t=>String(t||"").replace(/[^A-Za-z\u0370-\u03ff\u1f00-\u1fff]/g,"").length>=20))src2=_colLa;
+      // A PAGE WITHOUT A GREEK COLUMN KEEPS ITS LATIN (owner 2026-09-22, pg-2175 col. 71, the Latin 'Ex adversariis Leichianis'
+      // front matter): the bleed prune is for a Greek page carrying its facing column's Latin; a page whose Greek is a crumb
+      // (< 200 letters) has no Greek column, and its Latin is the page's own text.
+      else if(_colLa.reduce((n,t)=>n+(String(t||"").match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length,0)<200)src2=_colLa;
     }
     // SEGMENT AT THE PRINTED RUBRICS (owner 2026-08-31 pg-2239): the aligner re-chunks by
     // sentences, which FUSED day-rubrics into paragraphs. Both lanes now split at their
@@ -5771,6 +5703,19 @@ async function loadPgCanon(ws){
       // aligner re-fused them into the walls it was meant to prevent
       const gl=c.replace(/[^\u0370-\u03FF\u1F00-\u1FFF]/g,"");
       return c.length>=6&&c.length<=160&&gl.length>=6&&gl===gl.toUpperCase();};
+    // LOPSIDED PAIRS ARE NO PAIRS (owner 2026-09-22, pg-1924 page 27, Latin view: the sentence stretch cut the page's Latin into 18
+    // pieces of equal length for 18 catalogue entries of 18 to 2,200 letters -- 'Ejus concio in quadragesima...' faced 'Syri. VII,
+    // p. 292.' with a gap under every English line). When a quarter of the stretched rows are lopsided (one cell over four times the
+    // other), the stretch paired nothing: each lane keeps its own paragraphs and they flow as two independent columns -- the Greek ·
+    // Latin view's unpaired-flow rendering (rows marked flow, equal block counts kept, the row builder stacks them).
+    const _pairOrFlow=(laArr,enArr)=>{
+      const pr=_alignPair(laArr,enArr),_t=x=>String(x||"").replace(/\u00A0/g," ").trim();
+      const both=pr.filter(([l,e])=>_t(l)&&_t(e));
+      const bad=both.filter(([l,e])=>{const a=_t(l).length,b=_t(e).length;return Math.max(a,b)>=240&&Math.max(a,b)>4*Math.min(a,b);}).length;
+      if(both.length<3||bad<Math.max(2,both.length/4))return pr;
+      const L=laArr.map(_t).filter(Boolean).flatMap(x=>x.length>900?_chunkText(x,700):[x]),E=enArr.map(_t).filter(Boolean),out=[];
+      for(let i=0;i<Math.max(L.length,E.length);i++){const p=[L[i]||"",E[i]||""];p.flow=true;out.push(p);}
+      return out;};
     let _pairs;
     if(_colLa._aligned){_pairs=_colLa.map((text,i)=>[text,_colEn[i]||" "]);}
     else {
@@ -5782,7 +5727,7 @@ async function loadPgCanon(ws){
         _pairs=[];
         for(let i=0;i<sE.length;i++){
           if(i>0)_pairs.push([hL[i],hE[i]]);   // the head pair rides through to the head branch below
-          _pairs.push(..._alignPair(sL[i],sE[i]));
+          _pairs.push(..._pairOrFlow(sL[i],sE[i]));
         }
       }else if(hE.length>1){
         // the LA lane has no matching caps rubric (p.189's "Die tertia" prints lowercase):
@@ -5798,11 +5743,11 @@ async function loadPgCanon(ws){
           si+=take.length;
           if(i>0)_pairs.push(["\u00A0",hE[i]]);
           const laSeg=take.join(" ").trim();
-          if(laSeg||sE[i].length)_pairs.push(..._alignPair(laSeg?[laSeg]:[],sE[i]));
+          if(laSeg||sE[i].length)_pairs.push(..._pairOrFlow(laSeg?[laSeg]:[],sE[i]));
         }
-      }else _pairs=_alignPair(src2,_enM.map(x=>(typeof x==="string"&&x.charCodeAt(0)===1)?x.slice(2):x));
+      }else _pairs=_pairOrFlow(src2,_enM.map(x=>(typeof x==="string"&&x.charCodeAt(0)===1)?x.slice(2):x));
     }
-    _pairs.forEach(([l,e])=>{
+    _pairs.forEach(([l,e],_pi)=>{const _fl=_colLa._flow||!!_pairs[_pi].flow;
       // A DIVISION HEADING IS A HEADING, not a paragraph (owner 2026-08-20: "make sure
       // inline headers etc for pg are good"). The English sidecar marks the printed heads
       // — HOMILY III. On the firmament — and rendering them as body text left the reading
@@ -5835,13 +5780,18 @@ async function loadPgCanon(ws){
       // (renders as a quiet solo row, never a page-collapsing mismatch)
       // punctuation-only residue (a lone '.' after a watermark strip) is not a row
       if(!(String(l||"").replace(/[^A-Za-z0-9\u0370-\u1FFF]/g,""))&&!(String(e||"").replace(/[^A-Za-z0-9\u0370-\u1FFF]/g,"")))return;
-      const el2=laD.createElement("p");el2.textContent=_mk(_tidy(l))||"\u00A0";if(_colLa._flow)el2.setAttribute("rend","flow");laB.appendChild(el2);
+      const el2=laD.createElement("p");el2.textContent=_mk(_tidy(l))||"\u00A0";if(_fl)el2.setAttribute("rend","flow");laB.appendChild(el2);
       // harvest residue is not reading text (owner 2026-09-03 pg-1445): the site EN pages
       // carry '[alt-version omitted]' markers and bare apparatus cue letters ('A its
       // punishment', 'therefore: B *But you shall\u2026', 'shown A For by the fire') \u2014 strip
       // the marker always, a lone A\u2013F only in cue positions (after :;, before a function
       // word, or block-initial before lowercase) so the article 'A Christian' survives
-      const e2=enD.createElement("p");e2.textContent=(e?_mk(e.replace(/\bDigitized\s+by\s+Google\b/gi," ").replace(/\s*\[alt-version omitted\]\s*/g," ").replace(/(^|[a-z][;:] )[A-F] (?=[A-Z\u201c"*])/g,"$1").replace(/([a-z][.,;:] )[A-F] (?=\u0004)/g,"$1").replace(/^[A-F] (?=[a-z])/,"").replace(/\b[A-F] (?=\u0004?(?:For|But|And|When|Then|Thus|Yet|Nor|Therefore|Moreover|Wherefore|The|This|That|These|Those|Saint|Holy)\b)/g,"").replace(/([.!?\u201d"]) [A-F]$/,"$1").replace(/([a-z])-\s+([a-z])/g,"$1$2").replace(/\s*[\u2022\ufffd]+\s*/g," ").replace(/\s+([.,;:!?\u00bb)])/g,"$1").replace(/\s{2,}/g," ").trim()):"")||"\u00A0";if(_colLa._flow)e2.setAttribute("rend","flow");enB.appendChild(e2);});
+      const e2=enD.createElement("p");e2.textContent=(e?_mk(e.replace(/\bDigitized\s+by\s+Google\b/gi," ").replace(/\s*\[alt-version omitted\]\s*/g," ").replace(/(^|[a-z][;:] )[A-F] (?=[A-Z\u201c"*])/g,"$1").replace(/([a-z][.,;:] )[A-F] (?=\u0004)/g,"$1").replace(/^[A-F] (?=[a-z])/,"").replace(/\b[A-F] (?=\u0004?(?:For|But|And|When|Then|Thus|Yet|Nor|Therefore|Moreover|Wherefore|The|This|That|These|Those|Saint|Holy)\b)/g,"").replace(/([.!?\u201d"]) [A-F]$/,"$1").replace(/([a-z])-\s+([a-z])/g,"$1$2").replace(/\s*[\u2022\ufffd]+\s*/g," ").replace(/\s+([.,;:!?\u00bb)])/g,"$1").replace(/\s{2,}/g," ").trim()):"")||"\u00A0";if(_fl)e2.setAttribute("rend","flow");enB.appendChild(e2);});
+    // THE PAGE'S FOOTNOTES (owner 2026-09-23 'a clean transcription ... of each volume'): the site's per-opening notes travel in the canon as
+    // <note place="foot"> (resp #pg-site-vtx); they join the synthetic page here and the folio builder's note band shows them on demand.
+    try{const _pn=pages.length?pages[pages.length-1]:null;const _nm=window.__pgNotes||{};
+      const _ns=_pn!=null?[...(_nm[String(_pn)]||[]),...((+_pn)%2===1?(_nm[String(+_pn+1)]||[]):[])]:[];
+      _ns.forEach((t,i)=>{if(!t)return;const nn=laD.createElement("note");nn.setAttribute("place","foot");nn.setAttribute("xml:id",`fn-${_pn}-${i+1}`);nn.textContent=t;laB.appendChild(nn);});}catch(e){}
     const _pr=_colLa._prune;_colLa=[];_colEn=[];_colLa._prune=_pr;};
   // PG READABILITY (owner 2026-09-03 audit: canon columns render as 2-5k-char walls with
   // the printed running titles fused in): carve UPPERCASE-GREEK rubric runs out as their
@@ -5869,13 +5819,27 @@ async function loadPgCanon(ws){
     // spread-folio: the even milestone is the same physical page — no flush, no new page,
     // the opening's Greek keeps flowing into the current folio
     if(window.__pgSpread&&!window.__pgSpread.has(n)){seen.add(n);return;}
+    // A PAGE IS TWO COLUMNS, in every PG work (owner 2026-09-17 "the page is the unit", 2026-09-23 "some works are greek only, latin
+    // only, both, some alternate"): Migne prints an opening as two columns, n (odd) and n+1. The spread rule above covered one class
+    // (pbs stepping by 2 with the English on them); everywhere else the right column's milestone opened a folio of its own -- pg-237
+    // col. 1520 read as its own page, and where the milestone sits before the left column's text (pg-293 col. 833: <pb 833/>
+    // <milestone 834/> Greek … Latin) the page's Greek was filed under 834 and 833 stood empty. The right column continues the page
+    // it belongs to, whatever its language; its English joins the folio. Links to the even column land on the opening
+    // (FRMigneNavigation.openingKey).
+    {const _last=pages.length?pages[pages.length-1]:null;
+     if(!window.__pgSpread&&_last!=null&&_last%2===1&&n===_last+1){seen.add(n);
+       if(enByCol[n]&&enByCol[n].length&&!(window.__enUsed&&window.__enUsed.has(n))){_colEn.push(...enByCol[n]);(window.__enUsed=window.__enUsed||new Set()).add(n);}
+       return;}}
     flushCol();seen.add(n);pages.push(n);
     for(const [D,B] of [[laD,laB],[enD,enB]]){const pb=D.createElement("pb");pb.setAttribute("n",String(n));B.appendChild(pb);}
     // EN SPAN-UNION (owner 2026-08-18 'matching vol by col'): opening-keyed canons carry
     // EN under BOTH columns of the opening — consume every EN column in [n .. nextPb-1],
     // and mark them so the tail loop can't re-append them as orphan pages.
     _colEn=[];{
-      const nx=(window.__pgPbNext&&window.__pgPbNext[n])||n+1;
+      // A PAGE IS TWO COLUMNS (owner 2026-09-22, pg-2572 col. 725 carried 336,492 characters of English: its reading lane skips from
+      // 725 to a far column, and the span union swallowed every English column in between). Columns past the opening are later
+      // pages' English; the orphan-opening loop gives them pages of their own, and their plates fill the source lane.
+      const nx=Math.min((window.__pgPbNext&&window.__pgPbNext[n])||n+1,n+2);
       for(let k=n;k<nx;k++){if(enByCol[k]&&enByCol[k].length){_colEn.push(...enByCol[k]);(window.__enUsed=window.__enUsed||new Set()).add(k);}}
       if(!_colEn.length&&enByCol[n])_colEn=(enByCol[n]||[]).slice();
     }
@@ -5884,6 +5848,7 @@ async function loadPgCanon(ws){
     // it was injecting pageview Greek into the Latin witness on every even column)
     if(src!=="grc"){_colLa._prune=false;return;}
     const canonicalOpening=_canonOpenings[String(n)];
+    if(_pgFrontLabels[n]&&canonicalOpening){_carveGr(canonicalOpening.grc||canonicalOpening.la||"",_colLa);_colLa._zoned=true;_colLa._prune=false;return;}
     if(canonicalOpening?.grc&&(window.__pgSpread?.has(n)||Object.keys(canonicalOpening.columns).length===1)){
       _carveGr(canonicalOpening.grc,_colLa);_colLa._zoned=true;_colLa._prune=false;
       // A PAGE PRINTS ONCE (owner 2026-09-17 'just get it right page by page'): the opening's Greek was just carved for the PAGE, so
@@ -5898,7 +5863,10 @@ async function loadPgCanon(ws){
     // everything is keyed by page'): when the volume pageview has this opening's
     // layout-zoned Greek column, it IS the source text — the mixed vision/OCR body
     // is bypassed entirely for this page (deterministic column separation).
-    _colLa._prune=!!_pgZone&&_zoneReplace;
+    // THE GREEK LANE SHOWS THE GREEK COLUMN (owner 2026-09-23 'the transcription fully as is', pg-67 col. 877): the body now carries both
+    // printed columns of every page, so the Latin column is pruned from the Greek view on any page that has Greek of its own -- the
+    // guards below keep a page without a Greek column whole. It no longer waits for a volume zone map.
+    _colLa._prune=true;
     // ALIGNMENT AUTHORITY = the zone (derived from the very scan shown beside the text).
     // The site vtx is cleaner typography — used only at the offset that MATCHES the zone.
     const _zn=_pgZone&&_pgZone[n]&&_pgZone[n].length>200?_pgZone[n]:null;
@@ -6001,7 +5969,11 @@ async function loadPgCanon(ws){
         if(cur&&cur.length+sn.length>700){out.push(cur);cur=sn;}
         else cur=cur?cur+" "+sn:sn;});
       if(cur)out.push(cur);return out;};
-    if(_vt&&(!_zoneReplace||!_zn||(_ov(_vt,_zn)>=0.3&&_vt.length>=_zn.length*0.45))){_carveGr(_vt,_colLa);_colLa._zoned=true;(window.__vtxApplied=window.__vtxApplied||new Set()).add(n);}
+    // THE TRANSCRIPTION, FULLY, AS IS (owner 2026-09-23): a page whose body carries Greek of its own (>= 200 letters, both columns of
+    // the opening) is shown as it stands; the vtx lane, the plate zone and the raw pageview fill only a page that has none.
+    const _bgOwn=(((_bodyPage[n]||"")+" "+(_bodyPage[(n%2===1)?n+1:n-1]||"")).match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;
+    if(_bgOwn>=200){}
+    else if(_vt&&(!_zoneReplace||!_zn||(_ov(_vt,_zn)>=0.3&&_vt.length>=_zn.length*0.45))){_carveGr(_vt,_colLa);_colLa._zoned=true;(window.__vtxApplied=window.__vtxApplied||new Set()).add(n);}
     else if(_zn&&_zoneReplace){
       // zone = page-keying authority; the BODY's text wins when it covers the same page
       // (complete, Greek-dominant, agreeing) — canon/vision text is cleaner than zone OCR
@@ -6013,7 +5985,9 @@ async function loadPgCanon(ws){
       const bt=_bodyPage[n]||"",_mateN=(n%2===1)?n+1:n-1,bu=(bt+" "+(_bodyPage[_mateN]||"")).trim();
       const bg=(bu.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;
       const bl=(bu.match(/[A-Za-z]/g)||[]).length;
-      if(bu.length>=_zn.length*0.85&&bg>bl&&_ov(bu,_zn)>=0.2){if(bt.trim()){_carveGr(bt,_colLa);_colLa._zoned=true;}}
+      // THE TRANSCRIPTION, FULLY, AS IS (owner 2026-09-23 'WE WANT TO DEFAULT TO DISPLAYING THE TRANSCRIPTION FULLY AS IS'): a page
+      // whose body carries Greek of its own (>= 200 letters) shows that text; the plate's OCR zone fills only a page that has none.
+      if(bg>=200||(bu.length>=_zn.length*0.85&&bg>bl&&_ov(bu,_zn)>=0.2)){if(bt.trim()){_carveGr(bt,_colLa);_colLa._zoned=true;}}
       else{_carveGr(_zn,_colLa);_colLa._zoned=true;}}
     else if(typeof pgpvFill!=="undefined"&&typeof pgpvFill[n]==="string"&&pgpvFill[n].length>40)_carveGr(pgpvFill[n],_colLa);};
   // DIALOGUE-TURN heads (Cyril's dialogi, pg-1737 class): the canon encodes each speaker
@@ -6072,6 +6046,29 @@ async function loadPgCanon(ws){
     // the witness repeats as ONE DIV PER COLUMN BLOCK — walk them all, in document order (gap openings interleaved by column number)
     [...doc.querySelectorAll(src==="la"?'div[type="secondary"]':'div[type="diplomatic"]')].forEach(d2=>(src==="la"?walk2g:walk2)(d2,0));
     if(src==="la")_emitGaps(null);
+    // ORPHAN OPENINGS IN THE WITNESS VIEWS (owner 2026-09-23 "we want all the pages catalogued and linked"): the whole-page
+    // transcription (ocr) and the rich-Latin view walk their witness lane only, so an English-keyed page the lane does not carry
+    // (pg-1692 col. 1487) opened with an empty source column. Such a page reads its plate: both printed columns in the page
+    // transcription, the Latin column first in the Latin view. The fill applies in flushCol, to a page with no text of its own.
+    try{
+      const _shown=new Set(pages),_frontW=n=>typeof _pgFrontLabels==="object"&&_pgFrontLabels&&_pgFrontLabels[n];
+      const _needW=[...new Set(Object.keys(enByCol).map(Number).filter(Boolean).map(n=>n%2?n:n-1))].filter(p=>!_shown.has(p)&&!_shown.has(p+1)&&[...(enByCol[p]||[]),...(enByCol[p+1]||[])].join(" ").length>=120&&!_frontW(p));
+      if(_needW.length){
+        const pvW5=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
+        const pvUrl5=pvW5?((pvW5.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null;
+        if(pvUrl5){window.__pgpvCache=window.__pgpvCache||{};
+          window.__pgpvCache[pvUrl5]=window.__pgpvCache[pvUrl5]||fetch(pvUrl5+(pvUrl5.includes("?")?"&":"?")+"v="+encodeURIComponent(window.__FR_VER||"pg-source-20260914")).then(r=>r.ok?r.text():null).catch(()=>null);
+          const x5=await window.__pgpvCache[pvUrl5];
+          if(x5){const pv5=new DOMParser().parseFromString(x5,"application/xml");_pvFill=_pvFill||{};
+            for(const n of _needW){const sf5=pv5.querySelector('surface[n="'+n+'"]');if(!sf5)continue;
+              const zt5=ty=>[...sf5.querySelectorAll("zone")].filter(z=>(z.getAttribute("type")||"").includes(ty)).map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim();
+              const g5=_healGrc(zt5("ColGreek").replace(/^\d+\s+[^\u0370-\u03ff]{0,120}?(?=[\u0370-\u03ff])/,"").replace(/\s+\d+\s*$/,"")),l5=zt5("ColLatin").replace(/\bDigitized\s+by\s+Google\b/gi," ").trim();
+              const gl5=(g5.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length,ll5=(l5.match(/[A-Za-z]/g)||[]).length,o5=[];
+              if(src!=="la"&&gl5>=40)o5.push(g5);
+              if(ll5>=200)_chunkText(l5,700).forEach(t=>o5.push(t));
+              if(src==="la"&&!o5.length&&gl5>=40)o5.push(g5);
+              if(o5.length)_pvFill[n]=o5;}}}}
+    }catch(e){window.__pvFillErr2=String(e&&e.stack||e).slice(0,300);}
   }else{
     const body=doc.querySelector("body");
     const walk=(node,depth)=>{for(const ch of node.children){
@@ -6109,10 +6106,10 @@ async function loadPgCanon(ws){
       // hasSecondary true, the parallel path was skipped, and "Greek · Latin" showed no
       // Latin at all while the volume pageview carries ColLatin on every surface)   // grcla = the MIGNE PARALLEL: Greek with its Latin under-voice, per opening (owner 2026-08-28 'how greek + latin interact with migne')
       const pvW3=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
-      const pvUrl3=_pvR2(pvW3?((pvW3.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null);
+      const pvUrl3=pvW3?((pvW3.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null;
       if(pvUrl3)try{
         window.__pgpvCache=window.__pgpvCache||{};
-        window.__pgpvCache[pvUrl3]=window.__pgpvCache[pvUrl3]||fetch(pvUrl3+(pvUrl3.includes("?")?"&":"?")+"v="+encodeURIComponent(window.__FR_VER||"pg-source-20260914")).then(r=>r.ok?r.text():null).catch(()=>null);
+        window.__pgpvCache[pvUrl3]=window.__pgpvCache[pvUrl3]||fetch(pvUrl3+(pvUrl3.includes("?")?"&":"?")+"v="+encodeURIComponent((window.__FR_VER||"pg-source")+"-20260922-finish")).then(r=>r.ok?r.text():null).catch(()=>null);
         const pvXml3=await window.__pgpvCache[pvUrl3];
         if(pvXml3){
           const pv3=new DOMParser().parseFromString(pvXml3,"application/xml");
@@ -6127,6 +6124,8 @@ async function loadPgCanon(ws){
           if(!cols3.length)cols3.push(...Object.keys(enByCol).map(Number).filter(Boolean));
           if(cols3.length){
             const lo3=Math.min(...cols3)-1,hi3=Math.max(...cols3)+1;
+            // ORPHAN OPENINGS (see the Greek-view fill): English openings past the reading lanes' window are this work's pages too
+            const _orph3=new Set(Object.keys(enByCol).map(Number).filter(n=>n&&(enByCol[n]||[]).join(" ").length>=120).map(n=>n%2?n:n-1).filter(p=>p<lo3||p>hi3));
             const _paras3=t=>{const out=[];let cur="";
               t.split(/(?<=[.;!?])\s+/).forEach(sn=>{
                 if(cur&&cur.length+sn.length>700){out.push(cur);cur=sn;}
@@ -6137,18 +6136,26 @@ async function loadPgCanon(ws){
                 .map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim(),
               grc:[...sf.querySelectorAll("zone")].filter(z=>(z.getAttribute("type")||"").includes("ColGreek"))
                 .map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim()}))
-              .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&x.n>=lo3&&x.n<=hi3&&(!_pgOwned.size||_pgOwned.has(String(x.n)))).sort((a,b)=>a.n-b.n);
+              .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&((x.n>=lo3&&x.n<=hi3)||_orph3.has(x.n))&&(!_pgOwned.size||_pgOwned.has(String(x.n)))&&(!Object.keys(_pgFrontLabels).length||_canonOpenings[String(x.n)])).sort((a,b)=>a.n-b.n);
             // The source site's vision text is already in the primary TEI columns.
             // Raw pageview zones are a fallback, never an unconditional replacement.
-            for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)],_pvLat=sf.lat,_pvGrc=sf.grc;
+            for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)]||{};
+              if(_pgFrontLabels[sf.n]){sf.lat=canon.la||"";sf.grc=canon.grc||"";}
+              const _pvLat=_pgFrontLabels[sf.n]?"":sf.lat,_pvGrc=_pgFrontLabels[sf.n]?"":sf.grc;
+              // A PAGE WITH NO CANON OPENING (2026-09-21, pg-2466 col. 725): after a page-true re-key the reading division carries nothing
+              // for this plate while the English does and the volume pageview prints its Greek — an undefined opening used to throw
+              // out of this loop and the page showed English alone. An empty opening lets the plate's own zones carry the page.
               // COMPLETE PER PAGE (owner 2026-09-17 'just make sure the latin and greek is shown completely per page'): the canon
               // sometimes carries a FRAGMENT of a column -- pg-3288 page 1583 keeps 820 of the 2,936 Latin letters the plate prints
               // (the rest never came over). A canon lane that covers less than 70% of the page's zone for its script yields to the
               // zone: the whole column, scan-true, carved into paragraphs. Its Latin zone must agree with the canon's Latin first.
               const _gL=t=>(String(t||"").match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length,_lL=t=>(String(t||"").match(/[A-Za-z]/g)||[]).length;
-              const _grcShort=!!(canon?.grc)&&_gL(_pvGrc)>=200&&_gL(canon.grc)<0.7*_gL(_pvGrc);
-              const _laShort=!!(canon?.la)&&_lL(_pvLat)>=200&&_lL(canon.la)<0.7*_lL(_pvLat);
-              if(canon?.grc&&!_grcShort)sf.grc=canon.grcRich||canon.grc;if(canon?.la&&!_laShort)sf.lat=canon.laRich||canon.la;if(canon){sf.grcParas=canon.grcParas||[];sf.laParas=canon.laParas||[];sf.colParas=canon.colParas||[];
+              // FOOTNOTES ARE THE PAGE'S OWN TEXT (owner 2026-09-23, pg-105 col. 329): the site's clean column is shorter than the plate's
+              // zone exactly because Migne's footnotes live in <note>s -- counted here so a complete column is never displaced by the OCR blob.
+              const _nT=(canon?.notes||[]).join(" ");
+              const _grcShort=!!(canon?.grc)&&_gL(_pvGrc)>=200&&(_gL(canon.grc)+_gL(_nT))<0.7*_gL(_pvGrc);
+              const _laShort=!!(canon?.la)&&_lL(_pvLat)>=200&&(_lL(canon.la)+_lL(_nT))<0.7*_lL(_pvLat);
+              if(canon?.grc&&!_grcShort)sf.grc=canon.grcRich||canon.grc;if(canon?.la&&!_laShort)sf.lat=canon.laRich||canon.la;if(canon){sf.grcParas=canon.grcParas||[];sf.laParas=canon.laParas||[];sf.colParas=canon.colParas||[];   // an EMPTY opening ({}) must still reach the zone-lane rules below
               if(_grcShort){sf.grcParas=[];sf.colParas=sf.colParas.filter(c=>c.lang!=="grc");}
               if(_laShort){const _shL=t=>{const w=String(t||"").toLowerCase().replace(/[^a-z\s]/g," ").split(/\s+/).filter(x=>x.length>=3);const o=new Set();for(let i=0;i+4<=w.length;i++)o.add(w.slice(i,i+4).join(" "));return o;};
                 const _A2=_shL(_pvLat),_B2=_shL(canon.la);let _c2=0;_A2.forEach(x=>{if(_B2.has(x))_c2++;});
@@ -6216,7 +6223,12 @@ async function loadPgCanon(ws){
                   const _enMarked=_colEn.map(e=>typeof e==="string"&&e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e);
                   const _enParas=[...(enParasByCol[sf.n]||[]),...(enParasByCol[sf.n+1]||[])].map(e=>e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e);
                   const _byCol=(sf.colParas||[]).map(c=>({n:c.n,lang:c.lang,paras:c.lang==="grc"?(c.paras||[]).map(_healGrc):(c.paras||[]),en:(enParasByCol[+c.n]||[]).map(e=>e.charCodeAt(0)===1?"\u0002"+e.slice(2)+"\u0003":e)}));
-                  const aligned=window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_enMarked.join(" "),{grc:(sf.grcParas||[]).map(_healGrc),la:sf.laParas||[],en:_enParas,byCol:_byCol});
+                  // PAGEVIEW LATIN IS A LANE (owner 2026-09-22, pg-1924 page 27 'something deeply wrong with this interface'): a page with no
+                  // canon opening at all -- Fabricius' Notitia, Latin only -- reached the aligner as a bare string, and every basis reads
+                  // paragraph lists, so the printed-paragraphs basis set the English beside an empty Latin lane. With neither Greek nor Latin
+                  // paragraphs, the page's own zone Latin is carved into paragraphs, as the zone Greek already is (PAGEVIEW GREEK IS A LANE).
+                  const _laP=((sf.laParas||[]).length||(sf.grcParas||[]).length)?(sf.laParas||[]):_paras3(lt);
+                  const aligned=window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_enMarked.join(" "),{grc:(sf.grcParas||[]).map(_healGrc),la:_laP,en:_enParas,byCol:_byCol});
                   // Keep printed headings visible in their own lane, without guessing
                   // their counterparts. Their opening remains a usable outline target.
                   const marked=aligned.rows.map(r=>r.en).join(" ");
@@ -6249,6 +6261,55 @@ async function loadPgCanon(ws){
     // SECONDARY-ONLY CANON (owner 2026-08-18: index/anthology docs whose whole body is one
     // witness div rendered BLANK — the walk skips witness divs): when no reading content
     // exists outside witness divs, the largest witness div IS the document — walk it.
+    // A PAGE WITH NO SOURCE TEXT (see flushCol): the reading lanes' pages that carry no text while their English does. The volume
+    // pageview is fetched only when one of them needs a zone (the Greek and Latin views already fetch it for every page).
+    // 09-23: the Latin view too (owner "all the pages catalogued and linked"): a work whose rich facing-Latin lane keeps the Latin view
+    // off the pageview path appended its ORPHAN OPENINGS (English-keyed pages, e.g. pg-1692 col. 1487) with an empty source lane
+    if((src==="grc"||src==="la"||src==="ocr")&&!_latBuilt&&body)try{
+      const _ptx={},_plist=[];let _pc=null;
+      (function tw(node){for(const ch of node.children){const ty=ch.getAttribute?ch.getAttribute("type"):null;
+        if(ch.localName==="div"){if(window.FRMigneNavigation.isReadingDivision(ty))tw(ch);continue;}
+        if(ch.localName==="pb"){const nn=+ch.getAttribute("n");if(nn){_pc=nn;if(!(nn in _ptx)){_ptx[nn]=0;_plist.push(nn);}}}
+        else if((ch.localName==="p"||ch.localName==="head")&&_pc)_ptx[_pc]+=(ch.textContent.match(/[A-Za-z\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length;}})(body);
+      const _front=n=>typeof _pgFrontLabels==="object"&&_pgFrontLabels&&_pgFrontLabels[n];
+      const _need=_plist.filter(n=>_ptx[n]<40&&[...(enByCol[n]||[]),...(enByCol[n+1]||[])].join(" ").length>=120&&!_front(n));
+      // ORPHAN OPENINGS (owner 2026-09-22 "exceeds patrologia-graeca site"; pg-2175 cols 695–1461 read as English beside an empty lane):
+      // an opening whose English exists but whose reading lanes carry no page marker is appended after the walk; its plate fills it too.
+      _need.push(...[...new Set(Object.keys(enByCol).map(Number).filter(Boolean).map(n=>n%2?n:n-1))].filter(p=>!(p in _ptx)&&!((p+1) in _ptx)&&[...(enByCol[p]||[]),...(enByCol[p+1]||[])].join(" ").length>=120&&!_front(p)));
+      if(_need.length){
+        _pvFill={};const _zw=[];
+        for(const n of _need){const op=_canonOpenings[String(n)];
+          if(src==="la"){if(op&&(op.laParas||[]).length)_pvFill[n]=op.laParas.slice();else _zw.push(n);continue;}
+          if(src==="ocr"){_zw.push(n);continue;}                 // the page transcription reads the plate itself
+          if(op&&(op.grcParas||[]).length)_pvFill[n]=op.grcParas.slice();else _zw.push(n);}
+        const pvW4=[...doc.querySelectorAll("witness")].find(w=>w.getAttribute("xml:id")==="pageview");
+        const pvUrl4=pvW4?((pvW4.textContent.match(/https?:\/\/\S+/)||[])[0]||null):null;
+        let pv4=null;
+        if(_zw.length&&pvUrl4){window.__pgpvCache=window.__pgpvCache||{};
+          window.__pgpvCache[pvUrl4]=window.__pgpvCache[pvUrl4]||fetch(pvUrl4+(pvUrl4.includes("?")?"&":"?")+"v="+encodeURIComponent(window.__FR_VER||"pg-source-20260914")).then(r=>r.ok?r.text():null).catch(()=>null);
+          const x4=await window.__pgpvCache[pvUrl4];if(x4)pv4=new DOMParser().parseFromString(x4,"application/xml");}
+        // the zone lane's own furniture strip: the printed column number, the running title, '(cod.' crumbs, Migne's margin letters
+        const _zLat=t=>{t=String(t).replace(/^\d[\d:. ]*\s+/,"");
+          for(let _st=0;_st<3;_st++){const _b4=t;
+            t=t.replace(/^[A-Z\u00c6\u0152][A-Z\u00c6\u0152\d .,'\u2019:-]{5,60}?\s(?=\(|[A-Z\u00c6\u0152]?[a-z\u00e6\u0153])/,"");
+            t=t.replace(/^(?:\(cod\.?[^)]{0,16}\)?\.?\s*){1,4}/,"");if(t===_b4)break;}
+          t=t.replace(/(^|[.!?;:\u00bb]\s+)E(?=\s+[a-z\u00e6\u0153])/g,"$1\uE000").replace(/\s[A-E](?=\s+[a-z\u00e6\u0153])/g,"").replace(/\s[A-E](?=\s+[a-z\u00e6\u0153])/g,"").replace(/\uE000/g,"E");
+          return t.replace(/\bDigitized\s+by\s+Google\b/gi," ").replace(/\s+/g," ").trim();};
+        for(const n of _zw){const op=_canonOpenings[String(n)],sf4=pv4?pv4.querySelector('surface[n="'+n+'"]'):null;
+          const zt=ty=>sf4?[...sf4.querySelectorAll("zone")].filter(z=>(z.getAttribute("type")||"").includes(ty)).map(z=>z.textContent.replace(/\s+/g," ").trim()).join(" ").trim():"";
+          const g4=_healGrc(zt("ColGreek").replace(/^\d+\s+[^\u0370-\u03ff]{0,120}?(?=[\u0370-\u03ff])/,"").replace(/\s+\d+\s*$/,"")),l4=_zLat(zt("ColLatin"));
+          const gl=(g4.match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length,ll=(l4.match(/[A-Za-z]/g)||[]).length;
+          if(src==="ocr"){const o4=[];if(gl>=40)o4.push(g4);if(ll>=200)_chunkText(l4,700).forEach(t=>o4.push(t));if(o4.length)_pvFill[n]=o4;continue;}
+          if(src==="la"){                                   // the Latin view reads the plate's Latin first
+            if(ll>=200)_pvFill[n]=_chunkText(l4,700);
+            else if(gl>=40)_pvFill[n]=[g4];
+            continue;}
+          if(gl>=600&&gl>=0.25*ll)_pvFill[n]=[g4];
+          else if(op&&(op.laParas||[]).length)_pvFill[n]=op.laParas.slice();
+          else if(ll>=200)_pvFill[n]=_chunkText(l4,700);
+          else if(gl>=40)_pvFill[n]=[g4];}
+      }
+    }catch(e){window.__pvFillErr=String(e&&e.stack||e).slice(0,300);}
     let wroot=body;
     if(body){
       const rd=[...body.children].some(ch=>!(ch.localName==="div"&&["translation","secondary","diplomatic"].includes(ch.getAttribute("type")||"")));
@@ -6270,8 +6331,9 @@ async function loadPgCanon(ws){
     const zsh=t=>{t=(t||"").replace(/[^\u0370-\u03ff\u1f00-\u1fff]/g,"");const o=new Set();
       for(let i=0;i+12<=t.length;i+=3)o.add(t.slice(i,i+12));return o;};
     const kids=[...laB.childNodes];let pgN2=null,buf2=[],els=[];
-    const arb=()=>{if(pgN2==null||!els.length)return;if(window.__vtxApplied&&window.__vtxApplied.has(pgN2))return;
+    const arb=()=>{if(pgN2==null||!els.length||_pgFrontLabels[pgN2])return;if(window.__vtxApplied&&window.__vtxApplied.has(pgN2))return;
       const zn3=_pgZone[pgN2];if(!zn3||zn3.length<200)return;
+      if((buf2.join(" ").match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length>=200)return;   // the transcription, as is (owner 2026-09-23)
       const A=zsh(buf2.join(" ")),Z2=zsh(zn3);
       if(!A.size)return;
       let c=0;A.forEach(x=>{if(Z2.has(x))c++;});
@@ -6287,8 +6349,72 @@ async function loadPgCanon(ws){
   }
   // columns whose English exists but whose source lane never page-broke: append them in
   // column order so no translation is silently dropped (pg-658 lost 43 of 63 columns).
-  Object.keys(enByCol).map(Number).filter(n=>!seen.has(n)&&!(window.__enUsed&&window.__enUsed.has(n))).sort((a,b)=>a-b).forEach(n=>{addPb(n);});
+  // ORPHAN OPENINGS (owner 2026-09-22): an orphan column opens its PAGE -- the odd column of the opening, unless that column is already
+  // a page -- and the page takes both columns' English (one opening, one page; before, cols 801 and 802 became two English-only folios).
+  [...new Set(Object.keys(enByCol).map(Number).filter(n=>!seen.has(n)&&!(window.__enUsed&&window.__enUsed.has(n))).map(n=>n%2===0&&!seen.has(n-1)?n-1:n))].sort((a,b)=>a-b).forEach(n=>{
+    if(n%2===1&&window.__pgPbNext[n]===undefined&&!seen.has(n+1))window.__pgPbNext[n]=n+2;addPb(n);});
   flushCol();
+  // COMPLETE PER PAGE in the Greek view (owner 2026-09-17 "just make sure the latin and greek is shown completely per page"; census
+  // 2026-09-22: 8,558 printed pages whose only work carries under 30% of its plate's text -- pg-2466 col. 175 holds 769 letters of a
+  // 1,192-letter Greek column). The Greek . Latin view's rule, in the Greek view, after the walk (when every page is known): a page
+  // whose Greek carries under 70% of its own plate's Greek zone reads that zone. Only a page that is its whole opening -- a work that
+  // makes the even column a page of its own (pg-293 keys its Greek there) would print the zone twice -- never front matter or a page
+  // the site's columns built, and only a page with English beside it.
+  if(_pgZone&&src==="grc"){
+    const _gr=t=>(String(t||"").match(/[\u0370-\u03ff\u1f00-\u1fff]/g)||[]).length,_pset=new Set(pages),_enL={};
+    {let c0=null;for(const k of [...enB.childNodes]){if(k.localName==="pb")c0=+k.getAttribute("n");
+      else if(k.localName==="p"&&c0!=null)_enL[c0]=(_enL[c0]||0)+(k.textContent||"").trim().length;}}
+    let pn=null,pbN=null,els=[];
+    const _pt={},_pl=[];{let c1=null;for(const k of [...laB.childNodes]){if(k.localName==="pb"){c1=+k.getAttribute("n");if(!(c1 in _pt)){_pt[c1]="";_pl.push(c1);}}
+      else if(k.localName==="p"&&c1!=null)_pt[c1]+=" "+(k.textContent||"");}}
+    const _caps=t=>{const L=String(t).replace(/[^\u0370-\u03ff\u1f00-\u1fff]/g,"");return L&&L===L.toUpperCase();};
+    const _capsTail=t=>{const w=String(t).split(/\s+/);let k=w.length;while(k>0&&_caps(w[k-1]))k--;   // a running title closing the zone
+      return w.slice(k).join("").replace(/[^\u0370-\u03ff\u1f00-\u1fff]/g,"").length>=12?w.slice(0,k).join(" "):String(t);};
+    // the column foot's apparatus the OCR folded into the Greek zone (pg-2466 col. 175 ends 'ευστοχήσειε. εὑρεῖν. Β περισταίη. ἐκείνου.'):
+    // what follows the last sentence of 40+ Greek letters is dropped from what the zone adds when it is two or more fragments (a lone
+    // short closing sentence stays)
+    const _appTail=t=>{const fr=String(t).split(/(?<=[.\u00b7;\u0387])\s+/);let j=fr.length-1;
+      while(j>=0&&_gr(fr[j])<40)j--;return j>=0&&fr.length-1-j>=2?fr.slice(0,j+1).join(" "):String(t);};
+    const _capsHead=t=>{const w=String(t).split(/\s+/);let k=0;while(k<w.length&&_caps(w[k]))k++;
+      return w.slice(0,k).join("").replace(/[^\u0370-\u03ff\u1f00-\u1fff]/g,"").length>=12?w.slice(k).join(" "):String(t);};
+    const done=()=>{
+      if(pn==null||pn%2!==1||_pset.has(pn+1))return;
+      if((typeof _pgFrontLabels==="object"&&_pgFrontLabels&&_pgFrontLabels[pn])||(window.__vtxApplied&&window.__vtxApplied.has(pn)))return;
+      const zg=String(_pgZone[pn]||""),gz=_gr(zg);if(gz<600||(_enL[pn]||0)<120)return;
+      // COMPLETE, NOT OVERRIDE (owner 2026-09-23, evening): a page with text of its own is never REPLACED by the zone (the replace branch
+      // below is barred when the page holds >= 200 Greek letters), but what the plate prints BEFORE its first words and AFTER its last
+      // still joins the page -- 3,738 rebuilt pages carry a site column thinner than 60% of their plate.
+      const _ownG=_gr(els.map(e=>e.textContent||"").join(" "));
+      const gc=els.reduce((n,e)=>n+_gr(e.textContent),0);if(gc>=0.7*gz)return;
+      // MERGE, don't replace: the canon's own paragraphs stay (the zone OCR can clip a column's first line -- pg-2466 col. 175 keeps
+      // 'Ὁ δὲ Μονομαχάτος…'); the plate adds what lies BEFORE the canon's first words and AFTER its last, located on accent-free
+      // Greek letters. A canon the zone cannot place is replaced only when it is a scrap (< 30% of the zone).
+      const _nz=t=>{const o=[],m=[],s0=String(t||"");for(let i=0;i<s0.length;i++){
+          const c=s0[i].normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\u03c2/g,"\u03c3");
+          for(const ch of c)if(ch>="\u03b1"&&ch<="\u03c9"){o.push(ch);m.push(i);}}return [o.join(""),m];};
+      const ct=els.map(e=>e.textContent||"").join(" "),[cz]=_nz(ct),[zz,zm]=_nz(zg);
+      const hd=cz.slice(0,40),tl=cz.slice(-40),hi=hd.length>=30?zz.indexOf(hd):-1,ti=tl.length>=30?zz.lastIndexOf(tl):-1;
+      const mkP=t=>{const e=laD.createElement("p");e.textContent=_tidy(t);return e;};
+      if((hi>=0||ti>=0)&&!(hi>=0&&ti>=0&&ti<hi)){   // each end on its own: a zone that clipped the column's first line still places the canon's last words
+        let pre=hi>0?_capsHead(zg.slice(0,zm[hi]).trim()):"",end=ti>=0?ti+tl.length-1:-1,suf=end>=0&&end+1<zz.length?_appTail(_capsTail(zg.slice(zm[end]+1).trim())):"";
+        // a page break set a paragraph early or late is not missing text: what the zone adds must not open the next page or close the previous
+        const _ix=_pl.indexOf(pn),_nxT=_ix>=0&&_ix+1<_pl.length?_nz(_pt[_pl[_ix+1]])[0]:"",_pvT=_ix>0?_nz(_pt[_pl[_ix-1]])[0]:"";
+        const sufH=_nz(suf)[0].slice(0,40),preT=_nz(pre)[0].slice(-40);
+        if(sufH.length>=30&&_nxT.includes(sufH))suf="";
+        if(preT.length>=30&&_pvT.includes(preT))pre="";
+        if(_gr(pre)+_gr(suf)<100)return;
+        const first=els.length?els[0]:(pbN?pbN.nextSibling:null),after=els.length?els[els.length-1].nextSibling:(pbN?pbN.nextSibling:null);
+        if(_gr(pre)>=40)_chunkText(pre,900).forEach(t=>laB.insertBefore(mkP(t),first||null));
+        if(_gr(suf)>=40)_chunkText(suf,900).forEach(t=>laB.insertBefore(mkP(t),after||null));
+      }else if(gc<0.3*gz&&_zoneReplace&&_ownG<200){   // replacing is the zone-arbitration's call: pure-Greek bodies keep their text (owner 2026-08-18, pg-3223's dirty vol-34 zones); never a page with its own Greek (2026-09-23)
+        const ref=els.length?els[els.length-1].nextSibling:(pbN?pbN.nextSibling:null);
+        els.forEach(e=>e.remove());_chunkText(zg,900).forEach(t=>laB.insertBefore(mkP(t),ref||null));
+      }else return;
+      window.__pgZoneComplete=(window.__pgZoneComplete||0)+1;};
+    [...laB.childNodes].forEach(k=>{if(k.localName==="pb"){done();pn=+k.getAttribute("n");pbN=k;els=[];}
+      else if(k.localName==="p"&&pn!=null)els.push(k);});
+    done();
+  }
   // FACS-CARRIER PRUNE (owner 2026-08-18 'vtx/en/facs should track by design'): Migne
   // canons emit <pb> for the PAGE (facs carrier) and key the Greek to the column
   // <milestone> right after it — the pb's own column is the facing LATIN column. A pb
@@ -6509,7 +6635,7 @@ async function loadPgCanon(ws){
   window.__pldCanonDocs={la:laD,en:enD};
   const _aula=author;author=await _auEn(author);
   return {slug:ws,title,title_en:title,author:author||author_gr,author_la:_aula&&_aula!==author?_aula:undefined,volume:vol?("PG "+vol):"",
-    pg_columns:_printedColumns,pg_source:src,
+    pg_columns:_printedColumns,pg_source:src,pg_page_labels:_pgFrontLabels,
     tradition:"Greek Fathers",has_pages:true,has_tei:true,tei_v:0,en_only:false,
     n_pages:pages.length,structure:structure,base:null,spine_nav:structure.length>1,
     pages:pages.map(n=>({n,la:"",en:"",img:facs[n]||null,thumb:facs[n]||null}))};
@@ -6521,7 +6647,7 @@ async function loadPgCanon(ws){
 async function loadPoCanon(ws){
   const id=ws.slice(3);
   const [xml,facsMap,povtx,poen,pofx2]=await Promise.all([
-    ((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/v1/tei/po/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/v1/tei/po/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})),
+    ((window.__frEarly&&window.__frEarly.canon)?window.__frEarly.canon.catch(()=>fetch(BLOB+"/tei/po/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})):fetch(BLOB+"/tei/po/"+id+".xml").then(r=>{if(!r.ok)throw new Error("canon "+r.status);return r.text();})),
     fetch(BLOB+"/v1/pofacs/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null),
     // the PO site's own original-script text, page-keyed — harvested for thin-lane works
     fetch(BLOB+"/v1/povtx/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null),
@@ -6824,8 +6950,14 @@ async function loadEeboCanon(ws){
     try{const ds=new DecompressionStream("gzip");
       return await new Response(new Blob([buf]).stream().pipeThrough(ds)).text();}
     catch(e){return new TextDecoder().decode(buf);}};
+  // ONE DOWNLOAD, NOT TWO (2026-09-15, reverse-ported from the MereO reader): the early-fetch
+  // block already has this file on the wire as window.__frEarly.canonEebo before the document
+  // finished parsing. A second fetch here doubled the transfer of every Early English Books
+  // canon work (21 MB for the 10.6 MB Ness folio) and held two decodes in memory at once.
+  // Consume the early response when it is ours and unread; fetch only where there is none.
+  const early=(window.__frEarly&&window.__frEarly.canonEebo)?window.__frEarly.canonEebo.catch(()=>null):Promise.resolve(null);
   const [d,mod]=await Promise.all([
-    fetch(BLOB+"/eebo/"+encodeURIComponent(id)+".json.gz").then(async r=>{if(!r.ok)throw new Error("eebo "+r.status);return JSON.parse(await gunz(r));}),
+    early.then(r=>(r&&r.ok&&!r.bodyUsed)?r:fetch(BLOB+"/eebo/"+encodeURIComponent(id)+".json.gz")).then(async r=>{if(!r.ok)throw new Error("eebo "+r.status);return JSON.parse(await gunz(r));}),
     fetch(BLOB+"/eebo_modern/"+encodeURIComponent(id)+".json.gz").then(async r=>r.ok?JSON.parse(await gunz(r)):null).catch(()=>null)]);
   const M=(mod&&mod.m)||null;
   const mk=()=>{const D2=document.implementation.createDocument(null,"TEI",null);
@@ -7147,7 +7279,7 @@ async function resolveAlias(ws){
   }catch(e){ return ws; }
 }
 async function loadWork(ws){
-  if(!BLOB)return await jfetch("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/work?ws="+encodeURIComponent(ws),1);
+  if(!BLOB)return await jfetch("/api/work?ws="+encodeURIComponent(ws),1);
   // ── PL CANON MODE (2026-08-17): pld-{id} works hydrate straight from the family canon
   // on this same Blob store — tei/pld/{id}.xml (structure, columns, la∥en pairs) +
   // v1/pldtoc/{id}.json (English deep-TOC labels). No copied text anywhere: the canon is
@@ -7238,26 +7370,20 @@ async function loadWork(ws){
   return meta;
 }
 (async()=>{const _qp=new URLSearchParams(location.search);let ws=_qp.get("ws")||_qp.get("w")||window.__FR_SLUG__||null;   // let: the alias resolver rewrites it (2026-08-20)   // ?w=<title-slug> canonical; ?ws=<path> legacy; /read/<slug> shells bake __FR_SLUG__
-  if(window.MOFaithCatalogue && !window.MOFaithCatalogue.publicWork(ws)){
-    document.querySelector('#app')?.classList.add('nosb','fr-work-unavailable');
-    document.querySelector('#h1').textContent='Volume unavailable';
-    document.querySelector('#reading').innerHTML='<div class="loading">This volume is not available in the public library. <a href="/the-faith-received/all-works/?collection=all">Return to the library</a></div>';
-    document.querySelector('nav.frthumb')?.remove();return;
-  }
   // owner affordances: review mode shows a slim exit banner; the public reader injects a
   // discreet ✎ masthead button ONLY once /api/me confirms the owner (nothing rendered otherwise).
   // In Blob mode there is no /api/me — owner detection arrives with the Firebase sign-in (Phase 4); skip the call.
   if(REVIEW){
     const bn=document.createElement("div");bn.className="rvbanner";
     bn.innerHTML='✎&ensp;<b>Review mode</b>&nbsp;— edits write to the corpus'
-      +'<a class="rv-exit" href="'+(ws?"/the-faith-received/read/?w="+encodeURIComponent(ws):"/")+'">⏎ Exit to reading</a>';
+      +'<a class="rv-exit" href="'+(ws?"/read?w="+encodeURIComponent(ws):"/")+'">⏎ Exit to reading</a>';
     const mn=document.querySelector(".main");mn.insertBefore(bn,mn.firstChild);
   } else if(CLOUD_REVIEW){
     // deployed review page: a clear banner over the live reader. Owner signs in (stivenpeter@gmail.com)
     // → the masthead ✎/✓/⚑/⟳ controls light up (Blob-authoritative edit/redo). State driven by Firebase auth.
     const mn=document.querySelector(".main");
     const bn=document.createElement("div");bn.className="rvbanner";bn.id="cloudRv";mn.insertBefore(bn,mn.firstChild);
-    const exit='<a class="rv-exit" href="'+(ws?"/the-faith-received/read/?w="+encodeURIComponent(ws):"/")+'">⏎ Exit to reading</a>';
+    const exit='<a class="rv-exit" href="'+(ws?"/read?w="+encodeURIComponent(ws):"/")+'">⏎ Exit to reading</a>';
     window.__frRvSet=function(state,email){
       document.body.classList.toggle("cloud-review",state==="owner");
       if(state==="owner"){
@@ -7274,13 +7400,13 @@ async function loadWork(ws){
     };
     window.__frRvSet(window.__frRvState||"out");
   } else if(ws&&!BLOB){
-    fetch("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/me").then(r=>r.json()).then(m=>{if(m&&m.owner){
-      const b=document.createElement("a");b.id="ownerEdit";b.href="/the-faith-received/review/?ws="+encodeURIComponent(ws);
+    fetch("/api/me").then(r=>r.json()).then(m=>{if(m&&m.owner){
+      const b=document.createElement("a");b.id="ownerEdit";b.href="/review?ws="+encodeURIComponent(ws);
       b.title="Owner review / QA for this work";b.textContent="✎ Review";
       const ph=document.querySelector(".ph");if(ph)ph.appendChild(b);
     }}).catch(()=>{});
   }
-  if(!ws){$("#reading").innerHTML='<div class="loading">No work specified. <a href="/the-faith-received/all-works/?collection=all">Return to the library.</a></div>';return;}
+  if(!ws){$("#reading").innerHTML='<div class="loading">No work specified. <a href="/">Return to the library.</a></div>';return;}
   try{ws=await resolveAlias(ws);DATA=await loadWork(ws);
   // TEI-only exports (scholarios/calvin class 2026-08-18) arrive with ZERO pages here —
   // loadTEI() synthesizes the folio skeleton from the sidecar's <pb>s, so only bail
@@ -7321,6 +7447,10 @@ async function loadWork(ws){
   // lane rebuilds in place: the TEI and pageview ride session caches, the URL updates via
   // replaceState, and the reader stays on the same folio.
   window.__switchSrc=async ns=>{
+    if(window.__frSourceChanging)return;
+    window.__frSourceChanging=true;
+    const sourceBusy=busy=>{const group=document.getElementById('reader-witnesses');if(group){group.setAttribute('aria-busy',String(busy));group.querySelectorAll('button').forEach(b=>b.disabled=busy);}};
+    sourceBusy(true);
     try{
       const u=new URL(location.href);u.searchParams.set("src",ns);history.replaceState(null,"",u);
       window.__srcOverride=ns;
@@ -7337,6 +7467,7 @@ async function loadWork(ws){
         try{jump(keep);}catch(e){}
         setTimeout(()=>{try{window.__jumpSettle&&window.__jumpSettle(keep);}catch(e){}},700);}
     }catch(e){location.reload();}
+    finally{window.__frSourceChanging=false;sourceBusy(false);}
   };
   // Cold arrival and same-document source choices share one cancellable navigation owner.
   const arrive=()=>{
@@ -7397,4 +7528,4 @@ async function loadWork(ws){
       // fr_lanes2 remembers the reader's own combination on every return.
       else{Object.assign(LN,{en:true,la:false,fx:false});applyLanes();}}}
     if(window.__frApplyOwner)window.__frApplyOwner();}   // owner signed in BEFORE the text loaded → wire review controls now
-  catch(err){$("#reading").innerHTML='<div class="loading">Failed to load: '+esc(String(err))+' — <a href="/the-faith-received/all-works/?collection=all">return to the library</a></div>';}})();
+  catch(err){$("#reading").innerHTML='<div class="loading">Failed to load: '+esc(String(err))+' — <a href="/">return to the library</a></div>';}})();
