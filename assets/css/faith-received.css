@@ -20245,3 +20245,16 @@ html:not(.faith-mf-tabbed) .faith-mf-panel + .faith-mf-panel { margin-top: 72px;
   line-height: 1.45;
   color: var(--color-muted, #6b6660);
 }
+/* Phone: the three stack, so each reads on one line, smaller, with a
+   tighter button (Ian, 2026-09-24: "make them smaller and the text
+   better aligned"). 44px stays the touch floor. */
+@media (max-width: 640px) {
+  .faith-mf-tabs > button {
+    min-height: 44px;
+    padding: 9px 12px;
+    font-size: 14px;
+    line-height: 1.25;
+  }
+  .faith-mf-tab-tfr { display: inline; }
+  .faith-mf-tabs { margin-bottom: 32px; }
+}
