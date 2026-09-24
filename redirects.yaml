@@ -458,3 +458,11 @@
 - from: ^/the-faith-received/polanus-syntagma/?$
   to: /the-faith-received/read/?w=polanus-amandus-polanus-syntagma-theologiae-christianae-liber-i-de-the&from=polanus-syntagma
   permanent: true
+
+- from: ^/the-faith-received/heidelberg/?$
+  to: /the-faith-received/read/?w=rc-061-heidelberg-catechism-1563&from=heidelberg
+  permanent: true
+
+- from: ^/the-faith-received/augsburg/?$
+  to: /the-faith-received/read/?w=lc-002-augsburg-confession-1530&from=augsburg
+  permanent: true

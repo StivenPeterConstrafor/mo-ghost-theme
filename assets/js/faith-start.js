@@ -89,7 +89,7 @@
       note: "A hundred and seven questions that shaped English-speaking Protestantism." },
     { slug: "didache", eyebrow: "c. 50&ndash;120", title: "The Didache",
       note: "How the first Christians were taught to live, pray and gather." },
-    { slug: "augustine-confessions", eyebrow: "Augustine", title: "The Confessions",
+    { slug: "augustine-confessions", href: "/the-faith-received/read/?w=pld-2722", eyebrow: "Augustine", title: "The Confessions",
       note: "The book that invented the inner life as a subject worth writing about." },
     { slug: "athanasius-incarnation", eyebrow: "Athanasius", title: "On the Incarnation",
       note: "Why God became man, argued by the man who would not let it go." },
