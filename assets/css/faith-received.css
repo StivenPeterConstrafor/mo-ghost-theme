@@ -17892,6 +17892,43 @@ a.fr-btn:hover,
   text-decoration: none;
 }
 
+/* The browse hero's four routes belong to the search field, not the full
+   width of the photograph. A compact equal grid keeps the choices readable
+   beneath that field on a desktop and makes a stable two-column touch layout
+   on phones. */
+.bhero .tfr-browse-all--hero {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  width: min(100%, 660px);
+}
+.bhero .tfr-browse-all--hero .btn,
+.bhero .tfr-browse-all--hero a.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 10px 8px;
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+@media (max-width: 640px) {
+  .bhero .tfr-browse-all--hero {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .bhero .tfr-browse-all--hero .btn,
+  .bhero .tfr-browse-all--hero a.btn {
+    min-height: 44px;
+    padding: 8px 6px;
+    font-size: 10px;
+    letter-spacing: 0.07em;
+  }
+}
+
 /* "| Home" is a quieter half of the same label. */
 .tfr-rail-home { opacity: 0.55; font-weight: 400; }
 
