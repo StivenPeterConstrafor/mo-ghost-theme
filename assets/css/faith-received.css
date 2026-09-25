@@ -19338,7 +19338,9 @@ html.g-mobile #reading .fr-sec-toggle {
   flex-wrap: wrap;
 }
 @media (max-width: 640px) {
-  .lp-hero-about--row { flex-direction: column; gap: 12px; }
+  /* align-items, not text-align: a flex column stretches its items, so
+     the parent's centring does not reach them. */
+  .lp-hero-about--row { flex-direction: column; align-items: center; gap: 12px; }
 }
 
 /* The masthead's terracotta sweep, on the library's own headline (Ian,
