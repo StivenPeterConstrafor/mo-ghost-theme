@@ -84,7 +84,7 @@
           body: "The title and author of the work you are reading sit at the top of the page." },
         { sel: ["#reading .fr-hd-card", "#reading .fr-sec-headrow", "#reading .fr-sec-head"],
           title: "Section headings",
-          body: "Each book, chapter or article opens with a heading. The small line above the title tells you where you are in the work." },
+          body: "Each book, chapter or article opens with a heading card. Where a work numbers its parts, a small line above the title gives your place." },
         { sel: ["#reading .fr-sec-toggle"],
           title: "Fold a section",
           body: "Press the arrow beside a heading to fold that section away. Press it again to open it." },
