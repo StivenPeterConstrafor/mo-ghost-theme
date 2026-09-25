@@ -20312,6 +20312,19 @@ html:not(.faith-mf-tabbed) .faith-mf-panel + .faith-mf-panel { margin-top: 72px;
   border-radius: 3px;
 }
 .faith-mf-head .faith-mf-by { color: var(--color-secondary, #c1593c); }
+/* The month over the title, inside the title box (Ian, 2026-09-25:
+   "label all three letters with September 2026 as an eyebrow over the
+   title"). Quieter than the byline under the title, which is the
+   terracotta line: a date is the least important thing in the box and
+   should not compete with the name of the person who wrote it. */
+.faith-mf-date {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted, #6b6660);
+}
 @media (max-width: 640px) {
   .faith-mf-head { padding: 20px 18px 18px; }
 }
