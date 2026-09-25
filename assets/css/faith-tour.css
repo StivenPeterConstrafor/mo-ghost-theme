@@ -206,7 +206,7 @@
 }
 .frt-next-tour { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 .frt-next-tour[hidden] { display: none; }
-.frt-join { color: var(--frt-muted) !important; }
+.frt-join, .frt-all-tours { color: var(--frt-muted) !important; }
 
 /* The tutorial hub (custom-faith-tutorial.hbs): one card per tour. */
 .frt-hub {

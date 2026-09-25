@@ -783,13 +783,22 @@
     const nt = card.querySelector(".frt-next-tour");
     const nxt = last ? nextTourOf(run.name) : null;
     const join = last && run.hasMember && !isMember("tfr-research");
-    nt.hidden = !(nxt || join);
+    nt.hidden = !last;
     nt.textContent = "";
     if (nxt) {
       const a = document.createElement("a");
       a.href = tourUrl(nxt[0]);
       a.textContent = `Next tour: ${nxt[1]} →`;
       nt.appendChild(a);
+    }
+    // Every tour ends with a way back to the tutorial page, to pick
+    // another tour or take this one again.
+    if (last) {
+      const h = document.createElement("a");
+      h.href = "/the-faith-received/tutorial/";
+      h.className = "frt-all-tours";
+      h.textContent = "All tours";
+      nt.appendChild(h);
     }
     if (join) {
       const m = document.createElement("a");
@@ -928,7 +937,7 @@
       if (n) n.textContent = t ? `${t.steps.filter(fits).length} steps` : "Coming soon";
       const a = c.querySelector("[data-frt-start]");
       if (a) {
-        if (t) { a.href = tourUrl(name); a.hidden = false; }
+        if (t) { a.href = tourUrl(name); a.hidden = false; a.textContent = done.indexOf(name) >= 0 ? "Take again" : "Start"; }
         else a.hidden = true;
       }
     });
