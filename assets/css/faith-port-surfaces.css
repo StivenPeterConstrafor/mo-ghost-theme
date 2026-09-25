@@ -2029,3 +2029,9 @@ main#frAuthorOwn form.srow button {
   main.research-room .rx-position-topic > summary strong { font-size: 1.05em; }
   body main.research-room .rx-loci-group > h3.rx-loci-head { flex-wrap: wrap; gap: 2px 12px; }
 }
+
+/* Rings and Tradition sit on the page the way Timeline does: no plate,
+   no hairline frame, no cream ground (Ian, 2026-09-25: "Everything
+   should look like timeline"). The canvas paints no background of its
+   own, so the page shows through. */
+#faith-web-constellations .cn-stage{background:transparent;border:0;border-radius:0}
