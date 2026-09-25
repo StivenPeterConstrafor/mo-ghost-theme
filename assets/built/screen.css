@@ -217,7 +217,7 @@ img { max-width: 100%; height: auto; }
   justify-content: space-between;
   padding-top: 6px;
   padding-bottom: 6px;
-  gap: 32px;
+  gap: 20px;
 }
 
 .brand {
@@ -279,7 +279,7 @@ img { max-width: 100%; height: auto; }
 .nav {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   /* CENTRED, NOT PUSHED LEFT (Ian, 2026-09-25). .header-inner is
      space-between, so with the logo narrow and the member button wide
      the bar ended up sitting left of centre and the eye read the whole
@@ -305,14 +305,26 @@ img { max-width: 100%; height: auto; }
    tracking comes in from 0.22em, and no top-level label may wrap. The
    hamburger also takes over earlier; see the 1240px block further down,
    which is its own query because the 1024px one governs half the site. */
-.site-header > * { max-width: 1300px; }
+/* The header is wider than the 1180px measure the rest of the site
+   uses, and at 1440 it is effectively full width. That is the only way
+   eight items fit: at 1300 the logo, the links and the member button
+   came to 1447px and the button simply hung 175px past the container's
+   right edge, which is what made the bar look shifted rather than
+   centred. Ian, 2026-09-25: "centering would involve moving the logo
+   left in order for the whole bar to shift left." It does, and it now
+   does. Gutters are even again: 64px each side at 1728. */
+.site-header > * {
+  max-width: 1600px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
 .nav a,
 .nav .nav-dropdown-toggle {
   font-size: 10px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   white-space: nowrap;
-  padding-left: 8px;
-  padding-right: 8px;
+  padding-left: 7px;
+  padding-right: 7px;
 }
 /* Below about 1150 the items cannot be made to fit however hard the
    tracking is squeezed, and a bar that breaks is worse than a menu
