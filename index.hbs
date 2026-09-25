@@ -226,6 +226,32 @@
     </div>
 </section>
 
+{{!-- THE FAITH RECEIVED BAND: the library, between This Week and the
+     Daily Liturgy (Ian, 2026-09-25). Half the height of the band on
+     TFR's own homepage and a great deal less copy: a name, a sentence,
+     a way in, and three works.
+
+     IT IS OFF UNTIL IAN TURNS IT ON. The Faith Received launches on
+     Monday 28 September 2026, so this ships hidden and the switch is
+     the theme setting "tfr_home_band" in Ghost, under Design. Flipping
+     it is instant and needs no deploy, which also means it can be taken
+     straight back down. Before then, ?tfr=preview on the homepage shows
+     it to whoever has the link and to nobody else.
+
+     The three works rotate daily and come from assets/data/tfr-spotlight.json,
+     built by scripts/build-tfr-spotlight.mjs: two from the authors the
+     library cites 10,000 times or more, one from below that. The bands
+     are the rule for choosing, never a label on screen. --}}
+<section class="mo-tfr-band" data-tfr-band{{#if @custom.tfr_home_band}} data-tfr-live{{else}} hidden{{/if}} data-tfr-src="{{asset "data/tfr-spotlight.json"}}" aria-labelledby="mo-tfr-head">
+    <div class="container mo-tfr-inner">
+        <p class="eyebrow mo-tfr-eyebrow">Now from Mere Orthodoxy</p>
+        <h2 class="mo-tfr-head" id="mo-tfr-head">The Faith Received</h2>
+        <p class="mo-tfr-sub">An online library with tens of thousands of primary source works from across church history made publicly available, practically usable, and beautifully readable.</p>
+        <p class="mo-tfr-act"><a class="fr-btn" href="/the-faith-received/" data-hm-goal="tfr-home-band">Go To The Faith Received</a></p>
+        <div class="mo-tfr-works" data-tfr-works hidden></div>
+    </div>
+</section>
+
 {{!-- DAILY LITURGY BAND: thin dark section for the Daily Liturgy
      podcast + newsletter, sitting between "This Week" (articles) and
      "Listen" (podcasts). Cover art is the Ghost-hosted podcast cover,
@@ -426,3 +452,5 @@
 {{#if @custom.podcast_feed_url}}
 <script src="{{asset "js/podcast-feed.js"}}"></script>
 {{/if}}
+
+<script src="{{asset "js/page/mo-tfr-band.js"}}" defer></script>

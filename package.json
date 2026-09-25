@@ -1,6 +1,6 @@
 {
   "name": "mere-orthodoxy",
-  "description": "Mere Orthodoxy \u2014 Christian renewal for the common good.",
+  "description": "Mere Orthodoxy — Christian renewal for the common good.",
   "version": "1.2.1",
   "engines": {
     "ghost": ">=5.0.0"
@@ -76,7 +76,7 @@
       },
       "kit_bridge_url": {
         "type": "text",
-        "description": "URL of the deployed mo-kit-bridge Worker (e.g. https://mo-kit-bridge.mo-podcast-feed.workers.dev). Powers /admin/drift/ (Ghost\u2194Kit reconciliation report). Empty disables the drift page."
+        "description": "URL of the deployed mo-kit-bridge Worker (e.g. https://mo-kit-bridge.mo-podcast-feed.workers.dev). Powers /admin/drift/ (Ghost↔Kit reconciliation report). Empty disables the drift page."
       },
       "search_worker_url": {
         "type": "text",
@@ -84,7 +84,7 @@
       },
       "plausible_domain": {
         "type": "text",
-        "description": "Plausible site ID (usually the domain \u2014 e.g. mereorthodoxy.com). When set, the Plausible tracking script loads site-wide and the KPI dashboard can query stats. Empty disables both. Use the production domain even on staging so stats accumulate in the right account."
+        "description": "Plausible site ID (usually the domain — e.g. mereorthodoxy.com). When set, the Plausible tracking script loads site-wide and the KPI dashboard can query stats. Empty disables both. Use the production domain even on staging so stats accumulate in the right account."
       },
       "error_worker_url": {
         "type": "text",
@@ -92,7 +92,7 @@
       },
       "referral_offer_url": {
         "type": "text",
-        "description": "New-member Ghost Offer link for the referral program (e.g. https://mereorthodoxy.com/#/portal/offers/abc123). When a visitor arrives via a /membership/?ref= link, the 'Become a Member' CTA is repointed here so the referred person gets the first-period discount. Empty = referral still works but single-sided (no new-member offer). Create the offer in Ghost Admin \u2192 Membership \u2192 Offers."
+        "description": "New-member Ghost Offer link for the referral program (e.g. https://mereorthodoxy.com/#/portal/offers/abc123). When a visitor arrives via a /membership/?ref= link, the 'Become a Member' CTA is repointed here so the referred person gets the first-period discount. Empty = referral still works but single-sided (no new-member offer). Create the offer in Ghost Admin → Membership → Offers."
       },
       "heatmap_sample": {
         "type": "select",
@@ -113,6 +113,12 @@
       "bible_worker_url": {
         "type": "text",
         "description": "Full URL of the deployed mo-bible Cloudflare Worker (e.g. https://mo-bible.mo-podcast-feed.workers.dev). Powers the Scripture reader and Daily Liturgy passage lookups. Empty disables Scripture display."
+      },
+      "tfr_home_band": {
+        "type": "boolean",
+        "default": false,
+        "group": "homepage",
+        "description": "Show The Faith Received band on the homepage, between This Week and the Daily Liturgy. Off until TFR launches on 28 September 2026. Turning it off takes the band down immediately."
       }
     }
   }
