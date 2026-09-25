@@ -244,13 +244,17 @@
      are the rule for choosing, never a label on screen. --}}
 <section class="mo-tfr-band" data-tfr-band{{#if @custom.tfr_home_band}} data-tfr-live{{else}} hidden{{/if}} data-tfr-src="{{asset "data/tfr-spotlight.json"}}" aria-labelledby="mo-tfr-head">
     <div class="container mo-tfr-inner">
+      <div class="mo-tfr-copy">
         <h2 class="mo-tfr-head" id="mo-tfr-head">The Faith Received</h2>
         <p class="mo-tfr-sub">An online library with tens of thousands of primary source works from across church history made publicly available, practically usable, and beautifully readable.</p>
         <p class="mo-tfr-act"><a class="fr-btn" href="/the-faith-received/" data-hm-goal="tfr-home-band">Go To The Faith Received</a></p>
+      </div>
+      <div class="mo-tfr-spotlight">
         {{!-- The label sits with the works, not over the band: it names
              the three, and the band is already named by its headline. --}}
         <p class="eyebrow mo-tfr-eyebrow" data-tfr-works-label hidden>Spotlight</p>
         <div class="mo-tfr-works" data-tfr-works hidden></div>
+      </div>
     </div>
 </section>
 
