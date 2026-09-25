@@ -758,3 +758,18 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
 .sd-chart > summary:focus-visible { outline: 2px solid var(--color-secondary, #c1593c); outline-offset: 3px; }
 .sd-desk .sd-chart:not([open]) { padding-bottom: 16px; }
 @media (prefers-reduced-motion: reduce) { .sd-chart > summary::after { transition: none; } }
+
+/* Verse Desk, the corpus owner's order (2026-09-25): folds that open in place. */
+.sd-desk-fold > summary { list-style: none; cursor: pointer; }
+.sd-desk-fold > summary::-webkit-details-marker { display: none; }
+.sd-desk-fold > summary .sd-h2::before { content: "▾ "; font-size: .7em; color: var(--color-muted, #777); }
+.sd-desk-fold:not([open]) > summary .sd-h2::before { content: "▸ "; }
+.sd-desk-fold > summary .sd-h2 { display: inline; }
+.sd-groups { margin: .5rem 0 1rem; }
+.sd-group { border-top: 1px solid var(--color-rule, #ddd); padding: .35rem 0; }
+.sd-group > summary, .sd-work > summary { cursor: pointer; padding: .35rem 0; }
+.sd-group-name { font-weight: 600; }
+.sd-group-body { padding-left: 1rem; }
+.sd-work { border-left: 2px solid var(--color-rule, #ddd); padding-left: .75rem; margin: .25rem 0; }
+.sd-companions { list-style: none; padding: 0; margin: .25rem 0 1rem; }
+

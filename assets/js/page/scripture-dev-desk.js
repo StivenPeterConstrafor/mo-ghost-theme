@@ -71,19 +71,45 @@
 
     `${transSection}` +
 
+    /* The corpus owner's order (2026-09-25: "display first the chapter commentaries + whole bible
+     * commentaries and the specific citations … and then similarity for verse desk"; "groupings by
+     * author, work, etc and even when the same work might cite the same passage over many pages";
+     * "allow the collapsing or expansion without going to a new link"): his two commentary lists,
+     * the citations grouped by author and then work, similar passages, then Ask. Every section folds
+     * in place. */
+    `<section class="sd-desk-sec" aria-labelledby="sd-h-comm">` +
+      `<details class="sd-desk-fold" open><summary><h2 class="sd-h2" id="sd-h-comm">Chapter commentaries <span class="sd-muted" data-sd-comm-n></span></h2></summary>` +
+      `<div data-sd-comm><p class="sd-muted" role="status">Loading commentaries…</p></div></details>` +
+    `</section>` +
+    `<section class="sd-desk-sec" aria-labelledby="sd-h-wb">` +
+      `<details class="sd-desk-fold" open><summary><h2 class="sd-h2" id="sd-h-wb">Whole-Bible commentaries <span class="sd-muted" data-sd-wb-n></span></h2></summary>` +
+      `<div data-sd-wb></div></details>` +
+    `</section>` +
+
     `<section class="sd-desk-sec" aria-labelledby="sd-h-cite">` +
-      `<h2 class="sd-h2" id="sd-h-cite">Citations</h2>` +
+      `<details class="sd-desk-fold" open><summary><h2 class="sd-h2" id="sd-h-cite">Citations</h2></summary>` +
       `<p class="sd-count" data-sd-count><span class="sd-muted">Counting citations…</span></p>` +
       `<div class="sd-charts" data-sd-charts></div>` +
       `<div data-sd-filters></div>` +
       `<h3 class="sd-h3">Most-cited sources</h3>` +
       `<ol class="sd-sources sd-top" data-sd-top></ol>` +
-      `<p class="sd-jump"><a href="#sd-h-all">Every citation, below the commentaries</a></p>` +
+      `<h3 class="sd-h3" id="sd-h-all" data-sd-all-h>All citations</h3>` +
+      `<p class="sd-muted">By author, then by work; a work that cites the verse on several pages is one row.</p>` +
+      `<div class="sd-groups" data-sd-rows></div>` +
+      `<button type="button" class="sd-more" data-sd-more hidden>Show more</button>` +
+      `</details>` +
     `</section>` +
 
-    `<section class="sd-desk-sec" aria-labelledby="sd-h-comm">` +
-      `<h2 class="sd-h2" id="sd-h-comm">Commentaries on ${esc(book.name)} ${c}</h2>` +
-      `<div data-sd-comm></div>` +
+    `<section class="sd-desk-sec" aria-labelledby="sd-h-sim">` +
+      `<details class="sd-desk-fold" open><summary><h2 class="sd-h2" id="sd-h-sim">Similar passages</h2></summary>` +
+      `<h3 class="sd-h3">Similar Scripture use</h3>` +
+      `<p class="sd-muted">Verses of this chapter cited on the same pages as ${esc(label)}, from the citations loaded above. A shared page does not mean a shared interpretation.</p>` +
+      `<ol class="sd-companions" data-sd-companions><li class="sd-muted">Loading…</li></ol>` +
+      `<h3 class="sd-h3">Similar wording</h3>` +
+      `<p class="sd-muted">Passages whose wording resembles this verse, found by meaning search when you ask. Similarity does not establish agreement. Open to members.</p>` +
+      `<button type="button" class="sd-btn" data-sd-similar data-feature-gate="ask">Find passages like this verse</button>` +
+      `<ol class="sd-sources" data-sd-similar-rows></ol>` +
+      `</details>` +
     `</section>` +
 
     `<section class="sd-desk-sec" aria-labelledby="sd-h-ask">` +
@@ -97,14 +123,6 @@
         // the subscribe pop-up instead of sending them to /ask/.
         `<button type="submit" class="sd-btn" data-feature-gate="ask">Ask</button>` +
       `</form>` +
-    `</section>` +
-
-    // The full list is last: every "Show more" lengthens it, and nothing
-    // should sit below something that grows (UX review, 2026-09-22).
-    `<section class="sd-desk-sec" aria-labelledby="sd-h-all">` +
-      `<h2 class="sd-h2" id="sd-h-all" data-sd-all-h>All citations</h2>` +
-      `<ol class="sd-sources" data-sd-rows></ol>` +
-      `<button type="button" class="sd-more" data-sd-more hidden>Show more</button>` +
     `</section>`;
 
   // ── The verse, its neighbours, and five translations ──────────
@@ -116,6 +134,7 @@
    * citation worker already returns the verse's text, and the chapter
    * index gives the chapter's last verse, so two small responses do the
    * work of a chapter file the size of a photograph. */
+  let deskVerseText = "";
   const verseAndLast = book.ap
     ? S.fetchApocryphaVerse(book, c, v)
     : S.chapterNode(t, book, c).then((box) => ({
@@ -124,6 +143,7 @@
     }));
   verseAndLast.then((d) => {
     const text = d.text || "";
+    deskVerseText = text;
     $verse.textContent = text || `${label} is not in the ${short}.`;
     $verseTrans.textContent = S.textName(book, t);
     const $ask = $root.querySelector("#sd-ask-q");
@@ -191,6 +211,10 @@
   const ctx = { book, c, v };
   let run = 0;
   let offset = 0;
+  // All citations by author and then work, and the chapter verses the loaded pages cite beside this
+  // one: declared before the first query() below runs.
+  let groups = new Map();
+  let companionCounts = new Map();
   const bar = S.filterBar($root.querySelector("[data-sd-filters]"), {
     search: true,
     searchLabel: `Search the citations of ${label}`,
@@ -203,18 +227,18 @@
     if (!more) {
       offset = 0;
       $top.innerHTML = `<li class="sd-muted" role="status">Loading…</li>`;
-      $rows.innerHTML = "";
+      resetGroups();
     }
     $more.disabled = true;
-    S.fetchVerse(book, c, v, bar.filters, offset, 20).then((d) => {
+    S.fetchVerse(book, c, v, bar.filters, offset, 50).then((d) => {
       if (my !== run) return;
       $more.disabled = false;
       if (!d || !d.total) {
         $count.textContent = `The library does not cite ${label} yet.`;
         $top.innerHTML = "";
-        $root.querySelectorAll("[data-sd-filters], .sd-top, .sd-jump, #sd-h-cite ~ .sd-h3").forEach((el) => { el.hidden = true; });
-        const $all = $root.querySelector("#sd-h-all");
-        if ($all) $all.closest("section").hidden = true;
+        // The Citations fold keeps its count line; its lists and their headings go.
+        $root.querySelectorAll("[data-sd-filters], .sd-top, [data-sd-rows], [data-sd-more], [aria-labelledby=\"sd-h-cite\"] .sd-h3, [aria-labelledby=\"sd-h-cite\"] .sd-h3 + .sd-muted").forEach((el) => { el.hidden = true; });
+        $root.querySelector("[data-sd-companions]").innerHTML = `<li class="sd-muted">No citations of ${esc(label)} are held yet, so no companion verses either.</li>`;
         return;
       }
       bar.update(d.facets);
@@ -235,7 +259,8 @@
         });
         if (!(d.top_works || []).length) $top.innerHTML = `<li class="sd-muted">Nothing matches these filters.</li>`;
       }
-      (d.rows || []).forEach((r) => $rows.appendChild(S.sourceItem(r, ctx)));
+      (d.rows || []).forEach(addGrouped);
+      updateCompanions();
       offset = d.next_offset || 0;
       $more.hidden = !d.next_offset;
       $more.textContent = d.next_offset ? `Show more (${fmt(d.matched - d.next_offset)} left)` : "Show more";
@@ -303,7 +328,99 @@
   query(false);
 
   // ── Commentaries ──────────────────────────────────────────────
-  S.commentaryStrip($root.querySelector("[data-sd-comm]"), { book, c });
+  // The worker's list IS the corpus owner's list (v1/devotion.json.gz): works on the book (a chapter
+  // range, or the whole book) and the whole-Bible sets it marks `annotation`.
+  const commentaryList = (items) => `<ol class="sd-panel-commentaries">${items.map((e) => {
+    const href = S.sourceHref(e.href, e.w);
+    const range = e.c1 ? `Chapters ${e.c1}${e.c2 && e.c2 !== e.c1 ? `-${e.c2}` : ""}` : (e.annotation ? "Whole Bible" : (e.kind || "Commentary"));
+    const meta = [range, S.centuryLabel(e.cen)].filter(Boolean).map(esc).join(" · ");
+    const inner = `<span class="sd-source-title">${esc(e.t)}</span><span class="sd-source-meta">${esc(e.a || "")}${meta ? ` · ${meta}` : ""}</span>`;
+    return href ? `<li class="sd-source"><a class="sd-panel-commentary" href="${esc(href)}">${inner}</a></li>` : `<li class="sd-source"><span class="sd-panel-commentary">${inner}</span></li>`;
+  }).join("")}</ol>`;
+  S.fetchCommentaries(book, c, S.emptyFilters()).then((d) => {
+    const items = (d && d.items) || [];
+    const chapter = items.filter((e) => !e.annotation).sort((a, b) => (Number(b.c1) > 0 ? 1 : 0) - (Number(a.c1) > 0 ? 1 : 0));
+    const whole = items.filter((e) => e.annotation);
+    $root.querySelector("[data-sd-comm]").innerHTML = chapter.length ? commentaryList(chapter) : `<p class="sd-muted">No commentaries on ${esc(book.name)} are catalogued yet.</p>`;
+    $root.querySelector("[data-sd-wb]").innerHTML = whole.length ? commentaryList(whole) : `<p class="sd-muted">No whole-Bible commentaries are catalogued for ${esc(book.name)} yet.</p>`;
+    $root.querySelector("[data-sd-comm-n]").textContent = `(${fmt(chapter.length)})`;
+    $root.querySelector("[data-sd-wb-n]").textContent = `(${fmt(whole.length)})`;
+  }).catch(() => {
+    $root.querySelector("[data-sd-comm]").innerHTML = `<p class="sd-muted">Commentaries did not load.</p>`;
+  });
+
+  // ── All citations, by author and then by work ─────────────────
+  // Rows arrive fifty at a time; each lands in its author's fold and its work's fold, so a work that
+  // cites the verse on thirty pages is one row with its count, open on a click, never a new page.
+  function resetGroups() {
+    groups = new Map();
+    companionCounts = new Map();
+    $rows.innerHTML = "";
+  }
+  function addGrouped(r) {
+    const aKey = r.a || "Author not recorded";
+    let g = groups.get(aKey);
+    if (!g) {
+      const el = document.createElement("details");
+      el.className = "sd-group";
+      if (!groups.size) el.open = true;
+      el.innerHTML = `<summary><span class="sd-group-name">${esc(aKey)}</span> <span class="sd-muted" data-sd-group-n></span></summary><div class="sd-group-body"></div>`;
+      $rows.appendChild(el);
+      g = { el, works: new Map(), n: 0 };
+      groups.set(aKey, g);
+    }
+    let w = g.works.get(r.w);
+    if (!w) {
+      const el = document.createElement("details");
+      el.className = "sd-work";
+      el.innerHTML = `<summary><span class="sd-source-title">${esc(r.t || r.w)}</span> <span class="sd-muted" data-sd-work-n></span></summary><ol class="sd-sources"></ol>`;
+      g.el.querySelector(".sd-group-body").appendChild(el);
+      w = { el, n: 0 };
+      g.works.set(r.w, w);
+    }
+    w.el.querySelector("ol").appendChild(S.sourceItem(r, ctx));
+    w.n += 1;
+    g.n += 1;
+    w.el.querySelector("[data-sd-work-n]").textContent = plural(w.n, "page", "pages");
+    g.el.querySelector("[data-sd-group-n]").textContent = `${plural(g.works.size, "work", "works")} · ${plural(g.n, "citation", "citations")}`;
+    if (g.works.size === 1 && !g.el.querySelector(".sd-work[open]")) w.el.open = true;
+    (r.vv || []).forEach((n) => { if (Number(n) !== Number(v)) companionCounts.set(Number(n), (companionCounts.get(Number(n)) || 0) + 1); });
+  }
+  // Similar Scripture use: the verses of this chapter the loaded pages cite beside this one.
+  function updateCompanions() {
+    const $c = $root.querySelector("[data-sd-companions]");
+    const top = [...companionCounts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0]).slice(0, 15);
+    $c.innerHTML = top.length
+      ? top.map(([n, k]) => `<li class="sd-source"><a class="sd-panel-commentary" href="${esc(S.deskHref(book, c, n, tParam))}"><span class="sd-source-title">${esc(S.refLabel(book, c, n))}</span><span class="sd-source-meta">${plural(k, "shared page", "shared pages")}</span></a></li>`).join("")
+      : `<li class="sd-muted">No other verse of ${esc(S.refLabel(book, c))} is cited on these pages.</li>`;
+  }
+  // Similar wording: the member-gated meaning search on the library worker, run only on the click
+  // (feature-gate.js stops a reader without an account first; MOAuth attaches the member's token).
+  const LIB = ((document.querySelector('meta[name="tfr-library-base"]') || {}).content || "https://mo-tfr-library.mo-podcast-feed.workers.dev").replace(/\/$/, "");
+  let titles = null;
+  $root.querySelector("[data-sd-similar]").addEventListener("click", async (e) => {
+    const $b = e.currentTarget;
+    const $out = $root.querySelector("[data-sd-similar-rows]");
+    if (!deskVerseText) { $out.innerHTML = `<li class="sd-muted">The verse text has not loaded yet.</li>`; return; }
+    $b.disabled = true;
+    $out.innerHTML = `<li class="sd-muted" role="status">Searching the library…</li>`;
+    try {
+      const url = `${LIB}/v1/vsearch?${new URLSearchParams({ q: deskVerseText.slice(0, 480), k: "30" })}`;
+      const res = await (window.MOAuth && window.MOAuth.fetch ? window.MOAuth.fetch(url, {}) : fetch(url));
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((body && body.error) || "The similarity search is unavailable right now.");
+      if (!titles) titles = await fetch(`${LIB}/v1/titles_en.json`, { credentials: "omit" }).then((x) => (x.ok ? x.json() : {})).catch(() => ({}));
+      const seen = new Set();
+      const hits = (body.results || []).filter((x) => x && x.slug && x.page != null && !seen.has(`${x.slug}|${x.page}`) && seen.add(`${x.slug}|${x.page}`)).slice(0, 20);
+      $out.innerHTML = hits.length
+        ? hits.map((x) => { const href = S.sourceHref(null, x.slug, x.page); const title = (titles && titles[x.slug]) || x.slug; return `<li class="sd-source"><a class="sd-panel-commentary" href="${esc(href || "#")}"><span class="sd-source-title">${esc(title)}</span><span class="sd-source-meta">page ${esc(String(x.page))}</span></a></li>`; }).join("")
+        : `<li class="sd-muted">No similar passages were found for this verse.</li>`;
+    } catch (err) {
+      $out.innerHTML = `<li class="sd-muted" role="status">${esc(err && err.message ? err.message : "The similarity search is unavailable right now.")}</li>`;
+    } finally {
+      $b.disabled = false;
+    }
+  });
 
   // ── The chooser, for a Desk opened without a verse ────────────
   // Grouped by division, the same three the reader's tabs give: a flat
