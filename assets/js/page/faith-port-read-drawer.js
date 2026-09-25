@@ -116,6 +116,8 @@
     ednotes: [{ d: "M5 4h14v16H5zM8 8h8M8 12h8M8 16h5" }],
     modern: [{ d: "M4 17l4-10 4 10M5.5 13h5" }, { d: "M14 9.5c1-1.2 4.5-1.4 4.5 1.2V17M18.5 13c-3.5-.4-5 .6-5 2.1 0 1.8 3 2.2 5-.6" }],
     scan: [{ tag: "rect", x: "4", y: "3", width: "16", height: "18", rx: "1" }, { d: "M8 7h8M8 11h8M8 15h5" }],
+    // One text for another: the Greek Fathers' source column.
+    source: [{ d: "M4 8h14l-3-3M20 16H6l3 3" }],
   };
 
   /* ── One button for the reading languages ─────────────────────────
@@ -283,7 +285,62 @@
     dScan.hidden = !(d && d.has_pages);
     dScan.setAttribute("aria-pressed", window.LN && window.LN.fx ? "true" : "false");
   }
-  groups.read.append(dLang, dScan);
+
+  /* ── The Greek Fathers' source, one button ──────────────────────────
+     Ian, 2026-09-24, of the full-width "Source [Greek] [Latin]
+     [Greek · Latin]" row under the head: "Takes up too much space."
+     The engine's row (#reader-witnesses, reader-core.js) stays in the
+     DOM, out of sight; this button presses its next pill, so the
+     engine's own switch (__switchSrc) and the pills' state do the work.
+     The engine re-marks the pills after every switch and builds the row
+     ~800ms after the text loads; an observer repaints from them. */
+  const srcBtns = [];
+  function srcPills() {
+    const row = document.getElementById("reader-witnesses");
+    return row ? Array.from(row.querySelectorAll("button")).filter((b) => !b.hidden) : [];
+  }
+  function srcNow() {
+    const pills = srcPills();
+    const i = Math.max(0, pills.findIndex((b) => b.getAttribute("aria-pressed") === "true"));
+    return { pills, cur: pills[i], next: pills[(i + 1) % (pills.length || 1)] };
+  }
+  function paintSrc() {
+    const { pills, cur, next } = srcNow();
+    srcBtns.forEach((b) => {
+      b.hidden = pills.length < 2;
+      if (b.hidden) return;
+      const name = cur.textContent.trim();
+      const lb = b.querySelector(".lb");
+      if (lb) lb.textContent = name;
+      else b.textContent = `Source: ${name}`;
+      b.title = `Source: ${name}. Press for ${next.textContent.trim()}.`;
+      b.setAttribute("aria-label", b.title);
+    });
+  }
+  function cycleSrc() {
+    const { pills, next } = srcNow();
+    if (pills.length > 1 && next) next.click();
+    paintSrc();
+  }
+  const srcWatch = new MutationObserver(() => paintSrc());
+  let srcRow = null;
+  function watchSrc() {
+    const row = document.getElementById("reader-witnesses");
+    if (row && row !== srcRow) {
+      srcRow = row;
+      srcWatch.observe(row, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["aria-pressed", "hidden"] });
+    }
+    paintSrc();
+  }
+  new MutationObserver(watchSrc).observe(ph, { childList: true });
+  const dSrc = document.createElement("button");
+  dSrc.type = "button";
+  dSrc.className = "fr-td-src";
+  dSrc.hidden = true;
+  dSrc.addEventListener("click", cycleSrc);
+  srcBtns.push(dSrc);
+  painters.push(watchSrc);
+  groups.read.append(dLang, dSrc, dScan);
 
   // Ask, beside Research (Ian, 2026-09-23: "Also add Ask to the
   // toolbar"). Opened beside the text with this work in context, the way
@@ -463,8 +520,13 @@
       }
     });
     const theme = proxy("x-theme", "Theme", "theme", "#thTop");
+    const src = cell("x-src", "Greek", "source");
+    src.hidden = true;
+    src.addEventListener("click", cycleSrc);
+    srcBtns.push(src);
     proxies = {
       lang,
+      src,
       flow,
       theme,
       transparency: cell("x-tt", "Transparency", "transparency"),
@@ -576,11 +638,14 @@
     });
     // Languages first: the choice a reader makes most.
     if (mDrawer.firstChild !== proxies.lang) mDrawer.insertBefore(proxies.lang, mDrawer.firstChild);
+    // The source beside it: the other choice of which words to read.
+    if (proxies.lang.nextSibling !== proxies.src) mDrawer.insertBefore(proxies.src, proxies.lang.nextSibling);
     // Text (Aa) is the dock's fourth button, beside Tools (Ian,
     // 2026-09-23: "break out Aa tools to be a 4th default button").
     const aa = document.getElementById("aaBtn");
     if (aa && aa.classList.contains("frthumb-aa") && aa.nextElementSibling !== mTools) bar.insertBefore(aa, mTools);
     syncProxies();
+    watchSrc();
   }
 
   /* On a phone the drawer does not animate its width. A width change

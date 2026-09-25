@@ -3607,3 +3607,15 @@ html.g-mobile #app #reading h3.fr-hd-promoted.fr-hd-in-t2 .fr-hd-title { font-si
    The editors' apparatus goes; the author's text and footnotes stay. */
 html.fr-hide-editorial #reading :is(section.pld-editorial, .laonly, .row.rapp, .appbank) { display: none !important; }
 #app .fr-tb-ednotes[hidden], .fr-mtools-drawer [data-t="x-ednotes"][hidden] { display: none !important; }
+
+/* The Greek Fathers' source row (#reader-witnesses) leaves the head on
+   both widths (Ian, 2026-09-24: "Takes up too much space"). One button
+   in Tools cycles it (faith-port-read-drawer.js), pressing the engine's
+   own pills, which stay in the DOM. */
+#app #reader-witnesses { display: none !important; }
+html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .fr-td-src { min-width: 112px; justify-content: center; }
+.fr-td-src[hidden], .fr-mtools-drawer [data-t="x-src"][hidden] { display: none !important; }
+/* Hide editorial notes is a desktop bar button; a phone reaches it as the
+   Tools cell (x-ednotes), so the bar's own stays off the phone head, as
+   Report, Top, Collapse and Focus do. */
+html.g-mobile .fr-tb-ednotes { display: none !important; }
