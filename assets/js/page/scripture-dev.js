@@ -308,8 +308,55 @@
   const $panel = document.createElement("section");
   $panel.className = "sd-panel";
   let panelRun = 0;
+  let panelCommRun = 0;
   let bar = null;
   let rowsOffset = 0;
+  const panelFoldMq = window.matchMedia("(max-width: 640px)");
+  const PANEL_FOLDS = {
+    chapter: { key: "chapter", title: "Commentaries on this chapter", wideOpen: true },
+    wholeBook: { key: "whole_book", title: "Commentaries on the whole book", wideOpen: false },
+    citations: { key: "citations", title: "Citations of this verse", wideOpen: false },
+  };
+
+  function panelDefaultOpen(section) {
+    return !panelFoldMq.matches && Boolean(section.wideOpen);
+  }
+
+  function recalledPanelOpen(section) {
+    const fallback = panelDefaultOpen(section);
+    try {
+      const v = window.localStorage.getItem(`sd_panel_open_${section.key}`);
+      if (v === "1") return true;
+      if (v === "0") return false;
+      return fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  function rememberPanelOpen(section, open) {
+    try { window.localStorage.setItem(`sd_panel_open_${section.key}`, open ? "1" : "0"); } catch (e) { /* not remembered */ }
+  }
+
+  function panelSummary(section, count) {
+    const n = Number(count);
+    const suffix = Number.isFinite(n) && n >= 0 ? ` <span data-sd-summary-count>(${fmt(n)})</span>` : ` <span data-sd-summary-count></span>`;
+    return `${esc(section.title)}${suffix}`;
+  }
+
+  function panelDetails(section, body, count) {
+    return `<details class="sd-panel-fold" data-sd-panel-section="${esc(section.key)}"${recalledPanelOpen(section) ? " open" : ""}><summary>${panelSummary(section, count)}</summary><div class="sd-panel-fold-body">${body}</div></details>`;
+  }
+
+  function bindPanelFolds() {
+    $panel.querySelectorAll("[data-sd-panel-section]").forEach((el) => {
+      if (el.dataset.sdPanelBound) return;
+      const section = Object.values(PANEL_FOLDS).find((s) => s.key === el.dataset.sdPanelSection);
+      if (!section) return;
+      el.dataset.sdPanelBound = "1";
+      el.addEventListener("toggle", () => rememberPanelOpen(section, el.open));
+    });
+  }
 
   function placePanel(v) {
     if (narrow.matches) {
@@ -386,23 +433,9 @@
     const {book} = state;
     const {c} = state;
     const t = state.t === "ESV" ? "" : state.t;
-    $panel.innerHTML =
-      `<header class="sd-panel-head">` +
-        `<p class="sd-eyebrow">Verse</p>` +
-        `<h2 class="sd-panel-ref" tabindex="-1">${esc(S.refLabel(book, c, v))}</h2>` +
-        `<a class="sd-desk-link" href="${esc(S.deskHref(book, c, v, t))}">Open the Verse Desk</a>` +
-        `<button type="button" class="sd-close" aria-label="Close verse panel">Close</button>` +
-      `</header>` +
-      `<p class="sd-count" data-sd-count role="status"><span class="sd-muted">Counting citations…</span></p>` +
-      `<div data-sd-filters></div>` +
-      `<h3 class="sd-h3">Most-cited sources</h3>` +
-      `<ol class="sd-sources sd-top" data-sd-top></ol>` +
-      `<div data-sd-matches hidden>` +
-        `<h3 class="sd-h3">Matching citations</h3>` +
-        `<ol class="sd-sources" data-sd-rows></ol>` +
-        `<button type="button" class="sd-more" data-sd-more hidden>Show more</button>` +
-      `</div>` +
-      `<p class="sd-panel-foot"><a href="${esc(S.deskHref(book, c, v, t))}">Every citation of ${esc(S.refLabel(book, c, v))} on the Verse Desk</a></p>`;
+    const citationBody = `<div data-sd-filters></div><h3 class="sd-h3">Most-cited sources</h3><ol class="sd-sources sd-top" data-sd-top></ol><div data-sd-matches hidden><h3 class="sd-h3">Matching citations</h3><ol class="sd-sources" data-sd-rows></ol><button type="button" class="sd-more" data-sd-more hidden>Show more</button></div>`;
+    $panel.innerHTML = `<header class="sd-panel-head"><p class="sd-eyebrow">Verse</p><h2 class="sd-panel-ref" tabindex="-1">${esc(S.refLabel(book, c, v))}</h2><a class="sd-desk-link" href="${esc(S.deskHref(book, c, v, t))}">Open the Verse Desk</a><button type="button" class="sd-close" aria-label="Close verse panel">Close</button></header><p class="sd-count" data-sd-count role="status"><span class="sd-muted">Counting citations…</span></p><div data-sd-panel-commentaries><p class="sd-muted">Loading commentaries…</p></div>${panelDetails(PANEL_FOLDS.citations, citationBody)}<p class="sd-panel-foot"><a href="${esc(S.deskHref(book, c, v, t))}">Every citation of ${esc(S.refLabel(book, c, v))} on the Verse Desk</a></p>`;
+    bindPanelFolds();
     $panel.querySelector(".sd-close").addEventListener("click", () => {
       const span = $text.querySelector(`.bible-verse[data-v="${v}"]`);
       closePanel();
@@ -414,7 +447,46 @@
       onChange: () => query(v, false),
     });
     $panel.querySelector("[data-sd-more]").addEventListener("click", () => query(v, true));
+    loadPanelCommentaries(v);
     query(v, false);
+  }
+
+  function loadPanelCommentaries(v) {
+    const my = ++panelCommRun;
+    const {book} = state;
+    const {c} = state;
+    const $host = $panel.querySelector("[data-sd-panel-commentaries]");
+    if (!$host) return;
+    $host.innerHTML = `<p class="sd-muted">Loading commentaries…</p>`;
+    S.fetchCommentaries(book, c, S.emptyFilters()).then((d) => {
+      if (my !== panelCommRun || state.v !== v || state.book !== book || state.c !== c) return;
+      const items = (d && d.items) || [];
+      const chapter = items.filter((e) => Number(e.c1) > 0 && Number(e.c1) <= c && c <= Number(e.c2));
+      const wholeBook = items.filter((e) => Number(e.c1) === 0 && Number(e.c2) === 0);
+      const chunks = [];
+      if (chapter.length) chunks.push(panelDetails(PANEL_FOLDS.chapter, panelCommentaryList(chapter), chapter.length));
+      if (wholeBook.length) chunks.push(panelDetails(PANEL_FOLDS.wholeBook, panelCommentaryList(wholeBook), wholeBook.length));
+      $host.innerHTML = chunks.join("");
+      bindPanelFolds();
+    }).catch(() => {
+      if (my !== panelCommRun || state.v !== v) return;
+      $host.innerHTML = `<p class="sd-muted">Commentaries did not load.</p>`;
+    });
+  }
+
+  function panelCommentaryList(items) {
+    const rows = items.map((e) => {
+      const href = S.sourceHref(e.href, e.w);
+      const range = e.c1 ? `Chapters ${e.c1}${e.c2 && e.c2 !== e.c1 ? `-${e.c2}` : ""}` : (e.annotation ? "Annotations" : (e.kind || "Commentary"));
+      const meta = [range, S.centuryLabel(e.cen)].filter(Boolean).map(esc).join(" · ");
+      const inner =
+        `<span class="sd-source-title">${esc(e.t)}</span>` +
+        `<span class="sd-source-meta">${esc(e.a || "")}${meta ? ` · ${meta}` : ""}</span>`;
+      return href
+        ? `<li class="sd-source"><a class="sd-panel-commentary" href="${esc(href)}">${inner}</a></li>`
+        : `<li class="sd-source"><span class="sd-panel-commentary">${inner}</span></li>`;
+    }).join("");
+    return `<ol class="sd-panel-commentaries">${rows}</ol>`;
   }
 
   function query(v, more) {
@@ -431,17 +503,20 @@
     const $matches = $panel.querySelector("[data-sd-matches]");
     const $rows = $panel.querySelector("[data-sd-rows]");
     const $more = $panel.querySelector("[data-sd-more]");
+    const $citationCount = $panel.querySelector('[data-sd-panel-section="citations"] [data-sd-summary-count]');
     if (!more) $top.innerHTML = `<li class="sd-muted">Loading…</li>`;
     $more.disabled = true;
     S.fetchVerse(book, c, v, f, rowsOffset, 10).then((d) => {
       if (my !== panelRun || state.v !== v) return;
       $more.disabled = false;
       if (!d || !d.total) {
+        if ($citationCount) $citationCount.textContent = "(0)";
         $count.innerHTML = `The library does not cite ${esc(S.refLabel(book, c, v))} yet.`;
         $top.innerHTML = "";
         $panel.querySelectorAll(".sd-h3, [data-sd-filters]").forEach((el) => { el.hidden = true; });
         return;
       }
+      if ($citationCount) $citationCount.textContent = `(${fmt(d.total)})`;
       bar.update(d.facets);
       $count.innerHTML = filtered
         ? `<strong>${fmt(d.matched)}</strong> of ${plural(d.total, "citation", "citations")} match`
