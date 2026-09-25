@@ -111,6 +111,26 @@
     if (!fold) return;
 
     if (host.dataset.moShelf !== SHELF) host.dataset.moShelf = SHELF;
+
+    /* ONE FORCED REDRAW. A shelf named in the address is rendered with the
+       fold already open, and that first draw does not come through the
+       wrapper above, so it is chunked to 160 like any other. paint() will
+       not draw it again on its own: it compares a render key it has
+       already stored and finds nothing has changed. Clearing the key and
+       flicking the fold shut and open makes it draw once more, this time
+       with every author. A live sentinel is the signal that the list is
+       short; paneList removes it when the list is whole, so once this has
+       worked the condition is false and it cannot run again. setTimeout
+       rather than requestAnimationFrame, which does not run in a hidden
+       tab and would leave the page short. */
+    const drawn = fold.querySelector(".rx-directory");
+    if (drawn && !fold.dataset.moRedrawn && drawn.querySelector(".rx-pane-sentinel")) {
+      fold.dataset.moRedrawn = "1";
+      delete drawn.dataset.authorRenderKey;
+      fold.open = false;
+      window.setTimeout(() => { fold.open = true; }, 0);
+      return;
+    }
     if (!fold.classList.contains("mo-shelf-on")) fold.classList.add("mo-shelf-on");
     if (!fold.open) fold.open = true;
     document.body.classList.add("mo-shelf-page");
