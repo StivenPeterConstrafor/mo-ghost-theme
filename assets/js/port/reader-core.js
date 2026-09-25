@@ -5280,7 +5280,9 @@ async function loadPldCanon(ws){
   const CAPRX=/^(?:CAPUT|CAP\.)\s+(PRIMUM|SECUNDUM|TERTIUM|QUARTUM|QUINTUM|SEXTUM|SEPTIMUM|OCTAVUM|NONUM|DECIMUM|UNDECIMUM|DUODECIMUM|[IVXLC]+)\b/i;
   let lastChapterNum=null,chapterDepth=null,lastHeadEntry=null,lastHeadHadEn=false;
   // Some heads open with the old edition's page number ("311 Caput XVIII. De eo …"): it is not part of the title.
-  const unPage=t=>String(t||'').trim().replace(/^\d{1,4}\s+(?=(?:CAPUT|CAP\.|Caput|PRAEFATIO|Praefatio|PROLOGUS|Prologus|LIBER|Liber)\b)/,'');
+  // a page or note number printed before a head ("311 Caput XVIII", "2 CAPUT PRIMUM") — in the Latin and in its English
+  // ("2 Chapter One", pld-8725): not part of the title
+  const unPage=t=>String(t||'').trim().replace(/^\d{1,4}\s+(?=(?:CAPUT|Caput|PRAEFATIO|Praefatio|PROLOGUS|Prologus|LIBER|Liber|CHAPTER|Chapter|BOOK|Book|PREFACE|Preface|PROLOGUE|Prologue)\b|(?:CAP|Cap|CHAP|Chap)\.)/,'');
   // The edition's note numbers were flattened into its chapter titles ("CHAPTER II 9 . That … man 10 sinned"); in the OUTLINE a
   // number standing before punctuation, between two lower-case words or at the end of a chapter title is a note mark and goes.
   // The page text keeps them as printed.
@@ -5309,7 +5311,7 @@ async function loadPldCanon(ws){
         const did=(ch.parentElement.getAttribute("xml:id")||"").replace(/^w\d+-d/,"").replace(/_/g," ");
         const en=info.english||(!sourceView?.notes&&toc&&toc[did])||"";
         if(depth0===null)depth0=depth;
-        if(t||en){struct.push({title:chapterTitle(en||unPage(t)),page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5),pld_division:ch.parentElement.getAttribute("xml:id")||""});lastHeadEntry=struct[struct.length-1];lastHeadHadEn=!!en;}
+        if(t||en){struct.push({title:chapterTitle(unPage(en)||unPage(t)),page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5),pld_division:ch.parentElement.getAttribute("xml:id")||""});lastHeadEntry=struct[struct.length-1];lastHeadHadEn=!!en;}
         {const hm=CAPRX.exec(unPage(t));if(hm){lastChapterNum=capNum(hm[1]);chapterDepth=Math.min(Math.max(depth-depth0+1,1),5);}else lastChapterNum=null;}
         window.__pldLastEnHead=null;window.__pldLastEnHeadEcho=false;
         // Exact source head/p + corresp translation: retain the complete canonical
@@ -5337,14 +5339,20 @@ async function loadPldCanon(ws){
         t=t.replace(/([A-Za-zÀ-ÿæœ])-\s+([a-zà-ÿæœ])/g,"$1$2")
            .replace(/([A-Z]{2,})-\s+([A-Z]{2,})/g,"$1$2");
         if(!t)continue;
-        if(!sourceView?.notes&&lang!=='en'&&t.length<=400){const cm=CAPRX.exec(t);
+        // A chapter printed INLINE ("CAP. II.--Audiens haec…", the Lives in PL 73; pld-2018) is one long paragraph that
+        // opens with its number: it heads the outline as that number alone. Without it the reader fell back to a folio
+        // list naming only the chapters that begin a page (I, IV, VI, VIII), and the rest vanished from the contents.
+        const ut=!sourceView?.notes&&lang!=='en'?unPage(t):'',cm0=ut?CAPRX.exec(ut):null;
+        const inline=!!cm0&&ut.length>400&&/^\.?\s*(?:--|\u2014|\u2013)/.test(ut.slice(cm0.index+cm0[0].length));
+        const headOf=x=>inline?String(x||'').split(/\s*(?:--|\u2014|\u2013)\s*/)[0]:x;
+        if(!sourceView?.notes&&lang!=='en'&&(t.length<=400||inline)){const cm=cm0;
           if(cm){const num=capNum(cm[1]);
             const nx=ch.nextElementSibling,id=ch.getAttribute('xml:id')||'';
-            const en=nx&&id&&nx.getAttribute('corresp')==='#'+id?nx.textContent.replace(/\s+/g,' ').trim():'';
+            const en=headOf(nx&&id&&nx.getAttribute('corresp')==='#'+id?nx.textContent.replace(/\s+/g,' ').trim():'');
             if(num!==null&&num!==lastChapterNum){
-              struct.push({title:chapterTitle(en||t).slice(0,180),page:pages.length?pages[pages.length-1]:1,depth:chapterDepth??1,pld_division:(ch.parentElement&&ch.parentElement.getAttribute('xml:id'))||''});lastHeadEntry=null;}
+              struct.push({title:chapterTitle(unPage(en)||headOf(ut)).slice(0,180),page:pages.length?pages[pages.length-1]:1,depth:chapterDepth??1,pld_division:(ch.parentElement&&ch.parentElement.getAttribute('xml:id'))||''});lastHeadEntry=null;}
             // the same chapter as the head just made, which had only its Latin: the head takes this English title
-            else if(num!==null&&lastHeadEntry&&!lastHeadHadEn&&en){lastHeadEntry.title=chapterTitle(en).slice(0,180);lastHeadHadEn=true;}
+            else if(num!==null&&lastHeadEntry&&!lastHeadHadEn&&en){lastHeadEntry.title=chapterTitle(unPage(en)).slice(0,180);lastHeadHadEn=true;}
             if(num!==null)lastChapterNum=num;}}
         if(sourceView?.notes&&lang!=='en'){const notePage=pages.at(-1);if(sourceView.columnNotes){if(!struct.some(s=>s.page===notePage))struct.push({title:'Notes at column '+notePage,page:notePage,depth:1});}else{const incipit=t.split(/[.!?]\s/)[0];struct.push({title:'Notes '+pages.length+': '+incipit.slice(0,90),page:notePage,depth:1});}}
         // INDEX-VOLUME FORMATTING (owner 2026-08-17 'one big block'): Migne's index tomes
