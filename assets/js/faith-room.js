@@ -856,17 +856,37 @@
   // reaches "Louis Le Blanc de Beaulieu", "sanchez" reaches "Sánchez",
   // "a lasco" reaches "à Lasco". Jake searched LeBlanc, got nothing, and
   // reasonably concluded the man was missing.
+  //
+  // The words, not one phrase (corpus owner, 2026-09-25: "I should type
+  // in Westminster Annotations and the Annotations upon all the books of
+  // the Old and New Testament … shows up"; "works like Albert Divine
+  // names should get me"). The box was matched as one unbroken string,
+  // and a reader names a work by its author and its title at once. Now
+  // every word must be found, in any order: all of them in the name is
+  // the author, all of them in the title is the title, and a work whose
+  // name holds some of them and whose title holds the rest answers with
+  // the titles.
   const AUTHOR = 0, TITLE = 1, KEYWORD = 2, NONE = -1;
-  function tierOf(w, q) {
+  function tierOf(w, q, words) {
     if (w._qa === undefined) w._qa = fold(w.author || "");
-    if (w._qa.includes(q)) return AUTHOR;
+    if (w._qa.includes(q) || hasWords(w._qa, words)) return AUTHOR;
     if (w._qt === undefined) w._qt = fold(`${w.title || ""} ${w.titleLatin || ""} ${window.MOCollectedContents?.search(w.id) || ""}`);
-    if (w._qt.includes(q)) return TITLE;
+    if (w._qt.includes(q) || hasWords(w._qt, words)) return TITLE;
+    if (hasWords(`${w._qa} ${w._qt}`, words)) return TITLE;
     if (w._qk === undefined) {
       w._qk = fold([w.subject, w.topic, w.tradition, w.school, w.eyebrow, w.volume]
         .filter(Boolean).join(" "));
     }
-    return w._qk.includes(q) ? KEYWORD : NONE;
+    return w._qk.includes(q) || hasWords(`${w._qa} ${w._qt} ${w._qk}`, words) ? KEYWORD : NONE;
+  }
+
+  // The words of the box, split from what was typed (fold() drops the
+  // spaces) and folded one by one; one word is the phrase test above.
+  function queryWords(s) {
+    return String(s || "").split(/\s+/).map(fold).filter(Boolean);
+  }
+  function hasWords(h, words) {
+    return words.length > 1 && words.every((x) => h.includes(x));
   }
 
   // Lowercase, strip accents, drop everything that is not a letter or a
@@ -1224,13 +1244,14 @@
     // The box. Every work in hand answers with its tier; the catalogue's
     // own words count only when neither a name nor a title did.
     const q = fold(filter);
+    const words = queryWords(filter);
     let tiers = null;
     let filtered = facet;
     if (q) {
       tiers = new Map();
       let best = NONE;
       facet.forEach((w) => {
-        const t = tierOf(w, q);
+        const t = tierOf(w, q, words);
         if (t === NONE) return;
         tiers.set(w, t);
         if (best === NONE || t < best) best = t;
