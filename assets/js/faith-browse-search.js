@@ -51,6 +51,10 @@
   const fold = (s) => String(s || "")
     .normalize("NFD").replace(/\p{M}/gu, "")
     .toLowerCase().replace(/[^a-z0-9]+/g, "");
+  // The words of a query, in any order. fold() drops the spaces too, so
+  // the words are split from what was typed and folded one by one.
+  const queryWords = (s) => String(s || "").split(/\s+/).map(fold).filter(Boolean);
+  const hasWords = (h, words) => words.length > 1 && words.every((x) => h.includes(x));
 
   // Tradition has two levels here as everywhere else: the communion,
   // and the denomination or series under it. Under Protestant it is a
@@ -217,21 +221,36 @@
     wrap.hidden = !kids.length;
   }
 
+  // WORDS, NOT ONE PHRASE (corpus owner 2026-09-25: "I should type in Westminster Annotations and the Annotations upon
+  // all the books of the Old and New Testament … shows up", "works like Albert Divine names should get me …"). The query
+  // was matched as one unbroken string, so "Westminster Annotations" (author Westminster Divines, title Annotations
+  // upon all the books …) and "Albert Divine Names" (Albert the Great, On Dionysius' On the Divine Names) found
+  // nothing. Now every word of the query must appear in the work's author, title or Latin title, in any order; a work
+  // that holds the query as one phrase ranks first, and the catalogue order is kept within each rank.
   function matchCatalogue(list, scope) {
     const q = fold(term);
     if (!q) return [];
-    return list.filter((w) => {
+    const words = queryWords(term);
+    const hay = (w) => {
       if (scope === "author") {
         if (w._fa === undefined) w._fa = fold(w.author);
-        return w._fa.includes(q);
+        return w._fa;
       }
       if (scope === "title") {
         if (w._ft === undefined) w._ft = fold(`${w.title || ""} ${w.titleLatin || ""}`);
-        return w._ft.includes(q);
+        return w._ft;
       }
       if (w._fq === undefined) w._fq = fold(`${w.author || ""} ${w.title || ""} ${w.titleLatin || ""}`);
-      return w._fq.includes(q);
+      return w._fq;
+    };
+    const phrase = [];
+    const allWords = [];
+    list.forEach((w) => {
+      const h = hay(w);
+      if (h.includes(q)) phrase.push(w);
+      else if (hasWords(h, words)) allWords.push(w);
     });
+    return phrase.concat(allWords);
   }
 
   // ── Where a result opens ──────────────────────────────────────
@@ -317,12 +336,14 @@
   function authorsMatching() {
     const q = fold(term);
     if (!q || !all) return [];
+    // "Albert Great" and "Calvin John" are names too: every word, any order.
+    const words = queryWords(term);
     const m = new Map();
     all.forEach((w) => {
       const a = String(w.author || "").trim();
       if (!a || NOT_A_NAME.test(a)) return;
       if (w._fa === undefined) w._fa = fold(a);
-      if (!w._fa.includes(q)) return;
+      if (!w._fa.includes(q) && !hasWords(w._fa, words)) return;
       m.set(a, (m.get(a) || 0) + 1);
     });
     return [...m.entries()]

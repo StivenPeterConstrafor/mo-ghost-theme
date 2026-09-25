@@ -1072,6 +1072,10 @@
 
     function matching() {
       const q = fold(state.q);
+      // Every word of the box, in any order (corpus owner, 2026-09-25: a
+      // work is named by its author and its title at once, "Westminster
+      // Annotations"). fold() drops the spaces, so the words are split first.
+      const words = String(state.q || "").split(/\s+/).map(fold).filter(Boolean);
       return entries.filter((e) => {
         if (state.verse && !verseSet(e).has(state.verse)) return false;
         if (state.collection && e.corpus !== state.collection) return false;
@@ -1080,7 +1084,8 @@
         if (state.denomination && tradOf(e) !== state.denomination) return false;
         if (state.century && String(e.century) !== state.century) return false;
         if (!q) return true;
-        return haystack(e).includes(q);
+        const h = haystack(e);
+        return h.includes(q) || (words.length > 1 && words.every((x) => h.includes(x)));
       });
     }
 
@@ -1090,7 +1095,8 @@
       const word = `${noun}${shown === 1 ? "" : "s"}`;
       countEl.textContent = shown === entries.length
         ? `${shown.toLocaleString()} ${word}`
-        : `${shown.toLocaleString()} of ${entries.length.toLocaleString()} ${word}`;
+        // "1 of 606 works": the noun agrees with the whole, not the one shown.
+        : `${shown.toLocaleString()} of ${entries.length.toLocaleString()} ${noun}${entries.length === 1 ? "" : "s"}`;
     }
 
     // The denomination list follows the chosen tradition. Guarded on
