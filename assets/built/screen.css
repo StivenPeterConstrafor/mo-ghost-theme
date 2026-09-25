@@ -280,6 +280,15 @@ img { max-width: 100%; height: auto; }
   display: flex;
   align-items: center;
   gap: 8px;
+  /* CENTRED, NOT PUSHED LEFT (Ian, 2026-09-25). .header-inner is
+     space-between, so with the logo narrow and the member button wide
+     the bar ended up sitting left of centre and the eye read the whole
+     header as leaning. Auto margins take the leftover space evenly on
+     both sides, which centres the links between the logo and the
+     actions without touching either of them. The mobile rows are
+     unaffected: .nav is display:none there. */
+  margin-left: auto;
+  margin-right: auto;
 }
 /* ROOM FOR "THE FAITH RECEIVED" AND "THE DAILY LITURGY" (Ian,
    2026-09-25). Two more items, both long, on a bar that already did not
