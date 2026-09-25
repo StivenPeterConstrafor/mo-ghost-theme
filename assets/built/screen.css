@@ -279,7 +279,34 @@ img { max-width: 100%; height: auto; }
 .nav {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+}
+/* ROOM FOR "THE FAITH RECEIVED" (Ian, 2026-09-25). A seven-item bar
+   carrying an eighteen-character item does not fit the 1180px measure
+   the rest of the site uses, at any width: the label wrapped onto three
+   lines and pushed the bar out of shape, but the overflow was there
+   before the wrap made it visible.
+
+   So the header, and only the header, gets a wider inner measure, the
+   tracking comes in from 0.22em, and no top-level label may wrap. The
+   hamburger also takes over earlier; see the 1240px block further down,
+   which is its own query because the 1024px one governs half the site. */
+.site-header > * { max-width: 1300px; }
+.nav a,
+.nav .nav-dropdown-toggle {
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+/* Below about 1150 the items cannot be made to fit however hard the
+   tracking is squeezed, and a bar that breaks is worse than a menu
+   button, so the menu button starts at 1240 rather than 1024. The cost
+   is that laptops between those widths lose the full bar. */
+@media (max-width: 1240px) {
+  .nav { display: none; }
+  .nav-actions { display: none; }
+  .nav-toggle { display: inline-flex; }
 }
 .nav a {
   font-family: var(--font-body);
