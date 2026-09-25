@@ -902,7 +902,7 @@
 
   function toHub() {
     const hub = "/the-faith-received/tutorial/";
-    if (window.location.pathname !== hub) window.location.href = hub;
+    if (window.location.pathname !== hub) window.location.assign(hub);
   }
 
   function stop(finished) {
