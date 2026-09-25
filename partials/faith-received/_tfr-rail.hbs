@@ -102,7 +102,18 @@
            routes.yaml is uploaded; until then this starts the first tour,
            which chains to the rest. Point it at the hub once the route is
            live. --}}
-      <li><a class="tfr-rail-link" href="/the-faith-received/tutorial/">Tutorial</a></li>
+      {{!-- About, a drawer rather than a link (Ian, 2026-09-25). The
+           tutorial was the only way in here and the manifesto had none,
+           so the two things a newcomer wants, what this is and how to
+           use it, now sit together under one name. Same drawer as Read
+           and Research; narrow, because it holds two items. --}}
+      <li class="tfr-rail-group">
+        <button type="button" class="tfr-rail-link tfr-rail-toggle" data-tfr-drawer="about" aria-expanded="false" aria-controls="tfrDrawerAbout">About</button>
+        <div class="tfr-rail-drawer" id="tfrDrawerAbout" data-tfr-drawer-for="about" hidden>
+          <a href="/the-faith-received/manifesto/">About TFR</a>
+          <a href="/the-faith-received/tutorial/">Tutorial</a>
+        </div>
+      </li>
     </ul>
   </div>
 </nav>
