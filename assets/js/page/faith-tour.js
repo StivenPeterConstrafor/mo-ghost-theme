@@ -132,34 +132,34 @@
         { sel: ["#rdTools", "[aria-controls=\"frMToolsDrawer\"]"],
           title: "Tools",
           body: "Tools opens a tray with everything else the reader can do. Here is what is inside." },
-        { sel: [".fr-tools-drawer .fr-td-lang", "#frMToolsDrawer [data-t=\"x-lang\"]", "#m-par"], open: [TOOLS],
+        { sel: [".fr-tools-drawer.is-settled .fr-td-lang", "#frMToolsDrawer [data-t=\"x-lang\"]", "#m-par"], open: [TOOLS],
           title: "Languages",
           body: "Many works come with the original Latin or Greek beside the English. Choose English only, the original only, or both side by side." },
-        { sel: [".fr-tools-drawer .fr-td-src", "#frMToolsDrawer [data-t=\"x-src\"]"], open: [TOOLS],
+        { sel: [".fr-tools-drawer.is-settled .fr-td-src", "#frMToolsDrawer [data-t=\"x-src\"]"], open: [TOOLS],
           title: "Source",
           body: "Some works come from more than one source text. For those, Source in Tools switches between them." },
-        { sel: [".fr-tools-drawer .fr-td-scan", ".fr-tools-drawer #m-study", "#frMToolsDrawer [data-t=\"study\"]"], open: [TOOLS],
+        { sel: [".fr-tools-drawer.is-settled .fr-td-scan", ".fr-tools-drawer.is-settled #m-study", "#frMToolsDrawer [data-t=\"study\"]"], open: [TOOLS],
           title: "Page scans",
           body: "Many works include photographs of the printed pages. Where they do, Scan in Tools opens the page beside the text and follows along as you scroll." },
-        { sel: [".fr-tools-drawer #rdFlow", "#frMToolsDrawer [data-t=\"x-flow\"]"], open: [TOOLS],
+        { sel: [".fr-tools-drawer.is-settled #rdFlow", "#frMToolsDrawer [data-t=\"x-flow\"]"], open: [TOOLS],
           title: "Flow or pages",
           body: "Flow reads as one continuous text. Switch to Pages to read the work page by page, as it was printed." },
-        { sel: [".fr-tools-drawer .fr-tb-folds", "#frMToolsDrawer [data-t=\"x-folds\"]"], open: [TOOLS],
+        { sel: [".fr-tools-drawer.is-settled .fr-tb-folds", "#frMToolsDrawer [data-t=\"x-folds\"]"], open: [TOOLS],
           title: "Collapse all",
           body: "Fold every section at once to see the shape of the work. Press it again to open them all." },
-        { sel: [".fr-tools-drawer .fr-tb-ednotes", "#frMToolsDrawer [data-t=\"x-ednotes\"]"], open: [TOOLS],
+        { sel: [".fr-tools-drawer.is-settled .fr-tb-ednotes", "#frMToolsDrawer [data-t=\"x-ednotes\"]"], open: [TOOLS],
           title: "Hide editorial notes",
           body: "This removes the editor's notes from every page of every work. The author's own footnotes stay." },
-        { sel: [".fr-tools-drawer #rdKeep", "#frMToolsDrawer [data-t=\"x-keep\"]"], open: [TOOLS], member: "tfr-bookmarks",
+        { sel: [".fr-tools-drawer.is-settled #rdKeep", "#frMToolsDrawer [data-t=\"x-keep\"]"], open: [TOOLS], member: "tfr-bookmarks",
           title: "Bookmark and copy link",
           body: "Bookmark keeps your place in this work for later. Copy link gives you an address that opens this exact page." },
-        { sel: [".fr-tools-drawer .fr-tb-focus"], open: [TOOLS], only: "desktop",
+        { sel: [".fr-tools-drawer.is-settled .fr-tb-focus"], open: [TOOLS], only: "desktop",
           title: "Hide the toolbar",
           body: "Give the text the whole screen. A small Show toolbar button brings everything back." },
-        { sel: [".fr-tools-drawer .fr-tb-report", "#frMToolsDrawer [data-t=\"x-report\"]"], open: [TOOLS], member: "tfr-report",
+        { sel: [".fr-tools-drawer.is-settled .fr-tb-report", "#frMToolsDrawer [data-t=\"x-report\"]"], open: [TOOLS], member: "tfr-report",
           title: "Report a problem",
           body: "Found a bad scan, a wrong word or a broken link? Tell us here and we will look into it." },
-        { sel: [".fr-tools-drawer #nbCount", "#frMToolsDrawer [data-t=\"nb\"]"], open: [TOOLS], member: "tfr-research",
+        { sel: [".fr-tools-drawer.is-settled #nbCount", "#frMToolsDrawer [data-t=\"nb\"]"], open: [TOOLS], member: "tfr-research",
           title: "Research",
           body: "Research opens a panel beside the text for studying this work. The next few steps open it." },
         { sel: ["#notebook.open .nb-tabs", "#notebook .nb-tabs"], open: NB, shut: "#nbClose", member: "tfr-research",
@@ -176,7 +176,7 @@
           ],
           title: "Your saved passages",
           body: "Everything you highlight, clip or annotate collects here with its citation, ready to search and to use on the Desk." },
-        { sel: [".fr-tools-drawer .fr-td-ask", "#frMToolsDrawer [data-t=\"x-ask\"]", "#frMToolsDrawer [data-t=\"ask\"]"], open: [TOOLS], member: "ask",
+        { sel: [".fr-tools-drawer.is-settled .fr-td-ask", "#frMToolsDrawer [data-t=\"x-ask\"]", "#frMToolsDrawer [data-t=\"ask\"]"], open: [TOOLS], member: "ask",
           title: "Ask",
           body: "Ask opens a conversation about this work beside the text. The next step opens it." },
         { sel: ["#fra-workspace"], open: ASK, shut: "#fra-close", member: "ask",
@@ -738,7 +738,12 @@
     const tour = TOURS[name];
     if (!tour || run) return;
     loadCss();
-    if (tour.ready) await waitFor(tour.ready, 20000);
+    // Arriving mid-tour on another page (the Verse Desk, a topic page):
+    // wait for that step's own target, not the first page's, which never
+    // appears there and held the tour for the full 20 seconds.
+    const arriving = fromIdx > 0 ? tour.steps.find((s) => s.idx >= fromIdx) : null;
+    if (arriving && arriving.at) { if (arriving.sel) await waitFor([arriving.sel], 10000); }
+    else if (tour.ready) await waitFor(tour.ready, 20000);
     await wait(700);
     if (run) return;
     const steps = tour.steps.filter(fits);
@@ -766,7 +771,18 @@
   // An `open` entry is a selector to press, or { press, unless } to press
   // only while `unless` is not on screen.
   const keyOf = (o) => (typeof o === "string" ? o : o.press);
-  const isOpen = (t) => t && (t.getAttribute("aria-expanded") === "true" || t.getAttribute("aria-selected") === "true");
+  const isOpen = (t) => {
+    if (!t) return false;
+    // The desktop Tools tray's own record of whether it is open; its
+    // button's aria-expanded can say open while the tray has folded shut
+    // (closing the Research panel folds it), which left Ask lit on an
+    // empty slot in the toolbar.
+    if (t.id === "rdTools") {
+      const d = document.querySelector(".fr-tools-drawer");
+      if (d) return d.dataset.want === "open";
+    }
+    return t.getAttribute("aria-expanded") === "true" || t.getAttribute("aria-selected") === "true";
+  };
   function press(sel) {
     const t = find(sel);
     if (!t) return null;
