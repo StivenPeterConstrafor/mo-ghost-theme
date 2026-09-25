@@ -65,6 +65,8 @@
   const ASK_OPEN = "#fra-workspace";
   // The Topics tour moves from the index to one topic's page.
   const TRIN = "/the-faith-received/topics/?t=de-trinitate";
+  // The Scripture tour ends on the Verse Desk for the verse it opened.
+  const DESK = "/the-faith-received/scripture/desk/?ref=genesis.1.26";
   const ASK = [{ press: TOOLS, unless: ASK_OPEN }, { press: ".fr-td-ask, #frMToolsDrawer [data-t=\"x-ask\"]", unless: ASK_OPEN }];
 
   // ── The tours ───────────────────────────────────────────────────
@@ -74,7 +76,7 @@
     reader: {
       name: "Reading a work",
       blurb: "Headings, contents, pages, reading settings, the tools tray and the research panel.",
-      url: "/the-faith-received/read/?w=pld-433",
+      url: "/the-faith-received/read/?w=pld-433&p=1",
       ready: ["#reading .row", "#rdTools, nav.frthumb"],
       steps: [
         { title: "Reading a work",
@@ -91,7 +93,7 @@
         { sel: ["#reading .fr-fold-head", "#reading section.pld-editorial"],
           title: "The editor's notes",
           body: "Notes from the printed edition's editor start folded, so you meet the author first. Open them whenever you want them." },
-        { sel: ["#reading .xref"],
+        { sel: ["#reading .xref"], near: true,
           title: "Scripture references",
           body: "References to Scripture are marked in the text. Point at one to read the verses without leaving the page." },
         { sel: ["#reading .row .en"], member: "tfr-notebook",
@@ -103,9 +105,6 @@
         { sel: ["#sbT"], only: "desktop",
           title: "Show or hide the contents",
           body: "This button folds the contents column away to give the text more room. Press it again to bring the column back." },
-        { sel: [".fr-sb-actions .fr-read-fold", ".fr-read-fold"], only: "desktop",
-          title: "The whole outline at once",
-          body: "Expand contents lays the full outline over the page, one card per part. Choose any entry to go there." },
         { sel: ["nav.frthumb [data-t=\"toc\"]"], only: "phone",
           title: "Contents",
           body: "Contents lists every part of the work. Choose one to go straight there." },
@@ -126,7 +125,7 @@
           body: "Some old books run a single paragraph for pages. Split paragraphs breaks long ones at the ends of sentences without changing a word." },
         { sel: ["#frAaTools #m-modern"], open: ["#aaBtn"], member: "tfr-modernize",
           title: "Modernize",
-          body: "Modernize updates old English spelling and grammar as you read. The original language is never touched." },
+          body: "Works written in older English also have Modernize here. It updates old spelling and grammar as you read without changing the original." },
         { sel: ["#aaPop"], open: ["#aaBtn"],
           title: "Theme, font and size",
           body: "Choose a light, sepia or dark page, a font, the line spacing and the size of the text. Your choices are remembered on this device." },
@@ -138,10 +137,10 @@
           body: "Many works come with the original Latin or Greek beside the English. Choose English only, the original only, or both side by side." },
         { sel: [".fr-tools-drawer .fr-td-src", "#frMToolsDrawer [data-t=\"x-src\"]"], open: [TOOLS],
           title: "Source",
-          body: "Where the library holds more than one source text for a work, this button switches between them." },
+          body: "Some works come from more than one source text. For those, Source in Tools switches between them." },
         { sel: [".fr-tools-drawer .fr-td-scan", ".fr-tools-drawer #m-study", "#frMToolsDrawer [data-t=\"study\"]"], open: [TOOLS],
           title: "Page scans",
-          body: "Scan opens a photograph of the printed page beside the text. It follows along as you scroll." },
+          body: "Many works include photographs of the printed pages. Where they do, Scan in Tools opens the page beside the text and follows along as you scroll." },
         { sel: [".fr-tools-drawer #rdFlow", "#frMToolsDrawer [data-t=\"x-flow\"]"], open: [TOOLS],
           title: "Flow or pages",
           body: "Flow reads as one continuous text. Switch to Pages to read the work page by page, as it was printed." },
@@ -245,15 +244,42 @@
         { sel: [".sd-panel .sd-sources"], open: [{ press: "#v26", unless: ".sd-panel .sd-panel-head" }],
           title: "Most-cited sources",
           body: "The works that cite this verse most often. Preview shows the passage itself without leaving the page." },
-        { sel: [".sd-panel .sd-desk-link"], open: [{ press: "#v26", unless: ".sd-panel .sd-panel-head" }],
-          title: "The Verse Desk",
-          body: "Open the Verse Desk to study every citation of this verse at once, grouped and in full." },
         { sel: [".sd-comm-toggle"],
           title: "Commentaries",
           body: "Commentaries lists the commentaries in the library on this chapter." },
         { sel: ["#sdCommPanel"], open: [".sd-comm-toggle"],
           title: "Find a commentary",
           body: "Filter the commentaries by tradition or author, then choose one to read its comment on this chapter." },
+        { sel: [".sd-panel .sd-desk-link"], open: [{ press: "#v26", unless: ".sd-panel .sd-panel-head" }],
+          title: "The Verse Desk",
+          body: "Open the Verse Desk to study every citation of this verse at once, grouped and in full. The next step opens it." },
+        { sel: [".sd-desk-head"], at: DESK,
+          title: "One verse, everything",
+          body: "The Verse Desk gathers everything the library holds on a single verse." },
+        { sel: [".sd-desk-nav"], at: DESK,
+          title: "Verse by verse",
+          body: "Step to the verse before or after this one, or go back to the whole chapter." },
+        { sel: [".sd-parallel"], at: DESK,
+          title: "In five translations",
+          body: "The verse in five translations, side by side." },
+        { sel: [".sd-charts"], at: DESK,
+          title: "Citations at a glance",
+          body: "See who cited the verse by century and by tradition. Select a bar to show only those citations." },
+        { sel: [".sd-desk-sec > .sd-filters"], at: DESK,
+          title: "Narrow the citations",
+          body: "Filter by tradition, author or century. You can also search the citations for a word." },
+        { sel: [".sd-sources.sd-top"], at: DESK,
+          title: "Most-cited sources",
+          body: "The works that cite this verse most often. Preview shows the passage without leaving the desk." },
+        { sel: [".sd-comm-strip"], at: DESK,
+          title: "Commentaries",
+          body: "Commentaries on the chapter, from the Fathers onward. Scroll sideways for more." },
+        { sel: [".sd-desk-sec:has(#sd-h-ask)"], at: DESK, member: "ask",
+          title: "Ask about this verse",
+          body: "Ask a question about the verse. Answers come from the library with citations you can check." },
+        { sel: ["#sd-h-all"], at: DESK,
+          title: "Every citation",
+          body: "Below that, every citation of the verse in the library, each with its passage." },
         { title: "Scripture, done",
           body: "Any chapter works the same way. The next tour shows the library arranged by topic." }
       ]
@@ -281,9 +307,12 @@
         { sel: [".td-head .td-kids"], at: TRIN,
           title: "Narrower topics",
           body: "Some topics divide into narrower ones. Follow these links to go deeper." },
-        { sel: [".td-toc-drawer > summary", ".td-toc"], at: TRIN,
+        { sel: [".td-toc"], at: TRIN, only: "desktop",
           title: "Contents",
           body: "The whole outline stays at hand. Use it to move to any other topic." },
+        { sel: [".td-toc-drawer > summary"], at: TRIN, only: "phone",
+          title: "Contents",
+          body: "The whole outline stays at hand. Open Contents to move to any other topic." },
         { sel: [".td-block .td-fold-sum"], at: TRIN,
           title: "Creeds and confessions",
           body: "What the creeds, confessions and catechisms say on this topic. Press a section's heading to fold it away." },
@@ -413,7 +442,7 @@
         { at: "/the-faith-received/research/", sel: ["#research-panel-connections"], open: ["[data-research-mode=\"connections\"]"], only: "signed-in", member: "tfr-connections",
           title: "Connections",
           body: "The whole library mapped by citation. Choose an author to see who they read and who read them." },
-        { at: "/the-faith-received/research/", sel: ["#research-panel-desk"], open: ["[data-research-mode=\"desk\"]"], only: "signed-in", member: "tfr-desk",
+        { at: "/the-faith-received/research/", sel: ["#research-panel-desk"], span: true, open: ["[data-research-mode=\"desk\"]"], only: "signed-in", member: "tfr-desk",
           title: "Desk",
           body: "Write with what you have kept beside you. Every quotation stays linked to the page it came from." },
         { at: "/the-faith-received/research/", sel: [".blist--tools li:nth-child(1)"], only: "signed-out", member: "ask",
@@ -530,6 +559,22 @@
     if (step.only === "signed-out" && isSignedIn()) return false;
     return true;
   }
+  // Of several matches, the first one at or below the top of the screen.
+  function findNear(sel) {
+    let best = null;
+    let bestTop = Infinity;
+    for (const s of [].concat(sel || [])) {
+      let els;
+      try { els = document.querySelectorAll(s); } catch (e) { continue; }
+      for (const el of els) {
+        if (!visible(el)) continue;
+        const t = el.getBoundingClientRect().top;
+        if (t >= 80 && t < bestTop) { best = el; bestTop = t; }
+      }
+    }
+    return best || find(sel);
+  }
+  const target = (step) => (step.sel ? (step.near ? findNear(step.sel) : find(step.sel)) : null);
   function waitFor(sels, ms) {
     return new Promise((resolve) => {
       const t0 = Date.now();
@@ -645,16 +690,17 @@
     await wait(700);
     if (run) return;
     const steps = tour.steps.filter(fits);
-    // A step with a panel to open, or on another page, cannot be checked
-    // yet; the rest are kept only if their target is on the page now.
-    // A page may rewrite its own address (the author page does), so
-    // "here" is decided by the `at` pages alone: if this is one of them,
-    // the tour's other pages are elsewhere.
-    const hereAt = tour.steps.some((s) => s.at && onPage(s.at));
-    const elsewhere = (s) => (s.at ? !onPage(s.at) : hereAt);
-    const live = steps.filter((s) => !s.sel || s.open || elsewhere(s) || find(s.sel));
+    // Every step that fits this screen stays, so the count matches the
+    // tutorial page. A step whose feature this work lacks shows its card
+    // in the middle of the screen with nothing lit.
+    const live = steps;
     let first = 0;
     if (fromIdx > 0) first = Math.max(0, live.findIndex((s) => s.idx >= fromIdx));
+    // A reader opened at a #place keeps jumping back to it as the page
+    // settles, which would pull every lit feature off the screen.
+    if (window.location.hash) {
+      try { window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search); } catch (e) { /* ignore */ }
+    }
     setTouring(true);
     run = { name, tour, steps: live, i: -1, opened: [], target: null, raf: 0, ui: build(), lastFocus: document.activeElement,
       arrivedAt: fromIdx > 0 && live[first] ? live[first].idx : -1, lastAt: "",
@@ -750,15 +796,40 @@
         const f = find(step.fill.sel);
         if (f && !f.value) f.value = step.fill.value;
       }
-      const el = step.sel ? find(step.sel) : null;
-      if (!step.sel || el) { run.busy = false; paint(i, step, el); return; }
-      // Missing on arrival: drop it so the count stays honest.
-      steps.splice(i, 1);
-      if (dir < 0) i -= 1;
+      const el = target(step);
+      run.busy = false;
+      paint(i, step, el);
+      settle(token, step);
+      return;
     }
     run.busy = false;
     if (i < 0) { show(0, 1); return; }
     stop(true);
+  }
+
+  // For a moment after a step paints, keep it honest: a page that jumps
+  // back to its own #anchor, or a tray still folding shut from the last
+  // step, would otherwise leave the light on the wrong place.
+  async function settle(token, step) {
+    for (let k = 0; k < 10; k++) {
+      await wait(160);
+      if (!run || token !== run.token) return;
+      let el = run.target && run.target.isConnected && visible(run.target) ? run.target : target(step);
+      if (step.sel && !el && step.open) {
+        for (const entry of step.open) {
+          if (entry.unless && find(entry.unless)) continue;
+          const t = find(keyOf(entry));
+          if (t && !isOpen(t)) { t.click(); await wait(380); }
+        }
+        if (!run || token !== run.token) return;
+        el = target(step);
+      }
+      if (!el) continue;
+      run.target = el;
+      const r = el.getBoundingClientRect();
+      if (r.bottom < 60 || r.top > window.innerHeight - 20) el.scrollIntoView({ block: "center", inline: "nearest", behavior: "instant" });
+      place();
+    }
   }
 
   function paint(i, step, el) {
@@ -845,7 +916,18 @@
     spot.classList.remove("is-none");
     const step = run.steps[run.i];
     const pad = step && step.pad != null ? step.pad : 6;
-    const r = el.getBoundingClientRect();
+    let r = el.getBoundingClientRect();
+    // `span`: light everything the target lays out, even where its
+    // children run wider than the target itself (the Desk's side columns).
+    if (step && step.span) {
+      let { left: l, top: t, right: rt, bottom: b } = r;
+      el.querySelectorAll(":scope > *, :scope > * > *, :scope > * > * > *").forEach((c) => {
+        const q = c.getBoundingClientRect();
+        if (q.width < 2 || q.height < 2) return;
+        l = Math.min(l, q.left); t = Math.min(t, q.top); rt = Math.max(rt, q.right); b = Math.max(b, q.bottom);
+      });
+      r = { left: l, top: t, right: rt, bottom: b };
+    }
     // Clip the box to the screen so a long target still reads as lit.
     const top = Math.max(2, r.top - pad);
     const left = Math.max(2, r.left - pad);

@@ -19940,6 +19940,9 @@ body .research-workspace .cmp-col > .cmp-note { margin: 0; padding: 12px 16px 4p
   body:has(.tfr-rail) select,
   body:has(.tfr-rail) select::picker(select) { appearance: base-select; }
   body:has(.tfr-rail) select { background-image: none; border-radius: 0; cursor: pointer; }
+  /* A base-select menu lays its chosen text at the top of a tall box
+     (the relation menu read "parallels" against the top edge). Centre it. */
+  body:has(.tfr-rail) select { align-content: center; align-items: center; }
   body:has(.tfr-rail) select::picker-icon {
     content: "";
     width: 6px;
