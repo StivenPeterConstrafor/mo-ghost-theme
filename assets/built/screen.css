@@ -296,24 +296,56 @@ img { max-width: 100%; height: auto; }
    child, so a three-column grid would strand it in the centre column.
    Flex is the right layout for that row and it keeps it. */
 @media (min-width: 1262px) {
-  .header-inner {
+  /* THE BAR IS AS WIDE AS IT NEEDS TO BE, AND NO WIDER (Ian, 2026-09-25:
+     "I'm so confused about why the logo and sign in are not moving back
+     in toward the middle to be better aligned"). The header had its own
+     1600px measure while every other block on the site uses .container's
+     1180px. At a 1900px window that put the logo 186px to the LEFT of
+     where the page's own text begins and the member button 186px to the
+     right of where it ends, with 340px of dead air between the logo and
+     the links. The bar was not misaligned with itself; it was misaligned
+     with the page.
+
+     width: fit-content makes it shrink to its contents, and the
+     min-width floor stops it shrinking past the page's own measure. So
+     six nav items give a bar exactly as wide as the text below it, with
+     the logo on the content's left edge and the member button on its
+     right, and the slack split evenly by space-between. Add items and
+     the bar grows past the page's measure only as far as it must,
+     staying centred, up to the 1600px ceiling.
+
+     1172, not 1180: .container carries 28px of padding and the header
+     24px, so the header's box has to be 8px narrower for the two to
+     START in the same place. Measured at 1900: logo and content both at
+     388, member button and content both ending at 1512. */
+  .site-header > .header-inner {
     display: grid;
-    /* minmax(min-content, 1fr): the outer tracks take an equal share of
-       the leftover space, which is what centres the links, and neither
-       can be squeezed below the smallest its contents allow. That floor
-       is not a fixed number any more, because the logo and the actions
-       below are the things that give. When the links need room, the
-       tracks hand it over and the two sides get smaller; when the links
-       give room back, the sides grow again, up to their full size and no
-       further. The sides stay equal, and so the links stay centred,
-       until one side hits its own floor; after that the wider side stops
-       and the links drift a few dozen pixels off centre rather than
-       sliding underneath anything. */
-    grid-template-columns: minmax(min-content, 1fr) auto minmax(min-content, 1fr);
+    /* auto tracks, not 1fr: an fr track would take an equal share of the
+       leftover and leave all the slack on the logo's side, because the
+       member button is 124px wider than the logo. auto sizes each group
+       to itself and space-between hands the slack to the two gaps, which
+       is what makes them equal. The cost is that the links sit about
+       62px left of the window's true centre, which is half that 124px
+       difference and is the price of both gaps being the same. */
+    grid-template-columns: auto auto auto;
+    justify-content: space-between;
+    align-items: center;
+    width: fit-content;
+    min-width: min(100%, 1172px);
+    margin-left: auto;
+    margin-right: auto;
   }
-  .header-inner > .brand { justify-self: start; }
-  .header-inner > .nav { justify-self: center; }
-  .header-inner > .nav-actions { justify-self: end; }
+
+  /* The links give up padding before the logo gives up size, because a
+     link's padding is air and the logo is the masthead. 11px each side
+     at a wide window, down to 6px as the bar fills, which is 65px across
+     eight items and is what keeps the whole bar inside a 1262px window
+     rather than running off the edge of it. */
+  .nav a,
+  .nav .nav-dropdown-toggle {
+    padding-left: clamp(6px, 0.55vw, 11px);
+    padding-right: clamp(6px, 0.55vw, 11px);
+  }
 
   /* THE LOGO IS THE FLUID PART (Ian, 2026-09-25: "the logo/sign in
      sections to expand and shrink with whatever is in the bar. Right now
@@ -326,10 +358,7 @@ img { max-width: 100%; height: auto; }
      164px is the cap because that is the image's natural width; past it
      the PNG would be resampled and go soft. 84px is the floor because
      below that the wordmark stops being readable, and a bar that cannot
-     be read is worth less than a menu button. Those two numbers decide
-     the breakpoint above: 84 + 884 links + 237 actions + two 20px gaps
-     + two 24px gutters is 1269, near enough to 1262 once the actions
-     have tightened, and below it the hamburger takes over. */
+     be read is worth less than a menu button. */
   .brand-logo {
     width: 100%;
     height: auto;
@@ -3942,14 +3971,20 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
 }
 
 /* WHERE THE GIVING RUNS OUT, AND WHY THIS BLOCK IS DOWN HERE. With
-   eight items the links are 884px and the two sides cannot go below
-   84px of logo and 237px of actions, so the narrowest bar that still
-   works is about 1262px once the gaps and gutters are counted.
-   Measured, not guessed: at 1262 the clearances are exactly the 20px
-   grid gap on both sides. Below that the menu button takes over,
-   earlier than the 1024px the rest of the site uses, because a bar that
-   breaks is worse than a menu button. Add a ninth nav item and this
-   number moves with it.
+   eight items everything reaches its floor at once at 1262: the links
+   at 6px of padding are 819px, the logo is 107px, the actions 247px,
+   and with the gaps and gutters that comes to 1262 exactly. Below it
+   the menu button takes over, earlier than the 1024px the rest of the
+   site uses, because a bar that breaks is worse than a menu button. A
+   ninth nav item moves this number.
+
+   MEASURE THE BAR'S RIGHT EDGE AGAINST THE WINDOW, not the gaps between
+   its parts and not document.scrollWidth. #app and body both carry
+   overflow-x, so a bar that runs off the side is CLIPPED: the gaps
+   still read as a tidy 20px, scrollWidth still equals innerWidth, and
+   the member button is simply not there. Checked the wrong way on
+   2026-09-25, an earlier version of this was called a fit when it was
+   42px over.
 
    IT HAS TO BE AFTER THE BASE RULES. `.nav-toggle { display: none }`
    and `.nav-actions { display: flex }` are declared further up this
