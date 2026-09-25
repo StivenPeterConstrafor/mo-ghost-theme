@@ -26163,7 +26163,9 @@ body:has(.welcome-page) .site-header { position: static; flex: 0 0 auto; }
   text-align: center;
 }
 .mo-tfr-band[hidden] { display: none; }
-.mo-tfr-eyebrow { color: #ffffffb3; margin: 0 0 10px; }
+.mo-tfr-eyebrow { color: #ffffffb3; margin: 0 0 12px; }
+.mo-tfr-eyebrow[data-tfr-works-label] { margin: 0 0 12px; }
+.mo-tfr-eyebrow[hidden] { display: none; }
 .mo-tfr-head {
   font-family: var(--font-display, Georgia, serif);
   font-weight: 400;

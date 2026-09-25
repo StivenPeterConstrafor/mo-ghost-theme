@@ -83,6 +83,8 @@
       if (!html) return;
       list.innerHTML = html;
       list.hidden = false;
+      const label = band.querySelector("[data-tfr-works-label]");
+      if (label) label.hidden = false;
     })
     .catch(() => { /* the headline and the button stand on their own */ });
 })();
