@@ -476,7 +476,58 @@
           title: "Open the tools",
           body: "The research tools are free during the beta. Enter your name and email and we will send you a sign-in link." },
         { at: "/the-faith-received/research/",
-          title: "That is the whole library",
+          title: "Research tools, done",
+          body: "The last tour opens Connections, the map of who read whom across the whole library." }
+      ]
+    },
+    connections: {
+      name: "Connections",
+      blurb: "The whole library mapped by citation: who each author read, who read them and the passages behind every link.",
+      url: "/the-faith-received/connections/",
+      ready: ["#explorer, .tfr-gate-band"],
+      steps: [
+        { title: "Connections",
+          body: "Connections maps the whole library by citation. Every point is an author. Every line is one author citing another." },
+        { sel: [".tfr-gate-band"], only: "signed-out", member: "tfr-connections",
+          title: "Open the map",
+          body: "Connections needs a free account during the beta. Sign in, then take this tour again to see the map itself." },
+        { sel: ["#find"], member: "tfr-connections",
+          title: "Find an author",
+          body: "Type a name to jump straight to that author." },
+        { sel: ["#author-index"], member: "tfr-connections",
+          title: "Browse authors",
+          body: "Every author in the index with how many readers they have. The menu above the list sorts it another way." },
+        { sel: ["#map-filters > summary", "#map-filters"], member: "tfr-connections",
+          title: "Filter the index",
+          body: "Narrow the map to one shelf, a period or a span of years. Network prominence keeps only the most connected authors." },
+        { sel: ["#mobile-view"], only: "phone", member: "tfr-connections",
+          title: "List or map",
+          body: "On a phone the page opens on the list of authors. View map shows the network itself." },
+        { sel: ["#graph-frame"], only: "desktop", member: "tfr-connections",
+          title: "The citation network",
+          body: "Each point is an author and each line a recorded citation. Earlier authors sit to the left and later ones to the right." },
+        { sel: ["#network-layouts"], only: "desktop", member: "tfr-connections",
+          title: "Three layouts",
+          body: "Timeline places authors by date. Rings and Tradition arrange the same network by closeness and by tradition." },
+        { sel: ["#web-zoom"], only: "desktop", member: "tfr-connections",
+          title: "Move around the map",
+          body: "Drag to pan. Use plus and minus to zoom, or Fit map to see the whole network again." },
+        { sel: ["#period-key"], only: "desktop", member: "tfr-connections",
+          title: "Colours",
+          body: "A point's colour shows the period its author belongs to." },
+        { sel: ["#panel:not([inert])", "#panel"], open: [{ press: "#author-index [data-author]", unless: "#panel:not([inert]) #pbody > *" }], shut: "#px", member: "tfr-connections",
+          title: "An author's connections",
+          body: "Choose any author to see who they cited and who cited them. Each link opens the passages where it happens." },
+        { sel: ["#network-author-map"], open: [{ press: "#author-index [data-author]", unless: "#panel:not([inert]) #pbody > *" }], shut: "#px", member: "tfr-connections",
+          title: "One author's map",
+          body: "This redraws the network around the author you chose, with only their connections." },
+        { sel: ["#connection-discovery"], only: "desktop", member: "tfr-connections",
+          title: "Places to start",
+          body: "A few recorded connections to explore first. Each opens the passages where one author cites another." },
+        { sel: ["#mnav"], member: "tfr-connections",
+          title: "Other views",
+          body: "Paths traces the chain of citations between two authors. Topics and Scripture show who wrote on a doctrine or a passage of the Bible." },
+        { title: "That is the whole library",
           body: "You have seen every tour. The Tutorial link in the bar at the top brings you back to any of them." }
       ]
     }
@@ -487,7 +538,8 @@
     ["scripture", "Scripture"],
     ["topics", "Topics"],
     ["search", "Search"],
-    ["research", "Research tools"]
+    ["research", "Research tools"],
+    ["connections", "Connections"]
   ];
 
   // ── Storage ─────────────────────────────────────────────────────
