@@ -33,7 +33,11 @@
  * interrupts the tour, and the modal returns the moment the tour ends.
  * The workers keep their own member checks, so a panel whose content
  * comes from a member API is shown with an `example` from the step data,
- * labelled Example, and `fill` can put an example question in its box.
+ * labelled Example, and `fill` can put an example question in its box
+ * (`prefill` does the same before the step's panels are opened). `only`
+ * also takes "signed-in" or "signed-out", for pages the server renders
+ * differently for the two (Search and Research send signed-out readers
+ * a sign-up panel instead of the tool).
  *
  * DONE. localStorage tfr_tours_done = ["reader", ...], wrapped, since
  * storage can throw. The hub page reads it through
@@ -295,6 +299,56 @@
         { title: "Topics, done",
           body: "Every topic is laid out the same way. The next tour shows how to search the whole library." }
       ]
+    },
+    search: {
+      name: "Search",
+      blurb: "Find a work, a passage, a verse or an idea across the whole library.",
+      url: "/the-faith-received/search/",
+      // Signed in, the search tool; signed out, the page's sign-up
+      // panel. The page is gated on the server ({{#if @member}}), so a
+      // signed-out reader gets examples instead of the live tool.
+      ready: [".smodes, .blist--tools, .tfr-gate-form"],
+      steps: [
+        { title: "Search",
+          body: "Search looks across every work in the library at once. Here is how it works." },
+        { sel: [".smodes"], only: "signed-in", member: "tfr-search",
+          title: "Four kinds of search",
+          body: "Choose Works to find a title or author, Passages for words in the texts, Scripture for a verse, or Ask for a question." },
+        { sel: [".search-query"], only: "signed-in", prefill: { sel: "#q", value: "justification" },
+          title: "The search box",
+          body: "Type here and press Enter. This example looks for works about justification." },
+        { sel: [".shelf-controls #fTrad", ".shelf-controls"], only: "signed-in",
+          title: "Shelf",
+          body: "Limit the search to one shelf of the library." },
+        { sel: ["#scopeWrap"], open: ["#scopeToggle"], only: "signed-in",
+          title: "Filters and order",
+          body: "Narrow the results by author, work, collection or group. You can also choose how they are organized." },
+        { sel: ["#results"], only: "signed-in", prefill: { sel: "#q", value: "justification" },
+          open: [{ press: "#runSearch", unless: "#results > *" }],
+          title: "Results",
+          body: "Each result names the work and its author. Open one to read it at that place." },
+        { sel: ["#densityBtn"], only: "signed-in",
+          title: "Compact",
+          body: "Compact fits more results on the screen at once." },
+        { sel: ["#passageMethod"], open: [".smodes [data-m=\"full\"]"], only: "signed-in", member: "tfr-search",
+          title: "Exact words or ideas",
+          body: "Passages searches the texts themselves. Exact words matches your wording, and By idea finds passages that say the same thing in other words." },
+        { sel: [".blist--tools li:nth-child(2)", ".blist--tools"], only: "signed-out", member: "tfr-search",
+          example: [
+            "Passages: \u201cjustified by faith alone\u201d",
+            "Every page in the library with those words, each linked to its place in the work."
+          ],
+          title: "Search the texts",
+          body: "Search finds a work, a passage, a Scripture reference or an idea across the whole library. By idea finds passages that say the same thing in other words." },
+        { sel: [".blist--tools"], only: "signed-out",
+          title: "The research tools",
+          body: "Search comes with Ask, Compare, Connections, the notebook and the Desk. The last tour shows each of them." },
+        { sel: [".tfr-gate-form"], only: "signed-out",
+          title: "Open the tools",
+          body: "The research tools are free during the beta. Enter your name and email and we will send you a sign-in link." },
+        { title: "Search, done",
+          body: "The last tour covers the research tools: author pages, Compare, Ask, the notebook and your saved passages." }
+      ]
     }
   };
   Object.keys(TOURS).forEach((k) => TOURS[k].steps.forEach((st, i) => { st.idx = i; }));
@@ -361,9 +415,18 @@
     }
     return null;
   }
+  // Signed in, as the server rendered the page (read once, before a
+  // tour lends the attribute).
+  let signedIn = null;
+  const isSignedIn = () => {
+    if (signedIn === null) signedIn = Boolean(document.body && document.body.hasAttribute("data-member-status"));
+    return signedIn;
+  };
   function fits(step) {
     if (step.only === "phone" && !phone()) return false;
     if (step.only === "desktop" && phone()) return false;
+    if (step.only === "signed-in" && !isSignedIn()) return false;
+    if (step.only === "signed-out" && isSignedIn()) return false;
     return true;
   }
   function waitFor(sels, ms) {
@@ -406,6 +469,7 @@
   let lentStatus = false;
   function setTouring(on) {
     const body = document.body;
+    isSignedIn();
     if (on) {
       window.MOTour = { active: true };
       if (!body.hasAttribute("data-member-status")) { body.setAttribute("data-member-status", "tour"); lentStatus = true; }
@@ -548,6 +612,10 @@
         document.body.appendChild(go);
         go.click();
         return;
+      }
+      if (step.prefill) {
+        const f = find(step.prefill.sel);
+        if (f && !f.value) f.value = step.prefill.value;
       }
       if (step.open) {
         const nb = run.ui.card.querySelector(".frt-next");
