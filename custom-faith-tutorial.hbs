@@ -1,0 +1,78 @@
+{{!< default}}
+{{!-- The TFR rail, first on the page, as on the other library pages. It also
+     loads the tour engine (assets/js/page/faith-tour.js), which fills in the
+     cards below. --}}
+{{> "faith-received/_tfr-rail"}}
+{{#contentFor "moHead"}}
+<title>Tutorial | The Faith Received</title>
+<meta name="description" content="Five short guided tours of The Faith Received: reading a work, Scripture, Topics, Search and the research tools." />
+<meta property="og:title" content="Tutorial | The Faith Received" />
+<meta property="og:description" content="Five short guided tours of The Faith Received: reading a work, Scripture, Topics, Search and the research tools." />
+<meta name="twitter:title" content="Tutorial | The Faith Received" />
+<meta name="twitter:description" content="Five short guided tours of The Faith Received: reading a work, Scripture, Topics, Search and the research tools." />
+<link rel="stylesheet" href="{{asset "css/faith-tour.css"}}&amp;frv=67891283d4478d92">
+{{/contentFor}}
+{{!-- /the-faith-received/tutorial/ (Ian, 2026-09-25). The five guided tours,
+     in the order a new reader needs them. Each card's Start link opens the
+     tour's demo page with ?tour=<name>; the tour runs on the real page and
+     its last step offers the next tour. The step counts, Start links and
+     done ticks are filled by faith-tour.js from its own tour data and from
+     localStorage tfr_tours_done, so this page never disagrees with the
+     tours. A tour not yet written shows "Coming soon" and no Start link.
+
+     ROUTE: needs /the-faith-received/tutorial/ in routes.yaml, which only
+     staff can upload. Until then this page 404s, and the rail's Tutorial
+     link and the home hero's Take A Tour start the reader tour directly. --}}
+
+<main class="faith-received faith-feature">
+
+  <section class="bhero bhero--tool">
+    <div class="bhero-inner container">
+      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Tutorial</p>
+      <h1>How to use <em>The Faith Received</em></h1>
+    </div>
+  </section>
+  <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+
+  <section class="bband faith-feature-body">
+    <div class="container container-narrow faith-tp">
+      <p class="faith-tp-lede">Five short tours, each on a real page of the library. Every feature is lit in turn with a sentence on what it does. Start with the first and each one leads to the next.</p>
+
+      <ol class="frt-hub">
+        <li class="frt-hub-card" data-frt-card="reader">
+          <h2>Reading a work</h2>
+          <p>Headings, contents, pages, reading settings, the tools tray and the research panel.</p>
+          <p class="frt-hub-meta"><span data-frt-count></span><span class="frt-hub-done">Done</span></p>
+          <a class="frt-btn frt-btn--primary" data-frt-start hidden>Start</a>
+        </li>
+        <li class="frt-hub-card" data-frt-card="scripture">
+          <h2>Scripture</h2>
+          <p>Read any chapter with the writers of the tradition who cited it beside each verse.</p>
+          <p class="frt-hub-meta"><span data-frt-count></span><span class="frt-hub-done">Done</span></p>
+          <a class="frt-btn frt-btn--primary" data-frt-start hidden>Start</a>
+        </li>
+        <li class="frt-hub-card" data-frt-card="topics">
+          <h2>Topics</h2>
+          <p>The library arranged by doctrine, from God and the Trinity to the last things.</p>
+          <p class="frt-hub-meta"><span data-frt-count></span><span class="frt-hub-done">Done</span></p>
+          <a class="frt-btn frt-btn--primary" data-frt-start hidden>Start</a>
+        </li>
+        <li class="frt-hub-card" data-frt-card="search">
+          <h2>Search</h2>
+          <p>Find a word, a phrase or an idea across every work in the library.</p>
+          <p class="frt-hub-meta"><span data-frt-count></span><span class="frt-hub-done">Done</span></p>
+          <a class="frt-btn frt-btn--primary" data-frt-start hidden>Start</a>
+        </li>
+        <li class="frt-hub-card" data-frt-card="research">
+          <h2>Research tools</h2>
+          <p>Author rooms, Compare, Ask, the notebook and your saved passages.</p>
+          <p class="frt-hub-meta"><span data-frt-count></span><span class="frt-hub-done">Done</span></p>
+          <a class="frt-btn frt-btn--primary" data-frt-start hidden>Start</a>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+{{> "faith-received/_beta-band"}}
+</main>
+{{> "faith-received/_library-cta"}}

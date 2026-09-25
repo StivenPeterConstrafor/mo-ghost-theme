@@ -216,6 +216,16 @@
   };
 
   function hasAccess(feature) {
+    /* TOUR BYPASS (Ian, 2026-09-25): a guided tour shows the member
+       tools open, to everyone. assets/js/page/faith-tour.js sets
+       window.MOTour.active in memory while a tour runs and clears it the
+       moment the tour ends, is skipped or is closed; it is never stored
+       and never read from the address. Every gate below (the click
+       gate, the address doors, MOFeatureGate.open/allowed) asks here, so
+       this one check covers them all. It is the modal only: the workers'
+       own member checks are untouched, so nothing a member pays for is
+       served by this. */
+    if (window.MOTour && window.MOTour.active === true) return true;
     if (feature.requires === "subscriber") {
       return STATUS === "free" || STATUS === "paid" || STATUS === "comped";
     }

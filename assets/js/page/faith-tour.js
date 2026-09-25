@@ -1,0 +1,629 @@
+/*
+ * The Faith Received: guided tours.
+ *
+ * Ian, 2026-09-25: a first-time reader should see the real page, with
+ * each feature lit in turn while the rest dims, a sentence or two on what
+ * it does, and Next and Back. Five tours, one per page, each ending with
+ * a door to the next: reader, Scripture, Topics, Search, Research.
+ *
+ * START. `?tour=<name>` on any page that loads this file (it rides in
+ * the TFR rail partial, so every rail page has it). The address is read
+ * the moment this file runs, before reader-core.js rewrites the reader's
+ * address away, which is why this is a plain script and not deferred.
+ * The tour then waits for its `ready` selector (the reader builds its UI
+ * late) and begins.
+ *
+ * STEPS. Each tour is a list of
+ *   { sel: [fallback selectors], title, body, open?, only?, pad? }
+ * `sel` is tried in order and the first VISIBLE match is lit; a step
+ * whose target is missing or hidden is skipped, never fatal. No `sel`
+ * means an intro card over the dimmed page. `open` names a toggle (Tools,
+ * Aa) to press first, by its aria-expanded, so the step can point inside
+ * the panel; it is pressed again on leaving unless the next step wants
+ * the same panel; `shut` names a close button pressed on leaving. `only`
+ * is "phone" or "desktop".
+ *
+ * MEMBER TOOLS (Ian, 2026-09-25: show them open, to everyone). A step
+ * with `member: "<feature>"` carries a Members pill and ends "Available
+ * to members." While a tour runs, window.MOTour.active is true and
+ * html.fr-touring is set, in memory only; feature-gate.js's hasAccess()
+ * lets the panels open for as long as that holds, so no subscribe modal
+ * interrupts the tour, and the modal returns the moment the tour ends.
+ * The workers keep their own member checks, so a panel whose content
+ * comes from a member API is shown with an `example` from the step data,
+ * labelled Example, and `fill` can put an example question in its box.
+ *
+ * DONE. localStorage tfr_tours_done = ["reader", ...], wrapped, since
+ * storage can throw. The hub page reads it through
+ * the [data-frt-card] hooks at the end of this file.
+ *
+ * CSP: no inline script anywhere; the sheet is injected as a <link> from
+ * this script's own data-css attribute. Page script: it runs before
+ * site.min.js and uses no bundle globals.
+ */
+(function () {
+  "use strict";
+
+  if (window.FRTour) return;
+
+  const me = document.currentScript;
+  const CSS = me && me.getAttribute("data-css");
+  const DONE_KEY = "tfr_tours_done";
+  const PHONE = 640;
+  const TOOLS = "#rdTools, [aria-controls=\"frMToolsDrawer\"]";
+  const MEMBERS_LINE = "Available to members.";
+  // The Research panel and the Ask workspace: their buttons are toggles,
+  // so they are pressed only while the panel is shut.
+  const NB_OPEN = "#notebook.open";
+  const NB = [{ press: TOOLS, unless: NB_OPEN }, { press: "#nbCount, #frMToolsDrawer [data-t=\"nb\"]", unless: NB_OPEN }];
+  const ASK_OPEN = "#fra-workspace";
+  const ASK = [{ press: TOOLS, unless: ASK_OPEN }, { press: ".fr-td-ask, #frMToolsDrawer [data-t=\"x-ask\"]", unless: ASK_OPEN }];
+
+  // ── The tours ───────────────────────────────────────────────────
+  // Copy rules (Ian): plain, warm, brief; one or two sentences; no em
+  // dashes; no comma splices or ", and" joins; no hype.
+  const TOURS = {
+    reader: {
+      name: "Reading a work",
+      blurb: "Headings, contents, pages, reading settings, the tools tray and the research panel.",
+      url: "/the-faith-received/read/?w=pld-433",
+      ready: ["#reading .row", "#rdTools, nav.frthumb"],
+      steps: [
+        { title: "Reading a work",
+          body: "This tour walks through the reader, one feature at a time. Use Next and Back, or the arrow keys on your keyboard." },
+        { sel: ["#app .reader-identity", "#h1"],
+          title: "The work in front of you",
+          body: "The title and author of the work you are reading sit at the top of the page." },
+        { sel: ["#reading .fr-hd-card", "#reading .fr-sec-headrow", "#reading .fr-sec-head"],
+          title: "Section headings",
+          body: "Each book, chapter or article opens with a heading. The small line above the title tells you where you are in the work." },
+        { sel: ["#reading .fr-sec-toggle"],
+          title: "Fold a section",
+          body: "Press the arrow beside a heading to fold that section away. Press it again to open it." },
+        { sel: ["#reading .fr-fold-head", "#reading section.pld-editorial"],
+          title: "The editor's notes",
+          body: "Notes from the printed edition's editor start folded, so you meet the author first. Open them whenever you want them." },
+        { sel: ["#reading .xref"],
+          title: "Scripture references",
+          body: "References to Scripture are marked in the text. Point at one to read the verses without leaving the page." },
+        { sel: ["#reading .row .en"], member: "tfr-notebook",
+          title: "Highlight, note and share",
+          body: "Select any words to highlight them, add a note, copy them with a citation or make a quote image." },
+        { sel: ["#app > .sidebar"], only: "desktop",
+          title: "Contents",
+          body: "The contents list every part of the work. Choose one to go straight there." },
+        { sel: ["#sbT"], only: "desktop",
+          title: "Show or hide the contents",
+          body: "This button folds the contents column away to give the text more room. Press it again to bring the column back." },
+        { sel: [".fr-sb-actions .fr-read-fold", ".fr-read-fold"], only: "desktop",
+          title: "The whole outline at once",
+          body: "Expand contents lays the full outline over the page, one card per part. Choose any entry to go there." },
+        { sel: ["nav.frthumb [data-t=\"toc\"]"], only: "phone",
+          title: "Contents",
+          body: "Contents lists every part of the work. Choose one to go straight there." },
+        { sel: [".ph .ctr .pnav", "#pPrev"],
+          title: "Turn the page",
+          body: "These arrows move one printed page back or forward. The arrow keys on your keyboard do the same." },
+        { sel: [".ph .ctr .pgjump", "#pgJump"],
+          title: "Go to a page",
+          body: "This shows the page you are on. Type a page number and press Enter to jump there." },
+        { sel: ["#rsBtn", "nav.frthumb [data-t=\"find\"]"],
+          title: "Search this work",
+          body: "Search finds every page of this work that contains your words." },
+        { sel: ["#aaBtn"],
+          title: "Reading settings",
+          body: "Aa holds the settings for how the text looks and reads. Here is what is inside." },
+        { sel: ["#frAaTools .fr-tb-paras"], open: ["#aaBtn"],
+          title: "Split paragraphs",
+          body: "Some old books run a single paragraph for pages. Split paragraphs breaks long ones at the ends of sentences without changing a word." },
+        { sel: ["#frAaTools #m-modern"], open: ["#aaBtn"], member: "tfr-modernize",
+          title: "Modernize",
+          body: "Modernize updates old English spelling and grammar as you read. The original language is never touched." },
+        { sel: ["#aaPop"], open: ["#aaBtn"],
+          title: "Theme, font and size",
+          body: "Choose a light, sepia or dark page, a font, the line spacing and the size of the text. Your choices are remembered on this device." },
+        { sel: ["#rdTools", "[aria-controls=\"frMToolsDrawer\"]"],
+          title: "Tools",
+          body: "Tools opens a tray with everything else the reader can do. Here is what is inside." },
+        { sel: [".fr-tools-drawer .fr-td-lang", "#frMToolsDrawer [data-t=\"x-lang\"]", "#m-par"], open: [TOOLS],
+          title: "Languages",
+          body: "Many works come with the original Latin or Greek beside the English. Choose English only, the original only, or both side by side." },
+        { sel: [".fr-tools-drawer .fr-td-src", "#frMToolsDrawer [data-t=\"x-src\"]"], open: [TOOLS],
+          title: "Source",
+          body: "Where the library holds more than one source text for a work, this button switches between them." },
+        { sel: [".fr-tools-drawer .fr-td-scan", ".fr-tools-drawer #m-study", "#frMToolsDrawer [data-t=\"study\"]"], open: [TOOLS],
+          title: "Page scans",
+          body: "Scan opens a photograph of the printed page beside the text. It follows along as you scroll." },
+        { sel: [".fr-tools-drawer #rdFlow", "#frMToolsDrawer [data-t=\"x-flow\"]"], open: [TOOLS],
+          title: "Flow or pages",
+          body: "Flow reads as one continuous text. Switch to Pages to read the work page by page, as it was printed." },
+        { sel: [".fr-tools-drawer .fr-tb-folds", "#frMToolsDrawer [data-t=\"x-folds\"]"], open: [TOOLS],
+          title: "Collapse all",
+          body: "Fold every section at once to see the shape of the work. Press it again to open them all." },
+        { sel: [".fr-tools-drawer .fr-tb-ednotes", "#frMToolsDrawer [data-t=\"x-ednotes\"]"], open: [TOOLS],
+          title: "Hide editorial notes",
+          body: "This removes the editor's notes from every page of every work. The author's own footnotes stay." },
+        { sel: [".fr-tools-drawer #rdKeep", "#frMToolsDrawer [data-t=\"x-keep\"]"], open: [TOOLS], member: "tfr-bookmarks",
+          title: "Bookmark and copy link",
+          body: "Bookmark keeps your place in this work for later. Copy link gives you an address that opens this exact page." },
+        { sel: [".fr-tools-drawer .fr-tb-focus"], open: [TOOLS], only: "desktop",
+          title: "Hide the toolbar",
+          body: "Give the text the whole screen. A small Show toolbar button brings everything back." },
+        { sel: [".fr-tools-drawer .fr-tb-report", "#frMToolsDrawer [data-t=\"x-report\"]"], open: [TOOLS], member: "tfr-report",
+          title: "Report a problem",
+          body: "Found a bad scan, a wrong word or a broken link? Tell us here and we will look into it." },
+        { sel: [".fr-tools-drawer #nbCount", "#frMToolsDrawer [data-t=\"nb\"]"], open: [TOOLS], member: "tfr-research",
+          title: "Research",
+          body: "Research opens a panel beside the text for studying this work. The next few steps open it." },
+        { sel: ["#notebook.open .nb-tabs", "#notebook .nb-tabs"], open: NB, shut: "#nbClose", member: "tfr-research",
+          title: "The Research panel",
+          body: "Work describes the edition and its sources. Search looks through the whole work. Passage holds the tools for words you select." },
+        { sel: ["#notebook.open #nbWorkSearch", "#nbWorkSearchTab"], open: NB.concat("#nbWorkSearchTab"), shut: "#nbClose", member: "tfr-research",
+          fill: { sel: "#nbWorkSearchQuery", value: "satisfaction" },
+          title: "Search inside the work",
+          body: "Type a word or phrase to list every page where it appears. Choose a result to go to that page." },
+        { sel: ["#notebook.open #nbSaved", "#nbSavedTab"], open: NB.concat("#nbSavedTab"), shut: "#nbClose", member: "tfr-notebook",
+          example: [
+            "“For God to forgive sin without payment would be unfitting.” Anselm, <em>Why God Became Man</em> I.12",
+            "Note: compare Calvin, <em>Institutes</em> II.16"
+          ],
+          title: "Your saved passages",
+          body: "Everything you highlight, clip or annotate collects here with its citation, ready to search and to use on the Desk." },
+        { sel: [".fr-tools-drawer .fr-td-ask", "#frMToolsDrawer [data-t=\"x-ask\"]", "#frMToolsDrawer [data-t=\"ask\"]"], open: [TOOLS], member: "ask",
+          title: "Ask",
+          body: "Ask opens a conversation about this work beside the text. The next step opens it." },
+        { sel: ["#fra-workspace"], open: ASK, shut: "#fra-close", member: "ask",
+          fill: { sel: "#fra-input", value: "Why must the one who makes satisfaction be both God and man?" },
+          example: [
+            "Q. Why must the one who makes satisfaction be both God and man?",
+            "A. Anselm answers in Book II, chapters 6 and 7. Only God can pay a debt so great, yet only man owes it. Each claim links to the page it comes from."
+          ],
+          title: "A conversation beside the book",
+          body: "Answers are drawn from the library with citations you can open and check. You can keep asking follow-up questions." },
+        { sel: [".ph .ctr .fr-tb-tt", "#frMToolsDrawer [data-t=\"x-tt\"]"],
+          title: "How this text was made",
+          body: "Transparency explains where this text and its translation came from, including any use of machine translation." },
+        { sel: [".tfr-rail"],
+          title: "The rest of the library",
+          body: "This bar goes everywhere in <em>The Faith Received</em>: reading lists, Scripture, Topics, Search and the research tools." },
+        { title: "You are ready to read",
+          body: "That is the whole reader. The next tour shows how to read Scripture with the tradition beside it." }
+      ]
+    }
+  };
+  const ORDER = [
+    ["reader", "Reading a work"],
+    ["scripture", "Scripture"],
+    ["topics", "Topics"],
+    ["search", "Search"],
+    ["research", "Research tools"]
+  ];
+
+  // ── Storage ─────────────────────────────────────────────────────
+  function doneList() {
+    try {
+      const v = JSON.parse(window.localStorage.getItem(DONE_KEY) || "[]");
+      return Array.isArray(v) ? v : [];
+    } catch (e) { return []; }
+  }
+  function markDone(name) {
+    try {
+      const v = doneList();
+      if (v.indexOf(name) < 0) v.push(name);
+      window.localStorage.setItem(DONE_KEY, JSON.stringify(v));
+    } catch (e) { /* storage refused: the tour still ran */ }
+  }
+
+  function tourUrl(name) {
+    const t = TOURS[name];
+    if (!t) return "";
+    return `${t.url + (t.url.indexOf("?") < 0 ? "?" : "&")}tour=${encodeURIComponent(name)}`;
+  }
+  function nextTourOf(name) {
+    const i = ORDER.findIndex((o) => o[0] === name);
+    for (let j = i + 1; j < ORDER.length; j++) if (TOURS[ORDER[j][0]]) return ORDER[j];
+    return null;
+  }
+
+  let cssAsked = false;
+  function loadCss() {
+    if (cssAsked || !CSS) return;
+    cssAsked = true;
+    const l = document.createElement("link");
+    l.rel = "stylesheet";
+    l.href = CSS;
+    document.head.appendChild(l);
+  }
+
+  // ── Targets ─────────────────────────────────────────────────────
+  const phone = () => window.innerWidth < PHONE || document.documentElement.classList.contains("g-mobile");
+  function visible(el) {
+    if (!el || !el.isConnected) return false;
+    if (el.closest("[hidden]")) return false;
+    const r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return false;
+    const cs = window.getComputedStyle(el);
+    return cs.visibility !== "hidden" && cs.display !== "none" && Number(cs.opacity) > 0.05;
+  }
+  function find(sel) {
+    const list = [].concat(sel || []);
+    for (const s of list) {
+      let els;
+      try { els = document.querySelectorAll(s); } catch (e) { continue; }
+      for (const el of els) if (visible(el)) return el;
+    }
+    return null;
+  }
+  function fits(step) {
+    if (step.only === "phone" && !phone()) return false;
+    if (step.only === "desktop" && phone()) return false;
+    return true;
+  }
+  function waitFor(sels, ms) {
+    return new Promise((resolve) => {
+      const t0 = Date.now();
+      (function poll() {
+        if (sels.every((s) => find(s))) return resolve(true);
+        if (Date.now() - t0 > ms) return resolve(false);
+        window.setTimeout(poll, 250);
+      }());
+    });
+  }
+  const wait = (ms) => new Promise((r) => window.setTimeout(r, ms));
+
+  // ── The tour ────────────────────────────────────────────────────
+  let run = null;
+
+  // The in-memory flag feature-gate.js reads. Never stored, never taken
+  // from the address: it lives exactly as long as the tour on screen.
+  // ONE MORE GATE. The Ask workspace (a port file we do not edit) sends
+  // a reader whose <body> has no data-member-status to the /ask/ page
+  // instead of opening beside the book. For the length of a tour a
+  // signed-out reader's body carries data-member-status="tour", removed
+  // again with the flag; the server still decides what Ask will answer.
+  let lentStatus = false;
+  function setTouring(on) {
+    const body = document.body;
+    if (on) {
+      window.MOTour = { active: true };
+      if (!body.hasAttribute("data-member-status")) { body.setAttribute("data-member-status", "tour"); lentStatus = true; }
+    } else {
+      if (window.MOTour) window.MOTour.active = false;
+      if (lentStatus) { body.removeAttribute("data-member-status"); lentStatus = false; }
+    }
+    document.documentElement.classList.toggle("fr-touring", Boolean(on));
+  }
+  function isMember(feature) {
+    // Asked with the tour flag down, so it answers for the reader rather
+    // than for the tour.
+    const g = window.MOFeatureGate;
+    if (!g || typeof g.allowed !== "function") return false;
+    const was = window.MOTour && window.MOTour.active;
+    if (window.MOTour) window.MOTour.active = false;
+    try { return g.allowed(feature); } finally { if (window.MOTour) window.MOTour.active = was; }
+  }
+
+  function build() {
+    const catchEl = document.createElement("div");
+    catchEl.className = "frt-catch";
+    const spot = document.createElement("div");
+    spot.className = "frt-spot is-none";
+    spot.setAttribute("aria-hidden", "true");
+    const card = document.createElement("div");
+    card.className = "frt-card";
+    card.setAttribute("role", "dialog");
+    card.setAttribute("aria-modal", "false");
+    card.setAttribute("aria-labelledby", "frtTitle");
+    card.tabIndex = -1;
+    card.innerHTML =
+      '<button type="button" class="frt-x" aria-label="Close the tour">×</button>' +
+      '<div aria-live="polite" aria-atomic="true">' +
+      '<p class="frt-eyebrow"><span class="frt-count"></span><span class="frt-pill" hidden>Members</span></p>' +
+      '<h2 class="frt-title" id="frtTitle"></h2><p class="frt-body"></p>' +
+      '<div class="frt-example" hidden></div>' +
+      '</div>' +
+      '<p class="frt-next-tour" hidden></p>' +
+      '<div class="frt-foot">' +
+      '<button type="button" class="frt-skip">Skip tour</button>' +
+      '<button type="button" class="frt-btn frt-back">← Back</button>' +
+      '<button type="button" class="frt-btn frt-btn--primary frt-next">Next →</button>' +
+      '</div>';
+    // Clicks inside the tour stay inside it: the reader closes Aa and the
+    // Tools tray on any document click, which would shut the panel the
+    // next step points into.
+    ["click", "mousedown", "pointerdown", "touchstart"].forEach((ev) => {
+      card.addEventListener(ev, (e) => e.stopPropagation());
+      catchEl.addEventListener(ev, (e) => { e.stopPropagation(); if (ev !== "touchstart") e.preventDefault(); });
+    });
+    document.body.append(catchEl, spot, card);
+    // On a phone the Ask workspace makes every other child of <body>
+    // inert while it is open, which would leave the card unclickable
+    // over the very panel it describes. The tour's own nodes shed it.
+    const unInert = new MutationObserver((list) => {
+      list.forEach((m) => { if (m.target.hasAttribute("inert")) m.target.removeAttribute("inert"); });
+    });
+    [catchEl, spot, card].forEach((n) => unInert.observe(n, { attributes: true, attributeFilter: ["inert"] }));
+    card.querySelector(".frt-x").addEventListener("click", () => stop(false));
+    card.querySelector(".frt-skip").addEventListener("click", () => stop(false));
+    card.querySelector(".frt-back").addEventListener("click", () => go(-1));
+    card.querySelector(".frt-next").addEventListener("click", () => go(1));
+    return { catchEl, spot, card, unInert };
+  }
+
+  async function start(name) {
+    const tour = TOURS[name];
+    if (!tour || run) return;
+    loadCss();
+    if (tour.ready) await waitFor(tour.ready, 20000);
+    await wait(700);
+    if (run) return;
+    const steps = tour.steps.filter(fits);
+    // A step with a panel to open cannot be checked until it is open;
+    // the rest are kept only if their target is on the page now.
+    const live = steps.filter((s) => !s.sel || s.open || find(s.sel));
+    setTouring(true);
+    run = { name, tour, steps: live, i: -1, opened: [], target: null, raf: 0, ui: build(), lastFocus: document.activeElement,
+      hasMember: live.some((s) => s.member) };
+    window.addEventListener("keydown", onKey, true);
+    window.addEventListener("resize", schedule);
+    document.addEventListener("scroll", schedule, true);
+    show(0, 1);
+  }
+
+  // An `open` entry is a selector to press, or { press, unless } to press
+  // only while `unless` is not on screen.
+  const keyOf = (o) => (typeof o === "string" ? o : o.press);
+  const isOpen = (t) => t && (t.getAttribute("aria-expanded") === "true" || t.getAttribute("aria-selected") === "true");
+  function press(sel) {
+    const t = find(sel);
+    if (!t) return null;
+    if (!isOpen(t)) t.click();
+    return t;
+  }
+  // Undo what the last step opened, keeping whatever the next step
+  // opens too (so Aa stays open across its three steps).
+  function unwind(next) {
+    if (!run) return;
+    const keep = ((next && next.open) || []).map(keyOf);
+    let closed = false;
+    const prev = run.steps[run.i];
+    if (prev && prev.shut && (!next || next.shut !== prev.shut)) {
+      const x = find(prev.shut);
+      if (x) { x.click(); closed = true; }
+    }
+    const still = [];
+    for (let k = run.opened.length - 1; k >= 0; k--) {
+      const o = run.opened[k];
+      if (keep.indexOf(o.sel) >= 0) { still.unshift(o); continue; }
+      if (o.el.getAttribute("aria-expanded") === "true") { o.el.click(); closed = true; }
+    }
+    run.opened = still;
+    return closed;
+  }
+
+  async function show(i, dir) {
+    if (!run) return;
+    const {steps} = run;
+    const token = (run.token = (run.token || 0) + 1);
+    run.busy = true;
+    while (i >= 0 && i < steps.length) {
+      const step = steps[i];
+      // A panel sliding shut hides its neighbours until it has closed.
+      if (unwind(step)) await wait(380);
+      if (token !== run.token || !run) return;
+      if (step.open) {
+        const nb = run.ui.card.querySelector(".frt-next");
+        nb.setAttribute("aria-busy", "true");
+        nb.textContent = "Opening\u2026";
+      }
+      for (const entry of step.open || []) {
+        const sel = keyOf(entry);
+        if (entry.unless && find(entry.unless)) continue;
+        if (run.opened.some((o) => o.sel === sel) && isOpen(run.opened.find((o) => o.sel === sel).el)) continue;
+        const t = press(sel);
+        if (t) {
+          run.opened.push({ sel, el: t });
+          // A panel that builds itself (Ask) can take a moment to appear.
+          if (entry.unless) await waitFor([entry.unless], 4000);
+          await wait(450);
+        }
+        if (token !== run.token || !run) return;
+      }
+      if (step.fill) {
+        const f = find(step.fill.sel);
+        if (f && !f.value) f.value = step.fill.value;
+      }
+      const el = step.sel ? find(step.sel) : null;
+      if (!step.sel || el) { run.busy = false; paint(i, step, el); return; }
+      // Missing on arrival: drop it so the count stays honest.
+      steps.splice(i, 1);
+      if (dir < 0) i -= 1;
+    }
+    run.busy = false;
+    if (i < 0) { show(0, 1); return; }
+    stop(true);
+  }
+
+  function paint(i, step, el) {
+    run.i = i;
+    run.target = el;
+    const { card } = run.ui;
+    const last = i === run.steps.length - 1;
+    card.querySelector(".frt-count").textContent = `Step ${i + 1} of ${run.steps.length}`;
+    card.querySelector(".frt-pill").hidden = !step.member;
+    card.querySelector(".frt-title").innerHTML = step.title;
+    card.querySelector(".frt-body").innerHTML = step.body + (step.member ? ` <span class="frt-members-line">${MEMBERS_LINE}</span>` : "");
+    const ex = card.querySelector(".frt-example");
+    ex.hidden = !step.example;
+    ex.innerHTML = step.example
+      ? `<span class="frt-example-tag">Example</span>${step.example.map((l) => `<p>${l}</p>`).join("")}`
+      : "";
+    card.querySelector(".frt-back").hidden = i === 0;
+    const nextBtn = card.querySelector(".frt-next");
+    nextBtn.removeAttribute("aria-busy");
+    nextBtn.textContent = last ? "Finish" : "Next →";
+    const nt = card.querySelector(".frt-next-tour");
+    const nxt = last ? nextTourOf(run.name) : null;
+    const join = last && run.hasMember && !isMember("tfr-research");
+    nt.hidden = !(nxt || join);
+    nt.textContent = "";
+    if (nxt) {
+      const a = document.createElement("a");
+      a.href = tourUrl(nxt[0]);
+      a.textContent = `Next tour: ${nxt[1]} →`;
+      nt.appendChild(a);
+    }
+    if (join) {
+      const m = document.createElement("a");
+      m.href = "/membership/";
+      m.className = "frt-join";
+      m.textContent = "Become a member";
+      nt.appendChild(m);
+    }
+    if (last) markDone(run.name);
+    if (el) {
+      const r = el.getBoundingClientRect();
+      const inView = r.top >= 60 && r.bottom <= window.innerHeight - 20;
+      // A tray that scrolls sideways (the Tools drawer) can hold the
+      // target past the edge of the screen.
+      const across = r.left >= 0 && r.right <= window.innerWidth;
+      if (!inView && r.height < window.innerHeight * 0.8) el.scrollIntoView({ block: "center", inline: "nearest", behavior: "instant" });
+      else if (!inView) el.scrollIntoView({ block: "start", inline: "nearest", behavior: "instant" });
+      else if (!across) el.scrollIntoView({ block: "nearest", inline: "center", behavior: "instant" });
+    }
+    place();
+    // Scrolling can make the reader fold its toolbar away; place again
+    // once that has settled.
+    window.setTimeout(place, 260);
+    try { card.focus({ preventScroll: true }); } catch (e) { card.focus(); }
+  }
+
+  function place() {
+    if (!run) return;
+    const { spot, card } = run.ui;
+    const el = run.target;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    card.classList.remove("is-dock-top", "is-dock-bottom");
+    if (!el || !el.isConnected || !visible(el)) {
+      spot.classList.add("is-none");
+      Object.assign(spot.style, { top: `${vh / 2}px`, left: `${vw / 2}px`, width: "0px", height: "0px" });
+      if (vw < PHONE) { card.classList.add("is-dock-bottom"); return; }
+      const cw = card.offsetWidth;
+      const ch = card.offsetHeight;
+      card.style.left = `${Math.max(12, (vw - cw) / 2)}px`;
+      card.style.top = `${Math.max(12, (vh - ch) / 2)}px`;
+      return;
+    }
+    spot.classList.remove("is-none");
+    const step = run.steps[run.i];
+    const pad = step && step.pad != null ? step.pad : 6;
+    const r = el.getBoundingClientRect();
+    // Clip the box to the screen so a long target still reads as lit.
+    const top = Math.max(2, r.top - pad);
+    const left = Math.max(2, r.left - pad);
+    const bottom = Math.min(vh - 2, r.bottom + pad);
+    const right = Math.min(vw - 2, r.right + pad);
+    Object.assign(spot.style, { top: `${top}px`, left: `${left}px`, width: `${Math.max(0, right - left)}px`, height: `${Math.max(0, bottom - top)}px` });
+
+    if (vw < PHONE) {
+      const mid = (top + bottom) / 2;
+      card.classList.add(mid > vh * 0.5 ? "is-dock-top" : "is-dock-bottom");
+      return;
+    }
+    const cw = card.offsetWidth;
+    const ch = card.offsetHeight;
+    const gap = 14;
+    let x;
+    let y;
+    if (vh - bottom >= ch + gap + 8) { y = bottom + gap; x = left; }
+    else if (top >= ch + gap + 8) { y = top - gap - ch; x = left; }
+    else if (vw - right >= cw + gap + 8) { x = right + gap; y = top; }
+    else if (left >= cw + gap + 8) { x = left - gap - cw; y = top; }
+    else { x = vw - cw - 16; y = vh - ch - 16; }
+    x = Math.min(Math.max(12, x), vw - cw - 12);
+    y = Math.min(Math.max(12, y), vh - ch - 12);
+    card.style.left = `${x}px`;
+    card.style.top = `${y}px`;
+  }
+
+  function schedule() {
+    if (!run || run.raf) return;
+    run.raf = window.requestAnimationFrame(() => { if (run) { run.raf = 0; place(); } });
+  }
+
+  function go(d) {
+    // Ignored while a step is still opening its panel.
+    if (!run || run.busy) return;
+    const i = run.i + d;
+    if (i < 0) return;
+    if (i >= run.steps.length) { stop(true); return; }
+    show(i, d);
+  }
+
+  function onKey(e) {
+    if (!run) return;
+    const k = e.key;
+    if (k === "ArrowRight" || k === "ArrowLeft" || k === "Escape") {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if (k === "Escape") stop(false);
+      else go(k === "ArrowRight" ? 1 : -1);
+    }
+  }
+
+  function stop(finished) {
+    if (!run) return;
+    if (finished) markDone(run.name);
+    run.token = (run.token || 0) + 1;
+    unwind(null);
+    // Any panel a skipped or interrupted step left open.
+    run.tour.steps.forEach((st) => {
+      const x = st.shut && find(st.shut);
+      if (x) x.click();
+    });
+    setTouring(false);
+    window.removeEventListener("keydown", onKey, true);
+    window.removeEventListener("resize", schedule);
+    document.removeEventListener("scroll", schedule, true);
+    if (run.raf) window.cancelAnimationFrame(run.raf);
+    const { catchEl, spot, card, unInert } = run.ui;
+    unInert.disconnect();
+    catchEl.remove(); spot.remove(); card.remove();
+    const back = run.lastFocus;
+    run = null;
+    if (back && back.focus && back.isConnected) { try { back.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
+  }
+
+  // ── Hub cards ───────────────────────────────────────────────────
+  // The tutorial page (custom-faith-tutorial.hbs) marks each card
+  // [data-frt-card=<name>]; this fills its step count, start link and
+  // done tick from the tour data and localStorage.
+  function paintHooks() {
+    const done = doneList();
+    document.querySelectorAll("[data-frt-card]").forEach((c) => {
+      const name = c.getAttribute("data-frt-card");
+      const t = TOURS[name];
+      c.classList.toggle("is-done", done.indexOf(name) >= 0);
+      c.classList.toggle("is-soon", !t);
+      const n = c.querySelector("[data-frt-count]");
+      if (n) n.textContent = t ? `${t.steps.filter(fits).length} steps` : "Coming soon";
+      const a = c.querySelector("[data-frt-start]");
+      if (a) {
+        if (t) { a.href = tourUrl(name); a.hidden = false; }
+        else a.hidden = true;
+      }
+    });
+  }
+
+  window.FRTour = { tours: TOURS, order: ORDER, start, stop, done: doneList };
+
+  let wanted = "";
+  try { wanted = new URLSearchParams(window.location.search).get("tour") || ""; } catch (e) { wanted = ""; }
+  function boot() {
+    paintHooks();
+    if (wanted && TOURS[wanted]) start(wanted);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+}());

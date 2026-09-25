@@ -406,6 +406,11 @@ routes:
   # Ian's text, 2026-09-22. Linked from the TFR homepage hero.
   /the-faith-received/manifesto/:
     template: custom-faith-manifesto
+  # The guided tours' hub (Ian, 2026-09-25): five cards, each starting a
+  # tour on its demo page with ?tour=<name>. See custom-faith-tutorial.hbs
+  # and assets/js/page/faith-tour.js.
+  /the-faith-received/tutorial/:
+    template: custom-faith-tutorial
   /the-faith-received/search/:
     template: custom-faith-port-search
   # A question answered from the library with citations - POSTs to

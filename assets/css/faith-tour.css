@@ -1,0 +1,257 @@
+/*
+ * The Faith Received: guided tours (assets/js/page/faith-tour.js).
+ *
+ * One fixed box over the feature being explained, whose huge box-shadow
+ * dims everything else, and one card beside it. The engine injects this
+ * sheet only when a tour starts, so pages that never run one pay nothing.
+ *
+ * Thin-line TFR style: tan hairline, 3px radius, terracotta accent, the
+ * serif body. No display face. Reader dark mode is :root[data-theme=dark].
+ * The hub page (custom-faith-tutorial.hbs) links this sheet directly.
+ */
+:root {
+  --frt-bg: #fbf8f2;
+  --frt-ink: #2d2927;
+  --frt-muted: #6b6660;
+  --frt-line: #d9c6a7;
+  --frt-accent: #c1593c;
+  --frt-accent-ink: #fff;
+  --frt-dim: rgba(28, 22, 16, 0.58);
+}
+:root[data-theme="dark"] {
+  --frt-bg: #2a2622;
+  --frt-ink: #eee6d8;
+  --frt-muted: #b3a998;
+  --frt-line: #5a4d3d;
+  --frt-accent: #d9795c;
+  --frt-accent-ink: #1d1a17;
+  --frt-dim: rgba(0, 0, 0, 0.66);
+}
+
+/* Swallows clicks outside the card while a tour runs, so a stray tap
+   cannot open a gated tool or navigate away mid-step. */
+.frt-catch {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483600;
+  background: transparent;
+}
+.frt-spot {
+  position: fixed;
+  z-index: 2147483601;
+  pointer-events: none;
+  border-radius: 3px;
+  box-shadow: 0 0 0 2px var(--frt-accent), 0 0 0 200vmax var(--frt-dim);
+  transition: top 0.22s ease, left 0.22s ease, width 0.22s ease, height 0.22s ease;
+}
+.frt-spot.is-none {
+  /* No target on screen (an intro step): dim the whole page. */
+  box-shadow: 0 0 0 200vmax var(--frt-dim);
+}
+.frt-card {
+  position: fixed;
+  z-index: 2147483602;
+  box-sizing: border-box;
+  width: min(360px, calc(100vw - 24px));
+  padding: 16px 18px 14px;
+  background: var(--frt-bg);
+  color: var(--frt-ink);
+  border: 1px solid var(--frt-line);
+  border-radius: 3px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  font-family: var(--font-body, "EB Garamond", Georgia, serif);
+  font-size: 17px;
+  line-height: 1.45;
+  text-align: left;
+}
+.frt-card:focus { outline: none; }
+.frt-eyebrow {
+  margin: 0 28px 6px 0;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.08em;
+  font-size: 15px;
+  color: var(--frt-accent);
+}
+.frt-title {
+  margin: 0 28px 6px 0;
+  font-family: inherit;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--frt-ink);
+}
+.frt-body { margin: 0 0 14px; color: var(--frt-ink); }
+.frt-body em, .frt-title em { font-style: italic; }
+.frt-x {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--frt-muted);
+  font: inherit;
+  font-size: 22px;
+  line-height: 30px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.frt-x:hover, .frt-x:focus-visible { color: var(--frt-accent); }
+.frt-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.frt-skip {
+  margin-right: auto;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--frt-muted);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--frt-line);
+}
+.frt-skip:hover, .frt-skip:focus-visible { color: var(--frt-accent); }
+.frt-btn {
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--frt-accent);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--frt-accent);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.frt-btn[hidden] { display: none; }
+.frt-btn--primary {
+  background: var(--frt-accent);
+  color: var(--frt-accent-ink);
+}
+.frt-btn:hover { filter: brightness(0.95); }
+.frt-btn:focus-visible, .frt-skip:focus-visible, .frt-x:focus-visible {
+  outline: 2px solid var(--frt-accent);
+  outline-offset: 2px;
+}
+.frt-next-tour {
+  display: block;
+  margin: 0 0 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--frt-line);
+  font-size: 15px;
+  color: var(--frt-muted);
+}
+.frt-next-tour a { color: var(--frt-accent); }
+
+/* Phones: the card docks at the bottom (or the top, when the feature
+   sits low on the screen, as the reader's thumb bar does). */
+@media (max-width: 639.98px) {
+  .frt-card {
+    left: 8px !important;
+    right: 8px;
+    width: auto;
+    font-size: 16px;
+    padding: 14px 16px 12px;
+  }
+  .frt-card.is-dock-bottom { top: auto !important; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+  .frt-card.is-dock-top { bottom: auto; top: 8px !important; }
+  .frt-title { font-size: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .frt-spot { transition: none; }
+}
+
+/* Members pill, the example block and the join link. */
+.frt-eyebrow { display: flex; align-items: center; gap: 8px; }
+.frt-pill {
+  display: inline-block;
+  padding: 0 7px;
+  border: 1px solid var(--frt-accent);
+  border-radius: 999px;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.08em;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--frt-accent);
+}
+.frt-pill[hidden] { display: none; }
+.frt-members-line { color: var(--frt-muted); font-style: italic; }
+.frt-example {
+  margin: -4px 0 14px;
+  padding: 8px 10px;
+  border: 1px dashed var(--frt-line);
+  border-radius: 3px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.frt-example[hidden] { display: none; }
+.frt-example p { margin: 4px 0 0; }
+.frt-example-tag {
+  font-variant: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.08em;
+  font-size: 13px;
+  color: var(--frt-muted);
+}
+.frt-next-tour { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.frt-next-tour[hidden] { display: none; }
+.frt-join { color: var(--frt-muted) !important; }
+
+/* The tutorial hub (custom-faith-tutorial.hbs): one card per tour. */
+.frt-hub {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+  counter-reset: frt;
+}
+.frt-hub-card {
+  position: relative;
+  counter-increment: frt;
+  padding: 16px 18px 16px 56px;
+  border: 1px solid #d9c6a7;
+  border-radius: 3px;
+  font-family: var(--font-body, "EB Garamond", Georgia, serif);
+}
+.frt-hub-card::before {
+  content: counter(frt);
+  position: absolute;
+  left: 18px;
+  top: 16px;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #c1593c;
+  border-radius: 50%;
+  color: #c1593c;
+  text-align: center;
+  line-height: 24px;
+  font-size: 15px;
+}
+.frt-hub-card.is-done::before { content: "\2713"; background: #c1593c; color: #fff; }
+.frt-hub-card h2 { margin: 0 0 4px; font-family: inherit; font-size: 21px; font-weight: 600; }
+.frt-hub-card p { margin: 0 0 8px; }
+.frt-hub-meta {
+  display: flex;
+  gap: 12px;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.08em;
+  font-size: 14px;
+  color: #6b6660;
+}
+.frt-hub-done { display: none; color: #c1593c; }
+.frt-hub-card.is-done .frt-hub-done { display: inline; }
+.frt-hub-card .frt-btn { display: inline-block; --frt-accent: #c1593c; --frt-accent-ink: #fff; }
+.frt-hub-card.is-soon { opacity: 0.7; }
