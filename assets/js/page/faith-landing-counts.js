@@ -2,7 +2,8 @@
 (function(){
  if(!window.MOCorpora||!document.querySelector('.faith-landing'))return;
  const ids=['pg','pld','po','tfr','eebo','confessions','mo'];
- Promise.all(ids.map(id=>window.MOFaithCatalogue.load(id).catch(()=>[]))).then(sets=>{
+ // Counted as the lists show them: Migne's apparatus (indices, notices, admonitions) is not a work (2026-09-25).
+ Promise.all(ids.map(id=>window.MOFaithCatalogue.load(id).then(ws=>ws.filter(w=>!w.app)).catch(()=>[]))).then(sets=>{
    sets.forEach((works,i)=>{if(works.length)document.querySelectorAll(`[data-landing-corpus="${ids[i]}"]`).forEach(el=>el.textContent=`${works.length.toLocaleString()} ${ids[i]==='confessions'?'documents':'works'}`);});
    if(sets.some(works=>!works.length))return; // Keep descriptive labels if any catalogue failed.
    const all=sets.filter((_, i)=>ids[i]!=='confessions').flat();

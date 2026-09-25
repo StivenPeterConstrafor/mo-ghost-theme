@@ -242,6 +242,9 @@
      built once rather than by reading sixty-nine thousand works in a
      browser. --}}
 <script src="{{asset "js/faith-term-index.js"}}"></script>
+{{!-- What each collected volume (Opera, Works) holds, from the reader outlines: the search reads it and a hit
+     shows it (corpus owner, 2026-09-25). Before the search script, which waits on it. --}}
+<script data-contents="{{asset "data/faith-received/collected-work-contents.json"}}&amp;frv=5f8846a4b520ab2a" src="{{asset "js/faith-collected-contents.js"}}&amp;frv=95473b5afaf6e54c"></script>
 <script src="{{asset "js/faith-browse-search.js"}}"></script>
 <script src="{{asset "js/faith-resolve.js"}}"></script>
 {{!-- Bookmark a work from its row. The store first: it is the same
