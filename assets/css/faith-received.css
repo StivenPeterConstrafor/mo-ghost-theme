@@ -20333,3 +20333,37 @@ html:not(.faith-mf-tabbed) .faith-mf-panel + .faith-mf-panel { margin-top: 72px;
 @media (max-width: 640px) {
   .faith-mf-head { padding: 20px 18px 18px; }
 }
+
+/* ── A SHELF ON ITS OWN PAGE (Ian, 2026-09-25) ─────────────────────────
+   "make a Show All button that takes you to the page with all of them."
+   The button is drawn by assets/js/page/faith-shelf-show-all.js; the
+   hiding has to be done here rather than there, because the port's
+   paint() assigns `hidden` on every shelf on every redraw and would undo
+   anything JavaScript set. A class and a data attribute are things it
+   does not touch. */
+.mo-shelf-all {
+  align-self: flex-start;
+  margin-top: 18px;
+}
+#dir[data-mo-shelf] .rx-author-fold:not(.mo-shelf-on) { display: none; }
+/* The port's filters search all nine shelves and open whichever match.
+   Eight of them are hidden here by a rule it cannot see, so a search on
+   this page would read as "no results". The complete list is on the page
+   instead, and "All shelves" goes back to where searching works. */
+body.mo-shelf-page .rx-filters,
+body.mo-shelf-page .rx-results-line,
+body.mo-shelf-page #author-order-note { display: none; }
+body.mo-shelf-page #dir[data-mo-shelf] .rx-author-fold > summary { cursor: default; }
+.mo-shelf-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0 0 14px;
+}
+.mo-shelf-head h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.01em;
+}
