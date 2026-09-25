@@ -533,8 +533,16 @@ main.research-room:has(.rx-profile) .ar-stat > span {
   text-transform: uppercase;
   color: var(--muted, #6b6660);
 }
-/* A tradition is a word, not a count. */
-main.research-room:has(.rx-profile) .ar-stat--word b { font-size: 19px; line-height: 1.35; padding-top: 5px; }
+/* A tradition is a word, not a count. Words also run long, and a
+   denomination can be two of them ("Congregational, Puritan"), so this
+   one breaks rather than pushing out of its box. */
+main.research-room:has(.rx-profile) .ar-stat--word b {
+  font-size: 19px;
+  line-height: 1.35;
+  padding-top: 5px;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
 main.research-room:has(.rx-profile) .ar-links {
   display: flex;
   flex-wrap: wrap;
@@ -639,6 +647,16 @@ main.research-room:has(.rx-profile) .ar-more-shelves { display: flex; flex-wrap:
   /* Two across on a phone rather than one tall stack. */
   main.research-room:has(.rx-profile) .ar-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   main.research-room:has(.rx-profile) .ar-stat b { font-size: 22px; }
+  /* 2026-09-25, Ian: "shrink the font size here to make sure things fit
+     in their boxes." The rule above sizes every value at 22px, which
+     was overriding the 19px meant for word values, so the longest
+     things on the card were set LARGEST exactly where the box is
+     narrowest: half a phone. Words get their own size back, smaller
+     still, because two columns of a 375px screen is about 150px of
+     room. */
+  main.research-room:has(.rx-profile) .ar-stat--word b { font-size: 16px; line-height: 1.3; padding-top: 3px; }
+  main.research-room:has(.rx-profile) .ar-stat { padding: 11px 13px 9px; }
+  main.research-room:has(.rx-profile) .ar-stat > span { font-size: 11px; letter-spacing: 0.06em; }
   main.research-room:has(.rx-profile) .rx-filters { padding: 14px 16px; }
   main.research-room:has(.rx-profile) .rx-work-list > .rx-work-row { padding: 16px 16px 12px; }
 }

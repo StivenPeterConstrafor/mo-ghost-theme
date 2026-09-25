@@ -17,27 +17,26 @@
     
     <h1>The Christian tradition is<br /> <em class="highlight">the Christian&rsquo;s inheritance.</em></h1>
     <p class="lp-hero-sub">Read Christian theology from the early church to the early modern period. Search the works, compare translations with the original texts, and follow their sources, publicly available, practically usable, and beautifully readable.</p>
-    {{!-- The manifesto and the tour. Ian, 2026-09-22: a simple "About The
-         Faith Received" link at the foot of the hero, not a third button
-         competing with the two above it. Ian, 2026-09-25: "Take A Tour"
-         beside it, each text link under one button as a two-column pair,
-         and each still under its own button where the buttons stack.
+    {{!-- The manifesto and the tour, BOTH under BOTH buttons. Ian,
+         2026-09-25: "I don't want the links between the buttons, I want
+         the links under the buttons. About first and Tour second." They
+         were a column each, which on a phone read button, link, button,
+         link, and put a text link in the middle of the two calls to
+         action.
 
          TOUR TARGET: the tutorial hub (/the-faith-received/tutorial/)
          404s until routes.yaml is uploaded, so this starts the reader
          tour directly. Point it at the hub once the route is live. --}}
-    <div class="lp-ctas lp-ctas--paired">
-      <div class="lp-cta-col">
-        <a href="/the-faith-received/curated/" class="btn btn-primary btn-lg">Begin reading</a>
-        <p class="lp-hero-about"><a href="/the-faith-received/manifesto/" data-hm-goal="manifesto-hero">About The Faith Received <span aria-hidden="true">&rarr;</span></a></p>
-      </div>
+    <div class="lp-ctas">
+      <a href="/the-faith-received/curated/" class="btn btn-primary btn-lg">Begin reading</a>
       {{!-- #support is on the page for everyone now: membership for
            readers who aren't members, a one-time gift for everyone. --}}
-      <div class="lp-cta-col">
-        <a href="#support" class="btn btn-ghost btn-lg" data-hm-goal="support-hero">Support the work</a>
-        <p class="lp-hero-about"><a href="/the-faith-received/tutorial/" data-hm-goal="tour-hero">Take A Tour <span aria-hidden="true">&rarr;</span></a></p>
-      </div>
+      <a href="#support" class="btn btn-ghost btn-lg" data-hm-goal="support-hero">Support the work</a>
     </div>
+    <p class="lp-hero-about lp-hero-about--row">
+      <a href="/the-faith-received/manifesto/" data-hm-goal="manifesto-hero">About The Faith Received <span aria-hidden="true">&rarr;</span></a>
+      <a href="/the-faith-received/tutorial/" data-hm-goal="tour-hero">Take A Tour <span aria-hidden="true">&rarr;</span></a>
+    </p>
   </div>
 </section>
 

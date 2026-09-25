@@ -19326,16 +19326,19 @@ html.g-mobile #reading .fr-sec-toggle {
 .lp-hero-about a:hover,
 .lp-hero-about a:focus-visible { color: #fff; text-decoration-color: #fff; }
 
-/* The two text links paired with the two buttons (Ian, 2026-09-25):
-   About under Begin reading, Take A Tour under Support the work. Each
-   column holds its button and its link, so where the buttons stack on a
-   phone each link still sits under its own button. */
-.lp-ctas--paired { align-items: flex-start; }
-.lp-cta-col { display: flex; flex-direction: column; align-items: center; }
-.lp-cta-col .lp-hero-about { margin: 14px 0 0; }
+/* Both links sit under both buttons, About then Tour, rather than one
+   under each. A row on a wide screen, stacked on a phone, because
+   "About The Faith Received" beside "Take A Tour" does not fit a 375px
+   column without shrinking the type below the size a text link wants. */
+.lp-hero-about--row {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 26px;
+  flex-wrap: wrap;
+}
 @media (max-width: 640px) {
-  .lp-cta-col { align-items: stretch; }
-  .lp-cta-col .lp-hero-about { margin: 2px 0 6px; }
+  .lp-hero-about--row { flex-direction: column; gap: 12px; }
 }
 
 /* The masthead's terracotta sweep, on the library's own headline (Ian,
