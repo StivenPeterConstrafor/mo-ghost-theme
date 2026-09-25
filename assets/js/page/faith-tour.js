@@ -21,7 +21,9 @@
  * Aa) to press first, by its aria-expanded, so the step can point inside
  * the panel; it is pressed again on leaving unless the next step wants
  * the same panel; `shut` names a close button pressed on leaving. `only`
- * is "phone" or "desktop".
+ * is "phone" or "desktop". `at` puts a step on another page: the tour
+ * goes there with ?tour=<name>&tstep=<index> and carries on (Topics goes
+ * from the index to one topic). Steps without `at` live on the tour's url.
  *
  * MEMBER TOOLS (Ian, 2026-09-25: show them open, to everyone). A step
  * with `member: "<feature>"` carries a Members pill and ends "Available
@@ -57,6 +59,8 @@
   const NB_OPEN = "#notebook.open";
   const NB = [{ press: TOOLS, unless: NB_OPEN }, { press: "#nbCount, #frMToolsDrawer [data-t=\"nb\"]", unless: NB_OPEN }];
   const ASK_OPEN = "#fra-workspace";
+  // The Topics tour moves from the index to one topic's page.
+  const TRIN = "/the-faith-received/topics/?t=de-trinitate";
   const ASK = [{ press: TOOLS, unless: ASK_OPEN }, { press: ".fr-td-ask, #frMToolsDrawer [data-t=\"x-ask\"]", unless: ASK_OPEN }];
 
   // ── The tours ───────────────────────────────────────────────────
@@ -249,8 +253,51 @@
         { title: "Scripture, done",
           body: "Any chapter works the same way. The next tour shows the library arranged by topic." }
       ]
+    },
+    topics: {
+      name: "Topics",
+      blurb: "The library arranged by doctrine, from theological method to the last things.",
+      url: "/the-faith-received/topics/",
+      ready: [".td-parts .td-locus, .td-head .td-title"],
+      steps: [
+        { title: "Topics",
+          body: "Topics gathers what the tradition taught on each doctrine, from the creeds and confessions to the great treatises." },
+        { sel: [".td-find"],
+          title: "Find a topic",
+          body: "Type a word to find a topic by name." },
+        { sel: [".td-parts .td-part"],
+          title: "The outline",
+          body: "The topics follow the order of a classic systematic theology in numbered parts. It begins with theological method and ends with the last things." },
+        { sel: [".td-parts .td-locus"],
+          title: "A topic",
+          body: "Each line is one topic. The next step opens the Trinity." },
+        { sel: [".td-head"], at: TRIN,
+          title: "A topic page",
+          body: "The heading names the topic and its part of the outline. The figures show how much of the library treats it." },
+        { sel: [".td-head .td-kids"], at: TRIN,
+          title: "Narrower topics",
+          body: "Some topics divide into narrower ones. Follow these links to go deeper." },
+        { sel: [".td-toc-drawer > summary", ".td-toc"], at: TRIN,
+          title: "Contents",
+          body: "The whole outline stays at hand. Use it to move to any other topic." },
+        { sel: [".td-block .td-fold-sum"], at: TRIN,
+          title: "Creeds and confessions",
+          body: "What the creeds, confessions and catechisms say on this topic. Press a section's heading to fold it away." },
+        { sel: [".td-block .td-tabs"], at: TRIN,
+          title: "Four ways to read",
+          body: "Read the texts, compare them side by side, trace the teaching through the centuries or gather the Scripture they cite." },
+        { sel: [".td-articles > li"], at: TRIN,
+          title: "The texts themselves",
+          body: "Each article is quoted with its source. Open one to read it in the work it comes from." },
+        { sel: ["#td-h-teach"], at: TRIN,
+          title: "Works",
+          body: "Below the confessions come the classic treatments of the topic in the library's works." },
+        { title: "Topics, done",
+          body: "Every topic is laid out the same way. The next tour shows how to search the whole library." }
+      ]
     }
   };
+  Object.keys(TOURS).forEach((k) => TOURS[k].steps.forEach((st, i) => { st.idx = i; }));
   const ORDER = [
     ["reader", "Reading a work"],
     ["scripture", "Scripture"],
@@ -331,6 +378,21 @@
   }
   const wait = (ms) => new Promise((r) => window.setTimeout(r, ms));
 
+  // Which page a step lives on, and whether that is this one. The tour's
+  // own parameters are ignored; so is anything a page adds to its own
+  // address after load, by comparing only the parameters the step names.
+  const pageOf = (tour, step) => step.at || tour.url;
+  function onPage(url) {
+    const want = new URL(url, window.location.origin);
+    const here = new URL(window.location.href);
+    if (want.pathname !== here.pathname) return false;
+    for (const [k, v] of want.searchParams) if (here.searchParams.get(k) !== v) return false;
+    // A bare page (the Topics index) is not the same page as one of its
+    // topics.
+    if (!want.search && here.searchParams.has("t")) return false;
+    return true;
+  }
+
   // ── The tour ────────────────────────────────────────────────────
   let run = null;
 
@@ -410,7 +472,7 @@
     return { catchEl, spot, card, unInert };
   }
 
-  async function start(name) {
+  async function start(name, fromIdx) {
     const tour = TOURS[name];
     if (!tour || run) return;
     loadCss();
@@ -418,16 +480,18 @@
     await wait(700);
     if (run) return;
     const steps = tour.steps.filter(fits);
-    // A step with a panel to open cannot be checked until it is open;
-    // the rest are kept only if their target is on the page now.
-    const live = steps.filter((s) => !s.sel || s.open || find(s.sel));
+    // A step with a panel to open, or on another page, cannot be checked
+    // yet; the rest are kept only if their target is on the page now.
+    const live = steps.filter((s) => !s.sel || s.open || !onPage(pageOf(tour, s)) || find(s.sel));
+    let first = 0;
+    if (fromIdx > 0) first = Math.max(0, live.findIndex((s) => s.idx >= fromIdx));
     setTouring(true);
     run = { name, tour, steps: live, i: -1, opened: [], target: null, raf: 0, ui: build(), lastFocus: document.activeElement,
       hasMember: live.some((s) => s.member) };
     window.addEventListener("keydown", onKey, true);
     window.addEventListener("resize", schedule);
     document.addEventListener("scroll", schedule, true);
-    show(0, 1);
+    show(first, 1);
   }
 
   // An `open` entry is a selector to press, or { press, unless } to press
@@ -471,6 +535,20 @@
       // A panel sliding shut hides its neighbours until it has closed.
       if (unwind(step)) await wait(380);
       if (token !== run.token || !run) return;
+      if (!onPage(pageOf(run.tour, step))) {
+        const u = new URL(pageOf(run.tour, step), window.location.origin);
+        u.searchParams.set("tour", run.name);
+        u.searchParams.set("tstep", String(step.idx));
+        run.busy = false;
+        // A same-origin address built from the tour's own data; followed
+        // as a link so the page's own link handling applies.
+        const go = document.createElement("a");
+        go.href = u.pathname + u.search;
+        go.hidden = true;
+        document.body.appendChild(go);
+        go.click();
+        return;
+      }
       if (step.open) {
         const nb = run.ui.card.querySelector(".frt-next");
         nb.setAttribute("aria-busy", "true");
@@ -679,10 +757,15 @@
   window.FRTour = { tours: TOURS, order: ORDER, start, stop, done: doneList };
 
   let wanted = "";
-  try { wanted = new URLSearchParams(window.location.search).get("tour") || ""; } catch (e) { wanted = ""; }
+  let fromIdx = 0;
+  try {
+    const q = new URLSearchParams(window.location.search);
+    wanted = q.get("tour") || "";
+    fromIdx = Number(q.get("tstep")) || 0;
+  } catch (e) { wanted = ""; }
   function boot() {
     paintHooks();
-    if (wanted && TOURS[wanted]) start(wanted);
+    if (wanted && TOURS[wanted]) start(wanted, fromIdx);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
