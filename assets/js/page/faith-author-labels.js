@@ -54,7 +54,10 @@
   let schools = null; // Map(folded name -> order)
   const denomPath = "/assets/data/faith-received/denominations.json";
   const ready = Promise.all([
-    fetch(window.moAssetUrl ? window.moAssetUrl(denomPath) : denomPath)
+    // The same URL faith-denominations.js fetches, so the room and the
+    // All Works facet read one copy of the table.
+    fetch((window.MODenom && window.MODenom.url)
+      || (window.moDataUrl ? window.moDataUrl(denomPath) : window.moAssetUrl ? window.moAssetUrl(denomPath) : denomPath))
       .then((r) => (r.ok ? r.json() : null)).then((d) => { denoms = (d && d.authors) || {}; })
       .catch(() => { denoms = {}; }),
     fetch(`${LIB}/v1/schools.json`)

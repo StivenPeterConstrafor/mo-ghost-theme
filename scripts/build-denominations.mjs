@@ -46,7 +46,7 @@ const EEBO = "https://eebo-backup.vercel.app";
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
 
 const BODIES = new Set([
-  "Anglican", "Presbyterian", "Congregational", "Baptist", "Quaker",
+  "Anglican", "Reformed", "Presbyterian", "Congregational", "Baptist", "Quaker",
   "Continental Reformed", "Lutheran", "Anabaptist", "Arminian",
   "Bohemian Brethren", "Waldensian", "Socinian",
   // Not Protestant, and so never offered under the Protestant
@@ -347,7 +347,13 @@ function put(name, rec, source) {
 const skippedAmbiguous = [];
 const scoped = Object.create(null);
 
+// Keys a hand row with an establishment office in its note wrote to
+// (see ANGLICAN_ONLY_WHEN_CLEAR below).
+const officeKeys = new Set();
+let noteHoldsOffice = false;
+
 function putKey(key, rec, source) {
+  if (noteHoldsOffice) officeKeys.add(key);
   const rank = RANK[source] || 0;
   if (!authors[key]) {
     authors[key] = ["", "", rec.conf || "m"];
@@ -389,7 +395,43 @@ Object.keys(llAuthors).forEach((name) => {
 });
 
 // 1st — the hand table wins everything.
-handAuthors.forEach((r) => put(r.name, r, "hand"));
+const OFFICE = /\b(?:arch)?bishop\b|\bdean of\b|\bprimate\b/i;
+handAuthors.forEach((r) => {
+  noteHoldsOffice = r.body === "Anglican" && OFFICE.test(r.note || "");
+  put(r.name, r, "hand");
+  noteHoldsOffice = false;
+});
+
+// ── Anglican only when it is clear ────────────────────────────────
+//
+// Stiven, 2026-09-24, on the Westminster Assembly filed Anglican: "the
+// Anglican shelf is sustained under Reformed; if things are iffy revert
+// to Reformed." Anglican stays for the plain conformists, a man filed
+// Conformist with confidence (Hooker, Andrewes, Laud's party) and a man
+// whose note names his see or deanery (a bishop is the Church of England
+// whatever his party). Everything else the sources called Anglican is a
+// Reformed Englishman in the national church: the Puritans who never
+// left (Perkins, Sibbes, Preston), the early reformers the lists give no
+// party (Tyndale, Frith, Bale), the Latin Library's "English Reformed",
+// and every "l" guess. They file as Reformed, the body the English
+// church sat in, rather than a churchmanship nobody has settled.
+// Corporate authors ("Church of England. Diocese of Ely") match by
+// pattern, not here, and stay Anglican.
+function anglicanIsClear(key, row) {
+  if (officeKeys.has(key)) return true;
+  return row[1] === "Conformist" && (row[2] === "h" || row[2] === "m");
+}
+const toReformed = [];
+Object.keys(authors).forEach((key) => {
+  const row = authors[key];
+  if (row[0] !== "Anglican" || anglicanIsClear(key, row)) return;
+  row[0] = "Reformed";
+  toReformed.push(key);
+});
+Object.keys(scoped).forEach((key) => {
+  const row = scoped[key];
+  if (row[0] === "Anglican" && !anglicanIsClear(key, row)) row[0] = "Reformed";
+});
 
 const works = Object.create(null);
 handWorks.forEach((r) => {
@@ -491,4 +533,5 @@ if (collisions.length) {
   console.log(`\n${collisions.length} sources disagree:`);
   collisions.slice(0, 20).forEach((c) => console.log("  ", c.join("  |  ")));
 }
+console.log(`\nAnglican -> Reformed (not clearly conformist): ${toReformed.length} keys`);
 console.log(`\nwrote ${path.relative(ROOT, OUT)}`);

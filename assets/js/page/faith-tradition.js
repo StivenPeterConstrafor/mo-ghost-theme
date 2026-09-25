@@ -38,6 +38,8 @@
 
   const BASE = "/the-faith-received/";
   const asset = (p) => (window.moAssetUrl ? window.moAssetUrl(p) : p);
+  // Rebuilt with the denominations, without a theme change (moDataUrl).
+  const dataUrl = (p) => (window.moDataUrl ? window.moDataUrl(p) : asset(p));
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => (
     { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const slugify = (s) => String(s || "").normalize("NFD").replace(/\p{M}/gu, "")
@@ -48,8 +50,8 @@
   const want = slugify(new URLSearchParams(location.search).get("t") || "");
 
   const dataP = Promise.all([
-    fetch(asset("/assets/data/faith-received/traditions.json")).then((r) => (r.ok ? r.json() : Promise.reject(r.status))),
-    fetch(asset("/assets/data/faith-received/tradition-authors.json")).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+    fetch(dataUrl("/assets/data/faith-received/traditions.json")).then((r) => (r.ok ? r.json() : Promise.reject(r.status))),
+    fetch(dataUrl("/assets/data/faith-received/tradition-authors.json")).then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
 
   // ── The documents ────────────────────────────────────────────────

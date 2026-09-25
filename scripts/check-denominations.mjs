@@ -77,7 +77,11 @@ is("Prynne body", MODenom.body(work("Prynne, William, 1600-1669")), "Presbyteria
 is("Prynne party", MODenom.party(work("Prynne, William, 1600-1669")), "Puritan");
 is("Keach body", MODenom.body(work("Keach, Benjamin, 1640-1704")), "Baptist");
 is("Keach party", MODenom.party(work("Keach, Benjamin, 1640-1704")), "Puritan");
-is("Perkins body (conformed)", MODenom.body(work("Perkins, William, 1558-1602")), "Anglican");
+// A Puritan who never left is Reformed, not Anglican (Stiven, 2026-09-24):
+// Anglican is kept for the clear conformists.
+is("Perkins body (Puritan, never left)", MODenom.body(work("Perkins, William, 1558-1602")), "Reformed");
+is("Hooker body (conformist)", MODenom.body(work("Hooker, Richard, 1553 or 4-1600")), "Anglican");
+is("Westminster Assembly body", MODenom.body(work("Westminster Assembly (1643-1652)")), "Presbyterian");
 is("Perkins party", MODenom.party(work("Perkins, William, 1558-1602")), "Puritan");
 is("Laud body", MODenom.body(work("Laud, William, 1573-1645")), "Anglican");
 is("Laud party", MODenom.party(work("Laud, William, 1573-1645")), "Conformist");

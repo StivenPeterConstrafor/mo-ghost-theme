@@ -56,12 +56,13 @@
   // The table is data, not code: it is rebuilt and redeployed without a
   // theme version bump, and the versioned URL is cached for a year, so a
   // corrected table took the old label to readers for hours (the Westminster
-  // Assembly stayed "Anglican" six hours after the fix reached the server,
-  // 2026-09-24). An hourly key on top of the theme version bounds that.
-  const HOUR = Math.floor(Date.now() / 3600000);
-  const URL_ = `${window.moAssetUrl
-    ? window.moAssetUrl("/assets/data/faith-received/denominations.json")
-    : "/assets/data/faith-received/denominations.json"}${window.moAssetUrl ? "&" : "?"}h=${HOUR}`;
+  // Assembly stayed "Anglican" long after the fix reached the server,
+  // 2026-09-24). An `&h=` hour key did not help: the CDN keys on `v` alone.
+  // moDataUrl puts the hour inside `v`. The author labels fetch this same
+  // URL, so the two never disagree.
+  const PATH = "/assets/data/faith-received/denominations.json";
+  const URL_ = window.moDataUrl ? window.moDataUrl(PATH)
+    : window.moAssetUrl ? window.moAssetUrl(PATH) : PATH;
 
   // Display order for the facet. Not by how much sits in each: a
   // reader scanning for his own church finds it faster in an order
@@ -75,6 +76,7 @@
   // Reformation or outside it.
   const ORDER = [
     "Anglican",
+    "Reformed",
     "Presbyterian",
     "Congregational",
     "Baptist",
@@ -99,6 +101,7 @@
   // they were now in.
   const COMMUNION = {
     Anglican: "Protestant",
+    Reformed: "Protestant",
     Presbyterian: "Protestant",
     Congregational: "Protestant",
     Baptist: "Protestant",
@@ -309,6 +312,7 @@
       return pending;
     },
     loaded () { return !!data; },
+    url: URL_,
     of,
     body (work) { return of(work).body; },
     party (work) { return of(work).party; },

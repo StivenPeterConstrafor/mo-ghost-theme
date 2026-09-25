@@ -39,4 +39,16 @@
     if (!v) return path;
     return `${path}${path.indexOf("?") >= 0 ? "&" : "?"}v=${v}`;
   };
+
+  // For data rebuilt without a theme change. `v` is boot.min.js's own
+  // content hash, so it moves only when that file does: denominations.json
+  // was corrected on the server and the Westminster Assembly still read
+  // "Anglican" hours later, because the CDN keeps its copy under the old
+  // `v` and keys on `v` ALONE. An `&h=` beside it was ignored (2026-09-24).
+  // So the hour goes into `v` itself: a rebuilt table reaches readers
+  // within the hour, at the cost of one refetch an hour.
+  window.moDataUrl = function (path) {
+    const hour = Math.floor(Date.now() / 3600000);
+    return `${path}${path.indexOf("?") >= 0 ? "&" : "?"}v=${v || "0"}h${hour}`;
+  };
 })();
