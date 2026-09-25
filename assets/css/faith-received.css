@@ -20317,11 +20317,16 @@ html:not(.faith-mf-tabbed) .faith-mf-panel + .faith-mf-panel { margin-top: 72px;
    title"). Quieter than the byline under the title, which is the
    terracotta line: a date is the least important thing in the box and
    should not compete with the name of the person who wrote it. */
-.faith-mf-date {
+/* Scoped one class deeper on purpose: `.faith-tp p` sets the letter's
+   prose at 17px and is (0,1,1), so a bare `.faith-mf-date` at (0,1,0)
+   lost and the date rendered the size of the byline. Ian, 2026-09-25:
+   "That date eyebrow is way too big." */
+.faith-mf .faith-mf-date {
   margin: 0 0 10px;
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.2;
   font-weight: 600;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--color-muted, #6b6660);
 }
