@@ -505,8 +505,17 @@
     // dark mode in Aa is now redundant" / "Same with Flow/Pages"), so the
     // phone reaches them here, as the desktop does in its drawer.
     const flow = proxy("x-flow", "Pages", "flow", "#rdFlow");
-    // Modernize and Split paragraphs live at the top of Aa on both widths
-    // now (placeInAa), so the phone's Tools drawer has no cells for them.
+    /* Split paragraphs is in Aa at both widths (placeInAa) AND has a cell
+       here (Ian, 2026-09-25: "Mobile tools need the paragraph splitter").
+       Aa is where it belongs by kind, since it changes how the words
+       read, but Tools is where a reader goes looking for a tool, and on a
+       phone the two panels are different buttons on the dock. The cell
+       presses the real button, so there is still one control and one
+       stored setting; only the way to it is doubled. Modernize keeps no
+       cell: it shows only on early modern English, and a cell that is
+       absent from most works is worse than one home for it. */
+    const paras = proxy("x-paras", "Paragraphs", "paras", ".fr-tb-paras");
+    paras.title = "Break long paragraphs into shorter ones at sentence ends";
     // Ask as our own cell: the dock's own Ask is taken by ask-workspace.js
     // at the document before the subscribe gate can see the click.
     const ask = cell("x-ask", "Ask", "ask");
@@ -528,6 +537,7 @@
       lang,
       src,
       flow,
+      paras,
       theme,
       transparency: cell("x-tt", "Transparency", "transparency"),
       folds: proxy("x-folds", "Collapse", "folds", ".fr-tb-folds"),
@@ -567,6 +577,12 @@
       proxies.keep.classList.toggle("on", kept);
       proxies.keep.querySelector(".lb").textContent = kept ? "Bookmarked" : "Bookmark";
     }
+    const sp = document.querySelector(".fr-tb-paras");
+    if (proxies.paras) {
+      // Gone only if the tool itself is gone; it applies to every text.
+      proxies.paras.hidden = !sp || sp.hidden;
+      proxies.paras.classList.toggle("on", Boolean(sp) && sp.getAttribute("aria-pressed") === "true");
+    }
     proxies.transparency.hidden = !ttReady();
     dTt.hidden = !ttReady();
     proxies.transparency.classList.toggle("on", ttOpen());
@@ -589,6 +605,11 @@
         mirrored.observe(el, { attributes: true, attributeFilter: ["hidden", "aria-pressed", "disabled"] });
       }
     });
+    const sp = document.querySelector(".fr-tb-paras");
+    if (sp && !sp.dataset.frMirrored) {
+      sp.dataset.frMirrored = "1";
+      mirrored.observe(sp, { attributes: true, attributeFilter: ["hidden", "aria-pressed", "disabled"] });
+    }
   }
 
   function mMembers() {
