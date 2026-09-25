@@ -349,6 +349,107 @@
         { title: "Search, done",
           body: "The last tour covers the research tools: author pages, Compare, Ask, the notebook and your saved passages." }
       ]
+    },
+    research: {
+      name: "Research tools",
+      blurb: "Author pages, Ask, Compare, Connections, bookmarks, the notebook and the Desk.",
+      url: "/the-faith-received/author/?a=augustine-of-hippo",
+      ready: ["#segw, .tfr-gate-form, [data-research-mode]"],
+      steps: [
+        { title: "Research tools",
+          body: "The research tools help you study an author, compare writers and keep what you find. The tour starts on an author's page." },
+        { sel: ["main .bhero h1", "main h1"],
+          title: "An author's page",
+          body: "Every author in the library has a page like this one. It gathers their works and shows how the tradition received them." },
+        { sel: ["main details > summary"],
+          title: "About the author",
+          body: "Open this for a short account of the author's life and writings." },
+        { sel: ["#segw"],
+          title: "Works",
+          body: "Every work by this author in the library. Filter by kind or by title to find one." },
+        { sel: ["#room-works .pinb-work", ".pinb-work"], member: "tfr-notebook",
+          title: "Save a work",
+          body: "Save work keeps it in your notebook, ready to open again from any page." },
+        { sel: ["#segp"],
+          title: "Positions",
+          body: "What the author held on each doctrine, topic by topic, with the passages behind each summary." },
+        { sel: ["#segs"],
+          title: "Scripture",
+          body: "The books and verses of the Bible this author cites, with the places they cite them." },
+        { sel: ["#segt"],
+          title: "Topics",
+          body: "The doctrines this author wrote on, linked to the Topics pages." },
+        { sel: ["#segr"],
+          title: "Reception",
+          body: "Who cited this author afterwards, how often and where. It follows a writer through the centuries after them." },
+        { sel: ["#segc"],
+          title: "Connections",
+          body: "The writers this author read and the writers who read them, drawn as a map." },
+        { sel: ["#segx"],
+          title: "Search this author",
+          body: "Search looks through this author's works only." },
+        // The Research desk. Rendered on the server for members only;
+        // signed-out readers get its sign-up panel, so each tool has a
+        // signed-in step on the real tab and a signed-out step with an
+        // example on the panel's list of tools.
+        { at: "/the-faith-received/research/", sel: ["[data-research-mode=\"ask\"]"], only: "signed-in",
+          title: "The Research desk",
+          body: "The desk holds every research tool behind one row of tabs. Each tab keeps its own place." },
+        { at: "/the-faith-received/research/", sel: ["#research-panel-ask"], open: ["[data-research-mode=\"ask\"]"], only: "signed-in", member: "ask",
+          title: "Ask",
+          body: "Ask the whole library a question. Every answer cites the pages it draws on, so you can check it." },
+        { at: "/the-faith-received/research/", sel: ["#research-panel-power-search"], open: ["[data-research-mode=\"power-search\"]"], only: "signed-in", member: "tfr-search",
+          title: "Power Search",
+          body: "Search by meaning rather than exact words, with filters for author, period and tradition." },
+        { at: "/the-faith-received/research/", sel: ["#research-panel-compare"], open: ["[data-research-mode=\"compare\"]"], only: "signed-in", member: "tfr-compare",
+          title: "Compare",
+          body: "Set two to four authors side by side on one topic, each with the passages that show their view." },
+        { at: "/the-faith-received/research/", sel: ["#research-panel-bookmarks"], open: ["[data-research-mode=\"bookmarks\"]"], only: "signed-in", member: "tfr-bookmarks",
+          title: "Bookmarks",
+          body: "The works and places you have bookmarked while reading, in one list." },
+        { at: "/the-faith-received/research/", sel: ["#research-panel-notebook"], open: ["[data-research-mode=\"notebook\"]"], only: "signed-in", member: "tfr-notebook",
+          title: "Notebook",
+          body: "Your highlights, notes and clipped passages, each with its citation. Search them or export them." },
+        { at: "/the-faith-received/research/", sel: ["#research-panel-connections"], open: ["[data-research-mode=\"connections\"]"], only: "signed-in", member: "tfr-connections",
+          title: "Connections",
+          body: "The whole library mapped by citation. Choose an author to see who they read and who read them." },
+        { at: "/the-faith-received/research/", sel: ["#research-panel-desk"], open: ["[data-research-mode=\"desk\"]"], only: "signed-in", member: "tfr-desk",
+          title: "Desk",
+          body: "Write with what you have kept beside you. Every quotation stays linked to the page it came from." },
+        { at: "/the-faith-received/research/", sel: [".blist--tools li:nth-child(1)"], only: "signed-out", member: "ask",
+          example: [
+            "Q. How did the Fathers read the Song of Songs?",
+            "A. An answer drawn from the library, each claim linked to the page it comes from."
+          ],
+          title: "Ask",
+          body: "Ask the whole library a question. Every answer cites the pages it draws on, so you can check it." },
+        { at: "/the-faith-received/research/", sel: [".blist--tools li:nth-child(3)"], only: "signed-out", member: "tfr-compare",
+          example: [
+            "Compare: Augustine, Aquinas and Calvin on grace",
+            "Three columns, one per author, each with the passages that show their view."
+          ],
+          title: "Compare",
+          body: "Set two to four authors side by side on one topic, each with the passages that show their view." },
+        { at: "/the-faith-received/research/", sel: [".blist--tools li:nth-child(4)"], only: "signed-out", member: "tfr-connections",
+          title: "Connections",
+          body: "The whole library mapped by citation. Choose an author to see who they read and who read them." },
+        { at: "/the-faith-received/research/", sel: [".blist--tools li:nth-child(5)"], only: "signed-out", member: "tfr-notebook",
+          example: [
+            "\u201cOur heart is restless until it rests in you.\u201d Augustine, <em>Confessions</em> I.1",
+            "Note: the theme of the whole book, stated in its first paragraph."
+          ],
+          title: "The notebook",
+          body: "Your highlights, notes, bookmarks and clipped passages, each with its citation." },
+        { at: "/the-faith-received/research/", sel: [".blist--tools li:nth-child(6)"], only: "signed-out", member: "tfr-desk",
+          title: "Desk",
+          body: "Write with what you have kept beside you. Every quotation stays linked to the page it came from." },
+        { at: "/the-faith-received/research/", sel: [".tfr-gate-form"], only: "signed-out",
+          title: "Open the tools",
+          body: "The research tools are free during the beta. Enter your name and email and we will send you a sign-in link." },
+        { at: "/the-faith-received/research/",
+          title: "That is the whole library",
+          body: "You have seen every tour. The Tutorial link in the bar at the top brings you back to any of them." }
+      ]
     }
   };
   Object.keys(TOURS).forEach((k) => TOURS[k].steps.forEach((st, i) => { st.idx = i; }));
@@ -546,11 +647,17 @@
     const steps = tour.steps.filter(fits);
     // A step with a panel to open, or on another page, cannot be checked
     // yet; the rest are kept only if their target is on the page now.
-    const live = steps.filter((s) => !s.sel || s.open || !onPage(pageOf(tour, s)) || find(s.sel));
+    // A page may rewrite its own address (the author page does), so
+    // "here" is decided by the `at` pages alone: if this is one of them,
+    // the tour's other pages are elsewhere.
+    const hereAt = tour.steps.some((s) => s.at && onPage(s.at));
+    const elsewhere = (s) => (s.at ? !onPage(s.at) : hereAt);
+    const live = steps.filter((s) => !s.sel || s.open || elsewhere(s) || find(s.sel));
     let first = 0;
     if (fromIdx > 0) first = Math.max(0, live.findIndex((s) => s.idx >= fromIdx));
     setTouring(true);
     run = { name, tour, steps: live, i: -1, opened: [], target: null, raf: 0, ui: build(), lastFocus: document.activeElement,
+      arrivedAt: fromIdx > 0 && live[first] ? live[first].idx : -1, lastAt: "",
       hasMember: live.some((s) => s.member) };
     window.addEventListener("keydown", onKey, true);
     window.addEventListener("resize", schedule);
@@ -599,7 +706,11 @@
       // A panel sliding shut hides its neighbours until it has closed.
       if (unwind(step)) await wait(380);
       if (token !== run.token || !run) return;
-      if (!onPage(pageOf(run.tour, step))) {
+      // Only a step with `at`, or the step after one, can change page,
+      // and never the step a page was just opened for: a page that
+      // rewrites its own address must not send the tour round in a loop.
+      const leaving = step.at ? !onPage(step.at) : Boolean(run.lastAt) && onPage(run.lastAt);
+      if (leaving && step.idx !== run.arrivedAt) {
         const u = new URL(pageOf(run.tour, step), window.location.origin);
         u.searchParams.set("tour", run.name);
         u.searchParams.set("tstep", String(step.idx));
@@ -652,6 +763,7 @@
 
   function paint(i, step, el) {
     run.i = i;
+    run.lastAt = step.at || "";
     run.target = el;
     const { card } = run.ui;
     const last = i === run.steps.length - 1;
