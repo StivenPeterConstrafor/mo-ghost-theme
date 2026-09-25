@@ -902,7 +902,9 @@
 
   function toHub() {
     const hub = "/the-faith-received/tutorial/";
-    if (window.location.pathname !== hub) window.location.assign(hub);
+    if (window.location.pathname === hub) return;
+    // eslint-disable-next-line no-restricted-syntax -- same-origin path literal
+    window.location.assign(hub);
   }
 
   function stop(finished) {
