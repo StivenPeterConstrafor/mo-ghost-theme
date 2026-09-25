@@ -73,9 +73,14 @@
     return { title: t.trim(), author: a.trim(), volume: v.trim(), page: page.trim() };
   }
 
+  // Migne's volumes are cited by column (corpus owner 2026-09-25: a reader was handed "PL 158, p. 489" and took PL 158
+  // for another work). The reader's header now names the series ("Patrologia Latina (PL) 158"); the Patrologia
+  // Orientalis and everything else stay by page.
+  const unitOf = (volume) => (/\((?:PL|PG)\)|^\s*P[LG]\s*\d/i.test(String(volume || "")) ? "col." : "p.");
+
   function citation() {
     const w = work();
-    return [w.author, w.title, w.volume, w.page && `p. ${w.page}`]
+    return [w.author, w.title, w.volume, w.page && `${unitOf(w.volume)} ${w.page}`]
       .filter(Boolean).join(", ");
   }
 
@@ -211,7 +216,7 @@
         title: w.title,
         author: w.author,
         cite,
-        anchor: w.page ? `p. ${w.page}` : "",
+        anchor: w.page ? `${unitOf(w.volume)} ${w.page}` : "",
         url,
         text: body,
       }));

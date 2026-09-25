@@ -1523,6 +1523,13 @@ function readerOutlineHref(row){
   if(row.navSourcePath){url.searchParams.set('section',row.navSourcePath);if(row.navSourceKey)url.searchParams.set('heading',row.navSourceKey);}
   return url.href;
 }
+// THE SERIES, SAID IN FULL (owner 2026-09-25, a Mere Orthodoxy reader: "which tutorial should I read to understand how the 'PL'
+// system works? … it seems to be located inside another Volume called PL 158"): Migne's volumes are named, explained on hover,
+// and cited by column.
+const SERIES={PL:{name:'Patrologia Latina',note:"Migne's Patrologia Latina (Paris, 1844–55): 221 volumes of the Latin Fathers. A volume gathers the writings of one or several authors, and the numbers in the margin are its columns"},
+  PG:{name:'Patrologia Graeca',note:"Migne's Patrologia Graeca (Paris, 1857–66): 161 volumes of the Greek Fathers, printed with a facing Latin translation; the numbers in the margin are its columns"},
+  PO:{name:'Patrologia Orientalis',note:'Patrologia Orientalis (Paris, 1904–): the Eastern Fathers in Syriac, Coptic, Arabic, Armenian, Ethiopic and Georgian, each with a translation; it is cited by page'}};
+function seriesOf(v){const m=/^\s*(PL|PG|PO)(?:\s+Tome)?\s*(\d+)/i.exec(String(v||''));if(!m)return null;const k=m[1].toUpperCase();return {key:k,vol:m[2],...SERIES[k],label:SERIES[k].name+' ('+k+') '+m[2]};}
 function locOf(n){
   if(n==='editorial')return 'Editorial notes';
   if(DATA?.pld_source_view?.combined&&DATA.pld_source_view.hasColumns===false)return 'Section '+n;
@@ -2332,7 +2339,7 @@ function build(){
     // researcher affordance: clicking the folio pill copies a full citation + deep link
     {const ff=fm.querySelector(".ff");ff.title="Click to copy the citation for this page";
      ff.onclick=()=>{const a=(Array.isArray(DATA.author)?DATA.author.join(", "):(DATA.author||"")),
-       cite=[a,[DATA.title,DATA.volume].filter(Boolean).join(", "),locOf(pg.n)].filter(Boolean).join(", ")
+       cite=[a,[DATA.title,seriesOf(DATA.volume)?.label||DATA.volume].filter(Boolean).join(", "),locOf(pg.n)].filter(Boolean).join(", ")
          +" — "+location.origin+"/the-faith-received/read/?w="+encodeURIComponent(DATA.slug||"")+(DATA.pld_source_view?'&pldpart='+DATA.pld_source_view.id:'')+"#b"+pg.n+"-0";
        navigator.clipboard.writeText(cite).then(()=>{const old=ff.textContent;ff.textContent="✓ copied";
          setTimeout(()=>{ff.textContent=old;},1200);}).catch(()=>{});};}
@@ -3964,7 +3971,8 @@ function syncReaderHeader(n){
  if(!DATA)return;
  const author=$("#reader-author"),volume=$("#reader-volume"),place=$("#reader-location");
  author.textContent=DATA.author||"";author.href="/the-faith-received/author/?a="+encodeURIComponent(DATA.author||"");
- volume.textContent=String(DATA.volume||"").replace(/\b(P[LG]|PO)\s*(\d+)/g,"$1 $2");
+ {const se=seriesOf(DATA.volume);if(se){volume.textContent=se.label;volume.title=se.note+'. This work is in volume '+se.vol+(se.key==='PO'?'; cite as PO '+se.vol+', p. '+n:'; cite as '+se.key+' '+se.vol+', col. '+n)+'.';}
+   else{volume.textContent=String(DATA.volume||"").replace(/\b(P[LG]|PO)\s*(\d+)/g,"$1 $2");volume.removeAttribute('title');}}
  place.textContent=locOf(n);place.setAttribute('aria-label','Go to a place in this work, currently '+locOf(n));
  const column=DATA.pld_source_view?.hasColumns!==false&&(!DATA.pld_source_view?.notes||DATA.pld_source_view?.columnNotes)&&/^P[LG]\s*\d/i.test(DATA.volume||""),unit=column?'column':DATA.has_pages?'page':'section';
  $("#pgJump").setAttribute('aria-label',unit[0].toUpperCase()+unit.slice(1)+' number');$("#pgJump").title='Go to '+unit;
@@ -5262,6 +5270,23 @@ async function loadPldCanon(ws){
     return parseInt(raw,10)||0;};
   let depth0=null;
   const pairedHeads=new Set();
+  // CHAPTER TITLES LEFT AS PARAGRAPHS (owner 2026-09-25, a Mere Orthodoxy reader on Anselm's De libertate arbitrii: "it skips
+  // chapters I and IV in the outline view"): the PL canon made a <head> only where a chapter title opened its division; a CAPUT
+  // title printed after a page number stayed a <p>, so chapters I, IV and VI never reached the outline (206+ PL documents,
+  // 2,400+ titles). A Latin paragraph that IS a chapter title joins the outline under its English translation, at the depth of
+  // the chapter headings; the bold repeat that follows a real heading (same number) is not counted twice.
+  const CAPORD={PRIMUM:1,SECUNDUM:2,TERTIUM:3,QUARTUM:4,QUINTUM:5,SEXTUM:6,SEPTIMUM:7,OCTAVUM:8,NONUM:9,DECIMUM:10,UNDECIMUM:11,DUODECIMUM:12};
+  const capNum=w=>{w=String(w||'').toUpperCase();if(CAPORD[w])return CAPORD[w];let n=0,last=0;for(const c of w.split('').reverse()){const v={I:1,V:5,X:10,L:50,C:100}[c];if(!v)return null;n+=v<last?-v:v;last=v;}return n||null;};
+  const CAPRX=/^(?:CAPUT|CAP\.)\s+(PRIMUM|SECUNDUM|TERTIUM|QUARTUM|QUINTUM|SEXTUM|SEPTIMUM|OCTAVUM|NONUM|DECIMUM|UNDECIMUM|DUODECIMUM|[IVXLC]+)\b/i;
+  let lastChapterNum=null,chapterDepth=null,lastHeadEntry=null,lastHeadHadEn=false;
+  // Some heads open with the old edition's page number ("311 Caput XVIII. De eo …"): it is not part of the title.
+  const unPage=t=>String(t||'').trim().replace(/^\d{1,4}\s+(?=(?:CAPUT|CAP\.|Caput|PRAEFATIO|Praefatio|PROLOGUS|Prologus|LIBER|Liber)\b)/,'');
+  // The edition's note numbers were flattened into its chapter titles ("CHAPTER II 9 . That … man 10 sinned"); in the OUTLINE a
+  // number standing before punctuation, between two lower-case words or at the end of a chapter title is a note mark and goes.
+  // The page text keeps them as printed.
+  const chapterTitle=t=>{const m=/^((?:chapter|caput)\s+(?:[IVXLC]+|\d{1,3}|[A-Za-z]+))(\s+\d{1,3})?\s*([.:]?)\s*([\s\S]*)$/i.exec(String(t||''));if(!m)return t;
+    const rest=m[4].replace(/\s+\d{1,3}\s*(?=[.,:;!?])/g,'').replace(/([a-z,;:])\s+\d{1,3}\s+(?=[a-z])/g,'$1 ').replace(/\s+\d{1,3}\s*$/,'').replace(/\s+([.,:;!?])/g,'$1').trim();
+    return (m[1]+(m[3]||(rest?'.':''))+(rest?' '+rest:'')).trim();};
   const advance=n=>{if(n&&!seen.has(n)){seen.add(n);pages.push(n);
     for(const [d,b] of [[laD,laB],[enD,enB]]){const pb=d.createElement("pb");pb.setAttribute("n",String(n));b.appendChild(pb);}}};
   // The first source column also owns any opening text printed before its marker.
@@ -5284,7 +5309,8 @@ async function loadPldCanon(ws){
         const did=(ch.parentElement.getAttribute("xml:id")||"").replace(/^w\d+-d/,"").replace(/_/g," ");
         const en=info.english||(!sourceView?.notes&&toc&&toc[did])||"";
         if(depth0===null)depth0=depth;
-        if(t||en)struct.push({title:en||t,page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5),pld_division:ch.parentElement.getAttribute("xml:id")||""});
+        if(t||en){struct.push({title:chapterTitle(en||unPage(t)),page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5),pld_division:ch.parentElement.getAttribute("xml:id")||""});lastHeadEntry=struct[struct.length-1];lastHeadHadEn=!!en;}
+        {const hm=CAPRX.exec(unPage(t));if(hm){lastChapterNum=capNum(hm[1]);chapterDepth=Math.min(Math.max(depth-depth0+1,1),5);}else lastChapterNum=null;}
         window.__pldLastEnHead=null;window.__pldLastEnHeadEcho=false;
         // Exact source head/p + corresp translation: retain the complete canonical
         // paragraphs once. The sidecar label is navigation metadata, often truncated.
@@ -5311,6 +5337,15 @@ async function loadPldCanon(ws){
         t=t.replace(/([A-Za-zÀ-ÿæœ])-\s+([a-zà-ÿæœ])/g,"$1$2")
            .replace(/([A-Z]{2,})-\s+([A-Z]{2,})/g,"$1$2");
         if(!t)continue;
+        if(!sourceView?.notes&&lang!=='en'&&t.length<=400){const cm=CAPRX.exec(t);
+          if(cm){const num=capNum(cm[1]);
+            const nx=ch.nextElementSibling,id=ch.getAttribute('xml:id')||'';
+            const en=nx&&id&&nx.getAttribute('corresp')==='#'+id?nx.textContent.replace(/\s+/g,' ').trim():'';
+            if(num!==null&&num!==lastChapterNum){
+              struct.push({title:chapterTitle(en||t).slice(0,180),page:pages.length?pages[pages.length-1]:1,depth:chapterDepth??1,pld_division:(ch.parentElement&&ch.parentElement.getAttribute('xml:id'))||''});lastHeadEntry=null;}
+            // the same chapter as the head just made, which had only its Latin: the head takes this English title
+            else if(num!==null&&lastHeadEntry&&!lastHeadHadEn&&en){lastHeadEntry.title=chapterTitle(en).slice(0,180);lastHeadHadEn=true;}
+            if(num!==null)lastChapterNum=num;}}
         if(sourceView?.notes&&lang!=='en'){const notePage=pages.at(-1);if(sourceView.columnNotes){if(!struct.some(s=>s.page===notePage))struct.push({title:'Notes at column '+notePage,page:notePage,depth:1});}else{const incipit=t.split(/[.!?]\s/)[0];struct.push({title:'Notes '+pages.length+': '+incipit.slice(0,90),page:notePage,depth:1});}}
         // INDEX-VOLUME FORMATTING (owner 2026-08-17 'one big block'): Migne's index tomes
         // (PL 218-221) print thousands of entries glued with ".--"; give each its own line.
