@@ -281,11 +281,16 @@ img { max-width: 100%; height: auto; }
   align-items: center;
   gap: 8px;
 }
-/* ROOM FOR "THE FAITH RECEIVED" (Ian, 2026-09-25). A seven-item bar
-   carrying an eighteen-character item does not fit the 1180px measure
-   the rest of the site uses, at any width: the label wrapped onto three
-   lines and pushed the bar out of shape, but the overflow was there
-   before the wrap made it visible.
+/* ROOM FOR "THE FAITH RECEIVED" AND "THE DAILY LITURGY" (Ian,
+   2026-09-25). Two more items, both long, on a bar that already did not
+   fit the 1180px measure the rest of the site uses: the first one
+   wrapped onto three lines and pushed the bar out of shape, and the
+   overflow was there before the wrap made it visible.
+
+   Eight items only fit if the type steps down, so the bar is set at
+   10px rather than 11px with the tracking in from 0.22em to 0.1em. That
+   buys 107px at 1440 and keeps every item, which is the trade worth
+   making: dropping "Home" would have bought only 78px and cost a link.
 
    So the header, and only the header, gets a wider inner measure, the
    tracking comes in from 0.22em, and no top-level label may wrap. The
@@ -294,10 +299,11 @@ img { max-width: 100%; height: auto; }
 .site-header > * { max-width: 1300px; }
 .nav a,
 .nav .nav-dropdown-toggle {
-  letter-spacing: 0.14em;
+  font-size: 10px;
+  letter-spacing: 0.1em;
   white-space: nowrap;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 /* Below about 1150 the items cannot be made to fit however hard the
    tracking is squeezed, and a bar that breaks is worse than a menu
