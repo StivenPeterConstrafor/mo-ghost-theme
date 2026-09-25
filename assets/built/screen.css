@@ -280,15 +280,40 @@ img { max-width: 100%; height: auto; }
   display: flex;
   align-items: center;
   gap: 6px;
-  /* CENTRED, NOT PUSHED LEFT (Ian, 2026-09-25). .header-inner is
-     space-between, so with the logo narrow and the member button wide
-     the bar ended up sitting left of centre and the eye read the whole
-     header as leaning. Auto margins take the leftover space evenly on
-     both sides, which centres the links between the logo and the
-     actions without touching either of them. The mobile rows are
-     unaffected: .nav is display:none there. */
-  margin-left: auto;
-  margin-right: auto;
+}
+/* A FLUID BAR (Ian, 2026-09-25: "Can the menu bar be truly fluid? The
+   logo and sign in side expand and shrink depending on what is in the
+   bar?"). Yes, and this is how: three columns, the middle one `auto` so
+   the links take exactly the width they need, the two outer ones equal
+   fractions so whatever is left over is split evenly between the logo
+   side and the sign-in side. Add a nav item and both sides give up the
+   same amount; remove one and both get it back. The links stay on the
+   page's centre line while they do it, which auto margins also managed
+   but only while nothing overflowed.
+
+   Confined to 1241px and up on purpose. Below that .nav and
+   .nav-actions are display:none and the hamburger is the third visible
+   child, so a three-column grid would strand it in the centre column.
+   Flex is the right layout for that row and it keeps it. */
+@media (min-width: 1241px) {
+  .header-inner {
+    display: grid;
+    /* minmax(max-content, 1fr), not minmax(0, 1fr). The two outer
+       tracks take an equal share of the leftover space, which is what
+       centres the links, but a track never goes below the width of what
+       is in it. That matters because the member button is 133px wider
+       than the logo: a dead-centre nav needs room for TWO of the wider
+       side, and below about 1370px there isn't any. With a floor, the
+       wider track freezes at its own width and the nav drifts left by a
+       few dozen pixels instead of sliding underneath the button, which
+       is what minmax(0, 1fr) did (44px of overlap at 1241). It also
+       means a signed-in member, whose actions are a different width, is
+       handled without a second breakpoint. */
+    grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
+  }
+  .header-inner > .brand { justify-self: start; }
+  .header-inner > .nav { justify-self: center; }
+  .header-inner > .nav-actions { justify-self: end; }
 }
 /* ROOM FOR "THE FAITH RECEIVED" AND "THE DAILY LITURGY" (Ian,
    2026-09-25). Two more items, both long, on a bar that already did not
@@ -297,14 +322,16 @@ img { max-width: 100%; height: auto; }
    overflow was there before the wrap made it visible.
 
    Eight items only fit if the type steps down, so the bar is set at
-   10px rather than 11px with the tracking in from 0.22em to 0.1em. That
-   buys 107px at 1440 and keeps every item, which is the trade worth
-   making: dropping "Home" would have bought only 78px and cost a link.
+   10px rather than 11px with the tracking in from 0.22em; that is done
+   in the .nav a rule below, and the note there explains why it has to
+   be done there and nowhere else. It takes the links from 899px to
+   686px, which is the trade worth making: dropping "Home" would have
+   saved only 78px and cost a link.
 
-   So the header, and only the header, gets a wider inner measure, the
-   tracking comes in from 0.22em, and no top-level label may wrap. The
-   hamburger also takes over earlier; see the 1240px block further down,
-   which is its own query because the 1024px one governs half the site. */
+   So the header, and only the header, gets a wider inner measure, and
+   no top-level label may wrap. The hamburger also takes over earlier;
+   see the 1240px block further down, which is its own query because the
+   1024px one governs half the site. */
 /* The header is wider than the 1180px measure the rest of the site
    uses, and at 1440 it is effectively full width. That is the only way
    eight items fit: at 1300 the logo, the links and the member button
@@ -318,31 +345,36 @@ img { max-width: 100%; height: auto; }
   padding-left: 24px;
   padding-right: 24px;
 }
-.nav a,
-.nav .nav-dropdown-toggle {
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-  padding-left: 7px;
-  padding-right: 7px;
-}
-/* Below about 1150 the items cannot be made to fit however hard the
-   tracking is squeezed, and a bar that breaks is worse than a menu
-   button, so the menu button starts at 1240 rather than 1024. The cost
-   is that laptops between those widths lose the full bar. */
+/* 1237px is the floor: logo 165 + links 686 + actions 298 + two 20px
+   gaps + two 24px gutters. Four pixels of slack at 1241, so this
+   breakpoint is not arbitrary and a ninth nav item would have to move
+   it. A bar that breaks is worse than a menu button, so the menu button
+   starts at 1240 rather than at the 1024 the rest of the site uses. The
+   cost is that laptops between those widths lose the full bar. */
 @media (max-width: 1240px) {
   .nav { display: none; }
   .nav-actions { display: none; }
   .nav-toggle { display: inline-flex; }
 }
+/* SMALL TYPE, TIGHT TRACKING, AND WHY IT IS DECLARED HERE. Eight items
+   only fit on a 1241px screen at 10px with the tracking in from 0.22em
+   and the padding in from 14px. That was first written as a separate
+   `.nav a, .nav .nav-dropdown-toggle` block above this one, and it
+   never took: equal specificity, and this rule comes later in the file,
+   so every plain link kept 11px/0.22em/14px while the two dropdown
+   toggles (a two-class selector, so it did win) shrank. The bar was
+   213px wider than intended and the dropdowns were visibly smaller
+   than their neighbours. Change the size HERE, in the one rule that
+   owns these links, and never by adding another block. */
 .nav a {
   font-family: var(--font-body);
   color: var(--color-dark);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 8px 14px;
+  white-space: nowrap;
+  padding: 8px 7px;
   transition: color 0.15s;
 }
 .nav a:hover { color: var(--color-primary); text-decoration: none; }
@@ -371,11 +403,14 @@ img { max-width: 100%; height: auto; }
 .nav-dropdown-toggle {
   font-family: var(--font-body);
   color: var(--color-dark);
-  font-size: 11px;
+  /* Matches .nav a above. A toggle sits in the same row as the links
+     and must not read as a different size. */
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 8px 14px;
+  white-space: nowrap;
+  padding: 8px 7px;
   background: none;
   border: 0;
   cursor: pointer;
