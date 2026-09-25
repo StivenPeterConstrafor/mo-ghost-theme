@@ -115,17 +115,19 @@
     if (!fold.open) fold.open = true;
     document.body.classList.add("mo-shelf-page");
 
+    /* A back link and nothing else. The shelf's own summary is still
+       there and still carries its name, its counts and its preview
+       names, so a heading here would print "Latin Fathers" twice. The
+       summary is left alone rather than hidden: when a <summary> is not
+       rendered the browser is entitled to supply a default one, and a
+       stray "Details" triangle is worse than the line it replaced. */
     if (!document.querySelector(".mo-shelf-head")) {
-      const name = fold.querySelector("summary strong");
       const head = document.createElement("div");
       head.className = "mo-shelf-head";
-      const h = document.createElement("h2");
-      h.textContent = name ? name.textContent : "This shelf";
       const back = document.createElement("a");
       back.className = "rx-text-link mo-shelf-back";
       back.href = window.location.pathname;
-      back.textContent = "All shelves";
-      head.appendChild(h);
+      back.textContent = "\u2190 All shelves";
       head.appendChild(back);
       host.parentNode.insertBefore(head, host);
     }

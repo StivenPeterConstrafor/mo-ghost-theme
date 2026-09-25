@@ -20353,17 +20353,10 @@ html:not(.faith-mf-tabbed) .faith-mf-panel + .faith-mf-panel { margin-top: 72px;
 body.mo-shelf-page .rx-filters,
 body.mo-shelf-page .rx-results-line,
 body.mo-shelf-page #author-order-note { display: none; }
-body.mo-shelf-page #dir[data-mo-shelf] .rx-author-fold > summary { cursor: default; }
 .mo-shelf-head {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
   margin: 0 0 14px;
-}
-.mo-shelf-head h2 {
-  margin: 0;
-  font-size: 22px;
-  letter-spacing: 0.01em;
 }
