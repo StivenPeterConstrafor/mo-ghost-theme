@@ -19,7 +19,7 @@
     <div class="admin-main">
       <header class="admin-topbar">
         <h1 class="admin-topbar-title"><em>Shipping Addresses</em></h1>
-        <p class="admin-topbar-sub">Every saved address from members, gift recipients, and group purchases. Search or sort any column; edits write through to the member's own account.</p>
+        <p class="admin-topbar-sub">Shipping addresses for active paid and complimentary members, with all saved records available for audit.</p>
       </header>
 
     <section class="admin-body">
@@ -43,6 +43,10 @@
                  data-edit-key="email"
                  data-edit-fields="name,organization,church,line1,line2,city,state,postal_code,country,age_range,gender,church_role,denomination">
               <div class="admin-table-toolbar">
+                <div class="admin-table-scope" role="group" aria-label="Address membership status">
+                  <button type="button" class="admin-table-scope-btn is-active" data-table-scope data-query="" aria-pressed="true">Active members</button>
+                  <button type="button" class="admin-table-scope-btn" data-table-scope data-query="status=all" aria-pressed="false">All saved addresses</button>
+                </div>
                 <p class="admin-table-count" data-count-label>Loading&hellip;</p>
                 <a href="#" class="btn btn-primary btn-sm" data-download-csv hidden>Download CSV</a>
               </div>

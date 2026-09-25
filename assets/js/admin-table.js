@@ -59,6 +59,8 @@
   const tableEl = host.querySelector('[data-table]');
   const theadRow = host.querySelector('[data-thead]');
   const tbody = host.querySelector('[data-tbody]');
+  const scopeButtons = Array.from(host.querySelectorAll('[data-table-scope]'));
+  let endpointQuery = (scopeButtons.find((button) => button.classList.contains('is-active')) || scopeButtons[0])?.dataset.query || '';
 
   if (!apiBase || !endpoint || !collection) {
     setStatus('Admin is not configured — missing api base or endpoint.');
@@ -121,54 +123,81 @@
     }
   }
 
-  (async () => {
+  scopeButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      if (button.classList.contains('is-active')) return;
+      endpointQuery = button.dataset.query || '';
+      scopeButtons.forEach((candidate) => {
+        const active = candidate === button;
+        candidate.classList.toggle('is-active', active);
+        candidate.setAttribute('aria-pressed', String(active));
+      });
+      loadRows();
+    });
+  });
+
+  downloadEl.addEventListener('click', async (ev) => {
+    ev.preventDefault();
     try {
-      const res = await window.MOAuth.fetch(apiBase + endpoint, { credentials: 'omit' });
+      const r = await window.MOAuth.fetch(endpointUrl({format: 'csv'}));
+      if (!r.ok) return setStatus(`CSV download failed: ${r.status}`);
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${endpoint.split('/').pop() || 'data'}-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      setStatus('CSV download failed.');
+    }
+  });
+
+  loadRows();
+
+  function endpointUrl(extraParams = {}) {
+    const url = new URL(apiBase + endpoint, window.location.origin);
+    new URLSearchParams(endpointQuery).forEach((value, key) => url.searchParams.set(key, value));
+    Object.entries(extraParams).forEach(([key, value]) => url.searchParams.set(key, value));
+    return url.toString();
+  }
+
+  async function loadRows() {
+    host.setAttribute('aria-busy', 'true');
+    scopeButtons.forEach((button) => { button.disabled = true; });
+    downloadEl.hidden = true;
+    statusEl.textContent = '';
+    countEl.textContent = 'Loading\u2026';
+    try {
+      const res = await window.MOAuth.fetch(endpointUrl(), {credentials: 'omit'});
       if (res.status === 401) { setStatus('Sign in required.'); return; }
       if (res.status === 403) { setStatus('Forbidden — your email is not in the admin list.'); return; }
       if (!res.ok) { setStatus(`Could not load data. (${res.status})`); return; }
       const body = await res.json();
       allRows = body[collection] || [];
-      render(allRows, body.count);
+      render(allRows, body.count, body.warning);
     } catch (err) {
       console.error('admin-table fetch failed', err);
       setStatus('Network error loading data.');
+    } finally {
+      host.removeAttribute('aria-busy');
+      scopeButtons.forEach((button) => { button.disabled = false; });
     }
-  })();
+  }
 
   function setStatus(msg) {
     statusEl.textContent = msg;
     countEl.textContent = '';
   }
 
-  function render(rows, count) {
-    statusEl.textContent = '';
+  function render(rows, count, warning) {
+    statusEl.textContent = warning || '';
     countEl.textContent = `${count ?? rows.length} row${rows.length === 1 ? '' : 's'}`;
     downloadEl.hidden = false;
-    // Anchors can't send custom headers, so the Download button does
-    // a fetch with the bearer token, blob-converts the response, and
-    // triggers a synthetic <a> click. Same auth path as the list view.
     downloadEl.href = '#';
-    downloadEl.addEventListener('click', async (ev) => {
-      ev.preventDefault();
-      try {
-        const r = await window.MOAuth.fetch(`${apiBase + endpoint}?format=csv`);
-        if (!r.ok) return setStatus(`CSV download failed: ${r.status}`);
-        const blob = await r.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${endpoint.split('/').pop() || 'data'}-${new Date().toISOString().slice(0, 10)}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        console.error(err);
-        setStatus('CSV download failed.');
-      }
-    }, { once: false });
-
     tableEl.hidden = false;
     paint();
   }
@@ -416,14 +445,18 @@
           save.disabled = false;
           return;
         }
-        // Update the row in place so the table reflects the edit without
-        // a full refetch losing the current sort and search.
         const updated = out.address || payload;
-        const i = allRows.findIndex((x) => x[editKey] === keyValue);
-        if (i >= 0) allRows[i] = {...allRows[i], ...updated};
-        else allRows.unshift(updated);
         back.remove();
-        paint();
+        if (scopeButtons.length) {
+          await loadRows();
+        } else {
+          // Update the row in place so the table reflects the edit without
+          // a full refetch losing the current sort and search.
+          const i = allRows.findIndex((x) => x[editKey] === keyValue);
+          if (i >= 0) allRows[i] = {...allRows[i], ...updated};
+          else allRows.unshift(updated);
+          paint();
+        }
       } catch (err) {
         console.error(err);
         msg.textContent = 'Network error while saving.';
