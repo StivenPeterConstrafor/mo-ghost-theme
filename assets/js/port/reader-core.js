@@ -4179,7 +4179,7 @@ function applyLanes(){
   const P={en:LN.en,par:LN.la,study:LN.fx};
   ["en","par","study"].forEach(x=>{const b=$("#m-"+x);if(b)b.setAttribute("aria-pressed",!!P[x]);});
   if(!LN.fx){app.classList.remove("facs-only");const fe=$("#facsExp");if(fe){fe.setAttribute("aria-pressed","false");fe.textContent="⤢";}}  // dropping the scan drops facsimile-only too
-  if(!singleLane)lsSet("fr_lanes2",JSON.stringify(LN));if(window.__frThumbSync)window.__frThumbSync();
+  if(!singleLane&&!window.__frLanesFromURL)lsSet("fr_lanes2",JSON.stringify(LN));if(window.__frThumbSync)window.__frThumbSync();
   // PHONE PARALLEL (owner 2026-08-10 "work on this on mobile"): stacked runs render la-column-
   // then-en-column — pages of Latin before any English on a phone. Zip them into la∥en pairs,
   // paragraph by paragraph, whenever both lanes are on at phone width. One-way per stkwrap
@@ -7760,7 +7760,11 @@ async function loadWork(ws){
     // default layout: English only. The reader's last explicit lane combination (fr_lanes) wins on
     // return visits; pre-lanes visitors fall back to their old preset (fr_mode).
     let restored=false;
-    try{const sl=JSON.parse(lsGet("fr_lanes2")||"null");
+    // PREVIEW = ENGLISH (corpus owner 2026-09-25 "for preview mode make it english only by default"): a mini reader embedded by
+    // the Scripture desk asks ?lanes=en — one English column whatever the visitor last chose here, and the choice is not saved
+    // (applyLanes skips fr_lanes2 while __frLanesFromURL). Latin and the scan stay one tap away inside the preview.
+    if(new URLSearchParams(location.search).get("lanes")==="en"){window.__frLanesFromURL=true;Object.assign(LN,{en:true,la:false,fx:false});applyLanes();restored=true;}
+    else try{const sl=JSON.parse(lsGet("fr_lanes2")||"null");
       if(sl&&typeof sl.en==="boolean"){Object.assign(LN,{en:!!sl.en,la:!!sl.la,fx:!!sl.fx});applyLanes();restored=true;}}catch(e){}
     // on phones the facsimile is a 100vw fixed overlay — a Scan lane restored from a previous
     // session must not cover the text on arrival ("facsimile first loads", 2026-07-12); the
