@@ -779,7 +779,7 @@
     card.querySelector(".frt-back").hidden = i === 0;
     const nextBtn = card.querySelector(".frt-next");
     nextBtn.removeAttribute("aria-busy");
-    nextBtn.textContent = last ? "Finish" : "Next →";
+    nextBtn.textContent = last ? "Done" : "Next →";
     const nt = card.querySelector(".frt-next-tour");
     const nxt = last ? nextTourOf(run.name) : null;
     const join = last && run.hasMember && !isMember("tfr-research");
@@ -884,7 +884,8 @@
     if (!run || run.busy) return;
     const i = run.i + d;
     if (i < 0) return;
-    if (i >= run.steps.length) { stop(true); return; }
+    // Done on the last step returns to the tutorial page to pick the next tour.
+    if (i >= run.steps.length) { stop(true); toHub(); return; }
     show(i, d);
   }
 
@@ -897,6 +898,11 @@
       if (k === "Escape") stop(false);
       else go(k === "ArrowRight" ? 1 : -1);
     }
+  }
+
+  function toHub() {
+    const hub = "/the-faith-received/tutorial/";
+    if (window.location.pathname !== hub) window.location.href = hub;
   }
 
   function stop(finished) {
