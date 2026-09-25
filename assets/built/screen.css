@@ -380,19 +380,9 @@ img { max-width: 100%; height: auto; }
   padding-left: 24px;
   padding-right: 24px;
 }
-/* Where the giving runs out. With eight items the links are 884px, and
-   the two sides cannot go below 84px of logo and 237px of actions, so
-   the narrowest bar that still works is about 1262px once the gaps and
-   gutters are counted. Measured, not guessed: at 1262 the clearances are
-   exactly the 20px grid gap on both sides. Below that a bar that breaks
-   is worse than a menu button, so the menu button takes over, earlier
-   than the 1024 the rest of the site uses. Add a ninth item and this
-   number has to move with it. */
-@media (max-width: 1261px) {
-  .nav { display: none; }
-  .nav-actions { display: none; }
-  .nav-toggle { display: inline-flex; }
-}
+/* The bar hands over to the menu button at 1261px. That rule cannot
+   live here; it is in the Responsive section at the foot of the file,
+   after the base rules it has to beat. The note there says why. */
 /* THE LINKS KEEP THEIR SIZE; THE SIDES GIVE INSTEAD. These were cut to
    10px/0.08em to make eight items fit, and that was the wrong thing to
    shrink: the links are what the bar is for. They are back at 11px with
@@ -3949,6 +3939,31 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
   max-width: none;
   padding: 12px 20px;
   font-size: 14px;
+}
+
+/* WHERE THE GIVING RUNS OUT, AND WHY THIS BLOCK IS DOWN HERE. With
+   eight items the links are 884px and the two sides cannot go below
+   84px of logo and 237px of actions, so the narrowest bar that still
+   works is about 1262px once the gaps and gutters are counted.
+   Measured, not guessed: at 1262 the clearances are exactly the 20px
+   grid gap on both sides. Below that the menu button takes over,
+   earlier than the 1024px the rest of the site uses, because a bar that
+   breaks is worse than a menu button. Add a ninth nav item and this
+   number moves with it.
+
+   IT HAS TO BE AFTER THE BASE RULES. `.nav-toggle { display: none }`
+   and `.nav-actions { display: flex }` are declared further up this
+   file at the same specificity, so while this block sat next to the
+   header rules near the top it lost to both: between 1025px and 1261px
+   the links were hidden, the hamburger stayed hidden with them, and the
+   page had no navigation at all. It shipped that way on 2026-09-25 and
+   was caught the same afternoon. A media query adds no specificity;
+   only source order saves it. Keep this block below every base rule it
+   overrides. */
+@media (max-width: 1261px) {
+  .nav { display: none; }
+  .nav-actions { display: none; }
+  .nav-toggle { display: inline-flex; }
 }
 
 @media (max-width: 1024px) {
