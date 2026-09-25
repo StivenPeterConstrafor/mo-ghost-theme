@@ -34,6 +34,10 @@
 (function () {
   "use strict";
 
+  // The room's Works tab leaves Migne's apparatus out (indices, notices, admonitions, tables of contents; corpus
+  // owner, 2026-09-25, for this site). The port reads this flag when it draws the tab.
+  window.FR_HIDE_APPARATUS = true;
+
   const T = window.MOTitleOrder;
   const R = window.FRResearch;
   if (!T || !T.compareTitlesAlpha) return;
@@ -60,20 +64,31 @@
       return T.compareTitlesAlpha(setTitle(x), setTitle(y)) || originalOrder(a, b);
     };
 
-    // Different volumes of a series (PG 5, PG 6) keep number order, so the
-    // "by volume" directory reads PG 1 onward; inside one volume, and
-    // everywhere else, works are alphabetical.
+    // The Patrologia keeps Migne's order: volume by volume, and inside a
+    // volume the order the volume prints (corpus owner, 2026-09-25: "all
+    // results … should sequentially list the works per volume by the migne
+    // ordering"). This was alphabetical inside a volume (Ian, 2026-09-23);
+    // the owner has ruled for Migne's sequence there. Everywhere else works
+    // stay alphabetical.
+    const isSeries = (w) => Boolean(series(R.orderWork(w).volume));
     R.workOrder = function (a, b) {
-      const xr = series(R.orderWork(a).volume);
-      const yr = series(R.orderWork(b).volume);
-      if (xr && yr && (xr.series !== yr.series || xr.volume !== yr.volume)) return originalOrder(a, b);
+      if (isSeries(a) && isSeries(b)) return originalOrder(a, b);
       return alphaOrder(a, b);
     };
 
-    // An author's own list: purely alphabetical, one run of titles.
+    // An author's own list: the Patrologia first, volume by volume in
+    // Migne's order (PL 148, then PL 158 from the Monologion at col. 144),
+    // then everything else alphabetical, one run of titles.
     R.orderedWorks = function (rows, getWork) {
       const get = typeof getWork === "function" ? getWork : (x) => x;
-      return rows.slice().sort((p, q) => alphaOrder(get(p), get(q)));
+      return rows.slice().sort((p, q) => {
+        const x = get(p);
+        const y = get(q);
+        const xs = isSeries(x);
+        const ys = isSeries(y);
+        if (xs !== ys) return xs ? -1 : 1;
+        return xs ? originalOrder(x, y) : alphaOrder(x, y);
+      });
     };
   }
 

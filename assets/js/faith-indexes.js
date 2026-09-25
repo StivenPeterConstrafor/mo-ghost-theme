@@ -1621,7 +1621,12 @@
         )
       ).then((pairs) => {
         const cats = new Map(pairs);
-        return rows.map((row) => {
+        // Migne's own indices and notices are not works that cite a verse or treat a topic: an index of Scripture
+        // "cites" every verse it lists. Their rows are left out (corpus owner, 2026-09-25).
+        return rows.filter((row) => {
+          const w = (cats.get(row[0]) || new Map()).get(String(row[1]));
+          return !(w && w.app);
+        }).map((row) => {
           const [corpus, id, times, loc, excerpt, verses] = row;
           const w = (cats.get(corpus) || new Map()).get(String(id));
           return {
