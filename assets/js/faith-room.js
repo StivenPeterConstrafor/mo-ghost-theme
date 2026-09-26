@@ -431,12 +431,15 @@
       if (!had || c < had) authorCentury.set(name, c);
     });
     const T = window.MOTitleOrder;
-    works = list.slice().sort((a, b) => {
+    // Migne's apparatus (indices, notices, admonitions, tables of contents) is not listed as a work; each piece stays
+    // readable from its volume in the reader. Corpus owner, 2026-09-25. Under one author, the works in the Patrologia
+    // come first and in the order their volumes print them; the rest by title, as before.
+    works = list.filter((w) => !w.app).sort((a, b) => {
       if (T && T.compareNames) {
-        return T.compareNames(a.author, isEarly(a.author), b.author, isEarly(b.author)) || compareWorks(a, b);
+        return T.compareNames(a.author, isEarly(a.author), b.author, isEarly(b.author)) || migneOrder(a, b) || compareWorks(a, b);
       }
       const an = surname(a.author), bn = surname(b.author);
-      return an.localeCompare(bn) || compareWorks(a, b);
+      return an.localeCompare(bn) || migneOrder(a, b) || compareWorks(a, b);
     });
     // A shelf with no named series cannot be known until its works are in, so the
     // address is read here rather than at startup: a reader who arrived on
@@ -935,13 +938,38 @@
   // cited by the volume of its set, and the confessions and the English
   // editions are not cited by place at all, so they get none rather than a
   // tradition name pretending to be a location.
+  // In the two Patrologiae the address carries the columns too, "PL 158, cols. 489\u2013506" (corpus owner,
+  // 2026-09-25: "all latin and greek should have the migne ranges").
   const WHERE = {
-    pld: (w) => w.eyebrow, pg: (w) => w.eyebrow, po: (w) => w.eyebrow,
+    pld: (w) => migneCite(w), pg: (w) => migneCite(w), po: (w) => w.eyebrow,
     eebo: (w) => w.eyebrow, tfr: (w) => w.volume,
   };
   function where(w) {
     const f = WHERE[w.corpus];
     return f ? String(f(w) || "").trim() : "";
+  }
+
+  // Migne's place for a work in the Patrologia: series, volume, the volume's own order (Migne's sequence, else the
+  // first column). Null outside the series.
+  const SERIES = { PG: 0, PL: 1, PO: 2 };
+  function migneOf(w) {
+    const m = /^(PL|PG|PO)(?:\s+Tome)?\s+(\d+)/i.exec(String(w.eyebrow || ""));
+    if (!m) return null;
+    const c = Array.isArray(w.cols) && w.cols.length === 2 && w.cols.every((x) => x != null) ? w.cols : null;
+    return { s: m[1].toUpperCase(), v: Number(m[2]), cols: c, o: w.order != null ? Number(w.order) : (c ? Number(c[0]) : Infinity) };
+  }
+  function migneCite(w) {
+    const m = migneOf(w);
+    if (!m) return String(w.eyebrow || "");
+    const c = m.s === "PO" ? null : m.cols;
+    return `${m.s} ${m.v}${c ? (String(c[0]) === String(c[1]) ? `, col. ${c[0]}` : `, cols. ${c[0]}\u2013${c[1]}`) : ""}`;
+  }
+  // The Patrologia's works before the rest, in their volumes' order; 0 between two works outside it, so the title
+  // decides there. A total order: series works always precede the others.
+  function migneOrder(a, b) {
+    const x = migneOf(a), y = migneOf(b);
+    if (!x || !y) return (x ? 0 : 1) - (y ? 0 : 1);
+    return SERIES[x.s] - SERIES[y.s] || x.v - y.v || x.o - y.o;
   }
 
   function compareWorks(a, b) {
@@ -1005,7 +1033,8 @@
     // column range in the two Patrologiae, the fascicle in the Orientalis,
     // which is how a tome is divided and how it is cited. A series with
     // neither gets no gutter at all rather than an empty one.
-    const c = w.columns;
+    // Ian's volume data has no columns for some of the short pieces; the catalogue's own range fills in.
+    const c = w.columns || (Array.isArray(w.cols) && w.cols.length === 2 && w.cols.every((x) => x != null) ? w.cols : null);
     const range = c ? `${c[0]}${c[1] !== c[0] ? `\u2013${c[1]}` : ""}` : "";
     // The volume number is set lighter than the columns: it is the same on
     // every row of the page and the head has already said it; the columns

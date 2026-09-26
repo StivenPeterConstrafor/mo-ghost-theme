@@ -37,6 +37,10 @@
         author:aliases[previous.author]?.includes(' (') ? authorName(previous.author) : w.author_en || w.author, volume, tradition:w.tradition === 'Reformed' ? 'Continental Reformed' : w.tradition, party:w.party || '',
         eyebrow:series ? w.volume : w.tradition, extent:w.n_pages || previous.extent || 0,
         order:w.po ?? previous.order, cols:w.cols || previous.cols, kind:w.kind || previous.kind,
+        // Migne's apparatus: 'index' | 'contents' | 'notice' | 'admonition' (v1/works-index.json `app`). Lists leave these
+        // out (corpus owner, 2026-09-25: "we dont display indices, notices, admonitions, analytical indexes"); the work
+        // stays here, so a reader link, a bookmark or an index entry that names it still resolves.
+        app:w.app || '',
         url:`/the-faith-received/read/?w=${encodeURIComponent(w.slug)}`,
       };
     }));
@@ -61,7 +65,9 @@
   }
   const loaded = new Map();
   let ready = Promise.resolve();
-  const api = {publicWork, displayWork, workSlug, authorName, authorKey, normalize, setAliases, setWorkIdentity, setCanonical, catalogue, libraryIds, countLabel, authorGroup,
+  // A work a list shows: not Migne's apparatus (see `app` above).
+  const shelved = work => !(work && work.app);
+  const api = {publicWork, displayWork, shelved, workSlug, authorName, authorKey, normalize, setAliases, setWorkIdentity, setCanonical, catalogue, libraryIds, countLabel, authorGroup,
     load(id) {
       if (!loaded.has(id)) loaded.set(id, Promise.all([root.MOCorpora.load(id), ready]).then(([works]) => catalogue(id, works)));
       return loaded.get(id);

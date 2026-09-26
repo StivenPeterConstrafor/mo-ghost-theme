@@ -56,6 +56,38 @@
   const queryWords = (s) => String(s || "").split(/\s+/).map(fold).filter(Boolean);
   const hasWords = (h, words) => words.length > 1 && words.every((x) => h.includes(x));
 
+  // MIGNE (corpus owner, 2026-09-25: "all latin and greek should have the migne ranges"; "all results … should
+  // sequentially list the works per volume by the migne ordering"). A work in the Patrologia is cited by volume and
+  // column, "PL 158, cols. 489–506", not by a bare "158"; and the works of one volume come in the order the volume
+  // prints them. Works outside the series, and the few Latin pieces whose columns are not recorded, keep what they had.
+  const SERIES = { PG: 0, PL: 1, PO: 2 };
+  function migneOf(w) {
+    const m = /^(PL|PG|PO)(?:\s+Tome)?\s+(\d+)/i.exec(String(w.eyebrow || ""));
+    if (!m) return null;
+    const c = Array.isArray(w.cols) && w.cols.length === 2 && w.cols.every((x) => x != null) ? w.cols : null;
+    const s = m[1].toUpperCase();
+    return { s, v: Number(m[2]), cols: s === "PO" ? null : c, o: w.order != null ? Number(w.order) : (c ? Number(c[0]) : Infinity) };
+  }
+  function migneCite(w) {
+    const m = migneOf(w);
+    if (!m) return "";
+    const c = m.cols;
+    return `${m.s} ${m.v}${c ? (String(c[0]) === String(c[1]) ? `, col. ${c[0]}` : `, cols. ${c[0]}\u2013${c[1]}`) : ""}`;
+  }
+  // Within one rank the Migne works take the places they already hold, in Migne's order: series, volume, then the
+  // volume's own sequence. Everything else stays where it was.
+  function inMigneOrder(list) {
+    const keyed = list.map((w) => migneOf(w));
+    const mig = list.filter((w, i) => keyed[i]).map((w) => [w, migneOf(w)])
+      .sort((p, q) => SERIES[p[1].s] - SERIES[q[1].s] || p[1].v - q[1].v || p[1].o - q[1].o)
+      .map((p) => p[0]);
+    let i = 0;
+    return list.map((w, k) => (keyed[k] ? mig[i++] : w));
+  }
+  // What a collected volume holds (MOCollectedContents, the reader outlines of the Opera and Works volumes), so
+  // "Coccejus Leviticus" finds the volume that contains it.
+  const contentsOf = (w) => (window.MOCollectedContents ? window.MOCollectedContents.search(w.id) : "");
+
   // Tradition has two levels here as everywhere else: the communion,
   // and the denomination or series under it. Under Protestant it is a
   // denomination; under The Fathers it is one of Migne's series, and
@@ -123,7 +155,9 @@
     return Promise.all(list.map((c) =>
       window.MOFaithCatalogue.load(c.id).catch(() => [])))
       .then((sets) => {
-        all = sets.flat();
+        // Migne's apparatus (indices, notices, admonitions, tables of contents) is not offered as a work here: it
+        // stays readable from its volume. Corpus owner, 2026-09-25.
+        all = sets.flat().filter((w) => !w.app);
         // The library's own collections are shelves (the Tradition select), not a collection to pick.
         fillSelect("[data-bs-collection]", tally(all, (w) => (ONE_LIBRARY.has(w.corpus) ? "" : w.corpus)), (id) => {
           const c = window.MOCorpora.get(id);
@@ -237,10 +271,10 @@
         return w._fa;
       }
       if (scope === "title") {
-        if (w._ft === undefined) w._ft = fold(`${w.title || ""} ${w.titleLatin || ""}`);
+        if (w._ft === undefined) w._ft = fold(`${w.title || ""} ${w.titleLatin || ""} ${contentsOf(w)}`);
         return w._ft;
       }
-      if (w._fq === undefined) w._fq = fold(`${w.author || ""} ${w.title || ""} ${w.titleLatin || ""}`);
+      if (w._fq === undefined) w._fq = fold(`${w.author || ""} ${w.title || ""} ${w.titleLatin || ""} ${contentsOf(w)}`);
       return w._fq;
     };
     const phrase = [];
@@ -250,7 +284,7 @@
       if (h.includes(q)) phrase.push(w);
       else if (hasWords(h, words)) allWords.push(w);
     });
-    return phrase.concat(allWords);
+    return inMigneOrder(phrase).concat(inMigneOrder(allWords));
   }
 
   // ── Where a result opens ──────────────────────────────────────
@@ -312,9 +346,13 @@
       }${
       // A multi-volume set is five rows of one title: the volume tells them apart
       // ("Vol. 2: The Votes of the Assembly and Minutes, Sessions 45–198 …").
-      w.volume ? `<span class="bsearch-hit-vol">${escapeHtml(String(w.volume))}</span>` : ""
+      // In the Patrologia the citation is the volume and its columns.
+      migneCite(w) ? `<span class="bsearch-hit-vol">${escapeHtml(migneCite(w))}</span>`
+        : w.volume ? `<span class="bsearch-hit-vol">${escapeHtml(String(w.volume))}</span>` : ""
       }<span class="bsearch-hit-where">${escapeHtml(c && !ONE_LIBRARY.has(c.id) ? c.label : (shelfOf(w) || ""))}</span>${ 
-      extra || ""}</li>`;
+      extra || ""}${
+      // A collected volume says what it holds.
+      window.MOCollectedContents ? window.MOCollectedContents.preview(w.id) : ""}</li>`;
   }
 
   // Entries in the author field that are not a person: the
@@ -697,7 +735,9 @@
     // something untrue about it.
     if (noteEl) { noteEl.textContent = ""; noteEl.hidden = true; }
     out.innerHTML = "";
-    corpora().then((list) => {
+    // The contents of the collected volumes are part of what a search reads, so they are in before it runs.
+    const contents = window.MOCollectedContents ? window.MOCollectedContents.ready : null;
+    Promise.all([corpora(), contents]).then(([list]) => {
       paintDenoms();
       const scope = scopeEl.value;
       const set = narrowed(list);
