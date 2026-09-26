@@ -4234,6 +4234,10 @@ function setContentsOpen(open,restoreFocus=false){
   const sidebar=document.querySelector('.sidebar'),focused=document.activeElement;
   app.classList.toggle('nosb',!open);
   if(open)document.documentElement.classList.remove('mh-hide','mh-mini');
+  /* 09-26 (owner: "nav placement is a bit weird when clicking around on toc"): the drawer closes after a TOC click and reopened on
+     whatever it last showed, the current entry often 2,000px below. Reopening now centres the outline's current row (the outline's
+     own row, never the volume list — see the volume box note above). */
+  if(open)requestAnimationFrame(()=>{try{const n=document.querySelector('#nav .nav-node.on, #nav .fol.on, #nav [aria-current="location"]');if(n)n.scrollIntoView({block:'center',inline:'nearest'});}catch(e){}});
   if(!open&&sidebar?.contains(focused))focused.blur();
   window.__frThumbSync?.();
   if(!open&&restoreFocus){const target=document.documentElement.classList.contains('g-mobile')?document.querySelector('.frthumb [data-t="toc"]'):$('#sbT');target?.focus({preventScroll:true});}
