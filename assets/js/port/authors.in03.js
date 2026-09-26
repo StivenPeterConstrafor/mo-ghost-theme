@@ -255,7 +255,7 @@ document.addEventListener("click",async e=>{
     window.open(readerHref(w,pg),"_blank","noopener");return;}
   const b=e.target.closest(".peekbtn");if(!b)return;
   e.preventDefault();
-  const host=b.closest('.scripture-work,.annotation-volume,.rx-excerpt,.vpr,.ev,.m,.vc-row')||b.parentElement;
+  const host=b.closest('.scripture-work,.annotation-volume,.rx-excerpt,.vpr,.ev,.vc-row,.vc-page-ref')||b.closest('.m')||b.parentElement;
   let wrap=host.querySelector(':scope > .peekwrap');
   const setOpen=on=>{wrap.classList.toggle('on',on);wrap.inert=!on;b.classList.toggle('on',on);b.setAttribute('aria-expanded',String(on));};
   if(wrap){setOpen(!wrap.classList.contains('on'));return;}
@@ -1313,8 +1313,8 @@ async function workPage(dnum){
     return `<div class="pane-meta" style="margin:.3rem 0 .1rem">A commentary on <a href="/the-faith-received/bible/#b/${bs2}${ins.lemma.c?"/"+ins.lemma.c:""}">${esc(bn2)}${ins.lemma.c?" "+ins.lemma.c:""}</a> — its chapter holds this work among the commentators.</div>`;})():""}
   ${/* The work page's headline quotation (the mine's first "memorable" line: Calvin's Institutes opened on "It is therefore an
      audacity…", p. 1) said nothing about the work; removed (owner 2026-09-26). */''}
-  ${books?`<h2 class="sect">Its Scripture</h2>${books}`:""}
-  ${topics?`<h2 class="sect">Its topics</h2>${topics}`:""}
+  ${books?`<h2 class="sect">Its Scripture</h2><div class="vc-index-section">${books}</div>`:""}
+  ${topics?`<h2 class="sect">Its topics</h2><div class="vc-index-section">${topics}</div>`:""}
   <div id="wauth"></div>
   ${entries?`<h2 class="sect">Subject index <span class="tn" style="font-family:var(--body);font-size:.75rem;color:var(--faint)">Migne's</span></h2>${entries}`:""}
   ${(!books&&!topics&&!entries)?'<p class="hint">Not yet mined.</p>':""}`;
@@ -1358,7 +1358,7 @@ async function workPage(dnum){
   });
   // Each five-card index row owns one full-width detail panel beneath it.
   page.addEventListener("click",e=>{
-    const card=e.target.closest("[data-vc-expand]");if(card){const group=card.closest(".vc-expand-group"),wasOpen=card.getAttribute("aria-expanded")==="true";group.querySelectorAll("[data-vc-expand]").forEach(x=>x.setAttribute("aria-expanded","false"));group.querySelectorAll("[data-vc-panel]").forEach(x=>{x.hidden=true;});if(!wasOpen){card.setAttribute("aria-expanded","true");const panel=group.querySelector(`#${CSS.escape(card.dataset.vcExpand)}`);if(panel)panel.hidden=false;}return;}
+    const card=e.target.closest("[data-vc-expand]");if(card){const group=card.closest(".vc-expand-group"),section=card.closest(".vc-index-section")||group,wasOpen=card.getAttribute("aria-expanded")==="true";section.querySelectorAll("[data-vc-expand]").forEach(x=>x.setAttribute("aria-expanded","false"));section.querySelectorAll("[data-vc-panel]").forEach(x=>{x.hidden=true;});if(!wasOpen){card.setAttribute("aria-expanded","true");const panel=group.querySelector(`#${CSS.escape(card.dataset.vcExpand)}`);if(panel)panel.hidden=false;}return;}
     const close=e.target.closest("[data-vc-close]");if(close){const panel=close.closest(".vc-book-panel"),card=page.querySelector(`[aria-controls="${CSS.escape(panel.id)}"]`);panel.hidden=true;if(card){card.setAttribute("aria-expanded","false");card.focus();}return;}
     const all=e.target.closest(".vc-book-panel [data-vc-all]");if(all){const panel=all.closest(".vc-book-panel");panel.classList.add("vc-open");all.hidden=true;return;}
   });
