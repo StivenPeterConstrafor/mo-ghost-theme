@@ -560,7 +560,8 @@
   }
 
   // ── Source rows with inline preview ─────────────────────────────
-  const HOW = { quotation: "Quotes", explicit: "Cites", allusion: "Alludes", citation: "Cites", exegesis: "Expounds" };
+  // "cites" and "citation-survey" are rare spellings in the index (8 of about 7,000 rows in Matthew 1) of a citation by reference.
+  const HOW = { quotation: "Quotes", explicit: "Cites", allusion: "Alludes", citation: "Cites", cites: "Cites", "citation-survey": "Cites", exegesis: "Expounds" };
   const centuryLabel = (c) => {
     const n = Number(c);
     if (!n) return "";
