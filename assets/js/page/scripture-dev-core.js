@@ -36,7 +36,10 @@
  * NO SCROLL BOXES. Previews open in the page flow and take their own
  * height. The commentary strip scrolls sideways by Ian's request, and
  * the reader's sidebar scrolls on its own (sidebars are the recorded
- * exception, 2026-09-22). Nothing else here caps its height.
+ * exception, 2026-09-22). Nothing else here caps its height, with one
+ * proposed exception: "Keep reading here" opens the reader itself under
+ * a preview, and a reader scrolls (corpus owner, 2026-09-25; see
+ * readerFrame below).
  */
 (function () {
   "use strict";
@@ -575,6 +578,39 @@
     return /[.!?)"\u201d\u2019]$/.test(t) ? t : `${t}\u2026`;
   };
 
+  /* KEEP READING HERE (corpus owner, 2026-09-25: "does preview allow you
+   * to effectively read and scroll the preview while not leaving the pages
+   * and verses"). The quotation is the passage; this opens the reader under
+   * it at the same place, in English (?lanes=en, the preview mode of the
+   * reader), in a frame that scrolls through the whole work while this page
+   * and its verse stay where they are. Framed, the reader marks itself
+   * mo-embedded (faith-port-read-boot.js) and drops the masthead and footer,
+   * as it already does for the Ask workspace's source pane. */
+  function readerFrameSrc(link) {
+    const u = new URL(link, window.location.origin);
+    u.searchParams.set("lanes", "en");
+    return u.pathname + u.search + u.hash;
+  }
+  function readerFrame($pv, link, title) {
+    const btn = $pv.querySelector(".sd-keep-reading");
+    if (!btn) return;
+    let frame = null;
+    btn.addEventListener("click", () => {
+      const open = btn.getAttribute("aria-expanded") !== "true";
+      btn.setAttribute("aria-expanded", String(open));
+      btn.textContent = open ? "Close the reader" : "Keep reading here";
+      if (open && !frame) {
+        frame = document.createElement("iframe");
+        frame.className = "sd-reader-frame";
+        frame.title = `Reader: ${title}`;
+        frame.src = readerFrameSrc(link);
+        $pv.appendChild(frame);
+      }
+      if (frame) frame.hidden = !open;
+      if (open) frame.scrollIntoView({ block: "nearest" });
+    });
+  }
+
   function sourceItem(row, ctx, extra) {
     const li = document.createElement("li");
     li.className = "sd-source";
@@ -607,6 +643,7 @@
         .then(({ d, r }) => {
           const link = sourceHref((d && d.href) || r.h, r.w, r.p) || href;
           const read = link ? `<a class="sd-read-link" href="${esc(link)}">Read in context</a>` : "";
+          const here = link ? `<button type="button" class="sd-keep-reading" aria-expanded="false">Keep reading here</button>` : "";
           if (d && d.found && d.text) {
             // The worker trims to the neighbourhood of the reference and
             // says which ends it cut; mark them so a clipped sentence is
@@ -614,13 +651,14 @@
             const text = `${d.clipped_start ? "… " : ""}${d.text}${d.clipped_end ? " …" : ""}`;
             $pv.innerHTML =
               `<blockquote class="sd-quote"${d.lang ? ` lang="${esc(d.lang)}"` : ""}>${esc(text)}</blockquote>` +
-              `<p class="sd-preview-foot">${d.locator ? `<span>${esc(d.locator)}</span>` : ""}${read}</p>`;
+              `<p class="sd-preview-foot">${d.locator ? `<span>${esc(d.locator)}</span>` : ""}${here}${read}</p>`;
           } else {
             const why = d && d.reason === "licensed"
               ? "This edition's text is licensed, so it cannot be previewed here."
               : "The passage could not be extracted from this edition.";
-            $pv.innerHTML = `<p class="sd-muted">${why}</p><p class="sd-preview-foot">${read}</p>`;
+            $pv.innerHTML = `<p class="sd-muted">${why}</p><p class="sd-preview-foot">${here}${read}</p>`;
           }
+          if (link) readerFrame($pv, link, r.t || row.t || r.w);
         })
         .catch(() => {
           loaded = false;

@@ -421,6 +421,12 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
 .sd-preview-foot { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--color-muted); margin: 8px 0 0; }
 .sd-read-link { color: var(--sd-accent); font-weight: 600; }
 .sd-read-link::after { content: " \2192"; }
+/* Keep reading here: the reader itself under a preview, English, scrolling
+   inside its frame while the page stays put (corpus owner, 2026-09-25). */
+.sd-keep-reading { font: inherit; font-weight: 600; color: var(--sd-accent); background: none; border: 0; padding: 0; cursor: pointer; }
+.sd-keep-reading:hover, .sd-keep-reading:focus-visible { text-decoration: underline; }
+.sd-reader-frame { display: block; width: 100%; height: min(75vh, 780px); margin-top: 12px; border: 1px solid var(--color-rule); border-radius: 6px; }
+.sd-reader-frame[hidden] { display: none; }
 .sd-more { margin-top: 14px; width: 100%; }
 .sd-more:disabled { opacity: 0.5; cursor: progress; }
 
