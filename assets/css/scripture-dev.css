@@ -421,6 +421,12 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
 .sd-preview-foot { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--color-muted); margin: 8px 0 0; }
 .sd-read-link { color: var(--sd-accent); font-weight: 600; }
 .sd-read-link::after { content: " \2192"; }
+/* Keep reading here: the reader itself under a preview, English, scrolling
+   inside its frame while the page stays put (corpus owner, 2026-09-25). */
+.sd-keep-reading { font: inherit; font-weight: 600; color: var(--sd-accent); background: none; border: 0; padding: 0; cursor: pointer; }
+.sd-keep-reading:hover, .sd-keep-reading:focus-visible { text-decoration: underline; }
+.sd-reader-frame { display: block; width: 100%; height: min(75vh, 780px); margin-top: 12px; border: 1px solid var(--color-rule); border-radius: 6px; }
+.sd-reader-frame[hidden] { display: none; }
 .sd-more { margin-top: 14px; width: 100%; }
 .sd-more:disabled { opacity: 0.5; cursor: progress; }
 
@@ -758,3 +764,18 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
 .sd-chart > summary:focus-visible { outline: 2px solid var(--color-secondary, #c1593c); outline-offset: 3px; }
 .sd-desk .sd-chart:not([open]) { padding-bottom: 16px; }
 @media (prefers-reduced-motion: reduce) { .sd-chart > summary::after { transition: none; } }
+
+/* Verse Desk, the corpus owner's order (2026-09-25): folds that open in place. */
+.sd-desk-fold > summary { list-style: none; cursor: pointer; }
+.sd-desk-fold > summary::-webkit-details-marker { display: none; }
+.sd-desk-fold > summary .sd-h2::before { content: "▾ "; font-size: .7em; color: var(--color-muted, #777); }
+.sd-desk-fold:not([open]) > summary .sd-h2::before { content: "▸ "; }
+.sd-desk-fold > summary .sd-h2 { display: inline; }
+.sd-groups { margin: .5rem 0 1rem; }
+.sd-group { border-top: 1px solid var(--color-rule, #ddd); padding: .35rem 0; }
+.sd-group > summary, .sd-work > summary { cursor: pointer; padding: .35rem 0; }
+.sd-group-name { font-weight: 600; }
+.sd-group-body { padding-left: 1rem; }
+.sd-work { border-left: 2px solid var(--color-rule, #ddd); padding-left: .75rem; margin: .25rem 0; }
+.sd-companions { list-style: none; padding: 0; margin: .25rem 0 1rem; }
+

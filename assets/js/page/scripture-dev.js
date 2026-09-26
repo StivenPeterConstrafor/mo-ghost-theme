@@ -312,10 +312,15 @@
   let bar = null;
   let rowsOffset = 0;
   const panelFoldMq = window.matchMedia("(max-width: 640px)");
+  /* The corpus owner's two commentary lists, in his order (2026-09-25: "display first the chapter
+   * commentaries + whole bible commentaries and the specific citations … and then similarity"): the
+   * works on this book that cover the chapter, then the whole-Bible sets (the worker marks them
+   * `annotation`; they had been filed under "whole book"), then the verse's citations, then similarity. */
   const PANEL_FOLDS = {
-    chapter: { key: "chapter", title: "Commentaries on this chapter", wideOpen: true },
-    wholeBook: { key: "whole_book", title: "Commentaries on the whole book", wideOpen: false },
+    chapter: { key: "chapter", title: "Chapter commentaries", wideOpen: true },
+    wholeBible: { key: "whole_bible", title: "Whole-Bible commentaries", wideOpen: true },
     citations: { key: "citations", title: "Citations of this verse", wideOpen: false },
+    similar: { key: "similar", title: "Similar passages", wideOpen: false },
   };
 
   function panelDefaultOpen(section) {
@@ -434,7 +439,7 @@
     const {c} = state;
     const t = state.t === "ESV" ? "" : state.t;
     const citationBody = `<div data-sd-filters></div><h3 class="sd-h3">Most-cited sources</h3><ol class="sd-sources sd-top" data-sd-top></ol><div data-sd-matches hidden><h3 class="sd-h3">Matching citations</h3><ol class="sd-sources" data-sd-rows></ol><button type="button" class="sd-more" data-sd-more hidden>Show more</button></div>`;
-    $panel.innerHTML = `<header class="sd-panel-head"><p class="sd-eyebrow">Verse</p><h2 class="sd-panel-ref" tabindex="-1">${esc(S.refLabel(book, c, v))}</h2><a class="sd-desk-link" href="${esc(S.deskHref(book, c, v, t))}">Open the Verse Desk</a><button type="button" class="sd-close" aria-label="Close verse panel">Close</button></header><p class="sd-count" data-sd-count role="status"><span class="sd-muted">Counting citations…</span></p><div data-sd-panel-commentaries><p class="sd-muted">Loading commentaries…</p></div>${panelDetails(PANEL_FOLDS.citations, citationBody)}<p class="sd-panel-foot"><a href="${esc(S.deskHref(book, c, v, t))}">Every citation of ${esc(S.refLabel(book, c, v))} on the Verse Desk</a></p>`;
+    $panel.innerHTML = `<header class="sd-panel-head"><p class="sd-eyebrow">Verse</p><h2 class="sd-panel-ref" tabindex="-1">${esc(S.refLabel(book, c, v))}</h2><a class="sd-desk-link" href="${esc(S.deskHref(book, c, v, t))}">Open the Verse Desk</a><button type="button" class="sd-close" aria-label="Close verse panel">Close</button></header><p class="sd-count" data-sd-count role="status"><span class="sd-muted">Counting citations…</span></p><div data-sd-panel-commentaries><p class="sd-muted">Loading commentaries…</p></div>${panelDetails(PANEL_FOLDS.citations, citationBody)}${panelDetails(PANEL_FOLDS.similar, `<p class="sd-muted">Verses cited on the same pages as ${esc(S.refLabel(book, c, v))}, and passages whose wording resembles it, are on the Verse Desk.</p><p><a class="sd-desk-link" href="${esc(S.deskHref(book, c, v, t))}#sd-h-sim">Open similar passages</a></p>`)}<p class="sd-panel-foot"><a href="${esc(S.deskHref(book, c, v, t))}">Every citation of ${esc(S.refLabel(book, c, v))} on the Verse Desk</a></p>`;
     bindPanelFolds();
     $panel.querySelector(".sd-close").addEventListener("click", () => {
       const span = $text.querySelector(`.bible-verse[data-v="${v}"]`);
@@ -461,11 +466,13 @@
     S.fetchCommentaries(book, c, S.emptyFilters()).then((d) => {
       if (my !== panelCommRun || state.v !== v || state.book !== book || state.c !== c) return;
       const items = (d && d.items) || [];
-      const chapter = items.filter((e) => Number(e.c1) > 0 && Number(e.c1) <= c && c <= Number(e.c2));
-      const wholeBook = items.filter((e) => Number(e.c1) === 0 && Number(e.c2) === 0);
+      // Works on the book first by their chapter range, then the whole-book ones; the sets apart.
+      const chapter = items.filter((e) => !e.annotation)
+        .sort((a, b) => (Number(b.c1) > 0 ? 1 : 0) - (Number(a.c1) > 0 ? 1 : 0));
+      const wholeBible = items.filter((e) => e.annotation);
       const chunks = [];
       if (chapter.length) chunks.push(panelDetails(PANEL_FOLDS.chapter, panelCommentaryList(chapter), chapter.length));
-      if (wholeBook.length) chunks.push(panelDetails(PANEL_FOLDS.wholeBook, panelCommentaryList(wholeBook), wholeBook.length));
+      if (wholeBible.length) chunks.push(panelDetails(PANEL_FOLDS.wholeBible, panelCommentaryList(wholeBible), wholeBible.length));
       $host.innerHTML = chunks.join("");
       bindPanelFolds();
     }).catch(() => {
