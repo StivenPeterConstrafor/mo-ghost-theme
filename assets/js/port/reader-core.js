@@ -1322,7 +1322,8 @@ function frResolveSourceHeading(position){
 }
 function frResolveReaderAnchor(position){
   if(position.sourcePath)return frResolveSourceHeading(position);
-  if(position.page!=null)window.__ensurePage?.(position.page);
+  const opening=position.page==null?null:(window.FRMigneNavigation?.openingKey(DATA,position.page)??position.page);
+  if(opening!=null)window.__ensurePage?.(opening);
   const visible=node=>{if(node?.closest?.('.frontmatter'))document.getElementById('app')?.classList.add('show-fm');return node?.isConnected&&node.getClientRects().length?node:null;};
   // A search occurrence is temporary UI; keep its canonical body ID as the saved location.
   if(position.focusId)return visible(document.getElementById(position.focusId));
@@ -1331,7 +1332,8 @@ function frResolveReaderAnchor(position){
   if(!block||block.index!=='0'||!window.__readerBuilt)return null;
   return Array.from(document.querySelectorAll('#reading .pganchor')).filter(node=>String(node.dataset.page)===block.page).map(visible).find(Boolean)
     ||visible(document.getElementById('b'+block.page+'-1'))
-    ||Array.from(document.querySelectorAll('#reading .folio:not(.rolled)')).filter(node=>String(node.dataset.page)===block.page).map(visible).find(Boolean)||null;
+    ||Array.from(document.querySelectorAll('#reading .folio:not(.rolled)')).filter(node=>String(node.dataset.page)===block.page).map(visible).find(Boolean)
+    ||(String(opening)!==block.page?Array.from(document.querySelectorAll('#reading .folio:not(.rolled)')).filter(node=>String(node.dataset.page)===String(opening)).map(visible).find(Boolean):null)||null;
 }
 function frReaderNavigationLanded(position){
   if(window.__readerLandedSerial===position.serial)return;window.__readerLandedSerial=position.serial;
@@ -1356,7 +1358,7 @@ function restoreReaderPosition(position){
       const delta=target.getBoundingClientRect().top-sc.getBoundingClientRect().top;
       // The mobile masthead can grow after fonts load. Keep source-heading arrivals
       // below its current bottom instead of freezing the initial desktop-sized gap.
-      const header=position.sourcePath&&document.querySelector?.('.ph');
+      const header=(position.sourcePath||target.classList?.contains('pganchor')||frReaderBlockReference(position.id)?.index==='0')&&document.querySelector?.('.ph');
       if(header)offset=Math.max(14,header.getBoundingClientRect().bottom-sc.getBoundingClientRect().top+14);
       if(offset==null)offset=delta;
       const drift=delta-offset;if(Math.abs(drift)>2){sc.scrollTop+=drift;stable=0;}else stable++;
@@ -1442,16 +1444,22 @@ function frAnchorBlock(target){
 window.__frPlaceReaderAnchor=(target,opts={})=>{
   if(!target)return null;
   const block=opts.block||frAnchorBlock(target);
-  target.scrollIntoView({block,behavior:opts.behavior||'auto'});
+  target.scrollIntoView({block,behavior:opts.behavior||'instant'});
+  if(block==='start'){
+    const sc=document.getElementById('scroll'),header=document.querySelector?.('.ph');
+    if(sc?.contains(target)&&header){const top=Math.max(sc.getBoundingClientRect().top,header.getBoundingClientRect().bottom)+12;sc.scrollTop+=target.getBoundingClientRect().top-top;}
+  }
   return block;
 };
 window.__frAnchorBlock=frAnchorBlock;
 function jump(p,ttl){
+  const requested=p;p=window.FRMigneNavigation?.openingKey(DATA,p)??p;
   // WINDOWED RENDERING (owner 2026-08-20, Baxter "A Safe Religion" on mobile: inline TOC
   // links did nothing): the target folio may still be a placeholder — hydrate it, and its
   // neighbours, BEFORE looking for it. No-op on small works.
   try{if(window.__ensurePage)window.__ensurePage(p);}catch(e){}
   let t=$("#reading").querySelector(`.folio[data-page="${p}"]`);
+  if(String(requested)!==String(p)){const inline=$("#reading").querySelector(`.pganchor.an-en[data-page="${requested}"],.pganchor[data-page="${requested}"]`);if(inline?.getClientRects().length)t=inline;}
   // reading-edition merge can leave a folio empty (its body ran on from the previous page) —
   // the inline page anchor is then the true position of the page start
   if(t&&!t.getBoundingClientRect().height){const a=$("#reading").querySelector(`.pganchor.an-en[data-page="${p}"],.pganchor[data-page="${p}"]`);if(a)t=a;}
@@ -1483,7 +1491,7 @@ function jump(p,ttl){
       if(bs<0.6)t.querySelectorAll(".row:not(.rhead)").forEach(r=>{if(!r.getClientRects().length)return;
         const sc=score((r.textContent||"").slice(0,260));if(sc>bs){bs=sc;best=r;}});
       if(best&&bs>=0.6)tgt=best.closest(".row")||best;}}
-  tgt.scrollIntoView({behavior:"auto",block:"start"});window.__frJumpEl=tgt;return tgt;}  // page starts at "pg. N", clear of the masthead (scroll-margin-top)
+  window.__frPlaceReaderAnchor(tgt,{block:"start"});window.__frJumpEl=tgt;return tgt;}  // page starts at "pg. N", clear of the masthead (scroll-margin-top)
 // ---- canonical locators ----
 // Scanned works cite by PRINTED PAGE ("p. N"). Born-digital (SCTA) works have no page image,
 // so they're cited by their place in the spine — the scholastic locator (lib./dist./q./art./
@@ -1523,7 +1531,15 @@ function readerOutlineHref(row){
   if(row.navSourcePath){url.searchParams.set('section',row.navSourcePath);if(row.navSourceKey)url.searchParams.set('heading',row.navSourceKey);}
   return url.href;
 }
+// THE SERIES, SAID IN FULL (owner 2026-09-25, a Mere Orthodoxy reader: "which tutorial should I read to understand how the 'PL'
+// system works? … it seems to be located inside another Volume called PL 158"): Migne's volumes are named, explained on hover,
+// and cited by column.
+const SERIES={PL:{name:'Patrologia Latina',note:"Migne's Patrologia Latina (Paris, 1844–55): 221 volumes of the Latin Fathers. A volume gathers the writings of one or several authors, and the numbers in the margin are its columns"},
+  PG:{name:'Patrologia Graeca',note:"Migne's Patrologia Graeca (Paris, 1857–66): 161 volumes of the Greek Fathers, printed with a facing Latin translation; the numbers in the margin are its columns"},
+  PO:{name:'Patrologia Orientalis',note:'Patrologia Orientalis (Paris, 1904–): the Eastern Fathers in Syriac, Coptic, Arabic, Armenian, Ethiopic and Georgian, each with a translation; it is cited by page'}};
+function seriesOf(v){const m=/^\s*(PL|PG|PO)(?:\s+Tome)?\s*(\d+)/i.exec(String(v||''));if(!m)return null;const k=m[1].toUpperCase();return {key:k,vol:m[2],...SERIES[k],label:SERIES[k].name+' ('+k+') '+m[2]};}
 function locOf(n){
+  if(typeof INDEX_PAGES!=='undefined'&&(INDEX_PAGES?.has(n)||INDEX_PAGES?.has(String(n))))return 'Index · '+(DATA?.has_pages?'p. ':'§ ')+n;
   if(n==='editorial')return 'Editorial notes';
   if(DATA?.pld_source_view?.combined&&DATA.pld_source_view.hasColumns===false)return 'Section '+n;
   if(DATA?.pld_source_view?.notes)return DATA.pld_source_view.columnNotes?'Editorial notes, col. '+n:'Notes, section '+n;
@@ -1679,7 +1695,7 @@ let APPARATUS_MODE="anchored";
 // this patch — verified meta.json.index_pages absent even on the flagship Luther-WA publish),
 // else via the looksLikeTailIndex() stopgap below, per §2.2's explicit stopgap authorization.
 let INDEX_PAGES=null;
-const teiNorm=v=>{const s=String(v==null?"":v).trim(),i=parseInt(s,10);return isNaN(i)?s:String(i);};  // strips zero-padding so pb@n="0017" keys the same as pg.n===17
+const teiNorm=v=>{const s=String(v==null?"":v).trim();return /^\d+$/.test(s)?s.replace(/^0+(?=\d)/,""):s;};  // strips zero-padding so pb@n="0017" keys the same as pg.n===17
 function teiSegment(doc){
   const map={};if(!doc)return map;
   const pbEl=doc.querySelector("pb");
@@ -1958,6 +1974,8 @@ function build(){
   document.title="The Faith Received — "+_entitle;
   $("#wt").textContent=_entitle;$("#wt").title=_entitle;$("#h1").textContent=_entitle;
   app.classList.toggle('source-en',DATA.src_lang==='en');
+  app.classList.toggle('source-only',DATA.source_only===true);
+  renderSourceView();
   if(DATA.src_lang==='en')applyLanes();
   {const c=$("#coins");if(c)c.title=coinsOf(DATA);}   // Zotero/Mendeley COinS — reference managers auto-detect this citation
   // English-only works (e.g. Baxter's Methodus — no Latin parallel; the Ramist diagrams live in the
@@ -2096,7 +2114,8 @@ function build(){
   // a prayer book (meta.liturgy, the 1928 BCP on Mere Orthodoxy) sets its italics as rubrics and the people's part in bold (the
   // theme's skin CSS, #app.liturgy) — Ian's main 2026-09-24, carried here so the port never loses it (research-shell drift rule)
   app.classList.toggle("liturgy",DATA.liturgy===true);
-  {const mp=$("#m-par");if(mp)mp.style.display=enOnly?"none":"";}
+  {const mp=$("#m-par");if(mp){mp.style.display=enOnly?"none":"";mp.hidden=!!enOnly;}}   // hidden too: the port's transparency panel reads this button's label as the source language (owner 2026-09-24: an English original is not a translation)
+  document.documentElement.setAttribute("data-fr-lanes",(enOnly?"":"source")+(DATA.source_only?"":(enOnly?"en":" en")));   // what the work has: "source en" | "en" | "source" (the port's disclosure shows only for "source en")
   // witness (owner 2026-09-09): a facsimile work reads text AND scan — two witnesses; a digital work is the text alone
   $("#wmeta").textContent=[DATA.author,`${DATA.n_pages} ${DATA.has_pages?"folia":"sections"}`,DATA.source_only?(window.__SRCNAME||'Original'):enOnly||DATA.src_lang==='en'?"English":((window.__SRCNAME||"Latin")+" + English"),DATA.pld_source_view?.label,DATA.has_pages?"facsimile · text + page scans":"digital text"].filter(Boolean).join(" · ");
   {const bits=[(DATA.title_en&&DATA.title_en!==DATA.title)?esc(DATA.title):null,
@@ -2284,16 +2303,17 @@ function build(){
     }
     const ttl=title??(node&&node.querySelector&&node.querySelector(".nn-t")?node.querySelector(".nn-t").textContent:null);
     const request=rememberReaderChoice(p,ttl||'');
+    const renderedPage=window.FRMigneNavigation?.openingKey(DATA,p)??p;
     // shard-streaming guard (2026-07-20, same fix as the pager): if the target folio hasn't rendered
     // yet on a large work, queue it as the settle target and pull the remaining shards — a bare jump()
     // was a silent no-op that left the reader at page 1.
-    if(!$("#reading").querySelector(`.folio[data-page="${p}"]`)&&DATA&&p>=1&&p<=(DATA.n_pages||0)){
+    if(!$("#reading").querySelector(`.folio[data-page="${renderedPage}"]`)&&DATA&&(DATA.__loadRest||DATA.pages.some(page=>String(page.n)===String(renderedPage)))){
       window.__frTgt=p;window.__frUserScrolled=false;
       if(DATA.__loadRest)DATA.__loadRest().catch(()=>{});
       // retry until the folio renders (progressive build may still be streaming DOM), then jump
       let k=0;const iv=setInterval(()=>{
         if(request!==window.__readerNavSerial){clearInterval(iv);return;}
-        if($("#reading").querySelector(`.folio[data-page="${p}"]`)){clearInterval(iv);jump(p,ttl);}
+        if($("#reading").querySelector(`.folio[data-page="${renderedPage}"]`)){clearInterval(iv);jump(p,ttl);}
         else if(++k>120)clearInterval(iv);},250);
     }
     jump(p,ttl);   // jump + light up the clicked node directly (scroll-spy is suppressed briefly so the jump's scroll can't re-pick a neighbouring entry)
@@ -2306,7 +2326,7 @@ function build(){
     // scrolled the fmark/heading made corrections ping-pong — "navs are snapping").
     {let k=0,st=0,cj=0;window.__frUserScrolled=false;const iv=setInterval(()=>{
       if(request!==window.__readerNavSerial||window.__frUserScrolled||++k>12||st>=2||cj>=4){clearInterval(iv);return;}
-      const t=(window.__frJumpEl&&window.__frJumpEl.isConnected)?window.__frJumpEl:$("#reading").querySelector(`.folio[data-page="${p}"]`);
+      const t=(window.__frJumpEl&&window.__frJumpEl.isConnected)?window.__frJumpEl:$("#reading").querySelector(`.folio[data-page="${renderedPage}"]`);
       if(t){const off=Math.abs(t.getBoundingClientRect().top-((document.querySelector('.ph')?.offsetHeight||64)+14));
         if(off>(cj?120:40)){jump(p,ttl);cj++;st=0;}else st++;}
     },260);}
@@ -2332,7 +2352,7 @@ function build(){
     // researcher affordance: clicking the folio pill copies a full citation + deep link
     {const ff=fm.querySelector(".ff");ff.title="Click to copy the citation for this page";
      ff.onclick=()=>{const a=(Array.isArray(DATA.author)?DATA.author.join(", "):(DATA.author||"")),
-       cite=[a,[DATA.title,DATA.volume].filter(Boolean).join(", "),locOf(pg.n)].filter(Boolean).join(", ")
+       cite=[a,[DATA.title,seriesOf(DATA.volume)?.label||DATA.volume].filter(Boolean).join(", "),locOf(pg.n)].filter(Boolean).join(", ")
          +" — "+location.origin+"/the-faith-received/read/?w="+encodeURIComponent(DATA.slug||"")+(DATA.pld_source_view?'&pldpart='+DATA.pld_source_view.id:'')+"#b"+pg.n+"-0";
        navigator.clipboard.writeText(cite).then(()=>{const old=ff.textContent;ff.textContent="✓ copied";
          setTimeout(()=>{ff.textContent=old;},1200);}).catch(()=>{});};}
@@ -2466,6 +2486,7 @@ function build(){
     // GAPPY-PAGE RESCUE: if most rows pair a short cell against a very long one, the shared
     // row heights create dead space — re-flow this section as two independent columns.
     try{
+      const rws=[...sec.querySelectorAll(".row")].filter(r=>!r.classList.contains("rhead")&&!r.classList.contains("rtoc")&&!r.classList.contains("rapp"));
       // NEVER restructure sub-paired rows: a .row.seg holds .sp pairs, and lifting only its first
       // .la/.en shreds the pairing (owner screenshot 2026-08-09: boxed Latin cells, dead space).
       // A .row.seg holds .sp sub-pairs; lifting only its first .la/.en shreds the pairing. But
@@ -2880,6 +2901,7 @@ function build(){
         if(LAp.length===ENp.length&&LAp.length>1&&LAp.every(x=>x.e)&&ENp.every(x=>x.e)){
           for(let j=0;j<LAp.length;j++){
             const row=el("div","row prow");
+            if(LAp[j].e.getAttribute("rend")==="flow")row.classList.add("pflow");   // unpaired printed paragraphs (stacked below)
             row.innerHTML=`<div class="la" lang="la">${_cellHtml(LAp[j])}</div><div class="en" lang="en">${_cellHtml(ENp[j])}</div>`;
             sec.appendChild(row);}
         }else{
@@ -2938,6 +2960,18 @@ function build(){
       (b?b.notes:[]).forEach(e=>notesEN.push(teiNote(e)));
     }
     let bi=0;sec.querySelectorAll(".row").forEach(rw=>{if(!rw.classList.contains("rhead"))rw.id="b"+pg.n+"-"+(bi++);});
+    // UNPAIRED FLOWS (owner 2026-09-15, PG 78 col. 63): rows the PG aligner could not pair (printed-paragraphs basis) stack as two
+    // independent columns — each lane keeps its printed paragraphs in order and no row asserts a pairing (the gappy-page rescue's
+    // structure; deep-link ids move to the cell that carries text).
+    try{const flows=[...sec.querySelectorAll(".row.pflow")];let run=[];
+      const flush=()=>{if(!run.length)return;const w=el("div","stkwrap flow"),c1=el("div","stk stk-la"),c2=el("div","stk stk-en");
+        run[0].parentNode.insertBefore(w,run[0]);
+        run.forEach(r=>{const la=r.querySelector(".la"),en=r.querySelector(".en"),hasEn=!!(en&&en.textContent.replace(/\u00a0/g,"").trim()),hasLa=!!(la&&la.textContent.replace(/\u00a0/g,"").trim());
+          const tgt=hasEn?en:(hasLa?la:null);if(tgt&&r.id){tgt.id=r.id;r.removeAttribute("id");}
+          if(hasLa)c1.appendChild(la);if(hasEn)c2.appendChild(en);r.remove();});
+        w.appendChild(c1);w.appendChild(c2);run=[];};
+      flows.forEach(r=>{if(run.length&&r.previousElementSibling!==run[run.length-1])flush();run.push(r);});flush();
+      if(flows.length)sec.classList.add("sec-stacked");}catch(e){}
     // REF MIRROR (owner 2026-08-18 hover parity): when the source cell of a paired row
     // carries footnote anchors and the English cell carries none, mirror the anchors at
     // the English paragraph's end — hover pops the English note via the band pairing.
@@ -3629,7 +3663,7 @@ function build(){
         if(syn.length>=3){DATA.structure=syn;STRUCT=true;}
       }catch(e){}
     }
-    const nav=$("#nav");window.FRReaderContents?.capture(nav);nav.innerHTML="";
+    const nav=$("#nav");if(window.FRReaderContents?.release)window.FRReaderContents.release(nav);else window.FRReaderContents?.capture(nav);nav.innerHTML="";
     // NEVER A DEAD END ON A PHONE (owner 2026-08-31 "when I'm in a confession I can't get
     // out"): the brand home link is hidden on small screens, so the contents sheet opens
     // with the ways OUT — home, and the section this work belongs to. Library-tab work
@@ -3964,7 +3998,8 @@ function syncReaderHeader(n){
  if(!DATA)return;
  const author=$("#reader-author"),volume=$("#reader-volume"),place=$("#reader-location");
  author.textContent=DATA.author||"";author.href="/the-faith-received/author/?a="+encodeURIComponent(DATA.author||"");
- volume.textContent=String(DATA.volume||"").replace(/\b(P[LG]|PO)\s*(\d+)/g,"$1 $2");
+ {const se=seriesOf(DATA.volume);if(se){volume.textContent=se.label;volume.title=se.note+'. This work is in volume '+se.vol+(se.key==='PO'?'; cite as PO '+se.vol+', p. '+n:'; cite as '+se.key+' '+se.vol+', col. '+n)+'.';}
+   else{volume.textContent=String(DATA.volume||"").replace(/\b(P[LG]|PO)\s*(\d+)/g,"$1 $2");volume.removeAttribute('title');}}
  place.textContent=locOf(n);place.setAttribute('aria-label','Go to a place in this work, currently '+locOf(n));
  const column=DATA.pld_source_view?.hasColumns!==false&&(!DATA.pld_source_view?.notes||DATA.pld_source_view?.columnNotes)&&/^P[LG]\s*\d/i.test(DATA.volume||""),unit=column?'column':DATA.has_pages?'page':'section';
  $("#pgJump").setAttribute('aria-label',unit[0].toUpperCase()+unit.slice(1)+' number');$("#pgJump").title='Go to '+unit;
@@ -4163,6 +4198,7 @@ function applyLanes(){
   const englishSource=DATA?.src_lang==='en';
   const singleLane=englishSource||DATA?.en_only===true||app.classList.contains('en-only');
   if(singleLane){LN.en=true;LN.la=false;}
+  if(DATA?.source_only){LN.en=false;LN.la=true;}
   if(!LN.en&&!LN.la)LN.en=true;
   if(!(DATA&&DATA.has_pages))LN.fx=false;                 // born-digital: no scan exists
   app.classList.toggle("only-en",LN.en&&!LN.la);
@@ -4171,7 +4207,7 @@ function applyLanes(){
   const P={en:LN.en,par:LN.la,study:LN.fx};
   ["en","par","study"].forEach(x=>{const b=$("#m-"+x);if(b)b.setAttribute("aria-pressed",!!P[x]);});
   if(!LN.fx){app.classList.remove("facs-only");const fe=$("#facsExp");if(fe){fe.setAttribute("aria-pressed","false");fe.textContent="⤢";}}  // dropping the scan drops facsimile-only too
-  if(!singleLane)lsSet("fr_lanes2",JSON.stringify(LN));if(window.__frThumbSync)window.__frThumbSync();
+  if(!singleLane&&!DATA?.source_only&&!window.__frLanesFromURL)lsSet("fr_lanes2",JSON.stringify(LN));if(window.__frThumbSync)window.__frThumbSync();
   // PHONE PARALLEL (owner 2026-08-10 "work on this on mobile"): stacked runs render la-column-
   // then-en-column — pages of Latin before any English on a phone. Zip them into la∥en pairs,
   // paragraph by paragraph, whenever both lanes are on at phone width. One-way per stkwrap
@@ -4354,7 +4390,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
     const jumpBox=document.createElement('form');jumpBox.className='reader-jump-form';
     jumpBox.innerHTML='<label id="reader-jump-label" for="reader-jump">Go to page</label><div><input id="reader-jump" type="text" autocomplete="off" aria-describedby="reader-jump-status"><button type="submit">Go</button></div><p id="reader-jump-status" role="status"></p>';
     pop.prepend(jumpBox);
-    jumpBox.onsubmit=e=>{e.preventDefault();const value=$('#reader-jump').value.trim(),pg=DATA?.pages.find(p=>String(p.n)===value);if(pg){pop.classList.remove('on');delete pop.dataset.locJump;$('#reader-jump').blur();$('#aaBtn').setAttribute('aria-expanded','false');$('#reader-jump-status').textContent='';goReaderReference(pg);}else{$('#reader-jump-status').textContent='That reference is not available in this work.';}};
+    jumpBox.onsubmit=e=>{e.preventDefault();const value=$('#reader-jump').value.trim(),opening=window.FRMigneNavigation?.openingKey(DATA,value)??value,pg=DATA?.pages.find(p=>String(p.n)===String(opening));if(pg){pop.classList.remove('on');delete pop.dataset.locJump;$('#reader-jump').blur();$('#aaBtn').setAttribute('aria-expanded','false');$('#reader-jump-status').textContent='';goReaderReference(pg);}else{$('#reader-jump-status').textContent='That reference is not available in this work.';}};
     /* MereO delta: the location button is a toggle now. It only ever ADDED `on`,
        and it stops the click reaching the document handler that would otherwise
        dismiss the menu, so once opened from here the panel could not be closed
@@ -4944,7 +4980,7 @@ if(fst){
       // in scan mode the SCAN is the page: step by the pages array and set it directly —
       // stepFolio's text-scroll can land the scroll-spy back on the boundary page.
       {const pgs=(typeof DATA!=="undefined"&&DATA)?DATA.pages:null;
-       const i2=pgs?pgs.findIndex(x=>+x.n===+cur):-9;
+       const i2=pgs?pgs.findIndex(x=>String(x.n)===String(cur)):-9;
        const nx=pgs?pgs[i2+(dx<0?1:-1)]:null;
        Object.assign(window.__swDbg,{pgsN:pgs?pgs.length:null,i2,nxn:nx?nx.n:null,curv:(typeof cur!=="undefined")?cur:"nd"});
        if(nx){window.__folioLock=Date.now()+1600;if(typeof jump==="function")jump(nx.n);
@@ -4976,7 +5012,7 @@ if(fst){
       const rg=sc.querySelector("input"),nEl=sc.querySelector("#fscN");
       const sync=()=>{const pgs=(typeof DATA!=="undefined"&&DATA)?DATA.pages:null;if(!pgs||!pgs.length)return;
         rg.max=String(pgs.length-1);
-        const ci=(typeof cur!=="undefined"&&cur!=null)?pgs.findIndex(x=>+x.n===+cur):-1;   // cur is the page NUMBER
+        const ci=(typeof cur!=="undefined"&&cur!=null)?pgs.findIndex(x=>String(x.n)===String(cur)):-1;   // cur is the page NUMBER
         const cur2=ci>=0?ci:0;
         rg.value=String(cur2);const column=/^(PG|PL)\b/.test(DATA.volume||"");rg.setAttribute("aria-label",column?"Go to column":"Go to page");nEl.textContent=(column?"col. ":"p. ")+(pgs[cur2]?pgs[cur2].n:"");};
       rg.addEventListener("input",()=>{const pgs=(typeof DATA!=="undefined"&&DATA)?DATA.pages:null;if(!pgs)return;
@@ -5013,7 +5049,7 @@ $("#pPrev").onclick=()=>stepFolio(-1);$("#pNext").onclick=()=>stepFolio(1);
    if(nx){rememberReaderChoice(nx.n);window.__folioLock=Date.now()+1600;jump(nx.n);setTimeout(()=>setFolio(nx),80);
      if(window.__jumpSettle)setTimeout(()=>window.__jumpSettle(nx.n),900);}};
  if(a)a.onclick=()=>stepScan(-1);if(b)b.onclick=()=>stepScan(1);}   // page-turn from the scan header (the only nav on a phone's full-screen scan)
-{const pj=$("#pgJump");if(pj){const go=e=>{const value=e.target.value.trim(),exact=DATA&&DATA.pages.find(x=>String(x.n)===value),p=/^\d+$/.test(value)?Number(value):null;
+{const pj=$("#pgJump");if(pj){const go=e=>{const value=e.target.value.trim(),opening=window.FRMigneNavigation?.openingKey(DATA,value)??value,exact=DATA&&DATA.pages.find(x=>String(x.n)===String(opening)),p=/^\d+$/.test(value)?Number(value):null;
    if(exact)goReaderReference(exact);   // exact printed label; a new choice replaces the arrival target
    else if(p&&DATA&&p>=1&&p<=(DATA.n_pages||0)){
      // folio lives in a shard that hasn't loaded yet (large works stream in chunks):
@@ -5134,10 +5170,8 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
         rows=sp.toc.map(e=>{
           const lvl=Math.min(+e.lvl||0,4);
           const cur=e.id===meId&&lvl===0;
-          let cc="";
-          if(lvl===0&&e.id!=null&&ranges[e.id]&&seenWork!==e.id){const c=ranges[e.id];
-            cc=`<span class=vnc>${c[0]===c[1]?c[0]:c[0]+"&#8211;"+c[1]}</span>`;}
-          else if(e.c!=null)cc=`<span class=vnc>${e.c}</span>`;
+          const column=window.FRMigneNavigation?.indexLabel(e,ranges[e.id],lvl===0&&e.id!=null&&seenWork!==e.id)??String(e.c??'');
+          const cc=column?`<span class=vnc>${esc(column)}</span>`:'';
           if(lvl===0)seenWork=e.id;
           const body=`${cc}<span class=vnt>${esc(e.t||"")}</span>`;
           const fm=lvl===0&&_fm(e.t)?" vnfm":"";
@@ -5173,7 +5207,8 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
     if(R&&!document.getElementById("volnext")){
       const nx=i>=0?sp.works[i+1]:null;
       const band=document.createElement("div");band.id="volnext";
-      const nxUrl=nx?`/the-faith-received/read/?w=${prefix}-${nx.id}`:(sp.next?`/the-faith-received/read/?w=${prefix}-${sp.next.first}`:null);
+      let nxUrl=nx?`/the-faith-received/read/?w=${prefix}-${nx.id}`:(sp.next?`/the-faith-received/read/?w=${prefix}-${sp.next.first}`:null);
+      if(nxUrl&&prefix==='pg'){const source=new URL(location.href).searchParams.get('src');if(['grc','grcla','la','ocr'].includes(source))nxUrl+='&src='+source;if(nx?.c?.[0]!=null){const start=encodeURIComponent(String(nx.c[0]));nxUrl+='&p='+start+'#b'+start+'-0';}}
       band.innerHTML=nx
         ?`<span class=vk>Next in ${volWord} ${volN}</span><a href="${nxUrl}">${esc(nx.t||"")} &#8250;</a>`
         :(sp.next?`<span class=vk>End of ${volWord} ${volN}</span><a href="${nxUrl}">Continue into ${volWord} ${sp.next.vol} &#8250;</a>`:"");
@@ -5186,16 +5221,24 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
         hint.style.cssText="text-align:center;font:600 .72rem/1 var(--sans);color:var(--muted);margin:-1.6rem 0 2.4rem;opacity:.7";
         hint.textContent="keep scrolling to continue";
         band.after(hint);
+        const pane=document.getElementById('scroll');
+        window.__frVolumeTravelCleanup?.();
+        const events=new AbortController();let observer;
+        window.__frVolumeTravelCleanup=()=>{events.abort();observer?.disconnect();};
         let armed=false,acc=0,fired=false;
-        try{new IntersectionObserver(es=>{es.forEach(x=>{armed=x.isIntersecting;if(!x.isIntersecting)acc=0;});},{threshold:.9}).observe(band);}catch(e){}
+        try{observer=new IntersectionObserver(es=>{es.forEach(x=>{armed=x.isIntersecting;if(!x.isIntersecting)acc=0;});},{root:pane,threshold:.9});observer.observe(band);}catch(e){}
+        const eligible=ev=>armed&&!fired&&band.isConnected&&pane?.contains(ev.target)&&
+          pane.scrollHeight-pane.clientHeight-pane.scrollTop<8&&
+          !String(window.getSelection?.()||'')&&!document.querySelector('#aaPop.on,.notebook.open')&&app.classList.contains('nosb');
         const go=()=>{if(fired)return;fired=true;hint.textContent="continuing\u2026";location.href=nxUrl;};
-        window.addEventListener("wheel",ev=>{if(!armed||fired)return;
-          if(ev.deltaY>0){acc+=ev.deltaY;if(acc>350)go();}else acc=0;},{passive:true});
+        pane?.addEventListener("wheel",ev=>{if(!eligible(ev)){acc=0;return;}
+          if(ev.deltaY>0){acc+=ev.deltaY;if(acc>350)go();}else acc=0;},{passive:true,signal:events.signal});
         let ty=null;
-        window.addEventListener("touchstart",ev=>{ty=ev.touches[0].clientY;},{passive:true});
-        window.addEventListener("touchmove",ev=>{if(!armed||fired||ty==null)return;
-          const dy=ty-ev.touches[0].clientY;
-          if(dy>0){acc+=dy;ty=ev.touches[0].clientY;if(acc>350)go();}},{passive:true});
+        pane?.addEventListener("touchstart",ev=>{ty=ev.touches[0]?.clientY;acc=0;},{passive:true,signal:events.signal});
+        pane?.addEventListener("touchmove",ev=>{if(ty==null)return;
+          const y=ev.touches[0]?.clientY,dy=ty-y;ty=y;
+          if(!eligible(ev)){acc=0;return;}
+          if(dy>0){acc+=dy;if(acc>350)go();}else acc=0;},{passive:true,signal:events.signal});
       }
     }
   });};
@@ -5214,7 +5257,7 @@ function wireSrcSel(options,cur){
     const u=new URL(location.href);
     box.innerHTML='<div class=sshead>Source column</div>'+options.map(o=>{
       u.searchParams.set("src",o.v);
-      return `<a class="ssopt${o.v===cur?" on":""}" href="${u.pathname+u.search}">${o.l}</a>`;}).join("");
+      return `<a class="ssopt${o.v===cur?" on":""}" href="${u.pathname+u.search+u.hash}">${o.l}</a>`;}).join("");
     nav.insertBefore(box,nav.firstChild);
   },600);
   setTimeout(()=>clearInterval(t),30000);
@@ -5262,6 +5305,25 @@ async function loadPldCanon(ws){
     return parseInt(raw,10)||0;};
   let depth0=null;
   const pairedHeads=new Set();
+  // CHAPTER TITLES LEFT AS PARAGRAPHS (owner 2026-09-25, a Mere Orthodoxy reader on Anselm's De libertate arbitrii: "it skips
+  // chapters I and IV in the outline view"): the PL canon made a <head> only where a chapter title opened its division; a CAPUT
+  // title printed after a page number stayed a <p>, so chapters I, IV and VI never reached the outline (206+ PL documents,
+  // 2,400+ titles). A Latin paragraph that IS a chapter title joins the outline under its English translation, at the depth of
+  // the chapter headings; the bold repeat that follows a real heading (same number) is not counted twice.
+  const CAPORD={PRIMUM:1,SECUNDUM:2,TERTIUM:3,QUARTUM:4,QUINTUM:5,SEXTUM:6,SEPTIMUM:7,OCTAVUM:8,NONUM:9,DECIMUM:10,UNDECIMUM:11,DUODECIMUM:12};
+  const capNum=w=>{w=String(w||'').toUpperCase();if(CAPORD[w])return CAPORD[w];let n=0,last=0;for(const c of w.split('').reverse()){const v={I:1,V:5,X:10,L:50,C:100}[c];if(!v)return null;n+=v<last?-v:v;last=v;}return n||null;};
+  const CAPRX=/^(?:CAPUT|CAP\.)\s+(PRIMUM|SECUNDUM|TERTIUM|QUARTUM|QUINTUM|SEXTUM|SEPTIMUM|OCTAVUM|NONUM|DECIMUM|UNDECIMUM|DUODECIMUM|[IVXLC]+)\b/i;
+  let lastChapterNum=null,chapterDepth=null,lastHeadEntry=null,lastHeadHadEn=false;
+  // Some heads open with the old edition's page number ("311 Caput XVIII. De eo …"): it is not part of the title.
+  // a page or note number printed before a head ("311 Caput XVIII", "2 CAPUT PRIMUM") — in the Latin and in its English
+  // ("2 Chapter One", pld-8725): not part of the title
+  const unPage=t=>String(t||'').trim().replace(/^\d{1,4}\s+(?=(?:CAPUT|Caput|PRAEFATIO|Praefatio|PROLOGUS|Prologus|LIBER|Liber|CHAPTER|Chapter|BOOK|Book|PREFACE|Preface|PROLOGUE|Prologue)\b|(?:CAP|Cap|CHAP|Chap)\.)/,'');
+  // The edition's note numbers were flattened into its chapter titles ("CHAPTER II 9 . That … man 10 sinned"); in the OUTLINE a
+  // number standing before punctuation, between two lower-case words or at the end of a chapter title is a note mark and goes.
+  // The page text keeps them as printed.
+  const chapterTitle=t=>{const m=/^((?:chapter|caput)\s+(?:[IVXLC]+|\d{1,3}|[A-Za-z]+))(\s+\d{1,3})?\s*([.:]?)\s*([\s\S]*)$/i.exec(String(t||''));if(!m)return t;
+    const rest=m[4].replace(/\s+\d{1,3}\s*(?=[.,:;!?])/g,'').replace(/([a-z,;:])\s+\d{1,3}\s+(?=[a-z])/g,'$1 ').replace(/\s+\d{1,3}\s*$/,'').replace(/\s+([.,:;!?])/g,'$1').trim();
+    return (m[1]+(m[3]||(rest?'.':''))+(rest?' '+rest:'')).trim();};
   const advance=n=>{if(n&&!seen.has(n)){seen.add(n);pages.push(n);
     for(const [d,b] of [[laD,laB],[enD,enB]]){const pb=d.createElement("pb");pb.setAttribute("n",String(n));b.appendChild(pb);}}};
   // The first source column also owns any opening text printed before its marker.
@@ -5284,7 +5346,8 @@ async function loadPldCanon(ws){
         const did=(ch.parentElement.getAttribute("xml:id")||"").replace(/^w\d+-d/,"").replace(/_/g," ");
         const en=info.english||(!sourceView?.notes&&toc&&toc[did])||"";
         if(depth0===null)depth0=depth;
-        if(t||en)struct.push({title:en||t,page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5),pld_division:ch.parentElement.getAttribute("xml:id")||""});
+        if(t||en){struct.push({title:chapterTitle(unPage(en)||unPage(t)),page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5),pld_division:ch.parentElement.getAttribute("xml:id")||""});lastHeadEntry=struct[struct.length-1];lastHeadHadEn=!!en;}
+        {const hm=CAPRX.exec(unPage(t));if(hm){lastChapterNum=capNum(hm[1]);chapterDepth=Math.min(Math.max(depth-depth0+1,1),5);}else lastChapterNum=null;}
         window.__pldLastEnHead=null;window.__pldLastEnHeadEcho=false;
         // Exact source head/p + corresp translation: retain the complete canonical
         // paragraphs once. The sidecar label is navigation metadata, often truncated.
@@ -5311,6 +5374,21 @@ async function loadPldCanon(ws){
         t=t.replace(/([A-Za-zÀ-ÿæœ])-\s+([a-zà-ÿæœ])/g,"$1$2")
            .replace(/([A-Z]{2,})-\s+([A-Z]{2,})/g,"$1$2");
         if(!t)continue;
+        // A chapter printed INLINE ("CAP. II.--Audiens haec…", the Lives in PL 73; pld-2018) is one long paragraph that
+        // opens with its number: it heads the outline as that number alone. Without it the reader fell back to a folio
+        // list naming only the chapters that begin a page (I, IV, VI, VIII), and the rest vanished from the contents.
+        const ut=!sourceView?.notes&&lang!=='en'?unPage(t):'',cm0=ut?CAPRX.exec(ut):null;
+        const inline=!!cm0&&ut.length>400&&/^\.?\s*(?:--|\u2014|\u2013)/.test(ut.slice(cm0.index+cm0[0].length));
+        const headOf=x=>inline?String(x||'').split(/\s*(?:--|\u2014|\u2013)\s*/)[0]:x;
+        if(!sourceView?.notes&&lang!=='en'&&(t.length<=400||inline)){const cm=cm0;
+          if(cm){const num=capNum(cm[1]);
+            const nx=ch.nextElementSibling,id=ch.getAttribute('xml:id')||'';
+            const en=headOf(nx&&id&&nx.getAttribute('corresp')==='#'+id?nx.textContent.replace(/\s+/g,' ').trim():'');
+            if(num!==null&&num!==lastChapterNum){
+              struct.push({title:chapterTitle(unPage(en)||headOf(ut)).slice(0,180),page:pages.length?pages[pages.length-1]:1,depth:chapterDepth??1,pld_division:(ch.parentElement&&ch.parentElement.getAttribute('xml:id'))||''});lastHeadEntry=null;}
+            // the same chapter as the head just made, which had only its Latin: the head takes this English title
+            else if(num!==null&&lastHeadEntry&&!lastHeadHadEn&&en){lastHeadEntry.title=chapterTitle(unPage(en)).slice(0,180);lastHeadHadEn=true;}
+            if(num!==null)lastChapterNum=num;}}
         if(sourceView?.notes&&lang!=='en'){const notePage=pages.at(-1);if(sourceView.columnNotes){if(!struct.some(s=>s.page===notePage))struct.push({title:'Notes at column '+notePage,page:notePage,depth:1});}else{const incipit=t.split(/[.!?]\s/)[0];struct.push({title:'Notes '+pages.length+': '+incipit.slice(0,90),page:notePage,depth:1});}}
         // INDEX-VOLUME FORMATTING (owner 2026-08-17 'one big block'): Migne's index tomes
         // (PL 218-221) print thousands of entries glued with ".--"; give each its own line.
@@ -7663,6 +7741,10 @@ async function loadWork(ws){
   // lane rebuilds in place: the TEI and pageview ride session caches, the URL updates via
   // replaceState, and the reader stays on the same folio.
   window.__switchSrc=async ns=>{
+    if(window.__frSourceChanging)return;
+    window.__frSourceChanging=true;
+    const sourceBusy=busy=>{const group=document.getElementById('reader-witnesses');if(group){group.setAttribute('aria-busy',String(busy));group.querySelectorAll('button').forEach(b=>b.disabled=busy);}};
+    sourceBusy(true);
     try{
       const u=new URL(location.href);u.searchParams.set("src",ns);history.replaceState(null,"",u);
       window.__srcOverride=ns;
@@ -7679,6 +7761,7 @@ async function loadWork(ws){
         try{jump(keep);}catch(e){}
         setTimeout(()=>{try{window.__jumpSettle&&window.__jumpSettle(keep);}catch(e){}},700);}
     }catch(e){location.reload();}
+    finally{window.__frSourceChanging=false;sourceBusy(false);}
   };
   // Cold arrival and same-document source choices share one cancellable navigation owner.
   const arrive=()=>{
@@ -7725,7 +7808,11 @@ async function loadWork(ws){
     // default layout: English only. The reader's last explicit lane combination (fr_lanes) wins on
     // return visits; pre-lanes visitors fall back to their old preset (fr_mode).
     let restored=false;
-    try{const sl=JSON.parse(lsGet("fr_lanes2")||"null");
+    // PREVIEW = ENGLISH (corpus owner 2026-09-25 "for preview mode make it english only by default"): a mini reader embedded by
+    // the Scripture desk asks ?lanes=en — one English column whatever the visitor last chose here, and the choice is not saved
+    // (applyLanes skips fr_lanes2 while __frLanesFromURL). Latin and the scan stay one tap away inside the preview.
+    if(new URLSearchParams(location.search).get("lanes")==="en"){window.__frLanesFromURL=true;Object.assign(LN,{en:true,la:false,fx:false});applyLanes();restored=true;}
+    else try{const sl=JSON.parse(lsGet("fr_lanes2")||"null");
       if(sl&&typeof sl.en==="boolean"){Object.assign(LN,{en:!!sl.en,la:!!sl.la,fx:!!sl.fx});applyLanes();restored=true;}}catch(e){}
     // on phones the facsimile is a 100vw fixed overlay — a Scan lane restored from a previous
     // session must not cover the text on arrival ("facsimile first loads", 2026-07-12); the
