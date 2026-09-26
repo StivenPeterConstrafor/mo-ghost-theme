@@ -2288,3 +2288,6 @@ html.fr-research-tools .selchip{display:none!important}
    cycle on it and the icon says which you are in. The explicit choice is the only
    way dark is reached — the OS preference still does not get to choose it. */
 html:not(.fr-plain) .fr-reader-head #thTop{display:inline-flex;align-items:center;justify-content:center}
+
+/* A work printed in one language only (DATA.source_only): no English lane to offer (corpus reader, 2026-09-24). */
+.app.source-only #m-en{display:none!important}
