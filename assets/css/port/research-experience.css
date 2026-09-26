@@ -390,6 +390,7 @@ body.research-page .pinb{min-height:0;min-width:0;font:500 12.5px/1.2 var(--sans
 .vc-note{margin:.3rem 0 0;font-size:.82rem;color:var(--muted)}
 /* Source preview: an inline reading excerpt, not a miniature application. */
 .vc-expand-panel .peekwrap{width:100%;max-width:none}
+.vc-expand-panel .ev>.peekwrap{width:auto;margin-left:-20px;margin-right:-20px}
 .peekwrap.on{width:100%;margin:12px 0 4px}
 .peekwrap.on>div{border:1px solid var(--border);border-radius:3px;background:var(--card,var(--bg));overflow:hidden}
 .peekwrap .peekhead{position:static;display:flex;align-items:center;flex-wrap:wrap;gap:4px 16px;padding:6px 12px;border-bottom:1px solid var(--border);background:var(--bg);font-size:13px}
