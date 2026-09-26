@@ -749,7 +749,9 @@
     li.innerHTML =
       `<div class="sd-source-head">` +
         `<div class="sd-source-id">` +
-          `<span class="sd-source-title">${esc(e.t || e.w)}</span>` +
+          // A section inside a larger volume (v1/devotion.json `st`, corpus owner 2026-09-26) is named by the section,
+          // with the volume's title beside it; shown when the verse worker passes `st` through.
+          `<span class="sd-source-title">${esc(e.st ? `${e.st} (in ${e.t || e.w})` : (e.t || e.w))}</span>` +
           `<span class="sd-source-meta">${meta}</span>` +
         `</div>${ 
         href ? `<button type="button" class="sd-preview-btn" aria-expanded="false" aria-controls="${pid}">Preview</button>` : "" 
