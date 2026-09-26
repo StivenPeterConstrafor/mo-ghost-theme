@@ -337,7 +337,7 @@
   function recalledPanelOpen(section) {
     const fallback = panelDefaultOpen(section);
     try {
-      const v = window.localStorage.getItem(`sd_panel_open_${section.key}`);
+      const v = window.localStorage.getItem(`sd_panel_fold_${section.key}`);
       if (v === "1") return true;
       if (v === "0") return false;
       return fallback;
@@ -347,7 +347,7 @@
   }
 
   function rememberPanelOpen(section, open) {
-    try { window.localStorage.setItem(`sd_panel_open_${section.key}`, open ? "1" : "0"); } catch (e) { /* not remembered */ }
+    try { window.localStorage.setItem(`sd_panel_fold_${section.key}`, open ? "1" : "0"); } catch (e) { /* not remembered */ }
   }
 
   function panelSummary(section, count) {
@@ -366,7 +366,17 @@
       const section = Object.values(PANEL_FOLDS).find((s) => s.key === el.dataset.sdPanelSection);
       if (!section) return;
       el.dataset.sdPanelBound = "1";
-      el.addEventListener("toggle", () => rememberPanelOpen(section, el.open));
+      /* Remember only what the reader chose. A fold inserted open fires `toggle` as well, so the
+       * old keys (sd_panel_open_*) stored every wide-screen default as a choice: a fresh visit to
+       * Matthew 1:2 saved chapter=1 and whole_bible=1 without a click. Those keys are left unread;
+       * a click on the summary (Enter and Space on it click too) marks the toggle that follows. */
+      const $summary = el.querySelector(":scope > summary");
+      if ($summary) $summary.addEventListener("click", () => { el.dataset.sdChosen = "1"; });
+      el.addEventListener("toggle", () => {
+        if (el.dataset.sdChosen !== "1") return;
+        delete el.dataset.sdChosen;
+        rememberPanelOpen(section, el.open);
+      });
     });
   }
 
