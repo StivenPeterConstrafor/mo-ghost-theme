@@ -158,7 +158,7 @@
     // "d. 1327", "fl. c. 1300"); `y` is only the first year in them, so it is not called a birth year.
     const ranked = authors.slice().sort((x, y) => (y.np || 0) - (x.np || 0) || (y.n || 0) - (x.n || 0));
     const authorRows = ranked.slice(0, MAX_AUTHORS_SHOWN).map((a) => {
-      const shown = a.dt || (a.y != null ? String(a.y) : "");
+      const shown = (a.dt && !/^unknown$/i.test(a.dt) ? a.dt : "") || (a.y != null ? String(a.y) : "");
       const dates = shown ? `<span class="faith-topic-author-year">${escapeHtml(shown)}</span>` : "";
       return `<a class="faith-topic-author-row" href="${authorUrl(a.s)}">`
         + `<span class="faith-topic-author-name">${escapeHtml(a.a)}</span>${dates}`
