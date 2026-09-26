@@ -212,9 +212,14 @@
   }
 
   // ── Commentaries dropdown ─────────────────────────────────────
+  // The chapter commentaries and the whole-Bible commentaries, closed and
+  // previewable, as in the verse panel (corpus owner, 2026-09-25). With a
+  // verse open, a preview looks for the commentary's comment on it.
   function loadCommentaries() {
     $commCount.textContent = "";
-    comm = S.commentaryStrip($commPanel.querySelector("[data-sd-comm-host]"), { book: state.book, c: state.c }, (n) => {
+    const { book, c } = state;
+    const ctx = { book, c, get v() { return state.book === book && state.c === c ? state.v : 0; } };
+    comm = S.commentaryFolds($commPanel.querySelector("[data-sd-comm-host]"), ctx, (n) => {
       $commCount.textContent = n ? `(${fmt(n)})` : "";
     });
   }
@@ -315,10 +320,12 @@
   /* The corpus owner's two commentary lists, in his order (2026-09-25: "display first the chapter
    * commentaries + whole bible commentaries and the specific citations … and then similarity"): the
    * works on this book that cover the chapter, then the whole-Bible sets (the worker marks them
-   * `annotation`; they had been filed under "whole book"), then the verse's citations, then similarity. */
+   * `annotation`; they had been filed under "whole book"), then the verse's citations, then similarity.
+   * All four start closed (corpus owner, 2026-09-25: "make this collapsible"; open, Matthew 1's 57 and
+   * 21 commentaries made the panel about 6,000 pixels tall). A fold the reader opens stays open. */
   const PANEL_FOLDS = {
-    chapter: { key: "chapter", title: "Chapter commentaries", wideOpen: true },
-    wholeBible: { key: "whole_bible", title: "Whole-Bible commentaries", wideOpen: true },
+    chapter: { key: "chapter", title: "Chapter commentaries", wideOpen: false },
+    wholeBible: { key: "whole_bible", title: "Whole-Bible commentaries", wideOpen: false },
     citations: { key: "citations", title: "Citations of this verse", wideOpen: false },
     similar: { key: "similar", title: "Similar passages", wideOpen: false },
   };
@@ -465,35 +472,24 @@
     $host.innerHTML = `<p class="sd-muted">Loading commentaries…</p>`;
     S.fetchCommentaries(book, c, S.emptyFilters()).then((d) => {
       if (my !== panelCommRun || state.v !== v || state.book !== book || state.c !== c) return;
-      const items = (d && d.items) || [];
       // Works on the book first by their chapter range, then the whole-book ones; the sets apart.
-      const chapter = items.filter((e) => !e.annotation)
-        .sort((a, b) => (Number(b.c1) > 0 ? 1 : 0) - (Number(a.c1) > 0 ? 1 : 0));
-      const wholeBible = items.filter((e) => e.annotation);
+      const g = S.commentaryGroups(d && d.items);
+      const list = (k) => `<ol class="sd-sources sd-panel-commentaries" data-sd-comm-list="${k}"></ol>`;
       const chunks = [];
-      if (chapter.length) chunks.push(panelDetails(PANEL_FOLDS.chapter, panelCommentaryList(chapter), chapter.length));
-      if (wholeBible.length) chunks.push(panelDetails(PANEL_FOLDS.wholeBible, panelCommentaryList(wholeBible), wholeBible.length));
+      if (g.chapter.length) chunks.push(panelDetails(PANEL_FOLDS.chapter, list("chapter"), g.chapter.length));
+      if (g.whole.length) chunks.push(panelDetails(PANEL_FOLDS.wholeBible, list("whole"), g.whole.length));
       $host.innerHTML = chunks.join("");
+      // Each commentary previews in place (corpus owner, 2026-09-25); see commentaryItem in the core.
+      const ctx = { book, c, v };
+      [["chapter", g.chapter], ["whole", g.whole]].forEach(([k, items]) => {
+        const $ol = $host.querySelector(`[data-sd-comm-list="${k}"]`);
+        if ($ol) items.forEach((e) => $ol.appendChild(S.commentaryItem(e, ctx)));
+      });
       bindPanelFolds();
     }).catch(() => {
       if (my !== panelCommRun || state.v !== v) return;
       $host.innerHTML = `<p class="sd-muted">Commentaries did not load.</p>`;
     });
-  }
-
-  function panelCommentaryList(items) {
-    const rows = items.map((e) => {
-      const href = S.sourceHref(e.href, e.w);
-      const range = e.c1 ? `Chapters ${e.c1}${e.c2 && e.c2 !== e.c1 ? `-${e.c2}` : ""}` : (e.annotation ? "Annotations" : (e.kind || "Commentary"));
-      const meta = [range, S.centuryLabel(e.cen)].filter(Boolean).map(esc).join(" · ");
-      const inner =
-        `<span class="sd-source-title">${esc(e.t)}</span>` +
-        `<span class="sd-source-meta">${esc(e.a || "")}${meta ? ` · ${meta}` : ""}</span>`;
-      return href
-        ? `<li class="sd-source"><a class="sd-panel-commentary" href="${esc(href)}">${inner}</a></li>`
-        : `<li class="sd-source"><span class="sd-panel-commentary">${inner}</span></li>`;
-    }).join("");
-    return `<ol class="sd-panel-commentaries">${rows}</ol>`;
   }
 
   function query(v, more) {
@@ -532,7 +528,13 @@
       if (!more) {
         $top.innerHTML = "";
         (d.top_works || []).forEach((w) => {
-          $top.appendChild(S.sourceItem(w, ctx, { count: w.n, pickRow: () => firstRowOf(w.w, v) }));
+          // A work's kinds, when all its citations fit one response; the same rows give its Preview.
+          const all = S.workRows(ctx, { ...f }, w);
+          $top.appendChild(S.sourceItem(w, ctx, all ? {
+            count: w.n,
+            pickRow: () => all().then((x) => x.rows[0] || null),
+            kinds: () => all().then((x) => (x.rows.length === x.matched ? S.kindsLabel(x.rows) : "")),
+          } : { count: w.n, pickRow: () => firstRowOf(w.w, v) }));
         });
         if (!(d.top_works || []).length) $top.innerHTML = `<li class="sd-muted">Nothing matches these filters.</li>`;
         $rows.innerHTML = "";
