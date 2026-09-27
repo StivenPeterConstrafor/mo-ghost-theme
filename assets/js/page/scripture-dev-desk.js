@@ -223,12 +223,42 @@
   let groups = new Map();
   let companionCounts = new Map();
   let openAuthor = "", openWork = "";
+  const PAGE_SIZE = 50;
+  const MORE_PAGES = 5;
+  const MORE_BATCH = PAGE_SIZE * MORE_PAGES;
+  const KIND_BATCH = 100;
+  let kindSel = "", kindTotals = null, lastMatched = 0, filling = false;
   const bar = S.filterBar($root.querySelector("[data-sd-filters]"), {
     search: true,
     searchLabel: `Search the citations of ${label}`,
     onChange: () => query(false),
   });
-  $more.addEventListener("click", () => (kindSel ? fillKind() : query(true)));
+  $more.addEventListener("click", () => (kindSel ? fillKind() : loadMoreBatch()));
+
+  async function loadMoreBatch() {
+    if (filling || !offset) return;
+    filling = true;
+    $more.disabled = true;
+    let pages = 0;
+    try {
+      while (offset && pages < MORE_PAGES) {
+        pages += 1;
+        const before = offset;
+        await query(true);
+        if (offset === before) break;
+      }
+    } finally {
+      filling = false;
+      $more.disabled = filling;
+      updateMoreLabel();
+    }
+  }
+
+  function updateMoreLabel() {
+    const left = Math.max(0, Number(lastMatched || 0) - Number(offset || 0));
+    $more.hidden = !offset;
+    $more.textContent = offset ? `Show ${fmt(Math.min(MORE_BATCH, left))} more (${fmt(left)} left)` : "Show more";
+  }
 
   function query(more) {
     const my = more ? run : ++run;
@@ -238,9 +268,9 @@
       resetGroups();
     }
     $more.disabled = true;
-    return S.fetchVerse(book, c, v, bar.filters, offset, 50).then((d) => {
+    return S.fetchVerse(book, c, v, bar.filters, offset, PAGE_SIZE).then((d) => {
       if (my !== run) return;
-      $more.disabled = false;
+      $more.disabled = filling;
       if (!d || !d.total) {
         $count.textContent = `The library does not cite ${label} yet.`;
         $top.innerHTML = "";
@@ -278,12 +308,11 @@
       lastMatched = d.matched;
       offset = d.next_offset || 0;
       updateKinds(d.matched);
-      $more.hidden = !d.next_offset;
-      $more.textContent = d.next_offset ? `Show more (${fmt(d.matched - d.next_offset)} left)` : "Show more";
+      updateMoreLabel();
       if (kindSel) moreLabel();
     }).catch(() => {
       if (my !== run) return;
-      $more.disabled = false;
+      $more.disabled = filling;
       $count.innerHTML = `<span class="sd-muted">Citations did not load.</span> <button type="button" class="sd-clear" data-sd-retry>Try again</button>`;
       $count.querySelector("[data-sd-retry]").addEventListener("click", () => query(false));
       $top.innerHTML = "";
@@ -397,7 +426,6 @@
   // verse's true totals from the library's kind index (the worker has none), and choosing a kind keeps loading until a
   // page of that kind is in hand instead of filtering only the fifty rows the worker has returned so far.
   const $kinds = $root.querySelector("[data-sd-kinds]");
-  let kindSel = "", kindTotals = null, lastMatched = 0, filling = false;
   const K = window.FRScriptureKind, KORDER = ["quotation", "explicit", "allusion", "exegesis"];
   const kindWord = (k) => { const w = K ? K.verb(k) : ({ quotation: "quotes", explicit: "cites", allusion: "alludes", exegesis: "expounds" }[k] || "cites"); return w.charAt(0).toUpperCase() + w.slice(1); };
   const exactTotals = () => {
@@ -413,13 +441,15 @@
   function moreLabel() {
     const ex = exactTotals(), total = ex && ex.get(kindSel), have = shownOfKind();
     $more.hidden = !offset;
-    $more.textContent = total != null ? `Show more ${kindSel.toLowerCase()} (${fmt(Math.max(0, total - have))} left)` : `Show more ${kindSel.toLowerCase()}`;
+    $more.textContent = total != null
+      ? `Show ${fmt(Math.min(KIND_BATCH, Math.max(0, total - have)))} more ${kindSel.toLowerCase()} (${fmt(Math.max(0, total - have))} left)`
+      : `Show ${fmt(KIND_BATCH)} more ${kindSel.toLowerCase()}`;
     if (total != null && have >= total) $more.hidden = true;
   }
   async function fillKind() {
     if (filling || !kindSel) return;
     filling = true; $more.disabled = true;
-    const want = shownOfKind() + 20;
+    const want = shownOfKind() + KIND_BATCH;
     let pages = 0;
     try { while (kindSel && offset && shownOfKind() < want && pages < 30) { pages += 1; await query(true); } }
     finally { filling = false; $more.disabled = false; moreLabel(); }
@@ -451,7 +481,7 @@
     $kinds.querySelectorAll(".sd-kind").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.kind === kindSel)));
     applyKind();
     if (kindSel) fillKind();
-    else { $more.hidden = !offset; $more.textContent = offset ? `Show more (${fmt(lastMatched - offset)} left)` : "Show more"; }
+    else updateMoreLabel();
   });
 
   // ── All citations, by author and then by work ─────────────────
