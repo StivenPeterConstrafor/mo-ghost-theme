@@ -561,7 +561,13 @@
 
   // ── Source rows with inline preview ─────────────────────────────
   // "cites" and "citation-survey" are rare spellings in the index (8 of about 7,000 rows in Matthew 1) of a citation by reference.
-  const HOW = { quotation: "Quotes", explicit: "Cites", allusion: "Alludes", citation: "Cites", cites: "Cites", "citation-survey": "Cites", exegesis: "Expounds" };
+  // Every kind reads the ONE rule (scripture-kinds.js, owner 2026-09-26: allusions on every surface): Quotes, Cites, Alludes or
+  // Expounds for any recorded value, never the raw text — so no row falls outside the desk's kind chips.
+  const HOW = new Proxy({}, { get: (_, k) => {
+    if (typeof k !== "string") return undefined;
+    const K = window.FRScriptureKind, v = K ? K.verb(k) : ({ quotation: "quotes", explicit: "cites", allusion: "alludes", exegesis: "expounds" }[k] || "cites");
+    return v.charAt(0).toUpperCase() + v.slice(1);
+  } });
   const centuryLabel = (c) => {
     const n = Number(c);
     if (!n) return "";

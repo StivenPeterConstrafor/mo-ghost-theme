@@ -113,7 +113,10 @@ const aName=a2=>AFIX[a2]||a2;
 const pgl=w2=>(/^(pld|pg)-/.test(String(w2||""))?"col.":"p.");   // only Migne works are column-numbered
 // word-safe trim for the builder's hard [:80] title cuts ('…thirty-fifth, thirt')
 const tell=t2=>{t2=String(t2||"");if(t2.length<72)return t2;const c2=t2.slice(0,70),i2=c2.lastIndexOf(" ");return (i2>40?c2.slice(0,i2):c2)+"\u2026";};
-const HOWL={quotation:"Quoted",explicit:"Cited",allusion:"Echoed","":"Cited"};
+// every kind lookup reads the ONE rule (scripture-kinds.js, owner 2026-09-26: allusions on every surface); never the raw text
+const FRKIND=()=>window.FRScriptureKind||{kind:h=>h||"",verb:h=>({quotation:"quotes",explicit:"cites",allusion:"alludes",exegesis:"expounds"})[h]||"cites",title:()=>"",plural:k=>k,counts:()=>[]};
+const kindMap=fn=>new Proxy({},{get:(_,k)=>typeof k==="string"?FRKIND()[fn](k):undefined});
+const HOWL=kindMap("verb");
 const page=$("#page");
 const PAGE=location.pathname.includes("compare")?"compare":location.pathname.includes("topics")?"topics":(location.pathname.includes("bible")?"bible":"fathers");
 
@@ -1087,7 +1090,7 @@ async function room(slug,arg){
     if(!shard){pbody.innerHTML='<p class="loading">…</p>';
       try{const B2=await bundle();
         shard=shardCache[bslug]={a:d.a,book:((B2.profile.books||[]).find(b=>b.slug===bslug)||{}).book||bslug,
-          rows:B2.books[bslug]||[]};
+          rows:B2.books[bslug]||[],cut:(B2.cut||{})[bslug]||0};   // cut: the book's true row count when the bundle keeps a sample
         if(!shard.rows.length)throw 0;
     }catch(_){if(token===roomViewRun&&run===RESEARCH_RUN)pbody.innerHTML='<p class="loading">This book could not load. Choose another book or try again.</p><button class="rx-button" data-back>Browse books</button>';return;}}
     if(token!==roomViewRun||run!==RESEARCH_RUN)return;
@@ -1116,7 +1119,7 @@ async function room(slug,arg){
     pbody.innerHTML=`<div class="view">
       <button class="bkback" data-back>‹ All books</button>
       <div class="pane-topic">${esc(shard.book)} ${ch}</div>
-      <p class="rx-note"><a class="rx-text-link" href="${FRResearchData.verseURL(bslug,ch)}">Open this chapter in Scripture</a></p><div class="pane-meta">${(byc[ch]||[]).length} citations in this chapter · ${shard.rows.length.toLocaleString()} in ${esc(shard.book)}</div>
+      <p class="rx-note"><a class="rx-text-link" href="${FRResearchData.verseURL(bslug,ch)}">Open this chapter in Scripture</a></p><div class="pane-meta">${(byc[ch]||[]).length} citations in this chapter${(()=>{const kc=FRKIND().counts(byc[ch]||[]);return kc.length?' ('+kc.map(([k,n])=>`<span class="how-${FRKIND().verb(k)}" title="${esc(FRKIND().title(k))}">${fmtR(n)} ${({quotes:"quoted",cites:"cited",alludes:"alluded to",expounds:"expounded"})[FRKIND().verb(k)]}</span>`).join(', ')+')':'';})()} · ${shard.cut?`a sample of ${shard.rows.length.toLocaleString()} of ${shard.cut.toLocaleString()} in ${esc(shard.book)}, every kind kept in proportion`:`${shard.rows.length.toLocaleString()} in ${esc(shard.book)}`}</div>
       <div class="chstrip">${(()=>{const cm=Math.max(...chs.map(c2=>byc[c2].length),1);
         return chs.map(c2=>`<button class="chp heat${c2===ch?" on":""}" data-ch="${c2}"><span>${c2}<span style="color:var(--faint)"> · ${byc[c2].length}</span></span><em style="width:${Math.max(4,34*Math.sqrt(byc[c2].length/cm)).toFixed(0)}px"></em></button>`).join("");})()}</div>
       <div class="rx-pane room-scripture-pane" tabindex="0" aria-label="Scripture and commentary">${body2}</div></div>`;
@@ -1274,7 +1277,7 @@ async function workPage(dnum){
   if(run!==RESEARCH_RUN)return;
   const T=catalogue.titles[slug]||(ins?ins.t:node.t), A=ins?ins.a:node.a, rawVolume=ins?ins.v:node.v;
   const V=record?RX.edition(record):rawVolume?(RX.seriesRef(rawVolume)?RX.edition({volume:String(rawVolume)}):slug.startsWith('pld-')&&/^\d+$/.test(String(rawVolume))?'PL '+rawVolume:String(rawVolume)):'';
-  const HOWA={quotation:"quotes",explicit:"cites",allusion:"alludes"};
+  const HOWA=kindMap("verb");
   const bookViews=(ins&&ins.books||[]).map((b2,i)=>{
     const bmax2=Math.max(...ins.books.map(x=>x.n),1);
     // SCRIPTURE ROWS (owner 2026-09-26: the pale verse, the boxed kind and the oversized Preview "color is not good, do some
@@ -1283,12 +1286,13 @@ async function workPage(dnum){
     const bsl=(BNAME[b2.b]||String(b2.b)).toLowerCase().replace(/^([i]{1,3}) /,(m2,r2)=>r2+"-").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
     // A range cited as a range reads as one (Romans 8:28–30); the link opens its first verse (owner 2026-09-26 "make sure
     // verses work for ranges"). Twenty rows show; the rest follow "Show all" or a chapter.
-    const rows=(b2.rows||[]).map((r,ri)=>{const ref=`${esc(BNAME[b2.b]||b2.b)} ${r.c??""}${r.v?":"+r.v:""}${r.v&&r.ve>r.v?"–"+r.ve:""}`,kind=HOWA[r.how]||r.how||'';
-      return `<div class="vc vc-row${ri>=20?' vc-extra':''}" data-c="${r.c??""}">${r.c?`<a class="vref" href="/the-faith-received/bible/#b/${bsl}/${r.c}${r.v?"?v="+r.v:""}">${ref}</a>`:`<span class="vref">${ref}</span>`}<span class="howtag${kind?' how-'+esc(kind):''}">${esc(kind)}</span><span class="vpg">${pgl(slug)} ${r.p??"?"}</span><span class="vact">${readBtn(slug,r.p)}</span></div>`;}).join("");
+    const rows=(b2.rows||[]).map((r,ri)=>{const ref=`${esc(BNAME[b2.b]||b2.b)} ${r.c??""}${r.v?":"+r.v:""}${r.v&&r.ve>r.v?"–"+r.ve:""}`,kind=HOWA[r.how],k=FRKIND().kind(r.how)||'explicit';
+      return `<div class="vc vc-row${ri>=20?' vc-extra':''}" data-c="${r.c??""}" data-k="${k}">${r.c?`<a class="vref" href="/the-faith-received/bible/#b/${bsl}/${r.c}${r.v?"?v="+r.v:""}">${ref}</a>`:`<span class="vref">${ref}</span>`}<span class="howtag how-${esc(kind)}" title="${esc(FRKIND().title(r.how))}">${esc(kind)}</span><span class="vpg">${pgl(slug)} ${r.p??"?"}</span><span class="vact">${readBtn(slug,r.p)}</span></div>`;}).join("");
     const chapters=(b2.chs||[]).map(([c2,n2])=>`<option value="${esc(c2)}">Chapter ${esc(c2)} · ${fmtR(n2)} ${n2===1?'citation':'citations'}</option>`).join("");
     const bookName=esc(BNAME[b2.b]||b2.b),cardId=`vc-book-card-${i}`,panelId=`vc-book-panel-${i}`;
     return {card:`<button type="button" class="vc-index-card" id="${cardId}" data-vc-expand="${panelId}" aria-controls="${panelId}" aria-expanded="false"><span>${bookName}</span><small>${fmtR(b2.n)} ${b2.n===1?'citation':'citations'}</small></button>`,panel:`<section class="wdet vc-expand-panel vc-book-panel" id="${panelId}" data-vc-panel role="region" aria-labelledby="${cardId}" hidden><header><div><h3>${bookName}</h3><p>${fmtR(b2.n)} ${b2.n===1?'citation':'citations'}</p></div><button type="button" class="vc-panel-close" data-vc-close aria-label="Close ${bookName}" title="Close">&times;</button></header>
       ${chapters?`<label class="vc-chapter-filter"><span>Chapter</span><select data-vc-chapter aria-label="Filter ${esc(BNAME[b2.b]||b2.b)} citations by chapter"><option value="">All chapters</option>${chapters}</select></label>`:""}
+      ${(()=>{const kc=FRKIND().counts(b2.rows||[]);return kc.length>1?`<label class="vc-chapter-filter vc-kind-filter"><span>Kind</span><select data-vc-kind aria-label="Filter ${esc(BNAME[b2.b]||b2.b)} citations by kind"><option value="">All kinds</option>${kc.map(([k,n])=>`<option value="${k}">${esc(FRKIND().plural(k))} · ${fmtR(n)}</option>`).join("")}</select></label>`:"";})()}
       <p class="vc-status" role="status"></p>
       <div class="vcits" style="margin-left:0">${rows}</div>${(b2.rows||[]).length>20?`<button type="button" class="rx-text-link vc-all" data-vc-all>Show all ${fmtR((b2.rows||[]).length)} citations</button>`:''}${b2.n>(b2.rows||[]).length?`<p class="vc-note">${fmtR((b2.rows||[]).length)} of ${fmtR(b2.n)} citations are listed; <a href="${readerHref(slug)}">the reader</a> has every page.</p>`:''}</section>`};});
   const bookGroups=[];for(let i=0;i<bookViews.length;i+=5){const group=bookViews.slice(i,i+5);bookGroups.push(`<div class="vc-expand-group"><div class="vc-index-grid">${group.map(x=>x.card).join('')}</div>${group.map(x=>x.panel).join('')}</div>`);}const books=bookGroups.join('');
@@ -1313,7 +1317,7 @@ async function workPage(dnum){
     return `<div class="pane-meta" style="margin:.3rem 0 .1rem">A commentary on <a href="/the-faith-received/bible/#b/${bs2}${ins.lemma.c?"/"+ins.lemma.c:""}">${esc(bn2)}${ins.lemma.c?" "+ins.lemma.c:""}</a> — its chapter holds this work among the commentators.</div>`;})():""}
   ${/* The work page's headline quotation (the mine's first "memorable" line: Calvin's Institutes opened on "It is therefore an
      audacity…", p. 1) said nothing about the work; removed (owner 2026-09-26). */''}
-  ${books?`<h2 class="sect">Its Scripture</h2><div class="vc-index-section">${books}</div>`:""}
+  ${books?`<h2 class="sect">Its Scripture</h2>${(()=>{const kc=FRKIND().counts((ins&&ins.books||[]).flatMap(b2=>b2.rows||[]));return kc.length?`<p class="vc-kinds-line">${kc.map(([k,n])=>`<span class="how-${FRKIND().verb(k)}" title="${esc(FRKIND().title(k))}">${fmtR(n)} ${esc(FRKIND().n?FRKIND().n(k,n):FRKIND().plural(k).toLowerCase())}</span>`).join(" · ")}</p>`:"";})()}<div class="vc-index-section">${books}</div>`:""}
   ${topics?`<h2 class="sect">Its topics</h2><div class="vc-index-section">${topics}</div>`:""}
   <div id="wauth"></div>
   ${entries?`<h2 class="sect">Subject index <span class="tn" style="font-family:var(--body);font-size:.75rem;color:var(--faint)">Migne's</span></h2>${entries}`:""}
@@ -1345,16 +1349,19 @@ async function workPage(dnum){
   }catch(_){}})();
   // One compact chapter selector replaces the wall of chapter chips. It keeps every
   // chapter available while leaving the citations as the page's visual subject.
+  // chapter and kind filter together (owner 2026-09-26: allusions on every surface)
   const filterChapter=(det,chapter)=>{
-    const on=Boolean(chapter);let n=0;
-    det.querySelectorAll(".vc[data-c]").forEach(r=>{r.hidden=on&&r.dataset.c!==chapter;if(on&&!r.hidden)n++;});
+    const kindSel=det.querySelector("[data-vc-kind]"),kind=kindSel?kindSel.value:"";
+    const on=Boolean(chapter)||Boolean(kind);let n=0;
+    det.querySelectorAll(".vc[data-c]").forEach(r=>{r.hidden=(Boolean(chapter)&&r.dataset.c!==chapter)||(Boolean(kind)&&r.dataset.k!==kind);if(on&&!r.hidden)n++;});
     det.classList.toggle("vc-chapter",on);
-    const st=det.querySelector(".vc-status"),book=det.querySelector("summary b")?.textContent||"";
-    if(st)st.textContent=on?(n?`${fmtR(n)} ${n===1?"citation":"citations"} in ${book} ${chapter}`:`No citation of ${book} ${chapter} is listed on this page`):"";
+    const st=det.querySelector(".vc-status"),book=(det.querySelector("summary b,header h3")?.textContent||"").trim(),where=`${book}${chapter?" "+chapter:""}`;
+    const word=m=>kind&&FRKIND().n?FRKIND().n(kind,m):(m===1?"citation":"citations");
+    if(st)st.textContent=on?(n?`${fmtR(n)} ${word(n)} in ${where}`:`No ${word(2)} of ${where} are listed on this page`):"";
   };
   page.addEventListener("change",e=>{
-    const select=e.target.closest(".vc-book-panel [data-vc-chapter]");if(!select)return;
-    filterChapter(select.closest(".vc-book-panel"),select.value);
+    const select=e.target.closest(".vc-book-panel [data-vc-chapter],.vc-book-panel [data-vc-kind]");if(!select)return;
+    const panel=select.closest(".vc-book-panel");filterChapter(panel,panel.querySelector("[data-vc-chapter]")?.value||"");
   });
   // Each five-card index row owns one full-width detail panel beneath it.
   page.addEventListener("click",e=>{
@@ -1479,11 +1486,11 @@ function panelHTML(rows,total,hl,opts={}){
   // SCROLLABLE (owner 2026-09-10 "i want to scroll everything all collapsible … want to see it all"): eras fold,
   // authors fold, an author's rows fold by work; the panel is a bounded pane; the rows beyond the shard's cap
   // load on demand from the chapter's companion shard ("Load all").
-  const HOWA2={quotation:"quotes",explicit:"cites",allusion:"alludes"};
+  const HOWA2=kindMap("verb");
   rows=rows.filter(facOK);
   const byE={};for(const r of rows){const e2=eraOf(r);(byE[e2]=byE[e2]||[]).push(r);}
   if(!rows.length)return `<p class="scripture-status">No passages match the current source filters${total>0?' among the '+total.toLocaleString()+' loaded':''}.${total>rows.length&&opts.key!=null&&!opts.full?` <button type="button" class="rx-text-link" data-load-all="${esc(String(opts.key))}">Load all ${total.toLocaleString()} and look again</button>`:''}</p>`;
-  const rowH=r=>`<div class="vpr">${r.how?`<span class="howtag">${HOWA2[r.how]||r.how}</span>`:""}<span class="wk">${esc(tell(r.t))}</span>
+  const rowH=r=>`<div class="vpr">${r.how?`<span class="howtag how-${esc(HOWA2[r.how])}" title="${esc(FRKIND().title(r.how))}">${esc(HOWA2[r.how])}</span>`:""}<span class="wk">${esc(tell(r.t))}</span>
           ${r.vv?`<span class="hint">vv. ${r.vv[0]}–${r.vv[1]}</span>`:""}
           <span class="hint">${pgl(r.w)} ${r.p??"—"}</span>${readBtn(r.w,r.p,hl)}${pinBtn(r.w,r.p,r.t,r.a,r.g||"")}
           ${r.g?`<div class="vpg">${esc(ell(r.g))}</div>`:""}</div>`;
@@ -1593,7 +1600,7 @@ async function bookPageAuthor(bslug,c,aslg){
 // preview source for each"; "verses should include citations allusion classification, if we have that"). The panel's
 // chapter and whole-Bible commentaries start closed; the reader's open/closed choice and chosen kind hold across verses.
 const SUMMARY_STATE={chapter:false,whole:false,sources:true,kind:''};
-const SUMMARY_KIND={quotation:'quotes',explicit:'cites',citation:'cites',cites:'cites','citation-survey':'cites',allusion:'alludes',exegesis:'expounds'};
+const SUMMARY_KIND=kindMap('verb');
 async function bookPageMain(bslug,c){
   const run=++BIBLE_RUN;page.className='scripture-page';page.innerHTML='<p class="loading" role="status">Loading Scripture and its sources…</p>';
   const [bk,,catalog]=await Promise.all([J(BLOB+'/v1/bible/all/books.json'),devotion(),FRScripture.catalogue().catch(()=>[])]);if(run!==BIBLE_RUN)return;

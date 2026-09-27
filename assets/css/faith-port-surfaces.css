@@ -2222,6 +2222,10 @@ main.research-work .vc.vc-row .howtag {
 }
 main.research-work .vc.vc-row .howtag.how-quotes { color: var(--wk-accent); }
 main.research-work .vc.vc-row .howtag.how-cites { color: var(--wk-ink); }
+main.research-work .vc.vc-row .howtag.how-alludes { color: var(--allusion, #2B6A6E); font-style: italic; }   /* allusions distinct, never dimmed (owner 2026-09-26) */
+main.research-work .vc.vc-row .howtag.how-expounds { color: var(--wk-ink); }
+main.research-work .vc-kinds-line { color: var(--wk-muted); }
+main.research-work .vc-kinds-line .how-alludes { color: var(--allusion, #2B6A6E); }
 /* Open and Preview: one joined group; reading the page is the primary. */
 main.research-work .vc.vc-row .vact { gap: 0; }
 main.research-work .vc.vc-row .vact > :is(.readbtn, .peekbtn) {

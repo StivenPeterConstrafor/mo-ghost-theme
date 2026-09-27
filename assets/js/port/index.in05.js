@@ -488,7 +488,7 @@ function renderPlScripture(sw,opts){
       const box=host.querySelector("#chhits");if(!box)return;
       box.innerHTML=`<p class=shelfhint>Loading\u2026</p>`;
       _plrFetch(st.layer+"/"+st.book+"/"+st.ch+".json").then(rows=>{
-        if(!rows||!rows.length){box.innerHTML=`<p class=shelfhint>No citations indexed for this chapter.</p>`;return;}
+        if(!rows||!rows.length){box.innerHTML=`<p class=shelfhint>No ${st.layer==="allusions"?"allusions":"citations"} indexed for this chapter.</p>`;return;}
         st.grp=st.grp||"author";
         const authorOf=r=>{const w=_pldById(r.d);return (w&&w.author)||"Unattributed";};
         const volOf=r=>{const w=_pldById(r.d);return (w&&w.volume)||String(r.cit||"").split(":")[0]||"PL ?";};
@@ -496,7 +496,7 @@ function renderPlScripture(sw,opts){
           const bar=`<div class="plorg plgrp"><span class=gk>Group by</span>`+
             [["author","Author"],["vol","Volume"],["verse","Verse"]].map(([k,l])=>
               `<button class="pob${st.grp===k?" on":""}" data-g="${k}">${l}</button>`).join("")+
-            `<span class=plgn>${rows.length.toLocaleString()} citation${rows.length>1?"s":""}</span></div>`;
+            `<span class=plgn>${rows.length.toLocaleString()} ${st.layer==="allusions"?"allusion":"citation"}${rows.length>1?"s":""}</span></div>`;
           let bodyHtml="";
           if(st.grp==="verse"){
             const byV={};rows.forEach(r=>{(byV[r.v||0]=byV[r.v||0]||[]).push(r);});
