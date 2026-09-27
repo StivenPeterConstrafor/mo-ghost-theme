@@ -2355,8 +2355,9 @@ main.research-work .vc-authority-citation > span { display: block; overflow-wrap
 main.research-work .vc-authority-citation small { display: block; margin-top: 2px; color: var(--wk-muted); font-size: 12px; }
 main.research-work .vc-authority-page { color: var(--wk-muted); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 main.research-work .vc-authority-row .vact { display: flex; align-items: center; gap: 14px; }
-main.research-work .vc-authority-row .readbtn { min-height: 32px; padding: 0 !important; border: 0 !important; background: transparent !important; color: var(--wk-accent) !important; font: 13px/1.2 var(--font-body, Georgia, serif) !important; }
-main.research-work .vc-authority-row .readbtn:hover { text-decoration: underline; text-underline-offset: 3px; }
+main.research-work .vc-authority-row .vact > :is(.readbtn, .peekbtn) { min-height: 32px; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; color: var(--wk-ink) !important; font: 13px/1.2 var(--font-body, Georgia, serif) !important; }
+main.research-work .vc-authority-row .vact > .readbtn { color: var(--wk-accent) !important; }
+main.research-work .vc-authority-row .vact > :is(.readbtn, .peekbtn):hover { color: var(--wk-accent) !important; text-decoration: underline; text-underline-offset: 3px; }
 /* On a phone citations and controls get separate, predictable lines. */
 @media (max-width: 640px) {
   main.research-work .vc-index-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -2375,14 +2376,18 @@ main.research-work .vc-authority-row .readbtn:hover { text-decoration: underline
   main.research-work .wdet > div:not(.ev) > .m > span:nth-child(2) { margin-left: 0; }
   main.research-work .vc-authority-row { grid-template-columns: 1fr auto; gap: 2px 16px; padding-block: 12px; }
   main.research-work .vc-authority-citation { grid-column: 1 / -1; }
-  main.research-work .vc-authority-row .readbtn { min-height: 44px; }
+  main.research-work .vc-authority-row .vact > :is(.readbtn, .peekbtn) { min-height: 44px; }
   body.research-page:has(main.research-work) .fr-survey-tab {
-    right: 10px;
-    max-width: 88px;
-    padding: 7px 10px 8px;
+    top: 62%;
+    right: 0;
+    bottom: auto;
+    width: 30px;
+    max-width: 30px;
+    padding: 10px 6px;
     overflow: hidden;
     font-size: 0;
     white-space: nowrap;
+    writing-mode: vertical-rl;
   }
   body.research-page:has(main.research-work) .fr-survey-tab::after { content: "Feedback"; font-size: 12px; }
 }
