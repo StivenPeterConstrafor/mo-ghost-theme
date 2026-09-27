@@ -438,6 +438,20 @@
     return t ? t.short : String(code || "");
   };
 
+  /* EXACT KIND TOTALS (owner 2026-09-26, "fix the verse desk for ian, limits"): the worker returns fifty rows at a
+   * time and has no kind facet, so the desk's kind counts were of the rows loaded (Romans 8:28: "Alludes 7" of 626).
+   * The library publishes one small file per book — every verse's citations by kind, from the same chapter files the
+   * worker reads — so the chips can say the true totals. Cached per book; null when it is not published. */
+  const kindTotalsCache = new Map();
+  function fetchKindTotals(book) {
+    if (!book || !book.lib) return Promise.resolve(null);
+    if (!kindTotalsCache.has(book.lib)) {
+      kindTotalsCache.set(book.lib, fetch(`${LIBRARY_BASE}/v1/bible/all/${encodeURIComponent(book.lib)}/kinds.json`, { credentials: "omit" })
+        .then((r) => (r.ok ? r.json() : null)).catch(() => null));
+    }
+    return kindTotalsCache.get(book.lib);
+  }
+
   // ── Citations (mo-tfr-verse) ────────────────────────────────────
   function api(path, params) {
     const u = new URL(VERSE_API + path);
@@ -934,7 +948,7 @@
     translationInfo, recalledTranslation, rememberTranslation,
     fetchChapterHtml, markVerses, verseTextFrom, fetchVerseText,
     fetchApocryphaChapter, apocryphaChapterNode, chapterNode, fetchApocryphaVerse,
-    fetchVerse, fetchCommentaries, fetchPassage,
+    fetchVerse, fetchCommentaries, fetchPassage, fetchKindTotals,
     emptyFilters, activeCount, filterBar, sourceItem, centuryLabel,
     HOW, kindOf, kindsLabel, workRows,
     // For /the-faith-received/topics/, which reads the same worker.
