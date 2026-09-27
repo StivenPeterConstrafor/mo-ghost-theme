@@ -279,6 +279,31 @@
   color: var(--color-dark);
   margin: 36px 0 10px;
 }
+.faith-tp-shelf-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 30px 0 22px;
+}
+.faith-tp-shelf {
+  padding: 22px 24px 24px;
+  border: 1px solid var(--color-card-border);
+  border-top: 3px solid var(--color-primary);
+  border-radius: 3px;
+  background: var(--color-white, #fff);
+}
+.faith-tp-shelf h3 { margin: 0 0 2px; }
+.faith-tp-shelf .faith-tp-shelf-name {
+  margin: 0 0 16px;
+  padding-bottom: 12px;
+  color: var(--color-muted);
+  border-bottom: 1px solid var(--color-card-border);
+}
+.faith-tp-shelf p:last-child { margin-bottom: 0; }
+@media (max-width: 720px) {
+  .faith-tp-shelf-grid { grid-template-columns: 1fr; }
+  .faith-tp-shelf { padding-inline: 18px; }
+}
 .faith-tp-shelves .faith-tp-steps h4 {
   font-family: var(--font-display, Georgia, serif);
   font-size: 19px;

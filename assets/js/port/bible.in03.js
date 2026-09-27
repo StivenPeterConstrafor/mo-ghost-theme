@@ -279,7 +279,7 @@ const foldOpen=(w,rows)=>{const r=(rows||[]).find(x=>x&&RX.page(x.p)!=null);cons
   if(pg==null)return `<a class="rx-text-link cd-read" href="${readerHref(w,null)}" onclick="event.stopPropagation()">Open work</a>`;
   return `<a class="rx-text-link cd-read" href="${readerHrefHl(w,r.p,r.pageSummary||!r.q?'':String(r.q).replace(/\s+/g,' ').slice(0,120))}" onclick="event.stopPropagation()" title="Open the reader at the first cited page">open at ${pgl(w)} ${esc(String(pg))}</a>`;};
 const previewBtn=(w,p,hl)=>w&&p!=null&&p!==""?`<button class="peekbtn" data-pk="${esc(w)}|${esc(p)}|${esc(hl||'')}" aria-label="Preview source passage" aria-expanded="false">Preview source</button>`:"";
-const readBtn=(w,p,hl)=>(w&&p!=null&&p!=="")?`<a class="readbtn" target="_blank" rel="noopener" href="${readerHrefHl(w,p,hl)}">Open ↗</a><button class="peekbtn" data-pk="${esc(w)}|${p}|${esc(hl||'')}" aria-label="Preview source passage" aria-expanded="false" title="Read the passage here">Preview</button>`:"";   // owner 2026-09-02 "open inline, peeking, opening in a tab" (supersedes 08-31 never-inline)
+const readBtn=(w,p,hl)=>(w&&p!=null&&p!=="")?`<a class="readbtn" target="_blank" rel="noopener" href="${readerHrefHl(w,p,hl)}" title="Open in a new tab">Open</a><button class="peekbtn" data-pk="${esc(w)}|${p}|${esc(hl||'')}" aria-label="Preview source passage" aria-expanded="false" title="Read the passage here">Preview</button>`:"";   // owner 2026-09-02 "open inline, peeking, opening in a tab" (supersedes 08-31 never-inline)
 // PEEK: the passage slides open right under its row — the reader itself, embedded
 // PREVIEW = ENGLISH (owner 2026-09-25 "for preview mode make it english only by default"): the mini reader asks for one English
 // column (?lanes=en, honoured by the reader and not saved as the visitor's choice); Latin is one tap away inside it.
@@ -1337,9 +1337,12 @@ async function workPage(dnum){
     const topicName=esc(t2.t),cardId=`vc-topic-card-${i}`,panelId=`vc-topic-panel-${i}`;
     return {card:`<button type="button" class="vc-index-card" id="${cardId}" data-vc-expand="${panelId}" aria-controls="${panelId}" aria-expanded="false"><span>${topicName}</span><small>${fmtR(t2.n)} ${t2.n===1?'page':'pages'}</small></button>`,panel:`<section class="wdet vc-expand-panel vc-topic-panel" id="${panelId}" data-vc-panel role="region" aria-labelledby="${cardId}" hidden><header><div><h3>${topicName}</h3><p>${fmtR(t2.n)} ${t2.n===1?'indexed page':'indexed pages'}</p></div><button type="button" class="vc-panel-close" data-vc-close aria-label="Close ${topicName}" title="Close">&times;</button></header>${pos||""}${pps?`<div class="vc-page-refs"><h4>Additional indexed pages</h4><div>${pps}</div></div>`:""}</section>`};});
   const topicGroups=[];for(let i=0;i<topicViews.length;i+=5){const group=topicViews.slice(i,i+5);topicGroups.push(`<div class="vc-expand-group"><div class="vc-index-grid">${group.map(x=>x.card).join('')}</div>${group.map(x=>x.panel).join('')}</div>`);}const topics=topicGroups.join('');
-  const entries=(subj&&subj.entries||[]).map(en=>`<div class="ev"><div class="q" style="font-size:.92rem">${esc(en.t)}</div>
-    <div class="m">${en.refs.slice(0,10).map(r=>`<span>${r.c}</span>`).join(" ")}
-    ${en.refs[0]?readBtn(slug,en.refs[0].c):""}</div></div>`).join("");
+  const subjectViews=(subj&&subj.entries||[]).map((en,i)=>{
+    const name=esc(en.t),cardId=`vc-subject-card-${i}`,panelId=`vc-subject-panel-${i}`;
+    const refs=(en.refs||[]).slice(0,40).map(r=>`<div class="vc-page-ref"><span>${pgl(slug)} ${r.c}</span><span class="vact">${readBtn(slug,r.c)}</span></div>`).join("");
+    return {card:`<button type="button" class="vc-index-card" id="${cardId}" data-vc-expand="${panelId}" aria-controls="${panelId}" aria-expanded="false"><span>${name}</span><small>${fmtR((en.refs||[]).length)} ${(en.refs||[]).length===1?'page':'pages'}</small></button>`,panel:`<section class="wdet vc-expand-panel vc-subject-panel" id="${panelId}" data-vc-panel role="region" aria-labelledby="${cardId}" hidden><header><div><h3>${name}</h3><p>${fmtR((en.refs||[]).length)} indexed ${(en.refs||[]).length===1?'page':'pages'}</p></div><button type="button" class="vc-panel-close" data-vc-close aria-label="Close ${name}" title="Close">&times;</button></header><div class="vc-page-refs"><div>${refs}</div></div>${(en.refs||[]).length>40?`<p class="vc-note">The first 40 indexed pages are shown.</p>`:''}</section>`};
+  });
+  const subjectGroups=[];for(let i=0;i<subjectViews.length;i+=5){const group=subjectViews.slice(i,i+5);subjectGroups.push(`<div class="vc-expand-group"><div class="vc-index-grid">${group.map(x=>x.card).join('')}</div>${group.map(x=>x.panel).join('')}</div>`);}const entries=subjectGroups.join('');
   page.innerHTML=`
   <div class="crumbs"><a href="#${aslug(A)}">${esc(A)}</a></div>
   <div class="headline">${esc(T)}</div>
@@ -1354,7 +1357,7 @@ async function workPage(dnum){
   ${books?`<h2 class="sect">Its Scripture</h2><div class="vc-index-section">${books}</div>`:""}
   ${topics?`<h2 class="sect">Its topics</h2><div class="vc-index-section">${topics}</div>`:""}
   <div id="wauth"></div>
-  ${entries?`<h2 class="sect">Subject index <span class="tn" style="font-family:var(--body);font-size:.75rem;color:var(--faint)">Migne's</span></h2>${entries}`:""}
+  ${entries?`<h2 class="sect">Subject index <span class="vc-section-meta">Migne&rsquo;s</span></h2><div class="vc-index-section">${entries}</div>`:""}
   ${(!books&&!topics&&!entries)?'<p class="hint">Not yet mined.</p>':""}`;
   // the work's own FACE (2026-09-01): the title-page scan, floated beside the header —
   // one small meta fetch; families without a stored meta (PL) skip silently
@@ -1376,10 +1379,11 @@ async function workPage(dnum){
     mine.sort((a2,b2)=>b2.rows.length-a2.rows.length);
     if(!mine.length)return;
     const tot=mine.reduce((a2,b2)=>a2+b2.rows.length,0);
-    $("#wauth").innerHTML=`<h2 class="sect">Its authorities <span class="tn" style="font-family:var(--body);font-size:.74rem;color:var(--faint)">${tot.toLocaleString()} resolved citations of ${mine.length} authors</span></h2>`+
-      mine.slice(0,40).map((g,i)=>`<details class="wdet"${i===0?" open":""}><summary><b>${esc(g.a)}</b><i style="width:${Math.max(3,40*Math.sqrt(g.rows.length/mine[0].rows.length)).toFixed(0)}%"></i><span class="n">${g.rows.length}</span></summary>
-        <div>${g.rows.slice(0,80).map(r2=>`<div class="m" style="margin:.25rem 0 0;flex-wrap:wrap"><span style="font-size:.85rem">${r2.loc?`<i>${esc(r2.loc)}</i>`:esc(r2.sf)}</span><span>${pgl(slug)} ${r2.p??"?"}</span>${readBtn(slug,r2.p)}${r2.tw?`<span style="color:var(--faint);font-size:.74rem">→ ${esc(tell(String((F.works||{})[r2.tw]||r2.tw)))}</span>`:''}</div>`).join("")}
-        ${g.rows.length>80?`<div style="color:var(--faint);font-size:.78rem;margin-top:.3rem">+ ${(g.rows.length-80).toLocaleString()} more in <a href="/the-faith-received/fathers/#${aslug(A)}/reception">${esc(A)}’s Reception</a></div>`:""}</div></details>`).join("");
+    const views=mine.slice(0,40).map((g,i)=>{const name=esc(g.a),cardId=`vc-authority-card-${i}`,panelId=`vc-authority-panel-${i}`;
+      const rows=g.rows.slice(0,80).map((r2,ri)=>`<div class="vc-authority-row${ri>=10?' vc-authority-extra':''}"${ri>=10?' hidden':''}><div class="vc-authority-citation"><span>${r2.loc?`<i>${esc(r2.loc)}</i>`:esc(r2.sf)}</span>${r2.tw?`<small>${esc(tell(String((F.works||{})[r2.tw]||r2.tw)))}</small>`:''}</div><span class="vc-authority-page">${pgl(slug)} ${r2.p??"?"}</span><span class="vact">${readBtn(slug,r2.p)}</span></div>`).join("");
+      return {card:`<button type="button" class="vc-index-card" id="${cardId}" data-vc-expand="${panelId}" aria-controls="${panelId}" aria-expanded="false"><span>${name}</span><small>${fmtR(g.rows.length)} ${g.rows.length===1?'citation':'citations'}</small></button>`,panel:`<section class="wdet vc-expand-panel vc-authority-panel" id="${panelId}" data-vc-panel role="region" aria-labelledby="${cardId}" hidden><header><div><h3>${name}</h3><p>${fmtR(g.rows.length)} resolved ${g.rows.length===1?'citation':'citations'}</p></div><button type="button" class="vc-panel-close" data-vc-close aria-label="Close ${name}" title="Close">&times;</button></header><div class="vc-authority-rows">${rows}</div>${g.rows.length>10?`<button type="button" class="rx-text-link vc-all" data-vc-more data-step="10">Show 10 more</button>`:''}${g.rows.length>80?`<p class="vc-note">${fmtR(g.rows.length-80)} more appear in <a href="/the-faith-received/fathers/#${aslug(A)}/reception">${esc(A)}&rsquo;s Reception</a>.</p>`:''}</section>`};});
+    const groups=[];for(let i=0;i<views.length;i+=5){const group=views.slice(i,i+5);groups.push(`<div class="vc-expand-group"><div class="vc-index-grid">${group.map(x=>x.card).join('')}</div>${group.map(x=>x.panel).join('')}</div>`);}
+    $("#wauth").innerHTML=`<h2 class="sect">Its authorities <span class="vc-section-meta">${tot.toLocaleString()} resolved citations of ${mine.length} authors</span></h2><div class="vc-index-section">${groups.join('')}</div>`;
   }catch(_){}})();
   // One compact chapter selector replaces the wall of chapter chips. It keeps every
   // chapter available while leaving the citations as the page's visual subject.
@@ -1387,7 +1391,7 @@ async function workPage(dnum){
     const on=Boolean(chapter);let n=0;
     det.querySelectorAll(".vc[data-c]").forEach(r=>{r.hidden=on&&r.dataset.c!==chapter;if(on&&!r.hidden)n++;});
     det.classList.toggle("vc-chapter",on);
-    const st=det.querySelector(".vc-status"),book=det.querySelector("summary b")?.textContent||"";
+    const st=det.querySelector(".vc-status"),book=det.querySelector("header h3")?.textContent||"";
     if(st)st.textContent=on?(n?`${fmtR(n)} ${n===1?"citation":"citations"} in ${book} ${chapter}`:`No citation of ${book} ${chapter} is listed on this page`):"";
   };
   page.addEventListener("change",e=>{
@@ -1397,7 +1401,8 @@ async function workPage(dnum){
   // Each five-card index row owns one full-width detail panel beneath it.
   page.addEventListener("click",e=>{
     const card=e.target.closest("[data-vc-expand]");if(card){const group=card.closest(".vc-expand-group"),section=card.closest(".vc-index-section")||group,wasOpen=card.getAttribute("aria-expanded")==="true";section.querySelectorAll("[data-vc-expand]").forEach(x=>x.setAttribute("aria-expanded","false"));section.querySelectorAll("[data-vc-panel]").forEach(x=>{x.hidden=true;});if(!wasOpen){card.setAttribute("aria-expanded","true");const panel=group.querySelector(`#${CSS.escape(card.dataset.vcExpand)}`);if(panel)panel.hidden=false;}return;}
-    const close=e.target.closest("[data-vc-close]");if(close){const panel=close.closest(".vc-book-panel"),card=page.querySelector(`[aria-controls="${CSS.escape(panel.id)}"]`);panel.hidden=true;if(card){card.setAttribute("aria-expanded","false");card.focus();}return;}
+    const close=e.target.closest("[data-vc-close]");if(close){const panel=close.closest(".vc-expand-panel"),card=panel&&page.querySelector(`[aria-controls="${CSS.escape(panel.id)}"]`);if(panel)panel.hidden=true;if(card){card.setAttribute("aria-expanded","false");card.focus();}return;}
+    const more=e.target.closest("[data-vc-more]");if(more){const panel=more.closest(".vc-authority-panel"),hidden=[...panel.querySelectorAll(".vc-authority-extra[hidden]")],step=+(more.dataset.step||10);hidden.slice(0,step).forEach(row=>{row.hidden=false;});const left=panel.querySelectorAll(".vc-authority-extra[hidden]").length;if(left)more.textContent=`Show ${Math.min(step,left)} more`;else more.hidden=true;return;}
     const all=e.target.closest(".vc-book-panel [data-vc-all]");if(all){const panel=all.closest(".vc-book-panel");panel.classList.add("vc-open");all.hidden=true;return;}
   });
 }

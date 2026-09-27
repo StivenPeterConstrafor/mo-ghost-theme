@@ -1735,21 +1735,26 @@ html:not(.mo-embedded) .fra {
   color: var(--color-muted);
 }
 .fra-found-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 0 18px;
+  border-top: 1px solid var(--color-card-border);
 }
 .fra-found-chip {
+  display: block;
+  width: 100%;
   max-width: 100%;
   min-height: 34px;
-  padding: 4px 10px;
+  padding: 7px 3px;
   font: inherit;
   font-size: 13px;
   line-height: 1.35;
+  text-align: left;
   color: var(--fra-fg);
-  background: var(--fra-card);
-  border: 1px solid var(--color-card-border);
-  border-radius: 3px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--color-card-border);
+  border-radius: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1758,7 +1763,7 @@ html:not(.mo-embedded) .fra {
 .fra-found-chip:hover,
 .fra-found-chip:focus-visible {
   color: var(--color-primary-text);
-  border-color: var(--color-primary-text);
+  border-bottom-color: var(--color-primary-text);
 }
 .fra-found-chip:focus-visible {
   outline: 2px solid var(--color-primary-text);

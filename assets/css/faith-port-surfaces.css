@@ -2036,9 +2036,9 @@ main#frAuthorOwn form.srow button {
    own, so the page shows through. */
 #faith-web-constellations .cn-stage{background:transparent;border:0;border-radius:0}
 
-/* ── THE WORK PAGE'S SCRIPTURE IN THE LIBRARY'S DRESS. Scoped to
-   main.research-work: a compact chapter selector, citation kinds as small-caps
-   words, joined Open and Preview actions, ruled rows, and a restrained preview. */
+/* ── THE WORK PAGE'S INDEXES IN THE LIBRARY'S DRESS. Scoped to
+   main.research-work: compact five-up indexes, ruled reading rows, quiet text
+   actions, and a restrained preview. */
 main.research-work {
   --wk-accent: var(--color-secondary, #c1593c);
   --wk-ink: var(--ink, #2d2927);
@@ -2083,6 +2083,12 @@ main.research-work .vc-index-card[aria-expanded="true"] {
   color: var(--wk-accent);
 }
 main.research-work .vc-index-card:focus-visible { outline: 2px solid var(--wk-accent); outline-offset: 2px; }
+main.research-work .vc-section-meta {
+  margin-left: 8px;
+  color: var(--wk-muted);
+  font: 13px/1.4 var(--font-body, "Source Serif Pro", Georgia, serif);
+  white-space: nowrap;
+}
 main.research-work .vc-expand-panel {
   margin: 10px 0 24px;
   padding: 0 18px 18px;
@@ -2166,8 +2172,8 @@ main.research-work .vc-page-refs h4 { margin: 0 0 10px; color: var(--wk-muted); 
 main.research-work .vc-page-refs > div { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 16px; }
 main.research-work .vc-page-ref { display: flex; align-items: center; min-width: 0; min-height: 44px; border-bottom: 1px solid var(--ar-line); }
 main.research-work .vc-page-ref > span:first-child { margin-right: auto; color: var(--wk-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
-main.research-work .vc-page-ref .vact { display: flex; align-items: center; gap: 0; }
-main.research-work .vc-page-ref .vact > :is(.readbtn, .peekbtn) { min-height: 32px; margin: 0; padding: 0 8px !important; border: 0 !important; border-left: 1px solid var(--ar-line) !important; border-radius: 0 !important; background: transparent !important; color: var(--wk-ink) !important; font: 12px/1.2 var(--font-body, Georgia, serif) !important; }
+main.research-work .vc-page-ref .vact { display: flex; align-items: center; gap: 14px; }
+main.research-work .vc-page-ref .vact > :is(.readbtn, .peekbtn) { min-height: 32px; margin: 0; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; color: var(--wk-ink) !important; font: 12px/1.2 var(--font-body, Georgia, serif) !important; }
 main.research-work .vc-page-ref .vact > .readbtn { color: var(--wk-accent) !important; }
 main.research-work .vc-page-ref .vact > :is(.readbtn, .peekbtn):hover { color: var(--wk-accent) !important; }
 /* What the rows show: an eyebrow, with its one action as a thin-line box. */
@@ -2222,21 +2228,20 @@ main.research-work .vc.vc-row .howtag {
 }
 main.research-work .vc.vc-row .howtag.how-quotes { color: var(--wk-accent); }
 main.research-work .vc.vc-row .howtag.how-cites { color: var(--wk-ink); }
-/* Open and Preview: one joined group; reading the page is the primary. */
-main.research-work .vc.vc-row .vact { gap: 0; }
+/* Open and Preview are quiet commands. Reading the page remains primary. */
+main.research-work .vc.vc-row .vact { gap: 16px; }
 main.research-work .vc.vc-row .vact > :is(.readbtn, .peekbtn) {
   min-height: 32px;
-  padding: 0 12px !important;
-  border: 1px solid var(--ar-line) !important;
+  padding: 0 !important;
+  border: 0 !important;
   border-radius: 0 !important;
-  background: var(--ar-card) !important;
+  background: transparent !important;
   color: var(--wk-ink) !important;
   font: 13px/1.2 var(--font-body, "Source Serif Pro", Georgia, serif) !important;
 }
-main.research-work .vc.vc-row .vact > .readbtn { position: relative; z-index: 1; border-color: var(--wk-accent) !important; color: var(--wk-accent) !important; border-radius: 3px 0 0 3px !important; }
-main.research-work .vc.vc-row .vact > .peekbtn { margin-left: -1px; border-radius: 0 3px 3px 0 !important; }
-main.research-work .vc.vc-row .vact > .peekbtn:only-child { margin-left: 0; border-radius: 3px !important; }
-main.research-work .vc.vc-row .vact > .peekbtn:is(:hover, .on) { position: relative; z-index: 2; border-color: var(--wk-accent) !important; color: var(--wk-accent) !important; }
+main.research-work .vc.vc-row .vact > .readbtn { color: var(--wk-accent) !important; }
+main.research-work .vc.vc-row .vact > .peekbtn { margin-left: 0; }
+main.research-work .vc.vc-row .vact > :is(.readbtn, .peekbtn):is(:hover, .on) { color: var(--wk-accent) !important; text-decoration: underline; text-underline-offset: 3px; }
 /* The preview: a thin-line box, its head an eyebrow over the reader. */
 main.research-work .vc.vc-row > .peekwrap.on > div { border: 1px solid var(--ar-line); border-radius: 3px; background: var(--ar-panel); }
 main.research-work .vc.vc-row > .peekwrap .peekhead { padding: 8px 14px; border-bottom: 1px solid var(--ar-line); background: var(--ar-panel); }
@@ -2249,13 +2254,8 @@ main.research-work .vc.vc-row > .peekwrap .peekhead strong {
 main.research-work .vc.vc-row > .peekwrap .peekhead :is(a, button) { color: var(--wk-ink); font-size: 13px; }
 main.research-work .vc.vc-row > .peekwrap .peekhead :is(a, button):hover { color: var(--wk-accent); }
 
-/* Its topics and its authorities, in the same dress: the statement (or the
-   citation) in ink, a stance as a terracotta small-caps word, and the page,
-   Open, Preview and Save as one joined thin-line group with Open outlined as
-   the primary. The port had a faint boxed stance, an oval Preview and loose
-   links (corpus owner, 2026-09-26: "the pills, etc"). A topic's row is
-   .ev > .m [page, Open, Preview, Save]; an authority's is
-   div > .m [citation, page, Open, Preview, → the work it resolves to]. */
+/* Its topics use the same editorial rows: the statement in ink, a stance as a
+   terracotta small-caps word, then quiet metadata and actions. */
 main.research-work .wdet .ev { padding: 12px 20px 14px !important; border-bottom: 1px solid var(--ar-line); }
 main.research-work .wdet .ev:last-child { border-bottom: 0; }
 main.research-work .wdet .ev .q { font-size: 16px !important; line-height: 1.6; color: var(--wk-ink); }
@@ -2277,12 +2277,12 @@ main.research-work .wdet :is(.ev > .m, div:not(.ev) > .m) {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0;
+  gap: 6px 16px;
   font-size: 13px;
   color: var(--wk-muted);
 }
 main.research-work .wdet .ev > .m { margin: 8px 0 0 !important; }
-/* the group's cells */
+/* Metadata and actions read as a byline, not a segmented control. */
 main.research-work .wdet .ev > .m > span:first-child,
 main.research-work .wdet div:not(.ev) > .m > span:nth-child(2),
 main.research-work .wdet .m > .readbtn,
@@ -2292,30 +2292,27 @@ main.research-work .wdet .m > .pinb {
   align-items: center;
   min-height: 32px;
   min-width: 0;
-  margin: 0 0 0 -1px;
-  padding: 0 11px !important;
-  border: 1px solid var(--ar-line) !important;
+  margin: 0;
+  padding: 0 !important;
+  border: 0 !important;
   border-radius: 0 !important;
-  background: var(--ar-card) !important;
+  background: transparent !important;
   color: var(--wk-ink) !important;
   font: 13px/1.2 var(--font-body, "Source Serif Pro", Georgia, serif) !important;
   opacity: 1 !important;
   text-decoration: none;
   white-space: nowrap;
 }
-/* the page number opens the group: quiet, tabular, square-left */
+/* Page numbers stay quiet and tabular. */
 main.research-work .wdet .ev > .m > span:first-child,
 main.research-work .wdet div:not(.ev) > .m > span:nth-child(2) {
   margin-left: 0;
-  border-radius: 3px 0 0 3px !important;
   color: var(--wk-muted) !important;
   font-variant-numeric: tabular-nums;
 }
-main.research-work .wdet .m > .readbtn { position: relative; z-index: 1; border-color: var(--wk-accent) !important; color: var(--wk-accent) !important; }
-main.research-work .wdet .ev > .m > :last-child,
-main.research-work .wdet div:not(.ev) > .m > .peekbtn { border-radius: 0 3px 3px 0 !important; }
-main.research-work .wdet .m > :is(.peekbtn, .pinb):is(:hover, .on) { position: relative; z-index: 2; border-color: var(--wk-accent) !important; color: var(--wk-accent) !important; }
-/* An authority's row: the citation, the group, then the work it resolves to. */
+main.research-work .wdet .m > .readbtn { color: var(--wk-accent) !important; }
+main.research-work .wdet .m > :is(.readbtn, .peekbtn, .pinb):is(:hover, .on) { color: var(--wk-accent) !important; text-decoration: underline; text-underline-offset: 3px; }
+/* Legacy authority rows, retained for older work records. */
 main.research-work .wdet > div:not(.ev) > .m { margin: 0 !important; padding: 6px 0; border-bottom: 1px solid var(--ar-line); }
 main.research-work .wdet > div:not(.ev) > .m:last-child { border-bottom: 0; }
 main.research-work .wdet > div:not(.ev) > .m > span:first-child {
@@ -2342,20 +2339,52 @@ main.research-work .deck .pill {
   text-transform: uppercase;
   color: var(--wk-muted);
 }
-/* On a phone an authority's citation and resolved work take their own lines, so the group never breaks apart. */
+/* Authority panels use a compact bibliography: citation, page, action. */
+main.research-work .vc-authority-rows { border-top: 1px solid var(--ar-line); }
+main.research-work .vc-authority-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px 22px;
+  min-height: 54px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--ar-line);
+}
+main.research-work .vc-authority-citation { min-width: 0; color: var(--wk-ink); font-size: 15px; }
+main.research-work .vc-authority-citation > span { display: block; overflow-wrap: anywhere; }
+main.research-work .vc-authority-citation small { display: block; margin-top: 2px; color: var(--wk-muted); font-size: 12px; }
+main.research-work .vc-authority-page { color: var(--wk-muted); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+main.research-work .vc-authority-row .vact { display: flex; align-items: center; gap: 14px; }
+main.research-work .vc-authority-row .readbtn { min-height: 32px; padding: 0 !important; border: 0 !important; background: transparent !important; color: var(--wk-accent) !important; font: 13px/1.2 var(--font-body, Georgia, serif) !important; }
+main.research-work .vc-authority-row .readbtn:hover { text-decoration: underline; text-underline-offset: 3px; }
+/* On a phone citations and controls get separate, predictable lines. */
 @media (max-width: 640px) {
   main.research-work .vc-index-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   main.research-work .vc-index-card { min-height: 72px; padding: 12px; }
   main.research-work .vc-expand-panel { margin-top: 8px; padding: 0 14px 14px; }
   main.research-work .vc-page-refs > div { grid-template-columns: 1fr; }
+  main.research-work .vc-section-meta { display: block; margin: 4px 0 0; white-space: normal; }
   main.research-work .vc-chapter-filter { align-items: stretch; flex-direction: column; gap: 6px; }
   main.research-work .vc-chapter-filter select { width: 100%; min-width: 0; min-height: 44px; }
   main.research-work .vc.vc-row .vact > :is(.readbtn, .peekbtn),
   main.research-work .wdet .m > :is(.readbtn, .peekbtn, .pinb) { min-height: 44px; }
+  main.research-work .vc.vc-row .vact { gap: 18px; }
   main.research-work .vc.vc-row { padding-block: 12px; row-gap: 6px; }
   main.research-work .wdet > div:not(.ev) > .m > span:first-child { flex: 1 1 100%; margin: 0 0 4px; }
   main.research-work .wdet > div:not(.ev) > .m > span[style*="faint"] { flex: 1 1 100%; margin: 0 0 6px; }
   main.research-work .wdet > div:not(.ev) > .m > span:nth-child(2) { margin-left: 0; }
+  main.research-work .vc-authority-row { grid-template-columns: 1fr auto; gap: 2px 16px; padding-block: 12px; }
+  main.research-work .vc-authority-citation { grid-column: 1 / -1; }
+  main.research-work .vc-authority-row .readbtn { min-height: 44px; }
+  body.research-page:has(main.research-work) .fr-survey-tab {
+    right: 10px;
+    max-width: 88px;
+    padding: 7px 10px 8px;
+    overflow: hidden;
+    font-size: 0;
+    white-space: nowrap;
+  }
+  body.research-page:has(main.research-work) .fr-survey-tab::after { content: "Feedback"; font-size: 12px; }
 }
 @media (min-width: 641px) and (max-width: 980px) {
   main.research-work .vc-index-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }

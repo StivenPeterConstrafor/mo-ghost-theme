@@ -592,6 +592,7 @@
   function readerFrameSrc(link) {
     const u = new URL(link, window.location.origin);
     u.searchParams.set("lanes", "en");
+    u.searchParams.set("peek", "1");
     return u.pathname + u.search + u.hash;
   }
   function readerFrame($pv, link, title) {
@@ -676,9 +677,15 @@
     let loaded = false;
     $btn.addEventListener("click", () => {
       const open = $btn.getAttribute("aria-expanded") !== "true";
+      if (open) {
+        li.closest(".sd-sources")?.querySelectorAll('.sd-preview-btn[aria-expanded="true"]').forEach((button) => {
+          if (button !== $btn) button.click();
+        });
+      }
       $btn.setAttribute("aria-expanded", String(open));
       $btn.textContent = open ? "Hide" : "Preview";
       $pv.hidden = !open;
+      li.classList.toggle("is-previewing", open);
       if (!open || loaded) return;
       loaded = true;
       $pv.innerHTML = `<p class="sd-muted" role="status">Finding the passage…</p>`;
@@ -771,9 +778,15 @@
     let shown = null;
     $btn.addEventListener("click", () => {
       const open = $btn.getAttribute("aria-expanded") !== "true";
+      if (open) {
+        li.closest(".sd-sources")?.querySelectorAll('.sd-preview-btn[aria-expanded="true"]').forEach((button) => {
+          if (button !== $btn) button.click();
+        });
+      }
       $btn.setAttribute("aria-expanded", String(open));
       $btn.textContent = open ? "Hide" : "Preview";
       $pv.hidden = !open;
+      li.classList.toggle("is-previewing", open);
       const v = Number(ctx.v) || 0;
       if (!open || shown === v) return;
       shown = v;
@@ -826,10 +839,27 @@
       const el = document.createElement("details");
       el.className = "sd-panel-fold sd-comm-fold";
       el.open = opened[key];
-      el.innerHTML = `<summary><span>${esc(title)} <span class="sd-comm-fold-n">(${fmt(list.length)})</span></span></summary><ol class="sd-sources sd-panel-commentaries"></ol>`;
+      const initial = 9;
+      el.innerHTML = `<summary><span>${esc(title)} <span class="sd-comm-fold-n">(${fmt(list.length)})</span></span></summary><ol class="sd-sources sd-panel-commentaries"></ol>` +
+        `<button type="button" class="sd-commentary-more"${list.length <= initial ? " hidden" : ""}>Show all ${fmt(list.length)} commentaries</button>`;
       const $ol = el.querySelector("ol");
-      list.forEach((e) => $ol.appendChild(commentaryItem(e, ctx)));
-      el.addEventListener("toggle", () => { opened[key] = el.open; });
+      list.forEach((e, index) => {
+        const item = commentaryItem(e, ctx);
+        if (index >= initial) item.hidden = true;
+        $ol.appendChild(item);
+      });
+      const $more = el.querySelector(".sd-commentary-more");
+      $more.addEventListener("click", () => {
+        $ol.querySelectorAll(".sd-commentary[hidden]").forEach((item) => { item.hidden = false; });
+        $more.hidden = true;
+      });
+      el.addEventListener("toggle", () => {
+        opened[key] = el.open;
+        if (!el.open) return;
+        $folds.querySelectorAll(".sd-comm-fold[open]").forEach((other) => {
+          if (other !== el) other.open = false;
+        });
+      });
       return el;
     };
     let run = 0;
