@@ -2170,7 +2170,7 @@ main.research-work .vc-topic-panel > .ev:last-of-type { border-bottom: 0; }
 main.research-work .vc-page-refs { padding-top: 16px; border-top: 1px solid var(--ar-line); }
 main.research-work .vc-page-refs h4 { margin: 0 0 10px; color: var(--wk-muted); font: 600 11px/1.4 var(--font-body, Georgia, serif); letter-spacing: 0.14em; text-transform: uppercase; }
 main.research-work .vc-page-refs > div { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 16px; }
-main.research-work .vc-page-ref { display: flex; align-items: center; min-width: 0; min-height: 44px; border-bottom: 1px solid var(--ar-line); }
+main.research-work .vc-page-ref { display: flex; flex-wrap: wrap; align-items: center; min-width: 0; min-height: 44px; border-bottom: 1px solid var(--ar-line); }
 main.research-work .vc-page-ref > span:first-child { margin-right: auto; color: var(--wk-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
 main.research-work .vc-page-ref .vact { display: flex; align-items: center; gap: 14px; }
 main.research-work .vc-page-ref .vact > :is(.readbtn, .peekbtn) { min-height: 32px; margin: 0; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; color: var(--wk-ink) !important; font: 12px/1.2 var(--font-body, Georgia, serif) !important; }
@@ -2358,6 +2358,7 @@ main.research-work .vc-authority-row .vact { display: flex; align-items: center;
 main.research-work .vc-authority-row .vact > :is(.readbtn, .peekbtn) { min-height: 32px; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; color: var(--wk-ink) !important; font: 13px/1.2 var(--font-body, Georgia, serif) !important; }
 main.research-work .vc-authority-row .vact > .readbtn { color: var(--wk-accent) !important; }
 main.research-work .vc-authority-row .vact > :is(.readbtn, .peekbtn):hover { color: var(--wk-accent) !important; text-decoration: underline; text-underline-offset: 3px; }
+main.research-work :is(.vc-authority-row, .vc-page-ref) > .peekwrap { grid-column: 1 / -1; flex: 1 0 100%; min-width: 0; }
 /* On a phone citations and controls get separate, predictable lines. */
 @media (max-width: 640px) {
   main.research-work .vc-index-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

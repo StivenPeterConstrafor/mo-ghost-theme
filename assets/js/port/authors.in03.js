@@ -255,7 +255,7 @@ document.addEventListener("click",async e=>{
     window.open(readerHref(w,pg),"_blank","noopener");return;}
   const b=e.target.closest(".peekbtn");if(!b)return;
   e.preventDefault();
-  const host=b.closest('.scripture-work,.annotation-volume,.rx-excerpt,.vpr,.ev,.vc-row,.vc-page-ref')||b.closest('.m')||b.parentElement;
+  const host=b.closest('.scripture-work,.annotation-volume,.rx-excerpt,.vpr,.ev,.vc-row,.vc-page-ref,.vc-authority-row')||b.closest('.m')||b.parentElement;
   let wrap=host.querySelector(':scope > .peekwrap');
   const setOpen=on=>{wrap.classList.toggle('on',on);wrap.inert=!on;b.classList.toggle('on',on);b.setAttribute('aria-expanded',String(on));};
   if(wrap){setOpen(!wrap.classList.contains('on'));return;}
