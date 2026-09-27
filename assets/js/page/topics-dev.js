@@ -179,6 +179,43 @@
     : a.trad === "Roman Catholic" ? "rc" : a.trad === "Lutheran" ? "lu" : "rf");
   const cgroupLabel = (k) => (CGROUPS.find((g) => g[0] === k) || [k, k])[1];
 
+  /* "Election" is a doctrinal synonym only in context. The mined index
+   * previously treated every election as predestination, admitting the
+   * election of bishops, popes and council officers. Keep the correction
+   * at the topic boundary so Read, Compare, Trace and the headline counts
+   * all describe the same doctrinal corpus. */
+  const PREDESTINATION_TERMS = /\b(?:predestinat\w*|reprobation|eternal\s+election|divine\s+election|election\s+(?:and\s+reprobation|to\s+(?:life|salvation)|unto\s+(?:life|salvation)|of\s+(?:grace|the\s+saints)|is\s+(?:made|also)|made\s+infallible)|decrees?\s+of\s+god|book\s+of\s+life)\b/i;
+  const DOCTRINAL_ELECTION = /\b(?:predestinat\w*|reprobation|election|elect|elects|chosen\s+(?:in\s+christ|before\s+the\s+foundation)|foreordain\w*)\b/i;
+  const OFFICE_ELECTION = /(?:election|chosen|elect)\s+(?:of|a|the|by)[^.!;]{0,80}(?:bishop|presbyter|deacon|pope|pontiff|minister|abbot|patriarch|cardinal)|(?:bishop|presbyter|deacon|pope|pontiff|minister|abbot|patriarch|cardinal)[^.!;]{0,80}(?:election|chosen|elect)/i;
+  const predestinationArticle = (a) => {
+    if (state.id !== "de-praedestinatione") return true;
+    const title = String(a.article_display || a.article || "");
+    const text = `${title} ${a.text || ""}`;
+    const dort = /Canons of Dort/i.test(a.doc || "") && /First Head/i.test(title);
+    return (dort || DOCTRINAL_ELECTION.test(text)) && !(!/predestinat|reprobation/i.test(text) && OFFICE_ELECTION.test(text));
+  };
+  const relevantSections = (w) => {
+    const secs = w.secs || [];
+    if (state.id !== "de-praedestinatione") return secs;
+    return secs.filter((s) => {
+      const title = String(s.t || "");
+      return PREDESTINATION_TERMS.test(title) && !(!/predestinat|reprobation/i.test(title) && OFFICE_ELECTION.test(title));
+    });
+  };
+  const curateTopicData = (d) => {
+    if (state.id !== "de-praedestinatione") return d;
+    const works = (d.works || []).map((w) => ({ ...w, secs: relevantSections(w) })).filter((w) =>
+      PREDESTINATION_TERMS.test(`${w.t || ""} ${w.a || ""}`) || w.secs.length);
+    const names = new Set(works.map((w) => w.a).filter(Boolean));
+    const selected = (TREAT && TREAT.loci && TREAT.loci[state.id]) || [];
+    selected.forEach((e) => names.add(e.author));
+    const authors = (d.authors || []).filter((a) => names.has(a.a));
+    return { ...d, works, authors, counts: { ...(d.counts || {}), authors: names.size, works: works.length } };
+  };
+
+  const indexCard = (key, title, meta, open, controls, attr) =>
+    `<button type="button" class="sd-index-card td-index-card" ${attr}="${esc(key)}" aria-expanded="${open ? "true" : "false"}" aria-controls="${esc(controls)}"><span>${esc(title)}</span><small>${esc(meta)}</small></button>`;
+
   function renderLocus(id, view, cview) {
     const hit = INDEX.get(id);
     if (!hit) { renderContents(); return; }
@@ -237,8 +274,8 @@
     Promise.all([S.api("/v1/topic", { id, t2: locus.t2 }), loadTreatments()]).then(([d]) => {
       if (state.id !== id) return;
       if (!d) throw new Error("no topic");
-      state.data = d;
-      const c = d.counts || {};
+      state.data = curateTopicData(d);
+      const c = state.data.counts || {};
       setStat("authors", c.authors || 0);
       setStat("works", c.works || 0);
       setView(state.view, false);
@@ -263,8 +300,9 @@
       return { d, from: null };
     }).then(({ d, from }) => {
       if (state.id !== id) return;
-      state.conf = { d: d || { articles: [], scripture: [] }, from };
-      setStat("conf", ((d && d.articles) || []).length);
+      const clean = d ? { ...d, articles: (d.articles || []).filter(predestinationArticle) } : { articles: [], scripture: [] };
+      state.conf = { d: clean, from };
+      setStat("conf", clean.articles.length);
       setCView(state.cview, false);
     }).catch(() => {
       if (state.id !== id) return;
@@ -378,45 +416,95 @@
   }
 
   function renderConfRead($view, arts, from) {
-    $view.innerHTML = `${from}<div data-td-cchips></div><ol class="td-articles"></ol>` +
-      `<p class="sd-muted td-conf-note">The articles linked to this topic so far, earliest first.</p>`;
-    const $ol = $view.querySelector(".td-articles");
-    // Catechisms give an article per question, so some topics hold
-    // hundreds (the Law, 291). Thirty at a time, with Show more.
+    $view.innerHTML = `${from}<div data-td-cchips></div><div class="td-document-index" data-td-docs></div>` +
+      `<button type="button" class="sd-more td-documents-more" data-td-documents-more hidden>Show more documents</button>` +
+      `<p class="sd-muted td-conf-note">Choose a document to read its articles on this topic.</p>`;
+    const $docs = $view.querySelector("[data-td-docs]");
+    const $docsMore = $view.querySelector("[data-td-documents-more]");
     let filterK = "";
-    let shown = 0;
-    const $more = document.createElement("button");
-    $more.type = "button";
-    $more.className = "sd-more";
-    const pool = () => arts.map((a, i) => [a, i]).filter(([a]) => !filterK || cgroup(a) === filterK);
-    const page = (reset) => {
-      if (reset) { $ol.innerHTML = ""; shown = 0; }
-      const list = pool();
-      const upto = pendingArticle != null ? Math.max(shown + 30, list.findIndex(([, i]) => i === pendingArticle) + 1) : shown + 30;
-      list.slice(shown, upto).forEach(([a, i]) => $ol.appendChild(articleItem(a, i)));
-      shown = Math.min(upto, list.length);
-      $more.hidden = shown >= list.length;
-      $more.textContent = `Show more (${fmt(list.length - shown)} left)`;
+    let openDoc = "";
+    let shownDocs = 25;
+    const groups = () => {
+      const map = new Map();
+      arts.forEach((a, i) => {
+        if (filterK && cgroup(a) !== filterK) return;
+        const key = `${a.year || ""}|${a.doc || "Document"}`;
+        if (!map.has(key)) map.set(key, { key, title: a.doc || "Document", year: a.year, rows: [] });
+        map.get(key).rows.push([a, i]);
+      });
+      return [...map.values()];
     };
-    $ol.after($more);
-    $more.addEventListener("click", () => page(false));
+    const paint = () => {
+      const allDocs = groups();
+      if (openDoc && !allDocs.some((d) => d.key === openDoc)) openDoc = "";
+      const target = openDoc ? allDocs.findIndex((d) => d.key === openDoc) : -1;
+      const visible = Math.min(allDocs.length, Math.max(shownDocs, target + 1));
+      const docs = allDocs.slice(0, visible);
+      const frag = document.createDocumentFragment();
+      for (let start = 0; start < docs.length; start += 5) {
+        const set = document.createElement("div");
+        set.className = "sd-expand-group td-document-set";
+        const grid = document.createElement("div");
+        grid.className = "sd-index-grid td-document-grid";
+        const chunk = docs.slice(start, start + 5);
+        chunk.forEach((doc, i) => {
+          const id = `td-doc-panel-${start + i}`;
+          grid.insertAdjacentHTML("beforeend", indexCard(doc.key, doc.title,
+            [doc.year, plural(doc.rows.length, "article", "articles")].filter(Boolean).join(" · "), openDoc === doc.key, id, "data-td-doc"));
+        });
+        set.appendChild(grid);
+        const selected = chunk.find((d) => d.key === openDoc);
+        if (selected) {
+          const panel = document.createElement("section");
+          panel.className = "sd-expand-panel td-document-panel";
+          panel.id = `td-doc-panel-${start + chunk.indexOf(selected)}`;
+          panel.innerHTML = `<header><div><h4>${esc(selected.title)}</h4><p>${[selected.year, plural(selected.rows.length, "article", "articles")].filter(Boolean).map(esc).join(" · ")}</p></div><button type="button" class="sd-panel-close" data-td-doc-close aria-label="Close document">×</button></header><ol class="td-articles"></ol><button type="button" class="sd-more" data-td-doc-more hidden>Show more</button>`;
+          const $ol = panel.querySelector("ol");
+          const $more = panel.querySelector("[data-td-doc-more]");
+          let shown = 0;
+          const page = () => {
+            const target = pendingArticle == null ? -1 : selected.rows.findIndex(([, i]) => i === pendingArticle);
+            const upto = Math.min(selected.rows.length, Math.max(shown + 10, target + 1));
+            selected.rows.slice(shown, upto).forEach(([a, i]) => $ol.appendChild(articleItem(a, i)));
+            shown = upto;
+            $more.hidden = shown >= selected.rows.length;
+            $more.textContent = `Show more (${fmt(selected.rows.length - shown)} left)`;
+            if (pendingArticle != null) {
+              const el = $ol.querySelector(`#td-art-${pendingArticle}`);
+              if (el) { pendingArticle = null; el.classList.add("is-picked"); requestAnimationFrame(() => el.scrollIntoView({ block: "start" })); }
+            }
+          };
+          $more.addEventListener("click", page);
+          page();
+          set.appendChild(panel);
+        }
+        frag.appendChild(set);
+      }
+      $docs.replaceChildren(frag);
+      $docsMore.hidden = visible >= allDocs.length;
+      $docsMore.textContent = `Show ${Math.min(25, allDocs.length - visible)} more documents (${fmt(allDocs.length - visible)} left)`;
+    };
+    $docs.addEventListener("click", (e) => {
+      const card = e.target.closest("[data-td-doc]");
+      if (card) { openDoc = openDoc === card.dataset.tdDoc ? "" : card.dataset.tdDoc; paint(); }
+      else if (e.target.closest("[data-td-doc-close]")) { openDoc = ""; paint(); }
+    });
+    $docsMore.addEventListener("click", () => { shownDocs += 25; paint(); });
     const keys = CGROUPS.map((g) => g[0]).filter((k) => arts.some((a) => cgroup(a) === k));
     if (keys.length > 1) {
       $view.querySelector("[data-td-cchips]").appendChild(chipsFor(keys, cgroupLabel,
         (k) => (k ? arts.filter((a) => cgroup(a) === k).length : arts.length),
-        (k) => { filterK = k; page(true); }));
+        (k) => { filterK = k; openDoc = ""; shownDocs = 25; paint(); }));
     }
-    // Compare's "All N in Read" opens here on its tradition. Pressed only
-    // once the chips exist (pressing first found nothing to press).
     const want = pendingCGroup;
     pendingCGroup = null;
     const chip = want && $view.querySelector(`.td-chip[data-k="${want}"]`);
-    if (chip) chip.click(); else page(true);
+    if (chip) chip.click();
     if (pendingArticle != null) {
-      const el = $view.querySelector(`#td-art-${pendingArticle}`);
-      pendingArticle = null;
-      if (el) { el.classList.add("is-picked"); el.scrollIntoView({ block: "start" }); }
+      const row = arts[pendingArticle];
+      if (row) openDoc = `${row.year || ""}|${row.doc || "Document"}`;
     }
+    paint();
   }
   let pendingArticle = null;
   let pendingCGroup = null; // a tradition to open Read on (Compare sets it)
@@ -497,28 +585,56 @@
     const order = expandOrder(["gf", "pl", "po", "md", "rc", "lu", "rf", "ed", "hl"]);
     const keys = order.filter((k) => list.some((e) => shOf(e) === k));
     $view.innerHTML =
-      `<div data-td-tchips></div><div class="td-treat-groups"></div>` +
-      `<details class="td-all-works"><summary>The leading treatises on this topic (${fmt((state.data.works || []).length)} of ${fmt((state.data.counts || {}).works || (state.data.works || []).length)})</summary><div data-td-works></div></details>`;
-    const $groups = $view.querySelector(".td-treat-groups");
+      `<div data-td-tchips></div><div class="td-treatment-index" data-td-treatment-index></div>` +
+      `<details class="td-all-works"><summary>More indexed works (${fmt((state.data.works || []).length)})</summary><div data-td-works></div></details>`;
+    const $index = $view.querySelector("[data-td-treatment-index]");
     if (!list.length) {
-      $groups.innerHTML = `<p class="sd-muted">No classic treatments are chosen for this topic yet. Every treatise the library holds on it is listed below.</p>`;
+      $index.innerHTML = `<p class="sd-muted">No classic treatments are chosen for this topic yet. The indexed works are available below.</p>`;
       $view.querySelector(".td-all-works").open = true;
     }
-    keys.forEach((k) => {
-      // Each tradition folds, open to start (Ian, 2026-09-24).
-      const sec = document.createElement("details");
-      sec.className = "td-treat-group";
-      sec.open = true;
-      sec.dataset.k = k;
-      sec.innerHTML = `<summary class="td-fold-sum"><h4 class="sd-h3">${esc(tradLabel(k))}</h4></summary><ol class="td-treats"></ol>`;
-      list.filter((e) => shOf(e) === k).forEach((e) => sec.querySelector("ol").appendChild(treatmentItem(e)));
-      $groups.appendChild(sec);
+    let filterK = "";
+    let openTreatment = "";
+    const keyed = list.map((e, i) => ({ e, key: `${e.w || "work"}|${e.p || 0}|${i}` }));
+    const paint = () => {
+      const rows = keyed.filter(({ e }) => !filterK || shOf(e) === filterK);
+      if (openTreatment && !rows.some((r) => r.key === openTreatment)) openTreatment = "";
+      const frag = document.createDocumentFragment();
+      for (let start = 0; start < rows.length; start += 5) {
+        const set = document.createElement("div");
+        set.className = "sd-expand-group td-treatment-set";
+        const grid = document.createElement("div");
+        grid.className = "sd-index-grid td-treatment-grid";
+        const chunk = rows.slice(start, start + 5);
+        chunk.forEach(({ e, key }, i) => {
+          const id = `td-treatment-panel-${start + i}`;
+          grid.insertAdjacentHTML("beforeend", indexCard(key, e.title || e.w,
+            [e.author, tradLabel(shOf(e))].filter(Boolean).join(" · "), openTreatment === key, id, "data-td-treatment"));
+        });
+        set.appendChild(grid);
+        const selected = chunk.find((r) => r.key === openTreatment);
+        if (selected) {
+          const panel = document.createElement("section");
+          panel.className = "sd-expand-panel td-treatment-panel";
+          panel.id = `td-treatment-panel-${start + chunk.indexOf(selected)}`;
+          panel.innerHTML = `<header><div><h4>${esc(selected.e.title || selected.e.w)}</h4><p>${[selected.e.author, tradLabel(shOf(selected.e))].filter(Boolean).map(esc).join(" · ")}</p></div><button type="button" class="sd-panel-close" data-td-treatment-close aria-label="Close treatise">×</button></header><ol class="td-treats"></ol>`;
+          panel.querySelector("ol").appendChild(treatmentItem(selected.e));
+          set.appendChild(panel);
+        }
+        frag.appendChild(set);
+      }
+      $index.replaceChildren(frag);
+    };
+    $index.addEventListener("click", (e) => {
+      const card = e.target.closest("[data-td-treatment]");
+      if (card) { openTreatment = openTreatment === card.dataset.tdTreatment ? "" : card.dataset.tdTreatment; paint(); }
+      else if (e.target.closest("[data-td-treatment-close]")) { openTreatment = ""; paint(); }
     });
     if (keys.length > 1) {
       $view.querySelector("[data-td-tchips]").appendChild(chipsFor(keys, tradLabel,
         (k) => (k ? list.filter((e) => shOf(e) === k).length : list.length),
-        (k) => $groups.querySelectorAll(".td-treat-group").forEach((g) => { g.hidden = Boolean(k) && g.dataset.k !== k; })));
+        (k) => { filterK = k; openTreatment = ""; paint(); }));
     }
+    paint();
     renderWorks($view.querySelector("[data-td-works]"), state.data.works || []);
   }
 
@@ -611,32 +727,53 @@
       $host.innerHTML = `<p class="sd-muted">No treatise in the library is catalogued under this topic by itself.</p>`;
       return;
     }
-    // Earliest first, grouped by century, so the reading list is also a
-    // history: the Fathers, the schoolmen, the Reformers, their heirs.
-    const byCen = new Map();
-    works.forEach((w) => {
-      const k = Number(w.cen) || 0;
-      if (!byCen.has(k)) byCen.set(k, []);
-      byCen.get(k).push(w);
+    let openWork = "";
+    const rows = works.map((w, i) => ({ w, key: `${w.w || "work"}|${i}` }));
+    const paint = () => {
+      const frag = document.createDocumentFragment();
+      for (let start = 0; start < rows.length; start += 5) {
+        const set = document.createElement("div");
+        set.className = "sd-expand-group td-work-set";
+        const grid = document.createElement("div");
+        grid.className = "sd-index-grid td-work-grid";
+        const chunk = rows.slice(start, start + 5);
+        chunk.forEach(({ w, key }, i) => {
+          const id = `td-work-panel-${start + i}`;
+          const secs = w.secs || [];
+          grid.insertAdjacentHTML("beforeend", indexCard(key, w.t || w.w,
+            [w.a, secs.length ? plural(secs.length, "relevant section", "relevant sections") : S.centuryLabel(w.cen)].filter(Boolean).join(" · "), openWork === key, id, "data-td-work"));
+        });
+        set.appendChild(grid);
+        const selected = chunk.find((r) => r.key === openWork);
+        if (selected) {
+          const w = selected.w;
+          const panel = document.createElement("section");
+          panel.className = "sd-expand-panel td-work-panel";
+          panel.id = `td-work-panel-${start + chunk.indexOf(selected)}`;
+          panel.innerHTML = `<header><div><h4>${esc(w.t || w.w)}</h4><p>${[w.a, S.centuryLabel(w.cen)].filter(Boolean).map(esc).join(" · ")}</p></div><button type="button" class="sd-panel-close" data-td-work-close aria-label="Close work">×</button></header><div class="td-work-panel-body"></div>`;
+          const body = panel.querySelector(".td-work-panel-body");
+          const secs = w.secs || [];
+          if (secs.length) {
+            const ol = document.createElement("ol");
+            ol.className = "sd-sources";
+            secs.forEach((s) => ol.appendChild(previewItem({ title: s.t, heading: s.t, w: w.w, p: s.p, href: s.href, meta: s.p ? `p. ${s.p}` : "" })));
+            body.appendChild(ol);
+          } else {
+            const href = S.sourceHref(w.href, w.w);
+            body.innerHTML = href ? `<p><a class="sd-read-link" href="${esc(href)}">Read this work</a></p>` : `<p class="sd-muted">No section headings are indexed for this work.</p>`;
+          }
+          set.appendChild(panel);
+        }
+        frag.appendChild(set);
+      }
+      $host.replaceChildren(frag);
+    };
+    $host.addEventListener("click", (e) => {
+      const card = e.target.closest("[data-td-work]");
+      if (card) { openWork = openWork === card.dataset.tdWork ? "" : card.dataset.tdWork; paint(); }
+      else if (e.target.closest("[data-td-work-close]")) { openWork = ""; paint(); }
     });
-    const keys = [...byCen.keys()].sort((a, b) => (a || 99) - (b || 99));
-    $host.innerHTML = keys.map((k) => `<details class="td-cen-group" open><summary class="td-fold-sum"><h5 class="sd-h3">${k ? esc(S.centuryLabel(k).replace(" c.", " century")) : "Undated"}</h5></summary><ol class="td-works" data-cen="${k}"></ol></details>`).join("");
-    keys.forEach((k) => {
-      const $ol = $host.querySelector(`.td-works[data-cen="${k}"]`);
-      byCen.get(k).forEach((w) => {
-        const li = document.createElement("li");
-        li.className = "td-work";
-        const href = S.sourceHref(w.href, w.w);
-        const secs = w.secs || [];
-        li.innerHTML =
-          `<div class="td-work-head"><a class="td-work-title" href="${esc(href)}">${esc(w.t || w.w)}</a>` +
-          `<span class="sd-source-meta">${[w.a].filter(Boolean).map(esc).join(" · ")}</span></div>${ 
-          secs.length ? `<details class="td-secs"><summary>${plural(secs.length, "section", "sections")} on this topic</summary><ol class="sd-sources"></ol></details>` : ""}`;
-        const $secs = li.querySelector(".td-secs ol");
-        if ($secs) secs.forEach((s) => $secs.appendChild(previewItem({ title: s.t, heading: s.t, w: w.w, p: s.p, href: s.href, meta: s.p ? `p. ${s.p}` : "" })));
-        $ol.appendChild(li);
-      });
-    });
+    paint();
   }
 
   // ── Teachers: Compare ─────────────────────────────────────────

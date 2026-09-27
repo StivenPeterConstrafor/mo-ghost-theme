@@ -28,6 +28,10 @@
   --td-c-gf: #8c3b2a; --td-c-pl: #a8572b; --td-c-po: #6e4a2e; --td-c-md: #7d6a3c;
   --td-c-rc: #7a2f4f; --td-c-lu: #2f5d7c; --td-c-rf: #3d6b45; --td-c-ed: #2d2927;
   --td-c-hl: #6b6660; --td-c-x: #857a70;
+  --sd-card: #fffdf9;
+  --sd-panel: #fbf8f3;
+  --sd-ink: var(--color-dark, #2d2927);
+  --sd-muted: var(--color-muted, #6b6660);
   /* Topics has no sticky bar, so the shared sidebar must not leave room
      for one. */
   --sd-bar-h: 0px;
@@ -326,6 +330,61 @@
   .td-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .td-stat b { font-size: 21px; }
   .td-article, .td-treat { padding: 16px; }
+}
+
+/* Topic reading indexes, 2026-09-27. The page opens with choices rather
+   than scores of full articles. Five choices form a row; one reading
+   panel opens beneath that row, using ruled text rather than nested cards. */
+.td-document-index,
+.td-treatment-index,
+.td-all-works { margin-top: 14px; }
+.td-documents-more { margin-top: 8px; }
+.td-index-card { min-height: 82px; }
+.td-document-panel,
+.td-treatment-panel,
+.td-work-panel { background: var(--sd-panel); }
+.td-document-panel > .td-articles,
+.td-treatment-panel > .td-treats { display: block; margin: 0; }
+.td-document-panel .td-article,
+.td-treatment-panel .td-treat,
+.td-document-panel .td-article:last-child,
+.td-treatment-panel .td-treat:last-child {
+  margin: 0;
+  padding: 18px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--color-rule);
+  border-radius: 0;
+  background: transparent;
+}
+.td-document-panel .td-article:last-child,
+.td-treatment-panel .td-treat:last-child { border-bottom: 0; }
+.td-document-panel .sd-more { margin-top: 14px; }
+.td-treatment-panel .td-treat-actions { margin-bottom: 0; }
+.td-work-panel-body { padding-top: 12px; }
+.td-work-panel-body > .sd-sources { margin: 0; }
+.td-work-panel-body > .sd-sources > .sd-source {
+  margin: 0;
+  padding: 14px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--color-rule);
+  border-radius: 0;
+  background: transparent;
+}
+.td-all-works > summary {
+  min-height: 48px;
+  padding: 14px 0;
+  border-block: 1px solid var(--color-rule);
+  color: var(--color-muted);
+  cursor: pointer;
+  font-size: 15px;
+}
+.td-all-works[open] > summary { margin-bottom: 14px; color: var(--color-dark); }
+
+@media (max-width: 640px) {
+  .td-index-card { min-height: 76px; }
+  .td-document-panel .td-article,
+  .td-treatment-panel .td-treat { padding: 16px 0; }
+  .td-stats .td-stat:last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
 
 /* The contents page's head: the search in a thin-line panel across the
