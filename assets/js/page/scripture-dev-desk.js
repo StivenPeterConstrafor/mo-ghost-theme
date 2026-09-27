@@ -222,6 +222,7 @@
   // one: declared before the first query() below runs.
   let groups = new Map();
   let companionCounts = new Map();
+  let openAuthor = "", openWork = "";
   const bar = S.filterBar($root.querySelector("[data-sd-filters]"), {
     search: true,
     searchLabel: `Search the citations of ${label}`,
@@ -456,7 +457,6 @@
   // ── All citations, by author and then by work ─────────────────
   // Rows arrive fifty at a time; each lands in its author's fold and its work's fold, so a work that
   // cites the verse on thirty pages is one row with its count, open on a click, never a new page.
-  let openAuthor = "", openWork = "";
   function resetGroups() {
     groups = new Map();
     companionCounts = new Map();
