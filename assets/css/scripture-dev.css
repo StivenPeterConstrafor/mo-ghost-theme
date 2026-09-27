@@ -840,3 +840,251 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
 .sd-group-body { padding-left: 1rem; }
 .sd-work { border-left: 2px solid var(--color-rule, #ddd); padding-left: .75rem; margin: .25rem 0; }
 .sd-companions { list-style: none; padding: 0; margin: .25rem 0 1rem; }
+
+/* Verse Desk, 2026-09-27: use the work-page reading-table pattern. A
+   compact five-up index opens one full-width panel beneath its own row;
+   the material being read remains ruled, quiet, and full width. */
+.sd-desk {
+  --sd-card: #fffdf9;
+  --sd-panel: #fbf8f3;
+  --sd-ink: var(--color-dark, #2d2927);
+  --sd-muted: var(--color-muted, #6b6660);
+}
+.sd .sd-desk { padding-top: 34px; }
+.sd-desk .sd-desk-head {
+  padding: 4px 0 28px;
+  border: 0;
+  border-bottom: 1px solid var(--color-rule);
+  border-radius: 0;
+  background: transparent;
+}
+.sd-desk .sd-desk-title {
+  margin-bottom: 14px;
+  font-family: var(--font-display, "EB Garamond", Georgia, serif);
+  font-weight: 500;
+}
+.sd-desk .sd-desk-verse { max-width: 900px; font-size: 22px; line-height: 1.62; }
+.sd-desk .sd-desk-nav { padding-top: 4px; border-top: 0; }
+.sd-desk .sd-desk-sec {
+  margin-top: 0;
+  padding: 34px 0 38px;
+  border-bottom: 1px solid var(--color-rule);
+}
+.sd-desk .sd-desk-sec:last-child { border-bottom: 0; }
+.sd-desk .sd-h2 {
+  margin-bottom: 5px;
+  font-family: var(--font-display, "EB Garamond", Georgia, serif);
+  font-size: 29px;
+  font-weight: 500;
+}
+.sd-section-intro { max-width: 680px; margin: 0 0 16px; color: var(--sd-muted); font-size: 14px; }
+
+/* Translation cards are the first quick comparison, one per version. */
+.sd-desk .sd-parallel { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 16px; }
+.sd-desk .sd-parallel-row,
+.sd-desk .sd-parallel-row:last-child {
+  min-width: 0;
+  padding: 13px 14px 15px;
+  background: var(--sd-card);
+}
+.sd-desk .sd-parallel dd { font-size: 15px; line-height: 1.5; }
+
+/* Shared card-and-panel grammar, matched to the Institutes work page. */
+.sd-collection-index,
+.sd-index-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+.sd-collection-index { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 720px; }
+.sd-index-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  min-height: 76px;
+  padding: 13px 14px 11px;
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: var(--sd-card);
+  color: var(--sd-ink);
+  text-align: left;
+  cursor: pointer;
+}
+.sd-index-card > span { overflow-wrap: anywhere; font: 600 16px/1.25 var(--font-body, Georgia, serif); }
+.sd-index-card > small { color: var(--sd-muted); font: 12px/1.3 var(--font-body, Georgia, serif); font-variant-numeric: tabular-nums; }
+.sd-index-card:hover { border-color: var(--sd-muted); }
+.sd-index-card[aria-expanded="true"] {
+  border-color: var(--sd-accent);
+  box-shadow: inset 0 3px 0 var(--sd-accent);
+  color: var(--sd-accent);
+}
+.sd-index-card:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 2px; }
+.sd-expand-group { margin: 0 0 10px; }
+.sd-expand-panel {
+  margin: 9px 0 22px;
+  padding: 0 18px 18px;
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: var(--sd-card);
+}
+.sd-expand-panel[hidden] { display: none; }
+.sd-expand-panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 64px;
+  border-bottom: 1px solid var(--color-rule);
+}
+.sd-expand-panel > header :is(h3, h4) {
+  margin: 0;
+  color: var(--sd-ink);
+  font: 500 23px/1.2 var(--font-display, "EB Garamond", Georgia, serif);
+}
+.sd-expand-panel > header p { margin: 3px 0 0; color: var(--sd-muted); font-size: 12px; }
+.sd-panel-close {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--sd-muted);
+  font: 24px/1 var(--font-body, Georgia, serif);
+  cursor: pointer;
+}
+.sd-panel-close:hover { color: var(--sd-accent); }
+.sd-panel-close:focus-visible { outline: 2px solid var(--sd-accent); }
+
+/* Commentary choices and the most-cited shelf use compact cards. Their
+   selected preview takes the whole row, as it does on work pages. */
+.sd-commentary-panel { margin-top: 10px; }
+.sd-commentary-panel .sd-panel-commentaries,
+.sd-desk .sd-top,
+.sd-desk .sd-companions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+.sd-commentary-panel .sd-panel-commentaries > .sd-source,
+.sd-desk .sd-top > .sd-source,
+.sd-desk .sd-companions > .sd-source {
+  min-width: 0;
+  min-height: 92px;
+  padding: 13px 14px;
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: var(--sd-card);
+}
+.sd-commentary-panel .sd-panel-commentaries > .sd-source.is-previewing,
+.sd-desk .sd-top > .sd-source.is-previewing { grid-column: 1 / -1; min-height: 0; }
+.sd-commentary-panel .sd-source-head,
+.sd-desk .sd-top .sd-source-head { height: 100%; flex-direction: column; }
+.sd-commentary-panel .sd-preview-btn,
+.sd-desk .sd-top .sd-preview-btn { align-self: flex-start; min-height: 32px; padding: 0; border: 0; background: transparent; color: var(--sd-accent); }
+.sd-commentary-panel .sd-preview-btn:hover,
+.sd-desk .sd-top .sd-preview-btn:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Citation navigation first, citation reading second. */
+.sd-groups { margin: 14px 0 8px; }
+.sd-author-panel { background: var(--sd-panel); }
+.sd-author-panel-body { padding-top: 14px; }
+.sd-work-card { min-height: 68px; background: var(--sd-card); }
+.sd-work-panel { margin-bottom: 8px; background: var(--sd-card); }
+.sd-desk .sd-citation-rows {
+  display: block;
+  margin: 0;
+}
+.sd-desk .sd-citation-rows > .sd-source,
+.sd-desk .sd-citation-rows > .sd-source:last-child {
+  min-height: 58px;
+  margin: 0;
+  padding: 13px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--color-rule);
+  border-radius: 0;
+  background: transparent;
+}
+.sd-desk .sd-citation-rows > .sd-source:last-child { border-bottom: 0; }
+.sd-citation-rows .sd-preview-btn {
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--sd-accent);
+}
+.sd-citation-rows .sd-preview-btn:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Supporting research remains available, without turning into another
+   vertical accordion. */
+.sd-desk .sd-count {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.sd-desk .sd-count strong { font-family: var(--font-display, Georgia, serif); font-size: 30px; }
+.sd-desk .sd-filters { padding: 14px 0; border: 0; border-block: 1px solid var(--color-rule); background: transparent; }
+.sd-desk .sd-chart { background: var(--sd-card); }
+.sd-similar-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.sd-similar-block { min-width: 0; }
+.sd-similar-block .sd-h3 { margin-top: 14px; }
+.sd-desk .sd-companions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sd-desk .sd-companions > .sd-source { min-height: 64px; }
+.sd-desk .sd-ask { padding: 18px 0 0; border: 0; border-top: 1px solid var(--color-rule); background: transparent; }
+
+@media (min-width: 641px) and (max-width: 980px) {
+  .sd-desk .sd-parallel,
+  .sd-index-grid,
+  .sd-commentary-panel .sd-panel-commentaries,
+  .sd-desk .sd-top { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .sd .sd-desk { padding-top: 22px; padding-bottom: 72px; }
+  .sd-desk .sd-desk-head { padding: 0 0 22px; }
+  .sd-desk .sd-desk-title { font-size: 34px; }
+  .sd-desk .sd-desk-verse { font-size: 18px; line-height: 1.58; }
+  .sd-desk .sd-desk-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; }
+  .sd-desk .sd-desk-nav a:nth-child(2) { grid-column: 1 / -1; grid-row: 1; }
+  .sd-desk .sd-desk-sec { padding: 28px 0 30px; }
+  .sd-desk .sd-h2 { font-size: 26px; }
+  .sd-desk .sd-parallel,
+  .sd-index-grid,
+  .sd-collection-index,
+  .sd-commentary-panel .sd-panel-commentaries,
+  .sd-desk .sd-top,
+  .sd-desk .sd-companions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sd-desk .sd-parallel-row,
+  .sd-desk .sd-parallel-row:last-child { padding: 12px; }
+  .sd-desk .sd-parallel dd { font-size: 14px; line-height: 1.45; }
+  .sd-index-card { min-height: 72px; padding: 12px; }
+  .sd-index-card > span { font-size: 15px; }
+  .sd-expand-panel { margin-top: 8px; padding: 0 14px 14px; }
+  .sd-author-panel > header,
+  .sd-work-panel > header { min-height: 58px; }
+  .sd-similar-grid { grid-template-columns: 1fr; gap: 8px; }
+  .sd-commentary-panel .sd-panel-commentaries > .sd-source.is-previewing,
+  .sd-desk .sd-top > .sd-source.is-previewing { grid-column: 1 / -1; }
+  .sd-desk .sd-citation-rows .sd-source-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+  .sd-desk .sd-citation-rows .sd-preview-btn { min-width: 64px; min-height: 44px; }
+  .sd-desk .sd-charts { grid-template-columns: 1fr; }
+  .sd-desk .sd-filters { padding-inline: 0; }
+  .sd-desk .sd-ask { padding-inline: 0; }
+  .sd-desk-page .fr-survey-tab {
+    top: 62%;
+    right: 0;
+    bottom: auto;
+    width: 30px;
+    max-width: 30px;
+    padding: 10px 6px;
+    overflow: hidden;
+    font-size: 0;
+    white-space: nowrap;
+    writing-mode: vertical-rl;
+  }
+  .sd-desk-page .fr-survey-tab::after { content: "Feedback"; font-size: 12px; }
+}

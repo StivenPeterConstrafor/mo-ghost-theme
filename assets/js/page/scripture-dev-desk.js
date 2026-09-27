@@ -80,16 +80,18 @@
      * previews in place, as on the verse panel (2026-09-25: "for desk make same thing preview for
      * each"). */
     `<section class="sd-desk-sec" aria-labelledby="sd-h-comm">` +
-      `<details class="sd-desk-fold"><summary><h2 class="sd-h2" id="sd-h-comm">Chapter commentaries <span class="sd-muted" data-sd-comm-n></span></h2></summary>` +
-      `<div data-sd-comm><p class="sd-muted" role="status">Loading commentaries…</p></div></details>` +
-    `</section>` +
-    `<section class="sd-desk-sec" aria-labelledby="sd-h-wb">` +
-      `<details class="sd-desk-fold"><summary><h2 class="sd-h2" id="sd-h-wb">Whole-Bible commentaries <span class="sd-muted" data-sd-wb-n></span></h2></summary>` +
-      `<div data-sd-wb></div></details>` +
+      `<h2 class="sd-h2" id="sd-h-comm">Commentaries</h2>` +
+      `<p class="sd-section-intro">Choose a collection, then preview a commentary without leaving the desk.</p>` +
+      `<div class="sd-collection-index" data-sd-commentary-index>` +
+        `<button type="button" class="sd-index-card" data-sd-commentary-tab="chapter" aria-expanded="false"><span>On ${esc(S.refLabel(book, c))}</span><small data-sd-comm-n>Loading…</small></button>` +
+        `<button type="button" class="sd-index-card" data-sd-commentary-tab="whole" aria-expanded="false"><span>Whole-Bible commentaries</span><small data-sd-wb-n>Loading…</small></button>` +
+      `</div>` +
+      `<section class="sd-expand-panel sd-commentary-panel" data-sd-commentary-panel="chapter" hidden><header><div><h3>Commentaries on ${esc(S.refLabel(book, c))}</h3><p data-sd-comm-meta></p></div><button type="button" class="sd-panel-close" data-sd-commentary-close aria-label="Close commentary collection">×</button></header><div data-sd-comm><p class="sd-muted" role="status">Loading commentaries…</p></div></section>` +
+      `<section class="sd-expand-panel sd-commentary-panel" data-sd-commentary-panel="whole" hidden><header><div><h3>Whole-Bible commentaries</h3><p data-sd-wb-meta></p></div><button type="button" class="sd-panel-close" data-sd-commentary-close aria-label="Close commentary collection">×</button></header><div data-sd-wb><p class="sd-muted" role="status">Loading commentaries…</p></div></section>` +
     `</section>` +
 
     `<section class="sd-desk-sec" aria-labelledby="sd-h-cite">` +
-      `<details class="sd-desk-fold" open><summary><h2 class="sd-h2" id="sd-h-cite">Citations</h2></summary>` +
+      `<h2 class="sd-h2" id="sd-h-cite">Citations</h2>` +
       `<p class="sd-count" data-sd-count><span class="sd-muted">Counting citations…</span></p>` +
       `<div class="sd-charts" data-sd-charts></div>` +
       `<div data-sd-filters></div>` +
@@ -100,19 +102,21 @@
       `<div class="sd-kinds" data-sd-kinds hidden></div>` +
       `<div class="sd-groups" data-sd-rows></div>` +
       `<button type="button" class="sd-more" data-sd-more hidden>Show more</button>` +
-      `</details>` +
     `</section>` +
 
     `<section class="sd-desk-sec" aria-labelledby="sd-h-sim">` +
-      `<details class="sd-desk-fold" open><summary><h2 class="sd-h2" id="sd-h-sim">Similar passages</h2></summary>` +
+      `<h2 class="sd-h2" id="sd-h-sim">Similar passages</h2>` +
+      `<div class="sd-similar-grid">` +
+      `<div class="sd-similar-block">` +
       `<h3 class="sd-h3">Similar Scripture use</h3>` +
       `<p class="sd-muted">Verses of this chapter cited on the same pages as ${esc(label)}, from the citations loaded above. A shared page does not mean a shared interpretation.</p>` +
       `<ol class="sd-companions" data-sd-companions><li class="sd-muted">Loading…</li></ol>` +
+      `</div><div class="sd-similar-block">` +
       `<h3 class="sd-h3">Similar wording</h3>` +
       `<p class="sd-muted">Passages whose wording resembles this verse, found by meaning search when you ask. Similarity does not establish agreement. Open to members.</p>` +
       `<button type="button" class="sd-btn" data-sd-similar data-feature-gate="ask">Find passages like this verse</button>` +
       `<ol class="sd-sources" data-sd-similar-rows></ol>` +
-      `</details>` +
+      `</div></div>` +
     `</section>` +
 
     `<section class="sd-desk-sec" aria-labelledby="sd-h-ask">` +
@@ -350,6 +354,23 @@
     items.forEach((e) => $ol.appendChild(S.commentaryItem(e, ctx)));
     host.replaceChildren($ol);
   };
+  const $commentaryIndex = $root.querySelector("[data-sd-commentary-index]");
+  const setCommentaryPanel = (name) => {
+    $commentaryIndex.querySelectorAll("[data-sd-commentary-tab]").forEach((button) => {
+      button.setAttribute("aria-expanded", String(button.dataset.sdCommentaryTab === name));
+    });
+    $root.querySelectorAll("[data-sd-commentary-panel]").forEach((panel) => {
+      panel.hidden = panel.dataset.sdCommentaryPanel !== name;
+    });
+  };
+  $commentaryIndex.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-sd-commentary-tab]");
+    if (!button) return;
+    setCommentaryPanel(button.getAttribute("aria-expanded") === "true" ? "" : button.dataset.sdCommentaryTab);
+  });
+  $root.querySelectorAll("[data-sd-commentary-close]").forEach((button) => {
+    button.addEventListener("click", () => setCommentaryPanel(""));
+  });
   S.fetchCommentaries(book, c, S.emptyFilters()).then((d) => {
     const { chapter, whole } = S.commentaryGroups(d && d.items);
     const $comm = $root.querySelector("[data-sd-comm]");
@@ -358,8 +379,10 @@
     else $comm.innerHTML = `<p class="sd-muted">No commentaries on ${esc(book.name)} are catalogued yet.</p>`;
     if (whole.length) commentaryList($wb, whole);
     else $wb.innerHTML = `<p class="sd-muted">No whole-Bible commentaries are catalogued for ${esc(book.name)} yet.</p>`;
-    $root.querySelector("[data-sd-comm-n]").textContent = `(${fmt(chapter.length)})`;
-    $root.querySelector("[data-sd-wb-n]").textContent = `(${fmt(whole.length)})`;
+    $root.querySelector("[data-sd-comm-n]").textContent = plural(chapter.length, "commentary", "commentaries");
+    $root.querySelector("[data-sd-wb-n]").textContent = plural(whole.length, "commentary", "commentaries");
+    $root.querySelector("[data-sd-comm-meta]").textContent = plural(chapter.length, "commentary", "commentaries");
+    $root.querySelector("[data-sd-wb-meta]").textContent = plural(whole.length, "commentary", "commentaries");
   }).catch(() => {
     $root.querySelector("[data-sd-comm]").innerHTML = `<p class="sd-muted">Commentaries did not load.</p>`;
   });
@@ -384,7 +407,8 @@
     (kindTotals.kinds || KORDER).forEach((k, i) => { if (row[i]) m.set(kindWord(k), (m.get(kindWord(k)) || 0) + row[i]); });
     return m;
   };
-  const shownOfKind = () => [...$rows.querySelectorAll(".sd-work > ol > .sd-source")].filter((li) => li.dataset.kind === kindSel).length;
+  const loadedRows = () => [...groups.values()].flatMap((group) => [...group.works.values()].flatMap((work) => work.rows));
+  const shownOfKind = () => loadedRows().filter((row) => S.kindOf(row) === kindSel).length;
   function moreLabel() {
     const ex = exactTotals(), total = ex && ex.get(kindSel), have = shownOfKind();
     $more.hidden = !offset;
@@ -402,29 +426,13 @@
   S.fetchKindTotals && S.fetchKindTotals(book).then((t) => { kindTotals = t; updateKinds(lastMatched); });
   // The fold counts follow the kind: under "Alludes" an author reads "2 works · 3 citations" of that kind.
   function applyKind() {
-    $rows.querySelectorAll(".sd-work").forEach((w) => {
-      let shown = 0;
-      w.querySelectorAll(":scope > ol > .sd-source").forEach((li) => {
-        li.hidden = Boolean(kindSel) && li.dataset.kind !== kindSel;
-        if (!li.hidden) shown += 1;
-      });
-      w.hidden = !shown;
-      const $n = w.querySelector(":scope > summary [data-sd-work-n]");
-      if ($n) $n.textContent = plural(shown, "page", "pages");
-    });
-    $rows.querySelectorAll(".sd-group").forEach((g) => {
-      const works = g.querySelectorAll(".sd-work:not([hidden])");
-      g.hidden = !works.length;
-      const n = g.querySelectorAll(".sd-work:not([hidden]) > ol > .sd-source:not([hidden])").length;
-      const $n = g.querySelector(":scope > summary [data-sd-group-n]");
-      if ($n && works.length) $n.textContent = `${plural(works.length, "work", "works")} · ${plural(n, "citation", "citations")}`;
-    });
+    renderGroups();
   }
   function updateKinds(matched) {
-    const items = [...$rows.querySelectorAll(".sd-work > ol > .sd-source")];
+    const items = loadedRows();
     const exact = exactTotals();
     const n = exact || new Map();
-    if (!exact) items.forEach((li) => { const k = li.dataset.kind; if (k) n.set(k, (n.get(k) || 0) + 1); });
+    if (!exact) items.forEach((row) => { const k = S.kindOf(row); if (k) n.set(k, (n.get(k) || 0) + 1); });
     if (n.size < 2 && !kindSel) { $kinds.hidden = true; $kinds.innerHTML = ""; return; }
     if (kindSel && !n.has(kindSel)) kindSel = "";
     const chip = (k, text) => `<button type="button" class="sd-kind" data-kind="${esc(k)}" aria-pressed="${kindSel === k}">${esc(text)}</button>`;
@@ -448,40 +456,120 @@
   // ── All citations, by author and then by work ─────────────────
   // Rows arrive fifty at a time; each lands in its author's fold and its work's fold, so a work that
   // cites the verse on thirty pages is one row with its count, open on a click, never a new page.
+  let openAuthor = "", openWork = "";
   function resetGroups() {
     groups = new Map();
     companionCounts = new Map();
+    openAuthor = "";
+    openWork = "";
     $rows.innerHTML = "";
   }
   function addGrouped(r) {
     const aKey = r.a || "Author not recorded";
     let g = groups.get(aKey);
     if (!g) {
-      const el = document.createElement("details");
-      el.className = "sd-group";
-      if (!groups.size) el.open = true;
-      el.innerHTML = `<summary><span class="sd-group-name">${esc(aKey)}</span> <span class="sd-muted" data-sd-group-n></span></summary><div class="sd-group-body"></div>`;
-      $rows.appendChild(el);
-      g = { el, works: new Map(), n: 0 };
+      g = { works: new Map(), n: 0 };
       groups.set(aKey, g);
     }
     let w = g.works.get(r.w);
     if (!w) {
-      const el = document.createElement("details");
-      el.className = "sd-work";
-      el.innerHTML = `<summary><span class="sd-source-title">${esc(r.t || r.w)}</span> <span class="sd-muted" data-sd-work-n></span></summary><ol class="sd-sources"></ol>`;
-      g.el.querySelector(".sd-group-body").appendChild(el);
-      w = { el, n: 0 };
+      w = { title: r.t || r.w, rows: [] };
       g.works.set(r.w, w);
     }
-    w.el.querySelector("ol").appendChild(S.sourceItem(r, ctx));
-    w.n += 1;
+    w.rows.push(r);
     g.n += 1;
-    w.el.querySelector("[data-sd-work-n]").textContent = plural(w.n, "page", "pages");
-    g.el.querySelector("[data-sd-group-n]").textContent = `${plural(g.works.size, "work", "works")} · ${plural(g.n, "citation", "citations")}`;
-    if (g.works.size === 1 && !g.el.querySelector(".sd-work[open]")) w.el.open = true;
     (r.vv || []).forEach((n) => { if (Number(n) !== Number(v)) companionCounts.set(Number(n), (companionCounts.get(Number(n)) || 0) + 1); });
   }
+
+  const visibleRows = (work) => work.rows.filter((row) => !kindSel || S.kindOf(row) === kindSel);
+  const makeIndexCard = (type, key, title, meta, expanded, controls) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `sd-index-card sd-${type}-card`;
+    button.dataset[`sd${type[0].toUpperCase()}${type.slice(1)}`] = key;
+    button.setAttribute("aria-expanded", String(expanded));
+    if (controls) button.setAttribute("aria-controls", controls);
+    button.innerHTML = `<span>${esc(title)}</span><small>${esc(meta)}</small>`;
+    return button;
+  };
+  function renderWorkGroups(authorKey, group, host) {
+    const works = [...group.works.entries()].map(([key, work]) => ({ key, work, rows: visibleRows(work) })).filter((entry) => entry.rows.length);
+    for (let start = 0; start < works.length; start += 5) {
+      const set = document.createElement("div");
+      set.className = "sd-expand-group sd-work-set";
+      const grid = document.createElement("div");
+      grid.className = "sd-index-grid sd-work-grid";
+      const chunk = works.slice(start, start + 5);
+      chunk.forEach(({ key, work, rows }, index) => {
+        const panelId = `sd-work-panel-${start + index}`;
+        grid.appendChild(makeIndexCard("work", key, work.title, plural(rows.length, "page", "pages"), openWork === key, panelId));
+      });
+      set.appendChild(grid);
+      const selected = chunk.find(({ key }) => key === openWork);
+      if (selected) {
+        const panel = document.createElement("section");
+        panel.className = "sd-expand-panel sd-work-panel";
+        panel.id = `sd-work-panel-${start + chunk.indexOf(selected)}`;
+        panel.innerHTML = `<header><div><h4>${esc(selected.work.title)}</h4><p>${plural(selected.rows.length, "citation", "citations")} by ${esc(authorKey)}</p></div><button type="button" class="sd-panel-close" data-sd-work-close aria-label="Close work">×</button></header><ol class="sd-sources sd-citation-rows"></ol>`;
+        const list = panel.querySelector("ol");
+        selected.rows.forEach((row) => list.appendChild(S.sourceItem(row, ctx)));
+        set.appendChild(panel);
+      }
+      host.appendChild(set);
+    }
+  }
+  function renderGroups() {
+    const authors = [...groups.entries()].map(([key, group]) => {
+      const works = [...group.works.values()].filter((work) => visibleRows(work).length);
+      return { key, group, works, n: works.reduce((sum, work) => sum + visibleRows(work).length, 0) };
+    }).filter((entry) => entry.n);
+    if (openAuthor && !authors.some((entry) => entry.key === openAuthor)) { openAuthor = ""; openWork = ""; }
+    const fragment = document.createDocumentFragment();
+    for (let start = 0; start < authors.length; start += 5) {
+      const set = document.createElement("div");
+      set.className = "sd-expand-group sd-author-set";
+      const grid = document.createElement("div");
+      grid.className = "sd-index-grid sd-author-grid";
+      const chunk = authors.slice(start, start + 5);
+      chunk.forEach(({ key, works, n }, index) => {
+        const panelId = `sd-author-panel-${start + index}`;
+        grid.appendChild(makeIndexCard("author", key, key, `${plural(works.length, "work", "works")} · ${plural(n, "citation", "citations")}`, openAuthor === key, panelId));
+      });
+      set.appendChild(grid);
+      const selected = chunk.find(({ key }) => key === openAuthor);
+      if (selected) {
+        const panel = document.createElement("section");
+        panel.className = "sd-expand-panel sd-author-panel";
+        panel.id = `sd-author-panel-${start + chunk.indexOf(selected)}`;
+        panel.innerHTML = `<header><div><h3>${esc(selected.key)}</h3><p>${plural(selected.works.length, "work", "works")} · ${plural(selected.n, "citation", "citations")}</p></div><button type="button" class="sd-panel-close" data-sd-author-close aria-label="Close author">×</button></header><div class="sd-author-panel-body"></div>`;
+        renderWorkGroups(selected.key, selected.group, panel.querySelector(".sd-author-panel-body"));
+        set.appendChild(panel);
+      }
+      fragment.appendChild(set);
+    }
+    $rows.replaceChildren(fragment);
+  }
+  $rows.addEventListener("click", (event) => {
+    const author = event.target.closest("[data-sd-author]");
+    const work = event.target.closest("[data-sd-work]");
+    if (author) {
+      const key = author.dataset.sdAuthor;
+      openAuthor = openAuthor === key ? "" : key;
+      openWork = "";
+      renderGroups();
+    } else if (work) {
+      const key = work.dataset.sdWork;
+      openWork = openWork === key ? "" : key;
+      renderGroups();
+    } else if (event.target.closest("[data-sd-author-close]")) {
+      openAuthor = "";
+      openWork = "";
+      renderGroups();
+    } else if (event.target.closest("[data-sd-work-close]")) {
+      openWork = "";
+      renderGroups();
+    }
+  });
   // Similar Scripture use: the verses of this chapter the loaded pages cite beside this one.
   function updateCompanions() {
     const $c = $root.querySelector("[data-sd-companions]");
