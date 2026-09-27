@@ -1917,9 +1917,7 @@ async function comparePage(){
   const run=researchStart('research-compare');
   const state=cdParse(location.hash);
   const write=st=>{const h=cdHash(st);if(location.hash!==h)history.replaceState(null,'',location.pathname+location.search+h);const button=$('#cd-save');if(button){button.disabled=!st.a.length;button.hidden=!st.a.length;}};
-  page.innerHTML=`<div class="crumbs"><a href="/the-faith-received/topics/">Topics</a> · <a href="/the-faith-received/author/">Authors</a></div>
-  <div class="research-intro cd-intro"><div><h1>Compare</h1><p>Compare authors on a topic, read the passages grouped by work, and bring your findings into the writing desk.</p></div></div>
-  <div class="cd-viewbar"><button type="button" class="rx-button" id="cd-save" disabled hidden>Save this view</button><details class="rx-fold cd-saved" hidden><summary><span><strong>Saved views</strong><small id="cd-saved-count"></small></span></summary><div id="cd-saved-list" class="rx-fold-body"></div></details></div>
+  page.innerHTML=`<div class="cd-viewbar"><button type="button" class="rx-button" id="cd-save" disabled hidden>Save this view</button><details class="rx-fold cd-saved" hidden><summary><span><strong>Saved views</strong><small id="cd-saved-count"></small></span></summary><div id="cd-saved-list" class="rx-fold-body"></div></details></div>
   <p class="rx-note rx-paraphrase-note">These are machine-written summaries of what each passage says, not the author&rsquo;s words. No quotation on this page is verbatim. Open the source to read the passage itself, and to check its speaker, context and translation.</p><div id="cd-host"><p class="rx-note" role="status">Loading the comparison directory…</p></div>`;
   const host=$('#cd-host');
   // The saved-views fold shows once there is a saved view (or an error to report); an empty one cost a screen row.
