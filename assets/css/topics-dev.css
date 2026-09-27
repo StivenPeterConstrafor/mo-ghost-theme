@@ -10,13 +10,12 @@
    screen.min.css loads after page CSS and its .container padding and
    max-width win ties (found on /the-faith-received/scripture/, 2026-09-22).
 
-   SCROLLING. The contents column and the source sidebar scroll on
-   their own (sidebars are the recorded exception). Nothing else caps
-   its height.
+   SCROLLING. The source sidebar scrolls on its own (sidebars are the
+   recorded exception). Nothing else caps its height.
    ═══════════════════════════════════════════════════════════════ */
 
 .sd .td-root {
-  max-width: 1240px;
+  max-width: 1320px;
   padding-top: 48px;
   padding-bottom: 96px;
   font-family: var(--font-body);
@@ -62,23 +61,10 @@
 .td-locus-link:hover, .td-locus-link:focus-visible { color: var(--sd-accent); text-decoration: underline; text-underline-offset: 3px; }
 .td-locus--child .td-locus-link { padding-left: 20px; font-size: 15px; color: var(--color-muted); }
 
-/* ── A topic: contents | topic | sidebar ─────────────────────── */
-.td-toc-drawer > summary {
-  font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600;
-  color: var(--sd-accent); cursor: pointer; padding: 14px 0; min-height: 44px; list-style-position: inside;
-}
-.td-toc-list, .td-toc-list ol { list-style: none; margin: 0; padding: 0; }
-.td-toc-part { margin: 0 0 14px; }
-.td-toc-part-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-.td-toc-list a { display: block; padding: 8px 0 8px 10px; min-height: 36px; font-size: 14px; color: var(--color-muted); text-decoration: none; border-left: 2px solid transparent; }
-.td-toc-kids a { padding-left: 22px; font-size: 13px; }
-.td-toc-list a:hover, .td-toc-list a:focus-visible { color: var(--color-dark); }
-.td-toc-list a[aria-current="page"] { color: var(--color-dark); font-weight: 600; border-left-color: var(--sd-accent); }
-.td-toc-all { font-size: 14px; margin: 8px 0 0; }
-.td-toc-all a { color: var(--sd-accent); }
-
+/* ── A topic: full workspace | optional source sidebar ────────── */
 .td-main { min-width: 0; }
 .td-head { padding-bottom: 20px; border-bottom: 1px solid var(--color-rule); }
+.td-topic-path { display: flex; flex-wrap: wrap; gap: 0; }
 .td-confessions { padding-top: 28px; }
 .td-source-sub { font-size: 15px; line-height: 1.4; }
 .td-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
@@ -157,26 +143,14 @@
 .td-side-works li { padding: 4px 0; }
 .td-side-works a { color: var(--color-dark); font-style: italic; }
 
-/* Wide: contents column, the topic, and the sidebar when open. */
-@media (min-width: 1100px) {
-  .sd .td-root.has-topic { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 48px; align-items: start; }
-  .sd .td-root.has-topic.has-side { grid-template-columns: 220px minmax(0, 1fr) minmax(320px, 380px); gap: 36px; }
-  .td-toc {
-    position: sticky; top: calc(var(--sd-top, 0px) + 16px);
-    max-height: calc(100vh - var(--sd-top, 0px) - 32px);
-    overflow-y: auto; overscroll-behavior: contain; padding-right: 8px;
+/* The topic fills the workspace until an author panel is requested. */
+@media (min-width: 900px) {
+  .sd .td-root.has-topic.has-side {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+    gap: 36px;
+    align-items: start;
   }
-  .td-toc-drawer > summary { pointer-events: none; list-style: none; }
-  .td-toc-drawer > summary::-webkit-details-marker { display: none; }
-}
-/* Mid: the contents fold into a drawer above the topic. */
-@media (min-width: 900px) and (max-width: 1099px) {
-  .sd .td-root.has-topic.has-side { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); gap: 32px; align-items: start; }
-  .sd .td-root.has-topic.has-side .td-toc { grid-column: 1 / -1; }
-}
-.td-toc { margin-bottom: 20px; }
-@media (max-width: 1099px) {
-  .td-toc { border-bottom: 1px solid var(--color-rule); }
 }
 /* The panel on phones sits in the flow under what opened it. */
 .td-main .sd-panel {
@@ -204,7 +178,7 @@
    whenever the author sidebar takes the room. */
 .td-cmp .td-quote-foot { flex-direction: column; align-items: flex-start; gap: 8px; }
 .sd .td-root.has-side .td-cmp { grid-template-columns: 1fr; }
-/* The sidebar parks where the contents column does. */
+/* The source sidebar parks beside the full topic workspace. */
 .td-root .sd-side { top: calc(var(--sd-top, 0px) + 16px); max-height: calc(100vh - var(--sd-top, 0px) - 32px); }
 @media (max-width: 640px) {
   .sd .td-root { padding-bottom: 56px; }
@@ -304,9 +278,6 @@
   margin: 0 0 20px;
 }
 .td-part-h { margin: 0 -20px 10px; padding: 0 20px 10px; }
-
-/* A topic: the page may use a wide screen. */
-@media (min-width: 1100px) { .sd .td-root.has-topic { max-width: 1320px; } }
 
 /* Its header is a panel, its numbers boxes. */
 .td-head:not(.td-head--contents) {

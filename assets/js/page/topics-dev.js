@@ -5,9 +5,9 @@
  * TWO VIEWS, ONE ROUTE.
  *   no ?t=     the contents: ten parts in the classic order of the loci
  *              (Prolegomena to Last Things), every locus and its children.
- *   ?t=<id>    one locus: the contents down the left, the locus in the
- *              middle, and a sidebar on the right for whichever author or
- *              source is open. &view= picks the tab.
+ *   ?t=<id>    one locus across the full reading workspace, with a sidebar
+ *              on the right only when an author or source is open. &view=
+ *              picks the tab.
  *
  * THE ORDER IS AN EDITORIAL DECISION, stated once in
  * assets/data/faith-received/loci.json: the Reformed-scholastic sequence
@@ -48,10 +48,6 @@
   const TRADS = [["rc", "Roman Catholic"], ["lu", "Lutheran"], ["rf", "Continental Reformed"], ["ed", "English Divines"], ["hl", "Humanism and Law"],
     ["pl", "Latin Fathers"], ["gf", "Greek Fathers"], ["md", "Medieval"], ["po", "Eastern Fathers"]];
   const narrow = window.matchMedia("(max-width: 899px)");
-  // The contents are a column only at 1100px and up (topics-dev.css);
-  // below that they are a drawer and must start closed, or a 1024px
-  // screen opens on 1,900px of contents above the topic.
-  const wide = window.matchMedia("(min-width: 1100px)");
 
   const topicHref = (id, view, cview) => `${BASE}?t=${encodeURIComponent(id)}${
     cview && cview !== "read" ? `&c=${cview}` : ""}${view && view !== "read" ? `&view=${view}` : ""}`;
@@ -76,17 +72,6 @@
       }));
       return d;
     });
-  }
-
-  function contentsList(currentId) {
-    return LOCI.parts.map((p) =>
-      `<li class="td-toc-part"><span class="td-toc-part-label"><span class="td-roman">${esc(p.n)}</span> ${esc(p.label)}</span><ol>${
-        p.loci.map((l) => {
-          const kids = (l.children || []).map((ch) =>
-            `<li><a href="${esc(topicHref(ch.id))}"${ch.id === currentId ? ' aria-current="page"' : ""}>${esc(ch.label)}</a></li>`).join("");
-          return `<li><a href="${esc(topicHref(l.id))}"${l.id === currentId ? ' aria-current="page"' : ""}>${esc(l.label)}</a>${kids ? `<ol class="td-toc-kids">${kids}</ol>` : ""}</li>`;
-        }).join("")
-      }</ol></li>`).join("");
   }
 
   // ── The contents page ─────────────────────────────────────────
@@ -208,15 +193,9 @@
     const tabs = (block, cur) => `<nav class="td-tabs" aria-label="${block === "c" ? "Ways to read the confessions" : "Ways to read the teachers"}">${VIEWS.map(([k, lab]) =>
       `<a class="td-tab" href="${esc(topicHref(id, block === "w" ? k : state.view, block === "c" ? k : state.cview))}" data-block="${block}" data-view="${k}"${k === cur ? ' aria-current="true"' : ""}>${lab}</a>`).join("")}</nav>`;
     $root.innerHTML =
-      `<nav class="td-toc" aria-label="Topics">` +
-        `<details class="td-toc-drawer"${wide.matches ? " open" : ""}><summary>Contents</summary>` +
-          `<ol class="td-toc-list">${contentsList(id)}</ol>` +
-          `<p class="td-toc-all"><a href="${BASE}">All topics</a></p>` +
-        `</details>` +
-      `</nav>` +
       `<div class="td-main" data-td-main>` +
         `<header class="td-head">` +
-          `<p class="sd-eyebrow">Part ${esc(part.n)} · ${esc(part.label)}${parent ? ` · <a href="${esc(topicHref(parent.id))}">${esc(parent.label)}</a>` : ""}</p>` +
+          `<p class="sd-eyebrow td-topic-path"><a href="${BASE}">All topics</a><span aria-hidden="true"> · </span>Part ${esc(part.n)} · ${esc(part.label)}${parent ? ` · <a href="${esc(topicHref(parent.id))}">${esc(parent.label)}</a>` : ""}</p>` +
           `<h2 class="td-title">${esc(locus.label)}</h2>` +
           // The topic's numbers as boxes (Ian, 2026-09-23: thin-line boxes,
           // the whole width). Each fills in as its source arrives; the
@@ -252,9 +231,6 @@
       e.preventDefault();
       if (a.dataset.block === "c") setCView(a.dataset.view, true); else setView(a.dataset.view, true);
     }));
-    const cur = $root.querySelector('.td-toc a[aria-current="page"]');
-    if (cur && wide.matches) cur.scrollIntoView({ block: "center" });
-
     setCView(state.cview, false);
     setView(state.view, false);
     loadConfessions(id, hit);
@@ -956,10 +932,6 @@
     window.scrollTo(0, 0);
   }
   window.addEventListener("popstate", route);
-  wide.addEventListener("change", () => {
-    const dr = $root.querySelector(".td-toc-drawer");
-    if (dr) dr.open = wide.matches;
-  });
   narrow.addEventListener("change", () => { if ($panel.isConnected) closePanel(null); });
 
   // The denomination table must be in before the first render, or the
