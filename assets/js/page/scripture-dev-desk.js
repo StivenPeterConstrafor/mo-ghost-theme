@@ -223,7 +223,7 @@
     searchLabel: `Search the citations of ${label}`,
     onChange: () => query(false),
   });
-  $more.addEventListener("click", () => query(true));
+  $more.addEventListener("click", () => (kindSel ? fillKind() : query(true)));
 
   function query(more) {
     const my = more ? run : ++run;
@@ -233,7 +233,7 @@
       resetGroups();
     }
     $more.disabled = true;
-    S.fetchVerse(book, c, v, bar.filters, offset, 50).then((d) => {
+    return S.fetchVerse(book, c, v, bar.filters, offset, 50).then((d) => {
       if (my !== run) return;
       $more.disabled = false;
       if (!d || !d.total) {
@@ -270,10 +270,12 @@
       }
       (d.rows || []).forEach(addGrouped);
       updateCompanions();
-      updateKinds(d.matched);
+      lastMatched = d.matched;
       offset = d.next_offset || 0;
+      updateKinds(d.matched);
       $more.hidden = !d.next_offset;
       $more.textContent = d.next_offset ? `Show more (${fmt(d.matched - d.next_offset)} left)` : "Show more";
+      if (kindSel) moreLabel();
     }).catch(() => {
       if (my !== run) return;
       $more.disabled = false;
@@ -367,8 +369,38 @@
   // already says its kind; this counts the kinds among the rows loaded so far and shows one kind at a
   // time. The worker has no kind filter or facet, so the counts are of loaded rows and say so until
   // every citation is loaded; "Show more" adds to them.
+  // EXACT AND COMPLETE (owner 2026-09-26, "fix the verse desk for ian, limits"): with no other filter the chips give the
+  // verse's true totals from the library's kind index (the worker has none), and choosing a kind keeps loading until a
+  // page of that kind is in hand instead of filtering only the fifty rows the worker has returned so far.
   const $kinds = $root.querySelector("[data-sd-kinds]");
-  let kindSel = "";
+  let kindSel = "", kindTotals = null, lastMatched = 0, filling = false;
+  const K = window.FRScriptureKind, KORDER = ["quotation", "explicit", "allusion", "exegesis"];
+  const kindWord = (k) => { const w = K ? K.verb(k) : ({ quotation: "quotes", explicit: "cites", allusion: "alludes", exegesis: "expounds" }[k] || "cites"); return w.charAt(0).toUpperCase() + w.slice(1); };
+  const exactTotals = () => {
+    if (!kindTotals || S.activeCount(bar.filters) > 0) return null;
+    const row = ((kindTotals.verses || {})[String(c)] || {})[String(v)];
+    if (!row) return null;
+    const m = new Map();
+    (kindTotals.kinds || KORDER).forEach((k, i) => { if (row[i]) m.set(kindWord(k), (m.get(kindWord(k)) || 0) + row[i]); });
+    return m;
+  };
+  const shownOfKind = () => [...$rows.querySelectorAll(".sd-work > ol > .sd-source")].filter((li) => li.dataset.kind === kindSel).length;
+  function moreLabel() {
+    const ex = exactTotals(), total = ex && ex.get(kindSel), have = shownOfKind();
+    $more.hidden = !offset;
+    $more.textContent = total != null ? `Show more ${kindSel.toLowerCase()} (${fmt(Math.max(0, total - have))} left)` : `Show more ${kindSel.toLowerCase()}`;
+    if (total != null && have >= total) $more.hidden = true;
+  }
+  async function fillKind() {
+    if (filling || !kindSel) return;
+    filling = true; $more.disabled = true;
+    const want = shownOfKind() + 20;
+    let pages = 0;
+    try { while (kindSel && offset && shownOfKind() < want && pages < 30) { pages += 1; await query(true); } }
+    finally { filling = false; $more.disabled = false; moreLabel(); }
+  }
+  S.fetchKindTotals && S.fetchKindTotals(book).then((t) => { kindTotals = t; updateKinds(lastMatched); });
+  // The fold counts follow the kind: under "Alludes" an author reads "2 works · 3 citations" of that kind.
   function applyKind() {
     $rows.querySelectorAll(".sd-work").forEach((w) => {
       let shown = 0;
@@ -377,22 +409,29 @@
         if (!li.hidden) shown += 1;
       });
       w.hidden = !shown;
+      const $n = w.querySelector(":scope > summary [data-sd-work-n]");
+      if ($n) $n.textContent = plural(shown, "page", "pages");
     });
     $rows.querySelectorAll(".sd-group").forEach((g) => {
-      g.hidden = !g.querySelector(".sd-work:not([hidden])");
+      const works = g.querySelectorAll(".sd-work:not([hidden])");
+      g.hidden = !works.length;
+      const n = g.querySelectorAll(".sd-work:not([hidden]) > ol > .sd-source:not([hidden])").length;
+      const $n = g.querySelector(":scope > summary [data-sd-group-n]");
+      if ($n && works.length) $n.textContent = `${plural(works.length, "work", "works")} · ${plural(n, "citation", "citations")}`;
     });
   }
   function updateKinds(matched) {
     const items = [...$rows.querySelectorAll(".sd-work > ol > .sd-source")];
-    const n = new Map();
-    items.forEach((li) => { const k = li.dataset.kind; if (k) n.set(k, (n.get(k) || 0) + 1); });
+    const exact = exactTotals();
+    const n = exact || new Map();
+    if (!exact) items.forEach((li) => { const k = li.dataset.kind; if (k) n.set(k, (n.get(k) || 0) + 1); });
     if (n.size < 2 && !kindSel) { $kinds.hidden = true; $kinds.innerHTML = ""; return; }
     if (kindSel && !n.has(kindSel)) kindSel = "";
     const chip = (k, text) => `<button type="button" class="sd-kind" data-kind="${esc(k)}" aria-pressed="${kindSel === k}">${esc(text)}</button>`;
     const loadedAll = items.length >= Number(matched || 0);
     $kinds.hidden = false;
     const chips = [...n.entries()].sort((a, b) => b[1] - a[1]).map(([k, x]) => chip(k, `${k} ${fmt(x)}`)).join("");
-    const note = loadedAll ? "" : `<span class="sd-muted sd-kinds-note">among the ${fmt(items.length)} loaded so far</span>`;
+    const note = exact || loadedAll ? "" : `<span class="sd-muted sd-kinds-note">among the ${fmt(items.length)} loaded so far</span>`;
     $kinds.innerHTML = `<span class="sd-filter-label">Kind</span>${chip("", "All")}${chips}${note}`;
     applyKind();
   }
@@ -402,6 +441,8 @@
     kindSel = b.dataset.kind;
     $kinds.querySelectorAll(".sd-kind").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.kind === kindSel)));
     applyKind();
+    if (kindSel) fillKind();
+    else { $more.hidden = !offset; $more.textContent = offset ? `Show more (${fmt(lastMatched - offset)} left)` : "Show more"; }
   });
 
   // ── All citations, by author and then by work ─────────────────

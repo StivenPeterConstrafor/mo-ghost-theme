@@ -12,5 +12,9 @@
 .wrs-record{padding:14px 0;border-bottom:1px solid var(--wrs-rule);min-width:0}.wrs-record:last-child{border-bottom:0}
 .wrs-text{font:15px/1.75 var(--font-body,'Source Serif Pro',serif);margin:0 0 8px;white-space:pre-wrap;overflow-wrap:anywhere}.wrs-record>.wrs-note{margin:6px 0}
 .wrs-page-status{font-variant-numeric:tabular-nums;margin:8px 0}.wrs-page-controls{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:8px}.wrs-page-controls .wrs-button{margin-right:0}
+.wrs-kinds{display:flex;flex-wrap:wrap;align-items:stretch;margin:10px 0 16px;border-block:1px solid var(--wrs-rule)}
+.wrs-kinds .wrs-button{min-height:40px;margin:0;padding:7px 12px;border-right:1px solid var(--wrs-rule);color:var(--muted);text-decoration:none}
+.wrs-kinds .wrs-button:is(:hover,:focus-visible){color:var(--fg);text-decoration:none}
+.wrs-kinds .wrs-button[aria-pressed="true"]{box-shadow:inset 0 -2px 0 var(--detail,var(--fg));color:var(--fg);font-weight:600}
 .wrs :is(a,button,summary):focus-visible{outline:2px solid var(--fg);outline-offset:3px}.wrs ::selection{background:var(--fg);color:var(--bg)}
-@media(max-width:640px){.wrs{margin-top:22px}.wrs-section>summary{font-size:16px}.wrs-page-controls{gap:6px 14px}.wrs-link,.wrs-button{min-height:44px}}
+@media(max-width:640px){.wrs{margin-top:22px}.wrs-section>summary{font-size:16px}.wrs-page-controls{gap:6px 14px}.wrs-link,.wrs-button{min-height:44px}.wrs-kinds{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}.wrs-kinds .wrs-button{flex:0 0 auto;white-space:nowrap}}

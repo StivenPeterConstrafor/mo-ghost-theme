@@ -438,6 +438,20 @@
     return t ? t.short : String(code || "");
   };
 
+  /* EXACT KIND TOTALS (owner 2026-09-26, "fix the verse desk for ian, limits"): the worker returns fifty rows at a
+   * time and has no kind facet, so the desk's kind counts were of the rows loaded (Romans 8:28: "Alludes 7" of 626).
+   * The library publishes one small file per book — every verse's citations by kind, from the same chapter files the
+   * worker reads — so the chips can say the true totals. Cached per book; null when it is not published. */
+  const kindTotalsCache = new Map();
+  function fetchKindTotals(book) {
+    if (!book || !book.lib) return Promise.resolve(null);
+    if (!kindTotalsCache.has(book.lib)) {
+      kindTotalsCache.set(book.lib, fetch(`${LIBRARY_BASE}/v1/bible/all/${encodeURIComponent(book.lib)}/kinds.json`, { credentials: "omit" })
+        .then((r) => (r.ok ? r.json() : null)).catch(() => null));
+    }
+    return kindTotalsCache.get(book.lib);
+  }
+
   // ── Citations (mo-tfr-verse) ────────────────────────────────────
   function api(path, params) {
     const u = new URL(VERSE_API + path);
@@ -561,7 +575,13 @@
 
   // ── Source rows with inline preview ─────────────────────────────
   // "cites" and "citation-survey" are rare spellings in the index (8 of about 7,000 rows in Matthew 1) of a citation by reference.
-  const HOW = { quotation: "Quotes", explicit: "Cites", allusion: "Alludes", citation: "Cites", cites: "Cites", "citation-survey": "Cites", exegesis: "Expounds" };
+  // Every kind reads the ONE rule (scripture-kinds.js, owner 2026-09-26: allusions on every surface): Quotes, Cites, Alludes or
+  // Expounds for any recorded value, never the raw text — so no row falls outside the desk's kind chips.
+  const HOW = new Proxy({}, { get: (_, k) => {
+    if (typeof k !== "string") return undefined;
+    const K = window.FRScriptureKind, v = K ? K.verb(k) : ({ quotation: "quotes", explicit: "cites", allusion: "alludes", exegesis: "expounds" }[k] || "cites");
+    return v.charAt(0).toUpperCase() + v.slice(1);
+  } });
   const centuryLabel = (c) => {
     const n = Number(c);
     if (!n) return "";
@@ -958,7 +978,7 @@
     translationInfo, recalledTranslation, rememberTranslation,
     fetchChapterHtml, markVerses, verseTextFrom, fetchVerseText,
     fetchApocryphaChapter, apocryphaChapterNode, chapterNode, fetchApocryphaVerse,
-    fetchVerse, fetchCommentaries, fetchPassage,
+    fetchVerse, fetchCommentaries, fetchPassage, fetchKindTotals,
     emptyFilters, activeCount, filterBar, sourceItem, centuryLabel,
     HOW, kindOf, kindsLabel, workRows,
     // For /the-faith-received/topics/, which reads the same worker.

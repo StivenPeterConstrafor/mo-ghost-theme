@@ -169,14 +169,28 @@
       try {const catalogue=await json('/v1/bible/all/books.json',data=>Array.isArray(data?.books));if(!catalogue.missing)bible=catalogue.data.books;else note(body,'The Scripture navigation index is not published; source-page links remain available.');}
       catch (_) {note(body,'Scripture navigation could not load; source-page links remain available.');body.appendChild(link('Browse Scripture','/the-faith-received/bible/'));}
       note(body,'Counts describe recorded citations. The available source rows may be a selection of those citations.');
-      paginate(body,books,book => {
-        const parent=element('div'),rows=list(book.rows),n=count(book.n),name=string(book.name)||bibleNames[book.b]||string(book.b)||'Scripture';   // 09-08: the shard carries the public book name (one name per book, families say '(1 or 2)')
-        group(parent,name,(n!==null?n+' recorded citations. ':'')+rows.length+' supplied source rows.',rows,row=>{
-          const label=name+(row.c!=null?' '+row.c:'')+(row.v!=null&&row.v!==0?':'+row.v:'');
-          const node=record(label,row.how?'Recorded as: '+({quotation:'quotation',explicit:'explicit citation',allusion:'allusion'}[row.how]||row.how):'',row.p);
-          const destination=bibleURL(bible,book.b,row.c,row.v);if(destination){node.appendChild(link('Read Scripture',destination));node.appendChild(link('Open verse desk',destination+(destination.includes('?')?'&':'?')+'view=desk'));}return node;
-        },'citations');return parent;
-      },12,'books');body.appendChild(workLink());
+      // KINDS (owner 2026-09-26: "this is important for research rail for Ian … basically every surface"): each row says how the
+      // verse is used — quotation, citation, allusion (echoed without a citation), exposition — by the one rule of
+      // scripture-kinds.js, and a kind bar filters the rows of every book.
+      const SK=root.FRScriptureKind,kindOf=row=>SK?(SK.kind(row.how)||'explicit'):String(row.how||'');
+      const listHost=element('div');let current='';
+      const draw=()=>{listHost.replaceChildren();
+        const shown=books.map(book=>({...book,rows:list(book.rows).filter(row=>!current||kindOf(row)===current)})).filter(book=>book.rows.length);
+        if(!shown.length){note(listHost,'No '+(SK?SK.plural(current).toLowerCase():current)+' are supplied for this work.');return;}
+        paginate(listHost,shown,book => {
+          const parent=element('div'),rows=book.rows,n=count(book.n),name=string(book.name)||bibleNames[book.b]||string(book.b)||'Scripture';   // 09-08: the shard carries the public book name (one name per book, families say '(1 or 2)')
+          group(parent,name,(current?rows.length+' '+(SK?SK.plural(current).toLowerCase():current)+' supplied. ':(n!==null?n+' recorded citations. ':'')+rows.length+' supplied source rows.'),rows,row=>{
+            const label=name+(row.c!=null?' '+row.c:'')+(row.v!=null&&row.v!==0?':'+row.v:'');
+            const k=kindOf(row),node=record(label,row.how?'Recorded as: '+(SK?SK.noun(k)+' — '+SK.title(k).replace(/^[^:]*:\s*/,''):k):'',row.p);
+            if(k)node.dataset.k=k;
+            const destination=bibleURL(bible,book.b,row.c,row.v);if(destination){node.appendChild(link('Read Scripture',destination));node.appendChild(link('Open verse desk',destination+(destination.includes('?')?'&':'?')+'view=desk'));}return node;
+          },'citations');return parent;
+        },12,'books');};
+      if(SK){const kc=SK.counts(books.flatMap(book=>list(book.rows)));
+        if(kc.length>1){const bar=element('div','wrs-kinds');bar.setAttribute('role','group');bar.setAttribute('aria-label','Scripture by kind');
+          const mk=(k,labelText)=>{const b=button(labelText,()=>{current=k;bar.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));draw();});b.setAttribute('aria-pressed',String(k===current));if(k)b.title=SK.title(k);b.dataset.k=k;return b;};
+          bar.append(mk('','All'),...kc.map(([k,n])=>mk(k,SK.plural(k)+' '+n.toLocaleString())));body.appendChild(bar);}}
+      body.appendChild(listHost);draw();body.appendChild(workLink());
     },'scripture');
 
     async function roster() {
