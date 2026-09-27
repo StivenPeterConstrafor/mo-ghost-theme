@@ -300,8 +300,8 @@
    * choice is kept per browser: the charts are redrawn on every filter
    * change, so the state lives here rather than in the element. */
   const FOLD_KEY = "fr_sd_charts_closed";
-  let closed = {};
-  try { closed = JSON.parse(window.localStorage.getItem(FOLD_KEY) || "{}") || {}; } catch (e) { closed = {}; }
+  let closed = { cen: true, tr: true };
+  try { closed = JSON.parse(window.localStorage.getItem(FOLD_KEY) || "null") || closed; } catch (e) { /* keep the compact default */ }
   // Display only: the shelf name "English Divines" is never shown.
   const trLabel = (x) => {
     const raw = x.label || x.k;

@@ -1058,6 +1058,7 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
   .sd-commentary-panel .sd-panel-commentaries,
   .sd-desk .sd-top,
   .sd-desk .sd-companions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sd-desk .sd-parallel { grid-template-columns: 1fr; }
   .sd-desk .sd-parallel-row,
   .sd-desk .sd-parallel-row:last-child { padding: 12px; }
   .sd-desk .sd-parallel dd { font-size: 14px; line-height: 1.45; }
@@ -1074,7 +1075,7 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
   .sd-desk .sd-charts { grid-template-columns: 1fr; }
   .sd-desk .sd-filters { padding-inline: 0; }
   .sd-desk .sd-ask { padding-inline: 0; }
-  .sd-desk-page .fr-survey-tab {
+  body:has(.sd-desk-page) .fr-survey-tab {
     top: 62%;
     right: 0;
     bottom: auto;
@@ -1086,5 +1087,5 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
     white-space: nowrap;
     writing-mode: vertical-rl;
   }
-  .sd-desk-page .fr-survey-tab::after { content: "Feedback"; font-size: 12px; }
+  body:has(.sd-desk-page) .fr-survey-tab::after { content: "Feedback"; font-size: 12px; }
 }
