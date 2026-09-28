@@ -1014,11 +1014,15 @@
     const preview=window.MOCollectedContents?.preview(w.slug || w.id)||"";
     const details=window.MOCollectedContents?.disclosure(w.slug || w.id)||"";
     const inner = `<span class="brow-t">${escapeHtml(title || w.title || w.id)}</span>${sub}${second2}${vol}${preview}`;
+    // Facsimile or digital text, and the other edition's volume, when the work is
+    // held both ways (faith-editions.js; outside the link, the slot holds links).
+    // Keyed on the work's own url, not the entry passage url below.
+    const edition = window.MOEditions ? window.MOEditions.slot(w.url) : "";
     // A confession entry opens on its own passage: page and block, the ids
     // the reader gives its blocks (see entryUrl in faith-corpora.js).
     const href = w.entryUrl || w.url;
     if (w.readable !== false && href) {
-      return `<li${contents?' class="frcw-volume"':""}><a href="${escapeHtml(href)}">${inner}</a>${details}</li>`;
+      return `<li${contents?' class="frcw-volume"':""}><a href="${escapeHtml(href)}">${inner}</a>${edition}${details}</li>`;
     }
     return `<li class="faith-room-pending"><span class="faith-room-row">${inner}</span></li>`;
   }
