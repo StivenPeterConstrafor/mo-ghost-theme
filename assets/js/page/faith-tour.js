@@ -189,7 +189,7 @@
           body: "Answers are drawn from the library with citations you can open and check. You can keep asking follow-up questions." },
         { sel: [".ph .ctr .fr-tb-tt", "#frMToolsDrawer [data-t=\"x-tt\"]"],
           title: "How this text was made",
-          body: "Transparency explains where this text and its translation came from, including any use of machine translation." },
+          body: "This panel explains where this text and its translation came from, including any use of machine translation." },
         { sel: [".tfr-rail"],
           title: "The rest of the library",
           body: "This bar goes everywhere in <em>The Faith Received</em>: reading lists, Scripture, Topics, Search and the research tools." },

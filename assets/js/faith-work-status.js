@@ -154,6 +154,8 @@
   if (corpus === "eebo") {
     draw({
       title: "How this text was made",
+      // The toolbar button is short; this is a transcription, not AI.
+      label: "Transparency",
       fact: "EEBO-TCP transcription",
       head: "This is a transcription of the printed book, not a translation.",
       body: "The text comes from the Early English Books Text Creation Partnership, "
@@ -214,7 +216,10 @@
       // and spent them both saying what the panel below it says
       // anyway; the first fact on the summary line is already "AI
       // translated from Latin".
-      title: "Transparency",
+      // "AI Transparency" (Ian, 2026-09-28, after a reader's report
+      // that "Transparency" alone "might mean many things"). The
+      // toolbar button reads this title through data-tt-label.
+      title: "AI Transparency",
       fact: `AI translated from ${escapeHtml(source)}`,
       head: "This English was translated by a machine.",
       // The controls it names are the reader's current ones (Ian,
@@ -286,7 +291,7 @@
 
   function draw(intro) {
   mount.innerHTML =
-    `<details class="fr-tt">`
+    `<details class="fr-tt" data-tt-label="${intro.label || intro.title}">`
     + `<summary class="fr-tt-head">`
     + `<span class="fr-tt-title">${intro.title}</span>`
     + `<span class="fr-tt-facts" data-tt-facts>`

@@ -553,8 +553,21 @@
     proxies.transparency.addEventListener("click", () => setTt(!ttOpen()));
   }
 
+  // The button is named by the panel it opens: "AI Transparency" on a
+  // machine translation, plain "Transparency" on an EEBO transcription,
+  // which is not AI (faith-work-status.js sets data-tt-label).
+  function syncTtLabel() {
+    const d = status && status.querySelector(".fr-tt");
+    const label = (d && d.getAttribute("data-tt-label")) || "Transparency";
+    if (dTt.textContent !== label) dTt.textContent = label;
+    box.setAttribute("aria-label", label);
+    const lb = proxies && proxies.transparency.querySelector(".lb");
+    if (lb && lb.textContent !== label) lb.textContent = label;
+  }
+
   function syncProxies() {
     dTt.hidden = !ttReady();
+    syncTtLabel();
     if (!proxies) return;
     const fl = document.getElementById("rdFlow");
     const flowing = !fl || fl.getAttribute("aria-pressed") !== "false";
@@ -586,6 +599,7 @@
     proxies.transparency.hidden = !ttReady();
     dTt.hidden = !ttReady();
     proxies.transparency.classList.toggle("on", ttOpen());
+    syncTtLabel();
   }
   document.addEventListener("fr-folds-change", syncProxies);
   document.addEventListener("fr-paras-change", syncProxies);
@@ -738,7 +752,7 @@
   x.addEventListener("click", () => setTt(false));
   scrim.addEventListener("click", () => setTt(false));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && ttOpen()) setTt(false); });
-  if (status) new MutationObserver(syncProxies).observe(status, { childList: true });
+  if (status) { new MutationObserver(syncProxies).observe(status, { childList: true }); syncProxies(); }
 
   // The disclosure lives in the dialog on both widths now (Ian,
   // 2026-09-23: "Move Transparency disclaimer to this section", the
