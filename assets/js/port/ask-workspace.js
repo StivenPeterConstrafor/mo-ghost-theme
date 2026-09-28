@@ -811,8 +811,16 @@ function checkHTML(t){
       thread.dataset.signature=signature;
       thread.innerHTML=c.turns.map(t=>'<article class="fra-turn" data-turn="'+esc(t.id)+'"><h2 class="fra-question">'+esc(t.q)+'</h2>'+(t.passage?'<details class="fra-quoted"><summary>Selected passage · '+esc(t.passage.cite||'This book')+'</summary><blockquote>'+esc(t.passage.text)+'</blockquote>'+(safeURL(t.passage.url)?'<a href="'+esc(safeURL(t.passage.url))+'">Read passage</a>':'')+'</details>':'')+'<div class="fra-turn-meta">'+esc((modes[researchMode(t.mode)])[0])+'</div><div class="fra-progress" role="status"></div><div class="fra-answer-label" hidden>'+icon('book')+'<span>Answer</span></div><div class="fra-answer"></div><div class="fra-turn-extra"></div><div class="fra-actions"></div></article>').join('');
     }
+    /* MereO delta (Ian, 2026-09-28: "after an answer generates, the page needs to start at the top of the answer, not at
+       the bottom"). While a turn runs, the feed stays pinned to the bottom so the progress lines can be watched; when the
+       answer then landed, the same pin left the reader at its END. A turn seen running on the last pass and finished on
+       this one is `landed`, and the feed goes to where that answer begins instead. Only on that transition: an answer
+       already finished when the page opened, or one read while scrolled up elsewhere, is left where it is. */
+    let landed=null;
     for(const t of c.turns){
       const node=thread.querySelector('[data-turn="'+CSS.escape(t.id)+'"]'),answer=node.querySelector('.fra-answer');
+      const wasRunning=node.dataset.seenState==='running';node.dataset.seenState=t.status;
+      if(wasRunning&&t.status!=='running'&&shownAnswer(t))landed=node;
       node.querySelector('.fra-turn-meta').textContent=turnModeLabel(t);
       node.dataset.state=t.status;node.querySelector('.fra-answer-label').hidden=!shownAnswer(t);
       const answerText=shownAnswer(t),sourceKey=JSON.stringify((t.src||[]).map(s=>[s.slug,s.page,s.link,s.cit,s.cite,titleOf(s)]));
@@ -850,7 +858,11 @@ function checkHTML(t){
       if(actions.dataset.status!==actionKey){actions.dataset.status=actionKey;actions.innerHTML=t.status==='running'?'':((t.src||[]).length?'<button data-sources="'+esc(t.id)+'">Read sources</button>':'')+(answerText?'<button data-share="'+esc(t.id)+'">Share</button><button data-copy="'+esc(t.id)+'">Copy answer</button><button data-note="'+esc(t.id)+'">Save to notebook</button><button data-desk="'+esc(t.id)+'">Insert in Desk</button>':'')+(offersDeep(t)?'<button data-deepen="'+esc(t.id)+'" title="Research this question in the background using the same scope. Saves progress; up to 10 minutes per run.">Research in Deep</button>':'')+(['error','interrupted','stopped'].includes(t.status)&&!t.serverJob?'<button data-retry="'+esc(t.id)+'">Retry question</button>':'');}
       if(t.serverJob){let controls=actions.querySelector('.fra-job-controls');if(!controls){controls=document.createElement('span');controls.className='fra-job-controls';actions.append(controls);}const state=t.serverJob.status,controlState=state+'|'+!!t.serverJob.canResume;if(controls.dataset.state!==controlState){controls.dataset.state=controlState;controls.innerHTML=(['queued','running'].includes(state)?'<button data-job-control="pause" data-job-turn="'+esc(t.id)+'">Pause research</button>':(['paused','limit_reached','needs_input'].includes(state)||state==='complete'&&t.serverJob.canResume)?'<button data-job-control="resume" data-job-turn="'+esc(t.id)+'">'+(state==='complete'?'Research further for 10 minutes':state==='limit_reached'?'Continue for 10 more minutes':'Continue research')+'</button>':'')+(t.status==='error'?'<button data-job-control="retry" data-job-turn="'+esc(t.id)+'">Reconnect Deep research</button>':'');}}
     }
-    if(near&&c.turns.length&&(!window.getSelection||window.getSelection()?.isCollapsed!==false))feed.scrollTop=feed.scrollHeight;
+    if(near&&c.turns.length&&(!window.getSelection||window.getSelection()?.isCollapsed!==false)){
+      const start=landed&&landed.querySelector('.fra-answer-label:not([hidden]),.fra-outline,.fra-answer');
+      if(start)feed.scrollTop=Math.max(0,start.getBoundingClientRect().top-feed.getBoundingClientRect().top+feed.scrollTop-12);
+      else feed.scrollTop=feed.scrollHeight;
+    }
     $('#fra-jump').hidden=near||!c.turns.length;
   }
   function elapsed(ts){const seconds=Math.max(0,Math.floor((Date.now()-ts)/1000));return seconds<60?seconds+'s':Math.floor(seconds/60)+'m '+seconds%60+'s';}

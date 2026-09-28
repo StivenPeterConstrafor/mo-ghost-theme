@@ -786,9 +786,9 @@ html.fra-open .fra-launcher { display: none; }
   align-items: center;
   cursor: pointer;
 }
-.fra-actions button + button,
-.fra-actions a + button,
-.fra-actions button + a { border-left: 0; }
+/* No border-left:0 on the second button onward (Ian, 2026-09-28: "these buttons with no left side"). That rule joined the
+   buttons into one bar, but #fra-workspace .fra-actions (below) spaces them 18px apart, and the panel is always
+   #fra-workspace, so every button after the first stood alone with its left edge missing. */
 .fra-actions button:hover,
 .fra-actions a:hover { background: var(--color-cream); text-decoration: none; }
 .fra-actions button:disabled { color: var(--color-muted); cursor: default; }
