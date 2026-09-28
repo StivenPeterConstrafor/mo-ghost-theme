@@ -1111,11 +1111,15 @@ function render(){
           // indented beneath, exactly as patrologia-graeca renders it. Replaces the flat
           // position-sorted rows when the toc exists; the flat list is the fallback above.
           if(VW==="PG"&&vn2){
-            fetch(BLOB+"/v1/pgvol/"+vn2+".json").then(r=>r.ok?r.json():null).then(sp=>{
+            fetch(BLOB+"/v1/pgvol/"+vn2+".json?v="+encodeURIComponent(window.__FR_VER||"")).then(r=>r.ok?r.json():null).then(sp=>{
               if(!sp||!sp.toc||sp.toc.length<4)return;
               const ranges={};ws2.forEach(w=>{const m=String(w.slug).match(/^pg-(\d+)$/);if(m&&w.cols)ranges[+m[1]]=w.cols;});
               const have=new Set(ws2.map(w=>String(w.slug)));
-              let seenW=null;
+              let seenW=null,lastAu=null;
+              // THE PATROLOGIA SITE'S CONTENTS (owner 2026-09-28: "pg must show how the patrologia site shows — extremely detailed,
+              // nested, indented"): every entry of the printed table at its depth, the author once above a work's own head (toc.au),
+              // the English title with Migne's Latin beside it (toc.la), the column at the right; each entry opens the work that prints it
+              // (toc.id, re-pointed by title and column 09-28: the source files several works under one catch-all document)
               const rows=sp.toc.map(e2=>{
                 const lvl=Math.min(+e2.lvl||0,3);
                 const id2=e2.id!=null?("pg-"+e2.id):null;
@@ -1123,9 +1127,12 @@ function render(){
                 const column=window.FRMigneNavigation?.indexLabel(e2,ranges[e2.id],showRange)??String(e2.c??'');
                 const cc=esc(column);
                 if(lvl===0)seenW=e2.id;
-                const body2=`<span class=spc title="Migne columns">${cc}</span><span class=spt>${esc(e2.t||"")}</span>`;
-                if(!id2||!have.has(id2))return `<span class="sprow spd${lvl} spoff">${body2}</span>`;
-                return `<a class="sprow spd${lvl}" href="/the-faith-received/read/?w=${id2}${e2.c!=null?`#b${e2.c}-0`:""}">${body2}</a>`;
+                const au=lvl===0&&e2.au&&e2.au!==lastAu?`<div class="spau">${esc(e2.au)}</div>`:"";
+                if(lvl===0&&e2.au)lastAu=e2.au;
+                const la=e2.la&&e2.la!==e2.t?`<span class=spla> · ${esc(e2.la)}</span>`:"";
+                const body2=`<span class=spt>${esc(e2.t||"")}${la}</span><span class=spc title="Migne columns">${cc}</span>`;
+                if(!id2||!have.has(id2))return `${au}<span class="sprow pgtoc spd${lvl} spoff">${body2}</span>`;
+                return `${au}<a class="sprow pgtoc spd${lvl}" href="/the-faith-received/read/?w=${id2}${e2.c!=null?`#b${e2.c}-0`:""}">${body2}</a>`;
               }).join("");
               if(!rows)return;
               body.innerHTML=rows;

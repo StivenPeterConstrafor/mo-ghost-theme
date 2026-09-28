@@ -5158,7 +5158,7 @@ function _auEn(a){
 }
 function wireVolTravel(volWord,volN,meId,prefix,store){
   if(!volN)return;
-  const spineP=fetch(BLOB+"/v1/"+store+"/"+volN+".json").then(r=>r.ok?r.json():null).catch(()=>null);
+  const spineP=fetch(BLOB+"/v1/"+store+"/"+volN+".json?v="+encodeURIComponent(window.__FR_VER||"")).then(r=>r.ok?r.json():null).catch(()=>null);
   const wire=()=>{spineP.then(sp=>{
     if(!sp||!sp.works||!sp.works.length)return;
     const nav=document.getElementById("nav");
@@ -5174,17 +5174,22 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
       const _fm=t=>/^(Admonitio|Admonition|Monitum|Praefatio|Preface|Prooemium|Index|Elenchus|Notice|Notitia|Ordo|Retractat|Editorial)/i.test(String(t||""));
       if(sp.toc&&sp.toc.length>3){
         const ranges={};(sp.works||[]).forEach(x=>{if(x.c)ranges[+x.id]=x.c;});
-        let seenWork=null;
+        let seenWork=null,lastAu=null;
+        // as patrologia-graeca prints the contents (owner 2026-09-28): the author once above a work's own head, the English title
+        // with Migne's Latin beside it, every entry at its depth, opening the work that prints it
         rows=sp.toc.map(e=>{
           const lvl=Math.min(+e.lvl||0,4);
           const cur=e.id===meId&&lvl===0;
           const column=window.FRMigneNavigation?.indexLabel(e,ranges[e.id],lvl===0&&e.id!=null&&seenWork!==e.id)??String(e.c??'');
           const cc=column?`<span class=vnc>${esc(column)}</span>`:'';
           if(lvl===0)seenWork=e.id;
-          const body=`${cc}<span class=vnt>${esc(e.t||"")}</span>`;
+          const au=lvl===0&&e.au&&e.au!==lastAu?`<div class="vnau">${esc(e.au)}</div>`:"";
+          if(lvl===0&&e.au)lastAu=e.au;
+          const la=e.la&&e.la!==e.t?`<span class=vnla> · ${esc(e.la)}</span>`:"";
+          const body=`${cc}<span class=vnt>${esc(e.t||"")}${la}</span>`;
           const fm=lvl===0&&_fm(e.t)?" vnfm":"";
-          if(e.id==null)return `<span class="vnrow vnd${lvl} off${fm}">${body}</span>`;
-          return `<a class="vnrow vnd${lvl}${cur?" on":""}${fm}" target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${e.id}${e.c!=null?`#b${e.c}-0`:""}">${body}</a>`;
+          if(e.id==null)return `${au}<span class="vnrow vnd${lvl} off${fm}">${body}</span>`;
+          return `${au}<a class="vnrow vnd${lvl}${cur?" on":""}${fm}" target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${e.id}${e.c!=null?`#b${e.c}-0`:""}">${body}</a>`;
         }).join("");
       }else rows=sp.works.map((x,xi)=>{
         const cur=+x.id===meId;

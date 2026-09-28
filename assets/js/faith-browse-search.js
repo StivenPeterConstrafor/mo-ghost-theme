@@ -86,7 +86,7 @@
   }
   // What a collected volume holds (MOCollectedContents, the reader outlines of the Opera and Works volumes), so
   // "Coccejus Leviticus" finds the volume that contains it.
-  const contentsOf = (w) => (window.MOCollectedContents ? window.MOCollectedContents.search(w.id) : "");
+  const contentsOf = (w) => (window.MOCollectedContents ? window.MOCollectedContents.search(w.slug || w.id) : "");
 
   // Tradition has two levels here as everywhere else: the communion,
   // and the denomination or series under it. Under Protestant it is a
@@ -352,7 +352,7 @@
       }<span class="bsearch-hit-where">${escapeHtml(c && !ONE_LIBRARY.has(c.id) ? c.label : (shelfOf(w) || ""))}</span>${ 
       extra || ""}${
       // A collected volume says what it holds.
-      window.MOCollectedContents ? window.MOCollectedContents.preview(w.id) : ""}</li>`;
+      window.MOCollectedContents ? window.MOCollectedContents.preview(w.slug || w.id) : ""}</li>`;
   }
 
   // Entries in the author field that are not a person: the
