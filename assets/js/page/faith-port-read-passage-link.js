@@ -45,16 +45,34 @@
     return u.href;
   }
 
-  function cite(row) {
-    // The citation line read-tools.js prints lives on the popover's own
-    // Cite button; the work and page are enough for a pasted quotation.
+  const pageOf = (row) => { const f = row.closest(".folio"); return (f && f.dataset.page) ? String(f.dataset.page) : ""; };
+
+  function cite(row, link) {
+    // The same line the Tools popover prints (faith-port-read-tools.js,
+    // loaded before this file): author, title, the volume, and the column
+    // or page the words are on — Migne's volumes by column, as a footnote
+    // cites them. With the port's own formatter present (window.__frCite,
+    // once the port pin brings it), the note form, link included.
     const h1 = document.getElementById("h1");
     const who = document.getElementById("reader-author");
-    const folio = row.closest(".folio");
+    const vol = document.getElementById("reader-volume");
+    const page = pageOf(row);
+    const volume = vol ? norm(vol.textContent) : "";
+    if (page && typeof window.__frCite === "function") {
+      try {
+        const app = document.getElementById("app");
+        const lane = app && /\bonly-la\b/.test(app.className) ? "orig" : "en";
+        const note = window.__frCite(page, link || "", lane);
+        if (note) return note;
+      } catch (e) { /* the line below stands */ }
+    }
+    const C = window.MOFaithCite;
+    const unit = C ? C.unitOf(volume) : (/\((?:PL|PG)\)|^\s*P[LG]\s*\d/i.test(volume) ? "col." : "p.");
     const parts = [
       who ? norm(who.textContent) : "",
       h1 ? norm(h1.textContent) : "",
-      folio && folio.dataset.page ? `p. ${folio.dataset.page}` : "",
+      volume,
+      page ? `${unit} ${page}` : "",
     ].filter(Boolean);
     return parts.join(", ");
   }
@@ -76,9 +94,10 @@
     e.preventDefault();
     e.stopImmediatePropagation();
     const link = exactLink(last);
+    const note = cite(last.row, link);
     const body = btn.id === "spLink"
       ? link
-      : `${last.text}\n\n${cite(last.row)}\n${link}`;
+      : `${last.text}\n\n${note}${note.indexOf(link) >= 0 ? "" : `\n${link}`}`;
     write(body).then(() => flash(btn, true), () => flash(btn, false));
   }, true);
 

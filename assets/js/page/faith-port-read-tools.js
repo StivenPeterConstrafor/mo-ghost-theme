@@ -78,56 +78,191 @@
   // Orientalis and everything else stay by page.
   const unitOf = (volume) => (/\((?:PL|PG)\)|^\s*P[LG]\s*\d/i.test(String(volume || "")) ? "col." : "p.");
 
-  function citation() {
+  // Where a passage is: the column or page it is on ("col. 615"), or the
+  // run it crosses ("cols. 615–617"). A quotation that begins on one column
+  // and ends on the next is cited by both, as a footnote would be. The
+  // corpus owner (2026-09-28) copied a passage running from col. 615 to
+  // col. 617 and was handed "col. 617" — the page box's number, not the
+  // words'.
+  function locator(volume, first, last) {
+    if (!first) return "";
+    const unit = unitOf(volume);
+    if (!last || String(last) === String(first)) return `${unit} ${first}`;
+    return `${unit === "col." ? "cols." : "pp."} ${first}–${last}`;
+  }
+  // The selection bar (faith-port-read-passage-link.js, loaded after this
+  // file) cites the same way.
+  window.MOFaithCite = { unitOf, locator };
+
+  // The citation of a passage running from `first` to `last` (folio page
+  // numbers; the page in view when nothing is given).
+  //
+  // The site's own formatter is the port's window.__frCite, which the
+  // ported read-tools.js exposes once its citation profile has loaded:
+  // the corpus owner's note form (2026-09-28: "Philip Melanchthon, Loci
+  // Theologici (1559), CR 21:601, English trans. accessed through The
+  // Faith Received, <link>"). It cites one page, so a run of columns is
+  // written into its locator ("PL 113:615" → "PL 113:615–617"), and it
+  // carries the link itself. Until the port pin brings it here, the line
+  // below stands: author, title, volume, column(s).
+  function citation(first, last, url, lane) {
     const w = work();
-    return [w.author, w.title, w.volume, w.page && `${unitOf(w.volume)} ${w.page}`]
-      .filter(Boolean).join(", ");
+    const page = String(first || w.page || "");
+    const end = String(last || page);
+    if (page && typeof window.__frCite === "function") {
+      try {
+        const note = window.__frCite(page, url || "", lane === "orig" ? "orig" : "en");
+        if (note && end === page) return note;
+        if (note) return note.replace(/(\d):0*(\d+[A-Da-d]?)(?=,)/, (m, v, n) => (n === page ? `${v}:${page}–${end}` : m));
+      } catch (e) { /* the older line stands */ }
+    }
+    return [w.author, w.title, w.volume, locator(w.volume, page, end)].filter(Boolean).join(", ");
   }
 
-  // A link to the page in view, not to the top of the work.
-  function deepLink() {
-    const w = work();
+  // A link to the passage: the page it starts on, and its first paragraph
+  // when one is known. Without a page, the page in view.
+  function deepLink(page, rowId) {
+    const p = page || work().page;
     const u = new URL("/the-faith-received/read/", location.origin);
     u.searchParams.set("w", SLUG);
-    if (w.page) u.searchParams.set("p", w.page);
+    if (p) u.searchParams.set("p", p);
+    if (rowId) u.hash = rowId;
     return u.href;
   }
 
-  // The reader's selection if there is one, otherwise the whole of what
-  // is on screen. Lane buttons decide which languages are showing, so
-  // reading the rendered text is also the only thing that respects them.
-  function visibleText() {
-    const sel = String(window.getSelection() || "").trim();
-    if (sel) return sel;
-    const reading = $("reading");
-    if (!reading) return "";
-
-    // The reader scrolls inside #scroll, not the window, so the window's
-    // height is the wrong ruler for what is on screen. This is the same
-    // rect the port's own position capture measures against.
-    const scroll = $("scroll");
-    const box = scroll ? scroll.getBoundingClientRect() : null;
-    const top = box ? box.top : 0;
-    const bottom = box && box.height ? box.bottom : window.innerHeight;
-
-    // innerText is empty for anything the browser is not rendering, so
-    // textContent is the fallback. It loses paragraph breaks, which is
-    // worth less than losing the text.
-    const read = (el) => ((el.innerText || el.textContent || "").trim());
-
-    const rows = Array.from(reading.querySelectorAll(".row"));
-    const seen = [];
-    rows.forEach((r) => {
-      const b = r.getBoundingClientRect();
-      if (b.bottom < top || b.top > bottom) return;
-      const t = read(r);
-      if (t) seen.push(t);
-    });
-    // A geometry test that finds nothing must not be the reason a reader
-    // cannot copy. Fall back to the column itself.
-    if (seen.length) return seen.join("\n\n");
-    return read(reading);
+  // The clipboard text: the passage, a blank line, its citation, and the
+  // link — unless the citation (the note form) already carries the link.
+  function withCitation(text, p) {
+    const url = deepLink(p.first, p.rowId);
+    const cite = citation(p.first, p.last, url, p.lane);
+    return `${text}\n\n${cite}${cite.indexOf(url) >= 0 ? "" : `\n${url}`}`;
   }
+
+  /* ---- The passage ------------------------------------------------- */
+
+  // The lanes a copy reads: the reader's lane buttons set only-en or
+  // only-la on #app; with neither, both languages are showing.
+  function laneShown() {
+    const c = ($("app") || {}).className || "";
+    return /\bonly-en\b/.test(c) ? "en" : (/\bonly-la\b/.test(c) ? "orig" : "both");
+  }
+  const pageOf = (row) => { const f = row.closest(".folio"); return (f && f.dataset.page) || ""; };
+  // A row's own controls — the Latin reveal, the pencil, the fold toggle,
+  // the rail — are not the text, though a plain read of the row would
+  // take them ("LATIN" between two paragraphs).
+  const CONTROLS = "button, .fr-sec-toggle, .la-rev, .trpencil, .rowx, .hanchor";
+  // The text of a node, each paragraph on its own line.
+  function textOf(node) {
+    const clone = node.cloneNode(true);
+    clone.querySelectorAll(CONTROLS).forEach((x) => x.remove());
+    const blocks = Array.from(clone.querySelectorAll("p, h1, h2, h3, h4, li"));
+    const leaves = blocks.filter((e) => !blocks.some((o) => o !== e && e.contains(o)));
+    return (leaves.length ? leaves : [clone])
+      .map((e) => (e.textContent || "").replace(/\s+/g, " ").trim())
+      .filter(Boolean)
+      .join("\n");
+  }
+  // One row as copied text: the lane(s) on show; a column mark as "[col. N]".
+  function rowText(row, lane) {
+    if (row.classList.contains("rcolm")) {
+      const m = (row.textContent || "").replace(/\s+/g, " ").trim();
+      return m ? `[${m}]` : "";
+    }
+    const cells = lane === "both" ? [".la", ".en"] : [lane === "en" ? ".en" : ".la"];
+    const parts = cells.map((s) => row.querySelector(`:scope > ${s}`)).filter(Boolean).map(textOf).filter(Boolean);
+    return parts.length ? parts.join("\n") : textOf(row);
+  }
+  // A row the folds have hidden (faith-reader-folds.js) is still the work.
+  const folded = (row) => row.classList.contains("fr-sec-hid");
+  const hidden = (row) => getComputedStyle(row).display === "none";
+
+  // The passage a copy is of: {text, first, last, rowId, lane}, or null.
+  //
+  // The reader's selection if there is one, otherwise the whole of what is
+  // on screen. Lane buttons decide which languages are showing, so the
+  // lanes on show are what is read.
+  //
+  // FOLDED TEXT IS INCLUDED. A section the reader has folded shut is
+  // still the work; a quotation must be continuous. The corpus owner
+  // (2026-09-28) selected across three folded chapters of Walafrid Strabo
+  // and the copy kept their headings and dropped their bodies — "CHAPTER
+  // VIII CHAPTER IX CHAPTER X" — because a selection's own text skips what
+  // is not rendered. So the rows the selection crosses are read here, the
+  // first and last only as far as the selection reaches, the rows between
+  // whole, folded or not. Rows hidden for any other reason (an echoed
+  // head, a note bank) stay out.
+  function passage() {
+    const reading = $("reading");
+    if (!reading) return null;
+    const lane = laneShown();
+    const rows = Array.from(reading.querySelectorAll(".row"));
+    const picked = [];
+    const sel = window.getSelection();
+    const range = sel && !sel.isCollapsed && sel.rangeCount ? sel.getRangeAt(0) : null;
+    if (range && reading.contains(range.commonAncestorContainer)) {
+      rows.forEach((row) => {
+        if (!range.intersectsNode(row)) return;
+        if (!folded(row) && hidden(row)) return;
+        const rr = document.createRange();
+        rr.selectNodeContents(row);
+        const clipStart = range.compareBoundaryPoints(Range.START_TO_START, rr) > 0;
+        const clipEnd = range.compareBoundaryPoints(Range.END_TO_END, rr) < 0;
+        let text;
+        if (clipStart || clipEnd) {
+          if (clipStart) rr.setStart(range.startContainer, range.startOffset);
+          if (clipEnd) rr.setEnd(range.endContainer, range.endOffset);
+          const box = document.createElement("div");
+          box.appendChild(rr.cloneContents());
+          text = textOf(box);
+        } else {
+          text = rowText(row, lane);
+        }
+        if (text) picked.push({ row, text });
+      });
+    }
+    if (!picked.length) {
+      // The reader scrolls inside #scroll, not the window, so the window's
+      // height is the wrong ruler for what is on screen. This is the same
+      // rect the port's own position capture measures against.
+      const scroll = $("scroll");
+      const box = scroll ? scroll.getBoundingClientRect() : null;
+      const top = box ? box.top : 0;
+      const bottom = box && box.height ? box.bottom : window.innerHeight;
+      // A folded section whose heading is on screen comes whole: the
+      // heading alone would be the same orphan the owner saw.
+      let carry = false;
+      rows.forEach((row) => {
+        if (folded(row)) {
+          if (carry) { const t = rowText(row, lane); if (t) picked.push({ row, text: t }); }
+          return;
+        }
+        carry = false;
+        if (hidden(row)) return;
+        const b = row.getBoundingClientRect();
+        if (b.bottom < top || b.top > bottom) return;
+        const t = rowText(row, lane);
+        if (t) picked.push({ row, text: t });
+        carry = row.classList.contains("is-collapsed");
+      });
+    }
+    if (!picked.length) {
+      // A geometry test that finds nothing must not be the reason a reader
+      // cannot copy. Fall back to the column itself.
+      const t = textOf(reading);
+      const w = work();
+      return t ? { text: t, first: w.page, last: w.page, rowId: "", lane } : null;
+    }
+    const w = work();
+    return {
+      text: picked.map((p) => p.text).join("\n\n"),
+      first: pageOf(picked[0].row) || w.page,
+      last: pageOf(picked[picked.length - 1].row) || w.page,
+      rowId: picked[0].row.id || "",
+      lane,
+    };
+  }
+  // For the theme's checks (scripts/) and a console: what a copy would carry.
+  window.MOFaithReadTools = { passage, citation, deepLink, withCitation, rowText };
 
   function note(msg, bad) {
     if (!say) return;
@@ -154,12 +289,12 @@
   /* ---- The four ---------------------------------------------------- */
 
   $("rdCopyText").addEventListener("click", () => {
-    const body = visibleText();
-    if (!body) { note("Wait for the text to appear.", true); return; }
+    const p = passage();
+    if (!p) { note("Wait for the text to appear.", true); return; }
     // The citation travels with the words. A quotation pasted into a
     // footnote without its source is the thing this library exists to
     // stop happening.
-    toClipboard(`${body}\n\n${citation()}\n${deepLink()}`, "Text and citation copied.");
+    toClipboard(withCitation(p.text, p), "Text and citation copied.");
   });
 
   $("rdCopyLink").addEventListener("click", () => {
@@ -203,11 +338,11 @@
 
   $("rdNote").addEventListener("click", () => {
     if (!NB) { note("The notebook could not load. Reload and try again.", true); return; }
-    const body = visibleText();
-    if (!body) { note("Wait for the text to appear.", true); return; }
+    const p = passage();
+    if (!p) { note("Wait for the text to appear.", true); return; }
     const w = work();
-    const cite = citation();
-    const url = deepLink();
+    const url = deepLink(p.first, p.rowId);
+    const cite = citation(p.first, p.last, url, p.lane);
     where().then((at) => {
       NB.add(NB.newEntry({
         kind: "selection",
@@ -216,9 +351,9 @@
         title: w.title,
         author: w.author,
         cite,
-        anchor: w.page ? `${unitOf(w.volume)} ${w.page}` : "",
+        anchor: locator(w.volume, p.first, p.last),
         url,
-        text: body,
+        text: p.text,
       }));
       note("Saved to your notebook.");
     }).catch(() => note("That could not be saved to the notebook.", true));
@@ -308,12 +443,10 @@
       const b = e.target.closest("button");
       if (!b || !host) return;
       e.preventDefault();
-      const link = new URL(deepLink());
-      link.hash = host.id;
+      const p = { first: pageOf(host), last: pageOf(host), rowId: host.id, lane: laneShown() };
       const body = b.getAttribute("data-a") === "link"
-        ? link.href
-        : `${(host.innerText || host.textContent || "").trim()}`
-          + `\n\n${citation()}\n${link.href}`;
+        ? deepLink(p.first, host.id)
+        : withCitation(rowText(host, p.lane), p);
       copyRaw(body).then(() => flash(b, "\u2713"), () => flash(b, "\u2715"));
     });
   }
