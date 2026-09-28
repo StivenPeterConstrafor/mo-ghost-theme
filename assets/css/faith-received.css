@@ -20360,3 +20360,16 @@ body.mo-shelf-page #author-order-note { display: none; }
   flex-wrap: wrap;
   margin: 0 0 14px;
 }
+
+/* THE RAIL SITS ON THE PAGE'S CENTER LINE (Ian, 2026-09-28: "recenter
+   the TFR navrail to always be center, even with the TFR link in the MO
+   menu bar"). The row was packed to the left of .container, so once the
+   masthead grew a Faith Received link and widened, the rail sat visibly
+   left of it. Auto margins on the row's two children (the brand and the
+   item list) center it. They are used rather than justify-content:center
+   because the row scrolls sideways: when it overflows (a phone, or
+   Research open), auto margins fall to zero and the row starts at its
+   left edge, where centering would push the brand off the start and out
+   of reach of the scroll. */
+.tfr-rail-inner > .tfr-rail-brand { margin-left: auto; }
+.tfr-rail-inner > .tfr-rail-items { margin-right: auto; }
