@@ -177,7 +177,7 @@ body.gripping{user-select:none;cursor:col-resize}
 /* collapsible tree: a caret on nodes that have descendants; collapsed → hide the subtree */
 .nav-node .cv{flex:none;width:.85rem;margin:-.3rem -.5rem -.3rem -.65rem;padding:.3rem .5rem;font-size:.6rem;color:var(--muted);transition:transform .15s var(--ease);-webkit-user-select:none;user-select:none;cursor:pointer;text-align:center}
 .nav-node.collapsed .cv{transform:rotate(-90deg)}
-.nav-node .cv.leaf{visibility:hidden}
+.nav-node .cv.leaf{visibility:hidden;flex:0 0 24px;width:24px;margin:-4px 0 -4px -4px}/* a leaf keeps the caret's room, so siblings line up */
 .nav-node.nd-hidden{display:none}
 /* Independent, keyboard-accessible section and expansion controls. */
 .nav-node .nav-open{appearance:none;border:0;background:none;box-shadow:none;padding:0;text-align:left;cursor:pointer;text-decoration:none}
