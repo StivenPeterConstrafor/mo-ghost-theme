@@ -657,7 +657,7 @@
       if (mine && !mine.unavailable && typeof mine.used === "number" && mine.cap > 0) {
         usageMineRow.hidden = false;
         const pct = Math.min(100, Math.round((mine.used / mine.cap) * 100));
-        if (usageMineText) usageMineText.textContent = `${mine.used} of ${mine.cap} used`;
+        if (usageMineText) usageMineText.textContent = `${mine.used} of ${mine.cap} used today`;
         if (usageMineFill) usageMineFill.style.width = `${pct}%`;
         usageMineRow.classList.toggle("ask-usage-row--warn", mine.used >= mine.cap);
       } else {
