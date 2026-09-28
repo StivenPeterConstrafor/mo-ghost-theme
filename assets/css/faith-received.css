@@ -6840,7 +6840,7 @@ mark.faith-find-hit.is-current {
 .fr-ed { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px;
   margin: -6px 0 12px; font-family: var(--font-body); font-size: 12px;
   line-height: 1.4; color: var(--color-muted); }
-.fr-ed-chip { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+.fr-ed-chip { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--color-dark); border: 1px solid var(--color-card-border); padding: 1px 6px; }
 .fr-ed-chip.fac { border-style: double; border-width: 3px; padding: 0 5px; }
 /* .blist a is a whole-row link (a block, or a grid in the folded room lists, whose
