@@ -1794,7 +1794,7 @@ a.plref:hover{color:var(--accent);border-bottom-style:solid}
 /* the printed contents (09-28): titles wrap so the Latin beside the English stays readable; the author above a work's head */
 .vncontents .vnrow .vnt{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
 .vncontents .vnla{color:var(--muted);font-style:italic;font-size:.94em}
-.vncontents .vnau{padding:.55rem .3rem .1rem;font:600 .7rem/1.3 var(--sans);letter-spacing:.03em;color:var(--muted)}
+.vncontents .vnau{padding:.55rem .3rem .1rem;font:600 .75rem/1.3 var(--sans);letter-spacing:.03em;color:var(--muted)}
 .row.solo{grid-template-columns:1fr!important}.row.solo>.la,.row.solo>.en{max-width:68ch;margin-inline:auto}
 .row.soloen,.row.solola{grid-template-columns:1fr!important}
 .row.soloen>.la,.row.solola>.en{display:none}
