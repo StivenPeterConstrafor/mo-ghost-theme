@@ -944,6 +944,31 @@ function __initReaderTools(){
   const rowCite=r=>{const f=r.closest(".folio");const base=f?(CITEWORK+", "+locOf(f.dataset.page)):CITEWORK;
     const ed=r&&r.dataset&&r.dataset.edit;   // editors'-apparatus rows cite as the EDITORS', in the work — never as the author's own words
     return ed?(ed+" (Wadding–Vivès editors’ apparatus), in "+base):base;};
+  // CITATIONS for academic use (a reader asked: "Will source information be added so these materials can be cited for academic
+  // use? … all the standard citation details needed in a bibliography and footnotes"). The note, in The Faith Received's form:
+  // "Philipp Melanchthon, Loci Theologici (1559), CR 21:601–2, English trans. accessed through The Faith Received (Mere Orthodoxy),
+  // <link>"; an early English book cites as a regular book. The formatter is cite-core.js (tfr-backend api/_cite-core.mjs byte for
+  // byte, the same code as the worker's /v1/cite and the MCP's cite tool); the work's citation profile (its bibliographic record,
+  // the texts of a collected-works volume, Denzinger's page labels) comes from /v1/cite?record=1. Until both have loaded — or if
+  // either fails — the older line above stands.
+  let CITE=null;
+  (async()=>{try{const src=document.getElementById("frPortAssets")?.dataset.citeCore;if(!src||!WORK_SLUG)return;
+    const [core,prof]=await Promise.all([import(src),fetch("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/cite?w="+encodeURIComponent(WORK_SLUG)+"&record=1").then(r=>r.ok?r.json():null)]);
+    if(core&&core.citation&&prof&&prof.record)CITE={core,prof};}catch(e){}})();
+  const htmlEsc=t=>String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  // the lane a row is cited in: the Latin/Greek column is the original; everything else is read in English
+  const laneOfRow=r=>{const s=getSelection&&getSelection(),a=s&&s.anchorNode,n=a&&(a.nodeType===1?a:a.parentElement),la=n&&n.closest&&n.closest(".la");
+    return (la&&r&&(r===la||r.contains(la)))||(r&&r.classList&&r.classList.contains("la"))?"orig":"en";};
+  // one page's citations — {note, short, bibliography, bibtex, ris, html, …} — or null until the formatter has loaded
+  const citeOf=(page,url,lane)=>{if(!CITE||page==null)return null;const core=CITE.core,prof=CITE.prof,rec=prof.record,k=String(page),pm=rec.page_map||{};
+    const printed=pm[k]??pm[String(Number(k))]??pm[k.padStart(4,"0")]??null,label=prof.labels?(prof.labels[k]||prof.labels[String(Number(k))]||""):"";
+    try{return core.citation(rec,{page:k,printed,part:core.partAt(prof.texts,k),lane,link:url||"",site:prof.site,label});}catch(e){return null;}};
+  const plain=t=>String(t).replace(/\*([^*]+)\*/g,"$1");
+  // a row's note, as plain text and as HTML (italic titles for a rich paste), editors' apparatus named as such
+  const rowNote=(r,url)=>{const f=r&&r.closest(".folio"),c=f?citeOf(f.dataset.page,url,laneOfRow(r)):null;if(!c)return null;
+    const ed=r&&r.dataset&&r.dataset.edit,pre=ed?ed+" (Wadding–Vivès editors’ apparatus), in ":"";
+    return {text:pre+plain(c.note),html:htmlEsc(pre)+c.html.note,c};};
+  window.__frCite=(page,url,lane)=>{const c=citeOf(page,url,lane||"en");return c?plain(c.note):null;};   // reader-core's folio pill uses it
   function rowx(r,kind){return reading.querySelector('.rowx[data-for="'+r.id+'"][data-kind="'+kind+'"]');}
   function placeAfter(r,node){let ref=r; const tr=rowx(r,"tr"); if(kindOrder(node)==="note"&&tr)ref=tr; ref.after(node);}
   function kindOrder(n){return n.dataset.kind;}
@@ -1210,17 +1235,19 @@ function __initReaderTools(){
   function cpFlash(btn,txt){const o=btn.textContent;btn.textContent=txt||"Copied ✓";setTimeout(()=>{btn.textContent=o;},1100);}
   function rowAnchor(r){return location.origin+location.pathname+location.search+"#"+r.id;}
   const cw=t=>navigator.clipboard&&navigator.clipboard.writeText(t);
-  if($("#spCopy"))$("#spCopy").onclick=function(){const t=passageText();const cite=popRow?rowCite(popRow):WORK;
-    cw(t+"\n\n— "+cite+(popRow?"\n"+rowAnchor(popRow):""));cpFlash(this);};
+  if($("#spCopy"))$("#spCopy").onclick=function(){const t=passageText();const cite=popRow?rowCite(popRow):WORK,n=popRow&&rowNote(popRow,rowAnchor(popRow));
+    cw(t+"\n\n— "+(n?n.text:cite+(popRow?"\n"+rowAnchor(popRow):"")));cpFlash(this);};
   // deep-link to this exact passage
   if($("#spLink"))$("#spLink").onclick=function(){if(popRow)cw(rowAnchor(popRow));cpFlash(this,"Link ✓");};
   // citation: stable locus + permalink (Chicago-ish; scholars can paste & adapt)
-  if($("#spCite"))$("#spCite").onclick=function(){const cite=popRow?rowCite(popRow):WORK,url=popRow?rowAnchor(popRow):location.href;
+  if($("#spCite"))$("#spCite").onclick=function(){const cite=popRow?rowCite(popRow):WORK,url=popRow?rowAnchor(popRow):location.href,n=popRow&&rowNote(popRow,url);
+    if(n){cw(n.text);cpFlash(this,"Cited ✓");return;}
     const loc=popRow&&WORK_SLUG?(()=>{const m=popRow.id.match(/^b(\d+)-(\d+)$/);return m?` [${WORK_SLUG}/p${m[1]}/b${m[2]}]`:"";})():"";
     cw(cite+loc+". The Faith Received. "+url+".");cpFlash(this,"Cited ✓");};
   // BibTeX export (locus + permalink)
   $("#spBib")&&(($("#spBib")||{}).onclick=function(){const fol=popRow&&popRow.closest(".folio");
-    const loc=fol?locOf(+fol.dataset.page):"",url=popRow?rowAnchor(popRow):location.href;
+    const loc=fol?locOf(+fol.dataset.page):"",url=popRow?rowAnchor(popRow):location.href,n=popRow&&rowNote(popRow,url);
+    if(n&&n.c.bibtex){cw(n.c.bibtex);cpFlash(this,"BibTeX ✓");return;}
     const key=((DATA.author||WORK).split(/[\s,]+/)[0]||"work").replace(/[^A-Za-z]/g,"")+(WORK.split(/\s+/)[0]||"");
     cw("@book{"+key+",\n  author = {"+(DATA.author||"")+"},\n  title = {"+WORK+(DATA.volume?", "+DATA.volume:"")+"},\n  note = {The Faith Received"+(loc?", "+loc:"")+"},\n  url = {"+url+"}\n}");
     cpFlash(this,"BibTeX ✓");});
@@ -1232,7 +1259,10 @@ function __initReaderTools(){
     if(lsGet("fr_nocite")==="1")return;
     const node=s.anchorNode&&s.anchorNode.parentElement,row=node&&node.closest&&node.closest(".row[id],.en[id^=b],.la[id^=b]");
     if(!row||!reading.contains(row))return;
-    e.clipboardData.setData("text/plain",s.toString().replace(/\s+/g," ").trim()+"\n\n"+rowCite(row));e.preventDefault();});
+    const txt=s.toString().replace(/\s+/g," ").trim(),n=rowNote(row,rowAnchor(row));
+    if(n){e.clipboardData.setData("text/plain",txt+"\n\n"+n.text);e.clipboardData.setData("text/html",htmlEsc(txt)+"<br><br>"+n.html);}
+    else e.clipboardData.setData("text/plain",txt+"\n\n"+rowCite(row));
+    e.preventDefault();});
   // per-paragraph Latin reveal (English-primary "Read" mode) + hover pencil for translation
   reading.querySelectorAll(".row[id],.en[id^=b],.la[id^=b]").forEach(r=>{
     if(!canTranslateSource())return;

@@ -2352,8 +2352,9 @@ function build(){
     // researcher affordance: clicking the folio pill copies a full citation + deep link
     {const ff=fm.querySelector(".ff");ff.title="Click to copy the citation for this page";
      ff.onclick=()=>{const a=(Array.isArray(DATA.author)?DATA.author.join(", "):(DATA.author||"")),
-       cite=[a,[DATA.title,seriesOf(DATA.volume)?.label||DATA.volume].filter(Boolean).join(", "),locOf(pg.n)].filter(Boolean).join(", ")
-         +" — "+location.origin+"/the-faith-received/read/?w="+encodeURIComponent(DATA.slug||"")+(DATA.pld_source_view?'&pldpart='+DATA.pld_source_view.id:'')+"#b"+pg.n+"-0";
+       url=location.origin+"/the-faith-received/read/?w="+encodeURIComponent(DATA.slug||"")+(DATA.pld_source_view?'&pldpart='+DATA.pld_source_view.id:'')+"#b"+pg.n+"-0",
+       // the academic note (read-tools.js __frCite, cite-core.js) once it has loaded; the older line until then
+       cite=(window.__frCite&&window.__frCite(pg.n,url,"en"))||([a,[DATA.title,seriesOf(DATA.volume)?.label||DATA.volume].filter(Boolean).join(", "),locOf(pg.n)].filter(Boolean).join(", ")+" — "+url);
        navigator.clipboard.writeText(cite).then(()=>{const old=ff.textContent;ff.textContent="✓ copied";
          setTimeout(()=>{ff.textContent=old;},1200);}).catch(()=>{});};}
     R.appendChild(fm);
