@@ -650,3 +650,12 @@
 - from: ^/the-faith-received/athanasius-incarnation/?$
   to: /the-faith-received/read/?w=pg-2880&from=athanasius-incarnation
   permanent: true
+
+# ── The Faith Received: the Didache moves into the reader (2026-09-28) ─
+# The Didache is not a retired duplicate: it is in no other collection,
+# so the English Edition (v1/works/didache) is the copy. Its old
+# standalone page had no AI Transparency or Report a problem tools.
+# No `from=`: nothing is being mapped from an old work id.
+- from: ^/the-faith-received/didache/?$
+  to: /the-faith-received/read/?w=didache
+  permanent: true

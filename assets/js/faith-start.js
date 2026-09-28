@@ -87,7 +87,7 @@
       note: "Warmest of the catechisms. Begins not with doctrine but with comfort." },
     { slug: "westminster-shorter", href: "/the-faith-received/read/?w=rc-115-westminster-shorter-catechism-1647", eyebrow: "1647", title: "The Westminster Shorter Catechism",
       note: "A hundred and seven questions that shaped English-speaking Protestantism." },
-    { slug: "didache", eyebrow: "c. 50&ndash;120", title: "The Didache",
+    { slug: "didache", href: "/the-faith-received/read/?w=didache", eyebrow: "c. 50&ndash;120", title: "The Didache",
       note: "How the first Christians were taught to live, pray and gather." },
     { slug: "augustine-confessions", href: "/the-faith-received/read/?w=pld-2722", eyebrow: "Augustine", title: "The Confessions",
       note: "The book that invented the inner life as a subject worth writing about." },
