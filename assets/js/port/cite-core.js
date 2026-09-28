@@ -38,7 +38,8 @@ export const SERIES = {
   'CIC (Friedberg)': { series: 'Corpus Iuris Canonici', editor: 'E. Friedberg', by: 'column' },
 };
 // Chicago 14.128: a book printed before 1900 is cited by place and date; the publisher (a printer's imprint) may go.
-const pre1900 = y => { const m = /\d{4}/.exec(String(y ?? '')); return !!m && Number(m[0]) < 1900; };
+// (a range by its last year: a series printed 1883–2009 keeps its publisher)
+const pre1900 = y => { const all = String(y ?? '').match(/\d{4}/g); return !!all && Number(all[all.length - 1]) < 1900; };
 // an imprint set in capitals on the title page ("APUD C. A. SCHWETSCHKE ET FILIUM") in ordinary case, for the exports
 const LOWER = new Set(['et', 'und', 'and', 'of', 'the', 'de', 'du', 'des', 'la', 'le', 'les', 'von', 'van', 'der', 'den', 'in', 'bei', 'chez', 'e', 'y', 'for', 'at', 'by']);
 const ordinaryCase = t => { const s = String(t || ''), letters = s.replace(/[^\p{L}]/gu, '');
@@ -82,6 +83,8 @@ const WEAK = new Set(['a', 'an', 'the', 'of', 'and', 'in', 'on', 'to', 'for', 'a
 const shortTitle = t => { const s = String(t || '').split(/[:.;—–(]/)[0].trim(); let w = s.split(/\s+/); if (w.length > 4) w = w.slice(0, 4); while (w.length > 1 && WEAK.has(w[w.length - 1].toLowerCase())) w.pop(); return w.join(' '); };
 const clean = s => String(s || '').replace(/\s+/g, ' ').replace(/\s+([,.;:])/g, '$1').replace(/([.?!])\./g, '$1').replace(/,\s*,/g, ',').trim();
 const isAnon = a => /^(?:various|anonymous|uncertain)/i.test(a);
+// a volume inside a note: "vol. 2" (the catalogue's "Vol. 2" in lower case mid-sentence; "Pars VIII", "Tomus II" as printed)
+const inNote = v => /^[\dIVXL]+$/.test(String(v)) ? `vol. ${v}` : String(v).replace(/^Vol\.\s*/, 'vol. ');
 
 /** A record for a work that has none yet: the catalogue's author, title and volume line, and the series rules for Migne. */
 export function recordFromCatalogue(w = {}) {
@@ -111,14 +114,17 @@ function locatorOf(rec, page, printed = null) {
   const col = /^(\d+):0*(\d+)([a-d]?)$/i.exec(p), num = /^0*(\d+)$/.exec(p);
   const n = col ? col[2] + (col[3] || '').toUpperCase() : (num ? num[1] : p);
   const vol = col ? col[1] : rec.volume;
-  const volOk = vol && /^[\dIVXL/, ]+$/.test(String(vol));
+  // outside a series a column number says so (Chicago 14.156: "col.", "cols."); a page number goes bare (no "p." in a note). The
+  // volume of a book outside a series is named before the imprint (citation's volLabel), so it is not repeated here.
+  const cols = (v, isCol) => isCol ? (/[–-]/.test(v) ? `cols. ${v}` : `col. ${v}`) : v;
   // a printed number the edition kept on this page (printed_numbers: <fw type="pageNum">) — exact, never interpolated
-  if (printed != null && printed !== '') return { kind: 'printed', text: ss ? `${ss} ${vol}:${printed}` : (volOk ? `${vol}:${printed}` : String(printed)), n: String(printed) };
+  if (printed != null && printed !== '') { const pv = String(printed);
+    return { kind: 'printed', text: ss ? `${ss} ${vol}:${pv}` : cols(pv, rec.locator?.printed === 'columns'), n: pv }; }
   if (kind === 'column' || kind === 'printed-page') {
     // a Greek Migne page holds two columns, the Greek and its Latin (each page mark is the odd one): cite both
     const c = ss === 'PG' && /^\d+$/.test(n) && Number(n) % 2 === 1 ? `${n}–${chicagoEnd(Number(n), Number(n) + 1)}` : n;
     if (ss) return { kind, text: `${ss} ${vol}:${c}`, n };
-    return { kind, text: volOk ? `${vol}:${c}` : c, n };   // Chicago: no "p." in a note
+    return { kind, text: cols(c, kind === 'column'), n };
   }
   if (kind === 'image') return { kind, text: `image ${n}`, n };
   if (kind === 'sequence') return { kind, text: `digital ed. sect. ${n}`, n };
@@ -158,11 +164,12 @@ export function citation(record, { page = null, printed = null, part = null, lan
   else {
     const pub = r.publisher && !pre1900(r.year) ? r.publisher : '';
     const facts = [r.place && (pub ? `${r.place}: ${pub}` : r.place), r.year || (inPart ? '' : date)].filter(Boolean).join(', ');
-    const volLabel = r.volume ? (/^[\dIVXL]+$/.test(String(r.volume)) ? `vol. ${r.volume}` : String(r.volume)) : (r.volume_note && r.volume_note.length <= 40 ? r.volume_note : '');
+    const volLabel = r.volume ? inNote(r.volume) : (r.volume_note && r.volume_note.length <= 40 ? r.volume_note : '');
     const extra = [!byEditor && r.editor ? `ed. ${list(people(r.editor))}` : '', r.translator ? `trans. ${r.translator}` : '', r.edition || '', volLabel].filter(Boolean).join(', ');
     note = clean(`${who ? who + ', ' : ''}*${title}*${inPart && part.date ? ` (${part.date})` : ''}${inPart && (r.title_orig || r.title) !== title ? `, in *${r.title_orig || r.title}*` : ''}${extra ? ', ' + extra : ''}${facts ? ` (${facts})` : ''}${loc.text ? ', ' + loc.text : ''}, ${where}${link ? ', ' + link : ''}.`);
   }
-  const short = clean(`${!byEditor && authors.length ? surname(authors[0]) + ', ' : editors.length ? surname(editors[0]) + ', ' : ''}*${shortTitle(title)}*${loc.text ? ', ' + loc.text : ''}.`);
+  const bookVol = !ser && r.volume ? inNote(r.volume) : '';
+  const short = clean(`${!byEditor && authors.length ? surname(authors[0]) + ', ' : editors.length ? surname(editors[0]) + ', ' : ''}*${shortTitle(title)}*${bookVol && loc.text ? ', ' + bookVol : ''}${loc.text ? ', ' + loc.text : ''}.`);
   const sbl = ser ? clean(`${who ? who + ', ' : ''}*${title}*${loc.text ? ` (${loc.text})` : ''}.`) : null;
 
   // THE BIBLIOGRAPHY — Chicago, with every publication fact the record has.
