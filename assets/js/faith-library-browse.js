@@ -620,7 +620,7 @@
       if (!list.length) return;
       const grid = documentsSection.querySelector(".faith-card-grid");
       appendCards(grid, list, (c) =>
-        `<a class="faith-card" href="${escapeHtml(c.url)}">${ 
+        `<a class="faith-card" href="${escapeHtml(c.entryUrl || c.url)}">${ 
         c.eyebrow ? `<p class="faith-card-date">${escapeHtml(c.eyebrow)}</p>` : "" 
         }<h3 class="faith-card-title"><em>${escapeHtml(c.title)}</em></h3>${ 
         c.year ? `<p class="faith-card-desc">${escapeHtml(String(c.year))}</p>` : "" 

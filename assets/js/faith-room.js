@@ -86,6 +86,12 @@
     "Continental Reformed", "Anglican", "Presbyterian", "Congregational", "Baptist",
     "Anabaptist", "Remonstrant", "Methodist",
   ];
+  /* THE CONFESSIONS COUNT DOCUMENTS (corpus owner, 2026-09-28: "list
+     entries rather than distinct works"). Denzinger's papal and conciliar
+     documents are rows of their own now, several to a work, so the noun on
+     this page is the one the landing already uses for it. */
+  const NOUN = BY_TRADITION ? ["document", "documents"] : ["work", "works"];
+  const nounOf = (n) => NOUN[n === 1 ? 0 : 1];
   const traditionOf = (w) => {
     const t = String((w && w.tradition) || "").trim() || "Other";
     return window.MOFaithLabel && window.MOFaithLabel.shelf ? window.MOFaithLabel.shelf(t) : t;
@@ -988,7 +994,7 @@
     return Boolean(c) && c <= 15;
   }
 
-  function row(w, mark) {
+  function row(w, mark, title) {
     const second = w.titleLatin && w.titleLatin !== w.title ? w.titleLatin : "";
     const second2 = second ? `<span class="brow-la">${escapeHtml(second)}</span>` : "";
     const contents=window.MOCollectedContents?.get(w.id);
@@ -1007,9 +1013,12 @@
     const sub = m && m.length > ADDRESS ? `<span class="brow-sub">${escapeHtml(m)}</span>` : "";
     const preview=window.MOCollectedContents?.preview(w.id)||"";
     const details=window.MOCollectedContents?.disclosure(w.id)||"";
-    const inner = `<span class="brow-t">${escapeHtml(w.title || w.id)}</span>${sub}${second2}${vol}${preview}`;
-    if (w.readable !== false && w.url) {
-      return `<li${contents?' class="frcw-volume"':""}><a href="${escapeHtml(w.url)}">${inner}</a>${details}</li>`;
+    const inner = `<span class="brow-t">${escapeHtml(title || w.title || w.id)}</span>${sub}${second2}${vol}${preview}`;
+    // A confession entry opens on its own passage: page and block, the ids
+    // the reader gives its blocks (see entryUrl in faith-corpora.js).
+    const href = w.entryUrl || w.url;
+    if (w.readable !== false && href) {
+      return `<li${contents?' class="frcw-volume"':""}><a href="${escapeHtml(href)}">${inner}</a>${details}</li>`;
     }
     return `<li class="faith-room-pending"><span class="faith-room-row">${inner}</span></li>`;
   }
@@ -1103,7 +1112,8 @@
       ? { kind, label: name }
       : window.MOFaithCatalogue.authorGroup(name, list);
     name = authorLabel(group.label);
-    const rows = list.map((w) => row(w, markOf ? markOf(w) : undefined)).join("");
+    const subs = kind === "tradition" ? entryGroups(list) : null;
+    const rows = subs ? "" : list.map((w) => row(w, markOf ? markOf(w) : undefined)).join("");
     const n = list.length;
 
     // Every author folds shut, and starts shut. Open, this page is tens
@@ -1140,9 +1150,77 @@
     const office = note && note.office
       ? `<span class="btrad-office">${escapeHtml(note.office)}</span>` : "";
     return `<details class="btrad${wide}">
-  <summary class="btrad-sum"><h3>${escapeHtml(name)}${dates}<span class="btrad-n">${n.toLocaleString()} ${group.kind === "collection" ? (n === 1 ? "entry" : "entries") : (n === 1 ? "work" : "works")}</span></h3>${office}</summary>
-  ${all}<ul class="blist">${rows}</ul>
+  <summary class="btrad-sum"><h3>${escapeHtml(name)}${dates}<span class="btrad-n">${n.toLocaleString()} ${group.kind === "collection" ? (n === 1 ? "entry" : "entries") : nounOf(n)}</span></h3>${office}</summary>
+  ${all}${subs ? subFolds(subs) : `<ul class="blist">${rows}</ul>`}
 </details>`;
+  }
+
+  /* THE ROMAN SIDE BY POPE AND COUNCIL (corpus owner, 2026-09-28). Every
+     Denzinger entry names the pope or council that issued it, so a
+     tradition whose documents carry one opens on those names, in the order
+     they spoke, and each opens on its own documents. Five hundred rows
+     under one heading was a wall; a hundred names is an index. The creeds
+     Denzinger prints without an issuer head the list. Null for a tradition
+     with no issuers, which keeps the plain list. */
+  const NO_ISSUER = "Creeds and formulas";
+  // One name can be several councils: "Lateran Council" is 649 and 1102,
+  // "Roman Council" four synods across four centuries. Where one name's
+  // works lie more than a generation apart, each work is its own fold,
+  // named with its year. A pope's several sections stay one fold.
+  const APART = 30;
+  function entryGroups(list) {
+    if (!list.some((w) => w.entryAuthor)) return null;
+    const firstOf = new Map();
+    list.forEach((w) => {
+      if (!w.entryAuthor) return;
+      const k = `${w.entryAuthor}\u0000${w.id}`;
+      const y = realYear(w) || yearOf(w);
+      if (!firstOf.has(k) || y < firstOf.get(k)) firstOf.set(k, y);
+    });
+    const spread = new Map();
+    firstOf.forEach((y, k) => {
+      const name = k.split("\u0000")[0];
+      const r = spread.get(name) || [y, y];
+      spread.set(name, [Math.min(r[0], y), Math.max(r[1], y)]);
+    });
+    const by = new Map();
+    list.forEach((w) => {
+      let name = w.entryAuthor || NO_ISSUER;
+      const r = w.entryAuthor && spread.get(name);
+      if (r && r[1] - r[0] > APART) name = `${name} (${firstOf.get(`${name}\u0000${w.id}`)})`;
+      if (!by.has(name)) by.set(name, []);
+      by.get(name).push(w);
+    });
+    const first = (g) => (g.name === NO_ISSUER ? -Infinity : Math.min(...g.works.map((w) => realYear(w) || yearOf(w))));
+    return [...by.entries()].map(([name, works]) => ({ name, works }))
+      .sort((a, b) => first(a) - first(b) || a.name.localeCompare(b.name));
+  }
+  // "The Errors of Peter Abelard — Council of Sens, 1140" under the Council
+  // of Sens reads "The Errors of Peter Abelard", its year in the column.
+  function entryTitle(w) {
+    const t = String(w.title || w.id);
+    const a = String(w.entryAuthor || "");
+    if (!a) return t;
+    const tail = ` \u2014 ${a}, `;
+    const at = t.lastIndexOf(tail);
+    return at > 0 && /^\d{1,4}$/.test(t.slice(at + tail.length).trim()) ? t.slice(0, at) : t;
+  }
+  // The catalogue's own year, which yearOf's text match misses below 100
+  // (Clement of Rome, 90). Zero for an undated creed.
+  const realYear = (w) => (Number.isInteger(w.year) && w.year > 0 && w.year < 2100 ? w.year : 0);
+  function subFolds(groups) {
+    return `<div class="btrad-subs">${groups.map((g) => {
+      const ys = g.works.map(realYear).filter(Boolean);
+      const lo = ys.length ? Math.min(...ys) : 0, hi = ys.length ? Math.max(...ys) : 0;
+      // A council already named with its year does not print it twice.
+      const span = lo && !/\(\d{3,4}\)$/.test(g.name) ? `<span class="btrad-dates">${lo}${hi !== lo ? `\u2013${hi}` : ""}</span>` : "";
+      const n = g.works.length;
+      // A search has already narrowed the list, so its hits are not hidden
+      // behind a second fold.
+      return `<details class="btrad-sub"${filter ? " open" : ""}><summary class="btrad-sub-sum"><h4>${escapeHtml(authorLabel(g.name))}${span}`
+        + `<span class="btrad-n">${n.toLocaleString()} ${nounOf(n)}</span></h4></summary>`
+        + `<ul class="blist">${g.works.map((w) => row(w, realYear(w) ? String(realYear(w)) : "", entryTitle(w))).join("")}</ul></details>`;
+    }).join("")}</div>`;
   }
 
   // ── The volume grid ──────────────────────────────────────────────
@@ -1326,7 +1404,10 @@
       // in the sort, so one page of the Latin Fathers printed twenty-two
       // separate "Unknown author" rows. A name gets one block, at the
       // place it first appears.
-      const key = `${w.corpus}|${w.id}`;
+      // A confession entry is its work plus the passage it starts at, so
+      // Denzinger's documents are rows of their own rather than one row
+      // per pope (corpus owner, 2026-09-28).
+      const key = `${w.corpus}|${w.id}|${w.page == null ? "" : w.page}|${w.block == null ? "" : w.block}`;
       let g = byName.get(name);
       if (!g) {
         g = { name, works: [], seen: new Set() };
@@ -1350,7 +1431,11 @@
     // Confessions read in the order they were written, inside a tradition
     // as inside a century (Ian, 2026-09-24). Undated documents close the
     // group, A-Z among themselves.
-    if (BY_TRADITION) allGroups.forEach((g) => { g.works.sort((a, b) => yearOf(a) - yearOf(b) || compareWorks(a, b)); });
+    // Entries of one year read in the order their work prints them, so
+    // Vatican I's chapters come before its canons, not after them by title.
+    const inPrint = (a, b) => (a.block != null && b.block != null
+      ? String(a.id).localeCompare(String(b.id)) || a.page - b.page || a.block - b.block : 0);
+    if (BY_TRADITION) allGroups.forEach((g) => { g.works.sort((a, b) => yearOf(a) - yearOf(b) || inPrint(a, b) || compareWorks(a, b)); });
     allGroups.sort((a, b) => groupOrder[a.kind] - groupOrder[b.kind]
       || (centuryList ? centuryRank(a) - centuryRank(b) : 0)
       || (BY_TRADITION && !centuryList ? traditionRank(a.name) - traditionRank(b.name) || a.name.localeCompare(b.name) : 0)
@@ -1543,7 +1628,7 @@
     const matching = filter ? ` matching &ldquo;${escapeHtml(filter)}&rdquo;` : "";
     const within = (party ? ` &middot; ${escapeHtml(party)}` : "") + (scans ? " &middot; with page scans" : "");
     // One library: English editions are counted as works (MOFaithCatalogue.countLabel adds "+ N English editions").
-    const oneCount = (list) => `${list.length.toLocaleString()} work${list.length === 1 ? "" : "s"}`;
+    const oneCount = (list) => `${list.length.toLocaleString()} ${nounOf(list.length)}`;
     let counted = `${oneCount(scoped)}${matching} in ${escapeHtml(label)}${within}`;
     if (party === ASSEMBLY && rosterState !== "ready") counted = "";
     if (onGrid) {
@@ -1580,7 +1665,7 @@
     if (undatedNote) {
       const n = scoped.filter(w => !cent(w)).length;
       undatedNote.hidden = !n;
-      undatedNote.textContent = `${n.toLocaleString()} ${n === 1 ? "work has" : "works have"} no date`;
+      undatedNote.textContent = `${n.toLocaleString()} ${nounOf(n)} ${n === 1 ? "has" : "have"} no date`;
     }
     root.querySelector("[data-room-rail]").innerHTML = rail;
     root.querySelector("[data-room-list]").innerHTML = body;

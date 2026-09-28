@@ -165,8 +165,10 @@
     const inner = `<span class="tfr-trad-yr">${esc(whenOf(w))}</span>`
       + `<span class="tfr-trad-t">${esc(titleOf(w))}</span>${
        kind ? `<span class="tfr-trad-kind">${esc(kind)}</span>` : ""}`;
-    return w.url
-      ? `<li><a href="${esc(w.url)}">${inner}</a></li>`
+    // A confession entry opens on its own passage (entryUrl, faith-corpora.js).
+    const href = w.entryUrl || w.url;
+    return href
+      ? `<li><a href="${esc(href)}">${inner}</a></li>`
       : `<li><span class="tfr-trad-row">${inner}</span></li>`;
   }
 

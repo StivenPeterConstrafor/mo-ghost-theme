@@ -227,11 +227,40 @@
   function confessionTradition(title, given, slug) {
     const s = String(slug || "");
     if (CONFESSION_OVERRIDE[s]) return CONFESSION_OVERRIDE[s];
+    // The patterns split the Protestant half by church. They never move a
+    // Roman document: since the Denzinger rebuild (2026-09-28) every papal
+    // and conciliar entry carries its own title, and Innocent III's
+    // "Profession of Faith Prescribed for Durand of Osca and His Waldensian
+    // Companions" or Constance's questions "to the Wycliffites and Hussites"
+    // are Rome speaking about those churches, not their confessions.
+    if (given === "Roman Catholic") return given;
     const t = String(title || "");
     for (const [pattern, tradition] of CONFESSION_TRADITION) {
       if (pattern.test(t)) return tradition;
     }
     return given || "";
+  }
+
+  // The pope or council a Denzinger entry is filed under, as the index
+  // gives it, less three slips of its parser: Vatican I arrived as a pope,
+  // and two councils kept the first half of an alternative date. The two
+  // councils keep a plain name; the room tells same-named councils apart
+  // by year (faith-room.js, entryGroups).
+  const CONFESSION_AUTHOR = {
+    "Pope The Vatican Council": "Vatican Council I",
+    "Roman Council 860 and": "Roman Council",
+    "Council of Sens 1140 or": "Council of Sens",
+  };
+  function confessionAuthor(raw) {
+    const a = String(raw || "").trim();
+    return CONFESSION_AUTHOR[a] || a;
+  }
+  // The entry's title ends "— <author>, <year>", so the same slip is
+  // mended there too.
+  function confessionTitle(title, raw) {
+    const t = String(title || "");
+    const a = String(raw || "").trim();
+    return CONFESSION_AUTHOR[a] ? t.split(`\u2014 ${a}`).join(`\u2014 ${CONFESSION_AUTHOR[a]}`) : t;
   }
 
   // ── Works filed under the wrong man ──────────────────────────────
@@ -595,11 +624,26 @@
       normalize: (c) => ({
         corpus: "confessions",
         id: c.slug,
+        // ONE ROW PER ENTRY, NOT PER WORK (corpus owner, 2026-09-28). The
+        // Denzinger rebuild splits each pope's or council's section into
+        // its documents: 680 rows over 260 works, each Denzinger row
+        // carrying the page and the block its text starts at, and the
+        // pope or council who issued it. The reader numbers blocks the
+        // same way (b<page>-<block>), so the row opens on the passage.
+        // `url` stays the work's own address, because the search and the
+        // scripture index add a page and a query to it; `entryUrl` is the
+        // entry's, and the lists that show entries use it.
+        page: Number.isInteger(c.page) ? c.page : null,
+        block: Number.isInteger(c.block) ? c.block : null,
+        entryAuthor: confessionAuthor(c.author),
+        entryUrl: Number.isInteger(c.page) && Number.isInteger(c.block)
+          ? `/the-faith-received/read/?w=${encodeURIComponent(c.slug)}&p=${c.page}#b${c.page}-${c.block}`
+          : "",
         // The catalogue dates these outright. A creed with year 0 is
         // genuinely undated rather than dated to the year nought.
         date: c.year ? String(c.year) : "",
         tradition: confessionTradition(c.title, c.tradition, c.slug),
-        title: c.title || c.slug,
+        title: confessionTitle(c.title, c.author) || c.slug,
         author: "",
         eyebrow: [c.tradition, c.type].filter(Boolean).join(" · "),
         year: c.year || null,

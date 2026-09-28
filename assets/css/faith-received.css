@@ -17145,6 +17145,50 @@ body[data-member-status] [data-tfr-gate="signed-out"] { display: none !important
   line-height: 1.5;
 }
 
+/* ── Issuers inside a tradition (2026-09-28) ─────────────────────────
+   The Roman side of the Creeds, Confessions, & Catechisms room opens on
+   the popes and councils that issued its documents, each folding shut on
+   its own documents (faith-room.js, entryGroups). A second, quieter fold:
+   sentence case at reading size under the uppercase tradition, a lighter
+   hairline, the same caret a size down, and the years beside the name. */
+.faith-room-blocks--fold .btrad-subs { margin: 0 0 16px 26px; }
+.faith-room-blocks--fold .btrad-sub { border-top: 1px solid var(--color-card-border); }
+.faith-room-blocks--fold .btrad-sub:last-child { border-bottom: 1px solid var(--color-card-border); }
+.faith-room-blocks--fold .btrad-sub-sum { list-style: none; cursor: pointer; }
+.faith-room-blocks--fold .btrad-sub-sum::-webkit-details-marker { display: none; }
+.faith-room-blocks--fold .btrad-sub-sum h4 {
+  display: flex; align-items: baseline; gap: 12px;
+  position: relative;
+  margin: 0;
+  /* 44px of target. */
+  padding: 12px 0 12px 20px;
+  font-family: var(--font-body);
+  font-size: 15px; font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0; text-transform: none;
+}
+.faith-room-blocks--fold .btrad-sub-sum:hover h4 { color: var(--color-primary); }
+.faith-room-blocks--fold .btrad-sub-sum:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.faith-room-blocks--fold .btrad-sub-sum h4::before {
+  content: ""; position: absolute; left: 3px; top: 50%;
+  width: 5px; height: 5px; margin-top: -3px;
+  border-right: 1.5px solid var(--color-secondary);
+  border-bottom: 1.5px solid var(--color-secondary);
+  transform: rotate(-45deg); transform-origin: 50% 50%;
+  transition: transform 0.15s ease;
+}
+.faith-room-blocks--fold .btrad-sub[open] > .btrad-sub-sum h4::before { transform: rotate(45deg); }
+@media (prefers-reduced-motion: reduce) {
+  .faith-room-blocks--fold .btrad-sub-sum h4::before { transition: none; }
+}
+.faith-room-blocks--fold .btrad-sub .blist { padding-left: 20px; margin-bottom: 8px; }
+@media (max-width: 640px) {
+  .faith-room-blocks--fold .btrad-subs { margin-left: 0; }
+  .faith-room-blocks--fold .btrad-sub .blist { padding-left: 20px; }
+  .faith-room-blocks--fold .btrad-sub-sum h4 { flex-wrap: wrap; gap: 2px 10px; }
+  .faith-room-blocks--fold .btrad-sub-sum h4 .btrad-dates { display: inline; margin: 0; }
+}
+
 /* ── Back to the first page ───────────────────────────────────────
    The ported reader restores your place without asking, which is right.
    This is the way out of that, and it appears only when a restore has
