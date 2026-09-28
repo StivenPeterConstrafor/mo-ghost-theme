@@ -25,6 +25,17 @@
 .vol-browser .spt{min-width:0;white-space:normal;overflow-wrap:anywhere}
 .vol-browser .spa{font:14px/1.5 var(--font-body)}
 .vol-browser .spkind{display:inline-block;margin-left:.6em;font:12px/1.5 var(--font-body);color:var(--muted);font-style:normal}
+/* the PG printed contents (09-28, as patrologia-graeca shows them): dense rows, a work head in weight, sections indented beneath,
+   Migne's Latin beside the English, the column at the right, the author above */
+#shelfworks .vol-browser .sprow.pgtoc{padding-top:6px;padding-bottom:6px;border-bottom:0;align-items:baseline}
+#shelfworks .vol-browser .sprow.pgtoc.spd0{padding-top:9px}
+#shelfworks .vol-browser .sprow.pgtoc.spd0 .spt{font-weight:600}
+#shelfworks .vol-browser .sprow.pgtoc .spt{flex:1 1 auto}
+#shelfworks .vol-browser .sprow.pgtoc .spc{order:2;flex:0 0 auto;margin-left:auto;padding-left:12px;text-align:right}
+.vol-browser .spla{color:var(--muted);font-style:italic;font-weight:400;font-size:.92em}
+.vol-browser .spau{padding:14px 12px 2px;font:600 12px/1.4 var(--font-body);letter-spacing:.03em;color:var(--muted);border-top:1px solid var(--rule-soft)}
+.vol-browser .spau:first-child{border-top:0}
+@media(max-width:700px){#shelfworks .vol-browser .sprow.pgtoc{display:flex;gap:10px}}
 .vol-empty{margin:0;padding:36px 0;color:var(--muted);font:16px/1.5 var(--font-body)}
 @media(max-width:700px){
  .fr-library .vol-browser{grid-template-columns:minmax(0,1fr);gap:20px}

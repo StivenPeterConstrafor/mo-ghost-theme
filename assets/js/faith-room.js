@@ -879,7 +879,7 @@
   function tierOf(w, q, words) {
     if (w._qa === undefined) w._qa = fold(w.author || "");
     if (w._qa.includes(q) || hasWords(w._qa, words)) return AUTHOR;
-    if (w._qt === undefined) w._qt = fold(`${w.title || ""} ${w.titleLatin || ""} ${window.MOCollectedContents?.search(w.id) || ""}`);
+    if (w._qt === undefined) w._qt = fold(`${w.title || ""} ${w.titleLatin || ""} ${window.MOCollectedContents?.search(w.slug || w.id) || ""}`);
     if (w._qt.includes(q) || hasWords(w._qt, words)) return TITLE;
     if (hasWords(`${w._qa} ${w._qt}`, words)) return TITLE;
     if (w._qk === undefined) {
@@ -997,7 +997,7 @@
   function row(w, mark, title) {
     const second = w.titleLatin && w.titleLatin !== w.title ? w.titleLatin : "";
     const second2 = second ? `<span class="brow-la">${escapeHtml(second)}</span>` : "";
-    const contents=window.MOCollectedContents?.get(w.id);
+    const contents=window.MOCollectedContents?.get(w.slug || w.id);
     const rawMark = String(mark === undefined ? where(w) : mark || "").trim();
     const m = contents && rawMark.includes(" · ") ? rawMark.split(" · ")[0] : rawMark;
     // An address is short. "PL 101", "1640", "Tome 2 · fasc. 4" — the longest of
@@ -1011,8 +1011,8 @@
     const ADDRESS = 30;
     const vol = m && m.length <= ADDRESS ? `<span class="brow-m">${escapeHtml(m)}</span>` : "";
     const sub = m && m.length > ADDRESS ? `<span class="brow-sub">${escapeHtml(m)}</span>` : "";
-    const preview=window.MOCollectedContents?.preview(w.id)||"";
-    const details=window.MOCollectedContents?.disclosure(w.id)||"";
+    const preview=window.MOCollectedContents?.preview(w.slug || w.id)||"";
+    const details=window.MOCollectedContents?.disclosure(w.slug || w.id)||"";
     const inner = `<span class="brow-t">${escapeHtml(title || w.title || w.id)}</span>${sub}${second2}${vol}${preview}`;
     // A confession entry opens on its own passage: page and block, the ids
     // the reader gives its blocks (see entryUrl in faith-corpora.js).
