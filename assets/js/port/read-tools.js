@@ -820,7 +820,7 @@ function frReaderSearchPassages(nodes,lane){
   };
   for(const node of nodes||[])walk(node);return passages;
 }
-async function frBuildReaderSearchIndex({tei,pages=[],loaded=[],sourceLabel='Source'},yieldTask=()=>new Promise(resolve=>setTimeout(resolve,0))){
+async function frBuildReaderSearchIndex({tei,pages=[],loaded=[],texts=null,sourceLabel='Source'},yieldTask=()=>new Promise(resolve=>setTimeout(resolve,0))){
   const canonical=!!tei&&['en','la'].some(lane=>Object.keys(tei[lane]||{}).length),records=[],lanes=[];
   if(canonical){
     const names={en:'English',la:sourceLabel};for(const lane of ['en','la'])if(Object.keys(tei[lane]||{}).length)lanes.push(names[lane]);
@@ -831,10 +831,21 @@ async function frBuildReaderSearchIndex({tei,pages=[],loaded=[],sourceLabel='Sou
       if(text)records.push({page:references.get(frReaderSearchPageKey(key))||key,text,lower:text.toLowerCase(),passages});
       if(i%32===31)await yieldTask();
     }
+  }else if(texts){
+    // THE WHOLE WORK (owner 2026-09-28, Junius / Bellarmine folios: "ctrl+f doesn't work for large chunks"): a sharded work
+    // renders only the pages near the reader, so indexing the rendered folios searched a few dozen of a thousand pages. The page
+    // texts of every shard are in DATA.pages once the rest has streamed in — index those.
+    const names={en:'English',la:sourceLabel};
+    for(let i=0;i<texts.length;i++){
+      const t=texts[i],passages=[];
+      for(const lane of ['en','la']){const text=String(t[lane]||'').replace(/\s+/g,' ').trim();if(text){passages.push({text,lower:text.toLowerCase(),lane,kind:'body'});if(!lanes.includes(names[lane]))lanes.push(names[lane]);}}
+      if(passages.length){const text=passages.map(x=>x.text).join(' ');records.push({page:String(t.page),text,lower:text.toLowerCase(),passages});}
+      if(i%64===63)await yieldTask();
+    }
   }else{
     for(const page of loaded){const text=frReaderSearchText(page.nodes);if(text)records.push({page:String(page.page),text,lower:text.toLowerCase()});}
   }
-  return {kind:canonical?'canonical':'loaded',lanes,records,pages:records.length};
+  return {kind:canonical?'canonical':texts?'complete':'loaded',lanes,records,pages:records.length};
 }
 function frSearchReaderIndex(index,query){
   const terms=[...new Set(String(query||'').toLowerCase().trim().split(/\s+/).filter(Boolean))];
@@ -1368,7 +1379,7 @@ function __initReaderTools(){
     workResearch.setPage(cur);workResearch.load();
   }
   let readerSearchIndex=null,readerSearchTEI=null,readerSearchSequence=0,readerSearchQuery='',readerSearchHits=[],readerSearchTerms=[],readerSearchShown=50,readerSearchSelected='';
-  function readerSearchCoverage(index){return index.kind==='canonical'?'Canonical '+index.lanes.join(' and ')+' text · '+index.pages+(index.pages===1?' page indexed':' pages indexed'):'Loaded reading text only · '+index.pages+(index.pages===1?' page':' pages')+' indexed. Other pages have not been searched.';}
+  function readerSearchCoverage(index){if(index.kind==='complete')return 'Whole work · '+index.pages+(index.pages===1?' page indexed':' pages indexed');return index.kind==='canonical'?'Canonical '+index.lanes.join(' and ')+' text · '+index.pages+(index.pages===1?' page indexed':' pages indexed'):'Loaded reading text only · '+index.pages+(index.pages===1?' page':' pages')+' indexed. Other pages have not been searched.';}
   async function ensureReaderSearchIndex(){
     if(window.__teiHydrating){($('#nbWorkSearchStatus')||{}).textContent='Loading the canonical text for this work…';await window.__teiHydrating;}
     const tei=typeof TEI_PAGES!=='undefined'&&TEI_ON?TEI_PAGES:null;
@@ -1380,6 +1391,13 @@ function __initReaderTools(){
     // the 260 of them answered "0 matching pages ... 0 pages indexed" however
     // plainly the word was on the screen. Where a folio has no lanes, the folio
     // itself is the text; frReaderSearchText already skips the furniture.
+    // every page's own text when the work carries it (per-work stores: {n, la, en}); stream the remaining shards in first
+    if(!tei&&typeof DATA!=='undefined'&&DATA&&Array.isArray(DATA.pages)&&DATA.pages.some(page=>typeof page.en==='string'||typeof page.la==='string')){
+      if(DATA.__loadRest){const st=$('#nbWorkSearchStatus');if(st)st.textContent='Loading the whole work…';await DATA.__loadRest().catch(()=>{});}
+      const n=DATA.pages.length;if(readerSearchIndex&&readerSearchIndex.kind==='complete'&&readerSearchIndex.of===n)return readerSearchIndex;
+      const index=await frBuildReaderSearchIndex({texts:DATA.pages.map(page=>({page:String(page.n),en:page.en,la:page.la})),sourceLabel:window.__SRCNAME||'source'});
+      index.of=n;readerSearchIndex=index;return index;
+    }
     const loaded=tei?[]:Array.from(reading.querySelectorAll('.folio')).map(folio=>{
       const lanes=folio.querySelectorAll('.row .en,.row .la');
       return {page:folio.dataset.page,nodes:lanes.length?lanes:[folio]};
@@ -1441,6 +1459,18 @@ function __initReaderTools(){
   window.addEventListener('fr-conversations-updated',()=>{if(notebook.classList.contains('open')&&!$('#nbChats')?.hidden)renderConversations();});
   window.addEventListener('storage',e=>{if(['fr_hl','fr_notes','fr_tr','fr_collections_v1'].includes(e.key)&&notebook.classList.contains('open'))renderNotebook();});
   window.__frSearchWork=async query=>{await openNotebook('search');($('#nbWorkSearchQuery')||{}).value=String(query||'');await runReaderSearch();};
+  // CTRL/⌘+F SEARCHES THE WHOLE WORK (owner 2026-09-28: "ctrl+f doesn't work for large chunks of the larger folios from Bellarmine
+  // and Junius"): the reader renders only the pages near you, so the browser's find cannot see the rest. The shortcut opens this
+  // work's search (every page, the selection as the query); pressing it again within two seconds — or from the search box —
+  // hands over to the browser's own find.
+  {let lastFind=0;document.addEventListener('keydown',e=>{
+    if(!(e.metaKey||e.ctrlKey)||e.altKey||e.shiftKey||String(e.key).toLowerCase()!=='f'||!$('#nbWorkSearchQuery'))return;
+    const now=Date.now(),again=now-lastFind<2000;lastFind=now;
+    if(again||document.activeElement===$('#nbWorkSearchQuery'))return;
+    e.preventDefault();const sel=String(window.getSelection?.()||'').replace(/\s+/g,' ').trim().slice(0,120);
+    window.__frSearchWork(sel).then(()=>{const q=$('#nbWorkSearchQuery');if(!q)return;q.focus({preventScroll:true});q.select();
+      const st=$('#nbWorkSearchStatus');if(st&&!sel)st.textContent='Search every page of this work. (Press '+(/Mac|iP/.test(navigator.platform)?'⌘':'Ctrl')+'+F again for the browser’s find.)';});
+  },true);}
   window.__frOpenNotebook=openNotebook;   // thumb-bar hook (mobile shell)
   window.FRReaderResearch={open:openNotebook,close:closeNotebook,passage:()=>passage&&({...passage}),navigate(url){return window.__frNavigateReaderAnchor?.(url)===true;}};
   if(new URLSearchParams(location.search).get('research')==='work'){
