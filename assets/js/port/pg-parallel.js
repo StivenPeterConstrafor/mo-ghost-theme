@@ -18,6 +18,7 @@ function sourceColumns(doc){
   else if(tag==='head'&&!state.opening){state.pending.push(ch.textContent||'');}
   else if((tag==='p'||tag==='head')&&state.opening&&state.column){const opening=out[state.opening]||(out[state.opening]={columns:{}}),col=opening.columns[state.column]||(opening.columns[state.column]={});if(/-plate$/.test(ch.getAttribute('ana')||''))twoPlate=true;
    if(role==='verified')opening.verified=true;
+   if(tag==='p'&&role!=='supplement')(opening.pns||(opening.pns=[])).push({n:(ch.getAttribute('n')||'').trim(),t:ch.textContent||''});   // the paragraph's own printed column (p@n), read only by the LABEL pass below
    const rich=col[role+'Rich']||(col[role+'Rich']=[]);
    const head=t=>/^[Α-ΩA-B]\s*[—–-]\s/.test(t)?t:'\u0002'+t+'\u0003';
    rich.push(...(state.pending||[]).map(head));state.pending=[];
@@ -91,6 +92,18 @@ function sourceColumns(doc){
    if(pending.trim()){if(list.length)list[list.length-1]+=' '+pending.trim();else list.push(pending.trim());}
    opening[lang+'Paras'].push(...list);opening.colParas.push({n:column,lang,paras:list});}
   opening.grc=opening.grc.join(' ');opening.la=opening.la.join(' ');opening.grcRich=opening.grcRich.join(' ');opening.laRich=opening.laRich.join(' ');}
+ // COLUMN LABELS (ticket 2026-09-28, PG 76 col. 1203 'On the Right Faith to the Queens'): Migne's opening 1203/1204 is REVERSED (Latin on
+ // the left, Greek on the right) and the canon files both scripts under the opening's one odd-column milestone, so `printed` names the
+ // Greek with the Latin column number. Each paragraph carries its true column in p@n. This pass reads it for the LABEL ONLY, into
+ // printed[key].lab; `printed`, the lanes and colParas stay exactly as they were (the reader's lane rules and the column-keyed English
+ // depend on them). It acts only on that one shape: Greek and Latin both filed under the same single column c, every paragraph of each
+ // script (80% of its letters) naming the opening's odd column or the next, and the two scripts naming different ones.
+ for(const [key,opening] of Object.entries(out)){const pr=printed[key];if(!opening.pns||!pr||!pr.grc||!pr.la||!/^\d+$/.test(key))continue;
+  const g0=[...new Set(pr.grc)],l0=[...new Set(pr.la)];if(g0.length!==1||l0.length!==1||g0[0]!==l0[0])continue;
+  const o=Number(key),tally={grc:{},la:{}},all={grc:0,la:0};
+  for(const {n,t} of opening.pns){const s=scripts(t.replace(/\s+/g,' '));if(s.g+s.l<40)continue;const lang=s.g>=s.l?'grc':'la',w=lang==='grc'?s.g:s.l;all[lang]+=w;if(/^\d+$/.test(n)&&(Number(n)===o||Number(n)===o+1))tally[lang][n]=(tally[lang][n]||0)+w;}
+  const top=lang=>{const e=Object.entries(tally[lang]).sort((a,b)=>b[1]-a[1])[0];return e&&all[lang]&&e[1]>=all[lang]*.8?e[0]:null;};
+  const g=top('grc'),l=top('la');if(g&&l&&g!==l)pr.lab={grc:[g],la:[l]};}
  const result={openings:out,printed};sourceCache.set(doc,result);return result;
 }
 function printedColumns(doc){return sourceColumns(doc).printed;}
@@ -173,7 +186,7 @@ function cleanEnglish(value){
 }
 function location(data,opening){
  const label=data?.pg_page_labels?.[text(opening)];if(label)return label;
- const map=data?.pg_columns?.[text(opening)];if(!map)return null;const mode=data.pg_source||'grc',cols=[...new Set((mode==='grcla'?[...(map.grc||[]),...(map.la||[])]:map[mode]||[]).map(text))];if(!cols.length)return null;
+ const map=data?.pg_columns?.[text(opening)];if(!map)return null;const mode=data.pg_source||'grc',lab=map.lab||{},pick=l=>lab[l]||map[l]||[],cols=[...new Set((mode==='grcla'?[...pick('grc'),...pick('la')]:pick(mode)).map(text))];if(!cols.length)return null;
  cols.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));return cols.length===1?'col. '+cols[0]:'cols. '+cols.join('–');
 }
 return {canonicalOpenings,alignOpening,printedColumns,location,cleanEnglish,dropGutterLetters,nextWorkReference};
