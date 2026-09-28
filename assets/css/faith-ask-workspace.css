@@ -1920,3 +1920,17 @@ html:not(.mo-embedded) .fra {
   #fra-workspace .fra-outline { padding: 14px 16px; }
   #fra-workspace .fra-outline > strong { font-size: 18px; }
 }
+
+/* CONNECT AN AI AGENT (2026-09-28). The dialog borrows .fra-command's frame; these are its insides. Keys and commands are long
+   and unbroken, so they wrap anywhere rather than scroll in a box of their own. */
+#fra-workspace .fra-menu-rule { border:0; border-top:1px solid var(--fra-border); margin:6px 0; }
+#fra-workspace .fra-connect { overflow-y:auto; }
+#fra-workspace .fra-connect-body { padding:6px 20px 20px; font-size:14px; line-height:1.55; }
+#fra-workspace .fra-connect-body p { margin:0 0 12px; }
+#fra-workspace .fra-connect-body h3 { font-family:inherit; font-size:13px; font-weight:600; letter-spacing:.02em; margin:18px 0 6px; }
+#fra-workspace .fra-connect-row { display:flex; align-items:flex-start; gap:10px; margin:0 0 6px; }
+#fra-workspace .fra-connect-row code { flex:1; min-width:0; font-family:ui-monospace,Menlo,monospace; font-size:12px; line-height:1.5; padding:8px 10px; border:1px solid var(--fra-border); border-radius:6px; background:var(--fra-bg, transparent); overflow-wrap:anywhere; word-break:break-all; user-select:all; }
+#fra-workspace .fra-connect-row button { flex:none; font:inherit; font-size:12px; padding:8px 12px; border:1px solid var(--fra-border); border-radius:6px; background:none; color:inherit; cursor:pointer; }
+#fra-workspace .fra-connect-row button:hover { border-color:currentColor; }
+#fra-workspace .fra-connect-note, #fra-workspace .fra-connect-wait { color:var(--fra-muted); font-size:13px; }
+#fra-workspace .fra-connect-note { margin-top:14px !important; }
