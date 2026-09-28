@@ -6936,6 +6936,36 @@ mark.faith-find-hit.is-current {
   .brow-c { font-size: 12px; }
 }
 
+/* A Greek Fathers volume's own contents, under each work's row (2026-09-28): the printed table as the library's volume panel and
+   patrologia-graeca set it: every entry at its depth, English with Migne's Latin after it, the column in the gutter. A step
+   smaller and tighter than the works themselves, so the volume still reads work by work. */
+.faith-room-contents { list-style: none; margin: -6px 0 10px; padding: 0; }
+.faith-room-printed .faith-room-contents a,
+.faith-room-printed .faith-room-contents .faith-room-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 0 12px;
+  align-items: baseline;
+  padding: 3px 0;
+  border: 0;
+}
+.faith-room-contents li { border: 0; }
+.faith-room-printed .faith-room-contents a { margin: 0; padding-left: 0; padding-right: 0; }
+.faith-room-printed .faith-room-contents .brow-t { font-size: 15px; line-height: 1.35; }
+.faith-room-printed .faith-room-contents .brow-c { font-size: 12px; }
+.faith-room-contents-la { font-style: italic; color: var(--color-muted); }
+.faith-room-contents-d1 .brow-t { padding-left: 0.9em; }
+.faith-room-contents-d2 .brow-t { padding-left: 1.8em; }
+.faith-room-contents-d3 .brow-t { padding-left: 2.7em; }
+.faith-room-printed .faith-room-contents li:hover { background: color-mix(in srgb, var(--color-card-border) 30%, transparent); }
+@media (max-width: 640px) {
+  .faith-room-printed .faith-room-contents a,
+  .faith-room-printed .faith-room-contents .faith-room-row { grid-template-columns: 44px minmax(0, 1fr); gap: 0 10px; }
+  .faith-room-contents-d1 .brow-t { padding-left: 0; }
+  .faith-room-contents-d2 .brow-t { padding-left: 0.8em; }
+  .faith-room-contents-d3 .brow-t { padding-left: 1.6em; }
+}
+
 .btiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--color-card-border); }
 .btiles--4 { grid-template-columns: repeat(4, 1fr); }
 .btiles a { background: var(--color-cream); padding: 26px 24px; text-decoration: none; color: inherit; }
