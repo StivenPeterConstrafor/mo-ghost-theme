@@ -50,7 +50,7 @@
   function getState(key){
     if(states.has(key))return states.get(key);let stored={};
     try{const data=JSON.parse(root.sessionStorage?.getItem('fr_contents_v1:'+encodeURIComponent(key))||'{}');if(data.v===1)stored=data;}catch(_){}
-    const state={expanded:new Set(Array.isArray(stored.expanded)?stored.expanded.filter(k=>typeof k==='string'):[]),query:typeof stored.query==='string'?stored.query:'',scroll:0,focus:null,pending:false};states.set(key,state);return state;
+    const state={expanded:new Set(Array.isArray(stored.expanded)?stored.expanded.filter(k=>typeof k==='string'):[]),fresh:!Array.isArray(stored.expanded),query:typeof stored.query==='string'?stored.query:'',scroll:0,focus:null,pending:false};states.set(key,state);return state;
   }
   function persist(key,state){try{root.sessionStorage?.setItem('fr_contents_v1:'+encodeURIComponent(key),JSON.stringify({v:1,query:state.query,expanded:[...state.expanded]}));}catch(_){} }
   function capture(nav){return controllers.get(nav)?.capture()||null;}
@@ -60,6 +60,11 @@
     const previous=controllers.get(nav);if(previous){if(!previous.hasCaptured())previous.capture();previous.destroy();}
     const doc=nav.ownerDocument||root.document,state=getState(text(key)),tree=model(items,parents),keyIndex=new Map(tree.keys.map((key,i)=>[key,i]));
     state.expanded=new Set([...state.expanded].filter(key=>keyIndex.has(key)));
+    // A LONE WRAPPER (owner 2026-09-28, Junius Opera: "the table of contents … just doesn't exist"): 883 works file every
+    // entry under one top entry (the volume's title), and a fully folded tree then showed ONE line. On a fresh visit open that
+    // lone entry — and any chain of lone children under it — so the first level with real choices shows.
+    if(state.fresh){state.fresh=false;let level=tree.keys.map((_,i)=>i).filter(i=>tree.parents[i]<0);
+      while(level.length===1&&tree.hasChildren[level[0]]){state.expanded.add(tree.keys[level[0]]);const at=level[0];level=tree.keys.map((_,i)=>i).filter(i=>tree.parents[i]===at);}}
     const carets=rows.map(row=>row.querySelector('button.cv')),links=rows.map(row=>row.querySelector('.nav-open')||row.querySelector('.nn-t')||row);
     const targets=new Map();carets.forEach((node,i)=>{if(node)targets.set(node,{kind:'caret',key:tree.keys[i]});});links.forEach((node,i)=>targets.set(node,{kind:'link',key:tree.keys[i]}));
     const filterCollapsed=new Set(),listeners=[];let view,destroyed=false,active=-1,painted=-1,composing=false,queued=false,queryVersion=0,queryFrame=null;

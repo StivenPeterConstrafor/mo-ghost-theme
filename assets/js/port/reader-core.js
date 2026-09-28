@@ -3881,6 +3881,8 @@ function build(){
     // default collapse: large trees open compact (top level only); small trees fully open
     const big=S.length>60;
     const collapsed=new Set();if(big)for(let i=0;i<S.length;i++)if(kids[i]&&dep[i]>=1)collapsed.add(i);
+    // a lone top entry (a volume title over everything) stays open, and any chain of lone children, so the first real level shows (owner 09-28, Junius)
+    {let lv=S.map((_,i)=>i).filter(i=>par[i]<0);while(lv.length===1&&kids[lv[0]]){collapsed.delete(lv[0]);const at=lv[0];lv=S.map((_,i)=>i).filter(i=>par[i]===at);}}
     const frag=document.createDocumentFragment();     // batch DOM writes: 1,900-entry trees were appended live one-by-one
     const rows=S.map((s,i)=>{
       const d=Math.min(dep[i],5);const a=el("div","nav-node nd"+d);a.dataset.page=s.page;a.dataset.idx=i;if(s.navSourcePath)a.dataset.sourcePath=s.navSourcePath;if(s.navSourceKey)a.dataset.sourceKey=s.navSourceKey;
