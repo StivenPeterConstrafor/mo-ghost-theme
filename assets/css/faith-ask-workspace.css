@@ -1869,3 +1869,54 @@ html:not(.mo-embedded) .fra {
   .fra-citepop-actions a { min-height: 44px; }
   .fra-citepop-actions a { display: inline-flex; align-items: center; }
 }
+
+/* ── THE QUESTION ABOVE AN ANSWER, AS A TFR CARD (Ian, 2026-09-28: "can we have the original question show up in our
+   new design style that we've used across TFR? the nice looking boxes?"). The engine draws .fra-outline before each
+   answer: the question, a "Top ↑" link, and one link per section of the answer. It had no styling of its own, so it
+   printed as a run of bold text. It now takes the reader's section-heading card (faith-port-reader-skin.css, "Tier 1:
+   the card"): a paper box with the tan hairline and 3px corners, the question set as the card's title in the body
+   serif (no display face on a working surface), "Top ↑" at the right of the title, and the section links as a quiet
+   row beneath. Colours come from the panel's own tokens, so the card follows the site theme into dark mode. */
+#fra-workspace .fra-outline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 16px;
+  margin: 4px 0 20px;
+  padding: 16px 20px;
+  /* The reader's card sits a shade lighter than its page (--card #fffdfa on the page's #f6f3f2); --fra-card is the page
+     colour itself, which would leave only a hairline. Light: the reader's paper. Dark: the panel's lifted cream-dark. */
+  background: #fffdfa;
+  border: 1px solid var(--fra-border);
+  border-radius: 3px;
+}
+#fra-workspace[data-theme="dark"] .fra-outline { background: var(--color-cream); }
+#fra-workspace .fra-outline > strong {
+  flex: 1 1 calc(100% - 90px);
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--fra-fg, var(--color-dark));
+}
+#fra-workspace .fra-outline > button {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--fra-muted, var(--color-muted));
+  cursor: pointer;
+  text-align: left;
+}
+#fra-workspace .fra-outline > button:hover,
+#fra-workspace .fra-outline > button:focus-visible { color: var(--color-primary); text-decoration: underline; }
+/* "Top ↑" sits on the title's line, at the right; the section links follow on the rows below. */
+#fra-workspace .fra-outline > button[data-jump="top"] { flex: 0 0 auto; margin-left: auto; white-space: nowrap; }
+@media (max-width: 640px) {
+  #fra-workspace .fra-outline { padding: 14px 16px; }
+  #fra-workspace .fra-outline > strong { font-size: 18px; }
+}
