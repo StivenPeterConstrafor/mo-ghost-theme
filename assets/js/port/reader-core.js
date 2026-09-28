@@ -431,7 +431,7 @@ function appBank(laN,enN){
 (function(){
   if(frReaderBlockReference(location.hash)||location.hash.length>1)return;
   let page=new URLSearchParams(location.search).get("p");
-  if(!page)try{const ws=new URLSearchParams(location.search).get("ws")||new URLSearchParams(location.search).get("w"),saved=JSON.parse(localStorage.getItem("fr_lastread")||"{}");
+  if(!page)try{const ws=(window.frIS||function(x){return x;})(new URLSearchParams(location.search).get("ws"))||(window.frIS||function(x){return x;})(new URLSearchParams(location.search).get("w")),saved=JSON.parse(localStorage.getItem("fr_lastread")||"{}");
     const last=saved[ws]?.page;if(last!=null&&(!/^\d+$/.test(String(last))||Number(last)>3))page=String(last);
   }catch(_){}
   if(page)window.__frInitialReference=String(page);
@@ -1398,7 +1398,7 @@ window.__frNavigateReaderAnchor=href=>{
   try{
     const target=new URL(href,location.href),here=new URL(location.href);
     if(target.origin!==here.origin)return false;
-    const work=url=>url.searchParams.get('w')||url.searchParams.get('ws')||(/^\/read\/([^/]+?)(?:\.html)?$/.exec(url.pathname)||[])[1]||'';
+    const work=url=>(window.frIS||function(x){return x;})(url.searchParams.get('w'))||(window.frIS||function(x){return x;})(url.searchParams.get('ws'))||(/^\/read\/([^/]+?)(?:\.html)?$/.exec(url.pathname)||[])[1]||'';
     const currentWork=work(here)||window.__FR_SLUG__||DATA?.slug||'',targetWork=work(target);
     if(/^pld-\d+$/.test(currentWork)&&(target.searchParams.get('pldpart')||'all')!==(here.searchParams.get('pldpart')||'all'))return false;
     // the reader may be mounted under a route prefix (MereO: /the-faith-received/read/) — a citation to the SAME page is
@@ -3319,7 +3319,7 @@ function build(){
     // (owner 2026-09-02, Scheibler/Billuart: a translator-merged margin note became a full-width block that split
     // the page) — only Akademie works / typed headnotes get the in-flow block; everywhere else a long gloss stays
     // in the rail, clamped to a few lines with a click to open
-    const _akadWork=/gottfried-wilhelm-leibniz/.test(String((window.DATA&&DATA.slug)||new URLSearchParams(location.search).get("w")||""));
+    const _akadWork=/gottfried-wilhelm-leibniz/.test(String((window.DATA&&DATA.slug)||(window.frIS||function(x){return x;})(new URLSearchParams(location.search).get("w"))||""));
     secs.forEach(sec=>sec.querySelectorAll(".mnp>.mnote").forEach(m=>{
       const L=m.textContent.trim().length;
       if(L>80&&(_akadWork||m.classList.contains("headnote")))m.parentElement.classList.add("edblock");
@@ -4084,7 +4084,7 @@ function setFolio(pg){if(!pg||cur===pg.n)return;cur=pg.n;syncReaderHeader(pg.n);
       setContentsOpen(!wasOpen,true);
       if(!wasOpen){const n=$(".nav-node.on");if(n)n.scrollIntoView({block:"center"});}};}}
   try{const lr=JSON.parse(lsGet("fr_lastread")||"{}");
-    {const _q=new URLSearchParams(location.search);const _k=_q.get("ws")||_q.get("w")||DATA.slug||DATA.workspace;
+    {const _q=new URLSearchParams(location.search);const _k=(window.frIS||function(x){return x;})(_q.get("ws"))||(window.frIS||function(x){return x;})(_q.get("w"))||DATA.slug||DATA.workspace;
      lr[_k]={page:pg.n,slug:DATA.slug||"",title:DATA.title||"",author:DATA.author||"",ts:Date.now(),...(DATA.pld_source_view?{pldpart:DATA.pld_source_view.id}:{} )};
      if(lr["undefined"])delete lr["undefined"];}
     lsSet("fr_lastread",JSON.stringify(lr));
@@ -4455,7 +4455,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
   const btn=$("#rdRel");if(!btn)return;
   let pn=null,lastPg=null,relatedSerial=0,relatedController=null;
   const localRelatedPreview=()=>['localhost','127.0.0.1','::1','[::1]'].includes(location.hostname);
-  const relatedSlug=()=>new URLSearchParams(location.search).get('w')||DATA?.slug||'';
+  const relatedSlug=()=>(window.frIS||function(x){return x;})(new URLSearchParams(location.search).get('w'))||DATA?.slug||'';
   function liveRelatedReader(pg){const url=new URL('/the-faith-received/read/',location.origin);url.searchParams.set('w',relatedSlug());if(pg!=null){url.searchParams.set('p',String(pg));url.hash='b'+String(pg)+'-0';}return url.href;}
   function cancelRelated(){relatedSerial++;relatedController?.abort();relatedController=null;}
   async function relatedJSON(url,signal){const response=await fetch(url,{signal});if(!response.ok){const error=Error('Related service returned HTTP '+response.status);error.status=response.status;throw error;}let data;try{data=await response.json();}catch(_){throw Error('The related service returned an unreadable response.');}if(!data||typeof data!=='object'||Array.isArray(data)||data.error)throw Error('The related service could not return results.');return data;}
@@ -4493,7 +4493,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
   let _mineP=null;
   function mineUnits(){
     if(_mineP)return _mineP;
-    const slug=(new URLSearchParams(location.search).get("w"))||DATA.slug||"";
+    const slug=((window.frIS||function(x){return x;})(new URLSearchParams(location.search).get("w")))||DATA.slug||"";
     _mineP=fetch(BLOB+"/v1/mine/units/"+encodeURIComponent(slug)+".json").then(r=>r.ok?r.json():null).catch(()=>null);
     return _mineP;}
   function mineHtml(d,pg){
@@ -7725,7 +7725,7 @@ async function loadWork(ws){
   else meta.has_pages=false;
   return meta;
 }
-(async()=>{const _qp=new URLSearchParams(location.search);let ws=_qp.get("ws")||_qp.get("w")||window.__FR_SLUG__||null;   // let: the alias resolver rewrites it (2026-08-20)   // ?w=<title-slug> canonical; ?ws=<path> legacy; /read/<slug> shells bake __FR_SLUG__
+(async()=>{const _qp=new URLSearchParams(location.search);let ws=(window.frIS||function(x){return x;})(_qp.get("ws"))||(window.frIS||function(x){return x;})(_qp.get("w"))||window.__FR_SLUG__||null;   // let: the alias resolver rewrites it (2026-08-20)   // ?w=<title-slug> canonical; ?ws=<path> legacy; /read/<slug> shells bake __FR_SLUG__
   if(window.MOFaithCatalogue && !window.MOFaithCatalogue.publicWork(ws)){
     document.querySelector('#app')?.classList.add('nosb','fr-work-unavailable');
     document.querySelector('#h1').textContent='Volume unavailable';

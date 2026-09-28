@@ -173,7 +173,7 @@
   const slug = () => {
     const d = dataOf();
     if (d && d.slug) return String(d.slug);
-    try { return new URLSearchParams(window.location.search).get("w") || ""; }
+    try { return (window.frIS||function(x){return x;})(new URLSearchParams(window.location.search).get("w")) || ""; }
     catch (_) { return ""; }
   };
   const storeKey = () => `mo_tfr_folds:${slug()}`;

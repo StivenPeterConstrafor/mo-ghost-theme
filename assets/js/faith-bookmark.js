@@ -24,7 +24,7 @@
   let corpusId = "tfr";
   try {
     const q = new URLSearchParams(window.location.search);
-    slug = (q.get("w") || "").replace(/[^a-z0-9_-]/gi, "");
+    slug = ((window.frIS||function(x){return x;})(q.get("w")) || "").replace(/[^a-z0-9_-]/gi, "");
     corpusId = (q.get("c") || "tfr").replace(/[^a-z0-9_-]/gi, "");
   } catch (_) { /* no query */ }
   if (!slug) return;

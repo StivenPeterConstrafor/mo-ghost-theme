@@ -39,7 +39,7 @@
   const PREFIXED = ["eebo", "pld", "pg", "po"];
 
   function slug() {
-    try { return new URLSearchParams(window.location.search).get("w") || ""; }
+    try { return (window.frIS||function(x){return x;})(new URLSearchParams(window.location.search).get("w")) || ""; }
     catch (_) { return ""; }
   }
 

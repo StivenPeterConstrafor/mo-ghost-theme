@@ -1,12 +1,13 @@
 {{!< default}}
 {{#contentFor "moHead"}}
 <script defer src="{{asset "js/page/faith-port-downloads.js"}}&amp;frv=2b1f79b352c6db15"></script>
-<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=de68ed46eea11d31"></script>
+<script defer src="{{asset "js/page/faith-port-links.js"}}&amp;frv=9c50bdcb009beceb"></script>
 <title>{{#if title}}{{title}} | {{/if}}The Faith Received | Mere Orthodoxy</title>
 {{!-- RETIRED WORKS FORWARD FIRST. ?w=<a retired English Edition> is
      rewritten to the copy that replaced it, with the same question or
      article, before anything below reads the address. See
      assets/js/lib/faith-work-forwards.js. --}}
+<script src="{{asset "js/lib/faith-public-slugs.js"}}"></script>
 <script src="{{asset "js/lib/faith-work-forwards.js"}}"></script>
 <script src="{{asset "js/page/faith-work-forward.js"}}"></script>
 <script src="{{asset "js/page/faith-port-read-research-overlay.js"}}"></script>
@@ -63,7 +64,7 @@
       their notebook there; our CSP refuses the gstatic imports, so today it only
       logs three CSP errors per load and mislabels the notebook "sync
       unavailable". This drops the config while the window between the two files
-      is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=15386a5f9525839b"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ccd1c7702c51c000"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=5446ac052c1f5dc1"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
+      is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=15386a5f9525839b"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ccd1c7702c51c000"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=6e63cc70934179ce"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
 <link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=961530e5a045578b">
 {{/contentFor}}
 
@@ -86,7 +87,7 @@
      lives in assets/css/faith-port-reader-skin.css and must stay the last
      stylesheet, because it restores values two of his own sheets
      overwrite. --}}
-<script src="{{asset "js/port/read.in02.js"}}&amp;frv=a1e63cdd1b6ab3d6"></script>
+<script src="{{asset "js/port/read.in02.js"}}&amp;frv=2290a567ffa6ae9d"></script>
 {{!-- THE RAIL, ABOVE THE TOOLBAR. Ian, 2026-09-23: "remove this [the
      ‹ Library link] and put the Navrail above the toolbar. It also stays
      pinned to the top on scroll." In flow under the masthead:
@@ -264,7 +265,7 @@
      setting a global here would need inline script, which the CSP
      forbids. --}}
 <div id="frPortAssets" hidden
-     data-read-tools="{{asset "js/port/read-tools.js"}}&amp;frv=ca6b902569007982"
+     data-read-tools="{{asset "js/port/read-tools.js"}}&amp;frv=a23700b07bc05e31"
      data-cite-core="{{asset "js/port/cite-core.js"}}&amp;frv=cc5b44a29670e0a7"
      data-ask-jobs="{{asset "js/port/ask-jobs.js"}}&amp;frv=408f593670c4a344"></div>
 <script src="{{asset "js/faith-denominations.js"}}"></script>
@@ -274,17 +275,17 @@
      every heading jumped into its card (Ian, 2026-09-24). --}}
 {{!-- The editorial apparatus folds. Ian, 2026-09-21: "I don't care
      about this. I want to collapse it and move on." --}}
-<script src="{{asset "js/page/faith-reader-folds.js"}}&amp;frv=2af96ea072e83bd8"></script>
+<script src="{{asset "js/page/faith-reader-folds.js"}}&amp;frv=7532f42f474bd8a1"></script>
 {{!-- Section headings, one hierarchy: eyebrow, title, subtitle, argument, in three tiers (card, hairline, plain) (Ian, 2026-09-24). After the folds, which tag the heading rows. --}}
 {{!-- The work's title card in the English lane: prints the library's title where the machine rendering of the work's own running head is a poorer one ("Why God man" for "Why God Became Man"). Loads BEFORE the heading layer so its observer runs first on the same batch. --}}
 <script src="{{asset "js/page/faith-port-read-title-head.js"}}&amp;frv=08f0f5af907183f2"></script>
 <script src="{{asset "js/page/faith-port-read-headings.js"}}&amp;frv=4c609041ea7ed7c4"></script>
-<script src="{{asset "js/port/reader-core.js"}}&amp;frv=a617942b71e8fcae"></script>
+<script src="{{asset "js/port/reader-core.js"}}&amp;frv=4f4059ffde235513"></script>
 {{!-- The reader's Tools popover writes to OUR stores: the mo-kit bookmark
      All Works draws its row stars from, and the notebook the desk reads. --}}
 <script src="{{asset "js/lib/faith-work-bookmarks.js"}}"></script>
 <script src="{{asset "js/lib/faith-notebook-store.js"}}&amp;frv=587241ea81038bf2"></script>
-<script src="{{asset "js/page/faith-port-read-tools.js"}}&amp;frv=c610eeef474bb865"></script>
+<script src="{{asset "js/page/faith-port-read-tools.js"}}&amp;frv=a03b770447bb066a"></script>
 {{!-- The Research rail's Work tab. read-tools.js owns the panel; this names the
      work in it and routes the four shortcuts the restore left unbound. --}}
 <script src="{{asset "js/page/faith-port-read-research.js"}}&amp;frv=6acdf77bce1393b4"></script>
@@ -307,13 +308,13 @@
      collection this work is in. This order, because the resolver calls
      into the panel the moment it knows. --}}
 <script src="{{asset "js/faith-work-status.js"}}&amp;frv=fd10e96b6c65efd5"></script>
-<script src="{{asset "js/page/faith-port-work-status.js"}}&amp;frv=9c31284c4117adf7"></script>
+<script src="{{asset "js/page/faith-port-work-status.js"}}&amp;frv=3cc1853b8dc083bb"></script>
 {{!-- Reading settings joins the dock on a phone; see the file head. --}}
 <script src="{{asset "js/page/faith-port-read-aa-dock.js"}}&amp;frv=4095809a94686ad4"></script>
 {{!-- The ported reader restores your place silently, which is right,
      but leaves no way back to page 1. This adds only that door; the
      reader still owns the position itself. --}}
-<script src="{{asset "js/page/faith-port-read-restart.js"}}&amp;frv=bf42730f800bc4a5"></script>
+<script src="{{asset "js/page/faith-port-read-restart.js"}}&amp;frv=a2778186e265050d"></script>
 {{!-- Contents titles: a numbered division (Chap. VIII, Book II) shows a
      short title from the work itself, by one rule for every work. After
      the engine, whose #nav it rewrites; the chrome file's Expand contents
@@ -332,7 +333,7 @@
      Search and Tools slides out of Tools; on a phone the dock is
      Contents, Search, Tools, and Transparency is a dialog. After the
      chrome file, whose buttons it moves. --}}
-<script src="{{asset "js/page/faith-port-read-drawer.js"}}&amp;frv=4a7e8d0e50eb6b00"></script>
+<script src="{{asset "js/page/faith-port-read-drawer.js"}}&amp;frv=cb7d183093fb7365"></script>
 {{!-- The selection bar's Link and Copy carry the exact words, and a
      link that arrives with them marks them. --}}
 <script src="{{asset "js/page/faith-port-read-passage-link.js"}}&amp;frv=125f8e4d2d336da1"></script>

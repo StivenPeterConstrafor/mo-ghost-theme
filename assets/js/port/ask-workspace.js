@@ -2,7 +2,7 @@
   'use strict';
   if (window.FRAsk) return;
   // A source opened beside a conversation uses its parent's workspace and stream owner.
-  try { if (window.parent !== window && window.parent.FRAsk) { if(window.frameElement?.id==='fra-source-frame')document.documentElement.classList.add('fr-ask-source');window.FRAsk = { open: (opts={}) => window.parent.FRAsk.open({...opts,contextWork:new URLSearchParams(location.search).get('w')||window.__FR_SLUG__||''}), markdown:window.parent.FRAsk.markdown, readURL:window.parent.FRAsk.readURL }; return; } } catch (_) {}
+  try { if (window.parent !== window && window.parent.FRAsk) { if(window.frameElement?.id==='fra-source-frame')document.documentElement.classList.add('fr-ask-source');window.FRAsk = { open: (opts={}) => window.parent.FRAsk.open({...opts,contextWork:(window.frIS||function(x){return x;})(new URLSearchParams(location.search).get('w'))||window.__FR_SLUG__||''}), markdown:window.parent.FRAsk.markdown, readURL:window.parent.FRAsk.readURL }; return; } } catch (_) {}
   // INTEGRATION (owner 2026-09-13 'make integration of ask easy'): one file runs on every host. A host sets
   // window.FRAskConfig BEFORE this script loads; every key is optional and defaults to the Vercel site.
   //   apiBase          origin+prefix that serves ask + investigations   ('' → same origin '/api'; MereO → 'https://…workers.dev/v1')
@@ -89,7 +89,7 @@
   const $ = sel => panel && panel.querySelector(sel);
   const selected = () => conversations.find(c => c.id === current);
   const running = c => c && (c.turns || []).find(t => t.status === 'running');
-  const contextWork = () => new URLSearchParams(location.search).get('w') || window.__FR_SLUG__ || '';
+  const contextWork = () => (window.frIS||function(x){return x;})(new URLSearchParams(location.search).get('w')) || window.__FR_SLUG__ || '';
   const dockMedia=matchMedia('(min-width:1100px)');let expandedReaderAsk=false;
   const readerPage=()=>!!document.getElementById('reading');
   /* MereO delta (Ian, 2026-09-21): a conversation belongs to the book on
@@ -1203,7 +1203,7 @@ function checkHTML(t){
     clearTimeout(sourceStatusTimer);sourceStatusTimer=setTimeout(()=>{if(request===sourceSequence&&!sourceReady)setSourceLoading(true,'This passage is taking longer to load. You can open the full reader above.');},15000);
     if(recordHistory){const state={...(history.state||{}),frAskSource:{chat,url:sourceURL,title:sourceTitle}};if(history.state&&history.state.frAskSource)history.replaceState(state,'');else history.pushState(state,'');}
     $('#fra-read-tab').classList.add('active');$('#fra-chat-tab').classList.remove('active');
-    const slug=u.searchParams.get('w')||(/^\/read\/([^/]+)/.exec(u.pathname)||[])[1];
+    const slug=(window.frIS||function(x){return x;})(u.searchParams.get('w'))||(/^\/read\/([^/]+)/.exec(u.pathname)||[])[1];
     if(slug&&chat)try{await S.update(chat,c=>{c.contextWork=slug.replace(/\.html$/,'');});}catch(_){}
     if(request!==sourceSequence||chat!==current||!visible||!panel.classList.contains('fra-show-reader'))return;
     const frame=$('#fra-source-frame'),target=localURL(sourceURL);frame.dataset.resume=String(resume);frame.dataset.source=target;

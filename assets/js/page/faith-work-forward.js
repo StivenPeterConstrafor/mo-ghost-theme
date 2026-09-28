@@ -40,7 +40,7 @@
 
   if (READERS.indexOf(path) >= 0) {
     const q = new URLSearchParams(window.location.search);
-    const w = q.get("w") || q.get("ws") || "";
+    const w = (window.frIS||function(x){return x;})(q.get("w")) || (window.frIS||function(x){return x;})(q.get("ws")) || "";
     const from = q.get("from") || "";
     let old = "";
     if (F.get(w)) old = w;

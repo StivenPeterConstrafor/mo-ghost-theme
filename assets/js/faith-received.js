@@ -728,7 +728,7 @@
     let c = "tfr";
     try {
       const q = new URLSearchParams(location.search);
-      w = q.get("w") || "";
+      w = (window.frIS||function(x){return x;})(q.get("w")) || "";
       c = q.get("c") || "tfr";
     } catch (_) {}
     return { work: w, corpus: c };

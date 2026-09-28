@@ -538,10 +538,11 @@
     if (typeof h !== "string" || !h) return "";
     const m = /[?&]w=([^&#]+)/.exec(h);
     if (!m) return "";
+    const own = window.frIS || function (x) { return x; };   // a link shown by its public name (faith-public-slugs.js)
     try {
-      return decodeURIComponent(m[1]);
+      return own(decodeURIComponent(m[1]));
     } catch (_) {
-      return m[1];
+      return own(m[1]);
     }
   }
 

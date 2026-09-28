@@ -355,7 +355,7 @@
   dAsk.title = "Ask the library a question about this work";
   dAsk.addEventListener("click", () => {
     let slug = "";
-    try { slug = new URLSearchParams(window.location.search).get("w") || ""; } catch (e) { slug = ""; }
+    try { slug = (window.frIS||function(x){return x;})(new URLSearchParams(window.location.search).get("w")) || ""; } catch (e) { slug = ""; }
     if (window.FRAsk && typeof window.FRAsk.open === "function") {
       window.FRAsk.open({ contextWork: slug, works: slug ? [slug] : [] });
     }
@@ -522,7 +522,7 @@
     ask.setAttribute("data-feature-gate", "ask");
     ask.addEventListener("click", () => {
       let slug = "";
-      try { slug = new URLSearchParams(window.location.search).get("w") || ""; } catch (e) { slug = ""; }
+      try { slug = (window.frIS||function(x){return x;})(new URLSearchParams(window.location.search).get("w")) || ""; } catch (e) { slug = ""; }
       if (window.FRAsk && typeof window.FRAsk.open === "function") {
         setMobile(false);
         window.FRAsk.open({ contextWork: slug, works: slug ? [slug] : [] });

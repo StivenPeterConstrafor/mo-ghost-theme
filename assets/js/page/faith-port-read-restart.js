@@ -23,7 +23,7 @@
   "use strict";
 
   const params = new URLSearchParams(window.location.search);
-  const work = params.get("w") || params.get("ws");
+  const work = (window.frIS||function(x){return x;})(params.get("w")) || (window.frIS||function(x){return x;})(params.get("ws"));
   if (!work) return;
 
   // An explicit page, a highlight, or a hash means the reader was sent
