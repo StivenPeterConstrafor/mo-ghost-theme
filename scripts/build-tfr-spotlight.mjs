@@ -104,8 +104,16 @@ const readsEnglish = (t) => /\b(?:the|of|and|on|upon|to|an?|concerning|against|w
   && !/\b(?:de|et|ad|libri?|contra|super|seu|sive|quae|qui|cum|pro|ex)\b/i.test(t);
 const englishTitle = (w) => w.title_en || (readsEnglish(w.title) ? w.title : "");
 
+/* WORKS, NOT THEIR FURNITURE (2026-09-28: the first card to ship read
+   "Table of Contents", Athanasius's Elenchus). Prefaces, apparatus and
+   fragments carry a kind; an edition's index or an editor's notice is
+   often catalogued as kind "work", so its title gives it away. */
+const SPOTLIGHT_KINDS = new Set(["work", undefined, null]);
+const EDITORIAL = /^(?:table of contents|contents|index|indices|elenchus|pr(?:a|æ)?efa(?:ce|tio)|prolegomen|editorial|editor's|admonition|monitum|appendix|notes by|catalogue of|list of|analysis|argument|summar|dissertat|conspectus|notitia|notice)/i;
+
 for (const w of works) {
   if (!w.slug || !w.title || !w.author || w.dup_of) continue;
+  if (!SPOTLIGHT_KINDS.has(w.kind) || EDITORIAL.test(w.title_en || "") || EDITORIAL.test(w.title)) continue;
   const title = englishTitle(w);
   if (!title) continue;
   const n = cited.get(slugify(w.author));

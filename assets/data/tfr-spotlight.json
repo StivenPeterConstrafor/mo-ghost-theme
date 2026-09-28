@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-28T10:45:10.901Z",
+ "generated": "2026-09-28T10:47:36.942Z",
  "note": "Built by scripts/build-tfr-spotlight.mjs. Bands are by author citations received; never label them on screen.",
  "pools": {
   "middle": [
@@ -180,12 +180,6 @@
     "author": "Thomas Cajetan"
    },
    {
-    "slug": "pg-2384",
-    "title": "Argument of the First Epistle of Saint Peter, with its Chapters",
-    "orig": "Argumentum Epistolae I S. Petri, cum capitulis ejusdem",
-    "author": "Theophylact, Archbishop of Bulgaria"
-   },
-   {
     "slug": "pg-2383",
     "title": "Exposition of the Catholic Epistle of St. James",
     "orig": "Expositio in Epistolam catholicam S. Jacobi",
@@ -246,12 +240,6 @@
     "title": "On Adoration and Worship in Spirit and Truth",
     "orig": "De Adoratione et Cultu in Spiritu et Veritate",
     "author": "Cyril of Alexandria"
-   },
-   {
-    "slug": "pg-198",
-    "title": "Preface to Contra Celsum",
-    "orig": "Origenis Praefatio ad Libros \"Contra Celsum\"",
-    "author": "Origen"
    },
    {
     "slug": "pg-1733",
@@ -337,12 +325,6 @@
     "title": "Proof of the Gospel",
     "orig": "Demonstratio evangelica",
     "author": "Eusebius of Caesarea"
-   },
-   {
-    "slug": "pg-1891",
-    "title": "Dissertations of Garnier",
-    "orig": "Garnerii Dissertationes",
-    "author": "Theodoret of Cyrus"
    },
    {
     "slug": "pld-352",
@@ -564,12 +546,6 @@
     "author": "Thomas Aquinas"
    },
    {
-    "slug": "pg-2369",
-    "title": "Table of Contents",
-    "orig": "Elenchus",
-    "author": "Theophylact, Archbishop of Bulgaria"
-   },
-   {
     "slug": "pg-2370",
     "title": "Exposition of the First Epistle to Timothy",
     "orig": "Expositio in Epistolam I ad Timotheum",
@@ -629,12 +605,6 @@
     "slug": "pg-247",
     "title": "Commentary on the Gospel of John",
     "orig": "Commentaria in Evangelium Joannis",
-    "author": "Origen"
-   },
-   {
-    "slug": "pg-246",
-    "title": "Editorial Notice on Origen's Commentary on John",
-    "orig": "Monitum ad Commentaria Origenis in Joannem",
     "author": "Origen"
    },
    {
@@ -812,21 +782,9 @@
     "author": "Theodoret of Cyrus"
    },
    {
-    "slug": "pg-2865",
-    "title": "Editorial Notice on the Book of Psalms",
-    "orig": "In Librum Psalmorum Monitum",
-    "author": "Origen"
-   },
-   {
     "slug": "pld-7604",
     "title": "Collectanea on the Epistles of Paul",
     "author": "Peter Lombard"
-   },
-   {
-    "slug": "pg-2375",
-    "title": "Preface of Bonifacius Finettus to the Third Volume of the Venetian Edition of Theophylact",
-    "orig": "Praefatio Bonifacii Finetti in tomum tertium Theophylacti edit. Venet.",
-    "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-3944",
@@ -838,12 +796,6 @@
     "slug": "pg-2377",
     "title": "Second Dedication by the Same",
     "orig": "Nuncupatio altera ejusdem",
-    "author": "Theophylact, Archbishop of Bulgaria"
-   },
-   {
-    "slug": "pg-2378",
-    "title": "Argument of the Book of Acts, together with its Chapters",
-    "orig": "Argumentum libri Actorum una cum capitulis eorum",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
@@ -986,12 +938,6 @@
     "slug": "pg-1875",
     "title": "The Beggar (or The Many-Shaped)",
     "orig": "Eranistes seu Polymorphus",
-    "author": "Theodoret of Cyrus"
-   },
-   {
-    "slug": "pg-3948",
-    "title": "Greek Index, or Theodoretan Glossary",
-    "orig": "Index Graecus, vel Glossarium Theodoreteum",
     "author": "Theodoret of Cyrus"
    },
    {
@@ -1170,12 +1116,6 @@
     "author": "Ambrose of Milan"
    },
    {
-    "slug": "pg-364",
-    "title": "Admonition concerning the Following Fragments on the Song of Songs",
-    "orig": "Admonitio in Fragmenta Subsequentia in Canticum",
-    "author": "Athanasius of Alexandria"
-   },
-   {
     "slug": "pld-2741",
     "title": "The Literal Meaning of Genesis",
     "author": "Augustine of Hippo"
@@ -1322,12 +1262,6 @@
     "author": "John Chrysostom"
    },
    {
-    "slug": "pg-2843",
-    "title": "Second Dissertation",
-    "orig": "Dissertatio Secunda",
-    "author": "Irenaeus of Lyon"
-   },
-   {
     "slug": "pg-3970",
     "title": "Homilies",
     "orig": "Homiliæ (OCR-floor, columnae non in textu puro)",
@@ -1406,6 +1340,12 @@
     "author": "Gregory of Nazianzus"
    },
    {
+    "slug": "pg-1843",
+    "title": "Commentary on the Song of Songs",
+    "orig": "Explanatio in Canticum canticorum",
+    "author": "Theodoret of Cyrus"
+   },
+   {
     "slug": "pld-5596",
     "title": "Commentary on Job",
     "author": "Jerome"
@@ -1428,6 +1368,12 @@
     "author": "Ambrose of Milan"
    },
    {
+    "slug": "pg-202",
+    "title": "Dialogue of Adamantius on Right Faith in God",
+    "orig": "Adamantii Dialogus de Recta in Deum Fide",
+    "author": "Origen"
+   },
+   {
     "slug": "pg-1466",
     "title": "Commentary on the Epistle to the Ephesians",
     "orig": "In Epistolam ad Ephesios Commentarius",
@@ -1444,10 +1390,10 @@
     "author": "Bede the Venerable"
    },
    {
-    "slug": "pg-1465",
-    "title": "Table of Contents",
-    "orig": "Elenchus",
-    "author": "John Chrysostom"
+    "slug": "pg-211",
+    "title": "Homilies on Leviticus",
+    "orig": "Homiliae in Leviticum",
+    "author": "Origen"
    },
    {
     "slug": "aq-qdepot-26",
@@ -1501,21 +1447,15 @@
     "author": "Eusebius of Caesarea"
    },
    {
+    "slug": "pg-2876",
+    "title": "Commentary on Daniel",
+    "orig": "Daniel",
+    "author": "Origen"
+   },
+   {
     "slug": "aq-dedivnom-88",
     "title": "Dionysius's On the Divine Names",
     "author": "Thomas Aquinas"
-   },
-   {
-    "slug": "pg-369",
-    "title": "Table of Contents",
-    "orig": "Elenchus",
-    "author": "Athanasius of Alexandria"
-   },
-   {
-    "slug": "pg-3053",
-    "title": "Summary of the Holy Scriptures",
-    "orig": "Synopsis scripturae sacrae",
-    "author": "Athanasius of Alexandria"
    },
    {
     "slug": "pld-2856",
@@ -1541,27 +1481,9 @@
     "author": "Basil the Great"
    },
    {
-    "slug": "pg-2842",
-    "title": "Preliminary Dissertations on the Books of Irenaeus: First Dissertation",
-    "orig": "Dissertationes Praeviae in Irenaei Libros: Dissertatio Prima",
-    "author": "Irenaeus of Lyon"
-   },
-   {
     "slug": "pld-2725",
     "title": "Against Cresconius the Donatist Grammarian",
     "author": "Augustine of Hippo"
-   },
-   {
-    "slug": "pg-395",
-    "title": "Preface",
-    "orig": "Praefatio",
-    "author": "Basil the Great"
-   },
-   {
-    "slug": "pg-3748",
-    "title": "Analysis of Book Four",
-    "orig": "Analysis Libri Quarti",
-    "author": "Irenaeus of Lyon"
    },
    {
     "slug": "pld-2851",
@@ -1589,28 +1511,22 @@
     "author": "Augustine of Hippo"
    },
    {
-    "slug": "pg-292",
-    "title": "Double Appendix",
-    "orig": "Appendix duplex",
-    "author": "Eusebius of Caesarea"
-   },
-   {
-    "slug": "pg-390",
-    "title": "Notes by Fronto Ducaeus",
-    "orig": "Notae Frontonis Ducaei",
-    "author": "Basil the Great"
-   },
-   {
-    "slug": "pg-3048",
-    "title": "Life of Antony",
-    "orig": "Vita Antonii",
-    "author": "Athanasius of Alexandria"
+    "slug": "pg-2402",
+    "title": "75 Letters from Joannes Meursius",
+    "orig": "Epistolae LXXV ex Joan. Meursio",
+    "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-3291",
     "title": "Book on Virginity",
     "orig": "Liber de virginitate",
     "author": "Basil the Great"
+   },
+   {
+    "slug": "pg-2410",
+    "title": "Exposition on the Prophet Micah",
+    "orig": "Expositio in prophetam Michaeam",
+    "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-295",
@@ -1650,12 +1566,6 @@
     "title": "Gospel Questions and Answers to Stephanus and Marinus",
     "orig": "Quaestiones evangelicae ad Stephanum et Marinum (Migne scan-OCR)",
     "author": "Eusebius of Caesarea"
-   },
-   {
-    "slug": "pg-446",
-    "title": "Editorial Notice on the Following Life",
-    "orig": "Monitum in Vitam sequentem",
-    "author": "Gregory of Nazianzus"
    },
    {
     "slug": "aq-decael-76",
@@ -1701,16 +1611,22 @@
     "author": "Eusebius of Caesarea"
    },
    {
-    "slug": "pg-466",
-    "title": "Editorial Notice on the Epitaphs and Epigrams",
-    "orig": "Monitum in Epitaphia et Epigrammata",
-    "author": "Gregory of Nazianzus"
+    "slug": "pg-827",
+    "title": "Letters (to Various Persons)",
+    "orig": "Epistolae (ad diversos)",
+    "author": "John Chrysostom"
    },
    {
     "slug": "pg-3041",
     "title": "Four Letters to Serapion",
     "orig": "Epistulae quattuor ad Serapionem",
     "author": "Athanasius of Alexandria"
+   },
+   {
+    "slug": "pg-3739",
+    "title": "Letters of Theodoret (continuation, letters 96–181)",
+    "orig": "Epistolae Theodoreti (continuatio, letters 96-181)",
+    "author": "Theodoret of Cyrus"
    },
    {
     "slug": "pld-3047",
@@ -1777,12 +1693,6 @@
     "author": "Gregory of Nazianzus"
    },
    {
-    "slug": "pg-3893",
-    "title": "Index of Subjects and Names (Volumes III–IV)",
-    "orig": "Index Rerum et Verborum (Tomorum III-IV) [cols 1413-1523]",
-    "author": "Basil the Great"
-   },
-   {
     "slug": "duns-scotus-in-primum-librum-perihermenias-quaestiones",
     "title": "Questions on the First Book of Perihermenias",
     "author": "John Duns Scotus"
@@ -1836,10 +1746,10 @@
     "author": "Athanasius of Alexandria"
    },
    {
-    "slug": "pg-3812",
-    "title": "Analytical Index",
-    "orig": "Index analyticus",
-    "author": "Gregory of Nazianzus"
+    "slug": "pg-2363",
+    "title": "Commentary on the Epistle to the Ephesians",
+    "orig": "Commentarius in Epistolam ad Ephesios",
+    "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-1996",
@@ -1863,6 +1773,12 @@
     "slug": "aq-corpuschri-121",
     "title": "Office of Corpus Christi - Sacerdos in aeternum",
     "author": "Thomas Aquinas"
+   },
+   {
+    "slug": "pg-2371",
+    "title": "Exposition on the Second Epistle to Timothy",
+    "orig": "Expositio in Epistolam II ad Timotheum",
+    "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-2880",
@@ -1908,12 +1824,6 @@
     "slug": "pld-5710",
     "title": "Fragments from a historical work",
     "author": "Hilary of Poitiers"
-   },
-   {
-    "slug": "pg-3807",
-    "title": "Comprehensive Index",
-    "orig": "Index Locupletissimus",
-    "author": "Eusebius of Caesarea"
    },
    {
     "slug": "cajetan-de-nominum-analogia",
@@ -1998,6 +1908,12 @@
     "author": "Gregory of Nazianzus"
    },
    {
+    "slug": "pg-3796",
+    "title": "Life of the Most Blessed Emperor Constantine",
+    "orig": "De Vita Beatissimi Imperatoris Constantini",
+    "author": "Eusebius of Caesarea"
+   },
+   {
     "slug": "pld-336",
     "title": "On Abraham",
     "author": "Ambrose of Milan"
@@ -2006,6 +1922,12 @@
     "slug": "pld-5654",
     "title": "Book of Genesis",
     "author": "Jerome"
+   },
+   {
+    "slug": "pg-323",
+    "title": "Against Hierocles",
+    "orig": "Liber contra Hieroclem",
+    "author": "Eusebius of Caesarea"
    },
    {
     "slug": "pg-1993",
@@ -2039,12 +1961,6 @@
     "slug": "pld-3763",
     "title": "Letters on the baptism of heretics",
     "author": "Cyprian of Carthage"
-   },
-   {
-    "slug": "pg-2852",
-    "title": "Appendix to Irenaeus's Books Against Heresies, Containing Fragments of the Gnostics Mentioned by the Holy Martyr",
-    "orig": "Appendix ad Irenæi libros contra hæreses, continens Gnosticorum quorum meminit S. martyr fragmenta",
-    "author": "Irenaeus of Lyon"
    },
    {
     "slug": "bonaventure-collationes-de-decem-praeceptis",
@@ -2088,6 +2004,12 @@
     "slug": "pg-384",
     "title": "On Virginity (Spurious Homily: \"Each of Us Has Free Will\")",
     "orig": "De virginitate (homilia Sp. — “Ἕκαστος ἡμῶν τὸ αὐτεξούσιον”)",
+    "author": "Basil the Great"
+   },
+   {
+    "slug": "pg-409",
+    "title": "Homilies Translated from Greek into Latin by Rufinus",
+    "orig": "Homiliae quas transtulit Rufinus de Graeco in Latinum",
     "author": "Basil the Great"
    },
    {
@@ -2150,6 +2072,18 @@
     "author": "Dionysius the Areopagite"
    },
    {
+    "slug": "pg-2909",
+    "title": "Book Five",
+    "orig": "Liber Quintus",
+    "author": "Basil the Great"
+   },
+   {
+    "slug": "pg-3051",
+    "title": "Homily on the Passion and Cross of the Lord",
+    "orig": "Homilia de passione et cruce domini",
+    "author": "Athanasius of Alexandria"
+   },
+   {
     "slug": "pg-3310",
     "title": "On Holy Baptism (Oration 40)",
     "orig": "In sanctum baptisma (orat. 40)",
@@ -2164,6 +2098,12 @@
     "slug": "pld-8513",
     "title": "Prescriptions against Heretics",
     "author": "Tertullian"
+   },
+   {
+    "slug": "pg-370",
+    "title": "Disputation against Arius at the Council of Nicaea",
+    "orig": "Disputatio contra Arium in concilio Nicaeno",
+    "author": "Athanasius of Alexandria"
    },
    {
     "slug": "pg-3108",
@@ -2182,6 +2122,18 @@
     "author": "Ambrose of Milan"
    },
    {
+    "slug": "pg-2887",
+    "title": "Encyclical Letter to the Bishops of Egypt and Libya",
+    "orig": "Ad Episcopos Aegypti et Libyæ Epistola Encyclica",
+    "author": "Athanasius of Alexandria"
+   },
+   {
+    "slug": "pg-3261",
+    "title": "Questions on Holy Scripture",
+    "orig": "Quaestiones in scripturam sacram Sp.",
+    "author": "Athanasius of Alexandria"
+   },
+   {
     "slug": "aq-peri-73",
     "title": "On Interpretation",
     "author": "Thomas Aquinas"
@@ -2197,6 +2149,12 @@
     "author": "Bede the Venerable"
    },
    {
+    "slug": "pg-3100",
+    "title": "Second Invective Against Julian the Emperor",
+    "orig": "Contra Julianum imperatorem ii",
+    "author": "Gregory of Nazianzus"
+   },
+   {
     "slug": "pld-3051",
     "title": "Prose life of Saint Cuthbert",
     "author": "Bede the Venerable"
@@ -2207,6 +2165,12 @@
     "author": "Ambrose of Milan"
    },
    {
+    "slug": "pg-3107",
+    "title": "On the Love of the Poor",
+    "orig": "De pauperum amore",
+    "author": "Gregory of Nazianzus"
+   },
+   {
     "slug": "pld-354",
     "title": "On the Intercession of Job and David",
     "author": "Ambrose of Milan"
@@ -2214,6 +2178,40 @@
    {
     "slug": "pld-8509",
     "title": "On Prayer",
+    "author": "Tertullian"
+   },
+   {
+    "slug": "pg-3207",
+    "title": "On the Holy Trinity",
+    "orig": "De sancta trinitate",
+    "author": "John of Damascus"
+   },
+   {
+    "slug": "pg-53",
+    "title": "Scholia of Saint Maximus",
+    "orig": "Sancti Maximi Scholia",
+    "author": "Dionysius the Areopagite"
+   },
+   {
+    "slug": "pg-454",
+    "title": "Nicetas of Serrhae",
+    "orig": "Nicetas Serronius",
+    "author": "Gregory of Nazianzus"
+   },
+   {
+    "slug": "pg-3606",
+    "title": "On the Two Wills in Christ",
+    "orig": "De Duabus in Christo Voluntatibus",
+    "author": "John of Damascus"
+   },
+   {
+    "slug": "pld-8491",
+    "title": "To the nations",
+    "author": "Tertullian"
+   },
+   {
+    "slug": "pld-8514",
+    "title": "On Modesty",
     "author": "Tertullian"
    }
   ],
@@ -2670,11 +2668,6 @@
     "author": "Francisco de Oviedo"
    },
    {
-    "slug": "johannes-hoornbeeck-summa-controversiarum-religionis",
-    "title": "Summary of Religious Controversies",
-    "author": "Johannes Hoornbeeck"
-   },
-   {
     "slug": "hammond-paraphrase-annotations-all-books-new-testament",
     "title": "A paraphrase and annotations upon all the books of the New Testament briefly explaining all the difficult places",
     "author": "Henry Hammond"
@@ -2908,11 +2901,6 @@
     "slug": "johann-adam-scherzer-systema-theologiae",
     "title": "System of Theology",
     "author": "Johann Adam Scherzer"
-   },
-   {
-    "slug": "hoornbeek-summa-controversiarum",
-    "title": "Summary of Religious Controversies with Infidels, Heretics, Schismatics",
-    "author": "Johannes Hoornbeeck"
    },
    {
     "slug": "eebo-13216",
@@ -4178,11 +4166,6 @@
     "author": "William Nicholson"
    },
    {
-    "slug": "tommaso-zigliara-summa-philosophica-vol-1",
-    "title": "Summary of Philosophy",
-    "author": "Tommaso Zigliara"
-   },
-   {
     "slug": "eebo-46774",
     "title": "The Four Last Things",
     "author": "William Bates"
@@ -4236,6 +4219,21 @@
     "slug": "petrus-pictaviensis-sententiae",
     "title": "Five Books of Sentences",
     "author": "Peter of Poitiers"
+   },
+   {
+    "slug": "eebo-47886",
+    "title": "A practical discourse concerning a future judgment by William Sherlock",
+    "author": "William Sherlock"
+   },
+   {
+    "slug": "pld-5567",
+    "title": "Commentaries on the Epistles of Paul",
+    "author": "Herveus of Bourg-Dieu"
+   },
+   {
+    "slug": "eebo-2296",
+    "title": "Catechismus, a short instruction into Christian religion",
+    "author": "Thomas Cranmer"
    }
   ]
  }
