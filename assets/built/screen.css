@@ -26468,6 +26468,17 @@ body:has(.welcome-page) .site-header { position: static; flex: 0 0 auto; }
   color: #fff;
   margin-bottom: 5px;
 }
+/* The original title under the English one: smaller and quieter, so the
+   English reads first (Ian, 2026-09-28). */
+.mo-tfr-work .brow-o {
+  display: block;
+  font-family: var(--font-body, Georgia, serif);
+  font-size: 13.5px;
+  font-style: italic;
+  line-height: 1.35;
+  color: #ffffffa6;
+  margin: -1px 0 6px;
+}
 .mo-tfr-work .brow-m {
   display: block;
   font-size: 13px;

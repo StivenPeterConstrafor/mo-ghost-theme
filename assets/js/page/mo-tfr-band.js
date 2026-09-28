@@ -64,10 +64,11 @@
   const card = (work) => {
     if (!work || !work.slug) return "";
     const url = `/the-faith-received/read/?w=${encodeURIComponent(work.slug)}`;
+    // The original title, smaller, under the English one (Ian, 2026-09-28).
+    const orig = work.orig ? `<span class="brow-o">${esc(work.orig)}</span>` : "";
     return `<a class="mo-tfr-work" href="${esc(url)}" data-hm-goal="tfr-spotlight">`
-      + `<span class="brow-t">${esc(work.title)}</span>`
-      + `<span class="brow-m">${esc(work.author)}</span>`
-      + "</a>";
+      + `<span class="brow-t">${esc(work.title)}</span>${orig}`
+      + `<span class="brow-m">${esc(work.author)}</span></a>`;
   };
 
   fetch(src, { credentials: "omit" })

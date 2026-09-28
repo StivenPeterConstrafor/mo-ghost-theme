@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-25T15:06:22.454Z",
+ "generated": "2026-09-28T10:45:10.901Z",
  "note": "Built by scripts/build-tfr-spotlight.mjs. Bands are by author citations received; never label them on screen.",
  "pools": {
   "middle": [
@@ -29,69 +29,24 @@
     "author": "John Calvin"
    },
    {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-9",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
-   },
-   {
     "slug": "bellarmine-disputationes-de-controversiis-vol-1-as",
     "title": "Disputations on the Controversies of the Christian Faith",
     "author": "Robert Bellarmine"
    },
    {
-    "slug": "duns-scotus-quaestiones-quodlibetales",
-    "title": "Quodlibetal Questions",
-    "author": "John Duns Scotus"
-   },
-   {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-2",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
-   },
-   {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-5",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
-   },
-   {
-    "slug": "duns-scotus-in-xii-libros-metaphysicorum-aristotelis-expositio",
-    "title": "Exposition on the Twelve Books of Aristotle’s Metaphysics",
-    "author": "John Duns Scotus"
-   },
-   {
-    "slug": "duns-scotus-opera-t15",
-    "title": "Complete Works",
-    "author": "John Duns Scotus"
-   },
-   {
     "slug": "duns-scotus-summa-theologica-vol-3",
-    "title": "Summa Theologica, Vol. III",
+    "title": "Summa Theologica, compiled by Jerome of Montefortino, Vol. III",
     "author": "John Duns Scotus"
    },
    {
     "slug": "duns-scotus-summa-theologica-vol-5",
-    "title": "Summa Theologica, Vol. V",
+    "title": "Summa Theologica, compiled by Jerome of Montefortino, Vol. V",
     "author": "John Duns Scotus"
-   },
-   {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-1",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
-   },
-   {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-10",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
    },
    {
     "slug": "duns-scotus-summa-theologica-vol-6",
-    "title": "Summa Theologica, Vol. VI",
+    "title": "Summa Theologica, compiled by Jerome of Montefortino, Vol. VI",
     "author": "John Duns Scotus"
-   },
-   {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-8",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
    },
    {
     "slug": "bellarmine-explanatio-in-psalmos-vol-1",
@@ -100,23 +55,13 @@
    },
    {
     "slug": "duns-scotus-summa-theologica-vol-4",
-    "title": "Summa Theologica, Vol. IV",
+    "title": "Summa Theologica, compiled by Jerome of Montefortino, Vol. IV",
     "author": "John Duns Scotus"
-   },
-   {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-12",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
    },
    {
     "slug": "pld-2809",
     "title": "Expositions of the Psalms",
     "author": "Augustine of Hippo"
-   },
-   {
-    "slug": "duns-scotus-opera-t09",
-    "title": "Complete Works",
-    "author": "John Duns Scotus"
    },
    {
     "slug": "bellarmine-disputationes-de-controversiis-vol-2-as",
@@ -134,44 +79,9 @@
     "author": "Bonaventure"
    },
    {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-6-pt-1",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
-   },
-   {
     "slug": "bellarmine-disputationes-de-controversiis-vol-3-as",
     "title": "Disputations on the Controversies of the Christian Faith",
     "author": "Robert Bellarmine"
-   },
-   {
-    "slug": "duns-scotus-lectura",
-    "title": "Lectura",
-    "author": "John Duns Scotus"
-   },
-   {
-    "slug": "luther-wa-schriften-49",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 49. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "duns-scotus-opera-t18",
-    "title": "Complete Works",
-    "author": "John Duns Scotus"
-   },
-   {
-    "slug": "luther-wa-schriften-52",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 52. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "duns-scotus-reportata-parisiensia-liber-quartus",
-    "title": "Parisian Reports Book Four",
-    "author": "John Duns Scotus"
-   },
-   {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-7-pt-2",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
    },
    {
     "slug": "calvin-institutes-of-the-christian-religion",
@@ -179,153 +89,25 @@
     "author": "John Calvin"
    },
    {
-    "slug": "luther-wa-schriften-44",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 44. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "luther-wa-schriften-9",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 9. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "duns-scotus-opera-t04",
-    "title": "Complete Works",
-    "author": "John Duns Scotus"
-   },
-   {
     "slug": "duns-scotus-quaestiones-subtilissimae-super-libros-metaphysicorum",
     "title": "Most Subtle Questions on the Books of the Metaphysics",
     "author": "John Duns Scotus"
    },
    {
-    "slug": "luther-wa-schriften-15",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 15. Band",
-    "author": "Martin Luther"
+    "slug": "pg-1686",
+    "title": "Commentary on the Prophet Isaiah",
+    "orig": "Commentarius in Isaiam Prophetam",
+    "author": "Cyril of Alexandria"
    },
    {
-    "slug": "luther-wa-schriften-7",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 7. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "luther-wa-schriften-20",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 20. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "duns-scotus-opera-t10",
-    "title": "Complete Works",
+    "slug": "duns-scotus-summa-theologica-vol-1",
+    "title": "Summa Theologica, compiled by Jerome of Montefortino, Vol. I",
     "author": "John Duns Scotus"
-   },
-   {
-    "slug": "duns-scotus-opera-t14",
-    "title": "Complete Works",
-    "author": "John Duns Scotus"
-   },
-   {
-    "slug": "luther-wa-schriften-18",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 18. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "luther-wa-schriften-46",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 46. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "duns-scotus-opera-t17",
-    "title": "Complete Works",
-    "author": "John Duns Scotus"
-   },
-   {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-4",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
-   },
-   {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-6-pt-2",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
-   },
-   {
-    "slug": "luther-wa-schriften-30-i",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 30. I. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "luther-wa-schriften-28",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 28. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "luther-wa-schriften-40-iii",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 40. III. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "luther-wa-schriften-31-ii",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 31. II. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "luther-wa-schriften-69",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 69. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-7-pt-3",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
-   },
-   {
-    "slug": "pg-202",
-    "title": "Adamantii Dialogus de Recta in Deum Fide",
-    "author": "Origen"
-   },
-   {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-13",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
-   },
-   {
-    "slug": "luther-wa-schriften-47",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 47. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "luther-wa-schriften-14",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 14. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "luther-wa-schriften-45",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 45. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "luther-wa-schriften-2",
-    "title": "Werke (Weimarer Ausgabe) — Schriften, 2. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "luther-wa-tischreden-3",
-    "title": "Werke (Weimarer Ausgabe) — Tischreden, 3. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "luther-wa-tischreden-4",
-    "title": "Werke (Weimarer Ausgabe) — Tischreden, 4. Band",
-    "author": "Martin Luther"
-   },
-   {
-    "slug": "baronius-annales-ecclesiastici-vol-12",
-    "title": "Annales Ecclesiastici",
-    "author": "Caesar Baronius"
    },
    {
     "slug": "pg-318",
-    "title": "Praeparatio Evangelica",
+    "title": "Preparation for the Gospel",
+    "orig": "Praeparatio Evangelica",
     "author": "Eusebius of Caesarea"
    },
    {
@@ -340,13 +122,9 @@
    },
    {
     "slug": "pg-329",
-    "title": "Commentariorum in Psalmos",
+    "title": "Commentary on the Psalms",
+    "orig": "Commentariorum in Psalmos",
     "author": "Eusebius of Caesarea"
-   },
-   {
-    "slug": "bellarmine-opera-omnia-vives-tomus-6",
-    "title": "Opera omnia (Vivès 1873), Tomus VI: De Gratia et Libero Arbitrio (IV-VI), De Justificatione, De Bonis Operibus in Particulari, De Translatione Imperii Romani",
-    "author": "Robert Bellarmine"
    },
    {
     "slug": "bellarmine-opera-omnia-vives-tomus-4",
@@ -355,7 +133,8 @@
    },
    {
     "slug": "pg-263",
-    "title": "Hexaplorum Quae Supersunt",
+    "title": "Remnants of the Hexapla",
+    "orig": "Hexaplorum Quae Supersunt",
     "author": "Origen"
    },
    {
@@ -364,29 +143,9 @@
     "author": "Bonaventure"
    },
    {
-    "slug": "baronius-annales-ecclesiastici-vol-10",
-    "title": "Annales Ecclesiastici",
-    "author": "Caesar Baronius"
-   },
-   {
     "slug": "pld-7606",
     "title": "Commentary on the Psalms",
     "author": "Peter Lombard"
-   },
-   {
-    "slug": "baronius-annales-ecclesiastici-vol-11",
-    "title": "Annales Ecclesiastici",
-    "author": "Caesar Baronius"
-   },
-   {
-    "slug": "pld-277",
-    "title": "Letter and Privileges",
-    "author": "Alexander III"
-   },
-   {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-6-pt-3",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
    },
    {
     "slug": "bellarmine-opera-omnia-vives-tomus-3",
@@ -394,24 +153,9 @@
     "author": "Robert Bellarmine"
    },
    {
-    "slug": "bellarmine-opera-omnia-vives-tomus-5",
-    "title": "Opera omnia (Vivès 1873), Tomus V: De Extrema Unctione, De Ordine, De Matrimonio, De Gratia Primi Hominis, De Amissione Gratiae et Statu Peccati, De Gratia et Libero Arbitrio (I-III)",
-    "author": "Robert Bellarmine"
-   },
-   {
-    "slug": "baronius-annales-ecclesiastici-vol-9",
-    "title": "Annales Ecclesiastici",
-    "author": "Caesar Baronius"
-   },
-   {
     "slug": "cajetan-opera-omnia-in-sacram-scripturam-tom-ii-1-reg-job",
     "title": "Complete Works on Sacred Scripture",
     "author": "Thomas Cajetan"
-   },
-   {
-    "slug": "pg-3530",
-    "title": "Fragmenta ex libris \"Stromatum\"",
-    "author": "Origen"
    },
    {
     "slug": "cajetan-opera-omnia-in-sacram-scripturam-tom-i-pentateuch",
@@ -419,39 +163,16 @@
     "author": "Thomas Cajetan"
    },
    {
-    "slug": "baronius-annales-ecclesiastici-vol-7",
-    "title": "Annales Ecclesiastici",
-    "author": "Caesar Baronius"
-   },
-   {
-    "slug": "acts-of-the-council-of-trent-acta-concilii-tridentini-vol-7-pt-1",
-    "title": "Acta Concilii Tridentini",
-    "author": "Acts of the Council of Trent"
-   },
-   {
-    "slug": "baronius-annales-ecclesiastici-vol-3",
-    "title": "Annales Ecclesiastici",
-    "author": "Caesar Baronius"
-   },
-   {
-    "slug": "baronius-annales-ecclesiastici-vol-2",
-    "title": "Annales Ecclesiastici",
-    "author": "Caesar Baronius"
-   },
-   {
     "slug": "pg-1837",
-    "title": "Interpretatio in Psalmos",
+    "title": "Commentary on the Psalms",
+    "orig": "Interpretatio in Psalmos",
     "author": "Theodoret of Cyrus"
    },
    {
     "slug": "pg-2385",
-    "title": "Expositio in Epistolam I S. Petri",
+    "title": "Exposition on the First Epistle of St. Peter",
+    "orig": "Expositio in Epistolam I S. Petri",
     "author": "Theophylact, Archbishop of Bulgaria"
-   },
-   {
-    "slug": "baronius-annales-ecclesiastici-vol-1",
-    "title": "Annales Ecclesiastici",
-    "author": "Caesar Baronius"
    },
    {
     "slug": "cajetan-opera-omnia-in-sacram-scripturam-tom-iv-gospels",
@@ -460,18 +181,15 @@
    },
    {
     "slug": "pg-2384",
-    "title": "Argumentum Epistolae I S. Petri, cum capitulis ejusdem",
+    "title": "Argument of the First Epistle of Saint Peter, with its Chapters",
+    "orig": "Argumentum Epistolae I S. Petri, cum capitulis ejusdem",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-2383",
-    "title": "Expositio in Epistolam catholicam S. Jacobi",
+    "title": "Exposition of the Catholic Epistle of St. James",
+    "orig": "Expositio in Epistolam catholicam S. Jacobi",
     "author": "Theophylact, Archbishop of Bulgaria"
-   },
-   {
-    "slug": "baronius-annales-ecclesiastici-vol-6",
-    "title": "Annales Ecclesiastici",
-    "author": "Caesar Baronius"
    },
    {
     "slug": "cajetan-opera-omnia-in-sacram-scripturam-tom-v-actsepistles",
@@ -479,44 +197,39 @@
     "author": "Thomas Cajetan"
    },
    {
+    "slug": "duns-scotus-super-universalia-porphyrii-quaestiones-acutissimae",
+    "title": "Most Acute Questions on the Universals of Porphyry",
+    "author": "John Duns Scotus"
+   },
+   {
     "slug": "pg-419",
-    "title": "Epistolae (Classes I-III)",
+    "title": "Letters (Classes I-III)",
+    "orig": "Epistolae (Classes I-III)",
     "author": "Basil the Great"
    },
    {
     "slug": "pg-2380",
-    "title": "Expositionis ejusdem textus alter ex codice Vaticano",
+    "title": "Another Exposition of the Same Text from a Vatican Manuscript",
+    "orig": "Expositionis ejusdem textus alter ex codice Vaticano",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-417",
-    "title": "Liber de Spiritu Sancto; Epistolae (Classes I-III)",
+    "title": "On the Holy Spirit; Letters (Classes I-III)",
+    "orig": "Liber de Spiritu Sancto; Epistolae (Classes I-III)",
     "author": "Basil the Great"
    },
    {
     "slug": "pg-1982",
-    "title": "Opera Philosophica et Theologica",
+    "title": "Philosophical and Theological Works",
+    "orig": "Opera Philosophica et Theologica",
     "author": "John of Damascus"
    },
    {
-    "slug": "baronius-annales-ecclesiastici-vol-5",
-    "title": "Annales Ecclesiastici",
-    "author": "Caesar Baronius"
-   },
-   {
-    "slug": "baronius-annales-ecclesiastici-vol-8",
-    "title": "Annales Ecclesiastici",
-    "author": "Caesar Baronius"
-   },
-   {
-    "slug": "baronius-annales-ecclesiastici-vol-4",
-    "title": "Annales Ecclesiastici",
-    "author": "Caesar Baronius"
-   },
-   {
-    "slug": "pld-2815",
-    "title": "Letters",
-    "author": "Augustine of Hippo"
+    "slug": "pg-1712",
+    "title": "Commentary on the Gospel of John (Books I-VI)",
+    "orig": "Expositio in Joannis Evangelium (Libri I-VI)",
+    "author": "Cyril of Alexandria"
    },
    {
     "slug": "bellarmine-explanatio-in-psalmos-vol-2",
@@ -529,14 +242,22 @@
     "author": "Robert Bellarmine"
    },
    {
-    "slug": "aq-st-ii-ii-19",
-    "title": "Summa Theologica II-II, q. 1-91",
-    "author": "Thomas Aquinas"
+    "slug": "pg-1676",
+    "title": "On Adoration and Worship in Spirit and Truth",
+    "orig": "De Adoratione et Cultu in Spiritu et Veritate",
+    "author": "Cyril of Alexandria"
    },
    {
     "slug": "pg-198",
-    "title": "Origenis Praefatio ad Libros \"Contra Celsum\"",
+    "title": "Preface to Contra Celsum",
+    "orig": "Origenis Praefatio ad Libros \"Contra Celsum\"",
     "author": "Origen"
+   },
+   {
+    "slug": "pg-1733",
+    "title": "Thesaurus on the Holy and Consubstantial Trinity",
+    "orig": "Thesaurus de Sancta et Consubstantiali Trinitate",
+    "author": "Cyril of Alexandria"
    },
    {
     "slug": "pld-2850",
@@ -545,17 +266,20 @@
    },
    {
     "slug": "pg-3214",
-    "title": "Sacra parallela recensiones secundum alphabeti",
+    "title": "Sacred Parallels, alphabetical recensions",
+    "orig": "Sacra parallela recensiones secundum alphabeti",
     "author": "John of Damascus"
    },
    {
     "slug": "pg-2847",
-    "title": "Adversus hæreses libri quinque (NB: \"Libri Quinque\" is in volume 7b)",
+    "title": "Against Heresies",
+    "orig": "Adversus hæreses libri quinque (NB: \"Libri Quinque\" is in volume 7b)",
     "author": "Irenaeus of Lyon"
    },
    {
     "slug": "pg-3416",
-    "title": "Supplementa minora ad quaestiones ad Marinum",
+    "title": "Minor Supplements to the Questions to Marinus",
+    "orig": "Supplementa minora ad quaestiones ad Marinum",
     "author": "Eusebius of Caesarea"
    },
    {
@@ -564,28 +288,21 @@
     "author": "Bonaventure"
    },
    {
-    "slug": "pld-5640",
-    "title": "Letters",
-    "author": "Jerome"
-   },
-   {
     "slug": "pg-447",
-    "title": "Orationes S. Gregorii",
+    "title": "Orations of Saint Gregory",
+    "orig": "Orationes S. Gregorii",
     "author": "Gregory of Nazianzus"
    },
    {
     "slug": "pg-307",
-    "title": "Ecclesiasticae Historiae",
+    "title": "Ecclesiastical History",
+    "orig": "Ecclesiasticae Historiae",
     "author": "Eusebius of Caesarea"
    },
    {
-    "slug": "aq-st-ii-ii-20",
-    "title": "Summa Theologica II-II, q. 92-189",
-    "author": "Thomas Aquinas"
-   },
-   {
     "slug": "pg-1866",
-    "title": "Interpretatio in xiv epistulas sancti Pauli",
+    "title": "Commentary on the Fourteen Epistles of Saint Paul",
+    "orig": "Interpretatio in xiv epistulas sancti Pauli",
     "author": "Theodoret of Cyrus"
    },
    {
@@ -600,12 +317,14 @@
    },
    {
     "slug": "pg-3599",
-    "title": "Interpretatio epistolæ II ad Corinthios",
+    "title": "Commentary on the Second Epistle to the Corinthians",
+    "orig": "Interpretatio epistolæ II ad Corinthios",
     "author": "Theodoret of Cyrus"
    },
    {
     "slug": "pg-3609",
-    "title": "Expositio in Epistolam B. Pauli",
+    "title": "Exposition on the Epistle of Blessed Paul",
+    "orig": "Expositio in Epistolam B. Pauli",
     "author": "John of Damascus"
    },
    {
@@ -615,12 +334,14 @@
    },
    {
     "slug": "pg-322",
-    "title": "Demonstratio evangelica",
+    "title": "Proof of the Gospel",
+    "orig": "Demonstratio evangelica",
     "author": "Eusebius of Caesarea"
    },
    {
     "slug": "pg-1891",
-    "title": "Garnerii Dissertationes",
+    "title": "Dissertations of Garnier",
+    "orig": "Garnerii Dissertationes",
     "author": "Theodoret of Cyrus"
    },
    {
@@ -629,8 +350,14 @@
     "author": "Ambrose of Milan"
    },
    {
+    "slug": "duns-scotus-summa-theologica-vol-2",
+    "title": "Summa Theologica, compiled by Jerome of Montefortino, Vol. II",
+    "author": "John Duns Scotus"
+   },
+   {
     "slug": "pg-237",
-    "title": "Commentaria in Evangelium secundum Matthaeum (Tomi XII sqq.)",
+    "title": "Commentary on the Gospel according to Matthew (Books XII et seqq.)",
+    "orig": "Commentaria in Evangelium secundum Matthaeum (Tomi XII sqq.)",
     "author": "Origen"
    },
    {
@@ -640,12 +367,14 @@
    },
    {
     "slug": "pg-362",
-    "title": "De titulis Psalmorum",
+    "title": "On the Titles of the Psalms",
+    "orig": "De titulis Psalmorum",
     "author": "Athanasius of Alexandria"
    },
    {
     "slug": "pg-2379",
-    "title": "Expositio in Acta apostolorum",
+    "title": "Exposition on the Acts of the Apostles",
+    "orig": "Expositio in Acta apostolorum",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
@@ -654,24 +383,21 @@
     "author": "Bonaventure"
    },
    {
-    "slug": "aq-st-i-ii-17",
-    "title": "Summa Theologica I-II, q. 1-70",
-    "author": "Thomas Aquinas"
-   },
-   {
-    "slug": "cajetan-opuscula-omnia",
-    "title": "Opuscula Omnia",
-    "author": "Thomas Cajetan"
-   },
-   {
     "slug": "calvin-commentary-on-romans",
     "title": "Commentary on Romans",
     "author": "John Calvin"
    },
    {
     "slug": "pg-1877",
-    "title": "Compendium Haereticarum Fabularum",
+    "title": "A Compendium of Heretical Fables",
+    "orig": "Compendium Haereticarum Fabularum",
     "author": "Theodoret of Cyrus"
+   },
+   {
+    "slug": "pg-1681",
+    "title": "Elegant Commentaries",
+    "orig": "Glaphyra",
+    "author": "Cyril of Alexandria"
    },
    {
     "slug": "pld-5594",
@@ -685,7 +411,8 @@
    },
    {
     "slug": "pg-272",
-    "title": "P. Danielis Huetii Origeniana",
+    "title": "Huet's Origeniana",
+    "orig": "P. Danielis Huetii Origeniana",
     "author": "Origen"
    },
    {
@@ -694,28 +421,15 @@
     "author": "John Calvin"
    },
    {
-    "slug": "aq-st-iii-21",
-    "title": "Summa Theologiae III, q. 1-59",
-    "author": "Thomas Aquinas"
-   },
-   {
-    "slug": "aq-st-i-16",
-    "title": "Summa Theologiae I, q. 50-119",
-    "author": "Thomas Aquinas"
-   },
-   {
-    "slug": "po-72",
-    "title": "Athanasius of Alexandria, Oratio II contra Arianos",
-    "author": "Athanasius of Alexandria"
-   },
-   {
-    "slug": "pld-6357",
-    "title": "Letters",
-    "author": "Leo I"
+    "slug": "pg-1715",
+    "title": "Commentary on John (Books VII–XII)",
+    "orig": "Commentarii in Joannem (Libri VII-XII)",
+    "author": "Cyril of Alexandria"
    },
    {
     "slug": "pg-3672",
-    "title": "Exegetica in Psalmos",
+    "title": "Exegesis on the Psalms",
+    "orig": "Exegetica in Psalmos",
     "author": "Origen"
    },
    {
@@ -724,13 +438,9 @@
     "author": "John Calvin"
    },
    {
-    "slug": "pg-221",
-    "title": "Exegetica in Psalmos",
-    "author": "Origen"
-   },
-   {
     "slug": "pg-3208",
-    "title": "Commentarii in epistulas Pauli",
+    "title": "Commentaries on the Epistles of Paul",
+    "orig": "Commentarii in epistulas Pauli",
     "author": "John of Damascus"
    },
    {
@@ -754,11 +464,6 @@
     "author": "John Calvin"
    },
    {
-    "slug": "pld-3142",
-    "title": "Letters",
-    "author": "Bernard of Clairvaux"
-   },
-   {
     "slug": "calvin-commentary-on-isaiah-vol-1",
     "title": "Commentary on Isaiah",
     "author": "John Calvin"
@@ -769,9 +474,10 @@
     "author": "John Calvin"
    },
    {
-    "slug": "aq-st-iiisup-23",
-    "title": "Supplementum, q. 1-68",
-    "author": "Thomas Aquinas"
+    "slug": "pg-1760",
+    "title": "Paschal Letters or Paschal Homilies (Letters 1–30)",
+    "orig": "Epistulae paschales sive Homiliae paschales (epist. 1 30)",
+    "author": "Cyril of Alexandria"
    },
    {
     "slug": "calvin-commentary-on-genesis-vol-1",
@@ -794,13 +500,32 @@
     "author": "Augustine of Hippo"
    },
    {
+    "slug": "pg-3401",
+    "title": "Exposition on the Psalms",
+    "orig": "Expositio in Psalmos",
+    "author": "Cyril of Alexandria"
+   },
+   {
+    "slug": "pg-3700",
+    "title": "Explanation of the Psalms",
+    "orig": "Explanatio in Psalmos",
+    "author": "Cyril of Alexandria"
+   },
+   {
+    "slug": "pg-3701",
+    "title": "Against Julian the Emperor (Ten Books)",
+    "orig": "Adversus Julianum Imp. Libri Decem",
+    "author": "Cyril of Alexandria"
+   },
+   {
     "slug": "calvin-commentary-on-genesis-vol-2",
     "title": "Commentary on Genesis",
     "author": "John Calvin"
    },
    {
     "slug": "pg-383",
-    "title": "Commentarius in Isaiam prophetam",
+    "title": "Commentary on the Prophet Isaiah",
+    "orig": "Commentarius in Isaiam prophetam",
     "author": "Basil the Great"
    },
    {
@@ -840,12 +565,14 @@
    },
    {
     "slug": "pg-2369",
-    "title": "Elenchus",
+    "title": "Table of Contents",
+    "orig": "Elenchus",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-2370",
-    "title": "Expositio in Epistolam I ad Timotheum",
+    "title": "Exposition of the First Epistle to Timothy",
+    "orig": "Expositio in Epistolam I ad Timotheum",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
@@ -855,27 +582,20 @@
    },
    {
     "slug": "pg-3032",
-    "title": "Expositiones in Psalmos",
+    "title": "Expositions on the Psalms",
+    "orig": "Expositiones in Psalmos",
     "author": "Athanasius of Alexandria"
    },
    {
     "slug": "pg-54",
-    "title": "Scriptores varii Vitae S. Dionysii Areopagitae",
+    "title": "Various Writers on the Life of St. Dionysius the Areopagite",
+    "orig": "Scriptores varii Vitae S. Dionysii Areopagitae",
     "author": "Dionysius the Areopagite"
    },
    {
-    "slug": "aq-st-i-15",
-    "title": "Summa Theologica I, q. 1-49",
-    "author": "Thomas Aquinas"
-   },
-   {
-    "slug": "pg-398",
-    "title": "Moralia",
-    "author": "Basil the Great"
-   },
-   {
     "slug": "pg-2853",
-    "title": "Variorum Notæ",
+    "title": "Notes on Various Topics",
+    "orig": "Variorum Notæ",
     "author": "Irenaeus of Lyon"
    },
    {
@@ -884,18 +604,20 @@
     "author": "Thomas Aquinas"
    },
    {
-    "slug": "aq-jerem-47",
-    "title": "Jeremiah",
-    "author": "Thomas Aquinas"
-   },
-   {
     "slug": "pld-7605",
     "title": "Collectanea on the Epistles of Paul",
     "author": "Peter Lombard"
    },
    {
+    "slug": "pg-3699",
+    "title": "Commentary on the Gospel of Luke",
+    "orig": "Explanatio in Lucæ Evangelium",
+    "author": "Cyril of Alexandria"
+   },
+   {
     "slug": "pg-1981",
-    "title": "S. Joannes Damascenus",
+    "title": "St. John of Damascus",
+    "orig": "S. Joannes Damascenus",
     "author": "John of Damascus"
    },
    {
@@ -904,28 +626,21 @@
     "author": "Thomas Aquinas"
    },
    {
-    "slug": "pld-3031",
-    "title": "Homilies",
-    "author": "Bede the Venerable"
-   },
-   {
     "slug": "pg-247",
-    "title": "Commentaria in Evangelium Joannis",
+    "title": "Commentary on the Gospel of John",
+    "orig": "Commentaria in Evangelium Joannis",
     "author": "Origen"
    },
    {
     "slug": "pg-246",
-    "title": "Monitum ad Commentaria Origenis in Joannem",
+    "title": "Editorial Notice on Origen's Commentary on John",
+    "orig": "Monitum ad Commentaria Origenis in Joannem",
     "author": "Origen"
    },
    {
-    "slug": "aq-st-i-ii-18",
-    "title": "Summa Theologica I-II, q. 71-114",
-    "author": "Thomas Aquinas"
-   },
-   {
     "slug": "pg-291",
-    "title": "Chronicorum Libri Duo",
+    "title": "Chronicle",
+    "orig": "Chronicorum Libri Duo",
     "author": "Eusebius of Caesarea"
    },
    {
@@ -935,68 +650,92 @@
    },
    {
     "slug": "pg-463",
-    "title": "Carmina — Poemata de se ipso (Liber II, Tomus I)",
+    "title": "Poems: Poems Concerning Himself (Book II, Volume I)",
+    "orig": "Carmina — Poemata de se ipso (Liber II, Tomus I)",
     "author": "Gregory of Nazianzus"
    },
    {
+    "slug": "pg-1709",
+    "title": "Commentary on the Gospel of Luke",
+    "orig": "Explanatio in Lucae Evangelium",
+    "author": "Cyril of Alexandria"
+   },
+   {
+    "slug": "pg-1734",
+    "title": "Book on the Holy and Consubstantial Trinity",
+    "orig": "Liber de Sancta et Consubstantiali Trinitate",
+    "author": "Cyril of Alexandria"
+   },
+   {
     "slug": "pg-2374",
-    "title": "Expositio in Epistolam ad Hebræos",
+    "title": "Exposition of the Epistle to the Hebrews",
+    "orig": "Expositio in Epistolam ad Hebræos",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-462",
-    "title": "Carmina — Poemata Moralia (Liber I, Tomus II)",
+    "title": "Poems—Moral Poems (Book I, Volume II)",
+    "orig": "Carmina — Poemata Moralia (Liber I, Tomus II)",
     "author": "Gregory of Nazianzus"
    },
    {
     "slug": "pg-1438",
-    "title": "In Joannem (homiliae 1-88)",
+    "title": "Homilies on the Gospel of John",
+    "orig": "In Joannem (homiliae 1-88)",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-1240",
-    "title": "Expositiones in Psalmos (Chrysostom)",
+    "title": "Expositions on the Psalms",
+    "orig": "Expositiones in Psalmos (Chrysostom)",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-1244",
-    "title": "Expositiones in Psalmos (Chrysostom)",
+    "title": "Expositions on the Psalms",
+    "orig": "Expositiones in Psalmos (Chrysostom)",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-308",
-    "title": "De Vita Constantini Imperatoris Libri Quatuor",
+    "title": "The Life of the Emperor Constantine in Four Books",
+    "orig": "De Vita Constantini Imperatoris Libri Quatuor",
     "author": "Eusebius of Caesarea"
    },
    {
     "slug": "pg-355",
-    "title": "Orationes contra Arianos — Opera Historica et Dogmatica",
+    "title": "Orations against the Arians — Historical and Dogmatic Works",
+    "orig": "Orationes contra Arianos — Opera Historica et Dogmatica",
     "author": "Athanasius of Alexandria"
    },
    {
+    "slug": "duns-scotus-quaestiones-super-libros-aristotelis-de-anima",
+    "title": "Questions on the Books of Aristotle on the Soul",
+    "author": "John Duns Scotus"
+   },
+   {
     "slug": "pg-1429",
-    "title": "Commentarius in Sanctum Matthæum (homiliae 1-44)",
+    "title": "Commentary on Saint Matthew (Homilies 1-44)",
+    "orig": "Commentarius in Sanctum Matthæum (homiliae 1-44)",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-3740",
-    "title": "Quæstiones selectæ in Loca Difficilia Scripturæ sacræ (Quæstiones in Genesin through Quæstiones in Ruth)",
+    "title": "Selected Questions on Difficult Passages of Holy Scripture",
+    "orig": "Quæstiones selectæ in Loca Difficilia Scripturæ sacræ (Quæstiones in Genesin through Quæstiones in Ruth)",
     "author": "Theodoret of Cyrus"
    },
    {
     "slug": "pg-250",
-    "title": "Commentaria in Epistolam B. Pauli ad Romanos",
+    "title": "Commentary on the Epistle of Blessed Paul to the Romans",
+    "orig": "Commentaria in Epistolam B. Pauli ad Romanos",
     "author": "Origen"
    },
    {
     "slug": "pg-1846",
-    "title": "Interpretatio in Ezechielis prophetiam",
+    "title": "Commentary on the Prophet Ezekiel",
+    "orig": "Interpretatio in Ezechielis prophetiam",
     "author": "Theodoret of Cyrus"
-   },
-   {
-    "slug": "aq-st-iii-22",
-    "title": "Summa Theologica III, q. 60-90",
-    "author": "Thomas Aquinas"
    },
    {
     "slug": "pld-5706",
@@ -1005,42 +744,44 @@
    },
    {
     "slug": "pg-1844",
-    "title": "Interpretatio eclogarum in Isaiam prophetam",
+    "title": "Commentary on Selected Passages from the Prophet Isaiah",
+    "orig": "Interpretatio eclogarum in Isaiam prophetam",
     "author": "Theodoret of Cyrus"
    },
    {
-    "slug": "pld-7607",
-    "title": "Sentences",
-    "author": "Peter Lombard"
-   },
-   {
     "slug": "pg-2353",
-    "title": "Enarratio in Evangelium S. Lucae",
+    "title": "Exposition of the Gospel of Luke",
+    "orig": "Enarratio in Evangelium S. Lucae",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-3455",
-    "title": "Interpretatio in xii prophetas minores",
+    "title": "Commentary on the Twelve Minor Prophets",
+    "orig": "Interpretatio in xii prophetas minores",
     "author": "Theodoret of Cyrus"
    },
    {
     "slug": "pg-3518",
-    "title": "Expositio fidei orthodoxae (De Fide Orthodoxa)",
+    "title": "An Exposition of the Orthodox Faith",
+    "orig": "Expositio fidei orthodoxae (De Fide Orthodoxa)",
     "author": "John of Damascus"
    },
    {
     "slug": "pg-335",
-    "title": "Commentaria in Isaiam",
+    "title": "Commentary on Isaiah",
+    "orig": "Commentaria in Isaiam",
     "author": "Eusebius of Caesarea"
    },
    {
     "slug": "pg-1989",
-    "title": "Sacra Parallela (recensio plena, secundum alphabeti litteras)",
+    "title": "Sacra Parallela (Full Recension, Arranged Alphabetically)",
+    "orig": "Sacra Parallela (recensio plena, secundum alphabeti litteras)",
     "author": "John of Damascus"
    },
    {
     "slug": "pg-2878",
-    "title": "Philosophumena, sive Omnium hæreseon refutatio",
+    "title": "Refutation of All Heresies",
+    "orig": "Philosophumena, sive Omnium hæreseon refutatio",
     "author": "Origen"
    },
    {
@@ -1060,17 +801,20 @@
    },
    {
     "slug": "pg-38",
-    "title": "De divinis nominibus",
+    "title": "On the Divine Names",
+    "orig": "De divinis nominibus",
     "author": "Dionysius the Areopagite"
    },
    {
     "slug": "pg-1867",
-    "title": "Historia Ecclesiastica",
+    "title": "Ecclesiastical History",
+    "orig": "Historia Ecclesiastica",
     "author": "Theodoret of Cyrus"
    },
    {
     "slug": "pg-2865",
-    "title": "In Librum Psalmorum Monitum",
+    "title": "Editorial Notice on the Book of Psalms",
+    "orig": "In Librum Psalmorum Monitum",
     "author": "Origen"
    },
    {
@@ -1080,53 +824,69 @@
    },
    {
     "slug": "pg-2375",
-    "title": "Praefatio Bonifacii Finetti in tomum tertium Theophylacti edit. Venet.",
+    "title": "Preface of Bonifacius Finettus to the Third Volume of the Venetian Edition of Theophylact",
+    "orig": "Praefatio Bonifacii Finetti in tomum tertium Theophylacti edit. Venet.",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
+    "slug": "pg-3944",
+    "title": "Letters of Saint Cyril and Others to Him (Letters 1–88)",
+    "orig": "Epistolæ sancti Cyrilli et Variorum ad Ipsum (Epistolæ I-LXXXVIII)",
+    "author": "Cyril of Alexandria"
+   },
+   {
     "slug": "pg-2377",
-    "title": "Nuncupatio altera ejusdem",
+    "title": "Second Dedication by the Same",
+    "orig": "Nuncupatio altera ejusdem",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-2378",
-    "title": "Argumentum libri Actorum una cum capitulis eorum",
+    "title": "Argument of the Book of Acts, together with its Chapters",
+    "orig": "Argumentum libri Actorum una cum capitulis eorum",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-1460",
-    "title": "In epistulam i ad Corinthios — Commentarius (homiliae 1-44)",
+    "title": "Commentary on the First Epistle to the Corinthians (Homilies 1–44)",
+    "orig": "In epistulam i ad Corinthios — Commentarius (homiliae 1-44)",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-2870",
-    "title": "In Hesaiam",
+    "title": "Homilies on Isaiah",
+    "orig": "In Hesaiam",
     "author": "Origen"
    },
    {
     "slug": "pg-1445",
-    "title": "Commentarius in Acta Apostolorum",
+    "title": "Commentary on the Acts of the Apostles",
+    "orig": "Commentarius in Acta Apostolorum",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-3347",
-    "title": "In Genesim (homiliae 1-41)",
+    "title": "Homilies on Genesis",
+    "orig": "In Genesim (homiliae 1-41)",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-460",
-    "title": "Epistolae S. Gregorii",
+    "title": "Letters of St. Gregory",
+    "orig": "Epistolae S. Gregorii",
     "author": "Gregory of Nazianzus"
    },
    {
     "slug": "pg-1879",
-    "title": "Graecarum Affectionum Curatio",
+    "title": "Cure of Greek Maladies",
+    "orig": "Graecarum Affectionum Curatio",
     "author": "Theodoret of Cyrus"
    },
    {
-    "slug": "pld-3040",
-    "title": "Martyrology",
-    "author": "Bede the Venerable"
+    "slug": "pg-1707",
+    "title": "Commentary on the Twelve Minor Prophets",
+    "orig": "Commentarius in duodecim prophetas minores",
+    "author": "Cyril of Alexandria"
    },
    {
     "slug": "bonaventure-collationes-in-hexameron-sive-illuminationes-ecclesiae",
@@ -1140,12 +900,14 @@
    },
    {
     "slug": "pg-2351",
-    "title": "Enarratio in Evangelium Matthæi",
+    "title": "Commentary on the Gospel of Matthew",
+    "orig": "Enarratio in Evangelium Matthæi",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-1500",
-    "title": "Eclogae ex diversis homiliis",
+    "title": "Selections from Various Homilies",
+    "orig": "Eclogae ex diversis homiliis",
     "author": "John Chrysostom"
    },
    {
@@ -1155,17 +917,14 @@
    },
    {
     "slug": "pg-1424",
-    "title": "Eruditi Commentarii in Evangelium Matthaei incerto auctore",
+    "title": "Learned Commentaries on the Gospel of Matthew by an Anonymous Author",
+    "orig": "Eruditi Commentarii in Evangelium Matthaei incerto auctore",
     "author": "John Chrysostom"
    },
    {
-    "slug": "pld-6359",
-    "title": "Sermons",
-    "author": "Leo I"
-   },
-   {
     "slug": "pg-1432",
-    "title": "Commentarius in Sanctum Matthæum (homiliae 45-90)",
+    "title": "Commentary on the Gospel of Matthew (Homilies 45-90)",
+    "orig": "Commentarius in Sanctum Matthæum (homiliae 45-90)",
     "author": "John Chrysostom"
    },
    {
@@ -1174,24 +933,21 @@
     "author": "Ambrose of Milan"
    },
    {
-    "slug": "aq-st-iiisup-24",
-    "title": "Supplementum, q. 69-99",
-    "author": "Thomas Aquinas"
-   },
-   {
     "slug": "pg-1836",
-    "title": "Quæstiones selectæ in Loca Difficilia Scripturæ sacræ (in libros Regnorum et Paralipomenon)",
+    "title": "Selected Questions on Difficult Passages of Holy Scripture (on the Books of Kings and Chronicles)",
+    "orig": "Quæstiones selectæ in Loca Difficilia Scripturæ sacræ (in libros Regnorum et Paralipomenon)",
     "author": "Theodoret of Cyrus"
-   },
-   {
-    "slug": "aq-scg3-13",
-    "title": "Summa Contra Gentiles 3",
-    "author": "Thomas Aquinas"
    },
    {
     "slug": "pld-370",
     "title": "Exposition of the Gospel according to Luke",
     "author": "Ambrose of Milan"
+   },
+   {
+    "slug": "pg-1695",
+    "title": "Commentary on the Prophet Hosea",
+    "orig": "Commentarius in Oseam prophetam",
+    "author": "Cyril of Alexandria"
    },
    {
     "slug": "bonaventure-collationes-in-evangelium-s-ioannis",
@@ -1204,39 +960,51 @@
     "author": "Bonaventure"
    },
    {
-    "slug": "aq-eth-83",
-    "title": "Ethics",
-    "author": "Thomas Aquinas"
-   },
-   {
     "slug": "pld-2726",
     "title": "Against Faustus the Manichaean",
     "author": "Augustine of Hippo"
    },
    {
     "slug": "pg-1845",
-    "title": "Interpretatio in prophetiam Jeremiae",
+    "title": "Commentary on the Prophecy of Jeremiah",
+    "orig": "Interpretatio in prophetiam Jeremiae",
     "author": "Theodoret of Cyrus"
    },
    {
     "slug": "pg-2357",
-    "title": "Commentarius in Joannis Evangelium (Continuatio)",
+    "title": "Commentary on the Gospel of John (Continuation)",
+    "orig": "Commentarius in Joannis Evangelium (Continuatio)",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
+    "slug": "pg-1691",
+    "title": "Book Five",
+    "orig": "Liber Quintus",
+    "author": "Cyril of Alexandria"
+   },
+   {
     "slug": "pg-1875",
-    "title": "Eranistes seu Polymorphus",
+    "title": "The Beggar (or The Many-Shaped)",
+    "orig": "Eranistes seu Polymorphus",
     "author": "Theodoret of Cyrus"
    },
    {
     "slug": "pg-3948",
-    "title": "Index Graecus, vel Glossarium Theodoreteum",
+    "title": "Greek Index, or Theodoretan Glossary",
+    "orig": "Index Graecus, vel Glossarium Theodoreteum",
     "author": "Theodoret of Cyrus"
    },
    {
     "slug": "pg-3675",
-    "title": "Tomus XIX",
+    "title": "Commentary on the Gospel of John, Volume XIX",
+    "orig": "Tomus XIX",
     "author": "Origen"
+   },
+   {
+    "slug": "pg-1689",
+    "title": "Third Book",
+    "orig": "Liber Tertius",
+    "author": "Cyril of Alexandria"
    },
    {
     "slug": "pld-3033",
@@ -1244,38 +1012,45 @@
     "author": "Bede the Venerable"
    },
    {
-    "slug": "aq-metaph-82",
-    "title": "Metaphysics",
-    "author": "Thomas Aquinas"
-   },
-   {
     "slug": "pg-1601",
-    "title": "Fragmenta in Jeremiam (in catenis)",
+    "title": "Fragments on Jeremiah (in catenae)",
+    "orig": "Fragmenta in Jeremiam (in catenis)",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-1446",
-    "title": "Commentarius in Epistolam ad Romanos",
+    "title": "Commentary on the Epistle to the Romans",
+    "orig": "Commentarius in Epistolam ad Romanos",
     "author": "John Chrysostom"
    },
    {
+    "slug": "pg-3943",
+    "title": "Book One",
+    "orig": "Liber Primus",
+    "author": "Cyril of Alexandria"
+   },
+   {
     "slug": "pg-230",
-    "title": "Homiliae in Jeremiam",
+    "title": "Homilies on Jeremiah",
+    "orig": "Homiliae in Jeremiam",
     "author": "Origen"
    },
    {
     "slug": "pg-1848",
-    "title": "Commentarius in duodecim prophetas",
+    "title": "Commentary on the Twelve Prophets",
+    "orig": "Commentarius in duodecim prophetas",
     "author": "Theodoret of Cyrus"
    },
    {
     "slug": "pg-2871",
-    "title": "In Jeremiam",
+    "title": "Homilies on Jeremiah",
+    "orig": "In Jeremiam",
     "author": "Origen"
    },
    {
     "slug": "pg-1847",
-    "title": "Commentarius in visiones Danielis prophetae",
+    "title": "Commentary on the Visions of the Prophet Daniel",
+    "orig": "Commentarius in visiones Danielis prophetae",
     "author": "Theodoret of Cyrus"
    },
    {
@@ -1285,12 +1060,14 @@
    },
    {
     "slug": "pg-2874",
-    "title": "Hexaplorum",
+    "title": "Hexapla",
+    "orig": "Hexaplorum",
     "author": "Origen"
    },
    {
     "slug": "pg-2904",
-    "title": "Homiliae super Psalmos",
+    "title": "Homilies on the Psalms",
+    "orig": "Homiliae super Psalmos",
     "author": "Basil the Great"
    },
    {
@@ -1299,9 +1076,10 @@
     "author": "Jerome"
    },
    {
-    "slug": "aq-sent-ii-4",
-    "title": "Sentences II, d. 21-44",
-    "author": "Thomas Aquinas"
+    "slug": "pg-1690",
+    "title": "Book Four",
+    "orig": "Liber Quartus",
+    "author": "Cyril of Alexandria"
    },
    {
     "slug": "pld-3018",
@@ -1315,8 +1093,14 @@
    },
    {
     "slug": "pg-2864",
-    "title": "Hexapla in Job",
+    "title": "Hexapla on Job",
+    "orig": "Hexapla in Job",
     "author": "Origen"
+   },
+   {
+    "slug": "duns-scotus-in-librum-praedicamentorum-quaestiones",
+    "title": "Questions on the Book of Categories",
+    "author": "John Duns Scotus"
    },
    {
     "slug": "pld-2837",
@@ -1330,33 +1114,27 @@
    },
    {
     "slug": "pg-2905",
-    "title": "Adversus Eunomium (libri 5)",
+    "title": "Against Eunomius (5 books)",
+    "orig": "Adversus Eunomium (libri 5)",
     "author": "Basil the Great"
    },
    {
     "slug": "pg-3280",
-    "title": "De sancta trinitate (dialogi 1, 3, 5) Sp.",
+    "title": "On the Holy Trinity (Dialogues 1, 3, 5) [Spurious]",
+    "orig": "De sancta trinitate (dialogi 1, 3, 5) Sp.",
     "author": "Athanasius of Alexandria"
    },
    {
-    "slug": "pld-3030",
-    "title": "Ecclesiastical History",
-    "author": "Bede the Venerable"
-   },
-   {
     "slug": "pg-418",
-    "title": "Sermones ethici collecti by Symeon Metaphrastes — Appendix",
+    "title": "Ethical Sermons collected by Symeon Metaphrastes — Appendix",
+    "orig": "Sermones ethici collecti by Symeon Metaphrastes — Appendix",
     "author": "Basil the Great"
    },
    {
     "slug": "pg-397",
-    "title": "Regulæ brevius tractatæ",
+    "title": "Shorter Rules",
+    "orig": "Regulæ brevius tractatæ",
     "author": "Basil the Great"
-   },
-   {
-    "slug": "pg-3747",
-    "title": "Adversus hæreses libri quinque [Liber Quintus in Volumine 7b continetur]",
-    "author": "Irenaeus of Lyon"
    },
    {
     "slug": "pld-2852",
@@ -1364,19 +1142,27 @@
     "author": "Augustine of Hippo"
    },
    {
-    "slug": "pld-3762",
-    "title": "Letters",
-    "author": "Cyprian of Carthage"
+    "slug": "pg-36",
+    "title": "On the Celestial Hierarchy",
+    "orig": "De cœlesti hierarchia",
+    "author": "Dionysius the Areopagite"
    },
    {
     "slug": "pg-2406",
-    "title": "Expositio in Oseam prophetam",
+    "title": "Exposition on the Prophet Hosea",
+    "orig": "Expositio in Oseam prophetam",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-2861",
-    "title": "Hexaplorum quæ supersunt",
+    "title": "Remains of the Hexapla",
+    "orig": "Hexaplorum quæ supersunt",
     "author": "Origen"
+   },
+   {
+    "slug": "aq-camark-70",
+    "title": "Catena Aurea on Mark",
+    "author": "Thomas Aquinas"
    },
    {
     "slug": "pld-349",
@@ -1385,7 +1171,8 @@
    },
    {
     "slug": "pg-364",
-    "title": "Admonitio in Fragmenta Subsequentia in Canticum",
+    "title": "Admonition concerning the Following Fragments on the Song of Songs",
+    "orig": "Admonitio in Fragmenta Subsequentia in Canticum",
     "author": "Athanasius of Alexandria"
    },
    {
@@ -1400,8 +1187,15 @@
    },
    {
     "slug": "pg-325",
-    "title": "Eclogae Propheticae",
+    "title": "Prophetic Extracts",
+    "orig": "Eclogae Propheticae",
     "author": "Eusebius of Caesarea"
+   },
+   {
+    "slug": "pg-37",
+    "title": "On the Ecclesiastical Hierarchy",
+    "orig": "De ecclesiastica hierarchia",
+    "author": "Dionysius the Areopagite"
    },
    {
     "slug": "pld-2730",
@@ -1410,12 +1204,14 @@
    },
    {
     "slug": "pg-445",
-    "title": "S. Gregorius Theologus, Archiepiscopus Constantinopolitanus",
+    "title": "Saint Gregory the Theologian, Archbishop of Constantinople",
+    "orig": "S. Gregorius Theologus, Archiepiscopus Constantinopolitanus",
     "author": "Gregory of Nazianzus"
    },
    {
     "slug": "pg-2360",
-    "title": "Commentarius in Epistolam I ad Corinthios",
+    "title": "Commentary on the First Epistle to the Corinthians",
+    "orig": "Commentarius in Epistolam I ad Corinthios",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
@@ -1425,27 +1221,32 @@
    },
    {
     "slug": "pg-49",
-    "title": "Ejusdem S. Maximi in Librum de Divinis Nominibus Scholia",
+    "title": "Scholia of St. Maximus on the Treatise on the Divine Names",
+    "orig": "Ejusdem S. Maximi in Librum de Divinis Nominibus Scholia",
     "author": "Dionysius the Areopagite"
    },
    {
     "slug": "pg-1462",
-    "title": "In Secundum ad Corinthios Epistolam Commentarius",
+    "title": "Commentary on the Second Epistle to the Corinthians",
+    "orig": "In Secundum ad Corinthios Epistolam Commentarius",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-1479",
-    "title": "Enarratio",
+    "title": "Exposition",
+    "orig": "Enarratio",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-2359",
-    "title": "Commentarius in Epistolam ad Romanos",
+    "title": "Commentary on the Epistle to the Romans",
+    "orig": "Commentarius in Epistolam ad Romanos",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-2894",
-    "title": "Homiliae in Hexaemeron",
+    "title": "Homilies on the Hexaemeron",
+    "orig": "Homiliae in Hexaemeron",
     "author": "Basil the Great"
    },
    {
@@ -1455,8 +1256,14 @@
    },
    {
     "slug": "pg-2354",
-    "title": "Enarratio in Evangelium S. Joannis",
+    "title": "Commentary on the Gospel of Saint John",
+    "orig": "Enarratio in Evangelium S. Joannis",
     "author": "Theophylact, Archbishop of Bulgaria"
+   },
+   {
+    "slug": "duns-scotus-in-libros-elenchorum-quaestiones",
+    "title": "Questions on the Books of the Elenchi",
+    "author": "John Duns Scotus"
    },
    {
     "slug": "pld-5595",
@@ -1465,13 +1272,9 @@
    },
    {
     "slug": "pg-1876",
-    "title": "Demonstrationes per Syllogismos",
+    "title": "Demonstrations by Syllogisms",
+    "orig": "Demonstrationes per Syllogismos",
     "author": "Theodoret of Cyrus"
-   },
-   {
-    "slug": "pg-3801",
-    "title": "Praeparatio Evangelica",
-    "author": "Eusebius of Caesarea"
    },
    {
     "slug": "pld-3005",
@@ -1480,18 +1283,26 @@
    },
    {
     "slug": "pg-1878",
-    "title": "De Providentia Orationes Decem",
+    "title": "Ten Discourses on Providence",
+    "orig": "De Providentia Orationes Decem",
     "author": "Theodoret of Cyrus"
    },
    {
     "slug": "pg-3737",
-    "title": "Historia Religiosa (Præfatio + Pars I–XXX)",
+    "title": "Religious History (Preface + Parts I–XXX)",
+    "orig": "Historia Religiosa (Præfatio + Pars I–XXX)",
     "author": "Theodoret of Cyrus"
    },
    {
-    "slug": "pld-2722",
-    "title": "Confessions",
-    "author": "Augustine of Hippo"
+    "slug": "pg-2867",
+    "title": "Commentary on Proverbs",
+    "orig": "In Proverbia",
+    "author": "Origen"
+   },
+   {
+    "slug": "aq-108articul-105",
+    "title": "Letter to John of Vercelli on the 108 Articles",
+    "author": "Thomas Aquinas"
    },
    {
     "slug": "pld-3187",
@@ -1499,28 +1310,27 @@
     "author": "Bernard of Clairvaux"
    },
    {
-    "slug": "pg-36",
-    "title": "De cœlesti hierarchia",
-    "author": "Dionysius the Areopagite"
-   },
-   {
     "slug": "pg-342",
-    "title": "De Ecclesiastica theologia",
+    "title": "On Ecclesiastical Theology",
+    "orig": "De Ecclesiastica theologia",
     "author": "Eusebius of Caesarea"
    },
    {
     "slug": "pg-667",
-    "title": "Homiliae XXI de statuis",
+    "title": "Homilies on the Statues",
+    "orig": "Homiliae XXI de statuis",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-2843",
-    "title": "Dissertatio Secunda",
+    "title": "Second Dissertation",
+    "orig": "Dissertatio Secunda",
     "author": "Irenaeus of Lyon"
    },
    {
     "slug": "pg-3970",
-    "title": "Homiliæ (OCR-floor, columnae non in textu puro)",
+    "title": "Homilies",
+    "orig": "Homiliæ (OCR-floor, columnae non in textu puro)",
     "author": "John of Damascus"
    },
    {
@@ -1529,14 +1339,31 @@
     "author": "Bede the Venerable"
    },
    {
+    "slug": "aq-qdemalo-31",
+    "title": "On Evil",
+    "author": "Thomas Aquinas"
+   },
+   {
     "slug": "pld-5600",
     "title": "Commentary on Matthew",
     "author": "Jerome"
    },
    {
+    "slug": "pg-238",
+    "title": "Series of Commentaries on Matthew",
+    "orig": "Commentariorum Series",
+    "author": "Origen"
+   },
+   {
     "slug": "pg-467",
-    "title": "Christus Patiens — Tragoedia",
+    "title": "Christ Suffering - A Tragedy",
+    "orig": "Christus Patiens — Tragoedia",
     "author": "Gregory of Nazianzus"
+   },
+   {
+    "slug": "duns-scotus-de-primo-rerum-omnium-principio",
+    "title": "On the First Principle of All Things",
+    "author": "John Duns Scotus"
    },
    {
     "slug": "pld-6352",
@@ -1545,17 +1372,20 @@
    },
    {
     "slug": "pg-2352",
-    "title": "Enarratio in Evangelium S. Marci",
+    "title": "Commentary on the Gospel of St. Mark",
+    "orig": "Enarratio in Evangelium S. Marci",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-3757",
-    "title": "In Genesim (homiliae 42-67)",
+    "title": "Homilies on Genesis (Homilies 42–67)",
+    "orig": "In Genesim (homiliae 42-67)",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-3521",
-    "title": "De Imaginibus orationes tres",
+    "title": "Three Treatises on the Divine Images",
+    "orig": "De Imaginibus orationes tres",
     "author": "John of Damascus"
    },
    {
@@ -1564,8 +1394,15 @@
     "author": "Augustine of Hippo"
    },
    {
+    "slug": "pg-47",
+    "title": "Commentaries",
+    "orig": "Commentaria",
+    "author": "Dionysius the Areopagite"
+   },
+   {
     "slug": "pg-453",
-    "title": "Eliae Metropolitae Cretae commentarii in orationes ...",
+    "title": "Commentaries of Elias, Metropolitan of Crete, on the Orations of Gregory of Nazianzus",
+    "orig": "Eliae Metropolitae Cretae commentarii in orationes ...",
     "author": "Gregory of Nazianzus"
    },
    {
@@ -1574,24 +1411,16 @@
     "author": "Jerome"
    },
    {
-    "slug": "pld-3029",
-    "title": "Hexaemeron",
-    "author": "Bede the Venerable"
-   },
-   {
-    "slug": "pg-37",
-    "title": "De ecclesiastica hierarchia",
-    "author": "Dionysius the Areopagite"
-   },
-   {
     "slug": "pg-456",
-    "title": "Basilius Minimus",
+    "title": "Basil the Least",
+    "orig": "Basilius Minimus",
     "author": "Gregory of Nazianzus"
    },
    {
-    "slug": "pg-3634",
-    "title": "De sancta trinitate (dialogi 2, 4) Sp.",
-    "author": "Athanasius of Alexandria"
+    "slug": "pg-3866",
+    "title": "Commentary on the Psalms (continuation)",
+    "orig": "In Librum Psalmorum (continuatio)",
+    "author": "Origen"
    },
    {
     "slug": "pld-350",
@@ -1600,7 +1429,8 @@
    },
    {
     "slug": "pg-1466",
-    "title": "In Epistolam ad Ephesios Commentarius",
+    "title": "Commentary on the Epistle to the Ephesians",
+    "orig": "In Epistolam ad Ephesios Commentarius",
     "author": "John Chrysostom"
    },
    {
@@ -1615,18 +1445,19 @@
    },
    {
     "slug": "pg-1465",
-    "title": "Elenchus",
+    "title": "Table of Contents",
+    "orig": "Elenchus",
     "author": "John Chrysostom"
+   },
+   {
+    "slug": "aq-qdepot-26",
+    "title": "On the Power of God",
+    "author": "Thomas Aquinas"
    },
    {
     "slug": "pld-359",
     "title": "On the Duties of Ministers",
     "author": "Ambrose of Milan"
-   },
-   {
-    "slug": "pld-458",
-    "title": "Orations",
-    "author": "Anselm of Canterbury"
    },
    {
     "slug": "pld-5704",
@@ -1635,47 +1466,55 @@
    },
    {
     "slug": "pg-2361",
-    "title": "Commentarius in Epistolam II ad Corinthios",
+    "title": "Commentary on the Second Epistle to the Corinthians",
+    "orig": "Commentarius in Epistolam II ad Corinthios",
     "author": "Theophylact, Archbishop of Bulgaria"
    },
    {
     "slug": "pg-3519",
-    "title": "Dialectica (Capita philosophica)",
+    "title": "Dialectic (Philosophical Chapters)",
+    "orig": "Dialectica (Capita philosophica)",
     "author": "John of Damascus"
    },
    {
     "slug": "pg-662",
-    "title": "De Sacerdotio",
+    "title": "On the Priesthood",
+    "orig": "De Sacerdotio",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-2882",
-    "title": "Apologia Contra Arianos",
+    "title": "Defense Against the Arians",
+    "orig": "Apologia Contra Arianos",
     "author": "Athanasius of Alexandria"
    },
    {
     "slug": "pg-3711",
-    "title": "CI: Ad Cledonium presbyterum / CII: Ad eumdem",
+    "title": "101: To Cledonius the Presbyter / 102: To the Same",
+    "orig": "CI: Ad Cledonium presbyterum / CII: Ad eumdem",
     "author": "Gregory of Nazianzus"
    },
    {
-    "slug": "pg-3798",
-    "title": "Praeparatio Evangelica",
+    "slug": "pg-293",
+    "title": "Chronological and Astronomical Treatises of Ancient Writers, edited by Denis Pétau",
+    "orig": "Veterum scriptorum opuscula chronologica et astronomica ex recensione Dionysii Petavii",
     "author": "Eusebius of Caesarea"
    },
    {
-    "slug": "pg-293",
-    "title": "Veterum scriptorum opuscula chronologica et astronomica ex recensione Dionysii Petavii",
-    "author": "Eusebius of Caesarea"
+    "slug": "aq-dedivnom-88",
+    "title": "Dionysius's On the Divine Names",
+    "author": "Thomas Aquinas"
    },
    {
     "slug": "pg-369",
-    "title": "Elenchus",
+    "title": "Table of Contents",
+    "orig": "Elenchus",
     "author": "Athanasius of Alexandria"
    },
    {
     "slug": "pg-3053",
-    "title": "Synopsis scripturae sacrae",
+    "title": "Summary of the Holy Scriptures",
+    "orig": "Synopsis scripturae sacrae",
     "author": "Athanasius of Alexandria"
    },
    {
@@ -1685,32 +1524,26 @@
    },
    {
     "slug": "pg-1598",
-    "title": "Fragmenta in Beatum Job",
+    "title": "Fragments on the Blessed Job",
+    "orig": "Fragmenta in Beatum Job",
     "author": "John Chrysostom"
    },
    {
     "slug": "pg-3726",
-    "title": "Regulæ Fusius tractatæ",
+    "title": "Longer Rules",
+    "orig": "Regulæ Fusius tractatæ",
     "author": "Basil the Great"
    },
    {
     "slug": "pg-4045",
-    "title": "De Spiritu Sancto",
+    "title": "On the Holy Spirit",
+    "orig": "De Spiritu Sancto",
     "author": "Basil the Great"
    },
    {
-    "slug": "pld-374",
-    "title": "Hexaemeron",
-    "author": "Ambrose of Milan"
-   },
-   {
-    "slug": "pld-448",
-    "title": "Letters",
-    "author": "Anselm of Canterbury"
-   },
-   {
     "slug": "pg-2842",
-    "title": "Dissertationes Praeviae in Irenaei Libros: Dissertatio Prima",
+    "title": "Preliminary Dissertations on the Books of Irenaeus: First Dissertation",
+    "orig": "Dissertationes Praeviae in Irenaei Libros: Dissertatio Prima",
     "author": "Irenaeus of Lyon"
    },
    {
@@ -1720,12 +1553,14 @@
    },
    {
     "slug": "pg-395",
-    "title": "Praefatio",
+    "title": "Preface",
+    "orig": "Praefatio",
     "author": "Basil the Great"
    },
    {
     "slug": "pg-3748",
-    "title": "Analysis Libri Quarti",
+    "title": "Analysis of Book Four",
+    "orig": "Analysis Libri Quarti",
     "author": "Irenaeus of Lyon"
    },
    {
@@ -1739,33 +1574,48 @@
     "author": "Bonaventure"
    },
    {
+    "slug": "aq-graecorum-103",
+    "title": "On the Catholic Faith of the Greek Fathers",
+    "author": "Thomas Aquinas"
+   },
+   {
+    "slug": "duns-scotus-tractatus-de-perfectione-statuum",
+    "title": "Treatise on the Perfection of States",
+    "author": "John Duns Scotus"
+   },
+   {
     "slug": "pld-2731",
     "title": "Against the Letters of Petilian",
     "author": "Augustine of Hippo"
    },
    {
     "slug": "pg-292",
-    "title": "Appendix duplex",
+    "title": "Double Appendix",
+    "orig": "Appendix duplex",
     "author": "Eusebius of Caesarea"
    },
    {
     "slug": "pg-390",
-    "title": "Notae Frontonis Ducaei",
+    "title": "Notes by Fronto Ducaeus",
+    "orig": "Notae Frontonis Ducaei",
     "author": "Basil the Great"
    },
    {
     "slug": "pg-3048",
-    "title": "Vita Antonii",
+    "title": "Life of Antony",
+    "orig": "Vita Antonii",
     "author": "Athanasius of Alexandria"
    },
    {
     "slug": "pg-3291",
-    "title": "Liber de virginitate",
+    "title": "Book on Virginity",
+    "orig": "Liber de virginitate",
     "author": "Basil the Great"
    },
    {
     "slug": "pg-295",
-    "title": "Hipparchi Bithyni ad Arati et Eudoxi Phaenomena Enarrationum",
+    "title": "Commentary on the Phenomena of Aratus and Eudoxus by Hipparchus of Bithynia",
+    "orig": "Hipparchi Bithyni ad Arati et Eudoxi Phaenomena Enarrationum",
     "author": "Eusebius of Caesarea"
    },
    {
@@ -1780,12 +1630,14 @@
    },
    {
     "slug": "pg-2883",
-    "title": "Epistola de Decretis Nicænæ Synodi",
+    "title": "Letter on the Decrees of the Council of Nicaea",
+    "orig": "Epistola de Decretis Nicænæ Synodi",
     "author": "Athanasius of Alexandria"
    },
    {
     "slug": "pg-3098",
-    "title": "Contra Julianum imperatorem i",
+    "title": "Against Julian the Emperor I",
+    "orig": "Contra Julianum imperatorem i",
     "author": "Gregory of Nazianzus"
    },
    {
@@ -1795,13 +1647,20 @@
    },
    {
     "slug": "pg-324",
-    "title": "Quaestiones evangelicae ad Stephanum et Marinum (Migne scan-OCR)",
+    "title": "Gospel Questions and Answers to Stephanus and Marinus",
+    "orig": "Quaestiones evangelicae ad Stephanum et Marinum (Migne scan-OCR)",
     "author": "Eusebius of Caesarea"
    },
    {
     "slug": "pg-446",
-    "title": "Monitum in Vitam sequentem",
+    "title": "Editorial Notice on the Following Life",
+    "orig": "Monitum in Vitam sequentem",
     "author": "Gregory of Nazianzus"
+   },
+   {
+    "slug": "aq-decael-76",
+    "title": "On the Heavens",
+    "author": "Thomas Aquinas"
    },
    {
     "slug": "pld-5590",
@@ -1815,12 +1674,14 @@
    },
    {
     "slug": "pg-3426",
-    "title": "Carmina dogmatica",
+    "title": "Dogmatic Poems",
+    "orig": "Carmina dogmatica",
     "author": "Gregory of Nazianzus"
    },
    {
     "slug": "pg-3316",
-    "title": "Carmina quae spectant ad alios",
+    "title": "Poems Relating to Others",
+    "orig": "Carmina quae spectant ad alios",
     "author": "Gregory of Nazianzus"
    },
    {
@@ -1835,17 +1696,20 @@
    },
    {
     "slug": "pg-311",
-    "title": "Oratio Eusebii de laudibus Constantini in ejus tricennalibus habita",
+    "title": "Oration in Praise of Constantine, Delivered at His Tricennalia",
+    "orig": "Oratio Eusebii de laudibus Constantini in ejus tricennalibus habita",
     "author": "Eusebius of Caesarea"
    },
    {
     "slug": "pg-466",
-    "title": "Monitum in Epitaphia et Epigrammata",
+    "title": "Editorial Notice on the Epitaphs and Epigrams",
+    "orig": "Monitum in Epitaphia et Epigrammata",
     "author": "Gregory of Nazianzus"
    },
    {
     "slug": "pg-3041",
-    "title": "Epistulae quattuor ad Serapionem",
+    "title": "Four Letters to Serapion",
+    "orig": "Epistulae quattuor ad Serapionem",
     "author": "Athanasius of Alexandria"
    },
    {
@@ -1860,7 +1724,8 @@
    },
    {
     "slug": "pg-3626",
-    "title": "Epistola de synodis Arimini in Italia, et Seleuciæ in Isauria, celebratis",
+    "title": "Letter on the Councils of Ariminum in Italy and Seleucia in Isauria",
+    "orig": "Epistola de synodis Arimini in Italia, et Seleuciæ in Isauria, celebratis",
     "author": "Athanasius of Alexandria"
    },
    {
@@ -1880,13 +1745,20 @@
    },
    {
     "slug": "pg-341",
-    "title": "Contra Marcellum",
+    "title": "Against Marcellus",
+    "orig": "Contra Marcellum",
     "author": "Eusebius of Caesarea"
    },
    {
     "slug": "pg-403",
-    "title": "De baptismo libri duo",
+    "title": "On Baptism, Books I–II",
+    "orig": "De baptismo libri duo",
     "author": "Basil the Great"
+   },
+   {
+    "slug": "aq-dean-79",
+    "title": "On the Soul",
+    "author": "Thomas Aquinas"
    },
    {
     "slug": "pld-335",
@@ -1900,18 +1772,20 @@
    },
    {
     "slug": "pg-3713",
-    "title": "Oratio XLIII",
+    "title": "Oration 43",
+    "orig": "Oratio XLIII",
     "author": "Gregory of Nazianzus"
    },
    {
-    "slug": "pg-3797",
-    "title": "Praeparatio Evangelica",
-    "author": "Eusebius of Caesarea"
+    "slug": "pg-3893",
+    "title": "Index of Subjects and Names (Volumes III–IV)",
+    "orig": "Index Rerum et Verborum (Tomorum III-IV) [cols 1413-1523]",
+    "author": "Basil the Great"
    },
    {
-    "slug": "pg-3893",
-    "title": "Index Rerum et Verborum (Tomorum III-IV) [cols 1413-1523]",
-    "author": "Basil the Great"
+    "slug": "duns-scotus-in-primum-librum-perihermenias-quaestiones",
+    "title": "Questions on the First Book of Perihermenias",
+    "author": "John Duns Scotus"
    },
    {
     "slug": "pld-8499",
@@ -1920,13 +1794,20 @@
    },
    {
     "slug": "pg-401",
-    "title": "Constitutiones asceticæ Sp.",
+    "title": "Ascetic Constitutions",
+    "orig": "Constitutiones asceticæ Sp.",
     "author": "Basil the Great"
    },
    {
     "slug": "pg-3097",
-    "title": "Apologetica",
+    "title": "Apology for His Flight to Pontus",
+    "orig": "Apologetica",
     "author": "Gregory of Nazianzus"
+   },
+   {
+    "slug": "pld-2765",
+    "title": "On Christian Doctrine",
+    "author": "Augustine of Hippo"
    },
    {
     "slug": "pld-3020",
@@ -1949,59 +1830,391 @@
     "author": "Jerome"
    },
    {
-    "slug": "pg-35",
-    "title": "Prolegomena",
-    "author": "Dionysius the Areopagite"
-   },
-   {
     "slug": "pg-356",
-    "title": "Epistolae Heortasticae",
+    "title": "Festal Letters",
+    "orig": "Epistolae Heortasticae",
     "author": "Athanasius of Alexandria"
    },
    {
     "slug": "pg-3812",
-    "title": "Index analyticus",
+    "title": "Analytical Index",
+    "orig": "Index analyticus",
     "author": "Gregory of Nazianzus"
    },
    {
     "slug": "pg-1996",
-    "title": "Littera Ι",
+    "title": "Letter 10",
+    "orig": "Littera Ι",
     "author": "John of Damascus"
    },
    {
     "slug": "pg-2002",
-    "title": "Parallela Ruperfucaldina",
+    "title": "Ruperfucaldine Parallels",
+    "orig": "Parallela Ruperfucaldina",
     "author": "John of Damascus"
    },
    {
     "slug": "pg-3258",
-    "title": "Quaestiones ad Antiochum ducem Sp.",
+    "title": "Questions to Antiochus the Commander",
+    "orig": "Quaestiones ad Antiochum ducem Sp.",
     "author": "Athanasius of Alexandria"
    },
    {
+    "slug": "aq-corpuschri-121",
+    "title": "Office of Corpus Christi - Sacerdos in aeternum",
+    "author": "Thomas Aquinas"
+   },
+   {
     "slug": "pg-2880",
-    "title": "Oratio de Incarnatione Verbi",
+    "title": "On the Incarnation of the Word",
+    "orig": "Oratio de Incarnatione Verbi",
     "author": "Athanasius of Alexandria"
    },
    {
     "slug": "pg-2893",
-    "title": "Historia Arianorum ad Monachos",
+    "title": "History of the Arians to the Monks",
+    "orig": "Historia Arianorum ad Monachos",
     "author": "Athanasius of Alexandria"
    },
    {
     "slug": "pg-3249",
-    "title": "Fragmenta varia",
+    "title": "Various Fragments",
+    "orig": "Fragmenta varia",
     "author": "Athanasius of Alexandria"
    },
    {
     "slug": "pg-389",
-    "title": "Eustathii Metaphrasis in Hexaemeron Basilii",
+    "title": "Eustathius' Paraphrase of Basil's Hexaemeron",
+    "orig": "Eustathii Metaphrasis in Hexaemeron Basilii",
     "author": "Basil the Great"
    },
    {
     "slug": "pg-3793",
-    "title": "De Vita Beatissimi Imperatoris Constantini",
+    "title": "Life of the Blessed Emperor Constantine",
+    "orig": "De Vita Beatissimi Imperatoris Constantini",
     "author": "Eusebius of Caesarea"
+   },
+   {
+    "slug": "pld-5581",
+    "title": "Apology against the books of Rufinus",
+    "author": "Jerome"
+   },
+   {
+    "slug": "pld-5616",
+    "title": "Dialogue against the Pelagians",
+    "author": "Jerome"
+   },
+   {
+    "slug": "pld-5710",
+    "title": "Fragments from a historical work",
+    "author": "Hilary of Poitiers"
+   },
+   {
+    "slug": "pg-3807",
+    "title": "Comprehensive Index",
+    "orig": "Index Locupletissimus",
+    "author": "Eusebius of Caesarea"
+   },
+   {
+    "slug": "cajetan-de-nominum-analogia",
+    "title": "On the Analogy of Names",
+    "author": "Thomas Cajetan"
+   },
+   {
+    "slug": "pld-8515",
+    "title": "On the Resurrection of the Flesh",
+    "author": "Tertullian"
+   },
+   {
+    "slug": "pg-2879",
+    "title": "Against the Heathen",
+    "orig": "Oratio Contra Gentes",
+    "author": "Athanasius of Alexandria"
+   },
+   {
+    "slug": "pg-3520",
+    "title": "On Heresies",
+    "orig": "Liber de Haeresibus",
+    "author": "John of Damascus"
+   },
+   {
+    "slug": "pld-2792",
+    "title": "On the Merits and Remission of Sins",
+    "author": "Augustine of Hippo"
+   },
+   {
+    "slug": "pld-3004",
+    "title": "Allegorical exposition on the Proverbs of Solomon",
+    "author": "Bede the Venerable"
+   },
+   {
+    "slug": "pld-5588",
+    "title": "Commentary on Daniel",
+    "author": "Jerome"
+   },
+   {
+    "slug": "pld-3013",
+    "title": "On the Nature of Things",
+    "author": "Bede the Venerable"
+   },
+   {
+    "slug": "pld-5656",
+    "title": "Book of Jeremiah",
+    "author": "Jerome"
+   },
+   {
+    "slug": "pld-450",
+    "title": "Homilies and Exhortations",
+    "author": "Anselm of Canterbury"
+   },
+   {
+    "slug": "pg-2857",
+    "title": "On Things and Opinions",
+    "orig": "Rerum et Sententiarum",
+    "author": "Irenaeus of Lyon"
+   },
+   {
+    "slug": "pg-339",
+    "title": "On the Theophany",
+    "orig": "De Theophania",
+    "author": "Eusebius of Caesarea"
+   },
+   {
+    "slug": "pg-402",
+    "title": "Certain Doubtful Homilies",
+    "orig": "Homiliae quaedam dubiae",
+    "author": "Basil the Great"
+   },
+   {
+    "slug": "pg-3734",
+    "title": "Oration of Emperor Constantine to the Assembly of the Saints",
+    "orig": "Oratio Constantini Imperatoris ad Sanctorum Cœtum",
+    "author": "Eusebius of Caesarea"
+   },
+   {
+    "slug": "pg-455",
+    "title": "To Abbot Nonnus",
+    "orig": "Nonnus Abbas",
+    "author": "Gregory of Nazianzus"
+   },
+   {
+    "slug": "pld-336",
+    "title": "On Abraham",
+    "author": "Ambrose of Milan"
+   },
+   {
+    "slug": "pld-5654",
+    "title": "Book of Genesis",
+    "author": "Jerome"
+   },
+   {
+    "slug": "pg-1993",
+    "title": "Letter M",
+    "orig": "Littera Μ",
+    "author": "John of Damascus"
+   },
+   {
+    "slug": "pld-3128",
+    "title": "On Consideration",
+    "author": "Bernard of Clairvaux"
+   },
+   {
+    "slug": "pg-2906",
+    "title": "Book Two",
+    "orig": "Liber Secundus",
+    "author": "Basil the Great"
+   },
+   {
+    "slug": "po-201",
+    "title": "Four Homilies of Saint John Chrysostom on the Temptations of Our Lord and the Incarnation",
+    "orig": "Quatre Homélies de Saint Jean Chrysostome sur les tentations de Notre-Seigneur et l'Incarnation",
+    "author": "Jean Chrysostome"
+   },
+   {
+    "slug": "pld-3025",
+    "title": "Explanation of the Apocalypse",
+    "author": "Bede the Venerable"
+   },
+   {
+    "slug": "pld-3763",
+    "title": "Letters on the baptism of heretics",
+    "author": "Cyprian of Carthage"
+   },
+   {
+    "slug": "pg-2852",
+    "title": "Appendix to Irenaeus's Books Against Heresies, Containing Fragments of the Gnostics Mentioned by the Holy Martyr",
+    "orig": "Appendix ad Irenæi libros contra hæreses, continens Gnosticorum quorum meminit S. martyr fragmenta",
+    "author": "Irenaeus of Lyon"
+   },
+   {
+    "slug": "bonaventure-collationes-de-decem-praeceptis",
+    "title": "Conferences on the Ten Commandments",
+    "author": "Bonaventure"
+   },
+   {
+    "slug": "pg-51",
+    "title": "George Pachymeres, Paraphrase of the Letters of Saint Dionysius",
+    "orig": "Georgii Pachymerae Paraphrasis in Epistolas Sancti Dionysii",
+    "author": "Dionysius the Areopagite"
+   },
+   {
+    "slug": "pg-3633",
+    "title": "Instruction to Antiochus",
+    "orig": "Doctrina ad Antiochum",
+    "author": "Athanasius of Alexandria"
+   },
+   {
+    "slug": "aq-degen-77",
+    "title": "On Generation and Corruption",
+    "author": "Thomas Aquinas"
+   },
+   {
+    "slug": "pld-6353",
+    "title": "On the Heresy and History of the Priscillianists",
+    "author": "Leo I"
+   },
+   {
+    "slug": "pg-3034",
+    "title": "On the Incarnation against Apollinarius (Books I-II)",
+    "orig": "De incarnatione contra Apollinarium libri ii",
+    "author": "Athanasius of Alexandria"
+   },
+   {
+    "slug": "aq-qdevirt-29",
+    "title": "On the Virtues",
+    "author": "Thomas Aquinas"
+   },
+   {
+    "slug": "pg-384",
+    "title": "On Virginity (Spurious Homily: \"Each of Us Has Free Will\")",
+    "orig": "De virginitate (homilia Sp. — “Ἕκαστος ἡμῶν τὸ αὐτεξούσιον”)",
+    "author": "Basil the Great"
+   },
+   {
+    "slug": "pld-3021",
+    "title": "On the Temple of Solomon",
+    "author": "Bede the Venerable"
+   },
+   {
+    "slug": "pld-3174",
+    "title": "On Psalm 91 (He Who Dwells)",
+    "author": "Bernard of Clairvaux"
+   },
+   {
+    "slug": "pld-8497",
+    "title": "Against the Valentinians",
+    "author": "Tertullian"
+   },
+   {
+    "slug": "pg-39",
+    "title": "The Mystical Theology",
+    "orig": "De mystica theologia",
+    "author": "Dionysius the Areopagite"
+   },
+   {
+    "slug": "pg-3522",
+    "title": "Against the Jacobites",
+    "orig": "Contra Jacobitas",
+    "author": "John of Damascus"
+   },
+   {
+    "slug": "aq-36articuli-108",
+    "title": "Letter to Bassiano of Lodi on the 36 Articles",
+    "author": "Thomas Aquinas"
+   },
+   {
+    "slug": "pld-368",
+    "title": "Class II of letters",
+    "author": "Ambrose of Milan"
+   },
+   {
+    "slug": "pld-5714",
+    "title": "Book on Synods or the Faith of the Orientals",
+    "author": "Hilary of Poitiers"
+   },
+   {
+    "slug": "pg-3407",
+    "title": "Martyrdom of Saint Artemius",
+    "orig": "Passio sancti Artemii Dub.",
+    "author": "John of Damascus"
+   },
+   {
+    "slug": "pld-348",
+    "title": "On the Death of His Brother Satyrus",
+    "author": "Ambrose of Milan"
+   },
+   {
+    "slug": "pg-40",
+    "title": "Letters",
+    "orig": "Epistolæ",
+    "author": "Dionysius the Areopagite"
+   },
+   {
+    "slug": "pg-3310",
+    "title": "On Holy Baptism (Oration 40)",
+    "orig": "In sanctum baptisma (orat. 40)",
+    "author": "Gregory of Nazianzus"
+   },
+   {
+    "slug": "aq-libcaus-89",
+    "title": "The Book of Causes",
+    "author": "Thomas Aquinas"
+   },
+   {
+    "slug": "pld-8513",
+    "title": "Prescriptions against Heretics",
+    "author": "Tertullian"
+   },
+   {
+    "slug": "pg-3108",
+    "title": "Funeral Oration on His Father 1",
+    "orig": "Funebris oratio in patrem 1",
+    "author": "Gregory of Nazianzus"
+   },
+   {
+    "slug": "aq-deperfect-96",
+    "title": "On the Perfection of the Spiritual Life",
+    "author": "Thomas Aquinas"
+   },
+   {
+    "slug": "pld-361",
+    "title": "On Penance",
+    "author": "Ambrose of Milan"
+   },
+   {
+    "slug": "aq-peri-73",
+    "title": "On Interpretation",
+    "author": "Thomas Aquinas"
+   },
+   {
+    "slug": "duns-scotus-in-duos-libros-perihermenias-operis-secundi-quod-appellant-quaestiones-octo",
+    "title": "On the Two Books of Perihermenias, of the Second Work, as It Is Called, Eight Questions",
+    "author": "John Duns Scotus"
+   },
+   {
+    "slug": "pld-3026",
+    "title": "Exposition on the Acts of the Apostles",
+    "author": "Bede the Venerable"
+   },
+   {
+    "slug": "pld-3051",
+    "title": "Prose life of Saint Cuthbert",
+    "author": "Bede the Venerable"
+   },
+   {
+    "slug": "pld-343",
+    "title": "On Noah and the Ark",
+    "author": "Ambrose of Milan"
+   },
+   {
+    "slug": "pld-354",
+    "title": "On the Intercession of Job and David",
+    "author": "Ambrose of Milan"
+   },
+   {
+    "slug": "pld-8509",
+    "title": "On Prayer",
+    "author": "Tertullian"
    }
   ],
   "near": [
@@ -2011,39 +2224,9 @@
     "author": "Denys the Carthusian"
    },
    {
-    "slug": "gratian-decretum",
-    "title": "Decretum Gratiani",
-    "author": "Gratian"
-   },
-   {
-    "slug": "arriaga-cursus-philosophicus",
-    "title": "Cursus philosophicus",
-    "author": "Rodrigo de Arriaga"
-   },
-   {
-    "slug": "gottfried-wilhelm-leibniz-philosophische-schriften-band-iv",
-    "title": "Philosophische Schriften",
-    "author": "Gottfried Wilhelm Leibniz"
-   },
-   {
-    "slug": "oviedo-cursus-philosophicus",
-    "title": "Cursus Philosophicus",
-    "author": "Francisco de Oviedo"
-   },
-   {
-    "slug": "heidegger-tumulus-tridentini-concilii",
-    "title": "Tumulus Tridentini Concilii",
-    "author": "Johann Heinrich Heidegger"
-   },
-   {
     "slug": "lightfoot-the-works-of-the-reverend-and-learned-john-l",
     "title": "The works of the Reverend and learned John Lightfoot D. D., late Master of Katherine Hall in Cambridge",
     "author": "John Lightfoot"
-   },
-   {
-    "slug": "albertus-magnus-summa-theologiae",
-    "title": "Summa Theologica",
-    "author": "Albert the Great"
    },
    {
     "slug": "zamora-disputationes-theologicae-de-deo-uno-et-trino",
@@ -2059,11 +2242,6 @@
     "slug": "quenstedt-systema-theologicum",
     "title": "Didactic-Polemical Theology, or a Theological System",
     "author": "Johannes Andreas Quenstedt"
-   },
-   {
-    "slug": "johann-olearius-universa-theologia",
-    "title": "Universal Theology",
-    "author": "Johann Olearius"
    },
    {
     "slug": "cic-liber-extra",
@@ -2091,16 +2269,6 @@
     "author": "Joannes Poncius"
    },
    {
-    "slug": "guilielmus-altissiodorensis-summa-aurea",
-    "title": "Summa Aurea",
-    "author": "William of Auxerre"
-   },
-   {
-    "slug": "caspar-ebel-opera-philosophica-frankfurt-1677-posthumous-ed-rudrauff",
-    "title": "Philosophical Works",
-    "author": "Caspar Ebel"
-   },
-   {
     "slug": "henry-of-ghent-summa-quaestionum-ordinariarum",
     "title": "Summa of Ordinary Questions",
     "author": "Henry of Ghent"
@@ -2116,29 +2284,19 @@
     "author": "William of Ockham"
    },
    {
-    "slug": "eebo-3969",
-    "title": "Thesaurus Linguæ Romanæ Britannicæ",
-    "author": "Thomas Cooper"
-   },
-   {
     "slug": "chamierus-contractus-1642",
     "title": "Chamier Abridged; or, an Epitome of the Catholic Panstratia",
     "author": "Daniel Chamier"
    },
    {
-    "slug": "gottlieb-gerhard-titius-jus-privatum-romano-germanicum",
-    "title": "Jus Privatum Romano-Germanicum",
-    "author": "Gottlieb Gerhard Titius"
-   },
-   {
-    "slug": "hoornbeek-theologiae-practicae",
-    "title": "Practical Theology, Two Parts",
-    "author": "Johannes Hoornbeeck"
-   },
-   {
     "slug": "eebo-24950",
     "title": "A Learned Commentary on the Epistle to the Hebrews",
     "author": "William Gouge"
+   },
+   {
+    "slug": "albertus-magnus-in-evangelium-secundum-lucam",
+    "title": "On the Gospel According to Luke",
+    "author": "Albert the Great"
    },
    {
     "slug": "eebo-3342",
@@ -2156,24 +2314,9 @@
     "author": "Pierre Viret"
    },
    {
-    "slug": "dannhauer-hodomoria",
-    "title": "Hodomoria",
-    "author": "Johann Conrad Dannhauer"
-   },
-   {
     "slug": "bontempi-palladium-theologicum-t5",
     "title": "Palladium theologicum, Vol. V: On the Virtues",
     "author": "Gaudenzio Bontempi"
-   },
-   {
-    "slug": "hieronymus-kromayer-theologia-positivo-polemica",
-    "title": "Positive-Polemic Theology",
-    "author": "Hieronymus Kromayer"
-   },
-   {
-    "slug": "quenstedt-theologia-didactico-polemica",
-    "title": "Didactic-Polemical Theology",
-    "author": "Johannes Andreas Quenstedt"
    },
    {
     "slug": "eebo-24927",
@@ -2201,29 +2344,9 @@
     "author": "Richard Baxter"
    },
    {
-    "slug": "eebo-41674",
-    "title": "Sermons by Thomas Manton, second volume",
-    "author": "Thomas Manton"
-   },
-   {
-    "slug": "david-hollaz-examen-theologicum-acroamaticum",
-    "title": "Examen Theologicum Acroamaticum",
-    "author": "David Hollaz"
-   },
-   {
-    "slug": "voetius-selectae-disputationes-theologicae-vol-3",
-    "title": "Select Theological Disputations",
-    "author": "Gisbertus Voetius"
-   },
-   {
     "slug": "eebo-10889",
     "title": "The Works of Joseph Hall",
     "author": "Joseph Hall"
-   },
-   {
-    "slug": "jansenius-augustinus",
-    "title": "Augustinus",
-    "author": "Cornelius Jansen"
    },
    {
     "slug": "johann-gerhard-annotationes-posthumae-in-evangelium-matthaei",
@@ -2236,16 +2359,6 @@
     "author": "Thomas Manton"
    },
    {
-    "slug": "mastricht-theoretico-practica-theologia",
-    "title": "Theoretico-Practical Theology",
-    "author": "Petrus van Mastricht"
-   },
-   {
-    "slug": "conrad-bergius-praxis-catholica-divini-canonis-vol-1",
-    "title": "Praxis Catholica Divini Canonis",
-    "author": "Conrad Bergius"
-   },
-   {
     "slug": "pareus-in-romanos",
     "title": "Commentary on the Divine Epistle to the Romans",
     "author": "David Pareus"
@@ -2256,29 +2369,9 @@
     "author": "Joseph Hall"
    },
    {
-    "slug": "gerhard-confessio-catholica-liber-2-pars-1",
-    "title": "Confessio Catholica",
-    "author": "Johann Gerhard"
-   },
-   {
-    "slug": "henry-of-ghent-quodlibeta",
-    "title": "Quodlibeta",
-    "author": "Henry of Ghent"
-   },
-   {
     "slug": "eebo-36116",
     "title": "Jesus and the resurrection justified",
     "author": "Simon Patrick"
-   },
-   {
-    "slug": "heidegger-tumulus-concilii-tridentini-vol-2",
-    "title": "Tumulus Concilii Tridentini",
-    "author": "Johann Heinrich Heidegger"
-   },
-   {
-    "slug": "calov-biblia-veteris-testamenti-illustrata-vol-1",
-    "title": "Biblia Veteris Testamenti Illustrata",
-    "author": "Abraham Calov"
    },
    {
     "slug": "thomas-bradwardine-thomas-bradwardine-de-causa-dei",
@@ -2291,11 +2384,6 @@
     "author": "Ludwig Crocius"
    },
    {
-    "slug": "meisner-philosophia-sobria-3",
-    "title": "Sober Philosophy, Part III",
-    "author": "Balthasar Meisner"
-   },
-   {
     "slug": "johann-franz-buddeus-institutiones-theologiae-dogmaticae",
     "title": "Institutes of Dogmatic Theology",
     "author": "Johann Franz Budde"
@@ -2304,16 +2392,6 @@
     "slug": "hutter-libri-christianae-concordiae",
     "title": "Explanation of the Book of Christian Concord (Concordia)",
     "author": "Leonhard Hutter"
-   },
-   {
-    "slug": "amandus-polanus-symphonia-catholica",
-    "title": "Symphonia Catholica",
-    "author": "Amandus Polanus"
-   },
-   {
-    "slug": "johannes-scharf-theoria-transcendentalis",
-    "title": "Theoria Transcendentalis Primae Philosophiae",
-    "author": "Johann Scharff"
    },
    {
     "slug": "adrian-peter-walenburg-tractatus-generales-de-controversiis-fidei-colo",
@@ -2336,19 +2414,19 @@
     "author": "David Blondel"
    },
    {
-    "slug": "daneau-isagoges-christianae-pars-secunda",
-    "title": "Christian Introduction, Part II",
-    "author": "Lambert Daneau"
-   },
-   {
     "slug": "eebo-9221",
     "title": "A commentary upon the fourth book of Moses, called Numbers",
     "author": "William Attersoll"
    },
    {
-    "slug": "voetius-selectae-disputationes-theologicae-vol-2",
-    "title": "Select Theological Disputations",
-    "author": "Gisbertus Voetius"
+    "slug": "heidegger-corpus-theologiae-christianae-vol-3",
+    "title": "Corpus of Christian Theology",
+    "author": "Johann Heinrich Heidegger"
+   },
+   {
+    "slug": "calov-systema-locorum-theologicorum-as-4930128",
+    "title": "System of Theological Topics, Vol. 1 (1655)",
+    "author": "Abraham Calov"
    },
    {
     "slug": "heidanus-corpus-theologiae-christianae",
@@ -2356,9 +2434,9 @@
     "author": "Abraham Heidanus"
    },
    {
-    "slug": "wendelin-contra-gerhardum-vol-1",
-    "title": "Contra Gerhardum",
-    "author": "Marcus Friedrich Wendelin"
+    "slug": "eebo-39091",
+    "title": "One Hundred and Ninety Sermons on Psalm 119",
+    "author": "Thomas Manton"
    },
    {
     "slug": "coccejus-summa-theologiae",
@@ -2371,11 +2449,6 @@
     "author": "William Wake"
    },
    {
-    "slug": "meisner-philosophia-sobria-1",
-    "title": "Sober Philosophy, Part I",
-    "author": "Balthasar Meisner"
-   },
-   {
     "slug": "cornelius-a-lapide-commentarii-in-iv-evangelia",
     "title": "Commentaries on the Four Gospels",
     "author": "Cornelius a Lapide"
@@ -2384,16 +2457,6 @@
     "slug": "eebo-8667",
     "title": "A Commentary upon the Epistle to the Romans",
     "author": "Thomas Wilson"
-   },
-   {
-    "slug": "hardt-constantiense-concilium-1",
-    "title": "Magnum Oecumenicum Constantiense Concilium",
-    "author": "Hermann von der Hardt"
-   },
-   {
-    "slug": "eebo-12395",
-    "title": "Histrio-mastix",
-    "author": "William Prynne"
    },
    {
     "slug": "eebo-34087",
@@ -2411,11 +2474,6 @@
     "author": "Georg Dedeken"
    },
    {
-    "slug": "glassius-philologia-sacra-1713",
-    "title": "Philologia Sacra (Editio Nova 1713)",
-    "author": "Glassius, Salomon"
-   },
-   {
     "slug": "flacius-clavis-scripturae-sacrae-1567",
     "title": "Key to Sacred Scripture (1567)",
     "author": "Matthias Flacius Illyricus"
@@ -2424,11 +2482,6 @@
     "slug": "eebo-42499",
     "title": "Annotations upon the Holy Bible. Vol. II",
     "author": "Matthew Poole"
-   },
-   {
-    "slug": "wendelin-christianae-theologiae-libri-ii",
-    "title": "Philosophia Moralis",
-    "author": "Marcus Friedrich Wendelin"
    },
    {
     "slug": "journet-eglise-du-verbe-incarne-3",
@@ -2441,34 +2494,9 @@
     "author": "Luis de Molina"
    },
    {
-    "slug": "eebo-11527",
-    "title": "XCVI. Sermons by Lancelot Andrewes",
-    "author": "Lancelot Andrewes"
-   },
-   {
-    "slug": "eebo-33764",
-    "title": "LXXX sermons preached at St. Mary Magdalene Milk-street",
-    "author": "Anthony Farindon"
-   },
-   {
     "slug": "andrewes-xcvi-sermons-right-honorable-reverend-father",
     "title": "XCVI. Sermons by the Right Honorable and Reverend Father in God, Lancelot Andrews, Late Lord Bishop of Winchester",
     "author": "Lancelot Andrewes"
-   },
-   {
-    "slug": "coccejus-opera-vol-2",
-    "title": "Works",
-    "author": "Johannes Cocceius"
-   },
-   {
-    "slug": "chamier-panstratia-catholica-vol-2",
-    "title": "Panstratia Catholica",
-    "author": "Daniel Chamier"
-   },
-   {
-    "slug": "franciscus-junius-opera-theologica-vol-1",
-    "title": "Theological Works",
-    "author": "Franciscus Junius"
    },
    {
     "slug": "samuel-strimesius-ingenua-in-controversias-evangelicorum-inquisitio",
@@ -2476,19 +2504,9 @@
     "author": "Samuel Strimesius"
    },
    {
-    "slug": "lucas-trelcatius-opuscula-theologica-omnia",
-    "title": "Opuscula Theologica Omnia",
-    "author": "Lucas Trelcatius"
-   },
-   {
-    "slug": "twisse-opera-vol-2",
-    "title": "Works",
-    "author": "William Twisse"
-   },
-   {
-    "slug": "spanheim-jr-opera-omnia-vol-1",
-    "title": "Complete Works",
-    "author": "Spanheim Jr."
+    "slug": "doronzo-de-poenitentia-4",
+    "title": "Dogmatic Treatise on Penance",
+    "author": "Emmanuel Doronzo"
    },
    {
     "slug": "leonhard-hutter-loci-communes-theologici",
@@ -2501,11 +2519,6 @@
     "author": "Wolfgang Musculus"
    },
    {
-    "slug": "eebo-12437",
-    "title": "Hexapla in Genesin Exodum",
-    "author": "Andrew Willet"
-   },
-   {
     "slug": "eebo-28914",
     "title": "Ductor dubitantium, or, The rule of conscience",
     "author": "Jeremy Taylor"
@@ -2514,16 +2527,6 @@
     "slug": "adrian-peter-walenburg-tractatus-generales-de-controversiis-fidei-colo-2",
     "title": "General Treatises on the Controversies of the Faith",
     "author": "Adrian & Peter Walenburg"
-   },
-   {
-    "slug": "bechmann-theologia-polemica",
-    "title": "Polemical Theology",
-    "author": "Friedemann Bechmann"
-   },
-   {
-    "slug": "veremund-gufl-philosophia-scholastica-universa-vol-2",
-    "title": "Philosophia Scholastica Universa",
-    "author": "Veremund Gufl"
    },
    {
     "slug": "eebo-25504",
@@ -2541,11 +2544,6 @@
     "author": "Sedan Academy"
    },
    {
-    "slug": "gottfried-wilhelm-leibniz-politische-schriften-band-ix",
-    "title": "Politische Schriften",
-    "author": "Gottfried Wilhelm Leibniz"
-   },
-   {
     "slug": "becanus-summa-theologiae-scholasticae-vol-1",
     "title": "Scholastic Summa of Theology",
     "author": "Martin Becanus"
@@ -2561,21 +2559,6 @@
     "author": "John Selden"
    },
    {
-    "slug": "johann-adam-osiander-systema-theologicum-theologia-positiva-acroamatica",
-    "title": "Systematic Theology: Acroamatic Positive Theology",
-    "author": "Johann Adam Osiander"
-   },
-   {
-    "slug": "eebo-23183",
-    "title": "Cosmography in four books",
-    "author": "Peter Heylyn"
-   },
-   {
-    "slug": "walaeus-opera-omnia-vol-1",
-    "title": "Complete Works",
-    "author": "Antonius Walaeus"
-   },
-   {
     "slug": "jakob-martini-exercitationes-metaphysicae",
     "title": "Two Books of Metaphysical Exercises",
     "author": "Jakob Martini"
@@ -2586,9 +2569,9 @@
     "author": "John Downame"
    },
    {
-    "slug": "pietro-martire-vermigli-loci-communes",
-    "title": "Common Places",
-    "author": "Pietro Martire Vermigli"
+    "slug": "eebo-31668",
+    "title": "An exact chronological vindication of our British history",
+    "author": "William Prynne"
    },
    {
     "slug": "eebo-6371",
@@ -2596,14 +2579,14 @@
     "author": "William Perkins"
    },
    {
-    "slug": "hardt-constantiense-concilium-4",
-    "title": "Magnum Oecumenicum Constantiense Concilium",
-    "author": "Hermann von der Hardt"
-   },
-   {
     "slug": "eebo-9216",
     "title": "Lectures upon the whole Epistle of St. Paul to the Philippians",
     "author": "Henry Airay"
+   },
+   {
+    "slug": "duns-scotus-in-xii-libros-metaphysicorum-aristotelis-expositio",
+    "title": "Exposition on the Twelve Books of Aristotle’s Metaphysics",
+    "author": "Antonius Andreas"
    },
    {
     "slug": "snecanus-methodica-descriptio",
@@ -2641,26 +2624,6 @@
     "author": "Lewis Bayly"
    },
    {
-    "slug": "christian-wolff-jus-naturae-methodo-scientifica-pertractatum-pars-v",
-    "title": "Jus Naturae Methodo Scientifica Pertractatum",
-    "author": "Christian Wolff"
-   },
-   {
-    "slug": "bosco-jean-de-bosco-theologiae-sacramentalis-vol-3",
-    "title": "Sacramental Theology",
-    "author": "Bosco / Jean de Bosco"
-   },
-   {
-    "slug": "alphonsus-liguori-theologia-moralis-vol-ii",
-    "title": "Moral Theology",
-    "author": "Alphonsus Liguori"
-   },
-   {
-    "slug": "espen-dissertationes",
-    "title": "Dissertationes Canonicae",
-    "author": "Zeger Bernard van Espen"
-   },
-   {
     "slug": "eebo-40555",
     "title": "A Continuation of morning-exercise questions",
     "author": "Samuel Annesley"
@@ -2676,26 +2639,6 @@
     "author": "Joseph Mede"
    },
    {
-    "slug": "johann-adam-scherzer-anti-bellarminus",
-    "title": "Anti-Bellarminus",
-    "author": "Johann Adam Scherzer"
-   },
-   {
-    "slug": "wirceburgensis-theologia-wirceburgensis-vol-5",
-    "title": "Würzburg Theology",
-    "author": "Wirceburgensis"
-   },
-   {
-    "slug": "eebo-34825",
-    "title": "Symbolon Theologikon",
-    "author": "Jeremy Taylor"
-   },
-   {
-    "slug": "william-ames-bellarminus-enervatus-amsterdam-1630-4-toms-anti-bellarmi",
-    "title": "Bellarminus Enervatus (Amsterdam 1630, 4 toms) — anti-Bellarmine",
-    "author": "William Ames"
-   },
-   {
     "slug": "mazzella-de-deo-creante",
     "title": "On God the Creator: Scholastic-Dogmatic Lectures",
     "author": "Camillo Mazzella"
@@ -2706,34 +2649,15 @@
     "author": "Antonio Possevino"
    },
    {
-    "slug": "friedrich-spanheim-the-elder-dubia-evangelica-vol-3",
-    "title": "Dubia Evangelica",
-    "author": "Friedrich Spanheim"
-   },
-   {
     "slug": "po-68",
-    "title": "Demonstrationes I-XXII",
+    "title": "Demonstrations I-XXII",
+    "orig": "Demonstrationes I-XXII",
     "author": "Aphraates"
    },
    {
     "slug": "doronzo-de-poenitentia-2",
     "title": "Dogmatic Treatise on Penance",
     "author": "Emmanuel Doronzo"
-   },
-   {
-    "slug": "alphonsus-liguori-theologia-moralis-vol-i",
-    "title": "Moral Theology",
-    "author": "Alphonsus Liguori"
-   },
-   {
-    "slug": "franciscus-sylvius-opera-omnia-tom-3",
-    "title": "Complete Works",
-    "author": "Franciscus Sylvius"
-   },
-   {
-    "slug": "franciscus-junius-opera-theologica-vol-2",
-    "title": "Theological Works",
-    "author": "Franciscus Junius"
    },
    {
     "slug": "torquemada-summa-de-ecclesia",
@@ -2746,19 +2670,9 @@
     "author": "Francisco de Oviedo"
    },
    {
-    "slug": "christian-wolff-jus-naturae-methodo-scientifica-pertractatum-pars-iv",
-    "title": "Jus Naturae Methodo Scientifica Pertractatum",
-    "author": "Christian Wolff"
-   },
-   {
     "slug": "johannes-hoornbeeck-summa-controversiarum-religionis",
     "title": "Summary of Religious Controversies",
     "author": "Johannes Hoornbeeck"
-   },
-   {
-    "slug": "scharp-cursus-theologicus",
-    "title": "Cursus Theologicus",
-    "author": "Johann Scharp"
    },
    {
     "slug": "hammond-paraphrase-annotations-all-books-new-testament",
@@ -2769,11 +2683,6 @@
     "slug": "de-potentia-dei-cum-commentariis",
     "title": "Disputed Questions on the Power of God of St. Thomas, with Commentaries",
     "author": "Anonymous Commentator on Aquinas"
-   },
-   {
-    "slug": "adriaan-heereboord-meletemata-philosophica",
-    "title": "Meletemata Philosophica",
-    "author": "Adriaan Heereboord"
    },
    {
     "slug": "eebo-5554",
@@ -2816,24 +2725,9 @@
     "author": "Thomas Fuller"
    },
    {
-    "slug": "magdeburg-centuriae-cent-12",
-    "title": "Ecclesiastica Historia (Magdeburg Centuries)",
-    "author": "Matthias Flacius Illyricus"
-   },
-   {
     "slug": "eebo-26695",
     "title": "The annals of the world",
     "author": "James Ussher"
-   },
-   {
-    "slug": "doronzo-de-ordine-1",
-    "title": "Dogmatic Treatise on Holy Orders",
-    "author": "Emmanuel Doronzo"
-   },
-   {
-    "slug": "maccovius-loci-communes-collegia-theologica-vol-1",
-    "title": "Common Places, Theological Lectures",
-    "author": "Johannes Maccovius"
    },
    {
     "slug": "domingo-de-soto-zumel-salamanca-commentary-vol-1",
@@ -2846,11 +2740,6 @@
     "author": "Diego Ruiz de Montoya"
    },
    {
-    "slug": "johannes-crocius-anti-becanus-vol-2",
-    "title": "Anti-Becanus",
-    "author": "Johannes Crocius"
-   },
-   {
     "slug": "hostiensis-summa-aurea",
     "title": "The Golden Summa",
     "author": "Hostiensis (Henry of Segusio)"
@@ -2859,21 +2748,6 @@
     "slug": "froidmont-de-anima",
     "title": "Christian Philosophy of the Soul",
     "author": "Libert Froidmont"
-   },
-   {
-    "slug": "becanus-summa-theologiae-scholasticae-pars-2",
-    "title": "Scholastic Theology: Complete Summary, Part II",
-    "author": "Martin Becanus"
-   },
-   {
-    "slug": "acta-synodi-dordrechtanae",
-    "title": "Acta Synodi Nationalis Dordrechtanae (1618–1619)",
-    "author": "Synod of Dort"
-   },
-   {
-    "slug": "finke-acta-concilii-constanciensis-4",
-    "title": "Acta Concilii Constanciensis",
-    "author": "Heinrich Finke (ed.)"
    },
    {
     "slug": "eebo-8206",
@@ -2891,19 +2765,9 @@
     "author": "John Collinges"
    },
    {
-    "slug": "krisper-theologia-scholae-scotisticae-3",
-    "title": "Theologia Scholae Scotisticae, Tomus III",
-    "author": "Crescentius Krisper"
-   },
-   {
     "slug": "eebo-36399",
     "title": "The True Intellectual System of the Universe",
     "author": "Ralph Cudworth"
-   },
-   {
-    "slug": "jean-gerson-opera",
-    "title": "Works (Paris 1606)",
-    "author": "Jean Gerson"
    },
    {
     "slug": "selden-opera-omnia-vol-2",
@@ -2911,14 +2775,9 @@
     "author": "John Selden"
    },
    {
-    "slug": "wirceburgensis-theologia-wirceburgensis-vol-4",
-    "title": "Würzburg Theology",
-    "author": "Wirceburgensis"
-   },
-   {
-    "slug": "yso-walser-philosophus-irresolutus-vol-1",
-    "title": "Philosophus Irresolutus",
-    "author": "Yso Walser"
+    "slug": "marcus-friedrich-wendelin-christianae-theologiae-libri-ii",
+    "title": "Two Books on Christian Theology",
+    "author": "Marcus Friedrich Wendelin"
    },
    {
     "slug": "strangius-de-voluntate-et-actionibus-dei-circa-peccatum",
@@ -2936,9 +2795,9 @@
     "author": "Sibrandus Lubbertus"
    },
    {
-    "slug": "witsius-miscellanea-sacra-2",
-    "title": "Miscellanea Sacra",
-    "author": "Herman Witsius"
+    "slug": "estius-in-pauli-epistolas-2",
+    "title": "Commentaries on All the Epistles of Paul",
+    "author": "Willem van Est"
    },
    {
     "slug": "piscator-commentarii-in-omnes-libros-veteris-testamenti-vol-3",
@@ -2956,11 +2815,6 @@
     "author": "Johannes Capreolus"
    },
    {
-    "slug": "pallavicino-istoria-concilio-trento-3",
-    "title": "Istoria del Concilio di Trento, Parte Terza",
-    "author": "Pietro Sforza Pallavicino"
-   },
-   {
     "slug": "philippus-van-limborch-theologia-christiana-ad-praxin-pietatis",
     "title": "Christian Theology for the Practice of Piety",
     "author": "Philippus van Limborch"
@@ -2971,39 +2825,9 @@
     "author": "Nicholas Byfield"
    },
    {
-    "slug": "john-forbes-instructiones-historico-theologicae-vol-1",
-    "title": "Instructiones Historico-Theologicae",
-    "author": "John Forbes"
-   },
-   {
     "slug": "bechmann-annotationes-in-compendium-hutteri",
     "title": "More Extensive Annotations on the Theological Compendium of Leonhard Hutter",
     "author": "Friedemann Bechmann"
-   },
-   {
-    "slug": "eebo-12866",
-    "title": "Clavis mystica",
-    "author": "Daniel Featley"
-   },
-   {
-    "slug": "johannes-crocius-anti-becanus-vol-1",
-    "title": "Anti-Becanus",
-    "author": "Johannes Crocius"
-   },
-   {
-    "slug": "christoph-scheibler-metaphysica-duobus-libris-geneva-1636-protestant-s",
-    "title": "Metaphysics in Two Books",
-    "author": "Christoph Scheibler"
-   },
-   {
-    "slug": "john-cameron-ta-sozomena-opera-geneva-1659",
-    "title": "Collected Works / Opera (Geneva 1659)",
-    "author": "John Cameron"
-   },
-   {
-    "slug": "pallavicino-istoria-concilio-trento-1",
-    "title": "Istoria del Concilio di Trento, Parte Prima",
-    "author": "Pietro Sforza Pallavicino"
    },
    {
     "slug": "eebo-11402",
@@ -3026,29 +2850,9 @@
     "author": "Girolamo Zanchi"
    },
    {
-    "slug": "scherzer-vade-mecum-manuale-philosophicum",
-    "title": "Vade Mecum, or Philosophical Manual",
-    "author": "Johann Adam Scherzer"
-   },
-   {
     "slug": "field-church-fiue-bookes-richard-field-doctor",
     "title": "Of the Church Five Books.",
     "author": "Richard Field"
-   },
-   {
-    "slug": "ludovicus-de-dieu-critica-sacra-vol-1",
-    "title": "Critica Sacra",
-    "author": "Ludovicus de Dieu"
-   },
-   {
-    "slug": "frassen-scotus-academicus-vol-7",
-    "title": "Scotus Academicus",
-    "author": "Claude Frassen"
-   },
-   {
-    "slug": "acta-concilii-vaticani",
-    "title": "Acta et Decreta Sacrosancti Concilii Vaticani",
-    "author": "First Vatican Council"
    },
    {
     "slug": "eebo-12275",
@@ -3056,14 +2860,14 @@
     "author": "William Ames"
    },
    {
+    "slug": "gerhard-commentarius-in-1-petri",
+    "title": "Commentary on the First Epistle of Peter",
+    "author": "Johann Gerhard"
+   },
+   {
     "slug": "molina-de-iustitia-et-iure-tomus-i",
     "title": "On Justice and Law",
     "author": "Luis de Molina"
-   },
-   {
-    "slug": "veremund-gufl-philosophia-scholastica-universa-vol-1",
-    "title": "Philosophia Scholastica Universa",
-    "author": "Veremund Gufl"
    },
    {
     "slug": "bontempi-palladium-theologicum-t7",
@@ -3074,11 +2878,6 @@
     "slug": "mazzella-de-religione-et-ecclesia",
     "title": "On Religion and the Church: Scholastic-Dogmatic Lectures",
     "author": "Camillo Mazzella"
-   },
-   {
-    "slug": "chemnitz-examen-concilii-tridentini",
-    "title": "Examen Concilii Tridentini",
-    "author": "Martin Chemnitz"
    },
    {
     "slug": "jansenius-tetrateuchus",
@@ -3096,16 +2895,6 @@
     "author": "Charles Journet"
    },
    {
-    "slug": "alsted-theologia-scholastica-didactica",
-    "title": "Scholastic Didactic Theology",
-    "author": "Johann Heinrich Alsted"
-   },
-   {
-    "slug": "maccovius-loci-communes-collegia-theologica-vol-2",
-    "title": "Common Places, Theological Lectures",
-    "author": "Johannes Maccovius"
-   },
-   {
     "slug": "eebo-10388",
     "title": "The triumph of a true Christian described",
     "author": "Edward Elton"
@@ -3116,9 +2905,14 @@
     "author": "Pierre Viret"
    },
    {
-    "slug": "poinsot-john-of-st-thomas-cursus-philosophicus-vol-2",
-    "title": "Cursus Philosophicus",
-    "author": "Poinsot / John of St. Thomas"
+    "slug": "johann-adam-scherzer-systema-theologiae",
+    "title": "System of Theology",
+    "author": "Johann Adam Scherzer"
+   },
+   {
+    "slug": "hoornbeek-summa-controversiarum",
+    "title": "Summary of Religious Controversies with Infidels, Heretics, Schismatics",
+    "author": "Johannes Hoornbeeck"
    },
    {
     "slug": "eebo-13216",
@@ -3126,24 +2920,9 @@
     "author": "Thomas Hooker"
    },
    {
-    "slug": "john-rainolds-censura-librorum-apocryphorum-veteris-testamenti-vol-2",
-    "title": "Censura Librorum Apocryphorum Veteris Testamenti",
-    "author": "John Rainolds"
-   },
-   {
     "slug": "eebo-35790",
     "title": "A Defence of the Discourse Concerning Idolatry in Rome",
     "author": "Edward Stillingfleet"
-   },
-   {
-    "slug": "franciscus-sylvius-opera-omnia-tom-4",
-    "title": "Complete Works",
-    "author": "Franciscus Sylvius"
-   },
-   {
-    "slug": "salamanticenses-cursus-theologicus-vol-10",
-    "title": "Cursus Theologicus",
-    "author": "Salamanticenses"
    },
    {
     "slug": "stillingfleet-defence-discourse-concerning-idolatry-practised-church",
@@ -3156,11 +2935,6 @@
     "author": "Sibrandus Lubbertus"
    },
    {
-    "slug": "salamanticenses-cursus-theologicus-vol-18",
-    "title": "Cursus Theologicus",
-    "author": "Salamanticenses"
-   },
-   {
     "slug": "eebo-8134",
     "title": "Hexapla on Romans",
     "author": "Andrew Willet"
@@ -3171,24 +2945,9 @@
     "author": "Westminster Assembly"
    },
    {
-    "slug": "franz-schola-sacrificiorum",
-    "title": "Schola Sacrificiorum Patriarchalium Sacra",
-    "author": "Wolfgang Franz"
-   },
-   {
-    "slug": "samuel-strimesius-charitologia-sacra",
-    "title": "Charitologia Sacra",
-    "author": "Samuel Strimesius"
-   },
-   {
     "slug": "brochmand-systema-1",
     "title": "System of Universal Theology (Universae theologiae systema)",
     "author": "Jesper Brochmand"
-   },
-   {
-    "slug": "witsius-miscellanea-sacra-1",
-    "title": "Miscellanea Sacra",
-    "author": "Herman Witsius"
    },
    {
     "slug": "piscator-commentarii-in-omnes-libros-novi-testamenti",
@@ -3221,29 +2980,14 @@
     "author": "William Bucanus"
    },
    {
-    "slug": "eebo-13554",
-    "title": "LXXX Sermons by John Donne",
-    "author": "John Donne"
-   },
-   {
     "slug": "louis-le-blanc-de-beaulieu-theses-theologicae-in-academia-sedanensi-lo",
     "title": "Theses Theologicae in Academia Sedanensi (London, 1683) — one of two 1683 editions",
     "author": "Louis Le Blanc de Beaulieu"
    },
    {
-    "slug": "poinsot-john-of-st-thomas-cursus-philosophicus-vol-1",
-    "title": "Cursus Philosophicus",
-    "author": "Poinsot / John of St. Thomas"
-   },
-   {
     "slug": "jean-de-launoy-anti-bellarminus-sive-defensio-libertatis-ecclesiae-gallicanae",
     "title": "Anti-Bellarmine, or, Defense of the Liberty of the Gallican Church",
     "author": "Jean de Launoy"
-   },
-   {
-    "slug": "louis-le-blanc-theses-theologicae-editio-tertia-1683",
-    "title": "Theses Theologicae (editio tertia, London 1683)",
-    "author": "Louis Le Blanc de Beaulieu"
    },
    {
     "slug": "eebo-12426",
@@ -3261,11 +3005,6 @@
     "author": "Wilhelm Zepper"
    },
    {
-    "slug": "chemnitz-loci-theologici-pars-2",
-    "title": "Theological Topics",
-    "author": "Martin Chemnitz"
-   },
-   {
     "slug": "eebo-39772",
     "title": "Several discourses upon the existence and attributes of God",
     "author": "Charnock, Stephen"
@@ -3276,19 +3015,9 @@
     "author": "Ludwig Crocius"
    },
    {
-    "slug": "glassius-philologia-sacra-vol-1",
-    "title": "Philologia Sacra",
-    "author": "Glassius, Salomon"
-   },
-   {
-    "slug": "contzen-politicorum-libri-decem",
-    "title": "Politics in Ten Books",
-    "author": "Adam Contzen"
-   },
-   {
-    "slug": "johann-heinrich-posewitz-metaphysica-theologica",
-    "title": "Metaphysica Theologica",
-    "author": "Johann Heinrich Posewitz"
+    "slug": "heidegger-corpus-theologiae-christianae-vol-2",
+    "title": "Corpus of Christian Theology",
+    "author": "Johann Heinrich Heidegger"
    },
    {
     "slug": "hyperius-methodus-theologiae",
@@ -3316,11 +3045,6 @@
     "author": "John Collinges"
    },
    {
-    "slug": "rutherford-examen-arminianismi",
-    "title": "Examen Arminianismi",
-    "author": "Samuel Rutherford"
-   },
-   {
     "slug": "eebo-25341",
     "title": "CXLV Sermons on John 17",
     "author": "Anthony Burgess"
@@ -3331,39 +3055,14 @@
     "author": "Nicolaus Vedelius"
    },
    {
-    "slug": "jean-de-launoy-epistolae-omnes",
-    "title": "Epistolae Omnes",
-    "author": "Jean de Launoy"
-   },
-   {
     "slug": "habert-theologia-dogmatica-moralis-vol-3",
     "title": "Dogmatic and Moral Theology",
     "author": "Louis Habert"
    },
    {
-    "slug": "heinrich-wilhelm-bernsau-theologia-dogmatica-methodo-scientifica-pertractata-vol-2",
-    "title": "Dogmatic Theology Treated by Scientific Method",
-    "author": "Heinrich Wilhelm Bernsau"
-   },
-   {
-    "slug": "richer-historia-conciliorum",
-    "title": "Historia Conciliorum Generalium",
-    "author": "Edmond Richer"
-   },
-   {
-    "slug": "johann-franz-buddeus-elementa-philosophiae-instrumentalis",
-    "title": "Elementa Philosophiae Instrumentalis",
-    "author": "Johann Franz Budde"
-   },
-   {
     "slug": "bucer-in-quatuor-evangelia",
     "title": "Perpetual Annotations on the Four Sacred Gospels",
     "author": "Martin Bucer"
-   },
-   {
-    "slug": "sarpi-historia-concilio-tridentino",
-    "title": "Historia del Concilio Tridentino (Pietro Soave Polano)",
-    "author": "Paolo Sarpi"
    },
    {
     "slug": "vedel-rationale-theologicum",
@@ -3386,39 +3085,14 @@
     "author": "Henry Scudder"
    },
    {
-    "slug": "john-rainolds-censura-librorum-apocryphorum-veteris-testamenti-vol-1",
-    "title": "Censura Librorum Apocryphorum Veteris Testamenti",
-    "author": "John Rainolds"
-   },
-   {
     "slug": "hyperius-de-theologo",
     "title": "On the Theologian, or, On the Method of Theological Study, in Four Books",
     "author": "Andreas Hyperius"
    },
    {
-    "slug": "jakob-martini-disputationes-metaphysicae",
-    "title": "Metaphysical Disputations",
-    "author": "Jakob Martini"
-   },
-   {
-    "slug": "eebo-38972",
-    "title": "Keimēlia 'ekklēsiastika",
-    "author": "Peter Heylyn"
-   },
-   {
-    "slug": "rudolph-goclenius-the-elder-conciliator-philosophicus-kassel-1609",
-    "title": "Conciliator Philosophicus (Kassel 1609)",
-    "author": "Rudolph Goclenius the Elder"
-   },
-   {
     "slug": "delprado-de-gratia-et-libero-arbitrio-vol-1",
     "title": "On Grace and Free Will, Part I: On Grace",
     "author": "Norberto del Prado"
-   },
-   {
-    "slug": "spanheim-jr-opera-omnia-vol-2",
-    "title": "Complete Works",
-    "author": "Spanheim Jr."
    },
    {
     "slug": "robert-sharrock-de-officiis-secundum-naturae-jus",
@@ -3431,11 +3105,6 @@
     "author": "John Jewel"
    },
    {
-    "slug": "contenson-theologia-mentis-et-cordis-vol-2",
-    "title": "Theologia mentis et cordis, Tomus II: Libri VI–VIII",
-    "author": "Vincent Contenson"
-   },
-   {
     "slug": "eebo-8301",
     "title": "A Christian Dictionary",
     "author": "Thomas Wilson"
@@ -3446,39 +3115,14 @@
     "author": "Richard Rogers"
    },
    {
-    "slug": "john-forbes-instructiones-historico-theologicae-vol-2",
-    "title": "Instructiones Historico-Theologicae",
-    "author": "John Forbes"
-   },
-   {
     "slug": "clemens-timpler-metaphysicae-systema-methodicum",
     "title": "Methodical System of Metaphysics",
     "author": "Clemens Timpler"
    },
    {
-    "slug": "twisse-opera-vol-1",
-    "title": "Works",
-    "author": "William Twisse"
-   },
-   {
     "slug": "bartolomeo-barberi-bartolomeo-barberi-vol-1",
     "title": "Theological Course According to St. Bonaventure",
     "author": "Bartholomew de Barberiis"
-   },
-   {
-    "slug": "dannhauer-hodosophia-christiana",
-    "title": "Christian Hodosophia, or Positive Theology",
-    "author": "Johann Conrad Dannhauer"
-   },
-   {
-    "slug": "reinier-vogelsang-exercitationes-theologicae",
-    "title": "Exercitationes Theologicae",
-    "author": "Reinier Vogelsang"
-   },
-   {
-    "slug": "johann-heinrich-posewitz-theologia-scholastica",
-    "title": "Scholastic Theology",
-    "author": "Johann Heinrich Posewitz"
    },
    {
     "slug": "eebo-12414",
@@ -3496,19 +3140,9 @@
     "author": "John Jewel"
    },
    {
-    "slug": "christoph-scheibler-opus-logicum",
-    "title": "Logical Work",
-    "author": "Christoph Scheibler"
-   },
-   {
     "slug": "robert-baron-of-st-andrews-disputatio-de-formali-objecto-fidei",
     "title": "Disputation on the Formal Object of Faith",
     "author": "Robert Baron of St Andrews"
-   },
-   {
-    "slug": "alsted-theologia-naturalis",
-    "title": "Natural Theology",
-    "author": "Johann Heinrich Alsted"
    },
    {
     "slug": "pld-8088",
@@ -3546,29 +3180,19 @@
     "author": "Gilbert Burnet"
    },
    {
-    "slug": "eebo-27218",
-    "title": "Hiera dakrya, Ecclesiae anglicanae suspiria",
-    "author": "John Gauden"
-   },
-   {
-    "slug": "eebo-38692",
-    "title": "Vitæ Selectorum Aliquot Virorum",
-    "author": "William Bates"
-   },
-   {
-    "slug": "krisper-theologia-scholae-scotisticae-4",
-    "title": "Theologia Scholae Scotisticae, Tomus IV",
-    "author": "Crescentius Krisper"
-   },
-   {
     "slug": "burman-synopsis-theologiae-1",
     "title": "Synopsis of Theology, particularly of the Economy of God's Covenants",
     "author": "Frans Burman"
    },
    {
-    "slug": "hosius-confessio-catholicae-fidei",
-    "title": "Confessio Catholicae Fidei Christiana",
-    "author": "Stanislaus Hosius"
+    "slug": "eebo-17679",
+    "title": "The Due Right of Presbyteries",
+    "author": "Samuel Rutherford"
+   },
+   {
+    "slug": "eebo-24003",
+    "title": "Eniautos: A Course of Sermons",
+    "author": "Jeremy Taylor"
    },
    {
     "slug": "eebo-11709",
@@ -3606,11 +3230,6 @@
     "author": "William Bucanus"
    },
    {
-    "slug": "alting-scriptorum-theologicorum-heidelbergensium-vol-2",
-    "title": "Scriptorum Theologicorum Heidelbergensium",
-    "author": "Heinrich Alting"
-   },
-   {
     "slug": "spanheim-disputationum-miscellanearum",
     "title": "Theological Disputations, Miscellaneous, Parts One and Two",
     "author": "Friedrich Spanheim"
@@ -3621,19 +3240,14 @@
     "author": "Daniel Whitby"
    },
    {
-    "slug": "sanderson-xxxvi-sermons-viz-xvi-ad-aulam",
-    "title": "36 sermons viz. 16 ad aulam, 6 ad clerum, 6 ad magistratum, 8 ad populum : with a large preface",
-    "author": "Robert Sanderson"
-   },
-   {
     "slug": "trigland-antapologia",
     "title": "Antapologia, or an Examination and Refutation of the Entire Remonstrant Apology",
     "author": "Jacobus Trigland"
    },
    {
-    "slug": "eebo-29033",
-    "title": "Increpatio Barjesu",
-    "author": "Matthew Wren"
+    "slug": "eebo-15056",
+    "title": "The moral law expounded",
+    "author": "Lancelot Andrewes"
    },
    {
     "slug": "eebo-29886",
@@ -3646,19 +3260,9 @@
     "author": "Thomas Taylor"
    },
    {
-    "slug": "finke-acta-concilii-constanciensis-2",
-    "title": "Acta Concilii Constanciensis",
-    "author": "Heinrich Finke (ed.)"
-   },
-   {
     "slug": "petrus-de-ailliaco-sententias",
     "title": "Questions on the Books of Sentences",
     "author": "Pierre d’Ailly"
-   },
-   {
-    "slug": "alting-scriptorum-theologicorum-heidelbergensium-vol-1",
-    "title": "Scriptorum Theologicorum Heidelbergensium",
-    "author": "Heinrich Alting"
    },
    {
     "slug": "brochmand-systema-universae-theologiae-vol-2",
@@ -3671,16 +3275,6 @@
     "author": "Caspar Olevian"
    },
    {
-    "slug": "philipp-melanchthon-opera-vol-13",
-    "title": "Works",
-    "author": "Philipp Melanchthon"
-   },
-   {
-    "slug": "eebo-11129",
-    "title": "Ancilla Pietatis",
-    "author": "Daniel Featley"
-   },
-   {
     "slug": "diego-ruiz-de-montoya-commentaria-in-primam-partem-d-thomae-vol-1",
     "title": "Commentaries on the First Part of St. Thomas",
     "author": "Diego Ruiz de Montoya"
@@ -3691,9 +3285,20 @@
     "author": "Tilemann Heshusius"
    },
    {
-    "slug": "jedin-handbuch-kirchengeschichte-3-2",
-    "title": "Handbuch der Kirchengeschichte III/2: Die mittelalterliche Kirche",
-    "author": "Hubert Jedin (ed.)"
+    "slug": "eebo-4567",
+    "title": "The Sum of the Conference Between John Rainoldes and John Hart",
+    "author": "John Rainolds"
+   },
+   {
+    "slug": "pg-2071",
+    "title": "Library or Myriobiblon (Codices 1–249)",
+    "orig": "Bibliotheca sive Myriobiblon (Codices 1-249)",
+    "author": "Photius of Constantinople"
+   },
+   {
+    "slug": "estius-in-pauli-epistolas-1",
+    "title": "Commentaries on All the Epistles of Paul",
+    "author": "Willem van Est"
    },
    {
     "slug": "martini-christiana-et-catholica-fides",
@@ -3701,19 +3306,9 @@
     "author": "Matthias Martini"
    },
    {
-    "slug": "john-prideaux-opera-theologica",
-    "title": "Theological Works",
-    "author": "John Prideaux"
-   },
-   {
     "slug": "william-of-ockham-william-of-ockham-scriptum-in-libros-sententiarum",
     "title": "William of Ockham, Scriptum in Libros Sententiarum",
     "author": "William of Ockham"
-   },
-   {
-    "slug": "andrada-trent-commentary",
-    "title": "Trent commentary",
-    "author": "Diego de Andrada"
    },
    {
     "slug": "eebo-23015",
@@ -3751,19 +3346,15 @@
     "author": "William Wake"
    },
    {
-    "slug": "paul-voet-prima-philosophia-reformata-vol-1",
-    "title": "Prima Philosophia Reformata",
-    "author": "Paul Voet"
-   },
-   {
     "slug": "pg-1798",
-    "title": "Epistolarum Libri Quinque",
+    "title": "Five Books of Letters",
+    "orig": "Epistolarum Libri Quinque",
     "author": "Isidore and Zosimas"
    },
    {
-    "slug": "eebo-19393",
-    "title": "XXX sermons at Saint Mary Magdalen Milkstreet",
-    "author": "Anthony Farindon"
+    "slug": "mansi-sacrorum-conciliorum-collectio-32",
+    "title": "New and Most Ample Collection of the Sacred Councils",
+    "author": "Giovanni Domenico Mansi"
    },
    {
     "slug": "eebo-22336",
@@ -3776,24 +3367,25 @@
     "author": "Josias Simmler"
    },
    {
-    "slug": "bosco-jean-de-bosco-theologiae-sacramentalis-vol-2",
-    "title": "Sacramental Theology",
-    "author": "Bosco / Jean de Bosco"
-   },
-   {
     "slug": "pietro-martire-vermigli-defensio-de-eucharistiae-sacramento",
     "title": "Defense of the Ancient Doctrine of the Sacrament of the Eucharist",
     "author": "Pietro Martire Vermigli"
    },
    {
     "slug": "pg-2532",
-    "title": "Ex Praefatione Guillelmi Beveregii",
+    "title": "From the Preface of William Beveridge",
+    "orig": "Ex Praefatione Guillelmi Beveregii",
     "author": "Theodore Balsamon"
    },
    {
     "slug": "strangius-de-interpretatione-et-perfectione-scripturae",
     "title": "On the Interpretation and Perfection of Scripture",
     "author": "John Strang"
+   },
+   {
+    "slug": "johann-franz-buddeus-institutiones-theologiae-moralis",
+    "title": "Institutes of Moral Theology",
+    "author": "Johann Franz Budde"
    },
    {
     "slug": "leydekker-de-historia-jansenismi",
@@ -3821,13 +3413,19 @@
     "author": "John Downame"
    },
    {
+    "slug": "twisse-discovery-d-iacksons-vanitie-perspective-glasse",
+    "title": "A discovery of D. Jacksons vanity. Or A perspective glass, whereby the admirers of D. Jacksons profound discourses",
+    "author": "William Twisse"
+   },
+   {
     "slug": "leydekker-de-veritate-religionis-reformatae",
     "title": "On the Truth of the Reformed or Evangelical Religion",
     "author": "Melchior Leydekker"
    },
    {
     "slug": "pg-3545",
-    "title": "Fragmenta in Job",
+    "title": "Fragments on Job",
+    "orig": "Fragmenta in Job",
     "author": "Didymus the Blind"
    },
    {
@@ -3836,24 +3434,19 @@
     "author": "Dominique Bouix"
    },
    {
-    "slug": "philipp-melanchthon-opera-vol-15",
-    "title": "Works",
-    "author": "Philipp Melanchthon"
-   },
-   {
     "slug": "innocentius-apparatus-decretalium",
     "title": "Commentary on the Five Books of the Decretals (Apparatus)",
     "author": "Innocent IV"
    },
    {
+    "slug": "twisse-discovery-jacksons-vanitie",
+    "title": "A Discovery of Dr Jackson's Vanity (A Perspective Glass)",
+    "author": "William Twisse"
+   },
+   {
     "slug": "eebo-21964",
     "title": "Moses His Choice with His Eye Fixed Upon Heaven",
     "author": "Jeremiah Burroughs"
-   },
-   {
-    "slug": "pg-1686",
-    "title": "Commentarius in Isaiam Prophetam",
-    "author": "Cyril of Alexandria"
    },
    {
     "slug": "eebo-6877",
@@ -3869,11 +3462,6 @@
     "slug": "eebo-3764",
     "title": "The Second Reply of Thomas Cartwright",
     "author": "Thomas Cartwright"
-   },
-   {
-    "slug": "antonius-forti-philosophia-negativa",
-    "title": "Philosophia Negativa",
-    "author": "Antonius Forti"
    },
    {
     "slug": "eebo-10165",
@@ -3894,6 +3482,11 @@
     "slug": "bullinger-in-pauli-epistolas",
     "title": "Commentaries on All the Epistles of Paul the Apostle",
     "author": "Heinrich Bullinger"
+   },
+   {
+    "slug": "chemnitz-de-duabus-naturis-in-christo",
+    "title": "On the Two Natures in Christ",
+    "author": "Martin Chemnitz"
    },
    {
     "slug": "eebo-10733",
@@ -3926,11 +3519,6 @@
     "author": "Franciscus Zabarella"
    },
    {
-    "slug": "amandus-polanus-mellificium",
-    "title": "Mellificium",
-    "author": "Amandus Polanus"
-   },
-   {
     "slug": "franzelin-de-divina-traditione-et-scriptura",
     "title": "Treatise on Divine Tradition and Scripture",
     "author": "Johann Baptist Franzelin"
@@ -3951,6 +3539,11 @@
     "author": "John Wilson"
    },
    {
+    "slug": "amandus-polanus-logicae-libri-duo",
+    "title": "Two Books of Logic",
+    "author": "Amandus Polanus"
+   },
+   {
     "slug": "heshusius-explicatio-in-galatas",
     "title": "Explanation of Paul's Epistle to the Galatians",
     "author": "Tilemann Heshusius"
@@ -3964,6 +3557,11 @@
     "slug": "vossius-theses-theologicae",
     "title": "Theological and Historical Theses, on Various Chapters of Christian Doctrine",
     "author": "Gerardus Joannes Vossius"
+   },
+   {
+    "slug": "coccejus-epistolae-ad-hebraeos",
+    "title": "Explanation of the Epistle to the Hebrews and Demonstration of Its Truth",
+    "author": "Johannes Cocceius"
    },
    {
     "slug": "eebo-43674",
@@ -4002,8 +3600,642 @@
    },
    {
     "slug": "pg-2462",
-    "title": "Panoplia Dogmatica (Prologus et Tituli I-XXVIII)",
+    "title": "Dogmatic Panoply (Prologue and Titles I–XXVIII)",
+    "orig": "Panoplia Dogmatica (Prologus et Tituli I-XXVIII)",
     "author": "Euthymius Zigabenus"
+   },
+   {
+    "slug": "wilkinson-jr-three-decads-of-sermons-lately-preached-to-t",
+    "title": "Three decads of sermons lately preached to the University at St Mary's Church in Oxford: by Henry Wilkinson",
+    "author": "Henry Wilkinson, Jr."
+   },
+   {
+    "slug": "martin-bucer-commentary-on-romans",
+    "title": "Commentary on Romans",
+    "author": "Martin Bucer"
+   },
+   {
+    "slug": "eebo-11425",
+    "title": "A Treatise of the Divine Essence and Attributes",
+    "author": "Thomas Jackson"
+   },
+   {
+    "slug": "eebo-13474",
+    "title": "The Excellency of the Gospel Above the Law",
+    "author": "Richard Sibbes"
+   },
+   {
+    "slug": "watson-beatitudes-discourse-part-christs-famous-sermon",
+    "title": "The beatitudes: or A discourse upon part of Christs famous Sermon on the Mount. Whereunto is added Christs vari",
+    "author": "Thomas Watson"
+   },
+   {
+    "slug": "domingo-de-soto-zumel-salamanca-commentary-vol-2",
+    "title": "Commentaries on the First Part of St. Thomas",
+    "author": "Francisco Zumel"
+   },
+   {
+    "slug": "eebo-12308",
+    "title": "A Treatise of Justification",
+    "author": "George Downame"
+   },
+   {
+    "slug": "hefele-histoire-des-conciles-5",
+    "title": "History of the Councils",
+    "author": "Karl Joseph von Hefele"
+   },
+   {
+    "slug": "eebo-25571",
+    "title": "The Lord's Supper",
+    "author": "Thomas Morton"
+   },
+   {
+    "slug": "pg-2618",
+    "title": "Byzantine History",
+    "orig": "Nicephori Gregorae Historiae Byzantinae",
+    "author": "Nicephorus Gregoras"
+   },
+   {
+    "slug": "eebo-24184",
+    "title": "Heaven on Earth",
+    "author": "Thomas Brooks"
+   },
+   {
+    "slug": "jansenius-pentateuchus",
+    "title": "Pentateuch, or, Commentary on the Five Books of Moses",
+    "author": "Cornelius Jansen"
+   },
+   {
+    "slug": "eebo-44251",
+    "title": "Opera Posthuma Chronologica of John Pearson",
+    "author": "John Pearson"
+   },
+   {
+    "slug": "eebo-7797",
+    "title": "A Catholike Appeale for Protestants",
+    "author": "Thomas Morton"
+   },
+   {
+    "slug": "eebo-30658",
+    "title": "A Compleat collection of farewel sermons",
+    "author": "Edmund Calamy"
+   },
+   {
+    "slug": "eebo-49128",
+    "title": "Twelve Sermons Preached Upon Several Occasions, Vol. 2",
+    "author": "Robert South"
+   },
+   {
+    "slug": "sylvester-of-ferrara-commentaria-in-libros-quatuor-contra-gentiles-vol-1",
+    "title": "Commentary on the Four Books Against the Gentiles",
+    "author": "Sylvester of Ferrara"
+   },
+   {
+    "slug": "eebo-12854",
+    "title": "A worthy communicant",
+    "author": "Jeremiah Dyke"
+   },
+   {
+    "slug": "eebo-22720",
+    "title": "An exposition continued upon the fourteenth, fifteenth, sixteenth, seventeenth, ",
+    "author": "William Greenhill"
+   },
+   {
+    "slug": "eebo-30396",
+    "title": "Animadversions on Fiat Lux",
+    "author": "John Owen"
+   },
+   {
+    "slug": "sibbes-excellencie-gospell-above-law-liberty-sonnes",
+    "title": "The excellencie of the Gospell above the law Wherein the liberty of the sonnes of God is shewed. With the imag",
+    "author": "Richard Sibbes"
+   },
+   {
+    "slug": "raimundus-de-sabunde-theologia-naturalis",
+    "title": "Natural Theology, or the Book of Creatures",
+    "author": "Raimundus de Sabunde"
+   },
+   {
+    "slug": "eebo-23200",
+    "title": "An exposition of the Epistle of Jude",
+    "author": "William Jenkyn"
+   },
+   {
+    "slug": "eebo-38908",
+    "title": "The Method of Grace",
+    "author": "John Flavel"
+   },
+   {
+    "slug": "pg-1668",
+    "title": "Ecclesiastical History",
+    "orig": "Socratis Historia Ecclesiastica",
+    "author": "Socrates Scholasticus"
+   },
+   {
+    "slug": "eebo-18653",
+    "title": "Aarons Rod Blossoming, Or, The Divine Ordinance of Church-Government Vindicated",
+    "author": "George Gillespie"
+   },
+   {
+    "slug": "contenson-theologia-mentis-et-cordis-vol-3",
+    "title": "Theology of the Mind and Heart, Vol. III: Books IX–XI",
+    "author": "Vincent Contenson"
+   },
+   {
+    "slug": "augustinus-erath-conciliatio-praedeterminationis",
+    "title": "Reconciliation of Physical Predetermination with Middle Knowledge, or Theological Union",
+    "author": "Augustinus Erath"
+   },
+   {
+    "slug": "johannes-combach-metaphysicorum-libri-duo",
+    "title": "Two Books on Metaphysics",
+    "author": "Johannes Combach"
+   },
+   {
+    "slug": "mansi-sacrorum-conciliorum-collectio-29",
+    "title": "New and Most Ample Collection of the Sacred Councils",
+    "author": "Giovanni Domenico Mansi"
+   },
+   {
+    "slug": "eebo-45969",
+    "title": "A Scholastical History of Liturgies",
+    "author": "Thomas Comber"
+   },
+   {
+    "slug": "eebo-47905",
+    "title": "Twelve sermons preached upon several occasions by Robert South",
+    "author": "Robert South"
+   },
+   {
+    "slug": "andreae-novella-in-sextum",
+    "title": "Novella Commentary on the Liber Sextus",
+    "author": "Johannes Andreae"
+   },
+   {
+    "slug": "vidmar-compendium-repetitorium",
+    "title": "Compendium-Repetitorium of Dogmatic Theology",
+    "author": "Franz Vidmar"
+   },
+   {
+    "slug": "pesch-de-inspiratione-sacrae-scripturae",
+    "title": "On the Inspiration of Sacred Scripture",
+    "author": "Christian Pesch"
+   },
+   {
+    "slug": "eebo-32595",
+    "title": "An Essay Towards a Real Character",
+    "author": "John Wilkins"
+   },
+   {
+    "slug": "pg-2201",
+    "title": "Part Three of the Works: Containing the Lives of the Saints",
+    "orig": "Operum Pars Tertia - Complectens Vitas Sanctorum",
+    "author": "Symeon Metaphrastes"
+   },
+   {
+    "slug": "francisco-de-macedo-collationes-doctrinae-s-thomae-et-scoti-tomus-ii",
+    "title": "Collations of the Doctrine of St. Thomas and Scotus",
+    "author": "Francisco de Macedo"
+   },
+   {
+    "slug": "eebo-6809",
+    "title": "Seven treatises containing such direction as is gathered out of the Holy Scriptu",
+    "author": "Richard Rogers"
+   },
+   {
+    "slug": "pg-2441",
+    "title": "Commentary on the Psalter",
+    "orig": "Commentarius in Psalterium (Expositio in Psalmos)",
+    "author": "Euthymius Zigabenus"
+   },
+   {
+    "slug": "pg-2657",
+    "title": "History, Books I–IV (Books I–III)",
+    "orig": "Historiarum Libri IV (Libri I-III)",
+    "author": "John VI Kantakouzenos, Emperor of Constantinople"
+   },
+   {
+    "slug": "francisco-de-macedo-collationes-doctrinae-s-thomae-et-scoti-tomus-i",
+    "title": "Collations of the Doctrine of St. Thomas and Scotus",
+    "author": "Francisco de Macedo"
+   },
+   {
+    "slug": "eebo-10579",
+    "title": "Devotions Upon Emergent Occasions",
+    "author": "John Donne"
+   },
+   {
+    "slug": "raynaldus-annales-ecclesiastici-vol-28",
+    "title": "Ecclesiastical Annals",
+    "orig": "Annales Ecclesiastici",
+    "author": "Odoricus Raynaldus"
+   },
+   {
+    "slug": "melanchthon-confessio-augustana-apologia",
+    "title": "Confession of Faith (Augsburg Confession) with the Apology of the Confession",
+    "author": "Philipp Melanchthon"
+   },
+   {
+    "slug": "eebo-30468",
+    "title": "The Christian-man's calling",
+    "author": "George Swinnock"
+   },
+   {
+    "slug": "eebo-21962",
+    "title": "An Exposition Upon the Fourth, Fifth, Sixth, and Seventh Chapters of Hosea",
+    "author": "Jeremiah Burroughs"
+   },
+   {
+    "slug": "pg-2604",
+    "title": "Ecclesiastical History (continuation)",
+    "orig": "Ecclesiastica Historia (continuatio)",
+    "author": "Nicephorus Callistus Xanthopulus"
+   },
+   {
+    "slug": "andreae-novella-decretales-vol-3",
+    "title": "Novella Commentary on the Decretals",
+    "author": "Johannes Andreae"
+   },
+   {
+    "slug": "capreolus-defensiones-theologiae-aquinatis-vol-2",
+    "title": "Defenses of the Theology of Aquinas",
+    "author": "Johannes Capreolus"
+   },
+   {
+    "slug": "lessius-de-perfectionibus-moribusque-divinis",
+    "title": "Fourteen Books on the Perfections and Ways of God",
+    "author": "Leonard Lessius"
+   },
+   {
+    "slug": "bennettis-privilegiorum-vindiciae-1",
+    "title": "Vindication of the Privileges Conferred upon the Roman Pontiff in the Person of St. Peter",
+    "author": "Hieremias de Bennettis"
+   },
+   {
+    "slug": "pld-277",
+    "title": "Letter and Privileges",
+    "author": "Alexander III"
+   },
+   {
+    "slug": "eebo-11625",
+    "title": "The new covenant",
+    "author": "John Preston"
+   },
+   {
+    "slug": "bartholomaeus-de-barberiis-flores-et-fructus-philosophici-pars-iii",
+    "title": "Philosophical Flowers and Fruits from the Seraphic Paradise",
+    "author": "Bartholomew de Barberiis"
+   },
+   {
+    "slug": "heidanus-de-origine-erroris",
+    "title": "On the Origin of Error, Eight Books",
+    "author": "Abraham Heidanus"
+   },
+   {
+    "slug": "eebo-28326",
+    "title": "Thrēnoikos the house of mourning furnished with directions for the hour of death",
+    "author": "Daniel Featley"
+   },
+   {
+    "slug": "eebo-27406",
+    "title": "The Immortality of the Soul",
+    "author": "Henry More"
+   },
+   {
+    "slug": "johannes-musaeus-de-theologia-revelata",
+    "title": "On Revealed Theology",
+    "author": "Johannes Musaeus"
+   },
+   {
+    "slug": "duns-scotus-dilucidissima-expositio-et-quaestiones-in-octo-libros-physicorum-aristotelis",
+    "title": "Most Lucid Exposition and Questions on the Eight Books of Aristotle’s Physics",
+    "author": "Pseudo-Scotus"
+   },
+   {
+    "slug": "conant-sermons-preach-d-on-several-occasions-by-joh",
+    "title": "Sermons preached on several occasions by John Conant",
+    "author": "John Conant"
+   },
+   {
+    "slug": "eebo-7009",
+    "title": "Disce vivere: Learn to Live",
+    "author": "Christopher Sutton"
+   },
+   {
+    "slug": "arnauld-eclaircissements-conciles",
+    "title": "Clarifications on the Authority of General Councils and Popes",
+    "author": "Antoine Arnauld"
+   },
+   {
+    "slug": "eebo-8526",
+    "title": "The New Covenant",
+    "author": "William Attersoll"
+   },
+   {
+    "slug": "essenius-triumphus-crucis",
+    "title": "Triumph of the Cross, or the Catholic Faith on the Satisfaction of the Lord",
+    "author": "Andreas Essenius"
+   },
+   {
+    "slug": "eebo-40901",
+    "title": "The Bishop of Winchester's vindication of himself",
+    "author": "George Morley"
+   },
+   {
+    "slug": "martini-methodus-theologiae",
+    "title": "Method of Sacred Theology",
+    "author": "Matthias Martini"
+   },
+   {
+    "slug": "eebo-39247",
+    "title": "The Christian Life",
+    "author": "John Scott"
+   },
+   {
+    "slug": "pg-2149",
+    "title": "George the Monk",
+    "orig": "Georgius Hamartolus",
+    "author": "George the Monk"
+   },
+   {
+    "slug": "eebo-25332",
+    "title": "Scripture-light and Christ in Travel",
+    "author": "William Bridge"
+   },
+   {
+    "slug": "eebo-40005",
+    "title": "Troposchēmalogia: Tropes and figures",
+    "author": "Benjamin Keach"
+   },
+   {
+    "slug": "petrus-van-mastricht-novitatum-cartesianarum-gangraena-ded-william-iii",
+    "title": "Novitatum Cartesianarum Gangraena, ded. William III of Orange",
+    "author": "Petrus van Mastricht"
+   },
+   {
+    "slug": "hugo-grotius-annotationes-in-novum-testamentum-vol-6-romans",
+    "title": "Annotations on the New Testament",
+    "author": "Hugo Grotius"
+   },
+   {
+    "slug": "eebo-28643",
+    "title": "An explanation of the grand mystery of godliness",
+    "author": "Henry More"
+   },
+   {
+    "slug": "capito-in-hoseam-prophetam",
+    "title": "Commentary on the Prophet Hosea",
+    "author": "Wolfgang Capito"
+   },
+   {
+    "slug": "aretius-theologiae-problemata",
+    "title": "Problems of Sacred Theology, That Is, Common Places",
+    "author": "Benedict Aretius"
+   },
+   {
+    "slug": "eebo-35809",
+    "title": "Forty Sermons Upon Several Occasions",
+    "author": "Anthony Tuckney"
+   },
+   {
+    "slug": "pld-5132",
+    "title": "Golden commentary on the Psalms and ferial canticles",
+    "author": "Gerhoh of Reichersberg"
+   },
+   {
+    "slug": "watson-body-practical-divinity-consisting-above-one",
+    "title": "A body of practical divinity consisting of above one hundred seventy six sermons on the lesser catechism composed",
+    "author": "Thomas Watson"
+   },
+   {
+    "slug": "passaglia-de-immaculato-conceptu-2",
+    "title": "Commentary on the Immaculate Conception of the Mother of God, Ever-Virgin",
+    "author": "Carlo Passaglia"
+   },
+   {
+    "slug": "eebo-33015",
+    "title": "Pleroma to Pneumatikon",
+    "author": "John Goodwin"
+   },
+   {
+    "slug": "delprado-de-gratia-et-libero-arbitrio-vol-3",
+    "title": "On Grace and Free Will, Part III: Concordia of Molina",
+    "author": "Norberto del Prado"
+   },
+   {
+    "slug": "contenson-theologia-mentis-et-cordis-vol-4",
+    "title": "Theology of the Mind and Heart, Vol. IV: Book XI",
+    "author": "Vincent Contenson"
+   },
+   {
+    "slug": "brenz-in-apologiam-confessionis",
+    "title": "In Defense of the Württemberg Confession",
+    "author": "Johannes Brenz"
+   },
+   {
+    "slug": "pg-2047",
+    "title": "Part One: Exegetical Works",
+    "orig": "Pars Prima: Exegetica",
+    "author": "Photius of Constantinople"
+   },
+   {
+    "slug": "melanchthon-commentarii-in-romanos",
+    "title": "Commentaries on Paul's Epistle to the Romans",
+    "author": "Philipp Melanchthon"
+   },
+   {
+    "slug": "eebo-11948",
+    "title": "Instructions for a right comforting afflicted consciences",
+    "author": "Robert Bolton"
+   },
+   {
+    "slug": "eebo-36354",
+    "title": "Quakerisme the path-way to paganisme",
+    "author": "John Brown"
+   },
+   {
+    "slug": "pg-480",
+    "title": "Three Books on the Trinity",
+    "orig": "De Trinitate Libri Tres",
+    "author": "Didymus the Blind"
+   },
+   {
+    "slug": "pg-2466",
+    "title": "The Alexiad",
+    "orig": "Anna Comnena",
+    "author": "Anna Comnena"
+   },
+   {
+    "slug": "eebo-23815",
+    "title": "A Collection of the Works of Thomas Jackson",
+    "author": "Thomas Jackson"
+   },
+   {
+    "slug": "eebo-25833",
+    "title": "Castigations of Mr. Hobbes his Last Animadversions",
+    "author": "John Bramhall"
+   },
+   {
+    "slug": "martin-meurisse-rerum-metaphysicarum-libri-tres-ad-mentem-doctoris-sub",
+    "title": "Three Books on Metaphysical Things, According to the Mind of the Subtle Doctor [Scotus] (Paris 1636)",
+    "author": "Martin Meurisse"
+   },
+   {
+    "slug": "soto-de-natura-et-gratia",
+    "title": "On Nature and Grace",
+    "author": "Domingo de Soto"
+   },
+   {
+    "slug": "raynaldus-annales-ecclesiastici-vol-27",
+    "title": "Ecclesiastical Annals",
+    "orig": "Annales Ecclesiastici",
+    "author": "Odoricus Raynaldus"
+   },
+   {
+    "slug": "fulgentius-lafosse-augustinus-theologus-sive-theologia-secundum-genium-2",
+    "title": "Augustine the Theologian, or Theology According to the Mind of St. Augustine",
+    "author": "Fulgentius Lafosse"
+   },
+   {
+    "slug": "eebo-22313",
+    "title": "Christ and Moses excellency",
+    "author": "Vavasor Powell"
+   },
+   {
+    "slug": "gwalther-priorem-corinthios",
+    "title": "Homilies on the First Epistle to the Corinthians",
+    "author": "Rudolf Gwalther"
+   },
+   {
+    "slug": "estius-in-quatuor-libros-sententiarum-commentaria-liber-iv-pars-ii",
+    "title": "Commentaries on the Four Books of Sentences",
+    "author": "Willem Hessels van Est"
+   },
+   {
+    "slug": "eebo-8720",
+    "title": "A Brief Explanation of the Proverbs",
+    "author": "Robert Cleaver"
+   },
+   {
+    "slug": "eebo-9597",
+    "title": "An exposition upon the first Epistle to the Thessalonians",
+    "author": "William Sclater"
+   },
+   {
+    "slug": "eebo-43386",
+    "title": "The Religion of Protestants a Safe Way to Salvation",
+    "author": "William Chillingworth"
+   },
+   {
+    "slug": "vorstius-tractatus-de-deo",
+    "title": "Theological Treatise on God, or on the Nature and Attributes of God",
+    "author": "Conrad Vorstius"
+   },
+   {
+    "slug": "eebo-12054",
+    "title": "Three treatises of the vanity of the creature",
+    "author": "Edward Reynolds"
+   },
+   {
+    "slug": "juan-de-rada-obs-controversiae-theologicae-inter-s-thomam-et-scotum-su-2",
+    "title": "Theological Controversies between St. Thomas and Scotus on the Four Books of Sentences (Cologne 1620) — 4 parts",
+    "author": "Juan de Rada Obs."
+   },
+   {
+    "slug": "cartwright-electa-thargumico-rabbinica-exodus",
+    "title": "Electa Thargumico-Rabbinica: Annotations on Exodus",
+    "author": "Christopher Cartwright"
+   },
+   {
+    "slug": "arthur-duck-de-usu-et-authoritate-juris-civilis-romanorum",
+    "title": "On the Use and Authority of the Civil Law of the Romans",
+    "author": "Arthur Duck"
+   },
+   {
+    "slug": "pg-2310",
+    "title": "Compendium of Histories",
+    "orig": "Compendium Historiarum",
+    "author": "George Kedrenos"
+   },
+   {
+    "slug": "eebo-49368",
+    "title": "The Life of Justification Opened",
+    "author": "John Brown"
+   },
+   {
+    "slug": "eebo-31118",
+    "title": "The religion of Protestants a safe way to salvation",
+    "author": "William Chillingworth"
+   },
+   {
+    "slug": "eebo-44178",
+    "title": "The Practical Believer",
+    "author": "John Kettlewell"
+   },
+   {
+    "slug": "eebo-30385",
+    "title": "David's Harp Strung and Tuned",
+    "author": "William Nicholson"
+   },
+   {
+    "slug": "tommaso-zigliara-summa-philosophica-vol-1",
+    "title": "Summary of Philosophy",
+    "author": "Tommaso Zigliara"
+   },
+   {
+    "slug": "eebo-46774",
+    "title": "The Four Last Things",
+    "author": "William Bates"
+   },
+   {
+    "slug": "eebo-53324",
+    "title": "Sermons preached upon several occasions by W. Sherlock",
+    "author": "William Sherlock"
+   },
+   {
+    "slug": "johannes-driedo-johannes-driedo-vol-1",
+    "title": "On Ecclesiastical Scriptures and Doctrines",
+    "author": "Johannes Driedo"
+   },
+   {
+    "slug": "marcus-friedrich-wendelin-collatio-doctrinae-christianae-reformatorum-et-lutheranorum",
+    "title": "Comparison of the Christian Doctrine of the Reformers and Lutherans",
+    "author": "Marcus Friedrich Wendelin"
+   },
+   {
+    "slug": "eebo-10721",
+    "title": "An Answer to a Challenge Made by a Jesuit in Ireland",
+    "author": "James Ussher"
+   },
+   {
+    "slug": "hostiensis-lectura-vol-4",
+    "title": "Lectura on the Decretals",
+    "author": "Hostiensis (Henry of Segusio)"
+   },
+   {
+    "slug": "cano-melchior-cano-de-locis-theologicis",
+    "title": "On Theological Topics",
+    "author": "Melchor Cano"
+   },
+   {
+    "slug": "marc-antonio-de-dominis-de-republica-ecclesiastica-libri-decem",
+    "title": "Ten Books on the Ecclesiastical Republic",
+    "author": "Marc'Antonio de Dominis"
+   },
+   {
+    "slug": "juan-de-rada-obs-controversiae-theologicae-inter-s-thomam-et-scotum-su",
+    "title": "Theological Controversies between St. Thomas and Scotus on the Four Books of Sentences (Cologne 1620) — 4 parts",
+    "author": "Juan de Rada Obs."
+   },
+   {
+    "slug": "eebo-32470",
+    "title": "Cyprianus anglicus, or, The history of the life and death of William Laud",
+    "author": "Peter Heylyn"
+   },
+   {
+    "slug": "petrus-pictaviensis-sententiae",
+    "title": "Five Books of Sentences",
+    "author": "Peter of Poitiers"
    }
   ]
  }

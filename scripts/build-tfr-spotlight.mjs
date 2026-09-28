@@ -3,7 +3,8 @@
  * The daily spotlight for the homepage's Faith Received band.
  *
  * WHAT IT WRITES. assets/data/tfr-spotlight.json: three pools of works,
- * one per citation band, each entry {slug, title, author, url}. The page
+ * one per citation band, each entry {slug, title, orig?, author}:
+ * title in English, orig the original title when it differs. The page
  * picks one from each pool per day, so the homepage makes no call to the
  * library worker and cannot be slowed or broken by it.
  *
@@ -87,8 +88,26 @@ let matched = 0;
 // rather than whichever volume happened to sort first.
 const works = (index.works || []).slice().sort((a, b) => (b.n_pages || 0) - (a.n_pages || 0));
 
+/* ENGLISH TITLES ONLY (Ian, 2026-09-28: "Homepage should always use
+   translated titles, but keep untranslated smaller under them"). The
+   title shown is title_en when the catalogue has one, the same rule as
+   faith-catalogue.js, and the original rides along as `orig` for the
+   smaller line under it. A work with no English title is left out
+   unless it was written in English, so the band can never show Latin
+   alone. A dup_of row is a second volume of a work already in the
+   catalogue ("Liber Quintus in Volumine 7b"), never the one to show. */
+// Without title_en the title must itself read as English: the English
+// Divines shelf holds Latin titles too (Cooper's Thesaurus Linguae Romanae),
+// so the tradition cannot vouch for it. English function words in, Latin
+// ones out.
+const readsEnglish = (t) => /\b(?:the|of|and|on|upon|to|an?|concerning|against|with|for|how|what)\b/i.test(t)
+  && !/\b(?:de|et|ad|libri?|contra|super|seu|sive|quae|qui|cum|pro|ex)\b/i.test(t);
+const englishTitle = (w) => w.title_en || (readsEnglish(w.title) ? w.title : "");
+
 for (const w of works) {
-  if (!w.slug || !w.title || !w.author) continue;
+  if (!w.slug || !w.title || !w.author || w.dup_of) continue;
+  const title = englishTitle(w);
+  if (!title) continue;
   const n = cited.get(slugify(w.author));
   if (n === undefined) continue;          // nobody has cited them in this library
   matched += 1;
@@ -99,7 +118,7 @@ for (const w of works) {
   perAuthor.set(w.author, seen + 1);
   // No url: the page builds it from the slug, the same address the
   // browse rows use, and 400 of them are not worth the bytes.
-  pools[key].push({ slug: w.slug, title: w.title, author: w.author });
+  pools[key].push({ slug: w.slug, title, ...(title !== w.title ? { orig: w.title } : {}), author: w.author });
 }
 
 const out = {
