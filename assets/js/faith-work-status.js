@@ -120,7 +120,7 @@
   // accurate for no gain to the reader: what they need to know is
   // whether a translator has read this work, and the answer is yes or
   // it is no.
-  const REVIEW = corpus === "eebo"
+  let REVIEW = corpus === "eebo"
     // Nothing was translated here, so there is nothing for a
     // translation committee to have checked it against. What a reader
     // wants to know about a transcription is whether an editor has
@@ -167,6 +167,34 @@
     return;
   }
 
+  /* EVERY WORK SAYS HOW IT WAS MADE (Ian, 2026-09-28).
+   *
+   * A reader, Michael Nestler, found the Didache with no note at all and
+   * could not tell a human translation from an English original from a
+   * bug. Silence was the rule for everything outside the AI collections,
+   * and on slow pages for the AI collections too, because the panel
+   * waited for the reader's language button to hold still and gave up
+   * after twelve seconds.
+   *
+   * The ported reader now decides from the work's own data and hands the
+   * answer over as data-fr-prov (faith-port-work-status.js). Five kinds,
+   * and none of them is silence:
+   *
+   *   ai       machine translated; the language follows once the source
+   *            text has been read (fr-provenance-lang), "AI translation"
+   *            until then, so the disclosure never waits on it
+   *   human    a translation made by people, with its credit if we hold one
+   *   english  written in English; nothing translated
+   *   source   the original only; no English yet
+   *   unknown  not yet recorded, said in so many words
+   *
+   * The old reader never sets data-fr-prov and keeps the path below. */
+  let prov = null;
+  try { prov = mount.dataset.frProv ? JSON.parse(mount.dataset.frProv) : null; } catch (_) { prov = null; }
+  if (prov && prov.kind) {
+    drawProvenance(prov);
+    return;
+  }
   if (!AI_COLLECTIONS.has(corpus)) return;
 
   // The work answers for itself. The reader stamps the language of the
@@ -287,6 +315,89 @@
     // which is the old arrangement and not a broken one.
     const left = tries === undefined ? 20 : tries;
     if (left > 0) window.setTimeout(() => place(node, left - 1), 150);
+  }
+
+  function drawProvenance(p) {
+    const credit = p.credit ? escapeHtml(p.credit) : "";
+    const EDITOR = {
+      reviewed: { label: "Reviewed", cls: "is-reviewed",
+        note: "An editor has read this work against its source." },
+      needs: { label: "Needs review", cls: "is-needs",
+        note: "No editor has read this work against its source yet." },
+    };
+    if (p.kind === "ai") {
+      const aiBody = (from) => `The English on this page was produced from ${from} by `
+        + "artificial intelligence. It has not been reviewed by the translation committee "
+        + "unless this panel says so. To check any sentence yourself, open Tools and set "
+        + "the language button to Both. The original then sits beside the English. Where "
+        + "a scan of the printed page exists, Scan in Tools shows it too.";
+      // One object, so the review fetch inside draw() reads the fact as
+      // it stands when it lands, language included if it came first.
+      const intro = {
+        title: "AI Transparency",
+        fact: p.lang ? `AI translated from ${escapeHtml(p.lang)}` : "AI translation",
+        head: "This English was translated by a machine.",
+        body: aiBody(p.lang ? `the ${escapeHtml(p.lang)}` : "the original"),
+      };
+      draw(intro);
+      if (!p.lang) {
+        // The language arrives once the source text has been read. The
+        // disclosure itself did not wait for it.
+        document.addEventListener("fr-provenance-lang", (e) => {
+          const lang = e && e.detail && e.detail.lang;
+          if (!lang) return;
+          const first = mount.querySelector(".fr-tt-facts .fr-tt-fact");
+          if (first) first.innerHTML = `AI translated from ${escapeHtml(lang)}`;
+          const body = mount.querySelector(".fr-ai-note-body");
+          if (body) body.innerHTML = aiBody(`the ${escapeHtml(lang)}`);
+          intro.fact = `AI translated from ${escapeHtml(lang)}`;
+        }, { once: true });
+      }
+      return;
+    }
+    REVIEW = EDITOR;
+    if (p.kind === "english") {
+      REVIEW = {
+        reviewed: { label: "Reviewed", cls: "is-reviewed", note: "An editor has read this work against the printed text." },
+        needs: { label: "Needs review", cls: "is-needs", note: "No editor has read this work against the printed text yet." },
+      };
+    }
+    if (p.kind === "human") {
+      draw({
+        title: "Transparency",
+        fact: "Human translation",
+        head: "This English is a translation made by people, not by a machine.",
+        body: (credit ? `${credit} ` : "")
+          + "No artificial intelligence was used to translate this text."
+          + (credit ? "" : " We have not yet recorded the translator's name."),
+      });
+      return;
+    }
+    if (p.kind === "english") {
+      draw({
+        title: "Transparency",
+        fact: "Written in English",
+        head: "This work was written in English.",
+        body: "Nothing on this page has been translated. The text is the work's own English.",
+      });
+      return;
+    }
+    if (p.kind === "source") {
+      draw({
+        title: "Transparency",
+        fact: "Original language only",
+        head: "This work has not been translated yet.",
+        body: "The text on this page is in the original language. There is no English translation of it yet.",
+      });
+      return;
+    }
+    draw({
+      title: "Transparency",
+      fact: "Source not yet recorded",
+      head: "We have not yet recorded how this text was made.",
+      body: "It may be the author's own English or a translation. If it matters to your "
+        + "reading, use Report a problem below. We will check.",
+    });
   }
 
   function draw(intro) {

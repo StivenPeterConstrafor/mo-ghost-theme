@@ -25,9 +25,10 @@
  * fetched and asked. It is one small file listing our own works, and
  * this only runs on a reader page that is already loading a work.
  *
- * If the index cannot be read the panel is left alone rather than
- * shown with a guess. A disclosure that might be wrong is worse than
- * no disclosure: a reader who sees one believes it.
+ * If the index cannot be read, the native rules decide instead (see
+ * the fetch at the foot). They only say "machine translated" where a
+ * work shows a source lane beside its English, so a guess can never
+ * print that over one of ours.
  */
 (function () {
   "use strict";
@@ -58,141 +59,223 @@
     return null;
   }
 
-  /* WHAT THE ENGLISH WAS TRANSLATED FROM, ONCE THE PAGE IS SURE.
+  /* HOW THIS TEXT WAS MADE, DECIDED FROM THE WORK ITSELF (Ian, 2026-09-28).
    *
-   * For the machine-translated collections the panel prints nothing
-   * until it knows the source language, which it reads from
-   * data-fr-original-lang on <html>. The old reader set that; the
-   * ported one does not, so without this the panel waits its eight
-   * seconds and stays silent on every Migne and native work, which are
-   * exactly the works whose English a machine wrote.
+   * The first version read the language off the reader's source button
+   * and would publish only once that label had held still for five
+   * ticks, giving up after twelve seconds. Measured on the live site,
+   * the panel landed 10 to 14 seconds after the page opened, so a slow
+   * phone got no disclosure at all, and every work outside the AI
+   * collections got none by design: the Didache, the English Divines,
+   * the Book of Concord in English, Aquinas, all of Patrologia Orientalis.
+   * The button also lied: a Leibniz volume in French was published as
+   * "AI translated from Latin" because the native reader's button says
+   * Latin by default.
    *
-   * The language is not taken from the slug. The ported reader labels
-   * its source lane with the language of the work in front of you, so
-   * the page is asked instead of a table being guessed at.
-   *
-   * BUT THE LABEL LIES FOR THE FIRST TWO SECONDS. It is rendered from
-   * the template default before the work's own data arrives. Measured
-   * on pg-3860: "Latin" at 806ms with the text already loading, and
-   * "Greek" only at 2034ms. A first reading published "AI translated
-   * from Latin" over a Greek work, which is the disclosure stating a
-   * falsehood about the text under it, the one outcome worth more than
-   * a few seconds of waiting.
-   *
-   * So the label has to hold still. It is read only once the work's
-   * text is on the page, and then only after it has said the same thing
-   * for five ticks together. If it never settles, nothing is published
-   * and the panel keeps its silence, which is what the old reader did
-   * for a work that never answered. */
-  // SETTLE: consecutive equal readings, 250ms apart.
-  // GIVE_UP: 12s, comfortably past the 2s measured above.
-  const SETTLE = 5;
-  const GIVE_UP = 48;
+   * Now the reader's own stamp decides, and it lands in 0.5 to 7 seconds:
+   * data-fr-lanes on <html> ("source en", "en" or "source", reader-core)
+   * plus DATA, the work record reader-core holds as a top-level binding.
+   * The kind goes to faith-work-status.js as data-fr-prov and the panel
+   * draws at once. For a machine translation the language is read from
+   * the source text on the page, never from a label, and follows as an
+   * event; until then the panel says "AI translation", which is true.
+   * A language the text cannot settle is left as "the original" rather
+   * than guessed. */
 
-  /* THE LANE IS NOT ALWAYS LABELLED WITH A LANGUAGE.
-   *
-   * The first version of this accepted any word-shaped label, on the
-   * assumption that the source lane names a language. It does not
-   * always: pg-11 labels its lane "Page transcription", and the panel
-   * duly printed "AI translated from Page transcription" over Origen.
-   * Ian caught it on his phone the same afternoon.
-   *
-   * That is the same class of error as naming the wrong language, and
-   * it comes from asking what shape the label is instead of what it
-   * says. So the answer has to BE a language: anything outside this
-   * list publishes nothing and the panel keeps its silence, which is
-   * the correct outcome for a lane that is a scan rather than a
-   * source text.
-   *
-   * The list is the languages the library actually holds originals in.
-   * A combined lane such as "Greek · Latin" is deliberately absent: it
-   * names two things, and "translated from Greek · Latin" is not a
-   * sentence about where this English came from. */
-  const LANGUAGES = new Set([
-    "latin", "greek", "hebrew", "syriac", "arabic", "armenian", "coptic",
-    "ethiopic", "geez", "ge'ez", "georgian", "church slavonic",
-    "old church slavonic", "slavonic", "german", "french", "italian", "spanish",
-  ]);
+  // Our curated set. Four are English originals; the rest are historic
+  // translations made by people (the anf- works are the Ante-Nicene
+  // Fathers series). Sixteen works, so they are named rather than guessed.
+  const MO_ENGLISH = new Set(["edwards-resolutions", "1928-bcp", "lausanne", "new-hampshire-confession"]);
+  const ENGLISH_REGION = /^(English|Scottish|American|Welsh|Irish)/i;
+  const ENGLISH_TRADITION = /^English Divines$/i;
 
-  /* ONLY A WORK WITH BOTH LANES IS A TRANSLATION (Stiven, 2026-09-24: the
-   * Westminster minutes, an English original, were showing "AI translated
-   * from Latin"). The ported reader hides the source-language button with
-   * display:none for an English-only work, which is not the `hidden`
-   * attribute, so the button's template label ("Latin") was read as the
-   * source. The page is asked whether a source lane AND an English lane are
-   * in front of the reader: the reader stamps data-fr-lanes ("source en",
-   * "en" or "source") once its metadata lands, and the two buttons must
-   * both be visible. Anything else publishes nothing. */
-  function shown(el) {
-    return !!el && !el.hidden && window.getComputedStyle(el).display !== "none";
+  function data() {
+    try { return (typeof DATA !== "undefined" && DATA) || window.DATA || null; } catch (_) { return window.DATA || null; }
   }
-  /* AQUINAS IS THE EXCEPTION (Stiven, 2026-09-24): every work that shows a
-   * source lane and an English lane carries a machine translation, EXCEPT
-   * Thomas Aquinas' works, whose English is a human translation. So the
-   * disclosure is published on every two-lane work but his: the reader's
-   * own metadata names the author, and his slugs begin "aq-". */
-  function humanTranslated() {
-    // MereO fix on merge: `param` is not defined in this file, so every
-    // polling tick threw and no translated work ever got its disclosure;
-    // the file's own slug() reads ?w=. DATA is reader-core's top-level
-    // binding (a script-scope const, not a window property).
-    let data = null;
-    try { data = (typeof DATA !== "undefined" && DATA) || window.DATA || null; } catch (_) { data = window.DATA || null; }
-    const author = String((data && data.author) || "").trim();
-    if (/thomas aquinas/i.test(author)) return true;
-    return /^aq-/.test(String(slug() || ""));
+  /* AQUINAS IS THE EXCEPTION (Stiven, 2026-09-24): a two-lane work whose
+   * English is a human translation. His slugs begin "aq-". */
+  function aquinas(d) {
+    return /thomas aquinas/i.test(String((d && d.author) || "")) || /^aq-/.test(String(slug() || ""));
   }
-  function laneLanguage() {
-    if (humanTranslated()) return "";
-    const lanes = document.documentElement.getAttribute("data-fr-lanes");
-    if (lanes !== null && lanes.trim() !== "source en") return "";
-    const en = document.getElementById("m-en");
-    if (en && !shown(en)) return "";
-    const el = document.getElementById("m-par");
-    const lang = shown(el) ? (el.textContent || "").trim() : "";
-    if (!lang) return "";
-    return LANGUAGES.has(lang.toLowerCase()) ? lang : "";
+  function translatorFromTitle(d) {
+    const m = String((d && d.title) || "").match(/\((?:trans\.?|translated by|tr\.)\s+([^)]+)\)/i);
+    return m ? m[1].trim() : "";
   }
 
-  function loaded() {
-    const reading = document.getElementById("reading");
-    return !!reading && (reading.innerText || "").trim().length > 200;
+  // ── The language of the source text on the page ──
+  const SCRIPTS = [
+    [/[\u0370-\u03FF\u1F00-\u1FFF]/g, "Greek"],
+    [/[\u0700-\u074F]/g, "Syriac"],
+    [/[\u0600-\u06FF\u0750-\u077F]/g, "Arabic"],
+    [/[\u0590-\u05FF]/g, "Hebrew"],
+    [/[\u0530-\u058F]/g, "Armenian"],
+    [/[\u10A0-\u10FF\u1C90-\u1CBF]/g, "Georgian"],
+    [/[\u2C80-\u2CFF\u03E2-\u03EF]/g, "Coptic"],
+    [/[\u1200-\u137F]/g, "Ge\u02BCez"],
+    [/[\u0400-\u04FF\u0460-\u052F]/g, "Slavonic"],
+  ];
+  // Common short words, each a strong signal for one language only.
+  const STOP = {
+    Latin: ["et", "est", "quod", "non", "ad", "cum", "sed", "qui", "quae", "enim", "autem", "ut", "sunt", "hoc", "etiam", "vel", "atque", "quia"],
+    French: ["le", "les", "des", "du", "une", "que", "dans", "pour", "pas", "sont", "avec", "au", "ce", "il", "elle", "nous"],
+    German: ["der", "die", "das", "und", "ist", "nicht", "ein", "eine", "zu", "den", "mit", "sich", "auf", "auch", "dem", "von"],
+    Italian: ["il", "che", "di", "della", "gli", "per", "sono", "una", "del", "nel", "anche"],
+    Spanish: ["el", "los", "las", "que", "del", "por", "una", "para", "con", "es", "como", "sus"],
+    Dutch: ["het", "een", "van", "niet", "zijn", "dat", "ook", "maar", "wordt", "voor"],
+  };
+  // Sampled across the whole of what is loaded, not the opening page:
+  // a title page in Greek over a Latin work (pg-11, Recognitions) or a
+  // French preface to a mixed volume (Leibniz) would otherwise decide it.
+  function sourceText() {
+    const cells = document.querySelectorAll("#reading .la");
+    const step = Math.max(1, Math.floor(cells.length / 60));
+    let text = "";
+    for (let i = 0; i < cells.length && text.length < 12000; i += step) {
+      text += " " + String(cells[i].textContent || "").slice(0, 400);
+    }
+    return text;
   }
-
-  // Resolves to the settled language, or "" if the page never settles.
-  function settledLanguage() {
+  function languageOf(text) {
+    const letters = (text.match(/\p{L}/gu) || []).length;
+    if (letters < 300) return null;          // not enough on the page yet
+    // A script names the language only when it carries most of the text.
+    // A real share that is not a majority means a mixed page: say nothing.
+    for (const [re, name] of SCRIPTS) {
+      const share = (text.match(re) || []).length / letters;
+      if (share > 0.6) return name;
+      if (share > 0.15) return "";
+    }
+    const words = (text.toLowerCase().match(/\p{L}+/gu) || []);
+    const score = {};
+    for (const lang of Object.keys(STOP)) {
+      const set = new Set(STOP[lang]);
+      score[lang] = words.reduce((n, w) => n + (set.has(w) ? 1 : 0), 0);
+    }
+    const ranked = Object.entries(score).sort((a, b) => b[1] - a[1]);
+    const [best, second] = ranked;
+    // Only a clear winner is named. A volume that mixes languages, as
+    // Leibniz's do, says "the original" rather than the wrong one.
+    if (best[1] >= 12 && best[1] >= 2 * second[1]) return best[0];
+    return "";
+  }
+  // Resolves to a language, or "" when the text cannot settle it.
+  function readLanguage(limitMs) {
     return new Promise((done) => {
-      let last = "";
-      let same = 0;
-      let ticks = 0;
-      const timer = window.setInterval(() => {
-        ticks += 1;
-        const now = loaded() ? laneLanguage() : "";
-        same = now && now === last ? same + 1 : 0;
-        last = now;
-        if (same >= SETTLE) { window.clearInterval(timer); done(now); return; }
-        if (ticks >= GIVE_UP) { window.clearInterval(timer); done(""); }
-      }, 250);
+      const t0 = Date.now();
+      const tick = () => {
+        const lang = languageOf(sourceText());
+        if (lang !== null) { done(lang); return; }
+        if (Date.now() - t0 > limitMs) { done(""); return; }
+        window.setTimeout(tick, 300);
+      };
+      tick();
     });
+  }
+
+  // The reader's stamp, or null if it never comes.
+  function lanesStamp(limitMs) {
+    return new Promise((done) => {
+      const t0 = Date.now();
+      const tick = () => {
+        const v = document.documentElement.getAttribute("data-fr-lanes");
+        if (v !== null && data()) { done(v.trim()); return; }
+        if (Date.now() - t0 > limitMs) { done(null); return; }
+        window.setTimeout(tick, 150);
+      };
+      tick();
+    });
+  }
+
+  const PO_LANG = { syc: "Syriac", ar: "Arabic", gez: "Ge\u02BCez", cop: "Coptic", hy: "Armenian",
+    ka: "Georgian", grc: "Greek", cu: "Slavonic", chu: "Slavonic", la: "Latin", he: "Hebrew" };
+  // PO says per row whose English it is: resp="#machine" or "#edition"
+  // (the edition's own printed English). The reader has already fetched
+  // this file and it caches for a day, so this is a cache hit.
+  function poCanon(id) {
+    const blob = (window.__FR_BLOB_BASE__ && !/TBD/.test(String(window.__FR_BLOB_BASE__)))
+      ? String(window.__FR_BLOB_BASE__).replace(/\/+$/, "") : base();
+    return fetch(`${blob}/v1/tei/po/${encodeURIComponent(id)}.xml`, { credentials: "omit" })
+      .then((r) => (r.ok ? r.text() : ""))
+      .then((xml) => {
+        const machine = (xml.match(/resp="#machine"/g) || []).length;
+        const edition = (xml.match(/resp="#edition"/g) || []).length;
+        const code = (xml.match(/xml:lang="([a-z-]+)"\s+type="source"/) || [])[1] || "";
+        return { machine, edition, lang: PO_LANG[code] || "" };
+      })
+      .catch(() => null);
+  }
+
+  // reader-core's own language codes (its LGN), for works that declare one.
+  const SRC_LANG = { la: "Latin", grc: "Greek", el: "Greek", de: "German", fr: "French",
+    it: "Italian", es: "Spanish", nl: "Dutch", cy: "Welsh" };
+  const MACHINE_WORDS = /machine|\bAI\b|automat|gemini|gpt|llm/i;
+
+  function decide(corpus, lanes) {
+    const d = data() || {};
+    if (corpus === "mo") {
+      return MO_ENGLISH.has(slug()) ? { kind: "english" }
+        : { kind: "human", credit: /^anf-/.test(slug()) ? "From the Ante-Nicene Fathers series." : "" };
+    }
+    // An English original can show two lanes (the reader labels the
+    // second "Original"). It is never a translation.
+    if (d.src_lang === "en") return { kind: "english" };
+    if (lanes === "source") return { kind: "source" };
+    if (aquinas(d)) return { kind: "human", credit: "" };
+    if (lanes === "en") {
+      // The author's nation is not the text's language: a Latin work by
+      // an English divine can ship in English alone, and then it is a
+      // translation. Only a work whose title has no separate English form
+      // is taken as written in English.
+      const ownTitle = !d.title_en || d.title_en === d.title;
+      if (ownTitle && ENGLISH_TRADITION.test(String(d.tradition || ""))) return { kind: "english" };
+      if (ownTitle && d.region && ENGLISH_REGION.test(String(d.region))) return { kind: "english" };
+      if (d.source && /translat/i.test(String(d.source)) && !MACHINE_WORDS.test(String(d.source))) {
+        return { kind: "human", credit: String(d.source).replace(/\.?$/, ".") };
+      }
+      const tr = translatorFromTitle(d);
+      if (tr) return { kind: "human", credit: `Translated by ${tr}.` };
+      return { kind: "unknown" };
+    }
+    if (lanes === "source en") {
+      if (corpus === "pld") return { kind: "ai", lang: "Latin" };
+      return { kind: "ai", lang: SRC_LANG[String(d.src_lang || "").toLowerCase()] || "" };
+    }
+    return { kind: "unknown" };
   }
 
   function show(corpus, id) {
     mount.dataset.frStatusCorpus = corpus;
     mount.dataset.frStatusWork = id;
-    const go = () => {
+    const go = (prov) => {
+      if (prov) mount.dataset.frProv = JSON.stringify(prov);
       if (window.FRWorkStatus && window.FRWorkStatus.run) window.FRWorkStatus.run();
     };
-    // EEBO is a transcription and the curated set is human translation;
-    // neither asks what a machine worked from, so neither waits.
-    if (corpus === "eebo" || corpus === "mo") { go(); return; }
-    // The panel starts its own eight-second clock the moment it runs, so
-    // it is started AFTER the language is settled rather than before.
-    settledLanguage().then((lang) => {
-      if (lang) document.documentElement.dataset.frOriginalLang = lang;
-      go();
+    // EEBO keeps its own transcription note.
+    if (corpus === "eebo") { go(null); return; }
+    lanesStamp(20000).then(async (lanes) => {
+      // A reader that never stamps still gets a disclosure: the prefixed
+      // collections are machine translated; anything else says it is not
+      // yet recorded. Never silence.
+      if (lanes === null) {
+        // PO is left out: some of it is the edition's own printed English.
+        go(["pg", "pld"].includes(corpus) ? { kind: "ai", lang: corpus === "pld" ? "Latin" : "" } : { kind: "unknown" });
+        return;
+      }
+      let prov = decide(corpus, lanes);
+      if (corpus === "po" && prov.kind === "ai") {
+        const c = await poCanon(id);
+        if (!c) prov = { kind: "unknown" };   // no file, no claim either way
+        else if (c.edition && !c.machine) prov = { kind: "human", credit: "The English is the printed translation in the Patrologia Orientalis edition." };
+        else if (c.lang) prov.lang = c.lang;
+      }
+      go(prov);
+      if (prov.kind === "ai" && !prov.lang) {
+        readLanguage(20000).then((lang) => {
+          if (lang) document.dispatchEvent(new CustomEvent("fr-provenance-lang", { detail: { lang } }));
+        });
+      }
     });
   }
-
   const w = slug();
   if (!w) return;
 
@@ -204,9 +287,12 @@
     .then((r) => (r.ok ? r.json() : null))
     .then((d) => {
       const works = (d && (d.works || d)) || null;
-      if (!Array.isArray(works)) return;
+      if (!Array.isArray(works)) { show("tfr", w); return; }
       const ours = works.some((x) => String(x && (x.slug || x.s || x.id)) === w);
       show(ours ? "mo" : "tfr", w);
     })
-    .catch(() => { /* no guess: the panel stays as it is */ });
+    // Without the index the native rules still apply. They never call a
+    // work machine translated unless it shows a source and an English lane,
+    // which none of ours does, so this cannot mislabel our set as AI.
+    .catch(() => show("tfr", w));
 })();
