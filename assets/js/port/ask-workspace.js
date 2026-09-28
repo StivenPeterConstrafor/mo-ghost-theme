@@ -796,8 +796,11 @@ function checkHTML(t){
   function renderOutline(node,t,answer){
     const feed=$('#fra-feed'),heads=Array.from(answer.querySelectorAll('h3'));let bar=node.querySelector('.fra-outline');
     const long=heads.length>=2||(feed.clientHeight>0&&answer.offsetHeight>feed.clientHeight*1.5);
-    if(!long){if(bar)bar.remove();return;}
-    const html='<strong title="'+esc(t.q)+'">'+esc(t.q)+'</strong><button type="button" data-jump="top" data-jump-turn="'+esc(t.id)+'">Top ↑</button>'+heads.map((h,i)=>'<button type="button" data-jump="'+i+'" data-jump-turn="'+esc(t.id)+'" title="'+esc(h.textContent)+'">'+esc(h.textContent.trim().slice(0,72))+'</button>').join('');
+    /* MereO delta (Ian, 2026-09-28: "make the question card show above every answer"). The engine drew this bar only
+       on a long answer. It is now drawn over every answer that has text, as the TFR question card. "Top ↑" and the
+       section links are the long-answer tools: on a short answer the card carries the question alone. */
+    if(!answer.textContent.trim()){if(bar)bar.remove();return;}
+    const html='<strong title="'+esc(t.q)+'">'+esc(t.q)+'</strong>'+(long?'<button type="button" data-jump="top" data-jump-turn="'+esc(t.id)+'">Top ↑</button>'+heads.map((h,i)=>'<button type="button" data-jump="'+i+'" data-jump-turn="'+esc(t.id)+'" title="'+esc(h.textContent)+'">'+esc(h.textContent.trim().slice(0,72))+'</button>').join(''):'');
     if(!bar){bar=document.createElement('nav');bar.className='fra-outline';bar.setAttribute('aria-label','In this answer');node.insertBefore(bar,answer);}
     if(bar.dataset.html!==html){bar.innerHTML=html;bar.dataset.html=html;}
   }
