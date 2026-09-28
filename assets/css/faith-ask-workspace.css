@@ -1677,8 +1677,11 @@ html:not(.mo-embedded) .fra {
   width: 110px;
   height: 7px;
   border-radius: 2px;
-  background: currentColor;
-  opacity: 0.22;
+  /* The TRACK is pale, not the element. It was opacity:0.22 on the whole
+     bar, which faded the fill inside it to the same grey, so "1 of 5
+     used" looked exactly like "0 of 5" (a reader's report, 2026-09-28). */
+  background: rgba(45, 41, 39, 0.18);
+  background: color-mix(in srgb, currentColor 22%, transparent);
   overflow: hidden;
 }
 .fra-usage-bar > i {
@@ -1693,7 +1696,7 @@ html:not(.mo-embedded) .fra {
 /* Spent: the one state worth a colour, because the next question will
    be refused by the worker and the reader should not be surprised. */
 .fra-usage--spent { color: var(--color-secondary, #c1593c); font-weight: 600; }
-.fra-usage--spent .fra-usage-bar { opacity: 0.35; }
+/* Spent, the fill runs the full width in the warning colour; nothing is dimmed. */
 
 @media (max-width: 640px) {
   /* The hint and the meter cannot both fit; the count is the useful one. */
