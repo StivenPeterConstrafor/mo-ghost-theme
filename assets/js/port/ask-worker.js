@@ -77,8 +77,12 @@ async function run(id, turnId, request, job) {
        Re-apply this when re-vendoring ask-worker.js from upstream. */
     const r = await fetch(request.url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(request.headers || {}) }, credentials: 'same-origin', body: JSON.stringify(request.body), signal: ctl.signal });
     if (!r.ok || !r.body) {
-      if (r.status === 401 || r.status === 403) throw new Error('Your preview session has expired. Open the library to sign in, then retry.');
-      if (r.status === 429) throw new Error('The library is busy. Wait a moment, then retry.');
+      /* MereO delta (2026-09-29): the server says why in its JSON `error` (the member's questions for the day, the shared
+         daily capacity, signing in: gateResponse in mo-workers ask.js), and the reader is now shown that. A reader who had
+         used the day's questions was told "The library is busy. Wait a moment, then retry.", and retrying failed again. */
+      let said = ''; try { const j = await r.clone().json(); said = String((j && (j.error || j.message)) || '').slice(0, 300); } catch (_) {}
+      if (r.status === 401 || r.status === 403) throw new Error(said || 'Your preview session has expired. Open the library to sign in, then retry.');
+      if (r.status === 429) throw new Error(said || 'The library is busy. Wait a moment, then retry.');
       throw new Error('Research is unavailable (' + r.status + '). Your question is saved; you can retry.');
     }
     const parser = FRChatStream.parser(request.format, ev => {
