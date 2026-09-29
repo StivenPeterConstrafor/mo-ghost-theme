@@ -440,7 +440,7 @@
     // Migne's apparatus (indices, notices, admonitions, tables of contents) is not listed as a work; each piece stays
     // readable from its volume in the reader. Corpus owner, 2026-09-25. Under one author, the works in the Patrologia
     // come first and in the order their volumes print them; the rest by title, as before.
-    works = list.filter((w) => !w.app).sort((a, b) => {
+    works = list.filter((w) => window.MOFaithCatalogue.shelved(w)).sort((a, b) => {
       if (T && T.compareNames) {
         return T.compareNames(a.author, isEarly(a.author), b.author, isEarly(b.author)) || migneOrder(a, b) || compareWorks(a, b);
       }

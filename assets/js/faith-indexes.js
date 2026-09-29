@@ -1625,7 +1625,7 @@
         // "cites" every verse it lists. Their rows are left out (corpus owner, 2026-09-25).
         return rows.filter((row) => {
           const w = (cats.get(row[0]) || new Map()).get(String(row[1]));
-          return !(w && w.app);
+          return window.MOFaithCatalogue.shelved(w);
         }).map((row) => {
           const [corpus, id, times, loc, excerpt, verses] = row;
           const w = (cats.get(corpus) || new Map()).get(String(id));
