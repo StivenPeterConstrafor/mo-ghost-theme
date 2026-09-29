@@ -129,6 +129,16 @@ function parseScriptureQuery(query){
   if(!book||!chapter||chapter>XREF_CAP[book]||!verses)return null;
   return {book,chapter,ch:chapter,verse:verses[0]||null,verses,selection,query:book+' '+chapter+(selection?':'+selection:'')};
 }
+// VULGATE PSALMS (2026-09-29, owner: "citation should be Psalm 14:1 not 13:1": Anselm, Proslogion 2, "Psal. XIII, 1").
+// The Fathers, the medieval doctors and Catholic writers number the Psalms as the Vulgate (and the LXX) does, one behind
+// the Hebrew for most of the Psalter; the preview reads an English Bible, which numbers by the Hebrew. A psalm cited in
+// such a work opens by the standard Gallican-to-Hebrew concordance, the one the Scripture index applies
+// (tools/build_lf_bible.py gall_to_heb): chapter only, verses as printed. The page keeps its printed numeral and the link
+// carries it (data-scripture-printed) for the preview's note. Divines (English, Reformed, Lutheran) cite the Hebrew
+// numbering and are left alone.
+const VULGATE_PSALM_TRADITIONS=new Set(['Latin Fathers','Greek Fathers','Medieval','Roman Catholic']);
+function vulgatePsalms(){try{const d=DATA||{};return VULGATE_PSALM_TRADITIONS.has(d.tradition||({pld:'Latin Fathers',pg:'Greek Fathers'}[String(d.slug||'').split('-')[0]]||''));}catch(_){return false;}}
+function gallToHeb(chapter){return chapter<=9||chapter>=148?chapter:chapter<=112?chapter+1:chapter===113?114:chapter<=115?116:chapter<=145?chapter+1:147;}
 function scriptureLocation(text,start,book){
   const chapterToken=/^([IVXLCDMivxlcdm]+|\d{1,3})(?![\p{L}\p{N}])/u.exec(text.slice(start));if(!chapterToken)return null;
   const chapter=scriptureNumber(chapterToken[1]);if(!chapter||chapter>XREF_CAP[book])return null;
@@ -163,7 +173,8 @@ function scriptureLocation(text,start,book){
     const tail=/^\s*\.?\s*(?:(?:&amp;|&|et)\s*)?(?:seqq?\.|ff?\.)(?!\p{L})/u.exec(text.slice(end));
     if(tail){end+=tail[0].length;following=true;}
   }
-  return {start,end,book,chapter,selection,following,query:book+' '+chapter+(selection?':'+selection:'')};
+  const psalm=book==='Psalms'&&vulgatePsalms()?gallToHeb(chapter):chapter;
+  return {start,end,book,chapter:psalm,selection,following,query:book+' '+psalm+(selection?':'+selection:''),...(psalm!==chapter?{printed:book+' '+chapter+(selection?':'+selection:'')}:{})};
 }
 function scriptureReferences(text){
   const references=[];XREF_RE.lastIndex=0;let match;
@@ -199,7 +210,7 @@ function linkScriptureHTML(html){
     const references=scriptureReferences(text);
     for(const segment of segments){let value='',cursor=segment.start;for(const ref of references){const start=Math.max(segment.start,ref.start),end=Math.min(segment.end,ref.end);if(start>=end)continue;
         value+=text.slice(cursor,start);const part=text.slice(start,end),fallback=/[,-]/.test(ref.selection)?ref.book+' '+ref.chapter:ref.query;
-        value+=part.trim()?'<a class="xref" target="_blank" rel="noopener" data-scripture-ref="'+esc(ref.query).replace(/"/g,'&quot;')+'" href="/the-faith-received/search/?m=scripture&amp;q='+encodeURIComponent(fallback)+'"'+(ref.following?' data-xref-following="true"':'')+' title="Read Scripture">'+part+'</a>':part;cursor=end;}
+        value+=part.trim()?'<a class="xref" target="_blank" rel="noopener" data-scripture-ref="'+esc(ref.query).replace(/"/g,'&quot;')+'" href="/the-faith-received/search/?m=scripture&amp;q='+encodeURIComponent(fallback)+'"'+(ref.following?' data-xref-following="true"':'')+(ref.printed?' data-scripture-printed="'+esc(ref.printed).replace(/"/g,'&quot;')+'"':'')+' title="Read Scripture">'+part+'</a>':part;cursor=end;}
       output[segment.index]=value+text.slice(cursor,segment.end);}
     run=[];
   };

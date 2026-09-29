@@ -90,6 +90,23 @@ try {
       console.log(`  FAIL ${JSON.stringify(text)}\n       got:  ${got || "(none)"}\n       want: ${want || "(none)"}`);
     }
   }
+  // VULGATE PSALMS (owner, 2026-09-29: "citation should be Psalm 14:1 not 13:1", Anselm's "Psal. XIII, 1"). A Latin
+  // Fathers, Greek Fathers, medieval or Catholic work numbers the Psalms by the Vulgate, and the link opens the English
+  // psalm by the Gallican-to-Hebrew concordance; divines keep the numbering they print. The linker reads the work's
+  // tradition from the reader's DATA, which the cases above run without.
+  for (const [data, text, want] of [
+    [{ tradition: "Latin Fathers", slug: "pld-459" }, "Psal. XIII, 1.", "Psalms 14:1"],
+    [{ tradition: "Medieval" }, "Ps. L, 3.", "Psalms 51:3"],
+    [{ tradition: "English Divines" }, "Psal. XIII, 1.", "Psalms 13:1"],
+  ]) {
+    globalThis.DATA = data;
+    let got;
+    try { got = (scriptureReferences(text) || []).map((r) => r.query).join(" | "); }
+    catch (e) { got = `THREW ${e.message}`; }
+    if (got === want) { pass++; }
+    else { fail++; console.log(`  FAIL ${JSON.stringify(text)} in a ${data.tradition} work\n       got:  ${got || "(none)"}\n       want: ${want}`); }
+  }
+  delete globalThis.DATA;
 } finally { try { unlinkSync(path); } catch { /* best effort */ } }
 
 if (fail) { console.log(`\n✗ scripture linker: ${pass} passed, ${fail} failed.`); process.exit(1); }
