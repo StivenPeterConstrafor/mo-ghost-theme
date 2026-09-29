@@ -158,7 +158,7 @@
    * reads its key from shOf, so this one function is the whole change. */
   const DEN = window.MODenom;
   const ED_TO_SHELF = { "Continental Reformed": "rf", Lutheran: "lu", "Roman Catholic": "rc" };
-  const ED_ORDER = ["Anglican", "Presbyterian", "Congregational", "Baptist", "Quaker", "Anabaptist", "Arminian", "Bohemian Brethren", "Waldensian", "Socinian"];
+  const ED_ORDER = ["Anglican", "Presbyterian", "Congregational", "Baptist", "Quaker", "Anabaptist", "Arminian", "Methodist", "Bohemian Brethren", "Waldensian", "Socinian"];
   const bodyOf = (name) => (DEN && DEN.loaded() && name ? DEN.of({ author: String(name) }).body || "" : "");
   const shOf = (e) => {
     const k = shelfOf(e);

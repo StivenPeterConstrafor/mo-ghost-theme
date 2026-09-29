@@ -150,7 +150,7 @@
     "Medieval Church": "medieval-church", "Byzantine": "eastern-orthodox",
     "Anglican": "anglican", "Presbyterian": "presbyterian", "Congregational": "congregational",
     "Baptist": "baptist", "Quaker": "quaker", "Reformed": "reformed", "Lutheran": "lutheran",
-    "Anabaptist": "anabaptist", "Arminian": "arminian", "Bohemian Brethren": "bohemian-brethren",
+    "Anabaptist": "anabaptist", "Arminian": "arminian", "Methodist": "methodist", "Bohemian Brethren": "bohemian-brethren",
     "Waldensian": "waldensian",
   };
   // Writes `text` into el, its first comma-separated word a link when that

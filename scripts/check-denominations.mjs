@@ -93,6 +93,14 @@ is("Church of England", MODenom.body(work("Church of England")), "Anglican");
 is("a diocese", MODenom.body(work("Church of England. Diocese of Ely. Bishop (1559-1581 : Cox)")), "Anglican");
 is("the Crown is not a church", MODenom.body(work("England and Wales. Sovereign (1625-1649 : Charles I)")), "");
 
+console.log("\n── Methodists ──");
+is("John Wesley", MODenom.body({ corpus: "tfr", id: "z", author: "John Wesley" }), "Methodist");
+is("Whitefield", MODenom.body({ corpus: "tfr", id: "z", author: "George Whitefield" }), "Methodist");
+is("Watson, Wesleyan (per-work row)", MODenom.body({ corpus: "tfr", id: "richard-watson-theological-institutes-vol-1", author: "Richard Watson" }), "Methodist");
+is("Watson, Anglican bishop stays Anglican", MODenom.body(work("Watson, Richard, 1612-1685")), "Anglican");
+is("Methodist Episcopal Church", MODenom.body(work("Methodist Episcopal Church")), "Methodist");
+is("Methodist sits under Protestant", MODenom.communion("Methodist"), "Protestant");
+
 console.log("\n── the tradition string as a floor ──");
 is("a Lutheran work with no author row", MODenom.body({ corpus: "tfr", id: "y", author: "Nobody At All", tradition: "Lutheran" }), "Lutheran");
 is("English Divines is not a denomination", MODenom.body({ corpus: "tfr", id: "y", author: "Nobody At All", tradition: "English Divines" }), "");

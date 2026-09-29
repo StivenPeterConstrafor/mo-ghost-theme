@@ -15,7 +15,7 @@
  *
  *   BODY    the church a man belonged to: Anglican, Presbyterian,
  *           Congregational, Baptist, Continental Reformed, Lutheran,
- *           Quaker, Anabaptist, Arminian, Bohemian Brethren,
+ *           Quaker, Anabaptist, Arminian, Methodist, Bohemian Brethren,
  *           Waldensian, Socinian. Single-valued.
  *
  *   PARTY   where he stood inside it: Puritan or Conformist. Cuts
@@ -85,6 +85,7 @@
     "Lutheran",
     "Anabaptist",
     "Arminian",
+    "Methodist",
     "Bohemian Brethren",
     "Waldensian",
     "Socinian",
@@ -110,6 +111,7 @@
     Lutheran: "Protestant",
     Anabaptist: "Protestant",
     Arminian: "Protestant",
+    Methodist: "Protestant",
     "Bohemian Brethren": "Protestant",
     Waldensian: "Protestant",
     Socinian: "Protestant",
@@ -238,12 +240,15 @@
     "reformed baptist": "Baptist",
     anabaptist: "Anabaptist",
     arminian: "Arminian",
+    methodist: "Methodist",
+    wesleyan: "Methodist",
     quaker: "Quaker",
     waldensian: "Waldensian",
     "bohemian brethren": "Bohemian Brethren",
   };
 
   function fromTradition(work) {
+    if (work && work.party === "Methodist") return { body: "Methodist", party: "", confidence: "m" };
     const t = String((work && work.tradition) || "").trim().toLowerCase();
     if (!t) return null;
     const body = FROM_TRADITION[t];

@@ -52,7 +52,7 @@ const BODY_PAGE = {
   Anglican: "anglican", Presbyterian: "presbyterian", Congregational: "congregational",
   Baptist: "baptist", Quaker: "quaker", "Continental Reformed": "reformed",
   Reformed: "reformed",
-  Lutheran: "lutheran", Anabaptist: "anabaptist", Arminian: "arminian",
+  Lutheran: "lutheran", Anabaptist: "anabaptist", Arminian: "arminian", Methodist: "methodist",
   "Bohemian Brethren": "bohemian-brethren", Waldensian: "waldensian",
   "Eastern Orthodox": "eastern-orthodox",
 };

@@ -179,7 +179,7 @@
       ],
       "docs": { "labels": ["Anglican"] },
       "allWorks": { "q": "tradition=Protestant&denomination=Anglican", "label": "Anglican" },
-      "related": ["reformed", "presbyterian", "congregational"]
+      "related": ["reformed", "presbyterian", "congregational", "methodist"]
     },
     {
       "slug": "presbyterian",
@@ -249,7 +249,7 @@
       ],
       "docs": { "labels": ["Arminian", "Remonstrant"] },
       "allWorks": { "q": "tradition=Protestant&denomination=Arminian", "label": "Arminian" },
-      "related": ["reformed", "anglican"]
+      "related": ["reformed", "anglican", "methodist"]
     },
     {
       "slug": "quaker",
@@ -267,6 +267,23 @@
       ],
       "docs": { "labels": ["Quaker"] },
       "related": ["congregational", "baptist"]
+    },
+    {
+      "slug": "methodist",
+      "name": "Methodist",
+      "parent": "protestant",
+      "era": "From 1738",
+      "aliases": ["methodists", "wesleyan", "wesleyans", "wesleyan-methodist", "methodism"],
+      "dek": "The revival led by John and Charles Wesley and George Whitefield, and the churches that came from it.",
+      "overview": [
+        "Methodism began in the Church of England. Charles Wesley gathered a small group at Oxford in 1729, and his brother John soon led it. Its members kept a strict method of prayer, fasting and visiting the poor. Their critics gave them the name.",
+        "John Wesley reported that his heart was strangely warmed at a meeting in Aldersgate Street on May 24, 1738. In 1739 George Whitefield began preaching in the open air at Bristol, and Wesley followed him. The converts were gathered into societies and classes. Lay preachers served them, and Charles Wesley wrote hymns for them.",
+        "Whitefield held to unconditional election. Wesley taught that Christ died for all and that grace may be resisted. They parted over it in 1741. The Wesleyan line came to be called Arminian, and Whitefield’s followers were called Calvinistic Methodists. Wesley’s Sermons on Several Occasions and his Notes upon the New Testament became doctrinal standards for the Wesleyan connexion.",
+        "Wesley died in 1791 a priest of the Church of England. The break came earlier in America. At the Christmas Conference at Baltimore in 1784 the Methodist Episcopal Church was organized, with Thomas Coke and Francis Asbury as its superintendents. Wesley had abridged the Thirty-Nine Articles for its use, and the conference adopted twenty-five."
+      ],
+      "docs": { "labels": ["Methodist", "Wesleyan"] },
+      "allWorks": { "q": "tradition=Protestant&denomination=Methodist", "label": "Methodist" },
+      "related": ["anglican", "arminian", "reformed"]
     }
   ]
 }

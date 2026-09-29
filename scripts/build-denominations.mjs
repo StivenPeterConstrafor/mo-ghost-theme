@@ -47,7 +47,7 @@ const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (
 
 const BODIES = new Set([
   "Anglican", "Reformed", "Presbyterian", "Congregational", "Baptist", "Quaker",
-  "Continental Reformed", "Lutheran", "Anabaptist", "Arminian",
+  "Continental Reformed", "Lutheran", "Anabaptist", "Arminian", "Methodist",
   "Bohemian Brethren", "Waldensian", "Socinian",
   // Not Protestant, and so never offered under the Protestant
   // denomination facet — but worth carrying, because knowing that
@@ -121,6 +121,7 @@ const PATTERNS = [
   ["^catholic church\\b|^jesuits\\b|^council of trent", "Roman Catholic", ""],
   ["^synod of dort|^dutch reformed church|^reformed church", "Continental Reformed", ""],
   ["^lutheran church", "Lutheran", ""],
+  ["^methodist\\b|^wesleyan\\b", "Methodist", ""],
 ];
 
 async function get(url) {
@@ -163,6 +164,7 @@ async function tsv(file) {
 // the generic Reformed bucket.
 const LL_BODY = [
   [/\bcongregationalist|\bcongregational\b|\bindependent\b/i, "Congregational"],
+  [/\bmethodist|\bwesleyan/i, "Methodist"],
   [/\bbaptist\b/i, "Baptist"],
   [/\bquaker|society of friends/i, "Quaker"],
   [/\bmennonite|anabaptist/i, "Anabaptist"],

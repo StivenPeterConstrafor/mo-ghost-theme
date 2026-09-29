@@ -389,6 +389,7 @@
       // was expelled from it, so it belongs under Protestant and beside
       // Reformed rather than inside it.
       Arminian: "Protestant",
+      Methodist: "Protestant",
       // Both predate the Reformation and both kept a confessional line
       // of their own through it, which is why they are their own
       // denominations above and not filed under Reformed. They are

@@ -1,0 +1,17 @@
+# The Faith Received — per-work denominations
+#
+# work key <TAB> body <TAB> party <TAB> confidence <TAB> note
+#
+# The work key is {corpus}:{id}, as the corpora adapter normalizes it:
+# "tfr:some-slug". A per-work row beats the author table, so it is the
+# only way to place an anonymous tract or to tell two men of one name
+# apart. Same body list as denomination-authors.tsv.
+tfr:lives-of-early-methodist-preachers-vol-1	Methodist		h	Thomas Jackson (ed.), not the Anglican Thomas Jackson of the same name
+tfr:lives-of-early-methodist-preachers-vol-2	Methodist		h	same
+tfr:lives-of-early-methodist-preachers-vol-3	Methodist		h	same
+tfr:lives-of-early-methodist-preachers-vol-4	Methodist		h	same
+tfr:lives-of-early-methodist-preachers-vol-5	Methodist		h	same
+tfr:lives-of-early-methodist-preachers-vol-6	Methodist		h	same
+tfr:richard-watson-theological-institutes-vol-1	Methodist		h	Richard Watson, Wesleyan Methodist, 1781-1833; the author table holds an Anglican Richard Watson under the same bare name
+tfr:richard-watson-theological-institutes-vol-2	Methodist		h	Richard Watson, Wesleyan Methodist, 1781-1833; the author table holds an Anglican Richard Watson under the same bare name
+tfr:richard-watson-theological-institutes-vol-3	Methodist		h	Richard Watson, Wesleyan Methodist, 1781-1833; the author table holds an Anglican Richard Watson under the same bare name

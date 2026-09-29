@@ -4,7 +4,7 @@
 #
 # BODY    the church he belonged to. One of: Anglican, Presbyterian,
 #         Congregational, Baptist, Quaker, Continental Reformed,
-#         Lutheran, Anabaptist, Arminian, Bohemian Brethren,
+#         Lutheran, Anabaptist, Arminian, Methodist, Bohemian Brethren,
 #         Waldensian, Socinian, Roman Catholic, Eastern Orthodox.
 # PARTY   Puritan or Conformist, or blank. Cuts across the bodies.
 # CONF    h  certain — a man whose church is not in question
@@ -3241,3 +3241,23 @@ Philippus van Limborch	Arminian		h	Professor at the Remonstrant seminary in Amst
 Westminster Assembly	Presbyterian	Puritan	h	The Assembly of Divines, 1643–1652: Parliament's synod; Presbyterian by its settlement, Puritan by its men
 Westminster Divines	Presbyterian	Puritan	h	The Westminster Annotations (1645): the Assembly's divines as a corporate author
 Westminster Assembly (1643-1652)	Presbyterian	Puritan	h	same body, dated form of the name
+John Wesley	Methodist		h	Founder of Methodism; ordained in the Church of England and never left it, but the movement he led is its own body
+Charles Wesley	Methodist		h	Hymn writer of the Methodist revival
+John Wesley; Charles Wesley	Methodist		h	joint author line in the library
+George Whitefield	Methodist		h	Calvinistic Methodist; preached the revival on both sides of the Atlantic
+John William Fletcher	Methodist		h	Vicar of Madeley; Wesley's defender and chosen successor
+Joseph Benson	Methodist		h	Wesleyan preacher, commentator and editor of the Methodist Magazine
+Thomas Coke	Methodist		h	First Methodist bishop; organized Methodist missions
+Francis Asbury	Methodist		h	First Methodist Episcopal bishop consecrated in America
+Miner Raymond	Methodist		h	Methodist Episcopal theologian, Garrett Biblical Institute
+Nathan Bangs	Methodist		h	Methodist Episcopal minister and historian
+William Burt Pope	Methodist		h	Wesleyan Methodist theologian, Didsbury College
+Adam Clarke	Methodist		h	Wesleyan Methodist commentator, d. 1832
+Thomas O. Summers	Methodist		h	Methodist Episcopal Church, South, theologian
+John Miley	Methodist		h	Methodist Episcopal systematic theologian
+Freeborn Garrettson	Methodist		h	Methodist Episcopal itinerant preacher
+Hester Ann Rogers	Methodist		h	Wesleyan Methodist, a member of Wesley's circle
+Wilbur Fisk	Methodist		h	Methodist Episcopal minister and first president of Wesleyan University
+Daniel D. Whedon	Methodist		h	Methodist Episcopal commentator and editor
+Anonymous Methodist	Methodist		m	the library's shelf label for an anonymous Methodist defence, 1785
+John Gambold	Bohemian Brethren		m	Anglican priest who became a Moravian bishop; the library shelves him with the Methodists, his church was the Moravian
