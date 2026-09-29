@@ -87,6 +87,9 @@ const BUNDLES = [
       // would notice. It returns on its first test for any path outside
       // /the-faith-received/.
       "assets/js/faith-survey.js",
+      // The paid-member "Confirm Address For Journal" bar on main-site
+      // pages. Returns at once for TFR paths and anyone not paid/comped.
+      "assets/js/journal-address-bar.js",
       "assets/js/boot/breadcrumb-schema.js",
       "assets/js/site-settings.js",
       // nav-dropdowns.js is loaded standalone in default.hbs right

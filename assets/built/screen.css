@@ -26494,3 +26494,63 @@ body:has(.welcome-page) .site-header { position: static; flex: 0 0 auto; }
   .mo-tfr-sub { font-size: 16px; margin-bottom: 22px; }
   .mo-tfr-act { margin-bottom: 26px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   JOURNAL ADDRESS BAR
+   ══════════════════════════════════════════════════════════════════════════
+
+   The TFR reader survey's bar and tab (faith-received.css, THE READER
+   SURVEY), carried to the main site for paid members, with the tab as a
+   link to /manage/ instead of a panel toggle. assets/js/journal-address-bar.js
+   builds it and decides who sees it. Same orange for the same reason:
+   white at 13px on the raw token misses AA, mixed 88% with black it
+   clears 5:1. */
+
+.journal-address {
+  --journal-address-orange: color-mix(in srgb, var(--color-secondary, #c1593c) 88%, #000);
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100;
+  pointer-events: none;
+}
+.journal-address > * { pointer-events: auto; }
+.journal-address-bar {
+  position: relative;
+  height: 8px;
+  background: var(--journal-address-orange);
+}
+.journal-address-tab {
+  position: absolute;
+  bottom: 100%;
+  right: clamp(16px, 5vw, 48px);
+  padding: 5px 18px 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: var(--color-white, #fff);
+  background: var(--journal-address-orange);
+  border-radius: 4px 4px 0 0;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.journal-address-tab:hover,
+.journal-address-tab:focus-visible {
+  color: var(--color-white, #fff);
+  background: var(--color-dark, #2d2927);
+  text-decoration: none;
+}
+.journal-address-tab:focus-visible {
+  outline: 2px solid var(--color-dark, #2d2927);
+  outline-offset: 2px;
+}
+/* Bar plus tab, so the last line of a page clears it. */
+body.has-journal-address { padding-bottom: 34px; }
+/* A paid-audience slide-in would otherwise land on the tab. */
+body.has-journal-address .slide-in { bottom: 58px; }
+@media (max-width: 640px) {
+  body.has-journal-address .slide-in,
+  body.has-journal-address .slide-in.has-image { bottom: 34px; }
+}
