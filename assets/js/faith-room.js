@@ -728,7 +728,17 @@
     if (w._ra === undefined) w._ra = fold(directName(w.author));
     return rosterAuthors.has(w._ra);
   }
-  function inParty(w, p) { return p === ASSEMBLY ? inAssembly(w) : partyOf(w) === p; }
+  // The shelves strip names the conformists' party the way readers know
+  // it, Anglican (?party=Anglican), while the works file it as Conformist
+  // (partyOf above). Read either word as the one party: before this the
+  // strip's "Anglican 1,583" opened a room of 0 works.
+  function inParty(w, p) {
+    if (p === ASSEMBLY) return inAssembly(w);
+    return partyOf(w) === (p === "Anglican" ? "Conformist" : p);
+  }
+  // A party's printed name: Anglican for the conformists, whichever word
+  // the address used; every other party prints as it is filed.
+  function partyName(p) { return p === "Conformist" ? "Anglican" : p; }
   function loadRoster() {
     if (rosterState) return;
     rosterState = "loading";
@@ -1360,8 +1370,14 @@
     if (openers) openers.classList.toggle("is-filtered", narrowed);
     if (isAll) {
       const name = RESEARCH_NAMES[RESEARCH_SHELVES[denomination || tradition]] || "";
-      if (pageHeading) pageHeading.textContent = shelfName(name) || originalHeading;
-      if (pageLede) pageLede.textContent = name ? "Browse the works below, or search for an author or title." : originalLede;
+      // A party in hand names the page: ?party=Methodist is headed
+      // "Methodist", not "English writers", the shelf it sits on (owner,
+      // 2026-09-29, for the Methodists, the Westminster Assembly, the
+      // Puritans and the Anglicans alike). The count line under the
+      // search still names both, and Study this shelf stays the shelf's,
+      // since its doors open the whole shelf.
+      if (pageHeading) pageHeading.textContent = (party ? partyName(party) : shelfName(name)) || originalHeading;
+      if (pageLede) pageLede.textContent = (name || party) ? "Browse the works below, or search for an author or title." : originalLede;
     }
   }
 
@@ -1675,7 +1691,7 @@
     // in the one volume they have opened.
     // A search says what it matched; a party says which it is.
     const matching = filter ? ` matching &ldquo;${escapeHtml(filter)}&rdquo;` : "";
-    const within = (party ? ` &middot; ${escapeHtml(party)}` : "") + (scans ? " &middot; with page scans" : "");
+    const within = (party ? ` &middot; ${escapeHtml(partyName(party))}` : "") + (scans ? " &middot; with page scans" : "");
     // One library: English editions are counted as works (MOFaithCatalogue.countLabel adds "+ N English editions").
     const oneCount = (list) => `${list.length.toLocaleString()} ${nounOf(list.length)}`;
     let counted = `${oneCount(scoped)}${matching} in ${escapeHtml(label)}${within}`;
