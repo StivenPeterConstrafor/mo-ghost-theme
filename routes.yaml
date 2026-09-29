@@ -369,6 +369,8 @@ routes:
     template: custom-faith-shelf-puritans
   /the-faith-received/anglicans/:
     template: custom-faith-shelf-anglicans
+  /the-faith-received/methodists/:
+    template: custom-faith-shelf-methodists
   /the-faith-received/westminster-assembly/:
     template: custom-faith-shelf-westminster-assembly
   /the-faith-received/jesuits/:
