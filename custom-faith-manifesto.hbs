@@ -31,7 +31,7 @@
   <section class="bband faith-feature-body">
     <article class="container container-narrow faith-tp faith-mf">
 
-      {{!-- THREE WAYS IN (Ian, 2026-09-24). The page holds three pieces
+      {{!-- THREE WAYS IN (Ian, 2026-09-24; a fourth, the transparency commitment, 2026-09-29). The page holds three pieces
             about the project, chosen with a joined three-button toggle in
             the thin-line style: Stiven's essay (what, why, how), Ian's
             story of how it began, and Jake's letter on what it means for
@@ -43,6 +43,9 @@
         <button type="button" role="tab" id="mf-tab-what" aria-controls="what" aria-selected="true" data-mf-tab="what">What, Why, and How of <span class="faith-mf-tab-tfr">The Faith Received</span></button>
         <button type="button" role="tab" id="mf-tab-story" aria-controls="story" aria-selected="false" tabindex="-1" data-mf-tab="story">The Story of <span class="faith-mf-tab-tfr">The Faith Received</span></button>
         <button type="button" role="tab" id="mf-tab-mo" aria-controls="mere-orthodoxy" aria-selected="false" tabindex="-1" data-mf-tab="mere-orthodoxy">Mere Orthodoxy and <span class="faith-mf-tab-tfr">The Faith Received</span></button>
+        {{!-- The fourth (Ian, 2026-09-29): the transparency commitment, the
+              same text as /the-faith-received/transparency/, from one partial. --}}
+        <button type="button" role="tab" id="mf-tab-tp" aria-controls="transparency" aria-selected="false" tabindex="-1" data-mf-tab="transparency">Our Commitment to <span class="faith-mf-tab-tfr">Transparency</span></button>
       </div>
 
       <section class="faith-mf-panel" id="what" role="tabpanel" aria-labelledby="mf-tab-what" data-mf-panel>
@@ -177,7 +180,7 @@
         <p>Second point: One of the arguments Stiven made as he and I discussed this was that both of us could recognize how dramatically certain debates in reformed evangelicalism were changed by the translation of Bavinck’s Reformed Dogmatics. Well, he said, surely there are other previously untranslated texts that could prove similarly helpful and generative if only they were available to the average English speaker? I found that persuasive.</p>
         <p>Even thinking about my own denominational context in the Presbyterian Church in America, I am struck by the fact that the discourse in the PCA often amounts to southern presbyterians behaving as if southern presbyterianism is the only faithful expression of the reformed faith while missional PCA members act as if the tradition is somewhat of a liability in the work of evangelization and therefore must be relativized at certain points. What Bavinck did and what we hope TFR will do is show that both sides are wrong: Theological traditions are far broader than many realize and a closer encounter with the Christian intellectual tradition should make us better, more faithful evangelists, preachers, and theologians. Our theological traditions are treasures, not millstones.</p>
         <p>Third point: As a fourth-generation Nebraskan and first-generation college student, I have a strong draw toward egalitarian, democratized approaches to knowledge and learning. When <a href="/the-faith-received/author/?a=William%20Tyndale">Tyndale</a> was translating the Bible into English, a skeptical Catholic rebuked him, arguing that the common person was not equipped to understand scripture. Tyndale was undaunted and said that if he had his way a common plowboy would know the Bible better than most of the Roman church’s bishops. I have a similar inclination here. This library will not suddenly push college and seminary professors out of a job. It will simply put the texts that a small number of people have been able to read into the hands of a far larger group of people, so that they can read and learn from these texts for themselves. If anything, I hope this will make for better students who can now read primary sources for themselves, rather than relying on secondary sources in order to understand their respective theological traditions.</p>
-        <p>Fourth point: Because we do care deeply about the integrity of our work and never want to betray the trust of our readers, we have tried to approach this project in the most transparent way possible. You can read our transparency commitment <a href="/the-faith-received/transparency/">here</a>. Additionally, the reason we are launching this in Beta today is so that prior to the official launch we can have a few months with readers interacting with the texts and the research tools and offering feedback.</p>
+        <p>Fourth point: Because we do care deeply about the integrity of our work and never want to betray the trust of our readers, we have tried to approach this project in the most transparent way possible. You can read our transparency commitment <a href="#transparency" data-mf-tab-link>here</a>. Additionally, the reason we are launching this in Beta today is so that prior to the official launch we can have a few months with readers interacting with the texts and the research tools and offering feedback.</p>
         <p>I will leave off there for now. But I do expect we will continue to have conversations about the use of AI in intellectual work in the months to come. We have an essay coming from me later this week on the site that offers a more extensive treatment of the question. The upshot, however, is straightforward: We can recognize some uses of AI are obviously wrong, some are obviously OK, and others are complex and require a certain degree of patience and tolerance for one another as we work through the issues together. We can’t promise we’ll always arrive at positions you agree with. But we will do our best to show our work, be honest about what we are and are not doing, and be open to constructive criticism about these issues.</p>
         {{!-- Added 2026-09-25 with Ian's revised text. "give to support
              the work" points at this page's own support band; the
@@ -199,13 +202,20 @@
           {{/get}}
         </div>
       </section>
+      <section class="faith-mf-panel" id="transparency" role="tabpanel" aria-labelledby="mf-tab-tp" data-mf-panel>
+        <header class="faith-mf-head">
+          <h2 class="faith-mf-title">Our Commitment to Transparency</h2>
+          <p class="faith-mf-role">What artificial intelligence did here, what we do to keep it honest, and every work it touched.</p>
+        </header>
+        {{> "faith-received/_transparency-body"}}
+      </section>
 
       {{!-- Both are the library's own button. The first pass made the
             second a bare link, and the prose-link rule underlined the
             first one's label inside its own box. --}}
       <p class="faith-mf-act">
         <a class="fr-btn" href="/the-faith-received/curated/">Begin reading</a>
-        <a class="fr-btn" href="/the-faith-received/transparency/">Our commitment to transparency</a>
+        <a class="fr-btn" href="#transparency" data-mf-tab-link>Our commitment to transparency</a>
       </p>
 
     </article>
@@ -222,3 +232,9 @@
 
 <script src="{{asset "js/page/faith-manifesto-tabs.js"}}&amp;frv=c30156c5c7692e41" defer></script>
 <script src="{{asset "js/faith-report-issue.js"}}&amp;frv=f2924509d417b029"></script>
+{{!-- The transparency tab's list of machine-translated works. --}}
+<meta name="tfr-library-base" content="https://mo-tfr-library.mo-podcast-feed.workers.dev" />
+<script src="{{asset "js/faith-denominations.js"}}"></script>
+<script src="{{asset "js/faith-corpora.js"}}"></script>
+<script src="{{asset "js/faith-century.js"}}"></script>
+<script src="{{asset "js/faith-transparency.js"}}"></script>
