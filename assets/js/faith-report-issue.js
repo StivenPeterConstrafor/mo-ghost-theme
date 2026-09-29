@@ -105,6 +105,12 @@
     const whom = authorName();
     const onWork = !!here;
     const passage = opts && opts.passage && opts.passage.text ? opts.passage : null;
+    const cite = passage && passage.cite ? `<small class="fr-report-cite">${escapeHtml(passage.cite)}</small>` : "";
+    const passageField = passage
+      ? `<label class="fr-report-field"><span>Passage</span>` +
+        `<textarea name="passage" rows="3" aria-label="Passage">${escapeHtml(passage.text.slice(0, PASSAGE_MAX))}</textarea>` +
+        `${cite}</label>`
+      : "";
 
     overlay = document.createElement("div");
     overlay.className = "fr-report-overlay";
@@ -131,13 +137,7 @@
       `placeholder="${onWork ? "" : "The work or page this is about"}" required></label>` +
       `<label class="fr-report-field"><span>Author</span>` +
       `<input type="text" name="author" value="${escapeHtml(whom)}" ` +
-      `placeholder="Who wrote it, if you know"></label>` +
-      (passage
-        ? `<label class="fr-report-field"><span>Passage</span>` +
-          `<textarea name="passage" rows="3" aria-label="Passage">${escapeHtml(passage.text.slice(0, PASSAGE_MAX))}</textarea>` +
-          (passage.cite ? `<small class="fr-report-cite">${escapeHtml(passage.cite)}</small>` : "") +
-          `</label>`
-        : "") +
+      `placeholder="Who wrote it, if you know"></label>${passageField}` +
       `<label class="fr-report-field"><span>Issue type</span>` +
       `<select name="issueType" required>` +
       `<option value="">Choose one</option>${ 
@@ -222,10 +222,9 @@
         data.delete("passage");
         data.set("pageUrl", passage.url);
         if (quoted) {
-          data.set("comment", (
-            `Passage${passage.cite ? ` (${passage.cite})` : ""}:\n"${quoted}"\n\n` +
-            String(data.get("comment") || "").trim()
-          ).slice(0, 4000));
+          const said = String(data.get("comment") || "").trim();
+          const where = passage.cite ? ` (${passage.cite})` : "";
+          data.set("comment", `Passage${where}:\n"${quoted}"\n\n${said}`.slice(0, 4000));
         }
       }
       data.set("corpus", param("c") || "tfr");
@@ -304,7 +303,7 @@
     return {
       text,
       cite: "",
-      url: window.location.origin + window.location.pathname + window.location.search + "#" + row.id,
+      url: `${window.location.origin}${window.location.pathname}${window.location.search}#${row.id}`,
     };
   }
 
