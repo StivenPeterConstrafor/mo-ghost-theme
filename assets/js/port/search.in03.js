@@ -38,8 +38,8 @@ function rdHref(slug,page){return FRSearch.readerURL(slug,page==null||page===''?
 var qEl=document.getElementById('q'),res=document.getElementById('results'),ct=document.getElementById('count'),hint=document.getElementById('hint');
 var MODE='title',NAV=null,WLIST=null,WORKS_BY_SLUG=null,WORK_ALIASES={},IDX=null,seq=0,CATALOG_ERROR=false,RESULT_PAGE=0,RESTORE_PAGE=null,ORDER='shelf',REDRAW=null,SCOPE_SCHOOLS=null;
 var HINTS={
-  title:'Searches titles, authors and chapter headings — to find a book. To find where a word or an idea appears inside the books, use Search the texts.',
-  full:'Every work that uses the word, on every page, its Latin endings counted together — by tradition, most uses first; open a work for its passages. Put a phrase in quotes to find the words together: “foedus operum”.',
+  title:'Searches titles, authors and chapter headings, to find a book. To find where a word or an idea appears inside the books, use Search the texts.',
+  full:'Every work that uses the word, on every page, its Latin endings counted together, by tradition, most uses first; open a work for its passages. Put a phrase in quotes to find the words together: “foedus operum”.',
   meaning:'Describe what you want to find. For example, “how faith unites us to Christ” finds passages even when they use different words.',
   scripture:'Search a chapter, verse, or range, such as Romans 8:1–4.',
   tradition:'One question, the whole tradition: the strongest parallels era by era \u2014 Greek and Latin Fathers, Aquinas, the early-modern library \u2014 in chronological order.',
@@ -145,7 +145,7 @@ function loadHeadingsTier(){
     var add=rows.map(function(r2){var e=NAV&&NAV[r2[0]]||{};
       return {d:r2[0],k:'div',t:r2[2],a:e.a||'',page:r2[1]};});
     IDX=(IDX||[]).concat(add);_hFull=true;_hLoading=false;
-    if(MODE==='title'){hint.textContent='Searches the titles, authors and chapter headings of '+(WLIST||[]).length.toLocaleString()+' works ('+rows.length.toLocaleString()+' headings) — to find a book. To find where a word or an idea appears inside the books, use Search the texts.';RESTORE_PAGE=RESULT_PAGE;run();}
+    if(MODE==='title'){hint.textContent='Searches the titles, authors and chapter headings of '+(WLIST||[]).length.toLocaleString()+' works ('+rows.length.toLocaleString()+' headings), to find a book. To find where a word or an idea appears inside the books, use Search the texts.';RESTORE_PAGE=RESULT_PAGE;run();}
   }).catch(function(){_hLoading=false;});}
 function foldQ(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/v/g,'u').replace(/j/g,'i');}
 function renderTitle(q){
