@@ -217,8 +217,11 @@
         : { kind: "human", credit: /^anf-/.test(slug()) ? "From the Ante-Nicene Fathers series." : "" };
     }
     // An English original can show two lanes (the reader labels the
-    // second "Original"). It is never a translation.
-    if (d.src_lang === "en") return { kind: "english" };
+    // second "Original"). It is never a translation. A Latin title on
+    // the record says otherwise: Baxter's Methodus (1681) is stamped
+    // src_lang "en" upstream, but it is a Latin original.
+    const latinTitle = !!d.title_la && d.title_la !== d.title;
+    if (d.src_lang === "en" && !latinTitle) return { kind: "english" };
     if (lanes === "source") return { kind: "source" };
     if (aquinas(d)) return { kind: "human", credit: "" };
     if (lanes === "en") {
@@ -226,7 +229,7 @@
       // an English divine can ship in English alone, and then it is a
       // translation. Only a work whose title has no separate English form
       // is taken as written in English.
-      const ownTitle = !d.title_en || d.title_en === d.title;
+      const ownTitle = !latinTitle && (!d.title_en || d.title_en === d.title);
       if (ownTitle && ENGLISH_TRADITION.test(String(d.tradition || ""))) return { kind: "english" };
       if (ownTitle && d.region && ENGLISH_REGION.test(String(d.region))) return { kind: "english" };
       if (d.source && /translat/i.test(String(d.source)) && !MACHINE_WORDS.test(String(d.source))) {
