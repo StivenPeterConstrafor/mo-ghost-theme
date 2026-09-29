@@ -675,7 +675,8 @@
   // both. It sits with the parties because it answers the same question
   // — where did this man stand — and a reader looking for the Assembly
   // looks where he looked for the Puritans.
-  const PARTIES = ["Puritan", "Conformist", ASSEMBLY];
+  // Methodist (2026-09-29): the Wesleyans, a party under English Divines; ?party=Methodist from the shelves strip.
+  const PARTIES = ["Puritan", "Conformist", "Methodist", ASSEMBLY];
   // Under Protestant the denomination is the church body, which is its
   // own field now: see assets/js/faith-denominations.js for why the
   // tradition string could not do the job. Under anything else it is

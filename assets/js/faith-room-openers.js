@@ -44,7 +44,8 @@
   const FAMILY = { Puritan: "English Divines", Anglican: "English Divines" };
   const ENGLISH = "English Divines";
   const ASSEMBLY = "Westminster Assembly";
-  const PARTIES = ["Puritan", "Anglican", ASSEMBLY];
+  // Methodist (2026-09-29): the Wesleyans, a party of the English Divines like the other two; shown only once works carry it.
+  const PARTIES = ["Puritan", "Anglican", "Methodist", ASSEMBLY];
   function rosterKey(slug) {
     const m = /^eebo-(\d+)$/.exec(slug);
     return m ? `eebo|${m[1]}` : `tfr|${slug}`;
