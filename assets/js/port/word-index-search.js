@@ -3,7 +3,8 @@
    full-text (Pagefind) index — about 2,700 of the library's works, none of the Latin, Greek or Eastern Fathers nor EEBO — one spelling
    at a time, ten sections a page. This panel answers from the concordance instead (every word of every page of every work; a
    duplicate edition once): how many works, where, and which use the word most, with the word's own inflections (fama, famae, famam…).
-   Shared by the corpus site (search.html, /api/sql {op:'words'}) and MereO (search.in03.js, the Ask worker's /v1/words — mo-workers words-route.js).
+   Shared by the corpus site (search.html: answered in the page by word-index-local.js, no server call) and MereO (the theme's port,
+   the Ask worker's /v1/words; the same in-page engine once MereO's store serves byte ranges).
 
    FRWordIndex.mount(host, {query, post, readHref, title, meta})
      post(body)            → Promise of the {op:'words'} answer ({rows} or {forms, more})
@@ -71,6 +72,17 @@
 .wix .wix-pages{display:flex;flex-wrap:wrap;gap:.25rem .6rem;margin-top:.35rem;font-size:.82rem}.wix .wix-pages a{color:inherit}
 .wix .wix-go{margin-top:.7rem;padding:.35rem .8rem;border:1px solid var(--border,#ddd);border-radius:6px;background:none;color:inherit;font:inherit;cursor:pointer}
 .wix-teaser{padding:.7rem 1rem;font-size:.92rem;line-height:1.5}.wix-teaser .wix-go{margin:0 0 0 .4rem;padding:.2rem .7rem}
+.wix .wix-jump{white-space:nowrap;color:inherit}
+.wix .wix-c button.wix-pv{margin-left:.6rem;padding:.08rem .55rem;border:1px solid var(--border,#ddd);border-radius:999px;text-decoration:none;font-size:.8rem}
+.wix .wix-c button.wix-pv[aria-expanded=true]{background:var(--fg,#222);color:var(--card-bg,#fff);border-color:var(--fg,#222)}
+.wix .wix-inst{margin:.55rem 0 .15rem;padding:.15rem 0 .2rem .85rem;border-left:2px solid var(--border,#ddd)}
+.wix .wix-i{margin:.5rem 0;font-size:.9rem;line-height:1.55}.wix .wix-i a.wix-p{display:inline-block;min-width:3.2rem;margin-right:.5rem;font-size:.78rem;font-weight:600;color:inherit;white-space:nowrap}
+.wix .wix-s{overflow-wrap:anywhere}.wix .wix-s+.wix-s{margin-left:.3em}
+.wix .wix-s mark{background:color-mix(in srgb,var(--accent,#b8860b) 26%,transparent);color:inherit;padding:0 .12em;border-radius:3px}
+.wix .wix-none{color:var(--muted,#666);font-style:italic;font-size:.84rem}.wix .wix-if .wix-go{margin-top:.2rem;font-size:.84rem}
+.wix details.wix-all{margin:.4rem 0 .2rem}.wix details.wix-all summary{cursor:pointer;font-size:.82rem;color:var(--muted,#666)}
+.wix ol.wix-vols{margin:.45rem 0 0 .2rem;padding-left:.8rem;border-left:1px solid var(--border,#ddd)}.wix ol.wix-vols>li{padding:.4rem 0}
+.wix ol.wix-vols>li a.wix-t{font-weight:500}.wix .wix-plus{color:var(--muted,#666);cursor:help}
 .wix .wix-note{margin:.8rem 0 0;color:var(--muted,#666);font-size:.8rem;line-height:1.45}.wix .wix-err{color:#a8462b}`;
     const el = document.createElement('style'); el.textContent = css; document.head.appendChild(el);
   }
@@ -84,7 +96,7 @@
     box.className = 'wix'; box.setAttribute('aria-live', 'polite');
     const quoted = ws.map(w => '“' + esc(w) + '”').join(' + ');
     box.innerHTML = `<h3>${quoted}${ws.length > 1 ? ' on the same page' : ''} — every text in the library</h3>
-      <p class="wix-sub">Counted from the library’s word index: every page of every work, a duplicate edition once.</p>
+      <p class="wix-sub">Counted from the library’s word index: every page of every work, a duplicate edition once. <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
       <div class="wix-forms"></div><div class="wix-sum">Counting…</div><div class="wix-trad"></div><ol></ol><div class="wix-foot"></div>`;
     host.appendChild(box);
     const $ = s => box.querySelector(s);
@@ -96,7 +108,7 @@
         const have = g.cands.filter(f => g.counts[f]).sort((a, b) => g.counts[b] - g.counts[a]);
         const chips = have.map(f => `<label class="wix-f"><input type="checkbox" data-g="${gi}" data-f="${esc(f)}"${g.on.has(f) ? ' checked' : ''}>${esc(f)} <span>${n(g.counts[f])}</span></label>`).join('');
         const extra = g.more.filter(f => !g.cands.includes(f.form)).slice(0, 8);
-        const more = extra.length ? `<span class="wix-more">also: ${extra.map(f => `<button type="button" data-g="${gi}" data-add="${esc(f.form)}" title="${n(f.works)} works">${esc(f.form)}</button>`).join('')}</span>` : '';
+        const more = extra.length ? `<span class="wix-more">other words beginning “${esc(g.word)}”: ${extra.map(f => `<button type="button" data-g="${gi}" data-add="${esc(f.form)}" title="${n(f.works)} works">${esc(f.form)}</button>`).join('')}</span>` : '';
         return `<b>${esc(g.word)}</b>${chips || '<span class="wix-more">not in the word index</span>'}${more}`;
       }).join('<span style="width:100%"></span>');
     }
@@ -126,23 +138,82 @@
       state.rows = list.rows || []; state.full = !list.truncated && state.rows.length < 200; state.shown = 0;
       $('ol').innerHTML = ''; more();
     }
-    function row(r) {
-      const list = v => (Array.isArray(v) ? v : String(v || '').replace(/^\[|\]$/g, '').split(',')).map(s => s.trim()).filter(Boolean);
-      const f = list(r.forms), best = list(r.best_forms);
+    const list = v => (Array.isArray(v) ? v : String(v || '').replace(/^\[|\]$/g, '').split(',')).map(s => s.trim()).filter(Boolean);
+    const times = (o, p) => `${n(o)} ${Number(o) === 1 ? 'time' : 'times'} on ${n(p)} ${Number(p) === 1 ? 'page' : 'pages'}`;
+    const unit = slug => (/^(pld|pg)-/.test(slug) ? 'col.' : 'p.');
+    const pageLabel = (slug, p) => unit(slug) + ' ' + esc(String(p).replace(/^0+(?=\d)/, ''));
+    // One entry per work; the volumes of one work (same title, same author) are one entry that opens onto its volumes.
+    function grouped(rows) {
+      const by = new Map(), out = [];
+      for (const r of rows) {
+        const k = r.author ? r.author + '\u0001' + (r.title || r.slug) : r.slug;
+        let g = by.get(k);
+        if (!g) { g = { rows: [], occ: 0, pages: 0 }; by.set(k, g); out.push(g); }
+        g.rows.push(r); g.occ += Number(r.occurrences); g.pages += Number(r.pages);
+      }
+      return out.sort((a, b) => b.occ - a.occ || b.pages - a.pages);
+    }
+    function row(r, vol) {
+      const f = list(r.forms), best = list(r.best_forms), fl = [...new Set(ws.filter(x => f.includes(x)).concat(best, f))];
       // the word to highlight: one that is ON the page the link opens, the word as typed when it is there
       const hl = best.find(x => ws.includes(x)) || best[0] || f.find(x => ws.includes(x)) || f[0] || ws[0];
       const li = document.createElement('li');
-      li.innerHTML = `<a class="wix-t" href="${esc(opts.readHref(r.slug, r.best_page, hl))}">${opts.title(r.slug, r)}</a>
-        <div class="wix-m">${opts.meta(r)}</div>
-        <div class="wix-c">${n(r.occurrences)} ${Number(r.occurrences) === 1 ? 'time' : 'times'} on ${n(r.pages)} ${Number(r.pages) === 1 ? 'page' : 'pages'}${f.length ? ' · ' + esc(f.join(', ')) : ''}<button type="button" data-pages="${esc(r.slug)}" data-hl="${esc(hl)}">every page</button></div>`;
+      li.innerHTML = `<a class="wix-t" href="${esc(opts.readHref(r.slug, r.best_page, hl))}">${vol ? esc(r.volume || r.title || r.slug) : opts.title(r.slug, r)}</a>
+        ${vol ? '' : `<div class="wix-m">${opts.meta(r)}</div>`}
+        <div class="wix-c">${times(r.occurrences, r.pages)}${fl.length ? ' · ' + esc(fl.slice(0, 4).join(', ')) + (fl.length > 4 ? ` <span class="wix-plus" title="${esc(fl.join(', '))}">+${fl.length - 4}</span>` : '') : ''}<button type="button" class="wix-pv" data-pages="${esc(r.slug)}" data-hl="${esc(hl)}" aria-expanded="false">Preview passages ▾</button></div>`;
+      return li;
+    }
+    function entry(g) {
+      if (g.rows.length === 1) return row(g.rows[0]);
+      const top = g.rows[0], li = document.createElement('li');
+      li.className = 'wix-g';
+      const trads = [...new Set(g.rows.map(r => r.tradition).filter(Boolean))];
+      li.innerHTML = `<a class="wix-t" href="${esc(opts.readHref(top.slug, top.best_page, list(top.best_forms)[0] || ws[0]))}">${opts.title(top.slug, top)}</a>
+        <div class="wix-m">${[top.author, g.rows.length + ' volumes', trads.join(', ')].filter(Boolean).map(esc).join(' · ')}</div>
+        <div class="wix-c">${times(g.occ, g.pages)}<button type="button" class="wix-pv" data-vols aria-expanded="false">Show the ${g.rows.length} volumes ▾</button></div>
+        <ol class="wix-vols" hidden></ol>`;
+      const ol = li.querySelector('.wix-vols');
+      g.rows.forEach(r => ol.appendChild(row(r, true)));
       return li;
     }
     function more() {
-      const ol = $('ol'), next = state.rows.slice(state.shown, state.shown + 50);
-      next.forEach(r => ol.appendChild(row(r))); state.shown += next.length;
-      const left = state.rows.length - state.shown;
-      $('.wix-foot').innerHTML = left > 0 ? `<button type="button" class="wix-go" data-more>Show ${Math.min(50, left)} more of ${n(state.rows.length)}${state.full ? '' : '+'}</button>`
+      // ten works at first, so the passages below stay in reach; then fifty at a time
+      if (!state.shown) state.groups2 = grouped(state.rows);
+      const ol = $('ol'), all = state.groups2, next = all.slice(state.shown, state.shown + (state.shown ? 50 : 10));
+      next.forEach(g => ol.appendChild(entry(g))); state.shown += next.length;
+      const left = all.length - state.shown;
+      $('.wix-foot').innerHTML = left > 0 ? `<button type="button" class="wix-go" data-more>Show ${Math.min(50, left)} more of ${n(all.length)}${state.full ? '' : '+'}</button>`
         : (!state.full ? '<button type="button" class="wix-go" data-all>Load the rest of the list</button>' : '');
+    }
+    // The passages of one work: its pages in book order, a line around each use, six at first.
+    async function preview(li, slug, hl, btn) {
+      let box = li.querySelector(':scope > .wix-inst');
+      if (box) { box.hidden = !box.hidden; btn.setAttribute('aria-expanded', String(!box.hidden)); btn.textContent = box.hidden ? 'Preview passages ▾' : 'Hide passages ▴'; return; }
+      box = document.createElement('div'); box.className = 'wix-inst'; box.textContent = 'Reading the pages…'; li.appendChild(box);
+      btn.setAttribute('aria-expanded', 'true'); btn.textContent = 'Hide passages ▴';
+      const r = await opts.post({ op: 'words', by: 'pages', groups: groups(), work: slug, limit: 2000 }).catch(fail);
+      if (!r || !r.rows) { box.remove(); return; }
+      const pages = r.rows, forms = [...new Set(groups().flat())], st = { shown: 0 };
+      box.innerHTML = `<div class="wix-il"></div><div class="wix-if"></div>
+        <details class="wix-all"><summary>All ${n(pages.length)} ${pages.length === 1 ? 'page' : 'pages'} as links</summary><div class="wix-pages">${pages.map(p => `<a href="${esc(opts.readHref(slug, p.page, hl))}">${pageLabel(slug, p.page)}${Number(p.occurrences) > 1 ? ' ×' + p.occurrences : ''}</a>`).join('')}</div></details>`;
+      const il = box.querySelector('.wix-il'), foot = box.querySelector('.wix-if');
+      async function next(k) {
+        const batch = pages.slice(st.shown, st.shown + k); st.shown += batch.length;
+        foot.innerHTML = '<span class="wix-none">Reading the pages…</span>';
+        let texts = null;
+        if (window.FRWordPreview) texts = await FRWordPreview.pages(slug, batch.map(p => p.page)).catch(e => { console.warn('word preview', e); return null; });
+        batch.forEach(p => {
+          const k2 = texts && FRWordPreview.kwic(texts.get(p.page) || '', forms), d = document.createElement('div');
+          d.className = 'wix-i';
+          d.innerHTML = `<a class="wix-p" href="${esc(opts.readHref(slug, p.page, hl))}">${pageLabel(slug, p.page)}</a>`
+            + (k2 && k2.snips.length ? k2.snips.map(x => `<span class="wix-s">${x}</span>`).join('') : '<span class="wix-s wix-none">open the page to read it</span>');
+          il.appendChild(d);
+        });
+        const left = pages.length - st.shown;
+        foot.innerHTML = left > 0 ? `<button type="button" class="wix-go wix-im">Show ${Math.min(10, left)} more passages · ${n(left)} left</button>` : '';
+        const b = foot.querySelector('button'); if (b) b.onclick = () => next(10);
+      }
+      await next(6);
     }
     box.addEventListener('change', e => {
       const t = e.target; if (!t.matches('input[data-f]')) return;
@@ -151,23 +222,26 @@
     });
     box.addEventListener('click', async e => {
       const t = e.target;
-      if (t.matches('button[data-add]')) { const g = state.groups[+t.dataset.g]; if (!g.cands.includes(t.dataset.add)) g.cands.push(t.dataset.add); g.counts[t.dataset.add] = Number((g.more.find(x => x.form === t.dataset.add) || {}).works || 1); g.on.add(t.dataset.add); $('.wix-forms').innerHTML = formsHtml(); loadCounts().catch(fail); }
+      if (t.matches('a.wix-jump')) { e.preventDefault(); const to = document.getElementById('count') || document.getElementById('results'); if (to) to.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      else if (t.matches('button[data-add]')) { const g = state.groups[+t.dataset.g]; if (!g.cands.includes(t.dataset.add)) g.cands.push(t.dataset.add); g.counts[t.dataset.add] = Number((g.more.find(x => x.form === t.dataset.add) || {}).works || 1); g.on.add(t.dataset.add); $('.wix-forms').innerHTML = formsHtml(); loadCounts().catch(fail); }
       else if (t.matches('button[data-t]')) { state.trad = t.dataset.t; loadCounts().catch(fail); }
       else if (t.matches('button[data-more]')) more();
       else if (t.matches('button[data-all]')) {
         t.disabled = true; t.textContent = 'Loading…';
         const r = await opts.post({ op: 'words', by: 'works', groups: groups(), tradition: state.trad, limit: 2000 }).catch(fail);
-        if (r && r.rows) { state.rows = r.rows; state.full = true; more(); }
+        if (r && r.rows) {   // regroup the whole list, keeping what was open in view
+          const had = state.shown; state.rows = r.rows; state.full = true; state.groups2 = grouped(r.rows); $('ol').innerHTML = '';
+          state.groups2.slice(0, had + 50).forEach(g => $('ol').appendChild(entry(g))); state.shown = Math.min(had + 50, state.groups2.length);
+          const left = state.groups2.length - state.shown;
+          $('.wix-foot').innerHTML = left > 0 ? `<button type="button" class="wix-go" data-more>Show ${Math.min(50, left)} more of ${n(state.groups2.length)}</button>` : '';
+        }
+      } else if (t.matches('button[data-vols]')) {
+        const ol = t.closest('li').querySelector(':scope > .wix-vols'); ol.hidden = !ol.hidden;
+        t.setAttribute('aria-expanded', String(!ol.hidden)); t.textContent = ol.hidden ? t.textContent.replace('▴', '▾').replace(/^Hide/, 'Show') : t.textContent.replace('▾', '▴').replace(/^Show/, 'Hide');
       } else if (t.matches('button[data-pages]')) {
-        const li = t.closest('li'), open = li.querySelector('.wix-pages');
-        if (open) { open.remove(); return; }
-        t.disabled = true; t.textContent = 'loading pages…';
-        const r = await opts.post({ op: 'words', by: 'pages', groups: groups(), work: t.dataset.pages, limit: 2000 }).catch(fail);
-        t.disabled = false; t.textContent = 'every page';
-        if (!r || !r.rows) return;
-        const div = document.createElement('div'); div.className = 'wix-pages';
-        div.innerHTML = r.rows.map(p => `<a href="${esc(opts.readHref(t.dataset.pages, p.page, t.dataset.hl))}">p. ${esc(String(p.page).replace(/^0+(?=\d)/, ''))}${Number(p.occurrences) > 1 ? ' ×' + p.occurrences : ''}</a>`).join('');
-        li.appendChild(div);
+        t.disabled = true;
+        await preview(t.closest('li'), t.dataset.pages, t.dataset.hl, t).catch(fail);
+        t.disabled = false;
       }
     });
     function fail(err) { $('.wix-sum').innerHTML = '<span class="wix-err">The word index could not be reached. The passages below are still searchable.</span>'; console.warn('word index', err); }
