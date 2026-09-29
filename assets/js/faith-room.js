@@ -1041,7 +1041,49 @@
   // then 79 to 82, then 83 to 90 — and grouping its contents under author
   // headings sorted A to Z destroys the one order the volume actually has.
   // The author moves onto the row instead, where it costs nothing.
-  function volRow(w, num, oneAuthor) {
+  // A GREEK FATHERS VOLUME'S OWN CONTENTS (owner 2026-09-28: "how come ?view=volume&vol=6 doesn't have the numbering like" the
+  // library's volume panel). Each Patrologia Graeca volume carries its printed table of contents, v1/pgvol/<n>.json `toc`: every
+  // entry's English title `t`, Migne's Latin `la`, column `c`, depth `lvl`, and `id`, the work whose text prints that column.
+  // Under each work's row go that work's entries, in print order and at their depth, the column in the gutter, each opening the
+  // reader at its page. The file comes the way the catalogue does, from the library, and is asked for once per volume.
+  const PG_CONTENTS = "https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/pgvol/";
+  const pgContents = new Map();   // volume number -> its toc, null when it cannot be had, "pending" while it is on its way
+  function pgContentsOf(num) {
+    const key = String(num || "");
+    if (!key) return null;
+    if (pgContents.has(key)) return pgContents.get(key);
+    pgContents.set(key, "pending");
+    fetch(PG_CONTENTS + encodeURIComponent(key) + ".json", { cache: "no-cache" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { pgContents.set(key, d && Array.isArray(d.toc) ? d.toc : null); render(); })
+      .catch(() => { pgContents.set(key, null); });
+    return "pending";
+  }
+
+  function contentsRows(w, toc) {
+    if (!Array.isArray(toc)) return "";
+    const m = /^pg-(\d+)$/.exec(String(w.slug || "")) || /^(\d+)$/.exec(String(w.id || ""));
+    if (!m) return "";
+    const id = Number(m[1]);
+    const mine = toc.filter((e) => Number(e.id) === id && e.c != null && String(e.t || "").trim());
+    // The work's own heading is its row already: the top-level entry that carries its title, else its first top-level entry.
+    const title = fold(w.title || "");
+    const head = mine.find((e) => !(+e.lvl) && fold(e.t) === title) || mine.find((e) => !(+e.lvl));
+    const rows = mine.filter((e) => e !== head);
+    if (!rows.length) return "";
+    const base = w.readable !== false && w.url ? String(w.url) : "";
+    return `<ul class="faith-room-contents">${rows.map((e) => {
+      const c = Number(e.c);
+      const page = c % 2 ? c : c - 1;   // Migne's pages are keyed by their odd column
+      const depth = Math.min(Math.max(+e.lvl || 0, 1), 3);
+      const la = e.la && e.la !== e.t ? `<span class="faith-room-contents-la"> · ${escapeHtml(e.la)}</span>` : "";
+      const inner = `<span class="brow-c" title="Migne column">${escapeHtml(String(e.c))}</span><span class="brow-t">${escapeHtml(e.t)}${la}</span>`;
+      const href = base ? `${base}${base.includes("?") ? "&" : "?"}p=${page}#b${page}-0` : "";
+      return `<li class="faith-room-contents-d${depth}">${href ? `<a href="${escapeHtml(href)}">${inner}</a>` : `<span class="faith-room-row">${inner}</span>`}</li>`;
+    }).join("")}</ul>`;
+  }
+
+  function volRow(w, num, oneAuthor, toc) {
     // The gutter carries whatever locator the series is cited by: Migne's
     // column range in the two Patrologiae, the fascicle in the Orientalis,
     // which is how a tome is divided and how it is cited. A series with
@@ -1073,10 +1115,11 @@
     const inner = `${col}<span class="brow-t">${escapeHtml(w.title || w.id)}${who}${kind}</span>${la}`;
     // Migne's own apparatus is set a step quieter than the father it surrounds.
     const cls = w.editorial ? ' class="is-editorial"' : "";
+    const sub = toc ? contentsRows(w, toc) : "";
     if (w.readable !== false && w.url) {
-      return `<li${cls}><a href="${escapeHtml(w.url)}">${inner}</a></li>`;
+      return `<li${cls}><a href="${escapeHtml(w.url)}">${inner}</a>${sub}</li>`;
     }
-    return `<li class="faith-room-pending${w.editorial ? " is-editorial" : ""}"><span class="faith-room-row">${inner}</span></li>`;
+    return `<li class="faith-room-pending${w.editorial ? " is-editorial" : ""}"><span class="faith-room-row">${inner}</span>${sub}</li>`;
   }
 
   // One block per author, laid out two across, exactly as the traditions
@@ -1538,11 +1581,12 @@
     const volNum = inVolume && chosen ? (chosen.num || "") : "";
     const volWho = inVolume ? volAuthors(printed) : [];
     const oneAuthor = volWho.length === 1;
+    const volToc = inVolume && shelf === SHELVES.pg && volNum ? pgContentsOf(volNum) : null;
     const gutter = inVolume && printed.some((w) => w.columns || w.fasc)
       ? " faith-room-printed--loc" : "";
     const list = inVolume
       ? (printed.length
-        ? `<ul class="blist faith-room-printed${gutter}">${printed.map((w) => volRow(w, volNum, oneAuthor)).join("")}</ul>`
+        ? `<ul class="blist faith-room-printed${gutter}">${printed.map((w) => volRow(w, volNum, oneAuthor, volToc)).join("")}</ul>`
         : `<p class="faith-room-status">Nothing matches that. Try another name or title.</p>`)
       : groups.length
         ? (() => {
