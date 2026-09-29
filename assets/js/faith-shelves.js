@@ -179,6 +179,12 @@
       blurb: "Conformist divinity within the English church, from Davenant's Calvinism to the Restoration churchmen who followed him. Smaller than the Puritan shelf, and concentrated in fewer hands.",
       who: "John Davenant · Gilbert Burnet · Jeremy Taylor · Edward Stillingfleet",
     },
+    methodist: {
+      label: "Methodists", route: "/the-faith-received/methodists/",
+      kind: "party", party: "Methodist", parent: "English Divines", blurbFamily: "english-divines",
+      blurb: "The Methodist movement inside English divinity: John and Charles Wesley, the circle round them — Whitefield, Fletcher, Coke, Benson, Asbury — and the Wesleyan theologians of the next century, Watson, Pope, Raymond, Summers and Miley. Filed under English Divines by the same party field as the Puritans and Anglicans.",
+      who: "John Wesley · Charles Wesley · George Whitefield · John William Fletcher",
+    },
     "westminster-assembly": {
       label: "Westminster Assembly", route: "/the-faith-received/westminster-assembly/",
       kind: "school", school: "Westminster Assembly", parent: "English Divines", blurbFamily: "english-divines",
@@ -211,7 +217,9 @@
     },
   };
 
-  const ORDER = ["puritan", "anglican", "westminster-assembly", "jesuits", "franciscans", "dominicans", "augustinians"];
+  // Methodists (2026-09-29): a third party under English Divines — the Wesleys, their circle and the Wesleyan theologians,
+  // `party: "Methodist"` in v1/works-index.json. Owner: "methodists should be listed under english divines".
+  const ORDER = ["puritan", "anglican", "methodist", "westminster-assembly", "jesuits", "franciscans", "dominicans", "augustinians"];
 
   // ── The grid on /the-faith-received/curated/ ─────────────────────
   function renderGrid() {
