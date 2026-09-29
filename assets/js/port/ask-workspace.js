@@ -671,16 +671,17 @@ function checkHTML(t){
   function createWorker() {
     /* MereO delta (unmarked in the old copy, kept deliberately): our
        ask-worker.js is ahead of the owner's, so it keeps OUR cache token,
-       v7i, not his v4 (7h on 2026-09-26: the worker keeps the works found
+       v7j, not his v4 (7h on 2026-09-26: the worker keeps the works found
        and the check's marked statements; 7i on 2026-09-29: it sweeps dead
-       quick answers itself and Stop ends one nobody streams). The token is also the SharedWorker NAME: a browser
+       quick answers itself and Stop ends one nobody streams; 7j the same
+       day: a refused question shows the server's reason). The token is also the SharedWorker NAME: a browser
        that already owns fr-ask-v7g would keep serving the old script under
        a reused name, and every tab of a member mid-question would be
        answered by a worker without our member-bearer handling. Bump both
        together whenever ask-worker.js changes. The PATH comes from
        CFG.assetBase; only the version is ours. */
-    try { worker=new SharedWorker(CFG.assetBase+'ask-worker.js?v=7i',{name:'fr-ask-v7i'});port=worker.port;port.start(); }
-    catch(_){workerKind='tab';worker=new Worker(CFG.assetBase+'ask-worker.js?v=7i');port=worker;}
+    try { worker=new SharedWorker(CFG.assetBase+'ask-worker.js?v=7j',{name:'fr-ask-v7j'});port=worker.port;port.start(); }
+    catch(_){workerKind='tab';worker=new Worker(CFG.assetBase+'ask-worker.js?v=7j');port=worker;}
     port.onmessage=async({data})=>{
       if(data.type==='reply'){const r=replies.get(data.rid);if(r){clearTimeout(r.timer);replies.delete(data.rid);data.error?r.reject(new Error(data.error)):r.resolve();}}
       else if(data.type==='updated')scheduleRefresh();
