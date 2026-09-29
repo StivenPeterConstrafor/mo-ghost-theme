@@ -157,7 +157,7 @@
       .then((sets) => {
         // Migne's apparatus (indices, notices, admonitions, tables of contents) is not offered as a work here: it
         // stays readable from its volume. Corpus owner, 2026-09-25.
-        all = sets.flat().filter((w) => !w.app);
+        all = sets.flat().filter((w) => window.MOFaithCatalogue.shelved(w));
         // The library's own collections are shelves (the Tradition select), not a collection to pick.
         fillSelect("[data-bs-collection]", tally(all, (w) => (ONE_LIBRARY.has(w.corpus) ? "" : w.corpus)), (id) => {
           const c = window.MOCorpora.get(id);

@@ -336,7 +336,7 @@
   ])
     .then(([sets, roster, , confessions]) => {
       // A shelf counts what its room lists: Migne's apparatus (indices, notices, admonitions) is not a work (2026-09-25).
-      const html = catalogueReturn + continueReading() + shelves(sets.flat().filter((w) => !w.app), roster, confessions);
+      const html = catalogueReturn + continueReading() + shelves(sets.flat().filter((w) => window.MOFaithCatalogue.shelved(w)), roster, confessions);
       if (html) root.innerHTML = html;
       else root.remove();
     })
