@@ -11553,6 +11553,14 @@ body.faith-toc-open .faith-dock { display: none; }
   padding: 9px 10px;
 }
 .fr-report-field textarea { resize: vertical; min-height: 96px; }
+/* The citation under a passage sent from the reader's selection bar. */
+.fr-report-cite {
+  display: block;
+  margin: 5px 0 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-muted);
+}
 .fr-report-field input:focus,
 .fr-report-field select:focus,
 .fr-report-field textarea:focus {

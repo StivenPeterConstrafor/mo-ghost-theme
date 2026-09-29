@@ -96,12 +96,15 @@
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   }
 
-  function open() {
+  // `opts` may be a click event (the reader's tool button passes one
+  // straight through), so only a real passage with text counts.
+  function open(opts) {
     if (overlay) return;
     lastFocused = document.activeElement;
     const here = workName();
     const whom = authorName();
     const onWork = !!here;
+    const passage = opts && opts.passage && opts.passage.text ? opts.passage : null;
 
     overlay = document.createElement("div");
     overlay.className = "fr-report-overlay";
@@ -129,13 +132,19 @@
       `<label class="fr-report-field"><span>Author</span>` +
       `<input type="text" name="author" value="${escapeHtml(whom)}" ` +
       `placeholder="Who wrote it, if you know"></label>` +
+      (passage
+        ? `<label class="fr-report-field"><span>Passage</span>` +
+          `<textarea name="passage" rows="3" aria-label="Passage">${escapeHtml(passage.text.slice(0, PASSAGE_MAX))}</textarea>` +
+          (passage.cite ? `<small class="fr-report-cite">${escapeHtml(passage.cite)}</small>` : "") +
+          `</label>`
+        : "") +
       `<label class="fr-report-field"><span>Issue type</span>` +
       `<select name="issueType" required>` +
       `<option value="">Choose one</option>${ 
       TYPES.map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("") 
       }</select></label>` +
       `<label class="fr-report-field"><span>Comment</span>` +
-      `<textarea name="comment" rows="5" placeholder="Describe The Issue" required></textarea></label>` +
+      `<textarea name="comment" rows="5" placeholder="${passage ? "What is wrong with this passage?" : "Describe The Issue"}" required></textarea></label>` +
       `<div class="fr-report-turnstile" data-turnstile-wrap></div>` +
       `<p class="fr-report-msg" data-fr-msg role="status" aria-live="polite" hidden></p>` +
       `<div class="fr-report-actions">` +
@@ -205,6 +214,20 @@
       }
       data.set("turnstile_token", token);
       data.set("pageUrl", window.location.href.split("#")[0]);
+      // A passage report is pinned to its row: the link opens on the
+      // exact words, and the words themselves lead the comment, so the
+      // inbox and the notification email carry them with no new column.
+      if (passage) {
+        const quoted = String(data.get("passage") || "").trim();
+        data.delete("passage");
+        data.set("pageUrl", passage.url);
+        if (quoted) {
+          data.set("comment", (
+            `Passage${passage.cite ? ` (${passage.cite})` : ""}:\n"${quoted}"\n\n` +
+            String(data.get("comment") || "").trim()
+          ).slice(0, 4000));
+        }
+      }
       data.set("corpus", param("c") || "tfr");
       data.set("workId", param("w"));
 
@@ -247,6 +270,69 @@
     btn.innerHTML = `<span class="faith-toggle-label">Report An Issue</span>`;
     btn.addEventListener("click", open);
     controls.appendChild(btn);
+  }
+
+  /*
+   * REPORT FROM THE SELECTION BAR. Brannon's idea, Ian 2026-09-29: "Add
+   * Report to the highlight bar and make the form autopopulate with the
+   * highlighted text." A reader who selects the bad words and taps
+   * Report sends those words, their citation and a link to their exact
+   * row, instead of describing where they were.
+   *
+   * The bar (#selpop) is wired by read-tools.js, which is Stiven's and
+   * keeps its selection private. So nothing here touches that file: the
+   * selection is read the same way it reads it (first row under the
+   * start of the range, inside #reading), and the citation is taken
+   * from #nbSelectionCite, which read-tools.js paints for every
+   * selection it shows the bar for. The button itself is ours, in
+   * custom-faith-port-read.hbs.
+   */
+  const PASSAGE_MAX = 1500;
+  const ROW = ".row[id],.en[id^=b],.la[id^=b]";
+  let lastPassage = null;
+
+  function selectedPassage() {
+    const s = window.getSelection && window.getSelection();
+    if (!s || s.isCollapsed || !s.rangeCount) return null;
+    const text = s.toString().replace(/\s+/g, " ").trim();
+    if (text.length < 2) return null;
+    const start = s.getRangeAt(0).startContainer;
+    const node = start.nodeType === 1 ? start : start.parentElement;
+    const row = node && node.closest(ROW);
+    const reading = document.getElementById("reading");
+    if (!row || !reading || !reading.contains(row)) return null;
+    return {
+      text,
+      cite: "",
+      url: window.location.origin + window.location.pathname + window.location.search + "#" + row.id,
+    };
+  }
+
+  // A tap on a touch screen can collapse the selection before the
+  // click lands, so the last one seen is kept.
+  document.addEventListener("selectionchange", () => {
+    const p = selectedPassage();
+    if (p) lastPassage = p;
+  });
+
+  const reportFromBar = document.getElementById("spReport");
+  if (reportFromBar) {
+    reportFromBar.addEventListener("click", (e) => {
+      e.preventDefault();
+      const p = selectedPassage() || lastPassage;
+      if (p) {
+        const shown = document.getElementById("nbSelectionText");
+        const cite = document.getElementById("nbSelectionCite");
+        if (shown && cite && shown.textContent.replace(/\s+/g, " ").trim() === p.text) {
+          p.cite = cite.textContent.trim().slice(0, 300);
+        }
+      }
+      const bar = document.getElementById("selpop");
+      if (bar) bar.classList.remove("show");
+      try { window.getSelection().removeAllRanges(); } catch (_) { /* nothing selected */ }
+      lastPassage = null;
+      open({ passage: p });
+    });
   }
 
   // Anything on the page can raise it. The landing page's feedback

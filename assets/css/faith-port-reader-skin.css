@@ -3620,3 +3620,25 @@ html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .fr-td-src { min-wi
    Tools cell (x-ednotes), so the bar's own stays off the phone head, as
    Report, Top, Collapse and Focus do. */
 html.g-mobile .fr-tb-ednotes { display: none !important; }
+
+/* THE SELECTION BAR ON A PHONE IS TWO ROWS. read.in01.css pins #selpop
+   between 8px gutters as one flex row, and eight buttons already ran it
+   4px off a 375px screen, with "Highlight" running into "Note". Report
+   (2026-09-29) made nine, which put More 50px off the edge. Five columns,
+   wrapping upward from the bar's bottom anchor, keep every 44px target on
+   screen down to 320px. Labels may wrap to two lines, because the first
+   button reads "Remove highlight" on text that is already marked. */
+@media (max-width: 880px) {
+  #selpop.show {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 2px;
+  }
+  #selpop.show button.pb,
+  #selpop.show button.sw {
+    min-width: 0;
+    padding: 8px 2px;
+    white-space: normal;
+    line-height: 1.15;
+  }
+}
