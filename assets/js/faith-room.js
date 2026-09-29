@@ -1048,13 +1048,13 @@
   // Under each work's row go that work's entries, in print order and at their depth, the column in the gutter, each opening the
   // reader at its page. The file comes the way the catalogue does, from the library, and is asked for once per volume.
   const PG_CONTENTS = "https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/pgvol/";
-  const pgContents = new Map();   // volume number -> its toc, null when it cannot be had, "pending" while it is on its way
+  const pgContents = new Map(); // volume number -> its toc, null when it cannot be had, "pending" while it is on its way
   function pgContentsOf(num) {
     const key = String(num || "");
     if (!key) return null;
     if (pgContents.has(key)) return pgContents.get(key);
     pgContents.set(key, "pending");
-    fetch(PG_CONTENTS + encodeURIComponent(key) + ".json", { cache: "no-cache" })
+    fetch(`${PG_CONTENTS + encodeURIComponent(key)}.json`, { cache: "no-cache" })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { pgContents.set(key, d && Array.isArray(d.toc) ? d.toc : null); render(); })
       .catch(() => { pgContents.set(key, null); });
@@ -1075,7 +1075,7 @@
     const base = w.readable !== false && w.url ? String(w.url) : "";
     return `<ul class="faith-room-contents">${rows.map((e) => {
       const c = Number(e.c);
-      const page = c % 2 ? c : c - 1;   // Migne's pages are keyed by their odd column
+      const page = c % 2 ? c : c - 1; // Migne's pages are keyed by their odd column
       const depth = Math.min(Math.max(+e.lvl || 0, 1), 3);
       const la = e.la && e.la !== e.t ? `<span class="faith-room-contents-la"> · ${escapeHtml(e.la)}</span>` : "";
       const inner = `<span class="brow-c" title="Migne column">${escapeHtml(String(e.c))}</span><span class="brow-t">${escapeHtml(e.t)}${la}</span>`;

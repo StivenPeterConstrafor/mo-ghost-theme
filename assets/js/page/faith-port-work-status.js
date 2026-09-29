@@ -131,13 +131,13 @@
     const step = Math.max(1, Math.floor(cells.length / 60));
     let text = "";
     for (let i = 0; i < cells.length && text.length < 12000; i += step) {
-      text += " " + String(cells[i].textContent || "").slice(0, 400);
+      text += ` ${String(cells[i].textContent || "").slice(0, 400)}`;
     }
     return text;
   }
   function languageOf(text) {
     const letters = (text.match(/\p{L}/gu) || []).length;
-    if (letters < 300) return null;          // not enough on the page yet
+    if (letters < 300) return null; // not enough on the page yet
     // A script names the language only when it carries most of the text.
     // A real share that is not a majority means a mixed page: say nothing.
     for (const [re, name] of SCRIPTS) {
@@ -264,7 +264,7 @@
       let prov = decide(corpus, lanes);
       if (corpus === "po" && prov.kind === "ai") {
         const c = await poCanon(id);
-        if (!c) prov = { kind: "unknown" };   // no file, no claim either way
+        if (!c) prov = { kind: "unknown" }; // no file, no claim either way
         else if (c.edition && !c.machine) prov = { kind: "human", credit: "The English is the printed translation in the Patrologia Orientalis edition." };
         else if (c.lang) prov.lang = c.lang;
       }

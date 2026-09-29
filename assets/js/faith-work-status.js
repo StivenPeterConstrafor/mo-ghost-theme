@@ -367,9 +367,9 @@
         title: "Transparency",
         fact: "Human translation",
         head: "This English is a translation made by people, not by a machine.",
-        body: (credit ? `${credit} ` : "")
-          + "No artificial intelligence was used to translate this text."
-          + (credit ? "" : " We have not yet recorded the translator's name."),
+        body: `${credit ? `${credit} ` : ""
+           }No artificial intelligence was used to translate this text.${
+           credit ? "" : " We have not yet recorded the translator's name."}`,
       });
       return;
     }

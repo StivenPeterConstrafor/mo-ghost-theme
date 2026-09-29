@@ -5,7 +5,7 @@
   // the Greek Fathers' works and the texts inside them (tfr-backend v1/pg-contents.json, 09-28: "allow me to type in dialogue with
   // trypho"): a second file, merged — the Dialogue with Trypho is found inside "Justin the Philosopher and Martyr"
   const urlPg=document.currentScript?.dataset.contentsPg;
-  let works={};
+  const works={};
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const reader=(slug,page)=>`/the-faith-received/read/?w=${encodeURIComponent(slug)}${page==null?'':`&p=${encodeURIComponent(String(page))}#b${encodeURIComponent(String(page))}-0`}`;
   function excerpt(value){const text=String(value||'').replace(/\s+/g,' ').trim();return text.length<=260?text:`${text.slice(0,257).replace(/\s+\S*$/,'')}…`;}
