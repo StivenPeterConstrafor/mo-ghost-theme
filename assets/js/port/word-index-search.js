@@ -70,6 +70,7 @@
 .wix .wix-c{font-size:.84rem;margin-top:.12rem}.wix .wix-c button{border:0;background:none;padding:0;margin-left:.5rem;color:inherit;text-decoration:underline;cursor:pointer;font:inherit}
 .wix .wix-pages{display:flex;flex-wrap:wrap;gap:.25rem .6rem;margin-top:.35rem;font-size:.82rem}.wix .wix-pages a{color:inherit}
 .wix .wix-go{margin-top:.7rem;padding:.35rem .8rem;border:1px solid var(--border,#ddd);border-radius:6px;background:none;color:inherit;font:inherit;cursor:pointer}
+.wix-teaser{padding:.7rem 1rem;font-size:.92rem;line-height:1.5}.wix-teaser .wix-go{margin:0 0 0 .4rem;padding:.2rem .7rem}
 .wix .wix-note{margin:.8rem 0 0;color:var(--muted,#666);font-size:.8rem;line-height:1.45}.wix .wix-err{color:#a8462b}`;
     const el = document.createElement('style'); el.textContent = css; document.head.appendChild(el);
   }
@@ -173,5 +174,31 @@
     loadForms().then(loadCounts).catch(fail);
     return { words: ws };
   }
-  window.FRWordIndex = { mount, inflect, forms, words, fold };
+  /* The Works tab searches titles, so a reader who types a word there sees only works NAMED by it. One line says how many works
+     hold the word in their text and opens the full list (opts.open). Cached per query: the tab re-renders as headings load. */
+  const memo = new Map();
+  async function count(query, post) {
+    const ws = words(query); if (!ws) return null;
+    const key = ws.join(' ');
+    if (!memo.has(key)) memo.set(key, (async () => {
+      const gs = ws.map(w => forms(w)), all = [...new Set(gs.flatMap(g => g.all))].slice(0, 40);
+      const r = await post({ op: 'words', by: 'forms', groups: [all] });
+      const have = new Set((r.forms || []).map(x => x.form));
+      const groups = gs.map(g => g.all.filter(f => have.has(f) && !g.off.has(f)));
+      if (groups.some(g => !g.length)) return { ws, works: 0 };
+      const sum = await post({ op: 'words', by: 'summary', groups });
+      return { ws, works: (sum.rows || []).reduce((a, x) => a + Number(x.works), 0) };
+    })().catch(() => { memo.delete(key); return null; }));
+    return memo.get(key);
+  }
+  async function teaser(host, opts) {
+    if (!host) return;
+    const my = (host.__wixSeq = (host.__wixSeq || 0) + 1);
+    const c = await count(opts.query, opts.post);
+    if (my !== host.__wixSeq || !c || !c.works) return;
+    style();
+    host.innerHTML = `<div class="wix wix-teaser"><b>${c.ws.map(w => '“' + esc(w) + '”').join(' + ')}</b> ${c.ws.length > 1 ? 'occur together on the pages of' : 'occurs in the text of'} <b>${n(c.works)} ${c.works === 1 ? 'work' : 'works'}</b> (with ${c.ws.length > 1 ? 'their' : 'its'} other forms). The list below matches titles and headings only. <button type="button" class="wix-go">List every text</button></div>`;
+    host.querySelector('button').onclick = () => opts.open();
+  }
+  window.FRWordIndex = { mount, teaser, count, inflect, forms, words, fold };
 })();

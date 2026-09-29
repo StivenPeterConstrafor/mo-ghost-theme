@@ -149,6 +149,7 @@ function renderTitle(q){
   if(CATALOG_ERROR){searchUnavailable('Work catalogue',q);return;}
   if(!IDX){var waiting=seq,requestedPage=RESULT_PAGE;res.innerHTML='';ct.innerHTML='<span class="sbusy">loading…</span>';navMap(function(){if(waiting===seq){RESTORE_PAGE=requestedPage;run();}});return;}
   if(q.trim().length>=2)loadHeadingsTier();
+  if(window.FRWordIndex&&!FAC.author&&!FAC.work&&!FAC.workQuery&&!FAC.collection&&!FAC.group)FRWordIndex.teaser(document.getElementById('wordIndex'),{query:q,post:wixPost,open:function(){setMode('full');}});
   var toks=foldQ(q).split(/\s+/).filter(function(t2){return t2.length>=2;});
   var m=IDX.filter(function(e){
     var hay=foldQ(e.t+' '+(e.o||'')+' '+e.a+' '+(e.al||''));
@@ -203,7 +204,9 @@ function pfInit(){if(_pf)return _pf;
           .then(function(){return p;});});})
     .catch(function(){_pf=null;return null;});
   return _pf;}
-function renderFull(q){var my=++seq;ct.textContent='Loading the text index…';res.innerHTML='';if(window.FRWordIndex&&!FAC.author&&!FAC.work&&!FAC.workQuery&&!FAC.collection&&!FAC.group)FRWordIndex.mount(document.getElementById('wordIndex'),{query:q,post:function(b){var r64=btoa(String.fromCharCode.apply(null,new TextEncoder().encode(JSON.stringify(b)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');return fetch('https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/words?r='+r64,{signal:AbortSignal.timeout(45000)}).then(function(r){return r.json().then(function(j){if(!r.ok||j.error)throw Error(j.error||r.status);return j;});});},readHref:function(slug,page,w){var pg=/^\d+$/.test(String(page))?String(page).replace(/^0+(?=\d)/,''):page;var u=rdHref(slug,pg),i=u.indexOf('#'),hl=w?(u.indexOf('?')>=0?'&':'?')+'hl='+encodeURIComponent(w):'';return i<0?u+hl:u.slice(0,i)+hl+u.slice(i);},title:function(slug,row){return NAV&&NAV[slug]?docTitle(slug):esc(row.title||slug);},meta:function(row){return [row.author,row.volume,row.tradition].filter(Boolean).map(esc).join(' · ');}});
+/* the concordance behind the exact-word panel (word-index-search.js; the Ask worker's /v1/words, mo-workers words-route.js) */
+function wixPost(b){var r64=btoa(String.fromCharCode.apply(null,new TextEncoder().encode(JSON.stringify(b)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');return fetch('https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/words?r='+r64,{signal:AbortSignal.timeout(45000)}).then(function(r){return r.json().then(function(j){if(!r.ok||j.error)throw Error(j.error||r.status);return j;});});}
+function renderFull(q){var my=++seq;ct.textContent='Loading the text index…';res.innerHTML='';if(window.FRWordIndex&&!FAC.author&&!FAC.work&&!FAC.workQuery&&!FAC.collection&&!FAC.group)FRWordIndex.mount(document.getElementById('wordIndex'),{query:q,post:wixPost,readHref:function(slug,page,w){var pg=/^\d+$/.test(String(page))?String(page).replace(/^0+(?=\d)/,''):page;var u=rdHref(slug,pg),i=u.indexOf('#'),hl=w?(u.indexOf('?')>=0?'&':'?')+'hl='+encodeURIComponent(w):'';return i<0?u+hl:u.slice(0,i)+hl+u.slice(i);},title:function(slug,row){return NAV&&NAV[slug]?docTitle(slug):esc(row.title||slug);},meta:function(row){return [row.author,row.volume,row.tradition].filter(Boolean).map(esc).join(' · ');}});
  navMap(function(){if(my!==seq)return;pfInit().then(function(p){if(my!==seq)return;if(!p)throw Error('The text index could not load.');
   return p.search(q,{filters:FRSearch.pagefindFilters(FAC,WLIST||[])}).then(function(r){if(my!==seq)return;var total=r.results.length,cache=new Map();
    function href(raw,slug){var ref=FRSearch.readerLink(raw,location.origin);return ref?rdHref(ref.slug,ref.page):WORKS_BY_SLUG[slug]?rdHref(slug):null;}
