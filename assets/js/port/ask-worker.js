@@ -20,17 +20,28 @@ const STALE_AFTER=360000;
    when re-vendoring ask-worker.js from upstream. */
 const CLIENT_ABORT_MS=330000;
 const CLIENT_ABORT_TEXT=(CLIENT_ABORT_MS/60000).toFixed(1).replace(/\.0$/,'')+' minutes';
+/* MereO delta (2026-09-29, "Still writing… 871m 3s"): the worker sweeps abandoned quick answers ITSELF, not only when
+   it starts. The worker that streamed a turn can die (its tab closed or was suspended) while another tab keeps THIS
+   worker alive, and a startup-only sweep never saw that turn. Staleness is the turn's own clock: every save stamps
+   turn.beat (heartbeats included), so a turn nobody writes is known without trusting the conversation's ts, which
+   other writes touch. It runs at start, whenever a tab connects, and once a minute, so the launcher's "research
+   running" count clears with the panel closed too (the Low finding on 1cefc941e). The page-side check in
+   ask-workspace.js (abandoned()) stays: the two agree on the 360s ceiling. Re-apply when re-vendoring. */
+const lastBeat=t=>Math.max(t.beat||0,t.ts||0,...(t.steps||[]).map(s=>s.ts||0));
 async function recoverInterrupted(){
- const all=await Store.all();let pending=false;
+ const all=await Store.all();
  for(const c of all){
-  const stale=(c.turns||[]).filter(t=>t.status==='running'&&!t.serverJob&&!jobs.has(c.id));
-  if(!stale.length)continue;
-  if(Date.now()-(c.ts||0)<STALE_AFTER){pending=true;continue;}
-  await Store.update(c.id,current=>{if(jobs.has(c.id)||Date.now()-(current.ts||0)<STALE_AFTER)return;for(const t of current.turns||[])if(t.status==='running'&&!t.serverJob){t.status='interrupted';t.error='This research was interrupted when the browser stopped. Retry to start a new attempt.';}current.unread=true;});
+  if(jobs.has(c.id))continue;
+  if(!(c.turns||[]).some(t=>t.status==='running'&&!t.serverJob&&Date.now()-lastBeat(t)>=STALE_AFTER))continue;
+  let n=0;
+  await Store.update(c.id,current=>{if(jobs.has(c.id))return;for(const t of current.turns||[])if(t.status==='running'&&!t.serverJob&&Date.now()-lastBeat(t)>=STALE_AFTER){t.status='interrupted';t.error='This research was interrupted when the browser stopped. Retry to start a new attempt.';n++;}if(n)current.unread=true;});
+  if(n)broadcast({type:'updated',id:c.id});
  }
- if(pending){const timer=setTimeout(()=>recoverInterrupted().catch(()=>{}),STALE_AFTER);timer.unref?.();}
 }
 const ready=recoverInterrupted();
+(function sweep(){const t=setTimeout(()=>{recoverInterrupted().catch(()=>{}).finally(sweep);},60000);t?.unref?.();})();
+// A stop for a turn another worker streams is passed to that worker (see 'stop' below); the owner aborts it.
+if(channel)channel.addEventListener('message',e=>{const d=e.data||{};if(d.type==='stop-request'){const job=jobs.get(d.id);if(job)job.ctl.abort();}});
 async function run(id, turnId, request, job) {
   const ctl = job.ctl;
   let turn, lastSave = 0, finished = false, timer, saveTimer, saveChain=Promise.resolve();
@@ -42,6 +53,7 @@ async function run(id, turnId, request, job) {
     }
     clearTimeout(saveTimer);saveTimer=null;
     lastSave = Date.now();
+    turn.beat = lastSave;
     const snapshot = structuredClone(turn);
     const write=saveChain.then(()=>Store.update(id, c => {
       const i = c.turns.findIndex(t => t.id === turnId); if (i >= 0) c.turns[i] = snapshot;
@@ -123,6 +135,7 @@ async function run(id, turnId, request, job) {
 }
 function connect(port) {
   ports.add(port); if (port.start) port.start();
+  ready.then(()=>recoverInterrupted()).catch(()=>{});
   port.onmessage = async ({ data }) => {
     try {
       await ready;
@@ -136,7 +149,17 @@ function connect(port) {
         await Store.update(data.id, c => { c.turns.push(data.turn); c.ts = Date.now(); c.draft = ''; });
         run(data.id, data.turn.id, data.request, job);
         } catch (error) { jobs.delete(data.id); throw error; }
-      } else if (data.type === 'stop') { const job = jobs.get(data.id); if (job) job.ctl.abort();else{const c=await Store.get(data.id);if(c?.turns.some(t=>t.status==='running'&&!t.serverJob))throw Error('This answer is running in another open tab. Stop it in that tab.');} }
+      } else if (data.type === 'stop') { const job = jobs.get(data.id); if (job) job.ctl.abort(); else {
+        /* MereO delta (2026-09-29): another worker's turn, or nobody's. Its owner is asked to stop it; if the turn is
+           not written to over the next few seconds, no worker is streaming it and it ends here. It used to answer
+           "running in another open tab" for good, so a reader could not stop a dead answer. */
+        const before=await Store.get(data.id), t0=before?.turns.find(t=>t.status==='running'&&!t.serverJob);
+        if(t0){
+          if(channel)channel.postMessage({type:'stop-request',id:data.id});
+          await new Promise(r=>setTimeout(r,4000));
+          await Store.update(data.id,current=>{const t=(current.turns||[]).find(x=>x.id===t0.id);if(t&&t.status==='running'&&lastBeat(t)<=lastBeat(t0)){t.status='stopped';t.error='This answer had stopped arriving and was ended. Your question and any received passages are saved. Retry to start a new attempt.';}});
+        }
+      } }
       port.postMessage({ type: 'reply', rid: data.rid, ok: true });
       broadcast({ type: 'updated', id: data.id });
     } catch (error) { port.postMessage({ type: 'reply', rid: data.rid, error: String(error.message || error) }); }
