@@ -20490,13 +20490,14 @@ body.mo-shelf-page #author-order-note { display: none; }
 }
 
 /* THE BETA TAG ON THE TFR HOME, BIGGER (Ian, 2026-09-29: "make the beta
-   in the home page bigger"). At 9px and 75% it was a speck beside the
+   in the home page bigger", then "Bigger"). At 9px and 75% it was a speck beside the
    13px kicker. Here it matches the kicker's weight; the section nav's
    tag keeps the small size. */
 .lp-hero .hero-kicker .faith-beta {
-  font-size: 12px;
-  padding: 4px 10px 3px;
-  margin-left: 12px;
-  vertical-align: 0.08em;
+  font-size: 15px;
+  padding: 5px 12px 4px;
+  margin-left: 14px;
+  vertical-align: 0.04em;
+  border-width: 1.5px;
   opacity: 1;
 }
