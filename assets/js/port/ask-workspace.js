@@ -700,6 +700,10 @@ function checkHTML(t){
       await S.update(c.id,record=>{for(const t of record.turns)if(deliveryIncomplete(t)){t.status='error';t.error='The response ended before completion was confirmed. The received text and source passages are saved. Retry to finish.';}record.unread=true;});
       const updated=await S.get(c.id);Object.assign(c,updated);
     }
+    for(const c of conversations)if(c.turns.some(t=>abandoned(t,c))){
+      await S.update(c.id,record=>{let hit=false;for(const t of record.turns)if(abandoned(t,record)){t.status='interrupted';t.error='This answer stopped arriving, most likely because the browser paused it in the background. Your question and any received passages are saved. Retry to start a new attempt.';hit=true;}if(hit)record.unread=true;});
+      const updated=await S.get(c.id);Object.assign(c,updated);
+    }
     const count=conversations.filter(c=>running(c)).length, unread=conversations.filter(c=>c.unread).length;
     const updateLabel=count?count+' research running':unread?unread+' conversation updates':'';
     const launcher=document.getElementById('fra-launcher');if(launcher){
@@ -740,6 +744,17 @@ function checkHTML(t){
   }
   function shownAnswer(t){return t.status==='error'?String(t.a||'').split('The library hit an error answering this')[0].trim():t.a||'';}
   function offersDeep(t){return t.mode==='ask'&&t.status==='complete'&&!t.outOfScope&&!/^Ask is for this library's texts/.test(t.a||'');}
+  /* MereO delta: a quick-Ask turn nobody owns any more. ask-worker.js aborts
+     every quick Ask at CLIENT_ABORT_MS (330s) and then saves the turn as an
+     error, so a turn still 'running' past that plus a 30s grace (the worker's
+     own STALE_AFTER, 360s) has lost its worker: the browser suspended or killed
+     it mid-stream. The worker only sweeps these when a NEW worker starts, so a
+     page that outlives its worker showed "Still writing… 871m 3s" (reader
+     report, 2026-09-29). Deep research (serverJob) is owned by the server and
+     never matches. The c.ts check keeps us from racing a worker that is saving
+     its own final state right now. Re-apply when re-vendoring from upstream. */
+  const ABANDONED_AFTER_MS=360000;
+  function abandoned(t,c){return t.status==='running'&&!t.serverJob&&t.ts>0&&Date.now()-t.ts>ABANDONED_AFTER_MS&&Date.now()-((c&&c.ts)||0)>30000;}
   function deliveryIncomplete(t){return t.status==='complete'&&(t.expectsReceipt||(t.steps||[]).some(s=>s.label==='Preparing the response'))&&!t.receivedComplete&&!(t.steps||[]).some(s=>s.label==='Answer received');}
   function shownError(t){return /load failed|failed to fetch|networkerror|network request failed|fetch failed/i.test(t.error||'')?'The connection was interrupted. Your question and any received passages are saved. Try again.':t.error||'';}
   function renderHeader(){const c=selected();if(!c)return;
@@ -1422,6 +1437,13 @@ function checkHTML(t){
     if(window.__FR_ASK_PENDING__){const pending=window.__FR_ASK_PENDING__;delete window.__FR_ASK_PENDING__;open(pending);}
     else if(ASK_PATH_RE.test(location.pathname)||params.get('m')==='ask'||params.has('ask'))open({id:params.get('chat')||undefined,view:params.get('view')||undefined,q:params.get('ask')||params.get('q')||'',tradition:params.get('trad')||undefined});
     setInterval(()=>{if(visible)panel.querySelectorAll('.fra-elapsed').forEach(e=>e.textContent=elapsed(+e.dataset.start));},1000);
+    /* MereO delta: re-check for abandoned turns (see abandoned()) while the
+       panel is open, and the moment a backgrounded tab comes back, so the
+       clock never runs past the worker's own ceiling by more than a few seconds. */
+    const sweepIfStale=()=>{if(visible&&conversations.some(c=>c.turns.some(t=>abandoned(t,c))))refresh().catch(()=>{});};
+    setInterval(sweepIfStale,5000);
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sweepIfStale();});
+    window.addEventListener('pageshow',sweepIfStale);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootstrap,{once:true});else bootstrap();
 })();
