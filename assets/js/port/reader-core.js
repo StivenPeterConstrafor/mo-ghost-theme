@@ -1774,6 +1774,11 @@ async function loadTEI(){
     const P=new DOMParser();
     const parse=x=>{if(!x)return null;const d=P.parseFromString(x,"application/xml");return d.querySelector("parsererror")?null:d;};
     let laDoc=parse(laXml),enDoc=parse(enXml);
+    // Aquinas lecture heads (ticket #10): the English ingest writes the lecture title twice ("L. 6 (6:47-52) T T 6:47 ..."); keep one.
+    try{if(enDoc&&/^aq-/.test(String(DATA.slug||"")))enDoc.querySelectorAll("p").forEach(p=>{
+      const n=p.firstChild;if(!n||n.nodeType!==3||p.childNodes.length!==1)return;
+      const t=n.nodeValue,m=/^((?:L|Lect)\.\s*\d+\s*\([^)]*\)\s+)(\S.{2,200}?)\s+\2(?=\s)/.exec(t);
+      if(m)n.nodeValue=m[1]+m[2]+t.slice(m[0].length);});}catch(e){}
     if(!laDoc){
       // French-source works (Guettée, Hefele) carry tei.fr.xml, not tei.la.xml — the
       // source lane is French (owner 2026-08-26 "wheres the latin lane")
