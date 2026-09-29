@@ -182,7 +182,7 @@
     methodist: {
       label: "Methodists", route: "/the-faith-received/methodists/",
       kind: "party", party: "Methodist", parent: "English Divines", blurbFamily: "english-divines",
-      blurb: "The Methodist movement inside English divinity: John and Charles Wesley, the circle round them — Whitefield, Fletcher, Coke, Benson, Asbury — and the Wesleyan theologians of the next century, Watson, Pope, Raymond, Summers and Miley. Filed under English Divines by the same party field as the Puritans and Anglicans.",
+      blurb: "The Methodist movement inside English divinity: John and Charles Wesley, the circle round them, Whitefield, Fletcher, Coke, Benson and Asbury, and the Wesleyan theologians of the next century, Watson, Pope, Raymond, Summers and Miley. Filed under English Divines by the same party field as the Puritans and Anglicans.",
       who: "John Wesley · Charles Wesley · George Whitefield · John William Fletcher",
     },
     "westminster-assembly": {
