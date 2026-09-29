@@ -20501,3 +20501,12 @@ body.mo-shelf-page #author-order-note { display: none; }
   border-width: 1.5px;
   opacity: 1;
 }
+
+/* FOUR TABS ON THE ABOUT PAGE (2026-09-29, the transparency commitment
+   joined the three letters). At 15px with 16px sides, four across the
+   prose measure broke the labels onto three lines ("to" alone on one).
+   14px with 8px sides keeps every label on its two lines. Phones stack
+   the tabs and keep their own rule above. */
+@media (min-width: 641px) {
+  .faith-mf-tabs > button { font-size: 14px; padding: 12px 8px; }
+}
