@@ -58,33 +58,67 @@
   let styled = false;
   function style() {
     if (styled) return; styled = true;
-    const css = `.wix{margin:0 0 1.4rem;padding:1rem 1.1rem;border:1px solid var(--border,#ddd);border-radius:8px;background:var(--card-bg,#fff)}
-.wix h3{margin:0 0 .35rem;font:600 1.02rem/1.35 var(--font-ui,inherit)}.wix .wix-sub{margin:0 0 .7rem;color:var(--muted,#666);font-size:.86rem;line-height:1.45}
-.wix .wix-forms{display:flex;flex-wrap:wrap;gap:.35rem .4rem;align-items:center;margin:.2rem 0 .6rem;font-size:.84rem}
+    const css = `.wix{margin:0 0 1.4rem;padding:1.05rem 1.15rem 1.1rem;border:1px solid var(--border,#ddd);border-radius:10px;background:var(--card-bg,#fff)}
+.wix h3{margin:0 0 .3rem;font:600 1.05rem/1.35 var(--font-ui,inherit)}.wix .wix-sub{margin:0 0 .75rem;color:var(--muted,#666);font-size:.85rem;line-height:1.45}
+.wix .wix-jump{white-space:nowrap;color:inherit}
+.wix .wix-forms{display:flex;flex-wrap:wrap;gap:.35rem .4rem;align-items:center;margin:.2rem 0 .55rem;font-size:.84rem}
 .wix .wix-forms b{font-weight:600;margin-right:.2rem}.wix label.wix-f{display:inline-flex;gap:.25rem;align-items:center;padding:.12rem .5rem;border:1px solid var(--border,#ddd);border-radius:999px;cursor:pointer}
 .wix label.wix-f span{color:var(--muted,#666)}.wix .wix-more{color:var(--muted,#666)}.wix .wix-more button{border:0;background:none;padding:0 .2rem;color:inherit;text-decoration:underline;cursor:pointer;font:inherit}
-.wix .wix-sum{margin:.3rem 0 .5rem;font-size:.95rem}.wix .wix-trad{display:flex;flex-wrap:wrap;gap:.35rem;margin:0 0 .7rem}
-.wix .wix-trad button{padding:.18rem .6rem;border:1px solid var(--border,#ddd);border-radius:999px;background:none;color:inherit;font:inherit;font-size:.82rem;cursor:pointer}
-.wix .wix-trad button[aria-pressed=true]{background:var(--fg,#222);color:var(--card-bg,#fff);border-color:var(--fg,#222)}
-.wix ol{margin:0;padding:0;list-style:none}.wix li{padding:.55rem 0;border-top:1px solid var(--border,#eee)}.wix li a.wix-t{font-weight:600;color:var(--fg,#222);text-decoration:none}
-.wix li a.wix-t:hover{text-decoration:underline}.wix .wix-m{color:var(--muted,#666);font-size:.84rem;margin-top:.12rem}
-.wix .wix-c{font-size:.84rem;margin-top:.12rem}.wix .wix-c button{border:0;background:none;padding:0;margin-left:.5rem;color:inherit;text-decoration:underline;cursor:pointer;font:inherit}
-.wix .wix-pages{display:flex;flex-wrap:wrap;gap:.25rem .6rem;margin-top:.35rem;font-size:.82rem}.wix .wix-pages a{color:inherit}
-.wix .wix-go{margin-top:.7rem;padding:.35rem .8rem;border:1px solid var(--border,#ddd);border-radius:6px;background:none;color:inherit;font:inherit;cursor:pointer}
-.wix-teaser{padding:.7rem 1rem;font-size:.92rem;line-height:1.5}.wix-teaser .wix-go{margin:0 0 0 .4rem;padding:.2rem .7rem}
-.wix .wix-jump{white-space:nowrap;color:inherit}
-.wix .wix-c button.wix-pv{margin-left:.6rem;padding:.08rem .55rem;border:1px solid var(--border,#ddd);border-radius:999px;text-decoration:none;font-size:.8rem}
-.wix .wix-c button.wix-pv[aria-expanded=true]{background:var(--fg,#222);color:var(--card-bg,#fff);border-color:var(--fg,#222)}
-.wix .wix-inst{margin:.55rem 0 .15rem;padding:.15rem 0 .2rem .85rem;border-left:2px solid var(--border,#ddd)}
+.wix .wix-sum{margin:.5rem 0 .55rem;font-size:.98rem}.wix .wix-sum b{font-size:1.08rem}
+.wix .wix-trad{display:flex;flex-wrap:wrap;gap:.35rem;margin:0 0 .4rem}
+.wix .wix-trad button{padding:.2rem .65rem;border:1px solid var(--border,#ddd);border-radius:999px;background:none;color:inherit;font:inherit;font-size:.82rem;cursor:pointer}
+.wix .wix-trad button span{color:var(--muted,#666);margin-left:.3rem}.wix .wix-trad button[aria-pressed=true]{background:var(--fg,#222);color:var(--card-bg,#fff);border-color:var(--fg,#222)}
+.wix .wix-trad button[aria-pressed=true] span{color:inherit;opacity:.75}
+.wix .wix-sec{margin:1.1rem 0 0}.wix .wix-sec>h4{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.2rem .8rem;margin:0;padding:0 0 .35rem;border-bottom:2px solid var(--fg,#222);font:600 .98rem/1.3 var(--font-ui,inherit)}
+.wix .wix-sec>h4 .wix-ts{font-weight:400;font-size:.8rem;color:var(--muted,#666)}
+.wix ol{margin:0;padding:0;list-style:none}.wix li.wix-w{padding:.6rem 0 .55rem;border-bottom:1px solid var(--border,#e6e6e6)}
+.wix .wix-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.1rem 1rem}
+.wix a.wix-t{font-weight:600;font-size:.98rem;color:var(--fg,#222);text-decoration:none}.wix a.wix-t:hover{text-decoration:underline}
+.wix .wix-n{font-size:.8rem;color:var(--muted,#666);white-space:nowrap;font-variant-numeric:tabular-nums}
+.wix .wix-m{color:var(--muted,#666);font-size:.84rem;margin-top:.1rem}
+.wix .wix-c{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .6rem;margin-top:.35rem;font-size:.82rem}.wix .wix-fl{color:var(--muted,#666)}
+.wix .wix-plus{color:var(--muted,#666);cursor:help}
+.wix button.wix-pv,.wix button.wix-vol{padding:.12rem .6rem;border:1px solid var(--border,#ddd);border-radius:999px;background:none;color:inherit;font:inherit;font-size:.8rem;cursor:pointer;white-space:nowrap}
+.wix button.wix-vol span{color:var(--muted,#666);margin-left:.25rem;font-variant-numeric:tabular-nums}
+.wix button.wix-pv[aria-expanded=true],.wix button.wix-vol[aria-expanded=true]{background:var(--fg,#222);color:var(--card-bg,#fff);border-color:var(--fg,#222)}
+.wix button.wix-vol[aria-expanded=true] span{color:inherit;opacity:.75}.wix .wix-vl{color:var(--muted,#666)}
+.wix .wix-inst{margin:.6rem 0 .1rem;padding:.1rem 0 .15rem .85rem;border-left:2px solid var(--border,#ddd)}.wix .wix-ih{margin:.2rem 0 .1rem;font-size:.8rem;color:var(--muted,#666)}
 .wix .wix-i{margin:.5rem 0;font-size:.9rem;line-height:1.55}.wix .wix-i a.wix-p{display:inline-block;min-width:3.2rem;margin-right:.5rem;font-size:.78rem;font-weight:600;color:inherit;white-space:nowrap}
 .wix .wix-s{overflow-wrap:anywhere}.wix .wix-s+.wix-s{margin-left:.3em}
 .wix .wix-s mark{background:color-mix(in srgb,var(--accent,#b8860b) 26%,transparent);color:inherit;padding:0 .12em;border-radius:3px}
-.wix .wix-none{color:var(--muted,#666);font-style:italic;font-size:.84rem}.wix .wix-if .wix-go{margin-top:.2rem;font-size:.84rem}
+.wix .wix-none{color:var(--muted,#666);font-style:italic;font-size:.84rem}
+.wix .wix-pages{display:flex;flex-wrap:wrap;gap:.25rem .6rem;margin-top:.35rem;font-size:.82rem}.wix .wix-pages a{color:inherit}
 .wix details.wix-all{margin:.4rem 0 .2rem}.wix details.wix-all summary{cursor:pointer;font-size:.82rem;color:var(--muted,#666)}
-.wix ol.wix-vols{margin:.45rem 0 0 .2rem;padding-left:.8rem;border-left:1px solid var(--border,#ddd)}.wix ol.wix-vols>li{padding:.4rem 0}
-.wix ol.wix-vols>li a.wix-t{font-weight:500}.wix .wix-plus{color:var(--muted,#666);cursor:help}
+.wix .wix-go{margin-top:.6rem;padding:.35rem .85rem;border:1px solid var(--border,#ddd);border-radius:6px;background:none;color:inherit;font:inherit;font-size:.86rem;cursor:pointer}
+.wix .wix-if .wix-go{margin-top:.2rem;font-size:.84rem}
+.wix-teaser{padding:.7rem 1rem;font-size:.92rem;line-height:1.5}.wix-teaser .wix-go{margin:0 0 0 .4rem;padding:.2rem .7rem}
 .wix .wix-note{margin:.8rem 0 0;color:var(--muted,#666);font-size:.8rem;line-height:1.45}.wix .wix-err{color:#a8462b}`;
     const el = document.createElement('style'); el.textContent = css; document.head.appendChild(el);
+  }
+  // 'Tomus XII', 'Vol. 6', 'Pars VIII', 'Book 2' → a number to put a work's volumes in order
+  const ROMAN = { i: 1, v: 5, x: 10, l: 50, c: 100, d: 500, m: 1000 };
+  function volNo(label) {
+    const m = /\b(?:tomus|tom|volume|vol|pars|part|liber|book|band|bd|t)\.?\s*([ivxlcdm]+|\d+)\b/i.exec(String(label || ''));
+    if (!m) return Infinity;
+    if (/^\d+$/.test(m[1])) return Number(m[1]);
+    const r = m[1].toLowerCase(); let v = 0;
+    for (let i = 0; i < r.length; i++) { const a = ROMAN[r[i]], b = ROMAN[r[i + 1]] || 0; v += a < b ? -a : a; }
+    return v;
+  }
+
+  // a volume's button label: its number, not its description ('Vol. 1 · Letters, prefaces … (1514–1530)' → 'Vol. 1')
+  function volShort(v) {
+    const s = String(v || '').trim();
+    if (!s) return 'another volume';
+    const head = s.split(/\s*:\s+|\s+[·—–;]\s+|\s+-\s+/)[0].replace(/\s*\([^)]*\)\s*$/, '').trim() || s;
+    return cap(head, 28);
+  }
+  const cap = (s, k) => (s.length > k ? s.slice(0, k - 2).replace(/\s+\S*$/, '') + '…' : s);
+  // the labels of one work's volumes: short where the short labels tell them apart, longer where two would read alike
+  function volLabels(rows) {
+    const short = rows.map(r => volShort(r.volume)), seen = new Map();
+    short.forEach(x => seen.set(x, (seen.get(x) || 0) + 1));
+    return rows.map((r, i) => (seen.get(short[i]) > 1 ? cap(String(r.volume || '').trim(), 40) || short[i] : short[i]));
   }
 
   function mount(host, opts) {
@@ -97,10 +131,10 @@
     const quoted = ws.map(w => '“' + esc(w) + '”').join(' + ');
     box.innerHTML = `<h3>${quoted}${ws.length > 1 ? ' on the same page' : ''} — every text in the library</h3>
       <p class="wix-sub">Counted from the library’s word index: every page of every work, a duplicate edition once. <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
-      <div class="wix-forms"></div><div class="wix-sum">Counting…</div><div class="wix-trad"></div><ol></ol><div class="wix-foot"></div>`;
+      <div class="wix-forms"></div><div class="wix-sum">Counting…</div><div class="wix-trad" role="group" aria-label="Tradition"></div><div class="wix-list"></div>`;
     host.appendChild(box);
     const $ = s => box.querySelector(s);
-    const state = { seq: 0, groups: ws.map(w => { const f = forms(w); return { word: w, cands: f.all.slice(0, Math.floor(40 / ws.length)), off: f.off, on: new Set(), counts: {}, more: [] }; }), trad: '', rows: [], shown: 0, full: false };
+    const state = { seq: 0, groups: ws.map(w => { const f = forms(w); return { word: w, cands: f.all.slice(0, Math.floor(40 / ws.length)), off: f.off, on: new Set(), counts: {}, more: [] }; }), trad: null, sum: [], byTrad: new Map() };
     const groups = () => state.groups.map(g => [...g.on]).filter(g => g.length);
 
     function formsHtml() {
@@ -123,26 +157,72 @@
       });
       $('.wix-forms').innerHTML = formsHtml();
     }
+    const tradOf = r => r.tradition || '';
+    const tradName = t => t || 'Other';
+    // The counts, then the works by tradition: a section per tradition (most works first), its three leading works, more on asking.
     async function loadCounts() {
       const my = ++state.seq, G = groups();
-      if (G.length < state.groups.length) { $('.wix-sum').textContent = 'No form of every word is in the word index.'; $('.wix-trad').innerHTML = ''; $('ol').innerHTML = ''; $('.wix-foot').innerHTML = ''; return; }
+      if (G.length < state.groups.length) { $('.wix-sum').textContent = 'No form of every word is in the word index.'; $('.wix-trad').innerHTML = ''; $('.wix-list').innerHTML = ''; return; }
       $('.wix-sum').textContent = 'Counting every page…';
       const [sum, list] = await Promise.all([
         opts.post({ op: 'words', by: 'summary', groups: G }),
-        opts.post({ op: 'words', by: 'works', groups: G, tradition: state.trad, limit: 200 })]);
+        opts.post({ op: 'words', by: 'works', groups: G, limit: 600 })]);
       if (my !== state.seq) return;
-      const rows = sum.rows || [], tot = rows.reduce((a, r) => ({ works: a.works + Number(r.works), pages: a.pages + Number(r.pages), occ: a.occ + Number(r.occurrences) }), { works: 0, pages: 0, occ: 0 });
-      $('.wix-sum').innerHTML = tot.works ? `<b>${n(tot.works)}</b> works · ${n(tot.pages)} pages · ${n(tot.occ)} occurrences` : 'In no work of the library.';
-      $('.wix-trad').innerHTML = rows.length > 1 ? [`<button type="button" data-t="" aria-pressed="${!state.trad}">All traditions</button>`]
-        .concat(rows.filter(r => r.tradition).map(r => `<button type="button" data-t="${esc(r.tradition)}" aria-pressed="${state.trad === r.tradition}">${esc(r.tradition)} ${n(r.works)}</button>`)).join('') : '';
-      state.rows = list.rows || []; state.full = !list.truncated && state.rows.length < 200; state.shown = 0;
-      $('ol').innerHTML = ''; more();
+      state.sum = (sum.rows || []).map(r => ({ tradition: tradOf(r), works: Number(r.works), pages: Number(r.pages), occ: Number(r.occurrences) }))
+        .sort((a, b) => (a.tradition ? 0 : 1) - (b.tradition ? 0 : 1) || b.works - a.works);
+      const tot = state.sum.reduce((a, r) => ({ works: a.works + r.works, pages: a.pages + r.pages, occ: a.occ + r.occ }), { works: 0, pages: 0, occ: 0 });
+      $('.wix-sum').innerHTML = tot.works ? `<b>${n(tot.works)}</b> works · ${n(tot.pages)} pages · ${n(tot.occ)} times` : 'In no work of the library.';
+      state.byTrad = new Map();
+      const all = list.rows || [];
+      for (const s of state.sum) {
+        const rows = all.filter(r => tradOf(r) === s.tradition);
+        state.byTrad.set(s.tradition, { rows, full: rows.length >= s.works });
+      }
+      if (state.trad !== null && !state.byTrad.has(state.trad)) state.trad = null;
+      tradButtons(); render();
+    }
+    function tradButtons() {
+      $('.wix-trad').innerHTML = state.sum.length > 1 ? [`<button type="button" data-t="*" aria-pressed="${state.trad === null}">All traditions</button>`]
+        .concat(state.sum.map(s => `<button type="button" data-t="${esc(s.tradition)}" aria-pressed="${state.trad === s.tradition}">${esc(tradName(s.tradition))}<span>${n(s.works)}</span></button>`)).join('') : '';
+    }
+    // a tradition's rows, fetched on their own when the first list did not reach them
+    async function rowsOf(t, need) {
+      const b = state.byTrad.get(t);
+      if (b.full || b.rows.length >= need) return b;
+      const r = await opts.post({ op: 'words', by: 'works', groups: groups(), tradition: t, limit: 2000 });
+      b.rows = r.rows || b.rows; b.full = true;
+      return b;
+    }
+    function render() {
+      const listEl = $('.wix-list'); listEl.innerHTML = '';
+      const secs = state.trad === null ? state.sum : state.sum.filter(s => s.tradition === state.trad);
+      secs.forEach(s => listEl.appendChild(section(s, state.trad === null ? 3 : 10)));
+    }
+    function section(s, first) {
+      const sec = document.createElement('section');
+      sec.className = 'wix-sec';
+      sec.innerHTML = `<h4><span>${esc(tradName(s.tradition))}</span><span class="wix-ts">${n(s.works)} ${s.works === 1 ? 'work' : 'works'} · ${n(s.pages)} pages · ${n(s.occ)} times</span></h4><ol></ol><div class="wix-sf"></div>`;
+      const ol = sec.querySelector('ol'), foot = sec.querySelector('.wix-sf'), st = { shown: 0, works: 0 };
+      async function more(k) {
+        foot.innerHTML = '<span class="wix-none">Loading…</span>';
+        let b = state.byTrad.get(s.tradition), gs = grouped(b.rows);
+        if (st.shown + k > gs.length && !b.full) { b = await rowsOf(s.tradition, Infinity).catch(() => b); gs = grouped(b.rows); }
+        const next = gs.slice(st.shown, st.shown + k);
+        next.forEach(g => { ol.appendChild(entry(g)); st.works += g.rows.length; }); st.shown += next.length;
+        const left = s.works - st.works;
+        foot.innerHTML = left > 0 && st.shown < gs.length + (state.byTrad.get(s.tradition).full ? 0 : 1)
+          ? `<button type="button" class="wix-go">More ${esc(tradName(s.tradition))} · ${n(left)} more ${left === 1 ? 'work' : 'works'}</button>` : '';
+        const bt = foot.querySelector('button'); if (bt) bt.onclick = () => more(state.trad === null ? 10 : 25);
+      }
+      more(first);
+      return sec;
     }
     const list = v => (Array.isArray(v) ? v : String(v || '').replace(/^\[|\]$/g, '').split(',')).map(s => s.trim()).filter(Boolean);
-    const times = (o, p) => `${n(o)} ${Number(o) === 1 ? 'time' : 'times'} on ${n(p)} ${Number(p) === 1 ? 'page' : 'pages'}`;
+    const times = (o, p) => `${n(o)} ${Number(o) === 1 ? 'time' : 'times'} · ${n(p)} ${Number(p) === 1 ? 'page' : 'pages'}`;
     const unit = slug => (/^(pld|pg)-/.test(slug) ? 'col.' : 'p.');
     const pageLabel = (slug, p) => unit(slug) + ' ' + esc(String(p).replace(/^0+(?=\d)/, ''));
-    // One entry per work; the volumes of one work (same title, same author) are one entry that opens onto its volumes.
+    const same = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+    // One entry per work; the volumes of one work (same title, same author) are one entry, its volumes in order as buttons.
     function grouped(rows) {
       const by = new Map(), out = [];
       for (const r of rows) {
@@ -153,48 +233,43 @@
       }
       return out.sort((a, b) => b.occ - a.occ || b.pages - a.pages);
     }
-    function row(r, vol) {
-      const f = list(r.forms), best = list(r.best_forms), fl = [...new Set(ws.filter(x => f.includes(x)).concat(best, f))];
-      // the word to highlight: one that is ON the page the link opens, the word as typed when it is there
-      const hl = best.find(x => ws.includes(x)) || best[0] || f.find(x => ws.includes(x)) || f[0] || ws[0];
-      const li = document.createElement('li');
-      li.innerHTML = `<a class="wix-t" href="${esc(opts.readHref(r.slug, r.best_page, hl))}">${vol ? esc(r.volume || r.title || r.slug) : opts.title(r.slug, r)}</a>
-        ${vol ? '' : `<div class="wix-m">${opts.meta(r)}</div>`}
-        <div class="wix-c">${times(r.occurrences, r.pages)}${fl.length ? ' · ' + esc(fl.slice(0, 4).join(', ')) + (fl.length > 4 ? ` <span class="wix-plus" title="${esc(fl.join(', '))}">+${fl.length - 4}</span>` : '') : ''}<button type="button" class="wix-pv" data-pages="${esc(r.slug)}" data-hl="${esc(hl)}" aria-expanded="false">Preview passages ▾</button></div>`;
-      return li;
+    const hlOf = r => { const f = list(r.forms), best = list(r.best_forms); return best.find(x => ws.includes(x)) || best[0] || f.find(x => ws.includes(x)) || f[0] || ws[0]; };
+    function formsLine(rows) {
+      const f = new Set(); rows.forEach(r => list(r.forms).forEach(x => f.add(x)));
+      const fl = [...new Set(ws.filter(x => f.has(x)).concat([...f]))];
+      return fl.length ? `<span class="wix-fl">${esc(fl.slice(0, 4).join(', '))}${fl.length > 4 ? ` <span class="wix-plus" title="${esc(fl.join(', '))}">+${fl.length - 4}</span>` : ''}</span>` : '';
     }
     function entry(g) {
-      if (g.rows.length === 1) return row(g.rows[0]);
-      const top = g.rows[0], li = document.createElement('li');
-      li.className = 'wix-g';
-      const trads = [...new Set(g.rows.map(r => r.tradition).filter(Boolean))];
-      li.innerHTML = `<a class="wix-t" href="${esc(opts.readHref(top.slug, top.best_page, list(top.best_forms)[0] || ws[0]))}">${opts.title(top.slug, top)}</a>
-        <div class="wix-m">${[top.author, g.rows.length + ' volumes', trads.join(', ')].filter(Boolean).map(esc).join(' · ')}</div>
-        <div class="wix-c">${times(g.occ, g.pages)}<button type="button" class="wix-pv" data-vols aria-expanded="false">Show the ${g.rows.length} volumes ▾</button></div>
-        <ol class="wix-vols" hidden></ol>`;
-      const ol = li.querySelector('.wix-vols');
-      g.rows.forEach(r => ol.appendChild(row(r, true)));
+      const top = g.rows[0], li = document.createElement('li'), vols = g.rows.length > 1;
+      li.className = 'wix-w' + (vols ? ' wix-g' : '');
+      const title = opts.title(top.slug, top), meta = [same(top.author, top.title) ? '' : top.author, vols ? `${g.rows.length} volumes` : top.volume].filter(Boolean).map(esc).join(' · ');
+      const vrows = vols ? g.rows.slice().sort((a, b) => volNo(a.volume) - volNo(b.volume) || String(a.slug).localeCompare(String(b.slug), undefined, { numeric: true })) : [];
+      const vlab = volLabels(vrows);
+      const volBtns = vols ? vrows
+        .map((r, i) => `<button type="button" class="wix-vol" data-pages="${esc(r.slug)}" data-hl="${esc(hlOf(r))}" aria-expanded="false"${i >= 12 ? ' hidden' : ''} title="${esc([r.volume, times(r.occurrences, r.pages)].filter(Boolean).join(' — '))}">${esc(vlab[i])}<span>${n(r.occurrences)}</span></button>`).join('')
+          + (g.rows.length > 12 ? `<button type="button" class="wix-pv" data-allvols>all ${g.rows.length} volumes ▾</button>` : '') : '';
+      li.innerHTML = `<div class="wix-h"><a class="wix-t" href="${esc(opts.readHref(top.slug, top.best_page, hlOf(top)))}">${title}</a><span class="wix-n">${times(g.occ, g.pages)}</span></div>
+        ${meta ? `<div class="wix-m">${meta}</div>` : ''}
+        <div class="wix-c">${vols ? `<span class="wix-vl">Passages in</span>${volBtns}` : `${formsLine(g.rows)}<button type="button" class="wix-pv" data-pages="${esc(top.slug)}" data-hl="${esc(hlOf(top))}" aria-expanded="false">Passages ▾</button>`}</div>`;
       return li;
     }
-    function more() {
-      // ten works at first, so the passages below stay in reach; then fifty at a time
-      if (!state.shown) state.groups2 = grouped(state.rows);
-      const ol = $('ol'), all = state.groups2, next = all.slice(state.shown, state.shown + (state.shown ? 50 : 10));
-      next.forEach(g => ol.appendChild(entry(g))); state.shown += next.length;
-      const left = all.length - state.shown;
-      $('.wix-foot').innerHTML = left > 0 ? `<button type="button" class="wix-go" data-more>Show ${Math.min(50, left)} more of ${n(all.length)}${state.full ? '' : '+'}</button>`
-        : (!state.full ? '<button type="button" class="wix-go" data-all>Load the rest of the list</button>' : '');
-    }
-    // The passages of one work: its pages in book order, a line around each use, six at first.
+    // The passages of one work (or one volume): its pages in book order, a line around each use, six at first.
     async function preview(li, slug, hl, btn) {
       let box = li.querySelector(':scope > .wix-inst');
-      if (box) { box.hidden = !box.hidden; btn.setAttribute('aria-expanded', String(!box.hidden)); btn.textContent = box.hidden ? 'Preview passages ▾' : 'Hide passages ▴'; return; }
-      box = document.createElement('div'); box.className = 'wix-inst'; box.textContent = 'Reading the pages…'; li.appendChild(box);
-      btn.setAttribute('aria-expanded', 'true'); btn.textContent = 'Hide passages ▴';
+      const toggle = btn.classList.contains('wix-pv');
+      if (box && box.dataset.slug === slug) {
+        box.hidden = !box.hidden; btn.setAttribute('aria-expanded', String(!box.hidden));
+        if (toggle) btn.textContent = box.hidden ? 'Passages ▾' : 'Hide ▴';
+        return;
+      }
+      li.querySelectorAll('button[aria-expanded=true]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+      if (box) box.remove();
+      box = document.createElement('div'); box.className = 'wix-inst'; box.dataset.slug = slug; box.innerHTML = '<span class="wix-none">Reading the pages…</span>'; li.appendChild(box);
+      btn.setAttribute('aria-expanded', 'true'); if (toggle) btn.textContent = 'Hide ▴';
       const r = await opts.post({ op: 'words', by: 'pages', groups: groups(), work: slug, limit: 2000 }).catch(fail);
       if (!r || !r.rows) { box.remove(); return; }
       const pages = r.rows, forms = [...new Set(groups().flat())], st = { shown: 0 };
-      box.innerHTML = `<div class="wix-il"></div><div class="wix-if"></div>
+      box.innerHTML = `${btn.classList.contains('wix-vol') ? `<div class="wix-ih">${esc(btn.firstChild.textContent)} · ${n(pages.length)} ${pages.length === 1 ? 'page' : 'pages'}</div>` : ''}<div class="wix-il"></div><div class="wix-if"></div>
         <details class="wix-all"><summary>All ${n(pages.length)} ${pages.length === 1 ? 'page' : 'pages'} as links</summary><div class="wix-pages">${pages.map(p => `<a href="${esc(opts.readHref(slug, p.page, hl))}">${pageLabel(slug, p.page)}${Number(p.occurrences) > 1 ? ' ×' + p.occurrences : ''}</a>`).join('')}</div></details>`;
       const il = box.querySelector('.wix-il'), foot = box.querySelector('.wix-if');
       async function next(k) {
@@ -210,7 +285,7 @@
           il.appendChild(d);
         });
         const left = pages.length - st.shown;
-        foot.innerHTML = left > 0 ? `<button type="button" class="wix-go wix-im">Show ${Math.min(10, left)} more passages · ${n(left)} left</button>` : '';
+        foot.innerHTML = left > 0 ? `<button type="button" class="wix-go">Show ${Math.min(10, left)} more passages · ${n(left)} left</button>` : '';
         const b = foot.querySelector('button'); if (b) b.onclick = () => next(10);
       }
       await next(6);
@@ -221,24 +296,12 @@
       loadCounts().catch(fail);
     });
     box.addEventListener('click', async e => {
-      const t = e.target;
+      const t = e.target.closest('a,button'); if (!t || !box.contains(t)) return;
       if (t.matches('a.wix-jump')) { e.preventDefault(); const to = document.getElementById('count') || document.getElementById('results'); if (to) to.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
       else if (t.matches('button[data-add]')) { const g = state.groups[+t.dataset.g]; if (!g.cands.includes(t.dataset.add)) g.cands.push(t.dataset.add); g.counts[t.dataset.add] = Number((g.more.find(x => x.form === t.dataset.add) || {}).works || 1); g.on.add(t.dataset.add); $('.wix-forms').innerHTML = formsHtml(); loadCounts().catch(fail); }
-      else if (t.matches('button[data-t]')) { state.trad = t.dataset.t; loadCounts().catch(fail); }
-      else if (t.matches('button[data-more]')) more();
-      else if (t.matches('button[data-all]')) {
-        t.disabled = true; t.textContent = 'Loading…';
-        const r = await opts.post({ op: 'words', by: 'works', groups: groups(), tradition: state.trad, limit: 2000 }).catch(fail);
-        if (r && r.rows) {   // regroup the whole list, keeping what was open in view
-          const had = state.shown; state.rows = r.rows; state.full = true; state.groups2 = grouped(r.rows); $('ol').innerHTML = '';
-          state.groups2.slice(0, had + 50).forEach(g => $('ol').appendChild(entry(g))); state.shown = Math.min(had + 50, state.groups2.length);
-          const left = state.groups2.length - state.shown;
-          $('.wix-foot').innerHTML = left > 0 ? `<button type="button" class="wix-go" data-more>Show ${Math.min(50, left)} more of ${n(state.groups2.length)}</button>` : '';
-        }
-      } else if (t.matches('button[data-vols]')) {
-        const ol = t.closest('li').querySelector(':scope > .wix-vols'); ol.hidden = !ol.hidden;
-        t.setAttribute('aria-expanded', String(!ol.hidden)); t.textContent = ol.hidden ? t.textContent.replace('▴', '▾').replace(/^Hide/, 'Show') : t.textContent.replace('▾', '▴').replace(/^Show/, 'Hide');
-      } else if (t.matches('button[data-pages]')) {
+      else if (t.matches('button[data-allvols]')) { t.closest('.wix-c').querySelectorAll('button.wix-vol[hidden]').forEach(x => { x.hidden = false; }); t.remove(); }
+      else if (t.matches('button[data-t]')) { state.trad = t.dataset.t === '*' ? null : t.dataset.t; tradButtons(); render(); }
+      else if (t.matches('button[data-pages]')) {
         t.disabled = true;
         await preview(t.closest('li'), t.dataset.pages, t.dataset.hl, t).catch(fail);
         t.disabled = false;
