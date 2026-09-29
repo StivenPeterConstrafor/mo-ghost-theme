@@ -20479,3 +20479,12 @@ body.mo-shelf-page #author-order-note { display: none; }
    of reach of the scroll. */
 .tfr-rail-inner > .tfr-rail-brand { margin-left: auto; }
 .tfr-rail-inner > .tfr-rail-items { margin-right: auto; }
+
+/* Browse hero at half height. At 78vh the library below sat entirely
+   under the fold and readers took the hero for the whole page. Scoped
+   to .faith-browse so the author and tool heroes keep their size. */
+.faith-browse .bhero { min-height: 39vh; padding: 56px 0 40px; }
+.faith-browse .bhero h1 { font-size: clamp(30px, 3.4vw, 46px); margin: 0 0 22px; max-width: none; }
+@media (max-width: 640px) {
+  .faith-browse .bhero { min-height: 0; padding: 48px 0 32px; }
+}
