@@ -7675,6 +7675,8 @@ async function loadWork(ws){
   // works whose source lane is not Latin (lang census + LLM verify, runs/lang_final.json). The
   // lane toggle, headings and About copy all read __SRCNAME instead of assuming Latin.
   {const LGN={de:"German",fr:"French",el:"Greek",it:"Italian",es:"Spanish",nl:"Dutch",cy:"Welsh",en:"Original",mul:"Source"};
+   // Grotius, Cocceius and Petavius are stamped "el" upstream because they quote Greek (ticket #13); a Latin title on the record means the source lane is Latin.
+   if(/^(el|grc)$/i.test(meta.src_lang||"")&&!/^pg-/.test(ws)&&meta.title_la&&meta.title_la!==meta.title&&!/[Ͱ-Ͽἀ-῿]/.test(meta.title_la))meta.src_lang="la";
    if(meta.pld_source_view?.sourceName)window.__SRCNAME=meta.pld_source_view.sourceName;else if(meta.src_lang&&LGN[meta.src_lang])window.__SRCNAME=LGN[meta.src_lang];else if(!/^pg-/.test(ws))window.__SRCNAME="Latin";
    try{const SN=window.__SRCNAME,mp=document.getElementById("m-par");
      if(mp&&SN&&SN!=="Latin"){mp.textContent=SN;mp.title=SN+" source text — a toggle; read it beside the English, or alone with the scan";}

@@ -241,6 +241,10 @@
     }
     if (lanes === "source en") {
       if (corpus === "pld") return { kind: "ai", lang: "Latin" };
+      // Grotius, Cocceius and Petavius are stamped src_lang "el" upstream
+      // because they quote Greek; a Latin title on the record marks them Latin.
+      const greekStamp = /^(el|grc)$/i.test(String(d.src_lang || ""));
+      if (greekStamp && latinTitle && !/[Ͱ-Ͽἀ-῿]/.test(d.title_la)) return { kind: "ai", lang: "Latin" };
       return { kind: "ai", lang: SRC_LANG[String(d.src_lang || "").toLowerCase()] || "" };
     }
     return { kind: "unknown" };
