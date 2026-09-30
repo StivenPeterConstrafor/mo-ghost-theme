@@ -96,7 +96,12 @@
      screen when it was started there or is scoped to it. Ask in the reader
      is about THIS book, so every path that reuses an existing conversation
      has to ask this question first — including the stored active one. */
-  const belongsHere=c=>!readerPage()||c.contextWork===contextWork()||(c.scope?.works||[]).includes(contextWork());
+  const belongsHere=c=>readerPage()?c.contextWork===contextWork()||(c.scope?.works||[]).includes(contextWork()):!bookBound(c);
+  /* The other half (owner's site, 2026-09-30): off the reader, a conversation the reader started for its book —
+     scoped to exactly that work, nothing chosen beside it — is not resumed either. The home and search pages opened it
+     as "Ask the Library" while every question still searched one book, and the stored active conversation survives a
+     refresh (a reader: "a weird spot where it seemed to be searching within a restricted section of the Library"). */
+  function bookBound(c){const s=c?.scope||{};return !!c?.contextWork&&(s.works||[]).length===1&&s.works[0]===c.contextWork&&!scopeShelves(s).length&&!(s.authors||[]).length&&!(s.groups||[]).length;}
   /* The catalogue does not carry the curated works (ANF and the Fathers
      set are absent from works-index.json), so titleOf falls back to the
      raw slug and the rail names the book "anf-justin-sole-government".
@@ -739,6 +744,8 @@ function checkHTML(t){
     const historyHTML=list.length?loose.map(row).join('')+folders.map(name=>'<details class="fra-folder" data-folder="'+esc(name)+'"'+(foldersClosed.has(name)&&!historyFilter?'':' open')+'><summary><span>'+esc(name)+'</span><small>'+list.filter(c=>folderOf(c)===name).length+'</small><button type="button" class="fra-folder-rename" data-folder-rename="'+esc(name)+'" aria-label="Rename folder '+esc(name)+'">'+icon('edit')+'</button></summary>'+list.filter(c=>folderOf(c)===name).map(row).join('')+'</details>').join('')+(showArchived?'<button type="button" id="fra-delete-archived" class="fra-danger fra-delete-archived">Delete all archived</button>':''):'<p class="fra-empty-history">'+(historyFilter?'No matching conversations.':showArchived?'No archived conversations.':'Your conversations will appear here.')+'</p>';
     const host=$('#fra-history-list');if(host.dataset.html!==historyHTML){const focused=document.activeElement&&document.activeElement.dataset.chat;host.innerHTML=historyHTML;host.dataset.html=historyHTML;if(focused){const b=host.querySelector('[data-chat="'+CSS.escape(focused)+'"]');if(b)b.focus();}}
   }
+  /* The scope control names a single selection ("Complete Works", "Reformed", "Works by Calvin") instead of "1 work". */
+  function scopeName(c){const s=c.scope||{},t=scopeParts(s).length===1?scopeText(c):scopeButton(s);return t.length>34?t.slice(0,33).trimEnd()+'…':t;}
   function scopeText(c){const s=c.scope||{},parts=scopeParts(s);if(parts.length===1){if((s.groups||[]).length===1)return scopeGroups.find(g=>g.id===s.groups[0])?.name||'Selected group';if(scopeShelves(s).length===1)return shownShelf(scopeShelves(s)[0]);if((s.authors||[]).length===1)return 'Works by '+s.authors[0];if((s.works||[]).length===1){const slug=s.works[0],named=titleOf({slug});return named===slug&&slug===contextWork()&&readerTitle()||named;}}return parts.join(' · ')||'Whole library';}
   function turnModeLabel(t){
     const automatic=t.approach?t.approach.automatic===true:(t.steps||[]).some(s=>s.label==='Using Deep research for this question');
@@ -764,7 +771,7 @@ function checkHTML(t){
     if(ASK_PATH_RE.test(location.pathname)){const u=new URL(location.href);if(u.searchParams.get('chat')!==c.id){u.searchParams.set('chat',c.id);u.searchParams.delete('q');u.searchParams.delete('ask');history.replaceState(history.state,'',u);}}
     const latest=running(c)||c.turns[c.turns.length-1],state=researchState(latest),stateButton=$('#fra-state');stateButton.hidden=!latest;stateButton.dataset.state=state.kind;stateButton.querySelector('span').textContent=state.label;stateButton.setAttribute('aria-label',state.label+'. View research activity');
     $('#fra-title').textContent=c.t;$('#fra-context').textContent=(folderOf(c)?folderOf(c)+' · ':'')+scopeText(c);$('#fra-mode-name').textContent=modes[researchMode(c.mode)][0];
-    $('#fra-scope-name').textContent=scopeButton(c.scope||{});$('#fra-context').title=scopeText(c);
+    $('#fra-scope-name').textContent=scopeName(c);$('#fra-context').title=scopeText(c);
     $('#fra-archive').textContent=c.archived?'Restore conversation':'Archive conversation';
     $('#fra-save-state').textContent=storageError||legacyWarning||(running(c)?.serverJob?.status==='submitting'?'Starting Deep research · Wait for confirmation':running(c)?.serverJob?'Saved on the server · You can close this browser':running(c)?'Saved · '+(workerKind==='shared'?'Research continues while the site is open':'Keep this tab open while research runs'):c.turns.some(t=>t.serverJob&&t.serverJob.status!=='submitting')?'Research saved on the server':researchMode(c.mode)==='deep'?'Saves progress · Works in the background · Up to 10 minutes':'Saved in this browser');
     const busy=!!running(c), send=$('#fra-send');send.disabled=!!storageError||running(c)?.serverJob?.status==='submitting'||!busy&&!$('#fra-input').value.trim();send.innerHTML=icon(busy?'stop':'send');send.setAttribute('aria-label',busy?'Stop research':'Send message');
@@ -808,10 +815,10 @@ function checkHTML(t){
   const previousSuggestions = new Map();
   function renderSuggestions(conversation){
     const host=$('.fra-suggestions');
-    const inBook=readerPage()&&!(conversation.scope.groups||[]).length&&!scopeShelves(conversation.scope).length&&!(conversation.scope.authors||[]).length&&(conversation.scope.works||[]).length===1&&(conversation.scope.works||[])[0]===contextWork(),signature=conversation.id+'|'+inBook;
+    const inBook=readerPage()&&!(conversation.scope.groups||[]).length&&!scopeShelves(conversation.scope).length&&!(conversation.scope.authors||[]).length&&(conversation.scope.works||[]).length===1&&(conversation.scope.works||[])[0]===contextWork(),narrowed=!inBook&&scopeParts(conversation.scope||{}).length>0,signature=conversation.id+'|'+inBook+'|'+(narrowed?scopeText(conversation):'');
     if(!host||host.dataset.conversation===signature)return;
-    $('#fra-welcome h1').textContent=inBook?'Ask about this book':'Ask the Library';
-    $('#fra-welcome>p').textContent=inBook?'Select a passage to include it in your question, or ask about the work as a whole.':'Explore an idea, understand a passage, or follow a question through the texts.';
+    $('#fra-welcome h1').textContent=inBook?'Ask about this book':narrowed?'Ask within '+scopeText(conversation):'Ask the Library';
+    $('#fra-welcome>p').textContent=inBook?'Select a passage to include it in your question, or ask about the work as a whole.':narrowed?'Answers draw only on this selection. Use Search within to widen it to the whole library.':'Explore an idea, understand a passage, or follow a question through the texts.';
     const groups=inBook?[
       {label:'Follow the argument',questions:['Summarize the main argument of this work, with passages I can read.','How does the argument develop across this work?']},
       {label:'Understand its terms',questions:['Which theological terms are central to this work, and how are they defined?','Explain the key distinctions this work makes, with cited passages.']},
