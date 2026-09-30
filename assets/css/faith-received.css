@@ -12383,6 +12383,9 @@ a.faith-tp-log-work:hover { color: var(--color-secondary); }
   vertical-align: 1px;
 }
 .faith-tp-log-what { display: block; color: var(--color-muted); }
+.faith-tp-log-item.is-closed { grid-template-columns: 92px minmax(0, 1fr); }
+.faith-tp-log-vols a { color: var(--color-dark); text-decoration: none; }
+.faith-tp-log-vols a:hover { color: var(--color-secondary); }
 .faith-tp-log-empty { display: block; color: var(--color-muted); }
 .faith-tp-votes { display: inline-flex; gap: 4px; }
 .faith-tp-vote { display: inline-flex; flex-direction: column; align-items: center; min-width: 36px; }
@@ -12427,6 +12430,7 @@ a.faith-tp-log-work:hover { color: var(--color-secondary); }
 @media (max-width: 600px) {
   .faith-tp-log-item { grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; }
   .faith-tp-log-date { grid-column: 1 / -1; }
+  .faith-tp-log-item.is-closed { grid-template-columns: minmax(0, 1fr); }
 }
 .faith-tp-act { margin: 26px 0 30px; }
 .lp-beta-act {
@@ -20642,5 +20646,5 @@ body.mo-shelf-page #author-order-note { display: none; }
    14px with 8px sides keeps every label on its two lines. Phones stack
    the tabs and keep their own rule above. */
 @media (min-width: 641px) {
-  .faith-mf-tabs > button { font-size: 14px; padding: 12px 8px; }
+  .faith-mf-tabs > button { font-size: 15px; padding: 12px 10px; white-space: nowrap; }
 }

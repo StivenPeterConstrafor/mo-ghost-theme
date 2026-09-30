@@ -40,14 +40,17 @@
             open the matching panel so each can be linked to. Without the
             script all three read in order. --}}
       <div class="faith-mf-tabs" role="tablist" aria-label="About The Faith Received" data-mf-tabs hidden>
-        <button type="button" role="tab" id="mf-tab-what" aria-controls="what" aria-selected="true" data-mf-tab="what">What, Why, and How of <span class="faith-mf-tab-tfr">The Faith Received</span></button>
-        <button type="button" role="tab" id="mf-tab-story" aria-controls="story" aria-selected="false" tabindex="-1" data-mf-tab="story">The Story of <span class="faith-mf-tab-tfr">The Faith Received</span></button>
-        <button type="button" role="tab" id="mf-tab-mo" aria-controls="mere-orthodoxy" aria-selected="false" tabindex="-1" data-mf-tab="mere-orthodoxy">Mere Orthodoxy and <span class="faith-mf-tab-tfr">The Faith Received</span></button>
+        <button type="button" role="tab" id="mf-tab-what" aria-controls="what" aria-selected="true" data-mf-tab="what" aria-label="What, Why, and How of The Faith Received">What, Why, and How</button>
+        <button type="button" role="tab" id="mf-tab-story" aria-controls="story" aria-selected="false" tabindex="-1" data-mf-tab="story" aria-label="The Story of The Faith Received">The Story</button>
+        <button type="button" role="tab" id="mf-tab-mo" aria-controls="mere-orthodoxy" aria-selected="false" tabindex="-1" data-mf-tab="mere-orthodoxy" aria-label="Mere Orthodoxy and The Faith Received">Mere Orthodoxy</button>
         {{!-- The fourth (Ian, 2026-09-29): the transparency commitment, the
               same text as /the-faith-received/transparency/, from one partial. --}}
-        <button type="button" role="tab" id="mf-tab-tp" aria-controls="transparency" aria-selected="false" tabindex="-1" data-mf-tab="transparency">Our Commitment to <span class="faith-mf-tab-tfr">Transparency</span></button>
-        {{!-- The fifth (Ian, 2026-09-30): the changelog and open reports. --}}
-        <button type="button" role="tab" id="mf-tab-cl" aria-controls="changelog" aria-selected="false" tabindex="-1" data-mf-tab="changelog">Changelog and <span class="faith-mf-tab-tfr">Open Reports</span></button>
+        <button type="button" role="tab" id="mf-tab-tp" aria-controls="transparency" aria-selected="false" tabindex="-1" data-mf-tab="transparency" aria-label="Our Commitment to Transparency">Transparency</button>
+        {{!-- The fifth (Ian, 2026-09-30): the changelog and open reports.
+              Five two-line labels wrapped to four lines in the prose
+              measure, so every tab is now one short line; the full name
+              is each panel's title and each tab's aria-label. --}}
+        <button type="button" role="tab" id="mf-tab-cl" aria-controls="changelog" aria-selected="false" tabindex="-1" data-mf-tab="changelog" aria-label="Changelog and Open Reports">Changelog</button>
       </div>
 
       <section class="faith-mf-panel" id="what" role="tabpanel" aria-labelledby="mf-tab-what" data-mf-panel>

@@ -6,8 +6,12 @@
  *     not, with the work's title, author, link, date and what changed;
  *   - site-wide fixes and features too, labeled so ("All works");
  *   - a toggle between Open reports and Closed reports;
- *   - a thumbs up and a thumbs down on each item, with counts under them;
- *   - sortable by date, up votes and down votes; collapsible and paged.
+ *   - a thumbs up and a thumbs down on each open report, with counts
+ *     under them (closed ones take no votes);
+ *   - sortable by date, up votes and down votes; paged.
+ *   - one change is one entry: rows written at the same moment with the
+ *     same description (one fix across eight volumes) are grouped, and
+ *     the works it touched are listed on it.
  *
  * Everything comes from mo-forms GET /tfr-changes:
  *   changes  tfr_work_revisions, the same rows each work's own
@@ -84,19 +88,58 @@
     return `<span class="faith-tp-votes">${btn(1, r.up || 0, "Thumbs up")}${btn(-1, r.down || 0, "Thumbs down")}</span>`;
   }
 
-  function item(r) {
-    const kind = view === "open" ? "report" : "change";
+  function workName(r) {
     const link = href(r);
     const title = escapeHtml(r.title || r.work || "All works");
-    const name = link ? `<a class="faith-tp-log-work" href="${escapeHtml(link)}">${title}</a>`
+    return link ? `<a class="faith-tp-log-work" href="${escapeHtml(link)}">${title}</a>`
       : `<span class="faith-tp-log-work">${title}</span>`;
-    const author = r.author ? `<span class="faith-tp-log-author">${escapeHtml(r.author)}</span>` : "";
-    const tag = view === "closed" ? `<span class="faith-tp-log-tag">${label(r)}</span>` : "";
-    return `<li class="faith-tp-log-item">`
+  }
+  const byLine = (a) => (a ? `<span class="faith-tp-log-author">${escapeHtml(a)}</span>` : "");
+
+  /* The works one change touched. Volumes of one set fold into one line:
+     "Annotations on the New Testament · Hugo Grotius (Vol. 1, Vol. 2, …)",
+     each volume its own link. */
+  function worksLine(items) {
+    if (items.length === 1) return workName(items[0]) + byLine(items[0].author);
+    const sets = new Map();
+    items.forEach((r) => {
+      const m = /^(.*) \(([^()]+)\)$/.exec(r.title || "");
+      const base = m ? m[1] : (r.title || r.work);
+      const key = `${base}|${r.author}`;
+      if (!sets.has(key)) sets.set(key, { base, author: r.author, vols: [] });
+      sets.get(key).vols.push({ r, vol: m ? m[2] : "" });
+    });
+    return [...sets.values()].map((set) => {
+      if (set.vols.length === 1) return workName(set.vols[0].r) + byLine(set.author);
+      const vols = set.vols
+        .sort((x, y) => x.vol.localeCompare(y.vol, "en", { numeric: true }))
+        .map(({ r, vol }) => `<a href="${escapeHtml(href(r))}">${escapeHtml(vol)}</a>`).join(", ");
+      return `<span class="faith-tp-log-work">${escapeHtml(set.base)}</span>${byLine(set.author)}`
+        + ` <span class="faith-tp-log-vols">(${vols})</span>`;
+    }).join('<span class="faith-tp-log-sep">; </span>');
+  }
+
+  function item(r) {
+    const open = view === "open";
+    const tag = open ? "" : `<span class="faith-tp-log-tag">${label(r)}</span>`;
+    return `<li class="faith-tp-log-item${open ? "" : " is-closed"}">`
       + `<time class="faith-tp-log-date" datetime="${escapeHtml(r.at)}">${escapeHtml(day(r.at))}</time>`
-      + `<span class="faith-tp-log-main">${name}${author}${tag}`
+      + `<span class="faith-tp-log-main">${open ? workName(r) + byLine(r.author) : worksLine(r.items)}${tag}`
       + `<span class="faith-tp-log-what">${escapeHtml(r.summary)}</span></span>`
-      + `${votes(kind, r)}</li>`;
+      + `${open ? votes("report", r) : ""}</li>`;
+  }
+
+  // One change, one entry: same moment, same description.
+  function group(rows) {
+    const out = new Map();
+    rows.forEach((r) => {
+      const key = `${r.at}|${r.summary}`;
+      if (!out.has(key)) out.set(key, { at: r.at, summary: r.summary, corpus: r.corpus, source: r.source, items: [] });
+      const g = out.get(key);
+      g.items.push(r);
+      if (r.source === "report") g.source = "report";
+    });
+    return [...out.values()];
   }
 
   function sorted() {
@@ -104,6 +147,7 @@
     const by = sortEl.value;
     const date = (x, y) => String(y.at).localeCompare(String(x.at));
     if (by === "old") rows.sort((x, y) => -date(x, y));
+    else if (view === "closed") rows.sort(date);
     else if (by === "up") rows.sort((x, y) => (y.up - x.up) || date(x, y));
     else if (by === "down") rows.sort((x, y) => (y.down - x.down) || date(x, y));
     else rows.sort(date);
@@ -125,7 +169,16 @@
     tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.clView === view)));
   }
 
-  tabs.forEach((t) => t.addEventListener("click", () => { view = t.dataset.clView; page = 0; paint(); }));
+  // Votes, and so the vote sorts, belong to open reports only.
+  function sortOptions() {
+    sortEl.querySelectorAll('option[value="up"], option[value="down"]').forEach((o) => {
+      o.hidden = view !== "open";
+      o.disabled = view !== "open";
+    });
+    if (view !== "open" && (sortEl.value === "up" || sortEl.value === "down")) sortEl.value = "new";
+  }
+
+  tabs.forEach((t) => t.addEventListener("click", () => { view = t.dataset.clView; page = 0; sortOptions(); paint(); }));
   sortEl.addEventListener("change", () => { page = 0; paint(); });
   prevEl.addEventListener("click", () => { page -= 1; paint(); });
   nextEl.addEventListener("click", () => { page += 1; paint(); });
@@ -135,6 +188,7 @@
     if (!btn || btn.disabled) return;
     const key = btn.dataset.key;
     const [kind, id] = key.split(":");
+    if (kind !== "report") return;
     const pressed = Number(btn.dataset.vote);
     const vote = mine[key] === pressed ? 0 : pressed;
     const row = btn.closest(".faith-tp-votes");
@@ -149,7 +203,7 @@
         if (!res || !res.ok) throw new Error("vote");
         if (vote) mine[key] = vote; else delete mine[key];
         try { localStorage.setItem(MINE_KEY, JSON.stringify(mine)); } catch (_) { /* private mode */ }
-        const rec = data[kind === "report" ? "open" : "closed"].find((x) => String(x.id) === id);
+        const rec = data.open.find((x) => String(x.id) === id);
         if (rec) { rec.up = res.up; rec.down = res.down; }
         row.querySelector('[data-n="1"]').textContent = res.up;
         row.querySelector('[data-n="-1"]').textContent = res.down;
@@ -164,7 +218,7 @@
   fetch(`${API}/tfr-changes`)
     .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
     .then((res) => {
-      data.closed = (res && res.changes) || [];
+      data.closed = group((res && res.changes) || []);
       data.open = (res && res.open) || [];
       const n = data.closed.length;
       const o = data.open.length;
@@ -173,6 +227,7 @@
         const c = t.querySelector("[data-cl-n]");
         if (c) c.textContent = (t.dataset.clView === "open" ? o : n).toLocaleString();
       });
+      sortOptions();
       paint();
     })
     .catch(() => {
