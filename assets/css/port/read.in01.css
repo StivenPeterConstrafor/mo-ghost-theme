@@ -678,6 +678,8 @@ html.railok #reading:has(.hasmn){padding-left:calc(8.5rem + 1rem);padding-right:
   -webkit-mask:var(--rbrace) no-repeat center/100% 100%;mask:var(--rbrace) no-repeat center/100% 100%}
 .rdiagram .rlabel sup.fnref{font-size:.72em}
 @media(max-width:760px){.rdiagram{font-size:.88em}.rkids{padding-left:.95em}}
+/* a diagram carried over from the page before: its ancestors' braces run on as plain rules, as the edition prints them (Baxter p. 258) */
+.rnode.rcont>.rkids::before{-webkit-mask:none;mask:none;width:1px;left:.4em}
 /* paired sub-rows: long la∥en blocks render as vertically-synced chunk pairs */
 /* reading rows reuse the class name "seg" (canonical-pairing rows) — neutralize the masthead
    button-group .seg skin (border/card/radius/clip) or every paired row renders as a boxed card */

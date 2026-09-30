@@ -111,7 +111,10 @@
     const end = String(last || page);
     if (page && typeof window.__frCite === "function") {
       try {
-        const note = window.__frCite(page, url || "", lane === "orig" ? "orig" : "en");
+        // the port's __frCite runs a page note on to its last page ("digital ed.
+        // pp. 257–58"); an older pin ignores the fourth argument and the column
+        // range below still applies
+        const note = window.__frCite(page, url || "", lane === "orig" ? "orig" : "en", end);
         if (note && end === page) return note;
         if (note) return note.replace(/(\d):0*(\d+[A-Da-d]?)(?=,)/, (m, v, n) => (n === page ? `${v}:${page}–${end}` : m));
       } catch (e) { /* the older line stands */ }
@@ -150,11 +153,41 @@
   // A row's own controls — the Latin reveal, the pencil, the fold toggle,
   // the rail — are not the text, though a plain read of the row would
   // take them ("LATIN" between two paragraphs).
-  const CONTROLS = "button, .fr-sec-toggle, .la-rev, .trpencil, .rowx, .hanchor";
+  // A page mark inside a row (.pganchor, "p. 258") is not the text either.
+  const CONTROLS = "button, .fr-sec-toggle, .la-rev, .trpencil, .rowx, .hanchor, .pganchor";
+  // BRACE DIAGRAMS (Baxter's Methodus, 2026-09-29): the corpus owner copied a
+  // diagram across pp. 257-258 and got one run of words, "2. Intellect: 3. Will:
+  // II. Sensitive animal nature …"; beside a paragraph, a diagram was not copied
+  // at all, since only paragraphs were read. A diagram's members stay lines, two
+  // spaces a level, the shallowest at the margin; everything else in its row keeps
+  // its own line.
+  function diagramText(root) {
+    const out = [];
+    let cur = "";
+    const put = (d) => { const t = cur.replace(/\s+/g, " ").trim(); cur = ""; if (t) out.push({ d, t }); };
+    const walk = (n, d) => {
+      for (const c of n.childNodes) {
+        if (c.nodeType === 3) { cur += c.nodeValue; continue; }
+        if (c.nodeType !== 1) continue;
+        if (c.classList.contains("rlabel")) { put(null); walk(c, d); put(d); continue; }
+        if (c.classList.contains("rkids")) { put(null); walk(c, d + 1); continue; }
+        const block = /^(P|DIV|H[1-6]|LI|BLOCKQUOTE|SECTION|TABLE|TR)$/.test(c.tagName);
+        if (block) put(null);
+        walk(c, d);
+        if (block) put(null);
+      }
+    };
+    walk(root, 0);
+    put(null);
+    const depths = out.filter((x) => x.d != null).map((x) => x.d);
+    const lo = depths.length ? Math.min(...depths) : 0;
+    return out.map((x) => (x.d == null ? x.t : "  ".repeat(x.d - lo) + x.t)).join("\n");
+  }
   // The text of a node, each paragraph on its own line.
   function textOf(node) {
     const clone = node.cloneNode(true);
     clone.querySelectorAll(CONTROLS).forEach((x) => x.remove());
+    if (clone.querySelector(".rlabel")) return diagramText(clone);
     const blocks = Array.from(clone.querySelectorAll("p, h1, h2, h3, h4, li"));
     const leaves = blocks.filter((e) => !blocks.some((o) => o !== e && e.contains(o)));
     return (leaves.length ? leaves : [clone])
@@ -171,6 +204,16 @@
     const cells = lane === "both" ? [".la", ".en"] : [lane === "en" ? ".en" : ".la"];
     const parts = cells.map((s) => row.querySelector(`:scope > ${s}`)).filter(Boolean).map(textOf).filter(Boolean);
     return parts.length ? parts.join("\n") : textOf(row);
+  }
+  // The page a point of the text is on: the last page mark before it in its row
+  // (a fallback row holds several pages: Baxter's #b255-0 runs pp. 255-258), else
+  // the row's folio. A copy begun on p. 257 is cited from p. 257.
+  function pageAt(node, row) {
+    let page = pageOf(row);
+    row.querySelectorAll(".pganchor[data-page]").forEach((a) => {
+      if (a === node || (a.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING)) page = a.dataset.page;
+    });
+    return page;
   }
   // A row the folds have hidden (faith-reader-folds.js) is still the work.
   const folded = (row) => row.classList.contains("fr-sec-hid");
@@ -253,10 +296,12 @@
       return t ? { text: t, first: w.page, last: w.page, rowId: "", lane } : null;
     }
     const w = work();
+    const firstRow = picked[0].row, lastRow = picked[picked.length - 1].row;
+    const selected = range && reading.contains(range.commonAncestorContainer);
     return {
       text: picked.map((p) => p.text).join("\n\n"),
-      first: pageOf(picked[0].row) || w.page,
-      last: pageOf(picked[picked.length - 1].row) || w.page,
+      first: (selected ? pageAt(range.startContainer, firstRow) : pageOf(firstRow)) || w.page,
+      last: (selected ? pageAt(range.endContainer, lastRow) : pageOf(lastRow)) || w.page,
       rowId: picked[0].row.id || "",
       lane,
     };
