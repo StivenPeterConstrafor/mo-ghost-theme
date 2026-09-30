@@ -2620,6 +2620,12 @@ function build(){
     }
     // margin note kept IN-FLOW at its text position (owner 2026-08-12 'get margins right'):
     // renders as the .mnote aside, not a bank footnote
+    // EDITORS' APPARATUS IN THE TEXT (owner 2026-09-30, Scotus De Anima on MereO: "we want to be able to read the commentary
+    // and scholia but clearly label not hide"): <note rend="apparatus" type="commentary|summary|sources"> is read where it
+    // stands, full size, set off by a rule and labelled — never folded into the folio's notes, never mistaken for the author
+    if(e.localName==="note"&&(e.getAttribute("rend")||"")==="apparatus"){
+      const ty=e.getAttribute("type")||"",lab=({summary:"Scholium",commentary:"Commentary",sources:"Sources",source:"Sources"})[ty]||"Editors’ note";
+      return `<p class="apx apx-${esc(ty)}" data-apx="${lab}" title="${lab} — the editors’ apparatus in this edition, not the author’s own text">${teiInline(e)}</p>`;}
     if(e.localName==="note")return `<p class="mnp"><span class="mnote${(e.getAttribute("type")||"")==="headnote"?" headnote":""}">${teiInline(e)}</span></p>`;
     if(e.localName==="list"){
       if(e.getAttribute("type")==="eebo-list"){
@@ -2834,7 +2840,7 @@ function build(){
     const segments=els=>{const out=[{head:null,body:[],notes:[]}];
       (els||[]).forEach(e=>{
         // margin notes are READING content at their position; only foot notes go to the bank
-        if(e.localName==="note"){if((e.getAttribute("place")||"foot")==="margin")out[out.length-1].body.push(e);else out[out.length-1].notes.push(e);return;}
+        if(e.localName==="note"){if((e.getAttribute("place")||"foot")==="margin"||(e.getAttribute("rend")||"")==="apparatus")out[out.length-1].body.push(e);else out[out.length-1].notes.push(e);return;}
         // a commentary lemma (<head rend="lemma">) is READING content, not a section boundary (Scholarios 09-10)
         if(e.localName==="head"&&(e.getAttribute("rend")||"")==="lemma"){out[out.length-1].body.push(e);return;}
         if(e.localName==="head"){out.push({head:e,body:[],notes:[]});return;}
@@ -2977,6 +2983,9 @@ function build(){
       (b?b.notes:[]).forEach(e=>notesEN.push(teiNote(e)));
     }
     let bi=0;sec.querySelectorAll(".row").forEach(rw=>{if(!rw.classList.contains("rhead"))rw.id="b"+pg.n+"-"+(bi++);});
+    // the first paragraph of each run of the editors' apparatus carries the label (Commentary / Scholium / Sources), per lane
+    ["la","en"].forEach(ln=>{let prev=null;sec.querySelectorAll("."+ln+" p").forEach(p=>{
+      if(p.classList.contains("apx")&&!(prev&&prev.classList.contains("apx")&&prev.dataset.apx===p.dataset.apx))p.classList.add("apx-first");prev=p;});});
     // UNPAIRED FLOWS (owner 2026-09-15, PG 78 col. 63): rows the PG aligner could not pair (printed-paragraphs basis) stack as two
     // independent columns — each lane keeps its printed paragraphs in order and no row asserts a pairing (the gappy-page rescue's
     // structure; deep-link ids move to the cell that carries text).
