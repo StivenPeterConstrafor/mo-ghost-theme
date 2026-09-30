@@ -2647,7 +2647,7 @@ function build(){
     // stands, full size, set off by a rule and labelled — never folded into the folio's notes, never mistaken for the author
     if(e.localName==="note"&&(e.getAttribute("rend")||"")==="apparatus"){
       const ty=e.getAttribute("type")||"",lab=({summary:"Scholium",commentary:"Commentary",sources:"Sources",source:"Sources"})[ty]||"Editors’ note";
-      return `<p class="apx apx-${esc(ty)}" data-apx="${lab}" title="${lab} — the editors’ apparatus in this edition, not the author’s own text">${teiInline(e)}</p>`;}
+      return `<p class="apx apx-${esc(ty)}" data-apx="${lab}" title="${lab} (the editors’ apparatus in this edition, not the author’s own text)">${teiInline(e)}</p>`;}
     if(e.localName==="note")return `<p class="mnp"><span class="mnote${(e.getAttribute("type")||"")==="headnote"?" headnote":""}">${teiInline(e)}</span></p>`;
     if(e.localName==="list"){
       if(e.getAttribute("type")==="eebo-list"){
@@ -2726,7 +2726,7 @@ function build(){
     // the editors' apparatus as PARAGRAPHS (owner 2026-09-30 "they shouldnt be hidden in the notes"): <p rend="apparatus"
     // type="commentary|summary|sources"> reads in the text, set off, its run's leading <label> drawn as the label chip
     const _apxT=_rnd==="apparatus"?(e.getAttribute("type")||""):"",_apxL=({summary:"Scholium",commentary:"Commentary",sources:"Sources",source:"Sources"})[_apxT]||"Editors’ note";
-    const cls=(_rnd==="caps")?' class="caps"':(_rnd==="editorial")?' class="editorial"':(_rnd==="apparatus")?` class="apx apx-${esc(_apxT)}" data-apx="${_apxL}" title="${_apxL} — the editors’ apparatus in this edition, not the author’s own text"`:"";   // WA Einleitung / editor lines (2026-09-01): set petit like the edition
+    const cls=(_rnd==="caps")?' class="caps"':(_rnd==="editorial")?' class="editorial"':(_rnd==="apparatus")?` class="apx apx-${esc(_apxT)}" data-apx="${_apxL}" title="${_apxL} (the editors’ apparatus in this edition, not the author’s own text)"`:"";   // WA Einleitung / editor lines (2026-09-01): set petit like the edition
     let inner=pre+teiInline(e);
     // PILCROW BREAKS (owner 2026-08-30, Ockham/Biel/Lefèvre incunable-style prints): a ¶ inside running
     // text marks the start of a new paragraph in the print -- break there, keep the mark as a muted lead
