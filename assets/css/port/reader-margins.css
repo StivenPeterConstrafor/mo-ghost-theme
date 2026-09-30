@@ -1,7 +1,7 @@
 /* A compact apparatus cue keeps marginalia out of the prose's vertical measure. */
 /* Match the enhancer's ordinary-note eligibility before it runs. Editorial
    headnotes and body material are not folded into margin-note controls. */
-@media screen{#reading .mnote:not(.headnote):not(.edinl):not(.edblock *){display:none!important}}
+@media screen{#reading .mnote:not(.headnote):not(.edinl):not(.edblock *){display:none!important}#reading .mnp.rm-bare{display:none!important}}
 html.fr-margin-notes.railok #reading:has(.hasmn){padding-inline:clamp(1.75rem,4.5vw,4rem)}
 html.fr-margin-notes #reading .row>:is(.la,.en).hasmn{padding-inline:0}
 html.fr-margin-notes #reading .rm-original{display:none!important;float:none!important;clear:none!important}
