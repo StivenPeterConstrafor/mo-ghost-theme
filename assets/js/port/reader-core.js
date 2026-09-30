@@ -5681,7 +5681,8 @@ async function loadPgCanon(ws){
   if(doc.querySelector("parsererror"))throw new Error("canon parse");
   // Preserve old links when a verified plate is moved to its owning work.
   {const oldPage=frReaderBlockReference(location.hash)?.page||new URLSearchParams(location.search).get('p');
-    const move=[...doc.querySelectorAll('ref[type="relocated-opening"]')].find(el=>el.getAttribute('n')===String(oldPage));
+    const _rel=[...doc.querySelectorAll('ref[type="relocated-opening"]')];
+    const move=_rel.find(el=>el.getAttribute('n')===String(oldPage))||_rel.find(el=>el.getAttribute('n')==='*');
     const target=(move?.getAttribute('target')||'').match(/^(pg-\d+)#(\d+)$/);
     if(target&&target[1]!==ws){const url=new URL(location.href);url.searchParams.set('w',target[1]);url.searchParams.delete('ws');url.searchParams.set('p',target[2]);url.hash='b'+target[2]+'-0';location.replace(url);return new Promise(()=>{});}}
 
@@ -6513,7 +6514,7 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
           cols3.push(...Object.keys(_canonOpenings).map(Number).filter(Boolean));
           if(!cols3.length)cols3.push(...Object.keys(enByCol).map(Number).filter(Boolean));
           if(cols3.length){
-            const lo3=Math.min(...cols3)-1,hi3=Math.max(...cols3)+1;
+            const _mx3=Math.max(...cols3),lo3=Math.min(...cols3)-1,hi3=_mx3%2?_mx3+1:_mx3;
             // ORPHAN OPENINGS (see the Greek-view fill): English openings past the reading lanes' window are this work's pages too
             const _orph3=new Set(Object.keys(enByCol).map(Number).filter(n=>n&&(enByCol[n]||[]).join(" ").length>=120).map(n=>n%2?n:n-1).filter(p=>p<lo3||p>hi3));
             const _paras3=t=>{const out=[];let cur="";
@@ -6529,6 +6530,12 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
               .filter(x=>x.n&&(x.lat.length>40||(src==="grcla"&&x.grc.length>40))&&((x.n>=lo3&&x.n<=hi3)||_orph3.has(x.n))&&(!_pgOwned.size||_pgOwned.has(String(x.n)))&&(!Object.keys(_pgFrontLabels).length||_canonOpenings[String(x.n)])).sort((a,b)=>a.n-b.n);
             // The source site's vision text is already in the primary TEI columns.
             // Raw pageview zones are a fallback, never an unconditional replacement.
+            /* A CANON OPENING WITH NO PLATE (2026-09-29, PG 159 pg-2752 cols 717-861, PG 158 pg-2733's vision-read pages): the volume pageview
+               has no surface for it, so this parallel skipped the page and the English fallback showed it alone; the canon's own columns carry it */
+            {const _haveSf3=new Set(surfs3.map(x=>x.n));
+             for(const k3 of Object.keys(_canonOpenings)){const n3=+k3;if(!n3||_haveSf3.has(n3))continue;const o3=_canonOpenings[k3]||{};
+               if(((o3.la||"").length>40||(src==="grcla"&&(o3.grc||"").length>40))&&((n3>=lo3&&n3<=hi3)||_orph3.has(n3))&&(!_pgOwned.size||_pgOwned.has(String(n3))))surfs3.push({n:n3,lat:"",grc:""});}
+             surfs3.sort((a,b)=>a.n-b.n);}
             for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)]||{};
               if(_pgFrontLabels[sf.n]){sf.lat=canon.la||"";sf.grc=canon.grc||"";}
               const _pvLat=_pgFrontLabels[sf.n]?"":sf.lat,_pvGrc=_pgFrontLabels[sf.n]?"":sf.grc;
