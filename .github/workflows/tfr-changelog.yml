@@ -19,6 +19,10 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
         with:
+          # History (without file contents) so the script can ask git
+          # which files each pushed commit touched.
+          fetch-depth: 100
+          filter: blob:none
           sparse-checkout: scripts/tfr-changelog-post.mjs
           sparse-checkout-cone-mode: false
       - name: Post changelog lines for TFR commits

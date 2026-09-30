@@ -18,6 +18,18 @@
  * A failed post fails the workflow, so a missed entry is visible.
  */
 import fs from "node:fs";
+import { execFileSync } from "node:child_process";
+
+// Which files a commit touched, from git itself (the workflow checks out
+// enough history). The push payload's own file lists are not reliable.
+function filesOf(sha) {
+  try {
+    return execFileSync("git", ["diff-tree", "--no-commit-id", "--name-only", "-r", "--root", sha], { encoding: "utf8" })
+      .split("\n").filter(Boolean);
+  } catch (_) {
+    return [];
+  }
+}
 
 const ENDPOINT = "https://mo-forms.mo-podcast-feed.workers.dev/tfr-changelog-log";
 const token = process.env.CHANGELOG_TOKEN || "";
@@ -37,7 +49,8 @@ for (const c of event.commits || []) {
     if (m && !/^none\.?$/i.test(m[2].trim())) entries.push({ kind: m[1] ? "feature" : "staff", summary: m[2].trim() });
   }
   if (!entries.length) continue;
-  const files = [...(c.added || []), ...(c.modified || []), ...(c.removed || [])];
+  const listed = [...(c.added || []), ...(c.modified || []), ...(c.removed || [])];
+  const files = listed.length ? listed : filesOf(c.id);
   if (!files.some((f) => tfr.test(f))) {
     console.log(`skip ${c.id.slice(0, 8)}: has a Changelog line but touches no TFR file`);
     continue;
