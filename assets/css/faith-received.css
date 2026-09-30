@@ -20679,3 +20679,20 @@ body.mo-shelf-page #author-order-note { display: none; }
   .faith-mf-tabs > button + button { border-left: 0; }
   .faith-mf-tabs > button[aria-selected="true"] { background: var(--color-secondary, #c1593c); }
 }
+
+/* PHONE: THE RAIL, RESIZED FOR READING (owner 2026-09-30: "fix mobile to make it easy to read the toc navigation
+   and header at the top shall should be resized for easy reading"). The rail stays fixed on top of the toolbar (Ian, 09-23);
+   what changes is its layout: see below. */
+@media (max-width: 640px) {
+  /* The rail WRAPS on a phone. It scrolled sideways with a fade at the edge, which saved one line and cost half the menu:
+     Scripture, Topics, Research and About sat past the glass and read as cut off ("SCRIPTUR"). The dictionary's alphabet made
+     the same trade the other way (a grid, nothing hidden); so here. The brand and the items flow as one row that breaks onto a
+     second line, at sizes a phone can read. The drawers already drop as panels under the rail on a phone, so a two-line rail
+     does not disturb them, and the page measures the rail's height (--mo-head) so nothing sits under it. */
+  .tfr-rail-inner { flex-wrap: wrap; overflow-x: visible; column-gap: 16px; row-gap: 0; padding: 2px 16px 3px; }
+  .tfr-rail-items { display: contents; }
+  .tfr-rail::after { display: none; }
+  .tfr-rail-brand,
+  .tfr-rail-inner > .tfr-rail-brand { font-size: 12px; letter-spacing: 0.07em; padding: 8px 0; margin-left: 0; }
+  .tfr-rail-link { font-size: 12.5px; letter-spacing: 0.06em; padding: 8px 0; }
+}
