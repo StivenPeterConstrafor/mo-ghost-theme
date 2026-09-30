@@ -6192,8 +6192,13 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
       const e2=enD.createElement("p");e2.textContent=(e?_mk(e.replace(/\bDigitized\s+by\s+Google\b/gi," ").replace(/\s*\[alt-version omitted\]\s*/g," ").replace(/(^|[a-z][;:] )[A-F] (?=[A-Z\u201c"*])/g,"$1").replace(/([a-z][.,;:] )[A-F] (?=\u0004)/g,"$1").replace(/^[A-F] (?=[a-z])/,"").replace(/\b[A-F] (?=\u0004?(?:For|But|And|When|Then|Thus|Yet|Nor|Therefore|Moreover|Wherefore|The|This|That|These|Those|Saint|Holy)\b)/g,"").replace(/([.!?\u201d"]) [A-F]$/,"$1").replace(/([a-z])-\s+([a-z])/g,"$1$2").replace(/\s*[\u2022\ufffd]+\s*/g," ").replace(/\s+([.,;:!?\u00bb)])/g,"$1").replace(/\s{2,}/g," ").trim()):"")||"\u00A0";if(_fl)e2.setAttribute("rend","flow");enB.appendChild(e2);});
     // THE PAGE'S FOOTNOTES (owner 2026-09-23 'a clean transcription ... of each volume'): the site's per-opening notes travel in the canon as
     // <note place="foot"> (resp #pg-site-vtx); they join the synthetic page here and the folio builder's note band shows them on demand.
+    // ONCE PER PAGE (2026-09-30): this flush runs once per block group, so a page carrying headings appended its notes once per
+    // group -- PG 39 pg-480 col. 447 (25 empty chapter heads) showed its 74 notes 25 times (1,850 rows, 526K letters); pg-2379
+    // doubled them on 20 pages. The set of pages already given their notes belongs to the current work's notes map.
     try{const _pn=pages.length?pages[pages.length-1]:null;const _nm=window.__pgNotes||{};
-      const _ns=_pn!=null?[...(_nm[String(_pn)]||[]),...((+_pn)%2===1?(_nm[String(+_pn+1)]||[]):[])]:[];
+      const _nd=(window.__pgNotesDone&&window.__pgNotesDone.m===_nm)?window.__pgNotesDone.s:(window.__pgNotesDone={m:_nm,s:new Set()}).s;
+      const _ns=_pn!=null&&!_nd.has(String(_pn))?[...(_nm[String(_pn)]||[]),...((+_pn)%2===1?(_nm[String(+_pn+1)]||[]):[])]:[];
+      if(_pn!=null)_nd.add(String(_pn));
       _ns.forEach((t,i)=>{if(!t)return;const nn=laD.createElement("note");nn.setAttribute("place","foot");nn.setAttribute("xml:id",`fn-${_pn}-${i+1}`);nn.textContent=t;laB.appendChild(nn);});}catch(e){}
     const _pr=_colLa._prune;_colLa=[];_colEn=[];_colLa._prune=_pr;};
   // PG READABILITY (owner 2026-09-03 audit: canon columns render as 2-5k-char walls with
