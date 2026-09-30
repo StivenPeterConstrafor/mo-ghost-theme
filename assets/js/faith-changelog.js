@@ -65,12 +65,13 @@
     return `/the-faith-received/read/?w=${encodeURIComponent(r.work)}${c}`;
   }
 
-  // One label per change, from where it came from.
+  /* One label per change, saying who made it (Ian, 2026-09-30: "Any fix
+     I make is a staff fix"). Whether it touched one work or all of them
+     is already in the title ("All works"), so scope is not a label. */
   function label(r) {
     if (r.source === "report") return "Reported";
     if (r.source === "committee") return "Committee";
     if (r.source === "feature") return "Feature";
-    if (r.corpus === "site") return "Site fix";
     return "Staff";
   }
 
