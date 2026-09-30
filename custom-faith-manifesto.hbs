@@ -47,9 +47,11 @@
               same text as /the-faith-received/transparency/, from one partial. --}}
         <button type="button" role="tab" id="mf-tab-tp" aria-controls="transparency" aria-selected="false" tabindex="-1" data-mf-tab="transparency">Our Commitment to <span class="faith-mf-tab-tfr">Transparency</span></button>
         {{!-- The fifth (Ian, 2026-09-30): the changelog and open reports.
-              Full two-line labels in two rows, three over two
-              (faith-received.css, "FIVE TABS"). --}}
+              Full two-line labels in two rows of three
+              (faith-received.css, "SIX TABS"). --}}
         <button type="button" role="tab" id="mf-tab-cl" aria-controls="changelog" aria-selected="false" tabindex="-1" data-mf-tab="changelog">Changelog and <span class="faith-mf-tab-tfr">Open Reports</span></button>
+        {{!-- The sixth (Ian, 2026-09-30): the most read works, live. --}}
+        <button type="button" role="tab" id="mf-tab-mr" aria-controls="most-read" aria-selected="false" tabindex="-1" data-mf-tab="most-read">Most Read <span class="faith-mf-tab-tfr">Works</span></button>
       </div>
 
       <section class="faith-mf-panel" id="what" role="tabpanel" aria-labelledby="mf-tab-what" data-mf-panel>
@@ -220,6 +222,15 @@
         </header>
         {{> "faith-received/_changelog"}}
       </section>
+      <section class="faith-mf-panel" id="most-read" role="tabpanel" aria-labelledby="mf-tab-mr" data-mf-panel>
+        <header class="faith-mf-head">
+          <h2 class="faith-mf-title">Most Read Works</h2>
+          <p class="faith-mf-role">What readers of The Faith Received have been reading this month.</p>
+        </header>
+        <section class="faith-mr" data-faith-most-read>
+          <ol class="faith-mr-list" data-mr-list><li class="faith-mr-item faith-mr-empty">Loading&hellip;</li></ol>
+        </section>
+      </section>
 
       {{!-- Both are the library's own button. The first pass made the
             second a bare link, and the prose-link rule underlined the
@@ -250,3 +261,4 @@
 <script src="{{asset "js/faith-century.js"}}"></script>
 <script src="{{asset "js/faith-transparency.js"}}"></script>
 <script src="{{asset "js/faith-changelog.js"}}"></script>
+<script src="{{asset "js/faith-most-read.js"}}"></script>

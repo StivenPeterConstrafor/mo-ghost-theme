@@ -12383,6 +12383,19 @@ a.faith-tp-log-work:hover { color: var(--color-secondary); }
   vertical-align: 1px;
 }
 .faith-tp-log-what { display: block; color: var(--color-muted); }
+/* Most Read Works (faith-most-read.js): titles and authors, no numbers. */
+.faith-mr-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color-card-border);
+  font-family: var(--font-body);
+}
+.faith-mr-item { padding: 10px 0; border-bottom: 1px solid var(--color-card-border); }
+.faith-mr-work { font-size: 16px; color: var(--color-dark); text-decoration: none; }
+.faith-mr-work:hover { color: var(--color-secondary); }
+.faith-mr-author { display: block; font-size: 13px; color: var(--color-muted); }
+.faith-mr-empty { color: var(--color-muted); font-size: 14px; }
 .faith-tp-log-item.is-closed { grid-template-columns: 92px minmax(0, 1fr); }
 .faith-tp-log-vols a { color: var(--color-dark); text-decoration: none; }
 .faith-tp-log-vols a:hover { color: var(--color-secondary); }
@@ -20645,26 +20658,24 @@ body.mo-shelf-page #author-order-note { display: none; }
    prose measure broke the labels onto three lines ("to" alone on one).
    14px with 8px sides keeps every label on its two lines. Phones stack
    the tabs and keep their own rule above. */
-/* FIVE TABS (Ian, 2026-09-30: "I still want the full titles, I just want
-   them to fit"). Each label keeps its two lines. The bar is a grid whose
+/* SIX TABS (Ian, 2026-09-30: "I still want the full titles, I just want
+   them to fit"; Most Read Works made six). Each label keeps its two lines. The bar is a grid whose
    1px gaps over a tan ground draw the dividers, so a second row needs no
-   extra rules. Two rows at every width from 641px, three over two, inside
-   the prose measure (Ian: "3 / 2"). Phones keep the stacked list above. */
+   extra rules. Two rows of three at every width from 641px, inside the
+   prose measure. Phones keep the stacked list above. */
 @media (min-width: 641px) {
   .faith-mf-tabs {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1px;
     background: var(--color-card-border, #d9c6a7);
   }
   .faith-mf-tabs[hidden] { display: none; }
   .faith-mf-tabs > button {
-    grid-column: span 2;
     font-size: 15px;
     padding: 12px 10px;
     background: var(--color-white, #fffdfa);
   }
-  .faith-mf-tabs > button:nth-child(n + 4) { grid-column: span 3; }
   .faith-mf-tabs > button + button { border-left: 0; }
   .faith-mf-tabs > button[aria-selected="true"] { background: var(--color-secondary, #c1593c); }
 }
