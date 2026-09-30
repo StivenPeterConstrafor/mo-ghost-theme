@@ -25,5 +25,5 @@ jobs:
         env:
           CHANGELOG_TOKEN: ${{ secrets.CHANGELOG_TOKEN }}
           REPO_TAG: theme
-          TFR_PATHS: '^(custom-faith-|custom-the-faith-received|partials/faith-received/|assets/js/(faith-|port/|page/faith-|lib/faith-)|assets/css/(faith-|port/)|assets/built/faith-|assets/data/faith-received/|docs/faith-received/)'
+          TFR_PATHS: '^(custom-faith-|custom-the-faith-received|custom-admin-tfr|partials/faith-received/|assets/js/(faith-|port/|page/faith-|lib/faith-|admin-tfr)|assets/css/(faith-|port/)|assets/built/faith-|assets/data/faith-received/|docs/faith-received/|scripts/tfr-changelog|\.github/workflows/tfr-changelog)'
         run: node scripts/tfr-changelog-post.mjs
