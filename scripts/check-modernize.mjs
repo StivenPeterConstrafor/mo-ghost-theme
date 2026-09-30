@@ -60,6 +60,9 @@ const CASES = [
   ["Mine eyes have seen; mine own heart; the kingdom is mine; mine enemies.",
     "My eyes have seen; my own heart; the kingdom is mine; my enemies."],
   ["Thou shalt not steal.", "You will not steal."],
+  // Watson, Doctrine of Repentance (ticket #15): the chirurgeon family reads "surgeon".
+  ["Christ is the Chyrurgion of the soul, and chirurgeons practise chyrurgery.",
+    "Christ is the Surgeon of the soul, and surgeons practise surgery."],
   ["where wast thou", "where were you"],
   ["thou hast", "you have"],
   ["as thou well knowest", "as you well know"],

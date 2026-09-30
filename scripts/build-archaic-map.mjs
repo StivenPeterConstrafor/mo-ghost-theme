@@ -437,6 +437,12 @@ for (const v of Object.keys(tf)) {
 }
 stats.vetoes = vetoes;
 
+// MorphAdorner normalizes these to "chirurgeon", which is itself archaic.
+// Readers get "surgeon"; the variants below are added if the corpus pass missed them.
+const RESPELL = { chirurgeon: "surgeon", chirurgeons: "surgeons", chirurgery: "surgery", chirurgical: "surgical" };
+for (const l of lines) if (/^(chirurg|chyrurg)/.test(l[0]) && RESPELL[l[1]]) l[1] = RESPELL[l[1]];
+for (const [v, m] of Object.entries(RESPELL)) if (!lines.some((l) => l[0] === v)) lines.push([v, m, "", tf[v] || 0]);
+
 lines.sort((a, b) => (a[0] < b[0] ? -1 : 1));
 const header = [
   "# The Modernizer's spelling map: Early Modern spelling <TAB> modern spelling [<TAB> flag]",
