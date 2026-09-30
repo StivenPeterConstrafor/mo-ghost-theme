@@ -505,10 +505,24 @@
           + `<b>${done.toLocaleString()}</b> settled`
         : `No issues reported yet`;
 
+      /* Collapsible and paged (Ian, 2026-09-30: "so they don't become
+         massive over time"). Open by default while there are three or
+         fewer, closed with its count once there are more; five a page,
+         newest first. */
+      const REV_PAGE = 5;
+      const revItem = (r) => `<li><span class="fr-status-rev-date">${escapeHtml(when(r.at))}</span>`
+        + `<span class="fr-status-rev-what">${escapeHtml(r.summary)}</span></li>`;
+      const revPages = Math.ceil(revs.length / REV_PAGE);
+      const revPager = revPages > 1
+        ? `<div class="fr-status-pager"><button type="button" data-rev-page="-1" disabled>Newer</button>`
+          + `<span data-rev-at>1 of ${revPages}</span>`
+          + `<button type="button" data-rev-page="1">Older</button></div>`
+        : "";
       const history = revs.length
-        ? `<ol class="fr-status-revs">${revs.map((r) =>
-          `<li><span class="fr-status-rev-date">${escapeHtml(when(r.at))}</span>`
-          + `<span class="fr-status-rev-what">${escapeHtml(r.summary)}</span></li>`).join("")}</ol>`
+        ? `<details class="fr-status-history"${revs.length <= 3 ? " open" : ""}>`
+          + `<summary>${revs.length.toLocaleString()} correction${revs.length === 1 ? "" : "s"}</summary>`
+          + `<ol class="fr-status-revs" data-rev-list>${revs.slice(0, REV_PAGE).map(revItem).join("")}</ol>`
+          + `${revPager}</details>`
         : `<p class="fr-tt-empty">Nothing has been changed in this work yet.</p>`;
 
       rowsEl.innerHTML =
@@ -523,6 +537,18 @@
         + `<div class="fr-tt-row">`
         + `<span class="fr-tt-label">Corrections</span>`
         + `<span class="fr-tt-value">${history}</span></div>`;
+
+      let revAt = 0;
+      rowsEl.querySelectorAll("[data-rev-page]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          revAt = Math.max(0, Math.min(revPages - 1, revAt + Number(btn.dataset.revPage)));
+          rowsEl.querySelector("[data-rev-list]").innerHTML =
+            revs.slice(revAt * REV_PAGE, (revAt + 1) * REV_PAGE).map(revItem).join("");
+          rowsEl.querySelector("[data-rev-at]").textContent = `${revAt + 1} of ${revPages}`;
+          rowsEl.querySelector('[data-rev-page="-1"]').disabled = revAt === 0;
+          rowsEl.querySelector('[data-rev-page="1"]').disabled = revAt === revPages - 1;
+        });
+      });
     })
     .catch(() => { /* the notice in the body stands on its own */ });
   }

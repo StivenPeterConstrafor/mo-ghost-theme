@@ -12166,6 +12166,27 @@ body.faith-toc-open .faith-dock { display: none; }
 }
 .fr-tt-value .fr-status-revs,
 .fr-tt-value .fr-tt-empty { flex: 1 1 100%; margin: 0; }
+.fr-tt-value .fr-status-history { flex: 1 1 100%; }
+.fr-status-pager {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 0 15px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-muted);
+}
+.fr-status-pager button {
+  font: inherit;
+  color: var(--color-primary-text);
+  background: none;
+  border: 1px solid var(--color-card-border);
+  border-radius: 3px;
+  padding: 4px 10px;
+  min-height: 32px;
+  cursor: pointer;
+}
+.fr-status-pager button:disabled { opacity: 0.4; cursor: default; }
 .fr-tt-empty { color: var(--color-muted); font-size: 14px; }
 @media (max-width: 640px) {
   .fr-tt-row { grid-template-columns: 1fr; gap: 3px; }
@@ -12294,15 +12315,48 @@ a.faith-tp-work:hover .faith-tp-work-title { color: var(--color-secondary); }
 }
 .faith-tp-work-coll { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
 .faith-tp-more { margin: 16px 0 0; }
-/* The changelog of corrections (faith-changelog.js). Sits directly above
-   the machine-translation list, so it gives up the list's top margin. */
+/* The changelog (faith-changelog.js). Sits directly above the
+   machine-translation list, so it gives up the list's top margin. */
 .faith-tp-log-wrap { margin-bottom: 0; }
 .faith-tp-log-wrap + .faith-tp-list-wrap { margin-top: 12px; }
+.faith-tp-log-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+.faith-tp-log-toggle { display: inline-flex; border: 1px solid var(--color-card-border); border-radius: 4px; overflow: hidden; }
+.faith-tp-log-toggle button {
+  font: inherit;
+  color: var(--color-muted);
+  background: none;
+  border: 0;
+  padding: 6px 12px;
+  min-height: 36px;
+  cursor: pointer;
+}
+.faith-tp-log-toggle button + button { border-left: 1px solid var(--color-card-border); }
+.faith-tp-log-toggle button[aria-selected="true"] { background: var(--color-primary-text); color: var(--color-white, #fff); }
+.faith-tp-log-sort { display: inline-flex; align-items: center; gap: 6px; color: var(--color-muted); }
+.faith-tp-log-sort select {
+  font: inherit;
+  color: var(--color-dark);
+  background: var(--color-white, #fff);
+  border: 1px solid var(--color-card-border);
+  border-radius: 4px;
+  padding: 5px 8px;
+  min-height: 36px;
+}
 .faith-tp-log { list-style: none; margin: 0; padding: 0; }
 .faith-tp-log-item {
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
+  grid-template-columns: 92px minmax(0, 1fr) auto;
   gap: 12px;
+  align-items: start;
   padding: 7px 0;
   border-top: 1px solid var(--color-card-border);
   font-family: var(--font-body);
@@ -12312,13 +12366,66 @@ a.faith-tp-work:hover .faith-tp-work-title { color: var(--color-secondary); }
 .faith-tp-log-item:first-child { border-top: 0; }
 .faith-tp-log-date { color: var(--color-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .faith-tp-log-work { color: var(--color-dark); text-decoration: none; }
-.faith-tp-log-work:hover { color: var(--color-secondary); }
+a.faith-tp-log-work:hover { color: var(--color-secondary); }
 .faith-tp-log-author { color: var(--color-muted); }
 .faith-tp-log-author::before { content: " \00B7  "; }
+.faith-tp-log-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 6px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 3px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary-text);
+  vertical-align: 1px;
+}
 .faith-tp-log-what { display: block; color: var(--color-muted); }
 .faith-tp-log-empty { display: block; color: var(--color-muted); }
+.faith-tp-votes { display: inline-flex; gap: 4px; }
+.faith-tp-vote { display: inline-flex; flex-direction: column; align-items: center; min-width: 36px; }
+.faith-tp-vote-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 32px;
+  color: var(--color-muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.faith-tp-vote-btn.is-down svg { transform: scaleY(-1); }
+.faith-tp-vote-btn:hover { color: var(--color-dark); border-color: var(--color-card-border); }
+.faith-tp-vote-btn[aria-pressed="true"] { color: var(--color-secondary); border-color: var(--color-secondary); }
+.faith-tp-vote-btn:disabled { opacity: 0.5; }
+.faith-tp-vote-n { font-size: 11px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.faith-tp-log-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 12px 0 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-muted);
+}
+.faith-tp-log-pager button {
+  font: inherit;
+  color: var(--color-primary-text);
+  background: none;
+  border: 1px solid var(--color-card-border);
+  border-radius: 4px;
+  padding: 5px 12px;
+  min-height: 36px;
+  cursor: pointer;
+}
+.faith-tp-log-pager button:disabled { opacity: 0.4; cursor: default; }
 @media (max-width: 600px) {
-  .faith-tp-log-item { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .faith-tp-log-item { grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; }
+  .faith-tp-log-date { grid-column: 1 / -1; }
 }
 .faith-tp-act { margin: 26px 0 30px; }
 .lp-beta-act {
