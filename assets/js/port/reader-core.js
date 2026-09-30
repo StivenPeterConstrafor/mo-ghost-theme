@@ -2707,7 +2707,10 @@ function build(){
     }
     const _rnd=e.localName==="p"?(e.getAttribute("rend")||""):"";
     if(_rnd==="monogram")return `<p class="monogram"${sourceAttrs}>${esc(e.textContent.trim())}</p>`;
-    const cls=(_rnd==="caps")?' class="caps"':(_rnd==="editorial")?' class="editorial"':"";   // WA Einleitung / editor lines (2026-09-01): set petit like the edition
+    // the editors' apparatus as PARAGRAPHS (owner 2026-09-30 "they shouldnt be hidden in the notes"): <p rend="apparatus"
+    // type="commentary|summary|sources"> reads in the text, set off, its run's leading <label> drawn as the label chip
+    const _apxT=_rnd==="apparatus"?(e.getAttribute("type")||""):"",_apxL=({summary:"Scholium",commentary:"Commentary",sources:"Sources",source:"Sources"})[_apxT]||"Editors’ note";
+    const cls=(_rnd==="caps")?' class="caps"':(_rnd==="editorial")?' class="editorial"':(_rnd==="apparatus")?` class="apx apx-${esc(_apxT)}" data-apx="${_apxL}" title="${_apxL} — the editors’ apparatus in this edition, not the author’s own text"`:"";   // WA Einleitung / editor lines (2026-09-01): set petit like the edition
     let inner=pre+teiInline(e);
     // PILCROW BREAKS (owner 2026-08-30, Ockham/Biel/Lefèvre incunable-style prints): a ¶ inside running
     // text marks the start of a new paragraph in the print -- break there, keep the mark as a muted lead
