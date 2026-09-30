@@ -130,7 +130,10 @@
   }
 
   function fromYear(v) {
-    const m = String(v == null ? "" : v).match(/\b(\d{3,4})\b/);
+    // A 1400-1999 year first, so a session or psalm number ("Sessions 45-198",
+    // "Psalms 27-118") in a volume string is not read as the year 198 or 118.
+    const str = String(v == null ? "" : v);
+    const m = str.match(/\b(1[4-9]\d{2})\b/) || str.match(/\b(\d{3,4})\b/);
     if (!m) return 0;
     const y = parseInt(m[1], 10);
     return y > 0 && y < 2000 ? Math.floor((y - 1) / 100) + 1 : 0;
