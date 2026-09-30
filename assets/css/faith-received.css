@@ -12317,8 +12317,9 @@ a.faith-tp-work:hover .faith-tp-work-title { color: var(--color-secondary); }
 .faith-tp-more { margin: 16px 0 0; }
 /* The changelog (faith-changelog.js). Sits directly above the
    machine-translation list, so it gives up the list's top margin. */
-.faith-tp-log-wrap { margin-bottom: 0; }
-.faith-tp-log-wrap + .faith-tp-list-wrap { margin-top: 12px; }
+.faith-tp-log-wrap { margin: 0; }
+.faith-tp-log-head { cursor: default; }
+.faith-tp-changelog-link a { color: var(--color-secondary); }
 .faith-tp-log-bar {
   display: flex;
   flex-wrap: wrap;

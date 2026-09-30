@@ -46,6 +46,8 @@
         {{!-- The fourth (Ian, 2026-09-29): the transparency commitment, the
               same text as /the-faith-received/transparency/, from one partial. --}}
         <button type="button" role="tab" id="mf-tab-tp" aria-controls="transparency" aria-selected="false" tabindex="-1" data-mf-tab="transparency">Our Commitment to <span class="faith-mf-tab-tfr">Transparency</span></button>
+        {{!-- The fifth (Ian, 2026-09-30): the changelog and open reports. --}}
+        <button type="button" role="tab" id="mf-tab-cl" aria-controls="changelog" aria-selected="false" tabindex="-1" data-mf-tab="changelog">Changelog and <span class="faith-mf-tab-tfr">Open Reports</span></button>
       </div>
 
       <section class="faith-mf-panel" id="what" role="tabpanel" aria-labelledby="mf-tab-what" data-mf-panel>
@@ -208,6 +210,13 @@
           <p class="faith-mf-role">What artificial intelligence did here, what we do to keep it honest, and every work it touched.</p>
         </header>
         {{> "faith-received/_transparency-body"}}
+      </section>
+      <section class="faith-mf-panel" id="changelog" role="tabpanel" aria-labelledby="mf-tab-cl" data-mf-panel>
+        <header class="faith-mf-head">
+          <h2 class="faith-mf-title">Changelog and Open Reports</h2>
+          <p class="faith-mf-role">Every change made to a work, whether a reader asked for it or not, and every report still open. Vote on any of them.</p>
+        </header>
+        {{> "faith-received/_changelog"}}
       </section>
 
       {{!-- Both are the library's own button. The first pass made the

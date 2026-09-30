@@ -58,40 +58,10 @@
         <button type="button" class="tfr-review-btn" data-report-issue>Report an issue</button>
       </p>
 
-      {{!-- The changelog (Ian, 2026-09-30): every change made to a work or
-            to all works, requested or not, and the open reports the health
-            check has summarized. Closed by default like the list below;
-            filled by assets/js/faith-changelog.js. --}}
-      <section class="faith-tp-list-wrap faith-tp-log-wrap" data-faith-changelog>
-        <details class="faith-tp-list">
-          <summary class="faith-tp-list-head">
-            <span class="faith-tp-list-title">Changelog</span>
-            <span class="faith-tp-list-count" data-cl-count>Loading&hellip;</span>
-          </summary>
-          <div class="faith-tp-list-body">
-            <div class="faith-tp-log-bar">
-              <div class="faith-tp-log-toggle" role="group" aria-label="Show">
-                <button type="button" data-cl-view="open" aria-selected="false">Open reports <span data-cl-n></span></button>
-                <button type="button" data-cl-view="closed" aria-selected="true">Closed reports <span data-cl-n></span></button>
-              </div>
-              <label class="faith-tp-log-sort"><span>Sort</span>
-                <select data-cl-sort>
-                  <option value="new">Newest</option>
-                  <option value="old">Oldest</option>
-                  <option value="up">Most thumbs up</option>
-                  <option value="down">Most thumbs down</option>
-                </select>
-              </label>
-            </div>
-            <ol class="faith-tp-log" data-cl-list></ol>
-            <div class="faith-tp-log-pager" data-cl-pager hidden>
-              <button type="button" data-cl-prev>Previous</button>
-              <span data-cl-at></span>
-              <button type="button" data-cl-next>Next</button>
-            </div>
-          </div>
-        </details>
-      </section>
+      {{!-- The changelog and open reports moved to their own tab on the
+            About page (Ian, 2026-09-30); this points there. --}}
+      <p class="faith-tp-note faith-tp-changelog-link">Every change made to a work, and every open report, is listed in the <a href="/the-faith-received/manifesto/#changelog">changelog</a>.</p>
+
 
       {{!-- The list. Closed by default: it runs to thousands of
             titles, and a reader who wants it will open it. --}}
