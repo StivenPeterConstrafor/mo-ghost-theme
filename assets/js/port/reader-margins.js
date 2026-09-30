@@ -8,7 +8,11 @@
   sheet.innerHTML='<header class="rm-panel-head"><div><h2 id="readerMarginTitle">Margin notes</h2><p class="rm-context"></p></div><button type="button" class="rm-close" aria-label="Close margin notes">Close</button></header><div class="rm-panel-body"></div>';
   document.body.appendChild(sheet);
   const native=typeof sheet.showPopover==='function';let active=null,queued=false;
-  const eligible=note=>!!note.textContent.trim()&&!note.matches('.headnote,.edinl')&&!note.closest('.edblock');
+  // A margin note that is only the print's paragraph number or a margin-link letter ("12.", "n. 12", "XIV.", "b") is not a
+  // note to open: its control led to a panel holding the number alone (owner 09-30 on Scotus, Opera t. 8 p. 369: "i click
+  // this it nothing shows"; 67 of that volume's 235 margin notes). It keeps its place in the text for print and copy.
+  const BARE=/^[\[(]?(?:[nN](?:um)?\.?\s*|§\s*)?(?:\d{1,4}[a-z]?|[IVXLCDM]{1,8}|[a-zA-Z])[\])]?\s*[.,;:]?$/;
+  const eligible=note=>{const t=note.textContent.trim();return !!t&&!BARE.test(t)&&!note.matches('.headnote,.edinl')&&!note.closest('.edblock');};
   const notesIn=host=>host.matches('.mnote')?[host]:Array.from(host.children).filter(e=>e.matches('.mnote')&&eligible(e));
   function sourcePage(node){
     const row=node.closest('.row[id]');
@@ -80,6 +84,9 @@
   function enhance(){queued=false;
     root.querySelectorAll('.mnp:not(.edblock)').forEach(host=>{const notes=notesIn(host);if(!notes.length||host.querySelector('.headnote,.edinl'))return;marker(host,notes,false);host.classList.add('rm-group');});
     root.querySelectorAll('.mnote').forEach(note=>{if(!eligible(note)||note.parentElement.classList.contains('rm-group'))return;marker(note,[note],true);});
+    // a group holding nothing but such numbers gets no control and leaves no empty ruled box behind
+    root.querySelectorAll('.mnp:not(.edblock):not(.rm-group):not(.rm-bare)').forEach(host=>{const kids=Array.from(host.children);
+      if(kids.length&&kids.every(e=>e.matches('.mnote')&&!e.matches('.headnote,.edinl')&&!eligible(e))&&!Array.from(host.childNodes).some(n=>n.nodeType===3&&n.textContent.trim()))host.classList.add('rm-bare');});
     reserve();
   }
   sheet.querySelector('.rm-close').onclick=()=>close(true);
