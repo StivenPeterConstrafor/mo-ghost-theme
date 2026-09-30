@@ -1,0 +1,29 @@
+name: TFR Changelog
+
+# Posts a commit's "Changelog:" line to The Faith Received's public
+# changelog (About page, Changelog tab). TFR only: the script skips any
+# commit that touches no file matched by TFR_PATHS, so nothing about the
+# rest of Mere Orthodoxy can reach the page. See
+# scripts/tfr-changelog-post.mjs for the message format.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+        with:
+          sparse-checkout: scripts/tfr-changelog-post.mjs
+          sparse-checkout-cone-mode: false
+      - name: Post changelog lines for TFR commits
+        env:
+          CHANGELOG_TOKEN: ${{ secrets.CHANGELOG_TOKEN }}
+          REPO_TAG: theme
+          TFR_PATHS: '^(custom-faith-|custom-the-faith-received|partials/faith-received/|assets/js/(faith-|port/|page/faith-|lib/faith-)|assets/css/(faith-|port/)|assets/built/faith-|assets/data/faith-received/|docs/faith-received/)'
+        run: node scripts/tfr-changelog-post.mjs

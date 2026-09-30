@@ -170,25 +170,32 @@
     // the moment to write it down. The reader's Translation
     // Transparency panel prints this list, and a correction nobody
     // recorded is a change the reader cannot see was made.
+    /* A NOTE IS REQUIRED (Ian, 2026-09-30). The public changelog moves a
+       report from Open to Closed when it is settled, so a report closed
+       with no note would vanish from the page with nothing to show for
+       it. Settling now always writes the entry: what was corrected, or,
+       when nothing needed changing, why. Cancel keeps the report open.
+       A report with no work attached is logged against All works, titled
+       from the report itself. */
     let note = "";
     if (next === "done" && row) {
       note = (window.prompt(
-        "What was corrected? This is published in the work's correction history.\n\n"
-        + "Leave blank to close the report without recording a change.", "") || "").trim();
+        "What was corrected? This is published in the public changelog.\n\n"
+        + "If nothing needed changing, say why (for example: \"No change: this is the 1668 spelling of surgeon.\").", "") || "").trim();
+      if (!note) return;
     }
 
     done.disabled = true;
     if (note && row) {
-      const corpus = row.getAttribute("data-corpus") || "tfr";
-      const workId = row.getAttribute("data-work") || "";
-      if (workId) {
-        window.MOAuth.fetch(`${adminUrl}/tfr/revisions`, {
-          method: "POST",
-          credentials: "omit",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ corpus, workId, summary: note, source: "report", reportId: Number(id) }),
-        }).catch(() => { /* the report still closes */ });
-      }
+      let corpus = row.getAttribute("data-corpus") || "tfr";
+      let workId = row.getAttribute("data-work") || "";
+      if (!workId) { corpus = "site"; workId = "all"; }
+      window.MOAuth.fetch(`${adminUrl}/tfr/revisions`, {
+        method: "POST",
+        credentials: "omit",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ corpus, workId, summary: note, source: "report", reportId: Number(id) }),
+      }).catch(() => { /* the report still closes */ });
     }
     window.MOAuth.fetch(`${adminUrl}/tfr/issues/${encodeURIComponent(id)}/status`, {
       method: "POST",
