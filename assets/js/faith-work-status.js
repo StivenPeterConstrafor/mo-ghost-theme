@@ -437,11 +437,52 @@
   const factsEl = mount.querySelector("[data-tt-facts]");
   const rowsEl = mount.querySelector("[data-tt-rows]");
 
-  fetch(`${BASE}/v1/work-status?c=${encodeURIComponent(corpus)}&w=${encodeURIComponent(workId)}`)
-    .then((r) => (r.ok ? r.json() : null))
-    .then((data) => {
-      if (!data || !data.ok || !data.works) return;
-      const w = data.works[workId];
+  /* ONE WORK, TWO ADDRESSES (Ian, 2026-09-30: "The report and change to
+     it isn't showing up on the works transparency badge"). A sister-
+     collection work is stored under either shape, depending on which page
+     wrote the row: the ported reader's Report form and the changelog write
+     ("tfr", "pg-1753"), while the old reader and this panel address it as
+     ("pg", "1753"). Asking for only one of them showed "No issues reported
+     yet" on a work with a settled report and a published correction. So
+     both are asked and merged: counts add, corrections join, and a work
+     reviewed under either address is reviewed. */
+  const addresses = [[corpus, workId]];
+  const joined = /^(pg|pld|po|eebo|aq|dtc|confessions)-(.+)$/.exec(workId);
+  if (corpus !== "tfr") addresses.push(["tfr", `${corpus}-${workId}`]);
+  else if (joined) addresses.push([joined[1], joined[2]]);
+
+  function merge(list) {
+    const found = list.filter(Boolean);
+    if (!found.length) return null;
+    const seen = new Set();
+    const revisions = found.flatMap((x) => x.revisions || [])
+      .filter((r) => {
+        const k = `${r.at}|${r.summary}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      })
+      .sort((x, y) => String(y.at).localeCompare(String(x.at)));
+    const reviewed = found.find((x) => x.review === "reviewed");
+    return {
+      review: reviewed ? "reviewed" : (found[0].review || "needs"),
+      reviewedAt: reviewed ? reviewed.reviewedAt : null,
+      reviewer: reviewed ? reviewed.reviewer : null,
+      reports: {
+        open: found.reduce((n, x) => n + ((x.reports && x.reports.open) || 0), 0),
+        done: found.reduce((n, x) => n + ((x.reports && x.reports.done) || 0), 0),
+      },
+      revisions,
+    };
+  }
+
+  Promise.all(addresses.map(([c, w]) =>
+    fetch(`${BASE}/v1/work-status?c=${encodeURIComponent(c)}&w=${encodeURIComponent(w)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => (d && d.ok && d.works ? d.works[w] : null))
+      .catch(() => null)))
+    .then((list) => {
+      const w = merge(list);
       if (!w) return;
 
       const state = REVIEW[w.review] || REVIEW.needs;
