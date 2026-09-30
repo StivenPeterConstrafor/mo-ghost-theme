@@ -407,8 +407,8 @@ body.research-page .pinb{min-height:0;min-width:0;font:500 12.5px/1.2 var(--sans
 .rx-excerpt .rx-how.how-alludes,.pane-meta .how-alludes,.vpr .howtag.how-alludes{color:var(--allusion,#2B6A6E);font-style:italic}
 /* two witnesses of one volume (owner 2026-09-30): the facsimile marked with a double rule, as in the library search; its born-digital
    second witness in the same row, marked Digital text */
-.rx-witness{display:inline-block;margin-left:8px;padding:0 6px;border:1px solid var(--border);border-radius:3px;font:600 10px/18px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);vertical-align:3px;white-space:nowrap}
-.rx-witness.fac{border:3px double var(--border);line-height:14px}
+.rx-witness{display:inline-block;margin-left:8px;padding:0 6px;border:1px solid var(--border);border-radius:3px;font:600 12px/18px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);vertical-align:3px;white-space:nowrap}
+.rx-witness.fac{border:3px double var(--border);line-height:16px}
 .rx-work-witness{margin:6px 0 0;font:13px/1.6 var(--body);color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
 .rx-work-witness .rx-witness{margin-left:0}
 .rx-work-witness .pinb-work{margin-left:0}
