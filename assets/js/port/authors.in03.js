@@ -405,24 +405,43 @@ function pairWitnesses(rows,catalogue){
   // Vol. 1 and Vol. 2 in facsimile and none of the three digital volumes, "Tome I", "Tome II, Part I", "Tome II, Part II" of "System of
   // Universal Theology (Universae theologiae systema)"). A witness of a group this room shows that still matches no row is listed on its
   // own row — never dropped.
+  // Since 2026-09-30 (owner: "labelling sets together and then distinguishing when volumes are born digital versions of facsimile of
+  // the same copy") editions.json says it outright where the text was measured: `of` the volumes holding a witness's text, `part` when
+  // it holds only part of its volume, `k` when the group is ANOTHER EDITION, its volumes cut differently, or ANOTHER TRANSLATION. Such a
+  // work is never folded — a volume number is not a text: the room had put Petau's Tomus IV under Vol. 4 as "the same text" (Tomus IV
+  // is Vols 5–6) — and neither is a witness whose text spans two volumes; each keeps its row and names where its text lies.
   const rn=t=>{const v={I:1,V:5,X:10,L:50,C:100,D:500,M:1000};let n=0;for(let i=0;i<t.length;i++){const x=v[t[i]],y=v[t[i+1]]||0;n+=x<y?-x:x;}return n;};
   const vnum=w=>{const m=String(RX.edition(w)||'').match(/\b(\d+|[IVXLCDM]+)\b/);return m?(/^\d+$/.test(m[1])?+m[1]:rn(m[1])):null;};
   const key=w=>[EDITIONS[w.w]?.g,w.t,RX.edition(w)].join('|'),loose=w=>{const n=vnum(w);return n==null?null:EDITIONS[w.w]?.g+'#'+n;};
-  const primary=new Map(),primaryLoose=new Map(),seconds=new Map();rows.forEach(w=>{delete w.witnesses;});
-  for(const w of rows)if(EDITIONS[w.w]?.p===1){if(!primary.has(key(w)))primary.set(key(w),w);const l=loose(w);if(l&&!primaryLoose.has(l))primaryLoose.set(l,w);}
+  const primary=new Map(),primaryLoose=new Map(),bySlug=new Map(),seconds=new Map();rows.forEach(w=>{delete w.witnesses;delete w.sameAs;delete w.mixed;});
+  for(const w of rows)if(EDITIONS[w.w]?.p===1){bySlug.set(w.w,w);if(!primary.has(key(w)))primary.set(key(w),w);const l=loose(w);if(l&&!primaryLoose.has(l))primaryLoose.set(l,w);}
   // a group this room shows in ONE facsimile (a single-volume work): its unnumbered witness belongs to that row
   const single=new Map();for(const w of rows)if(EDITIONS[w.w]?.p===1){const g=EDITIONS[w.w].g;single.set(g,single.has(g)?null:w);}
-  const find=x=>primary.get(key(x))||(loose(x)&&primaryLoose.get(loose(x)))||(vnum(x)==null&&single.get(EDITIONS[x.w]?.g))||null;
+  const find=x=>{const e=EDITIONS[x.w];if(!e||e.k)return null;if(e.of)return (e.of.length===1&&bySlug.get(e.of[0]))||null;
+    return primary.get(key(x))||(loose(x)&&primaryLoose.get(loose(x)))||(vnum(x)==null&&single.get(e.g))||null;};
   const groups=new Set(rows.filter(w=>EDITIONS[w.w]?.p===1).map(w=>EDITIONS[w.w].g)),present=new Set(rows.map(w=>w.w)),extra=[];
   if(catalogue)for(const [slug,e] of Object.entries(EDITIONS))if(e.p===0&&catalogue.bySlug.has(slug)){const x=catalogueWork({w:slug},catalogue),p=find(x);
     if(p)seconds.set(slug,p);else if(groups.has(e.g)&&!present.has(slug))extra.push(x);}
   for(const [slug,p] of seconds)(p.witnesses=p.witnesses||[]).push(catalogueWork({w:slug},catalogue));
-  return rows.filter(w=>!(EDITIONS[w.w]?.p===0&&find(w))).concat(extra);}
-const witnessHTML=w=>{const ed=EDITIONS[w.w];if(!ed)return '';return w.pages?'<span class="rx-witness fac">Facsimile</span>':`<span class="rx-witness">Digital text${ed.p===0?' · second witness':''}</span>`;};
-const secondWitnessHTML=w=>(w.witnesses||[]).map(x=>`<p class="rx-work-witness"><span class="rx-witness${x.pages?' fac':''}">${x.pages?'Facsimile':'Digital text'} · second witness</span><span>${(RX.edition(x)&&(RX.edition(x)!==RX.edition(w)||x.t!==w.t))?esc(RX.edition(x))+(x.pages?': another scan of the same text':': the same text, born-digital'):(x.pages?'Another scan of the same volume':'The same volume as a born-digital text')}</span><a class="rx-text-link" href="${readerHref(x.w)}" aria-label="Read the ${x.pages?'second scan':'born-digital text'} of ${esc(x.t)}${RX.edition(x)?', '+esc(RX.edition(x)):''}">${x.pages?'Read this scan':'Read the digital text'}</a>${workSaveBtn(x.w,x.t,x.a||x.author||'')}</p>`).join('');
+  const shown=rows.filter(w=>!(EDITIONS[w.w]?.p===0&&find(w)));
+  // a work the room lacks stands right after its group's last row, not at the foot of the list
+  for(const x of extra){let at=-1;shown.forEach((w,i)=>{if(EDITIONS[w.w]?.g===EDITIONS[x.w].g)at=i;});shown.splice(at<0?shown.length:at+1,0,x);}
+  if(catalogue)for(const w of shown){const e=EDITIONS[w.w];if(e?.p===0&&e.of)w.sameAs=e.of.map(s=>catalogueWork({w:s},catalogue));}
+  // a SET holding facsimile and born-digital volumes marks every row with its format, grouped or not (Jansenius' Augustinus Vol. 4)
+  const formats=new Map();for(const w of shown){const f=RX.workFamily(w),m=formats.get(f)||new Set();[w,...(w.witnesses||[])].forEach(x=>m.add(!!x.pages));formats.set(f,m);}
+  for(const w of shown)w.mixed=formats.get(RX.workFamily(w)).size>1;
+  return shown;}
+const WITNESS_ROLE={edition:'another edition',translation:'another translation'};
+const witnessHTML=w=>{const ed=EDITIONS[w.w];if(!ed&&!w.mixed)return '';const role=ed?.p===0?' · '+(WITNESS_ROLE[ed.k]||'second witness'):'';
+  return `<span class="rx-witness${w.pages?' fac':''}">${w.pages?'Facsimile':'Digital text'}${role}</span>`;};
+// where a work that keeps its own row has its text among the group's volumes (Petau's Tomus III: Vols 4 and 7)
+const sameAsHTML=w=>{const s=w.sameAs||[];if(!s.length)return '';const k=EDITIONS[w.w]?.k,names=s.map(x=>`<a class="rx-text-link" href="${readerHref(x.w)}">${esc(RX.edition(x)||x.t)}</a>`);
+  const list=names.length>1?names.slice(0,-1).join(', ')+' and '+names[names.length-1]:names[0];
+  return `<p class="rx-work-witness"><span>${k==='translation'?'Another translation of the text in':k?'Another edition of the text in':'The same text as'} ${list}${s.every(x=>x.pages)?', in facsimile':''}</span></p>`;};
+const secondWitnessHTML=w=>(w.witnesses||[]).map(x=>`<p class="rx-work-witness"><span class="rx-witness${x.pages?' fac':''}">${x.pages?'Facsimile':'Digital text'} · second witness</span><span>${EDITIONS[x.w]?.part?(RX.edition(x)&&RX.edition(x)!==RX.edition(w)?esc(RX.edition(x))+': part':'Part')+' of this volume'+(x.pages?', another scan':', born-digital'):(RX.edition(x)&&(RX.edition(x)!==RX.edition(w)||x.t!==w.t))?esc(RX.edition(x))+(x.pages?': another scan of the same text':': the same text, born-digital'):(x.pages?'Another scan of the same volume':'The same volume as a born-digital text')}</span><a class="rx-text-link" href="${readerHref(x.w)}" aria-label="Read the ${x.pages?'second scan':'born-digital text'} of ${esc(x.t)}${RX.edition(x)?', '+esc(RX.edition(x)):''}">${x.pages?'Read this scan':'Read the digital text'}</a>${workSaveBtn(x.w,x.t,x.a||x.author||'')}</p>`).join('');
 const collectedHTML=slug=>{const c=collectedOf(slug);if(!c)return '';const n=(c.sections||[]).length,sum=String(c.summary||'').replace(/\s+/g,' ').trim(),short=sum.length>240?sum.slice(0,237).replace(/\s+\S*$/,'')+'…':sum;
   return (short?`<p class="rx-work-includes"><span>Includes</span> ${esc(short)}</p>`:'')+(n>1?`<details class="rx-work-contents"><summary>Contents · ${fmtR(n)} sections</summary><ol>${c.sections.map(x=>`<li><a href="${readerHref(slug,x.page)}">${esc(x.title)}</a><small>p. ${esc(x.page)}</small></li>`).join('')}</ol></details>`:'');};
-function workRowHTML(w){const reference=RX.edition(w),details=[reference,w.date,(!/^P[LG]\b/.test(reference)&&w.np)?fmtR(w.np)+' indexed pages':''].filter(Boolean);return `<article class="rx-work-row"><div><h3><a href="${readerHref(w.w)}">${esc(w.t)}</a>${witnessHTML(w)}</h3><p class="rx-work-reference">${details.map(esc).join(' · ')||'Edition details not recorded'}</p>${collectedHTML(w.w)}${secondWitnessHTML(w)}${w.ambiguous?`<small>Catalogue entry: ${esc(w.w)}</small>`:''}</div><div class="rx-work-actions"><a class="rx-text-link" href="${readerHref(w.w)}" aria-label="Read ${esc(w.t)}${reference?', '+esc(reference):''}">Read work</a><a class="rx-text-link" href="/the-faith-received/author/#w/${encodeURIComponent(w.w)}" aria-label="Explore ${esc(w.t)}${reference?', '+esc(reference):''}">Explore work</a>${workSaveBtn(w.w,w.t,w.a||w.author||'')}</div></article>`;}
+function workRowHTML(w){const reference=RX.edition(w),details=[reference,w.date,(!/^P[LG]\b/.test(reference)&&w.np)?fmtR(w.np)+' indexed pages':''].filter(Boolean);return `<article class="rx-work-row"><div><h3><a href="${readerHref(w.w)}">${esc(w.t)}</a>${witnessHTML(w)}</h3><p class="rx-work-reference">${details.map(esc).join(' · ')||'Edition details not recorded'}</p>${collectedHTML(w.w)}${sameAsHTML(w)}${secondWitnessHTML(w)}${w.ambiguous?`<small>Catalogue entry: ${esc(w.w)}</small>`:''}</div><div class="rx-work-actions"><a class="rx-text-link" href="${readerHref(w.w)}" aria-label="Read ${esc(w.t)}${reference?', '+esc(reference):''}">Read work</a><a class="rx-text-link" href="/the-faith-received/author/#w/${encodeURIComponent(w.w)}" aria-label="Explore ${esc(w.t)}${reference?', '+esc(reference):''}">Explore work</a>${workSaveBtn(w.w,w.t,w.a||w.author||'')}</div></article>`;}
 // Build only the branches the reader opens. The catalogue and its identifiers stay intact.
 function mountWorkGroups(host,rows,mode,options={}){
  const definitions=new Map();let serial=0;
