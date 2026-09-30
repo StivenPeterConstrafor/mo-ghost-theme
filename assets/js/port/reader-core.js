@@ -3071,7 +3071,12 @@ function build(){
     {const rows=[...sec.children];let run=[];
      // …but never on the TITLE leaf (owner 2026-09-06 "no stacking of source and english": Poinsot Cursus t.7-2 p3 —
      // eight paired title heads compacted into Latin-over-English; the title page keeps its side-by-side pairs)
-     const flush=()=>{if(run.length>=3&&!isTitle)run.forEach(r=>r.classList.add("ixh"));run=[];};
+     // …nor on a CHAPTER OPENING (owner 2026-09-30 "fix the fact that the headers of en and source stack": Quenstedt Systema p. 11 —
+     // CAPUT I / SECTIO PRIMA / Θέσις I are three nested section heads, not an index; the run rule took ≥3 heads as a TABULA and
+     // compacted them lane over lane). A run holds its side-by-side pairs when any head in it is a main head or carries a section label.
+     const _secLab=/^\s*(?:caput|cap\.|chapter|chap\.|sectio|section|sect\.|thesis|θέσις|quaestio|question|liber|book|pars|part|articulus|article|locus|disputatio|disputation|membrum|punctum|distinctio|titulus|homilia|sermo|psalmus|observatio|observation|digressio|digression)\b/i;
+     const _opener=r=>r.classList.contains("hmain")||_secLab.test((r.textContent||"").trim());
+     const flush=()=>{if(run.length>=4&&!isTitle&&!run.some(_opener))run.forEach(r=>r.classList.add("ixh"));run=[];};
      rows.forEach(r=>{if(r.classList.contains("rhead"))run.push(r);else flush();});flush();
      const nh=sec.querySelectorAll(".rhead").length,nb=[...sec.querySelectorAll(".row")].filter(x=>!x.classList.contains("rhead")&&!x.classList.contains("rapp")).length;
      if(nh>=6&&nb<=2&&!isTitle)sec.querySelectorAll(".rhead").forEach(r=>r.classList.add("ixh"));
