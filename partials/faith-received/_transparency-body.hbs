@@ -58,6 +58,25 @@
         <button type="button" class="tfr-review-btn" data-report-issue>Report an issue</button>
       </p>
 
+      {{!-- The changelog (Ian, 2026-09-30): every correction made to a work,
+            newest first, with its date. Closed by default like the list
+            below; filled by assets/js/faith-changelog.js from the same
+            table each work's own panel reads. --}}
+      <section class="faith-tp-list-wrap faith-tp-log-wrap" data-faith-changelog>
+        <details class="faith-tp-list">
+          <summary class="faith-tp-list-head">
+            <span class="faith-tp-list-title">Changelog of corrections</span>
+            <span class="faith-tp-list-count" data-cl-count>Loading&hellip;</span>
+          </summary>
+          <div class="faith-tp-list-body">
+            <ol class="faith-tp-log" data-cl-list></ol>
+            <div class="faith-tp-more">
+              <button type="button" class="bsearch-more" data-cl-more hidden>Show more</button>
+            </div>
+          </div>
+        </details>
+      </section>
+
       {{!-- The list. Closed by default: it runs to thousands of
             titles, and a reader who wants it will open it. --}}
       <section class="faith-tp-list-wrap" data-faith-transparency>

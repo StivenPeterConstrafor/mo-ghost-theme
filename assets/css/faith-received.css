@@ -12294,6 +12294,32 @@ a.faith-tp-work:hover .faith-tp-work-title { color: var(--color-secondary); }
 }
 .faith-tp-work-coll { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
 .faith-tp-more { margin: 16px 0 0; }
+/* The changelog of corrections (faith-changelog.js). Sits directly above
+   the machine-translation list, so it gives up the list's top margin. */
+.faith-tp-log-wrap { margin-bottom: 0; }
+.faith-tp-log-wrap + .faith-tp-list-wrap { margin-top: 12px; }
+.faith-tp-log { list-style: none; margin: 0; padding: 0; }
+.faith-tp-log-item {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 12px;
+  padding: 7px 0;
+  border-top: 1px solid var(--color-card-border);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.faith-tp-log-item:first-child { border-top: 0; }
+.faith-tp-log-date { color: var(--color-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.faith-tp-log-work { color: var(--color-dark); text-decoration: none; }
+.faith-tp-log-work:hover { color: var(--color-secondary); }
+.faith-tp-log-author { color: var(--color-muted); }
+.faith-tp-log-author::before { content: " \00B7  "; }
+.faith-tp-log-what { display: block; color: var(--color-muted); }
+.faith-tp-log-empty { display: block; color: var(--color-muted); }
+@media (max-width: 600px) {
+  .faith-tp-log-item { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}
 .faith-tp-act { margin: 26px 0 30px; }
 .lp-beta-act {
   display: flex;
