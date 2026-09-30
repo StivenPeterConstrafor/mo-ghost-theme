@@ -979,7 +979,42 @@ function __initReaderTools(){
   const rowNote=(r,url)=>{const f=r&&r.closest(".folio"),c=f?citeOf(f.dataset.page,url,laneOfRow(r)):null;if(!c)return null;
     const ed=r&&r.dataset&&r.dataset.edit,pre=ed?ed+" (Wadding–Vivès editors’ apparatus), in ":"";
     return {text:pre+plain(c.note),html:htmlEsc(pre)+c.html.note,c};};
-  window.__frCite=(page,url,lane)=>{const c=citeOf(page,url,lane||"en");return c?plain(c.note):null;};   // reader-core's folio pill uses it
+  // ---- copying a passage (Baxter, 2026-09-29) ----
+  // A copied brace diagram came out as one run ("2. Intellect: 3. Will: II. Sensitive animal nature …"), cited p. 258 for a passage
+  // begun on p. 257. A diagram's lines stay lines, two spaces a level, the shallowest at the margin; paragraphs stay paragraphs; the
+  // page marks (.pganchor) and a row's controls are not the text. A passage over a page turn is cited by its first page and its last,
+  // the pages the marks inside a row say (a fallback row holds several pages).
+  const SEL_SKIP=["pganchor","la-rev","trpencil","rowx","hanchor"];
+  function fragText(frag){const out=[];let cur="";const put=d=>{const t=cur.replace(/\s+/g," ").trim();cur="";if(t)out.push({d,t});};
+    (function walk(n,d){for(const c of n.childNodes){if(c.nodeType===3){cur+=c.nodeValue;continue;}
+      if(c.nodeType!==1||c.tagName==="BUTTON"||SEL_SKIP.some(k=>c.classList.contains(k)))continue;
+      if(c.classList.contains("rlabel")){put(null);walk(c,d);put(d);continue;}
+      if(c.classList.contains("rkids")){put(null);walk(c,d+1);continue;}
+      const blk=/^(P|DIV|H[1-6]|LI|BLOCKQUOTE|SECTION|TABLE|TR)$/.test(c.tagName);if(blk)put(null);walk(c,d);if(blk)put(null);}})(frag,0);
+    put(null);const ds=out.filter(x=>x.d!=null).map(x=>x.d),lo=ds.length?Math.min(...ds):0;
+    return out.map(x=>x.d==null?x.t:"  ".repeat(x.d-lo)+x.t).join("\n");}
+  function selText(s){const flat=(s?s.toString():"").replace(/\s+/g," ").trim(),r=s&&s.rangeCount?s.getRangeAt(0):null;
+    if(!r)return flat;const f=r.cloneContents();return f.querySelector&&f.querySelector(".rlabel")?fragText(f):flat;}
+  const endOfRange=(a,b)=>{if(a<100||a%100===0)return String(b);const A=String(a),B=String(b);if(A.length!==B.length)return B;   /* Chicago 9.61, as cite-core writes it */
+    let i=0;while(i<A.length&&A[i]===B[i])i++;const ch=B.slice(i);return a%100<10?ch:ch.length>=2?ch:B.slice(-2);};
+  // two notes that differ only in their locator → the first with its locator run on to the second's: "p. 257" + "p. 258" → "pp. 257–58"
+  function spanNote(a,b){if(!a||!b||a===b)return a;let i=0,j=0;while(i<a.length&&a[i]===b[i])i++;
+    while(j<a.length-i&&j<b.length-i&&a[a.length-1-j]===b[b.length-1-j])j++;
+    while(i>0&&/\d/.test(a[i-1]))i--;while(j>0&&/\d/.test(a[a.length-j]))j--;
+    const x=a.slice(i,a.length-j),y=b.slice(i,b.length-j);if(!/^\d+$/.test(x)||!/^\d+$/.test(y)||+y<=+x)return a;
+    return a.slice(0,i).replace(/\bp\. $/,"pp. ").replace(/\bcol\. $/,"cols. ")+x+"–"+endOfRange(+x,+y)+a.slice(a.length-j);}
+  // the page a point of the text is on: the last page mark before it in its row, else the row's folio
+  function pageAt(node){const el=node&&(node.nodeType===1?node:node.parentElement),row=el&&el.closest&&el.closest(".row[id],.en[id^=b],.la[id^=b]");if(!row)return null;
+    let pg=row.closest(".folio")?.dataset.page??null;for(const a of row.querySelectorAll(".pganchor[data-page]"))if(a===node||a.compareDocumentPosition(node)&4)pg=a.dataset.page;return pg;}
+  // ---- end of copying a passage ----
+  // a passage's note from its first page to its last (the row's folio when a page is not known)
+  const passageNote=(r,first,last,url)=>{const lane=laneOfRow(r),pg=first??r?.closest(".folio")?.dataset.page,c=pg!=null?citeOf(pg,url,lane):null;if(!c)return null;
+    const ed=r&&r.dataset&&r.dataset.edit,pre=ed?ed+" (Wadding–Vivès editors’ apparatus), in ":"";let text=plain(c.note),html=c.html.note;
+    if(last!=null&&String(last)!==String(pg)){const d=citeOf(last,url,lane);if(d){text=spanNote(text,plain(d.note));html=spanNote(html,d.html.note);}}
+    return {text:pre+text,html:htmlEsc(pre)+html,c};};
+  /* reader-core's folio pill uses __frCite; the theme's Copy passes the last page */
+  window.__frCite=(page,url,lane,last)=>{const c=citeOf(page,url,lane||"en");if(!c)return null;const t=plain(c.note);
+    if(last==null||String(last)===String(page))return t;const d=citeOf(last,url,lane||"en");return d?spanNote(t,plain(d.note)):t;};
   function rowx(r,kind){return reading.querySelector('.rowx[data-for="'+r.id+'"][data-kind="'+kind+'"]');}
   function placeAfter(r,node){let ref=r; const tr=rowx(r,"tr"); if(kindOrder(node)==="note"&&tr)ref=tr; ref.after(node);}
   function kindOrder(n){return n.dataset.kind;}
@@ -1162,7 +1197,8 @@ function __initReaderTools(){
     const s=getSelection();if(!s||s.isCollapsed||s.toString().trim().length<2)return false;
     const start=s.getRangeAt(0).startContainer,node=start.nodeType===1?start:start.parentElement,row=node&&node.closest(".row[id],.en[id^=b],.la[id^=b]");
     if(!row||!reading.contains(row))return false;
-    popRow=row;passage={author:AUTHOR,title:DATA.title_en||DATA.title||WORK,text:s.toString().replace(/\s+/g," ").trim(),cite:rowCite(row),slug:WORK_SLUG,page:row.closest(".folio")?.dataset.page||"",row:row.id,url:rowAnchor(row)};
+    const rg=s.getRangeAt(0);
+    popRow=row;passage={author:AUTHOR,title:DATA.title_en||DATA.title||WORK,text:selText(s),cite:rowCite(row),slug:WORK_SLUG,page:row.closest(".folio")?.dataset.page||"",first:pageAt(rg.startContainer),last:pageAt(rg.endContainer),row:row.id,url:rowAnchor(row)};
     paintPassage();return true;
   }
   function passageRow(){if(!passage)return null;let r=document.getElementById(passage.row);if(!r&&window.__ensurePage){window.__ensurePage(passage.page);r=document.getElementById(passage.row);}return r;}
@@ -1246,7 +1282,7 @@ function __initReaderTools(){
   function cpFlash(btn,txt){const o=btn.textContent;btn.textContent=txt||"Copied ✓";setTimeout(()=>{btn.textContent=o;},1100);}
   function rowAnchor(r){return location.origin+location.pathname+location.search+"#"+r.id;}
   const cw=t=>navigator.clipboard&&navigator.clipboard.writeText(t);
-  if($("#spCopy"))$("#spCopy").onclick=function(){const t=passageText();const cite=popRow?rowCite(popRow):WORK,n=popRow&&rowNote(popRow,rowAnchor(popRow));
+  if($("#spCopy"))$("#spCopy").onclick=function(){const t=passageText();const cite=popRow?rowCite(popRow):WORK,n=popRow&&passageNote(popRow,passage?.first,passage?.last,rowAnchor(popRow));
     cw(t+"\n\n— "+(n?n.text:cite+(popRow?"\n"+rowAnchor(popRow):"")));cpFlash(this);};
   // deep-link to this exact passage
   if($("#spLink"))$("#spLink").onclick=function(){if(popRow)cw(rowAnchor(popRow));cpFlash(this,"Link ✓");};
@@ -1266,12 +1302,14 @@ function __initReaderTools(){
   $("#spCard")&&(($("#spCard")||{}).onclick=function(){saveQuoteImage();hidePop();getSelection().removeAllRanges();});
   // native copy → append citation (owner 2026-08-19: opt-out setting — plain copy for
   // readers pasting into their own drafts; the notebook toggle persists per device)
-  document.addEventListener("copy",e=>{const s=getSelection();if(!s||s.isCollapsed)return;
-    if(lsGet("fr_nocite")==="1")return;
-    const node=s.anchorNode&&s.anchorNode.parentElement,row=node&&node.closest&&node.closest(".row[id],.en[id^=b],.la[id^=b]");
+  // the row is the one the passage starts in (the selection's start, not where the drag began), its pages those it runs over
+  document.addEventListener("copy",e=>{const s=getSelection();if(!s||s.isCollapsed||!s.rangeCount)return;
+    const rg=s.getRangeAt(0),st=rg.startContainer,node=st&&(st.nodeType===1?st:st.parentElement),row=node&&node.closest&&node.closest(".row[id],.en[id^=b],.la[id^=b]");
     if(!row||!reading.contains(row))return;
-    const txt=s.toString().replace(/\s+/g," ").trim(),n=rowNote(row,rowAnchor(row));
-    if(n){e.clipboardData.setData("text/plain",txt+"\n\n"+n.text);e.clipboardData.setData("text/html",htmlEsc(txt)+"<br><br>"+n.html);}
+    const txt=selText(s),rich=htmlEsc(txt).replace(/^ +/gm,m=>"&nbsp;".repeat(m.length)).replace(/\n/g,"<br>");
+    if(lsGet("fr_nocite")==="1"){if(txt.includes("\n")){e.clipboardData.setData("text/plain",txt);e.clipboardData.setData("text/html",rich);e.preventDefault();}return;}
+    const n=passageNote(row,pageAt(st),pageAt(rg.endContainer),rowAnchor(row));
+    if(n){e.clipboardData.setData("text/plain",txt+"\n\n"+n.text);e.clipboardData.setData("text/html",rich+"<br><br>"+n.html);}
     else e.clipboardData.setData("text/plain",txt+"\n\n"+rowCite(row));
     e.preventDefault();});
   // per-paragraph Latin reveal (English-primary "Read" mode) + hover pencil for translation

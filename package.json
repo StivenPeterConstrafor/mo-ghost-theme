@@ -31,6 +31,7 @@
     "check:ask": "node scripts/check-ask-selectors.mjs && node scripts/check-author-display.mjs && node scripts/check-room-corpora.mjs && node scripts/check-ask-cite-quote.mjs",
     "check:conflicts": "node scripts/check-conflict-markers.mjs",
     "check:linker": "node scripts/check-scripture-linker.mjs",
+    "check:diagrams": "node scripts/check-brace-diagrams.mjs",
     "check:modernize": "node scripts/check-modernize.mjs"
   },
   "devDependencies": {

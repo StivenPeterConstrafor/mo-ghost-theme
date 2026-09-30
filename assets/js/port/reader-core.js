@@ -935,9 +935,14 @@ function ramIsList(s){const ls=s.split(/\n/).filter(x=>x.trim());
 function ramParse(raw){
   const items=raw.split(/\n/).filter(l=>l.trim()).map(l=>({
     ind:(l.match(/^[ \t]*/)[0]||"").replace(/\t/g,"    ").length,
-    text:l.replace(/^[ \t]*[-*]\s*/,"").trim()}))               // \s* so a bare "-" → "" (then dropped)
+    text:l.replace(/^[ \t]*[-*]\s*/,"").replace(/\s+-\s*$/,"").trim()}))   // \s* so a bare "-" → "" (then dropped); a next line's dash left on this one's end goes
     .filter(it=>it.text && !/^[-–—.,;:·•\s]+$/.test(it.text));  // drop empty / dash-only / punctuation-only artifacts
   const root={children:[]},stack=[{ind:-1,node:root}];
+  // A DIAGRAM CARRIED OVER FROM THE PAGE BEFORE (Baxter, 2026-09-29) opens below its root: the edition sets p. 258's '3. Will:'
+  // at the depth of p. 257's '2. Intellect:', its ancestors' braces running on. Empty ancestors (rendered as plain rules, .rcont)
+  // for the levels above the first line keep every line at its own depth.
+  if(items.length&&items[0].ind>0){const step=Math.min(4,...items.filter(it=>it.ind>0).map(it=>it.ind));
+    for(let d=0;d<items[0].ind;d+=step){const ph={text:"",children:[]};stack[stack.length-1].node.children.push(ph);stack.push({ind:d,node:ph});}}
   for(const it of items){const node={text:it.text,children:[]};
     while(stack.length>1 && it.ind<=stack[stack.length-1].ind)stack.pop();
     stack[stack.length-1].node.children.push(node);stack.push({ind:it.ind,node});}
@@ -947,10 +952,27 @@ function ramLabel(t){return inl(String(t)
   .replace(/\s*\}\s*([,.;:)])/g,"$1")        // close brace before punctuation → just drop it (inline {a / b} enumeration)
   .replace(/\s*:?\s*\}\s*/g," — ")           // any remaining close brace → em-dash (the "X } Y" pairing form)
   .replace(/\s{2,}/g," ").trim());}
-function ramRender(nodes){return nodes.map(n=>n.children.length
+function ramRender(nodes){return nodes.map(n=>!n.text
+  ? `<div class="rnode rcont"><div class="rkids">${ramRender(n.children)}</div></div>`
+  : n.children.length
   ? `<div class="rnode"><div class="rlabel rparent">${ramLabel(n.text)}</div><div class="rkids">${ramRender(n.children)}</div></div>`
   : `<div class="rnode"><div class="rlabel">${ramLabel(n.text)}</div></div>`).join("");}
 function ramHTML(raw){try{const t=ramParse(raw);return t.length?`<div class="rdiagram">${ramRender(t)}</div>`:`<p>${inl(raw)}</p>`;}catch(e){return `<p>${inl(raw)}</p>`;}}
+// A TEI <p> holding a diagram → {lead, list}: the words before it (a paragraph above) and the indented "- " tree, or null.
+// Glue heal: md2tei joins a root bullet onto the previous line's end — re-break at sentence-terminal + " - " + list numeral.
+// THE LINE A LIST HANGS FROM (Baxter, 2026-09-29, checked against the edition's pages): the last line before the first dash
+// belongs to the diagram: its root when the dashes sit deeper (p. 257 'I. Principles in himself'), its first member when
+// numbered at their depth (p. 7 '1. The slothful'), the carried-over end of a member when it opens in lower case (p. 215
+// 'we are ignorant:) and both …'). Any other line stays in the paragraph above.
+function ramTeiParts(rawT){
+  const lines=rawT.replace(/([.:;!?])[ \t]+-[ \t]+(?=(?:[IVXLC]{1,6}|\d{1,3})\.\s)/g,"$1\n- ").split(/\n/);
+  const lead=[];while(lines.length&&!/^[ \t]*-\s+\S/.test(lines[0]))lead.push(lines.shift());
+  if(lead.length&&lines.length){const L=lead[lead.length-1],s=L.trim(),dep=x=>x.match(/^[ \t]*/)[0].replace(/\t/g,"    ").length,li=dep(L),bi=dep(lines[0]);
+    if(/^[a-z)\];:,]/.test(s)){lead.pop();lines.unshift(" ".repeat(bi)+"- "+s);}
+    else if(bi>li){lead.pop();lines.unshift(L);}
+    else if(bi===li&&/^(?:\(?(?:[IVXLC]{1,6}|\d{1,3})[.)]\s|§)/.test(s)){lead.pop();lines.unshift(" ".repeat(bi)+"- "+s);}}
+  const list=lines.join("\n");
+  return ramIsList(list)?{lead:lead.join(" ").replace(/\s+/g," ").replace(/\s+-$/,"").trim(),list}:null;}
 // Detect a run-on table-of-contents / index paragraph and split it into entries.
 // A real prose paragraph almost never has 4+ "Roman-numeral. Capital…" tokens plus page numbers.
 function tocEntries(s){
@@ -2689,14 +2711,8 @@ function build(){
     if(e.localName==="p"&&!e.getAttribute("rend")){
       const rawT=e.textContent;
       if(/\n[ \t]*-\s+\S/.test(rawT)){
-        const healed=rawT.replace(/([.:;!?])[ \t]+-[ \t]+(?=(?:[IVXLC]{1,6}|\d{1,3})\.\s)/g,"$1\n- ");
-        const lines=healed.split(/\n/);
-        let lead=[];while(lines.length&&!/^[ \t]*-\s+\S/.test(lines[0])){lead.push(lines.shift());}
-        const listPart=lines.join("\n");
-        if(ramIsList(listPart)){
-          const leadTxt=lead.join(" ").replace(/\s+/g," ").trim();
-          return (leadTxt?`<p>${inl(leadTxt)}</p>`:"")+ramHTML(listPart);
-        }
+        const rp=ramTeiParts(rawT);
+        if(rp)return (rp.lead?`<p>${inl(rp.lead)}</p>`:"")+ramHTML(rp.list);
       }
     }
     const _rnd=e.localName==="p"?(e.getAttribute("rend")||""):"";
