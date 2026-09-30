@@ -424,8 +424,8 @@ function pairWitnesses(rows,catalogue){
     if(p)seconds.set(slug,p);else if(groups.has(e.g)&&!present.has(slug))extra.push(x);}
   for(const [slug,p] of seconds)(p.witnesses=p.witnesses||[]).push(catalogueWork({w:slug},catalogue));
   const shown=rows.filter(w=>!(EDITIONS[w.w]?.p===0&&find(w)));
-  // a work the room lacks stands right after its group's last row, not at the foot of the list
-  for(const x of extra){let at=-1;shown.forEach((w,i)=>{if(EDITIONS[w.w]?.g===EDITIONS[x.w].g)at=i;});shown.splice(at<0?shown.length:at+1,0,x);}
+  // a work the room lacks stands right after its set's last row (its group or its family), not at the foot of the list
+  for(const x of extra){const f=RX.workFamily(x);let at=-1;shown.forEach((w,i)=>{if(EDITIONS[w.w]?.g===EDITIONS[x.w].g||RX.workFamily(w)===f)at=i;});shown.splice(at<0?shown.length:at+1,0,x);}
   if(catalogue)for(const w of shown){const e=EDITIONS[w.w];if(e?.p===0&&e.of)w.sameAs=e.of.map(s=>catalogueWork({w:s},catalogue));}
   // a SET holding facsimile and born-digital volumes marks every row with its format, grouped or not (Jansenius' Augustinus Vol. 4)
   const formats=new Map();for(const w of shown){const f=RX.workFamily(w),m=formats.get(f)||new Set();[w,...(w.witnesses||[])].forEach(x=>m.add(!!x.pages));formats.set(f,m);}
