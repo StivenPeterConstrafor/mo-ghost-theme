@@ -3128,6 +3128,14 @@ body {
   max-height: none;
   overflow: visible;
 }
+/* HubSpot-migrated embeds keep an inline position:absolute; height:100%
+   meant for a padding-bottom wrapper the migration stripped, so the
+   iframe fills the nearest positioned ancestor. Put it back in flow. */
+.article-content iframe.hs-responsive-embed-iframe {
+  position: static !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9;
+}
 .article-content figcaption {
   font-size: 13px;
   color: var(--color-muted);
