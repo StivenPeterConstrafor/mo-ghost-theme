@@ -2567,7 +2567,7 @@ function fetchReview(){if(REVIEW_COV||!BLOB)return;
       // sister anchor schemes differ (#b26 PLD, #c333 PG, #r44518 AQ, ?w=…#b12-0 TFR) — parse loosely,
       // keep the EXACT href on the pin so the notebook always lands on the right passage.
       const mm=hr.match(/(?:\/read\/|[?&]w=)([A-Za-z0-9_-]+?)(?:\.html)?#(?:dt-p|[bcr])(\d+)/);if(!mm)return;
-      const slug=mm[1],page=+mm[2];
+      const slug=(window.frIS||function(x){return x;})(mm[1]),page=+mm[2];
       const st=document.createElement("button");st.className="pinstar";st.title="Save to your notebook / reading list";st.textContent="\u2605";
       if(P().some(x=>x.site===site&&x.slug===slug&&x.page===page))st.classList.add("on");
       st.onclick=e=>{e.preventDefault();e.stopPropagation();

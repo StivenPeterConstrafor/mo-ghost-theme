@@ -9,7 +9,7 @@ async function __initReview(){
   const setStatus=(n,st)=>{okS.delete(n);ndS.delete(n);              // live registry: marks update the pills instantly
     if(st==="ok")okS.add(n);else if(st==="needs")ndS.add(n);
     if(st!=="new")vwS.add(n);renderSum();};
-  const wsq=encodeURIComponent(new URLSearchParams(location.search).get("ws")||"");
+  const wsq=encodeURIComponent((window.frIS||function(x){return x;})(new URLSearchParams(location.search).get("ws"))||"");
   document.querySelectorAll("#reading .folio").forEach((sec,pi)=>{
     const n=+sec.dataset.page;
     const bar=el("div","rvbar");
@@ -923,7 +923,7 @@ function canTranslateSource(data=DATA,reader=document.getElementById('app')){
 }
 function __initReaderTools(){
   const reading=$("#reading"), WORK=[DATA.title,DATA.volume].filter(Boolean).join(", ")||"";  // cite incl. volume / part
-  const WORK_SLUG=DATA.slug||new URLSearchParams(location.search).get("w")||new URLSearchParams(location.search).get("ws")||DATA.workspace||"", WSID=DATA.workspace||WORK_SLUG, K=r=>WSID+"|"+r.id;   // workspace-scoped storage key (row ids repeat across works)
+  const WORK_SLUG=DATA.slug||(window.frIS||function(x){return x;})(new URLSearchParams(location.search).get("w"))||(window.frIS||function(x){return x;})(new URLSearchParams(location.search).get("ws"))||DATA.workspace||"", WSID=DATA.workspace||WORK_SLUG, K=r=>WSID+"|"+r.id;   // workspace-scoped storage key (row ids repeat across works)
   const lj=k=>{try{return JSON.parse(lsGet(k))||{}}catch(e){return{}}};
   function applyTranslationPolicy(){
     const allowed=canTranslateSource();document.documentElement.classList.toggle('fr-no-personal-translation',!allowed);
@@ -1558,7 +1558,7 @@ function __initReaderTools(){
       if(!position.id||window.FRReaderBookmarks?.isTransientAnchor(position.id)){status('This saved place has no stable reader anchor.');return;}
       clearTimeout(FIND._inputTimer);FIND.sequence++;FIND.open=false;_findBar();
       if(!sideMedia.matches)closeNotebook(false);
-      try{const url=new URL(item.url,location.href),slug=url.searchParams.get('w')||url.searchParams.get('ws');if(url.origin===location.origin&&/^\/read(?:\.html)?$/.test(url.pathname)&&slug===WORK_SLUG&&decodeURIComponent(url.hash.slice(1))===position.id)history.replaceState(history.state,'',url);}catch(_){}
+      try{const url=new URL(item.url,location.href),slug=(window.frIS||function(x){return x;})(url.searchParams.get('w'))||(window.frIS||function(x){return x;})(url.searchParams.get('ws'));if(url.origin===location.origin&&/^\/read(?:\.html)?$/.test(url.pathname)&&slug===WORK_SLUG&&decodeURIComponent(url.hash.slice(1))===position.id)history.replaceState(history.state,'',url);}catch(_){}
       window.__frRestoreReaderPosition?.(position);return;
     }
     if(item.row){gotoRow(WSID+'|'+item.row);return;}
@@ -2036,7 +2036,7 @@ window.__frToolsRes&&window.__frToolsRes();
   const wire=setInterval(()=>{
     if(!window.__readerBuilt||typeof DATA==="undefined"||!window.DATA&&!document.querySelector(".folio"))return;
     clearInterval(wire);
-    const slug=(new URLSearchParams(location.search).get("w"))||"";
+    const slug=((window.frIS||function(x){return x;})(new URLSearchParams(location.search).get("w")))||"";
     if(!slug)return;
     const B=(window.BLOB||"https://mo-tfr-library.mo-podcast-feed.workers.dev");
     // the cites sidecar exists only for mined library works — canon families (eebo/pld/pg/po)

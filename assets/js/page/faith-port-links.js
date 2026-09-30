@@ -16,7 +16,7 @@
     if([prefix,prefix.slice(0,-1),`${prefix}all-works/`,`${prefix}library/`].includes(path)&&!u.search&&!u.hash)return `${prefix}all-works/?collection=all`;
     if (path === `${prefix}reader/` || path === `${prefix}reader`) {
       const corpus = u.searchParams.get('c') || 'tfr';
-      const work = u.searchParams.get('w');
+      const work = (window.frIS||function(x){return x;})(u.searchParams.get('w'));
       // 'mo' is the curated set. It was missing, so every curated work
       // fell through to the old reader and took its forward, which is
       // the hop Ian saw. Its slugs carry no corpus prefix, same as tfr.

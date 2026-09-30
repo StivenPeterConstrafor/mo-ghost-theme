@@ -12,7 +12,7 @@
   function safeURL(value){if(typeof value!=='string'||!value.trim())return null;try{const here=location.origin;const u=new URL(value,here);if(u.origin===here&&/^\/(?:the-faith-received\/(?:read|reader|web|author|topics|search)\/?|bible\/?)(?:[?#]|$)/.test(u.pathname+(u.search?'?':'')+(u.hash?'#':'')))return u.pathname+u.search+u.hash;const v=new URL(value,'https://thefaithreceived.vercel.app');return v.origin==='https://thefaithreceived.vercel.app'&&/^(?:\/|\/(?:read|bible|web|fathers|topics|search)(?:\.html)?(?:[?#]|$))/.test(v.pathname+(v.search?'?':'')+(v.hash?'#':''))?v.pathname+v.search+v.hash:null;}catch(_){return null;}}
   function source(row,works={},author=''){
     let slug=String(row.w||row.cw||''),page=row.p==null?null:String(row.p);
-    if(!slug&&row.h){try{const u=new URL(row.h,'https://thefaithreceived.vercel.app');slug=u.searchParams.get('w')||'';const m=u.hash.match(/^#b(.+)-\d+$/);if(m)page=decodeURIComponent(m[1]);}catch(_){}}
+    if(!slug&&row.h){try{const u=new URL(row.h,'https://thefaithreceived.vercel.app');slug=(window.frIS||function(x){return x;})(u.searchParams.get('w'))||'';const m=u.hash.match(/^#b(.+)-\d+$/);if(m)page=decodeURIComponent(m[1]);}catch(_){}}
     const title=String(works[slug]||row.wt||row.ct||row.t||slug);
     const layer=sourceContext(slug,page);return {slug,page,url:slug?readerURL(slug,page):safeURL(row.h),cite:[author,title,layer?.layer==='editorial-notes'?'Editorial notes':'',page!=null?(/^pld-/.test(slug)?'col. ':'p. ')+page:''].filter(Boolean).join(' · '),author,title,...layer?{sourceLayer:layer.layer}:{}};
   }

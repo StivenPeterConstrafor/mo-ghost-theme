@@ -123,7 +123,7 @@
   let corpusId = "tfr";
   try {
     const q = new URLSearchParams(window.location.search);
-    slug = q.get("w") || "";
+    slug = (window.frIS||function(x){return x;})(q.get("w")) || "";
     corpusId = (q.get("c") || "tfr").replace(/[^a-z0-9_-]/gi, "");
   } catch (_) {}
   slug = slug.replace(/[^a-z0-9_-]/gi, "");

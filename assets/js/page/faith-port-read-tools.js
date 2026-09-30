@@ -30,7 +30,7 @@
   // "aq" is Augustine, whose corpus id is the long name.
   const PREFIX = { eebo: "eebo", pld: "pld", pg: "pg", po: "po", aq: "augustine" };
 
-  const SLUG = new URLSearchParams(location.search).get("w") || "";
+  const SLUG = (window.frIS||function(x){return x;})(new URLSearchParams(location.search).get("w")) || "";
   const CUT = SLUG.indexOf("-");
   const HEAD = CUT > 0 ? SLUG.slice(0, CUT) : "";
 

@@ -130,7 +130,7 @@
     try { url = new URL(raw, root.location.origin); } catch (_) { return originalFetch.call(this, input, init); }
     const library = url.hostname.endsWith('.mo-podcast-feed.workers.dev');
     const path = decodeURIComponent(url.pathname);
-    if (library && [...withdrawn].some(slug => path.split('/').includes(slug) || path.split('/').some(part => part.startsWith(`${slug}.`)) || url.searchParams.get('w') === slug || url.searchParams.get('slug') === slug)) {
+    if (library && [...withdrawn].some(slug => path.split('/').includes(slug) || path.split('/').some(part => part.startsWith(`${slug}.`)) || (window.frIS||function(x){return x;})(url.searchParams.get('w')) === slug || url.searchParams.get('slug') === slug)) {
       return Promise.resolve(new Response(JSON.stringify({error:'This volume is not available in the public library.'}), {status:404, headers:{'content-type':'application/json'}}));
     }
     return originalFetch.call(this, input, init).then(async response => {

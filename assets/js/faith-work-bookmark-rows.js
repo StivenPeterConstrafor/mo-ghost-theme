@@ -97,7 +97,7 @@
     let u = null;
     try { u = new URL(safe, window.location.origin); } catch (_) { return null; }
     if (![READER_PATH, "/the-faith-received/read/"].includes(u.pathname)) return null;
-    const work = u.searchParams.get("w");
+    const work = (window.frIS||function(x){return x;})(u.searchParams.get("w"));
     if (!work) return null;
     return { corpus: u.searchParams.get("c") || "tfr", work };
   }

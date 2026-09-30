@@ -52,7 +52,7 @@
       // DATA is reader-core's top-level binding, shared across scripts.
       if (typeof DATA !== "undefined" && DATA && DATA.slug) return String(DATA.slug);
     } catch (_) { /* not booted yet */ }
-    return new URLSearchParams(window.location.search).get("w") || "";
+    return (window.frIS||function(x){return x;})(new URLSearchParams(window.location.search).get("w")) || "";
   }
 
   const clean = (s) => String(s || "").replace(/\s+/g, " ").trim();

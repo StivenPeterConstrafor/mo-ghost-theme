@@ -126,7 +126,7 @@
   const MINE_CAP = 60; // research files fetched for one author, at most
   const SHELF_OF = { "Latin Fathers": "pl", "Greek Fathers": "gf", "English Divines": "ed", "Eastern Fathers": "po", Reformed: "rf" };
   const SHELF_NAME = { pl: "Latin Fathers", gf: "Greek Fathers", ed: "English writers", po: "Eastern Fathers", rf: "Continental Reformed" };
-  const workSlug = (c, id) => new URL(readerHref(c, id), location.origin).searchParams.get("w");
+  const workSlug = (c, id) => (window.frIS||function(x){return x;})(new URL(readerHref(c, id), location.origin).searchParams.get("w"));
   const libJson = (k) => fetch(`${LIB}/${k}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   const n0 = (n) => Number(n || 0).toLocaleString();
 
