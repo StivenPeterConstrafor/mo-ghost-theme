@@ -20645,6 +20645,38 @@ body.mo-shelf-page #author-order-note { display: none; }
    prose measure broke the labels onto three lines ("to" alone on one).
    14px with 8px sides keeps every label on its two lines. Phones stack
    the tabs and keep their own rule above. */
+/* FIVE TABS (Ian, 2026-09-30: "I still want the full titles, I just want
+   them to fit"). Each label keeps its two lines. The bar is a grid whose
+   1px gaps over a tan ground draw the dividers, so a second row needs no
+   extra rules. From 1000px it runs wider than the prose measure, centered
+   on it, with all five in a row; from 641px to 999px it takes two rows,
+   three over two. Phones keep the stacked list above. */
 @media (min-width: 641px) {
-  .faith-mf-tabs > button { font-size: 15px; padding: 12px 10px; white-space: nowrap; }
+  .faith-mf-tabs {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--color-card-border, #d9c6a7);
+  }
+  .faith-mf-tabs[hidden] { display: none; }
+  .faith-mf-tabs > button {
+    grid-column: span 2;
+    font-size: 15px;
+    padding: 12px 10px;
+    background: var(--color-white, #fffdfa);
+  }
+  .faith-mf-tabs > button:nth-child(n + 4) { grid-column: span 3; }
+  .faith-mf-tabs > button + button { border-left: 0; }
+  .faith-mf-tabs > button[aria-selected="true"] { background: var(--color-secondary, #c1593c); }
+}
+@media (min-width: 1000px) {
+  .faith-mf-tabs {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    width: min(1100px, calc(100vw - 64px));
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .faith-mf-tabs > button,
+  .faith-mf-tabs > button:nth-child(n + 4) { grid-column: auto; }
 }
