@@ -20648,9 +20648,8 @@ body.mo-shelf-page #author-order-note { display: none; }
 /* FIVE TABS (Ian, 2026-09-30: "I still want the full titles, I just want
    them to fit"). Each label keeps its two lines. The bar is a grid whose
    1px gaps over a tan ground draw the dividers, so a second row needs no
-   extra rules. From 1000px it runs wider than the prose measure, centered
-   on it, with all five in a row; from 641px to 999px it takes two rows,
-   three over two. Phones keep the stacked list above. */
+   extra rules. Two rows at every width from 641px, three over two, inside
+   the prose measure (Ian: "3 / 2"). Phones keep the stacked list above. */
 @media (min-width: 641px) {
   .faith-mf-tabs {
     display: grid;
@@ -20668,15 +20667,4 @@ body.mo-shelf-page #author-order-note { display: none; }
   .faith-mf-tabs > button:nth-child(n + 4) { grid-column: span 3; }
   .faith-mf-tabs > button + button { border-left: 0; }
   .faith-mf-tabs > button[aria-selected="true"] { background: var(--color-secondary, #c1593c); }
-}
-@media (min-width: 1000px) {
-  .faith-mf-tabs {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    width: min(1100px, calc(100vw - 64px));
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  .faith-mf-tabs > button,
-  .faith-mf-tabs > button:nth-child(n + 4) { grid-column: auto; }
 }
