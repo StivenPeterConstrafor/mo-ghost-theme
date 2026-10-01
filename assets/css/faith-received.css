@@ -11280,6 +11280,25 @@ body.faith-toc-open .faith-dock { display: none; }
   text-transform: uppercase;
   color: var(--color-muted);
 }
+/* Facsimile / Born-digital text, and "Digital text held": the library rows' badges (index.in01.css .wbadge), on the card */
+/* inline badges in a block row: they follow the card's own alignment (the result grid centres its cards) */
+.bsearch-hit-format { display: block; margin-top: 2px; }
+.bsearch-fmt {
+  display: inline-block;
+  margin: 2px 3px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 3px 6px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 3px;
+  color: var(--color-muted);
+}
+.bsearch-fmt.is-fac { color: var(--color-secondary); border-color: color-mix(in oklab, var(--color-secondary) 35%, transparent); }
+.bsearch-fmt.is-held { color: #2f6f62; border-color: color-mix(in oklab, #2f6f62 32%, transparent); }
 .bsearch-hit-snippet {
   font-family: var(--font-body);
   font-size: 13px;

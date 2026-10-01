@@ -337,6 +337,13 @@
     return `<ol class="bsearch-passages">${rows}${rest}</ol>`;
   }
 
+  function formatHTML(w) {
+    const f = window.MOFaithCatalogue && window.MOFaithCatalogue.formatOf ? window.MOFaithCatalogue.formatOf(w, all) : null;
+    if (!f) return "";
+    return `<span class="bsearch-hit-format"><span class="bsearch-fmt${f.facsimile ? " is-fac" : ""}">${escapeHtml(f.own)}</span>${
+      f.other ? `<span class="bsearch-fmt is-held">${escapeHtml(f.other)}</span>` : ""}</span>`;
+  }
+
   function card(w, extra, loc) {
     const c = window.MOCorpora && window.MOCorpora.get(w.corpus);
     return `<li class="bsearch-hit">` +
@@ -349,7 +356,10 @@
       // In the Patrologia the citation is the volume and its columns.
       migneCite(w) ? `<span class="bsearch-hit-vol">${escapeHtml(migneCite(w))}</span>`
         : w.volume ? `<span class="bsearch-hit-vol">${escapeHtml(String(w.volume))}</span>` : ""
-      }<span class="bsearch-hit-where">${escapeHtml(c && !ONE_LIBRARY.has(c.id) ? c.label : (shelfOf(w) || ""))}</span>${ 
+      }<span class="bsearch-hit-where">${escapeHtml(c && !ONE_LIBRARY.has(c.id) ? c.label : (shelfOf(w) || ""))}</span>${
+      // Facsimile or born-digital, and the other when it is held (owner 2026-09-30: "this needs to show born digital
+      // fascmile etc like work did before") — the library rows' own badges and words.
+      formatHTML(w)}${ 
       extra || ""}${
       // A collected volume says what it holds.
       window.MOCollectedContents ? window.MOCollectedContents.preview(w.slug || w.id) : ""}</li>`;

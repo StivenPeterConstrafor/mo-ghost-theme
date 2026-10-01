@@ -41,6 +41,9 @@
         // notices and admonitions out (corpus owner, 2026-09-25); the end indexes and the contents are shown (2026-09-29:
         // "we can display end indexes and contents"). Every work stays here, so a link that names it still resolves.
         app:w.app || '',
+        // FACSIMILE OR DIGITAL (owner 2026-09-30, on the library search: "this needs to show born digital fascmile etc like
+        // work did before"): the works-index flag the library's own rows read, kept for every surface that lists works.
+        pages:w.has_pages === true,
         url:`/the-faith-received/read/?w=${encodeURIComponent(w.slug)}`,
       };
     }));
@@ -65,10 +68,31 @@
   }
   const loaded = new Map();
   let ready = Promise.resolve();
+  let editions = {};
+  /* The format a list prints for a work, and the other format when its edition group holds it — the words of the library's
+     own rows (index.in05.js _ledgerRow): "Facsimile" / "Born-digital text", "Digital text held" / "Facsimile witness held".
+     `works` is the list the reader is looking at, used to find the group's other members; null when the work is not
+     from this library's own shelves (EEBO, the confessions and the series say what they are elsewhere). */
+  function formatOf(work, works) {
+    if (!work || work.pages === undefined) return null;
+    const own = work.pages ? 'Facsimile' : 'Born-digital text';
+    const e = editions[work.slug];
+    let other = '';
+    if (e && e.g) {
+      if (!formatOf.groups || formatOf.from !== works) {
+        formatOf.groups = new Map(); formatOf.from = works;
+        (works || []).forEach(w => { const x = editions[w.slug]; if (x && x.g && w.pages !== undefined) {
+          const set = formatOf.groups.get(x.g) || new Set(); set.add(w.pages); formatOf.groups.set(x.g, set); } });
+      }
+      const held = formatOf.groups.get(e.g);
+      if (held && held.has(!work.pages)) other = work.pages ? 'Digital text held' : 'Facsimile witness held';
+    }
+    return {own, other, facsimile:work.pages};
+  }
   // A work a list shows: anything but Migne's notices and admonitions (see `app` above; indexes and contents show).
   const HIDDEN_APPARATUS = new Set(['notice', 'admonition']);
   const shelved = work => !(work && HIDDEN_APPARATUS.has(work.app));
-  const api = {publicWork, displayWork, shelved, workSlug, authorName, authorKey, normalize, setAliases, setWorkIdentity, setCanonical, catalogue, libraryIds, countLabel, authorGroup,
+  const api = {formatOf, publicWork, displayWork, shelved, workSlug, authorName, authorKey, normalize, setAliases, setWorkIdentity, setCanonical, catalogue, libraryIds, countLabel, authorGroup,
     load(id) {
       if (!loaded.has(id)) loaded.set(id, Promise.all([root.MOCorpora.load(id), ready]).then(([works]) => catalogue(id, works)));
       return loaded.get(id);
@@ -116,6 +140,9 @@
     readJSON(`${libraryBase}/v1/author_aliases.json`),
     readJSON(`${libraryBase}/v1/works-index.json`),
   ]).then(([local, fold, groups, publishedAliases, index]) => {
+    // v1/editions.json {slug: {g, p}}: a work held in facsimile AND as born-digital text is one edition group; a list says
+    // which the reader has in hand and that the other is held ("Digital text held"). Loaded beside the rest, never blocking it.
+    readJSON(`${libraryBase}/v1/editions.json`).then(e => { editions = e || {}; }).catch(() => {});
     setAliases({aliases:{...publishedAliases, ...local.aliases}});
     setWorkIdentity(fold, groups);
     setCanonical(index);
