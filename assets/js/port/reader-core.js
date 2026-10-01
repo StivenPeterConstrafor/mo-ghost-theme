@@ -4083,6 +4083,14 @@ function editionFor(slug){
  const V=window.__FR_VER?("?v="+window.__FR_VER):"";   // the library's own URL for the file, so a visit from it is a cache hit
  const p=!BLOB||!slug||/^(pld|pg|po|eebo)-/.test(slug)?Promise.resolve(null):fetch(BLOB+"/v1/work-relations.json"+V).then(r=>r.ok?r.json():null).then(rel=>{
   const g=(rel?.complementary_witnesses||[]).find(x=>(x.fac||[]).includes(slug)||(x.dig||[]).includes(slug));
+  // TWO EDITIONS, BOTH DIGITAL (owner 2026-10-01: the Ordinatio's two forms "aren't yet linked in the reader as editions of the
+  // same work"): the critical text and Wadding's Opus Oxoniense sit in rel.other_editions, each side with its own label.
+  const o=g?null:(rel?.other_editions||[]).find(x=>(x.a||[]).includes(slug)||(x.b||[]).includes(slug));
+  if(o){
+   const side=((o.a||[]).includes(slug)?o.b:o.a)||[],first=((o.volumes||{})[slug]||[])[0]?.[0]||side[0];
+   return fetch(BLOB+"/v1/witnesses/"+encodeURIComponent(slug)+".json"+V).then(r=>r.ok?r.json():null).catch(()=>null)
+    .then(w=>({kind:"ed",labels:o.labels||{},about:o.about||{},others:w?.others||side,first,map:(w?.map||[]).filter(x=>typeof x[0]==="number"&&typeof x[2]==="number").sort((a,b)=>a[0]-b[0])}));
+  }
   if(!g)return null;
   const kind=(g.fac||[]).includes(slug)?"fac":"dig",side=(kind==="fac"?g.dig:g.fac)||[];
   const first=((g.volumes||{})[slug]||[])[0]?.[0]||side[0];
@@ -4101,16 +4109,17 @@ function syncEdition(n){
   while(lo<=hi){const mid=(lo+hi)>>1;if(m[mid][0]<=k){at=mid;lo=mid+1;}else hi=mid-1;}
   const hit=at>=0?m[at]:m[0],other=hit?e.others[hit[1]]:e.first,page=hit?hit[2]:null;
   if(!other){row.hidden=true;return;}
-  const fac=e.kind==="fac",unit=fac?"section":"page";
+  const fac=e.kind==="fac",ed=e.kind==="ed",unit=fac?"section":"page";
+  const mine=ed?(e.labels[slug]||"This edition"):fac?"Facsimile":"Digital text",theirs=ed?(e.labels[other]||"Other edition"):fac?"Digital text":"Facsimile";
   if(row.dataset.work!==slug){row.dataset.work=slug;
    row.innerHTML='<span>Edition</span><span class="ed-on" aria-current="true"></span><a></a><span class="ed-where"></span>';
-   row.children[1].textContent=fac?"Facsimile":"Digital text";
-   row.children[1].title=fac?"You are reading the facsimile: the printed page, with its scan beside the text.":"You are reading the born-digital text: the Latin with its English translation.";}
+   row.children[1].textContent=mine;
+   row.children[1].title=ed?"You are reading "+(e.about[slug]||"this edition")+".":fac?"You are reading the facsimile: the printed page, with its scan beside the text.":"You are reading the born-digital text: the Latin with its English translation.";}
   const a=row.querySelector("a");
   a.href="/read?w="+encodeURIComponent(other)+(page!=null?"&p="+encodeURIComponent(page)+"#b"+encodeURIComponent(page)+"-0":"");
-  a.textContent=(fac?"Digital text":"Facsimile")+" \u21c4";
-  a.title=(fac?"This work is also held as a born-digital text: the Latin with its English translation.":"This work is also held in facsimile: the printed page, with its scan beside the text.")+(page!=null?" Opens "+unit+" "+page+", where this page's text is.":"");
-  a.setAttribute("aria-label",(fac?"Open this passage in the born-digital text":"Open this passage in the facsimile")+(page!=null?", "+unit+" "+page:""));
+  a.textContent=theirs+" \u21c4";
+  a.title=(ed?"This work is also held in another edition: "+(e.about[other]||theirs)+".":fac?"This work is also held as a born-digital text: the Latin with its English translation.":"This work is also held in facsimile: the printed page, with its scan beside the text.")+(page!=null?" Opens "+unit+" "+page+", where this page's text is.":"");
+  a.setAttribute("aria-label",(ed?"Open this passage in the "+theirs:fac?"Open this passage in the born-digital text":"Open this passage in the facsimile")+(page!=null?", "+unit+" "+page:""));
   row.querySelector(".ed-where").textContent=page!=null?unit+" "+page:"";
   row.hidden=false;
  });
