@@ -129,21 +129,70 @@
       "'": "&#39;"
     })[c]);
   }
+  function mdEmphasis(html) {
+    return html.replace(/\*\*(?=\S)([\s\S]+?)(?<=\S)\*\*/g, "<strong>$1</strong>").replace(/__(?=[^\s_])([^_]+?)(?<=[^\s_])__/g, "<u>$1</u>").replace(/\*(?=\S)([^*\n]+?)(?<=\S)\*/g, "<em>$1</em>");
+  }
+  function safeHref(u) {
+    const url = u.trim();
+    return /^(https?:|mailto:|tel:|\/|#)/i.test(url) ? url : "#";
+  }
   function markdownInline(text, tokens) {
-    let html = escapeHtml(text);
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, t, u) => {
-      const safe = u.trim().replace(/"/g, "&quot;");
-      return `<a href="${safe}" style="color:${tokens.tertiary};text-decoration:underline">${t}</a>`;
+    const links = [];
+    let html = escapeHtml(String(text).replace(/\u0000/g, "")).replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, u) => {
+      links.push(`<a href="${safeHref(u)}" style="color:${tokens.tertiary};text-decoration:underline">${mdEmphasis(t)}</a>`);
+      return `\0${links.length - 1}\0`;
     });
-    html = html.replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>");
-    html = html.replace(/__([^_]+?)__/g, "<u>$1</u>");
-    html = html.replace(/\*([^*\n]+?)\*/g, "<em>$1</em>");
-    html = html.replace(/\n/g, "<br>");
-    return html;
+    html = mdEmphasis(html);
+    html = html.replace(/ *\n/g, "<br>");
+    return html.replace(/\u0000(\d+)\u0000/g, (_, i) => links[+i]);
   }
   function markdownParagraphs(text) {
     if (!text) return [];
     return text.split(/\n\s*\n+/).map((s) => s.trim()).filter(Boolean);
+  }
+  function blockquoteText(p) {
+    const lines = p.split("\n");
+    if (!lines.every((l) => /^\s*>/.test(l))) return null;
+    return lines.map((l) => l.replace(/^\s*> ?/, "")).join("\n");
+  }
+  const MD_PARA_STYLE = {
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 16,
+    lineHeight: 1.65,
+    margin: "0 0 14px"
+  };
+  function MdParagraph({ text, tokens }) {
+    const quote = blockquoteText(text);
+    if (quote == null) {
+      return /* @__PURE__ */ React.createElement(
+        "p",
+        {
+          style: { ...MD_PARA_STYLE, color: tokens.bodyText },
+          dangerouslySetInnerHTML: { __html: markdownInline(text, tokens) }
+        }
+      );
+    }
+    const m = quote.match(/^([\s\S]*?(?:\n|[.!?"”’…)]))[ \t]*(?:—|--)[ \t]*([^—\n]+)$/);
+    const body = m ? m[1].trimEnd() : quote;
+    const cite = m ? m[2] : "";
+    return /* @__PURE__ */ React.createElement("blockquote", { style: {
+      margin: "6px 0 22px",
+      padding: "2px 0 2px 20px",
+      borderLeft: `3px solid ${tokens.quaternary}`
+    } }, /* @__PURE__ */ React.createElement(
+      "p",
+      {
+        style: { ...MD_PARA_STYLE, fontSize: 18, lineHeight: 1.5, fontStyle: "italic", color: tokens.bodyText, margin: cite ? "0 0 8px" : 0 },
+        dangerouslySetInnerHTML: { __html: markdownInline(body, tokens) }
+      }
+    ), cite && /* @__PURE__ */ React.createElement("p", { style: {
+      fontFamily: '"Source Sans 3", "Helvetica Neue", Arial, sans-serif',
+      fontSize: 13,
+      lineHeight: 1.4,
+      letterSpacing: "0.02em",
+      color: tokens.lightText,
+      margin: 0
+    }, dangerouslySetInnerHTML: { __html: "\u2014 " + markdownInline(cite, tokens) } }));
   }
   const DEFAULT_SECTION_ORDER = [
     "letter",
@@ -390,13 +439,7 @@
       }
     ), (() => {
       const body = content.editorBody != null ? content.editorBody : (content.editorParagraphs || []).join("\n\n");
-      return markdownParagraphs(body).map((p, i) => /* @__PURE__ */ React.createElement("p", { key: i, style: {
-        fontFamily: 'Georgia, "Times New Roman", serif',
-        fontSize: 16,
-        lineHeight: 1.65,
-        color: tokens.bodyText,
-        margin: "0 0 14px"
-      }, dangerouslySetInnerHTML: { __html: markdownInline(p, tokens) } }));
+      return markdownParagraphs(body).map((p, i) => /* @__PURE__ */ React.createElement(MdParagraph, { key: i, text: p, tokens }));
     })());
   }
   function SignatureBlock({ tokens, content }) {
@@ -936,13 +979,7 @@
               color: tokens.tertiary,
               textAlign: "center",
               margin: "0 0 14px"
-            }, dangerouslySetInnerHTML: { __html: markdownInline(heading, tokens) } }), linkHref ? /* @__PURE__ */ React.createElement("a", { href: linkHref, style: { textDecoration: "none", display: "block" } }, img) : img, bodyParas.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 16 } }, bodyParas.map((p, j) => /* @__PURE__ */ React.createElement("p", { key: j, style: {
-              fontFamily: 'Georgia, "Times New Roman", serif',
-              fontSize: 16,
-              lineHeight: 1.65,
-              color: tokens.bodyText,
-              margin: "0 0 14px"
-            }, dangerouslySetInnerHTML: { __html: markdownInline(p, tokens) } }))), caption && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", marginTop: 12 } }, linkHref ? /* @__PURE__ */ React.createElement("a", { href: linkHref, style: {
+            }, dangerouslySetInnerHTML: { __html: markdownInline(heading, tokens) } }), linkHref ? /* @__PURE__ */ React.createElement("a", { href: linkHref, style: { textDecoration: "none", display: "block" } }, img) : img, bodyParas.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 16 } }, bodyParas.map((p, j) => /* @__PURE__ */ React.createElement(MdParagraph, { key: j, text: p, tokens }))), caption && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", marginTop: 12 } }, linkHref ? /* @__PURE__ */ React.createElement("a", { href: linkHref, style: {
               fontFamily: '"Source Sans 3", "Helvetica Neue", Arial, sans-serif',
               fontSize: 11,
               fontWeight: 700,
@@ -962,13 +999,7 @@
           }
           const paras = markdownParagraphs(block.text || "");
           if (!paras.length) return null;
-          return /* @__PURE__ */ React.createElement("div", { style: { padding: "24px 40px 8px" }, className: "mo-letter mo-pad-40" }, paras.map((p, j) => /* @__PURE__ */ React.createElement("p", { key: j, style: {
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: 16,
-            lineHeight: 1.65,
-            color: tokens.bodyText,
-            margin: "0 0 14px"
-          }, dangerouslySetInnerHTML: { __html: markdownInline(p, tokens) } })));
+          return /* @__PURE__ */ React.createElement("div", { style: { padding: "24px 40px 8px" }, className: "mo-letter mo-pad-40" }, paras.map((p, j) => /* @__PURE__ */ React.createElement(MdParagraph, { key: j, text: p, tokens })));
         }
       }
     };

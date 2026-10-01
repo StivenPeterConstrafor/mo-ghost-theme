@@ -128,11 +128,13 @@ const SAMPLE_PODCASTS = [
 ];
 
 // --- Markdown -------------------------------------------------------
-// Minimal Markdown for email content. Supports **bold**, *italic*,
-// __underline__, [text](url), blank lines as paragraph breaks, single
-// newlines as <br>. HTML in the source is escaped first to prevent XSS,
-// then patterns are applied in priority order so that **bold** is consumed
-// before single-asterisk italic gets a chance to misfire.
+// Markdown for email content. Inline: **bold**, *italic*, __underline__,
+// [text](url), and any nesting of them (**[bold link](url)**). Blocks:
+// blank line = new paragraph, a paragraph whose lines all start with
+// "> " = blockquote, single newline (or two trailing spaces + newline)
+// = <br>. HTML in the source is escaped first to prevent XSS. Links are
+// swapped for placeholders before emphasis runs so an underscore or
+// asterisk inside a URL can never be read as formatting.
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({
@@ -140,27 +142,87 @@ function escapeHtml(s) {
   }[c]));
 }
 
+function mdEmphasis(html) {
+  return html
+    // **bold**  (consume before italic so * doesn't double-fire)
+    .replace(/\*\*(?=\S)([\s\S]+?)(?<=\S)\*\*/g, '<strong>$1</strong>')
+    // __underline__ — needs a non-underscore at both ends, so a
+    // fill-in blank like "Dear ______," stays literal
+    .replace(/__(?=[^\s_])([^_]+?)(?<=[^\s_])__/g, '<u>$1</u>')
+    // *italic*
+    .replace(/\*(?=\S)([^*\n]+?)(?<=\S)\*/g, '<em>$1</em>');
+}
+
+function safeHref(u) {
+  const url = u.trim();
+  return /^(https?:|mailto:|tel:|\/|#)/i.test(url) ? url : '#';
+}
+
 function markdownInline(text, tokens) {
-  let html = escapeHtml(text);
-  // [text](url) — links in brand color, underlined
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, t, u) => {
-    const safe = u.trim().replace(/"/g, '&quot;');
-    return `<a href="${safe}" style="color:${tokens.tertiary};text-decoration:underline">${t}</a>`;
+  const links = [];
+  let html = escapeHtml(String(text).replace(/\u0000/g, '')).replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, u) => {
+    links.push(`<a href="${safeHref(u)}" style="color:${tokens.tertiary};text-decoration:underline">${mdEmphasis(t)}</a>`);
+    return `\u0000${links.length - 1}\u0000`;
   });
-  // **bold**  (consume before italic so * doesn't double-fire)
-  html = html.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
-  // __underline__
-  html = html.replace(/__([^_]+?)__/g, '<u>$1</u>');
-  // *italic*
-  html = html.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
-  // single newlines → <br>
-  html = html.replace(/\n/g, '<br>');
-  return html;
+  html = mdEmphasis(html);
+  // "  \n" (Markdown hard break) and plain "\n" both → <br>
+  html = html.replace(/ *\n/g, '<br>');
+  return html.replace(/\u0000(\d+)\u0000/g, (_, i) => links[+i]);
 }
 
 function markdownParagraphs(text) {
   if (!text) return [];
   return text.split(/\n\s*\n+/).map((s) => s.trim()).filter(Boolean);
+}
+
+// A paragraph is a blockquote when every line starts with ">". Returns
+// the quote with markers stripped, or null.
+function blockquoteText(p) {
+  const lines = p.split('\n');
+  if (!lines.every((l) => /^\s*>/.test(l))) return null;
+  return lines.map((l) => l.replace(/^\s*> ?/, '')).join('\n');
+}
+
+const MD_PARA_STYLE = {
+  fontFamily: 'Georgia, "Times New Roman", serif',
+  fontSize: 16,
+  lineHeight: 1.65,
+  margin: '0 0 14px',
+};
+
+// One Markdown paragraph as an email-safe element. A blockquote ending
+// in "— Name" (or "-- Name") sets the attribution on its own line.
+function MdParagraph({ text, tokens }) {
+  const quote = blockquoteText(text);
+  if (quote == null) {
+    return <p style={{ ...MD_PARA_STYLE, color: tokens.bodyText }}
+      dangerouslySetInnerHTML={{ __html: markdownInline(text, tokens) }} />;
+  }
+  // The dash only counts as an attribution when it opens its own line or
+  // follows sentence-ending punctuation, so "I came — I saw." stays whole.
+  const m = quote.match(/^([\s\S]*?(?:\n|[.!?"”’…)]))[ \t]*(?:—|--)[ \t]*([^—\n]+)$/);
+  const body = m ? m[1].trimEnd() : quote;
+  const cite = m ? m[2] : '';
+  return (
+    <blockquote style={{
+      margin: '6px 0 22px',
+      padding: '2px 0 2px 20px',
+      borderLeft: `3px solid ${tokens.quaternary}`,
+    }}>
+      <p style={{ ...MD_PARA_STYLE, fontSize: 18, lineHeight: 1.5, fontStyle: 'italic', color: tokens.bodyText, margin: cite ? '0 0 8px' : 0 }}
+        dangerouslySetInnerHTML={{ __html: markdownInline(body, tokens) }} />
+      {cite && (
+        <p style={{
+          fontFamily: '"Source Sans 3", "Helvetica Neue", Arial, sans-serif',
+          fontSize: 13,
+          lineHeight: 1.4,
+          letterSpacing: '0.02em',
+          color: tokens.lightText,
+          margin: 0,
+        }} dangerouslySetInnerHTML={{ __html: '— ' + markdownInline(cite, tokens) }} />
+      )}
+    </blockquote>
+  );
 }
 
 // Fixed-section keys the email knows how to render, in the default
@@ -505,18 +567,12 @@ function LetterFromEditor({ tokens, content }) {
       {(() => {
         // Read editorBody (new shape) with a fallback to legacy
         // editorParagraphs array. Body supports Markdown:
-        //   **bold**, *italic*, __underline__, [text](url), \n\n for ¶.
+        //   **bold**, *italic*, __underline__, [text](url), > quote, \n\n for ¶.
         const body = content.editorBody != null
           ? content.editorBody
           : (content.editorParagraphs || []).join('\n\n');
         return markdownParagraphs(body).map((p, i) => (
-          <p key={i} style={{
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: 16,
-            lineHeight: 1.65,
-            color: tokens.bodyText,
-            margin: '0 0 14px',
-          }} dangerouslySetInnerHTML={{ __html: markdownInline(p, tokens) }} />
+          <MdParagraph key={i} text={p} tokens={tokens} />
         ));
       })()}
     </div>
@@ -621,13 +677,7 @@ function CustomBlocks({ tokens, accent, blocks }) {
         return (
           <div key={b.id || i} style={{ marginBottom: 14 }}>
             {paras.map((p, j) => (
-              <p key={j} style={{
-                fontFamily: 'Georgia, "Times New Roman", serif',
-                fontSize: 16,
-                lineHeight: 1.65,
-                color: tokens.bodyText,
-                margin: '0 0 14px',
-              }} dangerouslySetInnerHTML={{ __html: markdownInline(p, tokens) }} />
+              <MdParagraph key={j} text={p} tokens={tokens} />
             ))}
           </div>
         );
@@ -1341,13 +1391,7 @@ function EmailTemplate({ isMember = false, accent = 'moderate', density = 'norma
               {bodyParas.length > 0 && (
                 <div style={{ marginTop: 16 }}>
                   {bodyParas.map((p, j) => (
-                    <p key={j} style={{
-                      fontFamily: 'Georgia, "Times New Roman", serif',
-                      fontSize: 16,
-                      lineHeight: 1.65,
-                      color: tokens.bodyText,
-                      margin: '0 0 14px',
-                    }} dangerouslySetInnerHTML={{ __html: markdownInline(p, tokens) }} />
+                    <MdParagraph key={j} text={p} tokens={tokens} />
                   ))}
                 </div>
               )}
@@ -1389,13 +1433,7 @@ function EmailTemplate({ isMember = false, accent = 'moderate', density = 'norma
         return (
           <div style={{ padding: '24px 40px 8px' }} className="mo-letter mo-pad-40">
             {paras.map((p, j) => (
-              <p key={j} style={{
-                fontFamily: 'Georgia, "Times New Roman", serif',
-                fontSize: 16,
-                lineHeight: 1.65,
-                color: tokens.bodyText,
-                margin: '0 0 14px',
-              }} dangerouslySetInnerHTML={{ __html: markdownInline(p, tokens) }} />
+              <MdParagraph key={j} text={p} tokens={tokens} />
             ))}
           </div>
         );
