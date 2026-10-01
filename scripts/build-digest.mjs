@@ -27,7 +27,7 @@ const REPO = path.resolve(__dirname, "..");
 const SRC_DIR = path.join(REPO, "assets/js/digest");
 const SOURCES = [
   "tweaks-panel.jsx",
-  "email-template.jsx",
+  "email-template-v2.jsx",
   // The -v2 suffix is a cache-buster, not a rewrite. Ghost's {{asset}} helper
   // appends ?v=<hash>, but that hash is scoped to Ghost's boot rather than to
   // the theme, and the CDN in front of mereorthodoxy.com keys on PATH and
