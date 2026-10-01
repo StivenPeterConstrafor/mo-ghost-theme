@@ -5724,7 +5724,9 @@ async function loadPgCanon(ws){
   const title=gt("titleStmt > title")||("PG "+id);
   const vol=(()=>{const e=[...doc.querySelectorAll("idno")].find(x=>x.getAttribute("type")==="PG-volume");return e?e.textContent.trim():"";})();
   const _srcParam=window.__srcOverride||new URLSearchParams(location.search).get("src");
-  let src=_srcParam||"grc";
+  // GREEK · LATIN BY DEFAULT (owner 2026-09-30 "default readers to greek+latin"): a PG work opens in the Migne parallel -- the Greek
+  // with its Latin beneath, per opening -- unless the link names a view (?src=). The Latin-dominant rules below still apply.
+  let src=_srcParam||"grcla";
   // MOSTLY-LATIN WORKS DEFAULT TO THE PAGE TRANSCRIPTION (owner 2026-08-18 'for works that
   // are mostly latin with some greek this division by lane is very bad'): when the reading
   // body is Latin-dominant, the split lanes serve Greek fragments out of context — the
@@ -5748,6 +5750,10 @@ async function loadPgCanon(ws){
       if(_latinOnly){src="grcla";window.__pgLatinOnly=true;}else src="ocr";
     }
   }
+  // A LATIN-ONLY WORK under the new default reads as "Latin", as the parallel path already labels it when the transcription rule above
+  // chose it (a Petau dissertation in PG 19 has Latin columns and no Greek one).
+  if(!_srcParam&&src==="grcla"&&!window.__pgLatinOnly){try{const _co=Object.values(window.FRPgParallel.canonicalOpenings(doc));
+    if(_co.length>0&&_co.some(o=>o.la)&&!_co.some(o=>o.grc))window.__pgLatinOnly=true;}catch(e){}}
   // The opening can be Latin even in a predominantly Greek work. Inspect only
   // its first original-language column, never the translation or catalogue head.
   // Explicit source choices and the existing whole-page transcription default win.
