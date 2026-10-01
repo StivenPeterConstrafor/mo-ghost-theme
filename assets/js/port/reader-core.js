@@ -384,6 +384,7 @@ function appBank(laN,enN){
     if(/^(cx\d*|ccont\d*|dz\w*|x\d*)$/.test(id))return{sup:"†"};
     if(/^v\d+$/.test(id))return{lem:"variant"};                       // critical-apparatus collation notes ([^v1] lemma] reading)
     if(/^v[a-e]$/.test(id))return{sup:id[1]+")",lem:"variant"};          // lettered witness variants (Finke: a) B donans)
+    const dd=/^(\d{1,3})-\d{1,4}$/.exec(id);if(dd)return{sup:dd[1]};   // md2tei2 keeps ids unique across a book: the 14th page's note 1 is n-1-14 → label 1 (10-01, Wesley OT Notes)
     const mm=/^m(\d{1,3})$/.exec(id);if(mm)return{sup:mm[1]};          // vasquez-class numbered margin notes [^m23]
     const m=/^c(\d{1,3}|[a-z])(\d*)$/.exec(id);if(m)return{sup:m[1]+(m[2]||"")};return null;};
   const cell=(side,n)=>{if(!n)return `<div class="${side}" lang="${side==="la"?"la":"en"}"></div>`;
@@ -427,7 +428,9 @@ function appBank(laN,enN){
     // pairing, unmatched LA notes absorb leftover EN notes in source order — the same k-th↔k-th
     // logic the id queue already uses, applied across schemes.
     const prs=laN.map(l=>[l,take(l.id)]);
-    const left=enN.filter(e=>{const q=emq.get(e.id);return q&&q.includes(e);});
+    // (a note marked unpaired -- a PG English note with no numbered Latin twin, 2026-10-01 -- keeps its own row: a guess would set
+    //  one note's English beside another's Latin)
+    const left=enN.filter(e=>{const q=emq.get(e.id);return q&&q.includes(e)&&!e.solo;});
     let li=0;
     prs.forEach(pr=>{if(!pr[1]&&li<left.length){pr[1]=left[li];
       const q=emq.get(left[li].id);q.splice(q.indexOf(left[li]),1);li++;}});
@@ -2776,7 +2779,7 @@ function build(){
     const id=(e.getAttribute("xml:id")||"").replace(/^n-/,"").replace(/^(fn\d*)-(?:la|en)-/,"$1-");
     const txt=(e.textContent||"").trim();
     if(id)window.__TEINOTES[id]=txt;
-    return {id,text:txt,place:e.getAttribute("place")||"foot"};}
+    return {id,text:txt,place:e.getAttribute("place")||"foot",solo:e.getAttribute("subtype")==="unpaired"};}
   // HEAD REPAIR (owner 2026-08-18 screenshots — Holtzfus 'Cap.'+'III.' as two stacked heads,
   // 'I.'+'N.'+'D.' monogram as three, 'H O M I N U M' letterspacing kept): printed titles
   // arrive fragmented; merge each RUN of consecutive short heads into one, demote pious
@@ -4136,7 +4139,7 @@ function setFolio(pg){if(!pg||cur===pg.n)return;cur=pg.n;syncReaderHeader(pg.n);
       if(!wasOpen){const n=$(".nav-node.on");if(n)n.scrollIntoView({block:"center"});}};}}
   try{const lr=JSON.parse(lsGet("fr_lastread")||"{}");
     {const _q=new URLSearchParams(location.search);const _k=(window.frIS||function(x){return x;})(_q.get("ws"))||(window.frIS||function(x){return x;})(_q.get("w"))||DATA.slug||DATA.workspace;
-     lr[_k]={page:pg.n,slug:DATA.slug||"",title:DATA.title||"",author:DATA.author||"",ts:Date.now(),...(DATA.pld_source_view?{pldpart:DATA.pld_source_view.id}:{} )};
+     lr[_k]={page:pg.n,slug:DATA.slug||"",title:DATA.title_en||DATA.title||"",author:DATA.author||"",ts:Date.now(),...(DATA.pld_source_view?{pldpart:DATA.pld_source_view.id}:{} )};
      if(lr["undefined"])delete lr["undefined"];}
     lsSet("fr_lastread",JSON.stringify(lr));
     if(window._frSyncLastread)window._frSyncLastread(lr);
@@ -5724,7 +5727,9 @@ async function loadPgCanon(ws){
   const title=gt("titleStmt > title")||("PG "+id);
   const vol=(()=>{const e=[...doc.querySelectorAll("idno")].find(x=>x.getAttribute("type")==="PG-volume");return e?e.textContent.trim():"";})();
   const _srcParam=window.__srcOverride||new URLSearchParams(location.search).get("src");
-  let src=_srcParam||"grc";
+  // GREEK · LATIN BY DEFAULT (owner 2026-09-30 "default readers to greek+latin"): a PG work opens in the Migne parallel -- the Greek
+  // with its Latin beneath, per opening -- unless the link names a view (?src=). The Latin-dominant rules below still apply.
+  let src=_srcParam||"grcla";
   // MOSTLY-LATIN WORKS DEFAULT TO THE PAGE TRANSCRIPTION (owner 2026-08-18 'for works that
   // are mostly latin with some greek this division by lane is very bad'): when the reading
   // body is Latin-dominant, the split lanes serve Greek fragments out of context — the
@@ -5748,6 +5753,10 @@ async function loadPgCanon(ws){
       if(_latinOnly){src="grcla";window.__pgLatinOnly=true;}else src="ocr";
     }
   }
+  // A LATIN-ONLY WORK under the new default reads as "Latin", as the parallel path already labels it when the transcription rule above
+  // chose it (a Petau dissertation in PG 19 has Latin columns and no Greek one).
+  if(!_srcParam&&src==="grcla"&&!window.__pgLatinOnly){try{const _co=Object.values(window.FRPgParallel.canonicalOpenings(doc));
+    if(_co.length>0&&_co.some(o=>o.la)&&!_co.some(o=>o.grc))window.__pgLatinOnly=true;}catch(e){}}
   // The opening can be Latin even in a predominantly Greek work. Inspect only
   // its first original-language column, never the translation or catalogue head.
   // Explicit source choices and the existing whole-page transcription default win.
@@ -5862,6 +5871,19 @@ async function loadPgCanon(ws){
   const walk=n=>{for(const ch of n.children||[]){if(ch.localName==="div"){if(alt.has(ch.getAttribute("type")||""))continue;walk(ch);continue;}
     if(ch.localName==="pb")cur=ch.getAttribute("n")||cur;else if(ch.localName==="note"&&cur&&(ch.getAttribute("place")||"foot")!=="margin"){(m[cur]||(m[cur]=[])).push((ch.textContent||"").replace(/\s+/g," ").trim());}}};
   walk(doc.querySelector("body")||doc.documentElement);return m;}catch(e){return {};}})();
+  // THE ENGLISH OF MIGNE'S NOTES (owner 2026-10-01, pg-5: "The Greek text and the notes are mixed together"): a note's English travels in the
+  // translation div as <note place="foot" n="col"> (runs/pg_notes_1001) -- never the English lane; it joins the folio's note band beside its
+  // Latin. Keyed by column; the site sidecar speaks for a column where it carries notes there, else the machine translation.
+  window.__pgEnNotes=(()=>{try{const side={},mach={};
+    doc.querySelectorAll('div[type="translation"] note').forEach(nt=>{if((nt.getAttribute("place")||"foot")==="margin")return;
+      const n=+(nt.getAttribute("n")||0),t=(nt.textContent||"").replace(/\s+/g," ").trim();if(!n||!t)return;
+      const m=nt.closest('div[type="translation"]')?.getAttribute("resp")==="#site-sidecar"?side:mach;(m[n]||(m[n]=[])).push(t);});
+    // a bare head ("VARIOUS NOTES") adds nothing to the band; where the sidecar dropped the printed numbers the machine English kept them,
+    // and a numbered note is the one that can stand beside its Latin
+    const _hd=t=>/^\W*(?:VARIOUS\s+NOTES|(?:THE\s+)?NOTES\s+OF\s+(?:VARIOUS|DIFFERENT|SEVERAL)\s+\w+|VARIORUM\s+NOT\S*)\W*$/i.test(t),
+          _nn=a=>(a||[]).filter(t=>/^\s*\[?\(\d{1,3}\)/.test(t)).length;
+    const out={};new Set([...Object.keys(side),...Object.keys(mach)]).forEach(k=>{const pick=(side[k]&&!(_nn(side[k])===0&&_nn(mach[k])>0))?side[k]:mach[k];
+      out[k]=(pick||[]).filter(t=>!_hd(t));});return out;}catch(e){return {};}})();
 const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=window.FRPgParallel.printedColumns(doc);
   const _pgOwned=new Set(Object.keys(_canonOpenings).filter(k=>_canonOpenings[k].verified));
   // Roman-numbered preliminaries have their own scan and must not borrow ordinary column zones.
@@ -6202,9 +6224,25 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
     // doubled them on 20 pages. The set of pages already given their notes belongs to the current work's notes map.
     try{const _pn=pages.length?pages[pages.length-1]:null;const _nm=window.__pgNotes||{};
       const _nd=(window.__pgNotesDone&&window.__pgNotesDone.m===_nm)?window.__pgNotesDone.s:(window.__pgNotesDone={m:_nm,s:new Set()}).s;
+      const _first=_pn!=null&&!_nd.has(String(_pn));
       const _ns=_pn!=null&&!_nd.has(String(_pn))?[...(_nm[String(_pn)]||[]),...((+_pn)%2===1?(_nm[String(+_pn+1)]||[]):[])]:[];
       if(_pn!=null)_nd.add(String(_pn));
-      _ns.forEach((t,i)=>{if(!t)return;const nn=laD.createElement("note");nn.setAttribute("place","foot");nn.setAttribute("xml:id",`fn-${_pn}-${i+1}`);nn.textContent=t;laB.appendChild(nn);});}catch(e){}
+      _ns.forEach((t,i)=>{if(!t)return;const nn=laD.createElement("note");nn.setAttribute("place","foot");nn.setAttribute("xml:id",`fn-${_pn}-${i+1}`);nn.textContent=t;laB.appendChild(nn);});
+      // ...and their English (2026-10-01): a note that prints its number "(83)" stands beside the Latin note of that number; an English
+      // note with no numbered twin shows on its own row.
+      if(_first&&window.__pgEnNotes){const _en=window.__pgEnNotes,_es=[+_pn,...((+_pn)%2===1?[+_pn+1]:[])].flatMap(c=>_en[String(c)]||[]);
+        if(_es.length){const _num=t=>{const m=/^\s*\[?\((\d{1,3})\)\]?/.exec(String(t||""));return m?m[1]:null;};
+          const _byNum={},_used=new Set();_ns.forEach((t,i)=>{const k=_num(t);if(k)(_byNum[k]||(_byNum[k]=[])).push(i);});
+          // a number printed twice on a page (the Scripture line "(98) I Pet. v, 5." and the variorum note "(98) Πάντες …"): the Latin note
+          // whose first word the English repeats is its twin
+          const _w1=t=>(String(t).replace(/^\s*\[?\(\d{1,3}\)\]?\s*\**/,"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").match(/[\p{L}]{3,}/u)||[""])[0].toLowerCase();
+          const _twin=(k,t)=>{const c=(_byNum[k]||[]).filter(i=>!_used.has(i));if(c.length<2)return c.length?c[0]:null;
+            const w=_w1(t);return c.find(i=>_w1(_ns[i])===w)??c[0];};
+          // only the printed number pairs a note with its English: the two lanes break their unnumbered runs differently, and a guess
+          // would set one note's English beside another (pg-5 col. 205); an unpaired English note keeps its own row (a plain numeric id)
+          _es.forEach((t,j)=>{const k=_num(t);const i=k!=null?_twin(k,t):null;
+            if(i!=null)_used.add(i);const ne=enD.createElement("note");ne.setAttribute("place","foot");if(i==null)ne.setAttribute("subtype","unpaired");
+            ne.setAttribute("xml:id",i!=null?`fn-${_pn}-${i+1}`:`fn-${_pn}-${500+j}`);ne.textContent=t;enB.appendChild(ne);});}}}catch(e){}
     const _pr=_colLa._prune;_colLa=[];_colEn=[];_colLa._prune=_pr;};
   // PG READABILITY (owner 2026-09-03 audit: canon columns render as 2-5k-char walls with
   // the printed running titles fused in): carve UPPERCASE-GREEK rubric runs out as their

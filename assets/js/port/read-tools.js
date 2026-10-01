@@ -919,7 +919,10 @@ async function findReadSearchResult(hit,terms,{current=()=>true,status=()=>{}}={
 }
 // End research rail search index helpers.
 function canTranslateSource(data=DATA,reader=document.getElementById('app')){
-  return String(data?.src_lang||'').toLowerCase().split('-')[0]!=='en'&&data?.en_only!==true&&!reader?.classList.contains('en-only');
+  // OWNER 2026-09-10: "i do not want the my translation box ever" (again 2026-09-30, a PG 19 work showed the pencils on MereO:
+  // "my translation should basically not be available") -- the personal-translation feature is OFF everywhere: no pencil buttons,
+  // no My-translation boxes; applyTranslationPolicy() strips any saved ones. Same rule as the Vercel reader.
+  return false;
 }
 function __initReaderTools(){
   const reading=$("#reading"), WORK=[DATA.title,DATA.volume].filter(Boolean).join(", ")||"";  // cite incl. volume / part
