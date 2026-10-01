@@ -3669,3 +3669,18 @@ html.g-mobile #app aside.sidebar #nav .rc-contents-actions { min-height: 32px; m
 html.g-mobile #app aside.sidebar #nav .rc-contents-actions > * { min-height: 32px; }
 html.g-mobile #app aside.sidebar #nav .nav-node { margin-top: 0; margin-bottom: 0; padding-top: 1px; padding-bottom: 1px; }
 html.g-mobile #app #nav .nav-node .nav-open { min-height: 38px; padding: 5px 4px; font-size: 15.5px; line-height: 1.32; }
+
+/* TABLET READING COLUMN (Ian, 2026-09-30, "full tablet optimization").
+   Below 881px the reader is the touch layout (g-mobile, the thumb dock),
+   which is right for an iPad, but fr-reading-system.css also stretches the
+   text to the full screen with 12px sides: on a 768px iPad that is a
+   744px line, about 95 characters, edge to edge. From 641px the column is
+   the desktop single-language measure again, centered with 32px sides
+   (about 80 characters). Phones keep the full width. */
+@media screen and (min-width: 641px) and (max-width: 880px) {
+  html.g-mobile body .app #reading {
+    max-width: 44rem !important;
+    margin-inline: auto !important;
+    padding-inline: 32px !important;
+  }
+}

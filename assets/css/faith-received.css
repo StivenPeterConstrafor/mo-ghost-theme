@@ -20696,3 +20696,44 @@ body.mo-shelf-page #author-order-note { display: none; }
   .tfr-rail-inner > .tfr-rail-brand { font-size: 12px; letter-spacing: 0.07em; padding: 8px 0; margin-left: 0; }
   .tfr-rail-link { font-size: 12.5px; letter-spacing: 0.06em; padding: 8px 0; }
 }
+
+/* ══ TABLET (Ian, 2026-09-30: "We need to do a full tablet optimization") ══
+   iPads sit between the phone layout (≤640px) and the desktop one, and
+   several pages fell into the gap: phone rules that switch on at 900px
+   met desktop rules that switch back at 1000px, and desktop spacing met
+   a 744–834px screen. Measured at 768, 820 and 1180 on every public TFR
+   page; these are the faults that showed. */
+
+/* The TFR rail ran 45px past a 768px screen, cutting "About" in half with
+   nothing to say the row scrolls. At the phone's 12px type and slightly
+   tighter spacing it fits with room to spare down to the 744px iPad mini;
+   it still scrolls if Research is opened out along it. */
+@media (min-width: 641px) and (max-width: 1100px) {
+  .tfr-rail-inner { gap: 0 18px; }
+  .tfr-rail-items { gap: 0 16px; }
+  .tfr-rail-link,
+  .tfr-rail-brand { font-size: 12px; letter-spacing: 0.06em; }
+  .tfr-rail-brand { padding-right: 6px; }
+}
+
+/* TFR home, "Where to start". At 641–1000px a rule at 1000 makes the doors
+   two columns while a rule at 900 still gives them the phone's stacked
+   spacing (a rule and 28px above every door but the first), so the second
+   door sat 28px lower than the first and only three of four had a rule.
+   On a tablet they are a true two-by-two: the desktop's vertical rule
+   between the columns, one rule between the rows, tops aligned. */
+@media (min-width: 641px) and (max-width: 1000px) {
+  .lp-doors { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; }
+  .lp-door,
+  .lp-door:first-child,
+  .lp-door:last-child {
+    margin-top: 0;
+    border-top: 0;
+    border-left: 0;
+    padding: 28px 28px 28px 0;
+  }
+  .lp-door:nth-child(2n) { border-left: 1px solid var(--color-card-border); padding: 28px 0 28px 28px; }
+  .lp-door:nth-child(n + 3) { border-top: 1px solid var(--color-card-border); }
+  .lp-door:nth-child(-n + 2) { padding-top: 0; }
+  .lp-door:nth-last-child(-n + 2) { padding-bottom: 0; }
+}

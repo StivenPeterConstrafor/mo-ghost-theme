@@ -2417,3 +2417,15 @@ main.research-work :is(.vc-authority-row, .vc-page-ref) > .peekwrap { grid-colum
   main.research-work .vc-index-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   main.research-work .vc-page-refs > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* TABLET (Ian, 2026-09-30, "full tablet optimization"). On an author page
+   at 641–1024px the seven room tabs ran 80px past their row, so "Search"
+   wrapped and stretched across a line of its own; with 8px sides they fit
+   on one line. The stat cards were four fixed columns, which left the
+   fifth ("Reformed · Denomination") alone on a second row; they now take
+   as many columns as there are cards. */
+@media (min-width: 641px) and (max-width: 1024px) {
+  main.research-room .pseg { flex-wrap: nowrap; }
+  main.research-room .pseg button { padding: 10px 8px; white-space: nowrap; }
+  main.research-room:has(.rx-profile) .ar-stats { grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); }
+}
