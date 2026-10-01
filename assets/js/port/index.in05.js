@@ -729,12 +729,14 @@ function authorSection(author,items){
           let inner="";
           for(const ek of edKeys){
             eds[ek].sort((a,b)=>(wg.works[a.slug].n||0)-(wg.works[b.slug].n||0));
-            const lab=(g.editions&&g.editions[ek])||"Edition";
+            // a set of kind "formats" (2026-09-30) is ONE work held in facsimile and as born-digital text: its sub-headers name the format alone
+            const lab=(g.editions&&g.editions[ek])||(g.kind==="formats"?"":"Edition");
             const formats=[...new Set(eds[ek].map(m=>(m.has_pages||m.pdf_pages||m.img_base)?"Facsimile":"Born-digital text"))].join(" + ");
-            inner+=`<div class=wged>${esc(lab)} · ${esc(formats)}${g.unit==="edition"?"":`<span class=wgedc>${eds[ek].length} vol${eds[ek].length>1?"s":""}</span>`}</div>`+eds[ek].map(_ledgerRow).join("");
+            inner+=`<div class=wged>${lab?esc(lab)+" · ":""}${esc(formats)}${g.unit==="edition"?"":`<span class=wgedc>${eds[ek].length} vol${eds[ek].length>1?"s":""}</span>`}</div>`+eds[ek].map(_ledgerRow).join("");
           }
           const la=(g.title&&g.title!==g.title_en)?` <span class=wgla>${esc(g.title)}</span>`:"";
-          out.push(`<div class=wgroup><div class=wghead><span class=wgt>${esc(g.title_en||g.title||"")}${la}</span><span class=wgc>${g.unit==="edition"?edKeys.length+" editions":members.length+" volumes"+(edKeys.length>1?" · "+edKeys.length+" editions":"")}</span></div>${inner}</div>`);
+          const nf=members.filter(m=>m.has_pages||m.pdf_pages||m.img_base).length;
+          out.push(`<div class=wgroup><div class=wghead><span class=wgt>${esc(g.title_en||g.title||"")}${la}</span><span class=wgc>${g.kind==="formats"?nf+" in facsimile · "+(members.length-nf)+" born-digital":g.unit==="edition"?edKeys.length+" editions":members.length+" volumes"+(edKeys.length>1?" · "+edKeys.length+" editions":"")}</span></div>${inner}</div>`);
         }
         list.innerHTML=out.join("")||`<p class=shelfhint>No titles match.</p>`;
       } else
