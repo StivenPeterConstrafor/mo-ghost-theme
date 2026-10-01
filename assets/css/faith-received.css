@@ -20785,3 +20785,14 @@ body.mo-shelf-page #author-order-note { display: none; }
   .lp-door:nth-child(-n + 2) { padding-top: 0; }
   .lp-door:nth-last-child(-n + 2) { padding-bottom: 0; }
 }
+
+/* LINKS IN A PHOTO HERO ARE WHITE (2026-10-01). The forwarding pages
+   (/pins/, /compare/, /desk/: "Open Bookmarks on the Research desk") put a
+   link in .bhero-sub over the dark photograph, where it took the light-page
+   link color, #2d2927, and could not be read at any width. */
+.bhero .bhero-sub a:not(.fr-btn) {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.bhero .bhero-sub a:not(.fr-btn):hover { color: #fff; text-decoration-thickness: 2px; }

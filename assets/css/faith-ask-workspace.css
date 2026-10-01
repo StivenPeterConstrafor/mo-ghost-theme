@@ -1937,3 +1937,11 @@ html:not(.mo-embedded) .fra {
 #fra-workspace .fra-connect-row button:hover { border-color:currentColor; }
 #fra-workspace .fra-connect-note, #fra-workspace .fra-connect-wait { color:var(--fra-muted); font-size:13px; }
 #fra-workspace .fra-connect-note { margin-top:14px !important; }
+
+/* TABLET (Ian, 2026-10-01, member tools on tablet). Below 800px the
+   workspace took the phone's 18px sides, so a 768px iPad read the answer
+   edge to edge while desktop centers it on --fra-measure. From 641px the
+   desktop's centered column comes back, with at least 32px either side. */
+@media (min-width: 641px) and (max-width: 800px) {
+  #fra-workspace .fra-feed { padding: 28px max(32px, calc((100% - var(--fra-measure)) / 2)); }
+}
