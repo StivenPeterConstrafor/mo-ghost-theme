@@ -101,7 +101,7 @@
     // Roman numerals as printed, in capitals ("Centuria XII", "lib. II"), so a word such as "Civil" is never a number
     const v = String(w.volume || w.eyebrow || "");
     const out = [];
-    v.replace(/\b(\d+|[IVXLCDM]+)\b/g, (t) => { out.push(/\d/.test(t) ? Number(t) : romanValue(t.toLowerCase())); return t; });
+    v.replace(/\b(\d+|[IVXLCDM]+)\b/g, (t) => { if (/^[CDLM]$/.test(t)) return t; out.push(/\d/.test(t) ? Number(t) : romanValue(t.toLowerCase())); return t; });
     return out;
   }
   function byVolume(p, q) {
