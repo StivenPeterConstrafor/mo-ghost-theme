@@ -22,12 +22,19 @@ import { execFileSync } from "node:child_process";
 
 // Which files a commit touched, from git itself (the workflow checks out
 // enough history). The push payload's own file lists are not reliable.
+// A merge commit has no files under diff-tree, so a merged PR with a
+// Changelog line was skipped as "touches no TFR file" (2026-10-01). Diff
+// against the first parent instead; a root commit falls back to diff-tree.
 function filesOf(sha) {
+  const run = (args) => execFileSync("git", args, { encoding: "utf8" }).split("\n").filter(Boolean);
   try {
-    return execFileSync("git", ["diff-tree", "--no-commit-id", "--name-only", "-r", "--root", sha], { encoding: "utf8" })
-      .split("\n").filter(Boolean);
+    return run(["diff", "--name-only", `${sha}^1`, sha]);
   } catch (_) {
-    return [];
+    try {
+      return run(["diff-tree", "--no-commit-id", "--name-only", "-r", "--root", sha]);
+    } catch (__) {
+      return [];
+    }
   }
 }
 
