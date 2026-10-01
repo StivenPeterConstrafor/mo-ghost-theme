@@ -12401,7 +12401,36 @@ a.faith-tp-log-work:hover { color: var(--color-secondary); }
   color: var(--color-primary-text);
   vertical-align: 1px;
 }
-.faith-tp-log-what { display: block; color: var(--color-muted); }
+/* The summary leads and carries the label; the works it touched follow,
+   quieter. */
+.faith-tp-log-what { display: block; color: var(--color-dark); }
+.faith-tp-log-works { display: block; margin-top: 2px; color: var(--color-muted); }
+.faith-tp-log-works .faith-tp-log-work,
+.faith-tp-log-works .faith-tp-log-vols a { color: var(--color-muted); }
+.faith-tp-log-works a.faith-tp-log-work:hover,
+.faith-tp-log-works .faith-tp-log-vols a:hover { color: var(--color-secondary); }
+.faith-tp-log-works.is-clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+.faith-tp-log-more {
+  display: inline-block;
+  margin: 2px 0 4px;
+  padding: 4px 0;
+  min-height: 32px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-secondary);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.faith-tp-log-more[hidden] { display: none; }
 /* Most Read Works (faith-most-read.js): titles and authors, no numbers. */
 .faith-mr-list {
   list-style: none;

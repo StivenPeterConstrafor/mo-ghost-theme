@@ -112,9 +112,11 @@
     });
     return [...sets.values()].map((set) => {
       if (set.vols.length === 1) return workName(set.vols[0].r) + byLine(set.author);
+      // Volumes without a label of their own are numbered, never blank:
+      // an empty label printed as "(, , ,)".
       const vols = set.vols
         .sort((x, y) => x.vol.localeCompare(y.vol, "en", { numeric: true }))
-        .map(({ r, vol }) => `<a href="${escapeHtml(href(r))}">${escapeHtml(vol)}</a>`).join(", ");
+        .map(({ r, vol }, i) => `<a href="${escapeHtml(href(r))}">${escapeHtml(vol || String(i + 1))}</a>`).join(", ");
       return `<span class="faith-tp-log-work">${escapeHtml(set.base)}</span>${byLine(set.author)}`
         + ` <span class="faith-tp-log-vols">(${vols})</span>`;
     }).join('<span class="faith-tp-log-sep">; </span>');
@@ -125,8 +127,11 @@
     const tag = open ? "" : `<span class="faith-tp-log-tag">${label(r)}</span>`;
     return `<li class="faith-tp-log-item${open ? "" : " is-closed"}">`
       + `<time class="faith-tp-log-date" datetime="${escapeHtml(r.at)}">${escapeHtml(day(r.at))}</time>`
-      + `<span class="faith-tp-log-main">${open ? workName(r) + byLine(r.author) : worksLine(r.items)}${tag}`
-      + `<span class="faith-tp-log-what">${escapeHtml(r.summary)}</span></span>`
+      // What changed first, then what it touched (Ian, 2026-10-01:
+      // "Summary of what was changed, details of what was changed").
+      + `<span class="faith-tp-log-main"><span class="faith-tp-log-what">${escapeHtml(r.summary)}${tag}</span>`
+      + `<span class="faith-tp-log-works">${open ? workName(r) + byLine(r.author) : worksLine(r.items)}</span>`
+      + `<button type="button" class="faith-tp-log-more" data-cl-more hidden aria-expanded="false">Show more</button></span>`
       + `${open ? votes("report", r) : ""}</li>`;
   }
 
@@ -163,12 +168,35 @@
       ? rows.slice(page * PAGE, (page + 1) * PAGE).map(item).join("")
       : `<li class="faith-tp-log-item faith-tp-log-empty">${view === "open"
         ? "No open reports right now." : "Nothing has been changed yet."}</li>`;
+    clampLong();
     pagerEl.hidden = pages < 2;
     atEl.textContent = `Page ${page + 1} of ${pages}`;
     prevEl.disabled = page === 0;
     nextEl.disabled = page >= pages - 1;
     tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.clView === view)));
   }
+
+  /* A change that touched hundreds of works (a night's catalogue run)
+     printed every one of them. The list of works is held to three lines
+     with Show more / Show less; a short one gets no button. Measured
+     after paint, since only the browser knows where the lines fall. */
+  function clampLong() {
+    listEl.querySelectorAll(".faith-tp-log-works").forEach((el) => {
+      const btn = el.parentElement.querySelector("[data-cl-more]");
+      el.classList.add("is-clamped");
+      const long = el.scrollHeight > el.clientHeight + 2;
+      if (!long) el.classList.remove("is-clamped");
+      btn.hidden = !long;
+    });
+  }
+  listEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-cl-more]");
+    if (!btn) return;
+    const el = btn.parentElement.querySelector(".faith-tp-log-works");
+    const open = el.classList.toggle("is-clamped") === false;
+    btn.textContent = open ? "Show less" : "Show more";
+    btn.setAttribute("aria-expanded", String(open));
+  });
 
   // Votes, and so the vote sorts, belong to open reports only.
   function sortOptions() {
