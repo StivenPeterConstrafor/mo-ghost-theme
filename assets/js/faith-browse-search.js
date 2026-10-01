@@ -84,6 +84,47 @@
     let i = 0;
     return list.map((w, k) => (keyed[k] ? mig[i++] : w));
   }
+  // The volumes of one set in their own order (owner 2026-10-01, "centuries": the Magdeburg Centuries came X, XI, XII,
+  // XIII, I lib. I, I lib. II, II … — the catalogue's string order). Works that share author and title keep the place the
+  // first of them holds, and among themselves go by the numbers in their volume line, Roman or Arabic, left to right:
+  // "Centuria I" < "Centuria I, lib. I" < "Centuria I, lib. II" < "Centuria II". Migne volumes are already in their order.
+  const ROMAN = { i: 1, v: 5, x: 10, l: 50, c: 100, d: 500, m: 1000 };
+  function romanValue(t) {
+    let n = 0;
+    for (let i = 0; i < t.length; i++) {
+      const a = ROMAN[t[i]], b = ROMAN[t[i + 1]] || 0;
+      n += a < b ? -a : a;
+    }
+    return n;
+  }
+  function volumeKey(w) {
+    // Roman numerals as printed, in capitals ("Centuria XII", "lib. II"), so a word such as "Civil" is never a number
+    const v = String(w.volume || w.eyebrow || "");
+    const out = [];
+    v.replace(/\b(\d+|[IVXLCDM]+)\b/g, (t) => { out.push(/\d/.test(t) ? Number(t) : romanValue(t.toLowerCase())); return t; });
+    return out;
+  }
+  function byVolume(p, q) {
+    const a = volumeKey(p), b = volumeKey(q);
+    for (let i = 0; i < Math.max(a.length, b.length); i++) {
+      const x = a[i] == null ? -1 : a[i], y = b[i] == null ? -1 : b[i];
+      if (x !== y) return x - y;
+    }
+    return 0;
+  }
+  function inVolumeOrder(list) {
+    const setOf = (w) => migneOf(w) ? null : `${fold(w.author || "")}|${fold(w.title || "")}`;
+    const sets = new Map();
+    list.forEach((w) => { const k = setOf(w); if (k) { if (!sets.has(k)) sets.set(k, []); sets.get(k).push(w); } });
+    const done = new Set(); const out = [];
+    list.forEach((w) => {
+      const k = setOf(w);
+      if (!k || sets.get(k).length < 2) { out.push(w); return; }
+      if (done.has(k)) return;
+      done.add(k); out.push(...sets.get(k).slice().sort(byVolume));
+    });
+    return out;
+  }
   // What a collected volume holds (MOCollectedContents, the reader outlines of the Opera and Works volumes), so
   // "Coccejus Leviticus" finds the volume that contains it.
   const contentsOf = (w) => (window.MOCollectedContents ? window.MOCollectedContents.search(w.slug || w.id) : "");
@@ -284,7 +325,7 @@
       if (h.includes(q)) phrase.push(w);
       else if (hasWords(h, words)) allWords.push(w);
     });
-    return inMigneOrder(phrase).concat(inMigneOrder(allWords));
+    return inVolumeOrder(inMigneOrder(phrase)).concat(inVolumeOrder(inMigneOrder(allWords)));
   }
 
   // ── Where a result opens ──────────────────────────────────────
