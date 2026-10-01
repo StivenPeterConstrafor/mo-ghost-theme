@@ -1275,7 +1275,11 @@ function checkHTML(t){
       feed.scrollTo({top:Math.max(0,top),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});return;}
     if(b.dataset.sources){const node=panel.querySelector('[data-turn="'+CSS.escape(b.dataset.sources)+'"]'),sources=node?.querySelector('.fra-sources');if(sources){sources.open=true;sources.querySelector('summary').scrollIntoView({block:'center'});sources.querySelector('summary').focus();}return;}
     if(b.dataset.share){const t=c.turns.find(t=>t.id===b.dataset.share);if(!t)return;b.disabled=true;const was=b.textContent;b.textContent='Sharing…';
-      try{const r=await fetch('/api/share',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:t.q,a:shownAnswer(t),src:t.src||[],mode:t.mode||'ask'})});const d=await r.json();if(!r.ok||!d.url)throw Error(d.error||'share failed');
+      /* MereO delta (2026-10-01): share through our Ask worker, signed in.
+         '/api/share' is the corpus owner's Vercel route; on mereorthodoxy.com
+         Ghost answered it with an HTML 404 and Safari reported "The string
+         did not match the expected pattern". Re-apply when re-vendoring. */
+      try{const url=CFG.apiBase.replace(/\/$/,'')+'/share';const tok=window.MOAuth&&window.MOAuth.tokenFor?await window.MOAuth.tokenFor(url):null;const r=await fetch(url,{method:'POST',headers:Object.assign({'content-type':'application/json'},tok?{Authorization:'Bearer '+tok}:{}),body:JSON.stringify({q:t.q,a:shownAnswer(t),src:t.src||[],mode:t.mode||'ask'})});const d=await r.json().catch(()=>({error:'The share service did not answer.'}));if(!r.ok||!d.url)throw Error(d.error||'share failed');
         let shared=false;if(navigator.share){try{await navigator.share({title:t.q,text:t.q,url:d.url});shared=true;}catch(_){}}
         if(!shared){try{await navigator.clipboard.writeText(d.url);toast('Share link copied: '+d.url);}catch(_){prompt('Share this answer',d.url);}}}
       catch(e){toast('Sharing failed. '+(e.message||''));}
@@ -1444,7 +1448,8 @@ function checkHTML(t){
     window.addEventListener('storage',e=>{if(e.key==='fr_theme'&&['light','dark','sepia'].includes(e.newValue)){document.documentElement.dataset.theme=e.newValue;if(panel)panel.dataset.theme=e.newValue==='sepia'?'light':e.newValue;}if(e.key==='fr_chats')migrate().then(refresh).catch(()=>{});});
     const params=new URLSearchParams(location.search);
     if(window.__FR_ASK_PENDING__){const pending=window.__FR_ASK_PENDING__;delete window.__FR_ASK_PENDING__;open(pending);}
-    else if(ASK_PATH_RE.test(location.pathname)||params.get('m')==='ask'||params.has('ask'))open({id:params.get('chat')||undefined,view:params.get('view')||undefined,q:params.get('ask')||params.get('q')||'',tradition:params.get('trad')||undefined});
+    /* MereO delta: a shared answer (?share=) is read by faith-ask-share.js; the workspace must not open over it. */
+    else if(!params.has('share')&&(ASK_PATH_RE.test(location.pathname)||params.get('m')==='ask'||params.has('ask')))open({id:params.get('chat')||undefined,view:params.get('view')||undefined,q:params.get('ask')||params.get('q')||'',tradition:params.get('trad')||undefined});
     setInterval(()=>{if(visible)panel.querySelectorAll('.fra-elapsed').forEach(e=>e.textContent=elapsed(+e.dataset.start));},1000);
     /* MereO delta: re-check for abandoned turns (see abandoned()) while the
        panel is open, and the moment a backgrounded tab comes back, so the

@@ -79,6 +79,8 @@
 </main>
 
 <script src="{{asset "js/faith-beta-gate.js"}}"></script>
+{{!-- A shared answer (?share=<id>), for anyone, signed in or not. --}}
+<script src="{{asset "js/faith-ask-share.js"}}"></script>
 {{#if @member}}
 {{!-- Diagrams. Loaded before the engine because the engine's
       updateAnswer calls window.MODiagrams the first time an answer
