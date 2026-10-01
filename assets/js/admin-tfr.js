@@ -94,6 +94,34 @@
     });
   }
 
+  /* Most read by title and author, not slug (Ian, 2026-10-01). The event
+     log keeps slugs, and landing pages ("curated", "manifesto") are
+     logged beside works, so the list is drawn first and then relabelled
+     from mo-forms /tfr-titles: a work becomes "Title · Author"; a slug
+     the library does not know as a work is a page, "Page · curated". */
+  function nameWorks(rows) {
+    const list = root.querySelector("[data-tfr-works] .admin-tfr-bars");
+    if (!list || !rows || !rows.length) return;
+    const slugs = rows.map((r) => r.work_id).filter(Boolean);
+    fetch(`https://mo-forms.mo-podcast-feed.workers.dev/tfr-titles?w=${encodeURIComponent(slugs.join(","))}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((res) => {
+        if (!res || !res.works) return;
+        const labels = list.querySelectorAll(".admin-tfr-bar-label");
+        rows.forEach((r, i) => {
+          const label = labels[i];
+          if (!label || !r.work_id) return;
+          const w = res.works[r.work_id];
+          label.textContent = w
+            ? (w.author ? `${w.title} · ${w.author}` : w.title)
+            : `Page · ${r.work_id}`;
+          label.classList.toggle("is-page", !w);
+          label.title = `${label.textContent} (${r.work_id})`;
+        });
+      })
+      .catch(() => { /* the slugs stay, which is still true */ });
+  }
+
   function load(days) {
     setStatus("Loading…");
     const url = `${WORKER}/stats?days=${encodeURIComponent(days)}`;
@@ -130,6 +158,7 @@
           },
           empty: "No reads recorded yet.",
         });
+        nameWorks(d.works);
 
         renderBars("[data-tfr-depth]", d.depth, {
           value: "n",

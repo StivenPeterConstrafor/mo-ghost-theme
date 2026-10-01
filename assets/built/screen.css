@@ -23377,6 +23377,57 @@ p.kpi-more .kpi-btn { width: 100%; justify-content: center; }
 
 .admin-tfr-section { padding: 26px 0; border-bottom: 1px solid var(--color-rule); }
 .admin-tfr-section:last-child { border-bottom: 0; }
+/* Sections fold and long lists page (admin-tfr-sections.js, 2026-10-01). */
+.admin-tfr-fold {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.admin-tfr-fold::after {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  opacity: 0.6;
+  transition: transform 0.15s ease;
+}
+.admin-tfr-fold[aria-expanded="true"]::after { transform: rotate(45deg); }
+.admin-tfr-fold:hover { color: var(--color-secondary); }
+.admin-tfr-section-body { margin-top: 14px; }
+.admin-tfr-section-body[hidden] { display: none; }
+.admin-tfr-foldall { display: flex; gap: 16px; justify-content: flex-end; margin: 18px 0 0; }
+.admin-tfr-foldall button,
+.admin-tfr-pager button,
+.admin-tfr-export {
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-secondary);
+  background: none;
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.admin-tfr-foldall button { border: 0; padding: 4px 0; text-decoration: underline; text-underline-offset: 2px; }
+.admin-tfr-pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 14px 0 0; font-size: 13px; color: var(--color-muted); }
+.admin-tfr-pager button:disabled { opacity: 0.4; cursor: default; }
+.admin-tfr-bars > li[hidden] { display: none; }
+.admin-tfr-export { margin-left: 14px; }
+.admin-tfr-export:disabled { opacity: 0.6; cursor: default; }
+.admin-tfr-bar-label.is-page { color: var(--color-muted); font-style: italic; }
 .admin-tfr-section-title {
   font-family: var(--font-display);
   font-size: 21px;

@@ -236,6 +236,71 @@
       .catch(() => setStatus("Could not load the survey results."));
   }
 
+  /* EXPORT TO A SPREADSHEET (Ian, 2026-10-01). Every response in the
+     chosen window, one row each, one column per question, as a CSV that
+     Excel, Numbers and Google Sheets open directly. The rows come from
+     the same results route with ?rows=1, so the file and the page always
+     agree. The written answers are typed by strangers into a public
+     form, so any cell that begins = + - @ is prefixed with an apostrophe:
+     a spreadsheet would otherwise run it as a formula. */
+  const COLUMNS = [
+    ["Submitted (UTC)", "created_at"],
+    ["1. How much do you like it? (1-5)", "liking"],
+    ["2. How useful will it be? (1-5)", "usefulness"],
+    ["3. How they see themselves using it", "uses"],
+    ["4. Tradition", "tradition"],
+    ["5. Denomination", "denomination"],
+    ["6. Relationship to the church", "church_role"],
+    ["7. Age range", "age_range"],
+    ["8. Gender", "gender"],
+    ["9. What they like about it", "likes"],
+    ["Page", "page_path"],
+    ["Membership", "member_status"],
+    ["Questions answered", "answered_count"],
+    ["Questions asked", "asked_count"],
+  ];
+  function cell(v) {
+    let t = v == null ? "" : String(v);
+    if (/^\[.*\]$/.test(t)) {
+      try { const arr = JSON.parse(t); if (Array.isArray(arr)) t = arr.join("; "); } catch (_) { /* leave as written */ }
+    }
+    if (/^[=+\-@\t\r]/.test(t)) t = `'${t}`;
+    return /[",\n\r]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t;
+  }
+  function exportCsv(btn) {
+    const days = rangeEl ? rangeEl.value : "0";
+    const url = `${adminUrl}/tfr-survey/results?days=${encodeURIComponent(days)}&rows=1`;
+    const go = window.MOAuth && window.MOAuth.fetch ? window.MOAuth.fetch(url) : fetch(url);
+    btn.disabled = true;
+    btn.textContent = "Preparing…";
+    go.then((r) => r.json().catch(() => ({ ok: false })))
+      .then((d) => {
+        if (!d || !d.ok || !Array.isArray(d.rows)) throw new Error("rows");
+        const lines = [COLUMNS.map((c) => cell(c[0])).join(",")]
+          .concat(d.rows.map((r) => COLUMNS.map((c) => cell(r[c[1]])).join(",")));
+        // The byte-order mark tells Excel the file is UTF-8, so curly
+        // quotes and accented names survive.
+        const blob = new Blob([`\ufeff${lines.join("\r\n")}`], { type: "text/csv;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `tfr-survey-${new Date().toISOString().slice(0, 10)}${days !== "0" ? `-last-${days}-days` : ""}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+        btn.textContent = `Exported ${num(d.rows.length)} responses`;
+      })
+      .catch(() => { btn.textContent = "Export failed. Try again"; })
+      .finally(() => { btn.disabled = false; setTimeout(() => { btn.textContent = "Export to spreadsheet"; }, 4000); });
+  }
+  if (statusEl) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "admin-tfr-export";
+    btn.textContent = "Export to spreadsheet";
+    btn.addEventListener("click", () => exportCsv(btn));
+    statusEl.after(btn);
+  }
+
   if (rangeEl) rangeEl.addEventListener("change", load);
   load();
 }());
