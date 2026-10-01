@@ -55,6 +55,20 @@
     return ws.length && ws.length <= 3 ? ws : null;
   }
 
+  /* MereO delta (2026-10-01): show the words as the reader typed them.
+     fold() is for matching (j→i, v→u, accents off), so a search for
+     "justification" was announced as “iustification”. Each folded word is
+     mapped back to its first typed form for display only; matching is
+     unchanged. Re-apply when re-vendoring this file. */
+  function shown(query, ws) {
+    const typed = new Map();
+    (String(query || '').match(/[\p{L}\p{M}'’-]+/gu) || []).forEach(t => {
+      const f = fold(t).replace(/['’-]/g, '');
+      if (!typed.has(f)) typed.set(f, t.toLowerCase().replace(/['’-]/g, ''));
+    });
+    return (ws || []).map(w => typed.get(w) || w);
+  }
+
   let styled = false;
   function style() {
     if (styled) return; styled = true;
@@ -128,7 +142,7 @@
     style();
     const box = document.createElement('section');
     box.className = 'wix'; box.setAttribute('aria-live', 'polite');
-    const quoted = ws.map(w => '“' + esc(w) + '”').join(' + ');
+    const quoted = shown(opts.query, ws).map(w => '“' + esc(w) + '”').join(' + ');
     box.innerHTML = `<h3>${quoted}${ws.length > 1 ? ' on the same page' : ''} — every text in the library</h3>
       <p class="wix-sub">Counted from the library’s word index: every page of every work, a duplicate edition once. <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
       <div class="wix-forms"></div><div class="wix-sum">Counting…</div><div class="wix-trad" role="group" aria-label="Tradition"></div><div class="wix-list"></div>`;
@@ -334,7 +348,7 @@
     const c = await count(opts.query, opts.post);
     if (my !== host.__wixSeq || !c || !c.works) return;
     style();
-    host.innerHTML = `<div class="wix wix-teaser"><b>${c.ws.map(w => '“' + esc(w) + '”').join(' + ')}</b> ${c.ws.length > 1 ? 'occur together on the pages of' : 'occurs in the text of'} <b>${n(c.works)} ${c.works === 1 ? 'work' : 'works'}</b> (with ${c.ws.length > 1 ? 'their' : 'its'} other forms). The list below matches titles and headings only. <button type="button" class="wix-go">List every text</button></div>`;
+    host.innerHTML = `<div class="wix wix-teaser"><b>${shown(opts.query, c.ws).map(w => '“' + esc(w) + '”').join(' + ')}</b> ${c.ws.length > 1 ? 'occur together on the pages of' : 'occurs in the text of'} <b>${n(c.works)} ${c.works === 1 ? 'work' : 'works'}</b> (with ${c.ws.length > 1 ? 'their' : 'its'} other forms). The list below matches titles and headings only. <button type="button" class="wix-go">List every text</button></div>`;
     host.querySelector('button').onclick = () => opts.open();
   }
   window.FRWordIndex = { mount, teaser, count, inflect, forms, words, fold };
