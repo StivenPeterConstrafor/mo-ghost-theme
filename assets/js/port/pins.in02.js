@@ -61,11 +61,13 @@ function hydrate(){[...document.querySelectorAll(".card[data-x]")].slice(0,24).f
   const [s,p]=a.dataset.x.split("|");
   excerpt(s,+p).then(tx=>{if(tx&&!a.querySelector(".x"))a.insertAdjacentHTML("beforeend",'<span class=x>'+esc(tx)+'…</span>');});});}
 // unified cross-corpus scheme: items may carry site fr|pld|po (absent = fr).
+// Every site opens in our reader (Stiven 2026-10-01: nothing on MereO touches Vercel): a source doc id maps onto our slug.
+const aqSlug=x=>'aq-'+String(x||'').split('.html')[0].toLowerCase().replace(/_/g,'-');
 const SITES={fr:{name:"The Faith Received",url:(s,p)=>"/the-faith-received/read/?w="+encodeURIComponent(s)+"#b"+p+"-0"},
-  pld:{name:"Patrologia Latina",url:(s,p)=>"https://pld-patrologia-latina.vercel.app/read/"+s+".html#b"+p},
-  po:{name:"Patrologia Orientalis",url:(s,p)=>"https://patrologia-orientalis.vercel.app/read/"+s+".html#b"+p},
-  pg:{name:"Patrologia Graeca",url:(s,p)=>"https://patrologia-graeca.vercel.app/read/"+s+".html#c"+p},
-  aq:{name:"Aquinas Studies",url:(s,p)=>"https://aquinas-studies.vercel.app/read/"+s+".html#b"+p}};
+  pld:{name:"Patrologia Latina",url:(s,p)=>SITES.fr.url("pld-"+s,p)},
+  po:{name:"Patrologia Orientalis",url:(s,p)=>SITES.fr.url("po-"+s,p)},
+  pg:{name:"Patrologia Graeca",url:(s,p)=>SITES.fr.url("pg-"+s,p)},
+  aq:{name:"Aquinas Studies",url:(s,p)=>SITES.fr.url(aqSlug(s),p)}};
 const ikey=it=>notebookTools().itemKey(it);
 function mvBtns(k,index){const act=COLS.find(c=>c.id===ACTIVE);if(!act||act.sort||COLLECTION_QUERY||COLLECTION_KIND)return '';return '<button type="button" class="mv" data-mv="'+esc(k)+'" data-item-index="'+index+'" data-d="-1"'+(index===0?' disabled':'')+'>Move up</button><button type="button" class="mv" data-mv="'+esc(k)+'" data-item-index="'+index+'" data-d="1"'+(index===act.items.length-1?' disabled':'')+'>Move down</button>';}
 function card(it,removable){

@@ -7,18 +7,19 @@
   const unique=values=>[...new Set(values.filter(Boolean))];
   const labelOf=value=>typeof value==='string'?value:str(value?.name||value?.a||value?.t);
   function hash(value){let a=2166136261,b=2246822519;for(const c of str(value)){a=Math.imul(a^c.charCodeAt(0),16777619);b=Math.imul(b^c.charCodeAt(0),3266489917);}return (a>>>0).toString(16)+(b>>>0).toString(16);}
-  function safeURL(value){try{const u=new URL(str(value),root.location?.origin||'https://thefaithreceived.vercel.app');return value&&['https:','http:'].includes(u.protocol)?u.href:'';}catch(_){return '';}}
+  function safeURL(value){try{const u=new URL(str(value),root.location?.origin||'https://mereorthodoxy.com');return value&&['https:','http:'].includes(u.protocol)?u.href:'';}catch(_){return '';}}
   function sourceURL(source){
     const explicit=safeURL(source.url||source.u||source.link);if(explicit)return explicit;
     if(!source.slug)return '';
     const slug=encodeURIComponent(str(source.slug)),page=present(source.page)?encodeURIComponent(str(source.page)):'';
-    const sites={pld:'https://pld-patrologia-latina.vercel.app/read/',po:'https://patrologia-orientalis.vercel.app/read/',pg:'https://patrologia-graeca.vercel.app/read/',aq:'https://aquinas-studies.vercel.app/read/'};
-    if(sites[source.site])return sites[source.site]+slug+'.html'+(page?'#'+(source.site==='pg'?'c':'b')+page:'');
-    return (root.location?.origin||'https://thefaithreceived.vercel.app')+'/the-faith-received/read/?w='+slug+(source.pldpart?'&pldpart='+encodeURIComponent(source.pldpart):'')+(source.sourcePath?'&section='+encodeURIComponent(source.sourcePath):'')+(source.sourceKey?'&heading='+encodeURIComponent(source.sourceKey):'')+(source.row?'#'+encodeURIComponent(str(source.row)):page?'#b'+page+'-0':'');
+    // Source-site items open in our reader too (Stiven 2026-10-01: nothing on MereO touches Vercel): doc id -> our slug.
+    const pfx={pld:'pld-',pg:'pg-',po:'po-'}[source.site],ours=pfx?pfx+str(source.slug):source.site==='aq'?'aq-'+str(source.slug).split('.html')[0].toLowerCase().replace(/_/g,'-'):'';
+    if(ours)return (root.location?.origin||'https://mereorthodoxy.com')+'/the-faith-received/read/?w='+encodeURIComponent(ours)+(page?'#b'+page+'-0':'');
+    return (root.location?.origin||'https://mereorthodoxy.com')+'/the-faith-received/read/?w='+slug+(source.pldpart?'&pldpart='+encodeURIComponent(source.pldpart):'')+(source.sourcePath?'&section='+encodeURIComponent(source.sourcePath):'')+(source.sourceKey?'&heading='+encodeURIComponent(source.sourceKey):'')+(source.row?'#'+encodeURIComponent(str(source.row)):page?'#b'+page+'-0':'');
   }
   function sourcesOf(item){
     const rows=list(item.research?.sources).concat(list(item.askSources));
-    const primary=safeURL(item.url||item.u),conversationLink=primary&&['https://thefaithreceived.vercel.app',root.location?.origin].includes(new URL(primary).origin)&&/^\/(ask|web|fathers|topics|pins|desk|search)(?:\.html)?$/.test(new URL(primary).pathname);
+    const primary=safeURL(item.url||item.u),conversationLink=primary&&['https://mereorthodoxy.com',root.location?.origin].includes(new URL(primary).origin)&&/^\/(ask|web|fathers|topics|pins|desk|search)(?:\.html)?$/.test(new URL(primary).pathname);
     if((item.slug||primary&&!conversationLink)&&!rows.some(source=>source&&(item.slug&&str(source.slug)===str(item.slug)&&str(source.page)===str(item.page)||(primary&&sourceURL(source)===primary))))rows.push({slug:item.slug,page:item.page,url:item.url||item.u,cite:item.cite||item.label,author:item.author,title:item.title,site:item.site});
     // Preserve every supplied source record. Two quotations can share one page;
     // the facet index can share their location without deleting either citation.

@@ -30,10 +30,12 @@
 
   if (!window.MOCorpora) return;
 
+  // Copied from the source sites into our R2 (2026-10-01); see the
+  // CATALOGUES note in faith-corpora.js.
   const REFINDEX = {
-    pld: "https://pld-patrologia-latina.vercel.app/data/refindex.json",
-    pg: "https://patrologia-graeca.vercel.app/data/refindex.json",
-    po: "https://patrologia-orientalis.vercel.app/data/refindex.json",
+    pld: window.MOCorpora.url("pld", "/data/refindex.json"),
+    pg: window.MOCorpora.url("pg", "/data/refindex.json"),
+    po: window.MOCorpora.url("po", "/data/refindex.json"),
   };
   const loaded = new Map();
 

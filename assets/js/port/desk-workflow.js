@@ -3,7 +3,7 @@
   'use strict';
   const str=v=>v==null?'':String(v),arr=v=>Array.isArray(v)?v:[];
   const esc=v=>str(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function safeURL(value){try{const u=new URL(value,root.location?.origin||'https://thefaithreceived.vercel.app');return value&&/^https?:$/.test(u.protocol)?u.href:'';}catch(_){return '';}}
+  function safeURL(value){try{const u=new URL(value,root.location?.origin||'https://mereorthodoxy.com');return value&&/^https?:$/.test(u.protocol)?u.href:'';}catch(_){return '';}}
   function sourceURL(s){const explicit=safeURL(s.url||s.u||s.href);if(explicit)return explicit;if(!s.slug)return '';return '/the-faith-received/read/?w='+encodeURIComponent(s.slug)+(s.pldpart?'&pldpart='+encodeURIComponent(s.pldpart):'')+(s.sourcePath?'&section='+encodeURIComponent(s.sourcePath):'')+(s.sourceKey?'&heading='+encodeURIComponent(s.sourceKey):'')+(s.row?'#'+encodeURIComponent(s.row):s.page!=null?'#b'+encodeURIComponent(String(s.page))+'-0':'');}
   function citation(s){return s.cite||[s.author,s.title||s.slug,s.page!=null?'location '+s.page:''].filter(Boolean).join(', ')||sourceURL(s);}
   function readingHistory(raw){return Object.entries(raw||{}).filter(([key,r])=>r&&key!=='undefined'&&(r.slug||r.title)&&r.page!=null).map(([key,r])=>({...r,slug:r.slug||key,page:String(r.page),url:sourceURL({...r,slug:r.slug||key,page:r.page}),author:arr(r.author).length?r.author.join(', '):str(r.author)})).sort((a,b)=>(b.ts||0)-(a.ts||0));}

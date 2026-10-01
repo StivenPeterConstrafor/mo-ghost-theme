@@ -99,10 +99,23 @@
   const LIBRARY = "https://mo-tfr-library.mo-podcast-feed.workers.dev";
 
   // Every corpus below is ported with permission — MO is working with
-  // the author of these sites. Patrologia Latina's UI is passphrase-
-  // gated; its data endpoints are not, and we use them by agreement,
-  // not because they happen to answer.
-  // aquinas-studies.vercel.app publishes Aquinas and Augustine in one
+  // the author of these sites.
+  //
+  // NOTHING HERE IS FETCHED FROM VERCEL (Stiven, 2026-10-01: "make sure
+  // nothing on the MereO site deals with Vercel"). The catalogues and
+  // indexes the Early English Books, Patrologia Latina, Graeca and
+  // Orientalis entries used to read off his *.vercel.app sites are
+  // copied into our R2 under v1/catalogues/<corpus>/, keeping the
+  // source sites' /data/ layout, so every corpus-relative path below
+  // (catalogue, indexes, extras, partyByAuthor) resolves unchanged
+  // against CATALOGUES(id). They are snapshots of 2026-10-01: if a
+  // source catalogue changes, copy it again (wrangler r2 object put
+  // mo-tfr-library/v1/catalogues/<corpus>/data/<file> --remote).
+  // Full text never came from here: it is served by the reader from
+  // the same R2 (TEI under v1/tei/, shards under v1/works/).
+  const CATALOGUES = (id) => `${LIBRARY}/v1/catalogues/${id}`;
+
+  // Aquinas Studies publishes Aquinas and Augustine in one
   // nav.json. No group name says which is which, but the file ids run
   // a single counter across the whole catalogue and the split is exact
   // and contiguous: 1–150 Aquinas, ending with the Opuscula sermons;
@@ -661,7 +674,7 @@
       // a theological library has no use for them and carrying
       // them makes the library harder to search.
       short: "The English divines the library holds, 1473–1700",
-      base: "https://eebo-backup.vercel.app",
+      base: CATALOGUES("eebo"),
       catalogue: "/data/catalogue.json",
       // Exactly the Early English Books the library itself holds — the
       // corpus site's English Divines shelf, v1/works-index.json's eebo-
@@ -771,7 +784,7 @@
       id: "pld",
       label: "Patrologia Latina",
       short: "Migne, the Latin Fathers",
-      base: "https://pld-patrologia-latina.vercel.app",
+      base: CATALOGUES("pld"),
       catalogue: "/data/nav.json",
       // nav.docs is an object keyed by doc id, not an array.
       pick: (d) => Object.keys(d.docs || {}).map((k, i) => ({ _id: k, _i: i, ...d.docs[k] })),
@@ -820,7 +833,7 @@
       id: "pg",
       label: "Patrologia Graeca",
       short: "Migne, the Greek Fathers",
-      base: "https://patrologia-graeca.vercel.app",
+      base: CATALOGUES("pg"),
       // nav.docs holds the 2,976 individual works and nav.authors the
       // 494 authors. voltoc.json only describes the 161 physical
       // volumes, which is shelving, not a catalogue.
@@ -848,6 +861,10 @@
       blurbs: "/v1/notes/pg-works.json",
       modernize: true,
       reader: "html-extract",
+      // Shelf search (faith-text.js) reads the same TEI the reader
+      // opens, never the source site's HTML. The Greek is in the TEI;
+      // the English sits beside it, one string per printed column.
+      tei: { base: `${LIBRARY}/v1/tei/pg/`, english: `${LIBRARY}/v1/pgen/` },
       readable: true,
       // /read/<id>.html, the same page the source site serves. No
       // per-work JSON is published; the markup is clean enough to
@@ -947,26 +964,25 @@
       id: "po",
       label: "Eastern Fathers",
       short: "Syriac, Coptic, Armenian, Ge'ez & Arabic Fathers",
-      base: "https://patrologia-orientalis.vercel.app",
+      base: CATALOGUES("po"),
       catalogue: "/data/nav.json",
       // Same shape as PLD: nav.docs keyed by id. nav.volumes and
       // nav.authors are lookup lists, not the works themselves.
       pick: (d) => Object.keys(d.docs || {}).map((k, i) => ({ _id: k, _i: i, ...d.docs[k] })),
       indexes: { topics: "/data/topics.json", refindex: "/data/refindex.json" },
       extras: { titles: "/data/titles_en.json", authreg: "/data/authreg.json" },
-      // LICENSING — OPEN BY DECISION, NOT BY OVERSIGHT. The owner's
-      // port handoff (website/migration/ghost-port-handoff.md §8) says
-      // PO's source text came from a licensed library service and the
-      // PO mount must stay GATED. That was satisfied only incidentally
-      // by faith-gate.js, the shared-password overlay that sat over the
-      // whole of TFR before launch. That overlay was removed on
-      // 2026-09-04 and PO is now readable by anyone.
-      //
-      // Ian was shown this comment and chose to ship PO open rather
-      // than take the documented fallback (`readable: false`) or build
-      // a server-side member gate. So `readable: true` below is a
-      // deliberate acceptance of the licensing exposure, not a leftover.
-      // If the licensor ever objects, the one-line fix is
+      // LICENSING. Governed by Stiven's PO distribution policy
+      // (tfr-backend reference/docs/PO-DISTRIBUTION.md, researched
+      // 2026-09-04, widened 2026-09-26), which supersedes the "licensed
+      // library service, keep it gated" note in the port handoff (§8).
+      // US law, 95 years: tomes 1-22 and Patrologia Syriaca 1-3 are
+      // public domain and ship whole. Tomes 23+ are Brepols-side: our
+      // machine English and the original-language transcription ship;
+      // the printed translations, the editors' introductions and the
+      // scans must never appear here. The reader enforces this by
+      // reading only Stiven's compliant TEI (v1/tei/po/) and manifest
+      // (v1/po-distribution.json). This catalogue is metadata only.
+      // If a rights holder objects, the one-line fix is
       // `readable: false` — every consumer already treats that as
       // "listed but not readable" (faith-reader.js, faith-resolve.js,
       // faith-library-browse.js, faith-indexes.js).
@@ -986,6 +1002,9 @@
       blurbs: "/v1/notes/po-works.json",
       modernize: true,
       reader: "html-extract",
+      // Shelf search (faith-text.js) reads the same TEI the reader
+      // opens, never the source site's HTML.
+      tei: { base: `${LIBRARY}/v1/tei/po/` },
       readable: true,
       // /read/<id> — read/<id>.html 308-redirects to it.
       textPath: (id) => `/read/${id}`,

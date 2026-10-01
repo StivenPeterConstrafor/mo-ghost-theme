@@ -276,7 +276,7 @@
   // { byref: { "Genesis 1": ["6", "231", …] } } — ids into the EEBO
   // catalogue, so titles are resolved from the loaded collection.
   function loadEeboScripture(catalogue) {
-    return fetch("https://eebo-backup.vercel.app/data/scripture.json")
+    return fetch(`${BLOB}/v1/catalogues/eebo/data/scripture.json`)
       .then((r) => r.json())
       .then((d) => {
         const byId = new Map(catalogue.map((w) => [String(w.id), w]));
@@ -1681,10 +1681,10 @@
       .then((cat) => loadTopics(`${BLOB}/v1/topics.json`, "tfr", cat))
       .catch(() => {}),
     window.MOFaithCatalogue.load("pld")
-      .then((cat) => loadTopics("https://pld-patrologia-latina.vercel.app/data/topics.json", "pld", cat))
+      .then((cat) => loadTopics(`${BLOB}/v1/catalogues/pld/data/topics.json`, "pld", cat))
       .catch(() => {}),
     window.MOFaithCatalogue.load("po")
-      .then((cat) => loadTopics("https://patrologia-orientalis.vercel.app/data/topics.json", "po", cat))
+      .then((cat) => loadTopics(`${BLOB}/v1/catalogues/po/data/topics.json`, "po", cat))
       .catch(() => {}),
   ]).then(() => {
     renderScripture();

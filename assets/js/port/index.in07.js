@@ -22,7 +22,7 @@ OMNIBOX.attach({
     Object.entries(byA).sort((x,y)=>y[1].length-x[1].length)
       .forEach(([a,g])=>rows.push({k:"author",t:a,s:(dOf(a)?dOf(a)+" · ":"")+g.length+(g.length>1?" works":" work")+(g[0].tradition?" · "+g[0].tradition:""),href:"/#a="+encodeURIComponent(a),x:""}));
     ws.forEach(w=>rows.push({k:"work",t:(typeof TITLES!=="undefined"&&TITLES[w.slug])||w.title||w.slug,s:[w.author,w.volume,w.tradition].filter(Boolean).join(" · "),href:"/the-faith-received/read/?w="+encodeURIComponent(w.slug),x:(w.title||"")}));
-    {const SITE={pl:["Latin Fathers","https://pld-patrologia-latina.vercel.app/#a="],pg:["Greek Fathers","https://patrologia-graeca.vercel.app/#a="],po:["Oriental Fathers","https://patrologia-orientalis.vercel.app/#a="]};
+    {const A="/the-faith-received/author/?a=",SITE={pl:["Latin Fathers",A],pg:["Greek Fathers",A],po:["Oriental Fathers",A]}; // our author pages, not the source sites (2026-10-01)
      (SA||[]).forEach(([n,d,c])=>{const s=SITE[c];if(s)rows.push({k:"father",t:n,s:(d?d+" · ":"")+s[0],href:s[1]+encodeURIComponent(n),x:s[0]});});}
     return rows;},
   escapes:q=>{

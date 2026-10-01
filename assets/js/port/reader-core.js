@@ -1290,7 +1290,7 @@ function buildRows(lb,eb,first){
 function coinsOf(D){
   D=D||{};
   const kv=[["ctx_ver","Z39.88-2004"],["rft_val_fmt","info:ofi/fmt:kev:mtx:book"],
-    ["rfr_id","info:sid/thefaithreceived.vercel.app"],["rft.genre","book"],
+    ["rfr_id","info:sid/mereorthodoxy.com"],["rft.genre","book"],
     ["rft.btitle",D.title||""],["rft.title",D.title||""],["rft.au",D.author||""],
     ["rft.pub","The Faith Received"],["rft.language","lat"]];
   if(D.volume)kv.push(["rft.volume",D.volume]);
@@ -4533,7 +4533,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
   function relatedState(kind,pg,error,retry){
     const box=$('#rpB'),preview=kind==='preview',missing=kind==='missing',auth=error?.status===401||error?.status===403;
     const message=preview?'Related passages use the live library. This local preview does not include its search service.':missing?'No similarity results are available for this page yet. You can still search the library or ask about this passage.':auth?'Your library session needs renewing. Open the live reader to sign in, then try again.':'Related passages could not load. Your place in the book is unchanged.';
-    box.innerHTML='<div class="rp-note" role="status">'+esc(message)+'</div><div class="rp-act">'+(preview||auth?'<a href="'+esc(liveRelatedReader(pg))+'" target="_blank" rel="noopener">Open this page on the live site</a>':'')+(!preview?'<button type="button" class="rp-refresh" id="rpRetry">Retry related passages</button><a href="/the-faith-received/ask/?q='+encodeURIComponent('Help me understand '+(DATA?.title||relatedSlug())+', '+locOf(pg)+'.')+'" target="_blank" rel="noopener">Ask about this page</a>':'')+'<a href="https://thefaithreceived.vercel.app/?q='+encodeURIComponent(DATA?.author||DATA?.title||relatedSlug())+'" target="_blank" rel="noopener">Search the library</a></div>';
+    box.innerHTML='<div class="rp-note" role="status">'+esc(message)+'</div><div class="rp-act">'+(preview||auth?'<a href="'+esc(liveRelatedReader(pg))+'" target="_blank" rel="noopener">Open this page on the live site</a>':'')+(!preview?'<button type="button" class="rp-refresh" id="rpRetry">Retry related passages</button><a href="/the-faith-received/ask/?q='+encodeURIComponent('Help me understand '+(DATA?.title||relatedSlug())+', '+locOf(pg)+'.')+'" target="_blank" rel="noopener">Ask about this page</a>':'')+'<a href="/the-faith-received/search/?q='+encodeURIComponent(DATA?.author||DATA?.title||relatedSlug())+'" target="_blank" rel="noopener">Search the library</a></div>';
     const button=box.querySelector('#rpRetry');if(button)button.onclick=retry;
   }
   function panel(){if(pn)return pn;
@@ -4735,10 +4735,13 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
       hydrate(b);}
     const re=$("#rpRe");if(re)re.onclick=()=>{txtMode=false;if(cur)load(cur);};}
   function fRow(f){
-    const base=f.src==='PO'?'https://patrologia-orientalis.vercel.app':f.src==='AQ'?'https://aquinas-studies.vercel.app':'https://pld-patrologia-latina.vercel.app';
-    const frag=f.src==='AQ'?'#'+(f.anchor||''):'#b'+(f.anchor||'');   // Aquinas anchors are r-ids (#r123), PL/PO are #b<page>
+    // Our own reader, never the source sites (Stiven 2026-10-01: nothing on MereO touches Vercel). Their doc ids map onto
+    // our slugs: PO 15 -> po-15, PL 7607 -> pld-7607, Aquinas Sent_I_1 -> aq-sent-i-1. Aquinas r-ids (#r123) have no
+    // anchor in our reader, so those open the work at its start; PL/PO pages land on #b<page>-0.
+    const slug=f.src==='PO'?'po-'+f.doc:f.src==='AQ'?'aq-'+String(f.doc||'').toLowerCase().replace(/_/g,'-'):'pld-'+f.doc;
+    const a=String(f.anchor||''),frag=f.src==='AQ'||!a?'':'#b'+encodeURIComponent(a.includes('-')?a:a+'-0');
     const inner='<span class=cit>'+esc(f.cit||f.src)+(f.era?' <span class=era>s. '+_rom(f.era)+'</span>':'')+'</span><span class=tx>'+esc(f.tx)+'…</span>';
-    return f.doc?'<a class=rp-f href="'+base+'/the-faith-received/read/'+encodeURIComponent(f.doc)+'.html'+frag+'" target=_blank style="display:block;text-decoration:none;color:inherit">'+inner+'</a>'
+    return f.doc?'<a class=rp-f href="/the-faith-received/read/?w='+encodeURIComponent(slug)+frag+'" target=_blank style="display:block;text-decoration:none;color:inherit">'+inner+'</a>'
                 :'<div class=rp-f>'+inner+'</div>';}
   // ── auto-saved parallels: every lookup that returns results is kept, no action needed
   // (owner 2026-07-21: "allow me to save these parallels automatically"). localStorage, cap 40,

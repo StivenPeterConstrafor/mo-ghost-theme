@@ -1,6 +1,9 @@
 
 const $=s=>document.querySelector(s),el=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
 const esc=s=>(s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+// Aquinas links open in our reader, not Aquinas Studies (Stiven 2026-10-01: nothing on MereO touches Vercel).
+// "Sent_I_1.html#r171" -> aq-sent-i-1; the r-id has no anchor here, so the work opens at its start.
+const aqRead=x=>"/the-faith-received/read/?w="+encodeURIComponent("aq-"+String(x||"").split(".html")[0].toLowerCase().replace(/_/g,"-"));
 let WORKS=[],OWNER=false,MODE="trad",TRAD_ORDER=[],REVIEW_COV=null,BLURBS={},AUTHORS={},TITLES={};
 let VIEW="library",CONFS=null,CONF_FACET="all",CONF_TRAD="all",CONF_Q="";   // Confessions tab (Reformed + Lutheran)
 // blurb popover opens to the RIGHT of the card; flip LEFT when it would overflow the viewport (seamless side tooltip)
@@ -1348,11 +1351,11 @@ function renderTopics(){
          if(bk&&window.__SD&&S[bk][window.__SD]){
            const la=((S._lombard||{})[bk]||{})[window.__SD];
            if(la){const d0=el("div","topicwork confbox");
-             d0.innerHTML=`<div class=tw1><a class=twt href="https://pld-patrologia-latina.vercel.app/read/7607.html#${la}" target=_blank rel=noopener>Peter Lombard \u2014 Sententiae (the text itself)</a><span class=twa>c. 1155 \u00b7 PL 192 \u00b7 opens on Patrologia Latina</span></div>`;
+             d0.innerHTML=`<div class=tw1><a class=twt href="/the-faith-received/read/?w=pld-7607" target=_blank rel=noopener>Peter Lombard \u2014 Sententiae (the text itself)</a><span class=twa>c. 1155 \u00b7 PL 192 \u00b7 Patrologia Latina</span></div>`;
              lx.appendChild(d0);}
            const ta=((S._aquinas||{})[bk]||{})[window.__SD];
            if(ta){const d1=el("div","topicwork confbox");
-             d1.innerHTML=`<div class=tw1><a class=twt href="https://aquinas-studies.vercel.app/read/${ta}" target=_blank rel=noopener>Thomas Aquinas \u2014 Scriptum super Sententias, this distinctio</a><span class=twa>c. 1254 \u00b7 Latin\u2225English on Aquinas Studies</span></div>`;
+             d1.innerHTML=`<div class=tw1><a class=twt href="${aqRead(ta)}" target=_blank rel=noopener>Thomas Aquinas \u2014 Scriptum super Sententias, this distinctio</a><span class=twa>c. 1254 \u00b7 Latin\u2225English</span></div>`;
              lx.appendChild(d1);}
            {const ROM=["","I","II","III","IV"];const act=el("div","cellact");
             act.innerHTML=`<a class=lchip href="#ask=${encodeURIComponent(`Sentences Book ${ROM[bk]||bk}, dist. ${window.__SD} \u2014 how do the commentators treat this distinction?`)}">\u2726 Ask about this distinctio</a>`;
@@ -1413,8 +1416,8 @@ function renderTopics(){
          if(pk&&window.__SMQ&&S[pk][window.__SMQ]){
            const cell=S[pk][window.__SMQ];const qn=window.__SMQ;
            const d0=el("div","topicwork confbox");
-           d0.innerHTML=`<div class=tw1><a class=twt href="https://aquinas-studies.vercel.app/read/${cell.aq}" target=_blank rel=noopener>Thomas Aquinas \u2014 ${pk} q.${qn}: ${esc(cell.t)}</a><span class=twa>Latin\u2225English on Aquinas Studies</span></div><div class=thx id=thx></div><div class=cellact>`+
-             `<a class=lchip href="https://aquinas-studies.vercel.app/read/${cell.aq}" target=_blank rel=noopener>Read Thomas \u2192</a>`+
+           d0.innerHTML=`<div class=tw1><a class=twt href="${aqRead(cell.aq)}" target=_blank rel=noopener>Thomas Aquinas \u2014 ${pk} q.${qn}: ${esc(cell.t)}</a><span class=twa>Latin\u2225English</span></div><div class=thx id=thx></div><div class=cellact>`+
+             `<a class=lchip href="${aqRead(cell.aq)}" target=_blank rel=noopener>Read Thomas \u2192</a>`+
              `<a class=lchip href="#ask=${encodeURIComponent(`Summa Theologiae ${pk} q.${qn} (${cell.t}) \u2014 how do the commentators treat this question?`)}">\u2726 Ask about this question</a>`+
              ((cell.works||[]).length&&typeof b64e==="function"?`<a class=lchip href="/the-faith-received/pins/#c=${b64e({v:3,n:("ST "+pk+" q."+qn+" \u2014 the bench"),items:cell.works.map(w=>["fr",w[0],w[1]])})}" target=_blank>\u26c9 bench \u2192 collection</a>`:"")+`</div>`;
            lx.appendChild(d0);
@@ -1472,7 +1475,7 @@ function renderTopics(){
         if(window.__ERAF==="em"&&!(y>=1500&&y<9999))return false;}
       if(!f)return true;const hay=((w.title||"")+" "+(w.author||"")+" "+(w.school||"")+" "+(w.tradition||"")+" "+w.secs.map(s=>s.t).join(" ")).toLowerCase();return hay.includes(f);});
     const head=el("div","browse-head");
-    head.innerHTML=`<h2>${esc(t.label)}</h2><span class=hint>${rows.length} of ${t.n} works · <a href="#topics" id=tback style="color:var(--accent)">← all topics</a> · <a href="#library" style="color:var(--accent)">the shelves</a> · <a class=dossier href="${dossierURL(t.label,rows)}" title="Open every listed work (at its first matching section) as a shareable collection on /pins">⛉ open as collection</a> · <a class=dossier href="#tr=${encodeURIComponent(t.label)}" title="One query across the WHOLE tradition — Greek, Latin, Oriental Fathers, Aquinas, and the early-modern reception, banded chronologically">⟶ trace across the tradition</a> · <a class=dossier href="https://patrologia-graeca.vercel.app/topics.html#t=${t.id}" title="This locus on the Greek Fathers' topic door — benches (Alexandrian · Antiochene · Cappadocian …) and column-exact sections; unknown loci fall back to their topic index">Greek Fathers →</a></span>`;
+    head.innerHTML=`<h2>${esc(t.label)}</h2><span class=hint>${rows.length} of ${t.n} works · <a href="#topics" id=tback style="color:var(--accent)">← all topics</a> · <a href="#library" style="color:var(--accent)">the shelves</a> · <a class=dossier href="${dossierURL(t.label,rows)}" title="Open every listed work (at its first matching section) as a shareable collection on /pins">⛉ open as collection</a> · <a class=dossier href="#tr=${encodeURIComponent(t.label)}" title="One query across the WHOLE tradition — Greek, Latin, Oriental Fathers, Aquinas, and the early-modern reception, banded chronologically">⟶ trace across the tradition</a></span>`;
     lib.appendChild(head);
     head.querySelector("#tback").onclick=e=>{e.preventDefault();SEL_TOPIC=null;try{history.replaceState(null,"","#topics");}catch(e2){}render();};
     if(t.ov){const ov=el("div");ov.innerHTML=ovHTML(t);lib.appendChild(ov.firstChild);}   // status quaestionis

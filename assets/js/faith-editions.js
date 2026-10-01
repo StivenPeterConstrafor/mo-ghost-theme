@@ -1,6 +1,6 @@
 /* The Faith Received — two editions of one work, marked where works are listed.
  *
- * Ported from thefaithreceived.vercel.app (2026-09-22). The corpus holds some works
+ * Ported from Stiven's corpus site (2026-09-22). The corpus holds some works
  * twice: as a FACSIMILE (the printed pages, scanned, with their text) and as a
  * BORN-DIGITAL text (a transcription without page scans) — Gerhard's Confessio
  * Catholica, Calov, Báñez, Laínez and sixteen more. Listed side by side they were

@@ -13,7 +13,7 @@
 (function () {
   'use strict';
   const BASE = (window.__FR_BLOB_BASE__ && !/TBD/.test(String(window.__FR_BLOB_BASE__)) ? String(window.__FR_BLOB_BASE__)
-    : 'https://0ss8v4l06kodnhp0.public.blob.vercel-storage.com').replace(/\/+$/, '');
+    : 'https://mo-tfr-library.mo-podcast-feed.workers.dev').replace(/\/+$/, '');
   const fold = w => String(w || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/ſ/g, 's').replace(/æ/g, 'ae').replace(/œ/g, 'oe')
     .replace(/j/g, 'i').replace(/v/g, 'u').replace(/ς/g, 'σ');
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

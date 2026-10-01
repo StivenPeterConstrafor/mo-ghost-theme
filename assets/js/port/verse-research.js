@@ -39,7 +39,7 @@ function mount(host,opts){
 let dead=false,current=Number(opts.verse)||Number(opts.verses[0]?.v)||1,mode='sources',query='',shelf='',period='',author='',work='',groupLimit=12,companionLimit=10,companionScope='all',selected=new Map(),openGroups=new Set(),rowLimits=new Map(),analysisLimits=new Map(),roster=[],workStates=new Map(),workBatch=false,draft='',topicLinks=new Map(),topicIndexState='idle';
 const book=opts.book.slug,ch=opts.chapter,books=opts.books||[],byVerse=new Map(opts.verses.map(v=>[+v.v,v])),bookNames=new Map(books.map(b=>[b.slug,b.book]));
 const readerURL=(w,p)=>opts.readURL?opts.readURL(w,p):'/the-faith-received/read/?w='+encodeURIComponent(w)+(p!==null?'#b'+encodeURIComponent(p)+'-0':'');
-const absoluteURL=(w,p)=>new URL(readerURL(w,p),root.location?.origin||'https://thefaithreceived.vercel.app').href;
+const absoluteURL=(w,p)=>new URL(readerURL(w,p),root.location?.origin||'https://mereorthodoxy.com').href;
 const verseURL=(b,c,v)=>root.FRResearchData?.verseURL?root.FRResearchData.verseURL(b,c,v,{view:'desk'}):'/the-faith-received/bible/#b/'+b+'/'+c+'?v='+v+'&view=desk';
 const verseText=()=>opts.text?.(current)||byVerse.get(current)?.t||'',translation=()=>typeof opts.translationLabel==='function'?opts.translationLabel(current):opts.translationLabel||'Translation not recorded';
 const cite=()=>opts.book.book+' '+ch+':'+current,reference=g=>(bookNames.get(g.book)||g.book)+' '+g.ch+':'+g.verse+(g.endVerse&&g.endVerse!==g.verse?'–'+g.endVerse:'');

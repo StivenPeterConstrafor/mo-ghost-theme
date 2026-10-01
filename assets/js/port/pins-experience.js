@@ -2,13 +2,14 @@
 (function(root,factory){const api=factory(root);if(typeof module==='object'&&module.exports)module.exports=api;else root.FRPinsExperience=api;})(typeof window==='undefined'?globalThis:window,function(root){
   'use strict';
   const str=x=>x==null?'':String(x),list=x=>Array.isArray(x)?x:[];
-  const origin=()=>root.location?.origin||'https://thefaithreceived.vercel.app';
+  const origin=()=>root.location?.origin||'https://mereorthodoxy.com';
   function safeURL(value){try{const u=new URL(str(value),origin());return value&&/^https?:$/.test(u.protocol)?u.href:'';}catch(_){return '';}}
   function sourceURL(item){
     const explicit=safeURL(item.url||item.u);if(explicit)return explicit;
     if(!item.slug)return '';
-    const sites={pld:'https://pld-patrologia-latina.vercel.app/read/',pg:'https://patrologia-graeca.vercel.app/read/',po:'https://patrologia-orientalis.vercel.app/read/',aq:'https://aquinas-studies.vercel.app/read/'};
-    if(sites[item.site])return sites[item.site]+encodeURIComponent(item.slug)+'.html'+(item.page!=null?'#'+(item.site==='pg'?'c':'b')+encodeURIComponent(str(item.page)):'');
+    // Source-site items open in our reader too (Stiven 2026-10-01: nothing on MereO touches Vercel): doc id -> our slug.
+    const pfx={pld:'pld-',pg:'pg-',po:'po-'}[item.site],slug=pfx?pfx+str(item.slug):item.site==='aq'?'aq-'+str(item.slug).split('.html')[0].toLowerCase().replace(/_/g,'-'):item.slug;
+    if(pfx||item.site==='aq')return new URL('/the-faith-received/read/?w='+encodeURIComponent(slug)+(item.page!=null?'#b'+encodeURIComponent(str(item.page))+'-0':''),origin()).href;
     const u=new URL('/the-faith-received/read/',origin());u.searchParams.set('w',item.slug);
     if(item.pldpart)u.searchParams.set('pldpart',item.pldpart);
     if(item.sourcePath)u.searchParams.set('section',item.sourcePath);

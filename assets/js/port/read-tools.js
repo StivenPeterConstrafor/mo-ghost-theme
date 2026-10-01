@@ -494,12 +494,13 @@ function __initSearch(){
         const en=(window.__TEN||{})[x.slug]||"";
         return '<a class=rsr href="/the-faith-received/read/?w='+encodeURIComponent(x.slug)+"#b"+x.page+'-0"><span class=rst>'+esc(en||w.title||x.slug)+"</span><span class=rsm>"+esc(w.author||"")+(w.author?" · ":"")+"pg. "+x.page+"</span></a>";}).join("")):"<div class=rsn>No library results"+(SCOPE.tr?" among "+esc(SCOPE.tr)+" works":"")+".</div>";
       const NAME={pl:"Patrologia Latina — Latin Fathers",pg:"Patrologia Graeca — Greek Fathers",po:"Patrologia Orientalis — Eastern Fathers"};
-      const BASE={pl:"https://pld-patrologia-latina.vercel.app",pg:"https://patrologia-graeca.vercel.app",po:"https://patrologia-orientalis.vercel.app"};
+      // Parallels open in our reader (Stiven 2026-10-01: nothing on MereO touches Vercel): source doc id -> our slug.
+      const PFX={pl:"pld-",pg:"pg-",po:"po-"},hop=(c,f)=>{const a=String(f.anchor||"");return "/the-faith-received/read/?w="+encodeURIComponent(PFX[c]+f.doc)+(a?"#b"+encodeURIComponent(a.includes("-")?a:a+"-0"):"");};
       order.forEach((c,i)=>{const rs=(((pats[i]||{}).results)||[]).filter(x=>x.score>=(c==="pg"?0.55:0.6));
         if(!rs.length)return;
         h+='<div class=rp-sec style="margin:1rem 0 .5rem">'+NAME[c]+'</div>'
           +rs.map(f=>{const inner='<span class=cit>'+esc(f.cit)+(f.era?' <span class=era>s. '+_rom(f.era)+'</span>':'')+'</span><span class=tx>'+esc(f.tx)+'…</span>';
-            return f.doc?'<a class=rp-f href="'+BASE[c]+'/the-faith-received/read/'+encodeURIComponent(f.doc)+'.html#b'+(f.anchor||'')+'" target=_blank style="display:block;text-decoration:none;color:inherit">'+inner+'</a>'
+            return f.doc?'<a class=rp-f href="'+hop(c,f)+'" target=_blank style="display:block;text-decoration:none;color:inherit">'+inner+'</a>'
                         :'<div class=rp-f>'+inner+'</div>';}).join("");});
       body.innerHTML=h;
     }catch(e){body.innerHTML="<div class=rsn>Corpus search unavailable.</div>";}}

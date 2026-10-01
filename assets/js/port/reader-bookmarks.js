@@ -39,7 +39,7 @@
   function makeRecord(context,place,environment=root){
     const slug=text(context.slug).trim(),title=text(context.title).trim();
     if(!slug||!title||!place||!present(place.page)||!place.row||transient(place.row))throw Error('The work and reading place must be identified before saving.');
-    const page=text(place.page),row=generatedHeading(place.row)?'b'+page+'-0':text(place.row),origin=context.origin||environment.location?.origin||'https://thefaithreceived.vercel.app',sourcePosition=sourceLocation(place.position);
+    const page=text(place.page),row=generatedHeading(place.row)?'b'+page+'-0':text(place.row),origin=context.origin||environment.location?.origin||'https://mereorthodoxy.com',sourcePosition=sourceLocation(place.position);
     const path=environment.location?.pathname==='/read.html'?'/read.html':'/the-faith-received/read/';
     const url=new URL(path,origin);url.searchParams.set('w',slug);url.searchParams.set('p',page);if(sourcePosition.sourcePath)url.searchParams.set('section',sourcePosition.sourcePath);if(sourcePosition.sourceKey)url.searchParams.set('heading',sourcePosition.sourceKey);url.hash=row;
     let label;try{label=context.pageLabel?.(page);}catch(_){}label=text(label)||'Location '+page;

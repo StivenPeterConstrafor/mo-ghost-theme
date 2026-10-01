@@ -10,7 +10,8 @@
  *   json-sections   one JSON document, sections of rows      (pld, mo)
  *   gz-toc          one gzipped document, a nested contents  (eebo)
  *   shards          meta plus page files, or TEI             (tfr, confessions)
- *   html-extract    a page of HTML, parsed by the corpus     (pg, po, augustine)
+ *   html-extract    a page of HTML, parsed by the corpus     (augustine)
+ *   tei             the reader's own TEI on our R2           (pg, po)
  *
  * MOText.load(corpus, id) flattens all four into the same thing: an
  * array of { loc, text }, where loc is what the reader can be sent to.
@@ -133,6 +134,41 @@
     return out;
   }
 
+  // PG and PO: the TEI the reader itself opens, on our R2, rather than
+  // the source site's HTML (Stiven, 2026-10-01: nothing on the site
+  // touches Vercel). The locator is the printed page or column, in the
+  // reader's own anchor form (#b<page>-0), so a hit lands on its page.
+  // PG keeps its English out of the TEI, one string per printed column;
+  // when the corpus names that file, its columns are searched too.
+  async function fromTei(c, id) {
+    const r = await fetch(`${c.tei.base}${encodeURIComponent(id)}.xml`);
+    if (!r.ok) throw new Error(String(r.status));
+    const doc = new DOMParser().parseFromString(await r.text(), "application/xml");
+    if (doc.getElementsByTagName("parsererror").length) throw new Error("tei");
+    const text = doc.getElementsByTagName("text")[0];
+    const out = [];
+    if (text) {
+      let page = "";
+      const walk = doc.createTreeWalker(text, 1 /* NodeFilter.SHOW_ELEMENT */);
+      for (let el = walk.nextNode(); el; el = walk.nextNode()) {
+        if (el.localName === "pb") {
+          page = el.getAttribute("n") || page;
+        } else if (el.localName === "p") {
+          const t = strip(el.textContent);
+          if (t) out.push({ loc: page ? `b${page}-0` : "", text: t, en: el.getAttribute("xml:lang") === "en" ? t : "" });
+        }
+      }
+    }
+    if (c.tei.english) {
+      const en = await getJSON(`${c.tei.english}${encodeURIComponent(id)}.json`).catch(() => null);
+      Object.keys(en || {}).forEach((col) => {
+        const t = strip(en[col]);
+        if (t) out.push({ loc: `b${col}-0`, text: t, en: t });
+      });
+    }
+    return out;
+  }
+
   const READERS = {
     "json-sections": fromJsonSections,
     "gz-toc": fromGzToc,
@@ -144,7 +180,7 @@
     const key = `${corpusId}:${id}`;
     if (cache.has(key)) return cache.get(key);
     const c = window.MOCorpora && window.MOCorpora.get(corpusId);
-    const fn = c && READERS[c.reader];
+    const fn = c && (c.tei ? fromTei : READERS[c.reader]);
     if (!fn) return Promise.resolve([]);
     return remember(key, fn(c, id).catch(() => []));
   }
