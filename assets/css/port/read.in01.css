@@ -865,12 +865,15 @@ sup.fnref:hover{color:var(--accent2);text-decoration:underline;text-underline-of
 .row.rhead.hedit .csub{color:var(--muted);font-size:1.08em;margin-bottom:.3rem}
 /* the editors' apparatus read IN THE TEXT (<note rend="apparatus">: Wadding's scholia, the commentators' notes; owner 2026-09-30
    "read the commentary and scholia but clearly label not hide"): full reading size, a rule on the left, the first paragraph of each
-   run labelled "Commentary · editors’ apparatus" — plainly not the author, never folded away */
-.row .la p.apx,.row .en p.apx,p.apx{border-left:3px solid var(--accent-soft,#d6c9b3);padding-left:.85rem;margin-left:0;text-indent:0!important;color:color-mix(in srgb,var(--fg) 88%,var(--muted))}
+   run labelled with its author: "Commentary · Hugh Cavellus" (meta.apparatus.by / p@resp; else "editors’ apparatus"). Owner 10-01
+   "i cant … distinguish it": the commentator's voice sits on a tinted band, a size down, never in the author's plain column */
+.row .la p.apx,.row .en p.apx,p.apx{border-left:3px solid var(--accent-soft,#d6c9b3);padding:.35rem .9rem .35rem .85rem;margin-left:0;text-indent:0!important;color:color-mix(in srgb,var(--fg) 86%,var(--muted));background:color-mix(in srgb,var(--accent-soft,#d6c9b3) 16%,transparent);border-radius:0 6px 6px 0;font-size:.95em}
 .row .la p.apx.apx-first,.row .en p.apx.apx-first,p.apx.apx-first{margin-top:1rem}
 p.apx>.rl:first-child{display:block;font:600 .75rem/1.3 var(--sans,system-ui,sans-serif);letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin:0 0 .45rem}
-p.apx>.rl:first-child::after{content:" · editors’ apparatus";text-transform:none;letter-spacing:.02em;font-weight:500}
-p.apx.apx-first:not(:has(>.rl:first-child))::before{content:attr(data-apx) " · editors’ apparatus";display:block;font:600 .75rem/1.3 var(--sans,system-ui,sans-serif);letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin:0 0 .45rem}
+p.apx>.rl:first-child::after{content:" · " attr(data-by);text-transform:none;letter-spacing:.02em;font-weight:500}
+p.apx.apx-first:not(:has(>.rl:first-child))::before{content:attr(data-apx) " · " attr(data-by);display:block;font:600 .75rem/1.3 var(--sans,system-ui,sans-serif);letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin:0 0 .45rem}
+p.apx.apx-sub{font:600 .8rem/1.35 var(--sans,system-ui,sans-serif);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-top:1.1rem;margin-bottom:.2rem}
+p.apx.apx-sub>.rl:first-child{margin-bottom:.35rem}
 .edchip{display:inline-block;font:600 .58rem/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:.22rem .45rem;margin:0 0 .5rem}
 .row.redit{border-left:2px solid var(--rule-soft);padding-left:.7rem}
 .row.redit .la,.row.redit .en{font-size:.93em;color:color-mix(in oklch,var(--fg) 84%,transparent)}

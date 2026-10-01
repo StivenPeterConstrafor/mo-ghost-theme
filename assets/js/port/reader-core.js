@@ -2599,6 +2599,8 @@ function build(){
   function teiKids(els){const q={head:[],body:[]};
     (els||[]).forEach(e=>{if(e.localName==="head"&&(e.getAttribute("rend")||"")!=="lemma")q.head.push(e);
       else if(e.localName==="p"||e.localName==="ab"||e.localName==="list"||e.localName==="quote"||e.localName==="table"||e.localName==="figure")q.body.push(e);});return q;}
+  function apxBy(e,ty){const by=(typeof DATA!=="undefined"&&DATA&&DATA.apparatus&&DATA.apparatus.by)||{};
+    return (e.getAttribute("resp")||by[ty]||by["*"]||"editors’ apparatus").replace(/^#/,"");}
   function teiInline(node){let out="";
     node.childNodes.forEach(c=>{
       if(c.nodeType===3)out+=inl(c.nodeValue,false);
@@ -2649,8 +2651,8 @@ function build(){
     // and scholia but clearly label not hide"): <note rend="apparatus" type="commentary|summary|sources"> is read where it
     // stands, full size, set off by a rule and labelled — never folded into the folio's notes, never mistaken for the author
     if(e.localName==="note"&&(e.getAttribute("rend")||"")==="apparatus"){
-      const ty=e.getAttribute("type")||"",lab=({summary:"Scholium",commentary:"Commentary",sources:"Sources",source:"Sources"})[ty]||"Editors’ note";
-      return `<p class="apx apx-${esc(ty)}" data-apx="${lab}" title="${lab} (the editors’ apparatus in this edition, not the author’s own text)">${teiInline(e)}</p>`;}
+      const ty=e.getAttribute("type")||"",lab=({summary:"Scholium",commentary:"Commentary",sources:"Sources",source:"Sources"})[ty]||"Editors’ note",by=apxBy(e,ty);
+      return `<p class="apx apx-${esc(ty)}" data-apx="${lab}" data-by="${esc(by)}" title="${lab} (${esc(by)}, not the author’s own text)">${teiInline(e)}</p>`;}
     if(e.localName==="note")return `<p class="mnp"><span class="mnote${(e.getAttribute("type")||"")==="headnote"?" headnote":""}">${teiInline(e)}</span></p>`;
     if(e.localName==="list"){
       if(e.getAttribute("type")==="eebo-list"){
@@ -2728,8 +2730,10 @@ function build(){
     if(_rnd==="monogram")return `<p class="monogram"${sourceAttrs}>${esc(e.textContent.trim())}</p>`;
     // the editors' apparatus as PARAGRAPHS (owner 2026-09-30 "they shouldnt be hidden in the notes"): <p rend="apparatus"
     // type="commentary|summary|sources"> reads in the text, set off, its run's leading <label> drawn as the label chip
-    const _apxT=_rnd==="apparatus"?(e.getAttribute("type")||""):"",_apxL=({summary:"Scholium",commentary:"Commentary",sources:"Sources",source:"Sources"})[_apxT]||"Editors’ note";
-    const cls=(_rnd==="caps")?' class="caps"':(_rnd==="editorial")?' class="editorial"':(_rnd==="apparatus")?` class="apx apx-${esc(_apxT)}" data-apx="${_apxL}" title="${_apxL} (the editors’ apparatus in this edition, not the author’s own text)"`:"";   // WA Einleitung / editor lines (2026-09-01): set petit like the edition
+    // WHO wrote it (owner 2026-10-01 "the commentary label is just wrong"): p@resp, else the work's meta.apparatus.by[type]
+    // (De Anima: Hugh Cavellus, whose own preface claims the scholia, the citations and the commentary), else the edition's editors
+    const _apxT=_rnd==="apparatus"?(e.getAttribute("type")||""):"",_apxL=({summary:"Scholium",commentary:"Commentary",sources:"Sources",source:"Sources"})[_apxT]||"Editors’ note",_apxB=_rnd==="apparatus"?apxBy(e,_apxT):"";
+    const cls=(_rnd==="caps")?' class="caps"':(_rnd==="editorial")?' class="editorial"':(_rnd==="apparatus")?` class="apx apx-${esc(_apxT)}" data-apx="${_apxL}" data-by="${esc(_apxB)}" title="${_apxL} (${esc(_apxB)}, not the author’s own text)"`:"";   // WA Einleitung / editor lines (2026-09-01): set petit like the edition
     let inner=pre+teiInline(e);
     // PILCROW BREAKS (owner 2026-08-30, Ockham/Biel/Lefèvre incunable-style prints): a ¶ inside running
     // text marks the start of a new paragraph in the print -- break there, keep the mark as a muted lead
@@ -3007,7 +3011,11 @@ function build(){
     let bi=0;sec.querySelectorAll(".row").forEach(rw=>{if(!rw.classList.contains("rhead"))rw.id="b"+pg.n+"-"+(bi++);});
     // the first paragraph of each run of the editors' apparatus carries the label (Commentary / Scholium / Sources), per lane
     ["la","en"].forEach(ln=>{let prev=null;sec.querySelectorAll("."+ln+" p").forEach(p=>{
-      if(p.classList.contains("apx")&&!(prev&&prev.classList.contains("apx")&&prev.dataset.apx===p.dataset.apx))p.classList.add("apx-first");prev=p;});});
+      if(p.classList.contains("apx")&&!(prev&&prev.classList.contains("apx")&&prev.dataset.apx===p.dataset.apx))p.classList.add("apx-first");prev=p;
+      if(p.classList.contains("apx")){const rl=p.querySelector(":scope>.rl:first-child");if(rl)rl.dataset.by=p.dataset.by||"";
+        // the commentator's own division lines ('CONCLUSIO IV', 'DUBIUM', 'Commentarius CONCLUSIO I') read as small heads inside his run
+        const bare=(rl?p.textContent.replace(rl.textContent,""):p.textContent).trim();
+        if(/^(\d+\.\s*)?(conclusio|conclusion|dubium|iubium|doubt)\b[\s\divxlc.:]{0,12}(aliud|alterum|another|other)?\.?$/i.test(bare))p.classList.add("apx-sub");}});});
     // UNPAIRED FLOWS (owner 2026-09-15, PG 78 col. 63): rows the PG aligner could not pair (printed-paragraphs basis) stack as two
     // independent columns — each lane keeps its printed paragraphs in order and no row asserts a pairing (the gappy-page rescue's
     // structure; deep-link ids move to the cell that carries text).
