@@ -41,7 +41,9 @@ let failed = 0;
 for (const c of event.commits || []) {
   const entries = [];
   let works = [];
-  for (const raw of String(c.message || "").split("\n")) {
+  // The subject line is never a changelog line: a commit titled
+  // "Changelog: ..." posted itself twice (2026-10-01).
+  for (const raw of String(c.message || "").split("\n").slice(1)) {
     const line = raw.trim();
     const w = /^Changelog-Works?:\s*(.+)$/i.exec(line);
     if (w) { works = w[1].split(/[,\s]+/).filter(Boolean); continue; }
