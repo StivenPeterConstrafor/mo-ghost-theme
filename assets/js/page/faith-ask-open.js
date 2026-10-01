@@ -156,6 +156,9 @@
   }
 
   function attempt() {
+    // A shared answer (?share=<id>) is the page; faith-ask-share.js shows it,
+    // and the workspace must not open over it (2026-10-01).
+    try { if (new URLSearchParams(window.location.search).has("share")) return; } catch (_) { /* no query */ }
     if (isOpen()) {
       const panel = document.getElementById("fra-workspace");
       if (panel) watchForClose(panel);
