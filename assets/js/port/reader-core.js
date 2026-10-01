@@ -4136,7 +4136,7 @@ function setFolio(pg){if(!pg||cur===pg.n)return;cur=pg.n;syncReaderHeader(pg.n);
       if(!wasOpen){const n=$(".nav-node.on");if(n)n.scrollIntoView({block:"center"});}};}}
   try{const lr=JSON.parse(lsGet("fr_lastread")||"{}");
     {const _q=new URLSearchParams(location.search);const _k=(window.frIS||function(x){return x;})(_q.get("ws"))||(window.frIS||function(x){return x;})(_q.get("w"))||DATA.slug||DATA.workspace;
-     lr[_k]={page:pg.n,slug:DATA.slug||"",title:DATA.title||"",author:DATA.author||"",ts:Date.now(),...(DATA.pld_source_view?{pldpart:DATA.pld_source_view.id}:{} )};
+     lr[_k]={page:pg.n,slug:DATA.slug||"",title:DATA.title_en||DATA.title||"",author:DATA.author||"",ts:Date.now(),...(DATA.pld_source_view?{pldpart:DATA.pld_source_view.id}:{} )};
      if(lr["undefined"])delete lr["undefined"];}
     lsSet("fr_lastread",JSON.stringify(lr));
     if(window._frSyncLastread)window._frSyncLastread(lr);
