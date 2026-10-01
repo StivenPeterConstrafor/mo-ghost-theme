@@ -20737,9 +20737,13 @@ body.mo-shelf-page #author-order-note { display: none; }
      the same trade the other way (a grid, nothing hidden); so here. The brand and the items flow as one row that breaks onto a
      second line, at sizes a phone can read. The drawers already drop as panels under the rail on a phone, so a two-line rail
      does not disturb them, and the page measures the rail's height (--mo-head) so nothing sits under it. */
-  .tfr-rail-inner { flex-wrap: wrap; overflow-x: visible; column-gap: 16px; row-gap: 0; padding: 2px 16px 3px; }
-  .tfr-rail-items { display: contents; }
-  .tfr-rail::after { display: none; }
+  /* ONE LINE AGAIN (Ian, 2026-10-01: "It should be one line and
+     scrollable"). The wrap above is reversed; the readable sizes below
+     stay. The row scrolls sideways as it did, and the fade at the right
+     edge (.tfr-rail::after, from the phone block earlier in this file) is
+     kept on, so an item running past the glass reads as "more this way"
+     rather than as cut off, which was the complaint the wrap answered. */
+  .tfr-rail-inner { flex-wrap: nowrap; overflow-x: auto; column-gap: 16px; row-gap: 0; padding: 2px 34px 3px 16px; }
   .tfr-rail-brand,
   .tfr-rail-inner > .tfr-rail-brand { font-size: 12px; letter-spacing: 0.07em; padding: 8px 0; margin-left: 0; }
   .tfr-rail-link { font-size: 12.5px; letter-spacing: 0.06em; padding: 8px 0; }
