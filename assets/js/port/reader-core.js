@@ -384,6 +384,7 @@ function appBank(laN,enN){
     if(/^(cx\d*|ccont\d*|dz\w*|x\d*)$/.test(id))return{sup:"†"};
     if(/^v\d+$/.test(id))return{lem:"variant"};                       // critical-apparatus collation notes ([^v1] lemma] reading)
     if(/^v[a-e]$/.test(id))return{sup:id[1]+")",lem:"variant"};          // lettered witness variants (Finke: a) B donans)
+    const dd=/^(\d{1,3})-\d{1,4}$/.exec(id);if(dd)return{sup:dd[1]};   // md2tei2 keeps ids unique across a book: the 14th page's note 1 is n-1-14 → label 1 (10-01, Wesley OT Notes)
     const mm=/^m(\d{1,3})$/.exec(id);if(mm)return{sup:mm[1]};          // vasquez-class numbered margin notes [^m23]
     const m=/^c(\d{1,3}|[a-z])(\d*)$/.exec(id);if(m)return{sup:m[1]+(m[2]||"")};return null;};
   const cell=(side,n)=>{if(!n)return `<div class="${side}" lang="${side==="la"?"la":"en"}"></div>`;
