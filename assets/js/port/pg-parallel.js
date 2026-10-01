@@ -36,7 +36,10 @@ function sourceColumns(doc){
  const scripts=t=>{const g=(t.match(/\p{Script=Greek}/gu)||[]).length,l=(t.match(/\p{Script=Latin}/gu)||[]).length,letters=(t.match(/\p{L}/gu)||[]).length;return {g,l,letters,pure:g/Math.max(letters,1)>=.85?'grc':l/Math.max(letters,1)>=.85?'la':null};};
  const cands=new Map();   // opening key + column -> candidate witnesses in role order
  for(const [key,opening]of Object.entries(out))for(const [column,candidates]of Object.entries(opening.columns)){const list=[];
-  for(const role of ['verified','reading','secondary','supplement']){const t=(candidates[role]||[]).join(' ').replace(/\s+/g,' ').trim(),s=scripts(t);if(s.g+s.l<(role==='verified'?1:100)||s.g+s.l<s.letters*.5)continue;if(role==='secondary'&&s.pure==='grc')continue;list.push({role,t,...s,mixedSecondary:role==='secondary'&&!s.pure});}
+  // A PAGE UNDER ITS NOTES (owner 2026-10-01, pg-5 col. 203): Migne can print two lines of the author above a page of variorum notes.
+  // With the notes in <note>s, as the shelf's other pages carry them, the column's own text is a few dozen letters, and the 100-letter
+  // crumb floor handed the page to the OCR zone (the notes again, garbled). On a page that carries notes the floor is 20.
+  for(const role of ['verified','reading','secondary','supplement']){const t=(candidates[role]||[]).join(' ').replace(/\s+/g,' ').trim(),s=scripts(t);const floor=role==='verified'?1:(role!=='supplement'&&opening.notes&&opening.notes.length?20:100);if(s.g+s.l<floor||s.g+s.l<s.letters*.5)continue;if(role==='secondary'&&s.pure==='grc')continue;list.push({role,t,...s,mixedSecondary:role==='secondary'&&!s.pure});}
   // (a MIXED secondary column -- the Onomasticon's Greek lemma + Latin gloss, PG 28 cols. 1619-1622 -- used to be refused as 'not the
   //  Latin witness' and the page showed nothing at all; it now enters the page-true split below, never the lane resolution.)
   cands.set(key+'|'+column,list);}
