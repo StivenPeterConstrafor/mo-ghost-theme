@@ -101,7 +101,9 @@
       page(list);
     });
   };
-  new MutationObserver(() => { if (!queued) { queued = true; requestAnimationFrame(scan); } })
+  // setTimeout, not requestAnimationFrame: a tab in the background never
+  // paints, so a frame callback would leave every list unpaged there.
+  new MutationObserver(() => { if (!queued) { queued = true; setTimeout(scan, 30); } })
     .observe(sections[0].parentNode, { childList: true, subtree: true });
   scan();
 }());
