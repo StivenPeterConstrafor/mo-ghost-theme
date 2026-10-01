@@ -340,9 +340,10 @@
         body: aiBody(p.lang ? `the ${escapeHtml(p.lang)}` : "the original"),
       };
       draw(intro);
-      if (!p.lang) {
-        // The language arrives once the source text has been read. The
-        // disclosure itself did not wait for it.
+      {
+        // The language arrives once the source text has been read, or is
+        // refined (Latin and Greek) once the page shows a mixed source.
+        // The disclosure itself did not wait for it.
         document.addEventListener("fr-provenance-lang", (e) => {
           const lang = e && e.detail && e.detail.lang;
           if (!lang) return;

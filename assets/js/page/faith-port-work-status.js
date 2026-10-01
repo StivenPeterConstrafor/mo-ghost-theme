@@ -172,6 +172,28 @@
     });
   }
 
+  // PL volumes print some Greek beside the Latin (the African bishops'
+  // letter to Theodore, pld-3885) while every paragraph is tagged Latin
+  // upstream. Resolves "Latin and Greek" once the page shows a real share
+  // of Greek script, "" if it never does.
+  function readLatinGreek(limitMs) {
+    return new Promise((done) => {
+      const t0 = Date.now();
+      const tick = () => {
+        const text = sourceText();
+        const letters = (text.match(/\p{L}/gu) || []).length;
+        if (letters >= 300) {
+          const share = (text.match(SCRIPTS[0][0]) || []).length / letters;
+          done(share > 0.15 && share <= 0.6 ? "Latin and Greek" : "");
+          return;
+        }
+        if (Date.now() - t0 > limitMs) { done(""); return; }
+        window.setTimeout(tick, 300);
+      };
+      tick();
+    });
+  }
+
   // The reader's stamp, or null if it never comes.
   function lanesStamp(limitMs) {
     return new Promise((done) => {
@@ -276,6 +298,11 @@
         else if (c.lang) prov.lang = c.lang;
       }
       go(prov);
+      if (corpus === "pld" && prov.kind === "ai") {
+        readLatinGreek(20000).then((lang) => {
+          if (lang) document.dispatchEvent(new CustomEvent("fr-provenance-lang", { detail: { lang } }));
+        });
+      }
       if (prov.kind === "ai" && !prov.lang) {
         readLanguage(20000).then((lang) => {
           if (lang) document.dispatchEvent(new CustomEvent("fr-provenance-lang", { detail: { lang } }));
