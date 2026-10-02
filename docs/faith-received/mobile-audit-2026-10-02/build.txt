@@ -1,0 +1,217 @@
+
+> mere-orthodoxy@1.2.1 build
+> node scripts/check-conflict-markers.mjs && node scripts/check-admin-tools.mjs && node scripts/check-citation-parser.mjs && node scripts/check-scripture-linker.mjs && node scripts/check-passage-navigation.cjs && node --test scripts/check-reader-scripture.cjs scripts/check-reader-scripture-preview.cjs && node scripts/check-title-order.mjs && node --test scripts/check-ask-interface.cjs && node scripts/check-ask-selectors.mjs && node scripts/check-author-display.mjs && node scripts/check-catalogue-policy.cjs && node scripts/check-room-corpora.mjs && node scripts/check-ask-cite-quote.mjs && node scripts/check-web-network.mjs && node scripts/check-collected-contents.mjs && node scripts/check-page-dom-contract.mjs && node scripts/build-work-forwards.mjs --check && node scripts/build-public-slugs.mjs --check && node scripts/check-modernize.mjs && node scripts/build-theme.mjs
+
+✓ No conflict markers
+  ✓ admin permissions: 28 tools cover 30 pages
+✓ citation parser: 827 forms, all correct.
+✓ scripture linker: 21 citation forms, all correct.
+Passage navigation: ranges, single verses, invalid inputs and both research hosts passed.
+TAP version 13
+# Subtest: verse lists and expanded ranges preserve the requested order without duplicating verses
+ok 1 - verse lists and expanded ranges preserve the requested order without duplicating verses
+  ---
+  duration_ms: 0.696
+  ...
+# Subtest: missing or blank verses are reported honestly without substituting nearby text
+ok 2 - missing or blank verses are reported honestly without substituting nearby text
+  ---
+  duration_ms: 0.07475
+  ...
+# Subtest: a chapter-only reference is a labelled opening excerpt rather than a whole-chapter claim
+ok 3 - a chapter-only reference is a labelled opening excerpt rather than a whole-chapter claim
+  ---
+  duration_ms: 0.108208
+  ...
+# Subtest: one ordinary click opens a Scripture pane and prevents reader navigation
+ok 4 - one ordinary click opens a Scripture pane and prevents reader navigation
+  ---
+  duration_ms: 4.373708
+  ...
+# Subtest: a late A response cannot replace the newer B passage
+ok 5 - a late A response cannot replace the newer B passage
+  ---
+  duration_ms: 0.798583
+  ...
+# Subtest: closing cancels late response rendering without reopening the panel
+ok 6 - closing cancels late response rendering without reopening the panel
+  ---
+  duration_ms: 0.898708
+  ...
+# Subtest: a late failed A request cannot replace B with a stale error
+ok 7 - a late failed A request cannot replace B with a stale error
+  ---
+  duration_ms: 0.709375
+  ...
+# Subtest: keyboard activation opens accessibly; modifiers and non-primary clicks pass through
+ok 8 - keyboard activation opens accessibly; modifiers and non-primary clicks pass through
+  ---
+  duration_ms: 1.128333
+  ...
+# Subtest: missing verses and chapter excerpts remain explicit in the rendered content
+ok 9 - missing verses and chapter excerpts remain explicit in the rendered content
+  ---
+  duration_ms: 0.76525
+  ...
+# Subtest: Escape and another apparatus panel close Scripture without following the citation
+ok 10 - Escape and another apparatus panel close Scripture without following the citation
+  ---
+  duration_ms: 0.610833
+  ...
+# Subtest: published Roman-numbered catalogue books match normalized citation names
+ok 11 - published Roman-numbered catalogue books match normalized citation names
+  ---
+  duration_ms: 0.126042
+  ...
+# Subtest: ESV verses render with the correct edition and missing-verse label
+ok 12 - ESV verses render with the correct edition and missing-verse label
+  ---
+  duration_ms: 0.945334
+  ...
+# Subtest: hover prefetch and click share one ESV chapter request
+ok 13 - hover prefetch and click share one ESV chapter request
+  ---
+  duration_ms: 0.746416
+  ...
+# Subtest: Roell p116 references include inherited chapters and complete range metadata
+ok 14 - Roell p116 references include inherited chapters and complete range metadata
+  ---
+  duration_ms: 18.646584
+  ...
+# Subtest: Roell p119 lowercase Roman chapters and compact verse lists link without changing punctuation
+ok 15 - Roell p119 lowercase Roman chapters and compact verse lists link without changing punctuation
+  ---
+  duration_ms: 2.742208
+  ...
+# Subtest: multi-verse anchors carry full references with a chapter-commentary fallback
+ok 16 - multi-verse anchors carry full references with a chapter-commentary fallback
+  ---
+  duration_ms: 1.339458
+  ...
+# Subtest: preview parser expands explicit lists and ascending ranges without inferring following verses
+ok 17 - preview parser expands explicit lists and ascending ranges without inferring following verses
+  ---
+  duration_ms: 0.732333
+  ...
+# Subtest: same-book continuation stays within explicit adjacent chapter and verse groups
+ok 18 - same-book continuation stays within explicit adjacent chapter and verse groups
+  ---
+  duration_ms: 1.06775
+  ...
+# Subtest: invalid Roman tokens, numbered-book chapters, and partial numeric words remain unlinked
+ok 19 - invalid Roman tokens, numbered-book chapters, and partial numeric words remain unlinked
+  ---
+  duration_ms: 1.31025
+  ...
+# Subtest: HTML attributes, existing links, and note cues are not rewritten by Scripture linking
+ok 20 - HTML attributes, existing links, and note cues are not rewritten by Scripture linking
+  ---
+  duration_ms: 0.54675
+  ...
+# Subtest: links preserve italic, bold and split numbered-book markup character for character
+ok 21 - links preserve italic, bold and split numbered-book markup character for character
+  ---
+  duration_ms: 0.524167
+  ...
+# Subtest: native TEI linking combines adjacent text and formatting without changing note numbering
+ok 22 - native TEI linking combines adjacent text and formatting without changing note numbering
+  ---
+  duration_ms: 0.796208
+  ...
+# Subtest: lowercase book abbreviations and Roman book prefixes resolve without treating ordinary prose as chapters
+ok 23 - lowercase book abbreviations and Roman book prefixes resolve without treating ordinary prose as chapters
+  ---
+  duration_ms: 0.733875
+  ...
+# Subtest: period-separated inherited Roman chapters stop before Roman-numbered prose
+ok 24 - period-separated inherited Roman chapters stop before Roman-numbered prose
+  ---
+  duration_ms: 0.789167
+  ...
+# Subtest: actual Roell paragraph seams link 19 and 5,6,7 while preserving every source row, paragraph, label and character
+ok 25 - actual Roell paragraph seams link 19 and 5,6,7 while preserving every source row, paragraph, label and character
+  ---
+  duration_ms: 1.84675
+  ...
+# Subtest: bare book seam links Apoc. and XVI.5 without consuming II. God
+ok 26 - bare book seam links Apoc. and XVI.5 without consuming II. God
+  ---
+  duration_ms: 0.58175
+  ...
+# Subtest: paragraph enhancement rejects numbered prose, intervening headings, different lanes and different folios
+ok 27 - paragraph enhancement rejects numbered prose, intervening headings, different lanes and different folios
+  ---
+  duration_ms: 1.136625
+  ...
+# Subtest: internal numbered cross-references do not masquerade as the book of Numbers
+ok 28 - internal numbered cross-references do not masquerade as the book of Numbers
+  ---
+  duration_ms: 0.528667
+  ...
+# Subtest: early-modern dotted verse lists attach ascending verses and stop at prose numerals and ordinals (Voetius Disp. vol. 1 p. 55, owner 2026-09-16)
+ok 29 - early-modern dotted verse lists attach ascending verses and stop at prose numerals and ordinals (Voetius Disp. vol. 1 p. 55, owner 2026-09-16)
+  ---
+  duration_ms: 1.047417
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 29
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 69.849667
+✓ title order: 9 orderings, 7 surfaces routed through the comparator.
+TAP version 13
+# Subtest: /private/tmp/mereo-mobile-20261002/scripts/../assets/js/port/ask-workspace.js: source groups preserve every passage and separate edition witnesses
+ok 1 - /private/tmp/mereo-mobile-20261002/scripts/../assets/js/port/ask-workspace.js: source groups preserve every passage and separate edition witnesses
+  ---
+  duration_ms: 0.746459
+  ...
+# Subtest: /private/tmp/mereo-mobile-20261002/scripts/../assets/js/port/ask-workspace.js: source previews escape untrusted labels and reject executable destinations
+ok 2 - /private/tmp/mereo-mobile-20261002/scripts/../assets/js/port/ask-workspace.js: source previews escape untrusted labels and reject executable destinations
+  ---
+  duration_ms: 0.137458
+  ...
+# Subtest: /private/tmp/mereo-mobile-20261002/scripts/../assets/js/port/ask-workspace.js: displayed status follows actual research and delivery state
+ok 3 - /private/tmp/mereo-mobile-20261002/scripts/../assets/js/port/ask-workspace.js: displayed status follows actual research and delivery state
+  ---
+  duration_ms: 0.173833
+  ...
+# Subtest: /private/tmp/mereo-mobile-20261002/scripts/../assets/js/port/ask-workspace.js: command matching supports accents, multiple words and empty results
+ok 4 - /private/tmp/mereo-mobile-20261002/scripts/../assets/js/port/ask-workspace.js: command matching supports accents, multiple words and empty results
+  ---
+  duration_ms: 0.167
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 33.341334
+✓ Ask skin: all 121 .fra-* selectors match the engine's markup
+✓ All Ask entry points use the shared MereO stylesheet
+✓ author display: 14 name shapes, all correct.
+Catalogue policy: aliases, distinct people, withdrawn volume and witness preservation passed.
+Vercel duplicate folding: repeated import removed, explicit edition-group witness retained.
+Author curation: name variants, anthology labels, anonymous and editorial groups preserve source records.
+✓ room corpora: 6 collections, both lists agree.
+✓ ask cite quote: 7 shapes, all correct.
+✓ Web layouts: directed author focus, preserved totals, and catalogue shelf fallbacks
+✓ Collected contents: 226 volumes, section links, search labels and catalogue return routes; 2503 Greek Fathers works with their contents
+✓ Page DOM contract: 35 element reference(s) across 259 templates all resolve
+work-forwards: 54 retired works, lib current
+public-slugs: 3881 names, lib current
+check-modernize: 247 checks pass
+  ✓ boot.min.js (32.8 KB)
+  ✓ site.min.js (95.3 KB)
+  ✓ post.min.js (21.7 KB)
+  ✓ screen.min.css (476.0 KB)
+  ✓ faith-received.min.css (376.3 KB)
+  ✓ faith-ask-workspace.min.css (45.1 KB)
+
+Done. Commit the built files.
