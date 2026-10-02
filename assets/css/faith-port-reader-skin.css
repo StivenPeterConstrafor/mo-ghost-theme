@@ -2802,10 +2802,12 @@ html:not(.g-mobile) #app aside.sidebar {
   --sb-fill: var(--fr-fill, #b0573a);
   --sb-fill-ink: var(--fr-fill-ink, #fff);
 }
-#app aside.sidebar .fr-sb-actions { padding: 14px 16px 0; display: flex; gap: 8px; }
+#app aside.sidebar .fr-sb-actions { padding: 14px 16px 0; display: flex; flex-wrap: wrap; gap: 8px; }
 #app aside.sidebar .fr-sb-actions .fr-read-fold[hidden] { display: none; }
 #app aside.sidebar .fr-sb-actions .fr-read-fold:not([hidden]) {
-  flex: 1 1 0;
+  /* Side by side in a 300px sidebar; one per row in the narrower
+     tablet drawer, where both labels cannot fit across. */
+  flex: 1 1 120px;
   min-width: 0;
   white-space: nowrap;
   letter-spacing: 0.08em;
@@ -3722,6 +3724,7 @@ html.g-mobile.fr-bar-hidden .fr-read-toc { bottom: 0; }
 html.g-mobile .fr-read-toc-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
 html.g-mobile .fr-read-toc-head .fr-read-fold { min-height: 40px; }
 html.g-mobile.fr-bar-hidden nav.frthumb { display: none !important; }
+html.fr-bar-hidden header.site-header { box-shadow: none; }
 html.g-mobile .fr-read-restore:not(.fr-read-restore-sb) {
   top: auto;
   bottom: calc(14px + env(safe-area-inset-bottom, 0px));
