@@ -148,3 +148,75 @@ body.reading .dtc-resume{display:none}
   .meta{gap:.5rem}
   #q{font-size:16px}
 }
+
+/* On phones the article is the page. Keep its existing navigation in
+   reach during long entries, below the same measured masthead/rail as
+   the rest of TFR. Do not restore the old nested scrolling reader. */
+@media (max-width:820px) {
+  body.dtc-page { --dtc-sticky-top: var(--mo-head,104px); }
+  body.dtc-page:has(> .site-header.is-hidden) {
+    --dtc-sticky-top: calc(var(--mo-head,104px) - var(--mo-mast,61px));
+  }
+  body.dtc-page .faith-port-dtc-page .art { scroll-margin-top: var(--dtc-sticky-top); }
+  body.dtc-page .faith-port-dtc-page .art > .artbar {
+    position: sticky;
+    top: var(--dtc-sticky-top);
+    z-index: 8;
+    box-sizing: border-box;
+    height: 52px;
+    min-height: 52px;
+    padding: 4px 16px;
+    border-bottom-color: var(--border);
+    background: var(--bg);
+  }
+  body.dtc-page .faith-port-dtc-page .art .inner > .meta {
+    position: sticky;
+    top: calc(var(--dtc-sticky-top) + 52px);
+    z-index: 7;
+    display: grid;
+    grid-template-columns: 88px minmax(0,1fr);
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-top: 1px solid var(--ar-line,var(--border));
+    background: var(--ar-panel,var(--card-bg));
+  }
+  body.dtc-page .faith-port-dtc-page .meta > .pnav { grid-area: 1 / 1; display: flex; }
+  body.dtc-page .faith-port-dtc-page .meta > .lane-t { grid-area: 1 / 2; justify-self: start; max-width: 100%; }
+  body.dtc-page .faith-port-dtc-page .meta > .outline { grid-area: 2 / 1; }
+  body.dtc-page .faith-port-dtc-page .meta > .szc { grid-area: 2 / 2; display: flex; }
+  body.dtc-page .faith-port-dtc-page .meta > .dtc-bmk { grid-column: 1 / -1; justify-self: start; margin-left: 0; }
+  body.dtc-page .faith-port-dtc-page .meta > span:last-child { display: none; }
+  body.dtc-page .faith-port-dtc-page .artbar .mb,
+  body.dtc-page .faith-port-dtc-page .meta button,
+  body.dtc-page .faith-port-dtc-page .art .inner > .dtc-close {
+    min-height: 44px;
+    min-width: 44px;
+    box-sizing: border-box;
+  }
+  body.dtc-page .faith-port-dtc-page .lane-t button { padding-left: 6px; padding-right: 6px; }
+  body.dtc-page .faith-port-dtc-page .meta .outline > button { width: 88px; padding-left: 4px; padding-right: 4px; }
+  body.dtc-page .faith-port-dtc-page .art .inner > .dtc-close { width: 44px; height: 44px; }
+  body.dtc-page .faith-port-dtc-page .art .inner > h1 { padding-right: 64px; }
+  body.dtc-page .faith-port-dtc-page .outline .ol-pop {
+    min-width: 0;
+    width: min(280px,calc(100vw - 66px));
+    max-height: min(50dvh,360px);
+  }
+  body.dtc-page .faith-port-dtc-page .outline .ol-pop a {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: 44px;
+  }
+  /* Parallel paragraphs must have real heights when restoring a saved
+     place. Estimated offscreen heights otherwise move the target after
+     a language switch, leaving the reader several sections away. */
+  body.dtc-page .faith-port-dtc-page .pp {
+    content-visibility: visible;
+    contain-intrinsic-size: none;
+  }
+  body.dtc-page .faith-port-dtc-page .body [id^="sec"] {
+    scroll-margin-top: calc(var(--dtc-sticky-top) + 180px);
+  }
+}

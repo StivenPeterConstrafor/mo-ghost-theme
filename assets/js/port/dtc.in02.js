@@ -149,6 +149,40 @@ function tok(p){
 function detok(p){return String(p??"").replace(/<\/?(?:em|i)>/g,"");}
 const isHead=p=>{const t=p.replace(/\u27e6[^\u27e7]+\u27e7/g,"").trim();
   return t.length<170&&/^([IVXLC]+|\d+\u00b0?)[.)\u2014\u00b0]?\s+\S/.test(t)&&t.length<150;};
+// The phone reader flows in the document; desktop keeps its own pane.
+// Choose the paragraph at the first readable line in the active layout.
+function dtcCurrentParagraph(asc){
+  const pageFlow=window.matchMedia("(max-width: 820px)").matches;
+  let line=asc.getBoundingClientRect().top+16;
+  if(pageFlow){
+    const controls=asc.querySelector(".meta");
+    const bottom=controls?controls.getBoundingClientRect().bottom:0;
+    line=(bottom>0&&bottom<window.innerHeight?bottom:0)+16;
+  }
+  return [...asc.querySelectorAll('.body [id^="sec"]')].find(n=>n.getBoundingClientRect().bottom>line);
+}
+function dtcScrollToParagraph(asc,paragraph,behavior="instant"){
+  const target=document.getElementById('sec'+paragraph);
+  if(!target)return;
+  if(window.matchMedia("(max-width: 820px)").matches){
+    const place=()=>{
+      const controls=asc.querySelector(".meta");
+      const inset=controls?(parseFloat(getComputedStyle(controls).top)||0)+controls.getBoundingClientRect().height+16:16;
+      window.scrollTo({top:Math.max(0,window.scrollY+target.getBoundingClientRect().top-inset),behavior});
+    };
+    place();
+    // Scrolling can reveal/hide the site's masthead on the next frame.
+    // Reconcile that measured inset after the repaint, while the same
+    // article is still attached. No delayed jump after user scrolling.
+    if(behavior==="instant"&&window.requestAnimationFrame){
+      window.requestAnimationFrame(()=>{
+        if(!asc.isConnected||!target.isConnected)return;place();
+        window.requestAnimationFrame(()=>{if(asc.isConnected&&target.isConnected)place();});
+      });
+    }
+  }else target.scrollIntoView({block:"start",behavior});
+}
+let articleScrollController=null;
 function renderArt(d,initialParagraph=0){
   let paragraph=initialParagraph;
   // The headword as the page shows it: English where there is one.
@@ -164,7 +198,10 @@ function renderArt(d,initialParagraph=0){
   const lane=hasEn?"en":"fr";
   const frLen=FR.join(" ").length;
   const heads=FR.map((f,i)=>isHead(f)?i:-1).filter(i=>i>=0);
-  const paint=l=>{
+  const paint=(l,restorePlace=false)=>{
+    if(articleScrollController)articleScrollController.abort();
+    articleScrollController=new AbortController();
+    const signal=articleScrollController.signal;
     LANE=l;
     let body="";
     if(l==="both"&&hasEn){
@@ -210,20 +247,22 @@ function renderArt(d,initialParagraph=0){
     const ob=$("#olBtn");
     if(ob){ob.onclick=e=>{e.stopPropagation();$("#olPop").classList.toggle("on");};
       $("#olPop").querySelectorAll("a").forEach(a=>a.onclick=e=>{e.preventDefault();
-        const t=document.getElementById("sec"+a.dataset.sec);if(t){paragraph=Number(a.dataset.sec);writePlace(paragraph);t.scrollIntoView({block:"start",behavior:"smooth"});}
+        const t=document.getElementById("sec"+a.dataset.sec);if(t){paragraph=Number(a.dataset.sec);writePlace(paragraph);dtcScrollToParagraph(asc,paragraph,"smooth");}
         $("#olPop").classList.remove("on");});}
     const setSz=v=>{SZ=Math.max(.86,Math.min(1.3,v));try{localStorage.setItem("dtc_sz",SZ);}catch(e){}
       document.documentElement.style.setProperty("--dtcsz",SZ+"rem");};
     $("#szDn").onclick=()=>setSz(SZ-0.06);$("#szUp").onclick=()=>setSz(SZ+0.06);
     const asc=$("#art .artscroll");
     let follow=false,timer=0;
-    const current=()=>{const line=asc.getBoundingClientRect().top+16;return [...asc.querySelectorAll('.body [id^="sec"]')].find(n=>n.getBoundingClientRect().bottom>line);};
+    const current=()=>dtcCurrentParagraph(asc);
     const remember=()=>{const n=current();if(n)paragraph=Number(n.id.slice(3));};
-    for(const event of ['wheel','touchmove','pointerdown','keydown'])asc.addEventListener(event,()=>{follow=true;},{passive:true});
+    for(const event of ['wheel','touchmove','pointerdown','keydown'])asc.addEventListener(event,()=>{follow=true;},{passive:true,signal});
     asc.tabIndex=0;
-    asc.onscroll=()=>{$("#art").classList.toggle("scrolled",asc.scrollTop>10);
+    const saveScroll=()=>{$("#art").classList.toggle("scrolled",(window.matchMedia("(max-width: 820px)").matches?window.scrollY:asc.scrollTop)>10);
       if(timer)return;timer=setTimeout(()=>{timer=0;if(!asc.isConnected||CUR!==d.id||!follow)return;remember();writePlace(paragraph);rememberPlace(d.id,paragraph);},400);};
-    $("#art").querySelectorAll(".lane-t button").forEach(b=>b.onclick=()=>{if(!b.disabled){remember();LANEPREF=b.dataset.l;writePlace(paragraph,LANEPREF);paint(b.dataset.l);}});
+    asc.addEventListener("scroll",saveScroll,{passive:true,signal});
+    window.addEventListener("scroll",()=>{if(window.matchMedia("(max-width: 820px)").matches)saveScroll();},{passive:true,signal});
+    $("#art").querySelectorAll(".lane-t button").forEach(b=>b.onclick=()=>{if(!b.disabled){remember();LANEPREF=b.dataset.l;writePlace(paragraph,LANEPREF);paint(b.dataset.l,true);}});
     /* Bookmark this article. Same store, same id shape and same 200 cap
        as a bookmarked work, so one reader cannot end up with two
        records of the same thing. subscribe() keeps the button honest
@@ -241,11 +280,13 @@ function renderArt(d,initialParagraph=0){
     });
     $("#art").classList.remove("scrolled");
     asc.scrollTop=0;
-    if(paragraph>0)document.getElementById('sec'+paragraph)?.scrollIntoView({block:'start'});
+    if(paragraph>0||restorePlace)dtcScrollToParagraph(asc,paragraph);
+    else if(window.matchMedia('(max-width: 820px)').matches)$('#art').scrollIntoView({block:'start',behavior:'instant'});
   };
   paint(LANEPREF&&(LANEPREF==="fr"||hasEn)?LANEPREF:lane);
 }
 function openArt(id,push){
+  if(articleScrollController)articleScrollController.abort();
   const params=new URL(location.href),raw=params.searchParams.get('paragraph');
   const paragraph=push===false&&/^\d+$/.test(raw||'')?Number(raw):0;
   if(push===false&&['both','en','fr'].includes(params.searchParams.get('lang')))LANEPREF=params.searchParams.get('lang');
@@ -266,7 +307,7 @@ let LISTPOS=0;
 // ART goes with it: the closed article's markup stays in #art, and a
 // selection made after closing must not be offered as a passage of an
 // article the reader is no longer in.
-function closeArt(){document.body.classList.remove("reading");CUR=null;ART=null;
+function closeArt(){if(articleScrollController)articleScrollController.abort();document.body.classList.remove("reading");CUR=null;ART=null;
   const url=new URL(location.href);url.hash="";url.searchParams.delete("paragraph");history.replaceState(history.state,"",url);
   document.title="Dictionary of Catholic Theology \u00b7 The Faith Received";
   requestAnimationFrame(()=>{$("#list").scrollTop=LISTPOS;paintList();paintResume();});}

@@ -1477,10 +1477,28 @@ function frAnchorBlock(target){
   const height=target?.getBoundingClientRect?.().height||0;
   return height>Math.max(240,view-24)?'start':'center';
 }
+// Native scrollIntoView crosses iframe boundaries. A preview must move its
+// own reading pane without pulling the surrounding verse desk out of place.
+function frScrollReaderTarget(target,opts={}){
+  const sc=document.getElementById('scroll');
+  let framed=false;try{framed=window.self!==window.top;}catch(_){framed=true;}
+  if(framed&&sc?.contains(target)){
+    const r=target.getBoundingClientRect(),box=sc.getBoundingClientRect();
+    const top=box.top+(sc.clientTop||0),bottom=top+sc.clientHeight;
+    const above=r.top-top,below=r.bottom-bottom,block=opts.block||'start';
+    let delta=above;
+    if(block==='center')delta=(r.top+r.bottom-top-bottom)/2;
+    else if(block==='end')delta=below;
+    else if(block==='nearest')delta=above<0?Math.max(above,below):below>0?Math.min(above,below):0;
+    if(delta)sc.scrollTo({top:sc.scrollTop+delta,behavior:opts.behavior||'instant'});
+    return;
+  }
+  target.scrollIntoView(opts);
+}
 window.__frPlaceReaderAnchor=(target,opts={})=>{
   if(!target)return null;
   const block=opts.block||frAnchorBlock(target);
-  target.scrollIntoView({block,behavior:opts.behavior||'instant'});
+  frScrollReaderTarget(target,{block,behavior:opts.behavior||'instant'});
   if(block==='start'){
     const sc=document.getElementById('scroll'),header=document.querySelector?.('.ph');
     if(sc?.contains(target)&&header){const top=Math.max(sc.getBoundingClientRect().top,header.getBoundingClientRect().bottom)+12;sc.scrollTop+=target.getBoundingClientRect().top-top;}
@@ -3816,32 +3834,78 @@ function build(){
     });
     nav.appendChild(box);
   }
-  // LIBRARY: browse every work in the corpus without leaving the reader — a filterable
-  // author-sorted list in the drawer; the open work is marked. Index cached across views.
+  // LIBRARY: search the full catalogue; bound the rendered groups, not what can be found.
+  function readerLibraryGroups(works,query,currentSlug){
+    const norm=value=>String(value??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const volumeOf=value=>{
+      const match=norm(value).match(/\b(pg|pl|po)\s*(?:(?:tome|vol(?:ume)?)\.?\s*)?(\d+|[ivxlcdm]+)\b/);if(!match)return null;
+      let number=Number(match[2]);
+      if(!Number.isFinite(number)){
+        if(!/^m{0,3}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})$/.test(match[2]))return null;
+        const values={i:1,v:5,x:10,l:50,c:100,d:500,m:1000};number=0;
+        [...match[2]].forEach((letter,i)=>{const n=values[letter];number+=n<(values[match[2][i+1]]||0)?-n:n;});
+      }
+      return {key:match[1]+':'+number,text:match[0]};
+    };
+    const normalized=norm(query).trim(),requestedVolume=volumeOf(normalized),searching=!!normalized;
+    const terms=(requestedVolume?normalized.replace(requestedVolume.text,' '):normalized).split(/\s+/).filter(Boolean),groups=new Map();
+    const authorOf=w=>w._confession?'Confessions':w.author||'No named author';
+    const current=works.find(w=>w.slug===currentSlug)||null;
+    let count=0;
+    for(const w of works){
+      // "PG 73" means the printed volume. A slug such as pg-1473 is not
+      // evidence of that volume; only the catalogue's volume field is.
+      if(requestedVolume&&volumeOf(w.volume)?.key!==requestedVolume.key)continue;
+      const haystack=norm([w.title,w.title_en,w.author,w.slug,w.volume,w.edition,w.edition_label,w.edition_type,w.witness,w.year]
+        .map(value=>value&&typeof value==='object'?(value.label||value.title||value.name||''):value||'').join(' '));
+      if(!terms.every(term=>haystack.includes(term)))continue;
+      const author=authorOf(w);if(!groups.has(author))groups.set(author,{author,works:[]});groups.get(author).works.push(w);count++;
+    }
+    const ordered=[...groups.values()];
+    if(!searching&&current){const index=ordered.findIndex(group=>group.author===authorOf(current));if(index>0)ordered.unshift(ordered.splice(index,1)[0]);}
+    return {groups:ordered,count,searching,current};
+  }
   function renderLibrary(nav){
     const box=el("div","nav-lib");
-    box.innerHTML='<input class="nl-q" placeholder="Filter by title or author…" autocomplete=off spellcheck=false><div class="nl-list"><div class="nl-msg">Loading the library…</div></div>';
+    box.innerHTML='<input class="nl-q" type="search" aria-label="Find a work by title, author, volume or edition" placeholder="Title, author, volume or edition…" autocomplete=off spellcheck=false><p class="nl-msg nl-status" role="status"></p><div class="nl-list"><div class="nl-msg">Loading the library…</div></div>';
     nav.appendChild(box);
-    const list=box.querySelector(".nl-list"),inp=box.querySelector(".nl-q");
-    const norm=s=>(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");  // Suárez matches "suarez"
-    const paint=(ws,f)=>{
-      const t=norm(f).trim();
-      const m=t?ws.filter(w=>(w._q||(w._q=norm((w.title||"")+" "+(w.author||"")+" "+(w.title_en||"")))).includes(t)):ws;
-      // organized by AUTHOR, groups COLLAPSED by default (click to expand; filtering expands matches).
-      // Titles show the ENGLISH title when available (user 2026-07-20).
-      let h="",lastA=null;
-      m.slice(0,900).forEach(w=>{
-        const a=w._confession?"Confessions":w.author||"No named author";
-        if(a!==lastA){h+='<div class="nl-au'+(t?" open":"")+'" data-au="'+esc(a)+'"><span class="nl-cv">▸</span>'+esc(a)+'</div>';lastA=a;}
-        h+='<a class="nl-w'+(DATA&&w.slug===DATA.slug?" here":"")+'" href="/the-faith-received/read/?w='+encodeURIComponent(w.slug)+'">'
-          +'<span class="nl-t">'+esc(w.title_en||w.title||w.slug)+(w.volume?' <span class="nl-v">· '+esc(String(w.volume))+'</span>':'')+'</span></a>';
-      });
-      list.innerHTML=h||'<div class="nl-msg">No matches.</div>';
-      if(!t)list.classList.add("nl-collapsed");else list.classList.remove("nl-collapsed");
-      list.querySelectorAll(".nl-au").forEach(g=>{g.onclick=()=>g.classList.toggle("open");});
-      // keep the current work's author expanded
-      if(DATA){let group=list.querySelector("a.here")?.previousElementSibling;while(group&&!group.classList.contains("nl-au"))group=group.previousElementSibling;if(group)group.classList.add("open");}
-      if(m.length>900)list.insertAdjacentHTML("beforeend",'<div class="nl-msg">'+(m.length-900)+' more — narrow the filter</div>');
+    const list=box.querySelector(".nl-list"),inp=box.querySelector(".nl-q"),status=box.querySelector('.nl-status');
+    const GROUP_PAGE=25,WORK_PAGE=40;
+    const workLink=(w,current)=>'<a class="nl-w'+(current?' here':'')+'"'+(current?' aria-current="page"':'')+' href="/the-faith-received/read/?w='+encodeURIComponent(w.slug)+'">'
+      +(current?'<span class="nl-a">Currently reading</span>':'')+'<span class="nl-t">'+esc(w.title_en||w.title||w.slug)+(w.volume?' <span class="nl-v">· '+esc(String(w.volume))+'</span>':'')+'</span></a>';
+    const paint=(ws,query)=>{
+      const view=readerLibraryGroups(ws,query,DATA?.slug);list.innerHTML='';
+      let shown=0,more=null;
+      const addGroups=()=>{
+        const focusNext=more&&document.activeElement===more;let firstSummary=null;
+        more?.remove();
+        const end=Math.min(shown+GROUP_PAGE,view.groups.length);
+        for(const group of view.groups.slice(shown,end)){
+          const fold=el('details','nl-group'),summary=el('summary','nl-au'),body=el('div','nl-group-works');
+          if(!firstSummary)firstSummary=summary;
+          summary.textContent=group.author+' · '+group.works.length+' '+(group.works.length===1?'work':'works');
+          fold.append(summary,body);list.appendChild(fold);
+          const current=group.works.find(w=>w.slug===DATA?.slug),others=group.works.filter(w=>w!==current);
+          let loaded=0,workMore=null,started=false;
+          const addWorks=()=>{
+            const focusNextWork=workMore&&document.activeElement===workMore,previous=loaded;
+            workMore?.remove();
+            if(!started&&current)body.insertAdjacentHTML('beforeend',workLink(current,true));
+            started=true;const batch=others.slice(loaded,loaded+WORK_PAGE);loaded+=batch.length;
+            body.insertAdjacentHTML('beforeend',batch.map(w=>workLink(w,false)).join(''));
+            if(loaded<others.length){workMore=el('button','nl-retry');workMore.type='button';workMore.textContent='Show '+Math.min(WORK_PAGE,others.length-loaded)+' more works ('+(others.length-loaded)+' remaining)';workMore.onclick=addWorks;body.appendChild(workMore);}
+            if(focusNextWork)body.querySelectorAll('a.nl-w')[previous+(current?1:0)]?.focus();
+          };
+          fold.addEventListener('toggle',()=>{if(fold.open&&!started)addWorks();});
+          // Current work is separate from the ordered neighbouring works, so it stays
+          // reachable even when an author has hundreds of volumes or editions.
+          if(current||view.searching){fold.open=true;addWorks();}
+        }
+        shown=end;status.textContent=view.count+' '+(view.count===1?'work':'works')+' across '+view.groups.length+' '+(view.groups.length===1?'author':'authors')+'. Showing '+shown+' '+(shown===1?'author':'authors')+'.';
+        if(shown<view.groups.length){more=el('button','nl-retry');more.type='button';more.textContent='Show '+Math.min(GROUP_PAGE,view.groups.length-shown)+' more authors';more.onclick=addGroups;list.appendChild(more);}
+        if(focusNext)firstSummary?.focus();
+      };
+      addGroups();if(!view.count)list.innerHTML='<div class="nl-msg">No matches. Try another title, author or volume.</div>';
     };
     const go=ws=>{if(!box.isConnected)return;paint(ws,inp.value);inp.oninput=()=>paint(ws,inp.value);};
     const load=async()=>{
@@ -4316,6 +4380,11 @@ function setContentsOpen(open,restoreFocus=false){
 }
 $("#sbT").onclick=()=>setContentsOpen(app.classList.contains('nosb'),true);
 if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,true);
+if($("#contentsBrowse"))$("#contentsBrowse").onclick=()=>{
+  const nav=$("#nav");if(!nav)return;
+  nav.scrollTop=0;
+  nav.querySelector('.nav-vt button')?.focus({preventScroll:true});
+};
 // mobile: scrim behind the open sidebar + tap-to-dismiss; nav taps auto-close the sheet
 (function(){const sc=document.createElement("div");sc.id="sbScrim";app.appendChild(sc);
   sc.onclick=()=>setContentsOpen(false);
@@ -5230,6 +5299,7 @@ function _auEn(a){
   const p=window.__frEarly.auEn||(window.__frEarly.auEn=fetch(BLOB+"/v1/authors_en.json").then(r=>r.ok?r.json():{}).catch(()=>({})));
   return p.then(m=>(m&&m[a])||a).catch(()=>a);
 }
+function readerVolumeIndex(prefix){return ({pg:"pgvols",pl:"plvols",pld:"plvols"})[prefix]||null;}
 function wireVolTravel(volWord,volN,meId,prefix,store){
   if(!volN)return;
   const spineP=fetch(BLOB+"/v1/"+store+"/"+volN+".json?v="+encodeURIComponent(window.__FR_VER||"")).then(r=>r.ok?r.json():null).catch(()=>null);
@@ -5281,17 +5351,29 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
       box.innerHTML=`<details class="vncontents"><summary class="vnhead">Browse ${volWord} ${volN}${i>=0?` &middot; ${i+1} of ${sp.works.length}`:""}</summary><div class=vnhead><span>Volume navigation</span>`+
         `<span class=vnnav>${sp.prev?`<a target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${sp.prev.first}" title="${volWord} ${sp.prev.vol}">&#8249; ${volWord} ${sp.prev.vol}</a>`:""}`+
         `${sp.next?`<a target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${sp.next.first}" title="${volWord} ${sp.next.vol}">${volWord} ${sp.next.vol} &#8250;</a>`:""}</span></div>`+
-        `<label class="vnsw">Go to volume <select class="vnsel" title="Every volume of this shelf"><option value="">${volWord} ${volN}</option></select></label><div class="vnlist">`+rows+`</div></details>`;
+        (readerVolumeIndex(prefix)?`<label class="vnsw">Go to volume <select class="vnsel" title="Every volume of this shelf" disabled><option value="">Loading volumes…</option></select><button type="button" class="vnretry" hidden>Retry volume list</button></label>`:"")+`<div class="vnlist">`+rows+`</div></details>`;
       nav.appendChild(box);
-      /* VOLUME SWITCHER (owner 2026-09-26 "a system for the user to switch to different volumes in Latin Fathers, Greek Fathers"):
-         one select listing every volume of the shelf (v1/pgvols.json | v1/plvols.json: vol, first work, author, work count), loaded on first use;
-         choosing a volume opens its first work, whose own volume box then lists that volume. */
-      try{const sel=box.querySelector('select.vnsel');if(sel){let loaded=false;
-        const fill=()=>{if(loaded)return;loaded=true;fetch(BLOB+"/v1/"+(prefix==='pg'?'pgvols':'plvols')+".json").then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.vols||!j.vols.length)return;
-          sel.innerHTML=j.vols.map(v=>{const id=v.first&&v.first.id!=null?String(v.first.id):'';const au=v.first&&v.first.a?String(v.first.a).slice(0,40):'';
-            return `<option value="${esc(id)}"${+v.vol===+volN?' selected':''}>${volWord} ${v.vol}${au?' \u00b7 '+esc(au):''}${v.n?' ('+v.n+')':''}</option>`;}).join('');}).catch(()=>{});};
-        sel.addEventListener('focus',fill);sel.addEventListener('mousedown',fill);sel.addEventListener('touchstart',fill,{passive:true});
-        sel.addEventListener('change',()=>{const id=sel.value;if(id)location.href=`/the-faith-received/read/?w=${prefix}-${id}`;});}}catch(e){}
+      // Fetch before the first tap: native phone pickers snapshot their options
+      // as they open. PO has adjacent volumes but no validated all-volume index.
+      const index=readerVolumeIndex(prefix),sel=box.querySelector('select.vnsel');
+      if(index&&sel){
+        const retry=box.querySelector('.vnretry');
+        const fill=async()=>{
+          sel.disabled=true;retry.hidden=true;
+          sel.innerHTML='<option value="">Loading volumes…</option>';
+          try{
+            const response=await fetch(BLOB+'/v1/'+index+'.json',{signal:AbortSignal.timeout(15000)});
+            if(!response.ok)throw Error('Volume list unavailable');
+            const j=await response.json(),volumes=(j.vols||[]).filter(v=>v.first?.id!=null);
+            if(!volumes.length)throw Error('Volume list empty');
+            sel.innerHTML=volumes.map(v=>`<option value="${esc(String(v.first.id))}"${+v.vol===+volN?' selected':''}>${volWord} ${esc(String(v.vol))}${v.first.a?' · '+esc(String(v.first.a).slice(0,40)):''}${v.n?' ('+Number(v.n)+')':''}</option>`).join('');
+            sel.disabled=false;
+          }catch(e){sel.innerHTML='<option value="">Volume list unavailable</option>';retry.hidden=false;}
+        };
+        retry.onclick=fill;
+        sel.addEventListener('change',()=>{if(sel.value)location.href=`/the-faith-received/read/?w=${prefix}-${encodeURIComponent(sel.value)}`;});
+        fill();
+      }
       // NEVER scrollIntoView here: #nav is the SHARED scroll container — centering the
       // volume row dragged the outline 8,800px away from the reader's position on every
       // canon work (Opus audit P0). Center the OUTLINE's active node; the volume list
@@ -7988,7 +8070,7 @@ async function loadWork(ws){
       const t=$("#reading").querySelector(`.folio[data-page="${keep}"]`);
       if(t){const base=($("#scroll")||document.body).getBoundingClientRect().top;
         const off=Math.abs(t.getBoundingClientRect().top-base);
-        if(off>(cj?120:80)){t.scrollIntoView({block:"start"});cj++;st=0;}else st++;}
+        if(off>(cj?120:80)){frScrollReaderTarget(t,{block:"start"});cj++;st=0;}else st++;}
       setTimeout(fix,180);};fix();}
   }).catch(()=>{});}
   if(REVIEW)await initReview();else{initReaderTools();

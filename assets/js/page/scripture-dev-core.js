@@ -615,6 +615,18 @@
     u.searchParams.set("peek", "1");
     return u.pathname + u.search + u.hash;
   }
+  function revealReaderFrame(frame) {
+    const pane = frame.closest('.sd-panel-commentaries');
+    if (pane && /auto|scroll/.test(getComputedStyle(pane).overflowY) && pane.scrollHeight > pane.clientHeight) {
+      const r = frame.getBoundingClientRect(), box = pane.getBoundingClientRect();
+      const top = box.top + pane.clientTop, bottom = top + pane.clientHeight;
+      const above = r.top - top, below = r.bottom - bottom;
+      // Reveal only inside the chooser. Its header and the verse desk stay put.
+      pane.scrollTop += above < 0 ? Math.max(above, below) : below > 0 ? Math.min(above, below) : 0;
+    } else {
+      frame.scrollIntoView({ block: 'nearest' });
+    }
+  }
   function readerFrame($pv, link, title) {
     const btn = $pv.querySelector(".sd-keep-reading");
     if (!btn) return;
@@ -631,7 +643,7 @@
         $pv.appendChild(frame);
       }
       if (frame) frame.hidden = !open;
-      if (open) frame.scrollIntoView({ block: "nearest" });
+      if (open) revealReaderFrame(frame);
     });
   }
 

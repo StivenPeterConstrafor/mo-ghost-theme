@@ -1071,6 +1071,29 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
   .sd-similar-grid { grid-template-columns: 1fr; gap: 8px; }
   .sd-commentary-panel .sd-panel-commentaries > .sd-source.is-previewing,
   .sd-desk .sd-top > .sd-source.is-previewing { grid-column: 1 / -1; }
+  /* A chapter can have scores of commentaries. Keep the chooser within
+     reach of its close button and the citations that follow it. */
+  .sd-commentary-panel .sd-panel-commentaries {
+    grid-template-columns: minmax(0, 1fr);
+    max-height: min(64vh, 36rem);
+    max-height: min(64svh, 36rem);
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    scroll-padding-block: 12px;
+    padding: 2px;
+  }
+  .sd-commentary-panel .sd-source-head { height: auto; }
+  .sd-commentary-panel .sd-preview-btn {
+    min-width: 72px;
+    min-height: 44px;
+    padding: 8px 12px;
+    margin-left: -12px;
+  }
+  .sd-commentary-panel .sd-reader-frame {
+    height: min(46vh, 440px);
+    height: min(46svh, 440px);
+  }
   .sd-desk .sd-citation-rows .sd-source-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
   .sd-desk .sd-citation-rows .sd-preview-btn { min-width: 64px; min-height: 44px; }
   .sd-desk .sd-charts { grid-template-columns: 1fr; }

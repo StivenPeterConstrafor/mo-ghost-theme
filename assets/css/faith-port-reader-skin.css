@@ -3732,3 +3732,19 @@ html.g-mobile .fr-read-restore:not(.fr-read-restore-sb) {
   padding: 11px 14px;
   z-index: 80;
 }
+
+/* Keep a way back to search/work switching without pinning the full
+   contents controls over the outline. The long list remains free to scroll. */
+#app .contents-toolbar-actions { display: flex; align-items: center; gap: 8px; }
+#app #contentsBrowse { width: auto; min-height: 44px; padding: 8px 10px; font: inherit; font-size: 14px; border: 1px solid var(--border); background: var(--card-bg,var(--card)); color: var(--fg); }
+#app .nav-lib details.nl-group { border-bottom: 1px solid var(--border); }
+#app .nav-lib summary.nl-au { min-height: 44px; padding: 12px 4px; font-style: normal; cursor: pointer; overflow-wrap: anywhere; }
+#app .nav-lib summary.nl-au:focus-visible { outline: 2px solid var(--fg); outline-offset: -2px; }
+#app .nav-lib .nl-status { margin: 8px 0; line-height: 1.5; }
+#app .nav-lib .nl-group-works .nl-w { min-height: 44px; padding-block: 10px; }
+#app .nav-lib .nl-retry { min-height: 44px; padding: 8px; }
+html.g-mobile #app #contentsBrowse { box-sizing: border-box; height: 44px; min-height: 44px; max-height: 44px; margin: 0; line-height: 1.2; }
+html.g-mobile #app .nav-lib summary.nl-au { font-size: 16px; line-height: 1.4; margin: 0; }
+html.g-mobile #app .nav-lib .nl-status { font-size: 13px; padding: 8px 4px; margin: 0; min-height: 0; text-align: left; }
+html.g-mobile #app .nav-lib .nl-t { font-size: 16px; line-height: 1.45; }
+html.g-mobile #app .nav-lib .nl-v { font-size: 13px; }

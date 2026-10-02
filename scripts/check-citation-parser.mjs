@@ -40,7 +40,7 @@ const src = await readFile(path.join(ROOT, SOURCE), "utf-8");
 // early unless `window.MOCorpora` is present. Give it just enough of a
 // browser to reach its own export rather than keeping a second copy of
 // the parser in sync here.
-const win = { MOCorpora: {} };
+const win = { MOCorpora: { url: (corpus, resource) => `https://library.invalid/${corpus}${resource}` } };
 const doc = {
   querySelector: () => null,
   addEventListener: () => {},
