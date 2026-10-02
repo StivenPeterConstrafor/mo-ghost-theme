@@ -8,7 +8,11 @@
  * is totally messed up"). This version puts each control where it
  * belongs instead of in a row of its own:
  *
- *   Hide / show contents  is the toolbar's own ☰ (#sbT). Nothing added.
+ *   Hide contents         beside Expand contents at the top of the
+ *       sidebar (Ian, 2026-10-02: "we lost the hide contents button").
+ *       It presses the toolbar's own ☰ (#sbT), so the port keeps its
+ *       state. With the toolbar also hidden, "Show contents" waits top
+ *       left, as "Show toolbar" does top right.
  *   Expand contents       a quiet button at the top of the contents
  *       sidebar. It lays the outline over the text: one card per
  *       top-level section with its subsections, or one ruled list for a
@@ -159,12 +163,15 @@
     mo.observe(ctr, { childList: true });
     window.setTimeout(() => mo.disconnect(), 30000);
   }
+  const sbT = document.getElementById("sbT");
+  const bHide = button("Hide contents", "fr-read-fold");
+  bHide.hidden = !sbT;
   const bExpand = button("Expand contents", "fr-read-fold");
   bExpand.setAttribute("aria-controls", "fr-read-toc");
   if (sidebar) {
     const actions = document.createElement("div");
     actions.className = "fr-sb-actions";
-    actions.appendChild(bExpand);
+    actions.append(bHide, bExpand);
     const navEl = sidebar.querySelector("#nav");
     if (navEl) navEl.before(actions);
     else sidebar.prepend(actions);
@@ -173,16 +180,27 @@
   const restore = button("Show toolbar", "fr-read-restore");
   restore.hidden = true;
   document.body.appendChild(restore);
+  const restoreSb = button("Show contents", "fr-read-restore fr-read-restore-sb");
+  restoreSb.hidden = true;
+  document.body.appendChild(restoreSb);
 
   // ── Hide toolbar: the port's scrolled-away state, pinned ─────────
   function paintBar() {
     const on = barHidden && !mobile();
     html.classList.toggle("fr-bar-hidden", on);
     restore.hidden = !on;
+    restoreSb.hidden = !(on && app.classList.contains("nosb"));
   }
   bBar.addEventListener("click", () => { barHidden = true; remember(); paintBar(); restore.focus({ preventScroll: true }); });
   restore.addEventListener("click", () => { barHidden = false; remember(); paintBar(); bBar.focus({ preventScroll: true }); });
   paintBar();
+
+  // ── Hide contents: the port's ☰, labeled ─────────────────────────
+  if (sbT) {
+    bHide.addEventListener("click", () => { sbT.click(); });
+    restoreSb.addEventListener("click", () => { if (app.classList.contains("nosb")) sbT.click(); });
+    new MutationObserver(paintBar).observe(app, { attributes: true, attributeFilter: ["class"] });
+  }
 
   // ── Expand contents: the outline as cards over the text ──────────
   const overlay = document.createElement("div");

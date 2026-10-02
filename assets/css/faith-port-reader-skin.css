@@ -1998,6 +1998,7 @@ html.fr-bar-hidden #app .sidebar { top: 0; }
   cursor: pointer;
 }
 .fr-read-restore[hidden] { display: none; }
+.fr-read-restore-sb { right: auto; left: 16px; }
 
 /* Expand contents: the outline as thin-line cards over the text, one per
    top-level section, read across in rows; the overlay scrolls down. */
@@ -2803,7 +2804,8 @@ html:not(.g-mobile) #app aside.sidebar {
   --sb-fill: var(--fr-fill, #b0573a);
   --sb-fill-ink: var(--fr-fill-ink, #fff);
 }
-html:not(.g-mobile) #app aside.sidebar .fr-sb-actions { padding: 14px 16px 0; }
+html:not(.g-mobile) #app aside.sidebar .fr-sb-actions { padding: 14px 16px 0; display: flex; gap: 8px; }
+html:not(.g-mobile) #app aside.sidebar .fr-sb-actions .fr-read-fold[hidden] { display: none; }
 html:not(.g-mobile) #app aside.sidebar .fr-sb-actions .fr-read-fold {
   width: 100%;
   height: 32px;
@@ -2928,6 +2930,10 @@ html:not(.g-mobile).mh-hide body:has(#app.faith-port-read-page) .tfr-rail {
   transform: translateY(calc(-1 * var(--mo-mast, 61px)));
 }
 html:not(.g-mobile) #app.faith-port-read-page { margin-top: var(--fr-rail-h, 0px); }
+/* Toolbar hidden: the rail goes too, so its margin left a blank strip
+   above the contents (Ian, 2026-10-02: "the contents bar doesn't have a
+   top"). The sidebar now starts at the top of the screen. */
+html.fr-bar-hidden:not(.g-mobile) #app.faith-port-read-page { margin-top: 0; }
 @media (prefers-reduced-motion: reduce) {
   html:not(.g-mobile) body:has(#app.faith-port-read-page) .tfr-rail { transition: none; }
 }
