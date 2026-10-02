@@ -2329,3 +2329,16 @@ html:not(.fr-plain) .fr-reader-head #thTop{display:inline-flex;align-items:cente
 
 /* A work printed in one language only (DATA.source_only): no English lane to offer (corpus reader, 2026-09-24). */
 .app.source-only #m-en{display:none!important}
+/* PHONES (2026-10-01, mobile pass): the volume navigation ("Browse PG 1 · 2 of 13") had 16–28 px rows and a 20 px picker in
+   12.5 px type (iOS zooms the page when a field under 16 px takes focus, and its native select ignores min-height: height it is);
+   the reader's author link in the title band was a 16 px target; the notebook's project picker and searches were 14 px. Touch
+   screens get 44 px rows, a 44 px picker in 16 px type, 16 px notebook fields, and the author link a 44 px tap area that moves
+   nothing (padding offset by the same negative margin). */
+@media (pointer:coarse){
+  details.vncontents summary.vnhead{min-height:44px;align-items:center}
+  .vnlist a.vnrow{min-height:44px;align-items:center}
+  .vnsw select.vnsel{height:44px;min-height:44px;font-size:16px}
+  .fr-reader-head .reader-reference a{padding-block:14px;margin-block:-14px}
+  html body #notebook :is(#nbProjectPick,#nbSearch,#nbWorkSearchQuery),
+  #notebook :is(input:not([type=checkbox]):not([type=radio]),select,textarea){font-size:16px}
+}

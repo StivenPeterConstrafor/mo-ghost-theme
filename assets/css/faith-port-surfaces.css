@@ -1211,6 +1211,8 @@ main.research-room:has(.rx-profile) .rx-filters label:has(> #room-work-order) { 
 @media (max-width: 760px) {
   .faith-port-dtc-page > .top > .sband { flex: 1 1 100%; margin-left: 0; }
   .faith-port-dtc-page > .top #q { flex: 1 1 auto; width: auto; }
+  /* 0.95rem (15.2 px) made iOS zoom the page on focus (mobile pass, 2026-10-01) */
+  .faith-port-dtc-page > .top #q { font-size: 16px; }
 }
 
 /* The entry's own ×, top right of its head (faith-dtc-chrome.js). */
@@ -1654,6 +1656,11 @@ main.research-room select {
 }
 main.research-room input[type="search"]:focus,
 main.research-room select:focus { outline: none; border-color: var(--room-accent); }
+/* PHONES (2026-10-01, mobile pass): these fields were 15 px, and iOS zooms the page when a field under 16 px takes focus ("Find a
+   work", "Kind of work" in every room). Touch screens get 16 px; the desktop keeps 15. */
+@media (pointer: coarse) {
+  main.research-room :is(input[type="search"], input[type="text"], select) { font-size: 16px; }
+}
 /* A long choice ("All works in this room") stays on one line and the
    chevron sits at the right edge, not after the words. */
 main.research-room select { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }

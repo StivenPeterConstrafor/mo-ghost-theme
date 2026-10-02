@@ -412,4 +412,7 @@ body.research-page .pinb{min-height:0;min-width:0;font:500 12.5px/1.2 var(--sans
 .rx-work-witness{margin:6px 0 0;font:13px/1.6 var(--body);color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
 .rx-work-witness .rx-witness{margin-left:0}
 .rx-work-witness .pinb-work{margin-left:0}
-
+/* PHONES (2026-10-01, mobile pass): "Save work" on a work card was a 64×15 px target beside 44 px "Read work"/"Explore work". */
+@media (pointer:coarse){
+  body.research-page .rx-work-actions .pinb-work{min-height:44px;display:inline-flex;align-items:center}
+}
