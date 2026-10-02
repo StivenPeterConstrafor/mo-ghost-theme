@@ -41,11 +41,34 @@
       if (/a$/.test(w) && !/ia$/.test(w)) off.add(w.slice(0, -1) + 'is');
       [...out].forEach(f => { if (!/que$/.test(f)) out.add(f + 'que'); });
     } else {
+      // ENGLISH FORMS (10-02, the Pagefind comparison: Pagefind's stemming found 'antinomians', 'predestined'; "lords supper" missed
+      // 900 works because "Lord's" is indexed as lord + s): plurals, the singular of a plural or possessive, and the verb's forms,
+      // early-modern -eth/-est included. Only forms the library holds are shown, each with its count, and any can be unticked.
       if (!/s$/.test(w)) out.add(w + 's');
       if (/(s|x|z|ch|sh)$/.test(w)) out.add(w + 'es');
-      if (/[^aeiou]y$/.test(w)) out.add(w.slice(0, -1) + 'ies');
+      if (/[^aeiou]y$/.test(w)) { out.add(w.slice(0, -1) + 'ies'); out.add(w.slice(0, -1) + 'ied'); }
+      if (/[^s]s$/.test(w) && w.length > 3) out.add(w.slice(0, -1));
+      if (/ies$/.test(w)) out.add(w.slice(0, -3) + 'y');
+      if (w.length >= 4 && !/s$/.test(w)) {
+        const b = /e$/.test(w) ? w.slice(0, -1) : w;
+        [b + 'ed', b + 'ing', w + (/e$/.test(w) ? 'th' : 'eth'), w + (/e$/.test(w) ? 'st' : 'est'), b + 'er', b + 'ers'].forEach(f => out.add(f));
+        if (/e$/.test(w)) out.add(w + 'd');
+        if (/(ion|ism|ist|ian)$/.test(w)) out.add(w + 's');
+      }
     }
     return { all: [...out].filter(f => f.length >= 2), off };
+  }
+  /* A QUOTED PHRASE (2026-10-01, the Parquet phrase index): its indexed words in order (2–6) and the small words the index leaves out
+     (et, of, the …: "covenant of works" is couenant → works standing next to each other on a page). Null when it is not a phrase. */
+  /* 10-02 PM: and each indexed word's OFFSET in tokens from the first, counted as the positions index counts a page (\p{L}+ runs,
+     every one, small words included), so "covenant of works" is works exactly two tokens after couenant. */
+  function phraseOf(query) {
+    const m = /["“”]([^"“”]{2,240})["“”]?/.exec(String(query || '').trim());
+    if (!m) return null;
+    const toks = (m[1].normalize('NFC').match(/\p{L}+/gu) || []).map(fold), ws = [], at = [];
+    toks.forEach((w, i) => { if (w.length >= 2 && w.length <= 40 && !STOP.has(w)) { ws.push(w); at.push(i); } });
+    const skipped = [...new Set(toks.filter(w => w.length >= 2 && STOP.has(w)))];
+    return ws.length >= 2 && ws.length <= 6 ? { ws, skipped, offsets: at.map(i => i - at[0]), text: m[1].trim().replace(/\s+/g, ' ') } : null;
   }
   /* The words of a query worth counting (letters only, no stopwords); null for a quoted phrase or more than three words. */
   function words(query) {
@@ -79,7 +102,10 @@
 .wix .wix-forms b{font-weight:600;margin-right:.2rem}.wix label.wix-f{display:inline-flex;gap:.25rem;align-items:center;padding:.12rem .5rem;border:1px solid var(--border,#ddd);border-radius:999px;cursor:pointer}
 .wix label.wix-f span{color:var(--muted,#666)}.wix .wix-more{color:var(--muted,#666)}.wix .wix-more button{border:0;background:none;padding:0 .2rem;color:inherit;text-decoration:underline;cursor:pointer;font:inherit}
 .wix .wix-sum{margin:.5rem 0 .55rem;font-size:.98rem}.wix .wix-sum b{font-size:1.08rem}
-.wix .wix-trad{display:flex;flex-wrap:wrap;gap:.35rem;margin:0 0 .4rem}
+.wix .wix-trad,.wix .wix-dist{display:flex;flex-wrap:wrap;gap:.35rem;margin:0 0 .4rem;align-items:center}
+.wix .wix-dist button{padding:.2rem .65rem;border:1px solid var(--border,#ddd);border-radius:999px;background:none;color:inherit;font:inherit;font-size:.82rem;cursor:pointer}
+.wix .wix-dist button[aria-pressed=true]{background:var(--fg,#222);color:var(--card-bg,#fff);border-color:var(--fg,#222)}
+.wix .wix-dist .wix-ord{font-size:.82rem;color:var(--muted,#666);display:inline-flex;gap:.3rem;align-items:center;margin-left:.2rem}
 .wix .wix-trad button{padding:.2rem .65rem;border:1px solid var(--border,#ddd);border-radius:999px;background:none;color:inherit;font:inherit;font-size:.82rem;cursor:pointer}
 .wix .wix-trad button span{color:var(--muted,#666);margin-left:.3rem}.wix .wix-trad button[aria-pressed=true]{background:var(--fg,#222);color:var(--card-bg,#fff);border-color:var(--fg,#222)}
 .wix .wix-trad button[aria-pressed=true] span{color:inherit;opacity:.75}
@@ -106,7 +132,25 @@
 .wix .wix-go{margin-top:.6rem;padding:.35rem .85rem;border:1px solid var(--border,#ddd);border-radius:6px;background:none;color:inherit;font:inherit;font-size:.86rem;cursor:pointer}
 .wix .wix-if .wix-go{margin-top:.2rem;font-size:.84rem}
 .wix-teaser{padding:.7rem 1rem;font-size:.92rem;line-height:1.5}.wix-teaser .wix-go{margin:0 0 0 .4rem;padding:.2rem .7rem}
-.wix .wix-note{margin:.8rem 0 0;color:var(--muted,#666);font-size:.8rem;line-height:1.45}.wix .wix-err{color:#a8462b}`;
+.wix .wix-note{margin:.8rem 0 0;color:var(--muted,#666);font-size:.8rem;line-height:1.45}.wix .wix-err{color:#a8462b}
+.wcx .wcx-k{margin:0 0 .15rem;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#666)}
+.wcx h3{font-size:1.18rem}.wcx .wcx-gl{margin:.1rem 0 .35rem;font-size:.95rem;line-height:1.5}
+.wcx .wcx-meta{margin:0 0 .7rem;color:var(--muted,#666);font-size:.82rem;line-height:1.5}.wcx .wcx-meta a{color:inherit}
+.wcx .wcx-row{display:grid;grid-template-columns:5.2rem 1fr;gap:.2rem .6rem;align-items:baseline;margin:.3rem 0;font-size:.84rem}
+.wcx .wcx-row>b{font-weight:600;font-size:.8rem;color:var(--muted,#666);padding-top:.15rem}
+.wcx .wcx-chips{display:flex;flex-wrap:wrap;gap:.3rem .35rem}
+.wcx a.wcx-t{display:inline-flex;gap:.3rem;align-items:baseline;padding:.1rem .55rem;border:1px solid var(--border,#ddd);border-radius:999px;color:inherit;text-decoration:none}
+.wcx a.wcx-t:hover{border-color:var(--fg,#222)}.wcx a.wcx-t span{color:var(--muted,#666);font-size:.78rem;font-variant-numeric:tabular-nums}
+.wcx a.wcx-t[data-lang=grc]{font-family:var(--font-greek,inherit)}
+.wcx .wcx-v{color:var(--muted,#666);font-size:.8rem}.wcx .wcx-v i{font-style:italic;color:var(--fg,#222)}
+.wcx details.wcx-off{margin:.35rem 0 0;font-size:.8rem;color:var(--muted,#666)}.wcx details.wcx-off summary{cursor:pointer}
+.wcx details.wcx-off ul{margin:.3rem 0 0;padding-left:1.1rem}.wcx details.wcx-off li{margin:.15rem 0}
+.wcx .wcx-why{margin:.9rem 0 0;padding:.5rem 0 0;border-top:1px solid var(--border,#e6e6e6);color:var(--muted,#666);font-size:.8rem;line-height:1.45}
+.wcx .wcx-ev{color:var(--muted,#666)}
+.wcx .wcx-start{margin:.85rem 0 0;font-size:.9rem;line-height:1.5}.wcx .wcx-start b{font-weight:600}.wcx .wcx-start a{color:inherit}
+.wcx .wcx-near{margin:.35rem 0 0;font-size:.84rem;color:var(--muted,#666)}.wcx .wcx-near a{color:inherit}
+.wcx .wix-trad{margin:.7rem 0 .2rem}.wcx .wcx-en{font-size:.74rem;border:1px solid var(--border,#ddd);border-radius:999px;padding:0 .4rem;margin-left:.35rem;color:var(--muted,#666);white-space:nowrap}
+@media (max-width:640px){.wcx .wcx-row{grid-template-columns:1fr}.wcx .wcx-row>b{padding:0}}`;
     const el = document.createElement('style'); el.textContent = css; document.head.appendChild(el);
   }
   // 'Tomus XII', 'Vol. 6', 'Pars VIII', 'Book 2' → a number to put a work's volumes in order
@@ -135,21 +179,157 @@
     return rows.map((r, i) => (seen.get(short[i]) > 1 ? cap(String(r.volume || '').trim(), 40) || short[i] : short[i]));
   }
 
+
+  /* THE CONCEPT CARD (2026-10-02, owner: "build it … make of course results are tastefully done"). When the query names a doctrine or
+     topic of the concept map (tools/concepts/; v1/concepts/index.json: theosis, deification, the hypostatic union, transubstantiation,
+     the 198 topics and their finer doctrines), a card above the word panel shows what the library calls it in every language — the
+     words and phrases the judges kept, each with its works, every one a search of its own — its key verses with their wordings, and
+     the works that treat it most: ranked where its words, its verses and the statements filed under it agree on the same pages. Words
+     left out because they mostly mean something else here are listed with the reason. Same files on both sites (Blob / the library
+     worker); nothing changes when the query names no concept. */
+  const CBASE = () => (window.__FR_BLOB_BASE__ && !/TBD/.test(String(window.__FR_BLOB_BASE__)) ? String(window.__FR_BLOB_BASE__)
+    : 'https://0ss8v4l06kodnhp0.public.blob.vercel-storage.com').replace(/\/+$/, '') + '/v1/concepts/';
+  let cIndex = null;
+  const loadConcepts = () => cIndex || (cIndex = fetch(CBASE() + 'index.json?v=' + Math.floor(Date.now() / 600000))
+    .then(r => (r.ok ? r.json() : null)).catch(() => null).then(j => { if (!j) cIndex = null; return j; }));   // a miss is not remembered
+  const foldText = s => String(s || '').split(/[^\p{L}\p{N}]+/u).map(fold).filter(Boolean).join(' ');
+  /* the concept the WHOLE query names (a trigger or the label, 'the' and quotes aside): a search box is not a question */
+  function conceptOf(query, index) {
+    const fq = foldText(String(query || '').replace(/^\s*the\s+/i, ''));
+    if (!fq || !index) return null;
+    let best = null, part = null;
+    for (const c of index.concepts || []) {
+      const ts = [foldText(String(c.label).replace(/^\s*the\s+/i, '')), ...(c.triggers || []).map(t => t.replace(/^the /, ''))];
+      if (ts.includes(fq) && (!best || (c.works || 0) > (best.works || 0))) best = c;
+      // one of the concept's own Latin or Greek words ('deificatio'): a line pointing to the concept, not the whole card
+      else if (!best && (c.keys || []).includes(fq) && (!part || (c.works || 0) > (part.works || 0))) part = c;
+    }
+    return best || (part ? { ...part, part: true } : null);
+  }
+  const LANG = { grc: 'Greek', la: 'Latin', en: 'English' };
+  function searchHref(term) { const u = new URL(location.href); u.searchParams.set('q', term); u.searchParams.set('m', 'full'); u.hash = ''; return u.pathname + u.search; }
+  async function conceptCard(slot, opts, force) {
+    const index = await loadConcepts(), hit = force || conceptOf(opts.query, index);
+    if (!hit) return;
+    if (hit.part && !force) {
+      slot.className = 'wix wix-teaser';
+      slot.innerHTML = `<b>“${esc(String(opts.query).trim())}”</b> is one of the library’s words for <b>${esc(hit.label)}</b>${hit.gloss ? ` (${esc(hit.gloss.replace(/\.$/, ''))})` : ''}. <button type="button" class="wix-go">Show the concept</button>`;
+      slot.querySelector('button').onclick = () => conceptCard(slot, opts, { ...hit, part: false });
+      return;
+    }
+    const c = await fetch(CBASE() + encodeURIComponent(hit.id) + '.json?v=' + encodeURIComponent(index.v || '')).then(r => (r.ok ? r.json() : null)).catch(() => null);
+    if (!c || !slot.isConnected) return;
+    const on = (c.terms || []).filter(t => t.ticked && t.kind !== 'wording'), off = (c.terms || []).filter(t => !t.ticked && t.kind !== 'wording');
+    const wordings = (c.terms || []).filter(t => t.kind === 'wording' && t.ticked);
+    const chip = t => `<a class="wcx-t" data-lang="${esc(t.lang)}" href="${esc(searchHref(t.kind === 'word' ? t.term : '"' + t.term + '"'))}" title="${esc(t.kind === 'word' ? 'every page with “' + t.term + '” and its forms' : 'the phrase, every page')}">${esc(t.term)} <span>${n(t.works)}</span></a>`;
+    const rows = ['grc', 'la', 'en'].map(l => {
+      const ts = on.filter(t => t.lang === l).sort((a, b) => b.works - a.works);
+      if (!ts.length) return '';
+      const first = ts.slice(0, 7), rest = ts.slice(7);
+      return `<div class="wcx-row"><b>${LANG[l]}</b><div class="wcx-chips">${first.map(chip).join('')}${rest.length ? `<span class="wix-more"><button type="button" data-cmore="${l}">+${rest.length} more</button></span><span hidden data-crest="${l}">${rest.map(chip).join('')}</span>` : ''}</div></div>`;
+    }).join('');
+    const verses = (c.verses || []).filter(v => v.weight >= .3).slice(0, 4);
+    const vrow = verses.length ? `<div class="wcx-row"><b>Scripture</b><div class="wcx-v">${verses.map(v => {
+      const w = wordings.filter(t => String(t.note || '').startsWith(v.label.replace(/^(\d) /, '$1 ')) || String(t.note || '').includes(v.ref)).slice(0, 2);
+      return `${esc(v.label)} · cited in ${n(v.works)} works${w.length ? ' · ' + w.map(t => `<i>${esc(t.term)}</i>`).join(', ') : ''}`;
+    }).join('<br>')}</div></div>` : '';
+    const offList = off.length ? `<details class="wcx-off"><summary>${off.length} ${off.length === 1 ? 'word' : 'words'} left out: mostly used in another sense</summary><ul>${off.slice(0, 12).map(t =>
+      `<li><a href="${esc(searchHref(t.term))}">${esc(t.term)}</a> (${LANG[t.lang] || t.lang}${t.precision != null ? `, on topic on ${Math.round(t.precision * 100)}% of sampled pages` : ''})${t.note ? ' · ' + esc(t.note) : ''}</li>`).join('')}</ul></details>` : '';
+    const up = (c.broader || []).map(id => (index.concepts.find(x => x.id === id) || {}).label).filter(Boolean);
+    const meta = [`${n(c.works)} works · ${n(c.pages)} pages`, up.length ? 'within ' + up.map(esc).join(', ') : ''].filter(Boolean).join(' · ');
+    // FOR EVERY READER (owner 10-02: "genuinely useful for each type of person, varying complexity and varying traditions"): a
+    // newcomer gets the gloss and where to start in English; a student the nearby concepts and the dictionary article; a scholar the
+    // words in every language, the verses and the evidence per work; anyone can narrow the works to one tradition.
+    const conceptLabel = id => (index.concepts.find(x => x.id === id) || {}).label;
+    const near = [...(c.broader || []), ...(c.narrower || []).slice(0, 4), ...(c.related || []).slice(0, 4)].filter((x, i, a) => a.indexOf(x) === i).map(conceptLabel).filter(Boolean).slice(0, 8);
+    const dict = (c.dtc || [])[0];
+    const dictHref = dict ? (/^\/the-faith-received\//.test(location.pathname) ? '/the-faith-received/dictionary/' : '/dtc') + '#' + encodeURIComponent(dict) : '';
+    const nearLine = near.length || dict ? `<p class="wcx-near">${near.length ? 'Nearby: ' + near.map(l => `<a href="${esc(searchHref(l))}">${esc(l)}</a>`).join(' · ') : ''}${near.length && dict ? ' · ' : ''}${dict ? `<a href="${esc(dictHref)}">the dictionary article</a>` : ''}</p>` : '';
+    const trads = (c.traditions || []).filter(t => t.t && t.works);
+    slot.className = 'wix wcx';
+    slot.innerHTML = `<p class="wcx-k">Concept</p><h3>${esc(c.label)}</h3>${c.gloss ? `<p class="wcx-gl">${esc(c.gloss)}</p>` : ''}<p class="wcx-meta">${meta}</p>
+      ${rows}${vrow}${offList}${nearLine}
+      <p class="wcx-why">Works that treat it most: ranked where its words, its verses and the statements filed under it meet on the same pages. Each word above is a search of its own.</p>
+      ${trads.length > 1 ? `<div class="wix-trad" role="group" aria-label="Tradition"><button type="button" data-ct="*" aria-pressed="true">All traditions</button>${trads.map(t => `<button type="button" data-ct="${esc(t.t)}" aria-pressed="false">${esc(t.t)}<span>${n(t.works)}</span></button>`).join('')}</div>` : ''}
+      <p class="wcx-start"></p><ol class="wcx-list"></ol><div class="wcx-foot"></div>`;
+    const forms = [...new Set(on.filter(t => t.kind === 'word').flatMap(t => t.forms || []))];
+    const pforms = [...new Set(on.filter(t => t.kind !== 'word').flatMap(t => t.chain || []))];
+    const ol = slot.querySelector('.wcx-list'), foot = slot.querySelector('.wcx-foot'), st = { shown: 0, trad: null };
+    const pool = () => (c.top || []).filter(w => st.trad === null || w.tradition === st.trad);
+    function startWith() {
+      const el = slot.querySelector('.wcx-start'), en = pool().filter(w => w.en).slice(0, 3);
+      el.innerHTML = en.length ? `<b>Start with, in English:</b> ${en.map(w => `<a href="${esc(opts.readHref(w.w, w.best, forms[0] || ''))}">${opts.title(w.w, { slug: w.w, title: w.title })}</a>${w.author ? ` (${esc(w.author)})` : ''}`).join(' · ')}` : '';
+    }
+    const ev = w => [w.tp ? `its words on ${n(w.tp)} ${w.tp === 1 ? 'page' : 'pages'}` : '', w.vp ? `its verses on ${n(w.vp)}` : '', w.sp ? `${n(w.sp)} ${w.sp === 1 ? 'page' : 'pages'} filed under it` : ''].filter(Boolean).join(' · ');
+    function more(k) {
+      pool().slice(st.shown, st.shown + k).forEach(w => {
+        const li = document.createElement('li'); li.className = 'wix-w';
+        const row = { slug: w.w, title: w.title, author: w.author, tradition: w.tradition, volume: w.volume };
+        li.innerHTML = `<div class="wix-h"><a class="wix-t" href="${esc(opts.readHref(w.w, w.best, forms[0] || ''))}">${opts.title(w.w, row)}</a>${w.en ? '<span class="wcx-en" title="This work can be read in English">English</span>' : ''}<span class="wix-n">${n(w.pages)} ${w.pages === 1 ? 'page' : 'pages'}</span></div>
+          ${opts.meta(row) ? `<div class="wix-m">${opts.meta(row)}</div>` : ''}
+          <div class="wix-c"><span class="wcx-ev">${ev(w)}</span><button type="button" class="wix-pv" data-cw="${esc(w.w)}" aria-expanded="false">Passages ▾</button></div>`;
+        ol.appendChild(li);
+      });
+      st.shown = Math.min(pool().length, st.shown + k);
+      const left = pool().length - st.shown;
+      foot.innerHTML = left > 0 ? `<button type="button" class="wix-go">More works · ${n(left)} more ranked</button>` : '';
+      const b = foot.querySelector('button'); if (b) b.onclick = () => more(10);
+    }
+    more(8); startWith();
+    async function passages(li, w, btn) {
+      let box = li.querySelector(':scope > .wix-inst');
+      if (box) { box.hidden = !box.hidden; btn.setAttribute('aria-expanded', String(!box.hidden)); btn.textContent = box.hidden ? 'Passages ▾' : 'Hide ▴'; return; }
+      box = document.createElement('div'); box.className = 'wix-inst'; box.innerHTML = '<span class="wix-none">Reading the pages…</span>'; li.appendChild(box);
+      btn.setAttribute('aria-expanded', 'true'); btn.textContent = 'Hide ▴';
+      const pp = (w.pp || []).slice().sort((a, b) => b[1] - a[1]).slice(0, 6);
+      let texts = null;
+      if (window.FRWordPreview) texts = await FRWordPreview.pages(w.w, pp.map(p => String(p[0]))).catch(() => null);
+      box.innerHTML = '';
+      pp.forEach(p => {
+        const t = texts && texts.get(String(p[0])) || '';
+        let k = t && FRWordPreview.kwic(t, forms);
+        if (t && (!k || !k.total) && pforms.length) k = FRWordPreview.kwic(t, pforms);
+        const d = document.createElement('div'); d.className = 'wix-i';
+        const tags = [p[3] ? 'cites its verse' : '', p[4] ? `${p[4]} ${p[4] === 1 ? 'statement' : 'statements'} filed under it` : ''].filter(Boolean).join(' · ');
+        d.innerHTML = `<a class="wix-p" href="${esc(opts.readHref(w.w, p[0], forms[0] || ''))}">${(/^(pld|pg)-/.test(w.w) ? 'col.' : 'p.') + ' ' + esc(String(p[0]).replace(/^0+(?=\d)/, ''))}</a>`
+          + (k && k.snips.length ? k.snips.map(x => `<span class="wix-s">${x}</span>`).join('') : `<span class="wix-s wix-none">${tags || 'open the page to read it'}</span>`)
+          + (k && k.snips.length && tags ? ` <span class="wcx-ev">· ${tags}</span>` : '');
+        box.appendChild(d);
+      });
+    }
+    slot.addEventListener('click', async e => {
+      const t = e.target.closest('button'); if (!t || !slot.contains(t)) return;
+      if (t.dataset.ct) {
+        st.trad = t.dataset.ct === '*' ? null : t.dataset.ct; st.shown = 0; ol.innerHTML = '';
+        slot.querySelectorAll('button[data-ct]').forEach(b => b.setAttribute('aria-pressed', String(b === t)));
+        more(8); startWith(); return;
+      }
+      if (t.dataset.cmore) { const r = slot.querySelector(`[data-crest="${t.dataset.cmore}"]`); if (r) { r.hidden = false; r.style.display = 'contents'; } t.parentElement.remove(); }
+      else if (t.dataset.cw) { const w = (c.top || []).find(x => x.w === t.dataset.cw); if (w) { t.disabled = true; await passages(t.closest('li'), w, t).catch(() => {}); t.disabled = false; } }
+    });
+  }
+
   function mount(host, opts) {
-    const ws = words(opts.query);
+    const ph = phraseOf(opts.query), ws = ph ? ph.ws : words(opts.query);
     host.innerHTML = '';
     if (!ws || !host) return null;
     style();
     const box = document.createElement('section');
     box.className = 'wix'; box.setAttribute('aria-live', 'polite');
-    const quoted = shown(opts.query, ws).map(w => '“' + esc(w) + '”').join(' + ');
-    box.innerHTML = `<h3>${quoted}${ws.length > 1 ? ' on the same page' : ''} — every text in the library</h3>
-      <p class="wix-sub">Counted from the library’s word index: every page of every work, a duplicate edition once. <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
-      <div class="wix-forms"></div><div class="wix-sum">Counting…</div><div class="wix-trad" role="group" aria-label="Tradition"></div><div class="wix-list"></div>`;
+    const quoted = ph ? '“' + esc(ph.text) + '”' : shown(opts.query, ws).map(w => '“' + esc(w) + '”').join(' + ');
+    const phNote = ph ? `<span class="wix-phn"> The words stand next to each other, in this order${ph.skipped.length ? ` — the index leaves out small words (${ph.skipped.map(esc).join(', ')}), so “${esc(ph.ws.join(' … '))}” also finds the phrase with another small word between` : ''}.</span>` : '';
+    box.innerHTML = `<h3>${quoted}<span class="wix-how">${ph ? ' as a phrase' : ws.length > 1 ? ' on the same page' : ''}</span> — every text in the library</h3>
+      <p class="wix-sub">Counted from the library’s word index: every page of every work, a duplicate edition once.${phNote} <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
+      <div class="wix-forms"></div><div class="wix-dist" role="group" aria-label="How close" hidden></div><div class="wix-sum">Counting…</div><div class="wix-trad" role="group" aria-label="Tradition"></div><div class="wix-list"></div>`;
     host.appendChild(box);
+    const cslot = document.createElement('section'); host.insertBefore(cslot, box); conceptCard(cslot, opts).catch(e => console.warn('concept card', e));
     const $ = s => box.querySelector(s);
-    const state = { seq: 0, groups: ws.map(w => { const f = forms(w); return { word: w, cands: f.all.slice(0, Math.floor(40 / ws.length)), off: f.off, on: new Set(), counts: {}, more: [] }; }), trad: null, sum: [], byTrad: new Map() };
+    const state = { dist: { k: 0, ordered: false }, seq: 0, groups: ws.map(w => { const f = forms(w); return { word: w, cands: f.all.slice(0, Math.floor(40 / ws.length)), off: f.off, on: new Set(), counts: {}, more: [] }; }), trad: null, sum: [], byTrad: new Map() };
     const groups = () => state.groups.map(g => [...g.on]).filter(g => g.length);
+    // the distance asked: a quoted phrase exactly (its offsets; an engine without the positions table reads the pairs), or for two or
+    // three words the reader's choice (state.dist: same page, or within k words, in the typed order or not)
+    const spanBody = () => (ph ? { phrase: true, offsets: ph.offsets } : state.dist.k ? { within: state.dist.k, ordered: state.dist.ordered } : {});
+    const post = b => opts.post(b.by !== 'forms' ? { ...b, ...spanBody() } : b);
 
     function formsHtml() {
       return state.groups.map((g, gi) => {
@@ -162,7 +342,7 @@
     }
     async function loadForms() {
       const all = [...new Set(state.groups.flatMap(g => g.cands))];
-      const r = await opts.post({ op: 'words', by: 'forms', groups: [all.slice(0, 40)], prefixes: ws });
+      const r = await post({ op: 'words', by: 'forms', groups: [all.slice(0, 40)], prefixes: ws });
       const counts = {}; (r.forms || []).forEach(x => { counts[x.form] = Number(x.works); });
       state.groups.forEach(g => {
         g.counts = Object.fromEntries(g.cands.filter(f => counts[f]).map(f => [f, counts[f]]));
@@ -179,8 +359,8 @@
       if (G.length < state.groups.length) { $('.wix-sum').textContent = 'No form of every word is in the word index.'; $('.wix-trad').innerHTML = ''; $('.wix-list').innerHTML = ''; return; }
       $('.wix-sum').textContent = 'Counting every page…';
       const [sum, list] = await Promise.all([
-        opts.post({ op: 'words', by: 'summary', groups: G }),
-        opts.post({ op: 'words', by: 'works', groups: G, limit: 600 })]);
+        post({ op: 'words', by: 'summary', groups: G }),
+        post({ op: 'words', by: 'works', groups: G, limit: 600 })]);
       if (my !== state.seq) return;
       state.sum = (sum.rows || []).map(r => ({ tradition: tradOf(r), works: Number(r.works), pages: Number(r.pages), occ: Number(r.occurrences) }))
         .sort((a, b) => (a.tradition ? 0 : 1) - (b.tradition ? 0 : 1) || b.works - a.works);
@@ -203,7 +383,7 @@
     async function rowsOf(t, need) {
       const b = state.byTrad.get(t);
       if (b.full || b.rows.length >= need) return b;
-      const r = await opts.post({ op: 'words', by: 'works', groups: groups(), tradition: t, limit: 2000 });
+      const r = await post({ op: 'words', by: 'works', groups: groups(), tradition: t, limit: 2000 });
       b.rows = r.rows || b.rows; b.full = true;
       return b;
     }
@@ -280,7 +460,7 @@
       if (box) box.remove();
       box = document.createElement('div'); box.className = 'wix-inst'; box.dataset.slug = slug; box.innerHTML = '<span class="wix-none">Reading the pages…</span>'; li.appendChild(box);
       btn.setAttribute('aria-expanded', 'true'); if (toggle) btn.textContent = 'Hide ▴';
-      const r = await opts.post({ op: 'words', by: 'pages', groups: groups(), work: slug, limit: 2000 }).catch(fail);
+      const r = await post({ op: 'words', by: 'pages', groups: groups(), work: slug, limit: 2000 }).catch(fail);
       if (!r || !r.rows) { box.remove(); return; }
       const pages = r.rows, forms = [...new Set(groups().flat())], st = { shown: 0 };
       box.innerHTML = `${btn.classList.contains('wix-vol') ? `<div class="wix-ih">${esc(btn.firstChild.textContent)} · ${n(pages.length)} ${pages.length === 1 ? 'page' : 'pages'}</div>` : ''}<div class="wix-il"></div><div class="wix-if"></div>
@@ -322,6 +502,30 @@
       }
     });
     function fail(err) { $('.wix-sum').innerHTML = '<span class="wix-err">The word index could not be reached. The passages below are still searchable.</span>'; console.warn('word index', err); }
+    // WORDS IN ORDER, AT A DISTANCE (10-02 PM): two or three words may be asked on the same page (the default), within 5 or 15 words of
+    // each other, and in the typed order; offered only where the positions index is published (opts.has, else the page engine's)
+    const DIST = [[0, 'On the same page'], [5, 'Within 5 words'], [15, 'Within 15 words']];
+    function distButtons() {
+      const el = $('.wix-dist');
+      el.innerHTML = DIST.map(([k, label]) => `<button type="button" data-dist="${k}" aria-pressed="${state.dist.k === k}">${label}</button>`).join('')
+        + `<label class="wix-ord"><input type="checkbox" data-ord${state.dist.ordered ? ' checked' : ''}${state.dist.k ? '' : ' disabled'}> in this order</label>`;
+    }
+    const howLine = () => { $('.wix-how').textContent = state.dist.k ? ` within ${state.dist.k} words${state.dist.ordered ? ', in this order' : ''}` : ' on the same page'; };
+    const hasTable = opts.has || (window.FRWordLocal && window.FRWordLocal.has) || (() => Promise.resolve(false));
+    if (!ph && ws.length > 1) Promise.resolve(hasTable('positions')).then(yes => { if (yes) { distButtons(); $('.wix-dist').hidden = false; } }).catch(() => {});
+    if (ph) Promise.resolve(hasTable('positions')).then(yes => {
+      const sub = $('.wix-sub'); if (!yes || !sub) return;
+      const note = sub.querySelector('.wix-phn'); if (note) note.textContent = ' Exactly these words in this order, the small words counted too.';
+    }).catch(() => {});
+    box.addEventListener('click', e => {
+      const t = e.target.closest('button[data-dist]'); if (!t) return;
+      state.dist.k = Number(t.dataset.dist); if (!state.dist.k) state.dist.ordered = false;
+      distButtons(); howLine(); loadCounts().catch(fail);
+    });
+    box.addEventListener('change', e => {
+      if (!e.target.matches('input[data-ord]')) return;
+      state.dist.ordered = e.target.checked; howLine(); loadCounts().catch(fail);
+    });
     loadForms().then(loadCounts).catch(fail);
     return { words: ws };
   }
@@ -351,5 +555,5 @@
     host.innerHTML = `<div class="wix wix-teaser"><b>${shown(opts.query, c.ws).map(w => '“' + esc(w) + '”').join(' + ')}</b> ${c.ws.length > 1 ? 'occur together on the pages of' : 'occurs in the text of'} <b>${n(c.works)} ${c.works === 1 ? 'work' : 'works'}</b> (with ${c.ws.length > 1 ? 'their' : 'its'} other forms). The list below matches titles and headings only. <button type="button" class="wix-go">List every text</button></div>`;
     host.querySelector('button').onclick = () => opts.open();
   }
-  window.FRWordIndex = { mount, teaser, count, inflect, forms, words, fold };
+  window.FRWordIndex = { mount, teaser, count, inflect, forms, words, phraseOf, fold, conceptOf, loadConcepts };
 })();
