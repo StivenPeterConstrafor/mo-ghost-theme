@@ -23,8 +23,12 @@
  *       scrolls down: masthead and toolbar away, the text takes the
  *       screen. "Show toolbar" stays top right. Remembered per browser.
  *
- * Desktop only (html.g-mobile has the thumb bar). Labels by textContent;
- * outline titles copied as text.
+ * Phones and tablets too (Ian, 2026-10-02: "make all of this work on
+ * mobile and tablet"). On a phone (html.g-mobile) Hide contents and
+ * Expand contents sit at the top of the contents drawer, Hide toolbar
+ * is a cell in the Tools drawer (faith-port-read-drawer.js), and hiding
+ * takes the thumb bar too; "Show toolbar" waits bottom right, in reach
+ * of a thumb. Labels by textContent; outline titles copied as text.
  */
 (function () {
   "use strict";
@@ -185,11 +189,26 @@
   document.body.appendChild(restoreSb);
 
   // ── Hide toolbar: the port's scrolled-away state, pinned ─────────
+  /* The band of chrome is measured with the rail in it (boot and early
+     scripts). A page that loads with the toolbar hidden measures the
+     rail at 0, so showing the toolbar again put the reader's bar under
+     the rail (Ian, 2026-10-02: "it doesn't fully show"). Measure again
+     whenever the toolbar comes back. */
+  function measureHead() {
+    const h = document.querySelector("header.site-header, header.site, .site-header");
+    if (!h || !h.offsetHeight) return;
+    const rail = document.querySelector(".tfr-rail");
+    const railPx = rail && rail.offsetHeight ? rail.offsetHeight : 0;
+    html.style.setProperty("--mo-mast", `${h.offsetHeight}px`);
+    html.style.setProperty("--mo-head", `${h.offsetHeight + railPx}px`);
+  }
   function paintBar() {
-    const on = barHidden && !mobile();
-    html.classList.toggle("fr-bar-hidden", on);
-    restore.hidden = !on;
-    restoreSb.hidden = !(on && app.classList.contains("nosb"));
+    const was = html.classList.contains("fr-bar-hidden");
+    html.classList.toggle("fr-bar-hidden", barHidden);
+    restore.hidden = !barHidden;
+    // A phone keeps Contents on the thumb bar; no second door needed.
+    restoreSb.hidden = !(barHidden && !mobile() && app.classList.contains("nosb"));
+    if (was && !barHidden) measureHead();
   }
   bBar.addEventListener("click", () => { barHidden = true; remember(); paintBar(); restore.focus({ preventScroll: true }); });
   restore.addEventListener("click", () => { barHidden = false; remember(); paintBar(); bBar.focus({ preventScroll: true }); });
@@ -303,8 +322,11 @@
   }
 
   function setExpanded(on) {
-    const want = Boolean(on) && !mobile();
+    const want = Boolean(on);
     if (want) build();
+    // On a phone the contents are a drawer over the text: close it so
+    // the expanded outline is what the reader sees.
+    if (want && mobile() && sbT && !app.classList.contains("nosb")) sbT.click();
     overlay.hidden = !want;
     html.classList.toggle("fr-toc-open", want);
     bExpand.textContent = want ? "Shrink contents" : "Expand contents";

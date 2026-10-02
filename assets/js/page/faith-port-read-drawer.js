@@ -108,6 +108,8 @@
     save: [{ d: "M6 3h12v18l-6-4-6 4z" }],
     report: [{ d: "M5 21V4M5 4h11l-2 4 2 4H5" }],
     top: [{ d: "M12 19V5M5 12l7-7 7 7" }],
+    // A bar lifted away: the line above, the arrow rising to it.
+    hidebar: [{ d: "M4 4h16M12 20V9M7 13l5-5 5 5" }],
     // Two columns of text side by side: the original and the English.
     lang: [{ tag: "rect", x: "3", y: "4", width: "8", height: "16", rx: "1" }, { tag: "rect", x: "13", y: "4", width: "8", height: "16", rx: "1" }, { d: "M5.5 8h3M5.5 11h3M5.5 14h3M15.5 8h3M15.5 11h3M15.5 14h3" }],
     theme: [{ tag: "circle", cx: "12", cy: "12", r: "8" }, { d: "M12 4a8 8 0 0 1 0 16z", fill: "currentColor" }],
@@ -548,9 +550,15 @@
       ask,
       report,
       top: proxy("x-top", "Top", "top", ".fr-tb-top"),
+      // Hide toolbar (faith-port-read-chrome.js) on a phone: the
+      // masthead, rail, title bar and this dock go; "Show toolbar"
+      // brings them back.
+      hidebar: proxy("x-hidebar", "Hide toolbar", "hidebar", ".fr-tb-focus"),
     };
     proxies.transparency.setAttribute("aria-controls", "frTtModal");
     proxies.transparency.addEventListener("click", () => setTt(!ttOpen()));
+    // The dock leaves with the toolbar; it comes back shut.
+    proxies.hidebar.addEventListener("click", () => setMobile(false));
   }
 
   // The button is named by the panel it opens: "AI Transparency" on a

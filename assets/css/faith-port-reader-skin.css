@@ -1955,8 +1955,7 @@ html:not(.g-mobile) #app .ph.fr-reader-head .ctr > :is(.fr-tb-focus, .fr-tb-repo
 html.g-mobile .fr-tb-focus,
 html.g-mobile .fr-tb-report,
 html.g-mobile .fr-tb-top,
-html.g-mobile .fr-tb-folds,
-html.g-mobile .fr-sb-actions { display: none !important; }
+html.g-mobile .fr-tb-folds { display: none !important; }
 
 /* Expand contents: a quiet button at the top of the contents sidebar. */
 .fr-sb-actions { padding: 8px 12px 0; }
@@ -2058,8 +2057,7 @@ html.fr-bar-hidden .fr-read-toc { top: 0; }
   padding: 9px 0;
   border-bottom: 1px solid var(--border, #d9c6a7);
 }
-html.g-mobile .fr-read-restore,
-html.g-mobile .fr-read-toc { display: none !important; }
+html.g-mobile .fr-read-restore-sb { display: none !important; }
 
 /* ── THE TOOLBAR STAYS WHEN THE MASTHEAD GOES (Ian, 2026-09-23) ──────
    "on scroll down, when the Mere O menu bar goes away, can you have the
@@ -2804,16 +2802,16 @@ html:not(.g-mobile) #app aside.sidebar {
   --sb-fill: var(--fr-fill, #b0573a);
   --sb-fill-ink: var(--fr-fill-ink, #fff);
 }
-html:not(.g-mobile) #app aside.sidebar .fr-sb-actions { padding: 14px 16px 0; display: flex; gap: 8px; }
-html:not(.g-mobile) #app aside.sidebar .fr-sb-actions .fr-read-fold[hidden] { display: none; }
-html:not(.g-mobile) #app aside.sidebar .fr-sb-actions .fr-read-fold:not([hidden]) {
+#app aside.sidebar .fr-sb-actions { padding: 14px 16px 0; display: flex; gap: 8px; }
+#app aside.sidebar .fr-sb-actions .fr-read-fold[hidden] { display: none; }
+#app aside.sidebar .fr-sb-actions .fr-read-fold:not([hidden]) {
   flex: 1 1 0;
   min-width: 0;
   white-space: nowrap;
   letter-spacing: 0.08em;
   padding: 0 6px;
 }
-html:not(.g-mobile) #app aside.sidebar .fr-sb-actions .fr-read-fold {
+#app aside.sidebar .fr-sb-actions .fr-read-fold {
   width: 100%;
   height: 32px;
   border: 1px solid var(--sb-line);
@@ -2824,7 +2822,7 @@ html:not(.g-mobile) #app aside.sidebar .fr-sb-actions .fr-read-fold {
   letter-spacing: 0.14em;
   padding: 0 12px;
 }
-html:not(.g-mobile) #app aside.sidebar .fr-sb-actions .fr-read-fold:hover { border-color: var(--sb-fill); color: var(--sb-fill); }
+#app aside.sidebar .fr-sb-actions .fr-read-fold:hover { border-color: var(--sb-fill); color: var(--sb-fill); }
 html:not(.g-mobile) #app aside.sidebar #nav .nav-vt {
   gap: 0;
   margin: 12px 0 0;
@@ -3696,4 +3694,38 @@ html.g-mobile #app #nav .nav-node .nav-open { min-height: 38px; padding: 5px 4px
     margin-inline: auto !important;
     padding-inline: 32px !important;
   }
+}
+
+/* ── HIDE CONTENTS, EXPAND CONTENTS, HIDE TOOLBAR ON A PHONE ─────────
+   Ian, 2026-10-02: "make all of this work on mobile and tablet." Tablets
+   from 881px get the desktop controls as they are (the sidebar is a
+   drawer there below 1100px, and Hide contents closes it). On a phone
+   (html.g-mobile):
+   - the two sidebar buttons sit at the top of the contents drawer, 40px
+     tall for a thumb;
+   - Expand contents is a sheet over the whole screen above the dock,
+     one column;
+   - Hide toolbar (a Tools cell) takes the dock away with the rest, and
+     "Show toolbar" waits bottom right. */
+html.g-mobile #app aside.sidebar .fr-sb-actions { padding: 12px 14px 0; }
+html.g-mobile #app aside.sidebar .fr-sb-actions .fr-read-fold:not([hidden]) { height: 40px; font-size: 11px; }
+html.g-mobile .fr-read-toc {
+  position: fixed;
+  inset: var(--mo-head, 0px) 0 calc(60px + env(safe-area-inset-bottom, 0px)) 0;
+  z-index: 75;
+  padding: 14px 16px 24px;
+}
+html.g-mobile.mh-hide .fr-read-toc,
+html.g-mobile.mh-mini .fr-read-toc,
+html.g-mobile.fr-bar-hidden .fr-read-toc { top: env(safe-area-inset-top, 0px); }
+html.g-mobile.fr-bar-hidden .fr-read-toc { bottom: 0; }
+html.g-mobile .fr-read-toc-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+html.g-mobile .fr-read-toc-head .fr-read-fold { min-height: 40px; }
+html.g-mobile.fr-bar-hidden nav.frthumb { display: none !important; }
+html.g-mobile .fr-read-restore:not(.fr-read-restore-sb) {
+  top: auto;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  right: 14px;
+  padding: 11px 14px;
+  z-index: 80;
 }
