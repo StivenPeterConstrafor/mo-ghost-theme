@@ -573,6 +573,52 @@
     };
   }
 
+  // ── Volumes of a set ────────────────────────────────────────────
+  // The verse index names a work by its title alone, so the volumes of one
+  // set arrive as rows with the same title (six cards reading "System of
+  // Theological Topics"), in the order of their addresses (vol-1, vol-10,
+  // vol-3). The catalogue holds each volume's published label ("Vol. 10",
+  // "Tomus II"). It is read once, when the first source row is drawn; a
+  // page that cannot get it shows its rows as before.
+  const VOLUME_WORD = /^(?:vol(?:ume)?|tomus|tome|band|liber|pars|part|book)\b/i;
+  let volumesReady = null;
+  function loadVolumes() {
+    if (!volumesReady) {
+      volumesReady = fetch(`${LIBRARY_BASE}/v1/works-index.json`, { credentials: "omit" })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .then((d) => new Map(((d && d.works) || [])
+          .filter((w) => w && w.slug && VOLUME_WORD.test(String(w.volume || "")))
+          .map((w) => [w.slug, String(w.volume)])))
+        .catch(() => { volumesReady = null; return new Map(); });
+    }
+    return volumesReady;
+  }
+  const wordsOf = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").match(/[a-z0-9]+/g) || [];
+  /* A work's volume label, when its title does not already carry it
+   * ("Opera omnia, Tomus II" needs no second "Tomus II"). */
+  function volumeLabel(volumes, slug, title) {
+    const label = volumes && volumes.get(slug);
+    if (!label) return "";
+    const have = wordsOf(title);
+    let at = 0;
+    const carried = wordsOf(label).every((word) => {
+      const i = have.indexOf(word, at);
+      if (i < 0) return false;
+      at = i + 1;
+      return true;
+    });
+    return carried ? "" : label;
+  }
+  /* Works in the order a reader looks for them: by title, then by volume
+   * (2 before 10, II before IV), through the shared helper when the page
+   * loads it; otherwise the order they came in. */
+  function sortWorks(works, volumes) {
+    const sources = window.FRScriptureSources;
+    if (!sources || !sources.compareWorks) return works;
+    const metadata = (slug) => ({ volume: (volumes && volumes.get(slug)) || "" });
+    return works.slice().sort((x, y) => sources.compareWorks(x, y, metadata));
+  }
+
   // ── Source rows with inline preview ─────────────────────────────
   // "cites" and "citation-survey" are rare spellings in the index (8 of about 7,000 rows in Matthew 1) of a citation by reference.
   // Every kind reads the ONE rule (scripture-kinds.js, owner 2026-09-26: allusions on every surface): Quotes, Cites, Alludes or
@@ -688,6 +734,10 @@
       }<div class="sd-preview" id="${pid}" hidden></div>`;
     const $btn = li.querySelector(".sd-preview-btn");
     const $pv = li.querySelector(".sd-preview");
+    loadVolumes().then((volumes) => {
+      const label = volumeLabel(volumes, row.w, row.t);
+      if (label) li.querySelector(".sd-source-title").insertAdjacentHTML("beforeend", `<span class="sd-source-vol">, ${esc(label)}</span>`);
+    });
     if (row.how) li.dataset.kind = kindOf(row);
     if (extra && extra.kinds) {
       whenSeen(li, () => extra.kinds().then((label) => {
@@ -980,6 +1030,7 @@
     fetchApocryphaChapter, apocryphaChapterNode, chapterNode, fetchApocryphaVerse,
     fetchVerse, fetchCommentaries, fetchPassage, fetchKindTotals,
     emptyFilters, activeCount, filterBar, sourceItem, centuryLabel,
+    loadVolumes, volumeLabel, sortWorks,
     HOW, kindOf, kindsLabel, workRows,
     // For /the-faith-received/topics/, which reads the same worker.
     api, VERSE_API,

@@ -522,8 +522,12 @@
     button.innerHTML = `<span>${esc(title)}</span><small>${esc(meta)}</small>`;
     return button;
   };
+  // A set's volumes share one title in the index: each card says which volume it is, and they stand in volume order.
+  let volumes = new Map();
+  S.loadVolumes().then((loaded) => { volumes = loaded; if (groups.size) renderGroups(); });
+  const volumeOf = (key, work) => S.volumeLabel(volumes, key, work.title);
   function renderWorkGroups(authorKey, group, host) {
-    const works = [...group.works.entries()].map(([key, work]) => ({ key, work, rows: visibleRows(work) })).filter((entry) => entry.rows.length);
+    const works = S.sortWorks([...group.works.entries()].map(([key, work]) => ({ key, work, rows: visibleRows(work), w: key, t: work.title })).filter((entry) => entry.rows.length), volumes);
     for (let start = 0; start < works.length; start += 5) {
       const set = document.createElement("div");
       set.className = "sd-expand-group sd-work-set";
@@ -532,7 +536,7 @@
       const chunk = works.slice(start, start + 5);
       chunk.forEach(({ key, work, rows }, index) => {
         const panelId = `sd-work-panel-${start + index}`;
-        grid.appendChild(makeIndexCard("work", key, work.title, plural(rows.length, "page", "pages"), openWork === key, panelId));
+        grid.appendChild(makeIndexCard("work", key, work.title, [volumeOf(key, work), plural(rows.length, "page", "pages")].filter(Boolean).join(" · "), openWork === key, panelId));
       });
       set.appendChild(grid);
       const selected = chunk.find(({ key }) => key === openWork);
@@ -540,7 +544,7 @@
         const panel = document.createElement("section");
         panel.className = "sd-expand-panel sd-work-panel";
         panel.id = `sd-work-panel-${start + chunk.indexOf(selected)}`;
-        panel.innerHTML = `<header><div><h4>${esc(selected.work.title)}</h4><p>${plural(selected.rows.length, "citation", "citations")} by ${esc(authorKey)}</p></div><button type="button" class="sd-panel-close" data-sd-work-close aria-label="Close work">×</button></header><ol class="sd-sources sd-citation-rows"></ol>`;
+        panel.innerHTML = `<header><div><h4>${esc(selected.work.title)}${volumeOf(selected.key, selected.work) ? `<span class="sd-source-vol">, ${esc(volumeOf(selected.key, selected.work))}</span>` : ""}</h4><p>${plural(selected.rows.length, "citation", "citations")} by ${esc(authorKey)}</p></div><button type="button" class="sd-panel-close" data-sd-work-close aria-label="Close work">×</button></header><ol class="sd-sources sd-citation-rows"></ol>`;
         const list = panel.querySelector("ol");
         selected.rows.forEach((row) => list.appendChild(S.sourceItem(row, ctx)));
         set.appendChild(panel);
