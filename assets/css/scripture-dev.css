@@ -455,6 +455,8 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
 .sd-source-head { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
 .sd-source-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .sd-source-title { font-size: 16px; font-style: italic; line-height: 1.3; overflow-wrap: anywhere; }
+/* the volume of a set, after its title: upright, so it reads as the catalogue's label and not as part of the title */
+.sd-source-vol { font-style: normal; font-weight: 400; color: var(--color-muted); white-space: nowrap; }
 .sd-source-meta { font-size: 13px; color: var(--color-muted); line-height: 1.4; }
 .sd-source-gist { font-size: 14px; color: var(--color-muted); line-height: 1.5; margin: 6px 0 0; }
 .sd-preview-btn { flex: 0 0 auto; padding: 8px 12px; }
