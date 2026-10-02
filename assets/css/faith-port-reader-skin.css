@@ -1234,6 +1234,21 @@ html.mh-mini .faith-port-read-page { height: 100dvh; }
   html header.site-header, html body, html #app,
   html .faith-port-read-page { transition: none; }
 }
+/* THE MASTHEAD COMES BACK OVER THE TEXT, NOT INTO IT (a reader, 2026-10-01:
+   "their menu always pushing everything down when I scroll up"). On a desktop
+   a 30px scroll up threw the prose 200px down, and a 200px scroll down sent
+   it 370px up. The body's padding slid for .28s but #app's height did not
+   (`html #app` sets only padding-top, which wins over the height transition
+   above), so reader-core's keep-your-place observer heard one resize, at the
+   first frame, while the scroller's top had not moved yet; it gave back 85px
+   the wrong way and then the slide moved the box 85px more with nobody
+   watching. With the box re-laid out in one frame the observer sees the whole
+   move at once and gives it back before that frame is painted: the text stays
+   exactly where the reader's own scroll put it, both ways, and the masthead,
+   rail and toolbar still slide in and out over it on their transforms. The
+   phone already works this way (transition: none further down). */
+html body:has(#app.faith-port-read-page),
+html #app.faith-port-read-page { transition: none; }
 
 
 /* ── THE READER TOOLBAR, BOXED ──────────────────────────────────────
