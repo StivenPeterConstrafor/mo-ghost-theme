@@ -58,6 +58,18 @@
     }
     return { all: [...out].filter(f => f.length >= 2), off };
   }
+  /* A QUOTED PHRASE (2026-10-01, the Parquet phrase index): its indexed words in order (2–6) and the small words the index leaves out
+     (et, of, the …: "covenant of works" is couenant → works standing next to each other on a page). Null when it is not a phrase. */
+  /* 10-02 PM: and each indexed word's OFFSET in tokens from the first, counted as the positions index counts a page (\p{L}+ runs,
+     every one, small words included), so "covenant of works" is works exactly two tokens after couenant. */
+  function phraseOf(query) {
+    const m = /["“”]([^"“”]{2,240})["“”]?/.exec(String(query || '').trim());
+    if (!m) return null;
+    const toks = (m[1].normalize('NFC').match(/\p{L}+/gu) || []).map(fold), ws = [], at = [];
+    toks.forEach((w, i) => { if (w.length >= 2 && w.length <= 40 && !STOP.has(w)) { ws.push(w); at.push(i); } });
+    const skipped = [...new Set(toks.filter(w => w.length >= 2 && STOP.has(w)))];
+    return ws.length >= 2 && ws.length <= 6 ? { ws, skipped, offsets: at.map(i => i - at[0]), text: m[1].trim().replace(/\s+/g, ' ') } : null;
+  }
   /* The words of a query worth counting (letters only, no stopwords); null for a quoted phrase or more than three words. */
   function words(query) {
     const s = String(query || '').trim();
@@ -90,7 +102,10 @@
 .wix .wix-forms b{font-weight:600;margin-right:.2rem}.wix label.wix-f{display:inline-flex;gap:.25rem;align-items:center;padding:.12rem .5rem;border:1px solid var(--border,#ddd);border-radius:999px;cursor:pointer}
 .wix label.wix-f span{color:var(--muted,#666)}.wix .wix-more{color:var(--muted,#666)}.wix .wix-more button{border:0;background:none;padding:0 .2rem;color:inherit;text-decoration:underline;cursor:pointer;font:inherit}
 .wix .wix-sum{margin:.5rem 0 .55rem;font-size:.98rem}.wix .wix-sum b{font-size:1.08rem}
-.wix .wix-trad{display:flex;flex-wrap:wrap;gap:.35rem;margin:0 0 .4rem}
+.wix .wix-trad,.wix .wix-dist{display:flex;flex-wrap:wrap;gap:.35rem;margin:0 0 .4rem;align-items:center}
+.wix .wix-dist button{padding:.2rem .65rem;border:1px solid var(--border,#ddd);border-radius:999px;background:none;color:inherit;font:inherit;font-size:.82rem;cursor:pointer}
+.wix .wix-dist button[aria-pressed=true]{background:var(--fg,#222);color:var(--card-bg,#fff);border-color:var(--fg,#222)}
+.wix .wix-dist .wix-ord{font-size:.82rem;color:var(--muted,#666);display:inline-flex;gap:.3rem;align-items:center;margin-left:.2rem}
 .wix .wix-trad button{padding:.2rem .65rem;border:1px solid var(--border,#ddd);border-radius:999px;background:none;color:inherit;font:inherit;font-size:.82rem;cursor:pointer}
 .wix .wix-trad button span{color:var(--muted,#666);margin-left:.3rem}.wix .wix-trad button[aria-pressed=true]{background:var(--fg,#222);color:var(--card-bg,#fff);border-color:var(--fg,#222)}
 .wix .wix-trad button[aria-pressed=true] span{color:inherit;opacity:.75}
@@ -164,14 +179,14 @@
     return rows.map((r, i) => (seen.get(short[i]) > 1 ? cap(String(r.volume || '').trim(), 40) || short[i] : short[i]));
   }
 
+
   /* THE CONCEPT CARD (2026-10-02, owner: "build it … make of course results are tastefully done"). When the query names a doctrine or
      topic of the concept map (tools/concepts/; v1/concepts/index.json: theosis, deification, the hypostatic union, transubstantiation,
      the 198 topics and their finer doctrines), a card above the word panel shows what the library calls it in every language — the
      words and phrases the judges kept, each with its works, every one a search of its own — its key verses with their wordings, and
      the works that treat it most: ranked where its words, its verses and the statements filed under it agree on the same pages. Words
      left out because they mostly mean something else here are listed with the reason. Same files on both sites (Blob / the library
-     worker); nothing changes when the query names no concept. MereO: __FR_BLOB_BASE__ is the library worker, so the cards come
-     from LIB/v1/concepts/ (Cloudflare only). */
+     worker); nothing changes when the query names no concept. */
   const CBASE = () => (window.__FR_BLOB_BASE__ && !/TBD/.test(String(window.__FR_BLOB_BASE__)) ? String(window.__FR_BLOB_BASE__)
     : 'https://0ss8v4l06kodnhp0.public.blob.vercel-storage.com').replace(/\/+$/, '') + '/v1/concepts/';
   let cIndex = null;
@@ -295,21 +310,26 @@
   }
 
   function mount(host, opts) {
-    const ws = words(opts.query);
+    const ph = phraseOf(opts.query), ws = ph ? ph.ws : words(opts.query);
     host.innerHTML = '';
     if (!ws || !host) return null;
     style();
     const box = document.createElement('section');
     box.className = 'wix'; box.setAttribute('aria-live', 'polite');
-    const quoted = shown(opts.query, ws).map(w => '“' + esc(w) + '”').join(' + ');
-    box.innerHTML = `<h3>${quoted}${ws.length > 1 ? ' on the same page' : ''} — every text in the library</h3>
-      <p class="wix-sub">Counted from the library’s word index: every page of every work, a duplicate edition once. <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
-      <div class="wix-forms"></div><div class="wix-sum">Counting…</div><div class="wix-trad" role="group" aria-label="Tradition"></div><div class="wix-list"></div>`;
+    const quoted = ph ? '“' + esc(ph.text) + '”' : shown(opts.query, ws).map(w => '“' + esc(w) + '”').join(' + ');
+    const phNote = ph ? `<span class="wix-phn"> The words stand next to each other, in this order${ph.skipped.length ? ` — the index leaves out small words (${ph.skipped.map(esc).join(', ')}), so “${esc(ph.ws.join(' … '))}” also finds the phrase with another small word between` : ''}.</span>` : '';
+    box.innerHTML = `<h3>${quoted}<span class="wix-how">${ph ? ' as a phrase' : ws.length > 1 ? ' on the same page' : ''}</span> — every text in the library</h3>
+      <p class="wix-sub">Counted from the library’s word index: every page of every work, a duplicate edition once.${phNote} <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
+      <div class="wix-forms"></div><div class="wix-dist" role="group" aria-label="How close" hidden></div><div class="wix-sum">Counting…</div><div class="wix-trad" role="group" aria-label="Tradition"></div><div class="wix-list"></div>`;
     host.appendChild(box);
     const cslot = document.createElement('section'); host.insertBefore(cslot, box); conceptCard(cslot, opts).catch(e => console.warn('concept card', e));
     const $ = s => box.querySelector(s);
-    const state = { seq: 0, groups: ws.map(w => { const f = forms(w); return { word: w, cands: f.all.slice(0, Math.floor(40 / ws.length)), off: f.off, on: new Set(), counts: {}, more: [] }; }), trad: null, sum: [], byTrad: new Map() };
+    const state = { dist: { k: 0, ordered: false }, seq: 0, groups: ws.map(w => { const f = forms(w); return { word: w, cands: f.all.slice(0, Math.floor(40 / ws.length)), off: f.off, on: new Set(), counts: {}, more: [] }; }), trad: null, sum: [], byTrad: new Map() };
     const groups = () => state.groups.map(g => [...g.on]).filter(g => g.length);
+    // the distance asked: a quoted phrase exactly (its offsets; an engine without the positions table reads the pairs), or for two or
+    // three words the reader's choice (state.dist: same page, or within k words, in the typed order or not)
+    const spanBody = () => (ph ? { phrase: true, offsets: ph.offsets } : state.dist.k ? { within: state.dist.k, ordered: state.dist.ordered } : {});
+    const post = b => opts.post(b.by !== 'forms' ? { ...b, ...spanBody() } : b);
 
     function formsHtml() {
       return state.groups.map((g, gi) => {
@@ -322,7 +342,7 @@
     }
     async function loadForms() {
       const all = [...new Set(state.groups.flatMap(g => g.cands))];
-      const r = await opts.post({ op: 'words', by: 'forms', groups: [all.slice(0, 40)], prefixes: ws });
+      const r = await post({ op: 'words', by: 'forms', groups: [all.slice(0, 40)], prefixes: ws });
       const counts = {}; (r.forms || []).forEach(x => { counts[x.form] = Number(x.works); });
       state.groups.forEach(g => {
         g.counts = Object.fromEntries(g.cands.filter(f => counts[f]).map(f => [f, counts[f]]));
@@ -339,8 +359,8 @@
       if (G.length < state.groups.length) { $('.wix-sum').textContent = 'No form of every word is in the word index.'; $('.wix-trad').innerHTML = ''; $('.wix-list').innerHTML = ''; return; }
       $('.wix-sum').textContent = 'Counting every page…';
       const [sum, list] = await Promise.all([
-        opts.post({ op: 'words', by: 'summary', groups: G }),
-        opts.post({ op: 'words', by: 'works', groups: G, limit: 600 })]);
+        post({ op: 'words', by: 'summary', groups: G }),
+        post({ op: 'words', by: 'works', groups: G, limit: 600 })]);
       if (my !== state.seq) return;
       state.sum = (sum.rows || []).map(r => ({ tradition: tradOf(r), works: Number(r.works), pages: Number(r.pages), occ: Number(r.occurrences) }))
         .sort((a, b) => (a.tradition ? 0 : 1) - (b.tradition ? 0 : 1) || b.works - a.works);
@@ -363,7 +383,7 @@
     async function rowsOf(t, need) {
       const b = state.byTrad.get(t);
       if (b.full || b.rows.length >= need) return b;
-      const r = await opts.post({ op: 'words', by: 'works', groups: groups(), tradition: t, limit: 2000 });
+      const r = await post({ op: 'words', by: 'works', groups: groups(), tradition: t, limit: 2000 });
       b.rows = r.rows || b.rows; b.full = true;
       return b;
     }
@@ -440,7 +460,7 @@
       if (box) box.remove();
       box = document.createElement('div'); box.className = 'wix-inst'; box.dataset.slug = slug; box.innerHTML = '<span class="wix-none">Reading the pages…</span>'; li.appendChild(box);
       btn.setAttribute('aria-expanded', 'true'); if (toggle) btn.textContent = 'Hide ▴';
-      const r = await opts.post({ op: 'words', by: 'pages', groups: groups(), work: slug, limit: 2000 }).catch(fail);
+      const r = await post({ op: 'words', by: 'pages', groups: groups(), work: slug, limit: 2000 }).catch(fail);
       if (!r || !r.rows) { box.remove(); return; }
       const pages = r.rows, forms = [...new Set(groups().flat())], st = { shown: 0 };
       box.innerHTML = `${btn.classList.contains('wix-vol') ? `<div class="wix-ih">${esc(btn.firstChild.textContent)} · ${n(pages.length)} ${pages.length === 1 ? 'page' : 'pages'}</div>` : ''}<div class="wix-il"></div><div class="wix-if"></div>
@@ -482,6 +502,30 @@
       }
     });
     function fail(err) { $('.wix-sum').innerHTML = '<span class="wix-err">The word index could not be reached. The passages below are still searchable.</span>'; console.warn('word index', err); }
+    // WORDS IN ORDER, AT A DISTANCE (10-02 PM): two or three words may be asked on the same page (the default), within 5 or 15 words of
+    // each other, and in the typed order; offered only where the positions index is published (opts.has, else the page engine's)
+    const DIST = [[0, 'On the same page'], [5, 'Within 5 words'], [15, 'Within 15 words']];
+    function distButtons() {
+      const el = $('.wix-dist');
+      el.innerHTML = DIST.map(([k, label]) => `<button type="button" data-dist="${k}" aria-pressed="${state.dist.k === k}">${label}</button>`).join('')
+        + `<label class="wix-ord"><input type="checkbox" data-ord${state.dist.ordered ? ' checked' : ''}${state.dist.k ? '' : ' disabled'}> in this order</label>`;
+    }
+    const howLine = () => { $('.wix-how').textContent = state.dist.k ? ` within ${state.dist.k} words${state.dist.ordered ? ', in this order' : ''}` : ' on the same page'; };
+    const hasTable = opts.has || (window.FRWordLocal && window.FRWordLocal.has) || (() => Promise.resolve(false));
+    if (!ph && ws.length > 1) Promise.resolve(hasTable('positions')).then(yes => { if (yes) { distButtons(); $('.wix-dist').hidden = false; } }).catch(() => {});
+    if (ph) Promise.resolve(hasTable('positions')).then(yes => {
+      const sub = $('.wix-sub'); if (!yes || !sub) return;
+      const note = sub.querySelector('.wix-phn'); if (note) note.textContent = ' Exactly these words in this order, the small words counted too.';
+    }).catch(() => {});
+    box.addEventListener('click', e => {
+      const t = e.target.closest('button[data-dist]'); if (!t) return;
+      state.dist.k = Number(t.dataset.dist); if (!state.dist.k) state.dist.ordered = false;
+      distButtons(); howLine(); loadCounts().catch(fail);
+    });
+    box.addEventListener('change', e => {
+      if (!e.target.matches('input[data-ord]')) return;
+      state.dist.ordered = e.target.checked; howLine(); loadCounts().catch(fail);
+    });
     loadForms().then(loadCounts).catch(fail);
     return { words: ws };
   }
@@ -511,5 +555,5 @@
     host.innerHTML = `<div class="wix wix-teaser"><b>${shown(opts.query, c.ws).map(w => '“' + esc(w) + '”').join(' + ')}</b> ${c.ws.length > 1 ? 'occur together on the pages of' : 'occurs in the text of'} <b>${n(c.works)} ${c.works === 1 ? 'work' : 'works'}</b> (with ${c.ws.length > 1 ? 'their' : 'its'} other forms). The list below matches titles and headings only. <button type="button" class="wix-go">List every text</button></div>`;
     host.querySelector('button').onclick = () => opts.open();
   }
-  window.FRWordIndex = { mount, teaser, count, inflect, forms, words, fold, conceptOf, loadConcepts };
+  window.FRWordIndex = { mount, teaser, count, inflect, forms, words, phraseOf, fold, conceptOf, loadConcepts };
 })();
