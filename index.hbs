@@ -202,31 +202,7 @@
 {{/match}}
 {{/match}}
 
-{{!-- THIS WEEK: posts 3-8 --}}
-<section class="this-week" data-hm-section="this-week">
-    <div class="container">
-        <div class="section-intro">
-            <p class="eyebrow">This Week</p>
-            <h2 class="section-heading"><em>The wider conversation.</em></h2>
-        </div>
-
-        <div class="flourish"></div>
-
-        <div class="week-grid">
-            {{#get "posts" filter="tag:-hash-event+tag:-hash-podcast-transcript" limit="8" include="authors,tags"}}
-                {{#foreach posts from="3" limit="6"}}
-                    {{> "post-entry"}}
-                {{/foreach}}
-            {{/get}}
-        </div>
-
-        <div class="week-more">
-            <a href="/archive/" class="week-more-link" data-hm-goal="archive">Read more essays <span aria-hidden="true">&rarr;</span></a>
-        </div>
-    </div>
-</section>
-
-{{!-- THE FAITH RECEIVED BAND: the library, between This Week and the
+{{!-- THE FAITH RECEIVED BAND: the library, just above This Week and the
      Daily Liturgy (Ian, 2026-09-25). Half the height of the band on
      TFR's own homepage and a great deal less copy: a name, a sentence,
      a way in, and three works.
@@ -259,8 +235,8 @@
 </section>
 
 {{!-- DAILY LITURGY BAND: thin dark section for the Daily Liturgy
-     podcast + newsletter, sitting between "This Week" (articles) and
-     "Listen" (podcasts). Cover art is the Ghost-hosted podcast cover,
+     podcast + newsletter, sitting between the TFR band and "This Week"
+     (articles), moved up from below This Week (Ian, 2026-10-02). Cover art is the Ghost-hosted podcast cover,
      the same file /daily-liturgy/ uses, so the two stay in sync.
 
      The player row ships hidden and is revealed by dlp-band.js once it
@@ -304,6 +280,30 @@
             </div>
 
             <a href="/daily-liturgy/" class="btn btn-ghost-light dlp-band-cta">Start Now</a>
+        </div>
+    </div>
+</section>
+
+{{!-- THIS WEEK: posts 3-8 --}}
+<section class="this-week" data-hm-section="this-week">
+    <div class="container">
+        <div class="section-intro">
+            <p class="eyebrow">This Week</p>
+            <h2 class="section-heading"><em>The wider conversation.</em></h2>
+        </div>
+
+        <div class="flourish"></div>
+
+        <div class="week-grid">
+            {{#get "posts" filter="tag:-hash-event+tag:-hash-podcast-transcript" limit="8" include="authors,tags"}}
+                {{#foreach posts from="3" limit="6"}}
+                    {{> "post-entry"}}
+                {{/foreach}}
+            {{/get}}
+        </div>
+
+        <div class="week-more">
+            <a href="/archive/" class="week-more-link" data-hm-goal="archive">Read more essays <span aria-hidden="true">&rarr;</span></a>
         </div>
     </div>
 </section>
