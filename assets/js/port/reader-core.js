@@ -6599,6 +6599,7 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
     // reader offers Greek | Latin like the print does. Falls back to the Greek walk (and an
     // honest lane label) when the volume carries no Latin zones.
     let _latBuilt=false;
+    const _pgVisionLa=new Set([...doc.querySelectorAll('p[resp="#pg-latin-vision-1001"]')].map(p=>+p.getAttribute("n")).filter(Boolean));   // columns read clean from the scan (10-01)
     window.__pgLatFallback=false;
     if(src==="grcla"||(src==="la"&&(!hasSecondary||!_witRicher("secondary")))){
       // grcla = the pageview parallel BY DEFINITION; src=la uses it whenever the secondary
@@ -6660,7 +6661,11 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
               // zone exactly because Migne's footnotes live in <note>s -- counted here so a complete column is never displaced by the OCR blob.
               const _nT=(canon?.notes||[]).join(" ");
               const _grcShort=!!(canon?.grc)&&_gL(_pvGrc)>=200&&(_gL(canon.grc)+_gL(_nT))<0.7*_gL(_pvGrc);
-              const _laShort=!!(canon?.la)&&_lL(_pvLat)>=200&&(_lL(canon.la)+_lL(_nT))<0.7*_lL(_pvLat);
+              // A COLUMN READ CLEAN FROM ITS SCAN (owner 2026-10-01 'do the latin cleanup': resp #pg-latin-vision-1001) passed its own
+              // completeness gate against this very zone -- column + its footnotes -- before it was written; the zone also holds the footnotes,
+              // the running head and the OCR's noise, so the clean column is never 'short' and the plate's OCR yields to it.
+              const _laVision=_pgVisionLa.has(sf.n)||_pgVisionLa.has(sf.n+1);
+              const _laShort=!_laVision&&!!(canon?.la)&&_lL(_pvLat)>=200&&(_lL(canon.la)+_lL(_nT))<0.7*_lL(_pvLat);
               if(canon?.grc&&!_grcShort)sf.grc=canon.grcRich||canon.grc;if(canon?.la&&!_laShort)sf.lat=canon.laRich||canon.la;if(canon){sf.grcParas=canon.grcParas||[];sf.laParas=canon.laParas||[];sf.colParas=canon.colParas||[];   // an EMPTY opening ({}) must still reach the zone-lane rules below
               if(_grcShort){sf.grcParas=[];sf.colParas=sf.colParas.filter(c=>c.lang!=="grc");}
               if(_laShort){const _shL=t=>{const w=String(t||"").toLowerCase().replace(/[^a-z\s]/g," ").split(/\s+/).filter(x=>x.length>=3);const o=new Set();for(let i=0;i+4<=w.length;i++)o.add(w.slice(i,i+4).join(" "));return o;};
