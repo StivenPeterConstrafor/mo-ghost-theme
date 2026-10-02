@@ -1,0 +1,95 @@
+TAP version 13
+# Subtest: mobile page flow uses the readable viewport, not the offscreen pane origin
+ok 1 - mobile page flow uses the readable viewport, not the offscreen pane origin
+  ---
+  duration_ms: 0.777125
+  ...
+# Subtest: a paragraph underneath the sticky controls is not chosen
+ok 2 - a paragraph underneath the sticky controls is not chosen
+  ---
+  duration_ms: 0.255834
+  ...
+# Subtest: mobile controls outside the viewport do not shift the reading line
+ok 3 - mobile controls outside the viewport do not shift the reading line
+  ---
+  duration_ms: 0.3945
+  ...
+# Subtest: desktop pane keeps its existing scroll-origin behavior
+ok 4 - desktop pane keeps its existing scroll-origin behavior
+  ---
+  duration_ms: 0.254541
+  ...
+# Subtest: mobile restore places the same paragraph below measured controls
+ok 5 - mobile restore places the same paragraph below measured controls
+  ---
+  duration_ms: 0.979375
+  ...
+# Subtest: desktop restore continues to use its paragraph scroll target
+ok 6 - desktop restore continues to use its paragraph scroll target
+  ---
+  duration_ms: 0.232209
+  ...
+# Subtest: framed citation arrival scrolls only the inner reading pane
+ok 7 - framed citation arrival scrolls only the inner reading pane
+  ---
+  duration_ms: 0.828417
+  ...
+# Subtest: framed short-passage centering retains its placement
+ok 8 - framed short-passage centering retains its placement
+  ---
+  duration_ms: 0.224584
+  ...
+# Subtest: framed nearest leaves a fully visible passage untouched
+ok 9 - framed nearest leaves a fully visible passage untouched
+  ---
+  duration_ms: 0.559916
+  ...
+# Subtest: standalone reader preserves native anchor scrolling
+ok 10 - standalone reader preserves native anchor scrolling
+  ---
+  duration_ms: 0.225834
+  ...
+# Subtest: opening a mini reader reveals it only within the mobile chooser
+ok 11 - opening a mini reader reveals it only within the mobile chooser
+  ---
+  duration_ms: 0.35125
+  ...
+# Subtest: desktop non-scrolling collection keeps normal frame reveal
+ok 12 - desktop non-scrolling collection keeps normal frame reveal
+  ---
+  duration_ms: 0.244083
+  ...
+# Subtest: the open author stays reachable beyond the old 900-work cut-off
+ok 13 - the open author stays reachable beyond the old 900-work cut-off
+  ---
+  duration_ms: 5.446041
+  ...
+# Subtest: author, volume and edition can be combined without accent-sensitive lookup
+ok 14 - author, volume and edition can be combined without accent-sensitive lookup
+  ---
+  duration_ms: 0.5075
+  ...
+# Subtest: all works by one author remain available in the catalogue order
+ok 15 - all works by one author remain available in the catalogue order
+  ---
+  duration_ms: 1.018666
+  ...
+# Subtest: English titles and confession groups stay discoverable, with honest empty results
+ok 16 - English titles and confession groups stay discoverable, with honest empty results
+  ---
+  duration_ms: 0.101166
+  ...
+# Subtest: explicit Migne volume searches match volume metadata, never work IDs or incidental numbers
+ok 17 - explicit Migne volume searches match volume metadata, never work IDs or incidental numbers
+  ---
+  duration_ms: 1.008084
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 47.21775

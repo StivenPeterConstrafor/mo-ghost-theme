@@ -75,4 +75,4 @@ node --test scripts/check-reader-library.cjs scripts/check-dictionary-reading-pl
 
 Review the resulting changes and commit the source, template cache versions and any regenerated assets through the maintainer's normal deployment process. The patch includes a one-line correction to a stale test mock (`MOCorpora.url`); protected corpus configuration is untouched.
 
-Supporting material: [Scripture/Authors/Topics audit](scripture-authors-topics.md), [research/dictionary audit](research-dictionary.md), [library spot check](library.md), [build log](build.log), [focused tests](focused-tests.log), and [screenshots](evidence/).
+Supporting material: [Scripture/Authors/Topics audit](scripture-authors-topics.md), [research/dictionary audit](research-dictionary.md), [library spot check](library.md), [build log](build.txt), [focused tests](focused-tests.txt), and [screenshots](evidence/).
