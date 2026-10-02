@@ -3209,6 +3209,35 @@ function build(){
           const sp=document.createElement("span");sp.className="enhead";sp.appendChild(rg.extractContents());el2.insertBefore(sp,el2.firstChild);
           const nx=sp.nextSibling;if(nx&&nx.nodeType===3)nx.textContent=nx.textContent.replace(/^\s+/,"");});};
         hfix();setTimeout(hfix,2500);setTimeout(hfix,6000);}
+      // TITLE-CASE HEAD LINES (owner 2026-10-01 'chapter headings sitting inside paragraphs'): a head word and its number in title
+      // case ('Homily V', 'Chapter XI.', 'Sermon XXII', 'Book Three') standing at a paragraph's start, after a sentence end or after a
+      // caps title, and followed by a capitalised word, a quotation or a section number, is the printed heading the display joined
+      // into the prose ('CONCERNING PROVIDENCE Sermon XXII 1. So great …', '… economy. § 1. Homily XVI “Dare …') -- set on its own
+      // line (span.enhead). Display only, the pairing is untouched; ALL-CAPS heads stay with the caps pass above; never a sentence
+      // about a chapter ('Chapter 7, just as …', 'Canon 20 says …', 'in Homily XVI he …').
+      {const _WH=/(^|[.!?:\u00bb\u201d\u2026]\s+|[A-Z\u00C0-\u00DE]{2,}[.,]?\s+)((?:Chapter|Homily|Letter|Epistle|Book|Sermon|Oration|Discourse|Canon|Section|Article|Question|Psalm|Caput|Cap\.|Homilia|Epistola|Liber|Oratio|Sermo)\s+(?:[IVXLCDM]{1,8}|\d{1,3}|One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten|First|Second|Third|Fourth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth)\b\.?(?:\s*\[[^\]]{1,12}\])?)(?=$|\s+(?:[A-Z\u00C0-\u00DE"\u201c\u2018'(\[]|\d{1,3}\.\s|[IVXLC]{1,6}\.\s))/;
+       const wfix=()=>{document.querySelectorAll('#reading .en p:not([data-wh])').forEach(p=>{p.setAttribute('data-wh','1');
+         if(p.closest('.rhead'))return;
+         for(let guard=0;guard<6;guard++){
+           const tw=document.createTreeWalker(p,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement&&n.parentElement.closest('.enhead,.capsrun,sup,a')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+           let n,hit=null;while((n=tw.nextNode())){const m=n.textContent.match(_WH);if(m){hit=[n,m];break;}}
+           if(!hit)break;const [nd,m]=hit;const st=m.index+m[1].length,en=st+m[2].length;
+           // a citation, not a heading: a source line closing a quotation ('… no other chuse? Book V.') or a chain of divisions
+           // ('Causa 11. Question 3. Canon 41.', 'Canon 10. Distinctio 18.')
+           const _bef=(nd.textContent.slice(0,st)+'').trim(),_aft=nd.textContent.slice(en);
+           const _DIV=/^\s*(?:Causa|Distinctio|Dist\.|Question|Quaestio|Canon|Can\.|Cap\.|Chapter|Book|Lib\.|Liber|Section|Title|Tit\.|Art\.|Article)\s+[\dIVXLC]/;
+           const _skip=(!_aft.trim()&&(_bef||p.textContent.trim()!==m[2].trim()))||_DIV.test(_aft)
+             ||/(?:Causa|Distinctio|Dist\.|Question|Quaestio|Canon|Can\.|Cap\.|Lib\.|Tit\.)\s+[\dIVXLC]+\.?\s*$/.test(_bef)
+             // 'Novell. 123. Cap. 11.', 'Hist. Eccles. lib. 11. Cap. XVI.', 'caus. 23. quæst. 5. Cap. 23.', 'in Prax. rer. Civil. Cap. 41.'
+             ||/\d+\.?\s*$/.test(_bef)||/\b(?:caus|qu(?:æ|ae)?st|q|dist|can|cap|lib|tit|c|art|n|num|p|pag|col|fol|vol|tom|sect|prax|civil|rer|hist|eccles)\.\s*$/i.test(_bef)
+             // 'Cap. 1. De Sent. Excommun. in 6.': abbreviations after the number are a reference
+             ||/^\s+(?:De\s+)?[A-Z][a-z]{1,8}\.\s+[A-Z][a-z]{1,10}\./.test(_aft);
+           if(_skip)break;          // conservative: the rest of this paragraph stays as it is
+           const rg=document.createRange();rg.setStart(nd,st);rg.setEnd(nd,en);const sp=document.createElement('span');sp.className='enhead';
+           sp.appendChild(rg.extractContents());rg.insertNode(sp);
+           const nx=sp.nextSibling;if(nx&&nx.nodeType===3)nx.textContent=nx.textContent.replace(/^\s+/,'');
+           const pv=sp.previousSibling;if(pv&&pv.nodeType===3)pv.textContent=pv.textContent.replace(/\s+$/,'');}});};
+       wfix();setTimeout(wfix,2500);setTimeout(wfix,6000);}
       // GREEK RUBRIC ENTRANCES (owner 2026-08-18 'inline chapter divisions'): Migne prints
       // section rubrics (ΛΟΓΟΣ Β΄. / ΚΕΦΑΛΑΙΟΝ Αʹ.) INSIDE the flowing paragraph in 25
       // PG works with no head elements. Closed rubric vocabulary + sentence-boundary
