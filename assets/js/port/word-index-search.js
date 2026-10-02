@@ -41,9 +41,20 @@
       if (/a$/.test(w) && !/ia$/.test(w)) off.add(w.slice(0, -1) + 'is');
       [...out].forEach(f => { if (!/que$/.test(f)) out.add(f + 'que'); });
     } else {
+      // ENGLISH FORMS (10-02, the Pagefind comparison: Pagefind's stemming found 'antinomians', 'predestined'; "lords supper" missed
+      // 900 works because "Lord's" is indexed as lord + s): plurals, the singular of a plural or possessive, and the verb's forms,
+      // early-modern -eth/-est included. Only forms the library holds are shown, each with its count, and any can be unticked.
       if (!/s$/.test(w)) out.add(w + 's');
       if (/(s|x|z|ch|sh)$/.test(w)) out.add(w + 'es');
-      if (/[^aeiou]y$/.test(w)) out.add(w.slice(0, -1) + 'ies');
+      if (/[^aeiou]y$/.test(w)) { out.add(w.slice(0, -1) + 'ies'); out.add(w.slice(0, -1) + 'ied'); }
+      if (/[^s]s$/.test(w) && w.length > 3) out.add(w.slice(0, -1));
+      if (/ies$/.test(w)) out.add(w.slice(0, -3) + 'y');
+      if (w.length >= 4 && !/s$/.test(w)) {
+        const b = /e$/.test(w) ? w.slice(0, -1) : w;
+        [b + 'ed', b + 'ing', w + (/e$/.test(w) ? 'th' : 'eth'), w + (/e$/.test(w) ? 'st' : 'est'), b + 'er', b + 'ers'].forEach(f => out.add(f));
+        if (/e$/.test(w)) out.add(w + 'd');
+        if (/(ion|ism|ist|ian)$/.test(w)) out.add(w + 's');
+      }
     }
     return { all: [...out].filter(f => f.length >= 2), off };
   }
@@ -121,6 +132,9 @@
 .wcx details.wcx-off ul{margin:.3rem 0 0;padding-left:1.1rem}.wcx details.wcx-off li{margin:.15rem 0}
 .wcx .wcx-why{margin:.9rem 0 0;padding:.5rem 0 0;border-top:1px solid var(--border,#e6e6e6);color:var(--muted,#666);font-size:.8rem;line-height:1.45}
 .wcx .wcx-ev{color:var(--muted,#666)}
+.wcx .wcx-start{margin:.85rem 0 0;font-size:.9rem;line-height:1.5}.wcx .wcx-start b{font-weight:600}.wcx .wcx-start a{color:inherit}
+.wcx .wcx-near{margin:.35rem 0 0;font-size:.84rem;color:var(--muted,#666)}.wcx .wcx-near a{color:inherit}
+.wcx .wix-trad{margin:.7rem 0 .2rem}.wcx .wcx-en{font-size:.74rem;border:1px solid var(--border,#ddd);border-radius:999px;padding:0 .4rem;margin-left:.35rem;color:var(--muted,#666);white-space:nowrap}
 @media (max-width:640px){.wcx .wcx-row{grid-template-columns:1fr}.wcx .wcx-row>b{padding:0}}`;
     const el = document.createElement('style'); el.textContent = css; document.head.appendChild(el);
   }
@@ -208,30 +222,45 @@
       `<li><a href="${esc(searchHref(t.term))}">${esc(t.term)}</a> (${LANG[t.lang] || t.lang}${t.precision != null ? `, on topic on ${Math.round(t.precision * 100)}% of sampled pages` : ''})${t.note ? ' · ' + esc(t.note) : ''}</li>`).join('')}</ul></details>` : '';
     const up = (c.broader || []).map(id => (index.concepts.find(x => x.id === id) || {}).label).filter(Boolean);
     const meta = [`${n(c.works)} works · ${n(c.pages)} pages`, up.length ? 'within ' + up.map(esc).join(', ') : ''].filter(Boolean).join(' · ');
+    // FOR EVERY READER (owner 10-02: "genuinely useful for each type of person, varying complexity and varying traditions"): a
+    // newcomer gets the gloss and where to start in English; a student the nearby concepts and the dictionary article; a scholar the
+    // words in every language, the verses and the evidence per work; anyone can narrow the works to one tradition.
+    const conceptLabel = id => (index.concepts.find(x => x.id === id) || {}).label;
+    const near = [...(c.broader || []), ...(c.narrower || []).slice(0, 4), ...(c.related || []).slice(0, 4)].filter((x, i, a) => a.indexOf(x) === i).map(conceptLabel).filter(Boolean).slice(0, 8);
+    const dict = (c.dtc || [])[0];
+    const dictHref = dict ? (/^\/the-faith-received\//.test(location.pathname) ? '/the-faith-received/dictionary/' : '/dtc') + '#' + encodeURIComponent(dict) : '';
+    const nearLine = near.length || dict ? `<p class="wcx-near">${near.length ? 'Nearby: ' + near.map(l => `<a href="${esc(searchHref(l))}">${esc(l)}</a>`).join(' · ') : ''}${near.length && dict ? ' · ' : ''}${dict ? `<a href="${esc(dictHref)}">the dictionary article</a>` : ''}</p>` : '';
+    const trads = (c.traditions || []).filter(t => t.t && t.works);
     slot.className = 'wix wcx';
     slot.innerHTML = `<p class="wcx-k">Concept</p><h3>${esc(c.label)}</h3>${c.gloss ? `<p class="wcx-gl">${esc(c.gloss)}</p>` : ''}<p class="wcx-meta">${meta}</p>
-      ${rows}${vrow}${offList}
+      ${rows}${vrow}${offList}${nearLine}
       <p class="wcx-why">Works that treat it most: ranked where its words, its verses and the statements filed under it meet on the same pages. Each word above is a search of its own.</p>
-      <ol class="wcx-list"></ol><div class="wcx-foot"></div>`;
+      ${trads.length > 1 ? `<div class="wix-trad" role="group" aria-label="Tradition"><button type="button" data-ct="*" aria-pressed="true">All traditions</button>${trads.map(t => `<button type="button" data-ct="${esc(t.t)}" aria-pressed="false">${esc(t.t)}<span>${n(t.works)}</span></button>`).join('')}</div>` : ''}
+      <p class="wcx-start"></p><ol class="wcx-list"></ol><div class="wcx-foot"></div>`;
     const forms = [...new Set(on.filter(t => t.kind === 'word').flatMap(t => t.forms || []))];
     const pforms = [...new Set(on.filter(t => t.kind !== 'word').flatMap(t => t.chain || []))];
-    const ol = slot.querySelector('.wcx-list'), foot = slot.querySelector('.wcx-foot'), st = { shown: 0 };
+    const ol = slot.querySelector('.wcx-list'), foot = slot.querySelector('.wcx-foot'), st = { shown: 0, trad: null };
+    const pool = () => (c.top || []).filter(w => st.trad === null || w.tradition === st.trad);
+    function startWith() {
+      const el = slot.querySelector('.wcx-start'), en = pool().filter(w => w.en).slice(0, 3);
+      el.innerHTML = en.length ? `<b>Start with, in English:</b> ${en.map(w => `<a href="${esc(opts.readHref(w.w, w.best, forms[0] || ''))}">${opts.title(w.w, { slug: w.w, title: w.title })}</a>${w.author ? ` (${esc(w.author)})` : ''}`).join(' · ')}` : '';
+    }
     const ev = w => [w.tp ? `its words on ${n(w.tp)} ${w.tp === 1 ? 'page' : 'pages'}` : '', w.vp ? `its verses on ${n(w.vp)}` : '', w.sp ? `${n(w.sp)} ${w.sp === 1 ? 'page' : 'pages'} filed under it` : ''].filter(Boolean).join(' · ');
     function more(k) {
-      (c.top || []).slice(st.shown, st.shown + k).forEach(w => {
+      pool().slice(st.shown, st.shown + k).forEach(w => {
         const li = document.createElement('li'); li.className = 'wix-w';
         const row = { slug: w.w, title: w.title, author: w.author, tradition: w.tradition, volume: w.volume };
-        li.innerHTML = `<div class="wix-h"><a class="wix-t" href="${esc(opts.readHref(w.w, w.best, forms[0] || ''))}">${opts.title(w.w, row)}</a><span class="wix-n">${n(w.pages)} ${w.pages === 1 ? 'page' : 'pages'}</span></div>
+        li.innerHTML = `<div class="wix-h"><a class="wix-t" href="${esc(opts.readHref(w.w, w.best, forms[0] || ''))}">${opts.title(w.w, row)}</a>${w.en ? '<span class="wcx-en" title="This work can be read in English">English</span>' : ''}<span class="wix-n">${n(w.pages)} ${w.pages === 1 ? 'page' : 'pages'}</span></div>
           ${opts.meta(row) ? `<div class="wix-m">${opts.meta(row)}</div>` : ''}
           <div class="wix-c"><span class="wcx-ev">${ev(w)}</span><button type="button" class="wix-pv" data-cw="${esc(w.w)}" aria-expanded="false">Passages ▾</button></div>`;
         ol.appendChild(li);
       });
-      st.shown = Math.min((c.top || []).length, st.shown + k);
-      const left = (c.top || []).length - st.shown;
+      st.shown = Math.min(pool().length, st.shown + k);
+      const left = pool().length - st.shown;
       foot.innerHTML = left > 0 ? `<button type="button" class="wix-go">More works · ${n(left)} more ranked</button>` : '';
       const b = foot.querySelector('button'); if (b) b.onclick = () => more(10);
     }
-    more(8);
+    more(8); startWith();
     async function passages(li, w, btn) {
       let box = li.querySelector(':scope > .wix-inst');
       if (box) { box.hidden = !box.hidden; btn.setAttribute('aria-expanded', String(!box.hidden)); btn.textContent = box.hidden ? 'Passages ▾' : 'Hide ▴'; return; }
@@ -255,6 +284,11 @@
     }
     slot.addEventListener('click', async e => {
       const t = e.target.closest('button'); if (!t || !slot.contains(t)) return;
+      if (t.dataset.ct) {
+        st.trad = t.dataset.ct === '*' ? null : t.dataset.ct; st.shown = 0; ol.innerHTML = '';
+        slot.querySelectorAll('button[data-ct]').forEach(b => b.setAttribute('aria-pressed', String(b === t)));
+        more(8); startWith(); return;
+      }
       if (t.dataset.cmore) { const r = slot.querySelector(`[data-crest="${t.dataset.cmore}"]`); if (r) { r.hidden = false; r.style.display = 'contents'; } t.parentElement.remove(); }
       else if (t.dataset.cw) { const w = (c.top || []).find(x => x.w === t.dataset.cw); if (w) { t.disabled = true; await passages(t.closest('li'), w, t).catch(() => {}); t.disabled = false; } }
     });
