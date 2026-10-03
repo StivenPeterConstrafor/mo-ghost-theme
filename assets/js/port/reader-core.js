@@ -1583,7 +1583,7 @@ function locOf(n){
   const pgPlace=window.FRPgParallel?.location(DATA,n);if(pgPlace)return pgPlace;
   // UNVERIFIED COLUMNS SAY SO (PG reading audit 2026-10-02): a PG opening with no verified printed column was labelled 'col. n' --
   // one column, stated as fact. Its citation is the opening's range, the two columns the page prints.
-  if(/^PG\s*\d/i.test(DATA?.volume||"")&&/^\d+$/.test(String(n)))return "cols. "+n+"–"+(+n+1);
+  if(/^PG\s*\d/i.test(DATA?.volume||"")&&/^\d+$/.test(String(n))&&+n%2===1)return "cols. "+n+"–"+(+n+1);
   if(/^P[LG]\s*\d/i.test(DATA?.volume||""))return "col. "+n;
   if(DATA&&DATA.has_pages)return "p. "+n;
   // born-digital: prefer the export-time deep locator (page.loc, body-mined + carried forward),

@@ -1650,7 +1650,7 @@ function __initReaderTools(){
   {const clean=s=>(s||"").replace(/\[\^[^\]]+\]:?/g,"").replace(/\[\[[^\]]*\]\]/g,"").replace(/^#{1,6}\s*/gm,"").trim();
    const col=side=>(DATA.pages||[]).filter(p=>!p.blank).map(p=>clean(side==="la"?p.la:p.en)).filter(Boolean).join("\n\n");
    const wire=(id,side,lbl)=>{const b=$("#"+id);if(!b)return;
-     b.onclick=()=>{const t=col(side);if(t){cw(t);b.textContent="✓ copied";setTimeout(()=>b.textContent=lbl,1200);}};};
+     b.onclick=()=>{const t=col(side);if(t){const prev=b.dataset.lbl||(b.dataset.lbl=b.textContent);cw(t);b.textContent="✓ copied";setTimeout(()=>b.textContent=prev,1200);}};};
    wire("nbCopyEn","en","⧉ English");wire("nbCopyLa","la","⧉ Latin");
    if(DATA.en_only){const l=$("#nbCopyLa");if(l)l.style.display="none";}}
   if($("#nbClose"))$("#nbClose").onclick=closeNotebook;($("#nbScrim")||{}).onclick=closeNotebook;
