@@ -1581,6 +1581,9 @@ function locOf(n){
   if(DATA?.pld_source_view?.notes)return DATA.pld_source_view.columnNotes?'Editorial notes, col. '+n:'Notes, section '+n;
   const corrected=window.FRReaderNavigation?.locator(DATA,n);if(corrected)return corrected;
   const pgPlace=window.FRPgParallel?.location(DATA,n);if(pgPlace)return pgPlace;
+  // UNVERIFIED COLUMNS SAY SO (PG reading audit 2026-10-02): a PG opening with no verified printed column was labelled 'col. n' --
+  // one column, stated as fact. Its citation is the opening's range, the two columns the page prints.
+  if(/^PG\s*\d/i.test(DATA?.volume||"")&&/^\d+$/.test(String(n)))return "cols. "+n+"–"+(+n+1);
   if(/^P[LG]\s*\d/i.test(DATA?.volume||""))return "col. "+n;
   if(DATA&&DATA.has_pages)return "p. "+n;
   // born-digital: prefer the export-time deep locator (page.loc, body-mined + carried forward),
@@ -4090,20 +4093,24 @@ function syncReaderHeader(n){
  if(!DATA)return;
  const author=$("#reader-author"),volume=$("#reader-volume"),place=$("#reader-location");
  author.textContent=DATA.author||"";author.href="/the-faith-received/author/?a="+encodeURIComponent(DATA.author||"");
- {const se=seriesOf(DATA.volume);if(se){volume.textContent=se.label;volume.title=se.note+'. This work is in volume '+se.vol+(se.key==='PO'?'; cite as PO '+se.vol+', p. '+n:'; cite as '+se.key+' '+se.vol+', col. '+n)+'.';}
+ {const se=seriesOf(DATA.volume);if(se){volume.textContent=se.label;volume.title=se.note+'. This work is in volume '+se.vol+(se.key==='PO'?'; cite as PO '+se.vol+', p. '+n:'; cite as '+se.key+' '+se.vol+', '+(locOf(n)||'col. '+n))+'.';}
    else{volume.textContent=String(DATA.volume||"").replace(/\b(P[LG]|PO)\s*(\d+)/g,"$1 $2");volume.removeAttribute('title');}}
  place.textContent=locOf(n);place.setAttribute('aria-label','Go to a place in this work, currently '+locOf(n));
  const column=DATA.pld_source_view?.hasColumns!==false&&(!DATA.pld_source_view?.notes||DATA.pld_source_view?.columnNotes)&&/^P[LG]\s*\d/i.test(DATA.volume||""),unit=column?'column':DATA.has_pages?'page':'section';
  $("#pgJump").setAttribute('aria-label',unit[0].toUpperCase()+unit.slice(1)+' number');$("#pgJump").title='Go to '+unit;
  $("#reader-jump-label").textContent='Go to '+unit;
  if(!$("#aaPop").classList.contains('on'))$("#reader-jump").value=String(n);
- $("#pPrev").setAttribute('aria-label','Previous '+unit);$("#pNext").setAttribute('aria-label','Next '+unit);
- $("#pPrev").title='Previous '+unit;$("#pNext").title='Next '+unit;
+ // the arrows step a whole printed page (stepFolio: folio to folio), whatever unit the jump box takes (PG reading audit 2026-10-02)
+ const step=column?'page':unit;
+ $("#pPrev").setAttribute('aria-label','Previous '+step);$("#pNext").setAttribute('aria-label','Next '+step);
+ $("#pPrev").title='Previous '+step+' (←)';$("#pNext").title='Next '+step+' (→)';
  const source=DATA.pld_source_view?.sourceName||window.__SRCNAME||'Latin',enOnly=app.classList.contains('en-only')||DATA?.src_lang==='en';
  app.style.setProperty('--source-label',JSON.stringify(source));
  $("#source-size-name").textContent=source;$("#source-size").hidden=enOnly;
  $("#source-size .lt").textContent=source==='Greek'?'Gr':source==='Latin'?'La':'Aa';
- $("#source-size label").title=source+' text size';
+ $("#source-size label").title=source+' text size';$("#lzs")?.setAttribute('aria-label',source+' text size');
+ {const cl=$("#nbCopyLa");if(cl){cl.textContent='Copy '+source;cl.title='Copy the whole '+source+' column to the clipboard';}
+  const gr=$("#colgrip");if(gr)gr.title='Drag to resize the '+source+' ∥ English columns · double-click to reset';}
  if(DATA.pld_source_view?.sourceName){window.__SRCNAME=source;$("#m-par").textContent=source;}
  $("#m-par").disabled=DATA.source_only===true;$("#m-par").title=DATA.source_only?'Source edition notes in their original language':'Show '+source+' text';$("#m-en").title='Show English translation';
  syncEdition(n);
@@ -4949,7 +4956,7 @@ function applySplit(){lar=Math.min(.75,Math.max(.25,lar));
 applySplit();
 window.__mkGrip=function(){const rd=$("#reading");if(!rd||$("#colgrip"))return;   // build() wipes #reading -> re-attach after every build
   const grip=document.createElement("div");grip.id="colgrip";
-  grip.title="Drag to resize the Latin ∥ English columns · double-click to reset";
+  grip.title="Drag to resize the "+(window.__SRCNAME||"Latin")+" ∥ English columns · double-click to reset";
   rd.appendChild(grip);let gdn=false;
   grip.addEventListener("pointerdown",e=>{gdn=true;grip.setPointerCapture(e.pointerId);document.body.classList.add("gripping");e.preventDefault();});
   grip.addEventListener("pointermove",e=>{if(!gdn)return;const r=rd.getBoundingClientRect();lar=(e.clientX-r.left)/r.width;applySplit();});

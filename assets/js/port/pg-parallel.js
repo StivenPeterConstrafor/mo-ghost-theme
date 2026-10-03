@@ -11,14 +11,18 @@ function sourceColumns(doc){
  function walk(node,role='reading',state={opening:'',column:'',pending:[]}){for(const ch of node.children||[]){const tag=ch.localName,type=ch.getAttribute('type');
   if(tag==='div'){if(ch.getAttribute('subtype')==='historical-source-snapshot')continue;if(ch.getAttribute('subtype')==='migne-reading'){walk(ch,'verified',{opening:'',column:'',pending:[]});continue;}if(type==='translation')continue;if(type==='secondary')walk(ch,'secondary',{opening:'',column:'',pending:[]});else if(alt.has(type))walk(ch,'supplement',{opening:'',column:'',pending:[]});else walk(ch,role,state);continue;}
   if(role==='supplement'&&ch.getAttribute('resp')!=='#pageview-zone')continue;
-  if(tag==='pb'){const n=ch.getAttribute('n')||'',facs=ch.getAttribute('facs');state.opening=(facs&&images.get(facs))||n;state.column=n;if(facs&&!images.has(facs))images.set(facs,state.opening);}
-  else if(tag==='milestone'&&ch.getAttribute('unit')==='column')state.column=ch.getAttribute('n')||'';
+  if(tag==='pb'){const n=ch.getAttribute('n')||'',facs=ch.getAttribute('facs');state.opening=(facs&&images.get(facs))||n;state.column=n;state.prov=null;if(facs&&!images.has(facs))images.set(facs,state.opening);}
+  else if(tag==='milestone'&&ch.getAttribute('unit')==='column'){state.column=ch.getAttribute('n')||'';
+   // a clean Latin column read from the scan keeps its PRINTED column in its id (pg<work>-c<printed>-lv) even where its @n was moved
+   // to the page's free number (10-01 night) -- the citation names the printed column; no other id is read for provenance
+   state.prov=(/^pg\d+-c(\d+)-lv$/.exec(ch.getAttribute('xml:id')||'')||[])[1]||null;}
   else if(tag==='note'&&role!=='supplement'&&state.opening&&(ch.getAttribute('place')||'foot')!=='margin'){   // the page's footnotes (Migne's apparatus, resp #pg-site-vtx): counted as the page's own text, rendered as the folio's note band
    const opening=out[state.opening]||(out[state.opening]={columns:{}});(opening.notes||(opening.notes=[])).push((ch.textContent||'').replace(/\s+/g,' ').trim());}
   else if(tag==='head'&&!state.opening){state.pending.push(ch.textContent||'');}
   else if((tag==='p'||tag==='head')&&state.opening&&state.column){const opening=out[state.opening]||(out[state.opening]={columns:{}}),col=opening.columns[state.column]||(opening.columns[state.column]={});if(/-plate$/.test(ch.getAttribute('ana')||''))twoPlate=true;
    if(role==='verified')opening.verified=true;
    if(tag==='p'&&role!=='supplement')(opening.pns||(opening.pns=[])).push({n:(ch.getAttribute('n')||'').trim(),t:ch.textContent||''});   // the paragraph's own printed column (p@n), read only by the LABEL pass below
+   if(state.prov)col[role+'Prov']=state.prov;
    const rich=col[role+'Rich']||(col[role+'Rich']=[]);
    const head=t=>/^[Α-ΩA-B]\s*[—–-]\s/.test(t)?t:'\u0002'+t+'\u0003';
    rich.push(...(state.pending||[]).map(head));state.pending=[];
@@ -53,9 +57,21 @@ function sourceColumns(doc){
   // Paragraph lists (owner 2026-09-15 'rich labelled inner text like the patrologia site'): the printed paragraphs of each lane in column
   // order, a heading folded into the paragraph it introduces; colParas keeps them by printed column for the column basis in alignOpening.
   opening.grcParas=[];opening.laParas=[];opening.colParas=[];
+  // the languages the opening already has from each column's own witness (the first one pure enough, as before 10-02), and both sides
+  // of a mixed column the page-true split below divides by paragraph (pg-202 col. 1716)
+  const primaryLangs=new Set();for(const column of Object.keys(opening.columns)){const l0=cands.get(key+'|'+column)||[],p0=l0.find(c=>(c.pure||mixedLane)&&!c.mixedSecondary);
+   if(p0)primaryLangs.add(p0.pure||mixedLane);else{const c0=l0.find(c=>!c.mixedSecondary)||l0[0];if(c0&&!c0.pure){if(c0.g>=150)primaryLangs.add('grc');if(c0.l>=150)primaryLangs.add('la');}}}
   for(const [column,candidates]of Object.entries(opening.columns)){
    const _list0=cands.get(key+'|'+column)||[];
    const pick=_list0.find(c=>(c.pure||mixedLane)&&!c.mixedSecondary);
+   // EACH LANGUAGE ITS OWN WITNESS (PG reading audit 2026-10-02, pg-3740 col. 81 / PG 8 col. 51): the canon can file a page's Greek
+   // under the same column number as its clean Latin (reading lane = Greek, secondary lane = the Latin read from the scan). One
+   // witness per column showed the Greek and dropped the Latin. In a work that prints a Greek|Latin pair the column takes its Greek
+   // from the first lane pure in Greek and its Latin from the first lane pure in Latin; a single-stream work keeps one witness.
+   // ...but only a language the opening would otherwise lack: a second witness of a language another column already gives (pg-1952
+   // col. 1003: the OCR zone's Greek under the Latin column repeated col. 1004's Greek; pg-2894 col. 101: the secondary lane's copy of
+   // col. 102's Latin) is never added -- 302 openings read their Greek or Latin twice before this rule
+   const picks=pick&&!mixedLane?['grc','la'].map(l=>{const c=_list0.find(c=>c.pure===l&&!c.mixedSecondary);return c&&(c===pick||!primaryLangs.has(l))?c:null;}).filter(Boolean):(pick?[pick]:[]);
    // PAGE-TRUE LANES (owner 2026-09-17 'i care about the right pages, not cols ... sometimes left latin, sometimes right latin,
    // just get it right page by page'): a printed column carrying BOTH scripts -- the tail of a Greek formula above a Latin rubric,
    // PG 28 col. 1587 'QUARTA FORMULA' -- failed the 85% purity test and the WHOLE column was dropped, so the page showed neither
@@ -87,13 +103,14 @@ function sourceColumns(doc){
      if(!printed[key])printed[key]={};(printed[key][lang]||(printed[key][lang]=[])).push(column);
      opening[lang+'Paras'].push(...list);opening.colParas.push({n:column,lang,paras:list});}
     continue;}
-   if(!pick)continue;const lang=pick.pure||mixedLane;
-   opening[lang].push(pick.t);opening[lang+'Rich'].push((candidates[pick.role+'Rich']||candidates[pick.role]).join(' ').replace(/\s+/g,' ').trim());
-   if(!printed[key])printed[key]={};(printed[key][lang]||(printed[key][lang]=[])).push(column);
-   const rich=candidates[pick.role+'Rich']||[],list=[];let pending='';
+   if(!pick)continue;
+   for(const pk of picks){const lang=pk.pure||mixedLane;
+   opening[lang].push(pk.t);opening[lang+'Rich'].push((candidates[pk.role+'Rich']||candidates[pk.role]).join(' ').replace(/\s+/g,' ').trim());
+   if(!printed[key])printed[key]={};(printed[key][lang]||(printed[key][lang]=[])).push(candidates[pk.role+'Prov']||column);
+   const rich=candidates[pk.role+'Rich']||[],list=[];let pending='';
    for(const e of rich){const v=String(e||'').replace(/\s+/g,' ').trim();if(!v)continue;if(/^[^]*$/.test(v)){pending+=v+' ';continue;}list.push((pending+v).trim());pending='';}
    if(pending.trim()){if(list.length)list[list.length-1]+=' '+pending.trim();else list.push(pending.trim());}
-   opening[lang+'Paras'].push(...list);opening.colParas.push({n:column,lang,paras:list});}
+   opening[lang+'Paras'].push(...list);opening.colParas.push({n:column,lang,paras:list});}}
   opening.grc=opening.grc.join(' ');opening.la=opening.la.join(' ');opening.grcRich=opening.grcRich.join(' ');opening.laRich=opening.laRich.join(' ');}
  // COLUMN LABELS (ticket 2026-09-28, PG 76 col. 1203 'On the Right Faith to the Queens'): Migne's opening 1203/1204 is REVERSED (Latin on
  // the left, Greek on the right) and the canon files both scripts under the opening's one odd-column milestone, so `printed` names the
@@ -123,13 +140,21 @@ function isLabel(v){const bare=String(v).replace(/\u0002[^\u0003]*\u0003/g,'').r
  if(bare.length>48)return false;if(!LABEL.test(bare))return false;const rest=bare.replace(LABEL,'').trim();return rest.length<=12&&!/[a-zα-ωά-ώ]{3,}/u.test(rest);}
 function hasLabel(v){v=text(v);return /^\u0002/.test(v)||LABEL.test(v);}
 function foldHeads(list){const out=[];let pending='';for(const e of list||[]){const v=text(e).replace(/\s+/g,' ').trim();if(!v)continue;if(isLabel(v)){pending+=v+' ';continue;}out.push((pending+v).trim());pending='';}if(pending.trim()){if(out.length)out[out.length-1]+=' '+pending.trim();else out.push(pending.trim());}return out;}
+// A POSITIONAL PAIR MUST LOOK LIKE A TRANSLATION PAIR (PG reading audit 2026-10-02, pg-3740 col. 91): equal paragraph counts are a
+// coincidence where the lanes paragraph differently -- the English heading 'INTERR. XI.' (50 characters) was paired with a Greek
+// paragraph of 928, the English body (2,836) with the next Greek paragraph (989), the reference line with the third, and every row
+// opened a gap a column high in one lane. A pair whose longer side holds 300+ characters and is more than four times the other is not
+// a translation pair: the opening falls through to the bases that pair by evidence or assert no pairs. Shelf census: 5,422 of 35,807
+// position-paired openings carry such a row. (Folding the English p rend="heading" instead was measured and refused: the sidecar's
+// headings answer Greek headings the source keeps as paragraphs, and 2,687 correct heading-to-heading pairings would have gone.)
+function plausiblePairs(src,en){return src.every((s0,i)=>{const s=text(s0).replace(/[\u0002\u0003]/g,'').length,e=text(en[i]).replace(/[\u0002\u0003]/g,'').length,big=Math.max(s,e);return !s||!e||big<300||Math.min(s,e)*4>=big;});}
 function alignOpening(grc,la,en,paras){
  // COLUMN BASIS (owner 2026-09-15, PG 78 col. 61: the site keys its English by printed column): an opening whose columns all carry ONE lane
  // — a Latin dissertation running from the left column into the right, a Greek-only page — pairs column by column: a column's paragraphs
  // against that column's English when the counts agree, alone when the column has no English. A column whose counts disagree drops the basis.
  if(paras&&Array.isArray(paras.byCol)&&paras.byCol.length>=2&&new Set(paras.byCol.map(c=>c.lang)).size===1){
   const lang=paras.byCol[0].lang,rows=[];let ok=true;
-  for(const c of paras.byCol){const s=foldHeads(c.paras||[]),e=foldHeads(c.en||[]);if(e.length&&e.length!==s.length){ok=false;break;}
+  for(const c of paras.byCol){const s=foldHeads(c.paras||[]),e=foldHeads(c.en||[]);if(e.length&&(e.length!==s.length||!plausiblePairs(s,e))){ok=false;break;}
    s.forEach((t,i)=>rows.push({grc:lang==='grc'?t:'',la:lang==='la'?t:'',en:e[i]||''}));}
   if(ok&&rows.length)return {basis:'column-paragraphs',rows};}
  // Paragraph basis (owner 2026-09-15): when the source and the English carry the same number of printed paragraphs, pair them by
@@ -144,7 +169,7 @@ function alignOpening(grc,la,en,paras){
    // Latin is the pairing source because the Greek has fewer than two paragraphs (PG 28 page 1603: one Greek paragraph beside five
    // Latin), the Greek rode nowhere and vanished. It takes the first row, as the Latin already does in the mirror case.
    const mk=(t,i)=>({grc:src===g?t:(g.length===l.length?g[i]:(i===0?text(grc):'')),la:src===l?t:(l.length===g.length?l[i]:(i===0?text(la):'')),en:e[i]});
-   if(src.length===e.length)return {basis:'paragraphs',rows:src.map(mk)};
+   if(src.length===e.length&&plausiblePairs(src,e))return {basis:'paragraphs',rows:src.map(mk)};
    // Label anchors: when the counts differ but both lanes carry the same number of labelled paragraphs (a rule, a chapter — 'ΟΡΟΣ ΙΓ´.',
    // 'RULE XIII'), each lane is cut before every labelled paragraph and the segments pair by position; a segment may hold several paragraphs
    // (the English often prints the rule's statement as its own paragraph where the Greek runs on).
