@@ -140,7 +140,12 @@ async function renderRail(){
     var notes=lj('fr_notes');Object.keys(notes).forEach(function(k){var n=notes[k];if(!n||!n.t||k.indexOf('ask|')===0)return;if(chosen==='all'||chosen==='reader'&&!n.notebookId||n.notebookId===chosen)rows.push(workflow().legacyRow(k,n,'note'));});
     cols.filter(function(c){return chosen==='all'||chosen===c.id;}).forEach(function(c){(c.items||[]).forEach(function(item){rows.push(Object.assign({},item,{text:item.text||item.note||item.label||item.title||item.slug||'Saved reference',kind:notebook().kind(item),notebook:c.name}));});});
   }else if(TAB==='highlights'){
-    var highlights=lj('fr_hl'),passages=lj('fr_highlight_passages_v1');Object.keys(highlights).forEach(function(k){var h=passages[k];if(h&&h.text)rows.push(Object.assign(workflow().legacyRow(k,h,'highlight'),{color:highlights[k],fileable:true}));});
+    // Passage highlights (fr_hl_ranges, 2026-10-03: every highlight is one now) are listed with the old row tints (fr_hl);
+    // before, only rows in fr_hl showed here, so a passage highlight never reached the Desk.
+    var highlights=lj('fr_hl'),ranges=lj('fr_hl_ranges'),passages=lj('fr_highlight_passages_v1');
+    Object.keys(highlights).concat(Object.keys(ranges).filter(function(k){return !(k in highlights);})).forEach(function(k){var h=passages[k],r=ranges[k];
+      var color=highlights[k]||(Array.isArray(r)&&r[0]&&r[0].c)||(h&&h.color)||'amber';
+      if(h&&h.text)rows.push(Object.assign(workflow().legacyRow(k,h,'highlight'),{color:color,fileable:true}));});
   }else if(TAB==='history'){
     rows=workflow().readingHistory(lj('fr_lastread')).map(function(r){return Object.assign({},r,{kind:'history',text:r.title,cite:[r.author,'location '+r.page].filter(Boolean).join(' · '),fileable:true});});
   }else{
