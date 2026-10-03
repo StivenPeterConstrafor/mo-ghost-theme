@@ -125,6 +125,12 @@
 .wix .wix-inst{margin:.6rem 0 .1rem;padding:.1rem 0 .15rem .85rem;border-left:2px solid var(--border,#ddd)}.wix .wix-ih{margin:.2rem 0 .1rem;font-size:.8rem;color:var(--muted,#666)}
 .wix .wix-i{margin:.5rem 0;font-size:.9rem;line-height:1.55}.wix .wix-i a.wix-p{display:inline-block;min-width:3.2rem;margin-right:.5rem;font-size:.78rem;font-weight:600;color:inherit;white-space:nowrap}
 .wix .wix-s{overflow-wrap:anywhere}.wix .wix-s+.wix-s{margin-left:.3em}
+.wix .wix-pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.15rem 1.1rem;margin:.1rem 0 .45rem}
+.wix .wix-pair.wix-one{grid-template-columns:minmax(0,1fr)}.wix .wix-pair .wix-s+.wix-s{margin-left:0}
+.wix .wix-pair .wix-en{color:var(--fg,#222);border-left:1px solid var(--border,#ddd);padding-left:.8rem}
+.wix .wix-pair .wix-en>b{display:block;font:600 .66rem/1.2 var(--font-ui,inherit);letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#666);margin-bottom:.1rem}
+@media (max-width:680px){.wix .wix-pair{grid-template-columns:minmax(0,1fr)}.wix .wix-pair .wix-en{border-left:0;padding-left:0;border-top:1px dashed var(--border,#ddd);padding-top:.2rem}}
+.wix .wix-i>.wix-pairs{margin:.15rem 0 0}.wix .wix-allpv{display:inline-flex;align-items:center;gap:.35rem;font-size:.82rem;color:var(--muted,#666);margin:.1rem 0 .5rem;cursor:pointer}
 .wix .wix-s mark{background:color-mix(in srgb,var(--accent,#b8860b) 26%,transparent);color:inherit;padding:0 .12em;border-radius:3px}
 .wix .wix-none{color:var(--muted,#666);font-style:italic;font-size:.84rem}
 .wix .wix-pages{display:flex;flex-wrap:wrap;gap:.25rem .6rem;margin-top:.35rem;font-size:.82rem}.wix .wix-pages a{color:inherit}
@@ -179,6 +185,46 @@
     return rows.map((r, i) => (seen.get(short[i]) > 1 ? cap(String(r.volume || '').trim(), 40) || short[i] : short[i]));
   }
 
+
+  /* EVERY HIT, WITH ITS ENGLISH (2026-10-03, owner: "this just shows the latin not the english pls fix for both" + "make the layout
+     able for me to see the preview of all hits everywhere"): a page's uses come as pairs — the line in the original and the same
+     passage in English (FRWordPreview.pair) — every use on the page, not two; and one switch opens the passages under every work
+     as the list scrolls into view (remembered in this browser). */
+  function pairsHtml(list) {
+    if (!list || !list.length) return '';
+    const both = list.some(x => x.o && x.e);
+    return `<div class="wix-pairs">${list.map(x => both
+      ? `<div class="wix-pair"><span class="wix-s">${x.o || '<span class="wix-none">(English only on this page)</span>'}</span><span class="wix-s wix-en"><b>English</b>${x.e || '<span class="wix-none">not translated on this page</span>'}</span></div>`
+      : `<div class="wix-pair wix-one"><span class="wix-s">${x.o || x.e}</span></div>`).join('')}</div>`;
+  }
+  const ALLPV = 'wix-allpv';
+  const allOn = () => { try { return localStorage.getItem(ALLPV) === '1'; } catch (e) { return false; } };
+  const setAll = v => { try { localStorage.setItem(ALLPV, v ? '1' : '0'); } catch (e) { /* private window */ } document.dispatchEvent(new CustomEvent(ALLPV, { detail: !!v })); };
+  // open(li): show that entry's passages. Every entry of the list, present and to come, opens as it nears the screen while the switch is on.
+  function autoOpen(list, open) {
+    let io = null, mo = null;
+    const watch = li => { if (io && li.nodeType === 1 && li.matches('li') && !li.dataset.pvAuto) { li.dataset.pvAuto = '1'; io.observe(li); } };
+    function start() {
+      if (io || typeof IntersectionObserver !== 'function') return;
+      io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); open(e.target); } }), { rootMargin: '300px 0px' });
+      list.querySelectorAll(':scope li').forEach(watch);
+      mo = new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1) { watch(n); n.querySelectorAll && n.querySelectorAll('li').forEach(watch); } })));
+      mo.observe(list, { childList: true, subtree: true });
+    }
+    function stop() { if (io) io.disconnect(); if (mo) mo.disconnect(); io = mo = null; list.querySelectorAll('li[data-pv-auto]').forEach(li => delete li.dataset.pvAuto); }
+    return { start, stop };
+  }
+  // one setting for every list on the page: a switch turned anywhere turns every other one, and their lists open or close with it
+  function allSwitch(label, auto) {
+    const el = document.createElement('label'); el.className = 'wix-allpv';
+    el.innerHTML = `<input type="checkbox"${allOn() ? ' checked' : ''}> ${label}`;
+    const box = el.querySelector('input');
+    box.addEventListener('change', () => setAll(box.checked));
+    const sync = e => { if (!el.isConnected) { document.removeEventListener(ALLPV, sync); auto.stop(); return; } box.checked = e.detail; if (e.detail) auto.start(); else auto.stop(); };
+    document.addEventListener(ALLPV, sync);
+    if (allOn()) auto.start();
+    return el;
+  }
 
   /* THE CONCEPT CARD (2026-10-02, owner: "build it … make of course results are tastefully done"). When the query names a doctrine or
      topic of the concept map (tools/concepts/; v1/concepts/index.json: theosis, deification, the hypostatic union, transubstantiation,
@@ -251,9 +297,15 @@
       ${rows}${vrow}${offList}${nearLine}
       <p class="wcx-why">Works that treat it most: ranked where its words, its verses and the statements filed under it meet on the same pages. Each word above is a search of its own.</p>
       ${trads.length > 1 ? `<div class="wix-trad" role="group" aria-label="Tradition"><button type="button" data-ct="*" aria-pressed="true">All traditions</button>${trads.map(t => `<button type="button" data-ct="${esc(t.t)}" aria-pressed="false">${esc(t.t)}<span>${n(t.works)}</span></button>`).join('')}</div>` : ''}
-      <p class="wcx-start"></p><ol class="wcx-list"></ol><div class="wcx-foot"></div>`;
+      <p class="wcx-start"></p><div class="wcx-sw"></div><ol class="wcx-list"></ol><div class="wcx-foot"></div>`;
     const forms = [...new Set(on.filter(t => t.kind === 'word').flatMap(t => t.forms || []))];
     const pforms = [...new Set(on.filter(t => t.kind !== 'word').flatMap(t => t.chain || []))];
+    // what to look for on a page: the original's words and phrases; the English words and phrases in the English
+    const look = {
+      forms: [...new Set(on.filter(t => t.kind === 'word' && t.lang !== 'en').flatMap(t => t.forms || []))],
+      chains: on.filter(t => t.kind !== 'word' && t.lang !== 'en').map(t => t.chain || []).filter(c => c.length),
+      enForms: [...new Set(on.filter(t => t.kind === 'word' && t.lang === 'en').flatMap(t => t.forms || []))],
+      enChains: on.filter(t => t.kind !== 'word' && t.lang === 'en').map(t => t.chain || []).filter(c => c.length) };
     const ol = slot.querySelector('.wcx-list'), foot = slot.querySelector('.wcx-foot'), st = { shown: 0, trad: null };
     const pool = () => (c.top || []).filter(w => st.trad === null || w.tradition === st.trad);
     function startWith() {
@@ -279,24 +331,32 @@
     async function passages(li, w, btn) {
       let box = li.querySelector(':scope > .wix-inst');
       if (box) { box.hidden = !box.hidden; btn.setAttribute('aria-expanded', String(!box.hidden)); btn.textContent = box.hidden ? 'Passages ▾' : 'Hide ▴'; return; }
-      box = document.createElement('div'); box.className = 'wix-inst'; box.innerHTML = '<span class="wix-none">Reading the pages…</span>'; li.appendChild(box);
+      box = document.createElement('div'); box.className = 'wix-inst'; li.appendChild(box);
       btn.setAttribute('aria-expanded', 'true'); btn.textContent = 'Hide ▴';
-      const pp = (w.pp || []).slice().sort((a, b) => b[1] - a[1]).slice(0, 6);
-      let texts = null;
-      if (window.FRWordPreview) texts = await FRWordPreview.pages(w.w, pp.map(p => String(p[0]))).catch(() => null);
-      box.innerHTML = '';
-      pp.forEach(p => {
-        const t = texts && texts.get(String(p[0])) || '';
-        let k = t && FRWordPreview.kwic(t, forms);
-        if (t && (!k || !k.total) && pforms.length) k = FRWordPreview.kwic(t, pforms);
-        const d = document.createElement('div'); d.className = 'wix-i';
-        const tags = [p[3] ? 'cites its verse' : '', p[4] ? `${p[4]} ${p[4] === 1 ? 'statement' : 'statements'} filed under it` : ''].filter(Boolean).join(' · ');
-        d.innerHTML = `<a class="wix-p" href="${esc(opts.readHref(w.w, p[0], forms[0] || ''))}">${(/^(pld|pg)-/.test(w.w) ? 'col.' : 'p.') + ' ' + esc(String(p[0]).replace(/^0+(?=\d)/, ''))}</a>`
-          + (k && k.snips.length ? k.snips.map(x => `<span class="wix-s">${x}</span>`).join('') : `<span class="wix-s wix-none">${tags || 'open the page to read it'}</span>`)
-          + (k && k.snips.length && tags ? ` <span class="wcx-ev">· ${tags}</span>` : '');
-        box.appendChild(d);
-      });
+      const pp = (w.pp || []).slice().sort((a, b) => b[1] - a[1]), st = { shown: 0 };   // every page the card ranks, best first
+      const il = document.createElement('div'), ft = document.createElement('div'); ft.className = 'wix-if'; box.append(il, ft);
+      async function next(k) {
+        const batch = pp.slice(st.shown, st.shown + k); st.shown += batch.length;
+        ft.innerHTML = '<span class="wix-none">Reading the pages…</span>';
+        let lanes = null;
+        if (window.FRWordPreview && FRWordPreview.lanes) lanes = await FRWordPreview.lanes(w.w, batch.map(p => String(p[0]))).catch(() => null);
+        batch.forEach(p => {
+          const lane = lanes && lanes.get(String(p[0]));
+          const uses = lane ? FRWordPreview.pair(lane, look) : [];
+          const d = document.createElement('div'); d.className = 'wix-i';
+          const tags = [p[3] ? 'cites its verse' : '', p[4] ? `${p[4]} ${p[4] === 1 ? 'statement' : 'statements'} filed under it` : ''].filter(Boolean).join(' · ');
+          d.innerHTML = `<a class="wix-p" href="${esc(opts.readHref(w.w, p[0], forms[0] || pforms[0] || ''))}">${(/^(pld|pg)-/.test(w.w) ? 'col.' : 'p.') + ' ' + esc(String(p[0]).replace(/^0+(?=\d)/, ''))}</a>`
+            + (uses.length ? `<span class="wcx-ev">${uses.length} ${uses.length === 1 ? 'use' : 'uses'}${tags ? ' · ' + tags : ''}</span>${pairsHtml(uses)}` : `<span class="wix-s wix-none">${tags || 'open the page to read it'}</span>`);
+          il.appendChild(d);
+        });
+        const left = pp.length - st.shown;
+        ft.innerHTML = left > 0 ? `<button type="button" class="wix-go" data-n="8">${Math.min(8, left)} more pages</button> <button type="button" class="wix-go" data-n="all">all ${n(left)} left</button>` : '';
+        ft.querySelectorAll('button').forEach(b => { b.onclick = () => next(b.dataset.n === 'all' ? Infinity : 8); });
+      }
+      await next(6);
     }
+    slot.querySelector('.wcx-sw').appendChild(allSwitch('Show the passages under every work',
+      autoOpen(ol, li => { const b = li.querySelector('button[data-cw][aria-expanded=false]'); if (b) b.click(); })));
     slot.addEventListener('click', async e => {
       const t = e.target.closest('button'); if (!t || !slot.contains(t)) return;
       if (t.dataset.ct) {
@@ -320,7 +380,7 @@
     const phNote = ph ? `<span class="wix-phn"> The words stand next to each other, in this order${ph.skipped.length ? ` — the index leaves out small words (${ph.skipped.map(esc).join(', ')}), so “${esc(ph.ws.join(' … '))}” also finds the phrase with another small word between` : ''}.</span>` : '';
     box.innerHTML = `<h3>${quoted}<span class="wix-how">${ph ? ' as a phrase' : ws.length > 1 ? ' on the same page' : ''}</span> — every text in the library</h3>
       <p class="wix-sub">Counted from the library’s word index: every page of every work, a duplicate edition once.${phNote} <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
-      <div class="wix-forms"></div><div class="wix-dist" role="group" aria-label="How close" hidden></div><div class="wix-sum">Counting…</div><div class="wix-trad" role="group" aria-label="Tradition"></div><div class="wix-list"></div>`;
+      <div class="wix-forms"></div><div class="wix-dist" role="group" aria-label="How close" hidden></div><div class="wix-sum">Counting…</div><div class="wix-trad" role="group" aria-label="Tradition"></div><div class="wix-swl"></div><div class="wix-list"></div>`;
     host.appendChild(box);
     const cslot = document.createElement('section'); host.insertBefore(cslot, box); conceptCard(cslot, opts).catch(e => console.warn('concept card', e));
     const $ = s => box.querySelector(s);
@@ -463,24 +523,29 @@
       const r = await post({ op: 'words', by: 'pages', groups: groups(), work: slug, limit: 2000 }).catch(fail);
       if (!r || !r.rows) { box.remove(); return; }
       const pages = r.rows, forms = [...new Set(groups().flat())], st = { shown: 0 };
+      // a quoted phrase is looked for as a phrase (its words in order); otherwise every form of every word, in either lane
+      const look = ph ? { chains: [ph.ws] } : { forms };
       box.innerHTML = `${btn.classList.contains('wix-vol') ? `<div class="wix-ih">${esc(btn.firstChild.textContent)} · ${n(pages.length)} ${pages.length === 1 ? 'page' : 'pages'}</div>` : ''}<div class="wix-il"></div><div class="wix-if"></div>
         <details class="wix-all"><summary>All ${n(pages.length)} ${pages.length === 1 ? 'page' : 'pages'} as links</summary><div class="wix-pages">${pages.map(p => `<a href="${esc(opts.readHref(slug, p.page, hl))}">${pageLabel(slug, p.page)}${Number(p.occurrences) > 1 ? ' ×' + p.occurrences : ''}</a>`).join('')}</div></details>`;
       const il = box.querySelector('.wix-il'), foot = box.querySelector('.wix-if');
       async function next(k) {
         const batch = pages.slice(st.shown, st.shown + k); st.shown += batch.length;
         foot.innerHTML = '<span class="wix-none">Reading the pages…</span>';
-        let texts = null;
-        if (window.FRWordPreview) texts = await FRWordPreview.pages(slug, batch.map(p => p.page)).catch(e => { console.warn('word preview', e); return null; });
+        let lanes = null;
+        if (window.FRWordPreview && FRWordPreview.lanes) lanes = await FRWordPreview.lanes(slug, batch.map(p => p.page)).catch(e => { console.warn('word preview', e); return null; });
         batch.forEach(p => {
-          const k2 = texts && FRWordPreview.kwic(texts.get(p.page) || '', forms), d = document.createElement('div');
+          const lane = lanes && lanes.get(p.page);
+          let uses = lane ? FRWordPreview.pair(lane, look) : [];
+          if (lane && !uses.length && ph) uses = FRWordPreview.pair(lane, { forms });   // the phrase across a line or a note: its words
+          const d = document.createElement('div');
           d.className = 'wix-i';
           d.innerHTML = `<a class="wix-p" href="${esc(opts.readHref(slug, p.page, hl))}">${pageLabel(slug, p.page)}</a>`
-            + (k2 && k2.snips.length ? k2.snips.map(x => `<span class="wix-s">${x}</span>`).join('') : '<span class="wix-s wix-none">open the page to read it</span>');
+            + (uses.length ? `${uses.length > 1 ? `<span class="wcx-ev">${uses.length} uses</span>` : ''}${pairsHtml(uses)}` : '<span class="wix-s wix-none">open the page to read it</span>');
           il.appendChild(d);
         });
         const left = pages.length - st.shown;
-        foot.innerHTML = left > 0 ? `<button type="button" class="wix-go">Show ${Math.min(10, left)} more passages · ${n(left)} left</button>` : '';
-        const b = foot.querySelector('button'); if (b) b.onclick = () => next(10);
+        foot.innerHTML = left > 0 ? `<button type="button" class="wix-go" data-n="10">${Math.min(10, left)} more pages</button> <button type="button" class="wix-go" data-n="all">all ${n(left)} left</button>` : '';
+        foot.querySelectorAll('button').forEach(b => { b.onclick = () => next(b.dataset.n === 'all' ? Infinity : 10); });
       }
       await next(6);
     }
@@ -526,6 +591,11 @@
       if (!e.target.matches('input[data-ord]')) return;
       state.dist.ordered = e.target.checked; howLine(); loadCounts().catch(fail);
     });
+    // every work's passages as the list scrolls (the switch the concept card shares): a work opens its first volume or its passages
+    $('.wix-swl').appendChild(allSwitch('Show the passages under every work', autoOpen($('.wix-list'), li => {
+      if (!li.classList.contains('wix-w') || li.querySelector(':scope > .wix-inst')) return;
+      const b = li.querySelector('button.wix-pv[data-pages], button.wix-vol'); if (b) b.click();
+    })));
     loadForms().then(loadCounts).catch(fail);
     return { words: ws };
   }
