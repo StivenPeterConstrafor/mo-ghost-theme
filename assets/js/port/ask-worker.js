@@ -42,50 +42,9 @@ const ready=recoverInterrupted();
 (function sweep(){const t=setTimeout(()=>{recoverInterrupted().catch(()=>{}).finally(sweep);},60000);t?.unref?.();})();
 // A stop for a turn another worker streams is passed to that worker (see 'stop' below); the owner aborts it.
 if(channel)channel.addEventListener('message',e=>{const d=e.data||{};if(d.type==='stop-request'){const job=jobs.get(d.id);if(job)job.ctl.abort();}});
-async function run(id, turnId, request, job) {
-  const ctl = job.ctl;
-  let turn, lastSave = 0, finished = false, timer, saveTimer, saveChain=Promise.resolve();
-  function save(force = false) {
-    const wait=180-(Date.now()-lastSave);
-    if (!force && wait>0) {
-      if(!saveTimer)saveTimer=setTimeout(()=>{saveTimer=null;save(true).catch(error=>{job.storageError=error;ctl.abort();});},wait);
-      return saveChain;
-    }
-    clearTimeout(saveTimer);saveTimer=null;
-    lastSave = Date.now();
-    turn.beat = lastSave;
-    const snapshot = structuredClone(turn);
-    const write=saveChain.then(()=>Store.update(id, c => {
-      const i = c.turns.findIndex(t => t.id === turnId); if (i >= 0) c.turns[i] = snapshot;
-      c.ts = Date.now(); if (snapshot.status === 'complete' || snapshot.status === 'error') c.unread = true;
-    })).then(()=>broadcast({ type: 'updated', id, status: snapshot.status }));
-    // Serialize writes so a slower partial save cannot overwrite completion.
-    saveChain=write.catch(()=>{});
-    return write;
-  }
-  try {
-    const c = await Store.get(id); turn = c.turns.find(t => t.id === turnId);
-    if (!turn) throw new Error('Conversation not found');
-    timer = setTimeout(() => { job.timeout = true; ctl.abort(); }, CLIENT_ABORT_MS);
-    /* MereO delta (ASK-SPEC §7): carry the member bearer.
-       This worker has its own global scope and cannot reach
-       window.MOAuth, and `credentials: 'same-origin'` sends nothing to
-       mo-tfr-ask-dev because that is a different origin. Our Ask worker
-       requires a verified Ghost member on every spending route, so
-       without this every question 401s. The page mints the token and
-       puts it on request.headers; see assets/js/page/faith-ask-workspace.js.
-       Re-apply this when re-vendoring ask-worker.js from upstream. */
-    const r = await fetch(request.url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(request.headers || {}) }, credentials: 'same-origin', body: JSON.stringify(request.body), signal: ctl.signal });
-    if (!r.ok || !r.body) {
-      /* MereO delta (2026-09-29): the server says why in its JSON `error` (the member's questions for the day, the shared
-         daily capacity, signing in: gateResponse in mo-workers ask.js), and the reader is now shown that. A reader who had
-         used the day's questions was told "The library is busy. Wait a moment, then retry.", and retrying failed again. */
-      let said = ''; try { const j = await r.clone().json(); said = String((j && (j.error || j.message)) || '').slice(0, 300); } catch (_) {}
-      if (r.status === 401 || r.status === 403) throw new Error(said || 'Your preview session has expired. Open the library to sign in, then retry.');
-      if (r.status === 429) throw new Error(said || 'The library is busy. Wait a moment, then retry.');
-      throw new Error('Research is unavailable (' + r.status + '). Your question is saved; you can retry.');
-    }
-    const parser = FRChatStream.parser(request.format, ev => {
+// what a stream event does to a turn — shared by a live stream and a resumed one (2026-10-03)
+function applier(turn, state) {
+  return ev => {
       if(Array.isArray(ev.artifacts))turn.artifacts=ev.artifacts.slice(0,30);
       if(ev.corpusState&&Array.isArray(ev.corpusState.queries))turn.corpusState=ev.corpusState;
       if(ev.protocol===2)turn.expectsReceipt=true;
@@ -110,22 +69,98 @@ async function run(id, turnId, request, job) {
         if (ev.total) { turn.progress = { done: ev.done, total: ev.total, found: ev.found }; message = 'Reading batch ' + ev.done + ' of ' + ev.total + '; ' + ev.found + ' passages found'; }
         if (!message && ev.i != null) message = (turn.plan || [])[ev.i];
         if (message) { turn.stage = String(message).replace(/\s*[—]\s*/g, ': '); const history = turn.steps || (turn.steps = []); if (!history.length || history[history.length - 1].label !== turn.stage) history.push({ label: turn.stage, ts: Date.now() }); }
-      } else if (ev.t === 'report') { turn.a = ev.md || ''; turn.src = ev.sources || (ev.evidence || []).map(f => ({ slug: f.slug, page: f.page, t: f.work, quote: f.quote })); turn.evidence = ev.evidence; turn.stats = ev.stats; finished = true; }
+      } else if (ev.t === 'report') { turn.a = ev.md || ''; turn.src = ev.sources || (ev.evidence || []).map(f => ({ slug: f.slug, page: f.page, t: f.work, quote: f.quote })); turn.evidence = ev.evidence; turn.stats = ev.stats; state.finished = true; }
       else if (ev.t === 'error') throw new Error('The research could not finish. ' + String(ev.msg || '').slice(0,180));
-    });
+  };
+}
+// RESUME (2026-10-03, owner: a question failed when the phone went to another app). The worker stores every Ask turn's stream
+// under the turn id and answers GET ?turn=<id> with it; when the live stream breaks, the finished answer is fetched from there.
+const RESUME_WINDOW = 420000, RESUME_POLL_MS = typeof FR_RESUME_POLL_MS !== 'undefined' ? FR_RESUME_POLL_MS : 3000;
+async function resumeTurn(url, turnId, job, turn, apply, headers) {
+  const base = String(url).split('?')[0], t0 = Date.now(); let fails = 0;
+  while (Date.now() - t0 < RESUME_WINDOW) {
+    if (job.cancelled) return false;
+    let rec = null;
+    try {
+      const r = await fetch(base + '?turn=' + encodeURIComponent(turnId), { headers: headers || {}, credentials: 'same-origin', cache: 'no-store' });
+      if (r.status === 404) return false;
+      rec = r.ok ? await r.json() : null; fails = 0;
+    } catch (_) { if (++fails >= 3) return false; }
+    if (rec && rec.status === 'failed') return false;
+    if (rec && rec.status === 'done' && typeof rec.text === 'string') {
+      turn.a = ''; turn.src = []; turn.receivedComplete = false; turn.expectsReceipt = false; delete turn.replacing; delete turn.finalText;
+      try { FRChatStream.parser('ask', apply).feed(rec.text, true); } catch (_) { return false; }
+      if (turn.replacing) { if (String(turn.finalText || '').trim()) turn.a = turn.finalText; delete turn.replacing; delete turn.finalText; }
+      return !!String(turn.a || '').trim() && !(turn.expectsReceipt && !turn.receivedComplete);
+    }
+    await new Promise(r => setTimeout(r, RESUME_POLL_MS));
+  }
+  return false;
+}
+async function run(id, turnId, request, job) {
+  const ctl = job.ctl;
+  let turn, lastSave = 0, timer, saveTimer, saveChain=Promise.resolve(), apply = null; const state = { finished: false };
+  function save(force = false) {
+    const wait=180-(Date.now()-lastSave);
+    if (!force && wait>0) {
+      if(!saveTimer)saveTimer=setTimeout(()=>{saveTimer=null;save(true).catch(error=>{job.storageError=error;ctl.abort();});},wait);
+      return saveChain;
+    }
+    clearTimeout(saveTimer);saveTimer=null;
+    lastSave = Date.now();
+    turn.beat = lastSave;
+    const snapshot = structuredClone(turn);
+    const write=saveChain.then(()=>Store.update(id, c => {
+      const i = c.turns.findIndex(t => t.id === turnId); if (i >= 0) c.turns[i] = snapshot;
+      c.ts = Date.now(); if (snapshot.status === 'complete' || snapshot.status === 'error') c.unread = true;
+    })).then(()=>broadcast({ type: 'updated', id, status: snapshot.status }));
+    // Serialize writes so a slower partial save cannot overwrite completion.
+    saveChain=write.catch(()=>{});
+    return write;
+  }
+  try {
+    const c = await Store.get(id); turn = c.turns.find(t => t.id === turnId);
+    if (!turn) throw new Error('Conversation not found');
+    apply = applier(turn, state);                        // before the request: a fetch that fails outright still resumes
+    timer = setTimeout(() => { job.timeout = true; ctl.abort(); }, CLIENT_ABORT_MS);
+    /* MereO delta (ASK-SPEC §7): carry the member bearer.
+       This worker has its own global scope and cannot reach
+       window.MOAuth, and `credentials: 'same-origin'` sends nothing to
+       mo-tfr-ask-dev because that is a different origin. Our Ask worker
+       requires a verified Ghost member on every spending route, so
+       without this every question 401s. The page mints the token and
+       puts it on request.headers; see assets/js/page/faith-ask-workspace.js.
+       Re-apply this when re-vendoring ask-worker.js from upstream. */
+    if (request.format === 'ask' && request.body && typeof request.body === 'object') request.body.turn = turnId;   // the worker keeps the finished answer under it (2026-10-03)
+    let r; try { r = await fetch(request.url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(request.headers || {}) }, credentials: 'same-origin', body: JSON.stringify(request.body), signal: ctl.signal }); }
+    catch (e) { job.lostStream = true; throw e; }         // the connection itself failed: the server may still finish the answer
+    if (!r.ok || !r.body) {
+      /* MereO delta (2026-09-29): the server says why in its JSON `error` (the member's questions for the day, the shared
+         daily capacity, signing in: gateResponse in mo-workers ask.js), and the reader is now shown that. A reader who had
+         used the day's questions was told "The library is busy. Wait a moment, then retry.", and retrying failed again. */
+      let said = ''; try { const j = await r.clone().json(); said = String((j && (j.error || j.message)) || '').slice(0, 300); } catch (_) {}
+      if (r.status === 401 || r.status === 403) throw new Error(said || 'Your preview session has expired. Open the library to sign in, then retry.');
+      if (r.status === 429) throw new Error(said || 'The library is busy. Wait a moment, then retry.');
+      throw new Error('Research is unavailable (' + r.status + '). Your question is saved; you can retry.');
+    }
+    const parser = FRChatStream.parser(request.format, apply);
     if (request.format === 'follow') {
-      const result = await r.json(); if (!result.md) throw new Error(result.error || 'No answer was returned'); turn.a = result.md; finished = true;
+      const result = await r.json(); if (!result.md) throw new Error(result.error || 'No answer was returned'); turn.a = result.md; state.finished = true;
     } else {
       const reader = r.body.getReader(), decoder = new TextDecoder();
-      for (;;) { const { done, value } = await reader.read(); parser.feed(done ? decoder.decode() : decoder.decode(value, { stream: true }), done); await save(); if (done) break; }
+      for (;;) { let step; try { step = await reader.read(); } catch (e) { job.lostStream = true; throw e; } const { done, value } = step; parser.feed(done ? decoder.decode() : decoder.decode(value, { stream: true }), done); await save(); if (done) break; }
     }
     if (/^\s*\(synthesis failed\)\s*$/i.test(turn.a)) { turn.a=''; throw new Error('The selected-work scan could not write its report. Your question is saved. Retry with Deep research.'); }
-    if (!turn.a.trim() || (request.format !== 'ask' && !finished)) throw new Error('The response ended before an answer was ready. Retry the saved question.');
+    if (!turn.a.trim() || (request.format !== 'ask' && !state.finished)) { job.lostStream = true; } if (!turn.a.trim() || (request.format !== 'ask' && !state.finished)) throw new Error('The response ended before an answer was ready. Retry the saved question.');
     if (/The library hit an error answering this/.test(turn.a)) { turn.a=turn.a.split('The library hit an error answering this')[0].trim(); throw new Error(turn.src?.length?'The answer could not be completed. Retrieved source passages are saved below. You can retry.':'The answer could not be completed. Your question is saved; try again.'); }
-    if(turn.expectsReceipt&&!turn.receivedComplete)throw new Error('The response ended before completion was confirmed. The received text and source passages are saved. Retry to finish.');
+    if(turn.expectsReceipt&&!turn.receivedComplete){job.lostStream=true;} if(turn.expectsReceipt&&!turn.receivedComplete)throw new Error('The response ended before completion was confirmed. The received text and source passages are saved. Retry to finish.');
     turn.status = 'complete'; turn.stage = 'Complete'; turn.completedAt = Date.now();
   } catch (error) {
     if (!turn) return;
+    if (request.format === 'ask' && apply && !job.storageError && (job.lostStream || job.timeout) && (!ctl.signal.aborted || job.timeout)) {
+      turn.stage = 'Reconnecting to the answer'; try { await save(true); } catch (_) {}
+      if (await resumeTurn(request.url, turnId, job, turn, apply, request.headers)) { turn.status = 'complete'; turn.stage = 'Complete'; turn.completedAt = Date.now(); turn.error = ''; return; }
+    }
     turn.status = ctl.signal.aborted && !job.timeout && !job.storageError ? 'stopped' : 'error';
     const detail=String(error.message||error);
     turn.error = job.storageError ? 'The latest text could not be saved. Check available browser storage before retrying.' : job.timeout ? 'This answer was still arriving after '+CLIENT_ABORT_TEXT+', so the browser stopped waiting. Any text received is saved below. Narrow the question, or switch to Deep research, which runs on the server and keeps going after you close the tab.' : ctl.signal.aborted ? 'Stopped. Any partial answer is saved.' : /load failed|failed to fetch|networkerror|network request failed|fetch failed/i.test(detail) ? 'The connection was interrupted. Your question and any received passages are saved. Try again.' : detail;
@@ -153,7 +188,26 @@ function connect(port) {
         await Store.update(data.id, c => { c.turns.push(data.turn); c.ts = Date.now(); c.draft = ''; });
         run(data.id, data.turn.id, data.request, job);
         } catch (error) { jobs.delete(data.id); throw error; }
-      } else if (data.type === 'stop') { const job = jobs.get(data.id); if (job) job.ctl.abort(); else {
+      } else if (data.type === 'resume') {
+        if (!jobs.has(data.id)) {
+          const c = await Store.get(data.id), t = c && (c.turns || []).find(t => t.id === data.turnId);
+          const recent = t && !t.serverJob && Date.now() - Math.max(lastBeat(t), t.completedAt || 0) < 900000;
+          if (recent && (t.status === 'running' || t.status === 'interrupted' || (t.status === 'error' && /interrupted|ended before|Load failed|network/i.test(t.error || '')))) {
+            const job = { ctl: new AbortController() }; jobs.set(data.id, job);
+            (async () => {
+              const turn = structuredClone(t); turn.status = 'running'; turn.stage = 'Reconnecting to the answer'; turn.error = '';
+              const write = () => Store.update(data.id, c => { const i = c.turns.findIndex(x => x.id === turn.id); if (i >= 0) c.turns[i] = structuredClone(turn); c.ts = Date.now(); if (turn.status !== 'running') c.unread = true; });
+              try {
+                await write(); broadcast({ type: 'updated', id: data.id });
+                const ok = await resumeTurn(data.url || '/api/ask', turn.id, job, turn, applier(turn, {}), data.headers);
+                if (ok) { turn.status = 'complete'; turn.stage = 'Complete'; turn.completedAt = Date.now(); }
+                else { turn.status = job.cancelled ? 'stopped' : 'error'; turn.error = job.cancelled ? '' : 'The connection was interrupted and the answer could not be recovered. Your question is saved. Try again.'; }
+              } catch (_) { turn.status = 'error'; turn.error = 'The answer could not be recovered. Your question is saved. Try again.'; }
+              finally { jobs.delete(data.id); try { await write(); broadcast({ type: 'finished', id: data.id, status: turn.status, turnId: turn.id }); } catch (_) { broadcast({ type: 'storage-error', id: data.id }); } }
+            })();
+          }
+        }
+      } else if (data.type === 'stop') { const job = jobs.get(data.id); if (job) { job.cancelled = true; job.ctl.abort(); } else {
         /* MereO delta (2026-09-29): another worker's turn, or nobody's. Its owner is asked to stop it; if the turn is
            not written to over the next few seconds, no worker is streaming it and it ends here. It used to answer
            "running in another open tab" for good, so a reader could not stop a dead answer. */
