@@ -2,8 +2,10 @@
  *
  * v1/enrich/works/<slug>.json on the library worker carries, per work, what the
  * library has worked out from the work's own pages: where a newcomer should
- * start, a one-line note on what each section does, a back-of-book subject
- * index, and memorable lines kept only where they match the page word for word.
+ * start, the argument (main theses, how each is argued, objections and their
+ * answers, distinctions), a one-line note on what each section does, a
+ * back-of-book subject index, and memorable lines kept only where they match
+ * the page word for word.
  * v1/enrich/cites/<slug>.json maps each page to the pages of other works it
  * cites. All of it is machine-written from the text, and every page reference
  * was checked against the work before it was published.
@@ -51,6 +53,23 @@
     if (!Array.isArray(start) || !start.length) return null;
     const items = start.map((s) => `<li>${pageButton(s.page)}<span>${esc(s.why)}</span></li>`).join("");
     return fold("Where to start", `<ol class="nb-guide-list">${items}</ol>`, true);
+  }
+
+  // The argument: the work's main theses in order, how each is argued, the
+  // objections it meets and the answers given, and the distinctions it turns
+  // on, each with the pages its claims stand on.
+  const pagesOf = (refs) => (refs || []).slice(0, 8).map((r) => pageButton(r.p, String(r.p))).join(" ");
+  function argumentFold(arg) {
+    if (!arg || !Array.isArray(arg.map) || !arg.map.length) return null;
+    const theses = arg.map.map((t) => {
+      const objections = (t.objections || []).map((o) => `<li><span><em>Objection:</em> ${esc(o.objection)}</span>
+        ${o.answer ? `<span><em>Answer:</em> ${esc(o.answer)}</span>` : ""}<span class="nb-guide-pp">${pagesOf(o.refs)}</span></li>`).join("");
+      return `<li><p class="nb-arg-thesis">${esc(t.thesis)} <span class="nb-guide-pp">${pagesOf(t.refs)}</span></p>
+        ${t.argued ? `<p><em>Argued:</em> ${esc(t.argued)} <span class="nb-guide-pp">${pagesOf(t.argued_refs)}</span></p>` : ""}
+        ${objections ? `<ul class="nb-arg-objections">${objections}</ul>` : ""}
+        ${t.distinctions ? `<p><em>Distinctions:</em> ${esc(t.distinctions)}</p>` : ""}</li>`;
+    }).join("");
+    return fold("The argument", `${arg.summary ? `<p class="nb-arg-summary">${esc(arg.summary)}</p>` : ""}<ol class="nb-arg">${theses}</ol>`, false);
   }
 
   function sectionsFold(sections, structure) {
@@ -147,7 +166,7 @@
       needsStructure ? getJSON(`${BASE}/v1/works/${encodeURIComponent(slug)}/meta.json`) : null,
       getJSON(`${BASE}/v1/enrich/cites/${encodeURIComponent(slug)}.json`),
     ]);
-    const folds = [startFold(data.start), sectionsFold(data.sections, meta && meta.structure), indexFold(data.index),
+    const folds = [startFold(data.start), argumentFold(data.argument), sectionsFold(data.sections, meta && meta.structure), indexFold(data.index),
       quotesFold(data.quotes), citedFold(cites)].filter(Boolean);
     if (!folds.length) return;
     const guide = document.createElement("div");

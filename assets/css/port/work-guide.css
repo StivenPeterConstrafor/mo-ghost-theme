@@ -21,4 +21,11 @@
 #notebook .nb-guide-cited li>span{font-size:13px;color:var(--muted,inherit)}
 #notebook .nb-guide-none{margin:0;font:14px/1.5 var(--font-body);color:var(--muted,inherit)}
 #notebook .nb-guide-note{margin:12px 0 0;font:13px/1.5 var(--font-body);color:var(--muted,inherit)}
+#notebook .nb-arg-summary{margin:0 0 10px;font:15px/1.5 var(--font-body);color:var(--fg)}
+#notebook .nb-arg{margin:0;padding-left:1.8em;display:grid;gap:14px;font:15px/1.5 var(--font-body);color:var(--fg)}
+#notebook .nb-arg p{margin:0 0 4px}
+#notebook .nb-arg .nb-arg-thesis{font-weight:600}
+#notebook .nb-arg-objections{list-style:none;margin:4px 0;padding:0 0 0 12px;border-left:2px solid var(--border);display:grid;gap:6px}
+#notebook .nb-arg-objections li{display:grid;gap:2px}
+#notebook .nb-guide-pp{font-weight:400;font-size:13px;color:var(--muted,inherit)}
 @media (max-width:640px){#notebook .nb-guide-list li{grid-template-columns:1fr}}
