@@ -255,6 +255,7 @@ function renderMeaning(q){var my=++seq,pools=[],expanded=false,expanding=false,g
   /* the best of the first ranked set: its period bands hold a fixed number each (eight Eastern Fathers even when they only brush the
      question), so what trails the best match by more than 0.08 of similarity goes; a Latin Fathers citation 'PL 20:0657' opens the
      reader at column 657 (the ranked set carries no page) */
+  function ideaAll(){try{return localStorage.getItem('wix-allpv')==='1';}catch(e){return false;}}
   function ideaTop(rows){var top=rows.length?rows[0].score:0;return rows.filter(function(r){return r.score>=top-0.08;});}
   function withPage(r){if(r.page==null){var m=/^PL\s+\d+\s*:\s*0*(\d+)/.exec(r.citation||'');if(m)return Object.assign({},r,{page:m[1]});}return r;}
   function refresh(){var rows=FRSearch.fuseMeaning(pools).filter(function(r){return facetOk(r.slug);}).map(withPage);groups=FRSearch.meaningGroups(rows);REDRAW=paint;ct.textContent=rows.length+' passages in '+groups.length+' '+(groups.length===1?'work':'works')+', closest first'+(FAC.trad?' · '+FRSearch.display(FAC.trad):'');paint(RESULT_PAGE);}
@@ -262,12 +263,21 @@ function renderMeaning(q){var my=++seq,pools=[],expanded=false,expanding=false,g
    if(!p.excerpt&&p.page!=null){var span=a.querySelector('.sr-ex');excerpt(p.slug,p.page).then(function(text){
      // the page files cover the library's works; EEBO, TEI-only works and the Fathers are read the word panel's way (word-index-preview.js)
      if(text||!window.FRWordPreview)return text;return FRWordPreview.pages(p.slug,[p.page]).then(function(m){var t=(m.get(p.page)||'').trim();return t.length>320?t.slice(0,320).replace(/\s+\S*$/,''):t;}).catch(function(){return '';});
-    }).then(function(text){if(my===seq&&span.isConnected&&text)span.textContent=text+'…';});}}
+    }).then(function(text){if(my===seq&&span.isConnected&&text)span.textContent=text+'…';}).then(function(){bilingual(a,p);});}
+   else bilingual(a,p);}
+  /* the original beside the English (10-03, owner: "this just shows the latin not the english … everything should be seen on preview"):
+     a page held in two lanes shows the opening of each, side by side (word-index-preview.js lanes) */
+  function bilingual(a,p){if(p.page==null||!window.FRWordPreview||!FRWordPreview.lanes)return;
+   FRWordPreview.lanes(p.slug,[String(p.page)]).then(function(m){var l=m.get(String(p.page))||{};if(my!==seq||!a.isConnected||!l.o||!l.e)return;
+    var cut=function(t){t=t.trim();return t.length>360?t.slice(0,360).replace(/\s+\S*$/,'')+' …':t;},ex=a.querySelector('.sr-ex');
+    ex.outerHTML='<div class="sr-pair"><div class="sr-ex">'+esc(cut(l.o))+'</div><div class="sr-ex sr-en"><b>English</b>'+esc(cut(l.e))+'</div></div>';}).catch(function(){});}
   /* one list, closest first: each work once, its closest passage shown and the rest folded under it (no shelf and author nesting) */
   function paint(page){var win=FRSearch.pageWindow(groups.length,page,15);setPager(groups.length,win.page,paint,'works');res.innerHTML='';
+   var sw=document.createElement('label');sw.className='idea-allpv';sw.innerHTML='<input type="checkbox"'+(ideaAll()?' checked':'')+'> Show every passage under each work';
+   sw.querySelector('input').onchange=function(e){try{localStorage.setItem('wix-allpv',e.target.checked?'1':'0');}catch(x){}res.querySelectorAll('details.idea-more').forEach(function(d){d.open=e.target.checked;});};res.appendChild(sw);
    groups.slice(win.start,win.end).forEach(function(g){var w=WORKS_BY_SLUG[g.slug]||{},e=NAV&&NAV[g.slug]||{},card=document.createElement('article');card.className='idea-work';card.dataset.work=g.slug;
     var meta=[w.author||e.a,e.v,FRSearch.display(w.tradition||e.tr)].filter(Boolean).map(esc).join(' · ');
-    card.innerHTML='<div class="idea-h"><a href="'+esc(rdHref(g.slug,g.locations[0].page))+'">'+docTitle(g.slug)+'</a></div>'+(meta?'<div class="idea-m">'+meta+'</div>':'')+'<div class="idea-first"></div>'+(g.locations.length>1?'<details class="idea-more"><summary>'+(g.locations.length-1)+' more '+(g.locations.length===2?'passage':'passages')+' in this work</summary><div class="idea-rest"></div></details>':'');
+    card.innerHTML='<div class="idea-h"><a href="'+esc(rdHref(g.slug,g.locations[0].page))+'">'+docTitle(g.slug)+'</a></div>'+(meta?'<div class="idea-m">'+meta+'</div>':'')+'<div class="idea-first"></div>'+(g.locations.length>1?'<details class="idea-more"'+(ideaAll()?' open':'')+'><summary>'+(g.locations.length-1)+' more '+(g.locations.length===2?'passage':'passages')+' in this work</summary><div class="idea-rest"></div></details>':'');
     passage(card.querySelector('.idea-first'),g.locations[0]);g.locations.slice(1).forEach(function(p){passage(card.querySelector('.idea-rest'),p);});res.appendChild(card);});
    if(!groups.length)res.insertAdjacentHTML('beforeend','<p>No passages came close enough. Try describing it another way, or search the exact words.</p>');
    var foot=document.createElement('div');foot.className='idea-foot';var button=document.createElement('button');button.type='button';button.id='meaningBroaden';button.className='wix-go';button.disabled=expanded||expanding;button.textContent=expanding?'Finding more passages…':expanded?'The wider set is loaded':'Search more passages';button.onclick=broaden;foot.appendChild(button);res.appendChild(foot);
