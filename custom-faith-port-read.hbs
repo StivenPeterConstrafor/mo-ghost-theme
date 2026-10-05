@@ -290,6 +290,10 @@
 {{!-- The Research rail's Work tab. read-tools.js owns the panel; this names the
      work in it and routes the four shortcuts the restore left unbound. --}}
 <script src="{{asset "js/page/faith-port-read-research.js"}}&amp;frv=6acdf77bce1393b4"></script>
+{{!-- The Work tab's guide: where to start, the sections, a subject index, quotations
+     and the citations on the page in view, from v1/enrich on the library worker.
+     Folds after the tab's own controls; a work without notes shows nothing. --}}
+<link rel="stylesheet" href="{{asset "css/port/work-guide.css"}}"><script defer src="{{asset "js/page/faith-port-read-guide.js"}}"></script>
 {{!-- Find in this work belongs to read-tools.js: it builds #findbar and owns
      window._frSearch. This file adds only the door the port leaves unbound,
      Ctrl/⌘+Shift+F, and routes it there. It used to be a second find whose

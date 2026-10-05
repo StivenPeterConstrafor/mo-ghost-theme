@@ -1,0 +1,24 @@
+/* The Research rail's guide to the work (assets/js/page/faith-port-read-guide.js).
+   The folds take the tab's own .nb-analysis-fold look (read.in01.css); this only
+   sets the lists inside them. */
+#notebook .nb-work-guide{margin-top:4px}
+#notebook .nb-guide-body{padding:0 0 14px}
+#notebook .nb-guide-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+#notebook .nb-guide-list li{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:baseline;font:15px/1.5 var(--font-body);color:var(--fg)}
+#notebook .nb-guide-list li>span{color:var(--fg)}
+#notebook .nb-guide-sections .nb-guide-d2{padding-left:14px}
+#notebook .nb-guide-sections li{grid-template-columns:1fr}
+#notebook .nb-guide-sections li>.nb-guide-page{justify-self:start;text-align:left}
+#notebook .nb-guide-index li{display:block}
+#notebook .nb-guide-index .nb-guide-head{margin-right:6px}
+#notebook .nb-guide-quotes li{grid-template-columns:1fr}
+#notebook .nb-guide-quotes blockquote{margin:0;padding-left:12px;border-left:2px solid var(--border);font-style:italic}
+#notebook .nb-guide-page{appearance:none;background:none;border:0;padding:0;margin:0;font:inherit;color:var(--accent,inherit);text-decoration:underline;text-underline-offset:2px;cursor:pointer;min-height:24px}
+#notebook .nb-guide-page:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+#notebook .nb-guide-filter{display:grid;gap:6px;margin:0 0 12px;font:14px/1.4 var(--font-body);color:var(--muted,inherit)}
+#notebook .nb-guide-filter input{font:16px/1.4 var(--font-body);padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg,transparent);color:var(--fg)}
+#notebook .nb-guide-cited li{grid-template-columns:1fr}
+#notebook .nb-guide-cited li>span{font-size:13px;color:var(--muted,inherit)}
+#notebook .nb-guide-none{margin:0;font:14px/1.5 var(--font-body);color:var(--muted,inherit)}
+#notebook .nb-guide-note{margin:12px 0 0;font:13px/1.5 var(--font-body);color:var(--muted,inherit)}
+@media (max-width:640px){#notebook .nb-guide-list li{grid-template-columns:1fr}}
