@@ -40,7 +40,7 @@
         `<li><a href="${desk(room, c.with_room)}">${esc(c.with)}</a><span>${esc(c.summary)}</span></li>`).join("")}</ul>`));
     }
     if (!parts.length) return "";
-    return parts.join("") + `<p class="rx-note rn-note">Library notes: machine-written from the authors' own pages; open the compare desk for the pages behind each.</p>`;
+    return `${parts.join("")}<p class="rx-note rn-note">Library notes: machine-written from the authors' own pages; open the compare desk for the pages behind each.</p>`;
   }
 
   const cache = new Map();

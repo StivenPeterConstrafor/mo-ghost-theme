@@ -31,7 +31,7 @@
     const readings = (v.readings || []).map((r) => `<li><strong>${esc(r.label)}</strong>: ${esc(r.summary)}
       <span class="bn-pages">${(r.refs || []).slice(0, 5).map((x) => pageLink(x.work, x.page, `${x.author || "page"}, p. ${x.page}`)).join(" · ")}</span></li>`).join("");
     const conn = (v.connections || []).slice(0, 6).map((c) => `<li>${esc(c.ref)}: ${esc(c.why)}</li>`).join("");
-    const comm = (v.commentaries || []).slice(0, 8).map((c) => `<li>${pageLink(c.w, c.p, `${c.a ? c.a + ", " : ""}${c.t || c.w}, p. ${c.p}`)}</li>`).join("");
+    const comm = (v.commentaries || []).slice(0, 8).map((c) => `<li>${pageLink(c.w, c.p, `${c.a ? `${c.a}, ` : ""}${c.t || c.w}, p. ${c.p}`)}</li>`).join("");
     // How the verse was read period by period: the same timeline as a topic's history. A compiled page names its compiler.
     const h = v.history;
     const who = (x) => `${x.a}${x.via ? `, via ${x.via}` : ""}`;

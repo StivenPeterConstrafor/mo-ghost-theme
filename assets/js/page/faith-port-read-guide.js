@@ -47,7 +47,7 @@
   }
 
   const pageButton = (page, label) =>
-    `<button type="button" class="nb-guide-page" data-page="${esc(page)}">${esc(label || "p. " + page)}</button>`;
+    `<button type="button" class="nb-guide-page" data-page="${esc(page)}">${esc(label || `p. ${page}`)}</button>`;
 
   function startFold(start) {
     if (!Array.isArray(start) || !start.length) return null;
@@ -88,7 +88,7 @@
       if (!note || !e || e.page == null) return;
       const depth = Number(e.depth) || 1;
       if (depth > 2) return;
-      rows.push(`<li class="nb-guide-d${depth}">${pageButton(e.page, e.title || "p. " + e.page)}<span>${esc(note)}</span></li>`);
+      rows.push(`<li class="nb-guide-d${depth}">${pageButton(e.page, e.title || `p. ${e.page}`)}<span>${esc(note)}</span></li>`);
     });
     if (!rows.length) return null;
     return fold("Sections", `<ul class="nb-guide-list nb-guide-sections">${rows.slice(0, 120).join("")}</ul>`, false);

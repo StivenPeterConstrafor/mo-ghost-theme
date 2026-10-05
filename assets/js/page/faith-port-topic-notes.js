@@ -98,7 +98,7 @@
       box.id = "tnNotes";
       box.className = "cn-notes tn-notes";
       box.dataset.slug = slug;
-      box.innerHTML = body + `<p class="rx-note">Machine-written from the authors' own claims, not their words; every page is checked. Open a page to read the passage.</p>`;
+      box.innerHTML = `${body}<p class="rx-note">Machine-written from the authors' own claims, not their words; every page is checked. Open a page to read the passage.</p>`;
       box.addEventListener("click", async (e) => {
         const b = e.target.closest(".tn-open");
         if (!b) return;
