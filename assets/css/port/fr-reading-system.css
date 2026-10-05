@@ -73,12 +73,14 @@ html:not(.fr-plain) .app.only-en #reading .row .en p,html:not(.fr-plain) .app.on
 #runSearch{position:absolute;right:6px;top:6px;min-height:40px;padding:8px 14px;border:0;border-radius:5px;background:var(--fg);color:var(--card);font:14px/1.4 var(--font-ui);cursor:pointer}
 @media(max-width:640px){#main .smodes{gap:22px;flex-wrap:nowrap}#main .smodes button{font-size:14px}#main .search-query #q{font-size:16px}#main .sdoors{grid-template-columns:1fr}}
 /* Desk, reader highlights, and notebook share the same paper and neutral black scale. */
-:root{--mark-amber:#F0E9D9;--mark-sage:#E6EBE2;--mark-slate:#E5E9EC}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-theme="sepia"]){--mark-amber:#353026;--mark-sage:#293129;--mark-slate:#293037}}
-:root[data-theme="dark"]{--mark-amber:#353026;--mark-sage:#293129;--mark-slate:#293037}
+:root{--mark-amber:#F0E9D9;--mark-sage:#E6EBE2;--mark-slate:#E5E9EC;--mark-rose:#F3E0E4;--mark-lilac:#E9E1F2}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-theme="sepia"]){--mark-amber:#353026;--mark-sage:#293129;--mark-slate:#293037;--mark-rose:#382A2E;--mark-lilac:#2F2A38}}
+:root[data-theme="dark"]{--mark-amber:#353026;--mark-sage:#293129;--mark-slate:#293037;--mark-rose:#382A2E;--mark-lilac:#2F2A38}
 #reading .row[data-hl="amber"],.rl-item[data-highlight="amber"] .tx{background:var(--mark-amber)}
 #reading .row[data-hl="sage"],.rl-item[data-highlight="sage"] .tx{background:var(--mark-sage)}
 #reading .row[data-hl="slate"],.rl-item[data-highlight="slate"] .tx{background:var(--mark-slate)}
+#reading .row[data-hl="rose"],.rl-item[data-highlight="rose"] .tx{background:var(--mark-rose)}
+#reading .row[data-hl="lilac"],.rl-item[data-highlight="lilac"] .tx{background:var(--mark-lilac)}
 #reading .row[data-hl]{color:var(--fg)}
 .nb-desk-link{padding:12px 4px;border-bottom:1px solid var(--border);font:14px/1.6 var(--font-ui)}
 .nb-desk-link a{color:var(--fg);text-decoration:underline;text-underline-offset:3px}

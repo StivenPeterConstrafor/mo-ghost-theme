@@ -1251,11 +1251,10 @@ html[data-theme="dark"] .seg button[aria-pressed=true],html[data-theme="dark"] .
 .coach-x:hover{color:var(--fg)}
 @media(max-width:1100px){.facs{position:fixed;top:0;right:0;bottom:0;z-index:40}.app.no-facs .facs{margin-right:0;transform:translateX(102%)}.rz{display:none}.sidebar{width:220px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
-/* sidenote apparatus: in Read on wide screens, your notes & translations float into the right margin */
-@media(min-width:1400px){
-  .app.only-en .rowx{float:right;clear:right;width:14rem;margin:.1rem -15.6rem .7rem 0;font-size:.86em}
-  .app.only-en .rowx textarea{min-height:4rem}
-}
+/* sidenote apparatus (notes & translations floated 15.6rem into the right margin at >=1400px): RETIRED 2026-10-03. This
+   page has no right margin, and in flow each .folio is content-visibility:auto, whose paint containment clips what lies
+   outside it (.app.rflow .folio outranks .folio:focus-within), so the note editor drew cut off or not at all and took no
+   clicks ("user had to diminish the viewport"). Notes sit in the column at every width, as they did below 1400px. */
 /* mobile: Parallel/Study collapse to interleaved English-then-Latin blocks (never a horizontal scroll) */
 @media(max-width:880px){
   /* phones keep the PARALLEL spread (owner 2026-09-05 "flowing, not stacking english latin"):
@@ -2211,6 +2210,8 @@ html.fr-research-tools .selchip{display:none!important}
 .nb-highlight-colors button[data-reader-color="amber"]{background:var(--mark-amber)}
 .nb-highlight-colors button[data-reader-color="sage"]{background:var(--mark-sage)}
 .nb-highlight-colors button[data-reader-color="slate"]{background:var(--mark-slate)}
+.nb-highlight-colors button[data-reader-color="rose"]{background:var(--mark-rose)}
+.nb-highlight-colors button[data-reader-color="lilac"]{background:var(--mark-lilac)}
 .nb-more{border-top:1px solid var(--border);padding-top:6px}
 .nb-more>summary,.nb-settings>summary,.nb-conversation-group>summary{min-height:44px;box-sizing:border-box;padding:12px 0;cursor:pointer;color:var(--muted);font:13px/1.5 var(--font-body)}
 /* ONE WAY TO OPEN A THING. The panel had two disclosure idioms in a single

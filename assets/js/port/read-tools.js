@@ -1034,11 +1034,14 @@ function __initReaderTools(){
   window.__frRowFp=rowFp;
   // Keep a citation-bearing snapshot of the displayed canonical passage for Desk.
   // fr_hl retains its existing color map and sync contract.
-  function captureHl(r,c,store){
+  // ranges: the row's passage highlights, when it has them -- the notebook and Desk then carry the words that were
+  // marked (joined with " … "), not the paragraph they sit in (2026-10-03).
+  function captureHl(r,c,store,ranges){
     const key=K(r);if(!c){delete store[key];return;}
     const lane=r.querySelector(".en")||r.querySelector(".la")||r;
     const clone=lane.cloneNode(true);if(lane.dataset.orig)clone.innerHTML=lane.dataset.orig;clone.querySelectorAll("button,.rowx,.la-rev,.rv-edit,.rm-original,textarea,input").forEach(x=>x.remove());
-    store[key]={text:clone.textContent.trim(),cite:rowCite(r),slug:WORK_SLUG,page:r.closest(".folio")?.dataset.page||"",row:r.id,url:rowAnchor(r),work:WORK,author:AUTHOR,title:DATA.title_en||DATA.title||WORK,color:c,notebookId:store[key]?.notebookId||'',ts:store[key]?.ts||Date.now()};
+    const marked=Array.isArray(ranges)&&ranges.length?[...ranges].sort((a,b)=>a.s-b.s).map(x=>String(x.t||"").trim()).filter(Boolean).join(" … "):"";
+    store[key]={text:marked||clone.textContent.trim(),cite:rowCite(r),slug:WORK_SLUG,page:r.closest(".folio")?.dataset.page||"",row:r.id,url:rowAnchor(r),work:WORK,author:AUTHOR,title:DATA.title_en||DATA.title||WORK,color:c,notebookId:store[key]?.notebookId||'',ts:store[key]?.ts||Date.now()};
   }
   /* ── Highlighting what you actually selected ─────────────────────
      Ian: "I need to be able to only highlight what I actually highlight,
@@ -1072,23 +1075,87 @@ function __initReaderTools(){
     return out;
   }
 
-  // Where the live selection sits inside this row, in characters.
-  function selOffsets(row){
+  /* Every row the live selection touches, and exactly the characters it
+     covers in each: [{row,s,e,t}].
+
+     The first version read offsets only when the selection began AND ended
+     on text inside one row; anything else -- a selection that ran into the
+     next paragraph, or one that began or ended on an element (a
+     triple-click, a phone's paragraph grab) -- fell back to the old
+     whole-row tint, which is the thing Ian asked to be rid of ("only
+     highlight what I actually highlight, not the whole section or
+     paragraph", again 2026-10-03). Now each text node the range crosses
+     gives its own share, so element boundaries cost nothing, and a
+     selection across rows becomes one range in each. Nothing falls back
+     to the row. */
+  function hlRows(){return [...reading.querySelectorAll(".row[id],.en[id^=b],.la[id^=b]")];}
+  function selPieces(){
     const sel=getSelection();
-    if(!sel||!sel.rangeCount||sel.isCollapsed)return null;
-    const rg=sel.getRangeAt(0);
-    if(!row.contains(rg.startContainer)||!row.contains(rg.endContainer))return null;
-    const nodes=hlTextNodes(row);
-    let start=null,end=null,total=0;
-    for(const n of nodes){
-      if(n===rg.startContainer)start=total+rg.startOffset;
-      if(n===rg.endContainer)end=total+rg.endOffset;
-      total+=n.nodeValue.length;
+    if(!sel||!sel.rangeCount||sel.isCollapsed)return [];
+    const rg=sel.getRangeAt(0),out=[];
+    const rows=hlRows().filter(r=>rg.intersectsNode(r));
+    for(const row of rows){
+      // The innermost unit, as captureSelection() picks it: a lane with its
+      // own id inside a row is the row's highlight, not the row.
+      if(rows.some(o=>o!==row&&row.contains(o)))continue;
+      const nodes=hlTextNodes(row);let total=0,s=null,e=null;
+      for(const n of nodes){
+        const len=n.nodeValue.length;
+        if(rg.intersectsNode(n)){
+          const a=n===rg.startContainer?rg.startOffset:0,b=n===rg.endContainer?rg.endOffset:len;
+          if(b>a){if(s==null)s=total+a;e=total+b;}
+        }
+        total+=len;
+      }
+      if(s==null||e<=s)continue;
+      const t=nodes.map(n=>n.nodeValue).join("").slice(s,e);
+      if(t.trim())out.push({row,s,e,t});
     }
-    // A selection that began or ended on an element rather than in text.
-    // Rare, and not worth guessing at: the caller falls back to the row.
-    if(start==null||end==null||start>=end)return null;
-    return {s:start,e:end,t:String(rg)};
+    return out;
+  }
+  // A legacy whole-row tint becomes one range over the row's text, so a
+  // selection inside it can change or remove just its own words and the
+  // rest of the old highlight stays where it was.
+  /* Mark (colour) or unmark ("") exactly these pieces: [{row,s,e,t}]. The
+     popover passes the live selection's pieces; the notebook passes the
+     ones captured with the passage, because its buttons are pressed after
+     the selection is gone. A piece whose words are no longer at its
+     offsets (the row was re-rendered with different text) is skipped
+     rather than painted over the wrong words. Returns how many applied. */
+  function markPieces(pieces,colour){
+    const passages=lj("fr_highlight_passages_v1");let done=0;
+    for(const p of pieces){
+      const r=p.row;if(!r)continue;
+      if(hlTextNodes(r).map(n=>n.nodeValue).join("").slice(p.s,p.e)!==p.t)continue;
+      // As before 2026-10-03, a highlight the selection touches goes whole: a colour replaces it rather than
+      // stacking on it, and Remove takes it away. An old whole-row tint under the selection goes too, so a
+      // highlight or a Remove made inside one clears the page-sized tints the old fallback left.
+      clearTint(r);
+      const kept=hlRanges(r).filter(x=>x.e<=p.s||x.s>=p.e);
+      if(colour)kept.push({s:p.s,e:p.e,t:p.t,c:colour});
+      saveRanges(r,kept);
+      repaint(r);
+      const list=hlRanges(r);
+      captureHl(r,list.length?list[0].c:"",passages,list);
+      if(colour&&passages[K(r)]&&!passages[K(r)].notebookId)passages[K(r)].notebookId=activeNotebookId();
+      done++;
+    }
+    lsSet("fr_highlight_passages_v1",JSON.stringify(passages));
+    window.dispatchEvent(new Event("fr-notebook-updated"));
+    if(typeof updateCount==="function")updateCount();
+    return done;
+  }
+  // The pieces captured with a passage, back on the page's elements.
+  function passagePieces(){
+    if(!passage||!Array.isArray(passage.pieces))return [];
+    if(!document.getElementById(passage.row))passageRow();   // hydrates its page if needed
+    return passage.pieces.map(p=>({...p,row:document.getElementById(p.row)})).filter(p=>p.row);
+  }
+  // An old whole-row tint (fr_hl) cleared for good: the store, its tombstone for sync, and the paint. (Before
+  // 2026-10-03 a Remove inside a tinted row cleared only the paint, and the tint came back on the next load.)
+  function clearTint(row){
+    const m=lj("fr_hl");if(m[K(row)]){delete m[K(row)];save("fr_hl",m,"_frSyncHl");tomb("fr_hl",K(row));}
+    row.removeAttribute("data-hl");
   }
 
   const hlRanges=r=>{const all=lj(HLR);const v=all[K(r)];return Array.isArray(v)?v:[];};
@@ -1149,14 +1216,12 @@ function __initReaderTools(){
       // whole of it must not be. Legacy row-level highlights, made before
       // there were ranges, still paint the way they always did.
       const partial=repaint(r);
-      if(partial){r.removeAttribute("data-hl");captureHl(r,hlRanges(r)[0]?.c||"amber",passages);changed=true;return;}
+      if(partial){r.removeAttribute("data-hl");const list=hlRanges(r);captureHl(r,list[0]?.c||"amber",passages,list);changed=true;return;}
       if(m[K(r)]){r.dataset.hl=m[K(r)];captureHl(r,m[K(r)],passages);changed=true;}else r.removeAttribute("data-hl");});
     if(changed)lsSet("fr_highlight_passages_v1",JSON.stringify(passages));
   }
-  function setHl(r,c){const m=lj("fr_hl");if(c){m[K(r)]=c;untomb("fr_hl",K(r));}else{delete m[K(r)];tomb("fr_hl",K(r));}
-    save("fr_hl",m,"_frSyncHl");m[K(r)]?r.dataset.hl=c:r.removeAttribute("data-hl");
-    const passages=lj("fr_highlight_passages_v1");captureHl(r,c,passages);if(c&&passages[K(r)])passages[K(r)].notebookId=activeNotebookId();lsSet("fr_highlight_passages_v1",JSON.stringify(passages));window.dispatchEvent(new Event("fr-notebook-updated"));
-  }
+  // setHl(), the whole-row tint, is gone (2026-10-03): every highlight is a passage now (markPieces). Rows tinted before
+  // that still paint, until a highlight or a Remove made on words inside them clears the tint (clearTint).
   // ---- my translation ----
   function renderTr(r){const ex=rowx(r,"tr");if(ex)ex.remove();if(!canTranslateSource())return;const e=lj("fr_tr")[K(r)];if(!e||!e.t){updateCount();return;}
     const _drift=e.fp&&rowFp(r)&&e.fp!==rowFp(r);   // row content changed since this was written
@@ -1202,37 +1267,21 @@ function __initReaderTools(){
     const start=s.getRangeAt(0).startContainer,node=start.nodeType===1?start:start.parentElement,row=node&&node.closest(".row[id],.en[id^=b],.la[id^=b]");
     if(!row||!reading.contains(row))return false;
     const rg=s.getRangeAt(0);
-    popRow=row;passage={author:AUTHOR,title:DATA.title_en||DATA.title||WORK,text:selText(s),cite:rowCite(row),slug:WORK_SLUG,page:row.closest(".folio")?.dataset.page||"",first:pageAt(rg.startContainer),last:pageAt(rg.endContainer),row:row.id,url:rowAnchor(row)};
+    popRow=row;passage={author:AUTHOR,title:DATA.title_en||DATA.title||WORK,text:selText(s),cite:rowCite(row),slug:WORK_SLUG,page:row.closest(".folio")?.dataset.page||"",first:pageAt(rg.startContainer),last:pageAt(rg.endContainer),row:row.id,url:rowAnchor(row),
+      pieces:selPieces().map(p=>({row:p.row.id,s:p.s,e:p.e,t:p.t}))};
     paintPassage();return true;
   }
   function passageRow(){if(!passage)return null;let r=document.getElementById(passage.row);if(!r&&window.__ensurePage){window.__ensurePage(passage.page);r=document.getElementById(passage.row);}return r;}
   function passageText(){return passage?.text||getSelection()?.toString().trim()||"";}
   const showSelPop=()=>{
     if(!captureSelection()){hidePop();return;}
-    /* The one highlight control has to work both ways, because the only
-       other way out was removed. `.sw.clear` (data-hl="") exists in the
-       markup but sits inside a hidden div, and the single thing that
-       could have led to it -- "More" -- calls openNotebook(), which has
-       opened nothing since the Research panel was taken out in 20897a9.
-       So a highlight could be made and never unmade.
-
-       Rather than un-hiding a bare swatch, the button that made the
-       highlight offers to take it back: select a highlighted passage and
-       it reads "Remove highlight" and carries the empty colour that
-       setHl() already understands as erase. One control, and the state
-       of the passage decides which way it points. */
-    // Marked means: this row is tinted, or the selection touches a mark.
-    const at=popRow?selOffsets(popRow):null;
-    const overlaps=popRow&&hlRanges(popRow).some(r=>at?(r.s<at.e&&r.e>at.s):false);
-    const marked=popRow&&(popRow.dataset.hl||overlaps);
-    const sw=pop.querySelector(".sw.amber,.sw.is-clear");
-    if(sw){
-      sw.dataset.hl=marked?"":"amber";
-      sw.textContent=marked?"Remove highlight":"Highlight";
-      sw.title=marked?"Remove the highlight from this passage":"Highlight this passage";
-      sw.classList.toggle("is-clear",!!marked);
-      sw.classList.toggle("amber",!marked);
-    }
+    /* Five colours, each a swatch of its own (2026-10-03, owner: "add more
+       colours for highlighting"), and a Remove beside them that shows only
+       when the selection touches something already marked -- a highlight
+       can always be taken back, from the same place it was made. */
+    const marked=selPieces().some(p=>p.row.dataset.hl||hlRanges(p.row).some(r=>r.s<p.e&&r.e>p.s));
+    const rm=pop.querySelector(".sw.is-clear");
+    if(rm)rm.hidden=!marked;
     const rc=getSelection().getRangeAt(0).getBoundingClientRect();pop.classList.add("show");
     pop.style.left=Math.max(8,Math.min(rc.left,innerWidth-pop.offsetWidth-8))+"px";
     pop.style.top=Math.max(8,Math.min(rc.bottom+8,innerHeight-pop.offsetHeight-12))+"px";};
@@ -1245,36 +1294,16 @@ function __initReaderTools(){
   if($("#spMore"))$("#spMore").onclick=()=>{hidePop();openNotebook('passage');};
   pop.querySelectorAll(".sw").forEach(sw=>sw.onclick=e=>{
     e.preventDefault();
-    if(popRow){
-      const colour=sw.dataset.hl;
-      // Read the selection BEFORE the popover closes and clears it.
-      const at=selOffsets(popRow);
-      if(colour){
-        if(at){
-          // Drop anything it overlaps, so re-marking does not stack
-          // duplicate ranges over the same words.
-          const kept=hlRanges(popRow).filter(r=>r.e<=at.s||r.s>=at.e);
-          kept.push({s:at.s,e:at.e,t:at.t,c:colour});
-          saveRanges(popRow,kept);
-          // The row tint would sit under the mark and defeat the point.
-          const m=lj("fr_hl");if(m[K(popRow)]){delete m[K(popRow)];save("fr_hl",m,"_frSyncHl");tomb("fr_hl",K(popRow));}
-          popRow.removeAttribute("data-hl");
-          repaint(popRow);
-        } else {
-          setHl(popRow,colour);   // no usable selection: the old whole-row mark
-        }
-      } else {
-        // Remove: only what the selection touches, or all of it when the
-        // selection is not inside the row's marks.
-        const list=hlRanges(popRow);
-        const kept=at?list.filter(r=>r.e<=at.s||r.s>=at.e):[];
-        saveRanges(popRow,kept);
-        repaint(popRow);
-        if(!kept.length&&!at)setHl(popRow,"");
-        else if(!kept.length)popRow.removeAttribute("data-hl");
-      }
-      updateCount&&updateCount();
+    const colour=sw.dataset.hl;
+    // Read the selection BEFORE the popover closes and clears it. A tap on a phone can drop the selection before this
+    // runs; then the words captured when the popover opened stand in (until 2026-10-03 it tinted the whole paragraph).
+    const live=selPieces(),pieces=live.length?live:passagePieces();
+    if(!pieces.length){
+      // Nothing that maps onto words: say so, and never tint the paragraph.
+      if(typeof cpFlash==="function")cpFlash(sw,"Select the words");
+      return;
     }
+    markPieces(pieces,colour);
     hidePop();getSelection().removeAllRanges();});
   if($("#spNote"))$("#spNote").onclick=()=>{if(popRow)editNote(popRow);hidePop();getSelection().removeAllRanges();};
   if($("#spPar"))$("#spPar").onclick=()=>{const t2=passageText();hidePop();getSelection().removeAllRanges();
@@ -1327,7 +1356,7 @@ function __initReaderTools(){
       r.appendChild(rv);}                              // flex order places it between English and the revealed Latin
     const p=el("button","trpencil");p.title="Add your translation";p.textContent="✎";p.onclick=()=>editTr(r);r.appendChild(p);});
   // header notes count + sync note
-  function updateCount(){const here=k=>k.startsWith(WSID+'|'),n=['fr_notes','fr_tr','fr_hl'].reduce((n,k)=>n+Object.keys(lj(k)).filter(here).length,0);
+  function updateCount(){const here=k=>k.startsWith(WSID+'|'),n=['fr_notes','fr_tr','fr_hl','fr_hl_ranges'].reduce((n,k)=>n+Object.keys(lj(k)).filter(here).length,0);
     const b=$("#nbCount");if(b){b.textContent='Research';b.setAttribute('aria-label','Open research'+(n?', '+n+' saved passages':''));b.dataset.zero='0';}const count=$("#nbSavedCount");if(count)count.textContent=n||'';}
   const ctr=document.querySelector(".ctr");
   if(ctr&&!$("#frAuth")){const a=el("span","authbar");a.id="frAuth";
@@ -1340,7 +1369,7 @@ function __initReaderTools(){
       else if(sb.parentElement!==a){a.appendChild(sb);a.appendChild(nt);}};
     place();mq.addEventListener?mq.addEventListener("change",place):mq.addListener(place);}
   // ---- Notebook drawer: browse everything you've saved in this work ----
-  const HLC={amber:"#e8b04b",sage:"#8fae6f",slate:"#7d97bd"};
+  const HLC={amber:"#e8b04b",sage:"#8fae6f",slate:"#7d97bd",rose:"#d4879a",lilac:"#9a86c4"};
   let nbFocus=null,chatSequence=0,activeResearchTab='work';const notebook=$("#notebook")||document.createElement("div")/* The Research panel was removed in 20897a9 (its close button was dead). Roughly fifty statements below reach through `notebook` for classList, setAttribute, inert, addEventListener and querySelectorAll, and all of them are on the path to the rest of the reader's tools. A detached div answers every one of those honestly -- it is a real element, it just is not in the document -- so the notebook code runs and affects nothing, instead of throwing and taking Find, Ask and the desk links down with it. */,nbInert=new Map(),sideMedia=matchMedia('(min-width:1100px)');
   let quoteImageURL='';
   function status(text){($("#nbActionStatus")||{}).textContent=text;}
@@ -1413,14 +1442,15 @@ function __initReaderTools(){
     if(action==='copy'){cw(passage.text+'\n\n'+passage.cite+'\n'+passage.url);status('Passage and citation copied.');return;}
     if(action==='link'){cw(passage.url);status('Passage link copied.');return;}
     if(!r){status('Open the saved passage in the book before editing it.');return;}
-    if(action==='highlight'){setHl(r,'amber');status('Passage highlighted and saved.');}
+    if(action==='highlight'){status(markPieces(passagePieces(),'amber')?'Passage highlighted and saved.':'Select the words to highlight in the book first.');}
     if(action==='note'||action==='translate'){closeNotebook(false);action==='note'?editNote(r):editTr(r);}
     if(action==='parallels'){closeNotebook(false);window.__frParallels?.(passage.text);}
     if(action==='pin'){window.FRResearchNotebook?.selectCollection(activeNotebookId());window.__frPinToggle?.(passage.page);status('Reference updated in your active collection.');}
     if(action==='bib'){$('#spBib')?.click();status('BibTeX citation copied.');}
   }
   if(notebook) notebook.querySelectorAll('[data-reader-action]').forEach(b=>b.onclick=()=>act(b.dataset.readerAction));
-  if(notebook) notebook.querySelectorAll('[data-reader-color]').forEach(b=>b.onclick=()=>{const r=passageRow();if(r){setHl(r,b.dataset.readerColor);status(b.dataset.readerColor?'Highlight saved.':'Highlight cleared.');}});
+  if(notebook) notebook.querySelectorAll('[data-reader-color]').forEach(b=>b.onclick=()=>{const c=b.dataset.readerColor,n=markPieces(passagePieces(),c);
+    status(n?(c?'Highlight saved.':'Highlight cleared.'):'Select the words to highlight in the book first.');});
   if($('#spClip'))$('#spClip').onclick=()=>{hidePop();savePassageResearch();openNotebook('passage');};
   if($('#nbAskBook'))$('#nbAskBook').onclick=()=>{closeNotebook(false);window.FRAsk?.open({contextWork:WORK_SLUG});};
   if($('#nbNewChat'))$('#nbNewChat').onclick=()=>{closeNotebook(false);window.FRAsk?.open({fresh:true,contextWork:WORK_SLUG});};
@@ -1529,7 +1559,7 @@ function __initReaderTools(){
   window.addEventListener('fr-ask-visibility',e=>{if(e.detail?.open)closeNotebook(false);});
   window.addEventListener('fr-notebook-updated',()=>{updateCount();if(notebook.classList.contains('open'))renderNotebook();});
   window.addEventListener('fr-conversations-updated',()=>{if(notebook.classList.contains('open')&&!$('#nbChats')?.hidden)renderConversations();});
-  window.addEventListener('storage',e=>{if(['fr_hl','fr_notes','fr_tr','fr_collections_v1'].includes(e.key)&&notebook.classList.contains('open'))renderNotebook();});
+  window.addEventListener('storage',e=>{if(['fr_hl','fr_hl_ranges','fr_notes','fr_tr','fr_collections_v1'].includes(e.key)&&notebook.classList.contains('open'))renderNotebook();});
   window.__frSearchWork=async query=>{await openNotebook('search');($('#nbWorkSearchQuery')||{}).value=String(query||'');await runReaderSearch();};
   // CTRL/⌘+F SEARCHES THE WHOLE WORK (owner 2026-09-28: "ctrl+f doesn't work for large chunks of the larger folios from Bellarmine
   // and Junius"): the reader renders only the pages near you, so the browser's find cannot see the rest. The shortcut opens this
@@ -1581,7 +1611,7 @@ function __initReaderTools(){
   function exOf(id){const r=nbEl(id),saved=lj('fr_highlight_passages_v1')[id],note=lj('fr_notes')[id]||lj('fr_tr')[id];return r?canonicalRowText(r):saved?.text||((note?.exact||'')+(note?.sfx||''));}
   function nbItem(id,opts){const b=el("article","nb-item");
     const f=nbEl(id),fol=f&&f.closest(".folio"),saved=lj('fr_highlight_passages_v1')[id]||lj('fr_notes')[id]||lj('fr_tr')[id]||{},row=String(id).slice(WSID.length+1),pg=fol?.dataset.page||saved.page||(row.match(/^b(.+)-\d+$/)||[])[1]||'';
-    const cite=saved.cite||(f?rowCite(f):CITEWORK+(pg?', '+locOf(pg):'')),text=exOf(id),ctx={text,cite,slug:WORK_SLUG,page:pg,row,url:location.origin+location.pathname+location.search+'#'+row};
+    const cite=saved.cite||(f?rowCite(f):CITEWORK+(pg?', '+locOf(pg):'')),text=opts.text||exOf(id),ctx={text,cite,slug:WORK_SLUG,page:pg,row,url:location.origin+location.pathname+location.search+'#'+row};
     b.innerHTML='<button class="nb-open" type="button">'+(opts.dot?`<span class="nb-dot" style="background:${opts.dot}"></span>`:"")+`<span class="nb-ex">${esc(text.slice(0,240)||'Open saved passage')}</span>`+(opts.mine?`<span class="nb-mine">${esc(opts.mine)}</span>`:'')+`<span class="nb-cite">${esc(cite)}</span></button><div class="nb-item-actions"><button type="button" data-saved-action="desk">Use in Desk</button><button type="button" data-saved-action="ask">Discuss</button><button type="button" data-saved-action="image">Make image</button></div>`;
     b.querySelector('.nb-open').onclick=()=>gotoRow(id);
     b.querySelectorAll('[data-saved-action]').forEach(button=>button.onclick=()=>{
@@ -1591,8 +1621,8 @@ function __initReaderTools(){
     });
     return b;}
   function renderNotebook(){const body=$("#nbBody"),opened=new Map([...body.querySelectorAll(".nb-saved-group")].map(g=>[g.dataset.group,g.open]));body.innerHTML='<div class="nb-desk-link"><a href="/the-faith-received/desk/">Write with this research at Desk →</a> · <a href="/the-faith-received/pins/">Manage notebooks</a></div>';
-    const hl=lj("fr_hl"),notes=lj("fr_notes"),tr=lj("fr_tr"),here=key=>key.indexOf(WSID+"|")===0;
-    const ni=Object.keys(notes).filter(here),ti=Object.keys(tr).filter(here),hi=Object.keys(hl).filter(here);
+    const hl=lj("fr_hl"),hlr=lj(HLR),notes=lj("fr_notes"),tr=lj("fr_tr"),here=key=>key.indexOf(WSID+"|")===0;
+    const ni=Object.keys(notes).filter(here),ti=Object.keys(tr).filter(here),hi=[...new Set([...Object.keys(hl),...Object.keys(hlr)])].filter(here);
     const saved=savedCollections().flatMap(c=>(c.items||[]).filter(i=>((i.site||'fr')==='fr'&&i.slug===WORK_SLUG)||i.askSources?.some(s=>(s.slug||s.w)===WORK_SLUG)).map(i=>({...i,collection:c.name})));
     if($('#nbSavedCount'))$('#nbSavedCount').textContent=ni.length+ti.length+hi.length+saved.length||'';($('#nbTitle')||{}).textContent=(ni.length+ti.length+hi.length+saved.length)+' saved items from this book';
     if(!ni.length&&!ti.length&&!hi.length&&!saved.length){body.insertAdjacentHTML("beforeend",'<div class="nb-empty">Nothing saved from this book yet. Select text to highlight it, add a note, or make a quote image. Your work will collect here with its source.</div>');return;}
@@ -1600,7 +1630,9 @@ function __initReaderTools(){
     let section=body;const sec=(t,n)=>{section=el("details","nb-saved-group");section.dataset.group=t;section.open=opened.has(t)?opened.get(t):n<=3;const h=el("summary");h.textContent=t+" · "+n;section.appendChild(h);body.appendChild(section);};
     if(ni.length){sec("Notes",ni.length);ni.sort(ord).forEach(id=>section.appendChild(nbItem(id,{mine:(notes[id]||{}).t})));}
     if(ti.length){sec("My translations",ti.length);ti.sort(ord).forEach(id=>section.appendChild(nbItem(id,{mine:(tr[id]||{}).t})));}
-    if(hi.length){sec("Highlights",hi.length);hi.sort(ord).forEach(id=>section.appendChild(nbItem(id,{dot:HLC[hl[id]]||"#ccc"})));}
+    // A highlight of some words lists those words, in its first colour; a row tinted before 2026-10-03 lists its row.
+    if(hi.length){sec("Highlights",hi.length);hi.sort(ord).forEach(id=>{const rs=Array.isArray(hlr[id])?[...hlr[id]].sort((a,b)=>a.s-b.s):[];
+      section.appendChild(nbItem(id,{dot:HLC[hl[id]||rs[0]?.c]||"#ccc",text:rs.map(x=>String(x.t||"").trim()).filter(Boolean).join(" … ")}));});}
     if(saved.length){sec('References, answers, and images',saved.length);for(const item of saved){const it=el('article','nb-item');it.innerHTML='<div class="nb-cite">'+esc(item.quoteImage?'Quote image':item.askAnswer?'Ask answer':item.collection)+'</div><div class="nb-ex">'+esc((item.text||item.label||item.title||item.slug||'').slice(0,260))+'</div><div class="nb-cite">'+esc(item.cite||item.work||item.collection)+'</div><div class="nb-item-actions"></div>';const actions=it.querySelector('.nb-item-actions');const desk=el('button');desk.textContent='Use in Desk';desk.onclick=async()=>{try{const result=await FRResearchNotebook.save(item,{collectionId:$('#nbProjectPick')?.value});openSavedAtDesk(result);}catch(e){status(e.message);}};actions.appendChild(desk);if((item.site||'fr')==='fr'&&item.slug===WORK_SLUG&&(item.row||item.page!=null)){const go=el('button');go.textContent=item.readingPlace?'Go to saved place':'Read passage';go.onclick=()=>gotoSavedReference(item);actions.appendChild(go);}if(item.quoteImage){const image=el('button');image.textContent='Open image';image.onclick=()=>{passage={...item};paintPassage();makeCard(item.text,item.cite||CITEWORK,image=>showQuoteImage(image,item));};actions.appendChild(image);}if(item.chat){const chat=el('button');chat.textContent='Open conversation';chat.onclick=()=>{closeNotebook(false);window.FRAsk?.open({id:item.chat});};actions.appendChild(chat);}section.appendChild(it);}}
     filterNotebook();
   }

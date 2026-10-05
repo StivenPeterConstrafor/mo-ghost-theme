@@ -33,7 +33,7 @@
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer:ital@0;1&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Old+Standard+TT:ital,wght@0,400;0,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
 <link rel="stylesheet" href="{{asset "css/port/prdl-system.css"}}&amp;frv=773f88d15ebcac8e">  <!-- shared design system (one source for all four sites); the inline tokens below still win, so this is additive -->
-<link rel="stylesheet" href="{{asset "css/port/read.in01.css"}}&amp;frv=6720209d8f87f328">
+<link rel="stylesheet" href="{{asset "css/port/read.in01.css"}}&amp;frv=d9c56a652a9ffec1">
 <link rel="stylesheet" href="{{asset "css/port/work-research.css"}}&amp;frv=2752d3b8f4712425">
 <script defer src="{{asset "js/port/scripture-kinds.js"}}&amp;frv=45c55191e1820ff3"></script><script defer src="{{asset "js/port/work-research.js"}}&amp;frv=db0d6316be885af6"></script>
 <script defer src="{{asset "js/port/reader-bookmarks.js"}}&amp;frv=4e92a8363e3e9697"></script>
@@ -64,8 +64,8 @@
       their notebook there; our CSP refuses the gstatic imports, so today it only
       logs three CSP errors per load and mislabels the notebook "sync
       unavailable". This drops the config while the window between the two files
-      is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=f508895e8935d018"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=f96fc5e924711651"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ccd1c7702c51c000"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=67e0b6b13fd005ad"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
-<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=01fd65bc6155e1bf">
+      is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=74b92debb2557057"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=f96fc5e924711651"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ccd1c7702c51c000"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=67e0b6b13fd005ad"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
+<link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=0eb8cde708989b09">
 {{/contentFor}}
 
 {{!-- /the-faith-received/read/ — the ported page-native reader.
@@ -219,7 +219,7 @@
   </div><div id="nbRelatedSearch" hidden></div></section>
   <section id="nbPassage" class="nb-panel" role="tabpanel" aria-labelledby="nbPassageTab" hidden>
     <p class="nb-guidance" id="nbSelectionHelp">Select words in the book to highlight, add a note, make a quote image, or discuss the passage.</p>
-    <div id="nbSelection" hidden><p class="nb-context-label" id="nbSelectionCite"></p><blockquote id="nbSelectionText"></blockquote><div class="nb-passage-actions"><button type="button" data-reader-action="highlight">Highlight passage</button><button type="button" data-reader-action="save-research">Clip to notebook</button><button type="button" data-reader-action="desk">Use in Desk</button><button type="button" data-reader-action="note">Add note</button><button type="button" data-reader-action="image">Make quote image</button><button type="button" data-reader-action="ask">Discuss passage</button></div><fieldset class="nb-highlight-colors"><legend>Highlight color</legend><button type="button" data-reader-color="amber">Amber</button><button type="button" data-reader-color="sage">Sage</button><button type="button" data-reader-color="slate">Slate</button><button type="button" data-reader-color="">Clear highlight</button></fieldset><details class="nb-more"><summary>More passage tools</summary><div class="nb-passage-actions"><button type="button" data-reader-action="copy">Copy with citation</button><button type="button" data-reader-action="link">Copy passage link</button><button type="button" data-reader-action="translate">Write translation</button><button type="button" data-reader-action="parallels">Find parallels</button><button type="button" data-reader-action="pin">Save reference</button><button type="button" data-reader-action="bib">Copy BibTeX</button></div></details></div>
+    <div id="nbSelection" hidden><p class="nb-context-label" id="nbSelectionCite"></p><blockquote id="nbSelectionText"></blockquote><div class="nb-passage-actions"><button type="button" data-reader-action="highlight">Highlight passage</button><button type="button" data-reader-action="save-research">Clip to notebook</button><button type="button" data-reader-action="desk">Use in Desk</button><button type="button" data-reader-action="note">Add note</button><button type="button" data-reader-action="image">Make quote image</button><button type="button" data-reader-action="ask">Discuss passage</button></div><fieldset class="nb-highlight-colors"><legend>Highlight color</legend><button type="button" data-reader-color="amber">Amber</button><button type="button" data-reader-color="sage">Sage</button><button type="button" data-reader-color="slate">Slate</button><button type="button" data-reader-color="rose">Rose</button><button type="button" data-reader-color="lilac">Lilac</button><button type="button" data-reader-color="">Clear highlight</button></fieldset><details class="nb-more"><summary>More passage tools</summary><div class="nb-passage-actions"><button type="button" data-reader-action="copy">Copy with citation</button><button type="button" data-reader-action="link">Copy passage link</button><button type="button" data-reader-action="translate">Write translation</button><button type="button" data-reader-action="parallels">Find parallels</button><button type="button" data-reader-action="pin">Save reference</button><button type="button" data-reader-action="bib">Copy BibTeX</button></div></details></div>
     <figure id="nbImagePreview" class="nb-image-preview" hidden><figcaption>Quote image</figcaption><img alt="A typeset image of the selected quotation" width="1200" height="630"><a id="nbImageDownload" download>Download PNG</a></figure>
     <button type="button" id="nbAskBook" class="nb-book-ask">Ask about this book</button><p id="nbActionStatus" role="status" class="nb-guidance"></p>
   </section>
@@ -234,7 +234,16 @@
   <div class="nb-destinations"><a href="/the-faith-received/pins/?view=research">Personal research</a><a id="nbColl" href="/the-faith-received/pins/">Notebooks</a><a id="nbDesk" href="/the-faith-received/desk/">Open Desk</a></div>
 </aside>
 <div class="selpop" id="selpop" role="toolbar" aria-label="Selected passage tools">
-  <button class="sw amber" data-hl="amber" title="Highlight this passage">Highlight</button>
+  {{!-- Five highlight colours, and Remove when the selection touches a highlight (read-tools.js shows it then).
+       A highlight covers the selected words only, never the paragraph (2026-10-03). --}}
+  <span class="hlgroup" role="group" aria-label="Highlight the selected words">
+    <button class="sw amber" data-hl="amber" title="Highlight in amber" aria-label="Highlight in amber"></button>
+    <button class="sw sage" data-hl="sage" title="Highlight in sage" aria-label="Highlight in sage"></button>
+    <button class="sw slate" data-hl="slate" title="Highlight in slate" aria-label="Highlight in slate"></button>
+    <button class="sw rose" data-hl="rose" title="Highlight in rose" aria-label="Highlight in rose"></button>
+    <button class="sw lilac" data-hl="lilac" title="Highlight in lilac" aria-label="Highlight in lilac"></button>
+    <button class="sw is-clear" data-hl="" title="Remove the highlight these words are in" hidden>Remove</button>
+  </span>
   <button class="pb" id="spNote" data-feature-gate="tfr-notebook">Note</button>
   <button class="pb" id="spClip" data-feature-gate="tfr-notebook" title="Save this passage to your notebook">Save</button>
   <button class="pb" id="spCopy" title="Copy this passage with its citation and a link to it">Copy</button>
@@ -244,9 +253,6 @@
   <button class="pb" id="spReport" title="Report a translation or text error in these words">Report</button>
   <button class="pb" id="spMore" data-feature-gate="tfr-research">More</button>
   <div hidden>
-  <button class="sw sage" data-hl="sage" title="Highlight sage"></button>
-  <button class="sw slate" data-hl="slate" title="Highlight slate"></button>
-  <button class="sw clear" data-hl="" title="Clear highlight"></button>
   <button class="pb" id="spTr">Translate</button>
   <button class="pb" id="spCite">Cite</button>
   <button class="pb" id="spBib">BibTeX</button>
@@ -266,7 +272,7 @@
      setting a global here would need inline script, which the CSP
      forbids. --}}
 <div id="frPortAssets" hidden
-     data-read-tools="{{asset "js/port/read-tools.js"}}&amp;frv=6c1d6a6959706549"
+     data-read-tools="{{asset "js/port/read-tools.js"}}&amp;frv=c3d4c7da42ccb69b"
      data-cite-core="{{asset "js/port/cite-core.js"}}&amp;frv=cc5b44a29670e0a7"
      data-ask-jobs="{{asset "js/port/ask-jobs.js"}}&amp;frv=408f593670c4a344"></div>
 <script src="{{asset "js/faith-denominations.js"}}"></script>

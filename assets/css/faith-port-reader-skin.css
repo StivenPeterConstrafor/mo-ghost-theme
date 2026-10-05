@@ -1111,21 +1111,64 @@ html.mo-embedded { --mo-head: 0px; }
    Inline padding with a negative margin would misalign wrapped lines,
    so the mark takes its ground and nothing else. */
 mark.fr-hlx {
-  background: var(--mark-amber, #fbe9c8);
+  background: var(--hlx-amber);
   color: inherit;
   border-radius: 2px;
   padding: 0;
 }
-mark.fr-hlx[data-hl="sage"] { background: #e7efe0; }
-mark.fr-hlx[data-hl="slate"] { background: #e5ecf3; }
+mark.fr-hlx[data-hl="sage"] { background: var(--hlx-sage); }
+mark.fr-hlx[data-hl="slate"] { background: var(--hlx-slate); }
+mark.fr-hlx[data-hl="rose"] { background: var(--hlx-rose); }
+mark.fr-hlx[data-hl="lilac"] { background: var(--hlx-lilac); }
 
-[data-theme="dark"] mark.fr-hlx { background: #4d3b1c; }
-[data-theme="dark"] mark.fr-hlx[data-hl="sage"] { background: #2c3a2a; }
-[data-theme="dark"] mark.fr-hlx[data-hl="slate"] { background: #26313f; }
+/* The grounds are listed once because the selection bar's colour dots
+   (below) show the ground the words will get. Amber, sage and slate keep
+   the values they had. Rose and lilac (2026-10-03) sit at the same
+   lightness, so no colour reads louder than the others. */
+:root {
+  --hlx-amber: var(--mark-amber, #fbe9c8);
+  --hlx-sage: #e7efe0;
+  --hlx-slate: #e5ecf3;
+  --hlx-rose: #f3e0e4;
+  --hlx-lilac: #e9e1f2;
+}
+[data-theme="dark"] {
+  --hlx-amber: #4d3b1c;
+  --hlx-sage: #2c3a2a;
+  --hlx-slate: #26313f;
+  --hlx-rose: #46282f;
+  --hlx-lilac: #372848;
+}
 
-/* The one highlight control, when it is offering to take the mark back.
-   It stops being a swatch and becomes a plain labelled button, because
-   an amber chip that means "remove amber" reads as "apply amber". */
+/* THE FIVE COLOURS IN THE SELECTION BAR (2026-10-03; owner: "add more
+   colors for highlighting"). The bar had one amber Highlight button.
+   Now each colour is a dot: a 20px sample of the ground its words will
+   get, ringed in the colour at full strength (the notebook's dots),
+   because at 20px the five paper grounds read as one beige. Each dot's
+   target is 34px wide and as tall as the bar's other buttons. */
+#selpop .hlgroup { display: flex; gap: 2px; }
+#selpop .hlgroup button.sw:not(.is-clear) { min-width: 34px; padding: 8px 4px; background: transparent; }
+#selpop .hlgroup button.sw:not(.is-clear):hover { background: var(--hl); }
+#selpop .hlgroup button.sw:not(.is-clear)::before {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: var(--hlx-dot);
+  box-shadow: inset 0 0 0 2px var(--hlx-ring);
+}
+#selpop .sw.amber { --hlx-dot: var(--hlx-amber); --hlx-ring: #e8b04b; }
+#selpop .sw.sage { --hlx-dot: var(--hlx-sage); --hlx-ring: #8fae6f; }
+#selpop .sw.slate { --hlx-dot: var(--hlx-slate); --hlx-ring: #7d97bd; }
+#selpop .sw.rose { --hlx-dot: var(--hlx-rose); --hlx-ring: #d4879a; }
+#selpop .sw.lilac { --hlx-dot: var(--hlx-lilac); --hlx-ring: #9a86c4; }
+
+/* Remove, beside the colours when the selected words already carry a
+   highlight (read-tools.js unhides it). It is a plain labelled button,
+   not a swatch, because a chip that means "remove" reads as one more
+   colour. */
 #selpop button.sw.is-clear {
   background: transparent;
   border: 1px solid var(--fg);
@@ -3649,13 +3692,14 @@ html:not(.g-mobile) #app .ph.fr-reader-head .fr-tools-drawer .fr-td-src { min-wi
    Report, Top, Collapse and Focus do. */
 html.g-mobile .fr-tb-ednotes { display: none !important; }
 
-/* THE SELECTION BAR ON A PHONE IS TWO ROWS. read.in01.css pins #selpop
+/* THE SELECTION BAR ON A PHONE IS A GRID. read.in01.css pins #selpop
    between 8px gutters as one flex row, and eight buttons already ran it
    4px off a 375px screen, with "Highlight" running into "Note". Report
    (2026-09-29) made nine, which put More 50px off the edge. Five columns,
    wrapping upward from the bar's bottom anchor, keep every 44px target on
-   screen down to 320px. Labels may wrap to two lines, because the first
-   button reads "Remove highlight" on text that is already marked. */
+   screen down to 320px. The five highlight colours (2026-10-03) take the
+   top row whole, with Remove at its end on words already marked, and the
+   eight actions fill the two rows under it. */
 @media (max-width: 880px) {
   #selpop.show {
     display: grid;
@@ -3669,6 +3713,9 @@ html.g-mobile .fr-tb-ednotes { display: none !important; }
     white-space: normal;
     line-height: 1.15;
   }
+  #selpop.show .hlgroup { grid-column: 1 / -1; }
+  #selpop.show .hlgroup button.sw:not(.is-clear) { flex: 1 1 0; }
+  #selpop.show .hlgroup button.sw.is-clear { flex: none; padding: 8px 12px; }
 }
 
 /* PHONE: THE READER'S TOP BAND AND CONTENTS, RESIZED FOR READING (owner 2026-09-30: "fix mobile to make it easy to read the
