@@ -10,7 +10,9 @@
      post(body)            → Promise of the {op:'words'} answer ({rows} or {forms, more})
      readHref(slug,page,w) → the reader URL for a page with the word highlighted
      title(slug,row)       → the work's display title (HTML-escaped)
-     meta(row)             → the line under the title (HTML-escaped): author, volume, tradition */
+     meta(row)             → the line under the title (HTML-escaped): author, volume, tradition
+     scope                 → optional {label}: the answer is limited to one author's works (the author page's Search; the request
+                             carries room: <slug>, mo-workers #41), so the heading names them and the concept card is left out */
 (function () {
   'use strict';
   const STOP = new Set(('et in est non ad cum ut quod qui quae quo de sed per ab ex se si enim etiam autem quia hoc esse sunt eius nec vel uel aut ita sic tamen nam id ea eo ' +
@@ -318,11 +320,11 @@
     box.className = 'wix'; box.setAttribute('aria-live', 'polite');
     const quoted = ph ? '“' + esc(ph.text) + '”' : shown(opts.query, ws).map(w => '“' + esc(w) + '”').join(' + ');
     const phNote = ph ? `<span class="wix-phn"> The words stand next to each other, in this order${ph.skipped.length ? ` — the index leaves out small words (${ph.skipped.map(esc).join(', ')}), so “${esc(ph.ws.join(' … '))}” also finds the phrase with another small word between` : ''}.</span>` : '';
-    box.innerHTML = `<h3>${quoted}<span class="wix-how">${ph ? ' as a phrase' : ws.length > 1 ? ' on the same page' : ''}</span> — every text in the library</h3>
-      <p class="wix-sub">Counted from the library’s word index: every page of every work, a duplicate edition once.${phNote} <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
+    box.innerHTML = `<h3>${quoted}<span class="wix-how">${ph ? ' as a phrase' : ws.length > 1 ? ' on the same page' : ''}</span> — ${opts.scope ? 'in ' + esc(opts.scope.label) : 'every text in the library'}</h3>
+      <p class="wix-sub">Counted from the library’s word index: every page of ${opts.scope ? esc(opts.scope.label) : 'every work'}, a duplicate edition once.${phNote} <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
       <div class="wix-forms"></div><div class="wix-dist" role="group" aria-label="How close" hidden></div><div class="wix-sum">Counting…</div><div class="wix-trad" role="group" aria-label="Tradition"></div><div class="wix-list"></div>`;
     host.appendChild(box);
-    const cslot = document.createElement('section'); host.insertBefore(cslot, box); conceptCard(cslot, opts).catch(e => console.warn('concept card', e));
+    const cslot = document.createElement('section'); host.insertBefore(cslot, box); if (!opts.scope) conceptCard(cslot, opts).catch(e => console.warn('concept card', e));
     const $ = s => box.querySelector(s);
     const state = { dist: { k: 0, ordered: false }, seq: 0, groups: ws.map(w => { const f = forms(w); return { word: w, cands: f.all.slice(0, Math.floor(40 / ws.length)), off: f.off, on: new Set(), counts: {}, more: [] }; }), trad: null, sum: [], byTrad: new Map() };
     const groups = () => state.groups.map(g => [...g.on]).filter(g => g.length);
