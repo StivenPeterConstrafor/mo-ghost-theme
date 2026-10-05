@@ -5,8 +5,9 @@
  *   the book      a card, the chapters the tradition leaned on, its themes;
  *   a chapter     a card, its key verses (with why), its themes;
  *   a verse       a card, the readings it was given (each a short summary with
- *                 the pages behind it), the passages it was paired with, and
- *                 the commentaries on it in the library.
+ *                 the pages behind it), how it was read century by century
+ *                 (for the verses the most works use), the passages it was
+ *                 paired with, and the commentaries on it in the library.
  * Shown at the head of the book and chapter pages (#b/<book>[/<chapter>]), in
  * folds, under the page's own heading. Machine-written from the library's
  * pages, every page link checked; the block says so. A passage without notes
@@ -31,8 +32,12 @@
       <span class="bn-pages">${(r.refs || []).slice(0, 5).map((x) => pageLink(x.work, x.page, `${x.author || "page"}, p. ${x.page}`)).join(" · ")}</span></li>`).join("");
     const conn = (v.connections || []).slice(0, 6).map((c) => `<li>${esc(c.ref)}: ${esc(c.why)}</li>`).join("");
     const comm = (v.commentaries || []).slice(0, 8).map((c) => `<li>${pageLink(c.w, c.p, `${c.a ? c.a + ", " : ""}${c.t || c.w}, p. ${c.p}`)}</li>`).join("");
-    return `<details class="bn-verse" id="bn-v${esc(n)}"><summary><span>v. ${esc(n)}</span> ${esc(v.card)}</summary>
+    const h = v.history;
+    const periods = h ? (h.periods || []).map((p) => `<li><strong>${esc(p.period)}</strong>: ${esc(p.text)}
+      <span class="bn-pages">${(p.refs || []).slice(0, 5).map((x) => pageLink(x.w, x.p, `${x.a}, p. ${x.p}`)).join(" · ")}</span></li>`).join("") : "";
+    return `<details class="bn-verse" id="bn-v${esc(n)}"><summary><span>v. ${esc(n)}</span> ${esc(v.card || (h && h.summary))}${periods ? ` <small class="bn-has-history">history</small>` : ""}</summary>
       ${readings ? `<h5>Readings</h5><ul class="bn-list">${readings}</ul>` : ""}
+      ${periods ? `<h5>Through the centuries</h5>${h.summary && v.card ? `<p class="bn-card">${esc(h.summary)}</p>` : ""}<ul class="bn-list">${periods}</ul>` : ""}
       ${conn ? `<h5>Read with</h5><ul class="bn-list">${conn}</ul>` : ""}
       ${comm ? `<h5>Commentaries in the library</h5><ul class="bn-list">${comm}</ul>` : ""}</details>`;
   }
@@ -40,7 +45,7 @@
   function chapterHTML(d, ch) {
     const c = d.chapters && d.chapters[String(ch)];
     if (!c || !c.card) return "";
-    const verses = Object.entries(c.verses || {}).filter(([, v]) => v && v.card).sort((a, b) => Number(a[0]) - Number(b[0]));
+    const verses = Object.entries(c.verses || {}).filter(([, v]) => v && (v.card || v.history)).sort((a, b) => Number(a[0]) - Number(b[0]));
     const keys = (c.key_verses || []).map((k) => {
       const n = String(k.ref || "").split(":")[1];
       return `<li>${n ? `<a href="#bn-v${esc(n)}" data-bn-verse="${esc(n)}">${esc(k.ref)}</a>` : esc(k.ref)}: ${esc(k.why)}</li>`;
