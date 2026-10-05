@@ -7256,7 +7256,15 @@ async function loadPoCanon(ws){
     for(const [D,B] of [[laD,laB],[enD,enB]]){const pb=D.createElement("pb");pb.setAttribute("n",String(n));B.appendChild(pb);}};
   const walk=(node,depth)=>{for(const ch of node.children){
     const ln=ch.localName;
-    if(ln==="pb")addPb(+ch.getAttribute("n"));
+    if(ln==="pb"){addPb(+ch.getAttribute("n"));
+      // AN EMPTY PAGE SAYS WHY (owner 2026-10-03 "transcription matches the scans"): the PO rows are sections, keyed to the page
+      // where they begin; a page a section runs over, or the facing page of a source|translation pair, carries no row of its own.
+      // The TEI tags such a <pb rend="cont" corresp="#po1-p437"/> (rend="blank" when no row of the edition covers it);
+      // both lanes get one short note so the page is not a silent blank.
+      const rd=ch.getAttribute("rend")||"";
+      if(rd==="cont"||rd==="blank"){const cr=(ch.getAttribute("corresp")||"").match(/-p(\d+)\s*$/);
+        const note=rd==="blank"?"[No text transcribed for this page.]":("[Continued from p. "+(cr?cr[1]:"?")+" \u2014 the section that begins there runs over this page.]");
+        for(const [D,B] of [[laD,laB],[enD,enB]]){const e=D.createElement("p");e.textContent=note;B.appendChild(e);}}}
     else if(ln==="head"){const t=ch.textContent.replace(/\s+/g," ").trim();
       if(depth0===null)depth0=depth;
       if(t){struct.push({title:t.slice(0,140),page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5)});
