@@ -1210,8 +1210,25 @@ async function room(slug,arg){
       <div class="pane-topic">Search ${esc(d.a.split(" ")[0])}</div>
       <div class="srow"><input id="sq" type="search" placeholder="A word, a phrase, a question…" autocomplete="off">
         <button id="sgo">Find</button><button id="sask">Ask</button></div>
-      <div id="sres"></div></div>`;
-    const sq=$("#sq"),sres=$("#sres");sq.focus();
+      <div id="sres"></div><div id="swix" class="rx-swix"></div></div>`;
+    const sq=$("#sq"),sres=$("#sres"),swix=$("#swix");sq.focus();
+    /* EVERY PAGE OF THE AUTHOR'S WORKS (owner 2026-10-04: "allow searching within the author pages, hence specific to an author"). The
+       evidence below covers only what this room loads (topics, recorded statements, indexed passages, titles); Find also reads the
+       library's word index over every page of the author's works: the search page's panel (word-index-search.js), each request
+       limited to this room (room: <slug>; mo-workers #41: the works the catalogue files under the room's author). */
+    const wixPost=b=>{const r64=btoa(String.fromCharCode.apply(null,new TextEncoder().encode(JSON.stringify({...b,room:slug})))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+      return fetch('https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/words?r='+r64,{signal:AbortSignal.timeout(90000)}).then(r=>r.json().then(j=>{if(!r.ok||j.error)throw Error(j.error||r.status);return j;}));};
+    const wixHas=n=>fetch(BLOB+'/v1/sql/manifest.json?v='+Math.floor(Date.now()/600000)).then(r=>r.json()).then(m=>!!(m&&m.tables&&m.tables[n]),()=>false);
+    const readerPage=p=>{const s=p==null?'':String(p),m=/^\d+:0*(\d+)[A-Da-d]?$/.exec(s);return m?m[1]:(/^\d+$/.test(s)?s.replace(/^0+(?=\d)/,''):s);};
+    const workTitle=(w,row)=>(d.works||[]).find(x=>x.w===w)?.t||row?.title||w;
+    const texts=()=>{
+      const q=sq.value.trim();
+      if(!window.FRWordIndex||q.length<2){swix.innerHTML='';return;}
+      FRWordIndex.mount(swix,{query:q,post:wixPost,has:wixHas,scope:{label:d.a+'’s works'},
+        readHref:(w,page,hl)=>{const u=readerHref(w,page==null||page===''?page:readerPage(page)),i=u.indexOf('#'),h=hl?(u.includes('?')?'&':'?')+'hl='+encodeURIComponent(hl):'';return i<0?u+h:u.slice(0,i)+h+u.slice(i);},
+        title:(w,row)=>esc(workTitle(w,row)),
+        meta:row=>[row.volume].filter(Boolean).map(esc).join(' · ')});
+    };
     const local=()=>{
       const q=sq.value.trim();if(q.length<2){sres.innerHTML="";return;}
       const ql=q.toLowerCase();const out=[];
@@ -1227,12 +1244,12 @@ async function room(slug,arg){
       if(pagH.length)out.push('<h2 class="sect">Indexed passages</h2>'+workFoldsHTML(pagH.map(({t,p})=>({...p,topicLabel:t.t,pageSummary:!p.q})),{title:titleOf,author:d.a,extra:r=>'<p class="rx-note">'+esc(r.topicLabel)+'</p>'}));
       const wH=d.works.filter(x=>RX.fold(x.t).includes(RX.fold(q))).slice(0,10);
       if(wH.length)out.push('<h2 class="sect">Works</h2>'+RX.orderedWorks(wH).map(x=>workRowHTML({...x,a:d.a})).join(''));
-      sres.classList.add('rx-pane');sres.innerHTML='<p class="rx-note">Searches the evidence loaded for this author. Showing up to 30 statements, 30 indexed passages, and 10 works. Open Positions for the complete topic index.</p>'+(out.join('')||'<p class="rx-note">No matches in the loaded evidence. Try another phrase, browse Positions, or ask about this author’s works.</p>');
+      sres.classList.add('rx-pane');sres.innerHTML='<p class="rx-note">Searches the evidence loaded for this author. Showing up to 30 statements, 30 indexed passages, and 10 works. Open Positions for the complete topic index.'+(window.FRWordIndex?' Press Find or Enter to search every page of '+esc(d.a)+'’s works below.':'')+'</p>'+(out.join('')||'<p class="rx-note">No matches in the loaded evidence. Try another phrase, browse Positions, or ask about this author’s works.</p>');
     };
     let lT=null;
     sq.addEventListener("input",()=>{clearTimeout(lT);lT=setTimeout(local,250);});
-    sq.addEventListener("keydown",e=>{if(e.key==="Enter")local();});
-    $("#sgo").addEventListener("click",local);
+    sq.addEventListener("keydown",e=>{if(e.key==="Enter"){local();texts();}});
+    $("#sgo").addEventListener("click",()=>{local();texts();});
     $("#sask").addEventListener("click",async()=>{
       const q=sq.value.trim();if(q.length<3)return;
       if(!window.FRAsk?.open){sres.textContent='Ask could not load. Reload this page and try again.';return;}

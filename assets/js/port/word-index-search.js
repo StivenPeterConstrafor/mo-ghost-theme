@@ -10,7 +10,11 @@
      post(body)            → Promise of the {op:'words'} answer ({rows} or {forms, more})
      readHref(slug,page,w) → the reader URL for a page with the word highlighted
      title(slug,row)       → the work's display title (HTML-escaped)
-     meta(row)             → the line under the title (HTML-escaped): author, volume, tradition */
+     meta(row)             → the line under the title (HTML-escaped): author, volume, tradition
+     scope                 → optional {label, by}: the answer is limited to one author's works (the author page's Search sends
+                             room: <slug>; the search page's author filter sends authors: [names]; mo-workers #41), so the heading
+                             names them (label: "Richard Baxter’s works"), the teaser says whose (by: "by Richard Baxter") and the
+                             concept card is left out */
 (function () {
   'use strict';
   const STOP = new Set(('et in est non ad cum ut quod qui quae quo de sed per ab ex se si enim etiam autem quia hoc esse sunt eius nec vel uel aut ita sic tamen nam id ea eo ' +
@@ -318,11 +322,11 @@
     box.className = 'wix'; box.setAttribute('aria-live', 'polite');
     const quoted = ph ? '“' + esc(ph.text) + '”' : shown(opts.query, ws).map(w => '“' + esc(w) + '”').join(' + ');
     const phNote = ph ? `<span class="wix-phn"> The words stand next to each other, in this order${ph.skipped.length ? ` — the index leaves out small words (${ph.skipped.map(esc).join(', ')}), so “${esc(ph.ws.join(' … '))}” also finds the phrase with another small word between` : ''}.</span>` : '';
-    box.innerHTML = `<h3>${quoted}<span class="wix-how">${ph ? ' as a phrase' : ws.length > 1 ? ' on the same page' : ''}</span> — every text in the library</h3>
-      <p class="wix-sub">Counted from the library’s word index: every page of every work, a duplicate edition once.${phNote} <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
+    box.innerHTML = `<h3>${quoted}<span class="wix-how">${ph ? ' as a phrase' : ws.length > 1 ? ' on the same page' : ''}</span> — ${opts.scope ? 'in ' + esc(opts.scope.label) : 'every text in the library'}</h3>
+      <p class="wix-sub">Counted from the library’s word index: every page of ${opts.scope ? esc(opts.scope.label) : 'every work'}, a duplicate edition once.${phNote} <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
       <div class="wix-forms"></div><div class="wix-dist" role="group" aria-label="How close" hidden></div><div class="wix-sum">Counting…</div><div class="wix-trad" role="group" aria-label="Tradition"></div><div class="wix-list"></div>`;
     host.appendChild(box);
-    const cslot = document.createElement('section'); host.insertBefore(cslot, box); conceptCard(cslot, opts).catch(e => console.warn('concept card', e));
+    const cslot = document.createElement('section'); host.insertBefore(cslot, box); if (!opts.scope) conceptCard(cslot, opts).catch(e => console.warn('concept card', e));
     const $ = s => box.querySelector(s);
     const state = { dist: { k: 0, ordered: false }, seq: 0, groups: ws.map(w => { const f = forms(w); return { word: w, cands: f.all.slice(0, Math.floor(40 / ws.length)), off: f.off, on: new Set(), counts: {}, more: [] }; }), trad: null, sum: [], byTrad: new Map() };
     const groups = () => state.groups.map(g => [...g.on]).filter(g => g.length);
@@ -552,7 +556,7 @@
     const c = await count(opts.query, opts.post);
     if (my !== host.__wixSeq || !c || !c.works) return;
     style();
-    host.innerHTML = `<div class="wix wix-teaser"><b>${shown(opts.query, c.ws).map(w => '“' + esc(w) + '”').join(' + ')}</b> ${c.ws.length > 1 ? 'occur together on the pages of' : 'occurs in the text of'} <b>${n(c.works)} ${c.works === 1 ? 'work' : 'works'}</b> (with ${c.ws.length > 1 ? 'their' : 'its'} other forms). The list below matches titles and headings only. <button type="button" class="wix-go">List every text</button></div>`;
+    host.innerHTML = `<div class="wix wix-teaser"><b>${shown(opts.query, c.ws).map(w => '“' + esc(w) + '”').join(' + ')}</b> ${c.ws.length > 1 ? 'occur together on the pages of' : 'occurs in the text of'} <b>${n(c.works)} ${c.works === 1 ? 'work' : 'works'}${opts.scope && opts.scope.by ? ' ' + esc(opts.scope.by) : ''}</b> (with ${c.ws.length > 1 ? 'their' : 'its'} other forms). The list below matches titles and headings only. <button type="button" class="wix-go">List every text</button></div>`;
     host.querySelector('button').onclick = () => opts.open();
   }
   window.FRWordIndex = { mount, teaser, count, inflect, forms, words, phraseOf, fold, conceptOf, loadConcepts };
