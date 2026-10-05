@@ -97,6 +97,9 @@
 {{!-- A shelf that showed 160 of its 508 authors with no way to the rest: adds "Show all N authors" and, at ?sh=<code>&all=1, the whole shelf on its own page. Must load AFTER authors.in03.js, which defines paneList. --}}
 <script src="{{asset "js/page/faith-shelf-show-all.js"}}&amp;frv=cc12ed88f839ce9a"></script>
 <script src="{{asset "js/port/authors.in04.js"}}&amp;frv=8d00fd258d7820ab"></script>
+{{!-- The room's library notes: start reading, controversies and comparisons, from
+     v1/enrich on the library worker; each pair opens on the compare desk. --}}
+<link rel="stylesheet" href="{{asset "css/port/library-notes.css"}}"><script defer src="{{asset "js/page/faith-port-room-notes.js"}}"></script>
 {{!-- The profile's numbers as stat boxes (Ian, 2026-09-23). After the port,
      whose .stats it regroups; see the file header. --}}
 <script src="{{asset "js/page/faith-author-stats.js"}}&amp;frv=023fb2a4e7d33606"></script>
