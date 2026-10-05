@@ -152,7 +152,7 @@ function renderTitle(q){
   if(CATALOG_ERROR){searchUnavailable('Work catalogue',q);return;}
   if(!IDX){var waiting=seq,requestedPage=RESULT_PAGE;res.innerHTML='';ct.innerHTML='<span class="sbusy">loading…</span>';navMap(function(){if(waiting===seq){RESTORE_PAGE=requestedPage;run();}});return;}
   if(q.trim().length>=2)loadHeadingsTier();
-  if(window.FRWordIndex&&!FAC.author&&!FAC.work&&!FAC.workQuery&&!FAC.collection&&!FAC.group)FRWordIndex.teaser(document.getElementById('wordIndex'),{query:q,post:wixPost,open:function(){setMode('full');}});
+  if(wixOk())FRWordIndex.teaser(document.getElementById('wordIndex'),wixScoped({query:q,post:wixPost,open:function(){setMode('full');}}));
   var toks=foldQ(q).split(/\s+/).filter(function(t2){return t2.length>=2;});
   var m=IDX.filter(function(e){
     var hay=foldQ(e.t+' '+(e.o||'')+' '+e.a+' '+(e.al||''));
@@ -210,8 +210,15 @@ function pfInit(){if(_pf)return _pf;
 /* the concordance behind the exact-word panel (word-index-search.js; the Ask worker's /v1/words, mo-workers words-route.js) */
 function wixPost(b){var r64=btoa(String.fromCharCode.apply(null,new TextEncoder().encode(JSON.stringify(b)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');return fetch('https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/words?r='+r64,{signal:AbortSignal.timeout(45000)}).then(function(r){return r.json().then(function(j){if(!r.ok||j.error)throw Error(j.error||r.status);return j;});});}
 /* whether the R2 pointer holds a table (10-02 PM: the panel offers 'within N words' only where `positions` is published) */
+/* THE AUTHOR FILTER AS THE WORD INDEX'S SCOPE (owner 2026-10-04: "the search page's own author filter could use the same scope"). With
+   an author filter the exact-word panel used to stand down and the full-text index answered alone: about 2,700 works, none of the
+   Fathers or EEBO. Now the panel answers over every work of the catalogue authors the filter matches (the full-text filter's own
+   match), at most 40 of them (mo-workers #41: authors: [names]); past 40, or before the catalogue has loaded, the old way. */
+function wixAuthors(){if(!FAC.author)return null;if(!WLIST)return false;var f=foldQ(FAC.author);var names=Array.from(new Set(WLIST.filter(function(w){return w.author&&foldQ(w.author).indexOf(f)>=0;}).map(function(w){return w.author;})));return names.length&&names.length<=40?names:false;}
+function wixOk(){return !!window.FRWordIndex&&!FAC.work&&!FAC.workQuery&&!FAC.collection&&!FAC.group&&wixAuthors()!==false;}
+function wixScoped(o){var au=wixAuthors();if(!au)return o;var one=au.length===1;return Object.assign({},o,{post:function(b){return wixPost(Object.assign({},b,{authors:au}));},scope:{label:one?au[0]+'’s works':'the works of '+au.length+' authors matching “'+FAC.author+'”',by:one?'by '+au[0]:'by '+au.length+' authors matching “'+FAC.author+'”'}});}
 function wixHas(n){return fetch(FRB+'/v1/sql/manifest.json?v='+Math.floor(Date.now()/600000)).then(function(r){return r.json();}).then(function(m){return !!(m&&m.tables&&m.tables[n]);},function(){return false;});}
-function renderFull(q){var my=++seq;ct.textContent='Loading the text index…';res.innerHTML='';var wix=window.FRWordIndex&&!FAC.author&&!FAC.work&&!FAC.workQuery&&!FAC.collection&&!FAC.group?FRWordIndex.mount(document.getElementById('wordIndex'),{query:q,post:wixPost,has:wixHas,readHref:function(slug,page,w){var pg=page==null||page===''?page:readerPage(page);var u=rdHref(slug,pg),i=u.indexOf('#'),hl=w?(u.indexOf('?')>=0?'&':'?')+'hl='+encodeURIComponent(w):'';return i<0?u+hl:u.slice(0,i)+hl+u.slice(i);},title:function(slug,row){return NAV&&NAV[slug]?docTitle(slug):esc(row.title||slug);},meta:function(row){return [row.author,row.volume,row.tradition].filter(Boolean).map(esc).join(' · ');}}):null;
+function renderFull(q){var my=++seq;ct.textContent='Loading the text index…';res.innerHTML='';var wix=wixOk()?FRWordIndex.mount(document.getElementById('wordIndex'),wixScoped({query:q,post:wixPost,has:wixHas,readHref:function(slug,page,w){var pg=page==null||page===''?page:readerPage(page);var u=rdHref(slug,pg),i=u.indexOf('#'),hl=w?(u.indexOf('?')>=0?'&':'?')+'hl='+encodeURIComponent(w):'';return i<0?u+hl:u.slice(0,i)+hl+u.slice(i);},title:function(slug,row){return NAV&&NAV[slug]?docTitle(slug):esc(row.title||slug);},meta:function(row){return [row.author,row.volume,row.tradition].filter(Boolean).map(esc).join(' · ');}})):null;
  /* one to three plain words: the exact panel IS the answer (every work, exact forms, by tradition, passages per work) — the full-text
     index below stems words ('generate' finds 'generation') and pages ten sections at a time, so it answers phrases and filtered searches only */
  if(wix){ct.textContent='';setPager(0,0,function(){});return;}

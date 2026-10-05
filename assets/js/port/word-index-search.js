@@ -11,8 +11,10 @@
      readHref(slug,page,w) → the reader URL for a page with the word highlighted
      title(slug,row)       → the work's display title (HTML-escaped)
      meta(row)             → the line under the title (HTML-escaped): author, volume, tradition
-     scope                 → optional {label}: the answer is limited to one author's works (the author page's Search; the request
-                             carries room: <slug>, mo-workers #41), so the heading names them and the concept card is left out */
+     scope                 → optional {label, by}: the answer is limited to one author's works (the author page's Search sends
+                             room: <slug>; the search page's author filter sends authors: [names]; mo-workers #41), so the heading
+                             names them (label: "Richard Baxter’s works"), the teaser says whose (by: "by Richard Baxter") and the
+                             concept card is left out */
 (function () {
   'use strict';
   const STOP = new Set(('et in est non ad cum ut quod qui quae quo de sed per ab ex se si enim etiam autem quia hoc esse sunt eius nec vel uel aut ita sic tamen nam id ea eo ' +
@@ -554,7 +556,7 @@
     const c = await count(opts.query, opts.post);
     if (my !== host.__wixSeq || !c || !c.works) return;
     style();
-    host.innerHTML = `<div class="wix wix-teaser"><b>${shown(opts.query, c.ws).map(w => '“' + esc(w) + '”').join(' + ')}</b> ${c.ws.length > 1 ? 'occur together on the pages of' : 'occurs in the text of'} <b>${n(c.works)} ${c.works === 1 ? 'work' : 'works'}</b> (with ${c.ws.length > 1 ? 'their' : 'its'} other forms). The list below matches titles and headings only. <button type="button" class="wix-go">List every text</button></div>`;
+    host.innerHTML = `<div class="wix wix-teaser"><b>${shown(opts.query, c.ws).map(w => '“' + esc(w) + '”').join(' + ')}</b> ${c.ws.length > 1 ? 'occur together on the pages of' : 'occurs in the text of'} <b>${n(c.works)} ${c.works === 1 ? 'work' : 'works'}${opts.scope && opts.scope.by ? ' ' + esc(opts.scope.by) : ''}</b> (with ${c.ws.length > 1 ? 'their' : 'its'} other forms). The list below matches titles and headings only. <button type="button" class="wix-go">List every text</button></div>`;
     host.querySelector('button').onclick = () => opts.open();
   }
   window.FRWordIndex = { mount, teaser, count, inflect, forms, words, phraseOf, fold, conceptOf, loadConcepts };
