@@ -1,0 +1,51 @@
+/* Library notes on the author room (faith-port-room-notes.js) and the compare desk
+   (faith-port-compare-notes.js). The folds take .rx-author-bio / .rx-fold from the
+   room's own sheets; this only sets the lists inside them. */
+.rn-notes{margin:0 0 12px}
+.rn-list,.cn-points{list-style:none;margin:8px 0 4px;padding:0;display:grid;gap:12px}
+.rn-list li{display:grid;gap:2px}
+.rn-list li small{color:var(--muted,inherit)}
+.rn-list li span,.cn-points p{color:var(--fg,inherit)}
+.rn-note,.cn-notes .rx-note{margin-top:8px}
+.cn-notes{margin:0 0 16px}
+.cn-title{margin:0 0 8px;font-size:1.05rem}
+.cn-summary{margin:8px 0}
+.cn-points h4{margin:0 0 4px;font-size:1rem}
+.cn-points p{margin:2px 0}
+.cn-pages,.bn-pages{margin:4px 0 0;font:13px/1.6 var(--body,inherit);color:var(--muted,inherit);font-variant-numeric:tabular-nums}
+.cn-pages a,.bn-pages a{color:var(--fg,inherit);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.cn-pages a:hover,.bn-pages a:hover{text-decoration-thickness:2px}
+/* Fold bodies on topic and Scripture notes start with air under the summary line */
+.tn-fold>.rx-fold-body,.bn-fold>.rx-fold-body,.bn-verses>.rx-fold-body{padding-top:16px}
+/* One timeline for a doctrine's history (topics) and a verse's (Scripture): the period beside what was read then */
+.lib-lede{margin:0 0 18px;max-width:70ch;font:17px/1.6 var(--body,inherit);color:var(--fg,inherit);text-wrap:pretty}
+.lib-timeline{list-style:none;margin:0;padding:0}
+.lib-timeline>li{display:grid;grid-template-columns:minmax(7.5rem,10rem) minmax(0,1fr);gap:4px 24px;padding:14px 0;border-top:1px solid var(--border,#ddd)}
+.lib-timeline>li:first-child{border-top:0;padding-top:2px}
+.lib-timeline h4{margin:0;font:500 17px/1.4 var(--display,inherit);color:var(--fg,inherit);text-wrap:balance}
+.lib-timeline p{margin:0;max-width:68ch;line-height:1.65;text-wrap:pretty}
+.lib-timeline .cn-pages,.lib-timeline .bn-pages{margin-top:6px}
+.tn-course{margin:0;padding-left:2.2em;display:grid;gap:18px}
+.tn-course>li::marker{font:500 16px var(--display,inherit);color:var(--muted,inherit);font-variant-numeric:tabular-nums}
+.tn-course p{margin:4px 0 0;max-width:70ch;line-height:1.6;text-wrap:pretty}
+.tn-course .tn-course-head{margin:0;font:500 17px/1.4 var(--display,inherit)}
+.tn-course .tn-course-head a{color:var(--fg,inherit);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.tn-course .tn-course-thesis{font-size:.9em;font-style:italic;color:var(--muted,inherit)}
+/* Scripture (faith-port-bible-notes.js) */
+.bn-notes{margin:0 0 16px}
+.bn-card{margin:8px 0}
+.bn-notes h4{margin:12px 0 4px;font-size:1rem}
+.bn-notes h5{margin:10px 0 4px;font-size:.92rem}
+.bn-list{margin:4px 0;padding-left:18px;display:grid;gap:6px}
+.bn-themes{color:var(--muted,inherit);font-size:.92em}
+.bn-verse{border-top:1px solid var(--border,#ddd);padding:8px 0}
+.bn-verse>summary{cursor:pointer}
+.bn-verse>summary span{font-weight:600;margin-right:4px}
+.bn-verse>summary .bn-has-history{margin-left:4px;font-size:.88em;font-style:italic;color:var(--muted,inherit)}
+.bn-history-index{margin:12px 0;font:15px/1.7 var(--body,inherit);font-variant-numeric:tabular-nums}
+.bn-history-index span{font-style:italic;color:var(--muted,inherit);margin-right:4px}
+.bn-history-index a{color:var(--fg,inherit);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;white-space:nowrap}
+@media(max-width:640px){.lib-timeline>li{grid-template-columns:1fr;gap:4px;padding:12px 0}.lib-lede{font-size:16px}.tn-course{padding-left:1.8em}}
+/* Glossary page (faith-port-glossary-brief.js) */
+.faith-glossary-brief{margin:.25rem 0 .75rem;font-size:.95em}
+.faith-glossary-brief span{font-weight:600;margin-right:.25em}
