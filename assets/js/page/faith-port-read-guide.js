@@ -58,16 +58,24 @@
   // The argument: the work's main theses in order, how each is argued, the
   // objections it meets and the answers given, and the distinctions it turns
   // on, each with the pages its claims stand on.
-  const pagesOf = (refs) => (refs || []).slice(0, 8).map((r) => pageButton(r.p, String(r.p))).join(" ");
+  // "p. 12" or "pp. 10, 48, 70": each number opens that page in place.
+  function pagesOf(refs) {
+    const ps = (refs || []).slice(0, 8);
+    if (!ps.length) return "";
+    return `<span class="nb-guide-pp">${ps.length > 1 ? "pp." : "p."} ${ps.map((r) => pageButton(r.p, String(r.p))).join(", ")}</span>`;
+  }
+
   function argumentFold(arg) {
     if (!arg || !Array.isArray(arg.map) || !arg.map.length) return null;
     const theses = arg.map.map((t) => {
-      const objections = (t.objections || []).map((o) => `<li><span><em>Objection:</em> ${esc(o.objection)}</span>
-        ${o.answer ? `<span><em>Answer:</em> ${esc(o.answer)}</span>` : ""}<span class="nb-guide-pp">${pagesOf(o.refs)}</span></li>`).join("");
-      return `<li><p class="nb-arg-thesis">${esc(t.thesis)} <span class="nb-guide-pp">${pagesOf(t.refs)}</span></p>
-        ${t.argued ? `<p><em>Argued:</em> ${esc(t.argued)} <span class="nb-guide-pp">${pagesOf(t.argued_refs)}</span></p>` : ""}
+      const objections = (t.objections || []).map((o) => `<li>
+        <p><em>Objection.</em> ${esc(o.objection)}</p>
+        ${o.answer ? `<p><em>Answer.</em> ${esc(o.answer)}</p>` : ""}${pagesOf(o.refs)}</li>`).join("");
+      return `<li>
+        <p class="nb-arg-thesis">${esc(t.thesis)}</p>${pagesOf(t.refs)}
+        ${t.argued ? `<p><em>How it is argued.</em> ${esc(t.argued)}</p>${pagesOf(t.argued_refs)}` : ""}
         ${objections ? `<ul class="nb-arg-objections">${objections}</ul>` : ""}
-        ${t.distinctions ? `<p><em>Distinctions:</em> ${esc(t.distinctions)}</p>` : ""}</li>`;
+        ${t.distinctions ? `<p><em>Distinctions.</em> ${esc(t.distinctions)}</p>` : ""}</li>`;
     }).join("");
     return fold("The argument", `${arg.summary ? `<p class="nb-arg-summary">${esc(arg.summary)}</p>` : ""}<ol class="nb-arg">${theses}</ol>`, false);
   }

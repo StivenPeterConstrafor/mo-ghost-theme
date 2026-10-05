@@ -27,39 +27,45 @@
   const pageLink = (w, p, label) => `<a href="${READ}${encodeURIComponent(w)}#b${encodeURIComponent(p)}-0" target="_blank" rel="noopener">${esc(label)}</a>`;
   const slugNow = () => decodeURIComponent(String(location.hash || "").slice(1).split("?")[0].split("/")[0] || "");
 
-  const refs = (rs) => (rs || []).slice(0, 6).map((r) => pageLink(r.w, r.p, `${r.author || r.side || "page"}, p. ${r.p}`)).join(" · ");
+  // A page reference names whose words the page carries; a compiled page says by whom ("Augustine, via Eugippius, p. 12").
+  const who = (r) => `${r.a || r.author || r.side || "page"}${r.via ? `, via ${r.via}` : ""}`;
+  const refs = (rs) => (rs || []).slice(0, 6).map((r) => pageLink(r.w, r.p, `${who(r)}, p. ${r.p}`)).join(" · ");
+  const pagesLine = (rs) => (rs && rs.length ? `<p class="cn-pages">${refs(rs)}</p>` : "");
+
+  // The theme's own fold: summary title and count, then a card body.
+  const fold = (title, count, body, open) => `<details class="rx-fold tn-fold"${open ? " open" : ""}>
+      <summary><span><strong>${esc(title)}</strong><small>${esc(count)}</small></span></summary>
+      <div class="rx-fold-body">${body}</div></details>`;
 
   function traditionsHTML(prs) {
     if (!prs || !prs.length) return "";
-    return `<details class="rx-fold tn-fold" open><summary><span><strong>Traditions compared</strong><small>${prs.length} pairings</small></span></summary>
-      <ol class="cn-points">${prs.map((p) => `<li><h4>${esc(p.x)} and ${esc(p.y)}</h4><p class="cn-summary">${esc(p.summary)}</p>
-        ${p.agree ? `<p><em>Agree:</em> ${esc(p.agree)} <span class="cn-pages">${refs(p.agree_refs)}</span></p>` : ""}
-        ${p.differ ? `<p><em>Differ:</em> ${esc(p.differ)} <span class="cn-pages">${refs(p.differ_refs)}</span></p>` : ""}</li>`).join("")}</ol></details>`;
+    return fold("Traditions compared", `${prs.length} pairings`, `<ol class="cn-points">${prs.map((p) => `<li><h4>${esc(p.x)} and ${esc(p.y)}</h4>
+        <p class="cn-summary">${esc(p.summary)}</p>
+        ${p.agree ? `<p><em>Agree.</em> ${esc(p.agree)}</p>${pagesLine(p.agree_refs)}` : ""}
+        ${p.differ ? `<p><em>Differ.</em> ${esc(p.differ)}</p>${pagesLine(p.differ_refs)}` : ""}</li>`).join("")}</ol>`, false);
   }
 
-  // The doctrine's history across the library, century by century, and a
-  // course of readings in order, each a thesis's page with why to read it.
-  const byPage = (rs) => (rs || []).slice(0, 6).map((r) => pageLink(r.w, r.p, `${r.a}, p. ${r.p}`)).join(" · ");
+  // The doctrine's history across the library, period by period (a timeline
+  // shared with the Scripture pages' verse histories), and a course of
+  // readings in order, each a thesis's page with why to read it there.
   function historyHTML(g) {
     if (!g || !(g.history || []).length) return "";
-    return `<details class="rx-fold tn-fold" open><summary><span><strong>How the doctrine developed</strong><small>${g.history.length} periods</small></span></summary>
-      ${g.summary ? `<p class="cn-summary">${esc(g.summary)}</p>` : ""}
-      <ol class="cn-points">${g.history.map((h) => `<li><h4>${esc(h.period)}</h4><p>${esc(h.text)}</p>
-        <span class="cn-pages">${byPage(h.refs)}</span></li>`).join("")}</ol></details>`;
+    return fold("How the doctrine developed", `${g.history.length} periods`, `${g.summary ? `<p class="lib-lede">${esc(g.summary)}</p>` : ""}
+      <ol class="lib-timeline">${g.history.map((h) => `<li><h4>${esc(h.period)}</h4>
+        <div><p>${esc(h.text)}</p>${pagesLine(h.refs)}</div></li>`).join("")}</ol>`, true);
   }
 
   function courseHTML(g) {
     if (!g || !(g.course || []).length) return "";
-    return `<details class="rx-fold tn-fold"><summary><span><strong>A course of reading</strong><small>${g.course.length} readings</small></span></summary>
-      <ol class="tn-course">${g.course.map((c) => `<li>${pageLink(c.w, c.p, `${c.a}${c.t ? ", " + c.t : ""}, p. ${c.p}`)}
-        <span>${esc(c.why)}</span>${c.thesis ? `<small>${esc(c.thesis)}</small>` : ""}</li>`).join("")}</ol></details>`;
+    return fold("A course of reading", `${g.course.length} readings`, `<ol class="tn-course">${g.course.map((c) => `<li>
+        <p class="tn-course-head">${pageLink(c.w, c.p, `${who(c)}${c.t ? `, ${c.t}` : ""}, p. ${c.p}`)}</p>
+        <p>${esc(c.why)}</p>${c.thesis ? `<p class="tn-course-thesis">${esc(c.thesis)}</p>` : ""}</li>`).join("")}</ol>`, false);
   }
 
   function conceptsHTML(cs) {
     if (!cs || !cs.length) return "";
-    return `<details class="rx-fold tn-fold"><summary><span><strong>Concept guides</strong><small>${cs.length}</small></span></summary>
-      <ul class="rn-list">${cs.map((c) => `<li><strong>${esc(c.label)}</strong><span>${esc(c.gloss)}</span>
-        <button type="button" class="rx-button tn-open" data-concept="${esc(c.id)}">Read the guide</button><div class="tn-guide" hidden></div></li>`).join("")}</ul></details>`;
+    return fold("Concept guides", String(cs.length), `<ul class="rn-list">${cs.map((c) => `<li><strong>${esc(c.label)}</strong><span>${esc(c.gloss)}</span>
+        <button type="button" class="rx-button tn-open" data-concept="${esc(c.id)}">Read the guide</button><div class="tn-guide" hidden></div></li>`).join("")}</ul>`, false);
   }
 
   function guideHTML(g) {
@@ -105,7 +111,8 @@
         }
         slot.hidden = false; b.textContent = "Close the guide";
       });
-      head.insertAdjacentElement("afterend", box);
+      // After the whole heading row: the h1 shares a flex row with its link, where the notes would be squeezed into a column.
+      (head.closest(".rx-topic-heading") || head).insertAdjacentElement("afterend", box);
     } finally {
       busy = false;
     }

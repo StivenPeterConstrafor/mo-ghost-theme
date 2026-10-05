@@ -32,29 +32,36 @@
       <span class="bn-pages">${(r.refs || []).slice(0, 5).map((x) => pageLink(x.work, x.page, `${x.author || "page"}, p. ${x.page}`)).join(" · ")}</span></li>`).join("");
     const conn = (v.connections || []).slice(0, 6).map((c) => `<li>${esc(c.ref)}: ${esc(c.why)}</li>`).join("");
     const comm = (v.commentaries || []).slice(0, 8).map((c) => `<li>${pageLink(c.w, c.p, `${c.a ? c.a + ", " : ""}${c.t || c.w}, p. ${c.p}`)}</li>`).join("");
+    // How the verse was read period by period: the same timeline as a topic's history. A compiled page names its compiler.
     const h = v.history;
-    const periods = h ? (h.periods || []).map((p) => `<li><strong>${esc(p.period)}</strong>: ${esc(p.text)}
-      <span class="bn-pages">${(p.refs || []).slice(0, 5).map((x) => pageLink(x.w, x.p, `${x.a}, p. ${x.p}`)).join(" · ")}</span></li>`).join("") : "";
-    return `<details class="bn-verse" id="bn-v${esc(n)}"><summary><span>v. ${esc(n)}</span> ${esc(v.card || (h && h.summary))}${periods ? ` <small class="bn-has-history">history</small>` : ""}</summary>
+    const who = (x) => `${x.a}${x.via ? `, via ${x.via}` : ""}`;
+    const periods = h ? (h.periods || []).map((p) => `<li><h4>${esc(p.period)}</h4><div><p>${esc(p.text)}</p>
+      ${(p.refs || []).length ? `<p class="bn-pages">${p.refs.slice(0, 5).map((x) => pageLink(x.w, x.p, `${who(x)}, p. ${x.p}`)).join(" · ")}</p>` : ""}</div></li>`).join("") : "";
+    return `<details class="bn-verse" id="bn-v${esc(n)}"><summary><span>v. ${esc(n)}</span> ${esc(v.card || (h && h.summary))}${periods ? ` <small class="bn-has-history">with its history</small>` : ""}</summary>
       ${readings ? `<h5>Readings</h5><ul class="bn-list">${readings}</ul>` : ""}
-      ${periods ? `<h5>Through the centuries</h5>${h.summary && v.card ? `<p class="bn-card">${esc(h.summary)}</p>` : ""}<ul class="bn-list">${periods}</ul>` : ""}
+      ${periods ? `<h5>Through the centuries</h5>${h.summary && v.card ? `<p class="lib-lede">${esc(h.summary)}</p>` : ""}<ol class="lib-timeline">${periods}</ol>` : ""}
       ${conn ? `<h5>Read with</h5><ul class="bn-list">${conn}</ul>` : ""}
       ${comm ? `<h5>Commentaries in the library</h5><ul class="bn-list">${comm}</ul>` : ""}</details>`;
   }
 
   function chapterHTML(d, ch) {
     const c = d.chapters && d.chapters[String(ch)];
-    if (!c || !c.card) return "";
+    if (!c) return "";
     const verses = Object.entries(c.verses || {}).filter(([, v]) => v && (v.card || v.history)).sort((a, b) => Number(a[0]) - Number(b[0]));
+    if (!c.card && !verses.length) return "";
+    const jump = (n, label) => `<a href="#bn-v${esc(n)}" data-bn-verse="${esc(n)}">${esc(label)}</a>`;
     const keys = (c.key_verses || []).map((k) => {
       const n = String(k.ref || "").split(":")[1];
-      return `<li>${n ? `<a href="#bn-v${esc(n)}" data-bn-verse="${esc(n)}">${esc(k.ref)}</a>` : esc(k.ref)}: ${esc(k.why)}</li>`;
+      return `<li>${n ? jump(n, k.ref) : esc(k.ref)}: ${esc(k.why)}</li>`;
     }).join("");
-    return `<p class="bn-card">${esc(c.card)}</p>
+    // The verses read through the centuries, one tap from the chapter card (each opens in Verse by verse).
+    const told = verses.filter(([, v]) => v.history);
+    return `${c.card ? `<p class="bn-card">${esc(c.card)}</p>` : ""}
       ${keys ? `<h4>Key verses</h4><ul class="bn-list">${keys}</ul>` : ""}
+      ${told.length ? `<p class="bn-history-index"><span>Through the centuries:</span> ${told.map(([n]) => jump(n, `v. ${n}`)).join(" · ")}</p>` : ""}
       ${(c.themes || []).length ? `<p class="bn-themes">${c.themes.map(esc).join(" · ")}</p>` : ""}
-      ${verses.length ? `<details class="rx-fold bn-verses"><summary><span><strong>Verse by verse</strong><small>${verses.length} verses</small></span></summary>
-        ${verses.map(([n, v]) => verseHTML(n, v)).join("")}</details>` : ""}`;
+      ${verses.length ? `<details class="rx-fold bn-verses"><summary><span><strong>Verse by verse</strong><small>${verses.length} verses${told.length ? `, ${told.length} with a history` : ""}</small></span></summary>
+        <div class="rx-fold-body">${verses.map(([n, v]) => verseHTML(n, v)).join("")}</div></details>` : ""}`;
   }
 
   function bookHTML(d, book) {
@@ -86,8 +93,9 @@
       box.id = "bnNotes";
       box.className = "bn-notes";
       box.dataset.key = key;
-      box.innerHTML = `<details class="rx-fold bn-fold" open><summary><span><strong>How the library reads ${esc(r.ch ? `${d.book} ${r.ch}` : d.book)}</strong></span></summary>${body}
-        <p class="rx-note">Machine-written from the library's pages that use this passage; every page link is checked. Open a page to read it.</p></details>`;
+      box.innerHTML = `<details class="rx-fold bn-fold" open><summary><span><strong>How the library reads ${esc(r.ch ? `${d.book} ${r.ch}` : d.book)}</strong></span></summary>
+        <div class="rx-fold-body">${body}
+        <p class="rx-note">Machine-written from the library's pages that use this passage; every page link is checked. Open a page to read it.</p></div></details>`;
       box.addEventListener("click", (e) => {
         const a = e.target.closest("[data-bn-verse]");
         if (!a) return;
