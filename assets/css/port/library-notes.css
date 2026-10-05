@@ -14,6 +14,9 @@
 .cn-points p{margin:2px 0}
 .cn-pages{font-size:.88em;color:var(--muted,inherit)}
 .cn-pages a{margin-right:2px}
+.tn-course{margin:8px 0 4px;padding-left:2.2em;display:grid;gap:10px}
+.tn-course li span,.tn-course li small{display:block}
+.tn-course li small{color:var(--muted,inherit);font-size:.88em}
 /* Scripture (faith-port-bible-notes.js) */
 .bn-notes{margin:0 0 16px}
 .bn-card{margin:8px 0}
@@ -25,6 +28,7 @@
 .bn-verse{border-top:1px solid var(--border,#ddd);padding:8px 0}
 .bn-verse>summary{cursor:pointer}
 .bn-verse>summary span{font-weight:600;margin-right:4px}
+.bn-verse>summary .bn-has-history{font-size:.8em;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,inherit)}
 /* Glossary page (faith-port-glossary-brief.js) */
 .faith-glossary-brief{margin:.25rem 0 .75rem;font-size:.95em}
 .faith-glossary-brief span{font-weight:600;margin-right:.25em}

@@ -1,7 +1,11 @@
-/* Topic pages: the traditions compared on the subject, and the concept guides that belong to it.
+/* Topic pages: how the doctrine developed, the traditions compared on the subject, a course of reading,
+ * and the concept guides that belong to it.
  *
  * v1/enrich/topics/<slug>.json on the library worker (slugs are the topic
  * page's own, from v1/mine/topic2-all) carries:
+ *   guide       the doctrine's history across the library, period by period,
+ *               with the authors' pages behind each step, and a course of 10-12
+ *               readings in order, each a thesis's page with why to read it;
  *   traditions  pairings of the library's shelves (Roman Catholic and Reformed,
  *               Reformed and Lutheran, Latin and Greek Fathers ...) on this
  *               subject: a summary, where they agree, where they part, and the
@@ -31,6 +35,24 @@
       <ol class="cn-points">${prs.map((p) => `<li><h4>${esc(p.x)} and ${esc(p.y)}</h4><p class="cn-summary">${esc(p.summary)}</p>
         ${p.agree ? `<p><em>Agree:</em> ${esc(p.agree)} <span class="cn-pages">${refs(p.agree_refs)}</span></p>` : ""}
         ${p.differ ? `<p><em>Differ:</em> ${esc(p.differ)} <span class="cn-pages">${refs(p.differ_refs)}</span></p>` : ""}</li>`).join("")}</ol></details>`;
+  }
+
+  // The doctrine's history across the library, century by century, and a
+  // course of readings in order, each a thesis's page with why to read it.
+  const byPage = (rs) => (rs || []).slice(0, 6).map((r) => pageLink(r.w, r.p, `${r.a}, p. ${r.p}`)).join(" · ");
+  function historyHTML(g) {
+    if (!g || !(g.history || []).length) return "";
+    return `<details class="rx-fold tn-fold" open><summary><span><strong>How the doctrine developed</strong><small>${g.history.length} periods</small></span></summary>
+      ${g.summary ? `<p class="cn-summary">${esc(g.summary)}</p>` : ""}
+      <ol class="cn-points">${g.history.map((h) => `<li><h4>${esc(h.period)}</h4><p>${esc(h.text)}</p>
+        <span class="cn-pages">${byPage(h.refs)}</span></li>`).join("")}</ol></details>`;
+  }
+
+  function courseHTML(g) {
+    if (!g || !(g.course || []).length) return "";
+    return `<details class="rx-fold tn-fold"><summary><span><strong>A course of reading</strong><small>${g.course.length} readings</small></span></summary>
+      <ol class="tn-course">${g.course.map((c) => `<li>${pageLink(c.w, c.p, `${c.a}${c.t ? ", " + c.t : ""}, p. ${c.p}`)}
+        <span>${esc(c.why)}</span>${c.thesis ? `<small>${esc(c.thesis)}</small>` : ""}</li>`).join("")}</ol></details>`;
   }
 
   function conceptsHTML(cs) {
@@ -64,7 +86,7 @@
       const d = await getJSON(`${BASE}/v1/enrich/topics/${encodeURIComponent(slug)}.json`);
       if (old) old.remove();
       if (!d || slugNow() !== slug || !page.contains(head)) return;
-      const body = traditionsHTML(d.traditions) + conceptsHTML(d.concepts);
+      const body = historyHTML(d.guide) + traditionsHTML(d.traditions) + courseHTML(d.guide) + conceptsHTML(d.concepts);
       if (!body) return;
       const box = document.createElement("section");
       box.id = "tnNotes";
