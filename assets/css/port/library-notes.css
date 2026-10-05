@@ -25,3 +25,6 @@
 .bn-verse{border-top:1px solid var(--border,#ddd);padding:8px 0}
 .bn-verse>summary{cursor:pointer}
 .bn-verse>summary span{font-weight:600;margin-right:4px}
+/* Glossary page (faith-port-glossary-brief.js) */
+.faith-glossary-brief{margin:.25rem 0 .75rem;font-size:.95em}
+.faith-glossary-brief span{font-weight:600;margin-right:.25em}
