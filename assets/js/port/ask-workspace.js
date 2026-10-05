@@ -685,8 +685,13 @@ function checkHTML(t){
        answered by a worker without our member-bearer handling. Bump both
        together whenever ask-worker.js changes. The PATH comes from
        CFG.assetBase; only the version is ours. */
-    try { worker=new SharedWorker(CFG.assetBase+'ask-worker.js?v=7j',{name:'fr-ask-v7j'});port=worker.port;port.start(); }
+    try { worker=new SharedWorker(CFG.assetBase+'ask-worker.js?v=7j',{name:'fr-ask-v7k'});port=worker.port;port.start(); }
     catch(_){workerKind='tab';worker=new Worker(CFG.assetBase+'ask-worker.js?v=7j');port=worker;}
+    // back from the background (a phone switched apps), back online, or shown from the cache: a turn whose stream died is
+    // fetched from the worker's copy instead of failing (2026-10-03)
+    const resumeIfLost=()=>{const c=(typeof selected==='function'?selected():null)||conversations.find(x=>x.id===current);if(!c)return;const t=(c.turns||[]).find(t=>!t.serverJob&&(t.status==='running'||t.status==='interrupted'||(t.status==='error'&&/interrupted|ended before|Load failed|network/i.test(t.error||'')))&&Date.now()-(t.completedAt||t.ts||0)<900000);if(t)rpc('resume',{id:c.id,turnId:t.id,url:CFG.apiBase+'/ask',headers:(typeof askHeaders==='function'?askHeaders():undefined)}).catch(()=>{});};
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')resumeIfLost();});
+    window.addEventListener('pageshow',()=>resumeIfLost());window.addEventListener('online',()=>resumeIfLost());
     port.onmessage=async({data})=>{
       if(data.type==='reply'){const r=replies.get(data.rid);if(r){clearTimeout(r.timer);replies.delete(data.rid);data.error?r.reject(new Error(data.error)):r.resolve();}}
       else if(data.type==='updated')scheduleRefresh();
