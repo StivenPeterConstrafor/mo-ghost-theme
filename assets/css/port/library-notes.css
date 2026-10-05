@@ -14,3 +14,14 @@
 .cn-points p{margin:2px 0}
 .cn-pages{font-size:.88em;color:var(--muted,inherit)}
 .cn-pages a{margin-right:2px}
+/* Scripture (faith-port-bible-notes.js) */
+.bn-notes{margin:0 0 16px}
+.bn-card{margin:8px 0}
+.bn-notes h4{margin:12px 0 4px;font-size:1rem}
+.bn-notes h5{margin:10px 0 4px;font-size:.92rem}
+.bn-list{margin:4px 0;padding-left:18px;display:grid;gap:6px}
+.bn-themes{color:var(--muted,inherit);font-size:.92em}
+.bn-pages{display:block;font-size:.88em;color:var(--muted,inherit)}
+.bn-verse{border-top:1px solid var(--border,#ddd);padding:8px 0}
+.bn-verse>summary{cursor:pointer}
+.bn-verse>summary span{font-weight:600;margin-right:4px}
