@@ -213,8 +213,10 @@
       if(data.failed.length)note(body,'Author indexes could not load for: '+data.failed.join(', ')+'. Links below may be incomplete.');
       if(!data.matches.length)note(body,!author?'An author name is not supplied for this edition.':data.failed.length?'An exact author match could not be established from the indexes that loaded.':'No exact author record for “'+author+'” appears in the available indexes.');
     }
+    // A door: the link and one line on where it goes (the Positions section, on the work page and in the rail).
+    function door(parent,a,text){const row=element('div','wrs-door');row.append(a,element('p','wrs-door-note',text));parent.appendChild(row);}
     function positionsLinks(body, matches) {
-      for(const match of matches){body.appendChild(link('Read '+match.a+'’s positions · '+(root.MOFaithLabel?root.MOFaithLabel.of(shelves[match.sh],match.a):shelves[match.sh]),positionsURL(match,slug)));body.appendChild(link('Follow sources cited','/the-faith-received/connections/#journey='+encodeURIComponent(match.s)+'?'+new URLSearchParams({direction:'out',work:slug})));body.appendChild(link('Explore later citations','/the-faith-received/connections/#journey='+encodeURIComponent(match.s)+'?'+new URLSearchParams({direction:'in',targetWork:slug})));}
+      for(const match of matches){door(body,link('Read '+match.a+'’s positions · '+(root.MOFaithLabel?root.MOFaithLabel.of(shelves[match.sh],match.a):shelves[match.sh]),positionsURL(match,slug)),'The positions drawn from this author’s works, doctrine by doctrine, with the pages each comes from.');door(body,link('Follow sources cited','/the-faith-received/connections/#journey='+encodeURIComponent(match.s)+'?'+new URLSearchParams({direction:'out',work:slug})),'The authors this work cites, followed through the library.');door(body,link('Explore later citations','/the-faith-received/connections/#journey='+encodeURIComponent(match.s)+'?'+new URLSearchParams({direction:'in',targetWork:slug})),'The later works that cite this one.');}
     }
     if(author)lazy(frame,name('positions','Positions'),async body => {
       const draw=async()=>{

@@ -84,6 +84,17 @@ html #notebook .nb-work-primary>a.nb-work-desk{display:flex;justify-content:spac
 html #notebook .nb-work-primary>a.nb-work-desk::after{content:"\203A";font-size:16px;line-height:1;opacity:.6}
 html #notebook .nb-work-primary>a.nb-work-desk:hover{background-color:var(--hl,var(--nbx-card))}
 html #notebook .nb-work-primary>a.nb-work-desk+button{border-top:1px solid var(--nbx-line)}
+/* the Positions section's doors: the link, and a line on where it goes */
+.wrs-door{padding:12px 0;border-bottom:1px solid var(--border)}
+.wrs-door:last-of-type{border-bottom:0}
+.wrs-door>.wrs-link{min-height:0;padding:0;margin:0;font-size:16px;color:var(--fg)}
+.wrs-door>.wrs-door-note{margin:4px 0 0;font:14px/1.5 var(--body,var(--font-body,inherit));color:var(--muted);max-width:60ch}
+/* folds inside a work-page section take the page's chevron, not the browser's triangle */
+.wh-panel .wrs details>summary{list-style:none;display:flex;align-items:baseline;gap:10px;cursor:pointer}
+.wh-panel .wrs details>summary::-webkit-details-marker{display:none}
+.wh-panel .wrs details>summary::before{content:"\203A";flex:none;width:.7em;color:var(--muted);font-size:1.15em;line-height:1;transition:transform .15s}
+.wh-panel .wrs details[open]>summary::before{transform:rotate(90deg)}
+.wh-panel .wrs details.wrs-desk>summary{display:none}
 /* on the work page a section from work-research-sources.js renders open, without its fold */
 .wrs-desk{border-top:0;margin-top:0}
 .wrs-desk>summary{display:none}

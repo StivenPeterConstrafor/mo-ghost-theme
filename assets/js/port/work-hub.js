@@ -229,18 +229,29 @@
       seg.innerHTML = order.filter((id) => present[id]).map((id) =>
         `<button type="button" role="tab" id="wkt-${id}" data-sec="${id}" aria-controls="wkp-${id}" aria-selected="${id === active}" tabindex="${id === active ? 0 : -1}"${id === active ? ' class="on"' : ""}>${esc(label(id))}${num[id] > 1 ? ` · ${Number(num[id]).toLocaleString()}` : ""}</button>`).join("");
     }
+    // The selected tab, marked in place: re-drawing the strip on every switch would drop the focus a click gave the tab.
+    function mark() {
+      seg.querySelectorAll('[role="tab"]').forEach((b) => {
+        const on = b.dataset.sec === active;
+        b.setAttribute("aria-selected", String(on));
+        b.tabIndex = on ? 0 : -1;
+        b.classList.toggle("on", on);
+      });
+    }
     function show(id, write) {
       if (!present[id]) id = order.find((x) => present[x]);
       if (!id) { seg.hidden = true; return; }
       active = id;
-      body.querySelectorAll(".wh-panel").forEach((p) => { p.hidden = p.dataset.sec !== id; p.id = `wkp-${p.dataset.sec}`; p.setAttribute("aria-labelledby", `wkt-${p.dataset.sec}`); });
-      strip();
+      // positions and names are mounted the first time they are opened, BEFORE the panels are shown or hidden, so the
+      // new panel is the one shown
       if ((id === "positions" || id === "names") && !mounted.has(id) && o.sources) {
         mounted.add(id);
         const host = panel(id);
         host.innerHTML = `<h2 class="sect">${esc(label(id))}</h2><div class="wh-ref"></div>`;
         o.sources.mount(host.querySelector(".wh-ref"), { slug, author: o.author, blob: o.blob, only: [id], open: true, desk: true });
       }
+      body.querySelectorAll(".wh-panel").forEach((p) => { p.hidden = p.dataset.sec !== id; p.id = `wkp-${p.dataset.sec}`; p.setAttribute("aria-labelledby", `wkt-${p.dataset.sec}`); });
+      if (seg.querySelectorAll('[role="tab"]').length === order.filter((x) => present[x]).length) mark(); else strip();
       if (write) history.replaceState(null, "", `${location.pathname}${location.search}#w/${encodeURIComponent(slug)}${id === order.find((x) => present[x]) ? "" : "/" + id}`);
     }
     // The strip sticks under whatever the site keeps at the top (Mere Orthodoxy's header shows and hides on scroll with the
@@ -265,7 +276,6 @@
       show(b.dataset.sec, true);
       const on = seg.querySelector(`[data-sec="${b.dataset.sec}"]`);
       if (on) {
-        on.focus({ preventScroll: true });
         // the chosen tab in view along the strip (a phone scrolls it sideways)
         const r = on.getBoundingClientRect(), sr = seg.getBoundingClientRect();
         if (r.left < sr.left || r.right > sr.right) seg.scrollLeft += r.left - sr.left - 16;
