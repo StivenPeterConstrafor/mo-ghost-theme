@@ -17,6 +17,7 @@
     { id: "sections", label: "Sections" },
     { id: "index", label: "Subject index" },
     { id: "quotes", label: "Quotations" },
+    { id: "citedby", label: "Read later by" },
     { id: "scripture", label: "Scripture" },
     { id: "topics", label: "Topics" },
     { id: "positions", label: "Positions" },
@@ -154,6 +155,72 @@
   }
 
   const RENDER = { overview, argument, sections, index, quotes };
+
+  // READ LATER BY (owner 2026-10-06, proposal 2): the library's page-to-page citation links turned round — for each page of
+  // this work, the later pages that cite it (v1/enrich/citedby/<slug>.json, built by tools/enrich/citedby.py from the same
+  // links as "Cited on this page"; sure links only). Citing works are named from the catalogue.
+  const later = new Map();
+  function citedBy(slug) {
+    if (!later.has(slug)) later.set(slug, getJSON(`${cfg.base()}/v1/enrich/citedby/${encodeURIComponent(slug)}.json`).then((d) => (d && d.n ? d : null)));
+    return later.get(slug);
+  }
+  let catalogue = null;
+  function names() {
+    return catalogue || (catalogue = getJSON(`${cfg.base()}/v1/works-index.json`).then((d) => {
+      const m = {};
+      ((d && d.works) || []).forEach((w) => { m[w.slug] = w; });
+      return m;
+    }));
+  }
+  const citerName = (cat, slug) => {
+    const w = cat[slug] || {};
+    return { author: w.author_en || w.author || "", title: w.title_en || w.title || slug };
+  };
+  const num = (p) => Number(String(p).replace(/^0+(?=\d)/, "")) || 0;
+  // One citing page: who, which work, which page; on the work page a preview of that page opens under it.
+  function citerRow(cat, r, opt) {
+    const c = citerName(cat, r.w);
+    const where = `${c.author ? `${esc(c.author)}, ` : ""}<em>${esc(c.title)}</em>, p. ${esc(r.p)}`;
+    return `<li><a href="${esc(cfg.readerHref(r.w, r.p))}"${opt && opt.newTab ? ' target="_blank" rel="noopener"' : ""}>${where}</a>${r.k > 1 ? ` <span class="wh-k">${r.k}×</span>` : ""}${r.loc ? `<span class="wh-loc">${esc(r.loc)}</span>` : ""}${opt && opt.preview ? ` <button type="button" class="wh-page wh-pv" data-w="${esc(r.w)}" data-page="${esc(r.p)}">Preview</button>` : ""}</li>`;
+  }
+  // The work's cited pages, most cited first: one row a page; its later citations open in place (drawn when opened).
+  function mountLater(host, d, cat, opt) {
+    const compact = opt && opt.compact;
+    const groups = Object.entries(d.pages || {}).map(([p, rs]) => ({ p, rs, k: rs.map((r) => { const c = citerName(cat, r.w); return `${c.author} ${c.title}`; }).join(" | ").toLowerCase() }))
+      .sort((a, b) => b.rs.length - a.rs.length || num(a.p) - num(b.p));
+    const STEP = compact ? 6 : 30;
+    let shown = STEP, q = "";
+    host.innerHTML = `${compact ? "" : `<p class="wh-blurb">Pages of this work cited ${Number(d.n).toLocaleString()} times by ${Number(d.works).toLocaleString()} later works in the library. Open a page to see who cites it.</p>
+        <label class="wh-filter wh-lfilter">Find a later writer <input type="search" placeholder="A name or a title" autocomplete="off"></label>`}
+      <ol class="wh-later"></ol><p class="wh-none" hidden>No later writer matches.</p>
+      <button type="button" class="wh-more wh-later-more" hidden></button>`;
+    const list = host.querySelector(".wh-later"), none = host.querySelector(".wh-none"), more = host.querySelector(".wh-later-more");
+    function draw() {
+      const words = q.split(/\s+/).filter(Boolean);
+      const hit = groups.filter((g) => words.every((w) => g.k.includes(w)));
+      const cut = hit.slice(0, shown);
+      list.innerHTML = cut.map((g) => `<li data-p="${esc(g.p)}"><details${q && cut.length <= 3 ? " open" : ""}><summary><span class="wh-lp">p. ${esc(g.p)}</span><span class="wh-lc">${g.rs.length.toLocaleString()} later ${g.rs.length === 1 ? "citation" : "citations"}</span></summary><div class="wh-lbody"></div></details></li>`).join("");
+      none.hidden = hit.length > 0;
+      more.hidden = cut.length >= hit.length;
+      more.textContent = `Show more pages (${(hit.length - cut.length).toLocaleString()} more)`;
+      list.querySelectorAll("details[open]").forEach(fill);
+    }
+    function fill(det) {
+      const body = det.querySelector(".wh-lbody");
+      if (body.dataset.done) return;
+      body.dataset.done = "1";
+      const g = groups.find((x) => x.p === det.parentElement.dataset.p);
+      const words = q.split(/\s+/).filter(Boolean);
+      const rs = words.length ? g.rs.filter((r) => { const c = citerName(cat, r.w); const k = `${c.author} ${c.title}`.toLowerCase(); return words.every((w) => k.includes(w)); }) : g.rs;
+      body.innerHTML = `${compact ? "" : `<p class="wh-lopen"><button type="button" class="wh-page" data-page="${esc(g.p)}">Read p. ${esc(g.p)} of this work</button></p>`}
+        <ul class="wh-citers">${rs.slice(0, 200).map((r) => citerRow(cat, r, { preview: !compact, newTab: compact })).join("")}</ul>${rs.length > 200 ? `<p class="wh-none">and ${(rs.length - 200).toLocaleString()} more.</p>` : ""}`;
+    }
+    list.addEventListener("toggle", (e) => { if (e.target.open) fill(e.target); }, true);
+    more.addEventListener("click", () => { shown += STEP * 3; draw(); });
+    const box = host.querySelector(".wh-lfilter input");
+    if (box) box.addEventListener("input", () => { q = box.value.trim().toLowerCase(); shown = STEP; draw(); });
+    draw();
+  }
   function render(id, d, opt) { return RENDER[id] ? RENDER[id](d, opt || {}) : ""; }
 
   // Filters and page buttons inside a rendered block; onPage(page) decides what a page reference does.
@@ -174,7 +241,7 @@
     });
     host.addEventListener("input", (e) => {
       const box = e.target.closest(".wh-filter input");
-      if (!box) return;
+      if (!box || box.closest(".wh-lfilter")) return;   // "Read later by" filters its own list
       const scope = box.closest(".wh-panel, .wh-fold, details") || host;
       const q = box.value.trim().toLowerCase();
       let shown = 0;
@@ -246,6 +313,12 @@
       active = id;
       // positions and names are mounted the first time they are opened, BEFORE the panels are shown or hidden, so the
       // new panel is the one shown
+      if (id === "citedby" && !mounted.has(id)) {
+        mounted.add(id);
+        const host = panel(id);
+        host.innerHTML = `<h2 class="sect">${esc(label(id))}</h2><div class="wh-ref"><p class="pw-wait" role="status">Loading…</p></div>`;
+        Promise.all([citedBy(slug), names()]).then(([d, cat]) => { if (d) mountLater(host.querySelector(".wh-ref"), d, cat || {}); });
+      }
       if ((id === "positions" || id === "names") && !mounted.has(id) && o.sources) {
         mounted.add(id);
         const host = panel(id);
@@ -286,10 +359,16 @@
       const top = body.getBoundingClientRect().top, under = seg.getBoundingClientRect().bottom;
       if (top < under) window.scrollBy(0, top - under - 8);
     });
-    wire(body, (page, btn) => inlinePage(slug, page, btn));
+    wire(body, (page, btn) => inlinePage(btn.dataset.w || slug, page, btn));
     DESK = { slug, show, seg, onScroll };
     const want = o.tab || "";
     show(present[want] ? want : order.find((x) => present[x]), false);
+    citedBy(slug).then((d) => {
+      if ((o.run && !o.run()) || !d || DESK.seg !== seg) return;
+      present.citedby = true; num.citedby = d.n;
+      panel("citedby");
+      show(want === "citedby" ? "citedby" : active, false);
+    });
     guide(slug).then((d) => {
       if ((o.run && !o.run()) || !d || DESK.seg !== seg) return;
       const c = counts(d);
@@ -309,6 +388,6 @@
     return true;
   }
 
-  root.FRWorkHub = { SECTIONS, GUIDE, label, config, cfg, guide, counts, render, wire, esc, NOTE, desk, deskSwitch, inlinePage,
+  root.FRWorkHub = { SECTIONS, GUIDE, label, config, cfg, guide, counts, render, wire, esc, NOTE, desk, deskSwitch, inlinePage, citedBy, names, mountLater, citerRow,
     deskHref: (slug, id) => cfg.deskHref(slug, id), readerHref: (slug, p) => cfg.readerHref(slug, p) };
 })(typeof window === "undefined" ? globalThis : window);

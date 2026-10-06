@@ -41,7 +41,8 @@
     d.className = "wrs-section wh-fold";
     d.dataset.sec = id;
     if (open) d.open = true;
-    d.innerHTML = `<summary>${esc(title)}${n > 1 ? ` <span class="wh-count">${Number(n).toLocaleString()}</span>` : ""}</summary><div class="wrs-section-body">${body}${id !== "cited" ? `<a class="wrs-link wh-desk" href="${esc(deskHref(id))}">Open on the work page</a>` : ""}</div>`;
+    const desk = id === "cited" ? "" : id === "later-page" ? "citedby" : id;
+    d.innerHTML = `<summary>${esc(title)}${n > 1 ? ` <span class="wh-count">${Number(n).toLocaleString()}</span>` : ""}</summary><div class="wrs-section-body">${body}${desk ? `<a class="wrs-link wh-desk" href="${esc(deskHref(desk))}">${desk === "citedby" && id === "later-page" ? "Every later citation of this work" : "Open on the work page"}</a>` : ""}</div>`;
     return d;
   }
 
@@ -106,6 +107,31 @@
     list.insertBefore(a, list.firstChild);
   }
 
+  // READ LATER BY, the page in view: the later pages in the library that cite it (v1/enrich/citedby, FRWorkHub.citedBy).
+  function laterFold(d) {
+    if (!d) return null;
+    const f = fold("later-page", "Read later by", `<div class="nb-guide-later"></div>`, false);
+    const box = f.querySelector(".nb-guide-later");
+    let shown = null;
+    async function draw() {
+      const page = pageInView();
+      if (!page || page === shown) return;
+      shown = page;
+      const n = Number(page);
+      const keys = Number.isFinite(n) && /^p[gl]d?-/.test(slug) ? [String(n), String(n + 1)] : [page];
+      const rows = keys.flatMap((k) => d.pages[k] || d.pages[String(Number(k))] || []);
+      const cat = await HUB.names();
+      if (shown !== page) return;
+      if (!rows.length) { box.innerHTML = `<p class="wrs-note">No later page in the library cites p. ${esc(page)}.</p>`; return; }
+      box.innerHTML = `<p class="wrs-note">${rows.length.toLocaleString()} later ${rows.length === 1 ? "page cites" : "pages cite"} p. ${esc(page)}, oldest first.</p><ul class="wh-citers">${rows.slice(0, 60).map((r) => HUB.citerRow(cat || {}, r, { newTab: true })).join("")}</ul>${rows.length > 60 ? `<p class="wrs-note">and ${(rows.length - 60).toLocaleString()} more on the work page.</p>` : ""}`;
+    }
+    f.addEventListener("toggle", () => { if (f.open) { shown = null; draw(); } });
+    let t = 0;
+    window.addEventListener("scroll", () => { if (!f.open) return; clearTimeout(t); t = setTimeout(draw, 250); }, { passive: true });
+    window.addEventListener("fr-reader-navigation", () => { if (f.open) { shown = null; setTimeout(draw, 300); } });
+    return f;
+  }
+
   // Two groups under the work's card: what follows the page in view (its citations, and the analysis extracted from it),
   // then the whole work's sections in the work page's order. The analysis fold is the tab's own (#nbAnalysisFold, filled
   // by work-research.js); it moves up beside "Cited on this page" and takes a name that says what it shows.
@@ -119,7 +145,7 @@
   async function mount() {
     door();
     if (!HUB) return;
-    const [data, cites] = await Promise.all([HUB.guide(slug), getJSON(`${BASE}/v1/enrich/cites/${encodeURIComponent(slug)}.json`)]);
+    const [data, cites, later] = await Promise.all([HUB.guide(slug), getJSON(`${BASE}/v1/enrich/cites/${encodeURIComponent(slug)}.json`), HUB.citedBy ? HUB.citedBy(slug) : null]);
     const c = HUB.counts(data);
     const guide = document.createElement("div");
     guide.id = "nbWorkGuide";
@@ -127,6 +153,8 @@
     guide.appendChild(group("On this page"));
     const cited = citedFold(cites);
     if (cited) guide.appendChild(cited);
+    const laterHere = laterFold(later);
+    if (laterHere) guide.appendChild(laterHere);
     const analysis = $("nbAnalysisFold");
     if (analysis) {
       const s = analysis.querySelector(":scope > summary");
@@ -139,6 +167,17 @@
       if (!c[id]) return;
       guide.appendChild(fold(id, HUB.label(id), HUB.render(id, data, { compact: true }), id === "overview", c[id]));
     });
+    // the whole work's most-cited pages, after the quotations, as on the work page
+    if (later) {
+      const f = fold("citedby", HUB.label("citedby"), `<div class="nb-later-work"></div>`, false, later.n);
+      guide.appendChild(f);
+      f.addEventListener("toggle", async () => {
+        const host = f.querySelector(".nb-later-work");
+        if (!f.open || host.dataset.done) return;
+        host.dataset.done = "1";
+        HUB.mountLater(host, later, (await HUB.names()) || {}, { compact: true });
+      });
+    }
     HUB.wire(guide, (page) => go(page));
     const anchor = $("nbWorkSources");
     if (anchor) panel.insertBefore(guide, anchor); else panel.appendChild(guide);
