@@ -12,7 +12,8 @@
   window.__frEarly={ws:ws,titles:j(B+"/v1/titles_en.json"+V)};
   var cm=ws&&ws.match(/^(pld|pg|po)-(\d+)$/);
   var eb=ws&&ws.match(/^eebo-(\d+)$/);   // canon family: never probe the per-work store
-  if(cm){window.__frEarly.canon=fetch(B+"/v1/tei/"+cm[1]+"/"+cm[2]+".xml").then(function(r){if(!r.ok)throw 0;return r.text();});
+  if(cm){var PV=window.__pgV||(window.__pgV="?v="+Math.floor(Date.now()/6e5));   // PG data: a 10-minute version (reader-core loadPgCanon)
+    window.__frEarly.canon=fetch(B+"/v1/tei/"+cm[1]+"/"+cm[2]+".xml"+(cm[1]==="pg"?PV:"")).then(function(r){if(!r.ok)throw 0;return r.text();});
     window.__frEarly.canon.catch(function(){});
     window.__frEarly.auEn=j(B+"/v1/authors_en.json"+V);window.__frEarly.auEn.catch(function(){});}
   else if(eb){window.__frEarly.canonEebo=fetch(B+"/eebo/"+eb[1]+".json.gz").then(function(r){if(!r.ok)throw 0;return r;});
