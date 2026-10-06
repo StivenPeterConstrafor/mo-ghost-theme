@@ -3794,3 +3794,51 @@ html.g-mobile .fr-read-restore:not(.fr-read-restore-sb) {
   padding: 11px 14px;
   z-index: 80;
 }
+
+/* ── MORE OF THE SCREEN FOR THE TEXT ON A PHONE (owner, 2026-10-06:
+   "make mobile have a smaller font to adjust to read and provide more
+   reading room") ──────────────────────────────────────────────────────
+   Reading down a phone (html.mh-hide) took the masthead and the dock
+   away but kept the rail and the toolbar pinned at the top: 96px of an
+   iPhone 13's 664, over every line read. Now the three bars leave
+   together, each by the whole band's height (masthead + rail + toolbar),
+   on one transition, so they still move as one piece and never cross
+   (Ian, 2026-09-23: "the navrail should always be affixed to the top of
+   the toolbar"), and the text has the screen. A short scroll back up, or
+   a tap on the prose, brings them back as before. Text only (#app.no-facs):
+   the scan pane sits fixed at --mo-head, so with it open the bars stay as
+   they were and no band of text opens above the scan. A desktop keeps its
+   toolbar when the masthead goes. */
+html.g-mobile body:has(#app.faith-port-read-page) header.site-header,
+html.g-mobile body:has(#app.faith-port-read-page) .tfr-rail,
+html.g-mobile #app.faith-port-read-page .ph.fr-reader-head {
+  transition: transform 0.24s cubic-bezier(0.23, 1, 0.32, 1);
+}
+html.g-mobile.mh-hide body:has(#app.faith-port-read-page.no-facs) header.site-header,
+html.g-mobile.mh-hide body:has(#app.faith-port-read-page.no-facs) .tfr-rail,
+html.g-mobile.mh-hide:not(.fr-bar-hidden) #app.faith-port-read-page.no-facs .ph.fr-reader-head {
+  transform: translateY(calc(-4px - var(--mo-head, 104px) - var(--phh, 56px)));
+}
+@media (prefers-reduced-motion: reduce) {
+  html.g-mobile body:has(#app.faith-port-read-page) header.site-header,
+  html.g-mobile body:has(#app.faith-port-read-page) .tfr-rail,
+  html.g-mobile #app.faith-port-read-page .ph.fr-reader-head { transition: none; }
+}
+
+/* THE TEXT SIZE FIRST, AND WIDE ENOUGH TO MOVE (owner, 2026-10-06: "make mobile have a smaller font to adjust to read"). On a phone
+   the Text sheet opened on Modernize, Previous / Next and the footnote,
+   font and spacing rows; the size slider came last, 84px wide, its two
+   A's 32px. There the sheet is a column, the size row leads it, the
+   slider takes the row's width, and the two A's are 44px targets. */
+@media (max-width: 880px) {
+  html.g-mobile #app .ph.fr-reader-head #aaPop.on { display: flex; flex-direction: column; }
+  html.g-mobile #app .ph.fr-reader-head #aaPop > .aarow:has(> .sld.szc) {
+    order: -1;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  html.g-mobile:not(.fr-plain) #app .fr-reader-head .aapop .sld.szc { display: flex; width: 100%; gap: 4px; }
+  html.g-mobile:not(.fr-plain) #app .fr-reader-head .aapop .sld.szc input[type=range] { flex: 1; min-width: 0; }
+  html.g-mobile:not(.fr-plain) #app .fr-reader-head .aapop .szc button { min-width: 44px; min-height: 44px; }
+}

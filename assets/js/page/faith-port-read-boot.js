@@ -41,6 +41,22 @@
   // first statement and a later assignment would be ignored.
   window.__FR_SITE__ = "faith-received";
 
+  /* A PHONE READS AT 16px, NOT 17 (owner, 2026-10-06: "make mobile have
+     a smaller font to adjust to read and provide more reading room").
+     reader-core.js opens a phone (880px and under) at 17px and writes the
+     size back on every load, so every phone that has opened the reader
+     holds fr_rdsz_m = 17 whether or not anyone chose it, and a new
+     default would never reach them. Once per browser, before reader-core
+     reads the key: no size, or that 17, becomes 16. A size the reader
+     chose stays, and so does 17 chosen after this. */
+  try {
+    if (window.matchMedia("(max-width:880px)").matches && !window.localStorage.getItem("fr_rdsz_m16")) {
+      const was = window.localStorage.getItem("fr_rdsz_m");
+      if (!was || was === "17") window.localStorage.setItem("fr_rdsz_m", "16");
+      window.localStorage.setItem("fr_rdsz_m16", "1");
+    }
+  } catch (e) { /* no storage: the engine's own default */ }
+
   const FALLBACK = 61;
 
   function measure() {
