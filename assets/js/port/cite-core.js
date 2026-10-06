@@ -81,10 +81,16 @@ const list = names => names.length <= 1 ? names.join('') : names.length === 2 ? 
 const surname = n => { const inv = invertName(n); return inv.includes(',') ? inv.split(',')[0] : n; };
 const WEAK = new Set(['a', 'an', 'the', 'of', 'and', 'in', 'on', 'to', 'for', 'ad', 'de', 'et', 'in', 'contra', 'super', 'pro', 'cum']);
 const shortTitle = t => { const s = String(t || '').split(/[:.;—–(]/)[0].trim(); let w = s.split(/\s+/); if (w.length > 4) w = w.slice(0, 4); while (w.length > 1 && WEAK.has(w[w.length - 1].toLowerCase())) w.pop(); return w.join(' '); };
-const clean = s => String(s || '').replace(/\s+/g, ' ').replace(/\s+([,.;:])/g, '$1').replace(/([.?!])\./g, '$1').replace(/,\s*,/g, ',').trim();
+// A stop after a title's own stop goes ("Ibid.." → "Ibid.", "?." → "?"); an ellipsis stays (09-29 daily review C1': "..." became ".."
+// in 20 works' citations).
+const clean = s => String(s || '').replace(/\s+/g, ' ').replace(/\s+([,.;:])/g, '$1').replace(/(^|[^.])([.?!])\.(?!\.)/g, '$1$2').replace(/,\s*,/g, ',').trim();
 const isAnon = a => /^(?:various|anonymous|uncertain)/i.test(a);
 // a volume inside a note: "vol. 2" (the catalogue's "Vol. 2" in lower case mid-sentence; "Pars VIII", "Tomus II" as printed)
 const inNote = v => /^[\dIVXL]+$/.test(String(v)) ? `vol. ${v}` : String(v).replace(/^Vol\.\s*/, 'vol. ');
+// a catalogue volume line that only restates the imprint ("Harderwijk, 1664" beside place Harderwijk, year 1664) is not a volume
+// label: printed too, the note read "Harderwijk, 1664 (Harderwijk, 1664)" (owner 2026-10-06, "fix this")
+const restatesImprint = (vn, r) => { const t = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').match(/[\p{L}\d]+/gu) || [];
+  const have = new Set([...t(r.place), ...t(r.year), ...t(r.publisher)]), w = t(vn); return w.length > 0 && w.every(x => have.has(x)); };
 
 /** A record for a work that has none yet: the catalogue's author, title and volume line, and the series rules for Migne. */
 export function recordFromCatalogue(w = {}) {
@@ -164,7 +170,7 @@ export function citation(record, { page = null, printed = null, part = null, lan
   else {
     const pub = r.publisher && !pre1900(r.year) ? r.publisher : '';
     const facts = [r.place && (pub ? `${r.place}: ${pub}` : r.place), r.year || (inPart ? '' : date)].filter(Boolean).join(', ');
-    const volLabel = r.volume ? inNote(r.volume) : (r.volume_note && r.volume_note.length <= 40 ? r.volume_note : '');
+    const volLabel = r.volume ? inNote(r.volume) : (r.volume_note && r.volume_note.length <= 40 && !restatesImprint(r.volume_note, r) ? r.volume_note : '');
     const extra = [!byEditor && r.editor ? `ed. ${list(people(r.editor))}` : '', r.translator ? `trans. ${r.translator}` : '', r.edition || '', volLabel].filter(Boolean).join(', ');
     note = clean(`${who ? who + ', ' : ''}*${title}*${inPart && part.date ? ` (${part.date})` : ''}${inPart && (r.title_orig || r.title) !== title ? `, in *${r.title_orig || r.title}*` : ''}${extra ? ', ' + extra : ''}${facts ? ` (${facts})` : ''}${loc.text ? ', ' + loc.text : ''}, ${where}${link ? ', ' + link : ''}.`);
   }
@@ -190,7 +196,7 @@ export function citation(record, { page = null, printed = null, part = null, lan
     const place = r.place || '', year = r.year || '', publisher = r.publisher && !pre1900(year) ? ordinaryCase(r.publisher) : '';
     if (!place) warnings.push('place of publication not yet recorded (n.p.)');
     if (!year) warnings.push('date of publication not yet recorded (n.d.)');
-    const vol = r.volume ? (/^[\dIVXL]+$/.test(String(r.volume)) ? `Vol. ${r.volume}` : String(r.volume)) : (r.volume_note || '');
+    const vol = r.volume ? (/^[\dIVXL]+$/.test(String(r.volume)) ? `Vol. ${r.volume}` : String(r.volume)) : (r.volume_note && !restatesImprint(r.volume_note, r) ? r.volume_note : '');
     bibliography = clean(`${whoBib ? whoBib + '. ' : ''}*${inPart ? title : volTitle}*.${inPart && volTitle !== title ? ` In *${volTitle}*.` : ''}${!byEditor && editors.length ? ` Edited by ${list(editors)}.` : ''}${r.translator ? ` Translated by ${r.translator}.` : ''}${r.edition ? ` ${r.edition}.` : ''}${vol ? ` ${vol}.` : ''} ${place || 'N.p.'}${publisher ? ': ' + publisher : ''}, ${year || 'n.d.'}.${link ? ` ${site.name}. ${link}.` : ''}`);
   }
   if (loc.kind === 'scan-index' || loc.kind === 'sequence') warnings.push('the page is the digital edition\'s page or section, not a printed page number');
