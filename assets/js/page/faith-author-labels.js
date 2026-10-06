@@ -44,6 +44,14 @@
   const CHURCH_OF = { gf: "Greek", pl: "Latin", po: "Eastern" };
   const ORDER_NAME = { Jesuits: "Jesuit", Dominicans: "Dominican", Franciscans: "Franciscan", Augustinians: "Augustinian", Carmelites: "Carmelite", Benedictines: "Benedictine" };
   const BODY_NAME = { "Continental Reformed": "Reformed" };
+  // WRITERS WHO WERE NOT CHRISTIANS (2026-10-06). Patrologia Orientalis prints a few texts by Muslim scholars because they
+  // describe Christian practice: al-Biruni's chapter on the Melkite feasts (PO 10) and al-Maqrizi's on the Coptic feasts
+  // (PO 10). Shelved with the Eastern Fathers, the century rule below called them "Eastern Christian", which they were
+  // not. Their room says what they were and why they are here. Keyed by folded name; add a row for any such writer.
+  const OTHER_FAITH = {
+    "abu rayhan muhammad al biruni": ["Islam", "Here as", "a witness to Christian practice (the Melkite feasts)"],
+    "taqi al din ahmad ibn ali al maqrizi": ["Islam", "Here as", "a witness to Christian practice (the Coptic feasts)"],
+  };
   const ERAS = /^(?:Early patristic|Later patristic|Carolingian|High medieval|Reformation|Seventeenth century|Later authors|Undated)$/;
 
   const fold = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -95,6 +103,8 @@
 
   /* { tradition, detail, detailLabel } for one author. */
   function labelFor(name, sh, datesText) {
+    const other = OTHER_FAITH[fold(name)];
+    if (other) return { tradition: other[0], detailLabel: other[1], detail: other[2], other: true };
     const ys = years(datesText);
     const year = ys.length ? ys[0] : 0;
     const d = denomFor(name, ys);
@@ -222,7 +232,7 @@
       const parts = small.textContent.split(" · ");
       const dates = parts.length > 1 ? parts[0] : (ERAS.test(parts[0]) ? "" : parts[0]);
       const L = labelFor(strong.textContent.trim(), sh, dates);
-      const said = L.detail && L.detailLabel !== "Church" ? L.detail : [L.tradition, L.detail].filter(Boolean).join(", ");
+      const said = L.other ? `${L.tradition}, ${L.detail}` : L.detail && L.detailLabel !== "Church" ? L.detail : [L.tradition, L.detail].filter(Boolean).join(", ");
       if (!said) return;
       row.dataset.moLabel = "1";
       small.textContent = dates ? `${dates} · ${said}` : said;
