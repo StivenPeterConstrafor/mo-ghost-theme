@@ -53,8 +53,9 @@
      and precede reader-core.js. --}}
 <script src="{{asset "js/page/faith-port-read-contents-overlay.js"}}"></script>
 <link rel="stylesheet" href="{{asset "css/port/reader-contents.css"}}&amp;frv=be9cf4f6fae0f5a5">
+<link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=a615f0ae30c2b284"><script defer src="{{asset "js/port/work-hub.js"}}&amp;frv=55558b19abb0017f"></script>
 <link rel="stylesheet" href="{{asset "css/port/work-research-sources.css"}}&amp;frv=756b652f362c6473">
-<script defer src="{{asset "js/port/work-research-sources.js"}}&amp;frv=48232c7606f31bf8"></script>
+<script defer src="{{asset "js/port/work-research-sources.js"}}&amp;frv=7225f8a643dfa9f3"></script>
 <link rel="stylesheet" href="{{asset "css/port/desk-workflow.css"}}&amp;frv=d30e48aba012c5c2">
 <link rel="stylesheet" href="{{asset "css/port/reader-margins.css"}}&amp;frv=6c332397b4d1fc55"><script defer src="{{asset "js/port/reader-margins.js"}}&amp;frv=b0cf520814893dda"></script>
 <link rel="stylesheet" href="{{asset "css/port/reader-footnotes.css"}}&amp;frv=17ad80959a8b50ce"><script defer src="{{asset "js/port/reader-footnotes.js"}}&amp;frv=02bf9e1cb9320c19"></script>
@@ -200,7 +201,7 @@
   <div class="nb-head"><span>Research</span><button class="nb-x" id="nbClose" aria-label="Close research">×</button></div>
   <div class="nb-tabs" role="tablist" aria-label="Research tools"><button type="button" id="nbWorkPanelTab" role="tab" aria-selected="true" aria-controls="nbWorkPanel">Work</button><button type="button" id="nbWorkSearchTab" role="tab" aria-selected="false" aria-controls="nbWorkSearch">Search</button><button type="button" id="nbPassageTab" role="tab" aria-selected="false" aria-controls="nbPassage">Passage</button><button type="button" id="nbSavedTab" role="tab" aria-selected="false" aria-controls="nbSaved">Saved <span id="nbSavedCount"></span></button><button type="button" id="nbChatsTab" role="tab" aria-selected="false" aria-controls="nbChats">Chats</button></div>
   <div class="nb-project"><label>Save to notebook<select id="nbProjectPick" aria-label="Save to notebook"></select></label><a id="nbProjectDesk" href="/the-faith-received/desk/">Return to writing</a></div>
-  <section id="nbWorkPanel" class="nb-panel" role="tabpanel" aria-labelledby="nbWorkPanelTab"><div class="nb-work-identity"><h2 id="nbWorkTitle"></h2><p id="nbWorkAuthor"></p><div class="nb-work-primary"><button type="button" id="nbFindInWork">Search this work</button><button type="button" id="nbFindRelated" hidden>Find related works</button><button type="button" id="nbWorkAsk">Ask about this work</button><button type="button" id="nbWorkAbout">Edition details</button></div></div><div class="nb-reading-place"><div><button type="button" id="nbSaveWork" aria-pressed="false" title="Keep this work in your notebook for later reading">Save work</button><button type="button" id="nbSaveReadingPlace">Save reading place</button><button type="button" id="nbOpenSavedPlaces" hidden>Open saved places</button></div><p id="nbBookmarkStatus" role="status">Keep a fixed place in your notebook as your reading progress changes.</p></div><div id="nbWorkSources"></div><details id="nbAnalysisFold" class="nb-analysis-fold"><summary>Summaries and analysis</summary><div id="nbWorkAnalysis"></div></details></section>
+  <section id="nbWorkPanel" class="nb-panel" role="tabpanel" aria-labelledby="nbWorkPanelTab"><div class="nb-work-identity"><h2 id="nbWorkTitle"></h2><p id="nbWorkAuthor"></p><div class="nb-work-primary"><button type="button" id="nbFindInWork" hidden>Search this work</button><button type="button" id="nbFindRelated" hidden>Find related works</button><button type="button" id="nbWorkAsk">Ask about this work</button><button type="button" id="nbWorkAbout">Edition details</button></div></div><div class="nb-reading-place"><div><button type="button" id="nbSaveWork" aria-pressed="false" title="Keep this work in your notebook for later reading">Save work</button><button type="button" id="nbSaveReadingPlace">Save reading place</button><button type="button" id="nbOpenSavedPlaces" hidden>Open saved places</button></div><p id="nbBookmarkStatus" role="status">Keep a fixed place in your notebook as your reading progress changes.</p></div><div id="nbWorkSources"></div><details id="nbAnalysisFold" class="nb-analysis-fold"><summary>Summaries and analysis</summary><div id="nbWorkAnalysis"></div></details></section>
   <section id="nbWorkSearch" class="nb-panel" role="tabpanel" aria-labelledby="nbWorkSearchTab" hidden>
     {{!-- RELATED WORKS IS NOT BUILT. This toggle, its sibling #nbRelatedSearch
           and #nbFindRelated in the Work tab above came over in the 2026-09-17
@@ -296,10 +297,9 @@
 {{!-- The Research rail's Work tab. read-tools.js owns the panel; this names the
      work in it and routes the four shortcuts the restore left unbound. --}}
 <script src="{{asset "js/page/faith-port-read-research.js"}}&amp;frv=6acdf77bce1393b4"></script>
-{{!-- The Work tab's guide: where to start, the sections, a subject index, quotations
-     and the citations on the page in view, from v1/enrich on the library worker.
-     Folds after the tab's own controls; a work without notes shows nothing. --}}
-<link rel="stylesheet" href="{{asset "css/port/work-guide.css"}}"><script defer src="{{asset "js/page/faith-port-read-guide.js"}}"></script>
+{{!-- The Work tab's sections: the work page's own (work-hub.js), in its order and under its names, from v1/enrich on the
+     library worker, and the citations on the page in view. A work without notes shows only the folds it has. --}}
+<script defer src="{{asset "js/page/faith-port-read-guide.js"}}&amp;frv=849768b1868c6463"></script>
 {{!-- Find in this work belongs to read-tools.js: it builds #findbar and owns
      window._frSearch. This file adds only the door the port leaves unbound,
      Ctrl/⌘+Shift+F, and routes it there. It used to be a second find whose

@@ -50,12 +50,15 @@
     const link = (label, href) => {const node=element('a','wrs-link',label);node.href=href;return node;};
     const button = (label, callback) => {const node=element('button','wrs-button',label);node.type='button';node.addEventListener('click',callback);return node;};
     const note = (parent, text) => parent.appendChild(element('p','wrs-note',text));
-    const workLink = () => link('Open work overview','/the-faith-received/fathers/#w/'+encodeURIComponent(slug));
+    // One work, one set of sections (work-hub.js): the rail's folds take the work page's names and order, and each ends in a
+    // link to its tab there. On the work page itself (opts.desk) a section renders open, without the fold or the link.
+    const HUB=root.FRWorkHub,only=Array.isArray(opts.only)?new Set(opts.only):null;
+    const name=(id,fallback)=>HUB?HUB.label(id):fallback;
+    const deskLink=id=>link('Open on the work page',HUB?HUB.deskHref(slug,id):'/the-faith-received/author/#w/'+encodeURIComponent(slug)+(id?'/'+id:''));
     const location = page => string(opts.location?.(string(page)) || 'Page '+string(page));
     const frame = element('div','wrs');
     host.replaceChildren(frame);
-    const introduction=note(frame,'Explore topics and references across this work.');
-    frame.appendChild(workLink());
+    const introduction=note(frame,'');introduction.hidden=!opts.confession;
 
     async function json(path, validate) {
       if (!cache.has(path)) cache.set(path,(async () => {
@@ -87,9 +90,11 @@
       });
       return anchor;
     };
-    function missing(body, message) {note(body,message);body.appendChild(workLink());}
-    function lazy(parent, label, loader, analysisKind) {
+    function missing(body, message) {note(body,message);}
+    function lazy(parent, label, loader, analysisKind, id) {
       const details=element('details','wrs-section'),summary=element('summary','',label),body=element('div','wrs-section-body');
+      if(id&&only&&!only.has(id))return details;   // not this view's section: built, never shown
+      if(id){details.dataset.sec=id;if(opts.desk)details.classList.add('wrs-desk');}
       details.appendChild(summary);
       if(analysisKind&&typeof opts.browseAnalysis==='function'){
         const browse=button(analysisKind==='positions'?'Browse published positions':'Browse published Scripture records',async()=>{
@@ -108,14 +113,15 @@
         try {
           const content=element('div');await loader(content);
           if (dead) return;
-          body.replaceChildren(content);loaded=true;
+          body.replaceChildren(content);loaded=true;if(id&&!opts.desk)body.appendChild(deskLink(id));
         } catch (_) {
           if (dead) return;
           body.replaceChildren();note(body,'These records could not be loaded. Your reading place is unchanged.');
-          body.append(button('Retry loading',load),workLink());
+          body.append(button('Retry loading',load));
         } finally {pending=false;}
       }
       details.addEventListener('toggle',() => {if(details.open)load();});
+      if(id&&(opts.open||opts.desk))details.open=true;
       return details;
     }
     // Pagination bounds the DOM, never the published inventory. Array entries are
@@ -145,7 +151,7 @@
       const article=element('article','wrs-record');article.appendChild(element('p','wrs-text',text));if(meta)note(article,meta);article.appendChild(sourceLink(page));return article;
     }
 
-    const topicsSection=lazy(frame,'Topics in this work',async body => {
+    const topicsSection=lazy(frame,name('topics','Topics'),async body => {
       const result=await overview();if(result.missing){missing(body,'A work topic overview has not been published for this edition.');return;}
       const topics=list(result.data.topics);
       if(!topics.length){missing(body,list(result.data.books).length?'Topics have not been indexed for this work yet. Its Scripture citations are indexed under “Scripture in this work”.':'Topics have not been indexed for this work yet.');body.appendChild(link('Browse all topics','/the-faith-received/topics/'));return;}
@@ -156,12 +162,12 @@
       paginate(body,topics,topic => {
         const parent=element('div'),positions=list(topic.pos).map(value=>({...value,kind:'position'})),pages=list(topic.pp).map(p=>({p,kind:'page'}));
         const n=count(topic.n),description=topic.src==='heading'?pages.length+(pages.length===1?' section':' sections')+' filed under this topic by heading.':(n!==null?n+' indexed pages. ':'')+positions.length+' supplied statements and '+pages.length+' supplied page links.';
-        group(parent,string(topic.t)||'Untitled topic',description,[...positions,...pages],row=>record(row.kind==='position'?string(row.q)||'Statement text not supplied':string(topic.ph&&topic.ph[row.p])||'Indexed source page',row.kind==='position'&&row.s?'Local annotation: '+row.s:'',row.p));
+        group(parent,(string(topic.t)||'Untitled topic')+(n!==null?' · '+n:''),description,[...positions,...pages],row=>record(row.kind==='position'?string(row.q)||'Statement text not supplied':string(topic.ph&&topic.ph[row.p])||'Indexed source page',row.kind==='position'&&row.s?'Local annotation: '+row.s:'',row.p));
         return parent;
-      },12,'topics');body.appendChild(workLink());
-    },'positions');
+      },12,'topics');
+    },'positions','topics');
 
-    const scriptureSection=lazy(frame,'Scripture in this work',async body => {
+    const scriptureSection=lazy(frame,name('scripture','Scripture'),async body => {
       const result=await overview();if(result.missing){missing(body,'A work Scripture overview has not been published for this edition.');return;}
       const books=list(result.data.books);
       if(!books.length){missing(body,result.data.topics_src==='headings'?'No Scripture references are printed in this edition’s text.':'This published overview contains no Scripture entries.');return;}
@@ -179,7 +185,7 @@
         if(!shown.length){note(listHost,'No '+(SK?SK.plural(current).toLowerCase():current)+' are supplied for this work.');return;}
         paginate(listHost,shown,book => {
           const parent=element('div'),rows=book.rows,n=count(book.n),name=string(book.name)||bibleNames[book.b]||string(book.b)||'Scripture';   // 09-08: the shard carries the public book name (one name per book, families say '(1 or 2)')
-          group(parent,name,(current?rows.length+' '+(SK?SK.plural(current).toLowerCase():current)+' supplied. ':(n!==null?n+' recorded citations. ':'')+rows.length+' supplied source rows.'),rows,row=>{
+          group(parent,name+(current?' · '+rows.length.toLocaleString():(n!==null?' · '+n:'')),(current?rows.length+' '+(SK?SK.plural(current).toLowerCase():current)+' supplied. ':(n!==null?n+' recorded citations. ':'')+rows.length+' supplied source rows.'),rows,row=>{
             const label=name+(row.c!=null?' '+row.c:'')+(row.v!=null&&row.v!==0?':'+row.v:'');
             const k=kindOf(row),node=record(label,row.how?'Recorded as: '+(SK?SK.noun(k)+' — '+SK.title(k).replace(/^[^:]*:\s*/,''):k):'',row.p);
             if(k)node.dataset.k=k;
@@ -190,8 +196,8 @@
         if(kc.length>1){const bar=element('div','wrs-kinds');bar.setAttribute('role','group');bar.setAttribute('aria-label','Scripture by kind');
           const mk=(k,labelText)=>{const b=button(labelText,()=>{current=k;bar.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));draw();});b.setAttribute('aria-pressed',String(k===current));if(k)b.title=SK.title(k);b.dataset.k=k;return b;};
           bar.append(mk('','All'),...kc.map(([k,n])=>mk(k,SK.plural(k)+' '+n.toLocaleString())));body.appendChild(bar);}}
-      body.appendChild(listHost);draw();body.appendChild(workLink());
-    },'scripture');
+      body.appendChild(listHost);draw();
+    },'scripture','scripture');
 
     async function roster() {
       if(author&&root.FRResearchData?.authorRooms){const d=await root.FRResearchData.authorRooms(author);return {matches:d.matches,missing:[],failed:d.missing.map(sh=>shelves[sh]||sh)};}
@@ -207,16 +213,18 @@
       if(data.failed.length)note(body,'Author indexes could not load for: '+data.failed.join(', ')+'. Links below may be incomplete.');
       if(!data.matches.length)note(body,!author?'An author name is not supplied for this edition.':data.failed.length?'An exact author match could not be established from the indexes that loaded.':'No exact author record for “'+author+'” appears in the available indexes.');
     }
+    // A door: the link and one line on where it goes (the Positions section, on the work page and in the rail).
+    function door(parent,a,text){const row=element('div','wrs-door');row.append(a,element('p','wrs-door-note',text));parent.appendChild(row);}
     function positionsLinks(body, matches) {
-      for(const match of matches){body.appendChild(link('Read '+match.a+'’s positions · '+(root.MOFaithLabel?root.MOFaithLabel.of(shelves[match.sh],match.a):shelves[match.sh]),positionsURL(match,slug)));body.appendChild(link('Follow sources cited','/the-faith-received/connections/#journey='+encodeURIComponent(match.s)+'?'+new URLSearchParams({direction:'out',work:slug})));body.appendChild(link('Explore later citations','/the-faith-received/connections/#journey='+encodeURIComponent(match.s)+'?'+new URLSearchParams({direction:'in',targetWork:slug})));}
+      for(const match of matches){door(body,link('Read '+match.a+'’s positions · '+(root.MOFaithLabel?root.MOFaithLabel.of(shelves[match.sh],match.a):shelves[match.sh]),positionsURL(match,slug)),'The positions drawn from this author’s works, doctrine by doctrine, with the pages each comes from.');door(body,link('Follow sources cited','/the-faith-received/connections/#journey='+encodeURIComponent(match.s)+'?'+new URLSearchParams({direction:'out',work:slug})),'The authors this work cites, followed through the library.');door(body,link('Explore later citations','/the-faith-received/connections/#journey='+encodeURIComponent(match.s)+'?'+new URLSearchParams({direction:'in',targetWork:slug})),'The later works that cite this one.');}
     }
-    if(author)lazy(frame,'This author’s positions',async body => {
+    if(author)lazy(frame,name('positions','Positions'),async body => {
       const draw=async()=>{
         const data=await roster();if(dead)return;body.replaceChildren();rosterStatus(body,data);positionsLinks(body,data.matches);
         if(data.failed.length)body.appendChild(button('Retry author indexes',draw));
         body.appendChild(link('Browse authors','/the-faith-received/fathers/'));
       };await draw();
-    });
+    },undefined,'positions');
 
     async function resolved(body, room) {
       const summary=await json('/v1/reception/'+encodeURIComponent(room.s)+'.json.gz',data=>data&&typeof data==='object'&&!Array.isArray(data));
@@ -238,7 +246,7 @@
       },12,'authorities');
       body.appendChild(link('Explore author reception','/the-faith-received/fathers/?'+new URLSearchParams({sh:room.sh})+'#'+encodeURIComponent(room.s)+'/reception'));
     }
-    if(author)lazy(frame,'Sources cited',async body => {
+    if(author)lazy(frame,name('sources','Sources cited'),async body => {
       let pending=false;
       const draw=async()=>{
         if(pending||dead)return;pending=true;let failed=false,data;
@@ -246,19 +254,18 @@
         try{
           data=await roster();if(dead)return;body.replaceChildren();rosterStatus(body,data);
           await renderReferenceRooms(body,data.matches);
-        }catch(_){if(dead)return;failed=true;note(body,'Resolved references could not be loaded. The published file may be temporarily unavailable.');body.appendChild(workLink());}
+        }catch(_){if(dead)return;failed=true;note(body,'Resolved references could not be loaded. The published file may be temporarily unavailable.');}
         finally{pending=false;}
         if(!dead&&(failed||data?.failed.length))body.appendChild(button('Retry reference loading',draw));
       };
       await draw();
-    });
+    },undefined,'sources');
     async function renderReferenceRooms(body, matches) {
       const unique=[...new Map(matches.map(row=>[row.s,row])).values()];
       if(unique.length===1)await resolved(body,unique[0]);
       else if(unique.length>1){note(body,'More than one exact author record matches. Keep these published files separate.');for(const room of unique)lazy(body,room.a+' · '+shelves[room.sh]+' · '+room.s,content=>resolved(content,room));}
-      if(!unique.length)body.appendChild(workLink());
     }
-    const mentionsSection=lazy(frame,'Names mentioned',async body=>{
+    const mentionsSection=lazy(frame,name('names','Names'),async body=>{
       note(body,'Find where authors are named. The two indexes may overlap, so their counts are shown separately.');
       for(const [format,label,path] of [
         ['work','Citation index','/v1/works/'+encodeURIComponent(slug)+'/cites.json'],
@@ -276,8 +283,10 @@
           return node;
         },20,'mentions');
       });
-    });
-    if(!opts.confession)lazy(frame,'Historical subject index',async body => {
+    },undefined,'names');
+    // Migne's subject index exists only for Patrologia Latina works (v1/mine/pld_subjects/pld-*.json); the fold shows for those
+    // alone, as the work page's tab does, and mounting still fetches nothing.
+    if(!opts.confession&&/^pld-/.test(slug))lazy(frame,name('historical','Historical subject index'),async body => {
       const result=await json('/v1/mine/pld_subjects/'+encodeURIComponent(slug)+'.json',data=>Array.isArray(data?.entries));
       if(result.missing){missing(body,'A historical subject-index file has not been published for this edition.');return;}
       const entries=result.data.entries;
@@ -286,12 +295,14 @@
       paginate(body,entries,entry=>{
         const parent=element('div');group(parent,string(entry.t)||'Untitled subject','',list(entry.refs),ref=>record('Historical index reference','',ref.c),'references');return parent;
       },12,'subjects');
-    });
+    },undefined,'historical');
+    // the work page's order (Scripture before topics)
+    if(HUB)HUB.SECTIONS.forEach(s=>{const d=frame.querySelector(':scope > details[data-sec="'+s.id+'"]');if(d)frame.appendChild(d);});
     // Confessions currently have uneven published research coverage. Do not present
     // empty indexes as working destinations; a failed check remains recoverable.
     if(opts.confession){
       const sections=[topicsSection,scriptureSection,mentionsSection];sections.forEach(s=>s.hidden=true);
-      frame.querySelector(':scope > .wrs-link').hidden=true;introduction.textContent='Checking available research…';
+      introduction.textContent='Checking available research…';
       Promise.all([overview(),json('/v1/works/'+encodeURIComponent(slug)+'/cites.json'),json('/v1/cites/'+encodeURIComponent(slug)+'.json')]).then(([work,mentions,linked])=>{
         if(dead)return;
         topicsSection.hidden=work.missing||!list(work.data?.topics).length;

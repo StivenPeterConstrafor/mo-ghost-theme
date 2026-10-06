@@ -305,8 +305,13 @@ document.addEventListener("click",async e=>{
   const [w,p,hl]=String(b.dataset.pk).split("|");
   const href=readerHrefHl(w,p||null,hl),title=(host.querySelector('.work-title,strong,.vref')?.textContent||'Source passage')+(host.querySelector('.vpg')?' · '+host.querySelector('.vpg').textContent:'');
   wrap=document.createElement("div");wrap.className="peekwrap";wrap.id='source-preview-'+(++previewSequence);wrap.inert=true;b.setAttribute('aria-controls',wrap.id);
-  wrap.innerHTML=`<div><div class="peekhead"><strong>${esc(title)}</strong><a href="${esc(href)}" target="_blank" rel="noopener">Open full reader ↗</a><button type="button" data-close-preview>Close</button></div><iframe src="${esc(previewHref(href))}" title="Source passage: ${esc(title)}"></iframe></div>`;
+  // THE PAGE WINDOW (owner 2026-10-06 "only show the page before and after … allow for changing text"): the cited page
+  // marked, with the page before and after and an English / Latin / Both switch (page-window.js); a work without page
+  // files keeps the framed reader.
+  const frame=`<iframe src="${esc(previewHref(href))}" title="Source passage: ${esc(title)}"></iframe>`;
+  wrap.innerHTML=`<div><div class="peekhead"><strong>${esc(title)}</strong><a href="${esc(href)}" target="_blank" rel="noopener">Open in the reader ↗</a><button type="button" data-close-preview>Close</button></div><div class="peekbody">${window.FRPageWindow?'<p class="pw-wait" role="status">Loading the page…</p>':frame}</div></div>`;
   host.appendChild(wrap);
+  if(window.FRPageWindow){const box=wrap.querySelector('.peekbody');FRPageWindow.fill(box,{slug:w,page:p,hl}).then(ok=>{if(!ok)box.innerHTML=frame;}).catch(()=>{box.innerHTML=frame;});}
   wrap.querySelector('[data-close-preview]').onclick=()=>{setOpen(false);b.focus();};
   requestAnimationFrame(()=>setOpen(true));
 });
