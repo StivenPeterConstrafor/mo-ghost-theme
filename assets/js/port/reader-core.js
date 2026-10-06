@@ -31,10 +31,10 @@ function inl(s,scripture=true){s=esc(s);
   .replace(/\u2045/g,'<span class="citedup">').replace(/\u2046/g,"</span>")
   // PG INLINE STRUCTURE (owner 2026-08-27 pg-419): loadPgCanon sentinels run-together
   // printed heads (CLASS FIRST / EPISTLE I) and long italic argumenta — render them
-  .replace(/\u0002([^\u0002\u0003]{1,160}?)\u0003/g,'<span class="inhead">$1</span>')
+  .replace(/\u0002([^\u0002\u0003\u0007]{1,200}?)\u0007([^\u0002\u0003]{1,2400}?)\u0003/g,'<span class="inhead">$1</span><span class="inarg">$2</span>').replace(/\u0002([^\u0002\u0003]{1,160}?)\u0003/g,'<span class="inhead">$1</span>')
   .replace(/^([^\u0004\u0005]*)\u0005/,"<i>$1</i>").replace(/\u0004/g,"<i>").replace(/\u0005/g,"</i>")
   .replace(/\u0006([^\u0006]*)$/,'<span class="milat">$1</span>')
-  .replace(/[\u0002-\u0006]/g,"");
+  .replace(/[\u0002-\u0006]/g,"").replace(/\u0007/g," ");
   return scripture?linkScriptureHTML(s):s;}
 // scripture book shapes: EN full names + the common Latin abbreviations of this corpus
 const XREF_CAP={"Matthew":28,"Mark":16,"Luke":24,"John":21,"Acts":28,"Romans":16,"Corinthians":16,
@@ -5898,6 +5898,14 @@ async function loadPgCanon(ws){
   // the translation's <head>s walk with its <p>s, in printed order (owner 2026-10-06, PG 148 col. 119: the Greek showed its title and
   // 'ΛΟΓΟΣ Α´', the Latin 'LIBER PRIMUS' and 'CAPUT PRIMUM', and the English began at 'I. As I often read' -- this walk read <p> only, so
   // every opening that falls back from the paragraph basis lost the English book, chapter and title heads)
+  // A HEAD WITH ITS ARGUMENT (owner 10-06, PG 148 col. 119: 'CHAPTER ONE. The excellent duty of the historian ...' ran into the first
+  // paragraph): Migne's chapter summary rides inside the English head as <hi rend="argument">, and the inline renderer makes a head only
+  // of a marked run of 160 characters at most -- the head with its argument (~290) lost its marker and fused with the text. The entry
+  // carries head and argument apart (\u0007); the renderers draw the head, then the argument as its own italic line, as the scan prints them.
+  const _hdArg=(el,t)=>{const a=[...el.querySelectorAll('hi[rend="argument"]')];if(!a.length)return t;
+    const c=el.cloneNode(true);c.querySelectorAll('hi[rend="argument"]').forEach(x=>x.remove());
+    const h=c.textContent.replace(/\s+/g," ").trim(),g=a.map(x=>x.textContent).join(" ").replace(/\s+/g," ").trim();
+    return h&&g?h+"\u0007"+g:t;};
   [...doc.querySelectorAll('div[type="translation"] p, div[type="translation"] head')].forEach(pp=>{
     let n=+(pp.getAttribute("n")||0);
     if(!n){const m=(pp.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}
@@ -5905,7 +5913,7 @@ async function loadPgCanon(ws){
     if(!n)return;
     if(_sidecarCols.size&&_sidecarCols.has(n)&&(pp.closest?pp.closest('div[type="translation"]'):null)?.getAttribute("resp")!=="#site-sidecar")return;
     const t=pp.textContent.replace(/\s+/g," ").trim();if(!t)return;
-    if(pp.localName==="head"){(enByCol[n]=enByCol[n]||[]).push("\u0001H"+t);return;}
+    if(pp.localName==="head"){(enByCol[n]=enByCol[n]||[]).push("\u0001H"+_hdArg(pp,t));return;}
     // a whole-block caps line is a printed division head — 'HOMILY I' (no period, so the
     // embedded-rubric regex never fires) arrived as body text and the outline lost the
     // division (owner 2026-09-03 pg-16). Same law the pgen path already applies.
@@ -5922,7 +5930,7 @@ async function loadPgCanon(ws){
   [...doc.querySelectorAll('div[type="translation"][resp="#site-sidecar"] p, div[type="translation"][resp="#site-sidecar"] head')].forEach(el=>{
     let n=+(el.getAttribute("n")||0);if(!n){const m=(el.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}
     if(!n)return;const t=el.textContent.replace(/\s+/g," ").trim();if(!t)return;
-    (enParasByCol[n]=enParasByCol[n]||[]).push(el.localName==="head"?"\u0001H"+t:t);});
+    (enParasByCol[n]=enParasByCol[n]||[]).push(el.localName==="head"?"\u0001H"+_hdArg(el,t):t);});
   // MACHINE ENGLISH FILLS WHAT THE SIDECAR DOES NOT SPEAK FOR (2026-09-21, pg-48 col. 115, pg-2193 col. 31): a column whose only
   // English is the older #machine translation rendered an EMPTY English lane in the column and printed-paragraph bases, which pair
   // from this map alone. Its printed <p>s join the map, uncarved, with the carved lane's continuation rule and caps-head law.
@@ -6248,7 +6256,7 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
       // — HOMILY III. On the firmament — and rendering them as body text left the reading
       // lane with no divisions at all and nothing for the outline to hang on.
       if(typeof e==="string"&&e.charCodeAt(0)===1&&e[1]==="H"){
-        const ht=e.slice(2).trim();
+        const _hp=e.slice(2).split("\u0007"),ht=_hp[0].trim(),harg=(_hp[1]||"").trim();
         if(ht){
           // the structural div-head ('Homilia II') is a catalogue label parked at the pb \u2014
           // the PRINTED head is the true boundary (mid-page, after the previous homily's
@@ -6268,6 +6276,8 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
           }
           const h1=enD.createElement("head");h1.textContent=ht;enB.appendChild(h1);
           const h2=laD.createElement("head");h2.textContent=_tidy(l)||"\u00A0";laB.appendChild(h2);
+          if(harg){const ea=enD.createElement("p");ea.textContent="\u0004"+harg+"\u0005";enB.appendChild(ea);   // the argument, its own italic row
+            const la0=laD.createElement("p");la0.textContent="\u00A0";laB.appendChild(la0);}
           struct.push({title:ht.slice(0,140),page:pages.length?pages[pages.length-1]:1,depth:2});
           return;}
       }
@@ -6761,7 +6771,7 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
                   const marked=aligned.rows.map(r=>r.en).join(" ");
                   const heads=[...marked.matchAll(/\u0002([^\u0003]+)\u0003/g)];
                   const sourceHeads=heads.length?heads:[...sf.grc.matchAll(/\u0002([^\u0003]+)\u0003/g)];
-                  for(const h of sourceHeads){if(!struct.some(x=>x.page===sf.n&&x.title===h[1].slice(0,140)))struct.push({title:h[1].slice(0,140),page:sf.n,depth:2});}
+                  for(const h of sourceHeads){if(!struct.some(x=>x.page===sf.n&&x.title===h[1].split("\u0007")[0].slice(0,140)))struct.push({title:h[1].split("\u0007")[0].slice(0,140),page:sf.n,depth:2});}
                   // a row with no Greek is the Latin itself (a Latin-only opening), not an under-voice beneath nothing
                   _colLa=aligned.rows.map(r=>r.grc?(r.grc+(r.la?"\u0006"+r.la:"")):(r.la||""));_colLa._aligned=true;_colLa._flow=aligned.basis==="printed-paragraphs";_colEn=aligned.rows.map(r=>r.en);
                 }else lt.split(/(?<=[.!?])\s+(?=[A-Z\u00c6\u0152]{2,}(?:\s+[A-Z\u00c6\u0152]{2,}\.?)+)/)
