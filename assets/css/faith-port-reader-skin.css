@@ -3794,3 +3794,21 @@ html.g-mobile .fr-read-restore:not(.fr-read-restore-sb) {
   padding: 11px 14px;
   z-index: 80;
 }
+
+/* THE TEXT SIZE FIRST, AND WIDE ENOUGH TO MOVE (owner, 2026-10-06: "make mobile have a smaller font to adjust to read"). On a phone
+   the Text sheet opened on Modernize, Previous / Next and the footnote,
+   font and spacing rows; the size slider came last, 84px wide, its two
+   A's 32px. There the sheet is a column, the size row leads it, the
+   slider takes the row's width, and the two A's are 44px targets. */
+@media (max-width: 880px) {
+  html.g-mobile #app .ph.fr-reader-head #aaPop.on { display: flex; flex-direction: column; }
+  html.g-mobile #app .ph.fr-reader-head #aaPop > .aarow:has(> .sld.szc) {
+    order: -1;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  html.g-mobile:not(.fr-plain) #app .fr-reader-head .aapop .sld.szc { display: flex; width: 100%; gap: 4px; }
+  html.g-mobile:not(.fr-plain) #app .fr-reader-head .aapop .sld.szc input[type=range] { flex: 1; min-width: 0; }
+  html.g-mobile:not(.fr-plain) #app .fr-reader-head .aapop .szc button { min-width: 44px; min-height: 44px; }
+}
