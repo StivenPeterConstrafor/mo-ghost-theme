@@ -5890,13 +5890,17 @@ async function loadPgCanon(ws){
     .map(e=>e.textContent.replace(/\*/g,"").replace(/\s+/g," ").trim()).filter(t=>t.length>=4&&/[a-z]/.test(t)))];
   const _sidecarCols=new Set([...doc.querySelectorAll('div[type="translation"][resp="#site-sidecar"] p, div[type="translation"][resp="#site-sidecar"] head')].map(el=>{
     let n=+(el.getAttribute("n")||0);if(!n){const m=(el.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}return n;}).filter(Boolean));
-  [...doc.querySelectorAll('div[type="translation"] p')].forEach(pp=>{
+  // the translation's <head>s walk with its <p>s, in printed order (owner 2026-10-06, PG 148 col. 119: the Greek showed its title and
+  // 'ΛΟΓΟΣ Α´', the Latin 'LIBER PRIMUS' and 'CAPUT PRIMUM', and the English began at 'I. As I often read' -- this walk read <p> only, so
+  // every opening that falls back from the paragraph basis lost the English book, chapter and title heads)
+  [...doc.querySelectorAll('div[type="translation"] p, div[type="translation"] head')].forEach(pp=>{
     let n=+(pp.getAttribute("n")||0);
     if(!n){const m=(pp.getAttribute("corresp")||"").match(/-c(\d+)/);if(m)n=+m[1];}
     if(!n)n=_lastEnCol;else _lastEnCol=n;   // unanchored p continues the previous column
     if(!n)return;
     if(_sidecarCols.size&&_sidecarCols.has(n)&&(pp.closest?pp.closest('div[type="translation"]'):null)?.getAttribute("resp")!=="#site-sidecar")return;
     const t=pp.textContent.replace(/\s+/g," ").trim();if(!t)return;
+    if(pp.localName==="head"){(enByCol[n]=enByCol[n]||[]).push("\u0001H"+t);return;}
     // a whole-block caps line is a printed division head — 'HOMILY I' (no period, so the
     // embedded-rubric regex never fires) arrived as body text and the outline lost the
     // division (owner 2026-09-03 pg-16). Same law the pgen path already applies.
