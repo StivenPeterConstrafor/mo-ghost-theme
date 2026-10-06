@@ -5699,12 +5699,17 @@ function _alignPair(laArr,enArr){
 async function pgZoneSidecar(id){
   window.__pgzCache=window.__pgzCache||{};
   if(!(id in window.__pgzCache)){
-    window.__pgzCache[id]=fetch(BLOB+"/v1/pgzone/"+id+".json").then(r=>r.ok?r.json():null).catch(()=>null);
+    window.__pgzCache[id]=fetch(BLOB+"/v1/pgzone/"+id+".json"+(window.__pgV||(window.__pgV="?v="+Math.floor(Date.now()/6e5)))).then(r=>r.ok?r.json():null).catch(()=>null);
   }
   return window.__pgzCache[id];
 }
 async function loadPgCanon(ws){
-  const id=ws.slice(3),pgVersion="";   // this site reads the PG canon from R2 under /v1/ and
+  const id=ws.slice(3),pgVersion=window.__pgV||(window.__pgV="?v="+Math.floor(Date.now()/6e5));
+  // PG DATA IN TEN-MINUTE VERSIONS (10-06, owner: PG 148's fixed Contents still showed the old order on MereO). The library
+  // worker serves v1/ with max-age=86400 and these URLs carried no version, so a browser that had opened a work kept its old
+  // Contents, text and navigation for up to a day after a fix went out. One token per ten minutes (set in read.in02.js for the
+  // early canon fetch, or here): a publish reaches every reader within ten minutes, and within a window the files stay cached.
+  // Before 10-06: this site reads the PG canon from R2 under /v1/ and
   // versions nothing by query: every pg fetch below has always been bare and the store's own
   // cache headers decide. Kept as an empty string so the lines stay identical to the corpus
   // site's, which is the copy this region is ported from.
@@ -5954,7 +5959,7 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
     const reference=frReaderBlockReference(location.hash)?.page||new URLSearchParams(location.search).get('p');
     const lastColumn=Math.max(...[..._pgOwned].flatMap(k=>Object.keys(_canonOpenings[k].columns).map(Number)));
     if(reference&&Number(reference)>lastColumn){try{
-      const spine=await fetch(BLOB+'/v1/pgvol/'+vol+'.json').then(r=>r.ok?r.json():null);
+      const spine=await fetch(BLOB+'/v1/pgvol/'+vol+'.json'+pgVersion).then(r=>r.ok?r.json():null);
       const next=window.FRPgParallel.nextWorkReference(spine?.works||[],id,reference,lastColumn);
       if(next){const url=new URL(location.href);url.searchParams.set('w','pg-'+next);url.searchParams.delete('ws');url.searchParams.set('p',reference);url.hash='b'+reference+'-0';location.replace(url);return new Promise(()=>{});}
     }catch(_){/* Keep the explicit link when a neighbouring work cannot be verified. */}}
