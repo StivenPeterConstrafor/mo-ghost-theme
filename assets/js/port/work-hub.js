@@ -134,7 +134,9 @@
   }
   function sections(d, opt) {
     const rows = sectionRows(d).slice(0, opt && opt.compact ? 40 : 400);
-    return `<ul class="wh-sections">${rows.map((r) => `<li class="wh-d${r.depth}">${page(r.page, r.title)}<p>${esc(r.note)}</p></li>`).join("")}</ul>`;
+    // a long contents gets the index's find box (titles and notes)
+    const find = rows.length > 20 ? `<label class="wh-filter">Find a section <input type="search" placeholder="A word in a title or a note" autocomplete="off"></label>` : "";
+    return `${find}<ul class="wh-sections">${rows.map((r) => `<li class="wh-d${r.depth}" data-k="${esc(`${r.title} ${r.note}`.toLowerCase())}">${page(r.page, r.title)}<p>${esc(r.note)}</p></li>`).join("")}</ul>${find ? '<p class="wh-none" hidden>No section matches.</p>' : ""}`;
   }
 
   // The subject index: a filter box, the headings in a column grid, their pages behind each.
@@ -176,7 +178,7 @@
       const scope = box.closest(".wh-panel, .wh-fold, details") || host;
       const q = box.value.trim().toLowerCase();
       let shown = 0;
-      scope.querySelectorAll(".wh-index li").forEach((li) => { const on = !q || li.dataset.k.includes(q); li.hidden = !on; if (on) shown++; });
+      scope.querySelectorAll(".wh-index li, .wh-sections li").forEach((li) => { const on = !q || li.dataset.k.includes(q); li.hidden = !on; if (on) shown++; });
       const none = scope.querySelector(".wh-none");
       if (none) none.hidden = shown > 0;
     });
