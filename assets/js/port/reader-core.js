@@ -7363,10 +7363,18 @@ async function loadPoCanon(ws){
   // EN top-up: pages whose English lane is thin take the sidecar translation
   if(poen){
     const kids=[...enB.childNodes];let pgN=null,buf=[];const enThin=[];
+    // THE SIDECAR IS KEYED BY THE PO SITE'S OWN PAGES (2026-10-06): once the canon's rows were re-keyed to the page where they
+    // begin in the facsimile, a page the canon leaves thin may be one whose English the canon now prints on a neighbouring
+    // page — filling it from the sidecar printed that English twice (1,225 pages across PO; po-151 p. 498 repeated the hymn
+    // of p. 496). A page is topped up only when the sidecar's English is not already somewhere in the canon's English lane.
+    const _lt=t=>String(t||"").replace(/&(?:#x?[0-9a-f]+|[a-z]+);/gi," ").toLowerCase().replace(/[^\p{L}]+/gu,"");   // the sidecar keeps some HTML entities
+    const enAll=_lt(enB.textContent);
     const eflush=()=>{if(pgN==null)return;
       const vt=poen[String(pgN)];
       // thin is RELATIVE to the sidecar (po-216: 664 chars of 'p.0' machine junk vs 150K real)
-      if(vt&&vt.length>60&&buf.join("").length<Math.max(120,vt.length*0.05))enThin.push(pgN);
+      if(vt&&vt.length>60&&buf.join("").length<Math.max(120,vt.length*0.05)){
+        const k=_lt(vt).slice(0,60);
+        if(!(k.length>=30&&enAll.includes(k)))enThin.push(pgN);}
       buf=[];};
     kids.forEach(k=>{if(k.localName==="pb"){eflush();pgN=+k.getAttribute("n");}
       else if(k.localName==="p")buf.push(k.textContent||"");});
