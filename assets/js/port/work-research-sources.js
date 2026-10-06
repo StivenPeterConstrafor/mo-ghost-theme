@@ -162,7 +162,7 @@
       paginate(body,topics,topic => {
         const parent=element('div'),positions=list(topic.pos).map(value=>({...value,kind:'position'})),pages=list(topic.pp).map(p=>({p,kind:'page'}));
         const n=count(topic.n),description=topic.src==='heading'?pages.length+(pages.length===1?' section':' sections')+' filed under this topic by heading.':(n!==null?n+' indexed pages. ':'')+positions.length+' supplied statements and '+pages.length+' supplied page links.';
-        group(parent,string(topic.t)||'Untitled topic',description,[...positions,...pages],row=>record(row.kind==='position'?string(row.q)||'Statement text not supplied':string(topic.ph&&topic.ph[row.p])||'Indexed source page',row.kind==='position'&&row.s?'Local annotation: '+row.s:'',row.p));
+        group(parent,(string(topic.t)||'Untitled topic')+(n!==null?' · '+n:''),description,[...positions,...pages],row=>record(row.kind==='position'?string(row.q)||'Statement text not supplied':string(topic.ph&&topic.ph[row.p])||'Indexed source page',row.kind==='position'&&row.s?'Local annotation: '+row.s:'',row.p));
         return parent;
       },12,'topics');
     },'positions','topics');
@@ -185,7 +185,7 @@
         if(!shown.length){note(listHost,'No '+(SK?SK.plural(current).toLowerCase():current)+' are supplied for this work.');return;}
         paginate(listHost,shown,book => {
           const parent=element('div'),rows=book.rows,n=count(book.n),name=string(book.name)||bibleNames[book.b]||string(book.b)||'Scripture';   // 09-08: the shard carries the public book name (one name per book, families say '(1 or 2)')
-          group(parent,name,(current?rows.length+' '+(SK?SK.plural(current).toLowerCase():current)+' supplied. ':(n!==null?n+' recorded citations. ':'')+rows.length+' supplied source rows.'),rows,row=>{
+          group(parent,name+(current?' · '+rows.length.toLocaleString():(n!==null?' · '+n:'')),(current?rows.length+' '+(SK?SK.plural(current).toLowerCase():current)+' supplied. ':(n!==null?n+' recorded citations. ':'')+rows.length+' supplied source rows.'),rows,row=>{
             const label=name+(row.c!=null?' '+row.c:'')+(row.v!=null&&row.v!==0?':'+row.v:'');
             const k=kindOf(row),node=record(label,row.how?'Recorded as: '+(SK?SK.noun(k)+' — '+SK.title(k).replace(/^[^:]*:\s*/,''):k):'',row.p);
             if(k)node.dataset.k=k;

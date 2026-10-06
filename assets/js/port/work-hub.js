@@ -71,6 +71,15 @@
     return ps.length ? `<span class="wh-pp">${ps.length > 1 ? "pp." : "p."} ${ps.map((r) => page(r.p != null ? r.p : r, String(r.p != null ? r.p : r))).join(", ")}</span>` : "";
   };
 
+  // A contents title without the printed Latin echo after " — " when that half is in capitals ("Objection XIII. —
+  // OBIECTUM XIII."); a title whose second half is ordinary words keeps it.
+  function cleanTitle(t) {
+    const s = String(t || "").trim(), i = s.indexOf(" — ");
+    if (i < 1) return s;
+    const tail = s.slice(i + 3), letters = tail.replace(/[^A-Za-zÀ-ÿ]/g, "");
+    return letters.length >= 3 && letters === letters.toUpperCase() ? s.slice(0, i).replace(/[.,;:]\s*$/, "") : s;
+  }
+
   // The contents entry a page falls under ("p. 20 · Prefatory Address"), when the work's contents came with the guide.
   function where(d, p) {
     if (!Array.isArray(d.structure)) return "";
@@ -81,7 +90,7 @@
       if (!Number.isFinite(q) || q > n) continue;
       if (!hit || q >= hit.q) hit = { q, t: e.title };
     }
-    return hit && hit.t ? String(hit.t) : "";
+    return hit && hit.t ? cleanTitle(hit.t) : "";
   }
 
   function overview(d, opt) {
@@ -92,7 +101,8 @@
       return `<li><span class="wh-n">${i + 1}</span><div>${page(s.page, at ? `p. ${s.page} · ${at}` : `p. ${s.page}`)}<p>${esc(s.why)}</p></div></li>`;
     }).join("");
     const blurb = a.blurb || a.summary || "";
-    return `<div class="wh-ov"><div>${blurb ? `<p class="wh-blurb${opt && opt.compact ? " wh-clamp" : ""}">${esc(blurb)}</p>` : ""}${facts ? `<p class="wh-facts">${facts}</p>` : ""}</div>
+    const clamp = opt && opt.compact && blurb.length > 320;
+    return `<div class="wh-ov"><div>${blurb ? `<p class="wh-blurb${clamp ? " wh-clamp" : ""}">${esc(blurb)}</p>${clamp ? '<button type="button" class="wh-more" aria-expanded="false">Read the whole summary</button>' : ""}` : ""}${facts ? `<p class="wh-facts">${facts}</p>` : ""}</div>
       ${start ? `<div><h3 class="wh-h">Where to start</h3><ol class="wh-start">${start}</ol></div>` : ""}</div>`;
   }
 
@@ -118,7 +128,7 @@
       if (!note || !e || e.page == null) return;
       const depth = Number(e.depth) || 1;
       if (depth > 2) return;
-      out.push({ page: e.page, title: e.title || `p. ${e.page}`, depth, note });
+      out.push({ page: e.page, title: cleanTitle(e.title) || `p. ${e.page}`, depth, note });
     });
     return out;
   }
@@ -131,7 +141,7 @@
   function index(d) {
     const rows = (d.index || []).map((e) => {
       const head = e.sub ? `${e.heading}, ${e.sub}` : e.heading;
-      return `<li data-k="${esc(String(head).toLowerCase())}"><span class="wh-ih">${esc(head)}</span> ${(e.pages || []).slice(0, 12).map((p) => page(p, String(p))).join(" ")}</li>`;
+      return `<li data-k="${esc(String(head).toLowerCase())}"><span class="wh-ih">${esc(head)}</span><span class="wh-ipp">${(e.pages || []).slice(0, 12).map((p) => page(p, String(p))).join(" ")}</span></li>`;
     }).join("");
     return `<label class="wh-filter">Find in the index <input type="search" placeholder="A subject, a name" autocomplete="off"></label><ul class="wh-index">${rows}</ul>
       <p class="wh-none" hidden>Nothing in the index matches.</p>`;
@@ -147,6 +157,14 @@
   // Filters and page buttons inside a rendered block; onPage(page) decides what a page reference does.
   function wire(host, onPage) {
     host.addEventListener("click", (e) => {
+      const more = e.target.closest(".wh-more");
+      if (more && host.contains(more)) {
+        const p = more.previousElementSibling, open = more.getAttribute("aria-expanded") !== "true";
+        if (p) p.classList.toggle("wh-clamp", !open);
+        more.setAttribute("aria-expanded", String(open));
+        more.textContent = open ? "Show less" : "Read the whole summary";
+        return;
+      }
       const b = e.target.closest(".wh-page");
       if (!b || !host.contains(b)) return;
       e.preventDefault();

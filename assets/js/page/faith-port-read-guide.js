@@ -36,12 +36,12 @@
   }
 
   // The same fold the sources below use (.wrs-section), so the tab reads as one list.
-  function fold(id, title, body, open) {
+  function fold(id, title, body, open, n) {
     const d = document.createElement("details");
     d.className = "wrs-section wh-fold";
     d.dataset.sec = id;
     if (open) d.open = true;
-    d.innerHTML = `<summary>${esc(title)}</summary><div class="wrs-section-body">${body}${id !== "cited" ? `<a class="wrs-link wh-desk" href="${esc(deskHref(id))}">Open on the work page</a>` : ""}</div>`;
+    d.innerHTML = `<summary>${esc(title)}${n > 1 ? ` <span class="wh-count">${Number(n).toLocaleString()}</span>` : ""}</summary><div class="wrs-section-body">${body}${id !== "cited" ? `<a class="wrs-link wh-desk" href="${esc(deskHref(id))}">Open on the work page</a>` : ""}</div>`;
     return d;
   }
 
@@ -106,24 +106,41 @@
     list.insertBefore(a, list.firstChild);
   }
 
+  // Two groups under the work's card: what follows the page in view (its citations, and the analysis extracted from it),
+  // then the whole work's sections in the work page's order. The analysis fold is the tab's own (#nbAnalysisFold, filled
+  // by work-research.js); it moves up beside "Cited on this page" and takes a name that says what it shows.
+  const group = (text) => {
+    const p = document.createElement("p");
+    p.className = "wh-group";
+    p.textContent = text;
+    return p;
+  };
+
   async function mount() {
     door();
     if (!HUB) return;
     const [data, cites] = await Promise.all([HUB.guide(slug), getJSON(`${BASE}/v1/enrich/cites/${encodeURIComponent(slug)}.json`)]);
     const c = HUB.counts(data);
-    const folds = [citedFold(cites)];
-    if (data) HUB.GUIDE.forEach((id) => {
-      if (!c[id]) return;
-      folds.push(fold(id, HUB.label(id), HUB.render(id, data, { compact: true }), id === "overview"));
-    });
-    const live = folds.filter(Boolean);
-    if (!live.length) return;
     const guide = document.createElement("div");
     guide.id = "nbWorkGuide";
     guide.className = "wrs nb-work-guide";
-    live.forEach((f) => guide.appendChild(f));
+    guide.appendChild(group("On this page"));
+    const cited = citedFold(cites);
+    if (cited) guide.appendChild(cited);
+    const analysis = $("nbAnalysisFold");
+    if (analysis) {
+      const s = analysis.querySelector(":scope > summary");
+      if (s) s.textContent = "Analysis of this page";
+      analysis.classList.add("wrs-section");
+      guide.appendChild(analysis);
+    }
+    guide.appendChild(group("The whole work"));
+    if (data) HUB.GUIDE.forEach((id) => {
+      if (!c[id]) return;
+      guide.appendChild(fold(id, HUB.label(id), HUB.render(id, data, { compact: true }), id === "overview", c[id]));
+    });
     HUB.wire(guide, (page) => go(page));
-    const anchor = $("nbWorkSources") || $("nbAnalysisFold");
+    const anchor = $("nbWorkSources");
     if (anchor) panel.insertBefore(guide, anchor); else panel.appendChild(guide);
     // The library notes are machine-written: said once, at the foot of the tab's sections.
     if (data && !$("nbWorkNote")) {
