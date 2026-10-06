@@ -44,6 +44,13 @@
   const CHURCH_OF = { gf: "Greek", pl: "Latin", po: "Eastern" };
   const ORDER_NAME = { Jesuits: "Jesuit", Dominicans: "Dominican", Franciscans: "Franciscan", Augustinians: "Augustinian", Carmelites: "Carmelite", Benedictines: "Benedictine" };
   const BODY_NAME = { "Continental Reformed": "Reformed" };
+  // WRITERS WHO WERE NOT CHRISTIANS (2026-10-06). Patrologia Orientalis prints two chapters by Muslim scholars because
+  // they describe Christian feasts (al-Biruni, al-Maqrizi; PO 10). Shelved with the Eastern Fathers, the century rule below
+  // called them "Eastern Christian". They get a plain label instead, and no church. Keyed by folded name.
+  const OTHER_FAITH = {
+    "abu rayhan muhammad al biruni": "Muslim scholar",
+    "taqi al din ahmad ibn ali al maqrizi": "Muslim scholar",
+  };
   const ERAS = /^(?:Early patristic|Later patristic|Carolingian|High medieval|Reformation|Seventeenth century|Later authors|Undated)$/;
 
   const fold = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -95,6 +102,8 @@
 
   /* { tradition, detail, detailLabel } for one author. */
   function labelFor(name, sh, datesText) {
+    const other = OTHER_FAITH[fold(name)];
+    if (other) return { tradition: other, detail: "", detailLabel: "" };
     const ys = years(datesText);
     const year = ys.length ? ys[0] : 0;
     const d = denomFor(name, ys);
