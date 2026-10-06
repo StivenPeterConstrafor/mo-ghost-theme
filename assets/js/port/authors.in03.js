@@ -265,8 +265,13 @@ document.addEventListener("click",async e=>{
   const [w,p,hl]=String(b.dataset.pk).split("|");
   const href=readerHrefHl(w,p||null,hl),title=(host.querySelector('.work-title,strong,.vref')?.textContent||'Source passage')+(host.querySelector('.vpg')?' · '+host.querySelector('.vpg').textContent:'');
   wrap=document.createElement("div");wrap.className="peekwrap";wrap.id='source-preview-'+(++previewSequence);wrap.inert=true;b.setAttribute('aria-controls',wrap.id);
-  wrap.innerHTML=`<div><div class="peekhead"><strong>${esc(title)}</strong><a href="${esc(href)}" target="_blank" rel="noopener">Open full reader ↗</a><button type="button" data-close-preview>Close</button></div><iframe src="${esc(previewHref(href))}" title="Source passage: ${esc(title)}"></iframe></div>`;
+  // THE PAGE WINDOW (owner 2026-10-06 "only show the page before and after … allow for changing text"): the cited page
+  // marked, with the page before and after and an English / Latin / Both switch (page-window.js); a work without page
+  // files keeps the framed reader.
+  const frame=`<iframe src="${esc(previewHref(href))}" title="Source passage: ${esc(title)}"></iframe>`;
+  wrap.innerHTML=`<div><div class="peekhead"><strong>${esc(title)}</strong><a href="${esc(href)}" target="_blank" rel="noopener">Open in the reader ↗</a><button type="button" data-close-preview>Close</button></div><div class="peekbody">${window.FRPageWindow?'<p class="pw-wait" role="status">Loading the page…</p>':frame}</div></div>`;
   host.appendChild(wrap);
+  if(window.FRPageWindow){const box=wrap.querySelector('.peekbody');FRPageWindow.fill(box,{slug:w,page:p,hl}).then(ok=>{if(!ok)box.innerHTML=frame;}).catch(()=>{box.innerHTML=frame;});}
   wrap.querySelector('[data-close-preview]').onclick=()=>{setOpen(false);b.focus();};
   requestAnimationFrame(()=>setOpen(true));
 });
@@ -1355,7 +1360,7 @@ async function room(slug,arg){
 async function dossier(slug,topicName){return room(slug,topicName);}
 /* ── work page ── */
 const BNAME={"Gen":"Genesis","Ex":"Exodus","Lev":"Leviticus","Num":"Numbers","Deut":"Deuteronomy","Josh":"Joshua","Judg":"Judges","Ruth":"Ruth","1 Sam":"I Samuel","2 Sam":"II Samuel","1 Kgs":"I Kings","2 Kgs":"II Kings","1 Chr":"I Chronicles","2 Chr":"II Chronicles","Ezra":"Ezra","Neh":"Nehemiah","Esth":"Esther","Job":"Job","Ps":"Psalms","Prov":"Proverbs","Eccl":"Ecclesiastes","Song":"Song of Solomon","Isa":"Isaiah","Jer":"Jeremiah","Lam":"Lamentations","Ezek":"Ezekiel","Dan":"Daniel","Hos":"Hosea","Joel":"Joel","Amos":"Amos","Obad":"Obadiah","Jonah":"Jonah","Mic":"Micah","Nah":"Nahum","Hab":"Habakkuk","Zeph":"Zephaniah","Hag":"Haggai","Zech":"Zechariah","Mal":"Malachi","Matt":"Matthew","Mark":"Mark","Luke":"Luke","John":"John","Acts":"Acts","Rom":"Romans","1 Cor":"I Corinthians","2 Cor":"II Corinthians","Gal":"Galatians","Eph":"Ephesians","Phil":"Philippians","Col":"Colossians","1 Thess":"I Thessalonians","2 Thess":"II Thessalonians","1 Tim":"I Timothy","2 Tim":"II Timothy","Titus":"Titus","Phlm":"Philemon","Heb":"Hebrews","Jas":"James","1 Pet":"I Peter","2 Pet":"II Peter","1 John":"I John","2 John":"II John","3 John":"III John","Jude":"Jude","Rev":"Revelation","Wis":"Wisdom","Sir":"Sirach","Tob":"Tobit","Jdt":"Judith","Bar":"Baruch","1 Macc":"I Maccabees","2 Macc":"II Maccabees"};
-async function workPage(dnum){
+async function workPage(dnum,tab){
   const run=researchStart('research-work');
   const slug=/^\d+$/.test(String(dnum))?`pld-${dnum}`:String(dnum);   // only bare numbers are PL; named ED slugs pass through
   const [ins,catalogue]=await Promise.all([J(BLOB+`/v1/mine/work/${slug}.json`).catch(()=>null),getWorkCatalogue()]);if(run!==RESEARCH_RUN)return;
@@ -1416,11 +1421,20 @@ async function workPage(dnum){
     return `<div class="pane-meta" style="margin:.3rem 0 .1rem">A commentary on <a href="/the-faith-received/bible/#b/${bs2}${ins.lemma.c?"/"+ins.lemma.c:""}">${esc(bn2)}${ins.lemma.c?" "+ins.lemma.c:""}</a> — its chapter holds this work among the commentators.</div>`;})():""}
   ${/* The work page's headline quotation (the mine's first "memorable" line: Calvin's Institutes opened on "It is therefore an
      audacity…", p. 1) said nothing about the work; removed (owner 2026-09-26). */''}
-  ${books?`<h2 class="sect">Its Scripture</h2>${(()=>{const kc=FRKIND().counts((ins&&ins.books||[]).flatMap(b2=>b2.rows||[]));return kc.length?`<p class="vc-kinds-line">${kc.map(([k,n])=>`<span class="how-${FRKIND().verb(k)}" title="${esc(FRKIND().title(k))}">${fmtR(n)} ${esc(FRKIND().n?FRKIND().n(k,n):FRKIND().plural(k).toLowerCase())}</span>`).join(" · ")}</p>`:"";})()}<div class="vc-index-section">${books}</div>`:""}
-  ${topics?`<h2 class="sect">Its topics</h2><div class="vc-index-section">${topics}</div>`:""}
-  <div id="wauth"></div>
-  ${entries?`<h2 class="sect">Subject index <span class="vc-section-meta">Migne&rsquo;s</span></h2><div class="vc-index-section">${entries}</div>`:""}
-  ${(!books&&!topics&&!entries)?'<p class="hint">Not yet mined.</p>':""}`;
+  ${/* THE WORK DESK (owner 2026-10-06 "the work thing should have it all", "coherence on what's in the research rail and
+     the work desk"): one tab strip in the order and under the names the reader's Research rail uses (work-hub.js); the
+     guide's tabs are added by FRWorkHub.desk when the work has library notes. */''}
+  <div class="pseg wk-seg" role="tablist" aria-label="This work" id="wkseg"></div>
+  <div class="pbody wk-body" id="wkbody">
+  <section class="wh-panel" data-sec="scripture" role="tabpanel" hidden>${books?`<h2 class="sect">Scripture</h2>${(()=>{const kc=FRKIND().counts((ins&&ins.books||[]).flatMap(b2=>b2.rows||[]));return kc.length?`<p class="vc-kinds-line">${kc.map(([k,n])=>`<span class="how-${FRKIND().verb(k)}" title="${esc(FRKIND().title(k))}">${fmtR(n)} ${esc(FRKIND().n?FRKIND().n(k,n):FRKIND().plural(k).toLowerCase())}</span>`).join(" · ")}</p>`:"";})()}<div class="vc-index-section">${books}</div>`:""}</section>
+  <section class="wh-panel" data-sec="topics" role="tabpanel" hidden>${topics?`<h2 class="sect">Topics</h2><div class="vc-index-section">${topics}</div>`:""}</section>
+  <section class="wh-panel" data-sec="sources" role="tabpanel" hidden><div id="wauth"></div></section>
+  <section class="wh-panel" data-sec="historical" role="tabpanel" hidden>${entries?`<h2 class="sect">Historical subject index <span class="vc-section-meta">Migne&rsquo;s</span></h2><div class="vc-index-section">${entries}</div>`:""}</section>
+  </div>
+  ${(!books&&!topics&&!entries)?'<p class="hint wk-unmined">Not yet mined.</p>':""}`;
+  if(window.FRWorkHub)FRWorkHub.desk($("#wkseg"),$("#wkbody"),{slug,author:A,title:T,tab:tab||"",has:{scripture:!!books,topics:!!topics,historical:!!entries,sources:!!(ins&&A)},
+    sources:window.FRWorkResearchSources,run:()=>run===RESEARCH_RUN,blob:BLOB});
+  else{$("#wkseg").hidden=true;$("#wkbody").querySelectorAll(".wh-panel").forEach(p2=>{p2.hidden=false;});}   // a page without work-hub.js: every section, one after another
   // the work's own FACE (2026-09-01): the title-page scan, floated beside the header —
   // one small meta fetch; families without a stored meta (PL) skip silently
   (async()=>{try{
@@ -1445,7 +1459,7 @@ async function workPage(dnum){
       const rows=g.rows.slice(0,80).map((r2,ri)=>`<div class="vc-authority-row${ri>=10?' vc-authority-extra':''}"${ri>=10?' hidden':''}><div class="vc-authority-citation"><span>${r2.loc?`<i>${esc(r2.loc)}</i>`:esc(r2.sf)}</span>${r2.tw?`<small>${esc(tell(String((F.works||{})[r2.tw]||r2.tw)))}</small>`:''}</div><span class="vc-authority-page">${pgl(slug)} ${r2.p??"?"}</span><span class="vact">${readBtn(slug,r2.p)}</span></div>`).join("");
       return {card:`<button type="button" class="vc-index-card" id="${cardId}" data-vc-expand="${panelId}" aria-controls="${panelId}" aria-expanded="false"><span>${name}</span><small>${fmtR(g.rows.length)} ${g.rows.length===1?'citation':'citations'}</small></button>`,panel:`<section class="wdet vc-expand-panel vc-authority-panel" id="${panelId}" data-vc-panel role="region" aria-labelledby="${cardId}" hidden><header><div><h3>${name}</h3><p>${fmtR(g.rows.length)} resolved ${g.rows.length===1?'citation':'citations'}</p></div><button type="button" class="vc-panel-close" data-vc-close aria-label="Close ${name}" title="Close">&times;</button></header><div class="vc-authority-rows">${rows}</div>${g.rows.length>10?`<button type="button" class="rx-text-link vc-all" data-vc-more data-step="10">Show 10 more</button>`:''}${g.rows.length>80?`<p class="vc-note">${fmtR(g.rows.length-80)} more appear in <a href="/the-faith-received/author/#${aslug(A)}/reception">${esc(A)}&rsquo;s Reception</a>.</p>`:''}</section>`};});
     const groups=[];for(let i=0;i<views.length;i+=5){const group=views.slice(i,i+5);groups.push(`<div class="vc-expand-group"><div class="vc-index-grid">${group.map(x=>x.card).join('')}</div>${group.map(x=>x.panel).join('')}</div>`);}
-    $("#wauth").innerHTML=`<h2 class="sect">Its authorities <span class="vc-section-meta">${tot.toLocaleString()} resolved citations of ${mine.length} authors</span></h2><div class="vc-index-section">${groups.join('')}</div>`;
+    $("#wauth").innerHTML=`<h2 class="sect">Sources cited <span class="vc-section-meta">${tot.toLocaleString()} resolved citations of ${mine.length} authors</span></h2><div class="vc-index-section">${groups.join('')}</div>`;
   }catch(_){}})();
   // One compact chapter selector replaces the wall of chapter chips. It keeps every
   // chapter available while leaving the citations as the page's visual subject.
@@ -2239,7 +2253,7 @@ function route(){
     return;
   }
   if(h==="works"){navmark("works");const token=RESEARCH_RUN;worksIndex().catch(()=>{if(token===RESEARCH_RUN)researchError("Works could not load");});return;}   // reborn 08-25: kind-grouped, canon-ordered
-  if(h.startsWith("w/")){navmark("works");workPage(h.slice(2));return;}
+  if(h.startsWith("w/")){navmark("works");const [ws,wt]=h.slice(2).split("/");if(window.FRWorkHub&&FRWorkHub.deskSwitch(ws,wt))return;workPage(ws,wt||"");return;}   // #w/<slug>/<tab>: a tab of the same work switches in place
   navmark("fathers");
   if(!h){const token=RESEARCH_RUN;authorsIndex().catch(()=>{if(token===RESEARCH_RUN)researchError("Authors could not load");});return;}
   const seg=h.split("/");
