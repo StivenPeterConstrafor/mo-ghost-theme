@@ -1,0 +1,51 @@
+/* Library notes on the live Topics and Scripture pages (faith-port-topic-dev-notes.js,
+   faith-port-scripture-notes.js). The blocks take the pages' own vocabulary (.td-block, .td-tabs,
+   .sd-panel-fold, .sd-ov-verse, .sd-h3, .sd-muted) and their tokens; this only lays out what is inside. */
+
+/* Topics: "The doctrine through the centuries" */
+.fr-dn-view { padding: 0 0 8px; }
+.fr-dn-lede { margin: 0 0 20px; max-width: 68ch; font-size: 17px; line-height: 1.6; color: var(--color-dark); text-wrap: pretty; }
+.fr-dn-timeline { list-style: none; margin: 0; padding: 0; }
+.fr-dn-timeline > li {
+  display: grid; grid-template-columns: minmax(8rem, 11rem) minmax(0, 1fr); gap: 4px 28px;
+  padding: 16px 0; border-top: 1px solid var(--color-rule);
+}
+.fr-dn-timeline > li:first-child { border-top: 0; padding-top: 4px; }
+.fr-dn-timeline h4 { margin: 0; font-family: var(--font-body); font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--color-dark); text-wrap: balance; }
+.fr-dn-timeline p { margin: 0; max-width: 68ch; line-height: 1.65; text-wrap: pretty; }
+.fr-dn-pages { margin: 6px 0 0; font-size: 13px; line-height: 1.6; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.fr-dn-pages a, .fr-sn-pages a { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.fr-dn-pages a:hover, .fr-sn-pages a:hover { color: var(--color-dark); }
+.fr-dn-course { margin: 0; padding-left: 2.2em; display: grid; gap: 20px; }
+.fr-dn-course > li::marker { font-weight: 600; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.fr-dn-course p { margin: 4px 0 0; max-width: 68ch; line-height: 1.6; }
+.fr-dn-course .fr-dn-course-head { margin: 0; font-weight: 600; }
+.fr-dn-course .fr-dn-course-head a { color: var(--color-dark); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.fr-dn-thesis { font-size: 0.92em; font-style: italic; color: var(--color-muted); }
+.fr-dn-pairs { list-style: none; margin: 0; padding: 0; display: grid; gap: 22px; }
+.fr-dn-pairs h4 { margin: 0 0 4px; font-family: var(--font-body); font-size: 16px; font-weight: 600; }
+.fr-dn-pairs p { margin: 4px 0 0; max-width: 68ch; line-height: 1.6; }
+.fr-dn-concepts { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+.fr-dn-concepts p { margin: 0 0 6px; max-width: 68ch; line-height: 1.6; }
+.fr-dn-guide { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--color-rule); }
+.fr-dn-guide h5 { margin: 14px 0 6px; font-size: 14px; }
+.fr-dn-guide ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; }
+@media (max-width: 640px) {
+  .fr-dn-timeline > li { grid-template-columns: 1fr; gap: 4px; padding: 12px 0; }
+  .fr-dn-lede { font-size: 16px; }
+  .fr-dn-course { padding-left: 1.8em; }
+}
+
+/* Scripture: the chapter in the overview, the verse in the verse panel */
+.fr-sn-card { margin: 4px 0 8px; font-size: 14px; line-height: 1.6; text-wrap: pretty; }
+.fr-sn-row { grid-template-areas: "ref ref ref" "snip snip snip"; }
+.fr-sn-note { margin: 8px 0 0; font-size: 12px; line-height: 1.5; }
+.fr-sn-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.fr-sn-list p { margin: 0; line-height: 1.6; }
+.fr-sn-pages { margin: 4px 0 0; font-size: 13px; line-height: 1.6; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.fr-sn-lede { margin: 0 0 12px; line-height: 1.6; }
+.fr-sn-timeline { list-style: none; margin: 0; padding: 0; }
+.fr-sn-timeline > li { padding: 10px 0; border-top: 1px solid var(--color-rule); }
+.fr-sn-timeline > li:first-child { border-top: 0; padding-top: 0; }
+.fr-sn-timeline h4 { margin: 0 0 2px; font-family: var(--font-body); font-size: 14px; font-weight: 600; }
+.fr-sn-timeline p { margin: 0; line-height: 1.6; }

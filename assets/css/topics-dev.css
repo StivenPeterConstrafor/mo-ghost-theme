@@ -88,7 +88,7 @@
   border-bottom: 3px solid transparent;
 }
 .td-tab:hover, .td-tab:focus-visible { color: var(--color-dark); }
-.td-tab[aria-current="page"] { color: var(--color-dark); border-bottom-color: var(--sd-accent); }
+.td-tab[aria-current="page"], .td-tab[aria-current="true"] { color: var(--color-dark); border-bottom-color: var(--sd-accent); }
 .td-view > section + section { margin-top: 44px; }
 .td-view .sd-h2 { margin-top: 0; }
 
