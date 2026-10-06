@@ -225,9 +225,9 @@
       }
       if (write) history.replaceState(null, "", `${location.pathname}${location.search}#w/${encodeURIComponent(slug)}${id === order.find((x) => present[x]) ? "" : "/" + id}`);
     }
-    // The strip sticks under whatever the site keeps at the top (its header shows and hides on scroll; the Faith Received
-    // bar sticks below it), measured as the reader scrolls.
-    const bars = [...document.querySelectorAll("header.site-header, nav.tfr-rail")];
+    // The strip sticks under whatever the site keeps at the top (Mere Orthodoxy's header shows and hides on scroll with the
+    // Faith Received bar below it; the library's own site keeps header.site), measured as the reader scrolls.
+    const bars = [...document.querySelectorAll("header.site-header, nav.tfr-rail, header.site")];
     let raf = 0;
     const stick = () => {
       raf = 0;
