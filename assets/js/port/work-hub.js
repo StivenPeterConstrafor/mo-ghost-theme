@@ -238,7 +238,9 @@
       }
       seg.style.top = `${Math.round(b)}px`;
     };
-    if (bars.length) { stick(); addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(stick); }, { passive: true }); }
+    if (DESK && DESK.onScroll) removeEventListener("scroll", DESK.onScroll);
+    const onScroll = bars.length ? () => { if (!raf) raf = requestAnimationFrame(stick); } : null;
+    if (onScroll) { stick(); addEventListener("scroll", onScroll, { passive: true }); }
     seg.addEventListener("click", (e) => {
       const b = e.target.closest('[role="tab"][data-sec]');
       if (!b) return;
@@ -255,7 +257,7 @@
       if (top < under) window.scrollBy(0, top - under - 8);
     });
     wire(body, (page, btn) => inlinePage(slug, page, btn));
-    DESK = { slug, show, seg };
+    DESK = { slug, show, seg, onScroll };
     const want = o.tab || "";
     show(present[want] ? want : order.find((x) => present[x]), false);
     guide(slug).then((d) => {

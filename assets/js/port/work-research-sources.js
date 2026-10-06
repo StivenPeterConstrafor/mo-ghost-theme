@@ -282,7 +282,7 @@
         },20,'mentions');
       });
     },undefined,'names');
-    if(!opts.confession)lazy(frame,name('historical','Historical subject index'),async body => {
+    const historicalSection=opts.confession?null:lazy(frame,name('historical','Historical subject index'),async body => {
       const result=await json('/v1/mine/pld_subjects/'+encodeURIComponent(slug)+'.json',data=>Array.isArray(data?.entries));
       if(result.missing){missing(body,'A historical subject-index file has not been published for this edition.');return;}
       const entries=result.data.entries;
@@ -292,6 +292,9 @@
         const parent=element('div');group(parent,string(entry.t)||'Untitled subject','',list(entry.refs),ref=>record('Historical index reference','',ref.c),'references');return parent;
       },12,'subjects');
     },undefined,'historical');
+    // shown only when the work has one, as on the work page
+    if(historicalSection&&!opts.desk&&historicalSection.isConnected){historicalSection.hidden=true;
+      json('/v1/mine/pld_subjects/'+encodeURIComponent(slug)+'.json',data=>Array.isArray(data?.entries)).then(r=>{if(!dead)historicalSection.hidden=r.missing||!r.data.entries.length;}).catch(()=>{if(!dead)historicalSection.hidden=false;});}
     // the work page's order (Scripture before topics)
     if(HUB)HUB.SECTIONS.forEach(s=>{const d=frame.querySelector(':scope > details[data-sec="'+s.id+'"]');if(d)frame.appendChild(d);});
     // Confessions currently have uneven published research coverage. Do not present

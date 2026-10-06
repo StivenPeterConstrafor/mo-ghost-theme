@@ -81,7 +81,7 @@ html #notebook .nb-work-primary>a.nb-work-desk+button{border-top:1px solid var(-
 
 /* ── the page window: the cited page, the page before and after, English / Latin / both ─────────────────────────── */
 .pw{display:grid;gap:0;min-width:0}
-.pw-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:1}
+.pw-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg)}
 .pw-lanes{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden}
 .pw-lanes button{appearance:none;border:0;border-right:1px solid var(--border);background:none;color:var(--muted);font:13px/1 var(--body,inherit);padding:0 12px;min-height:36px;cursor:pointer}
 .pw-lanes button:last-child{border-right:0}
