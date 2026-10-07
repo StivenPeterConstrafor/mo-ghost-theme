@@ -6695,7 +6695,8 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
               // FOOTNOTES ARE THE PAGE'S OWN TEXT (owner 2026-09-23, pg-105 col. 329): the site's clean column is shorter than the plate's
               // zone exactly because Migne's footnotes live in <note>s -- counted here so a complete column is never displaced by the OCR blob.
               const _nT=(canon?.notes||[]).join(" ");
-              const _grcShort=!_edge&&!!(canon?.grc)&&_gL(_pvGrc)>=200&&(_gL(canon.grc)+_gL(_nT))<0.7*_gL(_pvGrc);
+              const _noZoneGrc=_shelfRead3&&_gL(canon.grc)<40;   /* a rebuilt page with no Greek of its own: see A REBUILT PAGE WITH NO GREEK below */
+              const _grcShort=!_edge&&!_noZoneGrc&&!!(canon?.grc)&&_gL(_pvGrc)>=200&&(_gL(canon.grc)+_gL(_nT))<0.7*_gL(_pvGrc);
               // A COLUMN READ CLEAN FROM ITS SCAN (owner 2026-10-01 'do the latin cleanup': resp #pg-latin-vision-1001) passed its own
               // completeness gate against this very zone -- column + its footnotes -- before it was written; the zone also holds the footnotes,
               // the running head and the OCR's noise, so the clean column is never 'short' and the plate's OCR yields to it.
@@ -6738,7 +6739,11 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
                 const _sh=t=>{const w=String(t||"").toLowerCase().replace(/[^a-z\s]/g," ").split(/\s+/).filter(x=>x.length>=3);const o=new Set();for(let i=0;i+4<=w.length;i++)o.add(w.slice(i,i+4).join(" "));return o;};
                 const _A=_sh(_pvLat),_B=_sh(canon.la||"");let _c=0;_A.forEach(x=>{if(_B.has(x))_c++;});
                 const _pvAgrees=!_B.size||_A.size<10||_c/Math.min(_A.size,_B.size)>=0.15;
-                if(_bothLa)sf.grc="";
+                /* A REBUILT PAGE WITH NO GREEK (owner 2026-10-07, yes to the 89 pages): a work the PG rebuild read from the scan carries every column
+                   the scan prints; where its page has no Greek, the plate's ColGreek zone is another page's text (PG 12 col. 1321, a Latin page,
+                   showed Greek on the Cherubim; PG 30 col. 1171, an index, another page's variant readings) -- the zone lends no Greek there. */
+                if(_noZoneGrc)sf.grc="";
+                else if(_bothLa)sf.grc="";
                 else if(_zg>=40&&_zg>_zl&&_pvAgrees){const gp=[];try{_carveGr(_healGrc(sf.grc),gp);}catch(e){}if(!gp.length)gp.push(_healGrc(sf.grc));
                   const gcol=_laCols.includes(sf.n)?sf.n+1:sf.n;sf.grcParas=gp;sf.colParas=[{n:String(gcol),lang:"grc",paras:gp},...(sf.colParas||[]).filter(c=>+c.n!==gcol)];sf._pvGreek=true;}
               }}}
