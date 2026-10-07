@@ -234,6 +234,36 @@
   // paragraph of each language lane of a heading row the section folds
   // found (.fr-sec-headrow, faith-reader-folds.js: the Latin Fathers and
   // the catechisms carry no heading element).
+  /* A HEADING THAT RUNS ON INTO ITS TEXT (2026-10-07, the rebuilt Greek
+     Fathers on a phone: "CHAPTER II", its argument and "Do not, therefore,
+     too curiously explore ..." all in one card). The Migne reader sets a
+     chapter's label and argument inline (.inhead, .inarg) at the head of the
+     paragraph that follows them, so the first paragraph of a heading row
+     can be heading and text at once. The heading is only those spans:
+     what comes after them is the chapter's first lines, moved into a
+     paragraph of their own right after the heading, so the card holds the
+     label and the argument and the text reads as text. Nothing in the
+     words changes; the nodes only move. */
+  const RUNIN = ".inhead, .inarg";
+  const blank = (n) => n.nodeType === 3 && !n.data.trim();
+  function splitRunOn(p) {
+    const kids = [...p.childNodes];
+    let i = 0;
+    while (i < kids.length && blank(kids[i])) i += 1;
+    if (i >= kids.length || kids[i].nodeType !== 1 || !kids[i].matches(RUNIN)) return;
+    let j = i;
+    while (j < kids.length && (blank(kids[j]) || (kids[j].nodeType === 1 && kids[j].matches(RUNIN)))) j += 1;
+    const rest = kids.slice(j);
+    if (!rest.some((n) => clean(n.textContent))) return;
+    const body = document.createElement("p");
+    body.dataset.frIl = "0";
+    body.dataset.frRunon = "1";
+    rest.forEach((n) => body.appendChild(n));
+    const lead = body.firstChild;
+    if (lead && lead.nodeType === 3) lead.data = lead.data.replace(/^\s+/, "");
+    p.after(body);
+  }
+
   function freshUnits() {
     const out = [];
     document.querySelectorAll("#reading h3.csub:not([data-fr-hd])").forEach((h) => out.push(h));
@@ -241,6 +271,7 @@
       // The folds found this row after its label was set inline: the
       // row is a heading, so it takes the heading setting instead.
       if (p.classList.contains("fr-il")) undoInline(p);
+      splitRunOn(p);
       out.push(p);
     });
     titleRow(out);
@@ -510,6 +541,18 @@
         wrap(host, 0, text.length, "fr-hd-title");
         titled = true;
       }
+    });
+    // A title that is all argument (a run-on heading split off its text,
+    // splitRunOn) was wrapped INSIDE the argument's span, and the title's
+    // upright setting then won over the argument's italic. Nest them the
+    // way they come when text follows: the title outside, the argument in.
+    el.querySelectorAll(".inarg > .fr-hd-title").forEach((t) => {
+      const a = t.parentElement;
+      // (the range split around the title leaves empty text nodes beside it: compare the words, not the child count)
+      if (clean(a.textContent) !== clean(t.textContent)) return;
+      a.replaceWith(t);
+      while (t.firstChild) a.appendChild(t.firstChild);
+      t.appendChild(a);
     });
     el.classList.add("fr-hd");
     if (labelled && !titled) el.classList.add("fr-hd-labelonly");
