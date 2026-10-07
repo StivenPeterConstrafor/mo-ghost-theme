@@ -6672,7 +6672,16 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
              for(const k3 of Object.keys(_canonOpenings)){const n3=+k3;if(!n3||_haveSf3.has(n3))continue;const o3=_canonOpenings[k3]||{};
                if(((o3.la||"").length>40||(src==="grcla"&&(o3.grc||"").length>40))&&((n3>=lo3&&n3<=hi3)||_orph3.has(n3))&&(!_pgOwned.size||_pgOwned.has(String(n3))))surfs3.push({n:n3,lat:"",grc:""});}
              surfs3.sort((a,b)=>a.n-b.n);}
+            /* THE PAGE A REBUILT WORK SHARES (owner 2026-10-07 "do the shared pages"): a work the PG rebuild assembled (header name
+               xml:id="pg-shelf-read") that opens or closes mid-page holds only ITS part of that first or last page, while the plate's zone is
+               the whole printed page -- the short tests below read the part as a short column and swapped in the old transcription (both
+               works' text, old OCR) on 656 pages (PG 86 col. 1145: pg-2953 opens at quarter D, under the end of the work before it). On such
+               a work's first and last opening its own text holds and the zone lends nothing. */
+            const _shelfRead3=[...doc.querySelectorAll("name")].some(nm=>nm.getAttribute("xml:id")==="pg-shelf-read");
+            const _cOpen3=Object.keys(_canonOpenings).map(Number).filter(Boolean);
+            const _edge3=_shelfRead3&&_cOpen3.length?new Set([Math.min(..._cOpen3),Math.max(..._cOpen3)]):new Set();
             for(const sf of surfs3){const canon=_canonOpenings[String(sf.n)]||{};
+              const _edge=_edge3.has(sf.n)&&!!(canon.grc||canon.la);
               if(_pgFrontLabels[sf.n]){sf.lat=canon.la||"";sf.grc=canon.grc||"";}
               const _pvLat=_pgFrontLabels[sf.n]?"":sf.lat,_pvGrc=_pgFrontLabels[sf.n]?"":sf.grc;
               // A PAGE WITH NO CANON OPENING (2026-09-21, pg-2466 col. 725): after a page-true re-key the reading division carries nothing
@@ -6686,13 +6695,15 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
               // FOOTNOTES ARE THE PAGE'S OWN TEXT (owner 2026-09-23, pg-105 col. 329): the site's clean column is shorter than the plate's
               // zone exactly because Migne's footnotes live in <note>s -- counted here so a complete column is never displaced by the OCR blob.
               const _nT=(canon?.notes||[]).join(" ");
-              const _grcShort=!!(canon?.grc)&&_gL(_pvGrc)>=200&&(_gL(canon.grc)+_gL(_nT))<0.7*_gL(_pvGrc);
+              const _grcShort=!_edge&&!!(canon?.grc)&&_gL(_pvGrc)>=200&&(_gL(canon.grc)+_gL(_nT))<0.7*_gL(_pvGrc);
               // A COLUMN READ CLEAN FROM ITS SCAN (owner 2026-10-01 'do the latin cleanup': resp #pg-latin-vision-1001) passed its own
               // completeness gate against this very zone -- column + its footnotes -- before it was written; the zone also holds the footnotes,
               // the running head and the OCR's noise, so the clean column is never 'short' and the plate's OCR yields to it.
               const _laVision=_pgVisionLa.has(sf.n)||_pgVisionLa.has(sf.n+1);
-              const _laShort=!_laVision&&!!(canon?.la)&&_lL(_pvLat)>=200&&(_lL(canon.la)+_lL(_nT))<0.7*_lL(_pvLat);
-              if(canon?.grc&&!_grcShort)sf.grc=canon.grcRich||canon.grc;if(canon?.la&&!_laShort)sf.lat=canon.laRich||canon.la;if(canon){sf.grcParas=canon.grcParas||[];sf.laParas=canon.laParas||[];sf.colParas=canon.colParas||[];   // an EMPTY opening ({}) must still reach the zone-lane rules below
+              const _laShort=!_edge&&!_laVision&&!!(canon?.la)&&_lL(_pvLat)>=200&&(_lL(canon.la)+_lL(_nT))<0.7*_lL(_pvLat);
+              if(canon?.grc&&!_grcShort)sf.grc=canon.grcRich||canon.grc;if(canon?.la&&!_laShort)sf.lat=canon.laRich||canon.la;
+              if(_edge){sf.grc=canon.grcRich||canon.grc||"";sf.lat=canon.laRich||canon.la||"";}   /* the zone's other columns are the other work's */
+              if(canon){sf.grcParas=canon.grcParas||[];sf.laParas=canon.laParas||[];sf.colParas=canon.colParas||[];   // an EMPTY opening ({}) must still reach the zone-lane rules below
               if(_grcShort){sf.grcParas=[];sf.colParas=sf.colParas.filter(c=>c.lang!=="grc");}
               if(_laShort){const _shL=t=>{const w=String(t||"").toLowerCase().replace(/[^a-z\s]/g," ").split(/\s+/).filter(x=>x.length>=3);const o=new Set();for(let i=0;i+4<=w.length;i++)o.add(w.slice(i,i+4).join(" "));return o;};
                 const _A2=_shL(_pvLat),_B2=_shL(canon.la);let _c2=0;_A2.forEach(x=>{if(_B2.has(x))_c2++;});
