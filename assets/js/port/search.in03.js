@@ -256,24 +256,44 @@ function searchUnavailable(label,query){setPager(0,0,function(){});ct.textConten
    (von der Hardt, Richer, Arnauld, the Acts of Pisa) instead of pages on holiness. Any other query is searched as typed. A one-shot
    flag lets the reader search the words as typed after all. */
 var IDEA_AS_TYPED=false;
+/* a stream of JSON lines: each complete line to onLine as it arrives (a browser without body streams gets them all at the end) */
+function ndjson(url,onLine){return fetch(url,{signal:AbortSignal.timeout(30000)}).then(function(r){if(!r.ok)throw Error('Search unavailable');
+ var buf='',dec=new TextDecoder(),take=function(chunk,last){buf+=chunk;var lines=buf.split('\n');buf=last?'':lines.pop();lines.forEach(function(l){if(l.trim())onLine(JSON.parse(l));});};
+ if(!r.body||!r.body.getReader)return r.text().then(function(t){take(t,true);});
+ var rd=r.body.getReader();return (function pump(){return rd.read().then(function(x){if(x.done){take(dec.decode(),true);return;}take(dec.decode(x.value,{stream:true}),false);return pump();});})();});}
 function ideaFirst(q){var host=document.getElementById('wordIndex');
  if(IDEA_AS_TYPED||!host||!window.FRWordIndex||!FRWordIndex.idea){IDEA_AS_TYPED=false;return Promise.resolve(null);}
  return FRWordIndex.idea(host,{query:q,asTyped:function(){IDEA_AS_TYPED=true;run();},
   readHref:function(slug,page,w){var u=rdHref(slug,page==null||page===''?page:readerPage(page)),i=u.indexOf('#'),hl=w?(u.indexOf('?')>=0?'&':'?')+'hl='+encodeURIComponent(w):'';return i<0?u+hl:u.slice(0,i)+hl+u.slice(i);},
   title:function(slug,row){return NAV&&NAV[slug]?docTitle(slug):esc(row.title||slug);},
   meta:function(row){return [row.author,row.volume,row.tradition].filter(Boolean).map(esc).join(' · ');}}).catch(function(){return null;});}
-function renderMeaning(q){var my=++seq,pools=[],expanded=false,expanding=false,groups=[],eq=q,idea=null;ct.textContent='Finding related passages…';res.innerHTML='';
+function renderMeaning(q){var my=++seq,pools=[],expanded=false,expanding=false,groups=[],eq=q,idea=null,state='',typed=IDEA_AS_TYPED;ct.textContent='Finding related passages…';res.innerHTML='';
  ideaFirst(q).then(function(c){if(my!==seq)return;idea=c;if(c)eq=c.gloss?c.label+': '+c.gloss:c.label;
  navMap(function(){if(my!==seq)return;var params=new URLSearchParams({q:eq,k:FAC.collection?'80':'25'}),endpoint='https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/xsearch?';if(FAC.collection){endpoint='https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/vsearch?';params.set('collection',FAC.collection);if(FAC.work)params.set('w',FAC.work);}else if(FAC.trad==='English Divines')params.set('c','tfr');else if(FAC.trad==='Medieval')params.set('c','aq,tfr');else if(FAC.trad)params.set('trad',FAC.trad);
-  fetch(endpoint+params,{signal:AbortSignal.timeout(25000)}).then(function(r){if(!r.ok)throw Error('Search unavailable');return r.json();}).then(function(data){if(my!==seq)return;pools=[ideaTop(FRSearch.meaningCandidates(data,WORKS_BY_SLUG))];refresh();}).catch(function(){if(my===seq)searchUnavailable('Search by idea',q);});
+  if(FAC.collection)banded();else read();
+  function banded(){fetch(endpoint+params,{signal:AbortSignal.timeout(25000)}).then(function(r){if(!r.ok)throw Error('Search unavailable');return r.json();}).then(function(data){if(my!==seq)return;state='';pools=[ideaTop(FRSearch.meaningCandidates(data,WORKS_BY_SLUG))];refresh();}).catch(function(){if(my===seq)searchUnavailable('Search by idea',q);});}
+  /* SEARCH BY IDEA, READ (2026-10-07, the worker's /v1/isearch = the corpus site's /api/isearch; measured P@10 0.75 → 0.98 on 29
+     queries): a small model says what the reader is after, the description and the idea are searched by meaning and the words
+     exactly, and the model reads the first 30 passages and puts first those that treat it, each with a few words on why. Two lines
+     arrive: the fused list (shown at once), then the list the model has read (it replaces the first). What was searched shows above
+     the idea card; a library idea the model says names something else is left out. Any failure before the first line falls back to
+     the banded search. */
+  function read(){var p=new URLSearchParams({q:q});if(idea&&idea.id)p.set('cid',idea.id);if(typed)p.set('as','typed');if(FAC.trad==='English Divines')p.set('c','tfr');else if(FAC.trad==='Medieval')p.set('c','aq,tfr');else if(FAC.trad)p.set('trad',FAC.trad);
+   var got=false;state='finding';
+   ndjson('https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/isearch?'+p,function(o){if(my!==seq)return;if(o.phase==='error')throw Error(o.error||'Search unavailable');
+    if(o.phase==='fused'){var u=o.understood||{},host=document.getElementById('wordIndex');if(u.description)eq=q+'. '+u.description;if(u.concept&&u.concept.fits===false)idea=null;
+     if(host&&window.FRWordIndex&&FRWordIndex.asked)FRWordIndex.asked(host,u,{asTyped:typed?null:function(){IDEA_AS_TYPED=true;run();}});state=o.status==='fused'?'reading':'fused';}
+    else state=o.status==='ranked'?'read':'fused';
+    got=true;pools[0]=readRows(o.hits);refresh();}).catch(function(){if(my!==seq)return;if(got){if(state==='reading'){state='fused';refresh();}return;}banded();});}
+  function readRows(hits){return (hits||[]).filter(function(h){return h.slug&&WORKS_BY_SLUG[h.slug];}).map(function(h){return {slug:h.slug,page:h.page==null?null:String(h.page),citation:h.cit||'',excerpt:h.excerpt||'',why:h.why||'',score:0};});}
   /* the best of the first ranked set: its period bands hold a fixed number each (eight Eastern Fathers even when they only brush the
      question), so what trails the best match by more than 0.08 of similarity goes; a Latin Fathers citation 'PL 20:0657' opens the
      reader at column 657 (the ranked set carries no page) */
   function ideaAll(){try{return localStorage.getItem('wix-allpv')==='1';}catch(e){return false;}}
   function ideaTop(rows){var top=rows.length?rows[0].score:0;return rows.filter(function(r){return r.score>=top-0.08;});}
   function withPage(r){if(r.page==null){var m=/^PL\s+\d+\s*:\s*0*(\d+)/.exec(r.citation||'');if(m)return Object.assign({},r,{page:m[1]});}return r;}
-  function refresh(){var rows=FRSearch.fuseMeaning(pools).filter(function(r){return facetOk(r.slug);}).map(withPage);groups=FRSearch.meaningGroups(rows);REDRAW=paint;ct.textContent=rows.length+' passages'+(idea?' on '+idea.label:'')+' in '+groups.length+' '+(groups.length===1?'work':'works')+', closest first'+(FAC.trad?' · '+FRSearch.display(FAC.trad):'');paint(RESULT_PAGE);}
-  function passage(host,p){var a=document.createElement('a');a.className='sr';a.href=rdHref(p.slug,p.page);a.innerHTML='<div class="sr-cite">'+esc(p.citation||(p.page!=null?'Page '+readerPage(p.page):'The work'))+'</div><div class="sr-ex">'+esc(p.excerpt||'')+'</div><small>'+(p.page==null?'Open the work':'Read the passage')+'</small>';host.appendChild(a);
+  function refresh(){var rows=FRSearch.fuseMeaning(pools).filter(function(r){return facetOk(r.slug);}).map(withPage);groups=FRSearch.meaningGroups(rows);REDRAW=paint;ct.textContent=rows.length+' passages'+(idea?' on '+idea.label:'')+' in '+groups.length+' '+(groups.length===1?'work':'works')+(state==='reading'?', reading them to put first those that treat it…':state==='read'?', read and put in order: those that treat it first':', closest first')+(FAC.trad?' · '+FRSearch.display(FAC.trad):'');paint(RESULT_PAGE);}
+  function passage(host,p){var a=document.createElement('a');a.className='sr';a.href=rdHref(p.slug,p.page);a.innerHTML='<div class="sr-cite">'+esc(p.citation||(p.page!=null?'Page '+readerPage(p.page):'The work'))+'</div>'+(p.why?'<div class="sr-why">'+esc(p.why)+'</div>':'')+'<div class="sr-ex">'+esc(p.excerpt||'')+'</div><small>'+(p.page==null?'Open the work':'Read the passage')+'</small>';host.appendChild(a);
    if(!p.excerpt&&p.page!=null){var span=a.querySelector('.sr-ex');excerpt(p.slug,p.page).then(function(text){
      // the page files cover the library's works; EEBO, TEI-only works and the Fathers are read the word panel's way (word-index-preview.js)
      if(text||!window.FRWordPreview)return text;return FRWordPreview.pages(p.slug,[p.page]).then(function(m){var t=(m.get(p.page)||'').trim();return t.length>320?t.slice(0,320).replace(/\s+\S*$/,''):t;}).catch(function(){return '';});
