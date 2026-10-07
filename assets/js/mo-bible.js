@@ -45,13 +45,14 @@
 
   // The translations the worker allows. Kept in step with
   // ALLOWED_TRANSLATIONS in workers/bible/bible.js — a value not in that
-  // set comes back 400.
+  // set comes back 400. The NIV came out 2026-10-07: bolls.life no
+  // longer serves it and returns its maintainer's notice about Biblica
+  // in place of every verse. A saved NIV falls back to the ESV.
   const TRANSLATIONS = [
     ["ESV", "English Standard Version"],
     ["KJV", "King James Version"],
     ["NKJV", "New King James Version"],
     ["NASB", "New American Standard Bible"],
-    ["NIV", "New International Version"],
     ["CSB17", "Christian Standard Bible"],
     ["BSB", "Berean Standard Bible"],
     ["AMP", "Amplified Bible"],

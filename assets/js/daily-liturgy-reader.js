@@ -30,7 +30,6 @@
     CSB: "CSB17",
     KJV: "KJV",
     ESV: "ESV",
-    NIV: "NIV",
     NASB: "NASB",
   };
 

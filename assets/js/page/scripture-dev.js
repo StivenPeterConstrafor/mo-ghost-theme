@@ -15,7 +15,7 @@
  * the commentaries, the Verse Desk and the addresses. Its text is the
  * one thing that differs, because mo-bible has no deuterocanon.
  *
- * Address: ?ref=john.3 or ?ref=john.3.16 (&t=NIV). A verse in the
+ * Address: ?ref=john.3 or ?ref=john.3.16 (&t=KJV). A verse in the
  * address opens with the sidebar showing it, so a Verse Desk's "Back to
  * the chapter" lands where the reader left.
  *
@@ -167,7 +167,7 @@
     // Where the text on screen comes from, and on an apocryphal book the
     // one line saying why the translations above are not offered.
     $attr.textContent = book.ap
-      ? `${S.APOCRYPHA_TEXT}, from the library's own index. The five translations this reader offers do not carry the deuterocanon.`
+      ? `${S.APOCRYPHA_TEXT}, from the library's own index. The four translations this reader offers do not carry the deuterocanon.`
       : `${S.textName(book, state.t)} (${S.textShort(book, state.t)}), served through bolls.life.`;
 
     if (changedChapter || !comm) loadCommentaries();

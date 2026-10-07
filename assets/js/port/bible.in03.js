@@ -37,7 +37,7 @@ const _esvId=n2=>{let k=String(n2).toLowerCase().replace(/^(i{1,3})\s/,m2=>({i:"
     .replace(/revelation of john/,"revelation").replace(/^psalm$/,"psalms").replace(/song of songs|canticles/,"song of solomon").trim();
   const i=ESV_ORDER.indexOf(k);return i<0?null:i+1;};
 /* ─────────────────────────────────────────────────────────────────────
-   THE FIVE TRANSLATIONS
+   THE FOUR TRANSLATIONS (five until 2026-10-07)
 
    Ian, 2026-09-21: "Carry over the verse tools and keep all five
    translations." Our own reader at /bible/ offered five and let the
@@ -47,7 +47,9 @@ const _esvId=n2=>{let k=String(n2).toLowerCase().replace(/^(i{1,3})\s/,m2=>({i:"
 
    The endpoint is the same for all five: the ask-dev worker's
    /v1/chapter/<CODE>/<bookId>/<chapter>/. Verified 2026-09-21, all five
-   return 200 with verse arrays.
+   return 200 with verse arrays. The NIV came out 2026-10-07: bolls.life
+   no longer serves it and returns its maintainer's notice about Biblica
+   in place of every verse. A saved NIV falls back to the ESV.
 
    EACH ONE MARKS UP ITS TEXT DIFFERENTLY, and stripping tags naively
    corrupts three of them:
@@ -63,7 +65,7 @@ const _esvId=n2=>{let k=String(n2).toLowerCase().replace(/^(i{1,3})\s/,m2=>({i:"
    holds for the chapter, American Standard for most of the canon and
    Douay-Rheims for the deuterocanon. It is offered because it is the
    text the citation index was built against, and it needs no fetch. */
-const TRANSLATIONS=[["ESV","English Standard Version"],["CSB17","Christian Standard Bible"],["NIV","New International Version"],["NASB","New American Standard Bible"],["KJV","King James Version"]];
+const TRANSLATIONS=[["ESV","English Standard Version"],["CSB17","Christian Standard Bible"],["NASB","New American Standard Bible"],["KJV","King James Version"]];
 const TRANS_KEY="fr.bible.translation";
 const transName=code=>(TRANSLATIONS.find(t2=>t2[0]===code)||[])[1]||null;
 let TRANS=(()=>{try{const v2=localStorage.getItem(TRANS_KEY);return v2==="base"||transName(v2)?v2:"ESV";}catch(_e){return "ESV";}})();
