@@ -1045,6 +1045,8 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
   .sd-index-grid,
   .sd-commentary-panel .sd-panel-commentaries,
   .sd-desk .sd-top { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* four translations since the NIV left (#118): two by two, not three and one */
+  .sd-desk .sd-parallel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {
   .sd .sd-desk { padding-top: 22px; padding-bottom: 72px; }

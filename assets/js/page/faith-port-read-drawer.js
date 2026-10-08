@@ -368,6 +368,8 @@
     const q = (s) => ph.querySelector(s) || document.querySelector(s);
     return [
       ["read", q(".seg.lanes")],
+      // fr-enla.js (#113) puts its "English of the Latin" toggle inside .seg.lanes, which our skin hides; lift it into the drawer.
+      ["read", document.querySelector("button.fr-enla-btn")],
       ["view", document.getElementById("rdFlow")],
       ["view", q(".fr-tb-folds")],
       ["view", q(".fr-tb-ednotes")],
@@ -642,6 +644,7 @@
       bar.querySelector('[data-t="study"]'),
       bar.querySelector('[data-t="nb"]'),
       bar.querySelector('[data-t="ask"]'),
+      document.querySelector("button.fr-enla-btn"),
     ].filter(Boolean);
   }
 

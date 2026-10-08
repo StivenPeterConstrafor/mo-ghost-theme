@@ -434,6 +434,8 @@
 
   function kindOfNext(n) {
     if (!n || n.none) return "";
+    // The chapter's first lines split off a heading card (#115) are text, never the heading's argument (#122).
+    if (n.dataset && n.dataset.frRunon === "1") return "";
     // A paragraph that opens on its own division label ("§. 1. The
     // Church is ...") is the next division, never this heading's line.
     const il = n.dataset ? n.dataset.frIl : "";
