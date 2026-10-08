@@ -3567,6 +3567,16 @@ function build(){
               lp.innerHTML=lp.innerHTML.replace(/-\s*$/,"");
               a.appendChild(mk(ln==="en"?"an-en":"an-la"));
               lp.innerHTML+=fp.innerHTML;fp.remove();
+            } else if(lp&&fp&&/^[IM]$/.test(lp.dataset.part||"")&&/^[FM]$/.test(fp.dataset.part||"")){
+              // ONE PARAGRAPH (owner 2026-10-08, Bucer Defensio p. 24/25: "these have a para break in the
+              // reader but dont seem to be an actual break"): the corpus marks the pair as one paragraph the
+              // page turn cut (part I|M → F|M), so the page anchor goes INSIDE it at the turn and the
+              // continuation's words join it, instead of opening a new paragraph under the anchor.
+              lp.appendChild(document.createTextNode(" "));lp.appendChild(mk(ln==="en"?"an-en":"an-la"));
+              while(fp.firstChild)lp.appendChild(fp.firstChild);
+              {const before=lp.dataset.part==="M",after=fp.dataset.part==="M";   // what the joined paragraph still continues
+               if(before||after)lp.dataset.part=before&&after?"M":(before?"F":"I");else lp.removeAttribute("data-part");}
+              fp.remove();
             } else a.appendChild(mk(ln==="en"?"an-en":"an-la"));
             while(b.firstChild)a.appendChild(b.firstChild);
           }
