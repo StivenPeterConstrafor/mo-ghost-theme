@@ -3882,7 +3882,7 @@ function build(){
     const norm=s=>(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");  // Suárez matches "suarez"
     const paint=(ws,f)=>{
       const t=norm(f).trim();
-      const m=t?ws.filter(w=>(w._q||(w._q=norm((w.title||"")+" "+(w.author||"")+" "+(w.title_en||"")))).includes(t)):ws;
+      const m=t?ws.filter(w=>(w._q||(w._q=norm((w.title||"")+" "+(w.author||"")+" "+(w.title_en||"")+" "+(w.title_la||"")))).includes(t)):ws;
       // organized by AUTHOR, groups COLLAPSED by default (click to expand; filtering expands matches).
       // Titles show the ENGLISH title when available (user 2026-07-20).
       let h="",lastA=null;
