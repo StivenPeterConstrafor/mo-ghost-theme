@@ -393,7 +393,7 @@
     // the distance asked: a quoted phrase exactly (its offsets; an engine without the positions table reads the pairs), or for two or
     // three words the reader's choice (state.dist: same page, or within k words, in the typed order or not)
     const spanBody = () => (ph ? { phrase: true, offsets: ph.offsets } : state.dist.k ? { within: state.dist.k, ordered: state.dist.ordered } : {});
-    const post = b => opts.post(b.by !== 'forms' ? { ...b, ...spanBody() } : b);
+    const post = b => patient(opts.post)(b.by !== 'forms' ? { ...b, ...spanBody() } : b);
 
     function formsHtml() {
       return state.groups.map((g, gi) => {
@@ -489,7 +489,11 @@
         if (!g) { g = { rows: [], occ: 0, pages: 0 }; by.set(k, g); out.push(g); }
         g.rows.push(r); g.occ += Number(r.occurrences); g.pages += Number(r.pages);
       }
-      return out.sort((a, b) => b.occ - a.occ || b.pages - a.pages);
+      // THE SERVER'S ORDER (2026-10-08). The rows come ranked by BM25 (_words.mjs: occurrences weighed against a work's length,
+      // benchmarked against raw counts 10-02: nDCG@10 .67 vs .62), so "justification" opens with the treatises on justification.
+      // Re-sorting them by raw count put the longest works first (Gerhard's Loci over Owen's Doctrine of Justification by Faith).
+      // A work's volumes keep the place of their best-ranked volume.
+      return out;
     }
     const hlOf = r => { const f = list(r.forms), best = list(r.best_forms); return best.find(x => ws.includes(x)) || best[0] || f.find(x => ws.includes(x)) || f[0] || ws[0]; };
     function formsLine(rows) {
@@ -603,6 +607,18 @@
     loadForms().then(loadCounts).catch(fail);
     return { words: ws };
   }
+  /* A REQUEST THAT HANGS IS ASKED AGAIN (2026-10-08). One /v1/words request in three hung (the SQL worker runs one query at a time,
+     and a stalled storage read held its turn): the panel waited until the page's own 45 s limit and said the index could not be
+     reached. Each request now gets LIGHT_MS (counts) or HEAVY_MS (works, pages), then one more try. */
+  const LIGHT_MS = 15000, HEAVY_MS = 40000;
+  function patient(send) {
+    return body => {
+      const ms = body && (body.by === 'works' || body.by === 'pages') ? HEAVY_MS : LIGHT_MS;
+      const once = () => { let t; return Promise.race([Promise.resolve().then(() => send(body)), new Promise((_, rej) => { t = setTimeout(() => rej(new Error('no answer within ' + ms / 1000 + ' s')), ms); })]).finally(() => clearTimeout(t)); };
+      return once().catch(() => once());
+    };
+  }
+
   /* The Works tab searches titles, so a reader who types a word there sees only works NAMED by it. One line says how many works
      hold the word in their text and opens the full list (opts.open). Cached per query: the tab re-renders as headings load. */
   const memo = new Map();
@@ -611,11 +627,11 @@
     const key = ws.join(' ');
     if (!memo.has(key)) memo.set(key, (async () => {
       const gs = ws.map(w => forms(w)), all = [...new Set(gs.flatMap(g => g.all))].slice(0, 40);
-      const r = await post({ op: 'words', by: 'forms', groups: [all] });
+      const r = await patient(post)({ op: 'words', by: 'forms', groups: [all] });
       const have = new Set((r.forms || []).map(x => x.form));
       const groups = gs.map(g => g.all.filter(f => have.has(f) && !g.off.has(f)));
       if (groups.some(g => !g.length)) return { ws, works: 0 };
-      const sum = await post({ op: 'words', by: 'summary', groups });
+      const sum = await patient(post)({ op: 'words', by: 'summary', groups });
       return { ws, works: (sum.rows || []).reduce((a, x) => a + Number(x.works), 0) };
     })().catch(() => { memo.delete(key); return null; }));
     return memo.get(key);

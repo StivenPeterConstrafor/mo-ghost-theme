@@ -162,22 +162,33 @@
         if (ok) { hits.push([toks[k][0], toks[j][1]]); k = j; }
       }
     }
-    return hits.sort((x, y) => x[0] - y[0]);
+    // ONE MARK PER WORD (2026-10-08, owner: "justification repeated twice"): a word found as a form and inside a phrase (the
+    // concept's "fide iustificari" around the form "iustificari") gave two overlapping ranges, and the page printed the word twice
+    // ("iustificariiustificari"). Overlapping ranges are one use.
+    const merged = [];
+    for (const h of hits.sort((x, y) => x[0] - y[0] || y[1] - x[1])) {
+      const last = merged[merged.length - 1];
+      if (last && h[0] < last[1]) last[1] = Math.max(last[1], h[1]); else merged.push([h[0], h[1]]);
+    }
+    return merged;
   }
   // the windows round every use (overlapping ones merged): [{a, b, mid, html}], .total = uses
   function windows(text, forms, width = 110, max = Infinity, chains = []) {
     const hits = usesOf(text, forms, chains);
     const snips = [];
     snips.total = hits.length;
+    // each window starts where the last one ended (10-08: a window's left context reached back into the one before, so the same
+    // sentence was printed twice in a row)
+    let end = 0;
     for (let i = 0; i < hits.length && snips.length < max;) {
-      let a = Math.max(0, hits[i][0] - width), b = Math.min(text.length, hits[i][1] + width), j = i;
+      let a = Math.max(end, hits[i][0] - width), b = Math.min(text.length, hits[i][1] + width), j = i;
       while (j + 1 < hits.length && hits[j + 1][0] < b) { j++; b = Math.min(text.length, Math.max(b, hits[j][1] + 40)); }
       if (a > 0) { const sp = text.indexOf(' ', a); if (sp > 0 && sp < hits[i][0]) a = sp + 1; }
       if (b < text.length) { const sp = text.lastIndexOf(' ', b); if (sp > hits[j][1]) b = sp; }
       let html = a > 0 ? '… ' : '', at = a;
       for (let h = i; h <= j; h++) { html += esc(text.slice(at, hits[h][0])) + '<mark>' + esc(text.slice(hits[h][0], hits[h][1])) + '</mark>'; at = hits[h][1]; }
       html += esc(text.slice(at, b)) + (b < text.length ? ' …' : '');
-      snips.push({ a, b, mid: (hits[i][0] + hits[j][1]) / 2, html }); i = j + 1;
+      snips.push({ a, b, mid: (hits[i][0] + hits[j][1]) / 2, html }); end = b; i = j + 1;
     }
     return snips;
   }
