@@ -332,6 +332,7 @@
           continue;
         }
       }
+      const las = laneP(row, "la");
       for (const p of ps) {
         if (p.classList.contains("fr-hd") || p.closest(".fr-hd")) continue;
         const t = p.textContent;
@@ -339,6 +340,17 @@
         if (p.querySelector(".fr-nm, .fr-vl, .fr-vx-arg")) { doneText.set(p, t); continue; }
         // A paragraph with real footnote marks keeps its numbers.
         const hidden = marked && !p.querySelector("sup, .fnref, a.fn") ? hideRanges(t) : [];
+        // A section number that opens the paragraph in BOTH lanes ("10 Cyrillus …" / "10 Cyril …", Vermigli's Loci
+        // communes) is the print's numbering, not a note marker: the English keeps it, as the Latin beside it does.
+        const lp = las[ps.indexOf(p)];
+        if (hidden.length && hidden[0][0] === 0 && lp) {
+          const num = t.slice(0, hidden[0][1]).trim();
+          if (/^\d{1,4}\.?$/.test(num) && new RegExp("^\\s*" + num.replace(".", "\\.") + "(?=[\\s.,;:)])").test(lp.textContent)) hidden.shift();
+        }
+        // A number right after a reference word is the reference's number ("Augustine also in Tractate 3 on John"), not a marker.
+        for (let k = hidden.length - 1; k >= 0; k--) {
+          if (/\b(?:tractates?|tracts?|books?|chapters?|chap|cap|ch|epistles?|letters?|homil(?:y|ies)|hom|sermons?|serm|psalms?|ps|questions?|qu|q|articles?|art|sections?|sect|verses?|vv?|vol|volumes?|tomes?|parts?|lib|title|tit|canons?|can|sessions?|sess|distinctions?|dist|pages?|pp?|col|columns?|no|numbers?|year)\.?\s*$/i.test(t.slice(0, hidden[k][0]))) hidden.splice(k, 1);
+        }
         // Wrap from the end so earlier offsets hold.
         for (let k = hidden.length - 1; k >= 0; k--) wrap(p, hidden[k][0], hidden[k][1], "fr-nm");
         const arg = t.match(ARG);
