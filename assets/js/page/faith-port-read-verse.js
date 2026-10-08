@@ -345,11 +345,15 @@
         const lp = las[ps.indexOf(p)];
         if (hidden.length && hidden[0][0] === 0 && lp) {
           const num = t.slice(0, hidden[0][1]).trim();
-          if (/^\d{1,4}\.?$/.test(num) && new RegExp("^\\s*" + num.replace(".", "\\.") + "(?=[\\s.,;:)])").test(lp.textContent)) hidden.shift();
+          // one or two digits only: Migne's column numbers ("117 Do you feel ...", Boethius) open both lanes too and stay hidden
+          if (/^\d{1,2}\.?$/.test(num) && new RegExp("^\\s*" + num.replace(".", "\\.") + "(?=[\\s.,;:)])").test(lp.textContent)) hidden.shift();
         }
         // A number right after a reference word is the reference's number ("Augustine also in Tractate 3 on John"), not a marker.
         for (let k = hidden.length - 1; k >= 0; k--) {
-          if (/\b(?:tractates?|tracts?|books?|chapters?|chap|cap|ch|epistles?|letters?|homil(?:y|ies)|hom|sermons?|serm|psalms?|ps|questions?|qu|q|articles?|art|sections?|sect|verses?|vv?|vol|volumes?|tomes?|parts?|lib|title|tit|canons?|can|sessions?|sess|distinctions?|dist|pages?|pp?|col|columns?|no|numbers?|year)\.?\s*$/i.test(t.slice(0, hidden[k][0]))) hidden.splice(k, 1);
+          const before = t.slice(0, hidden[k][0]);
+          // whole words, or an abbreviation WITH its period ("cap.", "can.", "q."): plain English "can", "art", "no" never count
+          if (/\b(?:tractates?|tracts?|books?|chapters?|epistles?|letters?|homil(?:y|ies)|sermons?|psalms?|questions?|articles?|sections?|verses?|volumes?|tomes?|canons?|sessions?|distinctions?|pages?|columns?)\s*$/i.test(before) ||
+              /\b(?:chap|cap|ch|ep|epist|hom|serm|ps|qu|q|art|sect|vv|v|vol|lib|tit|can|sess|dist|pp|p|col|no|n)\.\s*$/i.test(before)) hidden.splice(k, 1);
         }
         // Wrap from the end so earlier offsets hold.
         for (let k = hidden.length - 1; k >= 0; k--) wrap(p, hidden[k][0], hidden[k][1], "fr-nm");
