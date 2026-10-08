@@ -332,6 +332,7 @@
           continue;
         }
       }
+      const las = laneP(row, "la");
       for (const p of ps) {
         if (p.classList.contains("fr-hd") || p.closest(".fr-hd")) continue;
         const t = p.textContent;
@@ -339,6 +340,21 @@
         if (p.querySelector(".fr-nm, .fr-vl, .fr-vx-arg")) { doneText.set(p, t); continue; }
         // A paragraph with real footnote marks keeps its numbers.
         const hidden = marked && !p.querySelector("sup, .fnref, a.fn") ? hideRanges(t) : [];
+        // A section number that opens the paragraph in BOTH lanes ("10 Cyrillus …" / "10 Cyril …", Vermigli's Loci
+        // communes) is the print's numbering, not a note marker: the English keeps it, as the Latin beside it does.
+        const lp = las[ps.indexOf(p)];
+        if (hidden.length && hidden[0][0] === 0 && lp) {
+          const num = t.slice(0, hidden[0][1]).trim();
+          // one or two digits only: Migne's column numbers ("117 Do you feel ...", Boethius) open both lanes too and stay hidden
+          if (/^\d{1,2}\.?$/.test(num) && new RegExp("^\\s*" + num.replace(".", "\\.") + "(?=[\\s.,;:)])").test(lp.textContent)) hidden.shift();
+        }
+        // A number right after a reference word is the reference's number ("Augustine also in Tractate 3 on John"), not a marker.
+        for (let k = hidden.length - 1; k >= 0; k--) {
+          const before = t.slice(0, hidden[k][0]);
+          // whole words, or an abbreviation WITH its period ("cap.", "can.", "q."): plain English "can", "art", "no" never count
+          if (/\b(?:tractates?|tracts?|books?|chapters?|epistles?|letters?|homil(?:y|ies)|sermons?|psalms?|questions?|articles?|sections?|verses?|volumes?|tomes?|canons?|sessions?|distinctions?|pages?|columns?)\s*$/i.test(before) ||
+              /\b(?:chap|cap|ch|ep|epist|hom|serm|ps|qu|q|art|sect|vv|v|vol|lib|tit|can|sess|dist|pp|p|col|no|n)\.\s*$/i.test(before)) hidden.splice(k, 1);
+        }
         // Wrap from the end so earlier offsets hold.
         for (let k = hidden.length - 1; k >= 0; k--) wrap(p, hidden[k][0], hidden[k][1], "fr-nm");
         const arg = t.match(ARG);
