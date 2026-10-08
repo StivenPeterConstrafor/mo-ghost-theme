@@ -553,9 +553,22 @@ function appBank(laN,enN){
     if(!start)return 0;
     const i=marks.findIndex(m=>start===m||(start.compareDocumentPosition(m)&(Node.DOCUMENT_POSITION_FOLLOWING|Node.DOCUMENT_POSITION_CONTAINED_BY)));
     return i>=0?i:0;}
-  const count=()=>{if(bar)bar.querySelector(".hln").textContent=(marks.length?idx+1:0)+"/"+marks.length;};
+  const inNote=m=>!!(m&&m.closest(".mnote"));
+  const count=()=>{if(bar)bar.querySelector(".hln").textContent=(marks.length?idx+1:0)+"/"+marks.length+(inNote(marks[idx])?" · margin note":"");};
   const paint=()=>marks.forEach((m,i)=>m.classList.toggle("cur",i===idx));
-  const go=d=>{if(!marks.length)return;idx=(idx+d+marks.length)%marks.length;count();paint();marks[idx].scrollIntoView({block:"center"});};
+  // A MATCH IN A MARGIN NOTE (2026-10-06, a reader on Baxter's Catholick Theologie: the search "took me to the main text instead
+  // of the marginal note"): reader-margins.js keeps each note in place but hidden behind its margin marker, so scrolling to a
+  // mark inside it lands nowhere. Bring the marker into view and open its panel, whose copy of the note carries the mark, as
+  // Search this work already does. The markers are added after the reading renders: wait for this one a few seconds.
+  function reveal(m,tries){
+    const note=m&&m.closest(".mnote");
+    if(note&&!note.getClientRects().length){
+      const prev=note.previousElementSibling,group=note.closest(".rm-group");
+      const marker=prev&&prev.matches(".rm-marker")?prev:group&&group.querySelector(".rm-marker");
+      if(marker){marker.scrollIntoView({block:"center"});if(marker.getAttribute("aria-expanded")!=="true")marker.click();return;}
+      if((tries||0)<20){setTimeout(()=>{if(marks[idx]===m)reveal(m,(tries||0)+1);},250);return;}}
+    m.scrollIntoView({block:"center"});}
+  const go=d=>{if(!marks.length)return;idx=(idx+d+marks.length)%marks.length;count();paint();reveal(marks[idx]);};
   function clear(){
     if(mo){mo.disconnect();mo=null;}
     reading.querySelectorAll("mark.hlq").forEach(m=>{const s=document.createElement("span");s.textContent=m.textContent;m.replaceWith(s);});
@@ -582,7 +595,7 @@ function appBank(laN,enN){
       const wasCur=marks[idx]&&marks[idx].isConnected?marks[idx]:null;
       if(!mark()){count();return;}
       idx=wasCur?Math.max(0,marks.indexOf(wasCur)):startIndex();count();paint();
-      if(!window.__frUserScrolled&&marks[idx])marks[idx].scrollIntoView({block:"center"});},400);});
+      if(!window.__frUserScrolled&&marks[idx]&&!inNote(marks[idx]))marks[idx].scrollIntoView({block:"center"});},400);});
     mo.observe(reading,{childList:true,subtree:true});}
   function apply(){
     // build() streams folios in chunks (and the MereO port hydrates the TEI later still): an empty first pass is not
