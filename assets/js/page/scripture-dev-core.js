@@ -59,9 +59,12 @@
 
   // Ian, 2026-09-22: ESV, NIV, CSB, KJV, NASB. Codes are bolls.life's
   // (CSB is CSB17 there). ESV first because it is the default.
+  // The NIV came out 2026-10-07: bolls.life no longer serves it and
+  // returns its maintainer's notice about Biblica in place of every
+  // verse, which the desk printed as the NIV's text. A saved or linked
+  // NIV (&t=NIV) falls back to the ESV through recalledTranslation().
   const TRANSLATIONS = [
     ["ESV", "ESV", "English Standard Version"],
-    ["NIV", "NIV", "New International Version"],
     ["CSB17", "CSB", "Christian Standard Bible"],
     ["KJV", "KJV", "King James Version"],
     ["NASB", "NASB", "New American Standard Bible"],

@@ -8,7 +8,7 @@
  *
  * On the page, top to bottom (Ian, 2026-09-22):
  *   - the verse in the reader's translation, with its neighbours;
- *   - the verse in all five translations, except in the deuterocanon,
+ *   - the verse in all four translations, except in the deuterocanon,
  *     which has one text and gets a line saying which;
  *   - every citation: the count, charts by century and tradition that
  *     double as filters, the filters and a search, the top five works,
@@ -44,16 +44,16 @@
   const label = S.refLabel(book, c, v);
   document.title = `${label} | Verse Desk | The Faith Received | Mere Orthodoxy`;
 
-  // The deuterocanon is in none of the five translations, and mo-bible
+  // The deuterocanon is in none of the four translations, and mo-bible
   // has no book number for it, so that section is replaced by the one
-  // line that says so rather than left as five rows that all fail.
+  // line that says so rather than left as four rows that all fail.
   const transSection = book.ap
     ? `<section class="sd-desk-sec" aria-labelledby="sd-h-trans">` +
         `<h2 class="sd-h2" id="sd-h-trans">The text</h2>` +
-        `<p class="sd-muted">${esc(S.APOCRYPHA_TEXT)}, from the library's own index. The five translations this reader offers do not carry the deuterocanon.</p>` +
+        `<p class="sd-muted">${esc(S.APOCRYPHA_TEXT)}, from the library's own index. The four translations this reader offers do not carry the deuterocanon.</p>` +
       `</section>`
     : `<section class="sd-desk-sec" aria-labelledby="sd-h-trans">` +
-        `<h2 class="sd-h2" id="sd-h-trans">In five translations</h2>` +
+        `<h2 class="sd-h2" id="sd-h-trans">In four translations</h2>` +
         `<dl class="sd-parallel" data-sd-parallel></dl>` +
       `</section>`;
 
@@ -132,7 +132,7 @@
       `</form>` +
     `</section>`;
 
-  // ── The verse, its neighbours, and five translations ──────────
+  // ── The verse, its neighbours, and four translations ──────────
   const $verse = $root.querySelector("[data-sd-verse]");
   const $verseTrans = $root.querySelector("[data-sd-verse-trans]");
   const short = S.textShort(book, t);

@@ -3,7 +3,7 @@
  *
  * Ian, 2026-09-20: "We need to ditch our old Bible reader and use this."
  * Everything the old reader had that the new one lacked has since been
- * carried over: all five translations, and Ask, Search and Copy on each
+ * carried over: all four translations, and Ask, Search and Copy on each
  * verse. There is nothing left here that is not there.
  *
  * SO THIS PAGE FORWARDS, AND CARRIES THE PASSAGE WITH IT. A bare
