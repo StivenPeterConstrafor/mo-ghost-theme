@@ -839,7 +839,14 @@
     if (!href) return li;
     const $btn = li.querySelector(".sd-preview-btn");
     const $pv = li.querySelector(".sd-preview");
-    const where = /#b/.test(href) ? "the page this list links to" : "its first page";
+    // Where the list's own link opens (mo-tfr-verse `anchored`, 2026-10-08): the map's page for this chapter, else the page where
+    // the work cites the chapter most, else the start of its section on the book, else its first page.
+    const chapterRef = e.anchored === "chapter" || e.anchored === "cited" ? `${refLabel(ctx.book, ctx.c, 0)}` : "";
+    const where = e.anchored === "chapter" ? `its comment on ${chapterRef}`
+      : e.anchored === "cited" ? `the page where it cites ${chapterRef} most`
+      : e.anchored === "start" ? "the start of its section on this book"
+      : e.anchored === "none" ? "its first page"
+      : /#b/.test(href) ? "the page this list links to" : "its first page";
     const read = (link) => `<a class="sd-read-link" href="${esc(link)}">Read in context</a>`;
     const here = `<button type="button" class="sd-keep-reading" aria-expanded="false">Keep reading here</button>`;
     // The reader at once, for a commentary with no indexed comment on the verse.
@@ -849,6 +856,11 @@
       $pv.querySelector(".sd-keep-reading").click();
     };
     let shown = null;
+    // the nearest verse (one before, one after, then two) with an indexed comment in this commentary: {r, nv} or null
+    const neighbour = (v) => [v - 1, v + 1, v - 2, v + 2].filter((x) => x > 0).reduce((found, nv) => found.then((hit) => hit
+      || fetchVerse(ctx.book, ctx.c, nv, { ...emptyFilters(), w: e.w }, 0, 1)
+        .then((d) => { const r = ((d && d.rows) || [])[0]; return r ? { r, nv } : null; })
+        .catch(() => null)), Promise.resolve(null));
     $btn.addEventListener("click", () => {
       const open = $btn.getAttribute("aria-expanded") !== "true";
       if (open) {
@@ -873,7 +885,16 @@
         })
         .then(({ r, p }) => {
           if (shown !== v) return;
-          if (!r) { openReader(`No comment on ${ref} is indexed in this commentary yet, so it opens below at ${where}.`, href); return; }
+          if (!r) {
+            // A NEIGHBOURING VERSE FIRST (2026-10-08, the owner on Acts 2:39: "not going to the right page"). A commentary that
+            // indexes no comment on this verse usually has one on the verse before or after it, on the same page or the next; that
+            // page is opened before the list's own link.
+            return neighbour(v).then((hit) => {
+              if (shown !== v) return;
+              if (hit) openReader(`No comment on ${ref} is indexed in this commentary, so it opens below at its comment on ${refLabel(ctx.book, ctx.c, hit.nv)}.`, sourceHref(hit.r.h, hit.r.w, hit.r.p) || href);
+              else openReader(`No comment on ${ref} is indexed in this commentary yet, so it opens below at ${where}.`, href);
+            });
+          }
           const link = sourceHref((p && p.href) || r.h, r.w, r.p) || href;
           if (p && p.found && p.text) {
             const text = `${p.clipped_start ? "\u2026 " : ""}${p.text}${p.clipped_end ? " \u2026" : ""}`;
