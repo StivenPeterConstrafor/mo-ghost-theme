@@ -590,8 +590,15 @@
         id: w.slug,
         title: w.title || w.slug,
         // The catalogue carries the work's own title separately, so a
-        // reader gets both without waiting on a translation pass.
-        titleLatin: String(w.title_la || ""),
+        // reader gets both without waiting on a translation pass. Since
+        // 2026-10-08 a catalogue title can already name its source
+        // ("Discourse on the Existence of God (Proslogion)"): then the
+        // subtitle would only repeat it.
+        titleLatin: ((title, source) => {
+          const k = (v) => String(v || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+          const head = k(source).slice(0, 10);
+          return head && k(title).includes(head) ? "" : String(source || "");
+        })(w.title || w.slug, w.title_la),
         // Volume tells two printings of the same title apart. Without
         // it a multi-volume set reads as the same row repeated.
         // Volumes come through as numbers as often as strings, and a
