@@ -143,7 +143,7 @@
 .wix .wix-if .wix-go{margin-top:.2rem;font-size:.84rem}
 .wix-teaser{padding:.7rem 1rem;font-size:.92rem;line-height:1.5}.wix-teaser .wix-go{margin:0 0 0 .4rem;padding:.2rem .7rem}
 .wix .wix-note{margin:.8rem 0 0;color:var(--muted,#666);font-size:.8rem;line-height:1.45}.wix .wix-err{color:#a8462b}
-.wcx .wcx-k{margin:0 0 .15rem;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#666)}
+.wcx .wcx-k{margin:0 0 .15rem;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#666)}.wix-idea{margin:0 0 .6rem;font-size:.92rem;line-height:1.5;color:var(--muted,#666)}.wix-idea b{color:var(--fg,inherit)}.wix-idea .wix-go{margin-left:.4rem}.wix-asked{margin:0 0 .7rem;font-size:.95rem;line-height:1.5}.wix-asked .wix-k{display:block;margin:0 0 .1rem;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#666)}.wix-asked .wix-terms{display:block;margin-top:.2rem;font-size:.85rem;color:var(--muted,#666)}.wix-asked .wix-go{margin-left:.4rem}.sr .sr-why{margin:.15rem 0 .1rem;font-size:.85rem;font-style:italic;color:var(--muted,#666)}
 .wcx h3{font-size:1.18rem}.wcx .wcx-gl{margin:.1rem 0 .35rem;font-size:.95rem;line-height:1.5}
 .wcx .wcx-meta{margin:0 0 .7rem;color:var(--muted,#666);font-size:.82rem;line-height:1.5}.wcx .wcx-meta a{color:inherit}
 .wcx .wcx-row{display:grid;grid-template-columns:5.2rem 1fr;gap:.2rem .6rem;align-items:baseline;margin:.3rem 0;font-size:.84rem}
@@ -256,11 +256,62 @@
     }
     return best || (part ? { ...part, part: true } : null);
   }
+  /* A SLIP OF THE PEN (owner 2026-10-06: "ahec sancta" found nothing): the query names a concept when each of its words is within
+     one edit of the concept's label or one of its triggers, word for word (two edits for words of eight letters or more; a swap of
+     two letters is one edit). Words under four letters must match exactly, and a single short word never matches loosely. The
+     closest name wins; on a tie, the concept found in more works. */
+  function slip(a, b, lim) {
+    if (Math.abs(a.length - b.length) > lim) return lim + 1;
+    const d = [];
+    for (let i = 0; i <= a.length; i++) { d[i] = [i]; }
+    for (let j = 0; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      let low = lim + 1;
+      for (let j = 1; j <= b.length; j++) {
+        const c = a[i - 1] === b[j - 1] ? 0 : 1;
+        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + c);
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+        low = Math.min(low, d[i][j]);
+      }
+      if (low > lim) return lim + 1;
+    }
+    return d[a.length][b.length];
+  }
+  function conceptNear(query, index) {
+    const fq = foldText(String(query || '').replace(/^\s*the\s+/i, ''));
+    if (!fq || !index) return null;
+    const qs = fq.split(' ');
+    if (qs.length === 1 && qs[0].length < 6) return null;
+    let best = null, bestD = Infinity;
+    for (const c of index.concepts || []) {
+      for (const name of [foldText(String(c.label).replace(/^\s*the\s+/i, '')), ...(c.triggers || []).map(t => t.replace(/^the /, ''))]) {
+        const ns = name.split(' ');
+        if (ns.length !== qs.length) continue;
+        let d = 0;
+        for (let i = 0; i < ns.length && d < Infinity; i++) {
+          const x = qs[i], y = ns[i];
+          if (x === y) continue;
+          if (x.length < 4 || y.length < 4) { d = Infinity; break; }
+          const lim = Math.max(x.length, y.length) >= 8 ? 2 : 1, e = slip(x, y, lim);
+          d = e > lim ? Infinity : d + e;
+        }
+        if (d > 0 && d < Infinity && (d < bestD || (d === bestD && (c.works || 0) > (best.works || 0)))) { best = c; bestD = d; }
+      }
+    }
+    return best ? { ...best, near: true } : null;
+  }
   const LANG = { grc: 'Greek', la: 'Latin', en: 'English' };
   function searchHref(term) { const u = new URL(location.href); u.searchParams.set('q', term); u.searchParams.set('m', 'full'); u.hash = ''; return u.pathname + u.search; }
   async function conceptCard(slot, opts, force) {
     const index = await loadConcepts(), hit = force || conceptOf(opts.query, index);
-    if (!hit) return;
+    if (!hit) {
+      const nh = conceptNear(opts.query, index);
+      if (nh && slot.isConnected) {
+        slot.className = 'wix wix-teaser';
+        slot.innerHTML = `Did you mean <a href="${esc(searchHref(nh.label))}"><b>${esc(nh.label)}</b></a>${nh.gloss ? ` (${esc(nh.gloss.replace(/\.$/, ''))})` : ''}?`;
+      }
+      return;
+    }
     if (hit.part && !force) {
       slot.className = 'wix wix-teaser';
       slot.innerHTML = `<b>“${esc(String(opts.query).trim())}”</b> is one of the library’s words for <b>${esc(hit.label)}</b>${hit.gloss ? ` (${esc(hit.gloss.replace(/\.$/, ''))})` : ''}. <button type="button" class="wix-go">Show the concept</button>`;
@@ -629,5 +680,60 @@
     host.innerHTML = `<div class="wix wix-teaser"><b>${shown(opts.query, c.ws).map(w => '“' + esc(w) + '”').join(' + ')}</b> ${c.ws.length > 1 ? 'occur together on the pages of' : 'occurs in the text of'} <b>${n(c.works)} ${c.works === 1 ? 'work' : 'works'}${opts.scope && opts.scope.by ? ' ' + esc(opts.scope.by) : ''}</b> (with ${c.ws.length > 1 ? 'their' : 'its'} other forms). The list below matches titles and headings only. <button type="button" class="wix-go">List every text</button></div>`;
     host.querySelector('button').onclick = () => opts.open();
   }
-  window.FRWordIndex = { mount, teaser, count, inflect, forms, words, phraseOf, fold, conceptOf, loadConcepts };
+  /* BY IDEA (owner 2026-10-06: "haec sancta" brought pages on holiness; "make semantic search intuitive and useful"): the idea a query
+     names, exactly or within a slip of the pen, gets the card Exact words shows, at the top of the passages, and is returned so the
+     search can look for its meaning (its label and gloss) rather than the bare words. A query naming no concept returns null and is
+     searched as typed. opts: {query, readHref, title, meta, asTyped?}; asTyped() re-runs the search on the words as typed. */
+  async function idea(slot, opts) {
+    const index = await loadConcepts();
+    if (!index || !slot) return null;
+    style();
+    const hit = conceptOf(opts.query, index) || conceptNear(opts.query, index);
+    if (!hit) return null;
+    const line = document.createElement('p');
+    line.className = 'wix-idea';
+    const typed = String(opts.query || '').trim();
+    line.innerHTML = hit.near
+      ? `Showing the idea <b>${esc(hit.label)}</b>, the nearest name the library knows to “${esc(typed)}”.${opts.asTyped ? ' <button type="button" class="wix-go">Search the words as typed</button>' : ''}`
+      : `Searched with the library's idea <b>${esc(hit.label)}</b>.${opts.asTyped ? ' <button type="button" class="wix-go">Search the words as typed</button>' : ''}`;
+    const b = line.querySelector('button');
+    if (b) b.onclick = () => opts.asTyped();
+    const card = document.createElement('section');
+    slot.append(line, card);
+    conceptCard(card, { ...opts, query: hit.part ? typed : hit.label }, hit.part ? { ...hit, part: true } : { ...hit, part: false }).catch(e => console.warn('idea card', e));
+    return { id: hit.id, label: hit.label, gloss: hit.gloss || '', near: !!hit.near };
+  }
+  /* WHAT WAS SEARCHED (2026-10-07, /api/isearch): the model's reading of the query, above the idea card — what the page understood,
+     the words it searched exactly, and a way back to the words as typed. A library idea the model says names something else is
+     left out of the search, and its card folds away behind a link, so a wrong concept never stands over the results. */
+  function asked(slot, understood, opts = {}) {
+    if (!slot || !understood) return;
+    style();
+    slot.querySelector('.wix-asked')?.remove();
+    const terms = [...(understood.latin || []), ...(understood.english || [])].filter(Boolean).slice(0, 8);
+    if (understood.description) {
+      // the model's sentence as a statement of the idea: its preamble off, the first two sentences at most
+      let said = String(understood.description).replace(/^(?:this (?:phrase |search |query )?(?:refers to|concerns|is about)|the reader is (?:looking|searching) for)\s+/i, '');
+      said = said.charAt(0).toUpperCase() + said.slice(1);
+      const two = said.match(/^(?:[^.!?]+[.!?]+\s*){1,2}/);
+      if (two && two[0].length >= 40) said = two[0].trim();
+      const box = document.createElement('p');
+      box.className = 'wix-asked';
+      box.innerHTML = `<span class="wix-k">Searched as</span> ${esc(said)}`
+        + (terms.length ? `<span class="wix-terms">${terms.map(t => `<i>${esc(t)}</i>`).join(' · ')}</span>` : '')
+        + (opts.asTyped && !slot.querySelector('.wix-idea .wix-go') ? ' <button type="button" class="wix-go">Search the words as typed</button>' : '');
+      const b = box.querySelector('button');
+      if (b) b.onclick = () => opts.asTyped();
+      slot.prepend(box);
+    }
+    const c = understood.concept, line = slot.querySelector('.wix-idea');
+    if (c && c.fits === false && line && !line.dataset.unfit) {
+      line.dataset.unfit = '1';
+      line.innerHTML = `The library's idea <b>${esc(c.label)}</b> names something else, so it was left out. <button type="button" class="wix-go">Show it anyway</button>`;
+      const card = line.nextElementSibling;
+      if (card) card.hidden = true;
+      line.querySelector('button').onclick = (e) => { if (card) card.hidden = false; e.target.remove(); };
+    }
+  }
+  window.FRWordIndex = { mount, teaser, count, inflect, forms, words, phraseOf, fold, conceptOf, conceptNear, loadConcepts, idea, asked, card: conceptCard };
 })();

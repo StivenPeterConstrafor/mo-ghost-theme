@@ -6,7 +6,7 @@
   'use strict';
   const previous = window.fetch.bind(window);
   const host = 'mo-tfr-ask-dev.mo-podcast-feed.workers.dev';
-  const protectedPath = /^\/v1\/(ask|vsearch|xsearch|related|investigations|research|agent)(?:\/|$)/;
+  const protectedPath = /^\/v1\/(ask|vsearch|xsearch|isearch|related|investigations|research|agent)(?:\/|$)/;
   window.fetch = async function (input, init) {
     const url = new URL(typeof input === 'string' ? input : input.url, location.href);
     if (url.hostname !== host || !protectedPath.test(url.pathname)) return previous(input, init);
