@@ -188,7 +188,7 @@
       let html = a > 0 ? '… ' : '', at = a;
       for (let h = i; h <= j; h++) { html += esc(text.slice(at, hits[h][0])) + '<mark>' + esc(text.slice(hits[h][0], hits[h][1])) + '</mark>'; at = hits[h][1]; }
       html += esc(text.slice(at, b)) + (b < text.length ? ' …' : '');
-      snips.push({ a, b, mid: (hits[i][0] + hits[j][1]) / 2, html }); end = b; i = j + 1;
+      snips.push({ a, b, mid: (hits[i][0] + hits[j][1]) / 2, html, n: j - i + 1 }); end = b; i = j + 1;
     }
     return snips;
   }
@@ -217,5 +217,20 @@
     if (ew.length) return ew.map(w => ({ o: o ? around(o, w.mid / e.length, width + 20) : '', e: w.html, inEnglish: true }));
     return [];
   }
-  window.FRWordPreview = { pages, lanes, pair, kwic, cut, key };
+  /** THE PAGE'S BEST PASSAGE (2026-10-08, owner: one passage per page, its count beside it, "not every use"): the window that holds
+      the most uses, in the original where it has any, else in the English, and the other lane at the same place beside it.
+      {o, e, uses} of html (uses: every use on the page), or null when neither lane holds a use. */
+  function best(lane, { forms = [], chains = [], enForms = [], enChains = [], width = 140 } = {}) {
+    const o = lane.o || '', e = lane.e || '';
+    const ow = windows(o, forms, width, Infinity, chains), ew = windows(e, [].concat(forms, enForms), width + 30, Infinity, [].concat(chains, enChains));
+    const top = list => list.reduce((b, w) => (!b || w.n > b.n ? w : b), null);
+    if (ow.length) {
+      const w = top(ow), share = w.mid / o.length;
+      const m = ew.length ? ew.reduce((b, x) => (!b || Math.abs(x.mid / e.length - share) < Math.abs(b.mid / e.length - share) ? x : b), null) : null;
+      return { o: w.html, e: m ? m.html : around(e, share, width + 60), uses: ow.total };
+    }
+    if (ew.length) { const w = top(ew); return { o: o ? around(o, w.mid / e.length, width + 20) : '', e: w.html, uses: ew.total, inEnglish: true }; }
+    return null;
+  }
+  window.FRWordPreview = { pages, lanes, pair, best, kwic, cut, key };
 })();

@@ -201,33 +201,42 @@
       ? `<div class="wix-pair"><span class="wix-s">${x.o || '<span class="wix-none">(English only on this page)</span>'}</span><span class="wix-s wix-en"><b>English</b>${x.e || '<span class="wix-none">not translated on this page</span>'}</span></div>`
       : `<div class="wix-pair wix-one"><span class="wix-s">${x.o || x.e}</span></div>`).join('')}</div>`;
   }
-  const ALLPV = 'wix-allpv';
-  const allOn = () => { try { return localStorage.getItem(ALLPV) === '1'; } catch (e) { return false; } };
-  const setAll = v => { try { localStorage.setItem(ALLPV, v ? '1' : '0'); } catch (e) { /* private window */ } document.dispatchEvent(new CustomEvent(ALLPV, { detail: !!v })); };
-  // open(li): show that entry's passages. Every entry of the list, present and to come, opens as it nears the screen while the switch is on.
-  function autoOpen(list, open) {
-    let io = null, mo = null;
-    const watch = li => { if (io && li.nodeType === 1 && li.matches('li') && !li.dataset.pvAuto) { li.dataset.pvAuto = '1'; io.observe(li); } };
-    function start() {
-      if (io || typeof IntersectionObserver !== 'function') return;
-      io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); open(e.target); } }), { rootMargin: '300px 0px' });
-      list.querySelectorAll(':scope li').forEach(watch);
-      mo = new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1) { watch(n); n.querySelectorAll && n.querySelectorAll('li').forEach(watch); } })));
-      mo.observe(list, { childList: true, subtree: true });
-    }
-    function stop() { if (io) io.disconnect(); if (mo) mo.disconnect(); io = mo = null; list.querySelectorAll('li[data-pv-auto]').forEach(li => delete li.dataset.pvAuto); }
-    return { start, stop };
+  /* ONE PASSAGE PER PAGE, AND EACH WORK'S BEST PAGE FIRST (2026-10-08). The owner, on MereO search for "justification": "this doesnt
+     make sense all one one page??" — a work opened every use on its best page, Gerhard's p. 1082 twenty-seven times — then, on the
+     proposal: "the concept card and word forms at the top, the rest is fine". So: one ranked list (the word service's BM25 order,
+     a tradition button narrows it); under each work its single best passage, the original beside the English, read as the work
+     comes into view; "More passages" lists its other pages, busiest first, one passage each with its count. Not every use. */
+  function lazy(el, load) {
+    if (typeof IntersectionObserver !== 'function') { load(); return; }
+    const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) { io.disconnect(); load(); } }, { rootMargin: '400px 0px' });
+    io.observe(el);
   }
-  // one setting for every list on the page: a switch turned anywhere turns every other one, and their lists open or close with it
-  function allSwitch(label, auto) {
-    const el = document.createElement('label'); el.className = 'wix-allpv';
-    el.innerHTML = `<input type="checkbox"${allOn() ? ' checked' : ''}> ${label}`;
-    const box = el.querySelector('input');
-    box.addEventListener('change', () => setAll(box.checked));
-    const sync = e => { if (!el.isConnected) { document.removeEventListener(ALLPV, sync); auto.stop(); return; } box.checked = e.detail; if (e.detail) auto.start(); else auto.stop(); };
-    document.addEventListener(ALLPV, sync);
-    if (allOn()) auto.start();
-    return el;
+  // three works read at a time: a Father's TEI is a whole volume
+  const waiting = []; let reading = 0;
+  function limited(task) { return new Promise((res, rej) => { waiting.push([task, res, rej]); pump(); }); }
+  function pump() {
+    while (reading < 3 && waiting.length) {
+      const [t, res, rej] = waiting.shift(); reading++;
+      Promise.resolve().then(t).then(res, rej).finally(() => { reading--; pump(); });
+    }
+  }
+  const pageText = (slug, p) => (/^(pld|pg)-/.test(slug) ? 'col.' : 'p.') + ' ' + esc(String(p).replace(/^0+(?=\d)/, ''));
+  // one page: its link, how many uses it holds (and any tags), its best passage, the original beside the English
+  function passageHtml(href, label, b, count, extra) {
+    const c = Number(count || (b && b.uses) || 0), tags = [c ? `${n(c)} ${c === 1 ? 'use' : 'uses'} on this page` : '', extra].filter(Boolean).join(' · ');
+    return `<div class="wix-i"><a class="wix-p" href="${esc(href)}">${label}</a>${tags ? `<span class="wcx-ev">${tags}</span>` : ''}`
+      + (b ? pairsHtml([b]) : '<span class="wix-s wix-none">open the page to read it</span>') + '</div>';
+  }
+  // the best passage of each of these pages of one work: [{page, b}] in the order given
+  async function bestOf(slug, pages, look, fallback) {
+    const P = window.FRWordPreview;
+    const lanes = P && P.best ? await P.lanes(slug, pages.map(String)).catch(() => null) : null;
+    return pages.map(p => {
+      const lane = lanes && lanes.get(String(p));
+      let b = lane ? P.best(lane, look) : null;
+      if (!b && lane && fallback) b = P.best(lane, fallback);   // a phrase across a line or a note: its words
+      return { page: p, b };
+    });
   }
 
   /* THE CONCEPT CARD (2026-10-02, owner: "build it … make of course results are tastefully done"). When the query names a doctrine or
@@ -301,7 +310,7 @@
       ${rows}${vrow}${offList}${nearLine}
       <p class="wcx-why">Works that treat it most: ranked where its words, its verses and the statements filed under it meet on the same pages. Each word above is a search of its own.</p>
       ${trads.length > 1 ? `<div class="wix-trad" role="group" aria-label="Tradition"><button type="button" data-ct="*" aria-pressed="true">All traditions</button>${trads.map(t => `<button type="button" data-ct="${esc(t.t)}" aria-pressed="false">${esc(t.t)}<span>${n(t.works)}</span></button>`).join('')}</div>` : ''}
-      <p class="wcx-start"></p><div class="wcx-sw"></div><ol class="wcx-list"></ol><div class="wcx-foot"></div>`;
+      <p class="wcx-start"></p><ol class="wcx-list"></ol><div class="wcx-foot"></div>`;
     const forms = [...new Set(on.filter(t => t.kind === 'word').flatMap(t => t.forms || []))];
     const pforms = [...new Set(on.filter(t => t.kind !== 'word').flatMap(t => t.chain || []))];
     // what to look for on a page: the original's words and phrases; the English words and phrases in the English
@@ -323,44 +332,47 @@
         const row = { slug: w.w, title: w.title, author: w.author, tradition: w.tradition, volume: w.volume };
         li.innerHTML = `<div class="wix-h"><a class="wix-t" href="${esc(opts.readHref(w.w, w.best, forms[0] || ''))}">${opts.title(w.w, row)}</a>${w.en ? '<span class="wcx-en" title="This work can be read in English">English</span>' : ''}<span class="wix-n">${n(w.pages)} ${w.pages === 1 ? 'page' : 'pages'}</span></div>
           ${opts.meta(row) ? `<div class="wix-m">${opts.meta(row)}</div>` : ''}
-          <div class="wix-c"><span class="wcx-ev">${ev(w)}</span><button type="button" class="wix-pv" data-cw="${esc(w.w)}" aria-expanded="false">Passages ▾</button></div>`;
+          <div class="wix-best"><span class="wix-none">Reading its best page…</span></div>
+          <div class="wix-c"><span class="wcx-ev">${ev(w)}</span><button type="button" class="wix-pv" data-cw="${esc(w.w)}" aria-expanded="false">More passages ▾</button></div>`;
         ol.appendChild(li);
+        lazy(li, () => limited(() => cardBest(li, w)).catch(() => {}));
       });
       st.shown = Math.min(pool().length, st.shown + k);
       const left = pool().length - st.shown;
       foot.innerHTML = left > 0 ? `<button type="button" class="wix-go">More works · ${n(left)} more ranked</button>` : '';
       const b = foot.querySelector('button'); if (b) b.onclick = () => more(10);
     }
+    // the pages the card ranks for a work, best first ([page, score, …, cites its verse, statements filed under it])
+    const ranked = w => (w.pp || []).slice().sort((a, b) => b[1] - a[1]);
+    const tagsOf = p => [p[3] ? 'cites its verse' : '', p[4] ? `${p[4]} ${p[4] === 1 ? 'statement' : 'statements'} filed under it` : ''].filter(Boolean).join(' · ');
+    const hrefOf = (w, p) => opts.readHref(w.w, p, forms[0] || pforms[0] || '');
+    async function cardBest(li, w) {
+      const at = li.querySelector(':scope > .wix-best'), p = ranked(w)[0];
+      if (!at) return;
+      if (!p) { at.remove(); return; }
+      const [x] = await bestOf(w.w, [p[0]], look);
+      at.outerHTML = passageHtml(hrefOf(w, p[0]), pageText(w.w, p[0]), x.b, 0, tagsOf(p));
+    }
     more(8); startWith();
     async function passages(li, w, btn) {
       let box = li.querySelector(':scope > .wix-inst');
-      if (box) { box.hidden = !box.hidden; btn.setAttribute('aria-expanded', String(!box.hidden)); btn.textContent = box.hidden ? 'Passages ▾' : 'Hide ▴'; return; }
+      if (box) { box.hidden = !box.hidden; btn.setAttribute('aria-expanded', String(!box.hidden)); btn.textContent = box.hidden ? 'More passages ▾' : 'Hide ▴'; return; }
       box = document.createElement('div'); box.className = 'wix-inst'; li.appendChild(box);
       btn.setAttribute('aria-expanded', 'true'); btn.textContent = 'Hide ▴';
-      const pp = (w.pp || []).slice().sort((a, b) => b[1] - a[1]), st = { shown: 0 };   // every page the card ranks, best first
+      const pp = ranked(w).slice(1), st = { shown: 0 };   // the best page is already shown above the button
       const il = document.createElement('div'), ft = document.createElement('div'); ft.className = 'wix-if'; box.append(il, ft);
+      if (!pp.length) { il.innerHTML = '<span class="wix-none">The card ranks no other page of this work.</span>'; return; }
       async function next(k) {
         const batch = pp.slice(st.shown, st.shown + k); st.shown += batch.length;
         ft.innerHTML = '<span class="wix-none">Reading the pages…</span>';
-        let lanes = null;
-        if (window.FRWordPreview && FRWordPreview.lanes) lanes = await FRWordPreview.lanes(w.w, batch.map(p => String(p[0]))).catch(() => null);
-        batch.forEach(p => {
-          const lane = lanes && lanes.get(String(p[0]));
-          const uses = lane ? FRWordPreview.pair(lane, look) : [];
-          const d = document.createElement('div'); d.className = 'wix-i';
-          const tags = [p[3] ? 'cites its verse' : '', p[4] ? `${p[4]} ${p[4] === 1 ? 'statement' : 'statements'} filed under it` : ''].filter(Boolean).join(' · ');
-          d.innerHTML = `<a class="wix-p" href="${esc(opts.readHref(w.w, p[0], forms[0] || pforms[0] || ''))}">${(/^(pld|pg)-/.test(w.w) ? 'col.' : 'p.') + ' ' + esc(String(p[0]).replace(/^0+(?=\d)/, ''))}</a>`
-            + (uses.length ? `<span class="wcx-ev">${uses.length} ${uses.length === 1 ? 'use' : 'uses'}${tags ? ' · ' + tags : ''}</span>${pairsHtml(uses)}` : `<span class="wix-s wix-none">${tags || 'open the page to read it'}</span>`);
-          il.appendChild(d);
-        });
+        const got = await bestOf(w.w, batch.map(p => p[0]), look);
+        got.forEach((x, i) => il.insertAdjacentHTML('beforeend', passageHtml(hrefOf(w, x.page), pageText(w.w, x.page), x.b, 0, tagsOf(batch[i]))));
         const left = pp.length - st.shown;
-        ft.innerHTML = left > 0 ? `<button type="button" class="wix-go" data-n="8">${Math.min(8, left)} more pages</button> <button type="button" class="wix-go" data-n="all">all ${n(left)} left</button>` : '';
-        ft.querySelectorAll('button').forEach(b => { b.onclick = () => next(b.dataset.n === 'all' ? Infinity : 8); });
+        ft.innerHTML = left > 0 ? `<button type="button" class="wix-go" data-n="5">${Math.min(5, left)} more pages</button> <button type="button" class="wix-go" data-n="all">all ${n(left)} left</button>` : '';
+        ft.querySelectorAll('button').forEach(b => { b.onclick = () => next(b.dataset.n === 'all' ? Infinity : 5); });
       }
-      await next(6);
+      await next(5);
     }
-    slot.querySelector('.wcx-sw').appendChild(allSwitch('Show the passages under every work',
-      autoOpen(ol, li => { const b = li.querySelector('button[data-cw][aria-expanded=false]'); if (b) b.click(); })));
     slot.addEventListener('click', async e => {
       const t = e.target.closest('button'); if (!t || !slot.contains(t)) return;
       if (t.dataset.ct) {
@@ -384,11 +396,11 @@
     const phNote = ph ? `<span class="wix-phn"> The words stand next to each other, in this order${ph.skipped.length ? ` — the index leaves out small words (${ph.skipped.map(esc).join(', ')}), so “${esc(ph.ws.join(' … '))}” also finds the phrase with another small word between` : ''}.</span>` : '';
     box.innerHTML = `<h3>${quoted}<span class="wix-how">${ph ? ' as a phrase' : ws.length > 1 ? ' on the same page' : ''}</span> — ${opts.scope ? 'in ' + esc(opts.scope.label) : 'every text in the library'}</h3>
       <p class="wix-sub">Counted from the library’s word index: every page of ${opts.scope ? esc(opts.scope.label) : 'every work'}, a duplicate edition once.${phNote} <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
-      <div class="wix-forms"></div><div class="wix-dist" role="group" aria-label="How close" hidden></div><div class="wix-sum">Counting…</div><div class="wix-trad" role="group" aria-label="Tradition"></div><div class="wix-swl"></div><div class="wix-list"></div>`;
+      <div class="wix-forms"></div><div class="wix-dist" role="group" aria-label="How close" hidden></div><div class="wix-sum">Counting…</div><div class="wix-trad" role="group" aria-label="Tradition"></div><div class="wix-list"></div>`;
     host.appendChild(box);
     const cslot = document.createElement('section'); host.insertBefore(cslot, box); if (!opts.scope) conceptCard(cslot, opts).catch(e => console.warn('concept card', e));
     const $ = s => box.querySelector(s);
-    const state = { dist: { k: 0, ordered: false }, seq: 0, groups: ws.map(w => { const f = forms(w); return { word: w, cands: f.all.slice(0, Math.floor(40 / ws.length)), off: f.off, on: new Set(), counts: {}, more: [] }; }), trad: null, sum: [], byTrad: new Map() };
+    const state = { dist: { k: 0, ordered: false }, seq: 0, view: 0, all: [], allFull: false, groups: ws.map(w => { const f = forms(w); return { word: w, cands: f.all.slice(0, Math.floor(40 / ws.length)), off: f.off, on: new Set(), counts: {}, more: [] }; }), trad: null, sum: [], byTrad: new Map() };
     const groups = () => state.groups.map(g => [...g.on]).filter(g => g.length);
     // the distance asked: a quoted phrase exactly (its offsets; an engine without the positions table reads the pairs), or for two or
     // three words the reader's choice (state.dist: same page, or within k words, in the typed order or not)
@@ -398,10 +410,10 @@
     function formsHtml() {
       return state.groups.map((g, gi) => {
         const have = g.cands.filter(f => g.counts[f]).sort((a, b) => g.counts[b] - g.counts[a]);
-        const chips = have.map(f => `<label class="wix-f"><input type="checkbox" data-g="${gi}" data-f="${esc(f)}"${g.on.has(f) ? ' checked' : ''}>${esc(f)} <span>${n(g.counts[f])}</span></label>`).join('');
+        const chips = have.map(f => `<label class="wix-f"><input type="checkbox" data-g="${gi}" data-f="${esc(f)}"${g.on.has(f) ? ' checked' : ''}>${esc(asTyped(f))} <span>${n(g.counts[f])}</span></label>`).join('');
         const extra = g.more.filter(f => !g.cands.includes(f.form)).slice(0, 8);
         const more = extra.length ? `<span class="wix-more">other words beginning “${esc(g.word)}”: ${extra.map(f => `<button type="button" data-g="${gi}" data-add="${esc(f.form)}" title="${n(f.works)} works">${esc(f.form)}</button>`).join('')}</span>` : '';
-        return `<b>${esc(g.word)}</b>${chips || '<span class="wix-more">not in the word index</span>'}${more}`;
+        return `<b>${esc(asTyped(g.word))}</b>${chips || '<span class="wix-more">not in the word index</span>'}${more}`;
       }).join('<span style="width:100%"></span>');
     }
     async function loadForms() {
@@ -432,6 +444,7 @@
       $('.wix-sum').innerHTML = tot.works ? `<b>${n(tot.works)}</b> works · ${n(tot.pages)} pages · ${n(tot.occ)} times` : 'In no work of the library.';
       state.byTrad = new Map();
       const all = list.rows || [];
+      state.all = all; state.allFull = all.length >= tot.works;
       for (const s of state.sum) {
         const rows = all.filter(r => tradOf(r) === s.tradition);
         state.byTrad.set(s.tradition, { rows, full: rows.length >= s.works });
@@ -451,29 +464,40 @@
       b.rows = r.rows || b.rows; b.full = true;
       return b;
     }
+    // ONE RANKED LIST (2026-10-08): every work in the word service's order (BM25: the treatises on the word first), a tradition
+    // button narrowing it; ten works at a time, each with its best passage read as it comes into view.
     function render() {
       const listEl = $('.wix-list'); listEl.innerHTML = '';
-      const secs = state.trad === null ? state.sum : state.sum.filter(s => s.tradition === state.trad);
-      secs.forEach(s => listEl.appendChild(section(s, state.trad === null ? 3 : 10)));
-    }
-    function section(s, first) {
-      const sec = document.createElement('section');
-      sec.className = 'wix-sec';
-      sec.innerHTML = `<h4><span>${esc(tradName(s.tradition))}</span><span class="wix-ts">${n(s.works)} ${s.works === 1 ? 'work' : 'works'} · ${n(s.pages)} pages · ${n(s.occ)} times</span></h4><ol></ol><div class="wix-sf"></div>`;
-      const ol = sec.querySelector('ol'), foot = sec.querySelector('.wix-sf'), st = { shown: 0, works: 0 };
+      const ol = document.createElement('ol'); ol.className = 'wix-rank';
+      const foot = document.createElement('div'); foot.className = 'wix-sf';
+      listEl.append(ol, foot);
+      const my = ++state.view, st = { shown: 0, works: 0 };
+      const total = state.trad === null ? state.sum.reduce((a, x) => a + x.works, 0) : ((state.sum.find(x => x.tradition === state.trad) || {}).works || 0);
       async function more(k) {
         foot.innerHTML = '<span class="wix-none">Loading…</span>';
-        let b = state.byTrad.get(s.tradition), gs = grouped(b.rows);
-        if (st.shown + k > gs.length && !b.full) { b = await rowsOf(s.tradition, Infinity).catch(() => b); gs = grouped(b.rows); }
+        const gs = grouped(await rowsFor(st.works + k * 3 + 30));
+        if (my !== state.view) return;
         const next = gs.slice(st.shown, st.shown + k);
-        next.forEach(g => { ol.appendChild(entry(g)); st.works += g.rows.length; }); st.shown += next.length;
-        const left = s.works - st.works;
-        foot.innerHTML = left > 0 && st.shown < gs.length + (state.byTrad.get(s.tradition).full ? 0 : 1)
-          ? `<button type="button" class="wix-go">More ${esc(tradName(s.tradition))} · ${n(left)} more ${left === 1 ? 'work' : 'works'}</button>` : '';
-        const bt = foot.querySelector('button'); if (bt) bt.onclick = () => more(state.trad === null ? 10 : 25);
+        next.forEach(g => {
+          const li = entry(g); ol.appendChild(li); st.works += g.rows.length;
+          lazy(li, () => limited(() => firstPassage(li, g)).catch(() => { const at = li.querySelector(':scope > .wix-best'); if (at) at.remove(); }));
+        });
+        st.shown += next.length;
+        const left = total - st.works;
+        foot.innerHTML = left > 0 && next.length ? `<button type="button" class="wix-go">More works · ${n(left)} more</button>` : '';
+        const bt = foot.querySelector('button'); if (bt) bt.onclick = () => more(10);
       }
-      more(first);
-      return sec;
+      more(10).catch(fail);
+    }
+    // the ranked rows the list needs: the first answer (600 rows) or, past it, a longer one; a tradition's own rows when one is chosen
+    async function rowsFor(need) {
+      if (state.trad !== null) return (await rowsOf(state.trad, need)).rows;
+      if (!state.allFull && state.all.length < need) {
+        const lim = Math.min(2000, Math.max(600, need * 2));
+        const r = await post({ op: 'words', by: 'works', groups: groups(), limit: lim });
+        if (r && r.rows) { state.all = r.rows; state.allFull = r.rows.length < lim; }
+      }
+      return state.all;
     }
     const list = v => (Array.isArray(v) ? v : String(v || '').replace(/^\[|\]$/g, '').split(',')).map(s => s.trim()).filter(Boolean);
     const times = (o, p) => `${n(o)} ${Number(o) === 1 ? 'time' : 'times'} · ${n(p)} ${Number(p) === 1 ? 'page' : 'pages'}`;
@@ -496,9 +520,13 @@
       return out;
     }
     const hlOf = r => { const f = list(r.forms), best = list(r.best_forms); return best.find(x => ws.includes(x)) || best[0] || f.find(x => ws.includes(x)) || f[0] || ws[0]; };
+    // a form as the reader typed its word (10-08: the index's folded spelling showed "iustification" under a search for
+    // "justification"); forms of other words keep the index's spelling
+    const typedAs = new Map(ws.map((w, i) => [w, shown(opts.query, ws)[i]]));
+    const asTyped = f => { for (const [w, t] of typedAs) if (t !== w && f.startsWith(w)) return t + f.slice(w.length); return f; };
     function formsLine(rows) {
       const f = new Set(); rows.forEach(r => list(r.forms).forEach(x => f.add(x)));
-      const fl = [...new Set(ws.filter(x => f.has(x)).concat([...f]))];
+      const fl = [...new Set(ws.filter(x => f.has(x)).concat([...f]))].map(asTyped);
       return fl.length ? `<span class="wix-fl">${esc(fl.slice(0, 4).join(', '))}${fl.length > 4 ? ` <span class="wix-plus" title="${esc(fl.join(', '))}">+${fl.length - 4}</span>` : ''}</span>` : '';
     }
     function entry(g) {
@@ -512,16 +540,30 @@
           + (g.rows.length > 12 ? `<button type="button" class="wix-pv" data-allvols>all ${g.rows.length} volumes ▾</button>` : '') : '';
       li.innerHTML = `<div class="wix-h"><a class="wix-t" href="${esc(opts.readHref(top.slug, top.best_page, hlOf(top)))}">${title}</a><span class="wix-n">${times(g.occ, g.pages)}</span></div>
         ${meta ? `<div class="wix-m">${meta}</div>` : ''}
-        <div class="wix-c">${vols ? `<span class="wix-vl">Passages in</span>${volBtns}` : `${formsLine(g.rows)}<button type="button" class="wix-pv" data-pages="${esc(top.slug)}" data-hl="${esc(hlOf(top))}" aria-expanded="false">Passages ▾</button>`}</div>`;
+        <div class="wix-best"><span class="wix-none">Reading its best page…</span></div>
+        <div class="wix-c">${vols ? `<span class="wix-vl">More passages in</span>${volBtns}` : `${formsLine(g.rows)}<button type="button" class="wix-pv" data-pages="${esc(top.slug)}" data-hl="${esc(hlOf(top))}" aria-expanded="false">More passages ▾</button>`}</div>`;
       return li;
     }
-    // The passages of one work (or one volume): its pages in book order, a line around each use, six at first.
+    // a quoted phrase is looked for as a phrase (its words in order); otherwise every form of every word, in either lane
+    const lookOf = () => (ph ? { chains: [ph.ws] } : { forms: [...new Set(groups().flat())] });
+    const backup = () => (ph ? { forms: [...new Set(groups().flat())] } : null);
+    // the work's best page (the word service's best_page: the page with the most uses), shown before any button is pressed
+    async function firstPassage(li, g) {
+      const top = g.rows[0], at = li.querySelector(':scope > .wix-best');
+      if (!at) return;
+      if (top.best_page == null || top.best_page === '') { at.remove(); return; }
+      const [x] = await bestOf(top.slug, [top.best_page], lookOf(), backup());
+      const label = (g.rows.length > 1 ? esc(volShort(top.volume)) + ', ' : '') + pageLabel(top.slug, top.best_page);
+      li.dataset.best = `${top.slug}|${top.best_page}`;
+      at.outerHTML = passageHtml(opts.readHref(top.slug, top.best_page, hlOf(top)), label, x.b, 0, '');
+    }
+    // More passages: a work's (or one volume's) other pages, the most uses first, one passage each, five at a time.
     async function preview(li, slug, hl, btn) {
       let box = li.querySelector(':scope > .wix-inst');
       const toggle = btn.classList.contains('wix-pv');
       if (box && box.dataset.slug === slug) {
         box.hidden = !box.hidden; btn.setAttribute('aria-expanded', String(!box.hidden));
-        if (toggle) btn.textContent = box.hidden ? 'Passages ▾' : 'Hide ▴';
+        if (toggle) btn.textContent = box.hidden ? 'More passages ▾' : 'Hide ▴';
         return;
       }
       li.querySelectorAll('button[aria-expanded=true]').forEach(b => b.setAttribute('aria-expanded', 'false'));
@@ -530,32 +572,23 @@
       btn.setAttribute('aria-expanded', 'true'); if (toggle) btn.textContent = 'Hide ▴';
       const r = await post({ op: 'words', by: 'pages', groups: groups(), work: slug, limit: 2000 }).catch(fail);
       if (!r || !r.rows) { box.remove(); return; }
-      const pages = r.rows, forms = [...new Set(groups().flat())], st = { shown: 0 };
-      // a quoted phrase is looked for as a phrase (its words in order); otherwise every form of every word, in either lane
-      const look = ph ? { chains: [ph.ws] } : { forms };
-      box.innerHTML = `${btn.classList.contains('wix-vol') ? `<div class="wix-ih">${esc(btn.firstChild.textContent)} · ${n(pages.length)} ${pages.length === 1 ? 'page' : 'pages'}</div>` : ''}<div class="wix-il"></div><div class="wix-if"></div>
-        <details class="wix-all"><summary>All ${n(pages.length)} ${pages.length === 1 ? 'page' : 'pages'} as links</summary><div class="wix-pages">${pages.map(p => `<a href="${esc(opts.readHref(slug, p.page, hl))}">${pageLabel(slug, p.page)}${Number(p.occurrences) > 1 ? ' ×' + p.occurrences : ''}</a>`).join('')}</div></details>`;
+      const all = r.rows, st = { shown: 0 };
+      // the busiest pages first (book order among equals: the sort is stable); the page already shown above is not repeated
+      const pages = all.filter(p => `${slug}|${p.page}` !== li.dataset.best).sort((a, b) => Number(b.occurrences) - Number(a.occurrences));
+      box.innerHTML = `${btn.classList.contains('wix-vol') ? `<div class="wix-ih">${esc(btn.firstChild.textContent)} · ${n(all.length)} ${all.length === 1 ? 'page' : 'pages'}</div>` : ''}<div class="wix-il"></div><div class="wix-if"></div>
+        <details class="wix-all"><summary>All ${n(all.length)} ${all.length === 1 ? 'page' : 'pages'} as links, in book order</summary><div class="wix-pages">${all.map(p => `<a href="${esc(opts.readHref(slug, p.page, hl))}">${pageLabel(slug, p.page)}${Number(p.occurrences) > 1 ? ' ×' + p.occurrences : ''}</a>`).join('')}</div></details>`;
       const il = box.querySelector('.wix-il'), foot = box.querySelector('.wix-if');
+      if (!pages.length) { il.innerHTML = '<span class="wix-none">No other page holds the word.</span>'; return; }
       async function next(k) {
         const batch = pages.slice(st.shown, st.shown + k); st.shown += batch.length;
         foot.innerHTML = '<span class="wix-none">Reading the pages…</span>';
-        let lanes = null;
-        if (window.FRWordPreview && FRWordPreview.lanes) lanes = await FRWordPreview.lanes(slug, batch.map(p => p.page)).catch(e => { console.warn('word preview', e); return null; });
-        batch.forEach(p => {
-          const lane = lanes && lanes.get(p.page);
-          let uses = lane ? FRWordPreview.pair(lane, look) : [];
-          if (lane && !uses.length && ph) uses = FRWordPreview.pair(lane, { forms });   // the phrase across a line or a note: its words
-          const d = document.createElement('div');
-          d.className = 'wix-i';
-          d.innerHTML = `<a class="wix-p" href="${esc(opts.readHref(slug, p.page, hl))}">${pageLabel(slug, p.page)}</a>`
-            + (uses.length ? `${uses.length > 1 ? `<span class="wcx-ev">${uses.length} uses</span>` : ''}${pairsHtml(uses)}` : '<span class="wix-s wix-none">open the page to read it</span>');
-          il.appendChild(d);
-        });
+        const got = await bestOf(slug, batch.map(p => p.page), lookOf(), backup());
+        got.forEach((x, i) => il.insertAdjacentHTML('beforeend', passageHtml(opts.readHref(slug, x.page, hl), pageLabel(slug, x.page), x.b, batch[i].occurrences, '')));
         const left = pages.length - st.shown;
-        foot.innerHTML = left > 0 ? `<button type="button" class="wix-go" data-n="10">${Math.min(10, left)} more pages</button> <button type="button" class="wix-go" data-n="all">all ${n(left)} left</button>` : '';
-        foot.querySelectorAll('button').forEach(b => { b.onclick = () => next(b.dataset.n === 'all' ? Infinity : 10); });
+        foot.innerHTML = left > 0 ? `<button type="button" class="wix-go" data-n="5">${Math.min(5, left)} more pages</button> <button type="button" class="wix-go" data-n="all">all ${n(left)} left</button>` : '';
+        foot.querySelectorAll('button').forEach(b => { b.onclick = () => next(b.dataset.n === 'all' ? Infinity : 5); });
       }
-      await next(6);
+      await next(5);
     }
     box.addEventListener('change', e => {
       const t = e.target; if (!t.matches('input[data-f]')) return;
@@ -599,11 +632,6 @@
       if (!e.target.matches('input[data-ord]')) return;
       state.dist.ordered = e.target.checked; howLine(); loadCounts().catch(fail);
     });
-    // every work's passages as the list scrolls (the switch the concept card shares): a work opens its first volume or its passages
-    $('.wix-swl').appendChild(allSwitch('Show the passages under every work', autoOpen($('.wix-list'), li => {
-      if (!li.classList.contains('wix-w') || li.querySelector(':scope > .wix-inst')) return;
-      const b = li.querySelector('button.wix-pv[data-pages], button.wix-vol'); if (b) b.click();
-    })));
     loadForms().then(loadCounts).catch(fail);
     return { words: ws };
   }
