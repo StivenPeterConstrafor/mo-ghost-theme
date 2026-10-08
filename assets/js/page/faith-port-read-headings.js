@@ -438,6 +438,14 @@
     // Church is ...") is the next division, never this heading's line.
     const il = n.dataset ? n.dataset.frIl : "";
     if (il && il !== "0" && il !== "title") return "";
+    // A paragraph the page turn cuts (part="I"/"M": it runs on past the
+    // page) is the text itself, never a heading's line. An argument or
+    // subtitle is whole on its own page. Alsted's preface (Metaphysica,
+    // p. 3) is set in italic; cut at the turn, its first half fell under
+    // 1,200 characters and went into the card while its second half
+    // stayed outside (owner 2026-10-08).
+    const cut = n.matches && (n.matches('[data-part="I"], [data-part="M"]') || !!n.querySelector('[data-part="I"], [data-part="M"]'));
+    if (cut) return "";
     const text = clean(textOf(n));
     if (!text) return "";
     if (isHeading(n)) {
