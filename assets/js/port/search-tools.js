@@ -44,5 +44,21 @@ function workKind(w){return (w&&w.kind&&KIND_RANK[w.kind]!==undefined)?w.kind:'w
 function kindRank(w){return KIND_RANK[workKind(w)];}
 function sizeRank(w){return workKind(w)==='work'?-(Number(w&&w.n_pages)||0):0;}
 function orderWorks(items,mode,works,priorities={},compareWorks=null){if(mode==='relevance')return items.slice();if(mode==='title'){const meta=item=>works[typeof item==='string'?item:item.slug]||item;return items.slice().sort((a,b)=>{const x=meta(a),y=meta(b);return (priorities[typeof a==='string'?a:a.slug]||0)-(priorities[typeof b==='string'?b:b.slug]||0)||kindRank(x)-kindRank(y)||sizeRank(x)-sizeRank(y)||str(x.author).localeCompare(str(y.author))||str(x.title_en||x.title).localeCompare(str(y.title_en||y.title));});}/* title search has no engine score: the author's works first, real works before Migne's matter, largest first */const meta=item=>works[typeof item==='string'?item:item.slug]||item;const sh=w=>shelves.findIndex(s=>s.value===shelf(w.tradition||w.shelf)?.value);return items.slice().sort((a,b)=>{const x=meta(a),y=meta(b);return (mode==='shelf'?(sh(x)<0?99:sh(x))-(sh(y)<0?99:sh(y)):0)||(priorities[typeof a==='string'?a:a.slug]||0)-(priorities[typeof b==='string'?b:b.slug]||0)||str(x.author).localeCompare(str(y.author))||kindRank(x)-kindRank(y)||sizeRank(x)-sizeRank(y)||(compareWorks?compareWorks(x,y):0)||str(x.title_en||x.title).localeCompare(str(y.title_en||y.title))||str(x.volume).localeCompare(str(y.volume),undefined,{numeric:true});});}
-return {shelves,shelf,label,display,confession,matches,readerLink,readerURL,pagefindFilters,scriptureReference,scriptureRecords,scriptureGroups,meaningCandidates,fuseMeaning,meaningGroups,pageWindow,orderWorks,workKind,kindRank};
+// TITLE SEARCH RANK (2026-10-07, owner: "i type in regensburg in mereO and the acta of dont come up"). An author's EPITHET is not
+// the author. "Othloh of Saint Emmeram in Regensburg" made nineteen of his works count as the author's own for "regensburg", and
+// the Acts of the Regensburg Colloquy, the one work with Regensburg in its title, fell to page three. A word counts as the
+// author's only when it is in the name before " of / in / von / de …"; a word only in the epithet ranks after title matches.
+// 0 the author's own works · 1 dubia filed under that name ("Uncertain author (Augustine?)") · 2 the word is in the title ·
+// 3 the word is only in an author's epithet.
+function authorNamePart(a){return str(a).replace(/\([^)]*\)/g,' ').split(/\s+(?:of|in|von|van|de|da|di|du|des|der|from|at|to)\s+/i)[0];}
+const DUBIA=/^(uncertain|various|anonymous|auctor|auctores)/i;
+function titleRank(e,toks,foldFn=fold){
+  const has=s=>{const h=foldFn(s);return toks.length>0&&toks.every(t=>h.indexOf(t)>=0);};
+  const dubia=DUBIA.test(str(e&&e.a));
+  if(has(authorNamePart(e.a)+' '+authorNamePart(e.al)))return dubia?1:0;
+  if(dubia&&has(authorNamePart((str(e.a).match(/\(([^)]*)\)/)||[])[1]||'')))return 1;
+  if(has(str(e.t)+' '+str(e.o)+' '+str(e.la)))return 2;
+  return 3;
+}
+return {shelves,shelf,label,display,titleRank,authorNamePart,confession,matches,readerLink,readerURL,pagefindFilters,scriptureReference,scriptureRecords,scriptureGroups,meaningCandidates,fuseMeaning,meaningGroups,pageWindow,orderWorks,workKind,kindRank};
 });

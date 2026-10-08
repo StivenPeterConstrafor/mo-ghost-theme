@@ -90,7 +90,7 @@ function navMap(cb){if(NAV)return cb(NAV);
   Promise.all([FRResearchData.corpus(),FRResearchData.json('/v1/workgroups.json').catch(()=>({})),fetch('https://mo-tfr-library.mo-podcast-feed.workers.dev/v1/data/workgroups.json',{signal:AbortSignal.timeout(10000)}).then(r=>r.ok?r.json():{}).catch(()=>({}))]).then(function([corpus,published,local]){FRResearch.setWorkCatalogue({bySlug:corpus.works,groups:{works:{...(published.works||{}),...(local.works||{})},groups:{...(published.groups||{}),...(local.groups||{})}}});
     WORK_ALIASES=corpus.aliases||{};var rows=Array.from(corpus.works.values()).map(function(w){return Object.assign({},w,{author:Array.isArray(w.author)?w.author.join(', '):String(w.author||'')});});NAV={};WLIST=rows;WORKS_BY_SLUG={};
     rows.forEach(function(w){WORKS_BY_SLUG[w.slug]=w;if(w.slug)NAV[w.slug]={t:w.title_en||w.title||w.slug,a:w.author||'',al:w.author_la||'',v:w.volume||'',tr:w.tradition||'',n:w.n_pages||0};if(w.party)(PARTYSLUGS[w.party]=PARTYSLUGS[w.party]||[]).push(w.slug);});
-    IDX=rows.filter(function(w){return w.slug;}).map(function(w){return {d:w.slug,k:'work',t:w.title_en||w.title||w.slug,o:w.title||'',a:w.author||'',al:w.author_la||''};});
+    IDX=rows.filter(function(w){return w.slug;}).map(function(w){return {d:w.slug,k:'work',t:w.title_en||w.title||w.slug,o:w.title||'',la:w.title_la||'',a:w.author||'',al:w.author_la||''};});
     buildFacetLists();var q2=_navq;_navq=null;q2.forEach(function(f){f(NAV);});
   }).catch(function(){CATALOG_ERROR=true;NAV={};WLIST=[];IDX=[];WORKS_BY_SLUG={};var q2=_navq||[];_navq=null;q2.forEach(function(f){f(NAV);});});}
 function docCite(d){var e=NAV&&NAV[d];if(!e)return 'The Faith Received';var parts=[];if(ORDER==='relevance'&&e.a)parts.push(esc(e.a));if(e.v)parts.push(esc(e.v));return parts.join(' · ');}
@@ -155,16 +155,16 @@ function renderTitle(q){
   if(wixOk())FRWordIndex.teaser(document.getElementById('wordIndex'),wixScoped({query:q,post:wixPost,open:function(){setMode('full');}}));
   var toks=foldQ(q).split(/\s+/).filter(function(t2){return t2.length>=2;});
   var m=IDX.filter(function(e){
-    var hay=foldQ(e.t+' '+(e.o||'')+' '+e.a+' '+(e.al||''));
+    var hay=foldQ(e.t+' '+(e.o||'')+' '+(e.la||'')+' '+e.a+' '+(e.al||''));
     return (toks.length||e.k==='work')&&toks.every(function(t2){return hay.indexOf(t2)>=0;})&&facetOk(e.d);
   });
   // author-name queries surface the author's OWN works first ("Augustine" = the 143
   // Augustine works, then works merely mentioning him in the title)
-  m.forEach(function(e){var ah=foldQ(e.a+' '+(e.al||''));
-    var hit=toks.length&&toks.every(function(t2){return ah.indexOf(t2)>=0;});
-    // 0 = the author's own works · 1 = dubia ("Uncertain author (Augustine?)") · 2 = title-only
-    e._au=hit?(/^(uncertain|various|anonymous|auctor|auctores)/i.test(e.a)?1:0):2;});
+  // 0 = the author's own works · 1 = dubia ("Uncertain author (Augustine?)") · 2 = title · 3 = only an author's epithet
+  // ("regensburg" in "Othloh of Saint Emmeram in Regensburg": search-tools.js titleRank, 2026-10-07)
+  m.forEach(function(e){e._au=FRSearch.titleRank(e,toks,foldQ);});
   m.sort(function(x,y){return x._au-y._au;});
+  var _epithet=m.some(function(e){return e._au===3;})&&m.some(function(e){return e._au<3;});
   if(!m.length&&window._AUTO_MODE&&q.length>=3){window._AUTO_MODE=false;setMode('full');return;}
   // question-shaped input in Find mode ("what/why/how…?") → Ask is what they meant
   // Work searches never send a paid question automatically; Ask opens a draft.
@@ -178,7 +178,7 @@ function renderTitle(q){
   if(!order.length){ct.innerHTML='';res.innerHTML=zeroHtml(q,'title');return;}
   var _ed=order.filter(function(d){var w=WORKS_BY_SLUG[d];var k=w&&FRSearch.workKind?FRSearch.workKind(w):'work';return k==='preface'||k==='apparatus';}).length;
   ct.textContent=(order.length-_ed)+' work'+(order.length-_ed===1?'':'s')+(_ed?' · '+_ed+' editorial item'+(_ed===1?'':'s'):'')+(m.length>order.length?(' · '+m.length+' incl. sections'):'');
-  var rankOrder=order.slice(),priorities={},authorCounts={};if(q.trim()){order.forEach(function(d){var e=byDoc[d].work||byDoc[d].divs[0];authorCounts[e.a]=(authorCounts[e.a]||0)+1;});order.forEach(function(d){var e=byDoc[d].work||byDoc[d].divs[0];priorities[d]=e._au*1000000-authorCounts[e.a];});}function paintTitle(page){var _own=m.filter(function(e){return e._au===0;}).length,_authorQuery=m.length>0&&_own>=0.6*m.length;order=FRSearch.orderWorks(rankOrder,(ORDER==='relevance'||(ORDER==='shelf'&&_authorQuery))?'title':ORDER,WORKS_BY_SLUG,priorities,FRResearch.workOrder);   /* an author's name (owner 2026-09-17, "Athanasius"): the author's works by kind and size, not shelf-split with Migne's notes interleaved */var win=FRSearch.pageWindow(order.length,page);setPager(order.length,win.page,paintTitle,'works');res.innerHTML=order.slice(win.start,win.end).map(function(d){
+  var rankOrder=order.slice(),priorities={},authorCounts={};if(q.trim()){order.forEach(function(d){var e=byDoc[d].work||byDoc[d].divs[0];authorCounts[e.a]=(authorCounts[e.a]||0)+1;});order.forEach(function(d){var e=byDoc[d].work||byDoc[d].divs[0];priorities[d]=e._au*1000000-authorCounts[e.a];});}function paintTitle(page){var _own=m.filter(function(e){return e._au===0;}).length,_authorQuery=m.length>0&&_own>=0.6*m.length;order=FRSearch.orderWorks(rankOrder,(ORDER==='relevance'||(ORDER==='shelf'&&(_authorQuery||_epithet)))?'title':ORDER,WORKS_BY_SLUG,priorities,FRResearch.workOrder);   /* an author's name (owner 2026-09-17, "Athanasius"): the author's works by kind and size, not shelf-split with Migne's notes interleaved */var win=FRSearch.pageWindow(order.length,page);setPager(order.length,win.page,paintTitle,'works');res.innerHTML=order.slice(win.start,win.end).map(function(d){
     var g=byDoc[d], e=g.work||g.divs[0];
     var href=rdHref(e.d,e.k==='div'?e.page:null);
     var nd=g.divs.length;
