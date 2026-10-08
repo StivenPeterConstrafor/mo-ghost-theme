@@ -162,22 +162,33 @@
         if (ok) { hits.push([toks[k][0], toks[j][1]]); k = j; }
       }
     }
-    return hits.sort((x, y) => x[0] - y[0]);
+    // ONE MARK PER WORD (2026-10-08, owner: "justification repeated twice"): a word found as a form and inside a phrase (the
+    // concept's "fide iustificari" around the form "iustificari") gave two overlapping ranges, and the page printed the word twice
+    // ("iustificariiustificari"). Overlapping ranges are one use.
+    const merged = [];
+    for (const h of hits.sort((x, y) => x[0] - y[0] || y[1] - x[1])) {
+      const last = merged[merged.length - 1];
+      if (last && h[0] < last[1]) last[1] = Math.max(last[1], h[1]); else merged.push([h[0], h[1]]);
+    }
+    return merged;
   }
   // the windows round every use (overlapping ones merged): [{a, b, mid, html}], .total = uses
   function windows(text, forms, width = 110, max = Infinity, chains = []) {
     const hits = usesOf(text, forms, chains);
     const snips = [];
     snips.total = hits.length;
+    // each window starts where the last one ended (10-08: a window's left context reached back into the one before, so the same
+    // sentence was printed twice in a row)
+    let end = 0;
     for (let i = 0; i < hits.length && snips.length < max;) {
-      let a = Math.max(0, hits[i][0] - width), b = Math.min(text.length, hits[i][1] + width), j = i;
+      let a = Math.max(end, hits[i][0] - width), b = Math.min(text.length, hits[i][1] + width), j = i;
       while (j + 1 < hits.length && hits[j + 1][0] < b) { j++; b = Math.min(text.length, Math.max(b, hits[j][1] + 40)); }
       if (a > 0) { const sp = text.indexOf(' ', a); if (sp > 0 && sp < hits[i][0]) a = sp + 1; }
       if (b < text.length) { const sp = text.lastIndexOf(' ', b); if (sp > hits[j][1]) b = sp; }
       let html = a > 0 ? '… ' : '', at = a;
       for (let h = i; h <= j; h++) { html += esc(text.slice(at, hits[h][0])) + '<mark>' + esc(text.slice(hits[h][0], hits[h][1])) + '</mark>'; at = hits[h][1]; }
       html += esc(text.slice(at, b)) + (b < text.length ? ' …' : '');
-      snips.push({ a, b, mid: (hits[i][0] + hits[j][1]) / 2, html }); i = j + 1;
+      snips.push({ a, b, mid: (hits[i][0] + hits[j][1]) / 2, html, n: j - i + 1 }); end = b; i = j + 1;
     }
     return snips;
   }
@@ -206,5 +217,20 @@
     if (ew.length) return ew.map(w => ({ o: o ? around(o, w.mid / e.length, width + 20) : '', e: w.html, inEnglish: true }));
     return [];
   }
-  window.FRWordPreview = { pages, lanes, pair, kwic, cut, key };
+  /** THE PAGE'S BEST PASSAGE (2026-10-08, owner: one passage per page, its count beside it, "not every use"): the window that holds
+      the most uses, in the original where it has any, else in the English, and the other lane at the same place beside it.
+      {o, e, uses} of html (uses: every use on the page), or null when neither lane holds a use. */
+  function best(lane, { forms = [], chains = [], enForms = [], enChains = [], width = 140 } = {}) {
+    const o = lane.o || '', e = lane.e || '';
+    const ow = windows(o, forms, width, Infinity, chains), ew = windows(e, [].concat(forms, enForms), width + 30, Infinity, [].concat(chains, enChains));
+    const top = list => list.reduce((b, w) => (!b || w.n > b.n ? w : b), null);
+    if (ow.length) {
+      const w = top(ow), share = w.mid / o.length;
+      const m = ew.length ? ew.reduce((b, x) => (!b || Math.abs(x.mid / e.length - share) < Math.abs(b.mid / e.length - share) ? x : b), null) : null;
+      return { o: w.html, e: m ? m.html : around(e, share, width + 60), uses: ow.total };
+    }
+    if (ew.length) { const w = top(ew); return { o: o ? around(o, w.mid / e.length, width + 20) : '', e: w.html, uses: ew.total, inEnglish: true }; }
+    return null;
+  }
+  window.FRWordPreview = { pages, lanes, pair, best, kwic, cut, key };
 })();
