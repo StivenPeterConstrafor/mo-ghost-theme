@@ -33,7 +33,9 @@
       const series = /^(?:PL|PG|PO)(?:\s+Tome)?\s+(\d+)/i.exec(w.volume || '');
       const volume = series ? series[1] : String(w.volume || '');
       return {...previous, corpus, id:corpus === 'tfr' ? w.slug : w.slug.replace(`${corpus}-`, ''),
-        slug:w.slug, title:w.title_en || w.title, titleLatin:w.title_en && w.title_en !== w.title ? w.title : previous.titleLatin || '',
+        // The original-language title (2026-10-07): works-index rows keep it as title_la once their title is English
+        // (3,038 Latin, French, German and Welsh titles were made English that day); older rows still carry it as title.
+        slug:w.slug, title:w.title_en || w.title, titleLatin:w.title_la && w.title_la !== (w.title_en || w.title) ? w.title_la : w.title_en && w.title_en !== w.title ? w.title : previous.titleLatin || '',
         author:aliases[previous.author]?.includes(' (') ? authorName(previous.author) : w.author_en || w.author, volume, tradition:w.tradition === 'Reformed' ? 'Continental Reformed' : w.tradition, party:w.party || '',
         eyebrow:series ? w.volume : w.tradition, extent:w.n_pages || previous.extent || 0,
         order:w.po ?? previous.order, cols:w.cols || previous.cols, kind:w.kind || previous.kind,
