@@ -2805,7 +2805,7 @@ function build(){
   // arrive fragmented; merge each RUN of consecutive short heads into one, demote pious
   // monograms (I.N.D., V.D.M.) to a quiet ornament row, and close up letterspaced caps.
   const _joinCaps=s=>String(s).replace(/(^|[\s(])([A-ZÆŒ](?:\s[A-ZÆŒ]){2,})(?=[\s.,)]|$)/g,(m,pre,run)=>pre+run.replace(/\s+/g,""));
-  function teiHeadFix(els,page){
+  function teiHeadFix(els,page,facing){
     if(!els||!els.length)return els;
     const sourceFrom=(target,sources)=>{
       const paths=[],regions=[],keys=[];
@@ -2823,11 +2823,22 @@ function build(){
     // BD HEAD HYGIENE (owner 2026-08-18, Calov Systema: '### CAPUT I.' literal markers,
     // prose sentences promoted to heads, 'S.'/'Dn.' fragments): strip minted ### from head
     // text; demote prose-length heads and isolated non-numeral fragments back to paragraphs.
+    // A HEAD BOTH LANES MARK STAYS A HEAD IN BOTH (owner 2026-10-07, Voetius Selectae disputationes I p. 82): the prose
+    // test is each lane's own and a translation runs longer than its source, so a 128-character Latin head stayed a
+    // heading while its 147-character English fell to a paragraph beside it (a count that day: 24,672 head pairs in
+    // 1,212 works, 21,759 of them losing the English; this rule restores 19,280). When both lanes hold the same number
+    // of heads on the page, a head the test would demote stays a heading if the head at the same place in the facing
+    // lane passes and this one is at most 1.6 times as long (its translation, not a heading run on into the text).
+    const _hText=e=>e.textContent.replace(/\s+/g," ").replace(/^#{1,6}\s*/,"").trim();
+    const _prose=t=>t.length>140||(t.length>100&&/[.!?][)"'”\]]?$/.test(t)&&(t.match(/[a-zà-ÿ]/g)||[]).length>t.length*0.45);
+    const _secHeads=list=>(list||[]).filter(x=>x.localName==="head"&&(x.getAttribute("rend")||"")!=="lemma");
+    const ownH=_secHeads(els),faceH=_secHeads(facing),samePlan=ownH.length===faceH.length;
     els=els.map(e=>{
       if(e.localName!=="head")return e;
-      const t=e.textContent.replace(/\s+/g," ").replace(/^#{1,6}\s*/,"").trim();
+      const t=_hText(e);
       const D2=e.ownerDocument;
-      const isProse=t.length>140||(t.length>100&&/[.!?][)"'”\]]?$/.test(t)&&(t.match(/[a-zà-ÿ]/g)||[]).length>t.length*0.45);
+      const k=samePlan?ownH.indexOf(e):-1,ft=k>=0?_hText(faceH[k]):"";
+      const isProse=_prose(t)&&!(ft&&!_prose(ft)&&t.length<=ft.length*1.6);
       const isFrag=t.length<=3&&!/^[IVXLC]+\.?$/.test(t);
       if(isProse||isFrag){const p=sourceFrom(D2.createElement("p"),[e]);p.textContent=t;return p;}
       if(t!==e.textContent.replace(/\s+/g," ").trim()){
@@ -2865,7 +2876,7 @@ function build(){
   }
   function renderFolioTEI(pg,pi){
     const isFront=TP&&pg.n<TP,isTitle=TP&&pg.n===TP,key=teiNorm(pg.n);
-    const laEls=teiHeadFix(TEI_PAGES.la[key]||[],String(pg.n)),enEls=teiHeadFix(TEI_PAGES.en[key]||[],String(pg.n));
+    const laEls=teiHeadFix(TEI_PAGES.la[key]||[],String(pg.n),TEI_PAGES.en[key]),enEls=teiHeadFix(TEI_PAGES.en[key]||[],String(pg.n),TEI_PAGES.la[key]);
     // mirror renderFolio's ONLY skip rule: born-digital blank leaves. Facsimile blanks still
     // get a section (the scan stays visible) — every DATA.pages entry must produce a folio.
     if(DATA.has_pages===false&&!isFront&&!isTitle&&!laEls.length&&!enEls.length&&!DATA.pld_editorial?.[key]?.length)return;
