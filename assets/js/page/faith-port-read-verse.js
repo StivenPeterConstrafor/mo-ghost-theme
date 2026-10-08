@@ -346,7 +346,7 @@
         if (hidden.length && hidden[0][0] === 0 && lp) {
           const num = t.slice(0, hidden[0][1]).trim();
           // one or two digits only: Migne's column numbers ("117 Do you feel ...", Boethius) open both lanes too and stay hidden
-          if (/^\d{1,2}\.?$/.test(num) && new RegExp("^\\s*" + num.replace(".", "\\.") + "(?=[\\s.,;:)])").test(lp.textContent)) hidden.shift();
+          if (/^\d{1,2}\.?$/.test(num) && new RegExp(`^\\s*${num.replace(".", "\\.")}(?=[\\s.,;:)])`).test(lp.textContent)) hidden.shift();
         }
         // A number right after a reference word is the reference's number ("Augustine also in Tractate 3 on John"), not a marker.
         for (let k = hidden.length - 1; k >= 0; k--) {
