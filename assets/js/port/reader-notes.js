@@ -35,16 +35,18 @@
     after.parentNode.insertBefore(box, after.nextSibling);
     return box;
   }
+  let run = 0;
   async function apply(DATA, base) {
-    const slug = String((DATA && DATA.slug) || "");
+    const slug = String((DATA && DATA.slug) || ""), mine = ++run;   // the reader sets its header more than once: the last call wins
     const box = slot(); if (box) { box.hidden = true; box.textContent = ""; }
     if (!/^(pld|pg)-\d+$/.test(slug)) return;
     const d = await load(base);
-    if (!d || String((root.DATA && root.DATA.slug) || slug) !== slug) return;   // another work opened meanwhile
+    if (!d || mine !== run) return;                                  // a later call (or another work) took over meanwhile
     const n = (d.notes || {})[slug], intro = (d.intro || {})[slug];
     if (!n && !intro) return;
     style();
     const b = slot(); if (!b) return;
+    b.textContent = "";
     if (n) {
       const [title, , forSlug, forTitle, forAuthor, source] = n;
       if (title) {
