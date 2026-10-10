@@ -127,6 +127,9 @@
   // Divines" reads "English writers"). Keys, links and matching keep
   // the data's own name.
   const shelfName = (t) => (window.MOFaithLabel ? window.MOFaithLabel.shelf(t) : t);
+  // The shelves with a guide in motion (/the-faith-received/guide/?s=). The
+  // links stay hidden until faith-guide-links.js finds that route live.
+  const GUIDES = { pl: "latin", gf: "greek", md: "medieval", rc: "catholic", rf: "reformed", lu: "lutheran" };
   function studyShelf(name) {
     const sh = RESEARCH_SHELVES[name];
     if (!sh) return "";
@@ -136,6 +139,7 @@
     const dct = sh === "rc" ? `<a href="${base}dictionary/">Dictionary of Catholic Theology</a>` : "";
     return `<details class="fro-study"><summary>Study this shelf</summary>` +
       `<nav aria-label="Study ${esc(shelfName(name))}">` +
+      `${GUIDES[sh] ? `<a href="${base}guide/?s=${GUIDES[sh]}" data-guide-link hidden>Guide to this shelf</a>` : ""}` +
       `<a href="${base}ask/?trad=${encodeURIComponent(trad)}">Ask this shelf</a>` +
       `<a href="${base}bible/?sh=${sh}">Scripture</a>` +
       `<a href="${base}author/?sh=${sh}">Authors</a>` +
@@ -308,7 +312,8 @@
     // works in the whole library" reads as one of the two being wrong.
     // The smaller traditions are not shelves on the home page either;
     // they are in the Tradition filter below.
-    const foot = `<p class="fro-foot">Smaller traditions are in the Tradition filter below.</p>`;
+    const foot = `<p class="fro-foot">Smaller traditions are in the Tradition filter below.</p>` +
+      `<p class="fro-foot" data-guide-link hidden><a href="/the-faith-received/guide/">Guides to the shelves</a>: each shelf introduced in motion, with a century ruler over all of them.</p>`;
 
     // A fold, closed on arrival (Ian, 2026-09-23: "make this section
     // collapsible and start it collapsed"): the shelves are a way in, and

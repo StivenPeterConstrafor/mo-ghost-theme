@@ -1,0 +1,150 @@
+/* The shelf guides (owner 10-10: "independent page guide using motion graphics for each shelf", "prefer light cream").
+   One cream visual world, deliberately single-theme like MereO: paper, ink, rule, rubric red and gilt, with a stained-glass set of
+   family colours per shelf. Everything is scoped to .tg so the same file drops into the MereO theme unchanged. */
+.tg {
+  --paper: #f6f1e7; --paper-2: #efe6d6; --card: #fffdf8; --ink: #2d2927; --ink-2: #4a4440; --muted: #6f675f; --rule: #dccbad; --rule-2: #e9dcc4;
+  --rubric: #a3382a; --gilt: #a07c35; --leather: #5c3a2a; --land: #fbf7ee; --sea: #e6e7e0; --coast: #c9b48f;
+  --display: "IM Fell Great Primer", "EB Garamond", Georgia, serif; --body: "Source Serif 4", "Source Serif Pro", Georgia, serif;
+  --f1: #2f4a6b; --f2: #8a5a2b; --f3: #a3382a; --f4: #5b6b3a; --f5: #6d4c7d; --f6: #a07c35; --f7: #2e6e6a; --f8: #5c3a2a;
+  background: var(--paper); color: var(--ink); font: 17px/1.6 var(--body); color-scheme: light;
+}
+.tg *, .tg *::before, .tg *::after { box-sizing: border-box; }
+.tg a { color: var(--rubric); text-underline-offset: 3px; }
+.tg a:focus-visible, .tg button:focus-visible, .tg input:focus-visible, .tg [tabindex]:focus-visible { outline: 2px solid var(--rubric); outline-offset: 2px; }
+.tg .gut { padding-inline: 16px; }
+.tg .wrap { max-width: 76rem; margin: 0 auto; }
+.tg .eyebrow { font: 600 0.72rem var(--body); letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+.tg h2 { font: 400 clamp(2rem, 4.4vw, 3.3rem)/1.02 var(--display); margin: 0 0 14px; text-wrap: balance; letter-spacing: -0.005em; }
+.tg h3 { font: 400 1.5rem/1.1 var(--display); margin: 0 0 6px; }
+.tg .say { margin: 0 0 12px; max-width: 32rem; text-wrap: pretty; }
+.tg .small { font-size: 0.86rem; color: var(--muted); }
+.tg .num { font-variant-numeric: lining-nums tabular-nums; }
+/* hero */
+.tg .hero { position: relative; overflow: hidden; background: radial-gradient(120% 100% at 78% 0%, var(--card), var(--paper-2)); border-bottom: 1px solid var(--rule); color: var(--ink); padding: 0; }
+.tg .hero::before, .tg .hero::after { content: none; }   /* MereO's own .hero is a dark band with an orange burst */
+.tg .hero .wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px 40px; align-items: center; padding-block: 56px 48px; }
+.tg .hero .kick { font: 600 0.72rem var(--body); letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+.tg .hero .kick a { color: inherit; text-decoration: none; } .tg .hero .kick a:hover { color: var(--rubric); }
+.tg .hero h1 { font: 400 clamp(3.1rem, 8.4vw, 6.6rem)/0.9 var(--display); margin: 0; letter-spacing: -0.015em; }
+.tg .hero h1 em { color: var(--rubric); }
+.tg .hero .by { margin: 12px 0 0; font: italic 1.2rem var(--display); color: var(--muted); }
+.tg .hero .lede { max-width: 34rem; margin: 18px 0 0; font-size: 1.12rem; text-wrap: pretty; }
+.tg .hero .facts { display: flex; gap: 14px 34px; flex-wrap: wrap; list-style: none; padding: 0; margin: 26px 0 0; }
+.tg .hero .facts li { min-width: 5rem; max-width: 10.5rem; }
+.tg .hero .facts b { display: block; font: 400 2.2rem/1 var(--display); color: var(--rubric); font-variant-numeric: lining-nums tabular-nums; }
+.tg .hero .facts span { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.tg .hero .scroll { margin-top: 28px; font-size: 0.84rem; color: var(--muted); letter-spacing: 0.04em; }
+.tg .hero .scroll i { display: inline-block; font-style: normal; animation: tg-nudge 1.8s ease-in-out infinite; }
+@keyframes tg-nudge { 50% { transform: translateY(4px); } }
+.tg .hero .art { position: relative; width: 100%; max-width: 560px; justify-self: center; }
+.tg .hero .art svg { width: 100%; height: auto; aspect-ratio: 1; display: block; overflow: visible; }
+.tg .hero .art .cap { margin: 2px 0 0; text-align: center; font-size: 0.82rem; color: var(--muted); min-height: 2.6em; text-wrap: balance; }
+/* chapters: a sticky stage scrubbed by scroll (GSAP pins it); stacked and static under 860px or with reduced motion */
+.tg .scene { position: relative; min-height: calc(100vh - var(--tg-pin, 0px)); display: grid; align-content: center; padding-block: 64px; border-bottom: 1px solid var(--rule-2); }
+.tg .scene > .wrap { min-width: 0; width: 100%; }   /* a wide diagram must not widen the page on phones */
+.tg .scene-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 2fr); gap: 28px 48px; align-items: center; }
+.tg .scene .big { font: 400 clamp(2.6rem, 6vw, 4.4rem)/1 var(--display); color: var(--rubric); font-variant-numeric: lining-nums tabular-nums; }
+.tg .chron { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; max-height: 58vh; overflow: hidden; position: relative; }
+.tg .chron li { padding: 7px 10px 7px 12px; border-left: 2px solid var(--rule); opacity: 0.36; transition: opacity 0.35s, border-color 0.35s, background 0.35s; }
+.tg .chron li.past { opacity: 0.6; } .tg .chron li.now { opacity: 1; border-color: var(--rubric); background: var(--card); }
+.tg .chron .d { font: 600 0.8rem var(--body); color: var(--rubric); font-variant-numeric: tabular-nums; margin-right: 6px; }
+.tg .chron .e { font: 1.06rem/1.25 var(--display); }
+.tg .chron .w { font-size: 0.86rem; color: var(--muted); display: none; margin-top: 2px; } .tg .chron li.now .w { display: block; }
+.tg .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; counter-reset: s; }
+.tg .steps li { padding: 8px 12px; border-left: 2px solid var(--rule); opacity: 0.4; transition: opacity 0.3s, border-color 0.3s, background 0.3s; counter-increment: s; cursor: default; }
+.tg .steps li::before { content: counter(s) "  "; font: 600 0.8rem var(--body); color: var(--rubric); }
+.tg .steps li b { font: 400 1.06rem var(--display); }
+.tg .steps li p { margin: 2px 0 0; font-size: 0.9rem; display: none; } .tg .steps li.now { opacity: 1; border-color: var(--rubric); background: var(--card); } .tg .steps li.now p { display: block; }
+.tg .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.8rem; color: var(--muted); }
+.tg .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+/* maps */
+.tg .mapbox { position: relative; background: var(--sea); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; aspect-ratio: 4 / 3; max-width: 100%; }
+.tg .mapbox svg, .tg .mapbox canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.tg .mapbox .year { position: absolute; left: 16px; bottom: 12px; font: 400 clamp(2.4rem, 6vw, 4rem)/1 var(--display); color: var(--ink); font-variant-numeric: lining-nums tabular-nums; pointer-events: none; text-shadow: 0 0 12px var(--land); }
+.tg .mapbox .yearbar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--rule); } .tg .mapbox .yearbar i { display: block; height: 100%; background: var(--rubric); width: 0; }
+.tg .ribbon { display: flex; flex-wrap: wrap; gap: 6px; min-height: 30px; margin-top: 10px; }
+.tg .ribbon span { font: 0.8rem var(--body); padding: 2px 10px 2px 8px; border-radius: 999px; background: var(--card); border: 1px solid var(--rule); display: inline-flex; align-items: center; gap: 6px; }
+.tg .ribbon span i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+/* tools */
+.tg section.tool { padding-block: 72px 8px; }
+.tg .instrument { background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 16px 18px 12px; }
+.tg .controls { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin-bottom: 10px; }
+.tg .chip { font: 0.82rem var(--body); color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 999px; padding: 4px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.tg .chip i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.tg .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); } .tg .chip:hover { border-color: var(--rubric); }
+.tg .fams .chip { background: var(--card); color: var(--ink); border-color: var(--rule); }
+.tg .fams .chip[aria-pressed="true"] { background: var(--card); color: var(--ink); border-color: var(--ink-2); }
+.tg .fams .chip[aria-pressed="false"] { opacity: 0.42; }
+.tg .search { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--muted); }
+.tg .search input { font: 0.95rem var(--body); color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 10px; width: 15rem; max-width: 56vw; }
+.tg .tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--paper); font: 0.85rem/1.35 var(--body); padding: 8px 10px; border-radius: 4px; max-width: 22rem; z-index: 5; }
+.tg .tip small { display: block; opacity: 0.78; font-size: 0.78rem; margin-top: 2px; }
+.tg .card { background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 16px 18px; }
+.tg .card h3 a { color: var(--ink); text-decoration: none; }
+.tg .wlist { list-style: none; margin: 10px 0 0; padding: 0; columns: 2 18rem; column-gap: 28px; }
+.tg .wlist li { break-inside: avoid; padding: 5px 0; border-top: 1px solid var(--rule-2); font-size: 0.92rem; display: flex; justify-content: space-between; gap: 10px; }
+.tg .wlist a { color: var(--ink); text-decoration: none; } .tg .wlist a:hover { color: var(--rubric); text-decoration: underline; }
+.tg .wlist small { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tg .reveal { opacity: 0; transform: translateY(18px); }
+.tg .reveal.in { opacity: 1; transform: none; transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2,.7,.2,1); }
+.tg footer.mo { margin-top: 88px; background: var(--paper-2); color: var(--muted); border-top: 1px solid var(--rule); }
+.tg footer.mo .wrap { display: flex; flex-wrap: wrap; gap: 8px 30px; justify-content: space-between; padding-block: 28px; font-size: 0.85rem; }
+.tg footer.mo b { color: var(--ink); letter-spacing: 0.14em; }
+.tg .next { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.tg .next a { font: 0.92rem var(--body); color: var(--ink); text-decoration: none; border: 1px solid var(--rule); border-radius: 999px; padding: 6px 14px; background: var(--card); }
+.tg .next a:hover { border-color: var(--rubric); color: var(--rubric); }
+@media (max-width: 860px) {
+  .tg .hero .wrap, .tg .scene > .wrap { min-width: 0; width: 100%; }   /* a wide diagram must not widen the page on phones */
+.tg .scene-grid { grid-template-columns: minmax(0, 1fr); }
+  .tg .hero .art { max-width: 420px; }
+  .tg .scene { min-height: auto; padding-block: 48px; }
+  .tg .chron { max-height: 21rem; overflow: auto; margin-bottom: 8px; } .tg .chron li, .tg .chron li.past { opacity: 1; } .tg .chron .w { display: block; }
+  .tg .steps li, .tg .steps li.now { opacity: 1; background: none; } .tg .steps li p { display: block; }
+  .tg .search { margin-left: 0; width: 100%; } .tg .search input { width: 100%; max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tg .hero .scroll i { animation: none; } .tg .chron li, .tg .steps li { transition: none; }
+  .tg .reveal { opacity: 1; transform: none; }
+}
+/* the finder: search, family chips, three tabs (By author folds, By century lifelines, By title A to Z) */
+.tg .fx-top { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.tg .fx-search { display: flex; align-items: center; gap: 10px; flex: 1 1 22rem; max-width: 36rem; font: 600 0.72rem var(--body); letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+.tg .fx-search input { flex: 1 1 auto; min-width: 0; font: 1.02rem var(--body); letter-spacing: 0; text-transform: none; color: var(--ink); background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 10px 14px; }
+.tg .fx-search input:focus { border-color: var(--rubric); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--rubric) 14%, transparent); }
+.tg .fams { display: flex; flex-wrap: wrap; gap: 6px; }
+.tg .fx-count { margin: 10px 0 0; min-height: 1.3em; }
+.tg .fx-tabs { position: relative; display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--rule); margin-top: 14px; }
+.tg .fx-tabs button { font: 0.95rem var(--body); color: var(--muted); background: none; border: 0; padding: 12px 18px; cursor: pointer; }
+.tg .fx-tabs button[aria-selected="true"] { color: var(--ink); font-weight: 600; }
+.tg .fx-tabs button:hover { color: var(--rubric); }
+.tg .fx-ink { position: absolute; left: 0; bottom: -1px; height: 2px; width: 0; background: var(--rubric); pointer-events: none; }
+.tg .fx-panel { padding-top: 14px; }
+.tg .fx-cent { border-bottom: 1px solid var(--rule); }
+.tg .fx-cent > summary { cursor: pointer; list-style: none; display: flex; align-items: baseline; gap: 14px; padding: 12px 4px; }
+.tg .fx-cent > summary::-webkit-details-marker { display: none; }
+.tg .fx-cent > summary b { font: 400 1.45rem/1 var(--display); min-width: 9rem; }
+.tg .fx-cent > summary span { color: var(--muted); font-size: 0.88rem; min-width: 10rem; }
+.tg .fx-cent > summary .fx-spark { flex: 1 1 8rem; max-width: 24rem; min-width: 0; height: 18px; align-self: center; }
+.tg .fx-cent > summary i { margin-left: auto; color: var(--muted); font-style: normal; transition: transform 0.25s; }
+.tg .fx-cent[open] > summary i { transform: rotate(90deg); color: var(--rubric); }
+.tg .fx-cent > summary:hover b { color: var(--rubric); }
+.tg .fx-who-list { padding: 0 0 12px; columns: 2 28rem; column-gap: 28px; }
+.tg .fx-who { break-inside: avoid; }
+.tg .fx-who { border-top: 1px solid var(--rule-2); border-radius: 3px; }
+.tg .fx-who > summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; column-gap: 10px; align-items: baseline; padding: 7px 4px; }
+.tg .fx-who > summary::-webkit-details-marker { display: none; }
+.tg .fx-who > summary i { width: 9px; height: 9px; border-radius: 2px; align-self: center; }
+.tg .fx-who > summary b { font: 400 1.04rem/1.25 var(--display); }
+.tg .fx-who > summary .d { grid-column: 2; font-size: 0.78rem; color: var(--muted); }
+.tg .fx-who > summary .n { grid-row: 1; grid-column: 3; font-size: 0.78rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tg .fx-who[open] > summary b, .tg .fx-who > summary:hover b { color: var(--rubric); }
+.tg .fx-who .fx-body { padding: 0 4px 10px 24px; }
+.tg .fx-who .wlist { columns: 1; margin-top: 4px; }
+.tg .fx-cent > .fx-body { padding: 0 4px 12px; }
+.tg .wlist mark, .tg .fx-who mark { background: color-mix(in srgb, var(--gilt) 32%, transparent); color: inherit; border-radius: 2px; }
+@media (max-width: 860px) { .tg .fx-cent > summary .fx-spark { display: none; } .tg .fx-cent > summary span { min-width: 0; } }
+
+/* On MereO: the guide sits in the theme's main, under the masthead and the TFR rail */
+.tfr-guide-page { background: #f6f1e7; }
+.tfr-guide-page .tg { min-height: 60vh; }
+.tfr-guide-page .tg-loading { max-width: 76rem; margin: 0 auto; padding: 64px 16px; color: #6f675f; }

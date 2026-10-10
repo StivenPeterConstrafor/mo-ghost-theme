@@ -1,0 +1,162 @@
+<style>
+/* The Medieval shelf: stained glass for the families, vellum for the page, a ledger for the Sentences */
+.tg-med .rose .lancet { opacity: 0; cursor: pointer; transition: filter 0.2s; }
+.tg-med .rose .lancet path.glass { stroke: var(--ink); stroke-width: 1.3; stroke-linejoin: round; }
+.tg-med .rose .lancet path.hi { fill: none; stroke: #fff; stroke-opacity: 0.5; stroke-width: 1; }
+.tg-med .rose .lancet path.clear { stroke: var(--ink); stroke-width: 1.3; stroke-linejoin: round; }
+.tg-med .rose .lead { fill: none; stroke: var(--ink); stroke-width: 0.7; opacity: 0.55; pointer-events: none; }
+.tg-med .rose .lancet:hover path.glass, .tg-med .rose .lancet:focus path.glass { filter: brightness(1.18) saturate(1.1); stroke-width: 2.2; }
+.tg-med .rose .trace { fill: none; stroke: var(--ink); }
+.tg-med .rose .lbl { font: 12.5px var(--body); fill: var(--ink-2); }
+.tg-med .rose .yr { font: 400 38px var(--display); fill: var(--rubric); }
+.tg-med .rose .yr2 { font: 600 9.5px var(--body); letter-spacing: 0.2em; fill: var(--muted); text-transform: uppercase; }
+/* the ledger of commentaries */
+.tg-med .ledger { display: grid; grid-template-columns: minmax(8.5rem, 1.15fr) repeat(4, minmax(0, 1fr)); column-gap: 10px; align-items: center; font-size: 0.86rem; }
+.tg-med .ledger .bk { text-align: left; padding: 0 0 10px; border-bottom: 1px solid var(--ink); }
+.tg-med .ledger .bk b { display: block; font: 400 2rem/1 var(--display); color: var(--rubric); }
+.tg-med .ledger .bk span { display: block; font-size: 0.74rem; line-height: 1.25; color: var(--muted); margin-top: 4px; min-height: 2.5em; }
+.tg-med .ledger .who { padding: 5px 0; border-bottom: 1px solid var(--rule-2); line-height: 1.15; }
+.tg-med .ledger .who b { font: 400 1.02rem var(--display); display: block; }
+.tg-med .ledger .who small { color: var(--muted); font-variant-numeric: tabular-nums; }
+.tg-med .ledger .cell { height: 100%; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--rule-2); padding: 5px 0; min-width: 0; }
+.tg-med .ledger .cell a { display: block; height: 11px; border-radius: 2px; transform-origin: left center; flex: none; }
+.tg-med .ledger .cell small { color: var(--muted); font-size: 0.72rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tg-med .ledger .row { display: contents; }
+.tg-med .ledger .row.now .who b { color: var(--rubric); }
+/* the article */
+.tg-med .argue { position: relative; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 18px; box-shadow: 0 18px 40px -24px rgba(60, 40, 20, 0.45); }
+.tg-med .argue .grid { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 10px; position: relative; z-index: 1; }
+.tg-med .argue .blk { border: 1px solid var(--rule); border-radius: 3px; padding: 8px 10px; background: var(--paper); font-size: 0.8rem; line-height: 1.35; transition: border-color 0.3s, background 0.3s; min-width: 0; }
+.tg-med .argue .blk .k { display: block; font: 600 0.64rem var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.tg-med .argue .blk .la { font: italic 0.95rem/1.3 var(--display); color: var(--ink); display: block; }
+.tg-med .argue .blk .en { color: var(--muted); display: block; margin-top: 3px; }
+.tg-med .argue .blk.on { border-color: var(--rubric); background: var(--card); box-shadow: 0 0 0 3px color-mix(in srgb, var(--rubric) 12%, transparent); }
+.tg-med .argue .blk.on .k { color: var(--rubric); }
+.tg-med .argue .title { grid-column: 1 / -1; text-align: center; }
+.tg-med .argue .title .la { font-size: 1.6rem; }
+.tg-med .argue .arg { grid-column: span 5; }
+.tg-med .argue .sc { grid-column: 3 / span 6; text-align: center; }
+.tg-med .argue .co { grid-column: 1 / -1; text-align: center; }
+.tg-med .argue .ways { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.tg-med .argue .way { border-top: 3px solid var(--gilt); padding: 7px 8px; background: var(--paper); border-radius: 0 0 3px 3px; font-size: 0.74rem; line-height: 1.3; min-width: 0; }
+.tg-med .argue .way b { font: 400 1.05rem var(--display); display: block; color: var(--ink); }
+.tg-med .argue .way .la { font: italic 0.82rem/1.25 var(--display); display: block; margin-top: 3px; }
+.tg-med .argue .way .end { color: var(--rubric); font: italic 0.8rem var(--display); display: block; margin-top: 4px; }
+.tg-med .argue .ad { grid-column: span 5; }
+.tg-med .argue svg.arrows { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; overflow: visible; }
+.tg-med .argue svg.arrows path { fill: none; stroke: var(--rubric); stroke-width: 1.5; }
+.tg-med .excerpt { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-top: 12px; font-size: 0.84rem; line-height: 1.45; max-height: 9.5em; overflow: hidden; position: relative; }
+.tg-med .excerpt::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2.4em; background: linear-gradient(transparent, var(--paper)); }
+.tg-med .excerpt .la { font-family: var(--display); font-style: italic; }
+.tg-med .excerpt .en { color: var(--ink-2); }
+/* the glossed page */
+.tg-med .book { position: relative; width: min(100%, 440px); aspect-ratio: 3 / 4; margin: 0 auto; perspective: 1600px; }
+.tg-med .leaf { position: absolute; inset: 0; transform-origin: left center; background: #f8f0dc; border: 1px solid #d8c49c; border-radius: 2px 6px 6px 2px; box-shadow: 0 22px 44px -26px rgba(60, 40, 20, 0.6), inset 18px 0 24px -20px rgba(80, 50, 20, 0.35); backface-visibility: hidden; }
+.tg-med .leaf svg { width: 100%; height: 100%; display: block; }
+.tg-med .leaf .head { font: 400 15px var(--display); fill: var(--rubric); letter-spacing: 0.14em; }
+.tg-med .leaf .yr { font: italic 12px var(--display); fill: var(--muted); }
+.tg-med .leaf .gl { font: italic 10.5px var(--display); fill: var(--rubric); }
+.tg-med .leaf .ln { fill: #4a3f35; }
+.tg-med .leaf .gn { fill: #8a7a66; }
+.tg-med .leaf .init { font: 400 46px var(--display); fill: var(--rubric); }
+.tg-med .layers { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 4px; }
+.tg-med .layers li { padding: 8px 12px; border-left: 2px solid var(--rule); opacity: 0.4; transition: opacity 0.3s, border-color 0.3s, background 0.3s; }
+.tg-med .layers li.now { opacity: 1; border-color: var(--rubric); background: var(--card); } .tg-med .layers li.past { opacity: 0.7; }
+.tg-med .layers li b { font: 400 1.08rem var(--display); } .tg-med .layers li .d { color: var(--rubric); font: 600 0.78rem var(--body); margin-right: 6px; }
+.tg-med .layers li p { margin: 2px 0 0; font-size: 0.88rem; display: none; } .tg-med .layers li.now p { display: block; }
+.tg-med .layers li .gls { display: none; flex-wrap: wrap; gap: 4px 6px; margin-top: 4px; } .tg-med .layers li.now .gls { display: flex; }
+.tg-med .layers li .gls a { font-size: 0.78rem; border: 1px solid var(--rule); border-radius: 999px; padding: 1px 9px; color: var(--ink); text-decoration: none; background: var(--paper); }
+.tg-med .layers li .gls a:hover { border-color: var(--rubric); color: var(--rubric); }
+/* Aristotle */
+.tg-med .ari { overflow-x: auto; }
+.tg-med .ari table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 0.86rem; table-layout: fixed; }
+.tg-med .ari col.r { width: 13rem; }
+.tg-med .ari th small { display: block; font: 0.72rem var(--body); color: var(--muted); margin-top: 2px; }
+.tg-med .ari th { font: 400 1rem var(--display); text-align: center; padding: 6px 4px 10px; vertical-align: bottom; border-bottom: 1px solid var(--ink); }
+.tg-med .ari th.r { text-align: left; font: 0.88rem var(--body); color: var(--ink-2); border-bottom: 1px solid var(--rule-2); padding: 5px 10px 5px 0; white-space: nowrap; }
+.tg-med .ari td { text-align: center; border-bottom: 1px solid var(--rule-2); padding: 4px; height: 34px; }
+.tg-med .ari td a { display: inline-block; border-radius: 50%; vertical-align: middle; margin: 0 1px; }
+.tg-med .ari tr:hover th.r { color: var(--rubric); }
+@media (max-width: 860px) {
+  .tg-med .ledger { grid-template-columns: minmax(6.5rem, 1fr) repeat(4, minmax(0, 1fr)); column-gap: 6px; }
+  .tg-med .ledger .bk span { display: none; } .tg-med .ledger .cell small { display: none; }
+  .tg-med .argue .arg, .tg-med .argue .ad { grid-column: 1 / -1; } .tg-med .argue .sc { grid-column: 1 / -1; }
+  .tg-med .argue .ways { grid-template-columns: minmax(0, 1fr); }
+  .tg-med .layers li { opacity: 1; } .tg-med .layers li p, .tg-med .layers li .gls { display: block; }
+}
+</style>
+
+<section class="hero" aria-labelledby="tg-h1"><div class="wrap gut">
+  <div>
+    <p class="kick"><a href="/the-faith-received/">The Faith Received</a> · <a href="/the-faith-received/guide/">Guides to the shelves</a></p>
+    <h1 id="tg-h1">The <em>Medieval</em> shelf</h1>
+    <p class="by">From Abelard to Gabriel Biel, 1120–1495</p>
+    <p class="lede">The schools of the Latin Middle Ages: the masters of Paris and Oxford who lectured on the Sentences and wrote the summas, the friars who argued Aristotle into theology, and the canonists of Bologna who built the law of the Church. Latin on every page, with English beside it.</p>
+    <ul class="facts"><li><b data-count="works">0</b><span>works</span></li><li><b data-count="authors">0</b><span>authors</span></li><li><b data-count="pages">0</b><span>pages</span></li><li><b data-count="sent">0</b><span>commentaries on Lombard</span></li></ul>
+    <p class="scroll">Scroll to walk the shelf <i>↓</i></p>
+  </div>
+  <div class="art rose" aria-label="Every author on the shelf as a pane of a rose window, in order of birth, clockwise from the top; longer panes are more pages"><svg viewBox="-70 -70 740 740" role="img"></svg><p class="cap" aria-live="polite"></p></div>
+</div></section>
+
+<section class="scene gut" id="tg-road" aria-labelledby="tg-h-road"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">1 · Where they taught</p>
+    <h2 id="tg-h-road">The masters on the road</h2>
+    <p class="say">A master of the schools was seldom at home. Thomas Aquinas taught at Paris twice, at Cologne, Orvieto, Rome and Naples; Ockham went from Oxford to the pope’s court at Avignon and died in Munich. Scroll to follow them.</p>
+    <ul class="chron" id="tg-chron"></ul>
+  </div>
+  <div>
+    <div class="mapbox" id="tg-map"><svg aria-hidden="true"></svg><canvas aria-label="Map of the masters’ journeys between the schools, moving with the years"></canvas><div class="year num" id="tg-year">1080</div><div class="yearbar"><i id="tg-yearbar"></i></div></div>
+    <div class="ribbon" id="tg-ribbon" aria-live="polite"></div>
+    <p class="legend" id="tg-legend" style="margin-top:8px"></p>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-sent" aria-labelledby="tg-h-sent"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">2 · The textbook</p>
+    <h2 id="tg-h-sent">Four books, three centuries of lectures</h2>
+    <p class="say">Peter Lombard finished his <i>Sentences</i> at Paris about 1158: the answers of the Fathers gathered in four books, from God to the last things. Every bachelor of theology lectured on them before he could become a master.</p>
+    <p class="say">Lombard’s own text is on the Latin Fathers shelf, in <a id="tg-lombard" target="_blank" rel="noopener">volume 192 of Migne</a>. This shelf holds the commentaries.</p>
+    <div class="big num" id="tg-sent-n">0</div><p class="small" id="tg-sent-note">pages of commentary</p>
+  </div>
+  <div class="ledger" id="tg-ledger" role="table" aria-label="Commentaries on the four books of the Sentences, pages on the shelf for each book"></div>
+</div></section>
+
+<section class="scene gut" id="tg-art" aria-labelledby="tg-h-art"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">3 · The method</p>
+    <h2 id="tg-h-art">How a question is argued</h2>
+    <p class="say">The Summa of Theology, part one, question two, article three: <i>Utrum Deus sit</i>, whether God exists. Every article of the Summa is built the same way.</p>
+    <ol class="steps" id="tg-steps"></ol>
+  </div>
+  <div>
+    <div class="argue" id="tg-article"><svg class="arrows" aria-hidden="true"></svg><div class="grid"></div></div>
+    <div class="excerpt" id="tg-excerpt" aria-live="polite"><div class="la"></div><div class="en"></div></div>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-law" aria-labelledby="tg-h-law"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">4 · The law</p>
+    <h2 id="tg-h-law">Text and gloss</h2>
+    <p class="say">At Bologna the law of the Church was taught the way theology was taught at Paris: the text in the middle of the page and the masters’ commentary written around it. The shelf holds the whole Corpus of Canon Law, Gratian to the Extravagantes, and the great commentaries on it.</p>
+    <ol class="layers" id="tg-layers"></ol>
+  </div>
+  <div class="book" id="tg-book" aria-label="The Corpus of Canon Law as glossed pages, one for each collection"></div>
+</div></section>
+
+<section class="tool gut" id="tg-ari-s" aria-labelledby="tg-h-ari"><div class="wrap">
+  <p class="eyebrow">5 · Aristotle</p>
+  <h2 id="tg-h-ari">Aristotle in the schools</h2>
+  <p class="say" style="max-width:46rem">From the middle of the thirteenth century the friars commented on Aristotle book by book. Albert paraphrased nearly the whole of him; Thomas expounded him line by line; Scotus and his followers asked questions of him. Each circle is a commentary on the shelf, sized by its pages.</p>
+  <div class="ari instrument" id="tg-ari"><div class="tip" hidden></div></div>
+</div></section>
+
+<section class="tool gut" id="explore" aria-labelledby="tg-h-ex"><div class="wrap">
+  <p class="eyebrow">Find</p>
+  <h2 id="tg-h-ex">Every author, every work</h2>
+  <p class="say" style="max-width:46rem">Forty writers, from the Bolognese canonists to the last nominalists. Search the shelf, or browse it by author, century by century, by the span of their lives, or by title. Choose a family to narrow any of them.</p>
+  <div id="tg-explorer"></div>
+  <div class="next"><a href="/the-faith-received/all-works/?tradition=Medieval">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=Medieval">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
+</div></section>

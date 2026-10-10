@@ -1,0 +1,140 @@
+<style>
+/* The Lutheran shelf: the colours of Luther's seal (a red heart, a black cross, a white rose, a sky-blue field, a ring of gold) */
+.tg-lut { --f1: #a3382a; --f2: #7a4a2e; --f3: #a07c35; --f4: #2f4a6b; --f5: #5b6b3a; --f6: #4f86b0; --f7: #8a8178; --sky: #a9c4dc; --sky-2: #7fa3c4; --gold: #c9a24e; }
+.tg-lut .seal .bead { cursor: pointer; }
+.tg-lut .seal .bead circle { stroke: var(--card); stroke-width: 1.4; transition: stroke-width 0.2s; }
+.tg-lut .seal .bead:hover circle, .tg-lut .seal .bead:focus circle { stroke: var(--ink); stroke-width: 2.2; }
+.tg-lut .seal .tick { font: 11px var(--body); fill: var(--muted); }
+.tg-lut .seal .petal { fill: var(--card); stroke: var(--ink); stroke-width: 1.6; }
+.tg-lut .seal .vein { fill: none; stroke: var(--ink); stroke-width: 0.8; opacity: 0.35; }
+/* Luther's pen */
+.tg-lut .pen { position: relative; }
+.tg-lut .pen svg { width: 100%; height: auto; display: block; overflow: visible; }
+.tg-lut .pen .ax { font: 11px var(--body); fill: var(--muted); }
+.tg-lut .pen .dot { cursor: pointer; }
+.tg-lut .pen .lm { fill: none; stroke: var(--rubric); stroke-width: 1.6; }
+.tg-lut .pen .lmn { font: 600 9px var(--body); fill: var(--rubric); }
+.tg-lut .pen .life { font: italic 12.5px var(--display); fill: var(--ink-2); }
+.tg-lut .marks { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; max-height: 44vh; overflow: hidden; }
+.tg-lut .marks li { padding: 4px 10px; border-left: 2px solid var(--rule); opacity: 0.32; font-size: 0.9rem; transition: opacity 0.3s, border-color 0.3s, background 0.3s; }
+.tg-lut .marks li.past { opacity: 0.75; } .tg-lut .marks li.now { opacity: 1; border-color: var(--rubric); background: var(--card); }
+.tg-lut .marks li b { color: var(--rubric); font: 600 0.78rem var(--body); margin-right: 6px; font-variant-numeric: tabular-nums; }
+.tg-lut .marks li a { color: var(--ink); text-decoration: none; } .tg-lut .marks li a:hover { color: var(--rubric); text-decoration: underline; }
+.tg-lut .marks li i { font-style: normal; color: var(--muted); font-size: 0.78rem; margin-left: 4px; }
+/* the braid into the Book of Concord */
+.tg-lut .braid svg { width: 100%; height: auto; max-height: calc(100vh - 210px); display: block; overflow: visible; }
+.tg-lut .braid .doc rect { fill: var(--card); stroke: var(--ink-2); stroke-width: 1; }
+.tg-lut .braid .doc text { font: 11.5px var(--body); fill: var(--ink); }
+.tg-lut .braid .doc text.y { font: 600 10px var(--body); fill: var(--rubric); }
+.tg-lut .braid .thread { fill: none; stroke-width: 2.6; stroke-linecap: round; }
+.tg-lut .braid .tlab { font: 400 13.5px var(--display); fill: var(--ink); }
+.tg-lut .braid .tsub { font: 10.5px var(--body); fill: var(--muted); }
+.tg-lut .braid .knot circle { fill: var(--card); stroke: var(--ink); stroke-width: 1.4; }
+.tg-lut .braid .knot text { font: 12px var(--body); fill: var(--ink); }
+.tg-lut .braid .knot text.r { font: 400 12.5px var(--display); fill: var(--rubric); }
+.tg-lut .braid .knot a:hover text { fill: var(--rubric); text-decoration: underline; }
+.tg-lut .braid .ax { font: 11px var(--body); fill: var(--muted); }
+.tg-lut .braid .death { stroke: var(--ink); stroke-dasharray: 3 4; opacity: 0.5; }
+.tg-lut .braid .book rect.cover { fill: var(--leather); }
+.tg-lut .braid .book text { font: 400 15px var(--display); fill: #f1e3c4; letter-spacing: 0.08em; }
+.tg-lut .braid .step text { font: 10.5px var(--body); fill: var(--ink-2); }
+.tg-lut .braid .bind { fill: none; stroke: var(--gilt); stroke-width: 1.2; opacity: 0.7; }
+.tg-lut .bnote { min-height: 3.2em; }
+.tg-lut .bhead { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); align-items: end; margin-bottom: 12px; }
+.tg-lut .braid { position: relative; }
+.tg-lut .scene > .wrap { min-width: 0; width: 100%; }
+/* the systems and Gerhard's loci */
+.tg-lut .sys { position: relative; height: min(64vh, 600px); min-height: 460px; }
+.tg-lut .sys .spine { position: absolute; display: block; border-radius: 3px 3px 1px 1px; box-shadow: inset -3px 0 0 rgba(0,0,0,0.2), inset 2px 0 0 rgba(255,255,255,0.08); overflow: hidden; text-decoration: none; }
+.tg-lut .sys .spine::before, .tg-lut .sys .spine::after { content: ""; position: absolute; left: 3px; right: 3px; height: 3px; border-top: 1px solid var(--gold); border-bottom: 1px solid var(--gold); }
+.tg-lut .sys .spine::before { top: 10px; } .tg-lut .sys .spine::after { bottom: 10px; }
+.tg-lut .sys .floor { position: absolute; left: 0; right: 0; height: 7px; background: var(--leather); border-radius: 1px; }
+.tg-lut .sys .lab { position: absolute; font: 0.78rem/1.2 var(--body); color: var(--ink-2); text-align: center; transform: translateX(-50%); white-space: nowrap; }
+.tg-lut .sys .lab b { display: block; font: 600 0.72rem var(--body); color: var(--rubric); font-variant-numeric: tabular-nums; }
+.tg-lut .sys .col { position: absolute; display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
+.tg-lut .sys .col h4 { margin: 0 0 4px; font: 400 1.05rem var(--display); text-align: center; color: var(--ink); }
+.tg-lut .sys .locus { display: block; background: var(--card); border: 1px solid var(--rule); border-left: 3px solid var(--gold); border-radius: 2px; padding: 3px 5px; overflow: hidden; color: var(--ink); text-decoration: none; pointer-events: auto; transform-origin: top center; min-height: 0; }
+.tg-lut .sys .locus b, .tg-lut .sys .locus i { overflow-wrap: anywhere; hyphens: auto; }
+.tg-lut .sys .locus b { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; font: 400 0.86rem/1.05rem var(--display); }
+.tg-lut .sys .locus i { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; font: italic 0.7rem/0.72rem var(--display); color: var(--muted); }
+.tg-lut .sys .spine .rn { position: absolute; left: 0; right: 0; top: 44%; text-align: center; font: 400 1.6rem var(--display); color: var(--gold); opacity: 0; letter-spacing: 0.04em; }
+.tg-lut .sys .locus:hover { border-color: var(--rubric); background: #fff; } .tg-lut .sys .locus:hover b { color: var(--rubric); }
+.tg-lut .sys-say { min-height: 6.5em; }
+.tg-lut .sys-say .now { color: var(--rubric); }
+.tg-lut .lociList { display: none; }
+@media (max-width: 860px) {
+  .tg-lut .sys { display: none; } .tg-lut .lociList { display: block; }
+  .tg-lut .bhead { grid-template-columns: minmax(0, 1fr); }
+  .tg-lut .braid { overflow-x: auto; } .tg-lut .braid svg { min-width: 880px; max-height: none; }
+  .tg-lut .braid::after { content: 'Scroll sideways to follow the threads'; display: block; font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+  .tg-lut .marks { max-height: 18rem; overflow: auto; } .tg-lut .marks li, .tg-lut .marks li.past { opacity: 1; }
+}
+.tg-lut .lociList ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.tg-lut .lociList li > b { font: 400 1.05rem var(--display); display: block; margin-bottom: 4px; }
+.tg-lut .lociList li span { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+.tg-lut .lociList a { font-size: 0.82rem; border: 1px solid var(--rule); border-radius: 999px; padding: 1px 9px; color: var(--ink); text-decoration: none; background: var(--card); }
+</style>
+
+<section class="hero" aria-labelledby="tg-h1"><div class="wrap gut">
+  <div>
+    <p class="kick"><a href="/the-faith-received/">The Faith Received</a> · <a href="/the-faith-received/guide/">Guides to the shelves</a></p>
+    <h1 id="tg-h1">The <em>Lutheran</em> shelf</h1>
+    <p class="by">Two centuries from Wittenberg, 1517–1746</p>
+    <p class="lede">The churches of the Augsburg Confession, from Luther’s Wittenberg to the last of the orthodox systems: Luther in the Weimar Edition, Melanchthon, the Magdeburg Centuries, the theologians of the Formula of Concord, Gerhard, Calov and Quenstedt. Latin and German on every page, with English beside it.</p>
+    <ul class="facts"><li><b data-count="works">0</b><span>works</span></li><li><b data-count="authors">0</b><span>authors</span></li><li><b data-count="pages">0</b><span>pages</span></li><li><b data-count="wa">0</b><span>volumes of Luther’s Weimar Edition</span></li></ul>
+    <p class="scroll">Scroll to walk the shelf <i>↓</i></p>
+  </div>
+  <div class="art seal" aria-label="Luther’s seal drawn with the shelf: around the ring of gold, every writer on the shelf at the year of his birth"><svg viewBox="-70 -70 740 740" role="img"></svg><p class="cap" aria-live="polite"></p></div>
+</div></section>
+
+<section class="scene gut" id="tg-road" aria-labelledby="tg-h-road"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">1 · Where they taught</p>
+    <h2 id="tg-h-road">From Wittenberg</h2>
+    <p class="say">Lutheranism was made in the universities. Luther and Melanchthon taught at Wittenberg; their students carried the Reformation to Jena, Königsberg, Helmstedt, Rostock and Copenhagen, and the orthodox theologians moved between them for two hundred years. Scroll to follow them.</p>
+    <ul class="chron" id="tg-chron"></ul>
+  </div>
+  <div>
+    <div class="mapbox" id="tg-map"><svg aria-hidden="true"></svg><canvas aria-label="Map of the theologians’ journeys between the Lutheran universities, moving with the years"></canvas><div class="year num" id="tg-year">1483</div><div class="yearbar"><i id="tg-yearbar"></i></div></div>
+    <div class="ribbon" id="tg-ribbon" aria-live="polite"></div>
+    <p class="legend" id="tg-legend" style="margin-top:8px"></p>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-pen" aria-labelledby="tg-h-pen"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">2 · Luther</p>
+    <h2 id="tg-h-pen">Luther’s pen</h2>
+    <p class="say">The Weimar Edition prints Luther’s writings in the order he wrote them. Every dot is a writing whose heading carries its year: <span id="tg-pen-n" class="num">0</span> of them, from the first sermons to the last works of 1546.</p>
+    <ul class="marks" id="tg-marks"></ul>
+  </div>
+  <div class="pen" id="tg-penbox"><svg role="img" aria-label="Luther’s dated writings in the Weimar Edition, one dot each, stacked by year"></svg><div class="tip" hidden></div><p class="legend" id="tg-penkey" style="margin-top:6px"></p></div>
+</div></section>
+
+<section class="scene gut" id="tg-concord" aria-labelledby="tg-h-concord"><div class="wrap">
+  <div class="scene-grid bhead">
+    <div><p class="eyebrow">3 · The confession</p><h2 id="tg-h-concord" style="margin:0">Into the Book of Concord</h2></div>
+    <p class="say bnote" id="tg-bnote" style="margin:0" aria-live="polite"></p>
+  </div>
+  <div class="braid" id="tg-braid"><svg viewBox="0 0 1000 590" role="img" aria-label="The documents of 1529 to 1537, the controversies after Luther’s death, and the twelve articles of the Formula of Concord that settled them, bound into the Book of Concord of 1580"></svg><div class="tip" hidden></div></div>
+</div></section>
+
+<section class="scene gut" id="tg-sys" aria-labelledby="tg-h-sys"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">4 · The systems</p>
+    <h2 id="tg-h-sys">A shelf of systems</h2>
+    <div class="sys-say" id="tg-sys-say" aria-live="polite"></div>
+  </div>
+  <div>
+    <div class="sys" id="tg-sysbox" aria-label="The Lutheran systems of theology on the shelf, then Gerhard’s Loci opened into its loci"></div>
+    <div class="lociList" id="tg-locilist"></div>
+  </div>
+</div></section>
+
+<section class="tool gut" id="explore" aria-labelledby="tg-h-ex"><div class="wrap">
+  <p class="eyebrow">Explore</p>
+  <h2 id="tg-h-ex">Every author on the shelf</h2>
+  <p class="say" style="max-width:46rem">Forty-one writers, from the Reformers to the last orthodox dogmaticians and the philosophers who taught beside them. Choose a generation to narrow the lines, or search for a title.</p>
+  <div id="tg-explorer"></div>
+  <div class="next"><a href="/the-faith-received/all-works/?tradition=Lutheran">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=Lutheran">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a></div>
+</div></section>

@@ -1,0 +1,40 @@
+<style>
+/* The guides index: one century ruler over seven shelves; choose a time, see what each shelf holds, open its guide */
+.tg-lib .hero .wrap { grid-template-columns: minmax(0, 1fr); padding-block: 48px 30px; }
+.tg-lib .hero .lede { max-width: 44rem; }
+.tg-lib .ruler { margin-top: 22px; position: relative; user-select: none; touch-action: pan-y; }
+.tg-lib .ruler svg { display: block; width: 100%; overflow: visible; cursor: pointer; }
+.tg-lib .ruler .band { fill: color-mix(in srgb, var(--gilt) 20%, transparent); stroke: var(--gilt); stroke-width: 1; }
+.tg-lib .ruler text { font: 11px var(--body); fill: var(--muted); } .tg-lib .ruler text.on { fill: var(--rubric); font-weight: 600; }
+.tg-lib .ruler .lab { font: 600 9.5px var(--body); letter-spacing: 0.12em; text-transform: uppercase; fill: var(--ink-2); paint-order: stroke; stroke: var(--paper-2); stroke-width: 4px; stroke-linejoin: round; }
+.tg-lib .ruler-help { font-size: 0.85rem; color: var(--muted); margin: 6px 0 0; }
+.tg-lib .now { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin: 30px 0 10px; }
+.tg-lib .now h2 { font: 400 clamp(1.8rem, 4vw, 2.6rem)/1.1 var(--display); margin: 0; } .tg-lib .now h2 em { color: var(--rubric); }
+.tg-lib .now .nav { display: flex; gap: 6px; }
+.tg-lib .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 18px; }
+.tg-lib .tile { background: var(--card); border: 1px solid var(--rule); border-top: 4px solid var(--c); border-radius: 4px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.tg-lib .tile .eyebrow { margin: 0; } .tg-lib .tile h3 { font: 400 1.65rem/1.1 var(--display); margin: 0; } .tg-lib .tile h3 a { color: var(--ink); text-decoration: none; } .tg-lib .tile h3 a:hover { color: var(--rubric); }
+.tg-lib .tile .desc { color: var(--muted); font-size: 0.9rem; margin: 0 0 4px; }
+.tg-lib .tile .count { display: flex; align-items: baseline; gap: 8px; padding-top: 8px; border-top: 1px solid var(--rule-2); }
+.tg-lib .tile .count b { font: 400 2rem/1 var(--display); color: var(--c); font-variant-numeric: lining-nums tabular-nums; } .tg-lib .tile .count span { color: var(--muted); font-size: 0.86rem; }
+.tg-lib .tile ol { list-style: none; margin: 2px 0 8px; padding: 0; min-height: 14.6rem; }
+.tg-lib .tile li { display: grid; grid-template-columns: 5.4rem minmax(0, 1fr); gap: 8px; padding: 4px 0; border-top: 1px solid var(--rule-2); font-size: 0.88rem; }
+.tg-lib .tile[data-k="councils"] li { grid-template-columns: 3.2rem minmax(0, 1fr); }
+.tg-lib .tile li .y { color: var(--muted); font-size: 0.78rem; font-weight: 600; padding-top: 2px; font-variant-numeric: tabular-nums; }
+.tg-lib .tile li a { color: var(--ink); text-decoration: none; } .tg-lib .tile li a:hover { color: var(--rubric); text-decoration: underline; }
+.tg-lib .tile .empty { color: var(--muted); font-style: italic; padding: 8px 0; display: block; }
+.tg-lib .tile .open { margin-top: auto; align-self: flex-start; background: var(--ink); color: var(--card); padding: 8px 14px; border-radius: 4px; text-decoration: none; font-size: 0.9rem; }
+.tg-lib .tile .open:hover { background: var(--rubric); }
+@media (max-width: 860px) { .tg-lib .tile ol { min-height: 0; } }
+</style>
+<section class="hero" aria-labelledby="tg-h1"><div class="wrap gut"><div>
+  <p class="kick"><a href="/the-faith-received/">The Faith Received</a></p>
+  <h1 id="tg-h1">Guides to the <em>shelves</em></h1>
+  <p class="lede">Seven shelves, each with a guide of its own in motion: the councils, the Greek and the Latin Fathers, the medieval schools, the Roman Catholic schools after Trent, the Continental Reformed and the Lutherans. Choose a century to see what every shelf holds, then open a guide.</p>
+  <div class="ruler" id="tg-ruler"><svg role="slider" tabindex="0" aria-label="Choose a century" aria-valuemin="1" aria-valuemax="20"></svg></div>
+  <p class="ruler-help">Each band is a shelf, tallest where it holds the most. Click or drag along the centuries, or use the arrow keys.</p>
+</div></div></section>
+<section class="tool gut" style="padding-top:8px"><div class="wrap">
+  <div class="now"><h2 id="tg-now" aria-live="polite"></h2><span class="nav"><button class="chip" id="tg-prev" type="button">‹ Earlier</button><button class="chip" id="tg-next" type="button">Later ›</button></span></div>
+  <div class="tiles" id="tg-tiles"></div>
+</div></section>

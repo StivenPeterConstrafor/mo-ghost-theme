@@ -1,0 +1,114 @@
+<style>
+/* The Latin Fathers: a page of script for the writers, leather and lettering pieces for the volumes, the column set from the library's text */
+.tg-lat { --f1: #8a6a2a; --f2: #a3382a; --f3: #2f4a6b; --f4: #5b6b3a; --f5: #2e6e6a; --f6: #6d4c7d; --f7: #b9ab95; --vellum: #f7efdc; --vellum-2: #ecdfc2; --minim: #3a2f26; --rule-red: #c7a08f; }
+.tg-lat .script { position: relative; }
+.tg-lat .script svg { width: 100%; height: auto; display: block; }
+.tg-lat .script .vel { fill: url(#tg-vel); stroke: #d6c39b; }
+.tg-lat .script .ruling { stroke: var(--rule-red); stroke-width: 0.5; opacity: 0.55; }
+.tg-lat .script .prick { fill: #b39b74; }
+.tg-lat .script .ini { font: 400 17px var(--display); fill: var(--rubric); }
+.tg-lat .script .mk { stroke: var(--minim); stroke-width: 1.7; stroke-linecap: round; fill: none; }
+.tg-lat .script .mk.r { stroke: var(--rubric); }
+.tg-lat .script .hit { fill: transparent; cursor: pointer; }
+.tg-lat .script .hit:hover + .mk, .tg-lat .script .mk.on { stroke: var(--gilt); stroke-width: 2.6; }
+.tg-lat .script .quill { fill: var(--minim); }
+.tg-lat .script .incipit { font: italic 15px var(--display); fill: var(--rubric); }
+/* the shelf and the piles */
+.tg-lat .stage { position: relative; width: 100%; aspect-ratio: 16 / 10; max-width: 100%; }
+.tg-lat .stage svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.tg-lat .stage .plank { fill: var(--leather); }
+.tg-lat .stage .pl { font: 400 15px var(--display); fill: var(--ink); }
+.tg-lat .stage .pn { font: 11px var(--body); fill: var(--muted); }
+.tg-lat .phase { display: grid; gap: 2px; margin: 14px 0 0; padding: 10px 0 0; border-top: 1px solid var(--rule); max-width: 30rem; }
+.tg-lat .phase b { font: 400 1.15rem var(--display); color: var(--rubric); }
+.tg-lat .mapbox { aspect-ratio: 5 / 4; }
+/* the column, set from the library's text */
+.tg-lat .colstage { position: relative; min-height: 520px; }
+.tg-lat .mpage { position: relative; width: min(100%, 560px); margin: 0 auto; background: #fbf7ee; border: 1px solid var(--rule); box-shadow: 0 22px 44px -26px rgba(60, 40, 20, 0.55); padding: 14px 16px 18px; }
+.tg-lat .mhead { display: grid; grid-template-columns: 3rem 1fr 3rem; align-items: baseline; font: 400 0.95rem var(--display); letter-spacing: 0.08em; border-bottom: 1px solid var(--ink-2); padding-bottom: 4px; margin-bottom: 6px; }
+.tg-lat .mhead .cn { font: 600 0.9rem var(--body); font-variant-numeric: lining-nums; } .tg-lat .mhead .cn.r { text-align: right; } .tg-lat .mhead .t { text-align: center; }
+.tg-lat .mcols { display: grid; grid-template-columns: minmax(0, 1fr) 1.4rem minmax(0, 1fr); }
+.tg-lat .mcol { display: grid; grid-template-rows: repeat(4, 6.6rem); }
+.tg-lat .qbox { overflow: hidden; font: 400 0.69rem/1.32 var(--display); text-align: justify; hyphens: auto; color: #2b2622; padding: 2px 0; position: relative; transition: background 0.3s, box-shadow 0.3s; }
+.tg-lat .qbox .cap { display: block; text-align: center; font: 400 0.78rem var(--display); letter-spacing: 0.12em; margin: 2px 0 1px; }
+.tg-lat .qbox .sum { font-style: italic; }
+.tg-lat .qbox.on { background: color-mix(in srgb, var(--gilt) 18%, transparent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--rubric) 55%, transparent); }
+.tg-lat .gut2 { display: grid; grid-template-rows: repeat(4, 6.6rem); justify-items: center; }
+.tg-lat .gut2 span { font: 600 0.78rem var(--body); color: var(--rubric); padding-top: 2px; opacity: 0.35; transition: opacity 0.3s, transform 0.3s; }
+.tg-lat .gut2 span.on { opacity: 1; transform: scale(1.3); }
+.tg-lat .mnote { font-size: 0.78rem; color: var(--muted); text-align: center; margin: 8px 0 0; }
+.tg-lat .lrows { position: absolute; inset: 0 0 auto 0; display: grid; gap: 8px; opacity: 0; pointer-events: none; }
+.tg-lat .lrows.on { pointer-events: auto; }
+.tg-lat .lrow { display: grid; grid-template-columns: 6.2rem minmax(0, 1fr) minmax(0, 1fr); gap: 12px; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 9px 12px; font-size: 0.86rem; line-height: 1.45; align-items: start; }
+.tg-lat .lrow .ref { font: 600 0.78rem var(--body); color: var(--rubric); font-variant-numeric: tabular-nums; }
+.tg-lat .lrow .ref small { display: block; font: 400 0.72rem var(--body); color: var(--muted); margin-top: 2px; }
+.tg-lat .lrow .la { font-family: var(--display); font-style: italic; max-height: 5.9em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); }
+.tg-lat .lrow .en { color: var(--ink-2); max-height: 5.9em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); }
+.tg-lat .lrow .lane { display: block; font: 600 0.62rem var(--body); font-style: normal; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.tg-lat .lrows .open { justify-self: start; }
+@media (max-width: 860px) {
+  .tg-lat .opener { grid-template-columns: minmax(0, 1fr); }
+  .tg-lat .colstage { min-height: 0; }
+  .tg-lat .lrows { position: static; opacity: 1; margin-top: 14px; }
+  .tg-lat .lrow { grid-template-columns: minmax(0, 1fr); }
+  .tg-lat .mcol, .tg-lat .gut2 { grid-template-rows: repeat(4, 5.6rem); }
+}
+</style>
+
+<section class="hero" aria-labelledby="tg-h1"><div class="wrap gut">
+  <div>
+    <p class="kick"><a href="/the-faith-received/">The Faith Received</a> · <a href="/the-faith-received/guide/">Guides to the shelves</a></p>
+    <h1 id="tg-h1">The <em>Latin</em> Fathers</h1>
+    <p class="by">Patrologia Latina · Tertullian to Innocent III</p>
+    <p class="lede">Migne’s Latin Fathers: a thousand years of the Latin church in one row of books, from the African apologists and the age of Augustine through the monks and missionaries of the early Middle Ages to Bernard and the masters of the twelfth century. Latin on every page, with English beside it.</p>
+    <ul class="facts"><li><b data-count="vols">0</b><span>volumes</span></li><li><b data-count="works">0</b><span>works</span></li><li><b data-count="auth">0</b><span>writers</span></li><li><b data-count="cols">0</b><span>columns of print</span></li></ul>
+    <p class="scroll">Scroll to open the shelf <i>↓</i></p>
+  </div>
+  <div class="art script" aria-label="The writers of the shelf written out as a page of script: one line for each century, one stroke for each writer, the popes in red"><svg viewBox="0 0 600 640" role="img"></svg><p class="cap" aria-live="polite"></p></div>
+</div></section>
+
+<section class="scene gut" id="tg-shelf" aria-labelledby="tg-h-shelf"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">1 · The edition</p>
+    <h2 id="tg-h-shelf">Two hundred and twenty-one volumes</h2>
+    <p class="say">From 1844 to 1855 Migne’s workshop at Montrouge, outside Paris, printed the Latin writers in 217 volumes; four volumes of indexes followed in 1862–1864. Scroll to set them on the shelf, then pile them by the century they hold.</p>
+    <div class="big num" id="tg-vn">0</div>
+    <div class="phase"><b id="tg-vname">Volume 1</b><span class="small" id="tg-vnote">Tertullian</span></div>
+  </div>
+  <div class="stage" id="tg-stage"><svg aria-label="The volumes of the Patrologia Latina, first on two shelves, then piled by the century of their writers"></svg><div class="tip" hidden></div></div>
+</div></section>
+
+<section class="scene gut" id="tg-west" aria-labelledby="tg-h-west"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">2 · Where they wrote</p>
+    <h2 id="tg-h-west">From Carthage to Clairvaux</h2>
+    <p class="say">Latin Christian writing begins in Africa, settles in Italy, and moves north with the monks: to Spain and Gaul, to Ireland and Northumbria, to the Rhine and the abbeys of Burgundy. Each circle is a place a writer’s record names.</p>
+    <ul class="chron" id="tg-chron"></ul>
+  </div>
+  <div>
+    <div class="mapbox" id="tg-map"><svg aria-hidden="true"></svg><canvas aria-label="Map of the places the writers are tied to, filling century by century"></canvas><div class="year num" id="tg-year">150</div><div class="yearbar"><i id="tg-yearbar"></i></div></div>
+    <div class="ribbon" id="tg-ribbon" aria-live="polite"></div>
+    <p class="legend" id="tg-legend" style="margin-top:8px"></p>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-col" aria-labelledby="tg-h-col"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">3 · How to read it</p>
+    <h2 id="tg-h-col">From a column to a page</h2>
+    <p class="say">Anselm’s Proslogion, chapters two to four, in volume 158, columns 227 and 228. The library has no images of the Latin volumes, so the page here is set from the library’s own text; the columns and the letters are Migne’s.</p>
+    <ol class="steps" id="tg-steps"></ol>
+  </div>
+  <div class="colstage" id="tg-colstage">
+    <div class="mpage" id="tg-mpage"></div>
+    <div class="lrows" id="tg-lrows"></div>
+  </div>
+</div></section>
+
+<section class="tool gut" id="explore" aria-labelledby="tg-h-find"><div class="wrap">
+  <p class="eyebrow">4 · Find</p>
+  <h2 id="tg-h-find">Every writer, every volume, every column</h2>
+  <p class="say" style="max-width:48rem">Search for a writer or a title, or write a reference such as <i>PL 158:227C</i>: volume 158, column 227, at the letter C. Odd columns stand on the left of the page, even on the right. Or browse the shelf by author, by volume or by century.</p>
+  <div id="tg-find-host"></div>
+  <div class="next"><a href="/the-faith-received/all-works/?tradition=Latin%20Fathers">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=Latin%20Fathers">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
+</div></section>

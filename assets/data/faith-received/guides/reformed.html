@@ -1,0 +1,170 @@
+<style>
+/* The Continental Reformed shelf: Ramus's braces, Calvin's growing book, a deck of confessions, a stream of generations */
+.tg-ref .hero h1 { font-size: clamp(2.9rem, 7.2vw, 5.8rem); }
+.tg-ref .brace path.br { fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; }
+.tg-ref .brace text { font-family: var(--body); }
+.tg-ref .brace .root { font: italic 400 30px var(--display); fill: var(--rubric); }
+.tg-ref .brace .root2 { font: 600 10px var(--body); letter-spacing: 0.18em; text-transform: uppercase; fill: var(--muted); }
+.tg-ref .brace .reg { font: 400 19px var(--display); }
+.tg-ref .brace .regn { font: 11px var(--body); fill: var(--muted); }
+.tg-ref .brace .leaf { font: 13px var(--body); fill: var(--ink); cursor: pointer; }
+.tg-ref .brace .leaf:hover, .tg-ref .brace .leaf:focus { fill: var(--rubric); text-decoration: underline; outline: none; }
+.tg-ref .brace .lp { font: 10.5px var(--body); fill: var(--muted); }
+/* the Institutes */
+.tg-ref .eds { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 4px; }
+.tg-ref .eds li { padding: 7px 12px; border-left: 2px solid var(--rule); opacity: 0.4; transition: opacity 0.3s, border-color 0.3s, background 0.3s; }
+.tg-ref .eds li.now { opacity: 1; border-color: var(--rubric); background: var(--card); } .tg-ref .eds li.past { opacity: 0.66; }
+.tg-ref .eds li b { font: 400 1.25rem var(--display); color: var(--rubric); margin-right: 6px; font-variant-numeric: lining-nums; }
+.tg-ref .eds li span { font: 400 1.02rem var(--display); } .tg-ref .eds li small { color: var(--muted); margin-left: 6px; }
+.tg-ref .eds li p { margin: 2px 0 0; font-size: 0.88rem; display: none; } .tg-ref .eds li.now p { display: block; }
+.tg-ref .inst { position: relative; height: 650px; }
+.tg-ref .inst .keylab { position: absolute; left: 0; top: 160px; margin: 0; font: 600 0.68rem var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--rubric); opacity: 0; }
+.tg-ref .inst .cell { position: absolute; border-radius: 2px; background: color-mix(in srgb, var(--ink) 9%, var(--card)); border: 1px solid var(--rule); overflow: hidden; font-size: 10.5px; line-height: 1; color: var(--ink-2); text-decoration: none; display: flex; align-items: center; gap: 5px; padding: 0 6px; white-space: nowrap; }
+.tg-ref .inst .cell b { font: 600 10px var(--body); color: var(--muted); min-width: 1.3em; text-align: right; }
+.tg-ref .inst .cell span { overflow: hidden; text-overflow: ellipsis; opacity: 0; }
+.tg-ref .inst .cell.hot { background: color-mix(in srgb, var(--rubric) 16%, var(--card)); border-color: var(--rubric); }
+.tg-ref .inst .cell.hot b { color: var(--rubric); }
+.tg-ref .inst a.cell:hover { border-color: var(--ink); background: var(--card); z-index: 3; }
+.tg-ref .inst .first { position: absolute; border: 1.5px solid var(--rubric); background: var(--card); border-radius: 3px; display: flex; align-items: center; padding: 0 12px; font: 400 1.05rem var(--display); color: var(--ink); white-space: nowrap; overflow: hidden; box-shadow: 0 10px 22px -16px rgba(80, 40, 20, 0.6); }
+.tg-ref .inst .first i { font: 600 0.7rem var(--body); color: var(--rubric); font-style: normal; margin-right: 8px; letter-spacing: 0.1em; }
+.tg-ref .inst .bkh { position: absolute; font: 400 1.05rem/1.15 var(--display); color: var(--ink); opacity: 0; }
+.tg-ref .inst .bkh b { display: block; font: 600 0.66rem var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--rubric); }
+.tg-ref .inst .count { position: absolute; left: 0; top: 0; font: 400 clamp(3rem, 6vw, 4.6rem)/1 var(--display); color: var(--rubric); font-variant-numeric: lining-nums tabular-nums; pointer-events: none; }
+.tg-ref .inst .count small { display: block; font: 600 0.7rem var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.tg-ref .inst .tipline { position: absolute; left: 0; right: 0; bottom: -30px; font-size: 0.84rem; color: var(--muted); min-height: 1.3em; }
+/* confessions */
+.tg-ref .deck { position: relative; height: 660px; }
+.tg-ref .deck svg { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 300px; overflow: visible; }
+.tg-ref .deck .lane { font: 11px var(--body); fill: var(--muted); }
+.tg-ref .deck .tick { font: 11px var(--body); fill: var(--muted); }
+.tg-ref .deck rect.c { stroke: var(--card); stroke-width: 0.6; cursor: pointer; }
+.tg-ref .deck rect.c:hover { stroke: var(--ink); stroke-width: 1.4; }
+.tg-ref .deck .flag text { font: 400 12.5px var(--display); fill: var(--ink); }
+.tg-ref .deck .flag line { stroke: var(--rubric); stroke-width: 1; }
+.tg-ref .bigcard { position: absolute; left: 50%; top: 0; width: min(520px, 94%); transform: translateX(-50%); background: var(--card); border: 1px solid var(--rule); border-top: 4px solid var(--rubric); border-radius: 3px; padding: 14px 18px 12px; box-shadow: 0 24px 46px -28px rgba(70, 40, 20, 0.6); }
+.tg-ref .bigcard .y { font: 400 2.2rem/1 var(--display); color: var(--rubric); font-variant-numeric: lining-nums; }
+.tg-ref .bigcard h3 { font: 400 1.5rem/1.1 var(--display); margin: 4px 0 2px; }
+.tg-ref .bigcard .pl { font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.tg-ref .bigcard p { margin: 8px 0 8px; font-size: 0.93rem; }
+.tg-ref .bigcard .who { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; font-size: 0.78rem; color: var(--muted); }
+.tg-ref .bigcard .who button { font: 0.78rem var(--body); border: 1px solid var(--rule); border-radius: 999px; padding: 1px 9px; background: var(--paper); color: var(--ink); cursor: pointer; }
+.tg-ref .bigcard .who button:hover { border-color: var(--rubric); color: var(--rubric); }
+.tg-ref .bigcard .rd { font-size: 0.86rem; }
+.tg-ref .confnote { margin-top: 10px; }
+/* the Ramist tree */
+.tg-ref .ramus { position: relative; height: 560px; overflow: hidden; border: 1px solid var(--rule); border-radius: 4px; background: linear-gradient(90deg, var(--paper) 0, var(--card) 18%, var(--card) 82%, var(--paper) 100%); }
+.tg-ref .ramus::before, .tg-ref .ramus::after { content: ""; position: absolute; top: 0; bottom: 0; width: 70px; z-index: 2; pointer-events: none; }
+.tg-ref .ramus::before { left: 0; background: linear-gradient(90deg, var(--card), transparent); } .tg-ref .ramus::after { right: 0; background: linear-gradient(-90deg, var(--card), transparent); }
+.tg-ref .ramus svg { position: absolute; left: 0; top: 0; overflow: visible; will-change: transform; }
+.tg-ref .ramus path.br { fill: none; stroke: var(--ink); stroke-width: 1.2; }
+.tg-ref .ramus path.br.main { stroke: var(--rubric); stroke-width: 1.8; }
+.tg-ref .ramus .nd { cursor: pointer; }
+.tg-ref .ramus .nd text.la { font: italic 400 17px var(--display); fill: var(--ink); }
+.tg-ref .ramus .nd text.en { font: 11.5px var(--body); fill: var(--muted); }
+.tg-ref .ramus .nd text.cp { font: 600 9.5px var(--body); letter-spacing: 0.12em; fill: var(--gilt); text-transform: uppercase; }
+.tg-ref .ramus .nd.main text.la { fill: var(--rubric); }
+.tg-ref .ramus .nd:hover text.la, .tg-ref .ramus .nd:focus text.la { text-decoration: underline; }
+.tg-ref .ramus .nd:focus { outline: none; }
+.tg-ref .books { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+.tg-ref .books a { font-size: 0.78rem; border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; color: var(--ink); text-decoration: none; background: var(--card); }
+.tg-ref .books a:hover { border-color: var(--rubric); color: var(--rubric); }
+.tg-ref .books a b { font-weight: 600; color: var(--rubric); margin-right: 4px; }
+/* the stream of generations */
+.tg-ref .stream { position: relative; }
+.tg-ref .stream svg { width: 100%; height: 500px; display: block; overflow: visible; }
+.tg-ref .stream .ax { font: 11px var(--body); fill: var(--muted); }
+.tg-ref .stream .ev text { font: italic 12.5px var(--display); fill: var(--ink); }
+.tg-ref .stream .ev line { stroke: var(--ink); stroke-width: 0.8; stroke-dasharray: 2 3; }
+.tg-ref .stream .per text { font: 600 10px var(--body); letter-spacing: 0.16em; text-transform: uppercase; fill: var(--muted); }
+.tg-ref .stream .per rect { fill: var(--rule-2); }
+.tg-ref .stream path.s { stroke: var(--card); stroke-width: 0.8; cursor: crosshair; }
+.tg-ref .stream .now { font: 400 2.6rem var(--display); fill: var(--rubric); }
+.tg-ref .inst .bkh.narrow { font-size: 0; } .tg-ref .inst .bkh.narrow b { font-size: 0.66rem; }
+.tg-ref .ramus.outline { height: auto; overflow: visible; background: var(--card); padding: 12px 14px; }
+.tg-ref .ramus.outline ul { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 1.5px solid var(--rule); }
+.tg-ref .ramus.outline > ul { border-left: 0; padding-left: 0; }
+.tg-ref .ramus.outline li { padding: 4px 0 4px 6px; }
+.tg-ref .ramus.outline a { color: var(--ink); text-decoration: none; font-size: 0.9rem; } .tg-ref .ramus.outline a i { font: italic 1.05rem var(--display); }
+.tg-ref .ramus.outline a.main i { color: var(--rubric); } .tg-ref .ramus.outline small { color: var(--gilt); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; margin-left: 4px; }
+@media (max-width: 860px) {
+  .tg-ref .brace .leaf { font-size: 18px; } .tg-ref .brace .reg { font-size: 24px; } .tg-ref .brace .regn { font-size: 14px; } .tg-ref .brace .lp { display: none; } .tg-ref .brace .root { font-size: 34px; }
+  .tg-ref .inst { height: 690px; } .tg-ref .inst .cell span { display: none; } .tg-ref .inst .cell { padding: 0 3px; } .tg-ref .deck { height: auto; } .tg-ref .deck svg { position: relative; height: 300px; }
+  .tg-ref .bigcard { position: relative; left: auto; transform: none; width: 100%; margin-bottom: 12px; }
+  .tg-ref .eds li, .tg-ref .eds li.past { opacity: 1; } .tg-ref .eds li p { display: block; }
+  .tg-ref .ramus { height: 640px; overflow: auto; } .tg-ref .ramus::before, .tg-ref .ramus::after { display: none; } .tg-ref .stream svg { height: 380px; }
+}
+</style>
+
+<section class="hero" aria-labelledby="tg-h1"><div class="wrap gut">
+  <div>
+    <p class="kick"><a href="/the-faith-received/">The Faith Received</a> · <a href="/the-faith-received/guide/">Guides to the shelves</a></p>
+    <h1 id="tg-h1">The Continental <em>Reformed</em> shelf</h1>
+    <p class="by">From Zwingli’s Zurich to the Huguenot refuge, 1520–1760</p>
+    <p class="lede">The churches of Zurich and Geneva, the Palatinate, the Netherlands and France, and the schools they built: Calvin and Bullinger, the professors of Heidelberg, Leiden, Utrecht and Saumur, and the great systems of Reformed orthodoxy. Latin, and some French, on every page, with English beside it.</p>
+    <ul class="facts"><li><b data-count="works">0</b><span>works</span></li><li><b data-count="authors">0</b><span>authors</span></li><li><b data-count="pages">0</b><span>pages</span></li><li><b data-count="conf">0</b><span>Reformed confessions</span></li></ul>
+    <p class="scroll">Scroll to walk the shelf <i>↓</i></p>
+  </div>
+  <div class="art brace" aria-label="The shelf divided in the manner of Ramus: by where its writers taught, then by the three with the most pages in each"><svg viewBox="0 0 640 600" role="img"></svg><p class="cap" aria-live="polite"></p></div>
+</div></section>
+
+<section class="scene gut" id="tg-inst" aria-labelledby="tg-h-inst"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">1 · One book</p>
+    <h2 id="tg-h-inst">Six chapters become eighty</h2>
+    <p class="say">Calvin published the <i>Institutes of the Christian Religion</i> at Basel in 1536, a small book in six chapters. He rewrote it for twenty-three years. Scroll through the five Latin editions.</p>
+    <ol class="eds" id="tg-eds"></ol>
+    <p class="small" style="margin-top:12px">The library holds the 1559 text in Henry Beveridge’s English. <a id="tg-inst-read" target="_blank" rel="noopener">Open it at the first book</a>.</p>
+  </div>
+  <div class="inst" id="tg-inst-stage" aria-label="The chapters of the Institutes, edition by edition; in 1559 each chapter opens in the reader"><div class="count num" id="tg-inst-n">6<small>chapters</small></div><p class="tipline" id="tg-inst-tip"></p></div>
+</div></section>
+
+<section class="scene gut" id="tg-road" aria-labelledby="tg-h-road"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">2 · The Reformed International</p>
+    <h2 id="tg-h-road">A church of refugees and professors</h2>
+    <p class="say">The Reformed churches had no single capital. Their teachers fled, were called, and moved on: Junius from Bourges to Geneva, Heidelberg and Leiden; Alsted from Herborn to Transylvania. Scroll to watch the academies open and the writers travel between them.</p>
+    <ul class="chron" id="tg-chron"></ul>
+  </div>
+  <div>
+    <div class="mapbox" id="tg-map"><svg aria-hidden="true"></svg><canvas aria-label="Map of the academies and of the journeys of the shelf’s writers, moving with the years"></canvas><div class="year num" id="tg-year">1500</div><div class="yearbar"><i id="tg-yearbar"></i></div></div>
+    <div class="ribbon" id="tg-ribbon" aria-live="polite"></div>
+    <p class="legend" id="tg-legend" style="margin-top:8px"></p>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-conf" aria-labelledby="tg-h-conf"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">3 · What the churches confessed</p>
+    <h2 id="tg-h-conf">A confession for every church</h2>
+    <p class="say">Where the Lutherans gathered their confessions into one Book of Concord, each Reformed church wrote its own: cities, kingdoms, synods and refugee congregations. The library holds <span id="tg-conf-n">127</span> of them in its Confessions room. Each small card is one, and the great ones are dealt as cards.</p>
+    <p class="legend confnote" id="tg-conf-legend"></p>
+  </div>
+  <div class="deck" id="tg-deck"><div class="bigcard" id="tg-bigcard" aria-live="polite"></div><svg role="img" aria-label="Every Reformed confession in the library on a timeline, by region"></svg><div class="tip" hidden></div></div>
+</div></section>
+
+<section class="scene gut" id="tg-ramus" aria-labelledby="tg-h-ramus"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">4 · The method</p>
+    <h2 id="tg-h-ramus">Divide, and divide again</h2>
+    <p class="say">Peter Ramus taught that any subject is best laid out by dividing it in two, and each part in two again. The Reformed schools took to it. Amandus Polanus of Basel built his <i>Syntagma of Christian Theology</i> (1609) this way, and its first two books open with the whole tree. Scroll to follow it from theology to the two tables of the law; each branch opens at its chapter.</p>
+    <ol class="steps" id="tg-rsteps"></ol>
+    <div class="books" id="tg-polbooks"></div>
+  </div>
+  <div class="ramus" id="tg-ramus-stage"><svg aria-label="The divisions of Polanus’s Syntagma as a Ramist tree"></svg></div>
+</div></section>
+
+<section class="scene gut" id="tg-gen" aria-labelledby="tg-h-gen"><div class="wrap">
+  <p class="eyebrow">5 · The generations</p>
+  <h2 id="tg-h-gen">Two hundred years of Reformed schools</h2>
+  <p class="say" style="max-width:48rem">The width of each stream is the number of the shelf’s writers at work in those years, by where they taught. Watch the weight move from the Swiss cities to the German academies and on to the Dutch universities, and the French schools end with the Revocation.</p>
+  <div class="stream" id="tg-stream"><svg role="img" aria-label="Streams of writers at work by region, 1500 to 1790"></svg><div class="tip" hidden></div></div>
+  <p class="legend" id="tg-stream-legend" style="margin-top:6px"></p>
+</div></section>
+
+<section class="tool gut" id="explore" aria-labelledby="tg-h-ex"><div class="wrap">
+  <p class="eyebrow">Explore</p>
+  <h2 id="tg-h-ex">Every author on the shelf</h2>
+  <p class="say" style="max-width:46rem">A hundred and ten writers, from Capito and Oecolampadius to the last orthodox professors of Basel. Choose a region to narrow the lines, or search for a title.</p>
+  <div id="tg-explorer"></div>
+  <div class="next"><a href="/the-faith-received/all-works/?tradition=Reformed">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=Continental%20Reformed">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
+</div></section>

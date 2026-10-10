@@ -1,0 +1,40 @@
+{{!< default}}
+{{!-- The TFR rail, first on the page and pinned under the masthead as on the reader (Ian, 2026-09-23). --}}
+{{> "faith-received/_tfr-rail"}}
+{{#contentFor "moHead"}}
+<title>Guides to the Shelves | The Faith Received | Mere Orthodoxy</title>
+<meta name="description" content="Guides to the shelves of The Faith Received, in motion: the councils, the Greek and Latin Fathers, the medieval schools, the Roman Catholic schools after Trent, the Continental Reformed and the Lutherans." />
+<meta property="og:title" content="Guides to the Shelves | The Faith Received" />
+<meta property="og:description" content="Guides to the shelves of The Faith Received, in motion." />
+<meta name="twitter:title" content="Guides to the Shelves | The Faith Received" />
+<link rel="stylesheet" type="text/css" href="{{asset "data/faith-received/guides/guide.css"}}&amp;frv=31ee79e1128649e0" />
+{{/contentFor}}
+{{!-- /the-faith-received/guide/ — one guide per shelf at ?s=<shelf>, and
+     without ?s= the guides themselves with a century ruler over every
+     shelf (the owner, 2026-10-10: "from browse the shelves it can be quick
+     to find a time, but clicking into it it could be its own explainer with
+     graphic motion and everything").
+
+     One template for all of them, the pattern of the tradition pages.
+     assets/js/faith-guide.js reads ?s=, fetches that shelf's markup and
+     data from assets/data/faith-received/guides/, and runs its scenes
+     (assets/js/faith-guide-<shelf>.js) on the shared engine
+     (assets/js/faith-guide-engine.js). The motion is GSAP with its
+     ScrollTrigger, and the maps are d3, from jsDelivr (allowed by the
+     site's script-src). With reduced motion, or under 860px, every scene
+     shows its last frame and the page reads straight down.
+
+     Route (Ghost Admin, Labs, Routes):
+       /the-faith-received/guide/:
+         template: custom-faith-guide --}}
+
+<main class="faith-received tfr-guide-page">
+  <div class="tg" data-guide-root data-base="" data-pin-below=".tfr-rail" data-assets="/assets/data/faith-received/guides/">
+    <p class="tg-loading">Loading the guide&hellip;</p>
+  </div>
+</main>
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="{{asset "js/faith-guide.js"}}&amp;frv=88e318bdbea00f91"></script>

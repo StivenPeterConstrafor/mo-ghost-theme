@@ -1,0 +1,105 @@
+<style>
+/* The Greek Fathers: a mosaic dome for the writers, Byzantine colours for the regions, Migne's columns for the rest */
+.tg-gre { --f1: #24476b; --f2: #9b2f25; --f3: #3f6b4a; --f4: #5a2d6e; --f5: #b2652a; --f6: #4c5a66; --f7: #9a8f7e; --gold: #b8913f; --gold-2: #d9b866; --gold-3: #8a6a2a; }
+.tg-gre .dome .tess { cursor: pointer; }
+.tg-gre .dome .tess:hover, .tg-gre .dome .tess:focus { stroke: var(--card); stroke-width: 1.6; outline: none; }
+.tg-gre .dome .rib { stroke: var(--gold-3); stroke-width: 0.6; opacity: 0.35; }
+.tg-gre .dome .win { fill: var(--card); stroke: var(--gold-3); stroke-width: 0.8; }
+.tg-gre .dome .num { font: 400 22px var(--display); fill: var(--card); }
+.tg-gre .dome .cent { font: 600 8.5px var(--body); letter-spacing: 0.16em; fill: var(--gold-3); text-transform: uppercase; }
+/* the shelf that becomes a timeline */
+.tg-gre .stage { position: relative; width: 100%; aspect-ratio: 16 / 10; max-width: 100%; }
+.tg-gre .stage svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.tg-gre .stage .plank { fill: var(--leather); }
+.tg-gre .stage .tick { font: 11px var(--body); fill: var(--muted); }
+.tg-gre .stage .axis { stroke: var(--ink-2); stroke-width: 1; }
+.tg-gre .stage .grid { stroke: var(--rule-2); }
+.tg-gre .stage .lab { font: 400 13px var(--display); fill: var(--ink); }
+.tg-gre .stage .lab.r { fill: var(--rubric); }
+.tg-gre .stagetip { position: absolute; pointer-events: none; }
+.tg-gre .phase { display: grid; gap: 2px; margin: 14px 0 0; padding: 10px 0 0; border-top: 1px solid var(--rule); max-width: 30rem; }
+.tg-gre .phase b { font: 400 1.15rem var(--display); color: var(--rubric); }
+.tg-gre .ramp { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--muted); margin-top: 10px; }
+.tg-gre .ramp i { display: block; width: 140px; height: 8px; border-radius: 4px; }
+/* map */
+.tg-gre .mapbox { aspect-ratio: 16 / 10; }
+/* the column, and the same column in the library */
+.tg-gre .page { position: relative; max-width: 520px; width: min(100%, calc(80vh * 0.6207)); margin: 0 auto; box-shadow: 0 22px 44px -26px rgba(60, 40, 20, 0.55); border: 1px solid var(--rule); background: #f4efe4; transform-origin: 0 0; }
+.tg-gre .page img { display: block; width: 100%; height: auto; }
+.tg-gre .hl { position: absolute; border: 2px solid var(--rubric); background: color-mix(in srgb, var(--rubric) 10%, transparent); border-radius: 3px; opacity: 0; pointer-events: none; }
+.tg-gre .colwrap { position: relative; }
+.tg-gre .rows { position: absolute; inset: 0 0 auto 0; display: grid; gap: 10px; opacity: 0; pointer-events: none; }
+.tg-gre .rows.on { pointer-events: auto; }
+.tg-gre .row { display: grid; grid-template-columns: 2.2rem 8.5rem minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 10px 12px; font-size: 0.86rem; line-height: 1.45; }
+.tg-gre .row .q { font: 400 1.6rem/1 var(--display); color: var(--rubric); text-align: center; }
+.tg-gre .row .q small { display: block; font: 0.62rem var(--body); letter-spacing: 0.1em; color: var(--muted); margin-top: 4px; }
+.tg-gre .row .band { height: 5.6rem; border: 1px solid var(--rule); border-radius: 2px; background-repeat: no-repeat; background-color: #f4efe4; }
+.tg-gre .row .gr { font-family: var(--body); color: var(--ink); max-height: 5.8em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 62%, transparent); mask-image: linear-gradient(#000 62%, transparent); }
+.tg-gre .row .en { color: var(--ink-2); max-height: 5.8em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 62%, transparent); mask-image: linear-gradient(#000 62%, transparent); }
+.tg-gre .row .lane { display: block; font: 600 0.62rem var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.tg-gre .rows .open { justify-self: start; font-size: 0.92rem; }
+@media (max-width: 860px) {
+  .tg-gre .opener { grid-template-columns: minmax(0, 1fr); }
+  .tg-gre .rows { position: static; opacity: 1; margin-top: 14px; }
+  .tg-gre .row { grid-template-columns: 2rem minmax(0, 1fr); } .tg-gre .row .band { grid-column: 2; height: 4rem; } .tg-gre .row .gr, .tg-gre .row .en { grid-column: 2; }
+}
+</style>
+
+<section class="hero" aria-labelledby="tg-h1"><div class="wrap gut">
+  <div>
+    <p class="kick"><a href="/the-faith-received/">The Faith Received</a> · <a href="/the-faith-received/guide/">Guides to the shelves</a></p>
+    <h1 id="tg-h1">The <em>Greek</em> Fathers</h1>
+    <p class="by">Patrologia Graeca · Clement of Rome to the fall of Constantinople</p>
+    <p class="lede">Migne’s Greek Fathers: the Apostolic Fathers, the doctors of Alexandria, Cappadocia and Antioch, and the Byzantine writers after them to the fifteenth century. Every text in Greek with the Latin translation Migne printed beside it, and English in the library.</p>
+    <ul class="facts"><li><b data-count="vols">0</b><span>volumes</span></li><li><b data-count="works">0</b><span>works</span></li><li><b data-count="auth">0</b><span>writers</span></li><li><b data-count="cols">0</b><span>columns of print</span></li></ul>
+    <p class="scroll">Scroll to open the shelf <i>↓</i></p>
+  </div>
+  <div class="art dome" aria-label="Every writer on the shelf as a tile of a mosaic dome: the first century at the centre, the fifteenth at the rim, coloured by the region his record names"><svg viewBox="-44 -44 688 688" role="img"></svg><p class="cap" aria-live="polite"></p></div>
+</div></section>
+
+<section class="scene gut" id="tg-shelf" aria-labelledby="tg-h-shelf"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">1 · The edition</p>
+    <h2 id="tg-h-shelf">A hundred and sixty-one volumes</h2>
+    <p class="say">Between 1857 and 1866 Jacques-Paul Migne printed the Greek Fathers at his workshop outside Paris, the Greek in one column and a Latin translation in the other. Scroll to set the volumes on the shelf, then lay them out along the centuries they cover.</p>
+    <div class="big num" id="tg-vn">0</div>
+    <div class="phase"><b id="tg-vname">Volume 1</b><span class="small" id="tg-vnote">Clement of Rome</span></div>
+    <div class="ramp"><span>1st century</span><i id="tg-ramp"></i><span>15th</span></div>
+  </div>
+  <div class="stage" id="tg-stage"><svg aria-label="The 161 volumes of the Patrologia Graeca, first on two shelves, then as bars along the centuries their writers lived in"></svg><div class="tip stagetip" hidden></div></div>
+</div></section>
+
+<section class="scene gut" id="tg-east" aria-labelledby="tg-h-east"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">2 · Where they wrote</p>
+    <h2 id="tg-h-east">From Alexandria to the City</h2>
+    <p class="say">The Greek Fathers wrote in the great sees of the East: Alexandria and Antioch, Jerusalem and Caesarea, the cities of Cappadocia, and from the fourth century Constantinople, which drew writers to itself for a thousand years. Each circle is a place a writer’s record names.</p>
+    <ul class="chron" id="tg-chron"></ul>
+  </div>
+  <div>
+    <div class="mapbox" id="tg-map"><svg aria-hidden="true"></svg><canvas aria-label="Map of the places the writers are tied to, filling century by century"></canvas><div class="year num" id="tg-year">50</div><div class="yearbar"><i id="tg-yearbar"></i></div></div>
+    <div class="ribbon" id="tg-ribbon" aria-live="polite"></div>
+    <p class="legend" id="tg-legend" style="margin-top:8px"></p>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-col" aria-labelledby="tg-h-col"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">3 · How to read it</p>
+    <h2 id="tg-h-col">A page of Migne</h2>
+    <p class="say">Volume six, columns 475 and 476: the opening of Justin Martyr’s Dialogue with Trypho, as our scan shows it.</p>
+    <ol class="steps" id="tg-steps"></ol>
+  </div>
+  <div class="colwrap">
+    <div class="page" id="tg-page"></div>
+    <div class="rows" id="tg-rows"></div>
+  </div>
+</div></section>
+
+<section class="tool gut" id="explore" aria-labelledby="tg-h-find"><div class="wrap">
+  <p class="eyebrow">4 · Find</p>
+  <h2 id="tg-h-find">Every writer, every volume, every column</h2>
+  <p class="say" style="max-width:48rem">Search for a writer or a title, or write a reference such as <i>PG 6:475B</i>: volume six, column 475, at the letter B. Odd columns stand on the left of the page, even on the right. Or browse the shelf by author, by volume or by century.</p>
+  <div id="tg-find-host"></div>
+  <div class="next"><a href="/the-faith-received/all-works/?tradition=Greek%20Fathers">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=Greek%20Fathers">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
+</div></section>

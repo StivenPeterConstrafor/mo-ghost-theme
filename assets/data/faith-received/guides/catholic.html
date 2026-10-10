@@ -1,0 +1,153 @@
+<style>
+/* The Roman Catholic shelf: the bookcase of the schools, their streams, the colleges, Suárez's plan, the sessions of Trent.
+   School colours by position in the data: Thomists blue, Scotists brown, Jesuits teal, Augustinians olive, seculars red, councils gilt. */
+.tg-cat { --f3: #2e6e6a; --f5: #a3382a; --f6: #a07c35; }
+.tg-cat .hero .wrap { grid-template-columns: minmax(0, 1fr); gap: 26px; padding-block: 52px 40px; }
+.tg-cat .hero h1 { font-size: clamp(2.7rem, 6.2vw, 5.5rem); }
+.tg-cat .cat-sub { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 14px 48px; align-items: end; }
+.tg-cat .cat-sub .by { margin-top: 10px; } .tg-cat .cat-sub .lede { margin-top: 10px; }
+.tg-cat .cat-sub .facts { margin: 0 0 4px; }
+.tg-cat .case-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 10px; }
+.tg-cat .case-bar .lbl { font: 600 0.72rem var(--body); letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+.tg-cat .case-bar .tick { margin-left: auto; font: 400 1.6rem/1 var(--display); color: var(--rubric); font-variant-numeric: lining-nums tabular-nums; min-width: 4ch; text-align: right; }
+.tg-cat .seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; padding: 2px; background: var(--card); }
+.tg-cat .seg button { font: 0.82rem var(--body); color: var(--muted); background: none; border: 0; border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+.tg-cat .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.tg-cat .case { position: relative; width: 100%; background: linear-gradient(180deg, color-mix(in srgb, var(--leather) 10%, var(--card)), color-mix(in srgb, var(--leather) 4%, var(--card))); border: 1px solid var(--rule); border-radius: 4px; padding: 0; overflow: hidden; transition: height 0.9s cubic-bezier(.6,.05,.3,1); }
+.tg-cat .case .bk { position: absolute; left: 0; top: 0; display: block; border-radius: 1px 1px 0 0; box-shadow: inset -1px 0 0 rgba(0,0,0,0.22), inset 1px 0 0 rgba(255,255,255,0.18); will-change: transform; }
+.tg-cat .case .bk::before { content: ""; position: absolute; left: 0; right: 0; top: 4px; height: 2px; background: rgba(255, 233, 180, 0.55); }
+.tg-cat .case .bk:hover, .tg-cat .case .bk:focus { filter: brightness(1.35); outline: none; z-index: 2; }
+.tg-cat .case .board { position: absolute; left: 0; right: 0; height: 7px; background: linear-gradient(180deg, #6b4632, #4c3125); box-shadow: 0 3px 6px -2px rgba(60, 35, 20, 0.45); transition: transform 0.9s cubic-bezier(.6,.05,.3,1), opacity 0.4s; }
+.tg-cat .case .rl { position: absolute; left: 14px; width: 226px; font: 400 1.04rem/1.1 var(--display); color: var(--ink); white-space: normal; opacity: 0; transition: opacity 0.5s; pointer-events: none; }
+.tg-cat .case .rl small { display: block; font: 0.72rem var(--body); color: var(--muted); letter-spacing: 0.04em; margin-top: 2px; }
+.tg-cat .case .rl i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 7px; vertical-align: 1px; }
+.tg-cat .case .cent { position: absolute; font: italic 0.9rem var(--display); color: var(--gilt); transition: opacity 0.4s; pointer-events: none; }
+.tg-cat .case .cent::before { content: ""; position: absolute; left: -1px; top: 1.15rem; width: 1px; height: 12px; background: var(--gilt); }
+.tg-cat .case-cap { margin: 8px 0 0; font-size: 0.84rem; color: var(--muted); }
+/* streams */
+.tg-cat .streams { position: relative; }
+.tg-cat .streams svg { width: 100%; height: auto; display: block; overflow: visible; }
+.tg-cat .streams .lab { font: 400 15px var(--display); fill: #fffdf8; paint-order: stroke; stroke: rgba(0,0,0,0.18); stroke-width: 2px; pointer-events: none; }
+.tg-cat .streams .ax { font: 11px var(--body); fill: var(--muted); }
+.tg-cat .streams .ev text { font: italic 12.5px var(--display); fill: var(--ink-2); }
+.tg-cat .streams .ev line { stroke: var(--ink-2); stroke-width: 0.8; stroke-dasharray: 2 3; }
+.tg-cat .streams .who { font: 600 10.5px var(--body); fill: var(--ink); paint-order: stroke; stroke: var(--paper); stroke-width: 3px; }
+.tg-cat .nowcard { margin-top: 14px; border-left: 2px solid var(--rubric); background: var(--card); padding: 10px 14px; min-height: 7.2rem; }
+.tg-cat .nowcard b { font: 400 1.7rem/1 var(--display); color: var(--rubric); font-variant-numeric: lining-nums tabular-nums; }
+.tg-cat .nowcard p { margin: 4px 0 6px; font-size: 0.9rem; }
+.tg-cat .nowcard .ribbon { margin-top: 4px; }
+/* Suárez */
+.tg-cat .dm { position: relative; }
+.tg-cat .dm svg { width: 100%; height: auto; display: block; overflow: visible; }
+.tg-cat .dm .col { cursor: pointer; }
+.tg-cat .dm .col rect { transition: fill 0.3s, opacity 0.3s; }
+.tg-cat .dm .num { font: 10px var(--body); fill: var(--muted); }
+.tg-cat .dm .vl { font: 400 15px var(--display); fill: var(--spine-ink, #f1e3c4); }
+.tg-cat .dm .vs { font: 11px var(--body); fill: #f1e3c4; opacity: 0.85; }
+.tg-cat .dm .grp { font: italic 13px var(--display); fill: var(--ink-2); }
+.tg-cat .dm .part { font: 600 10.5px var(--body); letter-spacing: 0.16em; text-transform: uppercase; fill: var(--muted); }
+.tg-cat .dmcard { margin-top: 12px; min-height: 9.5rem; }
+.tg-cat .dmcard h3 { font-size: 1.3rem; }
+.tg-cat .dmcard ol { margin: 6px 0 0; padding-left: 1.2rem; font-size: 0.9rem; columns: 2 16rem; column-gap: 24px; }
+.tg-cat .dmcard li { break-inside: avoid; padding: 2px 0; }
+.tg-cat .dmcard a { color: var(--ink); } .tg-cat .dmcard a:hover { color: var(--rubric); }
+/* Trent */
+.tg-cat .trent svg { width: 100%; height: auto; display: block; overflow: visible; }
+.tg-cat .trent .per { font: 600 10.5px var(--body); letter-spacing: 0.14em; text-transform: uppercase; fill: var(--muted); }
+.tg-cat .trent .ses { font: 12.5px var(--display); fill: var(--ink); }
+.tg-cat .trent .per { font: 600 10.5px var(--body); letter-spacing: 0.14em; text-transform: uppercase; fill: var(--muted); }
+.tg-cat .trent .sesn { font: 600 9.5px var(--body); fill: var(--card); pointer-events: none; }
+.tg-cat .trent .yr { font: 11px var(--body); fill: var(--muted); }
+.tg-cat .trent .big { font: 400 54px var(--display); fill: var(--ink); }
+.tg-cat .onshelf { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 22px; margin-top: 14px; }
+.tg-cat .onshelf .card { padding: 12px 14px; }
+.tg-cat .onshelf h3 { font-size: 1.15rem; }
+.tg-cat .spines { display: flex; align-items: flex-end; gap: 2px; height: 74px; margin: 8px 0 6px; border-bottom: 5px solid var(--leather); }
+.tg-cat .spines a { display: block; width: 13px; border-radius: 2px 2px 0 0; background: var(--f6); box-shadow: inset -2px 0 0 rgba(0,0,0,0.2); transform-origin: bottom; }
+.tg-cat .spines a:hover { filter: brightness(1.25); }
+.tg-cat .spines a.s { background: var(--f5); } .tg-cat .spines a.p { background: var(--f3); }
+.tg-cat .undated { margin-top: 14px; font-size: 0.88rem; color: var(--muted); }
+.tg-cat .undated a { color: var(--ink-2); }
+@media (max-width: 860px) {
+  .tg-cat .cat-sub { grid-template-columns: minmax(0, 1fr); }
+  .tg-cat .onshelf { grid-template-columns: minmax(0, 1fr); }
+  .tg-cat .case .rl { font-size: 0.92rem; }
+}
+</style>
+
+<section class="hero" aria-labelledby="tg-h1"><div class="wrap gut">
+  <div class="cat-top">
+    <p class="kick"><a href="/the-faith-received/">The Faith Received</a> · <a href="/the-faith-received/guide/">Guides to the shelves</a></p>
+    <h1 id="tg-h1">The <em>Roman Catholic</em> shelf</h1>
+    <div class="cat-sub">
+      <div><p class="by">Five centuries of the Catholic schools, from the councils of the fifteenth century to the manuals of the twentieth</p>
+      <p class="lede">The Thomists of Salamanca and Alcalá, the Scotists of the Franciscan houses, the Jesuits of Coimbra and the Roman College, the doctors of Louvain and the Sorbonne, and the acts and histories of the councils. Latin for the most part, with English beside every page.</p></div>
+      <ul class="facts"><li><b data-count="works">0</b><span>works</span></li><li><b data-count="authors">0</b><span>authors</span></li><li><b data-count="pages">0</b><span>pages</span></li><li><b data-count="schools">0</b><span>schools</span></li></ul>
+    </div>
+  </div>
+  <div class="case-wrap">
+    <div class="case-bar"><span class="lbl">Arrange the shelf</span><span class="seg" role="group" aria-label="Arrange the shelf"><button type="button" data-mode="date" aria-pressed="true">By date</button><button type="button" data-mode="school" aria-pressed="false">By school</button></span><span class="tick" id="tg-tick" aria-hidden="true"></span></div>
+    <div class="case" id="tg-case" role="group" aria-label="Every work on the shelf as a book on a bookcase; open one to read it"><div class="tip" hidden></div></div>
+    <p class="case-cap" id="tg-case-cap">Every book on the shelf, in the order its author was born; the taller the spine, the more pages. Hover a spine to see it, open it to read.</p>
+  </div>
+  <p class="scroll">Scroll to walk the shelf <i>↓</i></p>
+</div></section>
+
+<section class="scene gut" id="tg-streams" aria-labelledby="tg-h-streams"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">1 · The schools</p>
+    <h2 id="tg-h-streams">The schools after Trent</h2>
+    <p class="say">After the Council of Trent Catholic theology was taught in schools: the Thomists of the Dominicans and the Discalced Carmelites, the Scotists of the Franciscan houses, the Jesuits after Suárez and Molina, the Augustinians of Louvain and the Sorbonne. Each stream is a school; its width is the number of its writers on this shelf at work in each decade.</p>
+    <div class="nowcard" aria-live="polite"><b id="tg-now">1500</b><p id="tg-now-ev"></p><div class="ribbon" id="tg-now-who"></div></div>
+  </div>
+  <div class="streams" id="tg-stream-box"><svg aria-label="Streamgraph of the schools from 1450 to 1980"></svg><div class="tip" hidden></div></div>
+</div></section>
+
+<section class="scene gut" id="tg-road" aria-labelledby="tg-h-road"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">2 · Where they taught</p>
+    <h2 id="tg-h-road">From Salamanca to the Roman College</h2>
+    <p class="say">The schools lived in universities and colleges. Suárez taught at Rome, Alcalá, Salamanca and Coimbra; Bellarmine at Louvain before Rome; Jansen came from Louvain to his see at Ypres. Scroll to follow them.</p>
+    <ul class="chron" id="tg-chron"></ul>
+  </div>
+  <div>
+    <div class="mapbox" id="tg-map"><svg aria-hidden="true"></svg><canvas aria-label="Map of the theologians’ journeys between the universities and colleges, moving with the years"></canvas><div class="year num" id="tg-year">1470</div><div class="yearbar"><i id="tg-yearbar"></i></div></div>
+    <div class="ribbon" id="tg-ribbon" aria-live="polite"></div>
+    <p class="legend" id="tg-legend" style="margin-top:8px"></p>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-dm" aria-labelledby="tg-h-dm"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">3 · The method</p>
+    <h2 id="tg-h-dm">How a disputation is built</h2>
+    <p class="say">Francisco Suárez’s <i>Metaphysical Disputations</i> (Salamanca, 1597) was the first complete metaphysics written as a system rather than as a commentary on Aristotle. It was read in Catholic and Protestant schools alike.</p>
+    <ol class="steps" id="tg-dm-steps"></ol>
+  </div>
+  <div>
+    <div class="dm" id="tg-dm-box"><svg aria-label="The fifty-four disputations of Suárez’s Metaphysical Disputations, each column one disputation, its height its pages"></svg><div class="tip" hidden></div></div>
+    <div class="card dmcard" id="tg-dm-card" aria-live="polite"></div>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-trent" aria-labelledby="tg-h-trent"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">4 · The council</p>
+    <h2 id="tg-h-trent">Trent, the hinge</h2>
+    <p class="say">The Council of Trent met in twenty-five sessions over eighteen years, in three periods under three popes. Its decrees on Scripture, justification and the sacraments are the ground of everything on this shelf after 1563.</p>
+    <ul class="chron" id="tg-trent-list"></ul>
+  </div>
+  <div class="trent">
+    <svg id="tg-trent-svg" aria-label="The sessions of the Council of Trent from 1545 to 1563"></svg>
+    <div class="onshelf" id="tg-onshelf"></div>
+  </div>
+</div></section>
+
+<section class="tool gut" id="explore" aria-labelledby="tg-h-ex"><div class="wrap">
+  <p class="eyebrow">Explore</p>
+  <h2 id="tg-h-ex">Every author on the shelf</h2>
+  <p class="say" style="max-width:46rem">A hundred and twenty-one writers, councils and editors. Choose a school to narrow the lines, or search for a name or a title.</p>
+  <div id="tg-explorer"></div>
+  <p class="undated" id="tg-undated"></p>
+  <div class="next"><a href="/the-faith-received/all-works/?tradition=Roman%20Catholic">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=Roman%20Catholic">Ask this shelf</a><a id="tg-councils-link" href="#">The Councils guide</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
+</div></section>

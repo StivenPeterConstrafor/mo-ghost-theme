@@ -1,0 +1,56 @@
+/*
+ * The Faith Received — guides to the shelves (/the-faith-received/guide/).
+ *
+ * One template, custom-faith-guide.hbs, serves every guide: ?s=<shelf>
+ * picks one, and with no ?s= the page is the guides themselves under a
+ * century ruler. This loader fetches the shelf's markup and data from
+ * assets/data/faith-received/guides/, then runs the shared engine
+ * (faith-guide-engine.js) and the shelf's own scenes
+ * (faith-guide-<shelf>.js). The same three files make the stand-alone
+ * previews the owner reviewed, so a guide reads the same in both.
+ *
+ * Versions below are each file's frv (the first 16 hex of its sha256),
+ * stamped by the export that writes these files.
+ */
+(() => {
+  const SHELVES = {"library": {"name": "Guides to the Shelves", "cls": "lib"}, "councils": {"name": "The Councils", "cls": "cou", "bare": true}, "greek": {"name": "The Greek Fathers", "cls": "gre"}, "latin": {"name": "The Latin Fathers", "cls": "lat"}, "medieval": {"name": "The Medieval Shelf", "cls": "med"}, "catholic": {"name": "Roman Catholic", "cls": "cat"}, "reformed": {"name": "Continental Reformed", "cls": "ref"}, "lutheran": {"name": "Lutheran", "cls": "lut"}};
+  const V = {"library.html": "339d3dc7d93a59d0", "library.json": "bce23d61971bb88f", "councils.html": "d2df0d1891ee9eb9", "councils.json": "a778fda8f5684ef4", "greek.html": "021c1c7b8aae877e", "greek.json": "a090ff32eb3cdc0e", "latin.html": "2185d937f4ef713c", "latin.json": "034e395cc2a4e7c5", "medieval.html": "c6a801761dcabb21", "medieval.json": "5f11e1c0ec822018", "catholic.html": "4d41e735318bd8cb", "catholic.json": "2dd98257dacc1f1d", "reformed.html": "8eebf82671f5fa5a", "reformed.json": "a2546c32252e6f25", "lutheran.html": "4af834f47b957999", "lutheran.json": "68d8c9e3f946121a", "library": "6b878d58706f1905", "councils": "06ff3a2586c64d3b", "greek": "216f8dd6a070828c", "latin": "7ec481eeb88b9259", "medieval": "bfbb7a6d9dfb5160", "catholic": "66574bf984af705b", "reformed": "16ac38fc3af325f8", "lutheran": "1d648c365715edb2", "engine": "b576ebc108ae76ea", "europe_land.json": "bb985d269feafed6"};
+  const root = document.querySelector("[data-guide-root]");
+  if (!root) return;
+  const {assets} = root.dataset;
+  const asked = new URLSearchParams(location.search).get("s") || "";
+  const key = Object.prototype.hasOwnProperty.call(SHELVES, asked) ? asked : "library";
+  const shelf = SHELVES[key];
+  const v = (name) => `?v=${V[name] || "0"}`;
+  const fail = () => {
+    root.innerHTML = '<div class="wrap gut" style="padding-block:64px"><p>This guide could not be loaded. <a href="/the-faith-received/guide/">See all the guides</a> or <a href="/the-faith-received/all-works/">browse the shelves</a>.</p></div>';
+  };
+  const script = (src) => new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.body.appendChild(s);
+  });
+  if (asked && key === "library") history.replaceState(null, "", location.pathname);
+  document.title = key === "library" ? "Guides to the Shelves | The Faith Received | Mere Orthodoxy" : `${shelf.name} | Guides to the Shelves | The Faith Received`;
+  fetch(`${assets}${key}.html${v(`${key}.html`)}`)
+    .then((r) => (r.ok ? r.text() : Promise.reject(new Error(`HTTP ${r.status}`))))
+    .then((html) => {
+      // the Councils guide keeps its own scoped styles (.tg-cou) and does not take the shared .tg ones
+      if (shelf.bare) root.classList.remove("tg");
+      root.classList.add(`tg-${shelf.cls}`);
+      root.dataset.data = `${assets}${key}.json${v(`${key}.json`)}`;
+      root.dataset.land = `${assets}europe_land.json${v("europe_land.json")}`;
+      root.innerHTML = html;
+      return script(`/assets/js/faith-guide-engine.js${v("engine")}`);
+    })
+    .then(() => script(`/assets/js/faith-guide-${key}.js${v(key)}`))
+    .then(() => {
+      if (location.hash) {
+        const t = document.getElementById(location.hash.slice(1));
+        if (t) setTimeout(() => t.scrollIntoView(), 400);
+      }
+    })
+    .catch(fail);
+})();
