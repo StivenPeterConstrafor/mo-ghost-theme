@@ -6,13 +6,13 @@
   const WORD = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'twentieth'];
   const SH = [
     { k: 'councils', c: '--rubric', name: 'The Councils', eyebrow: `Mansi · ${D.councils.vols} volumes`, desc: 'Every council and synod from the apostles at Jerusalem to the First Vatican Council and the Eastern synods after it.', unit: ['council', 'councils'] },
-    { k: 'greek', c: '--gilt', name: 'The Greek Fathers', eyebrow: `Patrologia Graeca · ${D.greek.vols} volumes`, desc: 'The Greek Fathers and the Byzantine writers after them, Greek with Latin beside it.', unit: ['writer', 'writers'] },
-    { k: 'latin', c: '--ink-2', name: 'The Latin Fathers', eyebrow: `Patrologia Latina · ${D.latin.vols} volumes`, desc: 'The Latin Fathers and the medieval writers after them, Tertullian to Innocent III.', unit: ['writer', 'writers'] },
+    { k: 'greek', c: '--gilt', name: 'The Greek Fathers', eyebrow: `Patrologia Graeca · ${D.greek.vols} volumes`, desc: 'The Greek Fathers and the Byzantine writers after them. The Greek is printed with Latin beside it.', unit: ['writer', 'writers'] },
+    { k: 'latin', c: '--ink-2', name: 'The Latin Fathers', eyebrow: `Patrologia Latina · ${D.latin.vols} volumes`, desc: 'The Latin Fathers and the medieval writers after them. The shelf runs from Tertullian to Innocent III.', unit: ['writer', 'writers'] },
     { k: 'medieval', c: '--f1', name: 'The Medieval shelf', eyebrow: `${D.medieval.works} works`, desc: 'The schools: the Sentences and the summas, Aristotle in the friars’ hands, and the canon law of Bologna.', unit: ['writer', 'writers'] },
     { k: 'catholic', c: '--f5', name: 'Roman Catholic', eyebrow: `${D.catholic.works} works`, desc: 'Trent and the schools after it: Thomists, Scotists and Jesuits, the controversialists and the historians.', unit: ['writer', 'writers'] },
-    { k: 'reformed', c: '--f4', name: 'Continental Reformed', eyebrow: `${D.reformed.works} works`, desc: 'Zurich and Geneva, Heidelberg and Leiden: the Reformers and the Reformed orthodox who followed them.', unit: ['writer', 'writers'] },
+    { k: 'reformed', c: '--f4', name: 'Continental Reformed', eyebrow: `${D.reformed.works} works`, desc: 'Zurich, Geneva, Heidelberg and Leiden: the Reformers and the Reformed orthodox who followed them.', unit: ['writer', 'writers'] },
     { k: 'lutheran', c: '--f2', name: 'Lutheran', eyebrow: `${D.lutheran.works} works`, desc: 'Luther and Melanchthon, the Book of Concord, and the orthodox divines of Wittenberg and Jena.', unit: ['writer', 'writers'] },
-    { k: 'english', c: '--f7', name: 'The English Divines', eyebrow: `${fmt(D.english.works)} works`, desc: 'The English church from the Reformation to the Evangelical revival, with a guide for each party and for the Westminster Assembly.', unit: ['writer', 'writers'],
+    { k: 'english', c: '--f7', name: 'The English Divines', eyebrow: `${fmt(D.english.works)} works`, desc: 'The English church from the Reformation to the Evangelical revival. Each party has its own guide. So does the Westminster Assembly.', unit: ['writer', 'writers'],
       subs: [['puritans', 'The Puritans'], ['anglicans', 'The Anglicans'], ['methodists', 'The Methodists'], ['westminster', 'The Westminster Assembly']] },
   ];
   const C0 = 1, C1 = 20; let cur = 4;

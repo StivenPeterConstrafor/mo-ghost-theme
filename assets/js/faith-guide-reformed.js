@@ -36,7 +36,7 @@
       t.addEventListener('mouseenter', show); t.addEventListener('focus', show);
       t.addEventListener('click', () => explorer && explorer.show(a.n)); t.addEventListener('keydown', (e) => { if (e.key === 'Enter') explorer && explorer.show(a.n); });
       leafEls.push(g); }));
-    cap.textContent = 'The shelf divided as Ramus divided a subject: by where its writers taught, then the three with the most pages in each.';
+    cap.textContent = 'The shelf divided as Ramus divided a subject: first by where its writers taught and then by the three with the most pages in each.';
     if (!G) return;
     const tl = gsap.timeline({ delay: 0.3 });
     tl.from([rootT, rootS], { opacity: 0, x: -14, duration: 0.7, ease: 'power2.out', stagger: 0.1 })
@@ -103,7 +103,7 @@
       labs.forEach((l, i) => { l.firstChild.textContent = counts[order[i]]; });
       const showC = clamp((p - 0.12) / 0.06, 0, 1); comps.forEach((c) => { c.style.opacity = showC; }); labs.forEach((l) => { l.style.opacity = showC; });
       axis.style.opacity = years[0] ? 1 - clamp((pB - 0.6) / 0.3, 0, 1) * 0.6 : 1; years.forEach((y) => { y.style.opacity = axis.style.opacity; });
-      note.textContent = pB <= 0 ? 'Every work on the shelf, by when its writer was at work.' : pB < 1 ? `Sorting: ${K.names[order[kNow]]}` : 'Choose a compartment to see what it holds.';
+      note.textContent = pB <= 0 ? 'Each work stands at the years its writer was at work.' : pB < 1 ? `Sorting: ${K.names[order[kNow]]}` : 'Choose a compartment to see what it holds.';
       const now = pB <= 0 ? -1 : kNow; if (now !== cur) { cur = now; lis.forEach((li, i) => { li.classList.toggle('now', i === now); li.classList.toggle('past', i < now); }); }
       if (p >= 0.999 && !picked) pick(order[0]);
     }
@@ -123,7 +123,7 @@
     const LBL = { Leiden: [-7, -6, 'right'], Utrecht: [7, 12, 'left'], Franeker: [-7, -6, 'right'], Geneva: [-7, 12, 'right'], Lausanne: [-7, -4, 'right'],
                   Bern: [7, 12, 'left'], Basel: [-7, -6, 'right'], Zurich: [7, -6, 'left'], Herborn: [7, -6, 'left'], Marburg: [7, 10, 'left'], Heidelberg: [7, 12, 'left'], Strasbourg: [-7, 12, 'right'], Sedan: [-7, -6, 'right'], Bremen: [7, 12, 'left'], 'Alba Iulia': [-7, -6, 'right'], Groningen: [7, -8, 'left'], Saumur: [-7, -6, 'right'] };
     const chron = TG.chronicle(document.getElementById('tg-chron'), D.events, ([y, e, w]) => `<li><span class="d">${y}</span><span class="e">${esc(e)}</span><span class="w">${esc(w)}</span></li>`);
-    document.getElementById('tg-legend').innerHTML = `${D.fam.filter(([k]) => J.some((j) => j.f === k)).map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('')}<span><i style="background:transparent;border:1.5px solid var(--ink);border-radius:1px"></i>an academy, with its year</span>`;
+    document.getElementById('tg-legend').innerHTML = `${D.fam.filter(([k]) => J.some((j) => j.f === k)).map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('')}<span><i style="background:transparent;border:1.5px solid var(--ink);border-radius:1px"></i>an academy and its year</span>`;
     const ribbon = document.getElementById('tg-ribbon'); let year = 1500, last = '';
     const curve = (a, b, t) => { const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1], k = 0.18, cx = mx - dy * k, cy = my + dx * k, u = 1 - t; return [u * u * a[0] + 2 * u * t * cx + t * t * b[0], u * u * a[1] + 2 * u * t * cy + t * t * b[1]]; };
     function at(j, Y) {
@@ -208,7 +208,7 @@
     }
     function deal(i, fwd, instant) {
       const b = D.big[Math.max(0, i)];
-      const html = i < 0 ? `<p class="pl">The first Reformed confession</p><h3>Scroll to deal the cards</h3><p>From Zwingli’s theses of 1523 to the last Swiss formula of 1675.</p>`
+      const html = i < 0 ? `<p class="pl">The first Reformed confession</p><h3>The confessions in order</h3><p>They run from Zwingli’s theses of 1523 to the last Swiss formula of 1675.</p>`
         : `<span class="y">${b.y}</span><h3>${esc(b.t)}</h3><span class="pl">${esc(b.place)}</span><p>${esc(b.note)}</p>
           <div class="who">${b.who.length ? `On the shelf: ${b.who.map((w) => `<button type="button" data-w="${esc(w)}">${esc(w)}</button>`).join('')}` : ''}</div>
           <p class="rd" style="margin:8px 0 0"><a href="${TG.read(b.s)}" target="_blank" rel="noopener">Read the ${esc(b.t.replace(/^The /, ''))}</a> <span class="small">${b.p} pp.</span></p>`;
@@ -233,12 +233,12 @@
       if (!n[4].length) o.leaf = leaves++; n[4].forEach((k) => o.kids.push(walk(k, d + 1, o))); return o; })(D.tree, 0, null);
     const STEPS = [
       ['Theology is false or true', 'Book I, chapters I and II.'],
-      ['True theology is archetypal or ectypal', 'God’s own knowledge of himself, and the copy of it he gives to creatures (chapters III and IV), a distinction Polanus took from Junius.'],
-      ['Ectypal theology is of union, of vision, or of wayfarers', 'In the human soul of Christ, in the blessed in heaven, and in us on the way (chapters VII to IX).'],
-      ['Ours is natural or supernatural', 'What nature teaches, and what God has revealed and we could not know otherwise (chapters X and XI).'],
-      ['Revealed theology has its principle and its parts', 'Its principle is Scripture, which fills the rest of Book I; its parts open Book II.'],
-      ['Its parts are faith and good works', 'What is to be believed, and what is to be done.'],
-      ['Faith is of God and his works; good works are worship', 'God in himself and in his works, Books II to VII; immediate worship of God and mediate worship toward our neighbor, the two tables of the law, Books IX and X.'],
+      ['True theology is archetypal or ectypal', 'God’s own knowledge of himself and the copy of it he gives to creatures (chapters III and IV). Polanus took the distinction from Junius.'],
+      ['Ectypal theology is of union, of vision, or of wayfarers', 'In the human soul of Christ, in the blessed in heaven, and in believers on the way (chapters VII to IX).'],
+      ['The wayfarers’ theology is natural or supernatural', 'What nature teaches and what God has revealed that could not be known otherwise (chapters X and XI).'],
+      ['Revealed theology has its principle and its parts', 'Its principle is Scripture. Scripture fills the rest of Book I. Its parts open Book II.'],
+      ['Its parts are faith and good works', 'What is to be believed and what is to be done.'],
+      ['Faith is of God and his works. Good works are worship.', 'Faith treats God in himself and in his works (Books II to VII). Good works are the immediate worship of God and the mediate worship toward the neighbor. These are the two tables of the law (Books IX and X).'],
     ];
     steps.innerHTML = STEPS.map(([b, p]) => `<li><b>${esc(b)}</b><p>${esc(p)}</p></li>`).join('');
     const sl = [...steps.children];
@@ -313,7 +313,7 @@
       const g = svg.append('g').attr('clip-path', 'url(#tg-ref-clip)');
       g.selectAll('path.s').data(series).join('path').attr('class', 's').attr('d', area).attr('fill', (s) => fc(s.key)).attr('opacity', 0.9)
         .on('mousemove', (e, s) => { const [mx] = d3.pointer(e, host), y = Math.round(sx.invert(mx) / 5) * 5, n = names(y, s.key); const b = host.getBoundingClientRect();
-          tip.innerHTML = `${esc(famName(s.key))}, about ${y}<small>${n.length ? esc(n.slice(0, 8).join(', ')) + (n.length > 8 ? ` and ${n.length - 8} more` : '') : 'none at work'}</small>`; tip.hidden = false;
+          tip.innerHTML = `${esc(famName(s.key))} in about ${y}<small>${n.length ? esc(n.slice(0, 8).join(', ')) + (n.length > 8 ? ` and ${n.length - 8} more` : '') : 'none at work'}</small>`; tip.hidden = false;
           tip.style.left = `${Math.min(mx + 14, b.width - 260)}px`; tip.style.top = `${d3.pointer(e, host)[1] - 20}px`; })
         .on('mouseleave', () => { tip.hidden = true; });
       const evg = svg.append('g').attr('class', 'ev'); const lanes = [12, 27, 42], lastX = lanes.map(() => -1e9), narrow = W < 600;

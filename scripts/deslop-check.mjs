@@ -77,8 +77,15 @@ const ERROR_PHRASES = [
   [/\b(delve|delves|delving|tapestry|testament to|seamless(ly)?|game[- ]chang\w*|cutting[- ]edge|world[- ]class|synerg\w+)\b/i, "stock AI/marketing word"],
   [/\b(curate[ds]?|curating|optimi[sz]e[ds]?|leverag(e|es|ed|ing)|empower(s|ed|ing)?|unlock(s|ed|ing)?|elevat(e|es|ed|ing))\b/i, "market-speak (brand voice: curate, optimize, leverage, empower...)"],
   [/\b(your truth|safe space|we're all on a journey)\b/i, "therapeutic language (brand voice)"],
+  // Ian, 2026-10-11, of "Scroll to set them on the shelf, then pile them by
+  // the century they hold": "pure slop writing". Copy never narrates the
+  // page's own animation. One "Scroll to begin" prompt is all a reader needs.
+  [/^Scroll (down )?to (?!begin\b)/i, "narrates the page's animation: cut it (only \"Scroll to begin\" stays)"],
 ];
 const WARN_PHRASES = [
+  [/^(Watch|Follow) (the|them|how|as|it)\b/i, "narrates the page's animation: cut it"],
+  [/[a-z)”’]; [a-z]/, "semicolon joining two sentences: make two sentences"],
+  [/, (just )?(outside|near|in|at|on|from|beyond) [A-Z][\w’'-]+( [A-Z][\w’'-]+)?,/, "aside set off by commas: fold it in or drop it (\"at Montrouge near Paris\")"],
   [/\b(leading|towering|pivotal|seminal|landmark|profound|vibrant|unparalleled|groundbreaking|revolutionary|nuanced|showcases?|architect of)\b/i, "puffery: keep only if it states a fact"],
   [/\bScroll to (walk|take|turn|follow|open)\b/i, "cute scroll prompt: \"Scroll to begin\""],
   [/,\s*(briefly|of course|naturally|indeed)\s*[.!?]/i, "hanging adverb tacked on with a comma"],
@@ -193,6 +200,10 @@ function checkProse(file, line, prose) {
     for (const [re, why] of WARN_PHRASES) if (re.test(t)) add("warn", file, line, why, t);
     if (STITCH.test(t)) add("warn", file, line, "\", and/but\" stitching an independent clause: make two sentences", t);
     if (TAIL.test(t) && t.split(" ").length > 6) add("warn", file, line, "trailing modifier hung off a comma: fold it in or give it its own sentence", t);
+    // "Not just one comma splice after another" (2026-10-11): a long sentence
+    // carrying two or more commas is a run of clauses. Lists of three keep theirs.
+    const commas = (t.match(/,/g) || []).length;
+    if (commas >= 2 && t.split(/\s+/).length > 15 && !/^[^,]+(, [^,]{1,40}){2,}, (and|or) [^,]{1,40}[.!?]?$/.test(t)) add("warn", file, line, `comma-heavy sentence (${commas} commas): make it straightforward, one claim per sentence`, t);
     if (isTfr(file) && WE_TFR.test(t) && !/\b(our (lord|savio(u)?r|father|lady)|for us|to us|of us)\b/i.test(t)) add("warn", file, line, "\"we/our\" in library copy: describe things on their own terms", t);
   }
 }

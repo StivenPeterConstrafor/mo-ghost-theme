@@ -53,8 +53,8 @@
     function apply(m, how) { // how: 'set' | 'flip'
       mode = m; const L = layout(m); host.style.height = `${L.height}px`; els.forEach((el) => { el.style.width = `${L.bw}px`; });
       document.querySelectorAll('.tg-cat .seg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.mode === m ? 'true' : 'false'));
-      cap.textContent = m === 'date' ? 'Every book on the shelf, in the order its author was born; the taller the spine, the more pages. Hover over a spine to see it. Open it to read.'
-        : 'The same books, each in its school, oldest first. The long runs are the great sets: Mansi’s councils, the Salamanca course, Suárez’s works.';
+      cap.textContent = m === 'date' ? 'Every book on the shelf in the order its author was born. A taller spine means more pages. Hover over a spine to see it. Open it to read.'
+        : 'The same books grouped by school with the oldest first. The long runs are the great sets: Mansi’s councils, the Salamanca course and Suárez’s works.';
       if (how === 'flip' && G) {
         els.forEach((el, i) => gsap.to(el, { x: L.pos[i].x, y: L.pos[i].y, duration: 1.15, ease: 'power3.inOut', delay: (B[i][4] * 0.05) + (i % 40) * 0.002 }));
       } else els.forEach((el, i) => { if (window.gsap) gsap.set(el, { x: L.pos[i].x, y: L.pos[i].y, opacity: 1 }); else el.style.transform = `translate(${L.pos[i].x}px,${L.pos[i].y}px)`; });
@@ -129,7 +129,7 @@
       gg.on('click', () => explorer && explorer.show(p.a.n)).on('mousemove', (e) => { const r = box.getBoundingClientRect(); tip.innerHTML = `${esc(p.a.n)}<small>${esc(TG.yr(p.a))} · ${esc(famName(p.a.f))}</small>`; tip.hidden = false; tip.style.left = `${Math.min(e.clientX - r.left + 10, r.width - 200)}px`; tip.style.top = `${e.clientY - r.top + 12}px`; }).on('mouseleave', () => { tip.hidden = true; });
       return { ...p, gg }; });
     const nowEl = document.getElementById('tg-now'), nowEv = document.getElementById('tg-now-ev'), nowWho = document.getElementById('tg-now-who');
-    const NOTE = { 1450: 'The councils of the fifteenth century and the first Thomists: Gerson, Tostado, Cajetan.', };
+    const NOTE = { 1450: 'The councils of the fifteenth century and the first Thomists: Gerson, Tostado and Cajetan.', };
     const ev2 = D.events; let lastKey = '';
     function render(yr) {
       clip.attr('width', x(yr));
@@ -229,7 +229,7 @@
     cols.forEach(({ gg, d }) => {
       const go = () => { const a = document.createElement('a'); a.href = TG.read(d.slug, d.page); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); };
       gg.addEventListener('click', go); gg.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
-      gg.addEventListener('mousemove', (e) => { const b = box.getBoundingClientRect(); tip.innerHTML = `Disputation ${d.n}: ${esc(d.s)}<small>${esc(d.t)} · ${d.pp} pages, ${d.secs.length} sections · open it</small>`; tip.hidden = false;
+      gg.addEventListener('mousemove', (e) => { const b = box.getBoundingClientRect(); tip.innerHTML = `Disputation ${d.n}: ${esc(d.s)}<small>${esc(d.t)} · ${d.pp} pages in ${d.secs.length} sections · open it</small>`; tip.hidden = false;
         tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 260)}px`; tip.style.top = `${e.clientY - b.top + 14}px`; });
       gg.addEventListener('mouseleave', () => { tip.hidden = true; }); });
     // the two parts and the order of the questions
@@ -246,20 +246,20 @@
     const longest = X.disp.reduce((m, d) => (d.pp > m.pp ? d : m), X.disp[0]), focus = X.disp[28];
     const ROMN = (n) => { let s = ''; for (const [v, r] of [[50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']]) while (n >= v) { s += r; n -= v; } return s; };
     const STEPS = [
-      ['Four volumes', `On the shelf the Disputations fill four volumes, ${fmt(X.vols.reduce((t, v) => t + v.pages, 0))} pages.`],
-      ['Fifty-four disputations', `Each column is one disputation, its height its pages. The longest is Disputation ${ROMN(longest.n)} (${longest.s}), at ${longest.pp} pages.`],
-      ['Two parts', 'Suárez’s own plan: first being in general, its unity, truth and goodness and its causes; then the kinds of being, from God down to the nine accidents.'],
-      ['The order of the questions', 'Being and its properties, the four causes, God, created substance, the accidents one by one, and last the beings of reason.'],
-      ['Inside a disputation', `Each disputation is cut into sections, each section into numbered paragraphs. Disputation ${ROMN(focus.n)} asks whether God can be known to exist by natural reason.`],
+      ['Four volumes', `On the shelf the Disputations fill four volumes. Together they run to ${fmt(X.vols.reduce((t, v) => t + v.pages, 0))} pages.`],
+      ['Fifty-four disputations', `Each column is one disputation. Its height shows its pages. The longest is Disputation ${ROMN(longest.n)} (${longest.s}) at ${longest.pp} pages.`],
+      ['Two parts', 'Suárez’s own plan has two parts. The first treats being in general with its unity, truth and goodness and its causes. The second treats the kinds of being from God down to the nine accidents.'],
+      ['The order of the questions', 'The questions run from being and its properties to the four causes, God, created substance and the accidents one by one. The beings of reason come last.'],
+      ['Inside a disputation', `Each disputation is cut into sections. Each section is cut into numbered paragraphs. Disputation ${ROMN(focus.n)} asks whether God can be known to exist by natural reason.`],
       ['Read it', ''],
     ];
     const stepsEl = document.getElementById('tg-dm-steps');
-    stepsEl.innerHTML = STEPS.map(([b, p]) => `<li><b>${esc(b)}</b>${p ? `<p>${esc(p)}</p>` : '<p>Open any column to go to that disputation in the reader, Latin beside English.</p>'}</li>`).join('');
+    stepsEl.innerHTML = STEPS.map(([b, p]) => `<li><b>${esc(b)}</b>${p ? `<p>${esc(p)}</p>` : '<p>Open any column to go to that disputation in the reader. The Latin stands beside the English.</p>'}</li>`).join('');
     const lis = [...stepsEl.children];
     const cardFor = (i) => {
-      if (i === 0) return `<p class="eyebrow">Francisco Suárez · Salamanca, 1597</p><h3>Metaphysical Disputations</h3><p class="small">${X.vols.map((v, k) => `<a href="${TG.read(v.slug)}" target="_blank" rel="noopener">Volume ${k + 1}: disputations ${v.from}–${v.to}</a>, ${fmt(v.pages)} pages`).join('<br>')}</p>`;
+      if (i === 0) return `<p class="eyebrow">Francisco Suárez · Salamanca, 1597</p><h3>Metaphysical Disputations</h3><p class="small">${X.vols.map((v, k) => `<a href="${TG.read(v.slug)}" target="_blank" rel="noopener">Volume ${k + 1}: disputations ${v.from}–${v.to}</a> · ${fmt(v.pages)} pages`).join('<br>')}</p>`;
       if (i === 1) return `<p class="eyebrow">The longest</p><h3><a href="${TG.read(longest.slug, longest.page)}" target="_blank" rel="noopener">Disputation ${ROMN(longest.n)}</a></h3><p>${esc(longest.t)}</p><p class="small">${longest.pp} pages in ${longest.secs.length} sections</p>`;
-      if (i === 2) return `<p class="eyebrow">The plan</p><h3>Being, then the kinds of being</h3><p>Disputations 1 to 27 treat being as such; 28 to 53 divide it, infinite and finite, substance and accident; the 54th treats the beings of reason, which exist only in the mind.</p>`;
+      if (i === 2) return `<p class="eyebrow">The plan</p><h3>Being, then the kinds of being</h3><p>Disputations 1 to 27 treat being as such. Disputations 28 to 53 divide it into infinite and finite and into substance and accident. The 54th treats the beings of reason. These exist only in the mind.</p>`;
       if (i === 3) return `<p class="eyebrow">The order</p><h3>From being to the nine accidents</h3><p>${X.groups.map(([a, b, t], gi) => `<span style="white-space:nowrap"><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${GC[gi]};margin-right:5px"></i>${esc(t)} (${a === b ? a : `${a}–${b}`})</span>`).join(' · ')}</p>`;
       const d = focus;
       return `<p class="eyebrow">Disputation ${ROMN(d.n)} · ${d.pp} pages</p><h3><a href="${TG.read(d.slug, d.page)}" target="_blank" rel="noopener">${esc(d.t)}</a></h3><ol>${d.secs.map(([t, p]) => `<li><a href="${TG.read(d.slug, p)}" target="_blank" rel="noopener">${esc(t.replace(/^[IVXL]+\.\s*/, ''))}</a> <span class="small">p. ${p}</span></li>`).join('')}</ol>`;
@@ -310,14 +310,14 @@
         const lab = mk('text', { x: cx + 2, y: base - 26, class: 'ses', transform: `rotate(-62 ${cx + 2} ${base - 26})` }, g); lab.textContent = short; }
       mk('circle', { cx, cy: base, r: 9, fill: bol ? TG.css('--gilt') : TG.css('--rubric'), stroke: TG.css('--card'), 'stroke-width': 1.5 }, g);
       const tn = mk('text', { x: cx, y: base + 3.4, 'text-anchor': 'middle', class: 'sesn' }, g); tn.textContent = n;
-      const tt = mk('title', {}, g); tt.textContent = `Session ${n}, ${d}${bol ? ' (Bologna)' : ''}${what ? `: ${what}` : ''}`;
+      const tt = mk('title', {}, g); tt.textContent = `Session ${n} · ${d}${bol ? ' (Bologna)' : ''}${what ? `: ${what}` : ''}`;
       return { g, t, cx, n, d, pl }; });
     const bigY = { set textContent(v) {} };
     const list = document.getElementById('tg-trent-list');
     const evs = T.sessions.filter((s) => s[4]).map(([n, d, t, pl, what]) => [t, n, d, pl, what]);
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const human = (d) => { const [yy, m, dd] = d.split('-').map(Number); return `${dd} ${months[m - 1]} ${yy}`; };
-    const chron = TG.chronicle(list, evs, ([t, n, d, pl, what]) => `<li><span class="d">Session ${n}</span><span class="e">${esc(what)}</span><span class="w">${human(d)}, at ${esc(pl)}</span></li>`);
+    const chron = TG.chronicle(list, evs, ([t, n, d, pl, what]) => `<li><span class="d">Session ${n}</span><span class="e">${esc(what)}</span><span class="w">${human(d)} at ${esc(pl)}</span></li>`);
     let shown = 0;
     function render(t) {
       const n = S.filter((s) => t >= s.t).length; nowT.textContent = n ? `Session ${S[n - 1].n} · ${human(S[n - 1].d)}${S[n - 1].pl === 'Bologna' ? ' · Bologna' : ''}` : '';
@@ -330,16 +330,16 @@
     TG.chapter('#tg-trent', 3000, (p) => render(lerp(X0, X1, p)), { scrub: 0.4 });
     // the council on the shelf
     const pages = (L) => L.reduce((s, w) => s + w[2], 0), mx = Math.max(...T.acts.map((w) => w[2]), ...T.sarpi.map((w) => w[2]), ...T.pallavicino.map((w) => w[2]));
-    const sp = (L, cls) => L.map((w) => `<a class="${cls}" href="${TG.read(w[1])}" target="_blank" rel="noopener" title="${esc(w[0])}, ${fmt(w[2])} pages" style="height:${(24 + 48 * w[2] / mx).toFixed(0)}px"></a>`).join('');
+    const sp = (L, cls) => L.map((w) => `<a class="${cls}" href="${TG.read(w[1])}" target="_blank" rel="noopener" title="${esc(w[0])} · ${fmt(w[2])} pages" style="height:${(24 + 48 * w[2] / mx).toFixed(0)}px"></a>`).join('');
     document.getElementById('tg-onshelf').innerHTML = `
-      <div class="card reveal"><h3>The acts of the council</h3><div class="spines">${sp(T.acts, '')}</div><p class="small" style="margin:0">${T.acts.length} volumes, ${fmt(pages(T.acts))} pages: the diaries, acts, letters and treatises of the council.</p></div>
-      <div class="card reveal"><h3>Two histories, and the councils entire</h3><div class="spines">${sp(T.sarpi, 's')}<span style="width:10px"></span>${sp(T.pallavicino, 'p')}</div>
-        <p class="small" style="margin:0">Paolo Sarpi’s history (1619), hostile to the papacy, and the Jesuit Pietro Sforza Pallavicino’s answer to it (1656–1657). Mansi’s collection of all the councils, ${T.mansi.n} volumes and ${fmt(T.mansi.pages)} pages, is on this shelf too: <a href="${D.councils_guide}" target="_blank" rel="noopener">see the Councils guide</a>.</p></div>`;
+      <div class="card reveal"><h3>The acts of the council</h3><div class="spines">${sp(T.acts, '')}</div><p class="small" style="margin:0">${T.acts.length} volumes and ${fmt(pages(T.acts))} pages of the council’s diaries, acts, letters and treatises.</p></div>
+      <div class="card reveal"><h3>Two histories and the councils entire</h3><div class="spines">${sp(T.sarpi, 's')}<span style="width:10px"></span>${sp(T.pallavicino, 'p')}</div>
+        <p class="small" style="margin:0">Paolo Sarpi’s history of 1619 is hostile to the papacy. The Jesuit Pietro Sforza Pallavicino answered it in 1656–1657. Mansi’s collection of all the councils is on this shelf too. It runs to ${T.mansi.n} volumes and ${fmt(T.mansi.pages)} pages. <a href="${D.councils_guide}" target="_blank" rel="noopener">See the Councils guide</a>.</p></div>`;
   })();
 
   /* ---------- explore ---------- */
   explorer = TG.explorer(document.getElementById('tg-explorer'), D, { range: [1360, 1990], first: 'Francisco Suárez', placeholder: 'Suárez, Báñez, grace, Trent…', label: 'Lifelines of the writers on the Roman Catholic shelf' });
-  document.getElementById('tg-undated').innerHTML = `Also on the shelf, without dates in the record: ${D.undated.map((a) => `<a href="${TG.read(a.w[0][1])}" target="_blank" rel="noopener">${esc(a.n)}</a>`).join(', ')}.`;
+  document.getElementById('tg-undated').innerHTML = `Also on the shelf without dates in the record: ${D.undated.map((a) => `<a href="${TG.read(a.w[0][1])}" target="_blank" rel="noopener">${esc(a.n)}</a>`).join(', ')}.`;
   document.getElementById('tg-councils-link').href = D.councils_guide;
   TG.reveal('.tg .reveal');
 })();

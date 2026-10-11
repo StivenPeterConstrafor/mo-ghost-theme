@@ -44,7 +44,7 @@
     const beam = LX.map((x, i) => mk('path', { d: lightPath(x), fill: 'url(#tg-sun)', 'pointer-events': 'none', opacity: 0 }));
     const yr = mk('text', { x: 282, y: 712, 'text-anchor': 'middle', fill: TG.css('--muted'), 'font-size': 13, 'font-family': TG.css('--body') });
     const light = (pn, on) => pn.p.setAttribute('fill', on ? `color-mix(in srgb, #efc978 ${Math.round(pn.lit * 100)}%, ${pn.base})` : pn.base);
-    const say = (a) => { cap.textContent = a ? `${a.n}, ${a.d || TG.yr(a)} · ${a.w.length} ${a.w.length === 1 ? 'work' : 'works'}, ${fmt(a.p)} pages · ${famName(a.f)}` : 'Each quarry of plain glass is a writer on the shelf, in order of birth from the top; the brighter the pane, the more pages.'; };
+    const say = (a) => { cap.textContent = a ? `${a.n}, ${a.d || TG.yr(a)} · ${a.w.length} ${a.w.length === 1 ? 'work' : 'works'} · ${fmt(a.p)} pages · ${famName(a.f)}` : 'Each quarry of plain glass is a writer on the shelf. The writers run in order of birth from the top. Brighter panes hold more pages.'; };
     panes.forEach((pn) => { const on = () => say(pn.a); pn.p.addEventListener('mouseenter', on); pn.p.addEventListener('focus', on);
       pn.p.addEventListener('click', () => explorer && explorer.show(pn.a.n)); pn.p.addEventListener('keydown', (e) => { if (e.key === 'Enter') explorer && explorer.show(pn.a.n); }); });
     svg.addEventListener('mouseleave', () => say(null)); say(null);
@@ -99,7 +99,7 @@
       ctx.globalAlpha = 1;
       // the year cursor
       if (Y < Y1) { const xx = x(Math.floor(Y)) + cwid; ctx.strokeStyle = TG.css('--ink'); ctx.globalAlpha = 0.35; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(xx, M.t - 4); ctx.lineTo(xx, base); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1; }
-      nEl.textContent = fmt(shown); capEl.textContent = Y >= Y1 - 1 ? `dated editions on the shelf, ${D.per_dec[0][0]} to ${D.per_dec[D.per_dec.length - 1][0] + 9}; ${fmt(forties)} of them in the 1640s` : `editions printed by ${Math.floor(Y)}`;
+      nEl.textContent = fmt(shown); capEl.textContent = Y >= Y1 - 1 ? `dated editions on the shelf from ${D.per_dec[0][0]} to ${D.per_dec[D.per_dec.length - 1][0] + 9}. The 1640s alone printed ${fmt(forties)}.` : `editions printed by ${Math.floor(Y)}`;
       legB.forEach((b, i) => { b.textContent = fmt(counts[i]); });
       chron(Y);
     }
@@ -139,11 +139,11 @@
       mk('path', { d: `M${(cx(i - 1) + cx(i)) / 2 - 20},${CY + RY + 18} l20,-8 l20,8`, fill: 'none', stroke: TG.css('--rubric'), 'stroke-width': 1.2, opacity: 0, class: 'arr' }); }
     const arrs = [...svg.querySelectorAll('.arr')];
     const steps = document.getElementById('tg-chain-steps');
-    steps.innerHTML = `${C.map((p) => `<li><b>${esc(p.n)}</b><p>${esc(p.link ? `${p.link[0].toUpperCase()}${p.link.slice(1)}.` : 'The first link.')}</p></li>`).join('')}<li><b>The chain runs on</b><p>From Cambridge to the London pulpits, and with Cotton and Hooker in 1633 to New England.</p></li>`;
+    steps.innerHTML = `${C.map((p) => `<li><b>${esc(p.n)}</b><p>${esc(p.link ? `${p.link[0].toUpperCase()}${p.link.slice(1)}.` : 'The first link.')}</p></li>`).join('')}<li><b>The chain runs on</b><p>It ran from Cambridge to the London pulpits. With Cotton and Hooker it reached New England in 1633.</p></li>`;
     const lis = [...steps.children];
     const show = (p) => `<p class="eyebrow" style="margin:0 0 4px">${p.link ? esc(p.link) : 'The first link'}</p><h3>${esc(p.n)}</h3><p class="meta">${esc(p.d)}</p><p style="margin:0">${esc(p.say)}</p>
       <div class="stat"><span><b>${p.works}</b>works on the shelf</span><span><b>${fmt(p.pages)}</b>pages</span>${p.first ? `<span><b>${p.first}${p.last !== p.first ? `–${String(p.last).slice(2)}` : ''}</b>printed</span>` : ''}</div>
-      <p class="small" style="margin:10px 0 0">The largest here: <a href="${TG.read(p.big[1])}" target="_blank" rel="noopener">${esc(p.big[0])}</a>, ${fmt(p.big[2])} pages.</p>`;
+      <p class="small" style="margin:10px 0 0">The largest here is <a href="${TG.read(p.big[1])}" target="_blank" rel="noopener">${esc(p.big[0])}</a> (${fmt(p.big[2])} pages).</p>`;
     let cur = -1;
     function step(k, instant) {
       if (k === cur) return; cur = k; lis.forEach((li, j) => li.classList.toggle('now', j === k));
@@ -152,7 +152,7 @@
         if (G && !instant) gsap.to(L.g, { opacity: on ? 1 : 0.38, scale: now ? 1.06 : 1, transformOrigin: `${cx(i)}px ${CY}px`, duration: 0.5, ease: 'back.out(2)' }); else { L.g.setAttribute('opacity', on ? 1 : 0.38); }
         if (L.via) { const v = i <= k ? 1 : 0; if (G && !instant) gsap.to([L.via, arrs[i - 1]], { opacity: v, duration: 0.4 }); else { L.via.setAttribute('opacity', v); arrs[i - 1].setAttribute('opacity', v); } } });
       const p = C[Math.min(k, C.length - 1)];
-      card.innerHTML = k >= C.length ? `<p class="eyebrow" style="margin:0 0 4px">The chain runs on</p><h3>Five preachers, ${fmt(C.reduce((t, c) => t + c.works, 0))} works on this shelf</h3><p style="margin:0">Perkins died in 1602; Preston in 1628; Cotton in Boston, New England, in 1652. Between them they shaped the preaching of Cambridge, the Inns of Court and the first churches of Massachusetts.</p><div class="stat">${C.map((c) => `<span><b>${c.works}</b>${esc(c.n.split(' ').slice(-1)[0])}</span>`).join('')}</div>` : show(p);
+      card.innerHTML = k >= C.length ? `<p class="eyebrow" style="margin:0 0 4px">The chain runs on</p><h3>Five preachers with ${fmt(C.reduce((t, c) => t + c.works, 0))} works on this shelf</h3><p style="margin:0">Perkins died in 1602. Preston died in 1628. Cotton died at Boston in New England in 1652. Between them they shaped the preaching of Cambridge, the Inns of Court and the first churches of Massachusetts.</p><div class="stat">${C.map((c) => `<span><b>${c.works}</b>${esc(c.n.split(' ').slice(-1)[0])}</span>`).join('')}</div>` : show(p);
       if (G && !instant) gsap.from(card.children, { opacity: 0, y: 8, duration: 0.4, stagger: 0.05, ease: 'power2.out' });
     }
     const st = TG.chapter('#tg-chain', 3000, (p, fin) => step(fin ? C.length : Math.min(C.length, Math.floor(p * (C.length + 1))), fin), { scrub: true });
@@ -164,7 +164,7 @@
     const R = D.perkins, S = D.sermon, rules = document.getElementById('tg-rules');
     document.getElementById('tg-arte').href = TG.read(R.slug, R.page);
     document.getElementById('tg-brooks').href = TG.read(S.slug);
-    document.getElementById('tg-brooks').textContent = `Thomas Brooks, The Silent Soul (${S.year})`;
+    document.getElementById('tg-brooks').textContent = `The Silent Soul by Thomas Brooks (${S.year})`;
     rules.innerHTML = R.rules.map((r) => `<li>${esc(r)}</li>`).join(''); document.getElementById('tg-sum').textContent = `“The Sum of the Sum. ${R.sum}”`;
     const rLis = [...rules.children], stack = document.getElementById('tg-stack'), parts = document.getElementById('tg-parts'), N = S.pages;
     const H = () => stack.clientHeight || 520, Y = (p) => (p - 1) / N * H();
@@ -202,9 +202,9 @@
     const total = presses.reduce((t, p) => t + p.n, 0), sumG = (gs) => presses.filter((p) => gs.includes(p.g)).reduce((t, p) => t + p.n, 0);
     const neMen = new Set(recs.filter((r) => r.ne).flatMap((r) => r.names)).size;
     const STEPS = [
-      ['London', `${fmt(sumG([0]))} of the ${fmt(total)} dated editions whose imprint names a town were printed in London, most of them for booksellers around St Paul’s.`, [0]],
-      ['The universities and Scotland', `Cambridge and Oxford printed ${fmt(sumG([1]))}; Edinburgh, Glasgow and Aberdeen ${fmt(sumG([2]))}, the Scottish divines’ books among them.`, [1, 2]],
-      ['The Low Countries', `${fmt(sumG([3]))} came from Amsterdam, Rotterdam, Leiden, Middelburg and Dordrecht, where English congregations in exile had their printers.`, [3]],
+      ['London', `London printed ${fmt(sumG([0]))} of the ${fmt(total)} dated editions whose imprint names a town. Most of them were printed for booksellers around St Paul’s.`, [0]],
+      ['The universities and Scotland', `Cambridge and Oxford printed ${fmt(sumG([1]))}. Edinburgh, Glasgow and Aberdeen printed ${fmt(sumG([2]))}. The Scottish divines’ books are among them.`, [1, 2]],
+      ['The Low Countries', `${fmt(sumG([3]))} came from Amsterdam, Rotterdam, Leiden, Middelburg and Dordrecht. English congregations in exile had their printers there.`, [3]],
       ['New England', `Boston and Cambridge in Massachusetts printed ${fmt(sumG([4]))}. The records of ${neMen} writers on the shelf name a place in New England.`, [4]],
     ];
     const key = document.getElementById('tg-lands-key');
@@ -230,7 +230,7 @@
         ctx.beginPath(); ctx.moveTo(p[0], p[1] - s); ctx.lineTo(p[0] + s, p[1]); ctx.lineTo(p[0], p[1] + s); ctx.lineTo(p[0] - s, p[1]); ctx.closePath(); ctx.fill(); ctx.stroke(); });
       // the writers whose records name both an old-world place and a new one
       D.crossings.forEach(([a, from, to]) => { const dest = P[to]; if (!V.keep(dest)) return; const p = V.M.xy(dest), vis = (NE.has(to) && on.includes(4)) || (LOW.has(to) && on.includes(3)); if (!vis) return;
-        ctx.globalAlpha = 1; ctx.fillStyle = rub; ctx.font = `italic 12px ${TG.css('--display')}`; ctx.textAlign = 'left'; ctx.fillText(`${a}, from ${from}`, p[0] + 9, p[1] - 9); });
+        ctx.globalAlpha = 1; ctx.fillStyle = rub; ctx.font = `italic 12px ${TG.css('--display')}`; ctx.textAlign = 'left'; ctx.fillText(`${a} from ${from}`, p[0] + 9, p[1] - 9); });
       ctx.globalAlpha = 1;
     }
     const drawAll = () => views.forEach(drawView);

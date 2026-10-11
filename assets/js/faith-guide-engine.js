@@ -178,7 +178,7 @@ window.TG = (() => {
       svg.innerHTML = o;
       svg.querySelectorAll('g.life').forEach((g) => { const a = AU[+g.dataset.i];
         g.addEventListener('click', () => card(a)); g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card(a); } });
-        g.addEventListener('mousemove', (e) => { const b = svg.parentElement.getBoundingClientRect(); tip.innerHTML = `${esc(a.n)}<small>${esc(a.d || TG.yr(a))}${a.u ? ' (dates uncertain)' : ''} · ${a.w.length} ${a.w.length === 1 ? 'work' : 'works'}, ${fmt(a.p)} pages</small>`; tip.hidden = false;
+        g.addEventListener('mousemove', (e) => { const b = svg.parentElement.getBoundingClientRect(); tip.innerHTML = `${esc(a.n)}<small>${esc(a.d || TG.yr(a))}${a.u ? ' (dates uncertain)' : ''} · ${a.w.length} ${a.w.length === 1 ? 'work' : 'works'} · ${fmt(a.p)} pages</small>`; tip.hidden = false;
           tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 200)}px`; tip.style.top = `${e.clientY - b.top + 14}px`; });
         g.addEventListener('mouseleave', () => { tip.hidden = true; }); });
       if (anim && hasG && !reduce) gsap.from(svg.querySelectorAll('rect.bar'), { scaleX: 0, transformOrigin: 'left center', duration: 0.6, ease: 'power3.out', stagger: 0.008 });
@@ -229,7 +229,7 @@ window.TG = (() => {
     if (!groups.length) return;
     const sec = document.createElement('section'); sec.className = 'tool gut'; sec.id = 'names'; sec.setAttribute('aria-labelledby', 'tg-h-names');
     sec.innerHTML = `<div class="wrap"><p class="eyebrow">Who’s who</p><h2 id="tg-h-names">The people in the conversation</h2>
-      <p class="say" style="max-width:46rem">${esc(D.keys_say || 'Where to begin on this shelf: the writers the others read, answered and argued with, group by group and in the order they wrote.')}</p>
+      <p class="say" style="max-width:46rem">${esc(D.keys_say || 'Where to begin on this shelf: the writers the others read, answered and argued with. Each group runs in the order they wrote.')}</p>
       <div class="kn-tabs" role="tablist" aria-label="Groups on this shelf">${groups.map((g, i) => `<button type="button" role="tab" aria-selected="${i ? 'false' : 'true'}" data-i="${i}">${esc(g.label)}</button>`).join('')}</div>
       <p class="kn-say" aria-live="polite"></p><svg class="kn-ruler" aria-hidden="true"></svg><div class="kn-grid"></div></div>`;
     before.parentNode.insertBefore(sec, before);
