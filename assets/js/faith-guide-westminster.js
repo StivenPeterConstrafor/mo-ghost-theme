@@ -245,6 +245,140 @@
     TG.chapter('#tg-conf', 3400, render, { scrub: 0.5 });
   })();
 
+  /* ---------- the debates: the members the minutes name, re-ranked month by month ---------- */
+  (function debates() {
+    const B = D.debate, P = B.people, M = B.months, box = document.getElementById('tg-debbox'), now = document.getElementById('tg-deb-now'), card = document.getElementById('tg-deb-card');
+    const last = Math.max(...P.flatMap((p) => p.m.map(([mi]) => mi)));
+    const cum = P.map((p) => { const a = new Array(M.length).fill(0); p.m.forEach(([mi, k]) => { a[mi] += k; }); for (let i = 1; i < a.length; i++) a[i] += a[i - 1]; return a; });
+    const perMonth = M.map((_, i) => P.reduce((t, p) => t + (p.m.find(([mi]) => mi === i) || [0, 0])[1], 0));
+    const cumAll = perMonth.reduce((acc, v) => { acc.push((acc.length ? acc[acc.length - 1] : 0) + v); return acc; }, []); // the scroll is paced by the speeches, not the months
+    const notes = D.events.concat(B.notes).sort((a, b) => (a[0] < b[0] ? -1 : 1));
+    const noteAt = (mo) => notes.filter((e) => e[0].slice(0, 7) <= mo).pop();
+    const monthName = (mo) => { const [y, m] = mo.split('-').map(Number); return `${MON[m - 1]} ${y}`; };
+    const RH = 23, max = Math.max(...P.map((p) => p.c));
+    box.style.height = `${P.length * RH}px`;
+    const rows = P.map((p, i) => {
+      const r = document.createElement('button'); r.type = 'button'; r.className = 'row'; r.setAttribute('role', 'listitem');
+      r.innerHTML = `<span class="nm">${esc(p.n)}</span><span class="bar"><i style="background:${fc(p.f)}"></i></span><b class="ct num">0</b>`;
+      r.style.transform = `translateY(${i * RH}px)`;
+      r.addEventListener('click', () => pick(i)); box.appendChild(r); return r;
+    });
+    const used = D.fam.filter(([k]) => P.some((p) => p.f === k));
+    document.getElementById('tg-deb-key').innerHTML = used.map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('');
+    let picked = -1, shownMo = '';
+    function pick(i) {
+      picked = i; const p = P[i]; rows.forEach((r, j) => r.classList.toggle('on', j === i));
+      const [fd, fl, fv, fp] = p.first, [td, tl, tv, tp] = p.top;
+      const name = p.on ? `<a href="${TG.author(p.n)}" target="_blank" rel="noopener">${esc(p.n)}</a>` : esc(p.n);
+      card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">${esc(famName(p.f))}</p><h3>${name}</h3>
+        <p class="small" style="margin:6px 0 0">The minutes give him ${fmt(p.c)} speeches. The first is in <a href="${TG.read(fv, fp)}" target="_blank" rel="noopener">${esc(fl)}, ${esc(long(fd))}</a>. He spoke most in <a href="${TG.read(tv, tp)}" target="_blank" rel="noopener">${esc(tl)}, ${esc(long(td))}</a>.</p>`;
+    }
+    function summary() {
+      const f = B.by_f;
+      card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">${fmt(B.named)} speeches by a named member</p><h3>The parties on the floor</h3>
+        <p class="small" style="margin:6px 0 0">The Independents made ${fmt(f.indep || 0)} of them. The Scottish commissioners made ${fmt(f.scots || 0)} and the Erastians ${fmt(f.erast || 0)}. The body of the Assembly made the other ${fmt(f.body || 0)}. Choose a member to open the day he spoke most.</p>`;
+    }
+    function render(p, fin) {
+      const k = fin ? last : Math.min(last, Math.max(0, cumAll.findIndex((v) => v >= p * B.named))), mo = M[k];
+      const vals = cum.map((a) => a[k]);
+      vals.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]).forEach(([v, i], r) => {
+        const row = rows[i]; row.style.transform = `translateY(${r * RH}px)`; row.style.opacity = v ? 1 : 0.4;
+        row.querySelector('.bar i').style.width = `${(100 * v) / max}%`; row.querySelector('.ct').textContent = fmt(v);
+      });
+      const note = noteAt(mo);
+      now.innerHTML = fin || k === last ? `<b>${monthName(M[0])} to ${monthName(M[last])}</b> · ${fmt(B.named)} named speeches` : `<b>${monthName(mo)}</b> · ${fmt(perMonth[k])} named ${perMonth[k] === 1 ? 'speech' : 'speeches'}`;
+      if (picked >= 0) return;
+      if (fin || k === last) { summary(); shownMo = ''; return; }
+      if (note && note[0] !== shownMo) { shownMo = note[0]; card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">${esc(long(note[0]))}</p><h3>${esc(note[1])}</h3>${note[2] ? `<p class="small" style="margin:6px 0 0">${esc(note[2])}</p>` : ''}`; }
+    }
+    TG.chapter('#tg-deb', 3600, render, { scrub: 0.5 });
+  })();
+
+  /* ---------- the Annotations of 1645: every chapter of the Bible, shaded by the length of its notes ---------- */
+  (function annotations() {
+    const A = D.annot, svg = document.querySelector('#tg-annbox svg'), NS = 'http://www.w3.org/2000/svg', card = document.getElementById('tg-ann-card'), tip = document.querySelector('#tg-annbox .tip');
+    const mk = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const key in at) e.setAttribute(key, at[key]); parent.appendChild(e); return e; };
+    document.getElementById('tg-annot').href = TG.read(A.slug);
+    const PER = 40, CS = 12, STEP = 14, TOP = 18, GAPY = 34, W = PER * STEP;
+    const nz = A.books.flatMap((b) => b[2].map((c) => c[0])).filter((w) => w > 0).sort((a, b) => a - b);
+    const rank = (w) => { let lo = 0, hi = nz.length; while (lo < hi) { const m = (lo + hi) >> 1; if (nz[m] < w) lo = m + 1; else hi = m; } return lo / (nz.length - 1); };
+    const shade = (w) => (w ? 0.1 + 0.9 * rank(w) : 0);
+    const isAdv = (b, ch) => A.adv.some(([n, c]) => n === b && c === ch);
+    const cells = []; let col = 0, row = 0, y0 = TOP;
+    const lab = (t, y) => { const e = mk('text', { x: 0, y: y - 6, class: 'tlab' }); e.textContent = t; };
+    lab('Old Testament', TOP);
+    A.books.forEach(([name, p0, chs], bi) => {
+      if (bi === 39) { y0 = TOP + (row + (col ? 1 : 0)) * STEP + GAPY; row = 0; col = 0; lab('New Testament', y0); }
+      chs.forEach(([w, pg], ci) => {
+        const x = col * STEP, y = y0 + row * STEP, adv = isAdv(name, ci + 1);
+        const r = mk('rect', { x, y, width: CS, height: CS, rx: 1.5, class: 'cell', tabindex: -1,
+          fill: w ? TG.css('--ink-2') : 'none', 'fill-opacity': shade(w), stroke: w ? 'none' : TG.css('--muted'), 'stroke-dasharray': w ? '' : '2 2', 'stroke-width': 1 });
+        if (ci === 0 && col) mk('line', { x1: x - 1, x2: x - 1, y1: y - 1.5, y2: y + CS + 1.5, stroke: TG.css('--ink'), 'stroke-width': 1.2, opacity: 0.5 });
+        cells.push({ r, bi, ci, w, pg, adv, x, y });
+        col += 1; if (col === PER) { col = 0; row += 1; }
+      });
+    });
+    const KY = y0 + (row + (col ? 1 : 0)) * STEP + 16, H = KY + 22;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const key = mk('g', { class: 'tlab' });
+    [0.1, 0.32, 0.55, 0.78, 1].forEach((s, i) => mk('rect', { x: 74 + i * STEP, y: KY, width: CS, height: CS, rx: 1.5, fill: TG.css('--ink-2'), 'fill-opacity': s }, key));
+    const k1 = mk('text', { x: 0, y: KY + 10, class: 'tlab' }, key); k1.textContent = 'Shorter';
+    const k2 = mk('text', { x: 74 + 5 * STEP + 6, y: KY + 10, class: 'tlab' }, key); k2.textContent = 'Longer notes';
+    mk('rect', { x: 290, y: KY, width: CS, height: CS, rx: 1.5, fill: 'none', stroke: TG.css('--muted'), 'stroke-dasharray': '2 2' }, key);
+    const k3 = mk('text', { x: 290 + STEP + 6, y: KY + 10, class: 'tlab' }, key); k3.textContent = 'No notes of its own';
+    const SHORT = { Philippians: 'Phil.', '1 Timothy': '1 Tim.', Hebrews: 'Heb.' };
+    const placed = []; // a label that would touch the one before it on the same row goes under its square
+    const rings = cells.filter((c) => c.adv).map((c) => {
+      const below = placed.some((q) => q.y === c.y && Math.abs(q.x - c.x) < 54); placed.push(c);
+      const g = mk('g', { opacity: 0 }); mk('rect', { x: c.x - 2.5, y: c.y - 2.5, width: CS + 5, height: CS + 5, rx: 3, fill: 'none', stroke: TG.css('--rubric'), 'stroke-width': 2 }, g);
+      const l = mk('text', { x: c.x + CS / 2, y: below ? c.y + CS + 14 : c.y - 6, 'text-anchor': 'middle', class: 'alab' }, g); l.textContent = `${SHORT[A.books[c.bi][0]]} ${c.ci + 1}`; return g;
+    });
+    const bookWords = A.books.map((b) => b[2].reduce((t, c) => t + c[0], 0));
+    const longest = (bi) => A.books[bi][2].reduce((m, c, i, a) => (c[0] > a[m][0] ? i : m), 0) + 1;
+    const testament = (bi) => (bi < 39 ? 'Old Testament' : 'New Testament');
+    function showBook(bi) {
+      const [name, p0, chs] = A.books[bi];
+      card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">${testament(bi)} · book ${bi + 1} of 66</p><h3><a href="${TG.read(A.slug, p0)}" target="_blank" rel="noopener">${esc(name)}</a></h3>
+        <p class="small" style="margin:6px 0 0">${chs.length} ${chs.length === 1 ? 'chapter' : 'chapters'} and ${fmt(bookWords[bi])} words of notes. The longest notes are on chapter ${longest(bi)}.</p>`;
+    }
+    function showAdv() {
+      const s = D.debate.tim517, inNov = s.filter((x) => x[0] >= '1643-11-01' && x[0] <= '1643-12-31'), first = s[0];
+      card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">An advertisement before the notes</p><h3>Philippians 1:1, 1 Timothy 3:1 and 5:17, Hebrews 6:2</h3>
+        <p class="small" style="margin:6px 0 0">One annotator’s notes on these places seemed to defend bishops. The others left his notes as they stood and answered them in <a href="${TG.read(A.slug, A.adv_page)}" target="_blank" rel="noopener">an advertisement at the front of the book</a>. The Assembly argued over the same verse. The minutes cite 1 Timothy 5:17 in ${s.length} sessions. The debate on ruling elders in November and December 1643 accounts for ${inNov.length} of them. The first is <a href="${TG.read(first[2], first[3])}" target="_blank" rel="noopener">${esc(first[1])}</a>.</p>`;
+    }
+    const wrap = document.getElementById('tg-annbox');
+    let hover = -1, lastK = 0;
+    const paint = () => cells.forEach((c, i) => { c.r.style.opacity = (0.12 + 0.88 * clamp(lastK - i, 0, 1)) * (hover < 0 || c.bi === hover ? 1 : 0.35); });
+    const dim = () => paint();
+    svg.addEventListener('mousemove', (e) => {
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse());
+      const c = cells.find((o) => q.x >= o.x - 1 && q.x <= o.x + STEP - 1 && q.y >= o.y - 1 && q.y <= o.y + STEP - 1);
+      if (!c) { tip.hidden = true; if (hover >= 0) { hover = -1; dim(); } return; }
+      const name = A.books[c.bi][0], b = wrap.getBoundingClientRect();
+      tip.innerHTML = `${esc(name)} ${c.ci + 1}<small>${c.w ? `${fmt(c.w)} words of notes · choose it to read them` : 'No notes of its own. The notes on chapter 43 end with a discussion of the whole vision.'}</small>`;
+      tip.hidden = false; tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 240)}px`; tip.style.top = `${e.clientY - b.top + 14}px`;
+      if (hover !== c.bi) { hover = c.bi; dim(); showBook(c.bi); }
+    });
+    svg.addEventListener('mouseleave', () => { tip.hidden = true; hover = -1; dim(); });
+    svg.addEventListener('click', (e) => {
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse());
+      const c = cells.find((o) => q.x >= o.x - 1 && q.x <= o.x + STEP - 1 && q.y >= o.y - 1 && q.y <= o.y + STEP - 1);
+      if (c) window.open(TG.read(A.slug, c.w ? c.pg : A.books[c.bi][2][42][1]), '_blank', 'noopener');
+    });
+    let shownBook = -2;
+    function render(p, fin) {
+      const n = cells.length, k = fin ? n : clamp(p / 0.86, 0, 1) * n;
+      lastK = k; paint();
+      const adv = fin ? 1 : clamp((p - 0.88) / 0.08, 0, 1);
+      rings.forEach((r) => r.setAttribute('opacity', adv));
+      if (hover >= 0) return;
+      if (adv > 0.5) { if (shownBook !== -1) { shownBook = -1; showAdv(); } return; }
+      const {bi} = cells[Math.min(n - 1, Math.max(0, Math.floor(k) - 1))];
+      if (bi !== shownBook) { shownBook = bi; showBook(bi); }
+    }
+    TG.chapter('#tg-ann', 4000, render, { scrub: 0.5 });
+  })();
+
   /* ---------- the Assembly's own texts ---------- */
   (function texts() {
     const docs = D.docs.map(([s, t, y]) => `<a href="${TG.read(s)}" target="_blank" rel="noopener"><b>${esc(t)}</b><small>${y} · in the Confessions</small></a>`);
