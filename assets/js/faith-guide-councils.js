@@ -4,6 +4,7 @@
   const ROOT = document.querySelector('[data-guide-root]') || document.querySelector('.tg-cou');
   const load = (n) => { const el = document.getElementById(`tg-${n}`); return el ? Promise.resolve(JSON.parse(el.textContent)) : fetch(ROOT.dataset[n]).then((r) => r.json()); };
   const IDX = await load('data');
+  if (window.TG && TG.linkify && IDX.lk) TG.linkify(ROOT, IDX.lk); // every person and work it names opens its room
   const D = { generated: IDX.generated, tomes: IDX.tomes, people: IDX.people, ecumenical: IDX.ecumenical, sites: IDX.sites,
     councils: IDX.councils.map((c) => [c.t, c.v, c.p, c.y]), site_councils: IDX.councils.filter((c) => c.pl && IDX.sites[c.pl]).map((c) => [c.y, c.pl]) };
   const LANDGEO = await load('land');
@@ -87,11 +88,12 @@
   const lis = [...chron.children];
   const mapbox = document.getElementById('mapbox'), svg = d3.select('#land'), sc = document.getElementById('sites'), sctx = sc.getContext('2d');
   const land = { type: 'Feature', geometry: LANDGEO };
-  let proj, MW, MH;
+  let proj, MW, MH, RS = 1; // RS: circles scale with the map, so a phone's narrow map is not covered by them
+  if (window.TG && TG.small && TG.small()) TG.declutter(sctx);
   const sites = Object.entries(D.sites).map(([k, [lat, lon]]) => ({ k, lat, lon, ys: D.site_councils.filter(([, s]) => s === k).map(([y]) => y).sort((a, b) => a - b) }));
   const LABEL = new Set(['CONSTANTINOPLE', 'ROME', 'TOLEDO', 'PARIS', 'LONDON', 'REIMS', 'ANTIOCH', 'CARTHAGE', 'MAINZ', 'TRENT', 'CONSTANCE', 'FLORENCE', 'EPHESUS', 'LYONS', 'MILAN', 'JERUSALEM', 'CANTERBURY', 'COLOGNE']);
   const title = (k) => k.toLowerCase().replace(/(^|[\s-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
-  function mapSetup() { MW = mapbox.clientWidth; MH = mapbox.clientHeight; const dpr = devicePixelRatio || 1; sc.width = MW * dpr; sc.height = MH * dpr; sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  function mapSetup() { MW = mapbox.clientWidth; MH = mapbox.clientHeight; RS = Math.min(1, MW / 640); const dpr = devicePixelRatio || 1; sc.width = MW * dpr; sc.height = MH * dpr; sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     proj = d3.geoConicConformal().parallels([35, 55]).rotate([-14, 0]).fitExtent([[10, 10], [MW - 10, MH - 10]], { type: 'MultiPoint', coordinates: [[-10, 33], [42, 33], [-10, 58], [42, 58], [35, 31]] });
     svg.attr('viewBox', `0 0 ${MW} ${MH}`).selectAll('*').remove();
     svg.append('path').datum(land).attr('d', d3.geoPath(proj)).attr('fill', css('--land')).attr('stroke', css('--coast')).attr('stroke-width', 0.8);
@@ -101,10 +103,10 @@
     curYear = year; const rub = css('--rubric'), ink = css('--ink'), gilt = css('--gilt'), muted = css('--muted');
     sctx.clearRect(0, 0, MW, MH); let shown = 0, total = 0;
     for (const s of sites) { let n = 0, recent = 0; for (const y of s.ys) { if (y <= year) { n++; if (year - y < 40) recent++; } }
-      total += n; if (!n) continue; shown++; const r = 2 + Math.sqrt(n) * 1.7;
-      if (recent) { sctx.globalAlpha = 0.18; sctx.fillStyle = rub; sctx.beginPath(); sctx.arc(s.x, s.y, r + 6 + recent, 0, 6.28); sctx.fill(); }
+      total += n; if (!n) continue; shown++; const r = (2 + Math.sqrt(n) * 1.7) * RS;
+      if (recent) { sctx.globalAlpha = 0.18; sctx.fillStyle = rub; sctx.beginPath(); sctx.arc(s.x, s.y, r + (6 + recent) * RS, 0, 6.28); sctx.fill(); }
       sctx.globalAlpha = recent ? 0.95 : 0.55; sctx.fillStyle = recent ? rub : ink; sctx.beginPath(); sctx.arc(s.x, s.y, r, 0, 6.28); sctx.fill();
-      if (LABEL.has(s.k) && (n >= 3 || recent)) { sctx.globalAlpha = 0.9; sctx.fillStyle = ink; sctx.font = `11.5px ${css('--body')}`; sctx.fillText(title(s.k), s.x + r + 3, s.y + 4); } }
+      if (LABEL.has(s.k) && (n >= 3 || recent)) { sctx.globalAlpha = 0.9; sctx.fillStyle = ink; sctx.font = `${RS < 1 ? 10.5 : 11.5}px ${css('--body')}`; sctx.fillText(title(s.k), s.x + r + 3, s.y + 4); } }
     sctx.globalAlpha = 1;
     document.getElementById('year').textContent = Math.round(year);
     document.getElementById('yearbar').style.width = `${(year - 50) / (1902 - 50) * 100}%`;

@@ -205,6 +205,10 @@
 @media (max-width: 520px) { .tg .kw-card.has-por { grid-template-columns: 64px minmax(0, 1fr); column-gap: 12px; } .tg .kw-card .kw-por { width: 64px; height: 80px; } }
 
 
+/* a person or a work the copy names, linked to its room */
+.tg a.tg-ln, .tg-cou a.tg-ln { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.tg a.tg-ln:hover, .tg a.tg-ln:focus-visible, .tg-cou a.tg-ln:hover, .tg-cou a.tg-ln:focus-visible { color: var(--rubric); text-decoration-color: currentColor; }
+
 
 /* On MereO: the guide sits in the theme's main, under the masthead and the TFR rail */
 .tfr-guide-page { background: #f6f1e7; }

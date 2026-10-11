@@ -39,8 +39,44 @@ window.TG = (() => {
   TG.load = (name) => {
     const el = document.getElementById(`tg-${name}`);
     const got = el ? Promise.resolve(JSON.parse(el.textContent)) : fetch(root.dataset[name]).then((r) => r.json());
-    if (name === 'data') got.then((D) => { if (D && D.keys) setTimeout(() => TG.keynames(D), 0); if (D && D.keyworks) setTimeout(() => TG.keyworks(D), 0); });
+    if (name === 'data') got.then((D) => { if (D && D.keys) setTimeout(() => TG.keynames(D), 0); if (D && D.keyworks) setTimeout(() => TG.keyworks(D), 0); if (D && D.lk) TG.linkify(root, D.lk); });
     return got;
+  };
+  // every person and work a guide names opens its room (owner 10-11: "can we open everything mentioned in the guides?"): the first
+  // mention of each in a paragraph, in the page's copy and in every caption and card the scenes write (D.lk, built by common/links.py)
+  TG.linkify = (scope, L) => {
+    if (!scope || TG.linked || !L || !L.length) return;
+    TG.linked = true;
+    let re;
+    const to = new Map(L.map(([p, k, t, n]) => [p, k === 'a' ? TG.author(t) : TG.read(t, n || 0)]));
+    try { re = new RegExp(`(?<![\\p{L}\\p{N}])(${[...to.keys()].map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![\\p{L}\\p{N}])`, 'gu'); } catch (e) { return; }
+    const SKIP = 'a,button,select,option,label,textarea,input,script,style,svg,canvas,h1,h2,.eyebrow,.tip,nav,#explore,[data-nolink]';
+    const run = (el) => {
+      if (!el || !el.isConnected || el.closest(SKIP)) return;
+      const nodes = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      for (let n = w.nextNode(); n; n = w.nextNode()) { re.lastIndex = 0; if (re.test(n.nodeValue) && n.parentElement && !n.parentElement.closest(SKIP)) nodes.push(n); }
+      nodes.forEach((node) => {
+        if (!node.isConnected) return;
+        const blk = node.parentElement.closest('p,li,dd,td,figcaption,h3,h4,div') || node.parentElement;
+        const done = new Set([...blk.querySelectorAll('a.tg-ln')].map((a) => a.textContent));
+        const s = node.nodeValue, frag = document.createDocumentFragment(); let last = 0, any = false, m;
+        re.lastIndex = 0;
+        while ((m = re.exec(s))) {
+          if (done.has(m[1])) continue;
+          done.add(m[1]); any = true;
+          frag.append(s.slice(last, m.index));
+          const a = document.createElement('a'); a.className = 'tg-ln'; a.href = to.get(m[1]); a.target = '_blank'; a.rel = 'noopener'; a.textContent = m[1];
+          frag.append(a); last = m.index + m[1].length;
+        }
+        if (any) { frag.append(s.slice(last)); node.replaceWith(frag); }
+      });
+    };
+    run(scope);
+    let todo = new Set(), raf = 0;
+    new MutationObserver((ms) => {
+      ms.forEach((mu) => { const t = mu.target.nodeType === 3 ? mu.target.parentElement : mu.target; if (t) todo.add(t); });
+      if (!raf) raf = requestAnimationFrame(() => { raf = 0; const els = [...todo]; todo = new Set(); els.forEach(run); });
+    }).observe(scope, { childList: true, subtree: true, characterData: true });
   };
   TG.yr = (a) => (a.y0 && a.y1 ? (a.y0 === a.y1 ? `${a.y0}` : `${a.y0}–${a.y1}`) : a.d || '');
   // count a number up when it scrolls into view
@@ -79,7 +115,7 @@ window.TG = (() => {
     const svg = d3.select(box.querySelector('svg')); let proj, W, H;
     const fit = () => {
       W = box.clientWidth; H = box.clientHeight;
-      const [[x0, y0], [x1, y1]] = extent;
+      const [[x0, y0], [x1, y1]] = TG.small() && opts.phone ? opts.phone : extent;
       proj = d3.geoConicConformal().parallels(opts.parallels || [38, 56]).rotate([-(x0 + x1) / 2, 0])
         .fitExtent([[6, 6], [W - 6, H - 6]], { type: 'MultiPoint', coordinates: [[x0, y0], [x1, y0], [x0, y1], [x1, y1], [(x0 + x1) / 2, y1 + 1.5]] });
       svg.attr('viewBox', `0 0 ${W} ${H}`).selectAll('*').remove();
@@ -91,9 +127,45 @@ window.TG = (() => {
     };
     const M = { fit, xy: (lonlat) => proj([lonlat[1], lonlat[0]]) };
     fit(); let t; new ResizeObserver(() => { clearTimeout(t); t = setTimeout(() => { if (Math.abs(box.clientWidth - W) > 2 || Math.abs(box.clientHeight - H) > 2) fit(); }, 120); }).observe(box);
+    if (TG.small()) { // the SVG labels a scene sets over its map: the larger first, then in the order drawn; a label that covers a kept one is hidden
+      let raf = 0;
+      const thin = () => {
+        raf = 0; const kept = [];
+        [...box.querySelectorAll('svg text')].map((e, i) => ({ e, i, f: parseFloat(getComputedStyle(e).fontSize) || 10 })).sort((a, b) => b.f - a.f || a.i - b.i).forEach(({ e }) => {
+          e.style.visibility = ''; const r = e.getBoundingClientRect();
+          if (!r.width) return;
+          if (kept.some((o) => o.left < r.right - 1 && r.left < o.right - 1 && o.top < r.bottom - 1 && r.top < o.bottom - 1)) e.style.visibility = 'hidden'; else kept.push(r);
+        });
+      };
+      new MutationObserver(() => { if (!raf) raf = requestAnimationFrame(thin); }).observe(box, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['x', 'y', 'transform'] });
+    }
     return M;
   };
-  TG.canvas = (cv) => { const c = { cv, ctx: cv.getContext('2d') }; c.size = () => { const d = devicePixelRatio || 1; c.W = cv.clientWidth; c.H = cv.clientHeight; cv.width = c.W * d; cv.height = c.H * d; c.ctx.setTransform(d, 0, 0, d, 0, 0); }; c.size(); return c; };
+  TG.canvas = (cv) => { const c = { cv, ctx: cv.getContext('2d') }; c.size = () => { const d = devicePixelRatio || 1; c.W = cv.clientWidth; c.H = cv.clientHeight; cv.width = c.W * d; cv.height = c.H * d; c.ctx.setTransform(d, 0, 0, d, 0, 0); }; c.size(); if (TG.small()) TG.declutter(c.ctx); return c; };
+  // phones (owner 10-11: "geography on mobile pls fix"): a map shrinks to the width of the screen, so its labels would sit on one
+  // another; a label that would cover one already drawn in the same frame is left out (its halo and its text count as one label)
+  TG.small = () => innerWidth <= 860;
+  TG.declutter = (ctx) => {
+    const placed = [], clear = ctx.clearRect.bind(ctx), fill = ctx.fillText.bind(ctx), stroke = ctx.strokeText.bind(ctx);
+    const boxOf = (s, x, y) => {
+      const m = ctx.measureText(s), w = m.width, up = m.actualBoundingBoxAscent || 9, dn = m.actualBoundingBoxDescent || 3, al = ctx.textAlign, bl = ctx.textBaseline;
+      const x0 = al === 'center' ? x - w / 2 : (al === 'right' || al === 'end') ? x - w : x;
+      const y0 = bl === 'top' || bl === 'hanging' ? y : bl === 'middle' ? y - (up + dn) / 2 : bl === 'bottom' || bl === 'ideographic' ? y - up - dn : y - up;
+      const T = ctx.getTransform(), p = (px, py) => [T.a * px + T.c * py + T.e, T.b * px + T.d * py + T.f];
+      const q = [p(x0, y0), p(x0 + w, y0), p(x0, y0 + up + dn), p(x0 + w, y0 + up + dn)];
+      return { k: `${s}|${Math.round(x)}|${Math.round(y)}`, x0: Math.min(...q.map((v) => v[0])) - 2, x1: Math.max(...q.map((v) => v[0])) + 2, y0: Math.min(...q.map((v) => v[1])) - 1, y1: Math.max(...q.map((v) => v[1])) + 1 };
+    };
+    const ok = (s, x, y) => {
+      if (!s || String(s).length < 3) return true;
+      const b = boxOf(String(s), x, y), same = placed.find((o) => o.k === b.k);
+      if (same) return true;
+      if (placed.some((o) => o.x0 < b.x1 && b.x0 < o.x1 && o.y0 < b.y1 && b.y0 < o.y1)) return false;
+      placed.push(b); return true;
+    };
+    ctx.clearRect = (...a) => { placed.length = 0; clear(...a); };
+    ctx.fillText = (s, x, y, ...r) => { if (ok(s, x, y)) fill(s, x, y, ...r); };
+    ctx.strokeText = (s, x, y, ...r) => { if (ok(s, x, y)) stroke(s, x, y, ...r); };
+  };
 
   /* ---------- the finder every guide ends with (owner 10-10: "the previous dropdown selection tools … add that same capability elsewhere"):
      one search over authors and titles, the family chips, and two ways in, each a tab (owner 10-10: "get rid of By title filtering"):

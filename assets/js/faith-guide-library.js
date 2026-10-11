@@ -5,7 +5,7 @@
   const ORD = (n) => n + (['th', 'st', 'nd', 'rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)]);
   const WORD = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'twentieth'];
   const SH = [
-    { k: 'councils', c: '--rubric', name: 'The Councils', eyebrow: `Mansi · ${D.councils.vols} volumes`, desc: 'Every council and synod from the apostles at Jerusalem to the First Vatican Council and the Eastern synods after it.', unit: ['council', 'councils'] },
+    { k: 'councils', c: '--rubric', name: 'The Councils', eyebrow: `Mansi · ${D.councils.vols} volumes`, desc: 'Mansi’s collection, a shelf of its own. It runs from the councils of the early Church to those of the Roman Catholic Church and the First Vatican Council.', unit: ['council', 'councils'] },
     { k: 'greek', c: '--gilt', name: 'The Greek Fathers', eyebrow: `Patrologia Graeca · ${D.greek.vols} volumes`, desc: 'The Greek Fathers and the Byzantine writers after them. The Greek is printed with Latin beside it.', unit: ['writer', 'writers'] },
     { k: 'latin', c: '--ink-2', name: 'The Latin Fathers', eyebrow: `Patrologia Latina · ${D.latin.vols} volumes`, desc: 'The Latin Fathers and the medieval writers after them. The shelf runs from Tertullian to Innocent III.', unit: ['writer', 'writers'] },
     { k: 'eastern', c: '--f5', name: 'The Eastern Fathers', eyebrow: `Patrologia Orientalis · ${fmt(D.eastern.works)} works`, desc: 'The churches of the East in Syriac, Arabic, Coptic, Ge’ez, Armenian and Georgian. English stands beside each text.', unit: ['writer', 'writers'] },

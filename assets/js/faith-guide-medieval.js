@@ -77,7 +77,7 @@
 
   /* ---------- 1. the masters on the road ---------- */
   (function road() {
-    const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[-9, 37.2], [29.5, 56.5]], { parallels: [38, 56] });
+    const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[-9, 37.2], [29.5, 56.5]], { parallels: [38, 56], phone: [[-4.5, 39.5], [18, 53.5]] });
     const cv = TG.canvas(box.querySelector('canvas')), {ctx} = cv, P = D.places;
     const SCH = new Set(D.schools.map((x) => x[0]));
     const J = D.journeys.map((j) => { const pts = j.s.map(([p, y]) => ({ p, y, ll: P[p] })), born = pts.length > 2 && !SCH.has(pts[0].p);

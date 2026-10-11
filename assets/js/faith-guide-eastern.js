@@ -155,7 +155,7 @@
 
   /* ---------- 3. the churches of the East: the writers at the places their records name, century by century, beside the chronicle ---------- */
   (function east() {
-    const box = document.getElementById('tg-map'), M = TG.map(box, D.land, [[9, 9.5], [70, 46]], { parallels: [15, 40] });
+    const box = document.getElementById('tg-map'), M = TG.map(box, D.land, [[9, 9.5], [70, 46]], { parallels: [15, 40], phone: [[24, 24], [52, 43]] });
     const cv = TG.canvas(box.querySelector('canvas')), { ctx } = cv, P = D.places;
     const q = D.biruni, quote = document.getElementById('tg-quote');
     quote.innerHTML = `<p class="src sc sc-ar" lang="ar" dir="rtl">${esc(q.src)}</p><p class="en">“${esc(q.en)}”</p>

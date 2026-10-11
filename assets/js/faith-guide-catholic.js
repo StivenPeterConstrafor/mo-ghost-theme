@@ -55,7 +55,7 @@
       mode = m; const L = layout(m); host.style.height = `${L.height}px`; els.forEach((el) => { el.style.width = `${L.bw}px`; });
       document.querySelectorAll('.tg-cat .seg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.mode === m ? 'true' : 'false'));
       cap.textContent = m === 'date' ? 'Every book on the shelf in the order its author was born. A taller spine means more pages. Hover over a spine to see it. Open it to read.'
-        : 'The same books grouped by school with the oldest first. The long runs are the great sets: Mansi’s councils, the Salamanca course and Suárez’s works.';
+        : 'The same books grouped by school with the oldest first. The long runs are the great sets: the Salamanca course and Suárez’s works.';
       if (how === 'flip' && G) {
         els.forEach((el, i) => gsap.to(el, { x: L.pos[i].x, y: L.pos[i].y, duration: 1.15, ease: 'power3.inOut', delay: (B[i][4] * 0.05) + (i % 40) * 0.002 }));
       } else els.forEach((el, i) => { if (window.gsap) gsap.set(el, { x: L.pos[i].x, y: L.pos[i].y, opacity: 1 }); else el.style.transform = `translate(${L.pos[i].x}px,${L.pos[i].y}px)`; });
@@ -161,7 +161,7 @@
 
   /* ---------- 2. the colleges on the map ---------- */
   (function road() {
-    const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[-10, 36.6], [25.6, 55.4]], { parallels: [38, 54] });
+    const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[-10, 36.6], [25.6, 55.4]], { parallels: [38, 54], phone: [[-9.5, 37], [18, 53.5]] });
     const cv = TG.canvas(box.querySelector('canvas')), {ctx} = cv, P = D.places;
     const SCH = new Set(D.schools.map((s) => s[0]));
     const J = D.journeys.map((j) => { const pts = j.s.map(([p, yy]) => ({ p, y: yy, ll: P[p] })), born = pts.length > 2 && !SCH.has(pts[0].p); return { ...j, pts, from: born ? pts[1].y - 4 : pts[0].y }; });
@@ -258,7 +258,7 @@
     document.getElementById('tg-onshelf').innerHTML = `
       <div class="card reveal"><h3>The acts of the council</h3><div class="spines">${sp(T.acts, '')}</div><p class="small" style="margin:0">${T.acts.length} volumes and ${fmt(pages(T.acts))} pages of the council’s diaries, acts, letters and treatises.</p></div>
       <div class="card reveal"><h3>Two histories and the councils entire</h3><div class="spines">${sp(T.sarpi, 's')}<span style="width:10px"></span>${sp(T.pallavicino, 'p')}</div>
-        <p class="small" style="margin:0">Paolo Sarpi’s history of 1619 is hostile to the papacy. The Jesuit Pietro Sforza Pallavicino answered it in 1656–1657. Mansi’s collection of all the councils is on this shelf too. It runs to ${T.mansi.n} volumes and ${fmt(T.mansi.pages)} pages. <a href="${D.councils_guide}" target="_blank" rel="noopener">See the Councils guide</a>.</p></div>`;
+        <p class="small" style="margin:0">Paolo Sarpi’s history of 1619 is hostile to the papacy. The Jesuit Pietro Sforza Pallavicino answered it in 1656–1657. Mansi’s collection of the councils is a shelf of its own. It runs from the councils of the early Church to those of the Roman Catholic Church, in ${T.mansi.n} volumes and ${fmt(T.mansi.pages)} pages. <a href="${D.councils_guide}" target="_blank" rel="noopener">See the Councils guide</a>.</p></div>`;
   })();
 
   /* ---------- 4. the Thomists: the Summa, treatise by treatise, one row to a commentary ---------- */
