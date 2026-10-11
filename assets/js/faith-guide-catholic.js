@@ -342,7 +342,7 @@
     const radaP = R.reduce((s, r) => s + r.pp, 0), picks = R.filter((r) => r.pick);
     const mastriP = M.reduce((s, v) => s + v.pages, 0), busiest = M.slice().sort((a, b) => b.hits.length - a.hits.length)[0];
     const STEPS = [
-      ['Thomas against Scotus', `Each block is one of Rada’s ${R.length} controversies, its width its pages (${fmt(radaP)} in all), in the order of the four books of the Sentences.`],
+      ['Thomas against Scotus', `Each block is one of Rada’s ${R.length} controversies. Its width is its pages (${fmt(radaP)} in all). The blocks follow the order of the four books of the Sentences.`],
       ['Where they parted', `${['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][picks.length] || picks.length} of the questions, numbered on the bar and given in Rada’s own headings. Each block opens its controversy.`],
       ['Scotist against Scotist', `Bartolomeo Mastri and John Punch, both Franciscans, wrote rival courses on Scotus. Each mark is a page of Mastri’s eight volumes that names Punch: ${fmt(X.mastri_pages)} pages.`],
       ['Punch replies', `Punch’s Philosophy names Mastri ${fmt(P.mentions)} times. In its second edition he set replies to Mastri after the questions they concerned.`],
@@ -603,7 +603,7 @@
       yEl.textContent = done ? `${items[0].y}–${X.books[X.books.length - 1].y}` : Math.floor(year);
       const key = done ? 'f' : last ? items.indexOf(last) : -1; if (key === lastKey) return; lastKey = key;
       if (done) { const n = (s) => X.books.filter((b) => b.side === s).length;
-        nowEl.innerHTML = `${X.books.length} books on grace on this shelf: ${n('moves')} for grace efficacious of itself, ${n('consent')} for the Jesuit answer, and Erath’s attempt to reconcile the two.`; return; }
+        nowEl.innerHTML = `${X.books.length} books on grace are on this shelf. ${n('moves')} argue for grace efficacious of itself and ${n('consent')} for the Jesuit answer. Erath tried to reconcile the two.`; return; }
       nowEl.innerHTML = last ? last.say : 'Before the quarrel: the decrees of Trent on justification, 1547.';
     }
     els.forEach((el) => { el.style.transition = 'opacity 0.35s ease, transform 0.35s ease'; });
@@ -631,7 +631,7 @@
     const quotes = (k) => `<ul>${by(k).map((w) => `<li><a href="${TG.read(w.slug, w.p)}" target="_blank" rel="noopener">${esc(w.n)}</a>, ${esc(w.w)}: ${q(w)}</li>`).join('')}</ul>`;
     const dated = X.writers.filter((w) => w.y0).slice().sort((a, b) => a.y0 - b.y0), first = dated[0], last = dated.reduce((m, w) => ((w.y1 || 0) > (m.y1 || 0) ? w : m), dated[0]);
     const words = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen', 'Twenty'];
-    const final = `<p>${words[X.writers.length] || X.writers.length} writers, from ${esc(first.n)} to ${esc(last.n)}, each linked to the page where the question is treated. Trent bounds one end: the works of the justified truly merit, and the reward is rendered according to God’s promise. Pius V bounds the other: no good work merits eternal life by its own nature.</p>`;
+    const final = `<p>${words[X.writers.length] || X.writers.length} writers run from ${esc(first.n)} to ${esc(last.n)}. Each is linked to the page where the question is treated. Trent bounds one end: the works of the justified truly merit. Their reward is rendered according to God’s promise. Pius V bounds the other: no good work merits eternal life by its own nature.</p>`;
     let lastKey = '';
     function render(p, fin) {
       const k = fin ? 99 : p * (ST.length + 2.2), done = fin || k >= ST.length + 1.4;
@@ -641,7 +641,7 @@
       cards.forEach((c) => c.classList.toggle('on', done || k >= ST.length + 0.6));
       const cur = done ? 'f' : k < 1 ? 'a' : Math.min(ST.length - 1, Math.floor(k) - 1); if (cur === lastKey) return; lastKey = cur;
       if (cur === 'f') { hEl.textContent = 'Merit on this shelf'; nowEl.innerHTML = final; return; }
-      if (cur === 'a') { hEl.textContent = 'Merit'; nowEl.innerHTML = `<p>Thomas asks in the Summa, <a href="${TG.read('aq-st-i-ii-18', 239)}" target="_blank" rel="noopener">I-II q. 114</a>, whether a man in grace can merit eternal life <i>de condigno</i>.</p>`; return; }
+      if (cur === 'a') { hEl.textContent = 'Merit'; nowEl.innerHTML = `<p>In the Summa (<a href="${TG.read('aq-st-i-ii-18', 239)}" target="_blank" rel="noopener">I-II q. 114</a>) Thomas asks whether a man in grace can merit eternal life <i>de condigno</i>.</p>`; return; }
       hEl.textContent = `${cur + 1} · ${ST[cur][1]}`; nowEl.innerHTML = quotes(ST[cur][0]) + (ST[cur][0] === 'self' && X.bull ? `<p class="small" style="margin:6px 0 0">In the same disputation Vásquez takes up the objection from Pius V’s bull: <a href="${TG.read(X.bull[0], X.bull[1])}" target="_blank" rel="noopener">chapter 13</a>.</p>` : '');
     }
     // hover or focus a writer: his words in the card

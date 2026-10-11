@@ -52,7 +52,7 @@
     });
     const mid = mk('text', { x: 0, y: 6, class: 'mid' }, gL), mids = mk('text', { x: 0, y: 22, class: 'mids' }, gL);
     const done = () => { mid.textContent = fmt(D.n_works); mid.style.fontSize = ''; mids.textContent = 'works'; };
-    const def = 'Each tile is a work, in the petal of the language it is printed in; the earliest tomes sit nearest the center, and darker tiles are longer works.';
+    const def = 'Each tile is a work in the petal of the language it is printed in. The earliest tomes sit nearest the center. Darker tiles are longer works.';
     svg.addEventListener('mouseleave', () => { cap.textContent = def; }); cap.textContent = def;
     if (!G) { done(); return; }
     // the series is shelved tome by tome: the rose grows outward from the Syriaca of 1894 to the tomes of the 1990s
@@ -197,7 +197,7 @@
       const alive = D.authors.filter((a) => a.y0 <= Y && (a.y1 || a.y0) >= Y && !council(a)).slice(0, 8);
       const sig = Y >= Y1 - 1 ? 'end' : alive.map((a) => a.n).join('|');
       if (sig !== lastRib) { lastRib = sig;
-        rib.innerHTML = sig === 'end' ? `<span>${A.length} writers at ${nPl} places; for ${nPers - A.length} more the record names no place, or one beyond this map</span>`
+        rib.innerHTML = sig === 'end' ? `<span>${A.length} writers at ${nPl} places. For ${nPers - A.length} more the record names no place or one beyond this map.</span>`
           : alive.length ? alive.map((a) => `<span role="button" tabindex="0" data-n="${esc(a.n)}" style="cursor:pointer"><i style="background:${fc(a.f)}"></i>${esc(a.n)}</span>`).join('') : '<span class="small" style="border:0;background:none">No writer on the shelf alive in this year</span>';
         rib.querySelectorAll('[data-n]').forEach((s) => { const go = () => TG._open && TG._open(s.dataset.n); s.addEventListener('click', go); s.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); }); }); }
     }
@@ -296,7 +296,7 @@
       L.forEach((w, ci) => { const [n, pp] = drawn[ci], { c } = w; w.sub.textContent = `${n} of ${c.n} volumes`; w.sub2.textContent = n ? `${fmt(pp)} pages` : ''; });
       const cur = all[Math.min(all.length - 1, Math.max(0, Math.floor(k)))], first = all[0].v, lastV = all[all.length - 1].v;
       const html = end || k >= all.length ? `<b>${all.length} volumes, from ${esc(first.c)} to ${esc(lastV.c)}</b>${C3.map((c) => `${esc(c.name)}: ${c.n} volumes, ${fmt(c.p)} pages`).join('<br>')}`
-        : k < 0.02 ? '<b>The months of each year</b>Each volume is drawn over the months it covers, in the order the series printed them.'
+        : k < 0.02 ? '<b>The months of each year</b>Each volume is drawn over the months it covers. The volumes appear in the order the series printed them.'
           : `<b>${esc(cur.v.c)}${cur.v.y ? ` · ${cur.v.y}` : /^\d+$/.test(cur.v.k) && Number(cur.v.k) <= 22 ? ' · 1904–1930' : ''}</b>${esc(cur.c.name)}: ${esc(cur.v.t.replace(/^.*?:\s*/, ''))}, ${fmt(cur.v.p)} pages`;
       if (html !== lastNow) { lastNow = html; nowEl.innerHTML = html; }
     }

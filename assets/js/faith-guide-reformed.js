@@ -290,13 +290,13 @@
     const ranks = [...new Set(per)].sort((a, b) => b - a), named = (n) => per.map((v, i) => [v, i]).filter(([v]) => v === n).map(([, i]) => B.books[i][1]);
     const list = (xs) => xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
     const GROUPS = [
-      { t: 'The first teachers', f: (r) => r.y0 < 1505, p: 'Oecolampadius at Basel, Capito and Bucer at Strasbourg, Musculus at Bern, Bullinger at Zurich: lectures and commentaries, one book at a time.' },
+      { t: 'The first teachers', f: (r) => r.y0 < 1505, p: 'Oecolampadius taught at Basel and Bullinger at Zurich. Capito and Bucer taught at Strasbourg and Musculus at Bern. They lectured and wrote commentaries one book at a time.' },
       { t: 'Calvin at Geneva', f: (r) => r === calvin, p: (() => { const all = Object.keys(calvin.by).map(Number), hom = all.filter((i) => calvin.by[i].every((c) => c[4] === 'h'));
         return `Commentaries and lectures on ${all.length - hom.length} of the sixty-six books${hom.length ? `, and sermons on ${list(hom.map((i) => B.books[i][1]))}` : ''}. Not among them on the shelf: ${list(runs(B.books.map((_, i) => i).filter((i) => !calvin.by[i])))}.`; })() },
-      { t: 'Zurich pulpits, Heidelberg chairs', f: (r) => r.y0 >= 1510 && r.y0 < 1540, p: 'Gwalther and Lavater preached through whole books at Zurich; their homilies are drawn open. Zanchi and Olevian taught at Heidelberg.' },
-      { t: 'Herborn and Leiden', f: (r) => r.y0 >= 1540 && r.y0 < 1580, p: `Piscator of Herborn set out all ${pis.nb === NB ? 'sixty-six books' : `${pis.nb} books`} of both Testaments in logical analysis. Pareus lectured on Romans at Heidelberg; Junius, Arminius and Gomarus taught at Leiden.` },
-      { t: 'The learned century', f: (r) => r.y0 >= 1580, p: `Grotius annotated ${gro.nb === 27 ? 'the whole New Testament' : `${gro.nb} books`}; Cartwright gathered the rabbis on Genesis and Exodus; Daillé preached on Philippians at Charenton; Cocceius expounded Hebrews.` },
-      { t: 'The books they opened most', f: () => false, p: `${list(named(ranks[0]))}, by ${say(ranks[0])} of the ${rows.length} writers; then ${list(named(ranks[1]))}, by ${say(ranks[1])}.` }];
+      { t: 'Zurich pulpits, Heidelberg chairs', f: (r) => r.y0 >= 1510 && r.y0 < 1540, p: 'Gwalther and Lavater preached through whole books at Zurich. Their homilies are drawn open. Zanchi and Olevian taught at Heidelberg.' },
+      { t: 'Herborn and Leiden', f: (r) => r.y0 >= 1540 && r.y0 < 1580, p: `Piscator of Herborn set out all ${pis.nb === NB ? 'sixty-six books' : `${pis.nb} books`} of both Testaments in logical analysis. Pareus lectured on Romans at Heidelberg. Junius, Arminius and Gomarus taught at Leiden.` },
+      { t: 'The learned century', f: (r) => r.y0 >= 1580, p: `Grotius annotated ${gro.nb === 27 ? 'the whole New Testament' : `${gro.nb} books`}. Cartwright gathered the rabbis on Genesis and Exodus. Daillé preached on Philippians at Charenton. Cocceius expounded Hebrews.` },
+      { t: 'The books they opened most', f: () => false, p: `${list(named(ranks[0]))} drew the most writers: ${say(ranks[0])} of the ${rows.length}. Next ${named(ranks[1]).length === 1 ? 'comes' : 'come'} ${list(named(ranks[1]))} with ${say(ranks[1])}.` }];
     steps.innerHTML = GROUPS.map((g) => `<li><b>${esc(g.t)}</b><p>${esc(g.p)}</p></li>`).join('');
     const sl = [...steps.children];
     document.getElementById('tg-bib-legend').innerHTML = `${D.fam.filter(([k]) => rows.some((r) => r.f === k)).map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('')

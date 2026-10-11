@@ -284,10 +284,10 @@
     const fnote = (f) => `<p><b style="color:${FC[f.k]}">${esc(f.n)}</b>: ${fmt(f.total)} claims on the shelf. The names most often answered: ${f.top.slice(0, 4).map(([l]) => esc(l)).join(', ')}. The largest shares: ${leaders(f.k)}.${f.k === 'rom' ? ` Rome is the first adversary of ${nw(nRome)} of these ${nw(N)} writers.` : ''}</p>`;
     const cal = Rw.find((a) => a.n === 'Abraham Calov');
     const NOTES = [
-      `<p>Where a claim in these pages answers someone, the library’s reading names the opponent. ${fmt(F0.sorted)} of the ${fmt(F0.all)} claims that name one fall on six adversaries; each bar is that adversary’s share of one writer’s answers.</p>`,
+      `<p>Where a claim in these pages answers someone, the library’s reading names the opponent. ${fmt(F0.sorted)} of the ${fmt(F0.all)} claims that name one fall on six adversaries. Each bar is that adversary’s share of one writer’s answers.</p>`,
       ...F.map(fnote),
       `<p>Rome is the first adversary for ${nw(nRome)} of the ${nw(N)} writers. ${others.length ? `${andList(others.map((a) => esc(a.n)))} answer the ${others.every((a) => firstOf(a) === 'soc') ? 'Socinians' : 'others'} first${cal ? `; Calov gives ${pct(cal.c.soc, cal.s)}% of his answers to the Socinians and ${pct(cal.c.arm, cal.s)}% to Grotius and the Remonstrants, against ${pct(cal.c.rom, cal.s)}% to Rome` : ''}.` : ''}</p>`];
-    document.getElementById('tg-fkey').innerHTML = `${F.map((f) => `<span><i style="background:${FC[f.k]}"></i>${esc(f.n)}</span>`).join('')}<span class="small" style="flex-basis:100%">The opponents were labeled by machine reading, so the shares are approximate. Sorting the labels into six adversaries is this guide’s own work. A label naming two goes to the more particular, in this order: Socinians, Grotius and the Remonstrants, Anabaptists and enthusiasts, quarrels among Lutherans, the Reformed, Rome. Left out: ${esc(andList(F0.dropped))}, with under 1,000 sorted claims each. The Constance volumes Hermann von der Hardt collected are left out too, because they are the acts of the council.</span>`;
+    document.getElementById('tg-fkey').innerHTML = `${F.map((f) => `<span><i style="background:${FC[f.k]}"></i>${esc(f.n)}</span>`).join('')}<span class="small" style="flex-basis:100%">The opponents were labeled by machine reading. The shares are approximate. Sorting the labels into six adversaries is this guide’s own work. A label naming two goes to the more particular. From the most particular down, the order is the Socinians, Grotius and the Remonstrants, Anabaptists and enthusiasts, quarrels among Lutherans, the Reformed, and Rome. Left out: ${esc(andList(F0.dropped))}, with under 1,000 sorted claims each. The Constance volumes Hermann von der Hardt collected are left out too, because they are the acts of the council.</span>`;
     let rows = [], cols = [];
     function build() {
       const ph = phone(); svg.innerHTML = ''; rows = []; cols = [];
@@ -402,11 +402,11 @@
     const newIn = (i) => R.filter((_, j) => first[j] === i), goneAfter = (i) => R.filter((r) => r.c[i] && !r.c.slice(i + 1).some(Boolean));
     const PICK = ['god', 'creation', 'pred', 'church', 'prayer', 'magis'], n2 = newIn(2), gone = goneAfter(1);
     const NOTES = [
-      `<p>Melanchthon came to Wittenberg in 1518 to teach Greek. His first outline of the <i>Loci</i>, which he never published, has ${nw(nl[0])} heads in ${tot[0]} pages: ${andList(R.filter((r) => r.c[0]).map((r) => lc(r.en)))}.</p>`,
+      `<p>Melanchthon came to Wittenberg in 1518 to teach Greek. He never published his first outline of the <i>Loci</i>. It has ${nw(nl[0])} heads in ${tot[0]} pages: ${andList(R.filter((r) => r.c[0]).map((r) => lc(r.en)))}.</p>`,
       `<p>The edition of 1521 has ${nl[1]} loci in ${tot[1]} pages, and still none on God. Its opening says why: ${link(L.slug, L.quote[0], `<i lang="la">${esc(L.quote[1])}</i>`)} We do better to adore the mysteries of the Godhead than to search them out.</p>`,
       `<p>From 1535 the book opens with God. ${nw(n2.length).replace(/^./, (c) => c.toUpperCase())} loci are new, among them ${andList(n2.filter((r) => PICK.includes(r.k)).map((r) => lc(r.en)))}. Gone from 1521: ${andList(gone.map((r) => lc(r.en)))}.</p>`,
-      `<p>The last form, printed at Leipzig in 1559, has ${nl[3]} loci in ${tot[3]} pages, with ${andList(newIn(3).map((r) => lc(r.en)))} at the end. Martin Chemnitz’s <i>Theological Topics</i>, on this shelf, are his lectures on this book.</p>`];
-    document.getElementById('tg-lkey').innerHTML = '<span><i style="background:var(--ink-2)"></i>a locus, as long as its pages in the <em>Corpus Reformatorum</em>, vol. 21</span><span><i style="background:var(--rubric);transform:rotate(45deg) scale(.7)"></i>its first appearance</span><span>Each bar opens its first page.</span>';
+      `<p>The last form was printed at Leipzig in 1559. It has ${nl[3]} loci in ${tot[3]} pages and ends with ${andList(newIn(3).map((r) => lc(r.en)))}. Martin Chemnitz’s <i>Theological Topics</i>, on this shelf, are his lectures on this book.</p>`];
+    document.getElementById('tg-lkey').innerHTML = '<span><i style="background:var(--ink-2)"></i>a locus as long as its pages in the <em>Corpus Reformatorum</em> (vol. 21)</span><span><i style="background:var(--rubric);transform:rotate(45deg) scale(.7)"></i>its first appearance</span><span>Each bar opens its first page.</span>';
     let cells = [], heads = [], labs = [];
     function build() {
       const ph = phone(), W = ph ? 400 : 1000, lw = ph ? 124 : 232, top = ph ? 44 : 58, rh = ph ? 16 : 17.2, gap = ph ? 7 : 16;
@@ -453,10 +453,10 @@
     const missing = V.reduce((s, v) => s + v.ch.filter((c) => !c).length, 0), v4 = V.find((v) => v.v === '4');
     const cname = (v) => `Century ${v.r}${v.sub ? `, ${v.sub}` : ''}`;
     const NOTES = [
-      `<p>The first volume, printed at Basel in ${Math.min(...yrs)}, promises the history of the Church ${link(Cc.title[0], Cc.title[1], '<i lang="la">secundum singulas Centurias</i>')}, a hundred years at a time. Its preface sets out the ${link(Cc.method[0], Cc.method[1], 'method')}: every century told under the same sixteen heads.</p>`,
-      `<p>${nw(V.length).replace(/^./, (c) => c.toUpperCase())} volumes on the shelf, printed from ${Math.min(...yrs)} to ${Math.max(...yrs)} by ${link(v4.slug, 1, '“certain studious and pious men in the city of Magdeburg”')}, Flacius at their head. Each square is a chapter; its area is the chapter’s pages.</p>`,
-      `<p>Doctrine is the longest chapter in ${nw(big.filter((b) => b === 3).length)} of the ${nw(V.length)} volumes; in ${cname(docMax)} it runs to ${docMax.ch[3][1]} pages. The lives of the bishops and doctors are longest in ${nw(big.filter((b) => b === 9).length)}.</p>`];
-    document.getElementById('tg-ckey').innerHTML = `<span><i style="background:var(--rubric)"></i>doctrine</span><span><i style="background:var(--ink-2)"></i>the other fifteen chapters</span><span><i style="background:transparent;border:1px solid var(--muted);border-radius:50%"></i>no heading found in the scan (${missing} in all); its pages count with the chapter before</span><span>Each square opens the chapter.</span>`;
+      `<p>The first volume was printed at Basel in ${Math.min(...yrs)}. It promises the history of the Church ${link(Cc.title[0], Cc.title[1], '<i lang="la">secundum singulas Centurias</i>')}, a hundred years at a time. Its preface sets out the ${link(Cc.method[0], Cc.method[1], 'method')}: every century is told under the same sixteen heads.</p>`,
+      `<p>${nw(V.length).replace(/^./, (c) => c.toUpperCase())} volumes are on the shelf. They were printed from ${Math.min(...yrs)} to ${Math.max(...yrs)} by ${link(v4.slug, 1, '“certain studious and pious men in the city of Magdeburg”')} with Flacius at their head. Each square is a chapter. Its area is the chapter’s pages.</p>`,
+      `<p>Doctrine is the longest chapter in ${nw(big.filter((b) => b === 3).length)} of the ${nw(V.length)} volumes. In ${cname(docMax)} it runs to ${docMax.ch[3][1]} pages. The lives of the bishops and doctors are longest in ${nw(big.filter((b) => b === 9).length)}.</p>`];
+    document.getElementById('tg-ckey').innerHTML = `<span><i style="background:var(--rubric)"></i>doctrine</span><span><i style="background:var(--ink-2)"></i>the other fifteen chapters</span><span><i style="background:transparent;border:1px solid var(--muted);border-radius:50%"></i>no heading found in the scan (${missing} in all). Its pages count with the chapter before.</span><span>Each square opens the chapter.</span>`;
     let sqs = [], heads = [], labs = [], frame = null;
     function build() {
       const ph = phone(), W = ph ? 400 : 1000, lw = ph ? 92 : 214, top = ph ? 30 : 50, rh = ph ? 22 : 29.5, bot = ph ? 4 : 22;
@@ -476,7 +476,7 @@
       sqs = [];
       V.forEach((v, ci) => v.ch.forEach((c, i) => { const cx = lw + ci * cw + cw / 2, cy = top + i * rh + rh / 2;
         if (!c) { const o = mk('circle', { cx, cy, r: ph ? 1.8 : 2.6, fill: 'none', stroke: TG.css('--muted'), 'stroke-width': 0.9, class: 'sq' }, svg);
-          tipOn(o, () => `${cname(v)}, chapter ${ROMAN[i]}: ${esc(Cc.chaps[i])}<small>No heading found in the scan; its pages count with the chapter before</small>`); sqs.push({ ci, i, el: o }); return; }
+          tipOn(o, () => `${cname(v)}, chapter ${ROMAN[i]}: ${esc(Cc.chaps[i])}<small>No heading found in the scan. Its pages count with the chapter before.</small>`); sqs.push({ ci, i, el: o }); return; }
         const s = Math.max(ph ? 2 : 2.5, s0 * Math.sqrt(c[1] / maxN)), a = mk('a', { href: TG.read(v.slug, c[0]), target: '_blank', rel: 'noopener', 'aria-label': `${cname(v)}, ${Cc.chaps[i]}: ${c[1]} pages` }, svg);
         const el = mk('rect', { x: cx - s / 2, y: cy - s / 2, width: s, height: s, rx: 1, fill: i === 3 ? TG.css('--rubric') : TG.css('--ink-2'), class: 'sq' }, a);
         const absorbed = []; for (let k = i + 1; k < 16 && !v.ch[k]; k++) absorbed.push(ROMAN[k]);
@@ -508,9 +508,9 @@
     const row = D.fronts.authors.find((a) => a.n === 'Abraham Calov'), dig = K.digression, v1 = V[0];
     const others = (r) => { const k = [...D.fronts.authors].sort((a, b) => a.c.rom / a.s - b.c.rom / b.s).indexOf(r); return k === 0 ? 'the smallest' : k === 1 ? 'the second smallest' : `the ${k + 1}th smallest`; };
     const NOTES = [
-      `<p>Calov held the chair at Wittenberg from 1650 to his death in 1686. His <i>System of Theological Topics</i> came out there in ${nw(V.length)} volumes, ${Math.min(...ys)} to ${Math.max(...ys)}: ${fmt(sysPages)} pages on the shelf. The first volume, ${fmt(v1.n)} pages, is prolegomena alone; the doctrine of God begins in the second.</p>`,
+      `<p>Calov held the chair at Wittenberg from 1650 to his death in 1686. His <i>System of Theological Topics</i> came out there in ${nw(V.length)} volumes, ${Math.min(...ys)} to ${Math.max(...ys)}: ${fmt(sysPages)} pages on the shelf. The first volume has ${fmt(v1.n)} pages of prolegomena alone. The doctrine of God begins in the second.</p>`,
       `<p>At page ${dig[1]} of that first volume Calov breaks off for a ${link(dig[0], dig[1], 'digression on the “new theology” of the syncretists of Helmstedt and Königsberg')}, the school of Georg Calixtus. In the <i>System</i>, ${fmt(sys.syn)} claims answer them.</p>`,
-      `<p>Each book has its adversary. <i>Socinianism Defeated</i> gives ${pct(soc.c.soc, sorted(soc))}% of its answers to the Socinians and the <i>Consideration of Arminianism</i> ${pct(arm.c.arm, sorted(arm))}% to the Remonstrants; in the Bible illustrated, ${fmt((bib.top.find(([l]) => l === 'Grotius') || [0, 0])[1])} claims answer Grotius by name.</p>`,
+      `<p>Each book has its adversary. <i>Socinianism Defeated</i> gives ${pct(soc.c.soc, sorted(soc))}% of its answers to the Socinians and the <i>Consideration of Arminianism</i> ${pct(arm.c.arm, sorted(arm))}% to the Remonstrants. In the Bible illustrated, ${fmt((bib.top.find(([l]) => l === 'Grotius') || [0, 0])[1])} claims answer Grotius by name.</p>`,
       `<p>Across his ${K.n_works} works on the shelf, ${fmt(row.c.soc)} claims answer the Socinians and ${fmt(row.c.rom)} answer Rome; Grotius and the Remonstrants have ${fmt(row.c.arm)}. Rome’s share of his answers, ${pct(row.c.rom, row.s)}%, is ${others(row)} on this shelf.</p>`];
     document.getElementById('tg-kkey').innerHTML = `${F.map((f) => `<span><i style="background:${FC[f.k]}"></i>${esc(f.n)}</span>`).join('')}`;
     document.getElementById('tg-klist').innerHTML = V.map((v) => `<li><b>${v.r}</b>${link(v.slug, v.p, esc(v.what))} <span class="small">${v.y || ''} · ${fmt(v.n)} pages</span></li>`).join('');

@@ -202,12 +202,12 @@
     const S = U.s.map((r) => (r.length === 3 ? (([y, f, slug, t, ai]) => [y, r[1], f, ai, slug, t, r[2]])(D.press[r[0]]) : r));
     const N = S.length, cnt = U.rows.map((_, k) => S.filter((r) => r[1] === k).length), named = N - cnt[PILE], pp = Sy.party, sp = Sy.span;
     const STEPS = [
-      ['Every printed sermon', `${fmt(N)} sermons on the shelf printed from ${Y0} to ${Y1}, each a dot in the year it came from the press, colored by its party. ${Math.round(100 * named / N)}% name on the title page where they were preached, or to whom.`],
+      ['Every printed sermon', `${fmt(N)} sermons on the shelf were printed from ${Y0} to ${Y1}. Each is a dot in the year it came from the press, colored by its party. ${Math.round(100 * named / N)}% name on the title page where they were preached or to whom.`],
       ['Paul’s Cross', `The open-air pulpit in the churchyard of St Paul’s, London. The shelf’s ${cnt[0]} sermons from it were printed between ${sp[0][0]} and ${sp[0][1]}.`],
-      ['Before Parliament', `${cnt[1]} sermons to the Commons or the Lords, ${Sy.parl_1640s} of them printed in the 1640s. ${Sy.parl_fast} name a day of fasting or humiliation, ${Sy.parl_thanks} a thanksgiving. ${pp[1][0]} are by Puritans.`],
-      ['At court', `${cnt[2]} sermons before the King or the Queen, at Whitehall and the royal chapels: ${Sy.court_1660} printed after 1660, ${Sy.court_1690s} in the 1690s alone. ${pp[2][1]} are by Anglicans.`],
+      ['Before Parliament', `${cnt[1]} sermons were preached to the Commons or the Lords. ${Sy.parl_1640s} of them were printed in the 1640s. ${Sy.parl_fast} name a day of fasting or humiliation and ${Sy.parl_thanks} a thanksgiving. ${pp[1][0]} are by Puritans.`],
+      ['At court', `${cnt[2]} sermons were preached before the King or the Queen at Whitehall and the royal chapels. ${Sy.court_1660} were printed after 1660 and ${Sy.court_1690s} in the 1690s alone. ${pp[2][1]} are by Anglicans.`],
       ['At a funeral', `${cnt[3]} sermons preached at a funeral, ${Sy.funeral_1650} of them printed after 1650.`],
-      ['The City of London', `${cnt[4]} sermons to the City. ${Sy.city_mayor} name the Lord Mayor or the aldermen, ${Sy.city_spital} the Spital sermons of Easter week, ${Sy.city_artillery} the Artillery Company.`],
+      ['The City of London', `${cnt[4]} sermons were preached to the City. ${Sy.city_mayor} name the Lord Mayor or the aldermen. ${Sy.city_spital} are Spital sermons of Easter week. ${Sy.city_artillery} were preached to the Artillery Company.`],
       ['Assizes and visitations', `${Sy.assize} sermons to the judges at the assizes, and ${Sy.visit} to the clergy at a bishop’s visitation.`],
       ['No occasion named', `${fmt(cnt[PILE])} name no single pulpit: sermons on a text, courses of sermons, and collections. The six rows above hold the other ${fmt(named)}.`]];
     const stepsEl = document.getElementById('tg-usteps'); stepsEl.innerHTML = STEPS.map(([b, t]) => `<li><b>${esc(b)}</b><p>${esc(t)}</p></li>`).join('');
@@ -217,7 +217,7 @@
     document.getElementById('tg-unote').textContent = `The pulpit is read from each title as it was first printed. ${fmt(out)} more sermons on the shelf carry no printed date or come after ${Y1}, and are not drawn.`;
     // the card: the sermon of the step, or the one chosen
     const showCard = (i, label) => {
-      if (i == null) { card.innerHTML = `<p class="k">How to read it</p><p class="ft">Each dot is one printed sermon. Point at one for its title; choose it to read the title as first printed and open the book.</p>`; return; }
+      if (i == null) { card.innerHTML = `<p class="k">How to read it</p><p class="ft">Each dot is one printed sermon. Point at one for its title. Choose it to read the title as first printed and open the book.</p>`; return; }
       const r = S[i], a = D.authors[r[3]];
       card.innerHTML = `<p class="k">${esc(label)}${r[6] ? ' · as first printed' : ''}</p><p class="ft">${esc(r[6] || r[5])}</p><p class="by"><i style="background:${fcI(r[2])}"></i>${r[0]}${a ? ` · ${esc(a.n)}` : ''} · <a href="${TG.read(r[4])}" target="_blank" rel="noopener">Read it</a></p>`;
     };
