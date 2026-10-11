@@ -1094,3 +1094,86 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
   }
   body:has(.sd-desk-page) .fr-survey-tab::after { content: "Feedback"; font-size: 12px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   PHONES AND TABLETS, MEASURED (corpus owner, 2026-10-11: "resize and
+   make everything good for mobile"). The live pages at 360, 390, 430
+   and 768 px with every panel, preview and reader frame open: nothing
+   overflowed, but on a phone the Desk set each commentary and each
+   most-cited work as a card half the screen wide (a title ran to four
+   lines, "16th c." broke in two), the kind chips ran off the right edge
+   (at 360 px "Alludes" was cut in half and "Expounds" could not be seen
+   at all), and the four translations were set at 14px. On phones and
+   touch tablets the Desk's Preview buttons were 32px tall, the chart
+   bars and kind chips 36px, the panel close 40px, the chart captions
+   18px and the two links under a preview 20px. Wide screens with a
+   mouse are unchanged.
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  /* One commentary, one most-cited work, per row: title and meta on the
+     left, Preview at the right, as the Scripture page's own list reads.
+     A row being previewed puts its passage under the whole row. */
+  .sd-commentary-panel .sd-panel-commentaries,
+  .sd-desk .sd-top { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .sd-commentary-panel .sd-panel-commentaries > .sd-source,
+  .sd-desk .sd-top > .sd-source { min-height: 0; padding: 10px 12px 10px 14px; }
+  .sd-commentary-panel .sd-source-head,
+  .sd-desk .sd-top .sd-source-head { flex-direction: row; flex-wrap: nowrap; align-items: center; height: auto; }
+  .sd-commentary-panel .sd-preview-btn,
+  .sd-desk .sd-top .sd-preview-btn { align-self: center; min-width: 64px; padding-left: 8px; text-align: right; }
+
+  /* The kinds wrap instead of running off the screen. */
+  .sd-kinds { flex-wrap: wrap; gap: 6px; overflow-x: visible; }
+  .sd-kinds .sd-filter-label { flex-basis: 100%; margin: 0 0 2px; }
+  .sd-kind,
+  .sd-kinds .sd-filter-label + .sd-kind,
+  .sd-kinds .sd-kind:last-of-type { margin-left: 0; border-radius: 3px; }
+
+  /* A chart's caption keeps one line with its chevron; the hint about
+     the bars goes under it rather than squeezing the caption into a
+     second column. */
+  .sd-chart > summary { flex-wrap: wrap; row-gap: 2px; letter-spacing: 0.16em; }
+  .sd-chart > summary > .sd-muted { order: 2; flex-basis: 100%; }
+
+  /* Reading text at reading size: the translations, and the bar's labels
+     at the size of every other label on these pages (screen.css sets
+     them at 9px). */
+  .sd-desk .sd-parallel dd { font-size: 16px; line-height: 1.5; }
+  .sd .bible-control-label { font-size: 11px; }
+  .sd-section-intro { font-size: 15px; }
+
+  /* A set's volume label may break like the title it follows; held on
+     one line it started a line of its own with its comma. */
+  .sd-source-vol { white-space: normal; }
+  .sd-expand-panel > header :is(h3, h4) { font-size: 21px; }
+  .sd-panel-close { margin-right: -8px; }
+
+  /* The reader under a preview: taller on a phone, where the panel's
+     own padding already narrows it. */
+  .sd-reader-frame { height: min(72vh, 640px); }
+}
+
+/* Taps: 44px on a phone, and on a touch screen of any width. */
+@media (max-width: 640px), (pointer: coarse) {
+  .sd-commentary-panel .sd-preview-btn,
+  .sd-desk .sd-top .sd-preview-btn,
+  .sd-citation-rows .sd-preview-btn { min-height: 44px; }
+  .sd-kind,
+  .sd-cbar,
+  .sd-desk .sd-companions .sd-panel-commentary { min-height: 44px; }
+  .sd-desk .sd-companions .sd-panel-commentary { justify-content: center; }
+  .sd-chart > summary { align-items: center; min-height: 44px; }
+  .sd-panel-close { width: 44px; height: 44px; flex-basis: 44px; }
+  .sd-desk-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0; }
+  .sd-preview-foot { align-items: center; gap: 0 18px; }
+  .sd-preview-foot .sd-keep-reading,
+  .sd-preview-foot .sd-read-link { display: inline-flex; align-items: center; min-height: 44px; }
+  .sd-desk .sd-desk-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0; }
+}
+
+/* The narrowest phones (400 px and under): the author and work index
+   stays two up, with a little less padding inside each card. */
+@media (max-width: 400px) {
+  .sd-index-card { padding: 11px 10px; }
+  .sd-expand-panel { padding: 0 12px 12px; }
+}
