@@ -5,7 +5,8 @@
   const transient=id=>/^(?:(?:fr|reader)[-_])*(?:find|search)(?:[-_]|$)|^__fr/i.test(text(id));
   const generatedHeading=id=>/^h\d+(?:-|$)/i.test(text(id));
   const sourceLocation=position=>typeof position?.sourcePath==='string'&&position.sourcePath.trim()?{sourcePath:position.sourcePath,...typeof position.sourceText==='string'?{sourceText:position.sourceText}:{},...typeof position.sourceKey==='string'&&position.sourceKey?{sourceKey:position.sourceKey}:{}}:{};
-  const bodySelector='.row[id],.en[id^="b"],.la[id^="b"],.pganchor[data-page]';
+  // .rowjoin: the address of a row the reader joined to the one before it, where a margin note had split its sentence (2026-10-11)
+  const bodySelector='.row[id],.en[id^="b"],.la[id^="b"],.pganchor[data-page],.rowjoin[id]';
   const excluded='.rapp,.appdiv,.mnote,.rowx,.footnotes,.appbank,.rv-edit,.furn';
   function canonicalNode(node,reading){
     if(!node)return null;
