@@ -589,6 +589,15 @@ html.railok #reading:has(.hasmn){padding-left:calc(8.5rem + 1rem);padding-right:
 .folio.titlepage .csub{text-align:center}
 .reading p{text-wrap:pretty}
 .row.rhead .csub,.reading h1,.reading h2,.reading h3{text-wrap:balance}
+.app p.pvers{border-left:2px solid var(--border);padding-left:.85rem;color:color-mix(in srgb,var(--fg) 86%,var(--muted))}
+.app .inhead.invers{text-align:left;font-family:inherit;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--muted);margin:.9em 0 .35em}
+.app p:not(.pvers)>.inhead.invers{border-left:2px solid var(--border);padding-left:.85rem;margin-bottom:0;padding-bottom:.35em}
+/* SECOND VERSIONS (owner 2026-10-11): a parallel translation Migne prints under its own heading (Billius in Irenaeus, the metrical
+   version of Gregory's poems ...) sits behind a hairline rule under a quiet caps label, in both lanes and every theme (tokens only) */
+.row.rvers .la,.row.rvers .en,.row.rhead.hvers .la,.row.rhead.hvers .en{border-left:2px solid var(--border);padding-left:.85rem}
+.row.rvers .la p,.row.rvers .en p{color:color-mix(in srgb,var(--fg) 86%,var(--muted))}
+.app .row.rhead.h2col.hvers .csub{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--muted);margin:1.15rem 0 .3rem}
+.app .row.rhead.h2col.hvers .csub .hen,.app .row.rhead.h2col.hvers .csub .hla{font-size:1em;font-weight:600;color:var(--muted)}
 /* reading measure cap for the PARALLEL view — on wide monitors unbounded lanes pass 90ch and
    reading comfort dies; cap the pair and center it (the only-en view already caps at 66ch) */
 .app.rflow:not(.only-en) #reading .row{max-width:126ch;margin-left:auto;margin-right:auto}
