@@ -252,7 +252,7 @@
       else if (latest && latest.s !== last) { last = latest.s; show(latest); }
     }
     TG.chapter('#tg-year', 3600, render, { scrub: 0.5 });
-    if (!TG.pinOK()) render(1, true);
+    if (!TG.plays()) render(1, true);
   })();
 
   /* ---------- explore ---------- */

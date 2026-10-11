@@ -209,6 +209,9 @@
 .tg a.tg-ln, .tg-cou a.tg-ln { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
 .tg a.tg-ln:hover, .tg a.tg-ln:focus-visible, .tg-cou a.tg-ln:hover, .tg-cou a.tg-ln:focus-visible { color: var(--rubric); text-decoration-color: currentColor; }
 
+.tg .tg-replay, .tg-cou .tg-replay { display: block; margin: 8px 0 0 auto; font: 0.8rem var(--body); color: var(--muted); background: var(--card); border: 1px solid var(--rule); border-radius: 3px; padding: 4px 10px; cursor: pointer; }
+.tg .tg-replay:hover, .tg-cou .tg-replay:hover { color: var(--rubric); border-color: var(--rubric); }
+
 
 /* On MereO: the guide sits in the theme's main, under the masthead and the TFR rail */
 .tfr-guide-page { background: #f6f1e7; }

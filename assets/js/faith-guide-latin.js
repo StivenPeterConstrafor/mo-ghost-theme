@@ -473,7 +473,7 @@ window.TGFinder = (host, D, C) => {
           gsap.to(page, { opacity: 0.1, scale: 0.96, duration: 0.8, ease: 'power2.inOut' });
         }
         if (!lib && prev >= 3) { gsap.to(rowsEl, { opacity: 0, duration: 0.3 }); gsap.to(page, { opacity: 1, scale: 1, duration: 0.5 }); }
-      } else if (TG.pinOK()) { rowsEl.style.opacity = lib ? 1 : 0; page.style.opacity = lib ? 0.1 : 1; }
+      } else if (TG.plays()) { rowsEl.style.opacity = lib ? 1 : 0; page.style.opacity = lib ? 0.1 : 1; }
     }
     const st = TG.chapter('#tg-col', 3000, (p, fin) => { if (fin) { lis.forEach((li) => li.classList.add('now')); ['227C', '228B', '228C'].forEach((k) => qb[k].classList.add('on')); letters.forEach((l) => l.classList.add('on')); return; } step(Math.min(STEPS.length - 1, Math.floor(p * STEPS.length)), false); }, { scrub: true });
     if (!st) rowsEl.style.opacity = 1;
