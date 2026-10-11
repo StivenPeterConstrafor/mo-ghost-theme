@@ -21,6 +21,23 @@
 .tg-pur #tg-press-pick .d { color: var(--rubric); font-weight: 600; font-variant-numeric: tabular-nums; }
 .tg-pur .glegend b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
 /* the chain */
+.tg-pur .bxbox { position: relative; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 10px 8px 6px; }
+.tg-pur .bxbox svg { display: block; width: 100%; height: auto; overflow: visible; }
+.tg-pur .bxbox .ax { font: 500 10.5px var(--body); fill: var(--muted); font-variant-numeric: tabular-nums; }
+.tg-pur .bxbox .grid { stroke: var(--rule); stroke-width: 1; }
+.tg-pur .bxbox .st { fill: var(--stone); } .tg-pur .bxbox .st.k { fill: #cbbfa8; } .tg-pur .bxbox .st.x { fill: var(--rubric); opacity: 0.75; } .tg-pur .bxbox .st.p { fill: url(#tg-bx-hatch); }
+.tg-pur .bxbox .stl { font: italic 11.5px var(--display); fill: var(--ink); }
+.tg-pur .bxbox .pen { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; }
+.tg-pur .bxbox .nib { fill: var(--rubric); }
+.tg-pur .bxbox .rule62 { stroke: var(--rubric); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.tg-pur .bxbox .r62 { font: italic 12px var(--display); fill: var(--rubric); }
+.tg-pur .bxbox .pin circle { fill: var(--card); stroke: var(--ink); stroke-width: 1.6; }
+.tg-pur .bxbox .pin line { stroke: var(--ink); stroke-width: 0.8; opacity: 0.5; }
+.tg-pur .bxbox .pin text { font: italic 12.5px var(--display); fill: var(--ink); }
+.tg-pur .bxbox .pin text tspan.y { font: 600 10px var(--body); fill: var(--muted); font-style: normal; letter-spacing: 0.04em; }
+.tg-pur .bxbox .pin a:hover text, .tg-pur .bxbox .pin a:focus text { fill: var(--rubric); }
+.tg-pur .bxbox .pin.now circle { fill: var(--rubric); stroke: var(--rubric); }
+.tg-pur .bx-note { margin: 6px 0 0; max-width: 60ch; }
 .tg-pur .chainbox { position: relative; }
 .tg-pur .chainbox svg { display: block; width: 100%; height: auto; overflow: visible; }
 .tg-pur .chainbox .lk { fill: none; stroke-width: 11; stroke-linecap: round; }
@@ -103,22 +120,36 @@
   </div>
 </div></section>
 
+<section class="scene gut" id="tg-lands" aria-labelledby="tg-h-lands"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">2 · Where they printed and preached</p>
+    <h2 id="tg-h-lands">Three countries</h2>
+    <p class="say">London printed most of the shelf. The godly also printed at the universities and in Scotland. Exiles printed in the Low Countries. Some of their ministers had gone to New England and printed there.</p>
+    <ol class="lands-key" id="tg-lands-key"></ol>
+  </div>
+  <div>
+    <div class="maps"><figure><div class="mapbox" id="tg-map"><svg aria-hidden="true"></svg><canvas aria-label="Map of England, Scotland and the Low Countries. It shows the presses that printed the shelf and the places its writers served."></canvas><div class="tip" hidden></div></div><figcaption>England, Scotland and the Low Countries</figcaption></figure>
+      <figure><div class="mapbox" id="tg-map-ne"><svg aria-hidden="true"></svg><canvas aria-label="Map of New England: its presses and churches"></canvas><div class="tip" hidden></div></div><figcaption>New England (three thousand miles west)</figcaption></figure></div>
+    <p class="legend" style="margin-top:8px"><span><i style="background:var(--g1);border-radius:50%"></i>a press sized by the editions it printed here</span><span><i style="background:transparent;border:1.5px solid var(--ink);transform:rotate(45deg);border-radius:1px"></i>a place the writers’ records name</span></p>
+  </div>
+</div></section>
+
 <section class="scene gut" id="tg-chain" aria-labelledby="tg-h-chain"><div class="wrap scene-grid">
   <div>
-    <p class="eyebrow">2 · The brotherhood</p>
+    <p class="eyebrow">3 · The brotherhood</p>
     <h2 id="tg-h-chain">A chain of preachers</h2>
-    <p class="say">Perkins drew the order of salvation as <a id="tg-golden" target="_blank" rel="noopener">A Golden Chain</a>. His hearers made a chain of another kind. By the accounts of the time, each of these five was brought to faith by the preaching of the one before.</p>
+    <p class="say">Perkins drew the order of salvation as <a id="tg-golden" target="_blank" rel="noopener">A Golden Chain</a>. His hearers made a chain of another kind. By the accounts of the time, each of these five was brought to faith by the preaching of the one before. By his own account, a sixth was brought to faith by a book.</p>
     <ol class="steps" id="tg-chain-steps"></ol>
   </div>
   <div>
-    <div class="chainbox"><svg viewBox="0 0 860 210" role="img" aria-label="Five preachers as the links of a chain from Perkins to Preston"></svg></div>
+    <div class="chainbox"><svg viewBox="0 0 860 362" role="img" aria-label="Five preachers as the links of a chain from Perkins to Preston. Baxter hangs from Sibbes as a sixth link, joined by a book."></svg></div>
     <div class="card link-card" id="tg-link-card" aria-live="polite"></div>
   </div>
 </div></section>
 
 <section class="scene gut" id="tg-sermon" aria-labelledby="tg-h-sermon"><div class="wrap scene-grid">
   <div>
-    <p class="eyebrow">3 · The method</p>
+    <p class="eyebrow">4 · The method</p>
     <h2 id="tg-h-sermon">The plain style</h2>
     <p class="say">Perkins gave the preachers their method in <a id="tg-arte" target="_blank" rel="noopener">The Arte of Prophecying</a>. He set out “the sum of the sacred and only method” in four rules:</p>
     <ol class="rules" id="tg-rules"></ol>
@@ -128,24 +159,25 @@
   <div class="sermon"><div class="stack" id="tg-stack" aria-hidden="true"></div><div class="parts" id="tg-parts"></div></div>
 </div></section>
 
-<section class="scene gut" id="tg-lands" aria-labelledby="tg-h-lands"><div class="wrap scene-grid">
+<section class="scene gut" id="tg-baxter" aria-labelledby="tg-h-baxter"><div class="wrap scene-grid">
   <div>
-    <p class="eyebrow">4 · Where they printed and preached</p>
-    <h2 id="tg-h-lands">Three countries</h2>
-    <p class="say">London printed most of the shelf. The godly also printed at the universities, in Scotland, in exile in the Low Countries, and in New England. Some of their ministers had gone to New England.</p>
-    <ol class="lands-key" id="tg-lands-key"></ol>
+    <p class="eyebrow">5 · The pen</p>
+    <h2 id="tg-h-baxter">Richard Baxter</h2>
+    <p class="say" id="tg-bx-say"></p>
+    <ol class="steps" id="tg-bx-steps"></ol>
   </div>
   <div>
-    <div class="maps"><figure><div class="mapbox" id="tg-map"><svg aria-hidden="true"></svg><canvas aria-label="Map of England, Scotland and the Low Countries: the presses that printed the shelf and the places its writers served"></canvas><div class="tip" hidden></div></div><figcaption>England, Scotland and the Low Countries</figcaption></figure>
-      <figure><div class="mapbox" id="tg-map-ne"><svg aria-hidden="true"></svg><canvas aria-label="Map of New England: its presses and churches"></canvas><div class="tip" hidden></div></div><figcaption>New England (three thousand miles west)</figcaption></figure></div>
-    <p class="legend" style="margin-top:8px"><span><i style="background:var(--g1);border-radius:50%"></i>a press sized by the editions it printed here</span><span><i style="background:transparent;border:1.5px solid var(--ink);transform:rotate(45deg);border-radius:1px"></i>a place the writers’ records name</span></p>
+    <div class="bxbox" id="tg-bx"><svg role="img" aria-labelledby="tg-bx-title"><title id="tg-bx-title">Richard Baxter’s editions on this shelf. The pages are added up year by year from 1650 to 1697 in four kinds. The stations of his life run above.</title></svg></div>
+    <div class="pressnow"><span class="big num" id="tg-bx-n">0</span><span class="small" id="tg-bx-cap">pages printed</span></div>
+    <p class="glegend" id="tg-bx-legend"></p>
+    <p class="small bx-note" id="tg-bx-note"></p>
   </div>
 </div></section>
 
 <section class="tool gut" id="explore" aria-labelledby="tg-h-ex"><div class="wrap">
   <p class="eyebrow">Find</p>
-  <h2 id="tg-h-ex">Every writer on the shelf</h2>
-  <p class="say" style="max-width:46rem">The writers are grouped by generation from the Elizabethans to the last of the Puritans. Search the shelf or browse it by author, century or title. Where a record gives no clear dates, a writer is placed by the years his books were printed. The card says so.</p>
+  <h2 id="tg-h-ex">The authors</h2>
+  <p class="say" style="max-width:46rem">The writers are grouped by generation from the Elizabethans to the last of the Puritans. Where a record gives no clear dates, a writer is placed by the years his books were printed. The card says so.</p>
   <div id="tg-explorer"></div>
-  <div class="next"><a href="/the-faith-received/all-works/?tradition=English%20Divines">Browse the shelf in All Works</a><a id="tg-pur-room">The Puritans in the library</a><a href="/the-faith-received/ask/?trad=English%20Divines">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=english">The English Divines</a><a href="/the-faith-received/guide/?s=westminster">The Westminster Assembly</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=methodists">The Methodists</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
+  <div class="next"><a href="/the-faith-received/all-works/?tradition=English%20Divines">Browse the shelf in All Works</a><a id="tg-pur-room">The Puritans in the library</a><a href="/the-faith-received/ask/?trad=English%20Divines">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=english">The English Divines</a><a href="/the-faith-received/guide/?s=westminster">The Westminster Assembly</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=methodists">The Methodists</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a><a href="/the-faith-received/guide/?s=eastern">The Eastern Fathers</a></div>
 </div></section>

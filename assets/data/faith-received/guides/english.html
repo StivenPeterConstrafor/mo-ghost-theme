@@ -1,5 +1,5 @@
 <style>
-/* The English Divines: a title page of the 1600s for the hero, the press year by year, the parties as shares, Britain, the old spelling */
+/* The English Divines: a title page of the 1600s for the hero, the press year by year, the parties as shares, Britain, the pulpits */
 .tg-eng { --f1: #2f4a6b; --f2: #a3382a; --f3: #5b6b3a; --f4: #a07c35; }
 .tg-eng .tp { position: relative; width: 100%; max-width: 440px; justify-self: center; }
 .tg-eng .tp svg { width: 100%; height: auto; display: block; overflow: visible; filter: drop-shadow(0 22px 30px rgba(70, 45, 20, 0.22)); }
@@ -35,26 +35,22 @@
 .tg-eng .mapbox.brit { aspect-ratio: 5 / 6; width: min(100%, calc(76vh * 5 / 6)); margin: 0 auto; }
 .tg-eng .abroad { font-size: 0.86rem; color: var(--muted); margin: 10px 0 0; }
 .tg-eng .abroad b { color: var(--ink); font-weight: 600; }
-.tg-eng .spell { background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: clamp(22px, 4vw, 44px); min-height: 22rem; display: grid; align-content: center; gap: 18px; position: relative; overflow: hidden; }
-.tg-eng .spell .meta { font: 600 0.74rem var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
-.tg-eng .spell .ti { font: italic 400 clamp(1.7rem, 3.6vw, 2.7rem)/1.2 var(--display); color: var(--ink); text-wrap: balance; }
-.tg-eng .spell .ti span { white-space: pre-wrap; display: inline; }
-.tg-eng .spell > * { min-width: 0; overflow-wrap: anywhere; }
-.tg-eng .spell .ti .del { color: var(--rubric); text-decoration: line-through; text-decoration-thickness: 1px; }
-.tg-eng .spell .ti .ins { color: var(--ink); text-decoration: underline; text-decoration-color: var(--rubric); text-underline-offset: 4px; }
-.tg-eng .spell .orig { font: italic 400 1.05rem var(--display); color: var(--muted); }
-.tg-eng .spell .orig b { font: 600 0.7rem var(--body); letter-spacing: 0.14em; text-transform: uppercase; font-style: normal; margin-right: 8px; }
-.tg-eng .spell .mod { font: 400 1rem var(--body); color: var(--muted); }
-.tg-eng .spell .mod a { color: var(--rubric); }
-.tg-eng .spell .dots { display: flex; gap: 6px; }
-.tg-eng .spell .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--rule); transition: background 0.3s; }
-.tg-eng .spell .dots i.on { background: var(--rubric); }
+.tg-eng .pulpit { position: relative; width: 100%; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; }
+.tg-eng .pulpit canvas { display: block; width: 100%; height: 100%; }
+.tg-eng .pulpit .tip { pointer-events: none; }
+.tg-eng #tg-usteps li p { font-size: 0.88rem; }
+.tg-eng .scard { margin-top: 14px; border-top: 1px solid var(--rule); padding-top: 12px; min-height: 8.6rem; }
+.tg-eng .scard .k { font: 600 0.7rem var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.tg-eng .scard .ft { font: italic 400 1.02rem/1.38 var(--display); color: var(--ink); margin: 6px 0 4px; text-wrap: pretty; overflow-wrap: anywhere; }
+.tg-eng .scard .by { font-size: 0.86rem; color: var(--muted); margin: 0; }
+.tg-eng .scard .by a { color: var(--rubric); }
+.tg-eng .scard .by i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
 @media (max-width: 860px) {
   .tg-eng .hero .wrap { grid-template-columns: minmax(0, 1fr); }   /* the shared mobile rule lost its hero selector (reported) */
   .tg-eng .tp { max-width: 360px; }
   .tg-eng .press { height: 360px; }
   .tg-eng .mapbox.brit { width: 100%; }
-  .tg-eng .spell { min-height: 0; }
+  .tg-eng .scard { min-height: 0; }
 }
 </style>
 
@@ -109,20 +105,24 @@
   <div class="mapbox brit" id="tg-bmap"><svg aria-hidden="true"></svg><canvas aria-label="Map of Britain and Ireland with the places where the shelf’s writers served. It fills as the years pass."></canvas></div>
 </div></section>
 
-<section class="scene gut" id="tg-spell" aria-labelledby="tg-h-spell"><div class="wrap scene-grid">
+<section class="scene gut" id="tg-pulpits" aria-labelledby="tg-h-pulpits"><div class="wrap scene-grid">
   <div>
-    <p class="eyebrow">4 · The first printings</p>
-    <h2 id="tg-h-spell">As they were first printed</h2>
-    <p class="say"><b class="num" id="tg-norig">880</b> titles on the shelf keep the spelling of their first printing beside the modern one: <i>chaine</i> for chain, <i>reede</i> for reed, <i>Praier</i> for prayer.</p>
-    <p class="small">Red letters are the old printer’s. Underlined letters are the modern title’s.</p>
+    <p class="eyebrow">4 · The pulpits</p>
+    <h2 id="tg-h-pulpits">Preached before</h2>
+    <ol class="steps" id="tg-usteps"></ol>
+    <div class="scard" id="tg-ucard" aria-live="polite"></div>
   </div>
-  <div class="spell" id="tg-spellbox" aria-live="polite"><p class="meta"></p><p class="ti"></p><p class="orig"></p><p class="mod"></p><p class="dots"></p></div>
+  <div>
+    <div class="pulpit" id="tg-ubox"><canvas aria-label="Every dated printed sermon on the shelf as a dot at the year it was printed, sorted into rows by the pulpit its title page names"></canvas><div class="tip" hidden></div></div>
+    <p class="legend" id="tg-ulegend" style="margin-top:8px"></p>
+    <p class="small" id="tg-unote" style="margin:4px 0 0"></p>
+  </div>
 </div></section>
 
 <section class="tool gut" id="explore" aria-labelledby="tg-h-ex"><div class="wrap">
   <p class="eyebrow">Find</p>
-  <h2 id="tg-h-ex">Every writer on the shelf</h2>
-  <p class="say" style="max-width:46rem">Search the shelf or browse it by writer, century or title. Writers whose records give no dates are placed by the years their books were printed. Their entries say so. A few have neither and sit apart.</p>
+  <h2 id="tg-h-ex">The authors</h2>
+  <p class="say" style="max-width:46rem">Writers whose records give no dates are placed by the years their books were printed. Their entries say so.</p>
   <div id="tg-explorer"></div>
-  <div class="next"><a href="/the-faith-received/all-works/?tradition=English%20Divines">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=English%20Divines">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=westminster">The Westminster Assembly</a><a href="/the-faith-received/guide/?s=puritans">The Puritans</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=methodists">The Methodists</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
+  <div class="next"><a href="/the-faith-received/all-works/?tradition=English%20Divines">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=English%20Divines">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=westminster">The Westminster Assembly</a><a href="/the-faith-received/guide/?s=puritans">The Puritans</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=methodists">The Methodists</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a><a href="/the-faith-received/guide/?s=eastern">The Eastern Fathers</a></div>
 </div></section>

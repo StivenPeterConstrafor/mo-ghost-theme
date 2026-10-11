@@ -4,6 +4,7 @@
   const ROOT = document.querySelector('[data-guide-root]') || document.querySelector('.tg-cou');
   const load = (n) => { const el = document.getElementById(`tg-${n}`); return el ? Promise.resolve(JSON.parse(el.textContent)) : fetch(ROOT.dataset[n]).then((r) => r.json()); };
   const IDX = await load('data');
+  if (window.TG && TG.linkify && IDX.lk) TG.linkify(ROOT, IDX.lk); // every person and work it names opens its room
   const D = { generated: IDX.generated, tomes: IDX.tomes, people: IDX.people, ecumenical: IDX.ecumenical, sites: IDX.sites,
     councils: IDX.councils.map((c) => [c.t, c.v, c.p, c.y]), site_councils: IDX.councils.filter((c) => c.pl && IDX.sites[c.pl]).map((c) => [c.y, c.pl]) };
   const LANDGEO = await load('land');
@@ -21,6 +22,7 @@
     .map(([b, s]) => `<li><b>${b}</b><span>${s}</span></li>`).join('');
   if (window.gsap && window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
   const canPin = !!(window.gsap && window.ScrollTrigger) && !reduce && innerWidth > 860;
+  const canPlay = !canPin && !!(window.TG && TG.autoplay && TG.plays && TG.plays()); // phones: no pin, but each scene plays when it comes into view
 
   // ---------- hero: the councils rain into a skyline (gilt on night) ----------
   (function rain() {
@@ -58,6 +60,7 @@
   }
   if (canPin) { spines.forEach((s) => { s.style.transition = 'opacity .35s, transform .35s'; });
     ScrollTrigger.create({ trigger: '#s-shelf', start: () => `top top+=${PIN()}`, end: '+=1600', pin: true, scrub: true, onUpdate: (st) => shelfAt(st.progress) }); shelfAt(0); }
+  else if (canPlay) { spines.forEach((s) => { s.style.transition = 'opacity .35s, transform .35s'; }); TG.autoplay(document.getElementById('s-shelf'), 1600, (p, fin) => shelfAt(fin ? 1 : p), { vis: shelf, dur: 4.5 }); }
   else shelfAt(1);
 
   // ---------- chapter two: the map and the chronicle ----------
@@ -87,11 +90,12 @@
   const lis = [...chron.children];
   const mapbox = document.getElementById('mapbox'), svg = d3.select('#land'), sc = document.getElementById('sites'), sctx = sc.getContext('2d');
   const land = { type: 'Feature', geometry: LANDGEO };
-  let proj, MW, MH;
+  let proj, MW, MH, RS = 1; // RS: circles scale with the map, so a phone's narrow map is not covered by them
+  if (window.TG && TG.small && TG.small()) TG.declutter(sctx);
   const sites = Object.entries(D.sites).map(([k, [lat, lon]]) => ({ k, lat, lon, ys: D.site_councils.filter(([, s]) => s === k).map(([y]) => y).sort((a, b) => a - b) }));
   const LABEL = new Set(['CONSTANTINOPLE', 'ROME', 'TOLEDO', 'PARIS', 'LONDON', 'REIMS', 'ANTIOCH', 'CARTHAGE', 'MAINZ', 'TRENT', 'CONSTANCE', 'FLORENCE', 'EPHESUS', 'LYONS', 'MILAN', 'JERUSALEM', 'CANTERBURY', 'COLOGNE']);
   const title = (k) => k.toLowerCase().replace(/(^|[\s-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
-  function mapSetup() { MW = mapbox.clientWidth; MH = mapbox.clientHeight; const dpr = devicePixelRatio || 1; sc.width = MW * dpr; sc.height = MH * dpr; sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  function mapSetup() { MW = mapbox.clientWidth; MH = mapbox.clientHeight; RS = Math.min(1, MW / 640); const dpr = devicePixelRatio || 1; sc.width = MW * dpr; sc.height = MH * dpr; sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     proj = d3.geoConicConformal().parallels([35, 55]).rotate([-14, 0]).fitExtent([[10, 10], [MW - 10, MH - 10]], { type: 'MultiPoint', coordinates: [[-10, 33], [42, 33], [-10, 58], [42, 58], [35, 31]] });
     svg.attr('viewBox', `0 0 ${MW} ${MH}`).selectAll('*').remove();
     svg.append('path').datum(land).attr('d', d3.geoPath(proj)).attr('fill', css('--land')).attr('stroke', css('--coast')).attr('stroke-width', 0.8);
@@ -101,10 +105,10 @@
     curYear = year; const rub = css('--rubric'), ink = css('--ink'), gilt = css('--gilt'), muted = css('--muted');
     sctx.clearRect(0, 0, MW, MH); let shown = 0, total = 0;
     for (const s of sites) { let n = 0, recent = 0; for (const y of s.ys) { if (y <= year) { n++; if (year - y < 40) recent++; } }
-      total += n; if (!n) continue; shown++; const r = 2 + Math.sqrt(n) * 1.7;
-      if (recent) { sctx.globalAlpha = 0.18; sctx.fillStyle = rub; sctx.beginPath(); sctx.arc(s.x, s.y, r + 6 + recent, 0, 6.28); sctx.fill(); }
+      total += n; if (!n) continue; shown++; const r = (2 + Math.sqrt(n) * 1.7) * RS;
+      if (recent) { sctx.globalAlpha = 0.18; sctx.fillStyle = rub; sctx.beginPath(); sctx.arc(s.x, s.y, r + (6 + recent) * RS, 0, 6.28); sctx.fill(); }
       sctx.globalAlpha = recent ? 0.95 : 0.55; sctx.fillStyle = recent ? rub : ink; sctx.beginPath(); sctx.arc(s.x, s.y, r, 0, 6.28); sctx.fill();
-      if (LABEL.has(s.k) && (n >= 3 || recent)) { sctx.globalAlpha = 0.9; sctx.fillStyle = ink; sctx.font = `11.5px ${css('--body')}`; sctx.fillText(title(s.k), s.x + r + 3, s.y + 4); } }
+      if (LABEL.has(s.k) && (n >= 3 || recent)) { sctx.globalAlpha = 0.9; sctx.fillStyle = ink; sctx.font = `${RS < 1 ? 10.5 : 11.5}px ${css('--body')}`; sctx.fillText(title(s.k), s.x + r + 3, s.y + 4); } }
     sctx.globalAlpha = 1;
     document.getElementById('year').textContent = Math.round(year);
     document.getElementById('yearbar').style.width = `${(year - 50) / (1902 - 50) * 100}%`;
@@ -117,7 +121,8 @@
   }
   mapSetup(); let mrt; new ResizeObserver(() => { clearTimeout(mrt); mrt = setTimeout(() => { mapSetup(); mapAt(curYear); }, 120); }).observe(mapbox);
   if (canPin) ScrollTrigger.create({ trigger: '#s-map', start: () => `top top+=${PIN()}`, end: '+=3600', pin: true, scrub: 0.5, onUpdate: (st) => mapAt(50 + st.progress * 1852) });
-  mapAt(canPin ? 50 : 1902);
+  if (canPlay) TG.autoplay(document.getElementById('s-map'), 3600, (p, fin) => mapAt(fin ? 1902 : 50 + p * 1852), { vis: mapbox, dur: 8 });
+  else mapAt(canPin ? 50 : 1902);
 
   // ---------- chapter three: the anatomy of a page ----------
   const STEPS = [
@@ -134,18 +139,41 @@
   const stepLis = [...stepsEl.children];
   function stepAt(i) { stepLis.forEach((li, j) => li.classList.toggle('now', j === i)); boxes.forEach((bs, j) => bs.forEach((b) => { if (window.gsap) gsap.to(b, { opacity: j === i ? 1 : 0, duration: reduce ? 0 : 0.35 }); else b.style.opacity = j === i ? 1 : 0; })); }
   if (canPin) ScrollTrigger.create({ trigger: '#s-page', start: () => `top top+=${PIN()}`, end: '+=2400', pin: true, scrub: true, onUpdate: (st) => stepAt(Math.min(STEPS.length - 1, Math.floor(st.progress * STEPS.length))) });
-  else { stepLis.forEach((li) => li.classList.add('now')); boxes.flat().forEach((b) => { b.style.opacity = 1; }); }
+  const allSteps = () => { stepLis.forEach((li) => li.classList.add('now')); boxes.flat().forEach((b) => { b.style.opacity = 1; }); };
+  if (!canPin && canPlay) TG.autoplay(document.getElementById('s-page'), 2400, (p, fin) => (fin ? allSteps() : stepAt(Math.min(STEPS.length - 1, Math.floor(p * STEPS.length)))), { vis: page, dur: 7 });
+  else if (!canPin) allSteps();
   if (canPin) stepAt(0);
 
   // ---------- people ----------
+  let pYear = 9999, pPlayed = false, pParts = null;
   function people() { const s = document.getElementById('people'), P = D.people.slice().sort((a, b) => a.y0 - b.y0), w = Math.max(640, s.parentElement.clientWidth), y0 = 420, y1 = 1560, sx = (y) => 8 + (y - y0) / (y1 - y0) * (w - 16), rows = [];
     const placed = P.map((p) => { const x0 = sx(p.y0), x1 = Math.max(sx(p.y1), x0 + 6), lw = p.name.length * 6.6 + 10, left = x0 > w - 150 ? x1 - lw : x0; let row = 0; while (rows[row] !== undefined && rows[row] > left - 4) row++; rows[row] = Math.max(x1, left + lw); return { p, x0, x1, row }; });
     const h = rows.length * 22 + 34, rub = css('--rubric'), ink = css('--ink'), muted = css('--muted'), rule = css('--rule'); s.setAttribute('viewBox', `0 0 ${w} ${h}`); s.setAttribute('width', w); s.setAttribute('height', h);
     let o = ''; for (let y = 500; y <= 1500; y += 100) { const x = sx(y); o += `<line x1="${x}" x2="${x}" y1="0" y2="${h - 22}" stroke="${rule}"/><text x="${x}" y="${h - 6}" fill="${muted}" font-size="11" text-anchor="middle">${y}</text>`; }
     for (const { p, x0, x1, row } of placed) { const y = row * 22 + 8, pope = /^Pope/.test(p.name), col = pope ? rub : ink, right = x0 > w - 150;
-      o += `<g><title>${esc(p.name)}: named in ${p.n} headings, ${p.y0}–${p.y1}</title><rect x="${x0}" y="${y}" width="${x1 - x0}" height="6" rx="3" fill="${col}" opacity="${pope ? 0.9 : 0.7}"/><text x="${right ? x1 : x0}" text-anchor="${right ? 'end' : 'start'}" y="${y + 17}" fill="${col}" font-size="11.5">${esc(p.name)}</text></g>`; }
-    s.innerHTML = o; }
+      o += `<g class="pp"><title>${esc(p.name)}: named in ${p.n} headings, ${p.y0}–${p.y1}</title><rect x="${x0}" y="${y}" width="${x1 - x0}" height="6" rx="3" fill="${col}" opacity="${pope ? 0.9 : 0.7}"/><text x="${right ? x1 : x0}" text-anchor="${right ? 'end' : 'start'}" y="${y + 17}" fill="${col}" font-size="11.5">${esc(p.name)}</text></g>`; }
+    o += `<g class="cursor" opacity="0"><line y1="0" y2="${h - 22}" stroke="${rub}" stroke-width="1.5"/><text y="${h - 28}" fill="${rub}" font-size="12.5" font-weight="600" text-anchor="start" stroke="${css('--paper') || '#f6f1e7'}" stroke-width="3" paint-order="stroke"></text></g>`;
+    s.innerHTML = o;
+    pParts = { gs: [...s.querySelectorAll('g.pp')], placed, sx, cur: s.querySelector('g.cursor') };
+    peopleAt(pYear); }
+  function peopleAt(Y) { // Y: the year the sweep has reached; past the end, every span stands whole
+    pYear = Y; if (!pParts) return; const { gs, placed, sx, cur } = pParts, end = Y >= 1560;
+    placed.forEach(({ p, x0, x1 }, i) => { const g = gs[i], r = g.firstElementChild.nextElementSibling, on = end || Y >= p.y0;
+      g.style.opacity = on ? 1 : 0; r.setAttribute('width', Math.max(0.5, end ? x1 - x0 : Math.min(x1, Math.max(x0, sx(Y))) - x0)); });
+    cur.setAttribute('opacity', end ? 0 : 1); const x = sx(Math.min(Y, 1560)); cur.firstElementChild.setAttribute('x1', x); cur.firstElementChild.setAttribute('x2', x);
+    cur.lastElementChild.setAttribute('x', x + 5); cur.lastElementChild.textContent = Math.round(Y); }
   people(); addEventListener('resize', () => people());
+  if (window.gsap && !reduce && 'IntersectionObserver' in window) {
+    const box = document.getElementById('people'), st = { y: 420 };
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tg-replay'; btn.textContent = 'Play again'; btn.hidden = true;
+    box.parentElement.insertAdjacentElement('afterend', btn);
+    const play = () => { btn.hidden = true; st.y = 420; peopleAt(420); gsap.to(st, { y: 1560, duration: 6, ease: 'none', onUpdate: () => peopleAt(st.y), onComplete() { peopleAt(9999); btn.hidden = false; } }); };
+    btn.addEventListener('click', play);
+    peopleAt(420);
+    const io = new IntersectionObserver((es) => { const e = es[es.length - 1], h = Math.min(e.boundingClientRect.height, innerHeight); // half of what the screen can show of it, by height
+      if (!pPlayed && h > 0 && e.intersectionRect.height / h >= 0.5) { pPlayed = true; io.disconnect(); play(); } }, { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] });
+    io.observe(box);
+  }
   const redraw = () => { people(); mapSetup(); mapAt(curYear); };
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
   new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });

@@ -33,6 +33,31 @@
 .tg-wes .chap li { padding: 3px 0; border-top: 1px solid var(--rule-2); }
 .tg-wes .chap li a { color: var(--ink); text-decoration: none; } .tg-wes .chap li a:hover { color: var(--rubric); text-decoration: underline; }
 .tg-wes .chap li small { color: var(--muted); margin-left: 6px; }
+/* the debates: one row a member, re-ranked month by month */
+.tg-wes .deb { position: relative; }
+.tg-wes .deb .row { position: absolute; left: 0; right: 0; top: 0; height: 22px; display: grid; grid-template-columns: 11.5rem 1fr 3rem; align-items: center; gap: 8px;
+  padding: 0; border: 0; background: none; font: 0.86rem var(--body); color: var(--ink); text-align: left; cursor: pointer; transition: transform 0.45s cubic-bezier(.2,.7,.2,1), opacity 0.3s; }
+.tg-wes .deb .row .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tg-wes .deb .row .bar { height: 12px; background: var(--rule-2); border-radius: 1px; overflow: hidden; }
+.tg-wes .deb .row .bar i { display: block; height: 100%; width: 0; transition: width 0.3s linear; }
+.tg-wes .deb .row .ct { font-weight: 400; font-size: 0.8rem; color: var(--muted); text-align: right; }
+.tg-wes .deb .row:hover .nm, .tg-wes .deb .row.on .nm { color: var(--rubric); }
+.tg-wes .deb .row:focus-visible { outline: 2px solid var(--rubric); outline-offset: 2px; }
+.tg-wes .deb-now { font: italic 1.05rem var(--display); color: var(--ink-2); min-height: 1.5em; margin: 10px 0 0; }
+.tg-wes .deb-now a { color: inherit; text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 3px; } .tg-wes .deb-now a:hover { color: var(--rubric); }
+.tg-wes .go { font-size: 0.86rem; color: var(--muted); margin: 10px 0 0; }
+.tg-wes .go p { margin: 8px 0 0; }
+.tg-wes .go a { color: var(--ink); } .tg-wes .go a:hover { color: var(--rubric); }
+.tg-wes .go label { display: block; margin-bottom: 4px; }
+.tg-wes .go select { font: 0.92rem var(--body); color: var(--ink); background: var(--card); border: 1px solid var(--rule); border-radius: 3px; padding: 6px 8px; max-width: 100%; }
+/* the Annotations: every chapter of the Bible as a square */
+.tg-wes .ann { position: relative; }
+.tg-wes .ann svg { display: block; width: 100%; height: auto; overflow: visible; }
+.tg-wes .ann .cell { cursor: pointer; }
+.tg-wes .ann .tlab { font: 600 9px var(--body); letter-spacing: 0.16em; text-transform: uppercase; fill: var(--muted); }
+.tg-wes .ann .tip { pointer-events: none; }
+.tg-wes .ann .alab { font: 600 10px var(--body); fill: var(--rubric); paint-order: stroke; stroke: var(--paper); stroke-width: 3px; stroke-linejoin: round; }
+@media (max-width: 860px) { .tg-wes .deb .row { grid-template-columns: 8.5rem 1fr 2.6rem; font-size: 0.8rem; } }
 /* the texts */
 .tg-wes .texts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 12px; margin-top: 14px; }
 .tg-wes .texts a { display: block; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 4px; background: var(--card); color: var(--ink); text-decoration: none; }
@@ -85,25 +110,9 @@
   </div>
 </div></section>
 
-<section class="scene gut" id="tg-conf" aria-labelledby="tg-h-conf"><div class="wrap scene-grid">
-  <div>
-    <p class="eyebrow">2 · The Confession</p>
-    <h2 id="tg-h-conf">Thirty-three chapters</h2>
-    <p class="say">The Confession of Faith was presented to Parliament in December 1646. Its thirty-three chapters run from Holy Scripture to the Last Judgment. Each column is a chapter. Each stone is one of its sections. Choose a chapter to read it and to see the divines’ own books on the same subject.</p>
-    <div class="chap" id="tg-chap" aria-live="polite"></div>
-  </div>
-  <div class="conf" id="tg-confbox"><svg role="img" aria-label="The Confession's thirty-three chapters as columns of their sections"></svg><div class="tip" hidden></div></div>
-</div></section>
-
-<section class="tool gut" aria-labelledby="tg-h-texts"><div class="wrap">
-  <p class="eyebrow">The Assembly’s own texts</p>
-  <h2 id="tg-h-texts">What it wrote and what it recorded</h2>
-  <div class="texts" id="tg-texts"></div>
-</div></section>
-
 <section class="scene gut" id="tg-where" aria-labelledby="tg-h-where"><div class="wrap scene-grid">
   <div>
-    <p class="eyebrow">3 · Where they came from</p>
+    <p class="eyebrow">2 · Where they came from</p>
     <h2 id="tg-h-where">From the parishes and the colleges</h2>
     <p class="say">The divines’ records name their parishes and colleges and the cathedrals and congregations where they served. London comes first. Cambridge and Oxford follow. Then come the shires. Last come the Scots: a professor at Glasgow, another at St Andrews, and ministers of Fife and Edinburgh.</p>
     <div class="ribbon" id="tg-where-names" aria-live="polite"></div>
@@ -112,17 +121,64 @@
 </div></section>
 
 <section class="scene gut" id="tg-press" aria-labelledby="tg-h-press"><div class="wrap">
-  <p class="eyebrow">4 · What they wrote</p>
+  <p class="eyebrow">3 · What they wrote</p>
   <h2 id="tg-h-press">While they sat, they printed</h2>
   <p class="say" style="max-width:46rem">Every book of theirs on the shelf stands at the year it was printed. The press ran hardest while the Assembly sat. It printed sermons preached before Parliament on its fast days, books on the government of the church, and the practical divinity of the English pulpit. Choose a kind to list its books.</p>
   <div class="press" id="tg-pressbox" aria-label="The divines' works by year of printing and then by kind"></div>
   <div class="card kindlist" id="tg-kindlist" aria-live="polite" hidden></div>
 </div></section>
 
+<section class="scene gut" id="tg-conf" aria-labelledby="tg-h-conf"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">4 · The Confession</p>
+    <h2 id="tg-h-conf">Thirty-three chapters</h2>
+    <p class="say">The Confession of Faith was presented to Parliament in December 1646. Its thirty-three chapters run from Holy Scripture to the Last Judgment. Each column is a chapter. Each stone is one of its sections. Choose a chapter to read it and to see the divines’ own books on the same subject.</p>
+    <div class="chap" id="tg-chap" aria-live="polite"></div>
+  </div>
+  <div class="conf" id="tg-confbox"><svg role="img" aria-label="The Confession's thirty-three chapters as columns of their sections"></svg><div class="tip" hidden></div></div>
+</div></section>
+
+<section class="scene gut" id="tg-deb" aria-labelledby="tg-h-deb"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">5 · The debates</p>
+    <h2 id="tg-h-deb">Who spoke</h2>
+    <p class="say">The scribes set a speaker’s name before each speech they took down. The minutes do this mostly in 1643 and 1644. Each bar is a member. Its length counts the speeches the minutes give him. Its color is his party.</p>
+    <p class="deb-now" id="tg-deb-now" aria-live="polite"></p>
+    <div class="chap" id="tg-deb-card" aria-live="polite"></div>
+  </div>
+  <div>
+    <div class="deb" id="tg-debbox" role="list" aria-label="The members the minutes name most often, with the number of their speeches"></div>
+    <p class="lkey" id="tg-deb-key"></p>
+    <p class="go" id="tg-deb-vols"></p>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-ann" aria-labelledby="tg-h-ann"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">6 · The Annotations</p>
+    <h2 id="tg-h-ann">Notes on every chapter</h2>
+    <p class="say">London stationers asked a committee of the Commons for leave to print notes fitted to the King James Bible. The chair of the Committee for Religion wrote to some divines and invited others in person. Several of them sat in the Assembly. They divided the books among themselves. Their <a id="tg-annot" target="_blank" rel="noopener"><i>Annotations upon All the Books of the Old and New Testament</i></a> came out in 1645.</p>
+    <p class="say">Each square is a chapter. The darker the square, the longer its notes.</p>
+    <div class="chap" id="tg-ann-card" aria-live="polite"></div>
+    <div class="go">
+      <label for="tg-ann-pick">Open a book’s notes</label>
+      <select id="tg-ann-pick"><option value="">Choose a book</option></select>
+      <p><a id="tg-ann-start" target="_blank" rel="noopener">Read from the preface</a> · <a id="tg-ann-adv" target="_blank" rel="noopener">Read the Advertisement</a></p>
+    </div>
+  </div>
+  <div class="ann" id="tg-annbox"><svg role="img" aria-label="Every chapter of the Bible in order. Each is shaded by the length of its notes in the Annotations of 1645."></svg><div class="tip" hidden></div></div>
+</div></section>
+
+<section class="tool gut" aria-labelledby="tg-h-texts"><div class="wrap">
+  <p class="eyebrow">The Assembly’s own texts</p>
+  <h2 id="tg-h-texts">What it wrote and what it recorded</h2>
+  <div class="texts" id="tg-texts"></div>
+</div></section>
+
 <section class="tool gut" id="explore" aria-labelledby="tg-h-ex"><div class="wrap">
   <p class="eyebrow">Find</p>
-  <h2 id="tg-h-ex">Every divine on the shelf</h2>
-  <p class="say" style="max-width:46rem">These are the divines whose works are on the shelf. Search them or browse them by author, century or title. Choose a party to narrow any of them.</p>
+  <h2 id="tg-h-ex">The divines</h2>
+  <p class="say" style="max-width:46rem">These are the divines whose works are on the shelf.</p>
   <div id="tg-explorer"></div>
-  <div class="next"><a href="/the-faith-received/all-works/?tradition=English%20Divines">Browse the English shelf in All Works</a><a id="tg-shelf-link" href="#">The Westminster Assembly shelf</a><a href="/the-faith-received/ask/?trad=English%20Divines">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=english">The English Divines</a><a href="/the-faith-received/guide/?s=puritans">The Puritans</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=methodists">The Methodists</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
+  <div class="next"><a href="/the-faith-received/all-works/?tradition=English%20Divines">Browse the English shelf in All Works</a><a id="tg-shelf-link" href="#">The Westminster Assembly shelf</a><a href="/the-faith-received/ask/?trad=English%20Divines">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=english">The English Divines</a><a href="/the-faith-received/guide/?s=puritans">The Puritans</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=methodists">The Methodists</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a><a href="/the-faith-received/guide/?s=eastern">The Eastern Fathers</a></div>
 </div></section>

@@ -389,7 +389,7 @@ window.TGFinder = (host, D, C) => {
 
   /* ---------- 2. the sees of the East ---------- */
   (function east() {
-    const box = document.getElementById('tg-map'), M = TG.map(box, D.land || LAND, [[3, 25.5], [45, 46.5]], { parallels: [30, 44] });
+    const box = document.getElementById('tg-map'), M = TG.map(box, D.land || LAND, [[3, 25.5], [45, 46.5]], { parallels: [30, 44], phone: [[11, 28], [40, 44]] });
     const cv = TG.canvas(box.querySelector('canvas')), {ctx} = cv;
     const A = D.authors.filter((a) => a.pl && a.fl && D.places[a.pl]), places = {};
     A.forEach((a) => { (places[a.pl] ||= { k: a.pl, ll: D.places[a.pl], f: a.f, ys: [] }).ys.push(a.fl); });
@@ -453,7 +453,7 @@ window.TGFinder = (host, D, C) => {
         if (lib && prev !== i) { gsap.to(page, { opacity: 0.14, scale: 0.94, duration: 0.6, ease: 'power2.inOut' }); gsap.fromTo(rowsEl, { opacity: 0 }, { opacity: 1, duration: 0.4 });
           gsap.fromTo(rows, { x: -60, opacity: 0, clipPath: 'inset(0 100% 0 0)' }, { x: 0, opacity: 1, clipPath: 'inset(0 0% 0 0)', duration: 0.9, ease: 'expo.out', stagger: 0.14, delay: 0.15 }); }
         if (!lib && prev === steps.length - 1) { gsap.to(page, { opacity: 1, scale: 1, duration: 0.5 }); gsap.to(rowsEl, { opacity: 0, duration: 0.3 }); }
-      } else if (TG.pinOK()) { page.style.opacity = lib ? 0.14 : 1; rowsEl.style.opacity = lib ? 1 : 0; }
+      } else if (TG.plays()) { page.style.opacity = lib ? 0.14 : 1; rowsEl.style.opacity = lib ? 1 : 0; }
       if (lib) fitBands();
     }
     const st = TG.chapter('#tg-col', 3400, (p, fin) => { if (fin) { lis.forEach((li) => li.classList.add('now')); boxes.flat().forEach((b) => { b.style.opacity = 0; }); fitBands(); return; } stepAt(Math.min(steps.length - 1, Math.floor(p * steps.length)), false); }, { scrub: true });

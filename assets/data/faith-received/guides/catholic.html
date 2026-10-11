@@ -68,10 +68,153 @@
 .tg-cat .spines a.s { background: var(--f5); } .tg-cat .spines a.p { background: var(--f3); }
 .tg-cat .undated { margin-top: 14px; font-size: 0.88rem; color: var(--muted); }
 .tg-cat .undated a { color: var(--ink-2); }
+/* 2. the Summa ledger */
+.tg-cat #tg-summa { padding-block: 28px; }
+.tg-cat #tg-summa > .wrap { display: grid; gap: 10px; }
+.tg-cat .sm-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 8px 40px; align-items: end; }
+.tg-cat .sm-top h2 { margin-bottom: 0; }
+.tg-cat .sm-top .say { max-width: 40rem; margin: 0; font-size: 0.95rem; }
+.tg-cat .sm-box { position: relative; }
+.tg-cat .sm { display: grid; column-gap: 2px; row-gap: 2px; font-size: 0.82rem; align-items: stretch; }
+.tg-cat .sm .pt { font: 600 0.66rem var(--body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--ink); padding: 0 0 4px; white-space: nowrap; overflow: hidden; }
+.tg-cat .sm .tot { height: 48px; display: flex; flex-direction: column; justify-content: flex-end; border-bottom: 1px solid var(--ink); margin-top: 6px; }
+.tg-cat .sm .totl { font: italic 0.8rem var(--display); color: var(--muted); align-self: end; padding-bottom: 2px; margin-top: 6px; }
+.tg-cat .sm .tot i { display: block; width: 100%; }
+.tg-cat .sm .th { height: 74px; position: relative; overflow: visible; }
+.tg-cat .sm .th span { position: absolute; left: 50%; bottom: 3px; transform-origin: 0 100%; transform: rotate(-56deg); white-space: nowrap; font: 0.72rem var(--body); color: var(--ink-2); }
+.tg-cat .sm .who { padding: 0 8px 0 0; line-height: 1.02; display: flex; flex-direction: column; justify-content: center; min-height: 18px; transition: opacity 0.2s; }
+.tg-cat .sm .who b { font: 400 0.92rem var(--display); }
+.tg-cat .sm .who small { color: var(--muted); font-size: 0.66rem; font-variant-numeric: tabular-nums; }
+.tg-cat .sm .who.now b { color: var(--rubric); }
+.tg-cat .sm .c { display: block; border-radius: 2px; min-height: 16px; background: var(--paper-2); }
+.tg-cat .sm a.c:hover, .tg-cat .sm a.c:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
+.tg-cat .sm a.c i { display: block; width: 100%; height: 100%; border-radius: 2px; }
+.tg-cat .sm .gap { min-width: 0; }
+/* a blank that is only a gap in the library: hatched (written, in a volume not on this shelf); a plain blank: no commentary by this author */
+.tg-cat .sm .c.g-shelf, .tg-cat .sm-key .g-shelf { background: repeating-linear-gradient(135deg, var(--muted) 0 1.2px, transparent 1.2px 4px), var(--paper-2); box-shadow: inset 0 0 0 1px var(--coast); }
+.tg-cat .sm-key { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 0.8rem; line-height: 1.35; color: var(--muted); }
+.tg-cat .sm-key span { display: inline-flex; align-items: center; gap: 7px; }
+.tg-cat .sm-key i { flex: none; display: inline-block; width: 13px; height: 15px; border-radius: 2px; background: var(--paper-2); }
+.tg-cat .sm .sep { grid-column: 1 / -1; font: 600 0.62rem var(--body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 6px 0 2px; border-bottom: 1px solid var(--rule); }
+.tg-cat .sm .sh { display: none; }
+.tg-cat .sm .pt .sh { text-transform: none; letter-spacing: 0.04em; }
+.tg-cat .sm-note { margin: 0; min-height: 2.6em; font-size: 0.92rem; max-width: 60rem; }
+.tg-cat .sm-note b { font: 400 1.08rem var(--display); color: var(--rubric); }
+/* 3. the Scotists */
+.tg-cat .sc { position: relative; }
+.tg-cat .sc svg { width: 100%; display: block; overflow: visible; }
+.tg-cat .sc text { font-family: var(--body); }
+.tg-cat .sc .lab { font: 400 13px var(--display); fill: var(--ink); }
+.tg-cat .sc .cap { font: 600 10px var(--body); letter-spacing: 0.14em; text-transform: uppercase; fill: var(--muted); }
+.tg-cat .sc .n { font: 11px var(--body); fill: var(--muted); font-variant-numeric: tabular-nums; }
+.tg-cat .sc .big { font: 400 26px var(--display); fill: var(--rubric); }
+.tg-cat .sc .seg { cursor: pointer; }
+.tg-cat .sc .seg:hover rect, .tg-cat .sc .seg:focus rect { fill: var(--ink); }
+.tg-cat .sc-card { margin-top: 12px; min-height: 6.5rem; font-size: 0.9rem; }
+.tg-cat .sc-card p { margin: 0 0 6px; } .tg-cat .sc-card p:last-child { margin: 0; }
+.tg-cat .sc-card ol { margin: 0 0 6px; padding-left: 1.3rem; }
+.tg-cat .sc-card ol.qs { columns: 2 17rem; column-gap: 26px; font-size: 0.84rem; }
+.tg-cat .sc-card ol.qs li { break-inside: avoid; padding: 1px 0; }
+.tg-cat .sc-card ol.qs li::marker { color: var(--rubric); font-weight: 600; }
+.tg-cat .sc-card a { color: var(--ink); }
+/* 4. Lapide */
+.tg-cat .lp-box { position: relative; }
+.tg-cat .lp { display: grid; row-gap: 10px; }
+.tg-cat .lp .row { display: grid; grid-template-columns: 7.5rem repeat(18, minmax(0, 1fr)); column-gap: 3px; align-items: end; }
+.tg-cat .lp .sec { font: 600 0.64rem/1.25 var(--body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 0 8px 4px 0; align-self: end; }
+.tg-cat .lp .bk { display: flex; flex-direction: column; align-items: stretch; text-decoration: none; color: var(--ink); min-width: 0; }
+.tg-cat .lp .bk b { font: 600 0.62rem var(--body); text-align: center; white-space: nowrap; overflow: hidden; letter-spacing: 0.02em; }
+.tg-cat .lp .bk .well { position: relative; height: 58px; background: var(--paper-2); border-radius: 2px 2px 0 0; overflow: hidden; border-bottom: 2px solid var(--leather); }
+.tg-cat .lp .bk .well i { position: absolute; left: 2px; right: 2px; bottom: 0; height: 100%; background: var(--f3); transform: scaleY(0); transform-origin: 50% 100%; border-radius: 1px 1px 0 0; }
+.tg-cat .lp .bk small { font: 0.6rem var(--body); text-align: center; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 1em; }
+.tg-cat .lp .bk.none .well { background: transparent; border: 1px dashed var(--muted); border-bottom: 2px solid var(--leather); }
+.tg-cat .lp .bk.now .well { outline: 2px solid var(--rubric); outline-offset: 1px; }
+.tg-cat .lp a.bk:hover .well i, .tg-cat .lp a.bk:focus .well i { background: var(--ink); }
+.tg-cat .lp-now b { font-size: 1.7rem; }
+.tg-cat .lp-others { margin: 12px 0 0; }
+.tg-cat .lp-others a { color: var(--ink-2); }
+/* 5. grace */
+.tg-cat .gr-box { position: relative; }
+.tg-cat .gr-key { display: none; margin: 0 0 10px; }
+.tg-cat .gr-heads { display: grid; grid-template-columns: minmax(0, 1fr) 11.5rem minmax(0, 1fr); gap: 0 10px; font: 600 0.68rem var(--body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.tg-cat .gr-heads span:first-child { text-align: right; } .tg-cat .gr-heads span:nth-child(2) { text-align: center; }
+.tg-cat .gr-heads small { display: block; font: italic 0.82rem var(--display); letter-spacing: 0; text-transform: none; color: var(--ink-2); }
+.tg-cat .gr { position: relative; }
+.tg-cat .gr .spine { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--rule); }
+.tg-cat .gr .yr { position: absolute; left: 50%; transform: translate(-50%, -50%); font: 0.7rem var(--body); color: var(--muted); background: var(--paper); padding: 0 4px; font-variant-numeric: tabular-nums; }
+.tg-cat .gr .brk { position: absolute; left: 50%; width: 22px; margin-left: -11px; border-top: 1px solid var(--muted); border-bottom: 1px solid var(--muted); height: 4px; background: var(--paper); }
+.tg-cat .gr .it { position: absolute; z-index: 1; width: calc(50% - 6.4rem); font-size: 0.8rem; line-height: 1.2; }
+.tg-cat .gr .it.l { text-align: right; } 
+.tg-cat .gr .it a, .tg-cat .gr .it span.box { display: block; padding: 3px 8px 4px; border-radius: 3px; background: var(--card); border: 1px solid var(--rule); color: var(--ink); text-decoration: none; }
+/* the school's color as a small dot before the year, not a thick side bar (10-11 design check); the box keeps its plain 1px rule all round */
+.tg-cat .gr .it b::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--gilt)); margin-right: 5px; vertical-align: 0.04em; }
+.tg-cat .gr .it a:hover, .tg-cat .gr .it a:focus { background: var(--paper-2); }
+.tg-cat .gr .it b { font: 600 0.72rem var(--body); color: var(--rubric); font-variant-numeric: tabular-nums; margin-right: 4px; }
+.tg-cat .gr .it i { display: block; font: italic 0.86rem/1.2 var(--display); color: var(--ink-2); }
+.tg-cat .gr .lead { position: absolute; height: 1px; background: var(--rule); }
+.tg-cat .gr .it.m { width: 11.5rem; left: 50%; margin-left: -5.75rem; text-align: center; }
+.tg-cat .gr .span { position: absolute; z-index: 0; left: 50%; width: 5px; margin-left: -2.5px; background: var(--gilt); opacity: 0.55; border-radius: 2px; }
+.tg-cat .gr .it.m span.box { background: var(--paper-2); border-color: var(--gilt); font: 0.76rem/1.2 var(--body); }
+.tg-cat .gr .it.m.bk a { border: 1px solid var(--c); }
+.tg-cat .gr .now { position: absolute; left: 0; right: 0; top: 0; height: 0; border-top: 1px solid var(--rubric); pointer-events: none; }
+.tg-cat .gr.list { display: grid; gap: 6px; }
+.tg-cat .gr.list .it, .tg-cat .gr.list .it.m { position: static; width: auto; margin: 0; text-align: left; }
+.tg-cat .gr.list .spine, .tg-cat .gr.list .yr, .tg-cat .gr.list .brk, .tg-cat .gr.list .lead, .tg-cat .gr.list .now, .tg-cat .gr.list .span { display: none; }
+/* 9. merit */
+.tg-cat .mr-box { position: relative; }
+.tg-cat .mr-ends { display: flex; justify-content: space-between; gap: 12px; font: 600 0.66rem var(--body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.tg-cat .mr { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: auto 12px auto; column-gap: 8px; }
+.tg-cat .mr .chips { grid-row: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 5px; padding-bottom: 6px; min-width: 0; }
+.tg-cat .mr .axis { grid-row: 2; grid-column: 1 / -1; height: 4px; align-self: center; border-radius: 2px; background: linear-gradient(90deg, var(--f2), var(--gilt) 50%, var(--f3)); }
+.tg-cat .mr .mname { grid-row: 3; padding-top: 6px; font: italic 0.82rem/1.2 var(--display); color: var(--ink-2); border-top: 1px solid var(--rule); min-width: 0; }
+.tg-cat .mr .mname b { display: block; font: 600 0.62rem var(--body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--rubric); font-style: normal; margin-bottom: 2px; }
+.tg-cat .mr .mc { display: block; padding: 4px 7px 5px; border-radius: 3px; background: var(--card); border: 1px solid var(--rule); color: var(--ink); text-decoration: none; font-size: 0.78rem; line-height: 1.2; opacity: 0; transform: translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease, background 0.2s; }
+.tg-cat .mr .mc.on { opacity: 1; transform: none; }
+.tg-cat .mr .mc:hover, .tg-cat .mr .mc:focus, .tg-cat .mr .mc.hot { background: var(--paper-2); }
+.tg-cat .mr .mc b { font: 600 0.75rem var(--body); display: block; letter-spacing: -0.005em; }
+.tg-cat .mr .mc b::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 5px; vertical-align: 0.04em; }
+.tg-cat .mr .mc i { display: block; font: italic 0.8rem/1.15 var(--display); color: var(--ink-2); }
+.tg-cat .mr .mname { opacity: 0.25; transition: opacity 0.4s; } .tg-cat .mr .mname.on { opacity: 1; }
+.tg-cat .mr .mc .mq { display: none; }
+.tg-cat .mr-rome { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 24px; margin-top: 14px; }
+.tg-cat .mr-rome .rc { font-size: 0.8rem; line-height: 1.3; padding: 8px 10px; border-radius: 3px; background: var(--paper-2); border: 1px solid var(--rule); opacity: 0; transition: opacity 0.5s; }
+.tg-cat .mr-rome .rc.on { opacity: 1; }
+.tg-cat .mr-rome .rc.right { text-align: right; }
+.tg-cat .mr-rome .rc b { font: 600 0.72rem var(--body); color: var(--rubric); }
+.tg-cat .mr-rome .rc b::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--gilt); margin-right: 5px; vertical-align: 0.04em; }
+.tg-cat .mr-rome .rc i { font-family: var(--display); }
+.tg-cat .mr-rome .rc a { color: var(--ink); }
+.tg-cat .mr-rome .rc .arr { color: var(--gilt); font-weight: 600; }
+.tg-cat .mr-now { min-height: 12rem; }
+.tg-cat .mr-now b { font-size: 1.2rem; line-height: 1.15; display: block; }
+.tg-cat .mr-now ul { list-style: none; margin: 6px 0 0; padding: 0; font-size: 0.8rem; line-height: 1.32; display: grid; gap: 4px; }
+.tg-cat .mr-now li i { font-family: var(--display); }
+.tg-cat .mr-now a { color: var(--ink); }
 @media (max-width: 860px) {
   .tg-cat .cat-sub { grid-template-columns: minmax(0, 1fr); }
   .tg-cat .onshelf { grid-template-columns: minmax(0, 1fr); }
   .tg-cat .case .rl { font-size: 0.92rem; }
+  .tg-cat .mr { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; row-gap: 4px; }
+  .tg-cat .mr .chips, .tg-cat .mr .mname { grid-row: auto; grid-column: 1; }
+  .tg-cat .mr .axis { display: none; }
+  .tg-cat .mr .mname { border-top: 0; padding-top: 10px; }
+  .tg-cat .mr-ends { display: none; }
+  .tg-cat .mr-rome { grid-template-columns: minmax(0, 1fr); }
+  .tg-cat .mr-rome .rc.right { text-align: left; }
+  .tg-cat .mr-now { min-height: 0; }
+  .tg-cat .mr .mc .mq { display: block; margin-top: 3px; font-size: 0.78rem; color: var(--ink-2); }
+  .tg-cat .mr .mc .mq i { display: inline; }
+  .tg-cat .mr-rome .rc .arr { display: none; }
+  .tg-cat .sm-top { grid-template-columns: minmax(0, 1fr); }
+  .tg-cat .sm .th, .tg-cat .sm .who small { display: none; }
+  .tg-cat .sm .who b { font-size: 0.78rem; }
+  .tg-cat .sm .lg { display: none; } .tg-cat .sm .sh { display: inline; } .tg-cat .sm .who b.sh { display: block; }
+  .tg-cat .gr-key { display: flex; }
+  .tg-cat .sm .pt { font-size: 0.56rem; letter-spacing: 0.04em; }
+  .tg-cat .lp .row { grid-template-columns: repeat(9, minmax(0, 1fr)); row-gap: 6px; }
+  .tg-cat .lp .sec { grid-column: 1 / -1; padding-bottom: 2px; }
+  .tg-cat .lp .bk small { display: none; }
+  .tg-cat .gr-heads { display: none; }
 }
 </style>
 
@@ -117,22 +260,9 @@
   </div>
 </div></section>
 
-<section class="scene gut" id="tg-dm" aria-labelledby="tg-h-dm"><div class="wrap scene-grid">
-  <div>
-    <p class="eyebrow">3 · The method</p>
-    <h2 id="tg-h-dm">How a disputation is built</h2>
-    <p class="say">Francisco Suárez published his <i>Metaphysical Disputations</i> at Salamanca in 1597. It was the first complete metaphysics written as a system rather than as a commentary on Aristotle. It was read in Catholic and Protestant schools alike.</p>
-    <ol class="steps" id="tg-dm-steps"></ol>
-  </div>
-  <div>
-    <div class="dm" id="tg-dm-box"><svg aria-label="The fifty-four disputations of Suárez’s Metaphysical Disputations. Each column is one disputation. Its height shows its pages."></svg><div class="tip" hidden></div></div>
-    <div class="card dmcard" id="tg-dm-card" aria-live="polite"></div>
-  </div>
-</div></section>
-
 <section class="scene gut" id="tg-trent" aria-labelledby="tg-h-trent"><div class="wrap scene-grid">
   <div>
-    <p class="eyebrow">4 · The council</p>
+    <p class="eyebrow">3 · The council</p>
     <h2 id="tg-h-trent">The turn at Trent</h2>
     <p class="say">The Council of Trent met in twenty-five sessions over eighteen years. It met in three periods under three popes. Its decrees on Scripture, justification and the sacraments are the ground of everything on this shelf after 1563.</p>
     <ul class="chron" id="tg-trent-list"></ul>
@@ -143,11 +273,87 @@
   </div>
 </div></section>
 
+<section class="scene gut" id="tg-summa" aria-labelledby="tg-h-summa"><div class="wrap">
+  <div class="sm-top">
+    <div>
+      <p class="eyebrow">4 · The Thomists</p>
+      <h2 id="tg-h-summa">The Summa, treatise by treatise</h2>
+    </div>
+    <p class="say">From Cajetan onward the Dominican masters taught by commenting on the Summa of Thomas question by question. Each row is a commentary on this shelf. Each column is one of the Summa’s treatises in Thomas’s order. The darker the square, the more pages the commentator gave it.</p>
+  </div>
+  <div class="sm-box"><div class="sm" id="tg-sm" role="table" aria-label="Commentaries on the Summa on this shelf: pages on each of its treatises"></div><div class="tip" hidden></div></div>
+  <p class="sm-key" id="tg-sm-key"><span><i class="k-f"></i>Commentary on this shelf</span><span><i class="g-shelf"></i>Commented on, in a volume not on this shelf</span><span><i></i>No commentary known from this author</span><span>Hover over a square for its pages or the reason.</span></p>
+  <p class="sm-note" id="tg-sm-note" aria-live="polite"></p>
+</div></section>
+
+<section class="scene gut" id="tg-scot" aria-labelledby="tg-h-scot"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">5 · The Scotists</p>
+    <h2 id="tg-h-scot">Scotus against Thomas</h2>
+    <p class="say">The Franciscan schools read the Sentences through Duns Scotus and defined themselves against the Thomists. Juan de Rada’s <i>Controversies between St Thomas and Scotus</i> (Cologne, 1620) sets the two doctors against each other on the four books of the Sentences.</p>
+    <ol class="steps" id="tg-scot-steps"></ol>
+  </div>
+  <div>
+    <div class="sc" id="tg-sc"><svg aria-label="Rada’s controversies between Thomas and Scotus, and the pages on which Mastri and Punch name each other"></svg><div class="tip" hidden></div></div>
+    <div class="card sc-card" id="tg-sc-card" aria-live="polite"></div>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-lap" aria-labelledby="tg-h-lap"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">6 · The Jesuits</p>
+    <h2 id="tg-h-lap">Cornelius a Lapide’s Bible</h2>
+    <p class="say">Cornelius a Lapide taught Scripture at Louvain and then at the Roman College. His commentary on the Bible fills twenty-one volumes on this shelf. Each square is a book of the Bible. The column inside it rises with the pages he gave that book volume by volume.</p>
+    <div class="nowcard lp-now" aria-live="polite"><b id="tg-lp-n">0</b><p id="tg-lp-v"></p></div>
+  </div>
+  <div class="lp-box"><div class="lp" id="tg-lp" role="table" aria-label="The books of the Bible and the pages of Lapide’s commentary on each"></div><div class="tip" hidden></div>
+    <p class="small lp-others" id="tg-lp-others"></p></div>
+</div></section>
+
+<section class="scene gut" id="tg-dm" aria-labelledby="tg-h-dm"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">7 · The method</p>
+    <h2 id="tg-h-dm">How a disputation is built</h2>
+    <p class="say">Francisco Suárez published his <i>Metaphysical Disputations</i> at Salamanca in 1597. It was the first complete metaphysics written as a system rather than as a commentary on Aristotle. It was read in Catholic and Protestant schools alike.</p>
+    <ol class="steps" id="tg-dm-steps"></ol>
+  </div>
+  <div>
+    <div class="dm" id="tg-dm-box"><svg aria-label="The fifty-four disputations of Suárez’s Metaphysical Disputations. Each column is one disputation. Its height shows its pages."></svg><div class="tip" hidden></div></div>
+    <div class="card dmcard" id="tg-dm-card" aria-live="polite"></div>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-grace" aria-labelledby="tg-h-grace"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">8 · The quarrel over grace</p>
+    <h2 id="tg-h-grace">Grace and free will</h2>
+    <p class="say">How does grace move a free will without forcing it? The Dominicans held that grace is efficacious of itself. The Jesuits after Molina held that it is efficacious through the consent God foresees. Rome examined the question from 1597 to 1607 and let both schools teach. Jansen’s <i>Augustinus</i> (Louvain, 1640) opened a second quarrel, which ran to <i>Unigenitus</i> in 1713.</p>
+    <div class="nowcard" aria-live="polite"><b id="tg-gr-y">1550</b><p id="tg-gr-now"></p></div>
+  </div>
+  <div class="gr-box"><div class="gr-heads" aria-hidden="true"><span>Grace efficacious of itself<small>Dominicans and Augustinians</small></span><span>Rome</span><span>Grace through foreseen consent<small>Jesuits</small></span></div>
+    <p class="legend gr-key" id="tg-gr-key"></p>
+    <div class="gr" id="tg-gr" role="list" aria-label="Books on grace on this shelf and the Roman acts, by year"></div></div>
+</div></section>
+
+<section class="scene gut" id="tg-merit" aria-labelledby="tg-h-merit"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">9 · Merit</p>
+    <h2 id="tg-h-merit">Why good works merit</h2>
+    <p class="say">After Trent the Catholic schools agreed that the good works of the justified truly merit eternal life. They disagreed about why. Merit <i>de condigno</i> is owed in justice. Merit <i>de congruo</i> is rewarded because it is fitting. Is a work done in grace worthy because God accepts it and promises the reward? Or does grace make the work itself worthy?</p>
+    <div class="nowcard mr-now" aria-live="polite"><b id="tg-mr-h">Merit</b><div id="tg-mr-now"></div></div>
+  </div>
+  <div class="mr-box">
+    <div class="mr-ends" aria-hidden="true"><span>God’s free acceptance</span><span>The work’s own worth in grace</span></div>
+    <div class="mr" id="tg-mr" role="list" aria-label="Writers on this shelf placed between God’s acceptance and the work’s own worth, each opening at the page where he treats merit"></div>
+    <div class="mr-rome" id="tg-mr-rome"></div>
+  </div>
+</div></section>
+
 <section class="tool gut" id="explore" aria-labelledby="tg-h-ex"><div class="wrap">
   <p class="eyebrow">Explore</p>
-  <h2 id="tg-h-ex">Every writer on the shelf</h2>
-  <p class="say" style="max-width:46rem">A hundred and twenty-one writers, councils and editors. Choose a school to narrow the lines or search for a name or a title.</p>
+  <h2 id="tg-h-ex">The authors</h2>
+  <p class="say" style="max-width:46rem">A hundred and twenty writers, councils and editors.</p>
   <div id="tg-explorer"></div>
   <p class="undated" id="tg-undated"></p>
-  <div class="next"><a href="/the-faith-received/all-works/?tradition=Roman%20Catholic">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=Roman%20Catholic">Ask this shelf</a><a id="tg-councils-link" href="#">The Councils guide</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=english">The English Divines</a><a href="/the-faith-received/guide/?s=westminster">The Westminster Assembly</a><a href="/the-faith-received/guide/?s=puritans">The Puritans</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=methodists">The Methodists</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
+  <div class="next"><a href="/the-faith-received/all-works/?tradition=Roman%20Catholic">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=Roman%20Catholic">Ask this shelf</a><a id="tg-councils-link" href="#">The Councils guide</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=english">The English Divines</a><a href="/the-faith-received/guide/?s=westminster">The Westminster Assembly</a><a href="/the-faith-received/guide/?s=puritans">The Puritans</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=methodists">The Methodists</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a><a href="/the-faith-received/guide/?s=eastern">The Eastern Fathers</a></div>
 </div></section>

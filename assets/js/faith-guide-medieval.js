@@ -77,7 +77,7 @@
 
   /* ---------- 1. the masters on the road ---------- */
   (function road() {
-    const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[-9, 37.2], [29.5, 56.5]], { parallels: [38, 56] });
+    const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[-9, 37.2], [29.5, 56.5]], { parallels: [38, 56], phone: [[-4.5, 39.5], [18, 53.5]] });
     const cv = TG.canvas(box.querySelector('canvas')), {ctx} = cv, P = D.places;
     const SCH = new Set(D.schools.map((x) => x[0]));
     const J = D.journeys.map((j) => { const pts = j.s.map(([p, y]) => ({ p, y, ll: P[p] })), born = pts.length > 2 && !SCH.has(pts[0].p);
@@ -142,6 +142,8 @@
   (function sentences() {
     const L = D.lombard, host = document.getElementById('tg-ledger');
     document.getElementById('tg-lombard').href = TG.read(L.slug, L.col);
+    document.getElementById('tg-sicnon').href = TG.read('peter-abelard-peter-abelard-sic-et-non');
+    document.getElementById('tg-halensis').href = TG.read('alexander-of-hales-alexander-of-hales-summa-universae-theologiae-summa');
     const max = Math.max(...D.sent.flatMap((s) => s.b)), roman = ['I', 'II', 'III', 'IV'];
     host.innerHTML = `<div class="bk" role="columnheader"><span style="min-height:0">Commentary</span></div>${L.books.map((b, i) => `<div class="bk" role="columnheader"><b>${roman[i]}</b><span>${esc(b)}</span></div>`).join('') 
       }${D.sent.map((s, r) => `<div class="row" role="row" data-r="${r}"><div class="who" role="rowheader"><b>${esc(s.a)}</b><small>${esc(s.lab)}</small></div>${ 
@@ -165,8 +167,8 @@
   /* ---------- 3. how a question is argued ---------- */
   (function article() {
     const A = D.article, {la} = A, {en} = A, host = document.querySelector('#tg-article .grid'), arrows = document.querySelector('#tg-article svg.arrows');
-    // MereO fix (2026-10-11): the first step, The question, reads la.title / en.title, which the
-    // data does not carry, and both excerpt lanes printed "undefined". The heading block's own words.
+    // MereO fix (Ian, 2026-10-11): the first step, The question, reads la.title / en.title, which the data does not carry,
+    // and both excerpt lanes printed "undefined". The heading block's own words.
     if (la.title == null) la.title = 'Utrum Deus sit.';
     if (en.title == null) en.title = 'Whether God exists.';
     const first = (s, n) => { const w = s.split(/\s+/); return w.slice(0, n).join(' ') + (w.length > n ? ' …' : ''); };

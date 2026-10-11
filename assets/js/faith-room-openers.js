@@ -129,7 +129,19 @@
   const shelfName = (t) => (window.MOFaithLabel ? window.MOFaithLabel.shelf(t) : t);
   // The shelves with a guide in motion (/the-faith-received/guide/?s=). The
   // links stay hidden until faith-guide-links.js finds that route live.
-  const GUIDES = { pl: "latin", gf: "greek", md: "medieval", rc: "catholic", rf: "reformed", lu: "lutheran", ed: "english" };
+  const GUIDES = { pl: "latin", gf: "greek", po: "eastern", md: "medieval", rc: "catholic", rf: "reformed", lu: "lutheran", ed: "english" };
+  // The guides of a shelf as buttons beside it (owner, 2026-10-11: "make the guides easier to click into"):
+  // the shelf's own guide, and on the English shelf the guides to its parties as well.
+  const SUBGUIDES = { ed: [["puritans", "the Puritans"], ["anglicans", "the Anglicans"], ["methodists", "the Methodists"], ["westminster", "the Westminster Assembly"]] };
+  function guideButtons(name) {
+    const sh = RESEARCH_SHELVES[name];
+    if (!sh || !GUIDES[sh]) return "";
+    const base = "/the-faith-received/guide/?s=";
+    const subs = (SUBGUIDES[sh] || []).map(([k, t]) => `<a class="fro-shelf-sub" href="${base}${k}">${esc(t)}</a>`);
+    return `<p class="fro-shelf-guides" data-guide-link hidden><a class="fr-btn" href="${base}${GUIDES[sh]}">Guide to this shelf</a>${ 
+      subs.length ? `<span class="fro-shelf-subs"><span class="fro-shelf-subs-l">Guides to</span>${subs.join('<span class="fro-shelf-sep"> · </span>')}</span>` : "" 
+      }</p>`;
+  }
   function studyShelf(name) {
     const sh = RESEARCH_SHELVES[name];
     if (!sh) return "";
@@ -140,6 +152,7 @@
     return `<details class="fro-study"><summary>Study this shelf</summary>` +
       `<nav aria-label="Study ${esc(shelfName(name))}">` +
       `${GUIDES[sh] ? `<a href="${base}guide/?s=${GUIDES[sh]}" data-guide-link hidden>Guide to this shelf</a>` : ""}` +
+      `${(SUBGUIDES[sh] || []).map(([k, t]) => `<a href="${base}guide/?s=${k}" data-guide-link hidden>Guide to ${esc(t)}</a>`).join("")}` +
       `<a href="${base}ask/?trad=${encodeURIComponent(trad)}">Ask this shelf</a>` +
       `<a href="${base}bible/?sh=${sh}">Scripture</a>` +
       `<a href="${base}author/?sh=${sh}">Authors</a>` +
@@ -186,7 +199,7 @@
   // "that section should be the exact same sections as on the home page.
   // All 10."). Keep in step with "The shelves" in custom-the-faith-received.hbs.
   const HOME_SHELVES = [
-    "Confessions", "Latin Fathers", "Greek Fathers", "Eastern Fathers", "Medieval",
+    "Confessions", "Councils", "Latin Fathers", "Greek Fathers", "Eastern Fathers", "Medieval",
     "Roman Catholic", "Continental Reformed", ENGLISH, "Lutheran", "Humanism and Law",
   ];
   // The confessions are a collection of their own, not a tradition, so
@@ -196,13 +209,26 @@
     href: "/the-faith-received/confessions/",
     who: "Nicaea · Chalcedon · Augsburg · Trent · Westminster",
   };
+  // Mansi's acts of the councils are a shelf of their own (owner, 2026-10-11: "add Mansi's Acts as a
+  // separate shelf please, The Councils, with its guide like PL"): the councils and synods themselves,
+  // where the creeds and confessions above are the documents every tradition confesses. Its works file
+  // under Roman Catholic in the catalogue, so they are lifted out of that shelf and counted here.
+  const COUNCILS = {
+    label: "The Councils",
+    href: "/the-faith-received/guide/?s=councils",
+    who: "Mansi · from the apostles at Jerusalem to the First Vatican Council",
+    first: "/the-faith-received/read/?w=mansi-sacrorum-conciliorum-collectio-1",
+  };
+  const isMansi = (w) => /^mansi-/.test(String(w.id || w.slug || ""));
 
   function shelves(works, roster, confessions) {
     const by = new Map();
+    let councils = 0;
 
     works.forEach((w) => {
       let t = String(w.tradition || "").trim();
       if (!t) return;
+      if (isMansi(w)) { councils++; return; }
       const parent = (window.MOCorpora.traditionParent
         ? window.MOCorpora.traditionParent(t, w.corpus) : "") || "";
       // The party, then the family it files under.
@@ -231,10 +257,24 @@
     if (!by.size) return "";
     const list = HOME_SHELVES.map((name) => (name === "Confessions"
       ? ((confessions || []).length ? { name, confessions: true, n: confessions.length, works: [], authors: new Map(), parties: new Map() } : null)
+      : name === "Councils" ? (councils ? { name, councils: true, n: councils } : null)
       : by.get(name))).filter(Boolean);
     if (!list.length) return "";
 
     const rows = list.map((s) => {
+      if (s.councils) {
+        return `<li class="fro-shelf"><a href="${esc(COUNCILS.href)}">` +
+          `<span class="fro-shelf-row">` +
+          `<span class="fro-shelf-name">${esc(COUNCILS.label)}</span>` +
+          `<span class="fro-shelf-n"><b>${num(s.n)}</b> ${s.n === 1 ? "volume" : "volumes"}</span>` +
+          `</span><span class="fro-shelf-who">${esc(COUNCILS.who)}</span></a>` +
+          `<p class="fro-shelf-guides" data-guide-link hidden><a class="fr-btn" href="${esc(COUNCILS.href)}">Guide to the Councils</a></p>` +
+          `<details class="fro-study"><summary>Study this shelf</summary>` +
+          `<nav aria-label="Study ${esc(COUNCILS.label)}">` +
+          `<a href="${esc(COUNCILS.href)}" data-guide-link hidden>Guide to this shelf</a>` +
+          `<a href="${esc(COUNCILS.first)}">Read the first volume</a>` +
+          `</nav></details></li>`;
+      }
       if (s.confessions) {
         return `<li class="fro-shelf"><a href="${esc(CONFESSIONS.href)}">` +
           `<span class="fro-shelf-row">` +
@@ -303,7 +343,7 @@
         `<span class="fro-shelf-name">${esc(shelfName(s.name))}</span>` +
         // One library: the English editions are works on the shelf like any other, counted with it.
         `<span class="fro-shelf-n"><b>${num(core + extra)}</b> ${core + extra === 1 ? "work" : "works"}</span>` +
-        `</span>${under}</a>${within}${studyShelf(s.name)}</li>`;
+        `</span>${under}</a>${within}${guideButtons(s.name)}${studyShelf(s.name)}</li>`;
     }).join("");
 
     // No aggregate work count in the heading. Only a work with a declared

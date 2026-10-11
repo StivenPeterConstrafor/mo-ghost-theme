@@ -1,6 +1,6 @@
 /* The shelf guides (owner 10-10: "independent page guide using motion graphics for each shelf", "prefer light cream").
    One cream visual world, deliberately single-theme like MereO: paper, ink, rule, rubric red and gilt, with a stained-glass set of
-   family colours per shelf. Everything is scoped to .tg so the same file drops into the MereO theme unchanged. */
+   family colors per shelf. Everything is scoped to .tg so the same file drops into the MereO theme unchanged. */
 .tg {
   --paper: #f6f1e7; --paper-2: #efe6d6; --card: #fffdf8; --ink: #2d2927; --ink-2: #4a4440; --muted: #6f675f; --rule: #dccbad; --rule-2: #e9dcc4;
   --rubric: #a3382a; --gilt: #a07c35; --leather: #5c3a2a; --land: #fbf7ee; --sea: #e6e7e0; --coast: #c9b48f;
@@ -105,7 +105,7 @@
   .tg .hero .scroll i { animation: none; } .tg .chron li, .tg .steps li { transition: none; }
   .tg .reveal { opacity: 1; transform: none; }
 }
-/* the finder: search, family chips, three tabs (By author folds, By century lifelines, By title A to Z) */
+/* the finder: search, family chips, two tabs (By author folds, By century lifelines) */
 .tg .fx-top { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
 .tg .fx-search { display: flex; align-items: center; gap: 10px; flex: 1 1 22rem; max-width: 36rem; font: 600 0.72rem var(--body); letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
 .tg .fx-search input { flex: 1 1 auto; min-width: 0; font: 1.02rem var(--body); letter-spacing: 0; text-transform: none; color: var(--ink); background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 10px 14px; }
@@ -161,8 +161,57 @@
 .tg #names .kn-sig { margin: 2px 0 0; font-size: 0.92rem; line-height: 1.5; color: var(--ink); text-wrap: pretty; }
 .tg #names .kn-go { margin: auto 0 0; padding-top: 8px; border-top: 1px solid var(--rule-2); display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; font-size: 0.86rem; }
 .tg #names .kn-go a { color: var(--rubric); }
-.tg #names .kn-go button { font: 0.86rem var(--body); color: var(--ink-2); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rule); }
-.tg #names .kn-go button:hover { color: var(--rubric); }
+.tg #names .kn-go a.kn-all { color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rule); }
+.tg #names .kn-go a.kn-all:hover { color: var(--rubric); }
+.tg #names .kn-card h3 a { color: inherit; text-decoration: none; background-image: linear-gradient(var(--rubric), var(--rubric)); background-size: 0 1px; background-repeat: no-repeat; background-position: 0 100%; transition: background-size 0.35s ease, color 0.2s; }
+.tg #names .kn-card h3 a:hover, .tg #names .kn-card h3 a:focus-visible { color: var(--rubric); background-size: 100% 1px; }
+/* key works: the books on one shelf in the order they were written; the current one pulled forward */
+.tg .kw-head { max-width: 46rem; }
+.tg .kw-stage { position: relative; overflow-x: auto; overflow-y: visible; padding: 34px 0 6px; margin-top: 10px; }
+.tg .kw-shelf { display: flex; align-items: flex-end; justify-content: center; gap: 12px; width: max-content; min-width: 100%; min-height: 270px; padding: 0 18px;
+  border-bottom: 13px solid #8a6438; box-shadow: 0 14px 18px -10px rgba(70, 45, 20, 0.35); background: linear-gradient(transparent 92%, rgba(80, 55, 25, 0.06)); }
+.tg .kw-set { display: flex; align-items: flex-end; gap: 1px; background: none; border: 0; padding: 0; cursor: pointer; transition: transform 0.4s cubic-bezier(.2,.8,.2,1); position: relative; }
+.tg .kw-set.now { transform: translateY(-16px); }
+.tg .kw-set:focus-visible { outline: 2px solid var(--rubric); outline-offset: 5px; border-radius: 3px; }
+.tg .kw-sp { position: relative; display: block; width: 16px; height: var(--h); border-radius: 3px 3px 1px 1px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--c) 62%, #000) 0, var(--c) 16%, color-mix(in srgb, var(--c) 78%, #fff) 48%, var(--c) 80%, color-mix(in srgb, var(--c) 62%, #000) 100%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14); transition: box-shadow 0.4s; }
+.tg .kw-sp::before, .tg .kw-sp::after { content: ''; position: absolute; left: 3px; right: 3px; height: 2px; background: var(--gilt); opacity: 0.85; box-shadow: 0 4px 0 -0.5px var(--gilt); }
+.tg .kw-sp::before { top: 12px; } .tg .kw-sp::after { bottom: 16px; }
+.tg .kw-sp.first { width: 34px; }
+.tg .kw-sp b { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); writing-mode: vertical-rl; max-height: calc(var(--h) - 52px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  font: 600 11.5px/1 var(--body); color: #f8f0dc; letter-spacing: 0.02em; }
+.tg .kw-sp i { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); writing-mode: vertical-rl; font: italic 10.5px/1 var(--display); color: #f1e4c4; opacity: 0.9; white-space: nowrap; }
+.tg .kw-set.now .kw-sp { box-shadow: 0 14px 20px -6px rgba(60, 40, 20, 0.45), inset 0 0 0 1px rgba(0, 0, 0, 0.16); }
+.tg .kw-more { align-self: center; font: italic 12px var(--body); color: var(--muted); padding-left: 4px; }
+.tg .kw-years { position: relative; height: 22px; width: max-content; min-width: 100%; }
+.tg .kw-years span { position: absolute; top: 6px; transform: translateX(-50%); font: 600 10.5px var(--body); color: var(--muted); font-variant-numeric: tabular-nums; transition: opacity 0.3s; }
+.tg .kw-card { margin-top: 18px; max-width: 48rem; min-height: 11.5rem; }
+.tg .kw-card .kw-d { margin: 0 0 4px; font: 600 0.78rem var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.tg .kw-card .kw-d a { color: var(--rubric); }
+.tg .kw-card h3 { margin: 0 0 6px; font: 400 1.6rem/1.15 var(--display); text-wrap: balance; } .tg .kw-card h3 a { color: inherit; text-decoration: none; }
+.tg .kw-card h3 a:hover { color: var(--rubric); } .tg .kw-card h3 i { color: var(--muted); font-size: 0.72em; margin-left: 6px; }
+.tg .kw-card .kw-note { margin: 0; max-width: 60ch; }
+.tg .kw-card .kw-m { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 10px 0 0; font-size: 0.86rem; color: var(--muted); } .tg .kw-card .kw-m a { color: var(--rubric); }
+@media (max-width: 640px) { .tg .kw-shelf { justify-content: flex-start; min-height: 230px; gap: 9px; } .tg .kw-sp.first { width: 28px; } .tg .kw-sp { width: 13px; } }
+
+/* a portrait engraved in an oval at the head of each who's-who card */
+.tg #names .kn-top { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 14px; align-items: start; }
+.tg #names .kn-por { margin: 0; width: 92px; }
+.tg #names .kn-por canvas { display: block; width: 92px; height: 115px; }
+.tg .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.tg .kw-card.has-por { display: grid; grid-template-columns: 84px minmax(0, 1fr); column-gap: 18px; } .tg .kw-card.has-por > :not(.kw-por) { grid-column: 2; }
+.tg .kw-card .kw-por { grid-column: 1; grid-row: 1 / span 4; width: 84px; height: 105px; align-self: start; }
+@media (max-width: 520px) { .tg .kw-card.has-por { grid-template-columns: 64px minmax(0, 1fr); column-gap: 12px; } .tg .kw-card .kw-por { width: 64px; height: 80px; } }
+
+
+/* a person or a work the copy names, linked to its room */
+.tg a.tg-ln, .tg-cou a.tg-ln { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.tg a.tg-ln:hover, .tg a.tg-ln:focus-visible, .tg-cou a.tg-ln:hover, .tg-cou a.tg-ln:focus-visible { color: var(--rubric); text-decoration-color: currentColor; }
+
+.tg .tg-replay, .tg-cou .tg-replay { display: block; margin: 8px 0 0 auto; font: 0.8rem var(--body); color: var(--muted); background: var(--card); border: 1px solid var(--rule); border-radius: 3px; padding: 4px 10px; cursor: pointer; }
+.tg .tg-replay:hover, .tg-cou .tg-replay:hover { color: var(--rubric); border-color: var(--rubric); }
+
 
 /* On MereO: the guide sits in the theme's main, under the masthead and the TFR rail */
 .tfr-guide-page { background: #f6f1e7; }

@@ -10,7 +10,9 @@
   const parse = (s) => { const [y, mo, day] = String(s).split('-').map(Number); return { y, mo, day, t: Date.UTC(y, mo - 1, day || 15) }; }; // day 0: known to the month
   const doy = (p) => (p.t - Date.UTC(p.y, 0, 1)) / 864e5;
   const fy = (s) => { const p = parse(s); return p.y + doy(p) / 366; };
-  const long = (s) => { const p = parse(s); return p.day ? `${DAYS[new Date(p.t).getUTCDay()]}, ${p.day} ${MON[p.mo - 1]} ${p.y}` : `${MON[p.mo - 1]} ${p.y}`; };
+  // England kept the Julian calendar until 1752: its weekday is the Gregorian one of a date ten days later (eleven from March 1700)
+  const julianDay = (p) => new Date(p.t + (p.y < 1700 || (p.y === 1700 && p.mo < 3) ? 10 : 11) * 864e5).getUTCDay();
+  const long = (s) => { const p = parse(s); return p.day ? `${DAYS[julianDay(p)]}, ${p.day} ${MON[p.mo - 1]} ${p.y}` : `${MON[p.mo - 1]} ${p.y}`; };
   let explorer = null;
   document.getElementById('tg-shelf-link').href = TG.href('westminster-assembly/');
 
@@ -129,60 +131,7 @@
     TG.chapter('#tg-sit', 3800, (p) => render(p), { scrub: 0.4 });
   })();
 
-  /* ---------- 2. the Confession as a building: thirty-three columns, a stone for each section ---------- */
-  (function confession() {
-    const C = D.conf.ch, svg = document.querySelector('#tg-confbox svg'), NS = 'http://www.w3.org/2000/svg', card = document.getElementById('tg-chap');
-    const mk = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
-    const W = 800, base = 372, shaftTop = 150, gap = 6, cw = (W - 40 - gap * 32) / 33, x0 = 20;
-    svg.setAttribute('viewBox', `0 0 ${W} 424`);
-    const RO = (n) => { let s = ''; for (const [v, r] of [[10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']]) while (n >= v) { s += r; n -= v; } return s; };
-    const plinth = mk('rect', { x: 8, y: base, width: W - 16, height: 10, fill: TG.css('--leather') });
-    const steps = [mk('rect', { x: 0, y: base + 10, width: W, height: 8, fill: TG.css('--rule') })];
-    const ent = mk('g', {}); mk('rect', { x: 10, y: shaftTop - 26, width: W - 20, height: 22, fill: TG.css('--card'), stroke: TG.css('--ink-2'), 'stroke-width': 1 }, ent);
-    const et = mk('text', { x: W / 2, y: shaftTop - 10, 'text-anchor': 'middle', fill: TG.css('--ink-2'), style: `font: 600 10px ${TG.css('--body')}; letter-spacing: 0.32em` }, ent); et.textContent = 'AGREED UPON BY THE ASSEMBLY OF DIVINES AT WESTMINSTER';
-    const ped = mk('g', {}); const tri = mk('path', { d: `M10 ${shaftTop - 28} L${W / 2} ${shaftTop - 118} L${W - 10} ${shaftTop - 28} Z`, fill: TG.css('--card'), stroke: TG.css('--ink-2'), 'stroke-width': 1.2 }, ped);
-    const pt = mk('text', { x: W / 2, y: shaftTop - 52, 'text-anchor': 'middle', fill: TG.css('--rubric'), style: `font: 400 26px ${TG.css('--display')}` }, ped); pt.textContent = 'The Confession of Faith';
-    const pd = mk('text', { x: W / 2, y: shaftTop - 36, 'text-anchor': 'middle', fill: TG.css('--muted'), style: `font: italic 12px ${TG.css('--display')}` }, ped); pd.textContent = 'presented to Parliament in December 1646';
-    const cols = C.map((c, i) => {
-      const x = x0 + i * (cw + gap), g = mk('g', { class: 'blk', tabindex: 0, role: 'button', 'aria-label': `Chapter ${c.r}: ${c.t} (${c.sec} sections)` }), stones = [];
-      const H = base - shaftTop, sh = (H - (c.sec - 1) * 2) / c.sec;
-      mk('rect', { x: x - 2, y: shaftTop - 4, width: cw + 4, height: 5, class: 'cap' }, g);
-      for (let k = 0; k < c.sec; k++) stones.push(mk('rect', { x, y: base - (k + 1) * sh - k * 2, width: cw, height: sh, rx: 1.5, fill: TG.css('--paper-2'), stroke: TG.css('--rule'), 'stroke-width': 0.8 }, g));
-      const n = mk('text', { x: x + cw / 2, y: base + (i % 2 ? 44 : 30), 'text-anchor': 'middle', class: 'num' }, g); n.textContent = RO(c.n);
-      return { c, g, stones, n };
-    });
-    function show(i) {
-      const { c } = cols[i]; cols.forEach((o, j) => o.stones.forEach((s) => s.setAttribute('fill', j === i ? TG.css('--gilt') : TG.css('--paper-2'))));
-      card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">Chapter ${c.r} · ${c.sec} ${c.sec === 1 ? 'section' : 'sections'}</p>
-        <h3><a href="${TG.read(D.conf.slug, c.p)}" target="_blank" rel="noopener">${esc(c.t)}</a></h3>
-        ${c.k ? `<p class="small" style="margin:6px 0 0">${c.k} ${c.k === 1 ? 'book' : 'books'} by the divines name this subject in the title${c.w.length < c.k ? '; the largest:' : ':'}</p><ul>${c.w.map(([t, s, a]) => `<li><a href="${TG.read(s)}" target="_blank" rel="noopener">${esc(t)}</a><small>${esc(a)}</small></li>`).join('')}</ul>`
-          : '<p class="small" style="margin:6px 0 0">No book by the divines names this subject in its title.</p>'}`;
-    }
-    cols.forEach((o, i) => { o.g.addEventListener('mouseenter', () => show(i)); o.g.addEventListener('focus', () => show(i)); o.g.addEventListener('click', () => show(i)); });
-    let shown = -1;
-    function render(p, fin) {
-      const k = fin ? 33 : p * 33.6, built = Math.min(33, Math.floor(k));
-      cols.forEach((o, i) => { const u = clamp(k - i, 0, 1); o.stones.forEach((s, j) => { const v = clamp(u * o.stones.length - j, 0, 1); s.style.opacity = v; s.style.transform = `translateY(${(1 - ease(v)) * -14}px)`; });
-        o.g.querySelector('.cap').style.opacity = u >= 1 ? 1 : 0; o.n.style.opacity = 0.25 + 0.75 * u; });
-      const roof = fin ? 1 : clamp((p - 0.86) / 0.12, 0, 1);
-      ent.style.opacity = roof; ent.style.transform = `translateY(${(1 - roof) * -10}px)`; ped.style.opacity = clamp(roof * 1.4 - 0.4, 0, 1);
-      const cur = fin ? 0 : Math.min(32, Math.max(0, Math.floor(k - 0.5)));
-      if (cur !== shown && (!fin || shown < 0)) { shown = cur; show(cur); }
-    }
-    TG.chapter('#tg-conf', 3400, render, { scrub: 0.5 });
-  })();
-
-  /* ---------- the Assembly's own texts ---------- */
-  (function texts() {
-    const docs = D.docs.map(([s, t, y]) => `<a href="${TG.read(s)}" target="_blank" rel="noopener"><b>${esc(t)}</b><small>${y} · in the Confessions</small></a>`);
-    const pages = [['westminster-shorter/', 'Learn the Shorter Catechism', 'question by question'], ['westminster-larger/', 'Learn the Larger Catechism', 'question by question']]
-      .map(([h, t, s]) => `<a href="${TG.href(h)}"><b>${esc(t)}</b><small>${esc(s)}</small></a>`);
-    const vols = D.vols.map((v) => `<a href="${TG.read(v.s)}" target="_blank" rel="noopener"><b>${esc(v.label.replace(/^Vol\. ([\w ,]+?): /, 'The Minutes, $1: '))}</b><small>${fmt(v.p)} pages</small></a>`);
-    document.getElementById('tg-texts').innerHTML = docs.concat(pages, vols).join('');
-    if (G) gsap.from('#tg-texts a', { opacity: 0, y: 14, duration: 0.5, stagger: 0.05, ease: 'power2.out', scrollTrigger: { trigger: '#tg-texts', start: 'top 85%', once: true } });
-  })();
-
-  /* ---------- 3. where they came from ---------- */
+  /* ---------- 2. where they came from ---------- */
   (function where() {
     const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[-8.4, 49.9], [5.2, 58.8]], { parallels: [50, 58] });
     const cv = TG.canvas(box.querySelector('canvas')), {ctx} = cv, names = document.getElementById('tg-where-names');
@@ -208,7 +157,7 @@
     TG.chapter('#tg-where', 2600, (p, fin) => { shown = fin ? P.length : p * (P.length + 1.5); const cur = fin ? P[0] : P[Math.max(0, Math.min(P.length - 1, Math.floor(shown) - 1))]; if (!sel) list(cur); draw(); }, { scrub: 0.5 });
   })();
 
-  /* ---------- 4. the press: the books by year, then by kind ---------- */
+  /* ---------- 3. the press: the books by year, then by kind ---------- */
   (function press() {
     const box = document.getElementById('tg-pressbox'), K = D.kinds.map((k) => k[0]), KN = Object.fromEntries(D.kinds);
     const KC = { parl: '--rubric', sermon: '--gilt', script: '--f1', treat: '--f2', order: '--f5', learn: '--f7' };
@@ -253,6 +202,212 @@
     new ResizeObserver(() => { layout(); render(lastP, lastF); }).observe(box);
     let lastP = 0, lastF = false;
     TG.chapter('#tg-press', 3600, (p, fin) => { lastP = p; lastF = fin; render(p, fin); }, { scrub: 0.5 });
+  })();
+
+  /* ---------- 4. the Confession as a building: thirty-three columns, a stone for each section ---------- */
+  (function confession() {
+    const C = D.conf.ch, svg = document.querySelector('#tg-confbox svg'), NS = 'http://www.w3.org/2000/svg', card = document.getElementById('tg-chap');
+    const mk = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
+    const W = 800, base = 372, shaftTop = 150, gap = 6, cw = (W - 40 - gap * 32) / 33, x0 = 20;
+    svg.setAttribute('viewBox', `0 0 ${W} 424`);
+    const RO = (n) => { let s = ''; for (const [v, r] of [[10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']]) while (n >= v) { s += r; n -= v; } return s; };
+    const plinth = mk('rect', { x: 8, y: base, width: W - 16, height: 10, fill: TG.css('--leather') });
+    const steps = [mk('rect', { x: 0, y: base + 10, width: W, height: 8, fill: TG.css('--rule') })];
+    const ent = mk('g', {}); mk('rect', { x: 10, y: shaftTop - 26, width: W - 20, height: 22, fill: TG.css('--card'), stroke: TG.css('--ink-2'), 'stroke-width': 1 }, ent);
+    const et = mk('text', { x: W / 2, y: shaftTop - 10, 'text-anchor': 'middle', fill: TG.css('--ink-2'), style: `font: 600 10px ${TG.css('--body')}; letter-spacing: 0.32em` }, ent); et.textContent = 'AGREED UPON BY THE ASSEMBLY OF DIVINES AT WESTMINSTER';
+    const ped = mk('g', {}); const tri = mk('path', { d: `M10 ${shaftTop - 28} L${W / 2} ${shaftTop - 118} L${W - 10} ${shaftTop - 28} Z`, fill: TG.css('--card'), stroke: TG.css('--ink-2'), 'stroke-width': 1.2 }, ped);
+    const pt = mk('text', { x: W / 2, y: shaftTop - 52, 'text-anchor': 'middle', fill: TG.css('--rubric'), style: `font: 400 26px ${TG.css('--display')}` }, ped); pt.textContent = 'The Confession of Faith';
+    const pd = mk('text', { x: W / 2, y: shaftTop - 36, 'text-anchor': 'middle', fill: TG.css('--muted'), style: `font: italic 12px ${TG.css('--display')}` }, ped); pd.textContent = 'presented to Parliament in December 1646';
+    const cols = C.map((c, i) => {
+      const x = x0 + i * (cw + gap), g = mk('g', { class: 'blk', tabindex: 0, role: 'button', 'aria-label': `Chapter ${c.r}: ${c.t} (${c.sec} sections)` }), stones = [];
+      const H = base - shaftTop, sh = (H - (c.sec - 1) * 2) / c.sec;
+      mk('rect', { x: x - 2, y: shaftTop - 4, width: cw + 4, height: 5, class: 'cap' }, g);
+      for (let k = 0; k < c.sec; k++) stones.push(mk('rect', { x, y: base - (k + 1) * sh - k * 2, width: cw, height: sh, rx: 1.5, fill: TG.css('--paper-2'), stroke: TG.css('--rule'), 'stroke-width': 0.8 }, g));
+      const n = mk('text', { x: x + cw / 2, y: base + (i % 2 ? 44 : 30), 'text-anchor': 'middle', class: 'num' }, g); n.textContent = RO(c.n);
+      return { c, g, stones, n };
+    });
+    function show(i) {
+      const { c } = cols[i]; cols.forEach((o, j) => o.stones.forEach((s) => s.setAttribute('fill', j === i ? TG.css('--gilt') : TG.css('--paper-2'))));
+      card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">Chapter ${c.r} · ${c.sec} ${c.sec === 1 ? 'section' : 'sections'}</p>
+        <h3><a href="${TG.read(D.conf.slug, c.p)}" target="_blank" rel="noopener">${esc(c.t)}</a></h3>
+        ${c.k ? `<p class="small" style="margin:6px 0 0">${c.k} ${c.k === 1 ? 'book' : 'books'} by the divines name this subject in the title${c.w.length < c.k ? '; the largest:' : ':'}</p><ul>${c.w.map(([t, s, a]) => `<li><a href="${TG.read(s)}" target="_blank" rel="noopener">${esc(t)}</a><small>${esc(a)}</small></li>`).join('')}</ul>`
+          : '<p class="small" style="margin:6px 0 0">No book by the divines names this subject in its title.</p>'}`;
+    }
+    cols.forEach((o, i) => { o.g.addEventListener('mouseenter', () => show(i)); o.g.addEventListener('focus', () => show(i)); o.g.addEventListener('click', () => show(i)); });
+    let shown = -1;
+    function render(p, fin) {
+      const k = fin ? 33 : p * 33.6, built = Math.min(33, Math.floor(k));
+      cols.forEach((o, i) => { const u = clamp(k - i, 0, 1); o.stones.forEach((s, j) => { const v = clamp(u * o.stones.length - j, 0, 1); s.style.opacity = v; s.style.transform = `translateY(${(1 - ease(v)) * -14}px)`; });
+        o.g.querySelector('.cap').style.opacity = u >= 1 ? 1 : 0; o.n.style.opacity = 0.25 + 0.75 * u; });
+      const roof = fin ? 1 : clamp((p - 0.86) / 0.12, 0, 1);
+      ent.style.opacity = roof; ent.style.transform = `translateY(${(1 - roof) * -10}px)`; ped.style.opacity = clamp(roof * 1.4 - 0.4, 0, 1);
+      const cur = fin ? 0 : Math.min(32, Math.max(0, Math.floor(k - 0.5)));
+      if (cur !== shown && (!fin || shown < 0)) { shown = cur; show(cur); }
+    }
+    TG.chapter('#tg-conf', 3400, render, { scrub: 0.5 });
+  })();
+
+  /* ---------- the debates: the members the minutes name, re-ranked month by month ---------- */
+  (function debates() {
+    const B = D.debate, P = B.people, M = B.months, box = document.getElementById('tg-debbox'), now = document.getElementById('tg-deb-now'), card = document.getElementById('tg-deb-card');
+    const last = Math.max(...P.flatMap((p) => p.m.map(([mi]) => mi)));
+    const cum = P.map((p) => { const a = new Array(M.length).fill(0); p.m.forEach(([mi, k]) => { a[mi] += k; }); for (let i = 1; i < a.length; i++) a[i] += a[i - 1]; return a; });
+    const perMonth = M.map((_, i) => P.reduce((t, p) => t + (p.m.find(([mi]) => mi === i) || [0, 0])[1], 0));
+    const cumAll = perMonth.reduce((acc, v) => { acc.push((acc.length ? acc[acc.length - 1] : 0) + v); return acc; }, []); // the scroll is paced by the speeches, not the months
+    const notes = D.events.concat(B.notes).sort((a, b) => (a[0] < b[0] ? -1 : 1));
+    const noteAt = (mo) => notes.filter((e) => e[0].slice(0, 7) <= mo).pop();
+    const monthName = (mo) => { const [y, m] = mo.split('-').map(Number); return `${MON[m - 1]} ${y}`; };
+    const RH = 23, max = Math.max(...P.map((p) => p.c));
+    box.style.height = `${P.length * RH}px`;
+    const rows = P.map((p, i) => {
+      const r = document.createElement('button'); r.type = 'button'; r.className = 'row'; r.setAttribute('role', 'listitem');
+      r.innerHTML = `<span class="nm">${esc(p.n)}</span><span class="bar"><i style="background:${fc(p.f)}"></i></span><b class="ct num">0</b>`;
+      r.style.transform = `translateY(${i * RH}px)`;
+      r.addEventListener('click', () => pick(i)); box.appendChild(r); return r;
+    });
+    document.getElementById('tg-deb-vols').innerHTML = `Read the minutes: ${D.vols.map((v) => `<a href="${TG.read(v.s)}" target="_blank" rel="noopener">${esc(v.label.split(':')[0])}${/papers/i.test(v.label) ? ' (the papers)' : ''}</a>`).join(' · ')}`;
+    const firstOf = {}; D.sessions.forEach((s) => { const mo = s[1].slice(0, 7); if (!firstOf[mo]) firstOf[mo] = s; });
+    const monthLink = (mo) => { const s = firstOf[mo]; return s ? `<a href="${TG.read(s[2], s[3])}" target="_blank" rel="noopener">${monthName(mo)}</a>` : monthName(mo); };
+    const used = D.fam.filter(([k]) => P.some((p) => p.f === k));
+    document.getElementById('tg-deb-key').innerHTML = used.map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('');
+    let picked = -1, shownMo = '';
+    function pick(i) {
+      picked = i; const p = P[i]; rows.forEach((r, j) => r.classList.toggle('on', j === i));
+      const [fd, fl, fv, fp] = p.first, [td, tl, tv, tp] = p.top;
+      const name = p.on ? `<a href="${TG.author(p.n)}" target="_blank" rel="noopener">${esc(p.n)}</a>` : esc(p.n);
+      card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">${esc(famName(p.f))}</p><h3>${name}</h3>
+        <p class="small" style="margin:6px 0 0">The minutes give him ${fmt(p.c)} speeches. The first is in <a href="${TG.read(fv, fp)}" target="_blank" rel="noopener">${esc(fl)}, ${esc(long(fd))}</a>. He spoke most in <a href="${TG.read(tv, tp)}" target="_blank" rel="noopener">${esc(tl)}, ${esc(long(td))}</a>.</p>`;
+    }
+    function summary() {
+      const f = B.by_f;
+      card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">${fmt(B.named)} speeches by a named member</p><h3>The parties on the floor</h3>
+        <p class="small" style="margin:6px 0 0">The Independents made ${fmt(f.indep || 0)} of them. The Scottish commissioners made ${fmt(f.scots || 0)} and the Erastians ${fmt(f.erast || 0)}. The body of the Assembly made the other ${fmt(f.body || 0)}. Choose a member to open the day he spoke most.</p>`;
+    }
+    function render(p, fin) {
+      const k = fin ? last : Math.min(last, Math.max(0, cumAll.findIndex((v) => v >= p * B.named))), mo = M[k];
+      const vals = cum.map((a) => a[k]);
+      vals.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]).forEach(([v, i], r) => {
+        const row = rows[i]; row.style.transform = `translateY(${r * RH}px)`; row.style.opacity = v ? 1 : 0.4;
+        row.querySelector('.bar i').style.width = `${(100 * v) / max}%`; row.querySelector('.ct').textContent = fmt(v);
+      });
+      const note = noteAt(mo);
+      now.innerHTML = fin || k === last ? `<b>${monthLink(M[0])} to ${monthLink(M[last])}</b> · ${fmt(B.named)} named speeches` : `<b>${monthLink(mo)}</b> · ${fmt(perMonth[k])} named ${perMonth[k] === 1 ? 'speech' : 'speeches'}`;
+      if (picked >= 0) return;
+      if (fin || k === last) { summary(); shownMo = ''; return; }
+      if (note && note[0] !== shownMo) { shownMo = note[0]; card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">${esc(long(note[0]))}</p><h3>${esc(note[1])}</h3>${note[2] ? `<p class="small" style="margin:6px 0 0">${esc(note[2])}</p>` : ''}`; }
+    }
+    TG.chapter('#tg-deb', 3600, render, { scrub: 0.5 });
+  })();
+
+  /* ---------- the Annotations of 1645: every chapter of the Bible, shaded by the length of its notes ---------- */
+  (function annotations() {
+    const A = D.annot, svg = document.querySelector('#tg-annbox svg'), NS = 'http://www.w3.org/2000/svg', card = document.getElementById('tg-ann-card'), tip = document.querySelector('#tg-annbox .tip');
+    const mk = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const key in at) e.setAttribute(key, at[key]); parent.appendChild(e); return e; };
+    document.getElementById('tg-annot').href = TG.read(A.slug);
+    document.getElementById('tg-ann-start').href = TG.read(A.slug, A.preface_page);
+    document.getElementById('tg-ann-adv').href = TG.read(A.slug, A.adv_page);
+    const sel = document.getElementById('tg-ann-pick');
+    A.books.forEach(([name], bi) => { const o = document.createElement('option'); o.value = bi; o.textContent = name; sel.appendChild(o); });
+    sel.addEventListener('change', () => { if (sel.value === '') return; const bi = Number(sel.value); showBook(bi); window.open(TG.read(A.slug, A.books[bi][1]), '_blank', 'noopener'); });
+    const PER = 40, CS = 12, STEP = 14, TOP = 18, GAPY = 34, W = PER * STEP;
+    const nz = A.books.flatMap((b) => b[2].map((c) => c[0])).filter((w) => w > 0).sort((a, b) => a - b);
+    const rank = (w) => { let lo = 0, hi = nz.length; while (lo < hi) { const m = (lo + hi) >> 1; if (nz[m] < w) lo = m + 1; else hi = m; } return lo / (nz.length - 1); };
+    const shade = (w) => (w ? 0.1 + 0.9 * rank(w) : 0);
+    const isAdv = (b, ch) => A.adv.some(([n, c]) => n === b && c === ch);
+    const cells = []; let col = 0, row = 0, y0 = TOP;
+    const lab = (t, y) => { const e = mk('text', { x: 0, y: y - 6, class: 'tlab' }); e.textContent = t; };
+    lab('Old Testament', TOP);
+    A.books.forEach(([name, p0, chs], bi) => {
+      if (bi === 39) { y0 = TOP + (row + (col ? 1 : 0)) * STEP + GAPY; row = 0; col = 0; lab('New Testament', y0); }
+      chs.forEach(([w, pg], ci) => {
+        const x = col * STEP, y = y0 + row * STEP, adv = isAdv(name, ci + 1);
+        const r = mk('rect', { x, y, width: CS, height: CS, rx: 1.5, class: 'cell', tabindex: -1,
+          fill: w ? TG.css('--ink-2') : 'none', 'fill-opacity': shade(w), stroke: w ? 'none' : TG.css('--muted'), 'stroke-dasharray': w ? '' : '2 2', 'stroke-width': 1 });
+        if (ci === 0 && col) mk('line', { x1: x - 1, x2: x - 1, y1: y - 1.5, y2: y + CS + 1.5, stroke: TG.css('--ink'), 'stroke-width': 1.2, opacity: 0.5 });
+        cells.push({ r, bi, ci, w, pg, adv, x, y });
+        col += 1; if (col === PER) { col = 0; row += 1; }
+      });
+    });
+    const KY = y0 + (row + (col ? 1 : 0)) * STEP + 16, H = KY + 22;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const key = mk('g', { class: 'tlab' });
+    [0.1, 0.32, 0.55, 0.78, 1].forEach((s, i) => mk('rect', { x: 74 + i * STEP, y: KY, width: CS, height: CS, rx: 1.5, fill: TG.css('--ink-2'), 'fill-opacity': s }, key));
+    const k1 = mk('text', { x: 0, y: KY + 10, class: 'tlab' }, key); k1.textContent = 'Shorter';
+    const k2 = mk('text', { x: 74 + 5 * STEP + 6, y: KY + 10, class: 'tlab' }, key); k2.textContent = 'Longer notes';
+    mk('rect', { x: 290, y: KY, width: CS, height: CS, rx: 1.5, fill: 'none', stroke: TG.css('--muted'), 'stroke-dasharray': '2 2' }, key);
+    const k3 = mk('text', { x: 290 + STEP + 6, y: KY + 10, class: 'tlab' }, key); k3.textContent = 'No notes of its own';
+    const SHORT = { Philippians: 'Phil.', '1 Timothy': '1 Tim.', Hebrews: 'Heb.' };
+    const placed = []; // a label that would touch the one before it on the same row goes under its square
+    const rings = cells.filter((c) => c.adv).map((c) => {
+      const below = placed.some((q) => q.y === c.y && Math.abs(q.x - c.x) < 54); placed.push(c);
+      const g = mk('g', { opacity: 0 }); mk('rect', { x: c.x - 2.5, y: c.y - 2.5, width: CS + 5, height: CS + 5, rx: 3, fill: 'none', stroke: TG.css('--rubric'), 'stroke-width': 2 }, g);
+      const l = mk('text', { x: c.x + CS / 2, y: below ? c.y + CS + 14 : c.y - 6, 'text-anchor': 'middle', class: 'alab' }, g); l.textContent = `${SHORT[A.books[c.bi][0]]} ${c.ci + 1}`; return g;
+    });
+    const bookWords = A.books.map((b) => b[2].reduce((t, c) => t + c[0], 0));
+    const longest = (bi) => A.books[bi][2].reduce((m, c, i, a) => (c[0] > a[m][0] ? i : m), 0) + 1;
+    const testament = (bi) => (bi < 39 ? 'Old Testament' : 'New Testament');
+    function showBook(bi) {
+      const [name, p0, chs] = A.books[bi];
+      card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">${testament(bi)} · book ${bi + 1} of 66</p><h3><a href="${TG.read(A.slug, p0)}" target="_blank" rel="noopener">${esc(name)}</a></h3>
+        <p class="small" style="margin:6px 0 0">${chs.length} ${chs.length === 1 ? 'chapter' : 'chapters'} and ${fmt(bookWords[bi])} words of notes. The longest notes are on chapter ${longest(bi)}.</p>`;
+    }
+    function showAdv() {
+      const s = D.debate.tim517, inNov = s.filter((x) => x[0] >= '1643-11-01' && x[0] <= '1643-12-31'), first = s[0];
+      card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">An advertisement before the notes</p><h3>Philippians 1:1, 1 Timothy 3:1 and 5:17, Hebrews 6:2</h3>
+        <p class="small" style="margin:6px 0 0">One annotator’s notes on these places seemed to defend bishops. The others left his notes as they stood and answered them in <a href="${TG.read(A.slug, A.adv_page)}" target="_blank" rel="noopener">an advertisement at the front of the book</a>. The Assembly argued over the same verse. The minutes cite 1 Timothy 5:17 in ${s.length} sessions. The debate on ruling elders in November and December 1643 accounts for ${inNov.length} of them. The first is <a href="${TG.read(first[2], first[3])}" target="_blank" rel="noopener">${esc(first[1])}</a>.</p>`;
+    }
+    const wrap = document.getElementById('tg-annbox');
+    let hover = -1, lastK = 0;
+    const paint = () => cells.forEach((c, i) => { c.r.style.opacity = (0.12 + 0.88 * clamp(lastK - i, 0, 1)) * (hover < 0 || c.bi === hover ? 1 : 0.35); });
+    const dim = () => paint();
+    svg.addEventListener('mousemove', (e) => {
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse());
+      const c = cells.find((o) => q.x >= o.x - 1 && q.x <= o.x + STEP - 1 && q.y >= o.y - 1 && q.y <= o.y + STEP - 1);
+      if (!c) { tip.hidden = true; if (hover >= 0) { hover = -1; dim(); } return; }
+      const name = A.books[c.bi][0], b = wrap.getBoundingClientRect();
+      tip.innerHTML = `${esc(name)} ${c.ci + 1}<small>${c.w ? `${fmt(c.w)} words of notes · choose it to read them` : 'No notes of its own. The notes on chapter 43 end with a discussion of the whole vision.'}</small>`;
+      tip.hidden = false; tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 240)}px`; tip.style.top = `${e.clientY - b.top + 14}px`;
+      if (hover !== c.bi) { hover = c.bi; dim(); }
+      showChapter(c);
+    });
+    svg.addEventListener('mouseleave', () => { tip.hidden = true; hover = -1; dim(); });
+    const pageOf = (c) => (c.w ? c.pg : A.books[c.bi][2][42][1]); // Ezekiel 44-48 open the notes on chapter 43
+    function showChapter(c) {
+      const [name, , chs] = A.books[c.bi];
+      card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">${testament(c.bi)} · ${esc(name)}</p><h3><a href="${TG.read(A.slug, pageOf(c))}" target="_blank" rel="noopener">${esc(name)} ${c.ci + 1}</a></h3>
+        <p class="small" style="margin:6px 0 0">${c.w ? `${fmt(c.w)} words of notes.` : 'No notes of its own. The notes on chapter 43 end with a discussion of the whole vision.'} The book has ${chs.length} ${chs.length === 1 ? 'chapter' : 'chapters'} and ${fmt(bookWords[c.bi])} words of notes.</p>`;
+    }
+    let touch = false, tapped = null;
+    svg.addEventListener('pointerdown', (e) => { touch = e.pointerType !== 'mouse'; });
+    svg.addEventListener('click', (e) => {
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse());
+      const c = cells.find((o) => q.x >= o.x - 1 && q.x <= o.x + STEP - 1 && q.y >= o.y - 1 && q.y <= o.y + STEP - 1);
+      if (!c) return;
+      if (touch && tapped !== c) { tapped = c; hover = c.bi; dim(); showChapter(c); return; }
+      window.open(TG.read(A.slug, pageOf(c)), '_blank', 'noopener');
+    });
+    let shownBook = -2;
+    function render(p, fin) {
+      const n = cells.length, k = fin ? n : clamp(p / 0.86, 0, 1) * n;
+      lastK = k; paint();
+      const adv = fin ? 1 : clamp((p - 0.88) / 0.08, 0, 1);
+      rings.forEach((r) => r.setAttribute('opacity', adv));
+      if (hover >= 0) return;
+      if (adv > 0.5) { if (shownBook !== -1) { shownBook = -1; showAdv(); } return; }
+      const {bi} = cells[Math.min(n - 1, Math.max(0, Math.floor(k) - 1))];
+      if (bi !== shownBook) { shownBook = bi; showBook(bi); }
+    }
+    TG.chapter('#tg-ann', 4000, render, { scrub: 0.5 });
+  })();
+
+  /* ---------- the Assembly's own texts ---------- */
+  (function texts() {
+    const docs = D.docs.map(([s, t, y]) => `<a href="${TG.read(s)}" target="_blank" rel="noopener"><b>${esc(t)}</b><small>${y} · in the Confessions</small></a>`);
+    const pages = [['westminster-shorter/', 'Learn the Shorter Catechism', 'question by question'], ['westminster-larger/', 'Learn the Larger Catechism', 'question by question']]
+      .map(([h, t, s]) => `<a href="${TG.href(h)}"><b>${esc(t)}</b><small>${esc(s)}</small></a>`);
+    const vols = D.vols.map((v) => `<a href="${TG.read(v.s)}" target="_blank" rel="noopener"><b>${esc(v.label.replace(/^Vol\. ([\w ,]+?): /, 'The Minutes, $1: '))}</b><small>${fmt(v.p)} pages</small></a>`);
+    document.getElementById('tg-texts').innerHTML = docs.concat(pages, vols).join('');
+    if (G) gsap.from('#tg-texts a', { opacity: 0, y: 14, duration: 0.5, stagger: 0.05, ease: 'power2.out', scrollTrigger: { trigger: '#tg-texts', start: 'top 85%', once: true } });
   })();
 
   /* ---------- the finder ---------- */
