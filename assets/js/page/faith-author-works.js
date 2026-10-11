@@ -90,9 +90,31 @@
     return p;
   }
 
-  function section(entry, author) {
+  function section(entry, author, collected) {
     const wrap = el("section", "ar-more");
     wrap.id = "ar-more";
+    // The collections this author put together (faith-room-counts.js keeps them out of his own list): open, first, not counted.
+    if (collected && collected.length) {
+      // "Heinrich Finke (ed.)" → "Heinrich Finke"; a room filed "Mansi, Giovanni Domenico" reads "Giovanni Domenico Mansi"
+      const bare = String(author).replace(/\s*\(eds?\.?\)\s*$/i, "").trim();
+      const inv = /^([^,]+),\s*([^,]+)$/.exec(bare);
+      const name = inv ? `${inv[2]} ${inv[1]}` : bare;
+      const det = el("details", "ar-more-other ar-collected");
+      det.open = true;
+      det.appendChild(el("summary", null, `Collected by ${name} · ${num(collected.length)}`));
+      det.appendChild(el("p", "ar-more-hint", "Collections of other people's texts that he gathered and edited. They are listed here and not counted among his own works."));
+      const ul = el("ul");
+      collected.slice().sort((p, q) => String(p.vs || p.t).localeCompare(String(q.vs || q.t), undefined, { numeric: true })).forEach((w) => {
+        const li = el("li");
+        li.dataset.title = `${w.t} ${w.vs || ""}`.toLowerCase();
+        const a = el("a", null, w.t);
+        a.href = `/the-faith-received/read/?w=${encodeURIComponent(w.w)}`;
+        li.append(a, el("span", "ar-more-ref", w.vs || ""));
+        ul.appendChild(li);
+      });
+      det.appendChild(ul);
+      wrap.appendChild(det);
+    }
     // The works themselves are in the room's own list now (merged by
     // faith-room-counts.js as the room loads); what stays here is the
     // editorial matter and the other shelves.
@@ -176,7 +198,8 @@
     const key = roomKey();
     if (!room || !key || !room.querySelector(".rx-profile")) return;
     const data = await load(key.sh);
-    const entry = data && data.rooms && data.rooms[key.slug];
+    const collected = (window.FRCollected || {})[`${key.sh}/${key.slug}`] || [];
+    const entry = (data && data.rooms && data.rooms[key.slug]) || (collected.length ? {} : null);
     if (!entry) return;
     // The room may have moved on while the file loaded.
     const now = roomKey();
@@ -197,7 +220,7 @@
       const view = list && list.closest(".view");
       if (view && !view.querySelector("#ar-more")) {
         const after = view.querySelector("#room-works-more") || list;
-        const more = section(entry, author);
+        const more = section(entry, author, collected);
         if (!more.childElementCount) return;
         after.after(more);
         const q = view.querySelector("#room-work-q");

@@ -102,15 +102,25 @@
     // and pages them with the rest. n_works is left alone: it is the
     // research count, and faith-author-works.js adds the extras to the
     // numbers the reader sees.
+    // COLLECTED WORKS (owner 2026-10-11: "aquinas should have catena … and so on for hardt, finke, vincke"). A room lists the
+    // collections its author put together (the Catena aurea, Mansi's councils) with k:"collected" (tools/build_lf_rooms.py, from the
+    // works-index `editor`). They are not his works: they leave the room's own list here, and faith-author-works.js shows them in a
+    // "Collected by …" fold on the same Works tab.
     const room = ROOM.exec(url);
     if (room && room[2] !== "index") {
       const [, sh, slug] = room;
       return Promise.all([original.apply(this, args), load(`${sh}.json`, "rooms")]).then(([res, all]) => {
         const entry = all && all[decodeURIComponent(slug)];
-        const x = entry && entry.x;
-        if (!res.ok || !x || !x.length) return res;
+        const x = (entry && entry.x) || [];
+        if (!res.ok) return res;
         return rewrite(res, (d) => {
           if (!Array.isArray(d.works)) return false;
+          const collected = d.works.filter((w) => w && w.k === "collected");
+          if (collected.length) {
+            d.works = d.works.filter((w) => !(w && w.k === "collected"));
+            (window.FRCollected = window.FRCollected || {})[`${sh}/${decodeURIComponent(slug)}`] = collected;
+          }
+          if (!x.length) return collected.length > 0;
           const have = new Set(d.works.map((w) => w && w.w));
           x.forEach(([corpus, id, title, n]) => {
             const w = keyOf(corpus, id);
