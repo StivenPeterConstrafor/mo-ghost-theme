@@ -1,0 +1,51 @@
+name: Deslop
+
+# The mechanical half of the Deslop agent (MOCA website/agents/DESLOP-AGENT.md).
+# Ian, 2026-10-11: "runs on every merge and every commit". Reads only what a
+# push or PR adds: em dashes, British spelling, "in motion" and the other
+# hanging phrases, boilerplate and market-speak block; splices, tails,
+# puffery, pills, IM Fell on working surfaces and scroll boxes warn.
+# "Deslop: skip <reason>" in a commit message or the PR body passes.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deslop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Deslop the change
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if [ "$EVENT" = "pull_request" ]; then
+            RANGE="$BASE...$HEAD"
+            MSG="$PR_BODY
+          $(git log --format=%B "$BASE..$HEAD")"
+          else
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then RANGE="$AFTER~1..$AFTER"; else RANGE="$BEFORE..$AFTER"; fi
+            MSG="$(git log --format=%B "$RANGE")"
+          fi
+          if printf '%s' "$MSG" | grep -q 'Deslop: skip'; then
+            echo "Deslop: skip found in the messages. Reporting only."
+            node scripts/deslop-check.mjs --range "$RANGE" --warn-only
+            exit 0
+          fi
+          node scripts/deslop-check.mjs --range "$RANGE"
