@@ -84,6 +84,22 @@
     return { orig, en };
   }
   const lanesOf = (o, e) => { const out = new Map(); o.forEach((t, k) => out.set(k, { o: t, e: '' })); e.forEach((t, k) => { const x = out.get(k) || { o: '', e: '' }; x.e = x.e ? x.e + ' ' + t : t; out.set(k, x); }); return out; };
+  // A LIBRARY WORK'S TEI, cut at <pb n>: the reader's own text. The source of a TEI-only work (the EEBO divines' class), and, asked
+  // for with lanes(…, {tei: true}), the text of a work whose page files are behind its TEI (2026-10-10, the MereO word-search
+  // audit: page files are not rewritten by every retranslation; 11 of 30 sampled best pages no longer matched the TEI the reader
+  // shows, and on 2 the searched word was not in the page file at all). One cache, so a TEI-only work is never fetched twice.
+  const teiDocs = new Map();
+  function teiSource(slug) {
+    if (teiDocs.has(slug)) return teiDocs.get(slug);
+    const p = Promise.all(['en', 'la', 'grc', 'fr'].map(l => fetchText(`v1/works/${slug}/tei.${l}.xml`).catch(() => ''))).then(([en, ...orig]) => {
+      const o = new Map();
+      for (const xml of orig) if (xml) cut(xml).forEach((t, k) => o.set(k, o.has(k) ? o.get(k) + ' ' + t : t));
+      const pages = lanesOf(o, en ? cut(en) : new Map());
+      return { get: async () => pages };
+    }).catch(e => { teiDocs.delete(slug); throw e; });
+    teiDocs.set(slug, p);
+    return p;
+  }
   function source(slug) {
     if (docs.has(slug)) return docs.get(slug);
     const fam = /^(pld|pg|po|eebo)-(.+)$/.exec(slug);
@@ -102,13 +118,7 @@
       return { get: async () => pages };
     });
     else p = fetchText(`v1/works/${slug}/meta.json`).then(JSON.parse).then(async meta => {
-      if (!meta.single && !(meta.shards || []).length) {   // a TEI-only work (the EEBO divines' class): tei.<lang>.xml cut at <pb n>
-        const [en, ...orig] = await Promise.all(['en', 'la', 'grc', 'fr'].map(l => fetchText(`v1/works/${slug}/tei.${l}.xml`).catch(() => '')));
-        const o = new Map();
-        for (const xml of orig) if (xml) cut(xml).forEach((t, k) => o.set(k, o.has(k) ? o.get(k) + ' ' + t : t));
-        const pages = lanesOf(o, en ? cut(en) : new Map());
-        return { get: async () => pages };
-      }
+      if (!meta.single && !(meta.shards || []).length) return teiSource(slug);   // a TEI-only work: tei.<lang>.xml cut at <pb n>
       const files = meta.single ? [{ file: meta.single === true ? 'work.json' : meta.single }] : (meta.shards || []);
       const loaded = new Map();
       const load = f => loaded.get(f.file) || loaded.set(f.file, fetchText(`v1/works/${slug}/${f.file}`).then(JSON.parse).then(d => {
@@ -134,8 +144,8 @@
     return p;
   }
   /** The text of these pages of a work: Map(the page key as given → text or ''). */
-  async function lanes(slug, keys) {
-    const src = await source(slug), ks = keys.map(key), got = await src.get(ks);
+  async function lanes(slug, keys, { tei = false } = {}) {
+    const src = await (tei && !/^(pld|pg|po|eebo)-/.test(slug) ? teiSource(slug) : source(slug)), ks = keys.map(key), got = await src.get(ks);
     return new Map(keys.map((k, i) => [k, got.get(ks[i]) || { o: '', e: '' }]));
   }
   async function pages(slug, keys) {
