@@ -3047,10 +3047,11 @@ function build(){
     }
     let bi=0;sec.querySelectorAll(".row").forEach(rw=>{if(!rw.classList.contains("rhead"))rw.id="b"+pg.n+"-"+(bi++);});
     // SECOND VERSIONS on the column-built pages (PG): their heads arrive as inline .inhead spans, not <head> rows -- a paragraph whose head
-    // names a second version opens the block; every paragraph after it on the page, in that lane, stays in it until the next head
+    // names a second version opens the block; every paragraph after it on the page, in that lane, stays in it until the next head.
+    // A head after the label in the SAME paragraph is the version's own (PG 7: TRANSLATION OF BILLIUS. + CHAPTER XI.) and keeps the block
     ["en","la"].forEach(ln=>{let inV=false;sec.querySelectorAll("."+ln+" p").forEach(p=>{
       const hs=p.querySelectorAll("span.inhead");
-      if(hs.length){const _t=x=>(x.textContent||"").replace(/\s+/g," ").trim().toLowerCase();inV=_versHead(_t(hs[hs.length-1]));
+      if(hs.length){const _t=x=>(x.textContent||"").replace(/\s+/g," ").trim().toLowerCase();inV=[...hs].some(h=>_versHead(_t(h)));
         if(inV){hs.forEach(h=>{if(_versHead(_t(h)))h.classList.add("invers");});
           // a paragraph that opens with another head (PG 13: the main text's '10. But as to what Simon Peter said' + ANCIENT TRANSLATION)
           // keeps that head out of the block: only its version label carries the rule, and the block runs on from the next paragraph
