@@ -1307,7 +1307,7 @@
       + ` aria-label="${escapeHtml(shelf.name(s))}${names ? `, ${escapeHtml(names)}` : ""}, ${held}"`
       + `${names ? ` title="${escapeHtml(names)}"` : ""}>`
       + `<span class="faith-room-vol-n">${face}</span>`
-      + (names ? `<span class="faith-room-vol-a">${escapeHtml(names)}</span>` : "")
+      + `${names ? `<span class="faith-room-vol-a">${escapeHtml(names)}</span>` : ""}`
       + `<span class="faith-room-vol-c">${held}</span></button>`;
   }
 
