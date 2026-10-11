@@ -380,7 +380,7 @@ window.TGFinder = (host, D, C) => {
 
   /* ---------- 2. the West ---------- */
   (function west() {
-    const box = document.getElementById('tg-map'), M = TG.map(box, D.land || LAND, [[-10, 34.5], [20.5, 57.5]], { parallels: [38, 56] });
+    const box = document.getElementById('tg-map'), M = TG.map(box, D.land || LAND, [[-10, 34.5], [20.5, 57.5]], { parallels: [38, 56], phone: [[-7, 36], [18, 56]] });
     const cv = TG.canvas(box.querySelector('canvas')), {ctx} = cv;
     const A = D.authors.filter((a) => a.pl && a.fl && D.places[a.pl]), places = {};
     A.forEach((a) => { (places[a.pl] ||= { k: a.pl, ll: D.places[a.pl], f: a.f, ys: [] }).ys.push(a.fl); });

@@ -164,7 +164,7 @@
 
   /* ---------- 3. the Reformed International ---------- */
   (function road() {
-    const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[-4.8, 40.6], [23.9, 56.2]], { parallels: [42, 54] });
+    const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[-4.8, 40.6], [23.9, 56.2]], { parallels: [42, 54], phone: [[-4.5, 42], [17.5, 56.4]] });
     const cv = TG.canvas(box.querySelector('canvas')), {ctx} = cv, P = D.places;
     const ACAD = new Set(D.acad.map((a) => a[0]));
     const J = D.journeys.map((j) => { const pts = j.s.map(([p, y]) => ({ p, y, ll: P[p] })), born = pts.length > 2 && !ACAD.has(pts[0].p); return { ...j, pts, from: born ? pts[1].y - 4 : pts[0].y }; });

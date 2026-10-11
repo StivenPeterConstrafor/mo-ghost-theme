@@ -389,7 +389,7 @@ window.TGFinder = (host, D, C) => {
 
   /* ---------- 2. the sees of the East ---------- */
   (function east() {
-    const box = document.getElementById('tg-map'), M = TG.map(box, D.land || LAND, [[3, 25.5], [45, 46.5]], { parallels: [30, 44] });
+    const box = document.getElementById('tg-map'), M = TG.map(box, D.land || LAND, [[3, 25.5], [45, 46.5]], { parallels: [30, 44], phone: [[11, 28], [40, 44]] });
     const cv = TG.canvas(box.querySelector('canvas')), {ctx} = cv;
     const A = D.authors.filter((a) => a.pl && a.fl && D.places[a.pl]), places = {};
     A.forEach((a) => { (places[a.pl] ||= { k: a.pl, ll: D.places[a.pl], f: a.f, ys: [] }).ys.push(a.fl); });
