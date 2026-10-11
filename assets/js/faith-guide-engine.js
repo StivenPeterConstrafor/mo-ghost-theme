@@ -12,8 +12,14 @@ window.TG = (() => {
   // (MereO hides its masthead on scroll and keeps the TFR rail: the rail's height is what stays on screen)
   const pinTop = () => !root?.dataset.pinBelow ? 0 : [...document.querySelectorAll(root.dataset.pinBelow)].filter((e) => /sticky|fixed/.test(getComputedStyle(e).position)).reduce((t, e) => t + e.getBoundingClientRect().height, 0);
   if (root) root.style.setProperty('--tg-pin', `${pinTop()}px`);
-  // refresh the pins when the page above them changes height (a hero that rearranges itself, a fold that opens)
-  if (root && hasG && 'ResizeObserver' in window) { let h0 = 0, rt; new ResizeObserver(() => { const h = root.offsetHeight; if (Math.abs(h - h0) < 40) return; h0 = h; clearTimeout(rt); rt = setTimeout(() => ScrollTrigger.refresh(), 200); }).observe(root); }
+  // MereO sets html { scroll-behavior: smooth }. ScrollTrigger measures its pins by jumping the scroll position on a refresh; a smoothed
+  // jump is measured mid-glide and the pins start in the wrong place (10-11: the English press scene pinned over its hero on the live
+  // site). The guide page scrolls without smoothing while it runs.
+  if (root && hasG) document.documentElement.style.scrollBehavior = 'auto';
+  // refresh the pins when the page above them changes height (a hero that rearranges itself, a fold that opens, the site's band above
+  // the guide, which sits outside it), and once the web fonts are in, since a title set in IM Fell is taller than its fallback
+  if (root && hasG && 'ResizeObserver' in window) { let h0 = 0, rt; const box = root.closest('main') || root; new ResizeObserver(() => { const h = box.offsetHeight; if (Math.abs(h - h0) < 40) return; h0 = h; clearTimeout(rt); rt = setTimeout(() => ScrollTrigger.refresh(), 200); }).observe(box); }
+  if (root && hasG && document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(() => ScrollTrigger.refresh(), 60));
   const TG = {
     reduce, hasG,
     pinOK: () => hasG && !reduce && innerWidth > 860,
