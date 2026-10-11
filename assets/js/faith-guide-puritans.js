@@ -1,4 +1,4 @@
-/* The Puritans guide: a plain-glass window, the press year by year, a chain of preachers, the plain style, three countries. */
+/* The Puritans guide: a plain-glass window, the press year by year, a chain of preachers, Richard Baxter's pen, the plain style, three countries. */
 (async () => {
   const {TG} = window, D = await TG.load('data');
   const { esc, fmt, clamp, ease, lerp } = TG, G = TG.hasG && !TG.reduce ? window.gsap : null;
@@ -15,7 +15,7 @@
     const svg = document.querySelector('.win svg'), cap = document.querySelector('.win .cap'), NS = 'http://www.w3.org/2000/svg';
     const mk = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
     const A = D.authors.slice().sort((a, b) => (a.y0 - b.y0) || a.n.localeCompare(b.n)), maxP = Math.max(...A.map((a) => a.p));
-    // three lights under a four-centred head, in a stone frame
+    // three lights under a four-centered head, in a stone frame
     const LX = [26, 202, 378], LW = 160, TOP = 92, BOT = 676, defs = mk('defs', {});
     const head = (x) => `M${x},${TOP} Q${x},${TOP - 44} ${x + LW / 2},${TOP - 52} Q${x + LW},${TOP - 44} ${x + LW},${TOP}`;
     const lightPath = (x) => `${head(x)} L${x + LW},${BOT} L${x},${BOT} Z`;
@@ -118,82 +118,7 @@
     TG.chapter('#tg-press', 4400, (p) => draw(lerp(Y0, Y1, p)), { scrub: 0.4 });
   })();
 
-  /* ---------- 2. a chain of preachers ---------- */
-  (function chain() {
-    const C = D.chain, svg = document.querySelector('.chainbox svg'), NS = 'http://www.w3.org/2000/svg', card = document.getElementById('tg-link-card');
-    const golden = D.golden.find((g) => /Golden chain, or the description/i.test(g[0])) || D.golden[0]; if (golden) document.getElementById('tg-golden').href = TG.read(golden[1]);
-    const mk = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
-    const defs = mk('defs', {}); const gr = mk('linearGradient', { id: 'tg-gold', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
-    [['0', '#e8cf8a'], ['0.5', '#b98c3a'], ['1', '#7d5a22']].forEach(([o, c]) => mk('stop', { offset: o, 'stop-color': c }, gr));
-    const pew = mk('linearGradient', { id: 'tg-pewter', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
-    [['0', '#d9d6cf'], ['0.5', '#a9a49a'], ['1', '#7e786e']].forEach(([o, c]) => mk('stop', { offset: o, 'stop-color': c }, pew));
-    const cx = (i) => 92 + i * 169, CY = 92, RX = 92, RY = 50;
-    const links = C.map((p, i) => { const g = mk('g', {});
-      const o = mk('ellipse', { class: 'lk', cx: cx(i), cy: CY, rx: RX, ry: RY, stroke: 'url(#tg-pewter)' }, g);
-      const inn = mk('ellipse', { class: 'lk-in', cx: cx(i), cy: CY, rx: RX - 12, ry: RY - 12, stroke: '#fff' }, g);
-      const t = mk('text', { class: 'nm', x: cx(i), y: CY + 2 }, g); t.textContent = p.n.split(' ').slice(-1)[0];
-      const y = mk('text', { class: 'yr', x: cx(i), y: CY + 20 }, g); y.textContent = p.d.replace(/^c\.\s*/, 'c. ');
-      return { g, o, t }; });
-    // the links interlock: each later link passes over the one before at its left and under it at its right
-    for (let i = 1; i < C.length; i++) { const lab = mk('text', { class: 'via', x: (cx(i - 1) + cx(i)) / 2, y: CY + RY + 34 }); lab.textContent = 'brought to faith'; lab.setAttribute('opacity', 0); links[i].via = lab;
-      mk('path', { d: `M${(cx(i - 1) + cx(i)) / 2 - 20},${CY + RY + 18} l20,-8 l20,8`, fill: 'none', stroke: TG.css('--rubric'), 'stroke-width': 1.2, opacity: 0, class: 'arr' }); }
-    const arrs = [...svg.querySelectorAll('.arr')];
-    const steps = document.getElementById('tg-chain-steps');
-    steps.innerHTML = `${C.map((p) => `<li><b>${esc(p.n)}</b><p>${esc(p.link ? `${p.link[0].toUpperCase()}${p.link.slice(1)}.` : 'The first link.')}</p></li>`).join('')}<li><b>The chain runs on</b><p>From Cambridge to the London pulpits, and with Cotton and Hooker in 1633 to New England.</p></li>`;
-    const lis = [...steps.children];
-    const show = (p) => `<p class="eyebrow" style="margin:0 0 4px">${p.link ? esc(p.link) : 'The first link'}</p><h3>${esc(p.n)}</h3><p class="meta">${esc(p.d)}</p><p style="margin:0">${esc(p.say)}</p>
-      <div class="stat"><span><b>${p.works}</b>works on the shelf</span><span><b>${fmt(p.pages)}</b>pages</span>${p.first ? `<span><b>${p.first}${p.last !== p.first ? `–${String(p.last).slice(2)}` : ''}</b>printed</span>` : ''}</div>
-      <p class="small" style="margin:10px 0 0">The largest here: <a href="${TG.read(p.big[1])}" target="_blank" rel="noopener">${esc(p.big[0])}</a>, ${fmt(p.big[2])} pages.</p>`;
-    let cur = -1;
-    function step(k, instant) {
-      if (k === cur) return; cur = k; lis.forEach((li, j) => li.classList.toggle('now', j === k));
-      links.forEach((L, i) => { const on = i <= k, now = i === k || (k >= C.length && i === C.length - 1);
-        L.o.setAttribute('stroke', on ? 'url(#tg-gold)' : 'url(#tg-pewter)');
-        if (G && !instant) gsap.to(L.g, { opacity: on ? 1 : 0.38, scale: now ? 1.06 : 1, transformOrigin: `${cx(i)}px ${CY}px`, duration: 0.5, ease: 'back.out(2)' }); else { L.g.setAttribute('opacity', on ? 1 : 0.38); }
-        if (L.via) { const v = i <= k ? 1 : 0; if (G && !instant) gsap.to([L.via, arrs[i - 1]], { opacity: v, duration: 0.4 }); else { L.via.setAttribute('opacity', v); arrs[i - 1].setAttribute('opacity', v); } } });
-      const p = C[Math.min(k, C.length - 1)];
-      card.innerHTML = k >= C.length ? `<p class="eyebrow" style="margin:0 0 4px">The chain runs on</p><h3>Five preachers, ${fmt(C.reduce((t, c) => t + c.works, 0))} works on this shelf</h3><p style="margin:0">Perkins died in 1602; Preston in 1628; Cotton in Boston, New England, in 1652. Between them they shaped the preaching of Cambridge, the Inns of Court and the first churches of Massachusetts.</p><div class="stat">${C.map((c) => `<span><b>${c.works}</b>${esc(c.n.split(' ').slice(-1)[0])}</span>`).join('')}</div>` : show(p);
-      if (G && !instant) gsap.from(card.children, { opacity: 0, y: 8, duration: 0.4, stagger: 0.05, ease: 'power2.out' });
-    }
-    const st = TG.chapter('#tg-chain', 3000, (p, fin) => step(fin ? C.length : Math.min(C.length, Math.floor(p * (C.length + 1))), fin), { scrub: true });
-    if (!st) lis.forEach((li) => li.classList.add('now'));
-  })();
-
-  /* ---------- 3. the plain style: Perkins's four rules, and Brooks's The Silent Soul opened part by part ---------- */
-  (function plain() {
-    const R = D.perkins, S = D.sermon, rules = document.getElementById('tg-rules');
-    document.getElementById('tg-arte').href = TG.read(R.slug, R.page);
-    document.getElementById('tg-brooks').href = TG.read(S.slug);
-    document.getElementById('tg-brooks').textContent = `Thomas Brooks, The Silent Soul (${S.year})`;
-    rules.innerHTML = R.rules.map((r) => `<li>${esc(r)}</li>`).join(''); document.getElementById('tg-sum').textContent = `“The Sum of the Sum. ${R.sum}”`;
-    const rLis = [...rules.children], stack = document.getElementById('tg-stack'), parts = document.getElementById('tg-parts'), N = S.pages;
-    const H = () => stack.clientHeight || 520, Y = (p) => (p - 1) / N * H();
-    stack.innerHTML = [1, 100, 200, 300, N].map((p) => `<span class="pg" style="top:${(p - 1) / N * 100}%">p. ${p}</span>`).join('') + S.parts.map((pt, i) => `<div class="seg" data-i="${i}" style="top:${(pt.p[0] - 1) / N * 100}%;height:${Math.max(0.6, (pt.p[1] - pt.p[0] + (pt.p[1] === pt.p[0] ? 1 : 0)) / N * 100)}%"></div>`).join('');
-    parts.innerHTML = S.parts.map((pt, i) => `<div class="part" data-i="${i}"><span class="tick"></span><div class="lab"><i>${['Text', 'Sense', 'Doctrine', 'Doctrine', 'Doctrine', 'Use', 'Use', 'Use'][i]}</i>${esc(pt.h)}<small>${pt.p[0] === pt.p[1] ? `p. ${pt.p[0]}` : `pp. ${pt.p[0]}–${pt.p[1]}`}</small></div>
-      <div class="q">${esc(pt.q)}<a href="${TG.read(S.slug, pt.p[0] >= 16 ? pt.p[0] : null)}" target="_blank" rel="noopener">read it</a></div></div>`).join('');
-    const segs = [...stack.querySelectorAll('.seg')], pEls = [...parts.querySelectorAll('.part')];
-    // the labels sit beside their pages, pushed apart where parts are short (the first pages hold four of them)
-    function place(open) { const hgt = parts.clientHeight || H(), gap = 30; let last = -1e9;
-      const want = S.parts.map((pt) => ((pt.p[0] - 1 + pt.p[1] - 1) / 2) / N * hgt), tops = [];
-      want.forEach((w, i) => { const t = Math.max(w - 12, last + gap + (open >= 0 && i - 1 === open ? pEls[open].querySelector('.q').offsetHeight + 8 : 0)); tops.push(t); last = t; });
-      const over = last + 40 + (open === S.parts.length - 1 ? pEls[open].querySelector('.q').offsetHeight : 0) - hgt; if (over > 0) for (let i = tops.length - 1; i >= 0; i--) { tops[i] -= over * (i / (tops.length - 1)); }
-      pEls.forEach((el, i) => { if (G) gsap.to(el, { top: tops[i], duration: 0.45, ease: 'power2.out' }); else el.style.top = `${tops[i]}px`; }); }
-    let cur = -2;
-    function step(k, instant) {
-      if (k === cur) return; cur = k;
-      const pt = S.parts[Math.min(k, S.parts.length - 1)];
-      rLis.forEach((li, j) => li.classList.toggle('now', k >= 0 && k < S.parts.length && j === pt.rule));
-      segs.forEach((s, i) => { s.classList.toggle('on', i === k); s.classList.toggle('past', i < k); });
-      pEls.forEach((el, i) => { el.classList.toggle('on', i === k); el.style.opacity = i <= k || k >= S.parts.length ? 1 : 0.32; });
-      if (TG.pinOK()) place(k);
-      const on = pEls[k]; if (on && G && !instant) gsap.fromTo(on.querySelector('.q'), { scaleX: 0.2, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.55, ease: 'expo.out', transformOrigin: 'left center' });
-    }
-    if (TG.pinOK()) { requestAnimationFrame(() => place(-1)); }
-    const st = TG.chapter('#tg-sermon', 3600, (p, fin) => step(fin ? -1 : Math.min(S.parts.length - 1, Math.floor(p * S.parts.length)), fin), { scrub: true });
-    if (!st) { rLis.forEach((li) => li.classList.add('now')); pEls.forEach((el) => { el.style.opacity = 1; }); }
-  })();
-
-  /* ---------- 4. three countries: the presses (imprints) and the places the records name, in two maps at their own scales ---------- */
+  /* ---------- 2. three countries: the presses (imprints) and the places the records name, in two maps at their own scales ---------- */
   (function lands() {
     const P = D.places, NE = new Set(D.ne), LOW = new Set(D.low);
     const GOF = { London: 0, Cambridge: 1, Oxford: 1, Edinburgh: 2, Glasgow: 2, Aberdeen: 2, Amsterdam: 3, Leiden: 3, Rotterdam: 3, Middelburg: 3, Dordrecht: 3, 'The Hague': 3, Boston: 4, 'Cambridge, Massachusetts': 4 };
@@ -245,6 +170,198 @@
       if (G && !instant) { const o = { g: 0.15 }; gsap.to(o, { g: 1, duration: 0.8, ease: 'back.out(1.8)', onUpdate() { grow = o.g; drawAll(); } }); } else { grow = 1; drawAll(); } }
     const st = TG.chapter('#tg-lands', 2800, (p, fin) => step(fin ? STEPS.length : Math.min(3, Math.floor(p * 4)), fin), { scrub: true });
     if (!st) { kLis.forEach((li) => li.classList.add('now')); }
+  })();
+
+  /* ---------- 3. a chain of preachers (and a sixth link, made by a book, hanging from Sibbes) ---------- */
+  (function chain() {
+    const C = D.chain, svg = document.querySelector('.chainbox svg'), NS = 'http://www.w3.org/2000/svg', card = document.getElementById('tg-link-card');
+    const golden = D.golden.find((g) => /Golden chain, or the description/i.test(g[0])) || D.golden[0]; if (golden) document.getElementById('tg-golden').href = TG.read(golden[1]);
+    const mk = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
+    const defs = mk('defs', {}); const gr = mk('linearGradient', { id: 'tg-gold', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+    [['0', '#e8cf8a'], ['0.5', '#b98c3a'], ['1', '#7d5a22']].forEach(([o, c]) => mk('stop', { offset: o, 'stop-color': c }, gr));
+    const pew = mk('linearGradient', { id: 'tg-pewter', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+    [['0', '#d9d6cf'], ['0.5', '#a9a49a'], ['1', '#7e786e']].forEach(([o, c]) => mk('stop', { offset: o, 'stop-color': c }, pew));
+    const cx = (i) => 92 + i * 169, CY = 118, RX = 92, RY = 50, rub = TG.css('--rubric');
+    // a link made by a book hangs from the link of the book's author, turned upright: it closes through the bottom of that link
+    const links = C.map((p, i) => { const g = mk('g', {}), bk = p.book, x = bk ? cx(bk.from) : cx(i), y = bk ? CY + RY + RX - 12 : CY, rx = bk ? RY - 6 : RX, ry = bk ? RX : RY;
+      const o = mk('ellipse', { class: 'lk', cx: x, cy: y, rx, ry, stroke: 'url(#tg-pewter)' }, g);
+      mk('ellipse', { class: 'lk-in', cx: x, cy: y, rx: rx - 12, ry: ry - 12, stroke: '#fff' }, g);
+      const t = mk('text', { class: 'nm', x, y: y + 2 }, g); t.textContent = p.n.split(' ').slice(-1)[0];
+      const yr = mk('text', { class: 'yr', x, y: y + 20 }, g); yr.textContent = p.d.replace(/^c\.\s*/, 'c. ');
+      const L = { g, o, x, y, marks: [] };
+      if (bk) { // the thread of the book: a label and an open book beside the hanging link
+        const lx = x + rx + 18, ly = y + 6, bg = mk('g', { opacity: 0 });
+        mk('path', { d: `M${lx},${ly - 26} q9,-5 18,0 q9,-5 18,0 v14 q-9,-5 -18,0 q-9,-5 -18,0 z M${lx + 18},${ly - 26} v14`, fill: 'none', stroke: rub, 'stroke-width': 1.2, 'stroke-linejoin': 'round' }, bg);
+        const v = mk('text', { class: 'via', x: lx, y: ly, 'text-anchor': 'start' }, bg); v.textContent = 'by a book:';
+        const v2 = mk('text', { class: 'via', x: lx, y: ly + 16, 'text-anchor': 'start' }, bg); v2.textContent = 'The Bruised Reed';
+        L.marks.push(bg);
+      } else if (i > 0) {
+        // preaching is marked above the chain, so the book's thread below it stays clear
+        const lab = mk('text', { class: 'via', x: (cx(i - 1) + cx(i)) / 2, y: CY - RY - 26, opacity: 0 }); lab.textContent = 'brought to faith';
+        L.marks.push(lab, mk('path', { d: `M${(cx(i - 1) + cx(i)) / 2 - 20},${CY - RY - 16} l20,8 l20,-8`, fill: 'none', stroke: rub, 'stroke-width': 1.2, opacity: 0 }));
+      }
+      return L; });
+    const steps = document.getElementById('tg-chain-steps');
+    steps.innerHTML = `${C.map((p) => `<li><b>${esc(p.n)}</b><p>${esc(p.link ? `${p.link[0].toUpperCase()}${p.link.slice(1)}.` : 'The first link.')}</p></li>`).join('')}<li><b>The chain runs on</b><p>From Cambridge to the London pulpits, with Cotton and Hooker in 1633 to New England, and in Baxter’s books past the Restoration.</p></li>`;
+    const lis = [...steps.children];
+    const show = (p) => `<p class="eyebrow" style="margin:0 0 4px">${p.link ? esc(p.link) : 'The first link'}</p><h3>${esc(p.n)}</h3><p class="meta">${esc(p.d)}</p><p style="margin:0">${esc(p.say)}</p>
+      <div class="stat"><span><b>${p.works}</b>works on the shelf</span><span><b>${fmt(p.pages)}</b>pages</span>${p.first ? `<span><b>${p.first}${p.last !== p.first ? `–${String(p.last).slice(2)}` : ''}</b>printed</span>` : ''}</div>
+      <p class="small" style="margin:10px 0 0">The largest here: <a href="${TG.read(p.big[1])}" target="_blank" rel="noopener">${esc(p.big[0])}</a>, ${fmt(p.big[2])} pages.${p.book ? ` In his own words: <a href="${TG.read(p.book.cite[0], p.book.cite[1])}" target="_blank" rel="noopener">Reliquiae Baxterianae, p. ${p.book.cite[1]}</a>.` : ''}</p>`;
+    let cur = -1;
+    function step(k, instant) {
+      if (k === cur) return; cur = k; lis.forEach((li, j) => li.classList.toggle('now', j === k));
+      links.forEach((L, i) => { const on = i <= k, now = i === k || (k >= C.length && i === C.length - 1);
+        L.o.setAttribute('stroke', on ? 'url(#tg-gold)' : 'url(#tg-pewter)');
+        if (G && !instant) gsap.to(L.g, { opacity: on ? 1 : 0.38, scale: now ? 1.06 : 1, svgOrigin: `${L.x} ${L.y}`, duration: 0.5, ease: 'back.out(2)' }); else { L.g.setAttribute('opacity', on ? 1 : 0.38); }
+        if (L.marks.length) { const v = on ? 1 : 0; if (G && !instant) gsap.to(L.marks, { opacity: v, duration: 0.4 }); else L.marks.forEach((m) => m.setAttribute('opacity', v)); } });
+      const p = C[Math.min(k, C.length - 1)], preach = C.filter((c) => !c.book);
+      card.innerHTML = k >= C.length ? `<p class="eyebrow" style="margin:0 0 4px">The chain runs on</p><h3>${preach.length === 5 ? 'Five' : preach.length} preachers and a reader, ${fmt(C.reduce((t, c) => t + c.works, 0))} works on this shelf</h3><p style="margin:0">Perkins died in 1602; Preston in 1628; Cotton in Boston, New England, in 1652; Baxter in London in 1691. Between them they shaped the preaching of Cambridge, the Inns of Court and the first churches of Massachusetts, and Baxter’s books carried it past the Restoration.</p><div class="stat">${C.map((c) => `<span><b>${c.works}</b>${esc(c.n.split(' ').slice(-1)[0])}</span>`).join('')}</div>` : show(p);
+      if (G && !instant) gsap.from(card.children, { opacity: 0, y: 8, duration: 0.4, stagger: 0.05, ease: 'power2.out' });
+    }
+    const st = TG.chapter('#tg-chain', 3400, (p, fin) => step(fin ? C.length : Math.min(C.length, Math.floor(p * (C.length + 1))), fin), { scrub: true });
+    if (!st) lis.forEach((li) => li.classList.add('now'));
+  })();
+
+  /* ---------- 4. the plain style: Perkins's four rules, and Brooks's The Silent Soul opened part by part ---------- */
+  (function plain() {
+    const R = D.perkins, S = D.sermon, rules = document.getElementById('tg-rules');
+    document.getElementById('tg-arte').href = TG.read(R.slug, R.page);
+    document.getElementById('tg-brooks').href = TG.read(S.slug);
+    document.getElementById('tg-brooks').textContent = `Thomas Brooks, The Silent Soul (${S.year})`;
+    rules.innerHTML = R.rules.map((r) => `<li>${esc(r)}</li>`).join(''); document.getElementById('tg-sum').textContent = `“The Sum of the Sum. ${R.sum}”`;
+    const rLis = [...rules.children], stack = document.getElementById('tg-stack'), parts = document.getElementById('tg-parts'), N = S.pages;
+    const H = () => stack.clientHeight || 520, Y = (p) => (p - 1) / N * H();
+    stack.innerHTML = [1, 100, 200, 300, N].map((p) => `<span class="pg" style="top:${(p - 1) / N * 100}%">p. ${p}</span>`).join('') + S.parts.map((pt, i) => `<div class="seg" data-i="${i}" style="top:${(pt.p[0] - 1) / N * 100}%;height:${Math.max(0.6, (pt.p[1] - pt.p[0] + (pt.p[1] === pt.p[0] ? 1 : 0)) / N * 100)}%"></div>`).join('');
+    parts.innerHTML = S.parts.map((pt, i) => `<div class="part" data-i="${i}"><span class="tick"></span><div class="lab"><i>${['Text', 'Sense', 'Doctrine', 'Doctrine', 'Doctrine', 'Use', 'Use', 'Use'][i]}</i>${esc(pt.h)}<small>${pt.p[0] === pt.p[1] ? `p. ${pt.p[0]}` : `pp. ${pt.p[0]}–${pt.p[1]}`}</small></div>
+      <div class="q">${esc(pt.q)}<a href="${TG.read(S.slug, pt.p[0] >= 16 ? pt.p[0] : null)}" target="_blank" rel="noopener">read it</a></div></div>`).join('');
+    const segs = [...stack.querySelectorAll('.seg')], pEls = [...parts.querySelectorAll('.part')];
+    // the labels sit beside their pages, pushed apart where parts are short (the first pages hold four of them)
+    function place(open) { const hgt = parts.clientHeight || H(), gap = 30; let last = -1e9;
+      const want = S.parts.map((pt) => ((pt.p[0] - 1 + pt.p[1] - 1) / 2) / N * hgt), tops = [];
+      want.forEach((w, i) => { const t = Math.max(w - 12, last + gap + (open >= 0 && i - 1 === open ? pEls[open].querySelector('.q').offsetHeight + 8 : 0)); tops.push(t); last = t; });
+      const over = last + 40 + (open === S.parts.length - 1 ? pEls[open].querySelector('.q').offsetHeight : 0) - hgt; if (over > 0) for (let i = tops.length - 1; i >= 0; i--) { tops[i] -= over * (i / (tops.length - 1)); }
+      pEls.forEach((el, i) => { if (G) gsap.to(el, { top: tops[i], duration: 0.45, ease: 'power2.out' }); else el.style.top = `${tops[i]}px`; }); }
+    let cur = -2;
+    function step(k, instant) {
+      if (k === cur) return; cur = k;
+      const pt = S.parts[Math.min(k, S.parts.length - 1)];
+      rLis.forEach((li, j) => li.classList.toggle('now', k >= 0 && k < S.parts.length && j === pt.rule));
+      segs.forEach((s, i) => { s.classList.toggle('on', i === k); s.classList.toggle('past', i < k); });
+      pEls.forEach((el, i) => { el.classList.toggle('on', i === k); el.style.opacity = i <= k || k >= S.parts.length ? 1 : 0.32; });
+      if (TG.pinOK()) place(k);
+      const on = pEls[k]; if (on && G && !instant) gsap.fromTo(on.querySelector('.q'), { scaleX: 0.2, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.55, ease: 'expo.out', transformOrigin: 'left center' });
+    }
+    if (TG.pinOK()) { requestAnimationFrame(() => place(-1)); }
+    const st = TG.chapter('#tg-sermon', 3600, (p, fin) => step(fin ? -1 : Math.min(S.parts.length - 1, Math.floor(p * S.parts.length)), fin), { scrub: true });
+    if (!st) { rLis.forEach((li) => li.classList.add('now')); pEls.forEach((el) => { el.style.opacity = 1; }); }
+  })();
+
+  /* ---------- 5. Richard Baxter: the pages of his editions here, added up year by year in four kinds, under the stations of his life ---------- */
+  (function baxter() {
+    const B = D.baxter, box = document.getElementById('tg-bx'), svg = box.querySelector('svg'), NS = 'http://www.w3.org/2000/svg';
+    const E = B.eds, K = B.kinds, X0 = 1640, X1 = 1698, KC = [gc(1), gc(4), gc(2), gc(3)];
+    const ORDER = [3, 2, 1, 0]; // kinds as data.json lists them: life, peace, doctrine, practice; stacked practice at the bottom
+    const SY = B.steps.map((s) => s[0]);
+    const yrs = []; for (let y = X0; y <= X1; y++) yrs.push(y);
+    // cum[k][j]: pages of kind k printed by the end of year yrs[j]
+    const cum = K.map(() => yrs.map(() => 0)); E.forEach(([y, k, p]) => { for (let j = y - X0; j < yrs.length; j++) cum[k][j] += p; });
+    const tot = yrs.map((_, j) => K.reduce((t, _k, k) => t + cum[k][j], 0)), TOT = tot[tot.length - 1];
+    const before = E.filter((e) => e[0] <= 1662), alive = E.filter((e) => e[0] > 1662 && e[0] <= 1691), after = E.filter((e) => e[0] > 1691);
+    const pins = B.pins.map(([slug, label]) => { const e = E.find((x) => x[4] === slug); return { slug, label, y: e[0], p: e[2] }; });
+    document.getElementById('tg-bx-say').innerHTML = `The largest writer on this shelf: ${B.n_works} works, ${fmt(E.reduce((t, e) => t + e[2], 0))} pages in ${E.length} editions printed from ${E[0][0]} to ${E[E.length - 1][0]}.`;
+    const steps = document.getElementById('tg-bx-steps');
+    steps.innerHTML = B.steps.map(([y, h, t]) => `<li><b>${esc(h)}</b><p>${esc(t)}</p></li>`).join('');
+    const lis = [...steps.children];
+    const leg = document.getElementById('tg-bx-legend');
+    leg.innerHTML = ORDER.map((k) => `<span><i style="background:${KC[k]}"></i>${esc(K[k][1])} <b>0</b></span>`).join('');
+    const legB = [...leg.querySelectorAll('b')];
+    const nEl = document.getElementById('tg-bx-n'), capEl = document.getElementById('tg-bx-cap');
+    document.getElementById('tg-bx-note').innerHTML = `Each edition is counted once, in the year the copy on this shelf was printed: not always the first edition (his Aphorismes of Justification first appeared in 1649; the copy here is of 1655). The kinds are sorted by title. ${B.late.length ? `One later reprint, of ${B.late[0][0]}, lies beyond the chart.` : ''} <a href="#explore" id="tg-bx-all">All ${B.n_works} works</a>`;
+    document.getElementById('tg-bx-all').addEventListener('click', (ev) => { if (TG._open) { ev.preventDefault(); document.getElementById('explore').scrollIntoView({ behavior: 'smooth' }); TG._open('Richard Baxter'); } });
+    const mk = (tag, at, parent) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); (parent || svg).appendChild(e); return e; };
+    let G0 = null, cur = X0, curStep = -1;
+    function build() {
+      const W = Math.max(320, Math.round(box.clientWidth - 16)), narrow = W < 540, H = Math.round(Math.max(330, Math.min(470, W * 0.66)));
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.textContent = '';
+      const M = { l: narrow ? 34 : 44, r: 10, t: 74, b: 26 }, pw = W - M.l - M.r, ph = H - M.t - M.b;
+      const x = (y) => M.l + (y - X0) / (X1 + 1 - X0) * pw, base = M.t + ph, yv = (v) => base - v / (TOT * 1.04) * ph;
+      const defs = mk('defs', {});
+      const hat = mk('pattern', { id: 'tg-bx-hatch', width: 5, height: 5, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+      mk('rect', { width: 5, height: 5, fill: TG.css('--stone') || '#ddd3c2' }, hat); mk('line', { x1: 0, y1: 0, x2: 0, y2: 5, stroke: '#a99c86', 'stroke-width': 1.4 }, hat);
+      const clip = mk('clipPath', { id: 'tg-bx-clip' }, defs), clipR = mk('rect', { x: 0, y: 0, width: 0, height: H }, clip);
+      // axes: a rule a decade, pages up the side
+      for (let y = 1640; y <= X1; y += 10) { mk('line', { class: 'grid', x1: x(y), y1: M.t, x2: x(y), y2: base, opacity: 0.55 }); const t = mk('text', { class: 'ax', x: x(y), y: base + 16, 'text-anchor': 'middle' }); t.textContent = y; }
+      const step = TOT > 30000 ? 10000 : 5000;
+      for (let v = step; v < TOT; v += step) { mk('line', { class: 'grid', x1: M.l, y1: yv(v), x2: W - M.r, y2: yv(v), 'stroke-dasharray': '2 4' }); const t = mk('text', { class: 'ax', x: M.l - 5, y: yv(v) + 3.5, 'text-anchor': 'end' }); t.textContent = narrow ? `${v / 1000}k` : fmt(v); }
+      mk('line', { x1: M.l, y1: base + 0.5, x2: W - M.r, y2: base + 0.5, stroke: TG.css('--ink'), 'stroke-width': 1, opacity: 0.6 });
+      { const t = mk('text', { class: 'ax', x: M.l - 5, y: M.t - 10, 'text-anchor': 'end' }); t.textContent = 'pages'; }
+      // the stations of his life: a strip above the plot; short stations are named above it
+      const life = mk('g', {}); const sy = 40, sh = 13;
+      const rows = []; // a station too short for its name is named above the strip, on the lowest row where the name is clear
+      B.life.forEach(([a, b, lab, say], i) => { const cls = lab === 'Prison' ? 'st x' : lab === 'After his death' ? 'st p' : /Kidderminster/.test(lab) ? 'st k' : 'st';
+        const r = mk('rect', { class: cls, x: x(a), y: sy, width: Math.max(2, x(b) - x(a) - 1), height: sh, rx: 2 }, life); const tt = mk('title', {}, r); tt.textContent = `${lab}: ${say}`;
+        const w = x(b) - x(a), tw = lab.length * 6.2, short = tw > w - 6, again = B.life.some((l, j) => j > i && l[2] === lab);
+        if ((short && (narrow || lab === 'After his death')) || (short && again)) return;
+        let row = 0; const cx = Math.max(M.l + tw / 2, (x(a) + x(b)) / 2), x0 = cx - tw / 2 - 4, x1 = cx + tw / 2 + 4;
+        if (short) { while ((rows[row] || []).some(([u, v]) => !(x1 < u || x0 > v))) row++; (rows[row] = rows[row] || []).push([x0, x1]); }
+        const t = mk('text', { class: 'stl', x: short ? cx : x(a) + 5, y: short ? sy - 6 - row * 13 : sy + sh - 3, 'text-anchor': short ? 'middle' : 'start' }, life); t.textContent = lab; });
+      // the 1662 rule
+      const r62 = mk('g', { opacity: 0 }); mk('line', { class: 'rule62', x1: x(1662.65), y1: M.t - 8, x2: x(1662.65), y2: base }, r62);
+      const r62t = mk('text', { class: 'r62', x: x(1662.65) + 5, y: M.t + 4 }, r62); r62t.textContent = narrow ? 'Ejected, 1662' : 'Ejected, August 1662';
+      const died = mk('g', { opacity: 0 }); mk('line', { x1: x(1691.93), y1: M.t + 14, x2: x(1691.93), y2: base, stroke: TG.css('--ink'), 'stroke-width': 1, 'stroke-dasharray': '1 3' }, died);
+      { const t = mk('text', { class: 'ax', x: x(1691.93) + 4, y: base - 6 }, died); t.textContent = 'd. 1691'; }
+      const prison = mk('rect', { x: x(1685.3), y: M.t, width: x(1687) - x(1685.3), height: ph, fill: 'url(#tg-bx-hatch)', opacity: 0 });
+      // the four bands, stacked; the pen line is their top
+      const plot = mk('g', { 'clip-path': 'url(#tg-bx-clip)' });
+      const px = (j) => x(yrs[j] + 1);
+      let lower = yrs.map(() => 0);
+      const bands = ORDER.map((k) => { const upper = lower.map((v, j) => v + cum[k][j]);
+        let d = `M${x(X0)},${yv(lower[0])}`; yrs.forEach((_, j) => { d += ` L${px(j)},${yv(upper[j])}`; }); for (let j = yrs.length - 1; j >= 0; j--) d += ` L${px(j)},${yv(lower[j])}`; d += ` L${x(X0)},${yv(lower[0])} Z`;
+        const el = mk('path', { d, fill: KC[k], opacity: 0.82 }, plot); lower = upper; return el; });
+      let pd = `M${x(X0)},${yv(0)}`; yrs.forEach((_, j) => { pd += ` L${px(j)},${yv(tot[j])}`; }); mk('path', { class: 'pen', d: pd }, plot);
+      const nib = mk('circle', { class: 'nib', r: 4.5, cx: x(X0), cy: base });
+      // the line at any x (for the pen's nib and for placing labels clear of it)
+      const lineAt = (xx) => { const yr = X0 + (xx - M.l) / pw * (X1 + 1 - X0) - 1, j = Math.floor(yr - X0); if (j < 0) return yv(0); if (j >= yrs.length - 1) return yv(TOT);
+        const f = yr - X0 - j; return yv(tot[j] + (tot[j + 1] - tot[j]) * f); };
+      // the named books: a pin on the line at the end of its year, the label in the clear space above-left (the line only rises), else above-right over the line
+      const boxes = [], pinEls = pins.map((pn, i) => { const cx = px(pn.y - X0), cy = yv(tot[pn.y - X0]), major = [0, 3, 5, 7].includes(i), g = mk('g', { class: 'pin', opacity: 0 });
+        const a = mk('a', { href: TG.read(pn.slug), target: '_blank', rel: 'noopener' }, g); const tt = mk('title', {}, a); tt.textContent = `${pn.label}, ${pn.y} · ${fmt(pn.p)} pages`;
+        let lx = 0, ly = 0, anchor = 'end';
+        if (!narrow || major) {
+          const w = Math.min(pn.label.length * 6.6, 190) + 4; const left = cx - 8 - w >= 2;
+          anchor = left ? 'end' : 'start'; lx = left ? cx - 8 : cx + 8;
+          const x0 = left ? lx - w : lx, x1 = left ? lx : lx + w; const top = left ? cy - 16 : Math.min(cy, ...[0, 0.25, 0.5, 0.75, 1].map((f) => lineAt(x0 + (x1 - x0) * f))) - 14;
+          ly = top; for (let n = 0; n < 12 && boxes.some((b) => !(x1 < b[0] || x0 > b[2] || ly - 26 > b[3] || ly + 2 < b[1])); n++) ly -= 14;
+          ly = Math.max(M.t + 22, ly); boxes.push([x0, ly - 26, x1, ly + 2]);
+          mk('line', { x1: cx, y1: cy - 5, x2: left ? cx : cx, y2: ly + 3 }, a);
+          const t = mk('text', { x: lx, y: ly - 12, 'text-anchor': anchor }, a); t.textContent = pn.label;
+          const t2 = mk('text', { x: lx, y: ly + 1, 'text-anchor': anchor }, a); const ts = mk('tspan', { class: 'y' }, t2); ts.textContent = `${pn.y} · ${fmt(pn.p)} pp.`;
+        }
+        mk('circle', { cx, cy, r: major ? 4.6 : 3.6 }, a);
+        return g; });
+      G0 = { x, yv, base, clipR, nib, lineAt, r62, prison, died, pinEls, M, W };
+    }
+    function draw(Y, k) {
+      cur = Y; if (!G0) build(); const { x, clipR, nib, lineAt, r62, prison, died, pinEls } = G0, xx = x(Math.min(X1 + 1, Y + 1));
+      clipR.setAttribute('width', xx);
+      nib.setAttribute('cx', xx); nib.setAttribute('cy', lineAt(xx)); nib.setAttribute('opacity', Y >= X1 ? 0 : 1);
+      r62.setAttribute('opacity', Y >= 1662.5 ? 1 : 0); prison.setAttribute('opacity', Y >= 1685.3 ? 0.55 : 0); died.setAttribute('opacity', Y >= 1691.9 ? 1 : 0);
+      const named = k >= 0 && k < B.steps.length ? B.steps[k][3] : [];
+      pinEls.forEach((g, i) => { g.setAttribute('opacity', pins[i].y <= Y ? 1 : 0); g.classList.toggle('now', named.includes(i)); });
+      const upto = E.filter((e) => e[0] <= Y), pages = upto.reduce((t, e) => t + e[2], 0);
+      nEl.textContent = fmt(pages);
+      capEl.textContent = Y >= X1 ? `pages in ${E.length} editions: ${before.length} printed by 1662, ${alive.length} after his ejection in his lifetime, ${after.length} after his death` : `pages in ${upto.length} editions printed by ${Math.floor(Y)}`;
+      ORDER.forEach((kk, i) => { legB[i].textContent = fmt(upto.filter((e) => e[1] === kk).length); });
+    }
+    function setStep(k) { if (k === curStep) return; curStep = k; lis.forEach((li, j) => li.classList.toggle('now', j === k)); }
+    new ResizeObserver(() => { const w = box.clientWidth; if (G0 && Math.abs((G0.W + 16) - w) < 4) return; G0 = null; draw(cur, curStep); }).observe(box);
+    const smooth = (t) => t * t * (3 - 2 * t);
+    const st = TG.chapter('#tg-baxter', 4200, (p, fin) => {
+      if (fin) { setStep(-1); draw(X1, -1); lis.forEach((li) => li.classList.add('now')); return; }
+      const n = SY.length, k = Math.min(n - 1, Math.floor(p * n)), t = clamp((p * n - k) / 0.6, 0, 1), from = k ? SY[k - 1] : X0;
+      setStep(k); draw(from + (SY[k] - from) * smooth(t), k);
+    }, { scrub: 0.4 });
+    if (!st) lis.forEach((li) => li.classList.add('now'));
   })();
 
   /* ---------- explore ---------- */

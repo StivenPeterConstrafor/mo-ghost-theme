@@ -66,13 +66,41 @@
   .tg-lut .sys { display: none; } .tg-lut .lociList { display: block; }
   .tg-lut .bhead { grid-template-columns: minmax(0, 1fr); }
   .tg-lut .braid { overflow-x: auto; } .tg-lut .braid svg { min-width: 880px; max-height: none; }
-  .tg-lut .braid::after { content: 'Scroll sideways to follow the threads'; display: block; font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+  .tg-lut .braid::after { content: 'The diagram continues to the right.'; display: block; font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
   .tg-lut .marks { max-height: 18rem; overflow: auto; } .tg-lut .marks li, .tg-lut .marks li.past { opacity: 1; }
 }
 .tg-lut .lociList ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .tg-lut .lociList li > b { font: 400 1.05rem var(--display); display: block; margin-bottom: 4px; }
 .tg-lut .lociList li span { display: flex; flex-wrap: wrap; gap: 4px 6px; }
 .tg-lut .lociList a { font-size: 0.82rem; border: 1px solid var(--rule); border-radius: 999px; padding: 1px 9px; color: var(--ink); text-decoration: none; background: var(--card); }
+/* the scenes added 10-10: Melanchthon's Loci in its ages, the Magdeburg Centuries, the fronts, Calov */
+.tg-lut .scene.tight { padding-block: 30px; }
+.tg-lut .scene.tight .bhead { margin-bottom: 8px; }
+.tg-lut .lnote { min-height: 5.4em; font-size: 0.98rem; line-height: 1.5; }
+.tg-lut .lnote p { margin: 0 0 8px; }
+.tg-lut .fig { position: relative; }
+.tg-lut .fig svg { width: 100%; height: auto; max-height: calc(100vh - var(--tg-pin, 0px) - 250px); display: block; overflow: visible; }
+.tg-lut .fig text { font-family: var(--body); fill: var(--ink-2); }
+.tg-lut .fig text.d { font-family: var(--display); fill: var(--ink); }
+.tg-lut .fig text.m { fill: var(--muted); font-variant-numeric: lining-nums tabular-nums; }
+.tg-lut .fig text.r { fill: var(--rubric); }
+.tg-lut .fig text.lt { fill: #f1e3c4; }
+.tg-lut .fig .bar { transform-box: fill-box; transform-origin: 0 50%; }
+.tg-lut .fig .sq { transform-box: fill-box; transform-origin: 50% 50%; }
+.tg-lut .fig .up { transform-box: fill-box; transform-origin: 50% 100%; }
+.tg-lut .fig .stripe { fill: var(--rule); opacity: 0.16; }
+.tg-lut .fig a { cursor: pointer; }
+.tg-lut .fig a:hover rect, .tg-lut .fig a:focus rect { stroke: var(--ink); stroke-width: 1.2; }
+.tg-lut .fig a:hover text { fill: var(--rubric); }
+.tg-lut .fig .who { cursor: pointer; } .tg-lut .fig .who:hover { fill: var(--rubric); text-decoration: underline; }
+.tg-lut .klist { display: none; }
+@media (max-width: 860px) {
+  .tg-lut .fig svg { max-height: none; }
+  .tg-lut .lnote { min-height: 0; }
+  .tg-lut .klist { display: block; list-style: none; margin: 14px 0 0; padding: 0; font-size: 0.86rem; }
+  .tg-lut .klist li { padding: 4px 0; border-top: 1px solid var(--rule-2); }
+  .tg-lut .klist b { font: 600 0.8rem var(--body); color: var(--rubric); margin-right: 6px; }
+}
 </style>
 
 <section class="hero" aria-labelledby="tg-h1"><div class="wrap gut">
@@ -91,7 +119,7 @@
   <div>
     <p class="eyebrow">1 · Where they taught</p>
     <h2 id="tg-h-road">From Wittenberg</h2>
-    <p class="say">Lutheranism was made in the universities. Luther and Melanchthon taught at Wittenberg. Their students carried the Reformation to Jena, Königsberg, Helmstedt, Rostock and Copenhagen. For two hundred years the orthodox theologians moved between these universities. Scroll to follow them.</p>
+    <p class="say">Lutheranism was made in the universities. Luther and Melanchthon taught at Wittenberg. Their students carried the Reformation to Jena, Königsberg, Helmstedt, Rostock and Copenhagen. For two hundred years the orthodox theologians moved between these universities.</p>
     <ul class="chron" id="tg-chron"></ul>
   </div>
   <div>
@@ -101,19 +129,9 @@
   </div>
 </div></section>
 
-<section class="scene gut" id="tg-pen" aria-labelledby="tg-h-pen"><div class="wrap scene-grid">
-  <div>
-    <p class="eyebrow">2 · Luther</p>
-    <h2 id="tg-h-pen">Luther’s pen</h2>
-    <p class="say">The Weimar Edition prints Luther’s writings in the order he wrote them. Every dot is a writing whose heading carries its year: <span id="tg-pen-n" class="num">0</span> of them, from the first sermons to the last works of 1546.</p>
-    <ul class="marks" id="tg-marks"></ul>
-  </div>
-  <div class="pen" id="tg-penbox"><svg role="img" aria-label="Luther’s dated writings in the Weimar Edition, one dot each, stacked by year"></svg><div class="tip" hidden></div><p class="legend" id="tg-penkey" style="margin-top:6px"></p></div>
-</div></section>
-
 <section class="scene gut" id="tg-concord" aria-labelledby="tg-h-concord"><div class="wrap">
   <div class="scene-grid bhead">
-    <div><p class="eyebrow">3 · The confession</p><h2 id="tg-h-concord" style="margin:0">Into the Book of Concord</h2></div>
+    <div><p class="eyebrow">2 · The confession</p><h2 id="tg-h-concord" style="margin:0">Into the Book of Concord</h2></div>
     <p class="say bnote" id="tg-bnote" style="margin:0" aria-live="polite"></p>
   </div>
   <div class="braid" id="tg-braid"><svg viewBox="0 0 1000 590" role="img" aria-label="The documents of 1529 to 1537, the controversies after Luther’s death, and the twelve articles of the Formula of Concord that settled them, bound into the Book of Concord of 1580"></svg><div class="tip" hidden></div></div>
@@ -121,7 +139,7 @@
 
 <section class="scene gut" id="tg-sys" aria-labelledby="tg-h-sys"><div class="wrap scene-grid">
   <div>
-    <p class="eyebrow">4 · The systems</p>
+    <p class="eyebrow">3 · The systems</p>
     <h2 id="tg-h-sys">A shelf of systems</h2>
     <div class="sys-say" id="tg-sys-say" aria-live="polite"></div>
   </div>
@@ -131,10 +149,57 @@
   </div>
 </div></section>
 
+<section class="scene gut tight" id="tg-fronts" aria-labelledby="tg-h-fronts"><div class="wrap">
+  <div class="scene-grid bhead">
+    <div><p class="eyebrow">4 · The adversaries</p><h2 id="tg-h-fronts" style="margin:0">Whom they answered</h2></div>
+    <div class="say bnote lnote" id="tg-fnote" style="margin:0" aria-live="polite"></div>
+  </div>
+  <div class="fig" id="tg-ffig"><svg role="img" aria-label="For each writer on the shelf, the share of his answers given to each of six adversaries: Rome and the schoolmen, the Reformed, quarrels within the Lutheran churches, Anabaptists and enthusiasts, the Socinians, Grotius and the Remonstrants"></svg><div class="tip" hidden></div></div>
+  <p class="legend" id="tg-fkey" style="margin-top:6px"></p>
+</div></section>
+
+<section class="scene gut" id="tg-pen" aria-labelledby="tg-h-pen"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">5 · Luther</p>
+    <h2 id="tg-h-pen">Luther’s pen</h2>
+    <p class="say">The Weimar Edition prints Luther’s writings in the order he wrote them. Every dot is a writing whose heading carries its year: <span id="tg-pen-n" class="num">0</span> of them, from the first sermons to the last works of 1546.</p>
+    <ul class="marks" id="tg-marks"></ul>
+  </div>
+  <div class="pen" id="tg-penbox"><svg role="img" aria-label="Luther’s dated writings in the Weimar Edition, one dot each, stacked by year"></svg><div class="tip" hidden></div><p class="legend" id="tg-penkey" style="margin-top:6px"></p></div>
+</div></section>
+
+<section class="scene gut tight" id="tg-loci" aria-labelledby="tg-h-loci"><div class="wrap">
+  <div class="scene-grid bhead">
+    <div><p class="eyebrow">6 · Melanchthon</p><h2 id="tg-h-loci" style="margin:0">How the <i>Loci</i> grew</h2></div>
+    <div class="say bnote lnote" id="tg-lnote" style="margin:0" aria-live="polite"></div>
+  </div>
+  <div class="fig" id="tg-lfig"><svg role="img" aria-label="The loci of Melanchthon’s Loci communes in his first outline and in the editions of 1521, 1535 and 1559, each bar as long as its pages in the Corpus Reformatorum"></svg><div class="tip" hidden></div></div>
+  <p class="legend" id="tg-lkey" style="margin-top:6px"></p>
+</div></section>
+
+<section class="scene gut tight" id="tg-cent" aria-labelledby="tg-h-cent"><div class="wrap">
+  <div class="scene-grid bhead">
+    <div><p class="eyebrow">7 · The Magdeburg Centuries</p><h2 id="tg-h-cent" style="margin:0">Sixteen chapters for every century</h2></div>
+    <div class="say bnote lnote" id="tg-cnote" style="margin:0" aria-live="polite"></div>
+  </div>
+  <div class="fig" id="tg-cfig"><svg role="img" aria-label="The fourteen volumes of the Magdeburg Centuries on the shelf, each cut into the same sixteen chapters; each square’s area is the chapter’s pages"></svg><div class="tip" hidden></div></div>
+  <p class="legend" id="tg-ckey" style="margin-top:6px"></p>
+</div></section>
+
+<section class="scene gut tight" id="tg-calov" aria-labelledby="tg-h-calov"><div class="wrap">
+  <div class="scene-grid bhead">
+    <div><p class="eyebrow">8 · Abraham Calov</p><h2 id="tg-h-calov" style="margin:0">Calov at Wittenberg</h2></div>
+    <div class="say bnote lnote" id="tg-knote" style="margin:0" aria-live="polite"></div>
+  </div>
+  <div class="fig" id="tg-kfig"><svg role="img" aria-label="The twelve volumes of Calov’s System of Theological Topics, each as tall as its pages, and the adversaries each of his works answers"></svg><div class="tip" hidden></div></div>
+  <p class="legend" id="tg-kkey" style="margin-top:6px"></p>
+  <ol class="klist" id="tg-klist"></ol>
+</div></section>
+
 <section class="tool gut" id="explore" aria-labelledby="tg-h-ex"><div class="wrap">
   <p class="eyebrow">Explore</p>
-  <h2 id="tg-h-ex">Every author on the shelf</h2>
-  <p class="say" style="max-width:46rem">Forty-one writers, from the Reformers to the last orthodox dogmaticians and the philosophers who taught beside them. Choose a generation to narrow the lines, or search for a title.</p>
+  <h2 id="tg-h-ex">The authors</h2>
+  <p class="say" style="max-width:46rem">Forty-one writers, from the Reformers to the last orthodox dogmaticians and the philosophers who taught beside them.</p>
   <div id="tg-explorer"></div>
   <div class="next"><a href="/the-faith-received/all-works/?tradition=Lutheran">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=Lutheran">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=english">The English Divines</a><a href="/the-faith-received/guide/?s=westminster">The Westminster Assembly</a><a href="/the-faith-received/guide/?s=puritans">The Puritans</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=methodists">The Methodists</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a></div>
 </div></section>

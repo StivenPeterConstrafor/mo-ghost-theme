@@ -157,7 +157,46 @@
     TG.chapter('#tg-press', 3800, (p) => { year = p < 0.86 ? lerp(Y0, B1, p / 0.86) : lerp(B2, 1890, (p - 0.86) / 0.14); chron(year); draw(); }, { scrub: 0.4 });
   })();
 
-  /* ---------- 3. Andrewes preaches the year: the XCVI Sermons on a calendar ---------- */
+  /* ---------- 3. the bench of bishops: the sees their records name ---------- */
+  (function bench() {
+    const GRID = { Derry: [0, 0], Durham: [4, 0], Armagh: [0, 1], 'Down and Connor': [1, 1], York: [4, 1], 'St Asaph': [2, 2], Chester: [3, 2], Lincoln: [5, 2],
+      Worcester: [3, 3], 'Lichfield and Coventry': [4, 3], Ely: [6, 3], Norwich: [7, 3], "St David's": [1, 4], Gloucester: [3, 4], Oxford: [4, 4],
+      'Bath and Wells': [2, 5], Salisbury: [3, 5], Winchester: [4, 5], London: [5, 5], Rochester: [6, 5], Canterbury: [7, 5], Exeter: [2, 6], Chichester: [5, 6] };
+    const IRE = new Set(['Derry', 'Armagh', 'Down and Connor']);
+    const grid = document.getElementById('tg-benchgrid'), cardEl = document.getElementById('tg-bcard'), nEl = document.getElementById('tg-bn'), note = document.getElementById('tg-bnote');
+    const used = Object.keys(GRID).filter((s) => D.bishops.some((b) => b.sees.includes(s)));
+    const tiles = {};
+    used.forEach((s) => { const [c, r] = GRID[s], d = document.createElement('div'); d.className = `see${IRE.has(s) ? ' ire' : ''}`;
+      d.style.gridColumn = `${c + 1}`; d.style.gridRow = s === 'Canterbury' ? `${r + 1} / span 2` : `${r + 1}`;
+      d.innerHTML = `<h4 title="${esc(s)}">${esc(s.replace(' and Coventry', '').replace(' and Connor', ' & Connor').replace('Bath and Wells', 'Bath & Wells'))}</h4><span class="n">0</span><ul></ul>`; grid.appendChild(d); tiles[s] = { el: d, ul: d.querySelector('ul'), n: d.querySelector('.n') }; });
+    const B = D.bishops.slice().sort((x, y) => (A[x.i].y0 || 0) - (A[y.i].y0 || 0));
+    const surname = (n) => n.replace(/ (the Elder|of .*)$/, '').split(' ').pop();
+    let state = new Map(); // bishop index → step reached (-1 none … sees.length - 1)
+    function apply(k) {
+      const next = new Map(); B.forEach((b, i) => { const u = clamp(k - i, 0, 1); next.set(b.i, u <= 0 ? -1 : Math.min(b.sees.length - 1, Math.floor(u * b.sees.length))); });
+      // the moves since the last frame fly across the bench
+      const moves = [];
+      next.forEach((st, bi) => { const old = state.has(bi) ? state.get(bi) : -1; if (st > old && st >= 0) moves.push([bi, old, st]); });
+      state = next;
+      Object.values(tiles).forEach((t) => { t.list = []; });
+      let placed = 0, arch = 0, lastB = null;
+      B.forEach((b) => { const st = state.get(b.i); if (st < 0) return; placed++; if (b.arch) arch++; lastB = b;
+        b.sees.forEach((s, j) => { if (j > st || !tiles[s]) return; tiles[s].list.push({ b, gone: j < st }); }); });
+      Object.entries(tiles).forEach(([s, t]) => { const L = t.list;
+        t.ul.innerHTML = L.map(({ b, gone }) => `<li class="${b.arch && (s === 'Canterbury' || s === 'York' || s === 'Armagh') ? 'arch' : ''}${gone ? ' gone' : ''}" title="${esc(A[b.i].n)}">${esc(surname(A[b.i].n))}</li>`).join('');
+        t.n.textContent = L.filter((x) => !x.gone).length || ''; t.el.classList.toggle('lit', L.length > 0); });
+      nEl.textContent = placed; note.textContent = `bishops on this shelf${arch ? `, ${arch} of them archbishops` : ''}`;
+      if (lastB) { const a = A[lastB.i]; cardEl.innerHTML = `<b>${esc(a.n)}</b> <span class="small">${esc(a.d)}</span><small>${esc(a.aff)}</small>`; }
+      if (G && moves.length && moves.length < 4) moves.forEach(([bi, old, st]) => { const b = D.bishops.find((x) => x.i === bi), to = tiles[b.sees[st]], from = old >= 0 ? tiles[b.sees[old]] : null;
+        if (!to) return; const gr = grid.getBoundingClientRect(), tr = to.el.getBoundingClientRect(), fr = from ? from.el.getBoundingClientRect() : { left: gr.left - 120, top: tr.top, width: 0, height: 0 };
+        const chip = document.createElement('div'); chip.className = 'fly'; chip.textContent = surname(A[bi].n); grid.appendChild(chip);
+        gsap.fromTo(chip, { x: fr.left - gr.left + fr.width / 2 - 20, y: fr.top - gr.top + fr.height / 2 - 10, opacity: 0.0 },
+          { x: tr.left - gr.left + 8, y: tr.top - gr.top + 18, opacity: 1, duration: 0.7, ease: 'power3.inOut', onComplete: () => gsap.to(chip, { opacity: 0, duration: 0.3, onComplete: () => chip.remove() }) }); });
+    }
+    TG.chapter('#tg-bench', 3400, (p, fin) => apply(fin ? B.length + 1 : p * (B.length + 0.6)), { scrub: 0.4 });
+  })();
+
+  /* ---------- 4. Andrewes preaches the year: the XCVI Sermons on a calendar ---------- */
   (function year() {
     const X = D.xcvi, S = X.sermons, GR = X.groups, svg = document.querySelector('#tg-ywrap svg'), card = document.getElementById('tg-sermon');
     const VW = 680, VH = 660, CX = 340, CY = 326, R0 = 50, R1 = 236, Y0 = 1588, Y1 = 1624; svg.setAttribute('viewBox', `0 0 ${VW} ${VH}`);
@@ -214,45 +253,6 @@
     }
     TG.chapter('#tg-year', 3600, render, { scrub: 0.5 });
     if (!TG.pinOK()) render(1, true);
-  })();
-
-  /* ---------- 4. the bench of bishops: the sees their records name ---------- */
-  (function bench() {
-    const GRID = { Derry: [0, 0], Durham: [4, 0], Armagh: [0, 1], 'Down and Connor': [1, 1], York: [4, 1], 'St Asaph': [2, 2], Chester: [3, 2], Lincoln: [5, 2],
-      Worcester: [3, 3], 'Lichfield and Coventry': [4, 3], Ely: [6, 3], Norwich: [7, 3], "St David's": [1, 4], Gloucester: [3, 4], Oxford: [4, 4],
-      'Bath and Wells': [2, 5], Salisbury: [3, 5], Winchester: [4, 5], London: [5, 5], Rochester: [6, 5], Canterbury: [7, 5], Exeter: [2, 6], Chichester: [5, 6] };
-    const IRE = new Set(['Derry', 'Armagh', 'Down and Connor']);
-    const grid = document.getElementById('tg-benchgrid'), cardEl = document.getElementById('tg-bcard'), nEl = document.getElementById('tg-bn'), note = document.getElementById('tg-bnote');
-    const used = Object.keys(GRID).filter((s) => D.bishops.some((b) => b.sees.includes(s)));
-    const tiles = {};
-    used.forEach((s) => { const [c, r] = GRID[s], d = document.createElement('div'); d.className = `see${IRE.has(s) ? ' ire' : ''}`;
-      d.style.gridColumn = `${c + 1}`; d.style.gridRow = s === 'Canterbury' ? `${r + 1} / span 2` : `${r + 1}`;
-      d.innerHTML = `<h4 title="${esc(s)}">${esc(s.replace(' and Coventry', '').replace(' and Connor', ' & Connor').replace('Bath and Wells', 'Bath & Wells'))}</h4><span class="n">0</span><ul></ul>`; grid.appendChild(d); tiles[s] = { el: d, ul: d.querySelector('ul'), n: d.querySelector('.n') }; });
-    const B = D.bishops.slice().sort((x, y) => (A[x.i].y0 || 0) - (A[y.i].y0 || 0));
-    const surname = (n) => n.replace(/ (the Elder|of .*)$/, '').split(' ').pop();
-    let state = new Map(); // bishop index → step reached (-1 none … sees.length - 1)
-    function apply(k) {
-      const next = new Map(); B.forEach((b, i) => { const u = clamp(k - i, 0, 1); next.set(b.i, u <= 0 ? -1 : Math.min(b.sees.length - 1, Math.floor(u * b.sees.length))); });
-      // the moves since the last frame fly across the bench
-      const moves = [];
-      next.forEach((st, bi) => { const old = state.has(bi) ? state.get(bi) : -1; if (st > old && st >= 0) moves.push([bi, old, st]); });
-      state = next;
-      Object.values(tiles).forEach((t) => { t.list = []; });
-      let placed = 0, arch = 0, lastB = null;
-      B.forEach((b) => { const st = state.get(b.i); if (st < 0) return; placed++; if (b.arch) arch++; lastB = b;
-        b.sees.forEach((s, j) => { if (j > st || !tiles[s]) return; tiles[s].list.push({ b, gone: j < st }); }); });
-      Object.entries(tiles).forEach(([s, t]) => { const L = t.list;
-        t.ul.innerHTML = L.map(({ b, gone }) => `<li class="${b.arch && (s === 'Canterbury' || s === 'York' || s === 'Armagh') ? 'arch' : ''}${gone ? ' gone' : ''}" title="${esc(A[b.i].n)}">${esc(surname(A[b.i].n))}</li>`).join('');
-        t.n.textContent = L.filter((x) => !x.gone).length || ''; t.el.classList.toggle('lit', L.length > 0); });
-      nEl.textContent = placed; note.textContent = `bishops on this shelf${arch ? `, ${arch} of them archbishops` : ''}`;
-      if (lastB) { const a = A[lastB.i]; cardEl.innerHTML = `<b>${esc(a.n)}</b> <span class="small">${esc(a.d)}</span><small>${esc(a.aff)}</small>`; }
-      if (G && moves.length && moves.length < 4) moves.forEach(([bi, old, st]) => { const b = D.bishops.find((x) => x.i === bi), to = tiles[b.sees[st]], from = old >= 0 ? tiles[b.sees[old]] : null;
-        if (!to) return; const gr = grid.getBoundingClientRect(), tr = to.el.getBoundingClientRect(), fr = from ? from.el.getBoundingClientRect() : { left: gr.left - 120, top: tr.top, width: 0, height: 0 };
-        const chip = document.createElement('div'); chip.className = 'fly'; chip.textContent = surname(A[bi].n); grid.appendChild(chip);
-        gsap.fromTo(chip, { x: fr.left - gr.left + fr.width / 2 - 20, y: fr.top - gr.top + fr.height / 2 - 10, opacity: 0.0 },
-          { x: tr.left - gr.left + 8, y: tr.top - gr.top + 18, opacity: 1, duration: 0.7, ease: 'power3.inOut', onComplete: () => gsap.to(chip, { opacity: 0, duration: 0.3, onComplete: () => chip.remove() }) }); });
-    }
-    TG.chapter('#tg-bench', 3400, (p, fin) => apply(fin ? B.length + 1 : p * (B.length + 0.6)), { scrub: 0.4 });
   })();
 
   /* ---------- explore ---------- */

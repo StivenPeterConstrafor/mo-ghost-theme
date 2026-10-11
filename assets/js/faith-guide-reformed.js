@@ -113,7 +113,56 @@
     let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { frame(); render(lastP); }, 150); }).observe(host);
   })();
 
-  /* ---------- 2. the Reformed International ---------- */
+  /* ---------- 2. the stream of generations ---------- */
+  (function stream() {
+    const host = document.getElementById('tg-stream'), svg = d3.select(host.querySelector('svg')), tip = host.querySelector('.tip');
+    const Y0 = 1480, Y1 = 1790, BIN = 5, bins = d3.range(Y0, Y1 + 1, BIN);
+    const active = (a) => { const coll = /^The |Synod|theses/.test(a.n) || /^fl\./.test(a.d || ''); return [coll ? a.y0 : Math.min(a.y0 + 24, a.y1), a.y1]; };
+    const rows = bins.map((y) => { const r = { y }; FAMS.forEach((k) => { r[k] = 0; }); D.authors.forEach((a) => { const [s, e] = active(a); if (s <= y + BIN / 2 && e >= y - BIN / 2) r[a.f] += 1; }); return r; });
+    const names = (y, k) => D.authors.filter((a) => { const [s, e] = active(a); return a.f === k && s <= y && e >= y; }).map((a) => a.n);
+    const series = d3.stack().keys(FAMS).offset(d3.stackOffsetWiggle).order(d3.stackOrderInsideOut)(rows);
+    document.getElementById('tg-stream-legend').innerHTML = D.fam.map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('');
+    const EV = [[1536, 'Institutes'], [1559, 'Geneva Academy'], [1563, 'Heidelberg Catechism'], [1575, 'Leiden'], [1618, 'Dort'], [1634, 'Amyraut'], [1648, 'Cocceius on the covenant'], [1675, 'Formula Consensus'], [1685, 'the Revocation']];
+    const PER = [[1517, 1565, 'Reformation'], [1565, 1640, 'Early orthodoxy'], [1640, 1725, 'High orthodoxy'], [1725, 1790, 'Late orthodoxy']];
+    let W = 0, reveal = null, nowT = null, nowL = null, evs = [], sx;
+    function build() {
+      W = host.clientWidth; const H = svg.node().clientHeight, top = 52, bot = H - 54;
+      sx = d3.scaleLinear([Y0, Y1], [0, W]); const ext = [d3.min(series, (s) => d3.min(s, (d) => d[0])), d3.max(series, (s) => d3.max(s, (d) => d[1]))];
+      const sy = d3.scaleLinear(ext, [bot, top]);
+      svg.attr('viewBox', `0 0 ${W} ${H}`).selectAll('*').remove();
+      const defs = svg.append('defs'); const clip = defs.append('clipPath').attr('id', 'tg-ref-clip'); reveal = clip.append('rect').attr('x', 0).attr('y', 0).attr('height', H).attr('width', 0);
+      const per = svg.append('g').attr('class', 'per');
+      PER.forEach(([a, b, n], i) => { per.append('rect').attr('x', sx(a)).attr('y', bot + 22).attr('width', sx(b) - sx(a) - 2).attr('height', 3).attr('opacity', i % 2 ? 0.6 : 1);
+        per.append('text').attr('x', sx(a) + 2).attr('y', bot + 40).text(W < 600 ? ['Reform.', 'Early', 'High', 'Late'][i] : n); });
+      const ax = svg.append('g').attr('class', 'ax');
+      for (let y = 1500; y <= 1775; y += 25) { ax.append('line').attr('x1', sx(y)).attr('x2', sx(y)).attr('y1', top - 8).attr('y2', bot + 6).attr('stroke', TG.css('--rule-2')); ax.append('text').attr('x', sx(y)).attr('y', bot + 17).attr('text-anchor', 'middle').text(y); }
+      const area = d3.area().x((d) => sx(d.data.y)).y0((d) => sy(d[0])).y1((d) => sy(d[1])).curve(d3.curveBasis);
+      const g = svg.append('g').attr('clip-path', 'url(#tg-ref-clip)');
+      g.selectAll('path.s').data(series).join('path').attr('class', 's').attr('d', area).attr('fill', (s) => fc(s.key)).attr('opacity', 0.9)
+        .on('mousemove', (e, s) => { const [mx] = d3.pointer(e, host), y = Math.round(sx.invert(mx) / 5) * 5, n = names(y, s.key); const b = host.getBoundingClientRect();
+          tip.innerHTML = `${esc(famName(s.key))}, about ${y}<small>${n.length ? esc(n.slice(0, 8).join(', ')) + (n.length > 8 ? ` and ${n.length - 8} more` : '') : 'none at work'}</small>`; tip.hidden = false;
+          tip.style.left = `${Math.min(mx + 14, b.width - 260)}px`; tip.style.top = `${d3.pointer(e, host)[1] - 20}px`; })
+        .on('mouseleave', () => { tip.hidden = true; });
+      const evg = svg.append('g').attr('class', 'ev'); const lanes = [12, 27, 42], lastX = lanes.map(() => -1e9), narrow = W < 600;
+      evs = EV.filter(([y]) => !narrow || [1536, 1618, 1685].includes(y)).map(([y, t]) => { const x = sx(y); let r = 0; while (r < lanes.length - 1 && x - 4 < lastX[r]) r++; lastX[r] = x + t.length * 6.4 + 12;
+        const gg = evg.append('g').attr('opacity', 0); gg.append('line').attr('x1', x).attr('x2', x).attr('y1', lanes[r] + 4).attr('y2', bot);
+        gg.append('text').attr('x', x + 4).attr('y', lanes[r]).text(t); return { y, gg }; });
+      nowL = svg.append('line').attr('y1', top - 10).attr('y2', bot + 6).attr('stroke', TG.css('--rubric')).attr('stroke-width', 1.2);
+      nowT = svg.append('text').attr('class', 'now').attr('y', bot - 8);
+    }
+    let cur = 1;
+    function render(p) {
+      cur = p; const Y = lerp(Y0 + 10, Y1, p), x = sx(Y);
+      reveal.attr('width', x); nowL.attr('x1', x).attr('x2', x).attr('opacity', p < 1 ? 1 : 0);
+      nowT.attr('x', Math.min(x + 8, W - 100)).text(p < 1 ? Math.round(Y) : '').attr('text-anchor', 'start');
+      evs.forEach((e) => e.gg.attr('opacity', e.y <= Y ? 1 : 0));
+    }
+    build();
+    TG.chapter('#tg-gen', 2800, render, { scrub: 0.5 });
+    let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (Math.abs(host.clientWidth - W) > 2) { build(); render(cur); } }, 150); });
+  })();
+
+  /* ---------- 3. the Reformed International ---------- */
   (function road() {
     const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[-4.8, 40.6], [23.9, 56.2]], { parallels: [42, 54] });
     const cv = TG.canvas(box.querySelector('canvas')), {ctx} = cv, P = D.places;
@@ -166,7 +215,7 @@
     TG.chapter('#tg-road', 4600, (p) => render(lerp(1500, 1725, p)), { scrub: 0.4 });
   })();
 
-  /* ---------- 3. the confessions, dealt ---------- */
+  /* ---------- 4. the confessions, dealt ---------- */
   (function confessions() {
     const deck = document.getElementById('tg-deck'), svg = deck.querySelector('svg'), card = document.getElementById('tg-bigcard'), tip = deck.querySelector('.tip');
     document.getElementById('tg-conf-n').textContent = D.conf.length;
@@ -208,7 +257,7 @@
     }
     function deal(i, fwd, instant) {
       const b = D.big[Math.max(0, i)];
-      const html = i < 0 ? `<p class="pl">The first Reformed confession</p><h3>Scroll to deal the cards</h3><p>From Zwingli’s theses of 1523 to the last Swiss formula of 1675.</p>`
+      const html = i < 0 ? `<p class="pl">The Reformed confessions</p><h3>1523 to 1675</h3><p>From Zwingli’s theses for the first Zurich disputation to the last Swiss formula.</p>`
         : `<span class="y">${b.y}</span><h3>${esc(b.t)}</h3><span class="pl">${esc(b.place)}</span><p>${esc(b.note)}</p>
           <div class="who">${b.who.length ? `On the shelf: ${b.who.map((w) => `<button type="button" data-w="${esc(w)}">${esc(w)}</button>`).join('')}` : ''}</div>
           <p class="rd" style="margin:8px 0 0"><a href="${TG.read(b.s)}" target="_blank" rel="noopener">Read the ${esc(b.t.replace(/^The /, ''))}</a> <span class="small">${b.p} pp.</span></p>`;
@@ -224,7 +273,237 @@
     let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (Math.abs(svg.clientWidth - W) > 2) { build(); const y = year; year = -1; cards.forEach((c) => { c.rc._on = undefined; }); flags.forEach((f) => { f._on = undefined; }); render(y, true); } }, 150); });
   })();
 
-  /* ---------- 4. divide, and divide again: Polanus's tree ---------- */
+  /* ---------- 5. the Bible, book by book: a row for each writer, a column for each book; rows fill in the order the writers worked ---------- */
+  (function bible() {
+    const B = D.bible, host = document.getElementById('tg-bib'), svg = host.querySelector('svg'), tip = host.querySelector('.tip'), steps = document.getElementById('tg-bsteps');
+    const NB = B.books.length, rows = B.rows.map((r) => { const by = {}; r.c.forEach((c) => (by[c[0]] = by[c[0]] || []).push(c)); return { ...r, by, nb: Object.keys(by).length }; });
+    const per = B.books.map((_, i) => rows.filter((r) => r.by[i]).length), most = Math.max(...per);
+    const vols = new Map(); rows.forEach((r) => r.c.forEach((c) => vols.set(c[1], c[5])));
+    const nVol = [...vols.values()].reduce((t, v) => t + v, 0), words = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+    const say = (n) => words[n] || fmt(n);
+    document.getElementById('tg-bib-n').textContent = `${fmt(nVol)} volumes by ${rows.length} writers.`;
+    // runs of books a writer has no commentary on, said the short way: "Judges to Esther"
+    const runs = (idx) => { const out = []; idx.forEach((i) => { const r = out[out.length - 1]; if (r && i === r[1] + 1) r[1] = i; else out.push([i, i]); });
+      return out.map(([a, b]) => a === b ? B.books[a][1] : b === a + 1 ? `${B.books[a][1]} and ${B.books[b][1]}` : `${B.books[a][1]} to ${B.books[b][1]}`); };
+    const find = (n) => rows.find((r) => r.n === n) || { nb: 0, by: {} };
+    const calvin = find('John Calvin'), pis = find('Johannes Piscator'), gro = find('Hugo Grotius');
+    const ranks = [...new Set(per)].sort((a, b) => b - a), named = (n) => per.map((v, i) => [v, i]).filter(([v]) => v === n).map(([, i]) => B.books[i][1]);
+    const list = (xs) => xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
+    const GROUPS = [
+      { t: 'The first teachers', f: (r) => r.y0 < 1505, p: 'Oecolampadius at Basel, Capito and Bucer at Strasbourg, Musculus at Bern, Bullinger at Zurich: lectures and commentaries, one book at a time.' },
+      { t: 'Calvin at Geneva', f: (r) => r === calvin, p: (() => { const all = Object.keys(calvin.by).map(Number), hom = all.filter((i) => calvin.by[i].every((c) => c[4] === 'h'));
+        return `Commentaries and lectures on ${all.length - hom.length} of the sixty-six books${hom.length ? `, and sermons on ${list(hom.map((i) => B.books[i][1]))}` : ''}. Not among them on the shelf: ${list(runs(B.books.map((_, i) => i).filter((i) => !calvin.by[i])))}.`; })() },
+      { t: 'Zurich pulpits, Heidelberg chairs', f: (r) => r.y0 >= 1510 && r.y0 < 1540, p: 'Gwalther and Lavater preached through whole books at Zurich; their homilies are drawn open. Zanchi and Olevian taught at Heidelberg.' },
+      { t: 'Herborn and Leiden', f: (r) => r.y0 >= 1540 && r.y0 < 1580, p: `Piscator of Herborn set out all ${pis.nb === NB ? 'sixty-six books' : `${pis.nb} books`} of both Testaments in logical analysis. Pareus lectured on Romans at Heidelberg; Junius, Arminius and Gomarus taught at Leiden.` },
+      { t: 'The learned century', f: (r) => r.y0 >= 1580, p: `Grotius annotated ${gro.nb === 27 ? 'the whole New Testament' : `${gro.nb} books`}; Cartwright gathered the rabbis on Genesis and Exodus; Daillé preached on Philippians at Charenton; Cocceius expounded Hebrews.` },
+      { t: 'The books they opened most', f: () => false, p: `${list(named(ranks[0]))}, by ${say(ranks[0])} of the ${rows.length} writers; then ${list(named(ranks[1]))}, by ${say(ranks[1])}.` }];
+    steps.innerHTML = GROUPS.map((g) => `<li><b>${esc(g.t)}</b><p>${esc(g.p)}</p></li>`).join('');
+    const sl = [...steps.children];
+    document.getElementById('tg-bib-legend').innerHTML = `${D.fam.filter(([k]) => rows.some((r) => r.f === k)).map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('')
+       }<span><i style="background:transparent;border:1.5px solid var(--ink-2)"></i>sermons or homilies</span>`;
+    const WTS = rows.map((r) => 1 + r.nb / 14), SUM = WTS.reduce((a, b) => a + b, 0), START = []; WTS.reduce((acc, w) => { START.push(acc / SUM); return acc + w; }, 0);
+    let L = null, head = [], rowEls = [], bars = [], barLab = [], dots = null, W = 0;
+    function layout() {
+      W = host.clientWidth; const vert = W < 600, secOf = B.books.map((b) => B.secs.findIndex((s) => s[0] === b[2]));
+      if (!vert) {
+        const lab = 138, tot = 26, gap = 5, cw = (W - lab - tot - gap * (B.secs.length - 1)) / NB, rh = 19, top = 60, barH = 52, barTop = top + rows.length * rh + 18;
+        const bx = B.books.map((_, i) => lab + i * cw + secOf[i] * gap);
+        return { vert, secOf, H: barTop + barH + 30, pos: (k, i) => [bx[i] + 0.6, top + k * rh + 2, cw - 1.2, rh - 4], bx, cw, lab, tot, top, rh, barTop, barH };
+      }
+      const lab = 64, gap = 5, top = 118, rh = 11, cw = Math.min(16, (W - lab - 26) / rows.length), by = B.books.map((_, i) => top + i * rh + secOf[i] * gap);
+      return { vert, secOf, H: by[NB - 1] + rh + 10, pos: (k, i) => [lab + k * cw + 0.6, by[i] + 0.6, cw - 1.2, rh - 1.2], by, cw, lab, top, rh };
+    }
+    function build() {
+      L = layout(); svg.setAttribute('viewBox', `0 0 ${W} ${L.H}`); svg.innerHTML = ''; head = []; rowEls = []; bars = []; barLab = [];
+      const g0 = mk('g', {}, svg);
+      // sections and books
+      B.secs.forEach(([k, n], s) => { const ix = B.books.map((b, i) => (b[2] === k ? i : -1)).filter((i) => i >= 0), a = ix[0], z = ix[ix.length - 1];
+        if (!L.vert) { const x0 = L.bx[a], x1 = L.bx[z] + L.cw; head.push(mk('line', { class: 'secl', x1: x0, x2: x1 - 1, y1: 17, y2: 17 }, g0));
+          const t = mk('text', { class: 'sec', x: x0, y: 12 }, g0), SHORT = { Prophets: 'Proph.', 'The Twelve': 'Twelve', 'Gospels, Acts': 'Gospels', 'Letters, Revelation': 'Letters' };
+          for (const label of [n, SHORT[n] || n.split(/[ ,]/)[0], '']) { t.textContent = label; if (!label || t.getComputedTextLength() <= x1 - x0 - 3) break; } head.push(t); }
+        else { const y0 = L.by[a], y1 = L.by[z] + L.rh; head.push(mk('line', { class: 'secl', x1: 2, x2: 2, y1: y0, y2: y1 - 1 }, g0)); } });
+      B.books.forEach(([ab], i) => { const t = L.vert ? mk('text', { class: 'bk', x: L.lab - 4, y: L.by[i] + L.rh - 2.5, 'text-anchor': 'end' }, g0)
+        : mk('text', { class: 'bk', transform: `translate(${L.bx[i] + L.cw * 0.5 + 3},${L.top - 4}) rotate(-90)` }, g0); t.textContent = ab; head.push(t); });
+      // the empty grid, one dot to a cell
+      let d = ''; rows.forEach((_, k) => B.books.forEach((__, i) => { const [x, y, w, h] = L.pos(k, i); d += `M${(x + w / 2 - 0.8).toFixed(1)},${(y + h / 2 - 0.8).toFixed(1)}h1.6v1.6h-1.6z`; }));
+      dots = mk('path', { class: 'dots', d }, g0);
+      rows.forEach((r, k) => {
+        const g = mk('g', {}, svg), col = fc(r.f); let name;
+        if (!L.vert) { name = mk('text', { class: 'nm', x: L.lab - 8, y: L.top + k * L.rh + L.rh * 0.66, 'text-anchor': 'end' }, g); name.textContent = r.n.replace(/^(Johannes|Wolfgang|Heinrich|Martin|Rudolf|Ludwig|Caspar|Franciscus|Girolamo|David|Jacobus|Hugo|Jean|Christopher|John) /, (m, f) => `${f[0]}. `); }
+        else { name = mk('text', { class: 'nm', transform: `translate(${L.lab + k * L.cw + L.cw * 0.5 + 3},${L.top - 6}) rotate(-60)`, style: 'font-size:10px' }, g); name.textContent = r.n.split(' ').slice(-1)[0]; }
+        const cells = Object.entries(r.by).map(([i, cs]) => { i = +i; const [x, y, w, h] = L.pos(k, i), hom = cs.every((c) => c[4] === 'h'), first = cs[0];
+          const a = mk('a', { href: TG.read(first[1], first[2] || undefined), target: '_blank', 'data-k': k, 'data-i': i, 'aria-label': `${r.n} on ${B.books[i][1]}` }, g);
+          const rect = mk('rect', { class: 'cl', x, y, width: w, height: h, rx: 1.5, fill: hom ? TG.css('--card') : col, stroke: hom ? col : 'none', 'stroke-width': hom ? 1.4 : 0 }, a);
+          return { rect, i }; });
+        let tot = null; if (!L.vert) { tot = mk('text', { class: 'rt', x: W - L.tot + 6, y: L.top + k * L.rh + L.rh * 0.66 }, g); tot.textContent = r.nb; }
+        rowEls.push({ name, cells, tot });
+      });
+      if (!L.vert) { // how many of the writers opened each book
+        const gb = mk('g', {}, svg); const cap = mk('text', { class: 'bcap', x: L.lab - 8, y: L.barTop + L.barH - 2, 'text-anchor': 'end' }, gb); cap.textContent = 'writers on each book'; barLab.push(cap);
+        B.books.forEach((_, i) => { const h = per[i] / most * L.barH, r = mk('rect', { class: `bar${per[i] === most ? ' top' : ''}`, x: L.bx[i] + 0.6, y: L.barTop + L.barH - h, width: L.cw - 1.2, height: Math.max(h, 0.5) }, gb); bars.push(r);
+          if (per[i] === most) { const t = mk('text', { class: 'bl', x: L.bx[i] + L.cw / 2, y: L.barTop + L.barH - h - 5, 'text-anchor': 'middle' }, gb); t.textContent = `${B.books[i][1]} ${per[i]}`; barLab.push(t); } });
+        const base = mk('line', { x1: L.lab, x2: W - L.tot, y1: L.barTop + L.barH + 0.5, y2: L.barTop + L.barH + 0.5, stroke: TG.css('--rule') }, gb); barLab.push(base);
+      }
+    }
+    let cur = -2;
+    function render(p) {
+      const hd = clamp(p / 0.06, 0, 1), body = clamp((p - 0.06) / 0.8, 0, 1), end = clamp((p - 0.88) / 0.1, 0, 1);
+      head.forEach((e) => { e.style.opacity = hd; }); dots.style.opacity = hd;
+      let now = -1;
+      rowEls.forEach((R, k) => { const t0 = START[k], t1 = t0 + WTS[k] / SUM, loc = clamp((body - t0) / (t1 - t0), 0, 1), nm = clamp(loc * 3, 0, 1);
+        if (body >= t0 && body > 0) now = k;
+        R.name.style.opacity = nm; R.name.style.transform = L.vert ? '' : `translateX(${((1 - nm) * -8).toFixed(1)}px)`;
+        R.cells.forEach(({ rect, i }) => { const u = ease(clamp(loc * 1.3 - (i / NB) * 0.3, 0, 1)); rect.style.opacity = u > 0.01 ? 1 : 0; rect.style.transform = `scale(${u.toFixed(3)})`; });
+        if (R.tot) R.tot.style.opacity = loc >= 1 ? 1 : 0; });
+      bars.forEach((b) => { b.style.transform = `scaleY(${ease(end).toFixed(3)})`; }); barLab.forEach((e) => { e.style.opacity = end; });
+      const si = end > 0.4 ? GROUPS.length - 1 : now < 0 ? -1 : GROUPS.findIndex((g) => g.f(rows[now]));
+      if (si !== cur) { cur = si; sl.forEach((li, i) => { li.classList.toggle('now', i === si); li.classList.toggle('past', i < si); }); }
+    }
+    host.addEventListener('mousemove', (e) => { const a = e.target.closest('a[data-k]'); if (!a) { tip.hidden = true; return; } const r = rows[+a.dataset.k], i = +a.dataset.i, b = host.getBoundingClientRect();
+      tip.innerHTML = `${esc(r.n)} on ${esc(B.books[i][1])}<small>${r.by[i].map((c) => `${esc(c[3])}${c[5] > 1 ? `, ${c[5]} vols.` : ''}`).join('<br>')}</small>`; tip.hidden = false;
+      tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 250)}px`; tip.style.top = `${e.clientY - b.top + 14}px`; });
+    host.addEventListener('mouseleave', () => { tip.hidden = true; });
+    build(); let lastP = 0; if (document.fonts) document.fonts.ready.then(() => { build(); render(lastP); }); // labels are fitted by measuring them
+    const st = TG.chapter('#tg-bible', 4400, (p, fin) => { lastP = fin ? 1 : p; render(lastP); }, { scrub: 0.5 });
+    if (!st) sl.forEach((li) => li.classList.add('now'));
+    let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { if (Math.abs(host.clientWidth - W) > 2) { build(); render(lastP); } }, 150); }).observe(host);
+  })();
+
+  /* ---------- 6. the Heidelberg Catechism: its 129 questions, and the pages three commentaries give each, as their printed books head them ---------- */
+  (function heid() {
+    const Hd = D.heid, host = document.getElementById('tg-heid-stage'), svg = host.querySelector('svg'), tip = host.querySelector('.tip'), steps = document.getElementById('tg-hsteps');
+    const Q = Hd.qs, CM = Hd.comm, NQ = Q.length, PC = ['--muted', '--muted', '--f1', '--f6'].map((v) => TG.css(v));
+    const partOf = (q) => Hd.parts.reduce((k, p, j) => (q >= p[1] ? j : k), 0); // q is 1-based
+    const shortN = (c) => c.n.split(' ').slice(-1)[0];
+    const share = (c, j) => { const qs = Q.map((_, i) => i).filter((i) => partOf(i + 1) === j); return Math.round(qs.reduce((t, i) => t + (c.pp[i] || 0), 0) / c.total * 100); };
+    const span = (c, i) => { let k = i + 1; while (k < NQ && c.pp[k] == null) k++; return k - 1 > i ? `Q. ${i + 1} to ${k}` : `Q. ${i + 1}`; }; // a span runs on over questions the book does not head
+    steps.innerHTML = `${CM.map((c) => { const pk = c.peaks[0];
+      return `<li><b>${esc(c.n)}</b><p>${esc(c.d)}${c.where ? `; this printing ${esc(c.where)}` : ''}. ${fmt(c.total)} pages on the questions, ${c.headed} of the 129 headed one by one. Longest on ${span(c, pk)}, ${esc(Hd.topic[pk + 1])}: ${c.pp[pk]} pages.</p></li>`; }).join('')
+       }<li><b>Where the weight falls</b><p>The third part, thankfulness (the law and prayer), takes ${CM.map((c) => `${share(c, 3)} per cent of ${shortN(c)}’s pages`).join(', ').replace(/, ([^,]*)$/, ' and $1')}.</p></li>`;
+    const sl = [...steps.children];
+    document.getElementById('tg-heid-legend').innerHTML = `${Hd.parts.slice(1).map((p, j) => `<span><i style="background:${PC[j + 1]}"></i>${esc(p[0])}</span>`).join('')
+       }<span><i style="background:transparent;border:1px solid var(--muted)"></i>a question the book does not head</span>`;
+    const maxPP = Math.max(...CM.flatMap((c) => c.pp.map((v) => v || 0)));
+    let L = null, W = 0, headEls = [], ticks = [], rowsEl = [], peaks = [], hov = null;
+    function layout() {
+      W = host.clientWidth; const narrow = W < 600, pad = 4, ldGap = narrow ? 0 : 1.4, ptGap = narrow ? 5 : 10;
+      const nLD = new Set(Q.map((q) => q[0])).size, cw = (W - 2 * pad - (nLD - 1) * ldGap - 3 * ptGap) / NQ, xs = []; let x = pad;
+      Q.forEach((q, i) => { if (i && q[0] !== Q[i - 1][0]) x += ldGap; if (i && partOf(i + 1) !== partOf(i)) x += ptGap; xs.push(x); x += cw; });
+      const top = narrow ? 64 : 70, rowH = narrow ? 120 : 152, H = top + CM.length * rowH + 4;
+      return { narrow, cw, xs, top, rowH, H, base: (k) => top + (k + 1) * rowH - 10, k: (rowH - 58) / maxPP };
+    }
+    function build() {
+      L = layout(); svg.setAttribute('viewBox', `0 0 ${W} ${L.H}`); svg.innerHTML = ''; headEls = []; ticks = []; rowsEl = []; peaks = [];
+      const g0 = mk('g', {}, svg);
+      hov = mk('rect', { class: 'hov', x: 0, y: 44, width: 0, height: L.H - 44, opacity: 0 }, g0);
+      Hd.parts.forEach(([n, q0], j) => { const q1 = (Hd.parts[j + 1] || [0, NQ + 1])[1] - 1, x0 = L.xs[q0 - 1], x1 = L.xs[q1 - 1] + L.cw;
+        const ln = mk('line', { class: 'ptl', x1: x0, x2: x1, y1: 20, y2: 20 }, g0), t = mk('text', { class: 'pt', x: x0, y: 14 }, g0), num = ['', 'I', 'II', 'III'][j];
+        const full = j ? `${num}. ${n.replace(/^Of /, '').replace(/^./, (m) => m.toUpperCase())}` : n;
+        for (const label of [full, num, '']) { t.textContent = label; if (!label || t.getComputedTextLength() <= x1 - x0 - 2) break; } headEls.push(ln, t); });
+      if (!L.narrow) Hd.subs.forEach(([n, q0], j) => { const x = L.xs[q0 - 1], nx = j + 1 < Hd.subs.length ? L.xs[Hd.subs[j + 1][1] - 1] : W, room = nx - x - 4;
+        const ln = mk('line', { class: 'sbl', x1: x + 0.5, x2: x + 0.5, y1: 26, y2: 44 }, g0), t = mk('text', { class: 'sb', x: x + 3, y: 34 }, g0);
+        const SUB = { 'Of God the Father': ['God the Father', 'Father'], 'Of God the Son': ['God the Son', 'The Son'], 'Of God the Holy Ghost': ['The Holy Ghost', 'Holy Ghost'], 'The Sacraments': ['The sacraments', 'Sacraments'],
+          'Of Holy Baptism': ['Baptism'], 'Of the Holy Supper': ['The Supper', 'Supper'], 'The Law of God': ['The law of God', 'The law'], Prayer: ['Prayer'] }[n] || [n];
+        for (const label of [...SUB, '']) { t.textContent = label; if (!label || t.getComputedTextLength() <= room) break; } headEls.push(ln, t); });
+      Q.forEach((q, i) => ticks.push(mk('rect', { class: 'tk', x: L.xs[i] + L.cw / 2 - 1.2, y: 47, width: 2.4, height: 2.4, opacity: 0 }, g0)));
+      CM.forEach((c, k) => {
+        const g = mk('g', {}, svg), b = L.base(k), rowTop = L.top + k * L.rowH;
+        const nm = mk('text', { class: 'rn', x: 4, y: rowTop + 16 }, g); nm.textContent = c.n;
+        const sub = mk('text', { class: 'rs', x: 4, y: rowTop + 16 }, g); sub.textContent = `${c.d}${c.where ? ` · ${c.where}` : ''} · ${fmt(c.total)} pages on the questions`;
+        if (L.narrow) sub.setAttribute('y', rowTop + 30); else sub.setAttribute('x', 4 + nm.getComputedTextLength() + 10);
+        mk('line', { class: 'base', x1: 0, x2: W, y1: b + 0.5, y2: b + 0.5 }, g);
+        const bars = c.pp.map((v, i) => {
+          if (v == null) return { el: mk('rect', { class: 'un', x: L.xs[i] + L.cw / 2 - 1.5, y: b - 3.5, width: 3, height: 3 }, g), i, hollow: true };
+          const h = Math.max(1.2, v * L.k), a = mk('a', { href: TG.read(c.slug, c.pg[i]), target: '_blank', 'aria-label': `${c.n} on question ${i + 1}: ${v} pages` }, g);
+          return { el: mk('rect', { class: 'b', x: L.xs[i] + 0.3, y: b - h, width: Math.max(0.8, L.cw - (L.narrow ? 0.3 : 0.8)), height: h, fill: PC[partOf(i + 1)] }, a), i }; });
+        rowsEl.push({ nm, sub, bars });
+        // the questions it dwells on longest: a number over the bar, and their names in a line at the head of the row
+        const pk = (L.narrow ? c.peaks.slice(0, 1) : c.peaks).map((i) => ({ i, x: L.xs[i] + L.cw / 2, y: b - c.pp[i] * L.k })).sort((a, z) => a.x - z.x);
+        const line = mk('text', { class: 'rs', x: 4, y: rowTop + 31, opacity: 0 }, g);
+        line.textContent = `Longest: ${c.peaks.slice(0, L.narrow ? 1 : 3).map((i) => `${span(c, i).replace('Q. ', 'Q. ')}, ${Hd.topic[i + 1]} (${c.pp[i]} pp.)`).join(' · ')}`;
+        if (L.narrow) line.setAttribute('y', rowTop + 44);
+        peaks.push({ g: line, row: k }); let lastX = -1e9;
+        if (!L.narrow) pk.forEach((p) => { const txt = `${p.i + 1}`, w = txt.length * 6 + 4, lift = p.x - w / 2 < lastX + 4 ? 12 : 0, pg = mk('g', { class: 'pk', opacity: 0 }, g), ty = p.y - 6 - lift;
+          mk('line', { x1: p.x, x2: p.x, y1: ty + 3, y2: p.y - 1 }, pg); const t = mk('text', { class: 'q', x: p.x, y: ty, 'text-anchor': 'middle' }, pg); t.textContent = txt;
+          lastX = p.x + w / 2; peaks.push({ g: pg, row: k }); });
+      });
+      // hover: the whole column of a question
+      const hit = mk('g', {}, svg); Q.forEach((q, i) => { const r = mk('rect', { x: L.xs[i], y: 44, width: L.cw + 1, height: L.H - 44, fill: 'transparent', 'data-i': i }, hit); r.style.cursor = 'crosshair'; });
+      hit.style.pointerEvents = L.narrow ? 'none' : 'auto'; svg.appendChild(hit); rowsEl.forEach((R) => R.bars.forEach((x) => { if (!x.hollow) svg.appendChild(x.el.parentNode); }));
+    }
+    let cur = -2;
+    function render(p) {
+      const t = clamp(p / 0.12, 0, 1), body = clamp((p - 0.12) / 0.74, 0, 1), end = clamp((p - 0.88) / 0.1, 0, 1);
+      headEls.forEach((e) => { e.style.opacity = t; }); ticks.forEach((e, i) => { e.setAttribute('opacity', t * NQ > i ? 1 : 0); });
+      let now = -1;
+      rowsEl.forEach((R, k) => { const loc = clamp(body * CM.length - k, 0, 1); if (loc > 0) now = k;
+        R.nm.style.opacity = R.sub.style.opacity = clamp(loc * 4, 0, 1);
+        R.bars.forEach(({ el, i, hollow }) => { const u = ease(clamp(loc * 1.3 - (i / NQ) * 0.3, 0, 1)); if (hollow) el.style.opacity = u > 0.5 ? 1 : 0; else el.style.transform = `scaleY(${u.toFixed(3)})`; }); });
+      peaks.forEach(({ g, row }) => { const v = end > 0 ? end : 0; g.setAttribute('opacity', v.toFixed(2)); g.style.transform = `translateY(${((1 - v) * 6).toFixed(1)}px)`; });
+      const si = end > 0.5 ? CM.length : now;
+      if (si !== cur) { cur = si; sl.forEach((li, i) => { li.classList.toggle('now', i === si); li.classList.toggle('past', i < si); }); }
+    }
+    host.addEventListener('mousemove', (e) => { const r = e.target.closest('[data-i]'), i = r ? +r.dataset.i : null;
+      const b = host.getBoundingClientRect(), mx = (e.clientX - b.left) * (W / b.width), qi = i != null ? i : L.xs.findIndex((x, j) => mx >= x && mx < x + L.cw + 1.5);
+      if (qi < 0) { tip.hidden = true; hov.setAttribute('opacity', 0); return; }
+      hov.setAttribute('x', L.xs[qi] - 0.5); hov.setAttribute('width', L.cw + 1); hov.setAttribute('opacity', 1);
+      tip.innerHTML = `Question ${qi + 1} · Lord’s Day ${Q[qi][0]}<br>${esc(Q[qi][1])}<small>${CM.map((c) => `${esc(shortN(c))}: ${c.pp[qi] == null ? 'with the question before' : `${c.pp[qi]} pp.`}`).join(' · ')}</small>`; tip.hidden = false;
+      tip.style.left = `${Math.min(e.clientX - b.left + 14, b.width - 300)}px`; tip.style.top = `${Math.max(0, e.clientY - b.top - 70)}px`; });
+    host.addEventListener('mouseleave', () => { tip.hidden = true; hov && hov.setAttribute('opacity', 0); });
+    host.addEventListener('click', (e) => { if (e.target.closest('a')) return; const r = e.target.closest('[data-i]'); if (!r) return; const i = +r.dataset.i, b = host.getBoundingClientRect();
+      const y = (e.clientY - b.top) * (L.H / b.height), k = clamp(Math.floor((y - L.top) / L.rowH), 0, CM.length - 1), c = CM[k]; let j = i; while (j > 0 && c.pp[j] == null) j--;
+      window.open(TG.read(c.slug, c.pg[j]), '_blank', 'noopener'); });
+    build(); let lastP = 0; if (document.fonts) document.fonts.ready.then(() => { build(); render(lastP); });
+    const st = TG.chapter('#tg-heid', 4200, (p, fin) => { lastP = fin ? 1 : p; render(lastP); }, { scrub: 0.5 });
+    if (!st) sl.forEach((li) => li.classList.add('now'));
+    let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { if (Math.abs(host.clientWidth - W) > 2) { build(); render(lastP); } }, 150); }).observe(host);
+  })();
+
+  /* ---------- 7. Dort: the five articles of the Remonstrance, and the four heads the synod answered them under ---------- */
+  (function dort() {
+    const Dt = D.dort, stage = document.getElementById('tg-dort-stage'), links = stage.querySelector('svg.links'), artsEl = document.getElementById('tg-arts'), headsEl = document.getElementById('tg-heads');
+    const roman = ['I', 'II', 'III', 'IV', 'V'];
+    artsEl.innerHTML = Dt.arts.map(([n, t, q]) => `<li><b>${n}</b><span>${esc(t)}</span><q>${esc(q)}</q></li>`).join('');
+    headsEl.innerHTML = Dt.heads.map((h) => `<li><span class="hh">${esc(h.h)}</span><a href="${TG.read(Dt.canons, h.p)}" target="_blank" rel="noopener">${esc(h.t)}</a>
+      <span class="dots" aria-hidden="true">${'<i></i>'.repeat(h.arts)}<i class="gap"></i>${'<i class="e"></i>'.repeat(h.errs)}</span>
+      <small>${h.arts} articles, ${h.errs} errors rejected · answers article${h.ans.length > 1 ? 's' : ''} ${h.ans.map((a) => roman[a]).join(' and ')}</small></li>`).join('');
+    const nA = Dt.heads.reduce((t, h) => t + h.arts, 0), nE = Dt.heads.reduce((t, h) => t + h.errs, 0);
+    const sum = document.getElementById('tg-dort-sum'); sum.innerHTML = `${nA} articles and ${nE} rejected errors in all. <a href="${TG.read(Dt.canons)}" target="_blank" rel="noopener">Read the Canons</a> · <a href="${TG.read(Dt.remonstrance)}" target="_blank" rel="noopener">the Remonstrance</a>`;
+    document.getElementById('tg-sat').innerHTML = Dt.sat.map(([n, what, p]) => `<button type="button" data-w="${esc(n)}" title="${esc(`${what}; named in the Acts of the synod, p. ${p}`)}">${esc(n)}<small>${esc(what.split(';')[0])}</small></button>`).join('');
+    stage.querySelectorAll('.satl button').forEach((b) => b.addEventListener('click', () => explorer && explorer.show(b.dataset.w)));
+    const li = (w) => `<li><a href="${TG.read(w[1])}" target="_blank" rel="noopener">${esc(w[0].replace(/\s*\(.*\)$/, '').replace(/:.*$/, ''))}</a><small>${/^Synod/.test(w[3]) ? 'the synod' : esc(w[3].split(' ').slice(-1)[0])} · ${fmt(w[2])} pp.</small></li>`;
+    document.getElementById('tg-dort-books').innerHTML = `<h4>For the Remonstrants, on the shelf</h4><ul>${Dt.for.map(li).join('')}</ul><h4>For the synod</h4><ul>${Dt.against.map(li).join('')}</ul>`;
+    const A = [...artsEl.children], Hs = [...headsEl.children], chips = [...stage.querySelectorAll('.satl button')], dotsOf = Hs.map((h) => [...h.querySelectorAll('.dots i:not(.gap)')]);
+    let paths = [];
+    function wire() {
+      // layout boxes, not screen boxes: the cards are mid-slide when this runs
+      const box = (el) => { let x = 0, y = 0, e = el; while (e && e !== stage) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; } return { x, y, w: el.offsetWidth, h: el.offsetHeight }; };
+      links.setAttribute('viewBox', `0 0 ${stage.offsetWidth} ${stage.offsetHeight}`); links.innerHTML = ''; paths = [];
+      Dt.heads.forEach((h, j) => h.ans.forEach((a) => { const ra = box(A[a]), rh = box(Hs[j]);
+        const x0 = ra.x + ra.w, y0 = ra.y + ra.h / 2, x1 = rh.x, y1 = rh.y + Math.min(rh.h / 2, 28), mx = (x0 + x1) / 2;
+        const p = mk('path', { d: `M${x0},${y0} C${mx},${y0} ${mx},${y1} ${x1},${y1}` }, links); paths.push({ p, j, L: p.getTotalLength() }); }));
+    }
+    let cur = -2;
+    function render(p) {
+      A.forEach((el, i) => { const u = ease(clamp((p - 0.02 - i * 0.05) / 0.06, 0, 1)); el.style.opacity = u; el.style.transform = `translateX(${((1 - u) * -14).toFixed(1)}px)`; });
+      chips.forEach((el, i) => { el.style.opacity = clamp((p - 0.28 - i * 0.012) / 0.04, 0, 1); });
+      let now = -1;
+      Hs.forEach((el, j) => { const t0 = 0.44 + j * 0.11, u = ease(clamp((p - t0) / 0.06, 0, 1)), d = clamp((p - t0 - 0.03) / 0.07, 0, 1); if (p >= t0) now = j;
+        el.style.opacity = u; el.style.transform = `translateX(${((1 - u) * 14).toFixed(1)}px)`;
+        dotsOf[j].forEach((x, k) => { x.style.opacity = k / dotsOf[j].length < d ? 1 : 0.12; }); });
+      paths.forEach(({ p: el, j, L }) => { const t0 = 0.44 + j * 0.11; el.style.strokeDasharray = L; el.style.strokeDashoffset = L * (1 - ease(clamp((p - t0) / 0.07, 0, 1))); });
+      sum.style.opacity = clamp((p - 0.9) / 0.06, 0, 1);
+      const hit = p > 0.92 ? -1 : now; if (hit !== cur) { cur = hit; A.forEach((el, i) => el.classList.toggle('hit', hit >= 0 && Dt.heads[hit].ans.includes(i))); }
+    }
+    Hs.forEach((el, j) => { el.addEventListener('mouseenter', () => A.forEach((a, i) => a.classList.toggle('hit', Dt.heads[j].ans.includes(i)))); el.addEventListener('mouseleave', () => A.forEach((a) => a.classList.remove('hit'))); });
+    let lastP = 0;
+    const go = () => { if (innerWidth > 860) wire(); render(lastP); }; // the curves on every wide screen, reduced motion too
+    TG.chapter('#tg-dort', 3600, (p, fin) => { lastP = fin ? 1 : p; render(lastP); }, { scrub: 0.5 });
+    go(); if (document.fonts) document.fonts.ready.then(go);
+    let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(go, 150); }).observe(stage);
+  })();
+
+  /* ---------- 8. divide, and divide again: Polanus's tree ---------- */
   (function ramus() {
     const stage = document.getElementById('tg-ramus-stage'), svg = stage.querySelector('svg'), steps = document.getElementById('tg-rsteps');
     const MAIN = new Set(['Christian theology', 'True theology', 'Ectypal', 'Of wayfarers', 'Supernatural', 'Its parts']);
@@ -271,7 +550,9 @@
         const vis = clamp((d - o.d) * 1.6 + 0.2, 0, 1); a.style.opacity = o.d === 0 ? 1 : vis; a.style.transform = `translateX(${(1 - vis) * -10}px)`;
         if (br) { const L = br._L || (br._L = br.getTotalLength()); br.style.strokeDasharray = L; br.style.strokeDashoffset = L * (1 - clamp((d - o.d) * 1.4, 0, 1)); }
       });
-      const focus = (i) => { const rel = nodes.filter((o) => o.parent && MAIN.has(o.parent.en) && (o.d === i || o.d === i + 1)); if (!rel.length) return nodes[0].y;
+      // the camera follows the column being opened, down to the last one (10-10, owner: "at the end it shows white because it pans up":
+      // past the main line it fell back to the root's height while the deepest branches sat below the frame)
+      const focus = (i) => { const k = Math.min(i, maxD); let rel = nodes.filter((o) => o.d === k || o.d === k + 1); if (!rel.length) rel = nodes.filter((o) => o.d === maxD);
         const ys = rel.map((o) => o.y); return (Math.min(...ys) + Math.max(...ys)) / 2; };
       const i0 = Math.floor(d), f = clamp(d - i0, 0, 1), fy = lerp(focus(i0), focus(i0 + 1), ease(f));
       const tx = fin && !TG.pinOK() ? 0 : -clamp(X0 + d * COLW - W * 0.62, 0, Math.max(0, totalW - W));
@@ -284,55 +565,6 @@
       stage.classList.add('outline'); stage.innerHTML = `<ul>${li(nodes[0])}</ul>`; sl.forEach((x) => x.classList.add('now')); return; }
     TG.chapter('#tg-ramus', 3600, render, { scrub: 0.5 });
     let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { if (Math.abs(stage.clientWidth - W) > 2 || Math.abs(stage.clientHeight - H) > 2) { built = false; render(0); } }, 120); }).observe(stage);
-  })();
-
-  /* ---------- 5. the stream of generations ---------- */
-  (function stream() {
-    const host = document.getElementById('tg-stream'), svg = d3.select(host.querySelector('svg')), tip = host.querySelector('.tip');
-    const Y0 = 1480, Y1 = 1790, BIN = 5, bins = d3.range(Y0, Y1 + 1, BIN);
-    const active = (a) => { const coll = /^The |Synod|theses/.test(a.n) || /^fl\./.test(a.d || ''); return [coll ? a.y0 : Math.min(a.y0 + 24, a.y1), a.y1]; };
-    const rows = bins.map((y) => { const r = { y }; FAMS.forEach((k) => { r[k] = 0; }); D.authors.forEach((a) => { const [s, e] = active(a); if (s <= y + BIN / 2 && e >= y - BIN / 2) r[a.f] += 1; }); return r; });
-    const names = (y, k) => D.authors.filter((a) => { const [s, e] = active(a); return a.f === k && s <= y && e >= y; }).map((a) => a.n);
-    const series = d3.stack().keys(FAMS).offset(d3.stackOffsetWiggle).order(d3.stackOrderInsideOut)(rows);
-    document.getElementById('tg-stream-legend').innerHTML = D.fam.map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('');
-    const EV = [[1536, 'Institutes'], [1559, 'Geneva Academy'], [1563, 'Heidelberg Catechism'], [1575, 'Leiden'], [1618, 'Dort'], [1634, 'Amyraut'], [1648, 'Cocceius on the covenant'], [1675, 'Formula Consensus'], [1685, 'the Revocation']];
-    const PER = [[1517, 1565, 'Reformation'], [1565, 1640, 'Early orthodoxy'], [1640, 1725, 'High orthodoxy'], [1725, 1790, 'Late orthodoxy']];
-    let W = 0, reveal = null, nowT = null, nowL = null, evs = [], sx;
-    function build() {
-      W = host.clientWidth; const H = svg.node().clientHeight, top = 52, bot = H - 54;
-      sx = d3.scaleLinear([Y0, Y1], [0, W]); const ext = [d3.min(series, (s) => d3.min(s, (d) => d[0])), d3.max(series, (s) => d3.max(s, (d) => d[1]))];
-      const sy = d3.scaleLinear(ext, [bot, top]);
-      svg.attr('viewBox', `0 0 ${W} ${H}`).selectAll('*').remove();
-      const defs = svg.append('defs'); const clip = defs.append('clipPath').attr('id', 'tg-ref-clip'); reveal = clip.append('rect').attr('x', 0).attr('y', 0).attr('height', H).attr('width', 0);
-      const per = svg.append('g').attr('class', 'per');
-      PER.forEach(([a, b, n], i) => { per.append('rect').attr('x', sx(a)).attr('y', bot + 22).attr('width', sx(b) - sx(a) - 2).attr('height', 3).attr('opacity', i % 2 ? 0.6 : 1);
-        per.append('text').attr('x', sx(a) + 2).attr('y', bot + 40).text(W < 600 ? ['Reform.', 'Early', 'High', 'Late'][i] : n); });
-      const ax = svg.append('g').attr('class', 'ax');
-      for (let y = 1500; y <= 1775; y += 25) { ax.append('line').attr('x1', sx(y)).attr('x2', sx(y)).attr('y1', top - 8).attr('y2', bot + 6).attr('stroke', TG.css('--rule-2')); ax.append('text').attr('x', sx(y)).attr('y', bot + 17).attr('text-anchor', 'middle').text(y); }
-      const area = d3.area().x((d) => sx(d.data.y)).y0((d) => sy(d[0])).y1((d) => sy(d[1])).curve(d3.curveBasis);
-      const g = svg.append('g').attr('clip-path', 'url(#tg-ref-clip)');
-      g.selectAll('path.s').data(series).join('path').attr('class', 's').attr('d', area).attr('fill', (s) => fc(s.key)).attr('opacity', 0.9)
-        .on('mousemove', (e, s) => { const [mx] = d3.pointer(e, host), y = Math.round(sx.invert(mx) / 5) * 5, n = names(y, s.key); const b = host.getBoundingClientRect();
-          tip.innerHTML = `${esc(famName(s.key))}, about ${y}<small>${n.length ? esc(n.slice(0, 8).join(', ')) + (n.length > 8 ? ` and ${n.length - 8} more` : '') : 'none at work'}</small>`; tip.hidden = false;
-          tip.style.left = `${Math.min(mx + 14, b.width - 260)}px`; tip.style.top = `${d3.pointer(e, host)[1] - 20}px`; })
-        .on('mouseleave', () => { tip.hidden = true; });
-      const evg = svg.append('g').attr('class', 'ev'); const lanes = [12, 27, 42], lastX = lanes.map(() => -1e9), narrow = W < 600;
-      evs = EV.filter(([y]) => !narrow || [1536, 1618, 1685].includes(y)).map(([y, t]) => { const x = sx(y); let r = 0; while (r < lanes.length - 1 && x - 4 < lastX[r]) r++; lastX[r] = x + t.length * 6.4 + 12;
-        const gg = evg.append('g').attr('opacity', 0); gg.append('line').attr('x1', x).attr('x2', x).attr('y1', lanes[r] + 4).attr('y2', bot);
-        gg.append('text').attr('x', x + 4).attr('y', lanes[r]).text(t); return { y, gg }; });
-      nowL = svg.append('line').attr('y1', top - 10).attr('y2', bot + 6).attr('stroke', TG.css('--rubric')).attr('stroke-width', 1.2);
-      nowT = svg.append('text').attr('class', 'now').attr('y', bot - 8);
-    }
-    let cur = 1;
-    function render(p) {
-      cur = p; const Y = lerp(Y0 + 10, Y1, p), x = sx(Y);
-      reveal.attr('width', x); nowL.attr('x1', x).attr('x2', x).attr('opacity', p < 1 ? 1 : 0);
-      nowT.attr('x', Math.min(x + 8, W - 100)).text(p < 1 ? Math.round(Y) : '').attr('text-anchor', 'start');
-      evs.forEach((e) => e.gg.attr('opacity', e.y <= Y ? 1 : 0));
-    }
-    build();
-    TG.chapter('#tg-gen', 2800, render, { scrub: 0.5 });
-    let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (Math.abs(host.clientWidth - W) > 2) { build(); render(cur); } }, 150); });
   })();
 
   /* ---------- explore ---------- */

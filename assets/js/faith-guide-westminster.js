@@ -129,7 +129,80 @@
     TG.chapter('#tg-sit', 3800, (p) => render(p), { scrub: 0.4 });
   })();
 
-  /* ---------- 2. the Confession as a building: thirty-three columns, a stone for each section ---------- */
+  /* ---------- 2. where they came from ---------- */
+  (function where() {
+    const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[-8.4, 49.9], [5.2, 58.8]], { parallels: [50, 58] });
+    const cv = TG.canvas(box.querySelector('canvas')), {ctx} = cv, names = document.getElementById('tg-where-names');
+    const P = Object.entries(D.placed).map(([k, ns]) => ({ k, ns, ll: D.places[k] })).sort((a, b) => b.ns.length - a.ns.length || a.ll[0] - b.ll[0]);
+    let shown = 0, sel = null;
+    const famOf = (p) => { const c = {}; p.ns.forEach((n) => { const f = (byName[n] || {}).f || 'body'; c[f] = (c[f] || 0) + 1; }); return Object.entries(c).sort((a, b) => b[1] - a[1])[0][0]; };
+    function draw() {
+      ctx.clearRect(0, 0, cv.W, cv.H); const font = TG.css('--body'), boxes = [];
+      P.forEach((p, i) => { const vis = clamp(shown - i, 0, 1); if (vis <= 0) return; const [x, y] = M.xy(p.ll), r = (3 + 2.6 * Math.sqrt(p.ns.length)) * (0.4 + 0.6 * ease(vis)), on = sel === p;
+        ctx.globalAlpha = on ? 1 : 0.8; ctx.fillStyle = fc(famOf(p)); ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
+        ctx.strokeStyle = on ? TG.css('--rubric') : TG.css('--card'); ctx.lineWidth = on ? 2.4 : 1.2; ctx.stroke(); p.x = x; p.y = y; p.r = r; });
+      ctx.globalAlpha = 1; ctx.font = `600 11px ${font}`;
+      P.forEach((p, i) => { if (shown - i < 1 || !(p.ns.length > 1 || sel === p || ['Glasgow', 'St Andrews', 'Edinburgh', 'Dublin', 'Amsterdam', 'Leiden', 'Norwich', 'Manchester'].includes(p.k))) return;
+        const w = ctx.measureText(p.k).width; let lx = p.x + p.r + 4; const ly = p.y + 4; if (lx + w > cv.W - 4) lx = p.x - p.r - 4 - w;
+        if (boxes.some((b) => lx < b[0] + b[2] && lx + w > b[0] && Math.abs(ly - b[1]) < 12)) return; boxes.push([lx, ly, w]);
+        ctx.fillStyle = TG.css('--land'); ctx.globalAlpha = 0.85; ctx.fillRect(lx - 2, ly - 10, w + 4, 13); ctx.globalAlpha = 1; ctx.fillStyle = TG.css('--ink'); ctx.fillText(p.k, lx, ly); });
+    }
+    const list = (p) => { names.innerHTML = p ? `<span style="border:0;background:none;padding-left:0"><b>${esc(p.k)}</b></span>${p.ns.map((n) => `<span><i style="background:${fc((byName[n] || {}).f || 'body')}"></i>${esc(n)}</span>`).join('')}` : ''; };
+    box.addEventListener('click', (e) => { const b = cv.cv.getBoundingClientRect(), mx = e.clientX - b.left, my = e.clientY - b.top;
+      const hit = P.find((p) => p.x != null && Math.hypot(p.x - mx, p.y - my) <= p.r + 4); if (hit) { sel = hit; list(hit); draw(); } });
+    cv.cv.style.cursor = 'pointer';
+    M.onfit = () => { cv.size(); draw(); };
+    TG.chapter('#tg-where', 2600, (p, fin) => { shown = fin ? P.length : p * (P.length + 1.5); const cur = fin ? P[0] : P[Math.max(0, Math.min(P.length - 1, Math.floor(shown) - 1))]; if (!sel) list(cur); draw(); }, { scrub: 0.5 });
+  })();
+
+  /* ---------- 3. the press: the books by year, then by kind ---------- */
+  (function press() {
+    const box = document.getElementById('tg-pressbox'), K = D.kinds.map((k) => k[0]), KN = Object.fromEntries(D.kinds);
+    const KC = { parl: '--rubric', sermon: '--gilt', script: '--f1', treat: '--f2', order: '--f5', learn: '--f7' };
+    const B = D.books.map(([t, s, p, y, k, a, f]) => ({ t, s, p, y, k, a, f })).sort((a, b) => (a.y || 9999) - (b.y || 9999) || K.indexOf(a.k) - K.indexOf(b.k));
+    const els = B.map((b) => { const d = document.createElement('a'); d.className = 'bk'; d.href = TG.read(b.s); d.target = '_blank'; d.rel = 'noopener';
+      d.style.background = TG.css(KC[b.k]); d.title = `${b.t}, ${b.a}${b.y ? `, ${b.y}` : ''}`; d.setAttribute('aria-label', d.title); d.tabIndex = -1; box.appendChild(d); return d; });
+    const axis = document.createElement('div'); axis.className = 'axis'; box.appendChild(axis);
+    const band = document.createElement('div'); band.className = 'band'; band.innerHTML = '<span>the Assembly sits</span>'; box.appendChild(band);
+    const yls = [1600, 1620, 1640, 1660, 1680, 1700].map((y) => { const e = document.createElement('div'); e.className = 'yl'; e.textContent = y; box.appendChild(e); return { y, e }; });
+    const heads = K.map((k) => { const n = B.filter((b) => b.k === k).length, e = document.createElement('div'); e.className = 'colh'; e.innerHTML = `${esc(KN[k])}<small>${fmt(n)} ${n === 1 ? 'work' : 'works'}</small>`; e.tabIndex = 0; e.setAttribute('role', 'button'); box.appendChild(e); return { k, e }; });
+    const listEl = document.getElementById('tg-kindlist');
+    heads.forEach(({ k, e }) => { const open = () => { const ws = B.filter((b) => b.k === k).sort((a, b) => b.p - a.p);
+      listEl.hidden = false; listEl.innerHTML = `<p class="eyebrow" style="margin:0 0 4px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(${KC[k]});margin-right:6px"></i>${esc(KN[k])} · ${fmt(ws.length)} works</p>
+        <ul class="wlist">${ws.slice(0, 40).map((b) => `<li><a href="${TG.read(b.s)}" target="_blank" rel="noopener">${esc(b.t)}</a><small>${esc(b.a)}${b.y ? `, ${b.y}` : ''}</small></li>`).join('')}</ul>${ws.length > 40 ? `<p class="small" style="margin:8px 0 0">and ${fmt(ws.length - 40)} more in the finder below.</p>` : ''}`;
+      if (G) gsap.from(listEl.querySelectorAll('li'), { opacity: 0, y: 6, duration: 0.3, stagger: 0.01 }); };
+      e.addEventListener('click', open); e.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') open(); }); });
+    let L = null;
+    function layout() {
+      const W = box.clientWidth, H = box.clientHeight, s = W < 600 ? 4 : 6, g = 1, base = H - 66, Y0 = 1596, Y1 = 1704, X = (y) => 8 + (y - Y0) / (Y1 - Y0) * (W - 24);
+      const A = [], stack = {}; B.forEach((b, i) => { const y = b.y && b.y >= Y0 && b.y <= Y1 ? b.y : null, key = y || 'u', h = stack[key] = (stack[key] || 0) + 1;
+        const x = y ? X(y) - s / 2 : W / 2, yy = y ? base - h * (s + g) : base + 40; A[i] = { x, y: Math.max(8, yy) }; });
+      // by kind: a column each, the books in rows, oldest at the foot
+      const cg = W < 600 ? 6 : 16, cw = (W - cg * (K.length - 1)) / K.length, Bk = [], seen = {}, most = Math.max(...K.map((k) => B.filter((b) => b.k === k).length));
+      // the sorted tiles grow until the largest kind fills most of the height
+      let s2 = s; for (let t = s; t <= 14; t += 0.5) { const per = Math.max(1, Math.floor(cw / (t + g))); if (Math.ceil(most / per) * (t + g) <= base * 0.78) s2 = t; }
+      const per = Math.max(1, Math.floor(cw / (s2 + g)));
+      B.forEach((b, i) => { const ci = K.indexOf(b.k), n = seen[b.k] = (seen[b.k] || 0); seen[b.k]++; Bk[i] = { x: ci * (cw + cg) + (n % per) * (s2 + g), y: base - (Math.floor(n / per) + 1) * (s2 + g) }; });
+      axis.style.top = `${base + 2}px`; band.style.left = `${X(1643)}px`; band.style.width = `${X(1652) - X(1643)}px`; band.style.top = '0px'; band.style.height = `${base}px`;
+      yls.forEach(({ y, e }) => { e.style.left = `${X(y)}px`; e.style.top = `${base + 8}px`; });
+      heads.forEach(({ e }, i) => { e.style.left = `${i * (cw + cg)}px`; e.style.width = `${cw}px`; e.style.top = `${base + 8}px`; });
+      els.forEach((el) => { el.style.width = `${s}px`; el.style.height = `${s}px`; });
+      L = { A, Bk, X, base, W, sc: s2 / s };
+    }
+    function render(p, fin) {
+      if (!L) layout(); const yearP = fin ? 1 : clamp(p / 0.5, 0, 1), sortP = fin ? 1 : ease(clamp((p - 0.6) / 0.35, 0, 1)), Ycur = 1596 + yearP * 108;
+      B.forEach((b, i) => { const a = L.A[i], k = L.Bk[i], vis = !b.y ? 0 : clamp((Ycur - b.y) / 1.5, 0, 1);
+        const st = sortP > 0 ? clamp(sortP * 1.3 - (i % 37) / 37 * 0.3, 0, 1) : 0, x = lerp(a.x, k.x, st), y = lerp(a.y - (1 - ease(vis)) * 40, k.y, st);
+        els[i].style.transform = `translate(${x}px, ${y}px) scale(${lerp(1, L.sc, st)})`; els[i].style.opacity = sortP > 0 ? (b.y ? 1 : st) : vis; els[i].tabIndex = sortP >= 1 ? 0 : -1; });
+      const pre = 1 - sortP; axis.style.opacity = pre; band.style.opacity = pre; yls.forEach(({ e }) => { e.style.opacity = pre; });
+      heads.forEach(({ e }) => { e.style.opacity = sortP; e.style.pointerEvents = sortP > 0.9 ? 'auto' : 'none'; });
+    }
+    new ResizeObserver(() => { layout(); render(lastP, lastF); }).observe(box);
+    let lastP = 0, lastF = false;
+    TG.chapter('#tg-press', 3600, (p, fin) => { lastP = p; lastF = fin; render(p, fin); }, { scrub: 0.5 });
+  })();
+
+  /* ---------- 4. the Confession as a building: thirty-three columns, a stone for each section ---------- */
   (function confession() {
     const C = D.conf.ch, svg = document.querySelector('#tg-confbox svg'), NS = 'http://www.w3.org/2000/svg', card = document.getElementById('tg-chap');
     const mk = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
@@ -180,79 +253,6 @@
     const vols = D.vols.map((v) => `<a href="${TG.read(v.s)}" target="_blank" rel="noopener"><b>${esc(v.label.replace(/^Vol\. ([\w ,]+?): /, 'The Minutes, $1: '))}</b><small>${fmt(v.p)} pages</small></a>`);
     document.getElementById('tg-texts').innerHTML = docs.concat(pages, vols).join('');
     if (G) gsap.from('#tg-texts a', { opacity: 0, y: 14, duration: 0.5, stagger: 0.05, ease: 'power2.out', scrollTrigger: { trigger: '#tg-texts', start: 'top 85%', once: true } });
-  })();
-
-  /* ---------- 3. where they came from ---------- */
-  (function where() {
-    const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[-8.4, 49.9], [5.2, 58.8]], { parallels: [50, 58] });
-    const cv = TG.canvas(box.querySelector('canvas')), {ctx} = cv, names = document.getElementById('tg-where-names');
-    const P = Object.entries(D.placed).map(([k, ns]) => ({ k, ns, ll: D.places[k] })).sort((a, b) => b.ns.length - a.ns.length || a.ll[0] - b.ll[0]);
-    let shown = 0, sel = null;
-    const famOf = (p) => { const c = {}; p.ns.forEach((n) => { const f = (byName[n] || {}).f || 'body'; c[f] = (c[f] || 0) + 1; }); return Object.entries(c).sort((a, b) => b[1] - a[1])[0][0]; };
-    function draw() {
-      ctx.clearRect(0, 0, cv.W, cv.H); const font = TG.css('--body'), boxes = [];
-      P.forEach((p, i) => { const vis = clamp(shown - i, 0, 1); if (vis <= 0) return; const [x, y] = M.xy(p.ll), r = (3 + 2.6 * Math.sqrt(p.ns.length)) * (0.4 + 0.6 * ease(vis)), on = sel === p;
-        ctx.globalAlpha = on ? 1 : 0.8; ctx.fillStyle = fc(famOf(p)); ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
-        ctx.strokeStyle = on ? TG.css('--rubric') : TG.css('--card'); ctx.lineWidth = on ? 2.4 : 1.2; ctx.stroke(); p.x = x; p.y = y; p.r = r; });
-      ctx.globalAlpha = 1; ctx.font = `600 11px ${font}`;
-      P.forEach((p, i) => { if (shown - i < 1 || !(p.ns.length > 1 || sel === p || ['Glasgow', 'St Andrews', 'Edinburgh', 'Dublin', 'Amsterdam', 'Leiden', 'Norwich', 'Manchester'].includes(p.k))) return;
-        const w = ctx.measureText(p.k).width; let lx = p.x + p.r + 4; const ly = p.y + 4; if (lx + w > cv.W - 4) lx = p.x - p.r - 4 - w;
-        if (boxes.some((b) => lx < b[0] + b[2] && lx + w > b[0] && Math.abs(ly - b[1]) < 12)) return; boxes.push([lx, ly, w]);
-        ctx.fillStyle = TG.css('--land'); ctx.globalAlpha = 0.85; ctx.fillRect(lx - 2, ly - 10, w + 4, 13); ctx.globalAlpha = 1; ctx.fillStyle = TG.css('--ink'); ctx.fillText(p.k, lx, ly); });
-    }
-    const list = (p) => { names.innerHTML = p ? `<span style="border:0;background:none;padding-left:0"><b>${esc(p.k)}</b></span>${p.ns.map((n) => `<span><i style="background:${fc((byName[n] || {}).f || 'body')}"></i>${esc(n)}</span>`).join('')}` : ''; };
-    box.addEventListener('click', (e) => { const b = cv.cv.getBoundingClientRect(), mx = e.clientX - b.left, my = e.clientY - b.top;
-      const hit = P.find((p) => p.x != null && Math.hypot(p.x - mx, p.y - my) <= p.r + 4); if (hit) { sel = hit; list(hit); draw(); } });
-    cv.cv.style.cursor = 'pointer';
-    M.onfit = () => { cv.size(); draw(); };
-    TG.chapter('#tg-where', 2600, (p, fin) => { shown = fin ? P.length : p * (P.length + 1.5); const cur = fin ? P[0] : P[Math.max(0, Math.min(P.length - 1, Math.floor(shown) - 1))]; if (!sel) list(cur); draw(); }, { scrub: 0.5 });
-  })();
-
-  /* ---------- 4. the press: the books by year, then by kind ---------- */
-  (function press() {
-    const box = document.getElementById('tg-pressbox'), K = D.kinds.map((k) => k[0]), KN = Object.fromEntries(D.kinds);
-    const KC = { parl: '--rubric', sermon: '--gilt', script: '--f1', treat: '--f2', order: '--f5', learn: '--f7' };
-    const B = D.books.map(([t, s, p, y, k, a, f]) => ({ t, s, p, y, k, a, f })).sort((a, b) => (a.y || 9999) - (b.y || 9999) || K.indexOf(a.k) - K.indexOf(b.k));
-    const els = B.map((b) => { const d = document.createElement('a'); d.className = 'bk'; d.href = TG.read(b.s); d.target = '_blank'; d.rel = 'noopener';
-      d.style.background = TG.css(KC[b.k]); d.title = `${b.t}, ${b.a}${b.y ? `, ${b.y}` : ''}`; d.setAttribute('aria-label', d.title); d.tabIndex = -1; box.appendChild(d); return d; });
-    const axis = document.createElement('div'); axis.className = 'axis'; box.appendChild(axis);
-    const band = document.createElement('div'); band.className = 'band'; band.innerHTML = '<span>the Assembly sits</span>'; box.appendChild(band);
-    const yls = [1600, 1620, 1640, 1660, 1680, 1700].map((y) => { const e = document.createElement('div'); e.className = 'yl'; e.textContent = y; box.appendChild(e); return { y, e }; });
-    const heads = K.map((k) => { const n = B.filter((b) => b.k === k).length, e = document.createElement('div'); e.className = 'colh'; e.innerHTML = `${esc(KN[k])}<small>${fmt(n)} ${n === 1 ? 'work' : 'works'}</small>`; e.tabIndex = 0; e.setAttribute('role', 'button'); box.appendChild(e); return { k, e }; });
-    const listEl = document.getElementById('tg-kindlist');
-    heads.forEach(({ k, e }) => { const open = () => { const ws = B.filter((b) => b.k === k).sort((a, b) => b.p - a.p);
-      listEl.hidden = false; listEl.innerHTML = `<p class="eyebrow" style="margin:0 0 4px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(${KC[k]});margin-right:6px"></i>${esc(KN[k])} · ${fmt(ws.length)} works</p>
-        <ul class="wlist">${ws.slice(0, 40).map((b) => `<li><a href="${TG.read(b.s)}" target="_blank" rel="noopener">${esc(b.t)}</a><small>${esc(b.a)}${b.y ? `, ${b.y}` : ''}</small></li>`).join('')}</ul>${ws.length > 40 ? `<p class="small" style="margin:8px 0 0">and ${fmt(ws.length - 40)} more in the finder below.</p>` : ''}`;
-      if (G) gsap.from(listEl.querySelectorAll('li'), { opacity: 0, y: 6, duration: 0.3, stagger: 0.01 }); };
-      e.addEventListener('click', open); e.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') open(); }); });
-    let L = null;
-    function layout() {
-      const W = box.clientWidth, H = box.clientHeight, s = W < 600 ? 4 : 6, g = 1, base = H - 66, Y0 = 1596, Y1 = 1704, X = (y) => 8 + (y - Y0) / (Y1 - Y0) * (W - 24);
-      const A = [], stack = {}; B.forEach((b, i) => { const y = b.y && b.y >= Y0 && b.y <= Y1 ? b.y : null, key = y || 'u', h = stack[key] = (stack[key] || 0) + 1;
-        const x = y ? X(y) - s / 2 : W / 2, yy = y ? base - h * (s + g) : base + 40; A[i] = { x, y: Math.max(8, yy) }; });
-      // by kind: a column each, the books in rows, oldest at the foot
-      const cg = W < 600 ? 6 : 16, cw = (W - cg * (K.length - 1)) / K.length, Bk = [], seen = {}, most = Math.max(...K.map((k) => B.filter((b) => b.k === k).length));
-      // the sorted tiles grow until the largest kind fills most of the height
-      let s2 = s; for (let t = s; t <= 14; t += 0.5) { const per = Math.max(1, Math.floor(cw / (t + g))); if (Math.ceil(most / per) * (t + g) <= base * 0.78) s2 = t; }
-      const per = Math.max(1, Math.floor(cw / (s2 + g)));
-      B.forEach((b, i) => { const ci = K.indexOf(b.k), n = seen[b.k] = (seen[b.k] || 0); seen[b.k]++; Bk[i] = { x: ci * (cw + cg) + (n % per) * (s2 + g), y: base - (Math.floor(n / per) + 1) * (s2 + g) }; });
-      axis.style.top = `${base + 2}px`; band.style.left = `${X(1643)}px`; band.style.width = `${X(1652) - X(1643)}px`; band.style.top = '0px'; band.style.height = `${base}px`;
-      yls.forEach(({ y, e }) => { e.style.left = `${X(y)}px`; e.style.top = `${base + 8}px`; });
-      heads.forEach(({ e }, i) => { e.style.left = `${i * (cw + cg)}px`; e.style.width = `${cw}px`; e.style.top = `${base + 8}px`; });
-      els.forEach((el) => { el.style.width = `${s}px`; el.style.height = `${s}px`; });
-      L = { A, Bk, X, base, W, sc: s2 / s };
-    }
-    function render(p, fin) {
-      if (!L) layout(); const yearP = fin ? 1 : clamp(p / 0.5, 0, 1), sortP = fin ? 1 : ease(clamp((p - 0.6) / 0.35, 0, 1)), Ycur = 1596 + yearP * 108;
-      B.forEach((b, i) => { const a = L.A[i], k = L.Bk[i], vis = !b.y ? 0 : clamp((Ycur - b.y) / 1.5, 0, 1);
-        const st = sortP > 0 ? clamp(sortP * 1.3 - (i % 37) / 37 * 0.3, 0, 1) : 0, x = lerp(a.x, k.x, st), y = lerp(a.y - (1 - ease(vis)) * 40, k.y, st);
-        els[i].style.transform = `translate(${x}px, ${y}px) scale(${lerp(1, L.sc, st)})`; els[i].style.opacity = sortP > 0 ? (b.y ? 1 : st) : vis; els[i].tabIndex = sortP >= 1 ? 0 : -1; });
-      const pre = 1 - sortP; axis.style.opacity = pre; band.style.opacity = pre; yls.forEach(({ e }) => { e.style.opacity = pre; });
-      heads.forEach(({ e }) => { e.style.opacity = sortP; e.style.pointerEvents = sortP > 0.9 ? 'auto' : 'none'; });
-    }
-    new ResizeObserver(() => { layout(); render(lastP, lastF); }).observe(box);
-    let lastP = 0, lastF = false;
-    TG.chapter('#tg-press', 3600, (p, fin) => { lastP = p; lastF = fin; render(p, fin); }, { scrub: 0.5 });
   })();
 
   /* ---------- the finder ---------- */

@@ -1,5 +1,5 @@
 /* The English Divines guide: a title page whose border is the shelf's writers, the press year by year, the parties as shares,
-   where they served in Britain, the spelling of the first printings, and the finder. */
+   where they served in Britain, the printed sermons sorted by the pulpit they were preached from, and the finder. */
 (async () => {
   const {TG} = window, D = await TG.load('data'), LAND = await TG.load('land');
   const { esc, fmt, clamp, ease, lerp } = TG, G = TG.hasG && !TG.reduce ? window.gsap : null;
@@ -194,38 +194,117 @@
     TG.chapter('#tg-brit', 3800, (p) => render(lerp(1500, 1880, p)), { scrub: 0.4 });
   })();
 
-  /* ---------- 4. the first printings: the old spelling turns into the modern ---------- */
-  (function spelling() {
-    const box = document.getElementById('tg-spellbox'), meta = box.querySelector('.meta'), ti = box.querySelector('.ti'), orig0 = box.querySelector('.orig'), mod = box.querySelector('.mod'), dots = box.querySelector('.dots'), S = D.spell;
-    document.getElementById('tg-norig').textContent = fmt(D.n_orig);
-    dots.innerHTML = S.map(() => '<i></i>').join('');
-    // a character diff (longest common subsequence) between the old title and the modern one
-    const diff = (a, b) => { const n = a.length, m = b.length, L = Array.from({ length: n + 1 }, () => new Int16Array(m + 1));
-      for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = a[i] === b[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
-      const out = []; let i = 0, j = 0; while (i < n && j < m) { if (a[i] === b[j]) { out.push(['k', a[i]]); i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) { out.push(['d', a[i]]); i++; } else { out.push(['i', b[j]]); j++; } }
-      while (i < n) out.push(['d', a[i++]]); while (j < m) out.push(['i', b[j++]]);
-      const g = []; out.forEach(([t, c]) => { if (g.length && g[g.length - 1][0] === t) g[g.length - 1][1] += c; else g.push([t, c]); }); return g; };
-    let cur = -1, tl = null;
-    function show(k, instant) {
-      if (k === cur) return; cur = k; const [orig, modern, au, yr, slug] = S[k];
-      [...dots.children].forEach((d, i) => d.classList.toggle('on', i === k));
-      meta.textContent = `${yr || ''}${yr ? ' · ' : ''}${au}`;
-      const g = diff(orig, modern);
-      ti.innerHTML = g.map(([t, c]) => `<span class="${t === 'k' ? '' : t === 'd' ? 'del' : 'ins'}">${esc(c)}</span>`).join('');
-      orig0.innerHTML = `<b>First printed</b>${esc(orig)}`;
-      mod.innerHTML = `The modern title is the library’s. <a href="${TG.read(slug)}" target="_blank" rel="noopener">Read it</a>`;
-      const dels = [...ti.querySelectorAll('.del')], ins = [...ti.querySelectorAll('.ins')];
-      if (tl) tl.kill();
-      if (!G || instant) { dels.forEach((e) => { e.style.display = 'none'; }); ins.forEach((e) => { e.style.textDecoration = 'underline'; }); return; }
-      ins.forEach((e) => { e.style.display = 'none'; });
-      tl = gsap.timeline({ delay: 0.5 });
-      tl.from(ti, { opacity: 0, y: 10, duration: 0.5 }).from(orig0, { opacity: 0, duration: 0.4 }, '+=1.6')
-        .to(dels, { opacity: 0, duration: 0.45, stagger: 0.05, onComplete: () => dels.forEach((e) => { e.style.display = 'none'; }) }, '+=0.7')
-        .add(() => ins.forEach((e) => { e.style.display = 'inline'; e.style.textDecoration = 'underline'; e.style.textDecorationColor = 'var(--rubric)'; }))
-        .from(ins, { opacity: 0, y: -8, duration: 0.45, stagger: 0.05, ease: 'back.out(2)' });
+  /* ---------- 4. the pulpits: every printed sermon, sorted into rows by the pulpit its title page names ---------- */
+  (function pulpits() {
+    const U = D.pulpits, box = document.getElementById('tg-ubox'), cv = TG.canvas(box.querySelector('canvas')), {ctx} = cv, tip = box.querySelector('.tip'), card = document.getElementById('tg-ucard');
+    const [Y0, Y1] = U.range, NR = U.rows.length, PILE = NR - 1, Sy = U.say, NS = 8;
+    // each sermon as [year, row, party, writer, slug, title, title as first printed]; one that is also a printing in the press keeps only its index there
+    const S = U.s.map((r) => (r.length === 3 ? (([y, f, slug, t, ai]) => [y, r[1], f, ai, slug, t, r[2]])(D.press[r[0]]) : r));
+    const N = S.length, cnt = U.rows.map((_, k) => S.filter((r) => r[1] === k).length), named = N - cnt[PILE], pp = Sy.party, sp = Sy.span;
+    const STEPS = [
+      ['Every printed sermon', `${fmt(N)} sermons on the shelf printed from ${Y0} to ${Y1}, each a dot in the year it came from the press, colored by its party. ${Math.round(100 * named / N)}% name on the title page where they were preached, or to whom.`],
+      ['Paul’s Cross', `The open-air pulpit in the churchyard of St Paul’s, London. The shelf’s ${cnt[0]} sermons from it were printed between ${sp[0][0]} and ${sp[0][1]}.`],
+      ['Before Parliament', `${cnt[1]} sermons to the Commons or the Lords, ${Sy.parl_1640s} of them printed in the 1640s. ${Sy.parl_fast} name a day of fasting or humiliation, ${Sy.parl_thanks} a thanksgiving. ${pp[1][0]} are by Puritans.`],
+      ['At court', `${cnt[2]} sermons before the King or the Queen, at Whitehall and the royal chapels: ${Sy.court_1660} printed after 1660, ${Sy.court_1690s} in the 1690s alone. ${pp[2][1]} are by Anglicans.`],
+      ['At a funeral', `${cnt[3]} sermons preached at a funeral, ${Sy.funeral_1650} of them printed after 1650.`],
+      ['The City of London', `${cnt[4]} sermons to the City. ${Sy.city_mayor} name the Lord Mayor or the aldermen, ${Sy.city_spital} the Spital sermons of Easter week, ${Sy.city_artillery} the Artillery Company.`],
+      ['Assizes and visitations', `${Sy.assize} sermons to the judges at the assizes, and ${Sy.visit} to the clergy at a bishop’s visitation.`],
+      ['No occasion named', `${fmt(cnt[PILE])} name no single pulpit: sermons on a text, courses of sermons, and collections. The six rows above hold the other ${fmt(named)}.`]];
+    const stepsEl = document.getElementById('tg-usteps'); stepsEl.innerHTML = STEPS.map(([b, t]) => `<li><b>${esc(b)}</b><p>${esc(t)}</p></li>`).join('');
+    const lis = [...stepsEl.children];
+    document.getElementById('tg-ulegend').innerHTML = D.fam.map(([, nm], i) => [nm, i, S.filter((r) => r[2] === i).length]).filter((x) => x[2]).map(([nm, i, c]) => `<span><i style="background:${fcI(i)};border-radius:50%"></i>${esc(nm)} <span class="num">${fmt(c)}</span></span>`).join('');
+    const out = U.out.reduce((a, b) => a + b, 0);
+    document.getElementById('tg-unote').textContent = `The pulpit is read from each title as it was first printed. ${fmt(out)} more sermons on the shelf carry no printed date or come after ${Y1}, and are not drawn.`;
+    // the card: the sermon of the step, or the one chosen
+    const showCard = (i, label) => {
+      if (i == null) { card.innerHTML = `<p class="k">How to read it</p><p class="ft">Each dot is one printed sermon. Point at one for its title; choose it to read the title as first printed and open the book.</p>`; return; }
+      const r = S[i], a = D.authors[r[3]];
+      card.innerHTML = `<p class="k">${esc(label)}${r[6] ? ' · as first printed' : ''}</p><p class="ft">${esc(r[6] || r[5])}</p><p class="by"><i style="background:${fcI(r[2])}"></i>${r[0]}${a ? ` · ${esc(a.n)}` : ''} · <a href="${TG.read(r[4])}" target="_blank" rel="noopener">Read it</a></p>`;
+    };
+    // a beeswarm: each dot at its year, pushed off the line just far enough to touch no other (both ways for a row, upward for the pile)
+    let xs = [], R = 2.6, G0 = null;
+    function dodge(idx, r, up) {
+      const d = 2 * r + 0.5, d2 = d * d - 0.01, placed = [], res = new Map(); let head = 0;
+      for (const i of idx.slice().sort((a, b) => xs[a] - xs[b] || a - b)) {
+        const x = xs[i]; while (head < placed.length && placed[head].x < x - d) head++;
+        const near = placed.slice(head), cands = [0];
+        for (const q of near) { const dy = Math.sqrt(Math.max(0, d * d - (x - q.x) ** 2)); cands.push(q.y + dy, q.y - dy); }
+        const ok = cands.filter((c) => !up || c >= 0).sort((a, b) => Math.abs(a) - Math.abs(b)).find((c) => near.every((q) => (x - q.x) ** 2 + (c - q.y) ** 2 >= d2));
+        const y = ok ?? Math.max(0, ...near.map((q) => Math.abs(q.y))) + d;
+        placed.push({ x, y }); res.set(i, y);
+      }
+      return res;
     }
-    const st = TG.chapter('#tg-spell', 3200, (p, fin) => show(fin ? 0 : Math.min(S.length - 1, Math.floor(p * S.length)), fin), { scrub: true });
-    if (!st) show(0, true);
+    const ML = 14, MR = 14, LH = 19, GAP = 9, AX = 26;
+    function layout() {
+      const W = box.clientWidth, maxH = TG.pinOK() ? TG.clamp(innerHeight - (parseFloat(TG.css('--tg-pin')) || 0) - 150, 380, 640) : 900;
+      const cw = (W - ML - MR) / (Y1 - Y0 + 1), byRow = U.rows.map((_, k) => S.map((r, i) => (r[1] === k ? i : -1)).filter((i) => i >= 0));
+      for (let r = 2.8; r >= 1.3; r -= 0.15) {
+        const seen = {}; xs = S.map((s) => { const n = (seen[s[0]] = (seen[s[0]] || 0) + 1); return ML + (s[0] - Y0 + 0.5) * cw + (((n * 0.618) % 1) - 0.5) * cw * 0.8; });
+        const rows = byRow.slice(0, PILE).map((idx) => dodge(idx, r, false)), half = rows.map((m) => Math.max(0, ...[...m.values()].map(Math.abs)) + r);
+        const piles = []; for (let m = 0; m <= PILE; m++) piles.push(dodge(S.map((s, i) => (s[1] >= m ? i : -1)).filter((i) => i >= 0), r, true));
+        const ptop = piles.map((m) => Math.max(0, ...m.values()) + r);
+        let y = 6; const mid = [], lab = [];
+        half.forEach((h) => { lab.push(y + 14); y += LH; mid.push(y + h); y += 2 * h + GAP; });
+        const pileLab = y + 14; y += LH; const base = y + ptop[PILE]; y = base + r + AX;
+        G0 = { r, cw, rows, half, piles, ptop, mid, lab, pileLab, base, H: Math.ceil(y), W };
+        if (y <= maxH) break;
+      }
+      R = G0.r; box.style.height = `${G0.H}px`; cv.size();
+    }
+    const pos = new Float32Array(N * 2); let P = 0, cur = -1, sel = -1;
+    const tk = (s, k) => clamp((s - (k + 1)) / 0.72, 0, 1);
+    function render(p) {
+      P = p; if (!G0) return; const g = G0, s = p * NS, {W} = cv; ctx.clearRect(0, 0, W, cv.H);
+      const ink = TG.css('--ink'), muted = TG.css('--muted'), rule = TG.css('--rule'), rub = TG.css('--rubric'), disp = TG.css('--display'), body = TG.css('--body');
+      const T = U.rows.map((_, k) => (k < PILE ? tk(s, k) : 0)); let m = 0; while (m < PILE && T[m] >= 1) m++;
+      const settle = m < PILE ? ease(clamp((T[m] - 0.45) / 0.45, 0, 1)) : 1, step = Math.min(NS - 1, Math.floor(s));
+      // the year rules and the axis: light, behind everything
+      ctx.font = `11px ${body}`; ctx.textAlign = 'center'; ctx.fillStyle = muted;
+      for (let y = 1550; y <= Y1; y += 50) { const x = ML + (y - Y0 + 0.5) * g.cw; ctx.strokeStyle = rule; ctx.setLineDash([2, 4]); ctx.beginPath(); ctx.moveTo(x, 4); ctx.lineTo(x, g.base + R + 4); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.strokeStyle = rule; ctx.beginPath(); ctx.moveTo(ML, g.base + R + 4.5); ctx.lineTo(W - MR, g.base + R + 4.5); ctx.stroke();
+      for (let y = 1550; y <= Y1; y += 25) ctx.fillText(String(y), ML + (y - Y0 + 0.5) * g.cw, g.base + R + 19);
+      // the rows: a ledger line through each, the name once its sermons begin to rise; a row still under the pile waits unseen
+      const ptop = lerp(g.ptop[m], g.ptop[Math.min(PILE, m + 1)], m < PILE ? settle : 0), clear = g.base - ptop - 26;
+      ctx.textAlign = 'left';
+      for (let k = 0; k < PILE; k++) {
+        const a = clamp(T[k] * 2.5, 0, 1); if (!a && g.mid[k] > clear) continue; ctx.strokeStyle = rule; ctx.globalAlpha = 0.35 + 0.65 * a; ctx.beginPath(); ctx.moveTo(ML, g.mid[k] + 0.5); ctx.lineTo(W - MR, g.mid[k] + 0.5); ctx.stroke();
+        ctx.globalAlpha = 0.28 + 0.72 * a; ctx.fillStyle = step === k + 1 ? rub : ink; ctx.font = `400 15px ${disp}`; ctx.fillText(U.rows[k][1], ML, g.lab[k]);
+        if (a > 0) { const w = ctx.measureText(U.rows[k][1]).width; ctx.globalAlpha = a; ctx.fillStyle = muted; ctx.font = `12px ${body}`; ctx.fillText(fmt(cnt[k]), ML + w + 8, g.lab[k]); }
+      }
+      ctx.globalAlpha = 1;
+      // the dots
+      for (let i = 0; i < N; i++) {
+        const r = S[i], k = r[1], x = xs[i]; let y, al;
+        if (k < m) { y = g.mid[k] + g.rows[k].get(i); al = 0.95; }
+        else if (k === m && k < PILE) { const td = ease(clamp(T[k] * 1.6 - ((x - ML) / (W - ML - MR)) * 0.6, 0, 1)); y = lerp(g.base - g.piles[m].get(i), g.mid[k] + g.rows[k].get(i), td); al = lerp(0.5, 0.95, td); }
+        else { y = lerp(g.base - g.piles[m].get(i), g.base - g.piles[Math.min(PILE, m + 1)].get(i), m < PILE ? settle : 0); al = s < 1 ? 0.85 : k === PILE && m >= PILE ? 0.6 : 0.5; }
+        pos[2 * i] = x; pos[2 * i + 1] = y; ctx.globalAlpha = al; ctx.fillStyle = fcI(r[2]); ctx.beginPath(); ctx.arc(x, y, R, 0, 6.2832); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      // the pile's name rides on top of it
+      const left = cnt[PILE] + U.rows.slice(0, PILE).reduce((a, _, k) => a + (T[k] < 0.5 ? cnt[k] : 0), 0);
+      const pl = s < 1 ? 'Every printed sermon' : m >= PILE ? 'No occasion named' : 'Still to sort', py = Math.min(g.pileLab, g.base - ptop - 7);
+      ctx.font = `400 15px ${disp}`; const pw = ctx.measureText(pl).width; ctx.fillStyle = TG.css('--card'); ctx.globalAlpha = 0.85; ctx.fillRect(ML - 3, py - 13, pw + 60, 18); ctx.globalAlpha = 1;
+      ctx.fillStyle = step === NS - 1 ? rub : ink; ctx.fillText(pl, ML, py); ctx.fillStyle = muted; ctx.font = `12px ${body}`; ctx.fillText(fmt(left), ML + pw + 8, py);
+      // the sermon on the card, ringed
+      const ring = sel >= 0 ? sel : step >= 1 ? U.feat[step - 1] : -1;
+      if (ring >= 0) { ctx.strokeStyle = rub; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(pos[2 * ring], pos[2 * ring + 1], R + 4, 0, 6.2832); ctx.stroke(); ctx.lineWidth = 1; }
+      if (step !== cur) { cur = step; sel = -1; lis.forEach((li, i) => li.classList.toggle('now', i === step)); showCard(step >= 1 ? U.feat[step - 1] : null, step >= 1 ? U.rows[step - 1][1] : '');
+        if (G) gsap.fromTo(card.children, { opacity: 0, y: 5 }, { opacity: 1, y: 0, duration: 0.35, stagger: 0.05 }); }
+    }
+    const hit = (e) => { const b = box.getBoundingClientRect(), mx = e.clientX - b.left, my = e.clientY - b.top; let best = -1, bd = (R + 4) ** 2;
+      for (let i = 0; i < N; i++) { const d = (pos[2 * i] - mx) ** 2 + (pos[2 * i + 1] - my) ** 2; if (d < bd) { bd = d; best = i; } } return [best, mx, my, b]; };
+    box.addEventListener('mousemove', (e) => { const [i, mx, my, b] = hit(e); if (i < 0) { tip.hidden = true; box.style.cursor = ''; return; }
+      const r = S[i], a = D.authors[r[3]]; box.style.cursor = 'pointer';
+      tip.innerHTML = `${esc(r[5])}<small>${r[0]}${a ? ` · ${esc(a.n)}` : ''} · ${esc(U.rows[r[1]][1])}</small>`; tip.hidden = false;
+      tip.style.left = `${Math.min(mx + 12, b.width - 250)}px`; tip.style.top = `${Math.max(6, my - 58)}px`; });
+    box.addEventListener('mouseleave', () => { tip.hidden = true; });
+    box.addEventListener('click', (e) => { const [i] = hit(e); if (i < 0) return; sel = i; showCard(i, 'Chosen'); render(P); if (G) gsap.fromTo(card.children, { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: 0.3, stagger: 0.04 }); });
+    let rt, w0 = 0; new ResizeObserver(() => { if (Math.abs(box.clientWidth - w0) < 2) return; w0 = box.clientWidth; clearTimeout(rt); rt = setTimeout(() => { layout(); render(P); }, 80); }).observe(box);
+    layout(); w0 = box.clientWidth;
+    const st = TG.chapter('#tg-pulpits', 5200, (p, fin) => render(fin ? 1 : p), { scrub: 0.5 });
+    if (!st) lis.forEach((li) => li.classList.add('now'));
   })();
 
   /* ---------- the finder ---------- */

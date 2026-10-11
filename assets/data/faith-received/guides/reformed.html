@@ -113,6 +113,77 @@
 .tg-ref .case2-pick { margin-top: 12px; min-height: 2em; }
 .tg-ref .case2-pick h3 { font: 400 1.3rem var(--display); margin: 0 0 4px; } .tg-ref .case2-pick .wlist { columns: 2 16rem; }
 @media (max-width: 860px) { .tg-ref .case2 { height: 860px; } .tg-ref .kn-kinds li { opacity: 1; } .tg-ref .kn-kinds li p { display: none; } }
+/* the Bible, book by book (10-10) */
+.tg-ref .bib { position: relative; }
+.tg-ref .bib svg { width: 100%; height: auto; display: block; overflow: visible; }
+.tg-ref .bib .sec { font: italic 400 12px var(--display); fill: var(--ink-2); }
+.tg-ref .bib .secl { stroke: var(--rule); stroke-width: 1; }
+.tg-ref .bib .bk { font: 8.5px var(--body); fill: var(--muted); }
+.tg-ref .bib .nm { font: 12px var(--body); fill: var(--ink); }
+.tg-ref .bib .rt { font: 600 10.5px var(--body); fill: var(--muted); font-variant-numeric: tabular-nums; }
+.tg-ref .bib .dots { fill: var(--rule); }
+.tg-ref .bib rect.cl { transform-box: fill-box; transform-origin: center; }
+.tg-ref .bib a:hover rect.cl, .tg-ref .bib a:focus rect.cl { stroke: var(--ink); stroke-width: 1.4; }
+.tg-ref .bib a:focus { outline: none; }
+.tg-ref .bib .bar { fill: var(--rubric); opacity: 0.78; transform-box: fill-box; transform-origin: bottom; }
+.tg-ref .bib .bar.top { opacity: 1; }
+.tg-ref .bib .bl { font: 600 9.5px var(--body); fill: var(--rubric); }
+.tg-ref .bib .bcap { font: italic 11.5px var(--display); fill: var(--muted); }
+/* one hundred and twenty-nine questions */
+.tg-ref .heid { position: relative; }
+.tg-ref .heid svg { width: 100%; height: auto; display: block; overflow: visible; }
+.tg-ref .heid .pt { font: italic 400 14.5px var(--display); fill: var(--ink); }
+.tg-ref .heid .ptl { stroke: var(--ink); stroke-width: 1; }
+.tg-ref .heid .sb { font: 600 8.5px var(--body); letter-spacing: 0.1em; text-transform: uppercase; fill: var(--muted); }
+.tg-ref .heid .sbl { stroke: var(--rule); stroke-width: 1; }
+.tg-ref .heid .tk { fill: var(--ink-2); }
+.tg-ref .heid .rn { font: 400 15px var(--display); fill: var(--ink); }
+.tg-ref .heid .rs { font: 11px var(--body); fill: var(--muted); }
+.tg-ref .heid .base { stroke: var(--rule); stroke-width: 1; }
+.tg-ref .heid rect.b { transform-box: fill-box; transform-origin: bottom; cursor: pointer; }
+.tg-ref .heid rect.un { fill: none; stroke: var(--muted); stroke-width: 0.8; }
+.tg-ref .heid .pk text { font: 600 10px var(--body); fill: var(--ink); }
+.tg-ref .heid .pk text.q { fill: var(--rubric); }
+.tg-ref .heid .pk line { stroke: var(--ink); stroke-width: 0.7; }
+.tg-ref .heid .hov { fill: color-mix(in srgb, var(--gilt) 16%, transparent); pointer-events: none; }
+/* Dort */
+.tg-ref .dort { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr); gap: 10px 0; align-items: start; }
+.tg-ref .dort svg.links { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.tg-ref .dort svg.links path { fill: none; stroke: var(--rubric); stroke-width: 1.3; opacity: 0.75; }
+.tg-ref .dort .col.l { grid-column: 1; } .tg-ref .dort .col.r { grid-column: 3; } .tg-ref .dort .sat { grid-column: 1 / -1; }
+.tg-ref .dort .colh { font: 600 0.7rem var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+.tg-ref .dort .colh span { color: var(--rubric); margin-left: 4px; }
+.tg-ref .dort ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.tg-ref .dort .arts li { position: relative; background: var(--card); border: 1px solid var(--rule); border-left: 3px solid var(--f5); border-radius: 3px; padding: 7px 10px 7px 34px; transition: border-color 0.3s, box-shadow 0.3s; }
+.tg-ref .dort .arts li.hit { border-color: var(--rubric); box-shadow: 0 8px 18px -14px rgba(80, 40, 20, 0.7); }
+.tg-ref .dort .arts li b { position: absolute; left: 9px; top: 6px; font: 400 1.05rem var(--display); color: var(--rubric); font-variant-numeric: lining-nums; }
+.tg-ref .dort .arts li span { display: block; font: 400 1rem/1.15 var(--display); }
+.tg-ref .dort .arts li q { display: block; font: italic 0.8rem/1.3 var(--body); color: var(--muted); margin-top: 2px; quotes: "“" "”"; }
+.tg-ref .dort .heads li { background: var(--card); border: 1px solid var(--rule); border-top: 3px solid var(--rubric); border-radius: 0 0 3px 3px; padding: 8px 11px 9px; }
+.tg-ref .dort .heads li .hh { font: 600 0.66rem var(--body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--rubric); }
+.tg-ref .dort .heads li a { display: block; font: 400 1.02rem/1.15 var(--display); color: var(--ink); text-decoration: none; margin: 2px 0 6px; }
+.tg-ref .dort .heads li a:hover { color: var(--rubric); text-decoration: underline; }
+.tg-ref .dort .dots { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
+.tg-ref .dort .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--rubric); display: inline-block; }
+.tg-ref .dort .dots i.e { background: transparent; border: 1.4px solid var(--ink-2); }
+.tg-ref .dort .dots i.gap { width: 6px; height: 0; background: none; border: 0; }
+.tg-ref .dort .heads li small { display: block; margin-top: 5px; font-size: 0.78rem; color: var(--muted); }
+.tg-ref .dort .sum { margin: 8px 0 0; font-size: 0.84rem; color: var(--muted); }
+.tg-ref .dort .sat { border-top: 1px solid var(--rule); padding-top: 10px; margin-top: 4px; }
+.tg-ref .dort .satl { display: flex; flex-wrap: wrap; gap: 5px 6px; }
+.tg-ref .dort .satl button { font: 0.8rem var(--body); color: var(--ink); background: var(--card); border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; cursor: pointer; }
+.tg-ref .dort .satl button small { color: var(--muted); margin-left: 4px; font-size: 0.72rem; }
+.tg-ref .dort .satl button:hover { border-color: var(--rubric); color: var(--rubric); }
+.tg-ref .dort-books { font-size: 0.86rem; }
+.tg-ref .dort-books h4 { font: 600 0.68rem var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 10px 0 3px; }
+.tg-ref .dort-books ul { list-style: none; margin: 0; padding: 0; }
+.tg-ref .dort-books li { padding: 2px 0; border-top: 1px solid var(--rule-2); display: flex; justify-content: space-between; gap: 8px; }
+.tg-ref .dort-books a { color: var(--ink); text-decoration: none; } .tg-ref .dort-books a:hover { color: var(--rubric); text-decoration: underline; }
+.tg-ref .dort-books small { color: var(--muted); white-space: nowrap; }
+@media (max-width: 860px) {
+  .tg-ref .dort { grid-template-columns: minmax(0, 1fr); } .tg-ref .dort svg.links { display: none; }
+  .tg-ref .dort .col.l, .tg-ref .dort .col.r, .tg-ref .dort .sat { grid-column: 1; }
+}
 </style>
 
 <section class="hero" aria-labelledby="tg-h1"><div class="wrap gut">
@@ -131,7 +202,7 @@
   <div>
     <p class="eyebrow">1 · What is on the shelf</p>
     <h2 id="tg-h-kinds">Nine kinds of book</h2>
-    <p class="say">Four hundred and thirty-one works by a hundred and ten writers, from Zwingli’s Zurich to the Dutch academies of the eighteenth century. Scroll to sort them as a printer sorted type: each kind of book to its own compartment.</p>
+    <p class="say">Four hundred and thirty-one works by a hundred and ten writers, from Zwingli’s Zurich to the Dutch academies of the eighteenth century. Here they are sorted by kind, as a printer sorted type into the compartments of a case.</p>
     <ol class="kn-kinds" id="tg-kind-list"></ol>
   </div>
   <div>
@@ -140,11 +211,19 @@
   </div>
 </div></section>
 
+<section class="scene gut" id="tg-gen" aria-labelledby="tg-h-gen"><div class="wrap">
+  <p class="eyebrow">2 · The generations</p>
+  <h2 id="tg-h-gen">Two hundred years of Reformed schools</h2>
+  <p class="say" style="max-width:48rem">The width of each stream is the number of the shelf’s writers at work in those years, by where they taught. The weight moves from the Swiss cities to the German academies and on to the Dutch universities; the French schools end with the Revocation.</p>
+  <div class="stream" id="tg-stream"><svg role="img" aria-label="Streams of writers at work by region, 1500 to 1790"></svg><div class="tip" hidden></div></div>
+  <p class="legend" id="tg-stream-legend" style="margin-top:6px"></p>
+</div></section>
+
 <section class="scene gut" id="tg-road" aria-labelledby="tg-h-road"><div class="wrap scene-grid">
   <div>
-    <p class="eyebrow">2 · The Reformed International</p>
+    <p class="eyebrow">3 · The Reformed International</p>
     <h2 id="tg-h-road">A church of refugees and professors</h2>
-    <p class="say">The Reformed churches had no single capital. Their teachers fled, were called, and moved on: Junius from Bourges to Geneva, Heidelberg and Leiden; Alsted from Herborn to Transylvania. Scroll to watch the academies open and the writers travel between them.</p>
+    <p class="say">The Reformed churches had no single capital. Their teachers fled, were called, and moved on: Junius from Bourges to Geneva, Heidelberg and Leiden; Alsted from Herborn to Transylvania. The map marks each academy in the year it opened and follows the writers between them.</p>
     <ul class="chron" id="tg-chron"></ul>
   </div>
   <div>
@@ -156,7 +235,7 @@
 
 <section class="scene gut" id="tg-conf" aria-labelledby="tg-h-conf"><div class="wrap scene-grid">
   <div>
-    <p class="eyebrow">3 · What the churches confessed</p>
+    <p class="eyebrow">4 · What the churches confessed</p>
     <h2 id="tg-h-conf">A confession for every church</h2>
     <p class="say">Where the Lutherans gathered their confessions into one Book of Concord, each Reformed church wrote its own: cities, kingdoms, synods and refugee congregations. The library holds <span id="tg-conf-n">127</span> of them in its Confessions room. Each small card is one confession. The major confessions are dealt out as full cards.</p>
     <p class="legend confnote" id="tg-conf-legend"></p>
@@ -164,29 +243,62 @@
   <div class="deck" id="tg-deck"><div class="bigcard" id="tg-bigcard" aria-live="polite"></div><svg role="img" aria-label="Every Reformed confession in the library on a timeline, by region"></svg><div class="tip" hidden></div></div>
 </div></section>
 
+<section class="scene gut" id="tg-bible" aria-labelledby="tg-h-bible"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">5 · Zurich, Geneva, Heidelberg, Leiden</p>
+    <h2 id="tg-h-bible">The Bible, book by book</h2>
+    <p class="say">The Reformed began with the Bible. These are the commentaries and homilies on the shelf that work through a book of Scripture: <span id="tg-bib-n"></span> Each row is a writer and each column a book, with the writers in the order they worked.</p>
+    <ol class="steps" id="tg-bsteps"></ol>
+  </div>
+  <div>
+    <div class="bib" id="tg-bib"><svg role="img" aria-label="A grid of the Bible's sixty-six books against the writers on the shelf who expounded them"></svg><div class="tip" hidden></div></div>
+    <p class="legend" id="tg-bib-legend" style="margin-top:8px"></p>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-heid" aria-labelledby="tg-h-heid"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">6 · Heidelberg</p>
+    <h2 id="tg-h-heid">One hundred and twenty-nine questions</h2>
+    <p class="say">The Heidelberg Catechism of 1563 was taught in the Palatinate, the Netherlands and far beyond, Sunday by Sunday through fifty-two Lord’s Days. Three commentaries on the shelf take it question by question. Each bar is the pages one of them gives a question, as the printed book heads it.</p>
+    <ol class="steps" id="tg-hsteps"></ol>
+  </div>
+  <div>
+    <div class="heid" id="tg-heid-stage"><svg role="img" aria-label="The 129 questions of the Heidelberg Catechism, and the pages three commentaries give each of them"></svg><div class="tip" hidden></div></div>
+    <p class="legend" id="tg-heid-legend" style="margin-top:8px"></p>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-dort" aria-labelledby="tg-h-dort"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">7 · Dort</p>
+    <h2 id="tg-h-dort">Five articles, and the synod’s answer</h2>
+    <p class="say">In 1610 the followers of Arminius set out their teaching in five articles, the Remonstrance. The States General called a national synod to Dordrecht, with theologians from Britain, the Palatinate, Hesse, the Swiss cities, Geneva, Bremen and Emden. It answered the five articles under four heads of doctrine, the third and fourth together, and closed each head with the errors it rejected.</p>
+    <div class="dort-books" id="tg-dort-books"></div>
+  </div>
+  <div class="dort" id="tg-dort-stage">
+    <svg class="links" aria-hidden="true"></svg>
+    <div class="col l"><p class="colh">The Remonstrance <span>1610</span></p><ol class="arts" id="tg-arts"></ol></div>
+    <div class="col r"><p class="colh">The Canons of Dort <span>1619</span></p><ol class="heads" id="tg-heads"></ol><p class="sum" id="tg-dort-sum"></p></div>
+    <div class="sat"><p class="colh">At the synod, from this shelf</p><div class="satl" id="tg-sat"></div></div>
+  </div>
+</div></section>
+
 <section class="scene gut" id="tg-ramus" aria-labelledby="tg-h-ramus"><div class="wrap scene-grid">
   <div>
-    <p class="eyebrow">4 · The method</p>
+    <p class="eyebrow">8 · The method</p>
     <h2 id="tg-h-ramus">Divide, and divide again</h2>
-    <p class="say">Peter Ramus taught that any subject is best laid out by dividing it in two, and each part in two again. The Reformed schools took to it. Amandus Polanus of Basel built his <i>Syntagma of Christian Theology</i> (1609) this way, and its first two books open with the whole tree. Scroll to follow it from theology to the two tables of the law; each branch opens at its chapter.</p>
+    <p class="say">Peter Ramus taught that any subject is best laid out by dividing it in two, and each part in two again. The Reformed schools took to it. Amandus Polanus of Basel built his <i>Syntagma of Christian Theology</i> (1609) this way, and its first two books open with the whole tree. The tree runs from theology to the two tables of the law, and each branch opens at its chapter.</p>
     <ol class="steps" id="tg-rsteps"></ol>
     <div class="books" id="tg-polbooks"></div>
   </div>
   <div class="ramus" id="tg-ramus-stage"><svg aria-label="The divisions of Polanus’s Syntagma as a Ramist tree"></svg></div>
 </div></section>
 
-<section class="scene gut" id="tg-gen" aria-labelledby="tg-h-gen"><div class="wrap">
-  <p class="eyebrow">5 · The generations</p>
-  <h2 id="tg-h-gen">Two hundred years of Reformed schools</h2>
-  <p class="say" style="max-width:48rem">The width of each stream is the number of the shelf’s writers at work in those years, by where they taught. Watch the weight move from the Swiss cities to the German academies and on to the Dutch universities, and the French schools end with the Revocation.</p>
-  <div class="stream" id="tg-stream"><svg role="img" aria-label="Streams of writers at work by region, 1500 to 1790"></svg><div class="tip" hidden></div></div>
-  <p class="legend" id="tg-stream-legend" style="margin-top:6px"></p>
-</div></section>
-
 <section class="tool gut" id="explore" aria-labelledby="tg-h-ex"><div class="wrap">
   <p class="eyebrow">Explore</p>
-  <h2 id="tg-h-ex">Every author on the shelf</h2>
-  <p class="say" style="max-width:46rem">A hundred and ten writers, from Capito and Oecolampadius to the last orthodox professors of Basel. Choose a region to narrow the lines, or search for a title.</p>
+  <h2 id="tg-h-ex">The authors</h2>
+  <p class="say" style="max-width:46rem">A hundred and ten writers, from Capito and Oecolampadius to the last orthodox professors of Basel.</p>
   <div id="tg-explorer"></div>
   <div class="next"><a href="/the-faith-received/all-works/?tradition=Reformed">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=Continental%20Reformed">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=english">The English Divines</a><a href="/the-faith-received/guide/?s=westminster">The Westminster Assembly</a><a href="/the-faith-received/guide/?s=puritans">The Puritans</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=methodists">The Methodists</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
 </div></section>

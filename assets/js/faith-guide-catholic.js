@@ -1,5 +1,6 @@
-/* The Roman Catholic shelf guide: the bookcase sorting itself into schools, the schools as streams, the colleges on the map,
-   the plan of Suárez's Metaphysical Disputations opening out, and the sessions of Trent. */
+/* The Roman Catholic shelf guide: the bookcase sorting itself into schools, the schools as streams, then one scene to a school
+   (the Thomists' Summa ledger, Rada's Thomas-against-Scotus and the Punch-Mastri quarrel, Lapide's Bible, the quarrel over grace),
+   the colleges on the map, the plan of Suárez's Metaphysical Disputations opening out, and the sessions of Trent. */
 (async () => {
   const {TG} = window, D = await TG.load('data'), LAND = await TG.load('land');
   const { esc, fmt, clamp, ease, lerp } = TG, G = TG.hasG && !TG.reduce ? window.gsap : null;
@@ -152,6 +153,12 @@
     }
   })();
 
+  const rgba = (hex, a) => { const h = hex.replace('#', ''), n = parseInt(h.length === 3 ? h.replace(/./g, '$&$&') : h, 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; };
+  const tipAt = (tip, box, e, html) => { const r = box.getBoundingClientRect(); tip.innerHTML = html; tip.hidden = false;
+    tip.style.left = `${Math.max(0, Math.min(e.clientX - r.left + 12, r.width - 260))}px`; tip.style.top = `${e.clientY - r.top + 14}px`; };
+  const tipFor = (tip, box, el, html) => { const r = box.getBoundingClientRect(), b = el.getBoundingClientRect(); tip.innerHTML = html; tip.hidden = false;
+    tip.style.left = `${Math.max(0, Math.min(b.left - r.left, r.width - 260))}px`; tip.style.top = `${b.bottom - r.top + 6}px`; };
+
   /* ---------- 2. the colleges on the map ---------- */
   (function road() {
     const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[-10, 36.6], [25.6, 55.4]], { parallels: [38, 54] });
@@ -196,13 +203,273 @@
       document.getElementById('tg-yearbar').style.width = `${(Y - 1470) / (1890 - 1470) * 100}%`;
       chron(Y);
       const names = live.map(({ j }) => j.a).join('|');
-      if (names !== lastR) { lastR = names; ribbon.innerHTML = live.map(({ j, c }) => `<span><i style="background:${c}"></i>${esc(j.a)}</span>`).join('') || '<span class="small" style="border:0;background:none">None of these masters is yet at work.</span>'; }
+      if (names !== lastR) { lastR = names; ribbon.innerHTML = live.map(({ j, c }) => `<span><i style="background:${c}"></i>${esc(j.a)}</span>`).join('') || `<span class="small" style="border:0;background:none">${Y < 1600 ? 'None of these masters is yet at work.' : 'None of these masters is still living.'}</span>`; }
     }
     M.onfit = () => { cv.size(); render(year); };
     TG.chapter('#tg-road', 4600, (p) => render(lerp(1470, 1890, p)), { scrub: 0.4 });
   })();
 
-  /* ---------- 3. Suárez: four volumes open into fifty-four disputations ---------- */
+  /* ---------- 3. Trent: twenty-five sessions in three periods ---------- */
+  (function trent() {
+    const T = D.trent, svg = document.getElementById('tg-trent-svg'), W = 760, H = 330, base = 250, X0 = 1545.6, X1 = 1564.1;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const mk = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
+    // three periods; inside each the sessions stand evenly in order, the long suspensions are breaks in the line
+    const PER = [[1, 10, 'Paul III', '1545–1547'], [11, 16, 'Julius III', '1551–1552'], [17, 25, 'Pius IV', '1562–1563']], GAP = 46, step = (W - 100 - 2 * GAP) / 25;
+    const sx = {}; let cx0 = 24;
+    PER.forEach(([a, b, pope, yrs], pi) => { const n = b - a + 1, x0 = cx0, x1 = cx0 + n * step;
+      mk('rect', { x: x0, y: base - 214, width: x1 - x0, height: 232, fill: TG.css('--paper-2'), rx: 4 });
+      mk('line', { x1: x0, x2: x1, y1: base, y2: base, stroke: TG.css('--ink-2'), 'stroke-width': 1 });
+      for (let k = a; k <= b; k++) sx[k] = x0 + (k - a + 0.5) * step;
+      const t = mk('text', { x: (x0 + x1) / 2, y: base + 32, 'text-anchor': 'middle', class: 'per' }); t.textContent = yrs;
+      const t2 = mk('text', { x: (x0 + x1) / 2, y: base + 46, 'text-anchor': 'middle', class: 'per' }); t2.textContent = pope;
+      if (pi < 2) { const gx = x1 + GAP / 2, txt = pi === 0 ? 'four years' : 'ten years';
+        mk('path', { d: `M${x1 + 6},${base} l6,-5 l6,10 l6,-10 l6,10 l6,-5`, fill: 'none', stroke: TG.css('--muted'), 'stroke-width': 1 });
+        const g1 = mk('text', { x: gx, y: base + 32, 'text-anchor': 'middle', class: 'yr' }); g1.textContent = txt; const g2 = mk('text', { x: gx, y: base + 46, 'text-anchor': 'middle', class: 'yr' }); g2.textContent = 'suspended'; }
+      cx0 = x1 + GAP; });
+    const nowT = mk('text', { x: W - 20, y: 22, 'text-anchor': 'end', class: 'per' }); nowT.textContent = '';
+    const S = T.sessions.map(([n, d, t, pl, what]) => { const g = mk('g', { opacity: 0 }), cx = sx[n], bol = pl === 'Bologna';
+      if (what && !/council (moves|resumes|reopens|is suspended|opens)/.test(what)) { const short = what.replace(/; the council closes$/, '').replace('Purgatory, the saints, images, indulgences', 'Purgatory, saints, images, indulgences');
+        mk('line', { x1: cx, x2: cx, y1: base - 12, y2: base - 22, stroke: TG.css('--rule'), 'stroke-width': 1 }, g);
+        const lab = mk('text', { x: cx + 2, y: base - 26, class: 'ses', transform: `rotate(-62 ${cx + 2} ${base - 26})` }, g); lab.textContent = short; }
+      mk('circle', { cx, cy: base, r: 9, fill: bol ? TG.css('--gilt') : TG.css('--rubric'), stroke: TG.css('--card'), 'stroke-width': 1.5 }, g);
+      const tn = mk('text', { x: cx, y: base + 3.4, 'text-anchor': 'middle', class: 'sesn' }, g); tn.textContent = n;
+      const tt = mk('title', {}, g); tt.textContent = `Session ${n}, ${d}${bol ? ' (Bologna)' : ''}${what ? `: ${what}` : ''}`;
+      return { g, t, cx, n, d, pl }; });
+    const bigY = { set textContent(v) {} };
+    const list = document.getElementById('tg-trent-list');
+    const evs = T.sessions.filter((s) => s[4]).map(([n, d, t, pl, what]) => [t, n, d, pl, what]);
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const human = (d) => { const [yy, m, dd] = d.split('-').map(Number); return `${dd} ${months[m - 1]} ${yy}`; };
+    const chron = TG.chronicle(list, evs, ([t, n, d, pl, what]) => `<li><span class="d">Session ${n}</span><span class="e">${esc(what)}</span><span class="w">${human(d)}, at ${esc(pl)}</span></li>`);
+    let shown = 0;
+    function render(t) {
+      const n = S.filter((s) => t >= s.t).length; nowT.textContent = n ? `Session ${S[n - 1].n} · ${human(S[n - 1].d)}${S[n - 1].pl === 'Bologna' ? ' · Bologna' : ''}` : '';
+      S.forEach((s, i) => { const on = i < n;
+        if (on && i >= shown && G) gsap.fromTo(s.g, { opacity: 0, y: -14 }, { opacity: 1, y: 0, duration: 0.5, ease: 'back.out(2)' });
+        else if (!on && i < shown) { if (window.gsap) { gsap.killTweensOf(s.g); gsap.set(s.g, { opacity: 0 }); } else s.g.setAttribute('opacity', 0); }
+        else if (on && !G) s.g.setAttribute('opacity', 1); });
+      shown = n; chron(t);
+    }
+    TG.chapter('#tg-trent', 3000, (p) => render(lerp(X0, X1, p)), { scrub: 0.4 });
+    // the council on the shelf
+    const pages = (L) => L.reduce((s, w) => s + w[2], 0), mx = Math.max(...T.acts.map((w) => w[2]), ...T.sarpi.map((w) => w[2]), ...T.pallavicino.map((w) => w[2]));
+    const sp = (L, cls) => L.map((w) => `<a class="${cls}" href="${TG.read(w[1])}" target="_blank" rel="noopener" title="${esc(w[0])}, ${fmt(w[2])} pages" style="height:${(24 + 48 * w[2] / mx).toFixed(0)}px"></a>`).join('');
+    document.getElementById('tg-onshelf').innerHTML = `
+      <div class="card reveal"><h3>The acts of the council</h3><div class="spines">${sp(T.acts, '')}</div><p class="small" style="margin:0">${T.acts.length} volumes, ${fmt(pages(T.acts))} pages: the diaries, acts, letters and treatises of the council.</p></div>
+      <div class="card reveal"><h3>Two histories, and the councils entire</h3><div class="spines">${sp(T.sarpi, 's')}<span style="width:10px"></span>${sp(T.pallavicino, 'p')}</div>
+        <p class="small" style="margin:0">Paolo Sarpi’s history (1619), hostile to the papacy, and the Jesuit Pietro Sforza Pallavicino’s answer to it (1656–1657). Mansi’s collection of all the councils, ${T.mansi.n} volumes and ${fmt(T.mansi.pages)} pages, is on this shelf too: <a href="${D.councils_guide}" target="_blank" rel="noopener">see the Councils guide</a>.</p></div>`;
+  })();
+
+  /* ---------- 4. the Thomists: the Summa, treatise by treatise, one row to a commentary ---------- */
+  (function summa() {
+    const S = D.summa, host = document.getElementById('tg-sm'), box = host.parentNode, tip = box.querySelector('.tip'), note = document.getElementById('tg-sm-note');
+    const T = S.treat, PN = Object.fromEntries(S.parts.map(([k, n]) => [k, n])), ROMP = { Ia: 'Ia', IaIIae: 'Ia IIae', IIaIIae: 'IIa IIae', IIIa: 'IIIa', Suppl: 'Suppl.' };
+    const SHORTN = { 'John of St Thomas': 'John of St Th.', 'Diego Ruiz de Montoya': 'Ruiz de Montoya', Salamanticenses: 'Salamant.' };
+    const surname = (n) => SHORTN[n] || n.split(' ').pop();
+    const rows = S.rows.filter((r) => r.f === 'thomist').concat(S.rows.filter((r) => r.f !== 'thomist'));
+    const nTh = rows.filter((r) => r.f === 'thomist').length;
+    const cols = []; T.forEach((t, i) => { if (i && T[i - 1][0] !== t[0]) cols.push(null); cols.push(i); });
+    const colOf = (ti) => cols.indexOf(ti) + 2; // grid line of a treatise (the name is column 1)
+    const maxCell = Math.max(...rows.flatMap((r) => r.cells.map((c) => c[1])));
+    const tot = T.map((_, ti) => rows.reduce((s, r) => s + ((r.cells.find((c) => c[0] === ti) || [0, 0])[1]), 0));
+    const maxTot = Math.max(...tot);
+    const yrs = (r) => (r.y0 ? `${r.y0}–${r.y1}` : '');
+    let html = '<div></div>';
+    S.parts.forEach(([k]) => { const tis = T.map((t, i) => [t, i]).filter(([t]) => t[0] === k).map(([, i]) => i);
+      html += `<div class="pt" style="grid-column:${colOf(tis[0])} / span ${tis.length}" title="${esc(PN[k])}"><span class="lg">${esc(PN[k])}</span><span class="sh">${ROMP[k]}</span></div>`; });
+    const SHORT = { 'Government of the world': 'Government', 'Habits and virtues': 'Virtues', 'Justice and religion': 'Justice', 'Gifts and states of life': 'States of life',
+      'Baptism and confirmation': 'Baptism', 'Penance, continued': 'Penance', 'The life of Christ': 'Life of Christ', 'Sacred doctrine': 'Doctrine', 'Extreme unction': 'Unction', 'The last things': 'Last things' };
+    const lc = (n) => n.replace(/^The /, 'the ').replace(/^[A-Z](?=[a-z])/, (c) => c.toLowerCase());
+    html += `<div></div>${cols.map((ti) => (ti === null ? '<div></div>' : `<div class="th" role="columnheader" title="${esc(T[ti][3])}"><span>${esc(SHORT[T[ti][3]] || T[ti][3].replace(/^The (.)/, (m, c) => c.toUpperCase()))}</span></div>`)).join('')}`;
+    rows.forEach((r, ri) => {
+      if (ri === 0) html += '<div class="sep">The Thomists</div>';
+      if (ri === nTh) html += '<div class="sep">The Jesuits on the same text</div>';
+      const by = Object.fromEntries(r.cells.map((c) => [c[0], c]));
+      html += `<div class="who" role="rowheader" data-r="${ri}" title="${esc(r.n)}"><b class="lg">${esc(r.n)}</b><b class="sh">${esc(surname(r.n))}</b><small>${yrs(r)}${yrs(r) ? ' · ' : ''}${fmt(r.p)} pp.</small></div>`;
+      html += cols.map((ti) => { if (ti === null) return '<span class="gap"></span>';
+        const c = by[ti]; if (!c) return '<span class="c" role="cell"></span>';
+        const a = 0.2 + 0.8 * Math.sqrt(c[1] / maxCell);
+        return `<a class="c" role="cell" data-r="${ri}" data-t="${ti}" href="${TG.read(c[2], c[3])}" target="_blank" rel="noopener" aria-label="${esc(r.n)} on ${esc(T[ti][3])}, ${fmt(c[1])} pages"><i style="background:${rgba(fc(r.f), a)}"></i></a>`; }).join('');
+    });
+    html += `<div class="totl">Pages on each treatise</div>${cols.map((ti) => (ti === null ? '<div></div>' : `<div class="tot" aria-hidden="true"><i data-s="j"></i><i data-s="t"></i></div>`)).join('')}`;
+    host.innerHTML = html;
+    const size = () => { host.style.gridTemplateColumns = `${host.clientWidth < 700 ? '4.6rem' : '10.5rem'} ${cols.map((c) => (c === null ? '5px' : 'minmax(0, 1fr)')).join(' ')}`; };
+    size(); addEventListener('resize', size);
+    const who = [...host.querySelectorAll('.who')], cells = rows.map((_, ri) => [...host.querySelectorAll(`a.c[data-r="${ri}"]`)].map((el) => ({ el: el.firstChild, ti: +el.dataset.t })));
+    const bars = [...host.querySelectorAll('.tot')].map((el, k) => ({ el, ti: cols.filter((c) => c !== null)[k], j: el.children[0], t: el.children[1] }));
+    bars.forEach((b) => { b.j.style.background = fc('jesuit'); b.t.style.background = fc('thomist'); });
+    const say = (r) => `<b>${esc(r.n)}</b>${yrs(r) ? ` (${yrs(r)})` : ''}: ${fmt(r.p)} pages in ${r.vols} ${r.vols === 1 ? 'volume' : 'volumes'}, on ${r.cells.length} of the ${T.length} treatises.${r.alt.length ? ` Also on the shelf in another printing: ${r.alt.map((a) => `<a href="${TG.read(a[1])}" target="_blank" rel="noopener">${esc(a[0])}</a>`).join(', ')}.` : ''}`;
+    const top = tot.map((v, ti) => [v, ti]).sort((a, b) => b[0] - a[0]);
+    const all = rows.reduce((s, r) => s + r.p, 0);
+    const final = `<b>${fmt(all)}</b> pages of commentary on the Summa in these ${rows.length} works. The treatises that drew the most pages are ${esc(lc(T[top[0][1]][3]))} (${fmt(top[0][0])}) and ${esc(lc(T[top[1][1]][3]))} (${fmt(top[1][0])}).`;
+    let last = -2;
+    function render(p, fin) {
+      const k = fin ? rows.length + 1 : p * (rows.length + 0.9); let cur = -1;
+      const sum = T.map(() => [0, 0]);
+      rows.forEach((r, ri) => {
+        const o = clamp(k - ri, 0, 1); if (o > 0.15) cur = ri;
+        who[ri].style.opacity = 0.3 + 0.7 * Math.min(1, o * 3);
+        cells[ri].forEach(({ el, ti }) => { el.style.opacity = clamp((o - (cols.indexOf(ti) / cols.length) * 0.55) * 3, 0, 1); });
+        r.cells.forEach((c) => { sum[c[0]][r.f === 'thomist' ? 0 : 1] += c[1] * o; });
+      });
+      bars.forEach((b) => { const [t, j] = sum[b.ti]; b.t.style.height = `${(44 * t / maxTot).toFixed(1)}px`; b.j.style.height = `${(44 * j / maxTot).toFixed(1)}px`; });
+      const done = fin || p > 0.985, now = done ? -1 : cur;
+      who.forEach((w, i) => w.classList.toggle('now', i === now));
+      const key = done ? 'f' : now; if (key === last) return; last = key;
+      note.innerHTML = done ? final : now >= 0 ? say(rows[now]) : 'Thomas Cajetan opens the table.';
+    }
+    host.addEventListener('mouseover', (e) => { const a = e.target.closest('a.c'); if (!a) return; const r = rows[+a.dataset.r], t = T[+a.dataset.t], c = r.cells.find((x) => x[0] === +a.dataset.t);
+      tipFor(tip, box, a, `${esc(r.n)} on ${esc(lc(t[3]))}: ${fmt(c[1])} pages<small>${esc(PN[t[0]])}, questions ${t[1] === t[2] ? t[1] : `${t[1]}–${t[2]}`} · opens at page ${c[3]}</small>`); });
+    host.addEventListener('mouseleave', () => { tip.hidden = true; });
+    host.addEventListener('focusin', (e) => { const a = e.target.closest('a.c'); if (a) a.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
+    TG.chapter('#tg-summa', 3600, (p, fin) => render(p, fin), { scrub: 0.5 });
+  })();
+
+  /* ---------- 5. the Scotists: Thomas against Scotus in Rada's controversies, and Mastri against Punch inside the school ---------- */
+  (function scotists() {
+    const X = D.scot, box = document.getElementById('tg-sc'), svg = box.querySelector('svg'), tip = box.querySelector('.tip'), card = document.getElementById('tg-sc-card');
+    const R = X.rada, M = X.mastri, P = X.punch, RS = X.rada_vols, BOOK = ['I', 'II', 'III', 'IV'];
+    const mk = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
+    const txt = (s, at, parent) => { const t = mk('text', at, parent); t.textContent = s; return t; };
+    const brown = fc('scotist'), red = TG.css('--rubric'), ink = TG.css('--ink'), rule = TG.css('--rule');
+    const radaP = R.reduce((s, r) => s + r.pp, 0), picks = R.filter((r) => r.pick);
+    const mastriP = M.reduce((s, v) => s + v.pages, 0), busiest = M.slice().sort((a, b) => b.hits.length - a.hits.length)[0];
+    const STEPS = [
+      ['Thomas against Scotus', `Each block is one of Rada’s ${R.length} controversies, its width its pages (${fmt(radaP)} in all), in the order of the four books of the Sentences.`],
+      ['Where they parted', `${['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][picks.length] || picks.length} of the questions, numbered on the bar and given in Rada’s own headings. Each block opens its controversy.`],
+      ['Scotist against Scotist', `Bartolomeo Mastri and John Punch, both Franciscans, wrote rival courses on Scotus. Each mark is a page of Mastri’s eight volumes that names Punch: ${fmt(X.mastri_pages)} pages.`],
+      ['Punch replies', `Punch’s Philosophy names Mastri ${fmt(P.mentions)} times. In its second edition he set replies to Mastri after the questions they concerned.`],
+      ['Read them', ''],
+    ];
+    const stepsEl = document.getElementById('tg-scot-steps');
+    stepsEl.innerHTML = STEPS.map(([b, p]) => `<li><b>${esc(b)}</b>${p ? `<p>${esc(p)}</p>` : '<p>Open any block or mark in the reader, at its page.</p>'}</li>`).join('');
+    const lis = [...stepsEl.children];
+    let L = null, cur = -2;
+    function draw() {
+      const W = Math.max(300, box.clientWidth), small = W < 640; svg.innerHTML = '';
+      const gap = 8, x0 = 0, usable = W - 3 * gap, sx = usable / radaP;
+      const top = 52, barH = small ? 30 : 36;
+      const g1 = mk('g', { class: 'g-rada' });
+      txt(small ? `Rada · ${R.length} controversies` : `Juan de Rada · ${R.length} controversies between Thomas and Scotus`, { x: 0, y: 12, class: 'cap' }, g1);
+      let x = x0; const segs = [], books = [];
+      BOOK.forEach((_, bi) => { const bx = x, gB = mk('g', {}, g1);
+        R.filter((r) => RS[r.v][0] === RS[bi][0]).forEach((r) => { const w = Math.max(1, r.pp * sx), g = mk('g', { class: 'seg', tabindex: 0, role: 'link', 'aria-label': `${r.q}, ${r.pp} pages` }, gB);
+          const rc = mk('rect', { x: x + 0.5, y: top, width: Math.max(0.6, w - 1), height: barH, fill: brown, rx: 1 }, g);
+          segs.push({ r, g, rc, cx: x + w / 2 }); x += w; });
+        books.push({ gB, bx, ex: x }); x += gap; });
+      books.forEach(({ bx, ex }, bi) => { const n = R.filter((r) => RS[r.v][0] === RS[bi][0]).length;
+        txt(`Book ${BOOK[bi]}`, { x: bx, y: top + barH + 16, class: 'lab' }, g1); if (ex - bx > (small ? 120 : 90)) txt(`${n} controversies`, { x: bx, y: top + barH + 30, class: 'n' }, g1); });
+      // the questions picked out: a numbered mark over each block, the questions themselves in the card
+      const gP = mk('g', { class: 'g-picks' });
+      segs.filter((s) => s.r.pick).forEach((s, k) => { mk('line', { x1: s.cx, x2: s.cx, y1: top - 1, y2: top - 9, stroke: red, 'stroke-width': 1 }, gP);
+        mk('circle', { cx: s.cx, cy: top - 18, r: 9, fill: red }, gP); txt(String(k + 1), { x: s.cx, y: top - 14, 'text-anchor': 'middle', style: 'font:600 10.5px var(--body);fill:#fffdf8' }, gP); });
+      // Mastri and Punch: two strips of pages, a mark where each names the other
+      const yM = top + barH + (small ? 70 : 96), sh = 14, tk = small ? 16 : 22;
+      const placeLab = (rowEnds, x, w, t, y, parent) => { const tw = t.length * 6.2; x = Math.min(x, W - tw); for (let k = 0; k < 2; k++) { if (x >= rowEnds[k] + 6) { rowEnds[k] = x + tw; return txt(t, { x, y: y + k * 12, class: 'n' }, parent); } } return null; };
+      const g2 = mk('g', { class: 'g-mastri' });
+      txt(small ? `Mastri names Punch: ${fmt(X.mastri_pages)} pages` : `Bartolomeo Mastri names Punch on ${fmt(X.mastri_pages)} pages`, { x: 0, y: yM - tk - 12, class: 'cap' }, g2);
+      const gapM = 5, sxM = (W - gapM * (M.length - 1)) / mastriP; let xm = 0; const mParts = [];
+      M.forEach((v, vi) => { const w = v.pages * sxM; mk('rect', { x: xm, y: yM, width: w, height: sh, fill: TG.css('--paper-2'), stroke: rule }, g2);
+        mParts.push({ v, x: xm, w }); xm += w + gapM; });
+      const endsM = [-1e9, -1e9]; mParts.forEach(({ v, x: vx, w }) => placeLab(endsM, vx, w, small ? v.lab.replace('Sentences ', 'Sent. ').split(/,/)[0] : v.lab.replace('Soul, generation, heavens', 'Soul and heavens'), yM + sh + 13, g2));
+      const ticksM = mk('g', { class: 'ticks' }, g2);
+      let dM = ''; mParts.forEach(({ v, x: vx, w }) => v.hits.forEach((pg) => { const tx = vx + w * (pg - 0.5) / v.pages; dM += `M${tx.toFixed(1)},${yM - 1}v${-tk}`; }));
+      mk('path', { d: dM, stroke: brown, 'stroke-width': 1, opacity: 0.85 }, ticksM);
+      M.forEach((v, vi) => { const { x: vx, w } = mParts[vi]; const hit = mk('rect', { x: vx, y: yM - tk - 2, width: w, height: tk + sh + 2, fill: 'transparent', style: 'cursor:pointer' }, ticksM);
+        hit.addEventListener('mousemove', (e) => tipAt(tip, box, e, `Mastri, ${esc(v.lab)}: ${fmt(v.hits.length)} of ${fmt(v.pages)} pages name Punch<small>Open the volume</small>`));
+        hit.addEventListener('mouseleave', () => { tip.hidden = true; }); hit.addEventListener('click', () => open(TG.read(v.slug, v.hits[0]), '_blank', 'noopener')); });
+      const phil = mParts.slice(0, 4), theo = mParts.slice(4);
+      if (!small) [[phil, 'Philosophy'], [theo, 'Theology on the four books of the Sentences']].forEach(([ps, t]) => { const a = ps[0].x, b = ps[ps.length - 1].x + ps[ps.length - 1].w;
+        mk('path', { d: `M${a},${yM + sh + 32} v4 H${b} v-4`, fill: 'none', stroke: TG.css('--muted'), 'stroke-width': 0.8 }, g2); txt(t, { x: a, y: yM + sh + 49, class: 'n', style: 'font-style:italic' }, g2); });
+      const yP = yM + sh + (small ? 84 : 112);
+      const g3 = mk('g', { class: 'g-punch' });
+      txt(small ? `Punch names Mastri: ${fmt(P.mentions)} times` : `John Punch names Mastri ${fmt(P.mentions)} times`, { x: 0, y: yP - tk - 12, class: 'cap' }, g3);
+      const parts = P.parts.map(([t, p0], i) => [t, p0, (P.parts[i + 1] ? P.parts[i + 1][1] : P.pages + 1) - p0]);
+      const gapP = 4, sxP = (W - gapP * (parts.length - 1)) / parts.reduce((s, q) => s + q[2], 0); let xp = 0; const pParts = [];
+      parts.forEach(([t, p0, n], i) => { const w = n * sxP; mk('rect', { x: xp, y: yP, width: w, height: sh, fill: TG.css('--paper-2'), stroke: rule }, g3);
+        pParts.push({ t, p0, n, x: xp, w }); xp += w + gapP; });
+      const endsP = [-1e9, -1e9]; pParts.forEach((q) => placeLab(endsP, q.x, q.w, q.t, yP + sh + 13, g3));
+      const posP = (pg) => { const q = pParts.filter((s) => s.p0 <= pg).pop() || pParts[0]; return q.x + q.w * clamp((pg - q.p0 + 0.5) / q.n, 0, 1); };
+      let dP = ''; P.at.forEach((pg) => { dP += `M${posP(pg).toFixed(1)},${yP - 1}v${-tk}`; });
+      const ticksP = mk('g', { class: 'ticks' }, g3); mk('path', { d: dP, stroke: fc('scotist'), 'stroke-width': 1, opacity: 0.85 }, ticksP);
+      pParts.forEach((s) => { const hit = mk('rect', { x: s.x, y: yP - tk - 2, width: s.w, height: tk + sh + 2, fill: 'transparent', style: 'cursor:pointer' }, ticksP);
+        const n = P.at.filter((pg) => pg >= s.p0 && pg < s.p0 + s.n).length;
+        hit.addEventListener('mousemove', (e) => tipAt(tip, box, e, `Punch, ${esc(s.t)}: names Mastri ${fmt(n)} times<small>Open the part</small>`));
+        hit.addEventListener('mouseleave', () => { tip.hidden = true; }); hit.addEventListener('click', () => open(TG.read(P.slug, s.p0), '_blank', 'noopener')); });
+      const H = yP + sh + 34; svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
+      segs.forEach(({ r, g }) => { const go = () => open(TG.read(RS[r.v][0], r.p), '_blank', 'noopener');
+        g.addEventListener('click', go); g.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+        g.addEventListener('mousemove', (e) => tipAt(tip, box, e, `${esc(r.q)}?<small>Book ${BOOK[r.v]} · ${r.pp} pages · open it</small>`));
+        g.addEventListener('mouseleave', () => { tip.hidden = true; }); });
+      L = { books, gP, g2, g3, segs, ticksM, ticksP, W };
+    }
+    const qs = `<ol class="qs">${R.filter((r) => r.pick).map((r) => `<li><a href="${TG.read(RS[r.v][0], r.p)}" target="_blank" rel="noopener">${esc(r.q)}?</a> <span class="small">Book ${BOOK[r.v]}</span></li>`).join('')}</ol>`;
+    const vlink = (s, t) => `<a href="${TG.read(s)}" target="_blank" rel="noopener">${t}</a>`;
+    const cardFor = (i) => {
+      if (i <= 0) return `<p>${RS.map(([s, n], k) => `${vlink(s, `Book ${BOOK[k]}`)} <span class="small">${fmt(n)} pp.</span>`).join(' · ')}</p>
+        <p class="small">Francisco de Macedo’s <i>Collations of the Doctrine of St Thomas and Scotus</i> compares them in ${X.macedo.reduce((s, m) => s + m[1], 0)} collations: ${X.macedo.map((m, k) => vlink(m[0], `volume ${k + 1}`)).join(', ')}. The first generation of the school is on the Medieval shelf: ${vlink(X.bassolis[0], 'Joannes de Bassolis')}, a pupil of Scotus at Paris, on the four books.</p>`;
+      if (i === 1) return qs;
+      if (i === 2) return `<p>Mastri names Punch most often in ${esc(busiest.lab.replace('Sentences', 'his theology on the Sentences, book'))}: ${fmt(busiest.hits.length)} of ${fmt(busiest.pages)} pages.</p><p class="small">${M.map((v) => vlink(v.slug, esc(v.lab))).join(' · ')}</p>`;
+      if (i === 3) return `<p>${vlink(P.slug, '<i>Philosophy According to Scotus</i>')}, read in English on this shelf. Punch’s preface says the additions answer “the things contained in the second part of Mastrius’s Metaphysics”.</p>`;
+      return `${qs}<p class="small">${vlink(RS[0][0], 'Rada’s Controversies')} · ${vlink(X.macedo[0][0], 'Macedo’s Collations')} · ${vlink(M[4].slug, 'Mastri on the Sentences')} · ${vlink(P.slug, 'Punch’s Philosophy')}</p>`;
+    };
+    function step(i, instant) {
+      if (i === cur && !instant) return; cur = i; lis.forEach((li, j) => li.classList.toggle('now', j === i));
+      const anim = G && !instant, T = (el, v, d = 0.6, ex = {}) => (anim ? gsap.to(el, { ...v, duration: d, ease: 'power2.out', ...ex }) : window.gsap ? gsap.set(el, v) : el.setAttribute('opacity', v.opacity));
+      L.books.forEach(({ gB, bx }, bi) => T(gB, { scaleX: i >= 0 ? 1 : 0, svgOrigin: `${bx} 0`, opacity: 1 }, 0.7, { delay: bi * 0.12 }));
+      L.segs.forEach(({ r, rc }) => rc.setAttribute('fill', i >= 1 && r.pick ? red : brown));
+      T(L.gP, { opacity: i >= 1 ? 1 : 0 }); T(L.g2, { opacity: i >= 2 ? 1 : 0 }); T(L.g3, { opacity: i >= 3 ? 1 : 0 });
+      [[L.ticksM, 2], [L.ticksP, 3]].forEach(([g, s]) => T(g, { scaleY: i >= s ? 1 : 0, svgOrigin: `0 ${g.getBBox ? (g.getBBox().y + g.getBBox().height) : 0}` }, 0.8, { delay: 0.25 }));
+      card.innerHTML = cardFor(i);
+      if (anim) gsap.fromTo(card.children, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.05 });
+    }
+    draw();
+    TG.chapter('#tg-scot', 3200, (p, fin) => step(fin ? 4 : p < 0.03 ? -1 : Math.min(4, Math.floor(p * 5)), fin), { scrub: true });
+    if (!TG.pinOK()) lis.forEach((li) => li.classList.add('now'));
+    let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { const c = cur; draw(); cur = -3; step(c, true); }, 180); });
+  })();
+
+  /* ---------- 6. the Jesuits: Cornelius a Lapide's commentary over the whole Bible ---------- */
+  (function lapide() {
+    const X = D.lapide, host = document.getElementById('tg-lp'), box = host.parentNode, tip = box.querySelector('.tip');
+    const nEl = document.getElementById('tg-lp-n'), vEl = document.getElementById('tg-lp-v'), slugOf = Object.fromEntries(X.vols.map((v) => [v.v, v.slug]));
+    const AB = { Genesis: 'Gen', Exodus: 'Ex', Leviticus: 'Lev', Numbers: 'Num', Deuteronomy: 'Deut', Joshua: 'Josh', Judges: 'Judg', Ruth: 'Ruth', '1 Samuel': '1 Sam', '2 Samuel': '2 Sam',
+      '1 Kings': '1 Kgs', '2 Kings': '2 Kgs', '1 Chronicles': '1 Chr', '2 Chronicles': '2 Chr', Ezra: 'Ezra', Nehemiah: 'Neh', Tobit: 'Tob', Judith: 'Jdt', Esther: 'Esth',
+      '1 Maccabees': '1 Mac', '2 Maccabees': '2 Mac', Job: 'Job', Psalms: 'Ps', Proverbs: 'Prov', Ecclesiastes: 'Eccl', 'Song of Songs': 'Song', Wisdom: 'Wis', Ecclesiasticus: 'Sir',
+      Isaiah: 'Isa', Jeremiah: 'Jer', Lamentations: 'Lam', Baruch: 'Bar', Ezekiel: 'Ezek', Daniel: 'Dan', Hosea: 'Hos', Joel: 'Joel', Amos: 'Amos', Obadiah: 'Obad', Jonah: 'Jon',
+      Micah: 'Mic', Nahum: 'Nah', Habakkuk: 'Hab', Zephaniah: 'Zeph', Haggai: 'Hag', Zechariah: 'Zech', Malachi: 'Mal', Matthew: 'Mt', Mark: 'Mk', Luke: 'Lk', John: 'Jn', Acts: 'Acts',
+      Romans: 'Rom', '1 Corinthians': '1 Cor', '2 Corinthians': '2 Cor', Galatians: 'Gal', Ephesians: 'Eph', Philippians: 'Phil', Colossians: 'Col', '1 Thessalonians': '1 Th',
+      '2 Thessalonians': '2 Th', '1 Timothy': '1 Tim', '2 Timothy': '2 Tim', Titus: 'Tit', Philemon: 'Phm', Hebrews: 'Heb', James: 'Jas', '1 Peter': '1 Pet', '2 Peter': '2 Pet',
+      '1 John': '1 Jn', '2 John': '2 Jn', '3 John': '3 Jn', Jude: 'Jude', Apocalypse: 'Apoc' };
+    const max = Math.max(...X.books.map((b) => b.pp)), total = X.books.reduce((s, b) => s + b.pp, 0), withP = X.books.filter((b) => b.pp);
+    host.innerHTML = X.sections.map((sec) => `<div class="row" role="row"><div class="sec" role="rowheader">${esc(sec)}</div>${X.books.filter((b) => b.s === sec).map((b) => {
+      const inner = `<b>${esc(AB[b.b] || b.b)}</b><span class="well"><i></i></span><small>${b.pp ? fmt(b.pp) : ''}</small>`;
+      return b.pp ? `<a class="bk" role="cell" href="${TG.read(slugOf[b.at[0][0]], b.at[0][1])}" target="_blank" rel="noopener" aria-label="${esc(b.b)}, ${fmt(b.pp)} pages" data-b="${esc(b.b)}">${inner}</a>`
+        : `<span class="bk none" role="cell" aria-label="${esc(b.b)}: not in the commentary on this shelf" data-b="${esc(b.b)}">${inner}</span>`; }).join('')}</div>`).join('');
+    const tiles = [...host.querySelectorAll('.bk')].map((el) => ({ el, b: X.books.find((x) => x.b === el.dataset.b), bar: el.querySelector('.well i') }));
+    host.addEventListener('mouseover', (e) => { const el = e.target.closest('.bk'); if (!el) return; const b = X.books.find((x) => x.b === el.dataset.b);
+      tipFor(tip, box, el, b.pp ? `${esc(b.b)}: ${fmt(b.pp)} pages<small>${b.at.map(([v, p]) => `vol. ${v}, p. ${p}`).join('; ')}${b.alt.length ? ` · printed again in vol. ${b.alt.map((a) => a[0]).join(', ')}` : ''}</small>` : `${esc(b.b)}<small>No commentary on this book in the twenty-one volumes</small>`); });
+    host.addEventListener('mouseleave', () => { tip.hidden = true; });
+    const listB = (bs) => (bs.length > 1 ? `${bs.slice(0, -1).join(', ')} and ${bs[bs.length - 1]}` : bs[0] || '');
+    document.getElementById('tg-lp-others').innerHTML = `Also on the shelf in other printings: ${X.others.map(([t, s, n, v]) => `<a href="${TG.read(s)}" target="_blank" rel="noopener">${esc(t)}</a>${v ? ` (${esc(v)})` : ''}`).join('; ')}.`;
+    const longest = withP.slice().sort((a, b) => b.pp - a.pp);
+    let lastKey = '';
+    function render(p, fin) {
+      const t = fin ? X.vols.length : p * (X.vols.length + 0.6); let sum = 0;
+      const vNow = clamp(Math.floor(t) + 1, 1, X.vols.length), done = fin || t >= X.vols.length;
+      tiles.forEach(({ el, b, bar }) => { if (!b.pp) return; let got = 0; b.at.forEach(([v, , pp]) => { got += pp * ease(clamp(t - (v - 1), 0, 1)); });
+        sum += got; bar.style.transform = `scaleY(${(got / max).toFixed(4)})`; el.classList.toggle('now', !done && b.at.some(([v]) => v === vNow)); });
+      nEl.textContent = fmt(Math.round(done ? total : sum));
+      const key = done ? 'f' : vNow; if (key === lastKey) return; lastKey = key;
+      if (done) { vEl.innerHTML = `pages on ${withP.length} books of the Bible. Lapide wrote on every book but Job and the Psalms. The longest commentaries are on ${esc(longest[0].b)} (${fmt(longest[0].pp)} pages) and ${esc(longest[1].b)} (${fmt(longest[1].pp)}).`; return; }
+      const v = X.vols[vNow - 1];
+      vEl.innerHTML = `pages so far. <a href="${TG.read(v.slug)}" target="_blank" rel="noopener">Volume ${v.v}</a> of ${X.vols.length}: ${esc(listB(v.books))}.`;
+    }
+    TG.chapter('#tg-lap', 3400, (p, fin) => render(p, fin), { scrub: 0.5 });
+  })();
+
+  /* ---------- 7. Suárez: four volumes open into fifty-four disputations ---------- */
   (function suarez() {
     const X = D.dm, box = document.getElementById('tg-dm-box'), svg = box.querySelector('svg'), tip = box.querySelector('.tip'), card = document.getElementById('tg-dm-card');
     const W = 760, H = 470, base = 340, gapG = 7, left = 18, right = 18;
@@ -285,56 +552,58 @@
     if (!TG.pinOK()) lis.forEach((li) => li.classList.add('now'));
   })();
 
-  /* ---------- 4. Trent: twenty-five sessions in three periods ---------- */
-  (function trent() {
-    const T = D.trent, svg = document.getElementById('tg-trent-svg'), W = 760, H = 330, base = 250, X0 = 1545.6, X1 = 1564.1;
-    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    const mk = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
-    // three periods; inside each the sessions stand evenly in order, the long suspensions are breaks in the line
-    const PER = [[1, 10, 'Paul III', '1545–1547'], [11, 16, 'Julius III', '1551–1552'], [17, 25, 'Pius IV', '1562–1563']], GAP = 46, step = (W - 100 - 2 * GAP) / 25;
-    const sx = {}; let cx0 = 24;
-    PER.forEach(([a, b, pope, yrs], pi) => { const n = b - a + 1, x0 = cx0, x1 = cx0 + n * step;
-      mk('rect', { x: x0, y: base - 214, width: x1 - x0, height: 232, fill: TG.css('--paper-2'), rx: 4 });
-      mk('line', { x1: x0, x2: x1, y1: base, y2: base, stroke: TG.css('--ink-2'), 'stroke-width': 1 });
-      for (let k = a; k <= b; k++) sx[k] = x0 + (k - a + 0.5) * step;
-      const t = mk('text', { x: (x0 + x1) / 2, y: base + 32, 'text-anchor': 'middle', class: 'per' }); t.textContent = yrs;
-      const t2 = mk('text', { x: (x0 + x1) / 2, y: base + 46, 'text-anchor': 'middle', class: 'per' }); t2.textContent = pope;
-      if (pi < 2) { const gx = x1 + GAP / 2, txt = pi === 0 ? 'four years' : 'ten years';
-        mk('path', { d: `M${x1 + 6},${base} l6,-5 l6,10 l6,-10 l6,10 l6,-5`, fill: 'none', stroke: TG.css('--muted'), 'stroke-width': 1 });
-        const g1 = mk('text', { x: gx, y: base + 32, 'text-anchor': 'middle', class: 'yr' }); g1.textContent = txt; const g2 = mk('text', { x: gx, y: base + 46, 'text-anchor': 'middle', class: 'yr' }); g2.textContent = 'suspended'; }
-      cx0 = x1 + GAP; });
-    const nowT = mk('text', { x: W - 20, y: 22, 'text-anchor': 'end', class: 'per' }); nowT.textContent = '';
-    const S = T.sessions.map(([n, d, t, pl, what]) => { const g = mk('g', { opacity: 0 }), cx = sx[n], bol = pl === 'Bologna';
-      if (what && !/council (moves|resumes|reopens|is suspended|opens)/.test(what)) { const short = what.replace(/; the council closes$/, '').replace('Purgatory, the saints, images, indulgences', 'Purgatory, saints, images, indulgences');
-        mk('line', { x1: cx, x2: cx, y1: base - 12, y2: base - 22, stroke: TG.css('--rule'), 'stroke-width': 1 }, g);
-        const lab = mk('text', { x: cx + 2, y: base - 26, class: 'ses', transform: `rotate(-62 ${cx + 2} ${base - 26})` }, g); lab.textContent = short; }
-      mk('circle', { cx, cy: base, r: 9, fill: bol ? TG.css('--gilt') : TG.css('--rubric'), stroke: TG.css('--card'), 'stroke-width': 1.5 }, g);
-      const tn = mk('text', { x: cx, y: base + 3.4, 'text-anchor': 'middle', class: 'sesn' }, g); tn.textContent = n;
-      const tt = mk('title', {}, g); tt.textContent = `Session ${n}, ${d}${bol ? ' (Bologna)' : ''}${what ? `: ${what}` : ''}`;
-      return { g, t, cx, n, d, pl }; });
-    const bigY = { set textContent(v) {} };
-    const list = document.getElementById('tg-trent-list');
-    const evs = T.sessions.filter((s) => s[4]).map(([n, d, t, pl, what]) => [t, n, d, pl, what]);
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const human = (d) => { const [yy, m, dd] = d.split('-').map(Number); return `${dd} ${months[m - 1]} ${yy}`; };
-    const chron = TG.chronicle(list, evs, ([t, n, d, pl, what]) => `<li><span class="d">Session ${n}</span><span class="e">${esc(what)}</span><span class="w">${human(d)}, at ${esc(pl)}</span></li>`);
-    let shown = 0;
-    function render(t) {
-      const n = S.filter((s) => t >= s.t).length; nowT.textContent = n ? `Session ${S[n - 1].n} · ${human(S[n - 1].d)}${S[n - 1].pl === 'Bologna' ? ' · Bologna' : ''}` : '';
-      S.forEach((s, i) => { const on = i < n;
-        if (on && i >= shown && G) gsap.fromTo(s.g, { opacity: 0, y: -14 }, { opacity: 1, y: 0, duration: 0.5, ease: 'back.out(2)' });
-        else if (!on && i < shown) { if (window.gsap) { gsap.killTweensOf(s.g); gsap.set(s.g, { opacity: 0 }); } else s.g.setAttribute('opacity', 0); }
-        else if (on && !G) s.g.setAttribute('opacity', 1); });
-      shown = n; chron(t);
+  /* ---------- 8. the quarrel over grace: the books on the shelf on either side, and Rome between them ---------- */
+  (function grace() {
+    const X = D.grace, host = document.getElementById('tg-gr'), yEl = document.getElementById('tg-gr-y'), nowEl = document.getElementById('tg-gr-now');
+    const KN = [[1540, 0], [1580, 60], [1660, 380], [1760, 500], [1915, 600]];
+    const Y = (y) => { for (let i = 0; i < KN.length - 1; i++) { const [a, ya] = KN[i], [b, yb] = KN[i + 1]; if (y <= b) return ya + (yb - ya) * (clamp(y, a, b) - a) / (b - a); } return KN[KN.length - 1][1]; };
+    const items = [
+      ...X.books.map((b) => ({ y: b.y, side: b.side === 'moves' ? 'l' : b.side === 'consent' ? 'r' : 'm', html: `<a href="${TG.read(b.slug)}" target="_blank" rel="noopener"><b>${b.y}</b>${esc(b.a)}<i>${esc(b.t)}</i></a>`, c: fc(b.f), say: `${esc(b.a)}, <i>${esc(b.t)}</i>${b.shelf ? ` (the copy on the shelf was printed in ${b.shelf})` : ''}.`, bk: 1 })),
+      ...X.rome.map(([a, b, t, w]) => ({ y: a, y1: b, side: 'm', html: /Pistoia/.test(t) && X.pistoia ? `<a href="${TG.read(X.pistoia)}" target="_blank" rel="noopener"><b>${a}</b>${esc(t)}</a>` : `<span class="box"><b>${a === b ? a : `${a}–${String(b).slice(2)}`}</b>${esc(t)}</span>`,
+        c: TG.css('--gilt'), say: `${esc(t)}${w ? `. ${esc(w)}` : ''}.`, bk: /Pistoia/.test(t) ? 1 : 0 })),
+    ].sort((a, b) => a.y - b.y || (a.side === 'm') - (b.side === 'm'));
+    host.innerHTML = `<div class="spine"></div><svg class="lead-svg" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none"></svg><div class="now"></div>${ 
+      items.map((it, i) => `<div class="it ${it.side}${it.bk && it.side === 'm' ? ' bk' : ''}" role="listitem" data-i="${i}" style="--c:${it.c}">${it.html}</div>`).join('')}`;
+    const els = [...host.querySelectorAll('.it')], lead = host.querySelector('.lead-svg'), nowLine = host.querySelector('.now');
+    document.getElementById('tg-gr-key').innerHTML = `${[['thomist', 'Dominicans'], ['augustinian', 'Augustinians'], ['jesuit', 'Jesuits']].map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${n}</span>`).join('')}<span><i style="background:${TG.css('--gilt')}"></i>Rome</span>`;
+    let list = false;
+    function layout() {
+      list = host.clientWidth < 640; host.classList.toggle('list', list);
+      lead.innerHTML = ''; host.querySelectorAll('.span,.brk').forEach((e) => e.remove());
+      if (list) { host.style.height = ''; els.forEach((el) => { el.style.top = ''; el.style.left = ''; el.style.right = ''; }); return; }
+      const W = host.clientWidth, cx = W / 2, end = { l: -1e9, r: -1e9, m: -1e9 };
+      items.forEach((it, i) => { const el = els[i], h = el.offsetHeight, want = Y(it.y) - (it.side === 'm' ? 8 : h / 2), top = Math.max(want, end[it.side] + 5); end[it.side] = top + h;
+        el.style.top = `${top}px`; if (it.side === 'l') el.style.left = '0'; if (it.side === 'r') el.style.right = '0';
+        it.top = top; it.h = h;
+        const ns = 'http://www.w3.org/2000/svg', path = document.createElementNS(ns, 'path');
+        if (it.side !== 'm') { const ex = it.side === 'l' ? el.offsetWidth : W - el.offsetWidth, mid = top + Math.min(h / 2, 14), sx = it.side === 'l' ? cx - 10 : cx + 10;
+          path.setAttribute('d', `M${ex},${mid} H${sx} L${cx},${Y(it.y)}`); }
+        else path.setAttribute('d', '');
+        path.setAttribute('fill', 'none'); path.setAttribute('stroke', it.c); path.setAttribute('stroke-width', '1'); lead.appendChild(path); it.path = path;
+        const dot = document.createElementNS(ns, 'circle'); dot.setAttribute('cx', cx); dot.setAttribute('cy', Y(it.y)); dot.setAttribute('r', it.side === 'm' ? 0 : 2.6); dot.setAttribute('fill', it.c); lead.appendChild(dot); it.dot = dot;
+        if (it.y1 && it.y1 > it.y) { const s = document.createElement('div'); s.className = 'span'; s.style.top = `${Y(it.y)}px`; s.style.height = `${Y(it.y1) - Y(it.y)}px`; host.insertBefore(s, host.firstChild); } });
+      const brk = document.createElement('div'); brk.className = 'brk'; brk.style.top = `${Y(1762)}px`; brk.title = 'The scale is closer after 1760'; host.appendChild(brk);
+      host.style.height = `${Math.max(...items.map((it) => it.top + it.h)) + 6}px`;
     }
-    TG.chapter('#tg-trent', 3000, (p) => render(lerp(X0, X1, p)), { scrub: 0.4 });
-    // the council on the shelf
-    const pages = (L) => L.reduce((s, w) => s + w[2], 0), mx = Math.max(...T.acts.map((w) => w[2]), ...T.sarpi.map((w) => w[2]), ...T.pallavicino.map((w) => w[2]));
-    const sp = (L, cls) => L.map((w) => `<a class="${cls}" href="${TG.read(w[1])}" target="_blank" rel="noopener" title="${esc(w[0])}, ${fmt(w[2])} pages" style="height:${(24 + 48 * w[2] / mx).toFixed(0)}px"></a>`).join('');
-    document.getElementById('tg-onshelf').innerHTML = `
-      <div class="card reveal"><h3>The acts of the council</h3><div class="spines">${sp(T.acts, '')}</div><p class="small" style="margin:0">${T.acts.length} volumes, ${fmt(pages(T.acts))} pages: the diaries, acts, letters and treatises of the council.</p></div>
-      <div class="card reveal"><h3>Two histories, and the councils entire</h3><div class="spines">${sp(T.sarpi, 's')}<span style="width:10px"></span>${sp(T.pallavicino, 'p')}</div>
-        <p class="small" style="margin:0">Paolo Sarpi’s history (1619), hostile to the papacy, and the Jesuit Pietro Sforza Pallavicino’s answer to it (1656–1657). Mansi’s collection of all the councils, ${T.mansi.n} volumes and ${fmt(T.mansi.pages)} pages, is on this shelf too: <a href="${D.councils_guide}" target="_blank" rel="noopener">see the Councils guide</a>.</p></div>`;
+    let lastKey = '';
+    let lastP = 0;
+    function render(p, fin) {
+      lastP = fin ? 1 : p; const year = fin ? 1915 : lerp(1545, 1912, p), done = fin || p > 0.985;
+      items.forEach((it, i) => { const on = done || list || it.y <= year; els[i].classList.toggle('on', on);
+        els[i].style.opacity = on ? 1 : 0; els[i].style.transform = on ? 'none' : `translateX(${it.side === 'l' ? -12 : it.side === 'r' ? 12 : 0}px)`;
+        if (it.path) { it.path.style.opacity = on ? 0.45 : 0; it.dot.style.opacity = on ? 1 : 0; } });
+      nowLine.style.opacity = done || list ? 0 : 1; nowLine.style.transform = `translateY(${Y(year)}px)`;
+      const last = items.filter((it) => it.y <= year).pop();
+      yEl.textContent = done ? `${items[0].y}–${X.books[X.books.length - 1].y}` : Math.floor(year);
+      const key = done ? 'f' : last ? items.indexOf(last) : -1; if (key === lastKey) return; lastKey = key;
+      if (done) { const n = (s) => X.books.filter((b) => b.side === s).length;
+        nowEl.innerHTML = `${X.books.length} books on grace on this shelf: ${n('moves')} for grace efficacious of itself, ${n('consent')} for the Jesuit answer, and Erath’s attempt to reconcile the two.`; return; }
+      nowEl.innerHTML = last ? last.say : 'Before the quarrel: the decrees of Trent on justification, 1547.';
+    }
+    els.forEach((el) => { el.style.transition = 'opacity 0.35s ease, transform 0.35s ease'; });
+    layout(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { layout(); lastKey = ''; render(lastP, lastP >= 1); });
+    TG.chapter('#tg-grace', 3400, (p, fin) => render(p, fin), { scrub: 0.4 });
+    let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { layout(); lastKey = ''; render(1, true); }, 180); });
   })();
 
   /* ---------- explore ---------- */

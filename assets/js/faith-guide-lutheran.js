@@ -1,5 +1,6 @@
 /* The Lutheran shelf guide: Luther's seal with the shelf's writers, the journeys from Wittenberg, Luther's pen, the braid into the Book
-   of Concord, the systems and Gerhard's loci, the explorer. */
+   of Concord, the systems and Gerhard's loci; added 10-10: Melanchthon's Loci in its ages, the Magdeburg Centuries, whom they answered,
+   Calov; the explorer. */
 (async () => {
   const {TG} = window, D = await TG.load('data'), LAND = await TG.load('land');
   const { esc, fmt, clamp, ease, lerp } = TG, G = TG.hasG && !TG.reduce ? window.gsap : null;
@@ -70,6 +71,22 @@
     tl.call(() => say(null), null, '+=0.4');
   })();
 
+  /* ---------- the scenes added 10-10: shared bits ---------- */
+  const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'];
+  const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
+  const nw = (n) => (n < WORDS.length ? WORDS[n] : fmt(n)), pct = (a, b) => Math.round(100 * a / Math.max(1, b));
+  const phone = () => innerWidth <= 860;
+  const txt = (parent, x, y, s, size, cls = '', at = {}) => { const t = mk('text', { x, y, 'font-size': size, class: cls, ...at }, parent); t.textContent = s; return t; };
+  const link = (slug, p, html) => `<a href="${TG.read(slug, p)}" target="_blank" rel="noopener">${html}</a>`;
+  const tipFor = (host, tip) => (el, html) => { el.addEventListener('mousemove', (e) => { const b = host.getBoundingClientRect(); tip.innerHTML = html(); tip.hidden = false;
+    tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 260)}px`; tip.style.top = `${e.clientY - b.top + 14}px`; }); el.addEventListener('mouseleave', () => { tip.hidden = true; }); };
+  const setNote = (el, html) => { if (el.dataset.h === html) return; el.dataset.h = html; el.innerHTML = html; if (G) gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.45 }); };
+  const onPhoneSwitch = (fn) => { let ph = phone(), t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => { if (phone() !== ph) { ph = phone(); fn(); } }, 200); }); };
+  const lc = (s) => (/^(God|Christ|Spirit|Old)\b/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1));
+  const andList = (xs) => (xs.some((x) => / and /.test(x)) ? xs.join('; ') : xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : xs[0] || '');
+  const FC = { rom: '#a3382a', ref: '#2f4a6b', in: '#a07c35', rad: '#5b6b3a', soc: '#6d4c7d', arm: '#2e6e6a' };
+  const shortName = (n) => { const p = n.split(' '); return n.length > 19 && p.length > 2 ? `${p.slice(0, -1).map((w) => `${w[0]}.`).join(' ')} ${p[p.length - 1]}` : n; };
+
   /* ---------- 1. from Wittenberg: the universities and the theologians' journeys ---------- */
   (function road() {
     const box = document.getElementById('tg-map'), M = TG.map(box, LAND, [[3.6, 44.7], [21.4, 56.1]], { parallels: [46, 56] });
@@ -124,68 +141,7 @@
     TG.chapter('#tg-road', 5000, (p) => render(lerp(YA, YB, p)), { scrub: 0.4 });
   })();
 
-  /* ---------- 2. Luther's pen: every dated writing in the Weimar Edition, stacked by year ---------- */
-  (function pen() {
-    const box = document.getElementById('tg-penbox'), svg = box.querySelector('svg'), tip = box.querySelector('.tip');
-    const W = 820, H = 470, L = 34, R = 8, BASE = 372, Y0 = 1512, Y1 = 1546, n = Y1 - Y0 + 1, cw = (W - L - R) / n, r = Math.min(4.4, cw * 0.21), pitch = r * 2.12;
-    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    const KIND = [['treat', 'treatises and open letters', '#2d2927'], ['sermon', 'sermons', '#2f4a6b'], ['expo', 'lectures and expositions', '#6d4c7d'], ['disp', 'disputations and theses', '#a3382a'], ['pref', 'prefaces', '#a07c35'], ['letter', 'letters', '#5b6b3a']];
-    const kc = Object.fromEntries(KIND.map(([k, , c]) => [k, c]));
-    const cnt = {}; D.pen.forEach((w) => { cnt[w[4]] = (cnt[w[4]] || 0) + 1; });
-    document.getElementById('tg-penkey').innerHTML = KIND.map(([k, n2, c]) => `<span><i style="background:${c};border-radius:50%"></i>${esc(n2)} · ${cnt[k] || 0}</span>`).join('');
-    const x = (y) => L + (y - Y0 + 0.5) * cw;
-    // axis and the life band
-    const ax = mk('g', {}, svg);
-    mk('line', { x1: L, x2: W - R, y1: BASE + 6, y2: BASE + 6, stroke: TG.css('--ink'), 'stroke-width': 1 }, ax);
-    for (let y = 1515; y <= 1545; y += 5) { mk('line', { x1: x(y), x2: x(y), y1: BASE + 6, y2: BASE + 11, stroke: TG.css('--ink') }, ax); mk('text', { x: x(y), y: BASE + 24, 'text-anchor': 'middle', class: 'ax' }, ax).textContent = y; }
-    const lifeG = mk('g', {}, svg), lifeTxt = mk('text', { x: L, y: H - 14, class: 'life' }, svg);
-    mk('line', { x1: x(1512), x2: x(1546), y1: BASE + 44, y2: BASE + 44, stroke: TG.css('--rule'), 'stroke-width': 3, 'stroke-linecap': 'round' }, lifeG);
-    const lifeMarks = D.life.map(([y]) => mk('path', { d: `M${x(y)},${BASE + 38} l6,6 l-6,6 l-6,-6 Z`, fill: TG.css('--rubric'), opacity: 0.25 }, lifeG));
-    const yearT = mk('text', { x: L + 4, y: 40, 'font-size': 44, 'font-family': TG.css('--display'), fill: TG.css('--ink'), class: 'num' }, svg);
-    const cntT = mk('text', { x: L + 6, y: 62, 'font-size': 12, 'font-family': TG.css('--body'), fill: TG.css('--muted') }, svg);
-    // the dots, in the order the edition prints them within each year
-    const byY = {}; D.pen.forEach((w) => { (byY[w[0]] ||= []).push(w); });
-    const dots = [], lmKey = new Set(D.landmarks.map((l) => `${l[2]}#${l[3]}`));
-    for (const y in byY) byY[y].forEach((w, i) => { const a = mk('a', { href: TG.read(w[2], w[3]), target: '_blank', rel: 'noopener', class: 'dot' }, svg);
-      const cy = BASE - r - i * pitch, c = mk('circle', { cx: x(+y), cy, r, fill: kc[w[4]] }, a);
-      a.setAttribute('aria-label', `${w[1]}, ${w[0]}`); dots.push({ w, a, c, i, n: byY[y].length, cy, lm: lmKey.has(`${w[2]}#${w[3]}`) }); });
-    const lmG = mk('g', {}, svg), lms = D.landmarks.map((l, k) => { const d = dots.find((q) => q.w[2] === l[2] && q.w[3] === l[3]); if (!d) return null;
-      const g = mk('g', { opacity: 0 }, lmG); mk('circle', { cx: x(d.w[0]), cy: d.cy, r: r + 3.2, class: 'lm' }, g); return { l, d, g, k }; }).filter(Boolean);
-    const wa = (slug) => slug.replace('luther-wa-schriften-', '').split('-').map((t) => (/^i+$/.test(t) ? t.toUpperCase() : t === 'rev' ? 'rev.' : t)).join(' ');
-    const call = mk('g', { opacity: 0 }, svg), callLine = mk('line', { stroke: TG.css('--rubric'), 'stroke-width': 1 }, call), callBg = mk('rect', { fill: TG.css('--paper'), opacity: 0.92, rx: 2 }, call),
-      callT = mk('text', { 'font-size': 14, 'font-family': TG.css('--display'), fill: TG.css('--rubric') }, call);
-    let callK = -1;
-    const marks = document.getElementById('tg-marks');
-    marks.innerHTML = D.landmarks.map((l) => `<li><b>${l[0]}</b><a href="${TG.read(l[2], l[3])}" target="_blank" rel="noopener">${esc(l[1])}</a><i>WA ${esc(wa(l[2]))}</i></li>`).join('');
-    const mlis = [...marks.children];
-    dots.forEach((d) => { d.a.addEventListener('mousemove', (e) => { const b = box.getBoundingClientRect(); tip.innerHTML = `${esc(d.w[1])}<small>${d.w[0]} · WA ${esc(wa(d.w[2]))}, page ${d.w[3]} · click to read</small>`; tip.hidden = false;
-      tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 250)}px`; tip.style.top = `${e.clientY - b.top + 14}px`; }); d.a.addEventListener('mouseleave', () => { tip.hidden = true; }); });
-    const total = D.pen.length, penN = document.getElementById('tg-pen-n'); penN.textContent = fmt(total);
-    function render(p) {
-      const Y = lerp(Y0 - 0.5, Y1 + 1, p); let shown = 0;
-      for (const d of dots) { const t = clamp((Y - d.w[0]) * d.n - d.i, 0, 1), e = t >= 1 ? 1 : 1 - (1 - t)**3;
-        d.c.setAttribute('cy', (d.cy - (1 - e) * 60).toFixed(1)); d.c.setAttribute('opacity', e.toFixed(2)); if (t > 0.5) shown++; }
-      lms.forEach(({ d, g }) => { g.setAttribute('opacity', clamp((Y - d.w[0]) * d.n - d.i, 0, 1).toFixed(2)); });
-      let now = -1; D.landmarks.forEach((l, i) => { if (l[0] <= Y - 0.15) now = i; });
-      mlis.forEach((li, i) => { li.classList.toggle('now', i === now); li.classList.toggle('past', i < now); });
-      if (now >= 0 && TG.pinOK()) marks.scrollTop = Math.max(0, mlis[now].offsetTop - marks.clientHeight * 0.4);
-      const lmNow = lms.filter((q) => q.l[0] <= Y - 0.15).pop();
-      if (lmNow && lmNow.k !== callK) { callK = lmNow.k; const cx = x(lmNow.d.w[0]), {cy} = lmNow.d, right = cx < W * 0.62, ty = Math.max(84, cy - 40);
-        callT.textContent = lmNow.l[1]; callT.setAttribute('text-anchor', right ? 'start' : 'end'); callT.setAttribute('x', cx + (right ? 14 : -14)); callT.setAttribute('y', ty);
-        const bb = callT.getBBox(); Object.entries({ x: bb.x - 4, y: bb.y - 2, width: bb.width + 8, height: bb.height + 4 }).forEach(([k, v]) => callBg.setAttribute(k, v));
-        Object.entries({ x1: cx, y1: cy - r - 3, x2: cx + (right ? 10 : -10), y2: ty - 4 }).forEach(([k, v]) => callLine.setAttribute(k, v));
-        if (G) gsap.fromTo(call, { opacity: 0 }, { opacity: 1, duration: 0.35 }); else call.setAttribute('opacity', 1); }
-      if (!lmNow && callK !== -1) { callK = -1; call.setAttribute('opacity', 0); }
-      yearT.textContent = Math.min(Y1, Math.max(Y0, Math.floor(Y))); cntT.textContent = `${fmt(shown)} writings`;
-      let li2 = -1; D.life.forEach(([y], i) => { if (y <= Y) li2 = i; });
-      lifeMarks.forEach((m, i) => m.setAttribute('opacity', i <= li2 ? 1 : 0.25));
-      lifeTxt.textContent = li2 >= 0 ? `${D.life[li2][0]} · ${D.life[li2][1]}` : 'Wittenberg, professor of Scripture since 1512';
-    }
-    TG.chapter('#tg-pen', 3800, render, { scrub: 0.5 });
-    if (!TG.pinOK()) mlis.forEach((li) => li.classList.add('past'));
-  })();
-
-  /* ---------- 3. into the Book of Concord: the controversies after Luther braided into the twelve articles ---------- */
+  /* ---------- 2. into the Book of Concord: the controversies after Luther braided into the twelve articles ---------- */
   (function concord() {
     const host = document.getElementById('tg-braid'), svg = host.querySelector('svg'), tip = host.querySelector('.tip'), note = document.getElementById('tg-bnote');
     const XA = 70, XB = 690, YA = 1546, YB = 1577, x = (y) => XA + (y - YA) / (YB - YA) * (XB - XA), KX = 712, BX = 918;
@@ -259,7 +215,7 @@
     TG.chapter('#tg-concord', 4200, render, { scrub: 0.5 });
   })();
 
-  /* ---------- 4. a shelf of systems, and Gerhard's nine tomes opened into their loci ---------- */
+  /* ---------- 3. a shelf of systems, and Gerhard's nine tomes opened into their loci ---------- */
   (function systems() {
     const box = document.getElementById('tg-sysbox'), say = document.getElementById('tg-sys-say'), S = D.systems;
     const LEATHER = ['#5c3a2a', '#6b3d2a', '#4c3125', '#7b5135', '#3e2b22'];
@@ -315,6 +271,303 @@
     // phones: the loci as a list under each tome
     document.getElementById('tg-locilist').innerHTML = `<ol style="margin-bottom:18px">${S.map((s) => `<li><b>${s.y} · ${esc(s.a)}</b><span><a href="${TG.read(s.v[0][0])}" target="_blank" rel="noopener">${esc(s.t)}${s.v.length > 1 ? `, ${s.v.length} vols.` : ''}</a></span></li>`).join('')}</ol><p class="say">Gerhard’s <i>Theological Commonplaces</i> (Jena, 1610–1622), nine tomes in thirty-five loci, from Holy Scripture to eternal life.</p><ol>${tomes.map((t) => `<li><b>Tome ${ROM[t - 1]}</b><span>${D.loci.filter((l) => l.t === t).map((l) => `<a href="${TG.read(gerhard.v[t - 1][0], l.p)}" target="_blank" rel="noopener">${esc(l.en)}</a>`).join('')}</span></li>`).join('')}</ol>`;
     if (!TG.pinOK()) { say.innerHTML = `<p>Twelve systems of Lutheran doctrine stand on this shelf, from Melanchthon’s <i>Body of Christian Doctrine</i> (1560) to Buddeus’s <i>Institutes</i> (1723). The classic is Johann Gerhard’s, in nine tomes and thirty-five loci, in the order of the faith: Holy Scripture first, because every other doctrine is proved from it; then God, creation and sin, law and Gospel and justification, the sacraments, the Church and its orders, and the last things.</p>`; }
+  })();
+
+  /* ---------- 4. whom they answered: each writer's answers by adversary, from the opponents the library's mined claims name ---------- */
+  (function fronts() {
+    const F0 = D.fronts, host = document.getElementById('tg-ffig'), svg = host.querySelector('svg'), note = document.getElementById('tg-fnote'), tipOn = tipFor(host, host.querySelector('.tip'));
+    const F = F0.order.map((k) => F0.fronts.find((f) => f.k === k)), Rw = F0.authors, N = Rw.length;
+    const sh = (a, k) => a.c[k] / a.s, firstOf = (a) => F0.order.reduce((b, k) => (a.c[k] > a.c[b] ? k : b), F0.order[0]);
+    const maxSh = Object.fromEntries(F0.order.map((k) => [k, Math.max(...Rw.map((a) => sh(a, k)))]));
+    const nRome = Rw.filter((a) => firstOf(a) === 'rom').length, others = Rw.filter((a) => firstOf(a) !== 'rom');
+    const leaders = (k, n = 3) => [...Rw].sort((a, b) => sh(b, k) - sh(a, k)).slice(0, n).map((a) => `${esc(a.n.split(' ').pop())} ${pct(a.c[k], a.s)}%`).join(', ');
+    const fnote = (f) => `<p><b style="color:${FC[f.k]}">${esc(f.n)}</b>: ${fmt(f.total)} claims on the shelf. The names most often answered: ${f.top.slice(0, 4).map(([l]) => esc(l)).join(', ')}. The largest shares: ${leaders(f.k)}.${f.k === 'rom' ? ` Rome is the first adversary of ${nw(nRome)} of these ${nw(N)} writers.` : ''}</p>`;
+    const cal = Rw.find((a) => a.n === 'Abraham Calov');
+    const NOTES = [
+      `<p>Where a claim in these pages answers someone, the library’s reading names the opponent. ${fmt(F0.sorted)} of the ${fmt(F0.all)} claims that name one fall on six adversaries; each bar is that adversary’s share of one writer’s answers.</p>`,
+      ...F.map(fnote),
+      `<p>Rome is the first adversary for ${nw(nRome)} of the ${nw(N)} writers. ${others.length ? `${andList(others.map((a) => esc(a.n)))} answer the ${others.every((a) => firstOf(a) === 'soc') ? 'Socinians' : 'others'} first${cal ? `; Calov gives ${pct(cal.c.soc, cal.s)}% of his answers to the Socinians and ${pct(cal.c.arm, cal.s)}% to Grotius and the Remonstrants, against ${pct(cal.c.rom, cal.s)}% to Rome` : ''}.` : ''}</p>`];
+    document.getElementById('tg-fkey').innerHTML = `${F.map((f) => `<span><i style="background:${FC[f.k]}"></i>${esc(f.n)}</span>`).join('')}<span class="small" style="flex-basis:100%">The opponents were labelled by machine reading and are indicative; sorting the labels into six adversaries is the guide’s own (a label naming two goes to the more particular, in this order: Socinians, Grotius and the Remonstrants, Anabaptists and enthusiasts, quarrels among Lutherans, the Reformed, Rome). Left out: ${esc(andList(F0.dropped))}, with under 1,000 sorted claims each, and Hermann von der Hardt, whose Constance volumes are a history of the council.</span>`;
+    let rows = [], cols = [];
+    function build() {
+      const ph = phone(); svg.innerHTML = ''; rows = []; cols = [];
+      if (ph) { // phones: one bar per writer, the six shares end to end
+        const W = 400, lw = 116, top = 6, rh = 19, bw = W - lw - 4, H = top + N * rh + 4; svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+        Rw.forEach((a, j) => { const y = top + j * rh; let x = lw;
+          txt(svg, lw - 6, y + rh * 0.68, shortName(a.n), 9.6, 'who', { 'text-anchor': 'end' }).addEventListener('click', () => explorer && explorer.show(a.n));
+          F0.order.forEach((k) => { const w = bw * sh(a, k); if (w <= 0) return; const r = mk('rect', { x, y: y + 3, width: w, height: rh - 6, fill: FC[k] }, svg);
+            tipOn(r, () => `${esc(a.n)}: ${pct(a.c[k], a.s)}% ${esc(F.find((f) => f.k === k).n)}<small>${fmt(a.c[k])} of ${fmt(a.s)} sorted claims</small>`); x += w; }); });
+        return;
+      }
+      const W = 1000, lw = 214, top = 50, rh = 19, gap = 14, H = top + N * rh + 6, wk = Object.fromEntries(F0.order.map((k) => [k, Math.max(maxSh[k], 0.24)]));
+      const u = (W - lw - gap * (F.length - 1)) / F0.order.reduce((s, k) => s + wk[k], 0); svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      Rw.forEach((_, j) => { if (j % 2 === 0) mk('rect', { x: 0, y: top + j * rh, width: W, height: rh, class: 'stripe' }, svg); });
+      let x = lw;
+      F.forEach((f) => { const g = mk('g', {}, svg), x0 = x; txt(g, x0, 20, f.s, 13, '', { fill: FC[f.k], 'font-weight': 600 }); txt(g, x0, 36, `${fmt(f.total)} claims`, 9.5, 'm');
+        mk('line', { x1: x0, x2: x0, y1: top - 4, y2: top + N * rh, stroke: TG.css('--rule'), 'stroke-width': 1 }, g); mk('title', {}, g).textContent = f.n;
+        cols.push({ k: f.k, x0, g, bars: [], nums: [] }); x += wk[f.k] * u + gap; });
+      Rw.forEach((a, j) => { const y = top + j * rh;
+        const yr = txt(svg, 2, y + rh * 0.7, a.y0 && a.y1 ? `${a.y0}–${a.y1}` : '', 9.5, 'm'), nm = txt(svg, lw - 12, y + rh * 0.7, shortName(a.n), 12, 'who', { 'text-anchor': 'end' });
+        nm.addEventListener('click', () => explorer && explorer.show(a.n)); mk('title', {}, nm).textContent = `${a.n}: ${fmt(a.s)} claims sorted onto the six adversaries`;
+        const bars = cols.map((c) => { const w = Math.max(0, sh(a, c.k) * u), r = mk('rect', { x: c.x0 + 1, y: y + rh * 0.2, width: w, height: rh * 0.6, fill: FC[c.k], class: 'bar' }, svg);
+          const t = txt(svg, c.x0 + 1 + w + 3, y + rh * 0.72, `${pct(a.c[c.k], a.s)}%`, 9.5, 'm', { opacity: 0 });
+          tipOn(r, () => `${esc(a.n)}: ${pct(a.c[c.k], a.s)}% to ${esc(F.find((f) => f.k === c.k).n)}<small>${fmt(a.c[c.k])} of his ${fmt(a.s)} sorted claims</small>`);
+          c.bars.push(r); c.nums.push(t); return { r, t, k: c.k, v: sh(a, c.k) }; });
+        rows.push({ j, yr, nm, bars }); });
+      render(last);
+    }
+    let last = TG.pinOK() ? 0 : 1;
+    function render(p) {
+      last = p; if (!rows.length) return;
+      const step = p < 0.44 ? -1 : p < 0.92 ? Math.min(F.length - 1, Math.floor((p - 0.44) / 0.08)) : F.length, hk = step >= 0 && step < F.length ? F[step].k : null;
+      rows.forEach(({ j, yr, nm, bars }) => { const t0 = 0.02 + j * (0.36 / N), v = ease(clamp((p - t0) / 0.05, 0, 1));
+        nm.setAttribute('opacity', p >= t0 ? 1 : 0.25); yr.setAttribute('opacity', p >= t0 ? 1 : 0.25);
+        nm.classList.toggle('r', p < 0.42 && p >= t0 && p < t0 + 0.05);
+        bars.forEach(({ r, t, k, v: s }) => { r.style.transform = `scaleX(${v.toFixed(3)})`; r.setAttribute('opacity', hk && hk !== k ? 0.16 : 1);
+          t.setAttribute('opacity', v < 0.98 ? 0 : hk ? (hk === k && s >= 0.005 ? 1 : 0) : step === F.length && s >= 0.15 ? 1 : 0); }); });
+      cols.forEach((c) => c.g.setAttribute('opacity', hk && hk !== c.k ? 0.35 : 1));
+      if (TG.pinOK()) setNote(note, NOTES[step + 1]);
+    }
+    build(); onPhoneSwitch(build);
+    if (!TG.pinOK()) note.innerHTML = NOTES[0] + NOTES[NOTES.length - 1];
+    TG.chapter('#tg-fronts', 5200, render, { scrub: 0.5 });
+  })();
+
+  /* ---------- 5. Luther's pen: every dated writing in the Weimar Edition, stacked by year ---------- */
+  (function pen() {
+    const box = document.getElementById('tg-penbox'), svg = box.querySelector('svg'), tip = box.querySelector('.tip');
+    const W = 820, H = 470, L = 34, R = 8, BASE = 372, Y0 = 1512, Y1 = 1546, n = Y1 - Y0 + 1, cw = (W - L - R) / n, r = Math.min(4.4, cw * 0.21), pitch = r * 2.12;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const KIND = [['treat', 'treatises and open letters', '#2d2927'], ['sermon', 'sermons', '#2f4a6b'], ['expo', 'lectures and expositions', '#6d4c7d'], ['disp', 'disputations and theses', '#a3382a'], ['pref', 'prefaces', '#a07c35'], ['letter', 'letters', '#5b6b3a']];
+    const kc = Object.fromEntries(KIND.map(([k, , c]) => [k, c]));
+    const cnt = {}; D.pen.forEach((w) => { cnt[w[4]] = (cnt[w[4]] || 0) + 1; });
+    document.getElementById('tg-penkey').innerHTML = KIND.map(([k, n2, c]) => `<span><i style="background:${c};border-radius:50%"></i>${esc(n2)} · ${cnt[k] || 0}</span>`).join('');
+    const x = (y) => L + (y - Y0 + 0.5) * cw;
+    // axis and the life band
+    const ax = mk('g', {}, svg);
+    mk('line', { x1: L, x2: W - R, y1: BASE + 6, y2: BASE + 6, stroke: TG.css('--ink'), 'stroke-width': 1 }, ax);
+    for (let y = 1515; y <= 1545; y += 5) { mk('line', { x1: x(y), x2: x(y), y1: BASE + 6, y2: BASE + 11, stroke: TG.css('--ink') }, ax); mk('text', { x: x(y), y: BASE + 24, 'text-anchor': 'middle', class: 'ax' }, ax).textContent = y; }
+    const lifeG = mk('g', {}, svg), lifeTxt = mk('text', { x: L, y: H - 14, class: 'life' }, svg);
+    mk('line', { x1: x(1512), x2: x(1546), y1: BASE + 44, y2: BASE + 44, stroke: TG.css('--rule'), 'stroke-width': 3, 'stroke-linecap': 'round' }, lifeG);
+    const lifeMarks = D.life.map(([y]) => mk('path', { d: `M${x(y)},${BASE + 38} l6,6 l-6,6 l-6,-6 Z`, fill: TG.css('--rubric'), opacity: 0.25 }, lifeG));
+    const yearT = mk('text', { x: L + 4, y: 40, 'font-size': 44, 'font-family': TG.css('--display'), fill: TG.css('--ink'), class: 'num' }, svg);
+    const cntT = mk('text', { x: L + 6, y: 62, 'font-size': 12, 'font-family': TG.css('--body'), fill: TG.css('--muted') }, svg);
+    // the dots, in the order the edition prints them within each year
+    const byY = {}; D.pen.forEach((w) => { (byY[w[0]] ||= []).push(w); });
+    const dots = [], lmKey = new Set(D.landmarks.map((l) => `${l[2]}#${l[3]}`));
+    for (const y in byY) byY[y].forEach((w, i) => { const a = mk('a', { href: TG.read(w[2], w[3]), target: '_blank', rel: 'noopener', class: 'dot' }, svg);
+      const cy = BASE - r - i * pitch, c = mk('circle', { cx: x(+y), cy, r, fill: kc[w[4]] }, a);
+      a.setAttribute('aria-label', `${w[1]}, ${w[0]}`); dots.push({ w, a, c, i, n: byY[y].length, cy, lm: lmKey.has(`${w[2]}#${w[3]}`) }); });
+    const lmG = mk('g', {}, svg), lms = D.landmarks.map((l, k) => { const d = dots.find((q) => q.w[2] === l[2] && q.w[3] === l[3]); if (!d) return null;
+      const g = mk('g', { opacity: 0 }, lmG); mk('circle', { cx: x(d.w[0]), cy: d.cy, r: r + 3.2, class: 'lm' }, g); return { l, d, g, k }; }).filter(Boolean);
+    const wa = (slug) => slug.replace('luther-wa-schriften-', '').split('-').map((t) => (/^i+$/.test(t) ? t.toUpperCase() : t === 'rev' ? 'rev.' : t)).join(' ');
+    const call = mk('g', { opacity: 0 }, svg), callLine = mk('line', { stroke: TG.css('--rubric'), 'stroke-width': 1 }, call), callBg = mk('rect', { fill: TG.css('--paper'), opacity: 0.92, rx: 2 }, call),
+      callT = mk('text', { 'font-size': 14, 'font-family': TG.css('--display'), fill: TG.css('--rubric') }, call);
+    let callK = -1;
+    const marks = document.getElementById('tg-marks');
+    marks.innerHTML = D.landmarks.map((l) => `<li><b>${l[0]}</b><a href="${TG.read(l[2], l[3])}" target="_blank" rel="noopener">${esc(l[1])}</a><i>WA ${esc(wa(l[2]))}</i></li>`).join('');
+    const mlis = [...marks.children];
+    dots.forEach((d) => { d.a.addEventListener('mousemove', (e) => { const b = box.getBoundingClientRect(); tip.innerHTML = `${esc(d.w[1])}<small>${d.w[0]} · WA ${esc(wa(d.w[2]))}, page ${d.w[3]} · click to read</small>`; tip.hidden = false;
+      tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 250)}px`; tip.style.top = `${e.clientY - b.top + 14}px`; }); d.a.addEventListener('mouseleave', () => { tip.hidden = true; }); });
+    const total = D.pen.length, penN = document.getElementById('tg-pen-n'); penN.textContent = fmt(total);
+    function render(p) {
+      const Y = lerp(Y0 - 0.5, Y1 + 1, p); let shown = 0;
+      for (const d of dots) { const t = clamp((Y - d.w[0]) * d.n - d.i, 0, 1), e = t >= 1 ? 1 : 1 - (1 - t)**3;
+        d.c.setAttribute('cy', (d.cy - (1 - e) * 60).toFixed(1)); d.c.setAttribute('opacity', e.toFixed(2)); if (t > 0.5) shown++; }
+      lms.forEach(({ d, g }) => { g.setAttribute('opacity', clamp((Y - d.w[0]) * d.n - d.i, 0, 1).toFixed(2)); });
+      let now = -1; D.landmarks.forEach((l, i) => { if (l[0] <= Y - 0.15) now = i; });
+      mlis.forEach((li, i) => { li.classList.toggle('now', i === now); li.classList.toggle('past', i < now); });
+      if (now >= 0 && TG.pinOK()) marks.scrollTop = Math.max(0, mlis[now].offsetTop - marks.clientHeight * 0.4);
+      const lmNow = lms.filter((q) => q.l[0] <= Y - 0.15).pop();
+      if (lmNow && lmNow.k !== callK) { callK = lmNow.k; const cx = x(lmNow.d.w[0]), {cy} = lmNow.d, right = cx < W * 0.62, ty = Math.max(84, cy - 40);
+        callT.textContent = lmNow.l[1]; callT.setAttribute('text-anchor', right ? 'start' : 'end'); callT.setAttribute('x', cx + (right ? 14 : -14)); callT.setAttribute('y', ty);
+        const bb = callT.getBBox(); Object.entries({ x: bb.x - 4, y: bb.y - 2, width: bb.width + 8, height: bb.height + 4 }).forEach(([k, v]) => callBg.setAttribute(k, v));
+        Object.entries({ x1: cx, y1: cy - r - 3, x2: cx + (right ? 10 : -10), y2: ty - 4 }).forEach(([k, v]) => callLine.setAttribute(k, v));
+        if (G) gsap.fromTo(call, { opacity: 0 }, { opacity: 1, duration: 0.35 }); else call.setAttribute('opacity', 1); }
+      if (!lmNow && callK !== -1) { callK = -1; call.setAttribute('opacity', 0); }
+      yearT.textContent = Math.min(Y1, Math.max(Y0, Math.floor(Y))); cntT.textContent = `${fmt(shown)} writings`;
+      let li2 = -1; D.life.forEach(([y], i) => { if (y <= Y) li2 = i; });
+      lifeMarks.forEach((m, i) => m.setAttribute('opacity', i <= li2 ? 1 : 0.25));
+      lifeTxt.textContent = li2 >= 0 ? `${D.life[li2][0]} · ${D.life[li2][1]}` : 'Wittenberg, professor of Scripture since 1512';
+    }
+    TG.chapter('#tg-pen', 3800, render, { scrub: 0.5 });
+    if (!TG.pinOK()) mlis.forEach((li) => li.classList.add('past'));
+  })();
+
+  /* ---------- 6. how Melanchthon's Loci grew: the first outline and the three ages, locus by locus, in the Corpus Reformatorum ---------- */
+  (function lociAges() {
+    const L = D.loci_ages, host = document.getElementById('tg-lfig'), svg = host.querySelector('svg'), note = document.getElementById('tg-lnote'), tipOn = tipFor(host, host.querySelector('.tip'));
+    const A = L.ages, R = L.rows, first = R.map((r) => r.c.findIndex(Boolean));
+    const tot = A.map((_, i) => R.reduce((s, r) => s + (r.c[i] ? r.c[i][1] : 0), 0)), nl = A.map((_, i) => R.filter((r) => r.c[i]).length);
+    const newIn = (i) => R.filter((_, j) => first[j] === i), goneAfter = (i) => R.filter((r) => r.c[i] && !r.c.slice(i + 1).some(Boolean));
+    const PICK = ['god', 'creation', 'pred', 'church', 'prayer', 'magis'], n2 = newIn(2), gone = goneAfter(1);
+    const NOTES = [
+      `<p>Melanchthon came to Wittenberg in 1518 to teach Greek. His first outline of the <i>Loci</i>, which he never published, has ${nw(nl[0])} heads in ${tot[0]} pages: ${andList(R.filter((r) => r.c[0]).map((r) => lc(r.en)))}.</p>`,
+      `<p>The edition of 1521 has ${nl[1]} loci in ${tot[1]} pages, and still none on God. Its opening says why: ${link(L.slug, L.quote[0], `<i lang="la">${esc(L.quote[1])}</i>`)} We do better to adore the mysteries of the Godhead than to search them out.</p>`,
+      `<p>From 1535 the book opens with God. ${nw(n2.length).replace(/^./, (c) => c.toUpperCase())} loci are new, among them ${andList(n2.filter((r) => PICK.includes(r.k)).map((r) => lc(r.en)))}. Gone from 1521: ${andList(gone.map((r) => lc(r.en)))}.</p>`,
+      `<p>The last form, printed at Leipzig in 1559, has ${nl[3]} loci in ${tot[3]} pages, with ${andList(newIn(3).map((r) => lc(r.en)))} at the end. Martin Chemnitz’s <i>Theological Topics</i>, on this shelf, are his lectures on this book.</p>`];
+    document.getElementById('tg-lkey').innerHTML = '<span><i style="background:var(--ink-2)"></i>a locus, as long as its pages in the <em>Corpus Reformatorum</em>, vol. 21</span><span><i style="background:var(--rubric);transform:rotate(45deg) scale(.7)"></i>its first appearance</span><span>Each bar opens its first page.</span>';
+    let cells = [], heads = [], labs = [];
+    function build() {
+      const ph = phone(), W = ph ? 400 : 1000, lw = ph ? 124 : 232, top = ph ? 44 : 58, rh = ph ? 16 : 17.2, gap = ph ? 7 : 16;
+      const cw = (W - lw - gap * (A.length - 1)) / A.length, maxN = Math.max(...R.flatMap((r) => r.c.filter(Boolean).map((c) => c[1]))), k = (cw - (ph ? 4 : 26)) / maxN;
+      const H = top + R.length * rh + 6; svg.innerHTML = ''; svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      R.forEach((_, j) => { if (j % 2 === 0) mk('rect', { x: 0, y: top + j * rh, width: W, height: rh, class: 'stripe' }, svg); });
+      heads = A.map((a, i) => { const x = lw + i * (cw + gap), g = mk('a', { href: TG.read(L.slug, a.intro), target: '_blank', rel: 'noopener' }, svg);
+        txt(g, x, ph ? 17 : 24, a.y, ph ? 15 : 22, 'd'); txt(g, x, ph ? 31 : 42, ph ? `${nl[i]} loci` : `${nl[i]} loci · ${tot[i]} pages`, ph ? 8.5 : 10.5, 'm');
+        mk('title', {}, g).textContent = `${a.what}: the editor’s introduction`; return g; });
+      labs = R.map((r, j) => txt(svg, lw - (ph ? 7 : 12), top + j * rh + rh * 0.7, r.en, ph ? 9.6 : 12.5, '', { 'text-anchor': 'end' }));
+      cells = [];
+      R.forEach((r, j) => r.c.forEach((c, i) => { const x = lw + i * (cw + gap), y = top + j * rh;
+        if (!c) { mk('circle', { cx: x + 2, cy: y + rh / 2, r: 1.2, fill: TG.css('--rule') }, svg); return; }
+        const a = mk('a', { href: TG.read(L.slug, c[0]), target: '_blank', rel: 'noopener', 'aria-label': `${r.en}, ${A[i].y}: ${c[1]} pages` }, svg), w = Math.max(2, c[1] * k);
+        const bar = mk('rect', { x, y: y + rh * 0.2, width: w, height: rh * 0.6, rx: 1.5, fill: TG.css('--ink-2'), class: 'bar' }, a);
+        const extra = [];
+        if (i === first[j] && i > 0) extra.push(mk('path', { d: `M${x - (ph ? 4 : 8)},${y + rh / 2} l${ph ? 2.4 : 3.6},${ph ? -2.4 : -3.6} l${ph ? 2.4 : 3.6},${ph ? 2.4 : 3.6} l${ph ? -2.4 : -3.6},${ph ? 2.4 : 3.6} Z`, fill: TG.css('--rubric') }, svg));
+        if (!ph) extra.push(txt(svg, x + w + 4, y + rh * 0.72, c[1], 9.5, 'm'));
+        tipOn(a, () => `${esc(c[2])}<small>${esc(A[i].y)} · ${c[1]} ${c[1] === 1 ? 'page' : 'pages'} from page ${c[0]} of the <i>Corpus Reformatorum</i>, vol. 21</small>`);
+        cells.push({ i, j, bar, extra }); }));
+      render(last);
+    }
+    const T = [0.03, 0.25, 0.47, 0.69];
+    let last = TG.pinOK() ? 0 : 1;
+    function render(p) {
+      last = p; const age = T.reduce((n, t, i) => (p >= t - 0.02 ? i : n), 0);
+      heads.forEach((g, i) => g.setAttribute('opacity', clamp((p - T[i] + 0.03) * 25, 0, 1).toFixed(2)));
+      cells.forEach(({ i, j, bar, extra }) => { const v = ease(clamp((p - T[i] - j * 0.0025) / 0.07, 0, 1)); bar.style.transform = `scaleX(${v.toFixed(3)})`; extra.forEach((e) => e.setAttribute('opacity', v >= 0.98 ? 1 : 0)); });
+      labs.forEach((t, j) => { t.setAttribute('opacity', p >= T[first[j]] - 0.01 ? 1 : 0.28); t.classList.toggle('r', p < 0.9 && first[j] > 0 && first[j] === age); });
+      if (TG.pinOK()) setNote(note, NOTES[age]);
+    }
+    build(); onPhoneSwitch(build);
+    if (!TG.pinOK()) note.innerHTML = NOTES.join('');
+    TG.chapter('#tg-loci', 4200, render, { scrub: 0.5 });
+  })();
+
+  /* ---------- 7. the Magdeburg Centuries: fourteen volumes, the same sixteen chapters ---------- */
+  (function centuries() {
+    const Cc = D.centuries, V = Cc.vols, host = document.getElementById('tg-cfig'), svg = host.querySelector('svg'), note = document.getElementById('tg-cnote'), tipOn = tipFor(host, host.querySelector('.tip'));
+    const SHORT = ['Argument', 'Spread', 'Persecution', 'Doctrine', 'Heresies', 'Rites', 'Government', 'Schisms', 'Councils', 'Lives', 'Heretics', 'Martyrs', 'Miracles', 'The Jews', 'Other religions', 'Empires'];
+    const maxN = Math.max(...V.flatMap((v) => v.ch.filter(Boolean).map((c) => c[1])));
+    const big = V.map((v) => v.ch.reduce((b, c, i) => (c && (b < 0 || c[1] > v.ch[b][1]) ? i : b), -1));
+    const docMax = V.reduce((m, v) => (v.ch[3] && v.ch[3][1] > (m ? m.ch[3][1] : 0) ? v : m), null), yrs = V.filter((v) => v.yr).map((v) => v.yr[0]);
+    const missing = V.reduce((s, v) => s + v.ch.filter((c) => !c).length, 0), v4 = V.find((v) => v.v === '4');
+    const cname = (v) => `Century ${v.r}${v.sub ? `, ${v.sub}` : ''}`;
+    const NOTES = [
+      `<p>The first volume, printed at Basel in ${Math.min(...yrs)}, promises the history of the Church ${link(Cc.title[0], Cc.title[1], '<i lang="la">secundum singulas Centurias</i>')}, a hundred years at a time. Its preface sets out the ${link(Cc.method[0], Cc.method[1], 'method')}: every century told under the same sixteen heads.</p>`,
+      `<p>${nw(V.length).replace(/^./, (c) => c.toUpperCase())} volumes on the shelf, printed from ${Math.min(...yrs)} to ${Math.max(...yrs)} by ${link(v4.slug, 1, '“certain studious and pious men in the city of Magdeburg”')}, Flacius at their head. Each square is a chapter; its area is the chapter’s pages.</p>`,
+      `<p>Doctrine is the longest chapter in ${nw(big.filter((b) => b === 3).length)} of the ${nw(V.length)} volumes; in ${cname(docMax)} it runs to ${docMax.ch[3][1]} pages. The lives of the bishops and doctors are longest in ${nw(big.filter((b) => b === 9).length)}.</p>`];
+    document.getElementById('tg-ckey').innerHTML = `<span><i style="background:var(--rubric)"></i>doctrine</span><span><i style="background:var(--ink-2)"></i>the other fifteen chapters</span><span><i style="background:transparent;border:1px solid var(--muted);border-radius:50%"></i>no heading found in the scan (${missing} in all); its pages count with the chapter before</span><span>Each square opens the chapter.</span>`;
+    let sqs = [], heads = [], labs = [], frame = null;
+    function build() {
+      const ph = phone(), W = ph ? 400 : 1000, lw = ph ? 92 : 214, top = ph ? 30 : 50, rh = ph ? 22 : 29.5, bot = ph ? 4 : 22;
+      const cw = (W - lw) / V.length, H = top + 16 * rh + bot, s0 = Math.min(cw, rh) - (ph ? 3 : 6);
+      svg.innerHTML = ''; svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      for (let i = 0; i < 16; i += 2) mk('rect', { x: 0, y: top + i * rh, width: W, height: rh, class: 'stripe' }, svg);
+      frame = mk('rect', { x: 0.5, y: top + 3 * rh + 0.5, width: W - 1, height: rh - 1, fill: 'none', stroke: TG.css('--rubric'), 'stroke-width': 1.2, rx: 2, opacity: 0 }, svg);
+      labs = Cc.chaps.map((c, i) => { const t = mk('text', { x: lw - (ph ? 6 : 12), y: top + i * rh + rh * 0.62, 'font-size': ph ? 9.2 : 12.5, 'text-anchor': 'end', class: i === 3 ? 'r' : '' }, svg);
+        if (!ph) { const ts = mk('tspan', { class: 'm', 'font-size': 10 }, t); ts.textContent = `${ROMAN[i]}  `; }
+        t.appendChild(document.createTextNode(ph ? SHORT[i] : c)); return t; });
+      heads = V.map((v, ci) => { const x = lw + ci * cw + cw / 2, g = mk('g', {}, svg);
+        txt(g, x, ph ? 12 : 20, v.r, ph ? 9 : 15, 'd', { 'text-anchor': 'middle' });
+        if (v.sub) txt(g, x, ph ? 23 : 36, ph ? (v.v === '1a' ? 'Christ' : 'apost.') : (v.v === '1a' ? 'Christ' : 'apostles'), ph ? 6.5 : 9.5, 'm', { 'text-anchor': 'middle' });
+        if (!ph && v.yr) txt(g, x, top + 16 * rh + 15, v.yr[0], 9.5, 'm', { 'text-anchor': 'middle' });
+        mk('title', {}, g).textContent = `${cname(v)}: ${fmt(v.pages)} pages${v.yr ? `, printed ${v.yr[0]}` : ''}`; return g; });
+      if (!ph) txt(svg, lw - 12, top + 16 * rh + 15, 'printed', 9.5, 'm', { 'text-anchor': 'end' });
+      sqs = [];
+      V.forEach((v, ci) => v.ch.forEach((c, i) => { const cx = lw + ci * cw + cw / 2, cy = top + i * rh + rh / 2;
+        if (!c) { const o = mk('circle', { cx, cy, r: ph ? 1.8 : 2.6, fill: 'none', stroke: TG.css('--muted'), 'stroke-width': 0.9, class: 'sq' }, svg);
+          tipOn(o, () => `${cname(v)}, chapter ${ROMAN[i]}: ${esc(Cc.chaps[i])}<small>No heading found in the scan; its pages count with the chapter before</small>`); sqs.push({ ci, i, el: o }); return; }
+        const s = Math.max(ph ? 2 : 2.5, s0 * Math.sqrt(c[1] / maxN)), a = mk('a', { href: TG.read(v.slug, c[0]), target: '_blank', rel: 'noopener', 'aria-label': `${cname(v)}, ${Cc.chaps[i]}: ${c[1]} pages` }, svg);
+        const el = mk('rect', { x: cx - s / 2, y: cy - s / 2, width: s, height: s, rx: 1, fill: i === 3 ? TG.css('--rubric') : TG.css('--ink-2'), class: 'sq' }, a);
+        const absorbed = []; for (let k = i + 1; k < 16 && !v.ch[k]; k++) absorbed.push(ROMAN[k]);
+        tipOn(a, () => `${cname(v)}, chapter ${ROMAN[i]}: ${esc(Cc.chaps[i])}<small>${c[1] ? `${c[1]} ${c[1] === 1 ? 'page' : 'pages'}` : 'under a page'} from page ${c[0]}${absorbed.length ? `, with chapter ${absorbed.join(' and ')} (no heading found)` : ''}${c[2] === 'k' ? '; found by its first heading' : ''}</small>`);
+        sqs.push({ ci, i, el }); }));
+      render(last);
+    }
+    let last = TG.pinOK() ? 0 : 1;
+    function render(p) {
+      last = p;
+      labs.forEach((t, i) => t.setAttribute('opacity', clamp((p / 0.1) * 16 - i, 0.15, 1).toFixed(2)));
+      const tc = (ci) => 0.1 + ci * (0.7 / V.length);
+      heads.forEach((g, ci) => g.setAttribute('opacity', clamp((p - tc(ci) + 0.02) * 30, 0.15, 1).toFixed(2)));
+      sqs.forEach(({ ci, i, el }) => { const v = ease(clamp((p - tc(ci) - i * 0.0018) / 0.035, 0, 1)); el.style.transform = `scale(${v.toFixed(3)})`; });
+      frame.setAttribute('opacity', clamp((p - 0.84) * 12, 0, 1).toFixed(2));
+      if (TG.pinOK()) setNote(note, NOTES[p < 0.1 ? 0 : p < 0.84 ? 1 : 2]);
+    }
+    build(); onPhoneSwitch(build);
+    if (!TG.pinOK()) note.innerHTML = NOTES.join('');
+    TG.chapter('#tg-cent', 4200, render, { scrub: 0.5 });
+  })();
+
+  /* ---------- 8. Abraham Calov: the twelve volumes of the System, and whom each of his works answers ---------- */
+  (function calov() {
+    const K = D.calov, host = document.getElementById('tg-kfig'), svg = host.querySelector('svg'), note = document.getElementById('tg-knote'), tipOn = tipFor(host, host.querySelector('.tip'));
+    const V = K.vols, Wk = K.works, F = D.fronts.order.map((k) => D.fronts.fronts.find((f) => f.k === k)), fname = (k) => F.find((f) => f.k === k).n;
+    const sorted = (w) => D.fronts.order.reduce((s, k) => s + w.c[k], 0), sysPages = V.reduce((s, v) => s + v.n, 0), ys = V.map((v) => v.y).filter(Boolean);
+    const sys = Wk[0], bib = Wk.find((w) => /^The Bible/.test(w.t)), soc = Wk.find((w) => /^Socinianism/.test(w.t)), arm = Wk.find((w) => /^Consideration/.test(w.t));
+    const row = D.fronts.authors.find((a) => a.n === 'Abraham Calov'), dig = K.digression, v1 = V[0];
+    const others = (r) => { const k = [...D.fronts.authors].sort((a, b) => a.c.rom / a.s - b.c.rom / b.s).indexOf(r); return k === 0 ? 'the smallest' : k === 1 ? 'the second smallest' : `the ${k + 1}th smallest`; };
+    const NOTES = [
+      `<p>Calov held the chair at Wittenberg from 1650 to his death in 1686. His <i>System of Theological Topics</i> came out there in ${nw(V.length)} volumes, ${Math.min(...ys)} to ${Math.max(...ys)}: ${fmt(sysPages)} pages on the shelf. The first volume, ${fmt(v1.n)} pages, is prolegomena alone; the doctrine of God begins in the second.</p>`,
+      `<p>At page ${dig[1]} of that first volume Calov breaks off for a ${link(dig[0], dig[1], 'digression on the “new theology” of the syncretists of Helmstedt and Königsberg')}, the school of Georg Calixtus. In the <i>System</i>, ${fmt(sys.syn)} claims answer them.</p>`,
+      `<p>Each book has its adversary. <i>Socinianism Defeated</i> gives ${pct(soc.c.soc, sorted(soc))}% of its answers to the Socinians and the <i>Consideration of Arminianism</i> ${pct(arm.c.arm, sorted(arm))}% to the Remonstrants; in the Bible illustrated, ${fmt((bib.top.find(([l]) => l === 'Grotius') || [0, 0])[1])} claims answer Grotius by name.</p>`,
+      `<p>Across his ${K.n_works} works on the shelf, ${fmt(row.c.soc)} claims answer the Socinians and ${fmt(row.c.rom)} answer Rome; Grotius and the Remonstrants have ${fmt(row.c.arm)}. Rome’s share of his answers, ${pct(row.c.rom, row.s)}%, is ${others(row)} on this shelf.</p>`];
+    document.getElementById('tg-kkey').innerHTML = `${F.map((f) => `<span><i style="background:${FC[f.k]}"></i>${esc(f.n)}</span>`).join('')}`;
+    document.getElementById('tg-klist').innerHTML = V.map((v) => `<li><b>${v.r}</b>${link(v.slug, v.p, esc(v.what))} <span class="small">${v.y || ''} · ${fmt(v.n)} pages</span></li>`).join('');
+    let spines = [], wrows = [], digG = null, counter = null;
+    function build() {
+      const ph = phone(); svg.innerHTML = ''; spines = []; wrows = [];
+      const W = ph ? 400 : 1000, sw = ph ? 24 : 31, sg = ph ? 6 : 8, x0 = ph ? 16 : 14, floorY = ph ? 236 : 470, hMax = ph ? 172 : 372, maxN = Math.max(...V.map((v) => v.n));
+      const RX = ph ? 0 : 520, RW = ph ? 392 : 476, RY = ph ? 300 : 70, rh = ph ? 56 : 64, H = ph ? RY + Wk.length * rh + 6 : 520; svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      txt(svg, 0, ph ? 14 : 20, 'System of Theological Topics', ph ? 13 : 16, 'd'); counter = txt(svg, 0, ph ? 28 : 38, '', ph ? 9 : 11, 'm');
+      mk('rect', { x: 0, y: floorY, width: x0 * 2 + V.length * (sw + sg) - sg, height: 6, fill: TG.css('--leather'), rx: 1 }, svg);
+      V.forEach((v, i) => { const h = hMax * v.n / maxN, x = x0 + i * (sw + sg), y = floorY - h, a = mk('a', { href: TG.read(v.slug, v.p), target: '_blank', rel: 'noopener', 'aria-label': `Volume ${v.r}: ${v.what}, ${v.n} pages` }, svg);
+        const g = mk('g', { class: 'up' }, a);
+        mk('rect', { x, y, width: sw, height: h, rx: 2, fill: i % 2 ? '#6b3d2a' : '#5c3a2a' }, g);
+        [y + 7, y + h - 9].forEach((yy) => { if (h > 24) mk('line', { x1: x + 3, x2: x + sw - 3, y1: yy, y2: yy, stroke: '#c9a24e', 'stroke-width': 1 }, g); });
+        // what the volume treats, along its spine; above it when the spine is too short; smaller type when neither has room (phones: the list below)
+        const fs = 10.5, cx = x + sw / 2 + fs * 0.36, t = txt(g, cx, y + h - 14, v.what, fs, 'lt', { transform: `rotate(-90 ${cx} ${y + h - 14})` }), len = t.getComputedTextLength(), room = y - (ph ? 40 : 66);
+        if (ph) t.remove();
+        else if (len + 22 > h) {
+          if (len + 8 < room) { t.setAttribute('y', y - 6); t.setAttribute('transform', `rotate(-90 ${cx} ${y - 6})`); t.setAttribute('class', ''); }
+          else if (h > 60) t.setAttribute('font-size', (fs * (h - 22) / len).toFixed(2));
+          else t.remove(); }
+        txt(svg, x + sw / 2, floorY + (ph ? 17 : 22), v.r, ph ? 10 : 13, 'd', { 'text-anchor': 'middle' });
+        if (v.y) txt(svg, x + sw / 2, floorY + (ph ? 28 : 36), v.y, ph ? 7.5 : 9.5, 'm', { 'text-anchor': 'middle' });
+        tipOn(a, () => `Volume ${v.r}${v.y ? `, ${v.y}` : ''}: ${esc(v.what)}<small>${fmt(v.n)} pages${v.p > 1 ? `, bound with volume V from page ${v.p}` : ''}</small>`);
+        spines.push({ g, v }); });
+      // the digression on the syncretists, marked in volume I
+      const h1 = hMax * V[0].n / maxN, yd = floorY - h1 + h1 * (dig[1] / V[0].n), xd = x0;
+      digG = mk('a', { href: TG.read(dig[0], dig[1]), target: '_blank', rel: 'noopener', opacity: 0 }, svg);
+      mk('line', { x1: xd - 3, x2: xd + sw + 3, y1: yd, y2: yd, stroke: '#e0bd62', 'stroke-width': 2.4 }, digG);
+      mk('line', { x1: xd - 6, x2: xd - 6, y1: yd, y2: ph ? 46 : 60, stroke: TG.css('--rubric'), 'stroke-width': 1 }, digG);
+      txt(digG, xd - 6, ph ? 41 : 54, `Vol. I, p. ${dig[1]}: digression on the syncretists`, ph ? 8.5 : 11, 'r');
+      // whom each work answers
+      if (!ph) { txt(svg, RX, 20, 'Whom each work answers', 16, 'd'); txt(svg, RX, 38, 'claims sorted onto the six adversaries', 11, 'm'); }
+      const maxS = Math.max(...Wk.map(sorted)), u = (RW - 50) / maxS;
+      Wk.forEach((w, i) => { const y = RY + i * rh, g = mk('g', {}, svg), s = sorted(w), href = TG.read(w.slug || w.slugs[0]);
+        const a = mk('a', { href, target: '_blank', rel: 'noopener' }, g); txt(a, RX, y + 14, w.t, ph ? 11 : 13.5, 'd');
+        txt(g, RX, y + (ph ? 27 : 30), `${fmt(w.pages)} pages${w.nv > 1 ? `, ${nw(w.nv)} volumes` : ''}${w.sub ? ` · ${w.sub}` : ''}`, ph ? 8.5 : 10, 'm');
+        const bar = mk('g', { class: 'bar' }, g); let x = RX;
+        D.fronts.order.forEach((k) => { const ww = w.c[k] * u; if (ww <= 0) return; const r = mk('rect', { x, y: y + (ph ? 33 : 38), width: ww, height: ph ? 11 : 14, fill: FC[k] }, bar);
+          tipOn(r, () => `${esc(w.t)}: ${fmt(w.c[k])} claims answer ${esc(fname(k))}<small>${pct(w.c[k], s)}% of ${fmt(s)} sorted claims${k === 'in' && w.syn ? `; ${fmt(w.syn)} name Calixtus or the syncretists` : ''}</small>`); x += ww; });
+        const n = txt(g, x + 5, y + (ph ? 42 : 49), fmt(s), ph ? 8.5 : 10, 'm');
+        wrows.push({ g, bar, n }); });
+      render(last);
+    }
+    let last = TG.pinOK() ? 0 : 1;
+    function render(p) {
+      last = p; if (!spines.length) return; let up = 0, pages = 0;
+      spines.forEach(({ g, v }, i) => { const e = ease(clamp((p - 0.02 - i * 0.03) / 0.05, 0, 1)); g.style.transform = `scaleY(${e.toFixed(3)})`; if (e > 0.5) { up++; pages += v.n; } });
+      counter.textContent = `Wittenberg, ${V[0].y}–${V[V.length - 1].y} · ${nw(up)} ${up === 1 ? 'volume' : 'volumes'} · ${fmt(pages)} pages`;
+      digG.setAttribute('opacity', clamp((p - 0.42) * 14, 0, 1).toFixed(2));
+      wrows.forEach(({ g, bar, n }, i) => { const t0 = 0.52 + i * 0.055, e = ease(clamp((p - t0) / 0.06, 0, 1)); g.setAttribute('opacity', p >= t0 - 0.01 ? 1 : 0.2);
+        bar.style.transform = `scaleX(${e.toFixed(3)})`; n.setAttribute('opacity', e > 0.98 ? 1 : 0); });
+      if (TG.pinOK()) setNote(note, NOTES[p < 0.42 ? 0 : p < 0.52 ? 1 : p < 0.9 ? 2 : 3]);
+    }
+    build(); onPhoneSwitch(build);
+    if (!TG.pinOK()) note.innerHTML = NOTES.join('');
+    TG.chapter('#tg-calov', 4600, render, { scrub: 0.5 });
   })();
 
   /* ---------- explore ---------- */
