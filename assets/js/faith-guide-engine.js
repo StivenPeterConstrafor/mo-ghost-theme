@@ -142,7 +142,7 @@ window.TG = (() => {
             <div class="fx-body">${a.aff ? `<p class="small" style="margin:0 0 4px">${esc(a.aff)}</p>` : ''}${works(a)}<p class="small" style="margin:6px 0 0"><a href="${TG.href(`author/?a=${encodeURIComponent(a.full || a.n)}`)}" target="_blank" rel="noopener">${esc(a.full || a.n)} in the library</a></p></div></details>`).join('')}</div></details>`; }).join('')
         : `<p class="small">Nothing on this shelf matches “${esc(q)}”.</p>`;
       if (anim && hasG && !reduce) gsap.fromTo(folds.querySelectorAll('.fx-spark'), { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 1, stagger: 0.05, ease: 'power2.inOut', clearProps: 'clipPath' });
-      count.textContent = q ? `${A.length} ${A.length === 1 ? 'author' : 'authors'} and ${fmt(A.reduce((t, a) => t + a.w.filter(hitW).length, 0))} titles match “${input.value.trim()}”.` : `${AU.length} authors and ${fmt(nW)} works on this shelf.`;
+      count.textContent = q ? ((nT) => `${A.length} ${A.length === 1 ? 'author' : 'authors'} and ${fmt(nT)} ${nT === 1 ? 'title' : 'titles'} match “${input.value.trim()}”.`)(A.reduce((t, a) => t + a.w.filter(hitW).length, 0)) : `${AU.length} authors and ${fmt(nW)} works on this shelf.`;
     }
     folds.addEventListener('toggle', (ev) => { const d = ev.target; if (!d.open || !hasG || reduce) return;
       if (d.classList.contains('fx-cent')) gsap.from(d.querySelectorAll(':scope > .fx-who-list > .fx-who'), { opacity: 0, y: 8, duration: 0.35, stagger: 0.02, ease: 'power2.out', clearProps: 'opacity,transform' });

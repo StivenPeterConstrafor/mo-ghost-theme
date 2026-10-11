@@ -165,6 +165,10 @@
   /* ---------- 3. how a question is argued ---------- */
   (function article() {
     const A = D.article, {la} = A, {en} = A, host = document.querySelector('#tg-article .grid'), arrows = document.querySelector('#tg-article svg.arrows');
+    // MereO fix (2026-10-11): the first step, The question, reads la.title / en.title, which the
+    // data does not carry, and both excerpt lanes printed "undefined". The heading block's own words.
+    if (la.title == null) la.title = 'Utrum Deus sit.';
+    if (en.title == null) en.title = 'Whether God exists.';
     const first = (s, n) => { const w = s.split(/\s+/); return w.slice(0, n).join(' ') + (w.length > n ? ' …' : ''); };
     const tail = (s) => { const m = s.match(/(?:[,;]\s*)((?:et hoc|quam|quod)[^,;.]*Deum[^.]*)\.?\s*$/i); return m ? m[1] : ''; };
     const NAMES = ['Motion', 'Causes', 'What can and must be', 'Degrees', 'Order'];

@@ -184,3 +184,26 @@ main.tfr-guide-page [data-guide-root] .pcard .go a {
 main.tfr-guide-page [data-guide-root] .pcard .go a:hover { background: #c1593c; color: #fff; }
 main.tfr-guide-page [data-guide-root] .leaf .eds span,
 main.tfr-guide-page [data-guide-root] .press span { border-radius: 3px; }
+
+/* Debug pass, 2026-10-11 (Ian: "Go back through the shelf guide and
+   debug"). No list scrolls in a box of its own (Ian, 2026-09-22):
+   - the Lutheran guide's marks (the year-by-year writings) were capped at
+     18rem on a phone and scrolled inside the page;
+   - the Medieval guide's Aristotle table held a 640px minimum, so on a
+     phone it swiped sideways in its own box. Six commentators fit a phone
+     at about 42px a column once the row labels may wrap and the names
+     set small. Its labels are a table's, so they read in the working
+     face at every width. */
+main.tfr-guide-page [data-guide-root] .ari th { font-family: "Source Serif Pro", Georgia, serif; font-size: 0.86rem; }
+@media (max-width: 860px) {
+  main.tfr-guide-page [data-guide-root] .marks { max-height: none; overflow: visible; }
+}
+@media (max-width: 640px) {
+  main.tfr-guide-page [data-guide-root] .ari { overflow: visible; }
+  main.tfr-guide-page [data-guide-root] .ari table { min-width: 0; }
+  main.tfr-guide-page [data-guide-root] .ari col.r { width: 6.5rem; }
+  main.tfr-guide-page [data-guide-root] .ari th.r { white-space: normal; font-size: 0.8rem; line-height: 1.2; padding-right: 6px; }
+  main.tfr-guide-page [data-guide-root] .ari thead th:not(.r) { font-size: 0.68rem; line-height: 1.15; padding: 4px 1px 8px; hyphens: auto; overflow-wrap: anywhere; }
+  main.tfr-guide-page [data-guide-root] .ari td { padding: 2px 0; }
+  main.tfr-guide-page [data-guide-root] .ari td a { max-width: 26px; max-height: 26px; }
+}
