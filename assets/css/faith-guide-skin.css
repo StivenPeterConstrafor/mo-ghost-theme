@@ -148,3 +148,39 @@ main.tfr-guide-page [data-guide-root] .opener input,
 main.tfr-guide-page [data-guide-root] .opener input::placeholder { font-family: "Source Serif Pro", Georgia, serif; }
 main.tfr-guide-page [data-guide-root] .opener input { border-radius: 3px; background: #fffdfa; }
 main.tfr-guide-page [data-guide-root] .chron .pp span { border-radius: 3px; }
+
+/* Who's who (the people in the conversation, every guide). His group tabs
+   are pills that fill with ink; ours are TFR buttons, the chosen group
+   filled terracotta. A person's card is a working card: the name in the
+   working face, no lift and no gilt edge, the hairline turning terracotta
+   on hover as our cards do. */
+main.tfr-guide-page [data-guide-root] #names .kn-tabs button {
+  border-radius: 3px;
+  background: transparent;
+  border-color: #c1593c;
+  color: #c1593c;
+}
+main.tfr-guide-page [data-guide-root] #names .kn-tabs button:hover,
+main.tfr-guide-page [data-guide-root] #names .kn-tabs button[aria-selected="true"] {
+  background: #c1593c;
+  border-color: #c1593c;
+  color: #fff;
+}
+main.tfr-guide-page [data-guide-root] #names .kn-say,
+main.tfr-guide-page [data-guide-root] #names .kn-note { font-family: "Source Serif Pro", Georgia, serif; }
+main.tfr-guide-page [data-guide-root] #names .kn-say { font-size: 1.05rem; }
+main.tfr-guide-page [data-guide-root] #names .kn-card h3 { font: 600 1.15rem/1.2 "Source Serif Pro", Georgia, serif; }
+main.tfr-guide-page [data-guide-root] #names .kn-card::before { content: none; }
+main.tfr-guide-page [data-guide-root] #names .kn-card:hover { transform: none; box-shadow: none; border-color: #c1593c; }
+
+/* The English shelves: the press card's link is a TFR button; edition and
+   press labels are square tags. */
+main.tfr-guide-page [data-guide-root] .pcard .go a {
+  border-radius: 3px;
+  background: transparent;
+  border: 1px solid #c1593c;
+  color: #c1593c;
+}
+main.tfr-guide-page [data-guide-root] .pcard .go a:hover { background: #c1593c; color: #fff; }
+main.tfr-guide-page [data-guide-root] .leaf .eds span,
+main.tfr-guide-page [data-guide-root] .press span { border-radius: 3px; }

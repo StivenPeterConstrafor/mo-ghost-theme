@@ -94,8 +94,7 @@
 .tg .next a { font: 0.92rem var(--body); color: var(--ink); text-decoration: none; border: 1px solid var(--rule); border-radius: 999px; padding: 6px 14px; background: var(--card); }
 .tg .next a:hover { border-color: var(--rubric); color: var(--rubric); }
 @media (max-width: 860px) {
-  .tg .hero .wrap, .tg .scene > .wrap { min-width: 0; width: 100%; }   /* a wide diagram must not widen the page on phones */
-.tg .scene-grid { grid-template-columns: minmax(0, 1fr); }
+  .tg .hero .wrap, .tg .scene-grid { grid-template-columns: minmax(0, 1fr); }
   .tg .hero .art { max-width: 420px; }
   .tg .scene { min-height: auto; padding-block: 48px; }
   .tg .chron { max-height: 21rem; overflow: auto; margin-bottom: 8px; } .tg .chron li, .tg .chron li.past { opacity: 1; } .tg .chron .w { display: block; }
@@ -143,6 +142,27 @@
 .tg .fx-cent > .fx-body { padding: 0 4px 12px; }
 .tg .wlist mark, .tg .fx-who mark { background: color-mix(in srgb, var(--gilt) 32%, transparent); color: inherit; border-radius: 2px; }
 @media (max-width: 860px) { .tg .fx-cent > summary .fx-spark { display: none; } .tg .fx-cent > summary span { min-width: 0; } }
+/* who's who: the people in the conversation, group by group */
+.tg #names .kn-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 12px; }
+.tg #names .kn-tabs button { font: 0.92rem var(--body); color: var(--ink-2); background: var(--card); border: 1px solid var(--rule); border-radius: 999px; padding: 6px 14px; cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+.tg #names .kn-tabs button:hover { border-color: var(--rubric); color: var(--rubric); }
+.tg #names .kn-tabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.tg #names .kn-say { font: italic 1.12rem/1.45 var(--display); color: var(--ink-2); max-width: 48rem; margin: 0 0 10px; min-height: 1.5em; }
+.tg #names .kn-ruler { display: block; width: 100%; overflow: visible; margin: 4px 0 16px; }
+.tg #names .kn-ruler.dim .kn-bar { opacity: 0.25; } .tg #names .kn-ruler g.on text { fill: var(--rubric); font-weight: 600; }
+.tg #names .kn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 17.5rem), 1fr)); gap: 16px; perspective: 900px; }
+.tg #names .kn-card { position: relative; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 16px 18px 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+.tg #names .kn-card:hover { border-color: var(--rubric); box-shadow: 0 14px 30px -22px rgba(60, 40, 20, 0.55); transform: translateY(-2px); }
+.tg #names .kn-card::before { content: ""; position: absolute; left: 18px; right: 18px; top: 0; height: 2px; background: linear-gradient(90deg, var(--gilt), transparent); opacity: 0.7; }
+.tg #names .kn-d { margin: 0; font: 600 0.74rem var(--body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tg #names .kn-card h3 { font: 400 1.5rem/1.1 var(--display); margin: 0; text-wrap: balance; }
+.tg #names .kn-note { margin: 0; font: italic 0.88rem var(--display); color: var(--rubric); }
+.tg #names .kn-aff { margin: 0; font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+.tg #names .kn-sig { margin: 2px 0 0; font-size: 0.92rem; line-height: 1.5; color: var(--ink); text-wrap: pretty; }
+.tg #names .kn-go { margin: auto 0 0; padding-top: 8px; border-top: 1px solid var(--rule-2); display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; font-size: 0.86rem; }
+.tg #names .kn-go a { color: var(--rubric); }
+.tg #names .kn-go button { font: 0.86rem var(--body); color: var(--ink-2); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rule); }
+.tg #names .kn-go button:hover { color: var(--rubric); }
 
 /* On MereO: the guide sits in the theme's main, under the masthead and the TFR rail */
 .tfr-guide-page { background: #f6f1e7; }

@@ -22,6 +22,11 @@
     lutheran: "the Lutheran shelf",
     greek: "the Greek Fathers",
     latin: "the Latin Fathers",
+    english: "the English Divines",
+    puritans: "the Puritans",
+    anglicans: "the Anglicans",
+    methodists: "the Methodists",
+    westminster: "the Westminster Assembly",
   };
   // tradition slugs and their aliases (assets/data/faith-received/traditions.json) → the guides of that shelf
   const TRAD = {
@@ -31,6 +36,9 @@
     lutheran: ["lutheran"], lutheranism: ["lutheran"], "evangelical-lutheran": ["lutheran"],
     "the-whole-church": ["greek", "latin"], fathers: ["greek", "latin"], "the-fathers": ["greek", "latin"], patristic: ["greek", "latin"],
     "early-church": ["greek", "latin"], "greek-fathers": ["greek"], "latin-fathers": ["latin"],
+    anglican: ["anglicans"], "church-of-england": ["anglicans"], episcopal: ["anglicans"], anglicanism: ["anglicans"],
+    methodist: ["methodists"], methodists: ["methodists"], wesleyan: ["methodists"], wesleyans: ["methodists"], "wesleyan-methodist": ["methodists"], methodism: ["methodists"],
+    presbyterian: ["puritans", "westminster"], presbyterians: ["puritans", "westminster"], congregational: ["puritans"], congregationalist: ["puritans"], independent: ["puritans"], independents: ["puritans"],
   };
   const known = () => { try { return sessionStorage.getItem(KEY); } catch (e) { return null; } };
   const remember = (v) => { try { sessionStorage.setItem(KEY, v); } catch (e) {} };

@@ -93,6 +93,26 @@
   .tg-ref .eds li, .tg-ref .eds li.past { opacity: 1; } .tg-ref .eds li p { display: block; }
   .tg-ref .ramus { height: 640px; overflow: auto; } .tg-ref .ramus::before, .tg-ref .ramus::after { display: none; } .tg-ref .stream svg { height: 380px; }
 }
+
+/* the type case: every work a sort, sorted by kind */
+.tg-ref .case2 { position: relative; height: 560px; background: linear-gradient(180deg, color-mix(in srgb, var(--leather) 6%, var(--card)), var(--card)); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.tg-ref .case2 .sort { position: absolute; left: 0; top: 0; width: 8px; height: 10px; border-radius: 1.5px; will-change: transform; cursor: pointer; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.16); }
+.tg-ref .case2 .sort:hover { outline: 1.5px solid var(--ink); z-index: 3; }
+.tg-ref .case2 .comp { position: absolute; border: 2px solid color-mix(in srgb, var(--leather) 55%, var(--rule)); border-top-width: 0; background: color-mix(in srgb, var(--leather) 5%, transparent); border-radius: 0 0 3px 3px; cursor: pointer; transition: background 0.2s; }
+.tg-ref .case2 .comp:hover, .tg-ref .case2 .comp.on { background: color-mix(in srgb, var(--gilt) 14%, transparent); }
+.tg-ref .case2 .clab { position: absolute; font: 400 0.78rem/1.12 var(--display); color: var(--ink); text-align: center; pointer-events: none; }
+.tg-ref .case2 .clab b { display: block; font: 600 0.72rem var(--body); color: var(--rubric); font-variant-numeric: tabular-nums; }
+.tg-ref .case2 .axis { position: absolute; left: 10px; right: 10px; border-top: 1px solid var(--rule); }
+.tg-ref .case2 .yr { position: absolute; font: 0.72rem var(--body); color: var(--muted); transform: translateX(-50%); }
+.tg-ref .case2 .note { position: absolute; left: 14px; top: 10px; font: italic 0.95rem var(--display); color: var(--muted); }
+.tg-ref .kn-kinds { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 2px; }
+.tg-ref .kn-kinds li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 6px 10px; border-left: 2px solid var(--rule); opacity: 0.4; transition: opacity 0.3s, border-color 0.3s, background 0.3s; cursor: pointer; }
+.tg-ref .kn-kinds li b { font: 400 1.02rem var(--display); } .tg-ref .kn-kinds li span { font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tg-ref .kn-kinds li p { grid-column: 1 / -1; margin: 2px 0 0; font-size: 0.86rem; display: none; }
+.tg-ref .kn-kinds li.past { opacity: 0.75; } .tg-ref .kn-kinds li.now { opacity: 1; border-color: var(--rubric); background: var(--card); } .tg-ref .kn-kinds li.now p { display: block; }
+.tg-ref .case2-pick { margin-top: 12px; min-height: 2em; }
+.tg-ref .case2-pick h3 { font: 400 1.3rem var(--display); margin: 0 0 4px; } .tg-ref .case2-pick .wlist { columns: 2 16rem; }
+@media (max-width: 860px) { .tg-ref .case2 { height: 860px; } .tg-ref .kn-kinds li { opacity: 1; } .tg-ref .kn-kinds li p { display: none; } }
 </style>
 
 <section class="hero" aria-labelledby="tg-h1"><div class="wrap gut">
@@ -107,15 +127,17 @@
   <div class="art brace" aria-label="The shelf divided in the manner of Ramus: by where its writers taught, then by the three with the most pages in each"><svg viewBox="0 0 640 600" role="img"></svg><p class="cap" aria-live="polite"></p></div>
 </div></section>
 
-<section class="scene gut" id="tg-inst" aria-labelledby="tg-h-inst"><div class="wrap scene-grid">
+<section class="scene gut" id="tg-kinds" aria-labelledby="tg-h-kinds"><div class="wrap scene-grid">
   <div>
-    <p class="eyebrow">1 · One book</p>
-    <h2 id="tg-h-inst">Six chapters become eighty</h2>
-    <p class="say">Calvin published the <i>Institutes of the Christian Religion</i> at Basel in 1536, a small book in six chapters. He rewrote it for twenty-three years. Scroll through the five Latin editions.</p>
-    <ol class="eds" id="tg-eds"></ol>
-    <p class="small" style="margin-top:12px">The library holds the 1559 text in Henry Beveridge’s English. <a id="tg-inst-read" target="_blank" rel="noopener">Open it at the first book</a>.</p>
+    <p class="eyebrow">1 · What is on the shelf</p>
+    <h2 id="tg-h-kinds">Nine kinds of book</h2>
+    <p class="say">Four hundred and thirty-one works by a hundred and ten writers, from Zwingli’s Zurich to the Dutch academies of the eighteenth century. Scroll to sort them as a printer sorted type: each kind of book to its own compartment.</p>
+    <ol class="kn-kinds" id="tg-kind-list"></ol>
   </div>
-  <div class="inst" id="tg-inst-stage" aria-label="The chapters of the Institutes, edition by edition; in 1559 each chapter opens in the reader"><div class="count num" id="tg-inst-n">6<small>chapters</small></div><p class="tipline" id="tg-inst-tip"></p></div>
+  <div>
+    <div class="case2" id="tg-case2" aria-label="Every work on the shelf, first along the years and then sorted by kind into the compartments of a type case"><div class="tip" hidden></div></div>
+    <div class="case2-pick" id="tg-case2-pick" aria-live="polite"></div>
+  </div>
 </div></section>
 
 <section class="scene gut" id="tg-road" aria-labelledby="tg-h-road"><div class="wrap scene-grid">
@@ -166,5 +188,5 @@
   <h2 id="tg-h-ex">Every author on the shelf</h2>
   <p class="say" style="max-width:46rem">A hundred and ten writers, from Capito and Oecolampadius to the last orthodox professors of Basel. Choose a region to narrow the lines, or search for a title.</p>
   <div id="tg-explorer"></div>
-  <div class="next"><a href="/the-faith-received/all-works/?tradition=Reformed">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=Continental%20Reformed">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
+  <div class="next"><a href="/the-faith-received/all-works/?tradition=Reformed">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=Continental%20Reformed">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=english">The English Divines</a><a href="/the-faith-received/guide/?s=westminster">The Westminster Assembly</a><a href="/the-faith-received/guide/?s=puritans">The Puritans</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=methodists">The Methodists</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
 </div></section>

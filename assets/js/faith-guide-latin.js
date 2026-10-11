@@ -223,7 +223,7 @@ window.TGFinder = (host, D, C) => {
       for (let y = Math.ceil(range[0] / step) * step; y <= range[1]; y += step) ctx.fillText(String(y), X(y), base + 19);
       ctx.lineCap = 'round'; const lw = Math.max(1.1, Math.min(3, pitch * 0.55));
       for (const l of L) { if (l.x1 < -4 || l.x0 > W + 4) continue; const big = l.a.works.length >= 25, alpha = l.out ? 0.5 * (1 - prog) : 1;
-        ctx.globalAlpha = (big ? 0.95 : 0.6) * alpha; ctx.lineWidth = big ? lw * 1.35 : lw; ctx.strokeStyle = l.col; ctx.beginPath(); ctx.moveTo(l.x0, l.y); ctx.lineTo(Math.max(l.x0 + 1, l.x1), l.y); ctx.stroke(); }
+        ctx.globalAlpha = (big ? 0.95 : 0.6) * alpha * (l.a.u ? 0.6 : 1); ctx.lineWidth = big ? lw * 1.35 : lw; ctx.strokeStyle = l.col; ctx.setLineDash(l.a.u ? [2, 4] : []); ctx.beginPath(); ctx.moveTo(l.x0, l.y); ctx.lineTo(Math.max(l.x0 + 1, l.x1), l.y); ctx.stroke(); ctx.setLineDash([]); } // dashed: the record gives only a window of dates
       const la = prog < 1 ? clamp((prog - 0.55) / 0.45) : 1; ctx.globalAlpha = 1;
       if (la > 0) { ctx.font = `11.5px ${TG.css('--body')}`; const lanes = [12, 30, 48, 66], lastX = lanes.map(() => -1e9);
         for (const e of ECU) { if (e.y < range[0] || e.y > range[1]) continue; const x = X(e.y), w = ctx.measureText(e.name).width + 10; let lane = 0;
@@ -235,7 +235,7 @@ window.TGFinder = (host, D, C) => {
         ctx.fillStyle = rub; ctx.font = `600 12px ${TG.css('--body')}`; ctx.textAlign = h.x1 > W - 160 ? 'right' : 'left'; ctx.fillText(h.a.n, h.x1 > W - 160 ? h.x0 - 6 : h.x1 + 6, h.y + 4); } ctx.textAlign = 'center'; }
     function pick(mx, my) { if (prog < 1) return null; let best = null, bd = 1e9; for (const l of L) { if (l.out) continue; const dx = mx < l.x0 ? l.x0 - mx : mx > l.x1 ? mx - l.x1 : 0, d = Math.hypot(dx, (l.y - my) * 1.4); if (d < bd) { bd = d; best = l; } } return bd < Math.max(7, pitch * 1.5) ? best : null; }
     cv.addEventListener('mousemove', (ev) => { const b = cv.getBoundingClientRect(), mx = ev.clientX - b.left, my = ev.clientY - b.top, h = pick(mx, my); if (h === hover) return; hover = h; draw();
-      if (!h) { tip.hidden = true; return; } tip.innerHTML = `${esc(h.a.n)}<small>${esc(h.a.d)} · ${h.a.works.length} work${h.a.works.length === 1 ? '' : 's'} · ${vr(h.a.vols)}</small>`; tip.hidden = false;
+      if (!h) { tip.hidden = true; return; } tip.innerHTML = `${esc(h.a.n)}<small>${esc(h.a.d)}${h.a.u ? ' (dates uncertain)' : ''} · ${h.a.works.length} work${h.a.works.length === 1 ? '' : 's'} · ${vr(h.a.vols)}</small>`; tip.hidden = false;
       let left = mx + 14; if (left + tip.offsetWidth > b.width) left = mx - tip.offsetWidth - 14; tip.style.left = `${Math.max(0, left)}px`; tip.style.top = `${Math.max(0, my - 10)}px`; });
     cv.addEventListener('mouseleave', () => { hover = null; tip.hidden = true; draw(); });
     cv.addEventListener('click', (ev) => { const b = cv.getBoundingClientRect(), h = pick(ev.clientX - b.left, ev.clientY - b.top); if (!h) return; sel = h; draw(); const {a} = h;
@@ -356,8 +356,10 @@ window.TGFinder = (host, D, C) => {
       const p1 = clamp(p / 0.42, 0, 1), pI = clamp((p - 0.42) / 0.06, 0, 1), pF = clamp((p - 0.46) / 0.1, 0, 1), p2 = clamp((p - 0.58) / 0.4, 0, 1);
       const k = p1 * text.length;
       R.forEach((r, i) => {
-        const o = r.v.idx ? pI : clamp(k - i, 0, 1), u = ease(clamp(p2 * 1.6 - (i / R.length) * 0.6, 0, 1));
-        const x = lerp(r.A.x, r.B.x, u), y = lerp(r.A.y + (1 - o) * 26, r.B.y, u), w = lerp(r.A.w, r.B.w, u), h = lerp(r.A.h, r.B.h, u);
+        const o = r.v.idx ? pI : clamp(k - i, 0, 1), u = clamp(p2 * 1.6 - (i / R.length) * 0.6, 0, 1);
+        // the spine sinks onto its shelf first, then glides to its century's pile: two moves, never both at once (10-10)
+        const us = ease(clamp(u * 2, 0, 1)), ug = ease(clamp(u * 2 - 1, 0, 1));
+        const h = lerp(r.A.h, r.B.h, us), w = lerp(r.A.w, r.B.w, ug), x = lerp(r.A.x, r.B.x, ug), y = lerp(r.A.y + r.A.h - h + (1 - o) * 26, r.B.y, ug);
         r.body.setAttribute('x', x.toFixed(1)); r.body.setAttribute('y', y.toFixed(1)); r.body.setAttribute('width', w.toFixed(1)); r.body.setAttribute('height', h.toFixed(1));
         r.body.setAttribute('fill', u > 0 ? r.mix(u) : r.from); r.body.style.opacity = p2 > 0 ? 1 : o;
         r.lab.setAttribute('x', (x + 0.8).toFixed(1)); r.lab.setAttribute('y', (y + 12).toFixed(1)); r.lab.setAttribute('width', Math.max(0, w - 1.6).toFixed(1));

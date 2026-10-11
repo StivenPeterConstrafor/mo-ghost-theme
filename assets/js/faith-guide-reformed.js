@@ -46,68 +46,71 @@
       .from(leafEls, { opacity: 0, x: -10, duration: 0.45, ease: 'power2.out', stagger: 0.04 }, '-=0.45');
   })();
 
-  /* ---------- 1. the Institutes: six chapters become eighty ---------- */
-  (function institutes() {
-    const I = D.inst, stage = document.getElementById('tg-inst-stage'), nEl = document.getElementById('tg-inst-n'), tip = document.getElementById('tg-inst-tip');
-    document.getElementById('tg-inst-read').href = TG.read(I.slug, I.books[0].p);
-    const eds = document.getElementById('tg-eds');
-    eds.innerHTML = I.editions.map(([y, pl, n, note]) => `<li><b>${y}</b><span>${esc(pl)}</span><small>${n} chapters</small><p>${esc(note)}</p></li>`).join('');
-    const edLis = [...eds.children];
-    const SHORT = ['God the Creator', 'God the Redeemer', 'The grace of Christ', 'The church'];
-    const cells = [], hot = new Map();
-    I.books.forEach((b, bi) => b.ch.forEach(([n, t, p]) => { const a = document.createElement('a'); a.className = 'cell'; a.href = TG.read(I.slug, p); a.target = '_blank'; a.rel = 'noopener';
-      a.innerHTML = `<b>${n}</b><span>${esc(t)}</span>`; a.dataset.k = `${bi}.${n}`; a.title = t; a.setAttribute('aria-label', `Book ${['I', 'II', 'III', 'IV'][bi]}, chapter ${n}: ${t}`);
-      a.addEventListener('mouseenter', () => { tip.textContent = `Book ${['I', 'II', 'III', 'IV'][bi]}, chapter ${n}: ${t}${hot.get(a.dataset.k) ? `. In 1536: ${hot.get(a.dataset.k)}` : ''}`; });
-      stage.appendChild(a); cells.push({ a, bi, n }); }));
-    I.first.forEach(([lab, tg]) => tg.forEach(([b, n]) => hot.set(`${b}.${n}`, lab)));
-    const heads = I.books.map((b, i) => { const h = document.createElement('div'); h.className = 'bkh'; h.innerHTML = `<b>Book ${['I', 'II', 'III', 'IV'][i]}</b>${esc(SHORT[i])}`; stage.appendChild(h); return h; });
-    const keyLab = document.createElement('p'); keyLab.className = 'keylab'; keyLab.textContent = 'The six chapters of 1536'; stage.appendChild(keyLab);
-    const firsts = I.first.map(([lab], i) => { const d = document.createElement('div'); d.className = 'first'; d.innerHTML = `<i>${i + 1}</i>${esc(lab)}`; stage.appendChild(d); return d; });
-    let cur = -1, W = 0;
-    function layout(k) { // target boxes for every element in edition k
-      W = stage.clientWidth; const Hh = stage.clientHeight, out = { cells: [], firsts: [], heads: [] }, N = I.editions[k][2];
-      const colW = Math.min(330, W * 0.46), colX = W - colW - 4, top = k === 4 ? 122 : 96;
-      if (k === 0) {
-        cells.forEach(() => out.cells.push({ x: colX + colW / 2 - 10, y: top + 240, w: 20, h: 8, o: 0 }));
-        firsts.forEach((_, i) => out.firsts.push({ x: colX, y: top + i * 70, w: colW, h: 56, o: 1, fs: 17 }));
-      } else if (k < 4) {
-        const hh = Math.min(26, (Hh - top - 30 - (N - 1) * 3) / N);
-        cells.forEach((c, i) => out.cells.push(i < N ? { x: colX, y: top + i * (hh + 3), w: colW, h: hh, o: 1 } : { x: colX, y: top + N * (hh + 3), w: colW, h: 4, o: 0 }));
-        const kw = Math.max(120, colX - 30);
-        firsts.forEach((_, i) => out.firsts.push({ x: 0, y: top + 96 + i * 34, w: Math.min(kw, 260), h: 28, o: 1, fs: 13 }));
-      } else {
-        const gap = W < 600 ? 4 : 10, cw = (W - 3 * gap) / 4, ch = Math.min(17, (Hh - top - 40 - 24 * 2) / 25), y0 = top + 40;
-        cells.forEach((c) => out.cells.push({ x: c.bi * (cw + gap), y: y0 + (c.n - 1) * (ch + 2), w: cw, h: ch, o: 1 }));
-        I.first.forEach(([, tg], i) => { const [b, n] = tg[0]; out.firsts.push({ x: b * (cw + gap), y: y0 + (n - 1) * (ch + 2), w: cw, h: ch, o: 0, fs: 11 }); });
-        heads.forEach((h, i) => { out.heads.push({ x: i * (cw + gap), y: top - 6, w: cw }); h.classList.toggle('narrow', W < 600); });
-      }
-      return out;
+  /* ---------- 1. what is on the shelf: every work along the years, then sorted by kind into a printer's type case ---------- */
+  (function kinds() {
+    const K = D.kinds, host = document.getElementById('tg-case2'), tip = host.querySelector('.tip'), pickEl = document.getElementById('tg-case2-pick'), list = document.getElementById('tg-kind-list');
+    const FI = Object.fromEntries(D.fam.map(([k], i) => [k, i + 1])), col = (f) => `var(--f${FI[f] || 1})`;
+    const by = Object.fromEntries(K.order.map((k) => [k, K.works.filter((w) => w[6] === k)]));
+    const order = K.order.filter((k) => by[k].length);
+    list.innerHTML = order.map((k) => `<li data-k="${k}"><b>${esc(K.names[k])}</b><span>${by[k].length} works · ${fmt(by[k].reduce((t, w) => t + w[2], 0))} pp.</span><p>${esc(K.say[k] || '')}</p></li>`).join('');
+    const lis = [...list.children];
+    const sorts = K.works.map((w, i) => { const d = document.createElement('a'); d.className = 'sort'; d.href = TG.read(w[1]); d.target = '_blank'; d.rel = 'noopener'; d.style.background = col(w[5]);
+      d.setAttribute('aria-label', `${w[0]}, ${w[3]}`); d.dataset.i = i; host.appendChild(d); return d; });
+    const axis = document.createElement('div'); axis.className = 'axis'; host.appendChild(axis);
+    const note = document.createElement('p'); note.className = 'note'; host.appendChild(note);
+    let comps = [], labs = [], years = [], L = null, cur = -1, picked = null;
+    function layout() {
+      const W = host.clientWidth, H = host.clientHeight, narrow = W < 640, tw = narrow ? 6 : 8, th = narrow ? 8 : 10, gx = 2, gy = 2;
+      const Y0 = 1500, Y1 = 1800, base = Math.round(H * (narrow ? 0.2 : 0.36)), sx = (y) => 14 + (Math.max(Y0, Math.min(Y1, y)) - Y0) / (Y1 - Y0) * (W - 28 - tw);
+      const stack = {}, A = K.works.map((w) => { const b = Math.floor((w[4] - Y0) / 4); const n = (stack[b] = (stack[b] || 0) + 1) - 1; return { x: sx(Y0 + b * 4), y: base - (n + 1) * (th + gy) }; });
+      const per = narrow ? 3 : order.length, rows = Math.ceil(order.length / per), gap = narrow ? 8 : 10, cw = (W - 20 - (per - 1) * gap) / per;
+      const lab = narrow ? 50 : 54, cTop = base + 30, cH = (H - cTop - lab - (rows - 1) * (lab + 6)) / rows, B = new Array(K.works.length), boxes = {}; // room under each compartment for its name
+      order.forEach((k, i) => { const r = Math.floor(i / per), c = i % per, x = 10 + c * (cw + gap), y = cTop + r * (cH + lab + 6), cols = Math.max(1, Math.floor((cw - 6) / (tw + gx)));
+        boxes[k] = { x, y, w: cw, h: cH };
+        by[k].forEach((w, j) => { const idx = K.works.indexOf(w), cc = j % cols, rr = Math.floor(j / cols); B[idx] = { x: x + 4 + cc * (tw + gx), y: y + cH - 4 - (rr + 1) * (th + gy) }; }); });
+      return { W, H, tw, th, A, B, boxes, base, sx, Y0, Y1 };
     }
-    function step(k, instant) {
-      if (k === cur && !instant) return; const prev = cur; cur = k; const L = layout(k), dur = instant || !G ? 0 : 0.85;
-      edLis.forEach((li, i) => { li.classList.toggle('now', i === k); li.classList.toggle('past', i < k); });
-      const n = I.editions[k][2];
-      if (G && !instant && prev >= 0) { const o = { v: +nEl.firstChild.textContent || 6 }; gsap.to(o, { v: n, duration: 0.8, ease: 'power2.out', onUpdate() { nEl.firstChild.textContent = Math.round(o.v); } }); }
-      else nEl.firstChild.textContent = n;
-      nEl.querySelector('small').textContent = k === 4 ? 'chapters in four books' : 'chapters';
-      cells.forEach((c, i) => {
-        const b = L.cells[i], isHot = k === 4 && hot.has(c.a.dataset.k);
-        c.a.classList.toggle('hot', isHot); c.a.style.pointerEvents = k === 4 ? 'auto' : 'none'; c.a.tabIndex = k === 4 ? 0 : -1;
-        if (dur) gsap.to(c.a, { left: b.x, top: b.y, width: b.w, height: b.h, opacity: b.o, duration: dur, ease: 'power3.inOut', delay: k === 4 ? (c.bi * 0.08 + c.n * 0.006) : i * 0.008 });
-        else Object.assign(c.a.style, { left: `${b.x}px`, top: `${b.y}px`, width: `${b.w}px`, height: `${b.h}px`, opacity: b.o });
-        const sp = c.a.querySelector('span'); if (dur) gsap.to(sp, { opacity: k === 4 ? 1 : 0, duration: 0.4, delay: k === 4 ? 0.7 : 0 }); else sp.style.opacity = k === 4 ? 1 : 0;
+    function frame() {
+      L = layout(); comps.forEach((c) => c.remove()); labs.forEach((c) => c.remove()); years.forEach((c) => c.remove()); comps = []; labs = []; years = [];
+      sorts.forEach((s) => { s.style.width = `${L.tw}px`; s.style.height = `${L.th}px`; });
+      axis.style.top = `${L.base}px`;
+      for (let y = 1525; y <= 1775; y += 50) { const t = document.createElement('span'); t.className = 'yr'; t.style.left = `${L.sx(y)}px`; t.style.top = `${L.base + 4}px`; t.textContent = y; host.appendChild(t); years.push(t); }
+      order.forEach((k) => { const b = L.boxes[k], c = document.createElement('div'); c.className = 'comp'; Object.assign(c.style, { left: `${b.x}px`, top: `${b.y}px`, width: `${b.w}px`, height: `${b.h}px` }); c.dataset.k = k;
+        c.onclick = () => pick(k); host.insertBefore(c, host.firstChild); comps.push(c);
+        const l = document.createElement('div'); l.className = 'clab'; Object.assign(l.style, { left: `${b.x}px`, top: `${b.y + b.h + 4}px`, width: `${b.w}px` }); l.innerHTML = `<b>0</b>${esc(K.names[k])}`; host.appendChild(l); labs.push(l); });
+    }
+    function pick(k) {
+      picked = k; comps.forEach((c) => c.classList.toggle('on', c.dataset.k === k));
+      const ws = by[k].slice().sort((a, b) => b[2] - a[2]);
+      pickEl.innerHTML = `<h3>${esc(K.names[k])}</h3><p class="small" style="margin:0 0 6px">${esc(K.say[k] || '')} The largest first.</p><ul class="wlist">${ws.slice(0, 14).map((w) => `<li><a href="${TG.read(w[1])}" target="_blank" rel="noopener">${esc(w[0])}</a><small>${esc(w[3])} · ${fmt(w[2])} pp.</small></li>`).join('')}</ul>${ws.length > 14 ? `<p class="small">and ${ws.length - 14} more in the finder below.</p>` : ''}`;
+      if (G) gsap.from(pickEl.querySelectorAll('.wlist li'), { opacity: 0, y: 6, duration: 0.3, stagger: 0.02 });
+    }
+    lis.forEach((li) => { li.onclick = () => pick(li.dataset.k); });
+    host.addEventListener('mousemove', (e) => { const s = e.target.closest('.sort'); if (!s) { tip.hidden = true; return; } const w = K.works[+s.dataset.i], b = host.getBoundingClientRect();
+      tip.innerHTML = `${esc(w[0])}<small>${esc(w[3])} · ${esc(K.names[w[6]])} · ${fmt(w[2])} pp.</small>`; tip.hidden = false;
+      tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 240)}px`; tip.style.top = `${Math.min(e.clientY - b.top + 12, b.height - 60)}px`; });
+    host.addEventListener('mouseleave', () => { tip.hidden = true; });
+    function render(p) {
+      const pA = clamp(p / 0.14, 0, 1), pB = clamp((p - 0.18) / 0.72, 0, 1), n = order.length, kNow = Math.min(n - 1, Math.floor(pB * n));
+      const counts = Object.fromEntries(order.map((k) => [k, 0]));
+      K.works.forEach((w, i) => {
+        const a = L.A[i], b = L.B[i], appear = clamp(pA * 1.4 - (i / K.works.length) * 0.4, 0, 1), ki = order.indexOf(w[6]);
+        const local = clamp((pB * n - ki) * 1.15 - (by[w[6]].indexOf(w) / by[w[6]].length) * 0.15, 0, 1), u = ease(local);
+        if (local >= 1) counts[w[6]]++;
+        const x = lerp(a.x, b.x, u), y = lerp(a.y, b.y, u) - Math.sin(Math.PI * u) * 40; // each sort is lifted, carried and dropped
+        sorts[i].style.transform = `translate(${x.toFixed(1)}px, ${(y - (1 - appear) * 24).toFixed(1)}px)`; sorts[i].style.opacity = appear;
       });
-      firsts.forEach((f, i) => { const b = L.firsts[i];
-        if (dur) gsap.to(f, { left: b.x, top: b.y, width: b.w, height: b.h, opacity: b.o, fontSize: b.fs, duration: k === 4 ? 1.1 : dur, ease: 'power3.inOut', delay: k === 4 ? 0.15 + i * 0.07 : 0 });
-        else Object.assign(f.style, { left: `${b.x}px`, top: `${b.y}px`, width: `${b.w}px`, height: `${b.h}px`, opacity: b.o, fontSize: `${b.fs}px` }); });
-      heads.forEach((h, i) => { const b = L.heads[i]; if (b) Object.assign(h.style, { left: `${b.x}px`, top: `${b.y}px`, width: `${b.w}px` });
-        if (dur) gsap.to(h, { opacity: k === 4 ? 1 : 0, y: k === 4 ? 0 : 8, duration: 0.5, delay: k === 4 ? 0.5 + i * 0.08 : 0 }); else h.style.opacity = k === 4 ? 1 : 0; });
-      if (dur) gsap.to(keyLab, { opacity: k > 0 && k < 4 ? 1 : 0, duration: 0.4 }); else keyLab.style.opacity = k > 0 && k < 4 ? 1 : 0;
-      tip.textContent = k === 4 ? 'The six chapters of 1536 are marked where they stand in 1559. Every chapter opens in the reader.' : k === 0 ? 'The first edition: a catechism’s order, Law, Creed, Prayer, sacraments.' : '';
+      labs.forEach((l, i) => { l.firstChild.textContent = counts[order[i]]; });
+      const showC = clamp((p - 0.12) / 0.06, 0, 1); comps.forEach((c) => { c.style.opacity = showC; }); labs.forEach((l) => { l.style.opacity = showC; });
+      axis.style.opacity = years[0] ? 1 - clamp((pB - 0.6) / 0.3, 0, 1) * 0.6 : 1; years.forEach((y) => { y.style.opacity = axis.style.opacity; });
+      note.textContent = pB <= 0 ? 'Every work on the shelf, by when its writer was at work.' : pB < 1 ? `Sorting: ${K.names[order[kNow]]}` : 'Choose a compartment to see what it holds.';
+      const now = pB <= 0 ? -1 : kNow; if (now !== cur) { cur = now; lis.forEach((li, i) => { li.classList.toggle('now', i === now); li.classList.toggle('past', i < now); }); }
+      if (p >= 0.999 && !picked) pick(order[0]);
     }
-    step(0, true);
-    TG.chapter('#tg-inst', 3400, (p, fin) => step(fin ? 4 : Math.min(4, Math.floor(p * 5)), fin), { scrub: true });
-    let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { if (Math.abs(stage.clientWidth - W) > 2) step(cur, true); }, 120); }).observe(stage);
+    frame(); let lastP = 0;
+    const st = TG.chapter('#tg-kinds', 3600, (p, fin) => { lastP = fin ? 1 : p; render(lastP); }, { scrub: 0.5 });
+    if (!st) lis.forEach((li) => li.classList.add('now'));
+    let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { frame(); render(lastP); }, 150); }).observe(host);
   })();
 
   /* ---------- 2. the Reformed International ---------- */

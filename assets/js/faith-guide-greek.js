@@ -223,7 +223,7 @@ window.TGFinder = (host, D, C) => {
       for (let y = Math.ceil(range[0] / step) * step; y <= range[1]; y += step) ctx.fillText(String(y), X(y), base + 19);
       ctx.lineCap = 'round'; const lw = Math.max(1.1, Math.min(3, pitch * 0.55));
       for (const l of L) { if (l.x1 < -4 || l.x0 > W + 4) continue; const big = l.a.works.length >= 25, alpha = l.out ? 0.5 * (1 - prog) : 1;
-        ctx.globalAlpha = (big ? 0.95 : 0.6) * alpha; ctx.lineWidth = big ? lw * 1.35 : lw; ctx.strokeStyle = l.col; ctx.beginPath(); ctx.moveTo(l.x0, l.y); ctx.lineTo(Math.max(l.x0 + 1, l.x1), l.y); ctx.stroke(); }
+        ctx.globalAlpha = (big ? 0.95 : 0.6) * alpha * (l.a.u ? 0.6 : 1); ctx.lineWidth = big ? lw * 1.35 : lw; ctx.strokeStyle = l.col; ctx.setLineDash(l.a.u ? [2, 4] : []); ctx.beginPath(); ctx.moveTo(l.x0, l.y); ctx.lineTo(Math.max(l.x0 + 1, l.x1), l.y); ctx.stroke(); ctx.setLineDash([]); } // dashed: the record gives only a window of dates
       const la = prog < 1 ? clamp((prog - 0.55) / 0.45) : 1; ctx.globalAlpha = 1;
       if (la > 0) { ctx.font = `11.5px ${TG.css('--body')}`; const lanes = [12, 30, 48, 66], lastX = lanes.map(() => -1e9);
         for (const e of ECU) { if (e.y < range[0] || e.y > range[1]) continue; const x = X(e.y), w = ctx.measureText(e.name).width + 10; let lane = 0;
@@ -235,7 +235,7 @@ window.TGFinder = (host, D, C) => {
         ctx.fillStyle = rub; ctx.font = `600 12px ${TG.css('--body')}`; ctx.textAlign = h.x1 > W - 160 ? 'right' : 'left'; ctx.fillText(h.a.n, h.x1 > W - 160 ? h.x0 - 6 : h.x1 + 6, h.y + 4); } ctx.textAlign = 'center'; }
     function pick(mx, my) { if (prog < 1) return null; let best = null, bd = 1e9; for (const l of L) { if (l.out) continue; const dx = mx < l.x0 ? l.x0 - mx : mx > l.x1 ? mx - l.x1 : 0, d = Math.hypot(dx, (l.y - my) * 1.4); if (d < bd) { bd = d; best = l; } } return bd < Math.max(7, pitch * 1.5) ? best : null; }
     cv.addEventListener('mousemove', (ev) => { const b = cv.getBoundingClientRect(), mx = ev.clientX - b.left, my = ev.clientY - b.top, h = pick(mx, my); if (h === hover) return; hover = h; draw();
-      if (!h) { tip.hidden = true; return; } tip.innerHTML = `${esc(h.a.n)}<small>${esc(h.a.d)} · ${h.a.works.length} work${h.a.works.length === 1 ? '' : 's'} · ${vr(h.a.vols)}</small>`; tip.hidden = false;
+      if (!h) { tip.hidden = true; return; } tip.innerHTML = `${esc(h.a.n)}<small>${esc(h.a.d)}${h.a.u ? ' (dates uncertain)' : ''} · ${h.a.works.length} work${h.a.works.length === 1 ? '' : 's'} · ${vr(h.a.vols)}</small>`; tip.hidden = false;
       let left = mx + 14; if (left + tip.offsetWidth > b.width) left = mx - tip.offsetWidth - 14; tip.style.left = `${Math.max(0, left)}px`; tip.style.top = `${Math.max(0, my - 10)}px`; });
     cv.addEventListener('mouseleave', () => { hover = null; tip.hidden = true; draw(); });
     cv.addEventListener('click', (ev) => { const b = cv.getBoundingClientRect(), h = pick(ev.clientX - b.left, ev.clientY - b.top); if (!h) return; sel = h; draw(); const {a} = h;
@@ -369,9 +369,12 @@ window.TGFinder = (host, D, C) => {
     function render(p) {
       const p1 = clamp(p / 0.48, 0, 1), p2 = clamp((p - 0.55) / 0.42, 0, 1), k = p1 * n;
       R.forEach(({ el, A, B, gb }, i) => {
-        const o = clamp(k - i, 0, 1), u = ease(clamp((p2 * 1.6) - (i / n) * 0.6, 0, 1));
-        gb.style.opacity = p2 > 0 ? Math.max(0, 1 - u * 4) * o : o; gb.setAttribute('transform', `translate(0 ${((1 - o) * 26).toFixed(1)})`);
-        const x = lerp(A.x, B.x, u), y = lerp(A.y + (1 - o) * 26, B.y, u), w = lerp(A.w, B.w, u), h = lerp(A.h, B.h, u);
+        const o = clamp(k - i, 0, 1), u = clamp((p2 * 1.6) - (i / n) * 0.6, 0, 1);
+        // two moves, never both at once (10-10, owner: "some animations are weird"): the spine first sinks onto its shelf as a thin bar,
+        // then the bar glides to its place among the centuries
+        const us = ease(clamp(u * 2, 0, 1)), ug = ease(clamp(u * 2 - 1, 0, 1));
+        gb.style.opacity = p2 > 0 ? Math.max(0, 1 - us * 3) * o : o; gb.setAttribute('transform', `translate(0 ${((1 - o) * 26).toFixed(1)})`);
+        const h = lerp(A.h, B.h, us), w = lerp(A.w, B.w, ug), x = lerp(A.x, B.x, ug), y = lerp(A.y + A.h - h + (1 - o) * 26, B.y, ug);
         el.setAttribute('x', x.toFixed(1)); el.setAttribute('y', y.toFixed(1)); el.setAttribute('width', w.toFixed(1)); el.setAttribute('height', h.toFixed(1));
         el.style.opacity = p2 > 0 ? 0.92 : o;
       });

@@ -12,6 +12,8 @@
     { k: 'catholic', c: '--f5', name: 'Roman Catholic', eyebrow: `${D.catholic.works} works`, desc: 'Trent and the schools after it: Thomists, Scotists and Jesuits, the controversialists and the historians.', unit: ['writer', 'writers'] },
     { k: 'reformed', c: '--f4', name: 'Continental Reformed', eyebrow: `${D.reformed.works} works`, desc: 'Zurich and Geneva, Heidelberg and Leiden: the Reformers and the Reformed orthodox who followed them.', unit: ['writer', 'writers'] },
     { k: 'lutheran', c: '--f2', name: 'Lutheran', eyebrow: `${D.lutheran.works} works`, desc: 'Luther and Melanchthon, the Book of Concord, and the orthodox divines of Wittenberg and Jena.', unit: ['writer', 'writers'] },
+    { k: 'english', c: '--f7', name: 'The English Divines', eyebrow: `${fmt(D.english.works)} works`, desc: 'The English church from the Reformation to the Evangelical revival, with a guide for each party and for the Westminster Assembly.', unit: ['writer', 'writers'],
+      subs: [['puritans', 'The Puritans'], ['anglicans', 'The Anglicans'], ['methodists', 'The Methodists'], ['westminster', 'The Westminster Assembly']] },
   ];
   const C0 = 1, C1 = 20; let cur = 4;
   const svg = document.querySelector('#tg-ruler svg'); let W = 0, X;
@@ -34,7 +36,7 @@
   svg.addEventListener('keydown', (ev) => { if (ev.key === 'ArrowLeft') { set(cur - 1); ev.preventDefault(); } if (ev.key === 'ArrowRight') { set(cur + 1); ev.preventDefault(); } });
   document.getElementById('tg-prev').onclick = () => set(cur - 1); document.getElementById('tg-next').onclick = () => set(cur + 1);
   const tiles = document.getElementById('tg-tiles');
-  tiles.innerHTML = SH.map((s) => `<article class="tile" data-k="${s.k}" style="--c:var(${s.c})"><p class="eyebrow">${esc(s.eyebrow)}</p><h3><a href="${esc(LK[s.k] || '#')}">${esc(s.name)}</a></h3><p class="desc">${esc(s.desc)}</p>
+  tiles.innerHTML = SH.map((s) => `<article class="tile" data-k="${s.k}" style="--c:var(${s.c})"><p class="eyebrow">${esc(s.eyebrow)}</p><h3><a href="${esc(LK[s.k] || '#')}">${esc(s.name)}</a></h3><p class="desc">${esc(s.desc)}</p>${s.subs ? `<p class="subs">${s.subs.filter(([k]) => LK[k]).map(([k, n]) => `<a href="${esc(LK[k])}">${esc(n)}</a>`).join('')}</p>` : ''}
     <div class="count"><b data-n="0">0</b><span></span></div><ol></ol><a class="open" href="${esc(LK[s.k] || '#')}">Open the guide</a></article>`).join('');
   function fill(first) {
     document.getElementById('tg-now').innerHTML = `The <em>${WORD[cur]}</em> century`;

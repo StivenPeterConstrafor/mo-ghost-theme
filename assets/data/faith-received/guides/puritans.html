@@ -1,0 +1,151 @@
+<style>
+/* The Puritans: plain glass, black letter ink, the sober colors of a meeting-house; the press in its places */
+.tg-pur { --f1: #3b3a36; --f2: #8a5a2b; --f3: #2f4a6b; --f4: #5b6b3a; --f5: #8a3a2a;
+  --g1: #2d2927; --g2: #2f4a6b; --g3: #5b6b3a; --g4: #c07a2a; --g5: #a3382a; --g6: #8a7f74; --g7: #d6ccb9;
+  --glass: #eef0e8; --glass-2: #e3e7dc; --lead: #4a443e; --stone: #ddd3c2; --stone-2: #c9bda8; }
+/* the window */
+.tg-pur .win svg { filter: drop-shadow(0 18px 30px rgba(60, 45, 25, 0.18)); }
+.tg-pur .win .stone { fill: var(--stone); stroke: var(--stone-2); stroke-width: 1.5; }
+.tg-pur .win .q { stroke: var(--lead); stroke-width: 1.5; stroke-linejoin: round; }
+.tg-pur .win .q.a { cursor: pointer; }
+.tg-pur .win .q.a:hover, .tg-pur .win .q.a:focus { stroke: var(--rubric); stroke-width: 2.6; outline: none; }
+.tg-pur .win .frame { fill: none; stroke: var(--lead); stroke-width: 2.4; }
+/* the press */
+.tg-pur .pressbox { position: relative; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 12px 12px 8px; }
+.tg-pur .pressbox canvas { display: block; width: 100%; height: min(58vh, 470px); }
+.tg-pur .pressbox .tip { max-width: 24rem; }
+.tg-pur .pressnow { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+.tg-pur .pressnow .big { font-size: clamp(2.2rem, 4.6vw, 3.4rem); }
+.tg-pur .glegend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+.tg-pur .glegend span { display: inline-flex; align-items: center; gap: 6px; } .tg-pur .glegend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.tg-pur #tg-press-pick .d { color: var(--rubric); font-weight: 600; font-variant-numeric: tabular-nums; }
+.tg-pur .glegend b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+/* the chain */
+.tg-pur .chainbox { position: relative; }
+.tg-pur .chainbox svg { display: block; width: 100%; height: auto; overflow: visible; }
+.tg-pur .chainbox .lk { fill: none; stroke-width: 11; stroke-linecap: round; }
+.tg-pur .chainbox .lk-in { fill: none; stroke-width: 3; opacity: 0.55; }
+.tg-pur .chainbox .nm { font: 400 19px var(--display); fill: var(--ink); text-anchor: middle; }
+.tg-pur .chainbox .yr { font: 600 10.5px var(--body); fill: var(--muted); text-anchor: middle; letter-spacing: 0.08em; }
+.tg-pur .chainbox .via { font: italic 12px var(--display); fill: var(--rubric); text-anchor: middle; }
+.tg-pur .link-card { margin-top: 14px; min-height: 13.5rem; }
+.tg-pur .link-card h3 { margin-bottom: 2px; }
+.tg-pur .link-card .meta { color: var(--muted); font-size: 0.86rem; margin: 0 0 8px; }
+.tg-pur .link-card .stat { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 10px; font-size: 0.86rem; color: var(--muted); }
+.tg-pur .link-card .stat b { display: block; font: 400 1.6rem/1 var(--display); color: var(--rubric); font-variant-numeric: lining-nums tabular-nums; }
+/* the plain style */
+.tg-pur .rules { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 4px; counter-reset: r; }
+.tg-pur .rules li { padding: 7px 12px; border-left: 2px solid var(--rule); opacity: 0.45; transition: opacity 0.3s, border-color 0.3s, background 0.3s; counter-increment: r; font: italic 1rem/1.35 var(--display); }
+.tg-pur .rules li::before { content: counter(r) ". "; font: 600 0.8rem var(--body); font-style: normal; color: var(--rubric); }
+.tg-pur .rules li.now { opacity: 1; border-color: var(--rubric); background: var(--card); }
+.tg-pur .sum { margin: 10px 0 0; font: italic 1.02rem var(--display); color: var(--ink-2); }
+.tg-pur .sermon { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 0 22px; align-items: stretch; }
+.tg-pur .stack { position: relative; height: min(64vh, 540px); border-radius: 2px 5px 5px 2px; background: repeating-linear-gradient(0deg, #f3ecdc 0 2px, #e7dcc6 2px 3px); box-shadow: inset -6px 0 10px -6px rgba(60, 40, 20, 0.4), 0 12px 24px -16px rgba(60, 40, 20, 0.5); }
+.tg-pur .stack .seg { position: absolute; left: 0; right: 0; border-top: 1px solid rgba(74, 68, 62, 0.5); background: transparent; transition: background 0.3s; }
+.tg-pur .stack .seg.on { background: color-mix(in srgb, var(--rubric) 22%, transparent); }
+.tg-pur .stack .seg.past { background: color-mix(in srgb, var(--gilt) 14%, transparent); }
+.tg-pur .stack .pg { position: absolute; left: -36px; font: 10px var(--body); color: var(--muted); transform: translateY(-50%); font-variant-numeric: tabular-nums; }
+.tg-pur .parts { position: relative; height: min(64vh, 540px); }
+.tg-pur .part { position: absolute; left: 0; right: 0; transform-origin: left center; }
+.tg-pur .part .lab { display: flex; align-items: baseline; gap: 10px; font: 400 1.02rem var(--display); color: var(--ink); }
+.tg-pur .part .lab small { font: 0.74rem var(--body); color: var(--muted); font-variant-numeric: tabular-nums; }
+.tg-pur .part .lab i { font: 600 0.68rem var(--body); font-style: normal; color: var(--rubric); letter-spacing: 0.12em; text-transform: uppercase; }
+.tg-pur .part .q { display: none; margin-top: 6px; padding: 10px 14px; background: var(--card); border: 1px solid var(--rule); border-left: 0; border-radius: 3px; font: italic 1.02rem/1.45 var(--display); color: var(--ink); box-shadow: 0 10px 24px -18px rgba(60, 40, 20, 0.5); }
+.tg-pur .part .q a { font: 0.8rem var(--body); font-style: normal; margin-left: 6px; }
+.tg-pur .part.on .q { display: block; }
+.tg-pur .part.on .lab { color: var(--rubric); }
+.tg-pur .part .tick { position: absolute; left: -22px; top: 0.62em; width: 16px; height: 1px; background: var(--rule); }
+/* three countries */
+.tg-pur .maps { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.tg-pur .maps figure { margin: 0; } .tg-pur .maps figcaption { font: italic 0.9rem var(--display); color: var(--muted); margin-top: 5px; }
+.tg-pur #tg-map { aspect-ratio: 4 / 5; } .tg-pur #tg-map-ne { aspect-ratio: 4 / 3.4; }
+.tg-pur .lands-key { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 4px; }
+.tg-pur .lands-key li { padding: 8px 12px; border-left: 2px solid var(--rule); opacity: 0.45; transition: opacity 0.3s, border-color 0.3s, background 0.3s; }
+.tg-pur .lands-key li.now { opacity: 1; border-color: var(--rubric); background: var(--card); }
+.tg-pur .lands-key li b { font: 400 1.06rem var(--display); display: block; }
+.tg-pur .lands-key li p { margin: 2px 0 0; font-size: 0.88rem; display: none; } .tg-pur .lands-key li.now p { display: block; }
+@media (max-width: 860px) {
+  .tg-pur .maps { grid-template-columns: minmax(0, 1fr); }
+  .tg-pur .rules li { opacity: 1; } .tg-pur .lands-key li { opacity: 1; } .tg-pur .lands-key li p { display: block; }
+  .tg-pur .sermon { grid-template-columns: 40px minmax(0, 1fr); gap: 0 14px; }
+  .tg-pur .stack .pg { display: none; }
+  .tg-pur .stack, .tg-pur .parts { height: auto; min-height: 0; }
+  .tg-pur .parts .part { position: relative; top: auto !important; margin-bottom: 10px; }
+  .tg-pur .part .q { display: block; }
+  .tg-pur .stack { display: none; } .tg-pur .sermon { grid-template-columns: minmax(0, 1fr); }
+}
+</style>
+
+<section class="hero" aria-labelledby="tg-h1"><div class="wrap gut">
+  <div>
+    <p class="kick"><a href="/the-faith-received/">The Faith Received</a> · <a href="/the-faith-received/guide/">Guides to the shelves</a></p>
+    <h1 id="tg-h1">The <em>Puritans</em></h1>
+    <p class="by">Perkins to the Mathers: the godly preachers of England, Scotland and New England, 1570–1720</p>
+    <p class="lede">The ministers who wanted the Church of England reformed further, and the Nonconformists and New Englanders who came after them: sermons and treatises of conscience, catechisms, commentaries and controversy, most of them read here as they were first printed.</p>
+    <ul class="facts"><li><b data-count="works">0</b><span>works</span></li><li><b data-count="authors">0</b><span>writers</span></li><li><b data-count="pages">0</b><span>pages</span></li><li><b data-count="forties">0</b><span>editions printed in the 1640s</span></li></ul>
+    <p class="scroll">Scroll to walk the shelf <i>↓</i></p>
+  </div>
+  <div class="art win" aria-label="The writers on the shelf as the quarries of a plain-glass window, in order of birth from the top; brighter panes hold more pages"><svg viewBox="0 0 564 720" role="img"></svg><p class="cap" aria-live="polite"></p></div>
+</div></section>
+
+<section class="scene gut" id="tg-press" aria-labelledby="tg-h-press"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">1 · The press</p>
+    <h2 id="tg-h-press">A shelf of printed sermons</h2>
+    <p class="say">Every dated edition on the shelf, year by year, each where it was printed. The Puritans were preachers who printed: a sermon heard on Sunday was often a book by the next term. Scroll through a century and a half.</p>
+    <ul class="chron" id="tg-chron"></ul>
+  </div>
+  <div>
+    <div class="pressbox"><canvas aria-label="Every dated edition on the shelf as a block in the column of its year, colored by where it was printed"></canvas><div class="tip" hidden></div></div>
+    <div class="pressnow"><span class="big num" id="tg-press-n">0</span><span class="small" id="tg-press-cap">editions printed by 1560</span></div>
+    <p class="glegend" id="tg-glegend"></p>
+    <p class="small" id="tg-press-pick" aria-live="polite" style="min-height:1.4em;margin:4px 0 0">Choose a block to see the book.</p>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-chain" aria-labelledby="tg-h-chain"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">2 · The brotherhood</p>
+    <h2 id="tg-h-chain">A chain of preachers</h2>
+    <p class="say">Perkins drew the order of salvation as <a id="tg-golden" target="_blank" rel="noopener">A Golden Chain</a>. His hearers made a chain of another kind: by the accounts of the time, each of these five was brought to faith by the preaching of the one before.</p>
+    <ol class="steps" id="tg-chain-steps"></ol>
+  </div>
+  <div>
+    <div class="chainbox"><svg viewBox="0 0 860 210" role="img" aria-label="Five preachers as the links of a chain, from Perkins to Preston"></svg></div>
+    <div class="card link-card" id="tg-link-card" aria-live="polite"></div>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-sermon" aria-labelledby="tg-h-sermon"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">3 · The method</p>
+    <h2 id="tg-h-sermon">The plain style</h2>
+    <p class="say">Perkins gave the preachers their method in <a id="tg-arte" target="_blank" rel="noopener">The Arte of Prophecying</a>, “the sum of the sacred and only method” in four rules:</p>
+    <ol class="rules" id="tg-rules"></ol>
+    <p class="sum" id="tg-sum"></p>
+    <p class="say" style="margin-top:12px">Here is the method at work in a whole book: <a id="tg-brooks" target="_blank" rel="noopener">Thomas Brooks, The Silent Soul</a>, one verse of a psalm opened over 372 pages.</p>
+  </div>
+  <div class="sermon"><div class="stack" id="tg-stack" aria-hidden="true"></div><div class="parts" id="tg-parts"></div></div>
+</div></section>
+
+<section class="scene gut" id="tg-lands" aria-labelledby="tg-h-lands"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">4 · Where they printed and preached</p>
+    <h2 id="tg-h-lands">Three countries</h2>
+    <p class="say">London printed most of the shelf. But the godly also printed at the universities, in Scotland, in exile in the Low Countries, and in New England, where some of their ministers had gone.</p>
+    <ol class="lands-key" id="tg-lands-key"></ol>
+  </div>
+  <div>
+    <div class="maps"><figure><div class="mapbox" id="tg-map"><svg aria-hidden="true"></svg><canvas aria-label="Map of England, Scotland and the Low Countries: the presses that printed the shelf and the places its writers served"></canvas><div class="tip" hidden></div></div><figcaption>England, Scotland and the Low Countries</figcaption></figure>
+      <figure><div class="mapbox" id="tg-map-ne"><svg aria-hidden="true"></svg><canvas aria-label="Map of New England: its presses and churches"></canvas><div class="tip" hidden></div></div><figcaption>New England, three thousand miles west</figcaption></figure></div>
+    <p class="legend" style="margin-top:8px"><span><i style="background:var(--g1);border-radius:50%"></i>a press, sized by the editions it printed here</span><span><i style="background:transparent;border:1.5px solid var(--ink);transform:rotate(45deg);border-radius:1px"></i>a place the writers’ records name</span></p>
+  </div>
+</div></section>
+
+<section class="tool gut" id="explore" aria-labelledby="tg-h-ex"><div class="wrap">
+  <p class="eyebrow">Find</p>
+  <h2 id="tg-h-ex">Every writer, every work</h2>
+  <p class="say" style="max-width:46rem">The writers by generation, from the Elizabethans to the last of the Puritans. Search the shelf, or browse it by author century by century, by the span of their lives, or by title. Where a record gives no clear dates, a writer is placed by the years his books were printed, and the card says so.</p>
+  <div id="tg-explorer"></div>
+  <div class="next"><a href="/the-faith-received/all-works/?tradition=English%20Divines">Browse the shelf in All Works</a><a id="tg-pur-room">The Puritans in the library</a><a href="/the-faith-received/ask/?trad=English%20Divines">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=english">The English Divines</a><a href="/the-faith-received/guide/?s=westminster">The Westminster Assembly</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=methodists">The Methodists</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
+</div></section>
