@@ -212,7 +212,8 @@
   // Mansi's acts of the councils are a shelf of their own (owner, 2026-10-11: "add Mansi's Acts as a
   // separate shelf please, The Councils, with its guide like PL"): the councils and synods themselves,
   // where the creeds and confessions above are the documents every tradition confesses. Its works file
-  // under Roman Catholic in the catalogue, so they are lifted out of that shelf and counted here.
+  // under Roman Catholic in the catalogue and stay there too, counted on both shelves (owner, 2026-10-11:
+  // "double count mansi as its own shelf ... double shelving is fine"), so each count matches its list.
   const COUNCILS = {
     label: "The Councils",
     href: "/the-faith-received/guide/?s=councils",
@@ -228,7 +229,7 @@
     works.forEach((w) => {
       let t = String(w.tradition || "").trim();
       if (!t) return;
-      if (isMansi(w)) { councils++; return; }
+      if (isMansi(w)) councils++;
       const parent = (window.MOCorpora.traditionParent
         ? window.MOCorpora.traditionParent(t, w.corpus) : "") || "";
       // The party, then the family it files under.
