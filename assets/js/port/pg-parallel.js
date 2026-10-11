@@ -217,5 +217,5 @@ function location(data,opening){
  const map=data?.pg_columns?.[text(opening)];if(!map)return null;const mode=data.pg_source||'grc',lab=map.lab||{},pick=l=>lab[l]||map[l]||[],cols=[...new Set((mode==='grcla'?[...pick('grc'),...pick('la')]:pick(mode)).map(text))];if(!cols.length)return null;
  cols.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));return cols.length===1?'col. '+cols[0]:'cols. '+cols.join('–');
 }
-return {canonicalOpenings,alignOpening,printedColumns,location,cleanEnglish,dropGutterLetters,nextWorkReference};
+return {canonicalOpenings,alignOpening,printedColumns,location,cleanEnglish,dropGutterLetters,nextWorkReference,foldHeads};
 });

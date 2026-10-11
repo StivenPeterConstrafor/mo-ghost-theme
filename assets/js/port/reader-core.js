@@ -4,7 +4,7 @@ if(window.MODenom)window.MODenom.ready();
 const $=s=>document.querySelector(s),el=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
 // SECOND-VERSION LABELS (owner 2026-10-11): Migne's heading over a second version of a passage -- BILLII INTERPRETATIO, VETUS
 // INTERPRETATIO, METRICA VERSIO, VERS. NOV., HIERON. INTERP. ... and their English -- as the reader recognises it everywhere.
-const FR_VERS_RE=/^(?:\d+\.?\s+)?(?:†\s*)?(?:j\.?\s*)?(?:billii\s+interpretatio|metrica\s+versio|vetus\s+interpre(?:tatio|tes|s)|antiqua\s+versio|versio\s+(?:evagrii|nova|rufini|hieronymi|hier\.|h\.?\s*valesii|marii\s+mercatoris)|vers\.\s*nov\.|rufini\s+versio|interpretatio\s+(?:nova|rufini|huetii|s\.?\s*hieronymi|ex\s+latino)|interpret\.\s*hieronymi|(?:hieronymi|hieron\.?|hier\.)\s+(?:interpretatio|interpret\.|interp\.|inter\.|versio)|gerardi\s+vossii\s+interpretatio|aniani\s+interpretatio|translation\s+of\s+(?:j\.?\s*)?(?:billius|rufinus|huet|jerome|gerardus\s+vossius|anianus)|metrical\s+version|ancient\s+translation|new\s+(?:translation|version)|version\s+of\s+(?:evagrius|jerome))(?![a-z])/;
+const FR_VERS_RE=/^(?:\d+\.?\s+)?(?:†\s*)?(?:j\.?\s*)?(?:billii\s+interpretatio|metrica\s+versio|vetus\s+interpre(?:tatio|tes|s)|antiqua\s+versio|versio\s+antiqua|versio\s+(?:evagrii|nova|rufini|hieronymi|hier\.|h\.?\s*valesii|marii\s+mercatoris)|vers\.\s*nov\.|rufini\s+versio|interpretatio\s+(?:nova|rufini|huetii|s\.?\s*hieronymi|ex\s+latino)|interpret\.\s*hieronymi|(?:hieronymi|hieron\.?|hier\.)\s+(?:interpretatio|interpret\.|interpr\.|interp\.|inter\.|versio)|gerardi\s+vossii\s+interpretatio|aniani\s+interpretatio|translation\s+of\s+(?:j\.?\s*)?(?:billius|rufinus|huet|jerome|gerardus\s+vossius|anianus)|metrical\s+version|ancient\s+translation|new\s+(?:translation|version)|version\s+of\s+(?:evagrius|jerome))(?![a-z])/;
 const frVersHead=t=>!!t&&FR_VERS_RE.test(String(t).replace(/^[\[\s]+/,""));
 // guarded storage: Safari private mode / quota-exceeded throws on writes — never let that kill a save path
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
@@ -3052,10 +3052,23 @@ function build(){
     // SECOND VERSIONS on the column-built pages (PG): their heads arrive as inline .inhead spans, not <head> rows -- a paragraph whose head
     // names a second version opens the block; every paragraph after it on the page, in that lane, stays in it until the next head.
     // A head after the label in the SAME paragraph is the version's own (PG 7: TRANSLATION OF BILLIUS. + CHAPTER XI.) and keeps the block
-    ["en","la"].forEach(ln=>{let inV=false;sec.querySelectorAll("."+ln+" p").forEach(p=>{
+    ["en","la"].forEach(ln=>{let inV=false,seenV=false;const nums=new Set();sec.querySelectorAll("."+ln+" p").forEach(p=>{
       const hs=p.querySelectorAll("span.inhead");
-      if(hs.length){const _t=x=>(x.textContent||"").replace(/\s+/g," ").trim().toLowerCase();inV=[...hs].some(h=>_versHead(_t(h)));
-        if(inV){hs.forEach(h=>{if(_versHead(_t(h)))h.classList.add("invers");});
+      // a paragraph whose words (after its heads) are mostly Greek is the page's own text, never the version (owner 2026-10-11) --
+      // a version paragraph may open on a quoted Greek word (PG 7 col. 615: 'Ἄῤῥητος septem litteras ...')
+      {let body="";for(const n of p.childNodes){if(!(n.classList&&n.classList.contains("inhead")||n.classList&&n.classList.contains("milat")))body+=n.textContent||"";}
+       const b0=body.slice(0,400),ng=(b0.match(/[\u0370-\u03FF\u1F00-\u1FFF]/g)||[]).length,nl=(b0.match(/[A-Za-z\u00c0-\u024f]/g)||[]).length;
+       if(ng>nl){
+         hs.forEach(h=>{if(_versHead((h.textContent||"").replace(/\s+/g," ").trim().toLowerCase()))h.classList.add("invers");});inV=false;return;}}
+      if(hs.length){const _t=x=>(x.textContent||"").replace(/\s+/g," ").trim().toLowerCase();const _lab=[...hs].some(h=>_versHead(_t(h)));
+        // the version's OWN heads keep the block (owner 2026-10-11): its CAPUT XXI., a bare number, a poem's title printed with its
+        // translator or numbered as a poem the page titled before the version ('LXXVII. ALIUD.') -- the rule the Greek · Latin split keeps
+        const _n=x=>{const m=/^([ivxlc]+|\d+)\.\s/.exec(x);return m?m[1]:null;},h0=_t(hs[0]);
+        const _own=/^(?:caput|cap\.|chapter)\s+[ivxlc\d]+\.?$/.test(h0)||/^\d+\.?$/.test(h0)||/\binterprete\b|\btranslat(?:ed|or)\b/.test(h0)||(!!_n(h0)&&nums.has(_n(h0)));
+        if(!seenV&&!_lab)hs.forEach(h=>{const n=_n(_t(h));if(n)nums.add(n);});
+        if(!(inV&&!_lab&&_own))inV=_lab;
+        if(_lab)seenV=true;
+        if(inV&&_lab){hs.forEach(h=>{if(_versHead(_t(h)))h.classList.add("invers");});
           // a paragraph that opens with another head (PG 13: the main text's '10. But as to what Simon Peter said' + ANCIENT TRANSLATION)
           // keeps that head out of the block: only its version label carries the rule, and the block runs on from the next paragraph
           if(!_versHead(_t(hs[0]))){return;}
@@ -6859,30 +6872,70 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
                   // a new tome opens mid-page between two blocks, a main-text head runs into the label in one folded paragraph), each
                   // lane's paragraphs are parted: a paragraph led by the label opens the version, a paragraph led by any other head
                   // (CAPUT / CHAPTER / a bare section number excepted) returns to the page's own text.
-                  const _vLead=t=>{const o=[],x=String(t||""),re=/\s*\u0002([^\u0003]+)\u0003/y;let m;while((m=re.exec(x)))o.push({h:m[1].replace(/\u0007[\s\S]*$/,"").replace(/\s+/g," ").trim().toLowerCase(),at:m.index});return o;};
-                  const _vOwn=h=>/^(?:caput|cap\.|chapter)\s+[ivxlc\d]+\.?$/.test(h)||/^\d+\.?$/.test(h);
-                  const _vPart=list=>{const main=[],vers=[];let inV=false,seen=false;
-                    for(const t0 of list||[]){let t=String(t0||"").trim();if(!t)continue;const L=_vLead(t),vi=L.findIndex(x=>frVersHead(x.h));
-                      if(vi>0&&L.slice(0,vi).every(x=>!frVersHead(x.h))){main.push(t.slice(0,L[vi].at).trim());vers.push(t.slice(L[vi].at).trim());inV=seen=true;continue;}
-                      if(vi===0){vers.push(t);inV=seen=true;continue;}
-                      if(L.length&&!_vOwn(L[0].h))inV=false;
-                      (inV?vers:main).push(t);}
-                    return {main:main.filter(Boolean),vers,seen};};
+                  const _vLead=t=>{const o=[],x=String(t||""),re=/\s*\u0002([^\u0003]+)\u0003/y;let m;while((m=re.exec(x)))o.push({h:m[1].replace(/\u0007[\s\S]*$/,"").replace(/\s+/g," ").trim().toLowerCase(),raw:m[1],at:m.index});return o;};
+                  // A VERSION'S OWN HEADS keep it open: its chapter heads (CAPUT II.) and bare section numbers; and in Gregory's poems (PG 37-38,
+                  // owner 2026-10-11 "fix all of these") each poem's title in the metrical version -- printed with its translator ('(Billio
+                  // interprete.)', '(Eodem interprete.)'), numbered as a poem the page's own text titled before the version began ('LXXVII.
+                  // ALIUD.' after 'LXXVII. Aliud *.'), or standing right after the label
+                  const _vNum=h=>{const m=/^([ivxlc]+|\d+)\.\s/.exec(h);return m?m[1]:null;};
+                  const _vOwn=(x,nums)=>/^(?:caput|cap\.|chapter)\s+[ivxlc\d]+\.?$/.test(x.h)||/^\d+\.?$/.test(x.h)
+                    ||/\binterprete\b|\btranslat(?:ed|or)\b/i.test(x.raw||"")||(!!_vNum(x.h)&&nums.has(_vNum(x.h)));
+                  const _isH=t=>!String(t||"").replace(/\u0002[^\u0003]*\u0003/g,"").trim();
+                  // each lane parted into the page's own text (main) and its version blocks, each block with the place it opened in main
+                  const _vPart=list=>{const main=[],vers=[],blocks=[],nums=new Set();let inV=false,seen=false,fresh=false,cur=null;
+                    const toV=t=>{if(!inV||!cur){cur={at:main.length,items:[]};blocks.push(cur);}cur.items.push(t);vers.push(t);inV=seen=true;fresh=_isH(t);};
+                    for(const t0 of list||[]){const t=String(t0||"").trim();if(!t)continue;const L=_vLead(t),vi=L.findIndex(x=>frVersHead(x.h));
+                      if(!seen)(vi<0?L:L.slice(0,vi)).forEach(x=>{const n=_vNum(x.h);if(n)nums.add(n);});
+                      if(vi>0&&L.slice(0,vi).every(x=>!frVersHead(x.h))){main.push(t.slice(0,L[vi].at).trim());inV=false;toV(t.slice(L[vi].at).trim());continue;}
+                      if(vi===0){toV(t);continue;}
+                      if(inV&&L.length&&!fresh&&!_vOwn(L[0],nums))inV=false;
+                      if(inV)toV(t);else{main.push(t);fresh=false;}}
+                    return {main:main.filter(Boolean),vers,seen,blocks};};
                   const _PL=_vPart(_laP),_PE=_vPart(_enParas);
                   const _vSplit=_PL.seen&&_PE.seen&&_PL.main.length>0&&_PE.main.length>0&&_PL.vers.length>0&&_PE.vers.length>0;
                   const _vSimple=_vSplit&&_vLa>0&&_vEn>0&&_vLt>0&&_vEt>0&&_vTail(_laP,_vLa)&&_vTail(_enParas,_vEn);   // one block to the page's end: cut the strings at the label
-                  // the Greek column repeats the version's label at its foot (PG 13 col. 1009): with the block set apart, that copy goes
-                  const _vNoTail=t=>String(t||"").replace(/\s*\u0002([^\u0003]+)\u0003\s*$/,(m,h)=>frVersHead(h.replace(/\u0007[\s\S]*$/,"").replace(/\s+/g," ").trim().toLowerCase())?"":m);
-                  const _gP=(sf.grcParas||[]).map(_healGrc);if(_vSplit&&_gP.length)_gP[_gP.length-1]=_vNoTail(_gP[_gP.length-1]);
+                  // THE VERSION IS NEVER GREEK: the copy of its label the assembler set in the Greek column -- at its foot (PG 13 col. 1009), or
+                  // mid-page before the next chapter (PG 2 col. 775, where the next chapter's Greek then opened inside the version) -- goes,
+                  // and so do heads after the Greek's last words that the version itself carries (PG 5 col. 717: CAPUT XII., CAPUT XIII.)
+                  const _hN=h=>String(h).replace(/\u0007[\s\S]*$/,"").replace(/\s+/g," ").trim().toLowerCase();
+                  const _vHs=new Set([..._PL.vers,..._PE.vers].flatMap(t=>[...String(t).matchAll(/\u0002([^\u0003]+)\u0003/g)].map(m=>_hN(m[1]))));
+                  const _vNoLab=t=>String(t||"").replace(/\s*\u0002([^\u0003]+)\u0003/g,(m,h)=>frVersHead(_hN(h))?"":m).trim();
+                  const _vNoTail=t=>{let x=_vNoLab(t);for(;;){const m=/\s*\u0002([^\u0003]+)\u0003\s*$/.exec(x);if(!m||!_vHs.has(_hN(m[1])))break;x=x.slice(0,m.index);}return x.trim();};
+                  let _gP=(sf.grcParas||[]).map(_healGrc);
+                  if(_vSplit){_gP=_gP.map(_vNoLab);while(_gP.length&&!(_gP[_gP.length-1]=_vNoTail(_gP[_gP.length-1])))_gP.pop();_gP=_gP.filter(Boolean);}
                   const aligned=_vSplit
                     ?window.FRPgParallel.alignOpening(_vNoTail(_healGrc(sf.grc)),_vSimple?lt.slice(0,_vLt):_PL.main.join(" "),_vSimple?_enAll.slice(0,_vEt):_PE.main.join(" "),{grc:_gP,la:_PL.main,en:_PE.main,byCol:_byCol})
                     :window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_enAll,{grc:(sf.grcParas||[]).map(_healGrc),la:_laP,en:_enParas,byCol:_byCol});
                   if(_vSplit&&aligned.basis!=="column-paragraphs"){   // the column basis pairs whole columns, the block included
                     const _fold=list=>{const o=[];let pend="";for(const t of list){const v=String(t||"").trim();if(!v)continue;if(/^\u0002[^\u0003]*\u0003$/.test(v)){pend+=v+" ";continue;}o.push((pend+v).trim());pend="";}if(pend.trim())o.push(pend.trim());return o;};
-                    const vl=_fold(_PL.vers),ve=_fold(_PE.vers);
-                    if(vl.length===ve.length)vl.forEach((t,i)=>aligned.rows.push({grc:"",la:t,en:ve[i]}));
-                    else aligned.rows.push({grc:"",la:vl.join(" "),en:ve.join(" ")});
-                    (window.__versApart=window.__versApart||{pages:0,rows:0,parted:0}).pages++;window.__versApart.rows+=vl.length===ve.length?vl.length:1;if(!_vSimple)window.__versApart.parted=(window.__versApart.parted||0)+1;}
+                    // WHERE THE PAGE PRINTS IT (owner 2026-10-11, "fix all of these"): a version printed mid-page -- the page's own text resumes
+                    // after it (PG 2 col. 775 EPISTOLAE PARS SECUNDA; PG 5 cols. 661, 717 the next letter) -- or twice (PG 5 col. 1255) stands
+                    // after as many of the page's own paragraphs as the page prints before it, when the rows pair those paragraphs one for
+                    // one; otherwise after them all, as before
+                    const _fh=window.FRPgParallel.foldHeads,_nP=list=>_fh?_fh(list).filter(t=>!_isH(t)).length:-1;
+                    const BL=_PL.blocks,BE=_PE.blocks,same=BL.length>0&&BL.length===BE.length;
+                    const nL=_nP(_PL.main),nE=_nP(_PE.main),nG=_nP(_gP);
+                    const pos=same?BL.map((b,i)=>{const x=_nP(_PL.main.slice(0,b.at)),y=_nP(_PE.main.slice(0,BE[i].at));return x===y?x:-1;}):[];
+                    const okPos=same&&pos.every(x=>x>=0)&&nL>=0&&nL===nE&&aligned.rows.length===nL&&(aligned.basis==="paragraphs"||(aligned.basis==="printed-paragraphs"&&(nG===nL||nG===0)));
+                    // ...or, where the rows do not pair one for one (a flow page), before the row that opens with the head the page prints
+                    // right after the version (PG 5 col. 717: AD POLYCARPUM., whose copy opens the Greek of the next letter)
+                    let anc=[];
+                    // (a head ending the page reaches the Latin list with the next page, never this one: the English, which keeps it, says
+                    // the page's own text goes on after the version, and the version then stands after as many paragraphs as precede it)
+                    if(same&&!okPos){let lo=0;anc=BL.map((b,i)=>{const nx=_PL.main[b.at],ne=_PE.main[BE[i].at];
+                      if(nx===undefined&&ne===undefined)return aligned.rows.length;
+                      const hs=[...(nx!==undefined?_vLead(nx):[]),...(ne!==undefined?_vLead(ne):[])].map(x=>x.h);
+                      if(hs.length)for(let r=lo;r<aligned.rows.length;r++){const R=aligned.rows[r];if([R.grc,R.la,R.en].some(t=>_vLead(t||"").some(x=>hs.includes(x.h)))){lo=r;return r;}}
+                      if(pos[i]>=lo&&pos[i]<aligned.rows.length){lo=pos[i];return pos[i];}
+                      return -1;});
+                      if(anc.some(x=>x<0))anc=[];}
+                    const placed=okPos||anc.length>0;
+                    const blocks=same?BL.map((b,i)=>({la:b.items,en:BE[i].items,at:okPos?pos[i]:(anc.length?anc[i]:-1)})):[{la:_PL.vers,en:_PE.vers,at:-1}];
+                    const rowsOf=b=>{const vl=_fold(b.la),ve=_fold(b.en);return vl.length===ve.length?vl.map((t,i)=>({grc:"",la:t,en:ve[i]})):[{grc:"",la:vl.join(" "),en:ve.join(" ")}];};
+                    let nrows=0,mid=0;
+                    if(placed)for(let k=blocks.length-1;k>=0;k--){const rs=rowsOf(blocks[k]),at=Math.min(blocks[k].at,aligned.rows.length);if(at<aligned.rows.length)mid++;aligned.rows.splice(at,0,...rs);nrows+=rs.length;}
+                    else blocks.forEach(b=>{const rs=rowsOf(b);aligned.rows.push(...rs);nrows+=rs.length;});
+                    const VA=(window.__versApart=window.__versApart||{pages:0,rows:0,parted:0,mid:0});VA.pages++;VA.rows+=nrows;if(!_vSimple)VA.parted=(VA.parted||0)+1;if(mid)VA.mid=(VA.mid||0)+1;}
                   // Keep printed headings visible in their own lane, without guessing
                   // their counterparts. Their opening remains a usable outline target.
                   const marked=aligned.rows.map(r=>r.en).join(" ");
