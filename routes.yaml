@@ -401,6 +401,11 @@ routes:
     template: custom-faith-tradition
   /the-faith-received/traditions/:
     template: custom-faith-tradition
+  # Guides to the shelves (theme #128, 2026-10-10): one guide per shelf at
+  # ?s=<shelf>, the century ruler without it. Links into the guides stay
+  # hidden until this route answers (faith-guide-links.js).
+  /the-faith-received/guide/:
+    template: custom-faith-guide
   # Feature pages
   /the-faith-received/transparency/:
     template: custom-faith-transparency
