@@ -2154,6 +2154,9 @@ html:not(.fr-plain) .ph.fr-reader-head:has(>#reader-volumes:not([hidden])),html:
 #reader-volumes .vs-of{font-weight:400;color:var(--muted)}
 #reader-volumes .vs-also{display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 12px}
 @media(max-width:640px){#reader-volumes a,#reader-volumes .vs-pick,#reader-volumes .vs-off,#reader-editions a{min-height:40px}}
+/* "Patrologia Graeca 44" under the title opens that volume on its shelf (2026-10-11); it reads as the line it was, underlined */
+#reader-volume a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+#reader-volume a:hover{color:var(--fg)}
 html:not(.fr-plain) .fr-reader-head :focus-visible{outline:2px solid var(--fg);outline-offset:3px}
 @media(min-width:881px) and (max-width:1180px){html:not(.fr-plain) .ph.fr-reader-head{gap:12px;padding-inline:16px}.fr-reader-head .mh-home span{display:none}html:not(.fr-plain) .fr-reader-head .ctr{gap:6px}html:not(.fr-plain) .fr-reader-head .seg button{padding-inline:7px}html:not(.fr-plain) .fr-reader-head h1{font-size:18px}}
 @media(max-width:880px){

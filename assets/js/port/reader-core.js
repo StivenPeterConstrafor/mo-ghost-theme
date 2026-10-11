@@ -1586,6 +1586,15 @@ function readerOutlineHref(row){
 const SERIES={PL:{name:'Patrologia Latina',note:"Migne's Patrologia Latina (Paris, 1844–55): 221 volumes of the Latin Fathers. A volume gathers the writings of one or several authors, and the numbers in the margin are its columns"},
   PG:{name:'Patrologia Graeca',note:"Migne's Patrologia Graeca (Paris, 1857–66): 161 volumes of the Greek Fathers, printed with a facing Latin translation; the numbers in the margin are its columns"},
   PO:{name:'Patrologia Orientalis',note:'Patrologia Orientalis (Paris, 1904–): the Eastern Fathers in Syriac, Coptic, Arabic, Armenian, Ethiopic and Georgian, each with a translation; it is cited by page'}};
+// A Migne volume's page on its shelf: the room's volume view on mereorthodoxy.com, the library's volume browser on the corpus site.
+function frShelfVolumeHref(se){
+  if(!se||!se.vol)return '';
+  if(location.pathname.indexOf('/the-faith-received/')===0){
+    const room={PL:'patrologia-latina',PG:'patrologia-graeca',PO:'patrologia-orientalis'}[se.key];if(!room)return '';
+    return '/the-faith-received/'+room+'/'+(se.key==='PO'?'?view=tome&tome=':'?view=volume&vol=')+encodeURIComponent(se.vol);}
+  const shelf={PL:'Latin Fathers',PG:'Greek Fathers',PO:'Eastern Fathers'}[se.key];if(!shelf||!DATA||!DATA.volume)return '';
+  return '/?shelf='+encodeURIComponent(shelf)+'&by=volume&vol='+encodeURIComponent(String(DATA.volume).trim())+'#shelfworks';
+}
 function seriesOf(v){const m=/^\s*(PL|PG|PO)(?:\s+Tome)?\s*(\d+)/i.exec(String(v||''));if(!m)return null;const k=m[1].toUpperCase();return {key:k,vol:m[2],...SERIES[k],label:SERIES[k].name+' ('+k+') '+m[2]};}
 function locOf(n){
   if(typeof INDEX_PAGES!=='undefined'&&(INDEX_PAGES?.has(n)||INDEX_PAGES?.has(String(n))))return 'Index · '+(DATA?.has_pages?'p. ':'§ ')+n;
@@ -4256,7 +4265,9 @@ function syncReaderHeader(n){
  if(!DATA)return;
  const author=$("#reader-author"),volume=$("#reader-volume"),place=$("#reader-location");
  author.textContent=DATA.author||"";author.href="/the-faith-received/author/?a="+encodeURIComponent(DATA.author||"");
- {const se=seriesOf(DATA.volume);if(se){volume.textContent=se.label;volume.title=se.note+'. This work is in volume '+se.vol+(se.key==='PO'?'; cite as PO '+se.vol+', p. '+n:'; cite as '+se.key+' '+se.vol+', '+(locOf(n)||'col. '+n))+'.';}
+ {const se=seriesOf(DATA.volume);if(se){volume.textContent=se.label;volume.title=se.note+'. This work is in volume '+se.vol+(se.key==='PO'?'; cite as PO '+se.vol+', p. '+n:'; cite as '+se.key+' '+se.vol+', '+(locOf(n)||'col. '+n))+'.';
+   // the volume on its shelf, every work it holds (owner 2026-10-11, the PG shelf on a phone)
+   const room=frShelfVolumeHref(se);if(room){const a=document.createElement('a');a.href=room;a.textContent=se.label;a.title='All the works in '+se.key+' '+se.vol;volume.replaceChildren(a);}}
    else{volume.textContent=String(DATA.volume||"").replace(/\b(P[LG]|PO)\s*(\d+)/g,"$1 $2");volume.removeAttribute('title');}}
  place.textContent=locOf(n);place.setAttribute('aria-label','Go to a place in this work, currently '+locOf(n));
  const column=DATA.pld_source_view?.hasColumns!==false&&(!DATA.pld_source_view?.notes||DATA.pld_source_view?.columnNotes)&&/^P[LG]\s*\d/i.test(DATA.volume||""),unit=column?'column':DATA.has_pages?'page':'section';
@@ -5437,6 +5448,9 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
     const nav=document.getElementById("nav");
     const i=sp.works.findIndex(x=>+x.id===meId);
     window.__volCtx={volWord,volN,meId,prefix,store,sp,i};   /* VOLUME CONTINUITY (owner 2026-09-26): the ends of a work continue into its neighbours */
+    // the volume row under the title (reader-volumes.js FRVolumes.migne; owner 2026-10-11, "make navigation easy especially for
+    // pg shelf"), and the links here open in the same tab: on a phone a new tab per volume left a stack of tabs to find the way back
+    {let tries=0;const row=()=>{if(window.FRVolumes&&window.FRVolumes.migne){try{window.FRVolumes.migne(window.__volCtx);}catch(e){}}else if(tries++<20)setTimeout(row,250);};row();}
     if(nav&&!document.getElementById("volnav")){
       const box=document.createElement("div");box.id="volnav";
       // NESTED SPINE (owner 2026-08-18 'the site shows nested, here it is flat'):
@@ -5462,7 +5476,7 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
           const body=`${cc}<span class=vnt>${esc(e.t||"")}${la}</span>`;
           const fm=lvl===0&&_fm(e.t)?" vnfm":"";
           if(e.id==null)return `${au}<span class="vnrow vnd${lvl} off${fm}">${body}</span>`;
-          return `${au}<a class="vnrow vnd${lvl}${cur?" on":""}${fm}" target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${e.id}${e.c!=null?`#b${e.c}-0`:""}">${body}</a>`;
+          return `${au}<a class="vnrow vnd${lvl}${cur?" on":""}${fm}" href="/the-faith-received/read/?w=${prefix}-${e.id}${e.c!=null?`#b${e.c}-0`:""}">${body}</a>`;
         }).join("");
       }else rows=sp.works.map((x,xi)=>{
         const cur=+x.id===meId;
@@ -5473,13 +5487,13 @@ function wireVolTravel(volWord,volN,meId,prefix,store){
         // where the catalogue has one, and an em dash holds the place where it does not.
         const nn=`<span class=vni>${xi+1}</span>`;
         const cc=x.c?`<span class=vnc>${x.c[0]===x.c[1]?x.c[0]:x.c[0]+"&#8211;"+x.c[1]}</span>`:`<span class="vnc vnc-none">&#8212;</span>`;
-        return `<a class="vnrow vnrow--num${cur?" on":""}${_fm(x.t)?" vnfm":""}" target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${x.id}">${nn}${cc}<span class=vnt>${esc(x.t||(prefix+"-"+x.id))}</span></a>`;}).join("");
+        return `<a class="vnrow vnrow--num${cur?" on":""}${_fm(x.t)?" vnfm":""}" href="/the-faith-received/read/?w=${prefix}-${x.id}">${nn}${cc}<span class=vnt>${esc(x.t||(prefix+"-"+x.id))}</span></a>`;}).join("");
       // Folded, as it is on the corpus site. Forty-six rows standing open between the
       // reader and the outline is why the volume could only be reached by scrolling
       // past it; a summary that names the volume puts it in front of them instead.
       box.innerHTML=`<details class="vncontents"><summary class="vnhead">Browse ${volWord} ${volN}${i>=0?` &middot; ${i+1} of ${sp.works.length}`:""}</summary><div class=vnhead><span>Volume navigation</span>`+
-        `<span class=vnnav>${sp.prev?`<a target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${sp.prev.first}" title="${volWord} ${sp.prev.vol}">&#8249; ${volWord} ${sp.prev.vol}</a>`:""}`+
-        `${sp.next?`<a target="_blank" rel="noopener" href="/the-faith-received/read/?w=${prefix}-${sp.next.first}" title="${volWord} ${sp.next.vol}">${volWord} ${sp.next.vol} &#8250;</a>`:""}</span></div>`+
+        `<span class=vnnav>${sp.prev?`<a href="/the-faith-received/read/?w=${prefix}-${sp.prev.first}" title="${volWord} ${sp.prev.vol}">&#8249; ${volWord} ${sp.prev.vol}</a>`:""}`+
+        `${sp.next?`<a href="/the-faith-received/read/?w=${prefix}-${sp.next.first}" title="${volWord} ${sp.next.vol}">${volWord} ${sp.next.vol} &#8250;</a>`:""}</span></div>`+
         `<label class="vnsw">Go to volume <select class="vnsel" title="Every volume of this shelf"><option value="">${volWord} ${volN}</option></select></label><div class="vnlist">`+rows+`</div></details>`;
       nav.appendChild(box);
       /* VOLUME SWITCHER (owner 2026-09-26 "a system for the user to switch to different volumes in Latin Fathers, Greek Fathers"):

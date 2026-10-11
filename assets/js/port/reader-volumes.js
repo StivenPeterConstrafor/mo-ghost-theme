@@ -103,7 +103,42 @@
    if(x.k!=null&&y.k!=null){const p=S.by[x.w.slug],q=S.by[y.w.slug];return p[1]-q[1]||p[2]-q[2];}
    return x.i-y.i;}).map(x=>x.w);
  }
- window.FRVolumes={ready,order,paint};
+ // MIGNE'S VOLUMES IN THE SAME ROW (owner 2026-10-11, the PG shelf on a phone: "make navigation easy"). A work in Migne had its
+ // volume only in a box at the foot of the Contents drawer, below the whole outline. The row under the title now walks the series:
+ // ‹ the volume before · this volume, the work's place in it, and a list of its works and of the other volumes · the volume after ›.
+ // Called by the reader's wireVolTravel with the volume's spine (v1/pgvol | plvol | povol/<n>.json); same tab throughout.
+ function migne(c){
+  if(!c||!c.sp||!Array.isArray(c.sp.works))return;
+  let row=document.getElementById('reader-volumes');
+  if(!row){const head=document.querySelector('header.fr-reader-head')||document.querySelector('header.ph');if(!head)return;
+   row=document.createElement('div');row.id='reader-volumes';row.hidden=true;
+   const ed=document.getElementById('reader-editions');if(ed&&ed.parentNode===head)head.insertBefore(row,ed);else head.appendChild(row);}
+  const sp=c.sp,W=c.volWord,N=c.volN,P=c.prefix,n=sp.works.length,i=c.i;
+  // a Greek Fathers reader keeps the text form they chose (Greek, Greek and Latin, Latin) from work to work
+  const src=P==='pg'?new URL(location.href).searchParams.get('src'):'';
+  const keep=['grc','grcla','la','ocr'].includes(src)?'&src='+src:'';
+  const go=id=>READ+encodeURIComponent(P+'-'+id)+keep;
+  row.setAttribute('role','navigation');row.setAttribute('aria-label','Volumes of '+W);row.dataset.work=P+'-'+c.meId;
+  let x=sp.prev?'<a class="vs-prev" href="'+go(sp.prev.first)+'" title="'+h('The volume before: '+W+' '+sp.prev.vol)+'">‹ '+h(W+' '+sp.prev.vol)+'</a>'
+               :'<span class="vs-prev vs-off" title="The first volume">‹</span>';
+  const works=sp.works.map((w,k)=>'<option value="'+h(String(w.id))+'"'+(k===i?' selected':'')+'>'+(k+1)+'. '+h(cut(w.t||(P+'-'+w.id),80))+'</option>').join('');
+  const vols=P==='pg'?'pgvols':P==='pld'?'plvols':'';
+  x+='<label class="vs-pick" title="'+h(W+' '+N+': its works, and the other volumes. Choose one to open it.')+'"><span class="vs-now">'+h(W+' '+N)
+    +(i>=0?' <span class="vs-of">· '+(i+1)+' of '+n+'</span>':'')+' ▾</span><select aria-label="'+h('Go to another work in '+W+' '+N+(vols?', or to another volume':''))+'">'
+    +'<optgroup label="'+h(W+' '+N)+'">'+works+'</optgroup>'+(vols?'<optgroup label="Other volumes" data-vols></optgroup>':'')+'</select></label>';
+  x+=sp.next?'<a class="vs-next" href="'+go(sp.next.first)+'" title="'+h('The volume after: '+W+' '+sp.next.vol)+'">'+h(W+' '+sp.next.vol)+' ›</a>'
+            :'<span class="vs-next vs-off" title="The last volume">›</span>';
+  row.innerHTML=x;row.hidden=false;
+  const sel=row.querySelector('select');
+  sel.addEventListener('change',()=>{const v=sel.value;if(v&&String(v)!==String(c.meId))location.href=go(v);});
+  // the other volumes: the shelf's list (60 KB for PG), fetched once the page is idle so it is there when the list opens
+  if(vols&&typeof BLOB==='string'&&BLOB){const fill=()=>fetch(BLOB+'/v1/'+vols+'.json').then(r=>r.ok?r.json():null).then(j=>{
+    const g=sel.querySelector('optgroup[data-vols]');if(!g||!j||!Array.isArray(j.vols))return;
+    g.innerHTML=j.vols.filter(v=>String(v.vol)!==String(N)&&v.first&&v.first.id!=null)
+     .map(v=>'<option value="'+h(String(v.first.id))+'">'+h(W+' '+v.vol)+(v.first.a?' · '+h(cut(String(v.first.a).replace(/,\s*pt\.\s*\d+$/,''),40)):'')+'</option>').join('');}).catch(()=>{});
+   (window.requestIdleCallback||(f=>setTimeout(f,1200)))(fill);}
+ }
+ window.FRVolumes={ready,order,paint,migne};
  {const previous=window._afterBuild;window._afterBuild=()=>{if(previous)previous();try{paint();}catch(e){}};}
  ready();
  if(window.__readerBuilt)paint();

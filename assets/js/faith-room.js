@@ -1294,23 +1294,33 @@
   // its name. There is exactly one today, the Patrologia Syriaca, whose
   // 38 works are shelved under "PS" in the catalogue. "PS" alone means
   // nothing on a page, and dropping the bucket would lose the works.
-  function volTile(s, n) {
+  // A Migne volume also says whose it is (owner 2026-10-11, the PG shelf on a phone: "make navigation easy"): "44 · Gregory of
+  // Nyssa · 20 works". A tile of a number and a count told a reader where to look only if they already knew that PG 44 is
+  // Gregory of Nyssa. The names are the volume's own, most works first; on a phone the grid is a list of these rows.
+  function volTile(s, n, who) {
     const held = `${n.toLocaleString()} work${n === 1 ? "" : "s"}`;
     const wide = s.num ? "" : " faith-room-vol--wide";
     const face = s.num ? String(s.num) : escapeHtml(s.label || s.v);
+    const names = `${(who || []).slice(0, 2).join(" \u00b7 ")}${(who || []).length > 2 ? " \u00b7 \u2026" : ""}`;
     return `<button type="button" class="faith-room-vol${wide}${s.v === vol ? " is-active" : ""}"`
       + ` data-room-vol="${escapeHtml(s.v)}"`
-      + ` aria-label="${escapeHtml(shelf.name(s))}, ${held}">`
+      + ` aria-label="${escapeHtml(shelf.name(s))}${names ? `, ${escapeHtml(names)}` : ""}, ${held}"`
+      + `${names ? ` title="${escapeHtml(names)}"` : ""}>`
       + `<span class="faith-room-vol-n">${face}</span>`
+      + (names ? `<span class="faith-room-vol-a">${escapeHtml(names)}</span>` : "")
       + `<span class="faith-room-vol-c">${held}</span></button>`;
   }
 
   function volGrid(list) {
     const counts = new Map();
+    const byVol = new Map();
     let unshelved = 0;
     list.forEach((w) => {
       const v = String(shelf.of(w) || "");
-      if (v) counts.set(v, (counts.get(v) || 0) + 1); else unshelved += 1;
+      if (v) {
+        counts.set(v, (counts.get(v) || 0) + 1);
+        if (shelf.printed) { if (!byVol.has(v)) byVol.set(v, []); byVol.get(v).push(w); }
+      } else unshelved += 1;
     });
     const tiles = shelfOrder.filter((s) => counts.get(s.v));
     if (!tiles.length) {
@@ -1323,8 +1333,15 @@
     const rest = unshelved
       ? `<p class="faith-room-undated">${unshelved.toLocaleString()} work${unshelved === 1 ? " names" : "s name"} no ${shelf.one}</p>`
       : "";
-    return `<p class="faith-room-shelf-note">${escapeHtml(shelf.lead)}</p>`
-      + `<div class="faith-room-vols">${tiles.map((s) => volTile(s, counts.get(s.v))).join("")}</div>${rest}`;
+    // Straight to a volume by its number: a reader holding a citation (PG 44 / 125a) wants PG 44, not a list of 161 to scroll.
+    const go = shelf.printed && tiles.some((s) => s.num)
+      ? `<form class="faith-room-vol-go" data-room-go><label>Go to ${escapeHtml(shelf.one)} `
+        + `<input type="text" inputmode="numeric" autocomplete="off" enterkeyhint="go" size="4" placeholder="${escapeHtml((shelf.lead.match(/P[LGO] (\d+)/) || [])[1] ? `e.g. ${shelf.lead.match(/P[LGO] (\d+)/)[1]}` : "")}"`
+        + ` aria-label="${escapeHtml(shelf.one)} number"></label><button type="submit">Open</button>`
+        + `<span class="faith-room-vol-go-miss" role="status"></span></form>`
+      : "";
+    return `<p class="faith-room-shelf-note">${escapeHtml(shelf.lead)}</p>${go}`
+      + `<div class="faith-room-vols${shelf.printed ? " faith-room-vols--named" : ""}">${tiles.map((s) => volTile(s, counts.get(s.v), shelf.printed ? volAuthors(byVol.get(s.v) || []) : null)).join("")}</div>${rest}`;
   }
 
   // The heading over one volume's works, with the address a footnote
@@ -1340,7 +1357,8 @@
     const c = new Map();
     list.forEach((w) => {
       const a = String(w.author || "").replace(/\s*\(.*$/, "").trim();
-      if (!a || NO_NAME.test(a)) return;
+      // a catalogue that names the volume where it has no author ("PG 2") has named nobody
+      if (!a || NO_NAME.test(a) || /^P[LGO]\s*\d/.test(a)) return;
       c.set(a, (c.get(a) || 0) + 1);
     });
     return [...c.entries()].sort((x, y) => y[1] - x[1]).map(([a]) => a);
@@ -1354,8 +1372,18 @@
     const by = who.length
       ? `<p class="faith-room-vol-by">${escapeHtml(who.slice(0, 4).join(" \u00b7 "))}${who.length > 4 ? " \u00b7 \u2026" : ""}</p>`
       : "";
+    // The volumes on either side, so a reader walks the set without going back to the grid (owner 2026-10-11, PG on a phone)
+    const k = shelfOrder.findIndex((x) => x.v === s.v);
+    const step = (x, back) => (x
+      ? `<button type="button" class="faith-room-vol-step${back ? " is-prev" : " is-next"}" data-room-vol="${escapeHtml(x.v)}"`
+        + ` aria-label="${back ? "Previous" : "Next"} ${escapeHtml(shelf.one)}: ${escapeHtml(shelf.name(x))}">`
+        + `${back ? "&lsaquo; " : ""}${escapeHtml(shelf.cite(x))}${back ? "" : " &rsaquo;"}</button>`
+      : "");
+    const steps = k >= 0 && (shelfOrder[k - 1] || shelfOrder[k + 1])
+      ? `<nav class="faith-room-vol-steps" aria-label="Other ${escapeHtml(shelf.many)}">${step(shelfOrder[k - 1], true)}${step(shelfOrder[k + 1], false)}</nav>`
+      : "";
     return `<div class="faith-room-vol-head">`
-      + `<h2>${escapeHtml(shelf.name(s))}</h2>${line}${by}`
+      + `<h2>${escapeHtml(shelf.name(s))}</h2>${line}${by}${steps}`
       + `<button type="button" class="faith-room-vol-back" data-room-vol="">`
       + `&larr; All ${escapeHtml(shelf.many)}</button></div>`;
   }
@@ -1733,6 +1761,7 @@
       undatedNote.textContent = `${n.toLocaleString()} ${nounOf(n)} ${n === 1 ? "has" : "have"} no date`;
     }
     root.querySelector("[data-room-rail]").innerHTML = rail;
+    placeRail();
     root.querySelector("[data-room-list]").innerHTML = body;
     // The grid of volumes is one screen of tiles and has nothing to
     // page through.
@@ -1892,6 +1921,24 @@
     });
   }
 
+  // THE LETTERS STAY IN REACH ON A PHONE (owner 2026-10-11, the PG shelf: "make navigation easy"). On a phone the rail leaves
+  // the search panel for the space above the list, where it can stay pinned while 553 authors scroll under it: inside the
+  // panel it scrolled away with the panel. On a wider screen it stays in the panel (Ian, 2026-09-23).
+  const RAIL_MQ = window.matchMedia ? window.matchMedia("(max-width: 640px)") : null;
+  function placeRail() {
+    const r = root.querySelector("[data-room-rail]"), panel = root.querySelector(".faith-room-panel");
+    if (!r || !panel) return;
+    if (RAIL_MQ && RAIL_MQ.matches) { if (r.parentElement === panel) panel.after(r); }
+    else if (r.parentElement !== panel) panel.appendChild(r);
+  }
+  if (RAIL_MQ && RAIL_MQ.addEventListener) RAIL_MQ.addEventListener("change", placeRail);
+  // Where a choice lands. On a phone the controls above the list are a screen tall, so a volume or a letter chosen lands on
+  // its list (scroll-margin keeps it clear of the pinned bars); wider, the room's top as before.
+  function toList() {
+    const list = RAIL_MQ && RAIL_MQ.matches ? root.querySelector("[data-room-list]") : null;
+    (list || root).scrollIntoView({ block: "start" });
+  }
+
   function wireList() {
     // Both the tiles and the way back out of one. An empty value is the
     // way back, which is why this reads the attribute rather than
@@ -1901,7 +1948,21 @@
         vol = b.getAttribute("data-room-vol") || "";
         page = 1;
         render();
-        root.scrollIntoView({ block: "start" });
+        toList();
+      });
+    });
+    root.querySelectorAll("[data-room-go]").forEach((f) => {
+      f.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const q = (f.querySelector("input")?.value || "").trim().replace(/^(?:P[LGO]|tome|vol(?:ume)?\.?)\s*/i, "");
+        const n = parseInt(q, 10);
+        const hit = shelfOrder.find((s) => (s.num && s.num === n) || s.v.toLowerCase() === q.toLowerCase());
+        const miss = f.querySelector(".faith-room-vol-go-miss");
+        if (!hit) { if (miss) miss.textContent = q ? `No ${shelf.one} ${q} here.` : ""; return; }
+        vol = hit.v;
+        page = 1;
+        render();
+        toList();
       });
     });
     root.querySelectorAll("[data-room-letter]").forEach((b) => {
@@ -1909,13 +1970,13 @@
         letter = b.getAttribute("data-room-letter");
         page = 1;
         render();
-        root.scrollIntoView({ block: "start" });
+        toList();
       });
     });
     root.querySelectorAll("[data-room-page]").forEach((b) => {
       b.addEventListener("click", () => {
         const n = parseInt(b.getAttribute("data-room-page"), 10);
-        if (!isNaN(n)) { page = n; render(); root.scrollIntoView({ block: "start" }); }
+        if (!isNaN(n)) { page = n; render(); toList(); }
       });
     });
   }

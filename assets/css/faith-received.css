@@ -7769,6 +7769,41 @@ mark.faith-find-hit.is-current {
   .faith-room-vol-back { margin-left: 0; }
 }
 
+/* ── A Migne shelf on a phone (owner 2026-10-11: "do a mobile pass to make navigation easy especially for pg shelf") ──
+   The volumes name their authors, a number goes straight to its volume, a volume steps to its neighbours, and the
+   letters stay in reach while 553 authors scroll past. */
+.faith-room-vol-a { display: none; }
+.faith-room-vol-go { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 16px; font-family: var(--font-body); font-size: var(--tfr-meta); color: var(--color-darkgrey); }
+.faith-room-vol-go label { display: inline-flex; align-items: center; gap: 8px; }
+.faith-room-vol-go input { width: 5em; min-height: 40px; padding: 6px 10px; border: 1px solid var(--color-card-border); border-radius: 3px; background: var(--color-white, #fff); font: inherit; color: var(--color-dark); }
+.faith-room-vol-go button { min-height: 40px; padding: 6px 14px; border: 1px solid var(--color-dark); border-radius: 3px; background: none; font: inherit; color: var(--color-dark); cursor: pointer; }
+.faith-room-vol-go button:hover { background: var(--color-dark); color: #fff; }
+.faith-room-vol-go-miss { color: var(--color-secondary); }
+.faith-room-vol-go-miss:empty { display: none; }
+.faith-room-vol-steps { display: inline-flex; gap: 6px; align-self: center; }
+.faith-room-vol-step { min-height: 44px; padding: 0 12px; border: 1px solid var(--color-card-border); border-radius: 3px; background: none; cursor: pointer; font-family: var(--font-body); font-size: var(--tfr-meta); color: var(--color-dark); white-space: nowrap; }
+.faith-room-vol-step:hover { border-color: var(--color-secondary); color: var(--color-secondary); }
+@media (max-width: 640px) {
+  /* only the Migne volumes, which name their authors, become a list; the year and century grids keep their tiles */
+  .faith-room-vols--named { grid-template-columns: minmax(0, 1fr); gap: 0; border-top: 1px solid var(--color-card-border); }
+  .faith-room-vols--named .faith-room-vol { flex-direction: row; justify-content: flex-start; align-items: baseline; gap: 12px; min-width: 0; width: 100%; overflow: hidden; min-height: 48px; padding: 12px 4px; border: 0; border-bottom: 1px solid var(--color-card-border); text-align: left; }
+  .faith-room-vols--named .faith-room-vol-n { flex: 0 0 2.4em; text-align: right; font-variant-numeric: tabular-nums; color: var(--color-dark); }
+  .faith-room-vols--named .faith-room-vol-a { display: block; flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-family: var(--font-body); font-size: 15px; color: var(--color-dark); }
+  .faith-room-vols--named .faith-room-vol-c { flex: none; margin-left: auto; }
+  .faith-room-vols--named .faith-room-vol.is-active .faith-room-vol-a { color: #fff; }
+  .faith-room-vol-head .faith-room-vol-steps { width: 100%; }
+  .faith-room-vol-step { flex: 1 1 0; }
+  /* The letters: one line that scrolls sideways, pinned under the site's rail while the names scroll (faith-room.js
+     placeRail moves it out of the search panel at this width, so it has the list to stick over). */
+  [data-room-shell] > [data-room-rail] { position: sticky; top: calc(var(--mo-mast, 61px) + 43px); z-index: 6; margin: 0 0 18px; background: var(--color-page, #f7f4ef); transition: top 0.25s ease; }
+  body:has(> .site-header.is-hidden) [data-room-shell] > [data-room-rail] { top: 43px; }
+  [data-room-shell] > [data-room-rail]:empty { display: none; }
+  [data-room-shell] > [data-room-list] { scroll-margin-top: calc(var(--mo-mast, 61px) + 43px + 64px); }
+  .faith-room-letters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 4px 0; margin-bottom: 0; }
+  .faith-room-letters::-webkit-scrollbar { display: none; }
+  .faith-room-letters button { flex: none; min-height: 40px; padding: 4px 10px; }
+}
+
 /* The annual/monthly pill.
 
    The markup is shared with /membership/, but the styling there comes
@@ -17835,6 +17870,14 @@ a.fr-btn:hover,
   .faith-shelf-study-grid { grid-template-columns: 1fr; }
   .faith-shelf-study-card { padding: 1rem; }
   .faith-shelf-study-head { align-items: flex-start; }
+  /* Study this shelf on a phone (owner 2026-10-11, the PG shelf: "make navigation easy"): four doors in a row of two,
+     named without their descriptions, so the list is in sight a screen sooner. */
+  .faith-shelf-research { margin-bottom: 1.5rem; }
+  .faith-shelf-study-head { margin-bottom: .6rem; }
+  .faith-shelf-study-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
+  .faith-shelf-study-card { min-height: 44px; padding: .6rem .8rem; justify-content: center; }
+  .faith-shelf-study-card strong { font-size: 1.05rem; }
+  .faith-shelf-study-card > span:not(.faith-shelf-reference-action) { display: none; }
 }
 
 .faith-research-links{display:flex;justify-content:space-between;gap:20px;padding:0 0 18px;border-bottom:1px solid var(--color-rule);margin-bottom:14px}
