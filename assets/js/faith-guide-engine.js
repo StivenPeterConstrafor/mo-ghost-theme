@@ -29,8 +29,9 @@ window.TG = (() => {
   // data: inline <script type="application/json" id="tg-<name>"> in the stand-alone page, or the theme's asset URL in data-<name>
   TG.load = (name) => {
     const el = document.getElementById(`tg-${name}`);
-    if (el) return Promise.resolve(JSON.parse(el.textContent));
-    return fetch(root.dataset[name]).then((r) => r.json());
+    const got = el ? Promise.resolve(JSON.parse(el.textContent)) : fetch(root.dataset[name]).then((r) => r.json());
+    if (name === 'data') got.then((D) => { if (D && D.keys) setTimeout(() => TG.keynames(D), 0); });
+    return got;
   };
   TG.yr = (a) => (a.y0 && a.y1 ? (a.y0 === a.y1 ? `${a.y0}` : `${a.y0}–${a.y1}`) : a.d || '');
   // count a number up when it scrolls into view
@@ -172,12 +173,12 @@ window.TG = (() => {
       for (const { a, x0, x1, r, right, cut } of placed) { const y = r * 24 + 8, c = famColor(a.f), sel = cur === a;
         o += `<g class="life" data-i="${AU.indexOf(a)}" tabindex="0" role="button" aria-label="${esc(a.n)}, ${esc(TG.yr(a))}" style="cursor:pointer">
           <rect x="${x0 - 2}" y="${y - 4}" width="${Math.max(x1 - x0, right ? 0 : a.n.length * 6.4 + 10) + 4}" height="24" fill="transparent"/>
-          <rect class="bar" x="${x0}" y="${y}" width="${x1 - x0}" height="${sel ? 8 : 6}" rx="3" fill="${c}" opacity="${sel ? 1 : 0.82}"/>${cut ? `<path d="M${x1 + 2},${y - 1} l5,4 l-5,4" fill="none" stroke="${c}" stroke-width="1.5"/>` : ''}
+          <rect class="bar" x="${x0}" y="${y}" width="${x1 - x0}" height="${sel ? 8 : 6}" rx="3" fill="${a.u ? 'none' : c}" stroke="${a.u ? c : 'none'}" stroke-dasharray="${a.u ? '3 3' : ''}" opacity="${sel ? 1 : 0.82}"/>${cut ? `<path d="M${x1 + 2},${y - 1} l5,4 l-5,4" fill="none" stroke="${c}" stroke-width="1.5"/>` : ''}
           <text x="${right ? x1 : x0}" text-anchor="${right ? 'end' : 'start'}" y="${y + 18}" fill="${sel ? TG.css('--rubric') : TG.css('--ink')}" font-size="11.5" font-weight="${sel ? 600 : 400}">${esc(a.n)}</text></g>`; }
       svg.innerHTML = o;
       svg.querySelectorAll('g.life').forEach((g) => { const a = AU[+g.dataset.i];
         g.addEventListener('click', () => card(a)); g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card(a); } });
-        g.addEventListener('mousemove', (e) => { const b = svg.parentElement.getBoundingClientRect(); tip.innerHTML = `${esc(a.n)}<small>${esc(a.d || TG.yr(a))} · ${a.w.length} ${a.w.length === 1 ? 'work' : 'works'}, ${fmt(a.p)} pages</small>`; tip.hidden = false;
+        g.addEventListener('mousemove', (e) => { const b = svg.parentElement.getBoundingClientRect(); tip.innerHTML = `${esc(a.n)}<small>${esc(a.d || TG.yr(a))}${a.u ? ' (dates uncertain)' : ''} · ${a.w.length} ${a.w.length === 1 ? 'work' : 'works'}, ${fmt(a.p)} pages</small>`; tip.hidden = false;
           tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 200)}px`; tip.style.top = `${e.clientY - b.top + 14}px`; });
         g.addEventListener('mouseleave', () => { tip.hidden = true; }); });
       if (anim && hasG && !reduce) gsap.from(svg.querySelectorAll('rect.bar'), { scaleX: 0, transformOrigin: 'left center', duration: 0.6, ease: 'power3.out', stagger: 0.008 });
@@ -195,13 +196,79 @@ window.TG = (() => {
     if (hasG && !reduce) ScrollTrigger.create({ trigger: host, start: 'top 85%', once: true, onEnter: () => authors(true) });
     let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => draw(false), 150); });
     const first = AU.find((a) => a.n === opt.first) || AU.find((a) => a.y0) || AU[0]; if (first) card(first);
-    // a click elsewhere on the page (a pane of the rose, a bead, a spine) opens that author's fold
-    return { show(name) { const a = AU.find((x) => x.n === name || x.full === name); if (!a) return;
+    // a click elsewhere on the page (a pane of the rose, a bead, a spine, a card in Who's who) opens that author's fold
+    const api = { show(name) { const a = AU.find((x) => x.n === name || x.full === name); if (!a) return;
       if (!on.has(a.f)) { on = new Set(fams.map((f) => f[0])); host.querySelectorAll('.chip[data-f]').forEach((c) => c.setAttribute('aria-pressed', 'true')); }
       if (q) { q = ''; input.value = ''; } refresh(false); setTab('author', true); card(a);
       const d = folds.querySelector(`.fx-who[data-i="${AU.indexOf(a)}"]`); if (!d) return; d.closest('.fx-cent').open = true; d.open = true;
       d.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
       if (hasG && !reduce) gsap.fromTo(d, { backgroundColor: 'rgba(160, 124, 53, 0.28)' }, { backgroundColor: 'rgba(160, 124, 53, 0)', duration: 1.6, delay: 0.5, clearProps: 'backgroundColor' }); } };
+    TG._open = api.show;
+    return api;
+  };
+
+  /* ---------- the people in the conversation (owner 10-10: "key name intros … do this for all shelves", "curate the authors that are important,
+     keeping in mind each guide introduces people to the conversation"). A curated cast per shelf (common/keys.json, merged into the data
+     as D.keys), group by group, each person in order of time with a ruler above them; the intro is the library's own record. ---------- */
+  TG.keynames = (D) => {
+    if (!root || root.querySelector('#names') || !D.keys || !D.keys.length) return;
+    const before = root.querySelector('#explore'); if (!before) return;
+    const {esc} = TG, {fmt} = TG, fams = D.fam || [], famColor = (k) => TG.css(`--f${Math.max(0, fams.findIndex((f) => f[0] === k)) + 1}`);
+    const A = D.authors || [], find = (n) => A.find((a) => a.n === n || a.full === n);
+    const largest = (a) => { if (a.w && a.w.length) { const w = a.w.slice().sort((x, y) => (y[2] || 0) - (x[2] || 0))[0]; return { t: w[0], href: TG.read(w[1], w[3]) }; }
+      if (D.works) { const i = A.indexOf(a), ws = D.works.filter((w) => w[5] === i); if (ws.length) { const w = ws.sort((x, y) => ((y[4] || 0) - (y[3] || 0)) - ((x[4] || 0) - (x[3] || 0)))[0]; return { t: w[0], href: TG.read(w[1], w[3]) }; } } return null; };
+    const nworks = (a) => (a.w && a.w.length) || a.nw || (D.works ? D.works.filter((w) => w[5] === A.indexOf(a)).length : 0);
+    // whole sentences only: a record cut short upstream must not end mid-word
+    const brief = (t, n = 300) => { if (!t) return ''; const ss = t.match(/[^.!?]+[.!?]+["”’)]?(\s|$)/g) || []; let o = ''; for (const x of ss) { if ((o + x).length > n && o) break; o += x; }
+      if (!o) { const cut = t.slice(0, n); o = `${cut.slice(0, cut.lastIndexOf(' '))}…`; } return o.trim(); };
+    // a name is {n, as (display), note, a (a record borrowed from another shelf)}; each group reads in order of time
+    const groups = D.keys.map((g) => ({ ...g, people: g.names.map((e) => { const a = e.a || find(e.n); return a ? { ...a, sig: a.sig || e.bio || '', kn: e.as || a.n, knote: e.note || '', cross: !!e.a } : null; })
+      .filter(Boolean).sort((x, y) => (x.y0 || 9999) - (y.y0 || 9999)) })).filter((g) => g.people.length);
+    groups.forEach((g) => { const home = g.people.filter((p) => !p.cross).map((p) => p.f); const f = home.sort((a, b) => home.filter((x) => x === b).length - home.filter((x) => x === a).length)[0];
+      g.people.forEach((p) => { if (p.cross) p.f = f; }); }); // a writer borrowed from another shelf takes his group's colour
+    if (!groups.length) return;
+    const sec = document.createElement('section'); sec.className = 'tool gut'; sec.id = 'names'; sec.setAttribute('aria-labelledby', 'tg-h-names');
+    sec.innerHTML = `<div class="wrap"><p class="eyebrow">Who’s who</p><h2 id="tg-h-names">The people in the conversation</h2>
+      <p class="say" style="max-width:46rem">${esc(D.keys_say || 'Where to begin on this shelf: the writers the others read, answered and argued with, group by group and in the order they wrote.')}</p>
+      <div class="kn-tabs" role="tablist" aria-label="Groups on this shelf">${groups.map((g, i) => `<button type="button" role="tab" aria-selected="${i ? 'false' : 'true'}" data-i="${i}">${esc(g.label)}</button>`).join('')}</div>
+      <p class="kn-say" aria-live="polite"></p><svg class="kn-ruler" aria-hidden="true"></svg><div class="kn-grid"></div></div>`;
+    before.parentNode.insertBefore(sec, before);
+    const tabs = [...sec.querySelectorAll('.kn-tabs button')], say = sec.querySelector('.kn-say'), grid = sec.querySelector('.kn-grid'), ruler = sec.querySelector('.kn-ruler');
+    let cur = -1;
+    function drawRuler(g) {
+      const P = g.people.filter((a) => a.y0), W = Math.max(320, ruler.clientWidth || grid.clientWidth), lo = Math.min(...P.map((a) => a.y0)), hi = Math.max(...P.map((a) => a.y1 || a.y0));
+      const pad = Math.max(10, (hi - lo) * 0.06), Y0 = lo - pad, Y1 = hi + pad, sx = (y) => 8 + (y - Y0) / (Y1 - Y0) * (W - 16), rows = [];
+      const placed = P.map((a) => { const x0 = sx(a.y0), x1 = Math.max(sx(a.y1 || a.y0), x0 + 4), lw = a.kn.replace(/ \(.*\)$/, '').length * 6.2 + 10; let r = 0; while (rows[r] !== undefined && rows[r] > x0 - 6) r++; rows[r] = Math.max(x1, x0 + lw); return { a, x0, x1, r }; });
+      const H = rows.length * 22 + 24, step = (Y1 - Y0) > 600 ? 100 : (Y1 - Y0) > 250 ? 50 : 25;
+      let o = ''; for (let y = Math.ceil(Y0 / step) * step; y <= Y1; y += step) o += `<line x1="${sx(y)}" x2="${sx(y)}" y1="0" y2="${H - 16}" stroke="${TG.css('--rule-2')}"/><text x="${sx(y)}" y="${H - 3}" font-size="10.5" fill="${TG.css('--muted')}" text-anchor="middle">${y}</text>`;
+      o += placed.map(({ a, x0, x1, r }) => `<g data-n="${esc(a.n)}"><rect class="kn-bar" x="${x0}" y="${r * 22 + 4}" width="${x1 - x0}" height="5" rx="2.5" fill="${a.u ? 'none' : famColor(a.f)}" stroke="${famColor(a.f)}" stroke-dasharray="${a.u ? '3 3' : ''}"/><text x="${x0}" y="${r * 22 + 19}" font-size="11.5" fill="${TG.css('--ink')}">${esc(a.kn.replace(/ \(.*\)$/, ''))}</text></g>`).join('');
+      ruler.setAttribute('viewBox', `0 0 ${W} ${H}`); ruler.setAttribute('height', H); ruler.innerHTML = o;
+      if (hasG && !reduce) gsap.from(ruler.querySelectorAll('.kn-bar'), { scaleX: 0, transformOrigin: 'left center', duration: 0.7, stagger: 0.06, ease: 'power3.out' });
+    }
+    function card(a) {
+      const w = largest(a), n = nworks(a);
+      return `<article class="kn-card" data-n="${esc(a.n)}"><p class="kn-d">${esc(a.d || TG.yr(a))}${a.u ? ' <span class="small">(uncertain)</span>' : ''}</p>
+        <h3>${esc(a.kn)}</h3>${a.knote ? `<p class="kn-note">${esc(a.knote)}</p>` : ''}${a.aff ? `<p class="kn-aff">${esc(brief(a.aff, 120))}</p>` : ''}
+        ${a.sig ? `<p class="kn-sig">${esc(brief(a.sig))}</p>` : ''}
+        <p class="kn-go">${w ? `<a href="${w.href}" target="_blank" rel="noopener">Start with <i>${esc(w.t)}</i></a>` : ''}${n > 1 && !a.cross ? `<button type="button" data-open="${esc(a.full || a.n)}">All ${fmt(n)} works</button>` : ''}</p></article>`;
+    }
+    function show(i, first) {
+      if (i === cur) return; const prev = cur; cur = i; const g = groups[i];
+      tabs.forEach((t, j) => t.setAttribute('aria-selected', j === i ? 'true' : 'false'));
+      const fill = () => {
+        say.textContent = g.say || ''; grid.innerHTML = g.people.map(card).join(''); drawRuler(g);
+        grid.querySelectorAll('[data-open]').forEach((b) => { b.onclick = () => (TG._open ? TG._open(b.dataset.open) : null); });
+        grid.querySelectorAll('.kn-card').forEach((c) => { const hl = (on) => { const r = ruler.querySelector(`g[data-n="${CSS.escape(c.dataset.n)}"] .kn-bar`); if (r) r.style.opacity = on ? 1 : ''; ruler.classList.toggle('dim', on); if (r) r.parentNode.classList.toggle('on', on); };
+          c.addEventListener('mouseenter', () => hl(true)); c.addEventListener('mouseleave', () => hl(false)); });
+        if (hasG && !reduce) gsap.fromTo(grid.children, { opacity: 0, y: 18, rotateX: -12 }, { opacity: 1, y: 0, rotateX: 0, duration: 0.55, stagger: 0.06, ease: 'power3.out', transformPerspective: 900, clearProps: 'transform' });
+      };
+      if (hasG && !reduce && prev >= 0) gsap.to(grid.children, { opacity: 0, y: -10, duration: 0.18, stagger: 0.02, onComplete: fill }); else fill();
+    }
+    tabs.forEach((t) => { t.onclick = () => show(+t.dataset.i); });
+    if (hasG && !reduce) ScrollTrigger.create({ trigger: sec, start: 'top 80%', once: true, onEnter() { cur = -1; show(0, true); } });
+    show(0, true);
+    let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => cur >= 0 && drawRuler(groups[cur]), 150); }).observe(grid);
+    if (hasG) ScrollTrigger.refresh();
   };
   return TG;
 })();

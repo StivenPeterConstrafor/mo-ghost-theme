@@ -129,7 +129,7 @@
   const shelfName = (t) => (window.MOFaithLabel ? window.MOFaithLabel.shelf(t) : t);
   // The shelves with a guide in motion (/the-faith-received/guide/?s=). The
   // links stay hidden until faith-guide-links.js finds that route live.
-  const GUIDES = { pl: "latin", gf: "greek", md: "medieval", rc: "catholic", rf: "reformed", lu: "lutheran" };
+  const GUIDES = { pl: "latin", gf: "greek", md: "medieval", rc: "catholic", rf: "reformed", lu: "lutheran", ed: "english" };
   function studyShelf(name) {
     const sh = RESEARCH_SHELVES[name];
     if (!sh) return "";

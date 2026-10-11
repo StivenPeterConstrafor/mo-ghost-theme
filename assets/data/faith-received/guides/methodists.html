@@ -1,0 +1,144 @@
+<style>
+/* The Methodists: the shelf as a hymn on a grand staff, an Atlantic revival, the long argument over grace, the hymnbook as a body of
+   divinity, and one Bible under four commentaries. Family colours: the Wesleys red, Whitefield slate, British preachers ochre, America green. */
+.tg-met { --f1: #9b2c2c; --f2: #3d5a80; --f3: #a07c35; --f4: #4f6b3a; }
+.tg-met .hero .wrap { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.15fr); }
+.tg-met .stave { position: relative; width: 100%; }
+.tg-met .stave svg { width: 100%; height: auto; display: block; overflow: visible; }
+.tg-met .stave .line { stroke: var(--ink-2); stroke-width: 0.8; }
+.tg-met .stave .bar { stroke: var(--ink-2); stroke-width: 0.8; opacity: 0.55; }
+.tg-met .stave .lane { font: italic 11px var(--display); fill: var(--muted); }
+.tg-met .stave .yr { font: 10.5px var(--body); fill: var(--muted); }
+.tg-met .stave .note { cursor: pointer; }
+.tg-met .stave .note:hover .hd, .tg-met .stave .note:focus .hd { stroke: var(--rubric); stroke-width: 2; }
+.tg-met .stave .note:focus { outline: none; }
+.tg-met .stave .head { font: italic 15px var(--display); fill: var(--ink); }
+.tg-met .stave .sub { font: 600 9px var(--body); letter-spacing: 0.16em; fill: var(--muted); }
+.tg-met .stave .ph { stroke: var(--rubric); stroke-width: 1.5; }
+.tg-met .stave .phy { font: 600 12px var(--body); fill: var(--rubric); }
+.tg-met .stave .cap { margin: 4px 0 0; font-size: 0.82rem; color: var(--muted); min-height: 2.6em; text-wrap: balance; text-align: center; }
+/* the Atlantic */
+.tg-met .mapbox { aspect-ratio: 16 / 10; }
+.tg-met .press { display: flex; flex-wrap: wrap; gap: 6px; min-height: 30px; margin-top: 10px; }
+.tg-met .press span { font: 0.8rem var(--body); padding: 2px 10px; border-radius: 999px; background: var(--card); border: 1px solid var(--rule); }
+.tg-met .press span b { color: var(--rubric); font-weight: 600; margin-left: 4px; font-variant-numeric: tabular-nums; }
+/* free grace */
+.tg-met .grace { position: relative; }
+.tg-met .grace .cols { display: grid; grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr); align-items: end; margin-bottom: 8px; }
+.tg-met .grace .cols b { font: 400 1.25rem var(--display); }
+.tg-met .grace .cols b:last-child { text-align: right; }
+.tg-met .grace .cols small { display: block; font: 0.78rem var(--body); color: var(--muted); }
+.tg-met .grace .rows { position: relative; display: grid; gap: 4px; }
+.tg-met .grace .row { display: grid; grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr); align-items: center; min-height: 34px; }
+.tg-met .grace .yr { text-align: center; font: 600 0.78rem var(--body); color: var(--rubric); font-variant-numeric: tabular-nums; position: relative; z-index: 1; }
+.tg-met .grace .gc { display: block; background: var(--card); border: 1px solid var(--rule); border-radius: 3px; padding: 5px 9px; font-size: 0.8rem; line-height: 1.25; color: var(--ink); text-decoration: none; min-width: 0; position: relative; z-index: 1; }
+.tg-met .grace .gc b { font: 400 0.93rem/1.2 var(--display); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tg-met .grace .gc small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tg-met .grace .gc small { color: var(--muted); }
+.tg-met .grace a.gc:hover { border-color: var(--rubric); }
+.tg-met .grace .gc.U { border-left-color: var(--f1); box-shadow: inset 3px 0 0 var(--f1); }
+.tg-met .grace .gc.E { box-shadow: inset -3px 0 0 var(--f2); text-align: right; }
+.tg-met .grace .gc.ghost { background: transparent; border-style: dashed; color: var(--muted); text-align: right; }
+.tg-met .grace .gc.ghost b { color: var(--ink-2); }
+.tg-met .grace .spine { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--rule); transform: translateX(-0.5px); }
+.tg-met .grace svg.links { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 2; }
+.tg-met .grace svg.links path { fill: none; stroke: var(--rubric); stroke-width: 1.3; }
+.tg-met .phase { margin: 10px 0 0; padding: 10px 12px; border-left: 2px solid var(--rubric); background: var(--card); min-height: 4.6em; font-size: 0.92rem; }
+.tg-met .phase b { font: 400 1.05rem var(--display); display: block; }
+/* the hymnbook */
+.tg-met .hymns { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; position: relative; align-items: start; }
+.tg-met .hymns .part { min-width: 0; position: relative; z-index: 1; }
+.tg-met .hymns .ph2 { border-bottom: 2px solid var(--ink); padding-bottom: 6px; margin-bottom: 6px; min-height: 3.6em; }
+.tg-met .hymns .ph2 b { font: 400 1.5rem/1 var(--display); color: var(--rubric); display: block; }
+.tg-met .hymns .ph2 span { font-size: 0.78rem; line-height: 1.2; display: block; margin-top: 3px; }
+.tg-met .hymns .part.supp .ph2 { border-bottom-style: dashed; }
+.tg-met .hymns .sec { display: block; text-decoration: none; color: var(--ink); padding: 4px 0 6px; font-size: 0.76rem; line-height: 1.2; min-height: 38px; }
+.tg-met .hymns .sec i { display: block; height: 7px; border-radius: 2px; background: var(--f1); margin-top: 4px; transform-origin: left center; }
+.tg-met .hymns .supp .sec i { background: var(--f3); }
+.tg-met .hymns .sec small { color: var(--muted); font-variant-numeric: tabular-nums; }
+.tg-met .hymns .sec:hover { color: var(--rubric); }
+.tg-met .hymns svg.path { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 0; }
+.tg-met .hymns svg.path path { fill: none; stroke: var(--gilt); stroke-width: 1.4; stroke-dasharray: 2 4; opacity: 0.8; }
+/* one Bible, four commentaries */
+.tg-met .bib { position: relative; overflow-x: auto; }
+.tg-met .bib svg { display: block; width: 100%; min-width: 760px; height: auto; overflow: visible; }
+.tg-met .bib .rl { font: 400 13px var(--display); fill: var(--ink); }
+.tg-met .bib .ry { font: 10.5px var(--body); fill: var(--muted); }
+.tg-met .bib .bk { font: 9px var(--body); fill: var(--muted); }
+.tg-met .bib .tt { font: 600 9.5px var(--body); letter-spacing: 0.16em; fill: var(--ink-2); }
+.tg-met .bib rect.c { cursor: pointer; }
+.tg-met .bib rect.c:hover { stroke: var(--rubric); stroke-width: 1.5; }
+.tg-met .bib .gap { stroke: var(--rule); stroke-width: 1; }
+.tg-met .bib .now { font: 400 1.05rem var(--display); color: var(--rubric); min-height: 1.5em; margin: 6px 0 0; }
+@media (max-width: 860px) {
+  .tg-met .hero .wrap { grid-template-columns: minmax(0, 1fr); }
+  .tg-met .hymns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tg-met .grace .row, .tg-met .grace .cols { grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr); }
+}
+</style>
+
+<section class="hero" aria-labelledby="tg-h1"><div class="wrap gut">
+  <div>
+    <p class="kick"><a href="/the-faith-received/">The Faith Received</a> · <a href="/the-faith-received/guide/">Guides to the shelves</a></p>
+    <h1 id="tg-h1">The <em>Methodists</em></h1>
+    <p class="by">From the Holy Club at Oxford to the Methodist Episcopal Church</p>
+    <p class="lede">The Wesleys and George Whitefield, the preachers who rode their circuits, and the American church that grew out of them: sermons and hymns, journals and letters, three commentaries on the whole Bible, and a long argument about grace. Printed in London and Bristol, Boston and Philadelphia, from 1737 to the end of the nineteenth century.</p>
+    <ul class="facts"><li><b data-count="works">0</b><span>works</span></li><li><b data-count="authors">0</b><span>authors</span></li><li><b data-count="pages">0</b><span>pages</span></li><li><b data-count="presses">0</b><span>printing towns</span></li></ul>
+    <p class="scroll">Scroll to follow the revival <i>↓</i></p>
+  </div>
+  <div class="stave" aria-label="Every work on the shelf as a note on a staff, placed in the year of its edition and on the line of its kind"><svg viewBox="0 0 680 400" role="img"></svg><p class="cap" aria-live="polite"></p></div>
+</div></section>
+
+<section class="scene gut" id="tg-sea" aria-labelledby="tg-h-sea"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">1 · An Atlantic revival</p>
+    <h2 id="tg-h-sea">The ocean between</h2>
+    <p class="say">The revival crossed the Atlantic from its first years. The Wesleys went out to Georgia in 1735; Whitefield crossed thirteen times and died in Massachusetts; Asbury sailed in 1771 and never came home. Their books were printed wherever they preached. Scroll to follow the ships and the presses.</p>
+    <ul class="chron" id="tg-chron"></ul>
+  </div>
+  <div>
+    <div class="mapbox" id="tg-map"><svg aria-hidden="true"></svg><canvas aria-label="The crossings of the Wesleys, Whitefield, Asbury and Coke, and the towns that printed the shelf's books, year by year"></canvas><div class="year num" id="tg-year">1729</div><div class="yearbar"><i id="tg-yearbar"></i></div></div>
+    <div class="press" id="tg-press" aria-live="polite"></div>
+    <p class="legend" id="tg-legend" style="margin-top:8px"></p>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-grace" aria-labelledby="tg-h-grace"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">2 · The argument</p>
+    <h2 id="tg-h-grace">Free grace</h2>
+    <p class="say">In 1739 Wesley preached at Bristol against the doctrine that God has chosen some and passed by the rest. Whitefield answered him, and for a century Methodists argued it out, with Calvinists in England and in New England. The shelf holds both sides of the first quarrel; the later opponents appear here by name.</p>
+    <div class="phase" id="tg-phase" aria-live="polite"></div>
+  </div>
+  <div class="grace" id="tg-gr">
+    <div class="cols"><b>Grace for all<small>Wesley and the Arminian Methodists</small></b><span></span><b>Grace for the elect<small>Whitefield, and the Calvinists they answered</small></b></div>
+    <div class="rows"><span class="spine" aria-hidden="true"></span><svg class="links" aria-hidden="true"></svg></div>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-hymns" aria-labelledby="tg-h-hymns"><div class="wrap">
+  <div style="max-width:52rem">
+    <p class="eyebrow">3 · The hymnbook</p>
+    <h2 id="tg-h-hymns">A body of divinity in hymns</h2>
+    <p class="say" style="max-width:52rem">In his preface of 1779 Wesley called the Collection of Hymns for the People Called Methodists “a little body of experimental and practical divinity”. It is ordered as a life: the sinner exhorted, convinced, repenting, then the believer rejoicing, fighting, praying, watching, working, suffering, seeking full redemption, and the society meeting and parting. Follow the dotted line through the parts. The edition on the shelf adds a supplement.</p>
+    <p class="small" id="tg-hymn-n" aria-live="polite"></p>
+  </div>
+  <div class="hymns" id="tg-hb"><svg class="path" aria-hidden="true"></svg></div>
+</div></section>
+
+<section class="scene gut" id="tg-bible" aria-labelledby="tg-h-bible"><div class="wrap">
+  <div style="max-width:52rem">
+    <p class="eyebrow">4 · Scripture</p>
+    <h2 id="tg-h-bible">One Bible, four commentaries</h2>
+    <p class="say" style="max-width:52rem">Wesley’s Explanatory Notes and the three great Methodist commentaries on the whole Bible that followed, Coke’s, Benson’s and Clarke’s, book by book from Genesis to Revelation. Each bar is that book in that commentary, as tall as its pages; open it to read. An empty place is a book the volumes on the shelf do not list in their contents: Clarke’s Romans is not on the shelf, and the shortest books may sit inside their neighbours.</p>
+  </div>
+  <div class="bib" id="tg-bib"><svg role="img" aria-label="Pages on each book of the Bible in four Methodist commentaries"></svg><div class="tip" hidden></div><p class="now num" id="tg-bnow" aria-live="polite"></p></div>
+</div></section>
+
+<section class="tool gut" id="explore" aria-labelledby="tg-h-ex"><div class="wrap">
+  <p class="eyebrow">Find</p>
+  <h2 id="tg-h-ex">Every author, every work</h2>
+  <p class="say" style="max-width:46rem">The Wesleys, Whitefield, the British preachers and scholars, and the Methodist Episcopal Church in America. Search the shelf, or browse it by author, by century or by title. The shelf also has its own room in <a href="/the-faith-received/methodists/">the Methodists</a>, and the tradition is introduced on <a href="/the-faith-received/tradition/?t=methodist">the Methodist tradition page</a>.</p>
+  <div id="tg-explorer"></div>
+  <div class="next"><a href="/the-faith-received/all-works/?tradition=English%20Divines&amp;party=Methodist">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=English%20Divines">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=english">The English Divines</a><a href="/the-faith-received/guide/?s=westminster">The Westminster Assembly</a><a href="/the-faith-received/guide/?s=puritans">The Puritans</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
+</div></section>
