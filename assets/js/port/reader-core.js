@@ -3916,12 +3916,13 @@ function build(){
       try{
         if(window.__WORKSLIST){go(window.__WORKSLIST);return;}
         const v=window.__FR_VER?'?v='+window.__FR_VER:'';
-        const [d,te,confs]=await Promise.all([
+        const [d,te,confs,sets]=await Promise.all([
           fetch(BLOB+'/v1/works-index.json'+v,{signal:AbortSignal.timeout(25000)}).then(r=>{if(!r.ok)throw Error('Catalogue '+r.status);return r.json();}),
           fetch(BLOB+'/v1/titles_en.json'+v,{signal:AbortSignal.timeout(25000)}).then(r=>r.ok?r.json():{}).catch(()=>({})),
-          fetch(BLOB+'/v1/confessions-index.json'+v,{signal:AbortSignal.timeout(25000)}).then(r=>{if(!r.ok)throw Error('Confessions '+r.status);return r.json();}).then(d=>Array.isArray(d.confessions)?d:null).catch(()=>null)
+          fetch(BLOB+'/v1/confessions-index.json'+v,{signal:AbortSignal.timeout(25000)}).then(r=>{if(!r.ok)throw Error('Confessions '+r.status);return r.json();}).then(d=>Array.isArray(d.confessions)?d:null).catch(()=>null),
+          window.FRVolumes?window.FRVolumes.ready():null   // a work's volumes in printed order (reader-volumes.js, 2026-10-11)
         ]);
-        const ws=FRReaderNavigation.catalogue(d,te,confs?.confessions||[]);if(confs)window.__WORKSLIST=ws;go(ws);
+        let ws=FRReaderNavigation.catalogue(d,te,confs?.confessions||[]);if(window.FRVolumes)ws=window.FRVolumes.order(ws,sets);if(confs)window.__WORKSLIST=ws;go(ws);
         if(!confs&&box.isConnected){list.insertAdjacentHTML('afterbegin','<p class="nl-msg">The confession catalogue could not load. <button type="button" class="nl-retry">Retry loading</button></p>');list.querySelector('.nl-retry').onclick=load;}
       }catch(error){if(!box.isConnected)return;list.innerHTML='<div class="nl-msg" role="status">The library could not load. <button type="button" class="nl-retry">Retry loading</button> <a href="/the-faith-received/all-works/?collection=all">Open library</a></div>';list.querySelector('.nl-retry').onclick=load;}
     };load();
@@ -4195,7 +4196,7 @@ function syncEdition(n){
    row.children[1].textContent=mine;
    row.children[1].title=ed?"You are reading "+(e.about[slug]||"this edition")+".":fac?"You are reading the facsimile: the printed page, with its scan beside the text.":"You are reading the born-digital text: the Latin with its English translation.";}
   const a=row.querySelector("a");
-  a.href="/read?w="+encodeURIComponent(other)+(page!=null?"&p="+encodeURIComponent(page)+"#b"+encodeURIComponent(page)+"-0":"");
+  a.href="/the-faith-received/read/?w="+encodeURIComponent(other)+(page!=null?"&p="+encodeURIComponent(page)+"#b"+encodeURIComponent(page)+"-0":"");   // this site's reader, not the corpus site's /read (2026-10-11)
   a.textContent=theirs+" \u21c4";
   a.title=(ed?"This work is also held in another edition: "+(e.about[other]||theirs)+".":fac?"This work is also held as a born-digital text: the Latin with its English translation.":"This work is also held in facsimile: the printed page, with its scan beside the text.")+(page!=null?" Opens "+unit+" "+page+", where this page's text is.":"");
   a.setAttribute("aria-label",(ed?"Open this passage in the "+theirs:fac?"Open this passage in the born-digital text":"Open this passage in the facsimile")+(page!=null?", "+unit+" "+page:""));
