@@ -2,6 +2,10 @@
 // The About panel names one author's church (MOFaithLabel.of); start the denomination table now so it is in hand by the time a reader opens it.
 if(window.MODenom)window.MODenom.ready();
 const $=s=>document.querySelector(s),el=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
+// SECOND-VERSION LABELS (owner 2026-10-11): Migne's heading over a second version of a passage -- BILLII INTERPRETATIO, VETUS
+// INTERPRETATIO, METRICA VERSIO, VERS. NOV., HIERON. INTERP. ... and their English -- as the reader recognises it everywhere.
+const FR_VERS_RE=/^(?:\d+\.?\s+)?(?:†\s*)?(?:j\.?\s*)?(?:billii\s+interpretatio|metrica\s+versio|vetus\s+interpre(?:tatio|tes|s)|antiqua\s+versio|versio\s+(?:evagrii|nova|rufini|hieronymi|hier\.|h\.?\s*valesii|marii\s+mercatoris)|vers\.\s*nov\.|rufini\s+versio|interpretatio\s+(?:nova|rufini|huetii|s\.?\s*hieronymi|ex\s+latino)|interpret\.\s*hieronymi|(?:hieronymi|hieron\.?|hier\.)\s+(?:interpretatio|interpret\.|interp\.|inter\.|versio)|gerardi\s+vossii\s+interpretatio|aniani\s+interpretatio|translation\s+of\s+(?:j\.?\s*)?(?:billius|rufinus|huet|jerome|gerardus\s+vossius|anianus)|metrical\s+version|ancient\s+translation|new\s+(?:translation|version)|version\s+of\s+(?:evagrius|jerome))(?![a-z])/;
+const frVersHead=t=>!!t&&FR_VERS_RE.test(String(t).replace(/^[\[\s]+/,""));
 // guarded storage: Safari private mode / quota-exceeded throws on writes — never let that kill a save path
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
 // margin-note rail only when the reading area is wide enough for two columns + two gutters (2026-09-02)
@@ -2776,8 +2780,7 @@ function build(){
   // second translation of the same passage under its own heading (BILLII INTERPRETATIO, METRICA VERSIO, VETUS INTERPRETATIO, VERSIO
   // EVAGRII ...), that section reads as a parallel version, not as the text running on. Not the Hexapla's columns (each a witness of its
   // own) and not Athanasius' INTERPRETATIO in PG 27 (his commentary). Heads arrive in one English form (runs/pg_shelf/tools/vheads.py).
-  const _VERS_RE=/^(?:\d+\.?\s+)?(?:†\s*)?(?:j\.?\s*)?(?:billii\s+interpretatio|metrica\s+versio|vetus\s+interpre(?:tatio|tes|s)|antiqua\s+versio|versio\s+(?:evagrii|nova|rufini|hieronymi|hier\.|h\.?\s*valesii|marii\s+mercatoris)|vers\.\s*nov\.|rufini\s+versio|interpretatio\s+(?:nova|rufini|huetii|s\.?\s*hieronymi|ex\s+latino)|interpret\.\s*hieronymi|(?:hieronymi|hieron\.?|hier\.)\s+(?:interpretatio|interpret\.|interp\.|inter\.|versio)|gerardi\s+vossii\s+interpretatio|aniani\s+interpretatio|translation\s+of\s+(?:j\.?\s*)?(?:billius|rufinus|huet|jerome|gerardus\s+vossius|anianus)|metrical\s+version|ancient\s+translation|new\s+(?:translation|version)|version\s+of\s+(?:evagrius|jerome))(?![a-z])/;
-  const _versHead=t=>!!t&&_VERS_RE.test(t.replace(/^[\[\s]+/,""));
+  const _VERS_RE=FR_VERS_RE,_versHead=frVersHead;   // one definition, script level (the Greek · Latin aligner uses it too)
   function teiHeadRow(sec,laEl,enEl){
     // LANE-INTEGRITY heads (owner 2026-08-10 'slipping from latin to english on subheadings'):
     // the Latin column NEVER shows English — each lane renders its OWN heading in its own
@@ -3055,7 +3058,11 @@ function build(){
         if(inV){hs.forEach(h=>{if(_versHead(_t(h)))h.classList.add("invers");});
           // a paragraph that opens with another head (PG 13: the main text's '10. But as to what Simon Peter said' + ANCIENT TRANSLATION)
           // keeps that head out of the block: only its version label carries the rule, and the block runs on from the next paragraph
-          if(!_versHead(_t(hs[0]))){return;}}}
+          if(!_versHead(_t(hs[0]))){return;}
+          // a label with text BEFORE it closes that paragraph (PG 13: the Greek column prints the old version's label at its foot,
+          // after its last Greek paragraph): the block opens after it, the paragraph itself is not the version
+          {const v0=[...hs].find(h=>_versHead(_t(h)));let lead="";for(const n of p.childNodes){if(n===v0||(n.contains&&n.contains(v0)))break;if(!(n.classList&&n.classList.contains("inhead")))lead+=n.textContent||"";}
+           if(lead.replace(/\s+/g,"").length>2)return;}}}
       if(inV)p.classList.add("pvers");});});
     // the first paragraph of each run of the editors' apparatus carries the label (Commentary / Scholium / Sources), per lane
     ["la","en"].forEach(ln=>{let prev=null;sec.querySelectorAll("."+ln+" p").forEach(p=>{
@@ -6837,7 +6844,30 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
                   // paragraph lists, so the printed-paragraphs basis set the English beside an empty Latin lane. With neither Greek nor Latin
                   // paragraphs, the page's own zone Latin is carved into paragraphs, as the zone Greek already is (PAGEVIEW GREEK IS A LANE).
                   const _laP=((sf.laParas||[]).length||(sf.grcParas||[]).length)?(sf.laParas||[]):_paras3(lt);
-                  const aligned=window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_enMarked.join(" "),{grc:(sf.grcParas||[]).map(_healGrc),la:_laP,en:_enParas,byCol:_byCol});
+                  // A SECOND VERSION APART (owner 2026-10-11, "fix origen to be better"): Migne prints the old Latin version of a page
+                  // (VETUS INTERPRETATIO in Origen's Matthew, BILLII INTERPRETATIO in Irenaeus) as a block under both columns. Its
+                  // paragraphs swelled the Latin count, no pairing basis held, and the page fell to the printed-paragraphs basis, which
+                  // puts the WHOLE Latin -- the version too -- under the first Greek paragraph (PG 13 col. 1269). When the block runs from
+                  // its label to the page's end in both the Latin and the English, it is cut off before the page is aligned and follows
+                  // the aligned rows as its own Latin | English rows.
+                  const _vHd=t=>{const m=/^\s*\u0002([^\u0003]+)\u0003/.exec(String(t||""));return m?m[1].replace(/\u0007[\s\S]*$/,"").replace(/\s+/g," ").trim().toLowerCase():null;};
+                  const _vAt=list=>(list||[]).findIndex(t=>{const h=_vHd(t);return !!h&&frVersHead(h);});
+                  const _vTail=(list,i)=>i>=0&&!list.slice(i+1).some(t=>{const h=_vHd(t);return h!==null&&!frVersHead(h)&&!/^(?:caput|cap\.|chapter)\s+[ivxlc\d]+\.?$/.test(h);});   // the version's own chapter heads (CAPUT II.) stay in it
+                  const _vCut=str=>{const re=/\u0002([^\u0003]+)\u0003/g;let m;while((m=re.exec(str))){if(frVersHead(m[1].replace(/\u0007[\s\S]*$/,"").replace(/\s+/g," ").trim().toLowerCase()))return m.index;}return -1;};
+                  const _vLa=_vAt(_laP),_vEn=_vAt(_enParas),_enAll=_enMarked.join(" "),_vLt=_vCut(lt),_vEt=_vCut(_enAll);
+                  const _vSplit=_vLa>0&&_vEn>0&&_vLt>0&&_vEt>0&&_vTail(_laP,_vLa)&&_vTail(_enParas,_vEn);
+                  // the Greek column repeats the version's label at its foot (PG 13 col. 1009): with the block set apart, that copy goes
+                  const _vNoTail=t=>String(t||"").replace(/\s*\u0002([^\u0003]+)\u0003\s*$/,(m,h)=>frVersHead(h.replace(/\u0007[\s\S]*$/,"").replace(/\s+/g," ").trim().toLowerCase())?"":m);
+                  const _gP=(sf.grcParas||[]).map(_healGrc);if(_vSplit&&_gP.length)_gP[_gP.length-1]=_vNoTail(_gP[_gP.length-1]);
+                  const aligned=_vSplit
+                    ?window.FRPgParallel.alignOpening(_vNoTail(_healGrc(sf.grc)),lt.slice(0,_vLt),_enAll.slice(0,_vEt),{grc:_gP,la:_laP.slice(0,_vLa),en:_enParas.slice(0,_vEn),byCol:_byCol})
+                    :window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_enAll,{grc:(sf.grcParas||[]).map(_healGrc),la:_laP,en:_enParas,byCol:_byCol});
+                  if(_vSplit&&aligned.basis!=="column-paragraphs"){   // the column basis pairs whole columns, the block included
+                    const _fold=list=>{const o=[];let pend="";for(const t of list){const v=String(t||"").trim();if(!v)continue;if(/^\u0002[^\u0003]*\u0003$/.test(v)){pend+=v+" ";continue;}o.push((pend+v).trim());pend="";}if(pend.trim())o.push(pend.trim());return o;};
+                    const vl=_fold(_laP.slice(_vLa)),ve=_fold(_enParas.slice(_vEn));
+                    if(vl.length===ve.length)vl.forEach((t,i)=>aligned.rows.push({grc:"",la:t,en:ve[i]}));
+                    else aligned.rows.push({grc:"",la:vl.join(" "),en:ve.join(" ")});
+                    (window.__versApart=window.__versApart||{pages:0,rows:0}).pages++;window.__versApart.rows+=Math.max(vl.length===ve.length?vl.length:1,0);}
                   // Keep printed headings visible in their own lane, without guessing
                   // their counterparts. Their opening remains a usable outline target.
                   const marked=aligned.rows.map(r=>r.en).join(" ");
