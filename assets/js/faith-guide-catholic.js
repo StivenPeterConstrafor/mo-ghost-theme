@@ -432,7 +432,7 @@
     }
     draw();
     TG.chapter('#tg-scot', 3200, (p, fin) => step(fin ? 4 : p < 0.03 ? -1 : Math.min(4, Math.floor(p * 5)), fin), { scrub: true });
-    if (!TG.pinOK()) lis.forEach((li) => li.classList.add('now'));
+    if (!TG.plays()) lis.forEach((li) => li.classList.add('now'));
     let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { const c = cur; draw(); cur = -3; step(c, true); }, 180); });
   })();
 
@@ -555,7 +555,7 @@
       if (anim) gsap.fromTo(card.children, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.05 });
     }
     TG.chapter('#tg-dm', 3000, (p, fin) => step(fin ? 3 : Math.min(5, Math.floor(p * 6)), fin), { scrub: true });
-    if (!TG.pinOK()) lis.forEach((li) => li.classList.add('now'));
+    if (!TG.plays()) lis.forEach((li) => li.classList.add('now'));
   })();
 
   /* ---------- 8. the quarrel over grace: the books on the shelf on either side, and Rome between them ---------- */

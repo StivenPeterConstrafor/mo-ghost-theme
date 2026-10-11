@@ -270,7 +270,7 @@
     TG.chapter('#tg-sys', 3600, render, { scrub: 0.5 });
     // phones: the loci as a list under each tome
     document.getElementById('tg-locilist').innerHTML = `<ol style="margin-bottom:18px">${S.map((s) => `<li><b>${s.y} · ${esc(s.a)}</b><span><a href="${TG.read(s.v[0][0])}" target="_blank" rel="noopener">${esc(s.t)}${s.v.length > 1 ? `, ${s.v.length} vols.` : ''}</a></span></li>`).join('')}</ol><p class="say">Gerhard’s <i>Theological Commonplaces</i> appeared at Jena in 1610–1622. Its nine tomes hold thirty-five loci from Holy Scripture to eternal life.</p><ol>${tomes.map((t) => `<li><b>Tome ${ROM[t - 1]}</b><span>${D.loci.filter((l) => l.t === t).map((l) => `<a href="${TG.read(gerhard.v[t - 1][0], l.p)}" target="_blank" rel="noopener">${esc(l.en)}</a>`).join('')}</span></li>`).join('')}</ol>`;
-    if (!TG.pinOK()) { say.innerHTML = `<p>Twelve systems of Lutheran doctrine stand on this shelf from Melanchthon’s <i>Body of Christian Doctrine</i> (1560) to Buddeus’s <i>Institutes</i> (1723). The classic is Johann Gerhard’s in nine tomes and thirty-five loci. The loci follow the order of the faith. Holy Scripture comes first because every other doctrine is proved from it. Then come God, creation and sin, law and Gospel and justification, the sacraments, the Church and its orders, and the last things.</p>`; }
+    if (!TG.plays()) { say.innerHTML = `<p>Twelve systems of Lutheran doctrine stand on this shelf from Melanchthon’s <i>Body of Christian Doctrine</i> (1560) to Buddeus’s <i>Institutes</i> (1723). The classic is Johann Gerhard’s in nine tomes and thirty-five loci. The loci follow the order of the faith. Holy Scripture comes first because every other doctrine is proved from it. Then come God, creation and sin, law and Gospel and justification, the sacraments, the Church and its orders, and the last things.</p>`; }
   })();
 
   /* ---------- 4. whom they answered: each writer's answers by adversary, from the opponents the library's mined claims name ---------- */
@@ -316,7 +316,7 @@
         rows.push({ j, yr, nm, bars }); });
       render(last);
     }
-    let last = TG.pinOK() ? 0 : 1;
+    let last = TG.plays() ? 0 : 1;
     function render(p) {
       last = p; if (!rows.length) return;
       const step = p < 0.44 ? -1 : p < 0.92 ? Math.min(F.length - 1, Math.floor((p - 0.44) / 0.08)) : F.length, hk = step >= 0 && step < F.length ? F[step].k : null;
@@ -326,10 +326,10 @@
         bars.forEach(({ r, t, k, v: s }) => { r.style.transform = `scaleX(${v.toFixed(3)})`; r.setAttribute('opacity', hk && hk !== k ? 0.16 : 1);
           t.setAttribute('opacity', v < 0.98 ? 0 : hk ? (hk === k && s >= 0.005 ? 1 : 0) : step === F.length && s >= 0.15 ? 1 : 0); }); });
       cols.forEach((c) => c.g.setAttribute('opacity', hk && hk !== c.k ? 0.35 : 1));
-      if (TG.pinOK()) setNote(note, NOTES[step + 1]);
+      if (TG.plays()) setNote(note, NOTES[step + 1]);
     }
     build(); onPhoneSwitch(build);
-    if (!TG.pinOK()) note.innerHTML = NOTES[0] + NOTES[NOTES.length - 1];
+    if (!TG.plays()) note.innerHTML = NOTES[0] + NOTES[NOTES.length - 1];
     TG.chapter('#tg-fronts', 5200, render, { scrub: 0.5 });
   })();
 
@@ -377,7 +377,7 @@
       lms.forEach(({ d, g }) => { g.setAttribute('opacity', clamp((Y - d.w[0]) * d.n - d.i, 0, 1).toFixed(2)); });
       let now = -1; D.landmarks.forEach((l, i) => { if (l[0] <= Y - 0.15) now = i; });
       mlis.forEach((li, i) => { li.classList.toggle('now', i === now); li.classList.toggle('past', i < now); });
-      if (now >= 0 && TG.pinOK()) marks.scrollTop = Math.max(0, mlis[now].offsetTop - marks.clientHeight * 0.4);
+      if (now >= 0 && TG.plays()) marks.scrollTop = Math.max(0, mlis[now].offsetTop - marks.clientHeight * 0.4);
       const lmNow = lms.filter((q) => q.l[0] <= Y - 0.15).pop();
       if (lmNow && lmNow.k !== callK) { callK = lmNow.k; const cx = x(lmNow.d.w[0]), {cy} = lmNow.d, right = cx < W * 0.62, ty = Math.max(84, cy - 40);
         callT.textContent = lmNow.l[1]; callT.setAttribute('text-anchor', right ? 'start' : 'end'); callT.setAttribute('x', cx + (right ? 14 : -14)); callT.setAttribute('y', ty);
@@ -391,7 +391,7 @@
       lifeTxt.textContent = li2 >= 0 ? `${D.life[li2][0]} · ${D.life[li2][1]}` : 'Professor of Scripture at Wittenberg since 1512';
     }
     TG.chapter('#tg-pen', 3800, render, { scrub: 0.5 });
-    if (!TG.pinOK()) mlis.forEach((li) => li.classList.add('past'));
+    if (!TG.plays()) mlis.forEach((li) => li.classList.add('past'));
   })();
 
   /* ---------- 6. how Melanchthon's Loci grew: the first outline and the three ages, locus by locus, in the Corpus Reformatorum ---------- */
@@ -430,16 +430,16 @@
       render(last);
     }
     const T = [0.03, 0.25, 0.47, 0.69];
-    let last = TG.pinOK() ? 0 : 1;
+    let last = TG.plays() ? 0 : 1;
     function render(p) {
       last = p; const age = T.reduce((n, t, i) => (p >= t - 0.02 ? i : n), 0);
       heads.forEach((g, i) => g.setAttribute('opacity', clamp((p - T[i] + 0.03) * 25, 0, 1).toFixed(2)));
       cells.forEach(({ i, j, bar, extra }) => { const v = ease(clamp((p - T[i] - j * 0.0025) / 0.07, 0, 1)); bar.style.transform = `scaleX(${v.toFixed(3)})`; extra.forEach((e) => e.setAttribute('opacity', v >= 0.98 ? 1 : 0)); });
       labs.forEach((t, j) => { t.setAttribute('opacity', p >= T[first[j]] - 0.01 ? 1 : 0.28); t.classList.toggle('r', p < 0.9 && first[j] > 0 && first[j] === age); });
-      if (TG.pinOK()) setNote(note, NOTES[age]);
+      if (TG.plays()) setNote(note, NOTES[age]);
     }
     build(); onPhoneSwitch(build);
-    if (!TG.pinOK()) note.innerHTML = NOTES.join('');
+    if (!TG.plays()) note.innerHTML = NOTES.join('');
     TG.chapter('#tg-loci', 4200, render, { scrub: 0.5 });
   })();
 
@@ -484,7 +484,7 @@
         sqs.push({ ci, i, el }); }));
       render(last);
     }
-    let last = TG.pinOK() ? 0 : 1;
+    let last = TG.plays() ? 0 : 1;
     function render(p) {
       last = p;
       labs.forEach((t, i) => t.setAttribute('opacity', clamp((p / 0.1) * 16 - i, 0.15, 1).toFixed(2)));
@@ -492,10 +492,10 @@
       heads.forEach((g, ci) => g.setAttribute('opacity', clamp((p - tc(ci) + 0.02) * 30, 0.15, 1).toFixed(2)));
       sqs.forEach(({ ci, i, el }) => { const v = ease(clamp((p - tc(ci) - i * 0.0018) / 0.035, 0, 1)); el.style.transform = `scale(${v.toFixed(3)})`; });
       frame.setAttribute('opacity', clamp((p - 0.84) * 12, 0, 1).toFixed(2));
-      if (TG.pinOK()) setNote(note, NOTES[p < 0.1 ? 0 : p < 0.84 ? 1 : 2]);
+      if (TG.plays()) setNote(note, NOTES[p < 0.1 ? 0 : p < 0.84 ? 1 : 2]);
     }
     build(); onPhoneSwitch(build);
-    if (!TG.pinOK()) note.innerHTML = NOTES.join('');
+    if (!TG.plays()) note.innerHTML = NOTES.join('');
     TG.chapter('#tg-cent', 4200, render, { scrub: 0.5 });
   })();
 
@@ -555,7 +555,7 @@
         wrows.push({ g, bar, n }); });
       render(last);
     }
-    let last = TG.pinOK() ? 0 : 1;
+    let last = TG.plays() ? 0 : 1;
     function render(p) {
       last = p; if (!spines.length) return; let up = 0, pages = 0;
       spines.forEach(({ g, v }, i) => { const e = ease(clamp((p - 0.02 - i * 0.03) / 0.05, 0, 1)); g.style.transform = `scaleY(${e.toFixed(3)})`; if (e > 0.5) { up++; pages += v.n; } });
@@ -563,10 +563,10 @@
       digG.setAttribute('opacity', clamp((p - 0.42) * 14, 0, 1).toFixed(2));
       wrows.forEach(({ g, bar, n }, i) => { const t0 = 0.52 + i * 0.055, e = ease(clamp((p - t0) / 0.06, 0, 1)); g.setAttribute('opacity', p >= t0 - 0.01 ? 1 : 0.2);
         bar.style.transform = `scaleX(${e.toFixed(3)})`; n.setAttribute('opacity', e > 0.98 ? 1 : 0); });
-      if (TG.pinOK()) setNote(note, NOTES[p < 0.42 ? 0 : p < 0.52 ? 1 : p < 0.9 ? 2 : 3]);
+      if (TG.plays()) setNote(note, NOTES[p < 0.42 ? 0 : p < 0.52 ? 1 : p < 0.9 ? 2 : 3]);
     }
     build(); onPhoneSwitch(build);
-    if (!TG.pinOK()) note.innerHTML = NOTES.join('');
+    if (!TG.plays()) note.innerHTML = NOTES.join('');
     TG.chapter('#tg-calov', 4600, render, { scrub: 0.5 });
   })();
 

@@ -94,19 +94,49 @@ window.TG = (() => {
   // a pinned chapter: onUpdate(progress 0..1) while it is scrubbed; on phones and with reduced motion it gets its last state once
   TG.chapter = (sel, length, onUpdate, opts = {}) => {
     const el = document.querySelector(sel);
-    if (!TG.pinOK()) { onUpdate(1, true); return null; }
+    if (!TG.pinOK()) { if (TG.plays() && el) return TG.autoplay(el, length, onUpdate); onUpdate(1, true); return null; } // a phone's player stands in for the pin
     onUpdate(0, false);
     return ScrollTrigger.create({ trigger: el, start: () => `top top+=${pinTop()}`, end: `+=${length}`, pin: true, scrub: opts.scrub ?? 0.6, anticipatePin: 1,
       onUpdate: (st) => onUpdate(st.progress, false) });
   };
-  // the chronicle beside a map: which entry is "now"
+  // phones (owner 10-11: "make sure the maps land, they load but it isnt in the motion"): a scene is not pinned on a small screen, but it
+  // still plays: once its picture is half in view it runs from start to end by itself, then offers to play again
+  TG.plays = () => TG.pinOK() || (hasG && !reduce && 'IntersectionObserver' in window);
+  TG.autoplay = (el, length, onUpdate, opt = {}) => {
+    const pick = () => { // the scene's picture: a known box, else the picture column of the scene, else its first drawn canvas or SVG
+      const k = el.querySelector('.mapbox, .stage, .art, .conf, .deb, .ann, .fig'); if (k && k.getBoundingClientRect().height) return k;
+      const g = el.querySelector('.scene-grid > :last-child'); if (g && g.getBoundingClientRect().height) return g;
+      return [...el.querySelectorAll('canvas, svg')].find((x) => x.getBoundingClientRect().width > 40) || el;
+    };
+    const vis = opt.vis || pick();
+    const dur = opt.dur || TG.clamp(length / 520, 4, 9), st = { p: 0 }; let tw = null;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tg-replay'; btn.textContent = 'Play again'; btn.hidden = true;
+    const play = () => { if (tw) tw.kill(); io.disconnect(); st.p = 0; btn.hidden = true; onUpdate(0, false);
+      tw = gsap.to(st, { p: 1, duration: dur, ease: 'none', onUpdate: () => onUpdate(st.p, false), onComplete() { onUpdate(1, true); btn.textContent = 'Play again'; btn.hidden = false; } }); };
+    btn.addEventListener('click', play);
+    (vis === el ? el : vis).insertAdjacentElement(vis === el ? 'beforeend' : 'afterend', btn);
+    onUpdate(0, false);
+    // it plays once half of what the screen can show of it is in view (by height: a picture wider than the phone scrolls sideways);
+    // a reader who scrolls past before that finds its last frame and a button to play it
+    let passed = false;
+    const io = new IntersectionObserver((es) => {
+      const e = es[es.length - 1], r = e.boundingClientRect;
+      if (!r.width && !r.height) { io.disconnect(); onUpdate(1, true); return; } // a picture hidden on this screen: its last frame
+      const h = Math.min(r.height, innerHeight);
+      if (h > 0 && e.intersectionRect.height / h >= 0.5) { io.disconnect(); btn.textContent = 'Play again'; play(); return; }
+      if (r.bottom < 0 && !passed) { passed = true; onUpdate(1, true); btn.textContent = 'Play'; btn.hidden = false; }
+    }, { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] });
+    io.observe(vis);
+    return { play };
+  };
+  // the chronicle beside a map: which entry is "now\"
   TG.chronicle = (ul, events, render) => {
     ul.innerHTML = events.map(render).join('');
     const lis = [...ul.children];
     return (year) => {
       let now = -1; events.forEach((e, i) => { if (e[0] <= year) now = i; });
       lis.forEach((li, i) => { li.classList.toggle('now', i === now); li.classList.toggle('past', i < now); });
-      if (now >= 0 && TG.pinOK()) { const li = lis[now]; ul.scrollTop = Math.max(0, li.offsetTop - ul.clientHeight * 0.3); }
+      if (now >= 0 && TG.plays()) { const li = lis[now]; ul.scrollTop = Math.max(0, li.offsetTop - ul.clientHeight * 0.3); }
       return now;
     };
   };
