@@ -856,10 +856,17 @@
       $pv.querySelector(".sd-keep-reading").click();
     };
     let shown = null;
+    // ITS OWN NOTE FIRST (2026-10-11, the owner: "make sure we will be able to direct people to [Lapide] from Scripture"). The worker
+    // keeps the chapter file's order, and a commentary's first row on a verse can be a citation of it in a preface (Lapide on Rom 5:12
+    // opened vol. 18 p. 59). Its note on the verse (`exegesis`, "Expounds") comes first; then a row inside the chapter's own pages
+    // (from the page this list links to); a work listed with no chapter page keeps its first row, as before.
+    const chapterPage = e.anchored === "chapter" ? Number((/#b(\d+)-/.exec(href) || [])[1]) || 0 : 0;
+    const pickRow = (rows) => rows.find((x) => x.how === "exegesis")
+      || (chapterPage ? rows.find((x) => Number(x.p) >= chapterPage && Number(x.p) < chapterPage + 60) : rows[0]) || null;
     // the nearest verse (one before, one after, then two) with an indexed comment in this commentary: {r, nv} or null
     const neighbour = (v) => [v - 1, v + 1, v - 2, v + 2].filter((x) => x > 0).reduce((found, nv) => found.then((hit) => hit
-      || fetchVerse(ctx.book, ctx.c, nv, { ...emptyFilters(), w: e.w }, 0, 1)
-        .then((d) => { const r = ((d && d.rows) || [])[0]; return r ? { r, nv } : null; })
+      || fetchVerse(ctx.book, ctx.c, nv, { ...emptyFilters(), w: e.w }, 0, 20)
+        .then((d) => { const r = pickRow((d && d.rows) || []); return r ? { r, nv } : null; })
         .catch(() => null)), Promise.resolve(null));
     $btn.addEventListener("click", () => {
       const open = $btn.getAttribute("aria-expanded") !== "true";
@@ -878,9 +885,9 @@
       if (!v) { openReader(`The commentary opens below at ${where}.`, href); return; }
       const ref = refLabel(ctx.book, ctx.c, v);
       $pv.innerHTML = `<p class="sd-muted" role="status">Looking for its comment on ${esc(ref)}\u2026</p>`;
-      fetchVerse(ctx.book, ctx.c, v, { ...emptyFilters(), w: e.w }, 0, 1)
+      fetchVerse(ctx.book, ctx.c, v, { ...emptyFilters(), w: e.w }, 0, 20)
         .then((d) => {
-          const r = ((d && d.rows) || [])[0];
+          const r = pickRow((d && d.rows) || []);
           return r ? fetchPassage(r, ctx.book, ctx.c, v).then((p) => ({ r, p })) : { r: null, p: null };
         })
         .then(({ r, p }) => {
