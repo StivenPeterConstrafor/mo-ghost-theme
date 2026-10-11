@@ -22,6 +22,9 @@
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fold = w => String(w || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/ſ/g, 's').replace(/æ/g, 'ae').replace(/œ/g, 'oe').replace(/j/g, 'i').replace(/v/g, 'u').replace(/ς/g, 'σ');
   const n = x => Number(x || 0).toLocaleString();
+  // works added per "More works" (2026-10-10, owner: "work search only returns max 10 items"; it was 10): each still reads its best
+  // passage only as it scrolls into view, three at a time, so a longer batch costs nothing until it is read
+  const WORKS_STEP = 25;
 
   /* A word's likely inflections: Latin by its ending (the common declensions), English plurals. Only the forms the library actually
      holds are shown, each with its count, and any can be unticked. */
@@ -228,15 +231,22 @@
       + (b ? pairsHtml([b]) : '<span class="wix-s wix-none">open the page to read it</span>') + '</div>';
   }
   // the best passage of each of these pages of one work: [{page, b}] in the order given
+  // A page the index found the word on, whose page file has no form of it, is read again from the work's TEI, the text the reader
+  // shows (2026-10-10, word-search audit: a library work's page files can be behind its TEI; word-index-preview.js teiSource).
   async function bestOf(slug, pages, look, fallback) {
     const P = window.FRWordPreview;
-    const lanes = P && P.best ? await P.lanes(slug, pages.map(String)).catch(() => null) : null;
-    return pages.map(p => {
+    if (!P || !P.best) return pages.map(p => ({ page: p, b: null }));
+    const read = tei => P.lanes(slug, pages.map(String), tei ? { tei: true } : undefined).catch(() => null);
+    const pick = lanes => pages.map(p => {
       const lane = lanes && lanes.get(String(p));
       let b = lane ? P.best(lane, look) : null;
       if (!b && lane && fallback) b = P.best(lane, fallback);   // a phrase across a line or a note: its words
       return { page: p, b };
     });
+    const out = pick(await read(false));
+    if (!out.some(x => !x.b) || /^(pld|pg|po|eebo)-/.test(slug)) return out;
+    const tei = pick(await read(true));
+    return out.map((x, i) => x.b ? x : tei[i]);
   }
 
   /* THE CONCEPT CARD (2026-10-02, owner: "build it … make of course results are tastefully done"). When the query names a doctrine or
@@ -391,7 +401,7 @@
       st.shown = Math.min(pool().length, st.shown + k);
       const left = pool().length - st.shown;
       foot.innerHTML = left > 0 ? `<button type="button" class="wix-go">More works · ${n(left)} more ranked</button>` : '';
-      const b = foot.querySelector('button'); if (b) b.onclick = () => more(10);
+      const b = foot.querySelector('button'); if (b) b.onclick = () => more(WORKS_STEP);
     }
     // the pages the card ranks for a work, best first ([page, score, …, cites its verse, statements filed under it])
     const ranked = w => (w.pp || []).slice().sort((a, b) => b[1] - a[1]);
@@ -516,7 +526,7 @@
       return b;
     }
     // ONE RANKED LIST (2026-10-08): every work in the word service's order (BM25: the treatises on the word first), a tradition
-    // button narrowing it; ten works at a time, each with its best passage read as it comes into view.
+    // button narrowing it; WORKS_STEP works at a time, each with its best passage read as it comes into view.
     function render() {
       const listEl = $('.wix-list'); listEl.innerHTML = '';
       const ol = document.createElement('ol'); ol.className = 'wix-rank';
@@ -536,9 +546,9 @@
         st.shown += next.length;
         const left = total - st.works;
         foot.innerHTML = left > 0 && next.length ? `<button type="button" class="wix-go">More works · ${n(left)} more</button>` : '';
-        const bt = foot.querySelector('button'); if (bt) bt.onclick = () => more(10);
+        const bt = foot.querySelector('button'); if (bt) bt.onclick = () => more(WORKS_STEP);
       }
-      more(10).catch(fail);
+      more(WORKS_STEP).catch(fail);
     }
     // the ranked rows the list needs: the first answer (600 rows) or, past it, a longer one; a tradition's own rows when one is chosen
     async function rowsFor(need) {
