@@ -403,7 +403,7 @@
     const PICK = ['god', 'creation', 'pred', 'church', 'prayer', 'magis'], n2 = newIn(2), gone = goneAfter(1);
     const NOTES = [
       `<p>Melanchthon came to Wittenberg in 1518 to teach Greek. He never published his first outline of the <i>Loci</i>. It has ${nw(nl[0])} heads in ${tot[0]} pages: ${andList(R.filter((r) => r.c[0]).map((r) => lc(r.en)))}.</p>`,
-      `<p>The edition of 1521 has ${nl[1]} loci in ${tot[1]} pages, and still none on God. Its opening says why: ${link(L.slug, L.quote[0], `<i lang="la">${esc(L.quote[1])}</i>`)} We do better to adore the mysteries of the Godhead than to search them out.</p>`,
+      `<p>The edition of 1521 has ${nl[1]} loci in ${tot[1]} pages, and still none on God. Its opening says why: ${link(L.slug, L.quote[0], `<i lang="la">${esc(L.quote[1])}</i>`)} “We do better to adore the mysteries of the Godhead than to search them out.”</p>`,
       `<p>From 1535 the book opens with God. ${nw(n2.length).replace(/^./, (c) => c.toUpperCase())} loci are new, among them ${andList(n2.filter((r) => PICK.includes(r.k)).map((r) => lc(r.en)))}. Gone from 1521: ${andList(gone.map((r) => lc(r.en)))}.</p>`,
       `<p>The last form was printed at Leipzig in 1559. It has ${nl[3]} loci in ${tot[3]} pages and ends with ${andList(newIn(3).map((r) => lc(r.en)))}. Martin Chemnitz’s <i>Theological Topics</i>, on this shelf, are his lectures on this book.</p>`];
     document.getElementById('tg-lkey').innerHTML = '<span><i style="background:var(--ink-2)"></i>a locus as long as its pages in the <em>Corpus Reformatorum</em> (vol. 21)</span><span><i style="background:var(--rubric);transform:rotate(45deg) scale(.7)"></i>its first appearance</span><span>Each bar opens its first page.</span>';
