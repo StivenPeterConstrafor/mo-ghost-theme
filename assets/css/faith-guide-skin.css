@@ -203,7 +203,17 @@ main.tfr-guide-page [data-guide-root] .ari th { font-family: "Source Serif Pro",
   main.tfr-guide-page [data-guide-root] .ari table { min-width: 0; }
   main.tfr-guide-page [data-guide-root] .ari col.r { width: 6.5rem; }
   main.tfr-guide-page [data-guide-root] .ari th.r { white-space: normal; font-size: 0.8rem; line-height: 1.2; padding-right: 6px; }
-  main.tfr-guide-page [data-guide-root] .ari thead th:not(.r) { font-size: 0.68rem; line-height: 1.15; padding: 4px 1px 8px; hyphens: auto; overflow-wrap: anywhere; }
+  /* At 34px a column a commentator's name broke mid-word ("Antonius
+     Andre-as"); on a phone the column heads run vertically, whole. */
+  main.tfr-guide-page [data-guide-root] .ari thead th:not(.r) {
+    writing-mode: vertical-rl;
+    white-space: nowrap;
+    font-size: 0.74rem;
+    line-height: 1.2;
+    padding: 6px 0 8px;
+    text-align: left;
+  }
+  main.tfr-guide-page [data-guide-root] .ari thead th:not(.r) > span:first-child { margin: 0 auto 4px; }
   main.tfr-guide-page [data-guide-root] .ari td { padding: 2px 0; }
   main.tfr-guide-page [data-guide-root] .ari td a { max-width: 26px; max-height: 26px; }
 }
