@@ -38,6 +38,10 @@ const SKIP_PATH = [
   // Historical source texts and essays: their spelling and dashes are the authors'.
   /partials\/faith-received\/(anf|npnf|ccel|pg|pl|eebo|mansi|source|text)-/,
   /(^|\/)page-journal-issue-/, /(^|\/)source-texts\//,
+  // Text written for a model, not a reader: Ask's prompts, tool and MCP
+  // descriptions, and the site modules vendored from tfr-backend. Ask's
+  // reader-facing copy lives in the theme and is checked there.
+  /(^|\/)tfr-library\//, /prompt/i, /(^|\/)_?mcp/i,
   // Vendored libraries and generated data that is not copy.
   /assets\/js\/vendor\//, /europe_land\.json$/, /works-index\.json$/,
 ];
