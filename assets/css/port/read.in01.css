@@ -1823,17 +1823,17 @@ a.plref:hover{color:var(--accent);border-bottom-style:solid}
 .row.rapp.soloen>.en,.row.rapp.solola>.la{max-width:none;margin-inline:0}   /* apparatus notes read as a BAND, not centered prose (owner 2026-08-28 screenshot) */
 .vnsw{display:flex;align-items:center;flex-wrap:wrap;gap:.35rem .5rem;font:600 .74rem/1.6 var(--sans);color:var(--muted);padding:.2rem .6rem .1rem}.vnsw select.vnsel{min-width:0;max-width:100%;margin:0;color:var(--ink);background:var(--paper,#fff);border:1px solid var(--border);border-radius:3px;padding:.2rem .35rem;font:inherit;font-size:.78rem}
 @media(max-width:640px){.vnsw select.vnsel{min-height:44px;flex:1 1 10rem}}
-#volnext{margin:2.5rem auto 3rem;max-width:44rem;display:flex;align-items:baseline;gap:.8rem;justify-content:space-between;
+#volnext,#setnext{margin:2.5rem auto 3rem;max-width:44rem;display:flex;align-items:baseline;gap:.8rem;justify-content:space-between;
  padding:1rem .2rem;border-block:1px solid var(--border);background:transparent}
-#volnext .vk{font:600 .74rem/1 var(--sans);color:var(--muted)}
-#volnext a{font:600 .95rem/1.3 var(--font-display);color:var(--accent2);text-decoration:none}
-#volnext a:hover{color:var(--accent)}
+#volnext .vk,#setnext .vk{font:600 .74rem/1 var(--sans);color:var(--muted)}
+#volnext a,#setnext a{font:600 .95rem/1.3 var(--font-display);color:var(--accent2);text-decoration:none}
+#volnext a:hover,#setnext a:hover{color:var(--accent)}
 /* VOLUME CONTINUITY (corpus owner 2026-09-26): the band above a work's first folio names the work before it in the
    volume (or the start of the volume), and a PG strip shows the plates of columns no work holds. */
-#volprev{margin:.4rem auto 2.2rem;max-width:44rem;display:flex;align-items:baseline;gap:.8rem;justify-content:space-between;flex-wrap:wrap;padding:.8rem .2rem;border-bottom:1px solid var(--border)}
-#volprev .vk{font:600 .74rem/1 var(--sans);color:var(--muted)}
-#volprev a{font:600 .95rem/1.3 var(--font-display);color:var(--accent2);text-decoration:none}
-#volprev a:hover{color:var(--accent)}
+#volprev,#setprev{margin:.4rem auto 2.2rem;max-width:44rem;display:flex;align-items:baseline;gap:.8rem;justify-content:space-between;flex-wrap:wrap;padding:.8rem .2rem;border-bottom:1px solid var(--border)}
+#volprev .vk,#setprev .vk{font:600 .74rem/1 var(--sans);color:var(--muted)}
+#volprev a,#setprev a{font:600 .95rem/1.3 var(--font-display);color:var(--accent2);text-decoration:none}
+#volprev a:hover,#setprev a:hover{color:var(--accent)}
 .volgap{margin:1.2rem auto;max-width:44rem;text-align:center}
 .volgap .vk{display:block;font:600 .72rem/1.4 var(--sans);color:var(--muted);margin-bottom:.5rem}
 .volgap .vgrow{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center}
@@ -2128,6 +2128,23 @@ html:not(.fr-plain) .ph.fr-reader-head:has(>.reader-witnesses){flex-wrap:wrap!im
 .fr-reader-head>.reader-witnesses>div{gap:6px}
 .fr-reader-head>.reader-witnesses button{min-height:44px;font-size:13px;padding:7px 10px}
 .fr-reader-head>.reader-witnesses button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+/* VOLUMES AND EDITIONS (owner 2026-10-11 "easy to go the previous volumes like poole, also ... going between born digital and
+   facsimile"): two rows under the title, each the masthead's full width. #reader-volumes (reader-volumes.js) steps through a work's
+   volumes and names its other forms; #reader-editions (syncEdition) links the page being read in the other form. Ported from the
+   corpus site's reader, where the Edition row already showed. */
+html:not(.fr-plain) .ph.fr-reader-head:has(>#reader-volumes:not([hidden])),html:not(.fr-plain) .ph.fr-reader-head:has(>#reader-editions:not([hidden])){flex-wrap:wrap;row-gap:0}
+#reader-volumes:not([hidden]),#reader-editions:not([hidden]){display:flex;align-items:center;flex-wrap:wrap;flex:0 0 100%;gap:0 12px;margin-top:2px;font:12px/1.5 var(--font-body);color:var(--muted)}
+#reader-volumes:not([hidden]){order:20}
+#reader-editions:not([hidden]){order:21}
+#reader-editions .ed-on{color:var(--fg);font-weight:600}
+#reader-volumes a,#reader-editions a{color:var(--fg);text-decoration:underline;text-underline-offset:3px;min-height:28px;display:inline-flex;align-items:center;gap:5px}
+#reader-volumes .vs-off{color:var(--muted);opacity:.45;min-height:28px;display:inline-flex;align-items:center}
+#reader-volumes .vs-pick{position:relative;display:inline-flex;align-items:center;min-height:28px;color:var(--fg);font-weight:600;cursor:pointer;white-space:nowrap}
+#reader-volumes .vs-pick select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px}
+#reader-volumes .vs-pick:focus-within{outline:2px solid var(--fg);outline-offset:2px;border-radius:3px}
+#reader-volumes .vs-of{font-weight:400;color:var(--muted)}
+#reader-volumes .vs-also{display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 12px}
+@media(max-width:640px){#reader-volumes a,#reader-volumes .vs-pick,#reader-volumes .vs-off,#reader-editions a{min-height:40px}}
 html:not(.fr-plain) .fr-reader-head :focus-visible{outline:2px solid var(--fg);outline-offset:3px}
 @media(min-width:881px) and (max-width:1180px){html:not(.fr-plain) .ph.fr-reader-head{gap:12px;padding-inline:16px}.fr-reader-head .mh-home span{display:none}html:not(.fr-plain) .fr-reader-head .ctr{gap:6px}html:not(.fr-plain) .fr-reader-head .seg button{padding-inline:7px}html:not(.fr-plain) .fr-reader-head h1{font-size:18px}}
 @media(max-width:880px){

@@ -372,7 +372,9 @@ aside.relpanel,
 #app #volnav .vnt,
 #app #volnav .vnhead,
 #app #volnext,
-#app #volprev {
+#app #volprev,
+#app #setnext,
+#app #setprev {
   color: var(--fg);
 }
 #app #volnav .vni,
