@@ -138,8 +138,8 @@
       rowsEl.appendChild(row); return { row, c };
     });
     const PHASES = [[1739, 'Wesley and Whitefield, 1739–1746', 'The sermon at Bristol and the letter that answered it; Wesley’s tracts on predestination follow.'],
-      [1765, 'The second quarrel, 1765–1777', 'Sellon against Hervey and Coles, then, hottest after the Conference Minutes of 1770, Fletcher and Olivers against Toplady and Rowland Hill.'],
-      [1790, 'Old books reprinted, 1790s', 'Olivers on perseverance; Whitefield’s defence of election printed again in Connecticut.'],
+      [1765, 'The second quarrel, 1765–1777', 'Sellon against Hervey and Coles. After the Conference Minutes of 1770 the quarrel was at its hottest: Fletcher and Olivers against Toplady and Rowland Hill.'],
+      [1790, 'Old books reprinted, 1790s', 'Olivers on perseverance; Whitefield’s defense of election printed again in Connecticut.'],
       [1815, 'In America, 1815–1864', 'Bangs against the New Divinity of New England, Fisk’s lectures, and Whedon’s answer to Jonathan Edwards.']];
     function drawLinks(upto) {
       const o = rowsEl.getBoundingClientRect(); let s = '';

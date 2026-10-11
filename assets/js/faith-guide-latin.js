@@ -299,7 +299,7 @@ window.TGFinder = (host, D, C) => {
       return { ln, cr, base, xEnd: ln.marks.length ? ln.marks[ln.marks.length - 1].x + 4 : X0 };
     });
     const quill = mk('circle', { class: 'quill', r: 2.2, cx: X0, cy: Y0, opacity: 0 }, svg);
-    const say = (a) => { cap.textContent = a ? `${a.n}, ${TG.yr(a)}${a.pl ? ` · ${a.pl}` : ''} · ${a.nw} ${a.nw === 1 ? 'work' : 'works'} on the shelf` : `Each line is a century, each stroke a writer, each word a decade; tall strokes wrote more, and the popes are written in red. ${fmt(A.length)} writers.`; };
+    const say = (a) => { cap.textContent = a ? `${a.n}, ${TG.yr(a)}${a.pl ? ` · ${a.pl}` : ''} · ${a.nw} ${a.nw === 1 ? 'work' : 'works'} on the shelf` : `Each line is a century, each stroke a writer, each word a decade. Taller strokes wrote more. The popes are written in red. ${fmt(A.length)} writers.`; };
     say(null);
     svg.addEventListener('mousemove', (e) => { const a = e.target.__a; if (a) say(a); });
     svg.addEventListener('mouseleave', () => say(null));

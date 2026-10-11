@@ -202,7 +202,7 @@
     const total = presses.reduce((t, p) => t + p.n, 0), sumG = (gs) => presses.filter((p) => gs.includes(p.g)).reduce((t, p) => t + p.n, 0);
     const neMen = new Set(recs.filter((r) => r.ne).flatMap((r) => r.names)).size;
     const STEPS = [
-      ['London', `${fmt(sumG([0]))} of the ${fmt(total)} dated editions whose imprint names a town were printed in London, most of them for booksellers round St Paul’s.`, [0]],
+      ['London', `${fmt(sumG([0]))} of the ${fmt(total)} dated editions whose imprint names a town were printed in London, most of them for booksellers around St Paul’s.`, [0]],
       ['The universities and Scotland', `Cambridge and Oxford printed ${fmt(sumG([1]))}; Edinburgh, Glasgow and Aberdeen ${fmt(sumG([2]))}, the Scottish divines’ books among them.`, [1, 2]],
       ['The Low Countries', `${fmt(sumG([3]))} came from Amsterdam, Rotterdam, Leiden, Middelburg and Dordrecht, where English congregations in exile had their printers.`, [3]],
       ['New England', `Boston and Cambridge in Massachusetts printed ${fmt(sumG([4]))}. The records of ${neMen} writers on the shelf name a place in New England.`, [4]],

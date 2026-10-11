@@ -20821,3 +20821,14 @@ html.faith-ask-shared [data-tfr-gate] { display: none; }
 .faith-share-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0 0; }
 .faith-share-loading { color: var(--color-muted); }
 @media (max-width: 640px) { .faith-share { padding: 36px 20px 56px; } }
+
+/* ── GUIDE LINKS ARE BUTTONS (Ian, 2026-10-11: "Turn the links to the
+   guides into buttons") ─────────────────────────────────────────────────
+   On a room's, a shelf's or a tradition's dark hero the guide is the
+   white-outlined hero button (.bhero-btn, as "Read the Bible"); a
+   tradition with two guides sets them side by side. In All Works the
+   footer's link is a TFR button. The Study menu keeps its entry as a
+   link, because every item in that menu is one. */
+.bhero .tfr-guide-link { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 0; }
+.bhero .tfr-guide-link[hidden] { display: none; }
+.fro-guides { margin-top: 14px; }

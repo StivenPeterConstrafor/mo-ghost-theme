@@ -53,14 +53,14 @@
     const guides = TRAD[t];
     if (!dek || !guides || document.querySelector(".tfr-guide-link")) return;
     const p = document.createElement("p");
-    p.className = "bhero-sub tfr-guide-link";
+    p.className = "bhero-actions tfr-guide-link";
     p.setAttribute("data-guide-link", "");
     p.hidden = true;
     guides.forEach((k, i) => {
-      if (i) p.append(" · ");
       const a = document.createElement("a");
+      a.className = "bhero-btn";
       a.href = `${ROUTE}?s=${k}`;
-      a.textContent = `A guide to ${SHELF[k]}, in motion →`;
+      a.textContent = `Guide to ${SHELF[k]}`;
       p.append(a);
     });
     dek.after(p);

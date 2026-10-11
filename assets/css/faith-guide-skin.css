@@ -225,3 +225,48 @@ main.tfr-guide-page [data-guide-root] .ari th { font-family: "Source Serif Pro",
   main.tfr-guide-page [data-guide-root] .ari td { padding: 2px 0; }
   main.tfr-guide-page [data-guide-root] .ari td a { max-width: 26px; max-height: 26px; }
 }
+
+/* ── IM FELL CUT DOWN (Ian, 2026-10-11: "De-slop the design too. You can
+   probably cut the use of IM Fell in half.") ─────────────────────────────
+   The guides set the display face on almost everything: council names in
+   the finder, counts, chart labels, column heads, figures. On a working
+   surface it is the tool announcing itself (feedback, 2026-09-14). Here
+   the shelves' own --display token becomes Source Serif, so every rule of
+   theirs that reads it follows, and IM Fell is given back only to:
+   - the chapter titles, and the shelf names on the guides' index;
+   - the period pieces, where the old type is the point: the English
+     title page and its old spellings, the Latin manuscript page and its
+     rows, the Medieval article's Latin, the Anglican Prayer Book leaf,
+     the Lutheran spine and the Puritan sermon and rules.
+   The large figures come down a step, since the same size in Source
+   Serif is more ink. */
+main.tfr-guide-page [data-guide-root] {
+  --display: "Source Serif Pro", Georgia, serif;
+  --fell: "IM Fell Great Primer", "EB Garamond", Georgia, serif;
+}
+main.tfr-guide-page [data-guide-root] h2,
+main.tfr-guide-page [data-guide-root] .tile h3,
+main.tfr-guide-page [data-guide-root] .tp text,
+main.tfr-guide-page [data-guide-root] .tp .t-big,
+main.tfr-guide-page [data-guide-root] .tp .t-it,
+main.tfr-guide-page [data-guide-root] .tp .t-cap,
+main.tfr-guide-page [data-guide-root] .tp .t-sm,
+main.tfr-guide-page [data-guide-root] .spell .orig,
+main.tfr-guide-page [data-guide-root] .qbox,
+main.tfr-guide-page [data-guide-root] .qbox .cap,
+main.tfr-guide-page [data-guide-root] .mhead,
+main.tfr-guide-page [data-guide-root] .script .ini,
+main.tfr-guide-page [data-guide-root] .script .incipit,
+main.tfr-guide-page [data-guide-root] .lrow .la,
+main.tfr-guide-page [data-guide-root] .argue .la,
+main.tfr-guide-page [data-guide-root] .excerpt .la,
+main.tfr-guide-page [data-guide-root] .leaf .rub,
+main.tfr-guide-page [data-guide-root] .braid .book text,
+main.tfr-guide-page [data-guide-root] .part .q,
+main.tfr-guide-page [data-guide-root] .rules li {
+  font-family: var(--fell);
+}
+main.tfr-guide-page [data-guide-root] .scene .big { font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 600; }
+main.tfr-guide-page [data-guide-root] .mapbox .year { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 600; }
+main.tfr-guide-page [data-guide-root] h3 { font-weight: 600; }
+main.tfr-guide-page [data-guide-root] .tile h3 { font-weight: 400; }

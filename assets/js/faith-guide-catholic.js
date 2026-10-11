@@ -53,7 +53,7 @@
     function apply(m, how) { // how: 'set' | 'flip'
       mode = m; const L = layout(m); host.style.height = `${L.height}px`; els.forEach((el) => { el.style.width = `${L.bw}px`; });
       document.querySelectorAll('.tg-cat .seg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.mode === m ? 'true' : 'false'));
-      cap.textContent = m === 'date' ? 'Every book on the shelf, in the order its author was born; the taller the spine, the more pages. Hover a spine to see it, open it to read.'
+      cap.textContent = m === 'date' ? 'Every book on the shelf, in the order its author was born; the taller the spine, the more pages. Hover over a spine to see it. Open it to read.'
         : 'The same books, each in its school, oldest first. The long runs are the great sets: Mansi’s councils, the Salamanca course, Suárez’s works.';
       if (how === 'flip' && G) {
         els.forEach((el, i) => gsap.to(el, { x: L.pos[i].x, y: L.pos[i].y, duration: 1.15, ease: 'power3.inOut', delay: (B[i][4] * 0.05) + (i % 40) * 0.002 }));

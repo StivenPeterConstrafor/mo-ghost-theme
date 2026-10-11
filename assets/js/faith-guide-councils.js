@@ -77,9 +77,9 @@
     [1309, 'The popes at Avignon', 'The papacy resides at Avignon until 1377.', ['Clement V', 'Gregory XI']],
     [1378, 'The Western Schism', 'Rival popes in Rome and Avignon, and from 1409 at Pisa.', ['Urban VI', 'Clement VII']],
     [1414, 'Constance', 'The Schism is ended; Jan Hus is condemned and burned (1415).', ['Emperor Sigismund', 'Martin V', 'Jan Hus']],
-    [1439, 'Florence', 'Union with the Greeks is proclaimed, briefly.', ['Eugenius IV', 'John VIII Palaiologos', 'Bessarion']],
+    [1439, 'Florence', 'Union with the Greeks is proclaimed. It does not last.', ['Eugenius IV', 'John VIII Palaiologos', 'Bessarion']],
     [1517, 'Lateran V closes', 'In the same year Luther posts his theses.', ['Leo X', 'Martin Luther']],
-    [1545, 'Trent', 'Scripture and tradition, justification and the sacraments, to 1563.', ['Paul III', 'Pius IV', 'Charles Borromeo']],
+    [1545, 'Trent', 'Decrees on Scripture and tradition, justification and the sacraments, to 1563.', ['Paul III', 'Pius IV', 'Charles Borromeo']],
     [1869, 'Vatican I', 'The primacy and infallibility of the pope are defined (1870).', ['Pius IX']],
   ];
   const chron = document.getElementById('chron');

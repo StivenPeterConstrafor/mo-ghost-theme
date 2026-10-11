@@ -313,7 +313,7 @@
     // The smaller traditions are not shelves on the home page either;
     // they are in the Tradition filter below.
     const foot = `<p class="fro-foot">Smaller traditions are in the Tradition filter below.</p>` +
-      `<p class="fro-foot" data-guide-link hidden><a href="/the-faith-received/guide/">Guides to the shelves</a>: each shelf introduced in motion, with a century ruler over all of them.</p>`;
+      `<p class="fro-foot fro-guides" data-guide-link hidden><a class="fr-btn" href="/the-faith-received/guide/">Guides to the shelves</a></p>`;
 
     // A fold, closed on arrival (Ian, 2026-09-23: "make this section
     // collapsible and start it collapsed"): the shelves are a way in, and
