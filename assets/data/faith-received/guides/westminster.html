@@ -44,6 +44,12 @@
 .tg-wes .deb .row:hover .nm, .tg-wes .deb .row.on .nm { color: var(--rubric); }
 .tg-wes .deb .row:focus-visible { outline: 2px solid var(--rubric); outline-offset: 2px; }
 .tg-wes .deb-now { font: italic 1.05rem var(--display); color: var(--ink-2); min-height: 1.5em; margin: 10px 0 0; }
+.tg-wes .deb-now a { color: inherit; text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 3px; } .tg-wes .deb-now a:hover { color: var(--rubric); }
+.tg-wes .go { font-size: 0.86rem; color: var(--muted); margin: 10px 0 0; }
+.tg-wes .go p { margin: 8px 0 0; }
+.tg-wes .go a { color: var(--ink); } .tg-wes .go a:hover { color: var(--rubric); }
+.tg-wes .go label { display: block; margin-bottom: 4px; }
+.tg-wes .go select { font: 0.92rem var(--body); color: var(--ink); background: var(--card); border: 1px solid var(--rule); border-radius: 3px; padding: 6px 8px; max-width: 100%; }
 /* the Annotations: every chapter of the Bible as a square */
 .tg-wes .ann { position: relative; }
 .tg-wes .ann svg { display: block; width: 100%; height: auto; overflow: visible; }
@@ -143,6 +149,7 @@
   <div>
     <div class="deb" id="tg-debbox" role="list" aria-label="The members the minutes name most often, with the number of their speeches"></div>
     <p class="lkey" id="tg-deb-key"></p>
+    <p class="go" id="tg-deb-vols"></p>
   </div>
 </div></section>
 
@@ -153,6 +160,11 @@
     <p class="say">London stationers asked a committee of the Commons for leave to print notes fitted to the King James Bible. The chair of the Committee for Religion wrote to some divines and invited others in person. Several of them sat in the Assembly. They divided the books among themselves. Their <a id="tg-annot" target="_blank" rel="noopener"><i>Annotations upon All the Books of the Old and New Testament</i></a> came out in 1645.</p>
     <p class="say">Each square is a chapter. The darker the square, the longer its notes.</p>
     <div class="chap" id="tg-ann-card" aria-live="polite"></div>
+    <div class="go">
+      <label for="tg-ann-pick">Open a book’s notes</label>
+      <select id="tg-ann-pick"><option value="">Choose a book</option></select>
+      <p><a id="tg-ann-start" target="_blank" rel="noopener">Read from the preface</a> · <a id="tg-ann-adv" target="_blank" rel="noopener">Read the Advertisement</a></p>
+    </div>
   </div>
   <div class="ann" id="tg-annbox"><svg role="img" aria-label="Every chapter of the Bible in order. Each is shaded by the length of its notes in the Annotations of 1645."></svg><div class="tip" hidden></div></div>
 </div></section>

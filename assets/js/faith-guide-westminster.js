@@ -10,7 +10,9 @@
   const parse = (s) => { const [y, mo, day] = String(s).split('-').map(Number); return { y, mo, day, t: Date.UTC(y, mo - 1, day || 15) }; }; // day 0: known to the month
   const doy = (p) => (p.t - Date.UTC(p.y, 0, 1)) / 864e5;
   const fy = (s) => { const p = parse(s); return p.y + doy(p) / 366; };
-  const long = (s) => { const p = parse(s); return p.day ? `${DAYS[new Date(p.t).getUTCDay()]}, ${p.day} ${MON[p.mo - 1]} ${p.y}` : `${MON[p.mo - 1]} ${p.y}`; };
+  // England kept the Julian calendar until 1752: its weekday is the Gregorian one of a date ten days later (eleven from March 1700)
+  const julianDay = (p) => new Date(p.t + (p.y < 1700 || (p.y === 1700 && p.mo < 3) ? 10 : 11) * 864e5).getUTCDay();
+  const long = (s) => { const p = parse(s); return p.day ? `${DAYS[julianDay(p)]}, ${p.day} ${MON[p.mo - 1]} ${p.y}` : `${MON[p.mo - 1]} ${p.y}`; };
   let explorer = null;
   document.getElementById('tg-shelf-link').href = TG.href('westminster-assembly/');
 
@@ -263,6 +265,9 @@
       r.style.transform = `translateY(${i * RH}px)`;
       r.addEventListener('click', () => pick(i)); box.appendChild(r); return r;
     });
+    document.getElementById('tg-deb-vols').innerHTML = `Read the minutes: ${D.vols.map((v) => `<a href="${TG.read(v.s)}" target="_blank" rel="noopener">${esc(v.label.split(':')[0])}${/papers/i.test(v.label) ? ' (the papers)' : ''}</a>`).join(' · ')}`;
+    const firstOf = {}; D.sessions.forEach((s) => { const mo = s[1].slice(0, 7); if (!firstOf[mo]) firstOf[mo] = s; });
+    const monthLink = (mo) => { const s = firstOf[mo]; return s ? `<a href="${TG.read(s[2], s[3])}" target="_blank" rel="noopener">${monthName(mo)}</a>` : monthName(mo); };
     const used = D.fam.filter(([k]) => P.some((p) => p.f === k));
     document.getElementById('tg-deb-key').innerHTML = used.map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('');
     let picked = -1, shownMo = '';
@@ -286,7 +291,7 @@
         row.querySelector('.bar i').style.width = `${(100 * v) / max}%`; row.querySelector('.ct').textContent = fmt(v);
       });
       const note = noteAt(mo);
-      now.innerHTML = fin || k === last ? `<b>${monthName(M[0])} to ${monthName(M[last])}</b> · ${fmt(B.named)} named speeches` : `<b>${monthName(mo)}</b> · ${fmt(perMonth[k])} named ${perMonth[k] === 1 ? 'speech' : 'speeches'}`;
+      now.innerHTML = fin || k === last ? `<b>${monthLink(M[0])} to ${monthLink(M[last])}</b> · ${fmt(B.named)} named speeches` : `<b>${monthLink(mo)}</b> · ${fmt(perMonth[k])} named ${perMonth[k] === 1 ? 'speech' : 'speeches'}`;
       if (picked >= 0) return;
       if (fin || k === last) { summary(); shownMo = ''; return; }
       if (note && note[0] !== shownMo) { shownMo = note[0]; card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">${esc(long(note[0]))}</p><h3>${esc(note[1])}</h3>${note[2] ? `<p class="small" style="margin:6px 0 0">${esc(note[2])}</p>` : ''}`; }
@@ -299,6 +304,11 @@
     const A = D.annot, svg = document.querySelector('#tg-annbox svg'), NS = 'http://www.w3.org/2000/svg', card = document.getElementById('tg-ann-card'), tip = document.querySelector('#tg-annbox .tip');
     const mk = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const key in at) e.setAttribute(key, at[key]); parent.appendChild(e); return e; };
     document.getElementById('tg-annot').href = TG.read(A.slug);
+    document.getElementById('tg-ann-start').href = TG.read(A.slug, A.preface_page);
+    document.getElementById('tg-ann-adv').href = TG.read(A.slug, A.adv_page);
+    const sel = document.getElementById('tg-ann-pick');
+    A.books.forEach(([name], bi) => { const o = document.createElement('option'); o.value = bi; o.textContent = name; sel.appendChild(o); });
+    sel.addEventListener('change', () => { if (sel.value === '') return; const bi = Number(sel.value); showBook(bi); window.open(TG.read(A.slug, A.books[bi][1]), '_blank', 'noopener'); });
     const PER = 40, CS = 12, STEP = 14, TOP = 18, GAPY = 34, W = PER * STEP;
     const nz = A.books.flatMap((b) => b[2].map((c) => c[0])).filter((w) => w > 0).sort((a, b) => a - b);
     const rank = (w) => { let lo = 0, hi = nz.length; while (lo < hi) { const m = (lo + hi) >> 1; if (nz[m] < w) lo = m + 1; else hi = m; } return lo / (nz.length - 1); };
@@ -357,13 +367,24 @@
       const name = A.books[c.bi][0], b = wrap.getBoundingClientRect();
       tip.innerHTML = `${esc(name)} ${c.ci + 1}<small>${c.w ? `${fmt(c.w)} words of notes · choose it to read them` : 'No notes of its own. The notes on chapter 43 end with a discussion of the whole vision.'}</small>`;
       tip.hidden = false; tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 240)}px`; tip.style.top = `${e.clientY - b.top + 14}px`;
-      if (hover !== c.bi) { hover = c.bi; dim(); showBook(c.bi); }
+      if (hover !== c.bi) { hover = c.bi; dim(); }
+      showChapter(c);
     });
     svg.addEventListener('mouseleave', () => { tip.hidden = true; hover = -1; dim(); });
+    const pageOf = (c) => (c.w ? c.pg : A.books[c.bi][2][42][1]); // Ezekiel 44-48 open the notes on chapter 43
+    function showChapter(c) {
+      const [name, , chs] = A.books[c.bi];
+      card.innerHTML = `<p class="eyebrow" style="margin:0 0 4px">${testament(c.bi)} · ${esc(name)}</p><h3><a href="${TG.read(A.slug, pageOf(c))}" target="_blank" rel="noopener">${esc(name)} ${c.ci + 1}</a></h3>
+        <p class="small" style="margin:6px 0 0">${c.w ? `${fmt(c.w)} words of notes.` : 'No notes of its own. The notes on chapter 43 end with a discussion of the whole vision.'} The book has ${chs.length} ${chs.length === 1 ? 'chapter' : 'chapters'} and ${fmt(bookWords[c.bi])} words of notes.</p>`;
+    }
+    let touch = false, tapped = null;
+    svg.addEventListener('pointerdown', (e) => { touch = e.pointerType !== 'mouse'; });
     svg.addEventListener('click', (e) => {
       const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse());
       const c = cells.find((o) => q.x >= o.x - 1 && q.x <= o.x + STEP - 1 && q.y >= o.y - 1 && q.y <= o.y + STEP - 1);
-      if (c) window.open(TG.read(A.slug, c.w ? c.pg : A.books[c.bi][2][42][1]), '_blank', 'noopener');
+      if (!c) return;
+      if (touch && tapped !== c) { tapped = c; hover = c.bi; dim(); showChapter(c); return; }
+      window.open(TG.read(A.slug, pageOf(c)), '_blank', 'noopener');
     });
     let shownBook = -2;
     function render(p, fin) {
