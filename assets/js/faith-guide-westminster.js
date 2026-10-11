@@ -39,7 +39,7 @@
     const L = (x, y, t, cls = 'lab', anchor = 'middle') => { const e = mk('text', { x, y, class: cls, 'text-anchor': anchor }, labs); e.textContent = t; return e; };
     L(300, 15, 'The upper end'); L(300, 462, 'The door'); L(560, 338, 'The fire', 'lab', 'end');
     L(336, 57, 'the prolocutor', 'lab2', 'start'); L(270, 88, 'assessors', 'lab', 'end'); L(300, 146, 'scribes', 'lab2');
-    L(244, 248, 'the Scots', 'lab2'); L(150, 106, 'members of Parliament', 'lab'); L(410, 88, 'the divines, where they pleased', 'lab2');
+    L(244, 248, 'the Scots', 'lab2'); L(150, 106, 'members of Parliament', 'lab'); L(410, 88, 'the divines where they pleased', 'lab2');
     // Parliament's lay members sat behind the Scots: their places are drawn empty, for none of their books are on this shelf
     for (const x of [220, 196]) for (let i = 0; i < 6; i++) mk('rect', { class: 'mp', x: x - 6, y: 118 + i * 19, width: 12, height: 12, rx: 3 }, furn);
     const SEAT = 13, seats = [];
@@ -58,7 +58,7 @@
     const placed = new Set(seats.map((s) => s.a.n)), rest = ALL.filter((a) => !placed.has(a.n)).sort((a, b) => (a.y0 || 1600) - (b.y0 || 1600));
     const step = pos.length / Math.max(1, rest.length); // spread the divines over every form, as a full chamber looks
     rest.forEach((a, i) => { const q = pos[Math.min(pos.length - 1, Math.floor(i * step))]; if (q) place(a.n, q[0], q[1]); });
-    const say = (s) => { cap.textContent = s ? `${s.a.n}${s.a.role ? `, ${s.a.role.toLowerCase()}` : ''} · ${s.a.d || TG.yr(s.a) || 'dates unknown'} · ${famName(s.a.f)} · ${s.a.w.length} ${s.a.w.length === 1 ? 'work' : 'works'}` : 'The Jerusalem Chamber as Robert Baillie, one of the Scots, described it in December 1643. Each seat is a divine whose books are on the shelf; the divines sat where they pleased.'; };
+    const say = (s) => { cap.textContent = s ? `${s.a.n}${s.a.role ? `, ${s.a.role.toLowerCase()}` : ''} · ${s.a.d || TG.yr(s.a) || 'dates unknown'} · ${famName(s.a.f)} · ${s.a.w.length} ${s.a.w.length === 1 ? 'work' : 'works'}` : 'The Jerusalem Chamber as the Scots commissioner Robert Baillie described it in December 1643. Each seat is a divine whose books are on the shelf. The divines sat where they pleased.'; };
     seats.forEach((s) => { s.r.addEventListener('mouseenter', () => say(s)); s.r.addEventListener('focus', () => say(s));
       s.r.addEventListener('click', () => explorer && explorer.show(s.a.n)); s.r.addEventListener('keydown', (e) => { if (e.key === 'Enter') explorer && explorer.show(s.a.n); }); });
     svg.addEventListener('mouseleave', () => say(null)); say(null);
@@ -215,9 +215,9 @@
     const et = mk('text', { x: W / 2, y: shaftTop - 10, 'text-anchor': 'middle', fill: TG.css('--ink-2'), style: `font: 600 10px ${TG.css('--body')}; letter-spacing: 0.32em` }, ent); et.textContent = 'AGREED UPON BY THE ASSEMBLY OF DIVINES AT WESTMINSTER';
     const ped = mk('g', {}); const tri = mk('path', { d: `M10 ${shaftTop - 28} L${W / 2} ${shaftTop - 118} L${W - 10} ${shaftTop - 28} Z`, fill: TG.css('--card'), stroke: TG.css('--ink-2'), 'stroke-width': 1.2 }, ped);
     const pt = mk('text', { x: W / 2, y: shaftTop - 52, 'text-anchor': 'middle', fill: TG.css('--rubric'), style: `font: 400 26px ${TG.css('--display')}` }, ped); pt.textContent = 'The Confession of Faith';
-    const pd = mk('text', { x: W / 2, y: shaftTop - 36, 'text-anchor': 'middle', fill: TG.css('--muted'), style: `font: italic 12px ${TG.css('--display')}` }, ped); pd.textContent = 'presented to Parliament, December 1646';
+    const pd = mk('text', { x: W / 2, y: shaftTop - 36, 'text-anchor': 'middle', fill: TG.css('--muted'), style: `font: italic 12px ${TG.css('--display')}` }, ped); pd.textContent = 'presented to Parliament in December 1646';
     const cols = C.map((c, i) => {
-      const x = x0 + i * (cw + gap), g = mk('g', { class: 'blk', tabindex: 0, role: 'button', 'aria-label': `Chapter ${c.r}: ${c.t}, ${c.sec} sections` }), stones = [];
+      const x = x0 + i * (cw + gap), g = mk('g', { class: 'blk', tabindex: 0, role: 'button', 'aria-label': `Chapter ${c.r}: ${c.t} (${c.sec} sections)` }), stones = [];
       const H = base - shaftTop, sh = (H - (c.sec - 1) * 2) / c.sec;
       mk('rect', { x: x - 2, y: shaftTop - 4, width: cw + 4, height: 5, class: 'cap' }, g);
       for (let k = 0; k < c.sec; k++) stones.push(mk('rect', { x, y: base - (k + 1) * sh - k * 2, width: cw, height: sh, rx: 1.5, fill: TG.css('--paper-2'), stroke: TG.css('--rule'), 'stroke-width': 0.8 }, g));
@@ -248,7 +248,7 @@
   /* ---------- the Assembly's own texts ---------- */
   (function texts() {
     const docs = D.docs.map(([s, t, y]) => `<a href="${TG.read(s)}" target="_blank" rel="noopener"><b>${esc(t)}</b><small>${y} · in the Confessions</small></a>`);
-    const pages = [['westminster-shorter/', 'The Shorter Catechism, to learn', 'question by question'], ['westminster-larger/', 'The Larger Catechism, to learn', 'question by question']]
+    const pages = [['westminster-shorter/', 'Learn the Shorter Catechism', 'question by question'], ['westminster-larger/', 'Learn the Larger Catechism', 'question by question']]
       .map(([h, t, s]) => `<a href="${TG.href(h)}"><b>${esc(t)}</b><small>${esc(s)}</small></a>`);
     const vols = D.vols.map((v) => `<a href="${TG.read(v.s)}" target="_blank" rel="noopener"><b>${esc(v.label.replace(/^Vol\. ([\w ,]+?): /, 'The Minutes, $1: '))}</b><small>${fmt(v.p)} pages</small></a>`);
     document.getElementById('tg-texts').innerHTML = docs.concat(pages, vols).join('');

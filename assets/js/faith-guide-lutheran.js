@@ -48,7 +48,7 @@
       const [x, y] = pt(RB + lvl * 15, ang), g = mk('g', { class: 'bead', tabindex: 0, role: 'button', 'aria-label': `${a.n}, ${TG.yr(a)}` }, svg);
       mk('circle', { cx: x, cy: y, r, fill: fc(a.f) }, g); const b = { a, g, r, ang, lvl }; placed.push(b); return b; });
     const say = (a) => { cap.textContent = a ? `${a.n}, ${a.d || TG.yr(a)} · ${a.w.length} ${a.w.length === 1 ? 'work' : 'works'}, ${fmt(a.p)} pages · ${famName(a.f)}`
-      : 'Luther’s seal, as he explained it in 1530: a black cross in a red heart, set in a white rose, on a sky-blue field, in a ring of gold. On the ring, every writer on the shelf at the year of his birth.'; };
+      : 'Luther explained his seal in 1530. A black cross sits in a red heart. The heart is set in a white rose on a sky-blue field in a ring of gold. Every writer on the shelf sits on the ring at the year of his birth.'; };
     beads.forEach(({ a, g }) => { g.addEventListener('mouseenter', () => say(a)); g.addEventListener('focus', () => say(a)); g.addEventListener('mouseleave', () => say(null));
       g.addEventListener('click', () => explorer && explorer.show(a.n)); g.addEventListener('keydown', (e) => { if (e.key === 'Enter') explorer && explorer.show(a.n); }); });
     say(null);
@@ -97,7 +97,7 @@
     const schools = D.schools.map(([p, y, what]) => ({ p, y, what, ll: P[p] }));
     const LBL = { Leipzig: [7, 12, 'left'], Halle: [-7, -6, 'right'], Jena: [7, 13, 'left'], Wittenberg: [8, -7, 'left'], Helmstedt: [-7, -6, 'right'], Giessen: [-7, 12, 'right'], Marburg: [-7, -6, 'right'], Strasbourg: [-7, -6, 'right'], Tübingen: [7, 12, 'left'], Altdorf: [7, 12, 'left'], Königsberg: [-7, -7, 'right'] };
     const chron = TG.chronicle(document.getElementById('tg-chron'), D.events, ([y, e, w]) => `<li><span class="d">${y}</span><span class="e">${esc(e)}</span><span class="w">${esc(w)}</span></li>`);
-    document.getElementById('tg-legend').innerHTML = `${D.fam.filter(([k]) => J.some((j) => j.f === k)).map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('')}<span><i style="background:transparent;border:1.5px solid var(--ink);border-radius:1px"></i>a Lutheran university, from the year it opened or turned Lutheran</span>`;
+    document.getElementById('tg-legend').innerHTML = `${D.fam.filter(([k]) => J.some((j) => j.f === k)).map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('')}<span><i style="background:transparent;border:1.5px solid var(--ink);border-radius:1px"></i>a Lutheran university from the year it opened or turned Lutheran</span>`;
     const ribbon = document.getElementById('tg-ribbon');
     let year = YA, lastRibbon = '';
     const curve = (a, b, t) => { const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1], k = 0.18, cx = mx - dy * k, cy = my + dx * k, u = 1 - t;
@@ -135,7 +135,7 @@
       document.getElementById('tg-yearbar').style.width = `${(Y - YA) / (YB - YA) * 100}%`;
       chron(Y);
       const names = live.map(({ j }) => j.a).join('|');
-      if (names !== lastRibbon) { lastRibbon = names; ribbon.innerHTML = live.map(({ j, c }) => `<span><i style="background:${c}"></i>${esc(j.a)}</span>`).join('') || '<span class="small" style="border:0;background:none">Between journeys: scroll on.</span>'; }
+      if (names !== lastRibbon) { lastRibbon = names; ribbon.innerHTML = live.map(({ j, c }) => `<span><i style="background:${c}"></i>${esc(j.a)}</span>`).join('') || '<span class="small" style="border:0;background:none">Between journeys.</span>'; }
     }
     M.onfit = () => { cv.size(); render(year); };
     TG.chapter('#tg-road', 5000, (p) => render(lerp(YA, YB, p)), { scrub: 0.4 });
@@ -176,7 +176,7 @@
       const sub = mk('text', { x: x0 + 2, y: y0 + 16, class: 'tsub' }, g); sub.textContent = sides;
       paths.forEach((p) => { const L = p.getTotalLength(); p.style.strokeDasharray = L; p.style.strokeDashoffset = L; p.dataset.len = L; });
       const hov = mk('rect', { x: x0 - 4, y: y0 - 24, width: 470, height: 46, fill: 'transparent' }, g);
-      hov.addEventListener('mousemove', (e) => { const b = host.getBoundingClientRect(); tip.innerHTML = `${esc(name)}, from ${esc(shown || y)}<small>${esc(sides)} · settled in article ${arts.map((k) => D.articles[k - 1].r).join(' and ')} of the Formula</small>`; tip.hidden = false;
+      hov.addEventListener('mousemove', (e) => { const b = host.getBoundingClientRect(); tip.innerHTML = `${esc(name)} from ${esc(shown || y)}<small>${esc(sides)} · settled in article ${arts.map((k) => D.articles[k - 1].r).join(' and ')} of the Formula</small>`; tip.hidden = false;
         tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 260)}px`; tip.style.top = `${e.clientY - b.top + 14}px`; });
       hov.addEventListener('mouseleave', () => { tip.hidden = true; });
       threads.push({ y, g, paths, arts }); });
@@ -194,10 +194,10 @@
     [104, 116, 480, 492].forEach((yy) => mk('line', { x1: BX + 5, x2: BX + 49, y1: yy, y2: yy, stroke: '#c9a24e', 'stroke-width': 1.2 }, book));
     const bt = mk('text', { x: BX + 33, y: 298, 'text-anchor': 'middle', transform: `rotate(-90 ${BX + 33} 298)` }, book); bt.textContent = 'CONCORDIA · 1580';
     const NOTES = [
-      [0.0, 'In 1580 the Lutheran churches bound their confessions into one book. Its first part was written while Luther lived: the catechisms of 1529, the Augsburg Confession and its Apology, the Smalcald Articles.'],
-      [0.16, 'Luther died in February 1546. Within two years the emperor’s Interim had divided his followers, and one controversy followed another.'],
-      [0.66, 'The Formula of Concord of 1577 settled them article by article. Article XI, on election, answered no open quarrel among Lutherans but prevented one; Article XII names the sects outside.'],
-      [0.86, 'On 25 June 1580, fifty years to the day after the Augsburg Confession was read, the Book of Concord was published at Dresden. Each article opens Leonhard Hutter’s commentary on it.']];
+      [0.0, 'In 1580 the Lutheran churches bound their confessions into one book. Its first part was written while Luther lived. It holds the catechisms of 1529, the Augsburg Confession with its Apology and the Smalcald Articles.'],
+      [0.16, 'Luther died in February 1546. Within two years the emperor’s Interim had divided his followers. One controversy followed another.'],
+      [0.66, 'The Formula of Concord of 1577 settled them article by article. Article XI on election answered no open quarrel among Lutherans but prevented one. Article XII names the sects outside.'],
+      [0.86, 'The Book of Concord was published at Dresden on 25 June 1580. That was fifty years to the day after the Augsburg Confession was read. Each article opens Leonhard Hutter’s commentary on it.']];
     function render(p) {
       const n = NOTES.filter(([t]) => p >= t).pop(); if (note.dataset.k !== String(n[0])) { note.dataset.k = n[0]; note.textContent = n[1]; if (G) gsap.fromTo(note, { opacity: 0 }, { opacity: 1, duration: 0.5 }); }
       docEls.forEach((d, i) => d.g.setAttribute('opacity', clamp(p * 40 - i * 0.7, 0, 1).toFixed(2)));
@@ -233,7 +233,7 @@
     const cols = tomes.map((t) => { const c = document.createElement('div'); c.className = 'col'; c.innerHTML = `<h4>${ROM[t - 1]}</h4>`;
       const L = D.loci.filter((l) => l.t === t), sum = L.reduce((u, l) => u + l.n, 0);
       const bands = L.map((l) => { const a = document.createElement('a'); a.className = 'locus'; a.href = TG.read(gerhard.v[t - 1][0], l.p); a.target = '_blank'; a.rel = 'noopener';
-        a.title = `${l.en} (${l.la}), tome ${ROM[t - 1]}, from page ${l.p}`; a.innerHTML = `<b>${esc(l.en)}</b><i>${esc(l.la)}</i>`; a.dataset.f = l.n / sum; c.appendChild(a); return a; });
+        a.title = `${l.en} (${l.la}) · tome ${ROM[t - 1]} from page ${l.p}`; a.innerHTML = `<b>${esc(l.en)}</b><i>${esc(l.la)}</i>`; a.dataset.f = l.n / sum; c.appendChild(a); return a; });
       box.appendChild(c); return { c, bands }; });
     let W = 0, H = 0, A = [], B = [];
     function layout() {
@@ -249,9 +249,9 @@
           b.style.height = `${h}px`; const B2 = b.querySelector('b'), I2 = b.querySelector('i'); B2.style.display = bl >= 1 ? '' : 'none'; B2.style.webkitLineClamp = String(Math.max(1, bl)); I2.style.display = il >= 1 ? '' : 'none'; I2.style.webkitLineClamp = String(Math.max(1, il)); }); });
     }
     const SAY = [
-      `<p>Twelve systems of Lutheran doctrine stand on this shelf, from Melanchthon’s <i>Body of Christian Doctrine</i> (1560) to Buddeus’s <i>Institutes</i> (1723). Each spine is a volume, as tall as its pages; open any of them.</p>`,
-      `<p class="now">Johann Gerhard’s <i>Theological Commonplaces</i>, Jena 1610–1622: nine tomes, the classic of Lutheran orthodoxy.</p>`,
-      `<p>Opened, the nine tomes are thirty-five loci in the order of the faith: Holy Scripture first, because every other doctrine is proved from it; then God, creation and sin, law and Gospel and justification, the sacraments, the Church and its orders, and the last things.</p><p class="small">Each band is as long as its locus. Choose one to read it.</p>`];
+      `<p>Twelve systems of Lutheran doctrine stand on this shelf from Melanchthon’s <i>Body of Christian Doctrine</i> (1560) to Buddeus’s <i>Institutes</i> (1723). Each spine is a volume. Its height shows its pages. Open any of them.</p>`,
+      `<p class="now">Johann Gerhard’s <i>Theological Commonplaces</i> appeared at Jena in 1610–1622. Its nine tomes are the classic of Lutheran orthodoxy.</p>`,
+      `<p>The nine tomes hold thirty-five loci in the order of the faith. Holy Scripture comes first because every other doctrine is proved from it. Then come God, creation and sin, law and Gospel and justification, the sacraments, the Church and its orders, and the last things.</p><p class="small">Each band is as long as its locus. Choose one to read it.</p>`];
     let sayK = -1;
     function render(p) {
       if (!W) layout();
@@ -269,8 +269,8 @@
     new ResizeObserver(() => { layout(); }).observe(box);
     TG.chapter('#tg-sys', 3600, render, { scrub: 0.5 });
     // phones: the loci as a list under each tome
-    document.getElementById('tg-locilist').innerHTML = `<ol style="margin-bottom:18px">${S.map((s) => `<li><b>${s.y} · ${esc(s.a)}</b><span><a href="${TG.read(s.v[0][0])}" target="_blank" rel="noopener">${esc(s.t)}${s.v.length > 1 ? `, ${s.v.length} vols.` : ''}</a></span></li>`).join('')}</ol><p class="say">Gerhard’s <i>Theological Commonplaces</i> (Jena, 1610–1622), nine tomes in thirty-five loci, from Holy Scripture to eternal life.</p><ol>${tomes.map((t) => `<li><b>Tome ${ROM[t - 1]}</b><span>${D.loci.filter((l) => l.t === t).map((l) => `<a href="${TG.read(gerhard.v[t - 1][0], l.p)}" target="_blank" rel="noopener">${esc(l.en)}</a>`).join('')}</span></li>`).join('')}</ol>`;
-    if (!TG.pinOK()) { say.innerHTML = `<p>Twelve systems of Lutheran doctrine stand on this shelf, from Melanchthon’s <i>Body of Christian Doctrine</i> (1560) to Buddeus’s <i>Institutes</i> (1723). The classic is Johann Gerhard’s, in nine tomes and thirty-five loci, in the order of the faith: Holy Scripture first, because every other doctrine is proved from it; then God, creation and sin, law and Gospel and justification, the sacraments, the Church and its orders, and the last things.</p>`; }
+    document.getElementById('tg-locilist').innerHTML = `<ol style="margin-bottom:18px">${S.map((s) => `<li><b>${s.y} · ${esc(s.a)}</b><span><a href="${TG.read(s.v[0][0])}" target="_blank" rel="noopener">${esc(s.t)}${s.v.length > 1 ? `, ${s.v.length} vols.` : ''}</a></span></li>`).join('')}</ol><p class="say">Gerhard’s <i>Theological Commonplaces</i> appeared at Jena in 1610–1622. Its nine tomes hold thirty-five loci from Holy Scripture to eternal life.</p><ol>${tomes.map((t) => `<li><b>Tome ${ROM[t - 1]}</b><span>${D.loci.filter((l) => l.t === t).map((l) => `<a href="${TG.read(gerhard.v[t - 1][0], l.p)}" target="_blank" rel="noopener">${esc(l.en)}</a>`).join('')}</span></li>`).join('')}</ol>`;
+    if (!TG.pinOK()) { say.innerHTML = `<p>Twelve systems of Lutheran doctrine stand on this shelf from Melanchthon’s <i>Body of Christian Doctrine</i> (1560) to Buddeus’s <i>Institutes</i> (1723). The classic is Johann Gerhard’s in nine tomes and thirty-five loci. The loci follow the order of the faith. Holy Scripture comes first because every other doctrine is proved from it. Then come God, creation and sin, law and Gospel and justification, the sacraments, the Church and its orders, and the last things.</p>`; }
   })();
 
   /* ---------- 4. whom they answered: each writer's answers by adversary, from the opponents the library's mined claims name ---------- */
@@ -287,7 +287,7 @@
       `<p>Where a claim in these pages answers someone, the library’s reading names the opponent. ${fmt(F0.sorted)} of the ${fmt(F0.all)} claims that name one fall on six adversaries; each bar is that adversary’s share of one writer’s answers.</p>`,
       ...F.map(fnote),
       `<p>Rome is the first adversary for ${nw(nRome)} of the ${nw(N)} writers. ${others.length ? `${andList(others.map((a) => esc(a.n)))} answer the ${others.every((a) => firstOf(a) === 'soc') ? 'Socinians' : 'others'} first${cal ? `; Calov gives ${pct(cal.c.soc, cal.s)}% of his answers to the Socinians and ${pct(cal.c.arm, cal.s)}% to Grotius and the Remonstrants, against ${pct(cal.c.rom, cal.s)}% to Rome` : ''}.` : ''}</p>`];
-    document.getElementById('tg-fkey').innerHTML = `${F.map((f) => `<span><i style="background:${FC[f.k]}"></i>${esc(f.n)}</span>`).join('')}<span class="small" style="flex-basis:100%">The opponents were labelled by machine reading and are indicative; sorting the labels into six adversaries is the guide’s own (a label naming two goes to the more particular, in this order: Socinians, Grotius and the Remonstrants, Anabaptists and enthusiasts, quarrels among Lutherans, the Reformed, Rome). Left out: ${esc(andList(F0.dropped))}, with under 1,000 sorted claims each, and Hermann von der Hardt, whose Constance volumes are a history of the council.</span>`;
+    document.getElementById('tg-fkey').innerHTML = `${F.map((f) => `<span><i style="background:${FC[f.k]}"></i>${esc(f.n)}</span>`).join('')}<span class="small" style="flex-basis:100%">The opponents were labeled by machine reading, so the shares are approximate. Sorting the labels into six adversaries is this guide’s own work. A label naming two goes to the more particular, in this order: Socinians, Grotius and the Remonstrants, Anabaptists and enthusiasts, quarrels among Lutherans, the Reformed, Rome. Left out: ${esc(andList(F0.dropped))}, with under 1,000 sorted claims each. The Constance volumes Hermann von der Hardt collected are left out too, because they are the acts of the council.</span>`;
     let rows = [], cols = [];
     function build() {
       const ph = phone(); svg.innerHTML = ''; rows = []; cols = [];
@@ -367,7 +367,7 @@
     const marks = document.getElementById('tg-marks');
     marks.innerHTML = D.landmarks.map((l) => `<li><b>${l[0]}</b><a href="${TG.read(l[2], l[3])}" target="_blank" rel="noopener">${esc(l[1])}</a><i>WA ${esc(wa(l[2]))}</i></li>`).join('');
     const mlis = [...marks.children];
-    dots.forEach((d) => { d.a.addEventListener('mousemove', (e) => { const b = box.getBoundingClientRect(); tip.innerHTML = `${esc(d.w[1])}<small>${d.w[0]} · WA ${esc(wa(d.w[2]))}, page ${d.w[3]} · click to read</small>`; tip.hidden = false;
+    dots.forEach((d) => { d.a.addEventListener('mousemove', (e) => { const b = box.getBoundingClientRect(); tip.innerHTML = `${esc(d.w[1])}<small>${d.w[0]} · WA ${esc(wa(d.w[2]))} p. ${d.w[3]} · click to read</small>`; tip.hidden = false;
       tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 250)}px`; tip.style.top = `${e.clientY - b.top + 14}px`; }); d.a.addEventListener('mouseleave', () => { tip.hidden = true; }); });
     const total = D.pen.length, penN = document.getElementById('tg-pen-n'); penN.textContent = fmt(total);
     function render(p) {
@@ -388,7 +388,7 @@
       yearT.textContent = Math.min(Y1, Math.max(Y0, Math.floor(Y))); cntT.textContent = `${fmt(shown)} writings`;
       let li2 = -1; D.life.forEach(([y], i) => { if (y <= Y) li2 = i; });
       lifeMarks.forEach((m, i) => m.setAttribute('opacity', i <= li2 ? 1 : 0.25));
-      lifeTxt.textContent = li2 >= 0 ? `${D.life[li2][0]} · ${D.life[li2][1]}` : 'Wittenberg, professor of Scripture since 1512';
+      lifeTxt.textContent = li2 >= 0 ? `${D.life[li2][0]} · ${D.life[li2][1]}` : 'Professor of Scripture at Wittenberg since 1512';
     }
     TG.chapter('#tg-pen', 3800, render, { scrub: 0.5 });
     if (!TG.pinOK()) mlis.forEach((li) => li.classList.add('past'));

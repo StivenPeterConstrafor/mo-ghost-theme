@@ -8,6 +8,10 @@
           {
             "type": "command",
             "command": ".claude/hooks/security-precommit.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/deslop-gate.sh"
           }
         ]
       }

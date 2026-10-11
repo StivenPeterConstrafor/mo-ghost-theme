@@ -153,7 +153,7 @@ window.TG = (() => {
         return `<svg class="fx-spark" viewBox="0 0 100 18" preserveAspectRatio="none" aria-hidden="true">${as.map((a) => `<line x1="${x(fl(a))}" x2="${x(fl(a))}" y1="${(16 - 13 * Math.sqrt(a.w.length / mx)).toFixed(1)}" y2="16" stroke="${famColor(a.f)}" vector-effect="non-scaling-stroke"/>`).join('')}</svg>`; };
       folds.innerHTML = keys.length ? keys.map((k, i) => { const as = by.get(k).sort((x, y) => (x.y0 || 0) - (y.y0 || 0)), nw = as.reduce((t, a) => t + (q ? a.w.filter(hitW).length || a.w.length : a.w.length), 0);
         return `<details class="fx-cent" data-k="${k}"${q || i === 0 ? ' open' : ''}><summary><b>${k >= 0 ? blabel(k) : 'Dates not recorded'}</b><span>${as.length} ${as.length === 1 ? 'author' : 'authors'} · ${fmt(nw)} ${nw === 1 ? 'work' : 'works'}</span>${k >= 0 ? spark(k, as) : ''}<i aria-hidden="true">›</i></summary>
-          <div class="fx-who-list">${as.map((a) => `<details class="fx-who" data-i="${AU.indexOf(a)}"${q && A.length <= 6 ? ' open' : ''}><summary><i style="background:${famColor(a.f)}"></i><b>${mark(a.full || a.n)}</b><span class="d">${esc(a.d || TG.yr(a))}</span><span class="n">${a.w.length} ${a.w.length === 1 ? 'work' : 'works'}${a.p ? `, ${fmt(a.p)} pp.` : ''}</span></summary>
+          <div class="fx-who-list">${as.map((a) => `<details class="fx-who" data-i="${AU.indexOf(a)}"${q && A.length <= 6 ? ' open' : ''}><summary><i style="background:${famColor(a.f)}"></i><b title="${esc(a.full && a.full !== a.n ? a.full : '')}">${mark(a.n)}</b><span class="d">${esc(a.d || TG.yr(a))}</span><span class="n">${a.w.length} ${a.w.length === 1 ? 'work' : 'works'}${a.p ? `, ${fmt(a.p)} pp.` : ''}</span></summary>
             <div class="fx-body">${a.aff ? `<p class="small" style="margin:0 0 4px">${esc(a.aff)}</p>` : ''}${works(a)}<p class="small" style="margin:6px 0 0"><a href="${TG.author(a.full || a.n)}" target="_blank" rel="noopener">The author’s room</a></p></div></details>`).join('')}</div></details>`; }).join('')
         : `<p class="small">Nothing on this shelf matches “${esc(q)}”.</p>`;
       if (anim && hasG && !reduce) gsap.fromTo(folds.querySelectorAll('.fx-spark'), { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 1, stagger: 0.05, ease: 'power2.inOut', clearProps: 'clipPath' });
@@ -180,7 +180,7 @@ window.TG = (() => {
       svg.innerHTML = o;
       svg.querySelectorAll('g.life').forEach((g) => { const a = AU[+g.dataset.i];
         g.addEventListener('click', () => card(a)); g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card(a); } });
-        g.addEventListener('mousemove', (e) => { const b = svg.parentElement.getBoundingClientRect(); tip.innerHTML = `${esc(a.n)}<small>${esc(a.d || TG.yr(a))}${a.u ? ' (dates uncertain)' : ''} · ${a.w.length} ${a.w.length === 1 ? 'work' : 'works'}, ${fmt(a.p)} pages</small>`; tip.hidden = false;
+        g.addEventListener('mousemove', (e) => { const b = svg.parentElement.getBoundingClientRect(); tip.innerHTML = `${esc(a.n)}<small>${esc(a.d || TG.yr(a))}${a.u ? ' (dates uncertain)' : ''} · ${a.w.length} ${a.w.length === 1 ? 'work' : 'works'} · ${fmt(a.p)} pages</small>`; tip.hidden = false;
           tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 200)}px`; tip.style.top = `${e.clientY - b.top + 14}px`; });
         g.addEventListener('mouseleave', () => { tip.hidden = true; }); });
       if (anim && hasG && !reduce) gsap.from(svg.querySelectorAll('rect.bar'), { scaleX: 0, transformOrigin: 'left center', duration: 0.6, ease: 'power3.out', stagger: 0.008 });
@@ -188,7 +188,7 @@ window.TG = (() => {
     function card(a) {
       cur = a; draw(false);
       pick.innerHTML = `<p class="eyebrow" style="margin:0 0 4px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${famColor(a.f)};margin-right:6px"></i>${esc((fams.find((f) => f[0] === a.f) || [])[1] || '')}</p>
-        <h3><a href="${TG.author(a.full || a.n)}" target="_blank" rel="noopener">${esc(a.full || a.n)}</a> <span class="small">${esc(a.d || TG.yr(a))}</span></h3>
+        <h3><a href="${TG.author(a.full || a.n)}" target="_blank" rel="noopener">${esc(a.n)}</a> <span class="small">${esc(a.d || TG.yr(a))}</span></h3>
         ${a.aff ? `<p class="small" style="margin:0 0 6px">${esc(a.aff)}</p>` : ''}${a.sig ? `<p style="margin:0;max-width:52rem">${esc(a.sig)}</p>` : ''}${works(a)}`;
       if (hasG && !reduce) gsap.from(pick.querySelectorAll('.wlist li'), { opacity: 0, y: 6, duration: 0.35, stagger: 0.015, ease: 'power2.out' });
     }
@@ -261,7 +261,7 @@ window.TG = (() => {
     const before = root.querySelector('#explore'); if (!before) return;
     const {esc} = TG, {fmt} = TG, K = D.keyworks.works, fams = D.fam || [], A = D.authors || [];
     const SHELF = { latin: 'Latin Fathers', greek: 'Greek Fathers', medieval: 'Medieval', catholic: 'Roman Catholic', reformed: 'Continental Reformed', lutheran: 'Lutheran', english: 'English Divines' };
-    const fam = (w) => { const a = A.find((x) => x.n === w.a || x.full === w.af); const i = a ? fams.findIndex((f) => f[0] === a.f) : -1; return TG.css(`--f${(i < 0 ? 0 : i) + 1}`) || TG.css('--ink-2'); };
+    const fam = (w) => { const a = A.concat(D.undated || []).find((x) => x.n === w.a || x.full === w.af); const i = a ? fams.findIndex((f) => f[0] === a.f) : -1; return TG.css(`--f${(i < 0 ? 0 : i) + 1}`) || TG.css('--ink-2'); };
     const sec = document.createElement('section'); sec.className = 'scene gut kw'; sec.id = 'works'; sec.setAttribute('aria-labelledby', 'tg-h-works');
     sec.innerHTML = `<div class="wrap"><div class="kw-head"><p class="eyebrow">Key works</p><h2 id="tg-h-works">The books to know</h2>${D.keyworks.say ? `<p class="say">${esc(D.keyworks.say)}</p>` : ''}</div>
       <div class="kw-stage"><div class="kw-shelf" role="list" aria-label="Key works, in the order they were written"></div><div class="kw-board" aria-hidden="true"></div><div class="kw-years" aria-hidden="true"></div></div>
@@ -334,7 +334,7 @@ window.TG = (() => {
     if (!groups.length) return;
     const sec = document.createElement('section'); sec.className = 'tool gut'; sec.id = 'names'; sec.setAttribute('aria-labelledby', 'tg-h-names');
     sec.innerHTML = `<div class="wrap"><p class="eyebrow">Who’s who</p><h2 id="tg-h-names">The people in the conversation</h2>
-      <p class="say" style="max-width:46rem">${esc(D.keys_say || 'Where to begin on this shelf: the writers the others read, answered and argued with, group by group and in the order they wrote.')}</p>
+      <p class="say" style="max-width:46rem">${esc(D.keys_say || 'Where to begin on this shelf: the writers the others read, answered and argued with. Each group runs in the order they wrote.')}</p>
       <div class="kn-tabs" role="tablist" aria-label="Groups on this shelf">${groups.map((g, i) => `<button type="button" role="tab" aria-selected="${i ? 'false' : 'true'}" data-i="${i}">${esc(g.label)}</button>`).join('')}</div>
       <p class="kn-say" aria-live="polite"></p><svg class="kn-ruler" aria-hidden="true"></svg><div class="kn-grid"></div></div>`;
     before.parentNode.insertBefore(sec, before);

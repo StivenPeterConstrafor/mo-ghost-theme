@@ -1,0 +1,191 @@
+<style>
+/* The Eastern Fathers: a rose of the eight languages for the shelf, the tomes on one shelf, a line of each script, the churches of the East on a
+   map, Severus's homilies by the tome that printed them, and three books of the saints as wheels of the year. Family colors are the languages. */
+.tg-eas { --f1: #2a5d9c; --f2: #1a8a74; --f3: #a0561a; --f4: #c9921c; --f5: #b3324f; --f6: #6a8f26; --f7: #7b52a8; --f8: #d06a3c; --f9: #9a8f7e; }
+.tg-eas .sc { unicode-bidi: isolate; }
+.tg-eas .sc-syc { font-family: "Noto Sans Syriac", "Estrangelo Edessa", "Segoe UI Historic", serif; direction: rtl; }
+.tg-eas .sc-ar { font-family: "Noto Naskh Arabic", "Geeza Pro", "Times New Roman", serif; direction: rtl; }
+.tg-eas .sc-cop { font-family: "Noto Sans Coptic", "Antinoou", "Segoe UI Historic", serif; }
+.tg-eas .sc-gez { font-family: "Noto Serif Ethiopic", "Kefa", "Nyala", serif; }
+.tg-eas .sc-hy { font-family: "Noto Serif Armenian", "Mshtakan", "Sylfaen", serif; }
+.tg-eas .sc-ka { font-family: "Noto Serif Georgian", "Sylfaen", serif; }
+.tg-eas .sc-grc, .tg-eas .sc-chu, .tg-eas .sc-la { font-family: "Noto Serif", var(--body); }
+/* hero: the rose */
+.tg-eas .hero .wrap { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); }
+.tg-eas .rose svg { aspect-ratio: 1; overflow: visible; }
+.tg-eas .rose .tile { cursor: pointer; }
+.tg-eas .rose .tile rect { transition: stroke-width 0.15s; }
+.tg-eas .rose .tile:hover rect, .tg-eas .rose .tile:focus rect { stroke: var(--ink); stroke-width: 1.6; }
+.tg-eas .rose .tile:focus { outline: none; }
+.tg-eas .rose .spoke { stroke: var(--rule); stroke-width: 0.8; }
+.tg-eas .rose .glyph { font-size: 25px; fill: var(--ink); dominant-baseline: middle; }
+.tg-eas .rose .lname { font: 600 9.5px var(--body); letter-spacing: 0.12em; fill: var(--muted); text-transform: uppercase; }
+.tg-eas .rose .mid { font: 400 34px var(--display); fill: var(--rubric); text-anchor: middle; }
+.tg-eas .rose .mids { font: 600 9px var(--body); letter-spacing: 0.16em; fill: var(--muted); text-anchor: middle; text-transform: uppercase; }
+/* 1. the tomes */
+.tg-eas .stage { position: relative; width: 100%; }
+.tg-eas .stage svg { display: block; width: 100%; height: auto; overflow: visible; }
+.tg-eas .stage .spine { cursor: pointer; }
+.tg-eas .stage .spine:hover .sk, .tg-eas .stage .spine:focus .sk { stroke: var(--ink); stroke-width: 1.4; }
+.tg-eas .stage .spine:focus { outline: none; }
+.tg-eas .stage .sk { fill: var(--leather); }
+.tg-eas .stage .plank { fill: #8a6438; }
+.tg-eas .stage .tn { font: 12px var(--body); fill: var(--muted); text-anchor: middle; font-variant-numeric: tabular-nums; }
+.tg-eas .stage .brk { stroke: var(--ink-2); stroke-width: 1; fill: none; }
+.tg-eas .stage .bl { font: italic 18px var(--display); fill: var(--ink); text-anchor: middle; }
+.tg-eas .stage .bs { font: 13px var(--body); fill: var(--muted); text-anchor: middle; }
+.tg-eas .stage .gap { fill: none; stroke: var(--rule); stroke-dasharray: 3 3; }
+.tg-eas .stage .cur { stroke: var(--rubric); stroke-width: 1.5; }
+.tg-eas .phase { margin: 14px 0 0; padding: 10px 12px; border-left: 2px solid var(--rubric); background: var(--card); min-height: 6.4em; font-size: 0.9rem; }
+.tg-eas .phase b { font: 400 1.15rem var(--display); display: block; }
+.tg-eas .phase .ln { display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 4px; font-size: 0.8rem; color: var(--muted); }
+.tg-eas .phase .ln i, .tg-eas .lgd i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.tg-eas .lgd { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.8rem; color: var(--muted); margin-top: 10px; }
+/* 2. the languages */
+.tg-eas .langs-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; list-style: none; margin: 0; padding: 0; }
+.tg-eas .lg { position: relative; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 10px 14px 9px 58px; min-width: 0; transition: border-color 0.3s, box-shadow 0.3s; }
+.tg-eas .lg.now { border-color: var(--ink-2); box-shadow: 0 12px 26px -20px rgba(60, 40, 20, 0.6); }
+.tg-eas .lg .gl { position: absolute; left: 10px; top: 8px; width: 38px; text-align: center; font-size: 34px; line-height: 1.1; direction: ltr; }
+.tg-eas .lg .hd { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.tg-eas .lg .hd b { font: 400 1.18rem var(--display); }
+.tg-eas .lg .hd small { color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+.tg-eas .lg .src { margin: 4px 0 0; font-size: 1.02rem; line-height: 1.55; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tg-eas .lg .en { margin: 3px 0 0; font-size: 0.84rem; line-height: 1.4; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-style: italic; }
+.tg-eas .lg .who { margin: 4px 0 0; font-size: 0.74rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tg-eas .lg .who a { color: var(--rubric); }
+.tg-eas .lg .rule { display: none; }   /* the script letter carries the language color; no side bar */
+.tg-eas .stack { display: flex; height: 16px; border-radius: 3px; overflow: hidden; background: var(--rule-2); margin: 14px 0 6px; }
+.tg-eas .stack i { display: block; height: 100%; width: 0; border-right: 2px solid var(--paper); }
+.tg-eas .stack-l { font-size: 0.8rem; color: var(--muted); min-height: 2.6em; margin: 0; }
+/* 3. the map */
+.tg-eas .mapbox { aspect-ratio: 16 / 10.5; }
+.tg-eas .quote { margin: 4px 0 12px; padding: 10px 12px; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; }
+.tg-eas .quote .src { margin: 0; font-size: 1.05rem; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--ink-2); }
+.tg-eas .quote .en { margin: 6px 0 0; font: italic 0.92rem/1.45 var(--body); }
+.tg-eas .quote .who { margin: 6px 0 0; font-size: 0.76rem; color: var(--muted); }
+.tg-eas #tg-east .chron { max-height: 34vh; }
+.tg-eas .ribbon span i { width: 8px; height: 8px; }
+/* 4. Severus */
+.tg-eas .hom { display: grid; grid-template-columns: repeat(25, minmax(0, 1fr)); gap: 4px; position: relative; }
+.tg-eas .hom a { position: relative; display: grid; place-items: center; aspect-ratio: 1; border-radius: 3px; font: 600 10.5px var(--body); color: #fff; text-decoration: none; background: var(--rule-2); font-variant-numeric: tabular-nums; }
+.tg-eas .hom a.on { background: var(--f1); }
+.tg-eas .hom a.cur { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--rubric); z-index: 1; }
+.tg-eas .hom a:hover, .tg-eas .hom a:focus-visible { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink); z-index: 2; outline: none; }
+.tg-eas .hom a s { position: absolute; right: 0; top: 0; width: 0; height: 0; border-style: solid; border-width: 0 9px 9px 0; border-color: transparent var(--f7) transparent transparent; text-decoration: none; }
+.tg-eas .hom a s.cop { border-right-color: var(--f3); }
+.tg-eas .homwrap { position: relative; }
+.tg-eas .hom-scale { display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--muted); margin: 6px 0 0; }
+.tg-eas .hom-say { margin: 12px 0 0; min-height: 3em; font-size: 0.92rem; }
+.tg-eas #tg-pubs.chron { max-height: 46vh; }
+.tg-eas #tg-pubs .e { font-size: 0.98rem; }
+/* 5. the year of the saints */
+.tg-eas .wheels { position: relative; width: 100%; }
+.tg-eas .wheels svg { display: block; width: 100%; height: auto; overflow: visible; }
+.tg-eas .wheels .ms { stroke: var(--paper); stroke-width: 2; }
+.tg-eas .wheels .mn { font: 12px var(--body); fill: var(--ink-2); }
+.tg-eas .wheels .base { fill: none; stroke: var(--rule-2); }
+.tg-eas .wheels .vol { fill: none; cursor: pointer; }
+.tg-eas .wheels .vol:hover { filter: brightness(1.15); }
+.tg-eas .wheels .vt { font: 600 11px var(--body); fill: #fff; pointer-events: none; }
+.tg-eas .wheels .cn { font: italic 18px var(--display); fill: var(--ink); text-anchor: middle; }
+.tg-eas .wheels .cs { font: 12.5px var(--body); fill: var(--muted); text-anchor: middle; font-variant-numeric: tabular-nums; }
+.tg-eas .sx-head { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 8px 48px; align-items: end; margin-bottom: 6px; }
+.tg-eas .now-vol { margin: 0; min-height: 4.6em; font-size: 0.95rem; padding: 10px 12px; border-left: 2px solid var(--rubric); background: var(--card); }
+.tg-eas .now-vol b { font: 400 1.1rem var(--display); display: block; }
+@media (max-width: 860px) {
+  .tg-eas .sx-head { grid-template-columns: minmax(0, 1fr); }
+  .tg-eas .hero .wrap { grid-template-columns: minmax(0, 1fr); }
+  .tg-eas .stage { overflow-x: auto; } .tg-eas .stage svg { min-width: 620px; }
+  .tg-eas .langs-grid { grid-template-columns: minmax(0, 1fr); }
+  .tg-eas .lg .src, .tg-eas .lg .en { -webkit-line-clamp: 3; }
+  .tg-eas .hom { grid-template-columns: repeat(10, minmax(0, 1fr)); }
+  .tg-eas #tg-east .chron, .tg-eas #tg-pubs.chron { max-height: 21rem; }
+}
+</style>
+
+<section class="hero" aria-labelledby="tg-h1"><div class="wrap gut">
+  <div>
+    <p class="kick"><a href="/the-faith-received/">The Faith Received</a> · <a href="/the-faith-received/guide/">Guides to the shelves</a></p>
+    <h1 id="tg-h1">The <em>Eastern</em> Fathers</h1>
+    <p class="by">Patrologia Orientalis · the churches of the East in their own languages</p>
+    <p class="lede">The Patrologia Orientalis, begun at Paris in 1904 by René Graffin and François Nau, prints the writings of the Eastern churches in the languages they have come down in: Syriac, Arabic, Coptic, Ge’ez, Armenian, Georgian, Greek and Slavonic. Homilies and hymns, lives of the saints, chronicles and liturgies, from Irenaeus in the second century to Paul of Aleppo in the seventeenth. Here the original is read beside English.</p>
+    <ul class="facts"><li><b data-count="tomes">0</b><span>tomes</span></li><li><b data-count="works">0</b><span>works</span></li><li><b data-count="langs">0</b><span>languages</span></li><li><b data-count="pages">0</b><span>pages</span></li></ul>
+    <p class="scroll">Scroll to begin <i>↓</i></p>
+  </div>
+  <div class="art rose" aria-label="Every work on the shelf as a tile, gathered by the language it is printed in: the earliest tomes near the center, the latest at the edge"><svg viewBox="-330 -330 660 660" role="img"></svg><p class="cap" aria-live="polite"></p></div>
+</div></section>
+
+<section class="scene gut" id="tg-series" aria-labelledby="tg-h-series"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">1 · The series</p>
+    <h2 id="tg-h-series">Fifty-seven tomes</h2>
+    <p class="say">René Graffin, a priest of Paris, began the Patrologia Syriaca in 1894. In 1904 he and François Nau opened the Patrologia Orientalis to every Eastern church, each text printed with a translation facing it: French for most, Latin, English or Italian for others. The series is still being published. The shelf holds the three volumes of the Syriaca and the tomes from 1 to 59, less 54 and 55.</p>
+    <div class="phase" id="tg-tphase" aria-live="polite"></div>
+    <p class="lgd" id="tg-tlgd"></p>
+  </div>
+  <div class="stage" id="tg-stage"><svg viewBox="0 0 1000 560" role="img" aria-label="The tomes on the shelf in their order, each as tall as its pages, banded by the languages of its texts"></svg><div class="tip" hidden></div></div>
+</div></section>
+
+<section class="scene gut" id="tg-langs" aria-labelledby="tg-h-langs"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">2 · The languages</p>
+    <h2 id="tg-h-langs">Eight languages</h2>
+    <p class="say">Each text is printed in the language it has come down in, which is not always the one it was written in: Irenaeus and Hippolytus wrote Greek, and are read here in Armenian and Georgian. Beside each language, the opening of one of its works, with the English the library gives it.</p>
+    <div class="stack" id="tg-stack" aria-hidden="true"></div>
+    <p class="stack-l" id="tg-stack-l" aria-live="polite"></p>
+  </div>
+  <ul class="langs-grid" id="tg-lgrid"></ul>
+</div></section>
+
+<section class="scene gut" id="tg-east" aria-labelledby="tg-h-east"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">3 · Where they wrote</p>
+    <h2 id="tg-h-east">The churches of the East</h2>
+    <div class="quote" id="tg-quote"></div>
+    <ul class="chron" id="tg-chron"></ul>
+  </div>
+  <div>
+    <div class="mapbox" id="tg-map"><svg aria-hidden="true"></svg><canvas aria-label="The places the writers' records name, filling as the centuries pass"></canvas><div class="year num" id="tg-year">150</div><div class="yearbar"><i id="tg-yearbar"></i></div></div>
+    <div class="ribbon" id="tg-ribbon" aria-live="polite"></div>
+    <p class="legend" id="tg-legend" style="margin-top:8px"></p>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-sev" aria-labelledby="tg-h-sev"><div class="wrap scene-grid">
+  <div>
+    <p class="eyebrow">4 · One preacher</p>
+    <h2 id="tg-h-sev">Severus at Antioch</h2>
+    <p class="say">As patriarch of Antioch from 512 to 518 Severus preached the 125 sermons known as his Cathedral Homilies. They are kept in the Syriac translation of Jacob of Edessa, and the series printed them a few at a time, out of their order.</p>
+    <ul class="chron" id="tg-pubs"></ul>
+  </div>
+  <div class="homwrap">
+    <div class="hom" id="tg-hom" role="list" aria-label="The 125 cathedral homilies of Severus of Antioch, numbered, each filled when the tome that prints it appears"></div>
+    <p class="hom-scale"><span>Homily 1</span><span>125</span></p>
+    <p class="lgd" id="tg-hom-lgd"></p>
+    <p class="hom-say" id="tg-hom-say" aria-live="polite"></p>
+    <div class="tip" hidden></div>
+  </div>
+</div></section>
+
+<section class="scene gut" id="tg-saints" aria-labelledby="tg-h-saints"><div class="wrap">
+  <div class="sx-head">
+    <div>
+      <p class="eyebrow">5 · The year of the saints</p>
+      <h2 id="tg-h-saints">Three books of the saints</h2>
+      <p class="say" style="max-width:36rem">A synaxarium gives the saints to be remembered on each day of the year, month by month, in a year of twelve months of thirty days and five days more. The series printed three: the Copts’ in Arabic, the Ethiopians’ in Ge’ez, and the Armenians’ that Ter Israel compiled, a volume or two at a time.</p>
+    </div>
+    <div>
+      <p class="now-vol" id="tg-nowvol" aria-live="polite"></p>
+      <p class="small" id="tg-cals10" style="margin:8px 0 0"></p>
+    </div>
+  </div>
+  <div class="wheels" id="tg-wheels"><svg role="img" aria-label="Three wheels of the year, one for each synaxarium, its months around the rim and each volume drawn over the months it covers"></svg><div class="tip" hidden></div><p class="small" style="margin:4px 0 0;text-align:center">On each arc, the tome that prints that volume. Choose an arc to open it.</p></div>
+</div></section>
+
+<section class="tool gut" id="explore" aria-labelledby="tg-h-ex"><div class="wrap">
+  <p class="eyebrow">Find</p>
+  <h2 id="tg-h-ex">The authors</h2>
+  <p class="say" style="max-width:46rem" id="tg-ex-say">The anonymous books, from the synaxaria to the Old Georgian Gospels, are found by searching for their titles.</p>
+  <div id="tg-explorer"></div>
+  <div class="next"><a href="/the-faith-received/patrologia-orientalis/">The Eastern Fathers room</a><a href="/the-faith-received/all-works/?tradition=Eastern%20Fathers">Browse the shelf in All Works</a><a href="/the-faith-received/ask/?trad=Eastern%20Fathers">Ask this shelf</a><a href="/the-faith-received/guide/">All the guides</a><a href="/the-faith-received/guide/?s=english">The English Divines</a><a href="/the-faith-received/guide/?s=westminster">The Westminster Assembly</a><a href="/the-faith-received/guide/?s=puritans">The Puritans</a><a href="/the-faith-received/guide/?s=anglicans">The Anglicans</a><a href="/the-faith-received/guide/?s=methodists">The Methodists</a><a href="/the-faith-received/guide/?s=councils">The Councils</a><a href="/the-faith-received/guide/?s=greek">The Greek Fathers</a><a href="/the-faith-received/guide/?s=latin">The Latin Fathers</a><a href="/the-faith-received/guide/?s=medieval">The Medieval shelf</a><a href="/the-faith-received/guide/?s=catholic">Roman Catholic</a><a href="/the-faith-received/guide/?s=reformed">Continental Reformed</a><a href="/the-faith-received/guide/?s=lutheran">Lutheran</a></div>
+</div></section>
