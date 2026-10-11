@@ -430,7 +430,7 @@ window.TGFinder = (host, D, C) => {
     const colHTML = (c) => `<div class="mcol">${'ABCD'.split('').map((q) => `<div class="qbox" lang="la" data-q="${c}${q}">${['227A', '227B'].includes(c + q) ? esc(Q[c + q]) : Q[c + q]}</div>`).join('')}</div>`;
     page.innerHTML = `<div class="mhead"><span class="cn">${O.cols[0]}</span><span class="t">PROSLOGION</span><span class="cn r">${O.cols[1]}</span></div>
       <div class="mcols">${colHTML(O.cols[0])}<div class="gut2">${'ABCD'.split('').map((q) => `<span data-l="${q}">${q}</span>`).join('')}</div>${colHTML(O.cols[1])}</div>
-      <p class="mnote">Set from the library’s text of PL 158. The line breaks are the library’s. The columns and letters are Migne’s.</p>`;
+      <p class="mnote">Set in type from PL 158. The columns and letters are Migne’s. The line breaks are not.</p>`;
     const qb = Object.fromEntries([...page.querySelectorAll('.qbox')].map((e) => [e.dataset.q, e])), letters = [...page.querySelectorAll('.gut2 span')], cn = [...page.querySelectorAll('.mhead .cn')];
     const ROWS = [
       ['227C', 'Chapter II', `${II[0].la} ${II[1].la}`, `${II[0].en} ${II[1].en}`],
@@ -485,7 +485,7 @@ window.TGFinder = (host, D, C) => {
     nameExamples: ['Ambrose', 'Bede', 'Rule of'], missing: (v) => (v === 37 ? 'PL 37 is not in the library yet.' : `PL ${v} is not on the shelf. The Patrologia Latina has 221 volumes.`),
     volintro: 'The volumes stand as Migne printed them. The four index volumes come at the end. Choose one to see the years of its main writers and what it holds. Each work is listed with the column where it begins.',
     vkeyMore: ' Volume 37 is not yet in the library.',
-    centintro: 'Each dated writer is a line from birth to death. Its color is the region his record names. The lines are stacked so that none overlap. The red marks are the general councils. Choose a period and then a line.',
+    centintro: 'Each dated writer is a line from birth to death. Its color is his region. The lines are stacked so that none overlap. The red marks are the general councils. Choose a period and then a line.',
     eras: [['All', 100, 1260], ['Before Nicaea', 100, 330], ['The age of Augustine', 300, 470], ['Gregory the Great to Bede', 450, 740], ['Carolingians', 730, 900], ['Reform and the schools', 1000, 1260]] });
   explorer.show = (n) => explorer.openAuthor(n);
   TG.reveal('.tg .reveal');

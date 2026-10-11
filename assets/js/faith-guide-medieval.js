@@ -132,7 +132,7 @@
       document.getElementById('tg-yearbar').style.width = `${(Y - 1080) / (1500 - 1080) * 100}%`;
       chron(Y);
       const names = live.map(({ j }) => j.a).join('|');
-      if (names !== lastRibbon) { lastRibbon = names; ribbon.innerHTML = live.map(({ j, c }) => `<span><i style="background:${c}"></i>${esc(j.a)}</span>`).join('') || '<span class="small" style="border:0;background:none">No master on this shelf is yet at work.</span>'; }
+      if (names !== lastRibbon) { lastRibbon = names; ribbon.innerHTML = live.map(({ j, c }) => `<span><i style="background:${c}"></i>${esc(j.a)}</span>`).join('') || `<span class="small" style="border:0;background:none">${Y < 1290 ? 'No master on this shelf is at work yet.' : 'No master on this shelf is still at work.'}</span>`; }
     }
     M.onfit = () => { cv.size(); render(year); };
     TG.chapter('#tg-road', 4600, (p) => render(lerp(1080, 1500, p)), { scrub: 0.4 });

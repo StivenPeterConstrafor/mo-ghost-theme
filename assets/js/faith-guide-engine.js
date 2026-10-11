@@ -91,13 +91,22 @@ window.TG = (() => {
     const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px' });
     els.forEach((e) => io.observe(e));
   };
-  // a pinned chapter: onUpdate(progress 0..1) while it is scrubbed; on phones and with reduced motion it gets its last state once
+  // refresh the pins in the order they stand on the page (10-11). ScrollTrigger measures pins in the order they were made, and a pin
+  // measured before the pins above it starts as if they took no room. The Key Works pin is made as soon as the data arrives, before a
+  // shelf's own scenes (which wait for more data), so it started thousands of pixels too early, on top of an earlier scene; on the
+  // Westminster guide it lay over the session ledger. Every new pin therefore puts all of them back in page order once the batch is made.
+  TG.inOrder = () => { if (!window.ScrollTrigger) return; ScrollTrigger.sort((a, b) => { const x = a.trigger, y = b.trigger; if (!x || !y || x === y) return 0; return x.compareDocumentPosition(y) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1; }); ScrollTrigger.refresh(); };
+  let reord = 0; const reorder = () => { clearTimeout(reord); reord = setTimeout(TG.inOrder, 0); };
+  // a pinned chapter: onUpdate(progress 0..1) while it is scrubbed; on phones and with reduced motion it gets its last state once.
+  // A scene taller than the room under the site's bars is pinned by its foot, so the step being told and the picture's last lines stay
+  // on the screen; its heading has been read on the way in (10-11: the Reformed method scene hid its current step below the window).
   TG.chapter = (sel, length, onUpdate, opts = {}) => {
     const el = document.querySelector(sel);
     if (!TG.pinOK()) { if (TG.plays() && el) return TG.autoplay(el, length, onUpdate); onUpdate(1, true); return null; } // a phone's player stands in for the pin
     onUpdate(0, false);
-    return ScrollTrigger.create({ trigger: el, start: () => `top top+=${pinTop()}`, end: `+=${length}`, pin: true, scrub: opts.scrub ?? 0.6, anticipatePin: 1,
-      onUpdate: (st) => onUpdate(st.progress, false) });
+    const st = ScrollTrigger.create({ trigger: el, start: () => (el.offsetHeight > innerHeight - pinTop() + 2 ? 'bottom bottom' : `top top+=${pinTop()}`), end: `+=${length}`, pin: true, scrub: opts.scrub ?? 0.6, anticipatePin: 1,
+      onUpdate: (t) => onUpdate(t.progress, false) });
+    reorder(); return st;
   };
   // phones (owner 10-11: "make sure the maps land, they load but it isnt in the motion"): a scene is not pinned on a small screen, but it
   // still plays: once its picture is half in view it runs from start to end by itself, then offers to play again
@@ -413,7 +422,6 @@ window.TG = (() => {
     }, { scrub: true });
     if (!st) { upto(K.length - 1, true); show(0, true); }
     requestAnimationFrame(place);
-    if (st && window.ScrollTrigger) { ScrollTrigger.sort(); ScrollTrigger.refresh(); } // made after the scenes below it: refresh in page order
   };
   TG.keynames = (D) => {
     if (!root || root.querySelector('#names') || !D.keys || !D.keys.length) return;

@@ -655,7 +655,7 @@
 
   /* ---------- explore ---------- */
   explorer = TG.explorer(document.getElementById('tg-explorer'), D, { range: [1360, 1990], first: 'Francisco Suárez', placeholder: 'Suárez, Báñez, grace, Trent…', label: 'Lifelines of the writers on the Roman Catholic shelf' });
-  document.getElementById('tg-undated').innerHTML = `Also on the shelf without dates in the record: ${D.undated.map((a) => `<a href="${TG.read(a.w[0][1])}" target="_blank" rel="noopener">${esc(a.n)}</a>`).join(', ')}.`;
+  document.getElementById('tg-undated').innerHTML = `Also on the shelf, undated: ${D.undated.map((a) => `<a href="${TG.read(a.w[0][1])}" target="_blank" rel="noopener">${esc(a.n)}</a>`).join(', ')}.`;
   document.getElementById('tg-councils-link').href = D.councils_guide;
   TG.reveal('.tg .reveal');
 })();

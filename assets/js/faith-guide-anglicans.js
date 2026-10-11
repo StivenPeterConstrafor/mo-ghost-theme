@@ -229,7 +229,7 @@
       if (s.prep) c.setAttribute('stroke', COL[k]);
       return { s, c, ln, x, y, k, nd: !(s.m && s.d), ring: !!(s.y && day) };
     });
-    document.getElementById('tg-ynote').textContent = `Hollow beads mark sermons that were prepared but not preached. Andrewes was too ill to preach them. ${off.length ? `${off.length} sermons with no day printed (${off.map((s) => s.y).join(', ')}) stand only in the book’s columns. ` : ''}The library’s contents list ${S.length} of the ninety-six. Years are as printed. The English year then began on 25 March.`;
+    document.getElementById('tg-ynote').textContent = `Hollow beads mark sermons that were prepared but not preached. Andrewes was too ill to preach them. ${off.length ? `${off.length} sermons with no day printed (${off.map((s) => s.y).join(', ')}) stand only in the book’s columns. ` : ''}${S.length} of the ninety-six are shown. Years are as printed. The English year then began on 25 March.`;
     const DAYN = (s) => (s.m && s.d ? `${s.d} ${['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][s.m - 1]} ${s.y}` : `${s.y || ''}`);
     const show = (b) => { const {s} = b, g = GR[s.g]; card.innerHTML = `<b>${esc(g[1])}</b>${g[2] ? ` · ${esc(g[2])}` : ''}<small>${esc(DAYN(s))}${s.pl ? `, ${esc(s.pl)}` : ''}${s.who ? `, before ${s.who === 'James' ? 'King James' : 'Queen Elizabeth'}` : ''}${s.prep ? ' · prepared, not preached' : ''}</small><small><a href="${TG.read(X.slug, s.p)}" target="_blank" rel="noopener">Read it, page ${s.p} of the 1629 book</a></small>`; };
     beads.forEach((b) => { b.c.addEventListener('mouseenter', () => show(b)); b.ln.addEventListener('focus', () => show(b)); });

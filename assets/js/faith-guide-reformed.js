@@ -79,11 +79,20 @@
         c.onclick = () => pick(k); host.insertBefore(c, host.firstChild); comps.push(c);
         const l = document.createElement('div'); l.className = 'clab'; Object.assign(l.style, { left: `${b.x}px`, top: `${b.y + b.h + 4}px`, width: `${b.w}px` }); l.innerHTML = `<b>0</b>${esc(K.names[k])}`; host.appendChild(l); labs.push(l); });
     }
-    function pick(k) {
-      picked = k; comps.forEach((c) => c.classList.toggle('on', c.dataset.k === k));
+    function pick(k, quiet) {
+      if (!quiet) picked = k; comps.forEach((c) => c.classList.toggle('on', !quiet && c.dataset.k === k));
       const ws = by[k].slice().sort((a, b) => b[2] - a[2]);
-      pickEl.innerHTML = `<h3>${esc(K.names[k])}</h3><p class="small" style="margin:0 0 6px">${esc(K.say[k] || '')} The largest first.</p><ul class="wlist">${ws.slice(0, 14).map((w) => `<li><a href="${TG.read(w[1])}" target="_blank" rel="noopener">${esc(w[0])}</a><small>${esc(w[3])} · ${fmt(w[2])} pp.</small></li>`).join('')}</ul>${ws.length > 14 ? `<p class="small">and ${ws.length - 14} more in the finder below.</p>` : ''}`;
-      if (G) gsap.from(pickEl.querySelectorAll('.wlist li'), { opacity: 0, y: 6, duration: 0.3, stagger: 0.02 });
+      pickEl.innerHTML = `<h3>${esc(K.names[k])}</h3><p class="small" style="margin:0 0 6px">${esc(K.say[k] || '')} The largest first.</p><ul class="wlist">${ws.slice(0, 8).map((w) => `<li><a href="${TG.read(w[1])}" target="_blank" rel="noopener">${esc(w[0])}</a><small>${esc(w[3])} · ${fmt(w[2])} pp.</small></li>`).join('')}</ul>${ws.length > 8 ? `<p class="small">and ${ws.length - 8} more in the finder below.</p>` : ''}`;
+      if (G && !quiet) gsap.from(pickEl.querySelectorAll('.wlist li'), { opacity: 0, y: 6, duration: 0.3, stagger: 0.02 });
+    }
+    // the list under the case fills at the end of the scene, after the pin has measured the scene; without its room kept from the start
+    // it ran into the next scene's heading (10-11). Each kind's list is set once, unseen, and the tallest height is kept.
+    function reserve() {
+      const keep = picked, html = pickEl.innerHTML; pickEl.style.minHeight = ''; pickEl.style.visibility = 'hidden'; let h = 0;
+      order.forEach((k) => { pick(k, true); h = Math.max(h, pickEl.offsetHeight); });
+      pickEl.style.minHeight = `${h}px`; pickEl.style.visibility = '';
+      if (keep) pick(keep, true); else pickEl.innerHTML = html;
+      picked = keep; comps.forEach((c) => c.classList.toggle('on', !!keep && c.dataset.k === keep));
     }
     lis.forEach((li) => { li.onclick = () => pick(li.dataset.k); });
     host.addEventListener('mousemove', (e) => { const s = e.target.closest('.sort'); if (!s) { tip.hidden = true; return; } const w = K.works[+s.dataset.i], b = host.getBoundingClientRect();
@@ -107,7 +116,8 @@
       const now = pB <= 0 ? -1 : kNow; if (now !== cur) { cur = now; lis.forEach((li, i) => { li.classList.toggle('now', i === now); li.classList.toggle('past', i < now); }); }
       if (p >= 0.999 && !picked) pick(order[0]);
     }
-    frame(); let lastP = 0;
+    frame(); reserve(); let lastP = 0;
+    let rw = pickEl.offsetWidth; new ResizeObserver(() => { if (Math.abs(pickEl.offsetWidth - rw) > 20) { rw = pickEl.offsetWidth; reserve(); } }).observe(pickEl);
     const st = TG.chapter('#tg-kinds', 3600, (p, fin) => { lastP = fin ? 1 : p; render(lastP); }, { scrub: 0.5 });
     if (!st) lis.forEach((li) => li.classList.add('now'));
     let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { frame(); render(lastP); }, 150); }).observe(host);
@@ -209,7 +219,7 @@
       document.getElementById('tg-yearbar').style.width = `${(Y - 1500) / (1725 - 1500) * 100}%`;
       chron(Y);
       const names = live.map(({ j }) => j.a).join('|');
-      if (names !== last) { last = names; ribbon.innerHTML = live.map(({ j, c }) => `<span><i style="background:${c}"></i>${esc(j.a)}</span>`).join('') || '<span class="small" style="border:0;background:none">No writer on this shelf is yet at work.</span>'; }
+      if (names !== last) { last = names; ribbon.innerHTML = live.map(({ j, c }) => `<span><i style="background:${c}"></i>${esc(j.a)}</span>`).join('') || `<span class="small" style="border:0;background:none">${Y < 1600 ? 'No writer on this shelf is at work yet.' : 'No writer on this shelf is still at work.'}</span>`; }
     }
     M.onfit = () => { cv.size(); render(year); };
     TG.chapter('#tg-road', 4600, (p) => render(lerp(1500, 1725, p)), { scrub: 0.4 });

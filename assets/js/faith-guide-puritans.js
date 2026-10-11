@@ -130,7 +130,7 @@
       ['London', `London printed ${fmt(sumG([0]))} of the ${fmt(total)} dated editions whose imprint names a town. Most of them were printed for booksellers around St Paul’s.`, [0]],
       ['The universities and Scotland', `Cambridge and Oxford printed ${fmt(sumG([1]))}. Edinburgh, Glasgow and Aberdeen printed ${fmt(sumG([2]))}. The Scottish divines’ books are among them.`, [1, 2]],
       ['The Low Countries', `${fmt(sumG([3]))} came from Amsterdam, Rotterdam, Leiden, Middelburg and Dordrecht. English congregations in exile had their printers there.`, [3]],
-      ['New England', `Boston and Cambridge in Massachusetts printed ${fmt(sumG([4]))}. The records of ${neMen} writers on the shelf name a place in New England.`, [4]],
+      ['New England', `Boston and Cambridge in Massachusetts printed ${fmt(sumG([4]))}. ${neMen} writers on the shelf lived or served in New England.`, [4]],
     ];
     const key = document.getElementById('tg-lands-key');
     key.innerHTML = STEPS.map(([b, p]) => `<li><b>${esc(b)}</b><p>${esc(p)}</p></li>`).join(''); const kLis = [...key.children];
@@ -276,7 +276,7 @@
     leg.innerHTML = ORDER.map((k) => `<span><i style="background:${KC[k]}"></i>${esc(K[k][1])} <b>0</b></span>`).join('');
     const legB = [...leg.querySelectorAll('b')];
     const nEl = document.getElementById('tg-bx-n'), capEl = document.getElementById('tg-bx-cap');
-    document.getElementById('tg-bx-note').innerHTML = `Each edition is counted once, in the year the copy on this shelf was printed: not always the first edition (his Aphorismes of Justification first appeared in 1649; the copy here is of 1655). The kinds are sorted by title. ${B.late.length ? `One later reprint, of ${B.late[0][0]}, lies beyond the chart.` : ''} <a href="#explore" id="tg-bx-all">All ${B.n_works} works</a>`;
+    document.getElementById('tg-bx-note').innerHTML = `${B.late.length ? `One later reprint, of ${B.late[0][0]}, lies beyond the chart.` : ''} <a href="#explore" id="tg-bx-all">All ${B.n_works} works</a>`;
     document.getElementById('tg-bx-all').addEventListener('click', (ev) => { if (TG._open) { ev.preventDefault(); document.getElementById('explore').scrollIntoView({ behavior: 'smooth' }); TG._open('Richard Baxter'); } });
     const mk = (tag, at, parent) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); (parent || svg).appendChild(e); return e; };
     let G0 = null, cur = X0, curStep = -1;
