@@ -2772,6 +2772,12 @@ function build(){
     // flow join is authoritative, not heuristic
     const prt=e.getAttribute?(e.getAttribute("part")||""):"";
     return `<p${cls}${prt?` data-part="${prt}"`:""}${sourceAttrs}>${inner}</p>`;}
+  // SECOND VERSIONS (owner 2026-10-11, Irenaeus PG 7: "im oke with the duplication ... we just need to format it"): where Migne prints a
+  // second translation of the same passage under its own heading (BILLII INTERPRETATIO, METRICA VERSIO, VETUS INTERPRETATIO, VERSIO
+  // EVAGRII ...), that section reads as a parallel version, not as the text running on. Not the Hexapla's columns (each a witness of its
+  // own) and not Athanasius' INTERPRETATIO in PG 27 (his commentary). Heads arrive in one English form (runs/pg_shelf/tools/vheads.py).
+  const _VERS_RE=/^(?:j\.?\s*)?(?:billii\s+interpretatio|metrica\s+versio|vetus\s+interpret(?:atio|es)|versio\s+(?:evagrii|nova|rufini|hieronymi|h\.?\s*valesii|marii\s+mercatoris)|rufini\s+versio|interpretatio\s+(?:nova|rufini|huetii|s\.?\s*hieronymi|ex\s+latino)|aniani\s+interpretatio|translation\s+of\s+(?:j\.?\s*)?(?:billius|rufinus|huet)|metrical\s+version|ancient\s+translation|new\s+(?:translation|version)|version\s+of\s+(?:evagrius|jerome))\b/;
+  const _versHead=t=>!!t&&_VERS_RE.test(t.replace(/^[\[\s]+/,""));
   function teiHeadRow(sec,laEl,enEl){
     // LANE-INTEGRITY heads (owner 2026-08-10 'slipping from latin to english on subheadings'):
     // the Latin column NEVER shows English — each lane renders its OWN heading in its own
@@ -2919,8 +2925,10 @@ function build(){
       // shift is visible instead of reading as broken body text.
       const _ht=(x)=>x?x.textContent.replace(/\s+/g," ").trim().toLowerCase():"";
       const isEdit=/^(anmerkungen|anmerkung|notes?)\b\.?$/.test(_ht((b&&b.head)||(a&&a.head)));
-      if((a&&a.head)||(b&&b.head)){teiHeadRow(sec,a&&a.head,b&&b.head);
-        if(isEdit&&sec.lastElementChild)sec.lastElementChild.classList.add("hedit");}
+      const isVers=_versHead(_ht(a&&a.head))||_versHead(_ht(b&&b.head));
+      if((a&&a.head)||(b&&b.head)){const _hb=sec.children.length;teiHeadRow(sec,a&&a.head,b&&b.head);
+        if(isEdit&&sec.lastElementChild)sec.lastElementChild.classList.add("hedit");
+        if(isVers&&sec.children.length>_hb)sec.lastElementChild.classList.add("hvers");}
       const _rowsBefore=sec.children.length;
       const laB=a?a.body:[],enB=b?b.body:[];
       if(laB.length||enB.length){
@@ -3033,10 +3041,21 @@ function build(){
           // a row with nothing to read (empty lanes: pg-604 col. 1123 opened on a blank band above its title, 09-23) is not drawn
           if(row.innerHTML&&(row.textContent.trim()||row.querySelector("img,figure,svg,table,.pganchor")))sec.appendChild(row);}}
       if(isEdit)for(let ri=_rowsBefore;ri<sec.children.length;ri++)sec.children[ri].classList.add("redit");
+      if(isVers)for(let ri=_rowsBefore;ri<sec.children.length;ri++)sec.children[ri].classList.add("rvers");
       (a?a.notes:[]).forEach(e=>notesLA.push(teiNote(e)));
       (b?b.notes:[]).forEach(e=>notesEN.push(teiNote(e)));
     }
     let bi=0;sec.querySelectorAll(".row").forEach(rw=>{if(!rw.classList.contains("rhead"))rw.id="b"+pg.n+"-"+(bi++);});
+    // SECOND VERSIONS on the column-built pages (PG): their heads arrive as inline .inhead spans, not <head> rows -- a paragraph whose head
+    // names a second version opens the block; every paragraph after it on the page, in that lane, stays in it until the next head
+    ["en","la"].forEach(ln=>{let inV=false;sec.querySelectorAll("."+ln+" p").forEach(p=>{
+      const hs=p.querySelectorAll("span.inhead");
+      if(hs.length){const _t=x=>(x.textContent||"").replace(/\s+/g," ").trim().toLowerCase();inV=_versHead(_t(hs[hs.length-1]));
+        if(inV){hs.forEach(h=>{if(_versHead(_t(h)))h.classList.add("invers");});
+          // a paragraph that opens with another head (PG 13: the main text's '10. But as to what Simon Peter said' + ANCIENT TRANSLATION)
+          // keeps that head out of the block: only its version label carries the rule, and the block runs on from the next paragraph
+          if(!_versHead(_t(hs[0]))){return;}}}
+      if(inV)p.classList.add("pvers");});});
     // the first paragraph of each run of the editors' apparatus carries the label (Commentary / Scholium / Sources), per lane
     ["la","en"].forEach(ln=>{let prev=null;sec.querySelectorAll("."+ln+" p").forEach(p=>{
       if(p.classList.contains("apx")&&!(prev&&prev.classList.contains("apx")&&prev.dataset.apx===p.dataset.apx))p.classList.add("apx-first");prev=p;
