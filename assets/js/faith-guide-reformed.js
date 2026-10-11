@@ -235,7 +235,7 @@
       ['Ours is natural or supernatural', 'What nature teaches, and what God has revealed and we could not know otherwise (chapters X and XI).'],
       ['Revealed theology has its principle and its parts', 'Its principle is Scripture, which fills the rest of Book I; its parts open Book II.'],
       ['Its parts are faith and good works', 'What is to be believed, and what is to be done.'],
-      ['Faith is of God and his works; good works are worship', 'God in himself and in his works, Books II to VII; immediate worship of God and mediate worship toward our neighbour, the two tables of the law, Books IX and X.'],
+      ['Faith is of God and his works; good works are worship', 'God in himself and in his works, Books II to VII; immediate worship of God and mediate worship toward our neighbor, the two tables of the law, Books IX and X.'],
     ];
     steps.innerHTML = STEPS.map(([b, p]) => `<li><b>${esc(b)}</b><p>${esc(p)}</p></li>`).join('');
     const sl = [...steps.children];

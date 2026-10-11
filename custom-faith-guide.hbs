@@ -8,6 +8,7 @@
 <meta property="og:description" content="Guides to the shelves of The Faith Received, in motion." />
 <meta name="twitter:title" content="Guides to the Shelves | The Faith Received" />
 <link rel="stylesheet" type="text/css" href="{{asset "data/faith-received/guides/guide.css"}}&amp;frv=31ee79e1128649e0" />
+<link rel="stylesheet" type="text/css" href="{{asset "css/faith-guide-skin.css"}}&amp;frv=2339415ba3ecee4d" />
 {{/contentFor}}
 {{!-- /the-faith-received/guide/ — one guide per shelf at ?s=<shelf>, and
      without ?s= the guides themselves with a century ruler over every
@@ -29,6 +30,16 @@
          template: custom-faith-guide --}}
 
 <main class="faith-received tfr-guide-page">
+  {{!-- Our page band (Ian, 2026-10-10: "Run 128 through our design"). The
+       guide's own hero names its shelf; faith-guide-skin.js moves that name
+       and its line up here, and the hero below keeps its art. --}}
+  <section class="bhero bhero--tool tfr-guide-hero">
+    <div class="bhero-inner container">
+      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> <a href="/the-faith-received/guide/">Guides to the shelves</a></p>
+      <h1 id="tfr-guide-h1" data-guide-name>Guides to the shelves</h1>
+      <p class="bhero-sub" data-guide-dek>Each shelf of the library introduced in motion, with a ruler over twenty centuries to find a time and open what the shelves hold from it.</p>
+    </div>
+  </section>
   <div class="tg" data-guide-root data-base="" data-pin-below=".tfr-rail" data-assets="/assets/data/faith-received/guides/">
     <p class="tg-loading">Loading the guide&hellip;</p>
   </div>
@@ -37,4 +48,5 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-<script src="{{asset "js/faith-guide.js"}}&amp;frv=170d8eaa51bc83bc"></script>
+<script src="{{asset "js/faith-guide-skin.js"}}&amp;frv=9af0c4c7dc315cc0" defer></script>
+<script src="{{asset "js/faith-guide.js"}}&amp;frv=05de8749e91476cd"></script>

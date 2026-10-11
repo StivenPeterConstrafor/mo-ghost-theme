@@ -1,0 +1,150 @@
+/* ── THE SHELF GUIDES IN OUR SKIN (Ian, 2026-10-10: "Run 128 through our
+   design") ───────────────────────────────────────────────────────────────
+   Stiven's guides (theme #128) arrive as their own visual world: a cream
+   paper, a rubric red and gilt, pill chips, his own hero and IM Fell on
+   the working lists. We are the skin and he is the bones, so his scenes,
+   motion, data and finder stay exactly as he built them, and this sheet
+   puts them in The Faith Received's clothes:
+   - our page hero band above the guide (custom-faith-guide.hbs), with the
+     shelf's name and line moved into it (faith-guide-skin.js); his own
+     hero keeps its art, its lede and its figures on our ground;
+   - our ground, card, ink, rule and the TFR terracotta in place of his
+     paper and rubric, by redefining his tokens, so every rule of his that
+     reads var(--rubric) follows;
+   - Source Serif Pro on everything a reader works with (the finder, the
+     chronicles, the steps, the figures), IM Fell kept for titles and for
+     the lettering inside the illustrations, which is part of the art;
+   - the TFR button: an outline in terracotta with 3px corners, filled
+     only when pressed, in place of his pills.
+   Loaded after guide.css; the shelves' own <style> blocks come later in
+   the page, so every rule here is one class more specific than theirs. */
+
+main.tfr-guide-page { background: var(--color-page, #f6f3f2); }
+main.tfr-guide-page [data-guide-root] {
+  --paper: #f6f3f2;
+  --paper-2: #f5efe1;
+  --card: #fffdfa;
+  --ink: #2d2927;
+  --muted: #6b6660;
+  --rule: #d9c6a7;
+  --rule-2: #e6d9c3;
+  --rubric: #c1593c;
+  --land: #fffdfa;
+  --body: "Source Serif Pro", Georgia, serif;
+  --button: #c1593c;
+  background: #f6f3f2;
+  color: #2d2927;
+  font-family: "Source Serif Pro", Georgia, serif;
+}
+main.tfr-guide-page .tg-loading { color: #6b6660; }
+
+/* His hero: the art, the lede and the figures stay; the name and its line
+   moved up into our band. */
+main.tfr-guide-page [data-guide-root] .hero {
+  background: #f6f3f2;
+  color: #2d2927;
+  border-bottom: 1px solid #d9c6a7;
+}
+main.tfr-guide-page [data-guide-root].tfr-guide-skinned .hero .kick,
+main.tfr-guide-page [data-guide-root].tfr-guide-skinned .hero h1,
+main.tfr-guide-page [data-guide-root].tfr-guide-skinned .hero .by { display: none; }
+main.tfr-guide-page [data-guide-root].tfr-guide-skinned .hero .wrap { padding-block: 40px 40px; }
+main.tfr-guide-page [data-guide-root].tfr-guide-skinned .hero .lede { margin-top: 0; }
+main.tfr-guide-page [data-guide-root] .hero .facts b {
+  font: 600 2rem/1 "Source Serif Pro", Georgia, serif;
+  color: #c1593c;
+}
+main.tfr-guide-page [data-guide-root] .hero .facts span { color: #6b6660; }
+/* The Councils guide carries a night hero of its own; on our page the
+   night is the band above it, so its hero takes the ground too. */
+main.tfr-guide-page [data-guide-root].tg-cou .hero { --night-ink: #2d2927; --night-muted: #6b6660; }
+
+/* Working type: Source Serif, hierarchy from size and weight. */
+main.tfr-guide-page [data-guide-root] .chron .e,
+main.tfr-guide-page [data-guide-root] .steps li b,
+main.tfr-guide-page [data-guide-root] .fx-cent > summary b,
+main.tfr-guide-page [data-guide-root] .fx-who > summary b,
+main.tfr-guide-page [data-guide-root] .phase b,
+main.tfr-guide-page [data-guide-root] .eds li span,
+main.tfr-guide-page [data-guide-root] .ledger .who b {
+  font-family: "Source Serif Pro", Georgia, serif;
+  font-weight: 600;
+}
+main.tfr-guide-page [data-guide-root] .chron .e,
+main.tfr-guide-page [data-guide-root] .fx-who > summary b { font-size: 1rem; }
+main.tfr-guide-page [data-guide-root] .fx-cent > summary b { font-size: 1.2rem; }
+main.tfr-guide-page [data-guide-root] .eyebrow { color: #6b6660; }
+
+/* The TFR button. Outline by default, terracotta fill when pressed or on
+   hover; 3px corners, never a pill. Each control keeps its own padding. */
+main.tfr-guide-page [data-guide-root] .chip,
+main.tfr-guide-page [data-guide-root] .next a,
+main.tfr-guide-page [data-guide-root] .tile .open,
+main.tfr-guide-page [data-guide-root] .member,
+main.tfr-guide-page [data-guide-root] .seg {
+  border-radius: 3px;
+}
+main.tfr-guide-page [data-guide-root] .chip:not(.fams .chip),
+main.tfr-guide-page [data-guide-root] .next a,
+main.tfr-guide-page [data-guide-root] .tile .open,
+main.tfr-guide-page [data-guide-root] .member {
+  background: transparent;
+  border: 1px solid #c1593c;
+  color: #c1593c;
+  box-shadow: none;
+}
+main.tfr-guide-page [data-guide-root] .chip:not(.fams .chip):hover,
+main.tfr-guide-page [data-guide-root] .next a:hover,
+main.tfr-guide-page [data-guide-root] .tile .open:hover,
+main.tfr-guide-page [data-guide-root] .member:hover,
+main.tfr-guide-page [data-guide-root] .chip:not(.fams .chip)[aria-pressed="true"] {
+  background: #c1593c;
+  border-color: #c1593c;
+  color: #fff;
+}
+/* Family chips are a legend that filters: a hairline box with its swatch,
+   dimmed when off, as he made them, with our corners and line. */
+main.tfr-guide-page [data-guide-root] .fams .chip { border-color: #d9c6a7; background: #fffdfa; }
+main.tfr-guide-page [data-guide-root] .fams .chip[aria-pressed="true"] { border-color: #2d2927; }
+/* A segmented choice is one box with dividers; the chosen part is filled. */
+main.tfr-guide-page [data-guide-root] .seg { padding: 0; border-color: #c1593c; background: transparent; overflow: hidden; }
+main.tfr-guide-page [data-guide-root] .seg button { border-radius: 0; color: #c1593c; padding: 5px 12px; }
+main.tfr-guide-page [data-guide-root] .seg button + button { border-left: 1px solid #c1593c; }
+main.tfr-guide-page [data-guide-root] .seg button[aria-pressed="true"] { background: #c1593c; color: #fff; }
+/* Labels in a row are tags, not buttons: square them off. */
+main.tfr-guide-page [data-guide-root] .ribbon span { border-radius: 3px; background: #fffdfa; border-color: #d9c6a7; }
+
+/* The finder's fields and tabs. */
+main.tfr-guide-page [data-guide-root] .fx-search input,
+main.tfr-guide-page [data-guide-root] .search input {
+  font-family: "Source Serif Pro", Georgia, serif;
+  border-color: #d9c6a7;
+  border-radius: 3px;
+  background: #fffdfa;
+}
+main.tfr-guide-page [data-guide-root] .fx-search input:focus { border-color: #c1593c; }
+main.tfr-guide-page [data-guide-root] .fx-tabs button { font-family: "Source Serif Pro", Georgia, serif; }
+
+/* No scroll boxes inside the page (Ian, 2026-09-22): on a phone the
+   chronicle reads straight down rather than in a box of its own. */
+@media (max-width: 860px) {
+  main.tfr-guide-page [data-guide-root] .chron { max-height: none; overflow: visible; }
+  /* With the name moved up, the hero's text column had nothing to hold it
+     open and the lede set in a 120px strip beside the art: one column. */
+  main.tfr-guide-page [data-guide-root] .hero .wrap { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* The Councils guide's own finder: its Search is the one filled button on
+   the panel; its page tags square off; its reference field reads in the
+   working face. */
+main.tfr-guide-page [data-guide-root] .opener .go {
+  background: #c1593c;
+  color: #fff;
+  border: 1px solid #c1593c;
+  border-radius: 3px;
+}
+main.tfr-guide-page [data-guide-root] .opener .go:hover { background: #2d2927; border-color: #2d2927; }
+main.tfr-guide-page [data-guide-root] .opener input,
+main.tfr-guide-page [data-guide-root] .opener input::placeholder { font-family: "Source Serif Pro", Georgia, serif; }
+main.tfr-guide-page [data-guide-root] .opener input { border-radius: 3px; background: #fffdfa; }
+main.tfr-guide-page [data-guide-root] .chron .pp span { border-radius: 3px; }

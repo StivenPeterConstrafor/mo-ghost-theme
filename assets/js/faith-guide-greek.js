@@ -2,7 +2,7 @@
    the PG/PL prototypes' selection tools, ported for the Greek and Latin guides. One search for names, titles and citations
    ("PG 6:475B", "PL 158:227C", resolved to the work and column with a drawing of the volume, the page, the column and its letter),
    and three tabs: By author (a fold per century with its sparkline; a writer opens to his works, the editors' matter last), By volume
-   (the shelf, earlier spines lighter, and a panel with the volume's years and contents), By century (every life as a line, coloured by
+   (the shelf, earlier spines lighter, and a panel with the volume's years and contents), By century (every life as a line, colored by
    region, with the general councils above; eras glide; a click opens a card). Scoped .tf, ids tf-*. */
 window.TGFinder = (host, D, C) => {
   const {TG} = window, { esc, fmt } = TG, G = TG.hasG && !TG.reduce ? window.gsap : null, K = C.key;
@@ -90,7 +90,7 @@ window.TGFinder = (host, D, C) => {
       <div class="tf-vgrid"><div><div class="tf-shelf" id="tf-shelf"></div><p class="small" id="tf-vkey"></p></div><aside class="tf-vpanel" id="tf-vpanel" aria-live="polite"></aside></div></section>
     <section class="tf-panel" id="tf-p-century" role="tabpanel" aria-labelledby="tf-t-century" hidden><p class="intro">${esc(C.centintro)}</p>
       <div class="instrument"><div class="controls" role="group" aria-label="Choose a period"><span id="tf-eras"></span></div>
-        <div class="tf-canvas"><canvas class="tf-life" id="tf-life" aria-label="Every writer as a line from birth to death, coloured by region"></canvas><div class="tip" id="tf-tip" hidden></div></div>
+        <div class="tf-canvas"><canvas class="tf-life" id="tf-life" aria-label="Every writer as a line from birth to death, colored by region"></canvas><div class="tip" id="tf-tip" hidden></div></div>
         <div class="tf-lpick" id="tf-lpick" aria-live="polite"></div>
         <div class="legend tf-legend" id="tf-legend"></div></div></section>`;
   const $ = (id) => document.getElementById(id);
@@ -285,7 +285,7 @@ window.TGFinder = (host, D, C) => {
       mk('path', { class: 'win', d: `M${P(r0, th - hw)} L${P(r1 - 6, th - hw)} Q${P(r1 + 1, th - hw * 0.7)} ${P(r1 + 2, th)} Q${P(r1 + 1, th + hw * 0.7)} ${P(r1 - 6, th + hw)} L${P(r0, th + hw)} Z` }, wins); }
     const rim = mk('circle', { cx: C, cy: C, r: RIM + 26, fill: 'none', stroke: TG.css('--ink'), 'stroke-width': 1.4 }, svg);
     mk('circle', { cx: C, cy: C, r: RIM + 2, fill: 'none', stroke: TG.css('--gold-3'), 'stroke-width': 1.6 }, svg);
-    // the mosaic: each century a ring of tesserae from the centre outward; each writer an arc of his ring, in the colour of his region,
+    // the mosaic: each century a ring of tesserae from the center outward; each writer an arc of his ring, in the color of his region,
     // set off from the next by a gold tessera
     const A = D.authors.filter((a) => a.fl), byC = {}; A.forEach((a) => { (byC[cent(a.fl)] ||= []).push(a); });
     const tiles = mk('g', { 'clip-path': 'url(#tg-domeclip)' }, svg), rings = [], T = 6.2, R0 = 44, band = (RIM - 10 - R0) / 15;
@@ -314,7 +314,7 @@ window.TGFinder = (host, D, C) => {
     const med = mk('g', {}, svg); mk('circle', { cx: C, cy: C, r: 30, fill: TG.css('--f4'), stroke: TG.css('--gold-2'), 'stroke-width': 2 }, med);
     mk('path', { d: `M${C - 13},${C - 13} L${C + 13},${C + 13} M${C + 13},${C - 13} L${C - 13},${C + 13} M${C},${C - 20} L${C},${C + 20} M${C},${C - 20} C${C + 13},${C - 20} ${C + 13},${C - 6} ${C},${C - 6}`, fill: 'none', stroke: TG.css('--gold-2'), 'stroke-width': 2.4, 'stroke-linecap': 'round' }, med);
     const num = mk('text', { x: C, y: C + RIM + 52, 'text-anchor': 'middle', class: 'num', fill: TG.css('--rubric') }, svg); num.style.fill = TG.css('--rubric'); num.textContent = '';
-    const say = (a) => { cap.textContent = a ? `${a.n}, ${TG.yr(a)}${a.pl ? ` · ${a.pl}` : ''} · ${a.nw} ${a.nw === 1 ? 'work' : 'works'} on the shelf` : 'Each ring is a century, the first at the centre and the fifteenth at the rim; each coloured arc is a writer, in the colour of the region his record names. Gold where it names none.'; };
+    const say = (a) => { cap.textContent = a ? `${a.n}, ${TG.yr(a)}${a.pl ? ` · ${a.pl}` : ''} · ${a.nw} ${a.nw === 1 ? 'work' : 'works'} on the shelf` : 'Each ring is a century, the first at the center and the fifteenth at the rim; each colored arc is a writer, in the color of the region his record names. Gold where it names none.'; };
     say(null);
     svg.addEventListener('mouseleave', () => say(null));
     if (!G) { num.textContent = 'I–XV'; return; }
@@ -462,7 +462,7 @@ window.TGFinder = (host, D, C) => {
     examples: [['PG 6:475B', 'Justin, Dialogue with Trypho'], ['PG 25:95', 'Athanasius, On the Incarnation'], ['PG 26:835', 'Athanasius, The Life of Antony'], ['PG 44:297', 'Gregory of Nyssa, The Life of Moses'], ['PG 3:997', 'The Mystical Theology']],
     nameExamples: ['Basil', 'Maximus', 'Hexaemeron'], missing: (v) => `PG ${v} is not on the shelf; the Patrologia Graeca has 161 volumes.`,
     volintro: 'The 161 volumes as Migne printed them. Choose one to see the years of its main writers and what it holds, with the column where each work begins.',
-    centintro: 'Every dated writer as a line from birth to death, coloured by the region his record names, stacked so that none overlap. The red marks are the general councils. Choose a period, then a line.',
+    centintro: 'Every dated writer as a line from birth to death, colored by the region his record names, stacked so that none overlap. The red marks are the general councils. Choose a period, then a line.',
     eras: [['All', 30, 1500], ['Before Nicaea', 30, 330], ['The great Fathers', 300, 470], ['Justinian to Iconoclasm', 450, 850], ['Middle Byzantine', 830, 1210], ['Late Byzantine', 1200, 1500]] });
   explorer.show = (n) => explorer.openAuthor(n);
   TG.reveal('.tg .reveal');

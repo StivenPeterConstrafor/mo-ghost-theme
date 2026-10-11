@@ -27,7 +27,7 @@
     for (let y = 1500; y <= 1750; y += 50) { const a = th(y), [x1, y1] = pt(R1 - 2, a), [x2, y2] = pt(R1 - 10, a), [tx, ty] = pt(R1 - 22, a);
       mk('line', { x1, y1, x2, y2, stroke: '#fff', 'stroke-width': 1.4, opacity: 0.85 }, ticks);
       const t = mk('text', { x: tx, y: ty + 4, 'text-anchor': 'middle', fill: '#fff', 'font-size': 11.5, 'font-family': TG.css('--body'), opacity: 0.95 }, ticks); t.textContent = y; }
-    // the white rose: five petals round a centre
+    // the white rose: five petals round a center
     const rose = mk('g', {}, svg), RP = 74, RD = 106;
     const petals = [0, 1, 2, 3, 4].map((k) => { const a = -Math.PI / 2 + k * 2 * Math.PI / 5, [px, py] = pt(RD, a), g = mk('g', {}, rose);
       mk('circle', { cx: px, cy: py, r: RP, class: 'petal' }, g);

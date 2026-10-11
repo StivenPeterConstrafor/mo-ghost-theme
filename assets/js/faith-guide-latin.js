@@ -2,7 +2,7 @@
    the PG/PL prototypes' selection tools, ported for the Greek and Latin guides. One search for names, titles and citations
    ("PG 6:475B", "PL 158:227C", resolved to the work and column with a drawing of the volume, the page, the column and its letter),
    and three tabs: By author (a fold per century with its sparkline; a writer opens to his works, the editors' matter last), By volume
-   (the shelf, earlier spines lighter, and a panel with the volume's years and contents), By century (every life as a line, coloured by
+   (the shelf, earlier spines lighter, and a panel with the volume's years and contents), By century (every life as a line, colored by
    region, with the general councils above; eras glide; a click opens a card). Scoped .tf, ids tf-*. */
 window.TGFinder = (host, D, C) => {
   const {TG} = window, { esc, fmt } = TG, G = TG.hasG && !TG.reduce ? window.gsap : null, K = C.key;
@@ -90,7 +90,7 @@ window.TGFinder = (host, D, C) => {
       <div class="tf-vgrid"><div><div class="tf-shelf" id="tf-shelf"></div><p class="small" id="tf-vkey"></p></div><aside class="tf-vpanel" id="tf-vpanel" aria-live="polite"></aside></div></section>
     <section class="tf-panel" id="tf-p-century" role="tabpanel" aria-labelledby="tf-t-century" hidden><p class="intro">${esc(C.centintro)}</p>
       <div class="instrument"><div class="controls" role="group" aria-label="Choose a period"><span id="tf-eras"></span></div>
-        <div class="tf-canvas"><canvas class="tf-life" id="tf-life" aria-label="Every writer as a line from birth to death, coloured by region"></canvas><div class="tip" id="tf-tip" hidden></div></div>
+        <div class="tf-canvas"><canvas class="tf-life" id="tf-life" aria-label="Every writer as a line from birth to death, colored by region"></canvas><div class="tip" id="tf-tip" hidden></div></div>
         <div class="tf-lpick" id="tf-lpick" aria-live="polite"></div>
         <div class="legend tf-legend" id="tf-legend"></div></div></section>`;
   const $ = (id) => document.getElementById(id);
@@ -483,7 +483,7 @@ window.TGFinder = (host, D, C) => {
     nameExamples: ['Ambrose', 'Bede', 'Rule of'], missing: (v) => (v === 37 ? 'PL 37 is not in the library yet.' : `PL ${v} is not on the shelf; the Patrologia Latina has 221 volumes.`),
     volintro: 'The volumes as Migne printed them, with the four index volumes at the end. Choose one to see the years of its main writers and what it holds, with the column where each work begins.',
     vkeyMore: ' Volume 37 is not yet in the library.',
-    centintro: 'Every dated writer as a line from birth to death, coloured by the region his record names, stacked so that none overlap. The red marks are the general councils. Choose a period, then a line.',
+    centintro: 'Every dated writer as a line from birth to death, colored by the region his record names, stacked so that none overlap. The red marks are the general councils. Choose a period, then a line.',
     eras: [['All', 100, 1260], ['Before Nicaea', 100, 330], ['The age of Augustine', 300, 470], ['Gregory the Great to Bede', 450, 740], ['Carolingians', 730, 900], ['Reform and the schools', 1000, 1260]] });
   explorer.show = (n) => explorer.openAuthor(n);
   TG.reveal('.tg .reveal');

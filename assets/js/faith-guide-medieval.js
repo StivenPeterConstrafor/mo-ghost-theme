@@ -49,7 +49,7 @@
     const big = panes.slice().sort((p, q) => q.a.p - p.a.p).slice(0, 9);
     const labels = big.map(({ a, th }) => { const [x, y] = pt(RMAX + 24, th), right = Math.cos(th) >= 0;
       const t = mk('text', { x, y: y + 4, 'text-anchor': Math.abs(Math.cos(th)) < 0.2 ? 'middle' : right ? 'start' : 'end', class: 'lbl' }); t.textContent = a.n.replace(/^John /, ''); svg.appendChild(t); return t; });
-    const say = (p) => { cap.textContent = p ? `${p.a.n}, ${TG.yr(p.a)} · ${p.a.w.length} ${p.a.w.length === 1 ? 'work' : 'works'}, ${fmt(p.a.p)} pages · ${famName(p.a.f)}` : 'Each pane is a writer, in order of birth clockwise from the top; the coloured glass fills with the pages on the shelf.'; };
+    const say = (p) => { cap.textContent = p ? `${p.a.n}, ${TG.yr(p.a)} · ${p.a.w.length} ${p.a.w.length === 1 ? 'work' : 'works'}, ${fmt(p.a.p)} pages · ${famName(p.a.f)}` : 'Each pane is a writer, in order of birth clockwise from the top; the colored glass fills with the pages on the shelf.'; };
     panes.forEach((p) => {
       const on = () => { say(p); yr.textContent = p.a.y0; yr2.textContent = 'born'; };
       p.g.addEventListener('mouseenter', on); p.g.addEventListener('focus', on);
