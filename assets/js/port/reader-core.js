@@ -3546,6 +3546,104 @@ function build(){
       const t1=la.trim(),t2=en.trim();
       if((t1||t2)&&(t1.length<=6&&t2.length<=6)&&(!t1||JUNK.test(t1))&&(!t2||JUNK.test(t2)))r.classList.add("furn");
     }));
+    // MARGIN NOTES STAY IN THE SENTENCE (owner 2026-10-11: "fix the reader so that margin notes dont cause new lines and are
+    // tastefully integrated"). The ingest closed the paragraph where a printed margin note stood, so the sentence broke at the
+    // note ("... But" | B C | "I easily ...", Twisse) and the note took a line of its own ("Margin notes 4"). Display only, the
+    // TEI is untouched: (1) two rows the note split are one row again when either lane's first paragraph stops mid-sentence;
+    // (2) inside a lane the two paragraphs are one paragraph, the notes inline where they stood (span.mnin); (3) every other
+    // note group moves into the paragraph it precedes (or, last on the page, the one it follows), so no note is a line of its
+    // own. reader-margins turns each .mnin into one mark, or a gloss in the outer margin where the page is wide enough.
+    // Measured 10-11: 447,206 note groups sit between paragraphs; ~54,535 of them split a sentence, in ~800 works.
+    {
+      const _MNX="sup,.mnote,.mnin,.rm-marker,.pganchor,.rhecho";
+      const _mnTxt=p=>{let t="";const w=document.createTreeWalker(p,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT,{acceptNode:n=>n.nodeType===1?(n.matches(_MNX)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_SKIP):NodeFilter.FILTER_ACCEPT});let n;while((n=w.nextNode()))t+=n.nodeValue;return t.replace(/\s+/g," ").trim();};
+      const _mnBlock=e=>e&&e.classList&&e.classList.contains("mnp")&&!e.classList.contains("edblock")&&!e.querySelector(".headnote,.edinl");
+      const _mnP=e=>!!e&&e.tagName==="P"&&!e.matches(".mnp,.vlem,.apx,.monogram,.editorial,.caps,.edblock");
+      // a note that opens a new piece of the argument says the paragraph break is real: a bare section number ("4", "98"), or
+      // an answer, objection or question ("Resp. 1.", "Obj.", "Q. 2"). Measured on Twisse vol. 1: 16 of 22 joins right before
+      // these rules, the misses all of this kind, a margin letter ending the text ("... by others. E") or a capitals opening.
+      const _mnBreak=blocks=>(blocks||[]).some(b=>[...b.querySelectorAll(".mnote")].some(m=>{const t=m.textContent.trim();
+        return /^\(?\d{1,4}\)?[.)]?$/.test(t)||/^(?:Resp(?:on(?:sio|deo|se))?|Obj(?:ectio|icitur|ection)?|Sol(?:utio)?|Arg(?:umentum)?|Quaest(?:io)?|Q)\b/i.test(t);}));
+      const _mnJoinable=(p1,p2,blocks)=>{
+        if(!_mnP(p1)||!_mnP(p2))return false;
+        if(/^[IM]$/.test(p1.dataset.part||"")&&/^[FM]$/.test(p2.dataset.part||""))return true;   // the corpus says one paragraph
+        if(_mnBreak(blocks))return false;
+        const a=_mnTxt(p1).replace(/(?:\s+[A-Z]){1,3}$/,""),b=_mnTxt(p2);   // margin letters at the end are not the sentence
+        if(a.length<40||!b)return false;
+        if(!/[\p{L},&\-‐–—]$/u.test(a))return false;            // ends in a letter, comma or hyphen: mid-sentence
+        if(/^[A-Z\u00c0-\u00de]{2,}\b/.test(b))return false;                       // a paragraph opening in capitals ("DOES it seem")
+        if(/^(?:[*\[§¶|]|\d+[.)]\s|[IVXLC]+\.\s)/.test(b))return false;   // a starred, bracketed, numbered or table line
+        if(/\|/.test(a.slice(-80))||/\|/.test(b.slice(0,80)))return false;
+        if((a.match(/\p{Lu}/gu)||[]).length>(a.match(/\p{Ll}/gu)||[]).length)return false;   // a title set in capitals
+        return true;};
+      // the notes of one or more .mnp blocks as one inline group; the emptied blocks go
+      const _mnGroup=blocks=>{const g=document.createElement("span");g.className="mnin";
+        blocks.forEach(b=>{[...b.childNodes].forEach(n=>{if(n.nodeType===1&&n.classList.contains("mnote"))g.appendChild(n);});b.remove();});
+        return g.childNodes.length?g:null;};
+      // the mark sits against the word the note stood beside: the paragraph's trailing space goes
+      const _mnTrimEnd=p=>{for(let n=p.lastChild;n;n=p.lastChild){if(n.nodeType===3&&!n.nodeValue.trim()){n.remove();continue;}if(n.nodeType===3)n.nodeValue=n.nodeValue.replace(/\s+$/,"");break;}};
+      const _mnJoin=(p1,blocks,p2,an)=>{
+        const g=_mnGroup(blocks);
+        // a word the note split ('contra-' | 'dictio') closes up without its hyphen
+        const hy=/[-‐]$/.test(_mnTxt(p1))&&/^[a-zà-ÿ]/.test(_mnTxt(p2));
+        if(hy){const w=document.createTreeWalker(p1,NodeFilter.SHOW_TEXT);let n,last=null;while((n=w.nextNode()))if(!n.parentElement.closest(_MNX)&&n.nodeValue.trim())last=n;
+          if(last)last.nodeValue=last.nodeValue.replace(/[-‐]\s*$/,"");}
+        _mnTrimEnd(p1);
+        if(an)p1.appendChild(an);
+        if(g){g.classList.add("mnin-j");p1.appendChild(g);}   // .mnin-j: a group at a join (the sentence the note had split)
+        if(!hy)p1.appendChild(document.createTextNode(" "));
+        while(p2.firstChild)p1.appendChild(p2.firstChild);
+        // what the joined paragraph still continues: from the page before (M|F first), onto the page after (M|I second)
+        {const pa=p1.dataset.part||"",pb=p2.dataset.part||"";
+         if(pa||pb){const from=pa==="M"||pa==="F",onto=pb==="M"||pb==="I";
+           if(from||onto)p1.dataset.part=from&&onto?"M":from?"F":"I";else p1.removeAttribute("data-part");}}
+        p2.remove();};
+      const _mnSkipRow=r=>!r||!r.classList.contains("row")||r.matches(".rhead,.rapp,.rtoc,.furn,.pflow");
+      secs.forEach(sec=>{
+        if(sec.classList.contains("dense"))return;
+        // (1) rows: a row that opens with a note block, after a row whose paragraph stops mid-sentence, joins it
+        [...sec.querySelectorAll(":scope>.row")].forEach(cur=>{
+          const prv=cur.previousElementSibling;
+          if(!cur.isConnected||_mnSkipRow(cur)||_mnSkipRow(prv))return;
+          const lanes=["la","en"].map(ln=>{const a=prv.querySelector(":scope>."+ln),b=cur.querySelector(":scope>."+ln);if(!a||!b)return null;
+            const kids=[...b.children];let i=0;while(i<kids.length&&_mnBlock(kids[i]))i++;
+            return {a,b,lead:kids.slice(0,i),p1:a.lastElementChild,p2:kids[i]};}).filter(Boolean);
+          if(!lanes.some(x=>x.lead.length)||lanes.some(x=>_mnBreak(x.lead))||!lanes.some(x=>_mnJoinable(x.p1,x.p2,x.lead)))return;
+          // the row's own address stays reachable (#b12-3 links, bookmarks), at the point where its text now begins, in the
+          // English lane where there is one: it is the lane every view but Latin-only shows, and a hidden anchor scrolls nowhere
+          const an=cur.id?Object.assign(document.createElement("span"),{className:"rowjoin",id:cur.id}):null;
+          const anLane=lanes.find(x=>x.a.classList.contains("en"))||lanes[0];
+          lanes.forEach(x=>{const mine=x===anLane?an:null;
+            if(_mnJoinable(x.p1,x.p2,x.lead))_mnJoin(x.p1,x.lead,x.p2,mine);
+            else if(mine)x.a.appendChild(mine);
+            while(x.b.firstChild)x.a.appendChild(x.b.firstChild);});
+          cur.remove();
+        });
+        // (2) inside a lane: paragraph, note block(s), paragraph -> one paragraph when the first stops mid-sentence
+        // (3) every other note block moves into the paragraph beside it
+        sec.querySelectorAll(".row>.la,.row>.en,.stkwrap>.stk").forEach(cell=>{
+          if(cell.closest(".rhead,.rapp,.rtoc"))return;
+          for(let k=cell.firstElementChild;k;){
+            if(!_mnBlock(k)){k=k.nextElementSibling;continue;}
+            const run=[k];let nx=k.nextElementSibling;while(nx&&_mnBlock(nx)){run.push(nx);nx=nx.nextElementSibling;}
+            const pv=run[0].previousElementSibling;
+            if(_mnJoinable(pv,nx,run)){_mnJoin(pv,run,nx);k=pv.nextElementSibling;continue;}
+            if(_mnP(nx)){const g=_mnGroup(run);if(g)nx.insertBefore(g,nx.firstChild);k=nx.nextElementSibling;continue;}
+            if(_mnP(pv)){const g=_mnGroup(run);if(g){_mnTrimEnd(pv);pv.appendChild(g);}k=nx;continue;}
+            k=nx;
+          }
+          // a note already inline in its paragraph: consecutive ones share one group
+          cell.querySelectorAll("p>span.mnote:not(.headnote):not(.edinl)").forEach(m=>{
+            if(!m.isConnected||m.parentElement.classList.contains("mnin"))return;
+            const g=document.createElement("span");g.className="mnin";m.before(g);g.appendChild(m);
+            for(let n=g.nextSibling;n;){const nn=n.nextSibling;
+              if(n.nodeType===3&&!n.nodeValue.trim()&&nn&&nn.nodeType===1&&nn.matches("span.mnote:not(.headnote):not(.edinl)")){n.remove();n=nn;continue;}
+              if(n.nodeType===1&&n.matches("span.mnote:not(.headnote):not(.edinl)")){g.appendChild(n);n=nn;continue;}
+              break;}
+          });
+        });
+      });
+    }
     // cross-page run continuation
     let prev=null,_seamIdx=null;
     for(const cur of secs){
@@ -3653,8 +3751,18 @@ function build(){
     // markup (<p class="mnp"><span class="mnote">) is untouched, only how it's later targeted.
     // Gated on the cell literally containing a .mnp child, so a page with no margin notes is a
     // no-op scan and every other page renders byte-identical to before this patch.
+    // notes that met at a page turn when the seam merges joined the pages (the last notes of one page, the first of the next)
+    // are one group with one mark (owner 2026-10-11, Acts of Dort p. 20/21: "notes" and "note" side by side)
+    R.querySelectorAll(".mnin").forEach(g=>{
+      if(!g.isConnected)return;
+      for(let n=g.nextSibling;n;){const nn=n.nextSibling;
+        if(n.nodeType===3&&!n.nodeValue.trim()){n=nn;continue;}
+        if(n.nodeType===1&&n.classList.contains("pganchor")){n=nn;continue;}
+        if(n.nodeType===1&&n.classList.contains("mnin")){while(n.firstChild){const c=n.firstChild;if(c.nodeType===1&&c.classList.contains("rm-marker"))c.remove();else g.appendChild(c);}n.remove();n=nn;continue;}
+        break;}
+    });
     R.querySelectorAll(".row > .la, .row > .en").forEach(cell=>{
-      cell.classList.toggle("hasmn",!!cell.querySelector(":scope > .mnp"));
+      cell.classList.toggle("hasmn",!!cell.querySelector(":scope > .mnp, .mnin"));
     });
   }catch(e){}};
   // phone parallel zip: interleave each stacked run's Latin/English columns into per-paragraph

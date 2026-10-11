@@ -11,6 +11,24 @@ html.fr-margin-notes #reading .rm-marker:hover,html.fr-margin-notes #reading .rm
 html.fr-margin-notes #reading .rm-marker:focus-visible{outline:2px solid var(--fg);outline-offset:4px}
 html.fr-margin-notes #reading .rm-marker.rm-inline{font-size:12px;min-height:28px;margin-inline:5px;padding-inline:2px}
 .rm-marker-compact{display:none}
+/* Notes inline where they stood (.mnin, set by the reader, owner 2026-10-11: "margin notes dont cause new lines and are
+   tastefully integrated"). One small mark in the sentence; where the page leaves room beside the text column, the notes stand
+   in the outer margin by their line instead, as the print sets them: the source lane's on the left, the English on the right.
+   reader-margins measures that room (html.fr-mn-railL / fr-mn-railR, widths --rm-railL / --rm-railR): MereO's column is
+   960px at most, so the old test of the reading area's own width (railok, 1180px) never passed there. Paragraph numbers and
+   margin letters alone (.rm-bare) are not shown. */
+#reading .mnin.rm-bare{display:none}
+@media screen{
+html.fr-mn-railL #reading :is(.la,.stk-la) .mnin>.rm-marker,html.fr-mn-railR #reading :is(.en,.stk-en) .mnin>.rm-marker{display:none!important}
+html.fr-mn-railL #reading :is(.la,.stk-la) .mnin>.mnote.rm-original,html.fr-mn-railR #reading :is(.en,.stk-en) .mnin>.mnote.rm-original{display:block!important;max-width:none!important;padding:0!important;border:0!important;background:none!important;font:400 .74rem/1.4 'Source Serif Pro',Georgia,serif!important;font-style:normal!important;letter-spacing:.005em;color:var(--muted)!important;text-indent:0!important;overflow-wrap:anywhere;hyphens:auto;cursor:pointer}
+html.fr-mn-railL #reading :is(.la,.stk-la) .mnin>.mnote.rm-original{float:left!important;clear:left!important;width:var(--rm-railL)!important;margin:.2em 0 .45em calc(-1*var(--rm-railL) - 1.25rem)!important;text-align:right!important}
+html.fr-mn-railR #reading :is(.en,.stk-en) .mnin>.mnote.rm-original{float:right!important;clear:right!important;width:var(--rm-railR)!important;margin:.2em calc(-1*var(--rm-railR) - 1.25rem) .45em 0!important;text-align:left!important}
+html:is(.fr-mn-railL,.fr-mn-railR) #reading .mnin>.mnote.rm-original+.mnote.rm-original{margin-top:.1em!important}
+html:is(.fr-mn-railL,.fr-mn-railR) #reading .mnin>.mnote.rm-original.mnlong{max-height:8.4em;overflow:hidden;-webkit-mask-image:linear-gradient(#000 65%,transparent);mask-image:linear-gradient(#000 65%,transparent)}
+html:is(.fr-mn-railL,.fr-mn-railR) #reading .mnin>.mnote.rm-original:hover{color:var(--fg)!important}
+html.fr-mn-railR #reading .folio{margin-right:calc(-1*var(--rm-extR,0px));padding-right:var(--rm-extR,0px)}
+html.fr-mn-railL #reading .folio{margin-left:calc(-1*var(--rm-extL,0px));padding-left:var(--rm-extL,0px)}
+}
 #readerMarginPopover{display:none;position:fixed;inset:90px 24px auto auto;margin:0;padding:0;width:min(460px,calc(100vw - 32px));max-height:min(650px,calc(100dvh - 120px));overflow:hidden;border:1px solid var(--border);border-radius:8px;background:var(--card,var(--card-bg,#fff));color:var(--fg);box-shadow:0 12px 32px #0000001c;font:16px/1.7 'Source Serif Pro',Georgia,serif;z-index:13000}
 #readerMarginPopover:popover-open,#readerMarginPopover.rm-open{display:flex;flex-direction:column}
 #readerMarginPopover::backdrop{background:transparent}
@@ -31,4 +49,4 @@ html.fr-margin-notes #reading .rm-marker.rm-inline{position:relative;min-height:
 
  #readerMarginPopover{inset:auto 0 0;margin:0;width:100%;max-height:70dvh;border-radius:12px 12px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom)}#readerMarginPopover .rm-panel-head{padding:18px 18px 12px}#readerMarginPopover .rm-panel-body{padding-inline:18px}#readerMarginPopover h2{font-size:25px}}
 @media(prefers-reduced-motion:no-preference){#readerMarginPopover:popover-open{animation:margin-note-open 140ms cubic-bezier(.22,1,.36,1)}@keyframes margin-note-open{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}}
-@media print{#readerMarginPopover,html.fr-margin-notes #reading .rm-marker{display:none!important}html.fr-margin-notes #reading .rm-original{display:block!important;width:auto!important;max-width:none!important;float:none!important;clear:none!important;margin:.35em 0!important;padding:0!important;border:0!important;font-size:10pt!important;line-height:1.4!important;text-align:start!important;-webkit-line-clamp:unset!important;overflow:visible!important}html.fr-margin-notes #reading p:not(.mnp)>.rm-original{display:inline!important}html.fr-margin-notes #reading .rm-group::before{content:'Margin notes';font-size:10pt;font-style:italic}}
+@media print{#readerMarginPopover,html.fr-margin-notes #reading .rm-marker{display:none!important}html.fr-margin-notes #reading .rm-original{display:block!important;width:auto!important;max-width:none!important;float:none!important;clear:none!important;margin:.35em 0!important;padding:0!important;border:0!important;font-size:10pt!important;line-height:1.4!important;text-align:start!important;-webkit-line-clamp:unset!important;overflow:visible!important}html.fr-margin-notes #reading p:not(.mnp)>.rm-original,html.fr-margin-notes #reading .mnin>.rm-original{display:inline!important}html.fr-margin-notes #reading .mnin>.rm-original::before{content:' ['}html.fr-margin-notes #reading .mnin>.rm-original::after{content:'] '}html.fr-margin-notes #reading .rm-group::before{content:'Margin notes';font-size:10pt;font-style:italic}}
