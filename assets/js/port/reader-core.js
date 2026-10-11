@@ -6855,19 +6855,34 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
                   const _vTail=(list,i)=>i>=0&&!list.slice(i+1).some(t=>{const h=_vHd(t);return h!==null&&!frVersHead(h)&&!/^(?:caput|cap\.|chapter)\s+[ivxlc\d]+\.?$/.test(h);});   // the version's own chapter heads (CAPUT II.) stay in it
                   const _vCut=str=>{const re=/\u0002([^\u0003]+)\u0003/g;let m;while((m=re.exec(str))){if(frVersHead(m[1].replace(/\u0007[\s\S]*$/,"").replace(/\s+/g," ").trim().toLowerCase()))return m.index;}return -1;};
                   const _vLa=_vAt(_laP),_vEn=_vAt(_enParas),_enAll=_enMarked.join(" "),_vLt=_vCut(lt),_vEt=_vCut(_enAll);
-                  const _vSplit=_vLa>0&&_vEn>0&&_vLt>0&&_vEt>0&&_vTail(_laP,_vLa)&&_vTail(_enParas,_vEn);
+                  // ...and where the block is not one run to the page's end (PG 13: the version keeps its own section numbers '58.',
+                  // a new tome opens mid-page between two blocks, a main-text head runs into the label in one folded paragraph), each
+                  // lane's paragraphs are parted: a paragraph led by the label opens the version, a paragraph led by any other head
+                  // (CAPUT / CHAPTER / a bare section number excepted) returns to the page's own text.
+                  const _vLead=t=>{const o=[],x=String(t||""),re=/\s*\u0002([^\u0003]+)\u0003/y;let m;while((m=re.exec(x)))o.push({h:m[1].replace(/\u0007[\s\S]*$/,"").replace(/\s+/g," ").trim().toLowerCase(),at:m.index});return o;};
+                  const _vOwn=h=>/^(?:caput|cap\.|chapter)\s+[ivxlc\d]+\.?$/.test(h)||/^\d+\.?$/.test(h);
+                  const _vPart=list=>{const main=[],vers=[];let inV=false,seen=false;
+                    for(const t0 of list||[]){let t=String(t0||"").trim();if(!t)continue;const L=_vLead(t),vi=L.findIndex(x=>frVersHead(x.h));
+                      if(vi>0&&L.slice(0,vi).every(x=>!frVersHead(x.h))){main.push(t.slice(0,L[vi].at).trim());vers.push(t.slice(L[vi].at).trim());inV=seen=true;continue;}
+                      if(vi===0){vers.push(t);inV=seen=true;continue;}
+                      if(L.length&&!_vOwn(L[0].h))inV=false;
+                      (inV?vers:main).push(t);}
+                    return {main:main.filter(Boolean),vers,seen};};
+                  const _PL=_vPart(_laP),_PE=_vPart(_enParas);
+                  const _vSplit=_PL.seen&&_PE.seen&&_PL.main.length>0&&_PE.main.length>0&&_PL.vers.length>0&&_PE.vers.length>0;
+                  const _vSimple=_vSplit&&_vLa>0&&_vEn>0&&_vLt>0&&_vEt>0&&_vTail(_laP,_vLa)&&_vTail(_enParas,_vEn);   // one block to the page's end: cut the strings at the label
                   // the Greek column repeats the version's label at its foot (PG 13 col. 1009): with the block set apart, that copy goes
                   const _vNoTail=t=>String(t||"").replace(/\s*\u0002([^\u0003]+)\u0003\s*$/,(m,h)=>frVersHead(h.replace(/\u0007[\s\S]*$/,"").replace(/\s+/g," ").trim().toLowerCase())?"":m);
                   const _gP=(sf.grcParas||[]).map(_healGrc);if(_vSplit&&_gP.length)_gP[_gP.length-1]=_vNoTail(_gP[_gP.length-1]);
                   const aligned=_vSplit
-                    ?window.FRPgParallel.alignOpening(_vNoTail(_healGrc(sf.grc)),lt.slice(0,_vLt),_enAll.slice(0,_vEt),{grc:_gP,la:_laP.slice(0,_vLa),en:_enParas.slice(0,_vEn),byCol:_byCol})
+                    ?window.FRPgParallel.alignOpening(_vNoTail(_healGrc(sf.grc)),_vSimple?lt.slice(0,_vLt):_PL.main.join(" "),_vSimple?_enAll.slice(0,_vEt):_PE.main.join(" "),{grc:_gP,la:_PL.main,en:_PE.main,byCol:_byCol})
                     :window.FRPgParallel.alignOpening(_healGrc(sf.grc),lt,_enAll,{grc:(sf.grcParas||[]).map(_healGrc),la:_laP,en:_enParas,byCol:_byCol});
                   if(_vSplit&&aligned.basis!=="column-paragraphs"){   // the column basis pairs whole columns, the block included
                     const _fold=list=>{const o=[];let pend="";for(const t of list){const v=String(t||"").trim();if(!v)continue;if(/^\u0002[^\u0003]*\u0003$/.test(v)){pend+=v+" ";continue;}o.push((pend+v).trim());pend="";}if(pend.trim())o.push(pend.trim());return o;};
-                    const vl=_fold(_laP.slice(_vLa)),ve=_fold(_enParas.slice(_vEn));
+                    const vl=_fold(_PL.vers),ve=_fold(_PE.vers);
                     if(vl.length===ve.length)vl.forEach((t,i)=>aligned.rows.push({grc:"",la:t,en:ve[i]}));
                     else aligned.rows.push({grc:"",la:vl.join(" "),en:ve.join(" ")});
-                    (window.__versApart=window.__versApart||{pages:0,rows:0}).pages++;window.__versApart.rows+=Math.max(vl.length===ve.length?vl.length:1,0);}
+                    (window.__versApart=window.__versApart||{pages:0,rows:0,parted:0}).pages++;window.__versApart.rows+=vl.length===ve.length?vl.length:1;if(!_vSimple)window.__versApart.parted=(window.__versApart.parted||0)+1;}
                   // Keep printed headings visible in their own lane, without guessing
                   // their counterparts. Their opening remains a usable outline target.
                   const marked=aligned.rows.map(r=>r.en).join(" ");
