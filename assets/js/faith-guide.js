@@ -14,7 +14,7 @@
  */
 (() => {
   const SHELVES = {"westminster": {"name": "The Westminster Assembly", "cls": "wes"}};
-  const V = {"westminster.html": "f57ecb48d5b8b6ba", "westminster.json": "ec8a8c6475b4913c", "westminster": "2985bd913d7f3248", "engine": "b64d8d1914770db7", "europe_land.json": "bb985d269feafed6"};
+  const V = {"westminster.html": "5c8e2b2d15f8cb67", "westminster.json": "ec8a8c6475b4913c", "westminster": "ebfe209642da4117", "engine": "b64d8d1914770db7", "europe_land.json": "bb985d269feafed6"};
   const root = document.querySelector("[data-guide-root]");
   if (!root) return;
   const {assets} = root.dataset;
