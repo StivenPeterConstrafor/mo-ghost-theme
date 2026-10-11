@@ -28,6 +28,7 @@
     methodists: "the Methodists",
     westminster: "the Westminster Assembly",
     councils: "the Councils",
+    eastern: "the Eastern Fathers",
   };
   // tradition slugs and their aliases (assets/data/faith-received/traditions.json) → the guides of that shelf
   const TRAD = {
@@ -37,7 +38,7 @@
     lutheran: ["lutheran"], lutheranism: ["lutheran"], "evangelical-lutheran": ["lutheran"],
     "the-whole-church": ["councils", "greek", "latin"], fathers: ["greek", "latin"], "the-fathers": ["greek", "latin"], patristic: ["greek", "latin"],
     "early-church": ["greek", "latin"], "greek-fathers": ["greek"], "latin-fathers": ["latin"],
-    "eastern-orthodox": ["greek"], orthodox: ["greek"], protestant: ["reformed", "lutheran", "english"], baptist: ["english"], baptists: ["english"],
+    "eastern-orthodox": ["greek", "eastern"], orthodox: ["greek", "eastern"], "eastern-fathers": ["eastern"], "oriental-orthodox": ["eastern"], "church-of-the-east": ["eastern"], protestant: ["reformed", "lutheran", "english"], baptist: ["english"], baptists: ["english"],
     arminian: ["reformed"], remonstrant: ["reformed"], councils: ["councils"],
     anglican: ["anglicans"], "church-of-england": ["anglicans"], episcopal: ["anglicans"], anglicanism: ["anglicans"],
     methodist: ["methodists"], methodists: ["methodists"], wesleyan: ["methodists"], wesleyans: ["methodists"], "wesleyan-methodist": ["methodists"], methodism: ["methodists"],

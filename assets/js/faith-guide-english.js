@@ -47,7 +47,7 @@
     const imprint = [mk('text', { x: X, y: 462, 'text-anchor': 'middle', class: 't-cap' }, 'LONDON,'),
       mk('text', { x: X, y: 478, 'text-anchor': 'middle', class: 't-sm' }, 'Printed for the library of The Faith Received,'),
       mk('text', { x: X, y: 492, 'text-anchor': 'middle', class: 't-sm' }, `${fmt(D.n_works)} books, from the Reformers to the Oxford Movement.`)];
-    const say = (o) => { cap.textContent = o ? `${o.a.n}, ${o.a.d || TG.yr(o.a)} · ${o.a.w.length} ${o.a.w.length === 1 ? 'work' : 'works'} · ${famName(o.a.f)}` : 'The border is the shelf’s writers, one ornament each in order of birth, clockwise from the top left; those with no dates close it. The larger, the more pages. Point at one to read it.'; };
+    const say = (o) => { cap.textContent = o ? `${o.a.n}, ${o.a.d || TG.yr(o.a)} · ${o.a.w.length} ${o.a.w.length === 1 ? 'work' : 'works'} · ${famName(o.a.f)}` : 'Each ornament in the border is one of the shelf’s writers. They run clockwise from the top left in order of birth. Writers with no dates close the border. Larger ornaments mean more pages. Point at one to read it.'; };
     let hot = null;
     svg.addEventListener('mousemove', (e) => { const b = svg.getBoundingClientRect(), k = Wd / b.width, mx = (e.clientX - b.left) * k, my = (e.clientY - b.top) * k;
       let best = null, bd = 9; for (const o of orns) { const d = Math.hypot(o.x - mx, o.y - my); if (d < bd) { bd = d; best = o; } }
@@ -76,7 +76,7 @@
     const chron = TG.chronicle(document.getElementById('tg-chron'), D.events.filter((e) => e[0] <= 1700), ([y, e, w]) => `<li><span class="d">${y}</span><span class="e">${esc(e)}</span><span class="w">${esc(w)}</span></li>`);
     document.getElementById('tg-plegend').innerHTML = D.fam.map(([k, nm], i) => [nm, i, D.press.filter((r) => r[1] === i).length]).filter((x) => x[2]).map(([nm, i, c]) => `<span><i style="background:${fcI(i)}"></i>${esc(nm)} <span class="num">${fmt(c)}</span></span>`).join('');
     const pre = P.filter((r) => r[0] < Y0).length;
-    document.getElementById('tg-pnote').textContent = `${fmt(P.length)} printings dated from 1530 to 1700, where the Early English Books end${pre ? ` (and ${pre} earlier)` : ''}. The shelf goes on after them in later editions: Wesley and Whitefield, the Methodist preachers, and Pusey.`;
+    document.getElementById('tg-pnote').textContent = `${fmt(P.length)} printings dated from 1530 to 1700${pre ? ` (and ${pre} earlier)` : ''}. The Early English Books end in 1700. The shelf goes on after them in later editions: Wesley and Whitefield, the Methodist preachers, and Pusey.`;
     // stack each year's printings by party
     const byY = new Map(); P.forEach((r, i) => { if (r[0] < Y0) return; if (!byY.has(r[0])) byY.set(r[0], []); byY.get(r[0]).push(i); });
     const maxN = Math.max(...[...byY.values()].map((a) => a.length));
@@ -129,22 +129,22 @@
       return [0, 1, 2, 3].map((p) => { const v = r[p + 1], h = mode === 'abs' ? hgt * v / maxT : hgt * v / (tot || 1); y -= h; return { y, h, o: focus == null || focus === p ? 1 : 0.16 }; }); });
     const top = (p) => ALL.filter((a) => FAMS.indexOf(a.f) === p).sort((a, b) => b.w.length - a.w.length).slice(0, 6).map((a) => a.n);
     const PARTY = [
-      ['Puritans', 'The godly who pressed for a further reformation of the church’s worship and discipline, and after 1662 the Dissenters who left it.', 'puritans/', 'the Puritans'],
+      ['Puritans', 'The godly who pressed for a further reformation of the church’s worship and discipline and the Dissenters who left it after 1662.', 'puritans/', 'the Puritans'],
       ['Anglicans', 'The church of the Prayer Book and the bishops: the Elizabethan and Caroline divines, the churchmen of the Restoration, and in the nineteenth century the Oxford Movement.', 'anglicans/', 'the Anglicans'],
-      ['Methodists', 'The revival of John and Charles Wesley and George Whitefield from 1738, and the preachers and commentators of the societies after them.', 'methodists/', 'the Methodists'],
+      ['Methodists', 'The revival of John and Charles Wesley and George Whitefield from 1738. The preachers and commentators of the societies came after them.', 'methodists/', 'the Methodists'],
     ];
     const STEPS = [
-      ['Decade by decade', `${fmt(D.n_works)} works by the decade they were printed, or for later books by when their writers were at work. The years of the war and of the Restoration stand highest.`],
-      ['As shares', 'The same decades drawn to one height, so each column shows the parties’ share of the shelf in its time.'],
+      ['Decade by decade', `${fmt(D.n_works)} works by the decade they were printed. Later books go by the decade their writers were at work. The years of the war and of the Restoration stand highest.`],
+      ['As shares', 'The same decades drawn to one height. Each column shows the parties’ share of the shelf in its time.'],
       ['The Puritans', ''], ['The Anglicans', ''], ['The Methodists', ''],
-      ['Three guides', 'Each party has a guide of its own, and so does the Westminster Assembly.']];
+      ['Three guides', 'Each party has a guide of its own. So does the Westminster Assembly.']];
     const stepsEl = document.getElementById('tg-psteps'); stepsEl.innerHTML = STEPS.map(([b, p2], i) => `<li><b>${esc(b)}</b>${p2 ? `<p>${esc(p2)}</p>` : `<p>${esc(PARTY[i - 2][1])}</p>`}</li>`).join('');
     const lis = [...stepsEl.children];
     function cardFor(k) {
-      if (k <= 1) { card.innerHTML = `<h3>${fmt(D.n_works)} works</h3><p class="who">${D.fam.map(([, nm], i) => `<span style="white-space:nowrap"><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${fcI(i)};margin-right:5px"></i>${esc(nm)} ${fmt(D.n_party[i])}</span>`).join(' · ')}</p><p>Most of the shelf is Puritan; the Anglicans come next, then the Methodists of the next century.</p>`; return; }
+      if (k <= 1) { card.innerHTML = `<h3>${fmt(D.n_works)} works</h3><p class="who">${D.fam.map(([, nm], i) => `<span style="white-space:nowrap"><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${fcI(i)};margin-right:5px"></i>${esc(nm)} ${fmt(D.n_party[i])}</span>`).join(' · ')}</p><p>Most of the shelf is Puritan. The Anglicans come next and the Methodists after them.</p>`; return; }
       if (k <= 4) { const p = k - 2, [nm, , href, lab] = PARTY[p];
         card.innerHTML = `<h3><i style="background:${fcI(p)}"></i>${nm} <span class="small">${fmt(D.n_party[p])} works</span></h3><p class="who">Most here: ${top(p).map(esc).join(', ')}</p><div class="go"><a href="${TG.href(href)}" target="_blank" rel="noopener">Browse ${lab} on their shelf</a></div>`; return; }
-      card.innerHTML = `<h3>Guides of their own</h3><p>The Puritans, the Anglicans and the Methodists each have a guide, and so does the Westminster Assembly of 1643 to 1653. Their shelves are in the library now:</p>
+      card.innerHTML = `<h3>Guides of their own</h3><p>The Puritans, the Anglicans and the Methodists each have a guide. So does the Westminster Assembly of 1643 to 1653. Their shelves are in the library now:</p>
         <div class="go"><a href="${TG.href('puritans/')}" target="_blank" rel="noopener">The Puritans</a><a href="${TG.href('anglicans/')}" target="_blank" rel="noopener">The Anglicans</a><a href="${TG.href('methodists/')}" target="_blank" rel="noopener">The Methodists</a><a href="${TG.href('westminster-assembly/')}" target="_blank" rel="noopener">The Westminster Assembly</a></div>`;
     }
     let cur = -1;
@@ -202,12 +202,12 @@
     const S = U.s.map((r) => (r.length === 3 ? (([y, f, slug, t, ai]) => [y, r[1], f, ai, slug, t, r[2]])(D.press[r[0]]) : r));
     const N = S.length, cnt = U.rows.map((_, k) => S.filter((r) => r[1] === k).length), named = N - cnt[PILE], pp = Sy.party, sp = Sy.span;
     const STEPS = [
-      ['Every printed sermon', `${fmt(N)} sermons on the shelf printed from ${Y0} to ${Y1}, each a dot in the year it came from the press, colored by its party. ${Math.round(100 * named / N)}% name on the title page where they were preached, or to whom.`],
+      ['Every printed sermon', `${fmt(N)} sermons on the shelf were printed from ${Y0} to ${Y1}. Each is a dot in the year it came from the press, colored by its party. ${Math.round(100 * named / N)}% name on the title page where they were preached or to whom.`],
       ['Paul’s Cross', `The open-air pulpit in the churchyard of St Paul’s, London. The shelf’s ${cnt[0]} sermons from it were printed between ${sp[0][0]} and ${sp[0][1]}.`],
-      ['Before Parliament', `${cnt[1]} sermons to the Commons or the Lords, ${Sy.parl_1640s} of them printed in the 1640s. ${Sy.parl_fast} name a day of fasting or humiliation, ${Sy.parl_thanks} a thanksgiving. ${pp[1][0]} are by Puritans.`],
-      ['At court', `${cnt[2]} sermons before the King or the Queen, at Whitehall and the royal chapels: ${Sy.court_1660} printed after 1660, ${Sy.court_1690s} in the 1690s alone. ${pp[2][1]} are by Anglicans.`],
+      ['Before Parliament', `${cnt[1]} sermons were preached to the Commons or the Lords. ${Sy.parl_1640s} of them were printed in the 1640s. ${Sy.parl_fast} name a day of fasting or humiliation and ${Sy.parl_thanks} a thanksgiving. ${pp[1][0]} are by Puritans.`],
+      ['At court', `${cnt[2]} sermons were preached before the King or the Queen at Whitehall and the royal chapels. ${Sy.court_1660} were printed after 1660 and ${Sy.court_1690s} in the 1690s alone. ${pp[2][1]} are by Anglicans.`],
       ['At a funeral', `${cnt[3]} sermons preached at a funeral, ${Sy.funeral_1650} of them printed after 1650.`],
-      ['The City of London', `${cnt[4]} sermons to the City. ${Sy.city_mayor} name the Lord Mayor or the aldermen, ${Sy.city_spital} the Spital sermons of Easter week, ${Sy.city_artillery} the Artillery Company.`],
+      ['The City of London', `${cnt[4]} sermons were preached to the City. ${Sy.city_mayor} name the Lord Mayor or the aldermen. ${Sy.city_spital} are Spital sermons of Easter week. ${Sy.city_artillery} were preached to the Artillery Company.`],
       ['Assizes and visitations', `${Sy.assize} sermons to the judges at the assizes, and ${Sy.visit} to the clergy at a bishop’s visitation.`],
       ['No occasion named', `${fmt(cnt[PILE])} name no single pulpit: sermons on a text, courses of sermons, and collections. The six rows above hold the other ${fmt(named)}.`]];
     const stepsEl = document.getElementById('tg-usteps'); stepsEl.innerHTML = STEPS.map(([b, t]) => `<li><b>${esc(b)}</b><p>${esc(t)}</p></li>`).join('');
@@ -217,7 +217,7 @@
     document.getElementById('tg-unote').textContent = `The pulpit is read from each title as it was first printed. ${fmt(out)} more sermons on the shelf carry no printed date or come after ${Y1}, and are not drawn.`;
     // the card: the sermon of the step, or the one chosen
     const showCard = (i, label) => {
-      if (i == null) { card.innerHTML = `<p class="k">How to read it</p><p class="ft">Each dot is one printed sermon. Point at one for its title; choose it to read the title as first printed and open the book.</p>`; return; }
+      if (i == null) { card.innerHTML = `<p class="k">How to read it</p><p class="ft">Each dot is one printed sermon. Point at one for its title. Choose it to read the title as first printed and open the book.</p>`; return; }
       const r = S[i], a = D.authors[r[3]];
       card.innerHTML = `<p class="k">${esc(label)}${r[6] ? ' · as first printed' : ''}</p><p class="ft">${esc(r[6] || r[5])}</p><p class="by"><i style="background:${fcI(r[2])}"></i>${r[0]}${a ? ` · ${esc(a.n)}` : ''} · <a href="${TG.read(r[4])}" target="_blank" rel="noopener">Read it</a></p>`;
     };

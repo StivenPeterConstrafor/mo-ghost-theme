@@ -64,22 +64,22 @@
   const EVENTS = [
     [50, 'The Council of Jerusalem', 'The apostles decide that Gentile converts need not keep the Law of Moses (Acts 15).', ['Peter', 'James', 'Paul']],
     [325, 'Nicaea', 'Arius is condemned and the Creed of Nicaea is set down.', ['Constantine', 'Athanasius', 'Arius']],
-    [381, 'Constantinople I', 'The divinity of the Holy Spirit; the Creed completed.', ['Theodosius I', 'Gregory of Nazianzus']],
-    [431, 'Ephesus', 'Mary is proclaimed Theotokos; Nestorius is deposed.', ['Cyril of Alexandria', 'Nestorius']],
-    [451, 'Chalcedon', 'Christ is confessed in two natures; the Tome of Leo is received.', ['Leo the Great', 'Emperor Marcian']],
+    [381, 'Constantinople I', 'The council affirms the divinity of the Holy Spirit and completes the Creed.', ['Theodosius I', 'Gregory of Nazianzus']],
+    [431, 'Ephesus', 'Mary is proclaimed Theotokos. Nestorius is deposed.', ['Cyril of Alexandria', 'Nestorius']],
+    [451, 'Chalcedon', 'Christ is confessed in two natures. The Tome of Leo is received.', ['Leo the Great', 'Emperor Marcian']],
     [589, 'Toledo III', 'The Visigothic king Reccared renounces Arianism.', ['Reccared', 'Leander of Seville']],
     [787, 'Nicaea II', 'The veneration of images is restored.', ['Empress Irene', 'Tarasius']],
     [794, 'Frankfurt', "Charlemagne's synod condemns Adoptionism.", ['Charlemagne', 'Alcuin']],
     [1054, 'East and West part', 'The papal legates and Patriarch Michael Cerularius excommunicate each other.', ['Leo IX', 'Michael Cerularius']],
-    [1122, 'The Concordat of Worms', "The investiture struggle of Gregory VII's reform is settled; Lateran I confirms it in 1123.", ['Gregory VII', 'Henry IV', 'Calixtus II']],
+    [1122, 'The Concordat of Worms', "The investiture struggle of Gregory VII's reform is settled. Lateran I confirms it in 1123.", ['Gregory VII', 'Henry IV', 'Calixtus II']],
     [1215, 'Lateran IV', 'Transubstantiation is defined and yearly confession required.', ['Innocent III']],
     [1274, 'Lyon II', 'A short-lived union with the Greeks.', ['Gregory X', 'Bonaventure']],
     [1309, 'The popes at Avignon', 'The papacy resides at Avignon until 1377.', ['Clement V', 'Gregory XI']],
-    [1378, 'The Western Schism', 'Rival popes in Rome and Avignon, and from 1409 at Pisa.', ['Urban VI', 'Clement VII']],
-    [1414, 'Constance', 'The Schism is ended; Jan Hus is condemned and burned (1415).', ['Emperor Sigismund', 'Martin V', 'Jan Hus']],
+    [1378, 'The Western Schism', 'Rival popes sit in Rome and Avignon. From 1409 another sits at Pisa.', ['Urban VI', 'Clement VII']],
+    [1414, 'Constance', 'The Schism is ended. Jan Hus is condemned and burned (1415).', ['Emperor Sigismund', 'Martin V', 'Jan Hus']],
     [1439, 'Florence', 'Union with the Greeks is proclaimed. It does not last.', ['Eugenius IV', 'John VIII Palaiologos', 'Bessarion']],
     [1517, 'Lateran V closes', 'In the same year Luther posts his theses.', ['Leo X', 'Martin Luther']],
-    [1545, 'Trent', 'Decrees on Scripture and tradition, justification and the sacraments, to 1563.', ['Paul III', 'Pius IV', 'Charles Borromeo']],
+    [1545, 'Trent', 'Decrees on Scripture and tradition, justification and the sacraments. The council sits until 1563.', ['Paul III', 'Pius IV', 'Charles Borromeo']],
     [1869, 'Vatican I', 'The primacy and infallibility of the pope are defined (1870).', ['Pius IX']],
   ];
   const chron = document.getElementById('chron');
@@ -113,7 +113,7 @@
     if (now >= 0 && canPin) { const li = lis[now]; chron.scrollTop = Math.max(0, li.offsetTop - chron.clientHeight * 0.35); }
     const P = D.people.filter((p) => p.y0 - 15 <= year && year <= p.y1 + 15).slice(0, 10);
     document.getElementById('ribbon').innerHTML = P.map((p) => `<span class="${/^Pope/.test(p.name) ? 'pope' : ''}">${esc(p.name)}</span>`).join('');
-    document.getElementById('mapNote').textContent = `${total.toLocaleString('en-US')} councils at ${shown} places by ${Math.round(year)}. Larger circles held more councils; red ones met in the last forty years.`;
+    document.getElementById('mapNote').textContent = `${total.toLocaleString('en-US')} councils at ${shown} places by ${Math.round(year)}. Larger circles held more councils. Red ones met in the last forty years.`;
   }
   mapSetup(); let mrt; new ResizeObserver(() => { clearTimeout(mrt); mrt = setTimeout(() => { mapSetup(); mapAt(curYear); }, 120); }).observe(mapbox);
   if (canPin) ScrollTrigger.create({ trigger: '#s-map', start: () => `top top+=${PIN()}`, end: '+=3600', pin: true, scrub: 0.5, onUpdate: (st) => mapAt(50 + st.progress * 1852) });
@@ -121,12 +121,12 @@
 
   // ---------- chapter three: the anatomy of a page ----------
   const STEPS = [
-    ['Two columns to a page', 'Mansi numbers columns, not pages: here columns 197 and 198 of tome VI, in the running head.', [[6.3, 3.3, 6.4, 2.6], [75.8, 3.5, 5.8, 2.8]]],
-    ['Letters in the gutter', 'Each column is divided by letters, A to E, printed between the columns. “Mansi 6:197A” is the top of the left column.', [[43.4, 3.5, 3, 2.5], [42.8, 19.7, 3, 2.5], [43.4, 31.8, 3, 2.5], [44.8, 58, 3, 2.5]]],
-    ['The margins', 'Mansi’s side notes summarize and point: “Attende auctoritatem Summi Pontificis”, mark the authority of the supreme pontiff.', [[0, 4.7, 7.6, 4.6], [0, 29.5, 7.6, 4], [80.5, 20.7, 8.8, 5], [80.5, 60.3, 8.8, 6.4]]],
-    ['A document begins', 'Letter 106 of Leo the Great to Anatolius, bishop of Constantinople, rebuking his ambition after Chalcedon; with a synopsis of its six points.', [[17, 37, 55, 7], [6.4, 44.8, 68.6, 10]]],
-    ['Greek beside Latin', 'Where both survive, the Greek and the Latin stand side by side, line by line.', [[6.4, 54.6, 38.6, 10.2], [45.4, 55.4, 35, 9.4]]],
-    ['The editors’ notes', 'Below, the notes of the Ballerini brothers’ edition of Leo give the readings of the manuscripts.', [[0, 67.4, 82, 24]]],
+    ['Two columns to a page', 'Mansi numbers columns rather than pages. The running head here shows columns 197 and 198 of tome VI.', [[6.3, 3.3, 6.4, 2.6], [75.8, 3.5, 5.8, 2.8]]],
+    ['Letters in the gutter', 'Letters A to E printed between the columns divide each column. “Mansi 6:197A” is the top of the left column.', [[43.4, 3.5, 3, 2.5], [42.8, 19.7, 3, 2.5], [43.4, 31.8, 3, 2.5], [44.8, 58, 3, 2.5]]],
+    ['The margins', 'Mansi’s side notes summarize and point. One reads “Attende auctoritatem Summi Pontificis”: mark the authority of the supreme pontiff.', [[0, 4.7, 7.6, 4.6], [0, 29.5, 7.6, 4], [80.5, 20.7, 8.8, 5], [80.5, 60.3, 8.8, 6.4]]],
+    ['A document begins', 'In Letter 106 Leo the Great rebukes Anatolius for his ambition after Chalcedon. Anatolius was bishop of Constantinople. The letter comes with a synopsis of its six points.', [[17, 37, 55, 7], [6.4, 44.8, 68.6, 10]]],
+    ['Greek beside Latin', 'Where both survive, the Greek and the Latin stand side by side and line by line.', [[6.4, 54.6, 38.6, 10.2], [45.4, 55.4, 35, 9.4]]],
+    ['The editors’ notes', 'The notes below come from the Ballerini brothers’ edition of Leo. They give the readings of the manuscripts.', [[0, 67.4, 82, 24]]],
   ];
   const stepsEl = document.getElementById('steps'), page = document.getElementById('page');
   stepsEl.innerHTML = STEPS.map(([b, p]) => `<li><b>${esc(b)}</b><p>${esc(p)}</p></li>`).join('');
@@ -188,7 +188,7 @@
   function drawCouncils(q) {
     const ql = (q || '').toLowerCase(), hits = ql ? C.filter((c) => c.t.toLowerCase().includes(ql) || (c.pl && c.pl.toLowerCase().includes(ql))) : C, by = new Map();
     hits.forEach((c) => { const k = c.y ? CENT(c.y) : 0; if (!by.has(k)) by.set(k, []); by.get(k).push(c); });
-    document.getElementById('sh-c-intro').textContent = ql ? `${hits.length.toLocaleString('en-US')} councils match “${q}”.` : `${C.length.toLocaleString('en-US')} councils and synods in the order of time. Each opens at its first page; the reference gives the tome and Mansi's printed column.`;
+    document.getElementById('sh-c-intro').textContent = ql ? `${hits.length.toLocaleString('en-US')} councils match “${q}”.` : `${C.length.toLocaleString('en-US')} councils and synods in the order of time. Each opens at its first page. The reference gives the tome and Mansi's printed column.`;
     const mark = (t) => ql ? esc(t).replace(new RegExp(ql.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), (m) => `<mark>${m}</mark>`) : esc(t);
     const spark = (k, a) => { const x = (y) => ((y - (k - 1) * 100 - 1) / 99 * 100).toFixed(2), g = D.ecumenical.filter((e) => CENT(e.y) === k);
       return `<svg class="spark" viewBox="0 0 100 18" preserveAspectRatio="none" aria-hidden="true">${a.map((c) => `<line x1="${x(c.y)}" x2="${x(c.y)}" y1="5" y2="15" vector-effect="non-scaling-stroke"/>`).join('')}${g.map((e) => `<line class="g" x1="${x(e.y)}" x2="${x(e.y)}" y1="1" y2="18" vector-effect="non-scaling-stroke"/>`).join('')}</svg>`; };

@@ -111,7 +111,7 @@ window.TGFinder = (host, D, C) => {
   const worksHtml = (ws, ql) => ws.map((w) => `<li><a href="${READ(w.s, w.c[0])}" target="_blank" rel="noopener">${hl(w.t, ql)}</a> <small>${wref(w)}${w.k === 'f' ? ' · fragment' : w.k === 'p' ? ' · preface' : w.k === 'a' ? ' · editors’ matter' : ''}</small></li>`).join('');
   const spark = (k, as) => { const x = (y) => clamp((y - (k - 1) * 100 - 1) / 99) * 100, g = ECU.filter((e) => CENT(e.y) === k);
     return `<svg class="spark" viewBox="0 0 100 18" preserveAspectRatio="none" aria-hidden="true">${as.map((a) => `<line x1="${x(a.fl).toFixed(2)}" x2="${x(a.fl).toFixed(2)}" y1="5" y2="15" vector-effect="non-scaling-stroke"/>`).join('')}${g.map((e) => `<line class="g" x1="${x(e.y).toFixed(2)}" x2="${x(e.y).toFixed(2)}" y1="1" y2="18" vector-effect="non-scaling-stroke"/>`).join('')}</svg>`; };
-  const intro = () => `${fmt(sorted.length)} writers in the order of their lives. Open a century, then a writer, to see the works and the columns where Migne printed them.`;
+  const intro = () => `${fmt(sorted.length)} writers in the order of their lives. Open a century and then a writer to see the works and the columns where Migne printed them.`;
   function drawAuthors(q, openFirst = true) { const ql = (q || '').toLowerCase().trim(), hitA = ql ? sorted.filter((a) => a.n.toLowerCase().includes(ql)) : sorted;
     const hitW = ql ? Wk.filter((w) => (w.t || '').toLowerCase().includes(ql)).slice(0, 60) : [];
     whits.innerHTML = hitW.length ? `<div class="tf-whits"><h3>Works</h3><ul class="tf-wlist">${worksHtml(hitW.map((w) => ({ ...w, t: `${w.t}${aname(w) ? `, ${aname(w)}` : ''}` })), ql)}</ul></div>` : '';
@@ -189,7 +189,7 @@ window.TGFinder = (host, D, C) => {
     b.style.height = `${86 + 70 * ((v.c1 || maxC * 0.6) / maxC)}px`; b.style.background = tone(v); b.title = `${K} ${v.v}${v.idx ? ' · indexes' : v.y0 ? ` · ${v.y0}–${v.y1}` : ''}${v.top[0] ? ` · ${v.top[0]}` : ''}`;
     b.setAttribute('aria-label', b.title);
     b.innerHTML = `<span${!v.idx && clamp(((v.y0 ?? r0) - r0) / (r1 - r0)) < 0.4 ? ' style="color:var(--ink)"' : ''}>${v.v}</span>`; b.onclick = () => openVol(v, b); shelf.appendChild(b); });
-  $('tf-vkey').textContent = `${V.length} volumes. Lighter spines hold earlier writers, darker ones later; taller spines run to more columns.${C.vkeyMore || ''}`;
+  $('tf-vkey').textContent = `${V.length} volumes. Lighter spines hold earlier writers and darker spines later ones. Taller spines run to more columns.${C.vkeyMore || ''}`;
   const v0 = VBY[C.firstVol] || V[0]; openVol(v0, shelf.children[V.indexOf(v0)]);
 
   // ---------- by century: every life a line ----------
@@ -308,13 +308,13 @@ window.TGFinder = (host, D, C) => {
     }
     tiles.addEventListener('mousemove', (e) => { const a = e.target.__a; if (a) say(a); });
     tiles.addEventListener('click', (e) => { const a = e.target.__a; if (a && explorer) explorer.show(a.n); });
-    tiles.setAttribute('tabindex', 0); tiles.setAttribute('role', 'img'); tiles.setAttribute('aria-label', `${A.length} writers in fifteen rings, one for each century`);
+    tiles.setAttribute('tabindex', 0); tiles.setAttribute('role', 'img'); tiles.setAttribute('aria-label', `${A.length} writers in fifteen rings with one ring for each century`);
     const glint = mk('circle', { cx: C - 160, cy: C - 160, r: 150, fill: 'url(#tg-glint)', 'clip-path': 'url(#tg-domeclip)', opacity: 0, 'pointer-events': 'none' }, svg);
     // the medallion: a chi-rho, and the century the tiles have reached
     const med = mk('g', {}, svg); mk('circle', { cx: C, cy: C, r: 30, fill: TG.css('--f4'), stroke: TG.css('--gold-2'), 'stroke-width': 2 }, med);
     mk('path', { d: `M${C - 13},${C - 13} L${C + 13},${C + 13} M${C + 13},${C - 13} L${C - 13},${C + 13} M${C},${C - 20} L${C},${C + 20} M${C},${C - 20} C${C + 13},${C - 20} ${C + 13},${C - 6} ${C},${C - 6}`, fill: 'none', stroke: TG.css('--gold-2'), 'stroke-width': 2.4, 'stroke-linecap': 'round' }, med);
     const num = mk('text', { x: C, y: C + RIM + 52, 'text-anchor': 'middle', class: 'num', fill: TG.css('--rubric') }, svg); num.style.fill = TG.css('--rubric'); num.textContent = '';
-    const say = (a) => { cap.textContent = a ? `${a.n}, ${TG.yr(a)}${a.pl ? ` · ${a.pl}` : ''} · ${a.nw} ${a.nw === 1 ? 'work' : 'works'} on the shelf` : 'Each ring is a century, the first at the center and the fifteenth at the rim; each colored arc is a writer, in the color of the region his record names. Gold where it names none.'; };
+    const say = (a) => { cap.textContent = a ? `${a.n}, ${TG.yr(a)}${a.pl ? ` · ${a.pl}` : ''} · ${a.nw} ${a.nw === 1 ? 'work' : 'works'} on the shelf` : 'Each ring is a century. The first is at the center and the fifteenth at the rim. Each colored arc is a writer in the color of the region his record names. The arc is gold where the record names none.'; };
     say(null);
     svg.addEventListener('mouseleave', () => say(null));
     if (!G) { num.textContent = 'I–XV'; return; }
@@ -382,7 +382,7 @@ window.TGFinder = (host, D, C) => {
       if (p2 <= 0) { const i = clamp(Math.ceil(k) - 1, 0, n - 1), v = V[i]; vn.textContent = Math.round(Math.min(k, n));
         vname.textContent = `Volume ${v.v}${v.y0 ? `, ${v.y0}–${v.y1}` : ''}`; vnote.textContent = v.top.length ? v.top.join(', ') : 'The editors’ matter'; }
       else { vn.textContent = `${n}`; vname.textContent = 'Laid along the centuries';
-        vnote.textContent = `Each bar runs from the earliest to the latest writer in its volume. ${heavy} of the ${n} volumes belong to the fourth and fifth centuries; the last reach the fall of Constantinople.`; }
+        vnote.textContent = `Each bar runs from the earliest to the latest writer in its volume. ${heavy} of the ${n} volumes belong to the fourth and fifth centuries. The last reach the fall of Constantinople.`; }
     }
     TG.chapter('#tg-shelf', 3800, render, { scrub: 0.5 });
   })();
@@ -428,7 +428,7 @@ window.TGFinder = (host, D, C) => {
     const S = D.spec, page = document.getElementById('tg-page'), rowsEl = document.getElementById('tg-rows'), stepsEl = document.getElementById('tg-steps'), R = D.reader;
     page.innerHTML = `<img alt="${esc(S.alt)}" src="${S.img}">`;
     const boxes = S.steps.map(([, , rects]) => rects.map(([x, y, w, h]) => { const d = document.createElement('div'); d.className = 'hl'; Object.assign(d.style, { left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${h}%` }); page.appendChild(d); return d; }));
-    const steps = [...S.steps.map(([nm, cap]) => [nm, esc(cap)]), ['In the library', `The reader gives the same opening as a column of rows: the Greek quarter by quarter, the English beside it, and the scan a click away. <a href="${TG.read(R.slug, R.col)}" target="_blank" rel="noopener">Open PG 6:475</a>`]];
+    const steps = [...S.steps.map(([nm, cap]) => [nm, esc(cap)]), ['In the library', `The reader gives the same opening as a column of rows. Each quarter of the Greek has its English beside it. The scan is a click away. <a href="${TG.read(R.slug, R.col)}" target="_blank" rel="noopener">Open PG 6:475</a>`]];
     stepsEl.innerHTML = steps.map(([b, p]) => `<li><b>${esc(b)}</b><p>${p}</p></li>`).join('');
     const lis = [...stepsEl.children];
     // the rows: a slice of the scan for each quarter, its Greek, its English
@@ -463,9 +463,9 @@ window.TGFinder = (host, D, C) => {
   /* ---------- 4. find: the selection tools of the Migne shelves ---------- */
   explorer = TGFinder(document.getElementById('tg-find-host'), D, { key: 'PG', range: [30, 1500], ticks: [300, 600, 900, 1200], firstVol: 6, ecu: D.ecu, fc, placeholder: 'A writer, a work, or a reference like PG 6:475B',
     examples: [['PG 6:475B', 'Justin, Dialogue with Trypho'], ['PG 25:95', 'Athanasius, On the Incarnation'], ['PG 26:835', 'Athanasius, The Life of Antony'], ['PG 44:297', 'Gregory of Nyssa, The Life of Moses'], ['PG 3:997', 'The Mystical Theology']],
-    nameExamples: ['Basil', 'Maximus', 'Hexaemeron'], missing: (v) => `PG ${v} is not on the shelf; the Patrologia Graeca has 161 volumes.`,
-    volintro: 'The 161 volumes as Migne printed them. Choose one to see the years of its main writers and what it holds, with the column where each work begins.',
-    centintro: 'Every dated writer as a line from birth to death, colored by the region his record names, stacked so that none overlap. The red marks are the general councils. Choose a period, then a line.',
+    nameExamples: ['Basil', 'Maximus', 'Hexaemeron'], missing: (v) => `PG ${v} is not on the shelf. The Patrologia Graeca has 161 volumes.`,
+    volintro: 'The 161 volumes stand as Migne printed them. Choose one to see the years of its main writers and what it holds. Each work is listed with the column where it begins.',
+    centintro: 'Each dated writer is a line from birth to death. Its color is the region his record names. The lines are stacked so that none overlap. The red marks are the general councils. Choose a period and then a line.',
     eras: [['All', 30, 1500], ['Before Nicaea', 30, 330], ['The great Fathers', 300, 470], ['Justinian to Iconoclasm', 450, 850], ['Middle Byzantine', 830, 1210], ['Late Byzantine', 1200, 1500]] });
   explorer.show = (n) => explorer.openAuthor(n);
   TG.reveal('.tg .reveal');

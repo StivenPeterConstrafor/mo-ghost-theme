@@ -190,7 +190,7 @@
     const top = list.filter((t) => !t.parent);
     const kids = (p) => list.filter((k) => k.parent === p.slug);
     sec.innerHTML = `<div class="tix-band"><p class="tix-eyebrow">The family tree</p><h2>Two thousand years of the church</h2>`
-      + `<p class="tix-say">Each line is a tradition, from the year it begins; a branch shows the church it came out of. Choose a line to read about that tradition below.</p>`
+      + `<p class="tix-say">Each line is a tradition from the year it begins. A branch shows the church it came out of. Choose a line to read about that tradition below.</p>`
       + `<div class="tix-tree"></div></div>`
       + `<div class="tix-band" style="padding-block:40px 0"><p class="tix-eyebrow">The traditions</p><h2>The churches and the people to meet first</h2>`
       + `<p class="tix-say">For each tradition: where it begins, the writers to read first, its confessions, and the guides and pages that open it.</p></div>`

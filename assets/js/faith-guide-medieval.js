@@ -49,7 +49,7 @@
     const big = panes.slice().sort((p, q) => q.a.p - p.a.p).slice(0, 9);
     const labels = big.map(({ a, th }) => { const [x, y] = pt(RMAX + 24, th), right = Math.cos(th) >= 0;
       const t = mk('text', { x, y: y + 4, 'text-anchor': Math.abs(Math.cos(th)) < 0.2 ? 'middle' : right ? 'start' : 'end', class: 'lbl' }); t.textContent = a.n.replace(/^John /, ''); svg.appendChild(t); return t; });
-    const say = (p) => { cap.textContent = p ? `${p.a.n}, ${TG.yr(p.a)} · ${p.a.w.length} ${p.a.w.length === 1 ? 'work' : 'works'}, ${fmt(p.a.p)} pages · ${famName(p.a.f)}` : 'Each pane is a writer, in order of birth clockwise from the top; the colored glass fills with the pages on the shelf.'; };
+    const say = (p) => { cap.textContent = p ? `${p.a.n}, ${TG.yr(p.a)} · ${p.a.w.length} ${p.a.w.length === 1 ? 'work' : 'works'}, ${fmt(p.a.p)} pages · ${famName(p.a.f)}` : 'Each pane is a writer. The panes run clockwise from the top in order of birth. The colored glass fills with the pages on the shelf.'; };
     panes.forEach((p) => {
       const on = () => { say(p); yr.textContent = p.a.y0; yr2.textContent = 'born'; };
       p.g.addEventListener('mouseenter', on); p.g.addEventListener('focus', on);
@@ -159,7 +159,7 @@
         sum += D.sent[i].b.reduce((a, b) => a + b, 0) * g; if (o > 0.5) cur = i; });
       rows.forEach((R, i) => R.row.classList.toggle('now', i === cur && p < 1));
       nEl.textContent = fmt(Math.round(sum));
-      note.textContent = p >= 0.999 ? `pages of commentary on the four books. Scotus alone fills ${fmt(scot)}; Gregory of Rimini and Baconthorpe are here for the first book only.` : 'pages of commentary';
+      note.textContent = p >= 0.999 ? `pages of commentary on the four books. Scotus alone fills ${fmt(scot)}. Gregory of Rimini and Baconthorpe are here for the first book only.` : 'pages of commentary';
     }
     TG.chapter('#tg-sent', 3200, render, { scrub: 0.5 });
   })();
@@ -185,15 +185,15 @@
       <div class="blk ad" data-s="4" data-k="ad1"><span class="k">Reply to objection 1</span><span class="la">${esc(first(la.ad1, 12))}</span><span class="en">${esc(first(en.ad1.replace(/^Reply to Objection 1\.\s*/, ''), 14))}</span></div>
       <div class="blk ad" data-s="4" data-k="ad2"><span class="k">Reply to objection 2</span><span class="la">${esc(first(la.ad2, 12))}</span><span class="en">${esc(first(en.ad2.replace(/^Reply to Objection 2\.\s*/, ''), 14))}</span></div>`;
     const STEPS = [
-      ['The question', 'An article opens with a question that can be answered yes or no: Utrum, whether.', 'title'],
-      ['The objections', 'First the case for the other side, as strongly as it can be put: there is evil in the world, and nature and human will seem to explain everything without God.', 'arg1'],
-      ['On the contrary', 'One authority against the objections. Here it is God’s own name: “I am who am” (Exodus 3:14).', 'sc'],
-      ['I answer that', 'Thomas’s own answer, the body of the article. Here it is the five ways, each ending in the same words: and this everyone calls God.', 'co1'],
-      ['The replies', 'Each objection is answered in turn. To the first, from Augustine: God would not allow evil unless he could bring good out of it.', 'ad1'],
+      ['The question', 'An article opens with a question that can be answered yes or no. It begins with Utrum: whether.', 'title'],
+      ['The objections', 'First comes the case for the other side as strongly as it can be put. There is evil in the world. Nature and human will seem to explain everything without God.', 'arg1'],
+      ['On the contrary', 'One authority stands against the objections. Here it is God’s own name: “I am who am” (Exodus 3:14).', 'sc'],
+      ['I answer that', 'The body of the article gives Thomas’s own answer. Here it is the five ways. Each ends in the same words: and this everyone calls God.', 'co1'],
+      ['The replies', 'Each objection is answered in turn. The reply to the first draws on Augustine: God would not allow evil unless he could bring good out of it.', 'ad1'],
       ['Read it', '', ''],
     ];
     const stepsEl = document.getElementById('tg-steps');
-    stepsEl.innerHTML = STEPS.map(([b, p], i) => i === 5 ? `<li><b>Read the whole article</b><p><a href="${TG.read(A.slug, A.page)}" target="_blank" rel="noopener">Summa of Theology I, question 2, article 3</a>, Latin and English side by side, on page ${A.page} of the first volume.</p></li>` : `<li><b>${esc(b)}</b><p>${esc(p)}</p></li>`).join('');
+    stepsEl.innerHTML = STEPS.map(([b, p], i) => i === 5 ? `<li><b>Read the whole article</b><p><a href="${TG.read(A.slug, A.page)}" target="_blank" rel="noopener">Summa of Theology I, question 2, article 3</a> is on page ${A.page} of the first volume. The Latin and English stand side by side.</p></li>` : `<li><b>${esc(b)}</b><p>${esc(p)}</p></li>`).join('');
     const lis = [...stepsEl.children], blocks = [...host.querySelectorAll('[data-s]')], wayEls = [...host.querySelectorAll('.way')];
     const ex = document.getElementById('tg-excerpt'), exLa = ex.querySelector('.la'), exEn = ex.querySelector('.en');
     const curvePath = (from, to, side) => { const a = from.getBoundingClientRect(), b = to.getBoundingClientRect(), o = arrows.getBoundingClientRect();

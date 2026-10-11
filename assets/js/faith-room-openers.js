@@ -129,7 +129,7 @@
   const shelfName = (t) => (window.MOFaithLabel ? window.MOFaithLabel.shelf(t) : t);
   // The shelves with a guide in motion (/the-faith-received/guide/?s=). The
   // links stay hidden until faith-guide-links.js finds that route live.
-  const GUIDES = { pl: "latin", gf: "greek", md: "medieval", rc: "catholic", rf: "reformed", lu: "lutheran", ed: "english" };
+  const GUIDES = { pl: "latin", gf: "greek", po: "eastern", md: "medieval", rc: "catholic", rf: "reformed", lu: "lutheran", ed: "english" };
   // The guides of a shelf as buttons beside it (owner, 2026-10-11: "make the guides easier to click into"):
   // the shelf's own guide, and on the English shelf the guides to its parties as well.
   const SUBGUIDES = { ed: [["puritans", "the Puritans"], ["anglicans", "the Anglicans"], ["methodists", "the Methodists"], ["westminster", "the Westminster Assembly"]] };

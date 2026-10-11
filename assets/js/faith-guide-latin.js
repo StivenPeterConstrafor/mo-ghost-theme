@@ -111,7 +111,7 @@ window.TGFinder = (host, D, C) => {
   const worksHtml = (ws, ql) => ws.map((w) => `<li><a href="${READ(w.s, w.c[0])}" target="_blank" rel="noopener">${hl(w.t, ql)}</a> <small>${wref(w)}${w.k === 'f' ? ' · fragment' : w.k === 'p' ? ' · preface' : w.k === 'a' ? ' · editors’ matter' : ''}</small></li>`).join('');
   const spark = (k, as) => { const x = (y) => clamp((y - (k - 1) * 100 - 1) / 99) * 100, g = ECU.filter((e) => CENT(e.y) === k);
     return `<svg class="spark" viewBox="0 0 100 18" preserveAspectRatio="none" aria-hidden="true">${as.map((a) => `<line x1="${x(a.fl).toFixed(2)}" x2="${x(a.fl).toFixed(2)}" y1="5" y2="15" vector-effect="non-scaling-stroke"/>`).join('')}${g.map((e) => `<line class="g" x1="${x(e.y).toFixed(2)}" x2="${x(e.y).toFixed(2)}" y1="1" y2="18" vector-effect="non-scaling-stroke"/>`).join('')}</svg>`; };
-  const intro = () => `${fmt(sorted.length)} writers in the order of their lives. Open a century, then a writer, to see the works and the columns where Migne printed them.`;
+  const intro = () => `${fmt(sorted.length)} writers in the order of their lives. Open a century and then a writer to see the works and the columns where Migne printed them.`;
   function drawAuthors(q, openFirst = true) { const ql = (q || '').toLowerCase().trim(), hitA = ql ? sorted.filter((a) => a.n.toLowerCase().includes(ql)) : sorted;
     const hitW = ql ? Wk.filter((w) => (w.t || '').toLowerCase().includes(ql)).slice(0, 60) : [];
     whits.innerHTML = hitW.length ? `<div class="tf-whits"><h3>Works</h3><ul class="tf-wlist">${worksHtml(hitW.map((w) => ({ ...w, t: `${w.t}${aname(w) ? `, ${aname(w)}` : ''}` })), ql)}</ul></div>` : '';
@@ -189,7 +189,7 @@ window.TGFinder = (host, D, C) => {
     b.style.height = `${86 + 70 * ((v.c1 || maxC * 0.6) / maxC)}px`; b.style.background = tone(v); b.title = `${K} ${v.v}${v.idx ? ' · indexes' : v.y0 ? ` · ${v.y0}–${v.y1}` : ''}${v.top[0] ? ` · ${v.top[0]}` : ''}`;
     b.setAttribute('aria-label', b.title);
     b.innerHTML = `<span${!v.idx && clamp(((v.y0 ?? r0) - r0) / (r1 - r0)) < 0.4 ? ' style="color:var(--ink)"' : ''}>${v.v}</span>`; b.onclick = () => openVol(v, b); shelf.appendChild(b); });
-  $('tf-vkey').textContent = `${V.length} volumes. Lighter spines hold earlier writers, darker ones later; taller spines run to more columns.${C.vkeyMore || ''}`;
+  $('tf-vkey').textContent = `${V.length} volumes. Lighter spines hold earlier writers and darker spines later ones. Taller spines run to more columns.${C.vkeyMore || ''}`;
   const v0 = VBY[C.firstVol] || V[0]; openVol(v0, shelf.children[V.indexOf(v0)]);
 
   // ---------- by century: every life a line ----------
@@ -299,7 +299,7 @@ window.TGFinder = (host, D, C) => {
       return { ln, cr, base, xEnd: ln.marks.length ? ln.marks[ln.marks.length - 1].x + 4 : X0 };
     });
     const quill = mk('circle', { class: 'quill', r: 2.2, cx: X0, cy: Y0, opacity: 0 }, svg);
-    const say = (a) => { cap.textContent = a ? `${a.n}, ${TG.yr(a)}${a.pl ? ` · ${a.pl}` : ''} · ${a.nw} ${a.nw === 1 ? 'work' : 'works'} on the shelf` : `Each line is a century, each stroke a writer, each word a decade. Taller strokes wrote more. The popes are written in red. ${fmt(A.length)} writers.`; };
+    const say = (a) => { cap.textContent = a ? `${a.n}, ${TG.yr(a)}${a.pl ? ` · ${a.pl}` : ''} · ${a.nw} ${a.nw === 1 ? 'work' : 'works'} on the shelf` : `Each line is a century. Each word is a decade. Each stroke is a writer. Taller strokes mark writers who wrote more. The popes are written in red. ${fmt(A.length)} writers.`; };
     say(null);
     svg.addEventListener('mousemove', (e) => { const a = e.target.__a; if (a) say(a); });
     svg.addEventListener('mouseleave', () => say(null));
@@ -368,10 +368,10 @@ window.TGFinder = (host, D, C) => {
       fire.setAttribute('opacity', (Math.sin(pF * Math.PI) * (0.8 + 0.2 * Math.sin(pF * 40))).toFixed(3));
       planks.style.opacity = 1 - p2 * 1.5; pileG.style.opacity = clamp(p2 * 1.6 - 0.5, 0, 1);
       if (p2 > 0) { vn.textContent = `${V.length}`; vname.textContent = 'Piled by century';
-        vnote.textContent = `Each pile holds the volumes whose writers belong to that century. The ${ord(top)} century fills ${stack[top]}; the four volumes of indexes stand apart.`; }
+        vnote.textContent = `Each pile holds the volumes whose writers belong to that century. The ${ord(top)} century fills ${stack[top]}. The four volumes of indexes stand apart.`; }
       else if (pF > 0) { vn.textContent = `${V.length}`; vname.textContent = 'February 1868';
-        vnote.textContent = 'On the night of 12 to 13 February fire swept the workshop at Montrouge and destroyed the stereotype plates; later printings were partly reset, so printings of one volume can differ.'; }
-      else if (pI > 0) { vn.textContent = `${text.length + Math.round(pI * idx.length)}`; vname.textContent = 'The indexes, 1862–1864'; vnote.textContent = 'Four volumes of indexes to the whole series: authors, subjects, Scripture.'; }
+        vnote.textContent = 'On the night of 12 to 13 February fire swept the workshop at Montrouge and destroyed the stereotype plates. Later printings were partly reset. Printings of one volume can therefore differ.'; }
+      else if (pI > 0) { vn.textContent = `${text.length + Math.round(pI * idx.length)}`; vname.textContent = 'The indexes, 1862–1864'; vnote.textContent = 'Four volumes of indexes to the whole series: authors, subjects and Scripture.'; }
       else { const i = clamp(Math.ceil(k) - 1, 0, text.length - 1), v = text[i]; vn.textContent = Math.round(Math.min(k, text.length));
         vname.textContent = `Volume ${v.v}, ${v.y0}–${v.y1}`; vnote.textContent = v.top.length ? v.top.join(', ') : 'The editors’ matter'; }
     }
@@ -430,7 +430,7 @@ window.TGFinder = (host, D, C) => {
     const colHTML = (c) => `<div class="mcol">${'ABCD'.split('').map((q) => `<div class="qbox" lang="la" data-q="${c}${q}">${['227A', '227B'].includes(c + q) ? esc(Q[c + q]) : Q[c + q]}</div>`).join('')}</div>`;
     page.innerHTML = `<div class="mhead"><span class="cn">${O.cols[0]}</span><span class="t">PROSLOGION</span><span class="cn r">${O.cols[1]}</span></div>
       <div class="mcols">${colHTML(O.cols[0])}<div class="gut2">${'ABCD'.split('').map((q) => `<span data-l="${q}">${q}</span>`).join('')}</div>${colHTML(O.cols[1])}</div>
-      <p class="mnote">Set from the library’s text of PL 158; the line breaks are ours, the columns and letters are Migne’s.</p>`;
+      <p class="mnote">Set from the library’s text of PL 158. The line breaks are the library’s. The columns and letters are Migne’s.</p>`;
     const qb = Object.fromEntries([...page.querySelectorAll('.qbox')].map((e) => [e.dataset.q, e])), letters = [...page.querySelectorAll('.gut2 span')], cn = [...page.querySelectorAll('.mhead .cn')];
     const ROWS = [
       ['227C', 'Chapter II', `${II[0].la} ${II[1].la}`, `${II[0].en} ${II[1].en}`],
@@ -443,11 +443,11 @@ window.TGFinder = (host, D, C) => {
        }<a class="open" href="${TG.read(O.slug, O.cols[0])}" target="_blank" rel="noopener">Read the Proslogion from column ${O.cols[0]}</a>`;
     const rows = [...rowsEl.querySelectorAll('.lrow')];
     const STEPS = [
-      ['Two columns to a page', 'Migne numbers columns, not pages. This opening is columns 227 and 228 of volume 158.'],
+      ['Two columns to a page', 'Migne numbers columns rather than pages. This opening is columns 227 and 228 of volume 158.'],
       ['Letters in the gutter', 'Between the columns the letters A to D divide each column into quarters.'],
-      ['Where a chapter begins', 'Chapter two begins at 227C, chapter three at 228B, chapter four at 228C: a reference names the column and the letter, and it holds in any printing.'],
-      ['Into the library', 'In the reader the columns open into rows: the Latin beside its English, each row keeping its place in Migne.'],
-      ['Read it', `<a href="${TG.read(O.slug, O.cols[0])}" target="_blank" rel="noopener">Anselm, Proslogion, PL 158:227C</a>, in Latin and English.`],
+      ['Where a chapter begins', 'Chapter two begins at 227C. Chapter three begins at 228B and chapter four at 228C. A reference names the column and the letter. It holds in any printing.'],
+      ['Into the library', 'In the reader the columns open into rows. Each row sets the Latin beside its English and keeps its place in Migne.'],
+      ['Read it', `<a href="${TG.read(O.slug, O.cols[0])}" target="_blank" rel="noopener">Anselm’s Proslogion at PL 158:227C</a> in Latin and English.`],
     ];
     stepsEl.innerHTML = STEPS.map(([b, p]) => `<li><b>${esc(b)}</b><p>${p}</p></li>`).join('');
     const lis = [...stepsEl.children]; let cur = -1, lt = null;
@@ -482,10 +482,10 @@ window.TGFinder = (host, D, C) => {
   /* ---------- 4. find: the selection tools of the Migne shelves ---------- */
   explorer = TGFinder(document.getElementById('tg-find-host'), D, { key: 'PL', range: [100, 1260], ticks: [400, 700, 1000], firstVol: 158, ecu: D.ecu, fc, placeholder: 'A writer, a work, or a reference like PL 158:227C',
     examples: [['PL 158:227C', 'Anselm, Proslogion'], ['PL 32:659', 'Augustine, Confessions'], ['PL 41:14', 'Augustine, The City of God'], ['PL 95:21', 'Bede, Ecclesiastical History'], ['PL 82:73', 'Isidore, Etymologies'], ['PL 75:509', 'Gregory the Great, Moralia on Job']],
-    nameExamples: ['Ambrose', 'Bede', 'Rule of'], missing: (v) => (v === 37 ? 'PL 37 is not in the library yet.' : `PL ${v} is not on the shelf; the Patrologia Latina has 221 volumes.`),
-    volintro: 'The volumes as Migne printed them, with the four index volumes at the end. Choose one to see the years of its main writers and what it holds, with the column where each work begins.',
+    nameExamples: ['Ambrose', 'Bede', 'Rule of'], missing: (v) => (v === 37 ? 'PL 37 is not in the library yet.' : `PL ${v} is not on the shelf. The Patrologia Latina has 221 volumes.`),
+    volintro: 'The volumes stand as Migne printed them. The four index volumes come at the end. Choose one to see the years of its main writers and what it holds. Each work is listed with the column where it begins.',
     vkeyMore: ' Volume 37 is not yet in the library.',
-    centintro: 'Every dated writer as a line from birth to death, colored by the region his record names, stacked so that none overlap. The red marks are the general councils. Choose a period, then a line.',
+    centintro: 'Each dated writer is a line from birth to death. Its color is the region his record names. The lines are stacked so that none overlap. The red marks are the general councils. Choose a period and then a line.',
     eras: [['All', 100, 1260], ['Before Nicaea', 100, 330], ['The age of Augustine', 300, 470], ['Gregory the Great to Bede', 450, 740], ['Carolingians', 730, 900], ['Reform and the schools', 1000, 1260]] });
   explorer.show = (n) => explorer.openAuthor(n);
   TG.reveal('.tg .reveal');

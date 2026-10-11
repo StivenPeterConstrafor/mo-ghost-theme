@@ -65,7 +65,7 @@
       stones.push({ a, g });
     });
     const say = (a) => { cap.innerHTML = a ? `<b>${esc(a.n)}</b>, ${esc(a.d)}${BISH.get(A.indexOf(a)) ? ` · ${esc(BISH.get(A.indexOf(a)).arch ? 'archbishop' : 'bishop')}` : ''} · ${a.w.length} ${a.w.length === 1 ? 'work' : 'works'}, ${fmt(a.p)} pages · ${esc(famName(a.f))}`
-      : 'Every writer on the shelf as a ledger stone, born earliest at the west door. A mitre marks a bishop, a gilt edge an archbishop; the larger the stone, the more pages. Pusey lies alone in the Lady chapel.'; };
+      : 'Each ledger stone is a writer on the shelf. The earliest born lie at the west door. A miter marks a bishop and a gilt edge an archbishop. Larger stones mean more pages. Pusey lies alone in the Lady chapel.'; };
     stones.forEach(({ a, g }) => { const on = () => say(a); g.addEventListener('mouseenter', on); g.addEventListener('focus', on);
       g.addEventListener('click', () => explorer && explorer.show(a.n)); g.addEventListener('keydown', (e) => { if (e.key === 'Enter') explorer && explorer.show(a.n); }); });
     svg.addEventListener('mouseleave', () => say(null)); say(null);
@@ -229,7 +229,7 @@
       if (s.prep) c.setAttribute('stroke', COL[k]);
       return { s, c, ln, x, y, k, nd: !(s.m && s.d), ring: !!(s.y && day) };
     });
-    document.getElementById('tg-ynote').textContent = `Hollow beads were prepared but not preached: Andrewes was too ill. ${off.length ? `${off.length} sermons with no day printed (${off.map((s) => s.y).join(', ')}) stand only in the book’s columns. ` : ''}The library’s contents list ${S.length} of the ninety-six. Years are as printed, when the English year began on 25 March.`;
+    document.getElementById('tg-ynote').textContent = `Hollow beads mark sermons that were prepared but not preached. Andrewes was too ill to preach them. ${off.length ? `${off.length} sermons with no day printed (${off.map((s) => s.y).join(', ')}) stand only in the book’s columns. ` : ''}The library’s contents list ${S.length} of the ninety-six. Years are as printed. The English year then began on 25 March.`;
     const DAYN = (s) => (s.m && s.d ? `${s.d} ${['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][s.m - 1]} ${s.y}` : `${s.y || ''}`);
     const show = (b) => { const {s} = b, g = GR[s.g]; card.innerHTML = `<b>${esc(g[1])}</b>${g[2] ? ` · ${esc(g[2])}` : ''}<small>${esc(DAYN(s))}${s.pl ? `, ${esc(s.pl)}` : ''}${s.who ? `, before ${s.who === 'James' ? 'King James' : 'Queen Elizabeth'}` : ''}${s.prep ? ' · prepared, not preached' : ''}</small><small><a href="${TG.read(X.slug, s.p)}" target="_blank" rel="noopener">Read it, page ${s.p} of the 1629 book</a></small>`; };
     beads.forEach((b) => { b.c.addEventListener('mouseenter', () => show(b)); b.ln.addEventListener('focus', () => show(b)); });
@@ -248,7 +248,7 @@
         b.c.setAttribute('cx', lerp(b.x, cx2, e)); b.c.setAttribute('cy', lerp(b.y, cy2, e)); b.c.setAttribute('r', vis ? lerp(5, 7, e) : 0);
         if (!b.ring) { b.c.setAttribute('cx', cx2); b.c.setAttribute('cy', cy2); }
         if (vis && b.ring && (!latest || b.s.y > latest.s.y || (b.s.y === latest.s.y && (b.s.m || 0) * 40 + (b.s.d || 0) > (latest.s.m || 0) * 40 + (latest.s.d || 0)))) latest = b; });
-      if (book > 0.5) { if (last !== -2) { last = -2; card.innerHTML = '<b>The book of 1629</b><small>The same sermons in the order Laud and Buckeridge printed them: the feasts of the year, then the fifth of August and the fifth of November, then several occasions. Choose one to open it.</small>'; } }
+      if (book > 0.5) { if (last !== -2) { last = -2; card.innerHTML = '<b>The book of 1629</b><small>The same sermons in the order Laud and Buckeridge printed them. The feasts of the year come first. Then come the fifth of August and the fifth of November and then several occasions. Choose one to open it.</small>'; } }
       else if (latest && latest.s !== last) { last = latest.s; show(latest); }
     }
     TG.chapter('#tg-year', 3600, render, { scrub: 0.5 });

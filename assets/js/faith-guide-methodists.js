@@ -19,7 +19,7 @@
     const LANE = { hymn: T0, sermon: T0 + 2 * GAP, life: T0 + 4 * GAP, bible: T0 + 6 * GAP, doct: B0 + 1 * GAP, argue: B0 + 4 * GAP, order: B0 + 7 * GAP };
     const kindName = Object.fromEntries(D.kinds);
     const g0 = mk('g', {}); svg.appendChild(g0);
-    g0.appendChild(mk('text', { x: X0, y: 26, class: 'head' })).textContent = 'The Methodist shelf, in the order of its editions';
+    g0.appendChild(mk('text', { x: X0, y: 26, class: 'head' })).textContent = 'The Methodist shelf in the order of its editions';
     g0.appendChild(mk('text', { x: X0, y: 42, class: 'sub' })).textContent = `${D.n_works} WORKS · ${Y0 + 2}–${Y1 - 1}`;
     const staffLines = lines.map((y) => g0.appendChild(mk('line', { x1: X0 - 10, x2: X1, y1: y, y2: y, class: 'line' })));
     // the brace and the opening bar line
@@ -48,7 +48,7 @@
       a.addEventListener('mouseenter', say); a.addEventListener('focus', say);
       return { g, x, n };
     });
-    const def = 'Each note is a book on the shelf, in the year of its edition and on the line of its kind: whole notes are long books, quarter notes short ones. After 1800 the years are drawn closer together.';
+    const def = 'Each note is a book on the shelf. It sits in the year of its edition and on the line of its kind. Whole notes are long books and quarter notes are short ones. After 1800 the years are drawn closer together.';
     svg.addEventListener('mouseleave', () => { cap.textContent = def; }); cap.textContent = def;
     if (!G) return;
     const ph = svg.appendChild(mk('line', { x1: X0, x2: X0, y1: T0 - 16, y2: B0 + 8 * GAP + 6, class: 'ph' })), phy = svg.appendChild(mk('text', { x: X0, y: T0 - 22, class: 'phy', 'text-anchor': 'middle' }));
@@ -137,10 +137,10 @@
       row.innerHTML = c.side === 'U' ? `${cardHTML}<span class="yr">${c.y}</span>${ghost || '<span></span>'}` : `<span></span><span class="yr">${c.y}</span>${cardHTML}`;
       rowsEl.appendChild(row); return { row, c };
     });
-    const PHASES = [[1739, 'Wesley and Whitefield, 1739–1746', 'The sermon at Bristol and the letter that answered it; Wesley’s tracts on predestination follow.'],
-      [1765, 'The second quarrel, 1765–1777', 'Sellon against Hervey and Coles. After the Conference Minutes of 1770 the quarrel was at its hottest: Fletcher and Olivers against Toplady and Rowland Hill.'],
-      [1790, 'Old books reprinted, 1790s', 'Olivers on perseverance; Whitefield’s defense of election printed again in Connecticut.'],
-      [1815, 'In America, 1815–1864', 'Bangs against the New Divinity of New England, Fisk’s lectures, and Whedon’s answer to Jonathan Edwards.']];
+    const PHASES = [[1739, 'Wesley and Whitefield in 1739–1746', 'The sermon at Bristol and the letter that answered it. Wesley’s tracts on predestination follow.'],
+      [1765, 'The second quarrel of 1765–1777', 'Sellon against Hervey and Coles. After the Conference Minutes of 1770 the quarrel was at its hottest: Fletcher and Olivers against Toplady and Rowland Hill.'],
+      [1790, 'Old books reprinted in the 1790s', 'Olivers on perseverance. Whitefield’s defense of election is printed again in Connecticut.'],
+      [1815, 'In America in 1815–1864', 'Bangs against the New Divinity of New England, Fisk’s lectures, and Whedon’s answer to Jonathan Edwards.']];
     function drawLinks(upto) {
       const o = rowsEl.getBoundingClientRect(); let s = '';
       rows.forEach(({ row, c }, i) => { if (i > upto || !c.to) return;
@@ -189,7 +189,7 @@
         for (let i = 1; i <= whole; i++) d += seg(pts[i - 1], pts[i]);
         if (whole < pts.length - 1 && f > 0) { const a = pts[whole], b = pts[whole + 1]; d += seg(a, [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]); }
         path.innerHTML = `<path d="${d}"/>`; }
-      nEl.textContent = p >= 0.999 ? `${fmt(wes)} hymns in Wesley’s five parts, and ${fmt(total - wes)} more in the supplement: ${fmt(total)} in the edition on the shelf.` : `${fmt(sum)} hymns`;
+      nEl.textContent = p >= 0.999 ? `${fmt(wes)} hymns in Wesley’s five parts and ${fmt(total - wes)} more in the supplement. That makes ${fmt(total)} in the edition on the shelf.` : `${fmt(sum)} hymns`;
     }
     trace();
     TG.chapter('#tg-hymns', 3000, (p, fin) => show(fin ? 1 : p, fin), { scrub: 0.5 });

@@ -36,7 +36,7 @@
       t.addEventListener('mouseenter', show); t.addEventListener('focus', show);
       t.addEventListener('click', () => explorer && explorer.show(a.n)); t.addEventListener('keydown', (e) => { if (e.key === 'Enter') explorer && explorer.show(a.n); });
       leafEls.push(g); }));
-    cap.textContent = 'The shelf divided as Ramus divided a subject: by where its writers taught, then the three with the most pages in each.';
+    cap.textContent = 'The shelf divided as Ramus divided a subject: first by where its writers taught and then by the three with the most pages in each.';
     if (!G) return;
     const tl = gsap.timeline({ delay: 0.3 });
     tl.from([rootT, rootS], { opacity: 0, x: -14, duration: 0.7, ease: 'power2.out', stagger: 0.1 })
@@ -103,7 +103,7 @@
       labs.forEach((l, i) => { l.firstChild.textContent = counts[order[i]]; });
       const showC = clamp((p - 0.12) / 0.06, 0, 1); comps.forEach((c) => { c.style.opacity = showC; }); labs.forEach((l) => { l.style.opacity = showC; });
       axis.style.opacity = years[0] ? 1 - clamp((pB - 0.6) / 0.3, 0, 1) * 0.6 : 1; years.forEach((y) => { y.style.opacity = axis.style.opacity; });
-      note.textContent = pB <= 0 ? 'Every work on the shelf, by when its writer was at work.' : pB < 1 ? `Sorting: ${K.names[order[kNow]]}` : 'Choose a compartment to see what it holds.';
+      note.textContent = pB <= 0 ? 'Each work stands at the years its writer was at work.' : pB < 1 ? `Sorting: ${K.names[order[kNow]]}` : 'Choose a compartment to see what it holds.';
       const now = pB <= 0 ? -1 : kNow; if (now !== cur) { cur = now; lis.forEach((li, i) => { li.classList.toggle('now', i === now); li.classList.toggle('past', i < now); }); }
       if (p >= 0.999 && !picked) pick(order[0]);
     }
@@ -140,7 +140,7 @@
       const g = svg.append('g').attr('clip-path', 'url(#tg-ref-clip)');
       g.selectAll('path.s').data(series).join('path').attr('class', 's').attr('d', area).attr('fill', (s) => fc(s.key)).attr('opacity', 0.9)
         .on('mousemove', (e, s) => { const [mx] = d3.pointer(e, host), y = Math.round(sx.invert(mx) / 5) * 5, n = names(y, s.key); const b = host.getBoundingClientRect();
-          tip.innerHTML = `${esc(famName(s.key))}, about ${y}<small>${n.length ? esc(n.slice(0, 8).join(', ')) + (n.length > 8 ? ` and ${n.length - 8} more` : '') : 'none at work'}</small>`; tip.hidden = false;
+          tip.innerHTML = `${esc(famName(s.key))} in about ${y}<small>${n.length ? esc(n.slice(0, 8).join(', ')) + (n.length > 8 ? ` and ${n.length - 8} more` : '') : 'none at work'}</small>`; tip.hidden = false;
           tip.style.left = `${Math.min(mx + 14, b.width - 260)}px`; tip.style.top = `${d3.pointer(e, host)[1] - 20}px`; })
         .on('mouseleave', () => { tip.hidden = true; });
       const evg = svg.append('g').attr('class', 'ev'); const lanes = [12, 27, 42], lastX = lanes.map(() => -1e9), narrow = W < 600;
@@ -172,7 +172,7 @@
     const LBL = { Leiden: [-7, -6, 'right'], Utrecht: [7, 12, 'left'], Franeker: [-7, -6, 'right'], Geneva: [-7, 12, 'right'], Lausanne: [-7, -4, 'right'],
                   Bern: [7, 12, 'left'], Basel: [-7, -6, 'right'], Zurich: [7, -6, 'left'], Herborn: [7, -6, 'left'], Marburg: [7, 10, 'left'], Heidelberg: [7, 12, 'left'], Strasbourg: [-7, 12, 'right'], Sedan: [-7, -6, 'right'], Bremen: [7, 12, 'left'], 'Alba Iulia': [-7, -6, 'right'], Groningen: [7, -8, 'left'], Saumur: [-7, -6, 'right'] };
     const chron = TG.chronicle(document.getElementById('tg-chron'), D.events, ([y, e, w]) => `<li><span class="d">${y}</span><span class="e">${esc(e)}</span><span class="w">${esc(w)}</span></li>`);
-    document.getElementById('tg-legend').innerHTML = `${D.fam.filter(([k]) => J.some((j) => j.f === k)).map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('')}<span><i style="background:transparent;border:1.5px solid var(--ink);border-radius:1px"></i>an academy, with its year</span>`;
+    document.getElementById('tg-legend').innerHTML = `${D.fam.filter(([k]) => J.some((j) => j.f === k)).map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('')}<span><i style="background:transparent;border:1.5px solid var(--ink);border-radius:1px"></i>an academy and its year</span>`;
     const ribbon = document.getElementById('tg-ribbon'); let year = 1500, last = '';
     const curve = (a, b, t) => { const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1], k = 0.18, cx = mx - dy * k, cy = my + dx * k, u = 1 - t; return [u * u * a[0] + 2 * u * t * cx + t * t * b[0], u * u * a[1] + 2 * u * t * cy + t * t * b[1]]; };
     function at(j, Y) {
@@ -290,13 +290,13 @@
     const ranks = [...new Set(per)].sort((a, b) => b - a), named = (n) => per.map((v, i) => [v, i]).filter(([v]) => v === n).map(([, i]) => B.books[i][1]);
     const list = (xs) => xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
     const GROUPS = [
-      { t: 'The first teachers', f: (r) => r.y0 < 1505, p: 'Oecolampadius at Basel, Capito and Bucer at Strasbourg, Musculus at Bern, Bullinger at Zurich: lectures and commentaries, one book at a time.' },
+      { t: 'The first teachers', f: (r) => r.y0 < 1505, p: 'Oecolampadius taught at Basel and Bullinger at Zurich. Capito and Bucer taught at Strasbourg and Musculus at Bern. They lectured and wrote commentaries one book at a time.' },
       { t: 'Calvin at Geneva', f: (r) => r === calvin, p: (() => { const all = Object.keys(calvin.by).map(Number), hom = all.filter((i) => calvin.by[i].every((c) => c[4] === 'h'));
         return `Commentaries and lectures on ${all.length - hom.length} of the sixty-six books${hom.length ? `, and sermons on ${list(hom.map((i) => B.books[i][1]))}` : ''}. Not among them on the shelf: ${list(runs(B.books.map((_, i) => i).filter((i) => !calvin.by[i])))}.`; })() },
-      { t: 'Zurich pulpits, Heidelberg chairs', f: (r) => r.y0 >= 1510 && r.y0 < 1540, p: 'Gwalther and Lavater preached through whole books at Zurich; their homilies are drawn open. Zanchi and Olevian taught at Heidelberg.' },
-      { t: 'Herborn and Leiden', f: (r) => r.y0 >= 1540 && r.y0 < 1580, p: `Piscator of Herborn set out all ${pis.nb === NB ? 'sixty-six books' : `${pis.nb} books`} of both Testaments in logical analysis. Pareus lectured on Romans at Heidelberg; Junius, Arminius and Gomarus taught at Leiden.` },
-      { t: 'The learned century', f: (r) => r.y0 >= 1580, p: `Grotius annotated ${gro.nb === 27 ? 'the whole New Testament' : `${gro.nb} books`}; Cartwright gathered the rabbis on Genesis and Exodus; Daillé preached on Philippians at Charenton; Cocceius expounded Hebrews.` },
-      { t: 'The books they opened most', f: () => false, p: `${list(named(ranks[0]))}, by ${say(ranks[0])} of the ${rows.length} writers; then ${list(named(ranks[1]))}, by ${say(ranks[1])}.` }];
+      { t: 'Zurich pulpits, Heidelberg chairs', f: (r) => r.y0 >= 1510 && r.y0 < 1540, p: 'Gwalther and Lavater preached through whole books at Zurich. Their homilies are drawn open. Zanchi and Olevian taught at Heidelberg.' },
+      { t: 'Herborn and Leiden', f: (r) => r.y0 >= 1540 && r.y0 < 1580, p: `Piscator of Herborn set out all ${pis.nb === NB ? 'sixty-six books' : `${pis.nb} books`} of both Testaments in logical analysis. Pareus lectured on Romans at Heidelberg. Junius, Arminius and Gomarus taught at Leiden.` },
+      { t: 'The learned century', f: (r) => r.y0 >= 1580, p: `Grotius annotated ${gro.nb === 27 ? 'the whole New Testament' : `${gro.nb} books`}. Cartwright gathered the rabbis on Genesis and Exodus. Daillé preached on Philippians at Charenton. Cocceius expounded Hebrews.` },
+      { t: 'The books they opened most', f: () => false, p: `${list(named(ranks[0]))} drew the most writers: ${say(ranks[0])} of the ${rows.length}. Next ${named(ranks[1]).length === 1 ? 'comes' : 'come'} ${list(named(ranks[1]))} with ${say(ranks[1])}.` }];
     steps.innerHTML = GROUPS.map((g) => `<li><b>${esc(g.t)}</b><p>${esc(g.p)}</p></li>`).join('');
     const sl = [...steps.children];
     document.getElementById('tg-bib-legend').innerHTML = `${D.fam.filter(([k]) => rows.some((r) => r.f === k)).map(([k, n]) => `<span><i style="background:${fc(k)}"></i>${esc(n)}</span>`).join('')
@@ -512,12 +512,12 @@
       if (!n[4].length) o.leaf = leaves++; n[4].forEach((k) => o.kids.push(walk(k, d + 1, o))); return o; })(D.tree, 0, null);
     const STEPS = [
       ['Theology is false or true', 'Book I, chapters I and II.'],
-      ['True theology is archetypal or ectypal', 'God’s own knowledge of himself, and the copy of it he gives to creatures (chapters III and IV), a distinction Polanus took from Junius.'],
-      ['Ectypal theology is of union, of vision, or of wayfarers', 'In the human soul of Christ, in the blessed in heaven, and in us on the way (chapters VII to IX).'],
-      ['Ours is natural or supernatural', 'What nature teaches, and what God has revealed and we could not know otherwise (chapters X and XI).'],
-      ['Revealed theology has its principle and its parts', 'Its principle is Scripture, which fills the rest of Book I; its parts open Book II.'],
-      ['Its parts are faith and good works', 'What is to be believed, and what is to be done.'],
-      ['Faith is of God and his works; good works are worship', 'God in himself and in his works, Books II to VII; immediate worship of God and mediate worship toward our neighbor, the two tables of the law, Books IX and X.'],
+      ['True theology is archetypal or ectypal', 'God’s own knowledge of himself and the copy of it he gives to creatures (chapters III and IV). Polanus took the distinction from Junius.'],
+      ['Ectypal theology is of union, of vision, or of wayfarers', 'In the human soul of Christ, in the blessed in heaven, and in believers on the way (chapters VII to IX).'],
+      ['The wayfarers’ theology is natural or supernatural', 'What nature teaches and what God has revealed that could not be known otherwise (chapters X and XI).'],
+      ['Revealed theology has its principle and its parts', 'Its principle is Scripture. Scripture fills the rest of Book I. Its parts open Book II.'],
+      ['Its parts are faith and good works', 'What is to be believed and what is to be done.'],
+      ['Faith is of God and his works. Good works are worship.', 'Faith treats God in himself and in his works (Books II to VII). Good works are the immediate worship of God and the mediate worship toward the neighbor. These are the two tables of the law (Books IX and X).'],
     ];
     steps.innerHTML = STEPS.map(([b, p]) => `<li><b>${esc(b)}</b><p>${esc(p)}</p></li>`).join('');
     const sl = [...steps.children];
