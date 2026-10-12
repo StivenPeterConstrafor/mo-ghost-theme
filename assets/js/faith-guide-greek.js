@@ -318,7 +318,7 @@ window.TGFinder = (host, D, C) => {
     say(null);
     svg.addEventListener('mouseleave', () => say(null));
     if (!G) { num.textContent = 'I–XV'; return; }
-    const tl = gsap.timeline({ delay: 0.2 });
+    const tl = TG.intro({ delay: 0.2 });
     tl.from(field, { opacity: 0, scale: 0.92, transformOrigin: `${C}px ${C}px`, duration: 1.2, ease: 'power2.out' })
       .from(ribs.children, { opacity: 0, duration: 0.6, stagger: 0.01 }, 0.3)
       .from(wins.children, { opacity: 0, y: 4, duration: 0.5, stagger: { each: 0.02, from: 'start' } }, 0.5)

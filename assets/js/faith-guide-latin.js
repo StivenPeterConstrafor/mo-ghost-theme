@@ -306,7 +306,7 @@ window.TGFinder = (host, D, C) => {
     svg.addEventListener('click', (e) => { const a = e.target.__a; if (a) showWriter(a.n); });
     if (!G) return;
     lineEls.forEach((l) => l.cr.setAttribute('width', 0));
-    const tl = gsap.timeline({ delay: 0.4 });
+    const tl = TG.intro({ delay: 0.4 });
     tl.from(svg.querySelector('.vel'), { opacity: 0, y: 10, duration: 0.8, ease: 'power2.out' }).from(inc, { opacity: 0, duration: 0.6 }, 0.3);
     let t0 = 0.8;
     lineEls.forEach((l, i) => {

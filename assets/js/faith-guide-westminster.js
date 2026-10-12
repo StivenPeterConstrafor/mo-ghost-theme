@@ -66,7 +66,7 @@
     svg.addEventListener('mouseleave', () => say(null)); say(null);
     if (!G) return;
     const draw = (el) => { const n = el.getTotalLength(); el.style.strokeDasharray = n; el.style.strokeDashoffset = n; return el; };
-    const tl = gsap.timeline({ delay: 0.2 });
+    const tl = TG.intro({ delay: 0.2 });
     tl.from(room.querySelector('.floor'), { opacity: 0, duration: 0.6 })
       .to(walls.map(draw), { strokeDashoffset: 0, duration: 1.6, ease: 'power2.inOut', stagger: 0.15 }, 0)
       .from(furn.children, { opacity: 0, duration: 0.5, stagger: 0.01 }, 0.8)

@@ -38,7 +38,7 @@
       leafEls.push(g); }));
     cap.textContent = 'The shelf divided as Ramus divided a subject: first by where its writers taught and then by the three with the most pages in each.';
     if (!G) return;
-    const tl = gsap.timeline({ delay: 0.3 });
+    const tl = TG.intro({ delay: 0.3 });
     tl.from([rootT, rootS], { opacity: 0, x: -14, duration: 0.7, ease: 'power2.out', stagger: 0.1 })
       .to(drawIn(b1), { strokeDashoffset: 0, duration: 0.9, ease: 'power2.inOut' }, '-=0.2')
       .from(regEls, { opacity: 0, x: -12, duration: 0.55, ease: 'power2.out', stagger: 0.09 }, '-=0.35')

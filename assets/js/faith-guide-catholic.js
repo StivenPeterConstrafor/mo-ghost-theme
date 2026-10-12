@@ -76,7 +76,7 @@
     els.forEach((el, i) => gsap.set(el, { x: L.pos[i].x, y: L.pos[i].y - 46, opacity: 0 }));
     decorate({ boards: L.boards, labels: [], cents: L.cents }, true);
     const n = els.length, per = 2.8 / n, counter = { i: 0 };
-    const tl = gsap.timeline({ delay: 0.35 });
+    const tl = TG.intro({ delay: 0.35 });
     els.forEach((el, i) => tl.to(el, { y: L.pos[i].y, opacity: 1, duration: 0.55, ease: 'back.out(1.7)' }, i * per));
     tl.to(counter, { i: n - 1, duration: n * per, ease: 'none', onUpdate() { const yv = B[Math.round(counter.i)][5]; tick.textContent = yv < 2000 ? yv : ''; } }, 0);
     tl.add(() => { tick.textContent = ''; }, '+=0.9').add(() => apply('school', 'flip'), '+=0.1');

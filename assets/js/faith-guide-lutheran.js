@@ -54,7 +54,7 @@
     say(null);
     if (!G) return;
     const draw = (el) => { const L = el.getTotalLength(); el.style.strokeDasharray = L; el.style.strokeDashoffset = L; return el; };
-    const tl = gsap.timeline({ delay: 0.25 });
+    const tl = TG.intro({ delay: 0.25 });
     tl.to(rings.map(draw), { strokeDashoffset: 0, duration: 1.3, ease: 'power2.inOut', stagger: 0.15 })
       .to(band, { opacity: 1, duration: 0.7 }, 0.8)
       .from(field, { scale: 0, svgOrigin: `${C} ${C}`, duration: 1.0, ease: 'power3.out' }, 1.0)

@@ -57,7 +57,7 @@
     say(null);
     if (!G) { devN.textContent = fmt(n); return; }
     const draw = (el) => { const L = el.getTotalLength ? el.getTotalLength() : 1000; el.style.strokeDasharray = L; el.style.strokeDashoffset = L; return el; };
-    const tl = gsap.timeline({ delay: 0.2 });
+    const tl = TG.intro({ delay: 0.2 });
     tl.to([...rules, rule2].map(draw), { strokeDashoffset: 0, duration: 1.2, ease: 'power2.inOut', stagger: 0.1 })
       .from(lines, { opacity: 0, scale: 1.06, filter: 'blur(3px)', transformOrigin: '50% 50%', duration: 0.7, ease: 'power2.out', stagger: 0.09 }, 0.4)
       .from(corners, { scale: 0, transformOrigin: '50% 50%', duration: 0.5, ease: 'back.out(2)', stagger: 0.1 }, 0.9)

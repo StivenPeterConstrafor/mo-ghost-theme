@@ -74,7 +74,7 @@
     if (!G) return;
     const draw = (el) => { const L = el.getTotalLength(); el.style.strokeDasharray = L; el.style.strokeDashoffset = L; return el; };
     wall.style.fillOpacity = 0;
-    const tl = gsap.timeline({ delay: 0.3 });
+    const tl = TG.intro({ delay: 0.3 });
     tl.to(draw(wall), { strokeDashoffset: 0, duration: 2.0, ease: 'power2.inOut' })
       .to(wall, { fillOpacity: 1, duration: 0.8 }, '-=0.6')
       .from(pierEls, { scale: 0, transformOrigin: 'center', duration: 0.4, stagger: 0.012, ease: 'back.out(2)' }, '-=0.9')

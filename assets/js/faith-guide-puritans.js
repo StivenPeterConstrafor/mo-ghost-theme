@@ -49,7 +49,7 @@
       pn.p.addEventListener('click', () => explorer && explorer.show(pn.a.n)); pn.p.addEventListener('keydown', (e) => { if (e.key === 'Enter') explorer && explorer.show(pn.a.n); }); });
     svg.addEventListener('mouseleave', () => say(null)); say(null);
     if (!G) { panes.forEach((pn) => light(pn, true)); yr.textContent = `born ${A[0].y0} to ${A[A.length - 1].y0}`; return; }
-    const tl = gsap.timeline({ delay: 0.2 });
+    const tl = TG.intro({ delay: 0.2 });
     const frames = [...svg.querySelectorAll('.frame')]; frames.forEach((f) => { const L = f.getTotalLength(); f.style.strokeDasharray = L; f.style.strokeDashoffset = L; });
     tl.from(svg.querySelector('.stone'), { opacity: 0, duration: 0.6 })
       .to(frames, { strokeDashoffset: 0, duration: 1.1, ease: 'power2.inOut', stagger: 0.12 }, 0.1)

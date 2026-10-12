@@ -20,8 +20,12 @@ window.TG = (() => {
   // the guide, which sits outside it), and once the web fonts are in, since a title set in IM Fell is taller than its fallback
   if (root && hasG && 'ResizeObserver' in window) { let h0 = 0, rt; const box = root.closest('main') || root; new ResizeObserver(() => { const h = box.offsetHeight; if (Math.abs(h - h0) < 40) return; h0 = h; clearTimeout(rt); rt = setTimeout(() => ScrollTrigger.refresh(), 200); }).observe(box); }
   if (root && hasG && document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(() => ScrollTrigger.refresh(), 60));
+  // on MereO the loader (faith-guide.js) keeps a cover over the guide while it is drawn (a reader, 10-11: "a few little glitchy
+  // things...might wanna have it give a loading status until all the elements are loaded"); figures count up and lines come in
+  // once it lifts, so they play in view. The stand-alone previews have no cover and go at once.
+  const shown = new Promise((res) => { const w = document.querySelector('[data-guide-root]'); if (w && w.classList.contains('tg-wait')) w.addEventListener('tg-shown', () => res(), { once: true }); else res(); });
   const TG = {
-    reduce, hasG,
+    reduce, hasG, shown,
     pinOK: () => hasG && !reduce && innerWidth > 860,
     esc: (s) => String(s ?? '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c])),
     // a link to a page goes into the reader; a link to a whole work goes to the work's room (owner 10-10: "we need linking to work and author rooms")
@@ -83,14 +87,16 @@ window.TG = (() => {
   TG.countUp = (el, to, dur = 1.6) => {
     if (!hasG || reduce) { el.textContent = TG.fmt(to); return; }
     const o = { v: 0 }; el.textContent = '0';
-    gsap.to(o, { v: to, duration: dur, ease: 'power2.out', onUpdate() { el.textContent = TG.fmt(Math.round(o.v)); }, scrollTrigger: { trigger: el, start: 'top 92%', once: true } });
+    shown.then(() => gsap.to(o, { v: to, duration: dur, ease: 'power2.out', onUpdate() { el.textContent = TG.fmt(Math.round(o.v)); }, scrollTrigger: { trigger: el, start: 'top 92%', once: true } }));
   };
   TG.reveal = (sel) => {
     const els = [...document.querySelectorAll(sel)];
     if (reduce || !('IntersectionObserver' in window)) { els.forEach((e) => e.classList.add('in')); return; }
     const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px' });
-    els.forEach((e) => io.observe(e));
+    shown.then(() => els.forEach((e) => io.observe(e)));
   };
+  // a hero's opening timeline: built with the scene, played from its start (and its delay) when the cover lifts
+  TG.intro = (vars = {}) => { const tl = gsap.timeline({ ...vars, paused: true }); shown.then(() => tl.restart(true)); return tl; };
   // refresh the pins in the order they stand on the page (10-11). ScrollTrigger measures pins in the order they were made, and a pin
   // measured before the pins above it starts as if they took no room. The Key Works pin is made as soon as the data arrives, before a
   // shelf's own scenes (which wait for more data), so it started thousands of pixels too early, on top of an earlier scene; on the

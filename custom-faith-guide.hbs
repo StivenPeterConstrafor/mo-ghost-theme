@@ -7,7 +7,7 @@
 <meta property="og:title" content="Guides to the Shelves | The Faith Received" />
 <meta property="og:description" content="A guide to each shelf of The Faith Received." />
 <meta name="twitter:title" content="Guides to the Shelves | The Faith Received" />
-<link rel="stylesheet" type="text/css" href="{{asset "data/faith-received/guides/guide.css"}}&amp;frv=287e2f6e25632e86" />
+<link rel="stylesheet" type="text/css" href="{{asset "data/faith-received/guides/guide.css"}}&amp;frv=fcd98cf9b1a9df76" />
 <link rel="stylesheet" type="text/css" href="{{asset "css/faith-guide-skin.css"}}&amp;frv=b294737521d2dcb0" />
 {{/contentFor}}
 {{!-- /the-faith-received/guide/ — one guide per shelf at ?s=<shelf>, and
@@ -45,8 +45,9 @@
   </div>
 </main>
 <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+{{!-- The loader goes first: it fetches the guide while GSAP and d3 arrive, and runs the scenes once they have. --}}
+<script src="{{asset "js/faith-guide.js"}}&amp;frv=b64242a0123ee8c4"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 <script src="{{asset "js/faith-guide-skin.js"}}&amp;frv=9af0c4c7dc315cc0" defer></script>
-<script src="{{asset "js/faith-guide.js"}}&amp;frv=d4b9910a23223e64"></script>

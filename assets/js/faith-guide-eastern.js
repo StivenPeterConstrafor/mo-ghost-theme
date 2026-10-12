@@ -58,7 +58,7 @@
     // the series is shelved tome by tome: the rose grows outward from the Syriaca of 1894 to the tomes of the 1990s
     const order = tiles.slice().sort((a, b) => a.t - b.t || a.r - b.r), st = { t: 0 }; let shown = 0;
     gsap.set(order.map((t) => t.el), { opacity: 0 }); gsap.set(gL.querySelectorAll('.lab'), { opacity: 0 });
-    gsap.timeline({ delay: 0.3 })
+    TG.intro({ delay: 0.3 })
       .from(g0.children, { opacity: 0, duration: 0.5, stagger: 0.03 })
       .to(st, { t: D.tomes.length - 1, duration: 4.4, ease: 'none', onUpdate() {
         const T = Math.floor(st.t), tm = D.tomes[T];
