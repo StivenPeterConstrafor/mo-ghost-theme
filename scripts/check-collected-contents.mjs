@@ -19,6 +19,10 @@ assert.match(c.disclosure('pg-105'),/col\. 471/);
 assert.ok(Object.keys(pg.works).length>2000);
 assert.match(c.preview('lightfoot-the-works-of-the-reverend-and-learned-john-l'),/harmony of the four Evangelists/);
 assert.match(c.search('gennadius-scholarios-works-vol-2'),/procession of the Holy Spirit/);
+// Cocceius vol. 5's outline opens on its title page (the card read "Works, Vol. 5", 10-12): the card names the epistles, the contents list them
+assert.match(c.preview('coccejus-opera-vol-5'),/Romans, 1 and 2 Corinthians, Galatians/);
+assert.match(c.disclosure('coccejus-opera-vol-5'),/p=466#b466-0/);
+assert.doesNotMatch(c.disclosure('coccejus-opera-vol-5'),/Works, Vol\. 5|Kind Reader|Friendly Reader/);
 const routes={URL,URLSearchParams};vm.createContext(routes);vm.runInContext(fs.readFileSync('assets/js/page/faith-port-links.js','utf8'),routes);
 for(const path of ['/the-faith-received/','/the-faith-received/all-works/','/the-faith-received/library/'])assert.equal(routes.FRPortLinks.localURL(path,'http://localhost:2368'),'/the-faith-received/all-works/?collection=all');
 assert.equal(routes.FRPortLinks.localURL('/the-faith-received/read/?w=book#b52%3A0183A-0','http://localhost:2368'),'/the-faith-received/read/?w=book#b52%3A0183A-0');
