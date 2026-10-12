@@ -64,7 +64,7 @@
       const Y0 = 1500, Y1 = 1800, base = Math.round(H * (narrow ? 0.2 : 0.36)), sx = (y) => 14 + (Math.max(Y0, Math.min(Y1, y)) - Y0) / (Y1 - Y0) * (W - 28 - tw);
       const stack = {}, A = K.works.map((w) => { const b = Math.floor((w[4] - Y0) / 4); const n = (stack[b] = (stack[b] || 0) + 1) - 1; return { x: sx(Y0 + b * 4), y: base - (n + 1) * (th + gy) }; });
       const per = narrow ? 3 : order.length, rows = Math.ceil(order.length / per), gap = narrow ? 8 : 10, cw = (W - 20 - (per - 1) * gap) / per;
-      const lab = narrow ? 50 : 54, cTop = base + 30, cH = (H - cTop - lab - (rows - 1) * (lab + 6)) / rows, B = new Array(K.works.length), boxes = {}; // room under each compartment for its name
+      const lab = narrow ? 50 : 72, cTop = base + 30, cH = (H - cTop - lab - (rows - 1) * (lab + 6)) / rows, B = new Array(K.works.length), boxes = {}; // room under each compartment for its name
       order.forEach((k, i) => { const r = Math.floor(i / per), c = i % per, x = 10 + c * (cw + gap), y = cTop + r * (cH + lab + 6), cols = Math.max(1, Math.floor((cw - 6) / (tw + gx)));
         boxes[k] = { x, y, w: cw, h: cH };
         by[k].forEach((w, j) => { const idx = K.works.indexOf(w), cc = j % cols, rr = Math.floor(j / cols); B[idx] = { x: x + 4 + cc * (tw + gx), y: y + cH - 4 - (rr + 1) * (th + gy) }; }); });
@@ -109,14 +109,19 @@
         const x = lerp(a.x, b.x, u), y = lerp(a.y, b.y, u) - Math.sin(Math.PI * u) * 40; // each sort is lifted, carried and dropped
         sorts[i].style.transform = `translate(${x.toFixed(1)}px, ${(y - (1 - appear) * 24).toFixed(1)}px)`; sorts[i].style.opacity = appear;
       });
-      labs.forEach((l, i) => { l.firstChild.textContent = counts[order[i]]; });
+      // MereO (2026-10-12): a compartment shows its count once its kind is being sorted, never a 0 while the list already names it
+      labs.forEach((l, i) => { l.firstChild.textContent = pB > 0 && i <= kNow ? by[order[i]].length : ''; });
       const showC = clamp((p - 0.12) / 0.06, 0, 1); comps.forEach((c) => { c.style.opacity = showC; }); labs.forEach((l) => { l.style.opacity = showC; });
       axis.style.opacity = years[0] ? 1 - clamp((pB - 0.6) / 0.3, 0, 1) * 0.6 : 1; years.forEach((y) => { y.style.opacity = axis.style.opacity; });
       note.textContent = pB <= 0 ? 'Each work stands at the years its writer was at work.' : pB < 1 ? `Sorting: ${K.names[order[kNow]]}` : 'Choose a compartment to see what it holds.';
       const now = pB <= 0 ? -1 : kNow; if (now !== cur) { cur = now; lis.forEach((li, i) => { li.classList.toggle('now', i === now); li.classList.toggle('past', i < now); }); }
       if (p >= 0.999 && !picked) pick(order[0]);
     }
-    frame(); reserve(); let lastP = 0;
+    // MereO (2026-10-12): the list of the chosen kind's works stands after the pinned scene, not inside it. Its reserved room made the
+    // scene taller than the window, so the pin hid the scene's top. It now follows the scene in the page.
+    { const sec = document.getElementById('tg-kinds'), after = document.createElement('div'); after.className = 'wrap gut tg-case2-after';
+      if (sec && sec.parentNode) { sec.parentNode.insertBefore(after, sec.nextSibling); after.appendChild(pickEl); } }
+    frame(); reserve(); pick(order[0], true); let lastP = 0; // the list after the scene is never an empty band
     let rw = pickEl.offsetWidth; new ResizeObserver(() => { if (Math.abs(pickEl.offsetWidth - rw) > 20) { rw = pickEl.offsetWidth; reserve(); } }).observe(pickEl);
     const st = TG.chapter('#tg-kinds', 3600, (p, fin) => { lastP = fin ? 1 : p; render(lastP); }, { scrub: 0.5 });
     if (!st) lis.forEach((li) => li.classList.add('now'));

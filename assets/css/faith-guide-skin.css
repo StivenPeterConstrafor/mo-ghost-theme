@@ -270,3 +270,14 @@ main.tfr-guide-page [data-guide-root] .scene .big { font-size: clamp(2.2rem, 5vw
 main.tfr-guide-page [data-guide-root] .mapbox .year { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 600; }
 main.tfr-guide-page [data-guide-root] h3 { font-weight: 600; }
 main.tfr-guide-page [data-guide-root] .tile h3 { font-weight: 400; }
+
+/* Scenes fit the window (Ian, 2026-10-12: "this is just a bug that shouldn't
+   happen"). On a screen wide enough to pin, a scene keeps less padding, so
+   fewer need the engine's scale-to-fit (faith-guide-engine.js, TG.chapter).
+   The Reformed type case's list of works now follows its scene. */
+@media (min-width: 861px) {
+  main.tfr-guide-page [data-guide-root] .scene { padding-block: 28px; }
+  /* a chronicle shows fewer lines at a time (it scrolls its own entries as the scene plays), so its scene fits without shrinking */
+  main.tfr-guide-page [data-guide-root] .chron { max-height: 44vh; }
+}
+main.tfr-guide-page [data-guide-root] .tg-case2-after { padding-block: 8px 40px; }

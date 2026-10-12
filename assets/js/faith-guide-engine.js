@@ -103,6 +103,34 @@ window.TG = (() => {
   // Westminster guide it lay over the session ledger. Every new pin therefore puts all of them back in page order once the batch is made.
   TG.inOrder = () => { if (!window.ScrollTrigger) return; ScrollTrigger.sort((a, b) => { const x = a.trigger, y = b.trigger; if (!x || !y || x === y) return 0; return x.compareDocumentPosition(y) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1; }); ScrollTrigger.refresh(); };
   let reord = 0; const reorder = () => { clearTimeout(reord); reord = setTimeout(TG.inOrder, 0); };
+  // MereO fit (Ian, 2026-10-12, of the Reformed type case and map with their tops under the site's bars: "this is just a bug that
+  // shouldn't happen"). Pinning a tall scene by its foot hid its heading and the top of its picture for the whole scene. A scene now
+  // fits the room under the bars: when its content is taller, the content is scaled down (CSS zoom on its .wrap, so the scene's own
+  // height shrinks and the pin measures what is drawn). Measured again before every ScrollTrigger refresh (resize, fonts).
+  // Every pinned scene is set a step smaller on a desktop (Ian, 2026-10-12: "simply shrink every section by a small bit. Not making it
+  // tiny or anything"), so the scenes keep one size together; a scene still taller than the room goes smaller only as far as it must.
+  TG.fitScene = (el) => {
+    const BASE = 0.9;
+    const fit = () => {
+      const w = el && el.querySelector(':scope > .wrap'); if (!w) return;
+      // measured on the .wrap as drawn, never on the scene: once pinned, ScrollTrigger fixes the scene's height inline
+      const cs = getComputedStyle(el), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+      // the bars come from the scene's own guide root (the Councils guide's root is .tg-cou, which pinTop does not see)
+      const pr = el.closest('[data-pin-below]'), bars = pr ? [...document.querySelectorAll(pr.dataset.pinBelow)].filter((e) => /sticky|fixed/.test(getComputedStyle(e).position)).reduce((t, e) => t + e.getBoundingClientRect().height, 0) : pinTop();
+      const drawn = () => w.getBoundingClientRect().height, room = innerHeight - bars - pad;
+      w.style.zoom = '';
+      let z = Math.max(0.55, Math.min(BASE, room / Math.max(1, drawn())));
+      w.style.zoom = z.toFixed(3);
+      // a drawing that sizes itself from its box can come out taller than the scale promised: check, and correct, up to three times
+      for (let i = 0; i < 3 && drawn() > room + 2 && z > 0.55; i++) {
+        z = Math.max(0.55, z * room / drawn()); w.style.zoom = z.toFixed(3);
+      }
+    };
+    fit(); if (window.ScrollTrigger) ScrollTrigger.addEventListener('refreshInit', fit);
+    // content that grows after the pin is made (a card filled in, fonts) is fitted again, and the pins re-measured once
+    { const w = el && el.querySelector(':scope > .wrap'); let rt = 0, last = '';
+      if (w && 'ResizeObserver' in window) new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { fit(); const z = w.style.zoom; if (z !== last) { last = z; ScrollTrigger.refresh(); } }, 200); }).observe(w); }
+  };
   // a pinned chapter: onUpdate(progress 0..1) while it is scrubbed; on phones and with reduced motion it gets its last state once.
   // A scene taller than the room under the site's bars is pinned by its foot, so the step being told and the picture's last lines stay
   // on the screen; its heading has been read on the way in (10-11: the Reformed method scene hid its current step below the window).
@@ -110,6 +138,7 @@ window.TG = (() => {
     const el = document.querySelector(sel);
     if (!TG.pinOK()) { if (TG.plays() && el) return TG.autoplay(el, length, onUpdate); onUpdate(1, true); return null; } // a phone's player stands in for the pin
     onUpdate(0, false);
+    TG.fitScene(el);
     const st = ScrollTrigger.create({ trigger: el, start: () => (el.offsetHeight > innerHeight - pinTop() + 2 ? 'bottom bottom' : `top top+=${pinTop()}`), end: `+=${length}`, pin: true, scrub: opts.scrub ?? 0.6, anticipatePin: 1,
       onUpdate: (t) => onUpdate(t.progress, false) });
     reorder(); return st;

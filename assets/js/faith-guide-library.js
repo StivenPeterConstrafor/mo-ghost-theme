@@ -15,7 +15,13 @@
     { k: 'lutheran', c: '--f2', name: 'Lutheran', eyebrow: `${D.lutheran.works} works`, desc: 'Luther and Melanchthon, the Book of Concord, and the orthodox divines of Wittenberg and Jena.', unit: ['writer', 'writers'] },
     { k: 'english', c: '--f7', name: 'The English Divines', eyebrow: `${fmt(D.english.works)} works`, desc: 'The English church from the Reformation to the Evangelical revival. Each party has its own guide. So does the Westminster Assembly.', unit: ['writer', 'writers'],
       subs: [['puritans', 'The Puritans'], ['anglicans', 'The Anglicans'], ['methodists', 'The Methodists'], ['westminster', 'The Westminster Assembly']] },
-  ];
+    // MereO (Ian, 2026-10-12: "make sure this page is updated to show all the shelves"): the English Divines' four guides have tiles and
+    // ruler rows of their own, from their own data (library.json, built from each guide's authors and printings)
+    { k: 'puritans', c: '--f3', name: 'The Puritans', eyebrow: `${fmt(D.puritans.works)} works`, desc: 'The godly preachers of England and New England from Perkins to the Mathers.', unit: ['writer', 'writers'] },
+    { k: 'anglicans', c: '--f6', name: 'The Anglicans', eyebrow: `${fmt(D.anglicans.works)} works`, desc: 'The divines of the Church of England from the Reformers to the Oxford Movement.', unit: ['writer', 'writers'] },
+    { k: 'westminster', c: '--f8', name: 'The Westminster Assembly', eyebrow: `${fmt(D.westminster.works)} works`, desc: 'The divines who met at Westminster from 1643 and wrote the Confession and Catechisms.', unit: ['writer', 'writers'] },
+    { k: 'methodists', c: '--f1', name: 'The Methodists', eyebrow: `${fmt(D.methodists.works)} works`, desc: 'The Wesleys and Whitefield and the church that grew out of their revival.', unit: ['writer', 'writers'] },
+  ].filter((s) => D[s.k]);
   const C0 = 1, C1 = 20; let cur = 4;
   const svg = document.querySelector('#tg-ruler svg'); let W = 0, X;
   const ROW = 22, TOP = 18, H = TOP + SH.length * ROW + 30;
