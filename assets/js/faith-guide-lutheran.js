@@ -54,7 +54,7 @@
     say(null);
     if (!G) return;
     const draw = (el) => { const L = el.getTotalLength(); el.style.strokeDasharray = L; el.style.strokeDashoffset = L; return el; };
-    const tl = gsap.timeline({ delay: 0.25 });
+    const tl = TG.intro({ delay: 0.25 });
     tl.to(rings.map(draw), { strokeDashoffset: 0, duration: 1.3, ease: 'power2.inOut', stagger: 0.15 })
       .to(band, { opacity: 1, duration: 0.7 }, 0.8)
       .from(field, { scale: 0, svgOrigin: `${C} ${C}`, duration: 1.0, ease: 'power3.out' }, 1.0)
@@ -284,10 +284,10 @@
     const fnote = (f) => `<p><b style="color:${FC[f.k]}">${esc(f.n)}</b>: ${fmt(f.total)} claims on the shelf. The names most often answered: ${f.top.slice(0, 4).map(([l]) => esc(l)).join(', ')}. The largest shares: ${leaders(f.k)}.${f.k === 'rom' ? ` Rome is the first adversary of ${nw(nRome)} of these ${nw(N)} writers.` : ''}</p>`;
     const cal = Rw.find((a) => a.n === 'Abraham Calov');
     const NOTES = [
-      `<p>Where a claim in these pages answers someone, the library’s reading names the opponent. ${fmt(F0.sorted)} of the ${fmt(F0.all)} claims that name one fall on six adversaries. Each bar is that adversary’s share of one writer’s answers.</p>`,
+      `<p>These writers answered six adversaries above all. Each bar is that adversary’s share of one writer’s answers.</p>`,
       ...F.map(fnote),
       `<p>Rome is the first adversary for ${nw(nRome)} of the ${nw(N)} writers. ${others.length ? `${andList(others.map((a) => esc(a.n)))} answer the ${others.every((a) => firstOf(a) === 'soc') ? 'Socinians' : 'others'} first${cal ? `; Calov gives ${pct(cal.c.soc, cal.s)}% of his answers to the Socinians and ${pct(cal.c.arm, cal.s)}% to Grotius and the Remonstrants, against ${pct(cal.c.rom, cal.s)}% to Rome` : ''}.` : ''}</p>`];
-    document.getElementById('tg-fkey').innerHTML = `${F.map((f) => `<span><i style="background:${FC[f.k]}"></i>${esc(f.n)}</span>`).join('')}<span class="small" style="flex-basis:100%">The opponents were labeled by machine reading. The shares are approximate. Sorting the labels into six adversaries is this guide’s own work. A label naming two goes to the more particular. From the most particular down, the order is the Socinians, Grotius and the Remonstrants, Anabaptists and enthusiasts, quarrels among Lutherans, the Reformed, and Rome. Left out: ${esc(andList(F0.dropped))}, with under 1,000 sorted claims each. The Constance volumes Hermann von der Hardt collected are left out too, because they are the acts of the council.</span>`;
+    document.getElementById('tg-fkey').innerHTML = `${F.map((f) => `<span><i style="background:${FC[f.k]}"></i>${esc(f.n)}</span>`).join('')}`;
     let rows = [], cols = [];
     function build() {
       const ph = phone(); svg.innerHTML = ''; rows = []; cols = [];

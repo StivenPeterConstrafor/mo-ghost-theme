@@ -20,8 +20,12 @@ window.TG = (() => {
   // the guide, which sits outside it), and once the web fonts are in, since a title set in IM Fell is taller than its fallback
   if (root && hasG && 'ResizeObserver' in window) { let h0 = 0, rt; const box = root.closest('main') || root; new ResizeObserver(() => { const h = box.offsetHeight; if (Math.abs(h - h0) < 40) return; h0 = h; clearTimeout(rt); rt = setTimeout(() => ScrollTrigger.refresh(), 200); }).observe(box); }
   if (root && hasG && document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(() => ScrollTrigger.refresh(), 60));
+  // on MereO the loader (faith-guide.js) keeps a cover over the guide while it is drawn (a reader, 10-11: "a few little glitchy
+  // things...might wanna have it give a loading status until all the elements are loaded"); figures count up and lines come in
+  // once it lifts, so they play in view. The stand-alone previews have no cover and go at once.
+  const shown = new Promise((res) => { const w = document.querySelector('[data-guide-root]'); if (w && w.classList.contains('tg-wait')) w.addEventListener('tg-shown', () => res(), { once: true }); else res(); });
   const TG = {
-    reduce, hasG,
+    reduce, hasG, shown,
     pinOK: () => hasG && !reduce && innerWidth > 860,
     esc: (s) => String(s ?? '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c])),
     // a link to a page goes into the reader; a link to a whole work goes to the work's room (owner 10-10: "we need linking to work and author rooms")
@@ -83,21 +87,32 @@ window.TG = (() => {
   TG.countUp = (el, to, dur = 1.6) => {
     if (!hasG || reduce) { el.textContent = TG.fmt(to); return; }
     const o = { v: 0 }; el.textContent = '0';
-    gsap.to(o, { v: to, duration: dur, ease: 'power2.out', onUpdate() { el.textContent = TG.fmt(Math.round(o.v)); }, scrollTrigger: { trigger: el, start: 'top 92%', once: true } });
+    shown.then(() => gsap.to(o, { v: to, duration: dur, ease: 'power2.out', onUpdate() { el.textContent = TG.fmt(Math.round(o.v)); }, scrollTrigger: { trigger: el, start: 'top 92%', once: true } }));
   };
   TG.reveal = (sel) => {
     const els = [...document.querySelectorAll(sel)];
     if (reduce || !('IntersectionObserver' in window)) { els.forEach((e) => e.classList.add('in')); return; }
     const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px' });
-    els.forEach((e) => io.observe(e));
+    shown.then(() => els.forEach((e) => io.observe(e)));
   };
-  // a pinned chapter: onUpdate(progress 0..1) while it is scrubbed; on phones and with reduced motion it gets its last state once
+  // a hero's opening timeline: built with the scene, played from its start (and its delay) when the cover lifts
+  TG.intro = (vars = {}) => { const tl = gsap.timeline({ ...vars, paused: true }); shown.then(() => tl.restart(true)); return tl; };
+  // refresh the pins in the order they stand on the page (10-11). ScrollTrigger measures pins in the order they were made, and a pin
+  // measured before the pins above it starts as if they took no room. The Key Works pin is made as soon as the data arrives, before a
+  // shelf's own scenes (which wait for more data), so it started thousands of pixels too early, on top of an earlier scene; on the
+  // Westminster guide it lay over the session ledger. Every new pin therefore puts all of them back in page order once the batch is made.
+  TG.inOrder = () => { if (!window.ScrollTrigger) return; ScrollTrigger.sort((a, b) => { const x = a.trigger, y = b.trigger; if (!x || !y || x === y) return 0; return x.compareDocumentPosition(y) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1; }); ScrollTrigger.refresh(); };
+  let reord = 0; const reorder = () => { clearTimeout(reord); reord = setTimeout(TG.inOrder, 0); };
+  // a pinned chapter: onUpdate(progress 0..1) while it is scrubbed; on phones and with reduced motion it gets its last state once.
+  // A scene taller than the room under the site's bars is pinned by its foot, so the step being told and the picture's last lines stay
+  // on the screen; its heading has been read on the way in (10-11: the Reformed method scene hid its current step below the window).
   TG.chapter = (sel, length, onUpdate, opts = {}) => {
     const el = document.querySelector(sel);
     if (!TG.pinOK()) { if (TG.plays() && el) return TG.autoplay(el, length, onUpdate); onUpdate(1, true); return null; } // a phone's player stands in for the pin
     onUpdate(0, false);
-    return ScrollTrigger.create({ trigger: el, start: () => `top top+=${pinTop()}`, end: `+=${length}`, pin: true, scrub: opts.scrub ?? 0.6, anticipatePin: 1,
-      onUpdate: (st) => onUpdate(st.progress, false) });
+    const st = ScrollTrigger.create({ trigger: el, start: () => (el.offsetHeight > innerHeight - pinTop() + 2 ? 'bottom bottom' : `top top+=${pinTop()}`), end: `+=${length}`, pin: true, scrub: opts.scrub ?? 0.6, anticipatePin: 1,
+      onUpdate: (t) => onUpdate(t.progress, false) });
+    reorder(); return st;
   };
   // phones (owner 10-11: "make sure the maps land, they load but it isnt in the motion"): a scene is not pinned on a small screen, but it
   // still plays: once its picture is half in view it runs from start to end by itself, then offers to play again
@@ -374,7 +389,7 @@ window.TG = (() => {
     // a set of volumes per work: the height follows the pages in a volume, the first spine carries the title
     shelf.innerHTML = K.map((w, i) => { const per = size(w) / w.vols, h = Math.round(130 + 110 * Math.sqrt(per / maxP)), n = Math.min(w.vols, 8), c = fam(w);
       const sp = Array.from({ length: n }, (_, j) => `<span class="kw-sp${j ? '' : ' first'}" style="--h:${h - (j % 3) * 3}px;--c:${c}">${j ? '' : `<b>${esc(w.t)}</b>`}</span>`).join('');
-      return `<button type="button" class="kw-set" role="listitem" data-i="${i}" aria-label="${esc(`${w.t}, ${w.a}, ${w.d}`)}">${sp}${w.vols > 8 ? `<em class="kw-more">+${w.vols - 8}</em>` : ''}</button>`; }).join('');
+      return `<button type="button" class="kw-set" role="listitem" data-i="${i}" aria-label="${esc(`${w.t}, ${w.a}, ${w.d}`)}"><span class="kw-drop">${sp}${w.vols > 8 ? `<em class="kw-more">+${w.vols - 8}</em>` : ''}</span></button>`; }).join('');
     const sets = [...shelf.children];
     if (TG.pinOK()) sets.forEach((b) => { b.style.opacity = 0; }); // scrolled: the shelf starts empty
     years.innerHTML = K.map((w) => `<span>${esc(String(w.y || ''))}</span>`).join('');
@@ -402,8 +417,14 @@ window.TG = (() => {
     function upto(k, instant) {
       if (k === shown) return; const prev = shown; shown = k;
       sets.forEach((b, j) => { const on = j <= k; if (prev >= 0 && on === (j <= prev) && !instant) return;
-        if (hasG && !reduce && !instant) { if (on) gsap.fromTo(b, { y: -60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: 'bounce.out', clearProps: 'transform' }); else gsap.to(b, { opacity: 0, duration: 0.2 }); }
-        else if (!on || instant || reduce || !hasG) b.style.opacity = on ? 1 : 0;
+        // the set fades; its inner row (.kw-drop) falls, so the drop never fights the pull forward on the button. A book still falling
+        // when the reader scrolls back stops: left running, its bounce outlived the fade and left the book standing.
+        const row = b.firstElementChild;
+        if (hasG) gsap.killTweensOf([b, row]);
+        if (hasG && !reduce && !instant) {
+          if (on) { gsap.to(b, { opacity: 1, duration: 0.2 }); gsap.fromTo(row, { y: -60 }, { y: 0, duration: 0.55, ease: 'bounce.out', clearProps: 'transform' }); }
+          else { gsap.set(row, { clearProps: 'transform' }); gsap.to(b, { opacity: 0, duration: 0.2 }); }
+        } else { if (hasG) gsap.set(row, { clearProps: 'transform' }); b.style.opacity = on ? 1 : 0; }
         yl[j].style.opacity = on ? 1 : 0; });
     }
     sets.forEach((b, i) => b.addEventListener('click', () => { if (+b.style.opacity === 0) return; show(i); }));
@@ -413,7 +434,6 @@ window.TG = (() => {
     }, { scrub: true });
     if (!st) { upto(K.length - 1, true); show(0, true); }
     requestAnimationFrame(place);
-    if (st && window.ScrollTrigger) { ScrollTrigger.sort(); ScrollTrigger.refresh(); } // made after the scenes below it: refresh in page order
   };
   TG.keynames = (D) => {
     if (!root || root.querySelector('#names') || !D.keys || !D.keys.length) return;

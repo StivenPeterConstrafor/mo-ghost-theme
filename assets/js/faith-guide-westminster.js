@@ -66,7 +66,7 @@
     svg.addEventListener('mouseleave', () => say(null)); say(null);
     if (!G) return;
     const draw = (el) => { const n = el.getTotalLength(); el.style.strokeDasharray = n; el.style.strokeDashoffset = n; return el; };
-    const tl = gsap.timeline({ delay: 0.2 });
+    const tl = TG.intro({ delay: 0.2 });
     tl.from(room.querySelector('.floor'), { opacity: 0, duration: 0.6 })
       .to(walls.map(draw), { strokeDashoffset: 0, duration: 1.6, ease: 'power2.inOut', stagger: 0.15 }, 0)
       .from(furn.children, { opacity: 0, duration: 0.5, stagger: 0.01 }, 0.8)
@@ -120,7 +120,10 @@
       tip.innerHTML = `${esc(label(s))}${ev ? `<small>${esc(ev.title)}</small>` : ''}<small>choose it to open the minutes</small>`; tip.hidden = false;
       tip.style.left = `${Math.min(e.clientX - b.left + 12, b.width - 240)}px`; tip.style.top = `${e.clientY - b.top + 14}px`; });
     box.addEventListener('mouseleave', () => { hover = null; tip.hidden = true; draw(); });
+    // a mark opens its day in the minutes at once (owner 10-11: "i cant click into session minutes"): the link this used to write under
+    // the ledger fell below the window while the scene was pinned, so a click seemed to do nothing. The link stays there as a record.
     box.addEventListener('click', (e) => { const b = cv.cv.getBoundingClientRect(), s = at(e.clientX - b.left, e.clientY - b.top); if (!s) return;
+      window.open(TG.read(s.v, s.p), '_blank', 'noopener');
       pick.innerHTML = `<a href="${TG.read(s.v, s.p)}" target="_blank" rel="noopener">${esc(label(s))}</a><small>in the Minutes and Papers of the Assembly</small>`;
       if (G) gsap.from(pick, { opacity: 0, y: 6, duration: 0.3 }); });
     pick.innerHTML = '<span class="small">Choose any mark to open that day in the minutes.</span>';

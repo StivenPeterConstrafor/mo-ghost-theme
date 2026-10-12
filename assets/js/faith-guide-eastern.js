@@ -58,7 +58,7 @@
     // the series is shelved tome by tome: the rose grows outward from the Syriaca of 1894 to the tomes of the 1990s
     const order = tiles.slice().sort((a, b) => a.t - b.t || a.r - b.r), st = { t: 0 }; let shown = 0;
     gsap.set(order.map((t) => t.el), { opacity: 0 }); gsap.set(gL.querySelectorAll('.lab'), { opacity: 0 });
-    gsap.timeline({ delay: 0.3 })
+    TG.intro({ delay: 0.3 })
       .from(g0.children, { opacity: 0, duration: 0.5, stagger: 0.03 })
       .to(st, { t: D.tomes.length - 1, duration: 4.4, ease: 'none', onUpdate() {
         const T = Math.floor(st.t), tm = D.tomes[T];
@@ -165,7 +165,7 @@
     const A = D.authors.filter((a) => a.pl && P[a.pl]).map((a) => ({ a, fl: flo(a) })).sort((x, y) => x.fl - y.fl), at = {};
     A.forEach((o) => { (at[o.a.pl] = at[o.a.pl] || []).push(o); o.j = at[o.a.pl].length - 1; });
     const nPl = Object.keys(at).length, council = (a) => /^The (Council|Synod)/.test(a.n), nPers = D.authors.filter((a) => !council(a)).length, rib = document.getElementById('tg-ribbon'), legend = document.getElementById('tg-legend');
-    legend.innerHTML = `${FK.filter((k) => A.some((o) => o.a.f === k)).map((k) => `<span><i style="background:${fc(k)}"></i>${esc(short(k))}</span>`).join('')}<span>Each dot is a writer, at the place his record names</span>`;
+    legend.innerHTML = `${FK.filter((k) => A.some((o) => o.a.f === k)).map((k) => `<span><i style="background:${fc(k)}"></i>${esc(short(k))}</span>`).join('')}<span>Each dot is a writer, at the place where he lived or served</span>`;
     const Y0 = 100, Y1 = 1700; let year = Y0, lastRib = '';
     function render(Y) {
       year = Y; ctx.clearRect(0, 0, cv.W, cv.H); const ink = TG.css('--ink'), body = TG.css('--body'), land = TG.css('--land');
@@ -197,7 +197,7 @@
       const alive = D.authors.filter((a) => a.y0 <= Y && (a.y1 || a.y0) >= Y && !council(a)).slice(0, 8);
       const sig = Y >= Y1 - 1 ? 'end' : alive.map((a) => a.n).join('|');
       if (sig !== lastRib) { lastRib = sig;
-        rib.innerHTML = sig === 'end' ? `<span>${A.length} writers at ${nPl} places. For ${nPers - A.length} more the record names no place or one beyond this map.</span>`
+        rib.innerHTML = sig === 'end' ? `<span>${A.length} writers at ${nPl} places. ${nPers - A.length} more lived beyond this map or at no known place.</span>`
           : alive.length ? alive.map((a) => `<span role="button" tabindex="0" data-n="${esc(a.n)}" style="cursor:pointer"><i style="background:${fc(a.f)}"></i>${esc(a.n)}</span>`).join('') : '<span class="small" style="border:0;background:none">No writer on the shelf alive in this year</span>';
         rib.querySelectorAll('[data-n]').forEach((s) => { const go = () => TG._open && TG._open(s.dataset.n); s.addEventListener('click', go); s.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); }); }); }
     }

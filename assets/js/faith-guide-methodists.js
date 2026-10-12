@@ -53,7 +53,7 @@
     if (!G) return;
     const ph = svg.appendChild(mk('line', { x1: X0, x2: X0, y1: T0 - 16, y2: B0 + 8 * GAP + 6, class: 'ph' })), phy = svg.appendChild(mk('text', { x: X0, y: T0 - 22, class: 'phy', 'text-anchor': 'middle' }));
     gsap.set(els.map((e) => e.g), { opacity: 0, scale: 0.2, transformOrigin: 'center center' });
-    const tl = gsap.timeline({ delay: 0.3 });
+    const tl = TG.intro({ delay: 0.3 });
     tl.from(staffLines, { attr: { x2: X0 - 10 }, duration: 0.9, ease: 'power2.inOut', stagger: 0.03 })
       .from(brace, { opacity: 0, duration: 0.5 }, 0.4).from(bars, { opacity: 0, duration: 0.4, stagger: 0.02 }, 0.6);
     const head = { x: X0 }; let shown = 0;

@@ -170,8 +170,11 @@
 .tg .kw-stage { position: relative; overflow-x: auto; overflow-y: visible; padding: 34px 0 6px; margin-top: 10px; }
 .tg .kw-shelf { display: flex; align-items: flex-end; justify-content: center; gap: 12px; width: max-content; min-width: 100%; min-height: 270px; padding: 0 18px;
   border-bottom: 13px solid #8a6438; box-shadow: 0 14px 18px -10px rgba(70, 45, 20, 0.35); background: linear-gradient(transparent 92%, rgba(80, 55, 25, 0.06)); }
-.tg .kw-set { display: flex; align-items: flex-end; gap: 1px; background: none; border: 0; padding: 0; cursor: pointer; transition: transform 0.4s cubic-bezier(.2,.8,.2,1); position: relative; }
+.tg .kw-set { display: flex; align-items: flex-end; background: none; border: 0; padding: 0; cursor: pointer; transition: transform 0.4s cubic-bezier(.2,.8,.2,1); position: relative; }
 .tg .kw-set.now { transform: translateY(-16px); }
+/* the drop onto the shelf moves this inner row, not the button: the button's pull forward is a CSS transition on transform, and a
+   transition on the property the drop animates chased every frame of it (a soft, lagging bounce, then a jump up once it ended) */
+.tg .kw-drop { display: flex; align-items: flex-end; gap: 1px; }
 .tg .kw-set:focus-visible { outline: 2px solid var(--rubric); outline-offset: 5px; border-radius: 3px; }
 .tg .kw-sp { position: relative; display: block; width: 16px; height: var(--h); border-radius: 3px 3px 1px 1px;
   background: linear-gradient(90deg, color-mix(in srgb, var(--c) 62%, #000) 0, var(--c) 16%, color-mix(in srgb, var(--c) 78%, #fff) 48%, var(--c) 80%, color-mix(in srgb, var(--c) 62%, #000) 100%);
@@ -216,4 +219,22 @@
 /* On MereO: the guide sits in the theme's main, under the masthead and the TFR rail */
 .tfr-guide-page { background: #f6f1e7; }
 .tfr-guide-page .tg { min-height: 60vh; }
-.tfr-guide-page .tg-loading { max-width: 76rem; margin: 0 auto; padding: 64px 16px; color: #6f675f; }
+/* the template's own "Loading the guide…" line, shown until the loader runs, is set as the cover is, at the cover's first mark */
+.tfr-guide-page [data-guide-root] > .tg-loading { box-sizing: border-box; height: max(70vh, 460px); margin: 0; padding: clamp(64px, 16vh, 160px) 16px 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; text-align: center; font: 1.15rem/1.4 var(--body, Georgia, serif); color: var(--ink, #2d2927); }
+.tfr-guide-page [data-guide-root] > .tg-loading::after { content: ""; width: min(20rem, 72vw); height: 2px; margin: 4px 0 calc(1.2rem + 4px); background: linear-gradient(var(--rubric, #c1593c), var(--rubric, #c1593c)) 0 0 / 5% 100% no-repeat, var(--rule-2, #e6d9c3); }
+/* The cover faith-guide.js stands over a guide while it is drawn and its pins measured (a reader, 10-11: "give a loading status until
+   all the elements are loaded"). The guide is laid out under it, hidden and cut to the cover's height, so the page cannot be scrolled
+   into a guide still being built; the band above keeps its title back until the guide's own is in it. */
+.tfr-guide-page [data-guide-root]:has(> .tg-cover) { position: relative; }
+.tfr-guide-page [data-guide-root].tg-wait { position: relative; height: max(70vh, 460px); overflow: hidden; }
+.tfr-guide-page [data-guide-root].tg-wait > :not(.tg-cover) { visibility: hidden; }
+.tfr-guide-page .tg-cover { position: absolute; inset: 0 0 auto; z-index: 30; height: max(70vh, 460px); box-sizing: border-box; padding: clamp(64px, 16vh, 160px) 16px 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px; text-align: center; background: var(--paper, #f6f3f2); color: var(--muted, #6b6660); transition: opacity 0.4s ease; }
+.tfr-guide-page .tg-cover.tg-done { opacity: 0; pointer-events: none; }
+.tfr-guide-page .tg-cover p { margin: 0; max-width: 32rem; }
+.tfr-guide-page .tg-cover-k { font: 0.72rem/1.4 var(--body, Georgia, serif); letter-spacing: 0.14em; text-transform: uppercase; }
+.tfr-guide-page .tg-cover-t { font: 1.15rem/1.4 var(--body, Georgia, serif); color: var(--ink, #2d2927); }
+.tfr-guide-page .tg-cover-bar { width: min(20rem, 72vw); height: 2px; margin: 4px 0; background: var(--rule-2, #e6d9c3); overflow: hidden; }
+.tfr-guide-page .tg-cover-bar i { display: block; width: 0; height: 100%; background: var(--rubric, #c1593c); transition: width 0.8s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.tfr-guide-page .tg-cover-s { font: italic 0.85rem/1.4 var(--body, Georgia, serif); }
+@media (prefers-reduced-motion: reduce) { .tfr-guide-page .tg-cover, .tfr-guide-page .tg-cover-bar i { transition: none; } }
+.tfr-guide-page:has(.tg-loading, .tg-cover:not(.tg-done)) :is([data-guide-name], [data-guide-dek]) { visibility: hidden; }

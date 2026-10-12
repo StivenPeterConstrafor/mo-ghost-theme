@@ -314,11 +314,11 @@ window.TGFinder = (host, D, C) => {
     const med = mk('g', {}, svg); mk('circle', { cx: C, cy: C, r: 30, fill: TG.css('--f4'), stroke: TG.css('--gold-2'), 'stroke-width': 2 }, med);
     mk('path', { d: `M${C - 13},${C - 13} L${C + 13},${C + 13} M${C + 13},${C - 13} L${C - 13},${C + 13} M${C},${C - 20} L${C},${C + 20} M${C},${C - 20} C${C + 13},${C - 20} ${C + 13},${C - 6} ${C},${C - 6}`, fill: 'none', stroke: TG.css('--gold-2'), 'stroke-width': 2.4, 'stroke-linecap': 'round' }, med);
     const num = mk('text', { x: C, y: C + RIM + 52, 'text-anchor': 'middle', class: 'num', fill: TG.css('--rubric') }, svg); num.style.fill = TG.css('--rubric'); num.textContent = '';
-    const say = (a) => { cap.textContent = a ? `${a.n}, ${TG.yr(a)}${a.pl ? ` · ${a.pl}` : ''} · ${a.nw} ${a.nw === 1 ? 'work' : 'works'} on the shelf` : 'Each ring is a century. The first is at the center and the fifteenth at the rim. Each colored arc is a writer in the color of the region his record names. The arc is gold where the record names none.'; };
+    const say = (a) => { cap.textContent = a ? `${a.n}, ${TG.yr(a)}${a.pl ? ` · ${a.pl}` : ''} · ${a.nw} ${a.nw === 1 ? 'work' : 'works'} on the shelf` : 'Each ring is a century. The first is at the center and the fifteenth at the rim. Each colored arc is a writer in the color of his region. A gold arc is a writer whose region is not known.'; };
     say(null);
     svg.addEventListener('mouseleave', () => say(null));
     if (!G) { num.textContent = 'I–XV'; return; }
-    const tl = gsap.timeline({ delay: 0.2 });
+    const tl = TG.intro({ delay: 0.2 });
     tl.from(field, { opacity: 0, scale: 0.92, transformOrigin: `${C}px ${C}px`, duration: 1.2, ease: 'power2.out' })
       .from(ribs.children, { opacity: 0, duration: 0.6, stagger: 0.01 }, 0.3)
       .from(wins.children, { opacity: 0, y: 4, duration: 0.5, stagger: { each: 0.02, from: 'start' } }, 0.5)
@@ -465,7 +465,7 @@ window.TGFinder = (host, D, C) => {
     examples: [['PG 6:475B', 'Justin, Dialogue with Trypho'], ['PG 25:95', 'Athanasius, On the Incarnation'], ['PG 26:835', 'Athanasius, The Life of Antony'], ['PG 44:297', 'Gregory of Nyssa, The Life of Moses'], ['PG 3:997', 'The Mystical Theology']],
     nameExamples: ['Basil', 'Maximus', 'Hexaemeron'], missing: (v) => `PG ${v} is not on the shelf. The Patrologia Graeca has 161 volumes.`,
     volintro: 'The 161 volumes stand as Migne printed them. Choose one to see the years of its main writers and what it holds. Each work is listed with the column where it begins.',
-    centintro: 'Each dated writer is a line from birth to death. Its color is the region his record names. The lines are stacked so that none overlap. The red marks are the general councils. Choose a period and then a line.',
+    centintro: 'Each dated writer is a line from birth to death. Its color is his region. The lines are stacked so that none overlap. The red marks are the general councils. Choose a period and then a line.',
     eras: [['All', 30, 1500], ['Before Nicaea', 30, 330], ['The great Fathers', 300, 470], ['Justinian to Iconoclasm', 450, 850], ['Middle Byzantine', 830, 1210], ['Late Byzantine', 1200, 1500]] });
   explorer.show = (n) => explorer.openAuthor(n);
   TG.reveal('.tg .reveal');

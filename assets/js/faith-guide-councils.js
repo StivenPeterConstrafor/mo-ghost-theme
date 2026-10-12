@@ -1,6 +1,8 @@
 /* The Councils guide (Mansi): the shelf assembling, where the Church met, the anatomy of a page, and the tools under them. */
 (async () => {
   const PIN = () => { const r = document.querySelector('.tfr-rail'); return r && /sticky|fixed/.test(getComputedStyle(r).position) ? r.offsetHeight : 0; };
+  // a scene taller than the room under the site's bars is pinned by its foot, so its last lines stay on the screen (10-11, as in the engine)
+  const foot = (sel) => { const el = document.querySelector(sel); return el && el.offsetHeight > innerHeight - PIN() + 2 ? 'bottom bottom' : `top top+=${PIN()}`; };
   const ROOT = document.querySelector('[data-guide-root]') || document.querySelector('.tg-cou');
   const load = (n) => { const el = document.getElementById(`tg-${n}`); return el ? Promise.resolve(JSON.parse(el.textContent)) : fetch(ROOT.dataset[n]).then((r) => r.json()); };
   const IDX = await load('data');
@@ -59,7 +61,7 @@
     document.getElementById('phaseNote').textContent = paris ? 'The reprint, its supplements and the continuation to the First Vatican Council' : `The original edition: the councils to Florence (${n} of ${nOrig} tomes)`;
   }
   if (canPin) { spines.forEach((s) => { s.style.transition = 'opacity .35s, transform .35s'; });
-    ScrollTrigger.create({ trigger: '#s-shelf', start: () => `top top+=${PIN()}`, end: '+=1600', pin: true, scrub: true, onUpdate: (st) => shelfAt(st.progress) }); shelfAt(0); }
+    ScrollTrigger.create({ trigger: '#s-shelf', start: () => foot('#s-shelf'), end: '+=1600', pin: true, scrub: true, onUpdate: (st) => shelfAt(st.progress) }); shelfAt(0); }
   else if (canPlay) { spines.forEach((s) => { s.style.transition = 'opacity .35s, transform .35s'; }); TG.autoplay(document.getElementById('s-shelf'), 1600, (p, fin) => shelfAt(fin ? 1 : p), { vis: shelf, dur: 4.5 }); }
   else shelfAt(1);
 
@@ -120,7 +122,7 @@
     document.getElementById('mapNote').textContent = `${total.toLocaleString('en-US')} councils at ${shown} places by ${Math.round(year)}. Larger circles held more councils. Red ones met in the last forty years.`;
   }
   mapSetup(); let mrt; new ResizeObserver(() => { clearTimeout(mrt); mrt = setTimeout(() => { mapSetup(); mapAt(curYear); }, 120); }).observe(mapbox);
-  if (canPin) ScrollTrigger.create({ trigger: '#s-map', start: () => `top top+=${PIN()}`, end: '+=3600', pin: true, scrub: 0.5, onUpdate: (st) => mapAt(50 + st.progress * 1852) });
+  if (canPin) ScrollTrigger.create({ trigger: '#s-map', start: () => foot('#s-map'), end: '+=3600', pin: true, scrub: 0.5, onUpdate: (st) => mapAt(50 + st.progress * 1852) });
   if (canPlay) TG.autoplay(document.getElementById('s-map'), 3600, (p, fin) => mapAt(fin ? 1902 : 50 + p * 1852), { vis: mapbox, dur: 8 });
   else mapAt(canPin ? 50 : 1902);
 
@@ -138,7 +140,7 @@
   const boxes = STEPS.map(([, , rects]) => rects.map(([x, y, w, h]) => { const d = document.createElement('div'); d.className = 'hl'; Object.assign(d.style, { left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${h}%` }); page.appendChild(d); return d; }));
   const stepLis = [...stepsEl.children];
   function stepAt(i) { stepLis.forEach((li, j) => li.classList.toggle('now', j === i)); boxes.forEach((bs, j) => bs.forEach((b) => { if (window.gsap) gsap.to(b, { opacity: j === i ? 1 : 0, duration: reduce ? 0 : 0.35 }); else b.style.opacity = j === i ? 1 : 0; })); }
-  if (canPin) ScrollTrigger.create({ trigger: '#s-page', start: () => `top top+=${PIN()}`, end: '+=2400', pin: true, scrub: true, onUpdate: (st) => stepAt(Math.min(STEPS.length - 1, Math.floor(st.progress * STEPS.length))) });
+  if (canPin) ScrollTrigger.create({ trigger: '#s-page', start: () => foot('#s-page'), end: '+=2400', pin: true, scrub: true, onUpdate: (st) => stepAt(Math.min(STEPS.length - 1, Math.floor(st.progress * STEPS.length))) });
   const allSteps = () => { stepLis.forEach((li) => li.classList.add('now')); boxes.flat().forEach((b) => { b.style.opacity = 1; }); };
   if (!canPin && canPlay) TG.autoplay(document.getElementById('s-page'), 2400, (p, fin) => (fin ? allSteps() : stepAt(Math.min(STEPS.length - 1, Math.floor(p * STEPS.length)))), { vis: page, dur: 7 });
   else if (!canPin) allSteps();

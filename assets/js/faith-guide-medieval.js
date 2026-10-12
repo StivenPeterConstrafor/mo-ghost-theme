@@ -60,7 +60,7 @@
     say(null);
     if (!G) { panes.forEach((p) => { p.g.style.opacity = 1; }); yr.textContent = `${A[0].y0}–${A[n - 1].y1}`; yr.setAttribute('font-size', 24); yr2.textContent = 'the shelf'; return; }
     const draw = (el) => { const L = el.getTotalLength ? el.getTotalLength() : 1000; el.style.strokeDasharray = L; el.style.strokeDashoffset = L; return el; };
-    const tl = gsap.timeline({ delay: 0.25 });
+    const tl = TG.intro({ delay: 0.25 });
     tl.to(rings.map(draw), { strokeDashoffset: 0, duration: 1.4, ease: 'power2.inOut', stagger: 0.12 })
       .to(spokes.map(draw), { strokeDashoffset: 0, duration: 0.5, ease: 'power1.out', stagger: 0.012 }, '-=0.9')
       .from(labels, { opacity: 0, duration: 0.6, stagger: 0.05 }, '-=0.2');
@@ -132,7 +132,7 @@
       document.getElementById('tg-yearbar').style.width = `${(Y - 1080) / (1500 - 1080) * 100}%`;
       chron(Y);
       const names = live.map(({ j }) => j.a).join('|');
-      if (names !== lastRibbon) { lastRibbon = names; ribbon.innerHTML = live.map(({ j, c }) => `<span><i style="background:${c}"></i>${esc(j.a)}</span>`).join('') || '<span class="small" style="border:0;background:none">No master on this shelf is yet at work.</span>'; }
+      if (names !== lastRibbon) { lastRibbon = names; ribbon.innerHTML = live.map(({ j, c }) => `<span><i style="background:${c}"></i>${esc(j.a)}</span>`).join('') || `<span class="small" style="border:0;background:none">${Y < 1290 ? 'No master on this shelf is at work yet.' : 'No master on this shelf is still at work.'}</span>`; }
     }
     M.onfit = () => { cv.size(); render(year); };
     TG.chapter('#tg-road', 4600, (p) => render(lerp(1080, 1500, p)), { scrub: 0.4 });
