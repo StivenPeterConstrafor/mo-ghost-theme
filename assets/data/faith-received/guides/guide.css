@@ -170,8 +170,11 @@
 .tg .kw-stage { position: relative; overflow-x: auto; overflow-y: visible; padding: 34px 0 6px; margin-top: 10px; }
 .tg .kw-shelf { display: flex; align-items: flex-end; justify-content: center; gap: 12px; width: max-content; min-width: 100%; min-height: 270px; padding: 0 18px;
   border-bottom: 13px solid #8a6438; box-shadow: 0 14px 18px -10px rgba(70, 45, 20, 0.35); background: linear-gradient(transparent 92%, rgba(80, 55, 25, 0.06)); }
-.tg .kw-set { display: flex; align-items: flex-end; gap: 1px; background: none; border: 0; padding: 0; cursor: pointer; transition: transform 0.4s cubic-bezier(.2,.8,.2,1); position: relative; }
+.tg .kw-set { display: flex; align-items: flex-end; background: none; border: 0; padding: 0; cursor: pointer; transition: transform 0.4s cubic-bezier(.2,.8,.2,1); position: relative; }
 .tg .kw-set.now { transform: translateY(-16px); }
+/* the drop onto the shelf moves this inner row, not the button: the button's pull forward is a CSS transition on transform, and a
+   transition on the property the drop animates chased every frame of it (a soft, lagging bounce, then a jump up once it ended) */
+.tg .kw-drop { display: flex; align-items: flex-end; gap: 1px; }
 .tg .kw-set:focus-visible { outline: 2px solid var(--rubric); outline-offset: 5px; border-radius: 3px; }
 .tg .kw-sp { position: relative; display: block; width: 16px; height: var(--h); border-radius: 3px 3px 1px 1px;
   background: linear-gradient(90deg, color-mix(in srgb, var(--c) 62%, #000) 0, var(--c) 16%, color-mix(in srgb, var(--c) 78%, #fff) 48%, var(--c) 80%, color-mix(in srgb, var(--c) 62%, #000) 100%);

@@ -389,7 +389,7 @@ window.TG = (() => {
     // a set of volumes per work: the height follows the pages in a volume, the first spine carries the title
     shelf.innerHTML = K.map((w, i) => { const per = size(w) / w.vols, h = Math.round(130 + 110 * Math.sqrt(per / maxP)), n = Math.min(w.vols, 8), c = fam(w);
       const sp = Array.from({ length: n }, (_, j) => `<span class="kw-sp${j ? '' : ' first'}" style="--h:${h - (j % 3) * 3}px;--c:${c}">${j ? '' : `<b>${esc(w.t)}</b>`}</span>`).join('');
-      return `<button type="button" class="kw-set" role="listitem" data-i="${i}" aria-label="${esc(`${w.t}, ${w.a}, ${w.d}`)}">${sp}${w.vols > 8 ? `<em class="kw-more">+${w.vols - 8}</em>` : ''}</button>`; }).join('');
+      return `<button type="button" class="kw-set" role="listitem" data-i="${i}" aria-label="${esc(`${w.t}, ${w.a}, ${w.d}`)}"><span class="kw-drop">${sp}${w.vols > 8 ? `<em class="kw-more">+${w.vols - 8}</em>` : ''}</span></button>`; }).join('');
     const sets = [...shelf.children];
     if (TG.pinOK()) sets.forEach((b) => { b.style.opacity = 0; }); // scrolled: the shelf starts empty
     years.innerHTML = K.map((w) => `<span>${esc(String(w.y || ''))}</span>`).join('');
@@ -417,8 +417,14 @@ window.TG = (() => {
     function upto(k, instant) {
       if (k === shown) return; const prev = shown; shown = k;
       sets.forEach((b, j) => { const on = j <= k; if (prev >= 0 && on === (j <= prev) && !instant) return;
-        if (hasG && !reduce && !instant) { if (on) gsap.fromTo(b, { y: -60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: 'bounce.out', clearProps: 'transform' }); else gsap.to(b, { opacity: 0, duration: 0.2 }); }
-        else if (!on || instant || reduce || !hasG) b.style.opacity = on ? 1 : 0;
+        // the set fades; its inner row (.kw-drop) falls, so the drop never fights the pull forward on the button. A book still falling
+        // when the reader scrolls back stops: left running, its bounce outlived the fade and left the book standing.
+        const row = b.firstElementChild;
+        if (hasG) gsap.killTweensOf([b, row]);
+        if (hasG && !reduce && !instant) {
+          if (on) { gsap.to(b, { opacity: 1, duration: 0.2 }); gsap.fromTo(row, { y: -60 }, { y: 0, duration: 0.55, ease: 'bounce.out', clearProps: 'transform' }); }
+          else { gsap.set(row, { clearProps: 'transform' }); gsap.to(b, { opacity: 0, duration: 0.2 }); }
+        } else { if (hasG) gsap.set(row, { clearProps: 'transform' }); b.style.opacity = on ? 1 : 0; }
         yl[j].style.opacity = on ? 1 : 0; });
     }
     sets.forEach((b, i) => b.addEventListener('click', () => { if (+b.style.opacity === 0) return; show(i); }));
