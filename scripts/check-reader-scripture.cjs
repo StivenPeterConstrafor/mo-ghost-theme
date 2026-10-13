@@ -12,6 +12,22 @@ const withoutLinks=html=>html.replace(/<a class="xref"[^>]*>([\s\S]*?)<\/a>/g,'$
 const text=value=>({nodeType:3,nodeValue:value});
 const element=(localName,value,attributes={})=>({nodeType:1,localName,textContent:value,childNodes:[text(value)],getAttribute:name=>attributes[name]||null});
 
+test('Binchius English: a verse with ff, and a chapter carried over after ch.',()=>{
+  const t=fixture();
+  let input='Ps. 19:5ff',html=t.inl(input);
+  assert.deepEqual(refs(html),['Psalms 19:5']);assert.equal(withoutLinks(html),t.esc(input));assert.equal((html.match(/data-xref-following="true"/g)||[]).length,1);
+  input='Wisd. 8:1; ch. 12:13';html=t.inl(input);
+  assert.deepEqual(refs(html),['Wisdom 8:1','Wisdom 12:13']);assert.equal(withoutLinks(html),t.esc(input));
+  input='Matt. 6:26; ch. 10:29';html=t.inl(input);
+  assert.deepEqual(refs(html),['Matthew 6:26','Matthew 10:29']);assert.equal(withoutLinks(html),t.esc(input));
+  input='Apoc. 3. 5. c. 20. 15.';html=t.inl(input);
+  assert.deepEqual(refs(html),['Revelation 3:5','Revelation 20:15']);assert.equal(withoutLinks(html),t.esc(input));
+  input='Sir. 3:30. Tob. 4:10. 2 Macc. 12:43. Sap. 3:1.';html=t.inl(input);
+  assert.deepEqual(refs(html),['Ecclesiasticus 3:30','Tobit 4:10','2 Maccabees 12:43','Wisdom 3:1']);assert.equal(withoutLinks(html),t.esc(input));
+  input='as in Ps. 23:1 for the shepherd';html=t.inl(input);
+  assert.deepEqual(refs(html),['Psalms 23:1']);
+});
+
 test('Roell p116 references include inherited chapters and complete range metadata',()=>{
   const t=fixture(),input='Jer. XVII, 10, XXXII, 19. Ps. LXII. 13. Job XXXIV. 11. Eccl. XII. 14. Rom. I. 32, II. 2. & seq. Matth. XXV. 31. & seq. 2 Cor. V. 10. 2 Thess. I. 5.—10.',html=t.inl(input);
   assert.deepEqual(refs(html),['Jeremiah 17:10','Jeremiah 32:19','Psalms 62:13','Job 34:11','Ecclesiastes 12:14','Romans 1:32','Romans 2:2','Matthew 25:31','2 Corinthians 5:10','2 Thessalonians 1:5-10']);

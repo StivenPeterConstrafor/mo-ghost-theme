@@ -49,6 +49,8 @@ const XREF_CAP={"Matthew":28,"Mark":16,"Luke":24,"John":21,"Acts":28,"Romans":16
   "Daniel":12,"Hosea":14,"Job":42,"Song of Songs":8,"Lamentations":5,"Obadiah":1,"Habakkuk":3,
   "Zephaniah":3,"Haggai":2,"Zechariah":14,"Malachi":4,"Ezra":10,"Nehemiah":13,"Esther":10,
   "Joel":3,"Amos":9,"Jonah":4,"Micah":7,"Nahum":3,"Ruth":4,"Philemon":1,"Judith":16,
+  // the other books the Scripture pages index (faith-scripture-totals.js DEUTERO), under the same names
+  "Tobit":14,"Wisdom":19,"Ecclesiasticus":51,"Baruch":6,"Maccabees":16,"1 Maccabees":16,"2 Maccabees":15,
   "1 Samuel":31,"2 Samuel":24,"1 Kings":22,"2 Kings":25,"1 Chronicles":29,"2 Chronicles":36,
   "1 Corinthians":16,"2 Corinthians":13,"1 Thessalonians":5,"2 Thessalonians":3,
   "1 Timothy":6,"2 Timothy":4,"1 Peter":5,"2 Peter":3,"1 John":5,"2 John":1,"3 John":1};
@@ -59,6 +61,8 @@ const XREF_EN={"Matth":"Matthew","Matt":"Matthew","Lev":"Leviticus","Chron":"Chr
   "Dn":"Daniel","Rm":"Romans","Hb":"Hebrews","Jas":"James","Jdg":"Judges","Ezk":"Ezekiel","Zec":"Zechariah","Zech":"Zechariah",
   "Mic":"Micah","Zep":"Zephaniah","Hag":"Haggai","Jl":"Joel","Est":"Esther","Ecc":"Ecclesiastes","Eccles":"Ecclesiastes",
   "Lam":"Lamentations","Jdt":"Judith","Rv":"Revelation","Prv":"Proverbs",
+  "Wisd":"Wisdom","Wis":"Wisdom","Sap":"Wisdom","Sapient":"Wisdom","Sir":"Ecclesiasticus","Sirach":"Ecclesiasticus","Ecclus":"Ecclesiasticus",
+  "Eccli":"Ecclesiasticus","Tob":"Tobit","Bar":"Baruch","Macc":"Maccabees","Mach":"Maccabees","Machab":"Maccabees",
   // Latin abbreviations of the PL corpus (owner 2026-08-17 'does scripture hover work?'):
   // Joan. is Migne's John; Reg./Paral. are Vulgate-numbered and resolved by prefix below
   "Joan":"John","Joann":"John","Ioann":"John","Isai":"Isaiah","Isa":"Isaiah","Num":"Numbers",
@@ -115,7 +119,7 @@ function scriptureBook(value){
   if(base==='Paral')return prefix&&prefix<=2?prefix+' Chronicles':null;
   const name=XREF_EN[base]||base;
   if(prefix)return XREF_CAP[prefix+' '+name]?prefix+' '+name:null;
-  if(/^(Samuel|Kings|Chronicles|Corinthians|Thessalonians|Timothy|Peter)$/.test(name))return null;
+  if(/^(Samuel|Kings|Chronicles|Corinthians|Thessalonians|Timothy|Peter|Maccabees)$/.test(name))return null;
   return XREF_CAP[name]?name:null;
 }
 function scriptureVerses(selection){
@@ -149,7 +153,7 @@ function scriptureLocation(text,start,book){
   // "I.Iohan. 1 John 5:7" (a Latin siglum glossed by its English form): a small chapter number followed by a book name is that book's ordinal.
   if(chapter<=5&&/^\d/.test(chapterToken[1])&&XREF_ORDNEXT_CITED.test(text.slice(start+chapterToken[0].length)))return null;
   let end=start+chapterToken[0].length,selection='',following=false;
-  const first=/^\s*[.:,]\s*(?:v\.\s*)?(\d{1,3})(?![\p{L}\p{N}])/u.exec(text.slice(end));
+  const first=/^\s*[.:,]\s*(?:v\.\s*)?(\d{1,3})(?:(?=ff?(?!\p{L}))|(?![\p{L}\p{N}]))/u.exec(text.slice(end));
   // The dotted ordinal reading ("XIII. 4. 5. Mos.") only applies when the citation itself is dot-style; after a colon
   // verse ("Ps. 23:1. Ioh. I.1.") the period is the sentence's, and the verse stays.
   const ordinalNext=first&&Number(first[1])<=5&&(XREF_ORDNEXT.test(text.slice(end+first[0].length))||(/^\s*\./.test(first[0])&&XREF_ORDNEXT_DOT.test(text.slice(end+first[0].length))));
@@ -158,7 +162,7 @@ function scriptureLocation(text,start,book){
     if(Number(first[1])<1||Number(first[1])>200)return null;
     selection=String(Number(first[1]));end+=first[0].length;let previous=Number(first[1]);const dotted=/^\s*\./.test(first[0]);
     while(true){
-      const range=/^\s*\.?\s*[–—-]\s*(\d{1,3})(?![\p{L}\p{N}])/u.exec(text.slice(end));
+      const range=/^\s*\.?\s*[–—-]\s*(\d{1,3})(?:(?=ff?(?!\p{L}))|(?![\p{L}\p{N}]))/u.exec(text.slice(end));
       if(range){const last=Number(range[1]);if(last<previous||last>200)return null;selection+='-'+last;end+=range[0].length;previous=last;}
       let list=/^\s*,\s*(\d{1,3})(?![\p{L}\p{N}])/u.exec(text.slice(end));
       // Early-modern dotted verse lists — "Rom. 2. 14. 15." / "Psal. 19. v. 1. 8." (Voetius Disp. vol. 1 p. 55,
@@ -174,7 +178,7 @@ function scriptureLocation(text,start,book){
       if(Number(list[1])<=5&&(XREF_ORDNEXT.test(text.slice(end+list[0].length))||XREF_ORDNEXT_DOT.test(text.slice(end+list[0].length))))break;
       previous=Number(list[1]);if(!previous||previous>200)return null;selection+=','+previous;end+=list[0].length;
     }
-    const tail=/^\s*\.?\s*(?:(?:&amp;|&|et)\s*)?(?:seqq?\.|ff?\.)(?!\p{L})/u.exec(text.slice(end));
+    const tail=/^\s*\.?\s*(?:(?:&amp;|&|et)\s*)?(?:seqq?\.|ff?\.?)(?!\p{L})/u.exec(text.slice(end));
     if(tail){end+=tail[0].length;following=true;}
   }
   const psalm=book==='Psalms'&&vulgatePsalms()?gallToHeb(chapter):chapter;
@@ -201,7 +205,9 @@ function scriptureReferences(text){
     reference.start=match.index+match[1].length;references.push(reference);
     while(reference.selection){
       const separator=/^\s*(?:,|;|&amp;|&|et\b)\s*/.exec(text.slice(reference.end))||/^\s*\.\s*(?=[IVXLCDM]+\s*[.:,]\s*\d)/i.exec(text.slice(reference.end));if(!separator)break;
-      const next=scriptureLocation(text,reference.end+separator[0].length,book);if(!next?.selection)break;
+      // "Wisd. 8:1; ch. 12:13" / "Matt. 6:26; cap. 10:29": the chapter word before the continuation is skipped, the book carries over.
+      let from=reference.end+separator[0].length;const chap=/^(?:ch(?:ap)?|cap|c)\.\s*(?=[IVXLCDM]+\s*[.:,]|\d)/i.exec(text.slice(from));if(chap)from+=chap[0].length;
+      const next=scriptureLocation(text,from,book);if(!next?.selection)break;
       references.push(next);reference=next;
     }
     XREF_RE.lastIndex=reference.end;
