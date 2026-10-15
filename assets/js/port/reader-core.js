@@ -193,7 +193,7 @@ function gallToHeb(chapter){return chapter<=9||chapter>=148?chapter:chapter<=112
 // after Jude, Obadiah, Philemon, 2 and 3 John is a VERSE of the only chapter, as is one after "v."/"ver." ("Jude ver. 14, 15.").
 // An unmarked 1 ("Jude 1", "Jude 1:6", "2 John 1. 3.") and a colon after the number keep the chapter reading.
 function scriptureOneChapter(text,start,book){
-  const head=/^(?:(?:vv?|vers?|verses?)\.?\s*)?(\d{1,3})(?:(?=ff?(?!\p{L}))|(?![\p{L}\p{N}]))/u.exec(text.slice(start));if(!head)return null;
+  const head=/^(?:(?:[vV]v?|[vV]ers?|[vV]erses?)\.?\s*)?(\d{1,3})(?:(?=ff?(?!\p{L}))|(?![\p{L}\p{N}]))/u.exec(text.slice(start));if(!head)return null;
   const verse=Number(head[1]),marked=/^\D/.test(head[0]),rest=text.slice(start+head[0].length);
   if(!verse||verse>200||(verse===1&&!marked)||/^\s*:\s*\d/.test(rest))return null;
   if(verse<=5&&!marked&&XREF_ORDNEXT_CITED.test(rest))return null;
@@ -222,7 +222,7 @@ function scriptureLocation(text,start,book,chapterWord=false){
   // "ch. 3 v. 23", "cap. 11. vers. 21". A Roman chapter takes a plain verse as usual: "Ps. c. XLIV, 3".
   const strict=chapterWord&&/^\d/.test(chapterToken[1]);
   const first=(strict?/^(?:\s*:\s*|\s*[.,]?\s*(?:(?:vv?|vers?|verses?)\.|verses?\s)\s*)(\d{1,3})(?:(?=ff?(?!\p{L}))|(?![\p{L}\p{N}]))/u
-    :/^\s*[.:,]\s*(?:(?:vv?|vers?|verses?)\.?\s*)?(\d{1,3})(?:(?=ff?(?!\p{L}))|(?![\p{L}\p{N}]))/u).exec(text.slice(end));
+    :/^\s*[.:,]\s*(?:(?:[vV]v?|[vV]ers?|[vV]erses?)\.?\s*)?(\d{1,3})(?:(?=ff?(?!\p{L}))|(?![\p{L}\p{N}]))/u).exec(text.slice(end));
   // The dotted ordinal reading ("XIII. 4. 5. Mos.") only applies when the citation itself is dot-style; after a colon
   // verse ("Ps. 23:1. Ioh. I.1.") the period is the sentence's, and the verse stays.
   const ordinalNext=first&&Number(first[1])<=5&&(XREF_ORDNEXT.test(text.slice(end+first[0].length))||(/^\s*\./.test(first[0])&&XREF_ORDNEXT_DOT.test(text.slice(end+first[0].length))));
@@ -254,7 +254,11 @@ function scriptureLocation(text,start,book,chapterWord=false){
   const psalm=book==='Psalms'&&vulgatePsalms()?gallToHeb(chapter):chapter;
   return {start,end,book,chapter:psalm,selection,following,query:book+' '+psalm+(selection?':'+selection:''),...(psalm!==chapter?{printed:book+' '+chapter+(selection?':'+selection:'')}:{})};
 }
+// THE LONG S (2026-10-15): where the text keeps the printed ſ ("Pſal. 51", "Eſa.", "Epheſ.", "Theſſ.", and the verse mark "Verſ."),
+// the names are matched as s. ſ and s are one UTF-16 unit each, so every offset found in the folded copy is the printed text's own
+// and the link keeps the print's spelling.
 function scriptureReferences(text){
+  text=String(text).replace(/ſ/g,'s');
   const references=[];XREF_RE.lastIndex=0;let match;
   while((match=XREF_RE.exec(text))){
     if(!match[2].endsWith('.')&&!match[3])continue;
@@ -286,6 +290,10 @@ function scriptureReferences(text){
     // Bare num. denotes an internal numbered passage in scholarly prose.
     // Require a verse for this ambiguous abbreviation; spelled-out Numbers still works.
     if(/^num$/i.test(plainBook)&&!reference.selection){XREF_RE.lastIndex=resume;continue;}
+    // A lowercase Latin word is no book ("eſt. 2. Cor. 3: 13": est is 'is', not Esther; with the long s read as s it began taking the
+    // next citation's ordinal, 2 Corinthians lost to "Esther 2"; "num. 5. 6" is an item number): est, num, pro, ex, is, am open a
+    // citation in lower case only in the colon form ("num. 21:9").
+    if(/^(?:est|num|pro|ex|is|am)$/.test(plainBook)&&!/^\s*\d{1,3}\s*:\s*\d/.test(text.slice(match.index+match[0].length))){XREF_RE.lastIndex=resume;continue;}
     if(/(?:^|[\s.])Par$/.test(plainBook)&&!reference.selection){XREF_RE.lastIndex=resume;continue;}
     if(XREF_SOFT.test(XREF_LOOKUP.get(plainBook.toLowerCase())||'')&&(!/^\p{Lu}/u.test(plainBook)||!reference.selection||(XREF_COLON_ONLY.test(plainBook)&&!/^\s*\d{1,3}\s*:\s*\d/.test(text.slice(match.index+match[0].length))))){XREF_RE.lastIndex=resume;continue;}
     reference.start=match.index+match[1].length;references.push(reference);

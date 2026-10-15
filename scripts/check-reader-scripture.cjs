@@ -241,3 +241,11 @@ test('a work citing "Sam." and never "3./4. Reg." reads 1./2. Reg. as Kings; the
   vm.runInContext('XREF_REG_KINGS=true',t);assert.deepEqual(refs(t.inl('2. Reg. 19. v. 35. 1. Reg. 8. 46. 3. Reg. 17. 1.')),['2 Kings 19:35','1 Kings 8:46','1 Kings 17:1']);
   vm.runInContext('XREF_REG_KINGS=false',t);assert.deepEqual(refs(t.inl('2. Reg. 12. 13. 4. Reg. 19. 35.')),['2 Samuel 12:13','2 Kings 19:35']);
 });
+
+test('the long s is read as s, and the link keeps the printed spelling (2026-10-15)',()=>{
+  const t=fixture(),input='Pſal. 51. 5. Eſa. 53. 5. 1 Theſſ. 5. 23. Rom. 8. Verſ. 28. the Pſalmiſt ſaith',html=t.inl(input);
+  assert.deepEqual(refs(html),['Psalms 51:5','Isaiah 53:5','1 Thessalonians 5:23','Romans 8:28']);
+  assert.equal(withoutLinks(html),t.esc(input));
+  assert.match(html,/>Pſal\. 51\. 5<\/a>/);
+  assert.deepEqual(refs(t.inl('Contra eſt. 2. Cor. 3: 13. & num. 5. 6.')),['2 Corinthians 3:13']);
+});
