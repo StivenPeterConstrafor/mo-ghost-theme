@@ -292,8 +292,7 @@
           `<div class="sd-ov-stat"><b>${fmt(cited.length)} of ${fmt(counts.length)}</b><span>verses cited</span></div>` +
         `</div>${wholeLine}` +
         `<h3 class="sd-h3">Most-cited verses</h3>` +
-        `<ol class="sd-ov-top">${rows}</ol>` +
-        `<p class="sd-muted sd-ov-hint">Select any verse in the text to see who cites it.</p>`;
+        `<ol class="sd-ov-top">${rows}</ol>`;
       $ov.querySelectorAll(".sd-ov-verse").forEach((b) => {
         const bar = b.querySelector(".sd-ov-meter i");
         if (bar) bar.style.width = `${b.dataset.w}%`;
@@ -625,6 +624,24 @@
     if (r) load(r.book, r.c, r.v, false);
   });
 
-  const start = S.parseRef(new URLSearchParams(location.search).get("ref")) || S.legacyRef();
-  load(start ? start.book : S.BOOK_BY_SLUG.get("genesis"), start ? start.c : 1, start ? start.v : 0, false);
+  /* AN ADDRESS THAT DOES NOT RESOLVE SAYS SO (2026-10-15: ?ref=rom.5.12 opened Genesis 1 without a word). A known book
+   * with a chapter it does not have opens the book; anything else opens Genesis 1. Either way one line says what happened. */
+  const rawRef = (new URLSearchParams(location.search).get("ref") || "").trim();
+  const start = S.parseRef(rawRef) || S.legacyRef();
+  let fallback = null;
+  if (!start && rawRef) {
+    const bk = S.bookFrom(rawRef.replace(/[\s.:]+\d.*$/, "").replace(/[ .]+/g, "-").toLowerCase());
+    fallback = bk || null;
+    const $wrap = document.createElement("div");
+    $wrap.className = "container sd-notice-wrap";
+    const $note = document.createElement("p");
+    $note.className = "sd-notice";
+    $note.setAttribute("role", "status");
+    $wrap.appendChild($note);
+    $note.textContent = bk
+      ? `${bk.name} has ${bk.chapters} ${bk.chapters === 1 ? "chapter" : "chapters"}, so “${rawRef}” opens at ${S.refLabel(bk, 1)}.`
+      : `No passage matches “${rawRef}”, so the reader opens at Genesis 1. Choose a book and chapter above.`;
+    $layout.before($wrap);
+  }
+  load(start ? start.book : fallback || S.BOOK_BY_SLUG.get("genesis"), start ? start.c : 1, start ? start.v : 0, false);
 })();

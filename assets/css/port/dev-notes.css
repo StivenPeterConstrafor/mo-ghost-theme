@@ -49,3 +49,32 @@
 .fr-sn-timeline > li:first-child { border-top: 0; padding-top: 0; }
 .fr-sn-timeline h4 { margin: 0 0 2px; font-family: var(--font-body); font-size: 14px; font-weight: 600; }
 .fr-sn-timeline p { margin: 0; line-height: 1.6; }
+
+/* The note leads, read on a click (2026-10-15): two sentences, then the rest under "Read the whole note". */
+.fr-sn-lede-wrap { margin: 2px 0 12px; }
+.fr-sn-lede-wrap .fr-sn-card { margin: 0; }
+.fr-sn-verse-card .fr-sn-card { font-size: 16px; line-height: 1.6; color: var(--color-dark); }
+.fr-sn-readon {
+  margin: 6px 0 0; padding: 6px 0; min-height: 32px;
+  font: 600 13px/1.3 var(--font-body); color: var(--sd-accent, var(--color-dark));
+  background: none; border: 0; cursor: pointer;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px;
+}
+.fr-sn-readon:hover { color: var(--color-dark); }
+.fr-sn-readon:focus-visible { outline: 2px solid var(--sd-accent, currentColor); outline-offset: 2px; }
+.fr-sn-verse { margin: 0 0 4px; }
+.fr-sn-verse .fr-sn-note { margin: -4px 0 14px; }
+.fr-sn-with a { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.fr-sn-with a:hover { color: var(--sd-accent, var(--color-dark)); }
+/* "comment on 5:12, p. 309" on a commentary row: the page where it comments on the verse. */
+.fr-sn-has a { color: var(--sd-accent, var(--color-dark)); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.fr-sn-all { margin-top: 4px; }
+
+/* The Verse Desk: the verse's note, then its readings beside its history on a wide page. */
+.fr-sn-desk .fr-sn-lede-wrap { max-width: 72ch; }
+.fr-sn-desk .fr-sn-verse-card .fr-sn-card { font-size: 18px; line-height: 1.6; }
+/* The readings side by side (three on a wide page), each with its pages under it. */
+.fr-sn-desk-readings > .fr-sn-list { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px 32px; }
+.fr-sn-desk-readings .fr-sn-list p { font-size: 16px; }
+.fr-sn-desk .fr-dn-timeline { max-width: 1040px; }
+.fr-sn-desk .sd-h3 { margin-top: 28px; }

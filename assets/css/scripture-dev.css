@@ -1177,3 +1177,18 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
   .sd-index-card { padding: 11px 10px; }
   .sd-expand-panel { padding: 0 12px 12px; }
 }
+
+/* An address the reader could not place says so above the text (2026-10-15). */
+.sd-notice-wrap { margin-top: 20px; margin-bottom: -28px; }
+.sd-desk .sd-notice { margin-bottom: 20px; }
+.sd-notice {
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 15px; line-height: 1.5;
+  color: var(--color-dark);
+  background: #fbf8f3;
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+}
+@media (max-width: 899px) { .sd-notice-wrap { margin-bottom: 0; } }
+.sd-notice a { color: var(--sd-accent); text-decoration: underline; text-underline-offset: 3px; }

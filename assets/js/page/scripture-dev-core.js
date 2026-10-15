@@ -155,8 +155,11 @@
   // "john.3.16" | "john.3" -> {book, c, v}. Out-of-range chapters are
   // refused rather than clamped; the caller falls back to a default.
   function parseRef(raw) {
-    const m = String(raw || "").trim().toLowerCase().match(/^([a-z0-9-]+)\.(\d{1,3})(?:\.(\d{1,3}))?$/);
+    // "rom.5.12" and the way a reader types a reference ("Rom 5:12", "1 Cor 13") both resolve.
+    const m = String(raw || "").trim().toLowerCase().replace(/\s+/g, " ")
+      .match(/^([1-3]?[ .-]?[a-z][a-z .-]*?)[ .](\d{1,3})(?:[.:](\d{1,3}))?$/);
     if (!m) return null;
+    m[1] = m[1].replace(/[ .]+/g, "-");
     // bookFrom as the fallback so a library slug in an address resolves
     // too ("i-maccabees.1" as well as "1-maccabees.1").
     const book = BOOK_BY_SLUG.get(m[1]) || bookFrom(m[1]);
@@ -177,6 +180,28 @@
    * Book names and library slugs both resolve ("I Corinthians",
    * "i-corinthians", "1 Corinthians", "revelation-of-john"). */
   const ROMAN = { i: "1", ii: "2", iii: "3" };
+  /* Abbreviations (2026-10-15: ?ref=rom.5.12 opened Genesis 1 without a word). The usual SBL and
+   * Vulgate short forms, keyed with the hyphens taken out, so "1cor", "1-cor" and "i-cor" all land. */
+  const ABBREV = {};
+  [
+    ["genesis", "gen ge gn"], ["exodus", "exod exo ex"], ["leviticus", "lev lv"], ["numbers", "num nm nb"],
+    ["deuteronomy", "deut dt deu"], ["joshua", "josh jos"], ["judges", "judg jdg jg"], ["ruth", "ru rth"],
+    ["1-samuel", "1sam 1sa 1sm 1kgdms"], ["2-samuel", "2sam 2sa 2sm"], ["1-kings", "1kgs 1ki 1kg"], ["2-kings", "2kgs 2ki 2kg"],
+    ["1-chronicles", "1chr 1ch 1chron 1par"], ["2-chronicles", "2chr 2ch 2chron 2par"], ["ezra", "ezr"], ["nehemiah", "neh ne"],
+    ["esther", "esth est es"], ["job", "jb"], ["psalms", "ps psa pss psalm"], ["proverbs", "prov pro prv pr"],
+    ["ecclesiastes", "eccl eccles ecc qoh qoheleth"], ["song-of-solomon", "song sos cant canticle sg"], ["isaiah", "isa is"],
+    ["jeremiah", "jer je"], ["lamentations", "lam la"], ["ezekiel", "ezek ezk eze"], ["daniel", "dan dn da"], ["hosea", "hos ho"],
+    ["joel", "jl"], ["amos", "am"], ["obadiah", "obad ob"], ["jonah", "jon jnh"], ["micah", "mic mi"], ["nahum", "nah na"],
+    ["habakkuk", "hab hb"], ["zephaniah", "zeph zep zp"], ["haggai", "hag hg"], ["zechariah", "zech zec zc"], ["malachi", "mal ml"],
+    ["matthew", "matt mt mat"], ["mark", "mk mrk mar"], ["luke", "lk luk"], ["john", "jn jhn joh"], ["acts", "act ac"],
+    ["romans", "rom ro rm"], ["1-corinthians", "1cor 1co"], ["2-corinthians", "2cor 2co"], ["galatians", "gal ga"],
+    ["ephesians", "eph ephes"], ["philippians", "phil php"], ["colossians", "col"], ["1-thessalonians", "1thess 1thes 1th"],
+    ["2-thessalonians", "2thess 2thes 2th"], ["1-timothy", "1tim 1ti 1tm"], ["2-timothy", "2tim 2ti 2tm"], ["titus", "tit ti"],
+    ["philemon", "phlm philem phm"], ["hebrews", "heb"], ["james", "jas jam jm"], ["1-peter", "1pet 1pe 1pt"], ["2-peter", "2pet 2pe 2pt"],
+    ["1-john", "1jn 1jo 1joh"], ["2-john", "2jn 2jo 2joh"], ["3-john", "3jn 3jo 3joh"], ["jude", "jud jd"],
+    ["revelation", "rev re apoc apocalypse"], ["tobit", "tob tb"], ["judith", "jdt jth"], ["wisdom", "wis ws sap"],
+    ["sirach", "sir ecclus eccli"], ["baruch", "bar"], ["1-maccabees", "1macc 1mac 1mc 1ma"], ["2-maccabees", "2macc 2mac 2mc 2ma"],
+  ].forEach(([slug, forms]) => forms.split(" ").forEach((f) => { ABBREV[f] = slug; }));
   function bookFrom(raw) {
     let n = String(raw || "").trim().toLowerCase().replace(/[\s_]+/g, "-")
       .replace(/^(iii|ii|i)-/, (m, r) => `${ROMAN[r]}-`)
@@ -190,7 +215,7 @@
       .replace(/^(?:the-)?wisdom(?:-of-solomon)?$/, "wisdom");
     if (BOOK_BY_SLUG.has(n)) return BOOK_BY_SLUG.get(n);
     n = n.replace(/^([123])(?=[a-z])/, "$1-");
-    return BOOK_BY_SLUG.get(n) || BOOKS.find((b) => b.lib === raw) || null;
+    return BOOK_BY_SLUG.get(n) || BOOKS.find((b) => b.lib === raw) || BOOK_BY_SLUG.get(ABBREV[n.replace(/-/g, "")]) || null;
   }
   function legacyRef(loc) {
     const l = loc || window.location;
@@ -809,22 +834,40 @@
    * sometimes the start of the book's section, so the note says only
    * "the page this list links to". */
   const COMMENTARY_KIND = { collected: "Collected works", treatises: "Treatise", law: "Councils and canons" };
+  /* OLDEST FIRST (2026-10-15, the owner: "ordering intuitively, correct ranking"). The worker keeps the map's order, which
+   * read as no order at all (Calvin, Gwalther, Hammond, Grotius, Wesley ... Origen 63rd on Romans 5). A list of commentaries
+   * now reads as the passage's reception history, as Compare reads a topic: by century, undated last, then author, then
+   * title and volume (2 before 10). */
+  const byCentury = (a, b) => {
+    const x = Number(a.cen) || Infinity, y = Number(b.cen) || Infinity;
+    if (x !== y) return x < y ? -1 : 1;
+    const sources = window.FRScriptureSources;
+    const cmp = sources && sources.compare ? sources.compare : (p, q) => String(p || "").localeCompare(String(q || ""));
+    return cmp(a.a, b.a) || (sources && sources.compareWorks ? sources.compareWorks(a, b) : cmp(a.t, b.t)) || cmp(a.w, b.w);
+  };
   function commentaryGroups(items) {
     const list = items || [];
     return {
-      // Works on the book, those with a chapter range first; then the whole-Bible sets (`annotation`).
-      chapter: list.filter((e) => !e.annotation).sort((a, b) => (Number(b.c1) > 0 ? 1 : 0) - (Number(a.c1) > 0 ? 1 : 0)),
-      whole: list.filter((e) => e.annotation),
+      // Works on the book; then the whole-Bible sets (`annotation`). Each oldest first.
+      chapter: list.filter((e) => !e.annotation).sort(byCentury),
+      whole: list.filter((e) => e.annotation).sort(byCentury),
     };
   }
   function commentaryItem(e, ctx) {
     const li = document.createElement("li");
     li.className = "sd-source sd-commentary";
+    li.dataset.w = e.w || "";
     const href = sourceHref(e.href, e.w);
-    const range = e.c1
+    // A range that is the whole book says nothing ("Chapters 1–16" on all of Romans); a part of it does.
+    const whole = Number(e.c1) <= 1 && (!e.c2 || Number(e.c2) >= ctx.book.chapters);
+    const range = e.c1 && !whole
       ? (e.c2 && e.c2 !== e.c1 ? `Chapters ${e.c1}\u2013${e.c2}` : `Chapter ${e.c1}`)
-      : (COMMENTARY_KIND[e.kind] || "");
-    const meta = [e.a, range, centuryLabel(e.cen)].filter(Boolean).map(esc).join(" \u00b7 ");
+      : (e.c1 ? "" : (COMMENTARY_KIND[e.kind] || ""));
+    // Said before the click: whether the work has its own page on this chapter or only cites it.
+    const on = ctx.c && e.anchored === "chapter" ? `Comment on ${refLabel(ctx.book, ctx.c, 0)}`
+      : ctx.c && e.anchored === "cited" ? `Cites ${refLabel(ctx.book, ctx.c, 0)}` : "";
+    const meta = [e.a, centuryLabel(e.cen), range].filter(Boolean).map(esc).join(" \u00b7 ") +
+      (on ? `<span class="sd-comm-on"> \u00b7 ${esc(on)}</span>` : "");
     const pid = `sdp-${Math.random().toString(36).slice(2, 9)}`;
     li.innerHTML =
       `<div class="sd-source-head">` +
@@ -836,6 +879,11 @@
         `</div>${ 
         href ? `<button type="button" class="sd-preview-btn" aria-expanded="false" aria-controls="${pid}">Preview</button>` : "" 
       }</div><div class="sd-preview" id="${pid}" hidden></div>`;
+    // The volumes of a set share one title (Melanchthon's "Works" three times on Romans 5): each says which it is.
+    loadVolumes().then((volumes) => {
+      const label = volumeLabel(volumes, e.w, e.t);
+      if (label) li.querySelector(".sd-source-title").insertAdjacentHTML("beforeend", `<span class="sd-source-vol">, ${esc(label)}</span>`);
+    });
     if (!href) return li;
     const $btn = li.querySelector(".sd-preview-btn");
     const $pv = li.querySelector(".sd-preview");
@@ -1055,7 +1103,7 @@
     commentaryStrip, commentaryFolds, commentaryItem, commentaryGroups, cleanChapter,
     TRANSLATIONS, BOOKS, BOOK_BY_SLUG, esc, fmt, plural,
     CANON, APOCRYPHA, SECTIONS, chainOf, APOCRYPHA_TEXT, textName, textShort,
-    parseRef, legacyRef, refKey, refLabel, readerHref, deskHref, sourceHref,
+    parseRef, legacyRef, bookFrom, refKey, refLabel, readerHref, deskHref, sourceHref,
     translationInfo, recalledTranslation, rememberTranslation,
     fetchChapterHtml, markVerses, verseTextFrom, fetchVerseText,
     fetchApocryphaChapter, apocryphaChapterNode, chapterNode, fetchApocryphaVerse,
