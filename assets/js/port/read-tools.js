@@ -495,7 +495,9 @@ function __initSearch(){
         legs.push(fetch("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/vsearch?q="+enc(term)+"&k="+k+"&corpus="+c).then(r=>r.json()).catch(()=>null));}});
       const [lib,...pats]=await Promise.all(legs);
       if(term!==q.value.trim()||mode!=="all")return;
-      const res=(lib&&lib.results)||[],groups=corpusGroups(res);
+      // a hit on a work the catalogue no longer holds (a Patrologia Graeca id from before the 09-29 partition still sits in the
+      // index: "pg-1725") opens no page, so it is left out once the catalogue has loaded
+      const all=(lib&&lib.results)||[],res=Object.keys(m).length?all.filter(x=>m[x.slug]):all,groups=corpusGroups(res);
       // one row per work, closest first, its other close pages named under it (10-15 audit: the 120 page rows repeated the same
       // works down the list and hid how many works answered)
       let h=res.length?("<div class=rsn>"+res.length+" passages in "+groups.length+" "+(groups.length===1?"work":"works")+(SCOPE.tr?" — "+esc(SCOPE.tr)+" works":"")+"</div>"+groups.map(g=>{const w=m[g.slug]||{};
