@@ -14,7 +14,10 @@
      scope                 → optional {label, by}: the answer is limited to one author's works (the author page's Search sends
                              room: <slug>; the search page's author filter sends authors: [names]; mo-workers #41), so the heading
                              names them (label: "Richard Baxter’s works"), the teaser says whose (by: "by Richard Baxter") and the
-                             concept card is left out */
+                             concept card is left out
+     keep(slug)            → optional: only these works count (the author page's "Search in" set, 2026-10-14: Calvin's 45
+                             commentary volumes of his 48 works). The room's whole list of works is asked for once and kept to the
+                             set, and the counts are made from it, so "N works · pages · times" is the set's, not the room's. */
 (function () {
   'use strict';
   const STOP = new Set(('et in est non ad cum ut quod qui quae quo de sed per ab ex se si enim etiam autem quia hoc esse sunt eius nec vel uel aut ita sic tamen nam id ea eo ' +
@@ -495,17 +498,25 @@
       const my = ++state.seq, G = groups();
       if (G.length < state.groups.length) { $('.wix-sum').textContent = 'No form of every word is in the word index.'; $('.wix-trad').innerHTML = ''; $('.wix-list').innerHTML = ''; return; }
       $('.wix-sum').textContent = 'Counting every page…';
+      const keep = typeof opts.keep === 'function' ? opts.keep : null;
       const [sum, list] = await Promise.all([
-        post({ op: 'words', by: 'summary', groups: G }),
-        post({ op: 'words', by: 'works', groups: G, limit: 600 })]);
+        keep ? null : post({ op: 'words', by: 'summary', groups: G }),
+        post({ op: 'words', by: 'works', groups: G, limit: keep ? 2000 : 600 })]);
       if (my !== state.seq) return;
-      state.sum = (sum.rows || []).map(r => ({ tradition: tradOf(r), works: Number(r.works), pages: Number(r.pages), occ: Number(r.occurrences) }))
+      if (keep) {
+        // A SET (opts.keep): an author's works are a few hundred at most, so one list of 2,000 holds every work of the room that
+        // uses the word; kept to the set, it is complete, and the counts below are summed from it rather than asked of the server.
+        const kept = (list.rows || []).filter(r => keep(r.slug)), by = new Map();
+        kept.forEach(r => { const t = tradOf(r), a = by.get(t) || { tradition: t, works: 0, pages: 0, occ: 0 }; a.works += 1; a.pages += Number(r.pages); a.occ += Number(r.occurrences); by.set(t, a); });
+        list.rows = kept;
+        state.sum = [...by.values()].sort((a, b) => (a.tradition ? 0 : 1) - (b.tradition ? 0 : 1) || b.works - a.works);
+      } else state.sum = (sum.rows || []).map(r => ({ tradition: tradOf(r), works: Number(r.works), pages: Number(r.pages), occ: Number(r.occurrences) }))
         .sort((a, b) => (a.tradition ? 0 : 1) - (b.tradition ? 0 : 1) || b.works - a.works);
       const tot = state.sum.reduce((a, r) => ({ works: a.works + r.works, pages: a.pages + r.pages, occ: a.occ + r.occ }), { works: 0, pages: 0, occ: 0 });
-      $('.wix-sum').innerHTML = tot.works ? `<b>${n(tot.works)}</b> works · ${n(tot.pages)} pages · ${n(tot.occ)} times` : 'In no work of the library.';
+      $('.wix-sum').innerHTML = tot.works ? `<b>${n(tot.works)}</b> ${tot.works === 1 ? 'work' : 'works'} · ${n(tot.pages)} ${tot.pages === 1 ? 'page' : 'pages'} · ${n(tot.occ)} ${tot.occ === 1 ? 'time' : 'times'}` : 'In no work of the library.';
       state.byTrad = new Map();
       const all = list.rows || [];
-      state.all = all; state.allFull = all.length >= tot.works;
+      state.all = all; state.allFull = !!keep || all.length >= tot.works;
       for (const s of state.sum) {
         const rows = all.filter(r => tradOf(r) === s.tradition);
         state.byTrad.set(s.tradition, { rows, full: rows.length >= s.works });
@@ -520,7 +531,7 @@
     // a tradition's rows, fetched on their own when the first list did not reach them
     async function rowsOf(t, need) {
       const b = state.byTrad.get(t);
-      if (b.full || b.rows.length >= need) return b;
+      if (b.full || b.rows.length >= need || typeof opts.keep === 'function') return b;   // a set's rows are all in hand
       const r = await post({ op: 'words', by: 'works', groups: groups(), tradition: t, limit: 2000 });
       b.rows = r.rows || b.rows; b.full = true;
       return b;
