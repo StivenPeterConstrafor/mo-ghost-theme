@@ -196,8 +196,48 @@ test('early-modern dotted verse lists attach ascending verses and stop at prose 
   input='forever. 2 ad Tim. 4. Daniel. 12.';assert.deepEqual(refs(t.inl(input)),['Daniel 12']);
   input='its proper seat Rom. 3. & 4. Eph. 2. Gal. 2. & 3. The remaining';assert.deepEqual(refs(t.inl(input)),['Romans 3','Ephesians 2','Galatians 2']);
   input='and Tim. 1. Ps. 45, 8. The end of the law';assert.deepEqual(refs(t.inl(input)),['Psalms 45:8']);
-  input='49. Exo. 4. John 3. Acts 3. Rom. 8. Gal. 4. &c.: but that';assert.deepEqual(refs(t.inl(input)),['John 3','Acts 3','Romans 8','Galatians 4']);
+  input='49. Exo. 4. John 3. Acts 3. Rom. 8. Gal. 4. &c.: but that';assert.deepEqual(refs(t.inl(input)),['Exodus 4','John 3','Acts 3','Romans 8','Galatians 4']);
   input='What does Voetius take from Rom. 2. 14. 15? And Psal. 19. v. 1. 8!';assert.deepEqual(refs(t.inl(input)),['Romans 2:14,15','Psalms 19:1,8']);
   input='Num. 20. v. 17. 19. 40,000 Israelites are killed';assert.deepEqual(refs(t.inl(input)),['Numbers 20:17,19']);
   input='1 Cor. 11. 5. 12. and 2 Tim. 3. 9. 10. and Heb. 12. v. 14. 2. Pet. 3. 1.';assert.deepEqual(refs(t.inl(input)),['1 Corinthians 11:5,12','2 Timothy 3:9,10','Hebrews 12:14','2 Peter 3:1']);
+});
+
+test('one-chapter books, early-modern abbreviations and Vulgate Kings link; word-like abbreviations need a capital and a verse (census 2026-10-15)',()=>{
+  const t=fixture(),cases=[
+    ['Jude 6. 2 Pet. 2. 4.',['Jude 1:6','2 Peter 2:4']],['Jude ver. 14, 15.',['Jude 1:14,15']],['Jude 1:6',['Jude 1:6']],
+    ['2 John 10. 3 John 4.',['2 John 1:10','3 John 1:4']],['Philem. 10. 11.',['Philemon 1:10,11']],['Obad. 21.',['Obadiah 1:21']],
+    ['Mat. 5. 3. Jam. 1. 17. Psa. 110. 1.',['Matthew 5:3','James 1:17','Psalms 110:1']],
+    ['1 Kin. 8. 27. 2 Chro. 20. 12. 1 Thes. 5. 23.',['1 Kings 8:27','2 Chronicles 20:12','1 Thessalonians 5:23']],
+    ['Canticles 1:4; Song of Sol. 8. 6.',['Song of Songs 1:4','Song of Songs 8:6']],
+    ['3 Kings 8. 27. IV Kings 19:35. 2 Paralip. 19. 6.',['1 Kings 8:27','2 Kings 19:35','2 Chronicles 19:6']],
+    ['Gen. 2. vers. 16. Rom. 8. ver. 28.',['Genesis 2:16','Romans 8:28']],
+    ['Ex 3:14 and Is. 53:11',['Exodus 3:14','Isaiah 53:11']],['Mar. 16. 16. Lu. 15. 7. Philip. 3:20',['Mark 16:16','Luke 15:7','Philippians 3:20']],
+    ['Ex 1. 2. et 3. sequitur',[]],['the ratio is 3:4',[]],['Philip II of Spain',[]],['Mar. 4. 1650',[]],
+    ['Rom. 5, 2 ex quo; Rom. 5, 3 pro nobis',['Romans 5:2','Romans 5:3']]];
+  for(const [input,expected] of cases)assert.deepEqual(refs(t.inl(input)),expected,input);
+});
+
+test('chapter words, chapter lists, cap. chains and the Latin forms of the divines link (Binchius, owner 2026-10-15)',()=>{
+  const t=fixture(),cases=[
+    ['Rom. ch. 3. Matt. chap. 5:23. Matt. ch. 15, ver. 19. Rom. ch. 3 v. 23.',['Romans 3','Matthew 5:23','Matthew 15:19','Romans 3:23']],
+    ['Rom. c. 3. v. 20. Esa. cap. 46. vers. 8. cap. 66. vers. 2.',['Romans 3:20','Isaiah 46:8','Isaiah 66:2']],
+    ['Exod. chs. 7, 8, 9. Gal. chs. 4 & 3. Job ch. 1 and 2.',['Exodus 7','Exodus 8','Exodus 9','Galatians 4','Galatians 3','Job 1','Job 2']],
+    ['Matt. ch. 21, 26, 27.',['Matthew 21','Matthew 26','Matthew 27']],['Matth. cap. 21. 26. 27.',['Matthew 21']],
+    ['Zechariah ch. 3, 3, 4, 5.',['Zechariah 3']],['Ps. c. XLIV, 3: unxit',['Psalms 44:3']],['Psalm c. 3. The LORD',['Psalms 100:3']],
+    ['Exod. ch. 21ff. Gen. ch. 7, 1 Sam. 12:18',['Exodus 21','Genesis 7','1 Samuel 12:18']],
+    ['Syr. 34. v. 8. Actor. 2. v. 17. Johan. 3. v. 16. Hose. 2. v. 19. 2. Par. 17. v. 9.',['Ecclesiasticus 34:8','Acts 2:17','John 3:16','Hosea 2:19','2 Chronicles 17:9']],
+    ['Jud. 3. v. 7. Epist. Iud. 12. Epist. Jud. v. 6.',['Judges 3:7','Jude 1:12','Jude 1:6']],
+    ['Joseph. l. 1. antiquit. Jud. c. 16.',[]],['art. 2. par. 3. 4.',[]],['Phil. II. 4. par opposition',['Philippians 2:4']],
+    ['Ps. 96: 2, 1 Par. 16: 32.',['Psalms 96:2','1 Chronicles 16:32']],['Roman. 1. 12. & seq.1. Ioh. 3. 8.',['Romans 1:12','1 John 3:8']],
+    ['Rom. 5, 2 actor est',['Romans 5:2']]];
+  for(const [input,expected] of cases)assert.deepEqual(refs(t.inl(input)),expected,input);
+});
+
+test('a work citing "Sam." and never "3./4. Reg." reads 1./2. Reg. as Kings; the Vulgate traditions keep Samuel (Binchius, 2026-10-15)',()=>{
+  const t=fixture();
+  assert.equal(t.scriptureRegKings('1. Sam. 2. 6. ... 2. Reg. 19. v. 35.'),true);
+  assert.equal(t.scriptureRegKings('1. Sam. 2. 6. ... 3. Reg. 8. 46. 2. Reg. 19. 35.'),false);
+  assert.equal(t.scriptureRegKings('1. Reg. 16. 7. 2. Reg. 12. 13.'),false);
+  vm.runInContext('XREF_REG_KINGS=true',t);assert.deepEqual(refs(t.inl('2. Reg. 19. v. 35. 1. Reg. 8. 46. 3. Reg. 17. 1.')),['2 Kings 19:35','1 Kings 8:46','1 Kings 17:1']);
+  vm.runInContext('XREF_REG_KINGS=false',t);assert.deepEqual(refs(t.inl('2. Reg. 12. 13. 4. Reg. 19. 35.')),['2 Samuel 12:13','2 Kings 19:35']);
 });
