@@ -151,6 +151,17 @@ function loadHeadingsTier(){
     if(MODE==='title'){hint.textContent='Searches the titles, authors and chapter headings of '+(WLIST||[]).length.toLocaleString()+' works ('+rows.length.toLocaleString()+' headings), to find a book. To find where a word or an idea appears inside the books, use Search the texts.';RESTORE_PAGE=RESULT_PAGE;run();}
   }).catch(function(){_hLoading=false;});}
 function foldQ(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/æ/g,'ae').replace(/œ/g,'oe').replace(/ſ/g,'s').replace(/v/g,'u').replace(/j/g,'i');}   // ligatures as the word index folds them (10-15)
+/* HOW WELL A TITLE ANSWERS THE QUERY (2026-10-15): 0 the main title is the query, 1 it begins with it, 2 the query is a word of the
+   main title, 3 it is elsewhere (a subtitle, the Latin, an epithet), 4 only a section heading matched. Ranks within the title tier
+   of FRSearch.titleRank; an author with more matches only breaks ties ("institutes": Calvin's Institutes before seven books of
+   Lactantius' Divine Institutes, which before were first by count alone). */
+function titleMatch(g,fq){if(!g.work)return 4;var w=WORKS_BY_SLUG[g.work.d]||{};var ts=[g.work.t,w.title_en,w.title].filter(Boolean).map(function(t){return foldQ(String(t).split(/[,:;(]/)[0]).replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim();});var best=3;ts.forEach(function(t){var main=t.replace(/^(?:the|a|an) /,'');var s=main===fq?0:(main.indexOf(fq+' ')===0?1:((' '+main+' ').indexOf(' '+fq+' ')>=0?2:3));if(s<best)best=s;});return best;}
+/* STANDING, FOR TIES (2026-10-15): among titles that answer the query equally well, the author the library cites more comes
+   first (v1/reception/index.json: author slug -> [times cited, ...]; Calvin 25,130, Budde 496). 0-9000, lower first; an author
+   not in the index, or before the file arrives, 9000. Loaded once; a title search on screen is redrawn when it lands. */
+var STANDING=null;
+function standing(a){if(!STANDING)return 9000;var k=String(a||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');var r=STANDING[k];var n=r&&r[0]?Number(r[0]):0;return 9000-Math.min(9000,Math.round(Math.log10(n+1)*1500));}
+fetch(FRB+'/v1/reception/index.json',{credentials:'omit'}).then(function(r){return r.ok?r.json():null;}).then(function(d){if(!d)return;STANDING=d;if(MODE==='title'&&qEl.value.trim())run();}).catch(function(){});
 function renderTitle(q){
   if(CATALOG_ERROR){searchUnavailable('Work catalogue',q);return;}
   if(!IDX){var waiting=seq,requestedPage=RESULT_PAGE;res.innerHTML='';ct.innerHTML='<span class="sbusy">loading…</span>';navMap(function(){if(waiting===seq){RESTORE_PAGE=requestedPage;run();}});return;}
@@ -181,7 +192,7 @@ function renderTitle(q){
   if(!order.length){ct.innerHTML='';res.innerHTML=zeroHtml(q,'title');return;}
   var _ed=order.filter(function(d){var w=WORKS_BY_SLUG[d];var k=w&&FRSearch.workKind?FRSearch.workKind(w):'work';return k==='preface'||k==='apparatus';}).length;
   ct.textContent=(order.length-_ed)+' work'+(order.length-_ed===1?'':'s')+(_ed?' · '+_ed+' editorial item'+(_ed===1?'':'s'):'')+(m.length>order.length?(' · '+m.length+' incl. sections'):'');
-  var rankOrder=order.slice(),priorities={},authorCounts={};if(q.trim()){order.forEach(function(d){var e=byDoc[d].work||byDoc[d].divs[0];authorCounts[e.a]=(authorCounts[e.a]||0)+1;});order.forEach(function(d){var e=byDoc[d].work||byDoc[d].divs[0];priorities[d]=e._au*1000000-authorCounts[e.a];});}function paintTitle(page){var _own=m.filter(function(e){return e._au===0;}).length,_authorQuery=m.length>0&&_own>=0.6*m.length;order=FRSearch.orderWorks(rankOrder,(ORDER==='relevance'||(ORDER==='shelf'&&(_authorQuery||_epithet)))?'title':ORDER,WORKS_BY_SLUG,priorities,FRResearch.workOrder);   /* an author's name (owner 2026-09-17, "Athanasius"): the author's works by kind and size, not shelf-split with Migne's notes interleaved */var win=FRSearch.pageWindow(order.length,page,WORKS_PAGE);setPager(order.length,win.page,paintTitle,'works',WORKS_PAGE);res.innerHTML=order.slice(win.start,win.end).map(function(d){
+  var rankOrder=order.slice(),priorities={},authorCounts={};if(q.trim()){order.forEach(function(d){var e=byDoc[d].work||byDoc[d].divs[0];authorCounts[e.a]=(authorCounts[e.a]||0)+1;});var fq=foldQ(q).replace(/\s+/g,' ').trim();order.forEach(function(d){var e=byDoc[d].work||byDoc[d].divs[0];priorities[d]=e._au*1000000+titleMatch(byDoc[d],fq)*10000+standing(e.a)-Math.min(authorCounts[e.a],99);});}function paintTitle(page){var _own=m.filter(function(e){return e._au===0;}).length,_authorQuery=m.length>0&&_own>=0.6*m.length;order=FRSearch.orderWorks(rankOrder,(ORDER==='relevance'||(ORDER==='shelf'&&(_authorQuery||_epithet)))?'title':ORDER,WORKS_BY_SLUG,priorities,FRResearch.workOrder);   /* an author's name (owner 2026-09-17, "Athanasius"): the author's works by kind and size, not shelf-split with Migne's notes interleaved */var win=FRSearch.pageWindow(order.length,page,WORKS_PAGE);setPager(order.length,win.page,paintTitle,'works',WORKS_PAGE);res.innerHTML=order.slice(win.start,win.end).map(function(d){
     var g=byDoc[d], e=g.work||g.divs[0];
     var href=rdHref(e.d,e.k==='div'?e.page:null);
     var nd=g.divs.length;
