@@ -81,6 +81,13 @@
         `<a data-sd-next hidden>Next verse</a>` +
       `</nav>` +
     `</header>` +
+    // The page runs long (ten screens on Romans 5:12): its sections by name, under the verse. The reception history's link
+    // appears when faith-port-scripture-notes.js places that section.
+    `<nav class="sd-desk-toc" aria-label="On this page"><span>On this page:</span>` +
+      `<a href="#sd-h-trans">${book.ap ? "The text" : "Translations"}</a>` +
+      `<a href="#sd-h-reads" data-sd-toc-reads hidden>Reception history</a>` +
+      `<a href="#sd-h-comm">Commentaries</a><a href="#sd-h-cite">Citations</a><a href="#sd-h-sim">Similar passages</a><a href="#sd-h-ask">Ask</a>` +
+    `</nav>` +
 
     `${transSection}` +
 
@@ -239,6 +246,7 @@
    * Augustine, who cites it 160 times). The worker's author facet counts every citation under the filters, its hundred
    * largest first: the cards are drawn from it, and an author's rows are fetched when the card is opened. */
   let authorFacet = [];
+  let authorYears = new Map(); // name -> the year the reception history dates him by (S.loadAuthorYears)
   let authorsShown = 15;
   const authorLoads = new Map();
   const authorDone = new Set();
@@ -565,6 +573,12 @@
   // A set's volumes share one title in the index: each card says which volume it is, and they stand in volume order.
   let volumes = new Map();
   S.loadVolumes().then((loaded) => { volumes = loaded; if (groups.size) renderGroups(); });
+  // when each author wrote, for every card (not only the authors whose rows are loaded)
+  S.loadAuthorYears().then((loaded) => { authorYears = loaded; if (groups.size || authorFacet.length) renderGroups(); });
+  function authorCentury(key, group) {
+    const y = Number(authorYears.get(key));
+    return y > 0 ? Math.floor((y - 1) / 100) + 1 : group.cen;
+  }
   const volumeOf = (key, work) => S.volumeLabel(volumes, key, work.title);
   function renderWorkGroups(authorKey, group, host) {
     // The works that cite the verse most first (Against Julian before a letter citing it once), then by title and volume.
@@ -628,7 +642,7 @@
       chunk.forEach(({ key, group, works, n, whole }, index) => {
         const panelId = `sd-author-panel-${start + index}`;
         // The century first, so the cards read as who and when (2026-10-15); the works once all the author's rows are in.
-        grid.appendChild(makeIndexCard("author", key, key, [S.centuryLabel(group.cen), whole && works.length ? plural(works.length, "work", "works") : "", plural(n, "citation", "citations")].filter(Boolean).join(" · "), openAuthor === key, panelId));
+        grid.appendChild(makeIndexCard("author", key, key, [S.centuryLabel(authorCentury(key, group)), whole && works.length ? plural(works.length, "work", "works") : "", plural(n, "citation", "citations")].filter(Boolean).join(" · "), openAuthor === key, panelId));
       });
       set.appendChild(grid);
       const selected = chunk.find(({ key }) => key === openAuthor);

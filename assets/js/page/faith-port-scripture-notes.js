@@ -57,44 +57,72 @@
     .then((r) => (r.ok ? r.json() : null)).then((d) => {
       if (!d) return null;
       const m = new Map(d.centuries), total = d.centuries.reduce((a, [, n]) => a + n, 0);
-      return { share: (c) => (m.get(c) || 0) / total };
+      const peak = d.centuries.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+      return { share: (c) => (m.get(c) || 0) / total, peak };
     }).catch(() => null));
-  function standsOut(x, base) {
-    if (!base) return null;
-    let best = null;
+  // the centuries where the verse is cited half again above the library's usual share, the strongest first (at most three)
+  function outliers(x, base) {
+    if (!base) return [];
+    const out = [];
     for (const [c, n] of x.strip || []) {
       if (n < Math.max(3, 0.02 * x.works) || !base.share(c)) continue;
       const r = n / x.works / base.share(c);
-      if (r >= 1.5 && (!best || r > best[1])) best = [c, r];
+      if (r >= 1.5) out.push([c, r]);
     }
-    return best && best[0];
+    return out.sort((a, b) => b[1] - a[1]).slice(0, 3).map(([c]) => c);
   }
+  const standsOut = (x, base) => outliers(x, base)[0] || null;
   const ord = (n) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[n % 10] || "th")}`;
-  const HOWS = { exegesis: "comments on the verse", explicit: "cites it", quotation: "quotes it", allusion: "alludes to it" };
+  const and = (xs) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+  // How the page uses the verse, in the site's one vocabulary (scripture-kinds.js: quotes, cites, alludes, expounds)
+  const kindOf = (h) => {
+    const K = window.FRScriptureKind;
+    const v = K ? K.verb(h) : ({ quotation: "quotes", explicit: "cites", allusion: "alludes", exegesis: "expounds" }[h] || "cites");
+    return v === "alludes" ? "alludes to it" : `${v} it`;
+  };
+  /* The eras by name for a reader who does not know the periods, with their years (the files carry the ids). */
+  const ERA = {
+    fathers: ["Early church", "to 600"], "early-medieval": ["Early Middle Ages", "600–1100"],
+    scholastic: ["High and late Middle Ages", "1100–1500"], reformation: ["Reformation", "1500–1600"],
+    "17th": ["Seventeenth century", "1600–1700"], "18th": ["Eighteenth century", "1700–1800"], modern: ["Modern era", "since 1800"],
+  };
+  const eraName = (e) => ERA[e.id] || [e.label, ""];
+  // the author's life as the catalogue gives it ("c. 185–c. 254"), else the year the history dates him by
+  const life = (x) => x.d || (x.y ? `fl. c. ${x.y}` : "");
   const REC_NOTE = "From every page in the library that cites the verse, dated by its author's life.";
   /* The century strip: works citing the verse in each century, the busiest at full height. */
-  function receptionStrip(rv) {
+  /* The century strip: works citing the verse in each century, the busiest at full height, the centuries where it is cited more
+   * than the library's usual share in the accent colour; a sentence above says what the bars show. */
+  function receptionStrip(rv, base) {
     const s = rv.strip || [];
     if (s.length < 2) return "";
     const max = Math.max(...s.map(([, n]) => n));
     const lo = s[0][0], hi = s[s.length - 1][0], by = new Map(s);
+    const outs = outliers(rv, base), isOut = new Set(outs);
     const cols = [];
     for (let c = lo; c <= hi; c += 1) {
       const n = by.get(c) || 0;
+      const tip = `${ord(c)} century: ${fmt(n)} ${n === 1 ? "work" : "works"}${isOut.has(c) ? ", more than usual" : ""}`;
       // square-root heights: the 17th century's hundreds must not flatten the Fathers' handful (the label says how many)
-      cols.push(`<li style="--k:${n ? Math.max(0.06, Math.sqrt(n / max)).toFixed(3) : 0}" title="${ord(c)} century: ${fmt(n)} ${n === 1 ? "work" : "works"}"><span class="fr-rh-bar" aria-hidden="true"></span><span class="fr-rh-c" aria-hidden="true">${c}</span><span class="fr-rh-sr">${ord(c)} century: ${fmt(n)} ${n === 1 ? "work" : "works"}</span></li>`);
+      cols.push(`<li${isOut.has(c) ? ' class="is-out"' : ""} style="--k:${n ? Math.max(0.06, Math.sqrt(n / max)).toFixed(3) : 0}" title="${tip}"><span class="fr-rh-bar" aria-hidden="true"></span><span class="fr-rh-c" aria-hidden="true">${c}</span><span class="fr-rh-sr">${tip}</span></li>`);
     }
-    return `<figure class="fr-rh-strip-wrap"><ol class="fr-rh-strip">${cols.join("")}</ol><figcaption class="sd-muted">Works citing it, century by century</figcaption></figure>`;
+    const lede = `${fmt(rv.works)} ${rv.works === 1 ? "work cites" : "works cite"} it, from the ${ord(lo)} century to the ${ord(hi)}${outs.length
+      ? `; more often than usual in the ${and(outs.slice().sort((a, b) => a - b).map(ord))} ${outs.length > 1 ? "centuries" : "century"}` : ""}.`;
+    const peak = base && base.peak;
+    const cap = `Works citing it in each century.${peak ? ` The library holds the most from the ${ord(peak)} century, so that bar runs tall for most verses.` : ""}${outs.length > 1 ? " The coloured bars are the centuries where this verse is cited more than the library's usual share."
+      : outs.length ? " The coloured bar is the century where this verse is cited more than the library's usual share." : ""}`;
+    return `<p class="fr-rh-lede">${lede}</p><figure class="fr-rh-strip-wrap"><ol class="fr-rh-strip">${cols.join("")}</ol><figcaption class="sd-muted">${cap}</figcaption></figure>`;
   }
   // the page's gist, ended at a word (the files keep 180 characters of it), the whole on hover
   const gist = (g) => {
     const t = String(g || "").trim();
     if (!t) return "";
-    const cut = /[.!?)\]"'”’]$/.test(t) ? t : `${t.length >= 170 ? t.replace(/\s+\S*$/, "") : t}…`;   // a gist cut short says so
+    const cut = /[.!?)\]"'”’]$/.test(t) ? t : `${t.length >= 170 ? t.replace(/\s+\S*$/, "") : t}…`; // a gist cut short says so
     return `<p class="fr-rh-g" title="${esc(t)}">${esc(cut)}</p>`;
   };
-  const witness = (x, hidden) => `<li${hidden ? " hidden" : ""}><p class="fr-rh-who">${link(x.w, x.p, x.a || x.w)}${x.y ? ` <span class="fr-rh-y">c. ${esc(String(x.y))}</span>` : ""}</p>
-      <p class="fr-rh-what"><cite>${esc(x.t || "")}</cite>, ${link(x.w, x.p, `p. ${x.p}`)} · ${esc(HOWS[x.how] || "cites it")}</p>${gist(x.g)}</li>`;
+  // A commentary's note on the verse says what it is ("expounds it"); any other use carries the page's gist, which says how.
+  const witness = (x, hidden) => `<li${hidden ? " hidden" : ""}><p class="fr-rh-who">${link(x.w, x.p, x.a || x.w)}${life(x) ? ` <span class="fr-rh-y">${esc(life(x))}</span>` : ""}</p>
+      <p class="fr-rh-what"><cite>${esc(x.t || "")}</cite>, ${link(x.w, x.p, `p. ${x.p}`)} · ${esc(kindOf(x.how))}</p>${x.commentary && x.how === "exegesis" ? "" : gist(x.g)}</li>`;
   /* The eras, oldest first; on the Desk beside a period column, in the panel one under another. */
   function receptionEras(rv, book, c, v, desk) {
     const eras = rv.eras || [];
@@ -102,13 +130,18 @@
     const more = (e) => (e.more ? `<p class="fr-rh-more sd-muted">${fmt(e.more)} more ${e.more === 1 ? "author" : "authors"} in this period${desk
       ? ` in <a href="#sd-h-all">All citations</a>` : ` on the <a href="${esc(S.deskHref(book, c, v))}">Verse Desk</a>`}.</p>` : "");
     const count = (e) => `${fmt(e.works)} ${e.works === 1 ? "work" : "works"}`;
-    // an era's first four in the panel, five on the Desk; the rest of its leading witnesses on a click
-    const SHOW = desk ? 5 : 4;
-    const list = (e) => `<ul class="fr-rh-wit">${e.top.map((x, i) => witness(x, i >= SHOW)).join("")}</ul>${e.top.length > SHOW
-      ? `<button type="button" class="sd-commentary-more fr-rh-all">Show ${fmt(e.top.length - SHOW)} more</button>` : ""}`;
+    // An era's leading four, three on a phone (the files rank them: the commentaries' notes and the other uses in turn), set oldest first so the
+    // era reads as a history; the rest of its leading witnesses, also oldest first, on a click.
+    const SHOW = window.matchMedia("(max-width: 640px)").matches ? 3 : 4; // a phone shows three, one under another
+    const byYear = (a, b) => (a.y || 9999) - (b.y || 9999);
+    const list = (e) => {
+      const xs = e.top.slice(0, SHOW).sort(byYear).concat(e.top.slice(SHOW).sort(byYear));
+      return `<ul class="fr-rh-wit">${xs.map((x, i) => witness(x, i >= SHOW)).join("")}</ul>${xs.length > SHOW
+        ? `<button type="button" class="sd-commentary-more fr-rh-all">Show ${fmt(xs.length - SHOW)} more</button>` : ""}`;
+    };
     return desk
-      ? `<ol class="fr-dn-timeline fr-rh">${eras.map((e) => `<li><h4>${esc(e.label)}<span class="fr-rh-n">${count(e)}</span></h4><div>${list(e)}${more(e)}</div></li>`).join("")}</ol>`
-      : `<ol class="fr-sn-timeline fr-rh">${eras.map((e) => `<li><h4>${esc(e.label)} <span class="fr-rh-n">· ${count(e)}</span></h4>${list(e)}${more(e)}</li>`).join("")}</ol>`;
+      ? `<ol class="fr-dn-timeline fr-rh">${eras.map((e) => { const [name, years] = eraName(e); return `<li><h4>${esc(name)}<span class="fr-rh-n">${years ? `${esc(years)} · ` : ""}${count(e)}</span></h4><div>${list(e)}${more(e)}</div></li>`; }).join("")}</ol>`
+      : `<ol class="fr-sn-timeline fr-rh">${eras.map((e) => { const [name, years] = eraName(e); return `<li><h4>${esc(name)} <span class="fr-rh-n">· ${years ? `${esc(years)} · ` : ""}${count(e)}</span></h4>${list(e)}${more(e)}</li>`; }).join("")}</ol>`;
   }
   // A page names whose words it carries; a compiled page names its compiler ("Augustine of Hippo, via Eugippius").
   const who = (x) => `${x.a || x.author || "page"}${x.via ? `, via ${x.via}` : ""}`;
@@ -206,17 +239,21 @@
   }
 
   // ── The verse ──
-  function verseParts(x, rv, ref) {
+  function verseParts(x, rv, ref, base) {
     if (!x && !rv) return null;
     x = x || {};
     const rd = x.readings || [];
     const cn = x.connections || [];
     const readings = rd.length ? `<ul class="fr-sn-list">${rd.map((r) => `<li><p><strong>${esc(r.label)}.</strong> ${esc(r.summary)}</p>${pages(r.refs)}</li>`).join("")}</ul>` : "";
     const has = rv && (rv.eras || []).length;
-    const history = has ? `${receptionStrip(rv)}${receptionEras(rv, ref.book, ref.c, ref.v, false)}` : "";
+    const history = has ? `${receptionStrip(rv, base)}${receptionEras(rv, ref.book, ref.c, ref.v, false)}` : "";
     // The Desk sets the history as the Topics page sets a doctrine's: the period beside its witnesses (.fr-dn-timeline).
-    const deskHistory = has ? `${receptionStrip(rv)}${receptionEras(rv, ref.book, ref.c, ref.v, true)}` : "";
-    return { readings, nReadings: rd.length, history, nWorks: has ? rv.works : null, deskHistory, with: cn.length ? readWithList(cn, ref.desk) : "", nWith: Math.min(cn.length, 8), commentaries: x.commentaries || [] };
+    const deskHistory = has ? `${receptionStrip(rv, base)}${receptionEras(rv, ref.book, ref.c, ref.v, true)}` : "";
+    // each commentary's note on the verse, one page per commentary (the history's own pages first, then the notes')
+    const seen = new Set();
+    const commentaries = Object.entries((rv && rv.notes) || {}).map(([w, p]) => ({ w, p })).concat(x.commentaries || [])
+      .filter((n) => n && n.w && !seen.has(n.w) && seen.add(n.w));
+    return { readings, nReadings: rd.length, history, nWorks: has ? rv.works : null, deskHistory, with: cn.length ? readWithList(cn, ref.desk) : "", nWith: Math.min(cn.length, 8), commentaries };
   }
 
   /* A commentary row says when the commentary has its own comment on this verse, with the page (the notes'
@@ -241,14 +278,13 @@
    * not carry is shown from the catalogue, opening at its note. */
   async function fillVerseCommentaries($ol, book, c, v, notesList) {
     if (!$ol) return;
-    // The commentaries' own notes on the verse in the chapter file ("Its note on this verse": the print's verse markers, Lapide's
-    // and Poole's among them) first, at their page; then the ones the notes name that the chapter file does not.
+    // Each commentary at the one page the reception history gives it (notesList: the history's notes, then the notes' own), then
+    // the commentaries' marked notes in the chapter file ("Its note on this verse": the print's verse markers) not yet named.
     const [d, cat, marked] = await Promise.all([
       S.fetchCommentaries(book, c, S.emptyFilters()).catch(() => null), S.loadCatalogue(),
       S.fetchVerse(book, c, v, { ...S.emptyFilters(), q: "note on this verse" }, 0, 50).catch(() => null),
     ]);
-    const list = ((marked && marked.rows) || []).filter((r) => r.how === "exegesis" && r.w && r.p).map((r) => ({ w: r.w, p: r.p }))
-      .concat(notesList || []);
+    const list = (notesList || []).concat(((marked && marked.rows) || []).filter((r) => r.how === "exegesis" && r.w && r.p).map((r) => ({ w: r.w, p: r.p })));
     const known = new Map(((d && d.items) || []).map((e) => [e.w, e]));
     const seen = new Set(), items = [];
     list.forEach((x) => {
@@ -299,12 +335,12 @@
       const $comm = $panel && $panel.querySelector("[data-sd-panel-commentaries]");
       const needMarks = $ref && $comm && $comm.querySelector(".sd-commentary[data-w]") && !$comm.dataset.frSnMarked;
       if (!needOv && !needVerse && !needMarks) return;
-      const [d, rec] = await Promise.all([bookFile(r.book), chapterReception(r.book, r.c)]);
+      const [d, rec, base] = await Promise.all([bookFile(r.book), chapterReception(r.book, r.c), loadBaseline()]);
       const ch = d && d.chapters && d.chapters[String(r.c)];
       if (needOv && $ov.isConnected) {
         $ov.querySelectorAll('[data-fr-sn="chapter"]').forEach((el) => el.remove());
         const top = ch ? chapterReading(ch, r.book, r.c) : "";
-        const end = rec ? chapterCenturies(rec, r.book, r.c, await loadBaseline()) : "";
+        const end = rec ? chapterCenturies(rec, r.book, r.c, base) : "";
         if (top || end) {
           // Under the counts and before the most-cited verses: what the chapter means, then how often it is cited.
           const $mostH = Array.prototype.find.call($ov.querySelectorAll(".sd-h3"), (el) => /most-cited/i.test(el.textContent));
@@ -319,7 +355,7 @@
       const rv = v && rec ? (rec.verses || {})[String(v)] : null;
       if (needVerse && $panel.isConnected) {
         $panel.querySelectorAll('[data-fr-sn="verse"]').forEach((el) => el.remove());
-        const parts = verseParts(x, rv, { book: r.book, c: r.c, v, desk: false }) || { readings: "", history: "", with: "", commentaries: [] };
+        const parts = verseParts(x, rv, { book: r.book, c: r.c, v, desk: false }, base) || { readings: "", history: "", with: "", commentaries: [] };
         {
           const lead = `${parts.history ? fold("fr_history", "Reception history", parts.nWorks, `${parts.history}<p class="sd-muted fr-sn-note">${REC_NOTE}</p>`, true, parts.nWorks === 1 ? "work" : "works") : ""}` +
             `${parts.readings ? fold("fr_readings", "Readings", parts.nReadings, `${parts.readings}<p class="sd-muted fr-sn-note">${NOTE}</p>`) : ""}`;
@@ -344,7 +380,9 @@
         }
       }
       if ($comm && $comm.isConnected && $comm.querySelector(".sd-commentary[data-w]")) {
-        markCommentaries($comm, (x && x.commentaries) || [], vKey.replace(/^.*?(\d+:\d+)$/, "$1"));
+        // the page the history gives each commentary first, so the panel's lists and the history agree
+        const vnotes = Object.entries((rv && rv.notes) || {}).map(([w, p]) => ({ w, p })).concat((x && x.commentaries) || []);
+        markCommentaries($comm, vnotes, vKey.replace(/^.*?(\d+:\d+)$/, "$1"));
         $comm.dataset.frSnMarked = "1";
       }
     } finally {
@@ -357,9 +395,9 @@
   async function placeDesk() {
     const ref = S.parseRef(new URLSearchParams(location.search).get("ref"));
     if (!ref || !ref.v) return;
-    const [d, rec] = await Promise.all([bookFile(ref.book), chapterReception(ref.book, ref.c)]);
+    const [d, rec, base] = await Promise.all([bookFile(ref.book), chapterReception(ref.book, ref.c), loadBaseline()]);
     const ch = d && d.chapters && d.chapters[String(ref.c)];
-    const parts = verseParts(ch && (ch.verses || {})[String(ref.v)], rec && (rec.verses || {})[String(ref.v)], { book: ref.book, c: ref.c, v: ref.v, desk: true })
+    const parts = verseParts(ch && (ch.verses || {})[String(ref.v)], rec && (rec.verses || {})[String(ref.v)], { book: ref.book, c: ref.c, v: ref.v, desk: true }, base)
       || { readings: "", deskHistory: "", with: "", commentaries: [] };
     const label = S.refLabel(ref.book, ref.c, ref.v);
     if (parts.readings || parts.deskHistory) {
@@ -369,6 +407,8 @@
         ${parts.deskHistory ? `${parts.deskHistory}<p class="sd-muted fr-sn-note">${REC_NOTE}</p>` : ""}
         ${parts.readings ? `<h3 class="sd-h3">Readings</h3><div class="fr-sn-desk-readings">${parts.readings}</div><p class="sd-muted fr-sn-note">${NOTE}</p>` : ""}</section>`;
       if ($trans) $trans.insertAdjacentHTML("afterend", html); else $desk.insertAdjacentHTML("beforeend", html);
+      const $toc = $desk.querySelector("[data-sd-toc-reads]");
+      if ($toc) $toc.hidden = false;
     }
     // The commentaries with their own note on the verse, in view above the commentary collections (2026-10-15).
     const $vc = $desk.querySelector("[data-sd-verse-comm]");

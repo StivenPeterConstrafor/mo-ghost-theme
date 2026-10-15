@@ -622,6 +622,18 @@
     }
     return catalogueReady;
   }
+  let authorYearsReady = null;
+  /* Every author who cites Scripture, with the year the reception history dates him by (v1/reception/scripture/_authors.json,
+   * runs/reception_1015/authors_year.py): name -> year. The Desk's author cards say when each author wrote from it. */
+  function loadAuthorYears() {
+    if (!authorYearsReady) {
+      authorYearsReady = fetch(`${LIBRARY_BASE}/v1/reception/scripture/_authors.json`, { credentials: "omit" })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .then((d) => new Map(Object.entries(d || {})))
+        .catch(() => { authorYearsReady = null; return new Map(); });
+    }
+    return authorYearsReady;
+  }
   let volumesReady = null;
   function loadVolumes() {
     if (!volumesReady) {
@@ -1114,7 +1126,7 @@
   }
 
   window.MOScriptureDev = {
-    commentaryStrip, commentaryFolds, commentaryItem, commentaryGroups, commentaryTitles, byCentury, loadCatalogue, cleanChapter,
+    commentaryStrip, commentaryFolds, commentaryItem, commentaryGroups, commentaryTitles, byCentury, loadCatalogue, loadAuthorYears, cleanChapter,
     TRANSLATIONS, BOOKS, BOOK_BY_SLUG, esc, fmt, plural,
     CANON, APOCRYPHA, SECTIONS, chainOf, APOCRYPHA_TEXT, textName, textShort,
     parseRef, legacyRef, bookFrom, refKey, refLabel, readerHref, deskHref, sourceHref,

@@ -96,17 +96,29 @@
 .sd-panel .fr-sn-timeline p, .sd-panel .fr-sn-list p { font-size: 15px; line-height: 1.55; }
 
 /* Scripture: the reception history from the pages themselves (faith-port-scripture-notes.js, v1/reception/scripture) */
+/* The history's one sentence (how many works, from when, and where the verse stands out), then the strip it describes. */
+.fr-rh-lede { margin: 0 0 12px; max-width: 68ch; font-size: 16px; line-height: 1.55; color: var(--color-dark); text-wrap: pretty; }
 .fr-rh-strip-wrap { margin: 2px 0 14px; }
 .fr-rh-strip { list-style: none; margin: 0; padding: 0; display: flex; align-items: flex-end; gap: 3px; border-bottom: 1px solid var(--color-rule); }
 .fr-rh-strip > li { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 64px; position: relative; }
 .fr-rh-bar { display: block; width: 100%; max-width: 22px; height: calc(46px * var(--k)); background: var(--color-dark); opacity: 0.72; border-radius: 2px 2px 0 0; }
 .fr-rh-c { margin: 4px 0 2px; font-size: 10px; line-height: 1; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+/* the centuries where the verse is cited more than the library's usual share (the caption says so) */
+.fr-rh-strip > li.is-out .fr-rh-bar { background: var(--sd-accent, #8f4630); opacity: 1; }
+.fr-rh-strip > li.is-out .fr-rh-c { color: var(--sd-accent, #8f4630); font-weight: 600; }
 .fr-rh-strip-wrap figcaption { margin: 6px 0 0; font-size: 12px; }
 .fr-rh-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .fr-rh .fr-rh-n { font-weight: 400; font-size: 13px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
 .fr-dn-timeline.fr-rh h4 .fr-rh-n { display: block; margin-top: 2px; }
 .fr-rh-wit { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 12px; }
 .fr-dn-timeline .fr-rh-wit { margin-top: 0; }
+/* The Desk: the history takes the column's full width, an era's witnesses two abreast, so the section is not five screens long. */
+.fr-sn-desk .fr-dn-timeline.fr-rh { max-width: none; }
+@media (min-width: 900px) {
+  .fr-dn-timeline.fr-rh .fr-rh-wit { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; row-gap: 16px; }
+  .fr-dn-timeline.fr-rh .fr-rh-wit > li[hidden] { display: none; }
+  .fr-dn-timeline.fr-rh .fr-rh-g { -webkit-line-clamp: 2; }
+}
 .fr-rh-wit p { margin: 0; max-width: 68ch; }
 .fr-rh-who { font-weight: 600; line-height: 1.4; }
 .fr-rh-who a { color: var(--color-dark); text-decoration: none; }
