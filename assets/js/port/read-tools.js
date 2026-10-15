@@ -483,6 +483,9 @@ function __initSearch(){
     close();if(window.__frSearchWork){window.__frSearchWork(term);return;}
     findSet([term]);findScrollCur();
   }
+  // the library leg's pages grouped by work, in the order the works first appear (the leg is sorted by similarity)
+  function corpusGroups(rows){const by=new Map();for(const x of rows||[]){if(!x||!x.slug||x.page==null)continue;let g=by.get(x.slug);
+    if(!g){g={slug:x.slug,pages:[]};by.set(x.slug,g);}const p=String(x.page);if(!g.pages.includes(p))g.pages.push(p);}return [...by.values()];}
   async function runCorpus(term){body.innerHTML="<div class=rsn>Searching the corpus…</div>";
     try{const m=await idx();
       const enc=encodeURIComponent;
@@ -492,10 +495,12 @@ function __initSearch(){
         legs.push(fetch("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/vsearch?q="+enc(term)+"&k="+k+"&corpus="+c).then(r=>r.json()).catch(()=>null));}});
       const [lib,...pats]=await Promise.all(legs);
       if(term!==q.value.trim()||mode!=="all")return;
-      const res=(lib&&lib.results)||[];
-      let h=res.length?("<div class=rsn>"+res.length+" results across the library"+(SCOPE.tr?" — "+esc(SCOPE.tr)+" works":"")+"</div>"+res.map(x=>{const w=m[x.slug]||{};
-        const en=(window.__TEN||{})[x.slug]||"";
-        return '<a class=rsr href="/the-faith-received/read/?w='+encodeURIComponent(x.slug)+"#b"+x.page+'-0"><span class=rst>'+esc(en||w.title||x.slug)+"</span><span class=rsm>"+esc(w.author||"")+(w.author?" · ":"")+"pg. "+x.page+"</span></a>";}).join("")):"<div class=rsn>No library results"+(SCOPE.tr?" among "+esc(SCOPE.tr)+" works":"")+".</div>";
+      const res=(lib&&lib.results)||[],groups=corpusGroups(res);
+      // one row per work, closest first, its other close pages named under it (10-15 audit: the 120 page rows repeated the same
+      // works down the list and hid how many works answered)
+      let h=res.length?("<div class=rsn>"+res.length+" passages in "+groups.length+" "+(groups.length===1?"work":"works")+(SCOPE.tr?" — "+esc(SCOPE.tr)+" works":"")+"</div>"+groups.map(g=>{const w=m[g.slug]||{};
+        const en=(window.__TEN||{})[g.slug]||"",more=g.pages.slice(1,7);
+        return '<a class=rsr href="/the-faith-received/read/?w='+encodeURIComponent(g.slug)+"#b"+g.pages[0]+'-0"><span class=rst>'+esc(en||w.title||g.slug)+"</span><span class=rsm>"+esc(w.author||"")+(w.author?" · ":"")+"pg. "+esc(g.pages[0])+(more.length?" · also pp. "+more.map(esc).join(", ")+(g.pages.length>7?" …":""):"")+"</span></a>";}).join("")):"<div class=rsn>No library results"+(SCOPE.tr?" among "+esc(SCOPE.tr)+" works":"")+".</div>";
       const NAME={pl:"Patrologia Latina — Latin Fathers",pg:"Patrologia Graeca — Greek Fathers",po:"Patrologia Orientalis — Eastern Fathers"};
       // Parallels open in our reader (Stiven 2026-10-01: nothing on MereO touches Vercel): source doc id -> our slug.
       const PFX={pl:"pld-",pg:"pg-",po:"po-"},hop=(c,f)=>{const a=String(f.anchor||"");return "/the-faith-received/read/?w="+encodeURIComponent(PFX[c]+f.doc)+(a?"#b"+encodeURIComponent(a.includes("-")?a:a+"-0"):"");};
