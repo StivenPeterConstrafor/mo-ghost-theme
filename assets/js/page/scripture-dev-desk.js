@@ -55,6 +55,8 @@
   const label = S.refLabel(book, c, v);
   document.title = `${label} | Verse Desk | The Faith Received | Mere Orthodoxy`;
 
+  // The commentary lists' names: on this chapter, on the book, on the whole Bible (2026-10-15).
+  const COMM_NAMES = S.commentaryTitles(book, c);
   // The deuterocanon is in none of the four translations, and mo-bible
   // has no book number for it, so that section is replaced by the one
   // line that says so rather than left as four rows that all fail.
@@ -92,14 +94,13 @@
      * each"). */
     `<section class="sd-desk-sec" aria-labelledby="sd-h-comm">` +
       `<h2 class="sd-h2" id="sd-h-comm">Commentaries</h2>` +
-      `<p class="sd-section-intro">Choose a collection, then preview a commentary without leaving the desk.</p>` +
-      `<div class="sd-collection-index" data-sd-commentary-index>` +
-        `<button type="button" class="sd-index-card" data-sd-commentary-tab="chapter" aria-expanded="false"><span>On ${esc(S.refLabel(book, c))}</span><small data-sd-comm-n>Loading…</small></button>` +
-        `<button type="button" class="sd-index-card" data-sd-commentary-tab="whole" aria-expanded="false"><span>Whole-Bible commentaries</span><small data-sd-wb-n>Loading…</small></button>` +
-      `</div>` +
-      `<section class="sd-expand-panel sd-commentary-panel" data-sd-commentary-panel="chapter" hidden><header><div><h3>Commentaries on ${esc(S.refLabel(book, c))}</h3><p data-sd-comm-meta></p></div><button type="button" class="sd-panel-close" data-sd-commentary-close aria-label="Close commentary collection">×</button></header><div data-sd-comm><p class="sd-muted" role="status">Loading commentaries…</p></div></section>` +
-      `<section class="sd-expand-panel sd-commentary-panel" data-sd-commentary-panel="whole" hidden><header><div><h3>Whole-Bible commentaries</h3><p data-sd-wb-meta></p></div><button type="button" class="sd-panel-close" data-sd-commentary-close aria-label="Close commentary collection">×</button></header><div data-sd-wb><p class="sd-muted" role="status">Loading commentaries…</p></div></section>` +
-    `</section>` +
+      `<p class="sd-section-intro">First the commentaries with their own note on this verse; then every commentary on the chapter, on the book and on the whole Bible. Preview any of them without leaving the desk.</p>` +
+      `<div data-sd-verse-comm></div>` +
+      `<div class="sd-collection-index" data-sd-commentary-index>${["chapter", "book", "whole"].map((k) =>
+        `<button type="button" class="sd-index-card" data-sd-commentary-tab="${k}" aria-expanded="false"><span>${esc(COMM_NAMES[k])}</span><small data-sd-comm-n="${k}">Loading…</small></button>`).join("")}</div>${ 
+      ["chapter", "book", "whole"].map((k) =>
+        `<section class="sd-expand-panel sd-commentary-panel" data-sd-commentary-panel="${k}" hidden><header><div><h3>${esc(COMM_NAMES[k])}</h3><p data-sd-comm-meta="${k}"></p></div><button type="button" class="sd-panel-close" data-sd-commentary-close aria-label="Close commentary collection">×</button></header><div data-sd-comm-body="${k}"><p class="sd-muted" role="status">Loading commentaries…</p></div></section>`).join("") 
+    }</section>` +
 
     `<section class="sd-desk-sec" aria-labelledby="sd-h-cite">` +
       `<h2 class="sd-h2" id="sd-h-cite">Citations</h2>` +
@@ -424,19 +425,16 @@
     button.addEventListener("click", () => setCommentaryPanel(""));
   });
   S.fetchCommentaries(book, c, S.emptyFilters()).then((d) => {
-    const { chapter, whole } = S.commentaryGroups(d && d.items);
-    const $comm = $root.querySelector("[data-sd-comm]");
-    const $wb = $root.querySelector("[data-sd-wb]");
-    if (chapter.length) commentaryList($comm, chapter);
-    else $comm.innerHTML = `<p class="sd-muted">No commentaries on ${esc(book.name)} are catalogued yet.</p>`;
-    if (whole.length) commentaryList($wb, whole);
-    else $wb.innerHTML = `<p class="sd-muted">No whole-Bible commentaries are catalogued for ${esc(book.name)} yet.</p>`;
-    $root.querySelector("[data-sd-comm-n]").textContent = plural(chapter.length, "commentary", "commentaries");
-    $root.querySelector("[data-sd-wb-n]").textContent = plural(whole.length, "commentary", "commentaries");
-    $root.querySelector("[data-sd-comm-meta]").textContent = plural(chapter.length, "commentary", "commentaries");
-    $root.querySelector("[data-sd-wb-meta]").textContent = plural(whole.length, "commentary", "commentaries");
+    const g = S.commentaryGroups(d && d.items, book);
+    const none = { chapter: `No work on ${S.refLabel(book, c)} alone is catalogued yet.`, book: `No commentary on ${book.name} is catalogued yet.`, whole: `No whole-Bible commentary is catalogued for ${book.name} yet.` };
+    ["chapter", "book", "whole"].forEach((k) => {
+      const $body = $root.querySelector(`[data-sd-comm-body="${k}"]`);
+      if (g[k].length) commentaryList($body, g[k]); else $body.innerHTML = `<p class="sd-muted">${esc(none[k])}</p>`;
+      $root.querySelector(`[data-sd-comm-n="${k}"]`).textContent = plural(g[k].length, "commentary", "commentaries");
+      $root.querySelector(`[data-sd-comm-meta="${k}"]`).textContent = plural(g[k].length, "commentary", "commentaries");
+    });
   }).catch(() => {
-    $root.querySelector("[data-sd-comm]").innerHTML = `<p class="sd-muted">Commentaries did not load.</p>`;
+    $root.querySelectorAll("[data-sd-comm-body]").forEach(($b) => { $b.innerHTML = `<p class="sd-muted">Commentaries did not load.</p>`; });
   });
 
   // ── Kinds: quotes, cites, alludes ─────────────────────────────

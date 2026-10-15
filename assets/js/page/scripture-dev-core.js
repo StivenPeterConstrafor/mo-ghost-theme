@@ -609,15 +609,23 @@
   // "Tomus II"). It is read once, when the first source row is drawn; a
   // page that cannot get it shows its rows as before.
   const VOLUME_WORD = /^(?:vol(?:ume)?|tomus|tome|band|liber|pars|part|book)\b/i;
+  let catalogueReady = null;
+  /* The catalogue, read once: slug -> {t, a, volume}. The commentaries a verse's notes name come with their author as the notes
+   * spelled it ("cumenius Bishop of Trikka", the Œ lost), so their names are the catalogue's. */
+  function loadCatalogue() {
+    if (!catalogueReady) {
+      catalogueReady = fetch(`${LIBRARY_BASE}/v1/works-index.json`, { credentials: "omit" })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .then((d) => new Map(((d && d.works) || []).filter((w) => w && w.slug)
+          .map((w) => [w.slug, { t: String(w.title_en || w.title || ""), a: String(w.author || ""), volume: String(w.volume || "") }])))
+        .catch(() => { catalogueReady = null; return new Map(); });
+    }
+    return catalogueReady;
+  }
   let volumesReady = null;
   function loadVolumes() {
     if (!volumesReady) {
-      volumesReady = fetch(`${LIBRARY_BASE}/v1/works-index.json`, { credentials: "omit" })
-        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-        .then((d) => new Map(((d && d.works) || [])
-          .filter((w) => w && w.slug && VOLUME_WORD.test(String(w.volume || "")))
-          .map((w) => [w.slug, String(w.volume)])))
-        .catch(() => { volumesReady = null; return new Map(); });
+      volumesReady = loadCatalogue().then((cat) => new Map([...cat].filter(([, w]) => VOLUME_WORD.test(w.volume)).map(([slug, w]) => [slug, w.volume])));
     }
     return volumesReady;
   }
@@ -845,14 +853,21 @@
     const cmp = sources && sources.compare ? sources.compare : (p, q) => String(p || "").localeCompare(String(q || ""));
     return cmp(a.a, b.a) || (sources && sources.compareWorks ? sources.compareWorks(a, b) : cmp(a.t, b.t)) || cmp(a.w, b.w);
   };
-  function commentaryGroups(items) {
+  /* THREE LISTS (2026-10-15, the owner: "do we highlight the chapter commentaries/book commentaries too"): works on part of the
+   * book that takes in this chapter (Chrysostom's sermons on Romans 4–9, a sermon on the chapter), commentaries on the whole book
+   * (a range of 80 % of its chapters or more, or no range), and the whole-Bible sets (`annotation`). Each oldest first. */
+  function commentaryGroups(items, book) {
     const list = items || [];
+    const n = (book && book.chapters) || 0;
+    const wholeBook = (e) => !(Number(e.c1) > 0) || (n && (Number(e.c2 || e.c1) - Number(e.c1) + 1) >= 0.8 * n);
     return {
-      // Works on the book; then the whole-Bible sets (`annotation`). Each oldest first.
-      chapter: list.filter((e) => !e.annotation).sort(byCentury),
+      chapter: list.filter((e) => !e.annotation && !wholeBook(e)).sort(byCentury),
+      book: list.filter((e) => !e.annotation && wholeBook(e)).sort(byCentury),
       whole: list.filter((e) => e.annotation).sort(byCentury),
     };
   }
+  // The three lists' names, in one place: "On Romans 5", "On Romans", "On the whole Bible".
+  const commentaryTitles = (book, c) => ({ chapter: `On ${refLabel(book, c, 0)}`, book: `On ${book.slug === "psalms" ? "the Psalms" : book.name}`, whole: "On the whole Bible" });
   function commentaryItem(e, ctx) {
     const li = document.createElement("li");
     li.className = "sd-source sd-commentary";
@@ -983,7 +998,7 @@
       `<div class="sd-comm-folds"></div>`;
     const $status = host.querySelector(".sd-comm-status");
     const $folds = host.querySelector(".sd-comm-folds");
-    const opened = { chapter: false, whole: false };
+    const opened = { chapter: false, book: false, whole: false };
     const fold = (key, title, list) => {
       const el = document.createElement("details");
       el.className = "sd-panel-fold sd-comm-fold";
@@ -1028,10 +1043,9 @@
             ? `${plural(d.matched, "commentary", "commentaries")} of ${fmt(d.total)} match.`
             : `${plural(d.total, "commentary", "commentaries")} on ${refLabel(ctx.book, ctx.c)}. Open a list, then Preview to read one here.`)
           : (d.total ? "No commentaries match these filters." : "No commentaries are catalogued for this book yet.");
-        const g = commentaryGroups(items);
+        const g = commentaryGroups(items, ctx.book), names = commentaryTitles(ctx.book, ctx.c);
         $folds.innerHTML = "";
-        if (g.chapter.length) $folds.appendChild(fold("chapter", "Chapter commentaries", g.chapter));
-        if (g.whole.length) $folds.appendChild(fold("whole", "Whole-Bible commentaries", g.whole));
+        ["chapter", "book", "whole"].forEach((k) => { if (g[k].length) $folds.appendChild(fold(k, names[k], g[k])); });
       }).catch(() => {
         if (my !== run || !$folds.isConnected) return;
         $status.innerHTML = `Commentaries did not load. <button type="button" class="sd-clear" data-sd-retry>Try again</button>`;
@@ -1100,7 +1114,7 @@
   }
 
   window.MOScriptureDev = {
-    commentaryStrip, commentaryFolds, commentaryItem, commentaryGroups, cleanChapter,
+    commentaryStrip, commentaryFolds, commentaryItem, commentaryGroups, commentaryTitles, byCentury, loadCatalogue, cleanChapter,
     TRANSLATIONS, BOOKS, BOOK_BY_SLUG, esc, fmt, plural,
     CANON, APOCRYPHA, SECTIONS, chainOf, APOCRYPHA_TEXT, textName, textShort,
     parseRef, legacyRef, bookFrom, refKey, refLabel, readerHref, deskHref, sourceHref,

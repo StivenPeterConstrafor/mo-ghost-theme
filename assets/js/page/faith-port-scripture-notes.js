@@ -1,16 +1,16 @@
-/* How the library's authors read the passage, on the Scripture reader and the Verse Desk.
+/* The passage's reception history and the commentaries that annotate it, on the Scripture reader and the Verse Desk.
  *   Reader (/the-faith-received/scripture/?ref=<book>.<chapter>[.<verse>], scripture-dev.js)
- *     chapter  in the overview beside the text (wide screens only, as the overview is): how the library reads the
- *              chapter and its key verses straight under the counts, then the most-cited verses, then the verses read
- *              through the centuries (five, and the rest on a click);
- *     verse    at the top of the verse panel, under its count: the verse's note, how the library reads it (open on a
- *              wide screen) and through the centuries; then the panel's commentaries and citations; then the verses read
- *              with it, beside Similar passages. A commentary with its own comment on the verse says so on its row.
+ *     chapter  in the overview beside the text (wide screens only, as the overview is): its key verses, then (after the
+ *              most-cited verses) its reception history verse by verse (five, and the rest on a click);
+ *     verse    under the panel's count: its reception history, century by century, with the pages (open on a wide
+ *              screen), and its readings; then the commentaries with their own note on the verse (open), before the
+ *              panel's commentary lists and citations; then the verses read with it, beside Similar passages.
  *   Desk (/the-faith-received/scripture/desk/?ref=<book>.<c>.<v>, scripture-dev-desk.js)
- *     the same verse notes as a section after the translations, and the verses read with it under Similar passages.
- * ORDER (2026-10-15, the owner: "the correct things shown for each surface, ordering intuitively"): what the passage
- * means to the library first, then the evidence (commentaries, citations), then the other verses. The 09-25 order of
- * the evidence (commentaries, citations, similarity) is kept as it was.
+ *     the reception history as a section after the translations, the commentaries with a note on the verse above the
+ *     commentary lists, and the verses read with it under Similar passages.
+ * RECEPTION HISTORY, NOT A SUMMARY (2026-10-15, the owner: "How the library reads it is AI slop, this is reception
+ * history"). The machine-written paragraph that opened the panel and the overview is gone; what is shown is the history:
+ * which authors used the verse, in which centuries, and how, each with the pages it rests on.
  * Data: v1/enrich/scripture/<library slug>.json on the library worker (the book's lib slug: i-john for 1 John).
  * Machine-written from the library's pages, every page link checked; each block says so. A passage without notes shows
  * nothing, and the page's own panels are left as they are.
@@ -45,17 +45,6 @@
     const s = String(t || "");
     return s.length > 110 ? `${s.slice(0, 108).replace(/\s+\S*$/, "")}…` : s;
   };
-  /* A long note reads in two sentences and opens on a click (the chapter's ran seventeen lines in the 360px column).
-   * Plain text throughout: the rest is a sibling span, shown by the button, never parsed as markup. */
-  function lede(text, cls) {
-    const t = String(text || "").trim();
-    if (!t) return "";
-    const parts = t.match(/[^.!?]+(?:[.!?]+["'’”)]*|$)\s*/g) || [t];
-    const head = parts.slice(0, 2).join("").trim();
-    const rest = parts.slice(2).join("").trim();
-    return `<div class="fr-sn-lede-wrap ${cls || ""}"><p class="fr-sn-card">${esc(head)}${rest ? `<span class="fr-sn-rest" hidden> ${esc(rest)}</span>` : ""}</p>` +
-      `${rest ? `<button type="button" class="fr-sn-readon" aria-expanded="false">Read the whole note</button>` : ""}</div>`;
-  }
   // "I Corinthians 15:22" (the library's names) -> a link to that verse on this page's kind of page.
   function verseHref(ref, desk) {
     const m = String(ref || "").match(/^(.+?)\s+(\d{1,3}):(\d{1,3})/);
@@ -116,11 +105,7 @@
     const keys = (ch.key_verses || []).map((k) => [parseInt(String(k.ref || "").split(":")[1], 10), k])
       .filter(([v]) => v > 0).sort((a, b) => a[0] - b[0])
       .map(([v, k]) => ovRow(v, S.refLabel(book, c, v), k.why)).join("");
-    if (!ch.card && !keys) return "";
-    return `<div class="fr-sn-chapter" data-fr-sn="chapter">
-      <h3 class="sd-h3">How the library reads it</h3>
-      ${lede(ch.card)}
-      ${keys ? `<h3 class="sd-h3">Key verses</h3><ol class="sd-ov-top">${keys}</ol>` : ""}</div>`;
+    return keys ? `<div class="fr-sn-chapter" data-fr-sn="chapter"><h3 class="sd-h3">Key verses</h3><ol class="sd-ov-top">${keys}</ol></div>` : "";
   }
   function chapterCenturies(ch, book, c) {
     const told = Object.entries(ch.verses || {}).filter(([, x]) => x && x.history && (x.history.periods || []).length)
@@ -128,7 +113,7 @@
     if (!told.length) return "";
     const SHOW = 5;
     return `<div class="fr-sn-chapter" data-fr-sn="chapter">
-      <h3 class="sd-h3">Through the centuries</h3>
+      <h3 class="sd-h3">Reception history, verse by verse</h3>
       <ol class="sd-ov-top fr-sn-told">${told.map(([v, x], i) => ovRow(v, S.refLabel(book, c, v), unformula(x.history.summary) || x.card, i >= SHOW)).join("")}</ol>
       ${told.length > SHOW ? `<button type="button" class="sd-commentary-more fr-sn-all">Show all ${fmt(told.length)} verses</button>` : ""}
       <p class="sd-muted fr-sn-note">${NOTE}</p></div>`;
@@ -141,19 +126,20 @@
     const h = x.history && (x.history.periods || []).length ? x.history : null;
     const cn = x.connections || [];
     const readings = rd.length ? `<ul class="fr-sn-list">${rd.map((r) => `<li><p><strong>${esc(r.label)}.</strong> ${esc(r.summary)}</p>${pages(r.refs)}</li>`).join("")}</ul>` : "";
-    const history = h ? `${h.summary ? `<p class="fr-sn-lede">${esc(h.summary)}</p>` : ""}<ol class="fr-sn-timeline">${h.periods.map((p) => `<li>
+    const history = h ? `<ol class="fr-sn-timeline">${h.periods.map((p) => `<li>
         <h4>${esc(p.period)}</h4><p>${esc(p.text)}</p>${pages(p.refs)}</li>`).join("")}</ol>` : "";
     // The Desk sets the history as the Topics page sets a doctrine's: the period beside its paragraph (.fr-dn-timeline).
-    const deskHistory = h ? `${h.summary ? `<p class="fr-dn-lede">${esc(h.summary)}</p>` : ""}<ol class="fr-dn-timeline">${h.periods.map((p) => `<li>
+    const deskHistory = h ? `<ol class="fr-dn-timeline">${h.periods.map((p) => `<li>
         <h4>${esc(p.period)}</h4><div><p>${esc(p.text)}</p>${pages(p.refs).replace("fr-sn-pages", "fr-dn-pages")}</div></li>`).join("")}</ol>` : "";
-    return { card: x.card || "", readings, nReadings: rd.length, history, deskHistory, with: cn.length ? readWithList(cn, desk) : "", nWith: Math.min(cn.length, 8), commentaries: x.commentaries || [] };
+    return { readings, nReadings: rd.length, history, nPeriods: h ? h.periods.length : null, deskHistory, with: cn.length ? readWithList(cn, desk) : "", nWith: Math.min(cn.length, 8), commentaries: x.commentaries || [] };
   }
 
   /* A commentary row says when the commentary has its own comment on this verse, with the page (the notes'
    * `commentaries` for the verse). Rows carry their work's slug (data-w, scripture-dev-core.js). */
   function markCommentaries($host, list, label) {
     if (!$host || !list.length) return;
-    const byW = new Map(list.map((x) => [x.w, x]));
+    const byW = new Map();
+    list.forEach((x) => { if (x && x.w && !byW.has(x.w)) byW.set(x.w, x); });
     $host.querySelectorAll(".sd-commentary[data-w]").forEach((li) => {
       const hit = byW.get(li.dataset.w);
       const $meta = li.querySelector(".sd-source-meta");
@@ -163,6 +149,38 @@
       if ($on) $on.remove();
       $meta.insertAdjacentHTML("beforeend", ` <span class="fr-sn-has">· ${link(hit.w, hit.p, `its note on ${label}, p. ${hit.p}`)}</span>`);
     });
+  }
+
+  /* The commentaries a verse's notes name (w, p), drawn as the commentary lists draw theirs (commentaryItem: Preview opens its
+   * note), with the catalogue's title and author and the commentary list's century; oldest first. A work the book's list does
+   * not carry is shown from the catalogue, opening at its note. */
+  async function fillVerseCommentaries($ol, book, c, v, notesList) {
+    if (!$ol) return;
+    // The commentaries' own notes on the verse in the chapter file ("Its note on this verse": the print's verse markers, Lapide's
+    // and Poole's among them) first, at their page; then the ones the notes name that the chapter file does not.
+    const [d, cat, marked] = await Promise.all([
+      S.fetchCommentaries(book, c, S.emptyFilters()).catch(() => null), S.loadCatalogue(),
+      S.fetchVerse(book, c, v, { ...S.emptyFilters(), q: "note on this verse" }, 0, 50).catch(() => null),
+    ]);
+    const list = ((marked && marked.rows) || []).filter((r) => r.how === "exegesis" && r.w && r.p).map((r) => ({ w: r.w, p: r.p }))
+      .concat(notesList || []);
+    const known = new Map(((d && d.items) || []).map((e) => [e.w, e]));
+    const seen = new Set(), items = [];
+    list.forEach((x) => {
+      if (!x || !x.w || seen.has(x.w)) return;
+      seen.add(x.w);
+      const w = cat.get(x.w) || {};
+      items.push(known.get(x.w) || { w: x.w, t: w.t || x.t || x.w, a: w.a || x.a || "", kind: "commentary", c1: 0, c2: 0, cen: null, href: `/read?w=${x.w}#b${x.p}-0`, anchored: "note" });
+    });
+    items.sort(S.byCentury);
+    // none: the block stays (it keys the verse) but out of sight
+    const $box = $ol.closest("[data-fr-sn]") || $ol.parentElement;
+    if (!items.length) { if ($box) $box.hidden = true; return; }
+    $ol.replaceChildren(...items.map((e) => S.commentaryItem(e, { book, c, v })));
+    markCommentaries($ol, list, `${c}:${v}`);
+    // the fold's count, now that the chapter file's notes are in
+    const $n = $ol.closest("details") && $ol.closest("details").querySelector(":scope > summary [data-sd-summary-count]");
+    if ($n) $n.textContent = `(${fmt(items.length)})`;
   }
 
   // ── Placing them as the reader draws its panels ──
@@ -215,15 +233,21 @@
       const x = v && ch ? (ch.verses || {})[String(v)] : null;
       if (needVerse && $panel.isConnected) {
         $panel.querySelectorAll('[data-fr-sn="verse"]').forEach((el) => el.remove());
-        const parts = verseParts(x, false);
-        if (parts && (parts.card || parts.readings || parts.history || parts.with)) {
-          const lead = `${parts.card ? lede(parts.card, "fr-sn-verse-card") : ""}<p class="sd-muted fr-sn-note">${NOTE}</p>` +
-            `${parts.readings ? fold("fr_readings", "How the library reads it", parts.nReadings, parts.readings, true) : ""}` +
-            `${parts.history ? fold("fr_history", "Through the centuries", null, parts.history) : ""}`;
+        const parts = verseParts(x, false) || { readings: "", history: "", with: "", commentaries: [] };
+        {
+          const lead = `${parts.history ? fold("fr_history", "Reception history", parts.nPeriods, `${parts.history}<p class="sd-muted fr-sn-note">${NOTE}</p>`, true) : ""}` +
+            `${parts.readings ? fold("fr_readings", "Readings", parts.nReadings, `${parts.readings}<p class="sd-muted fr-sn-note">${NOTE}</p>`) : ""}`;
           const $count = $panel.querySelector("[data-sd-count]");
-          if (parts.card || parts.readings || parts.history) {
+          if (lead) {
             const html = `<div class="fr-sn-verse" data-fr-sn="verse">${lead}</div>`;
             if ($count) $count.insertAdjacentHTML("afterend", html); else $panel.insertAdjacentHTML("beforeend", html);
+          }
+          // The commentaries with their own note on the verse, open, before the commentary lists (2026-10-15).
+          { // a verse the notes do not cover can still have commentaries' notes in the chapter file: always asked
+            const $lists = $panel.querySelector("[data-sd-panel-commentaries]");
+            const html = `<div class="fr-sn-verse" data-fr-sn="verse">${fold("fr_vcomm", `Commentaries on ${vKey}`, parts.commentaries.length, `<ol class="sd-sources sd-panel-commentaries" data-fr-sn-vcomm></ol>`, true)}</div>`;
+            if ($lists) $lists.insertAdjacentHTML("beforebegin", html); else $panel.insertAdjacentHTML("beforeend", html);
+            fillVerseCommentaries($panel.querySelector("[data-fr-sn-vcomm]"), r.book, r.c, v, parts.commentaries);
           }
           if (parts.with) {
             const html = `<div class="fr-sn-verse" data-fr-sn="verse">${fold("fr_with", "Read with", parts.nWith, parts.with)}</div>`;
@@ -231,7 +255,7 @@
             if ($similar) $similar.insertAdjacentHTML("beforebegin", html); else $panel.insertAdjacentHTML("beforeend", html);
           }
           $panel.querySelectorAll('[data-fr-sn="verse"]').forEach((el) => { el.dataset.key = vKey; });
-        } else $panel.dataset.frSnNone = vKey;
+        }
       }
       if ($comm && $comm.isConnected && $comm.querySelector(".sd-commentary[data-w]")) {
         markCommentaries($comm, (x && x.commentaries) || [], vKey.replace(/^.*?(\d+:\d+)$/, "$1"));
@@ -249,18 +273,22 @@
     if (!ref || !ref.v) return;
     const d = await bookFile(ref.book);
     const ch = d && d.chapters && d.chapters[String(ref.c)];
-    const parts = verseParts(ch && (ch.verses || {})[String(ref.v)], true);
-    if (!parts) return;
+    const parts = verseParts(ch && (ch.verses || {})[String(ref.v)], true) || { readings: "", deskHistory: "", with: "", commentaries: [] };
     const label = S.refLabel(ref.book, ref.c, ref.v);
-    if (parts.card || parts.readings || parts.history) {
+    if (parts.readings || parts.deskHistory) {
       const $trans = $desk.querySelector('[aria-labelledby="sd-h-trans"]');
       const html = `<section class="sd-desk-sec fr-sn-desk" aria-labelledby="sd-h-reads" data-fr-sn="verse">
-        <h2 class="sd-h2" id="sd-h-reads">How the library reads ${esc(label)}</h2>
-        ${parts.card ? lede(parts.card, "fr-sn-verse-card") : ""}
-        ${parts.readings ? `<h3 class="sd-h3">The readings</h3><div class="fr-sn-desk-readings">${parts.readings}</div>` : ""}
-        ${parts.deskHistory ? `<h3 class="sd-h3">Through the centuries</h3>${parts.deskHistory}` : ""}
+        <h2 class="sd-h2" id="sd-h-reads">Reception history of ${esc(label)}</h2>
+        ${parts.deskHistory}
+        ${parts.readings ? `<h3 class="sd-h3">Readings</h3><div class="fr-sn-desk-readings">${parts.readings}</div>` : ""}
         <p class="sd-muted fr-sn-note">${NOTE}</p></section>`;
       if ($trans) $trans.insertAdjacentHTML("afterend", html); else $desk.insertAdjacentHTML("beforeend", html);
+    }
+    // The commentaries with their own note on the verse, in view above the commentary collections (2026-10-15).
+    const $vc = $desk.querySelector("[data-sd-verse-comm]");
+    if ($vc) {
+      $vc.innerHTML = `<h3 class="sd-h3">Commentaries on ${esc(label)}</h3><ol class="sd-sources sd-panel-commentaries fr-sn-desk-vcomm" data-fr-sn-vcomm></ol>`;
+      fillVerseCommentaries($vc.querySelector("[data-fr-sn-vcomm]"), ref.book, ref.c, ref.v, parts.commentaries);
     }
     if (parts.with) {
       const $grid = $desk.querySelector(".sd-similar-grid");
