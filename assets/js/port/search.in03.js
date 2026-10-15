@@ -150,7 +150,7 @@ function loadHeadingsTier(){
     IDX=(IDX||[]).concat(add);_hFull=true;_hLoading=false;
     if(MODE==='title'){hint.textContent='Searches the titles, authors and chapter headings of '+(WLIST||[]).length.toLocaleString()+' works ('+rows.length.toLocaleString()+' headings), to find a book. To find where a word or an idea appears inside the books, use Search the texts.';RESTORE_PAGE=RESULT_PAGE;run();}
   }).catch(function(){_hLoading=false;});}
-function foldQ(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/v/g,'u').replace(/j/g,'i');}
+function foldQ(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/æ/g,'ae').replace(/œ/g,'oe').replace(/ſ/g,'s').replace(/v/g,'u').replace(/j/g,'i');}   // ligatures as the word index folds them (10-15)
 function renderTitle(q){
   if(CATALOG_ERROR){searchUnavailable('Work catalogue',q);return;}
   if(!IDX){var waiting=seq,requestedPage=RESULT_PAGE;res.innerHTML='';ct.innerHTML='<span class="sbusy">loading…</span>';navMap(function(){if(waiting===seq){RESTORE_PAGE=requestedPage;run();}});return;}

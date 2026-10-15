@@ -2,7 +2,7 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.FRSearch=api;})(typeof window==='undefined'?globalThis:window,function(){
 'use strict';
 const shelves=[['Latin Fathers','pl'],['Greek Fathers','gf'],['Eastern Fathers','po'],['Medieval','md'],['Roman Catholic','rc'],['Continental Reformed','rf'],['English Divines','ed'],['Lutheran','lu'],['Humanism and Law','hl']].map(([label,code])=>({label,code,value:label==='Continental Reformed'?'Reformed':label}));
-const str=v=>v==null?'':String(v),fold=v=>str(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const str=v=>v==null?'':String(v),fold=v=>str(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/æ/g,'ae').replace(/œ/g,'oe').replace(/ſ/g,'s');
 const shelf=value=>shelves.find(s=>s.value===value||s.label===value||s.code===value);
 const label=value=>shelf(value)?.label||str(value);
 /* What a reader is SHOWN for a shelf (MOFaithLabel in lib/faith-catalogue.js): "English Divines" prints as "English writers". `label` stays the matching/server value. */

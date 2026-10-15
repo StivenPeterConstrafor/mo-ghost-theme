@@ -465,7 +465,10 @@ function __initSearch(){
       await Promise.all(dirs.map(d=>p.mergeIndex(BLOB+"/v1/search/pagefind/"+d+"/").catch(()=>null)));
       return p;})().catch(()=>{_pfP=null;return null;});
     return _pfP;}
-  const pfVariants=s=>{const o=new Set([s]);o.add(s.replace(/v/g,"u"));o.add(s.replace(/j/g,"i").replace(/v/g,"u"));return [...o].slice(0,3);};   // early-modern orthography: u/v, i/j
+  const pfVariants=s=>{const o=new Set([s]);o.add(s.replace(/v/g,"u"));o.add(s.replace(/j/g,"i").replace(/v/g,"u"));   // early-modern orthography: u/v, i/j
+    // 10-15 (owner): ligatures both ways; editions print "præsens" or "praesens", "cœlum" or "coelum", and the long s
+    const lig=s.replace(/æ/g,"ae").replace(/Æ/g,"Ae").replace(/œ/g,"oe").replace(/Œ/g,"Oe").replace(/ſ/g,"s");o.add(lig);o.add(lig.replace(/ae/g,"æ").replace(/oe/g,"œ"));
+    return [...o].slice(0,5);};
   async function pfThis(term){
     const p=await loadPF();if(!p||!DATA||!DATA.slug)return null;
     const seen={};
