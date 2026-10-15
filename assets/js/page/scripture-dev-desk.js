@@ -274,9 +274,10 @@
 
   function updateMoreLabel() {
     const left = Math.max(0, Number(lastMatched || 0) - Number(offset || 0));
-    // The ranked cards already name every author; more rows only matter under a kind chip.
-    $more.hidden = !offset || (!kindSel && authorFacet.length > 0);
-    $more.textContent = offset ? `Show ${fmt(Math.min(MORE_BATCH, left))} more (${fmt(left)} left)` : "Show more";
+    // The ranked cards name the hundred largest authors; loading more rows reaches the rest (an author past the hundredth gets a
+    // card from the rows) and feeds Similar Scripture use, so the button stays, named for what it loads.
+    $more.hidden = !offset;
+    $more.textContent = offset ? `Load ${fmt(Math.min(MORE_BATCH, left))} more citations (${fmt(left)} left)` : "Load more citations";
   }
 
   function query(more) {
@@ -610,6 +611,12 @@
         return { key: x.k, group, works: loaded.works, n: Number(x.n) || loaded.n, whole: authorDone.has(x.k) || loaded.n >= Number(x.n) };
       })
       : [...groups.entries()].map(([key, group]) => ({ ...fromRows(key, group), whole: true })).filter((entry) => entry.n);
+    if (ranked) {
+      // authors past the facet's hundred, from the rows loaded so far, after the ranked ones and by their loaded count
+      const named = new Set(authorFacet.map((x) => x.k));
+      [...groups.entries()].filter(([key]) => !named.has(key)).map(([key, group]) => ({ ...fromRows(key, group), whole: true }))
+        .filter((entry) => entry.n).sort((a, b) => b.n - a.n).forEach((entry) => authors.push(entry));
+    }
     const total = authors.length;
     if (ranked) authors = authors.slice(0, Math.max(authorsShown, (authors.findIndex((x) => x.key === openAuthor) + 1) || 0));
     if (openAuthor && !authors.some((entry) => entry.key === openAuthor)) { openAuthor = ""; openWork = ""; }
