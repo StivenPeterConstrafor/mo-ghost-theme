@@ -145,7 +145,7 @@ function scriptureNumber(value){
 function scriptureBook(value){
   const match=String(value).match(/^([1-5])\.?\s*(.+)$/)||String(value).match(/^(III|II|IV|I|V)(?:\.\s*|\s+)(.+)$/i),prefix=match?scriptureNumber(match[1]):null,raw=(match?match[2]:value).replace(/\.$/,''),base=XREF_LOOKUP.get(raw.toLowerCase())||raw;
   if(base==='Mos')return prefix?XREF_MOS[prefix]||null:null;
-  if(base==='Reg'||base==='Regum')return prefix&&prefix<=4?(prefix<=2?prefix+' Samuel':(prefix-2)+' Kings'):null;
+  if(base==='Reg'||base==='Regum')return prefix&&prefix<=4?(prefix<=2?prefix+(XREF_REG_KINGS?' Kings':' Samuel'):(prefix-2)+' Kings'):null;
   if(/^Par(?:al|$)/.test(base))return prefix&&prefix<=2?prefix+' Chronicles':null;
   const name=XREF_EN[base]||base;
   // "3 Kings 8", "IV Kings 19:35": the Vulgate's third and fourth books of Kings are 1 and 2 Kings
@@ -178,6 +178,16 @@ function parseScriptureQuery(query){
 // numbering and are left alone.
 const VULGATE_PSALM_TRADITIONS=new Set(['Latin Fathers','Greek Fathers','Medieval','Roman Catholic']);
 function vulgatePsalms(){try{const d=DATA||{};return VULGATE_PSALM_TRADITIONS.has(d.tradition||({pld:'Latin Fathers',pg:'Greek Fathers'}[String(d.slug||'').split('-')[0]]||''));}catch(_){return false;}}
+// KINGS AS "REG." (2026-10-15, Binchius, Mellificium theologicum): Protestant divines who cite Samuel as "1./2. Sam." write "1./2. Reg."
+// for 1 and 2 Kings ("2. Reg. 19. v. 35", the angel and the Assyrians); the Vulgate's 1/2 Reg. are Samuel. A work reads Reg. so when
+// its source lane cites "Sam." and never "3./4. Reg.", outside the Vulgate traditions: 252 local works qualify (Turretin, Poole, Alting,
+// Gerhard, Coccejus ...), and the signature verses checked there ("1. Reg. 8. 46", "Salomo ... 1 Reg. 3. v. 9", "2. Reg. 6. v. 6") are all
+// Kings. Set by loadTEI for each work.
+let XREF_REG_KINGS=false;
+function scriptureRegKings(source){
+  if(!source||vulgatePsalms())return false;
+  return /(?<![\p{L}\p{N}.])(?:[12]|II?)\.?\s*Sam(?:uel)?\.?\s*\d/u.test(source)&&!/(?<![\p{L}\p{N}.])(?:[34]|III|IV)\.?\s*Reg(?:um)?\.?\s*[\dIVXLC]/u.test(source);
+}
 function gallToHeb(chapter){return chapter<=9||chapter>=148?chapter:chapter<=112?chapter+1:chapter===113?114:chapter<=115?116:chapter<=145?chapter+1:147;}
 // One-chapter books (2026-10-15 census of the mined citations: "Jude 6" 8k, "2 John 10" 2k, "Philem 10" 1k, "Obad 21"): a number
 // after Jude, Obadiah, Philemon, 2 and 3 John is a VERSE of the only chapter, as is one after "v."/"ver." ("Jude ver. 14, 15.").
@@ -1905,6 +1915,7 @@ function teiSegment(doc){
   });
   return map;}
 async function loadTEI(){
+  XREF_REG_KINGS=false;
   try{
     // PL canon mode: the docs were already parsed straight from the family canon
     if(window.__pldCanonDocs){
@@ -1925,6 +1936,7 @@ async function loadTEI(){
     const [laXml,enXml]=await Promise.all([
       fetch(base+"tei.la.xml?v="+(DATA.tei_v||0)).then(r=>r.ok?r.text():"").catch(()=>""),
       fetch(base+"tei.en.xml?v="+(DATA.tei_v||0)).then(r=>r.ok?r.text():"").catch(()=>"")]);
+    XREF_REG_KINGS=scriptureRegKings(laXml);
     const P=new DOMParser();
     const parse=x=>{if(!x)return null;const d=P.parseFromString(x,"application/xml");return d.querySelector("parsererror")?null:d;};
     let laDoc=parse(laXml),enDoc=parse(enXml);
