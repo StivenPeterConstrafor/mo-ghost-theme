@@ -1527,13 +1527,35 @@ function __initReaderTools(){
     const index=await frBuildReaderSearchIndex({tei,pages:DATA?.pages||[],loaded,sourceLabel:window.__SRCNAME||'source'});
     if(tei){readerSearchIndex=index;readerSearchTEI=tei;}return index;
   }
+  // EVERY VOLUME OF THE WORK, OR EVERY WORK OF THE AUTHOR (2026-10-16, owner: "where can someone do full text search on mansi, make it
+  // easy to do on multiple surfaces", "full vol works (across a whole work)"; the corpus site's read-tools.js): beside "Search library",
+  // the same words in every volume of a work in several (v1/volume-sets.json), or else every work of its author. Mansi's tomes go to
+  // the Councils guide's search (public), the others to the search page's full text.
+  let authorScope=null,authorScopeP=null;
+  const MANSI_SET='the-councils-collected-by-g-d-mansi-new-and-most-ample-collection-of-t';
+  function paintAuthorSearch(){if(!authorScope){findAuthorScope();return;}const lib=$('#nbWorkSearchLibrary');let el=$('#nbWorkSearchAuthor');
+    if(!el&&lib){el=document.createElement('a');el.id='nbWorkSearchAuthor';el.target='_blank';el.rel='noopener';lib.parentNode.insertBefore(el,lib);}
+    if(!el)return;const query=(($('#nbWorkSearchQuery')||{}).value||'').trim();el.textContent=authorScope.label;
+    el.href=authorScope.set===MANSI_SET?'/the-faith-received/guide/?'+new URLSearchParams(Object.assign({s:'councils'},query?{q:query}:{})).toString()+'#find'
+      :'/the-faith-received/search/?'+new URLSearchParams(Object.assign({m:'full'},authorScope.set?{set:authorScope.set}:{author:authorScope.a},query?{q:query}:{})).toString();}
+  function findAuthorScope(){if(authorScopeP||typeof DATA==='undefined'||!DATA||!DATA.slug)return;
+    const list=window.__rsWIDX?Promise.resolve(window.__rsWIDX):typeof fetch==='function'&&typeof BLOB!=='undefined'?fetch(BLOB+'/v1/works-index.json').then(r=>r.json()).then(d=>d.works||[]):null;
+    if(!list)return;
+    const sets=typeof fetch==='function'&&typeof BLOB!=='undefined'?fetch(BLOB+'/v1/volume-sets.json').then(r=>r.json()).catch(()=>null):Promise.resolve(null);
+    authorScopeP=Promise.all([list,sets]).then(([ws,vs])=>{
+      const inSet=vs&&vs.by&&vs.by[DATA.slug],set=inSet&&vs.sets&&vs.sets[inSet[0]];
+      if(set){const n=new Set((set.tracks||[]).flatMap(t=>(t.vols||[]).map(v=>v.s)).filter(Boolean)).size;
+        if(n>1){authorScope={set:inSet[0],label:'Search all '+n+' volumes'};paintAuthorSearch();return;}}
+      const me=ws.find(w=>w.slug===DATA.slug),a=me&&String(me.author||'').trim();if(!a)return;
+      const n=ws.filter(w=>String(w.author||'').trim()===a).length;if(n<2)return;
+      authorScope={a,label:/collected by/i.test(a)?'Search all '+n+' tomes':'Search all '+n+' works of '+a.split(/[;,]/)[0].trim()};paintAuthorSearch();}).catch(()=>{});}
   function renderReaderSearch(){
     const host=$('#nbWorkSearchResults');host.innerHTML=readerSearchHits.slice(0,readerSearchShown).map((hit,i)=>'<button type="button" class="nb-work-search-hit" data-reader-search-result="'+i+'"'+(readerSearchSelected===hit.page?' aria-current="location"':'')+'><span>'+esc(frReaderSearchResultLabel(hit.page,locOf(hit.page))+(hit.sourceRegion==='contents'?' · Contents':hit.sourceRegion==='frontmatter'?' · Front matter':'')+(hit.lane?' · '+(hit.lane==='en'?'English':window.__SRCNAME||'Source'):'')+(hit.kind==='note'?' · '+(hit.margin?'Margin note':'Footnote'):''))+'</span><span>'+frReaderSearchMarkup(frReaderSearchSnippet(hit.text,readerSearchTerms),readerSearchTerms)+'</span></button>').join('');
     if($('#nbWorkSearchMore'))$('#nbWorkSearchMore').hidden=readerSearchShown>=readerSearchHits.length;
   }
   async function runReaderSearch(){
     const query=$('#nbWorkSearchQuery')?.value.trim(),sequence=++readerSearchSequence;
-    if($('#nbWorkSearchLibrary'))$('#nbWorkSearchLibrary').href='/the-faith-received/search/'+(query?'?q='+encodeURIComponent(query):'');
+    if($('#nbWorkSearchLibrary'))$('#nbWorkSearchLibrary').href='/the-faith-received/search/'+(query?'?q='+encodeURIComponent(query):'');paintAuthorSearch();
     if(!query){readerSearchQuery='';readerSearchHits=[];readerSearchTerms=[];renderReaderSearch();($('#nbWorkSearchStatus')||{}).textContent='Find pages containing all the words you enter.';findSet([],{open:false});return;}
     if($('#nbWorkSearchStatus'))$('#nbWorkSearchStatus').textContent='Indexing this work’s text…';$('#nbWorkSearchStatus')?.setAttribute('aria-busy','true');
     try{
@@ -1544,7 +1566,7 @@ function __initReaderTools(){
     finally{if(sequence===readerSearchSequence)$('#nbWorkSearchStatus')?.removeAttribute('aria-busy');}
   }
   if($('#nbWorkSearchForm'))$('#nbWorkSearchForm').onsubmit=e=>{e.preventDefault();runReaderSearch();};
-  if($('#nbWorkSearchQuery'))$('#nbWorkSearchQuery').oninput=()=>{readerSearchSequence++;$('#nbWorkSearchStatus')?.removeAttribute('aria-busy');const query=$('#nbWorkSearchQuery')?.value.trim();($('#nbWorkSearchLibrary')||{}).href='/the-faith-received/search/'+(query?'?q='+encodeURIComponent(query):'');if(!query)runReaderSearch();else if(query!==readerSearchQuery)($('#nbWorkSearchStatus')||{}).textContent=readerSearchQuery?'Results for “'+readerSearchQuery+'” are retained. Select Search text to run the new query.':'Select Search text to search this work.';};
+  if($('#nbWorkSearchQuery'))$('#nbWorkSearchQuery').oninput=()=>{readerSearchSequence++;$('#nbWorkSearchStatus')?.removeAttribute('aria-busy');const query=$('#nbWorkSearchQuery')?.value.trim();($('#nbWorkSearchLibrary')||{}).href='/the-faith-received/search/'+(query?'?q='+encodeURIComponent(query):'');paintAuthorSearch();if(!query)runReaderSearch();else if(query!==readerSearchQuery)($('#nbWorkSearchStatus')||{}).textContent=readerSearchQuery?'Results for “'+readerSearchQuery+'” are retained. Select Search text to run the new query.':'Select Search text to search this work.';};
   if($('#nbWorkSearchMore'))$('#nbWorkSearchMore').onclick=()=>{readerSearchShown+=50;renderReaderSearch();};
   if($('#nbWorkSearchClear'))$('#nbWorkSearchClear').onclick=()=>{($('#nbWorkSearchQuery')||{}).value='';runReaderSearch();$('#nbWorkSearchQuery')?.focus({preventScroll:true});};
   if($('#nbWorkSearchResults'))$('#nbWorkSearchResults').onclick=e=>{
