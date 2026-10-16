@@ -59,7 +59,7 @@ const KORD=["commentary","sermons","treatises","devotional","polemical","cateche
 let KMAP=null;
 async function kinds(){if(KMAP)return KMAP;   // daily buster: the map is re-baked, browsers cache blob URLs for a year
   try{KMAP=await gzJ(BLOB+"/v1/kinds.json.gz?d="+bust());}catch(e){KMAP={};}return KMAP;}
-const BUST_REV="3";   // bump on same-day shard re-bakes — the daily buster alone caches stale
+const BUST_REV="4";   // bump on same-day shard re-bakes — the daily buster alone caches stale
 const bust=()=>new Date().toISOString().slice(0,10)+"."+BUST_REV;
 const kindOf=w=>{const r=(KMAP||{})[w];return r?KINDS[r[0]]:null;};
 const kordOf=w=>{const r=(KMAP||{})[w];return (r&&r[1])||0;};
@@ -886,7 +886,7 @@ async function room(slug,arg){
   else if(arg==="connections")VIEW="c";
   else if(arg==="t")VIEW="t";
   else if(arg==="reception")VIEW="rc";
-  else if(arg==="x")VIEW="x";
+  else if(arg==="x"||arg?.startsWith("x/"))VIEW="x";
   else if(arg==="s")VIEW="s";
   else if(arg&&arg.startsWith("s/")){VIEW="s";const p2=arg.slice(2).split("/");selBook=p2[0]||null;selCh=+p2[1]||0;}
   else if(arg&&arg!=="w"&&(topics.find(t=>t.t===arg)||topics.find(t=>t.key===topicCanon(arg).key))){VIEW="q";selT=(topics.find(t=>t.t===arg)||topics.find(t=>t.key===topicCanon(arg).key)).t;}
@@ -1209,14 +1209,32 @@ async function room(slug,arg){
     setHash("s/"+bslug+"/"+ch);
   }
   // ---- Search: his corpus, words and questions ----
-  function renderSearch(){
-    VIEW="x";segOn("x");starSel(null);
+  /* SEARCH IN ONE KIND OF HIS WORKS (owner 2026-10-14: "allow me to do full text search across calvins commentaries as a set ...
+     specific to calvin author room"). "Search in" offers All works or one kind of work as the Works tab files them (v1/kinds.json.gz):
+     Calvin's 45 commentary volumes, his sermons, his treatises. Find asks the word index for the room as before and keeps the answer to
+     the set's works (word-index-search.js opts.keep, which counts within the set); the loaded evidence and Ask keep to the set too. The
+     set and the words ride in the address (#<slug>/x/<kind>/<words>, kind "all" for every work), so a search can be linked and opens
+     already run: #john-calvin/x/commentary/adoption. */
+  async function renderSearch(init){
+    VIEW="x";segOn("x");starSel(null);const token=roomViewRun;
+    await kinds();if(token!==roomViewRun||run!==RESEARCH_RUN)return;
+    const ini=typeof init==="string"&&init.startsWith("x/")?init.slice(2).split("/"):[];
+    const roomWorks=(d.works||[]).filter(w=>w&&w.w),kOf=w=>kindOf(w.w)||"treatises",kRank=k=>KORD.indexOf(k)<0?99:KORD.indexOf(k);
+    const sets=[...new Set(roomWorks.map(kOf))].sort((a,b)=>kRank(a)-kRank(b))
+      .map(k=>({k,label:KNAME[k]||k,slugs:new Set(roomWorks.filter(w=>kOf(w)===k).map(w=>w.w))}));
+    const setSel=sets.length>1?`<label class="rx-search-in" style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--muted);white-space:nowrap">Search in<select id="sset" style="font:inherit;font-size:.88rem;border:1px solid var(--border);border-radius:12px;background:var(--card);color:var(--fg);padding:.45rem .6rem;max-width:16rem"><option value="">All works · ${fmtR(roomWorks.length)}</option>${sets.map(s=>`<option value="${esc(s.k)}">${esc(s.label)} · ${fmtR(s.slugs.size)}</option>`).join("")}</select></label>`:"";
     pbody.innerHTML=`<div class="view">
       <div class="pane-topic">Search ${esc(d.a.split(" ")[0])}</div>
-      <div class="srow"><input id="sq" type="search" placeholder="A word, a phrase, a question…" autocomplete="off">
+      <div class="srow" style="flex-wrap:wrap"><input id="sq" type="search" placeholder="A word, a phrase, a question…" autocomplete="off"${setSel?' style="flex:1 1 14rem;min-width:0"':""}>${setSel}
         <button id="sgo">Find</button><button id="sask">Ask</button></div>
       <div id="sres"></div><div id="swix" class="rx-swix"></div></div>`;
-    const sq=$("#sq"),sres=$("#sres"),swix=$("#swix");sq.focus();
+    const sq=$("#sq"),sres=$("#sres"),swix=$("#swix"),sset=$("#sset");sq.focus();
+    if(sset&&ini[0]&&sets.some(s=>s.k===ini[0]))sset.value=ini[0];
+    if(ini.length>1){try{sq.value=decodeURIComponent(ini.slice(1).join("/"));}catch(e){sq.value=ini.slice(1).join("/");}}
+    const chosen=()=>(sset&&sets.find(s=>s.k===sset.value))||null;
+    const inSet=w=>{const s=chosen();return !s||s.slugs.has(w);};
+    const whose=()=>{const s=chosen();return d.a+"’s "+(s?s.label.toLowerCase():"works");};
+    const hashOf=()=>{const q=sq.value.trim(),k=(sset&&sset.value)||"";return q||k?"x/"+(k||"all")+(q?"/"+encodeURIComponent(q):""):"x";};
     /* EVERY PAGE OF THE AUTHOR'S WORKS (owner 2026-10-04: "allow searching within the author pages, hence specific to an author"). The
        evidence below covers only what this room loads (topics, recorded statements, indexed passages, titles); Find also reads the
        library's word index over every page of the author's works: the search page's panel (word-index-search.js), each request
@@ -1229,38 +1247,42 @@ async function room(slug,arg){
     const texts=()=>{
       const q=sq.value.trim();
       if(!window.FRWordIndex||q.length<2){swix.innerHTML='';return;}
-      FRWordIndex.mount(swix,{query:q,post:wixPost,has:wixHas,scope:{label:d.a+'’s works'},
+      const s=chosen();
+      FRWordIndex.mount(swix,{query:q,post:wixPost,has:wixHas,scope:{label:whose()},keep:s?(w=>s.slugs.has(w)):null,
         readHref:(w,page,hl)=>{const u=readerHref(w,page==null||page===''?page:readerPage(page)),i=u.indexOf('#'),h=hl?(u.includes('?')?'&':'?')+'hl='+encodeURIComponent(hl):'';return i<0?u+h:u.slice(0,i)+h+u.slice(i);},
         title:(w,row)=>esc(workTitle(w,row)),
         meta:row=>[row.volume].filter(Boolean).map(esc).join(' · ')});
     };
     const local=()=>{
       const q=sq.value.trim();if(q.length<2){sres.innerHTML="";return;}
-      const ql=q.toLowerCase();const out=[];
+      const ql=q.toLowerCase();const out=[],s=chosen();
       const tHits=topics.filter(t=>!RX.isRawTopic(t.t)&&t.t.toLowerCase().includes(ql));
       if(tHits.length)out.push(`<h2 class="sect">Topics</h2><div class="chstrip">${tHits.slice(0,12).map(t=>`<button class="chp" data-t="${esc(t.t)}">${esc(t.t)}<span style="color:var(--faint)"> · ${t.n.toLocaleString()}</span></button>`).join("")}</div>`);
       const posH=[],pagH=[];
       for(const t of topics){
-        for(const p2 of (t.pos||[]))if(p2.q&&p2.q.toLowerCase().includes(ql)&&posH.length<30)posH.push({t,p:p2});
-        for(const p2 of (t.pages||[]))if(String(p2.q||p2.g||"").toLowerCase().includes(ql)&&pagH.length<30)pagH.push({t,p:p2});
+        for(const p2 of (t.pos||[]))if(p2.q&&inSet(p2.w)&&p2.q.toLowerCase().includes(ql)&&posH.length<30)posH.push({t,p:p2});
+        for(const p2 of (t.pages||[]))if(inSet(p2.w)&&String(p2.q||p2.g||"").toLowerCase().includes(ql)&&pagH.length<30)pagH.push({t,p:p2});
       }
       const titleOf=row=>(d.works||[]).find(w=>w.w===row.w)?.t||row.wt||row.w;
       if(posH.length)out.push('<h2 class="sect">Recorded statements</h2><p class="rx-note rx-paraphrase-note">These are machine-written summaries of what each passage says, not the author&rsquo;s words. No quotation on this page is verbatim. Open the source to read the passage itself, and to check its speaker, context and translation.</p>'+workFoldsHTML(posH.map(({t,p})=>({...p,topicLabel:t.t})),{title:titleOf,author:d.a,annotation:true,extra:r=>'<p class="rx-note">'+esc(r.topicLabel)+'</p>'}));
       if(pagH.length)out.push('<h2 class="sect">Indexed passages</h2>'+workFoldsHTML(pagH.map(({t,p})=>({...p,topicLabel:t.t,pageSummary:!p.q})),{title:titleOf,author:d.a,extra:r=>'<p class="rx-note">'+esc(r.topicLabel)+'</p>'}));
-      const wH=d.works.filter(x=>RX.fold(x.t).includes(RX.fold(q))).slice(0,10);
+      const wH=d.works.filter(x=>inSet(x.w)&&RX.fold(x.t).includes(RX.fold(q))).slice(0,10);
       if(wH.length)out.push('<h2 class="sect">Works</h2>'+RX.orderedWorks(wH).map(x=>workRowHTML({...x,a:d.a})).join(''));
-      sres.classList.add('rx-pane');sres.innerHTML='<p class="rx-note">Searches the evidence loaded for this author. Showing up to 30 statements, 30 indexed passages, and 10 works. Open Positions for the complete topic index.'+(window.FRWordIndex?' Press Find or Enter to search every page of '+esc(d.a)+'’s works below.':'')+'</p>'+(out.join('')||'<p class="rx-note">No matches in the loaded evidence. Try another phrase, browse Positions, or ask about this author’s works.</p>');
+      sres.classList.add('rx-pane');sres.innerHTML='<p class="rx-note">Searches the evidence loaded for this author'+(s?', kept to '+esc(whose()):'')+'. Showing up to 30 statements, 30 indexed passages, and 10 works. Open Positions for the complete topic index.'+(window.FRWordIndex?' Press Find or Enter to search every page of '+esc(whose())+' below.':'')+'</p>'+(out.join('')||'<p class="rx-note">No matches in the loaded evidence. Try another phrase, browse Positions, or ask about this author’s works.</p>');
     };
+    const find=()=>{local();texts();setHash(hashOf());};
     let lT=null;
     sq.addEventListener("input",()=>{clearTimeout(lT);lT=setTimeout(local,250);});
-    sq.addEventListener("keydown",e=>{if(e.key==="Enter"){local();texts();}});
-    $("#sgo").addEventListener("click",()=>{local();texts();});
+    sq.addEventListener("keydown",e=>{if(e.key==="Enter")find();});
+    $("#sgo").addEventListener("click",find);
+    if(sset)sset.addEventListener("change",()=>{if(sq.value.trim().length>=2)find();else setHash(hashOf());});
     $("#sask").addEventListener("click",async()=>{
       const q=sq.value.trim();if(q.length<3)return;
       if(!window.FRAsk?.open){sres.textContent='Ask could not load. Reload this page and try again.';return;}
-      await FRAsk.open({fresh:true,q,authors:[d.a],works:(d.works||[]).map(work=>work.w).filter(Boolean)});
+      await FRAsk.open({fresh:true,q,authors:[d.a],works:roomWorks.filter(w=>inSet(w.w)).map(w=>w.w)});
     });
-    pbody.scrollTop=0;setHash("x");
+    pbody.scrollTop=0;setHash(hashOf());
+    if(sq.value.trim().length>=2){local();texts();}
   }
   // ---- wiring ----
   segs.p.addEventListener("click",()=>renderPositions());
@@ -1351,7 +1373,7 @@ async function room(slug,arg){
   if(VIEW==="p")renderPositions(arg?.startsWith("positions/")?arg.slice(10):undefined);
   else if(VIEW==="c")renderConnections();
   else if(VIEW==="t")renderTopicsIndex();
-  else if(VIEW==="x")renderSearch();
+  else if(VIEW==="x")renderSearch(arg);
   else if(VIEW==="rc")renderReception();
   else if(VIEW==="s")renderScripture(selBook,selCh);
   else if(VIEW==="q"){const t=topics.find(x=>x.t===selT);if(t)renderTopic(t);else renderWorks();}
