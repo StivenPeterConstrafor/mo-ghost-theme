@@ -313,7 +313,7 @@
     S.fetchCommentaries(book, c, S.emptyFilters()).then((d) => {
       const $host = $ov.querySelector("[data-sd-ov-comm]");
       if (my !== ovRun || !$host || !d) return;
-      const g = S.commentaryGroups(d.items, book), names = S.commentaryTitles(book, c);
+      const g = S.commentaryGroups(d.items, book), names = S.commentaryTitles(book, c, g);
       // The commentaries on the book that have their own page on this chapter, one from each age (the Fathers, the early and
       // the high Middle Ages, the Reformation, the 17th century, after), then any others oldest first; then the works on part
       // of the book.
@@ -364,6 +364,7 @@
     chapter: { key: "chapter", title: "Chapter commentaries", wideOpen: false },
     book: { key: "book", title: "Book commentaries", wideOpen: false },
     wholeBible: { key: "whole_bible", title: "Whole-Bible commentaries", wideOpen: false },
+    other: { key: "other_works", title: "Other works", wideOpen: false },
     citations: { key: "citations", title: "Citations of this verse", wideOpen: false },
     similar: { key: "similar", title: "Similar passages", wideOpen: false },
   };
@@ -521,16 +522,17 @@
     S.fetchCommentaries(book, c, S.emptyFilters()).then((d) => {
       if (my !== panelCommRun || state.v !== v || state.book !== book || state.c !== c) return;
       // On this chapter, on the book, on the whole Bible (2026-10-15), each oldest first; the fold names say which.
-      const g = S.commentaryGroups(d && d.items, book), names = S.commentaryTitles(book, c);
+      const g = S.commentaryGroups(d && d.items, book), names = S.commentaryTitles(book, c, g);
       const list = (k) => `<ol class="sd-sources sd-panel-commentaries" data-sd-comm-list="${k}"></ol>`;
       const chunks = [];
       if (g.chapter.length) chunks.push(panelDetails({ ...PANEL_FOLDS.chapter, title: names.chapter }, list("chapter"), g.chapter.length));
       if (g.book.length) chunks.push(panelDetails({ ...PANEL_FOLDS.book, title: names.book }, list("book"), g.book.length));
       if (g.whole.length) chunks.push(panelDetails({ ...PANEL_FOLDS.wholeBible, title: names.whole }, list("whole"), g.whole.length));
+      if (g.other.length) chunks.push(panelDetails({ ...PANEL_FOLDS.other, title: names.other }, list("other"), g.other.length));
       $host.innerHTML = chunks.join("");
       // Each commentary previews in place (corpus owner, 2026-09-25); see commentaryItem in the core.
       const ctx = { book, c, v };
-      [["chapter", g.chapter], ["book", g.book], ["whole", g.whole]].forEach(([k, items]) => {
+      [["chapter", g.chapter], ["book", g.book], ["whole", g.whole], ["other", g.other]].forEach(([k, items]) => {
         const $ol = $host.querySelector(`[data-sd-comm-list="${k}"]`);
         if ($ol) items.forEach((e) => $ol.appendChild(S.commentaryItem(e, ctx)));
       });

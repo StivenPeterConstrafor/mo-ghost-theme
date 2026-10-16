@@ -497,8 +497,25 @@
   const fetchVerse = (book, c, v, f, offset, limit) => api("/v1/verse", {
     b: book.lib, c, v, tr: f.tr, au: f.au, cen: f.cen, q: f.q, w: f.w, offset: offset || 0, limit: limit || 20,
   });
-  const fetchCommentaries = (book, c, f) => api("/v1/verse/commentaries", {
+  /* WHOLE-BIBLE AND TESTAMENT SETS (2026-10-16, the owner: "whole and chapter are labelled correctly, where is lapide and poole's
+   * synopsis"). The map files each volume of a set under the books it expounds, so Lapide's vol. 18 and Poole's Synopsis came back
+   * as commentaries on Romans. v1/reception/scripture/_series.json names the sets (runs/reception_1015/series.py): bible, nt, ot.
+   * Each commentary is marked with its set (`set`) as the list arrives, so every list groups it the same way. */
+  let seriesReady = null;
+  function loadSeries() {
+    if (!seriesReady) {
+      seriesReady = fetch(`${LIBRARY_BASE}/v1/reception/scripture/_series.json`, { credentials: "omit" })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .then((d) => new Map(Object.entries(d || {})))
+        .catch(() => { seriesReady = null; return new Map(); });
+    }
+    return seriesReady;
+  }
+  const fetchCommentaries = (book, c, f) => Promise.all([api("/v1/verse/commentaries", {
     b: book.lib, c, tr: f.tr, au: f.au, cen: f.cen,
+  }), loadSeries()]).then(([d, sets]) => {
+    ((d && d.items) || []).forEach((e) => { const s = sets.get(e.w); if (s) e.set = s; });
+    return d;
   });
   const fetchPassage = (row, book, c, v) => api("/v1/verse/passage", {
     w: row.w, p: row.p, h: row.h, b: book.lib, c, v,
@@ -853,7 +870,10 @@
    * commentary list links to. That link is sometimes the chapter and
    * sometimes the start of the book's section, so the note says only
    * "the page this list links to". */
-  const COMMENTARY_KIND = { collected: "Collected works", treatises: "Treatise", law: "Councils and canons" };
+  const COMMENTARY_KIND = { collected: "Collected works", treatises: "Treatise", law: "Councils and canons", letters: "Letters", polemical: "Polemic",
+    devotional: "Devotional", poetry: "Poetry", catechetical: "Catechism", sermons: "Sermons", reference: "Reference" };
+  // Works that are not commentaries, listed apart so a commentary is never ranked against a council or a letter (2026-10-16)
+  const NOT_COMMENTARY = new Set(["law", "letters", "polemical", "treatises", "devotional", "poetry", "catechetical"]);
   /* OLDEST FIRST (2026-10-15, the owner: "ordering intuitively, correct ranking"). The worker keeps the map's order, which
    * read as no order at all (Calvin, Gwalther, Hammond, Grotius, Wesley ... Origen 63rd on Romans 5). A list of commentaries
    * now reads as the passage's reception history, as Compare reads a topic: by century, undated last, then author, then
@@ -868,18 +888,33 @@
   /* THREE LISTS (2026-10-15, the owner: "do we highlight the chapter commentaries/book commentaries too"): works on part of the
    * book that takes in this chapter (Chrysostom's sermons on Romans 4–9, a sermon on the chapter), commentaries on the whole book
    * (a range of 80 % of its chapters or more, or no range), and the whole-Bible sets (`annotation`). Each oldest first. */
+  /* FOUR LISTS (2026-10-16): the sets on the whole Bible or a whole Testament (Lapide, both Pooles, the Westminster Annotations,
+   * Benson, Coke; Grotius, Calov, Wesley on the New Testament) go with the map's whole-Bible works, each at its own volume; works
+   * that are not commentaries (councils, letters, polemics, treatises) are listed apart, after them. */
   function commentaryGroups(items, book) {
     const list = items || [];
     const n = (book && book.chapters) || 0;
     const wholeBook = (e) => !(Number(e.c1) > 0) || (n && (Number(e.c2 || e.c1) - Number(e.c1) + 1) >= 0.8 * n);
+    const other = (e) => NOT_COMMENTARY.has(e.kind);
+    const whole = (e) => !other(e) && (e.annotation || e.set);
     return {
-      chapter: list.filter((e) => !e.annotation && !wholeBook(e)).sort(byCentury),
-      book: list.filter((e) => !e.annotation && wholeBook(e)).sort(byCentury),
-      whole: list.filter((e) => e.annotation).sort(byCentury),
+      chapter: list.filter((e) => !other(e) && !whole(e) && !wholeBook(e)).sort(byCentury),
+      book: list.filter((e) => !other(e) && !whole(e) && wholeBook(e)).sort(byCentury),
+      whole: list.filter(whole).sort(byCentury),
+      other: list.filter(other).sort(byCentury),
     };
   }
-  // The three lists' names, in one place: "On Romans 5", "On Romans", "On the whole Bible".
-  const commentaryTitles = (book, c) => ({ chapter: `On ${refLabel(book, c, 0)}`, book: `On ${book.slug === "psalms" ? "the Psalms" : book.name}`, whole: "On the whole Bible" });
+  // The lists' names, in one place: "On Romans 5", "On Romans", "On the whole Bible" ("… or New Testament" when a Testament's
+  // set is among them), "Other works on Romans".
+  const commentaryTitles = (book, c, g) => {
+    const sets = new Set(((g && g.whole) || []).map((e) => e.set));
+    const name = book.slug === "psalms" ? "the Psalms" : book.name;
+    return {
+      chapter: `On ${refLabel(book, c, 0)}`, book: `On ${name}`,
+      whole: sets.has("nt") ? "On the whole Bible or New Testament" : sets.has("ot") ? "On the whole Bible or Old Testament" : "On the whole Bible",
+      other: `Other works on ${name}`,
+    };
+  };
   function commentaryItem(e, ctx) {
     const li = document.createElement("li");
     li.className = "sd-source sd-commentary";
@@ -1055,9 +1090,9 @@
             ? `${plural(d.matched, "commentary", "commentaries")} of ${fmt(d.total)} match.`
             : `${plural(d.total, "commentary", "commentaries")} on ${refLabel(ctx.book, ctx.c)}. Open a list, then Preview to read one here.`)
           : (d.total ? "No commentaries match these filters." : "No commentaries are catalogued for this book yet.");
-        const g = commentaryGroups(items, ctx.book), names = commentaryTitles(ctx.book, ctx.c);
+        const g = commentaryGroups(items, ctx.book), names = commentaryTitles(ctx.book, ctx.c, g);
         $folds.innerHTML = "";
-        ["chapter", "book", "whole"].forEach((k) => { if (g[k].length) $folds.appendChild(fold(k, names[k], g[k])); });
+        ["chapter", "book", "whole", "other"].forEach((k) => { if (g[k].length) $folds.appendChild(fold(k, names[k], g[k])); });
       }).catch(() => {
         if (my !== run || !$folds.isConnected) return;
         $status.innerHTML = `Commentaries did not load. <button type="button" class="sd-clear" data-sd-retry>Try again</button>`;
@@ -1126,7 +1161,7 @@
   }
 
   window.MOScriptureDev = {
-    commentaryStrip, commentaryFolds, commentaryItem, commentaryGroups, commentaryTitles, byCentury, loadCatalogue, loadAuthorYears, cleanChapter,
+    commentaryStrip, commentaryFolds, commentaryItem, commentaryGroups, commentaryTitles, byCentury, loadCatalogue, loadAuthorYears, loadSeries, cleanChapter,
     TRANSLATIONS, BOOKS, BOOK_BY_SLUG, esc, fmt, plural,
     CANON, APOCRYPHA, SECTIONS, chainOf, APOCRYPHA_TEXT, textName, textShort,
     parseRef, legacyRef, bookFrom, refKey, refLabel, readerHref, deskHref, sourceHref,

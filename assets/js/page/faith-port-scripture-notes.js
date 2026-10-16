@@ -2,8 +2,8 @@
  *   Reader (/the-faith-received/scripture/?ref=<book>.<chapter>[.<verse>], scripture-dev.js)
  *     chapter  in the overview beside the text (wide screens only, as the overview is): its key verses, then (after the
  *              most-cited verses) its reception history verse by verse (five, and the rest on a click);
- *     verse    under the panel's count: its reception history, century by century, with the pages (open on a wide
- *              screen), and its readings; then the commentaries with their own note on the verse (open), before the
+ *     verse    under the panel's count: its reception history, century by century, with the pages, and its readings;
+ *              then the commentaries with their own note on the verse, before the
  *              panel's commentary lists and citations; then the verses read with it, beside Similar passages.
  *   Desk (/the-faith-received/scripture/desk/?ref=<book>.<c>.<v>, scripture-dev-desk.js)
  *     the reception history as a section after the translations, the commentaries with a note on the verse above the
@@ -196,6 +196,12 @@
       era.parentElement.querySelectorAll(".fr-rh-wit > li[hidden]").forEach((li) => { li.hidden = false; });
       era.remove();
     }
+    const vc = e.target.closest && e.target.closest(".fr-vc-all");
+    if (vc) {
+      const $l = vc.previousElementSibling;
+      if ($l) $l.querySelectorAll(":scope > li[hidden]").forEach((li) => { li.hidden = false; });
+      vc.remove();
+    }
     const all = e.target.closest && e.target.closest(".fr-sn-all");
     if (all) {
       all.closest("[data-fr-sn]").querySelectorAll(".fr-sn-told > li[hidden]").forEach((li) => { li.hidden = false; });
@@ -299,6 +305,12 @@
     if (!items.length) { if ($box) $box.hidden = true; return; }
     $ol.replaceChildren(...items.map((e) => S.commentaryItem(e, { book, c, v })));
     markCommentaries($ol, list, `${c}:${v}`);
+    // In the panel, the first eight and the rest on a click (Romans 5:12 has 47); the Desk lists them all.
+    const PANEL_SHOW = 8;
+    if ($ol.closest("section.sd-panel") && items.length > PANEL_SHOW) {
+      [...$ol.children].slice(PANEL_SHOW).forEach((li) => { li.hidden = true; });
+      $ol.insertAdjacentHTML("afterend", `<button type="button" class="sd-commentary-more fr-vc-all">Show all ${fmt(items.length)} commentaries</button>`);
+    }
     // the fold's count, now that the chapter file's notes are in
     const $n = $ol.closest("details") && $ol.closest("details").querySelector(":scope > summary [data-sd-summary-count]");
     if ($n) $n.textContent = `(${fmt(items.length)})`;
@@ -357,7 +369,10 @@
         $panel.querySelectorAll('[data-fr-sn="verse"]').forEach((el) => el.remove());
         const parts = verseParts(x, rv, { book: r.book, c: r.c, v, desk: false }, base) || { readings: "", history: "", with: "", commentaries: [] };
         {
-          const lead = `${parts.history ? fold("fr_history", "Reception history", parts.nWorks, `${parts.history}<p class="sd-muted fr-sn-note">${REC_NOTE}</p>`, true, parts.nWorks === 1 ? "work" : "works") : ""}` +
+          // Closed until opened, on every screen (2026-10-16): open by default the history and the commentaries made the panel
+          // 9,400px tall beside a chapter of 2,500, and working in it scrolled the text out of sight (the panel is not sticky:
+          // Ian, 09-23). The fold rows say what each holds; the Verse Desk shows them whole.
+          const lead = `${parts.history ? fold("fr_history", "Reception history", parts.nWorks, `${parts.history}<p class="sd-muted fr-sn-note">${REC_NOTE}</p>`, false, parts.nWorks === 1 ? "work" : "works") : ""}` +
             `${parts.readings ? fold("fr_readings", "Readings", parts.nReadings, `${parts.readings}<p class="sd-muted fr-sn-note">${NOTE}</p>`) : ""}`;
           const $count = $panel.querySelector("[data-sd-count]");
           if (lead) {
@@ -367,7 +382,7 @@
           // The commentaries with their own note on the verse, open, before the commentary lists (2026-10-15).
           { // a verse the notes do not cover can still have commentaries' notes in the chapter file: always asked
             const $lists = $panel.querySelector("[data-sd-panel-commentaries]");
-            const html = `<div class="fr-sn-verse" data-fr-sn="verse">${fold("fr_vcomm", `Commentaries on ${vKey}`, parts.commentaries.length, `<ol class="sd-sources sd-panel-commentaries" data-fr-sn-vcomm></ol>`, true)}</div>`;
+            const html = `<div class="fr-sn-verse" data-fr-sn="verse">${fold("fr_vcomm", `Commentaries on ${vKey}`, parts.commentaries.length, `<ol class="sd-sources sd-panel-commentaries" data-fr-sn-vcomm></ol>`, false)}</div>`;
             if ($lists) $lists.insertAdjacentHTML("beforebegin", html); else $panel.insertAdjacentHTML("beforeend", html);
             fillVerseCommentaries($panel.querySelector("[data-fr-sn-vcomm]"), r.book, r.c, v, parts.commentaries);
           }
