@@ -480,7 +480,26 @@ function __initSearch(){
     close();if(window.__frSearchWork){window.__frSearchWork(term);return;}
     findSet([term]);findScrollCur();
   }
+  // THE WRITER THE SEARCH NAMES (2026-10-16, the corpus site's read-tools.js): the page vectors below never reach a line like
+  // Confessions I.1 (PL 32:659 is embedded from the editors' admonition that opens it), so the box also asks the idea search's
+  // writer lookup (mo-tfr-ask-dev /v1/isearch?as=writer, member-gated) — the writer named or whose sentence is typed, his
+  // sentence found through the concordance, his closest pages — and puts it above the library's results. A search that names no
+  // writer, or a reader who is not signed in, sees the box as before.
+  const W_LOOKUP="https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/isearch?as=writer&q=";
+  const wFetch=(u,o)=>(window.MOAuth&&window.MOAuth.fetch?window.MOAuth.fetch(u,o):fetch(u,o));
+  const wPage=p=>{const s=p==null?"":String(p),c=/^\d+:0*(\d+)[A-Da-d]?$/.exec(s);return c?c[1]:s.replace(/^0+(?=\d)/,"");};
+  function writerBlock(w,m,term){
+    const held=x=>x&&x.slug&&(!Object.keys(m).length||m[x.slug]);
+    const rows=[...((w&&w.passage)||[]).filter(held),...((w&&w.pages)||[]).filter(held)].slice(0,8);
+    if(!w||!w.writer||!rows.length)return "";
+    return '<div class="rs-writer" aria-label="In '+esc(w.writer.name)+'’s own works"><div class=rp-sec style="margin:.2rem 0 .5rem">In '+esc(w.writer.name)+'’s own works</div>'
+      +rows.map(x=>{const wk=m[x.slug]||{},en=(window.__TEN||{})[x.slug]||"",pg=wPage(x.page),sentence=x.why==="the sentence itself";
+        return '<a class=rsr href="/the-faith-received/read/?w='+encodeURIComponent(x.slug)+(sentence?"&hl="+encodeURIComponent(String((w.understood&&w.understood.passage)||term).split(/\s+/).slice(0,5).join(" ")):"")+(pg?"#b"+encodeURIComponent(pg)+"-0":"")+'">'
+          +'<span class=rst>'+esc(en||wk.title||x.title||x.slug)+'</span>'
+          +'<span class=rsm>'+(sentence?"The sentence itself · ":"")+esc(x.cit||(pg?"pg. "+pg:""))+'</span>'
+          +(x.excerpt?'<span class=rsx2>'+esc(x.excerpt)+'</span>':'')+'</a>';}).join("")+'</div>';}
   async function runCorpus(term){body.innerHTML="<div class=rsn>Searching the corpus…</div>";
+    const wP=Promise.resolve().then(()=>wFetch(W_LOOKUP+encodeURIComponent(term))).then(r=>r&&r.ok?r.json():null).catch(()=>null);
     try{const m=await idx();
       const enc=encodeURIComponent;
       const legs=[fetch("https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/vsearch?q="+enc(term)+"&k=120"+(SCOPE.tr?"&tr="+enc(SCOPE.tr):"")).then(r=>r.json()).catch(()=>null)];
@@ -503,6 +522,7 @@ function __initSearch(){
             return f.doc?'<a class=rp-f href="'+hop(c,f)+'" target=_blank style="display:block;text-decoration:none;color:inherit">'+inner+'</a>'
                         :'<div class=rp-f>'+inner+'</div>';}).join("");});
       body.innerHTML=h;
+      wP.then(w=>{if(term!==q.value.trim()||mode!=="all")return;const b=writerBlock(w,m,term);if(b&&!body.querySelector(".rs-writer"))body.insertAdjacentHTML("afterbegin",b);});
     }catch(e){body.innerHTML="<div class=rsn>Corpus search unavailable.</div>";}}
   // ── DEEP RESEARCH (owner 2026-07-21): brief → visible plan → exhaustive page sweep of the
   // work (every page, not top-k) → classification → synthesized report + page-cited evidence.
