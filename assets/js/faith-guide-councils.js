@@ -281,6 +281,8 @@
       title: (w, row) => esc(bySlug.has(w) ? 'New and Most Ample Collection of the Sacred Councils' : (row && row.title) || w),
       meta(row) { const t = bySlug.get(row && row.slug); return t && t.y0 ? esc(t.y1 && t.y1 !== t.y0 ? `${t.y0}–${t.y1}` : String(t.y0)) : esc((row && row.volume) || ''); } });
   }
+  // a search handed in by a link (?s=councils&q=…: the reader's "Search all 57 volumes", the shelf card) runs once the guide is drawn
+  { const q0 = new URLSearchParams(location.search).get('q'); if (q0 && q0.trim()) { fq.value = q0.trim().slice(0, 200); document.getElementById('sh-finder').requestSubmit(); document.getElementById('find').scrollIntoView({ block: 'start' }); } }
 
   // ---------- by tome: the shelf and the outline ----------
   const shelf = document.getElementById('sh-shelf'), panel = document.getElementById('sh-tomepanel'), maxP = Math.max(...D.tomes.map((t) => t.pages || 0));
