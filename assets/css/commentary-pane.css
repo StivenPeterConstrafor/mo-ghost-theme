@@ -84,6 +84,8 @@ body.cp-on.cp-src .cp-pane { display: none; }
 .cp-break { display: flex; align-items: center; gap: 10px; margin: 18px 0 14px; color: var(--cp-muted); font-size: 0.78rem; }
 .cp-break::before, .cp-break::after { content: ""; flex: 1; height: 1px; background: var(--cp-rule); }
 .cp-empty { color: var(--cp-muted); font-style: italic; }
+.cp-body abbr[title] { text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
+.cp-sig { margin: -2px 0 14px; font-size: 0.84rem; color: var(--cp-muted); }
 .cp-index { margin: 0 0 14px; font-size: 0.84rem; color: var(--cp-muted); line-height: 1.7; }
 .cp-index a { color: var(--cp-ink); text-decoration-color: var(--cp-rule); }
 .cp-crit { scroll-margin-top: 8px; padding: 4px 0 10px; border-bottom: 1px solid var(--cp-rule); margin-bottom: 12px; }

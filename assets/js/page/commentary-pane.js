@@ -65,6 +65,15 @@
     'Abraham Calov', 'Westminster Assembly', 'John Calvin', 'Johannes Cocceius', 'Hugo Grotius', 'John Wesley', 'Adam Clarke',
     'Joseph Benson', 'John Trapp', 'Johannes Piscator', 'Thomas Coke'];
   const cache = new Map();
+  // Poole's sigla ("Be." Beza, "Pi." Piscator …), from each volume's own Catalogus Auctorum, carried in the overlay
+  const SIGLA = {};
+  const reEsc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  function siglaOf(slug) {
+    const sg = SIGLA[slug]; if (!sg) return null;
+    const keys = Object.keys(sg).filter((k) => k.length >= 3).sort((a, b) => b.length - a.length);
+    if (!keys.length) return null;
+    return { sg, rx: new RegExp(`(^|[\\s;,(\\]])(${keys.map(reEsc).join('|')})(?=[\\s;,.)\\]]|$)`, 'g') };
+  }
   const store = { get(k, d) { try { return localStorage.getItem(k) ?? d; } catch (_) { return d; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch (_) {} } };
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -105,6 +114,7 @@
       const c = take(e.w, e.a, e.t);
       if (e.an && e.an[ch] != null) c.open = e.an[ch];
     }
+    for (const [slug, w] of Object.entries((ov && ov.works) || {})) if (w.sigla) SIGLA[slug] = w.sigla;
     for (const [slug, w] of Object.entries((ov && ov.works) || {})) {
       const x = w.books && w.books[book] && w.books[book][ch]; if (!x) continue;
       const c = take(slug, w.a, w.t); c.open = x.p; Object.assign(c.notes, x.v || {}); c.overlay = true;
@@ -299,11 +309,19 @@
     pane.querySelector('.cp-lang').hidden = !(hasEn && pages.some((p) => p.la));
     const rx = (t.how === 'note' || t.how === 'nearest' || t.how === 'later') ? noteRx(t.v) : null;
     let hit = false;
+    const sig = siglaOf(sh.slug);
+    const withSigla = (txt) => {
+      if (!sig) return { html: esc(txt), who: [] };
+      const who = [];
+      const html = esc(txt).replace(sig.rx, (m0, pre, k) => { const n = sig.sg[k]; if (n && !who.includes(n)) who.push(n); return `${pre}<abbr title="${esc(n)}">${k}</abbr>`; });
+      return { html, who };
+    };
     body.innerHTML = pages.map((p, i) => {
       const ps = paragraphs(p[lane] || p.la || p.en);
       const html = ps.map((s) => {
         const mark = rx && !hit && rx.test(s); if (mark) hit = true;
-        return `<p${mark ? ' class="cp-hit" id="cp-hit"' : ''}>${esc(s)}</p>`;
+        const x = withSigla(s);
+        return `<p${mark ? ' class="cp-hit" id="cp-hit"' : ''}>${x.html}</p>${mark && x.who.length ? `<p class="cp-sig">Critics cited: ${esc(x.who.join(', '))}</p>` : ''}`;
       }).join('') || '<p class="cp-empty">A blank page.</p>';
       return (i ? `<div class="cp-break"><span>p. ${p.n}</span></div>` : '') + html;
     }).join('');
