@@ -320,7 +320,9 @@
       const ps = paragraphs(p[lane] || p.la || p.en);
       const html = ps.map((s) => {
         const mark = rx && !hit && rx.test(s); if (mark) hit = true;
-        const x = withSigla(s);
+        const head = /^#{1,6}\s+/.test(s); // the page's own heads ("### CAPUT V.") are set as heads, not printed with their marks
+        const x = withSigla(head ? s.replace(/^#{1,6}\s+/, '') : s);
+        if (head) return `<p class="cp-h${mark ? ' cp-hit' : ''}"${mark ? ' id="cp-hit"' : ''}>${x.html}</p>`;
         return `<p${mark ? ' class="cp-hit" id="cp-hit"' : ''}>${x.html}</p>${mark && x.who.length ? `<p class="cp-sig">Critics cited: ${esc(x.who.join(', '))}</p>` : ''}`;
       }).join('') || '<p class="cp-empty">A blank page.</p>';
       return (i ? `<div class="cp-break"><span>p. ${p.n}</span></div>` : '') + html;
@@ -345,7 +347,7 @@
     body.innerHTML = idx + t.items.map(([who, pn, k], i) => {
       const p = (sh.byPage || {})[pn]; if (!p) return '';
       const pick = (ln) => paragraphs(p[ln]).filter((x) => rx.test(x))[k] || paragraphs(p[ln]).filter((x) => rx.test(x))[0];
-      let note = pick(lane) || pick(lane === 'en' ? 'la' : 'en') || '';
+      let note = (pick(lane) || pick(lane === 'en' ? 'la' : 'en') || '').replace(/^#{1,6}\s+/, '');
       if (note.length > 1100) note = `${note.slice(0, 1100).replace(/\s+\S*$/, '')} …`;
       return `<section class="cp-crit" id="cp-c${i}"><h4><span>${esc(who)}</span><a href="${esc(SITE.read(sh.slug, pn))}">p. ${pn}</a></h4>`
         + `<p>${note ? esc(note) : '<span class="cp-empty">The note could not be found on its page.</span>'}</p></section>`;
