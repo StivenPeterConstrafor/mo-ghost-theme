@@ -119,6 +119,7 @@
       const x = w.books && w.books[book] && w.books[book][ch]; if (!x) continue;
       const c = take(slug, w.a, w.t); c.open = x.p; Object.assign(c.notes, x.v || {}); c.overlay = true;
       if (x.c) { c.collected = x.c; for (const v of Object.keys(x.c)) if (!(v in c.notes)) c.notes[v] = x.c[v][0][1]; }
+      if (x.pv) c.pv = Object.assign(c.pv || {}, x.pv); // the verse as the work prints it, where its numbering counts a psalm's title
     }
     const rank = (a) => { const i = LANDMARKS.indexOf(a); return i < 0 ? 99 : i; };
     return [...by.values()].filter((c) => Object.keys(c.notes).length || c.open != null)
@@ -307,7 +308,8 @@
     if (t.how === 'collected') return paintCollected(sh, t, bookName, body, whereEl);
     const hasEn = pages.some((p) => p.en), lane = S.lang === 'la' || !hasEn ? 'la' : 'en';
     pane.querySelector('.cp-lang').hidden = !(hasEn && pages.some((p) => p.la));
-    const rx = (t.how === 'note' || t.how === 'nearest' || t.how === 'later') ? noteRx(t.v) : null;
+    const printed = (S.cur && S.cur.pv && S.cur.pv[t.v]) || t.v;
+    const rx = (t.how === 'note' || t.how === 'nearest' || t.how === 'later') ? noteRx(printed) : null;
     let hit = false;
     const sig = siglaOf(sh.slug);
     const withSigla = (txt) => {
@@ -341,10 +343,11 @@
       + ` <a href="${esc(SITE.read(sh.slug, t.items[0][1]))}">Open in the reader</a>`;
     const anyEn = Object.values(sh.byPage || {}).some((p) => p && p.en), lane = S.lang === 'la' || !anyEn ? 'la' : 'en';
     pane.querySelector('.cp-lang').hidden = !anyEn;
-    const rx = noteRx(t.v);
+    const rxV = noteRx(t.v);
     const firstOf = new Map(); t.items.forEach(([who], i) => { if (!firstOf.has(who)) firstOf.set(who, i); });
     const idx = `<p class="cp-index">${[...firstOf].map(([who, i]) => `<a href="#cp-c${i}" data-cp-jump="${i}">${esc(who)}</a>`).join(', ')}</p>`;
-    body.innerHTML = idx + t.items.map(([who, pn, k], i) => {
+    body.innerHTML = idx + t.items.map(([who, pn, k, pv], i) => {
+      const rx = pv ? noteRx(pv) : rxV; // a critic's own number for the verse, where his numbering counts the psalm's title
       const p = (sh.byPage || {})[pn]; if (!p) return '';
       const pick = (ln) => paragraphs(p[ln]).filter((x) => rx.test(x))[k] || paragraphs(p[ln]).filter((x) => rx.test(x))[0];
       let note = (pick(lane) || pick(lane === 'en' ? 'la' : 'en') || '').replace(/^#{1,6}\s+/, '');
