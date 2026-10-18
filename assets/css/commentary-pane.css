@@ -1,0 +1,138 @@
+/* COMMENTARY BESIDE THE TEXT (prototype, 2026-10-18) — /bible?pane=1 only. The site's own tokens: Source Serif, ink on the warm
+   grey ground, white paper for the pane; one tint marks the verse the commentary follows (the same grey as a selected verse). */
+:root {
+  --cp-ink: var(--ink, #1C1C1A);
+  --cp-muted: var(--muted, #5A5A56);
+  --cp-paper: var(--paper, #FFFFFF);
+  --cp-ground: var(--bg, #F0F0ED);
+  --cp-rule: #D6D6D0;
+  --cp-mark: #E7E4D9;
+  --cp-hit: #F3EED9;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --cp-rule: #3A3A36; --cp-mark: #2E2C26; --cp-hit: #353020; }
+}
+:root[data-theme="dark"] { --cp-rule: #3A3A36; --cp-mark: #2E2C26; --cp-hit: #353020; }
+
+/* the reader's own rule is .scripture-reader-layout:has(…) (0,3,0): these outrank it while the pane is open */
+html body.cp-on main .scripture-reader-layout:has(.cp-pane) {
+  grid-template-columns: minmax(340px, 1fr) minmax(420px, 1.2fr);
+  gap: 36px;
+  align-items: start;
+}
+html body.cp-on main.scripture-page:has(.cp-pane) { max-width: min(1400px, 100%) !important; }
+body.cp-on .scripture-verse-summary { display: none; }
+body.cp-on.cp-src .scripture-verse-summary { display: block; }
+body.cp-on.cp-src .cp-pane { display: none; }
+
+.cp-pane {
+  position: sticky;
+  top: 76px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 160px);
+  background: var(--cp-paper);
+  border: 1px solid var(--cp-rule);
+  color: var(--cp-ink);
+  font-family: "Source Serif Pro", Palatino, Georgia, serif;
+}
+.cp-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--cp-rule); }
+.cp-tabs button {
+  flex: 1; padding: 10px 12px; background: none; border: 0; border-bottom: 2px solid transparent;
+  font: inherit; font-size: 0.86rem; color: var(--cp-muted); cursor: pointer;
+}
+.cp-tabs button[aria-pressed="true"] { color: var(--cp-ink); border-bottom-color: var(--cp-ink); }
+.scripture-verse-summary > .cp-tabs { margin: -4px 0 14px; }
+
+.cp-head { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px 8px; }
+.cp-pickwrap { position: relative; flex: 1; min-width: 0; }
+.cp-pick {
+  display: flex; flex-direction: column; align-items: flex-start; width: 100%; padding: 0; text-align: left;
+  background: none; border: 0; font: inherit; color: inherit; cursor: pointer;
+}
+.cp-who { display: inline-flex; align-items: baseline; max-width: 100%; font-size: 1.28rem; line-height: 1.2; white-space: nowrap; }
+.cp-who::after { content: ""; flex: none; display: inline-block; width: 0.42em; height: 0.42em; margin-left: 0.45em; vertical-align: 0.18em;
+  border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); }
+.cp-what { font-size: 0.84rem; color: var(--cp-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.cp-pick:focus-visible, .cp-lang button:focus-visible, .cp-tabs button:focus-visible, .cp-pages button:focus-visible,
+.cp-body:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 2px; }
+
+.cp-list {
+  position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; width: min(440px, 80vw); max-height: 60vh; overflow: auto;
+  margin: 0; padding: 6px 0; list-style: none; background: var(--cp-paper); border: 1px solid var(--cp-rule);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+}
+.cp-list li[data-slug] { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; padding: 8px 14px; cursor: pointer; }
+.cp-list li[data-slug]:hover, .cp-list li[aria-selected="true"] { background: var(--cp-ground); }
+.cp-li-h { padding: 10px 14px 4px; font-size: 0.78rem; color: var(--cp-muted); }
+.cp-li-a { font-size: 0.98rem; }
+.cp-li-t { grid-column: 1; font-size: 0.8rem; color: var(--cp-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cp-li-n { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-size: 0.78rem; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
+
+.cp-lang { display: inline-flex; border: 1px solid var(--cp-rule); }
+.cp-lang button { padding: 5px 10px; background: none; border: 0; font: inherit; font-size: 0.8rem; color: var(--cp-muted); cursor: pointer; }
+.cp-lang button[aria-pressed="true"] { background: var(--cp-ink); color: var(--cp-paper); }
+
+.cp-where { margin: 0; padding: 0 18px 10px; font-size: 0.88rem; color: var(--cp-muted); border-bottom: 1px solid var(--cp-rule); }
+.cp-where .cp-pg { margin-left: 4px; font-variant-numeric: tabular-nums; }
+.cp-where a { margin-left: 8px; color: var(--cp-ink); }
+
+.cp-body { flex: 1; overflow: auto; padding: 14px 22px 28px; font-size: 1.02rem; line-height: 1.62; overscroll-behavior: contain; }
+.cp-body p { margin: 0 0 0.8em; max-width: 68ch; }
+.cp-body .cp-hit { background: var(--cp-hit); margin-left: -10px; margin-right: -10px; padding: 6px 10px; }
+.cp-body.cp-loading { opacity: 0.45; transition: opacity 0.2s ease-out; }
+.cp-break { display: flex; align-items: center; gap: 10px; margin: 18px 0 14px; color: var(--cp-muted); font-size: 0.78rem; }
+.cp-break::before, .cp-break::after { content: ""; flex: 1; height: 1px; background: var(--cp-rule); }
+.cp-empty { color: var(--cp-muted); font-style: italic; }
+.cp-index { margin: 0 0 14px; font-size: 0.84rem; color: var(--cp-muted); line-height: 1.7; }
+.cp-index a { color: var(--cp-ink); text-decoration-color: var(--cp-rule); }
+.cp-crit { scroll-margin-top: 8px; padding: 4px 0 10px; border-bottom: 1px solid var(--cp-rule); margin-bottom: 12px; }
+.cp-crit:last-child { border-bottom: 0; }
+.cp-crit h4 { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 0 0 4px; font-size: 0.98rem; font-weight: 600; }
+.cp-crit h4 a { font-weight: 400; font-size: 0.8rem; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
+.cp-crit p { margin: 0; }
+
+.cp-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 18px; border-top: 1px solid var(--cp-rule); font-size: 0.84rem; }
+.cp-follow { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.cp-pages { display: inline-flex; gap: 6px; }
+.cp-pages button { white-space: nowrap; padding: 4px 9px; background: none; border: 1px solid var(--cp-rule); font: inherit; font-size: 0.8rem; color: var(--cp-ink); cursor: pointer; }
+
+/* the verse the commentary is following */
+body.cp-on .scripture-verse-wrap.cp-focus { background: var(--cp-mark); }
+
+@media (max-width: 900px) {
+  html body.cp-on main .scripture-reader-layout:has(.cp-pane) { grid-template-columns: 1fr; }
+  .cp-pane { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; top: auto; height: 46vh; border-width: 1px 0 0; }
+  body.cp-on { padding-bottom: 46vh; }
+  .cp-head { padding: 10px 16px 6px; }
+  .cp-who { font-size: 1.08rem; }
+}
+@media (prefers-reduced-motion: reduce) { .cp-body.cp-loading { transition: none; } }
+
+/* ── Mere Orthodoxy (the theme's Scripture reader, html.cp-site-mo): its own tokens, its two-column .sd-layout, its sticky offset ── */
+html.cp-site-mo {
+  --cp-ink: var(--sd-ink, #2d2927);
+  --cp-muted: var(--sd-muted, #6b6660);
+  --cp-paper: var(--sd-card, #fffdf9);
+  --cp-ground: var(--sd-panel, #fbf8f3);
+  --cp-rule: var(--color-rule, #ddd5c8);
+  --cp-mark: #efe6d4;
+  --cp-hit: #f4ead2;
+}
+html.cp-site-mo .cp-pane {
+  font-family: var(--font-body, Georgia, serif);
+  top: calc(var(--sd-top, 0px) + 16px);
+  height: calc(100vh - var(--sd-top, 0px) - 40px);
+  border-radius: 3px;
+}
+html.cp-site-mo body.cp-on .sd-layout:has(.cp-pane) {
+  grid-template-columns: minmax(380px, 1fr) minmax(420px, 1.15fr) !important;
+  align-items: start;
+}
+html.cp-site-mo body.cp-on .sd-side { display: none !important; }
+html.cp-site-mo body.cp-on.cp-src .sd-side { display: block !important; }
+html.cp-site-mo body.cp-on.cp-src .cp-pane { display: none; }
+html.cp-site-mo body.cp-on .bible-verse.cp-focus { background: var(--cp-mark); }
+@media (max-width: 900px) {
+  html.cp-site-mo body.cp-on .sd-layout:has(.cp-pane) { grid-template-columns: 1fr !important; }
+}
