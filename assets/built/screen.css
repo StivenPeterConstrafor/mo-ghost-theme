@@ -11496,26 +11496,63 @@ label.site-form-field-check {
   .dl-ep-time { display: none; }
 }
 
-/* Reader endorsement closing the two-path band. A hairline and the
-   image, no box — the screenshot already carries its own white card,
-   so wrapping it in another one would read as a card-in-a-card. */
+/* Reader endorsement closing the two-path band: a hairline, then a
+   portrait engraved in an oval beside the quote, as on the TFR guides'
+   author cards. assets/js/engraved-portrait.js draws the canvas. */
 .dl-endorsement {
   max-width: 720px;
   margin: 56px auto 0;
   padding-top: 40px;
   border-top: 1px solid var(--color-rule);
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 40px;
+  align-items: center;
 }
-.dl-endorsement img {
+.dl-endorsement-por canvas {
   display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
+  width: 200px;
+  height: 250px;
+}
+/* No portrait (image failed or canvas unreadable): the quote takes the row. */
+.dl-endorsement.no-por { grid-template-columns: minmax(0, 1fr); }
+.dl-endorsement.no-por .dl-endorsement-por { display: none; }
+.dl-endorsement-quote {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: var(--font-body);
+  font-style: normal;
+  color: var(--color-dark);
+}
+.dl-endorsement-quote p {
+  margin: 0;
+  font-size: clamp(19px, 2.3vw, 23px);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+.dl-endorsement-quote p::before { content: "\201C"; }
+.dl-endorsement-quote p::after { content: "\201D"; }
+.dl-endorsement-cite {
+  margin-top: 14px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--color-muted);
+}
+.dl-endorsement-cite b {
+  display: block;
+  font-weight: 600;
+  color: var(--color-dark);
 }
 @media (max-width: 640px) {
   .dl-endorsement {
     margin-top: 40px;
     padding-top: 28px;
+    grid-template-columns: 104px minmax(0, 1fr);
+    gap: 18px;
   }
+  .dl-endorsement-por canvas { width: 104px; height: 130px; }
+  .dl-endorsement-quote p { font-size: 18px; }
 }
 
 .dl-listen-ctas {
@@ -11831,6 +11868,8 @@ label.site-form-field-check {
   color: var(--color-dark);
   margin-bottom: 14px;
 }
+.dl-about-cta { margin-top: 12px; }
+
 .dl-about-text {
   font-family: var(--font-body);
   font-size: 16px;
