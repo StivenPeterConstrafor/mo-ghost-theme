@@ -7797,6 +7797,12 @@ mark.faith-find-hit.is-current {
      placeRail moves it out of the search panel at this width, so it has the list to stick over). */
   [data-room-shell] > [data-room-rail] { position: sticky; top: calc(var(--mo-mast, 61px) + 43px); z-index: 6; margin: 0 0 18px; background: var(--color-page, #f7f4ef); transition: top 0.25s ease; }
   body:has(> .site-header.is-hidden) [data-room-shell] > [data-room-rail] { top: 43px; }
+  /* Phone: same two timings as the masthead (screen.css). `top` stays: the rail is sticky, a transform would not move its stick line. */
+  @media (max-width: 880px) {
+    [data-room-shell] > [data-room-rail] { transition: top 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+    body:has(> .site-header.is-hidden) [data-room-shell] > [data-room-rail] { transition: top 0.25s ease; }
+  }
+  @media (prefers-reduced-motion: reduce) { [data-room-shell] > [data-room-rail], body:has(> .site-header.is-hidden) [data-room-shell] > [data-room-rail] { transition: none; } }
   [data-room-shell] > [data-room-rail]:empty { display: none; }
   [data-room-shell] > [data-room-list] { scroll-margin-top: calc(var(--mo-mast, 61px) + 43px + 64px); }
   .faith-room-letters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 4px 0; margin-bottom: 0; }
@@ -13917,6 +13923,22 @@ a.fr-plan-open {
   padding: 0 0 0 16px;
   border-left: 1px solid var(--color-rule);
 }
+/* The writer the search names (2026-10-16): his sentence and his closest
+   pages above the works. The list keeps the passage list's look, without
+   its indent: it is not nested under a work here. The sentence itself is
+   set a step larger, being the answer the reader typed for. */
+.ps-writer { margin: 0 0 28px; }
+.ps-writer-head {
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--color-dark);
+  margin: 0 0 4px;
+  text-wrap: balance;
+}
+.ps-writer-list { padding-left: 0; border-left: 0; }
+.ps-writer-sentence .ps-passage-text { font-size: 17px; }
 .ps-passage { margin: 0; }
 .ps-passage + .ps-passage { border-top: 1px solid var(--color-rule); }
 .ps-passage-link {
@@ -20261,6 +20283,16 @@ body:not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail {
   top: var(--mo-mast, 85px);
   z-index: 19;
   transition: transform 0.25s ease;
+}
+/* Phone: ride the masthead's curve (screen.css): 0.3s ease-out coming back,
+   the stock 0.25s ease going away. */
+@media (max-width: 880px) {
+  body:not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail {
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  body:has(> .site-header.is-hidden):not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail {
+    transition: transform 0.25s ease;
+  }
 }
 body:has(> .site-header.is-hidden):not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail {
   transform: translateY(calc(-1 * var(--mo-mast, 85px)));
