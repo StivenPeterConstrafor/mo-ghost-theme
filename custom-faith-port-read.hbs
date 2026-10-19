@@ -294,6 +294,9 @@
      other forms (facsimile, born-digital text), from a row under the title and the ends of the text; v1/volume-sets.json. After
      reader-core.js: it reads the same data base (BLOB) and the work being read (DATA). --}}
 <script src="{{asset "js/port/reader-volumes.js"}}&amp;frv=a5127c116fcc6ff3"></script>
+{{!-- On a phone the volume row and the "Introduced by" row move from the header to the top of the Contents drawer
+     (Ian, 2026-10-19). After reader-volumes.js and reader-notes.js, which build them. --}}
+<script src="{{asset "js/page/faith-port-read-phone-head.js"}}"></script>
 {{!-- fr-enla.js: the optional second English of the PG works whose English is made from the Greek (Chrysostom) -- the English made
      from Migne's Latin, v1/pgenla/<id>.json, added under each page by a toggle beside English / Latin / Scan; off by default. After
      reader-core.js: it reads the same data base (BLOB). --}}

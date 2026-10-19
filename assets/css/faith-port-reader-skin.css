@@ -3844,3 +3844,26 @@ html.g-mobile.mh-hide:not(.fr-bar-hidden) #app.faith-port-read-page.no-facs .ph.
   html.g-mobile:not(.fr-plain) #app .fr-reader-head .aapop .sld.szc input[type=range] { flex: 1; min-width: 0; }
   html.g-mobile:not(.fr-plain) #app .fr-reader-head .aapop .szc button { min-width: 44px; min-height: 44px; }
 }
+
+
+/* ── Phone wayfinding in the Contents drawer ─────────────────────────
+   js/page/faith-port-read-phone-head.js moves the volume row and the
+   "Introduced by" row out of the header on a phone and into this box,
+   above the outline (Ian, 2026-10-19). The rows keep their own styles,
+   which the port keys to their ids. */
+.fr-phone-wayfinding { display: none; }
+.fr-phone-wayfinding:has(> :not([hidden])) {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 16px 12px;
+  border-bottom: 1px solid var(--rule, rgba(0, 0, 0, 0.12));
+}
+/* The port sizes both rows flex: 0 0 100% to take a full line of the
+   header's row; in this column that basis would be 100% of the height. */
+.fr-phone-wayfinding > #reader-volumes:not([hidden]),
+.fr-phone-wayfinding > #reader-notes:not([hidden]) {
+  flex: none;
+  margin-top: 0;
+  font-size: 14px;
+}
