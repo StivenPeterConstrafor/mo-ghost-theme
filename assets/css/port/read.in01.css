@@ -2385,3 +2385,7 @@ html:not(.fr-plain) .fr-reader-head #thTop{display:inline-flex;align-items:cente
   html body #notebook :is(#nbProjectPick,#nbSearch,#nbWorkSearchQuery),
   #notebook :is(input:not([type=checkbox]):not([type=radio]),select,textarea){font-size:16px}
 }
+
+/* A printed page number kept in the text as a placeholder (cleanPrintMarks): no space, so block ids stay put. */
+.folio .pgmark{display:none}
+.folio .row:has(> .la > .pgmark:only-child):has(> .en > .pgmark:only-child),.folio .row:has(> .la > .pgmark:only-child):not(:has(> .en)),.folio .row:has(> .en > .pgmark:only-child):not(:has(> .la)){display:none}
