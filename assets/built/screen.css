@@ -26613,3 +26613,82 @@ body.has-journal-address .slide-in { bottom: 58px; }
   body.has-journal-address .slide-in,
   body.has-journal-address .slide-in.has-image { bottom: 34px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VERSION-REFRESH TOAST
+   ══════════════════════════════════════════════════════════════════════════
+
+   assets/js/mo-version-watch.js shows this when a tab's loaded page is
+   older than what the site is currently serving. A floating toast, not a
+   full-width bar: the header is fixed and its own offset is measured by
+   header-behaviors.js from the header's height alone, so a top bar would
+   need that script taught about a second, dynamic element. A corner toast
+   needs no layout reservation (floats above content, pushes nothing) and
+   stays clear of the fixed header entirely. bottom: 56px reuses the exact
+   clearance .slide-in already uses to clear the journal-address bar + tab
+   (JOURNAL ADDRESS BAR, above), so the two stack correctly if both show. */
+
+.mo-version-banner {
+  position: fixed;
+  bottom: 56px;
+  right: clamp(12px, 4vw, 24px);
+  max-width: min(92vw, 380px);
+  z-index: 1150;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--color-dark, #2d2927);
+  color: var(--color-white, #fff);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.3;
+}
+.mo-version-banner-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mo-version-banner-refresh {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-dark, #2d2927);
+  background: var(--color-white, #fff);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mo-version-banner-refresh:hover,
+.mo-version-banner-refresh:focus-visible {
+  background: color-mix(in srgb, var(--color-white, #fff) 85%, #000);
+}
+.mo-version-banner-dismiss {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--color-white, #fff);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.mo-version-banner-dismiss:hover,
+.mo-version-banner-dismiss:focus-visible {
+  opacity: 0.75;
+}
+@media (max-width: 640px) {
+  .mo-version-banner { left: 12px; right: 12px; max-width: none; bottom: 34px; }
+}
