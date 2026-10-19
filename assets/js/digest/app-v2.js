@@ -1211,6 +1211,38 @@
       }, 300);
       return () => clearTimeout(handle);
     }, [content]);
+    const tfrDataRef = React.useRef(null);
+    const tfrDay = content.tfrSpotlight && content.tfrSpotlight.day;
+    const tfrCount = (content.tfrSpotlight && content.tfrSpotlight.works || []).length;
+    React.useEffect(() => {
+      const day = tfrSpotlightDay();
+      if (tfrDay === day && tfrCount) return;
+      let cancelled = false;
+      const fill = (data) => {
+        const works = tfrSpotlightPick(data, day);
+        if (cancelled || !works.length) return;
+        setContent((prev) => ({
+          ...prev,
+          tfrSpotlight: { ...DEFAULT_CONTENT.tfrSpotlight, ...prev.tfrSpotlight || {}, works, day }
+        }));
+      };
+      if (tfrDataRef.current) {
+        fill(tfrDataRef.current);
+        return () => {
+          cancelled = true;
+        };
+      }
+      fetch(`/assets/data/tfr-spotlight.json?v=${Date.now()}`, { credentials: "omit" }).then((r) => r.ok ? r.json() : null).then((data) => {
+        if (data) {
+          tfrDataRef.current = data;
+          fill(data);
+        }
+      }).catch(() => {
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [tfrDay, tfrCount]);
     const HISTORY_KEY = "mo:content:history";
     const HISTORY_MAX = 50;
     const [history, setHistory] = React.useState(() => {

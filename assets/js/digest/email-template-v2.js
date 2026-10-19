@@ -201,6 +201,7 @@
     "essays",
     "podcasts",
     "dailyLiturgy",
+    "tfrSpotlight",
     "sponsorBottom",
     "signature"
   ];
@@ -340,6 +341,17 @@
       body: "Daily Scripture meditations that help you grow in your love for God and your understanding of His Word.",
       cta: "Start Now",
       href: "https://mereorthodoxy.com/daily-liturgy/"
+    },
+    tfrSpotlight: {
+      // Standard copy from the homepage band (index.hbs, .mo-tfr-band). The
+      // works are not typed in: app-v2.jsx fills them with the homepage's pick
+      // for the day the digest is built (tfrSpotlightPick below).
+      headline: "The Faith Received",
+      body: "An online library with tens of thousands of primary source works from across church history made publicly available, practically usable, and beautifully readable.",
+      cta: "Go To The Faith Received",
+      href: "https://mereorthodoxy.com/the-faith-received/",
+      works: [],
+      day: null
     },
     sponsorTop: {
       label: "Ministry Partner",
@@ -829,6 +841,64 @@
       display: "inline-block"
     } }, c.cta || "Start Now")));
   }
+  function tfrSpotlightDay(now = Date.now()) {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/Chicago", year: "numeric", month: "numeric", day: "numeric", weekday: "short" }).formatToParts(new Date(now));
+    const get = (t) => (parts.find((p) => p.type === t) || {}).value;
+    const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(get("weekday"));
+    const back = (weekday - 3 + 7) % 7;
+    const wednesday = Date.UTC(Number(get("year")), Number(get("month")) - 1, Number(get("day")) - back);
+    return Math.floor((wednesday - Date.UTC(2026, 0, 1)) / 864e5);
+  }
+  function tfrSpotlightPick(data, day) {
+    const pools = data && data.pools;
+    if (!pools) return [];
+    const pick = (pool, slot) => {
+      if (!Array.isArray(pool) || !pool.length) return null;
+      const stride = slot === 1 ? 13 : 1;
+      return pool[(day * stride + slot * 7) % pool.length];
+    };
+    return [pick(pools.middle, 0), pick(pools.middle, 1), pick(pools.near, 0)].filter((w) => w && w.slug && w.title).map((w) => ({
+      title: String(w.title),
+      orig: w.orig ? String(w.orig) : "",
+      author: String(w.author || ""),
+      href: `https://mereorthodoxy.com/the-faith-received/read/?w=${encodeURIComponent(w.slug)}`
+    }));
+  }
+  const TFR_EMAIL_BG = "https://mereorthodoxy.com/assets/images/tfr/church-heart-of-the-andes-email.jpg?v=1";
+  function TfrSpotlightBlock({ tokens, content }) {
+    const c = content || {};
+    const works = Array.isArray(c.works) ? c.works : [];
+    const sans = '"Source Sans 3", "Helvetica Neue", Arial, sans-serif';
+    return /* @__PURE__ */ React.createElement("div", { style: { padding: "16px 32px 0" }, className: "mo-pad-32" }, /* @__PURE__ */ React.createElement("div", { style: {
+      padding: "28px 28px 26px",
+      backgroundColor: "#2d2927",
+      backgroundImage: `url(${TFR_EMAIL_BG})`,
+      backgroundPosition: "center center",
+      backgroundSize: "cover",
+      backgroundRepeat: "no-repeat",
+      borderRadius: 5
+    }, className: "mo-pad-32-tight" }, /* @__PURE__ */ React.createElement("div", { style: { fontFamily: "Georgia, serif", fontSize: 24, lineHeight: 1.2, color: "#fbf7ee", margin: "0 0 10px" } }, c.headline || "The Faith Received"), /* @__PURE__ */ React.createElement(
+      "p",
+      {
+        style: { fontFamily: "Georgia, serif", fontSize: 14, lineHeight: 1.6, color: "#d8ccb8", margin: "0 0 18px" },
+        dangerouslySetInnerHTML: { __html: markdownInline(c.body || "", tokens) }
+      }
+    ), works.length ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { fontFamily: sans, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#c9bca6", margin: "0 0 8px" } }, "Spotlight"), works.map((w, i) => (
+      // A table per card: Outlook drops borders and padding on a
+      // block-level link, and runs the three lines together.
+      /* @__PURE__ */ React.createElement("table", { key: i, role: "presentation", cellPadding: "0", cellSpacing: "0", border: "0", width: "100%", style: { borderCollapse: "separate", margin: "0 0 8px" } }, /* @__PURE__ */ React.createElement("tbody", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("td", { style: { border: "1px solid rgba(251, 247, 238, 0.22)", borderRadius: 4, padding: "12px 16px" } }, /* @__PURE__ */ React.createElement("a", { href: w.href, style: { textDecoration: "none", display: "block" } }, /* @__PURE__ */ React.createElement("span", { style: { display: "block", fontFamily: "Georgia, serif", fontSize: 16, lineHeight: 1.35, color: "#fbf7ee" } }, w.title)), w.orig ? /* @__PURE__ */ React.createElement("div", { style: { fontFamily: "Georgia, serif", fontSize: 13, fontStyle: "italic", lineHeight: 1.4, color: "#c9bca6", margin: "3px 0 0" } }, w.orig) : null, /* @__PURE__ */ React.createElement("div", { style: { fontFamily: sans, fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#c9bca6", margin: "6px 0 0" } }, w.author)))))
+    ))) : null, /* @__PURE__ */ React.createElement("a", { href: c.href || "https://mereorthodoxy.com/the-faith-received/", style: {
+      fontFamily: "Georgia, serif",
+      fontSize: 14,
+      color: "#fbf7ee",
+      textDecoration: "none",
+      border: "1px solid rgba(251, 247, 238, 0.55)",
+      borderRadius: 3,
+      padding: "10px 22px",
+      display: "inline-block",
+      margin: works.length ? "10px 0 0" : 0
+    } }, c.cta || "Go To The Faith Received")));
+  }
   function MemberThanks({ tokens, content }) {
     const eyebrow = ctaEyebrow(content.eyebrow, MEMBER_THANKS_EYEBROW_DEFAULT);
     return /* @__PURE__ */ React.createElement("div", { style: { padding: "0 32px" }, className: "mo-pad-32" }, /* @__PURE__ */ React.createElement("div", { style: {
@@ -947,6 +1017,8 @@
           return /* @__PURE__ */ React.createElement(PodcastsGrid, { tokens, accent, podcasts: content.podcasts, heading: content.podcastsHeading });
         case "dailyLiturgy":
           return /* @__PURE__ */ React.createElement(DailyLiturgyBlock, { tokens, content: content.dailyLiturgy });
+        case "tfrSpotlight":
+          return /* @__PURE__ */ React.createElement(TfrSpotlightBlock, { tokens, content: content.tfrSpotlight });
         case "sponsorBottom":
           if (!showAds) return null;
           return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SponsorBlock, { tokens, content: content.sponsorBottom }), /* @__PURE__ */ React.createElement(Spacer, { h: 20 }));
@@ -1022,5 +1094,5 @@
       boxShadow: "0 1px 3px rgba(45,41,39,0.06), 0 12px 36px rgba(45,41,39,0.10)"
     } }, /* @__PURE__ */ React.createElement(Masthead, { tokens, issueNumber: content.issueNumber, dateStr: content.dateStr, mastheadTitle: content.mastheadTitle }), renderedSections.map(({ key, node }, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key }, i > 0 && /* @__PURE__ */ React.createElement(Divider, null), node)), lastKey !== "sponsorBottom" && /* @__PURE__ */ React.createElement(Spacer, { h: 28 }), /* @__PURE__ */ React.createElement(Footer, { tokens, isMember }));
   }
-  Object.assign(window, { EmailTemplate, MO_TOKENS, DEFAULT_CONTENT, DEFAULT_SECTION_ORDER, SIGNATURES });
+  Object.assign(window, { EmailTemplate, MO_TOKENS, DEFAULT_CONTENT, DEFAULT_SECTION_ORDER, SIGNATURES, tfrSpotlightDay, tfrSpotlightPick });
 })();

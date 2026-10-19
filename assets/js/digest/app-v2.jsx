@@ -1,4 +1,4 @@
-/* global React, EmailTemplate, MO_TOKENS, DEFAULT_CONTENT, DEFAULT_SECTION_ORDER, ContentEditor, TweaksPanel, useTweaks, TweakSection, TweakRadio, TweakToggle, TweakButton, exportEmailHtml, downloadString, copyToClipboard, listImageFilenames */
+/* global React, EmailTemplate, MO_TOKENS, DEFAULT_CONTENT, DEFAULT_SECTION_ORDER, tfrSpotlightDay, tfrSpotlightPick, ContentEditor, TweaksPanel, useTweaks, TweakSection, TweakRadio, TweakToggle, TweakButton, exportEmailHtml, downloadString, copyToClipboard, listImageFilenames */
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "version": "free",
@@ -1481,6 +1481,36 @@ function App() {
     }, 300);
     return () => clearTimeout(handle);
   }, [content]);
+
+  // The Faith Received spotlight: fill in this week's three works (see
+  // tfrSpotlightDay) whenever the content in hand carries another week's or
+  // none: on load, and again after Restore, History or a template switch
+  // replaces the content. Only works and day are written, so edits to the
+  // headline, body and button survive. The JSON is fetched once per session
+  // and kept; cache-busted because Ghost's CDN serves a bare /assets/ path
+  // stale after a theme deploy. A failed read leaves the block without cards.
+  const tfrDataRef = React.useRef(null);
+  const tfrDay = content.tfrSpotlight && content.tfrSpotlight.day;
+  const tfrCount = ((content.tfrSpotlight && content.tfrSpotlight.works) || []).length;
+  React.useEffect(() => {
+    const day = tfrSpotlightDay();
+    if (tfrDay === day && tfrCount) return;
+    let cancelled = false;
+    const fill = (data) => {
+      const works = tfrSpotlightPick(data, day);
+      if (cancelled || !works.length) return;
+      setContent((prev) => ({
+        ...prev,
+        tfrSpotlight: { ...DEFAULT_CONTENT.tfrSpotlight, ...(prev.tfrSpotlight || {}), works, day },
+      }));
+    };
+    if (tfrDataRef.current) { fill(tfrDataRef.current); return () => { cancelled = true; }; }
+    fetch(`/assets/data/tfr-spotlight.json?v=${Date.now()}`, { credentials: 'omit' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data) { tfrDataRef.current = data; fill(data); } })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [tfrDay, tfrCount]);
 
   // Saved version HISTORY — every Save snapshots the current email, kept
   // SEPARATELY from the silent auto-save above. Browse past issues in the

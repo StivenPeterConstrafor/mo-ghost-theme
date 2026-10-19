@@ -340,7 +340,7 @@
                 </button>
                 {{#unless @member}}
                     <button class="sign-in" data-portal="signin">Sign in</button>
-                    <a href="/membership/" class="btn btn-primary">Become a Member</a>
+                    <a href="/membership/" class="btn btn-solid btn-primary">Become a Member</a>
                 {{else}}
                     <button class="sign-out" data-portal="signout">Sign out</button>
                     {{!-- Free subscribers have no dashboard access worth
@@ -348,9 +348,9 @@
                          preferences page instead (Ian, 2026-09-09). Paid +
                          comped keep the dashboard. --}}
                     {{#match @member.status "free"}}
-                        <a href="/email-preferences/" class="btn btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Your Emails{{/if}}</a>
+                        <a href="/email-preferences/" class="btn btn-solid btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Your Emails{{/if}}</a>
                     {{else}}
-                        <a href="/dashboard/" class="btn btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Dashboard{{/if}}</a>
+                        <a href="/dashboard/" class="btn btn-solid btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Dashboard{{/if}}</a>
                     {{/match}}
                 {{/unless}}
             </div>
@@ -384,12 +384,12 @@
                 </button>
                 {{#unless @member}}
                     <button class="mobile-nav-signin" data-portal="signin">Sign in</button>
-                    <a href="/membership/" class="btn btn-primary">Become a Member</a>
+                    <a href="/membership/" class="btn btn-solid btn-primary">Become a Member</a>
                 {{else}}
                     {{#match @member.status "free"}}
-                        <a href="/email-preferences/" class="btn btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Your Emails{{/if}}</a>
+                        <a href="/email-preferences/" class="btn btn-solid btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Your Emails{{/if}}</a>
                     {{else}}
-                        <a href="/dashboard/" class="btn btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Dashboard{{/if}}</a>
+                        <a href="/dashboard/" class="btn btn-solid btn-primary btn-account">{{#if @member.name}}{{@member.name}}{{else}}Dashboard{{/if}}</a>
                     {{/match}}
                     <button class="mobile-nav-signout" data-portal="signout">Sign out</button>
                 {{/unless}}
@@ -459,7 +459,6 @@
                     <li><a href="/about/">About</a></li>
                     <li><a href="/contributors/">Contributors</a></li>
                     <li><a href="/membership/">Support Our Work</a></li>
-                    <li><a href="/books/">Bookstore</a></li>
                     <li><a href="/contact/">Contact</a></li>
                     <li><a href="/privacy/">Privacy Policy</a></li>
                 </ul>
@@ -471,6 +470,16 @@
                     <li><a href="/podcasts/mere-fidelity/">Mere Fidelity</a></li>
                     <li><a href="/podcasts/christians-reading-classics/">Christians Reading Classics</a></li>
                     <li><a href="/podcasts/passages-nicaea/">Passages: Nicaea</a></li>
+                </ul>
+            </div>
+
+            <div class="site-footer-col">
+                <h4 class="site-footer-heading">Resources</h4>
+                <ul class="site-footer-list">
+                    <li><a href="/daily-liturgy/">The Daily Liturgy</a></li>
+                    <li><a href="/the-faith-received/">The Faith Received</a></li>
+                    <li><a href="/books/">The Bookstore</a></li>
+                    <li><a href="/ebooks/">eBooks</a></li>
                 </ul>
             </div>
 

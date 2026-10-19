@@ -1857,6 +1857,7 @@ function ContentEditor({ open, content, onChange, onClose, isMember = false }) {
                 essays: 'Essays grid',
                 podcasts: 'Podcasts grid',
                 dailyLiturgy: 'The Daily Liturgy block',
+                tfrSpotlight: 'The Faith Received spotlight',
                 sponsorBottom: 'Bottom sponsor block',
                 signature: 'Signature',
               };
@@ -2343,6 +2344,20 @@ function ContentEditor({ open, content, onChange, onClose, isMember = false }) {
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
               <Field label="CTA text" value={content.dailyLiturgy?.cta} onChange={(v) => updateField('dailyLiturgy.cta', v)} />
               <Field label="Link" value={content.dailyLiturgy?.href} onChange={(v) => updateField('dailyLiturgy.href', v)} />
+            </div>
+          </Group>
+
+          <Group title="The Faith Received">
+            <p style={{ margin: '0 0 10px', fontSize: 12, color: '#9a8773', lineHeight: 1.5 }}>
+              Sits under The Daily Liturgy. The three works are the homepage's spotlight for this week's
+              Wednesday, filled in automatically and changed each Wednesday, so there is nothing to pull.
+              {content.tfrSpotlight?.works?.length ? ` Now showing: ${content.tfrSpotlight.works.map((w) => w.title).join('; ')}.` : ' No works loaded yet.'}
+            </p>
+            <Field label="Headline" value={content.tfrSpotlight?.headline} onChange={(v) => updateField('tfrSpotlight.headline', v)} />
+            <Field label="Body" value={content.tfrSpotlight?.body} multiline rows={2} onChange={(v) => updateField('tfrSpotlight.body', v)} />
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+              <Field label="CTA text" value={content.tfrSpotlight?.cta} onChange={(v) => updateField('tfrSpotlight.cta', v)} />
+              <Field label="Link" value={content.tfrSpotlight?.href} onChange={(v) => updateField('tfrSpotlight.href', v)} />
             </div>
           </Group>
 

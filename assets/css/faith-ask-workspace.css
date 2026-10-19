@@ -1647,6 +1647,24 @@ html:not(.mo-embedded) .fra {
   #fra-workspace.fra-docked .fra-reader-bar { padding: 0 12px; }
 }
 
+/* PHONES (Ian, 2026-10-19: "way too much going on in these header
+   bars"). Three fixes to the Ask header at 800px and under:
+   1. It was a fixed 64px. The title wraps to two lines on a phone (see
+      #fra-title above) and the scope line sits under it, which is about
+      70px of text, so it spilled out of the bar and over the "Saved
+      research" row beneath. The bar now grows to fit what it holds.
+   2. Conversation search is the third way into the conversations drawer
+      (the menu button opens it with its own search box), as in the
+      desktop rail above. Off on phones.
+   3. "Library" keeps its arrow, href and aria-label and drops the word,
+      as in the rail, which hands the title the 60px it was using. */
+@media (max-width: 800px) {
+  #fra-workspace .fra-header { height: auto; min-height: 56px; padding-top: 6px; padding-bottom: 6px; align-items: center; }
+  #fra-workspace #fra-command-toggle { display: none; }
+  #fra-workspace .fra-home { font-size: 0; gap: 0; min-width: 40px; min-height: 44px; padding: 0 8px; justify-content: center; }
+  #fra-workspace .fra-home svg { width: 18px; height: 18px; }
+}
+
 /* THE USAGE METER, in the composer's status line.
    Ian: "make sure that there is a usage meter on every instance of chat
    that shows usage for that user."

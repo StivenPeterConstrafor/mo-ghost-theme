@@ -610,51 +610,145 @@ img { max-width: 100%; height: auto; }
   font-size: 15px;
   font-weight: 600;
   padding: 12px 22px;
-  border-radius: 999px;
-  border: 0;
+  border-radius: 3px;
+  border: 1px solid var(--color-dark);
   cursor: pointer;
   text-align: center;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
   white-space: nowrap;
+  color: var(--color-dark);
+  background-color: transparent;
+  background-image: var(--btn-sweep-image);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 0% 100%;
+  box-shadow: none;
+  transition: var(--btn-sweep-transition);
 }
-.btn:hover { text-decoration: none; transform: translateY(-1px); }
 
-/* ── THERE ARE TWO BUTTONS ──────────────────────────────────────────
-   SOLID: a filled ground, white ink, no line of its own. It is the one
-   thing on a surface allowed to be a colour, so a surface gets one. On
-   hover the ground steps darker and the button lifts a pixel.
+/* ── THE MERE O BUTTON IS THE TFR BUTTON ───────────────────────────
+   Ian, 2026-10-19: change the Mere O button to match the TFR button:
+   "shape, color, and outline default." Later the same day: "Don't
+   make it all uppercase. It can be normal case." So the label keeps
+   the magazine's sentence case and 15px; the TFR uppercase does not
+   come across. Until today the magazine had
+   orange filled pills and the library had square hollow boxes. Now
+   there is one button, and it is the one stated in faith-received.css
+   (THE TFR BUTTON, and THE TFR HOME'S BUTTONS ARE TFR BUTTONS).
 
-   HOLLOW: no ground, a 1px line and ink in whatever reads against what
-   it stands on. On hover the terracotta sweeps in from the left, the
-   ink turns white and the line turns terracotta. .btn-outline is the
-   hollow button for a light ground and .btn-ghost for a dark one; they
-   differ in their resting colour and in nothing else.
+   HOLLOW IS THE DEFAULT. Every .btn rests as an off-black 1px line
+   with off-black ink and 3px corners. On
+   hover the terracotta sweeps in from the left and the ink turns
+   white. .btn-primary, .btn-outline and .btn-dark all take this. They
+   used to be three looks and are now three names for one, so the
+   markup did not have to be rewritten. .btn-ghost is the same button
+   on a dark ground: white line and ink at rest, the same sweep.
 
-   Every hollow button in the theme is one of these two, or is a class
-   listed in the sweep rule below. Nothing else should invent a third
-   hover. Sizes stay where they were: .btn-lg, .btn-sm and .btn-pill are
-   scale, not behaviour, and a button's geometry is not what Ian was
-   asking about. */
-.btn-primary { background-color: var(--color-primary); color: var(--color-white); box-shadow: 0 8px 20px -8px rgba(238,125,81,0.55); }
-.btn-primary:hover { background-color: var(--color-secondary); }
-.btn-dark { background-color: var(--color-dark); color: var(--color-white); }
-.btn-dark:hover { background-color: #1a1816; }
-.btn-ghost { color: var(--color-white); border: 1px solid rgba(255,255,255,0.35); }
-.btn-outline { color: var(--color-dark); border: 1px solid var(--color-dark); }
+   SOLID IS OPT-IN. .btn-solid is a filled terracotta button with
+   white ink, deepening on hover. It goes on a surface's one call to
+   action (join, checkout, submit), never on two buttons side by side.
+   Terracotta and not the old orange because white on --color-primary
+   is about 2.9:1 and white on --color-secondary is 4.4:1.
 
-/* The sweep, stated once for the site. background-color stays
-   transparent throughout and the gradient does all the work, so a
-   button that sits on a photograph keeps showing the photograph until
-   the wipe reaches it. .btn-ghost-light and .btn-outline-copper are the
-   Daily Liturgy's pair and join here rather than keeping the two
-   bespoke hovers they had; the copper comes from the page's token
-   override at the top of this file. */
-.btn-ghost,
+   No lift on hover and no drop shadow: the TFR button has neither.
+   The admin dashboards keep their own button system, stated near the
+   end of this file under .admin-workspace, which outranks this one. */
+.btn:hover,
+.btn:focus-visible {
+  text-decoration: none;
+  background-size: 100% 100%;
+  color: var(--btn-sweep-ink);
+  border-color: var(--btn-sweep-fill);
+}
+.btn-primary,
 .btn-outline,
+.btn-dark {
+  color: var(--color-dark);
+  border-color: var(--color-dark);
+  background-color: transparent;
+  box-shadow: none;
+}
+.btn-ghost {
+  color: var(--color-white);
+  border-color: rgba(255,255,255,0.55);
+  background-color: transparent;
+}
+.btn-solid,
+a.btn-solid {
+  color: #fff;
+  background-color: var(--color-secondary);
+  background-image: none;
+  border-color: var(--color-secondary);
+}
+.btn-solid:hover,
+.btn-solid:focus-visible,
+a.btn-solid:hover,
+a.btn-solid:focus-visible {
+  color: #fff;
+  background-color: color-mix(in srgb, var(--color-secondary) 86%, #000);
+  border-color: color-mix(in srgb, var(--color-secondary) 86%, #000);
+}
+/* ON A DARK GROUND THE HOLLOW BUTTON INVERTS, as the TFR home's hero
+   does. Every .hero band is off-black (or a liturgical color on the
+   lc- pages), and so are the membership hero and the manage page's
+   hero. Off-black line and ink would vanish there, so the line and the
+   ink turn white and the terracotta still arrives on hover. Stated by
+   ground rather than by button so buttons built in JS are covered too. */
+.hero .btn:not(.btn-solid),
+.bhero .btn:not(.btn-solid),
+.mb-hero-intro .btn:not(.btn-solid),
+.membership-support .page-hero .btn:not(.btn-solid) {
+  color: var(--color-white);
+  border-color: rgba(255,255,255,0.55);
+}
+.hero .btn:not(.btn-solid):hover,
+.hero .btn:not(.btn-solid):focus-visible,
+.bhero .btn:not(.btn-solid):hover,
+.bhero .btn:not(.btn-solid):focus-visible,
+.mb-hero-intro .btn:not(.btn-solid):hover,
+.mb-hero-intro .btn:not(.btn-solid):focus-visible,
+.membership-support .page-hero .btn:not(.btn-solid):hover,
+.membership-support .page-hero .btn:not(.btn-solid):focus-visible {
+  color: var(--btn-sweep-ink);
+  border-color: var(--btn-sweep-fill);
+}
+/* A disabled button says so, and a disabled solid does not darken. */
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-solid:disabled:hover,
+.btn-solid[aria-disabled="true"]:hover {
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
+}
+.btn:not(.btn-solid):disabled:hover {
+  background-size: 0% 100%;
+  color: var(--color-dark);
+  border-color: var(--color-dark);
+}
+
+/* ON A TERRACOTTA GROUND THE SOLID BUTTON IS OFF-BLACK. The capstone
+   band behind .included-cta (membership and offer pages) is itself
+   --color-secondary, so a terracotta fill would vanish into it. The
+   TFR system's other fill, the off-black it uses for a pressed
+   control, takes its place. */
+.included-cta .btn-solid {
+  background-color: var(--color-dark);
+  border-color: var(--color-dark);
+}
+.included-cta .btn-solid:hover,
+.included-cta .btn-solid:focus-visible {
+  background-color: #1a1816;
+  border-color: #1a1816;
+}
+
+/* The Daily Liturgy's pair keep their own colors (the copper comes
+   from that page's token override) and share the sweep above. */
 .btn-ghost-light,
 .btn-outline-copper {
   background-color: transparent;
@@ -664,10 +758,6 @@ img { max-width: 100%; height: auto; }
   background-size: 0% 100%;
   transition: var(--btn-sweep-transition);
 }
-.btn-ghost:hover,
-.btn-ghost:focus-visible,
-.btn-outline:hover,
-.btn-outline:focus-visible,
 .btn-ghost-light:hover,
 .btn-ghost-light:focus-visible,
 .btn-outline-copper:hover,
@@ -2186,8 +2276,8 @@ img { max-width: 100%; height: auto; }
 }
 .site-footer-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
-  gap: 48px;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr 1fr;
+  gap: 40px;
   padding-bottom: 56px;
 }
 .site-footer-brand-link {
@@ -4401,9 +4491,7 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
   z-index: -1;
 }
 .other-way.is-featured { isolation: isolate; }
-.membership .card.is-featured .btn-primary {
-  box-shadow: 0 10px 24px -8px rgba(238, 125, 81, 0.55);
-}
+
 .card-flag {
   position: absolute;
   top: 0;
@@ -4471,9 +4559,10 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
   min-height: 2.8em;
 }
 
-/* btn-pill is a no-op on top of the theme's already pill-shaped .btn,
-   but btn-inline is a new sizing variant for inline CTAs. */
-.btn-pill { border-radius: 999px; padding: 16px 24px; font-size: 15px; }
+/* btn-pill is padding only since the 2026-10-19 button change (the
+   corners are the TFR button's 3px now); btn-inline is a sizing
+   variant for inline CTAs. */
+.btn-pill { padding: 16px 24px; }
 .btn-inline { width: auto; padding: 14px 28px; }
 .btn-tagline {
   font-family: var(--font-body);
@@ -4669,6 +4758,22 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
   color: rgba(255, 255, 255, 0.82);
   margin: 0;
   line-height: 1.55;
+}
+/* Eight items (Ian, 2026-10-19: The Daily Liturgy and The Faith Received
+   joined the six): four columns in two even rows on a wide screen, two on
+   a tablet, one on a phone (the 760px rule below). Three columns would
+   leave a ragged last row of two. Placed after the base .benefit-item
+   rules so the smaller h3 wins on source order. */
+@media (min-width: 1100px) {
+  .benefit-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: 36px;
+    max-width: 1160px;
+  }
+  .benefit-item h3 { font-size: 24px; }
+}
+@media (min-width: 761px) and (max-width: 1099px) {
+  .benefit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .capstone {
   background: var(--color-dark);
@@ -5384,6 +5489,12 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
   animation: mo-spin 0.6s linear infinite;
 }
 .membership-support .btn.is-loading .btn-spinner { display: inline-block; }
+/* A hollow button's spinner turns on cream, so it takes the ink color. */
+.membership-support .btn:not(.btn-solid) .btn-spinner,
+.lifetime-upgrade .btn:not(.btn-solid) .btn-spinner {
+  border-color: rgba(45, 41, 39, 0.25);
+  border-top-color: var(--color-dark);
+}
 .membership-support .btn:disabled,
 .membership-support .btn.is-loading {
   cursor: wait;
@@ -6550,21 +6661,28 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
 .about-endorsement footer {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 18px;
   margin-top: auto;
 }
+/* Each endorser engraved in an oval, as Alan Noble is on /daily-liturgy/
+   (assets/js/engraved-portrait.js). Smaller than about 110px wide and
+   the lines lose the face. */
 .about-endorsement-portrait {
+  width: 112px;
+  flex-shrink: 0;
+}
+.about-endorsement-portrait canvas {
+  display: block;
+  width: 112px;
+  height: 140px;
+}
+/* The plain photo the script swaps in if an engraving cannot draw. */
+.about-endorsement-portrait .engrave-fallback {
+  display: block;
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-.about-endorsement-portrait img {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
-  display: block;
 }
 .about-endorsement-name {
   font-family: var(--font-display);
@@ -11405,119 +11523,82 @@ label.site-form-field-check {
   color: var(--color-muted);
   margin: 14px 0 0;
 }
-/* Latest episode player (landing page) */
-/* Latest-episode player on /daily-liturgy/.
-   ------------------------------------------------------------
-   Self-contained on purpose. This used to carry .dlr-podcast and
-   lean on the reader's player styles; the reader's podcast
-   component was later redesigned into a glass card and
-   .dlr-player-info / -subtitle / -time were deleted, which left
-   this markup completely unstyled (block-stacked, play button
-   spilling out of a 14px-radius box). Nothing here may depend on
-   a .dlr-* rule. */
-.dl-ep {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 24px;
-  padding: 8px 18px 8px 8px;
-  border: 1px solid var(--color-rule);
-  border-radius: 999px;
-  background: var(--color-background);
-}
-.dl-ep[hidden] { display: none; }
-.dl-ep-play {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 46px;
-  height: 46px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--dl-copper);
-  color: var(--color-white);
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.dl-ep-play:hover { background: var(--dl-copper-light); }
-/* svg { display: block } is set globally and beats the [hidden]
-   attribute, so both glyphs render at once without this. */
-.dl-ep-play-icon[hidden],
-.dl-ep-pause-icon[hidden] { display: none; }
-.dl-ep-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.dl-ep-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-dark);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.dl-ep-progress {
-  height: 3px;
-  border-radius: 2px;
-  background: var(--color-rule);
-  cursor: pointer;
-}
-.dl-ep-bar {
-  height: 100%;
-  width: 0%;
-  border-radius: 2px;
-  background: var(--dl-copper);
-  transition: width 0.1s linear;
-}
-.dl-ep-sub {
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  color: var(--color-muted);
-}
-.dl-ep-time {
-  flex: none;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-muted);
-}
-
-/* Phone: the pill has no room for a fixed-width time column, so drop
-   it — the duration is already in the episode title line. */
-@media (max-width: 520px) {
-  .dl-ep {
-    gap: 12px;
-    padding: 8px 14px 8px 8px;
-  }
-  .dl-ep-time { display: none; }
-}
-
-/* Reader endorsement closing the two-path band. A hairline and the
-   image, no box — the screenshot already carries its own white card,
-   so wrapping it in another one would read as a card-in-a-card. */
+/* Reader endorsement closing the two-path band: a hairline, then a
+   portrait engraved in an oval beside the quote, as on the TFR guides'
+   author cards. assets/js/engraved-portrait.js draws the canvas. */
 .dl-endorsement {
   max-width: 720px;
   margin: 56px auto 0;
   padding-top: 40px;
   border-top: 1px solid var(--color-rule);
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 40px;
+  align-items: center;
 }
-.dl-endorsement img {
+.dl-endorsement-por canvas {
   display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
+  width: 200px;
+  height: 250px;
+}
+/* No portrait (image failed or canvas unreadable): the quote takes the row. */
+.dl-endorsement.no-por { grid-template-columns: minmax(0, 1fr); }
+.dl-endorsement.no-por .dl-endorsement-por { display: none; }
+.dl-endorsement-quote {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: var(--font-body);
+  font-style: normal;
+  color: var(--color-dark);
+}
+.dl-endorsement-quote p {
+  margin: 0;
+  font-size: clamp(19px, 2.3vw, 23px);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+.dl-endorsement-quote p::before { content: "\201C"; }
+.dl-endorsement-quote p::after { content: "\201D"; }
+.dl-endorsement-cite {
+  margin-top: 14px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--color-muted);
+}
+.dl-endorsement-cite b {
+  display: block;
+  font-weight: 600;
+  color: var(--color-dark);
 }
 @media (max-width: 640px) {
   .dl-endorsement {
     margin-top: 40px;
     padding-top: 28px;
+    grid-template-columns: 104px minmax(0, 1fr);
+    gap: 18px;
   }
+  .dl-endorsement-por canvas { width: 104px; height: 130px; }
+  .dl-endorsement-quote p { font-size: 18px; }
 }
 
+/* The reader's podcast card (.dlr-podcast, further down), used here as
+   is. The reader bleeds it 20px past its column; this column sits beside
+   another, so it stays inside. */
+/* The reader's colors live on .dlr-page, which this page does not have;
+   the light values, restated. Change them with .dlr-page's. This page has
+   no dark mode, so the reader's dark card rules skip it
+   (:not(.dl-landing-player)). */
+.dlr-podcast.dl-landing-player {
+  --dlr-ground: #f6f3f2;
+  --dlr-text: #1c1917;
+  --dlr-text-secondary: #4a4540;
+  --dlr-accent: #96694C;
+  --dlr-accent-light: #b8866a;
+  --dlr-rule: #d9c6a7;
+  margin: 0 0 24px;
+  color: var(--dlr-text);
+}
 .dl-listen-ctas {
   display: flex;
   flex-wrap: wrap;
@@ -11831,6 +11912,8 @@ label.site-form-field-check {
   color: var(--color-dark);
   margin-bottom: 14px;
 }
+.dl-about-cta { margin-top: 12px; }
+
 .dl-about-text {
   font-family: var(--font-body);
   font-size: 16px;
@@ -21546,12 +21629,12 @@ html[data-theme="dark"] .dlr-header-logo {
     );
   }
 }
-html[data-theme="dark"] .dlr-podcast::before {
+html[data-theme="dark"] .dlr-podcast:not(.dl-landing-player)::before {
   background:
     radial-gradient(58% 78% at 20% 4%, rgba(184, 134, 106, 0.16), transparent 68%),
     radial-gradient(52% 72% at 88% 100%, rgba(184, 134, 106, 0.09), transparent 70%);
 }
-html[data-theme="dark"] .dlr-podcast-glass {
+html[data-theme="dark"] .dlr-podcast:not(.dl-landing-player) .dlr-podcast-glass {
   border-color: rgba(232, 221, 208, 0.1);
   background: linear-gradient(
     180deg,
@@ -21710,7 +21793,7 @@ html[data-theme="dark"] .dlr-podcast-glass {
 }
 /* The dark-mode accent is light enough that a white glyph only reaches
    3:1 against it; the page ground reads at ~5.9:1. */
-html[data-theme="dark"] .dlr-play-btn {
+html[data-theme="dark"] .dlr-podcast:not(.dl-landing-player) .dlr-play-btn {
   color: #1a1714;
 }
 .dlr-play-btn:focus-visible,
@@ -26559,9 +26642,10 @@ body:has(.welcome-page) .site-header { position: static; flex: 0 0 auto; }
    ══════════════════════════════════════════════════════════════════════════
 
    The TFR reader survey's bar and tab (faith-received.css, THE READER
-   SURVEY), carried to the main site for paid members, with the tab as a
-   link to /manage/ instead of a panel toggle. assets/js/journal-address-bar.js
-   builds it and decides who sees it. Same orange for the same reason:
+   SURVEY), carried to the main site for paid members. One tab at a time:
+   "Migrate Your Membership" slides a panel up like the survey's, and
+   "Confirm Address For Journal" is a plain link to /manage/.
+   assets/js/journal-address-bar.js builds it and decides who sees it. Same orange for the same reason:
    white at 13px on the raw token misses AA, mixed 88% with black it
    clears 5:1. */
 
@@ -26580,10 +26664,18 @@ body:has(.welcome-page) .site-header { position: static; flex: 0 0 auto; }
   height: 8px;
   background: var(--journal-address-orange);
 }
-.journal-address-tab {
+/* Holds the one tab (address or migrate) at the right. */
+.journal-address-tabs {
   position: absolute;
   bottom: 100%;
   right: clamp(16px, 5vw, 48px);
+  display: flex;
+  gap: 6px;
+}
+.journal-address-tab {
+  margin: 0;
+  border: 0;
+  cursor: pointer;
   padding: 5px 18px 6px;
   font-family: var(--font-body);
   font-size: 13px;
@@ -26605,6 +26697,69 @@ body:has(.welcome-page) .site-header { position: static; flex: 0 0 auto; }
   outline: 2px solid var(--color-dark, #2d2927);
   outline-offset: 2px;
 }
+/* The version toast (z 1150) would sit on the open panel. */
+body:has(.journal-address.is-open) .mo-version-banner { display: none; }
+/* Open, the migrate tab is what the panel came out of, as on the survey. */
+.journal-address.is-open [data-ja-open] { visibility: hidden; }
+
+/* The migrate panel: the survey's slide-up (faith-received.css, THE
+   READER SURVEY), parked below the fold with visibility:hidden so it is
+   out of the tab order while closed and the transform stays animatable. */
+.journal-address-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  background: var(--color-page, #f6f3f2);
+  border-top: 1px solid var(--color-rule, #d9c6a7);
+  box-shadow: 0 -14px 40px rgba(45, 41, 39, 0.16);
+  transform: translateY(101%);
+  visibility: hidden;
+  transition: transform 0.28s ease, visibility 0.28s;
+}
+.journal-address.is-open .journal-address-panel {
+  transform: translateY(0);
+  visibility: visible;
+}
+@media (prefers-reduced-motion: reduce) {
+  .journal-address-panel { transition: none; }
+}
+.journal-address-inner {
+  position: relative;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 30px clamp(18px, 4vw, 32px) 26px;
+}
+.journal-address-close {
+  position: absolute;
+  top: 8px;
+  right: clamp(8px, 2vw, 16px);
+  width: 44px;
+  height: 44px;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--color-muted, #6b6660);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.journal-address-close:hover { color: var(--color-dark, #2d2927); }
+/* Body face: a working surface, not a title page. */
+.journal-address-title {
+  font-family: var(--font-body);
+  font-size: clamp(18px, 2.2vw, 21px);
+  line-height: 1.35;
+  margin: 0 0 8px;
+  padding-right: 44px;
+  color: var(--color-dark, #2d2927);
+}
+.journal-address-note {
+  margin: 0 0 18px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-muted, #6b6660);
+}
+
 /* Bar plus tab, so the last line of a page clears it. */
 body.has-journal-address { padding-bottom: 34px; }
 /* A paid-audience slide-in would otherwise land on the tab. */
@@ -26612,4 +26767,83 @@ body.has-journal-address .slide-in { bottom: 58px; }
 @media (max-width: 640px) {
   body.has-journal-address .slide-in,
   body.has-journal-address .slide-in.has-image { bottom: 34px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VERSION-REFRESH TOAST
+   ══════════════════════════════════════════════════════════════════════════
+
+   assets/js/mo-version-watch.js shows this when a tab's loaded page is
+   older than what the site is currently serving. A floating toast, not a
+   full-width bar: the header is fixed and its own offset is measured by
+   header-behaviors.js from the header's height alone, so a top bar would
+   need that script taught about a second, dynamic element. A corner toast
+   needs no layout reservation (floats above content, pushes nothing) and
+   stays clear of the fixed header entirely. bottom: 56px reuses the exact
+   clearance .slide-in already uses to clear the journal-address bar + tab
+   (JOURNAL ADDRESS BAR, above), so the two stack correctly if both show. */
+
+.mo-version-banner {
+  position: fixed;
+  bottom: 56px;
+  right: clamp(12px, 4vw, 24px);
+  max-width: min(92vw, 380px);
+  z-index: 1150;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--color-dark, #2d2927);
+  color: var(--color-white, #fff);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.3;
+}
+.mo-version-banner-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mo-version-banner-refresh {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-dark, #2d2927);
+  background: var(--color-white, #fff);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mo-version-banner-refresh:hover,
+.mo-version-banner-refresh:focus-visible {
+  background: color-mix(in srgb, var(--color-white, #fff) 85%, #000);
+}
+.mo-version-banner-dismiss {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--color-white, #fff);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.mo-version-banner-dismiss:hover,
+.mo-version-banner-dismiss:focus-visible {
+  opacity: 0.75;
+}
+@media (max-width: 640px) {
+  .mo-version-banner { left: 12px; right: 12px; max-width: none; bottom: 34px; }
 }
