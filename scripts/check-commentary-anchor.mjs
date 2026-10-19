@@ -66,6 +66,9 @@ ok(A.gistClaims('A commentary on Genesis 1:3-4 arguing that the first light', 'G
 ok(A.gistClaims('A lapidary commentary on 2 Peter 1:1 and the faith', 'Genesis', 1, 1) === 'no', 'a gist about another book does not');
 ok(A.gistClaims('The author discusses reconciling geological time with the account', 'Genesis', 1, 1) === 'unknown', 'a gist naming nothing is unknown');
 
+ok(A.gistClaims('Ps 22:1 My God', 'Psalms', 22, 1) === 'yes' && A.gistClaims('Mt 5:3', 'Matthew', 5, 3) === 'yes', 'short forms (Ps, Mt) name their books');
+ok(A.gistClaims('1 John 2:1', '1 John', 2, 1) === 'yes' && A.gistClaims('1 John 2:1', 'John', 2, 1) === 'no' && A.gistClaims('John 2:1', '1 John', 2, 1) === 'no', 'numbered books are told apart');
+
 const rows = [
   { w: 'lapide', how: 'quotation', p: 196, g: 'This page presents the Vulgate text of the chapter' },
   { w: 'lapide', how: 'explicit', p: 94, g: "A philological discussion of 'bereshith' in Genesis 1:1" },
@@ -105,7 +108,9 @@ const r1 = await R.resolve(lapide, 1, W);
 ok(r1.how === 'note' && r1.p === 197 && r1.v === 1, `Lapide on Genesis 1:1 opens at his note, p. 197 (got ${JSON.stringify(r1)})`);
 ok(r1.p !== 75, 'and not at the devotion map\'s chapter opening, p. 75');
 const r2 = await R.resolve(lapide, 2, W);
-ok(r2.how === 'page' && r2.p === 205, `1:2, whose heading is not found, opens at the page the library files as on it, p. 205 (got ${JSON.stringify(r2)})`);
+ok(r2.how === 'note' && r2.p === 197, `1:2 has its heading ("Vers. 2.") on p. 197 (got ${JSON.stringify(r2)})`);
+const r4 = await R.resolve({ ...lapide, rows: { 4: [{ w: 'lapide', how: 'explicit', p: 207, g: 'A commentary on Genesis 1:4 on the division of light' }] } }, 4, W);
+ok(r4.how === 'page' && r4.p === 207, `1:4, with no heading found, opens at the page the library files as on it (got ${JSON.stringify(r4)})`);
 const r3 = await R.resolve(lapide, 3, W);
 ok(r3.how === 'note' && r3.p === 206, `1:3 opens at its note, p. 206 (got ${JSON.stringify(r3)})`);
 const r9 = await R.resolve({ ...lapide, rows: {} }, 9, W);
@@ -114,15 +119,49 @@ const rNone = await R.resolve({ slug: 'x', notes: {}, rows: {}, open: 400, pv: {
 ok(rNone.how === 'chapter' && rNone.p === 400, 'a commentary with no located note at all opens at its chapter page, and says only that');
 const indexed = await R.resolve({ slug: 'poole', notes: { 12: 301 }, rows: {}, open: 300, pv: {} }, 12, W);
 ok(indexed.how === 'note' && indexed.p === 301 && indexed.indexed, 'a note the library indexed is trusted as it is');
-const later = await R.resolve({ slug: 'poole', notes: { 14: 305 }, rows: {}, open: 300, pv: {} }, 12, W);
+const later = await R.resolve({ slug: 'poole2', notes: { 14: 305 }, rows: {}, open: 300, pv: {} }, 12, W);
 ok(later.how === 'later' && later.v === 14 && later.p === 305, 'with no note on the verse, the NEXT note is opened, within four verses');
+
+
+// ── real excerpts from Lapide vol. 1 (pp. 81-143 are Pianciani's essay, full of footnote lines; his Genesis 1 is pp. 196-234) ────
+const FOOT = paras(`(6) Virago does not indicate sex, but a male soul.
+(7) De Opif. lib. II, cap. VIII, § 11.
+(8) Quaest. hebr. in Genes.
+(9) Cf. Augustine, De Genesi ad litteram, lib. V.
+(10) Ibid., cap. IX.`);
+ok(A.lemmaIndexes(FOOT).size === 0, 'footnote lines "(6) ..." are not numbered text and make no reprint');
+ok(A.findNote(FOOT, 6) === -1, 'and are not the note on verse 6');
+const LISTED = ['Vers. 5. 5. AND HE CALLED THE LIGHT DAY. The Fathers give three senses: 1. the literal day. 2. the mystical day. 3. the eternal day.', 'Vers. 6. 6. AND GOD SAID.'];
+ok(A.findNote(LISTED, 5) === 0, 'a note under a "Vers. N." heading is found though it lists 1. 2. 3. inside it');
+ok(A.capsNum('3. AND GOD SAID - by word, not of the mouth') === 3 && A.capsNum('1. In the beginning God created') === null, 'a capitals heading is told from a reprinted verse');
+const ESSAY = (n) => paras(`Pianciani, on the days of creation, page ${n}.\n(1) Footnote one to a work cited.\n(2) Footnote two to a work cited.\n(3) Footnote three.\n(4) Footnote four.\n(5) Footnote five.\n(6) Footnote six.`);
+const LEM = paras(Array.from({ length: 12 }, (_, i) => `${i + 1}. And God said, verse ${i + 1} of the chapter, in the words of the Vulgate.`).join('\n'));
+const book = {
+  81: ESSAY(81), 143: ESSAY(143), 145: ESSAY(145), 196: LEM,
+  197: paras('Vers. 1. 1. IN THE BEGINNING. - First, St. Augustine.\nVers. 2. 2. AND THE EARTH.'),
+  200: paras('9. LET THE WATERS WHICH ARE UNDER THE HEAVEN BE GATHERED TOGETHER. - Here Moses.'),
+  201: paras('Verse 20. 20.\nLET THE WATERS BRING FORTH THE CREEPING THING.\nVers. 20. Are birds made from matter?'),
+  198: paras('AND GOD SAW THE LIGHT THAT IT WAS GOOD. - Saw, that is, He made us see.'),
+};
+const R2 = A.createResolver(async (_s, n) => [book[n] || [], []], { verseText: (v) => ({ 4: 'And God saw the light, that it was good: and God divided the light from the darkness.' }[v] || '') });
+const L = { slug: 'l', notes: { 20: 145 }, rows: {}, open: 80, close: 235, pv: {} };
+const sec2 = await R2.section(L, W);
+ok(sec2.lo === 196, `the section starts where the chapter's text is reprinted, not in the footnotes before it (got ${sec2.lo})`);
+const h = async (v) => (await R2.resolve(L, v, W));
+ok((await h(1)).p === 197 && (await h(1)).how === 'note', 'a "Vers. 1." heading is indexed');
+ok((await h(9)).p === 200 && (await h(9)).how === 'note', 'a numbered capitals heading is indexed (9. LET THE WATERS)');
+ok((await h(20)).p === 201 && (await h(20)).how === 'note', 'a "Verse 20." heading beats a library index row that points into the essay (p. 145)');
+ok((await h(4)).p === 198 && (await h(4)).how === 'note', 'an unnumbered capitals heading is matched to the verse by its words');
+const last = await A.createResolver(async (_s, n) => [book[n] || [], []]).resolve({ slug: 'l', notes: {}, rows: {}, open: 80, pv: {} }, 1, W);
+ok(last.how === 'note' && last.p === 197, 'with no next chapter on the map, the section is bounded and still found');
 
 // ── the rail's markup and stylesheet ────────────────────────────────────────────────────────────────────────────────────────
 const js = readFileSync(path.join(root, 'assets/js/page/commentary-pane.js'), 'utf8');
 const css = readFileSync(path.join(root, 'assets/css/commentary-pane.css'), 'utf8');
 const hbs = readFileSync(path.join(root, 'custom-scripture-dev.hbs'), 'utf8');
-const tabs = /tabs\.innerHTML = '([^']+)'/.exec(js);
-ok(tabs && /data-tab="s">Citations<.*data-tab="c">Commentary<.*data-tab="r">Reception</.test(tabs[1]), 'tabs read Citations, Commentary, Reception');
+const tabsMo = /tabs\.innerHTML = SITE\.name === 'mo'\s*\? '([^']+)'/.exec(js);
+ok(tabsMo && /data-tab="s">Citations<.*data-tab="c">Commentary<.*data-tab="r">Reception</.test(tabsMo[1]), 'tabs read Citations, Commentary, Reception');
+ok(!/data-tab="s"\] \{ display: none/.test(css), 'the Citations tab is kept on phones');
 ok(/const firstTab = \(\) => \(SITE\.name === 'mo' && wide\.matches \? 's' : 'c'\)/.test(js), 'the rail opens on Citations');
 ok(!/store\.(get|set)\('fr_cp_tab'/.test(js), 'no last-tab preference is read or written');
 ok(/grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\) !important/.test(css), 'text and rail split the width 50/50');

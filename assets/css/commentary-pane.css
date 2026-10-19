@@ -35,6 +35,8 @@ body.cp-on.cp-src .cp-pane { display: none; }
    (.sd-eyebrow, .sd-panel-ref, .sd-h3, .sd-ov-stat, .sd-ov-comm-row in scripture-dev.css and port/dev-notes.css). */
 .cp-pane {
   --cp-accent: var(--sd-accent, var(--cp-ink));
+  /* in the page's flow, like the Citations view beside it (which the reader leaves unsticky, 2026-09-23: "the side panel doesn't need
+     to be sticky"); a rail that sticks and is taller than the window cannot be read to its end without a box that scrolls on its own */
   position: relative;
   color: var(--cp-ink);
   font-family: "Source Serif Pro", Palatino, Georgia, serif;
@@ -193,16 +195,30 @@ html.cp-site-mo body.cp-on .bible-verse.cp-focus { background: var(--cp-mark); }
 html.cp-site-mo body.cp-on .sd-side > .cp-tabs { margin: 0 0 16px; }
 @media (max-width: 899px) {
   html.cp-site-mo body.cp-on .sd-layout:has(.cp-pane) { grid-template-columns: 1fr !important; }
-  /* the phone: the verse panel is under the text, so the rail is a sheet with two views, scrolling as a whole */
-  html.cp-site-mo .cp-tabs [data-tab="s"] { display: none; }
+  /* the phone: a sheet at the bottom that scrolls as a whole. It carries the three tabs; the label and the large heading are left
+     out and the spacing is tight, so the commentary's words have the room. Citations here is the verse panel under the verse in
+     the text: the sheet shrinks to its tabs and the panel is brought into view. */
   .cp-pane { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; top: auto; height: 50vh; overflow-y: auto; overscroll-behavior: contain;
-    border-width: 1px 0 0; box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08); padding: 4px 16px 20px; }
+    border-width: 1px 0 0; box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08); padding: 0 14px 12px; }
   html.cp-site-mo .cp-pane { border-radius: 0; }
   body.cp-on { padding-bottom: 50vh; }
-  .cp-tabs { margin-bottom: 10px; }
-  .cp-ref { font-size: 22px; }
+  body.cp-on.cp-peek { padding-bottom: 56px; }
+  .cp-pane[data-tab="s"] { height: auto; }
+  .cp-pane[data-tab="s"] > :not(.cp-tabs) { display: none; }
+  .cp-tabs { position: sticky; top: 0; z-index: 1; margin: 0 -14px 6px; padding: 0 14px; background: var(--cp-paper); }
+  .cp-tabs button { min-height: 40px; padding: 4px 6px; }
+  .cp-top { display: none; }
+  .cp-cur { padding: 4px 2px; }
+  .cp-pick { min-height: 36px; }
+  .cp-lang { margin: 0; }
+  .cp-where { margin: 6px 0 8px; padding-bottom: 6px; }
+  .cp-body { font-size: 15.5px; line-height: 1.55; }
+  .cp-foot { margin-top: 10px; padding-top: 4px; }
+  .cp-follow, .cp-pages button { min-height: 40px; }
+  .cp-stats { margin-bottom: 6px; }
   /* the Ask button rides above the sheet instead of covering its text */
   body.cp-on #fra-launcher { bottom: calc(50vh + 12px); }
+  body.cp-on.cp-peek #fra-launcher { bottom: 68px; }
 }
 
 /* the verse panel (the Citations view): the active source filter, named with the way out; the commentaries on the verse, then on the chapter */

@@ -23,7 +23,10 @@
   const strongRx = (n) => new RegExp(`^${HEAD}\\(?${n}\\b\\s*[.:,)\\]]`, 'i');
   const bareRx = (n) => new RegExp(`^\\(?${n}\\b\\s*[.:,)\\]]`);
   const strongNum = (s) => { const m = new RegExp(`^${HEAD}\\(?(\\d{1,3})\\b\\s*[.:,)\\]]`, 'i').exec(s); return m ? +m[1] : null; };
-  const bareNum = (s) => { const m = /^\(?(\d{1,3})\s*[.:)\]]\s*\S/.exec(s); return m ? +m[1] : null; };
+  // a bare numbered line; a number in parentheses is a footnote mark, not a verse, and is not counted
+  const bareNum = (s) => { const m = /^(\d{1,3})\s*[.:)\]]\s*\S/.exec(s); return m ? +m[1] : null; };
+  // a bare numbered line whose first words are set in capitals: how some commentaries head a note ("3. AND GOD SAID - by word")
+  const capsNum = (s) => { const m = /^(\d{1,3})\s*[.:]\s+["\u201c\u2018']?[A-Z]{2,}[A-Z\u2019' ,;.-]*[A-Z]/.exec(s); return m ? +m[1] : null; };
   const isHead = (s) => /^#{1,6}\s+/.test(s);
 
   // The indexes of paragraphs that are the Bible's own words reprinted: a run of numbered lines counting up (five or more, or three
@@ -41,6 +44,7 @@
       i = j;
     }
     paras.forEach((s, i) => {
+      if (strongNum(s) != null) return; // a note under a "Vers. N." heading may list 1. 2. 3. inside it; it is still the note
       const marks = (s.match(/\s(\d{1,3})\.\s+\S/g) || []).map((m) => parseInt(m, 10));
       if (marks.some((n, k) => marks[k + 1] === n + 1)) out.add(i);
     });
@@ -53,7 +57,7 @@
   function findNote(paras, printed, loose) {
     const lemma = lemmaIndexes(paras);
     const sx = strongRx(printed), bx = bareRx(printed);
-    let i = paras.findIndex((s, k) => !lemma.has(k) && sx.test(s));
+    let i = paras.findIndex((s) => sx.test(s)); // the heading word marks a note even where the note lists 1. 2. 3. inside it
     if (i < 0) i = paras.findIndex((s, k) => !lemma.has(k) && bx.test(s) && (loose || !/^\(/.test(s)));
     return i;
   }
@@ -74,15 +78,22 @@
   // Whether a page's one-line gist, as the reception file carries it, is about this verse: 'yes' (it names a range holding the verse
   // in this chapter of this book), 'no' (it names verses, but not this one), or 'unknown' (it names none). "A commentary on
   // Genesis 1:3-4 …" is 'no' for 1:1; "… on 2 Peter 1:1" is 'no' for Genesis 1:1.
+  const ROMAN = { i: '1', ii: '2', iii: '3' };
+  const SHORT = { mt: 'matthew', mk: 'mark', mc: 'mark', lk: 'luke', jn: 'john', jhn: 'john', ps: 'psalms', pss: 'psalms', gen: 'genesis', ex: 'exodus',
+    lev: 'leviticus', num: 'numbers', dt: 'deuteronomy', deut: 'deuteronomy', canticles: 'song of solomon', song: 'song of solomon', sam: 'samuel',
+    kgs: 'kings', chr: 'chronicles', cor: 'corinthians', thess: 'thessalonians', tim: 'timothy', pet: 'peter', rom: 'romans', heb: 'hebrews' };
   function gistClaims(gist, bookName, ch, v) {
     const g = String(gist || '');
-    const rx = /((?:[1-3]|I{1,3})\s)?([A-Z][a-z]+)\.?\s+(\d{1,3})\s*[:.]\s*(\d{1,3})(?:\s*[-\u2013\u2014]\s*(\d{1,3}))?/g;
-    const book = String(bookName || '').toLowerCase();
+    const rx = /(?:^|[^A-Za-z0-9])((?:[1-3]|I{1,3})\.?\s+)?([A-Z][a-z]{1,11})\.?\s+(\d{1,3})\s*[:.]\s*(\d{1,3})(?:\s*[-\u2013\u2014]\s*(\d{1,3}))?/g;
+    const mine = /^\s*([1-3]|I{1,3})\.?\s+(.*)$/.exec(String(bookName || '')), num = mine ? (ROMAN[mine[1].toLowerCase()] || mine[1]) : '';
+    const book = (mine ? mine[2] : String(bookName || '')).toLowerCase();
     let m, any = false;
     while ((m = rx.exec(g))) {
       any = true;
-      const word = m[2].toLowerCase();
-      const same = word.length >= 3 && (book === word || book.endsWith(` ${word}`) || book.startsWith(word)) && !m[1];
+      const pre = m[1] ? (ROMAN[m[1].replace(/\./, '').trim().toLowerCase()] || m[1].replace(/\./, '').trim()) : '';
+      let word = m[2].toLowerCase();
+      word = SHORT[word] || word;
+      const same = pre === num && word.length >= 2 && (book === word || book.startsWith(word) || book.endsWith(` ${word}`) || word.startsWith(book));
       const a = +m[4], b = m[5] ? +m[5] : a;
       if (same && +m[3] === +ch && a <= v && v <= b) return 'yes';
     }
@@ -118,28 +129,63 @@
   // Genesis 1 to an essay on the six days printed ahead of his own Genesis, at p. 75; his chapter begins at p. 196, with the
   // chapter's text), so the section starts at the page that carries the longest run of reprinted verses between the map's opening
   // and the next chapter's, and ends at the next chapter's.
-  function createResolver(getParas) {
+  function createResolver(getParas, opts) {
+    const verseText = (opts && opts.verseText) || (() => '');
     const printedOf = (c, v) => (c.pv && c.pv[v]) || v;
     const memo = new Map();
     const once = (k, make) => { if (!memo.has(k)) memo.set(k, make()); return memo.get(k); };
+    // The section is every page from the chapter's reprinted text to the next chapter's page (or, with no usable next chapter, 150
+    // pages on), read once: it gives the section's start, and an index of the note headings in it ("Vers. 20.", "9. LET THE WATERS"),
+    // each the first heading of its number that follows the one before, so a cross-reference or a repeated number cannot take it.
     const section = (c, w) => once(`sec|${c.slug}|${w.name}|${w.ch}`, async () => {
-      const hi = c.close != null ? +c.close : Infinity;
       const from = c.open != null ? +c.open : 0;
+      const hi = from <= 0 ? Infinity : (c.close != null && +c.close > from ? Math.min(+c.close, from + 260) : from + 150);
+      const pages = [];
       let lo = from, best = 5;
       if (from > 0) {
-        for (let n = from; n < hi && n < from + 260; n += 1) {
+        for (let n = from; n < hi; n += 1) {
           const [en, la] = await getParas(c.slug, n);
           const ps = en.length ? en : la;
+          pages.push([n, ps]);
           const run = lemmaIndexes(ps).size;
           if (run > best) { best = run; lo = n; }
         }
       }
-      return { lo, hi };
+      const heads = {}, caps = [];
+      let last = 0, pos = 0;
+      for (const [n, ps] of pages) {
+        if (n < lo) continue;
+        const lemma = lemmaIndexes(ps);
+        for (let i = 0; i < ps.length; i += 1, pos += 1) {
+          const num = strongNum(ps[i]) != null ? strongNum(ps[i]) : (lemma.has(i) ? null : capsNum(ps[i]));
+          if (num != null && num > last && num - last <= 12) { heads[num] = { p: n, i, pos }; last = num; } else if (num == null && !lemma.has(i)) {
+            const m = /^[\u00ab"\u201c\u2018']?([A-Z][A-Z\u2019' -]{6,}[A-Z])\s*(?:[.,;:\u2014\u2013]|$)/.exec(ps[i]);
+            if (m) caps.push({ p: n, i, pos, words: m[1].toLowerCase().split(/[^a-z]+/).filter(Boolean) });
+          }
+        }
+      }
+      return { lo, hi, heads, caps };
     });
     const located = (c, v, w) => {
-      if (c.notes[v] != null) return Promise.resolve({ p: +c.notes[v], v, indexed: true });
       return once(`loc|${c.slug}|${w.name}|${w.ch}|${v}`, async () => {
         const printed = printedOf(c, v), sec = await section(c, w);
+        if (sec.heads[printed]) return { p: sec.heads[printed].p, v };
+        // a note headed only by the verse's words in capitals ("AND GOD SAW THE LIGHT THAT IT WAS GOOD."): between the notes on the
+        // verses either side, the heading whose words are all in the verse
+        let text = ''; try { text = String(verseText(v) || '').toLowerCase(); } catch (_) { text = ''; }
+        if (text) {
+          const ks = Object.keys(sec.heads).map(Number);
+          const before = Math.max(-1, ...ks.filter((k) => k < printed).map((k) => sec.heads[k].pos));
+          const after = Math.min(Infinity, ...ks.filter((k) => k > printed).map((k) => sec.heads[k].pos));
+          const have = new Set(text.split(/[^a-z]+/).filter(Boolean));
+          const score = (x) => x.words.filter((q) => have.has(q)).length;
+          const fit = sec.caps.filter((x) => x.pos > before && x.pos < after && x.words.length >= 3 && score(x) / x.words.length >= 0.7)
+            .sort((x, y) => score(y) - score(x) || x.pos - y.pos);
+          if (fit.length) return { p: fit[0].p, v };
+        }
+        // the library's own indexed note, if it lies in this commentary's section of the chapter (an index row can point into
+        // another work printed in the same volume)
+        if (c.notes[v] != null && +c.notes[v] >= sec.lo && +c.notes[v] < sec.hi) return { p: +c.notes[v], v, indexed: true };
         for (const cand of candidatePages((c.rows || {})[v], c.slug, w.name, w.ch, v).filter((x) => x.p >= sec.lo && x.p < sec.hi).slice(0, 8)) {
           for (const p of [cand.p - 2, cand.p - 1, cand.p]) {
             if (p < Math.max(1, sec.lo)) continue;
@@ -178,5 +224,5 @@
     return { located, resolve, section };
   }
 
-  return { strongRx, bareRx, strongNum, bareNum, lemmaIndexes, findNote, noteEnd, gistClaims, candidatePages, createResolver };
+  return { strongRx, bareRx, strongNum, bareNum, capsNum, lemmaIndexes, findNote, noteEnd, gistClaims, candidatePages, createResolver };
 }));

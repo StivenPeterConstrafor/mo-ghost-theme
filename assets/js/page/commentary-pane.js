@@ -101,6 +101,7 @@
         : new TextDecoder().decode(buf);
       return JSON.parse(text);
     });
+    p.catch(() => { if (cache.get(u) === p) cache.delete(u); }); // a failed fetch is tried again, not remembered
     cache.set(u, p); return p;
   }
   const gz = json;
@@ -247,7 +248,9 @@
     }
     const tabs = document.createElement('div');
     tabs.className = 'cp-tabs'; tabs.setAttribute('role', 'group'); tabs.setAttribute('aria-label', 'Beside the text');
-    tabs.innerHTML = '<button type="button" data-tab="s">Citations</button><button type="button" data-tab="c">Commentary</button><button type="button" data-tab="r">Reception</button>';
+    tabs.innerHTML = SITE.name === 'mo'
+      ? '<button type="button" data-tab="s">Citations</button><button type="button" data-tab="c">Commentary</button><button type="button" data-tab="r">Reception</button>'
+      : '<button type="button" data-tab="c">Commentary</button><button type="button" data-tab="r">Reception</button><button type="button" data-tab="s">Citations</button>';
     pane.prepend(tabs);
     layout.addEventListener('click', (e) => {
       const b = e.target.closest('.cp-tabs [data-tab]'); if (b) return setTab(b.dataset.tab);
@@ -266,17 +269,25 @@
     const closeList = () => { list.hidden = true; pick.setAttribute('aria-expanded', 'false'); pick.textContent = 'Change'; };
     list.onclick = (e) => { const li = e.target.closest('[data-slug]'); if (!li) return; choose(li.dataset.slug); closeList(); };
     pane.querySelectorAll('.cp-pages button').forEach((b) => { b.onclick = () => step(+b.dataset.step); });
-    wide.addEventListener('change', () => { if (!wide.matches && S.tab === 's') setTab('c', true); });
+    wide.addEventListener('change', () => setTab(S.tab, true));
     setTab(S.tab, true);
     return true;
   }
 
   // the rail's three views; Citations is the site's own verse panel, shown in the rail's place
   function setTab(t, quiet) {
-    if (t === 's' && SITE.name === 'mo' && !wide.matches) t = 'c'; // no Citations view in the phone sheet: the verse panel is under the text
     S.tab = t;
     pane.dataset.tab = t;
-    document.body.classList.toggle('cp-src', t === 's');
+    // On a wide screen Citations is the page's sidebar, shown in the rail's place. On a phone the sidebar is not in the page: the
+    // verse panel opens under the verse in the text, so there the sheet shrinks to its tabs and the panel is brought into view.
+    const phone = SITE.name === 'mo' && !wide.matches;
+    document.body.classList.toggle('cp-src', t === 's' && !phone);
+    document.body.classList.toggle('cp-peek', t === 's' && phone);
+    if (t === 's' && phone && !quiet) {
+      let panel = document.querySelector('.sd-panel');
+      if (!panel) { const b = SITE.pick(S.verse || 1); if (b) b.click(); panel = document.querySelector('.sd-panel'); }
+      if (panel) panel.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    }
     layout.querySelectorAll('.cp-tabs [data-tab]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.tab === t)));
     head();
     if (t === 'r') paintRec();
@@ -408,10 +419,13 @@
   const paraKey = (slug, n) => `para:${slug}:${n}`;
   function parasOf(slug, n) { // a page's paragraphs in both lanes: the English if it has one, and the Latin
     const k = paraKey(slug, n);
-    if (!cache.has(k)) cache.set(k, page(slug, n).then((g) => (g && g.p ? [paragraphs(g.p.en), paragraphs(g.p.la)] : [[], []])).catch(() => [[], []]));
+    if (!cache.has(k)) {
+      // a page that is not there is remembered as empty; a page that failed to load is not (it is asked for again)
+      cache.set(k, page(slug, n).then((g) => (g && g.p ? [paragraphs(g.p.en), paragraphs(g.p.la)] : [[], []])).catch(() => { cache.delete(k); return [[], []]; }));
+    }
     return cache.get(k);
   }
-  const resolver = A ? A.createResolver(parasOf) : null;
+  const resolver = A ? A.createResolver(parasOf, { verseText: (v) => { const el = SITE.verseEl(v); return el ? el.textContent : ''; } }) : null;
   // the work's own first (collected) or indexed target, with no page to read
   function quickTarget(v) {
     const c = S.cur; if (!c) return null;
@@ -422,7 +436,7 @@
       const x = next != null ? next : prev;
       if (x != null) return { p: c.collected[x][0][1], how: 'collected', v: x, items: c.collected[x], nearest: true };
     }
-    if (c.notes[v] != null) return { p: c.notes[v], how: 'note', v, indexed: true };
+    if (!resolver && c.notes[v] != null) return { p: c.notes[v], how: 'note', v, indexed: true }; // without the resolver, the library's index
     return null;
   }
   async function resolve(c, v, w) {
@@ -442,8 +456,9 @@
       bodyEl.classList.add('cp-loading');
       whereEl.textContent = `Looking for its note on ${w.name || w.book} ${w.ch}:${S.verse}…`;
       if (!bodyEl.textContent.trim()) bodyEl.innerHTML = '<p class="cp-empty">Looking for the note…</p>';
-      t = await resolve(cur, S.verse, w);
+      try { t = await resolve(cur, S.verse, w); } catch (_) { t = null; }
       if (tok !== S.token) return;
+      if (!t && cur.open != null) t = { p: cur.open, how: 'chapter' };
     }
     if (!t) { bodyEl.classList.remove('cp-loading'); S.shown = null; paint(); return; }
     const same = S.shown && S.shown.slug === cur.slug && +S.shown.p === +t.p && S.shown.t.how === t.how && S.shown.t.v === t.v;
