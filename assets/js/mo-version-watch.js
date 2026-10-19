@@ -18,6 +18,10 @@
  * show a dismissible bar with a refresh button. Never auto-reloads: a
  * background refresh could land mid-read.
  *
+ * Scoped to the Daily Liturgy pages only (/daily-liturgy/ and
+ * /daily-liturgy/read/, routes.yaml), per Ian: this is the one place
+ * the bug actually bit readers, not a general site-wide watcher.
+ *
  * The fetch URL carries its own cache-busting param (mo_cb=<ms>) for
  * the same reason moAssetUrl busts asset URLs: per
  * [[project_ghost-page-html-cached-with-stale-asset-hashes]] (five
@@ -28,6 +32,9 @@
  * stale cached copy the watcher exists to detect.
  */
 (function () {
+  const path = String(window.location.pathname || "/").toLowerCase();
+  if (path.indexOf("/daily-liturgy/") !== 0) return;
+
   const v = window.MO_ASSET_V;
   if (!v) return; // fails open, same as moAssetUrl itself
 
