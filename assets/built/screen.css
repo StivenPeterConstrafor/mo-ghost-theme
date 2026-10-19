@@ -26559,9 +26559,10 @@ body:has(.welcome-page) .site-header { position: static; flex: 0 0 auto; }
    ══════════════════════════════════════════════════════════════════════════
 
    The TFR reader survey's bar and tab (faith-received.css, THE READER
-   SURVEY), carried to the main site for paid members, with the tab as a
-   link to /manage/ instead of a panel toggle. assets/js/journal-address-bar.js
-   builds it and decides who sees it. Same orange for the same reason:
+   SURVEY), carried to the main site for paid members. One tab at a time:
+   "Migrate Your Membership" slides a panel up like the survey's, and
+   "Confirm Address For Journal" is a plain link to /manage/.
+   assets/js/journal-address-bar.js builds it and decides who sees it. Same orange for the same reason:
    white at 13px on the raw token misses AA, mixed 88% with black it
    clears 5:1. */
 
@@ -26580,10 +26581,18 @@ body:has(.welcome-page) .site-header { position: static; flex: 0 0 auto; }
   height: 8px;
   background: var(--journal-address-orange);
 }
-.journal-address-tab {
+/* Holds the one tab (address or migrate) at the right. */
+.journal-address-tabs {
   position: absolute;
   bottom: 100%;
   right: clamp(16px, 5vw, 48px);
+  display: flex;
+  gap: 6px;
+}
+.journal-address-tab {
+  margin: 0;
+  border: 0;
+  cursor: pointer;
   padding: 5px 18px 6px;
   font-family: var(--font-body);
   font-size: 13px;
@@ -26605,6 +26614,69 @@ body:has(.welcome-page) .site-header { position: static; flex: 0 0 auto; }
   outline: 2px solid var(--color-dark, #2d2927);
   outline-offset: 2px;
 }
+/* The version toast (z 1150) would sit on the open panel. */
+body:has(.journal-address.is-open) .mo-version-banner { display: none; }
+/* Open, the migrate tab is what the panel came out of, as on the survey. */
+.journal-address.is-open [data-ja-open] { visibility: hidden; }
+
+/* The migrate panel: the survey's slide-up (faith-received.css, THE
+   READER SURVEY), parked below the fold with visibility:hidden so it is
+   out of the tab order while closed and the transform stays animatable. */
+.journal-address-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  background: var(--color-page, #f6f3f2);
+  border-top: 1px solid var(--color-rule, #d9c6a7);
+  box-shadow: 0 -14px 40px rgba(45, 41, 39, 0.16);
+  transform: translateY(101%);
+  visibility: hidden;
+  transition: transform 0.28s ease, visibility 0.28s;
+}
+.journal-address.is-open .journal-address-panel {
+  transform: translateY(0);
+  visibility: visible;
+}
+@media (prefers-reduced-motion: reduce) {
+  .journal-address-panel { transition: none; }
+}
+.journal-address-inner {
+  position: relative;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 30px clamp(18px, 4vw, 32px) 26px;
+}
+.journal-address-close {
+  position: absolute;
+  top: 8px;
+  right: clamp(8px, 2vw, 16px);
+  width: 44px;
+  height: 44px;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--color-muted, #6b6660);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.journal-address-close:hover { color: var(--color-dark, #2d2927); }
+/* Body face: a working surface, not a title page. */
+.journal-address-title {
+  font-family: var(--font-body);
+  font-size: clamp(18px, 2.2vw, 21px);
+  line-height: 1.35;
+  margin: 0 0 8px;
+  padding-right: 44px;
+  color: var(--color-dark, #2d2927);
+}
+.journal-address-note {
+  margin: 0 0 18px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-muted, #6b6660);
+}
+
 /* Bar plus tab, so the last line of a page clears it. */
 body.has-journal-address { padding-bottom: 34px; }
 /* A paid-audience slide-in would otherwise land on the tab. */
