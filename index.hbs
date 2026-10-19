@@ -14,15 +14,15 @@
                 <p class="hero-sub">Long-form essays, patient podcasts, and a quarterly print journal on theology, culture, and spiritual formation.</p>
                 <div class="hero-ctas">
                     {{#match @member.status "paid"}}
-                        <a href="/dashboard/" class="btn btn-primary btn-lg" data-hm-goal="dashboard">Your Dashboard</a>
+                        <a href="/dashboard/" class="btn btn-solid btn-primary btn-lg" data-hm-goal="dashboard">Your Dashboard</a>
                     {{else}}{{#match @member.status "comped"}}
-                        <a href="/dashboard/" class="btn btn-primary btn-lg" data-hm-goal="dashboard">Your Dashboard</a>
+                        <a href="/dashboard/" class="btn btn-solid btn-primary btn-lg" data-hm-goal="dashboard">Your Dashboard</a>
                     {{else}}{{#if @member}}
                         {{!-- Free Subscriber: already on the list, so a single upgrade button. --}}
-                        <a href="#join" class="btn btn-primary btn-lg" data-hm-goal="member-cta">Become a Member</a>
+                        <a href="#join" class="btn btn-solid btn-primary btn-lg" data-hm-goal="member-cta">Become a Member</a>
                     {{else}}
                         {{!-- Anonymous visitor — primary CTA is now Membership. --}}
-                        <a href="#join" class="btn btn-primary btn-lg" data-hm-goal="member-cta">Become a Member</a>
+                        <a href="#join" class="btn btn-solid btn-primary btn-lg" data-hm-goal="member-cta">Become a Member</a>
                         <a href="#digest" class="btn btn-ghost btn-lg" data-hm-goal="digest-cta">Never Miss An Essay</a>
                     {{/if}}{{/match}}{{/match}}
                 </div>
@@ -175,7 +175,7 @@
                     <p class="eyebrow">For Subscribers</p>
                     <h3>Want More Mere Orthodoxy?</h3>
                     <p>You're on our free list. Members get everything below — plus our full print journal mailed to your door, four times a year.</p>
-                    <a href="#join" class="btn btn-primary btn-lg home-upgrade-btn" data-hm-goal="member-cta">Become a Member</a>
+                    <a href="#join" class="btn btn-solid btn-primary btn-lg home-upgrade-btn" data-hm-goal="member-cta">Become a Member</a>
                 </div>
                 <div class="home-upgrade-body">
                     <ul class="home-upgrade-list">
@@ -400,14 +400,14 @@
                 </ol>
                 <div class="journal-ctas">
                     {{#match @member.status "paid"}}
-                        <a href="/give/" class="btn btn-primary btn-lg" data-hm-goal="gift">Give a Membership</a>
+                        <a href="/give/" class="btn btn-solid btn-primary btn-lg" data-hm-goal="gift">Give a Membership</a>
                     {{else}}{{#match @member.status "comped"}}
-                        <a href="/give/" class="btn btn-primary btn-lg" data-hm-goal="gift">Give a Membership</a>
+                        <a href="/give/" class="btn btn-solid btn-primary btn-lg" data-hm-goal="gift">Give a Membership</a>
                     {{else}}{{#if @member}}
-                        <a href="#join" class="btn btn-primary btn-lg" data-hm-goal="journal">Get The Journal</a>
+                        <a href="#join" class="btn btn-solid btn-primary btn-lg" data-hm-goal="journal">Get The Journal</a>
                     {{else}}
                         {{!-- Anonymous — primary CTA is the membership signup. --}}
-                        <a href="#join" class="btn btn-primary btn-lg" data-hm-goal="journal">Get The Journal</a>
+                        <a href="#join" class="btn btn-solid btn-primary btn-lg" data-hm-goal="journal">Get The Journal</a>
                     {{/if}}{{/match}}{{/match}}
                 </div>
             </div>

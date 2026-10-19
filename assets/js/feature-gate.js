@@ -509,7 +509,7 @@
   function memberInner() {
     return (
       '<div class="feature-gate-modal-actions">' +
-        '<a href="/membership/" class="feature-gate-modal-cta btn btn-primary">Become a Member</a>' +
+        '<a href="/membership/" class="feature-gate-modal-cta btn btn-solid btn-primary">Become a Member</a>' +
       '</div>'
     );
   }

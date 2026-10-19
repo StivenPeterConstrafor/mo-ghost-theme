@@ -62,7 +62,7 @@
 
     const btn = document.createElement("a");
     btn.href = "/membership/";
-    btn.className = "btn btn-primary";
+    btn.className = "btn btn-solid btn-primary";
     btn.textContent = "Become a Member";
     ctas.appendChild(btn);
 

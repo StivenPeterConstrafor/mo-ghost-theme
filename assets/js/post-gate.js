@@ -143,7 +143,7 @@
       paidActions.className = "post-gate-actions";
       const becomeMember = document.createElement("a");
       becomeMember.href = "/membership/";
-      becomeMember.className = "btn btn-primary";
+      becomeMember.className = "btn btn-solid btn-primary";
       becomeMember.textContent = isMember && memberStatus !== "paid"
         ? "Become a Member"
         : "Become a Member";

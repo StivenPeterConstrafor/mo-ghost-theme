@@ -607,54 +607,158 @@ img { max-width: 100%; height: auto; }
 
 .btn {
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   padding: 12px 22px;
-  border-radius: 999px;
-  border: 0;
+  border-radius: 3px;
+  border: 1px solid var(--color-dark);
   cursor: pointer;
   text-align: center;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
   white-space: nowrap;
+  color: var(--color-dark);
+  background-color: transparent;
+  background-image: var(--btn-sweep-image);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 0% 100%;
+  box-shadow: none;
+  transition: var(--btn-sweep-transition);
 }
-.btn:hover { text-decoration: none; transform: translateY(-1px); }
 
-/* ── THERE ARE TWO BUTTONS ──────────────────────────────────────────
-   SOLID: a filled ground, white ink, no line of its own. It is the one
-   thing on a surface allowed to be a colour, so a surface gets one. On
-   hover the ground steps darker and the button lifts a pixel.
+/* ── THE MERE O BUTTON IS THE TFR BUTTON ───────────────────────────
+   Ian, 2026-10-19: change the Mere O button to match the TFR button:
+   "shape, color, and outline default." Until today the magazine had
+   orange filled pills and the library had square hollow boxes. Now
+   there is one button, and it is the one stated in faith-received.css
+   (THE TFR BUTTON, and THE TFR HOME'S BUTTONS ARE TFR BUTTONS).
 
-   HOLLOW: no ground, a 1px line and ink in whatever reads against what
-   it stands on. On hover the terracotta sweeps in from the left, the
-   ink turns white and the line turns terracotta. .btn-outline is the
-   hollow button for a light ground and .btn-ghost for a dark one; they
-   differ in their resting colour and in nothing else.
+   HOLLOW IS THE DEFAULT. Every .btn rests as an off-black 1px line
+   with off-black ink, 3px corners and an uppercase tracked label. On
+   hover the terracotta sweeps in from the left and the ink turns
+   white. .btn-primary, .btn-outline and .btn-dark all take this. They
+   used to be three looks and are now three names for one, so the
+   markup did not have to be rewritten. .btn-ghost is the same button
+   on a dark ground: white line and ink at rest, the same sweep.
 
-   Every hollow button in the theme is one of these two, or is a class
-   listed in the sweep rule below. Nothing else should invent a third
-   hover. Sizes stay where they were: .btn-lg, .btn-sm and .btn-pill are
-   scale, not behaviour, and a button's geometry is not what Ian was
-   asking about. */
-.btn-primary { background-color: var(--color-primary); color: var(--color-white); box-shadow: 0 8px 20px -8px rgba(238,125,81,0.55); }
-.btn-primary:hover { background-color: var(--color-secondary); }
-.btn-dark { background-color: var(--color-dark); color: var(--color-white); }
-.btn-dark:hover { background-color: #1a1816; }
-.btn-ghost { color: var(--color-white); border: 1px solid rgba(255,255,255,0.35); }
-.btn-outline { color: var(--color-dark); border: 1px solid var(--color-dark); }
+   SOLID IS OPT-IN. .btn-solid is a filled terracotta button with
+   white ink, deepening on hover. It goes on a surface's one call to
+   action (join, checkout, submit), never on two buttons side by side.
+   Terracotta and not the old orange because white on --color-primary
+   is about 2.9:1 and white on --color-secondary is 4.4:1.
 
-/* The sweep, stated once for the site. background-color stays
-   transparent throughout and the gradient does all the work, so a
-   button that sits on a photograph keeps showing the photograph until
-   the wipe reaches it. .btn-ghost-light and .btn-outline-copper are the
-   Daily Liturgy's pair and join here rather than keeping the two
-   bespoke hovers they had; the copper comes from the page's token
-   override at the top of this file. */
-.btn-ghost,
+   No lift on hover and no drop shadow: the TFR button has neither.
+   The admin dashboards keep their own button system, stated near the
+   end of this file under .admin-workspace, which outranks this one. */
+.btn:hover,
+.btn:focus-visible {
+  text-decoration: none;
+  background-size: 100% 100%;
+  color: var(--btn-sweep-ink);
+  border-color: var(--btn-sweep-fill);
+}
+.btn-primary,
 .btn-outline,
+.btn-dark {
+  color: var(--color-dark);
+  border-color: var(--color-dark);
+  background-color: transparent;
+  box-shadow: none;
+}
+.btn-ghost {
+  color: var(--color-white);
+  border-color: rgba(255,255,255,0.55);
+  background-color: transparent;
+}
+.btn-solid,
+a.btn-solid {
+  color: #fff;
+  background-color: var(--color-secondary);
+  background-image: none;
+  border-color: var(--color-secondary);
+}
+.btn-solid:hover,
+.btn-solid:focus-visible,
+a.btn-solid:hover,
+a.btn-solid:focus-visible {
+  color: #fff;
+  background-color: color-mix(in srgb, var(--color-secondary) 86%, #000);
+  border-color: color-mix(in srgb, var(--color-secondary) 86%, #000);
+}
+/* ON A DARK GROUND THE HOLLOW BUTTON INVERTS, as the TFR home's hero
+   does. Every .hero band is off-black (or a liturgical color on the
+   lc- pages), and so are the membership hero and the manage page's
+   hero. Off-black line and ink would vanish there, so the line and the
+   ink turn white and the terracotta still arrives on hover. Stated by
+   ground rather than by button so buttons built in JS are covered too. */
+.hero .btn:not(.btn-solid),
+.bhero .btn:not(.btn-solid),
+.mb-hero-intro .btn:not(.btn-solid),
+.membership-support .page-hero .btn:not(.btn-solid) {
+  color: var(--color-white);
+  border-color: rgba(255,255,255,0.55);
+}
+.hero .btn:not(.btn-solid):hover,
+.hero .btn:not(.btn-solid):focus-visible,
+.bhero .btn:not(.btn-solid):hover,
+.bhero .btn:not(.btn-solid):focus-visible,
+.mb-hero-intro .btn:not(.btn-solid):hover,
+.mb-hero-intro .btn:not(.btn-solid):focus-visible,
+.membership-support .page-hero .btn:not(.btn-solid):hover,
+.membership-support .page-hero .btn:not(.btn-solid):focus-visible {
+  color: var(--btn-sweep-ink);
+  border-color: var(--btn-sweep-fill);
+}
+/* A disabled button says so, and a disabled solid does not darken. */
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-solid:disabled:hover,
+.btn-solid[aria-disabled="true"]:hover {
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
+}
+.btn:not(.btn-solid):disabled:hover {
+  background-size: 0% 100%;
+  color: var(--color-dark);
+  border-color: var(--color-dark);
+}
+
+/* THE DESKTOP HEADER KEEPS SENTENCE CASE. The bar is measured to the
+   pixel at 1262 to 1300px (see ROOM FOR "THE FAITH RECEIVED" below),
+   and the uppercase tracked label pushed "Become a Member" 26px past
+   the window at 1280. Only the label's case and tracking step back
+   here; the corners, line and fill are the TFR button's. The mobile
+   menu has the width and keeps the full treatment. */
+.nav-actions .btn {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* ON A TERRACOTTA GROUND THE SOLID BUTTON IS OFF-BLACK. The capstone
+   band behind .included-cta (membership and offer pages) is itself
+   --color-secondary, so a terracotta fill would vanish into it. The
+   TFR system's other fill, the off-black it uses for a pressed
+   control, takes its place. */
+.included-cta .btn-solid {
+  background-color: var(--color-dark);
+  border-color: var(--color-dark);
+}
+.included-cta .btn-solid:hover,
+.included-cta .btn-solid:focus-visible {
+  background-color: #1a1816;
+  border-color: #1a1816;
+}
+
+/* The Daily Liturgy's pair keep their own colors (the copper comes
+   from that page's token override) and share the sweep above. */
 .btn-ghost-light,
 .btn-outline-copper {
   background-color: transparent;
@@ -664,10 +768,6 @@ img { max-width: 100%; height: auto; }
   background-size: 0% 100%;
   transition: var(--btn-sweep-transition);
 }
-.btn-ghost:hover,
-.btn-ghost:focus-visible,
-.btn-outline:hover,
-.btn-outline:focus-visible,
 .btn-ghost-light:hover,
 .btn-ghost-light:focus-visible,
 .btn-outline-copper:hover,
@@ -676,7 +776,7 @@ img { max-width: 100%; height: auto; }
   color: var(--btn-sweep-ink);
   border-color: var(--btn-sweep-fill);
 }
-.btn-lg { padding: 16px 32px; font-size: 16px; }
+.btn-lg { padding: 16px 32px; font-size: 14px; }
 
 /* -------- Breadcrumb (article) -------- */
 
@@ -4064,7 +4164,10 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
   .hero-headline-tail { font-size: 0.7em; }
   .hero-sub { font-size: 16px; }
   .hero-ctas { flex-direction: row; align-items: stretch; gap: 8px; flex-wrap: nowrap; }
-  .hero-ctas .btn { flex: 1 1 0; min-width: 0; width: auto; padding: 12px 14px; font-size: 13px; }
+  /* Uppercase tracked labels (2026-10-19 button change) are wider than
+     the old sentence case, so two buttons sharing a 375px row may wrap
+     onto two lines inside the box rather than spill out of it. */
+  .hero-ctas .btn { flex: 1 1 0; min-width: 0; width: auto; padding: 12px 14px; font-size: 13px; white-space: normal; line-height: 1.25; letter-spacing: 0.08em; text-align: center; }
   .hero-ctas .btn-lg { padding: 12px 14px; font-size: 13px; }
   .hero-ctas .btn:only-child { flex: 0 0 auto; }
   /* Feature image on mobile: fill the 16:10 frame with `cover` so
@@ -4401,9 +4504,7 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
   z-index: -1;
 }
 .other-way.is-featured { isolation: isolate; }
-.membership .card.is-featured .btn-primary {
-  box-shadow: 0 10px 24px -8px rgba(238, 125, 81, 0.55);
-}
+
 .card-flag {
   position: absolute;
   top: 0;
@@ -4471,9 +4572,10 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
   min-height: 2.8em;
 }
 
-/* btn-pill is a no-op on top of the theme's already pill-shaped .btn,
-   but btn-inline is a new sizing variant for inline CTAs. */
-.btn-pill { border-radius: 999px; padding: 16px 24px; font-size: 15px; }
+/* btn-pill is padding only since the 2026-10-19 button change (the
+   corners are the TFR button's 3px now); btn-inline is a sizing
+   variant for inline CTAs. */
+.btn-pill { padding: 16px 24px; }
 .btn-inline { width: auto; padding: 14px 28px; }
 .btn-tagline {
   font-family: var(--font-body);
@@ -5400,6 +5502,12 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
   animation: mo-spin 0.6s linear infinite;
 }
 .membership-support .btn.is-loading .btn-spinner { display: inline-block; }
+/* A hollow button's spinner turns on cream, so it takes the ink color. */
+.membership-support .btn:not(.btn-solid) .btn-spinner,
+.lifetime-upgrade .btn:not(.btn-solid) .btn-spinner {
+  border-color: rgba(45, 41, 39, 0.25);
+  border-top-color: var(--color-dark);
+}
 .membership-support .btn:disabled,
 .membership-support .btn.is-loading {
   cursor: wait;
