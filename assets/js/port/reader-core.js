@@ -5815,6 +5815,10 @@ async function loadPldCanon(ws){
   const author_la=gt("titleStmt > author")||"", author=await _auEn(author_la);
   const vol=(()=>{const e=[...doc.querySelectorAll("idno")].find(x=>x.getAttribute("type")==="PL-volume");return e?("PL "+e.textContent.trim()):"";})();
   const IS_PL_INDEX=/^PL 2(1[89]|2[01])$/.test(vol);   // Migne's index tomes
+  // PRINT MARKS (owner reports #32, #48): the export leaves the source edition's note and page numerals loose in the
+  // text of both lanes ("quisquam 341 bene proferre"). Removed by sequence in pld-reading.js, for the reading view only;
+  // the index tomes and the editorial-notes views, where numerals are the content, are left exactly as printed.
+  if(!IS_PL_INDEX&&!sourceView?.notes&&!sourceView?.combined){try{window.FRPldReading.cleanPrintMarks(doc);}catch(e){console.warn("[PLD] print-mark cleanup skipped",e);}}
   // Build the la/en sidecar DOMs the TEI renderer already consumes: milestones→<pb>,
   // heads→both lanes (identical-echo guard shows once), p pairs by xml:lang, unpaired→la.
   const NS="http://www.tei-c.org/ns/1.0";
@@ -5883,6 +5887,7 @@ async function loadPldCanon(ws){
         {const h=enD.createElement("head");h.textContent=en||t;enB.appendChild(h);window.__pldLastEnHead=h;window.__pldLastEnHeadEcho=!en;}
       }else if(ln==="p"){
         const lang=ch.getAttribute("xml:lang");
+        if(pairedHeads.has(ch))continue;   // the English twin of a letter title already made a head
         if(sourceView?.notes){
           // The export's note "translations" were Latin echoes: keep the source once, in Latin,
           // and use note sections rather than false columns. A real translation — a <p corresp>
@@ -5901,6 +5906,21 @@ async function loadPldCanon(ws){
         t=t.replace(/([A-Za-zÀ-ÿæœ])-\s+([a-zà-ÿæœ])/g,"$1$2")
            .replace(/([A-Z]{2,})-\s+([A-Z]{2,})/g,"$1$2");
         if(!t)continue;
+        // LETTER TITLES LEFT AS PARAGRAPHS (owner #44, pld-5640 col. 568 "EPISTOLA LVII. AD PAMMACHIUM"): the export made a <head>
+        // for most letters and left the rest as a plain paragraph, so those letters had no heading and no outline entry. A short
+        // all-capitals EPISTOLA title that is not the bold repeat of a head just above it becomes a heading in both lanes.
+        if(lang!=='en'&&!sourceView?.notes&&t.length<=200&&/^EPISTOLAE?\s+[IVXLCDM]+\b/.test(t)&&!(ch.previousElementSibling&&ch.previousElementSibling.localName==='head')){
+          const nx=ch.nextElementSibling,id=ch.getAttribute('xml:id')||'';
+          const twin=nx&&id&&nx.localName==='p'&&nx.getAttribute('corresp')==='#'+id?nx:null;
+          const en=twin?twin.textContent.replace(/\s+/g,' ').trim():'';
+          if(depth0===null)depth0=depth;
+          struct.push({title:chapterTitle(unPage(en)||unPage(t)),page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5),pld_division:(ch.parentElement&&ch.parentElement.getAttribute('xml:id'))||''});
+          lastHeadEntry=struct[struct.length-1];lastHeadHadEn=!!en;lastChapterNum=null;
+          {const h=laD.createElement("head");h.textContent=t;laB.appendChild(h);}
+          {const h=enD.createElement("head");h.textContent=en||t;enB.appendChild(h);window.__pldLastEnHead=null;window.__pldLastEnHeadEcho=false;}
+          if(twin)pairedHeads.add(twin);
+          continue;
+        }
         // A chapter printed INLINE ("CAP. II.--Audiens haec…", the Lives in PL 73; pld-2018) is one long paragraph that
         // opens with its number: it heads the outline as that number alone. Without it the reader fell back to a folio
         // list naming only the chapters that begin a page (I, IV, VI, VIII), and the rest vanished from the contents.

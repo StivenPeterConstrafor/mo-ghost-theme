@@ -245,7 +245,70 @@
     }
     return `<section class="pld-editorial" data-page="${esc(page)}" id="editorial-${esc(page)}"><h4>Editorial notes${page==='editorial'?'':' · col. '+esc(page)}</h4><p class="pld-editorial-status">${hasEnglish?'From the source edition, with available English text.':languages.length===1&&languages[0]==='la'?'Latin original; English translation not available yet.':'Original text; English translation not available yet.'} These notes are the editor’s, not the author’s.${page==='editorial'?' Their column locations are not supplied.':''}</p>${blocks.join('')}</section>`;
   }
-  const api={editorialEntries,editorialHTML,noteItems,heading,introduction,renderedHeading,sourcePart,sourceView,hasSourceViews,publisherNotes,citationContext,numericColumn,etymologiesHash};
+  // PRINT MARKS (owner reports #32 pld-5640, #48 pld-4951, 2026-10-19). The Migne export keeps the printed
+  // edition's running note/page numerals as loose tokens inside the prose ("quisquam 341 bene proferre", "LETTER LVII
+  // 785 . TO PAMMACHIUS"), in both lanes, and prints a bare page number as a paragraph of its own. They are not text.
+  // A marker is recognised by its SEQUENCE, never by its look: a numeral standing alone between words that continues a
+  // run (n after n-1, within a short window), or starts a run that the next few numerals prove (n, n+1, n+2). A real
+  // numeral ("epistolam 51 ad Joannem") is not consecutive with anything near it and stays. Display-time only: the
+  // canonical TEI and the sourceView/hash path are never touched, and the editorial-notes view is not cleaned.
+  // "Lucretius, 23 , 125 , 130" is an index entry, not a run of marks: a numeral hemmed in by commas is left alone.
+  const MARK_RX=/(?<=[^\s\d])(\s+)(\d{1,4})(?=\s|$)/g;
+  const MARK_ABBR=/(?:^|[\s(\[])(?:cap|c|v|vv|ver|vers|lib|l|ps|psal|can|serm|ep|epist|tom|t|p|pag|col|n|num|no|art|q|qu|qu?aest|hom|cf|vid|infra|supra|sect|§)\.?$/i;
+  function markRuns(values,before,forced){
+    // values: numerals in document order; forced[i]: already known to be a mark (its Latin twin said so).
+    // -> boolean[] (true = mark). `last` maps the latest accepted value of each run to where it was seen.
+    const WIN=40,AHEAD=12,hit=new Array(values.length).fill(false),last=new Map();
+    const near=(u,i,win)=>last.has(u)&&i-last.get(u)<=win;
+    for(let i=0;i<values.length;i++){
+      const v=values[i];
+      if(MARK_ABBR.test(before[i]))continue;                 // "cap. 3", "Ps. 4": a citation, not a mark
+      let ok=!!(forced&&forced[i])||near(v-1,i,WIN);
+      if(!ok){                                               // a new run: the next two numerals prove it
+        let j=-1;
+        for(let k=i+1;k<values.length&&k<=i+AHEAD&&j<0;k++)if(values[k]===v+1)j=k;
+        for(let k=j+1;j>0&&k<values.length&&k<=j+AHEAD&&!ok;k++)ok=values[k]===v+2;
+      }
+      if(ok){hit[i]=true;last.delete(v-1);last.set(v,i);}
+    }
+    return hit;
+  }
+  function cleanPrintMarks(doc){
+    // Edits text nodes of every head and p in place, per lane. Returns the number of marks removed.
+    const lanes={la:[],en:[]},drop=[];
+    // the machine English drops or moves numerals, which breaks a run; its Latin twin says which ones were marks
+    const twin=new Map();
+    const lane=el=>(el.getAttribute('xml:lang')==='en'?'en':'la');
+    for(const el of Array.from(doc.querySelectorAll('head,p'))){
+      if(/^\s*\d{1,4}\s*$/.test(el.textContent||'')){drop.push(el);continue;}   // a bare page number is a paragraph of its own
+      const w=doc.createTreeWalker?doc.createTreeWalker(el,4):null;let n;
+      const nodes=[];if(w){while((n=w.nextNode()))nodes.push(n);}
+      else{const walk=x=>{for(const c of Array.from(x.childNodes))c.nodeType===3?nodes.push(c):walk(c);};walk(el);}
+      for(const node of nodes){
+        MARK_RX.lastIndex=0;const data=node.data;let m;
+        while((m=MARK_RX.exec(data)))lanes[lane(el)].push({node,id:lane(el)==='en'?String(el.getAttribute('corresp')||'').replace(/^#/,''):(el.getAttribute('xml:id')||''),start:m.index,end:m.index+m[0].length,value:+m[2],before:data.slice(Math.max(0,m.index-12),m.index),list:/[,;]$/.test(data.slice(Math.max(0,m.index-2),m.index))&&/^\s*[,;]/.test(data.slice(m.index+m[0].length,m.index+m[0].length+3))});
+      }
+    }
+    let removed=0;
+    for(const ln of ['la','en']){
+      const list=lanes[ln].filter(x=>!x.list&&!MARK_ABBR.test(x.before)),hit=markRuns(list.map(x=>x.value),list.map(x=>x.before),ln==='en'?list.map(x=>!!x.id&&twin.get(x.id)?.has(x.value)):null);
+      if(ln==='la')list.forEach((x,i)=>{if(hit[i]&&x.id){if(!twin.has(x.id))twin.set(x.id,new Set());twin.get(x.id).add(x.value);}});
+      const byNode=new Map();list.forEach((x,i)=>{if(hit[i]){if(!byNode.has(x.node))byNode.set(x.node,[]);byNode.get(x.node).push(x);}});
+      for(const [node,items] of byNode){
+        let s=node.data;
+        for(const x of items.sort((a,b)=>b.start-a.start)){
+          // "LVII 785 . AD" -> "LVII. AD", "Deo 343 enim" -> "Deo enim"
+          const rest=s.slice(x.end);
+          s=s.slice(0,x.start)+(/^\s*[.,;:!?)»]/.test(rest)?rest.replace(/^\s+/,''):rest.length?' '+rest.replace(/^\s+/,''):'');
+          removed++;
+        }
+        node.data=s;
+      }
+    }
+    for(const el of drop){if(el.parentNode)el.parentNode.removeChild(el);removed++;}
+    return removed;
+  }
+  const api={cleanPrintMarks,markRuns,editorialEntries,editorialHTML,noteItems,heading,introduction,renderedHeading,sourcePart,sourceView,hasSourceViews,publisherNotes,citationContext,numericColumn,etymologiesHash};
   if(typeof module==='object'&&module.exports)module.exports=api;
   root.FRPldReading=api;
 })(typeof window==='object'?window:globalThis);

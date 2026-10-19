@@ -34,6 +34,7 @@
     "check:linker": "node scripts/check-scripture-linker.mjs",
     "check:diagrams": "node scripts/check-brace-diagrams.mjs",
     "check:modernize": "node scripts/check-modernize.mjs",
+    "check:pld-marks": "node scripts/check-pld-print-marks.mjs",
     "build:slugs": "node scripts/build-public-slugs.mjs"
   },
   "devDependencies": {
