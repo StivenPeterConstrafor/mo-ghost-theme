@@ -245,7 +245,101 @@
     }
     return `<section class="pld-editorial" data-page="${esc(page)}" id="editorial-${esc(page)}"><h4>Editorial notes${page==='editorial'?'':' · col. '+esc(page)}</h4><p class="pld-editorial-status">${hasEnglish?'From the source edition, with available English text.':languages.length===1&&languages[0]==='la'?'Latin original; English translation not available yet.':'Original text; English translation not available yet.'} These notes are the editor’s, not the author’s.${page==='editorial'?' Their column locations are not supplied.':''}</p>${blocks.join('')}</section>`;
   }
-  const api={editorialEntries,editorialHTML,noteItems,heading,introduction,renderedHeading,sourcePart,sourceView,hasSourceViews,publisherNotes,citationContext,numericColumn,etymologiesHash};
+  // PRINT MARKS (owner reports #32 pld-5640, #48 pld-4951). The Migne export keeps the printed edition's running
+  // note/page numerals as loose tokens inside the prose ("quisquam 341 bene proferre", "LETTER LVII 785 . TO PAMMACHIUS"),
+  // in both lanes, and prints a bare page number as a paragraph of its own. They are not text.
+  // A mark is recognised by its SEQUENCE, never by its look: a numeral between words that continues a run of consecutive
+  // numerals, or opens one that the next four prove, across at least two paragraphs. A real numeral is never touched:
+  // the word before it (anno, libro, cap., psalmo, book, chapter ...), a roman numeral and comma before it ("Joan. XIX, 26"),
+  // an open parenthesis, a comma list, or an apparatus line all keep it, and a chronicle or annals is not cleaned at all
+  // (its years are consecutive too). Display-time only, on a copy-then-swap: any failure leaves the text exactly as printed.
+  // No lookbehind: Safari before 16.4 fails to parse the whole file on one.
+  const MARK_RX=/([^\s\d])(\s+)(\d{1,4})(?=\s|$)/g;
+  const MARK_ABBR=/(?:^|[\s(\[])(?:anno|annus|anni|annum|ann|libro|liber|libri|lib|l|cap|capp|caput|capite|c|ch|chap|chapter|book|bk|psalmo|psalm|psal|ps|v|vv|ver|vers|versu|verse|year|tit|ibid|ep|epist|epistola|epistle|letter|can|serm|sermo|hom|tom|t|p|pag|col|n|num|no|art|q|qu|quaest|cf|vid|infra|supra|sect|§)\.?,?$/i;
+  const MARK_ROMAN=/(?:^|[\s(\[.])[IVXLCDM]{1,7},$/;
+  const APPARATUS=/\b[A-Z][a-z]{2,9}\.(?:,|\s+(?:et|ac|vel|ed|edd|cod|codd|mss|in|om|male|al|alias)\b)/g;
+  const CHRONICLE_TITLE=/\b(annals?|annales|chronic\w*|chronica|chronicon|gesta|necrolog\w*)\b/i;
+  const DATED_REF=/\b(?:anno|anni|annus|annum|year|a\.d\.)\.?\s+\d{3,4}\b/gi;
+  function markRuns(values,before,forced,para){
+    // values: numerals in document order; para[i]: which paragraph; forced[i]: already known to be a mark (its Latin twin).
+    // -> boolean[] (true = mark). `last` maps the latest accepted value of each run to where it was seen.
+    const WIN=40,AHEAD=12,RUN=5,hit=new Array(values.length).fill(false),last=new Map();
+    const near=(u,i,win)=>last.has(u)&&i-last.get(u)<=win;
+    for(let i=0;i<values.length;i++){
+      const v=values[i];
+      let ok=!!(forced&&forced[i])||near(v-1,i,WIN);
+      if(!ok){                                               // a new run: the next RUN-1 consecutive numerals prove it
+        let at=i,want=v+1;const seen=new Set([para?para[i]:0]);
+        for(;want<v+RUN;want++){
+          let j=-1;for(let k=at+1;k<values.length&&k<=at+AHEAD&&j<0;k++)if(values[k]===want)j=k;
+          if(j<0)break;at=j;seen.add(para?para[j]:0);
+        }
+        ok=want===v+RUN&&seen.size>=2;
+      }
+      if(ok){hit[i]=true;last.delete(v-1);last.set(v,i);}
+    }
+    return hit;
+  }
+  function cleanPrintMarks(doc){
+    // Returns the number of marks removed. Plans every edit first, applies them with an undo log, restores all on any error.
+    const undo=[];
+    try{
+      const title=(doc.querySelector('titleStmt > title')||{}).textContent||'';
+      if(CHRONICLE_TITLE.test(title))return 0;
+      const all=doc.documentElement.textContent||'',dated=all.match(DATED_REF);
+      if(dated&&dated.length>=12&&all.length/dated.length<20000)return 0;   // dates its entries by year (one per ~6,000 characters in the annals; Jerome's letters, one per 55,000): the numerals are the content
+      const lanes={la:[],en:[]},bare=[],twin=new Map();
+      const lane=el=>(el.getAttribute('xml:lang')==='en'?'en':'la');
+      let pi=0;
+      for(const el of Array.from(doc.querySelectorAll('head,p'))){
+        pi++;
+        if(/^\s*\d{1,4}\s*$/.test(el.textContent||'')){bare.push(el);continue;}   // a bare page number is a paragraph of its own
+        const w=doc.createTreeWalker?doc.createTreeWalker(el,4):null;let n;
+        const nodes=[];if(w){while((n=w.nextNode()))nodes.push(n);}
+        else{const walk=x=>{for(const c of Array.from(x.childNodes))c.nodeType===3?nodes.push(c):walk(c);};walk(el);}
+        const text=el.textContent||'',app=(text.match(APPARATUS)||[]).length;
+        if(app>=2||(app>=1&&text.length<200))continue;       // an apparatus line ("Gussanv., caecum quippe. 2 Carnot. et 3 Gemet.") keeps its keys
+        const id=lane(el)==='en'?String(el.getAttribute('corresp')||'').replace(/^#/,''):(el.getAttribute('xml:id')||'');
+        for(const node of nodes){
+          const data=node.data;MARK_RX.lastIndex=0;let m;
+          while((m=MARK_RX.exec(data))){
+            const start=m.index+1,end=m.index+m[0].length,before=data.slice(Math.max(0,start-14),start),prefix=data.slice(Math.max(0,start-60),start);
+            if(MARK_ABBR.test(before)||MARK_ROMAN.test(before))continue;
+            if(prefix.lastIndexOf('(')>prefix.lastIndexOf(')'))continue;                  // inside a citation
+            if(/[,;]$/.test(data.slice(Math.max(0,start-2),start))&&/^\s*[,;]/.test(data.slice(end,end+3)))continue;   // an index list
+            lanes[lane(el)].push({node,id,para:pi,start,end,value:+m[3],before});
+          }
+        }
+      }
+      const byNode=new Map();
+      for(const ln of ['la','en']){
+        const list=lanes[ln];
+        const hit=markRuns(list.map(x=>x.value),list.map(x=>x.before),ln==='en'?list.map(x=>!!x.id&&!!twin.get(x.id)&&twin.get(x.id).has(x.value)):null,list.map(x=>x.para));
+        list.forEach((x,i)=>{if(!hit[i])return;
+          if(ln==='la'&&x.id){if(!twin.has(x.id))twin.set(x.id,new Set());twin.get(x.id).add(x.value);}
+          if(!byNode.has(x.node))byNode.set(x.node,[]);byNode.get(x.node).push(x);});
+      }
+      let removed=0;
+      for(const [node,items] of byNode){
+        let s=node.data;
+        for(const x of items.sort((a,b)=>b.start-a.start)){
+          // "LVII 785 . AD" -> "LVII. AD", "Deo 343 enim" -> "Deo enim"
+          const rest=s.slice(x.end);
+          s=s.slice(0,x.start)+(/^\s*[.,;:!?)»]/.test(rest)?rest.replace(/^\s+/,''):rest.length?' '+rest.replace(/^\s+/,''):'');
+          removed++;
+        }
+        undo.push([node,node.data]);node.data=s;
+      }
+      // The page number stays in the document as a hidden paragraph: the reader's block ids (b<column>-<n>) count paragraphs,
+      // and saved highlights, notes and bookmarks are keyed to them.
+      if(removed)for(const el of bare){undo.push([el,null]);el.setAttribute('rend','pagemark');removed++;}
+      return removed;
+    }catch(e){
+      for(const [x,old] of undo.reverse()){try{if(old===null)x.removeAttribute('rend');else x.data=old;}catch(_){}}
+      return 0;
+    }
+  }
+  const api={cleanPrintMarks,markRuns,editorialEntries,editorialHTML,noteItems,heading,introduction,renderedHeading,sourcePart,sourceView,hasSourceViews,publisherNotes,citationContext,numericColumn,etymologiesHash};
   if(typeof module==='object'&&module.exports)module.exports=api;
   root.FRPldReading=api;
 })(typeof window==='object'?window:globalThis);
