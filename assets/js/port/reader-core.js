@@ -143,6 +143,14 @@ function parseScriptureQuery(query){
 const VULGATE_PSALM_TRADITIONS=new Set(['Latin Fathers','Greek Fathers','Medieval','Roman Catholic']);
 function vulgatePsalms(){try{const d=DATA||{};return VULGATE_PSALM_TRADITIONS.has(d.tradition||({pld:'Latin Fathers',pg:'Greek Fathers'}[String(d.slug||'').split('-')[0]]||''));}catch(_){return false;}}
 function gallToHeb(chapter){return chapter<=9||chapter>=148?chapter:chapter<=112?chapter+1:chapter===113?114:chapter<=115?116:chapter<=145?chapter+1:147;}
+// Verse numbers inside a Vulgate psalm count the title as verse 1 (or 2), as the Hebrew does; an English Bible (the preview's ESV/ASV)
+// leaves the title unnumbered, so "Psal. XX, 5" (Hebrew 21:5) is English 21:4 (2026-10-19, ticket 50). Offsets are the Hebrew verse count
+// minus the English one per psalm, derived from the Masoretic and KJV chapter lengths. Verses at or below the offset fall in the title and open at 1.
+const PSALM_TITLE_VERSES={3:1,4:1,5:1,6:1,7:1,8:1,9:1,12:1,13:1,18:1,19:1,20:1,21:1,22:1,30:1,31:1,34:1,36:1,38:1,39:1,40:1,41:1,42:1,44:1,45:1,46:1,47:1,48:1,49:1,51:2,52:2,53:1,54:2,55:1,56:1,57:1,58:1,59:1,60:2,61:1,62:1,63:1,64:1,65:1,67:1,68:1,69:1,70:1,75:1,76:1,77:1,80:1,81:1,83:1,84:1,85:1,88:1,89:1,92:1,102:1,108:1,140:1,142:1};
+function englishPsalmSelection(selection,psalm){
+  const k=PSALM_TITLE_VERSES[psalm];if(!k||!selection)return selection;
+  return selection.replace(/\d+/g,n=>String(Math.max(1,Number(n)-k)));
+}
 function scriptureLocation(text,start,book){
   const chapterToken=/^([IVXLCDMivxlcdm]+|\d{1,3})(?![\p{L}\p{N}])/u.exec(text.slice(start));if(!chapterToken)return null;
   const chapter=scriptureNumber(chapterToken[1]);if(!chapter||chapter>XREF_CAP[book])return null;
@@ -178,7 +186,8 @@ function scriptureLocation(text,start,book){
     if(tail){end+=tail[0].length;following=true;}
   }
   const psalm=book==='Psalms'&&vulgatePsalms()?gallToHeb(chapter):chapter;
-  return {start,end,book,chapter:psalm,selection,following,query:book+' '+psalm+(selection?':'+selection:''),...(psalm!==chapter?{printed:book+' '+chapter+(selection?':'+selection:'')}:{})};
+  const shifted=book==='Psalms'&&vulgatePsalms()?englishPsalmSelection(selection,psalm):selection;
+  return {start,end,book,chapter:psalm,selection,following,query:book+' '+psalm+(shifted?':'+shifted:''),...(psalm!==chapter?{printed:book+' '+chapter+(selection?':'+selection:'')}:{})};
 }
 function scriptureReferences(text){
   const references=[];XREF_RE.lastIndex=0;let match;
