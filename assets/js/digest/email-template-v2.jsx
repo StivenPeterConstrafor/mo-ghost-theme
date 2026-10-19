@@ -240,6 +240,7 @@ const DEFAULT_SECTION_ORDER = [
   'essays',
   'podcasts',
   'dailyLiturgy',
+  'tfrSpotlight',
   'sponsorBottom',
   'signature',
 ];
@@ -436,6 +437,17 @@ const DEFAULT_CONTENT = {
     body: 'Daily Scripture meditations that help you grow in your love for God and your understanding of His Word.',
     cta: 'Start Now',
     href: 'https://mereorthodoxy.com/daily-liturgy/',
+  },
+  tfrSpotlight: {
+    // Standard copy from the homepage band (index.hbs, .mo-tfr-band). The
+    // works are not typed in: app-v2.jsx fills them with the homepage's pick
+    // for the day the digest is built (tfrSpotlightPick below).
+    headline: 'The Faith Received',
+    body: 'An online library with tens of thousands of primary source works from across church history made publicly available, practically usable, and beautifully readable.',
+    cta: 'Go To The Faith Received',
+    href: 'https://mereorthodoxy.com/the-faith-received/',
+    works: [],
+    day: null,
   },
   sponsorTop: {
     label: 'Ministry Partner',
@@ -1158,6 +1170,117 @@ function DailyLiturgyBlock({ tokens, content }) {
   );
 }
 
+// The homepage band's daily pick (assets/js/page/mo-tfr-band.js), reproduced
+// exactly so the digest shows the works the site shows that day: day number
+// since 2026-01-01 UTC, two from the "middle" pool (the second at stride 13)
+// and one from "near". mo-kit's liturgy-newat.js carries the same rule for
+// the Daily Liturgy email; change all three together.
+//
+// The digest's spotlight changes once a week, on Wednesday (Ian, 2026-10-19):
+// from each Wednesday through the next Tuesday, Central time, it carries that
+// Wednesday's three works, which are the homepage's that day.
+function tfrSpotlightDay(now = Date.now()) {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'short' })
+    .formatToParts(new Date(now));
+  const get = (t) => (parts.find((p) => p.type === t) || {}).value;
+  const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday'));
+  const back = (weekday - 3 + 7) % 7;
+  const wednesday = Date.UTC(Number(get('year')), Number(get('month')) - 1, Number(get('day')) - back);
+  return Math.floor((wednesday - Date.UTC(2026, 0, 1)) / 86400000);
+}
+function tfrSpotlightPick(data, day) {
+  const pools = data && data.pools;
+  if (!pools) return [];
+  const pick = (pool, slot) => {
+    if (!Array.isArray(pool) || !pool.length) return null;
+    const stride = slot === 1 ? 13 : 1;
+    return pool[((day * stride) + (slot * 7)) % pool.length];
+  };
+  return [pick(pools.middle, 0), pick(pools.middle, 1), pick(pools.near, 0)]
+    .filter((w) => w && w.slug && w.title)
+    .map((w) => ({
+      title: String(w.title),
+      orig: w.orig ? String(w.orig) : '',
+      author: String(w.author || ''),
+      href: `https://mereorthodoxy.com/the-faith-received/read/?w=${encodeURIComponent(w.slug)}`,
+    }));
+}
+
+// The Faith Received, under The Daily Liturgy: an email version of the
+// homepage band (Ian, 2026-10-19). Same headline, copy and button as the
+// site, and the day's three spotlight works as cards with the original title
+// in italics under the English one, over the band's painting (Church, Heart
+// of the Andes). Email clients can't layer the band's CSS gradient over an
+// image, so church-heart-of-the-andes-email.jpg has that same gradient baked
+// in (rgba(45,41,39) .82 to .92), cropped to a portrait panel. Outlook on
+// Windows drops background images; the panel color underneath is the same
+// dark, so the text reads either way. With no works pulled the cards are
+// simply left out and the panel still stands.
+// ?v= because Ghost's CDN serves a bare /assets/ path stale; bump it if the
+// image changes.
+const TFR_EMAIL_BG = 'https://mereorthodoxy.com/assets/images/tfr/church-heart-of-the-andes-email.jpg?v=1';
+function TfrSpotlightBlock({ tokens, content }) {
+  const c = content || {};
+  const works = Array.isArray(c.works) ? c.works : [];
+  const sans = '"Source Sans 3", "Helvetica Neue", Arial, sans-serif';
+  return (
+    <div style={{ padding: '16px 32px 0' }} className="mo-pad-32">
+      <div style={{
+        padding: '28px 28px 26px',
+        backgroundColor: '#2d2927',
+        backgroundImage: `url(${TFR_EMAIL_BG})`,
+        backgroundPosition: 'center center',
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        borderRadius: 5,
+      }} className="mo-pad-32-tight">
+        <div style={{ fontFamily: 'Georgia, serif', fontSize: 24, lineHeight: 1.2, color: '#fbf7ee', margin: '0 0 10px' }}>
+          {c.headline || 'The Faith Received'}
+        </div>
+        <p
+          style={{ fontFamily: 'Georgia, serif', fontSize: 14, lineHeight: 1.6, color: '#d8ccb8', margin: '0 0 18px' }}
+          dangerouslySetInnerHTML={{ __html: markdownInline(c.body || '', tokens) }}
+        />
+        {works.length ? (
+          <>
+            <div style={{ fontFamily: sans, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#c9bca6', margin: '0 0 8px' }}>
+              Spotlight
+            </div>
+            {works.map((w, i) => (
+              // A table per card: Outlook drops borders and padding on a
+              // block-level link, and runs the three lines together.
+              <table key={i} role="presentation" cellPadding="0" cellSpacing="0" border="0" width="100%" style={{ borderCollapse: 'separate', margin: '0 0 8px' }}>
+                <tbody><tr><td style={{ border: '1px solid rgba(251, 247, 238, 0.22)', borderRadius: 4, padding: '12px 16px' }}>
+                  <a href={w.href} style={{ textDecoration: 'none', display: 'block' }}>
+                    <span style={{ display: 'block', fontFamily: 'Georgia, serif', fontSize: 16, lineHeight: 1.35, color: '#fbf7ee' }}>{w.title}</span>
+                  </a>
+                  {w.orig ? (
+                    <div style={{ fontFamily: 'Georgia, serif', fontSize: 13, fontStyle: 'italic', lineHeight: 1.4, color: '#c9bca6', margin: '3px 0 0' }}>{w.orig}</div>
+                  ) : null}
+                  <div style={{ fontFamily: sans, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#c9bca6', margin: '6px 0 0' }}>{w.author}</div>
+                </td></tr></tbody>
+              </table>
+            ))}
+          </>
+        ) : null}
+        <a href={c.href || 'https://mereorthodoxy.com/the-faith-received/'} style={{
+          fontFamily: 'Georgia, serif',
+          fontSize: 14,
+          color: '#fbf7ee',
+          textDecoration: 'none',
+          border: '1px solid rgba(251, 247, 238, 0.55)',
+          borderRadius: 3,
+          padding: '10px 22px',
+          display: 'inline-block',
+          margin: works.length ? '10px 0 0' : 0,
+        }}>
+          {c.cta || 'Go To The Faith Received'}
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function MemberThanks({ tokens, content }) {
   const eyebrow = ctaEyebrow(content.eyebrow, MEMBER_THANKS_EYEBROW_DEFAULT);
   return (
@@ -1334,6 +1457,8 @@ function EmailTemplate({ isMember = false, accent = 'moderate', density = 'norma
         return <PodcastsGrid tokens={tokens} accent={accent} podcasts={content.podcasts} heading={content.podcastsHeading} />;
       case 'dailyLiturgy':
         return <DailyLiturgyBlock tokens={tokens} content={content.dailyLiturgy} />;
+      case 'tfrSpotlight':
+        return <TfrSpotlightBlock tokens={tokens} content={content.tfrSpotlight} />;
       case 'sponsorBottom':
         if (!showAds) return null;
         return (
@@ -1488,4 +1613,4 @@ function EmailTemplate({ isMember = false, accent = 'moderate', density = 'norma
   );
 }
 
-Object.assign(window, { EmailTemplate, MO_TOKENS, DEFAULT_CONTENT, DEFAULT_SECTION_ORDER, SIGNATURES });
+Object.assign(window, { EmailTemplate, MO_TOKENS, DEFAULT_CONTENT, DEFAULT_SECTION_ORDER, SIGNATURES, tfrSpotlightDay, tfrSpotlightPick });
