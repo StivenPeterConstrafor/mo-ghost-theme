@@ -4670,6 +4670,22 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
   margin: 0;
   line-height: 1.55;
 }
+/* Eight items (Ian, 2026-10-19: The Daily Liturgy and The Faith Received
+   joined the six): four columns in two even rows on a wide screen, two on
+   a tablet, one on a phone (the 760px rule below). Three columns would
+   leave a ragged last row of two. Placed after the base .benefit-item
+   rules so the smaller h3 wins on source order. */
+@media (min-width: 1100px) {
+  .benefit-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: 36px;
+    max-width: 1160px;
+  }
+  .benefit-item h3 { font-size: 24px; }
+}
+@media (min-width: 761px) and (max-width: 1099px) {
+  .benefit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .capstone {
   background: var(--color-dark);
   color: var(--color-white);
