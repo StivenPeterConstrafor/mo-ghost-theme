@@ -32,7 +32,7 @@
 const TOP_ZONE = 80;
 const HIDE_DELTA = 10;
 const JITTER_PHONE = 4;
-const REVEAL_UP_PHONE = 140;
+const REVEAL_UP_PHONE = 600; // about 25 lines of body text (owner 2026-10-19)
 const PHONE_QUERY = '(max-width: 880px)'; // the line the reader calls g-mobile
 const PHONE = { revealUp: REVEAL_UP_PHONE, jitter: JITTER_PHONE };
 const DESKTOP = { revealUp: 0, jitter: 0 };

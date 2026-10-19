@@ -4744,7 +4744,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
       if(y<90){HTML.classList.remove("mh-hide","mh-mini");acc=0;return;}
       acc=(d>0)===(acc>0)?acc+d:d;
       if(acc>140)HTML.classList.add(mob?"mh-hide":"mh-mini");
-      else if(acc<=-(mob?(R.REVEAL_UP||140):24))HTML.classList.remove("mh-hide","mh-mini");   // phone: 140px up to bring it back
+      else if(acc<=-(mob?(R.REVEAL_UP||600):24))HTML.classList.remove("mh-hide","mh-mini");   // phone: about 25 lines up (600px) to bring it back
     },{passive:true});
     // Focus inside the hidden chrome (Tab, a screen reader) brings it back at once.
     document.addEventListener("focusin",e=>{
