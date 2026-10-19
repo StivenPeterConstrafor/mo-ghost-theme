@@ -382,6 +382,13 @@ aside.relpanel,
   color: var(--muted);
 }
 
+/* Desktop: the Browse section lists each work by its title. The column range
+   beside every row ("1-3") is the catalogue's printing detail, not something a
+   reader navigates by (owner 2026-10-19). Phones keep it. */
+@media (min-width: 1100px) {
+  #app #volnav .vnc { display: none; }
+}
+
 /* ── Every overlay was anchored to a viewport it no longer owns ─────
    One defect, five instances. The facsimile pane, the contents scrim,
    the related-passages panel, the research drawer and its scrim are all
@@ -2645,7 +2652,7 @@ html.g-mobile body:has(#app.faith-port-read-page) .tfr-rail {
   left: 0;
   right: 0;
   z-index: 45;
-  transition: transform 0.28s var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+  transition: transform var(--hdr-ms, 280ms) var(--hdr-ease, cubic-bezier(0.45, 0, 0.55, 1));
   will-change: transform;
 }
 html.g-mobile.mh-hide body:has(#app.faith-port-read-page) .tfr-rail,
@@ -3806,6 +3813,24 @@ html.g-mobile .fr-read-restore:not(.fr-read-restore-sb) {
   z-index: 80;
 }
 
+/* ── EVERYTHING ELSE THAT MOVES WITH THE CHROME, BOTH WAYS (Ian, 2026-10-19:
+   "it sort of just appears ... the exact opposite of when it disappears").
+   These phone rules change `top` when html.mh-hide arrives. The overlays
+   below had no transition on `top` at all, so they snapped each time the
+   chrome came or went. Each is declared here on its always-on selector, with
+   its own existing transitions kept, and the shared --hdr-ms/--hdr-ease. */
+@media (prefers-reduced-motion: no-preference) {
+  html.g-mobile #notebook.notebook { transition: transform .18s ease-out, top var(--hdr-ms, 280ms) var(--hdr-ease, cubic-bezier(0.45, 0, 0.55, 1)); }
+  html.g-mobile #app.faith-port-read-page .sidebar {
+    transition: transform .26s var(--ease), box-shadow .26s var(--ease), top var(--hdr-ms, 280ms) var(--hdr-ease, cubic-bezier(0.45, 0, 0.55, 1));
+  }
+  html.g-mobile #sbScrim { transition: opacity .25s, top var(--hdr-ms, 280ms) var(--hdr-ease, cubic-bezier(0.45, 0, 0.55, 1)); }
+  html.g-mobile .nb-scrim { transition: opacity .3s, top var(--hdr-ms, 280ms) var(--hdr-ease, cubic-bezier(0.45, 0, 0.55, 1)); }
+  html.g-mobile aside.relpanel { transition: transform .28s var(--ease), top var(--hdr-ms, 280ms) var(--hdr-ease, cubic-bezier(0.45, 0, 0.55, 1)); }
+  html.g-mobile aside.relpanel:not(.on) { transition-duration: .2s, var(--hdr-ms, 280ms); }
+  html.g-mobile .fr-read-toc { transition: top var(--hdr-ms, 280ms) var(--hdr-ease, cubic-bezier(0.45, 0, 0.55, 1)); }
+}
+
 /* ── MORE OF THE SCREEN FOR THE TEXT ON A PHONE (owner, 2026-10-06:
    "make mobile have a smaller font to adjust to read and provide more
    reading room") ──────────────────────────────────────────────────────
@@ -3823,7 +3848,7 @@ html.g-mobile .fr-read-restore:not(.fr-read-restore-sb) {
 html.g-mobile body:has(#app.faith-port-read-page) header.site-header,
 html.g-mobile body:has(#app.faith-port-read-page) .tfr-rail,
 html.g-mobile #app.faith-port-read-page .ph.fr-reader-head {
-  transition: transform 0.24s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--hdr-ms, 280ms) var(--hdr-ease, cubic-bezier(0.45, 0, 0.55, 1));
 }
 html.g-mobile.mh-hide body:has(#app.faith-port-read-page.no-facs) header.site-header,
 html.g-mobile.mh-hide body:has(#app.faith-port-read-page.no-facs) .tfr-rail,

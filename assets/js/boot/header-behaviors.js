@@ -7,14 +7,59 @@
  *      the header. Resize-observed so font-loading and viewport
  *      changes recompute.
  *
- *   2. Header hides on scroll-down past a small threshold; re-appears
- *      on any upward scroll. Pinned at top of page.
+ *   2. Header hides on scroll-down past a small threshold. On a desktop it
+ *      re-appears on any upward scroll; on a phone only after a deliberate
+ *      upward run (see REVEAL_UP). Pinned at top of page.
  *
  *   3. Mobile nav: tap toggles the slide-in panel. Pressing Escape,
  *      tapping the backdrop, or following a link inside the panel
  *      closes it. Body overflow is locked while open.
  */
+/*
+ * Reveal-on-scroll rules, shared by the site header (window scroll, here) and
+ * the reader's chrome (the #scroll element; reader-core.js reads these from
+ * window.moScrollReveal). All distances are CSS pixels of scroll.
+ *
+ *   TOP_ZONE       within this far of the top the header is always shown.
+ *   HIDE_DELTA     one scroll step down by more than this hides it (as before).
+ *   JITTER_PHONE   steps smaller than this are ignored on a phone (iOS
+ *                  rubber-band, finger tremor), so they cannot reset a run.
+ *   REVEAL_UP_PHONE  a phone must scroll UP this far in one unbroken run before
+ *                  the header returns (it used to return on the first pixel).
+ *                  A step down resets the run. A desktop keeps 0: any upward
+ *                  step reveals, as before.
+ */
+const TOP_ZONE = 80;
+const HIDE_DELTA = 10;
+const JITTER_PHONE = 4;
+const REVEAL_UP_PHONE = 600; // about 25 lines of body text (owner 2026-10-19)
+const PHONE_QUERY = '(max-width: 880px)'; // the line the reader calls g-mobile
+const PHONE = { revealUp: REVEAL_UP_PHONE, jitter: JITTER_PHONE };
+const DESKTOP = { revealUp: 0, jitter: 0 };
+
+/* Pure: state in, state out. state = { lastY, upRun, hidden }. */
+function stepReveal(state, rawY, cfg) {
+  const y = Math.max(0, rawY); // iOS overscroll reports negative offsets
+  if (y < TOP_ZONE) return { lastY: y, upRun: 0, hidden: false };
+  const d = y - state.lastY;
+  // Ignored steps leave lastY alone, so a slow drag still adds up.
+  if (d === 0 || Math.abs(d) < cfg.jitter) return state;
+  if (d > 0) {
+    return { lastY: y, upRun: 0, hidden: state.hidden || d > HIDE_DELTA };
+  }
+  const upRun = state.upRun - d;
+  return { lastY: y, upRun, hidden: state.hidden && upRun < cfg.revealUp };
+}
+
+if (typeof window !== 'undefined') {
+  window.moScrollReveal = { TOP_ZONE, HIDE_DELTA, JITTER: JITTER_PHONE, REVEAL_UP: REVEAL_UP_PHONE, PHONE_QUERY, stepReveal };
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { TOP_ZONE, HIDE_DELTA, JITTER_PHONE, REVEAL_UP_PHONE, PHONE, DESKTOP, stepReveal };
+}
+
 (function () {
+  if (typeof document === 'undefined') return;
   const header = document.querySelector('.site-header');
   if (!header) return;
 
@@ -62,25 +107,27 @@
   document.addEventListener('DOMContentLoaded', syncOffset);
   window.addEventListener('load', syncOffset);
 
-  let lastY = window.pageYOffset || window.scrollY || 0;
-  const threshold = 80;
-  const downDelta = 10;
+  const phone = window.matchMedia ? window.matchMedia(PHONE_QUERY) : { matches: false };
+  let st = { lastY: Math.max(0, window.pageYOffset || window.scrollY || 0), upRun: 0, hidden: false };
   let ticking = false;
   function onScroll() {
+    ticking = false;
     // An in-flow header must not be transformed away: it would take its space
     // with it and drag the page up under nothing.
     if (!isFixed()) return;
     const y = window.pageYOffset || window.scrollY || 0;
-    if (y < threshold) {
-      header.classList.remove('is-hidden');
-    } else if (y > lastY + downDelta) {
-      header.classList.add('is-hidden');
-    } else if (y < lastY) {
-      header.classList.remove('is-hidden');
+    st = stepReveal(st, y, phone.matches ? PHONE : DESKTOP);
+    // Only touch the class when the answer changed: no style work per event.
+    if (st.hidden !== header.classList.contains('is-hidden')) {
+      header.classList.toggle('is-hidden', st.hidden);
     }
-    lastY = y;
-    ticking = false;
   }
+  // Keyboard or screen-reader focus must never land in a hidden header: reveal
+  // it at once and restart the upward run from here.
+  header.addEventListener('focusin', () => {
+    if (st.hidden) st = { lastY: st.lastY, upRun: 0, hidden: false };
+    header.classList.remove('is-hidden');
+  });
   window.addEventListener('scroll', () => {
     if (!ticking) {
       window.requestAnimationFrame(onScroll);
@@ -90,6 +137,7 @@
 })();
 
 (function () {
+  if (typeof document === 'undefined') return;
   const toggle = document.querySelector('.nav-toggle');
   const panel = document.getElementById('mobile-nav');
   if (!toggle || !panel) return;

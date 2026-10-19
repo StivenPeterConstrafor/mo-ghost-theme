@@ -7797,6 +7797,11 @@ mark.faith-find-hit.is-current {
      placeRail moves it out of the search panel at this width, so it has the list to stick over). */
   [data-room-shell] > [data-room-rail] { position: sticky; top: calc(var(--mo-mast, 61px) + 43px); z-index: 6; margin: 0 0 18px; background: var(--color-page, #f7f4ef); transition: top 0.25s ease; }
   body:has(> .site-header.is-hidden) [data-room-shell] > [data-room-rail] { top: 43px; }
+  /* Phone: the masthead's timing both ways. `top` stays: the rail is sticky, a transform would not move its stick line. */
+  @media (max-width: 880px) {
+    [data-room-shell] > [data-room-rail] { transition: top var(--hdr-ms, 280ms) var(--hdr-ease, cubic-bezier(0.45, 0, 0.55, 1)); }
+  }
+  @media (prefers-reduced-motion: reduce) { [data-room-shell] > [data-room-rail], body:has(> .site-header.is-hidden) [data-room-shell] > [data-room-rail] { transition: none; } }
   [data-room-shell] > [data-room-rail]:empty { display: none; }
   [data-room-shell] > [data-room-list] { scroll-margin-top: calc(var(--mo-mast, 61px) + 43px + 64px); }
   .faith-room-letters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 4px 0; margin-bottom: 0; }
@@ -20278,11 +20283,18 @@ body:not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail {
   z-index: 19;
   transition: transform 0.25s ease;
 }
+/* Phone: the masthead's timing (--hdr-ms/--hdr-ease, screen.css) both ways. */
+@media (max-width: 880px) {
+  body:not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail {
+    transition: transform var(--hdr-ms, 280ms) var(--hdr-ease, cubic-bezier(0.45, 0, 0.55, 1));
+  }
+}
 body:has(> .site-header.is-hidden):not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail {
   transform: translateY(calc(-1 * var(--mo-mast, 85px)));
 }
 @media (prefers-reduced-motion: reduce) {
-  body > .tfr-rail { transition: none; }
+  body > .tfr-rail,
+  body:not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail { transition: none; }
 }
 
 /* "About [author]" heads the open author panel on All Works, directly
