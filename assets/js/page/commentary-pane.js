@@ -298,7 +298,7 @@
       const max = Math.max(...strip.map(([, k]) => k)), by = new Map(strip), cols = [];
       for (let c = strip[0][0]; c <= strip[strip.length - 1][0]; c += 1) {
         const k = by.get(c) || 0, tip = `${ord(c)} century: ${fmt(k)} ${k === 1 ? 'work' : 'works'}`;
-        cols.push(`<li style="--k:${k ? Math.max(0.08, Math.sqrt(k / max)).toFixed(3) : 0}" title="${tip}"><span class="cp-bar"></span><small aria-hidden="true">${c}</small><span class="cp-sr">${tip}</span></li>`);
+        cols.push(`<li${k ? '' : ' class="is-zero"'} style="--k:${k ? Math.max(0.08, Math.sqrt(k / max)).toFixed(3) : 0}" title="${tip}"><span class="cp-bar"></span><small aria-hidden="true">${c}</small><span class="cp-sr">${tip}</span></li>`);
       }
       bars = `<figure class="cp-rec-strip"><ol>${cols.join('')}</ol><figcaption>Works citing it, by century</figcaption></figure>`;
     }
@@ -529,7 +529,7 @@
       return;
     }
     lastKey = key;
-    S.rec = null;
+    S.rec = null; S.pin = false; // a new chapter: the rail follows the reading line again
     const [list, rec] = await Promise.all([commentaries(w.book, w.ch), recOf(w.book, w.ch)]);
     S.list = list; S.rec = rec;
     heat();

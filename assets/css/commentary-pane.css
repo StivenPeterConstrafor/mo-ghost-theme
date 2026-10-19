@@ -1,11 +1,11 @@
 /* COMMENTARY AND RECEPTION BESIDE THE TEXT (2026-10-18; default on the Scripture page 10-19). The site's own monochrome register:
    Source Serif and EB Garamond, ink on the grey ground, white paper for the rail; one tint marks the verse the rail follows. */
 :root {
-  --cp-ink: var(--ink, #1C1C1A);
+  --cp-ink: var(--fg, #1C1C1A);
   --cp-muted: var(--muted, #5A5A56);
-  --cp-paper: var(--paper, #FFFFFF);
+  --cp-paper: var(--card, #FFFFFF);
   --cp-ground: var(--bg, #F0F0ED);
-  --cp-rule: #D6D6D0;
+  --cp-rule: var(--border, #D6D6D0);
   --cp-mark: #E7E4D9;
   --cp-hit: #F3EED9;
   --cp-display: var(--display, 'EB Garamond', 'Source Serif Pro', Georgia, serif);
@@ -117,7 +117,7 @@ body.cp-on.cp-src .cp-pane { display: none; }
 .cp-rec-strip ol { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 3px; align-items: end; height: 64px; margin: 0; padding: 0; list-style: none; }
 .cp-rec-strip li { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; min-width: 0; }
 .cp-rec-strip .cp-bar { display: block; width: 100%; height: calc(var(--k) * 48px); min-height: 1px; background: var(--cp-ink); opacity: 0.72; }
-.cp-rec-strip li[style*="--k:0;"] .cp-bar { background: var(--cp-rule); opacity: 1; }
+.cp-rec-strip li.is-zero .cp-bar { background: var(--cp-rule); opacity: 1; }
 .cp-rec-strip small { margin-top: 4px; font-size: 0.62rem; color: var(--cp-faint); font-variant-numeric: tabular-nums; }
 .cp-rec-strip figcaption { margin-top: 6px; font-size: 0.78rem; color: var(--cp-muted); }
 .cp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -238,8 +238,8 @@ body.cp-on main.scripture-page .scripture-reading-meta > p { display: none; }
   body.cp-on main.scripture-page .scripture-passage-bar > label:nth-of-type(1) select { width: 150px; }
   body.cp-on main.scripture-page .scripture-passage-bar > label:nth-of-type(3) select { width: 100%; }
 }
-html.cp-site-mo body.cp-on .bible-verse[data-cp-heat] sup.v { color: var(--cp-faint); }
-html.cp-site-mo body.cp-on .bible-verse[data-cp-heat="2"] sup.v { color: var(--cp-muted); }
-html.cp-site-mo body.cp-on .bible-verse[data-cp-heat="3"] sup.v { color: var(--cp-ink); }
-html.cp-site-mo body.cp-on .bible-verse[data-cp-heat="4"] sup.v { color: var(--cp-ink); font-weight: 700; }
+html.cp-site-mo body.cp-on .bible-verse[data-cp-heat] > sup { color: var(--cp-faint); }
+html.cp-site-mo body.cp-on .bible-verse[data-cp-heat="2"] > sup { color: var(--cp-muted); }
+html.cp-site-mo body.cp-on .bible-verse[data-cp-heat="3"] > sup { color: var(--cp-ink); }
+html.cp-site-mo body.cp-on .bible-verse[data-cp-heat="4"] > sup { color: var(--cp-ink); font-weight: 700; }
 html.cp-site-mo { --cp-faint: var(--sd-faint, #8a837b); --cp-display: var(--font-heading, var(--font-body, Georgia, serif)); }
