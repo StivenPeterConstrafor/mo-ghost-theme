@@ -60,7 +60,7 @@
       try {
         const lr = JSON.parse(window.localStorage.getItem("fr_lastread") || "{}");
         const to = F.get(old).to;
-        if (lr && lr[old] && lr[old].page != null && !lr[to]) p = String(lr[old].page);
+        if (lr && lr[old] && lr[old].page != null && !lr[old].top && !lr[to]) p = String(lr[old].page);
       } catch (_) { /* no storage: land at the top */ }
     }
     const r = F.resolve(old, { p, hash });

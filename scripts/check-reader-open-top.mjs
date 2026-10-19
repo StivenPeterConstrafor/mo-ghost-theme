@@ -30,12 +30,16 @@ check("a non-numeric place still resumes", ctx.frResumePage({ page: "xiv" }) ===
 check("an arrival at the top (top:1) is not a resume point, whatever its page", ctx.frResumePage({ page: 7, top: 1 }) === null);
 check("no record, no resume", ctx.frResumePage(undefined) === null && ctx.frResumePage({}) === null);
 
-// the write marks only an unasked-for arrival
-const write = cut("const _sp=new URLSearchParams(location.search)", "lr[_k]=");
-check("the fr_lastread write flags an arrival with no p, section, heading, hl, hash, choice or saved place",
-  /!window\.__frInitialReference/.test(write) && /!window\.__readerChoice/.test(write) && /!location\.hash/.test(write)
-  && ["p", "section", "heading", "hl"].every((k) => write.includes(`!_sp.has("${k}")`)) && /_sc\.scrollTop<8/.test(write));
+// the write marks a reader who is at the top, arrived or scrolled back, and not one still being placed
+const write = cut("const _sc=document.getElementById(\"scroll\")", "lr[_k]=");
+check("the fr_lastread write flags scrollTop under 8 unless a position, choice or landing is pending",
+  /_sc\.scrollTop<8/.test(write) && /__readerPendingPosition/.test(write) && /__readerChoice/.test(write) && /prelanding/.test(write));
 check("the flag is stored as top:1", /\.\.\.\(_opening\?\{top:1\}:\{\}\)/.test(src));
+for (const f of ["assets/js/port/index.in05.js", "assets/js/faith-room-openers.js"]) {
+  const t = readFileSync(f, "utf8");
+  check(`${f}: Continue reading drops the #b hash and the fol. label for a top entry`, /e\.top/.test(t) && (t.match(/e\.top/g) || []).length >= 2);
+}
+check("work-forward does not carry a top entry's page across", /!lr\[old\]\.top/.test(readFileSync("assets/js/page/faith-work-forward.js", "utf8")));
 check("both resume readers go through frResumePage", (src.match(/frResumePage\(/g) || []).length === 3);
 
 // 2. a rebuild keeps a reader at the top

@@ -4529,10 +4529,10 @@ function setFolio(pg){if(!pg||cur===pg.n)return;cur=pg.n;syncReaderHeader(pg.n);
       if(!wasOpen){const n=$(".nav-node.on");if(n)n.scrollIntoView({block:"center"});}};}}
   try{const lr=JSON.parse(lsGet("fr_lastread")||"{}");
     {const _q=new URLSearchParams(location.search);const _k=(window.frIS||function(x){return x;})(_q.get("ws"))||(window.frIS||function(x){return x;})(_q.get("w"))||DATA.slug||DATA.workspace;
-     // top:1 marks an arrival at the top of the volume that nothing asked for (no ?p=, ?section=, ?hl=, #hash, saved place or
-     // choice, and the reader has not moved off the top). It still feeds "continue reading", but it is not a place to resume.
-     const _sp=new URLSearchParams(location.search),_sc=document.getElementById("scroll"),
-       _opening=!window.__frInitialReference&&!window.__readerChoice&&!window.__frUserScrolled&&!location.hash&&!_sp.has("p")&&!_sp.has("section")&&!_sp.has("heading")&&!_sp.has("hl")&&!!_sc&&_sc.scrollTop<8;
+     // top:1 marks a reader who is at the top of the volume, whether they arrived there or scrolled back to it (and no
+     // arrival, saved place or choice is still being placed). It still feeds "continue reading", but it is not a place to resume.
+     const _sc=document.getElementById("scroll"),
+       _opening=!!_sc&&_sc.scrollTop<8&&!window.__readerPendingPosition&&!window.__readerChoice&&!document.getElementById("app")?.classList.contains("prelanding");
      lr[_k]={page:pg.n,slug:DATA.slug||"",title:DATA.title_en||DATA.title||"",author:DATA.author||"",ts:Date.now(),...(_opening?{top:1}:{}),...(DATA.pld_source_view?{pldpart:DATA.pld_source_view.id}:{} )};
      if(lr["undefined"])delete lr["undefined"];}
     lsSet("fr_lastread",JSON.stringify(lr));

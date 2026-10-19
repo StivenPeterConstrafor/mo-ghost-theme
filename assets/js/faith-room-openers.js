@@ -98,11 +98,12 @@
       const title = e.title || String(ws).split("/").pop();
       // The reader anchors a page as #b<page>-0, so the link reopens on
       // the page last read rather than at the title page.
+      // top: the work was only opened, so it reopens bare, at the top.
       const href = `/the-faith-received/read/?w=${encodeURIComponent(slug)}`
-        + `#b${encodeURIComponent(e.page)}-0`;
+        + (e.top ? "" : `#b${encodeURIComponent(e.page)}-0`);
       const contents=window.MOCollectedContents?.get(slug);
       const preview=window.MOCollectedContents?.preview(slug)||"";
-      const meta = [e.author, contents?.volume, `fol. ${e.page}`].filter(Boolean).join(" · ");
+      const meta = [e.author, contents?.volume, e.top ? "" : `fol. ${e.page}`].filter(Boolean).join(" · ");
       return `<a class="fro-card" href="${esc(href)}" title="${esc(title)}">` +
         `<span class="fro-card-t">${esc(title)}</span>` +
         `<span class="fro-card-m">${esc(meta)}</span>${preview}</a>`;
