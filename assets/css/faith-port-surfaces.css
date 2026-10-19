@@ -148,19 +148,15 @@ body.research-page header.site,
 body.research-page header.site.glass,
 .faith-port-desk-page #docs,
 .faith-port-desk-page #rail { transition: top 0.25s ease; }
-/* Phone: the masthead's two timings (screen.css). `top` stays: these bars are
-   sticky or fixed against --mo-head, and a transform would leave that offset. */
+/* Phone: the masthead's timing (--hdr-ms/--hdr-ease, screen.css) both ways. `top`
+   stays: these bars are sticky or fixed against --mo-head, and a transform
+   would leave that offset. */
 @media (max-width: 880px) {
   body.web-page header.site,
   body.research-page header.site,
   body.research-page header.site.glass,
   .faith-port-desk-page #docs,
-  .faith-port-desk-page #rail { transition: top 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
-  body.web-page .site-header.is-hidden ~ header.site,
-  body.research-page .site-header.is-hidden ~ header.site,
-  body.research-page .site-header.is-hidden ~ header.site.glass,
-  .faith-port-desk-page .site-header.is-hidden ~ #docs,
-  .faith-port-desk-page .site-header.is-hidden ~ #rail { transition: top 0.25s ease; }
+  .faith-port-desk-page #rail { transition: top var(--hdr-ms, 280ms) var(--hdr-ease, cubic-bezier(0.45, 0, 0.55, 1)); }
 }
 @media (prefers-reduced-motion: reduce) {
   body.web-page .site-header.is-hidden ~ header.site,
