@@ -210,6 +210,18 @@ img { max-width: 100%; height: auto; }
   pointer-events: none;
 }
 .site-header.is-hidden { transform: translateY(-100%); }
+/* Phone: the masthead glides BACK (the shown state's transition) on a 0.3s
+   ease-out curve; hiding keeps the stock .25s ease. Transform only, no layout.
+   Pairs with the 140px reveal run in boot/header-behaviors.js. Pinned bars
+   (rail, desk, room letters) repeat these two values. The reader's own
+   masthead rule (faith-port-reader-skin.css, .28s) wins on reader pages. */
+@media (max-width: 880px) {
+  .site-header { transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+  .site-header.is-hidden { transition: transform 0.25s ease; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-header { transition: none; }
+}
 
 .header-inner {
   display: flex;
