@@ -109,8 +109,8 @@
     const lede = `${fmt(rv.works)} ${rv.works === 1 ? "work cites" : "works cite"} it, from the ${ord(lo)} century to the ${ord(hi)}${outs.length
       ? `; more often than usual in the ${and(outs.slice().sort((a, b) => a - b).map(ord))} ${outs.length > 1 ? "centuries" : "century"}` : ""}.`;
     const peak = base && base.peak;
-    const cap = `Works citing it in each century.${peak ? ` The library holds the most from the ${ord(peak)} century, so that bar runs tall for most verses.` : ""}${outs.length > 1 ? " The coloured bars are the centuries where this verse is cited more than the library's usual share."
-      : outs.length ? " The coloured bar is the century where this verse is cited more than the library's usual share." : ""}`;
+    const cap = `Works citing it in each century.${peak ? ` The library holds the most from the ${ord(peak)} century, so that bar runs tall for most verses.` : ""}${outs.length > 1 ? " The colored bars are the centuries where this verse is cited more than the library's usual share."
+      : outs.length ? " The colored bar is the century where this verse is cited more than the library's usual share." : ""}`;
     return `<p class="fr-rh-lede">${lede}</p><figure class="fr-rh-strip-wrap"><ol class="fr-rh-strip">${cols.join("")}</ol><figcaption class="sd-muted">${cap}</figcaption></figure>`;
   }
   // the page's gist, ended at a word (the files keep 180 characters of it), the whole on hover
