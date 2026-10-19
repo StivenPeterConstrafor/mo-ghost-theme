@@ -122,6 +122,12 @@ if (typeof module !== 'undefined' && module.exports) {
       header.classList.toggle('is-hidden', st.hidden);
     }
   }
+  // Keyboard or screen-reader focus must never land in a hidden header: reveal
+  // it at once and restart the upward run from here.
+  header.addEventListener('focusin', () => {
+    if (st.hidden) st = { lastY: st.lastY, upRun: 0, hidden: false };
+    header.classList.remove('is-hidden');
+  });
   window.addEventListener('scroll', () => {
     if (!ticking) {
       window.requestAnimationFrame(onScroll);

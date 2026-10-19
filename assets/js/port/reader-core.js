@@ -4737,6 +4737,12 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
       if(acc>140)HTML.classList.add(mob?"mh-hide":"mh-mini");
       else if(acc<=-(mob?(R.REVEAL_UP||140):24))HTML.classList.remove("mh-hide","mh-mini");   // phone: 140px up to bring it back
     },{passive:true});
+    // Focus inside the hidden chrome (Tab, a screen reader) brings it back at once.
+    document.addEventListener("focusin",e=>{
+      if(HTML.classList.contains("mh-hide")||HTML.classList.contains("mh-mini")){
+        if(e.target.closest&&e.target.closest("header.site-header,.ph.fr-reader-head,.tfr-rail")){HTML.classList.remove("mh-hide","mh-mini");acc=0;}
+      }
+    });
     const rd=document.getElementById("reading");
     if(rd)rd.addEventListener("click",e=>{
       if(!mq.matches||document.body.classList.contains("cloud-review"))return;
