@@ -607,10 +607,8 @@ img { max-width: 100%; height: auto; }
 
 .btn {
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   padding: 12px 22px;
   border-radius: 3px;
   border: 1px solid var(--color-dark);
@@ -633,13 +631,16 @@ img { max-width: 100%; height: auto; }
 
 /* ── THE MERE O BUTTON IS THE TFR BUTTON ───────────────────────────
    Ian, 2026-10-19: change the Mere O button to match the TFR button:
-   "shape, color, and outline default." Until today the magazine had
+   "shape, color, and outline default." Later the same day: "Don't
+   make it all uppercase. It can be normal case." So the label keeps
+   the magazine's sentence case and 15px; the TFR uppercase does not
+   come across. Until today the magazine had
    orange filled pills and the library had square hollow boxes. Now
    there is one button, and it is the one stated in faith-received.css
    (THE TFR BUTTON, and THE TFR HOME'S BUTTONS ARE TFR BUTTONS).
 
    HOLLOW IS THE DEFAULT. Every .btn rests as an off-black 1px line
-   with off-black ink, 3px corners and an uppercase tracked label. On
+   with off-black ink and 3px corners. On
    hover the terracotta sweeps in from the left and the ink turns
    white. .btn-primary, .btn-outline and .btn-dark all take this. They
    used to be three looks and are now three names for one, so the
@@ -731,17 +732,6 @@ a.btn-solid:focus-visible {
   border-color: var(--color-dark);
 }
 
-/* THE DESKTOP HEADER KEEPS SENTENCE CASE. The bar is measured to the
-   pixel at 1262 to 1300px (see ROOM FOR "THE FAITH RECEIVED" below),
-   and the uppercase tracked label pushed "Become a Member" 26px past
-   the window at 1280. Only the label's case and tracking step back
-   here; the corners, line and fill are the TFR button's. The mobile
-   menu has the width and keeps the full treatment. */
-.nav-actions .btn {
-  text-transform: none;
-  letter-spacing: normal;
-}
-
 /* ON A TERRACOTTA GROUND THE SOLID BUTTON IS OFF-BLACK. The capstone
    band behind .included-cta (membership and offer pages) is itself
    --color-secondary, so a terracotta fill would vanish into it. The
@@ -776,7 +766,7 @@ a.btn-solid:focus-visible {
   color: var(--btn-sweep-ink);
   border-color: var(--btn-sweep-fill);
 }
-.btn-lg { padding: 16px 32px; font-size: 14px; }
+.btn-lg { padding: 16px 32px; font-size: 16px; }
 
 /* -------- Breadcrumb (article) -------- */
 
@@ -4164,10 +4154,7 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
   .hero-headline-tail { font-size: 0.7em; }
   .hero-sub { font-size: 16px; }
   .hero-ctas { flex-direction: row; align-items: stretch; gap: 8px; flex-wrap: nowrap; }
-  /* Uppercase tracked labels (2026-10-19 button change) are wider than
-     the old sentence case, so two buttons sharing a 375px row may wrap
-     onto two lines inside the box rather than spill out of it. */
-  .hero-ctas .btn { flex: 1 1 0; min-width: 0; width: auto; padding: 12px 14px; font-size: 13px; white-space: normal; line-height: 1.25; letter-spacing: 0.08em; text-align: center; }
+  .hero-ctas .btn { flex: 1 1 0; min-width: 0; width: auto; padding: 12px 14px; font-size: 13px; }
   .hero-ctas .btn-lg { padding: 12px 14px; font-size: 13px; }
   .hero-ctas .btn:only-child { flex: 0 0 auto; }
   /* Feature image on mobile: fill the 16:10 frame with `cover` so
