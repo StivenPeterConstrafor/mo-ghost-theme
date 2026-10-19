@@ -6550,21 +6550,28 @@ html[data-theme="dark"] .article-content .inline-signup-success p {
 .about-endorsement footer {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 18px;
   margin-top: auto;
 }
+/* Each endorser engraved in an oval, as Alan Noble is on /daily-liturgy/
+   (assets/js/engraved-portrait.js). Smaller than about 110px wide and
+   the lines lose the face. */
 .about-endorsement-portrait {
+  width: 112px;
+  flex-shrink: 0;
+}
+.about-endorsement-portrait canvas {
+  display: block;
+  width: 112px;
+  height: 140px;
+}
+/* The plain photo the script swaps in if an engraving cannot draw. */
+.about-endorsement-portrait .engrave-fallback {
+  display: block;
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-.about-endorsement-portrait img {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
-  display: block;
 }
 .about-endorsement-name {
   font-family: var(--font-display);

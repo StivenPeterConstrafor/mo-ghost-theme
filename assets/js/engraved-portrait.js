@@ -10,8 +10,10 @@
  * source should be a grayscale head-and-shoulders crop at 4:5 with the
  * backdrop pale; see assets/images/dlp-noble-engrave.jpg.
  *
- * Used on /daily-liturgy/ for the reader endorsement. The canvas is
- * aria-hidden: the person is named in the text beside it.
+ * Used on /daily-liturgy/ (reader endorsement) and /about/ (the four
+ * endorsers). The canvas is aria-hidden: the person is named in the text
+ * beside it. data-engrave-fallback names a plain photo to show instead
+ * if the engraving cannot draw.
  */
 (function () {
   const canvases = document.querySelectorAll("canvas[data-engrave]");
@@ -47,7 +49,9 @@
     const norm = (v) => Math.min(1, Math.max(0, (v - lo) / Math.max(0.15, hi - lo)));
 
     const ink = getComputedStyle(document.documentElement).getPropertyValue("--color-dark").trim() || "#2d2927";
-    const gap = 2.1, rows = Math.floor(H / gap), maxW = gap * 0.92;
+    // Line pitch in CSS px. Smaller portraits need closer lines to keep a
+    // face: data-engrave-gap on the canvas overrides the default.
+    const gap = parseFloat(cv.getAttribute("data-engrave-gap")) || 2.1, rows = Math.floor(H / gap), maxW = gap * 0.92;
     const cx = W / 2, cy = H / 2, rx = W / 2 - 3, ry = H / 2 - 3;
     const inOval = (x, y) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
 
@@ -100,6 +104,13 @@
   }
 
   function fail(cv) {
+    const photo = cv.getAttribute("data-engrave-fallback");
+    if (photo) {
+      const img = document.createElement("img");
+      img.src = photo; img.alt = ""; img.className = "engrave-fallback";
+      cv.replaceWith(img);
+      return;
+    }
     const fig = cv.closest(".dl-endorsement");
     if (fig) fig.classList.add("no-por");
   }
