@@ -406,13 +406,6 @@
       window.MOCollectedContents ? window.MOCollectedContents.preview(w.slug || w.id) : ""}</li>`;
   }
 
-  // Entries in the author field that are not a person: the
-  // catalogue's own annotations. "Unknown author (Augustine of
-  // Hippo?)" is a librarian's guess, and offering it as a page beside
-  // Augustine's own reads as though the library thinks they are two
-  // men who happen to share a name.
-  const NOT_A_NAME = /^(unknown|anonymous|anon\b|unattributed|\[?various)|\?\s*\)?$/i;
-
   // ── The people, before their books ────────────────────────────
   //
   // Searching a name and being handed 345 title cards buries the man
@@ -422,67 +415,23 @@
   //
   // Counted against the whole catalogue rather than the filtered set,
   // because the number has to be what the author's page will show.
+  // The matching and the card live in faith-author-cards.js, shared with the Search page.
   function authorsMatching() {
-    const q = fold(term);
-    if (!q || !all) return [];
-    // "Albert Great" and "Calvin John" are names too: every word, any order.
-    const words = queryWords(term);
-    const m = new Map();
-    all.forEach((w) => {
-      const a = String(w.author || "").trim();
-      if (!a || NOT_A_NAME.test(a)) return;
-      if (w._fa === undefined) w._fa = fold(a);
-      if (!w._fa.includes(q) && !hasWords(w._fa, words)) return;
-      m.set(a, (m.get(a) || 0) + 1);
-    });
-    return [...m.entries()]
-      // All of them, most works first. Three was a cap, and a cap on
-      // a name search is what hid the fact that the catalogue spells
-      // Calvin two ways.
-      .sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]));
+    return all ? window.MOAuthorCards.match(all, term) : [];
   }
 
   // A page of names, then a pager. It used to scroll inside a box,
   // which put 1,903 authors behind a 320px window and made the reader
   // drag a scrollbar to see the second Calvin. Paged, the whole block
   // is on the page and the numbers say how much more there is.
-  const AUTHORS_PER_PAGE = 24;
   let authorPage = 1;
-
-  function authorPager(pages) {
-    if (pages < 2) return "";
-    const win = [];
-    const push = (n) => { if (win[win.length - 1] !== n) win.push(n); };
-    push(1);
-    if (authorPage - 2 > 2) win.push(null);
-    for (let n = Math.max(2, authorPage - 2); n <= Math.min(pages - 1, authorPage + 2); n += 1) push(n);
-    if (authorPage + 2 < pages - 1) win.push(null);
-    push(pages);
-    return `<p class="faith-pager bsearch-authors-pager">`
-      + `<button type="button" class="faith-pager-btn" data-bs-apage="${authorPage - 1}"${authorPage <= 1 ? " disabled" : ""}>&larr; Previous</button>`
-      + `<span class="faith-pager-nums">${win.map((n) => (n === null
-        ? `<span class="faith-pager-gap" aria-hidden="true">&hellip;</span>`
-        : `<button type="button" class="faith-pager-num${n === authorPage ? " is-current" : ""}" data-bs-apage="${n}"${n === authorPage ? ' aria-current="page"' : ""}>${n}</button>`)).join("")}</span>`
-      + `<button type="button" class="faith-pager-btn" data-bs-apage="${authorPage + 1}"${authorPage >= pages ? " disabled" : ""}>Next &rarr;</button></p>`;
-  }
 
   function authorBlock() {
     const found = authorsMatching();
     if (!found.length) return "";
-    const pages = Math.max(1, Math.ceil(found.length / AUTHORS_PER_PAGE));
-    if (authorPage > pages) authorPage = 1;
-    const from = (authorPage - 1) * AUTHORS_PER_PAGE;
-    const slice = found.slice(from, from + AUTHORS_PER_PAGE);
-    const label = found.length === 1 ? "Author" : `${found.length.toLocaleString()} authors`;
-    const rows = slice.map(([name, n]) =>
-      `<a class="bsearch-author" href="/the-faith-received/author/?a=${encodeURIComponent(fold(name))}">`
-      + `<span class="bsearch-author-name">${escapeHtml(name)}</span>`
-      + `<span class="bsearch-author-n">${n.toLocaleString()} work${n === 1 ? "" : "s"}</span>`
-      + `<span class="bsearch-author-go" aria-hidden="true">&rarr;</span></a>`).join("");
-    return `<div class="bsearch-authors">`
-      + `<p class="bsearch-authors-label">${escapeHtml(label)}</p>`
-      + `<div class="bsearch-authors-list">${rows}</div>${
-       authorPager(pages)}</div>`;
+    const b = window.MOAuthorCards.block(found, authorPage);
+    authorPage = b.page;
+    return b.html;
   }
 
   const PAGE = 60;
