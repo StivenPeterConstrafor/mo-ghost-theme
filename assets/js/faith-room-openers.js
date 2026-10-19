@@ -99,8 +99,8 @@
       // The reader anchors a page as #b<page>-0, so the link reopens on
       // the page last read rather than at the title page.
       // top: the work was only opened, so it reopens bare, at the top.
-      const href = `/the-faith-received/read/?w=${encodeURIComponent(slug)}`
-        + (e.top ? "" : `#b${encodeURIComponent(e.page)}-0`);
+      const anchor = e.top ? "" : `#b${encodeURIComponent(e.page)}-0`;
+      const href = `/the-faith-received/read/?w=${encodeURIComponent(slug)}${anchor}`;
       const contents=window.MOCollectedContents?.get(slug);
       const preview=window.MOCollectedContents?.preview(slug)||"";
       const meta = [e.author, contents?.volume, e.top ? "" : `fol. ${e.page}`].filter(Boolean).join(" · ");
