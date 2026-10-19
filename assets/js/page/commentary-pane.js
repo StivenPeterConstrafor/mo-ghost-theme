@@ -425,7 +425,7 @@
     }
     return cache.get(k);
   }
-  const resolver = A ? A.createResolver(parasOf, { verseText: (v) => { const el = SITE.verseEl(v); return el ? el.textContent : ''; } }) : null;
+  const resolver = A ? A.createResolver(parasOf, { verseText(v) { const el = SITE.verseEl(v); return el ? el.textContent : ''; } }) : null;
   // the work's own first (collected) or indexed target, with no page to read
   function quickTarget(v) {
     const c = S.cur; if (!c) return null;
