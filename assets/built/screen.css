@@ -4,6 +4,13 @@
    ============================================================= */
 
 :root {
+  /* One timing for the masthead and everything pinned to it, both directions
+     (hide and reveal), phones only. A symmetric ease-in-out, so the reveal is
+     the hide played backward. Declared on each element's ALWAYS-ON selector,
+     never on the hidden-state one, or the way back snaps. Checked by
+     scripts/check-header-reveal.mjs. */
+  --hdr-ms: 280ms;
+  --hdr-ease: cubic-bezier(0.45, 0, 0.55, 1);
   --color-primary: #ee7d51;
   --color-secondary: #c1593c;
   --color-background: #f1e0c9;
@@ -210,14 +217,11 @@ img { max-width: 100%; height: auto; }
   pointer-events: none;
 }
 .site-header.is-hidden { transform: translateY(-100%); }
-/* Phone: the masthead glides BACK (the shown state's transition) on a 0.3s
-   ease-out curve; hiding keeps the stock .25s ease. Transform only, no layout.
-   Pairs with the 140px reveal run in boot/header-behaviors.js. Pinned bars
-   (rail, desk, room letters) repeat these two values. The reader's own
-   masthead rule (faith-port-reader-skin.css, .28s) wins on reader pages. */
+/* Phone: one transition on the always-on selector, so hide and reveal are the
+   same motion in opposite directions. Transform only, no layout. The reader's
+   own masthead rule (faith-port-reader-skin.css) uses the same two variables. */
 @media (max-width: 880px) {
-  .site-header { transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
-  .site-header.is-hidden { transition: transform 0.25s ease; }
+  .site-header { transition: transform var(--hdr-ms, 280ms) var(--hdr-ease, cubic-bezier(0.45, 0, 0.55, 1)); }
 }
 @media (prefers-reduced-motion: reduce) {
   .site-header { transition: none; }
