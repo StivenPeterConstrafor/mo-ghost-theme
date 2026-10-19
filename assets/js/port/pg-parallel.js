@@ -215,7 +215,12 @@ function cleanEnglish(value){
 function location(data,opening){
  const label=data?.pg_page_labels?.[text(opening)];if(label)return label;
  const map=data?.pg_columns?.[text(opening)];if(!map)return null;const mode=data.pg_source||'grc',lab=map.lab||{},pick=l=>lab[l]||map[l]||[],cols=[...new Set((mode==='grcla'?[...pick('grc'),...pick('la')]:pick(mode)).map(text))];if(!cols.length)return null;
- cols.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));return cols.length===1?'col. '+cols[0]:'cols. '+cols.join('–');
+ cols.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+ // A LATIN-ONLY OPENING KEYED TO ITS RIGHT COLUMN (ticket 2026-10-19, pg-22 'Prolegomena' p. 717 'col. 718'): the rebuilt Latin lane files the
+ // whole opening's paragraphs under the even column's milestone, the left column's text included, and the opening has no Greek column to
+ // name the odd one. The page is two columns and its scan shows both, so the label names both; the lane's own column keys stay as they were.
+ if(cols.length===1&&!pick('grc').length&&/^\d+$/.test(text(opening))){const o=Number(opening),c=Number(cols[0]);if(o%2===1&&c===o+1)return 'cols. '+o+'–'+c;}
+ return cols.length===1?'col. '+cols[0]:'cols. '+cols.join('–');
 }
 return {canonicalOpenings,alignOpening,printedColumns,location,cleanEnglish,dropGutterLetters,nextWorkReference,foldHeads};
 });

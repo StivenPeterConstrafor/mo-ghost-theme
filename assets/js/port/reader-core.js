@@ -6143,6 +6143,39 @@ async function loadPgCanon(ws){
     const target=(move?.getAttribute('target')||'').match(/^(pg-\d+)#(\d+)$/);
     if(target&&target[1]!==ws){const url=new URL(location.href);url.searchParams.set('w',target[1]);url.searchParams.delete('ws');url.searchParams.set('p',target[2]);url.hash='b'+target[2]+'-0';location.replace(url);return new Promise(()=>{});}}
 
+  // PAGES FILED UNDER THE WRONG WORK, AND LATIN PLATES THAT BREAK ELSEWHERE (reader tickets 2026-10-19: pg-119 ended with the
+  // Pedagogue's title page, pg-3834's English outran its Latin). The decisions and node moves live in pg-canon-heal.js; this is the
+  // only place that knows the volume spine and can fetch a neighbour. Every failure leaves the canon as printed.
+  if(window.FRPgCanonHeal){try{
+    const H=window.FRPgCanonHeal,pbs0=H.primaryPbs(doc),_vol0=(()=>{const e=[...doc.querySelectorAll("idno")].find(x=>x.getAttribute("type")==="PG-volume");return e?e.textContent.trim():"";})();
+    if(_vol0&&H.mayNeedSpine(pbs0)){
+      const spine=await fetch(BLOB+"/v1/pgvol/"+_vol0+".json"+pgVersion).then(r=>r.ok?r.json():null).catch(()=>null),works=(spine&&spine.works)||[],at=works.findIndex(w=>String(w.id)===String(id));
+      const other=async oid=>{const x=await fetch(BLOB+"/v1/tei/pg/"+oid+".xml"+pgVersion).then(r=>r.ok?r.text():null).catch(()=>null);
+        const d=x&&new DOMParser().parseFromString(x,"application/xml");return d&&!d.querySelector("parsererror")?d:null;};
+      if(at>=0){
+        const claim=H.frontMatterClaim(pbs0,works[at-1]),cand=H.trailingForeign(pbs0,works[at+1]);
+        // ONE hand-over seen from both sides: the donor's trailing pages (cand.from, at most cand.count of them) are what the owner
+        // takes and what the donor gives up, and neither acts until the other's scans agree
+        if(claim){const dd=await other(claim.donor),dc=dd&&H.trailingForeign(H.primaryPbs(dd),works[at]);
+          if(dc&&H.confirmDonor(dc,pbs0)&&H.giveFront(doc,H.takeFront(dd,dc.from,dc.count,H.handOverTo(pbs0)))){
+            // the donor's per-column sidecars for the handed-over pages come with them
+            const fill=async(kind,o)=>{const sc=o&&typeof o==="object"?await fetch(BLOB+"/v1/"+kind+"/"+claim.donor+".json"+pgVersion).then(r=>r.ok?r.json():null).catch(()=>null):null;
+              if(sc)for(const k of Object.keys(sc))if(Number(k)>=dc.from&&Number(k)<=H.handOverTo(pbs0)&&!(k in o))o[k]=sc[k];};
+            await Promise.all([fill("pgen",pgen),fill("pgvtx",vtx)]);}}
+        if(cand){const nd=await other(cand.nextId);
+          if(nd&&H.confirmDonor(cand,H.primaryPbs(nd))){
+            // an older link to the title page's column belongs to the work that now holds it
+            const ref=frReaderBlockReference(location.hash)?.page||new URLSearchParams(location.search).get('p');
+            if(ref&&Number(ref)>=cand.from){const url=new URL(location.href);url.searchParams.set('w','pg-'+cand.nextId);url.searchParams.delete('ws');url.searchParams.set('p',ref);url.hash='b'+ref+'-0';location.replace(url);return new Promise(()=>{});}
+            H.takeFront(doc,cand.from,cand.count);   // the donor gives up its whole tail; the owner took only the columns before its own first page
+            // the per-column sidecars (English top-up, transcription, boundary text) keep the column the canon no longer holds
+            for(const o of [pgen,vtx,pggap])if(o&&typeof o==="object")for(const k of Object.keys(o))if(Number(k)>=cand.from)delete o[k];}}
+      }
+    }
+    // the Latin version on plates of its own: re-cut the one paragraph that crosses each page seam (parallel view only; the Latin
+    // view keeps the plate's own breaks)
+    if(["","grcla"].includes(window.__srcOverride||new URLSearchParams(location.search).get("src")||""))H.rebalanceSeams(doc);
+  }catch(e){window.__pgHealErr=String(e&&e.stack||e).slice(0,300);}}
   // CANON TEXT HEAL (owner 2026-08-27 screenshots): line-break hyphens kept inside Greek
   // words (ὕαπι-ζόμενοι) — Greek never hyphenates internally, join them; plus the
   // Migne-OCR garble chars ({ } ¡) that are never legitimate in the canon.
@@ -6541,13 +6574,16 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
     // pass through verbatim.
     if(src==="grc"&&_colLa.length&&!_colLa._carved){
       const _out=[];
+      const _hd=_colLa._heads;
       _colLa.forEach(x=>{
-        if(typeof x!=="string"||x.indexOf("\u0006")>=0||!/[\u0370-\u03ff\u1f00-\u1fff]/.test(x)){_out.push(x);return;}
+        if(typeof x!=="string"||x.indexOf("\u0006")>=0||!/[\u0370-\u03ff\u1f00-\u1fff]/.test(x)||(_hd&&_hd.has(x))){_out.push(x);return;}
         _carveGr(x,_out);});
       // the LONG leading caps-run is the printed running title — page furniture the EN
       // lane already demotes to the folio head; drop it so the letter-address rubric is
       // the one Greek head and the section aligner pairs it with the EN head 1:1
-      if(_out.length>1){
+      // (a leading head the walk put ahead of the page's text is the work's printed title, which the English opens with a head to
+      // face: it is not the running title this drops)
+      if(_out.length>1&&!(_hd&&_hd.has(_out[0]))){
         const f0=String(_out[0]||"");
         const gcaps=f0.replace(/[^\u0370-\u03FF\u1F00-\u1FFF]/g,"");
         if(gcaps.length>=30&&gcaps===gcaps.toUpperCase())_out.shift();
@@ -6732,7 +6768,7 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
      if(!window.__pgSpread&&_last!=null&&_last%2===1&&n===_last+1){seen.add(n);
        if(enByCol[n]&&enByCol[n].length&&!(window.__enUsed&&window.__enUsed.has(n))){_colEn.push(...enByCol[n]);(window.__enUsed=window.__enUsed||new Set()).add(n);}
        return;}}
-    flushCol();seen.add(n);pages.push(n);
+    flushCol();seen.add(n);pages.push(n);_pageText=false;_pageHeads=0;_pageRun=null;
     for(const [D,B] of [[laD,laB],[enD,enB]]){const pb=D.createElement("pb");pb.setAttribute("n",String(n));B.appendChild(pb);}
     // EN SPAN-UNION (owner 2026-08-18 'matching vol by col'): opening-keyed canons carry
     // EN under BOTH columns of the opening — consume every EN column in [n .. nextPb-1],
@@ -6897,10 +6933,31 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
   // single-letter speaker tag + dash is prose, not structure: keep it in the lane as a
   // paragraph and OUT of the Contents.
   const _isTurn=t=>/^[Α-ΩA-B]\s*[—–-]\s/.test(t);
-  const addHead=(t,depth)=>{flushCol();if(depth0===null)depth0=depth;
+  // A HEAD THAT LEADS A PAGE WHOSE TEXT WAS CARVED AHEAD OF THE WALK (owner ticket 2026-10-19, pg-2880 col. 95, Greek view: the work's own
+  // title stood in the middle of the opening, after a first paragraph that then printed again beneath it). The canon opening's Greek
+  // and English are carved into the lane when the page opens (addPb), so the head arrives with the page's text already waiting; flushing
+  // first put the text above its own title, and the flush dropped the lane's zoned mark, so the walk's <p> then added the text a second
+  // time. Where the English opens with a head for each head the walk meets, the Greek head now joins the lane ahead of the waiting
+  // text (the aligner pairs the heads: title with title) and nothing is flushed. Every other page keeps the flush. _pageText is false
+  // until a <p> of the page has been walked; _heads marks the lane's own leading heads so the carve leaves them whole.
+  let _pageText=false,_pageHeads=0,_pageRun=null;
+  // a printed rubric: a short run of capitals (the aligner's own test for a head the two lanes can pair)
+  const _rubric=t=>{const c=String(t||"").replace(/\s+/g," ").trim(),la=c.replace(/[^A-Za-z]/g,""),gr=c.replace(/[^\u0370-\u03FF\u1F00-\u1FFF]/g,"");
+    return c.length>=6&&c.length<=160&&((la.length>=5&&la===la.toUpperCase()&&!gr)||(gr.length>=6&&gr===gr.toUpperCase()));};
+  // the heads that lead this page in the TEI, from `el` on (milestones, page breaks and notes between them do not end the run)
+  const _leadRun=el=>{const out=[];for(let e=el;e;e=e.nextElementSibling){const n=e.localName;if(n==="head")out.push(e.textContent.replace(/\s+/g," ").trim());else if(n!=="milestone"&&n!=="note"&&n!=="pb")break;}return out;};
+  const addHead=(t,depth,el)=>{
+    const lead=_colEn.slice(0,_pageHeads+1),run=el&&!_pageHeads?_leadRun(el):null;
+    if(run)_pageRun=run;
+    const inj=!!(t&&!_isTurn(t)&&el&&_colLa._zoned&&!_pageText&&pages.length&&_pageRun&&_pageRun.length&&_pageRun.every(_rubric)
+      &&lead.length===_pageHeads+1&&_colEn.filter(x=>typeof x==="string"&&x.charCodeAt(0)===1).length===_pageRun.length
+      &&lead.every(x=>typeof x==="string"&&x.charCodeAt(0)===1)&&_colLa.some(x=>/[\u0370-\u03ff\u1f00-\u1fff]/.test(String(x))));
+    if(!inj)flushCol();
+    if(depth0===null)depth0=depth;
     if(!t)return;
     if(_isTurn(t)){_colLa.push(t);return;}
     struct.push({title:t.slice(0,140),page:pages.length?pages[pages.length-1]:1,depth:Math.min(Math.max(depth-depth0+1,1),5)});
+    if(inj){_colLa.splice(_pageHeads,0,t);(_colLa._heads=_colLa._heads||new Set()).add(t);_pageHeads++;return;}
     const h=laD.createElement("head");h.textContent=t;laB.appendChild(h);
     const h2=enD.createElement("head");h2.textContent=t;enB.appendChild(h2);};
   const hasSecondary=!!doc.querySelector('div[type="secondary"]');
@@ -6978,8 +7035,8 @@ const _canonOpenings=window.FRPgParallel.canonicalOpenings(doc),_printedColumns=
       if(ln==="div"&&!window.FRMigneNavigation.isReadingDivision(ty))continue;
       if(ln==="pb")addPb(+ch.getAttribute("n"));
       else if(ln==="milestone"&&ch.getAttribute("unit")==="column")addPb(+ch.getAttribute("n"));
-      else if(ln==="head")addHead(ch.textContent.replace(/\s+/g," ").trim(),depth);
-      else if(ln==="p"){if(!_colLa._zoned){
+      else if(ln==="head")addHead(ch.textContent.replace(/\s+/g," ").trim(),depth,ch);
+      else if(ln==="p"){_pageText=true;if(!_colLa._zoned){
         // THE TRANSCRIPTION KNOWS ITS PARAGRAPHS (owner 2026-09-03 pg-1445 'so please
         // figure it out'): vision-era canon <p>s carry real \n\n breaks — the homily head
         // (ΟΜΙΛΙΑ Β΄.), the lemma and each paragraph arrive pre-segmented; flattening the
