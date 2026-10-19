@@ -1,5 +1,5 @@
 /* COMMENTARY AND RECEPTION BESIDE THE TEXT (2026-10-18; default on the Scripture page 10-19). The site's own monochrome register:
-   Source Serif and EB Garamond, ink on the grey ground, white paper for the rail; one tint marks the verse the rail follows. */
+   Source Serif, ink on the grey ground, white paper for the rail; one tint marks the verse the rail follows. */
 :root {
   --cp-ink: var(--fg, #1C1C1A);
   --cp-muted: var(--muted, #5A5A56);
@@ -8,7 +8,6 @@
   --cp-rule: var(--border, #D6D6D0);
   --cp-mark: #E7E4D9;
   --cp-hit: #F3EED9;
-  --cp-display: var(--display, 'EB Garamond', 'Source Serif Pro', Georgia, serif);
   --cp-faint: var(--faint, #83837E);
   --cp-heat: var(--fg, #1C1C1A);
 }
@@ -29,135 +28,135 @@ body.cp-on .scripture-verse-summary { display: none; }
 body.cp-on.cp-src .scripture-verse-summary { display: block; }
 body.cp-on.cp-src .cp-pane { display: none; }
 
+/* ── The rail, set like the Citations view (10-19, owner: "design wise, it should be like the citation") ──
+   Small label over a large heading, thin-ruled rows, italic work titles over a muted author and century line, the body face
+   throughout (no display face on a working surface), no pill, and no box inside the rail that scrolls: the rail takes the height
+   its content takes and the page scrolls (the phone sheet scrolls as a whole). The values are the Citations view's own
+   (.sd-eyebrow, .sd-panel-ref, .sd-h3, .sd-ov-stat, .sd-ov-comm-row in scripture-dev.css and port/dev-notes.css). */
 .cp-pane {
-  position: sticky;
-  top: 76px;
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 160px);
-  background: var(--cp-paper);
-  border: 1px solid var(--cp-rule);
+  --cp-accent: var(--sd-accent, var(--cp-ink));
+  /* in the page's flow, like the Citations view beside it (which the reader leaves unsticky, 2026-09-23: "the side panel doesn't need
+     to be sticky"); a rail that sticks and is taller than the window cannot be read to its end without a box that scrolls on its own */
+  position: relative;
   color: var(--cp-ink);
   font-family: "Source Serif Pro", Palatino, Georgia, serif;
+  font-size: 15px;
+  line-height: 1.5;
+  background: var(--cp-paper);
+  border: 1px solid var(--cp-rule);
+  padding: 18px 20px 24px;
 }
-.cp-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--cp-rule); }
+.cp-pane button { font: inherit; color: inherit; }
+.cp-pane :focus-visible { outline: 2px solid var(--cp-accent); outline-offset: 2px; }
+
+.cp-tabs { display: flex; gap: 0; margin: 0 0 16px; border-bottom: 1px solid var(--cp-rule); }
 .cp-tabs button {
-  flex: 1; padding: 10px 12px; background: none; border: 0; border-bottom: 2px solid transparent;
-  font: inherit; font-size: 0.86rem; color: var(--cp-muted); cursor: pointer;
+  flex: 1; min-height: 44px; padding: 8px 6px; background: none; border: 0; border-bottom: 2px solid transparent;
+  font-size: 15px; color: var(--cp-muted); cursor: pointer;
 }
-.cp-tabs button[aria-pressed="true"] { color: var(--cp-ink); border-bottom-color: var(--cp-ink); }
-.scripture-verse-summary > .cp-tabs { margin: -4px 0 14px; }
+.cp-tabs button[aria-pressed="true"] { color: var(--cp-ink); border-bottom-color: var(--cp-accent); font-weight: 600; }
+.scripture-verse-summary > .cp-tabs, .sd-side > .cp-tabs { margin: 0 0 16px; }
 .cp-pane[data-tab="r"] .cp-head, .cp-pane[data-tab="r"] .cp-where, .cp-pane[data-tab="r"] .cp-body, .cp-pane[data-tab="r"] .cp-foot { display: none; }
 .cp-pane:not([data-tab="r"]) .cp-rec { display: none; }
 
-.cp-head { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px 8px; }
-.cp-pickwrap { position: relative; flex: 1; min-width: 0; }
-.cp-pick {
-  display: flex; flex-direction: column; align-items: flex-start; width: 100%; padding: 0; text-align: left;
-  background: none; border: 0; font: inherit; color: inherit; cursor: pointer;
-}
-.cp-who { display: inline-flex; align-items: baseline; max-width: 100%; font-size: 1.28rem; line-height: 1.2; white-space: nowrap; }
-.cp-who::after { content: ""; flex: none; display: inline-block; width: 0.42em; height: 0.42em; margin-left: 0.45em; vertical-align: 0.18em;
-  border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); }
-.cp-what { font-size: 0.84rem; color: var(--cp-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.cp-pick:focus-visible, .cp-lang button:focus-visible, .cp-tabs button:focus-visible, .cp-pages button:focus-visible,
-.cp-body:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 2px; }
+/* the label and the large heading, as the Citations view's "THIS CHAPTER IN THE LIBRARY / Genesis 1" */
+.cp-top { margin: 0 0 14px; }
+.cp-eyebrow { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--cp-accent); }
+.cp-ref { margin: 2px 0 0; font-family: inherit; font-size: 26px; line-height: 1.2; font-weight: 600; letter-spacing: 0; text-transform: none; font-style: normal; color: var(--cp-ink); }
 
-.cp-list {
-  position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; width: min(440px, 80vw); max-height: 60vh; overflow: auto;
-  margin: 0; padding: 6px 0; list-style: none; background: var(--cp-paper); border: 1px solid var(--cp-rule);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
-}
-.cp-list li[data-slug] { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; padding: 8px 14px; cursor: pointer; }
-.cp-list li[data-slug]:hover, .cp-list li[aria-selected="true"] { background: var(--cp-ground); }
-.cp-li-h { padding: 10px 14px 4px; font-size: 0.78rem; color: var(--cp-muted); }
-.cp-li-a { font-size: 0.98rem; }
-.cp-li-t { grid-column: 1; font-size: 0.8rem; color: var(--cp-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cp-li-n { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-size: 0.78rem; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
+/* the commentary chosen: one row, as a commentary is listed in the Citations view; Change opens the others in place */
+.cp-head { margin: 0 0 4px; }
+.cp-cur { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 2px; border-top: 1px solid var(--cp-rule); border-bottom: 1px solid var(--cp-rule); }
+.cp-cur-id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cp-what { font-size: 14px; font-style: italic; line-height: 1.35; }
+.cp-who { font-size: 12.5px; color: var(--cp-muted); }
+.cp-pick { flex: none; min-height: 44px; padding: 0 2px; background: none; border: 0; font-size: 14px; color: var(--cp-accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.cp-list { margin: 0 0 6px; padding: 0; list-style: none; }
+.cp-li-h { margin: 12px 0 4px; font-size: 13px; font-weight: 600; color: var(--cp-ink); }
+.cp-list .cp-row-li { border-bottom: 1px solid var(--cp-rule); }
+.cp-list .cp-li-h + .cp-row-li { border-top: 1px solid var(--cp-rule); }
+.cp-list .cp-row[aria-pressed="true"] .cp-row-t { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--cp-accent); }
 
-.cp-lang { display: inline-flex; border: 1px solid var(--cp-rule); }
-.cp-lang button { padding: 5px 10px; background: none; border: 0; font: inherit; font-size: 0.8rem; color: var(--cp-muted); cursor: pointer; }
-.cp-lang button[aria-pressed="true"] { background: var(--cp-ink); color: var(--cp-paper); }
+/* a row: an italic work title over a muted line (author, century, page) */
+.cp-rows, .cp-eras, .cp-top-list { margin: 0 0 6px; padding: 0; list-style: none; }
+.cp-rows { border-top: 1px solid var(--cp-rule); }
+.cp-row-li { border-bottom: 1px solid var(--cp-rule); }
+.cp-rows > .cp-row-li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 12px; }
+.cp-row { display: flex; flex-direction: column; gap: 2px; width: 100%; min-height: 44px; padding: 9px 2px; text-align: left; background: none; border: 0; cursor: pointer; }
+.cp-row-t { font-size: 14px; font-style: italic; line-height: 1.35; color: var(--cp-ink); }
+.cp-row-m { font-size: 12.5px; color: var(--cp-muted); }
+.cp-row:hover .cp-row-t, .cp-row:focus-visible .cp-row-t, a.cp-row-t:hover { color: var(--cp-accent); text-decoration: underline; text-underline-offset: 3px; }
+.cp-row-pg { font-size: 12.5px; color: var(--cp-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cp-wit { display: flex !important; flex-direction: column; gap: 2px; padding: 9px 2px; }
+.cp-wit[hidden] { display: none !important; }
+a.cp-row-t { text-decoration: none; }
+.cp-w-g { font-size: 13px; line-height: 1.45; color: var(--cp-muted); max-width: 62ch; }
 
-.cp-where { margin: 0; padding: 0 18px 10px; font-size: 0.88rem; color: var(--cp-muted); border-bottom: 1px solid var(--cp-rule); }
-.cp-where .cp-pg { margin-left: 4px; font-variant-numeric: tabular-nums; }
-.cp-where a { margin-left: 8px; color: var(--cp-ink); }
+.cp-lang { display: flex; align-items: center; gap: 8px; margin: 6px 0 0; font-size: 13px; color: var(--cp-muted); }
+.cp-lang[hidden] { display: none; }
+.cp-lang button { min-height: 32px; padding: 0 2px; background: none; border: 0; font-size: 13px; color: var(--cp-muted); cursor: pointer; }
+.cp-lang button[aria-pressed="true"] { color: var(--cp-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--cp-accent); }
 
-.cp-body { flex: 1; overflow: auto; padding: 14px 22px 28px; font-size: 1.02rem; line-height: 1.62; overscroll-behavior: contain; }
+.cp-where { margin: 10px 0 16px; padding: 0 0 10px; font-size: 13px; color: var(--cp-muted); border-bottom: 1px solid var(--cp-rule); }
+.cp-where .cp-pg { font-variant-numeric: tabular-nums; }
+.cp-where a { color: var(--cp-accent); text-decoration: underline; text-underline-offset: 3px; }
+
+/* the commentary's own words: in the page's flow, so the page scrolls and there is no second scrollbar */
+.cp-body { font-size: 16px; line-height: 1.62; }
 .cp-body p { margin: 0 0 0.8em; max-width: 68ch; }
 .cp-body .cp-hit, .cp-body .cp-hit-on { background: var(--cp-hit); margin-left: -10px; margin-right: -10px; padding: 6px 10px; }
 .cp-body .cp-hit:has(+ .cp-hit-on), .cp-body .cp-hit-on:has(+ .cp-hit-on) { margin-bottom: 0; padding-bottom: 0.8em; }
 .cp-body.cp-loading { opacity: 0.45; transition: opacity 0.2s ease-out; }
-.cp-break { display: flex; align-items: center; gap: 10px; margin: 18px 0 14px; color: var(--cp-muted); font-size: 0.78rem; }
+.cp-break { display: flex; align-items: center; gap: 10px; margin: 18px 0 14px; color: var(--cp-muted); font-size: 12.5px; }
 .cp-break::before, .cp-break::after { content: ""; flex: 1; height: 1px; background: var(--cp-rule); }
 .cp-empty { color: var(--cp-muted); font-style: italic; }
 .cp-body abbr[title] { text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
-.cp-body .cp-h { margin: 1.1em 0 0.5em; font-weight: 600; font-size: 0.95rem; letter-spacing: 0.02em; }
-.cp-sig { margin: -2px 0 14px; font-size: 0.84rem; color: var(--cp-muted); }
-.cp-index { margin: 0 0 14px; font-size: 0.84rem; color: var(--cp-muted); line-height: 1.7; }
+.cp-body .cp-h { margin: 1.1em 0 0.5em; font-weight: 600; font-size: 15px; }
+.cp-sig { margin: -2px 0 14px; font-size: 13px; color: var(--cp-muted); }
+.cp-index { margin: 0 0 14px; font-size: 13px; color: var(--cp-muted); line-height: 1.7; }
 .cp-index a { color: var(--cp-ink); text-decoration-color: var(--cp-rule); }
 .cp-crit { scroll-margin-top: 8px; padding: 4px 0 10px; border-bottom: 1px solid var(--cp-rule); margin-bottom: 12px; }
 .cp-crit:last-child { border-bottom: 0; }
-.cp-crit h4 { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 0 0 4px; font-size: 0.98rem; font-weight: 600; }
-.cp-crit h4 a { font-weight: 400; font-size: 0.8rem; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
+.cp-crit h4 { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+.cp-crit h4 a { font-weight: 400; font-size: 12.5px; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
 .cp-crit p { margin: 0; }
+.cp-expand, .cp-more { display: block; min-height: 44px; margin: 0; padding: 0 2px; background: none; border: 0; font-size: 14px; color: var(--cp-accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.cp-fold[hidden] { display: none; }
 
-.cp-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 18px; border-top: 1px solid var(--cp-rule); font-size: 0.84rem; }
-.cp-follow { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
-.cp-pages { display: inline-flex; gap: 6px; }
-.cp-pages button { white-space: nowrap; padding: 4px 9px; background: none; border: 1px solid var(--cp-rule); font: inherit; font-size: 0.8rem; color: var(--cp-ink); cursor: pointer; }
+.cp-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--cp-rule); font-size: 14px; }
+.cp-follow { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; cursor: pointer; }
+.cp-pages { display: inline-flex; gap: 14px; }
+.cp-pages button { min-height: 44px; padding: 0 2px; background: none; border: 0; font-size: 14px; color: var(--cp-accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
 /* ── Reception: the verse's history from the pages ── */
-.cp-rec { flex: 1; overflow: auto; padding: 18px 22px 28px; overscroll-behavior: contain; font-size: 0.95rem; line-height: 1.5; }
-.cp-rec:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: -2px; }
-.cp-rec-head h3 { margin: 0 0 4px; font-family: var(--cp-display); font-weight: 500; font-size: 1.5rem; line-height: 1.15; }
-.cp-rec-lede { margin: 0 0 14px; color: var(--cp-muted); }
-.cp-rec-lede strong { color: var(--cp-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
-.cp-rec-strip { margin: 0 0 22px; }
+.cp-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0 0 10px; }
+.cp-stat { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px 10px; background: #fff; border: 1px solid var(--cp-rule); border-radius: 3px; }
+.cp-stat b { font-size: 24px; line-height: 1.1; font-weight: 500; font-variant-numeric: tabular-nums; }
+.cp-stat span { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cp-muted); }
+.cp-lede { margin: 0 0 14px; font-size: 13px; color: var(--cp-muted); }
+.cp-h3 { margin: 26px 0 8px; padding-bottom: 6px; font-family: inherit; font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; font-style: normal; color: var(--cp-muted); border-bottom: 1px solid var(--cp-rule); }
+.cp-rec-strip { margin: 0 0 6px; }
 .cp-rec-strip ol { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 3px; align-items: end; height: 64px; margin: 0; padding: 0; list-style: none; }
 .cp-rec-strip li { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; min-width: 0; }
 .cp-rec-strip .cp-bar { display: block; width: 100%; height: calc(var(--k) * 48px); min-height: 1px; background: var(--cp-ink); opacity: 0.72; }
 .cp-rec-strip li.is-zero .cp-bar { background: var(--cp-rule); opacity: 1; }
-.cp-rec-strip small { margin-top: 4px; font-size: 0.62rem; color: var(--cp-faint); font-variant-numeric: tabular-nums; }
-.cp-rec-strip figcaption { margin-top: 6px; font-size: 0.78rem; color: var(--cp-muted); }
+.cp-rec-strip small { margin-top: 4px; font-size: 10px; color: var(--cp-faint); font-variant-numeric: tabular-nums; }
+.cp-rec-strip figcaption { margin-top: 6px; font-size: 12.5px; color: var(--cp-muted); }
 .cp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.cp-rec-sec { margin: 0 0 22px; }
-.cp-rec-sec h4 { display: flex; align-items: baseline; gap: 8px; margin: 0 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--cp-rule);
-  font-size: 0.82rem; font-weight: 600; letter-spacing: 0.01em; }
-.cp-rec-sec h4 small { font-weight: 400; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
-.cp-rec-notes { margin: 0; padding: 0; list-style: none; }
-.cp-rec-notes li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 12px; border-bottom: 1px solid var(--cp-ground); }
-.cp-rec-notes button { display: grid; min-width: 0; padding: 7px 8px 7px 0; background: none; border: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; }
-.cp-rec-notes button:hover .cp-rn-a, .cp-rec-notes button:focus-visible .cp-rn-a { text-decoration: underline; text-underline-offset: 3px; }
-.cp-rec-notes button:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 1px; }
-.cp-rn-a { font-size: 1rem; }
-.cp-rn-t { font-size: 0.8rem; color: var(--cp-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cp-rec-notes a { font-size: 0.8rem; color: var(--cp-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.cp-eras { margin: 0; padding: 0; list-style: none; }
-.cp-era { margin: 0 0 16px; }
-.cp-era h5 { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 6px;
-  font-family: var(--cp-display); font-weight: 500; font-size: 1.08rem; }
-.cp-era h5 small { font-family: var(--body, 'Source Serif Pro', Georgia, serif); font-size: 0.76rem; color: var(--cp-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.cp-era ul { margin: 0; padding: 0; list-style: none; }
-.cp-era li { padding: 6px 0 7px; border-top: 1px solid var(--cp-ground); }
-.cp-era li p { margin: 0; }
-.cp-w-who a { color: var(--cp-ink); }
-.cp-w-who span { color: var(--cp-muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
-.cp-w-what { font-size: 0.84rem; color: var(--cp-muted); }
-.cp-w-what a { color: var(--cp-muted); font-variant-numeric: tabular-nums; }
-.cp-w-g { margin-top: 2px !important; font-size: 0.84rem; color: var(--cp-muted); font-style: italic; max-width: 62ch; }
-.cp-more { margin-top: 6px; padding: 4px 0; background: none; border: 0; font: inherit; font-size: 0.84rem; color: var(--cp-ink);
-  text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.cp-era-more { margin: 4px 0 0; font-size: 0.78rem; color: var(--cp-muted); }
-.cp-rec-most { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; margin: 4px 0 18px; padding-top: 12px; border-top: 1px solid var(--cp-rule); font-size: 0.82rem; }
-.cp-rec-most > span { color: var(--cp-muted); margin-right: 2px; }
-.cp-rec-most button { display: inline-flex; align-items: baseline; gap: 5px; padding: 4px 8px; background: none; border: 1px solid var(--cp-rule);
-  font: inherit; color: var(--cp-ink); cursor: pointer; font-variant-numeric: tabular-nums; }
-.cp-rec-most button small { color: var(--cp-muted); font-size: 0.74rem; }
-.cp-rec-most button[aria-current="true"] { border-color: var(--cp-ink); }
-.cp-rec-most button:hover { background: var(--cp-ground); }
-.cp-rec-most button:focus-visible, .cp-more:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 2px; }
-.cp-rec-foot { margin: 8px 0 0; font-size: 0.76rem; color: var(--cp-faint); }
+.cp-eras .cp-era { margin: 0 0 14px; }
+.cp-era-h { margin: 12px 0 4px; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 10px; font-family: inherit; font-size: 13px; font-weight: 600; font-style: normal; letter-spacing: 0; }
+.cp-era-h small { font-size: 12.5px; font-weight: 400; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
+.cp-era-more { margin: 4px 0 0; font-size: 12.5px; color: var(--cp-muted); }
+.cp-top-list { border-top: 1px solid var(--cp-rule); }
+.cp-top-list li { border-bottom: 1px solid var(--cp-rule); }
+.cp-verse-row { display: grid; grid-template-columns: 4.6em minmax(0, 1fr) auto; align-items: center; gap: 4px 10px; width: 100%; min-height: 44px; padding: 10px 2px; background: transparent; border: 0; text-align: left; cursor: pointer; }
+.cp-verse-row:hover .cp-vr-ref, .cp-verse-row:focus-visible .cp-vr-ref { color: var(--cp-accent); }
+.cp-verse-row[aria-current="true"] .cp-vr-ref { text-decoration: underline; text-underline-offset: 3px; }
+.cp-vr-ref { font-weight: 600; font-size: 14px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cp-meter { height: 6px; background: rgba(45, 41, 39, 0.07); border-radius: 3px; overflow: hidden; }
+.cp-meter i { display: block; height: 100%; background: var(--cp-accent); border-radius: 3px; }
+.cp-vr-n { font-size: 13px; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
+.cp-rec-foot { margin: 16px 0 0; font-size: 12.5px; color: var(--cp-faint); }
 
 /* how much reception each verse has, in the verse number itself: the most cited darkest and heaviest, the least faint (four steps of
    the chapter's own range); no mark is added to the text */
@@ -171,46 +170,55 @@ body.cp-on .scripture-verse-wrap.cp-focus { background: var(--cp-mark); }
 
 @media (max-width: 900px) {
   html body.cp-on main .scripture-reader-layout:has(.cp-pane) { grid-template-columns: 1fr; }
-  .cp-pane { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; top: auto; height: 50vh; border-width: 1px 0 0;
-    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08); }
-  body.cp-on { padding-bottom: 50vh; }
-  .cp-tabs button { padding: 12px 8px; }
-  .cp-rec { padding: 14px 16px 24px; }
-  .cp-rec-head h3 { font-size: 1.25rem; }
-  /* the Ask button rides above the sheet instead of covering its text */
-  body.cp-on #fra-launcher { bottom: calc(50vh + 12px); }
-  .cp-head { padding: 10px 16px 6px; }
-  .cp-who { font-size: 1.08rem; }
 }
 @media (prefers-reduced-motion: reduce) { .cp-body.cp-loading { transition: none; } }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cp-rec-strip .cp-bar { opacity: 0.85; } }
 
-/* ── Mere Orthodoxy (the theme's Scripture reader, html.cp-site-mo): its own tokens, its two-column .sd-layout, its sticky offset ── */
+/* ── Mere Orthodoxy (the theme's Scripture reader, html.cp-site-mo): its own tokens, its two-column .sd-layout ── */
 html.cp-site-mo {
-  --cp-ink: var(--sd-ink, #2d2927);
-  --cp-muted: var(--sd-muted, #6b6660);
-  --cp-paper: var(--sd-card, #fffdf9);
-  --cp-ground: var(--sd-panel, #fbf8f3);
+  --cp-ink: var(--color-dark, #2d2927);
+  --cp-muted: var(--color-muted, #6b6660);
+  --cp-paper: #fbf8f3; /* the sidebar's own ground */
+  --cp-ground: #fbf8f3;
   --cp-rule: var(--color-rule, #ddd5c8);
   --cp-mark: #efe6d4;
   --cp-hit: #f4ead2;
+  --cp-faint: var(--sd-faint, #8a837b);
 }
-html.cp-site-mo .cp-pane {
-  font-family: var(--font-body, Georgia, serif);
-  top: calc(var(--sd-top, 0px) + 16px);
-  height: calc(100vh - var(--sd-top, 0px) - 40px);
-  border-radius: 3px;
-}
-html.cp-site-mo body.cp-on .sd-layout:has(.cp-pane) {
-  grid-template-columns: minmax(380px, 1fr) minmax(420px, 1.15fr) !important;
-  align-items: start;
-}
+html.cp-site-mo .cp-pane { font-family: var(--font-body, Georgia, serif); border-radius: 3px; color: var(--color-dark); }
+/* Half and half (10-19, owner: "the space should be split 50/50"): the text and the rail share the width equally, the gap kept */
+html.cp-site-mo body.cp-on .sd-layout:has(.cp-pane) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; align-items: start; }
 html.cp-site-mo body.cp-on .sd-side { display: none !important; }
 html.cp-site-mo body.cp-on.cp-src .sd-side { display: block !important; }
 html.cp-site-mo body.cp-on.cp-src .cp-pane { display: none; }
 html.cp-site-mo body.cp-on .bible-verse.cp-focus { background: var(--cp-mark); }
-@media (max-width: 900px) {
+html.cp-site-mo body.cp-on .sd-side > .cp-tabs { margin: 0 0 16px; }
+@media (max-width: 899px) {
   html.cp-site-mo body.cp-on .sd-layout:has(.cp-pane) { grid-template-columns: 1fr !important; }
+  /* the phone: a sheet at the bottom that scrolls as a whole. It carries the three tabs; the label and the large heading are left
+     out and the spacing is tight, so the commentary's words have the room. Citations here is the verse panel under the verse in
+     the text: the sheet shrinks to its tabs and the panel is brought into view. */
+  .cp-pane { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; top: auto; height: 50vh; overflow-y: auto; overscroll-behavior: contain;
+    border-width: 1px 0 0; box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08); padding: 0 14px 12px; }
+  html.cp-site-mo .cp-pane { border-radius: 0; }
+  body.cp-on { padding-bottom: 50vh; }
+  body.cp-on.cp-peek { padding-bottom: 56px; }
+  .cp-pane[data-tab="s"] { height: auto; }
+  .cp-pane[data-tab="s"] > :not(.cp-tabs) { display: none; }
+  .cp-tabs { position: sticky; top: 0; z-index: 1; margin: 0 -14px 6px; padding: 0 14px; background: var(--cp-paper); }
+  .cp-tabs button { min-height: 40px; padding: 4px 6px; }
+  .cp-top { display: none; }
+  .cp-cur { padding: 4px 2px; }
+  .cp-pick { min-height: 36px; }
+  .cp-lang { margin: 0; }
+  .cp-where { margin: 6px 0 8px; padding-bottom: 6px; }
+  .cp-body { font-size: 15.5px; line-height: 1.55; }
+  .cp-foot { margin-top: 10px; padding-top: 4px; }
+  .cp-follow, .cp-pages button { min-height: 40px; }
+  .cp-stats { margin-bottom: 6px; }
+  /* the Ask button rides above the sheet instead of covering its text */
+  body.cp-on #fra-launcher { bottom: calc(50vh + 12px); }
+  body.cp-on.cp-peek #fra-launcher { bottom: 68px; }
 }
 
 /* the verse panel (the Citations view): the active source filter, named with the way out; the commentaries on the verse, then on the chapter */
@@ -242,4 +250,3 @@ html.cp-site-mo body.cp-on .bible-verse[data-cp-heat] > sup { color: var(--cp-fa
 html.cp-site-mo body.cp-on .bible-verse[data-cp-heat="2"] > sup { color: var(--cp-muted); }
 html.cp-site-mo body.cp-on .bible-verse[data-cp-heat="3"] > sup { color: var(--cp-ink); }
 html.cp-site-mo body.cp-on .bible-verse[data-cp-heat="4"] > sup { color: var(--cp-ink); font-weight: 700; }
-html.cp-site-mo { --cp-faint: var(--sd-faint, #8a837b); --cp-display: var(--font-heading, var(--font-body, Georgia, serif)); }
