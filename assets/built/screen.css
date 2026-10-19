@@ -11405,97 +11405,6 @@ label.site-form-field-check {
   color: var(--color-muted);
   margin: 14px 0 0;
 }
-/* Latest episode player (landing page) */
-/* Latest-episode player on /daily-liturgy/.
-   ------------------------------------------------------------
-   Self-contained on purpose. This used to carry .dlr-podcast and
-   lean on the reader's player styles; the reader's podcast
-   component was later redesigned into a glass card and
-   .dlr-player-info / -subtitle / -time were deleted, which left
-   this markup completely unstyled (block-stacked, play button
-   spilling out of a 14px-radius box). Nothing here may depend on
-   a .dlr-* rule. */
-.dl-ep {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 24px;
-  padding: 8px 18px 8px 8px;
-  border: 1px solid var(--color-rule);
-  border-radius: 999px;
-  background: var(--color-background);
-}
-.dl-ep[hidden] { display: none; }
-.dl-ep-play {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 46px;
-  height: 46px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--dl-copper);
-  color: var(--color-white);
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.dl-ep-play:hover { background: var(--dl-copper-light); }
-/* svg { display: block } is set globally and beats the [hidden]
-   attribute, so both glyphs render at once without this. */
-.dl-ep-play-icon[hidden],
-.dl-ep-pause-icon[hidden] { display: none; }
-.dl-ep-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.dl-ep-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-dark);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.dl-ep-progress {
-  height: 3px;
-  border-radius: 2px;
-  background: var(--color-rule);
-  cursor: pointer;
-}
-.dl-ep-bar {
-  height: 100%;
-  width: 0%;
-  border-radius: 2px;
-  background: var(--dl-copper);
-  transition: width 0.1s linear;
-}
-.dl-ep-sub {
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  color: var(--color-muted);
-}
-.dl-ep-time {
-  flex: none;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-muted);
-}
-
-/* Phone: the pill has no room for a fixed-width time column, so drop
-   it — the duration is already in the episode title line. */
-@media (max-width: 520px) {
-  .dl-ep {
-    gap: 12px;
-    padding: 8px 14px 8px 8px;
-  }
-  .dl-ep-time { display: none; }
-}
-
 /* Reader endorsement closing the two-path band: a hairline, then a
    portrait engraved in an oval beside the quote, as on the TFR guides'
    author cards. assets/js/engraved-portrait.js draws the canvas. */
@@ -11555,6 +11464,23 @@ label.site-form-field-check {
   .dl-endorsement-quote p { font-size: 18px; }
 }
 
+/* The reader's podcast card (.dlr-podcast, further down), used here as
+   is. The reader bleeds it 20px past its column; this column sits beside
+   another, so it stays inside. */
+/* The reader's colors live on .dlr-page, which this page does not have;
+   the light values, restated. Change them with .dlr-page's. This page has
+   no dark mode, so the reader's dark card rules skip it
+   (:not(.dl-landing-player)). */
+.dlr-podcast.dl-landing-player {
+  --dlr-ground: #f6f3f2;
+  --dlr-text: #1c1917;
+  --dlr-text-secondary: #4a4540;
+  --dlr-accent: #96694C;
+  --dlr-accent-light: #b8866a;
+  --dlr-rule: #d9c6a7;
+  margin: 0 0 24px;
+  color: var(--dlr-text);
+}
 .dl-listen-ctas {
   display: flex;
   flex-wrap: wrap;
@@ -21585,12 +21511,12 @@ html[data-theme="dark"] .dlr-header-logo {
     );
   }
 }
-html[data-theme="dark"] .dlr-podcast::before {
+html[data-theme="dark"] .dlr-podcast:not(.dl-landing-player)::before {
   background:
     radial-gradient(58% 78% at 20% 4%, rgba(184, 134, 106, 0.16), transparent 68%),
     radial-gradient(52% 72% at 88% 100%, rgba(184, 134, 106, 0.09), transparent 70%);
 }
-html[data-theme="dark"] .dlr-podcast-glass {
+html[data-theme="dark"] .dlr-podcast:not(.dl-landing-player) .dlr-podcast-glass {
   border-color: rgba(232, 221, 208, 0.1);
   background: linear-gradient(
     180deg,
@@ -21749,7 +21675,7 @@ html[data-theme="dark"] .dlr-podcast-glass {
 }
 /* The dark-mode accent is light enough that a white glyph only reaches
    3:1 against it; the page ground reads at ~5.9:1. */
-html[data-theme="dark"] .dlr-play-btn {
+html[data-theme="dark"] .dlr-podcast:not(.dl-landing-player) .dlr-play-btn {
   color: #1a1714;
 }
 .dlr-play-btn:focus-visible,
