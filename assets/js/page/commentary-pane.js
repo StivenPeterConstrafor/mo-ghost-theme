@@ -1,27 +1,33 @@
-/* COMMENTARY BESIDE THE TEXT (prototype, 2026-10-18; owner: "make reading the bible and looking at these landmark commentaries as
-   seamless as logos"). Loaded by research_shell.html only with /bible?pane=1; nothing changes for other readers.
+/* COMMENTARY AND RECEPTION BESIDE THE TEXT (2026-10-18; owner: "make reading the bible and looking at these landmark commentaries as
+   seamless as logos"; 10-19: "this should be THE go to resource for reception history for every scripture … just fix it").
+   On the Scripture page by default (?pane=0 turns it off for the tab).
 
-   The chapter's own text on the left, one chosen commentary on the right, and the commentary follows the reader: the verse at the
-   reading line (or the verse clicked) brings the commentary to ITS note on that verse, read from its page, with the note marked.
-   Where the work has no note on the verse it says so and shows the nearest note before it, or the page its chapter opens on.
+   The chapter's own text on the left; beside it one rail with three views of the verse being read:
+     Commentary  one chosen commentary, following the reader: the verse at the reading line (or the verse clicked) brings it to
+                 ITS note on that verse, read from its page, the note marked; else its nearest note before, or its chapter's page.
+     Reception   the verse's reception history from the pages: how many works cite it and from when, the century strip, the
+                 commentaries with a note on it (each opens in the Commentary view), then each era's witnesses, oldest first.
+     Citations   every use of the verse (the site's own verse panel), filterable by kind.
 
    Where the places come from (nothing here guesses):
      - own notes: the chapter file's exegesis rows (v1/bible/all/<book>/<ch>.json.gz, "Its note on this verse");
      - chapter openings: the commentary map (v1/devotion.json.gz, `an`: chapter → page);
-     - works not yet on the map (the Critici Sacri, 1698): commentary-pane-overlay.json, from the frames (runs/scripture_1018). */
+     - collections not on the map as verse notes (the Critici Sacri, 1698): v1/bible/commentary-overlay.json;
+     - the reception history: v1/reception/scripture/<book>/<ch>.json (runs/reception_1015), every page that cites the verse. */
 (function () {
   'use strict';
-  // The flag: ?pane=1 in the address as the page was opened (Mere Orthodoxy's reader rewrites its address to the canonical one before
-  // this runs, so the navigation entry is read too), kept for this tab; ?pane=0 turns it off.
+  // On unless ?pane=0 (in the address as the page was opened: Mere Orthodoxy's reader rewrites its address before this runs, so the
+  // navigation entry is read too), which keeps it off for this tab; ?pane=1 turns it back on.
   const opened = ((performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {}).name || '';
   const asked = (rx) => rx.test(location.search) || rx.test(opened);
+  let on = true;
   try {
-    if (asked(/[?&]pane=1\b/)) sessionStorage.setItem('fr_cp_on', '1');
-    if (asked(/[?&]pane=0\b/)) sessionStorage.removeItem('fr_cp_on');
-  } catch (_) {}
-  let on = asked(/[?&]pane=1\b/) || !!window.FR_COMMENTARY_PANE;
-  try { on = on || sessionStorage.getItem('fr_cp_on') === '1'; } catch (_) {}
-  if (!on || asked(/[?&]pane=0\b/)) return;
+    if (asked(/[?&]pane=0\b/)) sessionStorage.setItem('fr_cp_off', '1');
+    if (asked(/[?&]pane=1\b/)) sessionStorage.removeItem('fr_cp_off');
+    if (sessionStorage.getItem('fr_cp_off') === '1') on = false;
+  } catch (_) { on = !asked(/[?&]pane=0\b/); }
+  if (window.FR_COMMENTARY_PANE === false) on = false;
+  if (!on) return;
   /* ONE PANE, TWO SITES (2026-10-18, owner: "yes to all and send to ian"). The same file runs on The Faith Received's Scripture page
      (/bible, hash addresses #b/<book>/<ch>) and on Mere Orthodoxy's (/the-faith-received/scripture/?ref=<book>.<ch>.<v>, the theme's
      window.MOScriptureDev); each site differs only in where its verses, layout and data are. */
@@ -42,6 +48,8 @@
         layout: '.sd-layout', side: '.sd-side', verses: '.bible-verse[data-v]',
         vnum: (el) => +el.dataset.v, clicked(t) { const b = t.closest('.bible-verse[data-v]'); return b ? +b.dataset.v : 0; },
         verseEl: (v) => document.querySelector(`.bible-verse[data-v="${v}"]`),
+        pick: (v) => document.querySelector(`.bible-verse[data-v="${v}"]`),
+        heatEl: (v) => document.querySelector(`.bible-verse[data-v="${v}"]`),
       };
     }
     return {
@@ -56,6 +64,8 @@
       layout: '.scripture-reader-layout', side: '.scripture-verse-summary', verses: '.scripture-verse-wrap[id^="v"]',
       vnum: (el) => +el.id.slice(1), clicked(t) { const b = t.closest('[data-select-verse]'); return b ? +b.dataset.selectVerse : 0; },
       verseEl: (v) => document.getElementById(`v${v}`),
+      pick: (v) => document.querySelector(`[data-select-verse="${v}"]`),
+      heatEl: (v) => document.getElementById(`v${v}`),
     };
   })();
   document.documentElement.classList.add(`cp-site-${SITE.name}`);
@@ -105,11 +115,13 @@
       return by.get(slug);
     };
     for (const v of (file && file.verses) || []) {
+      for (const r of v.rows || []) if (r.w && !S.meta[r.w]) S.meta[r.w] = { a: r.a || '', t: r.t || r.w };
       for (const r of v.rows || []) if (r.how === 'exegesis' && /note on this verse/i.test(r.g || '')) {
         const c = take(r.w, r.a, r.t); if (!(v.v in c.notes)) c.notes[v.v] = r.p;
       }
     }
     for (const e of ((dev && dev.books && dev.books[book]) || [])) {
+      S.meta[e.w] = { a: e.a || '', t: e.st || e.t || e.w };
       if (+ch < (e.c1 || 1) || +ch > (e.c2 || 999)) continue;
       const c = take(e.w, e.a, e.t);
       if (e.an && e.an[ch] != null) c.open = e.an[ch];
@@ -166,10 +178,23 @@
   const paragraphs = (t) => String(t || '').replace(/\[\^[^\]]*\]/g, '').split(/\n+/).map((s) => s.trim()).filter(Boolean);
   // a verse's note opens its paragraph: "12. PROPTEREA…", "Vers. 12.", "V. 12", "Verse 12."
   const noteRx = (v) => new RegExp(`^(?:ver(?:s(?:e|us)?)?\\.?\\s*|v\\.\\s*)?\\(?${v}\\b\\s*[.:,)\\]]`, 'i');
+  const anyNote = /^(?:ver(?:s(?:e|us)?)?\.?\s*|v\.\s*)?\(?\d{1,3}\b\s*[.:,)\]]/i;
+
+  // ── the reception history of the verse ────────────────────────────────────────────────────────────────────────────────────
+  const recOf = (book, ch) => json(`${BASE}/v1/reception/scripture/${book}/${ch}.json`).catch(() => null);
+  const ERA = { fathers: ['The Fathers', 'to 600'], 'early-medieval': ['Early Middle Ages', '600–1100'],
+    scholastic: ['High and late Middle Ages', '1100–1500'], reformation: ['Reformation', '1500–1600'],
+    '17th': ['Seventeenth century', '1600–1700'], '18th': ['Eighteenth century', '1700–1800'], modern: ['Since 1800', ''] };
+  const ord = (n) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th')}`;
+  const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+  const VERB = { quotation: 'quotes it', explicit: 'cites it', allusion: 'alludes to it', exegesis: 'expounds it' };
+  const rankOf = (a) => { const i = LANDMARKS.indexOf(a); return i < 0 ? 99 : i; };
+  // a page's one-line gist, as the reception file carries it (cut at about 170 characters): ended where it ends, else marked as cut
+  const gist = (g) => { const t = String(g || '').trim(); if (/[.!?)\]"'”’]$/.test(t)) return t; const u = t.length > 200 ? t.slice(0, 200) : t; return `${u.replace(/[\s,;:]+\S*$/, '')}…`; };
 
   // ── the pane ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
   const S = { list: [], cur: null, verse: null, follow: store.get('fr_cp_follow', '1') === '1', lang: store.get('fr_cp_lang', 'en'),
-    shown: null, token: 0 };
+    shown: null, token: 0, meta: {}, rec: null, pin: false, tab: ['c', 'r', 's'].includes(store.get('fr_cp_tab', 'c')) ? store.get('fr_cp_tab', 'c') : 'c' };
   let pane, layout, observer;
 
   function build() {
@@ -190,6 +215,7 @@
       </div>
       <p class="cp-where" aria-live="polite"></p>
       <div class="cp-body" tabindex="0"></div>
+      <div class="cp-rec" tabindex="0" aria-live="polite"></div>
       <div class="cp-foot">
         <label class="cp-follow"><input type="checkbox"> Follow the text</label>
         <span class="cp-pages"><button type="button" data-step="-1">Previous page</button><button type="button" data-step="1">Next page</button></span>
@@ -202,12 +228,14 @@
     }
     const tabs = document.createElement('div');
     tabs.className = 'cp-tabs'; tabs.setAttribute('role', 'group'); tabs.setAttribute('aria-label', 'Beside the text');
-    tabs.innerHTML = '<button type="button" data-tab="c" aria-pressed="true">Commentary</button><button type="button" data-tab="s" aria-pressed="false">Who cites this verse</button>';
+    tabs.innerHTML = '<button type="button" data-tab="c">Commentary</button><button type="button" data-tab="r">Reception</button><button type="button" data-tab="s">Citations</button>';
     pane.prepend(tabs);
     layout.addEventListener('click', (e) => {
-      const b = e.target.closest('.cp-tabs [data-tab]'); if (!b) return;
-      document.body.classList.toggle('cp-src', b.dataset.tab === 's');
-      layout.querySelectorAll('.cp-tabs [data-tab]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.tab === b.dataset.tab)));
+      const b = e.target.closest('.cp-tabs [data-tab]'); if (b) return setTab(b.dataset.tab);
+      const vb = e.target.closest('.cp-rec [data-cp-verse]'); if (vb) { e.preventDefault(); return select(+vb.dataset.cpVerse); }
+      const ob = e.target.closest('.cp-rec [data-cp-open]'); if (ob) { e.preventDefault(); return openNote(ob.dataset.cpOpen, +ob.dataset.cpP); }
+      const more = e.target.closest('.cp-rec .cp-more');
+      if (more) { more.parentElement.querySelectorAll('li[hidden]').forEach((li) => { li.hidden = false; }); more.remove(); }
     });
     pane.querySelector('.cp-follow input').checked = S.follow;
     pane.querySelector('.cp-follow input').onchange = (e) => { S.follow = e.target.checked; store.set('fr_cp_follow', S.follow ? '1' : '0'); if (S.follow && S.verse) show(S.verse); };
@@ -217,7 +245,94 @@
     document.addEventListener('click', (e) => { if (!pane.contains(e.target)) { list.hidden = true; pick.setAttribute('aria-expanded', 'false'); } });
     list.onclick = (e) => { const li = e.target.closest('[data-slug]'); if (!li) return; choose(li.dataset.slug); list.hidden = true; pick.setAttribute('aria-expanded', 'false'); };
     pane.querySelectorAll('.cp-pages button').forEach((b) => { b.onclick = () => step(+b.dataset.step); });
+    setTab(S.tab, true);
     return true;
+  }
+
+  // the rail's three views; Citations is the site's own verse panel, shown in the rail's place
+  function setTab(t, quiet) {
+    S.tab = t; if (!quiet) store.set('fr_cp_tab', t);
+    pane.dataset.tab = t;
+    document.body.classList.toggle('cp-src', t === 's');
+    layout.querySelectorAll('.cp-tabs [data-tab]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.tab === t)));
+    if (t === 'r') paintRec();
+    if (t === 's' && SITE.name === 'tfr') {
+      const side = layout.querySelector(SITE.side), b = SITE.pick(S.verse || 1);
+      if (side && side.hidden && b) b.click();
+    }
+  }
+  // a verse chosen from the rail: as if clicked in the text (the site's panel follows), brought to the reading line
+  function select(v) {
+    const b = SITE.pick(v), el = SITE.verseEl(v);
+    S.pin = true;
+    if (el) el.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    if (b) b.click(); else show(v, true);
+  }
+  // a commentary's note on the verse, from the Reception view: that commentary, at that note, in the Commentary view
+  function openNote(slug, p) {
+    let c = S.list.find((x) => x.slug === slug);
+    if (!c) {
+      const m = S.meta[slug] || {};
+      c = { slug, a: m.a || '', t: m.t || slug, notes: {}, open: null }; S.list.push(c);
+    }
+    if (!(S.verse in c.notes)) c.notes[S.verse] = p;
+    S.pin = true;
+    setTab('c'); choose(slug);
+  }
+
+  function paintRec() {
+    const box = pane && pane.querySelector('.cp-rec'), w = where(); if (!box || !w) return;
+    const {rec} = S, n = S.verse || 1, rv = rec && rec.verses && rec.verses[String(n)];
+    const name = w.name || w.book.replace(/-/g, ' ');
+    const all = Object.entries((rec && rec.verses) || {}).map(([k, x]) => [+k, x.works || 0]);
+    const most = all.slice().sort((a, b) => b[1] - a[1] || a[0] - b[0]).slice(0, 6);
+    const mostHTML = most.length ? `<nav class="cp-rec-most" aria-label="Most cited verses of ${esc(name)} ${esc(w.ch)}"><span>Most cited</span>${most.map(([k, x]) =>
+      `<button type="button" data-cp-verse="${k}"${k === n ? ' aria-current="true"' : ''}>${esc(w.ch)}:${k}<small>${fmt(x)}</small></button>`).join('')}</nav>` : '';
+    if (!rec) { box.innerHTML = '<p class="cp-empty">The reception history of this chapter is not yet available.</p>'; return; }
+    if (!rv) { box.innerHTML = `${mostHTML}<header class="cp-rec-head"><h3>${esc(name)} ${esc(w.ch)}:${n}</h3><p class="cp-rec-lede">No page in the library cites this verse yet.</p></header>`; return; }
+    const strip = rv.strip || [];
+    const lede = `<p class="cp-rec-lede"><strong>${fmt(rv.works)}</strong> ${rv.works === 1 ? 'work cites it' : 'works cite it'}${strip.length
+      ? `, from the ${ord(strip[0][0])} century to the ${ord(strip[strip.length - 1][0])}` : ''}.</p>`;
+    let bars = '';
+    if (strip.length >= 2) {
+      const max = Math.max(...strip.map(([, k]) => k)), by = new Map(strip), cols = [];
+      for (let c = strip[0][0]; c <= strip[strip.length - 1][0]; c += 1) {
+        const k = by.get(c) || 0, tip = `${ord(c)} century: ${fmt(k)} ${k === 1 ? 'work' : 'works'}`;
+        cols.push(`<li style="--k:${k ? Math.max(0.08, Math.sqrt(k / max)).toFixed(3) : 0}" title="${tip}"><span class="cp-bar"></span><small aria-hidden="true">${c}</small><span class="cp-sr">${tip}</span></li>`);
+      }
+      bars = `<figure class="cp-rec-strip"><ol>${cols.join('')}</ol><figcaption>Works citing it, by century</figcaption></figure>`;
+    }
+    const ns = Object.entries(rv.notes || {}).map(([slug, p]) => {
+      const c = S.list.find((x) => x.slug === slug) || S.meta[slug] || {};
+      return { slug, p, a: c.a || '', t: c.t || slug };
+    }).sort((x, y) => rankOf(x.a) - rankOf(y.a) || x.a.localeCompare(y.a));
+    const notes = ns.length ? `<section class="cp-rec-sec"><h4>Commentaries on this verse <small>${ns.length}</small></h4><ul class="cp-rec-notes">${ns.map((c) =>
+      `<li><button type="button" data-cp-open="${esc(c.slug)}" data-cp-p="${esc(c.p)}" title="Read beside the text"><span class="cp-rn-a">${esc(c.a || c.t)}</span><span class="cp-rn-t">${esc(c.t)}</span></button>`
+      + `<a href="${esc(SITE.read(c.slug, c.p))}" aria-label="${esc(`${c.a || c.t}, page ${c.p}, in the reader`)}">p. ${esc(c.p)}</a></li>`).join('')}</ul></section>` : '';
+    const SHOW = 4, byYear = (a, b) => (a.y || 9999) - (b.y || 9999);
+    const wit = (x, hid) => `<li${hid ? ' hidden' : ''}><p class="cp-w-who"><a href="${esc(SITE.read(x.w, x.p))}">${esc(x.a || x.w)}</a>${x.d ? ` <span>${esc(x.d)}</span>` : (x.y ? ` <span>fl. c. ${esc(x.y)}</span>` : '')}</p>`
+      + `<p class="cp-w-what"><cite>${esc(x.t || '')}</cite>, <a href="${esc(SITE.read(x.w, x.p))}">p. ${esc(x.p)}</a> · ${VERB[x.how] || 'cites it'}</p>`
+      + `${x.g && !(x.commentary && x.how === 'exegesis') ? `<p class="cp-w-g">${esc(gist(x.g))}</p>` : ''}</li>`;
+    const eras = (rv.eras || []).map((e) => {
+      const [label, years] = ERA[e.id] || [e.label, ''];
+      const xs = (e.top || []).slice().sort(byYear);
+      return `<li class="cp-era"><h5>${esc(label)}<small>${years ? `${esc(years)} · ` : ''}${fmt(e.works)} ${e.works === 1 ? 'work' : 'works'}</small></h5>`
+        + `<ul>${xs.map((x, j) => wit(x, j >= SHOW)).join('')}</ul>${xs.length > SHOW ? `<button type="button" class="cp-more">Show ${fmt(xs.length - SHOW)} more</button>` : ''}`
+        + `${e.more ? `<p class="cp-era-more">${fmt(e.more)} more ${e.more === 1 ? 'author' : 'authors'} in this period (Citations lists every use).</p>` : ''}</li>`;
+    }).join('');
+    box.innerHTML = `<header class="cp-rec-head"><h3>${esc(name)} ${esc(w.ch)}:${n}</h3>${lede}</header>${bars}${notes}`
+      + `${eras ? `<section class="cp-rec-sec"><h4>Through the centuries</h4><ol class="cp-eras">${eras}</ol></section>` : ''}${mostHTML}`
+      + '<p class="cp-rec-foot">Every page in the library that cites the verse, dated by its author\'s life.</p>';
+    box.scrollTop = 0;
+  }
+  // each verse number carries how much reception it has (a quiet mark in the text: four steps of the chapter's own range)
+  function heat() {
+    const vs = (S.rec && S.rec.verses) || {}, max = Math.max(1, ...Object.values(vs).map((x) => x.works || 0));
+    for (const [k, x] of Object.entries(vs)) {
+      const el = SITE.heatEl(+k); if (!el) continue;
+      const r = Math.sqrt((x.works || 0) / max);
+      el.dataset.cpHeat = r > 0.75 ? '4' : r > 0.5 ? '3' : r > 0.28 ? '2' : x.works ? '1' : '0';
+    }
   }
 
   function fillList() {
@@ -258,13 +373,20 @@
 
   async function show(v, force) {
     S.verse = +v;
+    if (S.tab === 'r') paintRec();
     const w = where(); if (!S.cur || !w) return;
     const t = target(S.verse); if (!t) return;
     const same = S.shown && S.shown.slug === S.cur.slug && +S.shown.p === +t.p;
     S.shown = { slug: S.cur.slug, p: +t.p, t, book: w.book, ch: w.ch };
     if (same && !force) return paint(true);
     const tok = ++S.token;
-    pane.querySelector('.cp-body').classList.add('cp-loading');
+    const bodyEl = pane.querySelector('.cp-body');
+    bodyEl.classList.add('cp-loading');
+    // a large volume takes a few seconds to open: say what is coming rather than show an empty page
+    if (!bodyEl.textContent.trim() || !same) {
+      pane.querySelector('.cp-where').textContent = `Opening ${S.cur.a || S.cur.t} on ${w.name || w.book} ${w.ch}:${t.v || S.verse}, p. ${t.p}…`;
+      if (!bodyEl.textContent.trim()) bodyEl.innerHTML = '<p class="cp-empty">Opening the page…</p>';
+    }
     try {
       if (t.how === 'collected') {
         const ns = [...new Set(t.items.map((x) => +x[1]))];
@@ -310,7 +432,7 @@
     pane.querySelector('.cp-lang').hidden = !(hasEn && pages.some((p) => p.la));
     const printed = (S.cur && S.cur.pv && S.cur.pv[t.v]) || t.v;
     const rx = (t.how === 'note' || t.how === 'nearest' || t.how === 'later') ? noteRx(printed) : null;
-    let hit = false;
+    let hit = false, cont = -1;
     const sig = siglaOf(sh.slug);
     const withSigla = (txt) => {
       if (!sig) return { html: esc(txt), who: [] };
@@ -321,11 +443,13 @@
     body.innerHTML = pages.map((p, i) => {
       const ps = paragraphs(p[lane] || p.la || p.en);
       const html = ps.map((s) => {
-        const mark = rx && !hit && rx.test(s); if (mark) hit = true;
+        const mark = rx && !hit && rx.test(s); if (mark) { hit = true; cont = 0; }
         const head = /^#{1,6}\s+/.test(s); // the page's own heads ("### CAPUT V.") are set as heads, not printed with their marks
+        let on = '';
+        if (!mark && cont >= 0) { if (head || anyNote.test(s) || cont >= 6) cont = -1; else { on = ' cp-hit-on'; cont += 1; } }
         const x = withSigla(head ? s.replace(/^#{1,6}\s+/, '') : s);
         if (head) return `<p class="cp-h${mark ? ' cp-hit' : ''}"${mark ? ' id="cp-hit"' : ''}>${x.html}</p>`;
-        return `<p${mark ? ' class="cp-hit" id="cp-hit"' : ''}>${x.html}</p>${mark && x.who.length ? `<p class="cp-sig">Critics cited: ${esc(x.who.join(', '))}</p>` : ''}`;
+        return `<p${mark ? ' class="cp-hit" id="cp-hit"' : on ? ` class="${on.trim()}"` : ''}>${x.html}</p>${mark && x.who.length ? `<p class="cp-sig">Critics cited: ${esc(x.who.join(', '))}</p>` : ''}`;
       }).join('') || '<p class="cp-empty">A blank page.</p>';
       return (i ? `<div class="cp-break"><span>p. ${p.n}</span></div>` : '') + html;
     }).join('');
@@ -367,7 +491,7 @@
     const seen = new Map();
     observer = new IntersectionObserver((es) => {
       for (const e of es) seen.set(e.target, e.isIntersecting);
-      if (!S.follow) return;
+      if (!S.follow || S.pin) return;
       const vis = [...seen].filter(([, on]) => on).map(([el]) => el).sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
       const v = vis.length ? SITE.vnum(vis[0]) : null;
       if (v && v !== S.verse) { clearTimeout(watch.t); watch.t = setTimeout(() => show(v), 180); }
@@ -376,16 +500,19 @@
   }
   document.addEventListener('click', (e) => {
     const v = SITE.clicked(e.target); if (!v || !pane) return;
+    S.pin = true;
     show(v, true);
   });
+  // the reader's own scrolling (not the page's scrolling to a chosen verse) hands the rail back to the reading line
+  const unpin = (e) => { if (e.type !== 'keydown' || ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(e.key)) S.pin = false; };
+  ['wheel', 'touchmove', 'keydown'].forEach((t) => addEventListener(t, (e) => { if (!pane || !pane.contains(e.target)) unpin(e); }, { passive: true }));
 
   // the reader redraws its side panel on every verse: give it the switch back to the commentary each time
   function ensureTabs() {
     const side = layout && layout.querySelector(SITE.side), tabs = pane && pane.querySelector('.cp-tabs');
     if (!side || !tabs || side.querySelector('.cp-tabs')) return;
     side.prepend(tabs.cloneNode(true));
-    const on = document.body.classList.contains('cp-src') ? 's' : 'c';
-    layout.querySelectorAll('.cp-tabs [data-tab]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.tab === on)));
+    layout.querySelectorAll('.cp-tabs [data-tab]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.tab === S.tab)));
   }
 
   let lastKey = '';
@@ -398,11 +525,14 @@
     if (key === lastKey && !fresh) {
       // the same chapter drawn again (another translation): follow the new verse elements
       const v1 = document.querySelector(SITE.verses);
-      if (v1 && v1 !== S.firstEl) { S.firstEl = v1; watch(); paint(true); }
+      if (v1 && v1 !== S.firstEl) { S.firstEl = v1; watch(); paint(true); heat(); }
       return;
     }
     lastKey = key;
-    S.list = await commentaries(w.book, w.ch);
+    S.rec = null;
+    const [list, rec] = await Promise.all([commentaries(w.book, w.ch), recOf(w.book, w.ch)]);
+    S.list = list; S.rec = rec;
+    heat();
     const want = store.get('fr_cp_author', 'Cornelius a Lapide');
     const c = S.list.find((x) => x.a === want) || S.list[0];
     S.verse = w.v || 1;
