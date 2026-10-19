@@ -49,7 +49,11 @@
     const memo = new Map();
     const m = new Map();
     const names = (w) => (Array.isArray(w.author) ? w.author : [w.author]);
+    // The same shelf the library search counts (Migne's apparatus is not a work), so the number matches.
+    const C = window.MOFaithCatalogue;
+    const shelved = C && typeof C.shelved === "function" ? C.shelved : () => true;
     for (const w of works) {
+      if (!shelved(w)) continue;
       for (const raw of names(w)) {
         const a = String(raw || "").trim();
         if (!a || NOT_A_NAME.test(a)) continue;
@@ -86,7 +90,7 @@
   function block(found, page) {
     if (!found || !found.length) return { html: "", pages: 0, page: 1 };
     const pages = Math.max(1, Math.ceil(found.length / AUTHORS_PER_PAGE));
-    const at = page > pages || page < 1 ? 1 : page;
+    const at = Number.isFinite(page) && page >= 1 && page <= pages ? Math.floor(page) : 1;
     const from = (at - 1) * AUTHORS_PER_PAGE;
     const label = found.length === 1 ? "Author" : `${found.length.toLocaleString()} authors`;
     const rows = found.slice(from, from + AUTHORS_PER_PAGE).map(([name, n]) =>

@@ -28,7 +28,9 @@
   let loading = false;
   let page = 1;
   let key = '';
-  let ranQuery = ''; // Search the texts runs on Enter or the button, not as you type
+  // Search the texts runs on Enter or the button, not as you type. A search that ran is in the address bar (run() saves
+  // m and q); typing after it makes the cards stale until the next run.
+  let dirty = false;
 
   const mode = () => (typeof MODE === 'string' ? MODE : 'title'); // search.in03.js's top-level var
 
@@ -63,9 +65,9 @@
     const m = mode();
     if (m === 'title') return q.value.trim();
     if (m === 'full') {
-      // A search restored from the address bar ran without a key press here: results on screen mean it ran.
-      if (!ranQuery && results.children.length) ranQuery = q.value.trim();
-      return ranQuery;
+      if (dirty) return '';
+      const u = new URL(location.href).searchParams;
+      return u.get('m') === 'full' ? (u.get('q') || '').trim() : '';
     }
     return '';
   }
@@ -91,20 +93,20 @@
 
   q.addEventListener('input', () => {
     page = 1;
-    if (mode() === 'full') { ranQuery = ''; clear(); return; }
+    if (mode() === 'full') { dirty = true; clear(); return; }
     soon();
   });
   q.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;
-    if (mode() === 'full') { page = 1; ranQuery = q.value.trim(); }
+    if (mode() === 'full') { page = 1; dirty = false; }
     soon();
   });
   const go = document.getElementById('runSearch');
   if (go) go.addEventListener('click', () => {
-    if (mode() === 'full') { page = 1; ranQuery = q.value.trim(); }
+    if (mode() === 'full') { page = 1; dirty = false; }
     soon();
   });
-  if (modes) modes.addEventListener('click', () => { page = 1; ranQuery = ''; clear(); setTimeout(() => sync(), 0); });
+  if (modes) modes.addEventListener('click', () => { page = 1; dirty = false; clear(); setTimeout(() => sync(), 0); });
 
   // A search restored from the address bar, and every repaint of the results, land here.
   new MutationObserver(soon).observe(results, { childList: true });
