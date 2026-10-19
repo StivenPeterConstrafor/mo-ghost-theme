@@ -189,6 +189,14 @@ function scriptureRegKings(source){
   return /(?<![\p{L}\p{N}.])(?:[12]|II?)\.?\s*Sam(?:uel)?\.?\s*\d/u.test(source)&&!/(?<![\p{L}\p{N}.])(?:[34]|III|IV)\.?\s*Reg(?:um)?\.?\s*[\dIVXLC]/u.test(source);
 }
 function gallToHeb(chapter){return chapter<=9||chapter>=148?chapter:chapter<=112?chapter+1:chapter===113?114:chapter<=115?116:chapter<=145?chapter+1:147;}
+// Verse numbers inside a Vulgate psalm count the title as verse 1 (or 2), as the Hebrew does; an English Bible (the preview's ESV/ASV)
+// leaves the title unnumbered, so "Psal. XX, 5" (Hebrew 21:5) is English 21:4 (2026-10-19, ticket 50). Offsets are the Hebrew verse count
+// minus the English one per psalm, derived from the Masoretic and KJV chapter lengths. Verses at or below the offset fall in the title and open at 1.
+const PSALM_TITLE_VERSES={3:1,4:1,5:1,6:1,7:1,8:1,9:1,12:1,13:1,18:1,19:1,20:1,21:1,22:1,30:1,31:1,34:1,36:1,38:1,39:1,40:1,41:1,42:1,44:1,45:1,46:1,47:1,48:1,49:1,51:2,52:2,53:1,54:2,55:1,56:1,57:1,58:1,59:1,60:2,61:1,62:1,63:1,64:1,65:1,67:1,68:1,69:1,70:1,75:1,76:1,77:1,80:1,81:1,83:1,84:1,85:1,88:1,89:1,92:1,102:1,108:1,140:1,142:1};
+function englishPsalmSelection(selection,psalm){
+  const k=PSALM_TITLE_VERSES[psalm];if(!k||!selection)return selection;
+  return selection.replace(/\d+/g,n=>String(Math.max(1,Number(n)-k)));
+}
 // One-chapter books (2026-10-15 census of the mined citations: "Jude 6" 8k, "2 John 10" 2k, "Philem 10" 1k, "Obad 21"): a number
 // after Jude, Obadiah, Philemon, 2 and 3 John is a VERSE of the only chapter, as is one after "v."/"ver." ("Jude ver. 14, 15.").
 // An unmarked 1 ("Jude 1", "Jude 1:6", "2 John 1. 3.") and a colon after the number keep the chapter reading.
@@ -252,7 +260,8 @@ function scriptureLocation(text,start,book,chapterWord=false){
   }
   if(!selection){const tail=/^\s*(?:ff?\.?|seqq?\.)(?!\p{L})/u.exec(text.slice(end));if(tail){end+=tail[0].length;following=true;}}
   const psalm=book==='Psalms'&&vulgatePsalms()?gallToHeb(chapter):chapter;
-  return {start,end,book,chapter:psalm,selection,following,query:book+' '+psalm+(selection?':'+selection:''),...(psalm!==chapter?{printed:book+' '+chapter+(selection?':'+selection:'')}:{})};
+  const shifted=book==='Psalms'&&vulgatePsalms()?englishPsalmSelection(selection,psalm):selection;
+  return {start,end,book,chapter:psalm,selection,following,query:book+' '+psalm+(shifted?':'+shifted:''),...(psalm!==chapter?{printed:book+' '+chapter+(selection?':'+selection:'')}:{})};
 }
 // THE LONG S (2026-10-15): where the text keeps the printed ſ ("Pſal. 51", "Eſa.", "Epheſ.", "Theſſ.", and the verse mark "Verſ."),
 // the names are matched as s. ſ and s are one UTF-16 unit each, so every offset found in the folded copy is the printed text's own

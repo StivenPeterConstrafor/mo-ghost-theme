@@ -96,7 +96,15 @@ try {
   // tradition from the reader's DATA, which the cases above run without.
   for (const [data, text, want] of [
     [{ tradition: "Latin Fathers", slug: "pld-459" }, "Psal. XIII, 1.", "Psalms 14:1"],
-    [{ tradition: "Medieval" }, "Ps. L, 3.", "Psalms 51:3"],
+    [{ tradition: "Medieval" }, "Ps. L, 3.", "Psalms 51:1"],
+    // Ticket 50: the title counts as verse 1 or 2 in Vulgate/Hebrew numbering, not in the English Bible the preview reads.
+    [{ tradition: "Latin Fathers", slug: "pld-7459" }, "Psal. XX, 5.", "Psalms 21:4"],
+    [{ tradition: "Latin Fathers" }, "Ps. L, 3-5.", "Psalms 51:1-3"],
+    [{ tradition: "Latin Fathers" }, "Ps. XXI, 5.", "Psalms 22:4"],
+    [{ tradition: "Latin Fathers" }, "Ps. VI, 2.", "Psalms 6:1"],
+    [{ tradition: "Greek Fathers" }, "Ps. XIII, 3.", "Psalms 14:3"],
+    [{ tradition: "Latin Fathers" }, "Ps. XII, 3.", "Psalms 13:2"],
+    [{ tradition: "English Divines" }, "Ps. VI, 2.", "Psalms 6:2"],
     [{ tradition: "English Divines" }, "Psal. XIII, 1.", "Psalms 13:1"],
   ]) {
     globalThis.DATA = data;
