@@ -34,7 +34,8 @@
     try {
       const all = JSON.parse(window.localStorage.getItem("fr_lastread") || "{}");
       const mine = all && all[work];
-      return mine && Number(mine.page) ? Number(mine.page) : 0;
+      // top:1 is the reader's own record of an arrival at the top, not a place anyone was left at.
+      return mine && !mine.top && Number(mine.page) ? Number(mine.page) : 0;
     } catch (_) {
       return 0;
     }

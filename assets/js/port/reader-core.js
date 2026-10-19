@@ -562,11 +562,19 @@ function appBank(laN,enN){
 // lane-confined selection guard: note the lane a selection starts in; suppress the other lane
 // until the pointer lifts and the selection collapses.
 // Select the initial reference now; the shared navigation owner places it after the reader boots.
+// A saved place is a resume point only when the reader was actually somewhere. An entry written by merely opening a
+// volume (see the fr_lastread write in setFolio, flagged top:1) is the volume's own opening, so a bare link to that work
+// must open at the top again instead of at the title page past the collapsed front matter (2026-10-19, report #42).
+function frResumePage(entry){
+  if(!entry||entry.top)return null;
+  const last=entry.page;
+  return last!=null&&(!/^\d+$/.test(String(last))||Number(last)>3)?String(last):null;
+}
 (function(){
   if(frReaderBlockReference(location.hash)||location.hash.length>1)return;
   let page=new URLSearchParams(location.search).get("p");
   if(!page)try{const ws=(window.frIS||function(x){return x;})(new URLSearchParams(location.search).get("ws"))||(window.frIS||function(x){return x;})(new URLSearchParams(location.search).get("w")),saved=JSON.parse(localStorage.getItem("fr_lastread")||"{}");
-    const last=saved[ws]?.page;if(last!=null&&(!/^\d+$/.test(String(last))||Number(last)>3))page=String(last);
+    page=frResumePage(saved[ws])||page;
   }catch(_){}
   if(page)window.__frInitialReference=String(page);
 })();
@@ -1442,11 +1450,15 @@ function frReaderBlockReference(hash){
   let id;try{id=decodeURIComponent(String(hash||'').replace(/^#/,''));}catch(_){return null;}
   const match=/^b(.+)-(\d+)$/.exec(id);return match?{id,page:match[1],index:match[2]}:null;
 }
-function captureReaderPosition(){
+function captureReaderPosition(rebuild){
   if(window.__readerNavigationSuspended&&window.__readerSuspendedPosition)return {...window.__readerSuspendedPosition};
   if(window.__readerPendingPosition?.serial===(window.__readerNavSerial||0))return {...window.__readerPendingPosition};
   const sc=document.getElementById('scroll'),reading=document.getElementById('reading');if(!sc||!reading)return null;
   const base=sc.getBoundingClientRect().top,choice=window.__readerChoice;
+  // A reader still at the very top of a volume nobody pointed anywhere in stays at the top through a rebuild (rebuild=true: TEI
+  // hydration, the late shards). Anchoring to the first body row instead re-pins that row at its old offset whenever the
+  // content above it changes height, which carried a bare link down past the title and front matter (report #42).
+  if(rebuild&&!choice&&!window.__frUserScrolled&&window.__frTgt==null&&!window.__frInitialReference&&!location.hash&&sc.scrollTop<=2)return {top:true,page:cur,title:'',choice:false,id:null,offset:null,serial:window.__readerNavSerial||0};
   if(choice?.id)return {page:choice.page,title:choice.title||'',choice:true,id:choice.id,...(choice.focusId?{focusId:choice.focusId}:{}),...(choice.sourcePath?{sourcePath:choice.sourcePath,sourceText:choice.sourceText,sourceKey:choice.sourceKey||''}:{}),anchor:true,offset:null,serial:choice.serial};
   const anchor=Array.from(reading.querySelectorAll('.row[id]:not(.rapp),.pganchor')).find(node=>{const r=node.getBoundingClientRect();return node.getClientRects().length&&r.bottom>base+16;});
   let page=anchor?.closest('.folio')?.dataset.page||anchor?.dataset.page||cur;
@@ -1510,6 +1522,18 @@ function frReaderNavigationLanded(position){
 }
 function restoreReaderPosition(position){
   if(!position||window.__readerNavigationSuspended)return;
+  if(position.top){
+    // Hold the top until the rebuilt column has settled, and let go the moment the reader reaches for the page.
+    const sc=document.getElementById('scroll');if(!sc)return;
+    let n=0,moved=false;const stop=()=>{moved=true;};
+    const evs=['wheel','touchstart','keydown','mousedown'];evs.forEach(t=>addEventListener(t,stop,{capture:true,passive:true}));
+    const hold=()=>{
+      if(moved||window.__frUserScrolled||window.__readerChoice||(window.__readerNavSerial||0)!==position.serial||++n>12){evs.forEach(t=>removeEventListener(t,stop,true));return;}
+      if(sc.scrollTop>2)sc.scrollTop=0;
+      setTimeout(hold,150);
+    };
+    requestAnimationFrame(hold);return;
+  }
   const pending={...position};window.__readerPendingPosition=pending;
   const restore=(window.__readerRestoreSerial||0)+1;window.__readerRestoreSerial=restore;
   let attempts=0,stable=0,offset=position.offset,placed=false;
@@ -4505,7 +4529,11 @@ function setFolio(pg){if(!pg||cur===pg.n)return;cur=pg.n;syncReaderHeader(pg.n);
       if(!wasOpen){const n=$(".nav-node.on");if(n)n.scrollIntoView({block:"center"});}};}}
   try{const lr=JSON.parse(lsGet("fr_lastread")||"{}");
     {const _q=new URLSearchParams(location.search);const _k=(window.frIS||function(x){return x;})(_q.get("ws"))||(window.frIS||function(x){return x;})(_q.get("w"))||DATA.slug||DATA.workspace;
-     lr[_k]={page:pg.n,slug:DATA.slug||"",title:DATA.title_en||DATA.title||"",author:DATA.author||"",ts:Date.now(),...(DATA.pld_source_view?{pldpart:DATA.pld_source_view.id}:{} )};
+     // top:1 marks a reader who is at the top of the volume, whether they arrived there or scrolled back to it (and no
+     // arrival, saved place or choice is still being placed). It still feeds "continue reading", but it is not a place to resume.
+     const _sc=document.getElementById("scroll"),
+       _opening=!!_sc&&_sc.scrollTop<8&&!window.__readerPendingPosition&&!window.__readerChoice&&!document.getElementById("app")?.classList.contains("prelanding");
+     lr[_k]={page:pg.n,slug:DATA.slug||"",title:DATA.title_en||DATA.title||"",author:DATA.author||"",ts:Date.now(),...(_opening?{top:1}:{}),...(DATA.pld_source_view?{pldpart:DATA.pld_source_view.id}:{} )};
      if(lr["undefined"])delete lr["undefined"];}
     lsSet("fr_lastread",JSON.stringify(lr));
     if(window._frSyncLastread)window._frSyncLastread(lr);
@@ -8319,7 +8347,7 @@ async function loadWork(ws){
     // paint under the old whole-book Promise.all (audit 2026-07-12) — now ~1/15th.
     const tgt=frReaderBlockReference(location.hash)?.page
            ||new URLSearchParams(location.search).get("p")
-           ||(()=>{try{const lr=JSON.parse(lsGet("fr_lastread")||"{}");return (lr[ws]||{}).page;}catch(e){return null;}})();
+           ||(()=>{try{const lr=JSON.parse(lsGet("fr_lastread")||"{}");return frResumePage(lr[ws]);}catch(e){return null;}})();
     let ti=0;
     if(tgt){const k=meta.shards.findIndex(s=>+tgt>=s.from&&+tgt<=s.to);if(k>=0)ti=k;}
     const first=[...new Set([ti,0])];                       // target shard + the spine start
@@ -8418,7 +8446,7 @@ async function loadWork(ws){
   else if(_teiWanted){
     window.__teiHydrating=loadTEI().then(()=>{
       try{
-        const position=captureReaderPosition();
+        const position=captureReaderPosition(true);
         build();
         restoreReaderPosition(position);
         requestAnimationFrame(()=>setTimeout(window.__frLoadTools,60));
@@ -8468,7 +8496,7 @@ async function loadWork(ws){
     app.classList.add('prelanding');setTimeout(()=>app.classList.remove('prelanding'),2500);arrive();}
   // stage-2 of the progressive shard load: stream the remaining shards, then one quiet rebuild
   // that restores the reading position (build() is re-entrant; the grip re-attaches after it).
-  if(DATA.__loadRest){DATA.__loadRest().then(()=>{const position=captureReaderPosition(),keep=(window.__frTgt&&!window.__frUserScrolled)?window.__frTgt:cur;delete DATA.__loadRest;build();
+  if(DATA.__loadRest){DATA.__loadRest().then(()=>{const position=captureReaderPosition(true),keep=(window.__frTgt&&!window.__frUserScrolled)?window.__frTgt:cur;delete DATA.__loadRest;build();
     {const pt=$("#pgTotal");if(pt){const _pd=pgDenom();pt.textContent="/ "+_pd.txt;pt.title=_pd.tip;}}   // drop the "+" loading cue now the volume is complete
     if(window.__mkGrip)window.__mkGrip();
     // one scrollIntoView is NOT enough after the full rebuild: build() streams folios in chunks,

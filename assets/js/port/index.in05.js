@@ -19,9 +19,9 @@ function renderContinue(){try{
   if(!items.length)return;
   const box=$("#continue");
   box.innerHTML='<div class=ct>Continue reading</div><div class=cshelf>'+items.map(([ws,e])=>
-    `<a class=ccard title="${esc(e.title||ws).replace(/"/g,"&quot;")}" href="/the-faith-received/read/?w=${encodeURIComponent(e.slug||ws)}#b${encodeURIComponent(e.page)}-0">`+
+    `<a class=ccard title="${esc(e.title||ws).replace(/"/g,"&quot;")}" href="/the-faith-received/read/?w=${encodeURIComponent(e.slug||ws)}${e.top?"":"#b"+encodeURIComponent(e.page)+"-0"}">`+
     `<span class=ct1>${esc(e.title||ws.split("/").slice(-1)[0])}</span>`+
-    `<span class=ct2>${esc(e.author||"")} · fol. ${esc(e.page)}</span></a>`).join("")+'</div>';
+    `<span class=ct2>${esc(e.author||"")}${e.top?"":" · fol. "+esc(e.page)}</span></a>`).join("")+'</div>';
 }catch(e){}}
 renderContinue();
 function matchF(w,f){return !f||[w.title,TITLES[w.slug],w.author,w.author_en,w.author_gr,w.author_full,w.party,w.volume,w.tradition,w.workspace].some(x=>String(x==null?"":x).toLowerCase().includes(f));}   // String(): numeric volumes (old TFR rows) crashed every filtered render ("library could not load", 2026-08-17)   // aliases: PL English authors ("Jerome"→Hieronymus), EEBO full names+dates, party ("puritan"), tome ("PL 137")
