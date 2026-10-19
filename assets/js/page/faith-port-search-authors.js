@@ -76,13 +76,13 @@
     const term = wanted();
     if (term.length < 2) { clear(); return; }
     if (!works) { load(); return; }
-    const next = mode() + '|' + term + '|' + page;
+    const next = `${mode()}|${term}|${page}`;
     if (!force && next === key) return;
     const found = cards.match(works, term);
     if (!found.length) { clear(); return; }
     const b = cards.block(found, page);
     page = b.page;
-    key = mode() + '|' + term + '|' + page;
+    key = `${mode()}|${term}|${page}`;
     const el = ensureHost();
     el.innerHTML = b.html;
     el.hidden = false;
