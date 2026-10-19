@@ -210,6 +210,15 @@ img { max-width: 100%; height: auto; }
   pointer-events: none;
 }
 .site-header.is-hidden { transform: translateY(-100%); }
+/* Phone: the masthead glides back on an ease-out curve instead of the stock
+   .25s ease. Transform only, no layout. Pairs with the 140px reveal run in
+   boot/header-behaviors.js (REVEAL_UP_PHONE). */
+@media (max-width: 880px) {
+  .site-header { transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-header { transition: none; }
+}
 
 .header-inner {
   display: flex;

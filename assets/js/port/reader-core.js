@@ -4725,12 +4725,17 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
     let y0=sc.scrollTop,acc=0;
     sc.addEventListener("scroll",()=>{
       const mob=mq.matches;
-      const y=sc.scrollTop,d=y-y0;y0=y;
+      const y=sc.scrollTop,d=y-y0;
+      // Phone: steps under 4px are jitter; leave y0 alone so a slow drag still adds up.
+      // Constants live in header-behaviors.js (window.moScrollReveal).
+      const R=window.moScrollReveal||{};
+      if(mob&&y>=90&&Math.abs(d)<(R.JITTER||4)&&app.classList.contains("nosb"))return;
+      y0=y;
       if(mob&&!app.classList.contains("nosb")){acc=0;return;}
       if(y<90){HTML.classList.remove("mh-hide","mh-mini");acc=0;return;}
       acc=(d>0)===(acc>0)?acc+d:d;
       if(acc>140)HTML.classList.add(mob?"mh-hide":"mh-mini");
-      else if(acc<-24)HTML.classList.remove("mh-hide","mh-mini");
+      else if(acc<=-(mob?(R.REVEAL_UP||140):24))HTML.classList.remove("mh-hide","mh-mini");   // phone: 140px up to bring it back
     },{passive:true});
     const rd=document.getElementById("reading");
     if(rd)rd.addEventListener("click",e=>{

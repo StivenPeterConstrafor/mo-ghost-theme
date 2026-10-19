@@ -20278,6 +20278,12 @@ body:not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail {
   z-index: 19;
   transition: transform 0.25s ease;
 }
+/* Phone: ride the masthead's own curve (screen.css) so the two stay one piece. */
+@media (max-width: 880px) {
+  body:not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail {
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
 body:has(> .site-header.is-hidden):not(:has(#app.faith-port-read-page)):not(.web-page) > .tfr-rail {
   transform: translateY(calc(-1 * var(--mo-mast, 85px)));
 }
