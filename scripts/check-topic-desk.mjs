@@ -220,6 +220,9 @@ if (live) {
       ok(idx.length === hist.history.length && attached.length === hist.history.length, `${name}: all ${hist.history.length} History periods appear exactly once in the merged section`);
       const rowOrder = [...sect.matchAll(/data-period="(\d+)"/g)].map((m) => Number(m[1]));
       ok(rowOrder.every((v, i) => i === 0 || v >= rowOrder[i - 1]), `${name}: the periods keep the History's order`);
+      const wantRefs = hist.history.reduce((n, h) => n + Math.min((h.refs || []).length, 12), 0);
+      const gotRefs = (sect.match(/<li><a href="\/the-faith-received\/read\/\?w=/g) || []).length;
+      ok(gotRefs >= wantRefs, `${name}: every source page of every period is in the numbered notes (${wantRefs})`);
       const plainText = (t) => t.replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, '"');
       ok(hist.history.every((h) => plainText(sect).includes(plainText(h.text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])).replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'")))) || true, `${name}: period texts are carried unchanged`);
     }

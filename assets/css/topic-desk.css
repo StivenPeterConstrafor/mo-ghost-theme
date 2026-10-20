@@ -265,3 +265,8 @@ html[data-sd-theme="dark"] .td-desk .tdk-cent {
 .td-desk .tdk-period-body .fr-dn-pages a { color: var(--cn-muted); display: inline-block; padding: 8px 0; }
 .td-desk .tdk-hist-lede { margin-top: 10px; }
 .td-desk .tdk-loose { margin-top: 14px; padding: 14px 16px; border-radius: 3px; border-left: 4px solid var(--cn-accent); background: var(--cn-e-modern); }
+
+.td-desk .tdk-notes { margin: 4px 0 6px; padding-left: 1.6em; font-size: 14px; }
+.td-desk .tdk-notes li { margin: 0; color: var(--cn-muted); }
+.td-desk .tdk-notes a { display: inline-block; min-height: 44px; padding: 12px 0; color: var(--cn-muted); }
+.td-desk .tdk-notes-h { margin: 8px 0 0; font-weight: 600; }

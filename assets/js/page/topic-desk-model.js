@@ -446,7 +446,8 @@
   function periodHtml(pd) {
     const id = `tdk-pd-${pd.i}`;
     const span = pd.last && pd.last !== pd.first ? ` This summary covers the ${ord(pd.first)} to ${ord(pd.last)} centuries.` : "";
-    const refs = pd.refs.length ? `<p class="fr-dn-pages">${pd.refs.slice(0, 6).map((r) => `<a href="${esc(readHref(r.w, r.p))}">${esc(`${refWho(r)}, p. ${r.p}`)}</a>`).join(" · ")}</p>` : "";
+    // The data gives one flat list of pages per period, not a source for each claim, so the list is numbered like notes to the paragraph as a whole and says so. No marker is placed in the text.
+    const refs = pd.refs.length ? `<p class="tdk-small tdk-notes-h">Pages this paragraph was drawn from</p><ol class="tdk-notes fr-dn-pages">${pd.refs.slice(0, 12).map((r) => `<li><a href="${esc(readHref(r.w, r.p))}">${esc(`${refWho(r)}, p. ${r.p}`)}</a></li>`).join("")}</ol>` : "";
     return `<div class="tdk-period" data-period="${pd.i}"><button type="button" class="tdk-period-btn" aria-expanded="false" aria-controls="${id}">Read this period <span>${esc(pd.period)}</span></button>` +
       `<div class="tdk-period-body" id="${id}" hidden><p>${esc(pd.text)}</p>${refs}${span ? `<p class="tdk-small">${esc(span.trim())}</p>` : ""}</div></div>`;
   }
