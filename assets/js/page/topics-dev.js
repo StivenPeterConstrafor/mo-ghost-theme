@@ -26,6 +26,11 @@
  *   the manner of Connections: one strip, a row per tradition, points by
  *   date), Scripture (proof-texts, each to its Verse Desk).
  *
+ * THE TOPIC DESK (2026-10-19). Above the two blocks, assets/js/page/topic-desk.js draws a desk for every topic: hero with a century
+ * ruler, the churches' own documents, classic works, a timeline, key verses, people, a reading path, related topics. Each module
+ * is computed from the data (topic-desk-model.js) and left out when the data is thin. This file only feeds it (deskFeed), so if
+ * the desk fails the two blocks below are exactly what they were.
+ *
  * The earlier stream of single verified sentences was dropped: sentences
  * cut from their argument, chosen by what verified rather than by what
  * mattered. Verified quotations remain in the author sidebar.
@@ -77,7 +82,7 @@
   // ── The contents page ─────────────────────────────────────────
   function renderContents() {
     document.title = "Topics | The Faith Received | Mere Orthodoxy";
-    $root.classList.remove("has-topic");
+    $root.classList.remove("has-topic", "has-desk");
     $root.innerHTML =
       `<header class="td-head td-head--contents">` +
         `<label class="sd-search td-find"><span class="sd-filter-label">Find a topic</span><input type="search" data-td-find placeholder="Justification, the Trinity, baptism…" autocomplete="off"></label>` +
@@ -127,6 +132,9 @@
    * Trace in both is a timeline in the manner of Connections: one strip,
    * rows by tradition, each point placed by its date. */
   const state = { id: "", view: "read", cview: "read", data: null, conf: null };
+  // The Topic Desk's handle (topic-desk.js), and a feed that never lets it break this page.
+  let deskCtl = null;
+  const deskFeed = (kind, payload, extra) => { try { if (deskCtl) deskCtl.feed(kind, payload, extra); } catch (e) { /* the page carries on without the desk */ } };
   let $main = null;
   let $side = null;
   const $panel = document.createElement("section");
@@ -227,6 +235,7 @@
     state.conf = null;
     document.title = `${locus.label} | Topics | The Faith Received | Mere Orthodoxy`;
     $root.classList.add("has-topic");
+    $root.classList.remove("has-desk");
     const tabs = (block, cur) => `<nav class="td-tabs" aria-label="${block === "c" ? "Ways to read the confessions" : "Ways to read the teachers"}">${VIEWS.map(([k, lab]) =>
       `<a class="td-tab" href="${esc(topicHref(id, block === "w" ? k : state.view, block === "c" ? k : state.cview))}" data-block="${block}" data-view="${k}"${k === cur ? ' aria-current="true"' : ""}>${lab}</a>`).join("")}</nav>`;
     $root.innerHTML =
@@ -245,6 +254,8 @@
           `<p class="td-counts sd-muted" data-td-counts hidden></p>${
             (locus.children || []).length ? `<p class="td-kids">Within this topic: ${locus.children.map((ch) => `<a href="${esc(topicHref(ch.id))}">${esc(ch.label)}</a>`).join(" · ")}</p>` : ""
           }</header>` +
+        // The Topic Desk (topic-desk.js) draws here when it has data. Empty until then, and empty for good if it fails.
+        `<div class="td-desk" data-td-desk></div>` +
         // Both blocks fold (Ian, 2026-09-24). <details>, open to start:
         // the heading and its note are the summary, so a closed block is
         // one line with its chevron.
@@ -262,6 +273,12 @@
       `<aside class="td-side sd-side" data-td-side hidden aria-label="Author"></aside>`;
     $main = $root.querySelector("[data-td-main]");
     $side = $root.querySelector("[data-td-side]");
+    deskCtl = null;
+    try {
+      deskCtl = window.MOTopicDeskMount
+        ? window.MOTopicDeskMount({ host: $main.querySelector("[data-td-desk]"), root: $root, id, locus, part, parent, S, loci: INDEX, bodyOf })
+        : null;
+    } catch (e) { deskCtl = null; }
     $main.querySelectorAll(".td-tabs").forEach((nav) => nav.addEventListener("click", (e) => {
       const a = e.target.closest(".td-tab");
       if (!a) return;
@@ -275,6 +292,7 @@
       if (state.id !== id) return;
       if (!d) throw new Error("no topic");
       state.data = curateTopicData(d);
+      deskFeed("topic", state.data, (TREAT && TREAT.loci && TREAT.loci[id]) || []);
       const c = state.data.counts || {};
       setStat("authors", c.authors || 0);
       setStat("works", c.works || 0);
@@ -302,11 +320,16 @@
       if (state.id !== id) return;
       const clean = d ? { ...d, articles: (d.articles || []).filter(predestinationArticle) } : { articles: [], scripture: [] };
       state.conf = { d: clean, from };
+      deskFeed("conf", {
+        articles: clean.articles, from,
+        timeline: (clean.timeline || []).filter((t) => clean.articles.some((a) => a.w === t.w)),
+      });
       setStat("conf", clean.articles.length);
       setCView(state.cview, false);
     }).catch(() => {
       if (state.id !== id) return;
       state.conf = { d: null, from: null, error: true };
+      deskFeed("conf", null);
       setStat("conf", null);
       setCView(state.cview, false);
     });

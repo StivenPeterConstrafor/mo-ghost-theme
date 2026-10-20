@@ -8584,22 +8584,6 @@
    {
     "trad": "gf",
     "trad_label": "Greek Fathers",
-    "author": "John Chrysostom",
-    "author_id": "a-5e62935d917fb99fe639",
-    "y": 387,
-    "cen": 5,
-    "w": "pg-1576",
-    "title": "Cassianus, de Incarnatione Domini, Lib. VII, 3. 30",
-    "p": 111,
-    "heading": null,
-    "excerpt": "TESTIMONIA VETERUM becomes God. For He was not made man with the loss of deity, nor was He made God from man through growth; but being the Word, because of His impassibility, He was made flesh, His own immutable nature remaining. ~SAINT AUGUSTINE, ON NATURE AND GRACE, Item, John, bishop of Constantinople, whose position he stated, says that sin is not a substance, but an evil act.",
-    "excerpt_at": "page",
-    "lang": "en",
-    "why": "weight 2 · 0 sections · 6748 positions · monograph · major author · page from 1 evidence pages · score 17.9"
-   },
-   {
-    "trad": "gf",
-    "trad_label": "Greek Fathers",
     "author": "Athanasius of Alexandria",
     "author_id": "a-cec87167e73396f00b33",
     "y": 336,
@@ -9015,22 +8999,6 @@
    }
   ],
   "de-spiritu-sancto": [
-   {
-    "trad": "gf",
-    "trad_label": "Greek Fathers",
-    "author": "Basil the Great",
-    "author_id": "a-d485c34057c3161cd9a7",
-    "y": 370,
-    "cen": 4,
-    "w": "pg-417",
-    "title": "Liber de Spiritu Sancto; Epistolae (Classes I-III)",
-    "p": 107,
-    "heading": null,
-    "excerpt": "Chapter IX. Proprieties and distinct notions concerning the Spirit, agreeing with the doctrine of the Scriptures. 22. But let us now examine what kind of notions we have concerning the Spirit, both those gathered for us from the Scriptures regarding Him, and those we have received from the unwritten tradition of the Fathers.",
-    "excerpt_at": "page",
-    "lang": "en",
-    "why": "weight 1 · 0 sections · 1361 positions · monograph · major author · page from 105 evidence pages · score 15.9"
-   },
    {
     "trad": "gf",
     "trad_label": "Greek Fathers",
