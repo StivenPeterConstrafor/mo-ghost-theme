@@ -1224,7 +1224,8 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
 /* A compact toolbar, 32px tall, right-aligned directly above the columns (icons, 2026-10-19: "moved up, made smaller, and made into icons"). */
 .sd .sd-viewbar { padding-top: 8px; padding-bottom: 0; }
 /* Flush with the right edge of the columns below: the columns are 1240px wide and the bare .container is 1180px, which left the toolbar 60px short of the panel's edge. */
-@media (min-width: 900px) { .sd .sd-viewbar { max-width: 1240px; } }
+/* Same width as .sd-layout, whose max-width the pane widens to min(1380px, 100%) while it is open: the toolbar's right edge is the panel's. */
+@media (min-width: 900px) { .sd .sd-viewbar { max-width: 1240px; } body.cp-on .sd .sd-viewbar { max-width: min(1380px, 100%); } }
 .sd-viewbar-row { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
 .sd-layout-group { display: none; align-items: center; }
 .sd-seg { display: inline-flex; }
@@ -1369,6 +1370,8 @@ html[data-sd-theme="dark"] {
 }
 html[data-sd-theme="dark"] main.sd { background: var(--sd-dk-page); color-scheme: dark; }
 html[data-sd-theme="dark"] .sd :is(.sd-bar, .sd-comm-panel, .sd-viewbar, .sd-layout, .sd-notice-wrap, .sd-attribution, .sd-desk) {
+  /* The text that names no colour of its own (panel headings, stat figures, row labels) inherits body's literal #2d2927: ink here. */
+  color: var(--sd-dk-ink);
   --color-dark: var(--sd-dk-ink);
   --color-white: var(--sd-dk-card);
   --color-page: var(--sd-dk-page);
