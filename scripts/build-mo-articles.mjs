@@ -33,6 +33,9 @@ const KIND = {
 };
 
 const input = readJson("scripts/mo-articles-input.json");
+const imageInput = readJson("scripts/mo-articles-images.json");
+const IMG_PATH = /^\d{4}\/\d{2}\/[A-Za-z0-9._%()~-]+\.(?:jpe?g|png|gif|webp|avif)$/i;
+let withImage = 0;
 
 // ── what the library has ──
 const loci = new Map();
@@ -78,6 +81,11 @@ for (const a of input.articles) {
   const o = { id: a.id, t: a.title, u: a.url, d: a.date, a: a.byline, k: kind, f: a.confidence, x: a.excerpt, w: a.keywords };
   if (!/^https:\/\/mereorthodoxy\.com\//.test(a.url)) problems.push(`${a.id}: url is not on mereorthodoxy.com`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(a.date)) problems.push(`${a.id}: bad date ${a.date}`);
+  const img = imageInput.images[a.id];
+  if (img) {
+    const ok = IMG_PATH.test(img.i) || /^https:\/\/(images\.unsplash\.com|storage\.ghost\.io)\/[^\s"<>]+$/.test(img.i);
+    if (ok) { o.i = img.i; withImage++; if (img.ia) o.ia = img.ia; } else problems.push(`${a.id}: image ${img.i} is not a valid path or URL`);
+  } else o.i = null;
   if (a.excerpt.length > 241) problems.push(`${a.id}: excerpt is ${a.excerpt.length} characters`);
 
   const works = [];
@@ -148,6 +156,7 @@ const out = {
   v: 1,
   generated: input.generated,
   note: "Built by scripts/build-mo-articles.mjs from scripts/mo-articles-input.json. Do not edit by hand. Essays from Mere Orthodoxy that serve the library. Each entry links to the original. Keys: t title, u url, d date, a author, k kind, f confidence, x excerpt, w keywords.",
+  imgBase: imageInput.imgBase,
   articles,
   lab: { docs: sortLabels(labels.docs), works: sortLabels(labels.works), topics: sortLabels(labels.topics) },
   idx: sortedIdx,
@@ -165,6 +174,7 @@ const report = [
   `mo-articles: ${articles.length} articles, ${(bytes / 1024).toFixed(0)} KB (target under ${MAX_BYTES / 1024} KB)`,
   `  kinds: ${Object.entries(kinds).map(([k, n]) => `${k} ${n}`).join(", ")}`,
   ...Object.entries(sortedIdx).map(([name, t]) => `  idx.${name}: ${Object.keys(t).length} keys, ${Object.values(t).reduce((n, l) => n + l.length, 0)} entries`),
+  `  with a featured image: ${withImage} of ${articles.length}`,
   `  without any entity: ${articles.filter((o) => !o.works && !o.authors && !o.docs && !o.verses && !o.topics).length}`,
   `  unresolved or dropped: ${dropped.length}`,
 ];

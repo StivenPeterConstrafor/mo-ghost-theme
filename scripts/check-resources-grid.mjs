@@ -1,0 +1,116 @@
+#!/usr/bin/env node
+/*
+ * The Resources page grid, measured in a real browser engine (2026-10-20).
+ *
+ * Builds a harness from custom-faith-resources.hbs (partials and helpers stripped, its scripts and stylesheet kept), serves the
+ * theme's assets locally, drives headless Chrome over the DevTools protocol, and at 1920, 1600, 1280, 1024, 768 and 375 asserts:
+ *   - the column count (8 at 1920 and 1600, 6 at 1280, 4 at 1024, 3 at 768, 1 at 375)
+ *   - no horizontal overflow of the page
+ *   - tiles of one grid are the same width within 1px
+ *   - no two cards, and no two text lines inside a card, overlap
+ *   - every card is a link, and has an image or a placeholder tile
+ *
+ *   node scripts/check-resources-grid.mjs
+ *
+ * Skips (and passes) when Chrome is not found (set CHROME to a binary). Not part of `npm run build`: it needs a browser.
+ * Images come from the network; they are not needed for the layout, so a blocked image changes nothing here.
+ */
+import { spawn } from "node:child_process";
+import { createServer } from "node:http";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+
+const root = path.resolve(import.meta.dirname, "..");
+const chromePath = [process.env.CHROME, "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"].find((p) => p && existsSync(p));
+if (!chromePath) { console.log("skip  resources grid: no Chrome found (set CHROME)"); process.exit(0); }
+if (typeof WebSocket === "undefined") { console.log("skip  resources grid: this Node has no WebSocket"); process.exit(0); }
+
+const tpl = readFileSync(path.join(root, "custom-faith-resources.hbs"), "utf8")
+  .replace(/\{\{!<.*?\}\}/g, "")
+  .replace(/\{\{!--[\s\S]*?--\}\}/g, "")
+  .replace(/\{\{#contentFor "moHead"\}\}[\s\S]*?\{\{\/contentFor\}\}/g, "")
+  .replace(/\{\{> [^}]*\}\}/g, "")
+  .replace(/<script src="\{\{asset "js\/page\/faith-tfr-rail\.js"\}\}" defer><\/script>/, "")
+  .replace(/\{\{asset "([^"]+)"\}\}&amp;frv=[a-z0-9-]+/g, "/assets/$1");
+const harness = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/assets/css/faith-resources.css"><style>body{margin:0;--font-body:Georgia,serif;background:#f7f4ef}.container{max-width:1180px;margin:0 auto;padding:0 28px}</style></head><body>${tpl}</body></html>`;
+
+const server = createServer((req, res) => {
+  const url = new URL(req.url, "http://x");
+  if (url.pathname === "/h") { res.setHeader("content-type", "text/html"); res.end(harness); return; }
+  const file = path.join(root, decodeURIComponent(url.pathname));
+  if (!file.startsWith(root) || !existsSync(file) || !/\.(js|css|json)$/.test(file)) { res.statusCode = 404; res.end("no"); return; }
+  res.setHeader("content-type", file.endsWith(".json") ? "application/json" : file.endsWith(".css") ? "text/css" : "text/javascript");
+  res.end(readFileSync(file));
+});
+await new Promise((res) => server.listen(0, "127.0.0.1", res));
+const base = `http://127.0.0.1:${server.address().port}`;
+
+const profile = mkdtempSync(path.join(tmpdir(), "res-grid-"));
+const chrome = spawn(chromePath, ["--headless=new", "--disable-gpu", "--no-first-run", "--hide-scrollbars", `--user-data-dir=${profile}`, "--remote-debugging-port=0", "about:blank"], { stdio: "ignore" });
+const cleanup = () => { try { chrome.kill(); } catch (_) { /* gone */ } server.close(); try { rmSync(profile, { recursive: true, force: true }); } catch (_) { /* busy */ } };
+process.on("exit", cleanup);
+let port = 0;
+for (let i = 0; i < 100 && !port; i += 1) {
+  await new Promise((res) => setTimeout(res, 150));
+  const f = path.join(profile, "DevToolsActivePort");
+  if (existsSync(f)) port = Number(readFileSync(f, "utf8").split("\n")[0]);
+}
+if (!port) { console.log("skip  resources grid: Chrome did not start"); cleanup(); process.exit(0); }
+const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
+const ws = new WebSocket(targets.find((t) => t.type === "page").webSocketDebuggerUrl);
+await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
+let seq = 0;
+const waiting = new Map();
+ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && waiting.has(d.id)) { waiting.get(d.id)(d); waiting.delete(d.id); } };
+const send = (method, params = {}) => new Promise((res) => { seq += 1; waiting.set(seq, res); ws.send(JSON.stringify({ id: seq, method, params })); });
+const evaluate = async (expression) => { const r = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true }); return r.result && r.result.result ? r.result.result.value : undefined; };
+await send("Page.enable");
+
+const MEASURE = `(async () => {
+  for (let i = 0; i < 60 && !document.querySelector(".fr-res-card"); i += 1) await new Promise((r) => setTimeout(r, 100));
+  const grids = [...document.querySelectorAll(".fr-res-grid")];
+  const out = { vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth, cards: document.querySelectorAll(".fr-res-card").length, problems: [] };
+  if (!grids.length) { out.problems.push("no grid"); return out; }
+  const g = grids[0];
+  out.cols = getComputedStyle(g).gridTemplateColumns.split(" ").length;
+  const cards = [...g.querySelectorAll(".fr-res-card")].map((c) => c.getBoundingClientRect());
+  const ws = cards.map((r) => r.width);
+  out.spread = Math.max(...ws) - Math.min(...ws);
+  const hit = (a, b) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
+  for (let i = 0; i < cards.length; i += 1) for (let j = i + 1; j < cards.length; j += 1) if (hit(cards[i], cards[j])) out.problems.push("cards " + i + " and " + j + " overlap");
+  out.left = Math.round(cards[0].left); out.right = Math.round(out.vw - Math.max(...cards.map((r) => r.right)));
+  for (const c of document.querySelectorAll(".fr-res-card")) {
+    const a = c.querySelector("a.fr-res-cardlink");
+    if (!a) { out.problems.push("a card without a link"); continue; }
+    if (!a.querySelector("img.fr-res-photo, .fr-res-ph")) out.problems.push("a card with no image or placeholder");
+  }
+  for (const a of [...document.querySelectorAll(".fr-res-cardlink")].slice(0, 60)) {
+    const parts = [...a.querySelectorAll(".fr-res-ctitle, .fr-res-cmeta, .fr-res-ckind")].map((e) => e.getBoundingClientRect());
+    for (let i = 0; i < parts.length; i += 1) for (let j = i + 1; j < parts.length; j += 1) if (hit(parts[i], parts[j])) out.problems.push("text lines overlap in a card");
+  }
+  return out;
+})()`;
+
+const WANT = { 1920: 8, 1600: 8, 1280: 6, 1024: 4, 768: 3, 375: 1 };
+let failed = 0;
+await send("Page.navigate", { url: `${base}/h` });
+await new Promise((res) => setTimeout(res, 800));
+for (const [w, cols] of Object.entries(WANT)) {
+  await send("Emulation.setDeviceMetricsOverride", { width: Number(w), height: 900, deviceScaleFactor: 1, mobile: false });
+  await new Promise((res) => setTimeout(res, 300));
+  const m = await evaluate(MEASURE);
+  const bad = [];
+  if (!m || m.problems === undefined) bad.push("the page did not measure");
+  else {
+    if (m.cols !== cols) bad.push(`${m.cols} columns, wanted ${cols}`);
+    if (m.sw > m.vw) bad.push(`page is ${m.sw}px wide in a ${m.vw}px window`);
+    if (m.spread > 1) bad.push(`tiles differ in width by ${m.spread.toFixed(2)}px`);
+    if (m.left > 25 || m.right > 25) bad.push(`gutters ${m.left}px and ${m.right}px, wanted about 24`);
+    bad.push(...new Set(m.problems));
+  }
+  if (bad.length) { failed += 1; console.error(`FAIL ${w}px: ${bad.join("; ")}`); } else console.log(`ok   ${w}px: ${cols} columns, ${m.cards} cards`);
+}
+cleanup();
+if (failed) process.exit(1);
+console.log("\nresources grid: all widths pass");

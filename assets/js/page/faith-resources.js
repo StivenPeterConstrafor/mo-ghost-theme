@@ -18,7 +18,7 @@
   const root = document.querySelector("[data-res-root]");
   if (!M || !root) return;
 
-  const PAGE = 25;
+  const PAGE = 48;
   const $ = (id) => document.getElementById(id);
   const $q = $("resQuery"), $clear = $("resClear"), $form = $("resForm"), $kinds = $("resKinds"), $sort = $("resSort");
   const $count = $("resCount"), $results = $("resResults"), $more = $("resMore"), $moreBtn = $("resMoreBtn");
@@ -62,7 +62,6 @@
 
   /* ── links to the library's own pages ─────────────────────────── */
   const SD = () => window.MOScriptureDev;
-  const foldName = (s) => String(s || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "");
   const shortTitle = (s) => String(s || "").replace(/\s*\([^)]*\)\s*$/, "");
 
   function verseParts(key) {
@@ -77,15 +76,8 @@
     const name = book ? (book.slug === "psalms" ? "Psalm" : book.name) : v.book;
     return `${name} ${v.c}${v.a ? `:${v.a}${v.b ? `-${v.b}` : ""}` : ""}`;
   }
-  function serveHref(e) {
-    if (e.type === "doc" || e.type === "work") return `/the-faith-received/read/?w=${enc(e.key)}`;
-    if (e.type === "author") return `/the-faith-received/author/?a=${enc(foldName(e.key))}`;
-    if (e.type === "topic") return `/the-faith-received/topics/?t=${enc(e.key)}`;
-    const v = verseParts(e.key);
-    return v ? `/the-faith-received/scripture/desk/?ref=${v.book}.${v.c}${v.a ? `.${v.a}` : ""}` : "";
-  }
   const TYPE_ORDER = ["doc", "work", "author", "topic", "verse"];
-  // Up to three, one of each kind first so the line shows range, then whatever is left in order.
+  // Up to three, one of each kind first so the line shows range, then whatever is left in order. Plain text: it goes in the card's title attribute.
   function serves(a) {
     const all = M.entities(a);
     const picked = [];
@@ -95,11 +87,7 @@
     }
     for (const e of all) if (picked.length < 3 && !picked.includes(e)) picked.push(e);
     picked.sort((x, y) => TYPE_ORDER.indexOf(x.type) - TYPE_ORDER.indexOf(y.type));
-    return picked.map((e) => {
-      const label = e.type === "verse" ? verseLabel(e.key) : e.type === "work" ? shortTitle(e.label) : e.label;
-      const href = serveHref(e);
-      return href ? `<a href="${esc(href)}">${esc(label)}</a>` : esc(label);
-    });
+    return picked.map((e) => (e.type === "verse" ? verseLabel(e.key) : e.type === "work" ? shortTitle(e.label) : e.label));
   }
 
   /* ── highlighting: fold as the search does, mark the original text ─ */
@@ -159,16 +147,29 @@
   const niceDate = (d) => { const t = new Date(`${d}T00:00:00Z`); return Number.isNaN(t.getTime()) ? d : dateFmt.format(t); };
   const plural = (n, one, many) => `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;
 
-  function row(a, ts) {
+  const KIND_LABEL = { doc: "Creeds and confessions", work: "Works and authors", retrieval: "Theological retrieval", topic: "Doctrine and Scripture" };
+  const SIZES = "(min-width: 1600px) 12vw, (min-width: 1280px) 16vw, (min-width: 1100px) 20vw, (min-width: 900px) 25vw, (min-width: 700px) 33vw, (min-width: 480px) 50vw, 100vw";
+  const monthYear = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", timeZone: "UTC" });
+  const niceMonth = (d) => { const t = new Date(`${d}T00:00:00Z`); return Number.isNaN(t.getTime()) ? d : monthYear.format(t); };
+
+  // One card, one link: the image (or a tinted tile with the kind), the title, author and month, the kind. What the essay serves rides in the title attribute.
+  function card(a, ts) {
+    const kind = KIND_LABEL[a.k] || "";
+    const src3 = M.image(a, 300);
+    const img = src3
+      ? `<img class="fr-res-photo" src="${esc(src3)}" srcset="${esc(src3)} 300w, ${esc(M.image(a, 600))} 600w" sizes="${SIZES}" width="600" height="400" alt="${esc(a.ia || "")}" loading="lazy" decoding="async">`
+      : `<span class="fr-res-ph" aria-hidden="true">${esc(kind)}</span>`;
     const s = serves(a);
-    const sep = '<span class="fr-res-sep" aria-hidden="true">, </span>';
+    const tip = s.length ? ` title="${esc(`Serves: ${s.join("; ")}`)}"` : "";
     return [
-      '<li class="fr-res-item">',
-      `<p class="fr-res-title"><a href="${esc(a.u)}" target="_blank" rel="noopener">${highlight(a.t, ts)}<span class="fr-res-sr"> (opens in a new tab)</span></a></p>`,
-      `<p class="fr-res-meta">${highlight(a.a, ts)} <span aria-hidden="true">&middot;</span> <time datetime="${esc(a.d)}">${esc(niceDate(a.d))}</time></p>`,
-      a.x ? `<p class="fr-res-x">${highlight(a.x, ts)}</p>` : "",
-      s.length ? `<p class="fr-res-serves"><span>Serves:</span> ${s.join(sep)}</p>` : "",
-      "</li>",
+      '<li class="fr-res-card">',
+      `<a class="fr-res-cardlink" href="${esc(a.u)}" target="_blank" rel="noopener"${tip}>`,
+      `<span class="fr-res-img">${img}</span>`,
+      `<span class="fr-res-ctitle">${highlight(a.t, ts)}</span>`,
+      `<span class="fr-res-cmeta">${esc(a.a)} <span aria-hidden="true">&middot;</span> ${esc(niceMonth(a.d))}</span>`,
+      `<span class="fr-res-ckind">${esc(kind)}</span>`,
+      '<span class="fr-res-sr"> (opens in a new tab)</span>',
+      "</a></li>",
     ].join("");
   }
 
@@ -199,10 +200,10 @@
         const part = shown.filter((a) => a.k === k);
         if (!part.length) continue;
         const of = list.filter((a) => a.k === k).length;
-        html += `<section class="fr-res-section" aria-labelledby="res-g-${k}"><h3 class="fr-res-h" id="res-g-${k}">${esc(label)} <span class="fr-res-n">${of.toLocaleString("en-US")}</span></h3><ul class="fr-res-list">${part.map((a) => row(a, ts)).join("")}</ul></section>`;
+        html += `<section class="fr-res-section" aria-labelledby="res-g-${k}"><h3 class="fr-res-h" id="res-g-${k}">${esc(label)} <span class="fr-res-n">${of.toLocaleString("en-US")}</span></h3><ul class="fr-res-grid">${part.map((a) => card(a, ts)).join("")}</ul></section>`;
       }
     } else {
-      html = `<ul class="fr-res-list">${shown.map((a) => row(a, ts)).join("")}</ul>`;
+      html = `<ul class="fr-res-grid">${shown.map((a) => card(a, ts)).join("")}</ul>`;
     }
     $results.innerHTML = total ? html : "";
     $empty.hidden = total > 0;
@@ -212,7 +213,7 @@
     if (left > 0) $moreBtn.textContent = `Show ${Math.min(PAGE, left)} more`;
     $clear.hidden = !$q.value;
     if (focusNew && shown.length > lastShown) {
-      const links = $results.querySelectorAll(".fr-res-title a");
+      const links = $results.querySelectorAll(".fr-res-cardlink");
       const target = links[lastShown];
       if (target) target.focus();
     }
