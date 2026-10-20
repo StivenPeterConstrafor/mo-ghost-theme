@@ -141,7 +141,7 @@
   // ── The model ─────────────────────────────────────────────────
   function buildDeskModel(input) {
     const {
-      locus, part, parent = null, topic = null, conf = null, scr = null, treat = [], data = {}, marquee = null, history = null,
+      locus, part, parent = null, topic = null, conf = null, scr = null, treat = [], data = {}, marquee = null, history = null, keyWorks = null,
       books = new Map(), loci = new Map(), bodyOf = null,
     } = input;
     const counts = (topic && topic.counts) || {};
@@ -281,7 +281,7 @@
       const rowsC = ruler.bars.filter((b) => b.total || byCen.has(b.c)).map((b) => {
         const all = (byCen.get(b.c) || []).sort((x, y) => x.rank - y.rank || x.y - y.y);
         const shown = all.slice(0, CAP.docsPerCentury).sort((x, y) => x.y - y.y);
-        return { c: b.c, total: b.total, by: b.by, docs: shown, more: all.length - shown.length, era: eraOf(b.c) };
+        return { c: b.c, total: b.total, by: b.by, docs: shown, more: all.length - shown.length, era: eraOf(b.c), kw: (keyWorks && keyWorks.get(b.c)) || [] };
       });
       const nDocs = rowsC.reduce((n, r) => n + r.docs.length + r.more, 0);
       /* The period summaries of the page's History data ("2nd-3rd centuries"), relocated onto the rows: each goes on the row of its first
@@ -293,8 +293,10 @@
       const loose = [];
       periods.forEach((pd, i) => {
         pd.i = i;
-        const row = pd.first ? rowsC.find((r) => r.c >= pd.first) : null;
-        if (row && (pd.last ? row.c <= pd.last || row.c === pd.first : true)) (row.periods = row.periods || []).push(pd); else loose.push(pd);
+        // A period shows under every century row it covers. The first of them carries the notes list; the others point to it.
+        const cov = pd.first ? rowsC.filter((r) => r.c >= pd.first && r.c <= pd.last) : [];
+        if (!cov.length) { loose.push(pd); return; }
+        cov.forEach((r, k) => { (r.periods = r.periods || []).push({ pd, lead: k === 0, firstC: cov[0].c }); });
       });
       const eras = ERAS.map((e) => ({ ...e, rows: rowsC.filter((r) => r.era === e.id) })).filter((e) => e.rows.length);
       if (rowsC.filter((r) => r.total).length >= MIN.ruler) {
@@ -419,7 +421,7 @@
     jumps.push(link("#td-h-conf", "Full record"));
     const tiles = h.tiles.length ? `<ul class="tdk-tiles" aria-label="This topic in the library">${h.tiles.map((t) =>
       `<li>${ids[t.to] ? `<a href="#tdk-${t.to}"><b>${fmt(t.n)}</b><span>${esc(t.label)}</span></a>` : `<b>${fmt(t.n)}</b><span>${esc(t.label)}</span>`}</li>`).join("")}</ul>` : "";
-    return `<div class="tdk-hero" id="tdk-hero" data-tier="${esc(tier)}"><div class="tdk-hero-grid">${h.dek ? `<p class="tdk-dek">${esc(h.dek)}</p>` : "<span></span>"}${tiles}</div>` +
+    return `<div class="tdk-hero" id="tdk-hero" data-tier="${esc(tier)}"><div class="tdk-hero-grid">${h.dek ? `<p class="tdk-dek">${esc(h.dek)}</p>` : ""}${tiles}</div>` +
       `${jumps.length ? `<nav class="tdk-jump" aria-label="On this page">${jumps.join("")}</nav>` : ""}</div>`;
   }
 
@@ -448,13 +450,21 @@
 
   // The page's History summary for one period, exactly as the page has always shown it (text and source links unchanged).
   const refWho = (r) => `${r.a || r.author || r.side || "page"}${r.via ? `, via ${r.via}` : ""}`;
-  function periodHtml(pd) {
-    const id = `tdk-pd-${pd.i}`;
-    const span = pd.last && pd.last !== pd.first ? ` This summary covers the ${ord(pd.first)} to ${ord(pd.last)} centuries.` : "";
+  // "Covers the 2nd and 3rd centuries": said only when a period spans more than one.
+  const coversLine = (pd) => (pd.last > pd.first ? `Covers the ${ord(pd.first)} ${pd.last - pd.first === 1 ? "and" : "to"} ${ord(pd.last)} centuries.` : "");
+  function periodHtml(pd, lead = true, firstC = 0) {
+    const covers = coversLine(pd);
     // The data gives one flat list of pages per period, not a source for each claim, so the list is numbered like notes to the paragraph as a whole and says so. No marker is placed in the text.
-    const refs = pd.refs.length ? `<p class="tdk-small tdk-notes-h">Pages this paragraph was drawn from</p><ol class="tdk-notes fr-dn-pages">${pd.refs.slice(0, 12).map((r) => `<li><a href="${esc(readHref(r.w, r.p))}">${esc(`${refWho(r)}, p. ${r.p}`)}</a></li>`).join("")}</ol>` : "";
-    return `<div class="tdk-period" data-period="${pd.i}"><button type="button" class="tdk-period-btn" aria-expanded="false" aria-controls="${id}">Read this period <span>${esc(pd.period)}</span></button>` +
-      `<div class="tdk-period-body" id="${id}" hidden><p>${esc(pd.text)}</p>${refs}${span ? `<p class="tdk-small">${esc(span.trim())}</p>` : ""}</div></div>`;
+    const refs = pd.refs.length ? `<p class="tdk-small tdk-notes-h">Pages this paragraph was drawn from</p><ol class="tdk-notes fr-dn-pages" id="tdk-pd-${pd.i}-notes">${pd.refs.slice(0, 12).map((r) => `<li><a href="${esc(readHref(r.w, r.p))}">${esc(`${refWho(r)}, p. ${r.p}`)}</a></li>`).join("")}</ol>` : "";
+    const see = pd.refs.length ? `<p class="tdk-small"><a href="#tdk-pd-${pd.i}-notes" data-notes-for="${Number(firstC)}">See the notes under the ${ord(Number(firstC))} century</a></p>` : "";
+    return `<div class="tdk-period" data-period="${pd.i}">${covers ? `<p class="tdk-small tdk-covers">${esc(covers)}</p>` : ""}<p>${esc(pd.text)}</p>${lead ? refs : see}</div>`;
+  }
+
+  // Key works for one century: plain list rows, ranked and chosen by topic-key-works.js. The line under the title says what the ranking is.
+  function keyWorksHtml(list) {
+    if (!list || !list.length) return "";
+    return `<div class="tdk-kw"><h5 class="tdk-kw-h">Key works</h5><p class="tdk-small">Works with the most passages on this topic</p><ul class="tdk-kwl">${list.map((w) =>
+      `<li><a href="${esc(readHref(w.w, w.p))}"><i>${esc(plain(w.title))}</i></a><span>${esc(w.author)}, ${w.y ? `fl. ${Number(w.y)}` : `${ord(Number(w.cen))} century`}</span></li>`).join("")}</ul></div>`;
   }
 
   function renderChron(c) {
@@ -466,18 +476,25 @@
         const label = `${fmt(r.total)} indexed passages in the ${ord(Number(r.c))} century`;
         const docs = r.docs.length || r.more ? `<ul class="tdk-docs">${r.docs.map((d) =>
           `<li class="${d.rank === 0 ? "is-council" : ""}"><a href="${esc(d.href)}" aria-label="${esc(`${d.title}, ${Number(d.y)}${d.type ? `, ${d.type}` : ""}. Opens the document.`)}"><b>${Number(d.y)}</b> ${esc(d.title)}${d.type ? `<span>${esc(d.type)}</span>` : ""}</a></li>`).join("")}${r.more ? `<li class="more"><a href="#td-h-conf">${fmt(r.more)} more in the full record</a></li>` : ""}</ul>` : "";
-        const periods = (r.periods || []).map((pd) => periodHtml(pd)).join("");
-        return `<li class="tdk-row" data-c="${Number(r.c)}" style="--d:${Math.min(step * 45, 900)}ms"><span class="tdk-cn">${ord(Number(r.c))} century</span>` +
-          `<span class="tdk-bar" role="img" aria-label="${esc(label)}" title="${esc(label)}">${bar}</span><span class="tdk-n">${fmt(r.total)}</span>${docs}${periods}</li>`;
+        const has = Boolean((r.periods && r.periods.length) || r.kw.length);
+        const pid = `tdk-pn-${Number(r.c)}`;
+        const head = `<span class="tdk-cn">${ord(Number(r.c))} century</span><span class="tdk-bar" role="img" aria-label="${esc(label)}" title="${esc(label)}">${bar}</span><span class="tdk-n">${fmt(r.total)}</span>${has ? `<span class="tdk-chev" aria-hidden="true"></span>` : ""}`;
+        const header = has ? `<button type="button" class="tdk-row-h" aria-expanded="false" aria-controls="${pid}">${head}</button>` : `<div class="tdk-row-h is-static">${head}</div>`;
+        const panel = has ? `<div class="tdk-pn" id="${pid}" hidden>${(r.periods || []).map((x) => periodHtml(x.pd, x.lead, x.firstC)).join("")}${keyWorksHtml(r.kw)}</div>` : "";
+        return `<li class="tdk-row${has ? " has-period" : ""}" data-c="${Number(r.c)}" style="--d:${Math.min(step * 45, 900)}ms">${header}${docs}${panel}</li>`;
       }).join("");
       return `<li class="tdk-era tdk-era--${e.id}"><h4 class="tdk-era-h">${esc(e.label)} <span>${esc(e.span)}</span></h4><ol class="tdk-rows">${rows}</ol></li>`;
     }).join("");
-    const loose = c.loose.length ? `<div class="tdk-loose"><h4 class="tdk-era-h">Other periods</h4>${c.loose.map((pd) => periodHtml(pd)).join("")}</div>` : "";
+    const loose = c.loose.length ? `<div class="tdk-loose"><h4 class="tdk-era-h">Other periods</h4>${c.loose.map((pd) => `<details class="tdk-loose-d"><summary>${esc(pd.period)}</summary>${periodHtml(pd, true, 0)}</details>`).join("")}</div>` : "";
     const caption = c.compact ? "" : `<p class="tdk-small tdk-cap">Documents only: what each says is in the document. Each links to its first article on this topic.${c.hasCouncil ? ` For every council see the ${link(COUNCILS_GUIDE, "Councils guide")}.` : ""}</p>`;
-    return `<section class="tdk-mod tdk-cent" id="tdk-chron" aria-labelledby="tdk-cent-h"><div class="tdk-head"><p class="tdk-eyebrow">Through time</p><h3 class="tdk-h tdk-cent-h" id="tdk-cent-h">${esc(c.title)}</h3>` +
-      `<p class="tdk-lede">${fmt(c.positions)} indexed passages in the library, counted by century, with the ${c.nDocs ? `${plural(c.nDocs, "dated document", "dated documents")} on this topic` : "documents"} where the library has them. Bar length is square-root scaled so the early centuries show. A passage is a place in a work where the index finds this topic treated.</p>${c.lede ? `<p class="tdk-lede tdk-hist-lede">${esc(c.lede)}</p>${c.nPeriods ? `<p class="tdk-small">Machine-written from the authors' own claims, not their words. Every page is checked. Open "Read this period" on a century.</p>` : ""}` : ""}</div>` +
+    const lede = `<p class="tdk-lede">${fmt(c.positions)} indexed passages in the library, counted by century, with the ${c.nDocs ? `${plural(c.nDocs, "dated document", "dated documents")} on this topic` : "documents"} where the library has them. Bar length is square-root scaled so the early centuries show. A passage is a place in a work where the index finds this topic treated.</p>${c.lede ? `<p class="tdk-lede tdk-hist-lede">${esc(c.lede)}</p>${c.nPeriods ? `<p class="tdk-small">Machine-written from the authors' own claims, not their words. Every page is checked. Open a century to read the period it falls in.</p>` : ""}` : ""}`;
+    // One section, "About <topic>", with one tablist. History (this ruler) is the first tab and the default. faith-port-topic-dev-notes.js adds the others
+    // (Scripture, A course of reading, Traditions compared, Concept guides) through MOAbout (topic-desk.js) when the topic has them.
+    return `<section class="tdk-mod tdk-cent" id="tdk-chron" aria-labelledby="tdk-cent-h"><div class="tdk-head"><p class="tdk-eyebrow">Through time</p><h3 class="tdk-h tdk-cent-h" id="tdk-cent-h">${esc(c.title)}</h3></div>` +
+      `<div class="tdk-tabs" role="tablist" aria-label="${esc(c.title)}" data-about-tabs><button type="button" role="tab" class="tdk-tab" id="about-history" aria-controls="about-panel-history" aria-selected="true" tabindex="0" data-k="history">History</button></div>` +
+      `<div role="tabpanel" class="tdk-panel" id="about-panel-history" aria-labelledby="about-history" tabindex="0" data-about-panel="history">${lede}` +
       `<ul class="tdk-legend" aria-label="Shelves">${c.shelves.map((k) => `<li><i class="b-${k}"></i>${esc(SHELF[k])}</li>`).join("")}</ul>` +
-      `<ol class="tdk-eras${c.compact ? " is-compact" : ""}">${eras}</ol>${loose}${caption}<p class="tdk-small">Era bands: the early church to 1054, medieval to 1517, Reformation to 1648, post-Reformation to 1800, then modern.</p></section>`;
+      `<ol class="tdk-eras${c.compact ? " is-compact" : ""}">${eras}</ol>${loose}${caption}<p class="tdk-small">Era bands: the early church to 1054, medieval to 1517, Reformation to 1648, post-Reformation to 1800, then modern.</p></div></section>`;
   }
 
   function renderVerses(v) {

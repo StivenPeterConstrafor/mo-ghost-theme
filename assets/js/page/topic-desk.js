@@ -24,12 +24,79 @@
     return files[name];
   };
 
+  /* The About section's tabs. History is drawn with the section; other scripts add theirs (add), in this order. Selecting a tab shows its
+     panel (hidden on the rest), keeps the roving tabindex, moves with the arrow keys, Home and End, and writes #about-<key> so a tab can be
+     linked. A panel with data-lazy is filled by whoever added it, when it is first shown ("about:show" on the panel). */
+  const ORDER = ["history", "scripture", "course", "traditions", "concepts"];
+  const about = {
+    host: null,
+    tabs() { return this.host ? [...this.host.querySelectorAll("[data-about-tabs] [role=tab]")] : []; },
+    ready(host) {
+      this.host = host;
+      const list = host.querySelector("[data-about-tabs]");
+      if (!list || list.dataset.bound) return;
+      list.dataset.bound = "1";
+      list.addEventListener("click", (e) => { const t = e.target.closest("[role=tab]"); if (t) this.activate(t.dataset.k, false, true); });
+      list.addEventListener("keydown", (e) => {
+        const tabs = this.tabs();
+        const i = tabs.indexOf(document.activeElement);
+        if (i < 0) return;
+        const to = { ArrowRight: (i + 1) % tabs.length, ArrowLeft: (i + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1 }[e.key];
+        if (to === undefined) return;
+        e.preventDefault();
+        this.activate(tabs[to].dataset.k, true, true);
+      });
+      this.hash();
+    },
+    activate(key, focus, write) {
+      const tabs = this.tabs();
+      const on = tabs.find((t) => t.dataset.k === key);
+      if (!on) return;
+      tabs.forEach((t) => {
+        const sel = t === on;
+        t.setAttribute("aria-selected", String(sel));
+        t.tabIndex = sel ? 0 : -1;
+        const panel = this.host.querySelector(`#${t.getAttribute("aria-controls")}`);
+        if (panel) panel.hidden = !sel;
+        if (sel && panel) panel.dispatchEvent(new window.CustomEvent("about:show"));
+      });
+      if (focus) on.focus();
+      if (write) { try { history.replaceState(null, "", `${location.pathname}${location.search}#about-${key}`); } catch (e) { /* a hash is a convenience */ } }
+    },
+    add(key, label, panel) {
+      const list = this.host && this.host.querySelector("[data-about-tabs]");
+      if (!list || list.querySelector(`[data-k="${key}"]`)) return false;
+      const tab = document.createElement("button");
+      tab.type = "button"; tab.className = "tdk-tab"; tab.id = `about-${key}`; tab.dataset.k = key;
+      tab.setAttribute("role", "tab"); tab.setAttribute("aria-controls", `about-panel-${key}`); tab.setAttribute("aria-selected", "false"); tab.tabIndex = -1;
+      tab.textContent = label;
+      panel.id = `about-panel-${key}`; panel.setAttribute("role", "tabpanel"); panel.setAttribute("aria-labelledby", tab.id); panel.tabIndex = 0; panel.hidden = true;
+      panel.classList.add("tdk-panel"); panel.dataset.aboutPanel = key;
+      const after = this.tabs().find((t) => ORDER.indexOf(t.dataset.k) > ORDER.indexOf(key));
+      list.insertBefore(tab, after || null);
+      const panels = [...this.host.querySelectorAll("[data-about-panel]")];
+      const next = panels.find((p) => ORDER.indexOf(p.dataset.aboutPanel) > ORDER.indexOf(key));
+      if (next) next.before(panel); else panels[panels.length - 1].after(panel);
+      this.hash();
+      return true;
+    },
+    hash() {
+      const m = /^#about-(history|scripture|course|traditions|concepts)$/.exec(location.hash);
+      if (m && this.tabs().some((t) => t.dataset.k === m[1])) this.activate(m[1], false, false);
+    },
+  };
+  window.MOAbout = about;
+  window.addEventListener("hashchange", () => about.hash());
+
   window.MOTopicDeskMount = function mount(opts) {
     const M = window.MOTopicDesk;
     const { host, root, id, locus, part, parent, S, loci, bodyOf } = opts;
     if (!M || !host || !S) return null;
     const got = { topic: undefined, conf: undefined, scr: undefined, files: undefined, hist: undefined };
     delete root.dataset.deskHistory;
+    // dev-notes waits for this before it decides where its tabs go (into the About section, or a block of its own).
+    const state = (v) => { root.dataset.deskState = v; root.dispatchEvent(new window.CustomEvent("tdk:state")); };
+    root.dataset.deskState = "pending";
     let treat = [];
     let drawn = false;
 
@@ -42,30 +109,36 @@
         const [data, marquee] = got.files;
         const model = M.buildDeskModel({
           locus, part, parent, topic: got.topic, conf: got.conf, scr: got.scr, treat, history: got.hist,
+          keyWorks: window.MOTopicKeyWorks ? window.MOTopicKeyWorks.buildKeyWorks({ locus, treat, works: got.topic.works || [], authors: got.topic.authors || [] }) : null,
           data: data || {}, marquee: (marquee && marquee.topics && marquee.topics[id]) || null,
           books: new Map(S.BOOKS.map((b) => [b.lib, b])), loci: new Map([...loci].map(([k, v]) => [k, v.locus])), bodyOf,
         });
         const html = M.renderDesk(model);
         host.innerHTML = html.hero + html.body;
         host.dataset.tier = model.tier;
-        // "The doctrine through the centuries" (faith-port-topic-dev-notes.js) belongs right under the century showpiece.
-        const notes = root.querySelector(".fr-dn");
-        const anchor = host.querySelector("#tdk-chron");
-        if (got.hist && anchor && host.querySelector("[data-period]")) {
-          // The History tab now lives on the century rows. The page's remaining notes (reading, traditions, concepts) redraw without it.
-          root.dataset.deskHistory = id;
-          if (notes) { notes.remove(); if (window.MOTopicNotesDraw) window.MOTopicNotesDraw(); }
-        } else if (notes && anchor) anchor.after(notes);
-        host.addEventListener("click", (e) => {
-          const b = e.target.closest(".tdk-period-btn");
-          if (!b) return;
-          const open = b.getAttribute("aria-expanded") !== "true";
+        // One tablist for the About section (History is drawn above). faith-port-topic-dev-notes.js adds the other tabs through MOAbout.
+        about.ready(host);
+        const toggle = (b, open) => {
           b.setAttribute("aria-expanded", String(open));
           const body = host.querySelector(`#${b.getAttribute("aria-controls")}`);
           if (body) body.hidden = !open;
+          if (b.closest(".tdk-row")) b.closest(".tdk-row").classList.toggle("is-open", open);
+        };
+        host.addEventListener("click", (e) => {
+          const note = e.target.closest("[data-notes-for]");
+          if (note) {
+            // "See the notes under the 2nd century": open that row and bring the list into view.
+            e.preventDefault();
+            const b = host.querySelector(`.tdk-row[data-c="${note.dataset.notesFor}"] .tdk-row-h`);
+            if (b) { toggle(b, true); const t = host.querySelector(note.getAttribute("href")); if (t) t.scrollIntoView({ block: "center" }); }
+            return;
+          }
+          const b = e.target.closest(".tdk-row-h");
+          if (b && b.tagName === "BUTTON") toggle(b, b.getAttribute("aria-expanded") !== "true");
         });
         // The page's own count boxes stay unless the desk drew counts of its own.
         if (model.modules.hero.tiles.length) root.classList.add("has-desk");
+        state("drawn");
         host.querySelectorAll("img[data-tdk-portrait]").forEach((img) => {
           const fallback = () => {
             img.hidden = true;
@@ -78,6 +151,7 @@
       } catch (e) {
         host.innerHTML = "";
         root.classList.remove("has-desk");
+        state("failed");
       }
     };
 

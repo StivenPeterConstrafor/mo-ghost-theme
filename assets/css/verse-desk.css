@@ -46,9 +46,13 @@
 .vd-ruler-bars b, .vd-heat b { position: absolute; top: 100%; margin-top: 4px; font: 600 11px/1 var(--font-body); color: var(--sd-muted); }
 .vd-ruler-axis { margin: 22px 0 0; font-size: 12px; color: var(--sd-muted); text-align: center; letter-spacing: 0.1em; text-transform: uppercase; }
 .vd-tiles {
-  list-style: none; margin: 26px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  list-style: none; margin: 26px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
   border-top: 1px solid var(--vd-line); border-left: 1px solid var(--vd-line);
 }
+/* Equal tiles that fill the row: one row of however many from 1024px up, two across below (an odd last tile spans the row). Never auto-fit, which left three across and an orphan at tablet width. */
+@media (min-width: 1024px) { .vd-tiles { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); } }
+.vd-tiles > .vd-tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
+@media (min-width: 1024px) { .vd-tiles > .vd-tile:last-child:nth-child(odd) { grid-column: auto; } }
 .vd-tile { padding: 16px 18px; background: var(--sd-card); border-right: 1px solid var(--vd-line); border-bottom: 1px solid var(--vd-line); }
 .vd-tile b { display: block; font: 600 34px/1 var(--font-body); color: var(--sd-accent); font-variant-numeric: tabular-nums; }
 .vd-tile span { display: block; margin-top: 8px; font: 600 12px/1.3 var(--font-body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--sd-muted); }
