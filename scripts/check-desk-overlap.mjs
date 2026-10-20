@@ -27,6 +27,7 @@ import path from "node:path";
 const root = path.resolve(import.meta.dirname, "..");
 const VERSE = "https://mo-tfr-verse.mo-podcast-feed.workers.dev";
 const LIB = "https://mo-tfr-library.mo-podcast-feed.workers.dev";
+const BIBLE = "https://mo-bible.mo-podcast-feed.workers.dev";
 const UA = { "User-Agent": "curl/8.7.1" };
 const args = process.argv.slice(2);
 const only = args.includes("--only") ? args[args.indexOf("--only") + 1] : "";
@@ -44,7 +45,7 @@ const harness = (hbs) => {
     .replace(/\{\{asset "([^"]+)"\}\}(?:&amp;frv=[A-Za-z0-9-]+)?/g, "/assets/$1").replace(/<title>[\s\S]*?<\/title>|<meta[^>]*>/g, "");
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="tfr-library-base" content="${LIB}">` +
     `<link rel="stylesheet" href="/assets/built/screen.min.css"><link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">` +
-    `<style>:root{--font-body:"Source Serif 4",Georgia,serif}</style></head><body>${body}</body></html>`;
+    `<style>:root{--font-body:"Source Serif 4",Georgia,serif}</style><script src="/assets/js/vendor/purify.min.js"></script></head><body>${body}</body></html>`;
 };
 const PAGES = {
   topic: { html: harness("custom-faith-topics-dev.hbs"), container: ".td-desk|.fr-dn", ready: ".td-desk .tdk-hero, .td-desk .tdk-mod",
@@ -66,9 +67,9 @@ const PAGES = {
 // ── A local server: the theme's assets, the harness, the two workers ─
 const server = createServer(async (q, r) => {
   const u = new URL(q.url, "http://x");
-  const px = [["/px/verse", VERSE], ["/px/lib", LIB]].find(([k]) => u.pathname.startsWith(k));
+  const px = [["/px/verse", VERSE], ["/px/lib", LIB], ["/px/bible", BIBLE]].find(([k]) => u.pathname.startsWith(k));
   if (px) {
-    try { const x = await fetch(px[1] + u.pathname.slice(px[0].length) + u.search, { headers: UA }); r.writeHead(x.status, { "content-type": x.headers.get("content-type") || "application/json" }); r.end(Buffer.from(await x.arrayBuffer())); } catch (_) { r.writeHead(502); r.end("bad"); }
+    try { const x = await fetch(px[1] + u.pathname.slice(px[0].length) + u.search, { headers: { ...UA, Origin: "https://mereorthodoxy.com" } }); r.writeHead(x.status, { "content-type": x.headers.get("content-type") || "application/json" }); r.end(Buffer.from(await x.arrayBuffer())); } catch (_) { r.writeHead(502); r.end("bad"); }
     return;
   }
   if (u.pathname.startsWith("/assets/")) {
@@ -108,7 +109,7 @@ ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && waiting.has(d.
 const send = (method, params = {}) => new Promise((res) => { seq += 1; waiting.set(seq, res); ws.send(JSON.stringify({ id: seq, method, params })); });
 const evaluate = async (expression) => { const r = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true }); return r.result && r.result.result ? r.result.result.value : undefined; };
 await send("Page.enable");
-await send("Page.addScriptToEvaluateOnNewDocument", { source: `(function(){var f=window.fetch;window.fetch=function(u,o){var s=String(u).replace("${VERSE}","/px/verse").replace("${LIB}","/px/lib");return f.call(this,s,o);};})();` });
+await send("Page.addScriptToEvaluateOnNewDocument", { source: `(function(){var f=window.fetch;window.fetch=function(u,o){var s=String(u).replace("${VERSE}","/px/verse").replace("${LIB}","/px/lib").replace("${BIBLE}","/px/bible");return f.call(this,s,o);};})();` });
 
 // ── The measurement, run in the page ───────────────────────────
 const MEASURE = `((sel) => {
@@ -211,6 +212,11 @@ for (const [name, cfg] of Object.entries(PAGES)) {
       const shown = await evaluate(`(() => { ${state.js} })()`);
       if (!shown) { console.log(`skip  ${name} ${u} [${state.name}]: not on this page`); continue; }
       await new Promise((res) => setTimeout(res, state.wait || 800));
+      if (state.name === "scripture") {
+        const n = await evaluate("document.querySelectorAll('.tsc-text:not([hidden])').length");
+        console.log(`      ${name} ${u}: ${n} verse texts shown on the Scripture cards`);
+        if (n === 0) console.log("skip  verse text did not load in this run (the Bible host may be unreachable)");
+      }
     }
     for (const scheme of SCHEMES) {
       await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: scheme }] });
@@ -227,13 +233,13 @@ for (const [name, cfg] of Object.entries(PAGES)) {
           const r = await evaluate(`(() => { const e = document.querySelector(${JSON.stringify(process.env.SHOTSEL)}); if (!e) return null; const q = e.getBoundingClientRect(); return [q.left + scrollX, q.top + scrollY, q.width, Math.min(q.height, 1400)]; })()`);
           if (r) {
             const shot = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true, clip: { x: r[0], y: r[1], width: r[2], height: r[3], scale: 1 } });
-            writeFileSync(path.join(process.env.SHOT, `el-${name}-${u.replace(/\W+/g, "_")}-${w}-${scheme}.png`), Buffer.from(shot.result.data, "base64"));
+            if (shot.result) writeFileSync(path.join(process.env.SHOT, `el-${name}-${u.replace(/\W+/g, "_")}-${w}-${scheme}.png`), Buffer.from(shot.result.data, "base64"));
           }
         }
         if (process.env.SHOT && m.overlaps[0] && m.overlaps[0].at) {
           const [ax, ay] = m.overlaps[0].at;
           const shot = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true, clip: { x: Math.max(0, ax - 280), y: Math.max(0, ay - 110), width: Math.min(560, w), height: 220, scale: 1 } });
-          writeFileSync(path.join(process.env.SHOT, `${name}-${u.replace(/\W+/g, "_")}-${w}-${scheme}.png`), Buffer.from(shot.result.data, "base64"));
+          if (shot.result) writeFileSync(path.join(process.env.SHOT, `${name}-${u.replace(/\W+/g, "_")}-${w}-${scheme}.png`), Buffer.from(shot.result.data, "base64"));
         }
         for (const k of ["overlaps", "clipped", "wide"]) for (const o of m[k]) {
           const key = `${name} ${k}: ${o.a} / ${o.b}${o.kind ? ` (${o.kind})` : ""}`;
