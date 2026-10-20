@@ -58,6 +58,14 @@ const books = new Map();
   if (books.size !== 66) throw new Error(`mo-articles: expected 66 canon books in scripture-dev-core.js, found ${books.size}`);
 }
 
+// Namesakes: the scan matched names, and some names belong to other people. An essay whose title or excerpt shows the other person, and not the
+// library's author (or whose title is the other person's), is not tagged with the author. Each removal is printed so it can be read over.
+const NAMESAKES = {
+  "Martin Luther": { other: /martin luther king|\bMLK\b|king jr/i, own: /martin luther(?! king)|luther's/i },
+  "John Calvin": { other: /calvin (coolidge|and hobbes|klein|college|university)|calvin & hobbes/i, own: /john calvin|jean calvin|calvin's institutes|calvinist/i },
+  "Augustine of Hippo": { other: /st\.? augustine,? (fl\b|florida)|augustine, florida/i, own: /hippo|city of god|confessions/i },
+};
+const namesakeRemoved = [];
 const problems = [];
 const dropped = [];
 const drop = (id, kind, v, why) => dropped.push(`${id} ${kind} ${v}: ${why}`);
@@ -95,6 +103,9 @@ for (const a of input.articles) {
   }
   const authors = [];
   for (const s of a.authors) {
+    const guard = NAMESAKES[s];
+    const text = `${a.title} ${a.excerpt}`;
+    if (guard && (guard.other.test(a.title) || (guard.other.test(text) && !guard.own.test(text)))) { namesakeRemoved.push(`${a.title} (${a.byline}): not ${s}`); continue; }
     if (input.authorWorks[s] > 0) authors.push(s); else drop(a.id, "author", s, "no works under that name in the library");
   }
   const docs = [], names = [];
@@ -188,6 +199,7 @@ const report = [
   `  with a featured image: ${withImage} of ${articles.length}`,
   `  without any entity: ${articles.filter((o) => !o.works && !o.authors && !o.docs && !o.verses && !o.topics).length}`,
   `  unresolved or dropped: ${dropped.length}`,
+  `  namesake guard removed ${namesakeRemoved.length} author tags${namesakeRemoved.map((x) => `\n    ${x}`).join("")}`,
 ];
 
 const check = process.argv.includes("--check");

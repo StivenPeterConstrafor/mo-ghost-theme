@@ -147,9 +147,27 @@
   const plural = (n, one, many) => `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;
 
   const KIND_LABEL = { doc: "Creeds and confessions", work: "Works and authors", retrieval: "Theological retrieval", topic: "Doctrine and Scripture" };
-  const SIZES = "(min-width: 1200px) 140px, (min-width: 1000px) 16vw, (min-width: 800px) 25vw, (min-width: 600px) 33vw, (min-width: 420px) 50vw, 100vw";
+  const SIZES = "(min-width: 1180px) 180px, (min-width: 1000px) 15vw, (min-width: 900px) 20vw, (min-width: 700px) 25vw, (min-width: 540px) 33vw, (min-width: 380px) 50vw, 100vw";
   const monthYear = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", timeZone: "UTC" });
   const niceMonth = (d) => { const t = new Date(`${d}T00:00:00Z`); return Number.isNaN(t.getTime()) ? d : monthYear.format(t); };
+
+  // Why an essay is on the page, in words, from what the data says it serves and nothing else: its kind, then the first two of the things it
+  // matched that fit that kind (documents for a creed piece; authors, then works, for a work piece; topics, then verses, for a doctrine piece).
+  const lower = (t) => t.replace(/^The /, "the ");
+  const VERB = { doc: "About", work: "Engages", retrieval: "On", topic: "Discusses" };
+  const FALLBACK = { doc: "About the creeds and confessions", work: "Engages the works and authors of the library", retrieval: "On theological retrieval", topic: "On doctrine and Scripture" };
+  const ORDER = { doc: ["doc", "topic"], work: ["author", "work"], retrieval: ["topic", "doc"], topic: ["topic", "verse"] };
+  function why(a) {
+    const all = M.entities(a);
+    const label = (e) => (e.type === "verse" ? verseLabel(e.key) : e.type === "work" ? lower(shortTitle(e.label)) : e.type === "doc" || e.type === "topic" ? lower(e.label) : e.label);
+    const picked = [];
+    for (const t of ORDER[a.k] || []) for (const e of all) if (e.type === t && picked.length < 2 && !picked.some((p) => p.type === t && p.key === e.key)) picked.push(e);
+    if (a.k === "retrieval") return FALLBACK.retrieval;
+    const names = picked.map(label);
+    if (!names.length && a.k === "doc" && (a.n || []).length) names.push(...a.n.slice(0, 2).map(lower));
+    if (!names.length) return FALLBACK[a.k] || "";
+    return `${VERB[a.k]} ${names.join(" and ")}`;
+  }
 
   // One card, one link: the image (or a tinted tile with the kind), the title, author and month, the kind. What the essay serves rides in the title attribute.
   function card(a, ts, q) {
@@ -167,6 +185,7 @@
       `<span class="fr-res-img">${img}</span>`,
       `<span class="fr-res-ctitle">${highlight(a.t, ts)}</span>`,
       `<span class="fr-res-cmeta">${esc(a.a)} <span aria-hidden="true">&middot;</span> ${esc(niceMonth(a.d))}</span>`,
+      `<span class="fr-res-cwhy">${esc(why(a))}</span>`,
       `<span class="fr-res-ckind">${esc(kind)}</span>`,
       also.length ? `<span class="fr-res-cmore">Also mentions: ${esc(also.join(", "))}</span>` : "",
       '<span class="fr-res-sr"> (opens in a new tab)</span>',

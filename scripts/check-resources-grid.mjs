@@ -4,7 +4,7 @@
  *
  * Builds a harness from custom-faith-resources.hbs (partials and helpers stripped, its scripts and stylesheet kept), serves the
  * theme's assets locally, drives headless Chrome over the DevTools protocol, and at 1920, 1440, 1280, 1024, 768 and 375 asserts:
- *   - the column count (8 at 1920, 1440 and 1280, 6 at 1024, 3 at 768, 1 at 375)
+ *   - the column count (6 at 1920, 1440, 1280 and 1024, 4 at 768, 1 at 375)
  *   - the grid, tab bar and hero share the theme's .container edges (1180px, 28px padding) within 1px
  *   - no horizontal overflow of the page
  *   - tiles of one grid are the same width within 1px
@@ -90,6 +90,9 @@ const MEASURE = `(async () => {
   document.querySelector('[data-kind=""]').click();
   out.renderMs = (performance.now() - t0) / 2;
   g = document.querySelector(".fr-res-grid");
+  const img = document.querySelector(".fr-res-img");
+  out.radius = img ? getComputedStyle(img).borderTopLeftRadius : "";
+  out.whyMissing = [...document.querySelectorAll(".fr-res-card")].filter((c) => !c.querySelector(".fr-res-cwhy") || !c.querySelector(".fr-res-cwhy").textContent.trim()).length;
   out.cols = getComputedStyle(g).gridTemplateColumns.split(" ").length;
   const cards = [...g.querySelectorAll(".fr-res-card")].map((c) => c.getBoundingClientRect());
   const ws = cards.map((r) => r.width);
@@ -107,13 +110,13 @@ const MEASURE = `(async () => {
     if (!a.querySelector("img.fr-res-photo, .fr-res-ph")) out.problems.push("a card with no image or placeholder");
   }
   for (const a of [...document.querySelectorAll(".fr-res-cardlink")].slice(0, 60)) {
-    const parts = [...a.querySelectorAll(".fr-res-ctitle, .fr-res-cmeta, .fr-res-ckind")].map((e) => e.getBoundingClientRect());
+    const parts = [...a.querySelectorAll(".fr-res-ctitle, .fr-res-cmeta, .fr-res-cwhy, .fr-res-ckind")].map((e) => e.getBoundingClientRect());
     for (let i = 0; i < parts.length; i += 1) for (let j = i + 1; j < parts.length; j += 1) if (hit(parts[i], parts[j])) out.problems.push("text lines overlap in a card");
   }
   return out;
 })()`;
 
-const WANT = { 1920: 8, 1440: 8, 1280: 8, 1024: 6, 768: 3, 375: 1 };
+const WANT = { 1920: 6, 1440: 6, 1280: 6, 1024: 6, 768: 4, 375: 1 };
 let failed = 0;
 await send("Page.navigate", { url: `${base}/h` });
 await new Promise((res) => setTimeout(res, 800));
@@ -125,6 +128,8 @@ for (const [w, cols] of Object.entries(WANT)) {
   if (!m || m.problems === undefined) bad.push("the page did not measure");
   else {
     if (m.renderMs > 150) bad.push(`a full render took ${m.renderMs.toFixed(0)} ms, over 150`);
+    if (m.radius !== "8px") bad.push(`image corners are ${m.radius}, wanted 8px`);
+    if (m.whyMissing) bad.push(`${m.whyMissing} cards have no why line`);
     if (m.cols !== cols) bad.push(`${m.cols} columns, wanted ${cols}`);
     if (m.sw > m.vw) bad.push(`page is ${m.sw}px wide in a ${m.vw}px window`);
     if (m.spread > 1) bad.push(`tiles differ in width by ${m.spread.toFixed(2)}px`);

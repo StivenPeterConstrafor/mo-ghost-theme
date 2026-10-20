@@ -198,6 +198,13 @@ test("image() asks for a size Ghost serves, and never answers for an essay witho
   if (un) assert.match(B.image(un, 300), /[?&]w=300(&|$)/);
 });
 
+test("namesakes: no Martin Luther King essay is tagged Martin Luther, and no Calvin and Hobbes piece John Calvin", () => {
+  for (const id of data.idx.author["Martin Luther"]) assert.ok(!/martin luther king|\bMLK\b|king jr/i.test(byId.get(id).t), byId.get(id).t);
+  for (const a of data.articles) {
+    if (/martin luther king/i.test(a.t)) assert.ok(!(a.authors || []).includes("Martin Luther"), a.t);
+    if (/calvin and hobbes/i.test(a.x) && !/john calvin/i.test(a.x)) assert.ok(!(a.authors || []).includes("John Calvin"), a.t);
+  }
+});
 test("the lookups answer from the built file", () => {
   assert.ok(B.forAuthor("Augustine of Hippo").length >= 30, "Augustine's essays");
   assert.ok(B.forWork("pld-2722").length >= 20, "Confessions");
@@ -335,7 +342,9 @@ test("a card is one link with an image or a placeholder, a sized image box, alt 
   assert.match(pageJs, /<img class="fr-res-photo"[^`]*width="600" height="400" alt="[^`]*loading="lazy" decoding="async"/);
   assert.match(pageJs, /class="fr-res-ph" aria-hidden="true"/);
   assert.match(css, /\.fr-res-img \{[^}]*aspect-ratio: 3 \/ 2/);
-  assert.match(css, /repeat\(8, minmax\(0, 1fr\)\)/);
+  assert.match(css, /min-width: 1000px\) \{ \.fr-res \.fr-res-grid \{ grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.fr-res-img \{[^}]*border-radius: 8px/);
+  assert.match(pageJs, /class="fr-res-cwhy"/);
   assert.ok(!/max-width: 820px/.test(css), "the narrow column is back");
   assert.match(tpl, /class="container fr-res-wrap"/);
   assert.ok(!/\.bhero-inner\.container \{/.test(css), "the hero container is overridden");
