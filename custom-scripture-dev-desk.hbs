@@ -6,6 +6,7 @@
 <meta name="description" content="One verse and everything The Faith Received holds on it: four translations, every citation, the commentaries, and the teachers who expounded it." />
 <link rel="stylesheet" href="{{asset "css/scripture-dev.css"}}&amp;frv=40630aebbb885e72" />
 <link rel="stylesheet" href="{{asset "css/verse-desk.css"}}" />
+<link rel="stylesheet" href="{{asset "css/mo-articles-module.css"}}" />
 {{!-- Dark or light, set on <html> before first paint (external: the CSP forbids inline script). --}}
 <script src="{{asset "js/page/scripture-view-boot.js"}}&amp;frv=b619c4b13b360add"></script>
 {{/contentFor}}
@@ -51,6 +52,10 @@
      They run after faith-port-scripture-notes.js (which hands them the data it already fetches) and take the place of its reception section;
      if they fail, that section is drawn instead (verse-desk.js). --}}
 <script defer src="{{asset "js/page/commentary-anchor.js"}}"></script>
+{{!-- From Mere Orthodoxy: the essays that relate to this page (mo-articles-placements.js; draws nothing when there are none). --}}
+<script src="{{asset "js/lib/mo-articles.js"}}"></script>
+<script src="{{asset "js/lib/mo-articles-module.js"}}"></script>
+<script src="{{asset "js/page/mo-articles-placements.js"}}"></script>
 <script defer src="{{asset "js/page/verse-desk-model.js"}}"></script>
 <script defer src="{{asset "js/page/verse-desk.js"}}"></script>
 <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>

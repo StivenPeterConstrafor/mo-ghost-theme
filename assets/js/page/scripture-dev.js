@@ -516,6 +516,8 @@
     const citationBody = `<div data-sd-filters></div><h3 class="sd-h3">Most-cited sources</h3><ol class="sd-sources sd-top" data-sd-top></ol><div data-sd-matches hidden><h3 class="sd-h3">Matching citations</h3><ol class="sd-sources" data-sd-rows></ol><button type="button" class="sd-more" data-sd-more hidden>Show more</button></div>`;
     $panel.innerHTML = `<header class="sd-panel-head"><p class="sd-eyebrow">Verse</p><h2 class="sd-panel-ref" tabindex="-1">${esc(S.refLabel(book, c, v))}</h2><a class="sd-desk-link" href="${esc(S.deskHref(book, c, v, t))}">Open the Verse Desk</a><button type="button" class="sd-close" aria-label="Close verse panel">Close</button></header><p class="sd-count" data-sd-count role="status"><span class="sd-muted">Counting citations…</span></p><div data-sd-panel-commentaries><p class="sd-muted">Loading commentaries…</p></div>${panelDetails(PANEL_FOLDS.citations, citationBody)}${panelDetails(PANEL_FOLDS.similar, `<p class="sd-muted">Verses cited on the same pages as ${esc(S.refLabel(book, c, v))}, and passages whose wording resembles it, are on the Verse Desk.</p><p><a class="sd-desk-link" href="${esc(S.deskHref(book, c, v, t))}#sd-h-sim">Open similar passages</a></p>`)}<p class="sd-panel-foot"><a href="${esc(S.deskHref(book, c, v, t))}">Every citation of ${esc(S.refLabel(book, c, v))} on the Verse Desk</a></p>`;
     bindPanelFolds();
+    // Mere Orthodoxy essays on this verse, two at most (mo-articles-placements.js).
+    if (window.MOPlace) window.MOPlace.panel($panel, { slug: book.slug, c, v }, S.deskHref(book, c, v, t));
     $panel.querySelector(".sd-close").addEventListener("click", closeVerse);
     bar = S.filterBar($panel.querySelector("[data-sd-filters]"), {
       search: true,

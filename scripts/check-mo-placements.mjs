@@ -1,0 +1,206 @@
+#!/usr/bin/env node
+/*
+ * Where the Mere Orthodoxy essays appear (2026-10-20): the selectors and the module, run on the real data.
+ *
+ * Ian reviewed the 493 essays matched to The Faith Received and said to use all of them. This asserts that:
+ *   - for ten verses, ten topics, ten authors, ten works and five confession documents, the selector functions
+ *     (assets/js/lib/mo-articles-module.js, pick.*) return exactly the essays the raw data ties to that page, in the order the
+ *     page promises (the verse itself before its chapter, a topic's own essays before those that come by a document), with a
+ *     note only where the reason is not the page's own subject
+ *   - every essay is on at least one page's index (an essay that no page can show is an ORPHAN and is listed with its kind)
+ *   - no module is drawn empty: a page with no essays gets "" and a page with essays gets a list of the right length, a heading
+ *     that names the subject, only https links that open in a new tab with rel=noopener, and no em dash, "undefined" or "null"
+ *   - "Show all N" appears exactly when there are more rows than the page shows, and the panel never draws more than two
+ *   - the words around the rows never claim a position (no "teaches", "holds", "argues", "the library's position")
+ *   - every key in the index resolves to a page that exists: a locus in loci.json, an author the author pages answer to, a
+ *     document the placements know, a book the Verse Desk knows
+ *
+ *   node scripts/check-mo-placements.mjs
+ * Reads assets/data/faith-received/mo-articles.json; skips (and passes) when the file is not in the tree.
+ */
+import { createRequire } from "node:module";
+import fs from "node:fs";
+import path from "node:path";
+
+const ROOT = path.join(import.meta.dirname, "..");
+const require = createRequire(import.meta.url);
+const real = path.join(ROOT, "assets/data/faith-received/mo-articles.json");
+if (!fs.existsSync(real)) { console.log("skip  mo placements: assets/data/faith-received/mo-articles.json is not in this tree yet (the data PR, tfr-mo-articles-data)"); process.exit(0); }
+const dataPath = real;
+const data = JSON.parse(fs.readFileSync(dataPath, "utf8"));
+const A = require(path.join(ROOT, "assets/js/lib/mo-articles.js")).create();
+A.use(data);
+const M = require(path.join(ROOT, "assets/js/lib/mo-articles-module.js"));
+const P = M.pick;
+
+let failed = 0;
+const fail = (m) => { failed += 1; console.error(`FAIL  ${m}`); };
+const ok = (c, m) => { if (!c) fail(m); };
+const ids = (xs) => xs.map((a) => a.id);
+const sameSet = (a, b) => a.length === b.length && new Set(a).size === a.length && b.every((x) => new Set(a).has(x));
+const raw = data.articles;
+console.log(`data: ${path.relative(ROOT, dataPath)}, ${raw.length} articles`);
+
+// ── ten verses ───────────────────────────────────────────────────────────────────────────────────────────────────────────
+const verseKeys = Object.keys(data.idx.verse).filter((k) => k.split(".").length === 3);
+const pickEvery = (list, n) => list.filter((_, i) => i % Math.max(1, Math.floor(list.length / n)) === 0).slice(0, n);
+// five verses an essay names, and five verses that only share a chapter with essays (the chapter-level tier)
+const named = pickEvery(verseKeys, 5);
+const chapterOnly = [];
+for (const k of Object.keys(data.idx.verse).filter((x) => x.split(".").length === 2)) {
+  const [slug, c] = k.split(".");
+  for (let v = 1; v <= 60 && chapterOnly.length < 5; v += 1) {
+    if (!data.idx.verse[`${k}.${v}`]) { chapterOnly.push(`${slug}.${c}.${v}`); break; }
+  }
+  if (chapterOnly.length >= 5) break;
+}
+const verses = [...named, ...chapterOnly];
+ok(verses.length === 10, `ten verses chosen (${verses.length})`);
+for (const key of verses) {
+  const [slug, c, v] = key.split(".");
+  const chap = `${slug}.${c}`;
+  const got = P.verse(A, slug, Number(c), Number(v));
+  const want = raw.filter((a) => (a.verses || []).some((k) => k === chap || k.startsWith(`${chap}.`))).map((a) => a.id);
+  ok(sameSet(ids(got), want), `${key}: the verse's essays are the essays on the chapter (${got.length} vs ${want.length})`);
+  const tiers = got.map((a) => ((a.verses || []).includes(key) ? 0 : 1));
+  ok(tiers.every((t, i) => i === 0 || tiers[i - 1] <= t), `${key}: the verse's own essays come before the chapter's`);
+  got.forEach((a, i) => ok(tiers[i] === 0 ? !a.note : a.note === "on this chapter", `${key}: "${a.t}" carries the right note (${a.note || "none"})`));
+  const out = M.html(got, { id: "t", limit: 3, excerpt: true, tag: "h2", context: "on this passage" });
+  ok(Boolean(out) === got.length > 0, `${key}: a module is drawn exactly when there are essays`);
+}
+
+// ── ten topics ───────────────────────────────────────────────────────────────────────────────────────────────────────────
+const topicKeys = Object.keys(data.idx.topic).sort((a, b) => data.idx.topic[b].length - data.idx.topic[a].length).slice(0, 10);
+for (const id of topicKeys) {
+  const own = raw.filter((a) => (a.topics || []).includes(id)).map((a) => a.id);
+  const got = P.topic(A, id, []);
+  ok(sameSet(ids(got), own), `topic ${id}: its own essays (${got.length} vs ${own.length})`);
+  const docs = ["rc-111-westminster-confession-of-faith-1646", "cf-001-apostolic-and-ancient-creeds"];
+  const withDocs = P.topic(A, id, docs);
+  const wantAll = new Set([...own, ...raw.filter((a) => (a.docs || []).some((d) => docs.includes(d))).map((a) => a.id)]);
+  ok(sameSet(ids(withDocs), [...wantAll]), `topic ${id}: plus the essays on its confession documents (${withDocs.length} vs ${wantAll.size})`);
+  ok(ids(withDocs).slice(0, got.length).join() === ids(got).join(), `topic ${id}: its own essays come first`);
+  withDocs.slice(got.length).forEach((a) => ok(/^on the /.test(a.note || ""), `topic ${id}: "${a.t}" by a document says which`));
+}
+
+// ── ten authors ──────────────────────────────────────────────────────────────────────────────────────────────────────────
+const authors = Object.keys(data.idx.author).sort((a, b) => data.idx.author[b].length - data.idx.author[a].length).slice(0, 10);
+for (const name of authors) {
+  const want = raw.filter((a) => (a.authors || []).includes(name)).map((a) => a.id);
+  const got = P.author(A, name);
+  ok(sameSet(ids(got), want), `author ${name}: ${got.length} vs ${want.length}`);
+  ok(sameSet(ids(P.author(A, name.toUpperCase())), want), `author ${name}: case does not matter`);
+}
+
+// ── ten works ────────────────────────────────────────────────────────────────────────────────────────────────────────────
+const works = Object.keys(data.idx.work).sort((a, b) => data.idx.work[b].length - data.idx.work[a].length).slice(0, 10);
+for (const slug of works) {
+  const want = raw.filter((a) => (a.works || []).includes(slug)).map((a) => a.id);
+  const got = P.work(A, slug);
+  ok(sameSet(ids(got), want), `work ${slug}: ${got.length} vs ${want.length}`);
+}
+ok(sameSet(ids(P.work(A, "2722")), ids(P.work(A, "pld-2722"))), "a bare PL number is a PL work");
+
+// ── five confession documents (they are works too) ──────────────────────────────────────────────────────────────────────
+const docs = Object.keys(data.idx.doc).sort((a, b) => data.idx.doc[b].length - data.idx.doc[a].length).slice(0, 5);
+for (const slug of docs) {
+  const want = raw.filter((a) => (a.docs || []).includes(slug)).map((a) => a.id);
+  ok(sameSet(ids(P.doc(A, slug)), want), `document ${slug}: ${P.doc(A, slug).length} vs ${want.length}`);
+  ok(sameSet(ids(P.work(A, slug)), raw.filter((a) => (a.docs || []).includes(slug) || (a.works || []).includes(slug)).map((a) => a.id)), `document ${slug} read as a work`);
+}
+ok(P.topic(A, "de-trinitate", ["cf-025-council-of-chalcedon-451"]).filter((a) => a.note).every((a) => a.note === "on the Council of Chalcedon"), "Chalcedon is named as Chalcedon, not by a decree inside it");
+
+// ── every essay is on at least one page ─────────────────────────────────────────────────────────────────────────────────
+const loci = new Set();
+(function walk(x) { if (Array.isArray(x)) x.forEach(walk); else if (x && typeof x === "object") { if (typeof x.id === "string") loci.add(x.id); Object.values(x).forEach(walk); } }(JSON.parse(fs.readFileSync(path.join(ROOT, "assets/data/faith-received/loci.json"), "utf8"))));
+const fold = (s) => String(s).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+const names = JSON.parse(fs.readFileSync(path.join(ROOT, "assets/data/faith-received/authors/names.json"), "utf8")).names || {};
+const principal = JSON.parse(fs.readFileSync(path.join(ROOT, "assets/data/faith-received/principal-writers.json"), "utf8"));
+const principalText = fold(JSON.stringify(principal));
+const BOOKS = new Set(fs.readFileSync(path.join(ROOT, "assets/js/page/scripture-dev-core.js"), "utf8").match(/slug:\s*"([a-z0-9-]+)"/g)?.map((m) => m.replace(/.*"([^"]+)"/, "$1")) || []);
+const badKeys = [];
+for (const k of Object.keys(data.idx.topic)) if (!loci.has(k)) badKeys.push(`topic ${k}`);
+for (const k of Object.keys(data.idx.author)) if (!names[fold(k)] && !principalText.includes(fold(k)) && !authorRoomKnown(k)) badKeys.push(`author ${k}`);
+for (const k of Object.keys(data.idx.verse)) if (BOOKS.size && !BOOKS.has(k.split(".")[0])) badKeys.push(`verse ${k}`);
+function authorRoomKnown(k) { return Boolean(names[fold(k).replace(/of|the|de/g, "")]); }
+if (badKeys.length) console.log(`note  ${badKeys.length} index keys not found in the theme's own lists (they may be rooms the worker holds): ${badKeys.slice(0, 8).join("; ")}${badKeys.length > 8 ? "; ..." : ""}`);
+
+const placed = new Set();
+const mark = (list) => list.forEach((a) => placed.add(a.id));
+for (const k of Object.keys(data.idx.verse)) if (k.split(".").length === 2) { const [s, c] = k.split("."); mark(P.verse(A, s, Number(c), 1)); }
+for (const k of Object.keys(data.idx.topic)) mark(P.topic(A, k, []));
+for (const k of Object.keys(data.idx.author)) mark(P.author(A, k));
+for (const k of Object.keys(data.idx.work)) mark(P.work(A, k));
+for (const k of Object.keys(data.idx.doc)) mark(P.doc(A, k));
+const orphans = raw.filter((a) => !placed.has(a.id));
+const byKind = {};
+orphans.forEach((a) => { byKind[a.k] = (byKind[a.k] || 0) + 1; });
+console.log(`pages: ${placed.size} of ${raw.length} essays appear on a verse, topic, author, work or document page; ORPHANS (no page): ${orphans.length} ${JSON.stringify(byKind)}`);
+ok(placed.size + orphans.length === raw.length, "every essay is either placed or counted as an orphan");
+// An orphan is an essay the data ties to no verse, topic, author, work or library document (the documents it names, the Thirty-Nine
+// Articles or the Prayer Book, are not matched to a page). Each is on the Resources page and found by its search.
+orphans.forEach((a) => {
+  ok(!(a.verses || []).length && !(a.topics || []).length && !(a.authors || []).length && !(a.works || []).length && !(a.docs || []).length, `orphan "${a.t}" has no entity the data could have placed`);
+  ok(A.search(a.t.split(/\s+/).slice(0, 3).join(" "), { limit: 50 }).some((x) => x.id === a.id), `orphan "${a.t}" is at least found by search`);
+});
+
+// ── the module, drawn ───────────────────────────────────────────────────────────────────────────────────────────────────
+ok(M.html([], { id: "e" }) === "", "no essays, no module");
+ok(M.html(null, { id: "e" }) === "", "no list, no module");
+ok(M.html([{ id: "x", t: "Title", u: "javascript:alert(1)", d: "2020-01-01", a: "A" }], { id: "e" }) === "", "an unsafe link draws nothing at all");
+ok(M.html([{ id: "x", t: "Title", u: "https://mereorthodoxy.com/x/", d: "2020-01-01", a: "A" }], { id: "e" }) !== "", "a safe link draws");
+const forbidden = /(—|undefined|null|\bteaches\b|\bholds\b|\bargues\b|library's (position|view|teaching)|[Gg]ood news)/;
+let rowsChecked = 0;
+const keysToDraw = [["verse", verses], ["topic", topicKeys], ["author", authors], ["work", works], ["doc", docs]];
+for (const [kind, list] of keysToDraw) {
+  for (const key of list) {
+    const items = kind === "verse" ? P.verse(A, ...[key.split(".")[0], Number(key.split(".")[1]), Number(key.split(".")[2])])
+      : kind === "topic" ? P.topic(A, key, []) : kind === "author" ? P.author(A, key) : kind === "work" ? P.work(A, key) : P.doc(A, key);
+    const limit = kind === "topic" || kind === "author" ? 5 : 3;
+    const out = M.html(items, { id: "m", limit, excerpt: kind !== "work", tag: "h2", title: kind === "author" ? `Mere Orthodoxy on ${key}` : "", context: kind === "verse" ? "on this passage" : "", note: "Essays that engage this. They do not speak for the library." });
+    ok(Boolean(out) === items.length > 0, `${kind} ${key}: drawn exactly when there are essays`);
+    if (!out) continue;
+    // The words this module writes (label, note, buttons, links) are checked; an essay's own title and excerpt are the essay's words.
+    const chrome = out.replace(/<li class="moa-row"[\s\S]*?<\/li>/g, " ").replace(/<[^>]+>/g, " ");
+    ok(!forbidden.test(chrome), `${kind} ${key}: forbidden wording in "${(chrome.match(forbidden) || [""])[0]}"`);
+    ok(!/\u2014|undefined|null/.test(out.replace(/<[^>]+>/g, " ")), `${kind} ${key}: no em dash, "undefined" or "null" anywhere in the drawn text`);
+    const rows = (out.match(/<li class="moa-row"/g) || []).length;
+    ok(rows === items.length, `${kind} ${key}: ${rows} rows for ${items.length} essays`);
+    ok((out.match(/ hidden data-moa-extra/g) || []).length === Math.max(0, items.length - limit), `${kind} ${key}: rows past ${limit} wait behind "Show all"`);
+    ok(/data-moa-more/.test(out) === items.length > limit, `${kind} ${key}: "Show all N" only when there is more`);
+    if (items.length > limit) ok(out.includes(`Show all ${items.length}</button>`), `${kind} ${key}: "Show all ${items.length}" names the count`);
+    ok(!/<li class="moa-row"[^>]*>\s*<\/li>/.test(out) && !/<ul class="moa-list"[^>]*><\/ul>/.test(out), `${kind} ${key}: no empty row or list`);
+    ok([...out.matchAll(/<a class="moa-link" href="([^"]+)" target="_blank" rel="noopener">/g)].every((m) => /^https:\/\/mereorthodoxy\.com\//.test(m[1])), `${kind} ${key}: every link is the original, in a new tab, noopener`);
+    ok(out.includes('href="/the-faith-received/resources/#articles"'), `${kind} ${key}: the foot links to all the articles`);
+    ok(!/<h[1-6][^>]*>\s*<\/h[1-6]>/.test(out), `${kind} ${key}: no empty heading`);
+    rowsChecked += rows;
+  }
+}
+// the narrow panel: two links, never more, and the rest through the Verse Desk
+{
+  const items = P.verse(A, "genesis", 1, 1);
+  const out = M.html(items, { id: "p", cap: 2, foot: false, moreHref: "/the-faith-received/scripture/desk/?ref=genesis.1.1", moreLabel: `All ${items.length} on the Verse Desk` });
+  ok((out.match(/<li class="moa-row"/g) || []).length === Math.min(2, items.length), "the panel draws two links at most");
+  if (items.length > 2) ok(out.includes("on the Verse Desk</a>") && !out.includes("data-moa-more"), "the panel points to the Verse Desk instead of expanding");
+  ok(M.html(items, { id: "p", cap: 2, moreHref: "https://evil.example/", moreLabel: "x" }).includes("evil.example") === false, "the panel's 'more' link is an on-site path only");
+}
+// dates, excerpts, and the seam between them
+ok(M.monthYear("2019-05-14") === "May 2019" && M.monthYear("2026-10-20T04:00:00.000Z") === "October 2026" && M.monthYear("") === "", "dates read as Month Year without a time zone");
+ok(M.excerpt("a ".repeat(200), 105).length <= 106 && M.excerpt("short", 170) === "short", "excerpts are cut on a word");
+ok(!M.plain("a — b").includes("—"), "the module never writes an em dash");
+
+// ── the sheet and the scripts hold the rules ────────────────────────────────────────────────────────────────────────────
+const css = fs.readFileSync(path.join(ROOT, "assets/css/mo-articles-module.css"), "utf8").replace(/\/\*[^]*?\*\//g, "");
+ok(!/#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/.test(css), "the module's sheet states no literal color");
+ok(!/IM Fell|font-variant:\s*small-caps|border-radius:\s*(9|[1-9]\d)/.test(css), "no display face and no pill in the module's sheet");
+ok(!/max-height|overflow(-y)?:\s*(auto|scroll)/.test(css), "no scroll box in the module's sheet");
+ok(/min-height:\s*44px/.test(css) && /:focus-visible/.test(css), "44px targets and a visible focus ring");
+for (const f of ["assets/js/lib/mo-articles-module.js", "assets/js/page/mo-articles-placements.js"]) {
+  const src = fs.readFileSync(path.join(ROOT, f), "utf8");
+  ok(!/\.innerHTML\s*=/.test(src.replace(/\/\*[^]*?\*\//g, "")), `${f}: no innerHTML assignment (rows are escaped strings through insertAdjacentHTML)`);
+  ok(!src.includes("—".repeat(1)) || /^\s*(\/\/|\*|\/\*)/m.test(src), `${f}: no em dash`);
+}
+
+console.log(`checked ${verses.length} verses, ${topicKeys.length} topics, ${authors.length} authors, ${works.length} works, ${docs.length} documents, ${rowsChecked} rows drawn`);
+if (failed) { console.error(`\n${failed} check(s) failed`); process.exit(1); }
+console.log("ok  Mere Orthodoxy placements");

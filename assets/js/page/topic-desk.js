@@ -141,6 +141,8 @@
         // The page's own count boxes stay unless the desk drew counts of its own.
         if (model.modules.hero.tiles.length) root.classList.add("has-desk");
         state("drawn");
+        // Mere Orthodoxy essays on this topic, and on the confession documents that speak to it (mo-articles-placements.js).
+        if (window.MOPlace) window.MOPlace.topic(host, id, ((got.conf && got.conf.articles) || []).map((a) => a.w).filter(Boolean));
         host.querySelectorAll("img[data-tdk-portrait]").forEach((img) => {
           const fallback = () => {
             img.hidden = true;
