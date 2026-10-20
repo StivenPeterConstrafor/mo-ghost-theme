@@ -165,6 +165,8 @@
       return { meta, p, last };
     }
 
+    const X_SHELF = { Reformed: 'rf', 'Continental Reformed': 'rf', 'Roman Catholic': 'rc', Lutheran: 'lu', Medieval: 'md', 'English Divines': 'ed',
+      'Humanism & Law': 'hl', 'Humanism and Law': 'hl' };
     // The works the library maps to a chapter, with where each opens and the rows that discuss each verse. No ranking (the pane ranks).
     async function listWorks(book, ch) {
       const [file, dev, ov] = await Promise.all([
@@ -185,12 +187,19 @@
         }
         for (const r of v.rows || []) if (r.how === 'exegesis' && /note on this verse/i.test(r.g || '')) {
           const c = take(r.w, r.a, r.t); if (!(v.v in c.notes)) c.notes[v.v] = r.p;
+          if (r.sh && r.sh !== 'x') c.sh = c.sh || r.sh;
         }
       }
       for (const e of ((dev && dev.books && dev.books[book]) || [])) {
-        meta[e.w] = { a: e.a || '', t: e.st || e.t || e.w };
+        // a volume of collected works is named by the piece in it that holds the chapter (map `stc` per chapter, else `st`; 10-19):
+        // "Lectures on Psalms 2, 51, 45, 1532" in WA 40.2, not "Weimar Edition: Writings, Volume 40.2"
+        const piece = (e.stc && e.stc[ch]) || e.st;
+        meta[e.w] = { a: e.a || '', t: piece || e.t || e.w };
         if (+ch < (e.c1 || 1) || +ch > (e.c2 || 999)) continue;
         const c = take(e.w, e.a, e.t);
+        if (piece) { c.t = piece; c.vol = e.t; }
+        // its tradition: the shelf, or for the Reformed, Lutheran and Roman Catholic the map's tradition (10-20)
+        c.sh = c.sh || (e.sh === 'x' ? (X_SHELF[e.tr] || 'x') : e.sh);
         c.k = c.k || e.k; c.cov = Math.max(c.cov || 0, Object.keys(e.an || {}).length || ((Number(e.c2) || 0) - (Number(e.c1) || 0) + 1));
         if (e.an && e.an[ch] != null) { c.open = e.an[ch]; if (e.an[String(+ch + 1)] != null) c.close = e.an[String(+ch + 1)]; }
       }
