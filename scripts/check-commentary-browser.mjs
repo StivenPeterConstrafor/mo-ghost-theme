@@ -58,6 +58,10 @@ window.document.querySelector('.bible-verse[data-v="1"]').click();
 const loaded = await until(() => /Its (note|next note|closest earlier note)|No note on|This is where it opens/.test(text('.cp-where')) && !window.document.querySelector('.cp-body').classList.contains('cp-loading') && text('.cp-body').length > 200, 90000);
 console.log(`      where: ${text('.cp-where')}`);
 ok(loaded && !/could not be loaded|Opening the page|Looking for/.test(text('.cp-body')), `the Commentary tab shows the commentary's words for Genesis 1:1 (got: ${text('.cp-body').slice(0, 90)})`);
+// the editors' critical apparatus of a scholarly edition is never set as the commentary: any such paragraph sits under the closed disclosure
+const AN = window.FRCommentaryAnchor;
+const loose = [...window.document.querySelectorAll('.cp-body p')].filter((el) => !el.closest('details.cp-app') && AN.isApparatus(el.textContent));
+ok(loose.length === 0, `no apparatus paragraph is set as commentary (got: ${loose.slice(0, 2).map((el) => el.textContent.slice(0, 50)).join(' | ') || 'none'})`);
 const creedsDone = await until(() => !window.document.querySelector('.cp-creeds [data-cp-creeds-loading], .cp-cr-loading'), 30000);
 const cr = text('.cp-creeds') || text('.cp-cr');
 ok(creedsDone && !/could not be loaded/.test(cr), `the creeds and confessions load for Genesis 1:1 (got: ${cr.slice(0, 90) || 'nothing'})`);
