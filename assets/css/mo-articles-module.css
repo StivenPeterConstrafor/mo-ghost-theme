@@ -1,0 +1,64 @@
+/* ═══════════════════════════════════════════════════════════════
+   "From Mere Orthodoxy" (2026-10-20): the one small module that lists Mere Orthodoxy essays on the pages they relate to.
+   Markup comes from assets/js/lib/mo-articles-module.js; every class is moa- so nothing here meets another sheet.
+
+   Colors are tokens only. On the Verse Desk and the Scripture pages the scope remaps --sd-ink, --sd-muted and --sd-accent for
+   html[data-sd-theme="dark"], so this sheet states no light or dark literal (scripts/check-scripture-view.mjs scans it). The
+   Topics, author and work pages are light only and take the page's own tokens.
+
+   Working surface: Source Serif (var(--font-body)), no display face. A small-caps label over a thin rule, plain rows, no pills, no
+   scroll box (the rest of the list opens in place), 44px rows on a phone, a visible focus ring.
+   ═══════════════════════════════════════════════════════════════ */
+.moa-host { margin: 28px 0 0; }
+.container > .moa-host:first-child, .container-narrow > .moa-host:first-child { margin-top: 20px; }
+.moa {
+  --moa-ink: var(--sd-ink, var(--color-dark));
+  --moa-muted: var(--sd-muted, var(--color-muted));
+  --moa-rule: var(--color-rule);
+  --moa-accent: var(--sd-accent, var(--color-secondary));
+  margin: 0; padding: 14px 0 0; border-top: 1px solid var(--moa-rule);
+  font-family: var(--font-body); color: var(--moa-ink); text-align: left;
+}
+/* The reader's rail and the research rooms carry their own tokens (fr-reading-system.css), light, dark and sepia alike. */
+#notebook .moa, main.research .moa {
+  --moa-ink: var(--ink); --moa-muted: var(--muted); --moa-rule: var(--border); --moa-accent: var(--ink);
+}
+main.research .moa { --moa-accent: var(--color-secondary, var(--ink)); }
+.moa .moa-h {
+  margin: 0; font: 600 12px/1.4 var(--font-body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--moa-muted);
+}
+.moa .moa-ctx { font-weight: 400; letter-spacing: 0.1em; }
+.moa .moa-note { margin: 6px 0 0; font-size: 13px; line-height: 1.5; color: var(--moa-muted); max-width: 62ch; }
+.moa .moa-list { list-style: none; margin: 6px 0 0; padding: 0; }
+.moa .moa-row { margin: 0; padding: 0; border-bottom: 1px solid var(--moa-rule); }
+.moa .moa-row:last-child { border-bottom: 0; }
+.moa .moa-row[hidden] { display: none; }
+.moa .moa-link {
+  display: block; padding: 11px 0; min-height: 44px; box-sizing: border-box;
+  font: 400 17px/1.4 var(--font-body); color: var(--moa-ink); text-decoration: underline; text-decoration-color: var(--moa-rule);
+  text-underline-offset: 3px; text-decoration-thickness: 1px;
+}
+.moa .moa-link:hover { color: var(--moa-accent); text-decoration-color: currentColor; }
+.moa .moa-meta, .moa .moa-x { display: block; margin: -7px 0 0; color: var(--moa-muted); font-size: 14px; line-height: 1.45; }
+.moa .moa-x { margin-top: 2px; max-width: 70ch; }
+.moa .moa-row > :last-child { margin-bottom: 12px; }
+.moa .moa-tag { font-style: normal; }
+.moa .moa-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.moa .moa-foot { display: flex; flex-wrap: wrap; align-items: center; column-gap: 24px; margin: 2px 0 0; }
+.moa .moa-more {
+  display: inline-flex; align-items: center; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: 0; background: none;
+  font: 400 15px/1.3 var(--font-body); color: var(--moa-accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.moa .moa-all {
+  display: inline-flex; align-items: center; min-height: 44px; font: 400 15px/1.3 var(--font-body); color: var(--moa-muted);
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.moa .moa-all:hover { color: var(--moa-accent); }
+.moa .moa-link:focus-visible, .moa .moa-more:focus-visible, .moa .moa-all:focus-visible { outline: 2px solid var(--moa-accent); outline-offset: 2px; }
+@media (max-width: 640px) {
+  .moa .moa-link { font-size: 16px; }
+  /* The excerpt is for a wide screen, where one line fits; on a phone the title, byline and date stand alone. */
+  .moa .moa-x { display: none; }
+  .moa .moa-meta { margin-bottom: 12px; }
+}
+@media print { .moa-host { display: none; } }
