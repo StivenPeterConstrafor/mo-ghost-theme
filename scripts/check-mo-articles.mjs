@@ -209,6 +209,73 @@ test("the lookups answer from the built file", () => {
   assert.equal(B.search("zzzqqq").length, 0);
 });
 
+// ── full-text search, on the real data and index ──
+const indexText = readFileSync(path.join(root, "assets/data/faith-received/mo-articles-index.json"), "utf8");
+const index = JSON.parse(indexText);
+const F = MOArticles.create();
+F.use(data);
+F.useIndex(index);
+const byTitle = (re) => data.articles.find((a) => re.test(a.t));
+const coonce = byTitle(/Wrong with a .?Rule of Life/i);
+const tids = (q) => F.search(q).map((a) => a.id);
+
+test("the index is a stamped, positionless set of postings under the size cap", () => {
+  assert.equal(index.n, data.articles.length);
+  assert.deepEqual(index.ids, data.articles.map((a) => a.id));
+  assert.ok(Buffer.byteLength(indexText) < 1500 * 1024, `${indexText.length} bytes`);
+  const stamp = readFileSync(path.join(root, "assets/js/lib/mo-articles-dv.js"), "utf8");
+  assert.ok(stamp.includes(`MO_ARTICLES_INDEX_DV = "${index.dv}"`), "the stamp does not carry the index's dv");
+  for (const [k, v] of Object.entries(index.t).slice(0, 2000)) assert.match(v, /^[0-9a-z]+(\.[0-9a-z]+)?(,[0-9a-z]+(\.[0-9a-z]+)?)*$/, k);
+});
+test("'ten commandments' finds the Coonce essay and at least ten others", () => {
+  assert.ok(coonce, "Coonce essay is in the data");
+  const r = tids("ten commandments");
+  assert.ok(r.includes(coonce.id));
+  assert.ok(r.length >= 11, `${r.length}`);
+});
+test("'decalogue' finds the same essays (alias), and overlaps 'ten commandments'", () => {
+  const a = new Set(tids("ten commandments"));
+  const b = tids("decalogue");
+  assert.ok(b.length >= 10 && b.filter((id) => a.has(id)).length >= 10);
+  assert.ok(b.includes(coonce.id));
+});
+test("'rule of life' puts the Coonce essay in the top three", () => {
+  assert.ok(tids("rule of life").slice(0, 3).includes(coonce.id));
+});
+test("'nicene creed' finds the Passages series", () => {
+  const titles = F.search("nicene creed").map((a) => a.t);
+  assert.ok(titles.filter((t) => /^Passages: Season 1/.test(t)).length >= 5, titles.slice(0, 12).join(" | "));
+});
+test("'heidelberg' finds the Heidelberg Catechism pieces", () => {
+  assert.ok(F.search("heidelberg").slice(0, 3).some((a) => /Heidelberg/.test(a.t)));
+  assert.ok(F.search("heidelberg").length >= 10);
+});
+test("AND: more terms narrow the results", () => {
+  const wide = tids("ten commandments");
+  const narrow = tids("ten commandments augustine");
+  assert.ok(narrow.length < wide.length && narrow.length >= 1);
+  assert.ok(narrow.every((id) => wide.includes(id)));
+});
+test("a body-only match says what matched; a title match does not", () => {
+  const body = F.search("ten commandments").find((a) => !/commandments/i.test(a.t) && F.mentions(a, "ten commandments").length);
+  assert.ok(body, "some essay mentions it only in the text");
+  assert.deepEqual(F.mentions(coonce, "rule of life"), []);
+  assert.ok(F.mentions(F.article(coonce.id), "ten commandments").length >= 1);
+});
+test("diacritics and case do not change results; empty and short queries are safe", () => {
+  assert.deepEqual(tids("calvin"), tids("calviń"));
+  assert.deepEqual(tids("CALVIN"), tids("calvin"));
+  assert.equal(F.search("").length, data.articles.length);
+  assert.equal(F.search("   ").length, data.articles.length);
+  for (const q of ["a", "x", "of", "the", "..", "\"", "'", "ro", "  a  b "]) assert.doesNotThrow(() => F.search(q), q);
+  assert.equal(F.search("zzzqqqxx").length, 0);
+});
+test("a query is fast", () => {
+  const t0 = Date.now();
+  for (let i = 0; i < 20; i++) F.search("ten commandments");
+  assert.ok((Date.now() - t0) / 20 < 30, "over 30 ms per query");
+});
+
 async function asyncTest() {
   const seen = [];
   const warns = [];
@@ -273,6 +340,11 @@ test("a card is one link with an image or a placeholder, a sized image box, alt 
   assert.match(tpl, /class="container fr-res-wrap"/);
   assert.ok(!/\.bhero-inner\.container \{/.test(css), "the hero container is overridden");
   assert.ok(!/container-narrow/.test(tpl), "the narrow container is back");
+});
+test("the page shows everything: no Show more control anywhere", () => {
+  assert.ok(!/show (\d+ |all )?more|show all|resMore/i.test(tpl + pageJs) && !/\bPAGE\b/.test(pageJs), "a pagination control is back");
+  assert.match(read("assets/css/faith-resources.css"), /\.fr-res-card \{[^}]*content-visibility: auto/);
+  assert.match(pageJs, /loading="lazy" decoding="async"/);
 });
 test("the page copy has no em dash and the links open the original safely", () => {
   assert.ok(!/\u2014|&mdash;/.test(tpl + pageJs), "em dash");

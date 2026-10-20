@@ -169,7 +169,10 @@ const DV_FILE = "assets/js/lib/mo-articles-dv.js";
 const dv = createHash("sha1").update(JSON.stringify(out)).digest("hex").slice(0, 10);
 const { v: outV, ...outRest } = out;
 const text = `${JSON.stringify({ v: outV, dv, ...outRest })}\n`;
-const stamp = `/* Written by scripts/build-mo-articles.mjs: the version of mo-articles.json. Do not edit. */\nwindow.MO_ARTICLES_DV = "${dv}";\n`;
+// The full-text index (mo-articles-index.json, from scripts/prep-mo-articles-search.mjs) carries its own dv; the stamp passes it on.
+let indexDv = "";
+try { indexDv = JSON.parse(readFileSync(rel("assets/data/faith-received/mo-articles-index.json"), "utf8")).dv || ""; } catch { /* no index yet */ }
+const stamp = `/* Written by scripts/build-mo-articles.mjs: the versions of mo-articles.json and mo-articles-index.json. Do not edit. */\nwindow.MO_ARTICLES_DV = "${dv}";\n${indexDv ? `window.MO_ARTICLES_INDEX_DV = "${indexDv}";\n` : ""}`;
 const bytes = Buffer.byteLength(text);
 if (bytes > MAX_BYTES) problems.push(`${OUT} is ${(bytes / 1024).toFixed(0)} KB, over the ${MAX_BYTES / 1024} KB target`);
 
