@@ -170,8 +170,9 @@ const get = async (url, name, hours = 6) => {
 
 let live = !OFFLINE;
 let worksIndex = null;
+let libAuthors = null;
 if (live) {
-  try { worksIndex = new Set((await get(`${LIB}/v1/works-index.json`, "works-index.json", 24)).works.map((w) => w.slug)); } catch (e) { console.log(`skip  live checks: the library is not reachable (${e.message})`); live = false; }
+  try { const wi = await get(`${LIB}/v1/works-index.json`, "works-index.json", 24); worksIndex = new Set(wi.works.map((w) => w.slug)); libAuthors = new Set(wi.works.map((w) => w.author)); } catch (e) { console.log(`skip  live checks: the library is not reachable (${e.message})`); live = false; }
 }
 
 const DEBUG = process.env.DEBUG_STANCE;
@@ -692,6 +693,48 @@ if (JSDOM && live) {
   } else console.log("skip  one section: no enrich data for the test topic");
 }
 
+// ── Principal writers: the curated file, the row, and the Gospel regression ──
+{
+  const PW = require(path.join(root, "assets/js/page/topic-principal-writers.js"));
+  const pw = json(path.join(DATA, "principal-writers.json"));
+  const names = Object.values(pw.traditions).flat();
+  ok(names.length > 30 && Boolean(pw.provenance) && /Curated by Claude/.test(pw.provenance), `principal-writers.json: ${names.length} names with provenance`);
+  const rows = PW.principalRows(["Alpha", "Beta", "Gamma"], [{ a: "Gamma", s: "gamma", n: 5 }, { a: "Alpha", s: "alpha", n: 0 }, { a: "Beta", s: "beta", n: 9 }], [{ a: "Beta", w: "w1", t: "T1", weight: 5, secs: [] }, { a: "Beta", w: "w2", t: "T2", weight: 50, secs: [{ t: "On x", p: 12 }] }], 8);
+  ok(rows.length === 2 && rows[0].name === "Beta" && rows[1].name === "Gamma", "principal rows: the curated order, and a writer with no passages is left out");
+  ok(rows[0].href === "/the-faith-received/read/?w=w2#b12-0" && rows[1].href === "/the-faith-received/author/?a=gamma", "principal rows: the work with the most passages gives the link, at its section; no work gives the author page");
+  ok(PW.principalRows(names, Array.from({ length: 30 }, (_, i) => ({ a: names[i], s: `s${i}`, n: 3 })), [], 8).length === 8, "principal rows: at most eight");
+  if (live) {
+    const missing = names.filter((n) => !libAuthors.has(n));
+    ok(missing.length === 0, `principal-writers.json: every name is an author the library spells that way (missing: ${missing.join(", ") || "none"})`);
+    const l = LOCI.get("de-evangelio");
+    const t = await get(`${VERSE}/v1/topic?id=de-evangelio&t2=${l.t2}`, "topic-de-evangelio.json");
+    const ref = PW.principalRows(pw.traditions.Reformed, t.authors, t.works, 8).map((r) => r.name);
+    console.log(`      The Gospel, Reformed principal writers with passages: ${ref.join(", ") || "none"}`);
+    const hasData = ["John Calvin", "Amandus Polanus", "Gisbertus Voetius"].filter((n) => t.authors.some((a) => a.a === n && Number(a.n) > 0));
+    ok(hasData.every((n) => ref.includes(n)), `The Gospel: Calvin, Polanus, and Voetius all appear on the Reformed side when the data has passages for them (${hasData.join(", ") || "none have"})`);
+    // Every comparison in every topic: after the cleaning no source token is left (the same pattern the page uses).
+    let left = 0; let pairs = 0;
+    const cl = (t) => String(t || "").replace(/\s*[(\[]\s*[XY]\d+(?:\s*[–—-]\s*[XY]?\d+)?(?:\s*[,;]\s*[XY]\d+(?:\s*[–—-]\s*[XY]?\d+)?)*\s*[)\]]/g, "").replace(/(^|[.!?]\s+)[XY]\d+\b/g, "$1A sampled source").replace(/\s+[XY]\d+\b/g, "");
+    for (const [lid, hit] of INDEX) {
+      for (const slug of [hit.locus.t2, ...(hit.locus.aliases || [])]) {
+        let e = null;
+        try { e = await get(`${LIB}/v1/enrich/topics/${encodeURIComponent(slug.toLowerCase())}.json`, `enrich-${slug}.json`); } catch (_) { e = null; }
+        if (!e || !(e.traditions || []).length) continue;
+        e.traditions.forEach((p) => { pairs += 1; ["summary", "agree", "differ"].forEach((k) => { if (/[(\[]\s*[XY]\d|\b[XY]\d+\b/.test(cl(p[k]))) left += 1; }); });
+        break;
+      }
+    }
+    ok(pairs > 100 && left === 0, `source tokens: none survive the cleaning in ${pairs} comparisons across every topic (${left} left)`);
+    for (const id of ["de-trinitate", "de-justificatione", "de-christo", "de-baptismo", "de-praedestinatione", "de-ecclesia", "de-scriptura", "de-coena"]) {
+      const lc = LOCI.get(id);
+      const tt = await get(`${VERSE}/v1/topic?id=${id}&t2=${lc.t2}`, `topic-${id}.json`);
+      const have = Object.entries(pw.traditions).map(([k, v]) => `${k}: ${PW.principalRows(v, tt.authors, tt.works, 20).map((r) => r.name).length}/${v.length}`).join("; ");
+      const gaps = Object.entries(pw.traditions).flatMap(([k, v]) => v.filter((n) => !tt.authors.some((a) => a.a === n && Number(a.n) > 0)).map((n) => `${n}`)).slice(0, 6);
+      console.log(`      ${lc.label}: ${have}. No passages in the top 400 for: ${gaps.join(", ") || "none"}`);
+    }
+  }
+}
+
 // ── Ways into this topic: tablist semantics, and every word and link of the data still there ──
 if (JSDOM && live) {
   for (const id of ["de-ecclesia", "de-justificatione", "de-trinitate"]) {
@@ -711,6 +754,9 @@ if (JSDOM && live) {
       return new window.Response("{}", { status: 404 });
     };
     for (const k of ["Response", "URL", "URLSearchParams"]) if (!window[k]) window[k] = globalThis[k];
+    const topicData = await get(`${VERSE}/v1/topic?id=${id}&t2=${l.t2}`, `topic-${id}.json`);
+    window.eval(readFileSync(path.join(root, "assets/js/page/topic-principal-writers.js"), "utf8"));
+    window.MOTopicDeskData = { columns: [{ id: "rf", quotes: [{ doc: "Heidelberg Catechism", article: "Q. 1", year: 1563, href: "/the-faith-received/read/?w=rc-001-heidelberg" }] }, { id: "lu", quotes: [] }], topic: { authors: topicData.authors, works: topicData.works }, principal: json(path.join(DATA, "principal-writers.json")) };
     window.eval(readFileSync(path.join(root, "assets/js/page/faith-port-topic-dev-notes.js"), "utf8"));
     const doc = window.document;
     const until = async (fn, ms) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (fn()) return true; await new Promise((r) => setTimeout(r, 50)); } return false; };
@@ -720,7 +766,8 @@ if (JSDOM && live) {
     const norm = (t) => t.replace(/\s+/g, " ").trim();
     const views = { course: [], traditions: [], concepts: [] };
     ((d.guide && d.guide.course) || []).forEach((c) => views.course.push(c.why, c.thesis, c.t, c.a || c.author));
-    (d.traditions || []).forEach((p) => views.traditions.push(p.x, p.y, p.summary, p.agree, p.differ));
+    const clean = (t) => String(t || "").replace(/\s*[(\[]\s*[XY]\d+(?:\s*[–—-]\s*[XY]?\d+)?(?:\s*[,;]\s*[XY]\d+(?:\s*[–—-]\s*[XY]?\d+)?)*\s*[)\]]/g, "").replace(/(^|[.!?]\s+)[XY]\d+\b/g, "$1A sampled source").replace(/\s+[XY]\d+\b/g, "").replace(/\s+([.,;:])/g, "$1");
+    (d.traditions || []).forEach((p) => views.traditions.push(p.x, p.y, clean(p.summary), clean(p.agree), clean(p.differ)));
     (d.concepts || []).forEach((c) => views.concepts.push(c.label, c.gloss));
     for (const t of tabs) {
       t.dispatchEvent(new window.Event("click", { bubbles: true }));
@@ -730,7 +777,22 @@ if (JSDOM && live) {
       ok(missing.length === 0 && text.length > 0, `ways-in ${id}: the ${t.dataset.frView} tab keeps every sentence of its data (${want.length} strings; missing: ${missing.slice(0, 1).join("") || "none"})`);
       const hrefs = [...doc.querySelectorAll(".fr-dn-view a")].map((a) => a.getAttribute("href"));
       const refs = t.dataset.frView === "course" ? ((d.guide && d.guide.course) || []).length : t.dataset.frView === "traditions" ? (d.traditions || []).reduce((n, p) => n + (p.agree_refs || []).slice(0, 6).length + (p.differ_refs || []).slice(0, 6).length, 0) : 0;
-      ok(hrefs.length >= refs && hrefs.every((h) => /^\/the-faith-received\/read\/\?w=/.test(h)), `ways-in ${id}: the ${t.dataset.frView} tab keeps its ${refs} reader links`);
+      ok(hrefs.length >= refs && hrefs.every((h) => /^\/the-faith-received\/(?:read\/\?w=|author\/\?a=)/.test(h)), `ways-in ${id}: the ${t.dataset.frView} tab keeps its ${refs} reader links`);
+    }
+    const trad = tabs.find((t) => t.dataset.frView === "traditions");
+    if (trad && (d.traditions || []).length) {
+      trad.dispatchEvent(new window.Event("click", { bubbles: true }));
+      const view = doc.querySelector(".fr-dn-view");
+      const text = norm(view.textContent);
+      ok(!/[(\[]\s*[XY]\d/.test(text) && !/\b[XY]\d+\b/.test(text), `traditions ${id}: no raw (X1, Y7) source token survives in the text`);
+      const cards = [...view.querySelectorAll(".fr-dn-card")];
+      ok(cards.every((c) => /Drawn from a sample of \d+ cited pages? by \d+ authors?/.test(c.textContent) && /Not every author in a tradition is represented/.test(c.textContent)), `traditions ${id}: each card says what its sample was (${cards.length} cards)`);
+      const heads = [...view.querySelectorAll(".fr-dn-half")].map((h) => [...h.querySelectorAll("h5")].map((x) => x.textContent));
+      ok(heads.every((h) => h.indexOf("Confessions and catechisms") < 0 || h.indexOf("Confessions and catechisms") < h.indexOf("Principal writers on this topic in the library") || h.indexOf("Principal writers on this topic in the library") < 0), `traditions ${id}: confessions come before principal writers in each half`);
+      const writerNames = [...view.querySelectorAll(".fr-dn-half")].flatMap((h) => [...h.querySelectorAll(".fr-dn-row")].filter((r) => /Principal writers/.test(r.textContent)).flatMap((r) => [...r.querySelectorAll("li a")].map((a) => a.textContent)));
+      const haveN = new Set(topicData.authors.filter((a) => Number(a.n) > 0).map((a) => a.a));
+      ok(writerNames.every((n) => haveN.has(n)), `traditions ${id}: principal writers shown only where the topic has passages for them (${writerNames.length} names)`);
+      ok(view.querySelectorAll(".fr-dn-half .fr-dn-row").length > 0 && [...view.querySelectorAll(".fr-dn-half")].every((h) => h.children.length <= 3), `traditions ${id}: halves carry rows`);
     }
     tabs[0].focus();
     tabs[0].dispatchEvent(new window.KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));

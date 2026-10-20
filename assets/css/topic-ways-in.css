@@ -87,6 +87,21 @@ html[data-sd-theme="dark"] .fr-dn {
 .fr-dn .tsc-chips a span, .fr-dn .tsc-works span { font-size: 14px; color: var(--wn-muted); }
 .fr-dn .tsc-all { margin-top: 16px; }
 
+/* Traditions compared: numbered notes, the sample line, and each tradition's confessions and principal writers in its own half. */
+.fr-dn .fr-dn-notes-h { margin: 0 0 2px; font-size: 14px; font-weight: 600; color: var(--wn-muted); }
+.fr-dn .fr-dn-notes { margin: 0 0 12px; padding-left: 1.6em; font-size: 14px; }
+.fr-dn .fr-dn-notes li { margin: 0; color: var(--wn-muted); }
+.fr-dn .fr-dn-notes a { display: inline-block; min-height: 44px; padding: 12px 0; color: var(--wn-muted); }
+.fr-dn .fr-dn-card .fr-dn-sample { margin: 8px 0 0; font-size: 14px; line-height: 1.5; color: var(--wn-muted); }
+.fr-dn .fr-dn-halves { display: grid; gap: 14px 22px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--wn-rule); grid-template-columns: minmax(0, 1fr); }
+.fr-dn .fr-dn-half-h { margin: 0 0 4px; font-size: 16px; font-weight: 600; color: var(--wn-ink); }
+.fr-dn .fr-dn-row h5 { margin: 8px 0 2px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--wn-muted); }
+.fr-dn .fr-dn-row ul { list-style: none; margin: 0; padding: 0; }
+.fr-dn .fr-dn-row li { margin: 0; line-height: 1.4; }
+.fr-dn .fr-dn-row li a { display: inline-block; padding: 10px 0; overflow-wrap: anywhere; max-width: 100%; }
+.fr-dn .fr-dn-row li span { font-size: 14px; color: var(--wn-muted); }
+.fr-dn .fr-dn-note { margin: 2px 0 0; font-size: 13px; line-height: 1.5; color: var(--wn-muted); }
+
 /* The verse itself under its reference (the Scripture page's own text and default translation). */
 .fr-dn .tsc-text { margin: 4px 0 10px; padding: 2px 0 2px 12px; border-left: 3px solid var(--wn-rule); font-size: 16.5px; line-height: 1.6; font-style: normal; color: var(--wn-ink); }
 .fr-dn .tsc-text[hidden] { display: none; }
