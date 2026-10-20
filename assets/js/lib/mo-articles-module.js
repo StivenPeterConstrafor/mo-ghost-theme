@@ -184,26 +184,99 @@
       .map(([t, a]) => withNote(a, t >= 2 ? "on this chapter" : ""));
   }
 
-  // A topic: its own essays, then essays on the confession documents that speak to it (named), newest first as the data orders them.
-  function topic(A, id, docSlugs) {
-    const own = A.forTopic(id);
+  const hay = (a) => `${a.t || ""} ${(a.w || []).join(" ")} ${a.x || ""}`;
+  const reEsc = (t) => String(t).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const hayTK = (a) => `${a.t || ""} ${(a.w || []).join(" ")}`;
+  const hasTermTK = (a, terms) => terms.length > 0 && new RegExp(`\\b(?:${terms.map(reEsc).join("|")})`, "i").test(hayTK(a));
+  const hasTerm = (a, terms) => terms.length > 0 && new RegExp(`\\b(?:${terms.map(reEsc).join("|")})`, "i").test(hay(a));
+
+  /* Namesakes: the matcher tied some essays to a theologian by name when they are about someone else. An essay whose title or
+     excerpt names the namesake is left off that author's page and off any list built from the author's name. */
+  const NAMESAKES = {
+    "Martin Luther": /martin luther king|\bMLK\b|king jr/i,
+    "John Calvin": /calvin (coolidge|and hobbes|klein|college|university)|hobbes/i,
+    "John Owen": /owen (strachan|wilson|jones|barfield)/i,
+    "Augustine of Hippo": /st\.? augustine,? (fl|florida)|augustine, florida/i,
+    "Bernard of Clairvaux": /bernard (madoff|sanders|lewis|williams)/i,
+    "Thomas Aquinas": /aquinas college/i,
+    "John Wesley": /wesley (snipes|crusher)/i,
+    "Thomas Goodwin": /goodwin (kearns|college)|doris kearns/i,
+    "Richard Hooker": /hooker (hall)/i,
+  };
+  const nsKey = (name) => Object.keys(NAMESAKES).find((k) => k.toLowerCase() === String(name).toLowerCase().trim());
+  const namesake = (name, a) => { const k = nsKey(name); return Boolean(k && NAMESAKES[k].test(`${a.t} ${a.x}`)); };
+  const excluded = (A) => {
+    const out = [];
+    Object.keys(NAMESAKES).forEach((name) => A.forAuthor(name).forEach((a) => { if (namesake(name, a)) out.push({ author: name, id: a.id, title: a.t }); }));
+    return out;
+  };
+
+  /* Words that stand for a topic: its name, its aliases and its search words (loci.json), less the few that are common English
+     (works, cross, mass, canon) and so say nothing. */
+  const COMMON = new Set(["works", "merit", "word", "the word", "prophecy", "prophets", "cross", "mass", "canon", "bible", "ministry", "preaching",
+    "discipline", "decree", "decrees", "sacrifice", "salvation", "persecution", "martyrdom", "reason", "tradition", "heresy", "revelation",
+    "adoption", "theology", "method", "forgiveness", "faith", "law", "church", "christ", "god", "sin", "grace", "love", "death", "life", "worship"]);
+  function topicTerms(locus) {
+    if (!locus) return [];
+    const raw = [locus.label, ...(locus.aliases || []).map((x) => String(x).replace(/-/g, " ")), ...(locus.find || [])];
+    const label = String(locus.label || "").replace(/^(the|of|on)\s+/i, "").replace(/^person and work of /i, "");
+    return [...new Set([...raw, label].map((x) => String(x || "").toLowerCase().trim()).filter((x) => x.length > 3 && !COMMON.has(x)))];
+  }
+
+  /* A topic's essays. The topic's own list is the matcher's, filtered to a STRONG signal: a word for the topic in the title; or a high-confidence document or work essay that has this topic first or second; or one of the Passages
+     creed series. The rest are left off. Then essays on the confession documents that speak to it, each named. */
+  function topic(A, id, docSlugs, terms) {
+    const ts = terms || [];
+    // Keywords and the excerpt are not signals on their own: one keyword among twelve, or a passing mention, put a Kairos-time essay on
+    // Baptism and a veils essay on the Atonement (Ian's review). The topic's word must be in the title, or in both a keyword and the excerpt.
+    const strong = (a) => hasTermTK({ t: a.t, w: [] }, ts) || (hasTermTK(a, ts) && hasTerm({ t: "", w: [], x: a.x }, ts)) || /^[\u2018\u2019'"]?Passages[,.:]? (Season|Chapter|Episode)/i.test(a.t || "") ||
+      ((a.k === "doc" || a.k === "work") && a.f === "high" && (a.topics || []).slice(0, 2).includes(id) && hasTerm(a, ts));
+    const own = A.forTopic(id).filter((a) => !terms || strong(a));
     const viaDocs = [];
-    (docSlugs || []).forEach((slug) => A.forDoc(slug).forEach((a) => viaDocs.push(withNote(a, `on ${docLabel(A, a, slug) || "a confession"}`))));
+    (docSlugs || []).forEach((slug) => doc(A, slug).forEach((a) => viaDocs.push(withNote(a, `on ${docLabel(A, a, slug) || "a confession"}`))));
     return dedupe([own, viaDocs]);
   }
 
-  const author = (A, name) => A.forAuthor(name);
+  const author = (A, name) => A.forAuthor(name).filter((a) => !namesake(name, a));
+
+  /* Creed documents: an essay is on the creed only when it says so (a creed word in its title, keywords or excerpt). The Apostles'
+     Creed page and the Nicene page share a document, so each takes its own words. */
+  const DOC_TERMS = {
+    "cf-001-apostolic-and-ancient-creeds": ["creed", "nicene", "nicaea", "apostles", "athanasian", "niceno"],
+    "cf-013-council-of-nicea-i-325": ["nicene", "nicaea", "nicea", "niceno", "arius", "homoousios"],
+    "cf-025-council-of-chalcedon-451": ["chalcedon", "chalcedonian"],
+    "cf-048-council-of-nicea-ii-787": ["nicaea", "nicea", "iconoclas", "icons", "adoptionis"],
+    "cf-092-council-of-trent-1545-1563": ["trent", "tridentine"],
+  };
+  const CREED_PAGE_TERMS = { apostles: ["apostles creed", "apostles’ creed", "apostles' creed", "apostles"], nicene: ["nicene", "nicaea", "niceno"] };
+  function doc(A, slugs, termsOverride) {
+    const list = Array.isArray(slugs) ? slugs : [slugs];
+    return dedupe(list.map((s) => {
+      const terms = termsOverride || DOC_TERMS[s];
+      const articles = A.forDoc(s);
+      return /^cf-/.test(s) && terms ? articles.filter((a) => hasTerm(a, terms.map((t) => t.replace(/’/g, "'")).concat(terms))) : articles;
+    }));
+  }
+
+  /* The Summa and the Contra Gentiles are cited in five or six parts that each carry the same essays; an essay shows on a part only
+     when it names that part, and the work's other essays are on the author's page. */
+  const PARTS = {
+    "aq-st-i-16": ["prima pars", "first part", "summa theologiae i\\b", "\\bST I\\b"], "aq-st-i-ii-17": ["prima secundae", "first part of the second"],
+    "aq-st-ii-ii-19": ["secunda secundae", "second part of the second"], "aq-st-ii-ii-20": ["secunda secundae", "second part of the second"],
+    "aq-st-iii-21": ["tertia pars", "third part"], "aq-st-iiisup-23": ["supplement"],
+    "aq-scg1-11": ["book i\\b", "book 1\\b"], "aq-scg2-12": ["book ii\\b", "book 2\\b"], "aq-scg3-13": ["book iii\\b", "book 3\\b"], "aq-scg4-14": ["book iv\\b", "book 4\\b"],
+  };
 
   // A work, or a library document (a creed, confession, catechism or council is a work too): essays on the work, then on the document.
   function work(A, slug) {
     const s = String(slug || "").trim();
     const key = /^\d+$/.test(s) ? `pld-${s}` : s;
-    return dedupe([A.forWork(key), A.forDoc(key)]);
+    let list = dedupe([A.forWork(key), doc(A, key)]);
+    if (PARTS[key]) list = list.filter((a) => new RegExp(`(?:${PARTS[key].join("|")})`, "i").test(hay(a)));
+    return list.map((a) => (/reading plans?/i.test(a.t) ? withNote(a, "a reading plan") : a));
   }
 
-  const doc = (A, slugs) => dedupe((Array.isArray(slugs) ? slugs : [slugs]).map((s) => A.forDoc(s)));
-
-  const pick = { verse, topic, author, work, doc, dedupe, DOC_NAMES };
+  const pick = { verse, topic, author, work, doc, dedupe, DOC_NAMES, topicTerms, excluded, NAMESAKES, CREED_PAGE_TERMS };
 
   return { html, mount, mountAt, bind, safeUrl, monthYear, dateLine, excerpt, plain, pick, ALL_HREF };
 }));

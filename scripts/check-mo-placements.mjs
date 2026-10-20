@@ -69,27 +69,44 @@ for (const key of verses) {
   ok(Boolean(out) === got.length > 0, `${key}: a module is drawn exactly when there are essays`);
 }
 
+const lociAll = JSON.parse(fs.readFileSync(path.join(ROOT, "assets/data/faith-received/loci.json"), "utf8"));
+const locusOf = (id) => { let hit = null; (function walk(x) { if (hit) return; if (Array.isArray(x)) x.forEach(walk); else if (x && typeof x === "object") { if (x.id === id && x.label) hit = x; else Object.values(x).forEach(walk); } }(lociAll)); return hit; };
+const termsOf = (id) => P.topicTerms(locusOf(id));
+
 // ── ten topics ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 const topicKeys = Object.keys(data.idx.topic).sort((a, b) => data.idx.topic[b].length - data.idx.topic[a].length).slice(0, 10);
 for (const id of topicKeys) {
-  const own = raw.filter((a) => (a.topics || []).includes(id)).map((a) => a.id);
-  const got = P.topic(A, id, []);
-  ok(sameSet(ids(got), own), `topic ${id}: its own essays (${got.length} vs ${own.length})`);
+  const rawOwn = raw.filter((a) => (a.topics || []).includes(id)).map((a) => a.id);
+  const got = P.topic(A, id, [], termsOf(id));
+  ok(got.every((a) => rawOwn.includes(a.id)) && got.length <= rawOwn.length, `topic ${id}: only its own essays, filtered (${got.length} of ${rawOwn.length})`);
+  ok(new Set(ids(got)).size === got.length, `topic ${id}: no essay twice`);
   const docs = ["rc-111-westminster-confession-of-faith-1646", "cf-001-apostolic-and-ancient-creeds"];
-  const withDocs = P.topic(A, id, docs);
-  const wantAll = new Set([...own, ...raw.filter((a) => (a.docs || []).some((d) => docs.includes(d))).map((a) => a.id)]);
-  ok(sameSet(ids(withDocs), [...wantAll]), `topic ${id}: plus the essays on its confession documents (${withDocs.length} vs ${wantAll.size})`);
+  const withDocs = P.topic(A, id, docs, termsOf(id));
   ok(ids(withDocs).slice(0, got.length).join() === ids(got).join(), `topic ${id}: its own essays come first`);
   withDocs.slice(got.length).forEach((a) => ok(/^on the /.test(a.note || ""), `topic ${id}: "${a.t}" by a document says which`));
 }
+// the eight marquee topics, and the essays that were wrongly on them (fix: a strong signal is required)
+const FALSE = {
+  "de-christo": ["Sexuality and the Need for Moral Guidance", "Why God Hides"], "de-baptismo": ["Living By Kairos Time"],
+  "de-scriptura": ["Knowledge Spackle", "Evangelical Universities"], "de-justificatione": ["23 Books for 2023"], "de-trinitate": ["Whiteness"],
+};
+const marquee = ["de-trinitate", "de-justificatione", "de-christo", "de-baptismo", "de-praedestinatione", "de-ecclesia", "de-scriptura", "de-coena"];
+for (const id of marquee) {
+  const got = P.topic(A, id, [], termsOf(id));
+  console.log(`topic ${id}: ${got.length} (was ${(data.idx.topic[id] || []).length})`);
+  if (process.env.LIST) got.forEach((a) => console.log(`    ${a.t}`));
+  (FALSE[id] || []).forEach((bad) => ok(!got.some((a) => a.t.includes(bad) || (a.x || "").includes(bad)), `topic ${id} no longer lists "${bad}"`));
+}
+ok(!P.topic(A, "de-trinitate", [], termsOf("de-trinitate")).some((a) => /whiteness/i.test(a.t)), "Trinity drops the whiteness essay");
 
 // ── ten authors ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 const authors = Object.keys(data.idx.author).sort((a, b) => data.idx.author[b].length - data.idx.author[a].length).slice(0, 10);
 for (const name of authors) {
   const want = raw.filter((a) => (a.authors || []).includes(name)).map((a) => a.id);
   const got = P.author(A, name);
-  ok(sameSet(ids(got), want), `author ${name}: ${got.length} vs ${want.length}`);
-  ok(sameSet(ids(P.author(A, name.toUpperCase())), want), `author ${name}: case does not matter`);
+  const wantKept = raw.filter((a) => (a.authors || []).includes(name) && !(P.NAMESAKES[name] && P.NAMESAKES[name].test(`${a.t} ${a.x}`))).map((a) => a.id);
+  ok(sameSet(ids(got), wantKept), `author ${name}: ${got.length} vs ${wantKept.length} (${want.length} tagged)`);
+  ok(sameSet(ids(P.author(A, name.toUpperCase())), wantKept), `author ${name}: case does not matter`);
 }
 
 // ── ten works ────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -97,7 +114,9 @@ const works = Object.keys(data.idx.work).sort((a, b) => data.idx.work[b].length 
 for (const slug of works) {
   const want = raw.filter((a) => (a.works || []).includes(slug)).map((a) => a.id);
   const got = P.work(A, slug);
-  ok(sameSet(ids(got), want), `work ${slug}: ${got.length} vs ${want.length}`);
+  ok(got.every((a) => want.includes(a.id) || (a.docs || []).includes(slug)), `work ${slug}: only essays tied to it`);
+  if (!/^aq-/.test(slug)) ok(sameSet(ids(got), want), `work ${slug}: ${got.length} vs ${want.length}`);
+  else ok(got.length < want.length || want.length === 0, `Summa part ${slug}: shows only essays that name the part (${got.length} of ${want.length})`);
 }
 ok(sameSet(ids(P.work(A, "2722")), ids(P.work(A, "pld-2722"))), "a bare PL number is a PL work");
 
@@ -105,10 +124,12 @@ ok(sameSet(ids(P.work(A, "2722")), ids(P.work(A, "pld-2722"))), "a bare PL numbe
 const docs = Object.keys(data.idx.doc).sort((a, b) => data.idx.doc[b].length - data.idx.doc[a].length).slice(0, 5);
 for (const slug of docs) {
   const want = raw.filter((a) => (a.docs || []).includes(slug)).map((a) => a.id);
-  ok(sameSet(ids(P.doc(A, slug)), want), `document ${slug}: ${P.doc(A, slug).length} vs ${want.length}`);
-  ok(sameSet(ids(P.work(A, slug)), raw.filter((a) => (a.docs || []).includes(slug) || (a.works || []).includes(slug)).map((a) => a.id)), `document ${slug} read as a work`);
+  const got = P.doc(A, slug);
+  ok(got.every((a) => want.includes(a.id)), `document ${slug}: only its essays`);
+  if (!/^cf-/.test(slug)) ok(sameSet(ids(got), want), `document ${slug}: ${got.length} vs ${want.length}`);
+  ok(sameSet(ids(P.work(A, slug)), ids(P.doc(A, slug)).concat(raw.filter((a) => (a.works || []).includes(slug) && !ids(P.doc(A, slug)).includes(a.id)).map((a) => a.id))), `document ${slug} read as a work`);
 }
-ok(P.topic(A, "de-trinitate", ["cf-025-council-of-chalcedon-451"]).filter((a) => a.note).every((a) => a.note === "on the Council of Chalcedon"), "Chalcedon is named as Chalcedon, not by a decree inside it");
+ok(P.topic(A, "de-trinitate", ["cf-025-council-of-chalcedon-451"], termsOf("de-trinitate")).filter((a) => a.note).every((a) => a.note === "on the Council of Chalcedon"), "Chalcedon is named as Chalcedon, not by a decree inside it");
 
 // ── every essay is on at least one page ─────────────────────────────────────────────────────────────────────────────────
 const loci = new Set();
@@ -128,21 +149,35 @@ if (badKeys.length) console.log(`note  ${badKeys.length} index keys not found in
 const placed = new Set();
 const mark = (list) => list.forEach((a) => placed.add(a.id));
 for (const k of Object.keys(data.idx.verse)) if (k.split(".").length === 2) { const [s, c] = k.split("."); mark(P.verse(A, s, Number(c), 1)); }
-for (const k of Object.keys(data.idx.topic)) mark(P.topic(A, k, []));
+for (const k of Object.keys(data.idx.topic)) mark(P.topic(A, k, [], termsOf(k)));
 for (const k of Object.keys(data.idx.author)) mark(P.author(A, k));
 for (const k of Object.keys(data.idx.work)) mark(P.work(A, k));
 for (const k of Object.keys(data.idx.doc)) mark(P.doc(A, k));
 const orphans = raw.filter((a) => !placed.has(a.id));
 const byKind = {};
 orphans.forEach((a) => { byKind[a.k] = (byKind[a.k] || 0) + 1; });
-console.log(`pages: ${placed.size} of ${raw.length} essays appear on a verse, topic, author, work or document page; ORPHANS (no page): ${orphans.length} ${JSON.stringify(byKind)}`);
+console.log(`pages: ${placed.size} of ${raw.length} essays appear on a verse, topic, author, work or document page; ORPHANS (no page): ${orphans.length} ${JSON.stringify(byKind)}; of those, ${orphans.filter((a) => (a.topics || []).length && !(a.verses || []).length && !(a.authors || []).length && !(a.works || []).length && !(a.docs || []).length).length} had only a topic that failed the strong-signal test`);
 ok(placed.size + orphans.length === raw.length, "every essay is either placed or counted as an orphan");
 // An orphan is an essay the data ties to no verse, topic, author, work or library document (the documents it names, the Thirty-Nine
 // Articles or the Prayer Book, are not matched to a page). Each is on the Resources page and found by its search.
+// Orphans now include essays whose only tie was a topic the strong-signal test rejected, and those a namesake guard or a creed or
+// Summa part rule left off: all are on the Resources page and found by search.
 orphans.forEach((a) => {
-  ok(!(a.verses || []).length && !(a.topics || []).length && !(a.authors || []).length && !(a.works || []).length && !(a.docs || []).length, `orphan "${a.t}" has no entity the data could have placed`);
   ok(A.search(a.t.split(/\s+/).slice(0, 3).join(" "), { limit: 50 }).some((x) => x.id === a.id), `orphan "${a.t}" is at least found by search`);
 });
+
+// ── namesakes, creed pages, Summa parts ──────────────────────────────────────────────────────────────────────────────────
+ok(!P.author(A, "Martin Luther").some((a) => /martin luther king|\bMLK\b|king jr/i.test(`${a.t} ${a.x}`)), "the Luther list has no Martin Luther King essay");
+console.log(`namesake exclusions: ${JSON.stringify(P.excluded(A).map((e) => `${e.author}: ${e.title}`))}`);
+{
+  const ap = P.doc(A, ["cf-001-apostolic-and-ancient-creeds"], P.CREED_PAGE_TERMS.apostles);
+  const ni = P.doc(A, ["cf-001-apostolic-and-ancient-creeds"], P.CREED_PAGE_TERMS.nicene);
+  ok(ids(ap).join() !== ids(ni).join(), "the Apostles' Creed page and the Nicene page list different essays");
+  ok(ap.every((a) => /apostles/i.test(`${a.t} ${(a.w || []).join(" ")} ${a.x}`)), "every Apostles' Creed essay says apostles");
+  ok(ni.every((a) => /nicene|nicaea|niceno/i.test(`${a.t} ${(a.w || []).join(" ")} ${a.x}`)), "every Nicene essay says Nicene or Nicaea");
+  ok(![...ap, ...ni, ...P.doc(A, ["cf-025-council-of-chalcedon-451"])].some((a) => a.t.startsWith("Teetering")), "the Adele essay is on no creed page");
+  console.log(`creed pages: Apostles' ${ap.length}, Nicene ${ni.length}, Chalcedon ${P.doc(A, ["cf-025-council-of-chalcedon-451"]).length}`);
+}
 
 // ── the module, drawn ───────────────────────────────────────────────────────────────────────────────────────────────────
 ok(M.html([], { id: "e" }) === "", "no essays, no module");
@@ -155,7 +190,7 @@ const keysToDraw = [["verse", verses], ["topic", topicKeys], ["author", authors]
 for (const [kind, list] of keysToDraw) {
   for (const key of list) {
     const items = kind === "verse" ? P.verse(A, ...[key.split(".")[0], Number(key.split(".")[1]), Number(key.split(".")[2])])
-      : kind === "topic" ? P.topic(A, key, []) : kind === "author" ? P.author(A, key) : kind === "work" ? P.work(A, key) : P.doc(A, key);
+      : kind === "topic" ? P.topic(A, key, [], termsOf(key)) : kind === "author" ? P.author(A, key) : kind === "work" ? P.work(A, key) : P.doc(A, key);
     const limit = kind === "topic" || kind === "author" ? 5 : 3;
     const out = M.html(items, { id: "m", limit, excerpt: kind !== "work", tag: "h2", title: kind === "author" ? `Mere Orthodoxy on ${key}` : "", context: kind === "verse" ? "on this passage" : "", note: "Essays that engage this. They do not speak for the library." });
     ok(Boolean(out) === items.length > 0, `${kind} ${key}: drawn exactly when there are essays`);

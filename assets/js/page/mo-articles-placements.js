@@ -29,7 +29,21 @@
   const P = MOD.pick;
 
   const NOTE = "Essays that engage this. They do not speak for the library.";
-  const loaded = () => MOA.load().then((d) => (d ? MOA : null)).catch(() => null);
+  const warn = () => { try { window.console.warn("mo-articles load failed"); } catch (e) { /* no console */ } };
+  const loaded = () => MOA.load().then((d) => { if (!d) warn(); return d ? MOA : null; }).catch(() => { warn(); return null; });
+  // loci.json (names, aliases and search words of every topic), one fetch, for the topic placement's strong-signal test.
+  let lociP = null;
+  const locus = (id) => {
+    if (!lociP) {
+      const path = "/assets/data/faith-received/loci.json";
+      lociP = fetch(window.moAssetUrl ? window.moAssetUrl(path) : path, { credentials: "omit" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    }
+    return lociP.then((d) => {
+      let hit = null;
+      (function walk(x) { if (hit) return; if (Array.isArray(x)) x.forEach(walk); else if (x && typeof x === "object") { if (x.id === id && x.label) hit = x; else Object.values(x).forEach(walk); } }(d));
+      return hit;
+    });
+  };
   const clear = (scope, key) => scope.querySelectorAll(`[data-moa-host="${key}"]`).forEach((el) => el.remove());
   const safe = (fn) => { try { return fn(); } catch (e) { return null; } };
 
@@ -51,9 +65,10 @@
 
   // The Topic Desk: a section of its own under the About section, never a tab of it.
   function topic(host, id, docSlugs) {
-    return loaded().then((A) => {
+    return Promise.all([loaded(), locus(id)]).then(([A, loc]) => {
       if (!A || !host || !host.isConnected || !id) return false;
-      const items = P.topic(A, id, docSlugs);
+      // Without the topic's words there is no strong-signal test, so nothing is drawn from the matcher's topic list.
+      const items = P.topic(A, id, docSlugs, P.topicTerms(loc));
       clear(host, "moa-topic");
       return Boolean(MOD.mountAt((el) => {
         const about = host.querySelector("#tdk-chron");
@@ -83,12 +98,14 @@
   const internal = (slug) => (typeof window.frIS === "function" ? window.frIS(slug) : slug);
 
   // The reader's Research rail, Work tab: the work in the address (?w=), or a creed or confession read as a work.
+  let readerFor = "";
   function reader() {
     const rail = document.getElementById("nbWorkPanel");
     const w = new URLSearchParams(window.location.search).get("w");
-    if (!rail || !w) return;
+    if (!rail || !w || readerFor === w) return;
+    readerFor = w;
     loaded().then((A) => {
-      if (!A || !rail.isConnected) return;
+      if (!A || !rail.isConnected || readerFor !== w) return;
       const items = P.work(A, internal(w));
       clear(rail, "moa-reader");
       MOD.mountAt((el) => {
@@ -156,7 +173,8 @@
     if (!slugs || !main) return;
     loaded().then((A) => {
       if (!A) return;
-      const items = P.doc(A, slugs);
+      const page = m[1] === "apostles-creed" ? "apostles" : m[1] === "nicene-creed" ? "nicene" : "";
+      const items = P.doc(A, slugs, page ? P.CREED_PAGE_TERMS[page] : undefined);
       MOD.mountAt((el) => {
         const wrap = document.createElement("div");
         wrap.className = "container container-narrow";
@@ -187,6 +205,9 @@
 
   window.MOPlace = { verseDesk, topic, panel };
 
+  // The reader moves between works without a reload (the address's ?w= changes): the rail's list follows.
+  window.addEventListener("popstate", () => safe(reader));
+  window.addEventListener("fr-reader-navigation", () => safe(reader));
   const start = () => { safe(reader); safe(rooms); safe(docPage); safe(councilsGuide); };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 }());
