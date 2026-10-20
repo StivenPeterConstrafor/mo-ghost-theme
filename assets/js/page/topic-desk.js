@@ -28,19 +28,20 @@
     const M = window.MOTopicDesk;
     const { host, root, id, locus, part, parent, S, loci, bodyOf } = opts;
     if (!M || !host || !S) return null;
-    const got = { topic: undefined, conf: undefined, scr: undefined, files: undefined };
+    const got = { topic: undefined, conf: undefined, scr: undefined, files: undefined, hist: undefined };
+    delete root.dataset.deskHistory;
     let treat = [];
     let drawn = false;
 
     const draw = () => {
       if (drawn || !host.isConnected) return;
-      if (got.topic === undefined || got.conf === undefined || got.scr === undefined || got.files === undefined) return;
+      if (got.topic === undefined || got.conf === undefined || got.scr === undefined || got.files === undefined || got.hist === undefined) return;
       if (!got.topic) return;
       drawn = true;
       try {
         const [data, marquee] = got.files;
         const model = M.buildDeskModel({
-          locus, part, parent, topic: got.topic, conf: got.conf, scr: got.scr, treat,
+          locus, part, parent, topic: got.topic, conf: got.conf, scr: got.scr, treat, history: got.hist,
           data: data || {}, marquee: (marquee && marquee.topics && marquee.topics[id]) || null,
           books: new Map(S.BOOKS.map((b) => [b.lib, b])), loci: new Map([...loci].map(([k, v]) => [k, v.locus])), bodyOf,
         });
@@ -50,7 +51,19 @@
         // "The doctrine through the centuries" (faith-port-topic-dev-notes.js) belongs right under the century showpiece.
         const notes = root.querySelector(".fr-dn");
         const anchor = host.querySelector("#tdk-chron");
-        if (notes && anchor) anchor.after(notes);
+        if (got.hist && anchor && host.querySelector("[data-period]")) {
+          // The History tab now lives on the century rows. The page's remaining notes (reading, traditions, concepts) redraw without it.
+          root.dataset.deskHistory = id;
+          if (notes) { notes.remove(); if (window.MOTopicNotesDraw) window.MOTopicNotesDraw(); }
+        } else if (notes && anchor) anchor.after(notes);
+        host.addEventListener("click", (e) => {
+          const b = e.target.closest(".tdk-period-btn");
+          if (!b) return;
+          const open = b.getAttribute("aria-expanded") !== "true";
+          b.setAttribute("aria-expanded", String(open));
+          const body = host.querySelector(`#${b.getAttribute("aria-controls")}`);
+          if (body) body.hidden = !open;
+        });
         // The page's own count boxes stay unless the desk drew counts of its own.
         if (model.modules.hero.tiles.length) root.classList.add("has-desk");
         host.querySelectorAll("img[data-tdk-portrait]").forEach((img) => {
@@ -70,6 +83,15 @@
 
     S.api("/v1/topic/scripture", { id, t2: locus.t2, limit: 60 }).then((r) => r || null).catch(() => null)
       .then((r) => { got.scr = r; draw(); });
+    // The History data the page's notes block has always read: v1/enrich/topics/<t2 or alias>.json on the library worker.
+    const base = window.__FR_BLOB_BASE__ || "https://mo-tfr-library.mo-podcast-feed.workers.dev";
+    (async () => {
+      for (const slug of [locus.t2, ...(locus.aliases || [])].filter(Boolean)) {
+        const d = await fetch(`${base}/v1/enrich/topics/${encodeURIComponent(String(slug).toLowerCase())}.json`, { credentials: "omit" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+        if (d && d.guide && (d.guide.history || []).length) return d.guide;
+      }
+      return null;
+    })().then((g) => { got.hist = g; draw(); });
     Promise.all([loadFile("topic-desk.json"), loadFile("topic-desk-marquee.json")]).then((f) => { got.files = f; draw(); });
 
     return {

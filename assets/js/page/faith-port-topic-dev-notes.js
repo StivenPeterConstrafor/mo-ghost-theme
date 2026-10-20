@@ -99,7 +99,9 @@
     if (my !== run || !d || !$m || new URLSearchParams(location.search).get("t") !== id || $m.querySelector("[data-fr-dn]")) return;
     const g = d.guide || {};
     const views = [];
-    if ((g.history || []).length) views.push(["history", "History", () => historyView(g)]);
+    // When the Topic Desk has put the History on its century rows, this block starts at the reading course.
+    const merged = $root.dataset.deskHistory === id;
+    if ((g.history || []).length && !merged) views.push(["history", "History", () => historyView(g)]);
     if ((g.course || []).length) views.push(["course", "A course of reading", () => courseView(g)]);
     if ((d.traditions || []).length) views.push(["traditions", "Traditions compared", () => traditionsView(d.traditions)]);
     if ((d.concepts || []).length) views.push(["concepts", "Concept guides", () => conceptsView(d.concepts)]);
@@ -109,8 +111,8 @@
     box.open = true;
     box.dataset.frDn = "";
     box.dataset.id = id;
-    box.innerHTML = `<summary class="td-fold-sum"><h3 class="td-block-h" id="td-h-history">The doctrine through the centuries</h3>
-      <p class="sd-muted td-note">How the library's authors developed it, period by period, with a course of reading and the traditions compared. Machine-written from their own claims, not their words; every page is checked.</p></summary>
+    box.innerHTML = `<summary class="td-fold-sum"><h3 class="td-block-h" id="td-h-history">${merged ? "Ways into this topic" : "The doctrine through the centuries"}</h3>
+      <p class="sd-muted td-note">${merged ? "A course of reading, the traditions compared, and concept guides. " : "How the library's authors developed it, period by period, with a course of reading and the traditions compared. "}Machine-written from their own claims, not their words; every page is checked.</p></summary>
       <nav class="td-tabs" aria-label="Ways to read the doctrine's history">${views.map(([k, lab], i) =>
         `<a class="td-tab" href="#td-h-history" data-fr-view="${k}"${i ? "" : ' aria-current="true"'}>${esc(lab)}</a>`).join("")}</nav>
       <div class="td-view fr-dn-view" data-fr-dn-view>${views[0][2]()}</div>`;
@@ -145,6 +147,7 @@
 
   // topics-dev.js redraws the whole topic into the root (innerHTML) on every route; a view switch only
   // redraws inside it. So watch the root's own children, and the history.
+  window.MOTopicNotesDraw = draw;
   new MutationObserver(() => { draw(); }).observe($root, { childList: true });
   window.addEventListener("popstate", () => { draw(); });
   draw();
