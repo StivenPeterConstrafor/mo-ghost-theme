@@ -50,6 +50,20 @@
     }
     return recCache.get(k);
   };
+  /* THE READINGS, WITH WHO HOLDS THEM (2026-10-19, the owner: "Scripture first, perfect and beautiful to read and explore"). The
+   * book file's readings carry a label, a sentence and a few pages; v1/enrich/scripture-readings/<lib>/<c>.json has, per verse,
+   * every reading with each witness's stance (holds / reports / rejects: the pages of the library read on the verse, at most 400),
+   * what the verse is used to prove, the exemplars with why, and the points in dispute with each side's witnesses. A verse whose book
+   * entry says readings_v 2 is drawn from it; without the file the book's readings are drawn as before. */
+  const rdCache = new Map();
+  const chapterReadings = (book, c) => {
+    const k = `${book.lib}/${c}`;
+    if (!rdCache.has(k)) {
+      rdCache.set(k, fetch(`${BASE}/v1/enrich/scripture-readings/${encodeURIComponent(book.lib)}/${c}.json`, { credentials: "omit" })
+        .then((r) => (r.ok ? r.json() : null)).catch(() => null));
+    }
+    return rdCache.get(k);
+  };
   // the library's usual share of each century (every verse's citing works summed): a verse "stands out" where its own share is
   // half again as high or more (Matthew 26:26 and John 6:53 in the 11th century, Berengar; James 2:24 in the 16th)
   let baseline = null;
@@ -202,6 +216,12 @@
       if ($l) $l.querySelectorAll(":scope > li[hidden]").forEach((li) => { li.hidden = false; });
       vc.remove();
     }
+    const rdm = e.target.closest && e.target.closest(".fr-rd-more");
+    if (rdm) {
+      const $l = rdm.previousElementSibling;
+      if ($l) $l.querySelectorAll(":scope > li[hidden]").forEach((li) => { li.hidden = false; });
+      rdm.remove();
+    }
     const all = e.target.closest && e.target.closest(".fr-sn-all");
     if (all) {
       all.closest("[data-fr-sn]").querySelectorAll(".fr-sn-told > li[hidden]").forEach((li) => { li.hidden = false; });
@@ -244,13 +264,59 @@
       <p class="sd-muted fr-sn-note">${REC_NOTE}</p></div>`;
   }
 
+  // ── A verse's readings, each with who holds, reports and rejects it ──
+  const ERA_ORDER = ["fathers", "early-medieval", "scholastic", "reformation", "17th", "18th", "modern", ""];
+  const witLink = (x) => link(x[0], x[1], `${x[2] || "page"}, p. ${x[1]}`);
+  // one entry per author, in the order met: "Augustine of Hippo, pp. 291, 1387" (each page its own link)
+  function byAuthor(ws, max) {
+    const order = [], pagesOf = new Map();
+    ws.forEach((x) => { const a = x[2] || "page"; if (!pagesOf.has(a)) { pagesOf.set(a, []); order.push(a); } pagesOf.get(a).push(x); });
+    const shown = max ? order.slice(0, max) : order;
+    // a work's pages together and in order (an author's pages may come from several of his works)
+    const sorted = (xs) => xs.slice().sort((a, b) => (a[0] === b[0] ? (parseInt(a[1], 10) || 0) - (parseInt(b[1], 10) || 0) : 0));
+    return shown.map((a) => { const xs = sorted(pagesOf.get(a)); return `${esc(a)}, ${xs.length > 1 ? "pp." : "p."} ${xs.map((x) => link(x[0], x[1], String(x[1]))).join(", ")}`; }).join(" · ");
+  }
+  // every witness of a reading (or of a side in a dispute), in the reception history's eras, oldest first
+  function byEra(ws) {
+    const by = new Map();
+    ws.forEach((x) => { const e = x[3] || ""; if (!by.has(e)) by.set(e, []); by.get(e).push(x); });
+    return `<ol class="fr-rd-eras">${ERA_ORDER.filter((e) => by.has(e)).map((e) => {
+      const [name, years] = e ? eraName({ id: e }) : ["Undated", ""];
+      const xs = by.get(e);
+      return `<li><h5>${esc(name)} <span class="fr-rh-n">· ${years ? `${esc(years)} · ` : ""}${fmt(xs.length)}</span></h5><p class="fr-sn-pages">${byAuthor(xs)}</p></li>`;
+    }).join("")}</ol>`;
+  }
+  const allOf = (ws, label) => (ws.length ? `<details class="fr-rd-all"><summary>${esc(label)}</summary>${byEra(ws)}</details>` : "");
+  function readingItem(rd, of, hidden) {
+    const [h, rp, rj] = rd.n || [0, 0, 0];
+    const chips = `<p class="fr-rd-stance"><span class="fr-rd-chip is-holds${h ? "" : " is-none"}">${h ? `Held on ${fmt(h)}` : "Held on none"}</span>` +
+      `${rp ? `<span class="fr-rd-chip">reported on ${fmt(rp)}</span>` : ""}${rj ? `<span class="fr-rd-chip is-rejects">rejected on ${fmt(rj)}</span>` : ""}` +
+      `<span class="fr-rd-of">of ${fmt(of)} pages</span></p>`;
+    const ex = (rd.exemplars || []).length ? `<ul class="fr-rd-ex">${rd.exemplars.map((e) => `<li>${link(e.work, e.page, `${e.author}, p. ${e.page}`)}${e.why ? `<span>${esc(e.why)}</span>` : ""}</li>`).join("")}</ul>` : "";
+    const lists = allOf(rd.holds || [], h === 1 ? "The page that holds it" : `All ${fmt(h)} who hold it`) +
+      allOf(rd.reports || [], `The ${fmt(rp)} that report it`) + allOf(rd.rejects || [], `The ${fmt(rj)} that reject it`);
+    return `<li class="fr-rd"${hidden ? " hidden" : ""}><p class="fr-rd-label">${esc(rd.label)}</p><p class="fr-rd-text">${esc(rd.reading)}</p>${chips}` +
+      `${rd.proves ? `<p class="fr-rd-proves"><em>Used to prove:</em> ${esc(rd.proves)}</p>` : ""}${ex}${lists ? `<div class="fr-rd-lists">${lists}</div>` : ""}</li>`;
+  }
+  const disputesBody = (ds) => `<ol class="fr-dp">${ds.map((d) => `<li><h4>${esc(d.question)}</h4><ul class="fr-dp-sides">${(d.sides || []).map((sd) => {
+    const ws = sd.witnesses || [];
+    return `<li><p class="fr-dp-pos">${esc(sd.position)} <span class="fr-rh-n">· ${fmt(ws.length)}</span></p>` +
+      `${ws.length ? `<p class="fr-sn-pages">${byAuthor(ws, 3)}</p>` : ""}${ws.length > 3 ? allOf(ws, `All ${fmt(ws.length)}, by era`) : ""}</li>`;
+  }).join("")}</ul></li>`).join("")}</ol>`;
+  const rdNote = (of) => `Sorted by machine from the ${fmt(of)} pages of the library read on this verse; every name opens its page.`;
+
   // ── The verse ──
   function verseParts(x, rv, ref, base) {
     if (!x && !rv) return null;
     x = x || {};
     const rd = x.readings || [];
     const cn = x.connections || [];
-    const readings = rd.length ? `<ul class="fr-sn-list">${rd.map((r) => `<li><p><strong>${esc(r.label)}.</strong> ${esc(r.summary)}</p>${pages(r.refs)}</li>`).join("")}</ul>` : "";
+    const fv = ref.fv && (ref.fv.readings || []).length ? ref.fv : null;
+    const RD_SHOW = 5;
+    const readings = fv ? `<ul class="fr-sn-list fr-rd-list">${fv.readings.map((r, i) => readingItem(r, fv.of, i >= RD_SHOW)).join("")}</ul>${fv.readings.length > RD_SHOW
+      ? `<button type="button" class="sd-commentary-more fr-rd-more">Show ${fmt(fv.readings.length - RD_SHOW)} more ${fv.readings.length - RD_SHOW === 1 ? "reading" : "readings"}</button>` : ""}`
+      : rd.length ? `<ul class="fr-sn-list">${rd.map((r) => `<li><p><strong>${esc(r.label)}.</strong> ${esc(r.summary)}</p>${pages(r.refs)}</li>`).join("")}</ul>` : "";
+    const disputes = fv && (fv.disputes || []).length ? disputesBody(fv.disputes) : "";
     const has = rv && (rv.eras || []).length;
     const history = has ? `${receptionStrip(rv, base)}${receptionEras(rv, ref.book, ref.c, ref.v, false)}` : "";
     // The Desk sets the history as the Topics page sets a doctrine's: the period beside its witnesses (.fr-dn-timeline).
@@ -259,7 +325,8 @@
     const seen = new Set();
     const commentaries = Object.entries((rv && rv.notes) || {}).map(([w, p]) => ({ w, p })).concat(x.commentaries || [])
       .filter((n) => n && n.w && !seen.has(n.w) && seen.add(n.w));
-    return { readings, nReadings: rd.length, history, nWorks: has ? rv.works : null, deskHistory, with: cn.length ? readWithList(cn, ref.desk) : "", nWith: Math.min(cn.length, 8), commentaries };
+    return { readings, nReadings: fv ? fv.readings.length : rd.length, readingsNote: fv ? rdNote(fv.of) : NOTE, disputes, nDisputes: disputes ? fv.disputes.length : 0,
+      history, nWorks: has ? rv.works : null, deskHistory, with: cn.length ? readWithList(cn, ref.desk) : "", nWith: Math.min(cn.length, 8), commentaries };
   }
 
   /* A commentary row says when the commentary has its own comment on this verse, with the page (the notes'
@@ -347,7 +414,7 @@
       const $comm = $panel && $panel.querySelector("[data-sd-panel-commentaries]");
       const needMarks = $ref && $comm && $comm.querySelector(".sd-commentary[data-w]") && !$comm.dataset.frSnMarked;
       if (!needOv && !needVerse && !needMarks) return;
-      const [d, rec, base] = await Promise.all([bookFile(r.book), chapterReception(r.book, r.c), loadBaseline()]);
+      const [d, rec, base, rdf] = await Promise.all([bookFile(r.book), chapterReception(r.book, r.c), loadBaseline(), chapterReadings(r.book, r.c)]);
       const ch = d && d.chapters && d.chapters[String(r.c)];
       if (needOv && $ov.isConnected) {
         $ov.querySelectorAll('[data-fr-sn="chapter"]').forEach((el) => el.remove());
@@ -367,13 +434,15 @@
       const rv = v && rec ? (rec.verses || {})[String(v)] : null;
       if (needVerse && $panel.isConnected) {
         $panel.querySelectorAll('[data-fr-sn="verse"]').forEach((el) => el.remove());
-        const parts = verseParts(x, rv, { book: r.book, c: r.c, v, desk: false }, base) || { readings: "", history: "", with: "", commentaries: [] };
+        const fv = rdf && rdf.verses ? rdf.verses[String(v)] : null;
+        const parts = verseParts(x, rv, { book: r.book, c: r.c, v, desk: false, fv }, base) || { readings: "", history: "", with: "", commentaries: [] };
         {
           // Closed until opened, on every screen (2026-10-16): open by default the history and the commentaries made the panel
           // 9,400px tall beside a chapter of 2,500, and working in it scrolled the text out of sight (the panel is not sticky:
           // Ian, 09-23). The fold rows say what each holds; the Verse Desk shows them whole.
           const lead = `${parts.history ? fold("fr_history", "Reception history", parts.nWorks, `${parts.history}<p class="sd-muted fr-sn-note">${REC_NOTE}</p>`, false, parts.nWorks === 1 ? "work" : "works") : ""}` +
-            `${parts.readings ? fold("fr_readings", "Readings", parts.nReadings, `${parts.readings}<p class="sd-muted fr-sn-note">${NOTE}</p>`) : ""}`;
+            `${parts.readings ? fold("fr_readings", "Readings", parts.nReadings, `${parts.readings}<p class="sd-muted fr-sn-note">${parts.readingsNote}</p>`) : ""}` +
+            `${parts.disputes ? fold("fr_disputes", "Points in dispute", parts.nDisputes, `${parts.disputes}<p class="sd-muted fr-sn-note">${parts.readingsNote}</p>`) : ""}`;
           const $count = $panel.querySelector("[data-sd-count]");
           if (lead) {
             const html = `<div class="fr-sn-verse" data-fr-sn="verse">${lead}</div>`;
@@ -410,9 +479,10 @@
   async function placeDesk() {
     const ref = S.parseRef(new URLSearchParams(location.search).get("ref"));
     if (!ref || !ref.v) return;
-    const [d, rec, base] = await Promise.all([bookFile(ref.book), chapterReception(ref.book, ref.c), loadBaseline()]);
+    const [d, rec, base, rdf] = await Promise.all([bookFile(ref.book), chapterReception(ref.book, ref.c), loadBaseline(), chapterReadings(ref.book, ref.c)]);
     const ch = d && d.chapters && d.chapters[String(ref.c)];
-    const parts = verseParts(ch && (ch.verses || {})[String(ref.v)], rec && (rec.verses || {})[String(ref.v)], { book: ref.book, c: ref.c, v: ref.v, desk: true }, base)
+    const fv = rdf && rdf.verses ? rdf.verses[String(ref.v)] : null;
+    const parts = verseParts(ch && (ch.verses || {})[String(ref.v)], rec && (rec.verses || {})[String(ref.v)], { book: ref.book, c: ref.c, v: ref.v, desk: true, fv }, base)
       || { readings: "", deskHistory: "", with: "", commentaries: [] };
     const label = S.refLabel(ref.book, ref.c, ref.v);
     if (parts.readings || parts.deskHistory) {
@@ -420,7 +490,8 @@
       const html = `<section class="sd-desk-sec fr-sn-desk" aria-labelledby="sd-h-reads" data-fr-sn="verse">
         <h2 class="sd-h2" id="sd-h-reads">Reception history of ${esc(label)}</h2>
         ${parts.deskHistory ? `${parts.deskHistory}<p class="sd-muted fr-sn-note">${REC_NOTE}</p>` : ""}
-        ${parts.readings ? `<h3 class="sd-h3">Readings</h3><div class="fr-sn-desk-readings">${parts.readings}</div><p class="sd-muted fr-sn-note">${NOTE}</p>` : ""}</section>`;
+        ${parts.readings ? `<h3 class="sd-h3">Readings</h3><div class="fr-sn-desk-readings">${parts.readings}</div><p class="sd-muted fr-sn-note">${parts.readingsNote}</p>` : ""}
+        ${parts.disputes ? `<h3 class="sd-h3">Points in dispute</h3><div class="fr-sn-desk-disputes">${parts.disputes}</div>` : ""}</section>`;
       if ($trans) $trans.insertAdjacentHTML("afterend", html); else $desk.insertAdjacentHTML("beforeend", html);
       const $toc = $desk.querySelector("[data-sd-toc-reads]");
       if ($toc) $toc.hidden = false;
