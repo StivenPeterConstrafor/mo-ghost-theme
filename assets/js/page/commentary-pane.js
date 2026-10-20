@@ -78,8 +78,8 @@
    * scripture reader its easy to get to the key works … not just whole bible like the glossa or poole and sacred critics and lapide
    * but also for chapter comms like Augustine on John or the Psalms"). The list above ranked whole-Bible annotators (and Wesley, Clarke,
    * Benson, Coke) over every Father: Augustine's Tractates on John came 157th of 208. v1/scripture/rank.json gives every commentary on
-   * the map its author's standing in the tradition (how many works in the library cite him, log scale, Augustine 100) and whether it
-   * belongs to a set on the whole Bible. A chapter's commentaries are ranked in two groups, on the book (Augustine on John, Chrysostom's
+   * the map its weight from curated knowledge of the tradition (owner 10-19: "we dont do citation based rerank"): the key commentators'
+   * tier, else its author's, and whether it belongs to a set on the whole Bible. A chapter's commentaries are ranked in two groups, on the book (Augustine on John, Chrysostom's
    * homilies) and on the whole Bible (the Glossa, Lapide, Poole): by that standing, a commentary before a sermon or a volume of
    * collected works, one that covers the book before one on a single chapter, and a note on the chapter's verses first. */
   const RANK = { works: {}, authors: {} };
@@ -179,7 +179,7 @@
     await loadRank();
     for (const c of by.values()) { c.rows = rowsBy.get(c.slug) || {}; weigh(c); }
     return [...by.values()].filter((c) => Object.keys(c.notes).length || c.open != null)
-      .sort((x, y) => x.wb - y.wb || y.score - x.score || x.a.localeCompare(y.a));
+      .sort((x, y) => x.wb - y.wb || y.score - x.score || ((RANK.works[x.slug] || [])[2] || 99) - ((RANK.works[y.slug] || [])[2] || 99) || x.a.localeCompare(y.a));
   }
 
   // ── a commentary page ─────────────────────────────────────────────────────────────────────────────────────────────────────
