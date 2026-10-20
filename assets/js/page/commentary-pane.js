@@ -160,7 +160,10 @@
   }
 
   // ── a commentary page ─────────────────────────────────────────────────────────────────────────────────────────────────────
-  const { page, stride, paragraphs } = PG;
+  // page() belongs to the loader built above; stride() and paragraphs() are the module's own helpers (not on the loader: reading them
+  // from PG left both undefined, so every commentary page threw in show() and the catch below reported "could not be loaded")
+  const { page } = PG;
+  const { stride, paragraphs } = window.FRCommentaryPages;
   // a verse's note opens its paragraph: "12. PROPTEREA…", "Vers. 12.", "V. 12", "Verse 12."
   const noteRx = (v) => new RegExp(`^(?:ver(?:s(?:e|us)?)?\\.?\\s*|v\\.\\s*)?\\(?${v}\\b\\s*[.:,)\\]]`, 'i');
 
@@ -384,10 +387,15 @@
     const path = `${CF.dir}${f}`;
     return window.moDataUrl ? window.moDataUrl(path) : window.moAssetUrl ? window.moAssetUrl(path) : path;
   };
-  const cfIndex = () => CF.index || (CF.index = json(cfUrl('index.json')).catch((e) => { CF.index = null; throw e; }));
+  // moDataUrl keys a file by the theme version and the HOUR, so a file whose shape changed within the hour (index.json went from
+  // {books} to {chapters} between two deploys) is served from the edge in its old shape until the hour turns: every creeds box
+  // said "could not be loaded". A file that is not the shape this code reads is asked for once more under a key of its own.
+  const cfLoad = (f, shaped) => json(cfUrl(f)).then((d) => (shaped(d) ? d : json(`${CF.dir}${f}?cb=${Date.now()}`)))
+    .then((d) => { if (!shaped(d)) throw new Error(`${f}: not the expected shape`); return d; });
+  const cfIndex = () => CF.index || (CF.index = cfLoad('index.json', (d) => d && d.chapters && d.docs).catch((e) => { CF.index = null; throw e; }));
   const cfChapter = (book, ch) => {
     const k = `${book}/${ch}`;
-    if (!CF.chapters.has(k)) CF.chapters.set(k, json(cfUrl(`${k}.json`)).catch((e) => { CF.chapters.delete(k); throw e; }));
+    if (!CF.chapters.has(k)) CF.chapters.set(k, cfLoad(`${k}.json`, (d) => d && d.a && (d.v || d.c)).catch((e) => { CF.chapters.delete(k); throw e; }));
     return CF.chapters.get(k);
   };
   const cfRank = (c) => { const i = CF_RANK.indexOf(c); return i < 0 ? CF_RANK.length : i; };
@@ -429,7 +437,7 @@
     try {
       docsIdx = await cfIndex();
       if ((docsIdx.chapters[w.book] || []).includes(Number(w.ch))) d = await cfChapter(w.book, w.ch);
-    } catch (_) { failed = true; }
+    } catch (err) { failed = true; console.error('Scripture pane: the creeds and confessions did not load', err); }
     if (tok !== CF.token) return;
     const body = box.querySelector('.cp-cr-body'), bar = box.querySelector('.cp-cr-bar');
     if (failed) {
@@ -551,7 +559,7 @@
     const k = paraKey(slug, n);
     if (!cache.has(k)) {
       // a page that is not there is remembered as empty; a page that failed to load is not (it is asked for again)
-      cache.set(k, page(slug, n).then((g) => (g && g.p ? [paragraphs(g.p.en), paragraphs(g.p.la)] : [[], []])).catch(() => { cache.delete(k); return [[], []]; }));
+      cache.set(k, page(slug, n).then((g) => (g && g.p ? [paragraphs(g.p.en), paragraphs(g.p.la)] : [[], []])).catch((err) => { console.error('Scripture pane: a page could not be read', err); cache.delete(k); return [[], []]; }));
     }
     return cache.get(k);
   }
@@ -587,7 +595,7 @@
       bodyEl.classList.add('cp-loading');
       whereEl.textContent = `Looking for its note on ${w.name || w.book} ${w.ch}:${S.verse}…`;
       if (!bodyEl.textContent.trim()) bodyEl.innerHTML = '<p class="cp-empty">Looking for the note…</p>';
-      try { t = await resolve(cur, S.verse, w); } catch (_) { t = null; }
+      try { t = await resolve(cur, S.verse, w); } catch (err) { t = null; console.error('Scripture pane: finding the note failed', err); }
       if (tok !== S.token) return;
       if (!t && cur.open != null) t = { p: cur.open, how: 'chapter' };
     }
@@ -613,7 +621,7 @@
         if (tok !== S.token) return;
         S.shown.pages = [a.p, b && b.p].filter(Boolean); S.shown.last = a.last;
       }
-    } catch (_) { if (tok === S.token) { S.shown.pages = []; } }
+    } catch (err) { console.error('Scripture pane: the commentary page did not load', err); if (tok === S.token) { S.shown.pages = []; } }
     paint();
   }
 
