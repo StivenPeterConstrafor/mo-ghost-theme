@@ -181,3 +181,18 @@
 .fr-dp-note { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; }
 .fr-dp-count { margin: 4px 0 0; }
 .fr-rd-unv { margin: 4px 0 0; font-size: 13px; line-height: 1.5; }
+
+/* "The doctrine through the centuries" (2026-10-19): sits under the century showpiece, so it gets a heavier heading, cards for
+   the periods, and a rule that runs down the timeline. */
+.fr-dn { margin-top: 36px; }
+.fr-dn .td-block-h { font-size: clamp(26px, 4vw, 34px); line-height: 1.12; }
+.fr-dn-timeline { position: relative; border-left: 2px solid var(--color-rule); margin-left: 6px; }
+.fr-dn-timeline > li, .fr-dn-timeline > li:first-child {
+  position: relative; margin: 0 0 12px 18px; padding: 16px 18px; border: 1px solid var(--color-rule); border-top: 1px solid var(--color-rule);
+  border-radius: 3px; background: var(--sd-card, #fffdf9);
+}
+.fr-dn-timeline > li::before {
+  content: ""; position: absolute; left: -26px; top: 22px; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--sd-card, #fffdf9); border: 2px solid var(--sd-accent, #9c4d37);
+}
+.fr-dn-timeline h4 { color: var(--sd-accent, #9c4d37); }

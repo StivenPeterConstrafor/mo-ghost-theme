@@ -73,26 +73,8 @@ html[data-sd-theme="dark"] .td-desk {
 .td-desk .tdk-tiles b { display: block; font-size: clamp(26px, 4vw, 32px); line-height: 1; font-weight: 600; color: var(--tdk-accent); font-variant-numeric: lining-nums tabular-nums; }
 .td-desk .tdk-tiles span { display: block; margin-top: 6px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tdk-muted); }
 
-.td-desk .tdk-rulerbox { margin-top: 24px; background: var(--tdk-card); border: 1px solid var(--tdk-rule); border-radius: 3px; padding: 14px 16px 10px; }
 .td-desk .tdk-h--sm { font-size: 18px; }
 .td-desk .tdk-small { font-size: 14px; line-height: 1.5; color: var(--tdk-muted); margin: 6px 0 0; max-width: 56rem; }
-.td-desk svg.tdk-ruler { display: none; width: 100%; height: auto; margin-top: 6px; }
-/* The drawn ruler's labels are 11px in a 1000-unit box: under about 1000px wide they print near 8px, so the list stands in. */
-@media (min-width: 1000px) {
-  .td-desk svg.tdk-ruler { display: block; }
-  .td-desk .tdk-ruler-list { display: none; }
-}
-.td-desk .rl-base { stroke: var(--tdk-ink); stroke-width: 1; }
-.td-desk .rl-cen, .td-desk .rl-n, .td-desk .rl-axis { fill: var(--tdk-muted); font: 11px var(--font-body); }
-.td-desk .rl-cn { fill: var(--tdk-ink); font: 600 11.5px var(--font-body); }
-.td-desk .rl-cl { stroke: var(--tdk-accent); stroke-width: 1; stroke-dasharray: 2 2; opacity: 0.8; }
-.td-desk .rl-doc { fill: var(--tdk-accent); opacity: 0.6; }
-.td-desk .tdk-ruler-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 3px; }
-.td-desk .tdk-ruler-list li { display: grid; grid-template-columns: 2.2rem 1fr 4.2rem; gap: 8px; align-items: center; font-size: 13px; color: var(--tdk-muted); }
-.td-desk .tdk-ruler-list .c { text-align: right; font-variant-numeric: tabular-nums; }
-.td-desk .tdk-ruler-list .bar { display: flex; height: 12px; }
-.td-desk .tdk-ruler-list .bar i { display: block; height: 100%; }
-.td-desk .tdk-ruler-list .n { text-align: right; font-variant-numeric: tabular-nums; }
 .td-desk .tdk-legend { list-style: none; margin: 10px 0 4px; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--tdk-muted); }
 .td-desk .tdk-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
 .td-desk .tdk-jump { display: flex; flex-wrap: wrap; gap: 0 20px; margin: 14px 0 0; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -153,20 +135,6 @@ html[data-sd-theme="dark"] .td-desk {
 .td-desk .tdk-tlist .ta { font-size: 15px; color: var(--tdk-ink2); }
 .td-desk .tdk-tlist .ts { font-size: 14px; color: var(--tdk-muted); }
 
-/* Timeline */
-.td-desk .tdk-chron { list-style: none; margin: 0; padding: 0; max-width: 56rem; }
-.td-desk .tdk-ev { position: relative; display: grid; grid-template-columns: 6.4rem 1fr; gap: 6px 18px; padding: 12px 0 12px 14px; border-left: 2px solid var(--tdk-rule); }
-.td-desk .tdk-ev::before { content: ""; position: absolute; left: -6px; top: 20px; width: 10px; height: 10px; border-radius: 50%; background: var(--tdk-card); border: 2px solid var(--tdk-rule); }
-.td-desk .tdk-ev--council { border-left-color: var(--tdk-accent); }
-.td-desk .tdk-ev--council::before { border-color: var(--tdk-accent); background: var(--tdk-accent); }
-.td-desk .tdk-ev--work::before { border-color: var(--tdk-muted); }
-.td-desk .tdk-ev .d { font-size: 16px; font-weight: 600; color: var(--tdk-accent); font-variant-numeric: tabular-nums; }
-.td-desk .tdk-ev b { font-weight: 600; }
-.td-desk .tdk-ev .m { display: block; font-size: 14px; color: var(--tdk-muted); }
-.td-desk .tdk-ev p { margin: 4px 0; font-size: 16px; line-height: 1.5; font-style: italic; color: var(--tdk-ink2); }
-.td-desk .tdk-ev .l { font-size: 15px; }
-@media (max-width: 560px) { .td-desk .tdk-ev { grid-template-columns: 1fr; } }
-
 /* Key verses */
 .td-desk .tdk-vgrid { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
 @media (min-width: 640px) { .td-desk .tdk-vgrid { grid-template-columns: 1fr 1fr; } }
@@ -222,3 +190,63 @@ html[data-sd-theme="dark"] .td-desk .tdk-person .ph img { filter: grayscale(0.5)
 .td-desk .tdk-lede a, .td-desk .tdk-small a, .td-desk .tdk-rulerbox a { position: relative; }
 .td-desk .tdk-lede a::after, .td-desk .tdk-small a::after, .td-desk .tdk-rulerbox a::after { content: ""; position: absolute; inset: -12px -2px; }
 .td-desk .tdk-legend li, .td-desk .tdk-jump a { min-height: 24px; }
+
+/* ═══ The doctrine through the centuries (the showpiece, first under the hero) ═══════════════
+   One self-contained surface, so it reads in light, in dark, and when the system is dark but the page is not.
+   Tokens are plain hex so scripts/check-topic-desk.mjs can measure every pair. Era tints sit behind ink and muted text. */
+.td-desk .tdk-cent {
+  --cn-bg: #fffdf9; --cn-ink: #2d2927; --cn-muted: #5f5a54; --cn-accent: #9c4d37; --cn-rule: #d9c6a7;
+  --cn-e-early: #f3e7e1; --cn-e-medieval: #efe9d8; --cn-e-reformation: #e6eef3; --cn-e-post: #e8f0e6; --cn-e-modern: #efe9f0;
+  --cn-gf: #8c3b2a; --cn-pl: #a8572b; --cn-po: #6e4a2e; --cn-md: #7d6a3c; --cn-rc: #7a2f4f; --cn-lu: #2f5d7c; --cn-rf: #3d6b45; --cn-ed: #2d2927; --cn-hl: #6b6660;
+}
+html[data-sd-theme="dark"] .td-desk .tdk-cent {
+  --cn-bg: #2b2c29; --cn-ink: #e9e9e5; --cn-muted: #b0b0a8; --cn-accent: #e6a08a; --cn-rule: #454740;
+  --cn-e-early: #3a2f2b; --cn-e-medieval: #38362a; --cn-e-reformation: #2a3640; --cn-e-post: #2c382c; --cn-e-modern: #372f38;
+  --cn-gf: #e08a73; --cn-pl: #e2a064; --cn-po: #bf9a7c; --cn-md: #c9b574; --cn-rc: #d88aae; --cn-lu: #78afd6; --cn-rf: #82bd92; --cn-ed: #d8d0c6; --cn-hl: #9e968c;
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-sd-theme="light"]) .td-desk .tdk-cent {
+    --cn-bg: #2b2c29; --cn-ink: #e9e9e5; --cn-muted: #b0b0a8; --cn-accent: #e6a08a; --cn-rule: #454740;
+    --cn-e-early: #3a2f2b; --cn-e-medieval: #38362a; --cn-e-reformation: #2a3640; --cn-e-post: #2c382c; --cn-e-modern: #372f38;
+    --cn-gf: #e08a73; --cn-pl: #e2a064; --cn-po: #bf9a7c; --cn-md: #c9b574; --cn-rc: #d88aae; --cn-lu: #78afd6; --cn-rf: #82bd92; --cn-ed: #d8d0c6; --cn-hl: #9e968c;
+  }
+}
+.td-desk .tdk-cent { background: var(--cn-bg); color: var(--cn-ink); border: 1px solid var(--cn-rule); border-radius: 3px; padding: 28px 24px 22px; margin-top: 24px; }
+@media (max-width: 560px) { .td-desk .tdk-cent { padding: 22px 14px 18px; } }
+.td-desk .tdk-cent a { color: var(--cn-accent); }
+.td-desk .tdk-cent .tdk-eyebrow, .td-desk .tdk-cent .tdk-small, .td-desk .tdk-cent .tdk-legend { color: var(--cn-muted); }
+.td-desk .tdk-cent .tdk-lede { color: var(--cn-ink); }
+.td-desk .tdk-cent .tdk-cent-h { font-size: clamp(30px, 5vw, 46px); line-height: 1.08; letter-spacing: -0.01em; }
+.td-desk .tdk-cent .b-gf { background: var(--cn-gf); } .td-desk .tdk-cent .b-pl { background: var(--cn-pl); } .td-desk .tdk-cent .b-po { background: var(--cn-po); }
+.td-desk .tdk-cent .b-md { background: var(--cn-md); } .td-desk .tdk-cent .b-rc { background: var(--cn-rc); } .td-desk .tdk-cent .b-lu { background: var(--cn-lu); }
+.td-desk .tdk-cent .b-rf { background: var(--cn-rf); } .td-desk .tdk-cent .b-ed { background: var(--cn-ed); } .td-desk .tdk-cent .b-hl { background: var(--cn-hl); }
+.td-desk .tdk-eras { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 14px; }
+.td-desk .tdk-era { border-radius: 3px; padding: 14px 16px 6px; border-left: 4px solid var(--cn-accent); }
+.td-desk .tdk-era--early { background: var(--cn-e-early); } .td-desk .tdk-era--medieval { background: var(--cn-e-medieval); }
+.td-desk .tdk-era--reformation { background: var(--cn-e-reformation); } .td-desk .tdk-era--post { background: var(--cn-e-post); } .td-desk .tdk-era--modern { background: var(--cn-e-modern); }
+.td-desk .tdk-era-h { margin: 0 0 6px; font-size: 20px; font-weight: 600; color: var(--cn-ink); }
+.td-desk .tdk-era-h span { margin-left: 8px; font-size: 14px; font-weight: 400; color: var(--cn-muted); }
+.td-desk .tdk-rows { list-style: none; margin: 0; padding: 0; }
+.td-desk .tdk-row { display: grid; grid-template-columns: 7rem minmax(0, 1fr) 4.5rem; gap: 2px 14px; align-items: center; padding: 8px 0; border-top: 1px solid var(--cn-rule); }
+.td-desk .tdk-cn { font-size: 15px; font-weight: 600; color: var(--cn-ink); }
+.td-desk .tdk-bar { display: flex; height: 18px; border-radius: 2px; transform-origin: left center; }
+.td-desk .tdk-bar i { display: block; height: 100%; min-width: 2px; }
+.td-desk .tdk-n { text-align: right; font-size: 15px; color: var(--cn-muted); font-variant-numeric: tabular-nums; }
+.td-desk .tdk-docs { grid-column: 2 / 4; list-style: none; margin: 4px 0 2px; padding: 0; display: flex; flex-wrap: wrap; gap: 0 18px; }
+.td-desk .tdk-docs a { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; min-height: 44px; padding: 10px 0 10px 12px; border-left: 3px solid var(--cn-rule); font-size: 15px; text-decoration: none; color: var(--cn-ink); }
+.td-desk .tdk-docs a b { color: var(--cn-accent); font-variant-numeric: tabular-nums; }
+.td-desk .tdk-docs a span { font-size: 13px; color: var(--cn-muted); }
+.td-desk .tdk-docs li.is-council a { border-left-color: var(--cn-accent); border-left-width: 5px; }
+.td-desk .tdk-docs a:hover, .td-desk .tdk-docs a:focus-visible { background: var(--cn-bg); text-decoration: underline; outline-offset: -2px; }
+.td-desk .tdk-docs .more a { border-left-color: transparent; color: var(--cn-accent); }
+.td-desk .tdk-eras.is-compact .tdk-docs { display: none; }
+@media (max-width: 560px) {
+  .td-desk .tdk-row { grid-template-columns: 1fr 4rem; }
+  .td-desk .tdk-cn { grid-column: 1 / 3; }
+  .td-desk .tdk-bar { grid-column: 1; }
+  .td-desk .tdk-docs { grid-column: 1 / 3; flex-direction: column; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .td-desk .tdk-bar { animation: tdk-grow 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: var(--d, 0ms); }
+  @keyframes tdk-grow { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+}

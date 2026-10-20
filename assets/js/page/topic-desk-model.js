@@ -35,6 +35,15 @@
     ["early", "The early church, to 1054"], ["rc", "Roman Catholic"], ["or", "Eastern Orthodox"], ["lu", "Lutheran"],
     ["rf", "Reformed"], ["an", "Anglican"], ["bp", "Baptist"],
   ];
+  /* The era bands. The first boundary is the one the confession groups already use (1054). The others are the dates the
+     library's own timelines and the Westminster Assembly fix: 1517, 1648, 1800. Stated in the caption on the page. */
+  const ERAS = [
+    { id: "early", label: "The early church", span: "to 1054", end: 1054 }, { id: "medieval", label: "Medieval", span: "1054 to 1517", end: 1517 },
+    { id: "reformation", label: "Reformation", span: "1517 to 1648", end: 1648 }, { id: "post", label: "Post-Reformation", span: "1648 to 1800", end: 1800 },
+    { id: "modern", label: "Modern", span: "after 1800", end: 9999 },
+  ];
+  const eraOf = (c) => ERAS.find((e) => c * 100 - 50 < e.end).id;
+  const ord = (n) => `${n}${[11, 12, 13].includes(n % 100) ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[n % 10] || "th")}`;
   const CHURCH_LABEL = Object.fromEntries(CHURCHES);
 
   /* Minimums: a module with fewer rows than this is left out. */
@@ -42,8 +51,8 @@
      false is omitted whole: no heading, no empty box. Turn one back on only after its content has passed a relevance
      check. traditions also carries the fault-line row. */
   const MODULES_ON = { traditions: false, treatments: false, chron: true, verses: false, people: true, path: false, related: true };
-  const MIN = { ruler: 3, columns: 2, treatments: 3, events: 5, verses: 5, people: 6, pathSteps: 2, pathItems: 2, related: 3 };
-  const CAP = { quotesPerColumn: 2, worksPerColumn: 3, verses: 9, moreVerses: 15, people: 12, related: 8, eventsPerCentury: 2, events: 16 };
+  const MIN = { docs: 2, ruler: 3, columns: 2, treatments: 3, events: 5, verses: 5, people: 6, pathSteps: 2, pathItems: 2, related: 3 };
+  const CAP = { docsPerCentury: 4, quotesPerColumn: 2, worksPerColumn: 3, verses: 9, moreVerses: 15, people: 12, related: 8, eventsPerCentury: 2, events: 16 };
 
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const fmt = (n) => Number(n || 0).toLocaleString("en-US");
@@ -251,38 +260,30 @@
 
     // Timeline -----------------------------------------------------
     const typeRank = (t) => (/^(Council|Creed|Definition|Canons)$/.test(t) ? 0 : /^(Confession|Catechism|Articles|Formula|Apology)$/.test(t) ? 1 : 2);
-    const events = [];
-    timeline.forEach((d) => {
-      const y = Number(d.year) || 0;
-      const first = articles.find((a) => a.w === d.w);
-      if (!y || !first) return;
-      const text = cleanText(first.text);
-      events.push({
-        y, kind: typeRank(d.doc_type) === 0 ? "council" : "conf", rank: typeRank(d.doc_type), title: plain(stripYear(d.doc)), type: d.doc_type || "",
-        n: d.n_articles || 1, article: plain(first.article_display || first.article || ""), text: MODULES_ON.traditions && text.length >= 60 ? clip(text, 150) : "",
-        w: first.w, p: first.p, href: safeRead(first.href, first.w, first.p), label: "Read the article",
-      });
-    });
-    (MODULES_ON.treatments ? treatList : []).forEach((e) => {
-      const y = Number(e.y) || 0;
-      if (!y) return;
-      events.push({ y, kind: "work", rank: 3, title: plain(e.title), type: "Work", author: e.author, w: e.w, p: e.p, label: "Read the section" });
-    });
-    const byCen = new Map();
-    events.sort((a, b) => a.rank - b.rank || a.y - b.y).forEach((ev) => {
-      const c = Math.ceil(ev.y / 100);
-      if (!byCen.has(c)) byCen.set(c, []);
-      if (byCen.get(c).length < CAP.eventsPerCentury) byCen.get(c).push(ev);
-    });
-    let picked = [...byCen.values()].flat();
-    while (picked.length > CAP.events) {
-      const worst = picked.reduce((w, ev) => (ev.rank > w.rank || (ev.rank === w.rank && ev.y > w.y) ? ev : w), picked[0]);
-      picked = picked.filter((ev) => ev !== worst);
-    }
-    picked.sort((a, b) => a.y - b.y || a.rank - b.rank);
+    /* The doctrine through the centuries: the century counts from the worker's own trace, and as markers only the dated
+       documents the library holds on this topic (each linked to its first article here). No quotation, no summary. */
     let chron = null;
-    if (picked.length >= MIN.events) chron = { events: picked, nDocs: timeline.length, hasCouncil: picked.some((e) => e.kind === "council") };
-    else skip("timeline", `${picked.length} dated events (needs ${MIN.events})`);
+    if (ruler) {
+      const byCen = new Map();
+      timeline.forEach((d) => {
+        const y = Number(d.year) || 0;
+        const first = articles.find((a) => a.w === d.w);
+        if (!y || !first) return;
+        const c = Math.ceil(y / 100);
+        if (!byCen.has(c)) byCen.set(c, []);
+        byCen.get(c).push({ y, title: plain(stripYear(d.doc)), type: String(d.doc_type || ""), rank: typeRank(d.doc_type), n: Number(d.n_articles) || 1, w: first.w, href: safeRead(first.href, first.w, first.p) });
+      });
+      const rowsC = ruler.bars.filter((b) => b.total || byCen.has(b.c)).map((b) => {
+        const all = (byCen.get(b.c) || []).sort((x, y) => x.rank - y.rank || x.y - y.y);
+        const shown = all.slice(0, CAP.docsPerCentury).sort((x, y) => x.y - y.y);
+        return { c: b.c, total: b.total, by: b.by, docs: shown, more: all.length - shown.length, era: eraOf(b.c) };
+      });
+      const nDocs = rowsC.reduce((n, r) => n + r.docs.length + r.more, 0);
+      const eras = ERAS.map((e) => ({ ...e, rows: rowsC.filter((r) => r.era === e.id) })).filter((e) => e.rows.length);
+      if (rowsC.filter((r) => r.total).length >= MIN.ruler) {
+        chron = { eras, max: Math.max(...rowsC.map((r) => r.total)), positions: ruler.positions, shelves: ruler.shelves, nDocs, compact: nDocs < MIN.docs, hasCouncil: rowsC.some((r) => r.docs.some((d) => d.rank === 0)) };
+      } else skip("centuries", "fewer than 3 centuries with data");
+    }
 
     // Key verses ---------------------------------------------------
     let verses = null;
@@ -393,67 +394,15 @@
   const modHead = (eyebrow, title, lede) =>
     `<div class="tdk-head"><p class="tdk-eyebrow">${esc(eyebrow)}</p><h3 class="tdk-h">${esc(title)}</h3>${lede ? `<p class="tdk-lede">${lede}</p>` : ""}</div>`;
 
-  function rulerSvg(r) {
-    const X0 = 56; const X1 = 984; const YB = 262; const HMAX = 176;
-    const span = r.maxC - r.minC + 1;
-    const maxTot = Math.max(...r.bars.map((b) => b.total));
-    const xc = (c) => X0 + ((c - r.minC + 0.5) / span) * (X1 - X0);
-    const xy = (y) => X0 + ((y / 100 - (r.minC - 1)) / span) * (X1 - X0);
-    const hs = (n) => HMAX * Math.sqrt(n / maxTot);
-    const bw = Math.min(30, 0.72 * ((X1 - X0) / span));
-    const o = [`<svg class="tdk-ruler" viewBox="0 0 1000 340" role="img" aria-labelledby="tdk-rul-t tdk-rul-d"><title id="tdk-rul-t">Indexed passages by century</title>` +
-      `<desc id="tdk-rul-d">Stacked bars for the ${r.minC} to ${r.maxC} centuries, colored by shelf. Dots mark dated creeds, councils, and confessions on this topic.</desc>`];
-    o.push(`<line class="rl-base" x1="${X0 - 10}" y1="${YB}" x2="${X1 + 10}" y2="${YB}"/>`);
-    r.bars.forEach((b) => {
-      const x = xc(b.c);
-      o.push(`<text class="rl-cen" x="${x.toFixed(1)}" y="${YB + 17}" text-anchor="middle">${Number(b.c)}</text>`);
-      if (!b.total) return;
-      let y = YB;
-      SHELF_ORDER.forEach((k) => {
-        const n = b.by[k];
-        if (!n) return;
-        const h = (hs(b.total) * n) / b.total;
-        y -= h;
-        o.push(`<rect class="b-${k}" x="${(x - bw / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h, 0.8).toFixed(1)}"><title>${esc(SHELF[k])}, century ${Number(b.c)}: ${fmt(n)} passages</title></rect>`);
-      });
-      if (b.total >= maxTot * 0.4) o.push(`<text class="rl-n" x="${x.toFixed(1)}" y="${(YB - hs(b.total) - 5).toFixed(1)}" text-anchor="middle">${fmt(b.total)}</text>`);
-    });
-    o.push(`<text class="rl-axis" x="${X0 - 10}" y="${YB + 33}">century</text>`);
-    r.docs.forEach((d) => o.push(`<circle class="rl-doc" cx="${xy(d.y).toFixed(1)}" cy="${YB + 52}" r="3.2"><title>${esc(d.doc)}, ${d.y}</title></circle>`));
-    if (r.docs.length) o.push(`<text class="rl-axis" x="${X0 - 10}" y="${YB + 74}">creeds, councils, and confessions on this topic</text>`);
-    r.councils.forEach((c, i) => {
-      const x = xy(c.y); const ty = 18 + (i % 4) * 17;
-      const end = x > 880;
-      o.push(`<line class="rl-cl" x1="${x.toFixed(1)}" y1="${ty + 2}" x2="${x.toFixed(1)}" y2="${YB}"/>` +
-        `<text class="rl-cn" x="${(end ? x - 3 : x + 3).toFixed(1)}" y="${ty}" text-anchor="${end ? "end" : "start"}">${esc(c.name)} ${c.y}</text>`);
-    });
-    o.push("</svg>");
-    return o.join("");
-  }
-
-  function rulerList(r) {
-    const maxTot = Math.max(...r.bars.map((b) => b.total));
-    return `<ol class="tdk-ruler-list" aria-label="Indexed passages by century">${r.bars.filter((b) => b.total).map((b) => {
-      const pct = 100 * Math.sqrt(b.total / maxTot);
-      const segs = SHELF_ORDER.filter((k) => b.by[k]).map((k) => `<i class="b-${k}" style="width:${((pct * b.by[k]) / b.total).toFixed(2)}%"></i>`).join("");
-      return `<li><span class="c">${Number(b.c)}</span><span class="bar">${segs}</span><span class="n">${fmt(b.total)}</span></li>`;
-    }).join("")}</ol>`;
-  }
-
   function renderHero(h, tier, ids) {
     const jumps = [];
     const j = (id, label) => { if (ids[id]) jumps.push(link(`#tdk-${id}`, label)); };
-    j("traditions", "Traditions"); j("treatments", "Classic works"); j("chron", "Timeline"); j("verses", "Key verses");
+    j("traditions", "Traditions"); j("treatments", "Classic works"); j("chron", "Centuries"); j("verses", "Key verses");
     j("people", "People"); j("path", "Reading path"); j("related", "Related");
     jumps.push(link("#td-h-conf", "Full record"));
     const tiles = h.tiles.length ? `<ul class="tdk-tiles" aria-label="This topic in the library">${h.tiles.map((t) =>
       `<li>${ids[t.to] ? `<a href="#tdk-${t.to}"><b>${fmt(t.n)}</b><span>${esc(t.label)}</span></a>` : `<b>${fmt(t.n)}</b><span>${esc(t.label)}</span>`}</li>`).join("")}</ul>` : "";
-    const r = h.ruler;
-    const ruler = r ? `<div class="tdk-rulerbox"><h3 class="tdk-h tdk-h--sm">When it was written about</h3>` +
-      `<p class="tdk-small">${fmt(r.positions)} indexed passages in the library, counted by century. A passage is a place in a work where the index finds this topic treated. Bar height is square-root scaled so the early centuries show.${r.undated ? ` ${fmt(r.undated)} undated passages are not drawn.` : ""}` +
-      `${r.hasCouncil ? ` Dashed lines mark councils that appear in this topic's documents. See the ${link(COUNCILS_GUIDE, "Councils guide")}.` : ""}${r.docs.length ? " Dots are dated documents." : ""}</p>` +
-      `${rulerSvg(r)}${rulerList(r)}<ul class="tdk-legend" aria-label="Shelves">${r.shelves.map((k) => `<li><i class="b-${k}"></i>${esc(SHELF[k])}</li>`).join("")}</ul></div>` : "";
-    return `<div class="tdk-hero" id="tdk-hero" data-tier="${esc(tier)}"><div class="tdk-hero-grid">${h.dek ? `<p class="tdk-dek">${esc(h.dek)}</p>` : "<span></span>"}${tiles}</div>${ruler}` +
+    return `<div class="tdk-hero" id="tdk-hero" data-tier="${esc(tier)}"><div class="tdk-hero-grid">${h.dek ? `<p class="tdk-dek">${esc(h.dek)}</p>` : "<span></span>"}${tiles}</div>` +
       `${jumps.length ? `<nav class="tdk-jump" aria-label="On this page">${jumps.join("")}</nav>` : ""}</div>`;
   }
 
@@ -481,13 +430,24 @@
   }
 
   function renderChron(c) {
-    const items = c.events.map((e) => {
-      const href = e.href || readHref(e.w, e.p);
-      const meta = e.kind === "work" ? esc(e.author) : [e.type, e.article && e.article !== e.title ? e.article : ""].filter(Boolean).map(esc).join(", ");
-      return `<li class="tdk-ev tdk-ev--${e.kind}"><span class="d">${e.kind === "work" ? "fl. " : ""}${Number(e.y)}</span><div><b>${esc(e.title)}</b>${meta ? `<span class="m">${meta}</span>` : ""}${e.text ? `<p>“${esc(e.text)}”</p>` : ""}<span class="l">${link(href, e.label)}</span></div></li>`;
+    let step = 0;
+    const eras = c.eras.map((e) => {
+      const rows = e.rows.map((r) => {
+        step += 1;
+        const bar = SHELF_ORDER.filter((k) => r.by[k]).map((k) => `<i class="b-${k}" style="width:${((100 * Math.sqrt(r.total / c.max) * r.by[k]) / r.total).toFixed(2)}%" title="${esc(SHELF[k])}: ${fmt(r.by[k])}"></i>`).join("");
+        const label = `${fmt(r.total)} indexed passages in the ${ord(Number(r.c))} century`;
+        const docs = r.docs.length || r.more ? `<ul class="tdk-docs">${r.docs.map((d) =>
+          `<li class="${d.rank === 0 ? "is-council" : ""}"><a href="${esc(d.href)}" aria-label="${esc(`${d.title}, ${Number(d.y)}${d.type ? `, ${d.type}` : ""}. Opens the document.`)}"><b>${Number(d.y)}</b> ${esc(d.title)}${d.type ? `<span>${esc(d.type)}</span>` : ""}</a></li>`).join("")}${r.more ? `<li class="more"><a href="#td-h-conf">${fmt(r.more)} more in the full record</a></li>` : ""}</ul>` : "";
+        return `<li class="tdk-row" style="--d:${Math.min(step * 45, 900)}ms"><span class="tdk-cn">${ord(Number(r.c))} century</span>` +
+          `<span class="tdk-bar" role="img" aria-label="${esc(label)}" title="${esc(label)}">${bar}</span><span class="tdk-n">${fmt(r.total)}</span>${docs}</li>`;
+      }).join("");
+      return `<li class="tdk-era tdk-era--${e.id}"><h4 class="tdk-era-h">${esc(e.label)} <span>${esc(e.span)}</span></h4><ol class="tdk-rows">${rows}</ol></li>`;
     }).join("");
-    return `<section class="tdk-mod" id="tdk-chron">${modHead("Timeline", "Councils, confessions, and treatises in order",
-      `${plural(c.events.length, "event", "events")} chosen from ${plural(c.nDocs, "dated document", "dated documents")}, at most two a century.${c.hasCouncil ? ` For every council see the ${link(COUNCILS_GUIDE, "Councils guide")}.` : ""}`)}<ol class="tdk-chron">${items}</ol></section>`;
+    const caption = c.compact ? "" : `<p class="tdk-small tdk-cap">Documents only: what each says is in the document. Each links to its first article on this topic.${c.hasCouncil ? ` For every council see the ${link(COUNCILS_GUIDE, "Councils guide")}.` : ""}</p>`;
+    return `<section class="tdk-mod tdk-cent" id="tdk-chron" aria-labelledby="tdk-cent-h"><div class="tdk-head"><p class="tdk-eyebrow">Through time</p><h3 class="tdk-h tdk-cent-h" id="tdk-cent-h">The doctrine through the centuries</h3>` +
+      `<p class="tdk-lede">${fmt(c.positions)} indexed passages in the library, counted by century, with the ${c.nDocs ? `${plural(c.nDocs, "dated document", "dated documents")} on this topic` : "documents"} where the library has them. Bar length is square-root scaled so the early centuries show. A passage is a place in a work where the index finds this topic treated.</p></div>` +
+      `<ul class="tdk-legend" aria-label="Shelves">${c.shelves.map((k) => `<li><i class="b-${k}"></i>${esc(SHELF[k])}</li>`).join("")}</ul>` +
+      `<ol class="tdk-eras${c.compact ? " is-compact" : ""}">${eras}</ol>${caption}<p class="tdk-small">Era bands: the early church to 1054, medieval to 1517, Reformation to 1648, post-Reformation to 1800, then modern.</p></section>`;
   }
 
   function renderVerses(v) {
@@ -550,7 +510,7 @@
       people: Boolean(m.people), path: Boolean(m.path), related: Boolean(m.related),
     };
     const body = [
-      m.traditions && renderTraditions(m.traditions, model.label), m.treatments && renderTreatments(m.treatments), m.chron && renderChron(m.chron),
+      m.chron && renderChron(m.chron), m.traditions && renderTraditions(m.traditions, model.label), m.treatments && renderTreatments(m.treatments),
       m.verses && renderVerses(m.verses), m.people && renderPeople(m.people), m.path && renderPath(m.path), m.related && renderRelated(m.related),
     ].filter(Boolean).join("");
     return { hero: renderHero(m.hero, model.tier, present), body };
