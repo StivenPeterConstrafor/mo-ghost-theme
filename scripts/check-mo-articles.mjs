@@ -186,5 +186,49 @@ test("the lookups answer from the built file", () => {
   assert.equal(B.search("zzzqqq").length, 0);
 });
 
+// ── 3. the Resources page ──
+const read = (p) => readFileSync(path.join(root, p), "utf8");
+const tpl = read("custom-faith-resources.hbs");
+const pageJs = read("assets/js/page/faith-resources.js");
+
+test("every id the page script looks up is in the template", () => {
+  const wanted = new Set([...pageJs.matchAll(/\$\("([A-Za-z]+)"\)/g)].map((m) => m[1]));
+  assert.ok(wanted.size >= 10, `found only ${wanted.size} ids`);
+  for (const id of wanted) {
+    if (id === "resRetry") continue; // written by the script itself, beside the failed-load message
+    assert.ok(new RegExp(`id="${id}"`).test(tpl), `#${id} is not in custom-faith-resources.hbs`);
+  }
+});
+test("one real tablist whose only tab today is Articles, with its panel", () => {
+  assert.equal((tpl.match(/role="tablist"/g) || []).length, 1);
+  assert.equal((tpl.match(/role="tab"/g) || []).length, 1);
+  assert.match(tpl, /role="tab"[^>]*aria-controls="res-panel-articles"/);
+  assert.match(tpl, /role="tabpanel"[^>]*id="res-panel-articles"[^>]*aria-labelledby="res-tab-articles"/);
+  assert.match(tpl, /data-k="articles"[^>]*>Articles</);
+});
+test("the search box is a labelled type=search with a clear button", () => {
+  assert.match(tpl, /<label[^>]*for="resQuery"/);
+  assert.match(tpl, /<input type="search" id="resQuery"/);
+  assert.match(tpl, /id="resClear"/);
+  assert.match(tpl, /id="resCount" role="status" aria-live="polite"/);
+});
+test("scripts load in dependency order and the page has no inline script", () => {
+  const order = ["js/lib/mo-articles.js", "js/page/scripture-dev-core.js", "js/page/faith-resources.js"].map((f) => tpl.indexOf(f));
+  assert.ok(order.every((i) => i > 0) && order[0] < order[1] && order[1] < order[2], order.join(","));
+  assert.ok(!/<script(?![^>]*\bsrc=)[^>]*>/.test(tpl), "inline script");
+  assert.ok(!/ on[a-z]+="/i.test(tpl), "inline handler");
+});
+test("the rail carries Resources between Research and About", () => {
+  const rail = read("partials/faith-received/_tfr-rail.hbs");
+  const a = rail.indexOf('data-tfr-drawer="research"');
+  const b = rail.indexOf('href="/the-faith-received/resources/"');
+  const c = rail.indexOf('data-tfr-drawer="about"');
+  assert.ok(a > 0 && b > a && c > b, `${a} ${b} ${c}`);
+});
+test("the page copy has no em dash and the links open the original safely", () => {
+  assert.ok(!/\u2014|&mdash;/.test(tpl + pageJs), "em dash");
+  assert.match(pageJs, /target="_blank" rel="noopener"/);
+});
+
 if (failed) { console.error(`\n${failed} failed`); process.exit(1); }
 console.log("\nmo-articles: all checks passed");
