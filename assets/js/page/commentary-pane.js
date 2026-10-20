@@ -84,14 +84,15 @@
    * scripture reader its easy to get to the key works … not just whole bible like the glossa or poole and sacred critics and lapide
    * but also for chapter comms like Augustine on John or the Psalms"). The list above ranked whole-Bible annotators (and Wesley, Clarke,
    * Benson, Coke) over every Father: Augustine's Tractates on John came 157th of 208. v1/scripture/rank.json gives every commentary on
-   * the map its author's standing in the tradition (how many works in the library cite him, log scale, Augustine 100) and whether it
-   * belongs to a set on the whole Bible. A chapter's commentaries are ranked in two groups, on the book (Augustine on John, Chrysostom's
+   * the map its weight from curated knowledge of the tradition (owner 10-19: "we dont do citation based rerank"): the key commentators'
+   * tier, else its author's, and whether it belongs to a set on the whole Bible; for the books readers open most, the key commentaries
+   * on the book themselves (`books`). A chapter's commentaries are ranked in two groups, on the book (Augustine on John, Chrysostom's
    * homilies) and on the whole Bible (the Glossa, Lapide, Poole): by that standing, a commentary before a sermon or a volume of
    * collected works, one that covers the book before one on a single chapter, and a note on the chapter's verses first. */
-  const RANK = { works: {}, authors: {} };
+  const RANK = { works: {}, authors: {}, books: {} };
   let rankReady = null;
   const loadRank = () => rankReady || (rankReady = json(`${BASE}/v1/scripture/rank.json`)
-    .then((d) => { Object.assign(RANK.works, (d && d.works) || {}); Object.assign(RANK.authors, (d && d.authors) || {}); })
+    .then((d) => { Object.assign(RANK.works, (d && d.works) || {}); Object.assign(RANK.authors, (d && d.authors) || {}); Object.assign(RANK.books, (d && d.books) || {}); })
     .catch(() => { rankReady = null; }));
   const impOf = (slug, a) => { const r = RANK.works[slug]; return r ? r[0] : (RANK.authors[a] || 0); };
   const KIND_W = { commentary: 1, sermons: 0.8, collected: 0.7 };
@@ -113,6 +114,8 @@
   const short = (a) => {
     if (SHORT[a]) return SHORT[a];
     if (/catena/i.test(a) && /aquinas/i.test(a)) return 'Catena Aurea'; // "The catena, collected by Thomas Aquinas" in the chapter files
+    // the Greek catalogue's "Archbishop of Bulgaria Theophylact", "Bishop of Trikka Oecumenius": the name comes last
+    if (/^(?:Arch)?bishop\b/i.test(a || '')) return String(a).trim().split(/\s+/).pop();
     const b = String(a || '').replace(/^Uncertain author\s*\(?/i, '').replace(/\)$/, '').replace(/\s+(?:of|the)\s+.*$/i, '').trim();
     const p = b.split(/\s+/);
     return /^[IVXL]+$/.test(p[p.length - 1]) ? b : p[p.length - 1];
@@ -493,36 +496,65 @@
     }
   }
 
+  // "Weimar Edition: Writings, Volume 40.2" → "WA 40.2" beside the piece's name; a volume title with no number ("Works") says nothing
+  const volShort = (t) => (/\d/.test(t || '') ? String(t).replace(/^Weimar Edition: Writings, Volume\s*/i, 'WA ').replace(/^Weimar Edition: (.+?), Volume\s*/i, 'WA $1 ') : '');
+  /* THE KEY COMMENTARIES ON THE BOOK, CURATED (owner 10-19: "musculus' psalm commentary should show up when i go through a psalm these
+   * are things that are important"). rank.json `books` lists them for the books readers open most, most needed first, each author with
+   * his works in the order to open them and his year; on the chapter, each author's first work that has the chapter's page (Luther on
+   * Psalm 51: his lectures of 1532, not the Summaries). Other books: the tier rule in fillList. */
+  function curated(book) {
+    const out = [];
+    for (const [, slugs, born] of (RANK.books[book] || [])) {
+      const have = slugs.map((s) => S.list.find((c) => c.slug === s)).filter(Boolean);
+      const c = have.find((x) => x.open != null) || have.find((x) => Object.keys(x.notes).length) || have[0];
+      if (c) { c.born = born; out.push(c); }
+    }
+    return out;
+  }
+  const cenOf = (c) => (RANK.works[c.slug] || [])[2] || 99;
+  // in the order their authors came: the curated key's year (Luther 1483, Bucer 1491, Musculus 1497, Calvin 1509), else the century
+  const when = (c) => c.born || cenOf(c) * 100 - 50;
   function fillList() {
     const list = pane.querySelector('.cp-list'), w = where() || {};
     const bookName = w.book === 'psalms' ? 'the Psalms' : (w.name || 'this book');
-    // one row per author in each group (his first-ranked work); his other works on the chapter after both groups
-    const seen = new Set(), firsts = [], again = [];
-    for (const c of S.list) { const k = `${c.wb}|${c.a}`; if (seen.has(k)) again.push(c); else { seen.add(k); firsts.push(c); } }
-    const onBook = firsts.filter((c) => !c.wb), whole = firsts.filter((c) => c.wb);
-    const li = (c) => `<li class="cp-row-li" data-slug="${esc(c.slug)}"><button type="button" class="cp-row" aria-pressed="${!!(S.cur && S.cur.slug === c.slug)}">`
-      + `<span class="cp-row-t">${esc(c.t)}</span><span class="cp-row-m">${[c.a, centuryOf(c.slug), Object.keys(c.notes).length ? `${Object.keys(c.notes).length} verse notes` : 'chapter'].filter(Boolean).map(esc).join(dot)}</span></button></li>`;
+    const keys = curated(w.book), keySet = new Set(keys.map((c) => c.slug));
+    /* ONE ROW PER AUTHOR (owner 10-19 on Psalm 51: "how are there 10 luther vols this is type of organization im asking"): the
+     * author's key work, else his first-ranked; his other works on the chapter beneath it, each by the piece it is. The curated key
+     * commentaries lead, in the order they wrote; the rest by weight. */
+    const authors = (wb) => {
+      const by = new Map();
+      for (const c of S.list) if (c.wb === wb) { const k = c.a || c.slug; if (!by.has(k)) by.set(k, []); by.get(k).push(c); }
+      return [...by.values()].map((cs) => { const main = cs.find((c) => keySet.has(c.slug)) || cs[0]; return { main, more: cs.filter((c) => c !== main) }; });
+    };
+    const onBook = authors(0), whole = authors(1);
+    const keyRows = onBook.filter((r) => keySet.has(r.main.slug)).sort((x, y) => when(x.main) - when(y.main) || keys.indexOf(x.main) - keys.indexOf(y.main));
+    const restRows = onBook.filter((r) => !keySet.has(r.main.slug));
+    const notes = (c) => (Object.keys(c.notes).length ? `${Object.keys(c.notes).length} verse notes` : 'chapter');
+    const li = (c, sub) => `<li class="cp-row-li${sub ? ' cp-row-sub' : ''}" data-slug="${esc(c.slug)}"><button type="button" class="cp-row" aria-pressed="${!!(S.cur && S.cur.slug === c.slug)}">`
+      + `<span class="cp-row-t">${esc(c.t)}</span><span class="cp-row-m">${(sub ? [volShort(c.vol), notes(c)] : [c.a, centuryOf(c.slug), volShort(c.vol), notes(c)]).filter(Boolean).map(esc).join(dot)}</span></button></li>`;
+    const row = (r) => li(r.main, false) + r.more.map((c) => li(c, true)).join('');
     const h = (t) => `<li class="cp-li-h" role="presentation">${esc(t)}</li>`;
-    list.innerHTML = (onBook.length ? h(`On ${bookName}`) + onBook.map(li).join('') : '')
-      + (whole.length ? h('On the whole Bible') + whole.map(li).join('') : '')
-      + (again.length ? h('More by the same authors') + again.map(li).join('') : '')
+    list.innerHTML = (keyRows.length ? h(`Key commentaries on ${bookName}`) + keyRows.map(row).join('') : '')
+      + (restRows.length ? h(keyRows.length ? `More on ${bookName}` : `On ${bookName}`) + restRows.map(row).join('') : '')
+      + (whole.length ? h('On the whole Bible') + whole.map(row).join('') : '')
       || h('No commentary on this chapter yet');
     // The key works, one click away (owner 10-19: "connect readers to what they want and should see, which is usually looking at key
-    // bible book commentaries, and whole bible commentaries"): the curated key commentators on the book (rank.json tier 1, Augustine,
-    // Chrysostom, Jerome, Aquinas, Luther, Calvin; then tier 2), at most five, in the order they wrote; a rule; the first two sets on
-    // the whole Bible (the Glossa, the Westminster Annotations, Poole …). A chapter with no key commentator shows its first four.
-    const tierOf = (c) => (RANK.works[c.slug] || [])[4] || 0, cenOf = (c) => (RANK.works[c.slug] || [])[2] || 99;
-    const keyed = onBook.filter((c) => tierOf(c)).sort((x, y) => tierOf(x) - tierOf(y) || y.score - x.score).slice(0, 5)
-      .sort((x, y) => cenOf(x) - cenOf(y) || y.score - x.score);
-    const book = keyed.length ? keyed : onBook.slice(0, 4);
-    const keys = book.concat(whole.slice(0, 2));
-    pane.querySelector('.cp-keys').innerHTML = keys.length < 2 ? '' : keys.map((c, i) =>
-      `${i === book.length && i ? '<span class="cp-keys-sep" aria-hidden="true"></span>' : ''}<button type="button" class="cp-key" data-slug="${esc(c.slug)}" aria-pressed="${!!(S.cur && S.cur.slug === c.slug)}" title="${esc(`${c.t} (${c.a})`)}">${esc(short(c.a))}</button>`).join('');
+    // bible book commentaries, and whole bible commentaries"): the book's curated keys, at most eight, the most needed, in the order
+    // their authors came; else the curated key commentators (rank.json tier 1, then tier 2), at most five; a rule; the first two sets on
+    // the whole Bible (the Glossa, the Westminster Annotations, Poole …). A chapter with neither shows its first four.
+    const tierOf = (c) => (RANK.works[c.slug] || [])[4] || 0;
+    const firsts = onBook.map((r) => r.main);
+    const book = (keys.length ? keys.slice(0, 8) : firsts.filter((c) => tierOf(c)).sort((x, y) => tierOf(x) - tierOf(y) || y.score - x.score).slice(0, 5))
+      .sort((x, y) => when(x) - when(y) || y.score - x.score);
+    const strip = (book.length ? book : firsts.slice(0, 4)).concat(whole.slice(0, 2).map((r) => r.main));
+    const nb = book.length || Math.min(4, firsts.length);
+    pane.querySelector('.cp-keys').innerHTML = strip.length < 2 ? '' : strip.map((c, i) =>
+      `${i === nb && i ? '<span class="cp-keys-sep" aria-hidden="true"></span>' : ''}<button type="button" class="cp-key" data-slug="${esc(c.slug)}" aria-pressed="${!!(S.cur && S.cur.slug === c.slug)}" title="${esc(`${c.t}${volShort(c.vol) ? ` (${volShort(c.vol)})` : ''}, ${c.a}`)}">${esc(short(c.a))}</button>`).join('');
   }
 
   function nameCur() {
     pane.querySelector('.cp-who').textContent = S.cur ? [S.cur.a, centuryOf(S.cur.slug)].filter(Boolean).join(dot) || 'Commentary' : 'No commentary';
-    pane.querySelector('.cp-what').textContent = S.cur ? S.cur.t : '';
+    pane.querySelector('.cp-what').textContent = S.cur ? `${S.cur.t}${volShort(S.cur.vol) ? ` (${volShort(S.cur.vol)})` : ''}` : '';
   }
   // Only the reader's own choice is remembered (fr_cp_pick): the old key held whatever opened first, Lapide for nearly everyone.
   function choose(slug, mine) {
@@ -764,9 +796,10 @@
         if (pane && S.list === list) { fillList(); nameCur(); }
       }).catch(() => {});
     }
-    // the reader's own last choice when this chapter has it, else the first-ranked commentary on the book
-    const want = store.get('fr_cp_pick', '');
-    const c = (want && S.list.find((x) => x.a === want)) || S.list[0];
+    // the reader's own last choice when this chapter has it (his key work on the book), else the book's first key commentary, else
+    // the first-ranked commentary on the book
+    const want = store.get('fr_cp_pick', ''), keys = curated(w.book);
+    const c = (want && (keys.find((x) => x.a === want) || S.list.find((x) => x.a === want))) || keys[0] || S.list[0];
     S.verse = w.v || 1;
     head();
     if (SITE.name === 'mo') creeds();

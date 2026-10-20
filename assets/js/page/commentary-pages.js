@@ -188,9 +188,13 @@
         }
       }
       for (const e of ((dev && dev.books && dev.books[book]) || [])) {
-        meta[e.w] = { a: e.a || '', t: e.st || e.t || e.w };
+        // a volume of collected works is named by the piece in it that holds the chapter (map `stc` per chapter, else `st`; 10-19):
+        // "Lectures on Psalms 2, 51, 45, 1532" in WA 40.2, not "Weimar Edition: Writings, Volume 40.2"
+        const piece = (e.stc && e.stc[ch]) || e.st;
+        meta[e.w] = { a: e.a || '', t: piece || e.t || e.w };
         if (+ch < (e.c1 || 1) || +ch > (e.c2 || 999)) continue;
         const c = take(e.w, e.a, e.t);
+        if (piece) { c.t = piece; c.vol = e.t; }
         c.k = c.k || e.k; c.cov = Math.max(c.cov || 0, Object.keys(e.an || {}).length || ((Number(e.c2) || 0) - (Number(e.c1) || 0) + 1));
         if (e.an && e.an[ch] != null) { c.open = e.an[ch]; if (e.an[String(+ch + 1)] != null) c.close = e.an[String(+ch + 1)]; }
       }
