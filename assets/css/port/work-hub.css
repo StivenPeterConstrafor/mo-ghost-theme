@@ -44,6 +44,14 @@
 .wh-sections .wh-d2{padding-left:1.2rem;border-left:2px solid var(--border)}
 .wh-filter{display:grid;gap:6px;margin:0 0 14px;font:14px/1.4 var(--body,inherit);color:var(--muted);max-width:28rem}
 .wh-filter input,.rn-q{font:16px/1.4 var(--body,inherit);padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--fg);min-height:44px;width:100%;box-sizing:border-box}
+/* the Index in five parts (2026-10-20): a row of parts, each with its count, over the part's own list */
+.wh-parts{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.wh-parts button{appearance:none;display:inline-flex;align-items:baseline;gap:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);border-radius:6px;padding:6px 12px;min-height:36px;font:14px/1.2 var(--body,inherit);cursor:pointer}
+.wh-parts button small{font-size:12px;font-variant-numeric:tabular-nums}
+.wh-parts button[aria-selected="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.wh-parts button:focus-visible{outline:2px solid var(--accent,var(--fg));outline-offset:2px}
+.wh-nonek{margin:4px 0 0;color:var(--muted);font:15px/1.5 var(--body,inherit)}
+.wh-index a.wh-ih{color:var(--fg);text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px}
 .wh-index{columns:2 18rem;column-gap:2rem}
 .wh-index li{break-inside:avoid;padding:6px 0;line-height:1.45;font-variant-numeric:tabular-nums;display:grid;gap:2px}
 .wh-ih{color:var(--fg)}
