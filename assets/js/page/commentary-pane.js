@@ -664,7 +664,10 @@
       if (h < 0 && t.indexed) h = all.findIndex((s) => noteRx(printed).test(s));
     }
     const from = h > 0 ? h : 0;
-    const to = h >= 0 ? (A ? A.noteEnd(all, h, printed, 14) : Math.min(all.length, h + 8)) : (t.how === 'browse' ? all.length : Math.min(all.length, 14));
+    // the editors' textual notes of a scholarly edition (variant readings, line numbers) are set apart, and do not count toward what is shown
+    const app = A ? A.apparatusIndexes(all) : new Set();
+    const shown = (n) => { let seen = 0, j = 0; for (; j < all.length && seen < n; j += 1) if (!app.has(j)) seen += 1; while (j < all.length && app.has(j)) j += 1; return j; };
+    const to = h >= 0 ? (A ? A.noteEnd(all, h, printed, 14) : Math.min(all.length, h + 8)) : (t.how === 'browse' ? all.length : shown(14));
     const sig = siglaOf(sh.slug);
     const withSigla = (txt) => {
       if (!sig) return { html: esc(txt), who: [] };
@@ -673,6 +676,10 @@
       return { html, who };
     };
     const one = (s, i) => {
+      if (app.has(i)) { // set small and plain, with no critics' sigla marked up: these are the editors' lines, not the commentary
+        const pb = i && pageOf[i] !== pageOf[i - 1] ? `<div class="cp-break"><span>p. ${pages[pageOf[i]].n}</span></div>` : '';
+        return `${pb}<p>${esc(s)}</p>`;
+      }
       const head1 = /^#{1,6}\s+/.test(s); // the page's own heads ("### CAPUT V.") are set as heads, not printed with their marks
       const x = withSigla(head1 ? s.replace(/^#{1,6}\s+/, '') : s);
       const brk = i && pageOf[i] !== pageOf[i - 1] ? `<div class="cp-break"><span>p. ${pages[pageOf[i]].n}</span></div>` : '';
@@ -680,7 +687,14 @@
       const mark = i === h;
       return `${brk}<p${mark ? ' class="cp-hit" id="cp-hit"' : i > h && h >= 0 && i < to ? ' class="cp-hit-on"' : ''}>${x.html}</p>${mark && x.who.length ? `<p class="cp-sig">Critics cited: ${esc(x.who.join(', '))}</p>` : ''}`;
     };
-    const run = (a, b) => all.slice(a, b).map((s, k) => one(s, a + k)).join('');
+    // each unbroken run of apparatus is one closed disclosure, never the commentary's own text
+    const run = (a, b) => {
+      let out = '', buf = '';
+      const flush = () => { if (buf) { out += `<details class="cp-app"><summary>Editors\u2019 textual notes (variants of the early printings)</summary>${buf}</details>`; buf = ''; } };
+      for (let i = a; i < b; i += 1) { if (app.has(i)) buf += one(all[i], i); else { flush(); out += one(all[i], i); } }
+      flush();
+      return out;
+    };
     body.innerHTML = (from > 0 ? `<button type="button" class="cp-expand" data-cp-expand="before">Earlier on these pages</button><div class="cp-fold" data-cp-fold="before" hidden>${run(0, from)}</div>` : '')
       + (run(from, to) || '<p class="cp-empty">A blank page.</p>')
       + (to < all.length ? `<div class="cp-fold" data-cp-fold="after" hidden>${run(to, all.length)}</div><button type="button" class="cp-expand" data-cp-expand="after">Keep reading</button>` : '');

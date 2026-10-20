@@ -155,6 +155,53 @@ ok((await h(4)).p === 198 && (await h(4)).how === 'note', 'an unnumbered capital
 const last = await A.createResolver(async (_s, n) => [book[n] || [], []]).resolve({ slug: 'l', notes: {}, rows: {}, open: 80, pv: {} }, 1, W);
 ok(last.how === 'note' && last.p === 197, 'with no next chapter on the map, the section is bounded and still found');
 
+// ── the editors' apparatus (2026-10-19) ──────────────────────────────────────────────────────────────────────────────────
+// Weimar Edition, Writings vol. 24 (luther-wa-schriften-24), pp. 25 to 28: Luther's 1527 Genesis lectures, with the editors' variant
+// readings of the early printings (sigla A to D, "r" for Rorer's manuscript) printed after each page's text. The pane opened p. 25 for
+// Genesis 1:1 and set 14 paragraphs, the greater part of them the editors' lines, as if they were the commentary.
+const L25 = paras(`As you wish to contemplate God, you must necessarily go outside of every creature. He who now clings to those vicissitudes and things cannot see God.
+In things, there is novelty. Time, the hour, and creatures have a beginning, which God created, not in a moment, but in time. But the earth was void and empty.
+13 zu Inanis et vacua id est was ungeschickt und rohe . r
+[zu Bl. A5 a Terra quae bis A6 a tenens et conservans vgl. R 99, 32 – 101, 24]
+16 zu Zeit fuer (vor B ) Gott ungemessen . r ABCD zu 18 2. Pet. 3 Psal. 90. r ABCD 15 woelchs B Druemb D 16 hanget C gedencken C ewickeit D Vor B
+17 jha B
+18 letste B würdt B
+20 ynn] jhn B augenplick B sag C
+21 ein C
+25 wuest BC laere B hab C almechtig C
+26 darů BC
+27 genum̄en C
+31 Arestoteles B`);
+const L26 = paras(`26b Heaven and earth you should take simply, but not yet adorned. The earth was formless, like a fetus in the womb.
+10 zu Erde war wüst und leer . r ABCD zu
+20 Anfang der schepffung (schoepffung C ) der welt. r ABCD zu 23 2. Pet. (Pe. C) 3. r ABCD zu
+31 Erde. r ABCD 11 als] wie C 12 nit (2) C 13 solte B nit C 14 hynfert C weder BC keinen C
+32 thiere C`);
+const L28 = paras(`A great question is raised here, whether what has been said is to be referred to this first day. I understand it thus.
+9 zu Liecht . r ABCD zu
+12 Nacht . r ABCD zu
+31 Gottheit . r ABCD 7 tag C nur BD nůr C ein B 8 klingt B tage C`);
+const appIdx = (ps) => [...A.apparatusIndexes(ps)];
+ok(appIdx(L25).join() === '2,3,4,5,6,7,8,9,10,11,12', 'Luther WA 24 p. 25: every apparatus line is recognized, and the three paragraphs of Luther are not');
+ok(appIdx(L26).join() === '1,2,3,4' && appIdx(L28).join() === '1,2,3', 'Luther WA 24 pp. 26 and 28: the same');
+ok(A.apparatusShare(L25) > 0.5 && A.apparatusShare(L25) < 0.8, 'p. 25 is a page of commentary with its apparatus, not a page of apparatus alone');
+ok(A.findNote(L25, 13) === -1 && A.findNote(L26, 10) === -1 && A.findNote(L25, 17, true) === -1, '"13 zu Inanis et vacua" and "17 jha B" are not the notes on verses 13 and 17');
+ok(A.noteEnd(L25, 0, 1, 14) === L25.length, 'a note on a page followed by the apparatus runs on over it and is not cut by its line numbers');
+ok(A.lemmaIndexes(paras('20 ynn] jhn B augenplick B sag C\n21 ein C\n22 anfange B gewest C daz B\n23 Woellichs B nit C\n25 wuest BC')).size === 0, 'a run of apparatus line numbers is not the reprinted text of a chapter');
+const LEMMA = paras('1. In the beginning God created the heaven and the earth.\n2. And the earth was void.');
+ok(!appIdx(LEMMA).length, 'a numbered verse ("1. In the beginning") is not apparatus');
+for (const real of ['13 And God said, Let there be light: and there was light.', '1 Cor. 15, 3 C. Thomas has it so.', 'Vers. 2. A great question is raised here.',
+  'In Genesis 1 B C and D are named by the Fathers as the letters of the plan, but the sense is plain.', '3 Peter A. Lapide, on this place.', 'zu Hause ist es am besten, sagt das Sprichwort.']) {
+  ok(!A.isApparatus(real), `prose is not apparatus: ${real.slice(0, 50)}`);
+}
+// an apparatus-only page cannot be chosen as the note on a verse
+{
+  const only = { 40: paras('13 zu Inanis et vacua . r\n17 jha B\n18 letste B würdt B\n20 ynn] jhn B sag C\n21 ein C'), 41: paras('1. IN THE BEGINNING. Luther here says that the beginning is time.') };
+  const r = A.createResolver(async (_s, n) => [only[n] || [], []]);
+  const got = await r.located({ slug: 'x', notes: {}, rows: { 1: [{ w: 'x', how: 'explicit', g: '', p: 40 }, { w: 'x', how: 'explicit', g: '', p: 41 }] }, open: 40, close: 43, pv: {} }, 1, { name: 'Genesis', ch: 1 });
+  ok(got && got.p === 41, 'a page that is all apparatus is passed over for the page with the note');
+}
+
 // ── the rail's markup and stylesheet ────────────────────────────────────────────────────────────────────────────────────────
 const js = readFileSync(path.join(root, 'assets/js/page/commentary-pane.js'), 'utf8');
 const css = readFileSync(path.join(root, 'assets/css/commentary-pane.css'), 'utf8');
@@ -173,6 +220,7 @@ ok(/grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\) !important/.test(cs
 ok(!/overflow:\s*auto/.test(css.slice(css.indexOf('.cp-pane {'), css.indexOf('/* the verse panel (the Citations view)'))
   .replace(/\.cp-pane \{[^}]*\}/, '')), 'nothing inside the rail has its own scroll box');
 ok(!/--cp-display|var\(--display|font-family:[^;]*(IM Fell|EB Garamond)/.test(css.slice(css.indexOf('.cp-pane {'))), 'no display face on the rail');
+ok(/Editors\\u2019 textual notes \(variants of the early printings\)/.test(js) && /<details class="cp-app">/.test(js) && /\.cp-app\b/.test(css), 'the pane sets the editors\' apparatus under a closed disclosure');
 ok(hbs.indexOf('commentary-anchor.js') > 0 && hbs.indexOf('commentary-anchor.js') < hbs.indexOf('commentary-pane.js'), 'the template loads the anchor before the pane');
 // one Close for all three tabs (2026-10-19, owner): the pane's asks the reader's script, which owns the verse; the list's toggle is not "Close"
 const sdjs = readFileSync(path.join(root, 'assets/js/page/scripture-dev.js'), 'utf8');
