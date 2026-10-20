@@ -69,6 +69,7 @@ body.cp-on.cp-src .cp-pane { display: none; }
 .scripture-verse-summary > .cp-tabs, .sd-side > .cp-tabs { margin: 0 0 16px; }
 .cp-pane[data-tab="r"] .cp-head, .cp-pane[data-tab="r"] .cp-where, .cp-pane[data-tab="r"] .cp-body, .cp-pane[data-tab="r"] .cp-foot { display: none; }
 .cp-pane:not([data-tab="r"]) .cp-rec { display: none; }
+.cp-pane[data-tab="r"] .cp-creeds { display: none; }
 
 /* the label and the large heading, as the Citations view's "THIS CHAPTER IN THE LIBRARY / Genesis 1" */
 .cp-top { margin: 0 0 14px; }
@@ -182,6 +183,28 @@ a.cp-row-t { text-decoration: none; }
 .cp-meter i { display: block; height: 100%; background: var(--cp-accent); border-radius: 3px; }
 .cp-vr-n { font-size: 13px; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
 .cp-rec-foot { margin: 16px 0 0; font-size: 12.5px; color: var(--cp-faint); }
+
+/* ── Creeds, confessions and catechisms that cite the verse (Mere Orthodoxy's page only) ──
+   Above the commentary, set like the Citations view: a small label over a heading in the body face, thin-ruled rows, an italic
+   title over a muted line, the words quoted beneath. No pill, no box that scrolls, no display face. */
+.cp-creeds { margin: 0 0 18px; padding: 0 0 8px; border-bottom: 1px solid var(--cp-rule); }
+.cp-creeds[hidden] { display: none; }
+.cp-creeds.is-loading { opacity: 0.55; transition: opacity 0.2s ease-out; }
+.cp-cr-eyebrow { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--cp-accent); }
+.cp-cr-h { margin: 2px 0 0; font-family: inherit; font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: 0; text-transform: none; font-style: normal; color: var(--cp-ink); }
+.cp-cr-sum { margin: 4px 0 10px; font-size: 13px; color: var(--cp-muted); }
+.cp-cr-at { font-style: normal; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cp-creeds .cp-wit { align-items: flex-start; }
+.cp-cr-q { font-style: normal; }
+.cp-cr-body .cp-era { margin: 0 0 8px; }
+.cp-cr-body .cp-era-more { margin: 0 0 4px; }
+.cp-cr-whole { margin-top: 14px; }
+@media (prefers-reduced-motion: reduce) { .cp-creeds.is-loading { transition: none; } }
+@media (max-width: 899px) {
+  .cp-creeds { margin: 8px 0 12px; padding-bottom: 4px; }
+  .cp-cr-h { font-size: 18px; }
+  .cp-cr-sum { margin-bottom: 6px; }
+}
 
 /* how much reception each verse has, in the verse number itself: the most cited darkest and heaviest, the least faint (four steps of
    the chapter's own range); no mark is added to the text */

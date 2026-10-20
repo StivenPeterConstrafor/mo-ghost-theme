@@ -12,6 +12,12 @@
      Reception   the verse's reception history from the pages: how many works cite it and from when, the century strip, the
                  commentaries with a note on it (each opens in the Commentary view), then each era's witnesses, oldest first.
 
+   Creeds, confessions and catechisms (Mere Orthodoxy's page only; 10-19, owner: "On Commentary, we need to add Creeds, Confessions,
+   and Catechisms whenever a verse is proof texted"): above the commentary, the articles that print the verse as a proof text, each
+   with the words it stands behind and a link into the document at that page. The data is built from the documents' own text
+   (scripts/build-confession-proofs.mjs), one file per book, fetched when the Commentary shows a verse of it. A chapter cited as a
+   whole ("Gen. 1") is listed apart and said to be that.
+
    Where the places come from (nothing here guesses):
      - own notes: the chapter file's exegesis rows (v1/bible/all/<book>/<ch>.json.gz, "Its note on this verse");
      - chapter openings: the commentary map (v1/devotion.json.gz, `an`: chapter → page);
@@ -210,6 +216,15 @@
         <label class="cp-follow"><input type="checkbox"> Follow the text</label>
         <span class="cp-pages"><button type="button" data-step="-1">Previous page</button><button type="button" data-step="1">Next page</button></span>
       </div>`;
+    if (SITE.name === 'mo') {
+      pane.querySelector('.cp-top').insertAdjacentHTML('afterend', `
+      <section class="cp-creeds" aria-labelledby="cpCreedsH" hidden>
+        <p class="cp-cr-eyebrow">Creeds, confessions and catechisms</p>
+        <h3 class="cp-cr-h" id="cpCreedsH">Where they cite this verse</h3>
+        <p class="cp-cr-sum" aria-live="polite"></p>
+        <div class="cp-cr-body"></div>
+      </section>`);
+    }
     layout.appendChild(pane);
     // the pane needs room: widen the column the reader sits in while it is open (the text keeps its measure)
     for (let a = layout; a && a !== document.body; a = a.parentElement) {
@@ -228,6 +243,8 @@
       const ob = e.target.closest('.cp-rec [data-cp-open]'); if (ob) { e.preventDefault(); return openNote(ob.dataset.cpOpen, +ob.dataset.cpP); }
       const more = e.target.closest('.cp-rec .cp-more');
       if (more) { more.parentElement.querySelectorAll('li[hidden]').forEach((li) => { li.hidden = false; }); more.remove(); return; }
+      const crMore = e.target.closest('.cp-creeds .cp-more');
+      if (crMore) { crMore.parentElement.querySelectorAll('li[hidden]').forEach((li) => { li.hidden = false; }); crMore.remove(); return; }
       const ex = e.target.closest('.cp-expand');
       if (ex) { const f = ex.parentElement.querySelector(`.cp-fold[data-cp-fold="${ex.dataset.cpExpand}"]`); if (f) f.hidden = false; ex.remove(); }
     });
@@ -348,6 +365,88 @@
       + `${eras ? `<h3 class="cp-h3">Through the centuries</h3><ol class="cp-eras">${eras}</ol>` : ''}${mostHTML}`
       + '<p class="cp-rec-foot">Every page in the library that cites the verse, dated by its author\'s life.</p>';
   }
+  // ── creeds, confessions and catechisms that cite the verse ────────────────────────────────────────────────────────────────
+  // Built by scripts/build-confession-proofs.mjs from the documents' own text. v: the articles that print the verse ("1:1"),
+  // c: the articles that cite its chapter as a whole, a: the article table [document, label, page, title], x: the words each
+  // stands behind (a tab opens the sentence out: "clause<TAB>what follows the citation").
+  const CF = { dir: '/assets/data/faith-received/confession-proofs/', books: new Map(), index: null, token: 0 };
+  // the churches in the order the history reads them (the creeds and confessions page sets them the same way)
+  const CF_RANK = ['The Whole Church', 'Ecumenical', 'Orthodox', 'Eastern Orthodox', 'Oriental Orthodox', 'Roman Catholic', 'Waldensian',
+    'Bohemian Brethren', 'Protestant', 'Lutheran', 'Reformed', 'Continental Reformed', 'Anglican', 'Presbyterian', 'Congregational',
+    'Baptist', 'Anabaptist', 'Remonstrant', 'Arminian', 'Methodist'];
+  const cfUrl = (f) => {
+    const path = `${CF.dir}${f}`;
+    return window.moDataUrl ? window.moDataUrl(path) : window.moAssetUrl ? window.moAssetUrl(path) : path;
+  };
+  const cfIndex = () => CF.index || (CF.index = json(cfUrl('index.json')).catch(() => { CF.index = null; return null; }));
+  const cfBook = (book) => {
+    if (!CF.books.has(book)) CF.books.set(book, json(cfUrl(`${book}.json`)).catch(() => { CF.books.delete(book); return null; }));
+    return CF.books.get(book);
+  };
+  // the words a link asks the reader to mark: the clause itself (the reader marks a whole phrase of 24 characters or more)
+  const cfPhrase = (x) => {
+    const t = String(x).split('\t')[0].replace(/^…\s*/, '').trim();
+    return t.length >= 24 ? t.slice(0, 110).replace(/\s+\S*$/, '') : '';
+  };
+  const cfHref = (slug, p, x) => {
+    const base = SITE.read(slug, p), hl = cfPhrase(x), i = base.indexOf('#');
+    return hl ? `${base.slice(0, i < 0 ? base.length : i)}&hl=${encodeURIComponent(hl)}${i < 0 ? '' : base.slice(i)}` : base;
+  };
+  const cfWords = (x) => {
+    const [clause, tail] = String(x).split('\t');
+    const lead = /^[a-z]/.test(clause) ? '… ' : '';
+    return `${lead}${clause}${tail ? ` ${tail}` : ''}`;
+  };
+  const cfRank = (c) => { const i = CF_RANK.indexOf(c); return i < 0 ? CF_RANK.length : i; };
+  // the history's order: the church, then the year
+  const cfOrder = (docs, d) => (p, q) => { const a = docs[d.a[p[0]][0]], b = docs[d.a[q[0]][0]]; return cfRank(a.c) - cfRank(b.c) || a.y - b.y; };
+  function cfRow(d, docs, r, x, hid) {
+    const doc = docs[r[0]], t = r[3] && r[3] !== doc.t ? r[3] : '';
+    const meta = [doc.c, doc.y ? String(doc.y) : '', t].filter(Boolean).map(esc).join(dot);
+    return `<li class="cp-row-li cp-wit"${hid ? ' hidden' : ''}><a class="cp-row-t" href="${esc(cfHref(doc.s, r[2], d.x[x]))}">${esc(doc.t)} <span class="cp-cr-at">${esc(r[1])}</span></a>`
+      + `<span class="cp-row-m">${meta}</span><span class="cp-w-g cp-cr-q">“${esc(cfWords(d.x[x]))}”</span></li>`;
+  }
+  function cfList(d, docs, rows, show) {
+    const li = rows.map(([a, x], i) => cfRow(d, docs, d.a[a], x, i >= show)).join('');
+    return `<ul class="cp-rows">${li}</ul>${rows.length > show ? `<button type="button" class="cp-more">Show ${fmt(rows.length - show)} more</button>` : ''}`;
+  }
+  async function creeds() {
+    const box = pane && pane.querySelector('.cp-creeds'), w = where(); if (!box || !w) return;
+    const tok = ++CF.token, v = S.verse || 1;
+    box.classList.add('is-loading');
+    const [docsIdx, d] = await Promise.all([cfIndex(), cfBook(w.book)]);
+    if (tok !== CF.token) return;
+    box.classList.remove('is-loading');
+    const rows = d && d.v ? d.v[`${w.ch}:${v}`] || [] : [];
+    const have = new Set(rows.map((r) => r[0]));
+    const whole = d && d.c ? (d.c[w.ch] || []).filter((r) => !have.has(r[0])) : [];
+    if (!docsIdx || !d || (!rows.length && !whole.length)) { box.hidden = true; return; }
+    const {docs} = docsIdx, name = w.name || w.book.replace(/-/g, ' ');
+    const byDoc = (n) => new Set(n.map((r) => d.a[r[0]][0])).size;
+    box.hidden = false;
+    box.querySelector('.cp-cr-h').textContent = rows.length ? 'Where they cite this verse' : 'Where they cite this chapter';
+    box.querySelector('.cp-cr-sum').textContent = rows.length
+      ? `${fmt(rows.length)} ${rows.length === 1 ? 'article' : 'articles'} in ${fmt(byDoc(rows))} ${byDoc(rows) === 1 ? 'document prints' : 'documents print'} ${name} ${w.ch}:${v} as a proof text.`
+      : `None names ${name} ${w.ch}:${v}. ${fmt(whole.length)} ${whole.length === 1 ? 'article cites' : 'articles cite'} ${name} ${w.ch} as a whole.`;
+    // on a wide screen the first rows are open; on the phone's sheet two, so the commentary is not pushed out of sight
+    const open = wide.matches ? 2 : 1;
+    let html = '';
+    if (rows.length > 12) {
+      // many: by church, the history's order, each church's first two open
+      const groups = new Map();
+      for (const r of rows) { const c = docs[d.a[r[0]][0]].c || 'Other'; if (!groups.has(c)) groups.set(c, []); groups.get(c).push(r); }
+      html = [...groups].sort((a, b) => cfRank(a[0]) - cfRank(b[0]) || a[0].localeCompare(b[0])).map(([c, rs]) =>
+        `<section class="cp-era"><h4 class="cp-era-h">${esc(c)} <small>${fmt(rs.length)} ${rs.length === 1 ? 'article' : 'articles'}</small></h4>${cfList(d, docs, rs, open)}</section>`).join('');
+    } else if (rows.length) {
+      html = cfList(d, docs, rows.slice().sort(cfOrder(docs, d)), wide.matches ? 6 : 2);
+    }
+    if (whole.length) {
+      html += `<section class="cp-era cp-cr-whole"><h4 class="cp-era-h">Cite ${esc(name)} ${esc(w.ch)} as a whole <small>${fmt(whole.length)} ${whole.length === 1 ? 'article' : 'articles'}</small></h4>`
+        + `<p class="cp-era-more">${rows.length ? 'These print the chapter reference without naming a verse.' : 'They print the chapter reference without naming a verse.'}</p>${cfList(d, docs, whole, rows.length || !wide.matches ? 2 : 4)}</section>`;
+    }
+    box.querySelector('.cp-cr-body').innerHTML = html;
+  }
+
   // each verse number carries how much reception it has (a quiet mark in the text: four steps of the chapter's own range)
   function heat() {
     const vs = (S.rec && S.rec.verses) || {}, max = Math.max(1, ...Object.values(vs).map((x) => x.works || 0));
@@ -442,6 +541,7 @@
   async function show(v, force) {
     S.verse = +v;
     head();
+    if (SITE.name === 'mo') creeds();
     if (S.tab === 'r') paintRec();
     const w = where(); if (!S.cur || !w) return;
     const tok = ++S.token, cur = S.cur;
@@ -633,6 +733,7 @@
     const c = (want && S.list.find((x) => x.a === want)) || S.list[0];
     S.verse = w.v || 1;
     head();
+    if (SITE.name === 'mo') creeds();
     choose(c ? c.slug : null);
     S.firstEl = document.querySelector(SITE.verses);
     watch();
