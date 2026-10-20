@@ -3,12 +3,12 @@
    On the Scripture page by default (?pane=0 turns it off for the tab).
 
    The chapter's own text on the left; beside it one rail, half the width, with three views of the verse being read, in this order
-   (10-19, owner: Citations first, "design wise, it should be like the citation"; every view is set like the Citations view: a small
+   (order 10-19, owner: Commentary, Citations, Reception, opening on the Commentary; "design wise, it should be like the citation": every view is set like the Citations view: a small
    label over a large heading, thin-ruled rows, italic work titles over a muted author and century line, no box that scrolls):
-     Citations   every use of the verse (the site's own verse panel), filterable by kind. The rail opens here.
      Commentary  one chosen commentary, following the reader: the verse at the reading line (or the verse clicked) brings it to
                  ITS note on that verse, read from its page, the note marked (commentary-anchor.js: never the place where the
                  commentary merely prints the verse); else its next note, or its closest earlier one, said plainly.
+     Citations   every use of the verse (the site's own verse panel), filterable by kind.
      Reception   the verse's reception history from the pages: how many works cite it and from when, the century strip, the
                  commentaries with a note on it (each opens in the Commentary view), then each era's witnesses, oldest first.
 
@@ -141,133 +141,20 @@
   const where = () => SITE.where();
 
   // ── the commentaries on this chapter ──────────────────────────────────────────────────────────────────────────────────────
+  // The loaders (a work's pages, TEI, Migne columns, EEBO books) and the list of works a chapter has are in commentary-pages.js, so
+  // scripts/check-commentary-pages.mjs can open every one of them against the live library.
+  const PG = window.FRCommentaryPages.createPages({ base: BASE, mo: SITE.name === 'mo', json,
+    text(u) { return fetch(u, { credentials: 'omit' }).then((r) => { if (!r.ok) throw new Error(u); return r.text(); }); } });
   async function commentaries(book, ch) {
-    const [file, dev, ov] = await Promise.all([
-      gz(`${BASE}/v1/bible/all/${book}/${ch}.json.gz`).catch(() => null),
-      gz(`${BASE}/v1/devotion.json.gz`).catch(() => null),
-      json(`${BASE}/v1/bible/commentary-overlay.json`).catch(() => null)]);
-    const by = new Map();
-    const take = (slug, a, t) => {
-      if (!by.has(slug)) by.set(slug, { slug, a: a || '', t: t || slug, notes: {}, open: null });
-      return by.get(slug);
-    };
-    const rowsBy = new Map(); // work → verse → the rows that discuss it (not the ones that merely print it): where a note can be looked for
-    for (const v of (file && file.verses) || []) {
-      for (const r of v.rows || []) if (r.w && !S.meta[r.w]) S.meta[r.w] = { a: r.a || '', t: r.t || r.w };
-      for (const r of v.rows || []) if (r.w && (r.how === 'explicit' || r.how === 'exegesis') && +r.p > 0) {
-        if (!rowsBy.has(r.w)) rowsBy.set(r.w, {});
-        const byV = rowsBy.get(r.w); (byV[v.v] || (byV[v.v] = [])).push({ w: r.w, how: r.how, g: r.g, p: r.p });
-      }
-      for (const r of v.rows || []) if (r.how === 'exegesis' && /note on this verse/i.test(r.g || '')) {
-        const c = take(r.w, r.a, r.t); if (!(v.v in c.notes)) c.notes[v.v] = r.p;
-      }
-    }
-    for (const e of ((dev && dev.books && dev.books[book]) || [])) {
-      S.meta[e.w] = { a: e.a || '', t: e.st || e.t || e.w };
-      if (+ch < (e.c1 || 1) || +ch > (e.c2 || 999)) continue;
-      const c = take(e.w, e.a, e.t);
-      c.k = c.k || e.k; c.cov = Math.max(c.cov || 0, Object.keys(e.an || {}).length || ((Number(e.c2) || 0) - (Number(e.c1) || 0) + 1));
-      if (e.an && e.an[ch] != null) { c.open = e.an[ch]; if (e.an[String(+ch + 1)] != null) c.close = e.an[String(+ch + 1)]; }
-    }
-    for (const [slug, w] of Object.entries((ov && ov.works) || {})) if (w.sigla) SIGLA[slug] = w.sigla;
-    for (const [slug, w] of Object.entries((ov && ov.works) || {})) {
-      const x = w.books && w.books[book] && w.books[book][ch]; if (!x) continue;
-      const c = take(slug, w.a, w.t); c.open = x.p; Object.assign(c.notes, x.v || {}); c.overlay = true;
-      if (x.c) { c.collected = x.c; for (const v of Object.keys(x.c)) if (!(v in c.notes)) c.notes[v] = x.c[v][0][1]; }
-      if (x.pv) c.pv = Object.assign(c.pv || {}, x.pv); // the verse as the work prints it, where its numbering counts a psalm's title
-    }
+    const { works, meta, sigla } = await PG.listWorks(book, ch);
+    Object.assign(S.meta, meta); Object.assign(SIGLA, sigla);
     await loadRank();
-    for (const c of by.values()) { c.rows = rowsBy.get(c.slug) || {}; weigh(c); }
-    return [...by.values()].filter((c) => Object.keys(c.notes).length || c.open != null)
-      .sort((x, y) => x.wb - y.wb || y.score - x.score || x.a.localeCompare(y.a));
+    for (const c of works) weigh(c);
+    return works.sort((x, y) => x.wb - y.wb || y.score - x.score || x.a.localeCompare(y.a));
   }
 
   // ── a commentary page ─────────────────────────────────────────────────────────────────────────────────────────────────────
-  /* A Father in Migne or the Patrologia Orientalis (pld-, pg-, po-) is held as one TEI file of the family, not as a work folder: its
-   * places are columns (milestone unit="column" n="vol:col"; the map's chapter pages are these columns), every paragraph in the
-   * source language with its English beside it (xml:lang, corresp). The pane shows a column and the next, as the reader does, and
-   * steps two at a time. Before this, Augustine on John and Chrysostom's homilies could be chosen but opened nothing. */
-  const CANON = /^(pld|pg|po)-(\d+)$/;
-  const XML_NS = 'http://www.w3.org/XML/1998/namespace';
-  const langOf = (el) => {
-    for (let x = el; x && x.nodeType === 1; x = x.parentElement) { const l = x.getAttributeNS(XML_NS, 'lang') || x.getAttribute('xml:lang'); if (l) return l; }
-    return '';
-  };
-  const stride = (slug) => (CANON.test(slug) ? 2 : 1);
-  function canonCols(slug) {
-    const k = `canon:${slug}`;
-    if (!cache.has(k)) {
-      const p = (async () => {
-        const [, fam, id] = CANON.exec(slug);
-        const url = SITE.name === 'mo' ? `${BASE}/v1/tei/${fam}/${id}.xml` : `${BASE}/tei/${fam}/${id}.xml`;
-        const r = await fetch(url, { credentials: 'omit' }); if (!r.ok) throw new Error(url);
-        const doc = new DOMParser().parseFromString(await r.text(), 'application/xml');
-        const en = new Map(), src = new Map(), cols = [];
-        let cur = null;
-        for (const el of doc.querySelectorAll('body *')) {
-          const tag = el.localName;
-          if (tag === 'milestone' || tag === 'pb') {
-            if (tag === 'milestone' && el.getAttribute('unit') !== 'column') continue;
-            const raw = String(el.getAttribute('n') || '');
-            if (fam === 'pld' && tag === 'milestone' && !raw.includes(':')) continue; // the volume's own mark, not a column
-            const c = parseInt(raw.split(':').pop(), 10); // "26:0021B": column 21, its second quarter
-            if (c) { cur = c; if (!cols.includes(c)) cols.push(c); }
-          } else if ((tag === 'p' || tag === 'head') && cur != null && !el.closest('note')) {
-            const t = el.textContent.replace(/\s+/g, ' ').trim(); if (!t) continue;
-            const m = langOf(el) === 'en' ? en : src;
-            if (!m.has(cur)) m.set(cur, []); m.get(cur).push(t);
-          }
-        }
-        return { en, la: src, cols };
-      })();
-      p.catch(() => { if (cache.get(k) === p) cache.delete(k); });
-      cache.set(k, p);
-    }
-    return cache.get(k);
-  }
-  async function page(slug, n) {
-    if (CANON.test(slug)) {
-      const d = await canonCols(slug);
-      const two = (m) => [Number(n), Number(n) + 1].flatMap((c) => m.get(c) || []).join('\n');
-      const p = { n, en: two(d.en), la: two(d.la) };
-      return { meta: { canon: true }, p: p.en || p.la ? p : null, last: d.cols[d.cols.length - 1] || n };
-    }
-    const meta = await json(`${BASE}/v1/works/${slug}/meta.json`);
-    const last = meta.n_pages || (meta.shards && meta.shards.length && meta.shards[meta.shards.length - 1].to);
-    if (!(meta.shards || []).length && meta.has_tei) {
-      // a born-digital edition (Calvin's commentaries …) is held as TEI only: its pages are the <pb n> breaks
-      const lanes = await teiPages(slug, meta);
-      const p = { n, en: (lanes.en.get(String(n)) || []).join('\n'), la: (lanes.la.get(String(n)) || []).join('\n') };
-      return { meta, p: p.en || p.la ? p : null, last };
-    }
-    const shard = (meta.shards || []).find((s) => s.from <= n && n <= s.to);
-    const d = shard ? await json(`${BASE}/v1/works/${slug}/${shard.file}`) : await json(`${BASE}/v1/works/${slug}/work.json`);
-    const p = (d.pages || []).find((x) => +x.n === +n);
-    return { meta, p, last };
-  }
-  function teiPages(slug, meta) {
-    const k = `tei:${slug}`;
-    if (!cache.has(k)) cache.set(k, (async () => {
-      const read = async (lane) => {
-        const m = new Map();
-        try {
-          const r = await fetch(`${BASE}/v1/works/${slug}/tei.${lane}.xml?v=${meta.tei_v || ''}`); if (!r.ok) return m;
-          const doc = new DOMParser().parseFromString(await r.text(), 'application/xml');
-          let cur = '0';
-          for (const el of doc.querySelectorAll('body *')) {
-            const tag = el.localName;
-            if (tag === 'pb') cur = String(+el.getAttribute('n') || el.getAttribute('n'));
-            else if ((tag === 'p' || tag === 'head') && !el.closest('note')) { const t = el.textContent.replace(/\s+/g, ' ').trim(); if (t) { if (!m.has(cur)) m.set(cur, []); m.get(cur).push(t); } }
-          }
-        } catch (_) {}
-        return m;
-      };
-      const [en, la] = await Promise.all([read('en'), meta.en_only ? Promise.resolve(new Map()) : read('la')]);
-      return { en, la };
-    })());
-    return cache.get(k);
-  }
-  const paragraphs = (t) => String(t || '').replace(/\[\^[^\]]*\]/g, '').split(/\n+/).map((s) => s.trim()).filter(Boolean);
+  const { page, stride, paragraphs } = PG;
   // a verse's note opens its paragraph: "12. PROPTEREA…", "Vers. 12.", "V. 12", "Verse 12."
   const noteRx = (v) => new RegExp(`^(?:ver(?:s(?:e|us)?)?\\.?\\s*|v\\.\\s*)?\\(?${v}\\b\\s*[.:,)\\]]`, 'i');
 
@@ -286,11 +173,11 @@
   const dot = ' · ';
 
   // ── the pane ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
-  // The rail opens on Citations (10-19, owner), and no longer remembers the last view: the old fr_cp_tab key is cleared. Below
-  // 900px the page's own verse panel sits under the text and the rail is a sheet, so there the sheet has two views and opens on
-  // the Commentary.
+  // The rail opens on the Commentary (10-19, owner, after trying Citations first), in every case: a verse selected, a deep link, the
+  // phone sheet. The order of the tabs is Commentary, Citations, Reception. The last view is not remembered (the old fr_cp_tab key
+  // is cleared). Below 900px the verse panel is under the verse in the text, so there Citations shrinks the sheet to its tabs.
   const wide = matchMedia('(min-width: 900px)');
-  const firstTab = () => (SITE.name === 'mo' && wide.matches ? 's' : 'c');
+  const firstTab = () => 'c';
   try { localStorage.removeItem('fr_cp_tab'); } catch (_) {}
   const S = { list: [], cur: null, verse: null, follow: store.get('fr_cp_follow', '1') === '1', lang: store.get('fr_cp_lang', 'en'),
     shown: null, token: 0, meta: {}, cen: {}, rec: null, pin: false, tab: firstTab() };
@@ -332,7 +219,7 @@
     const tabs = document.createElement('div');
     tabs.className = 'cp-tabs'; tabs.setAttribute('role', 'group'); tabs.setAttribute('aria-label', 'Beside the text');
     tabs.innerHTML = SITE.name === 'mo'
-      ? '<button type="button" data-tab="s">Citations</button><button type="button" data-tab="c">Commentary</button><button type="button" data-tab="r">Reception</button>'
+      ? '<button type="button" data-tab="c">Commentary</button><button type="button" data-tab="s">Citations</button><button type="button" data-tab="r">Reception</button>'
       : '<button type="button" data-tab="c">Commentary</button><button type="button" data-tab="r">Reception</button><button type="button" data-tab="s">Citations</button>';
     pane.prepend(tabs);
     layout.addEventListener('click', (e) => {
@@ -570,7 +457,7 @@
     // a large volume takes a few seconds to open: say what is coming rather than show an empty page
     if (!bodyEl.textContent.trim() || !same) {
       whereEl.textContent = `Opening ${cur.a || cur.t} on ${w.name || w.book} ${w.ch}:${t.v || S.verse}, p. ${t.p}…`;
-      if (!bodyEl.textContent.trim()) bodyEl.innerHTML = '<p class="cp-empty">Opening the page…</p>';
+      if (!bodyEl.textContent.trim()) bodyEl.innerHTML = `<p class="cp-empty">${PG.EEBO.test(cur.slug) ? 'Opening the book (a large file, loaded once)…' : 'Opening the page…'}</p>`;
     }
     try {
       if (t.how === 'collected') {

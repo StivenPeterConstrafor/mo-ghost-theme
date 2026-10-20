@@ -160,9 +160,14 @@ const js = readFileSync(path.join(root, 'assets/js/page/commentary-pane.js'), 'u
 const css = readFileSync(path.join(root, 'assets/css/commentary-pane.css'), 'utf8');
 const hbs = readFileSync(path.join(root, 'custom-scripture-dev.hbs'), 'utf8');
 const tabsMo = /tabs\.innerHTML = SITE\.name === 'mo'\s*\? '([^']+)'/.exec(js);
-ok(tabsMo && /data-tab="s">Citations<.*data-tab="c">Commentary<.*data-tab="r">Reception</.test(tabsMo[1]), 'tabs read Citations, Commentary, Reception');
+ok(tabsMo && /data-tab="c">Commentary<.*data-tab="s">Citations<.*data-tab="r">Reception</.test(tabsMo[1]), 'tabs read Commentary, Citations, Reception');
 ok(!/data-tab="s"\] \{ display: none/.test(css), 'the Citations tab is kept on phones');
-ok(/const firstTab = \(\) => \(SITE\.name === 'mo' && wide\.matches \? 's' : 'c'\)/.test(js), 'the rail opens on Citations');
+ok(/const firstTab = \(\) => 'c';/.test(js), 'the rail opens on the Commentary, wide or phone');
+ok(/\.cp-tabs button\[aria-pressed="true"\] \{ color: var\(--cp-ink\); border-bottom-color: var\(--cp-accent\); \}/.test(css), 'the pressed tab changes colour and underline only, never weight or face');
+ok(/\.cp-tabs button, \.cp-tabs button:hover[^{]*\{[^}]*font-weight: 400/.test(css), 'all three tabs are one face and one weight in every state');
+const sd = readFileSync(path.join(root, 'assets/css/scripture-dev.css'), 'utf8');
+ok(/\.sd-panel-fold > summary \{\s*display: grid;\s*grid-template-columns: minmax\(0, 1fr\) 10em 1\.25em;/.test(sd), 'every fold row is one grid: label, a fixed count column, the +/- at the right');
+ok(/\[data-sd-summary-count\], \.sd-panel-fold > summary > \.sd-comm-fold-n \{[^}]*font-variant-numeric: tabular-nums/.test(sd) && /grid-column: 2;[^}]*justify-self: end/.test(sd), 'every fold count sits in the one count column, right-aligned in tabular figures');
 ok(!/store\.(get|set)\('fr_cp_tab'/.test(js), 'no last-tab preference is read or written');
 ok(/grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\) !important/.test(css), 'text and rail split the width 50/50');
 ok(!/overflow:\s*auto/.test(css.slice(css.indexOf('.cp-pane {'), css.indexOf('/* the verse panel (the Citations view)'))

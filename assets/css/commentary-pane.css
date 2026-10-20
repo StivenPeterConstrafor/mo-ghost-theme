@@ -50,11 +50,20 @@ body.cp-on.cp-src .cp-pane { display: none; }
 .cp-pane :focus-visible { outline: 2px solid var(--cp-accent); outline-offset: 2px; }
 
 .cp-tabs { display: flex; gap: 0; margin: 0 0 16px; border-bottom: 1px solid var(--cp-rule); }
-.cp-tabs button {
-  flex: 1; min-height: 44px; padding: 8px 6px; background: none; border: 0; border-bottom: 2px solid transparent;
-  font-size: 15px; color: var(--cp-muted); cursor: pointer;
+/* One face, one weight, every state. The row is also cloned into the Citations sidebar, outside .cp-pane, where the pane's
+   "button { font: inherit }" does not reach: the clone fell back to the browser's button face, and the pressed tab was set at 600,
+   a weight the site's Source Serif is not loaded in, so it drew a different, wider face and moved the row. The face and weight are
+   stated on the button itself, the pressed tab is shown by colour and the underline alone, and nothing about it changes width. */
+.cp-tabs button, .cp-tabs button:hover, .cp-tabs button:focus, .cp-tabs button:focus-visible, .cp-tabs button[aria-pressed="true"] {
+  font-family: var(--font-body, "Source Serif Pro", Palatino, Georgia, serif); font-size: 15px; font-weight: 400; font-style: normal;
+  font-variation-settings: normal; font-synthesis: none; letter-spacing: 0; text-transform: none; line-height: 1.3;
 }
-.cp-tabs button[aria-pressed="true"] { color: var(--cp-ink); border-bottom-color: var(--cp-accent); font-weight: 600; }
+.cp-tabs button {
+  flex: 1 1 0; min-width: 0; min-height: 44px; padding: 8px 6px; background: none; border: 0; border-bottom: 2px solid transparent;
+  color: var(--cp-muted); cursor: pointer; text-align: center;
+}
+.cp-tabs button:hover { color: var(--cp-ink); }
+.cp-tabs button[aria-pressed="true"] { color: var(--cp-ink); border-bottom-color: var(--cp-accent); }
 .scripture-verse-summary > .cp-tabs, .sd-side > .cp-tabs { margin: 0 0 16px; }
 .cp-pane[data-tab="r"] .cp-head, .cp-pane[data-tab="r"] .cp-where, .cp-pane[data-tab="r"] .cp-body, .cp-pane[data-tab="r"] .cp-foot { display: none; }
 .cp-pane:not([data-tab="r"]) .cp-rec { display: none; }
