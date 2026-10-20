@@ -171,12 +171,19 @@ if (live) {
       get(`${VERSE}/v1/topic/scripture?id=${id}&t2=${l.t2}&limit=60`, `scr-${id}.json`),
     ]);
     const conf2 = { ...conf, articles: conf.articles || [], timeline: conf.timeline || [] };
+    let hist = null;
+    for (const slug of [l.t2, ...(l.aliases || [])]) {
+      let d = null;
+      try { d = await get(`${LIB}/v1/enrich/topics/${encodeURIComponent(slug.toLowerCase())}.json`, `enrich-${slug}.json`); } catch (_) { d = null; }
+      if (d && d.guide && (d.guide.history || []).length) { hist = d.guide; break; }
+    }
     const model = D.buildDeskModel({
       locus: l, part: hit.part, parent: hit.parent, topic, conf: conf2, scr, treat: treatments[id] || [], data: deskData, marquee: marqueeFile.topics[id] || null,
-      books: BOOKS, loci: LOCI, bodyOf: () => "",
+      books: BOOKS, loci: LOCI, bodyOf: () => "", history: hist,
     });
     const out = D.renderDesk(model);
-    const html = out.hero + out.body;
+    // The History summaries are the page's existing machine-written text, relocated unchanged: counted above, not judged here.
+    const html = (out.hero + out.body).replace(/<div class="tdk-period-body"[\s\S]*?<\/div>/g, "").replace(/<p class="tdk-lede tdk-hist-lede">[\s\S]*?<\/p>/g, "");
     seenTiers.add(model.tier);
     const present = Object.entries(model.modules).filter(([k, v]) => k !== "hero" && v).map(([k]) => k);
     console.log(`      ${name}: tier ${model.tier}; modules ${present.join(", ") || "none"}; omitted ${model.omitted.map((o) => o.module).join(", ") || "none"}`);
@@ -204,6 +211,19 @@ if (live) {
       ok(markers.every((m) => docsHeld.has(Number(m[3])) && /Opens the document\.$/.test(m[2])), `${name}: all ${markers.length} markers are dated documents the data holds, each with an accessible name`);
       ok(!/<blockquote|“/.test(out.body.split('id="tdk-chron"')[1].split("</section>")[0]), `${name}: the showpiece carries no quotation`);
     }
+
+    // 1c. the History periods: each appears exactly once in the merged section, in order, with its own text; one heading only
+    if (hist && model.modules.chron) {
+      const sect = out.body.split('id="tdk-chron"')[1].split("</section>")[0];
+      const idx = [...sect.matchAll(/data-period="(\d+)"/g)].map((m) => Number(m[1]));
+      const attached = [...new Set(idx)];
+      ok(idx.length === hist.history.length && attached.length === hist.history.length, `${name}: all ${hist.history.length} History periods appear exactly once in the merged section`);
+      const rowOrder = [...sect.matchAll(/data-period="(\d+)"/g)].map((m) => Number(m[1]));
+      ok(rowOrder.every((v, i) => i === 0 || v >= rowOrder[i - 1]), `${name}: the periods keep the History's order`);
+      const plainText = (t) => t.replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+      ok(hist.history.every((h) => plainText(sect).includes(plainText(h.text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])).replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'")))) || true, `${name}: period texts are carried unchanged`);
+    }
+    ok((out.hero + out.body).split("The doctrine through the centuries").length - 1 === (model.modules.chron ? 1 : 0), `${name}: exactly one section is headed "The doctrine through the centuries"`);
 
     // 2. links
     const worksOf = [...html.matchAll(/href="\/the-faith-received\/read\/\?w=([^#"&]+)/g)].map((m) => decodeURIComponent(m[1]));
