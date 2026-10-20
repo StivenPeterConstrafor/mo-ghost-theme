@@ -94,15 +94,19 @@
     const kind = c.k === 'sermons' && c.cov >= 5 ? 1 : (KIND_W[c.k] || (c.overlay ? 1 : 0.65));
     const cov = c.cov >= 5 ? 1 : c.cov >= 2 ? 0.92 : 0.86;
     c.wb = (RANK.works[c.slug] || [])[1] === 1 || !!c.overlay ? 1 : 0;
-    c.score = impOf(c.slug, c.a) * kind * cov + (Object.keys(c.notes).length ? 4 : 0);
+    // verse notes on the chapter only break near-ties: importance leads (Augustine's Expositions before Calvin on Psalm 51)
+    c.score = impOf(c.slug, c.a) * kind * cov + (Object.keys(c.notes).length ? 0.5 : 0);
     return c;
   }
   // the name a key button carries: "Augustine", "Chrysostom", "Glossa", "Critici Sacri"
   const SHORT = { 'Augustine of Hippo': 'Augustine', 'John Chrysostom': 'Chrysostom', 'Walafrid Strabo': 'Glossa', 'Walahfrid Strabo': 'Glossa',
-    'The critics, collected by John Pearson and others': 'Critici Sacri', 'Cornelius a Lapide': 'Lapide', 'collected by Thomas Aquinas': 'Aquinas, Catena',
-    'Denys the Carthusian': 'Denys', 'Willem van Est': 'Estius', 'Westminster Assembly': 'Westminster', 'Nicholas of Lyra': 'Lyra', 'Matthew Poole': 'Poole' };
+    'Westminster Assembly': 'Westminster Annotations', 'Gregory I': 'Gregory the Great', 'Theophylact, Archbishop of Bulgaria': 'Theophylact',
+    'The critics, collected by John Pearson and others': 'Critici Sacri', 'Cornelius a Lapide': 'Lapide', 'collected by Thomas Aquinas': 'Catena Aurea',
+    'collected by Thomas Aquinas The catena': 'Catena Aurea',
+    'Denys the Carthusian': 'Denys', 'Willem van Est': 'Estius', 'Nicholas of Lyra': 'Lyra', 'Matthew Poole': 'Poole' };
   const short = (a) => {
     if (SHORT[a]) return SHORT[a];
+    if (/catena/i.test(a) && /aquinas/i.test(a)) return 'Catena Aurea'; // "The catena, collected by Thomas Aquinas" in the chapter files
     const b = String(a || '').replace(/^Uncertain author\s*\(?/i, '').replace(/\)$/, '').replace(/\s+(?:of|the)\s+.*$/i, '').trim();
     const p = b.split(/\s+/);
     return /^[IVXL]+$/.test(p[p.length - 1]) ? b : p[p.length - 1];
@@ -475,10 +479,17 @@
       + (whole.length ? h('On the whole Bible') + whole.map(li).join('') : '')
       + (again.length ? h('More by the same authors') + again.map(li).join('') : '')
       || h('No commentary on this chapter yet');
-    // the key works, one click away: the four first on the book, the two first on the whole Bible
-    const keys = onBook.slice(0, 4).concat(whole.slice(0, 2));
+    // The key works, one click away (owner 10-19: "connect readers to what they want and should see, which is usually looking at key
+    // bible book commentaries, and whole bible commentaries"): the curated key commentators on the book (rank.json tier 1, Augustine,
+    // Chrysostom, Jerome, Aquinas, Luther, Calvin; then tier 2), at most five, in the order they wrote; a rule; the first two sets on
+    // the whole Bible (the Glossa, the Westminster Annotations, Poole …). A chapter with no key commentator shows its first four.
+    const tierOf = (c) => (RANK.works[c.slug] || [])[4] || 0, cenOf = (c) => (RANK.works[c.slug] || [])[2] || 99;
+    const keyed = onBook.filter((c) => tierOf(c)).sort((x, y) => tierOf(x) - tierOf(y) || y.score - x.score).slice(0, 5)
+      .sort((x, y) => cenOf(x) - cenOf(y) || y.score - x.score);
+    const book = keyed.length ? keyed : onBook.slice(0, 4);
+    const keys = book.concat(whole.slice(0, 2));
     pane.querySelector('.cp-keys').innerHTML = keys.length < 2 ? '' : keys.map((c, i) =>
-      `${i === Math.min(4, onBook.length) && i ? '<span class="cp-keys-sep" aria-hidden="true"></span>' : ''}<button type="button" class="cp-key" data-slug="${esc(c.slug)}" aria-pressed="${!!(S.cur && S.cur.slug === c.slug)}" title="${esc(`${c.t} (${c.a})`)}">${esc(short(c.a))}</button>`).join('');
+      `${i === book.length && i ? '<span class="cp-keys-sep" aria-hidden="true"></span>' : ''}<button type="button" class="cp-key" data-slug="${esc(c.slug)}" aria-pressed="${!!(S.cur && S.cur.slug === c.slug)}" title="${esc(`${c.t} (${c.a})`)}">${esc(short(c.a))}</button>`).join('');
   }
 
   function nameCur() {
