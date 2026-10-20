@@ -53,6 +53,126 @@
       },
       "verseNotes": {
         "i-john.5.7": "The wording of this verse that names the Father, the Word, and the Spirit is found in late Latin manuscripts and in a few late Greek manuscripts. It is absent from the critical Greek text. The text shown is the Verse Desk's default."
+      },
+      "terms": "trinit|triune|three persons|godhead|consubstantial|homoousi|filioque|nicene|creed|one god|one essence|one divine being",
+      "lead": "father.{0,60}son.{0,60}holy (?:ghost|spirit)|holy (?:ghost|spirit).{0,60}father|persons",
+      "articles": {
+        "early": [
+          {
+            "w": "cf-013-council-of-nicea-i-325",
+            "a": "The Nicene Creed",
+            "why": "The 325 creed that first confesses the Son of one substance with the Father."
+          },
+          {
+            "w": "cf-015-council-of-constantinople-i-381",
+            "a": "The",
+            "why": "The 381 creed, the text the Holy Spirit clause comes from."
+          }
+        ],
+        "rc": [
+          {
+            "w": "cf-077-council-of-lyons-ii-1274",
+            "why": "The 1274 council's profession on the Holy Spirit within the Trinity."
+          }
+        ],
+        "rf": [
+          {
+            "w": "rc-057-belgic-confession-1561",
+            "a": "Article VIII",
+            "why": "The article headed for one essence in three persons."
+          },
+          {
+            "w": "rc-061-heidelberg-catechism-1563",
+            "a": "Q. 25",
+            "why": "The question asks why one God is spoken of as three persons."
+          },
+          {
+            "w": "rc-111-westminster-confession-of-faith-1646",
+            "a": "Chapter II",
+            "why": "The chapter on God and the Holy Trinity."
+          }
+        ],
+        "an": [
+          {
+            "w": "rc-060-thirty-nine-articles-1562",
+            "a": "Article I",
+            "why": "The first Article, headed Of Faith in the Holy Trinity."
+          }
+        ],
+        "bp": [
+          {
+            "w": "rc-127-baptist-catechism-1693",
+            "a": "Q. 9",
+            "why": "The catechism question on the number of persons in the Godhead."
+          }
+        ]
+      },
+      "works": {
+        "early": [
+          {
+            "w": "pld-5706",
+            "p": 95,
+            "why": "Titled On the Trinity."
+          },
+          {
+            "w": "pld-2744",
+            "p": 819,
+            "why": "Titled On the Trinity."
+          },
+          {
+            "w": "pld-4952",
+            "p": 497,
+            "why": "Titled On the Trinity."
+          }
+        ],
+        "rc": [
+          {
+            "w": "aq-st-i-15",
+            "p": 177,
+            "why": "The section asks whether there is trinity in God."
+          },
+          {
+            "w": "bonaventure-quaestiones-disputatae-de-scientia-christi-de-mysterio-ss-trinitatis-de-perfectione-evangelica",
+            "p": 85,
+            "why": "A section on the trinity of persons, from questions on the mystery of the Trinity."
+          },
+          {
+            "w": "salamanticenses-cursus-theologicus-vol-3",
+            "p": 461,
+            "why": "An article asking whether the Trinity of the divine persons can be known."
+          }
+        ],
+        "lu": [
+          {
+            "w": "chemnitz-loci-theologici-pars-1",
+            "p": 110,
+            "why": "The chapter is headed On the Trinity."
+          },
+          {
+            "w": "calov-systema-locorum-theologicorum-vol-3",
+            "p": 40,
+            "why": "The article is headed On the Holy Trinity."
+          }
+        ],
+        "rf": [
+          {
+            "w": "beza-confessio-christianae-fidei",
+            "p": 13,
+            "why": "The chapter is headed On the Trinity."
+          },
+          {
+            "w": "polanus-amandus-polanus-syntagma-theologiae-christianae-liber-iii-de-s",
+            "p": 27,
+            "why": "The chapter is headed On the Most Holy Trinity."
+          },
+          {
+            "w": "francois-turretin-institutio-theologiae-elencticae",
+            "p": 48,
+            "why": "The question is headed Concerning the Most Holy Trinity.",
+            "at": 336,
+            "heading": "Question XXIII. Concerning the Most Holy Trinity"
+          }
+        ]
       }
     },
     "de-filioque": {
@@ -103,16 +223,266 @@
             "quote": "the Holy Spirit proceeding from the Father and the Son"
           }
         ]
-      }
+      },
+      "terms": "trinit|triune|three persons|godhead|consubstantial|homoousi|filioque|nicene|creed|one god|one essence|one divine being"
     },
     "de-scriptura": {
-      "dek": "What the churches have said about the Bible. Its authority, sufficiency, and interpretation."
+      "dek": "What the churches have said about the Bible. Its authority, sufficiency, and interpretation.",
+      "terms": "scripture|bible|word of god|canon|biblical|holy writ|sacred books|apocrypha|testament|tradition",
+      "articles": {
+        "early": [
+          {
+            "w": "cf-017-council-of-carthage-iii-397",
+            "a": "The Canon",
+            "why": "The 397 canon of the Sacred Scriptures."
+          }
+        ],
+        "rc": [
+          {
+            "w": "cf-092-council-of-trent-1545-1563",
+            "a": "The Sacred Books",
+            "why": "Trent's decree on the sacred books and the traditions."
+          }
+        ],
+        "rf": [
+          {
+            "w": "rc-057-belgic-confession-1561",
+            "a": "Article V",
+            "why": "The article on whence the Holy Scriptures obtain their authority."
+          },
+          {
+            "w": "rc-063-second-helvetic-confession-1566",
+            "a": "Chapter 1.",
+            "why": "The chapter on the Holy Scripture as the true word of God."
+          },
+          {
+            "w": "rc-111-westminster-confession-of-faith-1646",
+            "a": "Chapter I",
+            "why": "The chapter headed Of the Holy Scripture."
+          }
+        ],
+        "an": [
+          {
+            "w": "rc-060-thirty-nine-articles-1562",
+            "a": "Article VI",
+            "why": "The Article on the sufficiency of the Holy Scriptures."
+          }
+        ],
+        "bp": [
+          {
+            "w": "rc-126-london-baptist-confession-1677",
+            "a": "Chapter I",
+            "why": "The chapter headed Of the Holy Scriptures."
+          },
+          {
+            "w": "rc-127-baptist-catechism-1693",
+            "a": "Q. 4",
+            "why": "The catechism question What is the Word of God."
+          }
+        ]
+      },
+      "works": {
+        "rc": [
+          {
+            "w": "albertus-magnus-summa-theologiae",
+            "p": 25,
+            "why": "The part is on the four modes of exposition of sacred Scripture."
+          },
+          {
+            "w": "pesch-de-inspiratione-sacrae-scripturae",
+            "p": 259,
+            "why": "The section is headed On the Existence of Inspiration.",
+            "at": 392,
+            "heading": "On the Existence of Inspiration"
+          },
+          {
+            "w": "franzelin-de-divina-traditione-et-scriptura",
+            "p": 1,
+            "why": "The section is on the inspiration of Holy Scripture.",
+            "at": 298,
+            "heading": "Section I. On the Inspiration of Holy Scripture"
+          }
+        ],
+        "lu": [
+          {
+            "w": "chemnitz-examen-concilii-tridentini",
+            "p": 17,
+            "why": "The section is on the Vulgate and the manner of interpreting Scripture."
+          },
+          {
+            "w": "gerhard-confessio-catholica-liber-2-pars-1",
+            "p": 337,
+            "why": "The chapter is on the integrity of canonical Scripture."
+          },
+          {
+            "w": "quenstedt-theologia-didactico-polemica",
+            "p": 117,
+            "why": "The question asks whether Sacred Scripture is clear."
+          }
+        ],
+        "rf": [
+          {
+            "w": "calvin-institutes-of-the-christian-religion",
+            "p": 46,
+            "why": "The chapter is on the need of Scripture as guide and teacher."
+          },
+          {
+            "w": "francois-turretin-institutio-theologiae-elencticae",
+            "p": 46,
+            "why": "The topic is headed On Holy Scripture.",
+            "at": 117,
+            "heading": "Second Topic Concerning Holy Scripture"
+          },
+          {
+            "w": "owen-divine-originall-authority-self-evidencing-light",
+            "p": 15,
+            "why": "Titled Of the divine original, authority, self-evidencing light and power of the Scriptures.",
+            "at": 33,
+            "heading": ""
+          }
+        ]
+      }
     },
     "de-deo": {
       "dek": "What the churches have taught about who God is and what God is like."
     },
     "de-praedestinatione": {
-      "dek": "What the churches have said about election and predestination in relation to salvation."
+      "dek": "What the churches have said about election and predestination in relation to salvation.",
+      "terms": "predestin|elect\\w*|reprobat|decree|foreknow|foreordain",
+      "lead": "chosen",
+      "articles": {
+        "early": [
+          {
+            "w": "cf-052-council-of-valence-iii-855",
+            "why": "The 855 council's text headed Predestination."
+          }
+        ],
+        "rc": [
+          {
+            "w": "cf-092-council-of-trent-1545-1563",
+            "a": "Chapter 12",
+            "why": "Trent's chapter on rash presumption concerning predestination."
+          }
+        ],
+        "lu": [
+          {
+            "w": "lc-009-formula-of-concord-solid-declaration-1577",
+            "a": "XI.",
+            "why": "The Formula's article on God's eternal foreknowledge and election."
+          },
+          {
+            "w": "lc-008-formula-of-concord-epitome-1577",
+            "a": "XI.",
+            "why": "The Epitome's article on the same."
+          }
+        ],
+        "rf": [
+          {
+            "w": "rc-057-belgic-confession-1561",
+            "a": "Article XVI",
+            "why": "The article headed Eternal Election."
+          },
+          {
+            "w": "rc-105-canons-of-dort-1618",
+            "a": "First Head of Doctrine, Article 7",
+            "why": "The Canons' article that defines election."
+          },
+          {
+            "w": "rc-111-westminster-confession-of-faith-1646",
+            "a": "Chapter III",
+            "why": "The chapter on God's eternal decree."
+          }
+        ],
+        "an": [
+          {
+            "w": "rc-060-thirty-nine-articles-1562",
+            "a": "Article XVII",
+            "why": "The Article headed Of Predestination and Election."
+          }
+        ],
+        "bp": [
+          {
+            "w": "rc-126-london-baptist-confession-1677",
+            "a": "Chapter III",
+            "why": "The chapter on God's decree."
+          },
+          {
+            "w": "rc-127-baptist-catechism-1693",
+            "a": "Q. 10",
+            "why": "The catechism question on the decrees of God."
+          }
+        ]
+      },
+      "works": {
+        "early": [
+          {
+            "w": "pld-2794",
+            "p": 959,
+            "why": "Titled On the Predestination of the Saints."
+          },
+          {
+            "w": "pld-5795",
+            "p": 105,
+            "why": "Titled On Predestination."
+          }
+        ],
+        "rc": [
+          {
+            "w": "albertus-magnus-summa-theologiae",
+            "p": 745,
+            "why": "The treatise is headed On Predestination, Love, Election, and Reprobation."
+          },
+          {
+            "w": "duns-scotus-summa-theologica-vol-1",
+            "p": 591,
+            "why": "The question is headed On Predestination.",
+            "credit": "compiled by Jerome of Montefortino"
+          },
+          {
+            "w": "salamanticenses-cursus-theologicus-vol-2",
+            "p": 257,
+            "why": "The treatise is headed On Predestination and Reprobation."
+          }
+        ],
+        "lu": [
+          {
+            "w": "quenstedt-theologia-didactico-polemica",
+            "p": 604,
+            "why": "The thesis treats election."
+          },
+          {
+            "w": "gerhard-confessio-catholica-liber-2-pars-3",
+            "p": 561,
+            "why": "The chapter is on election and reprobation."
+          }
+        ],
+        "rf": [
+          {
+            "w": "calvin-institutes-of-the-christian-religion",
+            "p": 508,
+            "why": "The chapter is headed Of the Eternal Election."
+          },
+          {
+            "w": "polanus-amandus-polanus-syntagma-theologiae-christianae-liber-iv-de-de",
+            "p": 6,
+            "why": "The chapter is on the eternal counsel and decree of God."
+          },
+          {
+            "w": "francois-turretin-institutio-theologiae-elencticae",
+            "p": 50,
+            "why": "The topic covers the decrees of God and predestination.",
+            "at": 397,
+            "heading": "Fourth Locus: Concerning the Decrees of God in General, and Predestination in Particular"
+          }
+        ],
+        "an": [
+          {
+            "w": "perkins-c-e-treatise-manner-order-predestination",
+            "p": 115,
+            "why": "Titled A treatise of the manner and order of predestination."
+          }
+        ]
+      }
     },
     "de-creatione": {
       "dek": "What the churches have said about the origin of the world and God's relation to it."
@@ -124,7 +494,153 @@
       "dek": "What the churches have taught about sin. Its origin and its effects."
     },
     "de-christo": {
-      "dek": "The person and work of Jesus Christ. How the creeds, councils, and teachers describe them."
+      "dek": "The person and work of Jesus Christ. How the creeds, councils, and teachers describe them.",
+      "terms": "christ|jesus|mediator|redeem|redemption|incarnat|satisf|atone|two natures|two wills|passion|cross|crucif|oblation|offices|resurrection|ascension|descent|going down|son of god|propitiat|death of",
+      "verseThemes": [
+        {
+          "terms": "incarnat|natures|person|conceiv|virgin|flesh|wills|man\\b|God and man",
+          "take": 1
+        },
+        {
+          "terms": "suffer|crucif|cross|died|death|sacrific|oblation|ransom|offering|blood|satisf",
+          "take": 4
+        }
+      ],
+      "articles": {
+        "early": [
+          {
+            "w": "cf-023-council-of-ephesus-431",
+            "why": "The 431 council's text on the one Christ against the Nestorians."
+          },
+          {
+            "w": "cf-025-council-of-chalcedon-451",
+            "a": "Definition",
+            "why": "The 451 definition of the two natures of Christ."
+          }
+        ],
+        "lu": [
+          {
+            "w": "lc-002-augsburg-confession-1530",
+            "a": "Article III",
+            "why": "Article III, headed The Son of God."
+          },
+          {
+            "w": "lc-009-formula-of-concord-solid-declaration-1577",
+            "a": "VIII.",
+            "why": "The Formula's article headed The Person of Christ."
+          }
+        ],
+        "rf": [
+          {
+            "w": "rc-061-heidelberg-catechism-1563",
+            "a": "Q. 37",
+            "why": "The question what is meant by the word suffered."
+          },
+          {
+            "w": "rc-105-canons-of-dort-1618",
+            "a": "Second Head of Doctrine, Article 2",
+            "why": "The Canons' article on satisfaction for sin through Christ."
+          },
+          {
+            "w": "rc-111-westminster-confession-of-faith-1646",
+            "a": "Chapter VIII",
+            "why": "The chapter headed Of Christ the Mediator."
+          }
+        ],
+        "an": [
+          {
+            "w": "rc-060-thirty-nine-articles-1562",
+            "a": "Article II",
+            "why": "The Article that the Word was made very man."
+          },
+          {
+            "w": "rc-060-thirty-nine-articles-1562",
+            "a": "Article XXXI",
+            "why": "The Article headed Of the One Oblation of Christ finished upon the Cross."
+          }
+        ],
+        "bp": [
+          {
+            "w": "rc-126-london-baptist-confession-1677",
+            "a": "Chapter VIII",
+            "why": "The chapter headed Of Christ the Mediator."
+          },
+          {
+            "w": "rc-127-baptist-catechism-1693",
+            "a": "Q. 24",
+            "why": "The catechism question who is the Redeemer of God's elect."
+          }
+        ]
+      },
+      "works": {
+        "early": [
+          {
+            "w": "pg-2880",
+            "p": 95,
+            "why": "Titled On the Incarnation of the Word."
+          },
+          {
+            "w": "pld-352",
+            "p": 819,
+            "why": "Titled On the Sacrament of the Lord's Incarnation."
+          },
+          {
+            "w": "pld-4954",
+            "p": 573,
+            "why": "Titled On the Incarnation of the Son of God."
+          }
+        ],
+        "rc": [
+          {
+            "w": "bonaventure-in-tertium-librum-sententiarum",
+            "p": 6,
+            "why": "The article is on the incarnation."
+          },
+          {
+            "w": "salamanticenses-cursus-theologicus-vol-13",
+            "p": 15,
+            "why": "The treatise is headed On the Incarnation."
+          }
+        ],
+        "lu": [
+          {
+            "w": "gerhard-confessio-catholica-liber-2-pars-1",
+            "p": 577,
+            "why": "The chapter is on the end of the Incarnation."
+          },
+          {
+            "w": "quenstedt-systema-theologicum",
+            "p": 1483,
+            "why": "The chapter is headed On Christ the Redeemer.",
+            "at": 916,
+            "heading": "Chapter III. Concerning Christ the Redeemer"
+          },
+          {
+            "w": "calov-systema-locorum-theologicorum-vol-7",
+            "p": 171,
+            "why": "The chapter is headed On the Incarnation of the Son of God."
+          }
+        ],
+        "rf": [
+          {
+            "w": "zanchi-de-natura-dei-ephesians-incarnation-3",
+            "p": 38,
+            "why": "Titled On the Incarnation of the Son of God."
+          },
+          {
+            "w": "francois-turretin-institutio-theologiae-elencticae",
+            "p": 1199,
+            "why": "The question is on the necessity of the Incarnation."
+          }
+        ],
+        "an": [
+          {
+            "w": "eebo-17110",
+            "p": 16,
+            "why": "Titled The mystery of the Incarnation of the Son of God."
+          }
+        ]
+      }
     },
     "de-spiritu-sancto": {
       "dek": "The person and work of the Holy Spirit. How the creeds, councils, and teachers describe them."
@@ -136,22 +652,555 @@
       "dek": "What the churches have taught about faith. Its nature and its place in salvation."
     },
     "de-justificatione": {
-      "dek": "What the churches have taught about how sinners stand before God. The meaning of justification, and its relation to faith and works."
+      "dek": "What the churches have taught about how sinners stand before God. The meaning of justification, and its relation to faith and works.",
+      "terms": "justif|iustif|righteous|imput|faith alone|remission of sin",
+      "lead": "by faith|accounted righteous|pardon",
+      "articles": {
+        "rc": [
+          {
+            "w": "cf-092-council-of-trent-1545-1563",
+            "a": "Chapter 7",
+            "why": "Trent's chapter on what the justification of the sinner consists in."
+          },
+          {
+            "w": "cf-092-council-of-trent-1545-1563",
+            "a": "Chapter 8",
+            "why": "Trent's chapter on justification by faith and freely."
+          }
+        ],
+        "lu": [
+          {
+            "w": "lc-002-augsburg-confession-1530",
+            "a": "Article IV",
+            "why": "Article IV, headed Justification."
+          },
+          {
+            "w": "lc-003-apology-of-the-augsburg-confession-1531",
+            "a": "Article IV",
+            "why": "The Apology's article headed Justification."
+          },
+          {
+            "w": "lc-009-formula-of-concord-solid-declaration-1577",
+            "a": "III.",
+            "why": "The Formula's article on the righteousness of faith before God."
+          }
+        ],
+        "rf": [
+          {
+            "w": "rc-057-belgic-confession-1561",
+            "a": "Article XXII",
+            "why": "The article headed Our Justification Through Faith."
+          },
+          {
+            "w": "rc-061-heidelberg-catechism-1563",
+            "a": "Q. 60",
+            "why": "The question how a person is righteous before God."
+          },
+          {
+            "w": "rc-111-westminster-confession-of-faith-1646",
+            "a": "Chapter XI",
+            "why": "The chapter headed Of Justification."
+          }
+        ],
+        "an": [
+          {
+            "w": "rc-060-thirty-nine-articles-1562",
+            "a": "Article XI",
+            "why": "The Article headed Of the Justification of Man."
+          },
+          {
+            "w": "rc-102-irish-articles-1615",
+            "a": "Of Justification",
+            "why": "The Irish Articles' article headed Of Justification and Faith."
+          }
+        ],
+        "bp": [
+          {
+            "w": "rc-126-london-baptist-confession-1677",
+            "a": "Chapter XI",
+            "why": "The chapter headed Of Justification."
+          },
+          {
+            "w": "rc-127-baptist-catechism-1693",
+            "a": "Q. 36",
+            "why": "The catechism question What is justification."
+          }
+        ]
+      },
+      "works": {
+        "rc": [
+          {
+            "w": "aq-st-i-ii-18",
+            "p": 229,
+            "why": "The section asks whether justification of the ungodly is the remission of sins."
+          },
+          {
+            "w": "andres-de-vega-de-iustificatione-vol-1",
+            "p": 99,
+            "why": "Titled On Justification."
+          },
+          {
+            "w": "bellarmine-disputationes-de-controversiis-vol-3-as",
+            "p": 482,
+            "why": "The book is headed On Justification.",
+            "at": 483,
+            "heading": "Order of the Disputation Concerning Justification"
+          }
+        ],
+        "lu": [
+          {
+            "w": "melanchthon-disputationes-theologicae",
+            "p": 11,
+            "why": "A disputation on justification."
+          },
+          {
+            "w": "chemnitz-examen-concilii-tridentini",
+            "p": 141,
+            "why": "The section is headed The True State of the Topic of Justification."
+          },
+          {
+            "w": "gerhard-loci-theologici-tomus-3",
+            "p": 997,
+            "why": "The chapter is on the meaning of the term justification."
+          }
+        ],
+        "rf": [
+          {
+            "w": "calvin-institutes-of-the-christian-religion",
+            "p": 401,
+            "why": "The chapter is headed Of Justification by Faith."
+          },
+          {
+            "w": "francois-turretin-institutio-theologiae-elencticae",
+            "p": 871,
+            "why": "The locus is headed On Justification.",
+            "at": 1565,
+            "heading": "Sixteenth Locus on Justification"
+          },
+          {
+            "w": "eebo-36111",
+            "p": 16,
+            "why": "Titled The doctrine of justification by faith."
+          }
+        ],
+        "an": [
+          {
+            "w": "davenant-treatise-on-justification-vol-1",
+            "p": 1,
+            "why": "Titled A Treatise on Justification."
+          }
+        ]
+      }
     },
     "de-sanctificatione": {
       "dek": "What the churches have taught about holiness in believers and its relation to justification."
     },
     "de-ecclesia": {
-      "dek": "What the churches have taught about the church. Its nature, marks, and government."
+      "dek": "What the churches have taught about the church. Its nature, marks, and government.",
+      "terms": "church|ecclesia|ministry|ministers|pastors|bishops|keys|excommunicat|catholic",
+      "articles": {
+        "rc": [
+          {
+            "w": "cf-113-vatican-council-1869-1870",
+            "a": "Dogmatic Constitution",
+            "why": "The 1870 constitution on the Church of Christ."
+          }
+        ],
+        "lu": [
+          {
+            "w": "lc-002-augsburg-confession-1530",
+            "a": "Article VII",
+            "why": "Article VII, headed The Church."
+          },
+          {
+            "w": "lc-003-apology-of-the-augsburg-confession-1531",
+            "a": "The Church",
+            "why": "The Apology's article headed The Church."
+          }
+        ],
+        "rf": [
+          {
+            "w": "rc-057-belgic-confession-1561",
+            "a": "Article XXVII",
+            "why": "The article headed The Catholic Christian Church."
+          },
+          {
+            "w": "rc-061-heidelberg-catechism-1563",
+            "a": "Q. 54",
+            "why": "The question what is believed about the holy catholic church."
+          },
+          {
+            "w": "rc-111-westminster-confession-of-faith-1646",
+            "a": "Chapter XXV",
+            "why": "The chapter headed Of the Church."
+          }
+        ],
+        "an": [
+          {
+            "w": "rc-060-thirty-nine-articles-1562",
+            "a": "Article XIX",
+            "why": "The Article headed Of the Church."
+          }
+        ],
+        "bp": [
+          {
+            "w": "rc-126-london-baptist-confession-1677",
+            "a": "Chapter XXVI",
+            "why": "The chapter headed Of the Church."
+          }
+        ]
+      },
+      "works": {
+        "early": [
+          {
+            "w": "pld-3757",
+            "p": 497,
+            "why": "Titled On the Unity of the Church."
+          }
+        ],
+        "rc": [
+          {
+            "w": "torquemada-summa-de-ecclesia",
+            "p": 10,
+            "why": "Titled Treatise on the Church."
+          },
+          {
+            "w": "suarez-de-triplici-virtute",
+            "p": 177,
+            "why": "The disputation is headed On the Church."
+          },
+          {
+            "w": "mazzella-de-religione-et-ecclesia",
+            "p": 350,
+            "why": "Titled On Religion and the Church."
+          }
+        ],
+        "lu": [
+          {
+            "w": "melanchthon-disputationes-theologicae",
+            "p": 41,
+            "why": "A disputation on the authority of the Church."
+          },
+          {
+            "w": "gerhard-confessio-catholica-liber-2-pars-1",
+            "p": 1142,
+            "why": "The chapter is on the material of the Church."
+          }
+        ],
+        "rf": [
+          {
+            "w": "calvin-institutes-of-the-christian-religion",
+            "p": 576,
+            "why": "The chapter is headed Of the True Church.",
+            "at": 553,
+            "heading": "Chapter 1. Of the True Church. Duty of Cultivating Unity with Her, as the Mother of All the Godly"
+          },
+          {
+            "w": "voetius-politica-ecclesiastica-vol-3",
+            "p": 24,
+            "why": "Titled Politica Ecclesiastica, on the government and ordering of the Church."
+          },
+          {
+            "w": "polanus-amandus-polanus-syntagma-theologiae-christianae-liber-vii-de-e",
+            "p": 24,
+            "why": "The chapter is on the governance of the Church."
+          }
+        ]
+      }
     },
     "de-sacramentis": {
       "dek": "What the churches have taught about the sacraments or ordinances. Their number, meaning, and effect."
     },
     "de-baptismo": {
-      "dek": "What the churches have taught about baptism. Its meaning, subjects, and mode."
+      "dek": "What the churches have taught about baptism. Its meaning, subjects, and mode.",
+      "terms": "baptis|baptiz|rebaptiz",
+      "articles": {
+        "early": [
+          {
+            "w": "cf-012-council-of-arelas-i-314",
+            "a": "Plenary",
+            "why": "The 314 canon on whether baptism given by heretics is repeated."
+          }
+        ],
+        "rc": [
+          {
+            "w": "cf-080-council-of-vienne-1311-1312",
+            "a": "The Union",
+            "why": "The 1311 council's statement on the one baptism for all who are baptized."
+          },
+          {
+            "w": "cf-092-council-of-trent-1545-1563",
+            "a": "Canons on the Sacrament of Baptism",
+            "why": "Trent's canons headed for the Sacrament of Baptism."
+          }
+        ],
+        "lu": [
+          {
+            "w": "lc-002-augsburg-confession-1530",
+            "a": "Article IX",
+            "why": "Article IX, headed Baptism."
+          },
+          {
+            "w": "lc-004-smalcald-articles-1537",
+            "a": "Article V",
+            "why": "The Smalcald Articles' article headed Baptism."
+          },
+          {
+            "w": "lc-006-small-catechism-1529",
+            "a": "IV.",
+            "why": "The Small Catechism's part on the Sacrament of Holy Baptism."
+          }
+        ],
+        "rf": [
+          {
+            "w": "rc-057-belgic-confession-1561",
+            "a": "Article XXXIV",
+            "why": "The article headed Holy Baptism."
+          },
+          {
+            "w": "rc-061-heidelberg-catechism-1563",
+            "a": "Q. 69",
+            "why": "The question how baptism seals the washing of Christ's blood."
+          },
+          {
+            "w": "rc-111-westminster-confession-of-faith-1646",
+            "a": "Chapter XXVIII",
+            "why": "The chapter headed Of Baptism."
+          }
+        ],
+        "an": [
+          {
+            "w": "rc-060-thirty-nine-articles-1562",
+            "a": "Article XXVII",
+            "why": "The Article headed Of Baptism."
+          }
+        ],
+        "bp": [
+          {
+            "w": "rc-126-london-baptist-confession-1677",
+            "a": "Chapter XXIX",
+            "why": "The chapter headed Of Baptism."
+          },
+          {
+            "w": "rc-127-baptist-catechism-1693",
+            "a": "Q. 97",
+            "why": "The catechism question What is baptism."
+          }
+        ]
+      },
+      "works": {
+        "early": [
+          {
+            "w": "pg-3310",
+            "p": 393,
+            "why": "Titled On Holy Baptism."
+          },
+          {
+            "w": "pg-403",
+            "p": 1529,
+            "why": "Titled On Baptism."
+          },
+          {
+            "w": "pld-2749",
+            "p": 109,
+            "why": "Titled On Baptism against the Donatists."
+          }
+        ],
+        "rc": [
+          {
+            "w": "aq-st-iii-22",
+            "p": 39,
+            "why": "The section asks whether baptism is the mere washing."
+          },
+          {
+            "w": "bellarmine-disputationes-de-controversiis-vol-2-as",
+            "p": 169,
+            "why": "The book is headed On the Sacrament of Baptism."
+          },
+          {
+            "w": "doronzo-de-baptismo-et-confirmatione",
+            "p": 29,
+            "why": "Titled Dogmatic Treatises on Baptism and Confirmation."
+          }
+        ],
+        "lu": [
+          {
+            "w": "chemnitz-loci-theologici-pars-3",
+            "p": 404,
+            "why": "The section is headed Topic on Baptism."
+          },
+          {
+            "w": "gerhard-confessio-catholica-liber-2-pars-2",
+            "p": 962,
+            "why": "The chapter is on the necessity of baptism."
+          },
+          {
+            "w": "quenstedt-theologia-didactico-polemica",
+            "p": 1132,
+            "why": "The chapter is headed On Baptism."
+          }
+        ],
+        "rf": [
+          {
+            "w": "calvin-institutes-of-the-christian-religion",
+            "p": 711,
+            "why": "The chapter is headed Of Baptism."
+          },
+          {
+            "w": "gerardus-joannes-vossius-de-baptismo-disputationes-xx",
+            "p": 68,
+            "why": "Titled Twenty Disputations on Baptism."
+          }
+        ],
+        "bp": [
+          {
+            "w": "eebo-45131",
+            "p": 1,
+            "why": "Titled Baptism in Its Primitive Purity."
+          }
+        ],
+        "an": [
+          {
+            "w": "jeremy-taylor-discovrse-baptisme-its-institution-efficacy-all",
+            "p": 4,
+            "why": "Titled A discourse of baptism, its institution and efficacy.",
+            "at": 5,
+            "heading": "A Discourse of Baptism"
+          }
+        ]
+      }
     },
     "de-coena": {
-      "dek": "What the churches have taught about the Lord's Supper or Eucharist. Its meaning and the question of Christ's presence."
+      "dek": "What the churches have taught about the Lord's Supper or Eucharist. Its meaning and the question of Christ's presence.",
+      "terms": "supper|eucharist|communion|mass\\b|altar|lord.s table|real presence|transubstant|body and blood|consecrat",
+      "articles": {
+        "rc": [
+          {
+            "w": "cf-093-julius-iii-1550-1555",
+            "a": "Chapter 1.",
+            "why": "Trent's chapter on the real presence in the sacrament."
+          },
+          {
+            "w": "cf-093-julius-iii-1550-1555",
+            "a": "Chapter 4.",
+            "why": "Trent's chapter headed Transubstantiation."
+          }
+        ],
+        "lu": [
+          {
+            "w": "lc-002-augsburg-confession-1530",
+            "a": "Article X",
+            "why": "Article X, headed The Lord's Supper."
+          },
+          {
+            "w": "lc-006-small-catechism-1529",
+            "a": "VI.",
+            "why": "The Small Catechism's part on the Sacrament of the Altar."
+          },
+          {
+            "w": "lc-009-formula-of-concord-solid-declaration-1577",
+            "a": "VII.",
+            "why": "The Formula's article on the Holy Supper."
+          }
+        ],
+        "rf": [
+          {
+            "w": "rc-057-belgic-confession-1561",
+            "a": "Article XXXV",
+            "why": "The article headed The Holy Supper of our Lord Jesus Christ."
+          },
+          {
+            "w": "rc-061-heidelberg-catechism-1563",
+            "a": "Q. 75",
+            "why": "The question how the Supper signifies and seals Christ's sacrifice."
+          },
+          {
+            "w": "rc-111-westminster-confession-of-faith-1646",
+            "a": "Chapter XXIX",
+            "why": "The chapter headed Of the Lord's Supper."
+          }
+        ],
+        "an": [
+          {
+            "w": "rc-060-thirty-nine-articles-1562",
+            "a": "Article XXVIII",
+            "why": "The Article headed Of the Lord's Supper."
+          }
+        ],
+        "bp": [
+          {
+            "w": "rc-126-london-baptist-confession-1677",
+            "a": "Chapter XXX",
+            "why": "The chapter headed Of the Lord's Supper."
+          },
+          {
+            "w": "rc-127-baptist-catechism-1693",
+            "a": "Q. 102",
+            "why": "The catechism question What is the Lord's Supper."
+          }
+        ]
+      },
+      "works": {
+        "rc": [
+          {
+            "w": "aq-scg4-14",
+            "p": 61,
+            "why": "The chapter is headed On the Eucharist."
+          },
+          {
+            "w": "bonaventure-in-quartum-librum-sententiarum",
+            "p": 105,
+            "why": "The article treats the prefiguration of the Eucharist."
+          },
+          {
+            "w": "bellarmine-disputationes-de-controversiis-vol-2-as",
+            "p": 232,
+            "why": "The controversy treats the Sacrament of the Eucharist.",
+            "at": 259,
+            "heading": "Concerning the Sacrament of the Eucharist"
+          }
+        ],
+        "lu": [
+          {
+            "w": "chemnitz-examen-concilii-tridentini",
+            "p": 288,
+            "why": "The section is headed On the Sacrament of the Eucharist."
+          },
+          {
+            "w": "gerhard-confessio-catholica-liber-2-pars-2",
+            "p": 1044,
+            "why": "The article is headed On the Sacrament of the Eucharist."
+          }
+        ],
+        "rf": [
+          {
+            "w": "pietro-martire-vermigli-defensio-de-eucharistiae-sacramento",
+            "p": 25,
+            "why": "Titled Defense of the Ancient Doctrine of the Sacrament of the Eucharist."
+          },
+          {
+            "w": "calvin-institutes-of-the-christian-religion",
+            "p": 771,
+            "why": "The chapter is headed Of the Lord's Supper.",
+            "at": 739,
+            "heading": "Chapter 17. Of the Lord's Supper, and the Benefits Conferred by It"
+          },
+          {
+            "w": "heidegger-corpus-theologiae-christianae-vol-3",
+            "p": 442,
+            "why": "Heidegger's own questions on the Eucharistic decree of Trent.",
+            "at": 465,
+            "heading": "Questions on the Decrees of the Faith of Session XIII"
+          }
+        ],
+        "an": [
+          {
+            "w": "jeremy-taylor-real-presence-spirituall-christ-blessed-sacrament",
+            "p": 2,
+            "why": "Titled The real presence and spiritual of Christ in the blessed sacrament."
+          }
+        ]
+      }
     },
     "de-novissimis": {
       "dek": "What the churches have taught about death, judgment, and the end of all things."
@@ -159,5 +1208,64 @@
     "de-resurrectione": {
       "dek": "What the churches have said about the resurrection of the dead."
     }
+  },
+  "principal": {
+    "early": [
+      "creed-quicumque",
+      "apostolic-and-ancient-creeds",
+      "council-of-nicea-i-325",
+      "council-of-constantinople-i",
+      "council-of-ephesus",
+      "council-of-chalcedon",
+      "council-of-constantinople-iii",
+      "council-of-orange-ii",
+      "council-of-carthage-iii",
+      "council-of-rome-382",
+      "council-of-arelas",
+      "lateran-council-649"
+    ],
+    "rc": [
+      "council-of-trent",
+      "julius-iii",
+      "pius-iv",
+      "vatican-council",
+      "lateran-council-iv",
+      "council-of-lyons-ii",
+      "council-of-florence",
+      "council-of-constance",
+      "council-of-vienne"
+    ],
+    "lu": [
+      "augsburg-confession",
+      "apology-of-the-augsburg",
+      "formula-of-concord-solid",
+      "formula-of-concord-epitome",
+      "smalcald",
+      "large-catechism",
+      "small-catechism",
+      "three-ecumenical-creeds"
+    ],
+    "rf": [
+      "westminster-confession-of-faith",
+      "heidelberg-catechism",
+      "canons-of-dort",
+      "belgic-confession",
+      "second-helvetic",
+      "westminster-larger-catechism",
+      "westminster-shorter-catechism",
+      "french-confession",
+      "scottish-confession",
+      "first-helvetic",
+      "geneva-confession"
+    ],
+    "an": [
+      "thirty-nine-articles",
+      "forty-two-articles",
+      "irish-articles"
+    ],
+    "bp": [
+      "london-baptist-confession-1677",
+      "baptist-catechism"
+    ]
   }
 }
