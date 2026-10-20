@@ -35,7 +35,12 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(b
 $('#find').addEventListener('submit',e=>{e.preventDefault();find($('#q').value);});
 J('/v1/lexicon/index.json').then(async d=>{
   if(!d){$('#entry').innerHTML='<p class="muted">The lexicon could not be loaded. Reload the page to try again.</p>';return;}
-  INDEX=d;$('#letters').innerHTML=Object.entries(d.letters).filter(([l])=>l!=='_').map(([l,n])=>`<button type="button" data-l="${esc(l)}" aria-pressed="false" title="${n} terms">${esc(l.toUpperCase())}</button>`).join('');
+  // one row per alphabet: Greek capitals Α and Β are not the Latin A and B beside them
+  const SCRIPTS=[['Latin and English',/^[a-zæœ]$/],['Greek',/^[\u0370-\u03ff\u1f00-\u1fff]$/],['Hebrew',/^[\u0590-\u05ff]$/]];
+  const btn=([l,n])=>`<button type="button" data-l="${esc(l)}" aria-pressed="false" title="${n} terms">${esc(l.toUpperCase())}</button>`;
+  const all=Object.entries(d.letters).filter(([l])=>l!=='_');
+  INDEX=d;$('#letters').innerHTML=SCRIPTS.map(([name,rx])=>[name,all.filter(([l])=>rx.test(l))]).filter(([,ls])=>ls.length)
+    .map(([name,ls])=>`<div class="lgroup" role="group" aria-label="${esc(name)}"><span class="lname">${esc(name)}</span>${ls.map(btn).join('')}</div>`).join('');
   $('#list').innerHTML=listHTML(d.top.slice(0,120));
   const want=decodeURIComponent(location.hash.slice(1));
   if(want)await showTerm(want,false);else if(d.top.length)await showTerm(d.top[0][0],false);
