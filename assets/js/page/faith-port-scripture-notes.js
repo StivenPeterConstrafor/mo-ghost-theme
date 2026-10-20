@@ -110,6 +110,8 @@
       const peak = d.centuries.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
       return { share: (c) => (m.get(c) || 0) / total, peak };
     }).catch(() => null));
+  // The redesigned Verse Desk (verse-desk.js) reads the same files through these, so each is fetched once per visit.
+  window.FRScriptureData = { chapterReception, chapterReadings, loadBaseline, loadRank };
   // the centuries where the verse is cited half again above the library's usual share, the strongest first (at most three)
   function outliers(x, base) {
     if (!base) return [];
@@ -525,15 +527,23 @@
       || { readings: "", deskHistory: "", with: "", commentaries: [] };
     const label = S.refLabel(ref.book, ref.c, ref.v);
     if (parts.readings || parts.deskHistory) {
-      const $trans = $desk.querySelector('[aria-labelledby="sd-h-trans"]');
-      const html = `<section class="sd-desk-sec fr-sn-desk" aria-labelledby="sd-h-reads" data-fr-sn="verse">
+      // The redesigned modules (verse-desk.js) take this section's place when they render. This is the fallback: it is drawn
+      // when that script is absent, fails, or has nothing to show for the verse, so the desk never loses its reception history.
+      const placeReception = () => {
+        if ($desk.querySelector("#sd-h-reads")) return;
+        const $trans = $desk.querySelector('[aria-labelledby="sd-h-trans"]');
+        const html = `<section class="sd-desk-sec fr-sn-desk" aria-labelledby="sd-h-reads" data-fr-sn="verse">
         <h2 class="sd-h2" id="sd-h-reads">Reception history of ${esc(label)}</h2>
         ${parts.deskHistory ? `${parts.deskHistory}<p class="sd-muted fr-sn-note">${REC_NOTE}</p>` : ""}
         ${parts.readings ? `<h3 class="sd-h3">Readings</h3><div class="fr-sn-desk-readings">${parts.readings}</div><p class="sd-muted fr-sn-note">${parts.readingsNote}</p>` : ""}
         ${parts.disputes ? `<h3 class="sd-h3">Points in dispute</h3><div class="fr-sn-desk-disputes">${parts.disputes}</div>` : ""}</section>`;
-      if ($trans) $trans.insertAdjacentHTML("afterend", html); else $desk.insertAdjacentHTML("beforeend", html);
-      const $toc = $desk.querySelector("[data-sd-toc-reads]");
-      if ($toc) $toc.hidden = false;
+        if ($trans) $trans.insertAdjacentHTML("afterend", html); else $desk.insertAdjacentHTML("beforeend", html);
+        const $toc = $desk.querySelector("[data-sd-toc-reads]");
+        if ($toc) $toc.hidden = false;
+      };
+      const vd = window.MOVerseDesk;
+      if (vd && vd.done && typeof vd.done.then === "function") vd.done.then((ok) => { if (!ok) placeReception(); }, placeReception);
+      else placeReception();
     }
     // The commentaries with their own note on the verse, in view above the commentary collections (2026-10-15).
     const $vc = $desk.querySelector("[data-sd-verse-comm]");
