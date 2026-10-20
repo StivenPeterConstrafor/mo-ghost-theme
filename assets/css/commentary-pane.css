@@ -148,6 +148,9 @@ a.cp-row-t { text-decoration: none; }
 .cp-crit p { margin: 0; }
 .cp-expand, .cp-more { display: block; min-height: 44px; margin: 0; padding: 0 2px; background: none; border: 0; font-size: 14px; color: var(--cp-accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .cp-fold[hidden] { display: none; }
+.cp-app { margin: 14px 0; color: var(--cp-muted); font-size: 13px; }
+.cp-app > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--cp-muted); text-decoration: underline; text-underline-offset: 3px; }
+.cp-app > p { margin: 0 0 8px; font-size: 13px; line-height: 1.45; }
 
 .cp-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--cp-rule); font-size: 14px; }
 .cp-follow { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; cursor: pointer; }
