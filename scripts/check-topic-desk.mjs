@@ -361,6 +361,47 @@ if (JSDOM && live) {
   ok(bad.errors.length === 0, `fallback: the failure is contained, not logged as an exception (${bad.errors.slice(0, 1).join("") || "none"})`);
 }
 
+// ── The Scripture tab: eight topics, built from the live data ──
+if (live) {
+  const TS = require(path.join(root, "assets/js/page/topic-scripture-tab.js"));
+  const VDM = require(path.join(root, "assets/js/page/verse-desk-model.js"));
+  const ids = ["de-trinitate", "de-justificatione", "de-christo", "de-baptismo", "de-praedestinatione", "de-ecclesia", "de-scriptura", "de-coena"];
+  const idxProofs = json(path.join(DATA, "confession-proofs/index.json"));
+  const readWork = (w, h) => `/the-faith-received/read/?w=${encodeURIComponent(w)}`;
+  const read = (slug, page, href) => `/the-faith-received/read/?w=${encodeURIComponent(slug)}#b${page}-0`;
+  for (const id of ids) {
+    const l = LOCI.get(id);
+    if (id === "de-praedestinatione") { ok(true, "Scripture tab Predestination: omitted by design (its verse counts are not cleaned of office elections)"); continue; }
+    const c = await get(`${VERSE}/v1/topic/confessions?id=${id}&limit=1`, `confs1-${id}.json`);
+    const t = await get(`${VERSE}/v1/topic/scripture?id=${id}&t2=${l.t2}&limit=60`, `scr-${id}.json`);
+    const rows = (c.scripture || []).filter((r) => r.n > 0 && BOOKS.has(r.b) && r.v > 0).slice(0, 60);
+    const per = new Map();
+    for (const r of rows.slice(0, 24)) {
+      const book = BOOKS.get(r.b);
+      let cf = null;
+      const f = path.join(DATA, `confession-proofs/${r.b}/${r.c}.json`);
+      if ((idxProofs.chapters[r.b] || []).includes(Number(r.c)) && existsSync(f)) cf = { index: idxProofs, chapter: json(f) };
+      let v = null;
+      try { v = await get(`${VERSE}/v1/verse?b=${book.lib || r.b}&c=${r.c}&v=${r.v}&limit=1`, `verse-${r.b}-${r.c}-${r.v}.json`, 24); } catch (_) { v = null; }
+      per.set(`${r.b}.${r.c}.${r.v}`, { cf, works: (v && v.top_works) || [] });
+    }
+    const model = TS.build({ rows: rows.slice(0, 24), topicRows: t.rows || [], books: BOOKS, confessModel: VDM.parts.confessModel, read, readWork, per });
+    const html = TS.render(model);
+    console.log(`      Scripture tab, ${l.label}: ${model.cards.slice(0, 8).map((x) => x.ref).join(", ")}`);
+    ok(model.cards.length > 0 && model.cards.every((x) => (x.confs && x.confs.chips.length) || x.works.length), `Scripture tab ${l.label}: ${model.cards.length} cards, each with at least one confession or work`);
+    const ws = [...html.matchAll(/href="\/the-faith-received\/read\/\?w=([^#"&]+)/g)].map((m) => decodeURIComponent(m[1]));
+    const badW = ws.filter((w) => !worksIndex.has(w) && !proofDocs.has(w));
+    ok(badW.length === 0, `Scripture tab ${l.label}: all ${ws.length} reader links resolve (${[...new Set(badW)].slice(0, 3).join(", ") || "none unresolved"})`);
+    const refs = [...html.matchAll(/scripture\/desk\/\?ref=([a-z0-9-]+)\.\d+\.\d+"/g)];
+    ok(refs.length > 0 && refs.every((m) => BOOK_SLUGS.has(m[1])), `Scripture tab ${l.label}: ${refs.length} verse desk links name a known book`);
+    const own = textOf(html.replace(/<p class="tsc-lede">[\s\S]*?<\/p>/g, ""));
+    ok(!STANCE.test(own), `Scripture tab ${l.label}: no stance language in the tab's own words`);
+    ok(!/—/.test(html) && !/undefined|NaN/.test(html), `Scripture tab ${l.label}: no em dash, undefined, or NaN`);
+    const counts = [...html.matchAll(/Cited in ([\d,]+) confession article/g)].map((m) => Number(m[1].replace(/,/g, "")));
+    ok(model.cards.every((x, i) => x.articles === counts[i]) && counts.every((n, i) => i === 0 || n <= counts[i - 1]), `Scripture tab ${l.label}: counts are the data's and the order is by article count`);
+  }
+}
+
 // ── Ways into this topic: tablist semantics, and every word and link of the data still there ──
 if (JSDOM && live) {
   for (const id of ["de-ecclesia", "de-justificatione", "de-trinitate"]) {

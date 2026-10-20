@@ -170,7 +170,7 @@ for (const [name, cfg] of Object.entries(PAGES)) {
     await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
     await send("Page.navigate", { url: base + u });
     const ready = await until(cfg.ready, 40000);
-    await new Promise((res) => setTimeout(res, 2500));
+    await new Promise((res) => setTimeout(res, Number(process.env.WAIT) || 6000));
     if (!ready) { console.log(`skip  ${name} ${u}: the desk did not draw in time`); continue; }
     for (const scheme of SCHEMES) {
       await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: scheme }] });
