@@ -1,0 +1,76 @@
+{{!< default}}
+{{!-- The TFR rail, first on the page and pinned under the masthead as on the reader (Ian, 2026-09-23). --}}
+{{> "faith-received/_tfr-rail"}}
+{{#contentFor "moHead"}}
+<title>Resources | The Faith Received | Mere Orthodoxy</title>
+<meta name="description" content="Essays from Mere Orthodoxy that serve the library: on its works, authors, creeds and confessions, and on theological retrieval. Search them by keyword." />
+<meta property="og:title" content="Resources | The Faith Received" />
+<meta property="og:description" content="Essays from Mere Orthodoxy that serve the library: on its works, authors, creeds and confessions, and on theological retrieval." />
+<meta name="twitter:title" content="Resources | The Faith Received" />
+<meta name="twitter:description" content="Essays from Mere Orthodoxy that serve the library: on its works, authors, creeds and confessions, and on theological retrieval." />
+<link rel="stylesheet" href="{{asset "css/faith-resources.css"}}&amp;frv=resources-grid-20261020" />
+{{/contentFor}}
+{{!-- /the-faith-received/resources/ (Ian, 2026-10-20): the Resources page. One tab today, Articles: the Mere Orthodoxy
+     essays that serve the library (assets/data/faith-received/mo-articles.json, built by scripts/build-mo-articles.mjs),
+     searchable by keyword. More tabs will be added to the same tablist later. Everything is drawn by
+     assets/js/page/faith-resources.js from the data; the markup here is the frame. The address carries ?q= and ?kind=
+     and #articles; nothing else is kept. --}}
+
+<main class="faith-received faith-feature fr-res">
+
+  <section class="bhero bhero--tool">
+    <div class="bhero-inner container">
+      <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Resources</p>
+      <h1>Resources</h1>
+      <p class="bhero-sub">Essays and other material that serve the library.</p>
+    </div>
+  </section>
+  <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+
+  <section class="bband faith-feature-body">
+    <div class="container fr-res-wrap">
+      <div class="fr-res-body" data-res-root>
+
+        <div class="fr-res-tabs" role="tablist" aria-label="Resources" data-res-tabs>
+          <button type="button" role="tab" class="fr-res-tab" id="res-tab-articles" aria-controls="res-panel-articles" aria-selected="true" tabindex="0" data-k="articles">Articles</button>
+        </div>
+
+        <div role="tabpanel" class="fr-res-panel" id="res-panel-articles" aria-labelledby="res-tab-articles" tabindex="0" data-k="articles">
+          <h2 class="fr-res-sr">Articles</h2>
+          <p class="fr-res-intro">Essays from Mere Orthodoxy that serve the library: on its works, authors, creeds and confessions, and on theological retrieval.</p>
+
+          <form class="fr-res-search" role="search" id="resForm" autocomplete="off">
+            <label class="fr-res-label" for="resQuery">Search these articles</label>
+            <div class="fr-res-field">
+              <input type="search" id="resQuery" name="q" class="fr-res-input" placeholder="A word, a name, a work&hellip;" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" />
+              <button type="button" class="fr-res-clear" id="resClear" hidden>Clear</button>
+            </div>
+          </form>
+
+          <div class="fr-res-controls">
+            <div class="fr-res-group" role="group" aria-label="Kind of article" id="resKinds"></div>
+            <div class="fr-res-group fr-res-group--sort" role="group" aria-label="Sort" id="resSort">
+              <span class="fr-res-grouplabel" aria-hidden="true">Sort</span>
+              <button type="button" class="fr-res-opt" data-sort="match" aria-pressed="true">Best match</button>
+              <button type="button" class="fr-res-opt" data-sort="new" aria-pressed="false">Newest</button>
+              <button type="button" class="fr-res-opt" data-sort="old" aria-pressed="false">Oldest</button>
+            </div>
+          </div>
+
+          <p class="fr-res-count" id="resCount" role="status" aria-live="polite">Loading the articles&hellip;</p>
+          <div class="fr-res-results" id="resResults"></div>
+          <p class="fr-res-empty" id="resEmpty" hidden>No articles match. <button type="button" class="fr-res-link" id="resReset">Clear the search and filters</button></p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+{{> "faith-received/_beta-band"}}
+</main>
+{{> "faith-received/_library-cta"}}
+
+<script src="{{asset "js/lib/mo-articles-dv.js"}}"></script>
+<script src="{{asset "js/lib/mo-articles.js"}}&amp;frv=resources-grid-20261020"></script>
+<script src="{{asset "js/page/scripture-dev-core.js"}}&amp;frv=db01221e4f4b8ea6"></script>
+<script src="{{asset "js/page/faith-resources.js"}}&amp;frv=resources-grid-20261020"></script>

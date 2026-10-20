@@ -165,5 +165,7 @@
       $desk.querySelectorAll('.sd-desk-toc a[href^="#vd-"]').forEach((el) => el.remove());
       finish(false);
     }
+    // Mere Orthodoxy essays on this passage (mo-articles-placements.js): its own module, drawn whether or not the modules above were.
+    if (window.MOPlace) window.MOPlace.verseDesk($desk, { slug: book.slug, c, v });
   }());
 })();

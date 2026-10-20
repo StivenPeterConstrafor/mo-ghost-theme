@@ -25148,6 +25148,85 @@ p.kpi-more .kpi-btn { width: 100%; justify-content: center; }
   .aud-select { width: 100%; }
 }
 
+/* ---- peak hours: 7 x 24 traffic grid ---- */
+/* Columns are fractions of the row, never fixed widths, so the grid fits a
+   375px phone without its own scroll box: 24 columns of ~13px there. Shading
+   is opacity on the same primary fill the cross-tab uses, scaled to the
+   month's busiest square, and the key below names both ends in numbers. */
+.aud-peak-month {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-dark);
+  min-width: 9.5em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.aud-peak-metric { width: auto; }
+.aud-peak-summary {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-dark);
+  margin: 0 0 14px;
+  max-width: 760px;
+}
+.aud-peak-grid {
+  display: grid;
+  grid-template-columns: 26px repeat(24, minmax(0, 1fr));
+  gap: 2px;
+  max-width: 920px;
+  outline: none;
+}
+.aud-peak-grid:focus-visible { box-shadow: 0 0 0 2px var(--color-primary); }
+.aud-peak-hour,
+.aud-peak-day {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.aud-peak-hour { text-align: left; white-space: nowrap; overflow: visible; padding-bottom: 4px; }
+.aud-peak-day { display: flex; align-items: center; }
+.aud-peak-cell {
+  position: relative;
+  height: 24px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+}
+.aud-peak-cell .aud-cell-fill { inset: 0; border-radius: 2px; }
+.aud-peak-cell.is-selected { box-shadow: 0 0 0 2px var(--color-dark); z-index: 1; }
+.aud-peak-readout {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-dark);
+  margin: 12px 0 0;
+  min-height: 1.4em;
+  font-variant-numeric: tabular-nums;
+}
+.aud-peak-key .aud-key-label { font-variant-numeric: tabular-nums; }
+.aud-peak-pages { margin: 18px 0 4px; max-width: 760px; }
+.aud-peak-pages .aud-subhead { margin: 0 0 8px; }
+.aud-peak-pagelist { margin: 0; padding: 0; }
+.aud-peak-pagelist .admin-ranked-label { min-width: 0; overflow-wrap: anywhere; }
+.aud-peak-pagelist a { color: inherit; text-decoration: underline; text-decoration-color: var(--color-card-border); text-underline-offset: 2px; }
+.aud-peak-pagelist a:hover { text-decoration-color: currentColor; }
+.aud-peak-foot.is-warn { color: #a5442a; }
+
+@media (max-width: 640px) {
+  .aud-peak-grid { grid-template-columns: 20px repeat(24, minmax(0, 1fr)); gap: 1px; }
+  .aud-peak-cell { height: 18px; border-radius: 1px; }
+  .aud-peak-hour { font-size: 10px; }
+  .aud-peak-hour.is-minor { visibility: hidden; }
+  .aud-peak-metric { width: auto; }
+  .aud-peak-month { min-width: 0; flex: 1 1 auto; }
+  .aud-controls [data-aud-peak-prev],
+  .aud-controls [data-aud-peak-next],
+  .aud-controls [data-aud-peak-refresh],
+  .aud-peak-metric { min-height: 44px; }
+}
+
 /* ---- /welcome/ — post-signup survey ----------------------------------- */
 /* One question per screen. Typographic, no cards, warm rules: the page
    should feel like the front matter of a journal rather than a form in an

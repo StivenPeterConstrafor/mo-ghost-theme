@@ -1,0 +1,1205 @@
+{
+"v": 1,
+"note": "Featured images of the essays in mo-articles-input.json, from the Ghost Admin API (2026-10-20). i is a path under imgBase, or a full URL (Unsplash). Prepared by hand from the API; refresh by rerunning that fetch.",
+"imgBase": "https://storage.ghost.io/c/7b/0b/7b0bd699-d78f-4472-8d29-233bd333f048/content/images/",
+"images": {
+"69e6471531fa860001dc2019": {
+"i": "2026/05/ghost-upload-1779114601446-619467-paid-family-leave.jpg"
+},
+"69e65de531fa860001dc21ce": {
+"i": "2026/09/Screen-Shot-2022-08-06-at-2_07_04-PM-1.png"
+},
+"69e65f5a31fa860001dc23c0": {
+"i": "2026/05/ghost-upload-1779114671075-111596-thomas-aquinas-1-3174396573.jpg"
+},
+"69e65fa531fa860001dc247a": {
+"i": "2026/05/ghost-upload-1779114742142-910174-archbishop-mbanada.jpg"
+},
+"69e65fa931fa860001dc2484": {
+"i": "2026/05/ghost-upload-1779114745393-664754-acts_2018_20jerusalem_20judea_20samaria_20end_20of_20the_20world.jpg"
+},
+"69e65fac31fa860001dc248d": {
+"i": "2026/05/ghost-upload-1779114747776-878586-despair.jpg"
+},
+"69e65fbe31fa860001dc24af": {
+"i": "2026/05/ghost-upload-1779114760796-220492-young_20earth_20creationism.jpg"
+},
+"69e65fcb31fa860001dc24d4": {
+"i": "2026/05/ghost-upload-1779114786466-307805-BW-Rings-800x533-1.jpg"
+},
+"69e65fef31fa860001dc253b": {
+"i": "2026/05/ghost-upload-1779114815777-377960-psalms.jpg"
+},
+"69e6601a31fa860001dc25b8": {
+"i": "2026/05/ghost-upload-1779114850508-192808-Ruins-of-Coventry-Cathedral.jpg"
+},
+"69e6602a31fa860001dc25e4": {
+"i": "2026/05/ghost-upload-1779114861768-733062-magician_20mechanic_20horton.jpg"
+},
+"69e6602d31fa860001dc25ec": {
+"i": "2026/05/ghost-upload-1779114864193-31146-JC-Ryle-2-panorama-d8c34c84946432912850087e79177b15-5af166fbc90ab.jpg"
+},
+"69e6603331fa860001dc25fc": {
+"i": "2026/05/ghost-upload-1779114869212-614991-small_20magazines.jpg"
+},
+"69e6603d31fa860001dc260c": {
+"i": "2026/05/ghost-upload-1779114875416-320776-ten-commandments-sculpture-lawsuit-1327901-590218e63df78c5456804cf8.jpg"
+},
+"69e6604b31fa860001dc262e": {
+"i": "2026/05/ghost-upload-1779114891759-667044-icu-healthcare-rationing-2.jpg"
+},
+"69e6605a31fa860001dc264c": {
+"i": "2026/05/ghost-upload-1779114903376-252005-The_Tramp__28film_29.jpg"
+},
+"69e6605d31fa860001dc2657": {
+"i": "2026/05/ghost-upload-1779114906260-90715-Martin-Luther-King-2015.jpg"
+},
+"69e6607e31fa860001dc26b6": {
+"i": "2026/05/ghost-upload-1779114930316-47977-bad_20work_20day.jpg"
+},
+"69e6608531fa860001dc26cd": {
+"i": "2026/05/ghost-upload-1779114937756-127269-therapeutic.jpg"
+},
+"69e66c5831fa860001dc26e8": {
+"i": "2026/04/ghost-upload-1776708694632-142810-michelinodanteandhispoem.jpg"
+},
+"69e66c6031fa860001dc26f6": {
+"i": "2026/05/ghost-upload-1779114753995-365484-against_20the_20machine.jpg"
+},
+"69e66c6631fa860001dc26fe": {
+"i": "2026/05/ghost-upload-1779114948851-168968-old-books-436498_1280-May-26-2023-05-55-18-8887-PM.jpg"
+},
+"69e66c8b31fa860001dc2751": {
+"i": "2026/05/ghost-upload-1779114977376-402178-st_20ambrose.jpg"
+},
+"69e66caa31fa860001dc279a": {
+"i": "2026/05/ghost-upload-1779114995394-874528-BW-Rings-400x267-1.jpg"
+},
+"69e66cb131fa860001dc27a6": {
+"i": "2026/05/ghost-upload-1779114997401-989123-ai_20seminaries.jpg"
+},
+"69e66cbd31fa860001dc27c7": {
+"i": "2026/05/ghost-upload-1779115009466-29118-baird_20king_20of_20kings.jpg"
+},
+"69e66cc131fa860001dc27d0": {
+"i": "2026/05/ghost-upload-1779115011637-711207-annunciation.jpg"
+},
+"69e66cd531fa860001dc27fd": {
+"i": "2026/05/ghost-upload-1779115024335-471385-Nicaea_icon.jpg"
+},
+"69e66cdf31fa860001dc280e": {
+"i": "2026/05/ghost-upload-1779115029943-629754-musical_20taste.png"
+},
+"69e66cec31fa860001dc282a": {
+"i": "2026/05/ghost-upload-1779115040056-121343-Bio_FosdickHarryEmerson_001-opt_0.jpg"
+},
+"69e66d1031fa860001dc2870": {
+"i": "2026/05/ghost-upload-1779114494067-663695-dostoevsky-3.jpg"
+},
+"69e66d1431fa860001dc2879": {
+"i": "2026/05/ghost-upload-1779115074767-633786-thanksgiving-1.jpg"
+},
+"69e66d5a31fa860001dc2940": {
+"i": "2026/05/ghost-upload-1779115127051-905970-tucker-carlson-2891858518.jpg"
+},
+"69e66d8931fa860001dc29a1": {
+"i": "2026/05/ghost-upload-1779115161142-947583-union_20with_20christ_20sanders.jpg"
+},
+"69e66d9331fa860001dc29bb": {
+"i": "2026/05/ghost-upload-1779115165520-126715-justin_20martyr.jpg"
+},
+"69e66d9831fa860001dc29c5": {
+"i": "2026/05/ghost-upload-1779115169744-777528-quiet_20ambition.jpg"
+},
+"69e66d9c31fa860001dc29cc": {
+"i": "2026/05/ghost-upload-1779115174172-461349-bw-hands-2.jpg"
+},
+"69e66dd931fa860001dc2a49": {
+"i": "2026/05/ghost-upload-1779115224120-205160-lamb_20of_20the_20free.jpg"
+},
+"69e66de331fa860001dc2a59": {
+"i": "2026/05/ghost-upload-1779114690497-166317-ai-virtues-safety.jpg"
+},
+"69e66e1631fa860001dc2ad2": {
+"i": "2026/05/ghost-upload-1779115271463-193581-augustinian-liberalism-1.jpg"
+},
+"69e66e5031fa860001dc2b48": {
+"i": "2026/05/ghost-upload-1779115309863-474449-augustine_20disputing.jpg"
+},
+"69e66e5431fa860001dc2b50": {
+"i": "2026/05/ghost-upload-1779115312215-941438-bw-hands-2-2.jpg"
+},
+"69e66e6931fa860001dc2b94": {
+"i": "2026/05/ghost-upload-1779114494067-663695-dostoevsky-3.jpg"
+},
+"69e66ed831fa860001dc2c2d": {
+"i": "2026/05/ghost-upload-1779115413912-990622-Bw-Hands-1.jpg"
+},
+"69e66f3131fa860001dc2cc5": {
+"i": "2026/05/ghost-upload-1779115474791-944316-barren_20sea_20augustine.jpg"
+},
+"69e66f6231fa860001dc2cf3": {
+"i": "2026/05/ghost-upload-1779115487385-488763-0-1.jpg"
+},
+"69e66f7631fa860001dc2d15": {
+"i": "2026/05/ghost-upload-1779115527324-913762-scrupulosity-3.jpg"
+},
+"69e66f8331fa860001dc2d34": {
+"i": "2026/05/ghost-upload-1779115538387-525496-1280px-El_Greco_13-2.jpg"
+},
+"69e66f8631fa860001dc2d41": {
+"i": "2026/05/ghost-upload-1779115542139-446074-athanasius-the-great-1.jpg"
+},
+"69e66fa431fa860001dc2d95": {
+"i": "2026/05/ghost-upload-1779115574016-684463-richard_20gaffin.jpg"
+},
+"69e66fc031fa860001dc2de8": {
+"i": "2026/05/ghost-upload-1779115599201-737299-jesus_20healer.jpg"
+},
+"69e66fdc31fa860001dc2e28": {
+"i": "2026/05/ghost-upload-1779114512397-174932-eucharist.jpg"
+},
+"69e66fef31fa860001dc2e65": {
+"i": "2026/05/ghost-upload-1779115053748-839730-empty-church-pulpit-1.jpg"
+},
+"69e6702c31fa860001dc2efc": {
+"i": "2026/05/ghost-upload-1779115688352-645471-augustinian_20pope.jpg"
+},
+"69e6702f31fa860001dc2f04": {
+"i": "2026/05/ghost-upload-1779115691198-366213-presbyterian_20church.jpg"
+},
+"69e6703b31fa860001dc2f22": {
+"i": "2026/05/ghost-upload-1779115706108-526344-sack_20of_20rome_20boethius.jpg"
+},
+"69e6705231fa860001dc2f5d": {
+"i": "2026/05/ghost-upload-1779115726270-827250-nicaea.jpg"
+},
+"69e6705331fa860001dc2f64": {
+"i": "2026/05/ghost-upload-1779115024335-471385-Nicaea_icon.jpg"
+},
+"69e670a831fa860001dc301d": {
+"i": "2026/05/ghost-upload-1779115811426-278654-the-repentance-of-saint-peter-c-1630-1.JPG_Large.jpg"
+},
+"69e670d631fa860001dc308b": {
+"i": "2026/05/ghost-upload-1779115847121-748761-claudian.jpg"
+},
+"69e670ec31fa860001dc30c3": {
+"i": "2026/05/ghost-upload-1779115863233-697646-reach_20the_20west_20enchantment.jpg"
+},
+"69e6710231fa860001dc3106": {
+"i": "2026/05/ghost-upload-1779115882897-102888-augustinian-liberalism.jpg"
+},
+"69e6710831fa860001dc3118": {
+"i": "2026/05/ghost-upload-1779115888958-653062-abandoned_20church.jpg"
+},
+"69e6712331fa860001dc3151": {
+"i": "2026/05/ghost-upload-1779115912701-278006-how_20to_20use_20the_20book_20of_20common_20prayer.png"
+},
+"69e6714e31fa860001dc31b2": {
+"i": "2026/05/ghost-upload-1779115951586-134446-positive_20christianity_20third_20reich.jpg"
+},
+"69e6719731fa860001dc3261": {
+"i": "2026/05/ghost-upload-1779116019068-49471-old-books-436498_1280-May-25-2023-08-47-38-7735-PM.jpg"
+},
+"69e671ab31fa860001dc3290": {
+"i": "2026/05/ghost-upload-1779116036699-94995-babel.jpg"
+},
+"69e671cb31fa860001dc32d8": {
+"i": "2026/05/ghost-upload-1779116072143-598162-evangelizing_20the_20heart.jpg"
+},
+"69e671d031fa860001dc32e1": {
+"i": "2026/05/ghost-upload-1779116074614-136780-episode-from-the-german-peasants-war-15227.jpeg"
+},
+"69e671e031fa860001dc32f9": {
+"i": "2026/05/ghost-upload-1779116090846-358885-baptism.jpg"
+},
+"69e671f131fa860001dc331a": {
+"i": "2026/05/ghost-upload-1779116106409-835141-bucerm01.png"
+},
+"69e671f531fa860001dc3321": {
+"i": "2026/05/ghost-upload-1779116108925-365600-piper_20keller_20carson.jpg"
+},
+"69e6720831fa860001dc3355": {
+"i": "2026/05/ghost-upload-1779116128728-277020-despair.webp"
+},
+"69e6721231fa860001dc336e": {
+"i": "2026/05/ghost-upload-1779116137242-891733-consolation.jpg"
+},
+"69e6721531fa860001dc3375": {
+"i": "2026/05/ghost-upload-1779116139482-826011-erasmus_20lecture.png"
+},
+"69e6722531fa860001dc3398": {
+"i": "2026/05/ghost-upload-1779116157038-874819-descent_20into_20hell.jpg"
+},
+"69e6722e31fa860001dc33b3": {
+"i": "2026/05/ghost-upload-1779114512397-174932-eucharist.jpg"
+},
+"69e6723e31fa860001dc33d9": {
+"i": "2026/05/ghost-upload-1779116181070-277989-dejection_20spiritual_20despair.jpg"
+},
+"69e6725031fa860001dc340d": {
+"i": "2026/05/ghost-upload-1779116196308-364460-gregory-nazianzus-1.png"
+},
+"69e6726e31fa860001dc3453": {
+"i": "2026/05/ghost-upload-1779116221145-862559-pirates-of-the-caribbean-pirates-pirate-flag-wallpaper-preview.jpg"
+},
+"69e6727431fa860001dc346c": {
+"i": "2026/05/ghost-upload-1779116226099-203280-ll-blog_sorens_kantian-liberalism_1200-1024x576.webp"
+},
+"69e6728b31fa860001dc34a5": {
+"i": "2026/05/ghost-upload-1779116249386-411925-Doubting-Thomas-Jesus-1140x445.jpg"
+},
+"69e6729131fa860001dc34b3": {
+"i": "2026/05/ghost-upload-1779116256323-769016-JMC.jpg"
+},
+"69e672a331fa860001dc34e3": {
+"i": "2026/05/ghost-upload-1779116272356-171936-sounds_20of_20love.jpg"
+},
+"69e672aa31fa860001dc34f3": {
+"i": "2026/05/ghost-upload-1779116278010-188954-ai_20and_20demons.jpg"
+},
+"69e672b531fa860001dc350a": {
+"i": "2026/05/ghost-upload-1779116291162-141694-300px-Tiffany_Window_of_St_Augustine_-_Lightner_Museum-1.jpg"
+},
+"69e6731b31fa860001dc35ec": {
+"i": "2026/05/ghost-upload-1779116375364-276597-Giotto_di_Bondone_-_St_Paul_1_-_WGA091581-1.jpg"
+},
+"69e6732d31fa860001dc3620": {
+"i": "2026/05/ghost-upload-1779116389631-297925-christian_20discipline.png"
+},
+"69e6735a31fa860001dc3686": {
+"i": "2026/05/ghost-upload-1779116434663-942703-nicomedia_20martyrs.png"
+},
+"69e6737e31fa860001dc36c5": {
+"i": "2026/05/ghost-upload-1779116036699-94995-babel.jpg"
+},
+"69e6739431fa860001dc3701": {
+"i": "2026/05/ghost-upload-1779114512397-174932-eucharist.jpg"
+},
+"69e673b031fa860001dc373c": {
+"i": "2026/05/ghost-upload-1779116520062-179813-trump_20bible.jpg"
+},
+"69e673b431fa860001dc3743": {
+"i": "2026/05/ghost-upload-1779116522838-234054-word_20of_20god.jpg"
+},
+"69e673d631fa860001dc37ac": {
+"i": "2026/05/ghost-upload-1779116553309-561416-vatican-city.jpg"
+},
+"69e673dd31fa860001dc37c0": {
+"i": "2026/05/ghost-upload-1779116560915-120170-nightingale.jpg"
+},
+"69e673ef31fa860001dc37c7": {
+"i": "2026/05/ghost-upload-1779116563319-356056-insurrection.jpg"
+},
+"69e673f931fa860001dc37dd": {
+"i": "2026/05/ghost-upload-1779116581709-797841-apple_20vision_20pro.png"
+},
+"69e6741d31fa860001dc383a": {
+"i": "2026/05/ghost-upload-1779116617003-363212-xAboutAlistairLong.jpg.pagespeed.ic.enS-0PJbhT-642146177.jpg"
+},
+"69e6742431fa860001dc384c": {
+"i": "2026/05/ghost-upload-1779116622303-666213-going_20to_20heaven_20when_20you_20die.jpg"
+},
+"69e6742f31fa860001dc3865": {
+"i": "2026/05/ghost-upload-1779116632783-376885-evangelical_20constructive_20vision.jpg"
+},
+"69e6743431fa860001dc3873": {
+"i": "2026/05/ghost-upload-1779116638262-353179-demons_20ai.jpg"
+},
+"69e6745331fa860001dc38bb": {
+"i": "2026/05/ghost-upload-1779116662930-97894-john-davenant.jpg"
+},
+"69e6745731fa860001dc38c3": {
+"i": "2026/05/ghost-upload-1779116669327-270727-old-books-1941274_1280-May-25-2023-09-07-36-2674-PM.jpg"
+},
+"69e6746b31fa860001dc38f4": {
+"i": "2026/05/ghost-upload-1779116684648-131587-WARFIELD-Benjamin-B.-Ipsen.jpg"
+},
+"69e6747431fa860001dc3906": {
+"i": "2026/05/ghost-upload-1779116692143-562194-mere_20orthodoxy_20fundraising_20appeal-1.jpg"
+},
+"69e6748631fa860001dc393c": {
+"i": "2026/05/ghost-upload-1779116708260-765874-thomas_20traherne.jpg"
+},
+"69e674bd31fa860001dc39c7": {
+"i": "2026/05/ghost-upload-1779116758628-266147-ascension_20of_20christ-2.jpg"
+},
+"69e674c231fa860001dc39cf": {
+"i": "2026/05/ghost-upload-1779116762931-593972-declaration_20of_20independence_20liberalism.jpg"
+},
+"69e674ca31fa860001dc39e3": {
+"i": "2026/05/ghost-upload-1779116773505-974914-polycarp.jpg"
+},
+"69e674e931fa860001dc3a31": {
+"i": "2026/04/ghost-upload-1776710886318-113510-Canterbury-cathedral-wyrdlight.jpg"
+},
+"69e674f131fa860001dc3a49": {
+"i": "2026/05/ghost-upload-1779116106409-835141-bucerm01.png"
+},
+"69e674f631fa860001dc3a5b": {
+"i": "2026/05/ghost-upload-1779116809485-116248-biblical_20critical_20theory.jpg"
+},
+"69e6750731fa860001dc3a87": {
+"i": "2026/05/ghost-upload-1779116825708-585001-paul-power-of-grace.jpg"
+},
+"69e6751c31fa860001dc3ab7": {
+"i": "2026/05/ghost-upload-1779116844260-508179-thirty-nine-articles.jpg"
+},
+"69e6756031fa860001dc3b47": {
+"i": "2026/05/ghost-upload-1779116908441-641949-augustine-of-hippo-painting-May-26-2023-06-47-54-9479-PM.jpg"
+},
+"69e6756331fa860001dc3b4e": {
+"i": "2026/05/ghost-upload-1779116911313-216833-book_20of_20revelation.jpg"
+},
+"69e6756931fa860001dc3b5f": {
+"i": "2026/05/ghost-upload-1779116917265-602531-happy.png"
+},
+"69e6758331fa860001dc3ba0": {
+"i": "2026/05/ghost-upload-1779116940630-610376-singleness_20and_20heaven.jpg"
+},
+"69e6759731fa860001dc3bd0": {
+"i": "2026/05/ghost-upload-1779116957999-956010-john-henry-newman-1.jpg"
+},
+"69e675a231fa860001dc3be8": {
+"i": "2026/05/ghost-upload-1779116967921-415360-reformed_20catholicity.jpg"
+},
+"69e675e731fa860001dc3c75": {
+"i": "2026/05/ghost-upload-1779117030640-672482-St_Bernard_of_Clairvaux_August_20th-2.jpg"
+},
+"69e675fa31fa860001dc3ca9": {
+"i": "2026/05/ghost-upload-1779117045959-881285-political-theory-before-the-fall-2.jpg"
+},
+"69e6760031fa860001dc3cba": {
+"i": "2026/05/ghost-upload-1779117051234-768489-attending-church-2.jpg"
+},
+"69e6766631fa860001dc3deb": {
+"i": "2026/05/ghost-upload-1779117144004-190361-calvin-and-hobbes-e1679117732126-2.jpg"
+},
+"69e676a231fa860001dc3e95": {
+"i": "2026/05/ghost-upload-1779117196129-521585-HeikoObermanImage-2.jpg"
+},
+"69e676a531fa860001dc3e9c": {
+"i": "2026/05/ghost-upload-1779117199080-500791-notre_dame_bufale-2.jpg"
+},
+"69e676b731fa860001dc3ed0": {
+"i": "2026/04/ghost-upload-1776711018884-709907-american-flags-in-the-city-1477488243jc6.jpg"
+},
+"69e676ca31fa860001dc3f00": {
+"i": "2026/05/ghost-upload-1779117234321-362099-0-May-26-2023-06-39-47-8387-PM.jpg"
+},
+"69e676d231fa860001dc3f11": {
+"i": "2026/05/ghost-upload-1779117241064-164059-Obama_Health_Care_Speech_to_Joint_Session_of_Congress-May-26-2023-06-45-10-5024-PM.jpg"
+},
+"69e676e431fa860001dc3f3f": {
+"i": "2026/05/ghost-upload-1779117256928-286165-pope-urbi-2.jpg"
+},
+"69e676f531fa860001dc3f5f": {
+"i": "2026/05/ghost-upload-1779117271982-518348-augustine-of-hippo-painting-May-26-2023-06-04-39-6180-PM.jpg"
+},
+"69e6770231fa860001dc3f7e": {
+"i": "2026/05/ghost-upload-1779117283425-381228-st-paul-800x531-768x510-1-2.png"
+},
+"69e6772331fa860001dc3fb6": {
+"i": "2026/05/ghost-upload-1779117314851-427393-purgatorio-2.jpg"
+},
+"69e6775c31fa860001dc3fd5": {
+"i": "2026/05/ghost-upload-1779117327659-225466-parliament-ge9918bc48_1280-2.jpg"
+},
+"69e677c231fa860001dc40d7": {
+"i": "2026/05/ghost-upload-1779117465324-705102-storming-of-the-bastile-e1665782070522-2.jpg"
+},
+"69e677d631fa860001dc4106": {
+"i": "2026/05/ghost-upload-1779117479795-215767-american-flag-2.png"
+},
+"69e6783331fa860001dc41c2": {
+"i": "2026/05/ghost-upload-1779117560389-986632-architecture-building-infrastructure-old-2.jpg"
+},
+"69e6783f31fa860001dc41ec": {
+"i": "2026/05/ghost-upload-1779117569532-750700-thicket-2.jpg"
+},
+"69e6787131fa860001dc4263": {
+"i": "2026/05/ghost-upload-1779117629159-900880-schmemann-2.jpg"
+},
+"69e6789d31fa860001dc42ed": {
+"i": "2026/05/ghost-upload-1779117668100-507085-augustine-of-hippo-painting-May-26-2023-05-57-09-2028-PM.jpg"
+},
+"69e678a331fa860001dc42fc": {
+"i": "2026/05/ghost-upload-1779117673821-834851-talking-about-race-2.jpg"
+},
+"69e678aa31fa860001dc430e": {
+"i": "2026/05/ghost-upload-1779117681122-790484-moral-sentimentalism-mechanized-society-3.jpg"
+},
+"69e678ac31fa860001dc4316": {
+"i": "2026/05/ghost-upload-1779117683812-706138-lords-supper-3-1-1-2.jpg"
+},
+"69e678d331fa860001dc436d": {
+"i": "2026/04/ghost-upload-1776711889901-475363-basil-the-great.jpg"
+},
+"69e678d431fa860001dc4374": {
+"i": "2026/04/ghost-upload-1776708768101-943789-thomas-aquinas-1-3174396573.jpg"
+},
+"69e678f631fa860001dc43e1": {
+"i": "2026/05/ghost-upload-1779117771183-737761-perennialism-May-26-2023-06-39-09-1851-PM.jpg"
+},
+"69e678f731fa860001dc43eb": {
+"i": "2026/05/ghost-upload-1779116528712-797358-crossnotredame-copy-May-26-2023-06-31-25-1771-PM.jpg"
+},
+"69e6795031fa860001dc4448": {
+"i": "2026/05/ghost-upload-1779117859152-818675-reformed-public-theology-2.jpg"
+},
+"69e6797e31fa860001dc44ce": {
+"i": "2026/05/ghost-upload-1779117911511-692080-infant-baptism-2.jpg"
+},
+"69e679ba31fa860001dc4548": {
+"i": "2026/05/ghost-upload-1779117965335-514293-zwingli-2118272192-2.jpg"
+},
+"69e679c631fa860001dc4564": {
+"i": "2026/05/ghost-upload-1779117975200-501117-massacre_bartholomew-2.jpg"
+},
+"69e67a4e31fa860001dc46af": {
+"i": "2026/05/ghost-upload-1779118117428-318107-cbsn-oa-agusta-2.jpg"
+},
+"69e67a7b31fa860001dc470b": {
+"i": "2026/05/ghost-upload-1779118159740-606172-noah-gundersen-1.jpg"
+},
+"69e67a8e31fa860001dc473b": {
+"i": "2026/04/ghost-upload-1776711322388-360275-Aberlady_Church-3.jpg"
+},
+"69e67af531fa860001dc47e0": {
+"i": "2026/05/ghost-upload-1779118262279-254306-TenCommandmentsAustinStateCapitol-3.jpg"
+},
+"69e67afa31fa860001dc47ea": {
+"i": "2026/05/ghost-upload-1779118265387-60727-puritans-theonomy-1.jpg"
+},
+"69e67afc31fa860001dc47f1": {
+"i": "2026/05/ghost-upload-1779116022760-265213-driscoll-christian-brand-1-May-26-2023-06-43-14-9060-PM.jpg"
+},
+"69e67b0531fa860001dc4807": {
+"i": "2026/05/ghost-upload-1779118272847-953942-christianity-wokeness-strachan-1.jpg"
+},
+"69e67b1431fa860001dc4830": {
+"i": "2026/04/ghost-upload-1776712466360-210325-book-1659717_1280-2.jpg"
+},
+"69e67b1a31fa860001dc483e": {
+"i": "2026/05/ghost-upload-1779118288466-915011-100-days-of-dante-e1630693631729-3.png"
+},
+"69e67b2131fa860001dc4850": {
+"i": "2026/04/ghost-upload-1776712480131-757779-passages-reading-list-450x300.png",
+"ia": "notes on season one of Passages"
+},
+"69e67b4731fa860001dc48b8": {
+"i": "2026/05/ghost-upload-1779118323907-925645-paid-family-leave-1.jpg"
+},
+"69e67b9a31fa860001dc4970": {
+"i": "2026/05/ghost-upload-1779118394821-85791-atonement-moral-reasoning-e1635838660170-1.jpg"
+},
+"69e67ba431fa860001dc498d": {
+"i": "2026/05/ghost-upload-1779118402288-296961-christian-hope-1.jpg"
+},
+"69e67bb631fa860001dc49b9": {
+"i": "2026/05/ghost-upload-1779118417644-678320-purity-culture-3.jpg"
+},
+"69e67bc131fa860001dc49d2": {
+"i": "2026/05/ghost-upload-1779118429712-108350-baptism-illiberalism-1.jpg"
+},
+"69e67bc931fa860001dc49e5": {
+"i": "2026/05/ghost-upload-1779118436242-16879-i-am-iphone-3.jpeg"
+},
+"69e67bd731fa860001dc4a06": {
+"i": "2026/05/ghost-upload-1779118447093-66318-100-days-of-dante-e1630693631729-2.png"
+},
+"69e67be531fa860001dc4a29": {
+"i": "2026/05/ghost-upload-1779118467659-856356-three-pilgrim-announce-abraham-the-birth-of-isaac_jpgLarge-e1629399474658-1.jpg"
+},
+"69e67c0b31fa860001dc4a85": {
+"i": "2026/05/ghost-upload-1779118494333-687950-return-of-the-strong-gods-2.jpg"
+},
+"69e67c1131fa860001dc4a95": {
+"i": "2026/05/ghost-upload-1779118506528-149848-washington-political-engagement-May-26-2023-06-36-16-5624-PM.jpg"
+},
+"69e67c1c31fa860001dc4ab6": {
+"i": "2026/05/ghost-upload-1779118526638-784773-beatitudes-through-the-ages-1.jpg"
+},
+"69e67c2131fa860001dc4ac4": {
+"i": "2026/05/ghost-upload-1779118530535-334761-Gasson_from_Fulton-1.jpg"
+},
+"69e67c2431fa860001dc4ace": {
+"i": "2026/04/ghost-upload-1776712739032-293431-Nicaea_icon-450x300-1.jpg",
+"ia": "Passages: Season 1, Episode 12"
+},
+"69e67c2a31fa860001dc4ade": {
+"i": "2026/05/ghost-upload-1779118538344-623242-pca-overture-37-minority-report-1.jpg"
+},
+"69e67c2d31fa860001dc4aed": {
+"i": "2026/05/ghost-upload-1779118542273-854689-visitation-weyden-15th-c_-1.jpg"
+},
+"69e67c3831fa860001dc4b09": {
+"i": "2026/04/ghost-upload-1776712758970-383729-st-macrina-450x300-1.jpg"
+},
+"69e67c4831fa860001dc4b35": {
+"i": "2026/05/ghost-upload-1779118568379-833727-tonjes-cover-1.jpg"
+},
+"69e67c5a31fa860001dc4b3e": {
+"i": "2026/05/ghost-upload-1779118570555-235601-word-image-1-May-26-2023-06-39-22-0810-PM.jpeg"
+},
+"69e67c5c31fa860001dc4b46": {
+"i": "2026/04/ghost-upload-1776712795225-903714-holy-catholic-church-450x300.jpg",
+"ia": "Passages: Season 1, Episode 10"
+},
+"69e67c6f31fa860001dc4b7f": {
+"i": "2026/05/ghost-upload-1779118609580-682901-external-content_duckduckgo-May-26-2023-06-31-56-7309-PM.jpg"
+},
+"69e67c7e31fa860001dc4ba0": {
+"i": "2026/05/ghost-upload-1779118621998-543430-julian-of-norwich-1.jpg"
+},
+"69e67c8631fa860001dc4bc0": {
+"i": "2026/05/ghost-upload-1779118629662-670240-cajetan-1.jpg"
+},
+"69e67c8c31fa860001dc4bd1": {
+"i": "2026/04/ghost-upload-1776712480131-757779-passages-reading-list-450x300.png"
+},
+"69e67c9031fa860001dc4bdf": {
+"i": "2026/04/ghost-upload-1776712846459-235362-Gregory-Nazianzen_mosaic-450x300.jpg"
+},
+"69e67c9631fa860001dc4bf4": {
+"i": "2026/04/ghost-upload-1776712846459-235362-Gregory-Nazianzen_mosaic-450x300.jpg",
+"ia": "Passages: Season 1, Episode 6"
+},
+"69e67c9b31fa860001dc4c01": {
+"i": "2026/05/ghost-upload-1779118648354-132198-logic-of-the-body-2.jpg"
+},
+"69e67c9e31fa860001dc4c08": {
+"i": "2026/04/ghost-upload-1776712861089-334470-cyril-of-alexandria-450x300.jpg",
+"ia": "Passages Season 1, Episode 5"
+},
+"69e67ca331fa860001dc4c1d": {
+"i": "2026/04/ghost-upload-1776711724597-558534-church-and-commonwealth-May-26-2023-10-12-13-6928-PM.jpg"
+},
+"69e67caa31fa860001dc4c33": {
+"i": "2026/04/ghost-upload-1776712873318-368060-external-content.duckduckgo-450x300.jpg",
+"ia": "Passages: Season 1, Episode 4"
+},
+"69e67cac31fa860001dc4c3c": {
+"i": "2026/05/ghost-upload-1779117271982-518348-augustine-of-hippo-painting-May-26-2023-06-04-39-6180-PM.jpg"
+},
+"69e67cbd31fa860001dc4c68": {
+"i": "2026/05/ghost-upload-1779118684019-372084-marcion-1.png"
+},
+"69e67cd531fa860001dc4cad": {
+"i": "2026/05/ghost-upload-1779118708075-345576-tenet-1-1.jpg"
+},
+"69e67cdc31fa860001dc4ccb": {
+"i": "2026/04/ghost-upload-1776712739032-293431-Nicaea_icon-450x300-1.jpg",
+"ia": "Passages: Season 1, Episode 1"
+},
+"69e67cde31fa860001dc4cd2": {
+"i": "2026/04/ghost-upload-1776712925567-998039-Tertullian-526581582-5c546c0446e0fb0001c07f68-450x300.jpg",
+"ia": "Passages: Season 1, Episode 3"
+},
+"69e67ce231fa860001dc4ce0": {
+"i": "2026/04/ghost-upload-1776712928988-229244-passages-no-text-logo-1.jpg",
+"ia": "Passages podcast"
+},
+"69e67ce531fa860001dc4ce7": {
+"i": "2026/05/ghost-upload-1779118723881-107823-passages-no-text-logo-2.jpg"
+},
+"69e67d1731fa860001dc4d45": {
+"i": "2026/05/ghost-upload-1779118775673-924624-Canterbury-cathedral-wyrdlight-3.jpg"
+},
+"69e67d3031fa860001dc4d8e": {
+"i": "2026/05/ghost-upload-1779118799013-937795-music-subversive-history-1.jpg"
+},
+"69e67d3431fa860001dc4d97": {
+"i": "2026/05/ghost-upload-1779118802531-702198-memorial-pca-2.jpg"
+},
+"69e67d3b31fa860001dc4da7": {
+"i": "2026/05/ghost-upload-1779118812957-52382-from-the-ashes-1.jpg"
+},
+"69e67d4a31fa860001dc4ddd": {
+"i": "2026/05/ghost-upload-1779118824414-526397-old-books-436498_1280-May-26-2023-06-44-19-7417-PM.jpg"
+},
+"69e67da731fa860001dc4ee4": {
+"i": "2026/05/ghost-upload-1779118910219-211870-lady-bird-e1606761289750-1.jpg"
+},
+"69e67dba31fa860001dc4f13": {
+"i": "2026/05/ghost-upload-1779118927835-284824-Cant-Even-by-Anne-Helen-Petersen-1.jpg"
+},
+"69e67dcb31fa860001dc4f46": {
+"i": "2026/05/ghost-upload-1779118944716-144906-reformation-imagination-2.jpg"
+},
+"69e67ddd31fa860001dc4f7b": {
+"i": "2026/05/ghost-upload-1779118961842-989473-seeing-with-the-eyes-of-the-heart-1.jpg"
+},
+"69e67de031fa860001dc4f82": {
+"i": "2026/05/ghost-upload-1779118964600-914052-unlearning-1.jpg"
+},
+"69e67e1131fa860001dc5007": {
+"i": "2026/05/ghost-upload-1779119005580-787259-remembrance-communion-hope-1.jpg"
+},
+"69e67e7d31fa860001dc5134": {
+"i": "2026/05/ghost-upload-1779119103519-32411-ibram-x_-kendi-1.jpg"
+},
+"69e67e8a31fa860001dc515d": {
+"i": "2026/05/ghost-upload-1779119115260-504711-mariekondo-shop-1.jpg"
+},
+"69e67eab31fa860001dc51b3": {
+"i": "2026/05/ghost-upload-1779119153761-666419-Mere-Fidelity-logo-May-25-2023-08-45-03-1478-PM.jpg"
+},
+"69e67ec831fa860001dc51f4": {
+"i": "2026/05/ghost-upload-1779119183016-72960-Canterbury-cathedral-wyrdlight-2.jpg"
+},
+"69e67ed431fa860001dc5223": {
+"i": "2026/05/ghost-upload-1779114494067-663695-dostoevsky-3.jpg"
+},
+"69e67ef231fa860001dc5278": {
+"i": "2026/05/ghost-upload-1779119225013-257027-politics-after-christendom-3.png"
+},
+"69e67f0731fa860001dc52bf": {
+"i": "2026/05/ghost-upload-1779119261545-922332-eternal-generation-1.jpg"
+},
+"69e67f1b31fa860001dc52fd": {
+"i": "2026/05/ghost-upload-1779119281734-474902-politics-after-christendom-2.png"
+},
+"69e67f1d31fa860001dc5304": {
+"i": "2026/05/ghost-upload-1779119284980-800816-katherine-sonderegger-1.jpg"
+},
+"69e67f3c31fa860001dc5350": {
+"i": "2026/05/ghost-upload-1779115719814-827549-Starbuck_Community_Church.jpg"
+},
+"69e67f4931fa860001dc5373": {
+"i": "2026/05/ghost-upload-1779115271463-193581-augustinian-liberalism-1.jpg"
+},
+"69e67f8031fa860001dc53ee": {
+"i": "2026/05/ghost-upload-1779119375871-704285-bible-1023919_1280-May-26-2023-06-10-58-0339-PM.jpg"
+},
+"69e67f8931fa860001dc5404": {
+"i": "2026/05/ghost-upload-1779119383145-562995-augustine-of-hippo-painting-May-26-2023-05-51-58-1811-PM.jpg"
+},
+"69e67f8d31fa860001dc540d": {
+"i": "2026/05/ghost-upload-1779119385906-921141-canterbury-cathedral-1.jpg"
+},
+"69e67fa631fa860001dc5453": {
+"i": "2026/05/ghost-upload-1779119410587-709923-homesteading.jpg"
+},
+"69e67fc431fa860001dc549f": {
+"i": "2026/05/ghost-upload-1779119435937-346686-stripped-altar-2.jpg"
+},
+"69e67fe131fa860001dc54e6": {
+"i": "2026/05/ghost-upload-1779119462906-437982-giant-despair-1.jpg"
+},
+"69e67fec31fa860001dc5506": {
+"i": "2026/05/ghost-upload-1779118168651-164292-old-books-436498_1280-May-26-2023-06-40-09-0474-PM.jpg"
+},
+"69e67ff231fa860001dc5516": {
+"i": "2026/05/ghost-upload-1779119481044-821110-christian-cemetary-2.jpg"
+},
+"69e6801431fa860001dc554d": {
+"i": "2026/05/ghost-upload-1779119513286-72284-peter-paul-1.jpg"
+},
+"69e6801931fa860001dc555b": {
+"i": "2026/05/ghost-upload-1779119524550-244120-return-of-the-strong-gods-1-1.jpg"
+},
+"69e6804431fa860001dc55b7": {
+"i": "2026/04/ghost-upload-1776709066951-297649-memorial-presbyterian-church-pca-450x300.jpg",
+"ia": "Controversy in the PCA’s Missouri Presbytery"
+},
+"69e6804e31fa860001dc55cd": {
+"i": "2026/05/ghost-upload-1779119596772-217213-audience_band_christians_church_concert_crowd_energy_festival-950349-1.jpg"
+},
+"69e680da31fa860001dc568e": {
+"i": "2026/05/ghost-upload-1779119741618-606649-aquinas-and-the-market-1.jpg"
+},
+"69e680f331fa860001dc56c9": {
+"i": "2026/05/ghost-upload-1779119764815-815081-f9814988192bd73a69463e6ba2559e8d0e1b1d60-2.jpg"
+},
+"69e6813731fa860001dc5779": {
+"i": "2026/05/ghost-upload-1779119839276-22105-baby_yoda_meme-e1574093910856-1.jpg"
+},
+"69e6814431fa860001dc579b": {
+"i": "2026/05/ghost-upload-1779119847951-413965-2000fall_martin-luther-the-fearful-philosopher_1920x1080-May-26-2023-06-07-46-2679-PM.jpg"
+},
+"69e6815431fa860001dc57c4": {
+"i": "2026/04/ghost-upload-1776714067553-126788-2-1-450x300-1.png"
+},
+"69e6815931fa860001dc57cb": {
+"i": "2026/05/ghost-upload-1779119869366-166429-calvin-meme-1.png"
+},
+"69e6816e31fa860001dc5807": {
+"i": "2026/05/ghost-upload-1779119890372-578798-mary-1.jpg"
+},
+"69e6818631fa860001dc583a": {
+"i": "2026/05/ghost-upload-1779119921058-748584-melanchthon-1.jpg"
+},
+"69e6818c31fa860001dc584c": {
+"i": "2026/05/ghost-upload-1779119959892-796288-on-the-road-with-saint-augustine-1.jpg"
+},
+"69e6819531fa860001dc5868": {
+"i": "2026/04/ghost-upload-1776709595131-689955-eucharist.jpg"
+},
+"69e6820b31fa860001dc58ee": {
+"i": "2026/05/ghost-upload-1779120126768-172511-2000fall_martin-luther-the-fearful-philosopher_1920x1080-May-26-2023-05-57-07-8936-PM.jpg"
+},
+"69e6823d31fa860001dc5951": {
+"i": "2026/05/ghost-upload-1779120179605-929552-2000fall_martin-luther-the-fearful-philosopher_1920x1080-May-26-2023-06-35-51-9202-PM.jpg"
+},
+"69e6824d31fa860001dc5982": {
+"i": "2026/05/ghost-upload-1779120195594-676847-cary-meaning-protestant-theology-1.jpg"
+},
+"69e6826731fa860001dc59b6": {
+"i": "2026/05/ghost-upload-1779120211362-124643-latin-1.jpg"
+},
+"69e6826931fa860001dc59be": {
+"i": "2026/04/ghost-upload-1776714344082-31884-in-search-of-the-common-good-2.jpg"
+},
+"69e6828531fa860001dc59f8": {
+"i": "2026/04/ghost-upload-1776714365596-76297-nuns-4153008_960_720.jpg"
+},
+"69e682d031fa860001dc5aa4": {
+"i": "2026/05/ghost-upload-1779120326462-8592-rene-girard-1.jpg"
+},
+"69e682e331fa860001dc5ada": {
+"i": "2026/05/ghost-upload-1779120344617-475240-liberation-and-black-theology-1.jpg"
+},
+"69e6830231fa860001dc5ae9": {
+"i": "2026/04/ghost-upload-1776714497267-394514-Martin_Bucer_by_German_School.jpg"
+},
+"69e6831431fa860001dc5b19": {
+"i": "2026/05/ghost-upload-1779120414459-246536-Rainbow_flag_and_blue_skies-May-26-2023-06-44-23-8308-PM.jpg"
+},
+"69e6835831fa860001dc5bce": {
+"i": "2026/05/ghost-upload-1779120478130-683554-washington-political-engagement-May-26-2023-05-59-51-6448-PM.jpg"
+},
+"69e6836331fa860001dc5bf4": {
+"i": "2026/05/ghost-upload-1779115146776-696157-workism-desire-1.jpg"
+},
+"69e6836431fa860001dc5bfc": {
+"i": "2026/05/ghost-upload-1779116196308-364460-gregory-nazianzus-1.png"
+},
+"69e683d131fa860001dc5c19": {
+"i": "2026/05/ghost-upload-1779120606767-956138-humanity-westminster-confession-1.jpg"
+},
+"69e683e731fa860001dc5c5a": {
+"i": "2026/05/ghost-upload-1779120623166-457337-hoedemaker-v-kuyper-1.jpg"
+},
+"69e6840531fa860001dc5cba": {
+"i": "2026/05/ghost-upload-1779120650354-461895-john-milbank-guide-perplexed-1.jpg"
+},
+"69e6841b31fa860001dc5cf0": {
+"i": "2026/05/ghost-upload-1779120673410-774713-chapel-2738911_1280-May-26-2023-06-39-48-2341-PM.jpg"
+},
+"69e6841e31fa860001dc5cf9": {
+"i": "2026/04/ghost-upload-1776714781296-596969-Burnt-Matches-Improve-Confidence-e1365868446513.jpg"
+},
+"69e6842531fa860001dc5d07": {
+"i": "2026/05/ghost-upload-1779120682075-347623-chapel-2738911_1280-May-26-2023-06-52-40-0424-PM.jpg"
+},
+"69e6842b31fa860001dc5d16": {
+"i": "2026/05/ghost-upload-1779120686319-624847-nws-1507_49-retire-Muller-1.jpg"
+},
+"69e6843131fa860001dc5d24": {
+"i": "2026/05/ghost-upload-1779120690476-715991-chapel-2738911_1280-May-26-2023-06-48-57-0216-PM.jpg"
+},
+"69e6843831fa860001dc5d35": {
+"i": "2026/05/ghost-upload-1779120696188-46361-chapel-2738911_1280-May-26-2023-06-03-58-1262-PM.jpg"
+},
+"69e6843b31fa860001dc5d3e": {
+"i": "2026/04/ghost-upload-1776714809566-291758-communion-1997305_960_720.jpg"
+},
+"69e6848031fa860001dc5d80": {
+"i": "2026/05/ghost-upload-1779116039791-460875-mary-consoles-eve-1.jpg"
+},
+"69e6848231fa860001dc5d88": {
+"i": "2026/05/ghost-upload-1779115033688-90100-og-aristotle-116-1.jpg"
+},
+"69e684a231fa860001dc5dbc": {
+"i": "2026/05/ghost-upload-1779120840527-901894-richard-hooker-3.jpg"
+},
+"69e684ed31fa860001dc5e24": {
+"i": "2026/05/ghost-upload-1779120930761-878487-facebook-social-justice-anf-the-gospel-3.jpg"
+},
+"69e6852131fa860001dc5eaa": {
+"i": "2026/05/ghost-upload-1779117584967-163562-pew-846021_640-May-26-2023-06-09-51-7413-PM.jpg"
+},
+"69e6854831fa860001dc5efe": {
+"i": "2026/05/ghost-upload-1779116908441-641949-augustine-of-hippo-painting-May-26-2023-06-47-54-9479-PM.jpg"
+},
+"69e6855431fa860001dc5f15": {
+"i": "2026/05/ghost-upload-1779121052842-298619-Jan_Provoost_-_Crucifixion_-_WGA18445-1-1.jpg"
+},
+"69e6856a31fa860001dc5f4b": {
+"i": "2026/05/ghost-upload-1779121080745-723492-revoice-4.jpg"
+},
+"69e6856f31fa860001dc5f52": {
+"i": "2026/05/ghost-upload-1779121083909-159099-grunewald-1-2.jpg"
+},
+"69e6857331fa860001dc5f59": {
+"i": "2026/05/ghost-upload-1779121088103-935070-Screen-Shot-2018-06-18-at-7_42_07-AM-1.png"
+},
+"69e6857831fa860001dc5f60": {
+"i": "2026/05/ghost-upload-1779121097459-37836-revoice-3.jpg"
+},
+"69e685b131fa860001dc5fe1": {
+"i": "2026/05/ghost-upload-1779121154212-823257-bible-1023919_1280-May-26-2023-05-53-03-0225-PM.jpg"
+},
+"69e685d731fa860001dc6046": {
+"i": "2026/05/ghost-upload-1779121201915-189123-180-1.jpg"
+},
+"69e686af31fa860001dc61ec": {
+"i": "2026/05/ghost-upload-1779121468957-100399-evolution-the-fall-james-smith-william-cavanaugh-1.png"
+},
+"69e686d031fa860001dc6261": {
+"i": "2026/05/ghost-upload-1779121502827-757555-people-of-the-promise-1.jpg"
+},
+"69e686dc31fa860001dc6285": {
+"i": "2026/05/ghost-upload-1779121515923-555036-silver-chair-1.jpg"
+},
+"69e686f931fa860001dc62eb": {
+"i": "2026/05/ghost-upload-1779121548742-569324-Martin-Bucer-2.jpg"
+},
+"69e686fd31fa860001dc62fb": {
+"i": "2026/05/ghost-upload-1779121552064-667931-Rod-Dreher-Live-Not-by-Lies-16x9-1.jpg"
+},
+"69e6870131fa860001dc6301": {
+"i": "2026/05/ghost-upload-1779121555040-842371-communion-1997305_1280-3.jpg"
+},
+"69e6872b31fa860001dc6365": {
+"i": "2026/05/ghost-upload-1779121604108-36704-Mere-Fidelity-logo-featured-image-May-26-2023-06-40-09-8316-PM.jpg"
+},
+"69e6872f31fa860001dc6373": {
+"i": "2026/05/ghost-upload-1779121607640-363423-14481031194_0cabbe0afe_b-1.jpg"
+},
+"69e6875231fa860001dc63d0": {
+"i": "2026/05/ghost-upload-1779121635447-645084-origen-1.jpg"
+},
+"69e6876f31fa860001dc6425": {
+"i": "2026/05/ghost-upload-1779121668144-828677-Mere-Fidelity-logo-featured-image-May-25-2023-08-48-19-9694-PM.jpg"
+},
+"69e687bd31fa860001dc64ff": {
+"i": "2026/05/ghost-upload-1779121756246-459365-Martin-Bucer-3.jpg"
+},
+"69e687db31fa860001dc6562": {
+"i": "2026/05/ghost-upload-1779121800957-435982-Henry-Mosler-Pilgrims-Grace-May-26-2023-06-52-32-6973-PM.jpg"
+},
+"69e687e531fa860001dc6576": {
+"i": "2026/05/ghost-upload-1779121810433-436991-630px-Fra_Angelico_031-May-26-2023-06-04-17-9938-PM.jpg"
+},
+"69e687f931fa860001dc65a8": {
+"i": "2026/05/ghost-upload-1779121829952-829048-Henry-Mosler-Pilgrims-Grace-May-26-2023-06-50-05-6862-PM.jpg"
+},
+"69e6880431fa860001dc65bf": {
+"i": "2026/05/ghost-upload-1779121837900-119550-snake-river.jpg"
+},
+"69e6880931fa860001dc65c5": {
+"i": "2026/05/ghost-upload-1779121841702-706939-6250304129170086-1.jpg"
+},
+"69e6881a31fa860001dc6600": {
+"i": "2026/05/ghost-upload-1779121871234-769812-old-books-436498_1280-May-26-2023-06-00-27-2024-PM.jpg"
+},
+"69e6882331fa860001dc6617": {
+"i": "2026/05/ghost-upload-1779121886745-944583-PhilippMelanchthon-1.jpg"
+},
+"69e6882d31fa860001dc6630": {
+"i": "2026/05/ghost-upload-1779121895973-366621-maxresdefault-May-26-2023-06-48-10-7087-PM.jpg"
+},
+"69e6884b31fa860001dc6683": {
+"i": "2026/05/ghost-upload-1779121926478-195696-richard-hooker-2.jpg"
+},
+"69e6885431fa860001dc669d": {
+"i": "2026/05/ghost-upload-1779121935318-531345-TenCommandmentsAustinStateCapitol-4.jpg"
+},
+"69e6887431fa860001dc66fe": {
+"i": "2026/05/ghost-upload-1779121964953-306656-old-books-436498_1280-May-26-2023-05-56-37-1694-PM.jpg"
+},
+"69e688c831fa860001dc67ec": {
+"i": "2026/05/ghost-upload-1779122058592-916709-Starbuck_Community_Church-1.jpg"
+},
+"69e6893531fa860001dc6834": {
+"i": "2026/05/ghost-upload-1779122165260-992168-6250249065_ffc48733de_b-3.jpg"
+},
+"69e6894c31fa860001dc6868": {
+"i": "2026/05/ghost-upload-1779122199972-564164-24394211100_815cb8c744_b-2.jpg"
+},
+"69e6895031fa860001dc6877": {
+"i": "2026/05/ghost-upload-1779122203666-717877-daniel-kirk-1.jpg"
+},
+"69e689c831fa860001dc6984": {
+"i": "2026/05/ghost-upload-1779122340141-422838-Shield-Trinity-Scutum-Fidei-English_svg_-4.png"
+},
+"69e689ec31fa860001dc69c3": {
+"i": "2026/05/ghost-upload-1779122369892-139317-switzerland-1246157_1280-4.jpg"
+},
+"69e689f131fa860001dc69d1": {
+"i": "2026/05/ghost-upload-1779122374398-886714-6849888974_5492071681_b-1.jpg"
+},
+"69e689f431fa860001dc69da": {
+"i": "2026/05/ghost-upload-1779122377123-409460-Shield-Trinity-Scutum-Fidei-English_svg_-3.png"
+},
+"69e689f731fa860001dc69e9": {
+"i": "2026/05/ghost-upload-1779120904707-362167-old-books-436498_1280-May-26-2023-05-52-06-2531-PM.jpg"
+},
+"69e68a1031fa860001dc6a2c": {
+"i": "2026/05/ghost-upload-1779121964953-306656-old-books-436498_1280-May-26-2023-05-56-37-1694-PM.jpg"
+},
+"69e68a3031fa860001dc6a7e": {
+"i": "2026/05/ghost-upload-1779122439903-593960-Georgia_Dome_-_Passion_Conference-1.jpg"
+},
+"69e68ac931fa860001dc6b27": {
+"i": "2026/05/ghost-upload-1779122609086-514087-6250249065_ffc48733de_b-2.jpg"
+},
+"69e68b0f31fa860001dc6bcf": {
+"i": "2026/05/ghost-upload-1779122684515-810664-old-letters-436501_1280.jpg"
+},
+"69e68b1331fa860001dc6bdb": {
+"i": "2026/05/ghost-upload-1779122688984-232361-church-498525_1280-1.jpg"
+},
+"69e68b1b31fa860001dc6bf6": {
+"i": "2026/05/ghost-upload-1779122261444-708475-FandE_Schaeffer-2.jpg"
+},
+"69e68bce31fa860001dc6ce4": {
+"i": "2026/05/ghost-upload-1779122858713-95169-16694847762_b4156f2712_o-1.jpg"
+},
+"69e68d6731fa860001dc7022": {
+"i": "2026/05/ghost-upload-1779123320673-326378-god-and-gay-christian-194x300-1.jpg"
+},
+"69e68e2031fa860001dc71f5": {
+"i": "2026/05/ghost-upload-1779123524853-940474-masks-mercy-measure-for-measure.jpg"
+},
+"69e68e5931fa860001dc7286": {
+"i": "2026/05/ghost-upload-1779123584526-194494-Chester_Cathedral_7251396712-1.jpg"
+},
+"69e68e5f31fa860001dc729c": {
+"i": "2026/05/ghost-upload-1779123592747-882218-the-social-dilemma-1280x720-1.png"
+},
+"69e68e9c31fa860001dc7333": {
+"i": "2026/05/ghost-upload-1779123688158-63537-John_Calvin_12.jpg"
+},
+"69e68f5031fa860001dc7507": {
+"i": "2026/05/ghost-upload-1779123899272-921659-mark_sanford_victory2-1.jpg"
+},
+"69e68fb231fa860001dc75ce": {
+"i": "2026/05/ghost-upload-1779119204263-442740-Mere-Fidelity-logo-featured-image-May-25-2023-08-37-38-2220-PM.jpg"
+},
+"69e68ff731fa860001dc767a": {
+"i": "2026/05/ghost-upload-1779124102607-667425-18firstreformed-superJumbo-v2.jpg"
+},
+"69e6903631fa860001dc770f": {
+"i": "2026/05/ghost-upload-1779124166402-77519-kingdoms-apart-2.jpg"
+},
+"69e6903a31fa860001dc7716": {
+"i": "2026/05/ghost-upload-1779124169320-280625-180.jpg"
+},
+"69e690a831fa860001dc781f": {
+"i": "2026/05/ghost-upload-1779114550807-989151-medical-and-theological-reasoning-pandemic.jpg"
+},
+"69e691d931fa860001dc7ae1": {
+"i": "2026/05/ghost-upload-1779124606583-522223-Mere-Fidelity-logo-featured-image-May-25-2023-08-33-55-8211-PM.jpg"
+},
+"69e693cc31fa860001dc8270": {
+"i": "2026/05/ghost-upload-1779122670912-141348-Mere-Fidelity-logo-May-25-2023-08-48-25-6040-PM.jpg"
+},
+"69e6941d31fa860001dc83b0": {
+"i": "2026/05/ghost-upload-1779125211830-729491-MLK-1.jpg"
+},
+"69e6951831fa860001dc87bd": {
+"i": "2026/05/ghost-upload-1779125464691-978678-f9814988192bd73a69463e6ba2559e8d0e1b1d60-1.jpg"
+},
+"69e6959631fa860001dc8a11": {
+"i": "2026/05/ghost-upload-1779125597383-143954-grunewald-1-1.jpg"
+},
+"69e695cc31fa860001dc8af6": {
+"i": "2026/05/ghost-upload-1779125650949-397376-economic-crash-covid-19.jpg"
+},
+"69e695ef31fa860001dc8b8f": {
+"i": "2026/05/ghost-upload-1779125683725-512893-vintage-1232517_1280-2.jpg"
+},
+"69e6962f31fa860001dc8c97": {
+"i": "2026/05/ghost-upload-1779122670912-141348-Mere-Fidelity-logo-May-25-2023-08-48-25-6040-PM.jpg"
+},
+"69e6963b31fa860001dc8cb8": {
+"i": "2026/05/ghost-upload-1779125763935-45483-between-life-and-death.jpg"
+},
+"69e696b531fa860001dc8ef3": {
+"i": "2026/05/ghost-upload-1779125380540-957010-old-books-436498_1280-May-25-2023-08-34-05-6885-PM.jpg"
+},
+"69e6973f31fa860001dc91ac": {
+"i": "2026/05/ghost-upload-1779126020864-286877-GeorgeFloydMemorial-1.jpg"
+},
+"69e6975e31fa860001dc9258": {
+"i": "2026/05/ghost-upload-1779126052345-548153-3465570509_6ec50a58f9_b.jpg"
+},
+"69e6986a31fa860001dc96fc": {
+"i": "2026/05/ghost-upload-1779126315138-38794-intellectual-life.jpg"
+},
+"69e698e231fa860001dc995c": {
+"i": "2026/05/ghost-upload-1779126432925-815271-resurrection-and-moral-order-May-26-2023-06-31-36-7411-PM.jpg"
+},
+"69e6992331fa860001dc9a61": {
+"i": "2026/05/ghost-upload-1779126451897-137889-resurrection-and-moral-order-May-26-2023-06-40-20-5893-PM.jpg"
+},
+"69e6992631fa860001dc9a6e": {
+"i": "2026/05/ghost-upload-1779126432925-815271-resurrection-and-moral-order-May-26-2023-06-31-36-7411-PM.jpg"
+},
+"69e6998531fa860001dc9bd5": {
+"i": "2026/05/ghost-upload-1779126603558-940835-Jan_Provoost_-_Crucifixion_-_WGA18445-1.jpg"
+},
+"69e6999031fa860001dc9c05": {
+"i": "2026/05/ghost-upload-1779126615400-28441-8567825104_7a32a83018.jpg"
+},
+"69e699d331fa860001dc9d20": {
+"i": "2026/05/ghost-upload-1779126685060-957494-notre-dame-fire.jpg"
+},
+"69e69a3231fa860001dc9ed1": {
+"i": "2026/05/ghost-upload-1779126777713-466106-dignity-arnade.jpg"
+},
+"69e69a3631fa860001dc9ee5": {
+"i": "2026/05/ghost-upload-1779126783598-742858-Screen-Shot-2016-05-05-at-11_03_12-PM.png"
+},
+"69e69b2c31fa860001dca31b": {
+"i": "2026/04/ghost-upload-1777222749736-707472-scops.jpg"
+},
+"69e69b4731fa860001dca3a2": {
+"i": "2026/04/ghost-upload-1777216914558-513268-old-books-436498_1280-May-25-2023-08-48-08-9693-PM.jpg"
+},
+"69e69b4e31fa860001dca3bc": {
+"i": "2026/04/ghost-upload-1777222779500-704712-democracy-watch.jpg"
+},
+"69e69c4731fa860001dca81f": {
+"i": "2026/04/ghost-upload-1777220993522-784592-old-books-436498_1280-May-25-2023-08-30-28-6801-PM.jpg"
+},
+"69e69d0531fa860001dcab61": {
+"i": "2026/04/ghost-upload-1777223181377-417113-elizabeth-warren-1.jpg"
+},
+"69e69d0b31fa860001dcab7a": {
+"i": "2026/04/ghost-upload-1777223187356-764547-george-macdonald.jpg"
+},
+"69e69d1d31fa860001dcabc6": {
+"i": "2026/04/ghost-upload-1777217851740-783486-Mere-Fidelity-logo-featured-image-May-25-2023-08-40-39-4878-PM.jpg"
+},
+"69e69d6b31fa860001dcad49": {
+"i": "2026/04/ghost-upload-1777223277615-691695-ibram-x_-kendi.jpg"
+},
+"69e69dfd31fa860001dcafd8": {
+"i": "2026/04/ghost-upload-1777223412611-101050-nebraska-football-1.jpg"
+},
+"69e7c0134442de0001228abf": {
+"i": "2026/05/ghost-upload-1779114590619-904258-Shankilltroubles.jpg"
+},
+"69e8e26274759b0001f97e81": {
+"i": "2026/05/ghost-upload-1779115279503-979742-mark-twain-gettyimages-683484482-2956862598.jpg"
+},
+"69e8e4da74759b0001f97ff3": {
+"i": "2026/05/ghost-upload-1779115807716-612019-ocean-sunrise.jpg"
+},
+"69e8e5d674759b0001f98094": {
+"i": "2026/05/ghost-upload-1779116008412-710916-peter_brown.jpg"
+},
+"69e8e72e74759b0001f98192": {
+"i": "2026/05/ghost-upload-1779116288701-392758-Miss-Havisham.jpg"
+},
+"69e8eb6b74759b0001f984bd": {
+"i": "2026/05/ghost-upload-1779117208623-295928-a-dusty-old-book-2.jpg"
+},
+"69e8ec4374759b0001f98576": {
+"i": "2026/05/ghost-upload-1779117398700-628134-rich-christians-2.jpg"
+},
+"69e8f52174759b0001f98e0e": {
+"i": "2026/05/ghost-upload-1779115624294-511080-church-service-1.jpg"
+},
+"69e8fb5074759b0001f99537": {
+"i": "2026/05/ghost-upload-1779120998182-95538-john-webster-1.png"
+},
+"69e8fbc574759b0001f9967e": {
+"i": "2026/05/ghost-upload-1779121092098-474884-ChristtheKing-1-1500x926-1.jpg"
+},
+"69e9197974759b0001f9acb1": {
+"i": "2026/05/ghost-upload-1779114571662-158040-Nicaea_icon.jpg"
+},
+"69f0a2485a05650001ef6d7e": {
+"i": "2026/05/ghost-upload-1779114563907-695699-beha_20atheist.jpg"
+},
+"69f498935a05650001ef6def": {
+"i": "2026/05/ghost-upload-1779114544496-301751-tower-of-babel.jpg"
+},
+"69f9e6b4f6025c000138a3e4": {
+"i": "2026/05/ghost-upload-1779114526789-222752-bodily_20control_20gnosis.png"
+},
+"6a0b27142d7afa00019aeb61": {
+"i": "2026/05/ghost-upload-1779114852953-768725-american_20liberalism_20farmers_20prairie.jpg"
+},
+"6a105d5164997b0001d160a8": {
+"i": "2026/05/ghost-upload-1779457357436-558881-augustine-of-hippo-painting-May-26-2023-06-04-39-6180-PM.jpg"
+},
+"6a152c985d3b3d0001fe992e": {
+"i": "2026/05/ghost-upload-1779892678528-662892-werntz_20contesting_20the_20body.png"
+},
+"6a1a4bcb0b0a130001a17b44": {
+"i": "2026/05/Screenshot-2026-05-29-at-11.41.21---PM.png"
+},
+"6a2b0249c53acf0001d3b7a7": {
+"i": "https://images.unsplash.com/photo-1633963793294-4a7e34d6a9af?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8c2VhcmNofDQyfHxwcmVzYnl0ZXJpYW4lMjBjaHVyY2h8ZW58MHx8fHwxNzgxMjA0MzQyfDA&ixlib=rb-4.1.0&q=80&w=2000"
+},
+"6a2b8f2ac53acf0001d3b941": {
+"i": "2026/06/augustine-1015728507.png"
+},
+"6a32052c4cbcfe000125a0c0": {
+"i": "https://images.unsplash.com/photo-1573140152851-cc962f98db05?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8c2VhcmNofDMyfHxib29rJTIwb2YlMjBjb21tb24lMjBwcmF5ZXJ8ZW58MHx8fHwxNzgxNjYzMDYxfDA&ixlib=rb-4.1.0&q=80&w=2000"
+},
+"6a3bf0262cffee00013ac571": {
+"i": "2026/06/50937877318_e4acda0a22-1.jpg"
+},
+"6a44252441eab500011ed4d1": {
+"i": "2026/06/declaration-of-independence-painting-3.jpg"
+},
+"6a46c0581dce1600011f2579": {
+"i": "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8c2VhcmNofDJ8fGNodXJjaHxlbnwwfHx8fDE3ODMwMjE2OTZ8MA&ixlib=rb-4.1.0&q=80&w=2000"
+},
+"6a4eab2a7304780001ade046": {
+"i": "2026/07/Last_Rites_ca_1600.jpg"
+},
+"6a6ae1ccadd509000121ec8b": {
+"i": "https://images.unsplash.com/photo-1561084746-f360502e5abe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8c2VhcmNofDF8fGdhcmdveWxlfGVufDB8fHx8MTc4NTM4OTU5NHww&ixlib=rb-4.1.0&q=80&w=2000"
+},
+"6a720605a5338200016d6639": {
+"i": "2026/08/a-hidden-life-20197912-1116026376.jpg"
+},
+"6a7a302ea6531400011ccbc2": {
+"i": "https://images.unsplash.com/photo-1620065162998-9f69910cb265?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8c2VhcmNofDU5fHxjaHJpc3R8ZW58MHx8fHwxNzg2MzkyODIwfDA&ixlib=rb-4.1.0&q=80&w=2000"
+},
+"6a85f7b3333f950001dfd894": {
+"i": "https://images.unsplash.com/photo-1531572753322-ad063cecc140?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8c2VhcmNofDF8fHZhdGljYW58ZW58MHx8fHwxNzg3MTY0NzIxfDA&ixlib=rb-4.1.0&q=80&w=2000"
+},
+"6a885fc90163ba00017483dc": {
+"i": "2026/08/368941593_8a91f43c5b_b.jpg"
+},
+"6a8d26a3e3fee800015d7148": {
+"i": "2026/08/Vergo--s_Group_-_Saint_Augustine_Disputing_with_the_Heretics_-_Google_Art_Project.jpg"
+},
+"6aa46021832b020001fd28e9": {
+"i": "2026/09/Screenshot-2026-09-11-at-3.12.02---PM.png"
+},
+"6aa863e363e49e00017d29f0": {
+"i": "2026/09/Screenshot-2026-09-14-at-4.20.12---PM.png"
+},
+"6aa866ca63e49e00017d2a0c": {
+"i": "2026/09/Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_-Vienna-_-_Google_Art_Project_-_edited.jpg"
+},
+"6aac0c3bde544300016fb5cc": {
+"i": "https://images.unsplash.com/photo-1469228252629-cbe7cb7db2c8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8c2VhcmNofDIzfHxiaWJsZXxlbnwwfHx8fDE3ODk2NjAyOTR8MA&ixlib=rb-4.1.0&q=80&w=2000"
+},
+"6abab9872297600001509a65": {
+"i": "2026/09/Screenshot-2026-09-28-at-2.04.32---PM.png"
+},
+"6ac53dd9d49873000179de49": {
+"i": "https://images.unsplash.com/photo-1633963793294-4a7e34d6a9af?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8c2VhcmNofDR8fHdlc3RtaW5zdGVyJTIwY29uZmVzc2lvbnxlbnwwfHx8fDE3OTEzMTEzOTV8MA&ixlib=rb-4.1.0&q=80&w=2000"
+},
+"6acc6864d462430001ae7234": {
+"i": "2026/10/Lucha-de-gladiadores.jpg"
+},
+"6ace97b0f3c4d50001afadd1": {
+"i": "https://images.unsplash.com/photo-1531777319985-9dca28eeae64?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8c2VhcmNofDR8fHRocm9uZXxlbnwwfHx8fDE3OTE5MjQyOTF8MA&ixlib=rb-4.1.0&q=80&w=2000"
+},
+"6acfce1cf15d59000131dd29": {
+"i": "2026/10/christopher-nolans-the-odyssey-1536x864-585280004.jpg"
+}
+}
+}

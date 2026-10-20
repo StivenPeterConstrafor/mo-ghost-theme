@@ -1335,6 +1335,340 @@
   fillProductControl();
   renderProduct();
 
+  // ---- peak hours ----------------------------------------------------------
+  // Plausible traffic by weekday and hour, one calendar month at a time, from
+  // mo-admin (/audience/peak-hours). The worker sends a 7 x 24 grid of sums
+  // and how many of each weekday the month held; averages are taken here so
+  // the Visitors/Pageviews switch needs no second fetch. Sunday is row 0.
+  const peakHost = root.querySelector("[data-aud-peak]");
+  const peakPrev = root.querySelector("[data-aud-peak-prev]");
+  const peakNext = root.querySelector("[data-aud-peak-next]");
+  const peakMonthEl = root.querySelector("[data-aud-peak-month]");
+  const peakMetric = root.querySelector("[data-aud-peak-metric]");
+  const peakStatus = root.querySelector("[data-aud-peak-status]");
+  const peakRefresh = root.querySelector("[data-aud-peak-refresh]");
+  const PEAK_DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const PEAK_SHORT = ["S", "M", "T", "W", "Th", "F", "S"];
+  const peakCache = {};
+  const peakPagesCache = {};
+  let peakPagesTimer = null;
+  let peakMonths = [];
+  let peakMonth = null;
+  let peakSel = null;
+  let peakPinned = false;
+  let peakBusy = false;
+
+  const peakFmt = (n) => Math.round(n).toLocaleString("en-US");
+  const hourShort = (h) => `${h % 12 === 0 ? 12 : h % 12}${h < 12 ? "a" : "p"}`;
+  const hourLong = (h) => `${h % 12 === 0 ? 12 : h % 12} ${h < 12 ? "AM" : "PM"}`;
+  function monthName(ym) {
+    const [y, m] = ym.split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+  }
+  function dayName(ymd) {
+    const [y, m, d] = ymd.split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: "UTC" });
+  }
+  function peakSay(msg) { if (peakStatus) peakStatus.textContent = msg || ""; }
+
+  // How many times this weekday-hour has happened in the range. The worker
+  // sends a per-square count for the current month, where today's later
+  // hours have not happened yet; older stored months only have day counts.
+  function peakN(d, w, h) {
+    if (d.counts && d.counts[w]) return d.counts[w][h] || 0;
+    return d.days && d.days[w] ? d.days[w] : 0;
+  }
+
+  function peakAverages(d, metric) {
+    const sums = d[metric] || [];
+    return PEAK_DAYS.map((_, w) => Array.from({ length: 24 }, (__, h) => {
+      const n = peakN(d, w, h);
+      return n ? ((sums[w] && sums[w][h]) || 0) / n : 0;
+    }));
+  }
+  function peakNav() {
+    const i = peakMonths.indexOf(peakMonth);
+    // Not disabled while loading: that would drop keyboard focus to <body>
+    // mid-step. peakStep ignores clicks while a fetch is in flight instead.
+    if (peakPrev) peakPrev.disabled = i <= 0;
+    if (peakNext) peakNext.disabled = i === -1 || i >= peakMonths.length - 1;
+  }
+
+  function peakReadout(d, avg, metric, w, h) {
+    const unit = metric === "pageviews" ? "pageviews" : "visitors";
+    const n = peakN(d, w, h);
+    const total = ((d[metric][w] && d[metric][w][h]) || 0);
+    const plural = `${PEAK_DAYS[w]}s`;
+    return `${PEAK_DAYS[w]}, ${hourLong(h)} to ${hourLong((h + 1) % 24)}: ${peakFmt(avg[w][h])} ${unit} on average across ${n} ${n === 1 ? PEAK_DAYS[w] : plural} (${peakFmt(total)} in all).`;
+  }
+
+  function renderPeak() {
+    if (!peakHost) return;
+    peakHost.textContent = "";
+    const d = peakCache[peakMonth];
+    if (peakMonthEl) peakMonthEl.textContent = peakMonth ? `${monthName(peakMonth)}${d && !d.complete ? " so far" : ""}` : "";
+    if (peakRefresh) peakRefresh.disabled = !d;
+    peakNav();
+    if (!d) return;
+    const metric = peakMetric && peakMetric.value === "pageviews" ? "pageviews" : "visitors";
+    const unit = metric === "pageviews" ? "pageviews" : "visitors";
+    const avg = peakAverages(d, metric);
+    const cells = [];
+    avg.forEach((row, w) => row.forEach((v, h) => cells.push({ w, h, v })));
+    const max = Math.max(0, ...cells.map((c) => c.v));
+    if (!max) {
+      peakHost.appendChild(el("p", "admin-sub", "Plausible recorded no traffic for this month."));
+      return;
+    }
+    const ranked = cells.slice().sort((a, b) => b.v - a.v);
+    const top = ranked.slice(0, 3).map((c) => `${PEAK_DAYS[c.w]} ${hourLong(c.h)}`);
+    const quiet = ranked[ranked.length - 1];
+    const dayTotals = avg.map((row) => row.reduce((s, v) => s + v, 0));
+    const busiestDay = dayTotals.indexOf(Math.max(...dayTotals));
+    const quietestDay = dayTotals.indexOf(Math.min(...dayTotals));
+    peakHost.appendChild(el("p", "aud-peak-summary",
+      `Busiest hours: ${top.join(", ")}. Busiest day: ${PEAK_DAYS[busiestDay]}. Quietest day: ${PEAK_DAYS[quietestDay]}. Quietest hour: ${PEAK_DAYS[quiet.w]} ${hourLong(quiet.h)}.`));
+
+    // Opacity on a fixed floor so an empty hour still reads as a square.
+    const shadeOf = (v) => Math.round((0.05 + (v / max) * 0.87) * 1000) / 1000;
+    const grid = el("div", "aud-peak-grid");
+    grid.setAttribute("role", "application");
+    grid.tabIndex = 0;
+    grid.setAttribute("aria-label",
+      `Average ${unit} by day of week and hour, ${monthName(peakMonth)}, Central time. Busiest: ${top.join(", ")}. Use the arrow keys to read each hour and Enter to list its top pages.`);
+    grid.appendChild(el("span", "aud-peak-hour"));
+    for (let h = 0; h < 24; h++) {
+      const lab = h % 3 === 0 ? hourShort(h) : "";
+      grid.appendChild(el("span", `aud-peak-hour${h % 6 === 0 ? "" : " is-minor"}`, lab));
+    }
+    const cellEls = [];
+    avg.forEach((row, w) => {
+      grid.appendChild(el("span", "aud-peak-day", PEAK_SHORT[w]));
+      cellEls[w] = [];
+      row.forEach((v, h) => {
+        const c = el("span", "aud-peak-cell");
+        c.setAttribute("data-w", w);
+        c.setAttribute("data-h", h);
+        const fill = el("span", "aud-cell-fill");
+        fill.style.opacity = String(shadeOf(v));
+        c.appendChild(fill);
+        c.title = `${PEAK_DAYS[w]} ${hourLong(h)}: ${peakFmt(v)} ${unit}`;
+        grid.appendChild(c);
+        cellEls[w][h] = c;
+      });
+    });
+    peakHost.appendChild(grid);
+
+    // Key sits right under the grid; the readout and the pages list follow it
+    // (appended below, after the key is built).
+    const readout = el("p", "aud-peak-readout");
+    readout.setAttribute("aria-live", "polite");
+    const pagesBox = el("div", "aud-peak-pages");
+    pagesBox.setAttribute("aria-live", "polite");
+    function renderPages(w, h, data, failed) {
+      pagesBox.textContent = "";
+      const head = el("p", "aud-subhead", `Top pages, ${PEAK_DAYS[w]}s ${hourLong(h)} to ${hourLong((h + 1) % 24)}`);
+      pagesBox.appendChild(head);
+      if (failed === "busy") { pagesBox.appendChild(el("p", "aud-foot", "That is the limit of new squares for this hour, to stay inside Plausible's quota. Squares already opened still load.")); return; }
+      if (failed) { pagesBox.appendChild(el("p", "aud-foot", "Couldn't load pages for this hour. Click the square or press Enter to try again.")); return; }
+      if (!data) { pagesBox.appendChild(el("p", "aud-foot", "Loading pages\u2026")); return; }
+      const rows = (data.pages || []).slice().sort((a, b) => (b[metric] - a[metric]) || (b.pageviews - a.pageviews)).slice(0, 10);
+      if (!rows.length) { pagesBox.appendChild(el("p", "aud-foot", "Plausible recorded no pages in this hour.")); return; }
+      const top = rows[0][metric] || 1;
+      const list = el("ol", "admin-ranked aud-peak-pagelist");
+      rows.forEach((r) => {
+        const li = el("li", "admin-ranked-item");
+        const track = el("div", "aud-track");
+        const bar = el("div", "admin-ranked-bar");
+        bar.style.width = `${Math.max(1.5, (r[metric] / top) * 100)}%`;
+        track.appendChild(bar);
+        li.appendChild(track);
+        const label = el("span", "admin-ranked-label");
+        const path = String(r.path || "");
+        const name = String(r.title || path);
+        label.title = path;
+        // Paths come from Plausible. Only a same-site path becomes a link.
+        if (/^\/(?!\/)/.test(path)) {
+          const a = el("a", null, name);
+          a.href = `${window.location.origin}${path}`;
+          a.target = "_blank";
+          a.rel = "noopener";
+          label.appendChild(a);
+        } else {
+          label.textContent = name;
+        }
+        li.appendChild(label);
+        li.appendChild(el("span", "admin-ranked-value", peakFmt(r[metric])));
+        list.appendChild(li);
+      });
+      pagesBox.appendChild(list);
+      pagesBox.appendChild(el("p", "aud-foot",
+        `${unit[0].toUpperCase()}${unit.slice(1)} added up across the ${data.days} ${PEAK_DAYS[w]}s in ${monthName(peakMonth)}.`));
+    }
+    function loadPages(w, h) {
+      clearTimeout(peakPagesTimer);
+      const month = peakMonth;
+      const k = `${month}:${w}:${h}`;
+      if (peakPagesCache[k]) { renderPages(w, h, peakPagesCache[k]); return; }
+      renderPages(w, h, null);
+      // Debounced so holding an arrow key does not fire a query per square.
+      peakPagesTimer = setTimeout(() => {
+        window.MOAuth.fetch(`${WORKER}/audience/peak-hours/pages?month=${encodeURIComponent(month)}&dow=${w}&hour=${h}`)
+          .then((res) => {
+            if (res.status === 429) throw new Error("busy");
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+          })
+          .then((data) => {
+            peakPagesCache[k] = data;
+            if (peakSel && peakSel.w === w && peakSel.h === h && pagesBox.isConnected) renderPages(w, h, data);
+          })
+          .catch((err) => {
+            if (peakSel && peakSel.w === w && peakSel.h === h && pagesBox.isConnected) {
+              renderPages(w, h, null, err && err.message === "busy" ? "busy" : true);
+            }
+          });
+      }, 250);
+    }
+    // Hover previews a square; a click, tap or arrow key pins it, and the
+    // readout returns to the pinned square when the pointer leaves the grid.
+    let shown = null;
+    function show(w, h) {
+      if (shown) cellEls[shown.w][shown.h].classList.remove("is-selected");
+      shown = { w, h };
+      cellEls[w][h].classList.add("is-selected");
+      readout.textContent = peakReadout(d, avg, metric, w, h);
+    }
+    function select(w, h, withPages) {
+      peakSel = { w, h };
+      show(w, h);
+      if (withPages) loadPages(w, h);
+      else pagesBox.textContent = "";
+    }
+    // Opens on the busiest square so the readout is never blank. Hover reads
+    // a square on desktop; a tap or click reads it on touch, where a title
+    // tooltip never appears.
+    // Pages load only once someone has clicked a square: each uncached square
+    // costs four or five Plausible queries. After that, a month or measure
+    // switch keeps showing pages for the pinned square.
+    const start = peakSel || ranked[0];
+    const keepPages = !!peakSel && peakPinned;
+    peakSel = null;
+    select(start.w, start.h, keepPages);
+    if (!keepPages) pagesBox.appendChild(el("p", "aud-foot", "Click or tap a square to see its top ten pages."));
+    function fromEvent(e) {
+      const t = e.target && e.target.closest ? e.target.closest(".aud-peak-cell") : null;
+      if (!t) return null;
+      return { w: Number(t.getAttribute("data-w")), h: Number(t.getAttribute("data-h")) };
+    }
+    grid.addEventListener("click", (e) => { const p = fromEvent(e); if (p) { peakPinned = true; select(p.w, p.h, true); } });
+    grid.addEventListener("mouseover", (e) => { const p = fromEvent(e); if (p) show(p.w, p.h); });
+    grid.addEventListener("mouseleave", () => { if (peakSel) show(peakSel.w, peakSel.h); });
+    grid.addEventListener("keydown", (e) => {
+      const moves = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] };
+      if ((e.key === "Enter" || e.key === " ") && peakSel) {
+        e.preventDefault();
+        peakPinned = true;
+        select(peakSel.w, peakSel.h, true);
+        return;
+      }
+      const mv = moves[e.key];
+      if (!mv || !peakSel) return;
+      e.preventDefault();
+      // Arrows move without fetching; Enter lists the pages for a square.
+      select((peakSel.w + mv[0] + 7) % 7, (peakSel.h + mv[1] + 24) % 24, false);
+      const k = `${peakMonth}:${peakSel.w}:${peakSel.h}`;
+      if (peakPagesCache[k]) renderPages(peakSel.w, peakSel.h, peakPagesCache[k]);
+    });
+
+    const key = el("div", "aud-key aud-peak-key");
+    key.appendChild(el("span", "aud-key-label", "0"));
+    const ramp = el("span", "aud-key-ramp");
+    [0, 0.2, 0.4, 0.6, 0.8, 1].forEach((f) => {
+      const step = el("span", "aud-key-step");
+      step.style.opacity = String(shadeOf(f * max));
+      step.title = `${peakFmt(f * max)} ${unit}`;
+      ramp.appendChild(step);
+    });
+    key.appendChild(ramp);
+    key.appendChild(el("span", "aud-key-label", `${peakFmt(max)} ${unit} an hour on average`));
+    peakHost.appendChild(key);
+    peakHost.appendChild(readout);
+    peakHost.appendChild(pagesBox);
+
+    const asOf = new Date(d.computed_at);
+    const asOfText = Number.isNaN(asOf.getTime()) ? "unknown"
+      : asOf.toLocaleString("en-US", { timeZone: "America/Chicago", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+    const endHour = d.through_hour !== undefined && d.through_hour < 24 ? ` at ${hourLong(d.through_hour)}` : "";
+    const span = d.complete ? `all of ${monthName(d.month)}` : `${dayName(`${d.month}-01`)} through ${dayName(d.through)}${endHour}`;
+    peakHost.appendChild(el("p", "aud-peak-foot aud-foot",
+      `Data as of ${asOfText} Central. Covers ${span}. Source: Plausible. It counts each visitor once per hour, so a square is the number of people on the site in that hour. ${d.complete ? "A finished month is stored once. Refresh pulls it from Plausible again." : "This month updates every hour through the last full hour. Refresh pulls the latest now."}`));
+  }
+
+  function loadPeak(month, refresh) {
+    if (!peakHost) return;
+    if (!WORKER || !window.MOAuth) {
+      peakHost.textContent = "";
+      peakHost.appendChild(el("p", "admin-sub", "Peak hours needs the admin worker."));
+      return;
+    }
+    if (!refresh && month && peakCache[month]) { peakMonth = month; renderPeak(); return; }
+    peakBusy = true;
+    peakNav();
+    peakSay(refresh ? "Pulling from Plausible\u2026" : "Loading traffic\u2026");
+    const params = [];
+    if (month) params.push(`month=${encodeURIComponent(month)}`);
+    if (refresh) params.push("refresh=1");
+    window.MOAuth.fetch(`${WORKER}/audience/peak-hours${params.length ? `?${params.join("&")}` : ""}`)
+      .then((res) => {
+        if (res.status === 429) throw new Error("busy");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((d) => {
+        if (refresh) {
+          // New data can change any square's top pages too.
+          Object.keys(peakPagesCache).forEach((k) => { if (k.indexOf(`${d.month}:`) === 0) delete peakPagesCache[k]; });
+        }
+        peakCache[d.month] = d;
+        peakMonths = Array.isArray(d.months) ? d.months : [d.month];
+        peakMonth = d.month;
+        peakBusy = false;
+        peakSay(refresh ? "Refreshed." : "");
+        renderPeak();
+      })
+      .catch((err) => {
+        peakBusy = false;
+        if (refresh && peakCache[month]) {
+          // Keep the grid on screen; only the refresh failed.
+          peakSay(err && err.message === "busy"
+            ? "Refresh limit reached for this hour. Try again after the hour turns."
+            : "Couldn't refresh from Plausible. Showing the last data.");
+          return;
+        }
+        // Refresh doubles as the retry when nothing has loaded yet.
+        if (peakRefresh) peakRefresh.disabled = false;
+        peakSay("");
+        peakHost.textContent = "";
+        peakHost.appendChild(el("p", "admin-sub", "Couldn't load peak hours from Plausible. The rest of this page is unaffected."));
+        peakNav();
+      });
+  }
+  function peakStep(dir) {
+    if (peakBusy) return;
+    const i = peakMonths.indexOf(peakMonth) + dir;
+    if (i < 0 || i >= peakMonths.length) return;
+    loadPeak(peakMonths[i]);
+  }
+  if (peakPrev) peakPrev.addEventListener("click", () => peakStep(-1));
+  if (peakNext) peakNext.addEventListener("click", () => peakStep(1));
+  if (peakMetric) peakMetric.addEventListener("change", renderPeak);
+  if (peakRefresh) peakRefresh.addEventListener("click", () => {
+    if (peakBusy) return;
+    if (peakMonth && peakCache[peakMonth]) loadPeak(peakMonth, true);
+    else loadPeak(peakMonth || undefined);
+  });
+
   // ---- sticky cohort bar ---------------------------------------------------
   // The offset is the topbar's rendered height, not a constant: its subtitle
   // wraps to two lines under ~700px, and a hardcoded value leaves either a gap
@@ -1713,6 +2047,7 @@
   renderAll();
   renderXt();
   loadSayVsDo();
+  loadPeak();
 
   loadRows();
   // Live is the cohort the page opens on, so the renderAll() above necessarily

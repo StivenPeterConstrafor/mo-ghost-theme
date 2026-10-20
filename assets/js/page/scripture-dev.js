@@ -315,8 +315,8 @@
       if (my !== ovRun || !$host || !d) return;
       const g = S.commentaryGroups(d.items, book), names = S.commentaryTitles(book, c, g);
       // The commentaries on the book that have their own page on this chapter, one from each age (the Fathers, the early and
-      // the high Middle Ages, the Reformation, the 17th century, after), then any others oldest first; then the works on part
-      // of the book.
+      // the high Middle Ages, the Reformation, the 17th century, after), then any others oldest first (one list for the book since
+      // 2026-10-20: a volume on part of it is part of the book's commentaries).
       const own = g.book.filter((e) => e.anchored === "chapter");
       const AGES = [[0, 5], [6, 10], [11, 15], [16, 16], [17, 17], [18, 99]];
       const firsts = AGES.map(([a, b]) => own.find((e) => Number(e.cen) >= a && Number(e.cen) <= b)).filter(Boolean);
@@ -329,8 +329,8 @@
       const list = (label, items, n) => (items.length
         ? `<p class="sd-ov-comm-sub">${esc(label)}</p><ol class="sd-ov-comm-list">${items.slice(0, n).map(row).join("")}</ol>` : "");
       const all = Number(d.total) || (d.items || []).length;
-      $host.innerHTML = onBook.length || g.chapter.length
-        ? `<h3 class="sd-h3">Commentaries on ${esc(S.refLabel(book, c))}</h3>${list(names.book, onBook, 6)}${list(names.chapter, g.chapter, 3)}` +
+      $host.innerHTML = onBook.length
+        ? `<h3 class="sd-h3">Commentaries on ${esc(S.refLabel(book, c))}</h3>${list(names.book, onBook, 6)}` +
           `<button type="button" class="sd-commentary-more" data-sd-ov-comm-all>All ${fmt(all)} commentaries</button>`
         : (all ? `<button type="button" class="sd-commentary-more" data-sd-ov-comm-all>${fmt(all)} commentaries on ${esc(book.name)}</button>` : "");
     }).catch(() => {});
@@ -361,8 +361,8 @@
    * All four start closed (corpus owner, 2026-09-25: "make this collapsible"; open, Matthew 1's 57 and
    * 21 commentaries made the panel about 6,000 pixels tall). A fold the reader opens stays open. */
   const PANEL_FOLDS = {
-    chapter: { key: "chapter", title: "Chapter commentaries", wideOpen: false },
-    book: { key: "book", title: "Book commentaries", wideOpen: false },
+    book: { key: "book", title: "Commentaries on the book", wideOpen: false },
+    cited: { key: "cited", title: "Cited in commentaries on other books", wideOpen: false },
     wholeBible: { key: "whole_bible", title: "Whole-Bible commentaries", wideOpen: false },
     other: { key: "other_works", title: "Other works", wideOpen: false },
     citations: { key: "citations", title: "Citations of this verse", wideOpen: false },
@@ -516,6 +516,8 @@
     const citationBody = `<div data-sd-filters></div><h3 class="sd-h3">Most-cited sources</h3><ol class="sd-sources sd-top" data-sd-top></ol><div data-sd-matches hidden><h3 class="sd-h3">Matching citations</h3><ol class="sd-sources" data-sd-rows></ol><button type="button" class="sd-more" data-sd-more hidden>Show more</button></div>`;
     $panel.innerHTML = `<header class="sd-panel-head"><p class="sd-eyebrow">Verse</p><h2 class="sd-panel-ref" tabindex="-1">${esc(S.refLabel(book, c, v))}</h2><a class="sd-desk-link" href="${esc(S.deskHref(book, c, v, t))}">Open the Verse Desk</a><button type="button" class="sd-close" aria-label="Close verse panel">Close</button></header><p class="sd-count" data-sd-count role="status"><span class="sd-muted">Counting citations…</span></p><div data-sd-panel-commentaries><p class="sd-muted">Loading commentaries…</p></div>${panelDetails(PANEL_FOLDS.citations, citationBody)}${panelDetails(PANEL_FOLDS.similar, `<p class="sd-muted">Verses cited on the same pages as ${esc(S.refLabel(book, c, v))}, and passages whose wording resembles it, are on the Verse Desk.</p><p><a class="sd-desk-link" href="${esc(S.deskHref(book, c, v, t))}#sd-h-sim">Open similar passages</a></p>`)}<p class="sd-panel-foot"><a href="${esc(S.deskHref(book, c, v, t))}">Every citation of ${esc(S.refLabel(book, c, v))} on the Verse Desk</a></p>`;
     bindPanelFolds();
+    // Mere Orthodoxy essays on this verse, two at most (mo-articles-placements.js).
+    if (window.MOPlace) window.MOPlace.panel($panel, { slug: book.slug, c, v }, S.deskHref(book, c, v, t));
     $panel.querySelector(".sd-close").addEventListener("click", closeVerse);
     bar = S.filterBar($panel.querySelector("[data-sd-filters]"), {
       search: true,
@@ -537,19 +539,19 @@
     S.fetchCommentaries(book, c, S.emptyFilters()).then((d) => {
       if (my !== panelCommRun || state.v !== v || state.book !== book || state.c !== c) return;
       // On this chapter, on the book, on the whole Bible (2026-10-15), each oldest first; the fold names say which.
-      const g = S.commentaryGroups(d && d.items, book), names = S.commentaryTitles(book, c, g);
+      const g = S.commentaryGroups(d && d.items, book, d && d.cited), names = S.commentaryTitles(book, c, g);
       const list = (k) => `<ol class="sd-sources sd-panel-commentaries" data-sd-comm-list="${k}"></ol>`;
       const chunks = [];
-      if (g.chapter.length) chunks.push(panelDetails({ ...PANEL_FOLDS.chapter, title: names.chapter }, list("chapter"), g.chapter.length));
       if (g.book.length) chunks.push(panelDetails({ ...PANEL_FOLDS.book, title: names.book }, list("book"), g.book.length));
       if (g.whole.length) chunks.push(panelDetails({ ...PANEL_FOLDS.wholeBible, title: names.whole }, list("whole"), g.whole.length));
+      if (g.cited.length) chunks.push(panelDetails({ ...PANEL_FOLDS.cited, title: names.cited }, list("cited"), g.cited.length));
       if (g.other.length) chunks.push(panelDetails({ ...PANEL_FOLDS.other, title: names.other }, list("other"), g.other.length));
       $host.innerHTML = chunks.join("");
       // Each commentary previews in place (corpus owner, 2026-09-25); see commentaryItem in the core.
       const ctx = { book, c, v };
-      [["chapter", g.chapter], ["book", g.book], ["whole", g.whole], ["other", g.other]].forEach(([k, items]) => {
+      [["book", g.book], ["whole", g.whole], ["cited", g.cited], ["other", g.other]].forEach(([k, items]) => {
         const $ol = $host.querySelector(`[data-sd-comm-list="${k}"]`);
-        if ($ol) items.forEach((e) => $ol.appendChild(S.commentaryItem(e, ctx)));
+        if ($ol) S.commentaryRowsWithMore($ol, items, ctx, S.INITIAL_ROWS[k] || 9);
       });
       bindPanelFolds();
     }).catch(() => {
