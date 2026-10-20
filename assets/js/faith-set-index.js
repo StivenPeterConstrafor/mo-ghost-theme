@@ -10,7 +10,7 @@ const J=u=>fetch(BLOB+u).then(r=>r.ok?r.json():null).catch(()=>null);
 // MereO hosts the same page with its own reader path (window.__FR_READER_PATH__ = '/the-faith-received/read/') and data address
 const READER=(window.__FR_READER_PATH__||'/read');
 const read=(w,p)=>`${READER}?w=${encodeURIComponent(w)}#b${encodeURIComponent(p)}-0`;
-const SECS=[['subjects','Subjects'],['persons','Persons'],['terms','Terms'],['scripture','Scripture']];
+const SECS=[['subjects','Subjects'],['persons','Persons'],['scripture','Scripture'],['terms','Terms'],['questions','Questions']];
 const BOOK=b=>b.replace(/-/g,' ').replace(/\b([a-z])/g,c=>c.toUpperCase()).replace(/^(\d) /,'$1 ').replace('Revelation Of John','Revelation').replace('Song Of Songs','Song of Songs');
 const SET=new URLSearchParams(location.search).get('set');
 const base=`/v1/enrich/sets/${encodeURIComponent(SET)}/`;
@@ -70,7 +70,7 @@ async function showSec(sec,want,write){
   SEC=sec;CUR=null;document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.s===sec)));
   $('#entry').innerHTML='';$('#find').hidden=sec==='scripture';
   if(sec==='scripture'){const [b,c]=(want||'').split('/');await showScripture(b,c,write);return;}
-  $('#q').placeholder={subjects:'Find a subject: grace, justification, the papacy',persons:'Find a person: Augustine, Jerome',terms:'Find a term in English, Latin or Greek'}[sec];
+  $('#q').placeholder={subjects:'Find a subject: grace, justification, the papacy',persons:'Find a person: Augustine, Jerome',terms:'Find a term in English, Latin or Greek',questions:'Find a question: whether, why, how'}[sec];
   const letters='abcdefghijklmnopqrstuvwxyz_'.split('');
   $('#letters').innerHTML=letters.map(l=>`<button type="button" data-l="${l}" aria-pressed="false">${l==='_'?'#':l.toUpperCase()}</button>`).join('');
   const l=want?(fold(want)[0]||'_'):'a';await showLetter(/[a-z]/.test(l)?l:'_');
@@ -94,7 +94,7 @@ if(!SET){
   for(const id of ['tabs','find','letters','cols'])$(`#${id}`).hidden=true;
   J('/v1/enrich/sets/index.json').then(d=>{
     if(!d){$('#by').textContent='The list of sets could not be loaded. Reload the page to try again.';return;}
-    $('#by').textContent=`One index for each of ${d.sets.length} editions and sets of volumes: subjects, persons, terms and Scripture, every entry naming its volume and pages.`;
+    $('#by').textContent=`One index for each of ${d.sets.length} editions and sets of volumes: subjects, persons, Scripture, terms and questions, every entry naming its volume and pages.`;
     $('#dir').innerHTML=d.sets.map(([id,t,a,n,u,e])=>`<li><a href="?set=${encodeURIComponent(id)}">${esc(t)}</a><small>${n.toLocaleString()} ${esc(n===1?u:`${u}s`)} · ${e.toLocaleString()} entries</small>${a?`<span class="who">${esc(a)}</span>`:''}</li>`).join('');
     $('#dir').hidden=false;
   });
