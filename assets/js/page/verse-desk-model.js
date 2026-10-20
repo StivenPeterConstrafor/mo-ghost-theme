@@ -28,6 +28,9 @@
 }(typeof window !== 'undefined' ? window : globalThis, () => {
   'use strict';
 
+  // The commentary anchor's own test of whether a page's gist is about a given verse (commentary-anchor.js, pure).
+  const A = (() => { try { return typeof require === 'function' ? require('./commentary-anchor.js') : globalThis.FRCommentaryAnchor; } catch (e) { return globalThis.FRCommentaryAnchor || null; } })();
+
   // ── small helpers ─────────────────────────────────────────────────────────────────────────────────────────────────────────
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = (n) => Number(n || 0).toLocaleString('en-US');
@@ -186,21 +189,12 @@
     if (!list.length) return null;
     const items = list.map((rd) => {
       const M = T.readingModel(rd), n = rd.n || [0, 0, 0];
-      const pagesOf = new Map(), order = [];
-      M.holds.forEach((w) => {
-        const a = authorOf(w);
-        if (!pagesOf.has(a)) { pagesOf.set(a, []); order.push(a); }
-        pagesOf.get(a).push(w);
-      });
-      order.sort((a, b) => standing(rank, b) - standing(rank, a));
-      const holders = order.map((a) => ({
-        author: a,
-        pages: pagesOf.get(a).slice(0, 3).map((w) => ({ w: w[0], p: w[1] })),
-        n: pagesOf.get(a).length,
-      }));
+      // No author is named under a reading: the data says a page was sorted to a reading, not that its author holds it (a page that
+      // reports or refutes a position is sorted there too). Only counts and links to the pages are kept.
+      const pages = M.holds.slice(0, 6).map((w) => ({ w: w[0], p: w[1] }));
       return {
         label: plain(rd.label), text: plain(rd.reading), proves: plain(rd.proves), hold: n[0] || 0, reported: n[1] || 0, rejected: n[2] || 0,
-        unverified: M.unverified, holders, holdsList: M.holds,
+        unverified: M.unverified, pages, holdsList: M.holds,
       };
     });
     const max = Math.max(...items.map((i) => i.hold), 1);
@@ -216,26 +210,31 @@
   }
   // For each period, the reading held on the most pages placed in it. A reading whose only sources are pages that discuss it (no
   // report, no rejection, a heterodox label) has its holds withheld by readingModel, so it cannot win a period.
+  const RIBBON_MIN = 5;
   function ribbonModel(rv, readings) {
     if (!readings) return null;
     const eraWorks = new Map(arr(rv && rv.eras).map((e) => [e.id, e.works || 0]));
     const cells = [];
     GROUPS.forEach((g) => {
       const works = g.eras.reduce((a, id) => a + (eraWorks.get(id) || 0), 0);
-      let placed = 0, best = null;
+      let placed = 0, best = null, tie = false;
       readings.items.forEach((it) => {
         const k = it.holdsList.filter((w) => g.eras.includes(w[3])).length;
         placed += k;
-        if (k && (!best || k > best.k)) best = { label: it.label, k };
+        if (!k) return;
+        if (!best || k > best.k) { best = { label: it.label, k }; tie = false; } else if (k === best.k) tie = true;
       });
-      if (works || placed) cells.push({ id: g.id, label: g.label, years: g.years, works, placed, best });
+      // A leading reading is claimed only from at least five placed pages, and never from a tie.
+      if (placed < RIBBON_MIN || tie) best = null;
+      const why = placed < RIBBON_MIN ? 'few' : tie ? 'tie' : '';
+      if (works || placed) cells.push({ id: g.id, label: g.label, years: g.years, works, placed, best, why: best ? '' : why });
     });
     return cells.some((c) => c.best) ? { cells } : null;
   }
 
   // ── key voices ────────────────────────────────────────────────────────────────────────────────────────────────────────────
   // Chosen by rule from the library's own ranking (v1/scripture/rank.json): the curated key commentators of the book, in the order
-  // curated, then the authors the ranking puts at the top tier, each with the best page the reception history holds for this verse.
+  // curated, each with the best page the reception history holds for this verse.
   // A voice is an author with a page on THIS verse; no stance is claimed.
   const NOT_A_PERSON = /^(council|concilium|synod|acts of|ecumenical council|westminster assembly|the councils)/i;
   function voicesModel(rv, rank, ref, portraits) {
@@ -252,7 +251,7 @@
     const cands = [...best.entries()].map(([a, c]) => {
       const key = keyList.indexOf(a), tier = standing(rank, a);
       return { a, ...c, key, tier, score: key >= 0 ? 1000 - key : tier };
-    }).filter((c) => (c.key >= 0 || c.tier >= 75) && !NOT_A_PERSON.test(c.a))
+    }).filter((c) => c.key >= 0 && c.x.how === 'exegesis' && !NOT_A_PERSON.test(c.a))
       .sort((p, q) => q.score - p.score || quality(p.x) - quality(q.x) || (p.x.y || 0) - (q.x.y || 0));
     const per = new Map(), picked = [];
     cands.forEach((c) => {
@@ -261,11 +260,13 @@
       per.set(g, (per.get(g) || 0) + 1);
       picked.push(c);
     });
-    if (picked.length < 2) return null;
+    if (picked.length < 3) return null;
     picked.sort((p, q) => (p.x.y || 9999) - (q.x.y || 9999));
     const pmap = portraits || {};
     return picked.map((c) => {
-      const raw = cleanGist(c.x.g);
+      // a description is kept only where the page's own gist names this verse; one about the page before or after is left out
+      const about = A && A.gistClaims ? A.gistClaims(c.x.g, ref.name, ref.c, ref.v) === 'yes' : false;
+      const raw = about ? cleanGist(c.x.g) : '';
       const pic = pmap[c.a] || null;
       return {
         author: c.a, life: lifeOf(c.x), era: eraName(c.e)[0], w: c.x.w, p: c.x.p, h: c.x.h, title: cleanTitle(c.x.t),
@@ -282,13 +283,15 @@
     ERA_ORDER.forEach((id) => {
       const e = arr(rv && rv.eras).find((x) => x.id === id);
       if (!e) return;
-      const rows = arr(e.top).filter((x) => x && x.commentary && x.w && x.p).sort((a, b) => (a.y || 9999) - (b.y || 9999)).slice(0, 3);
+      const notes = (rv && rv.notes) || {};
+      // a rung shows only commentaries the reception history holds a note on this verse for, and opens at that note
+      const rows = arr(e.top).filter((x) => x && x.commentary && x.w && notes[x.w]).sort((a, b) => (a.y || 9999) - (b.y || 9999)).slice(0, 3);
       if (!rows.length) return;
       total += rows.length;
       const [name, years] = eraName(e);
       rungs.push({
         name, years, works: e.works || 0, authors: e.authors || 0,
-        rows: rows.map((x) => ({ author: x.a, life: lifeOf(x), title: cleanTitle(x.t), p: x.p, w: x.w, h: x.h })),
+        rows: rows.map((x) => ({ author: x.a, life: lifeOf(x), title: cleanTitle(x.t), p: notes[x.w], w: x.w })),
       });
     });
     return rungs.length ? { rungs, total } : null;
@@ -328,7 +331,7 @@
     if (rd) {
       const top = rd.items.reduce((a, b) => (b.hold > a.hold ? b : a));
       const found = rd.items.length === 1 ? 'one reading' : `${rd.items.length} readings`;
-      s.push(`The readings pass read ${plural(rd.of, 'page', 'pages')} on it and found ${found}.`);
+      s.push(`The readings pass read a sample of ${plural(rd.of, 'page', 'pages')} on it and found ${found}.`);
       if (top.hold) s.push(`The largest, “${top.label}”, is held on ${fmt(top.hold)}.`);
     }
     if (m.disputes) s.push(`It records ${plural(m.disputes.length, 'question', 'questions')} with competing positions.`);
@@ -391,7 +394,7 @@
   function renderVoices(m, ctx) {
     if (!m.voices || !m.voices.length) return '';
     const li = m.voices.map((v) => {
-      const pic = v.portrait && ctx.portrait ? `<img src="${esc(ctx.portrait(v.portrait.src))}" alt="Portrait of ${esc(v.author)} (${esc(v.portrait.kind)})" width="72" height="72" loading="lazy" decoding="async">`
+      const pic = v.portrait && ctx.portrait ? `<img src="${esc(ctx.portrait(v.portrait.src))}" alt="Portrait of ${esc(v.author)}" width="72" height="72" loading="lazy" decoding="async">`
         : `<span class="vd-ini" aria-hidden="true">${esc(initials(v.author))}</span>`;
       const meta = [v.life, v.era].filter(Boolean).join(' · ');
       return `<li class="vd-voice"><div class="vd-port">${pic}</div><div class="vd-vbody"><h3 class="vd-vname">${esc(v.author)}</h3>${meta ? `<p class="vd-vmeta">${esc(meta)}</p>` : ''}<p class="vd-gist">${esc(v.gist)}</p><a class="vd-vlink" href="${esc(ctx.read(v.w, v.p, v.h))}">${esc(v.title)}, p. ${esc(v.p)}</a></div></li>`;
@@ -399,25 +402,22 @@
     return sec('voices', 'Key voices', 'Who to read first', 'The library\u2019s importance ranking puts these authors first. Each has a page that comments on this verse or cites it by name. They are listed oldest first. Each link opens that page.', `<ul class="vd-voices">${li}</ul>${m.voices.some((v) => v.gistFromData) ? '<p class="vd-note">Each description is machine-written from the page it links to. A line that only says how the page uses the verse is not.</p>' : ''}`);
   }
 
-  function renderReadingItem(it, of) {
-    const holders = !it.unverified && it.holders.length
-      ? `<div class="vd-holders"><p class="vd-sublabel">Pages that hold it, by author</p><ul>${it.holders.slice(0, 8).map((h) =>
-        `<li>${esc(h.author)} ${h.pages.map((p) => `<a href="${esc(p.href)}">p. ${esc(p.p)}</a>`).join(', ')}${h.n > h.pages.length ? ` <span class="vd-dim">and ${fmt(h.n - h.pages.length)} more</span>` : ''}</li>`).join('')
-      }</ul>${it.holders.length > 8 ? `<p class="vd-dim">${plural(it.holders.length - 8, 'more author', 'more authors')} hold it.</p>` : ''}</div>` : '';
-    const stance = `<p class="vd-stance">Held on ${fmt(it.hold)} of ${fmt(of)} pages${it.reported ? `; reported on ${fmt(it.reported)}` : ''}${it.rejected ? `; rejected on ${fmt(it.rejected)}` : ''}.</p>`;
-    const unv = it.unverified ? `<p class="vd-dim">Unverified: the library found no page that reports or rejects this position, so no names are listed.</p>` : '';
-    return `<li class="vd-reading"><details><summary><span class="vd-rt">${esc(it.label)}</span><span class="vd-rbar" aria-hidden="true"><i style="width:${it.pct}%"></i></span><span class="vd-rn">${fmt(it.hold)}</span></summary><div class="vd-rbody">${it.text ? `<p>${esc(it.text)}</p>` : ''}${it.proves ? `<p class="vd-dim"><em>Used to prove:</em> ${esc(it.proves)}</p>` : ''}${stance}${unv}${holders}</div></details></li>`;
+  function renderReadingItem(it, of, ctx) {
+    const pages = it.pages.length ? `<div class="vd-pagelinks"><p class="vd-sublabel">Pages sorted to this reading</p><ul>${it.pages.map((x) =>
+      `<li><a href="${esc(ctx.read(x.w, x.p))}">Page ${esc(x.p)}</a></li>`).join('')}</ul>${it.hold > it.pages.length ? `<p class="vd-dim">${fmt(it.hold - it.pages.length)} more pages are sorted here.</p>` : ''}</div>` : '';
+    // A reading the library found no page reporting or rejecting is marked unverified and carries no stance line at all.
+    const stance = it.unverified ? '' : `<p class="vd-stance">${fmt(it.hold)} of ${fmt(of)} pages read are sorted to this reading${it.reported ? `. ${fmt(it.reported)} report it` : ''}${it.rejected ? `. ${fmt(it.rejected)} reject it` : ''}.</p>`;
+    const unv = it.unverified ? `<p class="vd-dim">Unverified: the library found no page that reports or rejects this position.</p>` : '';
+    return `<li class="vd-reading"><details><summary><span class="vd-rt">${esc(it.label)}</span><span class="vd-rbar" aria-hidden="true"><i style="width:${it.pct}%"></i></span><span class="vd-rn">${fmt(it.hold)}<span class="vd-sr"> ${it.hold === 1 ? 'page' : 'pages'}</span></span></summary><div class="vd-rbody">${it.text ? `<p>${esc(it.text)}</p>` : ''}${it.proves ? `<p class="vd-dim"><em>Used to prove:</em> ${esc(it.proves)}</p>` : ''}${stance}${unv}${pages}</div></details></li>`;
   }
   function renderChurch(m, ctx) {
     const rb = m.ribbon, rd = m.readings;
     if (!rb && !rd) return '';
-    // the holders' page links are made here, where ctx.read is known
-    if (rd) rd.items.forEach((it) => it.holders.forEach((h) => h.pages.forEach((p) => { p.href = ctx.read(p.w, p.p); })));
     const ribbon = rb ? `<ol class="vd-ribbon">${rb.cells.map((c) => `<li><span class="vd-lab">${esc(c.label)}</span><span class="vd-sp">${esc(c.years)}</span><b class="vd-big">${fmt(c.works)}</b><span class="vd-sp">${c.works === 1 ? 'work cites it' : 'works cite it'}</span>${c.best
-      ? `<h3 class="vd-rh">${esc(c.best.label)}</h3><p class="vd-sm">Held on ${fmt(c.best.k)} of ${fmt(c.placed)} placed pages</p>`
-      : `<h3 class="vd-rh vd-dim">No reading placed</h3><p class="vd-sm">The readings pass has no page dated to this period.</p>`}</li>`).join('')}</ol>` : '';
-    const list = rd ? `<p class="vd-sublabel vd-gap">${rd.items.length === 1 ? 'The reading' : `All ${fmt(rd.items.length)} readings`}, by pages that hold it (of ${fmt(rd.of)} pages read)</p><ul class="vd-readings">${rd.items.map((it) => renderReadingItem(it, rd.of)).join('')}</ul>` : '';
-    return sec('church', 'How the church read it', rb ? 'The reading in each age' : 'The readings', rb ? 'For each period, the reading held on the most pages placed in it. Counts of works are works citing the verse.' : '', `${ribbon}${list}<p class="vd-note">Sorted by machine from the pages of the library read on this verse. Open a reading for the pages that hold it.</p>`);
+      ? `<h3 class="vd-rh">${esc(c.best.label)}</h3><p class="vd-sm">Most pages: ${fmt(c.best.k)} of ${fmt(c.placed)} placed</p>`
+      : `<h3 class="vd-rh vd-dim">${c.why === 'tie' ? 'No single leading reading' : c.why === 'few' && c.placed ? 'Too few pages to name a leading reading' : 'No reading placed'}</h3><p class="vd-sm">${c.why === 'tie' ? `Two or more readings are level among ${fmt(c.placed)} placed pages.` : c.placed ? `Only ${plural(c.placed, 'page', 'pages')} from this period ${c.placed === 1 ? 'is' : 'are'} placed.` : 'The readings pass has no page dated to this period.'}</p>`}</li>`).join('')}</ol>` : '';
+    const list = rd ? `<p class="vd-sublabel vd-gap">${rd.items.length === 1 ? 'The reading' : `All ${fmt(rd.items.length)} readings`}, by pages sorted to it (of ${fmt(rd.of)} pages read)</p><ul class="vd-readings">${rd.items.map((it) => renderReadingItem(it, rd.of, ctx)).join('')}</ul>` : '';
+    return sec('church', 'How the church read it', rb ? 'The reading in each age' : 'The readings', rb ? 'For each period, the reading with the most placed pages. A period needs five placed pages, and no other reading may be level. Counts of works are works citing the verse.' : '', `${ribbon}${list}<p class="vd-note">Sorted by machine from the pages of the library read on this verse. Open a reading for its pages. A page can report or refute a position without holding it, so no author is named.</p>`);
   }
 
   function renderDisputes(m) {
@@ -439,15 +439,18 @@
     const l = m.ladder;
     if (!l) return '';
     const r = l.rungs.map((u) => `<li class="vd-rung"><span class="vd-lab">${esc(u.name)}</span><p class="vd-sm">${esc([u.years, plural(u.works, 'work', 'works'), plural(u.authors, 'author', 'authors')].filter(Boolean).join(' · '))}</p><ul>${u.rows.map((x) =>
-      `<li><a href="${esc(ctx.read(x.w, x.p, x.h))}"><b>${esc(x.author)}</b>${x.life ? ` <small>${esc(x.life)}</small>` : ''}<span>${esc(x.title)}, p. ${esc(x.p)}</span></a></li>`).join('')}</ul></li>`).join('');
+      `<li><a href="${esc(ctx.read(x.w, x.p))}"><b>${esc(x.author)}</b>${x.life ? ` <small>${esc(x.life)}</small>` : ''}<span>${esc(x.title)}, p. ${esc(x.p)}</span></a></li>`).join('')}</ul></li>`).join('');
     return sec('ladder', 'The commentary ladder', 'The note on this verse, by age', `One rung per period. Each link opens the commentary at the page that treats ${esc(ctx.label)}. Every commentary with a note on it is listed under Commentaries below.`, `<ol class="vd-ladder">${r}</ol>`);
   }
 
   function renderHeat(m, ctx) {
     const h = m.heat;
     if (!h) return '';
-    const bars = `<ol class="vd-heat" aria-label="Works citing each verse">${h.cols.map((c) =>
-      `<li class="${c.cur ? 'is-cur' : ''}" style="--vd-h:${c.h}%"><i aria-hidden="true"></i><b aria-hidden="true">${(c.v === h.lo && (10 - (h.lo % 10)) % 10 >= 4) || c.v % 10 === 0 || (c.v === h.hi && h.hi % 10 >= 4) ? c.v : ''}</b><span class="vd-sr">${esc(c.text)}</span></li>`).join('')}</ol>`;
+    const bars = `<ol class="vd-heat" aria-label="Works citing each verse">${h.cols.map((c) => {
+      const lab = (c.v === h.lo && (10 - (h.lo % 10)) % 10 >= 4) || c.v % 10 === 0 || (c.v === h.hi && h.hi % 10 >= 4) || c.cur ? c.v : '';
+      const inner = `<i aria-hidden="true"></i><b aria-hidden="true">${lab}</b><span class="vd-sr">${esc(c.text)}${c.cur ? ', this verse' : ''}</span>`;
+      return `<li class="${c.cur ? 'is-cur' : ''}" style="--vd-h:${c.h}%">${c.cur ? `<span class="vd-barlink" aria-current="true">${inner}</span>` : `<a class="vd-barlink" href="${esc(ctx.desk(ctx.c, c.v))}">${inner}</a>`}</li>`;
+    }).join('')}</ol>`;
     const top = `<p class="vd-sublabel vd-gap">Most cited in ${esc(ctx.chapter)}</p><ol class="vd-top">${h.top.map((t) =>
       `<li>${t.cur ? `<span class="vd-here"><b>${esc(t.label)}</b> <small>${plural(t.n, 'work', 'works')} · this verse</small></span>` : `<a href="${esc(ctx.desk(ctx.c, t.v))}"><b>${esc(t.label)}</b> <small>${plural(t.n, 'work', 'works')}</small></a>`}</li>`).join('')}</ol>`;
     return sec('heat', `Where it sits in ${ctx.chapter}`, 'Chapter heat', `Works citing each verse of the chapter, one bar a verse. ${esc(ctx.label)} is marked.`, `${bars}${top}`);

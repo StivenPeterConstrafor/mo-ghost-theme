@@ -38,7 +38,14 @@
 
   // ── the creeds' files and the portraits: the theme's own assets, one fetch each per visit ──
   const asset = (path) => (window.moDataUrl ? window.moDataUrl(path) : window.moAssetUrl ? window.moAssetUrl(path) : path);
-  const getJson = (url) => fetch(url, { credentials: "omit" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  // Every fetch of this file's own gives up after ten seconds, so a hang ends in the older section rather than a blank.
+  const LIMIT = 10000;
+  const getJson = (url) => {
+    const ctl = typeof AbortController === "function" ? new AbortController() : null;
+    const timer = setTimeout(() => { if (ctl) ctl.abort(); }, LIMIT);
+    return fetch(url, ctl ? { credentials: "omit", signal: ctl.signal } : { credentials: "omit" })
+      .then((r) => (r.ok ? r.json() : null)).catch(() => null).finally(() => clearTimeout(timer));
+  };
   // moDataUrl keys a file by the theme version and the hour: one that changed shape inside the hour is asked for once more.
   const shaped = (path, ok) => getJson(asset(path)).then((d) => (ok(d) ? d : getJson(`${path}?cb=${Date.now()}`))).then((d) => (ok(d) ? d : null));
   const CF = "/assets/data/faith-received/confession-proofs/";
@@ -64,16 +71,19 @@
       $head.insertAdjacentHTML("beforeend", by.get("hero"));
     }
     const sections = mods.filter((x) => x.id !== "hero");
+    const NAMES = { voices: "Key voices", church: "How the church read it", dispute: "Points in dispute", confess: "Creeds", ladder: "Commentary ladder", heat: "Chapter heat", share: "Share" };
+    // On a phone every module after the third sits behind its own Show button, so the page is not 13,000px long.
+    const phone = window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
+    const wrapped = sections.map((x, i) => (phone && i >= 3 ? `<details class="vd-fold" data-vd="fold-${x.id}"><summary>Show ${NAMES[x.id] || x.id}</summary>${x.html}</details>` : x.html));
     if (sections.length) {
       const $wrap = document.createElement("div");
       $wrap.className = "vd-modules";
       $wrap.dataset.vd = "modules";
-      $wrap.innerHTML = sections.map((x) => x.html).join("");
+      $wrap.innerHTML = wrapped.join("");
       const $trans = $desk.querySelector('[aria-labelledby="sd-h-trans"]');
       if ($trans) $trans.after($wrap); else $desk.append($wrap);
       // each module's name in the desk's own "On this page" line, in page order
       const $toc = $desk.querySelector(".sd-desk-toc");
-      const NAMES = { voices: "Key voices", church: "How the church read it", dispute: "Points in dispute", confess: "Creeds", ladder: "Commentary ladder", heat: "Chapter heat", share: "Share" };
       if ($toc) {
         const after = $toc.querySelector('a[href="#sd-h-trans"]');
         const frag = document.createDocumentFragment();
@@ -81,6 +91,8 @@
           const a = document.createElement("a");
           a.href = `#vd-${x.id}`;
           a.textContent = NAMES[x.id] || x.id;
+          // a link into a folded module opens its fold first
+          a.addEventListener("click", () => { const f = document.getElementById(`vd-${x.id}`); const d = f && f.closest("details.vd-fold"); if (d) d.open = true; });
           frag.append(a);
         });
         if (after) after.after(frag); else $toc.append(frag);
@@ -127,9 +139,14 @@
 
   (async function run() {
     try {
-      const [rec, rdf, base, rank, cf, pics] = await Promise.all([
-        D.chapterReception(book, c), D.chapterReadings(book, c), D.loadBaseline(), D.loadRank(), confessions(), portraits(),
+      let timer = 0;
+      const gaveUp = new Promise((resolve) => { timer = setTimeout(() => resolve(null), LIMIT); });
+      const got = await Promise.race([
+        Promise.all([D.chapterReception(book, c), D.chapterReadings(book, c), D.loadBaseline(), D.loadRank(), confessions(), portraits()]), gaveUp,
       ]);
+      clearTimeout(timer);
+      if (!got) throw new Error("the data did not arrive in time");
+      const [rec, rdf, base, rank, cf, pics] = got;
       const m = M.build({
         ref: { slug: book.slug, lib: book.lib, name: book.name, c, v }, label, rec, fv: rdf && rdf.verses ? rdf.verses[String(v)] : null,
         base, rank, cf, portraits: pics, T, read,
