@@ -1223,6 +1223,8 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
    label in the body face. 44px tall. */
 /* A compact toolbar, 32px tall, right-aligned directly above the columns (icons, 2026-10-19: "moved up, made smaller, and made into icons"). */
 .sd .sd-viewbar { padding-top: 8px; padding-bottom: 0; }
+/* Flush with the right edge of the columns below: the columns are 1240px wide and the bare .container is 1180px, which left the toolbar 60px short of the panel's edge. */
+@media (min-width: 900px) { .sd .sd-viewbar { max-width: 1240px; } }
 .sd-viewbar-row { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
 .sd-layout-group { display: none; align-items: center; }
 .sd-seg { display: inline-flex; }
