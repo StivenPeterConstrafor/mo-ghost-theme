@@ -1472,7 +1472,7 @@
       if (failed === "busy") { pagesBox.appendChild(el("p", "aud-foot", "That is the limit of new squares for this hour, to stay inside Plausible's quota. Squares already opened still load.")); return; }
       if (failed) { pagesBox.appendChild(el("p", "aud-foot", "Couldn't load pages for this hour. Click the square or press Enter to try again.")); return; }
       if (!data) { pagesBox.appendChild(el("p", "aud-foot", "Loading pages\u2026")); return; }
-      const rows = (data.pages || []).slice().sort((a, b) => (b[metric] - a[metric]) || (b.pageviews - a.pageviews)).slice(0, 5);
+      const rows = (data.pages || []).slice().sort((a, b) => (b[metric] - a[metric]) || (b.pageviews - a.pageviews)).slice(0, 10);
       if (!rows.length) { pagesBox.appendChild(el("p", "aud-foot", "Plausible recorded no pages in this hour.")); return; }
       const top = rows[0][metric] || 1;
       const list = el("ol", "admin-ranked aud-peak-pagelist");
@@ -1555,7 +1555,7 @@
     const keepPages = !!peakSel && peakPinned;
     peakSel = null;
     select(start.w, start.h, keepPages);
-    if (!keepPages) pagesBox.appendChild(el("p", "aud-foot", "Click or tap a square to see its top five pages."));
+    if (!keepPages) pagesBox.appendChild(el("p", "aud-foot", "Click or tap a square to see its top ten pages."));
     function fromEvent(e) {
       const t = e.target && e.target.closest ? e.target.closest(".aud-peak-cell") : null;
       if (!t) return null;
