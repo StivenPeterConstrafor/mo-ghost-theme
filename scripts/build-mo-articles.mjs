@@ -58,6 +58,14 @@ const books = new Map();
   if (books.size !== 66) throw new Error(`mo-articles: expected 66 canon books in scripture-dev-core.js, found ${books.size}`);
 }
 
+// Namesakes: the scan matched names, and some names belong to other people. An essay whose title or excerpt shows the other person, and not the
+// library's author (or whose title is the other person's), is not tagged with the author. Each removal is printed so it can be read over.
+const NAMESAKES = {
+  "Martin Luther": { other: /martin luther king|\bMLK\b|king jr/i, own: /martin luther(?! king)|luther's/i },
+  "John Calvin": { other: /calvin (coolidge|and hobbes|klein|college|university)|calvin & hobbes/i, own: /john calvin|jean calvin|calvin's institutes|calvinist/i },
+  "Augustine of Hippo": { other: /st\.? augustine,? (fl\b|florida)|augustine, florida/i, own: /hippo|city of god|confessions/i },
+};
+const namesakeRemoved = [];
 const problems = [];
 const dropped = [];
 const drop = (id, kind, v, why) => dropped.push(`${id} ${kind} ${v}: ${why}`);
@@ -95,6 +103,9 @@ for (const a of input.articles) {
   }
   const authors = [];
   for (const s of a.authors) {
+    const guard = NAMESAKES[s];
+    const text = `${a.title} ${a.excerpt}`;
+    if (guard && (guard.other.test(a.title) || (guard.other.test(text) && !guard.own.test(text)))) { namesakeRemoved.push(`${a.title} (${a.byline}): not ${s}`); continue; }
     if (input.authorWorks[s] > 0) authors.push(s); else drop(a.id, "author", s, "no works under that name in the library");
   }
   const docs = [], names = [];
@@ -117,6 +128,12 @@ for (const a of input.articles) {
   if (verses.length) o.verses = verses;
   if (topics.length) o.topics = topics;
   if (names.length) o.n = names;
+  // Every kind the essay really has, from what it matched: k stays the primary one (it orders the groups).
+  const has = { doc: docs.length > 0 || names.length > 0, work: works.length > 0 || authors.length > 0, retrieval: kind === "retrieval" || a.retrieval === true, topic: topics.length > 0 || verses.length > 0 };
+  has[kind] = true;
+  // Written only when there is more than one (to stay under the size cap); the loader answers [k] otherwise.
+  const ks = [kind, ...["doc", "work", "retrieval", "topic"].filter((x) => x !== kind && has[x])];
+  if (ks.length > 1) o.ks = ks;
   o.about = a.about; // consumed below, removed before writing
   articles.push(o);
 }
@@ -185,9 +202,11 @@ const report = [
   `mo-articles: ${articles.length} articles, ${(bytes / 1024).toFixed(0)} KB (target under ${MAX_BYTES / 1024} KB)`,
   `  kinds: ${Object.entries(kinds).map(([k, n]) => `${k} ${n}`).join(", ")}`,
   ...Object.entries(sortedIdx).map(([name, t]) => `  idx.${name}: ${Object.keys(t).length} keys, ${Object.values(t).reduce((n, l) => n + l.length, 0)} entries`),
+  `  kinds per article: ${[1, 2, 3, 4].map((n) => `${n}: ${articles.filter((o) => (o.ks || [o.k]).length === n).length}`).join(", ")}`,
   `  with a featured image: ${withImage} of ${articles.length}`,
   `  without any entity: ${articles.filter((o) => !o.works && !o.authors && !o.docs && !o.verses && !o.topics).length}`,
   `  unresolved or dropped: ${dropped.length}`,
+  `  namesake guard removed ${namesakeRemoved.length} author tags${namesakeRemoved.map((x) => `\n    ${x}`).join("")}`,
 ];
 
 const check = process.argv.includes("--check");

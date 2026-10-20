@@ -4,12 +4,12 @@
  *
  * Builds a harness from custom-faith-resources.hbs (partials and helpers stripped, its scripts and stylesheet kept), serves the
  * theme's assets locally, drives headless Chrome over the DevTools protocol, and at 1920, 1440, 1280, 1024, 768 and 375 asserts:
- *   - the column count (8 at 1920, 1440 and 1280, 6 at 1024, 3 at 768, 1 at 375)
+ *   - the column count (6 at 1920, 1440, 1280 and 1024, 4 at 768, 1 at 375)
  *   - the grid, tab bar and hero share the theme's .container edges (1180px, 28px padding) within 1px
  *   - no horizontal overflow of the page
  *   - tiles of one grid are the same width within 1px
  *   - no two cards, and no two text lines inside a card, overlap
- *   - every article is drawn (493, and 77/179/13/224 per kind) and a full render takes under 150 ms of script
+ *   - every article is drawn (493 unique; grouped, multi-kind essays sit under each group; each kind filter shows its own set, flat, with no repeats) and a full render takes under 150 ms of script
  *   - every card is a link, and has an image or a placeholder tile
  *
  *   node scripts/check-resources-grid.mjs
@@ -22,6 +22,11 @@ import { createServer } from "node:http";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+
+const dataFile = JSON.parse(readFileSync(path.join(import.meta.dirname, "..", "assets/data/faith-received/mo-articles.json"), "utf8"));
+const ksOf = (a) => a.ks || [a.k];
+const WANT_KIND = Object.fromEntries(["doc", "work", "retrieval", "topic"].map((k) => [k, dataFile.articles.filter((a) => ksOf(a).includes(k)).length]));
+const WANT_CARDS = dataFile.articles.reduce((n, a) => n + ksOf(a).length, 0);
 
 const root = path.resolve(import.meta.dirname, "..");
 const chromePath = [process.env.CHROME, "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"].find((p) => p && existsSync(p));
@@ -70,18 +75,25 @@ const evaluate = async (expression) => { const r = await send("Runtime.evaluate"
 await send("Page.enable");
 
 const MEASURE = `(async () => {
+  const WANT_KIND = ${JSON.stringify(WANT_KIND)}, WANT_CARDS = ${WANT_CARDS};
   for (let i = 0; i < 60 && !document.querySelector(".fr-res-card"); i += 1) await new Promise((r) => setTimeout(r, 100));
   const grids = [...document.querySelectorAll(".fr-res-grid")];
   const out = { vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth, cards: document.querySelectorAll(".fr-res-card").length, problems: [] };
   if (!grids.length) { out.problems.push("no grid"); return out; }
   let g = grids[0];
   // every article is drawn: all 493 unfiltered, and the whole set for each kind
-  if (out.cards !== 493) out.problems.push(out.cards + " cards, wanted 493");
+  // grouped, a multi-kind essay is under each of its groups; the unique total stays 493
+  if (out.cards !== WANT_CARDS) out.problems.push(out.cards + " cards, wanted " + WANT_CARDS);
+  if (!/^493 articles$/.test(document.getElementById("resCount").textContent)) out.problems.push("the count says " + document.getElementById("resCount").textContent);
+  const hrefs = [...document.querySelectorAll(".fr-res-section")].map((sec) => new Set([...sec.querySelectorAll(".fr-res-cardlink")].map((a) => a.href)).size === sec.querySelectorAll(".fr-res-cardlink").length);
+  if (hrefs.includes(false)) out.problems.push("a group repeats an article");
   const counts = {};
-  for (const [k, n] of Object.entries({ doc: 77, work: 179, retrieval: 13, topic: 224 })) {
+  for (const [k, n] of Object.entries(WANT_KIND)) {
     document.querySelector('[data-kind="' + k + '"]').click();
     counts[k] = document.querySelectorAll(".fr-res-card").length;
     if (counts[k] !== n) out.problems.push(k + " shows " + counts[k] + " cards, wanted " + n);
+    const flat = [...document.querySelectorAll(".fr-res-cardlink")].map((a) => a.href);
+    if (new Set(flat).size !== flat.length) out.problems.push("the " + k + " filter repeats an article");
   }
   document.querySelector('[data-kind=""]').click();
   // a full render, timed: script work from the click to the DOM being built
@@ -90,6 +102,9 @@ const MEASURE = `(async () => {
   document.querySelector('[data-kind=""]').click();
   out.renderMs = (performance.now() - t0) / 2;
   g = document.querySelector(".fr-res-grid");
+  const img = document.querySelector(".fr-res-img");
+  out.radius = img ? getComputedStyle(img).borderTopLeftRadius : "";
+  out.whyMissing = [...document.querySelectorAll(".fr-res-card")].filter((c) => !c.querySelector(".fr-res-cwhy") || !c.querySelector(".fr-res-cwhy").textContent.trim()).length;
   out.cols = getComputedStyle(g).gridTemplateColumns.split(" ").length;
   const cards = [...g.querySelectorAll(".fr-res-card")].map((c) => c.getBoundingClientRect());
   const ws = cards.map((r) => r.width);
@@ -107,13 +122,13 @@ const MEASURE = `(async () => {
     if (!a.querySelector("img.fr-res-photo, .fr-res-ph")) out.problems.push("a card with no image or placeholder");
   }
   for (const a of [...document.querySelectorAll(".fr-res-cardlink")].slice(0, 60)) {
-    const parts = [...a.querySelectorAll(".fr-res-ctitle, .fr-res-cmeta, .fr-res-ckind")].map((e) => e.getBoundingClientRect());
+    const parts = [...a.querySelectorAll(".fr-res-ctitle, .fr-res-cmeta, .fr-res-cwhy, .fr-res-ckind")].map((e) => e.getBoundingClientRect());
     for (let i = 0; i < parts.length; i += 1) for (let j = i + 1; j < parts.length; j += 1) if (hit(parts[i], parts[j])) out.problems.push("text lines overlap in a card");
   }
   return out;
 })()`;
 
-const WANT = { 1920: 8, 1440: 8, 1280: 8, 1024: 6, 768: 3, 375: 1 };
+const WANT = { 1920: 6, 1440: 6, 1280: 6, 1024: 6, 768: 4, 375: 1 };
 let failed = 0;
 await send("Page.navigate", { url: `${base}/h` });
 await new Promise((res) => setTimeout(res, 800));
@@ -125,6 +140,8 @@ for (const [w, cols] of Object.entries(WANT)) {
   if (!m || m.problems === undefined) bad.push("the page did not measure");
   else {
     if (m.renderMs > 150) bad.push(`a full render took ${m.renderMs.toFixed(0)} ms, over 150`);
+    if (m.radius !== "8px") bad.push(`image corners are ${m.radius}, wanted 8px`);
+    if (m.whyMissing) bad.push(`${m.whyMissing} cards have no why line`);
     if (m.cols !== cols) bad.push(`${m.cols} columns, wanted ${cols}`);
     if (m.sw > m.vw) bad.push(`page is ${m.sw}px wide in a ${m.vw}px window`);
     if (m.spread > 1) bad.push(`tiles differ in width by ${m.spread.toFixed(2)}px`);

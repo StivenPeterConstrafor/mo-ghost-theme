@@ -147,17 +147,41 @@
   const plural = (n, one, many) => `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;
 
   const KIND_LABEL = { doc: "Creeds and confessions", work: "Works and authors", retrieval: "Theological retrieval", topic: "Doctrine and Scripture" };
-  const SIZES = "(min-width: 1200px) 140px, (min-width: 1000px) 16vw, (min-width: 800px) 25vw, (min-width: 600px) 33vw, (min-width: 420px) 50vw, 100vw";
+  const SIZES = "(min-width: 1180px) 180px, (min-width: 1000px) 15vw, (min-width: 900px) 20vw, (min-width: 700px) 25vw, (min-width: 540px) 33vw, (min-width: 380px) 50vw, 100vw";
   const monthYear = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", timeZone: "UTC" });
   const niceMonth = (d) => { const t = new Date(`${d}T00:00:00Z`); return Number.isNaN(t.getTime()) ? d : monthYear.format(t); };
 
+  // Why an essay is on the page, in words, from what the data says it serves and nothing else: its kind, then the first two of the things it
+  // matched that fit that kind (documents for a creed piece; authors, then works, for a work piece; topics, then verses, for a doctrine piece).
+  const lower = (t) => t.replace(/^The /, "the ");
+  const VERB = { doc: "About", work: "Engages", retrieval: "On", topic: "Discusses" };
+  const FALLBACK = { doc: "About the creeds and confessions", work: "Engages the works and authors of the library", retrieval: "On theological retrieval", topic: "On doctrine and Scripture" };
+  const ORDER = { doc: ["doc", "topic"], work: ["author", "work"], retrieval: ["topic", "doc"], topic: ["topic", "verse"] };
+  function why(a) {
+    const all = M.entities(a);
+    const ks = M.kindsOf(a);
+    const label = (e) => (e.type === "verse" ? verseLabel(e.key) : e.type === "work" ? lower(shortTitle(e.label)) : e.type === "doc" || e.type === "topic" ? lower(e.label) : e.label);
+    // One clause per kind (up to three); a single-kind essay gets its first two entities in one clause.
+    const clauses = [];
+    for (const k of ks.slice(0, 3)) {
+      if (k === "retrieval") { clauses.push(FALLBACK.retrieval); continue; }
+      const picked = [];
+      for (const t of ORDER[k] || []) for (const e of all) if (e.type === t && picked.length < (ks.length > 1 ? 1 : 2) && !picked.some((p) => p.type === t && p.key === e.key)) picked.push(e);
+      const names = picked.map(label);
+      if (!names.length && k === "doc" && (a.n || []).length) names.push(...a.n.slice(0, ks.length > 1 ? 1 : 2).map(lower));
+      clauses.push(names.length ? `${VERB[k]} ${names.join(" and ")}` : FALLBACK[k]);
+    }
+    return clauses.map((c, i) => (i ? `${c.charAt(0).toLowerCase()}${c.slice(1)}` : c)).join("; ");
+  }
+
   // One card, one link: the image (or a tinted tile with the kind), the title, author and month, the kind. What the essay serves rides in the title attribute.
   function card(a, ts, q) {
-    const kind = KIND_LABEL[a.k] || "";
+    const kind = M.kindsOf(a).map((k) => KIND_LABEL[k]).filter(Boolean).join(", ");
+    const ph = KIND_LABEL[a.k] || "";
     const src3 = M.image(a, 300);
     const img = src3
       ? `<img class="fr-res-photo" src="${esc(src3)}" srcset="${esc(src3)} 300w, ${esc(M.image(a, 600))} 600w" sizes="${SIZES}" width="600" height="400" alt="${esc(a.ia || "")}" loading="lazy" decoding="async">`
-      : `<span class="fr-res-ph" aria-hidden="true">${esc(kind)}</span>`;
+      : `<span class="fr-res-ph" aria-hidden="true">${esc(ph)}</span>`;
     const s = serves(a);
     const also = q ? M.mentions(a, q) : [];
     const tip = s.length ? ` title="${esc(`Serves: ${s.join("; ")}`)}"` : "";
@@ -167,6 +191,7 @@
       `<span class="fr-res-img">${img}</span>`,
       `<span class="fr-res-ctitle">${highlight(a.t, ts)}</span>`,
       `<span class="fr-res-cmeta">${esc(a.a)} <span aria-hidden="true">&middot;</span> ${esc(niceMonth(a.d))}</span>`,
+      `<span class="fr-res-cwhy">${esc(why(a))}</span>`,
       `<span class="fr-res-ckind">${esc(kind)}</span>`,
       also.length ? `<span class="fr-res-cmore">Also mentions: ${esc(also.join(", "))}</span>` : "",
       '<span class="fr-res-sr"> (opens in a new tab)</span>',
@@ -182,8 +207,6 @@
     let list = base;
     if (state.sort === "new" || (state.sort === "match" && !q)) list = base.slice().sort((x, y) => (x.d < y.d ? 1 : x.d > y.d ? -1 : 0));
     else if (state.sort === "old") list = base.slice().sort((x, y) => (x.d < y.d ? -1 : x.d > y.d ? 1 : 0));
-    // No search and no filter: every article, grouped by kind, in group order.
-    if (!q && !state.kind) list = [].concat(...GROUPS.map(([k]) => list.filter((a) => a.k === k)));
     return list;
   }
 
@@ -197,7 +220,7 @@
     let html = "";
     if (grouped) {
       for (const [k, label] of GROUPS) {
-        const part = list.filter((a) => a.k === k);
+        const part = list.filter((a) => M.kindsOf(a).includes(k));
         if (!part.length) continue;
         html += `<section class="fr-res-section" aria-labelledby="res-g-${k}"><h3 class="fr-res-h" id="res-g-${k}">${esc(label)} <span class="fr-res-n">${part.length.toLocaleString("en-US")}</span></h3><ul class="fr-res-grid">${part.map((a) => card(a, ts, q)).join("")}</ul></section>`;
       }

@@ -198,6 +198,33 @@ test("image() asks for a size Ghost serves, and never answers for an essay witho
   if (un) assert.match(B.image(un, 300), /[?&]w=300(&|$)/);
 });
 
+test("namesakes: no Martin Luther King essay is tagged Martin Luther, and no Calvin and Hobbes piece John Calvin", () => {
+  for (const id of data.idx.author["Martin Luther"]) assert.ok(!/martin luther king|\bMLK\b|king jr/i.test(byId.get(id).t), byId.get(id).t);
+  for (const a of data.articles) {
+    if (/martin luther king/i.test(a.t)) assert.ok(!(a.authors || []).includes("Martin Luther"), a.t);
+    if (/calvin and hobbes/i.test(a.x) && !/john calvin/i.test(a.x)) assert.ok(!(a.authors || []).includes("John Calvin"), a.t);
+  }
+});
+test("kinds: every essay has valid kinds with its primary first; filters overlap and the unique total stays 493", () => {
+  const K = ["doc", "work", "retrieval", "topic"];
+  let multi = 0;
+  for (const a of data.articles) {
+    const ks = B.kindsOf(a);
+    assert.equal(ks[0], a.k, a.t);
+    assert.ok(ks.every((k) => K.includes(k)) && new Set(ks).size === ks.length, a.t);
+    if (a.ks) { assert.ok(a.ks.length > 1, `${a.t} writes ks for one kind`); multi++; }
+    if ((a.docs || []).length) assert.ok(ks.includes("doc"), `${a.t} has docs`);
+    if ((a.works || []).length || (a.authors || []).length) assert.ok(ks.includes("work"), `${a.t} has works or authors`);
+    if ((a.topics || []).length || (a.verses || []).length) assert.ok(ks.includes("topic"), `${a.t} has topics or verses`);
+  }
+  assert.ok(multi >= 30, `only ${multi} multi-kind essays`);
+  const counts = Object.fromEntries(B.kinds().map((k) => [k.k, k.n]));
+  for (const k of K) assert.equal(B.search("", { kind: k }).length, counts[k]);
+  assert.ok(K.reduce((n, k) => n + counts[k], 0) > 493, "the kind counts should overlap");
+  assert.equal(B.search("").length, 493);
+  const flat = B.search("", { kind: "work" }).map((a) => a.id);
+  assert.equal(new Set(flat).size, flat.length);
+});
 test("the lookups answer from the built file", () => {
   assert.ok(B.forAuthor("Augustine of Hippo").length >= 30, "Augustine's essays");
   assert.ok(B.forWork("pld-2722").length >= 20, "Confessions");
@@ -335,7 +362,9 @@ test("a card is one link with an image or a placeholder, a sized image box, alt 
   assert.match(pageJs, /<img class="fr-res-photo"[^`]*width="600" height="400" alt="[^`]*loading="lazy" decoding="async"/);
   assert.match(pageJs, /class="fr-res-ph" aria-hidden="true"/);
   assert.match(css, /\.fr-res-img \{[^}]*aspect-ratio: 3 \/ 2/);
-  assert.match(css, /repeat\(8, minmax\(0, 1fr\)\)/);
+  assert.match(css, /min-width: 1000px\) \{ \.fr-res \.fr-res-grid \{ grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.fr-res-img \{[^}]*border-radius: 8px/);
+  assert.match(pageJs, /class="fr-res-cwhy"/);
   assert.ok(!/max-width: 820px/.test(css), "the narrow column is back");
   assert.match(tpl, /class="container fr-res-wrap"/);
   assert.ok(!/\.bhero-inner\.container \{/.test(css), "the hero container is overridden");
