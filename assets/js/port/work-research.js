@@ -1,8 +1,22 @@
 /* Published work analysis. Page references remain strings; extracted text is never a quotation. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.FRWorkResearch=api;})(typeof window==='undefined'?globalThis:window,function(){
 'use strict';
-const kinds={summaries:'Page summaries',positions:'Positions',authorities:'Cited authorities',scripture:'Scripture references',questions:'Questions',definitions:'Terms and definitions'};
-const recordNames={summaries:'page summary',positions:'position',authorities:'authority reference',scripture:'Scripture reference',questions:'question',definitions:'definition'};
+const kinds={summaries:'Page summaries',positions:'Positions',answers:'Pages it answers or cites',answered:'Answered or cited by',authorities:'Cited authorities',scripture:'Scripture references',questions:'Questions',definitions:'Terms and definitions'};
+const recordNames={summaries:'page summary',positions:'position',answers:'reply',answered:'reply',authorities:'authority reference',scripture:'Scripture reference',questions:'question',definitions:'definition'};
+/* WHO ANSWERED WHOM, PAGE TO PAGE (2026-10-20, owner: "An objection's page is linked to the reply's page: Bellarmine with Whitaker,
+   Chamier and Ames"). v1/replies/<slug>.json (runs/minimax_1019/replies): a page's refutations, reports, approvals and quotations of a
+   place in another work that the citation graph resolved to its page (`out`), and the pages elsewhere that do so to this page (`in`).
+   Each becomes a record; its cited page opens through the record's "View cited works" (raw.resolved), as an authority's does. */
+const REPLY_VERB={refutes:['Refutes','Refuted by'],reports:['Reports','Reported by'],approves:['Approves','Approved by'],quotes:['Quotes','Quoted by']};
+function replyRecords(data){
+ const out=[];
+ for(const [dir,kind] of [['out','answers'],['in','answered']])for(const [page,rows] of Object.entries(data?.[dir]||{}))list(rows).forEach((x,i)=>{
+  const [w,p,author,how,locator,title]=x,verb=(REPLY_VERB[how]||['Cites','Cited by'])[dir==='out'?0:1];
+  out.push({id:`reply:${dir}:${page}:${i}`,kind,page:str(page),text:`${verb} ${author||w}${title?', '+title:''}, p. ${p}${dir==='out'&&locator?' ('+locator+')':''}`,unit:'',sections:[],sectionTopics:[],topics:[],
+   raw:{how,locator:dir==='in'?locator:'',resolved:{work_slug:w,anchor:'b'+str(p)+'-0'}}});
+ });
+ return out;
+}
 const str=v=>v==null?'':String(v),list=v=>Array.isArray(v)?v:[],fold=v=>str(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),esc=v=>str(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const stable=v=>Array.isArray(v)?'['+v.map(stable).join(',')+']':v&&typeof v==='object'?'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}':JSON.stringify(v);
 function normalize(data){
@@ -61,7 +75,7 @@ function mount(host,opts){
    for(const ref of ctx.verses){const a=document.createElement('a');a.href=window.FRResearchData.verseURL(ref.book,ref.ch,ref.verse,{view:'desk'});a.textContent='Open verse desk';article.querySelector('.wr-actions').appendChild(a);}
   }
  }
- async function load(){if(model||pending||missing)return pending;pending=(async()=>{status.textContent='Loading work analysis…';try{const r=await fetch(url,{signal:AbortSignal.timeout(25000)});if(r.status===404){missing=true;status.textContent='Work analysis is not yet published for this edition.';host.querySelector('.wr-coverage a').hidden=true;return;}if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!Array.isArray(data.units)||data.slug&&data.slug!==slug)throw Error('Invalid work analysis');if(dead)return;model=normalize(data);host.querySelector('[data-topic]').innerHTML='<option value="">All topics</option>'+model.topics.map(t=>'<option>'+esc(t)+'</option>').join('');host.querySelector('[data-coverage]').textContent=`This published file covers ${model.pages.length.toLocaleString()} page locations in ${model.units.toLocaleString()} sections. Counts refer to this file, not every page or claim in the work. Downloading the data preserves every published field.`;render();}catch(_){if(!dead){status.textContent='Work analysis could not be loaded. ';const retry=document.createElement('button');retry.type='button';retry.textContent='Retry loading';retry.onclick=load;status.appendChild(retry);}}finally{pending=null;}})();return pending;}
+ async function load(){if(model||pending||missing)return pending;pending=(async()=>{status.textContent='Loading work analysis…';try{const r=await fetch(url,{signal:AbortSignal.timeout(25000)});if(r.status===404){missing=true;status.textContent='Work analysis is not yet published for this edition.';host.querySelector('.wr-coverage a').hidden=true;return;}if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!Array.isArray(data.units)||data.slug&&data.slug!==slug)throw Error('Invalid work analysis');if(dead)return;model=normalize(data);try{const rr=await fetch((opts.blob||window.__FR_BLOB_BASE__||'')+'/v1/replies/'+encodeURIComponent(slug)+'.json',{signal:AbortSignal.timeout(15000)});if(rr.ok&&!dead){const extra=replyRecords(await rr.json());model.records.push(...extra);for(const r of extra)if(!model.pages.includes(r.page))model.pages.push(r.page);}}catch(_){/* replies are optional */}host.querySelector('[data-topic]').innerHTML='<option value="">All topics</option>'+model.topics.map(t=>'<option>'+esc(t)+'</option>').join('');host.querySelector('[data-coverage]').textContent=`This published file covers ${model.pages.length.toLocaleString()} page locations in ${model.units.toLocaleString()} sections. Counts refer to this file, not every page or claim in the work. Downloading the data preserves every published field.`;render();}catch(_){if(!dead){status.textContent='Work analysis could not be loaded. ';const retry=document.createElement('button');retry.type='button';retry.textContent='Retry loading';retry.onclick=load;status.appendChild(retry);}}finally{pending=null;}})();return pending;}
  function reveal(target){
   // Only the research panel scrolls; the source keeps its reading position.
   const panel=host.closest('.nb-panel')||host;

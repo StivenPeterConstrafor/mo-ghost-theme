@@ -1312,6 +1312,7 @@ function __initReaderTools(){
     const marked=selPieces().some(p=>p.row.dataset.hl||hlRanges(p.row).some(r=>r.s<p.e&&r.e>p.s));
     const rm=pop.querySelector(".sw.is-clear");
     if(rm)rm.hidden=!marked;
+    const word=passageText();if($("#spDef"))$("#spDef").hidden=!(word.length<=40&&word.split(/\s+/).length<=3&&/\p{L}/u.test(word));
     const rc=getSelection().getRangeAt(0).getBoundingClientRect();pop.classList.add("show");
     pop.style.left=Math.max(8,Math.min(rc.left,innerWidth-pop.offsetWidth-8))+"px";
     pop.style.top=Math.max(8,Math.min(rc.bottom+8,innerHeight-pop.offsetHeight-12))+"px";};
@@ -1322,6 +1323,45 @@ function __initReaderTools(){
   document.addEventListener("mousedown",e=>{if(!pop.contains(e.target))hidePop();});
   pop.addEventListener("pointerdown",e=>{if(e.pointerType==='mouse'&&e.target.closest('button'))e.preventDefault();});
   if($("#spMore"))$("#spMore").onclick=()=>{hidePop();openNotebook('passage');};
+  // THE LEXICON IN THE READER (2026-10-20, owner item 8: "In the reader they would appear as pop-ups"): the selected word looked up
+  // among the lexicon's forms (v1/lexicon/forms/<first two letters>.json: English headword, Latin and Greek terms), an inflected
+  // Latin or Greek word by the form whose stem it shares (gratiae: gratia), and the term's senses shown beside the text.
+  const lexFold=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu,' ').replace(/\s+/g,' ').trim();
+  const lexShards=new Map();
+  const lexShard=k=>{if(!lexShards.has(k))lexShards.set(k,typeof BLOB==='string'&&BLOB?fetch(BLOB+'/v1/lexicon/forms/'+encodeURIComponent(k)+'.json').then(r=>r.ok?r.json():{}).catch(()=>({})):Promise.resolve({}));return lexShards.get(k);};
+  function lexFind(shard,f){
+    if(shard[f])return shard[f];
+    let best=null,bl=0;
+    for(const k in shard){if(k.includes(' '))continue;let i=0;while(i<k.length&&i<f.length&&k[i]===f[i])i++;
+      if(i>=Math.max(4,f.length-4)&&i>=k.length-3&&(i>bl||(i===bl&&best&&k.length<best.length))){best=k;bl=i;}}
+    return best?shard[best]:null;
+  }
+  const lexPop=document.createElement('div');lexPop.id='lexpop';lexPop.setAttribute('role','dialog');lexPop.setAttribute('aria-label','Lexicon');lexPop.hidden=true;document.body.appendChild(lexPop);
+  const LEX=(window.__FR_LEXICON_PATH__||'/lexicon');
+  const lexEsc=t=>String(t??'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  function lexClose(){lexPop.hidden=true;}
+  async function defineWord(word,rc){
+    const f=lexFold(word);if(!f)return;
+    lexPop.innerHTML=`<p class="lx-wait" role="status">Looking up “${lexEsc(word)}”…</p>`;lexPop.hidden=false;
+    const place=()=>{if(innerWidth<=640){lexPop.style.left='8px';lexPop.style.top='auto';return;}
+      lexPop.style.left=Math.max(8,Math.min(rc.left,innerWidth-lexPop.offsetWidth-8))+'px';
+      const below=rc.bottom+10,h=lexPop.offsetHeight;lexPop.style.top=(below+h>innerHeight-8?Math.max(8,rc.top-h-10):below)+'px';};
+    place();
+    const id=lexFind(await lexShard(f.slice(0,2).replace(/ς/g,'σ').replace(/[^\p{L}\p{N}]/gu,'_')||'_'),f);
+    const t=id&&typeof BLOB==='string'&&BLOB?await fetch(BLOB+'/v1/lexicon/terms/'+encodeURIComponent(id)+'.json').then(r=>r.ok?r.json():null).catch(()=>null):null;
+    if(lexPop.hidden)return;
+    if(!t){lexPop.innerHTML=`<p class="lx-none">“${lexEsc(word)}” is not in the lexicon yet.</p><a class="lx-open" href="${LEX}">Browse the lexicon</a><button type="button" class="lx-x" aria-label="Close">×</button>`;place();return;}
+    const forms=[...(t.latin||[]).map(x=>'Latin '+x),...(t.greek||[]).map(x=>'Greek '+x)].slice(0,4).join(' · ');
+    lexPop.innerHTML=`<button type="button" class="lx-x" aria-label="Close">×</button><p class="lx-h">${lexEsc(t.headword)}</p>${forms?`<p class="lx-f">${lexEsc(forms)}</p>`:''}`
+      +`<ol class="lx-s">${(t.senses||[]).slice(0,3).map(sn=>`<li><span>${lexEsc(sn.gloss)}</span>${(sn.src||[]).slice(0,2).map(([w,pg,a,ti])=>`<a href="${lexEsc(READER_PATH(w,pg))}">${lexEsc(a?a+', ':'')}${lexEsc(ti||w)}, p. ${lexEsc(pg)}</a>`).join('')}</li>`).join('')}</ol>`
+      +`<a class="lx-open" href="${LEX}#${encodeURIComponent(t.id)}">${(t.senses||[]).length>3?`All ${t.senses.length} senses in the lexicon`:'Open in the lexicon'}</a>`;
+    place();
+  }
+  const READER_PATH=(w,pg)=>(window.__FR_READER_PATH__||'/read')+'?w='+encodeURIComponent(w)+'#b'+encodeURIComponent(pg)+'-0';
+  lexPop.addEventListener('click',e=>{if(e.target.closest('.lx-x'))lexClose();});
+  document.addEventListener('mousedown',e=>{if(!lexPop.hidden&&!lexPop.contains(e.target)&&!pop.contains(e.target))lexClose();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!lexPop.hidden)lexClose();});
+  $("#spDef")&&($("#spDef").onclick=()=>{const w=passageText(),rc=getSelection()?.rangeCount?getSelection().getRangeAt(0).getBoundingClientRect():pop.getBoundingClientRect();hidePop();defineWord(w,rc);});
   pop.querySelectorAll(".sw").forEach(sw=>sw.onclick=e=>{
     e.preventDefault();
     const colour=sw.dataset.hl;

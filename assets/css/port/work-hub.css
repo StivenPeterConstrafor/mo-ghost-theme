@@ -52,6 +52,8 @@
 .wh-quotes{display:grid;gap:14px}
 .wh-quotes blockquote{margin:0 0 4px;padding-left:14px;border-left:3px solid var(--border);font-style:italic;line-height:1.6;max-width:68ch}
 .wh-note{margin:18px 0 0;font:13px/1.5 var(--body,inherit);color:var(--muted)}
+.wh-setlink{margin:0 0 14px;font:600 13px/1.4 var(--ui,var(--body,inherit))}
+.wh-setlink a{color:inherit;text-decoration:underline;text-underline-offset:3px}
 .wh-page{appearance:none;background:none;border:0;padding:0;margin:0;font:inherit;color:var(--accent,var(--fg));text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;cursor:pointer;min-height:24px;text-align:left}
 .wh-page:hover{text-decoration-thickness:2px}
 .wh-page[aria-expanded="true"]{font-weight:600}
