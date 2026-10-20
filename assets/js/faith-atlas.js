@@ -13,6 +13,11 @@ const ANS=[['affirms','Affirm'],['denies','Deny'],['distinguishes','Distinguish'
 let CUR=null,FILTER=null,DATA=null;
 // an open question ("For whom Christ died") carries the positions the schools took, in place of affirm and deny
 const answersOf=d=>d.options?[...d.options.map(o=>[o,o]),['reports only','Report others only'],['unclear','Unclear']]:ANS;
+// the pages an answer stands on, grouped by work: "Theology of the Scotist School, Vol. I: pp. 361, 373, 375"
+function srcs(list){
+  const by=new Map();for(const [w,p,t] of list){if(!by.has(w))by.set(w,{t:t||w,ps:[]});if(!by.get(w).ps.includes(p))by.get(w).ps.push(p);}
+  return [...by.entries()].map(([w,{t,ps}])=>`<span class="src">${esc(t)}: ${ps.length>1?'pp.':'p.'} ${ps.map(p=>`<a href="${read(w,p)}">${esc(p)}</a>`).join(', ')}</span>`).join('');
+}
 function renderQ(){
   const d=DATA;if(!d)return;const A=answersOf(d);
   const counts=Object.fromEntries(A.map(([k])=>[k,d.answers.filter(a=>a.answer===k).length]));
@@ -20,7 +25,7 @@ function renderQ(){
   const groups=A.map(([k,l])=>[k,l,shown.filter(a=>a.answer===k)]).filter(([,,v])=>v.length);
   $('#q').innerHTML=`<h2>${esc(d.q)}</h2><p class="muted">${esc(d.locus)} · ${d.answers.length} authors · ${d.n_pages.toLocaleString()} pages</p><p class="note">Each answer is read by machine from the claims recorded on the author's pages: open the pages to check it.</p>`
     +`<div class="tally" role="group" aria-label="Filter by answer"><button type="button" data-f="" aria-pressed="${!FILTER}">Answers</button>${A.map(([k,l])=>counts[k]?`<button type="button" data-f="${esc(k)}" aria-pressed="${FILTER===k}">${esc(l)} ${counts[k]}</button>`:'').join('')}</div>${
-    groups.length?groups.map(([k,l,v])=>`<h3 class="ans">${esc(l)} <span class="muted">${v.length}</span></h3><ul class="rows">${v.map(a=>`<li><span class="who">${esc(a.author)}${a.dates||a.tradition?`<small>${esc([a.dates,a.tradition].filter(Boolean).join(' · '))}</small>`:''}</span><p>${esc(a.line)}</p><span class="pp">${(a.cited.length?a.cited:a.pages.slice(0,3)).map(([w,p,t])=>`<a href="${read(w,p)}">${esc(t||w)}, p. ${esc(p)}</a>`).join('')}</span></li>`).join('')}</ul>`).join('')
+    groups.length?groups.map(([k,l,v])=>`<h3 class="ans">${esc(l)} <span class="muted">${v.length}</span></h3><ul class="rows">${v.map(a=>`<li><span class="who">${esc(a.author)}${a.dates||a.tradition?`<small>${esc([a.dates,a.tradition].filter(Boolean).join(' · '))}</small>`:''}</span><p>${esc(a.line)}</p><span class="pp">${srcs(a.cited.length?a.cited:a.pages.slice(0,3))}</span></li>`).join('')}</ul>`).join('')
       :'<p class="muted">No author in the library states an answer on the pages filed under this question yet.</p>'}`;
 }
 async function showQ(id,write){
