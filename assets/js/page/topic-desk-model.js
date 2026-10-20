@@ -53,6 +53,8 @@
   // The early-church column stops here (the date the confession groups and the era bands already use). A work or author dated
   // later is never filed in it, whatever shelf the library keeps it on.
   const EARLY_END = 1054;
+  const QUOTE_MAX = 820; // one sentence may run this long; sentences are added after it only while the whole stays under QUOTE_PAD
+  const QUOTE_PAD = 420;
   // The shelves of the Fathers: a work on one of them counts as early only if its date is known and is no later than EARLY_END.
   const FATHER_GROUPS = new Set(["gf", "po", "pl"]);
 
@@ -194,22 +196,31 @@
     const h = String(e.heading || "");
     return h.length > 0 && h.length <= 160 && T.title.test(h) && !WEAK_WHY.test(String(e.why || ""));
   };
-  // Where the topic's own words first appear, so a quotation always contains them: from the start when they are near it, else from the sentence before.
-  const excerpt = (raw, re, n) => {
-    const t = cleanText(raw);
-    const at = re ? t.search(re) : -1;
-    if (at < 0) return "";
-    const trim = (x) => x.replace(/^[\s\-\u2013\u2014.;:]+/, "");
-    if (at < n - 60) return clip(trim(t), n);
-    let start = 0;
-    const head = t.slice(0, at);
-    for (const m of head.matchAll(/[.!?]["\u201d\u2019)\]]?\s+(?=["\u201c\u2018]?[A-Z])/g)) {
-      const before = head.slice(0, m.index);
-      if ((before.match(/\(/g) || []).length === (before.match(/\)/g) || []).length) start = m.index + m[0].length;
+  /* A shown quotation is whole sentences: it starts at a sentence boundary and ends at a sentence end (2026-10-20, after a quotation
+     stopped before the clause that mattered). It begins at the first sentence that names the topic and adds the sentences after it
+     while they fit; if that sentence alone is too long, no quotation is made. */
+  const sentencesOf = (t) => {
+    const out = [];
+    let from = 0;
+    for (const m of t.matchAll(/[.!?]["\u201d\u2019)\]]?\s+(?=["\u201c\u2018(\[]?[A-Z])/g)) {
+      const head = t.slice(from, m.index + 1);
+      const before = t.slice(0, m.index);
+      const word = (before.match(/([A-Za-z]+)$/) || ["", ""])[1];
+      const open = (before.match(/\(/g) || []).length - (before.match(/\)/g) || []).length;
+      if (open > 0 || (word.length <= 4 && /^[A-Z]/.test(word) && /[.]$/.test(m[0].charAt(0)))) continue;
+      out.push(head.trim());
+      from = m.index + m[0].length;
     }
-    if (at - start > n - 60) start = t.lastIndexOf(" ", Math.max(0, at - 120)) + 1; // one long sentence: begin a little before the word
-    const body = clip(trim(t.slice(start)), n);
-    return start ? `\u2026 ${body}` : body;
+    if (from < t.length) out.push(t.slice(from).trim());
+    return out.filter(Boolean);
+  };
+  const excerpt = (raw, re, n) => {
+    const sents = sentencesOf(cleanText(raw)).filter((x) => /^["\u201c\u2018]?[A-Z0-9]/.test(x) && !/^[A-Z][a-z]{0,4}\.\s*\d/.test(x));
+    const i = re ? sents.findIndex((x) => re.test(x) && x.length >= 40 && x.length <= n) : -1;
+    if (i < 0) return "";
+    let out = sents[i];
+    for (let j = i + 1; j < sents.length && out.length + sents[j].length + 1 <= Math.min(n, QUOTE_PAD); j += 1) out = `${out} ${sents[j]}`;
+    return /[.!?]["\u201d\u2019)\]]?$/.test(out) ? out : "";
   };
   const normKey = (s) => cleanText(plain(s)).toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, " ");
   // A work's column. The Fathers' shelves are early only with a known date no later than EARLY_END; a later Latin author is Medieval.
@@ -230,7 +241,7 @@
   function buildDeskModel(input) {
     const {
       locus, part, parent = null, topic = null, conf = null, scr = null, treat = [], data = {}, marquee = null, history = null,
-      books = new Map(), loci = new Map(), bodyOf = null, principal = {},
+      books = new Map(), loci = new Map(), bodyOf = null, principal = {}, vettedOnly = true,
     } = input;
     const counts = (topic && topic.counts) || {};
     const articles = ((conf && conf.articles) || []).filter((a) => a && a.w);
@@ -304,8 +315,8 @@
     });
     const quoteOf = (a) => {
       // A question-and-answer article often leaves the topic's name to its title (the question), which the caption prints; its answer then opens the quotation.
-      let text = excerpt(a.text, T && T.lead, 240);
-      if (!text && T && T.title.test(articleTitle(a))) text = clip(cleanText(a.text), 240);
+      let text = excerpt(a.text, T && T.lead, QUOTE_MAX);
+      if (!text && T && T.title.test(articleTitle(a))) text = excerpt(a.text, /[\s\S]/, QUOTE_MAX);
       return text ? { doc: plain(stripYear(a.doc)), year: Number(a.year) || 0, article: articleTitle(a), text, w: a.w, p: a.p, href: a.href } : null;
     };
     const titleRank = (a) => (T && T.title.test(articleTitle(a)) ? 0 : 1);
@@ -329,6 +340,7 @@
             if (q) { pickedDocs.add(a.w); quotes.push(q); }
           });
       }
+      if (k === "early") quotes.splice(0, quotes.length, ...quotes.filter((q) => q.year > 0 && q.year < EARLY_END)); // no undated entry in a dated column
       if (quotes.length) { colOf(k).quotes = quotes.sort((x, y) => (x.year || 9999) - (y.year || 9999)); }
     });
     if (pinMiss.length) omitted.push({ module: "vetted-pick", reason: `not found or not about the topic: ${pinMiss.join(", ")}` });
@@ -336,9 +348,14 @@
     if (vetted) {
       CHURCHES.forEach(([k]) => {
         (((hit.works || {})[k]) || []).forEach((pin) => {
-          const e = treatList.find((x) => x.w === pin.w && (pin.p == null || Number(x.p) === Number(pin.p)));
-          const early = k !== "early" || (Number(e && e.y) > 0 && Number(e.y) <= EARLY_END);
-          if (e && early && workAbout(e, T) && colOf(k).works.length < CAP.worksPerColumn) { colOf(k).works.push(e); workPool.push({ e, k, why: pin.why || "" }); } else pinMiss.push(`${k}:${pin.w}`);
+          const base = treatList.find((x) => x.w === pin.w && (pin.p == null || Number(x.p) === Number(pin.p)));
+          const early = k !== "early" || (Number(base && base.y) > 0 && Number(base.y) <= EARLY_END);
+          if (base && early && workAbout(base, T) && colOf(k).works.length < CAP.worksPerColumn) {
+            // at / heading: the page where the discussion itself begins (the library's section list), when the ranked page was an index or a preface.
+            const e = { ...base, p: pin.at != null ? pin.at : base.p, heading: pin.heading != null ? pin.heading : base.heading, credit: pin.credit || "" };
+            colOf(k).works.push(e);
+            workPool.push({ e, k, why: pin.why || "" });
+          } else pinMiss.push(`${k}:${pin.w}`);
         });
       });
     } else {
@@ -357,7 +374,7 @@
     });
     const columns = CHURCHES.map(([k]) => colMap.get(k)).filter(Boolean).map((col) => ({
       id: col.id, name: col.name, quotes: col.quotes,
-      works: col.works.map((e) => ({ w: e.w, p: e.p, title: plain(clip(e.title, 70)), author: e.author, shelf: groupLabel(displayGroup(groupOf(e, bodyOf), e.y)), y: e.y })),
+      works: col.works.map((e) => ({ w: e.w, p: e.p, title: plain(clip(e.title, 70)), author: e.author, credit: e.credit || "", shelf: groupLabel(displayGroup(groupOf(e, bodyOf), e.y)), y: e.y })),
       nArticles: col.arts.length, nDocs: col.docs.size, nAuthors: col.authors,
     })).filter((c) => c.quotes.length || c.works.length);
     /* Documents the library maps to this topic that no column takes in: its church is not one of these (a Waldensian or Bohemian
@@ -365,7 +382,7 @@
     const withheld = [];
     relevant.forEach((a) => {
       const label = plain(stripYear(a.doc));
-      if (!churchOfArticle(a) && Number(a.year) >= EARLY_END && !withheld.some((x) => x.label === label)) withheld.push({ label, year: Number(a.year) });
+      if (!churchOfArticle(a) && Number(a.year) >= EARLY_END && !/lukar/i.test(a.doc) && !withheld.some((x) => x.label === label)) withheld.push({ label, year: Number(a.year) });
     });
 
     // Fault-line row (marquee only; every quotation must be found word for word) --
@@ -382,7 +399,7 @@
 
     let traditions = null;
     if (columns.length >= MIN.columns) {
-      traditions = { columns, fault, nArticles: articles.length, from: model.from, noOrthodox: !columns.some((c) => c.id === "or"), withheld: withheld.slice(0, 6) };
+      traditions = { columns, fault, nArticles: articles.length, from: model.from, noOrthodox: !columns.some((c) => c.id === "or"), withheld: withheld.slice(0, 6), lukaris: articles.some((a) => /lukar/i.test(a.doc)) };
     } else skip("traditions", `${columns.length} church columns (needs ${MIN.columns})`);
 
     // Classic treatments (only works whose title or section heading names the topic; a vetted topic only its vetted picks) --
@@ -465,32 +482,60 @@
     let keyRows = rankRows(cite);
     /* A topic with two sides (the marquee file's verseThemes: words that pick out the articles on each side, for the person and the
        work of Christ) takes its key verses alternately from each side's own most-cited list, so one side cannot fill the page. */
-    const themes = ((hit && hit.verseThemes) || []).map(termRe).filter(Boolean);
+    const themes = ((hit && hit.verseThemes) || []).map((t) => (typeof t === "string" ? { terms: t, take: 1 } : t)).filter((t) => termRe(t.terms));
     if (themes.length) {
-      const lists = themes.map((re) => rankRows(countCites(relevant.filter((a) => re.test(`${articleTitle(a)} ${leadOf(a.text)}`)))));
+      const lists = themes.map((t) => ({ take: Number(t.take) || 1, list: rankRows(countCites(relevant.filter((a) => termRe(t.terms).test(`${articleTitle(a)} ${leadOf(a.text)}`)))).sort((x, y) => y.k * (y.r.lift || 1) - x.k * (x.r.lift || 1)) }));
       const seenRows = new Set();
       const mixed = [];
-      for (let i = 0; mixed.length < keyRows.length && i < keyRows.length; i += 1) {
-        lists.forEach((list) => { if (list[i] && !seenRows.has(rowKey(list[i].r))) { seenRows.add(rowKey(list[i].r)); mixed.push({ r: list[i].r, k: cite.get(rowKey(list[i].r)) || 0 }); } });
+      const idx = lists.map(() => 0);
+      for (let guard = 0; guard < 200 && mixed.length < keyRows.length; guard += 1) {
+        lists.forEach((l, li) => {
+          for (let t = 0; t < l.take && idx[li] < l.list.length; idx[li] += 1) {
+            const row = l.list[idx[li]];
+            if (!seenRows.has(rowKey(row.r))) { seenRows.add(rowKey(row.r)); mixed.push({ r: row.r, k: cite.get(rowKey(row.r)) || 0 }); t += 1; }
+          }
+        });
       }
       keyRows = [...mixed, ...keyRows.filter(({ r }) => !seenRows.has(rowKey(r)))];
     }
-    if (keyRows.length >= MIN.verses) {
+    /* Adjacent verses (up to three in a row, each a key verse) become one card, so a run like Ephesians 1:4, 5, and 6 takes one place, not three. */
+    const byKey = new Map(keyRows.map((x) => [rowKey(x.r), x]));
+    const taken = new Set();
+    const cards = [];
+    keyRows.forEach((x) => {
+      if (taken.has(rowKey(x.r))) return;
+      const run = [x];
+      taken.add(rowKey(x.r));
+      const at = (v) => { const y = byKey.get(`${x.r.b}.${x.r.c}.${v}`); return y && !taken.has(rowKey(y.r)) ? y : null; };
+      for (let guard = 0; guard < 2; guard += 1) {
+        const hi = at(Number(run[run.length - 1].r.v) + 1);
+        const lo = at(Number(run[0].r.v) - 1);
+        if (hi) { run.push(hi); taken.add(rowKey(hi.r)); } else if (lo) { run.unshift(lo); taken.add(rowKey(lo.r)); } else break;
+      }
+      cards.push(run);
+    });
+    if (cards.length >= MIN.verses) {
       const notes = (hit && hit.verseNotes) || {};
-      const key = rowKey;
-      const lab = (r) => {
+      const lab = (run) => {
+        const { r } = run[0];
         const b = books.get(r.b);
-        return `${b.slug === "psalms" ? "Psalm" : b.name} ${r.c}:${r.v}`;
+        const last = run[run.length - 1].r;
+        return `${b.slug === "psalms" ? "Psalm" : b.name} ${r.c}:${r.v}${run.length > 1 ? `\u2013${last.v}` : ""}`;
       };
       verses = {
-        items: keyRows.slice(0, CAP.verses).map(({ r, k }) => ({
-          ref: lab(r), href: `/the-faith-received/scripture/desk/?ref=${books.get(r.b).slug}.${r.c}.${r.v}`, text: r.t || "",
-          n: r.n, nAll: r.n_all, share: r.n_all ? Math.round((100 * r.n) / r.n_all) : 0, lift: r.lift, note: notes[key(r)] || "", articles: k,
-        })),
-        more: keyRows.slice(CAP.verses, CAP.verses + CAP.moreVerses).map(({ r }) => lab(r)),
+        items: cards.slice(0, CAP.verses).map((run) => {
+          const { r } = run[0];
+          const n = run.reduce((t, y) => t + (Number(y.r.n) || 0), 0);
+          const nAll = run.reduce((t, y) => t + (Number(y.r.n_all) || 0), 0);
+          return {
+            ref: lab(run), href: `/the-faith-received/scripture/desk/?ref=${books.get(r.b).slug}.${r.c}.${r.v}`, text: run.map((y) => y.r.t || "").filter(Boolean).join(" "),
+            n, nAll, share: nAll ? Math.round((100 * n) / nAll) : 0, lift: r.lift, note: run.map((y) => notes[rowKey(y.r)] || "").filter(Boolean)[0] || "", articles: Math.max(...run.map((y) => y.k)),
+          };
+        }),
+        more: cards.slice(CAP.verses, CAP.verses + CAP.moreVerses).map(lab),
         total: (scr && scr.total) || rows.length, nArticles: relevant.length,
       };
-    } else skip("verses", `${keyRows.length} verses cited by ${MIN.citeArticles} or more of the topic's articles (needs ${MIN.verses})`);
+    } else skip("verses", `${cards.length} verse cards cited by ${MIN.citeArticles} or more of the topic's articles (needs ${MIN.verses})`);
 
     // People -------------------------------------------------------
     let people = null;
@@ -529,7 +574,7 @@
       const pool = [];
       if (vetted) CHURCHES.forEach(([k]) => (((hit.articles || {})[k]) || []).forEach((pin) => {
         const a = articles.find((x) => x.w === pin.w && (!pin.a || normKey(articleTitle(x)).startsWith(normKey(pin.a))));
-        if (a && columns.some((c) => c.id === k && c.quotes.some((q) => q.w === a.w))) pool.push(a);
+        if (a && columns.some((c) => c.id === k && c.quotes.length >= 2 && c.quotes.some((q) => q.w === a.w))) pool.push(a);
       }));
       else relevant.forEach((a) => { const k = churchOfArticle(a); if (k && principalRank(principal, k, a.w) >= 0) pool.push(a); });
       const cand = pool.map((a) => ({ a, t: cleanText(a.text) })).filter(({ t }) => t.length >= 120 && t.length <= 1500)
@@ -566,7 +611,10 @@
     if (rel.length >= MIN.related) related = { items: rel.map((r) => ({ id: r.id, label: loci.get(r.id).label, n: r.n })), label: locus.label };
     else skip("related", `${rel.length} neighbors (needs ${MIN.related})`);
 
-    const off = (k, name, v) => { if (MODULES_ON[k]) return v; if (v) skip(name, "switched off until its content is vetted"); return null; };
+    /* Scope (2026-10-20): the church columns, classic works, key verses, and reading path are on only for a topic the marquee file has
+       hand-vetted. For every other topic they stay off, because the same rules still let weak picks through there (a volume's
+       abbreviations as a classic work, a catechism question on swearing under Sin). */
+    const off = (k, name, v) => { if (MODULES_ON[k] && (vetted || !vettedOnly)) return v; if (v) skip(name, MODULES_ON[k] ? "not hand-vetted: only the marquee topics show this module" : "switched off until its content is vetted"); return null; };
     traditions = off("traditions", "traditions", traditions);
     treatments = off("treatments", "treatments", treatments);
     verses = off("verses", "verses", verses);
@@ -605,9 +653,9 @@
       const quotes = c.quotes.map((q) =>
         `<figure class="tdk-quote"><blockquote>${esc(q.text)}</blockquote><figcaption>${link(safeRead(q.href, q.w, q.p), [q.doc, q.article && q.article !== q.doc ? q.article : ""].filter(Boolean).join(", "))}${q.year ? ` <span>${q.year}</span>` : ""}</figcaption></figure>`).join("");
       const works = c.works.length ? `<h4 class="tdk-h4">Key works</h4><ul class="tdk-keyworks">${c.works.map((w) =>
-        `<li>${link(readHref(w.w, w.p), w.title)}<span class="by">${esc(w.author)}${w.shelf && w.shelf !== c.name ? `, ${esc(w.shelf)}` : ""}</span></li>`).join("")}</ul>` : "";
+        `<li>${link(readHref(w.w, w.p), w.title)}<span class="by">${esc(w.author)}${w.credit ? ` (${esc(w.credit)})` : ""}${w.shelf && w.shelf !== c.name ? `, ${esc(w.shelf)}` : ""}</span></li>`).join("")}</ul>` : "";
       const stat = [c.nArticles ? `${plural(c.nArticles, "article", "articles")} in ${plural(c.nDocs, "document", "documents")} whose title or opening names this topic` : "", c.nAuthors ? `${plural(c.nAuthors, "author", "authors")} among the 400 with the most indexed passages` : ""].filter(Boolean).join(". ");
-      return `<article class="tdk-card" id="tdk-trad-${esc(c.id)}"><h4 class="tdk-card-h">${esc(c.name)}</h4>${quotes ? `<h4 class="tdk-h4">What the documents say</h4>${quotes}` : ""}${works}${stat ? `<p class="tdk-small tdk-stat">${esc(stat)}.</p>` : ""}</article>`;
+      return `<article class="tdk-card" id="tdk-trad-${esc(c.id)}"><h4 class="tdk-card-h">${esc(c.name)}</h4>${quotes ? `<h4 class="tdk-h4">What the documents say</h4>${quotes}` : ""}${works}${stat ? `<p class="tdk-small tdk-stat">${esc(stat)}.</p>` : ""}${c.id === "rf" && t.lukaris ? `<p class="tdk-small tdk-lukaris">The Confession of Cyril Lukaris (1629) is listed separately; it is not counted under Reformed.</p>` : ""}</article>`;
     }).join("");
     const f = t.fault;
     const fault = f ? `<table class="tdk-matrix"><caption>${esc(f.question)}</caption><thead><tr><th scope="col">Church</th><th scope="col">The text</th><th scope="col">Source</th></tr></thead><tbody>${f.rows.map((r) =>

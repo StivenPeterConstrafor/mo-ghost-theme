@@ -67,10 +67,6 @@
             "w": "cf-015-council-of-constantinople-i-381",
             "a": "The",
             "why": "The 381 creed, the text the Holy Spirit clause comes from."
-          },
-          {
-            "w": "cf-006-creed-quicumque",
-            "why": "The creed whose text is the confession of the Trinity."
           }
         ],
         "rc": [
@@ -104,11 +100,6 @@
           }
         ],
         "bp": [
-          {
-            "w": "rc-126-london-baptist-confession-1677",
-            "a": "Chapter II",
-            "why": "The chapter on God and the Holy Trinity."
-          },
           {
             "w": "rc-127-baptist-catechism-1693",
             "a": "Q. 9",
@@ -177,7 +168,9 @@
           {
             "w": "francois-turretin-institutio-theologiae-elencticae",
             "p": 48,
-            "why": "The topic is headed On the One and Triune God."
+            "why": "The question is headed Concerning the Most Holy Trinity.",
+            "at": 336,
+            "heading": "Question XXIII. Concerning the Most Holy Trinity"
           }
         ]
       }
@@ -239,11 +232,6 @@
       "articles": {
         "early": [
           {
-            "w": "cf-014-council-of-rome-382",
-            "a": "The Canon",
-            "why": "The 382 decree listing the canon of Scripture."
-          },
-          {
             "w": "cf-017-council-of-carthage-iii-397",
             "a": "The Canon",
             "why": "The 397 canon of the Sacred Scriptures."
@@ -303,12 +291,16 @@
           {
             "w": "pesch-de-inspiratione-sacrae-scripturae",
             "p": 259,
-            "why": "Titled On the Inspiration of Sacred Scripture."
+            "why": "The section is headed On the Existence of Inspiration.",
+            "at": 392,
+            "heading": "On the Existence of Inspiration"
           },
           {
             "w": "franzelin-de-divina-traditione-et-scriptura",
             "p": 1,
-            "why": "Titled Treatise on Divine Tradition and Scripture."
+            "why": "The section is on the inspiration of Holy Scripture.",
+            "at": 298,
+            "heading": "Section I. On the Inspiration of Holy Scripture"
           }
         ],
         "lu": [
@@ -337,12 +329,16 @@
           {
             "w": "francois-turretin-institutio-theologiae-elencticae",
             "p": 46,
-            "why": "The topic is headed On Holy Scripture."
+            "why": "The topic is headed On Holy Scripture.",
+            "at": 117,
+            "heading": "Second Topic Concerning Holy Scripture"
           },
           {
             "w": "owen-divine-originall-authority-self-evidencing-light",
             "p": 15,
-            "why": "Titled Of the divine original, authority, self-evidencing light and power of the Scriptures."
+            "why": "Titled Of the divine original, authority, self-evidencing light and power of the Scriptures.",
+            "at": 33,
+            "heading": ""
           }
         ]
       }
@@ -439,7 +435,8 @@
           {
             "w": "duns-scotus-summa-theologica-vol-1",
             "p": 591,
-            "why": "The question is headed On Predestination."
+            "why": "The question is headed On Predestination.",
+            "credit": "compiled by Jerome of Montefortino"
           },
           {
             "w": "salamanticenses-cursus-theologicus-vol-2",
@@ -473,7 +470,9 @@
           {
             "w": "francois-turretin-institutio-theologiae-elencticae",
             "p": 50,
-            "why": "The topic covers the decrees of God and predestination."
+            "why": "The topic covers the decrees of God and predestination.",
+            "at": 397,
+            "heading": "Fourth Locus: Concerning the Decrees of God in General, and Predestination in Particular"
           }
         ],
         "an": [
@@ -498,16 +497,17 @@
       "dek": "The person and work of Jesus Christ. How the creeds, councils, and teachers describe them.",
       "terms": "christ|jesus|mediator|redeem|redemption|incarnat|satisf|atone|two natures|two wills|passion|cross|crucif|oblation|offices|resurrection|ascension|descent|going down|son of god|propitiat|death of",
       "verseThemes": [
-        "incarnat|natures|person|conceiv|virgin|flesh|wills|man\\b|God and man",
-        "death|crucif|cross|passion|suffer|ransom|sacrific|oblation|offering"
+        {
+          "terms": "incarnat|natures|person|conceiv|virgin|flesh|wills|man\\b|God and man",
+          "take": 1
+        },
+        {
+          "terms": "suffer|crucif|cross|died|death|sacrific|oblation|ransom|offering|blood|satisf",
+          "take": 4
+        }
       ],
       "articles": {
         "early": [
-          {
-            "w": "cf-001-apostolic-and-ancient-creeds",
-            "a": "3.",
-            "why": "The creed article that states his conception, passion, and crucifixion."
-          },
           {
             "w": "cf-023-council-of-ephesus-431",
             "why": "The 431 council's text on the one Christ against the Nestorians."
@@ -611,7 +611,9 @@
           {
             "w": "quenstedt-systema-theologicum",
             "p": 1483,
-            "why": "The chapter is headed On Christ the Redeemer."
+            "why": "The chapter is headed On Christ the Redeemer.",
+            "at": 916,
+            "heading": "Chapter III. Concerning Christ the Redeemer"
           },
           {
             "w": "calov-systema-locorum-theologicorum-vol-7",
@@ -740,7 +742,9 @@
           {
             "w": "bellarmine-disputationes-de-controversiis-vol-3-as",
             "p": 482,
-            "why": "The book is headed On Justification."
+            "why": "The book is headed On Justification.",
+            "at": 483,
+            "heading": "Order of the Disputation Concerning Justification"
           }
         ],
         "lu": [
@@ -769,7 +773,9 @@
           {
             "w": "francois-turretin-institutio-theologiae-elencticae",
             "p": 871,
-            "why": "The topic is headed On Justification."
+            "why": "The locus is headed On Justification.",
+            "at": 1565,
+            "heading": "Sixteenth Locus on Justification"
           },
           {
             "w": "eebo-36111",
@@ -885,7 +891,9 @@
           {
             "w": "calvin-institutes-of-the-christian-religion",
             "p": 576,
-            "why": "The chapter is on the teachers and ministers of the Church."
+            "why": "The chapter is headed Of the True Church.",
+            "at": 553,
+            "heading": "Chapter 1. Of the True Church. Duty of Cultivating Unity with Her, as the Mother of All the Godly"
           },
           {
             "w": "voetius-politica-ecclesiastica-vol-3",
@@ -1055,7 +1063,9 @@
           {
             "w": "jeremy-taylor-discovrse-baptisme-its-institution-efficacy-all",
             "p": 4,
-            "why": "Titled A discourse of baptism, its institution and efficacy."
+            "why": "Titled A discourse of baptism, its institution and efficacy.",
+            "at": 5,
+            "heading": "A Discourse of Baptism"
           }
         ]
       }
@@ -1145,15 +1155,12 @@
           {
             "w": "bellarmine-disputationes-de-controversiis-vol-2-as",
             "p": 232,
-            "why": "The chapter treats John 6 and the Eucharist."
+            "why": "The controversy treats the Sacrament of the Eucharist.",
+            "at": 259,
+            "heading": "Concerning the Sacrament of the Eucharist"
           }
         ],
         "lu": [
-          {
-            "w": "melanchthon-confessio-augustana-apologia",
-            "p": 57,
-            "why": "The Apology's article is headed On the Mass."
-          },
           {
             "w": "chemnitz-examen-concilii-tridentini",
             "p": 288,
@@ -1174,12 +1181,16 @@
           {
             "w": "calvin-institutes-of-the-christian-religion",
             "p": 771,
-            "why": "The chapter in the Institutes' book on the Supper treating the Mass."
+            "why": "The chapter is headed Of the Lord's Supper.",
+            "at": 739,
+            "heading": "Chapter 17. Of the Lord's Supper, and the Benefits Conferred by It"
           },
           {
             "w": "heidegger-corpus-theologiae-christianae-vol-3",
             "p": 442,
-            "why": "The chapter is on the real presence of Christ in the Supper."
+            "why": "Heidegger's own questions on the Eucharistic decree of Trent.",
+            "at": 465,
+            "heading": "Questions on the Decrees of the Faith of Session XIII"
           }
         ],
         "an": [

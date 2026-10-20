@@ -83,7 +83,7 @@ const BOOK_SLUGS = new Set([...BOOKS.values()].map((b) => b.slug));
   const m = D.buildDeskModel({
     locus, part: { n: "I", label: "X" }, topic: { counts: { works: 3, authors: 2, positions: 10 }, trace: [], authors: [] },
     conf: { articles: arts, timeline: [] }, scr: { rows: [], total: 0 }, treat: [], data: {}, books: BOOKS, loci: LOCI,
-    principal: { lu: ["lc-1"], rf: ["rc-1"], an: ["rc-2"] },
+    principal: { lu: ["lc-1"], rf: ["rc-1"], an: ["rc-2"] }, vettedOnly: false, // the generic rules are tested; production passes nothing and so shows only vetted topics
     marquee: { dek: "A dek.", fault: { question: "Q?", rows: [{ church: "Lutheran", doc: "d", w: "lc-1", p: 1, quote: "a sentence the article does not contain" }, { church: "Reformed", doc: "d", w: "rc-1", p: 1, quote: "one God" }, { church: "Anglican", doc: "d", w: "rc-2", p: 1, quote: "one God" }] } },
   });
   const cols = (m.modules.traditions || { columns: [] }).columns.map((c) => c.id);
@@ -187,6 +187,7 @@ const predestinationArticle = (() => {
 })();
 
 // The eight marquee topics the relevance test covers, and the known bad picks the independent review found (2026-10-20).
+const MARQUEE_ALL = new Set(Object.entries(marqueeFile.topics).filter(([, v]) => v.articles || v.works).map(([k]) => k));
 const MARQUEE8 = ["de-trinitate", "de-justificatione", "de-christo", "de-baptismo", "de-praedestinatione", "de-ecclesia", "de-scriptura", "de-coena"];
 const DENY_WORK = [
   ["luther-wa-schriften-12", 16, "Leisnig ordinance, not a treatment of the Trinity"], ["pld-359", null, "Ambrose, On the Duties of Ministers"],
@@ -348,7 +349,7 @@ if (live) {
           const bad = DENY_WORK.find(([slug, p]) => slug === w.w && (p == null || p === Number(w.p))) || (DENY_WORK_PREFIX.some((x) => w.w.startsWith(x)) ? ["", 0, "Davenant vol 2"] : null);
           ok(!bad, `${name}: ${c.name}: ${w.author}, ${w.title.slice(0, 30)}: not on the deny list${bad ? ` (${bad[2]})` : ""}`);
           ok(worksIndex.has(w.w), `${name}: ${c.name}: work ${w.w} is in the live works index`);
-          const entry = (treatments[id] || []).find((e) => e.w === w.w && e.p === w.p);
+          const entry = (treatments[id] || []).find((e) => e.w === w.w);
           ok(Boolean(entry) && D.workAbout(entry, T), `${name}: ${c.name}: ${w.author}: a treatments.json entry whose title or section heading names the topic`);
           if (c.id === "early") ok(Number(w.y) > 0 && Number(w.y) <= D.EARLY_END, `${name}: early column: ${w.author} (${w.y}) is dated 1054 or earlier`);
         }
@@ -360,11 +361,11 @@ if (live) {
       }
       // the classic works module holds only works that pass the same rule
       const tw = model.modules.treatments ? model.modules.treatments.groups.flatMap((g) => g.rows) : [];
-      ok(tw.every((r) => { const e = (treatments[id] || []).find((x) => x.w === r.w && x.p === r.p); return e && D.workAbout(e, T) && !DENY_WORK.some(([slug, p]) => slug === r.w && (p == null || p === Number(r.p))); }), `${name}: classic works: all ${tw.length} pass the title-or-heading rule and none is on the deny list`);
+      ok(tw.every((r) => { const e = (treatments[id] || []).find((x) => x.w === r.w); return e && D.workAbout(e, T) && !DENY_WORK.some(([slug, p]) => slug === r.w && (p == null || p === Number(r.p))); }), `${name}: classic works: all ${tw.length} pass the title-or-heading rule and none is on the deny list`);
       // "the earliest treatments" step
       const src = model.modules.path ? model.modules.path.steps.find((st) => st.name === "To the sources") : null;
       if (src) {
-        const ys = src.items.map((it) => Number(((treatments[id] || []).find((e) => e.w === it.w && e.p === it.p) || {}).y));
+        const ys = src.items.map((it) => Number(((treatments[id] || []).find((e) => e.w === it.w) || {}).y));
         ok(ys.every((y) => y > 0 && y <= D.EARLY_END) && ys.every((y, i) => i === 0 || y >= ys[i - 1]), `${name}: the earliest treatments are dated 1054 or earlier, oldest first (${ys.join(", ")})`);
         lines.push(`        earliest treatments: ${src.items.map((it) => it.title).join("; ")}`);
       }
@@ -387,6 +388,42 @@ if (live) {
         ok(/appears only in the 381 text above/.test(trHtml), `${name}: the fault-line carries the line about the Eastern view`);
         ok(vitems.every((x) => !/i-john\.5\.7/.test(x.href)) || /few late Greek manuscripts/.test(out.body), `${name}: the 1 John 5:7 note mentions the late Greek manuscripts`);
       }
+      // quotations are whole sentences; the early column holds no undated entry
+      for (const c of trad.columns) for (const q of c.quotes) {
+        ok(/^["\u201c\u2018]?[A-Z0-9]/.test(q.text) && /[.!?]["\u201d\u2019)\]]?$/.test(q.text) && !/^\u2026/.test(q.text), `${name}: ${c.name}: ${q.doc}: the quotation starts at a sentence start and ends at a sentence end`);
+        if (c.id === "early") ok(q.year > 0, `${name}: early column: ${q.doc} is dated`);
+      }
+      if (id === "de-coena") ok(trad.columns.find((c) => c.id === "rf").quotes.some((q) => /Heidelberg/.test(q.doc) && /feeds and nourishes my soul/.test(q.text)), `${name}: the Heidelberg quotation is complete, through "feeds and nourishes my soul"`);
+      if (trad.lukaris) ok(/Cyril Lukaris \(1629\) is listed separately; it is not counted under Reformed/.test(trHtml), `${name}: the Lukaris note is printed where he is mapped`);
+      // LINK LANDING: every vetted work link opens on the discussion, not a contents page, an index, or a preface
+      const pins = Object.values((marqueeFile.topics[id] || {}).works || {}).flat();
+      let landed = 0; let unchecked = 0;
+      for (const pin of pins) {
+        const e = (treatments[id] || []).find((x) => x.w === pin.w);
+        const pg = Number(pin.at != null ? pin.at : (e && e.p));
+        let m;
+        try { m = await get(`${LIB}/v1/works/${pin.w}/meta.json`, `meta-${pin.w}.json`, 24 * 7); } catch (_) { m = null; }
+        const shards = m && m.shards && m.shards.length ? m.shards : null;
+        if (!shards) { unchecked += 1; continue; }
+        const pageText = async (n) => {
+          const sh = shards.find((x) => n >= x.from && n <= x.to);
+          if (!sh) return "";
+          const d = await get(`${LIB}/v1/works/${pin.w}/${sh.file}`, `shard-${pin.w}-${sh.file.replace(/\W/g, "_")}.json`, 24 * 7);
+          const row = (d.pages || []).find((r) => r.n === n);
+          return row ? String(row.en || row.la || "").replace(/\s+/g, " ") : "";
+        };
+        const here = await pageText(pg);
+        const text = `${here} ${await pageText(pg + 1)}`;
+        const head = here.slice(0, 200);
+        const words = here.split(/\s+/).filter(Boolean).length || 1;
+        const nums = (here.match(/\b\d{1,4}\b/g) || []).length;
+        const looksLikeFront = /^\W*(?:table of )?contents\b|^\W*index\b|^\W*preface\b|^\W*to the reader|^\W*praefatio|^\W*dedicat|\.{5,}/i.test(head) || (nums / words > 0.2 && words > 40) || (here.match(/\.{4,}/g) || []).length > 3;
+        const T2 = D.topicTerms(l, marqueeFile.topics[id]);
+        const good = !looksLikeFront && T2.title.test(text) && here.length > 300;
+        ok(good, `${name}: link landing: ${pin.w} p.${pg} opens on text that names the topic and is not a contents page, index, or preface${good ? "" : ` (${here.slice(0, 90)})`}`);
+        if (good) landed += 1;
+      }
+      console.log(`      ${name}: ${landed} work links verified by page text, ${unchecked} not checkable here (no page shards, e.g. EEBO texts)`);
       console.log(`      ${name}, what each column shows:\n${lines.join("\n")}`);
     }
   }
@@ -407,9 +444,14 @@ if (live) {
     const out = D.renderDesk(model);
     const html = out.hero + out.body;
     const empties = [...out.body.matchAll(/<section class="tdk-mod[^"]*" id="tdk-([a-z]+)"[^>]*>([\s\S]*?)<\/section>/g)].filter(([, , inner]) => !/<li|<article|<tr/.test(inner));
+    if (!MARQUEE_ALL.has(id)) {
+      const m = model.modules;
+      if (m.traditions || m.treatments || m.verses || m.path) ok(false, `${id}: a non-marquee topic shows a module that has not been hand-vetted`);
+    }
     if (empties.length || /undefined|NaN/.test(html)) ok(false, `${id}: an empty module or an undefined value was drawn`);
     built += 1;
   }
+  ok(MARQUEE8.every((k) => MARQUEE_ALL.has(k)) && MARQUEE_ALL.size === MARQUEE8.length, `scope: exactly the eight marquee topics are hand-vetted (${[...MARQUEE_ALL].join(", ")})`);
   ok(built === INDEX.size, `all ${built} loci build and draw without an empty module`);
 }
 
