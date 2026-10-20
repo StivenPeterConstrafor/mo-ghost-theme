@@ -49,7 +49,7 @@ async function page({ search, load, breakModel }) {
     return new window.Response(r.text, { status: r.status });
   };
   const run = (file) => window.eval(readFileSync(path.join(root, file), "utf8"));
-  ["assets/js/port/scripture-kinds.js", "assets/js/page/scripture-source-groups.js", "assets/js/page/scripture-dev-core.js", "assets/js/page/scripture-dev-desk.js"].forEach(run);
+  ["assets/js/port/scripture-kinds.js", "assets/js/page/scripture-source-groups.js", "assets/js/page/scripture-dev-core.js", "assets/js/page/scripture-dev-desk.js", "assets/js/page/commentary-anchor.js"].forEach(run);
   run("assets/js/page/faith-port-scripture-notes.js");
   if (load) {
     run("assets/js/page/verse-desk-model.js");

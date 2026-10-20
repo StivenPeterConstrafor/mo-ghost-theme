@@ -31,7 +31,7 @@
 .sd-desk .sd-desk-head.vd-on > * { grid-column: 1; }
 .sd-desk .sd-desk-head.vd-on > .vd-hero { display: contents; }
 .vd-on .sd-desk-verse {
-  font-family: "IM Fell Great Primer", "Source Serif Pro", Georgia, serif;
+  font-family: var(--font-body);
   font-size: clamp(22px, 2.6vw, 30px); line-height: 1.38; max-width: none;
 }
 .vd-hero .vd-ruler { grid-column: 2; grid-row: 1 / span 6; margin: 0; align-self: end; }
@@ -99,8 +99,8 @@ html[data-sd-theme="dark"] .vd-port img { filter: sepia(0.2) brightness(0.88); }
 .vd-rbody { padding: 4px 0 18px; max-width: 70ch; }
 .vd-rbody p { margin: 0 0 8px; font-size: 15px; line-height: 1.55; }
 .vd-stance { color: var(--sd-muted); }
-.vd-holders ul { list-style: none; margin: 4px 0 0; padding: 0; columns: 2 260px; column-gap: 28px; }
-.vd-holders li { padding: 4px 0; font-size: 15px; break-inside: avoid; }
+.vd-pagelinks ul { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 18px; }
+.vd-pagelinks li a { display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; }
 
 /* points in dispute */
 .vd-dqs { list-style: none; margin: 0; padding: 0; }
@@ -136,7 +136,11 @@ html[data-sd-theme="dark"] .vd-port img { filter: sepia(0.2) brightness(0.88); }
 
 /* the chapter's heat */
 .vd-heat { list-style: none; margin: 0 0 30px; padding: 0; display: flex; align-items: flex-end; gap: 2px; height: 90px; border-bottom: 1px solid var(--sd-ink); }
-.vd-heat li { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; }
+.vd-heat li { position: relative; flex: 1; height: 100%; }
+.vd-barlink { position: relative; display: flex; align-items: flex-end; height: 100%; text-decoration: none; }
+.vd-barlink:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 1px; }
+.vd-heat .is-cur .vd-barlink::before { content: "\25BE"; position: absolute; left: 50%; top: -14px; transform: translateX(-50%); font-size: 12px; line-height: 1; color: var(--sd-ink); }
+.vd-heat .is-cur b { color: var(--sd-ink); }
 .vd-heat i { display: block; width: 100%; height: var(--vd-h); background: var(--vd-bar); }
 .vd-heat .is-cur i { background: var(--vd-hot); }
 .vd-top { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--vd-line); }
@@ -164,7 +168,6 @@ html[data-sd-theme="dark"] .vd-port img { filter: sepia(0.2) brightness(0.88); }
   .vd-ribbon { grid-template-columns: minmax(0, 1fr); }
   .vd-reading summary { grid-template-columns: minmax(0, 1fr) 3rem; row-gap: 6px; padding: 10px 0; }
   .vd-rbar { grid-column: 1 / -1; grid-row: 2; }
-  .vd-holders ul { columns: 1; }
   .vd-side, .vd-side + .vd-side { padding: 0; border-left: 0; }
   .vd-side + .vd-side { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--vd-line); }
   .vd-dq { padding: 14px 14px; }
@@ -172,3 +175,9 @@ html[data-sd-theme="dark"] .vd-port img { filter: sepia(0.2) brightness(0.88); }
   .vd-ladder { grid-template-columns: minmax(0, 1fr); }
   .vd-sec { padding: 30px 0 26px; }
 }
+
+/* phones: every module after the third sits behind its own Show button */
+.vd-fold > summary { display: flex; align-items: center; min-height: 44px; margin: 14px 0 0; padding: 10px 14px; border: 1px solid var(--sd-accent); border-radius: 3px; color: var(--sd-accent); font: 600 12px/1.3 var(--font-body); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; list-style: none; }
+.vd-fold > summary::-webkit-details-marker { display: none; }
+.vd-fold[open] > summary { display: none; }
+.vd-fold > summary:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 2px; }

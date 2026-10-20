@@ -162,6 +162,7 @@ for (const [name, slug, lib, c, v] of VERSES) {
       for (const x of lede.matchAll(/(\d+)(?:st|nd|rd|th)\b/g)) ok(cents.has(Number(x[1])), `${tag}: the lede names the ${x[0]} century, which is not in the strip`);
       const rest = lede.replace(/\d+(?:st|nd|rd|th)\b/g, "");
       for (const n of [...rest.matchAll(/\d[\d,]*/g)].map((x) => Number(x[0].replace(/,/g, "")))) ok(allowed.has(n), `${tag}: the lede prints ${n}, which no source count gives`);
+      if (srcReadings.length) ok(lede.includes("a sample of"), `${tag}: the lede does not call the readings pages a sample`);
       if (srcReadings.length) ok(lede.includes(`found ${srcReadings.length === 1 ? "one reading" : `${srcReadings.length} readings`}`), `${tag}: lede readings count`);
       if (srcDisputes.length) ok(lede.includes(`records ${srcDisputes.length} question`), `${tag}: lede disputes count`);
       if (srcCf.length) ok(lede.includes(`${srcCf.length} article`) && lede.includes(`in ${srcCfDocs} `), `${tag}: lede confession counts`);
@@ -185,15 +186,21 @@ for (const [name, slug, lib, c, v] of VERSES) {
     const ribbon = (/<ol class="vd-ribbon">[\s\S]*?<\/ol>/.exec(html.church) || [""])[0];
     const rt = text(ribbon);
     for (const n of holdNames) if (n.length > 3) ok(!rt.includes(n), `${tag}: the ribbon names ${n}`);
-    const outside = text(html.church.replace(/<div class="vd-holders">[\s\S]*?<\/div>/g, ""));
+    // TRUST: no author is named anywhere under a reading, held or not (the data gives no stance), only counts and page links
     const own = srcReadings.map((r) => `${r.label} ${r.reading} ${r.proves}`).join(" ");
-    for (const n of holdNames) if (n.length > 3 && !own.includes(n)) ok(!outside.includes(n), `${tag}: a reading names ${n} outside a "hold" list`);
+    const whole = text(html.church);
+    const exemplarNames = new Set();
+    srcReadings.forEach((r) => (r.exemplars || []).forEach((e) => exemplarNames.add(String(e.author || ""))));
+    for (const n of new Set([...holdNames, ...exemplarNames, ...disputeNames])) if (n.length > 3 && !own.includes(n)) ok(!whole.includes(n), `${tag}: the readings module names ${n}`);
+    ok(!/vd-holders|Pages that hold|Held on/.test(html.church), `${tag}: the readings module still uses holder language`);
     // the ribbon's reading for a period is the one held on the most pages placed in it
     (m.ribbon ? m.ribbon.cells : []).forEach((cell) => {
       const g = M.GROUPS.find((x) => x.id === cell.id);
       const counts = srcReadings.map((r, i) => ({ label: r.label, k: m.readings.items[i].holdsList.filter((w) => g.eras.includes(w[3])).length }));
       const top = Math.max(0, ...counts.map((x) => x.k));
-      ok(cell.best ? cell.best.k === top : top === 0, `${tag}: ribbon ${cell.id} is not the most-held reading`);
+      const level = counts.filter((x) => x.k === top).length > 1;
+      ok(cell.best ? cell.best.k === top && !level && cell.placed >= 5 : top === 0 || level || cell.placed < 5, `${tag}: ribbon ${cell.id} names a leader it cannot (placed ${cell.placed}, top ${top}, level ${level})`);
+      ok(!cell.best || cell.placed >= 5, `${tag}: ribbon ${cell.id} has a leading reading from under five pages`);
       ok(cell.placed === counts.reduce((a, x) => a + x.k, 0), `${tag}: ribbon ${cell.id} placed count`);
     });
     // every reading's count is the file's own
@@ -206,7 +213,14 @@ for (const [name, slug, lib, c, v] of VERSES) {
     ok(vc.gist.length <= 260, `${tag}: ${vc.author}'s gist is long`);
     ok(vc.w && vc.p, `${tag}: ${vc.author} has no page`);
   });
-  ok(!m.voices || (m.voices.length >= 2 && m.voices.length <= 6), `${tag}: voices count ${m.voices && m.voices.length}`);
+  ok(!m.voices || (m.voices.length >= 3 && m.voices.length <= 6), `${tag}: voices count ${m.voices && m.voices.length}`);
+  {
+    const curated = new Set(((rank.books && (rank.books[slug] || rank.books[lib])) || []).map((x) => x[0]));
+    (m.voices || []).forEach((vc) => ok(curated.has(vc.author), `${tag}: ${vc.author} is a voice but not on the curated list for the book`));
+    if (!curated.size) ok(!m.voices && !html.voices, `${tag}: voices on a book with no curated list`);
+  }
+  // every ladder rung opens at a note the reception history holds for this verse
+  (m.ladder ? m.ladder.rungs : []).forEach((u) => u.rows.forEach((x) => ok(rv.notes[x.w] && String(rv.notes[x.w]) === String(x.p), `${tag}: ladder row ${x.w} has no note page ${x.p}`)));
   // ── links ──
   for (const mm of all.matchAll(/href="([^"]*)"/g)) {
     const h = decode(mm[1]);
