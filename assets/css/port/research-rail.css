@@ -1,0 +1,110 @@
+/* The Research rail, page first (2026-10-20 rail critique; owner "fix it all"). Loaded after every other sheet the rail draws on
+   (the reader's own rail block, work-research.css, work-hub.css, work-research-sources.css, desk-workflow.css), so these rules
+   are the rail's last word: one type scale with a 13px floor, one button scale, one fold mark. Its colours are the site's own:
+   Mere Orthodoxy's rail tokens (--nbx-*, faith-port-reader-skin.css) where they are set, the reader's otherwise; there the
+   skin loads after this sheet and keeps its own say, and the block marked TFR ONLY is left out of the theme's copy. */
+
+html #notebook{--rr-meta:13px;--rr-body:15px;--rr-ctl:40px;--rr-r:3px;--rr-line:var(--nbx-line,var(--border));--rr-card:var(--nbx-card,var(--card,var(--card-bg)));--rr-panel:var(--nbx-panel,var(--bg));--rr-fill:var(--nbx-fill,var(--fg));--rr-fill-ink:var(--nbx-fill-ink,var(--bg))}
+@media (pointer:coarse){html #notebook{--rr-ctl:44px}}
+@media (max-width:640px){html #notebook{--rr-meta:14px;--rr-body:16px}}
+
+/* ── the head: the rail's name, Save, close ───────────────────────────────────────────────────────────────────────────── */
+html #notebook:focus{outline:none}
+html #notebook .nb-head{gap:12px}
+html #notebook .nb-head-tools{display:flex;align-items:center;gap:6px;margin-left:auto}
+html #notebook .nb-save-toggle{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:6px 12px;border:1px solid var(--rr-line);border-radius:var(--rr-r);background:var(--rr-card);color:var(--fg);font:14px/1.2 var(--font-body);letter-spacing:normal;text-transform:none;cursor:pointer}
+html #notebook .nb-save-toggle::after{content:"";width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .15s var(--ease,ease-out)}
+html #notebook .nb-save-toggle:hover,html #notebook .nb-save-toggle[aria-expanded="true"]{background:var(--hl,var(--highlight))}
+html #notebook .nb-save-toggle[aria-expanded="true"]{border-color:var(--muted)}
+html #notebook .nb-save-toggle[aria-expanded="true"]::after{transform:translateY(1px) rotate(225deg)}
+@media (pointer:coarse){html #notebook .nb-save-toggle{min-height:44px}}
+
+/* ── the Save panel: both saves, the notebook they go into, what happened ──────────────────────────────────────────────── */
+html #notebook .nb-save-panel{flex:none;display:grid;gap:12px;padding:14px 18px 16px;border-bottom:1px solid var(--rr-line);background:var(--rr-panel)}
+html #notebook .nb-save-actions{display:flex;flex-wrap:wrap;gap:8px}
+html #notebook .nb-save-actions button{display:inline-flex;align-items:baseline;gap:8px;min-height:var(--rr-ctl);padding:8px 14px;border:1px solid var(--rr-line);border-radius:var(--rr-r);background:var(--rr-card);color:var(--fg);font:var(--rr-body)/1.3 var(--font-body);cursor:pointer}
+html #notebook .nb-save-actions button:hover{background:var(--hl,var(--highlight))}
+html #notebook .nb-save-actions button:disabled{opacity:.6;cursor:progress}
+html #notebook .nb-save-where{font-size:var(--rr-meta);color:var(--muted);font-variant-numeric:tabular-nums}
+html #notebook .nb-save-where:empty{display:none}
+html #notebook #nbSaveWork[aria-pressed="true"]{border-color:var(--muted)}
+html #notebook #nbSaveWork[aria-pressed="true"]::before{content:"\2713";color:var(--accent2,var(--fg))}
+html #notebook .nb-save-panel .nb-project{display:flex;align-items:flex-end;flex-wrap:wrap;gap:8px 16px;padding:0;border:0;background:none}
+#notebook .nb-save-panel label{display:grid;gap:4px;flex:1 1 200px;min-width:0;font:var(--rr-meta)/1.4 var(--font-body);color:var(--muted)}
+html #notebook .nb-save-panel .nb-project select{margin:0;min-height:var(--rr-ctl);font:var(--rr-body) var(--font-body)}
+html #notebook .nb-save-panel .nb-project a{display:inline-flex;align-items:center;min-height:var(--rr-ctl);max-width:none;font:var(--rr-meta)/1.4 var(--font-body);color:var(--fg);text-underline-offset:4px}
+html #notebook .nb-save-status{margin:0;font:var(--rr-meta)/1.5 var(--font-body);color:var(--muted)}
+html #notebook .nb-save-status:empty{display:none}
+@media (pointer:coarse){html #notebook .nb-save-panel .nb-project select{font-size:16px}}
+
+/* ── the work's card: its title, its author, its four doors as one row of links ────────────────────────────────────────── */
+html #notebook .nb-work-identity>p{font-size:var(--rr-meta);margin-bottom:6px}
+
+/* ── one fold mark: a chevron that turns when the fold opens ───────────────────────────────────────────────────────────── */
+html #notebook :is(.wrs-section,.nb-analysis-fold,.nb-saved-group,.nb-conversation-group,.nb-settings,.nb-more,.wrs-group,.wr-coverage,.wr-topic-context,.wr-verification)>summary{list-style:none;display:flex;align-items:baseline;gap:10px}
+html #notebook :is(.wrs-section,.nb-analysis-fold,.nb-saved-group,.nb-conversation-group,.nb-settings,.nb-more,.wrs-group,.wr-coverage,.wr-topic-context,.wr-verification)>summary::-webkit-details-marker{display:none}
+html #notebook :is(.wrs-section,.nb-analysis-fold,.nb-saved-group,.nb-conversation-group,.nb-settings,.nb-more,.wrs-group,.wr-coverage,.wr-topic-context,.wr-verification)>summary::before{content:"\203A";flex:none;display:inline-block;width:.55em;font-size:1.2em;line-height:1;color:var(--muted);transform:none;transition:transform .15s var(--ease,ease-out)}
+html #notebook :is(.wrs-section,.nb-analysis-fold,.nb-saved-group,.nb-conversation-group,.nb-settings,.nb-more,.wrs-group,.wr-coverage,.wr-topic-context,.wr-verification)[open]>summary::before{transform:rotate(90deg)}
+
+/* ── one type scale: meta 13, body 15 (14 and 16 on a phone), folds 17, headings 20; nothing under 13 ───────────────────── */
+html #notebook :is(.nb-context-label,#nbWorkSearchStatus,.nb-work-search-hit>span:first-child,.nb-item-actions button,.nb-chat small,.nb-cite,.nb-settings .nb-tools button,.nb-highlight-colors legend,.nb-highlight-colors button,.wr-controls label,.wr-group>summary>span:last-child,.wrs-note,.wrs-page-status,.wh-parts button small,.wh-note){font-size:var(--rr-meta)}
+@media (max-width:640px){
+  html #notebook :is(.nb-panel,.wrs){font-size:var(--rr-body)}
+  html #notebook :is(.wh-ipp,.wh-citers li,.wh-cited li,.nb-guidance){font-size:15px}
+}
+
+/* ── one button scale: filled for a tab's one main action, outlined for the rest, underlined text for doors ───────────── */
+html #notebook .nb-book-ask{display:inline-flex;align-items:center;justify-content:center;width:auto;min-height:var(--rr-ctl);padding:8px 16px;margin:4px 0 16px;border:1px solid var(--rr-line);border-radius:var(--rr-r);background:var(--rr-card);color:var(--fg);font:14px/1.3 var(--font-body);text-align:center;cursor:pointer}
+html #notebook .nb-book-ask:hover{background:var(--hl,var(--highlight));border-color:var(--muted)}
+html #notebook #nbNewChat{background:var(--rr-fill);border-color:var(--rr-fill);color:var(--rr-fill-ink)}
+html #notebook #nbNewChat:hover{background:var(--rr-fill);opacity:.88}
+html #notebook #nbWorkSearchMore{display:flex;width:100%}
+html #notebook select:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+
+/* ── Saved: the places first, then what else was kept ─────────────────────────────────────────────────────────────────── */
+html #notebook #nbTitle{margin:0 0 10px}
+html #notebook .nb-places{margin:4px 0 6px}
+html #notebook .nb-places-head{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:var(--rr-ctl);margin:0 0 4px}
+html #notebook .nb-places-head .nb-context-label{margin:0;font:var(--rr-body)/1.4 var(--font-body);color:var(--fg)}
+html #notebook .nb-place-save{flex:none;min-height:36px;padding:6px 12px;border:1px solid var(--rr-line);border-radius:var(--rr-r);background:var(--rr-card);color:var(--fg);font:14px/1.2 var(--font-body);cursor:pointer}
+html #notebook .nb-place-save:hover{background:var(--hl,var(--highlight))}
+html #notebook .nb-place-last{margin:2px 0 10px;font:var(--rr-meta)/1.5 var(--font-body);color:var(--muted)}
+html #notebook :is(.nb-place-last,.nb-place-list) a{color:var(--fg);text-underline-offset:3px}
+html #notebook .nb-place-list{list-style:none;margin:0 0 8px;padding:0}
+html #notebook .nb-place-list li{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--rr-line)}
+html #notebook .nb-place-col{font:var(--rr-meta)/1.4 var(--font-body);color:var(--muted)}
+html #notebook .nb-empty{padding:12px 0;font:italic var(--rr-body)/1.6 var(--font-body)}
+@media (pointer:coarse){html #notebook .nb-place-save{min-height:44px}}
+
+/* ── Search and Ask, started from the work's own index ───────────────────────────────────────────────────────────────── */
+html #notebook :is(.nb-starters,.nb-index-hits){margin:4px 0 18px}
+html #notebook :is(.nb-starters,.nb-index-hits) h3{display:flex;align-items:baseline;gap:8px;margin:0 0 10px;font:600 14px/1.4 var(--font-body);color:var(--fg)}
+html #notebook .nb-index-hits h3 span{font-weight:400;font-size:var(--rr-meta);color:var(--muted);font-variant-numeric:tabular-nums}
+html #notebook .nb-chips{display:flex;flex-wrap:wrap;gap:6px}
+html #notebook .nb-chip{display:inline-flex;align-items:center;min-height:36px;padding:6px 12px;border:1px solid var(--rr-line);border-radius:var(--rr-r);background:none;color:var(--fg);font:14px/1.3 var(--font-body);cursor:pointer}
+html #notebook .nb-chip:hover{background:var(--hl,var(--highlight));border-color:var(--muted)}
+html #notebook .nb-index-hits ul,html #notebook #nbAskStarters ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--rr-line)}
+html #notebook .nb-index-hits li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;padding:10px 0;border-bottom:1px solid var(--rr-line)}
+html #notebook .nb-ih-kind{font:var(--rr-meta)/1.5 var(--font-body);color:var(--muted)}
+html #notebook .nb-ih-name{font:var(--rr-body)/1.45 var(--font-body);color:var(--fg);overflow-wrap:anywhere}
+html #notebook .nb-index-hits .wh-ipp{grid-column:2}
+html #notebook .nb-ask-q{display:grid;gap:4px;width:100%;min-height:var(--rr-ctl);padding:12px 0;border:0;border-bottom:1px solid var(--rr-line);border-radius:0;background:none;color:var(--fg);font:var(--rr-body)/1.5 var(--font-body);text-align:left;cursor:pointer}
+html #notebook .nb-ask-q:hover span{text-decoration:underline;text-underline-offset:3px}
+html #notebook .nb-ask-q small{font:var(--rr-meta)/1.4 var(--font-body);color:var(--muted);font-variant-numeric:tabular-nums}
+@media (pointer:coarse){html #notebook .nb-chip{min-height:44px}}
+
+/* ── page numbers: a target a finger can hit ─────────────────────────────────────────────────────────────────────────── */
+html #notebook .wh-ipp .wh-page{display:inline-flex;align-items:center;min-width:24px;min-height:28px}
+@media (pointer:coarse){
+  html #notebook .wh-ipp{gap:4px 6px}
+  html #notebook .wh-ipp .wh-page{justify-content:center;min-width:40px;min-height:40px}
+}
+
+/* ── docked on a desk: the rail rises with the reader's header when it hides ─────────────────────────────────────────── */
+html.fr-research-docked #notebook{transition:transform .18s ease-out,top .28s var(--ease,ease-out)}
+html.mh-mini.fr-research-docked #notebook{top:0}
+
+@media (prefers-reduced-motion:reduce){
+  html #notebook :is(.wrs-section,.nb-analysis-fold,.nb-saved-group,.nb-conversation-group,.nb-settings,.nb-more,.wrs-group,.wr-coverage,.wr-topic-context,.wr-verification)>summary::before,
+  html #notebook .nb-save-toggle::after,html.fr-research-docked #notebook{transition:none}
+}

@@ -4447,7 +4447,7 @@ function syncReaderHeader(n){
    // the volume on its shelf, every work it holds (owner 2026-10-11, the PG shelf on a phone)
    const room=frShelfVolumeHref(se);if(room){const a=document.createElement('a');a.href=room;a.textContent=se.label;a.title='All the works in '+se.key+' '+se.vol;volume.replaceChildren(a);}}
    else{volume.textContent=String(DATA.volume||"").replace(/\b(P[LG]|PO)\s*(\d+)/g,"$1 $2");volume.removeAttribute('title');}}
- place.textContent=locOf(n);place.setAttribute('aria-label','Go to a place in this work, currently '+locOf(n));
+ place.textContent=locOf(n);place.dataset.page=String(n);place.setAttribute('aria-label','Go to a place in this work, currently '+locOf(n));
  const column=DATA.pld_source_view?.hasColumns!==false&&(!DATA.pld_source_view?.notes||DATA.pld_source_view?.columnNotes)&&/^P[LG]\s*\d/i.test(DATA.volume||""),unit=column?'column':DATA.has_pages?'page':'section';
  $("#pgJump").setAttribute('aria-label',unit[0].toUpperCase()+unit.slice(1)+' number');$("#pgJump").title='Go to '+unit;
  $("#reader-jump-label").textContent='Go to '+unit;

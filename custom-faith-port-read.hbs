@@ -33,10 +33,10 @@
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer:ital@0;1&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Old+Standard+TT:ital,wght@0,400;0,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
 <link rel="stylesheet" href="{{asset "css/port/prdl-system.css"}}&amp;frv=773f88d15ebcac8e">  <!-- shared design system (one source for all four sites); the inline tokens below still win, so this is additive -->
-<link rel="stylesheet" href="{{asset "css/port/read.in01.css"}}&amp;frv=68984dd1bf85a00a">
+<link rel="stylesheet" href="{{asset "css/port/read.in01.css"}}&amp;frv=9247f3e979bf7da1">
 <link rel="stylesheet" href="{{asset "css/port/work-research.css"}}&amp;frv=2752d3b8f4712425">
 <link rel="stylesheet" href="{{asset "css/mo-articles-module.css"}}&amp;frv=2625886e3c465b55" />
-<script defer src="{{asset "js/port/scripture-kinds.js"}}&amp;frv=45c55191e1820ff3"></script><script defer src="{{asset "js/port/work-research.js"}}&amp;frv=3c155c8a15ad216b"></script>
+<script defer src="{{asset "js/port/scripture-kinds.js"}}&amp;frv=45c55191e1820ff3"></script><script defer src="{{asset "js/port/work-research.js"}}&amp;frv=e9ca42981fd276a3"></script>
 <script defer src="{{asset "js/port/reader-bookmarks.js"}}&amp;frv=a09c15752f1c7920"></script>
 {{!-- The three the corpus site's reader loads and this one did not, which is why PL
       columns, the Greek parallel lanes and the PL editorial notes all behaved
@@ -56,7 +56,7 @@
      and precede reader-core.js. --}}
 <script src="{{asset "js/page/faith-port-read-contents-overlay.js"}}"></script>
 <link rel="stylesheet" href="{{asset "css/port/reader-contents.css"}}&amp;frv=be9cf4f6fae0f5a5">
-<link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=a78a83a4be45ab3d"><script defer src="{{asset "js/port/work-hub.js"}}&amp;frv=f8bfe2cd8e3845d4"></script>
+<link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=cd550e03bf3c7042"><script defer src="{{asset "js/port/work-hub.js"}}&amp;frv=ab5115611aa8840f"></script>
 {{!-- Citations you can follow (2026-10-20): the cited page beside the text, from v1/enrich/links on the library worker. --}}
 <script defer src="{{asset "js/port/page-window.js"}}&amp;frv=2023bacb69cf7ee4"></script><script defer src="{{asset "js/port/reader-cite-links.js"}}&amp;frv=e61afff0127c2ea0"></script>
 <link rel="stylesheet" href="{{asset "css/port/work-research-sources.css"}}&amp;frv=756b652f362c6473">
@@ -71,6 +71,9 @@
       logs three CSP errors per load and mislabels the notebook "sync
       unavailable". This drops the config while the window between the two files
       is still ours. --}}<script src="{{asset "js/page/faith-port-read-nosync.js"}}&amp;frv=89212fc42325800a"></script><link rel="stylesheet" href="{{asset "css/port/fr-reading-system.css"}}&amp;frv=74b92debb2557057"><link rel="stylesheet" href="{{asset "built/faith-ask-workspace.min.css"}}&amp;frv=f96fc5e924711651"><script defer src="{{asset "js/port/ask-store.js"}}&amp;frv=adef8dbf17b627ad"></script><script src="{{asset "js/page/faith-ask-config.js"}}&amp;frv=ccd1c7702c51c000"></script><script defer src="{{asset "js/port/ask-workspace.js"}}&amp;frv=7811ee43ff81687d"></script><script src="{{asset "js/port/research-data.js"}}&amp;frv=7a8a8dc3e166283a"></script><script src="{{asset "js/port/research-notebook.js"}}&amp;frv=c5faba0179c5d5db"></script>{{!-- site-navigation.js removed: it injects his Library/Authors/Scripture/Topics/Explore bar, and Mere Orthodoxy's own nav does that job now. --}}<script src="/assets/js/port/fr-noblob.js?v=nb1"></script>
+{{!-- The Research rail, page first (2026-10-20 rail critique): one Save control, the page's folds counted and open, one fold mark,
+     the Search and Ask tabs started from the work's own index, w to open or close it. Before the skin, which keeps its say. --}}
+<link rel="stylesheet" href="{{asset "css/port/research-rail.css"}}&amp;frv=c8a7458c433541b4">
 <link rel="stylesheet" href="{{asset "css/faith-port-reader-skin.css"}}&amp;frv=aab6457ac750aa06">
 {{/contentFor}}
 
@@ -202,11 +205,11 @@
 
      Four bare site links (/desk, /pins, /pins?view=research, /search) are rewritten to
      this site's routes, so no control can navigate away from the work. --}}
-<aside class="notebook" id="notebook" aria-hidden="true" aria-label="Research" inert>
-  <div class="nb-head"><span>Research</span><button class="nb-x" id="nbClose" aria-label="Close research">×</button></div>
-  <div class="nb-tabs" role="tablist" aria-label="Research tools"><button type="button" id="nbWorkPanelTab" role="tab" aria-selected="true" aria-controls="nbWorkPanel">Work</button><button type="button" id="nbWorkSearchTab" role="tab" aria-selected="false" aria-controls="nbWorkSearch">Search</button><button type="button" id="nbPassageTab" role="tab" aria-selected="false" aria-controls="nbPassage">Passage</button><button type="button" id="nbSavedTab" role="tab" aria-selected="false" aria-controls="nbSaved">Saved <span id="nbSavedCount"></span></button><button type="button" id="nbChatsTab" role="tab" aria-selected="false" aria-controls="nbChats">Chats</button></div>
-  <div class="nb-project"><label>Save to notebook<select id="nbProjectPick" aria-label="Save to notebook"></select></label><a id="nbProjectDesk" href="/the-faith-received/desk/">Return to writing</a></div>
-  <section id="nbWorkPanel" class="nb-panel" role="tabpanel" aria-labelledby="nbWorkPanelTab"><div class="nb-work-identity"><h2 id="nbWorkTitle"></h2><p id="nbWorkAuthor"></p><div class="nb-work-primary"><button type="button" id="nbFindInWork" hidden>Search this work</button><button type="button" id="nbFindRelated" hidden>Find related works</button><button type="button" id="nbWorkAsk">Ask about this work</button><button type="button" id="nbWorkAbout">Edition details</button></div></div><div class="nb-reading-place"><div><button type="button" id="nbSaveWork" aria-pressed="false" title="Keep this work in your notebook for later reading">Save work</button><button type="button" id="nbSaveReadingPlace">Save reading place</button><button type="button" id="nbOpenSavedPlaces" hidden>Open saved places</button></div><p id="nbBookmarkStatus" role="status">Keep a fixed place in your notebook as your reading progress changes.</p></div><div id="nbWorkSources"></div><details id="nbAnalysisFold" class="nb-analysis-fold"><summary>Summaries and analysis</summary><div id="nbWorkAnalysis"></div></details></section>
+<aside class="notebook" id="notebook" aria-hidden="true" aria-label="Research" tabindex="-1" inert>
+  <div class="nb-head"><span>Research</span><div class="nb-head-tools"><button type="button" class="nb-save-toggle" id="nbSaveToggle" aria-expanded="false" aria-controls="nbSavePanel">Save</button><button class="nb-x" id="nbClose" aria-label="Close research">×</button></div></div>
+  <div class="nb-save-panel" id="nbSavePanel" role="group" aria-label="Save to your notebook" hidden><div class="nb-save-actions"><button type="button" id="nbSaveReadingPlace">Save this place <span class="nb-save-where" id="nbSaveWhere"></span></button><button type="button" id="nbSaveWork" aria-pressed="false" title="Keep this work in your notebook for later reading">Save the work</button><button type="button" id="nbOpenSavedPlaces" hidden>Open saved places</button></div><div class="nb-project"><label>Notebook<select id="nbProjectPick" aria-label="Notebook to save into"></select></label><a id="nbProjectDesk" href="/the-faith-received/desk/" hidden>Return to writing</a></div><p id="nbBookmarkStatus" class="nb-save-status" role="status"></p></div>
+  <div class="nb-tabs" role="tablist" aria-label="Research tools"><button type="button" id="nbWorkPanelTab" role="tab" aria-selected="true" aria-controls="nbWorkPanel">Work</button><button type="button" id="nbWorkSearchTab" role="tab" aria-selected="false" aria-controls="nbWorkSearch">Search</button><button type="button" id="nbPassageTab" role="tab" aria-selected="false" aria-controls="nbPassage">Passage</button><button type="button" id="nbSavedTab" role="tab" aria-selected="false" aria-controls="nbSaved">Saved <span id="nbSavedCount"></span></button><button type="button" id="nbChatsTab" role="tab" aria-selected="false" aria-controls="nbChats">Ask</button></div>
+  <section id="nbWorkPanel" class="nb-panel" role="tabpanel" aria-labelledby="nbWorkPanelTab"><div class="nb-work-identity"><h2 id="nbWorkTitle"></h2><p id="nbWorkAuthor"></p><div class="nb-work-primary"><button type="button" id="nbFindInWork" hidden>Search this work</button><button type="button" id="nbFindRelated" hidden>Related works</button><button type="button" id="nbWorkAsk">Ask about this work</button><button type="button" id="nbWorkAbout">Edition details</button></div></div><div id="nbWorkSources"></div><details id="nbAnalysisFold" class="nb-analysis-fold"><summary>Summaries and analysis</summary><div id="nbWorkAnalysis"></div></details></section>
   <section id="nbWorkSearch" class="nb-panel" role="tabpanel" aria-labelledby="nbWorkSearchTab" hidden>
     {{!-- RELATED WORKS IS NOT BUILT. This toggle, its sibling #nbRelatedSearch
           and #nbFindRelated in the Work tab above came over in the 2026-09-17
@@ -221,23 +224,23 @@
     <form id="nbWorkSearchForm" class="nb-work-search-form" role="search" aria-label="Search this work"><label for="nbWorkSearchQuery">Search this work</label><div><input id="nbWorkSearchQuery" type="search" placeholder="Enter words or a phrase" autocomplete="off" aria-describedby="nbWorkSearchStatus"><button type="submit">Search text</button></div></form>
     <div class="nb-work-search-tools"><button type="button" id="nbWorkSearchClear">Clear search</button><a id="nbWorkSearchLibrary" href="/the-faith-received/search/" target="_blank" rel="noopener">Search library</a></div>
     </div>
-    <p id="nbWorkSearchStatus" class="nb-guidance" role="status">Find pages containing all the words you enter.</p><div id="nbWorkSearchResults"></div><button type="button" id="nbWorkSearchMore" class="nb-book-ask" hidden>Show more results</button>
+    <div id="nbIndexHits" class="nb-index-hits" hidden></div><p id="nbWorkSearchStatus" class="nb-guidance" role="status">Find pages containing all the words you enter.</p><div id="nbSearchStarters" class="nb-starters" hidden></div><div id="nbWorkSearchResults"></div><button type="button" id="nbWorkSearchMore" class="nb-book-ask" hidden>Show more results</button>
   </div><div id="nbRelatedSearch" hidden></div></section>
   <section id="nbPassage" class="nb-panel" role="tabpanel" aria-labelledby="nbPassageTab" hidden>
     <p class="nb-guidance" id="nbSelectionHelp">Select words in the book to highlight, add a note, make a quote image, or discuss the passage.</p>
     <div id="nbSelection" hidden><p class="nb-context-label" id="nbSelectionCite"></p><blockquote id="nbSelectionText"></blockquote><div class="nb-passage-actions"><button type="button" data-reader-action="highlight">Highlight passage</button><button type="button" data-reader-action="save-research">Clip to notebook</button><button type="button" data-reader-action="desk">Use in Desk</button><button type="button" data-reader-action="note">Add note</button><button type="button" data-reader-action="image">Make quote image</button><button type="button" data-reader-action="ask">Discuss passage</button></div><fieldset class="nb-highlight-colors"><legend>Highlight color</legend><button type="button" data-reader-color="amber">Amber</button><button type="button" data-reader-color="sage">Sage</button><button type="button" data-reader-color="slate">Slate</button><button type="button" data-reader-color="rose">Rose</button><button type="button" data-reader-color="lilac">Lilac</button><button type="button" data-reader-color="">Clear highlight</button></fieldset><details class="nb-more"><summary>More passage tools</summary><div class="nb-passage-actions"><button type="button" data-reader-action="copy">Copy with citation</button><button type="button" data-reader-action="link">Copy passage link</button><button type="button" data-reader-action="translate">Write translation</button><button type="button" data-reader-action="parallels">Find parallels</button><button type="button" data-reader-action="pin">Save reference</button><button type="button" data-reader-action="bib">Copy BibTeX</button></div></details></div>
     <figure id="nbImagePreview" class="nb-image-preview" hidden><figcaption>Quote image</figcaption><img alt="A typeset image of the selected quotation" width="1200" height="630"><a id="nbImageDownload" download>Download PNG</a></figure>
-    <button type="button" id="nbAskBook" class="nb-book-ask">Ask about this book</button><p id="nbActionStatus" role="status" class="nb-guidance"></p>
+    <button type="button" id="nbAskBook" class="nb-book-ask">Ask about this work</button><p id="nbActionStatus" role="status" class="nb-guidance"></p>
   </section>
   <section id="nbSaved" class="nb-panel nb-saved" role="tabpanel" aria-labelledby="nbSavedTab" hidden><p id="nbTitle" class="nb-context-label">Saved research</p><input id="nbSearch" type="search" placeholder="Search saved research" aria-label="Search saved research"><div class="nb-body" id="nbBody"></div></section>
-  <section id="nbChats" class="nb-panel" role="tabpanel" aria-labelledby="nbChatsTab" hidden><button type="button" id="nbNewChat" class="nb-book-ask">Start a conversation</button><div id="nbChatList"></div></section>
+  <section id="nbChats" class="nb-panel" role="tabpanel" aria-labelledby="nbChatsTab" hidden><button type="button" id="nbNewChat" class="nb-book-ask">Ask about this work</button><div id="nbAskStarters" class="nb-starters" hidden></div><div id="nbChatList"></div></section>
   <details class="nb-settings"><summary>Notebook settings and exports</summary>
   <div class="nb-account" id="nbAccount"></div>
   <div class="nb-mytr"><label><input type="checkbox" id="nbMyTr"> Show <b>my translations</b> in place of the English where I have written one</label></div>
   <div class="nb-mytr"><label><input type="checkbox" id="nbNoCite"> <b>Plain copy</b> — do not append the citation when I copy text</label></div>
   <div class="nb-mytr"><label><input type="checkbox" id="nbHypo"> Enable <b>Hypothes.is</b> — public scholarly annotation layer (loads their sidebar)</label></div>
   <div class="nb-tools"><button id="nbCopyEn" title="Copy the whole English column to the clipboard">Copy English</button><button id="nbCopyLa" title="Copy the whole Latin column to the clipboard">Copy Latin</button><button id="nbExport" title="Download your notebook as Markdown">Export notebook</button><button id="nbPages" title="Download a page range of this work as Markdown">Export pages</button><button id="nbWork" title="Download this work's full text">Export work</button></div></details>
-  <div class="nb-destinations"><a href="/the-faith-received/pins/?view=research">Personal research</a><a id="nbColl" href="/the-faith-received/pins/">Notebooks</a><a id="nbDesk" href="/the-faith-received/desk/">Open Desk</a></div>
+  <div class="nb-destinations"><a href="/the-faith-received/pins/?view=research">Personal research</a><a id="nbColl" href="/the-faith-received/pins/">Notebooks</a><a id="nbDesk" href="/the-faith-received/desk/">Open the Desk</a></div>
 </aside>
 <div class="selpop" id="selpop" role="toolbar" aria-label="Selected passage tools">
   {{!-- Five highlight colours, and Remove when the selection touches a highlight (read-tools.js shows it then).
@@ -279,7 +282,7 @@
      setting a global here would need inline script, which the CSP
      forbids. --}}
 <div id="frPortAssets" hidden
-     data-read-tools="{{asset "js/port/read-tools.js"}}&amp;frv=e3a63f9ec65b1d41"
+     data-read-tools="{{asset "js/port/read-tools.js"}}&amp;frv=43d980ab3b738784"
      data-cite-core="{{asset "js/port/cite-core.js"}}&amp;frv=81650dc7f0b258da"
      data-ask-jobs="{{asset "js/port/ask-jobs.js"}}&amp;frv=408f593670c4a344"></div>
 <script src="{{asset "js/faith-denominations.js"}}"></script>
@@ -294,7 +297,7 @@
 {{!-- The work's title card in the English lane: prints the library's title where the machine rendering of the work's own running head is a poorer one ("Why God man" for "Why God Became Man"). Loads BEFORE the heading layer so its observer runs first on the same batch. --}}
 <script src="{{asset "js/page/faith-port-read-title-head.js"}}&amp;frv=08f0f5af907183f2"></script>
 <script src="{{asset "js/page/faith-port-read-headings.js"}}&amp;frv=520039ed25620b15"></script>
-<script src="{{asset "js/port/reader-core.js"}}&amp;frv=f0ffb96d82c342f5"></script>
+<script src="{{asset "js/port/reader-core.js"}}&amp;frv=581526c89c18acfd"></script>
 {{!-- reader-volumes.js: a work held in several volumes (Poole's Synopsis, Gerhard's Loci) steps from volume to volume, and to its
      other forms (facsimile, born-digital text), from a row under the title and the ends of the text; v1/volume-sets.json. After
      reader-core.js: it reads the same data base (BLOB) and the work being read (DATA). --}}
@@ -321,7 +324,8 @@
 <script src="{{asset "js/page/mo-articles-placements.js"}}&amp;frv=39bd5ad790a1f7e6"></script>
 {{!-- The Work tab's sections: the work page's own (work-hub.js), in its order and under its names, from v1/enrich on the
      library worker, and the citations on the page in view. A work without notes shows only the folds it has. --}}
-<script defer src="{{asset "js/page/faith-port-read-guide.js"}}&amp;frv=57a6c2e0269ff9ec"></script>
+<script defer src="{{asset "js/port/research-rail.js"}}&amp;frv=b8070ded16285af6"></script>
+<script defer src="{{asset "js/page/faith-port-read-guide.js"}}&amp;frv=06e0900f0333a459"></script>
 {{!-- Find in this work belongs to read-tools.js: it builds #findbar and owns
      window._frSearch. This file adds only the door the port leaves unbound,
      Ctrl/⌘+Shift+F, and routes it there. It used to be a second find whose
