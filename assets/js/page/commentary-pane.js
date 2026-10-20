@@ -197,7 +197,7 @@
     pane = document.createElement('aside');
     pane.className = 'cp-pane'; pane.setAttribute('aria-label', 'Commentary beside the text');
     pane.innerHTML = `
-      <header class="cp-top"><p class="cp-eyebrow">Commentary</p><h2 class="cp-ref"></h2></header>
+      <header class="cp-top"><p class="cp-eyebrow">Commentary</p><h2 class="cp-ref"></h2>${SITE.name === 'mo' ? '<button type="button" class="sd-close cp-close" aria-label="Close verse panel" hidden>Close</button>' : ''}</header>
       <div class="cp-head">
         <div class="cp-pickwrap">
           <div class="cp-cur"><div class="cp-cur-id"><span class="cp-what"></span><span class="cp-who">Commentary</span></div>
@@ -252,10 +252,15 @@
     pane.querySelector('.cp-follow input').onchange = (e) => { S.follow = e.target.checked; store.set('fr_cp_follow', S.follow ? '1' : '0'); if (S.follow && S.verse) show(S.verse); };
     pane.querySelectorAll('.cp-lang button').forEach((b) => { b.onclick = () => { S.lang = b.dataset.lang; store.set('fr_cp_lang', S.lang); paint(); }; });
     const pick = pane.querySelector('.cp-pick'), list = pane.querySelector('.cp-list');
-    pick.onclick = () => { const open = list.hidden; list.hidden = !open; pick.setAttribute('aria-expanded', String(open)); pick.textContent = open ? 'Close' : 'Change'; };
+    pick.onclick = () => { const open = list.hidden; list.hidden = !open; pick.setAttribute('aria-expanded', String(open)); pick.textContent = open ? 'Hide list' : 'Change'; };
     const closeList = () => { list.hidden = true; pick.setAttribute('aria-expanded', 'false'); pick.textContent = 'Change'; };
     list.onclick = (e) => { const li = e.target.closest('[data-slug]'); if (!li) return; choose(li.dataset.slug, true); closeList(); };
     pane.querySelector('.cp-keys').onclick = (e) => { const b = e.target.closest('[data-slug]'); if (b) { choose(b.dataset.slug, true); closeList(); } };
+    // Close (Scripture page only): the same way out as the Citations panel's, which the reader's script carries out
+    const closeBtn = pane.querySelector('.cp-close');
+    if (closeBtn) closeBtn.onclick = () => window.dispatchEvent(new Event('sd:close-verse'));
+    // Escape shuts the open list of commentaries first; the reader's own Escape then closes the verse
+    pane.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !list.hidden) { closeList(); pick.focus(); e.stopPropagation(); } });
     pane.querySelectorAll('.cp-pages button').forEach((b) => { b.onclick = () => step(+b.dataset.step); });
     wide.addEventListener('change', () => setTab(S.tab, true));
     setTab(S.tab, true);
@@ -290,6 +295,7 @@
     const w = where(); if (!w) return;
     const name = w.name || w.book.replace(/-/g, ' ');
     pane.querySelector('.cp-eyebrow').textContent = S.tab === 'r' ? 'Reception history' : (S.verse ? 'Commentary on this verse' : 'Commentary');
+    const cb = pane.querySelector('.cp-close'); if (cb) cb.hidden = !w.v;
     pane.querySelector('.cp-ref').textContent = S.verse ? `${name} ${w.ch}:${S.verse}` : `${name} ${w.ch}`;
   }
   // a verse chosen from the rail: as if clicked in the text (the site's panel follows), brought to the reading line
@@ -691,6 +697,10 @@
     side.prepend(tabs.cloneNode(true));
     layout.querySelectorAll('.cp-tabs [data-tab]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.tab === S.tab)));
   }
+
+  // the reader's script says when a verse is chosen or closed: Close shows only while one is, and a closed verse hands the rail
+  // back to the reading line
+  window.addEventListener('sd:verse', (e) => { if (!pane) return; if (!(e.detail && e.detail.v)) S.pin = false; head(); });
 
   let lastKey = '';
   async function init() {

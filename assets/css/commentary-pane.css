@@ -39,6 +39,8 @@ body.cp-on.cp-src .cp-pane { display: none; }
      to be sticky"); a rail that sticks and is taller than the window cannot be read to its end without a box that scrolls on its own */
   position: relative;
   color: var(--cp-ink);
+  /* the page's hero and chapter heading are centered and that is inherited here: every row in the pane reads left to right */
+  text-align: left;
   font-family: "Source Serif Pro", Palatino, Georgia, serif;
   font-size: 15px;
   line-height: 1.5;
@@ -71,6 +73,12 @@ body.cp-on.cp-src .cp-pane { display: none; }
 
 /* the label and the large heading, as the Citations view's "THIS CHAPTER IN THE LIBRARY / Genesis 1" */
 .cp-top { margin: 0 0 14px; }
+/* Close: the Citations panel's own control (.sd-close), in the same place, top right of the head */
+html.cp-site-mo .cp-top { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: start; }
+html.cp-site-mo .cp-top > .cp-eyebrow, html.cp-site-mo .cp-top > .cp-ref { grid-column: 1; }
+.cp-pane button.cp-close { grid-column: 2; grid-row: 1 / span 2; align-self: start; font-family: var(--font-body, inherit); font-size: 12px; font-weight: 600; color: var(--tfr-btn, var(--color-dark)); }
+.cp-pane button.cp-close:hover, .cp-pane button.cp-close:focus-visible { color: var(--tfr-btn-ink, var(--color-white, #fff)); }
+.cp-pane button.cp-close[hidden] { display: none; }
 .cp-eyebrow { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--cp-accent); }
 .cp-ref { margin: 2px 0 0; font-family: inherit; font-size: 26px; line-height: 1.2; font-weight: 600; letter-spacing: 0; text-transform: none; font-style: normal; color: var(--cp-ink); }
 
@@ -247,7 +255,10 @@ html.cp-site-mo body.cp-on .sd-side > .cp-tabs { margin: 0 0 16px; }
   .cp-pane[data-tab="s"] > :not(.cp-tabs) { display: none; }
   .cp-tabs { position: sticky; top: 0; z-index: 1; margin: 0 -14px 6px; padding: 0 14px; background: var(--cp-paper); }
   .cp-tabs button { min-height: 40px; padding: 4px 6px; }
-  .cp-top { display: none; }
+  .cp-top, html.cp-site-mo .cp-top { display: none; }
+  /* the sheet keeps only Close from the head, in a row of its own while a verse is chosen */
+  html.cp-site-mo .cp-pane .cp-top:has(.cp-close:not([hidden])) { display: flex; justify-content: flex-end; margin: 0 0 6px; }
+  html.cp-site-mo .cp-top > .cp-eyebrow, html.cp-site-mo .cp-top > .cp-ref { display: none; }
   .cp-cur { padding: 4px 2px; }
   .cp-pick { min-height: 36px; }
   .cp-lang { margin: 0; }

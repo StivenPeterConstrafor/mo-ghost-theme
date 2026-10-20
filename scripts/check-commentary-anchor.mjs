@@ -174,6 +174,12 @@ ok(!/overflow:\s*auto/.test(css.slice(css.indexOf('.cp-pane {'), css.indexOf('/*
   .replace(/\.cp-pane \{[^}]*\}/, '')), 'nothing inside the rail has its own scroll box');
 ok(!/--cp-display|var\(--display|font-family:[^;]*(IM Fell|EB Garamond)/.test(css.slice(css.indexOf('.cp-pane {'))), 'no display face on the rail');
 ok(hbs.indexOf('commentary-anchor.js') > 0 && hbs.indexOf('commentary-anchor.js') < hbs.indexOf('commentary-pane.js'), 'the template loads the anchor before the pane');
+// one Close for all three tabs (2026-10-19, owner): the pane's asks the reader's script, which owns the verse; the list's toggle is not "Close"
+const sdjs = readFileSync(path.join(root, 'assets/js/page/scripture-dev.js'), 'utf8');
+ok(/class="sd-close cp-close"[^>]*>Close</.test(js) && /new Event\('sd:close-verse'\)/.test(js), 'the pane has a Close that asks the reader to close the verse');
+ok(/addEventListener\("sd:close-verse", closeVerse\)/.test(sdjs) && /\.sd-close"\)\.addEventListener\("click", closeVerse\)/.test(sdjs), 'the Citations Close and the pane Close run one function');
+ok(/pick\.textContent = open \? 'Hide list' : 'Change'/.test(js), "the commentary list's toggle says Hide list, so Close means one thing");
+ok(/min-height: 44px/.test(sd.slice(sd.indexOf('.sd-close {'), sd.indexOf('.sd-close {') + 400)), 'Close has a 44px touch target');
 
 if (failed) { console.error(`\n${failed} check(s) failed`); process.exit(1); }
 console.log('\ncommentary anchor: all checks passed');
