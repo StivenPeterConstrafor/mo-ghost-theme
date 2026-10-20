@@ -40,7 +40,7 @@ J('/v1/lexicon/index.json').then(async d=>{
   const btn=([l,n])=>`<button type="button" data-l="${esc(l)}" aria-pressed="false" title="${n} terms">${esc(l.toUpperCase())}</button>`;
   const all=Object.entries(d.letters).filter(([l])=>l!=='_');
   INDEX=d;$('#letters').innerHTML=SCRIPTS.map(([name,rx])=>[name,all.filter(([l])=>rx.test(l))]).filter(([,ls])=>ls.length)
-    .map(([name,ls])=>`<div class="lgroup" role="group" aria-label="${esc(name)}"><span class="lname">${esc(name)}</span>${ls.map(btn).join('')}</div>`).join('');
+    .map(([name,ls])=>`<div class="lgroup" role="group" aria-label="${esc(name)}"><span class="lname">${esc(name)}</span><div class="lbtns">${ls.map(btn).join('')}</div></div>`).join('');
   $('#list').innerHTML=listHTML(d.top.slice(0,120));
   const want=decodeURIComponent(location.hash.slice(1));
   if(want)await showTerm(want,false);else if(d.top.length)await showTerm(d.top[0][0],false);

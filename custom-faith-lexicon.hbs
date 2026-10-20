@@ -22,8 +22,9 @@
 .tfr-tool .find input{flex:1;min-width:0;font:1.05rem/1.3 var(--font-body);padding:.65rem .8rem;border:1px solid var(--border);border-radius:8px;background:var(--card-bg);color:var(--fg)}
 .tfr-tool .find input:focus-visible{outline:2px solid var(--fg);outline-offset:1px}
 .tfr-tool .letters{display:grid;gap:.45rem;margin:0 0 1.4rem}
-.tfr-tool .lgroup{display:flex;flex-wrap:wrap;gap:.25rem;align-items:center}
-.tfr-tool .lname{font:.75rem/1.2 var(--sans);color:var(--muted);min-width:7.5rem}
+.tfr-tool .lgroup{display:grid;grid-template-columns:7.5rem minmax(0,1fr);gap:.5rem;align-items:start}
+.tfr-tool .lname{font:.75rem/1.2 var(--sans);color:var(--muted);padding-top:.45rem}
+.tfr-tool .lbtns{display:flex;flex-wrap:wrap;gap:.25rem}
 .tfr-tool .letters button{min-width:2rem;padding:.3rem .45rem;border:1px solid var(--border);background:var(--card-bg);color:var(--fg);border-radius:6px;font:500 .95rem/1 var(--font-display);cursor:pointer}
 .tfr-tool .letters button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 .tfr-tool .cols{display:grid;grid-template-columns:minmax(12rem,18rem) minmax(0,1fr);gap:1.6rem;align-items:start}
@@ -40,7 +41,9 @@
 .tfr-tool .sense li a{color:var(--fg)}
 .tfr-tool .muted{color:var(--muted)}
 @media (max-width:720px){.tfr-tool .cols{grid-template-columns:1fr}
-.tfr-tool .list{max-height:40vh}}
+.tfr-tool .list{max-height:40vh}
+.tfr-tool .lgroup{grid-template-columns:1fr;gap:.25rem}
+.tfr-tool .lname{padding-top:0}}
 .tfr-tool{background:transparent}
 .tfr-tool .wrap{padding-top:1.2rem}
 </style>
@@ -61,4 +64,4 @@
   <div class="cols"><ul class="list" id="list" aria-label="Terms"></ul><article class="entry" id="entry" aria-live="polite"><p class="muted">Loading the lexicon…</p></article></div>
 
 </div></main>
-<script src="{{asset "js/faith-lexicon.js"}}&amp;frv=222ce1195e063874"></script>
+<script src="{{asset "js/faith-lexicon.js"}}&amp;frv=883cc3707104417f"></script>
