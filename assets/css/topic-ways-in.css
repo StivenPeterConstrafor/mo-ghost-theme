@@ -68,3 +68,28 @@ html[data-sd-theme="dark"] .fr-dn {
 .fr-dn .fr-dn-open:focus-visible { outline: 2px solid var(--wn-ink); outline-offset: 2px; }
 .fr-dn .fr-dn-guide { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--wn-rule); }
 @media (prefers-reduced-motion: no-preference) { .fr-dn .fr-dn-card { transition: border-color 0.15s; } }
+
+/* The Scripture tab: a verse card grid (topic-scripture-tab.js). Same surface and tokens as the rest of the block. */
+.fr-dn .tsc-lede { margin: 0 0 16px; max-width: 62ch; line-height: 1.6; color: var(--wn-muted); }
+.fr-dn .tsc-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .fr-dn .tsc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1500px) { .fr-dn .tsc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.fr-dn .tsc-card { min-width: 0; padding: 16px 18px 12px; background: var(--wn-card); border: 1px solid var(--wn-rule); border-top: 4px solid var(--wn-accent); border-radius: 3px; }
+.fr-dn .tsc-card[hidden] { display: none; }
+.fr-dn .tsc-card:hover, .fr-dn .tsc-card:focus-within { border-color: var(--wn-accent); }
+.fr-dn .tsc-top { display: flex; align-items: center; gap: 14px; justify-content: space-between; }
+.fr-dn .tsc-ref { display: inline-block; padding: 8px 0; font-size: 22px; font-weight: 600; line-height: 1.15; text-decoration: none; }
+.fr-dn .tsc-ref:hover { text-decoration: underline; }
+.fr-dn .tsc-heat { flex: 0 0 38%; height: 8px; border-radius: 2px; background: var(--wn-rule); overflow: hidden; }
+.fr-dn .tsc-heat i { display: block; height: 100%; background: var(--wn-accent); }
+.fr-dn .tsc-count { margin: 0 0 10px; font-size: 14px; line-height: 1.5; color: var(--wn-muted); }
+.fr-dn .tsc-row { margin: 10px 0 0; padding-top: 8px; border-top: 1px solid var(--wn-rule); }
+.fr-dn .tsc-h { margin: 0 0 2px; font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--wn-muted); }
+.fr-dn .tsc-chips, .fr-dn .tsc-works { list-style: none; margin: 0; padding: 0; }
+.fr-dn .tsc-chips li, .fr-dn .tsc-works li { margin: 0; }
+.fr-dn .tsc-chips a { display: inline-block; padding: 10px 0; line-height: 1.4; }
+.fr-dn .tsc-works a { display: inline-block; padding: 10px 0 0; line-height: 1.4; }
+.fr-dn .tsc-works span { display: block; padding-bottom: 6px; }
+.fr-dn .tsc-chips a b { color: var(--wn-ink); font-weight: 600; }
+.fr-dn .tsc-chips a span, .fr-dn .tsc-works span { font-size: 14px; color: var(--wn-muted); }
+.fr-dn .tsc-all { margin-top: 16px; }

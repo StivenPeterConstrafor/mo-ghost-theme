@@ -88,6 +88,7 @@
       ${pos ? `<h5>Positions</h5><ul>${pos}</ul>` : ""}${read ? `<h5>Where to read</h5><ul>${read}</ul>` : ""}`;
   }
 
+  const root_MOTS = window.MOTopicScripture || null;
   // ── The block ──
   let run = 0;
   async function draw() {
@@ -104,6 +105,9 @@
     if (my !== run || !d || !$m || new URLSearchParams(location.search).get("t") !== id || $m.querySelector("[data-fr-dn]")) return;
     const g = d.guide || {};
     const views = [];
+    // The Scripture tab (topic-scripture-tab.js) comes first when the topic has verses its confession articles cite.
+    const sc = root_MOTS ? await root_MOTS.prepare(id, locus).catch(() => null) : null;
+    if (sc) views.push(["scripture", "Scripture", () => `<div class="tsc" data-tsc></div>`]);
     // When the Topic Desk has put the History on its century rows, this block starts at the reading course.
     const merged = $root.dataset.deskHistory === id;
     if ((g.history || []).length && !merged) views.push(["history", "History", () => historyView(g)]);
@@ -123,12 +127,14 @@
       <div class="td-view fr-dn-view" id="fr-dn-panel" role="tabpanel" tabindex="0" aria-labelledby="fr-dn-tab-${views[0][0]}" data-fr-dn-view>${views[0][2]()}</div>`;
     const $view = box.querySelector("[data-fr-dn-view]");
     const tabs = [...box.querySelectorAll(".fr-dn-tab")];
+    if (views[0][0] === "scripture" && sc) root_MOTS.fill($view.querySelector("[data-tsc]"), id, sc);
     const pick = (t, focus) => {
       const v = views.find((x) => x[0] === t.dataset.frView);
       if (!v) return;
       tabs.forEach((o) => { o.setAttribute("aria-selected", String(o === t)); o.tabIndex = o === t ? 0 : -1; });
       $view.setAttribute("aria-labelledby", t.id);
       $view.innerHTML = v[2]();
+      if (v[0] === "scripture" && sc) root_MOTS.fill($view.querySelector("[data-tsc]"), id, sc);
       if (focus) t.focus();
     };
     box.querySelector(".fr-dn-tabs").addEventListener("click", (e) => { const t = e.target.closest(".fr-dn-tab"); if (t) pick(t, false); });
