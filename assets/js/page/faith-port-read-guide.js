@@ -82,7 +82,8 @@
     d.className = "wrs-section wh-fold";
     d.dataset.sec = id;
     if (id in kept ? kept[id] : open) d.open = true;
-    const desk = id === "cited" ? "" : id === "later-page" ? "citedby" : id;
+    // each page fold opens the work page on the tab that holds its whole-work list
+    const desk = id === "cited" ? "" : id === "later-page" ? "citedby" : id === "in-index" ? "index" : id;
     d.innerHTML = `<summary><span class="wh-sum">${esc(title)}</span>${n == null ? "" : `<span class="wh-count">${Number(n).toLocaleString()}</span>`}</summary><div class="wrs-section-body">${body}${desk ? `<a class="wrs-link wh-desk" href="${esc(deskHref(desk))}">${desk === "citedby" && id === "later-page" ? "Every later citation of this work" : "Open on the work page"}</a>` : ""}</div>`;
     remember(d, id);
     return d;
