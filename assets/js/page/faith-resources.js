@@ -18,12 +18,11 @@
   const root = document.querySelector("[data-res-root]");
   if (!M || !root) return;
 
-  const PAGE = 48;
-  const $ = (id) => document.getElementById(id);
+    const $ = (id) => document.getElementById(id);
   const $q = $("resQuery"), $clear = $("resClear"), $form = $("resForm"), $kinds = $("resKinds"), $sort = $("resSort");
-  const $count = $("resCount"), $results = $("resResults"), $more = $("resMore"), $moreBtn = $("resMoreBtn");
+  const $count = $("resCount"), $results = $("resResults");
   const $empty = $("resEmpty"), $reset = $("resReset");
-  if (!$q || !$clear || !$form || !$kinds || !$sort || !$count || !$results || !$more || !$moreBtn || !$empty || !$reset) return;
+  if (!$q || !$clear || !$form || !$kinds || !$sort || !$count || !$results || !$empty || !$reset) return;
 
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -120,7 +119,7 @@
   }
 
   /* ── state and address ────────────────────────────────────────── */
-  const state = { q: "", kind: "", sort: "match", shown: PAGE };
+  const state = { q: "", kind: "", sort: "match" };
   const KIND_KEYS = ["doc", "work", "retrieval", "topic"];
   function readUrl() {
     const p = new URLSearchParams(window.location.search);
@@ -153,13 +152,14 @@
   const niceMonth = (d) => { const t = new Date(`${d}T00:00:00Z`); return Number.isNaN(t.getTime()) ? d : monthYear.format(t); };
 
   // One card, one link: the image (or a tinted tile with the kind), the title, author and month, the kind. What the essay serves rides in the title attribute.
-  function card(a, ts) {
+  function card(a, ts, q) {
     const kind = KIND_LABEL[a.k] || "";
     const src3 = M.image(a, 300);
     const img = src3
       ? `<img class="fr-res-photo" src="${esc(src3)}" srcset="${esc(src3)} 300w, ${esc(M.image(a, 600))} 600w" sizes="${SIZES}" width="600" height="400" alt="${esc(a.ia || "")}" loading="lazy" decoding="async">`
       : `<span class="fr-res-ph" aria-hidden="true">${esc(kind)}</span>`;
     const s = serves(a);
+    const also = q ? M.mentions(a, q) : [];
     const tip = s.length ? ` title="${esc(`Serves: ${s.join("; ")}`)}"` : "";
     return [
       '<li class="fr-res-card">',
@@ -168,6 +168,7 @@
       `<span class="fr-res-ctitle">${highlight(a.t, ts)}</span>`,
       `<span class="fr-res-cmeta">${esc(a.a)} <span aria-hidden="true">&middot;</span> ${esc(niceMonth(a.d))}</span>`,
       `<span class="fr-res-ckind">${esc(kind)}</span>`,
+      also.length ? `<span class="fr-res-cmore">Also mentions: ${esc(also.join(", "))}</span>` : "",
       '<span class="fr-res-sr"> (opens in a new tab)</span>',
       "</a></li>",
     ].join("");
@@ -181,43 +182,32 @@
     let list = base;
     if (state.sort === "new" || (state.sort === "match" && !q)) list = base.slice().sort((x, y) => (x.d < y.d ? 1 : x.d > y.d ? -1 : 0));
     else if (state.sort === "old") list = base.slice().sort((x, y) => (x.d < y.d ? -1 : x.d > y.d ? 1 : 0));
-    // No search and no filter: every article, grouped by kind, so "Show more" pages through the groups in their order.
+    // No search and no filter: every article, grouped by kind, in group order.
     if (!q && !state.kind) list = [].concat(...GROUPS.map(([k]) => list.filter((a) => a.k === k)));
     return list;
   }
 
-  let lastShown = 0;
-  function render(focusNew) {
+  // Everything that matches is drawn, in one pass: off-screen cards are skipped by the browser (content-visibility), images load lazily.
+  function render() {
     const q = state.q.trim();
     const ts = M.terms(q);
     const list = results();
     const total = list.length;
     const grouped = !q && !state.kind;
-    const shown = list.slice(0, state.shown);
     let html = "";
     if (grouped) {
       for (const [k, label] of GROUPS) {
-        const part = shown.filter((a) => a.k === k);
+        const part = list.filter((a) => a.k === k);
         if (!part.length) continue;
-        const of = list.filter((a) => a.k === k).length;
-        html += `<section class="fr-res-section" aria-labelledby="res-g-${k}"><h3 class="fr-res-h" id="res-g-${k}">${esc(label)} <span class="fr-res-n">${of.toLocaleString("en-US")}</span></h3><ul class="fr-res-grid">${part.map((a) => card(a, ts)).join("")}</ul></section>`;
+        html += `<section class="fr-res-section" aria-labelledby="res-g-${k}"><h3 class="fr-res-h" id="res-g-${k}">${esc(label)} <span class="fr-res-n">${part.length.toLocaleString("en-US")}</span></h3><ul class="fr-res-grid">${part.map((a) => card(a, ts, q)).join("")}</ul></section>`;
       }
     } else {
-      html = `<ul class="fr-res-grid">${shown.map((a) => card(a, ts)).join("")}</ul>`;
+      html = `<ul class="fr-res-grid">${list.map((a) => card(a, ts, q)).join("")}</ul>`;
     }
     $results.innerHTML = total ? html : "";
     $empty.hidden = total > 0;
     $count.textContent = plural(total, "article", "articles");
-    const left = total - shown.length;
-    $more.hidden = left <= 0;
-    if (left > 0) $moreBtn.textContent = `Show ${Math.min(PAGE, left)} more`;
     $clear.hidden = !$q.value;
-    if (focusNew && shown.length > lastShown) {
-      const links = $results.querySelectorAll(".fr-res-cardlink");
-      const target = links[lastShown];
-      if (target) target.focus();
-    }
-    lastShown = shown.length;
   }
 
   function paintControls() {
@@ -227,10 +217,8 @@
   }
 
   function update() {
-    state.shown = PAGE;
-    lastShown = 0;
     paintControls();
-    render(false);
+    render();
     writeUrl();
   }
 
@@ -262,10 +250,6 @@
     const again = $sort.querySelector(`[data-sort="${state.sort}"]`);
     if (again) again.focus();
   });
-  $moreBtn.addEventListener("click", () => {
-    state.shown += PAGE;
-    render(true);
-  });
   $reset.addEventListener("click", () => {
     $q.value = "";
     window.clearTimeout(timer);
@@ -288,7 +272,9 @@
         return;
       }
       paintControls();
-      render(false);
+      render();
+      // The full text arrives after the page is usable; a search typed meanwhile is redrawn with it.
+      M.loadIndex().then((idx) => { if (idx && state.q.trim()) render(); });
     });
   }
   readUrl();

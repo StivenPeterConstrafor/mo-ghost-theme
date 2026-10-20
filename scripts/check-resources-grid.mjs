@@ -9,6 +9,7 @@
  *   - no horizontal overflow of the page
  *   - tiles of one grid are the same width within 1px
  *   - no two cards, and no two text lines inside a card, overlap
+ *   - every article is drawn (493, and 77/179/13/224 per kind) and a full render takes under 150 ms of script
  *   - every card is a link, and has an image or a placeholder tile
  *
  *   node scripts/check-resources-grid.mjs
@@ -73,13 +74,29 @@ const MEASURE = `(async () => {
   const grids = [...document.querySelectorAll(".fr-res-grid")];
   const out = { vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth, cards: document.querySelectorAll(".fr-res-card").length, problems: [] };
   if (!grids.length) { out.problems.push("no grid"); return out; }
-  const g = grids[0];
+  let g = grids[0];
+  // every article is drawn: all 493 unfiltered, and the whole set for each kind
+  if (out.cards !== 493) out.problems.push(out.cards + " cards, wanted 493");
+  const counts = {};
+  for (const [k, n] of Object.entries({ doc: 77, work: 179, retrieval: 13, topic: 224 })) {
+    document.querySelector('[data-kind="' + k + '"]').click();
+    counts[k] = document.querySelectorAll(".fr-res-card").length;
+    if (counts[k] !== n) out.problems.push(k + " shows " + counts[k] + " cards, wanted " + n);
+  }
+  document.querySelector('[data-kind=""]').click();
+  // a full render, timed: script work from the click to the DOM being built
+  const t0 = performance.now();
+  document.querySelector('[data-kind="topic"]').click();
+  document.querySelector('[data-kind=""]').click();
+  out.renderMs = (performance.now() - t0) / 2;
+  g = document.querySelector(".fr-res-grid");
   out.cols = getComputedStyle(g).gridTemplateColumns.split(" ").length;
   const cards = [...g.querySelectorAll(".fr-res-card")].map((c) => c.getBoundingClientRect());
   const ws = cards.map((r) => r.width);
   out.spread = Math.max(...ws) - Math.min(...ws);
   const hit = (a, b) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
-  for (let i = 0; i < cards.length; i += 1) for (let j = i + 1; j < cards.length; j += 1) if (hit(cards[i], cards[j])) out.problems.push("cards " + i + " and " + j + " overlap");
+  const first = cards.slice(0, 60);
+  for (let i = 0; i < first.length; i += 1) for (let j = i + 1; j < first.length; j += 1) if (hit(first[i], first[j])) out.problems.push("cards " + i + " and " + j + " overlap");
   out.left = cards[0].left; out.right = out.vw - Math.max(...cards.map((r) => r.right));
   const h1 = document.querySelector(".bhero h1");
   out.heroLeft = h1 ? h1.getBoundingClientRect().left : -1;
@@ -107,6 +124,7 @@ for (const [w, cols] of Object.entries(WANT)) {
   const bad = [];
   if (!m || m.problems === undefined) bad.push("the page did not measure");
   else {
+    if (m.renderMs > 150) bad.push(`a full render took ${m.renderMs.toFixed(0)} ms, over 150`);
     if (m.cols !== cols) bad.push(`${m.cols} columns, wanted ${cols}`);
     if (m.sw > m.vw) bad.push(`page is ${m.sw}px wide in a ${m.vw}px window`);
     if (m.spread > 1) bad.push(`tiles differ in width by ${m.spread.toFixed(2)}px`);
@@ -117,7 +135,7 @@ for (const [w, cols] of Object.entries(WANT)) {
     }
     bad.push(...new Set(m.problems));
   }
-  if (bad.length) { failed += 1; console.error(`FAIL ${w}px: ${bad.join("; ")}`); } else console.log(`ok   ${w}px: ${cols} columns, ${m.cards} cards`);
+  if (bad.length) { failed += 1; console.error(`FAIL ${w}px: ${bad.join("; ")}`); } else console.log(`ok   ${w}px: ${cols} columns, ${m.cards} cards, render ${m.renderMs.toFixed(0)} ms`);
 }
 cleanup();
 if (failed) process.exit(1);
