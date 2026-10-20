@@ -450,7 +450,7 @@
     // A sidebar held in view (sticky, scrolling on its own) needs no push: the panel opens at its top.
     if (getComputedStyle($side).position === "sticky") { $side.scrollTop = 0; return; }
     const span = v && $text.querySelector(`.bible-verse[data-v="${v}"]`);
-    if (!span) return;
+    if (!span || span.offsetParent === null) return;
     const room = $text.getBoundingClientRect().bottom - $side.getBoundingClientRect().top - 240;
     const drop = span.getBoundingClientRect().top - $side.getBoundingClientRect().top;
     const px = Math.round(Math.min(drop, room));
@@ -478,7 +478,12 @@
     if (!state.v) return;
     const span = $text.querySelector(`.bible-verse[data-v="${state.v}"]`);
     closePanel();
-    if (span) span.focus({ preventScroll: true });
+    if (span && span.offsetParent !== null) span.focus({ preventScroll: true });
+    else {
+      // The text is hidden (Panel Only): focus the rail's pressed tab, not a node that cannot take focus.
+      const tab = document.querySelector(".cp-pane .cp-tabs [aria-pressed=\"true\"], .sd-side .cp-tabs [aria-pressed=\"true\"]");
+      if (tab && tab.offsetParent !== null) tab.focus({ preventScroll: true });
+    }
   }
   window.addEventListener("sd:close-verse", closeVerse);
 

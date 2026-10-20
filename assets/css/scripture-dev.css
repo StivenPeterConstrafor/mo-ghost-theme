@@ -1206,3 +1206,228 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
 }
 @media (max-width: 899px) { .sd-notice-wrap { margin-bottom: 0; } }
 .sd-notice a { color: var(--sd-accent); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ══════════════════════════════════════════════════════════════════
+   THE VIEW BAR: LAYOUT AND DARK MODE (2026-10-19, owner: "Dark Mode" and
+   "5 Configuration buttons: 50/50, 25/75, 75/25, Scripture Only, Panel Only")
+   ══════════════════════════════════════════════════════════════════
+   One row between the book bar and the two columns. At left, on a wide
+   screen, five choices for how the width is split; at right, Dark mode.
+   scripture-view-boot.js (in the head) writes data-sd-theme and
+   data-sd-view on <html> before first paint; scripture-view.js wires the
+   buttons. "Scripture" is the chapter's text card, "Panel" is the right
+   column (the Commentary, Citations and Reception rail).
+
+   The control is the TFR button as the rest of this file states it:
+   hollow, one box with dividers, the chosen segment filled, a sentence-case
+   label in the body face. 44px tall. */
+.sd .sd-viewbar { padding-top: 28px; padding-bottom: 0; }
+.sd-viewbar-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px 24px; }
+.sd-layout-group { display: none; align-items: center; gap: 12px; margin-right: auto; }
+.sd-viewbar-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--sd-accent);
+  font-weight: 600;
+}
+.sd-seg { display: inline-flex; }
+.sd-seg button,
+.sd-theme-btn {
+  position: relative;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  color: var(--tfr-btn, var(--color-dark));
+  background: transparent;
+  border: 1px solid var(--tfr-btn, var(--color-dark));
+  border-radius: 3px;
+  min-height: 44px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.sd-seg button { border-radius: 0; margin-left: -1px; }
+.sd-seg button:first-child { border-radius: 3px 0 0 3px; margin-left: 0; }
+.sd-seg button:last-child { border-radius: 0 3px 3px 0; }
+.sd-seg button:hover,
+.sd-theme-btn:hover {
+  background: color-mix(in srgb, var(--tfr-btn, var(--color-dark)) 12%, transparent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.sd-seg button[aria-checked="true"],
+.sd-theme-btn[aria-pressed="true"] {
+  background: var(--tfr-btn, var(--color-dark));
+  color: var(--tfr-btn-ink, var(--color-white, #fff));
+}
+.sd-seg button:focus-visible,
+.sd-theme-btn:focus-visible { z-index: 1; outline: 2px solid var(--sd-accent); outline-offset: 2px; }
+/* 25/75 and 75/25 are offered from 1200px up, where the narrow column keeps at least 300px (see "Layout modes" below). */
+.sd-seg .sd-seg-narrow { display: none; }
+@media (min-width: 1200px) { .sd-seg .sd-seg-narrow { display: inline-flex; align-items: center; } }
+@media (min-width: 900px) { body.cp-on .sd-layout-group { display: flex; } }
+
+/* Scripture Only with a verse open: the panel is hidden, so say so where the reader is looking, with the way back. */
+.sd-view-hint {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px 14px;
+  max-width: calc(100vw - 32px);
+  margin: 0;
+  padding: 6px 8px 6px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--color-dark);
+  background: var(--color-white, #fff);
+  border: 1px solid var(--color-dark);
+  border-radius: 3px;
+}
+.sd-view-hint[hidden] { display: none; }
+.sd-view-hint button {
+  min-height: 44px;
+  padding: 8px 14px;
+  font: inherit;
+  color: var(--tfr-btn, var(--color-dark));
+  background: transparent;
+  border: 1px solid var(--tfr-btn, var(--color-dark));
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sd-view-hint button:hover,
+.sd-view-hint button:focus-visible { background: var(--tfr-btn, var(--color-dark)); color: var(--tfr-btn-ink, var(--color-white, #fff)); }
+.sd-view-hint button:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 2px; }
+
+/* The row sits where the layout's 88px of top padding was. */
+.sd .sd-viewbar ~ .sd-layout { padding-top: 24px; }
+.sd .sd-viewbar ~ .sd-notice-wrap { margin-bottom: 0; }
+.sd-desk-page .sd-viewbar + .sd-desk { padding-top: 22px; }
+@media (max-width: 640px) {
+  .sd .sd-viewbar { padding-top: 16px; }
+  .sd .sd-viewbar ~ .sd-layout { padding-top: 20px; }
+}
+
+/* ── Layout modes (900px and up, with the rail beside the text) ──────────────────────────────────────────────────────
+   commentary-pane.css sets the split to 1fr 1fr with !important, at html.cp-site-mo body.cp-on .sd-layout:has(.cp-pane)
+   (four classes). These carry one more class (the data-sd-view attribute) so they win the tie without touching that file.
+   50/50 is that rule, unchanged.
+
+   THE NARROW SPLITS. At 25% a 900px window gives the narrow column about 200px, too thin for the rail's three tabs and its
+   folds. 25/75 and 75/25 are therefore OFFERED FROM 1200px UP only (the buttons appear at the same width), and the narrow
+   column is never allowed under 300px: minmax(300px, 1fr) against minmax(0, 3fr) gives it a quarter of the width where a
+   quarter is at least 300px and 300px where it is not (so at 1200px it is 27%, at 1280px 25%). Under 1200px a stored narrow
+   split simply reads as 50/50 (the rules are inside the media query) and the stored choice is kept for a wider window. */
+@media (min-width: 900px) {
+  /* Scripture Only: the rail is hidden (a selected verse still works; the hint above offers the way back), the text card is
+     centered at a readable width. */
+  html[data-sd-view="scripture"].cp-site-mo body.cp-on .sd-layout:has(.cp-pane) { grid-template-columns: minmax(0, 1fr) !important; }
+  html[data-sd-view="scripture"].cp-site-mo body.cp-on .sd-layout .cp-pane,
+  html[data-sd-view="scripture"].cp-site-mo body.cp-on .sd-layout .sd-side,
+  html[data-sd-view="scripture"].cp-site-mo body.cp-on.cp-src .sd-layout .sd-side { display: none !important; }
+  html[data-sd-view="scripture"].cp-site-mo body.cp-on .sd .sd-layout .sd-text { max-width: 880px; margin: 0 auto; }
+
+  /* Panel Only: the text card is hidden and the rail takes the row. Its verse list and Close still work; Close returns it to the
+     whole chapter. */
+  html[data-sd-view="panel"].cp-site-mo body.cp-on .sd-layout:has(.cp-pane) { grid-template-columns: minmax(0, 1fr) !important; }
+  html[data-sd-view="panel"].cp-site-mo body.cp-on .sd .sd-layout .sd-text { display: none; }
+}
+@media (min-width: 1200px) {
+  html[data-sd-view="25-75"].cp-site-mo body.cp-on .sd-layout:has(.cp-pane) { grid-template-columns: minmax(300px, 1fr) minmax(0, 3fr) !important; }
+  html[data-sd-view="75-25"].cp-site-mo body.cp-on .sd-layout:has(.cp-pane) { grid-template-columns: minmax(0, 3fr) minmax(300px, 1fr) !important; }
+  /* The text card is the narrow column: less padding so the lines have room. */
+  html[data-sd-view="25-75"].cp-site-mo body.cp-on .sd .sd-layout .sd-text { padding: 24px 20px 28px; }
+  /* The rail is the narrow column: tighter padding, the same type. */
+  html[data-sd-view="75-25"].cp-site-mo body.cp-on .sd .sd-layout .cp-pane { padding: 14px 12px 20px; }
+  html[data-sd-view="75-25"].cp-site-mo body.cp-on .sd .sd-layout .sd-side { padding: 14px 14px 20px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SCRIPTURE DARK MODE (2026-10-19)
+   ══════════════════════════════════════════════════════════════════
+   The reader's own dark palette (port/fr-reading-system.css: --bg #222320, --card #2B2C29, --fg #E9E9E5, --muted #B0B0A8) with
+   the terracotta lifted the way the reader's buttons lift it (--tfr-btn, 65% toward white: #D79380). The page's tokens are
+   remapped on the page's own sections, so the rules above and the chapter's rules in screen.css (which read --color-dark and
+   the rest) turn over without being restated.
+
+   NOT TURNED OVER: the masthead, the TFR rail under it (site chrome, as on the reader, where the masthead is "the site's, not the
+   reader's") and the hero (already a dark band). Dark here is html[data-sd-theme], never html[data-theme], which
+   faith-site-theme.js holds at "light" on this page.
+
+   The tokens are declared on <html> as --sd-dk-* so scripts/check-scripture-view.mjs can measure every pair it names. */
+html[data-sd-theme="dark"] {
+  --sd-dk-page: #222320;
+  --sd-dk-card: #2B2C29;
+  --sd-dk-panel: #272824;
+  --sd-dk-ink: #E9E9E5;
+  --sd-dk-muted: #B0B0A8;
+  --sd-dk-faint: #A2A29A;
+  --sd-dk-rule: #454740;
+  --sd-dk-accent: #D79380;
+  --sd-dk-primary: #EE7D51;
+  --sd-dk-primary-lit: #FFA57C;
+  --sd-dk-mark: #34332D;
+  --sd-dk-hit: #3B3524;
+  --sd-dk-hl: #373932;
+}
+html[data-sd-theme="dark"] main.sd { background: var(--sd-dk-page); color-scheme: dark; }
+html[data-sd-theme="dark"] .sd :is(.sd-bar, .sd-comm-panel, .sd-viewbar, .sd-layout, .sd-notice-wrap, .sd-attribution, .sd-desk) {
+  --color-dark: var(--sd-dk-ink);
+  --color-white: var(--sd-dk-card);
+  --color-page: var(--sd-dk-page);
+  --color-cream: var(--sd-dk-panel);
+  --color-rule: var(--sd-dk-rule);
+  --color-card-border: var(--sd-dk-rule);
+  --color-muted: var(--sd-dk-muted);
+  --color-secondary: var(--sd-dk-accent);
+  --sd-accent: var(--sd-dk-accent);
+  --sd-faint: var(--sd-dk-faint);
+  --sd-card: var(--sd-dk-card);
+  --sd-panel: var(--sd-dk-panel);
+  --sd-ink: var(--sd-dk-ink);
+  --sd-muted: var(--sd-dk-muted);
+  /* the commentary rail's own tokens (commentary-pane.css states them on <html>, where the remap above does not reach) */
+  --cp-ink: var(--sd-dk-ink);
+  --cp-muted: var(--sd-dk-muted);
+  --cp-faint: var(--sd-dk-faint);
+  --cp-paper: var(--sd-dk-panel);
+  --cp-ground: var(--sd-dk-panel);
+  --cp-rule: var(--sd-dk-rule);
+  --cp-mark: var(--sd-dk-mark);
+  --cp-hit: var(--sd-dk-hit);
+}
+/* Surfaces the light rules paint with a literal colour. */
+@media (min-width: 900px) {
+  html[data-sd-theme="dark"] .sd .sd-text { background: var(--sd-dk-card); }
+  html[data-sd-theme="dark"] .sd .sd-side { background: var(--sd-dk-panel); }
+}
+html[data-sd-theme="dark"] .sd .sd-ov-stat,
+html[data-sd-theme="dark"] .sd .cp-stat,
+html[data-sd-theme="dark"] .sd .sd-desk .sd-sources:not(.sd-citation-rows) > .sd-source { background: var(--sd-dk-card); }
+html[data-sd-theme="dark"] .sd .sd-notice { background: var(--sd-dk-panel); }
+/* The Verse Desk's surfaces that the light rules paint with a literal colour (their later var(--sd-card) / transparent finals stay). */
+html[data-sd-theme="dark"] .sd .sd-desk .sd-desk-head { background: var(--sd-dk-panel); }
+html[data-sd-theme="dark"] .sd .sd-desk .sd-parallel-row,
+html[data-sd-theme="dark"] .sd .sd-desk .sd-chart { background: var(--sd-dk-card); }
+/* Verse numbers on the open verse's orange wash: the plain orange is 3.9:1 there, this is 4.5:1 or better (check-scripture-view.mjs). */
+html[data-sd-theme="dark"] .sd .sd-chapter-content .bible-verse.is-active .v { color: var(--sd-dk-primary-lit); }
+/* Tracks and meters were a tint of ink on paper; on dark they are a tint of the dark's ink. */
+html[data-sd-theme="dark"] .sd .sd-cbar-track,
+html[data-sd-theme="dark"] .sd .sd-ov-meter,
+html[data-sd-theme="dark"] .sd .cp-meter { background: rgba(233, 233, 229, 0.14); }
+/* The phone sheet's shadow was written for paper. */
+@media (max-width: 899px) {
+  html[data-sd-theme="dark"] .sd .cp-pane { box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35); }
+}

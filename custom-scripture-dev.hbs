@@ -4,7 +4,9 @@
 {{#contentFor "moHead"}}
 <title>Scripture | The Faith Received | Mere Orthodoxy</title>
 <meta name="description" content="Read any chapter of the Bible with the church&#39;s teachers beside it: every verse opens where the creeds, confessions and the library&#39;s authors cite it." />
-<link rel="stylesheet" href="{{asset "css/scripture-dev.css"}}&amp;frv=3abc4e01216b5bcc" />
+<link rel="stylesheet" href="{{asset "css/scripture-dev.css"}}&amp;frv=ebe7c91712fc6e73" />
+{{!-- Dark or light, and the 50/50 .. Panel Only split, set on <html> before first paint (external: the CSP forbids inline script). --}}
+<script src="{{asset "js/page/scripture-view-boot.js"}}&amp;frv=20996562e46459d9"></script>
 {{/contentFor}}
 {{!-- /the-faith-received/scripture/ — the Scripture reader, rebuilt (Ian, 2026-09-22). The whole chapter is typeset as the old
      /bible/ page set it, every verse is a button, and a verse opens a
@@ -81,6 +83,25 @@
     <div class="container" data-sd-comm-host></div>
   </section>
 
+  {{!-- The view bar (2026-10-19): how the width is split between the text and the panel (900px and up, with the rail on), and
+       Dark mode. scripture-view-boot.js sets the saved choice on <html> before paint; scripture-view.js wires these. --}}
+  <div class="container sd-viewbar" data-sd-viewbar>
+    <div class="sd-viewbar-row">
+      <div class="sd-layout-group" role="radiogroup" aria-labelledby="sd-layout-label" data-sd-layout-group>
+        <span class="sd-viewbar-label" id="sd-layout-label">Layout</span>
+        <div class="sd-seg">
+          <button type="button" role="radio" aria-checked="true" tabindex="0" data-sd-layout-opt="50-50" aria-label="50/50, text 50 percent, panel 50 percent" title="Text and panel, equal">50/50</button>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1" class="sd-seg-narrow" data-sd-layout-opt="25-75" aria-label="25/75, text 25 percent, panel 75 percent" title="Text 25%, panel 75%">25/75</button>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1" class="sd-seg-narrow" data-sd-layout-opt="75-25" aria-label="75/25, text 75 percent, panel 25 percent" title="Text 75%, panel 25%">75/25</button>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1" data-sd-layout-opt="scripture" title="The text alone">Scripture Only</button>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1" data-sd-layout-opt="panel" title="The panel alone">Panel Only</button>
+        </div>
+      </div>
+      <button type="button" class="sd-theme-btn" aria-pressed="false" data-sd-theme-toggle>Dark mode</button>
+    </div>
+    <p class="sd-view-hint" role="status" data-sd-view-hint hidden><span data-sd-view-hint-text>The panel is hidden.</span> <button type="button" data-sd-show-panel>Show panel</button></p>
+  </div>
+
   <div class="container sd-layout" data-sd-layout>
     <article class="bible-chapter sd-text" data-sd-text>
       <p class="bible-status" role="status">Loading scripture&hellip;</p>
@@ -94,10 +115,11 @@
 <script src="{{asset "js/port/scripture-kinds.js"}}&amp;frv=45c55191e1820ff3"></script>
 <script src="{{asset "js/page/scripture-source-groups.js"}}&amp;frv=18b4ac140cb9a1ae"></script>
 <script src="{{asset "js/page/scripture-dev-core.js"}}&amp;frv=302ebfc9544fc35c"></script>
-<script src="{{asset "js/page/scripture-dev.js"}}&amp;frv=0080ccc0a12cf636"></script>
+<script src="{{asset "js/page/scripture-dev.js"}}&amp;frv=28c7bacf5ec09b5d"></script>
 {{!-- The passage's reception history and the commentaries with their own note on the verse (faith-port-scripture-notes.js, from v1/enrich and the chapter files). --}}
 <link rel="stylesheet" href="{{asset "css/port/dev-notes.css"}}&amp;frv=c2a5838e8c32a669"><script defer src="{{asset "js/page/faith-port-scripture-notes.js"}}&amp;frv=2d6f30f2ed8693f0"></script>
 <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+<script defer src="{{asset "js/page/scripture-view.js"}}&amp;frv=865735685d676669"></script>
 {{!-- The commentary beside the text (2026-10-18): a chosen commentary follows the reader verse by verse, and the Critici Sacri show
      every critic on the verse. On unless the page is opened with ?pane=0 (kept for the tab; ?pane=1 turns it back on). The rail is half the width and opens on
      the Commentary (tabs: Commentary, Citations, Reception); commentary-pages.js loads every kind of work and commentary-anchor.js finds where a commentary comments on the verse. --}}
