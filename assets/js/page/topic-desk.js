@@ -47,7 +47,8 @@
         const html = M.renderDesk(model);
         host.innerHTML = html.hero + html.body;
         host.dataset.tier = model.tier;
-        root.classList.add("has-desk");
+        // The page's own count boxes stay unless the desk drew counts of its own.
+        if (model.modules.hero.tiles.length) root.classList.add("has-desk");
         host.querySelectorAll("img[data-tdk-portrait]").forEach((img) => {
           const fallback = () => {
             img.hidden = true;

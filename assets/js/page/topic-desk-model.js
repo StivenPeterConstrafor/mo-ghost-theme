@@ -38,6 +38,10 @@
   const CHURCH_LABEL = Object.fromEntries(CHURCHES);
 
   /* Minimums: a module with fewer rows than this is left out. */
+  /* One switch per module (Ian, 2026-10-19, after the first desk went live with claims nobody had vetted). A module that is
+     false is omitted whole: no heading, no empty box. Turn one back on only after its content has passed a relevance
+     check. traditions also carries the fault-line row. */
+  const MODULES_ON = { traditions: false, treatments: false, chron: true, verses: false, people: true, path: false, related: true };
   const MIN = { ruler: 3, columns: 2, treatments: 3, events: 5, verses: 5, people: 6, pathSteps: 2, pathItems: 2, related: 3 };
   const CAP = { quotesPerColumn: 2, worksPerColumn: 3, verses: 9, moreVerses: 15, people: 12, related: 8, eventsPerCentury: 2, events: 16 };
 
@@ -77,6 +81,8 @@
     return ED_TO_SHELF[b] || (b ? `ed:${b}` : "ed");
   };
   const groupLabel = (g) => (String(g).startsWith("ed:") ? String(g).slice(3) : g === "ed" ? "Other English writers" : (SHELF[g] || g));
+  // How a person's church reads on the people strip: one name for the Reformed, whichever table placed them.
+  const personChurch = (g) => (g === "rf" || g === "ed:Reformed" ? "Reformed" : groupLabel(g));
   const groupOrder = (groups) => {
     const rank = (g) => {
       if (String(g).startsWith("ed:")) return SHELF_ORDER.indexOf("ed") + 0.1 + ED_ORDER.indexOf(String(g).slice(3)) / 100;
@@ -101,6 +107,7 @@
     if (year && year < 1054) return "early";
     if (!year) return /^(Creed|Council|Definition)$/.test(type) ? "early" : null;
     if (/orthodox/i.test(trad)) return "or";
+    if (/lukar|lukaris/i.test(doc)) return null;
     if (/waldens|bohemian|moravian|brethren|socinian|racovian|mennonite|anabapt|quaker/i.test(doc)) return null;
     if (/baptist/i.test(doc)) return "bp";
     if (/thirty-nine articles|forty-two articles|irish articles|church of england|book of common prayer|lambeth/i.test(doc)) return "an";
@@ -252,11 +259,11 @@
       const text = cleanText(first.text);
       events.push({
         y, kind: typeRank(d.doc_type) === 0 ? "council" : "conf", rank: typeRank(d.doc_type), title: plain(stripYear(d.doc)), type: d.doc_type || "",
-        n: d.n_articles || 1, article: plain(first.article_display || first.article || ""), text: text.length >= 60 ? clip(text, 150) : "",
+        n: d.n_articles || 1, article: plain(first.article_display || first.article || ""), text: MODULES_ON.traditions && text.length >= 60 ? clip(text, 150) : "",
         w: first.w, p: first.p, href: safeRead(first.href, first.w, first.p), label: "Read the article",
       });
     });
-    treatList.forEach((e) => {
+    (MODULES_ON.treatments ? treatList : []).forEach((e) => {
       const y = Number(e.y) || 0;
       if (!y) return;
       events.push({ y, kind: "work", rank: 3, title: plain(e.title), type: "Work", author: e.author, w: e.w, p: e.p, label: "Read the section" });
@@ -314,11 +321,11 @@
       take(true);
       if (chosen.length < 8) { perGroup.clear(); chosen.forEach((a) => perGroup.set(groupOf(a, bodyOf), (perGroup.get(groupOf(a, bodyOf)) || 0) + 1)); take(false); }
       if (chosen.length >= MIN.people) {
-        chosen.sort((a, b) => (a.y || 9999) - (b.y || 9999));
+        chosen.sort((a, b) => (Number(a.y) || 9999) - (Number(b.y) || 9999));
         people = {
           nAuthors: counts.authors || authors.length,
           items: chosen.map((a) => ({
-            name: a.a, slug: a.s, born: a.y || 0, church: groupLabel(groupOf(a, bodyOf)), pages: a.pages || 0, portrait: portrait.has(a.s),
+            name: a.a, slug: a.s, born: Number(a.y) || 0, church: personChurch(groupOf(a, bodyOf)), pages: Number(a.pages) || 0, portrait: portrait.has(a.s),
           })),
         };
       } else skip("people", `${chosen.length} people (needs ${MIN.people})`);
@@ -364,6 +371,11 @@
     if (rel.length >= MIN.related) related = { items: rel.map((r) => ({ id: r.id, label: loci.get(r.id).label, n: r.n })), label: locus.label };
     else skip("related", `${rel.length} neighbors (needs ${MIN.related})`);
 
+    const off = (k, name, v) => { if (MODULES_ON[k]) return v; if (v) skip(name, "switched off until its content is vetted"); return null; };
+    traditions = off("traditions", "traditions", traditions);
+    treatments = off("treatments", "treatments", treatments);
+    verses = off("verses", "verses", verses);
+    path = off("path", "path", path);
     model.modules = {
       hero: {
         title: locus.label, dek, kids, tiles, ruler,
@@ -394,7 +406,7 @@
     o.push(`<line class="rl-base" x1="${X0 - 10}" y1="${YB}" x2="${X1 + 10}" y2="${YB}"/>`);
     r.bars.forEach((b) => {
       const x = xc(b.c);
-      o.push(`<text class="rl-cen" x="${x.toFixed(1)}" y="${YB + 17}" text-anchor="middle">${b.c}</text>`);
+      o.push(`<text class="rl-cen" x="${x.toFixed(1)}" y="${YB + 17}" text-anchor="middle">${Number(b.c)}</text>`);
       if (!b.total) return;
       let y = YB;
       SHELF_ORDER.forEach((k) => {
@@ -402,7 +414,7 @@
         if (!n) return;
         const h = (hs(b.total) * n) / b.total;
         y -= h;
-        o.push(`<rect class="b-${k}" x="${(x - bw / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h, 0.8).toFixed(1)}"><title>${esc(SHELF[k])}, century ${b.c}: ${fmt(n)} passages</title></rect>`);
+        o.push(`<rect class="b-${k}" x="${(x - bw / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h, 0.8).toFixed(1)}"><title>${esc(SHELF[k])}, century ${Number(b.c)}: ${fmt(n)} passages</title></rect>`);
       });
       if (b.total >= maxTot * 0.4) o.push(`<text class="rl-n" x="${x.toFixed(1)}" y="${(YB - hs(b.total) - 5).toFixed(1)}" text-anchor="middle">${fmt(b.total)}</text>`);
     });
@@ -424,7 +436,7 @@
     return `<ol class="tdk-ruler-list" aria-label="Indexed passages by century">${r.bars.filter((b) => b.total).map((b) => {
       const pct = 100 * Math.sqrt(b.total / maxTot);
       const segs = SHELF_ORDER.filter((k) => b.by[k]).map((k) => `<i class="b-${k}" style="width:${((pct * b.by[k]) / b.total).toFixed(2)}%"></i>`).join("");
-      return `<li><span class="c">${b.c}</span><span class="bar">${segs}</span><span class="n">${fmt(b.total)}</span></li>`;
+      return `<li><span class="c">${Number(b.c)}</span><span class="bar">${segs}</span><span class="n">${fmt(b.total)}</span></li>`;
     }).join("")}</ol>`;
   }
 
@@ -433,6 +445,7 @@
     const j = (id, label) => { if (ids[id]) jumps.push(link(`#tdk-${id}`, label)); };
     j("traditions", "Traditions"); j("treatments", "Classic works"); j("chron", "Timeline"); j("verses", "Key verses");
     j("people", "People"); j("path", "Reading path"); j("related", "Related");
+    jumps.push(link("#td-h-conf", "Full record"));
     const tiles = h.tiles.length ? `<ul class="tdk-tiles" aria-label="This topic in the library">${h.tiles.map((t) =>
       `<li>${ids[t.to] ? `<a href="#tdk-${t.to}"><b>${fmt(t.n)}</b><span>${esc(t.label)}</span></a>` : `<b>${fmt(t.n)}</b><span>${esc(t.label)}</span>`}</li>`).join("")}</ul>` : "";
     const r = h.ruler;
@@ -455,7 +468,7 @@
     }).join("");
     const f = t.fault;
     const fault = f ? `<table class="tdk-matrix"><caption>${esc(f.question)}</caption><thead><tr><th scope="col">Church</th><th scope="col">The text</th><th scope="col">Source</th></tr></thead><tbody>${f.rows.map((r) =>
-      `<tr><th scope="row">${esc(r.church)}</th><td>“${esc(r.quote)}”</td><td>${link(r.href, r.doc)}</td></tr>`).join("")}</tbody></table>` : "";
+      `<tr><th scope="row">${esc(r.church)}</th><td>“${esc(r.quote)}”</td><td>${link(r.href, r.doc)}</td></tr>`).join("")}</tbody></table>${t.columns.some((c) => c.id === "or") ? "" : `<p class="tdk-small">The library maps no Orthodox document, so the Eastern view appears only in the 381 text above.</p>`}` : "";
     return `<section class="tdk-mod" id="tdk-traditions">${modHead("How each tradition treats it", `${label} in the documents of the churches`,
       `Each column opens with words from the documents the library maps to this topic. All ${fmt(t.nArticles)} articles are in the full record below.${t.from ? ` These documents are mapped to ${link(topicHref(t.from.id), t.from.label)}, which this topic belongs to.` : ""}`)}${fault}<div class="tdk-grid">${cols}</div></section>`;
   }
@@ -471,10 +484,10 @@
     const items = c.events.map((e) => {
       const href = e.href || readHref(e.w, e.p);
       const meta = e.kind === "work" ? esc(e.author) : [e.type, e.article && e.article !== e.title ? e.article : ""].filter(Boolean).map(esc).join(", ");
-      return `<li class="tdk-ev tdk-ev--${e.kind}"><span class="d">${e.kind === "work" ? "fl. " : ""}${e.y}</span><div><b>${esc(e.title)}</b>${meta ? `<span class="m">${meta}</span>` : ""}${e.text ? `<p>“${esc(e.text)}”</p>` : ""}<span class="l">${link(href, e.label)}</span></div></li>`;
+      return `<li class="tdk-ev tdk-ev--${e.kind}"><span class="d">${e.kind === "work" ? "fl. " : ""}${Number(e.y)}</span><div><b>${esc(e.title)}</b>${meta ? `<span class="m">${meta}</span>` : ""}${e.text ? `<p>“${esc(e.text)}”</p>` : ""}<span class="l">${link(href, e.label)}</span></div></li>`;
     }).join("");
     return `<section class="tdk-mod" id="tdk-chron">${modHead("Timeline", "Councils, confessions, and treatises in order",
-      `${plural(c.events.length, "event", "events")} chosen from ${plural(c.nDocs, "dated document", "dated documents")} and the classic works, at most two a century.${c.hasCouncil ? ` For every council see the ${link(COUNCILS_GUIDE, "Councils guide")}.` : ""}`)}<ol class="tdk-chron">${items}</ol></section>`;
+      `${plural(c.events.length, "event", "events")} chosen from ${plural(c.nDocs, "dated document", "dated documents")}, at most two a century.${c.hasCouncil ? ` For every council see the ${link(COUNCILS_GUIDE, "Councils guide")}.` : ""}`)}<ol class="tdk-chron">${items}</ol></section>`;
   }
 
   function renderVerses(v) {
@@ -490,10 +503,10 @@
       const ini = x.name.split(/\s+/).filter((w) => /^[A-Z]/.test(w)).slice(0, 2).map((w) => w[0]).join("");
       const img = x.portrait ? `<img src="/assets/data/faith-received/guides/portraits/${enc(x.slug)}.jpg" alt="" width="84" height="84" loading="lazy" decoding="async" data-tdk-portrait>` : "";
       return `<li class="tdk-person"><a href="${esc(authorHref(x.slug))}"><span class="ph">${img}<span class="ini" aria-hidden="true"${x.portrait ? " hidden" : ""}>${esc(ini)}</span></span><b>${esc(x.name)}</b>` +
-        `<span class="d">${x.born ? `b. ${x.born}` : ""}</span><span class="t">${esc(x.church)}</span>${x.pages ? `<span class="t">${plural(x.pages, "page", "pages")} indexed here</span>` : ""}</a></li>`;
+        `<span class="d">${Number(x.born) ? `b. ${Number(x.born)}` : ""}</span><span class="t">${esc(x.church)}</span>${x.pages ? `<span class="t">${plural(x.pages, "page", "pages")} indexed here</span>` : ""}</a></li>`;
     }).join("");
     return `<section class="tdk-mod" id="tdk-people">${modHead("People", "Voices on this topic",
-      `${plural(p.items.length, "author", "authors")} of the ${fmt(p.nAuthors)} on this topic, listed by birth year. A fixed rule picks them. Authors with an engraved portrait come first, then those with the most pages indexed on this topic. No more than two come from one shelf.`)}<ul class="tdk-people">${items}</ul></section>`;
+      `${plural(p.items.length, "author", "authors")} of the ${fmt(p.nAuthors)} on this topic, listed by birth year, with authors of unknown birth year last. A fixed rule picks them. Authors with an engraved portrait come first, then those with the most pages indexed on this topic. No more than two come from one shelf.`)}<ul class="tdk-people">${items}</ul></section>`;
   }
 
   function renderPath(p) {
@@ -504,26 +517,26 @@
 
   function relSvg(r) {
     const cx = 470; const cy = 215; const rx = 215; const ry = 140;
-    const max = Math.max(...r.items.map((i) => i.n));
+    const max = Math.max(...r.items.map((i) => Number(i.n)));
     const o = ['<svg class="tdk-rel" viewBox="0 0 940 430" aria-hidden="true" focusable="false">'];
     r.items.forEach((it, k) => {
       const ang = -Math.PI / 2 + (k * 2 * Math.PI) / r.items.length;
       const x = cx + rx * Math.cos(ang); const y = cy + ry * Math.sin(ang);
-      const rad = 6 + (10 * it.n) / max;
+      const rad = 6 + (10 * Number(it.n)) / max;
       const c = Math.cos(ang);
       let anchor = "start"; let tx = x + rad + 8; let ty = y + 5;
       if (Math.abs(c) < 0.2) { anchor = "middle"; tx = x; ty = Math.sin(ang) < 0 ? y - rad - 10 : y + rad + 20; } else if (c < 0) { anchor = "end"; tx = x - rad - 8; }
-      o.push(`<line class="rel-l" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" style="stroke-width:${(1 + (3 * it.n) / max).toFixed(1)}"/>` +
+      o.push(`<line class="rel-l" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" style="stroke-width:${(1 + (3 * Number(it.n)) / max).toFixed(1)}"/>` +
         `<circle class="rel-n" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rad.toFixed(1)}"/>` +
         `<text class="rel-t" x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="${anchor}">${esc(it.label)}</text>` +
-        `<text class="rel-s" x="${tx.toFixed(1)}" y="${(ty + 15).toFixed(1)}" text-anchor="${anchor}">${it.n} shared</text>`);
+        `<text class="rel-s" x="${tx.toFixed(1)}" y="${(ty + 15).toFixed(1)}" text-anchor="${anchor}">${fmt(it.n)} shared</text>`);
     });
     o.push(`<circle class="rel-c" cx="${cx}" cy="${cy}" r="40"/><text class="rel-ct" x="${cx}" y="${cy + 4}" text-anchor="middle">This topic</text></svg>`);
     return o.join("");
   }
 
   function renderRelated(r) {
-    const list = r.items.map((it) => `<li>${link(topicHref(it.id), it.label)} <span>${it.n} of the 60 most particular proof-texts are shared</span></li>`).join("");
+    const list = r.items.map((it) => `<li>${link(topicHref(it.id), it.label)} <span>${fmt(it.n)} of the 60 most particular proof-texts are shared</span></li>`).join("");
     return `<section class="tdk-mod" id="tdk-related">${modHead("Related topics", "Topics that share its proof-texts",
       "Neighbors by shared proof-texts: how many of each topic's sixty most particular verses it has in common with this one.")}<div class="tdk-relgrid">${relSvg(r)}<ul class="tdk-rellist">${list}</ul></div></section>`;
   }
@@ -543,5 +556,5 @@
     return { hero: renderHero(m.hero, model.tier, present), body };
   }
 
-  return { buildDeskModel, renderDesk, readHref, churchOfArticle, groupOf, MIN, CAP, SHELF, CHURCHES };
+  return { buildDeskModel, renderDesk, readHref, churchOfArticle, groupOf, MIN, CAP, SHELF, CHURCHES, MODULES_ON };
 }));
