@@ -219,9 +219,11 @@
     if (SITE.name === 'mo') {
       pane.querySelector('.cp-top').insertAdjacentHTML('afterend', `
       <section class="cp-creeds" aria-labelledby="cpCreedsH" hidden>
-        <p class="cp-cr-eyebrow">Creeds, confessions and catechisms</p>
-        <h3 class="cp-cr-h" id="cpCreedsH">Where they cite this verse</h3>
-        <p class="cp-cr-sum" aria-live="polite"></p>
+        <div class="cp-cr-bar">
+          <h3 class="cp-cr-h" id="cpCreedsH">Creeds, confessions and catechisms</h3>
+          <button type="button" class="cp-cr-all" aria-expanded="false" hidden>Show all</button>
+        </div>
+        <p class="cp-cr-sum cp-sr" aria-live="polite"></p>
         <div class="cp-cr-body"></div>
       </section>`);
     }
@@ -244,7 +246,9 @@
       const more = e.target.closest('.cp-rec .cp-more');
       if (more) { more.parentElement.querySelectorAll('li[hidden]').forEach((li) => { li.hidden = false; }); more.remove(); return; }
       const crMore = e.target.closest('.cp-creeds .cp-more');
-      if (crMore) { crMore.parentElement.querySelectorAll('li[hidden]').forEach((li) => { li.hidden = false; }); crMore.remove(); return; }
+      if (crMore) { const ul = crMore.previousElementSibling; if (ul) ul.querySelectorAll('li[hidden]').forEach((li) => { li.hidden = false; }); crMore.remove(); return; }
+      if (e.target.closest('.cp-creeds .cp-cr-all')) { CF.open = !CF.open; creeds(); return; }
+      if (e.target.closest('.cp-creeds .cp-cr-retry')) { creeds(); return; }
       const ex = e.target.closest('.cp-expand');
       if (ex) { const f = ex.parentElement.querySelector(`.cp-fold[data-cp-fold="${ex.dataset.cpExpand}"]`); if (f) f.hidden = false; ex.remove(); }
     });
@@ -366,85 +370,117 @@
       + '<p class="cp-rec-foot">Every page in the library that cites the verse, dated by its author\'s life.</p>';
   }
   // ── creeds, confessions and catechisms that cite the verse ────────────────────────────────────────────────────────────────
-  // Built by scripts/build-confession-proofs.mjs from the documents' own text. v: the articles that print the verse ("1:1"),
-  // c: the articles that cite its chapter as a whole, a: the article table [document, label, page, title], x: the words each
-  // stands behind (a tab opens the sentence out: "clause<TAB>what follows the citation").
-  const CF = { dir: '/assets/data/faith-received/confession-proofs/', books: new Map(), index: null, token: 0 };
+  // Built by scripts/build-confession-proofs.mjs from the documents' own text, one file per chapter (confession-proofs/<book>/<ch>.json).
+  // v: the articles that print a verse ({ "1": [[article, words], ...] }), c: the articles that cite the chapter as a whole, a: the
+  // article table [document, label, page, title, paragraph], x: the words each stands behind ("clause<TAB>what follows the citation";
+  // a leading \u0001 says the words are an opening with its citations taken out, which the reader cannot mark). index.json lists the
+  // documents and which chapters have a file, so a chapter with none is never asked for.
+  const CF = { dir: '/assets/data/faith-received/confession-proofs/', chapters: new Map(), index: null, token: 0, open: false };
   // the churches in the order the history reads them (the creeds and confessions page sets them the same way)
-  const CF_RANK = ['The Whole Church', 'Ecumenical', 'Orthodox', 'Eastern Orthodox', 'Oriental Orthodox', 'Roman Catholic', 'Waldensian',
+  const CF_RANK = ['The Whole Church', 'Early church', 'Ecumenical', 'Orthodox', 'Eastern Orthodox', 'Oriental Orthodox', 'Roman Catholic', 'Waldensian',
     'Bohemian Brethren', 'Protestant', 'Lutheran', 'Reformed', 'Continental Reformed', 'Anglican', 'Presbyterian', 'Congregational',
     'Baptist', 'Anabaptist', 'Remonstrant', 'Arminian', 'Methodist'];
   const cfUrl = (f) => {
     const path = `${CF.dir}${f}`;
     return window.moDataUrl ? window.moDataUrl(path) : window.moAssetUrl ? window.moAssetUrl(path) : path;
   };
-  const cfIndex = () => CF.index || (CF.index = json(cfUrl('index.json')).catch(() => { CF.index = null; return null; }));
-  const cfBook = (book) => {
-    if (!CF.books.has(book)) CF.books.set(book, json(cfUrl(`${book}.json`)).catch(() => { CF.books.delete(book); return null; }));
-    return CF.books.get(book);
-  };
-  // the words a link asks the reader to mark: the clause itself (the reader marks a whole phrase of 24 characters or more)
-  const cfPhrase = (x) => {
-    const t = String(x).split('\t')[0].replace(/^…\s*/, '').trim();
-    return t.length >= 24 ? t.slice(0, 110).replace(/\s+\S*$/, '') : '';
-  };
-  const cfHref = (slug, p, x) => {
-    const base = SITE.read(slug, p), hl = cfPhrase(x), i = base.indexOf('#');
-    return hl ? `${base.slice(0, i < 0 ? base.length : i)}&hl=${encodeURIComponent(hl)}${i < 0 ? '' : base.slice(i)}` : base;
-  };
-  const cfWords = (x) => {
-    const [clause, tail] = String(x).split('\t');
-    const lead = /^[a-z]/.test(clause) ? '… ' : '';
-    return `${lead}${clause}${tail ? ` ${tail}` : ''}`;
+  const cfIndex = () => CF.index || (CF.index = json(cfUrl('index.json')).catch((e) => { CF.index = null; throw e; }));
+  const cfChapter = (book, ch) => {
+    const k = `${book}/${ch}`;
+    if (!CF.chapters.has(k)) CF.chapters.set(k, json(cfUrl(`${k}.json`)).catch((e) => { CF.chapters.delete(k); throw e; }));
+    return CF.chapters.get(k);
   };
   const cfRank = (c) => { const i = CF_RANK.indexOf(c); return i < 0 ? CF_RANK.length : i; };
   // the history's order: the church, then the year
   const cfOrder = (docs, d) => (p, q) => { const a = docs[d.a[p[0]][0]], b = docs[d.a[q[0]][0]]; return cfRank(a.c) - cfRank(b.c) || a.y - b.y; };
+  // the words a link asks the reader to mark: the clause itself (the reader marks a whole phrase of 24 characters or more)
+  const cfPhrase = (x) => {
+    if (String(x).startsWith('\u0001')) return '';
+    const t = String(x).split('\t')[0].replace(/^…\s*/, '').trim();
+    return t.length >= 24 ? t.slice(0, 110).replace(/\s+\S*$/, '') : '';
+  };
+  // the reader numbers a page's paragraphs b<page>-<n>: the link goes to the paragraph that cites the verse
+  const cfHref = (slug, r, x) => {
+    const base = SITE.read(slug, r[2]), hl = cfPhrase(x), i = base.indexOf('#');
+    return `${base.slice(0, i < 0 ? base.length : i)}${hl ? `&hl=${encodeURIComponent(hl)}` : ''}#b${encodeURIComponent(r[2])}-${r[4] || 0}`;
+  };
+  const cfWords = (x) => {
+    const raw = String(x), [clause, tail] = (raw.startsWith('\u0001') ? raw.slice(1) : raw).split('\t');
+    return clause ? `${/^[a-z]/.test(clause) ? '… ' : ''}${clause}${tail ? ` ${tail}` : ''}` : '';
+  };
   function cfRow(d, docs, r, x, hid) {
-    const doc = docs[r[0]], t = r[3] && r[3] !== doc.t ? r[3] : '';
-    const meta = [doc.c, doc.y ? String(doc.y) : '', t].filter(Boolean).map(esc).join(dot);
-    return `<li class="cp-row-li cp-wit"${hid ? ' hidden' : ''}><a class="cp-row-t" href="${esc(cfHref(doc.s, r[2], d.x[x]))}">${esc(doc.t)} <span class="cp-cr-at">${esc(r[1])}</span></a>`
-      + `<span class="cp-row-m">${meta}</span><span class="cp-w-g cp-cr-q">“${esc(cfWords(d.x[x]))}”</span></li>`;
+    const doc = docs[r[0]], t = r[3] && r[3] !== doc.t ? r[3] : '', words = cfWords(d.x[x]);
+    const meta = [doc.c, doc.y ? String(doc.y) : '', doc.u, t].filter(Boolean).map(esc).join(dot);
+    return `<li class="cp-row-li cp-wit"${hid ? ' hidden' : ''}><a class="cp-row-t" href="${esc(cfHref(doc.s, r, d.x[x]))}">${esc(doc.t)} <span class="cp-cr-at">${esc(r[1])}</span></a>`
+      + `<span class="cp-row-m">${meta}</span>${words ? `<span class="cp-w-g cp-cr-q">“${esc(words)}”</span>` : ''}</li>`;
   }
+  // a list of rows, the first `show` open and the rest behind their own button (it opens only the list it follows)
   function cfList(d, docs, rows, show) {
     const li = rows.map(([a, x], i) => cfRow(d, docs, d.a[a], x, i >= show)).join('');
     return `<ul class="cp-rows">${li}</ul>${rows.length > show ? `<button type="button" class="cp-more">Show ${fmt(rows.length - show)} more</button>` : ''}`;
   }
+  const cfGroup = (title, n, html, cls) => `<section class="cp-era ${cls || ''}"><h4 class="cp-era-h">${title} <small>${fmt(n)} ${n === 1 ? 'article' : 'articles'}</small></h4>${html}</section>`;
   async function creeds() {
     const box = pane && pane.querySelector('.cp-creeds'), w = where(); if (!box || !w) return;
     const tok = ++CF.token, v = S.verse || 1;
-    box.classList.add('is-loading');
-    const [docsIdx, d] = await Promise.all([cfIndex(), cfBook(w.book)]);
+    // the last verse's list is not left in view while this one loads
+    box.hidden = true;
+    let docsIdx, d = null, failed = false;
+    try {
+      docsIdx = await cfIndex();
+      if ((docsIdx.chapters[w.book] || []).includes(Number(w.ch))) d = await cfChapter(w.book, w.ch);
+    } catch (_) { failed = true; }
     if (tok !== CF.token) return;
-    box.classList.remove('is-loading');
-    const rows = d && d.v ? d.v[`${w.ch}:${v}`] || [] : [];
-    const have = new Set(rows.map((r) => r[0]));
-    const whole = d && d.c ? (d.c[w.ch] || []).filter((r) => !have.has(r[0])) : [];
-    if (!docsIdx || !d || (!rows.length && !whole.length)) { box.hidden = true; return; }
+    const body = box.querySelector('.cp-cr-body'), bar = box.querySelector('.cp-cr-bar');
+    if (failed) {
+      box.hidden = false; box.classList.remove('is-open');
+      bar.hidden = true;
+      body.innerHTML = '<p class="cp-cr-note">The creeds and confessions that cite this verse could not be loaded. <button type="button" class="cp-cr-retry">Try again</button></p>';
+      return;
+    }
+    bar.hidden = false;
+    const rows = d && d.v ? (d.v[String(v)] || []).slice().sort(cfOrder(docsIdx.docs, d)) : [];
+    const have = new Set(rows.map((r) => `${d.a[r[0]][0]}|${d.a[r[0]][1]}|${d.a[r[0]][2]}`));
+    const whole = d && d.c ? d.c.filter((r) => !have.has(`${d.a[r[0]][0]}|${d.a[r[0]][1]}|${d.a[r[0]][2]}`)).sort(cfOrder(docsIdx.docs, d)) : [];
+    if (!rows.length && !whole.length) { box.hidden = true; return; }
     const {docs} = docsIdx, name = w.name || w.book.replace(/-/g, ' ');
-    const byDoc = (n) => new Set(n.map((r) => d.a[r[0]][0])).size;
+    const main = rows.filter((r) => !docs[d.a[r[0]][0]].p), papal = rows.filter((r) => docs[d.a[r[0]][0]].p);
+    const n = rows.length;
     box.hidden = false;
-    box.querySelector('.cp-cr-h').textContent = rows.length ? 'Where they cite this verse' : 'Where they cite this chapter';
-    box.querySelector('.cp-cr-sum').textContent = rows.length
-      ? `${fmt(rows.length)} ${rows.length === 1 ? 'article' : 'articles'} in ${fmt(byDoc(rows))} ${byDoc(rows) === 1 ? 'document prints' : 'documents print'} ${name} ${w.ch}:${v} as a proof text.`
-      : `None names ${name} ${w.ch}:${v}. ${fmt(whole.length)} ${whole.length === 1 ? 'article cites' : 'articles cite'} ${name} ${w.ch} as a whole.`;
-    // on a wide screen the first rows are open; on the phone's sheet two, so the commentary is not pushed out of sight
-    const open = wide.matches ? 2 : 1;
+    box.querySelector('.cp-cr-h').textContent = `Creeds, confessions and catechisms (${fmt(n)})`;
+    const open = CF.open && (n > 3 || whole.length || papal.length);
+    box.classList.toggle('is-open', !!open);
+    const btn = box.querySelector('.cp-cr-all');
+    btn.hidden = !(n > 3 || whole.length);
+    btn.textContent = open ? 'Show fewer' : n > 3 ? `Show all ${fmt(n)}` : n ? 'Show more' : `Show ${fmt(whole.length)} citing the chapter`;
+    btn.setAttribute('aria-expanded', String(!!open));
+    box.querySelector('.cp-cr-sum').textContent = n
+      ? `${fmt(n)} ${n === 1 ? 'article cites' : 'articles cite'} ${name} ${w.ch}:${v}.`
+      : `None names ${name} ${w.ch}:${v}.`;
     let html = '';
-    if (rows.length > 12) {
-      // many: by church, the history's order, each church's first two open
-      const groups = new Map();
-      for (const r of rows) { const c = docs[d.a[r[0]][0]].c || 'Other'; if (!groups.has(c)) groups.set(c, []); groups.get(c).push(r); }
-      html = [...groups].sort((a, b) => cfRank(a[0]) - cfRank(b[0]) || a[0].localeCompare(b[0])).map(([c, rs]) =>
-        `<section class="cp-era"><h4 class="cp-era-h">${esc(c)} <small>${fmt(rs.length)} ${rs.length === 1 ? 'article' : 'articles'}</small></h4>${cfList(d, docs, rs, open)}</section>`).join('');
-    } else if (rows.length) {
-      html = cfList(d, docs, rows.slice().sort(cfOrder(docs, d)), wide.matches ? 6 : 2);
+    if (!open) {
+      // closed: the first three entries; on the phone's sheet two, so the commentary's note is still in the first screen
+      const peek = wide.matches ? 3 : 2;
+      html = main.length ? cfList(d, docs, main.slice(0, peek), peek).replace(/<button[\s\S]*$/, '') : '';
+      if (!main.length && papal.length) html = cfList(d, docs, papal.slice(0, peek), peek).replace(/<button[\s\S]*$/, '');
+      if (!n) html = `<p class="cp-cr-note">None names ${esc(name)} ${esc(w.ch)}:${esc(v)}.</p>`;
+    } else {
+      if (main.length > 6) {
+        const groups = new Map();
+        for (const r of main) { const c = docs[d.a[r[0]][0]].c || 'Other'; if (!groups.has(c)) groups.set(c, []); groups.get(c).push(r); }
+        html = [...groups].sort((a, b) => cfRank(a[0]) - cfRank(b[0]) || a[0].localeCompare(b[0]))
+          .map(([c, rs]) => cfGroup(esc(c), rs.length, cfList(d, docs, rs, 3))).join('');
+      } else if (main.length) {
+        html = cfList(d, docs, main, 6);
+      }
+      if (whole.length) {
+        html += cfGroup(`Citing ${esc(name)} ${esc(w.ch)} as a whole`, whole.length,
+          `<p class="cp-era-more">They print the chapter reference without naming a verse.</p>${cfList(d, docs, whole, 3)}`, 'cp-cr-whole');
+      }
+      if (papal.length) html += cfGroup('Papal and other teaching documents', papal.length, cfList(d, docs, papal, 0), 'cp-cr-papal');
+      if (!n) html = `<p class="cp-cr-note">None names ${esc(name)} ${esc(w.ch)}:${esc(v)}.</p>${html}`;
     }
-    if (whole.length) {
-      html += `<section class="cp-era cp-cr-whole"><h4 class="cp-era-h">Cite ${esc(name)} ${esc(w.ch)} as a whole <small>${fmt(whole.length)} ${whole.length === 1 ? 'article' : 'articles'}</small></h4>`
-        + `<p class="cp-era-more">${rows.length ? 'These print the chapter reference without naming a verse.' : 'They print the chapter reference without naming a verse.'}</p>${cfList(d, docs, whole, rows.length || !wide.matches ? 2 : 4)}</section>`;
-    }
-    box.querySelector('.cp-cr-body').innerHTML = html;
+    body.innerHTML = html;
   }
 
   // each verse number carries how much reception it has (a quiet mark in the text: four steps of the chapter's own range)
