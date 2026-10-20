@@ -66,11 +66,52 @@
       <p>${esc(c.why)}</p>${c.thesis ? `<p class="fr-dn-thesis">${esc(c.thesis)}</p>` : ""}</div></li>`).join("")}</ol>`;
   }
 
-  function traditionsView(prs) {
-    return `<ol class="fr-dn-pairs">${prs.map((p) => `<li class="fr-dn-card"><span class="fr-dn-edge" aria-hidden="true"><i class="e-${edge(p.x)}"></i><i class="e-${edge(p.y)}"></i></span><h4>${esc(p.x)} and ${esc(p.y)}</h4>
-      <p>${esc(p.summary)}</p>
-      ${p.agree ? `<p><em>Agree.</em> ${esc(p.agree)}</p>${pagesLine(p.agree_refs)}` : ""}
-      ${p.differ ? `<p><em>Differ.</em> ${esc(p.differ)}</p>${pagesLine(p.differ_refs)}` : ""}</li>`).join("")}</ol>`;
+  /* The comparison prose cites its sources by number into two lists the page never received: "(X1, Y7)" means the first tradition's sample, item 1, and the
+     second's, item 7. The refs the data does carry are only the cited subset, with no index, so a number cannot be matched to a page. The raw tokens are
+     taken out of the prose (nothing else in a sentence is changed) and the pages are listed as numbered notes to the paragraph as a whole. */
+  const GROUP = /\s*[(\[]\s*[XY]\d+(?:\s*[–—-]\s*[XY]?\d+)?(?:\s*[,;]\s*[XY]\d+(?:\s*[–—-]\s*[XY]?\d+)?)*\s*[)\]]/g;
+  const BARE = /\s+[XY]\d+\b/g;
+  const clean = (t) => String(t || "").replace(GROUP, "").replace(/(^|[.!?]\s+)[XY]\d+\b/g, "$1A sampled source").replace(BARE, "").replace(/\s+([.,;:])/g, "$1");
+  const CONF_DOC = /^(?:cf|rc|lc|bc)-\d/;
+  function notesList(refs) {
+    // A confession or catechism among the cited pages comes first.
+    const list = (refs || []).filter((r) => r && r.w).slice().sort((x, y) => Number(CONF_DOC.test(y.w)) - Number(CONF_DOC.test(x.w)));
+    if (!list.length) return "";
+    return `<p class="fr-dn-notes-h">Pages this paragraph was drawn from</p><ol class="fr-dn-notes">${list.slice(0, 12).map((r) => `<li>${pageLink(r.w, r.p, `${who(r)}, p. ${r.p}`)}</li>`).join("")}</ol>`;
+  }
+  // Which of the desk's church columns holds a tradition's vetted confessions. English Divines and Medieval have no column of their own, so no row.
+  const COLUMN_OF = { Reformed: "rf", Lutheran: "lu", "Roman Catholic": "rc", "Latin Fathers": "early", "Greek Fathers": "early" };
+  function sampleLine(p) {
+    const refs = [...(p.agree_refs || []), ...(p.differ_refs || [])];
+    const pages = new Set(refs.map((r) => `${r.w}|${r.p}`)).size;
+    const authors = new Set(refs.map((r) => r.author).filter(Boolean));
+    if (!pages) return "";
+    const by = (side) => [...new Set(refs.filter((r) => r.side === side).map((r) => r.author).filter(Boolean))];
+    const list = [p.x, p.y].map((t) => `${esc(t)}: ${by(t).map(esc).join(", ") || "none"}`).join(". ");
+    return `<p class="fr-dn-sample">Drawn from a sample of ${pages} cited ${pages === 1 ? "page" : "pages"} by ${authors.size} ${authors.size === 1 ? "author" : "authors"}. Not every author in a tradition is represented. Sampled authors, ${list}.</p>`;
+  }
+  function halfHtml(label, extra, used) {
+    // Latin and Greek Fathers share one column (the early church): its documents are shown once in a card, in the first half that asks.
+    const colId = COLUMN_OF[label];
+    const col = colId && !used.has(colId) && extra && extra.columns && extra.columns.find((c) => c.id === colId);
+    if (col) used.add(colId);
+    const docs = col && col.quotes && col.quotes.length ? `<div class="fr-dn-row"><h5>Confessions and catechisms</h5><ul>${col.quotes.slice(0, 6).map((q) =>
+      `<li><a href="${esc(q.href || `${READ}${encodeURIComponent(q.w)}`)}">${esc([q.doc, q.article && q.article !== q.doc ? q.article : ""].filter(Boolean).join(", "))}</a>${q.year ? ` <span>${esc(q.year)}</span>` : ""}</li>`).join("")}</ul></div>` : "";
+    const names = extra && extra.principal && extra.principal.traditions && extra.principal.traditions[label];
+    const rows = names && window.MOTopicPrincipal && extra.topic ? window.MOTopicPrincipal.principalRows(names, extra.topic.authors, extra.topic.works, 8) : [];
+    const writers = rows.length ? `<div class="fr-dn-row"><h5>Principal writers on this topic in the library</h5><ul>${rows.map((r) =>
+      `<li><a href="${esc(r.href)}">${esc(r.name)}</a> <span>${r.n.toLocaleString("en-US")} passages</span></li>`).join("")}</ul><p class="fr-dn-note">Listed from the library's passages on this topic. The comparison above was written from a sample and may not draw on every writer here.</p></div>` : "";
+    return docs || writers ? `<div class="fr-dn-half"><h5 class="fr-dn-half-h">${esc(label)}</h5>${docs}${writers}</div>` : "";
+  }
+  function traditionsView(prs, extra) {
+    return `<ol class="fr-dn-pairs">${prs.map((p) => {
+      const used = new Set();
+      const halves = [halfHtml(p.x, extra, used), halfHtml(p.y, extra, used)].join("");
+      return `<li class="fr-dn-card"><span class="fr-dn-edge" aria-hidden="true"><i class="e-${edge(p.x)}"></i><i class="e-${edge(p.y)}"></i></span><h4>${esc(p.x)} and ${esc(p.y)}</h4>
+      <p>${esc(clean(p.summary))}</p>
+      ${p.agree ? `<p><em>Agree.</em> ${esc(clean(p.agree))}</p>${notesList(p.agree_refs)}` : ""}
+      ${p.differ ? `<p><em>Differ.</em> ${esc(clean(p.differ))}</p>${notesList(p.differ_refs)}` : ""}${sampleLine(p)}${halves ? `<div class="fr-dn-halves">${halves}</div>` : ""}</li>`;
+    }).join("")}</ol>`;
   }
 
   function conceptsView(cs) {
@@ -139,7 +180,7 @@
     const merged = $root.dataset.deskHistory === id;
     if ((g.history || []).length && !merged) views.push(["history", "History", () => historyView(g)]);
     if ((g.course || []).length) views.push(["course", "A course of reading", () => courseView(g)]);
-    if ((d.traditions || []).length) views.push(["traditions", "Traditions compared", () => traditionsView(d.traditions)]);
+    if ((d.traditions || []).length) views.push(["traditions", "Traditions compared", () => traditionsView(d.traditions, window.MOTopicDeskData || null)]);
     if ((d.concepts || []).length) views.push(["concepts", "Concept guides", () => conceptsView(d.concepts)]);
     if (!views.length) return;
     // With the Topic Desk's About section on the page, these views become its tabs (one tablist, History first). Otherwise they keep a block of their own.

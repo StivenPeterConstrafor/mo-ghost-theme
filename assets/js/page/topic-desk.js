@@ -106,7 +106,7 @@
       if (!got.topic) return;
       drawn = true;
       try {
-        const [data, marquee] = got.files;
+        const [data, marquee, principal] = got.files;
         const model = M.buildDeskModel({
           locus, part, parent, topic: got.topic, conf: got.conf, scr: got.scr, treat, history: got.hist,
           keyWorks: window.MOTopicKeyWorks ? window.MOTopicKeyWorks.buildKeyWorks({ locus, treat, works: got.topic.works || [], authors: got.topic.authors || [], pins: (marquee && marquee.topics && marquee.topics[id] && marquee.topics[id].works) || null }) : null,
@@ -116,6 +116,8 @@
         const html = M.renderDesk(model);
         host.innerHTML = html.hero + html.body;
         host.dataset.tier = model.tier;
+        // What the Traditions compared cards need (faith-port-topic-dev-notes.js): this topic's vetted confession columns, its authors and works, and the curated principal writers.
+        window.MOTopicDeskData = { id, columns: (model.modules.traditions && model.modules.traditions.columns) || [], topic: { authors: got.topic.authors || [], works: got.topic.works || [] }, principal: principal || null };
         // One tablist for the About section (History is drawn above). faith-port-topic-dev-notes.js adds the other tabs through MOAbout.
         about.ready(host);
         const toggle = (b, open) => {
@@ -166,7 +168,7 @@
       }
       return null;
     })().then((g) => { got.hist = g; draw(); });
-    Promise.all([loadFile("topic-desk.json"), loadFile("topic-desk-marquee.json")]).then((f) => { got.files = f; draw(); });
+    Promise.all([loadFile("topic-desk.json"), loadFile("topic-desk-marquee.json"), loadFile("principal-writers.json")]).then((f) => { got.files = f; draw(); });
 
     return {
       feed(kind, payload, extra) {

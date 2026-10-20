@@ -1,0 +1,90 @@
+{
+ "v": 1,
+ "provenance": "Curated by Claude for Ian's review, 2026-10-20, from Ian's list (Augustine, Aquinas, Calvin, Luther, Melanchthon, Baxter, Owen, Athanasius, Tertullian, and the like) extended with the obvious names. Names are spelled as the library spells them (works-index.json author field). The order is the order shown. The desk lists only those who have indexed passages on the topic, at most eight, and says the comparison prose was written from a sample. Edit freely: add, remove, or reorder.",
+ "traditions": {
+  "Latin Fathers": [
+   "Tertullian",
+   "Cyprian of Carthage",
+   "Hilary of Poitiers",
+   "Ambrose of Milan",
+   "Jerome",
+   "Augustine of Hippo",
+   "Leo I"
+  ],
+  "Greek Fathers": [
+   "Justin Martyr",
+   "Irenaeus of Lyon",
+   "Clement of Alexandria",
+   "Origen",
+   "Athanasius of Alexandria",
+   "Basil the Great",
+   "Gregory of Nazianzus",
+   "Gregory of Nyssa",
+   "John Chrysostom",
+   "Cyril of Alexandria"
+  ],
+  "Medieval": [
+   "Bede the Venerable",
+   "Anselm of Canterbury",
+   "Peter Abelard",
+   "Bernard of Clairvaux",
+   "Peter Lombard",
+   "Albert the Great",
+   "Thomas Aquinas",
+   "Bonaventure",
+   "John Duns Scotus"
+  ],
+  "Roman Catholic": [
+   "Robert Bellarmine",
+   "Francisco Suárez",
+   "Cornelius a Lapide",
+   "Alphonsus Liguori"
+  ],
+  "Lutheran": [
+   "Martin Luther",
+   "Philipp Melanchthon",
+   "Martin Chemnitz",
+   "Johann Gerhard",
+   "Abraham Calov",
+   "Johannes Andreas Quenstedt",
+   "David Hollaz"
+  ],
+  "Reformed": [
+   "John Calvin",
+   "Heinrich Bullinger",
+   "Pietro Martire Vermigli",
+   "Theodore Beza",
+   "Girolamo Zanchi",
+   "Amandus Polanus",
+   "Gisbertus Voetius",
+   "William Ames",
+   "Johannes Cocceius",
+   "François Turretin",
+   "Herman Witsius"
+  ],
+  "English Divines": [
+   "Richard Hooker",
+   "John Jewel",
+   "Lancelot Andrewes",
+   "John Davenant",
+   "James Ussher",
+   "William Perkins",
+   "John Owen",
+   "Richard Baxter",
+   "Samuel Rutherford",
+   "Jeremy Taylor",
+   "Henry Hammond",
+   "Thomas Goodwin"
+  ],
+  "Baptist": [
+   "Benjamin Keach"
+  ]
+ },
+ "not_in_library": {
+  "Baptist": [
+   "John Gill",
+   "Andrew Fuller"
+  ],
+  "note": "Named for Ian's review but not in the library (the English collection stops at 1700 and the Baptist shelf is thin)."
+ }
+}
