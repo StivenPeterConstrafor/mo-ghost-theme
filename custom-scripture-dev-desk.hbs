@@ -5,6 +5,7 @@
 <title>Verse Desk | The Faith Received | Mere Orthodoxy</title>
 <meta name="description" content="One verse and everything The Faith Received holds on it: four translations, every citation, the commentaries, and the teachers who expounded it." />
 <link rel="stylesheet" href="{{asset "css/scripture-dev.css"}}&amp;frv=379e53ac919dd14b" />
+<link rel="stylesheet" href="{{asset "css/verse-desk.css"}}" />
 {{!-- Dark or light, set on <html> before first paint (external: the CSP forbids inline script). --}}
 <script src="{{asset "js/page/scripture-view-boot.js"}}&amp;frv=b619c4b13b360add"></script>
 {{/contentFor}}
@@ -46,5 +47,10 @@
 <script src="{{asset "js/page/scripture-dev-desk.js"}}&amp;frv=71e2bcadf579a15a"></script>
 {{!-- The verse's reception history after the translations, the commentaries with their own note on it, and the verses read with it (faith-port-scripture-notes.js). --}}
 <link rel="stylesheet" href="{{asset "css/port/dev-notes.css"}}&amp;frv=cdbf83b06a8a370c"><script defer src="{{asset "js/page/faith-port-scripture-notes.js"}}&amp;frv=b15d38549812a7db"></script>
+{{!-- The redesigned modules: ruler and counts, key voices, how the church read it, disputes, creeds, the commentary ladder, chapter heat, share.
+     They run after faith-port-scripture-notes.js (which hands them the data it already fetches) and take the place of its reception section;
+     if they fail, that section is drawn instead (verse-desk.js). --}}
+<script defer src="{{asset "js/page/verse-desk-model.js"}}"></script>
+<script defer src="{{asset "js/page/verse-desk.js"}}"></script>
 <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
 <script defer src="{{asset "js/page/scripture-view.js"}}&amp;frv=633c328d4b412260"></script>

@@ -75,12 +75,12 @@ for (const [name, fg, bg, min] of pairs) {
 // ── REGRESSION: literal colours that would not turn over in dark ──
 // The dark block remaps tokens (--color-dark and the rest) on the page's own sections, so a rule that reads a token follows. A rule
 // that states a literal dark text colour or a literal light background does not, and shows as dark-on-dark or light-on-light (the
-// Citations heading and stat figures, 2026-10-19, were body's inherited #2d2927). This scans the three stylesheets the page loads
+// Citations heading and stat figures, 2026-10-19, were body's inherited #2d2927). This scans the stylesheets the page loads
 // and fails on any such literal unless the dark block names that selector (it has its own override).
 if (!/--sd-dk-ink\);\s*\n\s*--color-dark/.test(block) && !/\{\s*\n?\s*(?:\/\*[^]*?\*\/\s*)?color:\s*var\(--sd-dk-ink\)/.test(block)) {
   fail("the dark scope rule does not set color: var(--sd-dk-ink); text that names no colour would inherit body's dark ink");
 }
-const sheets = ["assets/css/scripture-dev.css", "assets/css/port/dev-notes.css", "assets/css/commentary-pane.css"];
+const sheets = ["assets/css/scripture-dev.css", "assets/css/port/dev-notes.css", "assets/css/commentary-pane.css", "assets/css/verse-desk.css"];
 const hexLum = (h) => { const x = h.length === 4 ? `#${[...h.slice(1)].map((c) => c + c).join("")}` : h; return lum(x.slice(0, 7)); };
 for (const rel of sheets) {
   const src = fs.readFileSync(path.join(ROOT, rel), "utf8").replace(/\/\*[^]*?\*\//g, "");
