@@ -17,6 +17,13 @@ const require = createRequire(import.meta.url);
 const V = require(path.join(ROOT, "assets/js/page/scripture-view-boot.js"));
 
 const failures = [];
+// Literals that are right on both grounds (a selector that sits on its own fixed ground), by "file|selector".
+// The Verse Desk's count, filters and Ask boxes are re-stated transparent further down scripture-dev.css (swept in dark, no failure).
+const ALLOW = new Set([
+  "assets/css/scripture-dev.css|.sd-desk .sd-count",
+  "assets/css/scripture-dev.css|.sd-desk .sd-filters",
+  "assets/css/scripture-dev.css|.sd-desk .sd-ask",
+]);
 const fail = (m) => failures.push(m);
 
 // ── the dark block's tokens ──
@@ -63,6 +70,37 @@ for (const [name, fg, bg, min] of pairs) {
   const r = ratio(fg, bg);
   if (r < min) fail(`${name}: ${r.toFixed(2)}:1 is under ${min}:1 (${fg} on ${bg})`);
   else console.log(`ok  ${r.toFixed(2).padStart(5)}:1  ${name}`);
+}
+
+// ── REGRESSION: literal colours that would not turn over in dark ──
+// The dark block remaps tokens (--color-dark and the rest) on the page's own sections, so a rule that reads a token follows. A rule
+// that states a literal dark text colour or a literal light background does not, and shows as dark-on-dark or light-on-light (the
+// Citations heading and stat figures, 2026-10-19, were body's inherited #2d2927). This scans the three stylesheets the page loads
+// and fails on any such literal unless the dark block names that selector (it has its own override).
+if (!/--sd-dk-ink\);\s*\n\s*--color-dark/.test(block) && !/\{\s*\n?\s*(?:\/\*[^]*?\*\/\s*)?color:\s*var\(--sd-dk-ink\)/.test(block)) {
+  fail("the dark scope rule does not set color: var(--sd-dk-ink); text that names no colour would inherit body's dark ink");
+}
+const sheets = ["assets/css/scripture-dev.css", "assets/css/port/dev-notes.css", "assets/css/commentary-pane.css"];
+const hexLum = (h) => { const x = h.length === 4 ? `#${[...h.slice(1)].map((c) => c + c).join("")}` : h; return lum(x.slice(0, 7)); };
+for (const rel of sheets) {
+  const src = fs.readFileSync(path.join(ROOT, rel), "utf8").replace(/\/\*[^]*?\*\//g, "");
+  const darkAt = rel.endsWith("scripture-dev.css") ? src.indexOf("html[data-sd-theme=\"dark\"] {") : src.length;
+  for (const m of src.slice(0, darkAt > 0 ? darkAt : src.length).matchAll(/([^{}@]+)\{([^{}]*)\}/g)) {
+    const selector = m[1].trim();
+    if (/^(from|to|\d+%)/.test(selector)) continue;
+    for (const d of m[2].split(";")) {
+      const dm = /^\s*(color|background|background-color)\s*:\s*(#[0-9a-fA-F]{3,6}|white|black)\s*$/.exec(d);
+      if (!dm) continue;
+      const hexv = dm[2] === "white" ? "#ffffff" : dm[2] === "black" ? "#000000" : dm[2];
+      const L = hexLum(hexv);
+      const darkText = dm[1] === "color" && L < 0.2;
+      const lightBg = dm[1] !== "color" && L > 0.8;
+      if (!darkText && !lightBg) continue;
+      const firstSel = selector.split(",")[0].trim().split(/\s+/).pop();
+      if (block.includes(firstSel) || ALLOW.has(`${rel}|${selector}`)) continue;
+      fail(`${rel}: "${selector}" states ${dm[1]}: ${dm[2]}, a literal that does not turn over in dark mode (use a token, or add an override to the dark block)`);
+    }
+  }
 }
 
 // ── the state ──
