@@ -3,7 +3,7 @@
    This file is linked in the <head>, before anything paints, because the site's CSP has no 'unsafe-inline' and an inline script
    cannot do this job. It sets two attributes on <html> and nothing else:
      data-sd-theme  "dark" or "light"
-     data-sd-view   "50-50" | "25-75" | "75-25" | "scripture" | "panel"   (the Scripture page only; the Verse Desk has no columns)
+     data-sd-view   "50-50" | "40-60" | "60-40" | "scripture" | "panel"   (the Scripture page only; the Verse Desk has no columns)
 
    THEME. This page's own choice is fr_sd_theme ("dark" | "light"), written only by the button here. Without it the reader's
    fr_theme ("light" | "dark" | "sepia") is READ, never written (a toggle here must not turn a stored sepia into light); sepia is a
@@ -11,9 +11,8 @@
    It is NOT html[data-theme]: faith-site-theme.js forces that attribute to "light" on every Faith Received page except the reader
    (a MutationObserver puts it back), so the attribute the reader and the article pages use cannot carry the choice here.
 
-   VIEW. fr_sd_layout. The two narrow splits (25/75 and 75/25) need room: the stylesheet applies them from 1200px up, and the
-   buttons for them appear at the same width. Under 1200px a stored narrow split reads as 50/50 (effectiveLayout) without the
-   stored choice being overwritten, so a reader who widens the window gets it back.
+   VIEW. fr_sd_layout. A value saved by the first version (25-75, 75-25) reads as 40-60 and 60-40 (MIGRATED), so no saved choice is a
+   broken state. All five are offered from 900px up.
 
    Pure functions are exported for scripts/check-scripture-view.mjs; scripture-view.js (deferred) wires the buttons. */
 (function (root, factory) {
@@ -26,13 +25,10 @@
   const READER_THEME_KEY = 'fr_theme';
   const THEME_KEY = 'fr_sd_theme';
   const LAYOUT_KEY = 'fr_sd_layout';
-  const LAYOUTS = ['50-50', '25-75', '75-25', 'scripture', 'panel'];
-  const NARROW_SPLITS = ['25-75', '75-25'];
-  // The width at which both narrow splits keep the narrow column at 300px or more (see scripture-dev.css).
-  const ROOM_FOR_NARROW = '(min-width: 1200px)';
+  const LAYOUTS = ['50-50', '40-60', '60-40', 'scripture', 'panel'];
+  const MIGRATED = { '25-75': '40-60', '75-25': '60-40' };
 
-  const parseLayout = (v) => (LAYOUTS.includes(v) ? v : '50-50');
-  const effectiveLayout = (layout, roomForNarrow) => (NARROW_SPLITS.includes(layout) && !roomForNarrow ? '50-50' : layout);
+  const parseLayout = (v) => (LAYOUTS.includes(v) ? v : (Object.prototype.hasOwnProperty.call(MIGRATED, v) ? MIGRATED[v] : '50-50'));
   // own: this page's choice (fr_sd_theme), which wins; reader: the reader's fr_theme, read and never written here
   const resolveTheme = (stored, systemDark, own) => {
     if (own === 'dark' || own === 'light') return own;
@@ -50,5 +46,5 @@
     html.setAttribute('data-sd-view', parseLayout(get(LAYOUT_KEY)));
   }
 
-  return { READER_THEME_KEY, THEME_KEY, LAYOUT_KEY, LAYOUTS, NARROW_SPLITS, ROOM_FOR_NARROW, parseLayout, effectiveLayout, resolveTheme, get, set, systemDark, boot };
+  return { READER_THEME_KEY, THEME_KEY, LAYOUT_KEY, LAYOUTS, parseLayout, resolveTheme, get, set, systemDark, boot };
 }));
