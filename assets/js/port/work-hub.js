@@ -46,7 +46,14 @@
     if (!cache.has(slug)) {
       cache.set(slug, (async () => {
         const base = cfg.base();
-        const d = await getJSON(`${base}/v1/enrich/works/${encodeURIComponent(slug)}.json`);
+        let d = await getJSON(`${base}/v1/enrich/works/${encodeURIComponent(slug)}.json`);
+        // EVERY INDEXED WORK HAS ITS SUBJECT INDEX (2026-10-20, owner: "why … 9k vs 16k?"): the guide files (9,075 works) carry the
+        // subject index, but the whole index (v1/enrich/index, 16,604 works) has it for every mined work; a work without a guide, or
+        // a guide without an index, takes the subjects from there.
+        if (!(d && Array.isArray(d.index) && d.index.length)) {
+          const all = await fullIndex(slug);
+          if (all && Array.isArray(all.subjects) && all.subjects.length) d = Object.assign({}, d || {}, { index: all.subjects });
+        }
         if (!d) return null;
         const meta = d.sections && Object.keys(d.sections).length ? await getJSON(`${base}/v1/works/${encodeURIComponent(slug)}/meta.json`) : null;
         return Object.assign({}, d, { structure: (meta && meta.structure) || null });
