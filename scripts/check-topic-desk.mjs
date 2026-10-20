@@ -564,6 +564,12 @@ if (live) {
     const own = textOf(html.replace(/<p class="tsc-lede">[\s\S]*?<\/p>/g, ""));
     ok(!STANCE.test(own), `Scripture tab ${l.label}: no stance language in the tab's own words`);
     ok(!/—/.test(html) && !/undefined|NaN/.test(html), `Scripture tab ${l.label}: no em dash, undefined, or NaN`);
+    const cards = html.split('<li class="tsc-card"').slice(1);
+    const dupWord = cards.some((cd) => [...cd.matchAll(/<li><a href="[^"]+">(?:<b>[^<]*<\/b> )?([^<]*)/g)].some((m) => /\b([A-Za-z]{4,}) \1\b/.test(m[0].replace(/<[^>]+>/g, " ").replace(/\s+/g, " "))));
+    ok(!dupWord && !/<b>([^<]+)<\/b> \1\b/.test(html), `Scripture tab ${l.label}: no repeated-word label ("Waldensian Waldensian")`);
+    const sameRows = cards.some((cd) => { const rows = [...cd.matchAll(/<ul class="tsc-chips">([\s\S]*?)<\/ul>/g)].flatMap((m) => [...m[1].matchAll(/<li><a href="[^"]+">([\s\S]*?)<\/a>/g)].map((x) => x[1].replace(/<[^>]+>/g, "").trim())); return new Set(rows).size !== rows.length; });
+    ok(!sameRows, `Scripture tab ${l.label}: no two rows in a card read the same (repeats are one row with "N places")`);
+    ok(cards.every((cd) => /class="tsc-text" data-tsc-vk="[a-z0-9-]+\|\d+\|\d+\|\d+" hidden/.test(cd)) && html.indexOf('class="tsc-text"') < html.indexOf('class="tsc-row"'), `Scripture tab ${l.label}: every card has a verse-text slot above its confessions row`);
     const counts = [...html.matchAll(/Cited in ([\d,]+) confession article/g)].map((m) => Number(m[1].replace(/,/g, "")));
     ok(model.cards.every((x, i) => x.articles === counts[i]) && counts.every((n, i) => i === 0 || n <= counts[i - 1]), `Scripture tab ${l.label}: counts are the data's and the order is by article count`);
   }
@@ -597,6 +603,36 @@ if (live) {
   }
   ok(K.buildKeyWorks({ locus: LOCI.get("de-providentia"), treat: treatments["de-providentia"] || [], works: [], authors: [], pins: null }).size === 0, "a topic the marquee file has not vetted gets no key works");
   ok(K.denied("de-trinitate", "x", "The Trinity and Transubstantiation Compared", "Stillingfleet") && K.denied("de-coena", "pld-359", "De officiis", "Ambrose") && K.denied("de-trinitate", "luther-wa-schriften-12", "x", "Luther"), "the deny list catches the picks the owner named");
+}
+
+// ── Verse text on the cards: a stubbed Scripture page, a range, a failure ──
+if (JSDOM) {
+  const dom = new JSDOM(`<!doctype html><html><body><div id="host"></div></body></html>`, { url: "https://mereorthodoxy.com/", runScripts: "outside-only" });
+  const { window } = dom;
+  const calls = [];
+  const verses = { 1: "In the beginning, God created the heavens and the earth.", 2: "The earth was without form and void.", 3: "And God said, Let there be light." };
+  const node = () => { const d = window.document.createElement("div"); Object.entries(verses).forEach(([n, t]) => { const sp = window.document.createElement("span"); sp.className = "bible-verse"; sp.dataset.v = n; sp.textContent = `${n} ${t}`; d.appendChild(sp); }); return d; };
+  window.MOScriptureDev = {
+    BOOKS: [{ lib: "genesis", slug: "genesis", name: "Genesis", chapters: 50 }, { lib: "john", slug: "john", name: "John", chapters: 21 }], recalledTranslation: () => "ESV", translationInfo: () => ({ short: "ESV" }), textShort: () => "ESV",
+    chapterNode: (code, book, c) => { calls.push(`${code}|${book.lib}|${c}`); return book.lib === "john" ? Promise.reject(new Error("down")) : Promise.resolve(node()); },
+    verseTextFrom: (root, n) => { const el = root.querySelector(`.bible-verse[data-v="${n}"]`); return el ? el.textContent.replace(/^\d+\s*/, "").trim() : ""; },
+    api: async () => ({ top_works: [{ w: "w1", t: "On the Hexameron", a: "Basil", n: 2, cen: 4, h: "/read?w=w1" }] }), sourceHref: (h) => h,
+  };
+  window.FRVerseDeskModel = { parts: { confessModel: () => ({ n: 1, docs: 1, groups: [{ church: "Lutheran", rows: [{ title: "Small Catechism", label: "p. 8", year: "1529", href: "/the-faith-received/read/?w=x#b8-0" }] }] }) } };
+  window.Response = globalThis.Response;
+  window.fetch = async () => new window.Response("{}", { status: 404 });
+  window.eval(readFileSync(path.join(root, "assets/js/page/topic-scripture-tab.js"), "utf8"));
+  const host = window.document.getElementById("host");
+  window.document.body.appendChild(host);
+  const prepared = { rows: [{ b: "genesis", c: 1, v: 1, v2: 3, n: 5 }, { b: "genesis", c: 1, v: 2, n: 4 }, { b: "john", c: 1, v: 1, n: 3 }], topicRows: [] };
+  await window.MOTopicScripture.fill(host, "x", prepared);
+  await new Promise((r) => setTimeout(r, 300));
+  const bqs = [...host.querySelectorAll(".tsc-text")];
+  ok(bqs.length === 3 && !bqs[0].hidden && bqs[0].querySelectorAll("sup").length === 3 && /Let there be light/.test(bqs[0].textContent) && bqs[0].querySelector(".tsc-tr").textContent === "ESV", "verse text: a range shows each verse with a small number and the translation label");
+  ok(!bqs[1].hidden && bqs[1].querySelectorAll("sup").length === 0 && /without form/.test(bqs[1].textContent), "verse text: a single verse shows its text with no number");
+  ok(calls.filter((c) => c === "ESV|genesis|1").length === 1, "verse text: one request per chapter, reused by every card in it");
+  ok(bqs[2].hidden && bqs[2].textContent === "" && host.querySelectorAll(".tsc-card").length === 3, "verse text: when the text cannot load nothing extra is shown and the card stays");
+  window.close();
 }
 
 // ── One About section: five tabs, one tablist, real flow in a DOM ──
