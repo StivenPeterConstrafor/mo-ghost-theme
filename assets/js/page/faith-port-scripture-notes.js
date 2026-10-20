@@ -55,6 +55,12 @@
    * every reading with each witness's stance (holds / reports / rejects: the pages of the library read on the verse, at most 400),
    * what the verse is used to prove, the exemplars with why, and the points in dispute with each side's witnesses. A verse whose book
    * entry says readings_v 2 is drawn from it; without the file the book's readings are drawn as before. */
+  // the authors' standing in the tradition (how many works in the library cite them; v1/scripture/rank.json): the most cited first
+  let rankP = null;
+  const loadRank = () => rankP || (rankP = fetch(`${BASE}/v1/scripture/rank.json`, { credentials: "omit" })
+    .then((r) => (r.ok ? r.json() : null)).catch(() => null));
+  let RK = {};
+  const standing = (a) => (RK && RK.authors && RK.authors[a]) || 0;
   const rdCache = new Map();
   const chapterReadings = (book, c) => {
     const k = `${book.lib}/${c}`;
@@ -271,6 +277,7 @@
   function byAuthor(ws, max) {
     const order = [], pagesOf = new Map();
     ws.forEach((x) => { const a = x[2] || "page"; if (!pagesOf.has(a)) { pagesOf.set(a, []); order.push(a); } pagesOf.get(a).push(x); });
+    order.sort((x, y) => standing(y) - standing(x));
     const shown = max ? order.slice(0, max) : order;
     // a work's pages together and in order (an author's pages may come from several of his works)
     const sorted = (xs) => xs.slice().sort((a, b) => (a[0] === b[0] ? (parseInt(a[1], 10) || 0) - (parseInt(b[1], 10) || 0) : 0));
@@ -292,7 +299,8 @@
     const chips = `<p class="fr-rd-stance"><span class="fr-rd-chip is-holds${h ? "" : " is-none"}">${h ? `Held on ${fmt(h)}` : "Held on none"}</span>` +
       `${rp ? `<span class="fr-rd-chip">reported on ${fmt(rp)}</span>` : ""}${rj ? `<span class="fr-rd-chip is-rejects">rejected on ${fmt(rj)}</span>` : ""}` +
       `<span class="fr-rd-of">of ${fmt(of)} pages</span></p>`;
-    const ex = (rd.exemplars || []).length ? `<ul class="fr-rd-ex">${rd.exemplars.map((e) => `<li>${link(e.work, e.page, `${e.author}, p. ${e.page}`)}${e.why ? `<span>${esc(e.why)}</span>` : ""}</li>`).join("")}</ul>` : "";
+    const exs = (rd.exemplars || []).slice().sort((x, y) => standing(y.author) - standing(x.author));
+    const ex = exs.length ? `<ul class="fr-rd-ex">${exs.map((e) => `<li>${link(e.work, e.page, `${e.author}, p. ${e.page}`)}${e.why ? `<span>${esc(e.why)}</span>` : ""}</li>`).join("")}</ul>` : "";
     const lists = allOf(rd.holds || [], h === 1 ? "The page that holds it" : `All ${fmt(h)} who hold it`) +
       allOf(rd.reports || [], `The ${fmt(rp)} that report it`) + allOf(rd.rejects || [], `The ${fmt(rj)} that reject it`);
     return `<li class="fr-rd"${hidden ? " hidden" : ""}><p class="fr-rd-label">${esc(rd.label)}</p><p class="fr-rd-text">${esc(rd.reading)}</p>${chips}` +
@@ -414,7 +422,8 @@
       const $comm = $panel && $panel.querySelector("[data-sd-panel-commentaries]");
       const needMarks = $ref && $comm && $comm.querySelector(".sd-commentary[data-w]") && !$comm.dataset.frSnMarked;
       if (!needOv && !needVerse && !needMarks) return;
-      const [d, rec, base, rdf] = await Promise.all([bookFile(r.book), chapterReception(r.book, r.c), loadBaseline(), chapterReadings(r.book, r.c)]);
+      const [d, rec, base, rdf, rk] = await Promise.all([bookFile(r.book), chapterReception(r.book, r.c), loadBaseline(), chapterReadings(r.book, r.c), loadRank()]);
+      RK = rk || RK;
       const ch = d && d.chapters && d.chapters[String(r.c)];
       if (needOv && $ov.isConnected) {
         $ov.querySelectorAll('[data-fr-sn="chapter"]').forEach((el) => el.remove());
@@ -479,7 +488,8 @@
   async function placeDesk() {
     const ref = S.parseRef(new URLSearchParams(location.search).get("ref"));
     if (!ref || !ref.v) return;
-    const [d, rec, base, rdf] = await Promise.all([bookFile(ref.book), chapterReception(ref.book, ref.c), loadBaseline(), chapterReadings(ref.book, ref.c)]);
+    const [d, rec, base, rdf, rk] = await Promise.all([bookFile(ref.book), chapterReception(ref.book, ref.c), loadBaseline(), chapterReadings(ref.book, ref.c), loadRank()]);
+    RK = rk || RK;
     const ch = d && d.chapters && d.chapters[String(ref.c)];
     const fv = rdf && rdf.verses ? rdf.verses[String(ref.v)] : null;
     const parts = verseParts(ch && (ch.verses || {})[String(ref.v)], rec && (rec.verses || {})[String(ref.v)], { book: ref.book, c: ref.c, v: ref.v, desk: true, fv }, base)
