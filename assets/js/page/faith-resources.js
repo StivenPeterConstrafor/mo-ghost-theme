@@ -148,7 +148,7 @@
   const plural = (n, one, many) => `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;
 
   const KIND_LABEL = { doc: "Creeds and confessions", work: "Works and authors", retrieval: "Theological retrieval", topic: "Doctrine and Scripture" };
-  const SIZES = "(min-width: 1600px) 12vw, (min-width: 1280px) 16vw, (min-width: 1100px) 20vw, (min-width: 900px) 25vw, (min-width: 700px) 33vw, (min-width: 480px) 50vw, 100vw";
+  const SIZES = "(min-width: 1200px) 140px, (min-width: 1000px) 16vw, (min-width: 800px) 25vw, (min-width: 600px) 33vw, (min-width: 420px) 50vw, 100vw";
   const monthYear = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", timeZone: "UTC" });
   const niceMonth = (d) => { const t = new Date(`${d}T00:00:00Z`); return Number.isNaN(t.getTime()) ? d : monthYear.format(t); };
 

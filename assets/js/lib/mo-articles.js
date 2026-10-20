@@ -27,6 +27,10 @@
 }(typeof window !== "undefined" ? window : globalThis, () => {
   "use strict";
 
+  // The loader's own ?v= (Ghost stamps it with the theme hash, which changes on every deploy), read now while the script is running.
+  const SELF_V = (() => {
+    try { const m = /[?&]v=([a-z0-9]+)/i.exec((document.currentScript && document.currentScript.src) || ""); return m ? m[1] : ""; } catch (e) { return ""; }
+  })();
   const DATA_PATH = "/assets/data/faith-received/mo-articles.json";
   const KINDS = [
     ["doc", "Creeds and confessions"],
@@ -90,9 +94,22 @@
       if (data) return Promise.resolve(data);
       if (!pending) {
         const path = DATA_PATH;
-        const url = typeof window !== "undefined" && window.moAssetUrl ? window.moAssetUrl(path) : path;
+        // The CDN keys data files on ?v= alone and keeps old copies under old keys, so the data's own version goes in v: the stamp
+        // (mo-articles-dv.js, built with the data), else the theme hash this script was loaded under, else the site's hourly helper.
+        const dv = typeof window !== "undefined" && window.MO_ARTICLES_DV;
+        let url = path;
+        if (dv) url = `${path}?v=${dv}`;
+        else if (SELF_V) url = `${path}?v=${SELF_V}`;
+        else if (typeof window !== "undefined" && window.moDataUrl) url = window.moDataUrl(path);
         pending = fetch(url, { credentials: "omit" })
           .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d && typeof console !== "undefined") {
+              if (d.imgBase && !d.articles.some((a) => a.i)) console.warn("MOArticles: the data names an image base but no article has one, so a stale copy was served.", url);
+              if (dv && d.dv !== dv) console.warn("MOArticles: data version", d.dv, "is not the expected", dv, url);
+            }
+            return d;
+          })
           .then(use)
           .catch(() => null)
           .then((d) => { if (!d) pending = null; return d; });

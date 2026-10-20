@@ -3,8 +3,9 @@
  * The Resources page grid, measured in a real browser engine (2026-10-20).
  *
  * Builds a harness from custom-faith-resources.hbs (partials and helpers stripped, its scripts and stylesheet kept), serves the
- * theme's assets locally, drives headless Chrome over the DevTools protocol, and at 1920, 1600, 1280, 1024, 768 and 375 asserts:
- *   - the column count (8 at 1920 and 1600, 6 at 1280, 4 at 1024, 3 at 768, 1 at 375)
+ * theme's assets locally, drives headless Chrome over the DevTools protocol, and at 1920, 1440, 1280, 1024, 768 and 375 asserts:
+ *   - the column count (8 at 1920, 1440 and 1280, 6 at 1024, 3 at 768, 1 at 375)
+ *   - the grid, tab bar and hero share the theme's .container edges (1180px, 28px padding) within 1px
  *   - no horizontal overflow of the page
  *   - tiles of one grid are the same width within 1px
  *   - no two cards, and no two text lines inside a card, overlap
@@ -33,7 +34,7 @@ const tpl = readFileSync(path.join(root, "custom-faith-resources.hbs"), "utf8")
   .replace(/\{\{> [^}]*\}\}/g, "")
   .replace(/<script src="\{\{asset "js\/page\/faith-tfr-rail\.js"\}\}" defer><\/script>/, "")
   .replace(/\{\{asset "([^"]+)"\}\}&amp;frv=[a-z0-9-]+/g, "/assets/$1");
-const harness = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/assets/css/faith-resources.css"><style>body{margin:0;--font-body:Georgia,serif;background:#f7f4ef}.container{max-width:1180px;margin:0 auto;padding:0 28px}</style></head><body>${tpl}</body></html>`;
+const harness = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/assets/css/faith-resources.css"><style>body{margin:0;--font-body:Georgia,serif;background:#f7f4ef}.container{width:100%;box-sizing:border-box;max-width:1180px;margin:0 auto;padding:0 28px}</style></head><body>${tpl}</body></html>`;
 
 const server = createServer((req, res) => {
   const url = new URL(req.url, "http://x");
@@ -79,7 +80,10 @@ const MEASURE = `(async () => {
   out.spread = Math.max(...ws) - Math.min(...ws);
   const hit = (a, b) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
   for (let i = 0; i < cards.length; i += 1) for (let j = i + 1; j < cards.length; j += 1) if (hit(cards[i], cards[j])) out.problems.push("cards " + i + " and " + j + " overlap");
-  out.left = Math.round(cards[0].left); out.right = Math.round(out.vw - Math.max(...cards.map((r) => r.right)));
+  out.left = cards[0].left; out.right = out.vw - Math.max(...cards.map((r) => r.right));
+  const h1 = document.querySelector(".bhero h1");
+  out.heroLeft = h1 ? h1.getBoundingClientRect().left : -1;
+  out.tabLeft = document.querySelector(".fr-res-tab").getBoundingClientRect().left;
   for (const c of document.querySelectorAll(".fr-res-card")) {
     const a = c.querySelector("a.fr-res-cardlink");
     if (!a) { out.problems.push("a card without a link"); continue; }
@@ -92,7 +96,7 @@ const MEASURE = `(async () => {
   return out;
 })()`;
 
-const WANT = { 1920: 8, 1600: 8, 1280: 6, 1024: 4, 768: 3, 375: 1 };
+const WANT = { 1920: 8, 1440: 8, 1280: 8, 1024: 6, 768: 3, 375: 1 };
 let failed = 0;
 await send("Page.navigate", { url: `${base}/h` });
 await new Promise((res) => setTimeout(res, 800));
@@ -106,7 +110,11 @@ for (const [w, cols] of Object.entries(WANT)) {
     if (m.cols !== cols) bad.push(`${m.cols} columns, wanted ${cols}`);
     if (m.sw > m.vw) bad.push(`page is ${m.sw}px wide in a ${m.vw}px window`);
     if (m.spread > 1) bad.push(`tiles differ in width by ${m.spread.toFixed(2)}px`);
-    if (m.left > 25 || m.right > 25) bad.push(`gutters ${m.left}px and ${m.right}px, wanted about 24`);
+    // The theme's .container: 1180px wide at most, 28px side padding, centered. Hero, tab, search and grid share its edges.
+    const edge = (m.vw - Math.min(m.vw, 1180)) / 2 + 28;
+    for (const [name, v] of [["grid left", m.left], ["grid right", m.right], ["hero", m.heroLeft], ["tab", m.tabLeft]]) {
+      if (Math.abs(v - edge) > 1) bad.push(`${name} edge is ${v.toFixed(1)}px, the container's is ${edge}px`);
+    }
     bad.push(...new Set(m.problems));
   }
   if (bad.length) { failed += 1; console.error(`FAIL ${w}px: ${bad.join("; ")}`); } else console.log(`ok   ${w}px: ${cols} columns, ${m.cards} cards`);
