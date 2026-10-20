@@ -47,7 +47,7 @@ const harness = (hbs) => {
     `<style>:root{--font-body:"Source Serif 4",Georgia,serif}</style></head><body>${body}</body></html>`;
 };
 const PAGES = {
-  topic: { html: harness("custom-faith-topics-dev.hbs"), container: ".td-desk", ready: ".td-desk .tdk-hero, .td-desk .tdk-mod",
+  topic: { html: harness("custom-faith-topics-dev.hbs"), container: ".td-desk|.fr-dn", ready: ".td-desk .tdk-hero, .td-desk .tdk-mod",
     urls: () => {
       const loci = JSON.parse(readFileSync(path.join(root, "assets/data/faith-received/loci.json"), "utf8"));
       const ids = loci.parts.flatMap((p) => p.loci.map((l) => l.id));
@@ -159,7 +159,7 @@ const MEASURE = `((sel) => {
 
 // ── Run ────────────────────────────────────────────────────────
 const WIDTHS = [375, 768, 1024, 1280, 1920];
-const SCHEMES = ["light", "dark"];
+const SCHEMES = process.env.SHOTSEL ? ["light", "dark"] : ["light", "dark"];
 const until = async (sel, ms) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await evaluate(`Boolean(document.querySelector(${JSON.stringify(sel)}))`)) return true; await new Promise((res) => setTimeout(res, 300)); } return false; };
 let failed = 0;
 let measured = 0;
@@ -170,16 +170,26 @@ for (const [name, cfg] of Object.entries(PAGES)) {
     await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
     await send("Page.navigate", { url: base + u });
     const ready = await until(cfg.ready, 40000);
-    await new Promise((res) => setTimeout(res, 2500));
+    await new Promise((res) => setTimeout(res, Number(process.env.WAIT) || 6000));
     if (!ready) { console.log(`skip  ${name} ${u}: the desk did not draw in time`); continue; }
     for (const scheme of SCHEMES) {
       await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: scheme }] });
       for (const w of WIDTHS) {
         await send("Emulation.setDeviceMetricsOverride", { width: w, height: 900, deviceScaleFactor: 1, mobile: false });
         await new Promise((res) => setTimeout(res, 350));
-        const m = await evaluate(`${MEASURE}(${JSON.stringify(cfg.container)})`);
+        const parts = [];
+        for (const c of cfg.container.split("|")) { if (await evaluate(`Boolean(document.querySelector(${JSON.stringify(c)}))`)) parts.push(await evaluate(`${MEASURE}(${JSON.stringify(c)})`)); }
+        const m = parts.length ? { overlaps: parts.flatMap((p) => p.overlaps || []), clipped: parts.flatMap((p) => p.clipped || []), wide: parts.flatMap((p) => p.wide || []) } : { error: "no container" };
         if (!m || m.error) { console.log(`skip  ${name} ${u} ${w} ${scheme}: ${m ? m.error : "no result"}`); continue; }
         measured += 1;
+        if (process.env.SHOTSEL && process.env.SHOT) {
+          // SHOTSEL=".fr-dn" SHOT=<dir>: a picture of that element at each width, for looking at a design
+          const r = await evaluate(`(() => { const e = document.querySelector(${JSON.stringify(process.env.SHOTSEL)}); if (!e) return null; const q = e.getBoundingClientRect(); return [q.left + scrollX, q.top + scrollY, q.width, Math.min(q.height, 1400)]; })()`);
+          if (r) {
+            const shot = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true, clip: { x: r[0], y: r[1], width: r[2], height: r[3], scale: 1 } });
+            writeFileSync(path.join(process.env.SHOT, `el-${name}-${u.replace(/\W+/g, "_")}-${w}-${scheme}.png`), Buffer.from(shot.result.data, "base64"));
+          }
+        }
         if (process.env.SHOT && m.overlaps[0] && m.overlaps[0].at) {
           const [ax, ay] = m.overlaps[0].at;
           const shot = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true, clip: { x: Math.max(0, ax - 280), y: Math.max(0, ay - 110), width: Math.min(560, w), height: 220, scale: 1 } });

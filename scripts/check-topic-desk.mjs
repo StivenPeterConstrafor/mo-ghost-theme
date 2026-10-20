@@ -113,6 +113,21 @@ const BOOK_SLUGS = new Set([...BOOKS.values()].map((b) => b.slug));
   const blocks = [["light", /\.td-desk \.tdk-cent \{\s*(--cn-bg[^}]*)\}/], ["dark (attribute)", /html\[data-sd-theme="dark"\] \.td-desk \.tdk-cent \{\s*([^}]*)\}/], ["dark (system)", /html:not\(\[data-sd-theme="light"\]\) \.td-desk \.tdk-cent \{\s*([^}]*)\}/]];
   const lum = (h) => { const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
   const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+  const waysCss = readFileSync(path.join(root, "assets/css/topic-ways-in.css"), "utf8");
+  const wnBlocks = [["ways-in light", /\.fr-dn \{\s*(--wn-bg[^}]*)\}/], ["ways-in dark (attribute)", /html\[data-sd-theme="dark"\] \.fr-dn \{\s*([^}]*)\}/], ["ways-in dark (system)", /html:not\(\[data-sd-theme="light"\]\) \.fr-dn \{\s*([^}]*)\}/]];
+  for (const [label, re] of wnBlocks) {
+    const m = waysCss.match(re);
+    const v = {};
+    if (m) [...m[1].matchAll(/--wn-([a-z]+):\s*(#[0-9a-fA-F]{6})/g)].forEach((t) => { v[t[1]] = t[2]; });
+    ok(Boolean(m) && v.bg && v.card, `contrast (${label}): tokens found`);
+    if (!m) continue;
+    const low = [];
+    for (const g of ["bg", "card"]) for (const t of ["ink", "muted", "accent"]) if (ratio(v[t], v[g]) < 4.5) low.push(`${t} on ${g} ${ratio(v[t], v[g]).toFixed(2)}`);
+    if (ratio(v.bg, v.accent) < 4.5) low.push(`bg on accent ${ratio(v.bg, v.accent).toFixed(2)} (selected tab)`);
+    const lowE = [];
+    for (const g of ["bg", "card"]) for (const b of ["gf", "pl", "po", "md", "rc", "lu", "rf", "ed", "hl"]) if (ratio(v[b], v[g]) < 3) lowE.push(`${b} on ${g} ${ratio(v[b], v[g]).toFixed(2)}`);
+    ok(low.length === 0 && lowE.length === 0, `contrast (${label}): text 4.5:1, selected tab 4.5:1, palette edges 3:1 (${[...low, ...lowE].join("; ") || "all pass"})`);
+  }
   for (const [label, re] of blocks) {
     const m = css.match(re);
     const v = {};
@@ -451,6 +466,94 @@ if (JSDOM && live) {
   ok(bad.hostText === "" && !bad.has && bad.desk === 0, "fallback: when the model throws, the desk host stays empty and the page does not claim a desk");
   ok(bad.blocks === 2 && bad.stats.every((s) => s !== "…" && s !== "–"), "fallback: when the model throws, the page's two existing blocks and counts are unchanged");
   ok(bad.errors.length === 0, `fallback: the failure is contained, not logged as an exception (${bad.errors.slice(0, 1).join("") || "none"})`);
+}
+
+// ── The Scripture tab: eight topics, built from the live data ──
+if (live) {
+  const TS = require(path.join(root, "assets/js/page/topic-scripture-tab.js"));
+  const VDM = require(path.join(root, "assets/js/page/verse-desk-model.js"));
+  const ids = ["de-trinitate", "de-justificatione", "de-christo", "de-baptismo", "de-praedestinatione", "de-ecclesia", "de-scriptura", "de-coena"];
+  const idxProofs = json(path.join(DATA, "confession-proofs/index.json"));
+  const readWork = (w, h) => `/the-faith-received/read/?w=${encodeURIComponent(w)}`;
+  const read = (slug, page, href) => `/the-faith-received/read/?w=${encodeURIComponent(slug)}#b${page}-0`;
+  for (const id of ids) {
+    const l = LOCI.get(id);
+    if (id === "de-praedestinatione") { ok(true, "Scripture tab Predestination: omitted by design (its verse counts are not cleaned of office elections)"); continue; }
+    const c = await get(`${VERSE}/v1/topic/confessions?id=${id}&limit=1`, `confs1-${id}.json`);
+    const t = await get(`${VERSE}/v1/topic/scripture?id=${id}&t2=${l.t2}&limit=60`, `scr-${id}.json`);
+    const rows = (c.scripture || []).filter((r) => r.n > 0 && BOOKS.has(r.b) && r.v > 0).slice(0, 60);
+    const per = new Map();
+    for (const r of rows.slice(0, 24)) {
+      const book = BOOKS.get(r.b);
+      let cf = null;
+      const f = path.join(DATA, `confession-proofs/${r.b}/${r.c}.json`);
+      if ((idxProofs.chapters[r.b] || []).includes(Number(r.c)) && existsSync(f)) cf = { index: idxProofs, chapter: json(f) };
+      let v = null;
+      try { v = await get(`${VERSE}/v1/verse?b=${book.lib || r.b}&c=${r.c}&v=${r.v}&limit=1`, `verse-${r.b}-${r.c}-${r.v}.json`, 24); } catch (_) { v = null; }
+      per.set(`${r.b}.${r.c}.${r.v}`, { cf, works: (v && v.top_works) || [] });
+    }
+    const model = TS.build({ rows: rows.slice(0, 24), topicRows: t.rows || [], books: BOOKS, confessModel: VDM.parts.confessModel, read, readWork, per });
+    const html = TS.render(model);
+    console.log(`      Scripture tab, ${l.label}: ${model.cards.slice(0, 8).map((x) => x.ref).join(", ")}`);
+    ok(model.cards.length > 0 && model.cards.every((x) => (x.confs && x.confs.chips.length) || x.works.length), `Scripture tab ${l.label}: ${model.cards.length} cards, each with at least one confession or work`);
+    const ws = [...html.matchAll(/href="\/the-faith-received\/read\/\?w=([^#"&]+)/g)].map((m) => decodeURIComponent(m[1]));
+    const badW = ws.filter((w) => !worksIndex.has(w) && !proofDocs.has(w));
+    ok(badW.length === 0, `Scripture tab ${l.label}: all ${ws.length} reader links resolve (${[...new Set(badW)].slice(0, 3).join(", ") || "none unresolved"})`);
+    const refs = [...html.matchAll(/scripture\/desk\/\?ref=([a-z0-9-]+)\.\d+\.\d+"/g)];
+    ok(refs.length > 0 && refs.every((m) => BOOK_SLUGS.has(m[1])), `Scripture tab ${l.label}: ${refs.length} verse desk links name a known book`);
+    const own = textOf(html.replace(/<p class="tsc-lede">[\s\S]*?<\/p>/g, ""));
+    ok(!STANCE.test(own), `Scripture tab ${l.label}: no stance language in the tab's own words`);
+    ok(!/—/.test(html) && !/undefined|NaN/.test(html), `Scripture tab ${l.label}: no em dash, undefined, or NaN`);
+    const counts = [...html.matchAll(/Cited in ([\d,]+) confession article/g)].map((m) => Number(m[1].replace(/,/g, "")));
+    ok(model.cards.every((x, i) => x.articles === counts[i]) && counts.every((n, i) => i === 0 || n <= counts[i - 1]), `Scripture tab ${l.label}: counts are the data's and the order is by article count`);
+  }
+}
+
+// ── Ways into this topic: tablist semantics, and every word and link of the data still there ──
+if (JSDOM && live) {
+  for (const id of ["de-ecclesia", "de-justificatione", "de-trinitate"]) {
+    const l = LOCI.get(id);
+    let d = null;
+    for (const slug of [l.t2, ...(l.aliases || [])]) {
+      try { const x = await get(`${LIB}/v1/enrich/topics/${encodeURIComponent(slug.toLowerCase())}.json`, `enrich-${slug}.json`); if (x && ((x.guide && (x.guide.course || []).length) || (x.traditions || []).length)) { d = x; break; } } catch (_) { /* next */ }
+    }
+    if (!d) { console.log(`skip  ways-in ${id}: no enrich file`); continue; }
+    const dom = new JSDOM(`<!doctype html><html><body><div data-td-root><div data-td-main></div></div></body></html>`, { url: `https://mereorthodoxy.com/the-faith-received/topics/?t=${id}`, runScripts: "outside-only", pretendToBeVisual: true });
+    const { window } = dom;
+    window.console = { log() {}, info() {}, warn() {}, error() {} };
+    window.fetch = async (u) => {
+      const url = new URL(String(u), "https://mereorthodoxy.com");
+      if (url.pathname.startsWith("/assets/data/faith-received/loci.json")) return new window.Response(readFileSync(path.join(DATA, "loci.json"), "utf8"), { status: 200 });
+      if (url.pathname.includes("/v1/enrich/topics/")) return new window.Response(JSON.stringify(d), { status: 200 });
+      return new window.Response("{}", { status: 404 });
+    };
+    for (const k of ["Response", "URL", "URLSearchParams"]) if (!window[k]) window[k] = globalThis[k];
+    window.eval(readFileSync(path.join(root, "assets/js/page/faith-port-topic-dev-notes.js"), "utf8"));
+    const doc = window.document;
+    const until = async (fn, ms) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (fn()) return true; await new Promise((r) => setTimeout(r, 50)); } return false; };
+    await until(() => doc.querySelector(".fr-dn-tab"), 5000);
+    const tabs = [...doc.querySelectorAll(".fr-dn-tab")];
+    ok(Boolean(doc.querySelector('[role="tablist"]')) && tabs.length >= 2 && tabs.every((t) => t.getAttribute("role") === "tab") && tabs.filter((t) => t.getAttribute("aria-selected") === "true").length === 1 && Boolean(doc.querySelector('[role="tabpanel"][aria-labelledby]')), `ways-in ${id}: a real tablist (tablist, ${tabs.length} tabs, one selected, a labeled tabpanel)`);
+    const norm = (t) => t.replace(/\s+/g, " ").trim();
+    const views = { course: [], traditions: [], concepts: [] };
+    ((d.guide && d.guide.course) || []).forEach((c) => views.course.push(c.why, c.thesis, c.t, c.a || c.author));
+    (d.traditions || []).forEach((p) => views.traditions.push(p.x, p.y, p.summary, p.agree, p.differ));
+    (d.concepts || []).forEach((c) => views.concepts.push(c.label, c.gloss));
+    for (const t of tabs) {
+      t.dispatchEvent(new window.Event("click", { bubbles: true }));
+      const text = norm(doc.querySelector(".fr-dn-view").textContent);
+      const want = (views[t.dataset.frView] || []).filter(Boolean).map(norm);
+      const missing = want.filter((w) => !text.includes(w));
+      ok(missing.length === 0 && text.length > 0, `ways-in ${id}: the ${t.dataset.frView} tab keeps every sentence of its data (${want.length} strings; missing: ${missing.slice(0, 1).join("") || "none"})`);
+      const hrefs = [...doc.querySelectorAll(".fr-dn-view a")].map((a) => a.getAttribute("href"));
+      const refs = t.dataset.frView === "course" ? ((d.guide && d.guide.course) || []).length : t.dataset.frView === "traditions" ? (d.traditions || []).reduce((n, p) => n + (p.agree_refs || []).slice(0, 6).length + (p.differ_refs || []).slice(0, 6).length, 0) : 0;
+      ok(hrefs.length >= refs && hrefs.every((h) => /^\/the-faith-received\/read\/\?w=/.test(h)), `ways-in ${id}: the ${t.dataset.frView} tab keeps its ${refs} reader links`);
+    }
+    tabs[0].focus();
+    tabs[0].dispatchEvent(new window.KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    ok(doc.activeElement === tabs[1] && tabs[1].getAttribute("aria-selected") === "true" && tabs[0].getAttribute("tabindex") === "-1", `ways-in ${id}: the arrow key moves selection and focus`);
+    window.close();
+  }
 }
 
 if (failed) { console.error(`\n${failed} check(s) failed`); process.exit(1); }

@@ -55,21 +55,26 @@
       <h4>${esc(h.period)}</h4><div><p>${esc(h.text)}</p>${pagesLine(h.refs)}</div></li>`).join("")}</ol>`;
   }
 
+  /* The three views are laid out as cards (2026-10-20). Every sentence and link is the data's, unchanged; only the markup around
+     them is new. A tradition's color is the shelf color of its name, and a name with no shelf gets the neutral edge. */
+  const EDGE = { "roman catholic": "rc", lutheran: "lu", reformed: "rf", "continental reformed": "rf", "english divines": "ed", anglican: "ed", "greek fathers": "gf", "latin fathers": "pl", medieval: "md", "eastern fathers": "po" };
+  const edge = (name) => EDGE[String(name || "").toLowerCase()] || "hl";
+
   function courseView(g) {
-    return `<ol class="fr-dn-course">${g.course.map((c) => `<li>
+    return `<ol class="fr-dn-course">${g.course.map((c, i) => `<li class="fr-dn-step"><span class="fr-dn-n" aria-hidden="true">${i + 1}</span><div class="fr-dn-step-body">
       <p class="fr-dn-course-head">${pageLink(c.w, c.p, `${who(c)}${c.t ? `, ${c.t}` : ""}, p. ${c.p}`)}</p>
-      <p>${esc(c.why)}</p>${c.thesis ? `<p class="fr-dn-thesis">${esc(c.thesis)}</p>` : ""}</li>`).join("")}</ol>`;
+      <p>${esc(c.why)}</p>${c.thesis ? `<p class="fr-dn-thesis">${esc(c.thesis)}</p>` : ""}</div></li>`).join("")}</ol>`;
   }
 
   function traditionsView(prs) {
-    return `<ol class="fr-dn-pairs">${prs.map((p) => `<li><h4>${esc(p.x)} and ${esc(p.y)}</h4>
+    return `<ol class="fr-dn-pairs">${prs.map((p) => `<li class="fr-dn-card"><span class="fr-dn-edge" aria-hidden="true"><i class="e-${edge(p.x)}"></i><i class="e-${edge(p.y)}"></i></span><h4>${esc(p.x)} and ${esc(p.y)}</h4>
       <p>${esc(p.summary)}</p>
       ${p.agree ? `<p><em>Agree.</em> ${esc(p.agree)}</p>${pagesLine(p.agree_refs)}` : ""}
       ${p.differ ? `<p><em>Differ.</em> ${esc(p.differ)}</p>${pagesLine(p.differ_refs)}` : ""}</li>`).join("")}</ol>`;
   }
 
   function conceptsView(cs) {
-    return `<ul class="fr-dn-concepts">${cs.map((c) => `<li><p><strong>${esc(c.label)}</strong> ${esc(c.gloss)}</p>
+    return `<ul class="fr-dn-concepts">${cs.map((c) => `<li class="fr-dn-card fr-dn-concept"><p><strong>${esc(c.label)}</strong> ${esc(c.gloss)}</p>
       <button type="button" class="sd-clear fr-dn-open" data-concept="${esc(c.id)}" aria-expanded="false">Read the guide</button>
       <div class="fr-dn-guide" hidden></div></li>`).join("")}</ul>`;
   }
@@ -83,6 +88,7 @@
       ${pos ? `<h5>Positions</h5><ul>${pos}</ul>` : ""}${read ? `<h5>Where to read</h5><ul>${read}</ul>` : ""}`;
   }
 
+  const root_MOTS = window.MOTopicScripture || null;
   // ── The block ──
   let run = 0;
   async function draw() {
@@ -99,6 +105,9 @@
     if (my !== run || !d || !$m || new URLSearchParams(location.search).get("t") !== id || $m.querySelector("[data-fr-dn]")) return;
     const g = d.guide || {};
     const views = [];
+    // The Scripture tab (topic-scripture-tab.js) comes first when the topic has verses its confession articles cite.
+    const sc = root_MOTS ? await root_MOTS.prepare(id, locus).catch(() => null) : null;
+    if (sc) views.push(["scripture", "Scripture", () => `<div class="tsc" data-tsc></div>`]);
     // When the Topic Desk has put the History on its century rows, this block starts at the reading course.
     const merged = $root.dataset.deskHistory === id;
     if ((g.history || []).length && !merged) views.push(["history", "History", () => historyView(g)]);
@@ -113,18 +122,29 @@
     box.dataset.id = id;
     box.innerHTML = `<summary class="td-fold-sum"><h3 class="td-block-h" id="td-h-history">${merged ? "Ways into this topic" : "The doctrine through the centuries"}</h3>
       <p class="sd-muted td-note">${merged ? "A course of reading, the traditions compared, and concept guides. " : "How the library's authors developed it, period by period, with a course of reading and the traditions compared. "}Machine-written from their own claims, not their words; every page is checked.</p></summary>
-      <nav class="td-tabs" aria-label="Ways to read the doctrine's history">${views.map(([k, lab], i) =>
-        `<a class="td-tab" href="#td-h-history" data-fr-view="${k}"${i ? "" : ' aria-current="true"'}>${esc(lab)}</a>`).join("")}</nav>
-      <div class="td-view fr-dn-view" data-fr-dn-view>${views[0][2]()}</div>`;
+      <div class="fr-dn-tabs" role="tablist" aria-label="Ways into this topic">${views.map(([k, lab], i) =>
+        `<button type="button" class="fr-dn-tab" role="tab" id="fr-dn-tab-${k}" aria-controls="fr-dn-panel" aria-selected="${i ? "false" : "true"}" tabindex="${i ? "-1" : "0"}" data-fr-view="${k}">${esc(lab)}</button>`).join("")}</div>
+      <div class="td-view fr-dn-view" id="fr-dn-panel" role="tabpanel" tabindex="0" aria-labelledby="fr-dn-tab-${views[0][0]}" data-fr-dn-view>${views[0][2]()}</div>`;
     const $view = box.querySelector("[data-fr-dn-view]");
-    box.querySelector(".td-tabs").addEventListener("click", (e) => {
-      const a = e.target.closest(".td-tab");
-      if (!a) return;
-      e.preventDefault();
-      const v = views.find((x) => x[0] === a.dataset.frView);
+    const tabs = [...box.querySelectorAll(".fr-dn-tab")];
+    if (views[0][0] === "scripture" && sc) root_MOTS.fill($view.querySelector("[data-tsc]"), id, sc);
+    const pick = (t, focus) => {
+      const v = views.find((x) => x[0] === t.dataset.frView);
       if (!v) return;
-      box.querySelectorAll(".td-tab").forEach((t) => { if (t === a) t.setAttribute("aria-current", "true"); else t.removeAttribute("aria-current"); });
+      tabs.forEach((o) => { o.setAttribute("aria-selected", String(o === t)); o.tabIndex = o === t ? 0 : -1; });
+      $view.setAttribute("aria-labelledby", t.id);
       $view.innerHTML = v[2]();
+      if (v[0] === "scripture" && sc) root_MOTS.fill($view.querySelector("[data-tsc]"), id, sc);
+      if (focus) t.focus();
+    };
+    box.querySelector(".fr-dn-tabs").addEventListener("click", (e) => { const t = e.target.closest(".fr-dn-tab"); if (t) pick(t, false); });
+    box.querySelector(".fr-dn-tabs").addEventListener("keydown", (e) => {
+      const i = tabs.indexOf(document.activeElement);
+      if (i < 0) return;
+      const to = { ArrowRight: (i + 1) % tabs.length, ArrowLeft: (i + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1 }[e.key];
+      if (to === undefined) return;
+      e.preventDefault();
+      pick(tabs[to], true);
     });
     $view.addEventListener("click", async (e) => {
       const b = e.target.closest(".fr-dn-open");
