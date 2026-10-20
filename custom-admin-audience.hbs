@@ -94,6 +94,28 @@
 
           <div class="admin-section">
             <div class="admin-section-header">
+              <h2 class="admin-section-title"><em>Peak hours</em></h2>
+              <p class="admin-section-hint">When readers are on the site by day of week and hour for one month. Each square is the average for that weekday and hour across the month, so a month with five Tuesdays does not make Tuesday look busier. Central time.</p>
+            </div>
+            {{!-- Live from Plausible through mo-admin (/audience/peak-hours).
+                  Complete months are stored once per month; the current
+                  month is offered through yesterday. Not a survey cohort, so
+                  the cohort tabs above do not change it. --}}
+            <div class="aud-controls">
+              <button type="button" class="kpi-btn" data-aud-peak-prev aria-label="Previous month">Previous</button>
+              <span class="aud-peak-month" data-aud-peak-month></span>
+              <button type="button" class="kpi-btn" data-aud-peak-next aria-label="Next month">Next</button>
+              <select class="aud-select aud-peak-metric" data-aud-peak-metric aria-label="Measure">
+                <option value="visitors" selected>Visitors</option>
+                <option value="pageviews">Pageviews</option>
+              </select>
+              <span class="aud-legend" data-aud-peak-status role="status" aria-live="polite"></span>
+            </div>
+            <div data-aud-peak></div>
+          </div>
+
+          <div class="admin-section">
+            <div class="admin-section-header">
               <h2 class="admin-section-title"><em>The profile</em></h2>
               <p class="admin-section-hint">Every survey question for the selected cohort. Turn on Compare to see the other cohort behind each bar.</p>
             </div>
