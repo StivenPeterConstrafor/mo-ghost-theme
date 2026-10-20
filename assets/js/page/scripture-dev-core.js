@@ -1070,7 +1070,7 @@
       el.className = "sd-panel-fold sd-comm-fold";
       el.open = opened[key];
       const initial = 9;
-      el.innerHTML = `<summary><span>${esc(title)} <span class="sd-comm-fold-n">(${fmt(list.length)})</span></span></summary><ol class="sd-sources sd-panel-commentaries"></ol>` +
+      el.innerHTML = `<summary><span>${esc(title)}</span> <span class="sd-comm-fold-n">(${fmt(list.length)})</span></summary><ol class="sd-sources sd-panel-commentaries"></ol>` +
         `<button type="button" class="sd-commentary-more"${list.length <= initial ? " hidden" : ""}>Show all ${fmt(list.length)} commentaries</button>`;
       const $ol = el.querySelector("ol");
       list.forEach((e, index) => {

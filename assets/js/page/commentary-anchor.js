@@ -172,7 +172,7 @@
         if (sec.heads[printed]) return { p: sec.heads[printed].p, v };
         // a note headed only by the verse's words in capitals ("AND GOD SAW THE LIGHT THAT IT WAS GOOD."): between the notes on the
         // verses either side, the heading whose words are all in the verse
-        let text = ''; try { text = String(verseText(v) || '').toLowerCase(); } catch (_) { text = ''; }
+        let text; try { text = String(verseText(v) || '').toLowerCase(); } catch (_) { text = ''; }
         if (text) {
           const ks = Object.keys(sec.heads).map(Number);
           const before = Math.max(-1, ...ks.filter((k) => k < printed).map((k) => sec.heads[k].pos));

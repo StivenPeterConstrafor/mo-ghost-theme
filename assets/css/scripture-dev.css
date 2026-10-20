@@ -179,7 +179,6 @@
   .sd-comm-folds { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
   .sd-comm-fold[open] { grid-column: 1 / -1; }
 }
-.sd-comm-fold-n { letter-spacing: 0.04em; }
 .sd-comm-fold[open] .sd-panel-commentaries {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -384,30 +383,48 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
   padding: 0;
 }
 .sd-count + [data-sd-panel-commentaries] { margin-top: 6px; }
+/* ONE ROW FOR EVERY FOLD (Ian, 2026-10-19: "why are all of these numbers spacing all over the place???"). A fold's summary is the
+   label, the count and the +/-, three cells of one grid: the label on the left and free to wrap, the count in a column of its own,
+   right-aligned in tabular figures so every count shares one edge, and the +/- in the last column at the far right. Every fold
+   variant is this one rule (the verse panel's, the Readings and Points in dispute folds, and the commentary lists: the label is
+   whatever comes first, the count is [data-sd-summary-count] or .sd-comm-fold-n, the mark is the ::after); the row height is
+   fixed, so a short label and a long one stand alike. */
 .sd-panel-fold > summary {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: baseline;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 10em 1.25em;
+  column-gap: 8px;
+  align-items: center;
   list-style: none;
   cursor: pointer;
-  padding: 14px 0;
+  min-height: 48px;
+  padding: 6px 0;
   font-family: var(--font-body);
   font-size: 11px;
+  line-height: 1.4;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-muted);
   font-weight: 600;
 }
+.sd-panel-fold > summary > [data-sd-summary-count], .sd-panel-fold > summary > .sd-comm-fold-n {
+  grid-column: 2;
+  justify-self: end;
+  text-align: right;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 .sd-panel-fold > summary::-webkit-details-marker { display: none; }
 .sd-panel-fold > summary::after {
   content: "+";
-  flex: 0 0 auto;
+  grid-column: 3;
+  justify-self: end;
   color: var(--sd-accent);
   font-size: 16px;
   line-height: 1;
 }
 .sd-panel-fold[open] > summary::after { content: "-"; }
+@media (max-width: 420px) { .sd-panel-fold > summary { grid-template-columns: minmax(0, 1fr) 8.5em 1.25em; letter-spacing: 0.14em; } }
 .sd-panel-fold > summary:focus-visible {
   outline: 2px solid var(--sd-accent);
   outline-offset: 2px;
