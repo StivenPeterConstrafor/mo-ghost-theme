@@ -469,7 +469,18 @@
       $layout.classList.remove("has-side");
     }
     if (!silent) writeUrl(false);
+    window.dispatchEvent(new CustomEvent("sd:verse", { detail: { v: 0 } }));
   }
+
+  // One way out of a selected verse, for the Close on every tab (the Citations panel's own, the Commentary pane's, Escape): the
+  // highlight, the panel and the ?ref= verse go, and the sidebar returns to the whole chapter. The pane asks for it by event.
+  function closeVerse() {
+    if (!state.v) return;
+    const span = $text.querySelector(`.bible-verse[data-v="${state.v}"]`);
+    closePanel();
+    if (span) span.focus({ preventScroll: true });
+  }
+  window.addEventListener("sd:close-verse", closeVerse);
 
   function openVerse(v, opts) {
     const spans = $text.querySelectorAll(`.bible-verse[data-v="${v}"]`);
@@ -478,6 +489,7 @@
     $text.querySelectorAll(".bible-verse.is-active").forEach((el) => el.classList.remove("is-active"));
     spans.forEach((el) => el.classList.add("is-active"));
     writeUrl(false);
+    window.dispatchEvent(new CustomEvent("sd:verse", { detail: { v } }));
     if (!(opts && opts.keep)) renderPanel(v);
     placePanel(v);
     hinted = true;
@@ -499,11 +511,7 @@
     const citationBody = `<div data-sd-filters></div><h3 class="sd-h3">Most-cited sources</h3><ol class="sd-sources sd-top" data-sd-top></ol><div data-sd-matches hidden><h3 class="sd-h3">Matching citations</h3><ol class="sd-sources" data-sd-rows></ol><button type="button" class="sd-more" data-sd-more hidden>Show more</button></div>`;
     $panel.innerHTML = `<header class="sd-panel-head"><p class="sd-eyebrow">Verse</p><h2 class="sd-panel-ref" tabindex="-1">${esc(S.refLabel(book, c, v))}</h2><a class="sd-desk-link" href="${esc(S.deskHref(book, c, v, t))}">Open the Verse Desk</a><button type="button" class="sd-close" aria-label="Close verse panel">Close</button></header><p class="sd-count" data-sd-count role="status"><span class="sd-muted">Counting citations…</span></p><div data-sd-panel-commentaries><p class="sd-muted">Loading commentaries…</p></div>${panelDetails(PANEL_FOLDS.citations, citationBody)}${panelDetails(PANEL_FOLDS.similar, `<p class="sd-muted">Verses cited on the same pages as ${esc(S.refLabel(book, c, v))}, and passages whose wording resembles it, are on the Verse Desk.</p><p><a class="sd-desk-link" href="${esc(S.deskHref(book, c, v, t))}#sd-h-sim">Open similar passages</a></p>`)}<p class="sd-panel-foot"><a href="${esc(S.deskHref(book, c, v, t))}">Every citation of ${esc(S.refLabel(book, c, v))} on the Verse Desk</a></p>`;
     bindPanelFolds();
-    $panel.querySelector(".sd-close").addEventListener("click", () => {
-      const span = $text.querySelector(`.bible-verse[data-v="${v}"]`);
-      closePanel();
-      if (span) span.focus({ preventScroll: true });
-    });
+    $panel.querySelector(".sd-close").addEventListener("click", closeVerse);
     bar = S.filterBar($panel.querySelector("[data-sd-filters]"), {
       search: true,
       searchLabel: "Search this verse's citations",
@@ -636,9 +644,7 @@
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape" || !$panel.isConnected) return;
     if (e.target.closest && e.target.closest("input, select, textarea")) return;
-    const span = $text.querySelector(`.bible-verse[data-v="${state.v}"]`);
-    closePanel();
-    if (span) span.focus({ preventScroll: true });
+    closeVerse();
   });
   narrow.addEventListener("change", () => {
     if ($panel.isConnected && state.v) { placePanel(state.v); return; }
