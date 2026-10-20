@@ -14,6 +14,7 @@
  *   MOArticles.search(q, {kind, limit})   AND across the words, prefix on the last; title, keywords, byline, names, excerpt
  *   MOArticles.kinds()              [{k, label, n}] in display order
  *   MOArticles.terms(q)             the folded words of a query, for highlighting
+ *   MOArticles.image(article, w)   the featured image URL at width w (300, 600, 1000), or "" when there is none
  *   MOArticles.entities(article)    [{type, key, label}] the article serves, most specific first
  *
  * Every lookup answers [] until the data is loaded. Lists come in the order the build set: about the subject first,
@@ -173,6 +174,16 @@
       return KINDS.map(([k, label]) => ({ k, label, n: n[k] || 0 }));
     }
 
+    // The featured image at a width Ghost serves (300, 600, 1000). A path is under data.imgBase; a full URL (Unsplash) takes ?w=.
+    function image(a, w) {
+      if (!a || !a.i) return "";
+      if (/^https:/.test(a.i)) {
+        if (!/images\.unsplash\.com/.test(a.i)) return a.i;
+        try { const u = new URL(a.i); u.searchParams.set("w", String(w)); return u.toString(); } catch (e) { return a.i; }
+      }
+      return `${(data && data.imgBase) || ""}size/w${w}/${a.i}`;
+    }
+
     function entities(a) {
       const lab = (data && data.lab) || {};
       const out = [];
@@ -185,7 +196,7 @@
     }
 
     return {
-      load, use, search, kinds, entities, forVerse, forAuthor,
+      load, use, search, kinds, entities, image, forVerse, forAuthor,
       forTopic: (id) => pick("topic", id),
       forWork: (slug) => pick("work", slug),
       forDoc: (slug) => pick("doc", slug),

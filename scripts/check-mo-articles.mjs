@@ -175,6 +175,24 @@ test("labels exist for every work, document and topic used", () => {
     for (const s of a.topics || []) assert.ok(data.lab.topics[s], s);
   }
 });
+test("featured images: null or a valid path or URL, and most essays have one", () => {
+  let n = 0;
+  for (const a of data.articles) {
+    assert.ok(a.i === null || typeof a.i === "string", `${a.id} has no i`);
+    if (a.i) { n++; assert.ok(/^\d{4}\/\d{2}\/[^\s"<>]+$/.test(a.i) || /^https:\/\/[^\s"<>]+$/.test(a.i), `${a.id} image ${a.i}`); }
+    if (a.ia) assert.ok(a.i, `${a.id} has alt text but no image`);
+  }
+  assert.ok(n >= 380, `only ${n} essays have an image`);
+  assert.match(data.imgBase, /^https:\/\/storage\.ghost\.io\/.+\/content\/images\/$/);
+});
+test("image() asks for a size Ghost serves, and never answers for an essay without one", () => {
+  const withImg = data.articles.find((a) => a.i && !/^https:/.test(a.i));
+  assert.match(B.image(withImg, 600), /\/content\/images\/size\/w600\/\d{4}\/\d{2}\//);
+  assert.equal(B.image(data.articles.find((a) => !a.i), 600), "");
+  const un = data.articles.find((a) => /unsplash/.test(a.i || ""));
+  if (un) assert.match(B.image(un, 300), /[?&]w=300(&|$)/);
+});
+
 test("the lookups answer from the built file", () => {
   assert.ok(B.forAuthor("Augustine of Hippo").length >= 30, "Augustine's essays");
   assert.ok(B.forWork("pld-2722").length >= 20, "Confessions");
@@ -213,7 +231,7 @@ test("the search box is a labelled type=search with a clear button", () => {
   assert.match(tpl, /id="resCount" role="status" aria-live="polite"/);
 });
 test("scripts load in dependency order and the page has no inline script", () => {
-  const order = ["js/lib/mo-articles.js", "js/page/scripture-dev-core.js", "js/page/faith-resources.js"].map((f) => tpl.indexOf(f));
+  const order = ["js/lib/mo-articles.js", "js/page/scripture-dev-core.js", "js/page/faith-resources.js"].map((f) => tpl.lastIndexOf(f));
   assert.ok(order.every((i) => i > 0) && order[0] < order[1] && order[1] < order[2], order.join(","));
   assert.ok(!/<script(?![^>]*\bsrc=)[^>]*>/.test(tpl), "inline script");
   assert.ok(!/ on[a-z]+="/i.test(tpl), "inline handler");
@@ -224,6 +242,16 @@ test("the rail carries Resources between Research and About", () => {
   const b = rail.indexOf('href="/the-faith-received/resources/"');
   const c = rail.indexOf('data-tfr-drawer="about"');
   assert.ok(a > 0 && b > a && c > b, `${a} ${b} ${c}`);
+});
+test("a card is one link with an image or a placeholder, a sized image box, alt text and lazy loading", () => {
+  const css = read("assets/css/faith-resources.css");
+  assert.match(pageJs, /<a class="fr-res-cardlink" href=/);
+  assert.match(pageJs, /<img class="fr-res-photo"[^`]*width="600" height="400" alt="[^`]*loading="lazy" decoding="async"/);
+  assert.match(pageJs, /class="fr-res-ph" aria-hidden="true"/);
+  assert.match(css, /\.fr-res-img \{[^}]*aspect-ratio: 3 \/ 2/);
+  assert.match(css, /repeat\(8, minmax\(0, 1fr\)\)/);
+  assert.ok(!/max-width: 820px/.test(css), "the narrow column is back");
+  assert.ok(!/container-narrow/.test(tpl), "the narrow container is back");
 });
 test("the page copy has no em dash and the links open the original safely", () => {
   assert.ok(!/\u2014|&mdash;/.test(tpl + pageJs), "em dash");
