@@ -167,7 +167,9 @@
   const DEN = window.MODenom;
   const ED_TO_SHELF = { "Continental Reformed": "rf", Lutheran: "lu", "Roman Catholic": "rc" };
   const ED_ORDER = ["Anglican", "Presbyterian", "Congregational", "Baptist", "Quaker", "Anabaptist", "Arminian", "Methodist", "Bohemian Brethren", "Waldensian", "Socinian"];
-  const bodyOf = (name) => (DEN && DEN.loaded() && name ? DEN.of({ author: String(name) }).body || "" : "");
+  // The Latin Library catalogue holds some men (John Owen) only under a corpus-scoped row, so a name with no body is asked again as that corpus's.
+  const bodyOf = (name) => (DEN && DEN.loaded() && name
+    ? DEN.of({ author: String(name) }).body || DEN.of({ author: String(name), corpus: "tfr" }).body || "" : "");
   const shOf = (e) => {
     const k = shelfOf(e);
     if (k !== "ed") return k;

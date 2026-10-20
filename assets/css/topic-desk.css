@@ -77,7 +77,8 @@ html[data-sd-theme="dark"] .td-desk {
 .td-desk .tdk-h--sm { font-size: 18px; }
 .td-desk .tdk-small { font-size: 14px; line-height: 1.5; color: var(--tdk-muted); margin: 6px 0 0; max-width: 56rem; }
 .td-desk svg.tdk-ruler { display: none; width: 100%; height: auto; margin-top: 6px; }
-@media (min-width: 760px) {
+/* The drawn ruler's labels are 11px in a 1000-unit box: under about 1000px wide they print near 8px, so the list stands in. */
+@media (min-width: 1000px) {
   .td-desk svg.tdk-ruler { display: block; }
   .td-desk .tdk-ruler-list { display: none; }
 }
@@ -216,3 +217,8 @@ html[data-sd-theme="dark"] .td-desk .tdk-person .ph img { filter: grayscale(0.5)
 @media (min-width: 820px) { .td-desk .tdk-rellist { columns: 2; column-gap: 34px; } .td-desk .tdk-rellist li { break-inside: avoid; } }
 .td-desk .tdk-rellist li { padding: 0 0 8px; border-top: 1px solid var(--tdk-rule2); font-size: 16px; }
 .td-desk .tdk-rellist span { display: block; font-size: 14px; color: var(--tdk-muted); }
+
+/* Links inside paragraphs: a 44px tap area without changing the line. */
+.td-desk .tdk-lede a, .td-desk .tdk-small a, .td-desk .tdk-rulerbox a { position: relative; }
+.td-desk .tdk-lede a::after, .td-desk .tdk-small a::after, .td-desk .tdk-rulerbox a::after { content: ""; position: absolute; inset: -12px -2px; }
+.td-desk .tdk-legend li, .td-desk .tdk-jump a { min-height: 24px; }

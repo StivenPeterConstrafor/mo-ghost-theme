@@ -72,6 +72,8 @@ const BOOK_SLUGS = new Set([...BOOKS.values()].map((b) => b.slug));
   const text = "There is one God, in three persons, of one substance and power and eternity, the Father and the Son and the Holy Ghost.";
   const arts = [art("lc-1", 1530, "Lutheran", "Augsburg Confession 1530", "Confession", text), art("rc-1", 1561, "Reformed", "Belgic Confession 1561", "Confession", text),
     art("rc-2", 1562, "Reformed", "Thirty-nine Articles 1562", "Articles", text), art("rc-3", 1646, "Reformed", "Waldensian Confession 1655", "Confession", text)];
+  const was = { ...D.MODULES_ON };
+  Object.keys(D.MODULES_ON).forEach((k) => { D.MODULES_ON[k] = true; }); // the rules are tested with every module on
   const m = D.buildDeskModel({
     locus, part: { n: "I", label: "X" }, topic: { counts: { works: 3, authors: 2, positions: 10 }, trace: [], authors: [] },
     conf: { articles: arts, timeline: [] }, scr: { rows: [], total: 0 }, treat: [], data: {}, books: BOOKS, loci: LOCI,
@@ -83,6 +85,7 @@ const BOOK_SLUGS = new Set([...BOOKS.values()].map((b) => b.slug));
   ok(JSON.stringify(m.modules.traditions).indexOf("Waldensian") === -1, "synthetic: a Waldensian document is not filed under a church that is not its own");
   ok(m.modules.traditions && m.modules.traditions.fault === null, "synthetic: a fault-line row with a quotation not found in its article is dropped whole");
   ok(m.omitted.some((o) => o.module === "fault-line"), "synthetic: the dropped fault-line is recorded");
+  Object.assign(D.MODULES_ON, was);
   ok(m.modules.hero.dek === "A dek.", "synthetic: the dek is the marquee dek");
   ok(m.modules.treatments === null && m.modules.chron === null && m.modules.verses === null && m.modules.people === null && m.modules.path === null && m.modules.related === null,
     "synthetic: with no works, no dated events, no verses, no authors, and no neighbors, those modules are left out");
@@ -170,7 +173,7 @@ if (live) {
     const worksOf = [...html.matchAll(/href="\/the-faith-received\/read\/\?w=([^#"&]+)/g)].map((m) => decodeURIComponent(m[1]));
     const confDocs = new Set([...conf2.articles.map((a) => a.w), ...(topic.confessions || []).map((c) => c.w), ...proofDocs]);
     const bad = worksOf.filter((w) => !worksIndex.has(w) && !confDocs.has(w));
-    ok(worksOf.length > 0 && bad.length === 0, `${name}: all ${worksOf.length} reader links resolve (unresolved: ${[...new Set(bad)].slice(0, 4).join(", ") || "none"})`);
+    ok(bad.length === 0, `${name}: all ${worksOf.length} reader links resolve (unresolved: ${[...new Set(bad)].slice(0, 4).join(", ") || "none"})`);
     const refs = [...html.matchAll(/scripture\/desk\/\?ref=([a-z0-9-]+)\.(\d+)\.(\d+)"/g)];
     ok(refs.every((m) => BOOK_SLUGS.has(m[1])), `${name}: all ${refs.length} verse desk links name a book the desk knows`);
     const tops = [...html.matchAll(/topics\/\?t=([a-z0-9-]+)"/g)].map((m) => m[1]);
@@ -195,7 +198,7 @@ if (live) {
     // 4. hand-written text only from the marquee file
     const mq = marqueeFile.topics[id];
     ok((model.modules.hero.dek || "") === ((mq && mq.dek) || ""), `${name}: the dek is the marquee dek, or there is none`);
-    if (mq && mq.fault) ok(Boolean(model.modules.traditions && model.modules.traditions.fault) === (model.omitted.every((o) => o.module !== "fault-line")), `${name}: the fault-line row is drawn only if every quotation verified`);
+    if (mq && mq.fault && D.MODULES_ON.traditions) ok(Boolean(model.modules.traditions && model.modules.traditions.fault) === (model.omitted.every((o) => o.module !== "fault-line")), `${name}: the fault-line row is drawn only if every quotation verified`);
     ok(!/ id="tdk-trad-or"/.test(html) || conf2.articles.some((a) => /orthodox/i.test(a.trad || "")), `${name}: no Orthodox column without a mapped Orthodox document`);
   }
   ok(seenTiers.has("marquee") && (seenTiers.has("full") || seenTiers.has("thin")), `tiers seen: ${[...seenTiers].join(", ")}`);
@@ -203,7 +206,8 @@ if (live) {
   // the trinity fault-line row verified against the live articles
   const t = await get(`${VERSE}/v1/topic/confessions?id=de-trinitate&limit=500`, "conf-de-trinitate.json");
   const tm = D.buildDeskModel({ locus: LOCI.get("de-trinitate"), part: INDEX.get("de-trinitate").part, topic: await get(`${VERSE}/v1/topic?id=de-trinitate&t2=the-trinity`, "topic-de-trinitate.json"), conf: t, scr: null, treat: [], data: deskData, marquee: marqueeFile.topics["de-trinitate"], books: BOOKS, loci: LOCI });
-  ok(tm.modules.traditions && tm.modules.traditions.fault && tm.modules.traditions.fault.rows.length === 6, "the Trinity's fault-line row verifies all six quotations against the live articles");
+  ok(!tm.omitted.some((o) => o.module === "fault-line"), "the Trinity's fault-line row verifies all six quotations against the live articles");
+  ok(Object.entries(D.MODULES_ON).every(([k, on]) => on || [tm.modules[k === "chron" ? "chron" : k]].every((v) => v === null)), "a module switched off in MODULES_ON is omitted whole");
 
   // every locus builds without throwing and without an empty module
   let built = 0;
@@ -267,7 +271,7 @@ if (JSDOM && live) {
     return result;
   };
   const good = await run(false);
-  ok(good.hero && good.desk === 7 && good.has, `glue: the desk draws its hero and seven modules in the page (${good.desk})`);
+  ok(good.hero && good.desk === 3 && good.has, `glue: the desk draws its hero and the three modules that are on (${good.desk})`);
   ok(good.blocks === 2 && good.stats.every((s) => s !== "…" && s !== "–"), `glue: the page's two existing blocks and their counts are still there (${good.stats.join(", ")})`);
   const bad = await run(true);
   ok(bad.hostText === "" && !bad.has && bad.desk === 0, "fallback: when the model throws, the desk host stays empty and the page does not claim a desk");

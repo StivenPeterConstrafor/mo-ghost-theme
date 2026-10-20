@@ -3,53 +3,161 @@
   "provenance": "Hand-written list for the Topic Desk (assets/js/page/topic-desk-model.js). Drafted by Claude on 2026-10-19 for Ian's review. Every other sentence on the desk is computed from the library's data. A dek states what a topic covers and asks the question the churches answer. It never states an answer, a tradition's position, or Mere Orthodoxy's position. A fault-line row is shown only when every quotation in it is found, word for word, in the article the library maps to the topic. A verse note is a plain textual fact.",
   "topics": {
     "de-trinitate": {
-      "dek": "One God in three persons: Father, Son, and Holy Spirit. How the creeds, councils, and confessions word it.",
+      "dek": "What the creeds, councils, and confessions say about God as Father, Son, and Holy Spirit, and how they word it.",
       "fault": {
         "question": "From whom does the Holy Spirit proceed? The documents' own words.",
         "rows": [
-          { "church": "The early church", "doc": "Council of Constantinople I, 381", "w": "cf-015-council-of-constantinople-i-381", "p": 1, "quote": "who proceeds from the Father" },
-          { "church": "Roman Catholic", "doc": "Council of Lyons II, 1274", "w": "cf-077-council-of-lyons-ii-1274", "p": 1, "quote": "the Holy Spirit proceeds eternally from the Father and the Son, not as from two beginnings, but from one beginning" },
-          { "church": "Lutheran", "doc": "The Three Ecumenical Creeds, Book of Concord", "w": "lc-001-three-ecumenical-creeds", "p": 1, "quote": "who proceeds from the Father and the Son" },
-          { "church": "Reformed", "doc": "Belgic Confession, 1561", "w": "rc-057-belgic-confession-1561", "p": 2, "quote": "the Holy Spirit is the eternal power and might, proceeding from the Father and the Son" },
-          { "church": "Anglican", "doc": "Irish Articles, 1615", "w": "rc-102-irish-articles-1615", "p": 1, "quote": "The Holy Ghost, proceeding from the Father and the Son" },
-          { "church": "Baptist", "doc": "London Baptist Confession, 1677", "w": "rc-126-london-baptist-confession-1677", "p": 2, "quote": "the Holy Spirit proceeding from the Father and the Son" }
+          {
+            "church": "The early church",
+            "doc": "Council of Constantinople I, 381",
+            "w": "cf-015-council-of-constantinople-i-381",
+            "p": 1,
+            "quote": "who proceeds from the Father"
+          },
+          {
+            "church": "Roman Catholic",
+            "doc": "Council of Lyons II, 1274",
+            "w": "cf-077-council-of-lyons-ii-1274",
+            "p": 1,
+            "quote": "the Holy Spirit proceeds eternally from the Father and the Son, not as from two beginnings, but from one beginning"
+          },
+          {
+            "church": "Lutheran",
+            "doc": "The Three Ecumenical Creeds, Book of Concord",
+            "w": "lc-001-three-ecumenical-creeds",
+            "p": 1,
+            "quote": "who proceeds from the Father and the Son"
+          },
+          {
+            "church": "Reformed",
+            "doc": "Belgic Confession, 1561",
+            "w": "rc-057-belgic-confession-1561",
+            "p": 2,
+            "quote": "the Holy Spirit is the eternal power and might, proceeding from the Father and the Son"
+          },
+          {
+            "church": "Anglican",
+            "doc": "Irish Articles, 1615",
+            "w": "rc-102-irish-articles-1615",
+            "p": 1,
+            "quote": "The Holy Ghost, proceeding from the Father and the Son"
+          },
+          {
+            "church": "Baptist",
+            "doc": "London Baptist Confession, 1677",
+            "w": "rc-126-london-baptist-confession-1677",
+            "p": 2,
+            "quote": "the Holy Spirit proceeding from the Father and the Son"
+          }
         ]
       },
       "verseNotes": {
-        "i-john.5.7": "The wording of this verse that names the Father, the Word, and the Spirit is found in late Latin manuscripts and is absent from the critical Greek text. The text shown is the Verse Desk's default."
+        "i-john.5.7": "The wording of this verse that names the Father, the Word, and the Spirit is found in late Latin manuscripts and in a few late Greek manuscripts. It is absent from the critical Greek text. The text shown is the Verse Desk's default."
       }
     },
     "de-filioque": {
-      "dek": "The question whether the Holy Spirit proceeds from the Father alone or from the Father and the Son, and how the creeds word it.",
+      "dek": "The question from whom the Holy Spirit proceeds, and how the creeds word it.",
       "fault": {
         "question": "From whom does the Holy Spirit proceed? The documents' own words.",
         "rows": [
-          { "church": "The early church", "doc": "Council of Constantinople I, 381", "w": "cf-015-council-of-constantinople-i-381", "p": 1, "quote": "who proceeds from the Father" },
-          { "church": "Roman Catholic", "doc": "Council of Lyons II, 1274", "w": "cf-077-council-of-lyons-ii-1274", "p": 1, "quote": "the Holy Spirit proceeds eternally from the Father and the Son, not as from two beginnings, but from one beginning" },
-          { "church": "Lutheran", "doc": "The Three Ecumenical Creeds, Book of Concord", "w": "lc-001-three-ecumenical-creeds", "p": 1, "quote": "who proceeds from the Father and the Son" },
-          { "church": "Reformed", "doc": "Belgic Confession, 1561", "w": "rc-057-belgic-confession-1561", "p": 2, "quote": "the Holy Spirit is the eternal power and might, proceeding from the Father and the Son" },
-          { "church": "Anglican", "doc": "Irish Articles, 1615", "w": "rc-102-irish-articles-1615", "p": 1, "quote": "The Holy Ghost, proceeding from the Father and the Son" },
-          { "church": "Baptist", "doc": "London Baptist Confession, 1677", "w": "rc-126-london-baptist-confession-1677", "p": 2, "quote": "the Holy Spirit proceeding from the Father and the Son" }
+          {
+            "church": "The early church",
+            "doc": "Council of Constantinople I, 381",
+            "w": "cf-015-council-of-constantinople-i-381",
+            "p": 1,
+            "quote": "who proceeds from the Father"
+          },
+          {
+            "church": "Roman Catholic",
+            "doc": "Council of Lyons II, 1274",
+            "w": "cf-077-council-of-lyons-ii-1274",
+            "p": 1,
+            "quote": "the Holy Spirit proceeds eternally from the Father and the Son, not as from two beginnings, but from one beginning"
+          },
+          {
+            "church": "Lutheran",
+            "doc": "The Three Ecumenical Creeds, Book of Concord",
+            "w": "lc-001-three-ecumenical-creeds",
+            "p": 1,
+            "quote": "who proceeds from the Father and the Son"
+          },
+          {
+            "church": "Reformed",
+            "doc": "Belgic Confession, 1561",
+            "w": "rc-057-belgic-confession-1561",
+            "p": 2,
+            "quote": "the Holy Spirit is the eternal power and might, proceeding from the Father and the Son"
+          },
+          {
+            "church": "Anglican",
+            "doc": "Irish Articles, 1615",
+            "w": "rc-102-irish-articles-1615",
+            "p": 1,
+            "quote": "The Holy Ghost, proceeding from the Father and the Son"
+          },
+          {
+            "church": "Baptist",
+            "doc": "London Baptist Confession, 1677",
+            "w": "rc-126-london-baptist-confession-1677",
+            "p": 2,
+            "quote": "the Holy Spirit proceeding from the Father and the Son"
+          }
         ]
       }
     },
-    "de-scriptura": { "dek": "What the church says about the Bible. Its authority, sufficiency, and interpretation." },
-    "de-deo": { "dek": "What the church teaches about who God is and what God is like." },
-    "de-praedestinatione": { "dek": "How the church has spoken of election and predestination: God's eternal purpose concerning human salvation." },
-    "de-creatione": { "dek": "What the church confesses about God as the maker of heaven and earth." },
-    "de-providentia": { "dek": "How the church speaks of God's care for all that he has made and his governing of it." },
-    "de-peccato": { "dek": "What the church teaches about sin, its origin, and its effects." },
-    "de-christo": { "dek": "The person and work of Jesus Christ. How the creeds, councils, and teachers describe them." },
-    "de-spiritu-sancto": { "dek": "The person and work of the Holy Spirit. How the creeds, councils, and teachers describe them." },
-    "de-gratia": { "dek": "What the church teaches about the grace of God and how it works in salvation." },
-    "de-fide": { "dek": "What the church teaches about faith, its nature, and its place in salvation." },
-    "de-justificatione": { "dek": "How the church has taught that sinners stand right before God: what justification is, and how it relates to faith and works." },
-    "de-sanctificatione": { "dek": "What the church teaches about the making holy of believers and how it relates to justification." },
-    "de-ecclesia": { "dek": "What the church teaches about the church: its nature, its marks, and its government." },
-    "de-sacramentis": { "dek": "What the church teaches about the sacraments or ordinances. Their number, meaning, and effect." },
-    "de-baptismo": { "dek": "What the church teaches about baptism: its meaning, its subjects, and its mode." },
-    "de-coena": { "dek": "What the church teaches about the Lord's Supper or Eucharist: its meaning and the manner of Christ's presence." },
-    "de-novissimis": { "dek": "What the church teaches about death, judgment, and the end of all things." },
-    "de-resurrectione": { "dek": "What the church confesses about the resurrection of the body." }
+    "de-scriptura": {
+      "dek": "What the churches have said about the Bible. Its authority, sufficiency, and interpretation."
+    },
+    "de-deo": {
+      "dek": "What the churches have taught about who God is and what God is like."
+    },
+    "de-praedestinatione": {
+      "dek": "What the churches have said about election and predestination in relation to salvation."
+    },
+    "de-creatione": {
+      "dek": "What the churches have said about the origin of the world and God's relation to it."
+    },
+    "de-providentia": {
+      "dek": "What the churches have said about God's relation to the course of events."
+    },
+    "de-peccato": {
+      "dek": "What the churches have taught about sin. Its origin and its effects."
+    },
+    "de-christo": {
+      "dek": "The person and work of Jesus Christ. How the creeds, councils, and teachers describe them."
+    },
+    "de-spiritu-sancto": {
+      "dek": "The person and work of the Holy Spirit. How the creeds, councils, and teachers describe them."
+    },
+    "de-gratia": {
+      "dek": "What the churches have said about the grace of God and its place in salvation."
+    },
+    "de-fide": {
+      "dek": "What the churches have taught about faith. Its nature and its place in salvation."
+    },
+    "de-justificatione": {
+      "dek": "What the churches have taught about how sinners stand before God. The meaning of justification, and its relation to faith and works."
+    },
+    "de-sanctificatione": {
+      "dek": "What the churches have taught about holiness in believers and its relation to justification."
+    },
+    "de-ecclesia": {
+      "dek": "What the churches have taught about the church. Its nature, marks, and government."
+    },
+    "de-sacramentis": {
+      "dek": "What the churches have taught about the sacraments or ordinances. Their number, meaning, and effect."
+    },
+    "de-baptismo": {
+      "dek": "What the churches have taught about baptism. Its meaning, subjects, and mode."
+    },
+    "de-coena": {
+      "dek": "What the churches have taught about the Lord's Supper or Eucharist. Its meaning and the question of Christ's presence."
+    },
+    "de-novissimis": {
+      "dek": "What the churches have taught about death, judgment, and the end of all things."
+    },
+    "de-resurrectione": {
+      "dek": "What the churches have said about the resurrection of the dead."
+    }
   }
 }

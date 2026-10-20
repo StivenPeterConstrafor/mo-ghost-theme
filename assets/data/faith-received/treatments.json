@@ -9002,6 +9002,22 @@
    {
     "trad": "gf",
     "trad_label": "Greek Fathers",
+    "author": "Basil the Great",
+    "author_id": "a-d485c34057c3161cd9a7",
+    "y": 370,
+    "cen": 4,
+    "w": "pg-4045",
+    "title": "On the Holy Spirit (De Spiritu Sancto)",
+    "p": 1,
+    "heading": null,
+    "excerpt": "",
+    "excerpt_at": "page",
+    "lang": "en",
+    "why": "restored 2026-10-19: the live copy of the retired pg-417"
+   },
+   {
+    "trad": "gf",
+    "trad_label": "Greek Fathers",
     "author": "Gregory of Nyssa",
     "author_id": "a-daea7ad1cd0ef0096966",
     "y": 375,
