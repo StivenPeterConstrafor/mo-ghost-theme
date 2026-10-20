@@ -511,10 +511,26 @@
     }
     return seriesReady;
   }
+  /* IMPORTANCE FIRST (2026-10-19, the owner: "rerank by importance and relevance like augustine obv, reformers"). Every work on the
+   * map carries its author's standing in the tradition: how many works in the library cite him, on a log scale with Augustine at 100
+   * (v1/scripture/rank.json). The lists put the most cited first, the century beside each as before; equal standing, oldest first. */
+  let rankReady = null;
+  function loadRank() {
+    if (!rankReady) {
+      rankReady = fetch(`${LIBRARY_BASE}/v1/scripture/rank.json`, { credentials: "omit" })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .catch(() => { rankReady = null; return null; });
+    }
+    return rankReady;
+  }
+  const standingOf = (e, rk) => {
+    const r = rk && rk.works && rk.works[e.w];
+    return r ? r[0] : ((rk && rk.authors && rk.authors[e.a]) || 0);
+  };
   const fetchCommentaries = (book, c, f) => Promise.all([api("/v1/verse/commentaries", {
     b: book.lib, c, tr: f.tr, au: f.au, cen: f.cen,
-  }), loadSeries()]).then(([d, sets]) => {
-    ((d && d.items) || []).forEach((e) => { const s = sets.get(e.w); if (s) e.set = s; });
+  }), loadSeries(), loadRank()]).then(([d, sets, rk]) => {
+    ((d && d.items) || []).forEach((e) => { const s = sets.get(e.w); if (s) e.set = s; e.imp = standingOf(e, rk); });
     return d;
   });
   const fetchPassage = (row, book, c, v) => api("/v1/verse/passage", {
@@ -887,10 +903,13 @@
   };
   /* THREE LISTS (2026-10-15, the owner: "do we highlight the chapter commentaries/book commentaries too"): works on part of the
    * book that takes in this chapter (Chrysostom's sermons on Romans 4–9, a sermon on the chapter), commentaries on the whole book
-   * (a range of 80 % of its chapters or more, or no range), and the whole-Bible sets (`annotation`). Each oldest first. */
+   * (a range of 80 % of its chapters or more, or no range), and the whole-Bible sets (`annotation`). Each by its author's standing
+   * (2026-10-19), then oldest first. */
   /* FOUR LISTS (2026-10-16): the sets on the whole Bible or a whole Testament (Lapide, both Pooles, the Westminster Annotations,
    * Benson, Coke; Grotius, Calov, Wesley on the New Testament) go with the map's whole-Bible works, each at its own volume; works
    * that are not commentaries (councils, letters, polemics, treatises) are listed apart, after them. */
+  // most cited author first (e.imp, set when the list is fetched); then oldest first, as before
+  const byStanding = (a, b) => (Number(b.imp) || 0) - (Number(a.imp) || 0) || byCentury(a, b);
   function commentaryGroups(items, book) {
     const list = items || [];
     const n = (book && book.chapters) || 0;
@@ -898,10 +917,10 @@
     const other = (e) => NOT_COMMENTARY.has(e.kind);
     const whole = (e) => !other(e) && (e.annotation || e.set);
     return {
-      chapter: list.filter((e) => !other(e) && !whole(e) && !wholeBook(e)).sort(byCentury),
-      book: list.filter((e) => !other(e) && !whole(e) && wholeBook(e)).sort(byCentury),
-      whole: list.filter(whole).sort(byCentury),
-      other: list.filter(other).sort(byCentury),
+      chapter: list.filter((e) => !other(e) && !whole(e) && !wholeBook(e)).sort(byStanding),
+      book: list.filter((e) => !other(e) && !whole(e) && wholeBook(e)).sort(byStanding),
+      whole: list.filter(whole).sort(byStanding),
+      other: list.filter(other).sort(byStanding),
     };
   }
   // The lists' names, in one place: "On Romans 5", "On Romans", "On the whole Bible" ("… or New Testament" when a Testament's
@@ -1168,7 +1187,7 @@
     translationInfo, recalledTranslation, rememberTranslation,
     fetchChapterHtml, markVerses, verseTextFrom, fetchVerseText,
     fetchApocryphaChapter, apocryphaChapterNode, chapterNode, fetchApocryphaVerse,
-    fetchVerse, fetchCommentaries, fetchPassage, fetchKindTotals,
+    fetchVerse, fetchCommentaries, fetchPassage, fetchKindTotals, loadRank, standingOf,
     emptyFilters, activeCount, filterBar, sourceItem, centuryLabel,
     loadVolumes, volumeLabel, sortWorks,
     HOW, kindOf, kindsLabel, workRows,
