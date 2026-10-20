@@ -1015,9 +1015,10 @@
       const label = own && rest && ref
         ? `${plural(own, "more work", "more works")} by ${e.a || "the same author"} on ${ref}, and ${plural(rest, "volume", "volumes")} that ${rest === 1 ? "cites" : "cite"} it`
         : `${plural(e.more.length, "more work", "more works")} by ${e.a || "the same author"}`;
-      box.innerHTML = `<button type="button" class="sd-comm-more-btn" aria-expanded="false">${esc(label)}</button><ol class="sd-sources sd-comm-more-list" hidden></ol>`;
+      box.innerHTML = `<button type="button" class="sd-comm-more-btn" aria-expanded="false">${esc(label)}</button><ol class="sd-comm-more-list" hidden></ol>`;
       const $list = box.querySelector("ol");
-      e.more.forEach((x) => $list.appendChild(commentaryItem({ ...x, more: [] }, ctx)));
+      // rows inside the author's card, not cards of their own (sd-comm-sub, not sd-commentary)
+      e.more.forEach((x) => { const sub = commentaryItem({ ...x, more: [] }, ctx); sub.classList.replace("sd-commentary", "sd-comm-sub"); $list.appendChild(sub); });
       box.querySelector("button").addEventListener("click", (ev) => {
         const open = ev.currentTarget.getAttribute("aria-expanded") !== "true";
         ev.currentTarget.setAttribute("aria-expanded", String(open));
@@ -1073,6 +1074,9 @@
       $btn.textContent = open ? "Hide" : "Preview";
       $pv.hidden = !open;
       li.classList.toggle("is-previewing", open);
+      // a work previewed under its author's row widens the author's card, as the row's own preview does
+      const card = li.classList.contains("sd-comm-sub") ? li.parentElement.closest(".sd-commentary") : null;
+      if (card) card.classList.toggle("is-previewing", open || !!card.querySelector(".sd-comm-sub.is-previewing"));
       const v = Number(ctx.v) || 0;
       if (!open || shown === v) return;
       shown = v;
