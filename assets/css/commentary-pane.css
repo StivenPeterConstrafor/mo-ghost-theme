@@ -185,25 +185,37 @@ a.cp-row-t { text-decoration: none; }
 .cp-rec-foot { margin: 16px 0 0; font-size: 12.5px; color: var(--cp-faint); }
 
 /* ── Creeds, confessions and catechisms that cite the verse (Mere Orthodoxy's page only) ──
-   Above the commentary, set like the Citations view: a small label over a heading in the body face, thin-ruled rows, an italic
-   title over a muted line, the words quoted beneath. No pill, no box that scrolls, no display face. */
-.cp-creeds { margin: 0 0 18px; padding: 0 0 8px; border-bottom: 1px solid var(--cp-rule); }
+   Above the commentary, as one heading row with its count and the first three entries; Show all opens the rest in place, by church.
+   Set like the Citations view: thin-ruled rows, an italic title over a muted line, the words quoted beneath. No pill, no box that
+   scrolls, no display face. Closed it is short enough for the commentary to begin in the first screen. */
+.cp-creeds { margin: 0 0 14px; padding: 0 0 4px; border-bottom: 1px solid var(--cp-rule); }
 .cp-creeds[hidden] { display: none; }
-.cp-creeds.is-loading { opacity: 0.55; transition: opacity 0.2s ease-out; }
-.cp-cr-eyebrow { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--cp-accent); }
-.cp-cr-h { margin: 2px 0 0; font-family: inherit; font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: 0; text-transform: none; font-style: normal; color: var(--cp-ink); }
-.cp-cr-sum { margin: 4px 0 10px; font-size: 13px; color: var(--cp-muted); }
+.cp-cr-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; }
+.cp-cr-bar[hidden] { display: none; }
+.cp-cr-h { margin: 0; font-family: inherit; font-size: 17px; line-height: 1.3; font-weight: 600; letter-spacing: 0; text-transform: none; font-style: normal; color: var(--cp-ink); }
+.cp-cr-all { min-height: 44px; padding: 0 2px; background: none; border: 0; font-size: 14px; color: var(--cp-accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.cp-cr-all[hidden] { display: none; }
 .cp-cr-at { font-style: normal; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.cp-creeds .cp-wit { align-items: flex-start; }
+.cp-creeds .cp-wit { align-items: flex-start; min-height: 44px; padding: 6px 2px; }
+.cp-creeds a.cp-row-t { display: block; }
 .cp-cr-q { font-style: normal; }
+/* closed, a quotation is one line, so the commentary begins in the first screen */
+.cp-creeds:not(.is-open) .cp-cr-q { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.cp-cr-note { margin: 4px 0 8px; font-size: 13px; color: var(--cp-muted); }
+.cp-cr-retry { min-height: 44px; padding: 0 2px; background: none; border: 0; font-size: 13px; color: var(--cp-accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .cp-cr-body .cp-era { margin: 0 0 8px; }
 .cp-cr-body .cp-era-more { margin: 0 0 4px; }
-.cp-cr-whole { margin-top: 14px; }
-@media (prefers-reduced-motion: reduce) { .cp-creeds.is-loading { transition: none; } }
+.cp-cr-whole, .cp-cr-papal { margin-top: 14px; }
 @media (max-width: 899px) {
-  .cp-creeds { margin: 8px 0 12px; padding-bottom: 4px; }
-  .cp-cr-h { font-size: 18px; }
-  .cp-cr-sum { margin-bottom: 6px; }
+  .cp-creeds { margin: 4px 0 8px; }
+  .cp-cr-h { font-size: 15.5px; }
+  /* on the phone's sheet the closed list is the document, its church and year: the quotations come with Show all */
+  .cp-creeds:not(.is-open) .cp-cr-q { display: none; }
+  .cp-cr-bar { flex-wrap: nowrap; }
+  .cp-cr-h { min-width: 0; font-size: 14.5px; }
+  .cp-cr-all { flex: none; }
+  .cp-creeds:not(.is-open) a.cp-row-t, .cp-creeds:not(.is-open) .cp-row-m { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cp-creeds .cp-wit { padding: 4px 2px; }
 }
 
 /* how much reception each verse has, in the verse number itself: the most cited darkest and heaviest, the least faint (four steps of

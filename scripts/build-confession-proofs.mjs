@@ -32,11 +32,12 @@
  * article prints the citation.
  *
  * OUTPUT (assets/data/faith-received/confession-proofs/):
- *   index.json     the documents that cite anything, and the totals
- *   <book>.json    one file per book, keyed by the library's book slug
- *                  { v: { "1:1": [[article, clause], ...] },
- *                    a: [[doc, label, page, title], ...], x: ["clause", ...] }
- *                  (article and clause are indexes into a and x)
+ *   index.json          the documents that cite anything, the totals, and which chapters have a file
+ *   <book>/<ch>.json    one file per chapter, keyed by the library's book slug
+ *                       { v: { "1": [[article, clause], ...] }, c: [[article, clause], ...],
+ *                         a: [[doc, label, page, title, paragraph], ...], x: ["clause", ...] }
+ *                       (article and clause are indexes into a and x; c holds the articles that
+ *                       cite the chapter as a whole; paragraph is the reader's b<page>-<n>)
  *
  *   node scripts/build-confession-proofs.mjs            fetch the library, write
  *   node scripts/build-confession-proofs.mjs --check    offline: the committed
@@ -45,10 +46,11 @@
  *                                                        reads known cases
  *   node scripts/build-confession-proofs.mjs --report   also print what could not
  *                                                        be read, per document
+ *   --audit  every row of the committed data against its source page (clause on the page, paragraph cites the verse)
  *   --src <dir>   cache of the library's work.json files (default: the OS temp
  *                 dir); --refresh fetches them again.
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -176,19 +178,34 @@ function numberedParagraphs(work) {
  * An article is a section the document itself numbers (a chapter section, a
  * question, an article); a document that numbers nothing is read by its heads.
  */
+const ORD = { first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10 };
+// a heading that opens the errors a document rejects ("Rejection of Errors", "Errors rejected concerning election", "Separate rejection of accusations")
+const REJECTION = /\brejection\b|\berrors?\s+rejected|\banathemas?\b|\bcondemnations?\b/i;
+
 function* articles(work, entries) {
-  const st = { kind: "Art.", chap: null, chapTitle: "", art: null, artTitle: "", para: null, q: null, qText: "", topic: "", dz: null, seq: 0, artSeq: false };
-  const reset = { para: null, q: null, qText: "", seq: 0, artSeq: false, kind: "Art." };
+  const st = { kind: "Art.", head: "", rej: false, chap: null, chapTitle: "", art: null, artTitle: "", para: null, q: null, qText: "", topic: "", dz: null, seq: 0, artSeq: false };
+  const reset = { para: null, q: null, qText: "", seq: 0, artSeq: false, kind: "Art.", rej: false };
   const seqOk = numberedParagraphs(work);
   for (const page of work.pages || []) {
     const blocks = String(page.en || "").split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
+    // the reader numbers a page's paragraphs b<page>-<n>, counting every row but the heads
+    let bi = 0;
     for (const b of blocks) {
       const flat = plain(b);
       const head = /^#{1,6}\s+(.*)$/.exec(b);
+      const idx = head ? -1 : bi++;
       if (head) {
         const h = plain(head[1]);
         let m;
-        if ((m = /^(article|art\.|part)\s+([IVXLCDM]+|\d+)\b[\s.:\-–—]*(.*)$/i.exec(h)) && numOf(m[2])) {
+        if ((m = /^(?:the\s+)?((?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)(?:\s+and\s+(?:first|second|third|fourth|fifth|sixth))?)\s+(heads?|parts?|main points?)\b/i.exec(h))) {
+          const ns = m[1].toLowerCase().split(/\s+and\s+/).map((w) => ORD[w]);
+          const noun = /^head/i.test(m[2]) ? "Head" : /^part/i.test(m[2]) ? "Part" : "Point";
+          Object.assign(st, reset, { head: ns.length > 1 ? `${noun}s ${ns.join(" and ")}` : `${noun} ${ns[0]}`, art: null, artTitle: "", topic: "" });
+        } else if (/^conclusion$/i.test(h)) {
+          Object.assign(st, reset, { head: "", art: null, artTitle: "", chap: null, chapTitle: "", topic: cap(h, 70) });
+        } else if (h.length < 70 && REJECTION.test(h) && !/^\[?conclusion/i.test(h)) {
+          Object.assign(st, reset, { rej: true, art: null, artTitle: "", topic: "", chap: null, chapTitle: "" });
+        } else if ((m = /^(article|art\.|part)\s+([IVXLCDM]+|\d+)\b[\s.:\-–—]*(.*)$/i.exec(h)) && numOf(m[2])) {
           Object.assign(st, reset, { art: numOf(m[2]), kind: /^part/i.test(m[1]) ? "Part" : "Art.", artTitle: cap(m[3].replace(/^[.:\-–—\s]+/, ""), 70), topic: "" });
         } else if ((m = /^(?:chap(?:ter)?\.?)\s+([IVXLCDM]+|\d+)\b[\s.:\-–—]*(.*)$/i.exec(h)) && numOf(m[1])) {
           Object.assign(st, reset, { chap: numOf(m[1]), chapTitle: cap(m[2].replace(/^[.:\-–—\s]+/, ""), 70), art: null, artTitle: "", topic: "" });
@@ -201,8 +218,11 @@ function* articles(work, entries) {
         }
         continue;
       }
+      // "Paragraph 6" opens the sixth paragraph of the part (Dort's rejections)
+      let m = /^paragraph\s+(\d+)$/i.exec(flat);
+      if (m) { st.para = +m[1]; continue; }
       // a chapter named in a plain paragraph: "CHAP. I.—Of the Holy Scripture."
-      let m = /^(?:CHAP(?:TER)?\.?)\s+([IVXLCDM]+|\d+)\b[\s.:\-–—]*(.*)$/.exec(flat);
+      m = /^(?:CHAP(?:TER)?\.?)\s+([IVXLCDM]+|\d+)\b[\s.:\-–—]*(.*)$/.exec(flat);
       if (m && numOf(m[1]) && flat.length < 140) {
         Object.assign(st, reset, { chap: numOf(m[1]), chapTitle: cap(m[2].replace(/[.\s]+$/, ""), 70), art: null, artTitle: "", topic: "" });
         continue;
@@ -214,11 +234,11 @@ function* articles(work, entries) {
           || (wrapped ? /^(\d+)\.\s+(.*\?)\s*$/.exec(flat) : null);
         if (m) {
           st.q = +m[1]; st.qText = cap(m[2].replace(/\s*\(.*$/, ""), 110); st.para = null;
-          yield { page: page.n, text: b, label: `Q.${st.q}`, title: st.qText };
+          yield { page: page.n, idx, text: b, label: `Q.${st.q}`, title: st.qText };
           continue;
         }
         if (/^Q\.\s/.test(flat)) {
-          yield { page: page.n, text: b, label: st.topic || `p. ${page.n}`, title: cap(flat.replace(/^Q\.\s*/, "").replace(/\s*\(.*$/, ""), 110) };
+          yield { page: page.n, idx, text: b, label: st.topic ? `p. ${page.n}` : `p. ${page.n}`, title: cap(flat.replace(/^Q\.\s*/, "").replace(/\s*\(.*$/, ""), 110) };
           continue;
         }
         // an article head set as a line of its own: "*1. God*"
@@ -234,23 +254,26 @@ function* articles(work, entries) {
       m = flat.length >= 60 ? /^(\d{1,3}|[IVXL]{1,6})\.\s+\S/.exec(flat) : null;
       if (m) {
         const n = numOf(m[1]);
-        if (n && seqOk && !entries && st.chap == null && st.q == null && (st.art == null || st.artSeq) && (n === st.seq + 1 || n === 1)) {
+        if (n && seqOk && !entries && st.chap == null && st.q == null && !st.rej && (st.art == null || st.artSeq) && (n === st.seq + 1 || n === 1)) {
           // a document that numbers its articles as paragraphs ("1. That there is but one God ...")
           Object.assign(st, { art: n, artTitle: "", seq: n, artSeq: true, para: null });
-        } else if (n && (st.chap != null || st.art != null)) { if (st.para == null || n === st.para + 1 || n <= 2) st.para = n; }
+        } else if (n && (st.chap != null || st.art != null || st.rej)) { if (st.para == null || n === st.para + 1 || n <= 2) st.para = n; }
       }
       // Denzinger: a paragraph opens with its number ("787. That our Catholic faith ...")
       const dm = /^(\d{1,4})[a-z]?\.\s/.exec(flat);
       if (entries && dm) st.dz = +dm[1];
+      const pre = st.head ? `${st.head}, ` : "";
       let label; let title = "";
       if (entries) {
         label = `Denz. ${st.dz == null ? entries[0].lo : st.dz}`;
+      } else if (st.rej) {
+        label = `${pre}Rejection${st.para != null ? `, par. ${st.para}` : ""}`;
       } else if (st.q != null && st.chap == null && st.art == null) {
         label = `Q.${st.q}`; title = st.qText;
       } else if (st.chap != null && st.para != null) {
         label = `${st.chap}.${st.para}`; title = st.chapTitle;
       } else if (st.art != null) {
-        label = `${st.kind} ${st.art}`; title = st.artTitle || st.topic;
+        label = `${pre}${st.kind} ${st.art}`; title = st.artTitle || st.topic;
       } else if (st.chap != null) {
         label = `Ch. ${st.chap}`; title = st.chapTitle;
       } else if (st.topic) {
@@ -258,7 +281,7 @@ function* articles(work, entries) {
       } else {
         label = `p. ${page.n}`;
       }
-      yield { page: page.n, text: b, label, title, dz: st.dz };
+      yield { page: page.n, idx, text: b, label, title, dz: st.dz };
     }
   }
 }
@@ -267,17 +290,29 @@ function* articles(work, entries) {
 
 const GAP = /^(?:[\s;,.:()[\]&]|and\b|et\b|ch\b|chap\b|cap\b|c\b|see\b|cf\b|also\b|ibid\b|ff?\b)*$/i;
 
+// brackets that held a citation the linker took out leave "(; ; )" or "(;1-6;;; )": a bracket with no word of its own goes
+const dropEmptyBrackets = (t) => {
+  let out = String(t); let prev;
+  do {
+    prev = out;
+    out = out.replace(/[([]([^()[\]]*)[)\]]/g, (m, inner) => (/[A-Za-z]{4,}/.test(inner.replace(/\b(?:ibid|etc|see|and)\b\.?/gi, "")) ? m : " "));
+  } while (out !== prev);
+  return out;
+};
+const DEBRIS = /[;,]\s*[;,]|\(\s*[;,]|[;,]\s*\)/;
+
 function tidy(s) {
-  let t = String(s).replace(/\[\d+\]/g, " ").replace(/[*_]+/g, "").replace(/\s+/g, " ").trim();
+  let t = dropEmptyBrackets(s).replace(/\[\d+\]/g, " ").replace(/[*_]+/g, "").replace(/\s+/g, " ").trim();
   t = t.replace(/\s+([,;:.])/g, "$1").replace(/^(?:[IVXL]{1,6}|\d{1,3})\.\s+/, "").replace(/^(?:Proofs?|A)\.\s*/, "").replace(/^[,;:.)\]\s]+/, "").replace(/[,;:\s("“”]+$/, "").trim();
   // a clause that opens in capitals ("ALTHOUGH the light of nature") is set as a sentence
   t = t.replace(/^([A-Z]{2,})(?=\s|,|$)/, (w) => w[0] + w.slice(1).toLowerCase());
   return t;
 }
 
+const MAXQ = 140;
 function cutClause(t) {
-  if (t.length <= 230) return t;
-  const tail = t.slice(-230);
+  if (t.length <= MAXQ) return t;
+  const tail = t.slice(-MAXQ);
   const k = tail.search(/[.;:?!]\s+(?=\S)/);
   if (k >= 0 && tail.length - k > 40) return tail.slice(k + 1).trim();
   return `…${tail.replace(/^\S*\s+/, "")}`;
@@ -288,7 +323,7 @@ function withoutRefs(text, refs) {
   let out = ""; let at = 0;
   for (const r of refs) { out += text.slice(at, r.start); at = r.end; }
   out += text.slice(at);
-  return out.replace(/[([]\s*(?:[;,.\s]|cf\.?|see|etc\.?)*[)\]]/gi, " ").replace(/\s+/g, " ");
+  return dropEmptyBrackets(out).replace(/\s+/g, " ");
 }
 // a block that is only a list of proofs ("Proofs. Genesis 1:1; Psalm 33:6.", "(Deut. 4:35; 6:4; ...)")
 const citeOnly = (text, refs) => withoutRefs(text, refs).replace(/\b(?:proofs?|scripture|scriptures|see|cf|etc|and|also|ibid)\b/gi, "").replace(/[^\p{L}]/gu, "").length < 12;
@@ -296,12 +331,13 @@ const citeOnly = (text, refs) => withoutRefs(text, refs).replace(/\b(?:proofs?|s
 const leadOf = (text, refs) => {
   const t = tidy(withoutRefs(text, refs));
   const stop = t.slice(0, 260).search(/[.?!]["”’)]?\s+(?=[A-Z“"])/);
-  return cutClause(stop > 40 ? t.slice(0, stop + 1) : cap(t, 220));
+  return cap(stop > 40 ? t.slice(0, stop + 1) : t, MAXQ);
 };
 const DANGLING = /\b(?:is|are|was|were|be|been|the|a|an|of|and|that|who|which|whom|to|in|by|for|with|as|from|his|her|their|our|have|has|had|not|but|or|it|they|he|we|on|at|into|unto|upon)$/i;
 
 /** Groups of references that stand behind one clause, each with that clause. */
-function citedClauses(text, refs, lead) {
+const nrm = (t) => String(t).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+function citedClauses(text, refs, lead, leadSrc, leadOnPage) {
   const groups = [];
   for (const r of refs) {
     const g = groups[groups.length - 1];
@@ -310,7 +346,7 @@ function citedClauses(text, refs, lead) {
   }
   if (lead && citeOnly(text, refs)) {
     // the proofs stand apart from the sentence they prove: they prove the block before
-    for (const g of groups) g.clause = lead;
+    for (const g of groups) g.clause = leadOnPage && leadSrc && nrm(leadSrc).includes(nrm(lead.split("\t")[0].replace(/^…\s*/, ""))) ? lead : `\u0001${lead}`;
     return groups;
   }
   let boundary = 0;
@@ -320,7 +356,7 @@ function citedClauses(text, refs, lead) {
     const clauseEnd = open ? first.start - open[0].length : first.start;
     let clause = tidy(text.slice(boundary, clauseEnd));
     // a block that opens with its citations ("Exodus 20:2; Isaiah 40:18.") or with the word "Proofs" proves the statement before it
-    if (lead && (clause.length < 16 || /^proofs?\b/i.test(clause)) && boundary === 0) clause = lead;
+    if (lead && boundary === 0 && (first.start < 4 || /^proofs?\b/i.test(clause))) clause = lead;
     if (clause.length < 16) {
       // "No (Gen. 1:31)": too little to stand alone, so the opening of the block, without its citations
       const own = leadOf(text, refs);
@@ -334,11 +370,31 @@ function citedClauses(text, refs, lead) {
       const rest = text.slice(boundary).replace(/^\s*[([][^)\]]*[)\]]/, "");
       const stop = rest.search(/[,;:.?!([]/);
       const tail = tidy(stop >= 0 ? rest.slice(0, stop) : rest);
-      if (tail && tail.length <= 110) clause = `${clause}\t${tail}`;
+      if (tail && tail.length <= 60 && clause.length + tail.length <= MAXQ + 40) clause = `${clause}\t${tail}`;
     }
+    // a quote with the debris of a citation, or no words, is not shown: the row keeps its link
+    if (DEBRIS.test(clause) || clause.replace(/[^\p{L}]/gu, "").length < 12) clause = "";
+    // words that are not one run on the page (a block's opening with its citations taken out) are quoted but not marked in the reader
+    const base = nrm(clause.split("\t")[0].replace(/^…\s*/, ""));
+    if (clause && !nrm(text).includes(base) && !(leadOnPage && leadSrc && nrm(leadSrc).includes(base))) clause = `\u0001${clause}`;
     g.clause = clause;
   }
   return groups;
+}
+
+// "Eph. 2:8, 9 and 10": the linker keeps 8 and 9; the "and 10" that closes the list is read here
+function andMore(r, text) {
+  if (/^Psalms /.test(r.query)) return r.query;
+  const m = /:([\d,-]+)$/.exec(r.query);
+  if (!m) return r.query;
+  let q = r.query; let last = Number(m[1].split(/[,-]/).pop());
+  let at = r.end;
+  for (;;) {
+    const n = /^\s*(?:,\s*)?(?:and|&)\s+(\d{1,3})(?=\s*(?:[.;,)\]]|$))/.exec(text.slice(at));
+    if (!n || Number(n[1]) <= last || Number(n[1]) > 200) break;
+    last = Number(n[1]); q += `,${last}`; at += n[0].length;
+  }
+  return q;
 }
 
 /* ── Verses ──────────────────────────────────────────────────────────────── */
@@ -359,6 +415,37 @@ function versesOf(query) {
   return { book: m[1], chapter: +m[2], verses };
 }
 
+/* ── Titles, dates and churches ──────────────────────────────────────────── */
+
+const WORDCUT = (t, n) => (t.length <= n ? t : `${t.slice(0, n).replace(/\s+\S*$/, "")}…`);
+const CONCILIAR = /^(?:Session\b|Chap\.?\s*\d|Canons?\b)|Council|Synod/i;
+
+/**
+ * What a reader is shown for a document. A Denzinger title reads "Session XXV (dec. 3 and 4, 1563) Decree Concerning Purgatory
+ * — Pope Pius IV, 1559": the document is the decree and its own date is 1563; the pope is where the library filed it, not its author.
+ */
+function describe(row, slug, entry, confessionTradition) {
+  const raw = plain(row.title);
+  let main = raw; let src = "";
+  const denz = entry || /^cf-/.test(slug);
+  if (denz) { const parts = raw.split(/\s+—\s+/); main = parts[0]; src = parts.slice(1).join(" — "); }
+  main = main.replace(/^Then follows:\s*/i, "").replace(/(Chap\.?\s*\d+)\s*\.?\s*\[\s*([^\]]*?)\s*\]/i, "$1. $2")
+    .replace(/\s*\[\s*([^\]]*?)\s*\]/g, " ($1)").replace(/[[\]]/g, "").replace(/\s+\./g, ".").replace(/\.(?=[A-Z])/g, ". ").replace(/\s+/g, " ").trim();
+  if (!denz) main = shortTitle(raw);
+  const own = /\((?:[^)]*?\b)?(\d{4})\)/.exec(main);
+  let year = own ? +own[1] : row.year || 0;
+  src = src.replace(/,?\s*\d{2,4}\b.*$/, "").replace(/^Pope\s+(?=The\b)/, "").trim();
+  if (denz && CONCILIAR.test(main) && /^Pope\b/.test(src) && year >= 1545 && year <= 1563) src = "Council of Trent";
+  if (/Vatican Council/.test(src)) src = "Vatican Council I";
+  let church = confessionTradition(row.title, row.tradition, slug) || row.tradition || "";
+  if (church === "Roman Catholic" && year < 1054) church = "Early church";
+  const papal = row.type === "Papal" && !CONCILIAR.test(`${main} ${src}`);
+  return { t: WORDCUT(main, 90), y: year, u: src, c: church, k: row.type || "", ...(papal ? { p: 1 } : {}) };
+}
+
+// two rows of one article (the same document, label and page) are one row of a verse's list
+const same = (bk, a, b) => { const p = bk.arts[a]; const q = bk.arts[b]; return p[0] === q[0] && p[1] === q[1] && p[2] === q[2]; };
+
 /* ── Build ───────────────────────────────────────────────────────────────── */
 
 async function build() {
@@ -377,10 +464,11 @@ async function build() {
   const slugs = [...bySlug.keys()].sort();
 
   const docs = []; const docIx = new Map();
-  const docFor = (slug, row, title) => {
-    const key = `${slug}|${title}`;
+  const docFor = (slug, row, entry) => {
+    const info = describe(row, slug, entry, confessionTradition);
+    const key = `${slug}|${info.t}`;
     if (docIx.has(key)) return docIx.get(key);
-    docs.push({ s: slug, t: title, y: row.year || 0, c: confessionTradition(row.title, row.tradition, slug) || row.tradition || "", k: row.type || "" });
+    docs.push({ s: slug, ...info });
     docIx.set(key, docs.length - 1);
     return docs.length - 1;
   };
@@ -415,27 +503,29 @@ async function build() {
       return { row: r, lo: +(nums[0] || 0), hi: +(nums[nums.length - 1] || nums[0] || 0) };
     }).filter((e) => e.lo) : null;
     globalThis.DATA = { tradition: first.tradition, slug };
-    let got = 0; let lead = "";
+    let got = 0; let lead = ""; let leadSrc = ""; let leadPage = null;
     for (const blk of articles(work, entries)) {
+      // Denz. 882 prints "1Samuel 19:8" for Elijah's bread, which is 1 Kings 19:8 (3 Kings in the Vulgate)
+      if (slug === "cf-093-julius-iii-1550-1555") blk.text = blk.text.replace(/\b1Samuel 19:8/g, "1 Kings 19:8");
       let refs;
       try { refs = scriptureReferences(blk.text) || []; } catch { refs = []; }
-      if (!refs.length) { if (!/^#/.test(blk.text)) { const l = leadOf(blk.text, []); if (l.length >= 40 && !/^proofs?\b/i.test(l)) lead = l; } continue; }
+      if (!refs.length) { if (!/^#/.test(blk.text)) { const l = leadOf(blk.text, []); if (l.length >= 40 && !/^proofs?\b/i.test(l)) { lead = l; leadSrc = blk.text; leadPage = blk.page; } } continue; }
       const only = citeOnly(blk.text, refs);
       const entry = entries ? (entries.find((e) => blk.dz >= e.lo && blk.dz <= e.hi) || entries[0]) : null;
       const row = entry ? entry.row : first;
-      const title = entry ? plain(row.title) : shortTitle(first.title);
-      const d = docFor(slug, row, title);
-      for (const g of citedClauses(blk.text, refs, lead)) {
+      const d = docFor(slug, row, !!entry);
+      for (const g of citedClauses(blk.text, refs, lead, leadSrc, leadPage === blk.page)) {
         for (const r of g.refs) {
           report.refs++;
-          const v = versesOf(r.query);
+          const v = versesOf(andMore(r, blk.text));
           if (!v) { report.unreadable++; continue; }
           if (v.big) { report.bigRanges++; continue; }
           const lib = libSlugOf(v.book, canon);
           if (!lib) { report.unknownBook++; continue; }
           const bk = bookOf(lib);
-          const akey = `${d}|${blk.label}|${blk.page}`;
-          if (!bk.artIx.has(akey)) { bk.arts.push([d, blk.label, blk.page, blk.title || ""]); bk.artIx.set(akey, bk.arts.length - 1); }
+          // a row is one paragraph of an article, so its link goes to the paragraph that cites the verse
+          const akey = `${d}|${blk.label}|${blk.page}|${blk.idx}`;
+          if (!bk.artIx.has(akey)) { bk.arts.push([d, blk.label, blk.page, cap(blk.title || "", 60), blk.idx]); bk.artIx.set(akey, bk.arts.length - 1); }
           if (!bk.xIx.has(g.clause)) { bk.xs.push(g.clause); bk.xIx.set(g.clause, bk.xs.length - 1); }
           const a = bk.artIx.get(akey); const x = bk.xIx.get(g.clause);
           if (v.chapterOnly) {
@@ -443,7 +533,7 @@ async function build() {
             report.chapterOnly++;
             const ck = String(v.chapter);
             if (!bk.c.has(ck)) bk.c.set(ck, []);
-            if (!bk.c.get(ck).some((e) => e[0] === a)) bk.c.get(ck).push([a, x]);
+            if (!bk.c.get(ck).some((e) => same(bk, e[0], a))) bk.c.get(ck).push([a, x]);
             got++;
             continue;
           }
@@ -451,54 +541,62 @@ async function build() {
             const key = `${v.chapter}:${n}`;
             if (!bk.v.has(key)) bk.v.set(key, []);
             const list = bk.v.get(key);
-            if (!list.some((e) => e[0] === a)) list.push([a, x]); // one clause per article per verse
+            if (!list.some((e) => same(bk, e[0], a))) list.push([a, x]); // one clause per article per verse
           }
           got++;
         }
       }
-      if (!only && refs[0].start > 40) { const l = leadOf(blk.text, refs); if (l.length >= 40 && !/^proofs?\b/i.test(l)) lead = l; }
+      if (!only && refs[0].start > 40) { const l = leadOf(blk.text, refs); if (l.length >= 40 && !/^proofs?\b/i.test(l)) { lead = l; leadSrc = blk.text; leadPage = blk.page; } }
     }
     delete globalThis.DATA;
     per.set(slug, got);
     if (got) report.withProofs++; else report.noProofs.push(slug);
   }
 
-  // write, in a stable order, and sweep what a smaller run no longer produces
+  // write one file per chapter (a book such as Romans is 300 KB, a chapter of it is a few), in a stable order
+  rmSync(OUT, { recursive: true, force: true });
   mkdirSync(OUT, { recursive: true });
-  const written = new Set(["index.json"]);
-  let verseCount = 0; let chapterCount = 0; const bookCounts = {};
+  let verseCount = 0; let chapterCount = 0; let files = 0; let biggest = 0;
+  const chapters = {}; const bookCounts = {};
   const used = new Set();
   for (const bk of books.values()) for (const m of [bk.v, bk.c]) for (const list of m.values()) for (const [a] of list) used.add(bk.arts[a][0]);
   // keep only documents that are cited, renumbering them in catalogue order
   const order = [...used].sort((x, y) => (docs[x].y - docs[y].y) || docs[x].t.localeCompare(docs[y].t));
   const remap = new Map(order.map((o, i) => [o, i]));
   for (const [lib, bk] of [...books].sort((a, b) => a[0].localeCompare(b[0]))) {
-    const keys = [...bk.v.keys()].sort((p, q) => {
-      const [pc, pv] = p.split(":").map(Number); const [qc, qv] = q.split(":").map(Number);
-      return pc - qc || pv - qv;
-    });
-    const sortList = (list) => list.sort((p, q) => remap.get(bk.arts[p[0]][0]) - remap.get(bk.arts[q[0]][0]) || bk.arts[p[0]][2] - bk.arts[q[0]][2]);
-    const v = {};
-    for (const k of keys) v[k] = sortList(bk.v.get(k));
-    const c = {};
-    for (const k of [...bk.c.keys()].sort((p, q) => p - q)) c[k] = sortList(bk.c.get(k));
-    const out = { v, c, a: bk.arts.map(([d, label, page, title]) => [remap.get(d), label, page, title]), x: bk.xs };
-    writeFileSync(join(OUT, `${lib}.json`), `${JSON.stringify(out)}\n`);
-    written.add(`${lib}.json`);
-    verseCount += keys.length; bookCounts[lib] = keys.length;
-    chapterCount += Object.keys(c).length;
+    const sortList = (list) => list.slice().sort((p, q) => remap.get(bk.arts[p[0]][0]) - remap.get(bk.arts[q[0]][0]) || bk.arts[p[0]][2] - bk.arts[q[0]][2] || bk.arts[p[0]][4] - bk.arts[q[0]][4]);
+    const chs = new Set([...bk.v.keys()].map((k) => +k.split(":")[0]).concat([...bk.c.keys()].map(Number)));
+    bookCounts[lib] = 0; chapters[lib] = [];
+    for (const ch of [...chs].sort((x, y) => x - y)) {
+      const aIx = new Map(); const xIx = new Map(); const arts = []; const xs = [];
+      const take = (list) => sortList(list).map(([a, x]) => {
+        if (!aIx.has(a)) { const r = bk.arts[a]; arts.push([remap.get(r[0]), r[1], r[2], r[3], r[4]]); aIx.set(a, arts.length - 1); }
+        if (!xIx.has(x)) { xs.push(bk.xs[x]); xIx.set(x, xs.length - 1); }
+        return [aIx.get(a), xIx.get(x)];
+      });
+      const v = {};
+      const keys = [...bk.v.keys()].filter((k) => +k.split(":")[0] === ch).sort((p, q) => +p.split(":")[1] - +q.split(":")[1]);
+      for (const k of keys) v[k.split(":")[1]] = take(bk.v.get(k));
+      const c = bk.c.has(String(ch)) ? take(bk.c.get(String(ch))) : [];
+      const text = `${JSON.stringify({ v, c, a: arts, x: xs })}\n`;
+      mkdirSync(join(OUT, lib), { recursive: true });
+      writeFileSync(join(OUT, lib, `${ch}.json`), text);
+      files++; biggest = Math.max(biggest, text.length);
+      chapters[lib].push(ch);
+      verseCount += keys.length; bookCounts[lib] += keys.length;
+      if (c.length) chapterCount++;
+    }
   }
   const index = {
-    v: 1,
+    v: 2,
     note: "Built by scripts/build-confession-proofs.mjs from the library's creeds, confessions and catechisms. Do not edit by hand.",
     docs: order.map((o) => docs[o]),
     totals: { documents: order.length, verses: verseCount, chapters: chapterCount, citations: report.refs },
-    books: bookCounts,
+    chapters,
   };
   writeFileSync(join(OUT, "index.json"), `${JSON.stringify(index)}\n`);
-  for (const f of readdirSync(OUT)) if (!written.has(f)) unlinkSync(join(OUT, f));
 
-  console.log(`confession proofs: ${order.length} documents cite ${verseCount} verses in ${books.size} books (${report.refs} citations read)`);
+  console.log(`confession proofs: ${order.length} documents cite ${verseCount} verses in ${books.size} books, ${files} chapter files, largest ${Math.round(biggest / 1024)} KB (${report.refs} citations read)`);
   console.log(`  of ${report.documents} documents, ${report.withProofs} print a verse-level citation`);
   console.log(`  ${report.chapterOnly} citations name a chapter only (kept apart, ${chapterCount} chapters); ${report.bigRanges} ranges over 60 verses and ${report.unreadable} unreadable skipped; ${report.unknownBook} outside the canon the page reads`);
   if (report.noText.length) console.log(`  no text in the library: ${report.noText.join(", ")}`);
@@ -543,48 +641,58 @@ async function check() {
   if (!existsSync(join(OUT, "index.json"))) { bad("index.json is missing: run node scripts/build-confession-proofs.mjs"); }
   else {
     const index = JSON.parse(readFileSync(join(OUT, "index.json"), "utf8"));
-    const libs = new Set(canonFromCore().map((b) => b.lib));
-    const files = readdirSync(OUT).filter((f) => f !== "index.json");
-    if (files.length !== Object.keys(index.books).length) bad(`index.json lists ${Object.keys(index.books).length} books, ${files.length} files exist`);
-    let verses = 0;
-    for (const f of files) {
-      const lib = f.replace(/\.json$/, "");
-      if (!libs.has(lib)) { bad(`${f}: not a book the Scripture page reads`); continue; }
-      const d = JSON.parse(readFileSync(join(OUT, f), "utf8"));
-      const max = canonFromCore().find((b) => b.lib === lib).chapters;
-      for (const [k, list] of Object.entries(d.v)) {
-        const m = /^(\d+):(\d+)$/.exec(k);
-        if (!m || +m[1] < 1 || +m[1] > max) { bad(`${f}: bad verse key ${k}`); continue; }
-        verses++;
-        for (const [a, x] of list) {
-          if (!d.a[a]) bad(`${f} ${k}: article ${a} is not in the table`);
-          else if (!index.docs[d.a[a][0]]) bad(`${f} ${k}: document ${d.a[a][0]} is not in index.json`);
-          if (typeof d.x[x] !== "string" || !d.x[x]) bad(`${f} ${k}: clause ${x} is empty`);
-        }
+    const canon = canonFromCore();
+    let verses = 0; let files = 0;
+    const read = (lib, ch) => JSON.parse(readFileSync(join(OUT, lib, `${ch}.json`), "utf8"));
+    for (const [lib, chs] of Object.entries(index.chapters)) {
+      const book = canon.find((b) => b.lib === lib);
+      if (!book) { bad(`${lib}: not a book the Scripture page reads`); continue; }
+      for (const ch of chs) {
+        if (!(ch >= 1 && ch <= book.chapters)) { bad(`${lib}: chapter ${ch} does not exist`); continue; }
+        const f = join(OUT, lib, `${ch}.json`);
+        if (!existsSync(f)) { bad(`${lib}/${ch}.json is listed in index.json and missing`); continue; }
+        files++;
+        const d = read(lib, ch);
+        if (readFileSync(f).length > 150 * 1024) bad(`${lib}/${ch}.json is over 150 KB`);
+        const point = (a, x, where) => {
+          if (!d.a[a]) bad(`${where}: article ${a} is not in the table`);
+          else if (!index.docs[d.a[a][0]]) bad(`${where}: document ${d.a[a][0]} is not in index.json`);
+          else if (!Number.isInteger(d.a[a][4]) || d.a[a][4] < 0) bad(`${where}: article ${a} has no paragraph index`);
+          if (typeof d.x[x] !== "string") bad(`${where}: clause ${x} is not a string`);
+          else if (DEBRIS.test(d.x[x])) bad(`${where}: clause carries the debris of a citation: ${d.x[x].slice(0, 50)}`);
+        };
+        for (const [k, list] of Object.entries(d.v)) { verses++; for (const [a, x] of list) point(a, x, `${lib} ${ch}:${k}`); }
+        for (const [a, x] of d.c) point(a, x, `${lib} ${ch}`);
       }
-      for (const [k, list] of Object.entries(d.c || {})) {
-        if (!(+k >= 1 && +k <= max)) { bad(`${f}: bad chapter key ${k}`); continue; }
-        for (const [a, x] of list) if (!d.a[a] || !index.docs[d.a[a][0]] || !d.x[x]) bad(`${f} chapter ${k}: a row points at nothing`);
-      }
+    }
+    const onDisk = readdirSync(OUT).filter((f) => f !== "index.json").flatMap((dname) => readdirSync(join(OUT, dname)));
+    if (onDisk.length !== files) bad(`index.json lists ${files} chapter files, ${onDisk.length} exist`);
+    for (const doc of index.docs) {
+      if (doc.t.length > 91 || /Pope The|Then follows|[[\]]/.test(doc.t)) bad(`document title needs cleaning: ${doc.t}`);
     }
     if (index.totals.verses !== verses) bad(`index.json says ${index.totals.verses} verses, the files hold ${verses}`);
     // known answers, read against the documents' own text
-    const read = (lib) => JSON.parse(readFileSync(join(OUT, `${lib}.json`), "utf8"));
-    const at = (lib, tier, key) => { const d = read(lib); return (d[tier][key] || []).map(([a]) => { const r = d.a[a]; return `${index.docs[r[0]].s}|${r[1]}`; }); };
-    const WCF = "rc-111-westminster-confession-of-faith-1646"; const HC = "rc-061-heidelberg-catechism-1563";
+    const at = (lib, ch, tier, key) => { const d = read(lib, ch); const list = tier === "v" ? d.v[key] || [] : d.c; return list.map(([a]) => { const r = d.a[a]; return `${index.docs[r[0]].s}|${r[1]}`; }); };
+    const WCF = "rc-111-westminster-confession-of-faith-1646"; const HC = "rc-061-heidelberg-catechism-1563"; const DORT = "rc-105-canons-of-dort-1618";
     // each read against the document's own text: the Confession's 1.1 cites Ps. 19:1-3, 8.2 cites John 1:1, 14, 11.3 cites Isa. 53:4-6,
-    // and 4.1 cites Gen. 1 whole; the Catechism's Q.5 cites Rom. 3:10-12, 23 and Q.71 cites Matt. 28:19
+    // and 4.1 cites Gen. 1 whole; the Catechism's Q.5 cites Rom. 3:10-12, 23 and Q.71 cites Matt. 28:19; Dort's rejections of the
+    // Third and Fourth Heads cite Eph. 2:3 and are not Article 9 of anything
     const MUST = [
-      ["psalms", "v", "19:1", `${WCF}|1.1`],
-      ["john", "v", "1:1", `${WCF}|8.2`],
-      ["isaiah", "v", "53:5", `${WCF}|11.3`],
-      ["romans", "v", "3:23", `${HC}|Q.5`],
-      ["matthew", "v", "28:19", `${HC}|Q.71`],
-      ["genesis", "c", "1", `${WCF}|4.1`],
+      ["psalms", 19, "v", "1", `${WCF}|1.1`],
+      ["john", 1, "v", "1", `${WCF}|8.2`],
+      ["isaiah", 53, "v", "5", `${WCF}|11.3`],
+      ["romans", 3, "v", "23", `${HC}|Q.5`],
+      ["matthew", 28, "v", "19", `${HC}|Q.71`],
+      ["genesis", 1, "c", "", `${WCF}|4.1`],
     ];
-    for (const [lib, tier, key, want] of MUST) {
-      try { if (!at(lib, tier, key).includes(want)) bad(`${lib} ${key} should cite ${want}`); } catch { bad(`${lib}.json is unreadable`); }
+    for (const [lib, ch, tier, key, want] of MUST) {
+      try { if (!at(lib, ch, tier, key).includes(want)) bad(`${lib} ${ch}:${key} should cite ${want}`); } catch { bad(`${lib}/${ch}.json is unreadable`); }
     }
+    try {
+      const eph = at("ephesians", 2, "v", "3").filter((x) => x.startsWith(DORT));
+      if (!eph.some((x) => /Rejection/.test(x))) bad(`Eph. 2:3 should be cited in a Dort Rejection of Errors, got ${eph.join("; ")}`);
+      if (eph.some((x) => /\|Art\. 9$/.test(x) || /\|Art\. 1[0-9]$/.test(x))) bad("Eph. 2:3 in Dort's rejections wears an article number it does not have");
+    } catch { bad("ephesians/2.json is unreadable"); }
   }
   if (problems.length) {
     console.error(`confession proofs: ${problems.length} problem${problems.length === 1 ? "" : "s"}`);
@@ -594,5 +702,61 @@ async function check() {
   console.log("confession proofs: data well formed, parser holds");
 }
 
-if (has("--check")) await check();
+
+/* ── Audit: every row against its source page ────────────────────────────── */
+
+// For each row of the committed data: the clause is on the page it names, and the paragraph it links to cites the verse.
+async function audit() {
+  const { scriptureReferences } = await loadModules();
+  const dir = opt("--src") || join(tmpdir(), "mo-confession-proofs");
+  const index = JSON.parse(readFileSync(join(OUT, "index.json"), "utf8"));
+  const norm = (t) => String(t).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const idxRows = (await getJSON(`${LIBRARY}/v1/confessions-index.json`)).confessions;
+  const tradition = new Map(idxRows.map((r) => [r.slug, r.tradition]));
+  const works = new Map(); const pages = new Map();
+  let rows = 0; let quoteOk = 0; let quoteEmpty = 0; let quoteLoose = 0; let citeOk = 0; const fails = [];
+  for (const [lib, chs] of Object.entries(index.chapters)) {
+    for (const ch of chs) {
+      const d = JSON.parse(readFileSync(join(OUT, lib, `${ch}.json`), "utf8"));
+      const check = (a, x, verse) => {
+        rows++;
+        const r = d.a[a]; const doc = index.docs[r[0]];
+        if (!works.has(doc.s)) works.set(doc.s, JSON.parse(readFileSync(join(dir, `${doc.s}.json`), "utf8")));
+        const pg = works.get(doc.s).pages.find((p) => String(p.n) === String(r[2]));
+        const where = `${doc.s} p${r[2]}#${r[4]} ${lib} ${ch}:${verse || "whole"}`;
+        if (!pg) { fails.push(`${where}: no such page`); return; }
+        const key = `${doc.s}|${r[2]}`;
+        if (!pages.has(key)) pages.set(key, String(pg.en || "").split(/\n\s*\n/).map((b) => b.trim()).filter((b) => b && !/^#{1,6}\s/.test(b)));
+        const blocks = pages.get(key);
+        let text = blocks[r[4]];
+        if (text == null) { fails.push(`${where}: no paragraph ${r[4]}`); return; }
+        if (doc.s === "cf-093-julius-iii-1550-1555") text = text.replace(/\b1Samuel 19:8/g, "1 Kings 19:8");
+        globalThis.DATA = { tradition: tradition.get(doc.s), slug: doc.s };
+        let refs = []; try { refs = scriptureReferences(text) || []; } catch { refs = []; }
+        delete globalThis.DATA;
+        const hit = refs.some((q) => {
+          const v = versesOf(andMore(q, text));
+          const book = v && libSlugOf(v.book, canonFromCore());
+          if (!v || book !== lib || v.chapter !== ch) return false;
+          return verse ? !v.chapterOnly && !v.big && v.verses.includes(+verse) : !!v.chapterOnly;
+        });
+        if (hit) citeOk++; else fails.push(`${where}: the paragraph does not cite it`);
+        const marked = String(d.x[x] || "").startsWith("\u0001");
+        const clause = String(d.x[x] || "").replace(/^\u0001/, "").split("\t")[0].replace(/^…\s*/, "");
+        if (!clause) quoteEmpty++;
+        else if (marked) quoteLoose++;
+        else if (norm(pg.en).includes(norm(clause).slice(0, 120))) quoteOk++;
+        else fails.push(`${where}: clause not on the page: ${clause.slice(0, 60)}`);
+      };
+      for (const [k, list] of Object.entries(d.v)) for (const [a, x] of list) check(a, x, k);
+      for (const [a, x] of d.c) check(a, x, "");
+    }
+  }
+  const pct = (n, of) => `${((100 * n) / of).toFixed(2)}%`;
+  console.log(`audit: ${rows} rows; paragraph cites the verse: ${citeOk} (${pct(citeOk, rows)}); clause on its page: ${quoteOk} (${pct(quoteOk, rows - quoteEmpty - quoteLoose)} of the verbatim ones), ${quoteLoose} quotes are an opening with its citations taken out (not marked in the reader), ${quoteEmpty} rows carry no quote`);
+  if (fails.length) { console.log(`${fails.length} failing:`); for (const f of fails.slice(0, 40)) console.log(`  ${f}`); }
+}
+
+if (has("--audit")) await audit();
+else if (has("--check")) await check();
 else await build();
