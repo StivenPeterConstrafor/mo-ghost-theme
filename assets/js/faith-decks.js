@@ -22,7 +22,7 @@ try{LANE=localStorage.getItem('fr_deck_lane')||'en';}catch(_){}
 const canon=k=>((D.canon||{})[k])||{titles:[],places:[],landings:{}};
 function noun(){return {sentences:'distinction',summa:'question',decretals:'title',decretum:S.part==='C'?'causa':'distinction'}[S.deck];}
 function state(){const h=decodeURIComponent(location.hash.slice(1)).split('/');
-  if(h[0]==='summa')S={deck:'summa',part:PARTS.some(([k])=>k===h[1])?h[1]:'Ia',place:h[2]||null,art:h[3]!=null?h[3]:null};
+  if(h[0]==='summa')S={deck:'summa',part:PARTS.some(([k])=>k===h[1])?h[1]:'Ia',place:h[2]||null,art:/^\d+$/.test(h[3]||'')?h[3]:null};
   else if(h[0]==='decretals')S={deck:'decretals',part:['1','2','3','4','5'].includes(h[1])?h[1]:'1',place:h[2]||null,art:null};
   else if(h[0]==='decretum')S={deck:'decretum',part:DECRETUM.some(([k])=>k===h[1])?h[1]:'D',place:h[2]||null,art:null};
   else S={deck:'sentences',part:['1','2','3','4'].includes(h[1])?h[1]:'1',place:h[2]||null,art:null};}
@@ -59,7 +59,7 @@ function renderNav(){
     decretals:['1','2','3','4','5'].map(k=>[k,`Book ${ROMAN(+k)}`]),decretum:DECRETUM.map(([k,l])=>[k,l])}[S.deck];
   $('#parts').innerHTML=parts.map(([k,l])=>`<button type="button" class="chip" data-part="${esc(k)}" aria-pressed="${k===S.part}" title="${esc(S.deck==='summa'?(PARTS.find(p=>p[0]===k)||[])[1]:l)}">${esc(l)}</button>`).join('');
   const ps=places(),i=ps.findIndex(p=>p.k===S.place);
-  $('#grid').innerHTML=ps.map(p=>`<button type="button" data-place="${p.k}" aria-pressed="${p.k===S.place}" class="${p.n?'':'empty'}"${p.name?` title="${esc(p.name)}"`:''} aria-label="${esc(placeName(p.k))}${p.name?`, ${esc(p.name)}`:''}, ${p.n} ${p.n===1?'commentary':'commentaries'}">${p.k}<small>${p.n||'·'}</small></button>`).join('');
+  $('#grid').innerHTML=ps.map(p=>`<button type="button" data-place="${esc(p.k)}" aria-pressed="${p.k===S.place}" class="${p.n?'':'empty'}"${p.name?` title="${esc(p.name)}"`:''} aria-label="${esc(placeName(p.k))}${p.name?`, ${esc(p.name)}`:''}, ${p.n} ${p.n===1?'commentary':'commentaries'}">${esc(p.k)}<small>${p.n||'·'}</small></button>`).join('');
   $('#pick').textContent=S.place?`${placeName(S.place)} ▾`:`Choose a ${noun()} ▾`;
   $('#prev').disabled=i<=0;$('#next').disabled=i<0||i>=ps.length-1;
 }

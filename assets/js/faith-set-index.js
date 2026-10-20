@@ -90,17 +90,17 @@ $('#find').addEventListener('submit',async e=>{e.preventDefault();const f=fold($
   renderList(near,CUR);if(near.length)await showEntry(near[0][0],near[0][2],true);else $('#entry').innerHTML='<p class="muted">No entry matches. Try fewer letters.</p>';});
 // no set named: the directory of every set that has one index, the Weimar Edition and Migne first
 if(!SET){
-  $('#title').textContent='Indexes of whole sets';document.title='Set Indexes — The Faith Received';
+  $('#title').textContent='Indexes of whole sets';document.title='Set Indexes | The Faith Received | Mere Orthodoxy';
   for(const id of ['tabs','find','letters','cols'])$(`#${id}`).hidden=true;
   J('/v1/enrich/sets/index.json').then(d=>{
     if(!d){$('#by').textContent='The list of sets could not be loaded. Reload the page to try again.';return;}
     $('#by').textContent=`One index for each of ${d.sets.length} editions and sets of volumes: subjects, persons, terms and Scripture, every entry naming its volume and pages.`;
-    $('#dir').innerHTML=d.sets.map(([id,t,a,n,u,e])=>`<li><a href="?set=${encodeURIComponent(id)}">${esc(t)}</a><small>${n.toLocaleString()} ${n===1?u:`${u}s`} · ${e.toLocaleString()} entries</small>${a?`<span class="who">${esc(a)}</span>`:''}</li>`).join('');
+    $('#dir').innerHTML=d.sets.map(([id,t,a,n,u,e])=>`<li><a href="?set=${encodeURIComponent(id)}">${esc(t)}</a><small>${n.toLocaleString()} ${esc(n===1?u:`${u}s`)} · ${e.toLocaleString()} entries</small>${a?`<span class="who">${esc(a)}</span>`:''}</li>`).join('');
     $('#dir').hidden=false;
   });
 }else J(`${base}meta.json`).then(async m=>{
   if(!m){$('#by').textContent='This set has no index yet.';return;}
-  M=m;document.title=`${m.t} · Index — The Faith Received`;$('#title').textContent=m.t;
+  M=m;document.title=`${m.t} Index | The Faith Received | Mere Orthodoxy`;$('#title').textContent=m.t;
   $('#by').textContent=`${m.a?`${m.a} · `:''}${m.vols.length.toLocaleString()} ${unit(m.vols.length)} indexed together: every entry names its ${unit(1)} and its pages.`;
   $('#tabs').innerHTML=SECS.map(([k,l])=>`<button type="button" role="tab" data-s="${k}" aria-selected="false">${l}<small>${(m.n[k]||0).toLocaleString()}</small></button>`).join('');
   await route();
