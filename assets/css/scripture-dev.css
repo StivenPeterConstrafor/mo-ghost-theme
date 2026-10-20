@@ -183,6 +183,7 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+  align-items: start;
   padding-bottom: 12px;
 }
 .sd-comm-fold[open] .sd-commentary {
@@ -213,6 +214,41 @@
 .sd-commentary-more:hover,
 .sd-commentary-more:focus-visible { color: var(--sd-accent); }
 .sd-commentary-more:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 2px; }
+/* a list's tradition (2026-10-20: the commentaries on the book by tradition), across the whole grid */
+.sd-trad-h {
+  grid-column: 1 / -1;
+  margin: 18px 0 2px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--color-rule);
+  font: 500 15px/1.3 var(--font-body);
+  color: var(--color-dark);
+  list-style: none;
+}
+.sd-trad-h:first-child { margin-top: 4px; }
+/* a hit's page, in the library's one-line summary of it */
+.sd-comm-gist { display: block; margin-top: 4px; font-size: 13px; line-height: 1.45; color: var(--color-muted); }
+/* an author's other works on the chapter, beneath his row (2026-10-19: Luther's First Lectures and Summaries under his lectures of
+   1532 on Psalm 51, not ten rows of their own) */
+.sd-comm-more { margin-top: 8px; }
+.sd-comm-more-btn {
+  min-height: 32px;
+  padding: 4px 0;
+  text-align: left;
+  font: 500 13px/1.3 var(--font-body);
+  color: var(--color-muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-width: 640px) { .sd-comm-more-btn { min-height: 44px; } }
+.sd-comm-more-btn:hover,
+.sd-comm-more-btn:focus-visible { color: var(--sd-accent); }
+.sd-comm-more-btn:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 2px; }
+.sd-comm-more-list { margin: 4px 0 0; padding: 0; list-style: none; }
+.sd-comm-more-list[hidden] { display: none; }
+.sd-comm-more-list > .sd-comm-sub { padding: 10px 0 2px; border-top: 1px solid var(--color-rule); border-bottom: 0; }
 @media (max-width: 960px) {
   .sd-comm-fold[open] .sd-panel-commentaries { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -987,6 +1023,7 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
+  align-items: start;
   margin-top: 14px;
 }
 .sd-commentary-panel .sd-panel-commentaries > .sd-source,
