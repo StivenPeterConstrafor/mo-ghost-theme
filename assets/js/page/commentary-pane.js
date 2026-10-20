@@ -25,6 +25,7 @@
      - the reception history: v1/reception/scripture/<book>/<ch>.json (runs/reception_1015), every page that cites the verse. */
 (function () {
   'use strict';
+  const method = (html) => (window.TFRMethod ? window.TFRMethod.html(html) : html);
   // On unless ?pane=0 (in the address as the page was opened: Mere Orthodoxy's reader rewrites its address before this runs, so the
   // navigation entry is read too), which keeps it off for this tab; ?pane=1 turns it back on.
   const opened = ((performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {}).name || '';
@@ -244,6 +245,9 @@
     tabs.innerHTML = SITE.name === 'mo'
       ? '<button type="button" data-tab="c">Commentary</button><button type="button" data-tab="s">Citations</button><button type="button" data-tab="r">Reception</button>'
       : '<button type="button" data-tab="c">Commentary</button><button type="button" data-tab="r">Reception</button><button type="button" data-tab="s">Citations</button>';
+    // The Verse Desk, at the end of the tab row on Mere Orthodoxy's page (Ian, 2026-10-20: a button always there for opening it). The
+    // row is sticky, so it stays in reach as the page scrolls; head() points it at the verse the rail is on.
+    if (SITE.name === 'mo') tabs.insertAdjacentHTML('beforeend', '<a class="btn cp-desk" href="/the-faith-received/scripture/desk/">Verse Desk</a>');
     pane.prepend(tabs);
     layout.addEventListener('click', (e) => {
       const b = e.target.closest('.cp-tabs [data-tab]'); if (b) return setTab(b.dataset.tab);
@@ -310,6 +314,16 @@
     pane.querySelector('.cp-eyebrow').textContent = S.tab === 'r' ? 'Reception history' : (S.verse ? 'Commentary on this verse' : 'Commentary');
     const cb = pane.querySelector('.cp-close'); if (cb) cb.hidden = !w.v;
     pane.querySelector('.cp-ref').textContent = S.verse ? `${name} ${w.ch}:${S.verse}` : `${name} ${w.ch}`;
+    desk();
+  }
+  // every copy of the Verse Desk button (the rail's and the one cloned into the Citations panel) opens the verse the rail is on
+  function desk() {
+    const w = where(), M = window.MOScriptureDev;
+    if (!w || !w.bk || !M || !M.deskHref) return;
+    const v = S.verse || w.v || 1, sel = document.querySelector('[data-sd-translation]');
+    const t = (sel && sel.value) || new URLSearchParams(location.search).get('t') || '';
+    const href = M.deskHref(w.bk, w.ch, v, t), label = `Open the Verse Desk for ${w.name} ${w.ch}:${v}`;
+    document.querySelectorAll('.cp-tabs .cp-desk').forEach((a) => { a.href = href; a.setAttribute('aria-label', label); });
   }
   // a verse chosen from the rail: as if clicked in the text (the site's panel follows), brought to the reading line
   function select(v) {
@@ -358,7 +372,7 @@
         const k = by.get(c) || 0, tip = `${ord(c)} century: ${fmt(k)} ${k === 1 ? 'work' : 'works'}`;
         cols.push(`<li${k ? '' : ' class="is-zero"'} style="--k:${k ? Math.max(0.08, Math.sqrt(k / max)).toFixed(3) : 0}" title="${tip}"><span class="cp-bar"></span><small aria-hidden="true">${c}</small><span class="cp-sr">${tip}</span></li>`);
       }
-      bars = `<figure class="cp-rec-strip"><ol>${cols.join('')}</ol><figcaption>Works citing it, by century</figcaption></figure>`;
+      bars = `<figure class="cp-rec-strip"><ol>${cols.join('')}</ol><figcaption>Works citing it, by century</figcaption></figure>${method("<p>Every page in the library that cites the verse, dated by its author's life.</p>")}`;
     }
     const notes = ns.length ? `<h3 class="cp-h3">Commentaries on this verse</h3><ol class="cp-rows">${ns.map((c) =>
       `<li class="cp-row-li"><button type="button" class="cp-row" data-cp-open="${esc(c.slug)}" data-cp-p="${esc(c.p)}" title="Read beside the text"><span class="cp-row-t">${esc(c.t)}</span><span class="cp-row-m">${esc(c.a)}</span></button>`
@@ -375,8 +389,7 @@
         + `${e.more ? `<p class="cp-era-more">${fmt(e.more)} more ${e.more === 1 ? 'author' : 'authors'} in this period (Citations lists every use).</p>` : ''}</li>`;
     }).join('');
     box.innerHTML = `${tiles}${span}${bars}${notes}`
-      + `${eras ? `<h3 class="cp-h3">Through the centuries</h3><ol class="cp-eras">${eras}</ol>` : ''}${mostHTML}`
-      + '<p class="cp-rec-foot">Every page in the library that cites the verse, dated by its author\'s life.</p>';
+      + `${eras ? `<h3 class="cp-h3">Through the centuries</h3><ol class="cp-eras">${eras}</ol>` : ''}${mostHTML}`;
   }
   // ── creeds, confessions and catechisms that cite the verse ────────────────────────────────────────────────────────────────
   // Built by scripts/build-confession-proofs.mjs from the documents' own text, one file per chapter (confession-proofs/<book>/<ch>.json).
@@ -844,10 +857,12 @@
     if (!side || !tabs || side.querySelector('.cp-tabs')) return;
     side.prepend(tabs.cloneNode(true));
     layout.querySelectorAll('.cp-tabs [data-tab]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.tab === S.tab)));
+    desk();
   }
 
   // the reader's script says when a verse is chosen or closed: Close shows only while one is, and a closed verse hands the rail
   // back to the reading line
+  document.addEventListener('change', (e) => { if (e.target.matches && e.target.matches('[data-sd-translation]')) desk(); });
   window.addEventListener('sd:verse', (e) => { if (!pane) return; if (!(e.detail && e.detail.v)) S.pin = false; head(); });
 
   let lastKey = '';

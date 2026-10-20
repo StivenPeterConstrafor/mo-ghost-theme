@@ -1640,8 +1640,8 @@ for (const item of manifest) {
   // addresses). The confessions that forward to the reader (Heidelberg, Westminster, Belgic, Augsburg) get theirs in the reader's Research rail.
   const MO_DOC_PAGES = new Set(["nicene-creed", "apostles-creed", "chalcedonian"]);
   const moOn = MO_DOC_PAGES.has(item.slug);
-  const moCss = moOn ? `<link rel="stylesheet" href="{{asset "css/mo-articles-module.css"}}&amp;frv=01fbf188e086041f" />\n` : "";
-  const moJs = moOn ? `<script src="{{asset "js/lib/mo-articles-dv.js"}}"></script>\n<script src="{{asset "js/lib/mo-articles.js"}}"></script>\n<script src="{{asset "js/lib/mo-articles-module.js"}}&amp;frv=ecbf67b121e4b4f5"></script>\n<script src="{{asset "js/page/mo-articles-placements.js"}}&amp;frv=5ec4606d6db9d561"></script>\n` : "";
+  const moCss = moOn ? `<link rel="stylesheet" href="{{asset "css/mo-articles-module.css"}}&amp;frv=800f6abb7a47f7d6" />\n` : "";
+  const moJs = moOn ? `<script src="{{asset "js/lib/mo-articles-dv.js"}}"></script>\n<script src="{{asset "js/lib/mo-articles.js"}}"></script>\n<script src="{{asset "js/lib/mo-articles-module.js"}}&amp;frv=dabe2e796ee4fc92"></script>\n<script src="{{asset "js/page/mo-articles-placements.js"}}&amp;frv=8d52438d4ffa6bed"></script>\n` : "";
   const meta = metaBlock(tfrTitle(item.title), item.description).replace("{{/contentFor}}", `${retired}${moCss}{{/contentFor}}`);
   const tmpl = `{{!< default}}\n${meta}{{!-- Generated wrapper for /the-faith-received/${item.slug}/. Edit\n     scripts/build-faith-received.mjs (or the underlying partial) and\n     re-run \`node scripts/build-faith-received.mjs\` to regenerate. --}}\n{{> "faith-received/${item.slug}"}}\n<script src="{{asset "js/faith-modernize.js"}}"></script>\n<script src="{{asset "js/faith-received.js"}}"></script>\n${memorizeScript}${moJs}`;
   await writeFile(path.join(TEMPLATE_DIR, `custom-faith-${item.slug}.hbs`), tmpl);
@@ -1827,10 +1827,7 @@ if (topicsBundle) {
     <section class="faith-topic-synthesis" data-faith-topic-synthesis data-topic-slug="${slug}" hidden>
       <div class="container faith-doc-inner">
         <div class="faith-topic-synthesis-inner">
-          <div class="fr-ai-note">
-            <p class="fr-ai-note-head">Positions below were extracted and summarized by AI.</p>
-            <p class="fr-ai-note-body">Author rankings and position counts are computed directly from citations. The quoted positions themselves were extracted from the source texts and put into English by AI, and have not been reviewed by a human editor &mdash; open the page link on any one to check it against the source.</p>
-          </div>
+          {{#> tfr-method}}<p>Positions below were extracted and summarized by AI.</p><p>Author rankings and position counts are computed directly from citations. The quoted positions themselves were extracted from the source texts and put into English by AI, and have not been reviewed by a human editor. Open the page link on any one to check it against the source.</p>{{/tfr-method}}
           <div class="faith-topic-synthesis-body" data-faith-topic-synthesis-body></div>
         </div>
       </div>
