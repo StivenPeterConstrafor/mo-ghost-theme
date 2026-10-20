@@ -22,11 +22,41 @@
  * about it, then the plainest use), ranked by that, by commentaries on the book, and by how much the library cites him;
  * each with the page's own gist. No prose is written for it. It covers every cited verse (35,411), not only the 3,000 with notes.
  */
+(function (root) {
+  "use strict";
+  /* The trust model for readings and points in dispute (2026-10-19). The library's dispute data has NO stance: a "witness" of a
+   * side is any page that DISCUSSES the position, including a page where the author reports and refutes it (Luther refuting
+   * Sabellius, the councils condemning Arius). Listing those authors under a side made them hold what they refuted. So a side
+   * carries counts only, never names. A reading's holds/reports/rejects do carry stance, and only the holds are named. */
+  const authorKey = (w) => String(w[2] || w[0] || "");
+  function disputeModel(ds) {
+    return (ds || []).map((d) => ({
+      question: d.question,
+      sides: (d.sides || []).map((sd) => {
+        const ws = sd.witnesses || [];
+        return { position: sd.position, pages: ws.length, authors: new Set(ws.map(authorKey)).size };
+      }),
+    }));
+  }
+  /* A reading with no report and no rejection whose label or text states a condemned or heterodox position is probably a position
+   * the pages only discuss, so its name lists are hidden and it is marked Unverified. A heuristic; the pattern errs toward hiding. */
+  const HETERODOX = /\b(arian\w*|sabellian\w*|modalis\w*|adoptionis\w*|docetis\w*|gnostic\w*|archons?|titular|mere (?:man|creature)|merely (?:a )?(?:man|creature)|only one person|one person only|created (?:and subordinate|son|word|logos)|(?:son|word|logos) (?:is|was) (?:a )?created)\b/i;
+  function readingModel(rd) {
+    const n = rd.n || [0, 0, 0];
+    const unverified = !n[1] && !n[2] && HETERODOX.test(`${rd.label || ""} ${rd.reading || ""}`);
+    return { unverified, holds: unverified ? [] : (rd.holds || []), exemplars: unverified ? [] : (rd.exemplars || []) };
+  }
+  const api = { disputeModel, readingModel, HETERODOX };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  if (root) root.FRScriptureTrust = api;
+})(typeof window !== "undefined" ? window : null);
 (function () {
   "use strict";
 
+  if (typeof window === "undefined") return; // loaded by the node check (scripts/check-scripture-dispute-trust.mjs)
   const S = window.MOScriptureDev;
   if (!S) return;
+  const T = window.FRScriptureTrust;
   const $root = document.querySelector("[data-sd-reader]");
   const $desk = document.querySelector("[data-sd-desk]");
   if (!$root && !$desk) return;
@@ -299,18 +329,17 @@
     const chips = `<p class="fr-rd-stance"><span class="fr-rd-chip is-holds${h ? "" : " is-none"}">${h ? `Held on ${fmt(h)}` : "Held on none"}</span>` +
       `${rp ? `<span class="fr-rd-chip">reported on ${fmt(rp)}</span>` : ""}${rj ? `<span class="fr-rd-chip is-rejects">rejected on ${fmt(rj)}</span>` : ""}` +
       `<span class="fr-rd-of">of ${fmt(of)} pages</span></p>`;
-    const exs = (rd.exemplars || []).slice().sort((x, y) => standing(y.author) - standing(x.author));
+    const M = T.readingModel(rd);
+    const exs = M.exemplars.slice().sort((x, y) => standing(y.author) - standing(x.author));
     const ex = exs.length ? `<ul class="fr-rd-ex">${exs.map((e) => `<li>${link(e.work, e.page, `${e.author}, p. ${e.page}`)}${e.why ? `<span>${esc(e.why)}</span>` : ""}</li>`).join("")}</ul>` : "";
-    const lists = allOf(rd.holds || [], h === 1 ? "The page that holds it" : `All ${fmt(h)} who hold it`) +
-      allOf(rd.reports || [], `The ${fmt(rp)} that report it`) + allOf(rd.rejects || [], `The ${fmt(rj)} that reject it`);
-    return `<li class="fr-rd"${hidden ? " hidden" : ""}><p class="fr-rd-label">${esc(rd.label)}</p><p class="fr-rd-text">${esc(rd.reading)}</p>${chips}` +
+    // names only under "hold"; the reports and rejections stay counts in the chips above (see the trust model at the top)
+    const lists = allOf(M.holds, h === 1 ? "The page that holds it" : `All ${fmt(h)} who hold it`);
+    const unv = M.unverified ? `<p class="fr-rd-unv sd-muted">Unverified: the library found no page that reports or rejects this position, so no names are listed.</p>` : "";
+    return `<li class="fr-rd"${hidden ? " hidden" : ""}><p class="fr-rd-label">${esc(rd.label)}</p>${unv}<p class="fr-rd-text">${esc(rd.reading)}</p>${chips}` +
       `${rd.proves ? `<p class="fr-rd-proves"><em>Used to prove:</em> ${esc(rd.proves)}</p>` : ""}${ex}${lists ? `<div class="fr-rd-lists">${lists}</div>` : ""}</li>`;
   }
-  const disputesBody = (ds) => `<ol class="fr-dp">${ds.map((d) => `<li><h4>${esc(d.question)}</h4><ul class="fr-dp-sides">${(d.sides || []).map((sd) => {
-    const ws = sd.witnesses || [];
-    return `<li><p class="fr-dp-pos">${esc(sd.position)} <span class="fr-rh-n">· ${fmt(ws.length)}</span></p>` +
-      `${ws.length ? `<p class="fr-sn-pages">${byAuthor(ws, 3)}</p>` : ""}${ws.length > 3 ? allOf(ws, `All ${fmt(ws.length)}, by era`) : ""}</li>`;
-  }).join("")}</ul></li>`).join("")}</ol>`;
+  const disputesBody = (ds) => `<p class="sd-muted fr-dp-note">The library records which pages discuss each position, not which authors hold it, so no names are listed here.</p><ol class="fr-dp">${T.disputeModel(ds).map((d) => `<li><h4>${esc(d.question)}</h4><ul class="fr-dp-sides">${d.sides.map((sd) =>
+    `<li><p class="fr-dp-pos">${esc(sd.position)}</p>${sd.pages ? `<p class="fr-sn-pages fr-dp-count">${fmt(sd.pages)} ${sd.pages === 1 ? "page discusses" : "pages discuss"} this position${sd.authors > 1 ? ` (${fmt(sd.authors)} authors)` : ""}</p>` : ""}</li>`).join("")}</ul></li>`).join("")}</ol>`;
   const rdNote = (of) => `Sorted by machine from the ${fmt(of)} pages of the library read on this verse; every name opens its page.`;
 
   // ── The verse ──
@@ -323,7 +352,7 @@
     const RD_SHOW = 5;
     const readings = fv ? `<ul class="fr-sn-list fr-rd-list">${fv.readings.map((r, i) => readingItem(r, fv.of, i >= RD_SHOW)).join("")}</ul>${fv.readings.length > RD_SHOW
       ? `<button type="button" class="sd-commentary-more fr-rd-more">Show ${fmt(fv.readings.length - RD_SHOW)} more ${fv.readings.length - RD_SHOW === 1 ? "reading" : "readings"}</button>` : ""}`
-      : rd.length ? `<ul class="fr-sn-list">${rd.map((r) => `<li><p><strong>${esc(r.label)}.</strong> ${esc(r.summary)}</p>${pages(r.refs)}</li>`).join("")}</ul>` : "";
+      : rd.length ? `<ul class="fr-sn-list">${rd.map((r) => `<li><p><strong>${esc(r.label)}.</strong> ${esc(r.summary)}</p>${(r.refs || []).length ? `<p class="fr-sn-pages">${fmt(r.refs.length)} ${r.refs.length === 1 ? "page discusses" : "pages discuss"} this reading (no stance recorded, so no names).</p>` : ""}</li>`).join("")}</ul>` : "";
     const disputes = fv && (fv.disputes || []).length ? disputesBody(fv.disputes) : "";
     const has = rv && (rv.eras || []).length;
     const history = has ? `${receptionStrip(rv, base)}${receptionEras(rv, ref.book, ref.c, ref.v, false)}` : "";
