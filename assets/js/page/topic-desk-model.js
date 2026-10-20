@@ -475,21 +475,35 @@
     return `<section class="tdk-mod" id="tdk-path">${modHead("Reading path", "Where to start", "Built only from works in the library: the shortest confession articles first, then a standard treatment from several traditions, then the earliest treatments.")}<ol class="tdk-path">${steps}</ol></section>`;
   }
 
+  /* The related-topics hub. Every label is a block of lines (the name wrapped at 18 characters, then "N shared"), 15 units a line,
+     and the block is placed from the node's edge: beside it for side nodes (centered on the node), wholly above it for the top node and
+     wholly below it for the bottom node, with a fixed 10-unit gap. Nothing depends on how long a name is, so a label can never
+     run into its own node (Ian, 2026-10-20: "16 shared" under a circle). */
+  const wrapName = (name, max) => {
+    const lines = [];
+    String(name).split(/\s+/).forEach((w) => {
+      const last = lines[lines.length - 1];
+      if (last !== undefined && `${last} ${w}`.length <= max) lines[lines.length - 1] = `${last} ${w}`; else lines.push(w);
+    });
+    return lines;
+  };
   function relSvg(r) {
-    const cx = 470; const cy = 215; const rx = 215; const ry = 140;
+    const cx = 470; const cy = 250; const rx = 215; const ry = 140; const LH = 15; const GAP = 10;
     const max = Math.max(...r.items.map((i) => Number(i.n)));
-    const o = ['<svg class="tdk-rel" viewBox="0 0 940 430" aria-hidden="true" focusable="false">'];
+    const o = ['<svg class="tdk-rel" viewBox="0 0 940 520" aria-hidden="true" focusable="false">'];
     r.items.forEach((it, k) => {
       const ang = -Math.PI / 2 + (k * 2 * Math.PI) / r.items.length;
       const x = cx + rx * Math.cos(ang); const y = cy + ry * Math.sin(ang);
       const rad = 6 + (10 * Number(it.n)) / max;
       const c = Math.cos(ang);
-      let anchor = "start"; let tx = x + rad + 8; let ty = y + 5;
-      if (Math.abs(c) < 0.2) { anchor = "middle"; tx = x; ty = Math.sin(ang) < 0 ? y - rad - 10 : y + rad + 20; } else if (c < 0) { anchor = "end"; tx = x - rad - 8; }
+      const lines = wrapName(it.label, 18);
+      const h = (lines.length + 1) * LH;
+      let anchor = "start"; let tx = x + rad + GAP; let top = y - h / 2;
+      if (Math.abs(c) < 0.2) { anchor = "middle"; tx = x; top = Math.sin(ang) < 0 ? y - rad - GAP - h : y + rad + GAP; } else if (c < 0) { anchor = "end"; tx = x - rad - GAP; }
+      const names = lines.map((ln, i) => `<text class="rel-t" x="${tx.toFixed(1)}" y="${(top + LH * (i + 1) - 3).toFixed(1)}" text-anchor="${anchor}">${esc(ln)}</text>`).join("");
+      const text = `${names}<text class="rel-s" x="${tx.toFixed(1)}" y="${(top + LH * (lines.length + 1) - 3).toFixed(1)}" text-anchor="${anchor}">${fmt(it.n)} shared</text>`;
       o.push(`<line class="rel-l" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" style="stroke-width:${(1 + (3 * Number(it.n)) / max).toFixed(1)}"/>` +
-        `<circle class="rel-n" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rad.toFixed(1)}"/>` +
-        `<text class="rel-t" x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="${anchor}">${esc(it.label)}</text>` +
-        `<text class="rel-s" x="${tx.toFixed(1)}" y="${(ty + 15).toFixed(1)}" text-anchor="${anchor}">${fmt(it.n)} shared</text>`);
+        `<circle class="rel-n" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rad.toFixed(1)}"/>${text}`);
     });
     o.push(`<circle class="rel-c" cx="${cx}" cy="${cy}" r="40"/><text class="rel-ct" x="${cx}" y="${cy + 4}" text-anchor="middle">This topic</text></svg>`);
     return o.join("");
