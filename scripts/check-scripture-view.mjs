@@ -41,6 +41,9 @@ const faint = token("--sd-dk-faint");
 const accent = token("--sd-dk-accent");
 const primary = token("--sd-dk-primary");
 const mark = token("--sd-dk-mark");
+const primaryLit = token("--sd-dk-primary-lit");
+const blend = (a, al, b) => { const f = (h) => [16, 8, 0].map((sh) => (parseInt(h.slice(1), 16) >> sh) & 255); const [x, y] = [f(a), f(b)]; return `#${x.map((v, i) => Math.round(v * al + y[i] * (1 - al)).toString(16).padStart(2, "0")).join("")}`; };
+const wash = blend("#EE7D51", 0.18, card);
 const hit = token("--sd-dk-hit");
 const hl = token("--sd-dk-hl");
 
@@ -51,7 +54,7 @@ const pairs = [
   ["faint (10px strip labels) on panel", faint, panel, 4.5], ["faint on card", faint, card, 4.5],
   ["accent (links, labels) on page", accent, page, 4.5], ["accent on card", accent, card, 4.5], ["accent on panel", accent, panel, 4.5],
   ["accent on the followed verse", accent, mark, 4.5], ["accent on a hovered row", accent, hl, 4.5],
-  ["verse numbers (primary) on card", primary, card, 4.5], ["verse numbers on the followed verse", primary, mark, 4.5], ["primary on page", primary, page, 4.5],
+  ["verse numbers (primary) on card", primary, card, 4.5], ["verse numbers on the followed verse", primary, mark, 4.5], ["verse numbers on the open verse's wash", primaryLit, wash, 4.5], ["primary on page", primary, page, 4.5],
   ["card ink on a filled button (ink fill)", card, ink, 4.5], ["card ink on the accent hover fill", card, accent, 4.5],
   ["card ink on the primary hover fill (nav arrows)", card, primary, 4.5],
   ["control outline (ink) on page", ink, page, 3],
@@ -74,6 +77,9 @@ eq("25-75 with room", V.effectiveLayout("25-75", true), "25-75");
 eq("scripture without room", V.effectiveLayout("scripture", false), "scripture");
 eq("panel without room", V.effectiveLayout("panel", false), "panel");
 eq("stored dark", V.resolveTheme("dark", false), "dark");
+eq("own light beats reader dark", V.resolveTheme("dark", true, "light"), "light");
+eq("own dark beats reader sepia", V.resolveTheme("sepia", false, "dark"), "dark");
+eq("own garbage falls to reader", V.resolveTheme("dark", false, "x"), "dark");
 eq("stored light, system dark", V.resolveTheme("light", true), "light");
 eq("stored sepia reads light", V.resolveTheme("sepia", true), "light");
 eq("nothing stored, system dark", V.resolveTheme(null, true), "dark");

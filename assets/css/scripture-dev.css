@@ -1257,8 +1257,12 @@ a.sd-panel-commentary:focus-visible .sd-source-title {
 .sd-seg button:first-child { border-radius: 3px 0 0 3px; margin-left: 0; }
 .sd-seg button:last-child { border-radius: 0 3px 3px 0; }
 .sd-seg button:hover,
+.sd-theme-btn:hover {
+  background: color-mix(in srgb, var(--tfr-btn, var(--color-dark)) 12%, transparent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
 .sd-seg button[aria-checked="true"],
-.sd-theme-btn:hover,
 .sd-theme-btn[aria-pressed="true"] {
   background: var(--tfr-btn, var(--color-dark));
   color: var(--tfr-btn-ink, var(--color-white, #fff));
@@ -1373,6 +1377,7 @@ html[data-sd-theme="dark"] {
   --sd-dk-rule: #454740;
   --sd-dk-accent: #D79380;
   --sd-dk-primary: #EE7D51;
+  --sd-dk-primary-lit: #FFA57C;
   --sd-dk-mark: #34332D;
   --sd-dk-hit: #3B3524;
   --sd-dk-hl: #373932;
@@ -1412,6 +1417,12 @@ html[data-sd-theme="dark"] .sd .sd-ov-stat,
 html[data-sd-theme="dark"] .sd .cp-stat,
 html[data-sd-theme="dark"] .sd .sd-desk .sd-sources:not(.sd-citation-rows) > .sd-source { background: var(--sd-dk-card); }
 html[data-sd-theme="dark"] .sd .sd-notice { background: var(--sd-dk-panel); }
+/* The Verse Desk's surfaces that the light rules paint with a literal colour (their later var(--sd-card) / transparent finals stay). */
+html[data-sd-theme="dark"] .sd .sd-desk .sd-desk-head { background: var(--sd-dk-panel); }
+html[data-sd-theme="dark"] .sd .sd-desk .sd-parallel-row,
+html[data-sd-theme="dark"] .sd .sd-desk .sd-chart { background: var(--sd-dk-card); }
+/* Verse numbers on the open verse's orange wash: the plain orange is 3.9:1 there, this is 4.5:1 or better (check-scripture-view.mjs). */
+html[data-sd-theme="dark"] .sd .sd-chapter-content .bible-verse.is-active .v { color: var(--sd-dk-primary-lit); }
 /* Tracks and meters were a tint of ink on paper; on dark they are a tint of the dark's ink. */
 html[data-sd-theme="dark"] .sd .sd-cbar-track,
 html[data-sd-theme="dark"] .sd .sd-ov-meter,

@@ -1,7 +1,7 @@
 /* THE SCRIPTURE PAGE'S VIEW BAR (2026-10-19): the Dark mode button, and on the reader the five layout buttons.
 
    scripture-view-boot.js (in the head) has already put data-sd-theme and data-sd-view on <html>; this file keeps the buttons in step
-   with them, writes a choice to localStorage (fr_theme, fr_sd_layout) and tells the reader when the panel is hidden under a verse.
+   with them, writes a choice to localStorage (fr_sd_theme, fr_sd_layout) and tells the reader when the panel is hidden under a verse.
 
    The CSS does the layout (scripture-dev.css, "Layout modes"). Nothing here touches the reader's or the commentary pane's code: a verse
    chosen in Scripture Only still opens (its panel is only not shown), and in Panel Only the pane's own Close and verse rows still
@@ -17,13 +17,14 @@
   const themeBtn = bar.querySelector('[data-sd-theme-toggle]');
   const systemQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
   let chosen = V.get(V.THEME_KEY) !== null;
+  const apply = (t) => html.setAttribute('data-sd-theme', t);
   const theme = () => (html.getAttribute('data-sd-theme') === 'dark' ? 'dark' : 'light');
   const paintTheme = () => { if (themeBtn) themeBtn.setAttribute('aria-pressed', String(theme() === 'dark')); };
   if (themeBtn) {
     themeBtn.addEventListener('click', () => {
       const next = theme() === 'dark' ? 'light' : 'dark';
       chosen = true;
-      html.setAttribute('data-sd-theme', next);
+      apply(next);
       V.set(V.THEME_KEY, next);
       paintTheme();
     });

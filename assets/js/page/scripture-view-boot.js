@@ -5,8 +5,9 @@
      data-sd-theme  "dark" or "light"
      data-sd-view   "50-50" | "25-75" | "75-25" | "scripture" | "panel"   (the Scripture page only; the Verse Desk has no columns)
 
-   THEME. The reader's own key, fr_theme ("light" | "dark" | "sepia"), so a choice made in the reader and a choice made here are one
-   choice. Sepia is a light ground and reads as light. With nothing stored the page follows the system (prefers-color-scheme).
+   THEME. This page's own choice is fr_sd_theme ("dark" | "light"), written only by the button here. Without it the reader's
+   fr_theme ("light" | "dark" | "sepia") is READ, never written (a toggle here must not turn a stored sepia into light); sepia is a
+   light ground. With neither the page follows the system (prefers-color-scheme).
    It is NOT html[data-theme]: faith-site-theme.js forces that attribute to "light" on every Faith Received page except the reader
    (a MutationObserver puts it back), so the attribute the reader and the article pages use cannot carry the choice here.
 
@@ -22,7 +23,8 @@
 }(typeof window !== 'undefined' ? window : globalThis, () => {
   'use strict';
 
-  const THEME_KEY = 'fr_theme';
+  const READER_THEME_KEY = 'fr_theme';
+  const THEME_KEY = 'fr_sd_theme';
   const LAYOUT_KEY = 'fr_sd_layout';
   const LAYOUTS = ['50-50', '25-75', '75-25', 'scripture', 'panel'];
   const NARROW_SPLITS = ['25-75', '75-25'];
@@ -31,7 +33,9 @@
 
   const parseLayout = (v) => (LAYOUTS.includes(v) ? v : '50-50');
   const effectiveLayout = (layout, roomForNarrow) => (NARROW_SPLITS.includes(layout) && !roomForNarrow ? '50-50' : layout);
-  const resolveTheme = (stored, systemDark) => {
+  // own: this page's choice (fr_sd_theme), which wins; reader: the reader's fr_theme, read and never written here
+  const resolveTheme = (stored, systemDark, own) => {
+    if (own === 'dark' || own === 'light') return own;
     if (stored === 'dark') return 'dark';
     if (stored === 'light' || stored === 'sepia') return 'light';
     return systemDark ? 'dark' : 'light';
@@ -42,9 +46,9 @@
 
   function boot(win) {
     const html = win.document.documentElement;
-    html.setAttribute('data-sd-theme', resolveTheme(get(THEME_KEY), systemDark(win)));
+    html.setAttribute('data-sd-theme', resolveTheme(get(READER_THEME_KEY), systemDark(win), get(THEME_KEY)));
     html.setAttribute('data-sd-view', parseLayout(get(LAYOUT_KEY)));
   }
 
-  return { THEME_KEY, LAYOUT_KEY, LAYOUTS, NARROW_SPLITS, ROOM_FOR_NARROW, parseLayout, effectiveLayout, resolveTheme, get, set, systemDark, boot };
+  return { READER_THEME_KEY, THEME_KEY, LAYOUT_KEY, LAYOUTS, NARROW_SPLITS, ROOM_FOR_NARROW, parseLayout, effectiveLayout, resolveTheme, get, set, systemDark, boot };
 }));
