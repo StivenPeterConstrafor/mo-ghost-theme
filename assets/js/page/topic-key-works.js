@@ -43,8 +43,11 @@
   });
 
   /* Titles that are not a treatment of a topic: a collection, a handbook or history, a commentary on another book, a general "Works". */
-  const NOT_A_TREATISE = /commentar|collection|decretal|\bcouncils?\b|\bacts of\b|handbuch|history|geschichte|reformation\b|complete works|^works?\b|^opera\b|moral theology|hexa[eë]meron|conferences?\b|letters?\b|sermons?\b|homil|epistle|annotations|exposition|lectures on|duties of|psalter|prophets|gospel of|\bsic et non\b|catena|miscellan|dictionary|encyclop|chronicle|lives of|treasury|sentences\b/i;
+  const NOT_A_TREATISE = /commentar|collection|decretal|\bcouncils?\b|\bacts of\b|handbuch|history|geschichte|reformation\b|complete works|^works?\b|^opera\b|moral theology|hexa[eë]meron|conferences?\b|letters?\b|sermons?\b|homil|epistle|annotations|exposition|lectures on|duties of|psalter|prophets|gospel of|\bsic et non\b|catena|miscellan|dictionary|encyclop|chronicle|lives of|treasury|sentences\b|concili|\bacta\b|histori|introduction|lectures|theology of st|observations|abridged|reports?\b|gospels|prayers|disputed questions|compendium/i;
   const treatise = (title) => !NOT_A_TREATISE.test(String(title || ""));
+  // A section heading that is about the topic itself: it opens "On the Trinity", "Of Baptism", "Concerning the Church", "Question 3. On justification".
+  const LEAD = /^(?:(?:chapter|question|article|book|topic|disputation|quaestio|caput|liber|tractatus|treatise|part|section|thesis|locus)\s*[ivxlc\d]*[\s.,:;-]*)*(?:[ivxlc\d]+[\s.,:;-]+)?(?:(?:of|on|concerning|about|de|in)\s+)?(?:the\s+|that\s+|whether\s+(?:the\s+)?)?/i;
+  const strongHeading = (re, text) => re.test(String(text || "").toLowerCase().replace(/[—–]/g, " ").replace(LEAD, "").trim());
 
   const stemOf = (t) => (t.includes(" ") ? t : t.slice(0, Math.max(5, t.length - 2)));
   function termsOf(locus) {
@@ -55,7 +58,10 @@
   const namer = (locus) => {
     const stems = termsOf(locus).map((t) => stemOf(t).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
     const re = stems.length ? new RegExp(`\\b(?:${stems.join("|")})`, "i") : null;
-    return (text) => Boolean(re && re.test(String(text || "")));
+    const lead = stems.length ? new RegExp(`^(?:${stems.join("|")})`, "i") : null;
+    const f = (text) => Boolean(re && re.test(String(text || "")));
+    f.strong = (text) => Boolean(lead && strongHeading(lead, text));
+    return f;
   };
 
   const setKey = (author, title) => `${String(author || "").toLowerCase()}|${String(title || "").toLowerCase()
@@ -78,7 +84,7 @@
     });
     works.forEach((e) => {
       if (!e || !e.w || Number(e.weight) < MIN_WEIGHT || denied(locus.id, e.w, e.t, e.a)) return;
-      const sec = (e.secs || []).find((s) => names(s.t));
+      const sec = (e.secs || []).find((s) => names.strong(s.t));
       if (!sec || !treatise(e.t) || !treatise(sec.t)) return;
       cand.push({ src: "trace", rank: 1, order: -Number(e.weight), title: e.t, author: e.a, cen: centuryOf(e.cen, e.y), y: Number(e.y) || 0, w: e.w, p: sec ? sec.p : null });
     });

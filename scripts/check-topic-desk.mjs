@@ -586,9 +586,9 @@ if (live) {
     ok(new Set(flat.map((w) => w.w)).size === flat.length, `Key works ${l.label}: each work stands in exactly one century`);
     ok(rows.every(([, list]) => list.length <= K.PER_CENTURY), `Key works ${l.label}: at most ${K.PER_CENTURY} to a century`);
     const pins = new Set(Object.values((marqueeFile.topics[id] && marqueeFile.topics[id].works) || {}).flatMap((v) => v.map((x) => `${x.w}|${x.p}`)));
-    ok(flat.every((w) => w.src === "treatment" ? pins.has(`${w.w}|${w.p}`) : (byW.get(w.w) || {}).secs.some((sc) => names(sc.t))), `Key works ${l.label}: each row is a hand-vetted pick or a work with a section heading that names the topic`);
+    ok(flat.every((w) => w.src === "treatment" ? pins.has(`${w.w}|${w.p}`) : (byW.get(w.w) || {}).secs.some((sc) => names.strong(sc.t))), `Key works ${l.label}: each row is a hand-vetted pick or a work with a section heading that is about the topic`);
     ok(flat.filter((w) => w.src === "trace").every((w) => K.treatise(w.title)), `Key works ${l.label}: no collection, history, commentary, or general-works title among the filler`);
-    const BAD = [/Twelve Minor Prophets/i, /decretals/i, /Councils/i, /Constanzer/i, /Duties of Ministers/i, /Hexa[eë]meron/i, /Acts of the Council/i, /Handbuch/i, /Moral Theology/i, /Complete Works/i, /^Works$/i, /Transubstantiation/i];
+    const BAD = [/Twelve Minor Prophets/i, /decretals/i, /Councils/i, /Constanzer/i, /Duties of Ministers/i, /Hexa[eë]meron/i, /Acts of the Council/i, /Handbuch/i, /Moral Theology/i, /Complete Works/i, /^Works$/i, /Trinity and Transubstantiation/i];
     ok(flat.every((w) => !BAD.some((re) => re.test(w.title))), `Key works ${l.label}: none of the titles the owner named as wrong`);
     ok(flat.every((w) => !K.denied(id, w.w, w.title, w.author)), `Key works ${l.label}: no deny-listed work`);
     ok(rows.every(([c, list]) => list.every((w) => w.cen === c)), `Key works ${l.label}: each work is in the century of its own date`);
