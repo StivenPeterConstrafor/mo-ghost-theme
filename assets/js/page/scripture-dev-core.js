@@ -511,14 +511,16 @@
     }
     return seriesReady;
   }
-  /* IMPORTANCE FIRST (2026-10-19, the owner: "rerank by importance and relevance like augustine obv, reformers"). Every work on the
-   * map carries its author's standing in the tradition: how many works in the library cite him, on a log scale with Augustine at 100
-   * (v1/scripture/rank.json). The lists put the most cited first, the century beside each as before; equal standing, oldest first. */
-  let rankReady = null;
+  /* IMPORTANCE FIRST (2026-10-19, the owner: "rerank by importance and relevance like augustine obv, reformers"; "we dont do citation
+   * based rerank our knowledge of the tradition is sufficient"). Every work on the map carries its weight from curated knowledge of
+   * the tradition (v1/scripture/rank.json): the key commentators first, else its author's tier; for the books readers open most, the
+   * key commentaries on the book (`books`), and the volumes of commentaries that take in the whole book together (`series`). */
+  let rankReady = null, RANKD = null;
   function loadRank() {
     if (!rankReady) {
       rankReady = fetch(`${LIBRARY_BASE}/v1/scripture/rank.json`, { credentials: "omit" })
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .then((d) => { RANKD = d; return d; })
         .catch(() => { rankReady = null; return null; });
     }
     return rankReady;
@@ -530,7 +532,14 @@
   const fetchCommentaries = (book, c, f) => Promise.all([api("/v1/verse/commentaries", {
     b: book.lib, c, tr: f.tr, au: f.au, cen: f.cen,
   }), loadSeries(), loadRank()]).then(([d, sets, rk]) => {
-    ((d && d.items) || []).forEach((e) => { const s = sets.get(e.w); if (s) e.set = s; e.imp = standingOf(e, rk); });
+    ((d && d.items) || []).forEach((e) => {
+      const s = sets.get(e.w); if (s) e.set = s;
+      const r = rk && rk.works && rk.works[e.w];
+      e.imp = standingOf(e, rk);
+      // a set on the whole Bible the worker does not flag (the Glossa, the Critici Sacri, Denys) goes with the whole-Bible works, as on
+      // The Faith Received
+      if (r && r[1] === 1) e.wb = 1;
+    });
     return d;
   });
   const fetchPassage = (row, book, c, v) => api("/v1/verse/passage", {
@@ -908,20 +917,53 @@
   /* FOUR LISTS (2026-10-16): the sets on the whole Bible or a whole Testament (Lapide, both Pooles, the Westminster Annotations,
    * Benson, Coke; Grotius, Calov, Wesley on the New Testament) go with the map's whole-Bible works, each at its own volume; works
    * that are not commentaries (councils, letters, polemics, treatises) are listed apart, after them. */
-  // most cited author first (e.imp, set when the list is fetched); then oldest first, as before
+  // the weightiest first (e.imp, set when the list is fetched); then oldest first, as before
   const byStanding = (a, b) => (Number(b.imp) || 0) - (Number(a.imp) || 0) || byCentury(a, b);
+  /* ONE ROW PER AUTHOR, THE KEY COMMENTARIES FIRST (2026-10-19, the owner on Psalm 51: "how are there 10 luther vols this is type of
+   * organization im asking"; "musculus' psalm commentary should show up when i go through a psalm these are things that are
+   * important"). Each list gives an author one row: his work with its own page on the chapter, in the curated order of his works
+   * (rank.json `books`: Luther's lectures of 1532 before the Summaries), his other works beneath it (`e.more`). The book's curated key
+   * commentaries lead, in the order their authors came; the rest by weight. A volume of collected works or sermons with no page of its
+   * own on the chapter only touches it: it goes under its author's row, or with the other works. A volume of a commentary whose
+   * volumes together take in the whole book (Calvin's Psalms in five) is listed with the commentaries on the book. */
   function commentaryGroups(items, book) {
     const list = items || [];
     const n = (book && book.chapters) || 0;
-    const wholeBook = (e) => !(Number(e.c1) > 0) || (n && (Number(e.c2 || e.c1) - Number(e.c1) + 1) >= 0.8 * n);
+    const lib = book && book.lib;
+    const series = new Set(((RANKD && RANKD.series) || {})[lib] || []);
+    const keyOf = new Map();
+    (((RANKD && RANKD.books) || {})[lib] || []).forEach(([, slugs, born]) => slugs.forEach((w, i) => keyOf.set(w, { born: Number(born) || 0, i })));
+    const wholeBook = (e) => !(Number(e.c1) > 0) || series.has(e.w) || (n && (Number(e.c2 || e.c1) - Number(e.c1) + 1) >= 0.8 * n);
     const other = (e) => NOT_COMMENTARY.has(e.kind);
-    const whole = (e) => !other(e) && (e.annotation || e.set);
-    return {
-      chapter: list.filter((e) => !other(e) && !whole(e) && !wholeBook(e)).sort(byStanding),
-      book: list.filter((e) => !other(e) && !whole(e) && wholeBook(e)).sort(byStanding),
-      whole: list.filter(whole).sort(byStanding),
-      other: list.filter(other).sort(byStanding),
+    const whole = (e) => !other(e) && (e.annotation || e.set || e.wb);
+    const touches = (e) => !other(e) && !whole(e) && (e.kind === "collected" || e.kind === "sermons") && e.anchored !== "chapter"
+      && !(Number(e.c1) > 0 && Number(e.c2 || e.c1) - Number(e.c1) < 10);
+    const own = (e) => (e.anchored === "chapter" ? 0 : 1);
+    const keyI = (e) => (keyOf.has(e.w) ? keyOf.get(e.w).i : 99);
+    const inAuthor = (a, b) => own(a) - own(b) || keyI(a) - keyI(b) || byStanding(a, b);
+    const born = (e) => (keyOf.has(e.w) ? keyOf.get(e.w).born : null);
+    const rowOrder = (a, b) => {
+      const x = born(a), y = born(b);
+      return (x == null) - (y == null) || (x != null && y != null ? x - y : 0) || byStanding(a, b);
     };
+    const rows = (xs) => {
+      const by = new Map();
+      xs.forEach((e) => { const k = e.a || e.w; if (!by.has(k)) by.set(k, []); by.get(k).push(e); });
+      return [...by.values()].map((es) => { es.sort(inAuthor); const [main, ...more] = es; main.more = more; return main; });
+    };
+    const g = {
+      chapter: rows(list.filter((e) => !other(e) && !whole(e) && !touches(e) && !wholeBook(e))),
+      book: rows(list.filter((e) => !other(e) && !whole(e) && !touches(e) && wholeBook(e))),
+      whole: rows(list.filter(whole)),
+    };
+    const loose = [];
+    list.filter(touches).sort(byStanding).forEach((e) => {
+      const main = g.book.find((m) => m.a === e.a) || g.chapter.find((m) => m.a === e.a);
+      if (main) main.more.push(e); else loose.push(e);
+    });
+    g.other = rows(list.filter(other).concat(loose));
+    ["chapter", "book", "whole", "other"].forEach((k) => g[k].sort(rowOrder));
+    return g;
   }
   // The lists' names, in one place: "On Romans 5", "On Romans", "On the whole Bible" ("… or New Testament" when a Testament's
   // set is among them), "Other works on Romans".
@@ -947,7 +989,9 @@
     // Said before the click: whether the work has its own page on this chapter or only cites it.
     const on = ctx.c && e.anchored === "chapter" ? `Comment on ${refLabel(ctx.book, ctx.c, 0)}`
       : ctx.c && e.anchored === "cited" ? `Cites ${refLabel(ctx.book, ctx.c, 0)}` : "";
-    const meta = [e.a, centuryLabel(e.cen), range].filter(Boolean).map(esc).join(" \u00b7 ") +
+    // the tradition beside the century (2026-10-19, the owner: Musculus "should show up under reformed (continental)")
+    const trad = e.trad && window.MOFaithLabel ? window.MOFaithLabel.shelf(e.trad) : e.trad;
+    const meta = [e.a, centuryLabel(e.cen), trad, range].filter(Boolean).map(esc).join(" \u00b7 ") +
       (on ? `<span class="sd-comm-on"> \u00b7 ${esc(on)}</span>` : "");
     const pid = `sdp-${Math.random().toString(36).slice(2, 9)}`;
     li.innerHTML =
@@ -960,6 +1004,27 @@
         `</div>${ 
         href ? `<button type="button" class="sd-preview-btn" aria-expanded="false" aria-controls="${pid}">Preview</button>` : "" 
       }</div><div class="sd-preview" id="${pid}" hidden></div>`;
+    // The author's other works on the chapter, beneath his row (commentaryGroups `e.more`): Luther's First Lectures and Summaries
+    // under his lectures of 1532 on Psalm 51, each with its own preview.
+    if (e.more && e.more.length) {
+      const box = document.createElement("div");
+      box.className = "sd-comm-more";
+      // "3 more works by Martin Luther on Psalm 51, and 11 volumes that cite it": the works with their own page apart from the rest
+      const own = e.more.filter((x) => x.anchored === "chapter").length, rest = e.more.length - own;
+      const ref = ctx.c ? refLabel(ctx.book, ctx.c, 0) : "";
+      const label = own && rest && ref
+        ? `${plural(own, "more work", "more works")} by ${e.a || "the same author"} on ${ref}, and ${plural(rest, "volume", "volumes")} that ${rest === 1 ? "cites" : "cite"} it`
+        : `${plural(e.more.length, "more work", "more works")} by ${e.a || "the same author"}`;
+      box.innerHTML = `<button type="button" class="sd-comm-more-btn" aria-expanded="false">${esc(label)}</button><ol class="sd-sources sd-comm-more-list" hidden></ol>`;
+      const $list = box.querySelector("ol");
+      e.more.forEach((x) => $list.appendChild(commentaryItem({ ...x, more: [] }, ctx)));
+      box.querySelector("button").addEventListener("click", (ev) => {
+        const open = ev.currentTarget.getAttribute("aria-expanded") !== "true";
+        ev.currentTarget.setAttribute("aria-expanded", String(open));
+        $list.hidden = !open;
+      });
+      li.appendChild(box);
+    }
     // The volumes of a set share one title (Melanchthon's "Works" three times on Romans 5): each says which it is.
     loadVolumes().then((volumes) => {
       const label = volumeLabel(volumes, e.w, e.t);
@@ -1071,7 +1136,7 @@
       el.open = opened[key];
       const initial = 9;
       el.innerHTML = `<summary><span>${esc(title)}</span> <span class="sd-comm-fold-n">(${fmt(list.length)})</span></summary><ol class="sd-sources sd-panel-commentaries"></ol>` +
-        `<button type="button" class="sd-commentary-more"${list.length <= initial ? " hidden" : ""}>Show all ${fmt(list.length)} commentaries</button>`;
+        `<button type="button" class="sd-commentary-more"${list.length <= initial ? " hidden" : ""}>Show all ${fmt(list.length)}</button>`;
       const $ol = el.querySelector("ol");
       list.forEach((e, index) => {
         const item = commentaryItem(e, ctx);

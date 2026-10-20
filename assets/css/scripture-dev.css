@@ -213,6 +213,24 @@
 .sd-commentary-more:hover,
 .sd-commentary-more:focus-visible { color: var(--sd-accent); }
 .sd-commentary-more:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 2px; }
+/* an author's other works on the chapter, beneath his row (2026-10-19: Luther's First Lectures and Summaries under his lectures of
+   1532 on Psalm 51, not ten rows of their own) */
+.sd-comm-more { margin-top: 8px; }
+.sd-comm-more-btn {
+  min-height: 32px;
+  padding: 4px 0;
+  font: 500 13px/1.3 var(--font-body);
+  color: var(--color-muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.sd-comm-more-btn:hover,
+.sd-comm-more-btn:focus-visible { color: var(--sd-accent); }
+.sd-comm-more-btn:focus-visible { outline: 2px solid var(--sd-accent); outline-offset: 2px; }
+.sd-comm-more-list { display: grid; gap: 10px; margin: 6px 0 0; padding: 0 0 0 16px; list-style: none; }
 @media (max-width: 960px) {
   .sd-comm-fold[open] .sd-panel-commentaries { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
