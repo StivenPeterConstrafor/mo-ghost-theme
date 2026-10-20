@@ -109,7 +109,7 @@
         const [data, marquee] = got.files;
         const model = M.buildDeskModel({
           locus, part, parent, topic: got.topic, conf: got.conf, scr: got.scr, treat, history: got.hist,
-          keyWorks: window.MOTopicKeyWorks ? window.MOTopicKeyWorks.buildKeyWorks({ locus, treat, works: got.topic.works || [], authors: got.topic.authors || [] }) : null,
+          keyWorks: window.MOTopicKeyWorks ? window.MOTopicKeyWorks.buildKeyWorks({ locus, treat, works: got.topic.works || [], authors: got.topic.authors || [], pins: (marquee && marquee.topics && marquee.topics[id] && marquee.topics[id].works) || null }) : null,
           data: data || {}, marquee: (marquee && marquee.topics && marquee.topics[id]) || null, principal: (marquee && marquee.principal) || {},
           books: new Map(S.BOOKS.map((b) => [b.lib, b])), loci: new Map([...loci].map(([k, v]) => [k, v.locus])), bodyOf,
         });

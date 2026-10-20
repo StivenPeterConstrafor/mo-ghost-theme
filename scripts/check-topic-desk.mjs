@@ -574,7 +574,7 @@ if (live) {
   for (const id of ["de-trinitate", "de-justificatione", "de-christo", "de-baptismo", "de-praedestinatione", "de-ecclesia", "de-scriptura", "de-coena"]) {
     const l = LOCI.get(id);
     const topic = await get(`${VERSE}/v1/topic?id=${id}&t2=${l.t2}`, `topic-${id}.json`);
-    const map = K.buildKeyWorks({ locus: l, treat: treatments[id] || [], works: topic.works || [], authors: topic.authors || [] });
+    const map = K.buildKeyWorks({ locus: l, treat: treatments[id] || [], works: topic.works || [], authors: topic.authors || [], pins: (marqueeFile.topics[id] && marqueeFile.topics[id].works) || null });
     const rows = [...map.entries()].sort((a, b) => a[0] - b[0]);
     console.log(`      Key works, ${l.label}:`);
     rows.forEach(([c, list]) => console.log(`        ${c}: ${list.map((w) => `${w.author}, ${w.title.slice(0, 44)}`).join(" | ")}`));
@@ -585,15 +585,16 @@ if (live) {
     ok(flat.length > 0 && flat.every((w) => worksIndex.has(w.w)), `Key works ${l.label}: ${flat.length} rows in ${rows.length} centuries, every slug is in the works index`);
     ok(new Set(flat.map((w) => w.w)).size === flat.length, `Key works ${l.label}: each work stands in exactly one century`);
     ok(rows.every(([, list]) => list.length <= K.PER_CENTURY), `Key works ${l.label}: at most ${K.PER_CENTURY} to a century`);
-    ok(flat.every((w) => {
-      const e = (treatments[id] || []).find((t) => t.w === w.w);
-      const tw = byW.get(w.w);
-      return names(w.title) || (e && names(e.heading)) || (tw && (tw.secs || []).some((sc) => names(sc.t)));
-    }), `Key works ${l.label}: every row's title or section heading names the topic`);
+    const pins = new Set(Object.values((marqueeFile.topics[id] && marqueeFile.topics[id].works) || {}).flatMap((v) => v.map((x) => `${x.w}|${x.p}`)));
+    ok(flat.every((w) => w.src === "treatment" ? pins.has(`${w.w}|${w.p}`) : (byW.get(w.w) || {}).secs.some((sc) => names(sc.t))), `Key works ${l.label}: each row is a hand-vetted pick or a work with a section heading that names the topic`);
+    ok(flat.filter((w) => w.src === "trace").every((w) => K.treatise(w.title)), `Key works ${l.label}: no collection, history, commentary, or general-works title among the filler`);
+    const BAD = [/Twelve Minor Prophets/i, /decretals/i, /Councils/i, /Constanzer/i, /Duties of Ministers/i, /Hexa[eë]meron/i, /Acts of the Council/i, /Handbuch/i, /Moral Theology/i, /Complete Works/i, /^Works$/i, /Transubstantiation/i];
+    ok(flat.every((w) => !BAD.some((re) => re.test(w.title))), `Key works ${l.label}: none of the titles the owner named as wrong`);
     ok(flat.every((w) => !K.denied(id, w.w, w.title, w.author)), `Key works ${l.label}: no deny-listed work`);
     ok(rows.every(([c, list]) => list.every((w) => w.cen === c)), `Key works ${l.label}: each work is in the century of its own date`);
     ok(flat.every((w) => w.src === "treatment" ? treatKey.has(w.w) : (byW.get(w.w) || {}).weight >= K.MIN_WEIGHT), `Key works ${l.label}: classic treatments or works with at least ${K.MIN_WEIGHT} passages`);
   }
+  ok(K.buildKeyWorks({ locus: LOCI.get("de-providentia"), treat: treatments["de-providentia"] || [], works: [], authors: [], pins: null }).size === 0, "a topic the marquee file has not vetted gets no key works");
   ok(K.denied("de-trinitate", "x", "The Trinity and Transubstantiation Compared", "Stillingfleet") && K.denied("de-coena", "pld-359", "De officiis", "Ambrose") && K.denied("de-trinitate", "luther-wa-schriften-12", "x", "Luther"), "the deny list catches the picks the owner named");
 }
 

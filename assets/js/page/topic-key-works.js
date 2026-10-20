@@ -42,6 +42,10 @@
     return Boolean(d.w || d.title);
   });
 
+  /* Titles that are not a treatment of a topic: a collection, a handbook or history, a commentary on another book, a general "Works". */
+  const NOT_A_TREATISE = /commentar|collection|decretal|\bcouncils?\b|\bacts of\b|handbuch|history|geschichte|reformation\b|complete works|^works?\b|^opera\b|moral theology|hexa[eë]meron|conferences?\b|letters?\b|sermons?\b|homil|epistle|annotations|exposition|lectures on|duties of|psalter|prophets|gospel of|\bsic et non\b|catena|miscellan|dictionary|encyclop|chronicle|lives of|treasury|sentences\b/i;
+  const treatise = (title) => !NOT_A_TREATISE.test(String(title || ""));
+
   const stemOf = (t) => (t.includes(" ") ? t : t.slice(0, Math.max(5, t.length - 2)));
   function termsOf(locus) {
     const raw = [String(locus.label || "").replace(/^the\s+/i, ""), ...(locus.find || []), ...(locus.aliases || []).map((a) => a.replace(/-/g, " "))]
@@ -59,18 +63,23 @@
   const centuryOf = (cen, y) => Number(cen) || (Number(y) ? Math.ceil(Number(y) / 100) : 0);
   const possible = (c, birth) => !birth || (c * 100 >= birth && (c - 1) * 100 <= birth + 90);
 
-  function buildKeyWorks({ locus, treat = [], works = [], authors = [] }) {
+  /* Only a topic the marquee file has vetted gets key works (pins: its hand-vetted classic works by tradition). Those come first, each in the
+     century of its date. Filler comes only from works that pass the stricter test: a section heading names the topic AND the title is a treatise. */
+  function buildKeyWorks({ locus, treat = [], works = [], authors = [], pins = null }) {
+    if (!pins) return new Map();
+    const pinned = new Set();
+    Object.values(pins).forEach((list) => (list || []).forEach((pn) => pinned.add(`${pn.w}|${pn.p}`)));
     const names = namer(locus);
     const birth = new Map(authors.filter((a) => a && a.a && Number(a.y)).map((a) => [a.a, Number(a.y)]));
     const cand = [];
     treat.forEach((e, i) => {
-      if (!e || !e.w || !(names(e.heading) || names(e.title)) || denied(locus.id, e.w, e.title, e.author)) return;
+      if (!e || !e.w || !pinned.has(`${e.w}|${e.p}`) || denied(locus.id, e.w, e.title, e.author)) return;
       cand.push({ src: "treatment", rank: 0, order: i, title: e.title, author: e.author, cen: centuryOf(e.cen, e.y), y: Number(e.y) || 0, w: e.w, p: e.p || null });
     });
     works.forEach((e) => {
       if (!e || !e.w || Number(e.weight) < MIN_WEIGHT || denied(locus.id, e.w, e.t, e.a)) return;
       const sec = (e.secs || []).find((s) => names(s.t));
-      if (!sec && !names(e.t)) return;
+      if (!sec || !treatise(e.t) || !treatise(sec.t)) return;
       cand.push({ src: "trace", rank: 1, order: -Number(e.weight), title: e.t, author: e.a, cen: centuryOf(e.cen, e.y), y: Number(e.y) || 0, w: e.w, p: sec ? sec.p : null });
     });
     cand.sort((a, b) => a.rank - b.rank || a.order - b.order);
@@ -89,5 +98,5 @@
     return out;
   }
 
-  return { buildKeyWorks, termsOf, namer, denied, DENY, PER_CENTURY, MIN_WEIGHT };
+  return { buildKeyWorks, termsOf, namer, denied, treatise, NOT_A_TREATISE, DENY, PER_CENTURY, MIN_WEIGHT };
 }));

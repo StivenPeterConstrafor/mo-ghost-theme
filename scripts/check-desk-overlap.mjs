@@ -197,7 +197,8 @@ for (const [name, cfg] of Object.entries(PAGES)) {
         measured += 1;
         const bad = [];
         if (g.cl !== null && (Math.abs(g.l - g.cl) > 40 || Math.abs(g.r - g.cr) > 40)) bad.push(`row ${Math.round(g.l)}-${Math.round(g.r)} vs card ${Math.round(g.cl)}-${Math.round(g.cr)}`);
-        if (Math.max(...g.ws) - Math.min(...g.ws) > 1) bad.push(`unequal widths ${g.ws.map(Math.round).join(",")}`);
+        const eq = g.ws.filter((x) => x < (g.r - g.l) - 2); // an odd last tile may span the whole row below 1024px
+        if (eq.length && Math.max(...eq) - Math.min(...eq) > 1) bad.push(`unequal widths ${eq.map(Math.round).join(",")}`);
         if (Math.abs(Math.min(...g.ls) - g.l) > 2 || Math.abs(Math.max(...g.rs) - g.r) > 2) bad.push(`tiles do not fill the row (${Math.round(Math.min(...g.ls))}-${Math.round(Math.max(...g.rs))} in ${Math.round(g.l)}-${Math.round(g.r)})`);
         const across = new Set(g.tops).size === 1 ? g.ws.length : g.tops.filter((t) => t === g.tops[0]).length;
         if (w >= 1024 && g.ws.length === 4 && across !== 4) bad.push(`${across} across at ${w}px, want 4`);
