@@ -138,7 +138,9 @@
       b.textContent = "Close the guide";
       b.setAttribute("aria-expanded", "true");
     });
-    $m.appendChild(box);
+    // Up under the Topic Desk's century showpiece when it has drawn (Ian, 2026-10-19); topic-desk.js moves it there if the desk draws later.
+    const after = $m.querySelector("#tdk-chron") || $m.querySelector("[data-td-desk]");
+    if (after) after.after(box); else $m.appendChild(box);
   }
 
   // topics-dev.js redraws the whole topic into the root (innerHTML) on every route; a view switch only

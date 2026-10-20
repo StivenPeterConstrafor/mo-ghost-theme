@@ -47,6 +47,10 @@
         const html = M.renderDesk(model);
         host.innerHTML = html.hero + html.body;
         host.dataset.tier = model.tier;
+        // "The doctrine through the centuries" (faith-port-topic-dev-notes.js) belongs right under the century showpiece.
+        const notes = root.querySelector(".fr-dn");
+        const anchor = host.querySelector("#tdk-chron");
+        if (notes && anchor) anchor.after(notes);
         // The page's own count boxes stay unless the desk drew counts of its own.
         if (model.modules.hero.tiles.length) root.classList.add("has-desk");
         host.querySelectorAll("img[data-tdk-portrait]").forEach((img) => {

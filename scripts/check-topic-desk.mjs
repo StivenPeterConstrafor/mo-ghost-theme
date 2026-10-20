@@ -91,6 +91,30 @@ const BOOK_SLUGS = new Set([...BOOKS.values()].map((b) => b.slug));
     "synthetic: with no works, no dated events, no verses, no authors, and no neighbors, those modules are left out");
 }
 
+// ── Contrast: every token pair in the showpiece, light and dark ──
+{
+  const css = readFileSync(path.join(root, "assets/css/topic-desk.css"), "utf8");
+  const blocks = [["light", /\.td-desk \.tdk-cent \{\s*(--cn-bg[^}]*)\}/], ["dark (attribute)", /html\[data-sd-theme="dark"\] \.td-desk \.tdk-cent \{\s*([^}]*)\}/], ["dark (system)", /html:not\(\[data-sd-theme="light"\]\) \.td-desk \.tdk-cent \{\s*([^}]*)\}/]];
+  const lum = (h) => { const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+  for (const [label, re] of blocks) {
+    const m = css.match(re);
+    const v = {};
+    if (m) [...m[1].matchAll(/--cn-([a-z-]+):\s*(#[0-9a-fA-F]{6})/g)].forEach((t) => { v[t[1]] = t[2]; });
+    ok(Boolean(m) && v.bg && v.ink, `contrast (${label}): tokens found`);
+    if (!m) continue;
+    const eras = Object.keys(v).filter((k) => k.startsWith("e-"));
+    const text = ["ink", "muted", "accent"];
+    const low = [];
+    for (const g of ["bg", ...eras]) for (const t of text) if (ratio(v[t], v[g]) < 4.5) low.push(`${t} on ${g} ${ratio(v[t], v[g]).toFixed(2)}`);
+    ok(low.length === 0, `contrast (${label}): ink, muted, and accent text are 4.5:1 or better on the surface and every era band (${low.join("; ") || "all pass"})`);
+    const bars = Object.keys(v).filter((k) => /^(gf|pl|po|md|rc|lu|rf|ed|hl)$/.test(k));
+    const lowBars = [];
+    for (const g of ["bg", ...eras]) for (const b of bars) if (ratio(v[b], v[g]) < 3) lowBars.push(`${b} on ${g} ${ratio(v[b], v[g]).toFixed(2)}`);
+    ok(lowBars.length === 0, `contrast (${label}): every shelf color is 3:1 or better on the surface and every era band (${lowBars.join("; ") || "all pass"})`);
+  }
+}
+
 // ── Every work in treatments.json is a real work ───────────────
 const get = async (url, name, hours = 6) => {
   const f = path.join(CACHE, name);
@@ -158,9 +182,9 @@ if (live) {
     console.log(`      ${name}: tier ${model.tier}; modules ${present.join(", ") || "none"}; omitted ${model.omitted.map((o) => o.module).join(", ") || "none"}`);
 
     // 1. no empty module, minimums met
-    const sections = [...out.body.matchAll(/<section class="tdk-mod" id="tdk-([a-z]+)">([\s\S]*?)<\/section>/g)];
+    const sections = [...out.body.matchAll(/<section class="tdk-mod[^"]*" id="tdk-([a-z]+)"[^>]*>([\s\S]*?)<\/section>/g)];
     ok(sections.length === present.length, `${name}: the page draws exactly the modules the model holds (${sections.length})`);
-    const need = { traditions: ['<article class="tdk-card"', D.MIN.columns], treatments: ["<li><a class=\"tw\"", D.MIN.treatments], chron: ['<li class="tdk-ev', D.MIN.events], verses: ['<li class="tdk-verse"', D.MIN.verses],
+    const need = { traditions: ['<article class="tdk-card"', D.MIN.columns], treatments: ["<li><a class=\"tw\"", D.MIN.treatments], chron: ['<li class="tdk-row"', D.MIN.ruler], verses: ['<li class="tdk-verse"', D.MIN.verses],
       people: ['<li class="tdk-person"', D.MIN.people], path: ['<li class="tdk-step"', D.MIN.pathSteps], related: ["<li><a href", D.MIN.related] };
     sections.forEach(([, k, inner]) => {
       const [needle, min] = need[k];
@@ -168,6 +192,18 @@ if (live) {
       ok(n >= min, `${name}: ${k} has ${n} rows (minimum ${min})`);
     });
     ok(!/>\s*(0|NaN|undefined|null)\s*</.test(html) && !/undefined|NaN|\[object/.test(html), `${name}: no undefined, NaN, or empty count in the markup`);
+
+    // 1b. the century showpiece comes first after the hero, and its bars are the worker's own counts
+    if (model.modules.chron) {
+      ok(sections[0][1] === "chron", `${name}: the doctrine through the centuries is the first module after the hero`);
+      const rowsTotal = [...out.body.matchAll(/aria-label="([\d,]+) indexed passages in the (\d+)(?:st|nd|rd|th) century"/g)].map((m) => [Number(m[2]), Number(m[1].replace(/,/g, ""))]);
+      const want = topic.trace.filter((t) => t.cen && t.total > 0).map((t) => [t.cen, t.total]);
+      ok(JSON.stringify(rowsTotal) === JSON.stringify(want.filter(([c]) => rowsTotal.some(([r]) => r === c))) && rowsTotal.length === want.length, `${name}: every century bar equals the topic trace (${rowsTotal.length} centuries)`);
+      const markers = [...out.body.matchAll(/<li class="[^"]*"><a href="([^"]+)" aria-label="([^"]+)"><b>(\d+)<\/b>/g)];
+      const docsHeld = new Set(conf2.timeline.map((d) => Number(d.year)));
+      ok(markers.every((m) => docsHeld.has(Number(m[3])) && /Opens the document\.$/.test(m[2])), `${name}: all ${markers.length} markers are dated documents the data holds, each with an accessible name`);
+      ok(!/<blockquote|“/.test(out.body.split('id="tdk-chron"')[1].split("</section>")[0]), `${name}: the showpiece carries no quotation`);
+    }
 
     // 2. links
     const worksOf = [...html.matchAll(/href="\/the-faith-received\/read\/\?w=([^#"&]+)/g)].map((m) => decodeURIComponent(m[1]));
@@ -217,7 +253,7 @@ if (live) {
     const model = D.buildDeskModel({ locus: l, part: hit.part, parent: hit.parent, topic, conf, scr, treat: treatments[id] || [], data: deskData, marquee: marqueeFile.topics[id] || null, books: BOOKS, loci: LOCI });
     const out = D.renderDesk(model);
     const html = out.hero + out.body;
-    const empties = [...out.body.matchAll(/<section class="tdk-mod" id="tdk-([a-z]+)">([\s\S]*?)<\/section>/g)].filter(([, , inner]) => !/<li|<article|<tr/.test(inner));
+    const empties = [...out.body.matchAll(/<section class="tdk-mod[^"]*" id="tdk-([a-z]+)"[^>]*>([\s\S]*?)<\/section>/g)].filter(([, , inner]) => !/<li|<article|<tr/.test(inner));
     if (empties.length || /undefined|NaN/.test(html)) ok(false, `${id}: an empty module or an undefined value was drawn`);
     built += 1;
   }
