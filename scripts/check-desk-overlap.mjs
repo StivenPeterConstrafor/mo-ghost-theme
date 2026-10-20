@@ -48,13 +48,18 @@ const harness = (hbs) => {
 };
 const PAGES = {
   topic: { html: harness("custom-faith-topics-dev.hbs"), container: ".td-desk|.fr-dn", ready: ".td-desk .tdk-hero, .td-desk .tdk-mod",
+    states: [
+      { name: "History, every century open", js: "const t = document.querySelector('#about-history'); if (!t) return false; t.click(); document.querySelectorAll('.tdk-row-h[aria-expanded=false]').forEach((b) => b.click()); return true;", wait: 600 },
+      ...["scripture", "course", "traditions", "concepts"].map((k) => ({ name: k, js: `const t = document.querySelector('#about-${k}'); if (!t) return false; t.click(); return true;`, wait: k === "scripture" ? 6000 : 1200 })),
+    ],
+    tiles: { tiles: ".tdk-tiles", card: ".td-head" },
     urls: () => {
       const loci = JSON.parse(readFileSync(path.join(root, "assets/data/faith-received/loci.json"), "utf8"));
       const ids = loci.parts.flatMap((p) => p.loci.map((l) => l.id));
       const want = ["de-trinitate", "de-justificatione", "de-christo", "de-baptismo", "de-praedestinatione", "de-ecclesia", "de-scriptura", "de-coena", "de-providentia", "de-relationibus", "de-sacramentis"].filter((i) => ids.includes(i));
       return (quick ? ["de-trinitate", "de-sacramentis", "de-ecclesia"] : want).map((i) => `/topic?t=${i}`);
     } },
-  verse: { html: harness("custom-scripture-dev-desk.hbs"), container: "[data-sd-desk]", ready: "[data-sd-desk] [class*='vd-']",
+  verse: { html: harness("custom-scripture-dev-desk.hbs"), container: "[data-sd-desk]", tiles: { tiles: ".vd-tiles", card: ".sd-desk-head" }, ready: "[data-sd-desk] [class*='vd-']",
     urls: () => (quick ? ["john.1.1", "romans.8.28", "genesis.1.1"] : ["john.1.1", "matthew.16.18", "genesis.1.1", "romans.8.28", "john.3.16", "ephesians.2.8", "psalms.23.1", "1-corinthians.15.3", "hebrews.11.1", "romans.3.28", "john.10.30", "revelation.21.4"]).map((r) => `/verse?ref=${r}`) },
 };
 
@@ -127,7 +132,16 @@ const MEASURE = `((sel) => {
       texts.push({ l: q.left, t: q.top + pad, r: q.right, b: q.bottom - pad, el, s: n.nodeValue.trim().slice(0, 24) });
     }
   }
-  const gfx = [...root.querySelectorAll("svg circle, svg rect, svg ellipse, svg path, svg polygon, img, canvas")].filter((g) => !hiddenUp(g)).map((g) => { const q = g.getBoundingClientRect(); return { l: q.left, t: q.top, r: q.right, b: q.bottom, el: g }; }).filter((g) => g.r - g.l > 2 && g.b - g.t > 2);
+  const gfx = [...root.querySelectorAll("svg circle, svg rect, svg ellipse, svg path, svg polygon, img, canvas")].filter((g) => !hiddenUp(g)).map((g) => {
+    // What is drawn is the box clipped by every ancestor that clips (a portrait larger than its ring is cropped by the ring, not overlapping the name).
+    const q = g.getBoundingClientRect();
+    let L = q.left; let T = q.top; let R = q.right; let B = q.bottom;
+    for (let p = g.parentElement; p && p !== root.parentElement; p = p.parentElement) {
+      const cs = getComputedStyle(p);
+      if (/(hidden|clip|auto|scroll)/.test(cs.overflowX + cs.overflowY)) { const c = p.getBoundingClientRect(); L = Math.max(L, c.left); T = Math.max(T, c.top); R = Math.min(R, c.right); B = Math.min(B, c.bottom); }
+    }
+    return { l: L, t: T, r: R, b: B, el: g };
+  }).filter((g) => g.r - g.l > 2 && g.b - g.t > 2);
   const x = (a, b) => Math.min(a.r, b.r) - Math.max(a.l, b.l);
   const y = (a, b) => Math.min(a.b, b.b) - Math.max(a.t, b.t);
   const within = (a, b) => a.l >= b.l - 1 && a.r <= b.r + 1 && a.t >= b.t - 1 && a.b <= b.b + 1;
@@ -140,7 +154,7 @@ const MEASURE = `((sel) => {
       if (x(a, b) > 2 && y(a, b) > 2) add("o", { a: desc(a.el) + ' "' + a.s + '"', b: desc(b.el) + ' "' + b.s + '"', kind: "text/text", w: Math.round(x(a, b)), h: Math.round(y(a, b)), at: [Math.round(Math.max(a.l, b.l) + scrollX), Math.round(Math.max(a.t, b.t) + scrollY)] });
     }
     for (const g of gfx) {
-      if (x(texts[i], g) > 2 && y(texts[i], g) > 2 && !g.el.contains(texts[i].el) && !texts[i].el.contains(g.el) && !within(texts[i], g)) add("o", { a: desc(texts[i].el) + ' "' + texts[i].s + '"', b: desc(g.el), kind: "text/graphic", w: Math.round(x(texts[i], g)), h: Math.round(y(texts[i], g)), at: [Math.round(Math.max(texts[i].l, g.l) + scrollX), Math.round(Math.max(texts[i].t, g.t) + scrollY)] });
+      if (x(texts[i], g) > 2 && y(texts[i], g) > 2 && !g.el.contains(texts[i].el) && !texts[i].el.contains(g.el) && !within(texts[i], g)) add("o", { a: desc(texts[i].el) + ' "' + texts[i].s + '"', b: desc(g.el), kind: "text/graphic", w: Math.round(x(texts[i], g)), h: Math.round(y(texts[i], g)), rt: [Math.round(texts[i].l), Math.round(texts[i].t), Math.round(texts[i].r), Math.round(texts[i].b)], rg: [Math.round(g.l), Math.round(g.t), Math.round(g.r), Math.round(g.b)], vis: window.getComputedStyle(g.el).opacity + "/" + g.el.complete, at: [Math.round(Math.max(texts[i].l, g.l) + scrollX), Math.round(Math.max(texts[i].t, g.t) + scrollY)] });
     }
   }
   for (const el of root.querySelectorAll("*")) {
@@ -172,6 +186,32 @@ for (const [name, cfg] of Object.entries(PAGES)) {
     const ready = await until(cfg.ready, 40000);
     await new Promise((res) => setTimeout(res, Number(process.env.WAIT) || 6000));
     if (!ready) { console.log(`skip  ${name} ${u}: the desk did not draw in time`); continue; }
+    if (cfg.tiles) {
+      // The tile row spans its hero card: edges within 2px of the card's (the card's own padding aside, the row may sit inside it at a fixed inset),
+      // tiles equal in width within 1px, four across from 1024px up and a full-width 2x2 below. Never pushed to one side.
+      for (const w of [375, 768, 1024, 1280, 1920]) {
+        await send("Emulation.setDeviceMetricsOverride", { width: w, height: 900, deviceScaleFactor: 1, mobile: false });
+        await new Promise((res) => setTimeout(res, 300));
+        const g = await evaluate(`(() => { const t = document.querySelector(${JSON.stringify(cfg.tiles.tiles)}); const c = document.querySelector(${JSON.stringify(cfg.tiles.card)}); if (!t) return null; const kids = [...t.children].filter((k) => k.getBoundingClientRect().width > 0).map((k) => k.getBoundingClientRect()); const tr = t.getBoundingClientRect(); const cr = c ? c.getBoundingClientRect() : null; return { l: tr.left, r: tr.right, cl: cr ? cr.left : null, cr: cr ? cr.right : null, ws: kids.map((k) => k.width), tops: kids.map((k) => Math.round(k.top)), ls: kids.map((k) => k.left), rs: kids.map((k) => k.right) }; })()`);
+        if (!g) continue;
+        measured += 1;
+        const bad = [];
+        if (g.cl !== null && (Math.abs(g.l - g.cl) > 40 || Math.abs(g.r - g.cr) > 40)) bad.push(`row ${Math.round(g.l)}-${Math.round(g.r)} vs card ${Math.round(g.cl)}-${Math.round(g.cr)}`);
+        const eq = g.ws.filter((x) => x < (g.r - g.l) - 2); // an odd last tile may span the whole row below 1024px
+        if (eq.length && Math.max(...eq) - Math.min(...eq) > 1) bad.push(`unequal widths ${eq.map(Math.round).join(",")}`);
+        if (Math.abs(Math.min(...g.ls) - g.l) > 2 || Math.abs(Math.max(...g.rs) - g.r) > 2) bad.push(`tiles do not fill the row (${Math.round(Math.min(...g.ls))}-${Math.round(Math.max(...g.rs))} in ${Math.round(g.l)}-${Math.round(g.r)})`);
+        const across = new Set(g.tops).size === 1 ? g.ws.length : g.tops.filter((t) => t === g.tops[0]).length;
+        if (w >= 1024 && g.ws.length === 4 && across !== 4) bad.push(`${across} across at ${w}px, want 4`);
+        if (w < 1024 && g.ws.length === 4 && across !== 2) bad.push(`${across} across at ${w}px, want 2`);
+        bad.forEach((b) => { const key = `${name} tiles: ${b.replace(/[\d.,-]+/g, "#")}`; if (!found.has(key)) found.set(key, []); found.get(key).push(`${u} ${w} ${b}`); });
+      }
+    }
+    for (const state of cfg.states || [null]) {
+    if (state) {
+      const shown = await evaluate(`(() => { ${state.js} })()`);
+      if (!shown) { console.log(`skip  ${name} ${u} [${state.name}]: not on this page`); continue; }
+      await new Promise((res) => setTimeout(res, state.wait || 800));
+    }
     for (const scheme of SCHEMES) {
       await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: scheme }] });
       for (const w of WIDTHS) {
@@ -198,9 +238,10 @@ for (const [name, cfg] of Object.entries(PAGES)) {
         for (const k of ["overlaps", "clipped", "wide"]) for (const o of m[k]) {
           const key = `${name} ${k}: ${o.a} / ${o.b}${o.kind ? ` (${o.kind})` : ""}`;
           if (!found.has(key)) found.set(key, []);
-          found.get(key).push(`${u} ${w} ${scheme}${o.w ? ` ${o.w}x${o.h}px` : ""}`);
+          found.get(key).push(`${u} ${w} ${scheme}${state ? ` [${state.name}]` : ""}${o.w ? ` ${o.w}x${o.h}px` : ""}${process.env.DEBUG_GEOM && o.rt ? ` text ${o.rt} gfx ${o.rg} ${o.vis}` : ""}`);
         }
       }
+    }
     }
     console.log(`      ${name} ${u}: measured`);
   }

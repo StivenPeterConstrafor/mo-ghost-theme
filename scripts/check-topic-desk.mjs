@@ -110,11 +110,17 @@ const BOOK_SLUGS = new Set([...BOOKS.values()].map((b) => b.slug));
 // ── Contrast: every token pair in the showpiece, light and dark ──
 {
   const css = readFileSync(path.join(root, "assets/css/topic-desk.css"), "utf8");
-  const blocks = [["light", /\.td-desk \.tdk-cent \{\s*(--cn-bg[^}]*)\}/], ["dark (attribute)", /html\[data-sd-theme="dark"\] \.td-desk \.tdk-cent \{\s*([^}]*)\}/], ["dark (system)", /html:not\(\[data-sd-theme="light"\]\) \.td-desk \.tdk-cent \{\s*([^}]*)\}/]];
+  const blocks = [["light", /\.td-desk \.tdk-cent \{\s*(--cn-bg[^}]*)\}/], ["dark (attribute)", /html\[data-sd-theme="dark"\] \.td-desk \.tdk-cent \{\s*([^}]*)\}/]];
   const lum = (h) => { const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
   const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+  for (const f of ["topic-desk.css", "topic-ways-in.css"]) ok(!/prefers-color-scheme/.test(readFileSync(path.join(root, "assets/css", f), "utf8").replace(/\/\*[\s\S]*?\*\//g, "")), `light only: ${f} does not read the system color scheme`);
+  const tabCss = readFileSync(path.join(root, "assets/css/topic-desk.css"), "utf8");
+  const tabRules = [...tabCss.matchAll(/\.td-desk \.tdk-tab(?::[a-z-]+|\[[^\]]+\])? \{([^}]*)\}/g)].map((m) => m[1]);
+  ok(tabRules.length >= 3 && tabRules.every((r) => !/(^|;)\s*background:(?!\s*none)/.test(r) && !/border-radius:\s*[1-9]/.test(r) && !/(^|;)\s*border:\s*1px/.test(r)), "the section tabs are plain labels: no box, no fill, no rounded segment");
+  ok(/\.tdk-tab\[aria-selected="true"\][^}]*border-bottom-color:\s*var\(--cn-accent\)/.test(tabCss), "the active tab is underlined in the accent");
+  ok(!/tdk-period-btn|Read this period/.test(tabCss + readFileSync(path.join(root, "assets/js/page/topic-desk-model.js"), "utf8")), "no 'Read this period' button remains");
   const waysCss = readFileSync(path.join(root, "assets/css/topic-ways-in.css"), "utf8");
-  const wnBlocks = [["ways-in light", /\.fr-dn \{\s*(--wn-bg[^}]*)\}/], ["ways-in dark (attribute)", /html\[data-sd-theme="dark"\] \.fr-dn \{\s*([^}]*)\}/], ["ways-in dark (system)", /html:not\(\[data-sd-theme="light"\]\) \.fr-dn \{\s*([^}]*)\}/]];
+  const wnBlocks = [["ways-in light", /\.fr-dn \{\s*(--wn-bg[^}]*)\}/], ["ways-in dark (attribute)", /html\[data-sd-theme="dark"\] \.fr-dn \{\s*([^}]*)\}/]];
   for (const [label, re] of wnBlocks) {
     const m = waysCss.match(re);
     const v = {};
@@ -242,7 +248,7 @@ if (live) {
     });
     const out = D.renderDesk(model);
     // The History summaries are the page's existing machine-written text, relocated unchanged: counted above, not judged here.
-    const html = (out.hero + out.body).replace(/<div class="tdk-period-body"[\s\S]*?<\/div>/g, "").replace(/<p class="tdk-lede tdk-hist-lede">[\s\S]*?<\/p>/g, "");
+    const html = (out.hero + out.body).replace(/<div class="tdk-period"[\s\S]*?<\/div>/g, "").replace(/<p class="tdk-lede tdk-hist-lede">[\s\S]*?<\/p>/g, "");
     seenTiers.add(model.tier);
     const present = Object.entries(model.modules).filter(([k, v]) => k !== "hero" && v).map(([k]) => k);
     console.log(`      ${name}: tier ${model.tier}; modules ${present.join(", ") || "none"}; omitted ${model.omitted.map((o) => o.module).join(", ") || "none"}`);
@@ -250,7 +256,7 @@ if (live) {
     // 1. no empty module, minimums met
     const sections = [...out.body.matchAll(/<section class="tdk-mod[^"]*" id="tdk-([a-z]+)"[^>]*>([\s\S]*?)<\/section>/g)];
     ok(sections.length === present.length, `${name}: the page draws exactly the modules the model holds (${sections.length})`);
-    const need = { traditions: ['<article class="tdk-card"', D.MIN.columns], treatments: ["<li><a class=\"tw\"", D.MIN.treatments], chron: ['<li class="tdk-row"', D.MIN.ruler], verses: ['<li class="tdk-verse"', D.MIN.verses],
+    const need = { traditions: ['<article class="tdk-card"', D.MIN.columns], treatments: ["<li><a class=\"tw\"", D.MIN.treatments], chron: ['<li class="tdk-row', D.MIN.ruler], verses: ['<li class="tdk-verse"', D.MIN.verses],
       people: ['<li class="tdk-person"', D.MIN.people], path: ['<li class="tdk-step"', D.MIN.pathSteps], related: ["<li><a href", D.MIN.related] };
     sections.forEach(([, k, inner]) => {
       const [needle, min] = need[k];
@@ -274,11 +280,22 @@ if (live) {
     // 1c. the History periods: each appears exactly once in the merged section, in order, with its own text; one heading only
     if (hist && model.modules.chron) {
       const sect = out.body.split('id="tdk-chron"')[1].split("</section>")[0];
-      const idx = [...sect.matchAll(/data-period="(\d+)"/g)].map((m) => Number(m[1]));
-      const attached = [...new Set(idx)];
-      ok(idx.length === hist.history.length && attached.length === hist.history.length, `${name}: all ${hist.history.length} History periods appear exactly once in the merged section`);
-      const rowOrder = [...sect.matchAll(/data-period="(\d+)"/g)].map((m) => Number(m[1]));
-      ok(rowOrder.every((v, i) => i === 0 || v >= rowOrder[i - 1]), `${name}: the periods keep the History's order`);
+      const periodsIn = [...sect.matchAll(/data-period="(\d+)"/g)].map((m) => Number(m[1]));
+      const rowCs = [...sect.matchAll(/class="tdk-row[^"]*" data-c="(\d+)"/g)].map((m) => Number(m[1]));
+      let want = 0;
+      let loose = 0;
+      hist.history.forEach((h) => {
+        const nums = (h.period.match(/\d+/g) || []).map(Number);
+        const cov = rowCs.filter((c) => nums[0] && c >= nums[0] && c <= (nums[1] || nums[0])).length;
+        if (cov) want += cov; else { want += 1; loose += 1; }
+      });
+      ok(periodsIn.length === want && new Set(periodsIn).size === hist.history.length, `${name}: all ${hist.history.length} History periods appear under every century row they cover (${want} places, ${loose} under Other periods)`);
+      const covers = hist.history.filter((h) => { const n = (h.period.match(/\d+/g) || []).map(Number); return n[1] > n[0]; }).length;
+      ok((sect.match(/class="tdk-small tdk-covers"/g) || []).length >= covers, `${name}: a period that spans centuries says which it covers`);
+      ok(hist.history.every((h, i) => !h.refs.length || (sect.match(new RegExp(`id="tdk-pd-${i}-notes"`, "g")) || []).length === 1), `${name}: each period's notes list appears once`);
+      const toggles = [...sect.matchAll(/<button type="button" class="tdk-row-h" aria-expanded="false" aria-controls="(tdk-pn-\d+)"/g)].map((m) => m[1]);
+      ok(toggles.length > 0 && toggles.every((id) => sect.includes(`id="${id}" hidden`)), `${name}: every century toggle is a button with aria-expanded and aria-controls to a hidden panel (${toggles.length})`);
+      ok(!/<button[^>]*class="tdk-row-h"[^>]*>[\s\S]*?<\/button>/.test(sect.replace(/<button type="button" class="tdk-row-h"[\s\S]*?<\/button>/g, "")) , `${name}: no stray toggle`);
       const wantRefs = hist.history.reduce((n, h) => n + Math.min((h.refs || []).length, 12), 0);
       const gotRefs = (sect.match(/<li><a href="\/the-faith-received\/read\/\?w=/g) || []).length;
       ok(gotRefs >= wantRefs, `${name}: every source page of every period is in the numbered notes (${wantRefs})`);
@@ -549,6 +566,94 @@ if (live) {
     const counts = [...html.matchAll(/Cited in ([\d,]+) confession article/g)].map((m) => Number(m[1].replace(/,/g, "")));
     ok(model.cards.every((x, i) => x.articles === counts[i]) && counts.every((n, i) => i === 0 || n <= counts[i - 1]), `Scripture tab ${l.label}: counts are the data's and the order is by article count`);
   }
+}
+
+// ── Key works under each century: eight topics, printed and checked ──
+if (live) {
+  const K = require(path.join(root, "assets/js/page/topic-key-works.js"));
+  for (const id of ["de-trinitate", "de-justificatione", "de-christo", "de-baptismo", "de-praedestinatione", "de-ecclesia", "de-scriptura", "de-coena"]) {
+    const l = LOCI.get(id);
+    const topic = await get(`${VERSE}/v1/topic?id=${id}&t2=${l.t2}`, `topic-${id}.json`);
+    const map = K.buildKeyWorks({ locus: l, treat: treatments[id] || [], works: topic.works || [], authors: topic.authors || [], pins: (marqueeFile.topics[id] && marqueeFile.topics[id].works) || null });
+    const rows = [...map.entries()].sort((a, b) => a[0] - b[0]);
+    console.log(`      Key works, ${l.label}:`);
+    rows.forEach(([c, list]) => console.log(`        ${c}: ${list.map((w) => `${w.author}, ${w.title.slice(0, 44)}`).join(" | ")}`));
+    const flat = rows.flatMap(([, list]) => list);
+    const names = K.namer(l);
+    const treatKey = new Set((treatments[id] || []).map((e) => e.w));
+    const byW = new Map((topic.works || []).map((w) => [w.w, w]));
+    ok(flat.length > 0 && flat.every((w) => worksIndex.has(w.w)), `Key works ${l.label}: ${flat.length} rows in ${rows.length} centuries, every slug is in the works index`);
+    ok(new Set(flat.map((w) => w.w)).size === flat.length, `Key works ${l.label}: each work stands in exactly one century`);
+    ok(rows.every(([, list]) => list.length <= K.PER_CENTURY), `Key works ${l.label}: at most ${K.PER_CENTURY} to a century`);
+    const pins = new Set(Object.values((marqueeFile.topics[id] && marqueeFile.topics[id].works) || {}).flatMap((v) => v.map((x) => `${x.w}|${x.p}`)));
+    ok(flat.every((w) => w.src === "treatment" ? pins.has(`${w.w}|${w.p}`) : (byW.get(w.w) || {}).secs.some((sc) => names.strong(sc.t))), `Key works ${l.label}: each row is a hand-vetted pick or a work with a section heading that is about the topic`);
+    ok(flat.filter((w) => w.src === "trace").every((w) => K.treatise(w.title)), `Key works ${l.label}: no collection, history, commentary, or general-works title among the filler`);
+    const BAD = [/Twelve Minor Prophets/i, /decretals/i, /Councils/i, /Constanzer/i, /Duties of Ministers/i, /Hexa[eë]meron/i, /Acts of the Council/i, /Handbuch/i, /Moral Theology/i, /Complete Works/i, /^Works$/i, /Trinity and Transubstantiation/i];
+    ok(flat.every((w) => !BAD.some((re) => re.test(w.title))), `Key works ${l.label}: none of the titles the owner named as wrong`);
+    ok(flat.every((w) => !K.denied(id, w.w, w.title, w.author)), `Key works ${l.label}: no deny-listed work`);
+    ok(rows.every(([c, list]) => list.every((w) => w.cen === c)), `Key works ${l.label}: each work is in the century of its own date`);
+    ok(flat.every((w) => w.src === "treatment" ? treatKey.has(w.w) : (byW.get(w.w) || {}).weight >= K.MIN_WEIGHT), `Key works ${l.label}: classic treatments or works with at least ${K.MIN_WEIGHT} passages`);
+  }
+  ok(K.buildKeyWorks({ locus: LOCI.get("de-providentia"), treat: treatments["de-providentia"] || [], works: [], authors: [], pins: null }).size === 0, "a topic the marquee file has not vetted gets no key works");
+  ok(K.denied("de-trinitate", "x", "The Trinity and Transubstantiation Compared", "Stillingfleet") && K.denied("de-coena", "pld-359", "De officiis", "Ambrose") && K.denied("de-trinitate", "luther-wa-schriften-12", "x", "Luther"), "the deny list catches the picks the owner named");
+}
+
+// ── One About section: five tabs, one tablist, real flow in a DOM ──
+if (JSDOM && live) {
+  const id = "de-ecclesia";
+  const l = LOCI.get(id);
+  const hit = INDEX.get(id);
+  const cached = (n) => json(path.join(CACHE, n));
+  let enrich = null;
+  for (const slug of [l.t2, ...(l.aliases || [])]) { try { const x = await get(`${LIB}/v1/enrich/topics/${encodeURIComponent(slug.toLowerCase())}.json`, `enrich-${slug}.json`); if (x && x.guide && (x.guide.history || []).length) { enrich = x; break; } } catch (_) { /* next */ } }
+  if (enrich) {
+    await Promise.all([get(`${VERSE}/v1/topic?id=${id}&t2=${l.t2}`, `topic-${id}.json`), get(`${VERSE}/v1/topic/confessions?id=${id}&limit=500`, `conf-${id}.json`), get(`${VERSE}/v1/topic/scripture?id=${id}&t2=${l.t2}&limit=60`, `scr-${id}.json`), get(`${VERSE}/v1/topic/confessions?id=${id}&limit=1`, `confs1-${id}.json`)]);
+    const dom = new JSDOM(`<!doctype html><html><head><meta name="tfr-library-base" content="${LIB}"></head><body><main class="sd"><div class="container td-root" data-td-root><p>Loading</p></div></main></body></html>`, { url: `https://mereorthodoxy.com/the-faith-received/topics/?t=${id}`, runScripts: "outside-only", pretendToBeVisual: true });
+    const { window } = dom;
+    window.console = { log() {}, info() {}, warn() {}, error() {} };
+    window.matchMedia = (q) => ({ matches: false, media: q, addEventListener() {}, removeEventListener() {} });
+    window.Element.prototype.scrollIntoView = function scrollIntoView() {};
+    window.scrollTo = () => {};
+    window.IntersectionObserver = class { observe() {} disconnect() {} unobserve() {} };
+    window.fetch = async (u) => {
+      const url = new URL(String(u), "https://mereorthodoxy.com");
+      const body = (o) => new window.Response(JSON.stringify(o), { status: 200 });
+      if (url.pathname.startsWith("/assets/data/faith-received/")) { const f = path.join(DATA, url.pathname.replace("/assets/data/faith-received/", "")); return existsSync(f) ? new window.Response(readFileSync(f, "utf8"), { status: 200 }) : new window.Response("", { status: 404 }); }
+      if (url.pathname === "/v1/topic") return body(cached(`topic-${id}.json`));
+      if (url.pathname === "/v1/topic/confessions") return body(cached(url.searchParams.get("limit") === "1" ? `confs1-${id}.json` : `conf-${id}.json`));
+      if (url.pathname === "/v1/topic/scripture") return body(cached(`scr-${id}.json`));
+      if (url.pathname.includes("/v1/enrich/topics/")) return body(enrich);
+      return new window.Response("{}", { status: 404 });
+    };
+    for (const k of ["Response", "Blob", "TextDecoder", "Uint8Array", "URL", "URLSearchParams", "CustomEvent"]) if (!window[k]) window[k] = globalThis[k];
+    const ev = (f) => window.eval(readFileSync(path.join(root, f), "utf8"));
+    ["assets/js/page/scripture-dev-core.js", "assets/js/page/topic-key-works.js", "assets/js/page/topic-desk-model.js", "assets/js/page/topic-desk.js", "assets/js/page/topics-dev.js", "assets/js/page/verse-desk-model.js", "assets/js/page/topic-scripture-tab.js", "assets/js/page/faith-port-topic-dev-notes.js"].forEach(ev);
+    const doc = window.document;
+    const until = async (fn, ms) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (fn()) return true; await new Promise((r) => setTimeout(r, 100)); } return false; };
+    await until(() => doc.querySelectorAll("[data-about-tabs] [role=tab]").length >= 4, 15000);
+    const tabs = [...doc.querySelectorAll("[data-about-tabs] [role=tab]")];
+    const labels = tabs.map((t) => t.textContent);
+    const want = ["History", "Scripture", "A course of reading", "Traditions compared", "Concept guides"];
+    ok(doc.querySelectorAll('[role="tablist"]').length === 1, "one section: exactly one tablist on the page");
+    ok(JSON.stringify(labels) === JSON.stringify(want.filter((w) => labels.includes(w))) && labels[0] === "History" && labels.length >= 4, `one section: the tabs are in order (${labels.join(" | ")})`);
+    ok(tabs[0].getAttribute("aria-selected") === "true" && tabs.slice(1).every((t) => t.getAttribute("aria-selected") === "false" && t.tabIndex === -1), "one section: History is the default tab, the others have tabindex -1");
+    const panels = tabs.map((t) => doc.getElementById(t.getAttribute("aria-controls")));
+    ok(panels.every((p) => p && p.getAttribute("role") === "tabpanel" && p.getAttribute("aria-labelledby")) && panels.slice(1).every((p) => p.hidden) && !panels[0].hidden, `one section: each tab has one labeled panel, hidden except History (${panels.length})`);
+    ok(new Set(panels.map((p) => p.id)).size === panels.length, "one section: no panel appears twice");
+    const heads = [...doc.querySelectorAll("h3")].map((h) => h.textContent);
+    ok(heads.filter((h) => /^About /.test(h)).length === 1 && !heads.some((h) => /Ways into this topic|doctrine through the centuries/i.test(h)), `one section: one 'About' heading and no 'Ways into this topic' (${heads.filter((h) => /^About /.test(h)).join("")})`);
+    tabs[0].focus();
+    tabs[0].dispatchEvent(new window.KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    ok(doc.activeElement === tabs[1] && tabs[1].getAttribute("aria-selected") === "true" && !panels[1].hidden && panels[0].hidden, "one section: the arrow key moves selection, focus, and the visible panel");
+    tabs[1].dispatchEvent(new window.KeyboardEvent("keydown", { key: "End", bubbles: true }));
+    ok(doc.activeElement === tabs[tabs.length - 1], "one section: End goes to the last tab");
+    window.location.hash = "#about-course";
+    await new Promise((r) => setTimeout(r, 300));
+    const course = tabs.find((t) => t.dataset.k === "course");
+    ok(course && course.getAttribute("aria-selected") === "true", "one section: #about-course opens the course tab");
+    ok(Boolean(doc.getElementById("about-history")) && Boolean(doc.getElementById("tdk-chron")), "one section: the tab ids and #tdk-chron anchors exist");
+    window.close();
+  } else console.log("skip  one section: no enrich data for the test topic");
 }
 
 // ── Ways into this topic: tablist semantics, and every word and link of the data still there ──

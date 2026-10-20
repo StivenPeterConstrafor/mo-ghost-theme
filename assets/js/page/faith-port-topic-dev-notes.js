@@ -89,6 +89,33 @@
   }
 
   const root_MOTS = window.MOTopicScripture || null;
+  // "Read the guide" on a concept card: loads the guide in place.
+  function bindConcepts($el) {
+    $el.addEventListener("click", async (e) => {
+      const b = e.target.closest(".fr-dn-open");
+      if (!b || b.hasAttribute("data-tsc-all")) return;
+      const slot = b.nextElementSibling;
+      if (!slot.hidden) { slot.hidden = true; b.textContent = "Read the guide"; b.setAttribute("aria-expanded", "false"); return; }
+      if (!slot.dataset.loaded) {
+        const cg = await getJSON(`${BASE}/v1/enrich/concepts/${encodeURIComponent(b.dataset.concept)}.json`);
+        slot.innerHTML = cg ? guideHTML(cg) : "<p class=\"sd-muted\">This guide did not load.</p>";
+        slot.dataset.loaded = "1";
+      }
+      slot.hidden = false;
+      b.textContent = "Close the guide";
+      b.setAttribute("aria-expanded", "true");
+    });
+  }
+
+  // The Topic Desk says when it has drawn ("pending", then "drawn" or "failed"); this waits for that, so the tabs know where they go.
+  const deskReady = () => new Promise((res) => {
+    const st = () => $root.dataset.deskState || "none";
+    if (st() !== "pending") { res(st()); return; }
+    const t = setTimeout(() => res("timeout"), 12000);
+    const f = () => { if (st() !== "pending") { clearTimeout(t); $root.removeEventListener("tdk:state", f); res(st()); } };
+    $root.addEventListener("tdk:state", f);
+  });
+
   // ── The block ──
   let run = 0;
   async function draw() {
@@ -115,6 +142,28 @@
     if ((d.traditions || []).length) views.push(["traditions", "Traditions compared", () => traditionsView(d.traditions)]);
     if ((d.concepts || []).length) views.push(["concepts", "Concept guides", () => conceptsView(d.concepts)]);
     if (!views.length) return;
+    // With the Topic Desk's About section on the page, these views become its tabs (one tablist, History first). Otherwise they keep a block of their own.
+    const st = await deskReady();
+    if (my !== run) return;
+    const section = $m.querySelector("#tdk-chron");
+    if (st === "drawn" && section && window.MOAbout && window.MOAbout.host) {
+      if (section.dataset.joined) return;
+      section.dataset.joined = "1";
+      views.filter((v) => v[0] !== "history").forEach(([k, lab, fn]) => {
+        const panel = document.createElement("div");
+        panel.className = "fr-dn fr-dn--in";
+        panel.dataset.lazy = "1";
+        panel.addEventListener("about:show", () => {
+          if (!panel.dataset.lazy) return;
+          delete panel.dataset.lazy;
+          if (k === "scripture") { panel.innerHTML = `<div class="tsc" data-tsc></div>`; root_MOTS.fill(panel.querySelector("[data-tsc]"), id, sc); return; }
+          panel.innerHTML = `<p class="sd-muted td-note">Machine-written from their own claims, not their words; every page is checked.</p>${fn()}`;
+        });
+        bindConcepts(panel);
+        window.MOAbout.add(k, lab, panel);
+      });
+      return;
+    }
     const box = document.createElement("details");
     box.className = "td-block fr-dn";
     box.open = true;
@@ -146,20 +195,7 @@
       e.preventDefault();
       pick(tabs[to], true);
     });
-    $view.addEventListener("click", async (e) => {
-      const b = e.target.closest(".fr-dn-open");
-      if (!b) return;
-      const slot = b.nextElementSibling;
-      if (!slot.hidden) { slot.hidden = true; b.textContent = "Read the guide"; b.setAttribute("aria-expanded", "false"); return; }
-      if (!slot.dataset.loaded) {
-        const cg = await getJSON(`${BASE}/v1/enrich/concepts/${encodeURIComponent(b.dataset.concept)}.json`);
-        slot.innerHTML = cg ? guideHTML(cg) : "<p class=\"sd-muted\">This guide did not load.</p>";
-        slot.dataset.loaded = "1";
-      }
-      slot.hidden = false;
-      b.textContent = "Close the guide";
-      b.setAttribute("aria-expanded", "true");
-    });
+    bindConcepts($view);
     // Up under the Topic Desk's century showpiece when it has drawn (Ian, 2026-10-19); topic-desk.js moves it there if the desk draws later.
     const after = $m.querySelector("#tdk-chron") || $m.querySelector("[data-td-desk]");
     if (after) after.after(box); else $m.appendChild(box);
