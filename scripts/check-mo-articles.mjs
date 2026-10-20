@@ -118,6 +118,8 @@ test("entities() lists documents first and labels them", () => {
   assert.equal(e[0].label, "Council of Nicaea I (325)");
 });
 
+const read = (p) => readFileSync(path.join(root, p), "utf8");
+const tpl = read("custom-faith-resources.hbs");
 // ── 2. the built file ──
 const file = path.join(root, "assets/data/faith-received/mo-articles.json");
 const text = readFileSync(file, "utf8");
@@ -183,6 +185,9 @@ test("featured images: null or a valid path or URL, and most essays have one", (
     if (a.ia) assert.ok(a.i, `${a.id} has alt text but no image`);
   }
   assert.ok(n >= 380, `only ${n} essays have an image`);
+  const stamp = read("assets/js/lib/mo-articles-dv.js");
+  assert.ok(stamp.includes(`"${data.dv}"`), "mo-articles-dv.js does not match the data's dv");
+  assert.ok(tpl.indexOf("mo-articles-dv.js") > 0 && tpl.lastIndexOf("mo-articles-dv.js") < tpl.lastIndexOf("js/lib/mo-articles.js"), "the stamp must load before the loader");
   assert.match(data.imgBase, /^https:\/\/storage\.ghost\.io\/.+\/content\/images\/$/);
 });
 test("image() asks for a size Ghost serves, and never answers for an essay without one", () => {
@@ -204,9 +209,23 @@ test("the lookups answer from the built file", () => {
   assert.equal(B.search("zzzqqq").length, 0);
 });
 
+async function asyncTest() {
+  const seen = [];
+  const warns = [];
+  const realFetch = globalThis.fetch, realWarn = console.warn;
+  globalThis.window = { MO_ARTICLES_DV: "abc123" };
+  globalThis.fetch = (u) => { seen.push(u); return Promise.resolve({ ok: true, json: () => Promise.resolve({ imgBase: "https://x/", dv: "old", articles: [art("z", "Z", "2020-01-01", "work")], idx: {} }) }); };
+  console.warn = (...a) => warns.push(a.join(" "));
+  try {
+    const L = MOArticles.create();
+    await L.load();
+    assert.deepEqual(seen, ["/assets/data/faith-received/mo-articles.json?v=abc123"]);
+    assert.equal(warns.length, 2, warns.join(" | "));
+    console.log("ok   load() asks for the data under its own version, in v, and warns on a stale copy");
+  } finally { globalThis.fetch = realFetch; console.warn = realWarn; delete globalThis.window; }
+}
+
 // ── 3. the Resources page ──
-const read = (p) => readFileSync(path.join(root, p), "utf8");
-const tpl = read("custom-faith-resources.hbs");
 const pageJs = read("assets/js/page/faith-resources.js");
 
 test("every id the page script looks up is in the template", () => {
@@ -251,6 +270,8 @@ test("a card is one link with an image or a placeholder, a sized image box, alt 
   assert.match(css, /\.fr-res-img \{[^}]*aspect-ratio: 3 \/ 2/);
   assert.match(css, /repeat\(8, minmax\(0, 1fr\)\)/);
   assert.ok(!/max-width: 820px/.test(css), "the narrow column is back");
+  assert.match(tpl, /class="container fr-res-wrap"/);
+  assert.ok(!/\.bhero-inner\.container \{/.test(css), "the hero container is overridden");
   assert.ok(!/container-narrow/.test(tpl), "the narrow container is back");
 });
 test("the page copy has no em dash and the links open the original safely", () => {
@@ -258,5 +279,6 @@ test("the page copy has no em dash and the links open the original safely", () =
   assert.match(pageJs, /target="_blank" rel="noopener"/);
 });
 
+try { await asyncTest(); } catch (e) { failed++; console.error(`FAIL load() version\n     ${e.message}`); }
 if (failed) { console.error(`\n${failed} failed`); process.exit(1); }
 console.log("\nmo-articles: all checks passed");

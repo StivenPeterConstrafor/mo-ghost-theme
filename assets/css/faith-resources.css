@@ -38,9 +38,7 @@
 
 .fr-res .fr-res-intro { max-width: 70ch; margin: 0 0 22px; font-size: 17px; line-height: 1.6; color: var(--fr-muted); }
 
-/* The page's own gutter: hero, tabs, controls and grid all sit 24px in from the viewport edge. */
-.fr-res .bhero-inner.container { max-width: none; padding-left: 24px; padding-right: 24px; }
-.fr-res .fr-res-wrap { padding: 0 24px; }
+/* Width and gutters are the theme's .container (1180px, 28px), the same as the hero above and the other TFR pages. Nothing here overrides it. */
 
 /* Search */
 .fr-res .fr-res-label { display: block; margin: 0 0 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fr-muted); }
@@ -79,14 +77,13 @@
 .fr-res .fr-res-section + .fr-res-section { margin-top: 34px; }
 .fr-res .fr-res-h { margin: 26px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--fr-rule); font-size: 22px; font-weight: 600; line-height: 1.25; color: var(--fr-ink); }
 .fr-res .fr-res-n { font-size: 14px; font-weight: 400; color: var(--fr-muted); margin-left: 6px; }
-.fr-res .fr-res-grid { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 28px 20px; grid-template-columns: minmax(0, 1fr); }
+.fr-res .fr-res-grid { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
 .fr-res .fr-res-h + .fr-res-grid { margin-top: 0; }
-@media (min-width: 480px) { .fr-res .fr-res-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 700px) { .fr-res .fr-res-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (min-width: 900px) { .fr-res .fr-res-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-@media (min-width: 1100px) { .fr-res .fr-res-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
-@media (min-width: 1280px) { .fr-res .fr-res-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
-@media (min-width: 1600px) { .fr-res .fr-res-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
+@media (min-width: 420px) { .fr-res .fr-res-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 600px) { .fr-res .fr-res-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 800px) { .fr-res .fr-res-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .fr-res .fr-res-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (min-width: 1200px) { .fr-res .fr-res-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
 .fr-res .fr-res-card { margin: 0; min-width: 0; }
 .fr-res .fr-res-cardlink { display: block; min-height: 44px; color: var(--fr-ink); text-decoration: none; }
 .fr-res .fr-res-cardlink:focus-visible { outline: 2px solid var(--fr-ink); outline-offset: 4px; }
@@ -94,16 +91,16 @@
 .fr-res .fr-res-photo { display: block; width: 100%; height: 100%; object-fit: cover; }
 .fr-res .fr-res-ph {
   display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; box-sizing: border-box; padding: 10px;
-  font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; text-align: center; line-height: 1.4; color: var(--fr-muted);
+  font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; text-align: center; line-height: 1.4; color: var(--fr-muted);
 }
 .fr-res .fr-res-ctitle {
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden;
-  margin: 10px 0 4px; font-size: 16px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden;
+  margin: 8px 0 3px; font-size: 14px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere;
 }
 .fr-res .fr-res-cardlink:hover .fr-res-ctitle { color: var(--fr-accent); text-decoration: underline; text-underline-offset: 3px; }
 .fr-res .fr-res-cmeta,
-.fr-res .fr-res-ckind { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; line-height: 1.45; color: var(--fr-muted); }
-.fr-res .fr-res-ckind { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+.fr-res .fr-res-ckind { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; line-height: 1.45; color: var(--fr-muted); }
+.fr-res .fr-res-ckind { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
 .fr-res .fr-res-ctitle mark { color: inherit; background: color-mix(in srgb, var(--fr-accent) 16%, transparent); border-radius: 2px; padding: 0 1px; }
 
 .fr-res .fr-res-more,

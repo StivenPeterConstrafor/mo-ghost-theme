@@ -15,6 +15,7 @@
  * the author names recorded there (authors). An entity that does not resolve is dropped and reported; the
  * --check run fails on any, so a bad row cannot ship quietly.
  */
+import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -161,7 +162,14 @@ const out = {
   lab: { docs: sortLabels(labels.docs), works: sortLabels(labels.works), topics: sortLabels(labels.topics) },
   idx: sortedIdx,
 };
-const text = `${JSON.stringify(out)}\n`;
+// The data version: a short hash of the content, written into the file as dv and into assets/js/lib/mo-articles-dv.js, which a page
+// loads before the loader so the loader can ask for the file under a URL that changes exactly when the content does. The CDN keys the
+// theme's data files on ?v= alone and keeps the old copy under an old key, so the version has to ride in v.
+const DV_FILE = "assets/js/lib/mo-articles-dv.js";
+const dv = createHash("sha1").update(JSON.stringify(out)).digest("hex").slice(0, 10);
+const { v: outV, ...outRest } = out;
+const text = `${JSON.stringify({ v: outV, dv, ...outRest })}\n`;
+const stamp = `/* Written by scripts/build-mo-articles.mjs: the version of mo-articles.json. Do not edit. */\nwindow.MO_ARTICLES_DV = "${dv}";\n`;
 const bytes = Buffer.byteLength(text);
 if (bytes > MAX_BYTES) problems.push(`${OUT} is ${(bytes / 1024).toFixed(0)} KB, over the ${MAX_BYTES / 1024} KB target`);
 
@@ -194,10 +202,14 @@ for (const p of problems) console.error(`  ! ${p}`);
 if (check) {
   let current = "";
   try { current = readFileSync(rel(OUT), "utf8"); } catch { /* missing */ }
+  let currentStamp = "";
+  try { currentStamp = readFileSync(rel(DV_FILE), "utf8"); } catch { /* missing */ }
+  if (currentStamp !== stamp) { console.error(`mo-articles: ${DV_FILE} does not match the data (dv ${dv}). Run node scripts/build-mo-articles.mjs`); process.exit(1); }
   if (current !== text) { console.error(`mo-articles: ${OUT} is stale. Run node scripts/build-mo-articles.mjs`); process.exit(1); }
   if (problems.length) process.exit(1);
   console.log("mo-articles: file current");
 } else {
   writeFileSync(rel(OUT), text);
+  writeFileSync(rel(DV_FILE), stamp);
   if (problems.length) process.exit(1);
 }
