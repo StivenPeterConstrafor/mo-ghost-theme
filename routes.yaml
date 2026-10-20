@@ -481,6 +481,18 @@ routes:
   # as /the-faith-received/glossary/?q=.
   /the-faith-received/dictionary/:
     template: custom-faith-dictionary
+  # The free-inference tools (2026-10-20), as The Faith Received has them: the commented texts
+  # place by place (#sentences/1/3, #summa/I-II/109, #decretals/1/29, #decretum/C/12), the
+  # classic disputed questions with each author's answer (#q040), the lexicon of terms as the
+  # authors define them (#gratia), and one index for a whole set of volumes (?set=pl).
+  /the-faith-received/commentary-decks/:
+    template: custom-faith-decks
+  /the-faith-received/disputed-questions/:
+    template: custom-faith-atlas
+  /the-faith-received/lexicon/:
+    template: custom-faith-lexicon
+  /the-faith-received/set-index/:
+    template: custom-faith-set-index
   # The full ~190-topic layer (v1/mine/topic2-all/) underneath the 13
   # curated topic pages below. One route, two states via ?s=<slug>  - 
   # same pattern as /the-faith-received/author/?a=.

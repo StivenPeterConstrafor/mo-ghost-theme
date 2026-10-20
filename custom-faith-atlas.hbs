@@ -1,0 +1,62 @@
+{{!< default}}
+{{!-- The TFR rail, first on the page and pinned under the masthead as on the reader (Ian, 2026-09-23). --}}
+{{> "faith-received/_tfr-rail"}}
+{{#contentFor "moHead"}}
+<title>Disputed questions | The Faith Received | Mere Orthodoxy</title>
+<meta name="description" content="The classic disputed questions of theology, with every place the library treats them and each author's answer." />
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
+<link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+.tfr-tool{--bg:#FFFFFF;--fg:#1C1C1A;--muted:#5A5A56;--border:#D8D8D3;--card-bg:#FFFFFF;--highlight:#EFEFEA;
+  --font-display:'EB Garamond',Georgia,serif;--font-body:'Source Serif Pro',Georgia,serif;--sans:'Source Serif Pro',Georgia,serif;}
+.tfr-tool *{box-sizing:border-box}
+.tfr-tool{margin:0;background:var(--bg);color:var(--fg);font:16px/1.62 var(--font-body);-webkit-font-smoothing:antialiased}
+.tfr-tool a{color:var(--fg)}
+.tfr-tool .top{padding:1rem 1.4rem .8rem;display:flex;align-items:baseline;gap:.9rem;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.tfr-tool .top .wm{font:500 1.3rem/1 var(--font-display);text-decoration:none}
+.tfr-tool .top .sub{font:italic .95rem/1 var(--font-display);color:var(--muted)}
+.tfr-tool .wrap{max-width:60rem;margin:0 auto;padding:1.8rem 1.2rem 4rem}
+.tfr-tool h1{font:500 2rem/1.2 var(--font-display);margin:.2rem 0 .6rem;text-wrap:balance}
+.tfr-tool .lede{max-width:68ch;color:var(--muted);margin:0 0 1.4rem;text-wrap:pretty}
+.tfr-tool .cols{display:grid;grid-template-columns:minmax(14rem,20rem) minmax(0,1fr);gap:1.8rem;align-items:start}
+.tfr-tool .loci{margin:0;padding:0;list-style:none;border-top:1px solid var(--border)}
+.tfr-tool .loci details{border-bottom:1px solid var(--border)}
+.tfr-tool .loci summary{cursor:pointer;padding:.55rem .2rem;font:500 1.05rem/1.3 var(--font-display);list-style:none;display:flex;justify-content:space-between;gap:.5rem}
+.tfr-tool .loci summary::-webkit-details-marker{display:none}
+.tfr-tool .loci summary small{color:var(--muted);font:.78rem/1.3 var(--sans)}
+.tfr-tool .loci ul{list-style:none;margin:0 0 .6rem;padding:0}
+.tfr-tool .loci li button{display:block;width:100%;text-align:left;padding:.4rem .3rem .4rem .8rem;border:0;background:none;color:var(--fg);font:.92rem/1.35 var(--font-body);cursor:pointer;border-radius:4px}
+.tfr-tool .loci li button:hover{background:var(--highlight)}
+.tfr-tool .loci li button[aria-current="true"]{background:var(--fg);color:var(--bg)}
+.tfr-tool .q h2{font:500 1.6rem/1.25 var(--font-display);margin:0 0 .3rem;text-wrap:balance}
+.tfr-tool .q .tally{display:flex;flex-wrap:wrap;gap:.4rem;margin:.5rem 0 1.2rem}
+.tfr-tool .q .tally button{border:1px solid var(--border);background:var(--card-bg);color:var(--fg);padding:.35rem .75rem;border-radius:999px;font:600 .8rem/1.2 var(--sans);cursor:pointer}
+.tfr-tool .q .tally button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tfr-tool .ans{margin:1.2rem 0 .3rem;padding-bottom:.3rem;border-bottom:1px solid var(--border);font:500 1.1rem/1.3 var(--font-display);color:var(--muted)}
+.tfr-tool .rows{list-style:none;margin:0;padding:0}
+.tfr-tool .rows li{padding:.65rem 0;border-bottom:1px solid var(--border)}
+.tfr-tool .rows .who{font:500 1.05rem/1.3 var(--font-display)}
+.tfr-tool .rows .who small{font:.8rem/1 var(--sans);color:var(--muted);margin-left:.4rem}
+.tfr-tool .rows p{margin:.2rem 0 .3rem;max-width:70ch}
+.tfr-tool .rows .pp a{font-size:.85rem;margin-right:.6rem}
+.tfr-tool .muted{color:var(--muted)}
+@media (max-width:760px){.tfr-tool .cols{grid-template-columns:1fr}}
+.tfr-tool{background:transparent}
+.tfr-tool .wrap{padding-top:1.2rem}
+</style>
+{{/contentFor}}
+{{!-- /the-faith-received/disputed-questions/ — Disputed questions, as The Faith Received has it (tools/prdl_reader_prototype/atlas.html), in this site's
+     shell: the hero is the theme's, the body and its script (faith-atlas.js) the library's, reading the library worker. --}}
+<section class="bhero bhero--tool">
+  <div class="bhero-inner container">
+    <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Disputed questions</p>
+    <h1 class="bhero-title">The classic disputed questions</h1>
+    <p class="bhero-lede">The questions the schools and the confessions argued, from whether God's existence can be demonstrated to whether the saints are to be invoked. Each lists the authors in the library who answer it, what each answers in his own terms, and the pages where he says it.</p>
+  </div>
+</section>
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+<main class="tfr-tool"><div class="wrap">
+  <div class="cols"><nav aria-label="Questions by locus"><div class="loci" id="loci"><p class="muted">Loading…</p></div></nav><article class="q" id="q" aria-live="polite"></article></div>
+
+</div></main>
+<script src="{{asset "js/faith-atlas.js"}}&amp;frv=5775d3e897ea91eb"></script>

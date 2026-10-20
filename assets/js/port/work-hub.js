@@ -16,6 +16,8 @@
     { id: "argument", label: "The argument" },
     { id: "sections", label: "Sections" },
     { id: "index", label: "Subject index" },
+    { id: "terms", label: "Terms defined" },
+    { id: "questions", label: "Questions asked" },
     { id: "quotes", label: "Quotations" },
     { id: "citedby", label: "Read later by" },
     { id: "scripture", label: "Scripture" },
@@ -33,6 +35,7 @@
     base: () => root.__FR_BLOB_BASE__ || "https://mo-tfr-library.mo-podcast-feed.workers.dev",
     deskHref: (slug, id) => `/the-faith-received/author/#w/${encodeURIComponent(slug)}${id && id !== "overview" ? "/" + id : ""}`,
     readerHref: (slug, page) => `/the-faith-received/read/?w=${encodeURIComponent(slug)}${page != null && page !== "" ? `#b${encodeURIComponent(page)}-0` : ""}`,
+    setIndexHref: (id) => `/the-faith-received/set-index/?set=${encodeURIComponent(id)}`,
   };
   function config(over) { Object.assign(cfg, over || {}); }
 
@@ -154,7 +157,34 @@
     return `<ul class="wh-quotes">${(d.quotes || []).map((q) => `<li><blockquote>${esc(q.text)}</blockquote>${page(q.page)}</li>`).join("")}</ul>`;
   }
 
-  const RENDER = { overview, argument, sections, index, quotes };
+  // THE BACK-OF-BOOK INDEX, WHOLE (2026-10-20, owner: "Subjects, persons, Scripture, terms and questions"): v1/enrich/index/<slug>.json
+  // (runs/minimax_1019/indices/build_full.py). Subjects fill the Subject index above; persons and Scripture are the Names and Scripture
+  // tabs the work page already has; the terms the work defines and the questions it asks are new, each with its pages.
+  const full = new Map();
+  function fullIndex(slug) {
+    if (!full.has(slug)) full.set(slug, getJSON(`${cfg.base()}/v1/enrich/index/${encodeURIComponent(slug)}.json`));
+    return full.get(slug);
+  }
+  function terms(d) {
+    const rows = (d.terms || []).map((e) => `<li data-k="${esc(String(e.term).toLowerCase())}"><span class="wh-ih">${esc(e.term)}</span><span class="wh-ipp">${(e.pages || []).slice(0, 12).map((p) => page(p, String(p))).join(" ")}</span></li>`).join("");
+    return `<label class="wh-filter">Find a term <input type="search" placeholder="A term, in the work's language or English" autocomplete="off"></label><ul class="wh-index">${rows}</ul><p class="wh-none" hidden>No term matches.</p>`;
+  }
+  function questions(d) {
+    const rows = (d.questions || []).map((e) => `<li data-k="${esc(String(e.q).toLowerCase())}"><span class="wh-ih">${esc(e.q)}</span><span class="wh-ipp">${page(e.page, `p. ${e.page}`)}</span></li>`).join("");
+    return `<label class="wh-filter">Find a question <input type="search" placeholder="A word in the question" autocomplete="off"></label><ul class="wh-index">${rows}</ul><p class="wh-none" hidden>No question matches.</p>`;
+  }
+  const RENDER = { overview, argument, sections, index, quotes, terms, questions };
+
+  // THE SET'S OWN INDEX (2026-10-20, owner: "plus combined indexes across sets such as WA and Migne"): v1/enrich/sets/<id>/
+  // (runs/minimax_1019/indices/setindex.py). The Weimar Edition and Migne are known by the slug, the other sets by sets/by.json.
+  const FAMILY = [["pld-", "pl", "Patrologia Latina"], ["pg-", "pg", "Patrologia Graeca"], ["luther-wa-", "luther-wa", "Weimar Edition"]];
+  let byP = null;
+  function setOf(slug) {
+    const f = FAMILY.find(([p]) => String(slug).startsWith(p));
+    if (f) return Promise.resolve({ id: f[1], label: `Index of the whole ${f[2]}` });
+    if (!byP) byP = getJSON(`${cfg.base()}/v1/enrich/sets/by.json`);
+    return byP.then((b) => { const x = b && b[slug]; return x ? { id: x[0], label: `Index of all ${x[1]} volumes of the set` } : null; });
+  }
 
   // READ LATER BY (owner 2026-10-06, proposal 2): the library's page-to-page citation links turned round — for each page of
   // this work, the later pages that cite it (v1/enrich/citedby/<slug>.json, built by tools/enrich/citedby.py from the same
@@ -294,6 +324,16 @@
       return el;
     };
     let active = null;
+    // the set's index, linked from the work's own index panels
+    const setP = setOf(slug);
+    const addSet = (id) => setP.then((s) => {
+      const el = s && body.querySelector(`.wh-panel[data-sec="${id}"]`);
+      if (!el || el.querySelector(".wh-setlink")) return;
+      const p = document.createElement("p"); p.className = "wh-setlink";
+      p.innerHTML = `<a href="${esc(cfg.setIndexHref(s.id))}">${esc(s.label)}</a>`;
+      const h = el.querySelector("h2.sect");
+      if (h) h.after(p); else el.prepend(p);
+    });
     function strip() {
       seg.innerHTML = order.filter((id) => present[id]).map((id) =>
         `<button type="button" role="tab" id="wkt-${id}" data-sec="${id}" aria-controls="wkp-${id}" aria-selected="${id === active}" tabindex="${id === active ? 0 : -1}"${id === active ? ' class="on"' : ""}>${esc(label(id))}${num[id] > 1 ? ` · ${Number(num[id]).toLocaleString()}` : ""}</button>`).join("");
@@ -369,6 +409,17 @@
       panel("citedby");
       show(want === "citedby" ? "citedby" : active, false);
     });
+    fullIndex(slug).then((d) => {
+      if ((o.run && !o.run()) || !d || DESK.seg !== seg) return;
+      ["terms", "questions"].forEach((id) => {
+        const n = Array.isArray(d[id]) ? d[id].length : 0;
+        if (!n) return;
+        present[id] = true; num[id] = n;
+        panel(id).innerHTML = `<h2 class="sect">${esc(label(id))}</h2>${render(id, d)}<p class="wh-note">${esc(NOTE)}</p>`;
+      });
+      addSet("terms");
+      show(want && present[want] ? want : active || order.find((x) => present[x]), false);
+    });
     guide(slug).then((d) => {
       if ((o.run && !o.run()) || !d || DESK.seg !== seg) return;
       const c = counts(d);
@@ -377,6 +428,7 @@
         present[id] = true; num[id] = id === "overview" ? 0 : c[id];
         panel(id).innerHTML = `<h2 class="sect">${esc(label(id))}</h2>${render(id, d)}${id === "overview" ? `<p class="wh-note">${esc(NOTE)}</p>` : ""}`;
       });
+      addSet("index");
       body.parentElement?.querySelector(".wk-unmined")?.remove();
       // the guide leads unless the address asked for another tab
       show(want && present[want] ? want : order.find((x) => present[x]), false);
@@ -388,6 +440,6 @@
     return true;
   }
 
-  root.FRWorkHub = { SECTIONS, GUIDE, label, config, cfg, guide, counts, render, wire, esc, NOTE, desk, deskSwitch, inlinePage, citedBy, names, mountLater, citerRow,
+  root.FRWorkHub = { SECTIONS, GUIDE, label, config, cfg, guide, counts, render, wire, esc, NOTE, desk, deskSwitch, inlinePage, citedBy, names, mountLater, citerRow, fullIndex, setOf,
     deskHref: (slug, id) => cfg.deskHref(slug, id), readerHref: (slug, p) => cfg.readerHref(slug, p) };
 })(typeof window === "undefined" ? globalThis : window);

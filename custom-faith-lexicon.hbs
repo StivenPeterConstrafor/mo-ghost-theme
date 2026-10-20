@@ -1,0 +1,62 @@
+{{!< default}}
+{{!-- The TFR rail, first on the page and pinned under the masthead as on the reader (Ian, 2026-09-23). --}}
+{{> "faith-received/_tfr-rail"}}
+{{#contentFor "moHead"}}
+<title>Lexicon | The Faith Received | Mere Orthodoxy</title>
+<meta name="description" content="Latin and Greek terms as the authors themselves define them: each term's senses, each sense with the pages that define it." />
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
+<link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+.tfr-tool{--bg:#FFFFFF;--fg:#1C1C1A;--muted:#5A5A56;--border:#D8D8D3;--card-bg:#FFFFFF;--highlight:#EFEFEA;
+  --font-display:'EB Garamond',Georgia,serif;--font-body:'Source Serif Pro',Georgia,serif;--sans:'Source Serif Pro',Georgia,serif;}
+.tfr-tool *{box-sizing:border-box}
+.tfr-tool{margin:0;background:var(--bg);color:var(--fg);font:16px/1.62 var(--font-body);-webkit-font-smoothing:antialiased}
+.tfr-tool a{color:var(--fg)}
+.tfr-tool .top{padding:1rem 1.4rem .8rem;display:flex;align-items:baseline;gap:.9rem;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.tfr-tool .top .wm{font:500 1.3rem/1 var(--font-display);text-decoration:none}
+.tfr-tool .top .sub{font:italic .95rem/1 var(--font-display);color:var(--muted)}
+.tfr-tool .wrap{max-width:56rem;margin:0 auto;padding:1.8rem 1.2rem 4rem}
+.tfr-tool h1{font:500 2rem/1.2 var(--font-display);margin:.2rem 0 .6rem;text-wrap:balance}
+.tfr-tool .lede{max-width:66ch;color:var(--muted);margin:0 0 1.2rem;text-wrap:pretty}
+.tfr-tool .find{display:flex;gap:.5rem;margin:0 0 1rem}
+.tfr-tool .find input{flex:1;min-width:0;font:1.05rem/1.3 var(--font-body);padding:.65rem .8rem;border:1px solid var(--border);border-radius:8px;background:var(--card-bg);color:var(--fg)}
+.tfr-tool .find input:focus-visible{outline:2px solid var(--fg);outline-offset:1px}
+.tfr-tool .letters{display:flex;flex-wrap:wrap;gap:.25rem;margin:0 0 1.4rem}
+.tfr-tool .letters button{min-width:2rem;padding:.3rem .45rem;border:1px solid var(--border);background:var(--card-bg);color:var(--fg);border-radius:6px;font:500 .95rem/1 var(--font-display);cursor:pointer}
+.tfr-tool .letters button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tfr-tool .cols{display:grid;grid-template-columns:minmax(12rem,18rem) minmax(0,1fr);gap:1.6rem;align-items:start}
+.tfr-tool .list{list-style:none;margin:0;padding:0;max-height:70vh;overflow:auto;border-top:1px solid var(--border)}
+.tfr-tool .list li button{display:flex;justify-content:space-between;gap:.6rem;width:100%;text-align:left;padding:.45rem .3rem;border:0;border-bottom:1px solid var(--border);background:none;color:var(--fg);font:1rem/1.3 var(--font-body);cursor:pointer}
+.tfr-tool .list li button small{color:var(--muted);font:.78rem/1.3 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tfr-tool .list li button[aria-current="true"]{background:var(--highlight)}
+.tfr-tool .entry h2{font:500 1.8rem/1.2 var(--font-display);margin:0 0 .2rem}
+.tfr-tool .entry .forms{color:var(--muted);margin:0 0 1rem;font-style:italic}
+.tfr-tool .sense{margin:0 0 1.2rem;padding:0 0 1rem;border-bottom:1px solid var(--border)}
+.tfr-tool .sense p{margin:0 0 .5rem;max-width:68ch}
+.tfr-tool .sense ol{margin:0;padding:0;list-style:none;display:grid;gap:.25rem}
+.tfr-tool .sense li{font-size:.9rem;color:var(--muted)}
+.tfr-tool .sense li a{color:var(--fg)}
+.tfr-tool .muted{color:var(--muted)}
+@media (max-width:720px){.tfr-tool .cols{grid-template-columns:1fr}
+.tfr-tool .list{max-height:40vh}}
+.tfr-tool{background:transparent}
+.tfr-tool .wrap{padding-top:1.2rem}
+</style>
+{{/contentFor}}
+{{!-- /the-faith-received/lexicon/ — Lexicon, as The Faith Received has it (tools/prdl_reader_prototype/lexicon.html), in this site's
+     shell: the hero is the theme's, the body and its script (faith-lexicon.js) the library's, reading the library worker. --}}
+<section class="bhero bhero--tool">
+  <div class="bhero-inner container">
+    <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Lexicon</p>
+    <h1 class="bhero-title">Terms as the authors define them</h1>
+    <p class="bhero-lede">Each term gathers the definitions the library's authors give of it, from the Fathers to the post-Reformation divines, sorted into its senses. Every sense lists the pages that define it.</p>
+  </div>
+</section>
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+<main class="tfr-tool"><div class="wrap">
+  <form class="find" role="search" id="find"><label class="sr-only" for="q" style="position:absolute;left:-9999px">Find a term</label><input id="q" type="search" placeholder="A term in English, Latin or Greek: grace, gratia, χάρις" autocomplete="off"></form>
+  <div class="letters" id="letters" role="group" aria-label="Browse by letter"></div>
+  <div class="cols"><ul class="list" id="list" aria-label="Terms"></ul><article class="entry" id="entry" aria-live="polite"><p class="muted">Loading the lexicon…</p></article></div>
+
+</div></main>
+<script src="{{asset "js/faith-lexicon.js"}}&amp;frv=1925c6e23448af90"></script>
