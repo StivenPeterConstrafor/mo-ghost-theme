@@ -102,6 +102,15 @@ html.cp-site-mo .cp-top > .cp-eyebrow, html.cp-site-mo .cp-top > .cp-ref { grid-
 .cp-list .cp-row-li { border-bottom: 1px solid var(--cp-rule); }
 .cp-list .cp-li-h + .cp-row-li { border-top: 1px solid var(--cp-rule); }
 .cp-list .cp-row[aria-pressed="true"] .cp-row-t { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--cp-accent); }
+/* an author's other works on the chapter, beneath his row and inside its rule (10-19) */
+.cp-list .cp-row-li:has(+ .cp-row-sub) { border-bottom: 0; }
+.cp-list .cp-row-sub .cp-row { min-height: 0; padding: 0 2px 9px 18px; }
+/* the sub rows keep the 44px touch target on a phone (they were 26px) */
+@media (max-width: 640px) { .cp-list .cp-row-sub .cp-row { min-height: 44px; padding: 9px 2px 9px 18px; } }
+.cp-list .cp-li-more { border-bottom: 0; }
+.cp-more-btn { min-height: 44px; padding: 9px 2px; background: none; border: 0; color: var(--cp-muted); font: inherit; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.cp-more-btn:hover, .cp-more-btn:focus-visible { color: var(--cp-accent); }
+.cp-list .cp-row-sub .cp-row-t { font-size: 13px; }
 
 /* a row: an italic work title over a muted line (author, century, page) */
 .cp-rows, .cp-eras, .cp-top-list { margin: 0 0 6px; padding: 0; list-style: none; }
