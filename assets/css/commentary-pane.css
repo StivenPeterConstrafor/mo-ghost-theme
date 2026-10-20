@@ -39,6 +39,8 @@ body.cp-on.cp-src .cp-pane { display: none; }
      to be sticky"); a rail that sticks and is taller than the window cannot be read to its end without a box that scrolls on its own */
   position: relative;
   color: var(--cp-ink);
+  /* the page's hero and chapter heading are centered and that is inherited here: every row in the pane reads left to right */
+  text-align: left;
   font-family: "Source Serif Pro", Palatino, Georgia, serif;
   font-size: 15px;
   line-height: 1.5;
