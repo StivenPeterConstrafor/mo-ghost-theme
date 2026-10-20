@@ -191,10 +191,17 @@
 
   // SOURCES CITED, the page in view: the pages elsewhere in the library this page cites (v1/enrich/cites).
   function citedFold(cites) {
-    if (!cites || !cites.pages) return null;
+    if (!cites || !(cites.pages || cites.names)) return null;
+    cites.pages = cites.pages || {};
     const d = fold("cited", "Sources cited", `<div class="nb-guide-cited"></div>`, true, 0);
     const box = d.querySelector(".nb-guide-cited");
-    const at = (page) => keysOf(page).flatMap((k) => cites.pages[k] || []);
+    // the page's citations, one row per cited place (a work named twice without a page counts once)
+    // the page's citations placed on their page, then (from "names") the works it cites whose page is not yet found, each once
+    const at = (page) => {
+      const seen = new Set(), keys = keysOf(page);
+      const rows = keys.flatMap((k) => cites.pages[k] || []).concat(keys.flatMap((k) => ((cites.names || {})[k] || []).map((w) => ({ w }))));
+      return rows.filter((c) => { const id = `${c.w}|${c.p || ""}`; return !seen.has(id) && seen.add(id); });
+    };
     const FIRST = 8;
     let shown = null, all = false;
     async function draw(page) {
@@ -204,12 +211,13 @@
       if (!list.length) { box.innerHTML = `<p class="wrs-note">No linked citations on ${esc(where(page))}.</p>`; return; }
       const names = await works();
       if (shown !== page) return;
-      const cut = all ? list : list.slice(0, FIRST);
-      box.innerHTML = `<ul class="wh-cited">${cut.map((c) => {
-        const w = names[c.w];
-        const name = w ? [w.author, w.title].filter(Boolean).join(", ") : c.w;
-        return `<li><a href="${there(c.w, c.p)}" target="_blank" rel="noopener">${esc(name)}, p. ${esc(c.p)}</a>${c.loc ? `<span>${esc(c.loc)}</span>` : ""}</li>`;
-      }).join("")}</ul>${cut.length < list.length ? more(list.length) : ""}`;
+      const named = (c) => { const w = names[c.w]; return w ? [w.author, w.title].filter(Boolean).join(", ") : c.w; };
+      // a citation placed on its page is a row; one that names only the work (its page not yet found) joins one line under them
+      const paged = list.filter((c) => c.p), seen = new Set(), bare = list.filter((c) => !c.p && !seen.has(c.w) && seen.add(c.w));
+      const cut = all ? paged : paged.slice(0, FIRST);
+      box.innerHTML = `${paged.length ? `<ul class="wh-cited">${cut.map((c) =>
+        `<li><a href="${there(c.w, c.p)}" target="_blank" rel="noopener">${esc(named(c))}, p. ${esc(c.p)}</a>${c.how ? ` <span class="wh-how">${esc(c.how)}</span>` : ""}${c.loc ? `<span>${esc(c.loc)}</span>` : ""}</li>`).join("")}</ul>${cut.length < paged.length ? more(paged.length) : ""}` : ""}${bare.length
+        ? `<p class="wh-also">${paged.length ? "Also names" : "Names"} ${bare.map((c) => `<a href="${READ}${encodeURIComponent(c.w)}" target="_blank" rel="noopener">${esc(named(c))}</a>`).join(" · ")}</p>` : ""}`;
     }
     box.addEventListener("click", (e) => { if (e.target.closest(".wh-pall")) { all = true; const p = shown; shown = null; draw(p); } });
     d.addEventListener("toggle", () => { if (d.open) { shown = null; draw(page); } });
