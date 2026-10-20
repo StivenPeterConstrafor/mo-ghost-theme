@@ -447,6 +447,8 @@
      where it is as the page scrolls. The overview goes back to the top. */
   function alignSide(v) {
     $side.style.marginTop = "";
+    // A sidebar held in view (sticky, scrolling on its own) needs no push: the panel opens at its top.
+    if (getComputedStyle($side).position === "sticky") { $side.scrollTop = 0; return; }
     const span = v && $text.querySelector(`.bible-verse[data-v="${v}"]`);
     if (!span) return;
     const room = $text.getBoundingClientRect().bottom - $side.getBoundingClientRect().top - 240;

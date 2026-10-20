@@ -72,6 +72,14 @@ body.cp-on.cp-src .cp-pane { display: none; }
 .cp-who { font-size: 12.5px; color: var(--cp-muted); }
 .cp-pick { flex: none; min-height: 44px; padding: 0 2px; background: none; border: 0; font-size: 14px; color: var(--cp-accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .cp-list { margin: 0 0 6px; padding: 0; list-style: none; }
+/* The key works of the chapter, one click away (2026-10-19): the four first on the book, a rule, the two first on the whole Bible. */
+.cp-keys { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 2px; }
+.cp-keys:empty { display: none; }
+.cp-key { padding: 3px 10px; border: 1px solid var(--cp-rule); border-radius: 999px; background: transparent; color: var(--cp-ink); font: inherit; font-size: 12.5px; line-height: 1.4; cursor: pointer; }
+.cp-key:hover { border-color: var(--cp-ink); }
+.cp-key[aria-pressed="true"] { background: var(--cp-ink); border-color: var(--cp-ink); color: var(--cp-paper); }
+.cp-key:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 2px; }
+.cp-keys-sep { width: 1px; height: 16px; margin: 0 4px; background: var(--cp-rule); }
 .cp-li-h { margin: 12px 0 4px; font-size: 13px; font-weight: 600; color: var(--cp-ink); }
 .cp-list .cp-row-li { border-bottom: 1px solid var(--cp-rule); }
 .cp-list .cp-li-h + .cp-row-li { border-top: 1px solid var(--cp-rule); }

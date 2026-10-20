@@ -73,11 +73,44 @@
   })();
   document.documentElement.classList.add(`cp-site-${SITE.name}`);
   const BASE = SITE.base;
-  // The landmark sets first, in the order a reader of the tradition reaches for them; then the rest by how many verses they annotate.
-  const LANDMARKS = ['Cornelius a Lapide', 'Matthew Poole', 'Critici Sacri', 'Denys the Carthusian', 'Walafrid Strabo', 'Willem van Est',
-    'Abraham Calov', 'Westminster Assembly', 'John Calvin', 'Johannes Cocceius', 'Hugo Grotius', 'John Wesley', 'Adam Clarke',
-    'Joseph Benson', 'John Trapp', 'Johannes Piscator', 'Thomas Coke'];
   const cache = new Map();
+  /* IMPORTANCE, NOT A FIXED LIST (2026-10-19, owner: "rerank by importance and relevance like augustine obv, reformers … make sure in
+   * scripture reader its easy to get to the key works … not just whole bible like the glossa or poole and sacred critics and lapide
+   * but also for chapter comms like Augustine on John or the Psalms"). The list above ranked whole-Bible annotators (and Wesley, Clarke,
+   * Benson, Coke) over every Father: Augustine's Tractates on John came 157th of 208. v1/scripture/rank.json gives every commentary on
+   * the map its author's standing in the tradition (how many works in the library cite him, log scale, Augustine 100) and whether it
+   * belongs to a set on the whole Bible. A chapter's commentaries are ranked in two groups, on the book (Augustine on John, Chrysostom's
+   * homilies) and on the whole Bible (the Glossa, Lapide, Poole): by that standing, a commentary before a sermon or a volume of
+   * collected works, one that covers the book before one on a single chapter, and a note on the chapter's verses first. */
+  const RANK = { works: {}, authors: {} };
+  let rankReady = null;
+  const loadRank = () => rankReady || (rankReady = json(`${BASE}/v1/scripture/rank.json`)
+    .then((d) => { Object.assign(RANK.works, (d && d.works) || {}); Object.assign(RANK.authors, (d && d.authors) || {}); })
+    .catch(() => { rankReady = null; }));
+  const impOf = (slug, a) => { const r = RANK.works[slug]; return r ? r[0] : (RANK.authors[a] || 0); };
+  const KIND_W = { commentary: 1, sermons: 0.8, collected: 0.7 };
+  function weigh(c) {
+    // a series of sermons or tractates through the book (Augustine's 124 Tractates on John) is read as its commentary
+    const kind = c.k === 'sermons' && c.cov >= 5 ? 1 : (KIND_W[c.k] || (c.overlay ? 1 : 0.65));
+    const cov = c.cov >= 5 ? 1 : c.cov >= 2 ? 0.92 : 0.86;
+    c.wb = (RANK.works[c.slug] || [])[1] === 1 || !!c.overlay ? 1 : 0;
+    // verse notes on the chapter only break near-ties: importance leads (Augustine's Expositions before Calvin on Psalm 51)
+    c.score = impOf(c.slug, c.a) * kind * cov + (Object.keys(c.notes).length ? 0.5 : 0);
+    return c;
+  }
+  // the name a key button carries: "Augustine", "Chrysostom", "Glossa", "Critici Sacri"
+  const SHORT = { 'Augustine of Hippo': 'Augustine', 'John Chrysostom': 'Chrysostom', 'Walafrid Strabo': 'Glossa', 'Walahfrid Strabo': 'Glossa',
+    'Westminster Assembly': 'Westminster Annotations', 'Gregory I': 'Gregory the Great', 'Theophylact, Archbishop of Bulgaria': 'Theophylact',
+    'The critics, collected by John Pearson and others': 'Critici Sacri', 'Cornelius a Lapide': 'Lapide', 'collected by Thomas Aquinas': 'Catena Aurea',
+    'collected by Thomas Aquinas The catena': 'Catena Aurea',
+    'Denys the Carthusian': 'Denys', 'Willem van Est': 'Estius', 'Nicholas of Lyra': 'Lyra', 'Matthew Poole': 'Poole' };
+  const short = (a) => {
+    if (SHORT[a]) return SHORT[a];
+    if (/catena/i.test(a) && /aquinas/i.test(a)) return 'Catena Aurea'; // "The catena, collected by Thomas Aquinas" in the chapter files
+    const b = String(a || '').replace(/^Uncertain author\s*\(?/i, '').replace(/\)$/, '').replace(/\s+(?:of|the)\s+.*$/i, '').trim();
+    const p = b.split(/\s+/);
+    return /^[IVXL]+$/.test(p[p.length - 1]) ? b : p[p.length - 1];
+  };
   // Poole's sigla ("Be." Beza, "Pi." Piscator …), from each volume's own Catalogus Auctorum, carried in the overlay
   const SIGLA = {};
   const reEsc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -133,6 +166,7 @@
       S.meta[e.w] = { a: e.a || '', t: e.st || e.t || e.w };
       if (+ch < (e.c1 || 1) || +ch > (e.c2 || 999)) continue;
       const c = take(e.w, e.a, e.t);
+      c.k = c.k || e.k; c.cov = Math.max(c.cov || 0, Object.keys(e.an || {}).length || ((Number(e.c2) || 0) - (Number(e.c1) || 0) + 1));
       if (e.an && e.an[ch] != null) { c.open = e.an[ch]; if (e.an[String(+ch + 1)] != null) c.close = e.an[String(+ch + 1)]; }
     }
     for (const [slug, w] of Object.entries((ov && ov.works) || {})) if (w.sigla) SIGLA[slug] = w.sigla;
@@ -142,14 +176,62 @@
       if (x.c) { c.collected = x.c; for (const v of Object.keys(x.c)) if (!(v in c.notes)) c.notes[v] = x.c[v][0][1]; }
       if (x.pv) c.pv = Object.assign(c.pv || {}, x.pv); // the verse as the work prints it, where its numbering counts a psalm's title
     }
-    const rank = (a) => { const i = LANDMARKS.indexOf(a); return i < 0 ? 99 : i; };
-    for (const c of by.values()) c.rows = rowsBy.get(c.slug) || {};
+    await loadRank();
+    for (const c of by.values()) { c.rows = rowsBy.get(c.slug) || {}; weigh(c); }
     return [...by.values()].filter((c) => Object.keys(c.notes).length || c.open != null)
-      .sort((x, y) => rank(x.a) - rank(y.a) || Object.keys(y.notes).length - Object.keys(x.notes).length || x.a.localeCompare(y.a));
+      .sort((x, y) => x.wb - y.wb || y.score - x.score || x.a.localeCompare(y.a));
   }
 
   // ── a commentary page ─────────────────────────────────────────────────────────────────────────────────────────────────────
+  /* A Father in Migne or the Patrologia Orientalis (pld-, pg-, po-) is held as one TEI file of the family, not as a work folder: its
+   * places are columns (milestone unit="column" n="vol:col"; the map's chapter pages are these columns), every paragraph in the
+   * source language with its English beside it (xml:lang, corresp). The pane shows a column and the next, as the reader does, and
+   * steps two at a time. Before this, Augustine on John and Chrysostom's homilies could be chosen but opened nothing. */
+  const CANON = /^(pld|pg|po)-(\d+)$/;
+  const XML_NS = 'http://www.w3.org/XML/1998/namespace';
+  const langOf = (el) => {
+    for (let x = el; x && x.nodeType === 1; x = x.parentElement) { const l = x.getAttributeNS(XML_NS, 'lang') || x.getAttribute('xml:lang'); if (l) return l; }
+    return '';
+  };
+  const stride = (slug) => (CANON.test(slug) ? 2 : 1);
+  function canonCols(slug) {
+    const k = `canon:${slug}`;
+    if (!cache.has(k)) {
+      const p = (async () => {
+        const [, fam, id] = CANON.exec(slug);
+        const url = SITE.name === 'mo' ? `${BASE}/v1/tei/${fam}/${id}.xml` : `${BASE}/tei/${fam}/${id}.xml`;
+        const r = await fetch(url, { credentials: 'omit' }); if (!r.ok) throw new Error(url);
+        const doc = new DOMParser().parseFromString(await r.text(), 'application/xml');
+        const en = new Map(), src = new Map(), cols = [];
+        let cur = null;
+        for (const el of doc.querySelectorAll('body *')) {
+          const tag = el.localName;
+          if (tag === 'milestone' || tag === 'pb') {
+            if (tag === 'milestone' && el.getAttribute('unit') !== 'column') continue;
+            const raw = String(el.getAttribute('n') || '');
+            if (fam === 'pld' && tag === 'milestone' && !raw.includes(':')) continue; // the volume's own mark, not a column
+            const c = parseInt(raw.split(':').pop(), 10); // "26:0021B": column 21, its second quarter
+            if (c) { cur = c; if (!cols.includes(c)) cols.push(c); }
+          } else if ((tag === 'p' || tag === 'head') && cur != null && !el.closest('note')) {
+            const t = el.textContent.replace(/\s+/g, ' ').trim(); if (!t) continue;
+            const m = langOf(el) === 'en' ? en : src;
+            if (!m.has(cur)) m.set(cur, []); m.get(cur).push(t);
+          }
+        }
+        return { en, la: src, cols };
+      })();
+      p.catch(() => { if (cache.get(k) === p) cache.delete(k); });
+      cache.set(k, p);
+    }
+    return cache.get(k);
+  }
   async function page(slug, n) {
+    if (CANON.test(slug)) {
+      const d = await canonCols(slug);
+      const two = (m) => [Number(n), Number(n) + 1].flatMap((c) => m.get(c) || []).join('\n');
+      const p = { n, en: two(d.en), la: two(d.la) };
+      return { meta: { canon: true }, p: p.en || p.la ? p : null, last: d.cols[d.cols.length - 1] || n };
+    }
     const meta = await json(`${BASE}/v1/works/${slug}/meta.json`);
     const last = meta.n_pages || (meta.shards && meta.shards.length && meta.shards[meta.shards.length - 1].to);
     if (!(meta.shards || []).length && meta.has_tei) {
@@ -197,7 +279,7 @@
   const ord = (n) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th')}`;
   const fmt = (n) => Number(n || 0).toLocaleString('en-US');
   const VERB = { quotation: 'quotes it', explicit: 'cites it', allusion: 'alludes to it', exegesis: 'expounds it' };
-  const rankOf = (a) => { const i = LANDMARKS.indexOf(a); return i < 0 ? 99 : i; };
+  const rankOf = (slug, a) => -impOf(slug, a);
   // a page's one-line gist, as the reception file carries it (cut at about 170 characters): ended where it ends, else marked as cut
   const gist = (g) => { const t = String(g || '').trim(); if (/[.!?)\]"'”’]$/.test(t)) return t; const u = t.length > 200 ? t.slice(0, 200) : t; return `${u.replace(/[\s,;:]+\S*$/, '')}…`; };
   const centuryOf = (slug) => { const n = S.cen[slug], f = (window.MOScriptureDev || {}).centuryLabel; return n && f ? f(n) : ''; };
@@ -227,6 +309,7 @@
         <div class="cp-pickwrap">
           <div class="cp-cur"><div class="cp-cur-id"><span class="cp-what"></span><span class="cp-who">Commentary</span></div>
             <button type="button" class="cp-pick" aria-expanded="false" aria-controls="cpList">Change</button></div>
+          <div class="cp-keys" role="group" aria-label="Key commentaries on this chapter"></div>
           <ol class="cp-list" id="cpList" hidden></ol>
         </div>
         <div class="cp-lang" role="group" aria-label="Language of the commentary">
@@ -267,7 +350,8 @@
     const pick = pane.querySelector('.cp-pick'), list = pane.querySelector('.cp-list');
     pick.onclick = () => { const open = list.hidden; list.hidden = !open; pick.setAttribute('aria-expanded', String(open)); pick.textContent = open ? 'Close' : 'Change'; };
     const closeList = () => { list.hidden = true; pick.setAttribute('aria-expanded', 'false'); pick.textContent = 'Change'; };
-    list.onclick = (e) => { const li = e.target.closest('[data-slug]'); if (!li) return; choose(li.dataset.slug); closeList(); };
+    list.onclick = (e) => { const li = e.target.closest('[data-slug]'); if (!li) return; choose(li.dataset.slug, true); closeList(); };
+    pane.querySelector('.cp-keys').onclick = (e) => { const b = e.target.closest('[data-slug]'); if (b) { choose(b.dataset.slug, true); closeList(); } };
     pane.querySelectorAll('.cp-pages button').forEach((b) => { b.onclick = () => step(+b.dataset.step); });
     wide.addEventListener('change', () => setTab(S.tab, true));
     setTab(S.tab, true);
@@ -340,7 +424,7 @@
     const ns = Object.entries(rv.notes || {}).map(([slug, p]) => {
       const c = S.list.find((x) => x.slug === slug) || S.meta[slug] || {};
       return { slug, p, a: c.a || '', t: c.t || slug };
-    }).sort((x, y) => rankOf(x.a) - rankOf(y.a) || x.a.localeCompare(y.a));
+    }).sort((x, y) => rankOf(x.slug, x.a) - rankOf(y.slug, y.a) || x.a.localeCompare(y.a));
     const tiles = `<div class="cp-stats"><div class="cp-stat"><b>${fmt(rv.works)}</b><span>${rv.works === 1 ? 'work cites it' : 'works cite it'}</span></div>`
       + `<div class="cp-stat"><b>${fmt(ns.length)}</b><span>${ns.length === 1 ? 'commentary on it' : 'commentaries on it'}</span></div></div>`;
     const span = strip.length ? `<p class="cp-lede">From the ${ord(strip[0][0])} century to the ${ord(strip[strip.length - 1][0])}.</p>` : '';
@@ -382,22 +466,40 @@
   }
 
   function fillList() {
-    const list = pane.querySelector('.cp-list');
-    const land = S.list.filter((c) => LANDMARKS.includes(c.a)), rest = S.list.filter((c) => !LANDMARKS.includes(c.a));
+    const list = pane.querySelector('.cp-list'), w = where() || {};
+    const bookName = w.book === 'psalms' ? 'the Psalms' : (w.name || 'this book');
+    // one row per author in each group (his first-ranked work); his other works on the chapter after both groups
+    const seen = new Set(), firsts = [], again = [];
+    for (const c of S.list) { const k = `${c.wb}|${c.a}`; if (seen.has(k)) again.push(c); else { seen.add(k); firsts.push(c); } }
+    const onBook = firsts.filter((c) => !c.wb), whole = firsts.filter((c) => c.wb);
     const li = (c) => `<li class="cp-row-li" data-slug="${esc(c.slug)}"><button type="button" class="cp-row" aria-pressed="${!!(S.cur && S.cur.slug === c.slug)}">`
       + `<span class="cp-row-t">${esc(c.t)}</span><span class="cp-row-m">${[c.a, centuryOf(c.slug), Object.keys(c.notes).length ? `${Object.keys(c.notes).length} verse notes` : 'chapter'].filter(Boolean).map(esc).join(dot)}</span></button></li>`;
-    list.innerHTML = (land.length ? `<li class="cp-li-h" role="presentation">Landmark commentaries</li>${land.map(li).join('')}` : '')
-      + (rest.length ? `<li class="cp-li-h" role="presentation">Also on this chapter</li>${rest.map(li).join('')}` : '')
-      || '<li class="cp-li-h" role="presentation">No commentary on this chapter yet</li>';
+    const h = (t) => `<li class="cp-li-h" role="presentation">${esc(t)}</li>`;
+    list.innerHTML = (onBook.length ? h(`On ${bookName}`) + onBook.map(li).join('') : '')
+      + (whole.length ? h('On the whole Bible') + whole.map(li).join('') : '')
+      + (again.length ? h('More by the same authors') + again.map(li).join('') : '')
+      || h('No commentary on this chapter yet');
+    // The key works, one click away (owner 10-19: "connect readers to what they want and should see, which is usually looking at key
+    // bible book commentaries, and whole bible commentaries"): the curated key commentators on the book (rank.json tier 1, Augustine,
+    // Chrysostom, Jerome, Aquinas, Luther, Calvin; then tier 2), at most five, in the order they wrote; a rule; the first two sets on
+    // the whole Bible (the Glossa, the Westminster Annotations, Poole …). A chapter with no key commentator shows its first four.
+    const tierOf = (c) => (RANK.works[c.slug] || [])[4] || 0, cenOf = (c) => (RANK.works[c.slug] || [])[2] || 99;
+    const keyed = onBook.filter((c) => tierOf(c)).sort((x, y) => tierOf(x) - tierOf(y) || y.score - x.score).slice(0, 5)
+      .sort((x, y) => cenOf(x) - cenOf(y) || y.score - x.score);
+    const book = keyed.length ? keyed : onBook.slice(0, 4);
+    const keys = book.concat(whole.slice(0, 2));
+    pane.querySelector('.cp-keys').innerHTML = keys.length < 2 ? '' : keys.map((c, i) =>
+      `${i === book.length && i ? '<span class="cp-keys-sep" aria-hidden="true"></span>' : ''}<button type="button" class="cp-key" data-slug="${esc(c.slug)}" aria-pressed="${!!(S.cur && S.cur.slug === c.slug)}" title="${esc(`${c.t} (${c.a})`)}">${esc(short(c.a))}</button>`).join('');
   }
 
   function nameCur() {
     pane.querySelector('.cp-who').textContent = S.cur ? [S.cur.a, centuryOf(S.cur.slug)].filter(Boolean).join(dot) || 'Commentary' : 'No commentary';
     pane.querySelector('.cp-what').textContent = S.cur ? S.cur.t : '';
   }
-  function choose(slug) {
+  // Only the reader's own choice is remembered (fr_cp_pick): the old key held whatever opened first, Lapide for nearly everyone.
+  function choose(slug, mine) {
     S.cur = S.list.find((c) => c.slug === slug) || S.list[0] || null;
-    if (S.cur) store.set('fr_cp_author', S.cur.a);
+    if (S.cur && mine) store.set('fr_cp_pick', S.cur.a);
     nameCur();
     fillList();
     S.shown = null;
@@ -478,7 +580,7 @@
         S.shown.byPage = Object.fromEntries(ns.map((n, i) => [n, got[i] && got[i].p]));
         S.shown.pages = got.filter(Boolean).map((g) => g.p);
       } else {
-        const [a, b] = await Promise.all([page(cur.slug, +t.p), page(cur.slug, +t.p + 1).catch(() => null)]);
+        const [a, b] = await Promise.all([page(cur.slug, +t.p), page(cur.slug, +t.p + stride(cur.slug)).catch(() => null)]);
         if (tok !== S.token) return;
         S.shown.pages = [a.p, b && b.p].filter(Boolean); S.shown.last = a.last;
       }
@@ -488,10 +590,10 @@
 
   function step(d) {
     if (!S.shown) return;
-    const p = Math.max(1, S.shown.p + d);
+    const k = stride(S.cur.slug), p = Math.max(1, S.shown.p + d * k);
     S.follow = false; pane.querySelector('.cp-follow input').checked = false; store.set('fr_cp_follow', '0');
     S.shown = { ...S.shown, p, t: { p, how: 'browse' } };
-    Promise.all([page(S.cur.slug, p), page(S.cur.slug, p + 1).catch(() => null)]).then(([a, b]) => {
+    Promise.all([page(S.cur.slug, p), page(S.cur.slug, p + k).catch(() => null)]).then(([a, b]) => {
       S.shown.pages = [a.p, b && b.p].filter(Boolean); paint();
     });
   }
@@ -629,8 +731,9 @@
         if (pane && S.list === list) { fillList(); nameCur(); }
       }).catch(() => {});
     }
-    const want = store.get('fr_cp_author', 'Cornelius a Lapide');
-    const c = S.list.find((x) => x.a === want) || S.list[0];
+    // the reader's own last choice when this chapter has it, else the first-ranked commentary on the book
+    const want = store.get('fr_cp_pick', '');
+    const c = (want && S.list.find((x) => x.a === want)) || S.list[0];
     S.verse = w.v || 1;
     head();
     choose(c ? c.slug : null);
