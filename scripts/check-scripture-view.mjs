@@ -4,8 +4,8 @@
  * 1. CONTRAST. The dark tokens are stated in assets/css/scripture-dev.css under "SCRIPTURE DARK MODE". This reads them out of that
  *    block (so a changed colour is checked, not a copy of it) and measures every text-on-ground pair the page uses against WCAG AA
  *    (4.5:1 for text, 3:1 for the lines that mark a control). The light pairs the page already ships are not re-measured.
- * 2. STATE. scripture-view-boot.js parses the stored layout and theme; a bad value falls back, the narrow splits read as 50/50 when
- *    the window has no room for them, and a stored sepia reads as light.
+ * 2. STATE. scripture-view-boot.js parses the stored layout and theme; a bad value falls back, a saved 25-75 or 75-25 migrates to
+ *    40-60 or 60-40, and a stored sepia reads as light.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -71,11 +71,8 @@ for (const l of V.LAYOUTS) eq(`parseLayout(${l})`, V.parseLayout(l), l);
 eq("parseLayout(null)", V.parseLayout(null), "50-50");
 eq("parseLayout(garbage)", V.parseLayout("90-10"), "50-50");
 eq("parseLayout(constructor)", V.parseLayout("constructor"), "50-50");
-eq("25-75 without room", V.effectiveLayout("25-75", false), "50-50");
-eq("75-25 without room", V.effectiveLayout("75-25", false), "50-50");
-eq("25-75 with room", V.effectiveLayout("25-75", true), "25-75");
-eq("scripture without room", V.effectiveLayout("scripture", false), "scripture");
-eq("panel without room", V.effectiveLayout("panel", false), "panel");
+eq("a saved 25-75 reads as 40-60", V.parseLayout("25-75"), "40-60");
+eq("a saved 75-25 reads as 60-40", V.parseLayout("75-25"), "60-40");
 eq("stored dark", V.resolveTheme("dark", false), "dark");
 eq("own light beats reader dark", V.resolveTheme("dark", true, "light"), "light");
 eq("own dark beats reader sepia", V.resolveTheme("sepia", false, "dark"), "dark");

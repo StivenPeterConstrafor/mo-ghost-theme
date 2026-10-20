@@ -45,10 +45,9 @@
   const opts = Array.from(group.querySelectorAll('[data-sd-layout-opt]'));
   const hint = bar.querySelector('[data-sd-view-hint]');
   const hintText = bar.querySelector('[data-sd-view-hint-text]');
-  const room = window.matchMedia(V.ROOM_FOR_NARROW);
   const wide = window.matchMedia('(min-width: 900px)');
   const stored = () => V.parseLayout(html.getAttribute('data-sd-view'));
-  const shown = () => V.effectiveLayout(stored(), room.matches);
+  const shown = () => stored();
 
   function refreshHint() {
     if (!hint) return;
@@ -114,6 +113,6 @@
   // The pane adds cp-on to <body> some moments after the text is drawn; the hint is only ever wanted once it has.
   if (window.MutationObserver) new MutationObserver(later).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   window.addEventListener('sd:verse', later);
-  [room, wide].forEach((q) => { if (q.addEventListener) q.addEventListener('change', paintLayout); });
+  if (wide.addEventListener) wide.addEventListener('change', paintLayout);
   paintLayout();
 }());
