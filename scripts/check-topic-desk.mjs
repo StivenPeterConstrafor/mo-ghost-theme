@@ -14,6 +14,12 @@
  *   - no Orthodox column without a mapped Orthodox document
  *   - no em dash and no British spelling in the words the desk writes
  *   - every work in treatments.json is in the works index (all 45 topics, not only the ten)
+ *   - RELEVANCE (2026-10-20), for the eight marquee topics (Trinity, Justification, Christ and the Atonement, Baptism, Predestination,
+ *     the Church, Scripture, the Lord's Supper): every shown article is about its topic (its title or text names it, Predestination
+ *     through the Topics page's own predestinationArticle), no document or work on the deny list of known bad picks is shown, every
+ *     vetted pick in the marquee file resolved, every work and document resolves, the early-church column and "the earliest
+ *     treatments" hold nothing dated after 1054 and are in date order, every key verse is cited by two or more of the topic's articles,
+ *     the Christ desk carries passion texts, and no Orthodox column or Cyril Lukaris count appears. It prints what each column shows.
  *   - the browser glue (topic-desk.js, and topics-dev.js on top of it) draws the desk in a DOM, and when the model throws
  *     the page is left as it was (needs jsdom: npm i --no-save jsdom)
  *
@@ -60,8 +66,8 @@ const BOOK_SLUGS = new Set([...BOOKS.values()].map((b) => b.slug));
 
 // ── Synthetic cases (no network) ───────────────────────────────
 {
-  const locus = { id: "x", label: "A Thin Topic", t2: "x", children: [] };
-  const empty = D.buildDeskModel({ locus, part: { n: "I", label: "X" }, topic: null, conf: null, scr: null, treat: [], data: {}, books: BOOKS, loci: LOCI });
+  const locus = { id: "x", label: "God", t2: "x", children: [] };
+  const empty = D.buildDeskModel({ locus, part: { n: "I", label: "X" }, topic: null, conf: null, scr: null, treat: [], data: {}, books: BOOKS, loci: LOCI, principal: {} });
   const html = D.renderDesk(empty);
   ok(Object.entries(empty.modules).every(([k, v]) => k === "hero" || v === null), "synthetic: with no data every module but the hero is left out");
   ok(!/tdk-mod/.test(html.body) && html.body === "", "synthetic: nothing at all is drawn for an empty topic");
@@ -77,12 +83,14 @@ const BOOK_SLUGS = new Set([...BOOKS.values()].map((b) => b.slug));
   const m = D.buildDeskModel({
     locus, part: { n: "I", label: "X" }, topic: { counts: { works: 3, authors: 2, positions: 10 }, trace: [], authors: [] },
     conf: { articles: arts, timeline: [] }, scr: { rows: [], total: 0 }, treat: [], data: {}, books: BOOKS, loci: LOCI,
+    principal: { lu: ["lc-1"], rf: ["rc-1"], an: ["rc-2"] }, vettedOnly: false, // the generic rules are tested; production passes nothing and so shows only vetted topics
     marquee: { dek: "A dek.", fault: { question: "Q?", rows: [{ church: "Lutheran", doc: "d", w: "lc-1", p: 1, quote: "a sentence the article does not contain" }, { church: "Reformed", doc: "d", w: "rc-1", p: 1, quote: "one God" }, { church: "Anglican", doc: "d", w: "rc-2", p: 1, quote: "one God" }] } },
   });
   const cols = (m.modules.traditions || { columns: [] }).columns.map((c) => c.id);
   ok(cols.includes("lu") && cols.includes("rf") && cols.includes("an"), `synthetic: columns are the churches of the documents (${cols})`);
   ok(!cols.includes("or"), "synthetic: no Orthodox column without a mapped Orthodox document");
-  ok(JSON.stringify(m.modules.traditions).indexOf("Waldensian") === -1, "synthetic: a Waldensian document is not filed under a church that is not its own");
+  ok(JSON.stringify(m.modules.traditions.columns).indexOf("Waldensian") === -1, "synthetic: a Waldensian document is not filed under a church that is not its own");
+  ok(m.modules.traditions.withheld.some((x) => /Waldensian/.test(x.label)), "synthetic: a document no column takes in is named, not counted");
   ok(m.modules.traditions && m.modules.traditions.fault === null, "synthetic: a fault-line row with a quotation not found in its article is dropped whole");
   ok(m.omitted.some((o) => o.module === "fault-line"), "synthetic: the dropped fault-line is recorded");
   Object.assign(D.MODULES_ON, was);
@@ -176,6 +184,34 @@ const TOPICS = [
   ["The Lord's Supper", "de-coena"], ["Providence", "de-providentia"], ["An obscure topic (Relations and Persons)", "de-relationibus"],
 ];
 
+// The page's own predestinationArticle (topics-dev.js), read from the file and run, so the check cannot drift from the page.
+const predestinationArticle = (() => {
+  const src = readFileSync(path.join(root, "assets/js/page/topics-dev.js"), "utf8");
+  const a = src.indexOf("const PREDESTINATION_TERMS");
+  const b = src.indexOf("const relevantSections");
+  return new Function("state", `${src.slice(a, b)}; return predestinationArticle;`)({ id: "de-praedestinatione" });
+})();
+
+// The eight marquee topics the relevance test covers, and the known bad picks the independent review found (2026-10-20).
+const MARQUEE_ALL = new Set(Object.entries(marqueeFile.topics).filter(([, v]) => v.articles || v.works).map(([k]) => k));
+const MARQUEE8 = ["de-trinitate", "de-justificatione", "de-christo", "de-baptismo", "de-praedestinatione", "de-ecclesia", "de-scriptura", "de-coena"];
+const DENY_WORK = [
+  ["luther-wa-schriften-12", 16, "Leisnig ordinance, not a treatment of the Trinity"], ["pld-359", null, "Ambrose, On the Duties of Ministers"],
+  ["pld-2824", 1443, "Augustine, Tractates on John, for Scripture"], ["pld-5581", null, "Jerome, Apology against Rufinus"],
+  ["duns-scotus-in-librum-primum-sententiarum", null, "Scotus on enjoying versus using, for the Trinity"],
+  ["albertus-magnus-albert-the-great-commentaries-on-the-four-books-of-the-sentences", 520, "Albert on miraculous works, for Justification"],
+  ["eebo-44393", null, "Stillingfleet, the Trinity and Transubstantiation compared"], ["pld-7607", null, "Lombard (1136), after the early church"], ["pld-436", null, "Anselm (1073), after the early church"],
+];
+const DENY_WORK_PREFIX = ["davenant-treatise-on-justification-vol-2"]; // Justification's own treatise is vol-1; vol 2 stood in for four other topics
+const DENY_ARTICLE = [
+  ["cf-094-julius-iii-1550-1555", /Difference Between/i, "Trent on Penance, under Baptism"], ["cf-013-council-of-nicea-i-325", /Baptism of Heretics/i, "Nicaea canon on the Cathari, under Baptism"],
+  ["rc-113-benjamin-coxs-baptist-appendix-1646", null, "a title-page quotation"], ["rc-127-baptist-catechism-1693", /^Q\. 28\./, "Christ's priestly office, under the Church"],
+  ["lc-006-small-catechism-1529", /For Bishops|What the Hearers Owe/i, "a table of duties, under the Church"], ["cf-060-lateran-council-1102", null, "a fragment"], ["cf-061-council-of-guastalla-1106", null, "a fragment"],
+  ["rc-001-sixty-seven-articles-of-huldryc-zwingli-1523", null, "Zwingli on remission of sin, under Justification"], ["rc-005-william-farels-summary-1529", null, "Farel on merit, under Justification"],
+  ["rc-009-zwingli-fidei-expositio-1531", null, "Zwingli's Exposition, under the Lord's Supper"], ["rc-007-tetrapolitan-confession-1530", null, "the Tetrapolitan Confession, under the Lord's Supper"],
+];
+const PASSION = ["isaiah.53", "i-peter.2.24", "galatians.3.13", "ii-corinthians.5.21", "romans.3.25", "hebrews.9.14", "john.3.16", "philippians.2.8", "i-corinthians.15.3", "romans.5.8", "i-john.2.2", "hebrews.2.17"];
+
 // The desk's computed words only: the library's own titles, section headings, quotations, and verse text are excused, and so is the
 // marquee dek (a reviewed scope statement, checked separately below).
 const textOf = (html) => html.replace(/<svg[\s\S]*?<\/svg>/g, " ").replace(/<p class="tdk-dek">[\s\S]*?<\/p>/g, " ").replace(/<span class="(?:ts|m)">[\s\S]*?<\/span>/g, " ")
@@ -199,7 +235,7 @@ if (live) {
       get(`${VERSE}/v1/topic?id=${id}&t2=${l.t2}`, `topic-${id}.json`), get(`${VERSE}/v1/topic/confessions?id=${id}&limit=500`, `conf-${id}.json`),
       get(`${VERSE}/v1/topic/scripture?id=${id}&t2=${l.t2}&limit=60`, `scr-${id}.json`),
     ]);
-    const conf2 = { ...conf, articles: conf.articles || [], timeline: conf.timeline || [] };
+    const conf2 = { ...conf, articles: (conf.articles || []).filter((a) => id !== "de-praedestinatione" || predestinationArticle(a)), timeline: conf.timeline || [] };
     let hist = null;
     for (const slug of [l.t2, ...(l.aliases || [])]) {
       let d = null;
@@ -208,7 +244,7 @@ if (live) {
     }
     const model = D.buildDeskModel({
       locus: l, part: hit.part, parent: hit.parent, topic, conf: conf2, scr, treat: treatments[id] || [], data: deskData, marquee: marqueeFile.topics[id] || null,
-      books: BOOKS, loci: LOCI, bodyOf: () => "", history: hist,
+      books: BOOKS, loci: LOCI, bodyOf: () => "", history: hist, principal: marqueeFile.principal,
     });
     const out = D.renderDesk(model);
     // The History summaries are the page's existing machine-written text, relocated unchanged: counted above, not judged here.
@@ -271,6 +307,7 @@ if (live) {
     // 2. links
     const worksOf = [...html.matchAll(/href="\/the-faith-received\/read\/\?w=([^#"&]+)/g)].map((m) => decodeURIComponent(m[1]));
     const confDocs = new Set([...conf2.articles.map((a) => a.w), ...(topic.confessions || []).map((c) => c.w), ...proofDocs]);
+    const confDocsAll = confDocs;
     const bad = worksOf.filter((w) => !worksIndex.has(w) && !confDocs.has(w));
     ok(bad.length === 0, `${name}: all ${worksOf.length} reader links resolve (unresolved: ${[...new Set(bad)].slice(0, 4).join(", ") || "none"})`);
     const refs = [...html.matchAll(/scripture\/desk\/\?ref=([a-z0-9-]+)\.(\d+)\.(\d+)"/g)];
@@ -299,12 +336,119 @@ if (live) {
     ok((model.modules.hero.dek || "") === ((mq && mq.dek) || ""), `${name}: the dek is the marquee dek, or there is none`);
     if (mq && mq.fault && D.MODULES_ON.traditions) ok(Boolean(model.modules.traditions && model.modules.traditions.fault) === (model.omitted.every((o) => o.module !== "fault-line")), `${name}: the fault-line row is drawn only if every quotation verified`);
     ok(!/ id="tdk-trad-or"/.test(html) || conf2.articles.some((a) => /orthodox/i.test(a.trad || "")), `${name}: no Orthodox column without a mapped Orthodox document`);
+
+    // 5. RELEVANCE (the eight marquee topics): what each column shows, and that it is about the topic
+    if (MARQUEE8.includes(id)) {
+      const T = D.topicTerms(l, marqueeFile.topics[id]);
+      const arts = conf2.articles;
+      const trad = model.modules.traditions;
+      ok(Boolean(trad) && trad.columns.length >= 3, `${name}: relevance: the church columns are on (${trad ? trad.columns.length : 0} columns)`);
+      ok(model.omitted.every((o) => o.module !== "vetted-pick"), `${name}: relevance: every vetted pick in the marquee file resolved (${model.omitted.filter((o) => o.module === "vetted-pick").map((o) => o.reason).join("; ") || "none"})`);
+      ok(model.modules.treatments && model.modules.verses && model.modules.path, `${name}: relevance: classic works, key verses, and the reading path are on`);
+      const lines = [];
+      for (const c of (trad ? trad.columns : [])) {
+        lines.push(`        ${c.name}`);
+        for (const q of c.quotes) {
+          const art = arts.find((a) => a.w === q.w && (a.article_display || a.article || "").replace(/\s*—\s*/g, ": ") === q.article);
+          lines.push(`          article  ${q.year || "undated"}  ${q.doc}, ${q.article.slice(0, 50)}`);
+          ok(Boolean(art), `${name}: ${c.name}: ${q.doc} resolves to a mapped article`);
+          ok(Boolean(art) && T.lead.test(`${q.article} ${art.text}`), `${name}: ${c.name}: ${q.doc}, ${q.article.slice(0, 40)}: the article's title or text names the topic`);
+          ok(T.lead.test(`${q.article} ${q.text}`), `${name}: ${c.name}: ${q.doc}: the words shown name the topic`);
+          ok(q.text.length >= 60, `${name}: ${c.name}: ${q.doc}: a full statement, not a fragment`);
+          if (id === "de-praedestinatione") ok(Boolean(art) && predestinationArticle(art), `${name}: ${c.name}: ${q.doc}: passes the Topics page's predestinationArticle`);
+          const bad = DENY_ARTICLE.find(([w, re]) => w === q.w && (!re || re.test(q.article)));
+          ok(!bad, `${name}: ${c.name}: ${q.doc}: not on the deny list${bad ? ` (${bad[2]})` : ""}`);
+          ok(confDocsAll.has(q.w), `${name}: ${c.name}: confession id ${q.w} resolves`);
+          if (c.id === "early") ok(q.year === 0 || q.year < D.EARLY_END, `${name}: early column: ${q.doc} is dated before 1054`);
+        }
+        for (const w of c.works) {
+          lines.push(`          work     ${w.y || "undated"}  ${w.author}, ${w.title.slice(0, 44)}`);
+          const bad = DENY_WORK.find(([slug, p]) => slug === w.w && (p == null || p === Number(w.p))) || (DENY_WORK_PREFIX.some((x) => w.w.startsWith(x)) ? ["", 0, "Davenant vol 2"] : null);
+          ok(!bad, `${name}: ${c.name}: ${w.author}, ${w.title.slice(0, 30)}: not on the deny list${bad ? ` (${bad[2]})` : ""}`);
+          ok(worksIndex.has(w.w), `${name}: ${c.name}: work ${w.w} is in the live works index`);
+          const entry = (treatments[id] || []).find((e) => e.w === w.w);
+          ok(Boolean(entry) && D.workAbout(entry, T), `${name}: ${c.name}: ${w.author}: a treatments.json entry whose title or section heading names the topic`);
+          if (c.id === "early") ok(Number(w.y) > 0 && Number(w.y) <= D.EARLY_END, `${name}: early column: ${w.author} (${w.y}) is dated 1054 or earlier`);
+        }
+        if (c.id === "early") {
+          const ys = c.quotes.map((q) => q.year || 9999);
+          const ws = c.works.map((w) => Number(w.y) || 9999);
+          ok(ys.every((y, i) => i === 0 || y >= ys[i - 1]) && ws.every((y, i) => i === 0 || y >= ws[i - 1]), `${name}: early column: articles and works are in date order`);
+        }
+      }
+      // the classic works module holds only works that pass the same rule
+      const tw = model.modules.treatments ? model.modules.treatments.groups.flatMap((g) => g.rows) : [];
+      ok(tw.every((r) => { const e = (treatments[id] || []).find((x) => x.w === r.w); return e && D.workAbout(e, T) && !DENY_WORK.some(([slug, p]) => slug === r.w && (p == null || p === Number(r.p))); }), `${name}: classic works: all ${tw.length} pass the title-or-heading rule and none is on the deny list`);
+      // "the earliest treatments" step
+      const src = model.modules.path ? model.modules.path.steps.find((st) => st.name === "To the sources") : null;
+      if (src) {
+        const ys = src.items.map((it) => Number(((treatments[id] || []).find((e) => e.w === it.w) || {}).y));
+        ok(ys.every((y) => y > 0 && y <= D.EARLY_END) && ys.every((y, i) => i === 0 || y >= ys[i - 1]), `${name}: the earliest treatments are dated 1054 or earlier, oldest first (${ys.join(", ")})`);
+        lines.push(`        earliest treatments: ${src.items.map((it) => it.title).join("; ")}`);
+      }
+      // key verses: each cited by two or more of the topic's own articles
+      const aboutArts = arts.filter((a) => D.articleAbout(a, T, id));
+      const nCite = (b, c, v) => aboutArts.filter((a) => (a.scripture || []).some((r) => r.b === b && r.c === c && v >= r.v && v <= (r.v2 || r.v))).length;
+      const vitems = model.modules.verses ? model.modules.verses.items : [];
+      const vrefs = vitems.map((x) => x.href.split("ref=")[1]);
+      ok(vrefs.length >= 5 && vrefs.every((r) => { const [b, c, v] = r.split("."); const key = [...BOOKS.entries()].find(([, o]) => o.slug === b); return key && nCite(key[0], Number(c), Number(v)) >= 2; }), `${name}: key verses: all ${vrefs.length} are cited by two or more of the topic's articles`);
+      lines.push(`        key verses: ${vitems.map((x) => x.ref).join(", ")}`);
+      if (id === "de-christo") ok(PASSION.filter((r) => vrefs.some((v) => v.startsWith(r))).length >= 2, `${name}: key verses include passion and atonement texts (${PASSION.filter((r) => vrefs.some((v) => v.startsWith(r))).join(", ")})`);
+      // churches: no Orthodox column, no Lukaris counted, the notice once
+      ok(!trad.columns.some((c) => c.id === "or"), `${name}: no Orthodox column`);
+      const trHtml = out.body.split('id="tdk-traditions"')[1].split("</section>")[0];
+      ok((trHtml.match(/maps no Orthodox document/g) || []).length === 1, `${name}: the missing Orthodox document is stated once`);
+      ok(!trad.columns.some((c) => c.quotes.some((q) => /lukar/i.test(q.w))), `${name}: Cyril Lukaris is not counted in any column`);
+      // the fault-line: the Trinity and the Filioque only
+      ok(Boolean(trad.fault) === (id === "de-trinitate"), `${name}: the fault-line row is drawn for the Trinity and not for other topics`);
+      if (trad.fault) {
+        ok(/appears only in the 381 text above/.test(trHtml), `${name}: the fault-line carries the line about the Eastern view`);
+        ok(vitems.every((x) => !/i-john\.5\.7/.test(x.href)) || /few late Greek manuscripts/.test(out.body), `${name}: the 1 John 5:7 note mentions the late Greek manuscripts`);
+      }
+      // quotations are whole sentences; the early column holds no undated entry
+      for (const c of trad.columns) for (const q of c.quotes) {
+        ok(/^["\u201c\u2018]?[A-Z0-9]/.test(q.text) && /[.!?]["\u201d\u2019)\]]?$/.test(q.text) && !/^\u2026/.test(q.text), `${name}: ${c.name}: ${q.doc}: the quotation starts at a sentence start and ends at a sentence end`);
+        if (c.id === "early") ok(q.year > 0, `${name}: early column: ${q.doc} is dated`);
+      }
+      if (id === "de-coena") ok(trad.columns.find((c) => c.id === "rf").quotes.some((q) => /Heidelberg/.test(q.doc) && /feeds and nourishes my soul/.test(q.text)), `${name}: the Heidelberg quotation is complete, through "feeds and nourishes my soul"`);
+      if (trad.lukaris) ok(/Cyril Lukaris \(1629\) is listed separately; it is not counted under Reformed/.test(trHtml), `${name}: the Lukaris note is printed where he is mapped`);
+      // LINK LANDING: every vetted work link opens on the discussion, not a contents page, an index, or a preface
+      const pins = Object.values((marqueeFile.topics[id] || {}).works || {}).flat();
+      let landed = 0; let unchecked = 0;
+      for (const pin of pins) {
+        const e = (treatments[id] || []).find((x) => x.w === pin.w);
+        const pg = Number(pin.at != null ? pin.at : (e && e.p));
+        let m;
+        try { m = await get(`${LIB}/v1/works/${pin.w}/meta.json`, `meta-${pin.w}.json`, 24 * 7); } catch (_) { m = null; }
+        const shards = m && m.shards && m.shards.length ? m.shards : null;
+        if (!shards) { unchecked += 1; continue; }
+        const pageText = async (n) => {
+          const sh = shards.find((x) => n >= x.from && n <= x.to);
+          if (!sh) return "";
+          const d = await get(`${LIB}/v1/works/${pin.w}/${sh.file}`, `shard-${pin.w}-${sh.file.replace(/\W/g, "_")}.json`, 24 * 7);
+          const row = (d.pages || []).find((r) => r.n === n);
+          return row ? String(row.en || row.la || "").replace(/\s+/g, " ") : "";
+        };
+        const here = await pageText(pg);
+        const text = `${here} ${await pageText(pg + 1)}`;
+        const head = here.slice(0, 200);
+        const words = here.split(/\s+/).filter(Boolean).length || 1;
+        const nums = (here.match(/\b\d{1,4}\b/g) || []).length;
+        const looksLikeFront = /^\W*(?:table of )?contents\b|^\W*index\b|^\W*preface\b|^\W*to the reader|^\W*praefatio|^\W*dedicat|\.{5,}/i.test(head) || (nums / words > 0.2 && words > 40) || (here.match(/\.{4,}/g) || []).length > 3;
+        const T2 = D.topicTerms(l, marqueeFile.topics[id]);
+        const good = !looksLikeFront && T2.title.test(text) && here.length > 300;
+        ok(good, `${name}: link landing: ${pin.w} p.${pg} opens on text that names the topic and is not a contents page, index, or preface${good ? "" : ` (${here.slice(0, 90)})`}`);
+        if (good) landed += 1;
+      }
+      console.log(`      ${name}: ${landed} work links verified by page text, ${unchecked} not checkable here (no page shards, e.g. EEBO texts)`);
+      console.log(`      ${name}, what each column shows:\n${lines.join("\n")}`);
+    }
   }
   ok(seenTiers.has("marquee") && (seenTiers.has("full") || seenTiers.has("thin")), `tiers seen: ${[...seenTiers].join(", ")}`);
 
   // the trinity fault-line row verified against the live articles
   const t = await get(`${VERSE}/v1/topic/confessions?id=de-trinitate&limit=500`, "conf-de-trinitate.json");
-  const tm = D.buildDeskModel({ locus: LOCI.get("de-trinitate"), part: INDEX.get("de-trinitate").part, topic: await get(`${VERSE}/v1/topic?id=de-trinitate&t2=the-trinity`, "topic-de-trinitate.json"), conf: t, scr: null, treat: [], data: deskData, marquee: marqueeFile.topics["de-trinitate"], books: BOOKS, loci: LOCI });
+  const tm = D.buildDeskModel({ locus: LOCI.get("de-trinitate"), part: INDEX.get("de-trinitate").part, topic: await get(`${VERSE}/v1/topic?id=de-trinitate&t2=the-trinity`, "topic-de-trinitate.json"), conf: t, scr: null, treat: [], data: deskData, marquee: marqueeFile.topics["de-trinitate"], books: BOOKS, loci: LOCI, principal: marqueeFile.principal });
   ok(!tm.omitted.some((o) => o.module === "fault-line"), "the Trinity's fault-line row verifies all six quotations against the live articles");
   ok(Object.entries(D.MODULES_ON).every(([k, on]) => on || [tm.modules[k === "chron" ? "chron" : k]].every((v) => v === null)), "a module switched off in MODULES_ON is omitted whole");
 
@@ -313,13 +457,18 @@ if (live) {
   for (const [id, hit] of INDEX) {
     const l = hit.locus;
     const [topic, conf, scr] = await Promise.all([get(`${VERSE}/v1/topic?id=${id}&t2=${l.t2}`, `topic-${id}.json`), get(`${VERSE}/v1/topic/confessions?id=${id}&limit=500`, `conf-${id}.json`), get(`${VERSE}/v1/topic/scripture?id=${id}&t2=${l.t2}&limit=60`, `scr-${id}.json`)]);
-    const model = D.buildDeskModel({ locus: l, part: hit.part, parent: hit.parent, topic, conf, scr, treat: treatments[id] || [], data: deskData, marquee: marqueeFile.topics[id] || null, books: BOOKS, loci: LOCI });
+    const model = D.buildDeskModel({ locus: l, part: hit.part, parent: hit.parent, topic, conf, scr, treat: treatments[id] || [], data: deskData, marquee: marqueeFile.topics[id] || null, books: BOOKS, loci: LOCI, principal: marqueeFile.principal });
     const out = D.renderDesk(model);
     const html = out.hero + out.body;
     const empties = [...out.body.matchAll(/<section class="tdk-mod[^"]*" id="tdk-([a-z]+)"[^>]*>([\s\S]*?)<\/section>/g)].filter(([, , inner]) => !/<li|<article|<tr/.test(inner));
+    if (!MARQUEE_ALL.has(id)) {
+      const m = model.modules;
+      if (m.traditions || m.treatments || m.verses || m.path) ok(false, `${id}: a non-marquee topic shows a module that has not been hand-vetted`);
+    }
     if (empties.length || /undefined|NaN/.test(html)) ok(false, `${id}: an empty module or an undefined value was drawn`);
     built += 1;
   }
+  ok(MARQUEE8.every((k) => MARQUEE_ALL.has(k)) && MARQUEE_ALL.size === MARQUEE8.length, `scope: exactly the eight marquee topics are hand-vetted (${[...MARQUEE_ALL].join(", ")})`);
   ok(built === INDEX.size, `all ${built} loci build and draw without an empty module`);
 }
 
@@ -370,7 +519,7 @@ if (JSDOM && live) {
     return result;
   };
   const good = await run(false);
-  ok(good.hero && good.desk === 3 && good.has, `glue: the desk draws its hero and the three modules that are on (${good.desk})`);
+  ok(good.hero && good.desk >= 6 && good.has, `glue: the desk draws its hero and its modules (${good.desk})`);
   ok(good.blocks === 2 && good.stats.every((s) => s !== "…" && s !== "–"), `glue: the page's two existing blocks and their counts are still there (${good.stats.join(", ")})`);
   const bad = await run(true);
   ok(bad.hostText === "" && !bad.has && bad.desk === 0, "fallback: when the model throws, the desk host stays empty and the page does not claim a desk");
