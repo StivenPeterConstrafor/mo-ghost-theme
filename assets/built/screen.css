@@ -25223,6 +25223,7 @@ p.kpi-more .kpi-btn { width: 100%; justify-content: center; }
   .aud-peak-month { min-width: 0; flex: 1 1 auto; }
   .aud-controls [data-aud-peak-prev],
   .aud-controls [data-aud-peak-next],
+  .aud-controls [data-aud-peak-refresh],
   .aud-peak-metric { min-height: 44px; }
 }
 
