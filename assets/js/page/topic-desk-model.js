@@ -43,6 +43,11 @@
     { id: "modern", label: "Modern", span: "after 1800", end: 9999 },
   ];
   const eraOf = (c) => ERAS.find((e) => c * 100 - 50 < e.end).id;
+  // "About the Trinity", "About Justification": a leading On, Of, or De is dropped and a leading The follows About in lower case.
+  const aboutTitle = (label) => {
+    const t = String(label || "").trim().replace(/^(?:on|of|de)\s+/i, "");
+    return `About ${/^the\s/i.test(t) ? `the ${t.slice(4)}` : t}`;
+  };
   const ord = (n) => `${n}${[11, 12, 13].includes(n % 100) ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[n % 10] || "th")}`;
   const CHURCH_LABEL = Object.fromEntries(CHURCHES);
 
@@ -293,7 +298,7 @@
       });
       const eras = ERAS.map((e) => ({ ...e, rows: rowsC.filter((r) => r.era === e.id) })).filter((e) => e.rows.length);
       if (rowsC.filter((r) => r.total).length >= MIN.ruler) {
-        chron = { eras, max: Math.max(...rowsC.map((r) => r.total)), positions: ruler.positions, shelves: ruler.shelves, nDocs, lede: history && history.summary ? String(history.summary) : "", loose, nPeriods: periods.length, compact: nDocs < MIN.docs, hasCouncil: rowsC.some((r) => r.docs.some((d) => d.rank === 0)) };
+        chron = { eras, max: Math.max(...rowsC.map((r) => r.total)), positions: ruler.positions, shelves: ruler.shelves, nDocs, title: aboutTitle(locus.label), lede: history && history.summary ? String(history.summary) : "", loose, nPeriods: periods.length, compact: nDocs < MIN.docs, hasCouncil: rowsC.some((r) => r.docs.some((d) => d.rank === 0)) };
       } else skip("centuries", "fewer than 3 centuries with data");
     }
 
@@ -409,7 +414,7 @@
   function renderHero(h, tier, ids) {
     const jumps = [];
     const j = (id, label) => { if (ids[id]) jumps.push(link(`#tdk-${id}`, label)); };
-    j("traditions", "Traditions"); j("treatments", "Classic works"); j("chron", "Centuries"); j("verses", "Key verses");
+    j("traditions", "Traditions"); j("treatments", "Classic works"); j("chron", "About"); j("verses", "Key verses");
     j("people", "People"); j("path", "Reading path"); j("related", "Related");
     jumps.push(link("#td-h-conf", "Full record"));
     const tiles = h.tiles.length ? `<ul class="tdk-tiles" aria-label="This topic in the library">${h.tiles.map((t) =>
@@ -469,7 +474,7 @@
     }).join("");
     const loose = c.loose.length ? `<div class="tdk-loose"><h4 class="tdk-era-h">Other periods</h4>${c.loose.map((pd) => periodHtml(pd)).join("")}</div>` : "";
     const caption = c.compact ? "" : `<p class="tdk-small tdk-cap">Documents only: what each says is in the document. Each links to its first article on this topic.${c.hasCouncil ? ` For every council see the ${link(COUNCILS_GUIDE, "Councils guide")}.` : ""}</p>`;
-    return `<section class="tdk-mod tdk-cent" id="tdk-chron" aria-labelledby="tdk-cent-h"><div class="tdk-head"><p class="tdk-eyebrow">Through time</p><h3 class="tdk-h tdk-cent-h" id="tdk-cent-h">The doctrine through the centuries</h3>` +
+    return `<section class="tdk-mod tdk-cent" id="tdk-chron" aria-labelledby="tdk-cent-h"><div class="tdk-head"><p class="tdk-eyebrow">Through time</p><h3 class="tdk-h tdk-cent-h" id="tdk-cent-h">${esc(c.title)}</h3>` +
       `<p class="tdk-lede">${fmt(c.positions)} indexed passages in the library, counted by century, with the ${c.nDocs ? `${plural(c.nDocs, "dated document", "dated documents")} on this topic` : "documents"} where the library has them. Bar length is square-root scaled so the early centuries show. A passage is a place in a work where the index finds this topic treated.</p>${c.lede ? `<p class="tdk-lede tdk-hist-lede">${esc(c.lede)}</p>${c.nPeriods ? `<p class="tdk-small">Machine-written from the authors' own claims, not their words. Every page is checked. Open "Read this period" on a century.</p>` : ""}` : ""}</div>` +
       `<ul class="tdk-legend" aria-label="Shelves">${c.shelves.map((k) => `<li><i class="b-${k}"></i>${esc(SHELF[k])}</li>`).join("")}</ul>` +
       `<ol class="tdk-eras${c.compact ? " is-compact" : ""}">${eras}</ol>${loose}${caption}<p class="tdk-small">Era bands: the early church to 1054, medieval to 1517, Reformation to 1648, post-Reformation to 1800, then modern.</p></section>`;
@@ -541,5 +546,5 @@
     return { hero: renderHero(m.hero, model.tier, present), body };
   }
 
-  return { buildDeskModel, renderDesk, readHref, churchOfArticle, groupOf, MIN, CAP, SHELF, CHURCHES, MODULES_ON };
+  return { buildDeskModel, renderDesk, readHref, churchOfArticle, groupOf, MIN, CAP, SHELF, CHURCHES, MODULES_ON, aboutTitle };
 }));

@@ -91,6 +91,14 @@ const BOOK_SLUGS = new Set([...BOOKS.values()].map((b) => b.slug));
     "synthetic: with no works, no dated events, no verses, no authors, and no neighbors, those modules are left out");
 }
 
+// ── The About headings, for every topic ──
+{
+  const heads = [...INDEX.values()].map((h) => D.aboutTitle(h.locus.label));
+  console.log(`      headings: ${heads.join(" | ")}`);
+  ok(heads.every((h) => /^About (the )?[A-Z]/.test(h) && !/\b(On|Of|De) /.test(h) && !/the the/i.test(h)), `all ${heads.length} About headings are well formed`);
+  ok(D.aboutTitle("The Church") === "About the Church" && D.aboutTitle("On Baptism") === "About Baptism" && D.aboutTitle("Justification") === "About Justification", "About headings: the article, On, and a bare name");
+}
+
 // ── Contrast: every token pair in the showpiece, light and dark ──
 {
   const css = readFileSync(path.join(root, "assets/css/topic-desk.css"), "utf8");
@@ -226,7 +234,7 @@ if (live) {
       const plainText = (t) => t.replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, '"');
       ok(hist.history.every((h) => plainText(sect).includes(plainText(h.text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])).replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'")))) || true, `${name}: period texts are carried unchanged`);
     }
-    ok((out.hero + out.body).split("The doctrine through the centuries").length - 1 === (model.modules.chron ? 1 : 0), `${name}: exactly one section is headed "The doctrine through the centuries"`);
+    ok((out.hero + out.body).split(`>${D.aboutTitle(l.label).replace(/'/g, "&#39;")}<`).length - 1 === (model.modules.chron ? 1 : 0), `${name}: exactly one section is headed "${D.aboutTitle(l.label)}"`);
 
     // 2. links
     const worksOf = [...html.matchAll(/href="\/the-faith-received\/read\/\?w=([^#"&]+)/g)].map((m) => decodeURIComponent(m[1]));
