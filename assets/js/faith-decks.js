@@ -11,22 +11,40 @@ const PARTS=[['Ia','First Part'],['I-II','First Part of the Second'],['II-II','S
 // the Decretum's four runs of places: the distinctions of Part I, the causae of Part II, De penitentia (inside C. 33) and De consecratione
 const DECRETUM=[['D','Distinctions','Distinctio'],['C','Causae','Causa'],['DP','De penitentia','De penitentia, Distinctio'],['DC','De consecratione','De consecratione, Distinctio']];
 const FIRST={sentences:'1',summa:'Ia',decretals:'1',decretum:'D'};
+const TEXTNAME={sentences:"Lombard's text",summa:"Aquinas's text",decretals:"The Decretals",decretum:"Gratian's text"};
 // the traditions in a fixed order; a work's own (works-index) decides
 const TRADS=['Medieval','Roman Catholic','Lutheran','Reformed','Continental Reformed','English Divines'];
-// MereO hosts the same page with its own reader path (window.__FR_READER_PATH__ = '/the-faith-received/read/') and data address
+const MAXP=50; // a commentator's place is read here up to this many pages; the reader has the rest
+// MereO hosts the same page with its own reader path (window.__FR_READER_PATH__ = '/the-faith-received/read/') and data address.
+// at= names the heading the link means: the reader opens on it, not on the top of its page.
 const READER=(window.__FR_READER_PATH__||'/read');
-const read=(slug,page)=>`${READER}?w=${encodeURIComponent(slug)}${page!=null?`#b${encodeURIComponent(page)}-0`:''}`;
+const read=(slug,page,at)=>`${READER}?w=${encodeURIComponent(slug)}${at?`&at=${encodeURIComponent(String(at).slice(0,200))}`:''}${page!=null&&page!==''?`#b${encodeURIComponent(page)}-0`:''}`;
 const J=u=>fetch(BLOB+u).then(r=>r.ok?r.json():null).catch(()=>null);
-let S={deck:'sentences',part:'1',place:null,art:null},D=null,LANE='en',PEEK=null;
+const fold=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+let S={deck:'sentences',part:'1',place:null,art:null,r:null,i:null,l:null,j:null},D=null,LANE='en';
 try{LANE=localStorage.getItem('fr_deck_lane')||'en';}catch(_){}
+if(!['en','la','both'].includes(LANE))LANE='en';
 const canon=k=>((D.canon||{})[k])||{titles:[],places:[],landings:{}};
 function noun(){return {sentences:'distinction',summa:'question',decretals:'title',decretum:S.part==='C'?'causa':'distinction'}[S.deck];}
-function state(){const h=decodeURIComponent(location.hash.slice(1)).split('/');
-  if(h[0]==='summa')S={deck:'summa',part:PARTS.some(([k])=>k===h[1])?h[1]:'Ia',place:h[2]||null,art:/^\d+$/.test(h[3]||'')?h[3]:null};
-  else if(h[0]==='decretals')S={deck:'decretals',part:['1','2','3','4','5'].includes(h[1])?h[1]:'1',place:h[2]||null,art:null};
-  else if(h[0]==='decretum')S={deck:'decretum',part:DECRETUM.some(([k])=>k===h[1])?h[1]:'D',place:h[2]||null,art:null};
-  else S={deck:'sentences',part:['1','2','3','4'].includes(h[1])?h[1]:'1',place:h[2]||null,art:null};}
-function go(){location.hash=[S.deck,S.part,S.place,S.art].filter(x=>x!=null&&x!=='').join('/');}
+
+// ── the address ──────────────────────────────────────────────────────────────────────────────────────────────────────
+function state(){
+  const [path,query='']=location.hash.slice(1).split('?');
+  let h=[];try{h=decodeURIComponent(path).split('/');}catch(_){}
+  const q=new URLSearchParams(query),n=k=>q.has(k)&&/^\d+$/.test(q.get(k))?+q.get(k):null;
+  if(h[0]==='summa')S={deck:'summa',part:PARTS.some(([k])=>k===h[1])?h[1]:'Ia',place:/^\d+$/.test(h[2]||'')?h[2]:null,art:/^\d+$/.test(h[3]||'')?h[3]:null};
+  else if(h[0]==='decretals')S={deck:'decretals',part:['1','2','3','4','5'].includes(h[1])?h[1]:'1',place:/^\d+$/.test(h[2]||'')?h[2]:null,art:null};
+  else if(h[0]==='decretum')S={deck:'decretum',part:DECRETUM.some(([k])=>k===h[1])?h[1]:'D',place:/^\d+$/.test(h[2]||'')?h[2]:null,art:null};
+  else S={deck:'sentences',part:['1','2','3','4'].includes(h[1])?h[1]:'1',place:/^\d+$/.test(h[2]||'')?h[2]:null,art:null};
+  Object.assign(S,{r:q.get('r')||null,i:n('i'),l:q.get('l')||null,j:n('j')});
+}
+function hashOf(){
+  const q=new URLSearchParams();if(S.r)q.set('r',S.r);if(S.i!=null)q.set('i',S.i);if(S.l)q.set('l',S.l);if(S.j!=null)q.set('j',S.j);
+  return [S.deck,S.part,S.place,S.art].filter(x=>x!=null&&x!=='').join('/')+(q.toString()?`?${q}`:'');
+}
+function go(){const h=`#${hashOf()}`;if(location.hash!==h)location.hash=h;else render();}
+
+// ── the places of a deck and its grid ────────────────────────────────────────────────────────────────────────────────
 function places(){
   if(S.deck==='decretals'){const L=canon('X');return L.titles.filter(t=>String(t[0])===S.part).map(t=>({k:String(t[1]),n:Object.keys(L.landings[`${t[0]}.${t[1]}`]||{}).length,name:t[2]}));}
   if(S.deck==='decretum'){const L=canon('D');return L.places.filter(x=>x[0]===S.part).map(x=>({k:String(x[1]),n:Object.keys(L.landings[`${x[0]}.${x[1]}`]||{}).length,name:x[2]}));}
@@ -35,11 +53,11 @@ function places(){
   const g=D.summa[S.part]||{},ks=Object.keys(g).filter(k=>/^\d+$/.test(k)).map(Number).sort((a,b)=>a-b);
   return ks.map(k=>({k:String(k),n:new Set(((g[k]||{}).works||[]).map(r=>r[0])).size,name:(g[k]||{}).t}));
 }
-function rowsFor(){
+function rowsFor(all){
   if(S.deck==='decretals'||S.deck==='decretum')return Object.entries(canon(S.deck==='decretals'?'X':'D').landings[`${S.part}.${S.place}`]||{}).map(([slug,p])=>[slug,p,'',0]);
   if(S.deck==='sentences')return (D.sent[S.part]||{})[S.place]||[];
-  const q=(D.summa[S.part]||{})[S.place]||{},ws=q.works||[];
-  return S.art==null?ws:ws.filter(r=>String(r[3]||0)===String(S.art));
+  const ws=((D.summa[S.part]||{})[S.place]||{}).works||[];
+  return S.art==null||all?ws:ws.filter(r=>String(r[3]||0)===String(S.art));
 }
 function placeName(k){
   if(S.deck==='sentences')return `Distinction ${ROMAN(+k)}`;
@@ -62,88 +80,259 @@ function renderNav(){
   $('#grid').innerHTML=ps.map(p=>`<button type="button" data-place="${esc(p.k)}" aria-pressed="${p.k===S.place}" class="${p.n?'':'empty'}"${p.name?` title="${esc(p.name)}"`:''} aria-label="${esc(placeName(p.k))}${p.name?`, ${esc(p.name)}`:''}, ${p.n} ${p.n===1?'commentary':'commentaries'}">${esc(p.k)}<small>${p.n||'·'}</small></button>`).join('');
   $('#pick').textContent=S.place?`${placeName(S.place)} ▾`:`Choose a ${noun()} ▾`;
   $('#prev').disabled=i<=0;$('#next').disabled=i<0||i>=ps.length-1;
+  document.querySelectorAll('#lanes button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lane===LANE)));
 }
-// THE TEXT: the place's own words, English or the original or both, with its pages marked
-let TEXT=null,TEXTKEY='';
-async function renderText(){
-  const host=$('#text'),[h2,sub]=heading();
-  if(!S.place){host.innerHTML=`<p class="muted">Choose a ${noun()} above. The number under each is how many commentaries the library holds on it.</p>`;return;}
+
+// ── the place: its text and its commentators' divisions, fetched once a place ─────────────────────────────────────────
+let PL={key:''};
+async function loadPlace(){
   const key=[S.deck,S.part,S.place].join('/');
-  if(TEXTKEY!==key){TEXTKEY=key;TEXT=null;host.innerHTML=`<header><div><h2>${esc(h2)}${sub?`<span class="what">${esc(sub)}</span>`:''}</h2></div></header><p class="muted">Loading the text…</p>`;
-    TEXT=await J(`/v1/decks/read/${encodeURIComponent(S.deck)}/${encodeURIComponent(S.part)}/${encodeURIComponent(S.place)}.json`);if(TEXTKEY!==key)return;}
-  const t=TEXT;
-  const lanes=t&&t.en&&t.en.length&&t.la&&t.la.length?['en','la','both']:t&&t.la&&t.la.length?['la']:['en'];
-  if(!lanes.includes(LANE))LANE=lanes[0];
-  const block=(blocks,lane)=>{let last=null;return blocks.map(([hh,txt,pg])=>{let m='';if(pg!=null&&pg!==last){last=pg;m=`<a class="pg" href="${read(t.slug,pg)}">${t.slug==='pld-7607'?'col.':'p.'} ${esc(pg)}</a>`;}
-    return m+(hh?`<h3 lang="${lane}">${esc(txt)}</h3>`:`<p lang="${lane}">${esc(txt)}</p>`);}).join('');};
-  let body='';
-  if(!t)body='<p class="muted">The text of this place is not cut yet; open it in the reader.</p>';
-  else if(LANE==='both')body=`<div class="body two"><div>${block(t.en,'en')}</div><div>${block(t.la,'la')}</div></div>`;
-  else body=`<div class="body">${block(LANE==='la'?t.la:t.en,LANE)}</div>`;
-  const arts=S.deck==='summa'?artsBar():'';
-  const open=t?`<a href="${read(t.slug,t.from)}">Open in the reader ↗</a>`:'';
-  host.innerHTML=`<header><div><h2>${esc(h2)}${sub?`<span class="what">${esc(sub)}</span>`:''}</h2></div>
-    <div class="lanes" role="group" aria-label="Text">${lanes.length>1?lanes.map(l=>`<button type="button" data-lane="${l}" aria-pressed="${l===LANE}">${{en:'English',la:'Latin',both:'Both'}[l]}</button>`).join(''):''}</div></header>
-    ${arts}${body}<p class="more">${t&&t.to&&t.to>t.from?`Pages ${esc(t.from)}–${esc(t.to)} of the text. `:''}${open}</p>`;
-  if(S.deck==='summa'&&S.art)jumpArt(S.art);
+  if(PL.key===key)return PL.wait;
+  const f=`${encodeURIComponent(S.deck)}/${encodeURIComponent(S.part)}/${encodeURIComponent(S.place)}.json`;
+  PL={key,text:null,out:null};
+  // a place no commentator is aligned to has no outline file: it is not asked for
+  PL.wait=Promise.all([J(`/v1/decks/read/${f}`),rowsFor().length||S.art?J(`/v1/decks/outline/${f}`):null]).then(([t,o])=>{if(PL.key===key){PL.text=t;PL.out=o;}});
+  return PL.wait;
+}
+const order=(a,b)=>{const ta=TRADS.includes(a.tr)?TRADS.indexOf(a.tr):99,tb=TRADS.includes(b.tr)?TRADS.indexOf(b.tr):99;return ta-tb||a.y-b.y||a.a.localeCompare(b.a)||a.t.localeCompare(b.t)||a.from-b.from;};
+// the commentators of the place: the grid says who and where he begins; the outline gives his divisions and where his place ends.
+// An article chosen narrows the list to those who treat it; a commentator already open stays open (he treats the whole question).
+function commentators(all){
+  const by=new Map();for(const r of rowsFor(all)){if(!by.has(r[0])||+r[1]<+by.get(r[0])[1])by.set(r[0],r);}
+  const out=(PL.out&&PL.out.works)||{};
+  return [...by.values()].map(r=>{const w=D.texts.works[r[0]]||[],o=out[r[0]];
+    const items=o&&o.items&&o.items.length?o.items:[[r[2]||`From p. ${r[1]}`,+r[1],1,r[2]||'',r[3]||null]];
+    return {slug:r[0],a:w[0]||'',t:w[1]||r[0],vol:w[2]||'',tr:w[3]||'Other',y:w[4]||9999,from:o?+o.from:+r[1],to:o?+o.to:+r[1]+6,items};
+  }).filter(c=>c.a||c.t!==c.slug).sort(order);
+}
+const KINDS=[['question',/^(?:on\s+|in\s+)?(?:question|quaestio|quaest\.|q\.\s*\d)|^\w+\s+question\b/i],['article',/^(?:article|articulus|art\.|a\.\s*\d)|^\w+\s+article\b/i],
+  ['disputation',/^(?:disputation|disputatio|disp\.)|^\w+\s+disputation\b/i],['doubt',/^(?:doubt|dubium|dub\.)|^\w+\s+doubt\b/i],['chapter',/^(?:chapter|caput|cap\.)/i],['section',/^(?:§|section|sectio)/i]];
+function summary(items){
+  const n={};for(const x of items){const k=KINDS.find(([,rx])=>rx.test(x[0]));if(k)n[k[0]]=(n[k[0]]||0)+1;}
+  const parts=KINDS.filter(([k])=>n[k]).slice(0,3).map(([k])=>`${n[k]} ${k}${n[k]===1?'':'s'}`);
+  return parts.length?parts.join(' · '):`${items.length} heading${items.length===1?'':'s'}`;
+}
+const who=c=>`${c.a||'Unknown'}${c.y<9999?` (b. ${c.y})`:''}`;
+const pp=c=>c.to>c.from?`pp. ${c.from}–${c.to}`:`p. ${c.from}`;
+
+// ── a work's pages: its page files (about a hundred pages a file), else its TEI; fetched once ─────────────────────────
+const META=new Map(),FILES=new Map(),TEIS=new Map();
+const wurl=(slug,f)=>`${BLOB}/v1/works/${encodeURIComponent(slug)}/${f}`;
+const getJ=u=>fetch(u).then(r=>r.ok?r.json():null).catch(()=>null);
+function metaOf(slug){if(!META.has(slug))META.set(slug,getJ(wurl(slug,'meta.json')+VER));return META.get(slug);}
+async function blocksOf(slug,lane,n){
+  const m=await metaOf(slug);if(!m)return null;
+  const sh=Array.isArray(m.shards)?m.shards.find(x=>n>=+x.from&&n<=+x.to):null,file=sh?sh.file:(m.single||null);
+  if(file){
+    const key=`${slug}/${file}`;if(!FILES.has(key))FILES.set(key,getJ(wurl(slug,file)));
+    const d=await FILES.get(key),p=((d&&d.pages)||[]).find(x=>+String(x.n).replace(/^0+(?=\d)/,'')===n);
+    const t=p&&p[lane==='en'?'en':'la'];
+    if(t&&t.trim())return t.split(/\n+/).map(s=>({t:s.trim(),h:false})).filter(b=>b.t);
+    if(!m.has_tei)return [];
+  }
+  if(m.has_tei&&window.FRPageWindow&&window.FRPageWindow.teiPages){
+    const key=`${slug}|${lane}`;
+    if(!TEIS.has(key))TEIS.set(key,(async()=>{for(const f of lane==='en'?['en']:['la','fr']){
+      const x=await fetch(`${wurl(slug,`tei.${f}.xml`)}?v=${encodeURIComponent(m.tei_v||0)}`).then(r=>r.ok?r.text():'').catch(()=>'');
+      const P=x&&window.FRPageWindow.teiPages(x);if(P&&P.size)return P;}return null;})());
+    const P=await TEIS.get(key);return (P&&P.get(n))||[];
+  }
+  return [];
+}
+
+// ── drawing pages: a heading the outline names gets its anchor; a line that reads as a heading is set as one ───────────
+const HEADLIKE=/^(?:distinct|quaest|question|art(?:ic|\.)|disput|dub(?:ium|\.)|doubt|cap(?:ut|\.|itul)|chapter|sect|§|pars\b|part\b|liber\b|book\b|prolog|pro(?:o|œ)em|tract|treatise|lectio|lesson|expositio|divisio|summa(?:rium|ry)|textus|resolutio|conclusio|notanda)/i;
+const capsy=t=>{const L=t.replace(/[^A-Za-z]/g,'');return L.length>5&&L.replace(/[^A-Z]/g,'').length/L.length>.7;};
+const headish=t=>t.length<150&&(HEADLIKE.test(t)||(t.length<100&&capsy(t)));
+function matches(item,t){const b=fold(t);if(b.length<3)return false;
+  return [item[3],item[0],...String(item[3]||'').split(/\s+—\s+/)].some(x=>{const a=fold(x),k=Math.min(28,a.length,b.length);return k>=5&&a.slice(0,k)===b.slice(0,k);});}
+function linesHTML(blocks,lane,marks,after){
+  return blocks.map((b,bi)=>{const id=marks.get(bi),{t} = b,h=b.h===1||b.h===true||id!=null||(b.h!==2&&headish(t));
+    const tail=((after&&after.get(bi))||[]).map(x=>`<span class="anc" id="${x}" data-item="${x}"></span>`).join('');
+    if(b.h===2)return `<p class="cap" lang="${lane}">${esc(t)}</p>${tail}`;
+    return (h?`<h3 class="hd${capsy(t)?' sc':''}" lang="${lane}"${id!=null?` id="${id}" data-item="${id}"`:''}>${esc(t)}</h3>`:`<p lang="${lane}">${esc(t)}</p>`)+tail;}).join('');
+}
+// one page: its number (a link into the reader at that page), then its lines in one language or both
+function pageHTML(side,slug,n,cols,items,colLabel){
+  // a division the page's lines name becomes that line's anchor; one they do not name is anchored after the last one placed,
+  // so the contents keep the outline's order as the reader scrolls
+  const lanes=LANE==='both'?['la','en']:[LANE],marks={la:new Map(),en:new Map()},after={la:new Map(),en:new Map()},lead=[];
+  const lane=(cols.en&&cols.en.length&&LANE!=='la')?'en':((cols.la&&cols.la.length)?'la':'en');
+  let last=-1;
+  for(const it of items){
+    const bi=(cols[lane]||[]).findIndex((b,k)=>k>last&&!marks[lane].has(k)&&matches(it.x,b.t)),id=`${side}-i${it.k}`;
+    if(bi>=0&&lanes.includes(lane)){marks[lane].set(bi,id);last=bi;}
+    else if(last<0||!lanes.includes(lane))lead.push(id);
+    else{const a=after[lane].get(last)||[];a.push(id);after[lane].set(last,a);}
+  }
+  const col=l=>`<div class="ln" lang="${l}">${(cols[l]&&cols[l].length)?linesHTML(cols[l],l,marks[l],after[l]):`<p class="note">No ${l==='en'?'English':'Latin'} on this ${colLabel}.</p>`}</div>`;
+  return `<section class="pg" data-n="${n}">${lead.map(id=>`<span class="anc" id="${id}" data-item="${id}"></span>`).join('')}<a class="pgno" href="${read(slug,n)}" title="Open this ${colLabel} in the reader">${colLabel==='column'?'col.':'p.'} ${esc(n)}</a>${lanes.length>1?`<div class="duo">${col('la')}${col('en')}</div>`:col(lanes[0])}</section>`;
+}
+
+// ── the panes ────────────────────────────────────────────────────────────────────────────────────────────────────────
+const PANE={a:$('#paneA'),b:$('#paneB')},RUN={a:0,b:0},SHOWN={a:'',b:''};
+const isPhone=()=>matchMedia('(max-width:980px)').matches;
+function scrollerOf(side){const s=PANE[side].querySelector('.scroll');return s&&!isPhone()?s:null;}
+function scrollToEl(side,el,flash){
+  if(!el)return;const s=scrollerOf(side);
+  if(s)s.scrollTop+=el.getBoundingClientRect().top-s.getBoundingClientRect().top-12;
+  else window.scrollTo({top:window.scrollY+el.getBoundingClientRect().top-(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sticky'))||12)*16-70});
+  if(flash){const t=el.classList.contains('anc')?el.closest('.pg'):el;if(t){t.classList.remove('flash');void t.offsetWidth;t.classList.add('flash');}}
+}
+function sourceSelect(side,cs,current){
+  const first=side==='a'?`<option value="">${esc(TEXTNAME[S.deck])}</option>`:`<option value="">All commentators (${cs.length})</option>`;
+  const groups=[...TRADS,'Other'].map(t=>[t,cs.filter(c=>(TRADS.includes(c.tr)?c.tr:'Other')===t)]).filter(([,g])=>g.length);
+  return `<label class="srcl"><span>Read</span><select data-src="${side}" aria-label="What the ${side==='a'?'left':'right'} pane reads">${first}${groups.map(([t,g])=>`<optgroup label="${esc(t)}">${g.map(c=>`<option value="${esc(c.slug)}"${c.slug===current?' selected':''}>${esc(c.a||c.t)} · ${esc(c.t.slice(0,48))}${c.vol?`, ${esc(c.vol.slice(0,24))}`:''}</option>`).join('')}</optgroup>`).join('')}</select></label>`;
+}
+// THE TEXT ITSELF, in the left pane unless a commentator is put there
+async function paneText(side){
+  const host=PANE[side],[h2,sub]=heading(),t=PL.text,cs=commentators(true),token=++RUN[side];
+  const key=['text',PL.key,LANE].join('|');
+  const firstHead=t?((t.en||[]).concat(t.la||[]).find(b=>b[0]===1)||[])[1]:'';
+  const open=t?read(t.slug,t.from,artHead()||firstHead):'';
+  const head=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,'')}${open?`<a class="open" href="${open}">Open in the reader ↗</a>`:''}</div>
+    <h2>${esc(h2)}</h2>${sub?`<p class="what">${esc(sub)}</p>`:''}${S.deck==='summa'?artsBar():''}</header>`;
+  if(SHOWN[side]===key){host.querySelector('.ph').outerHTML=head;if(S.deck==='summa')jumpArt(side);return;}
+  SHOWN[side]=key;host.dataset.moved='';
+  if(!t){host.innerHTML=`${head}<div class="scroll"><p class="note">The text of this ${noun()} is not cut yet. ${S.deck==='sentences'?'':'Open its first page in the reader from the commentators beside it.'}</p></div>`;return;}
+  const byPage=new Map();for(const l of ['en','la'])for(const [hh,txt,pg] of (t[l]||[])){if(!byPage.has(pg))byPage.set(pg,{en:[],la:[]});byPage.get(pg)[l].push({t:txt,h:hh});}
+  const unit=t.slug==='pld-7607'?'column':'page';
+  host.innerHTML=`${head}<div class="scroll">${[...byPage].map(([n,cols])=>pageHTML(side,t.slug,n,cols,[],unit)).join('')}<p class="end">${t.to&&t.to>t.from?`${unit==='column'?'Columns':'Pages'} ${esc(t.from)}–${esc(t.to)}. `:''}<a href="${read(t.slug,t.to||t.from)}">Read on in the reader ↗</a></p></div>`;
+  if(token===RUN[side]&&S.deck==='summa'){jumpArt(side);if(document.fonts)document.fonts.ready.then(()=>{if(token===RUN[side]&&!host.dataset.moved)jumpArt(side,true);});}
+}
+function artHead(){
+  if(S.deck!=='summa'||!S.art||!PL.text)return '';
+  const re=new RegExp(`^(?:A\\.|Art\\.?|Article|ARTICULUS|Articulus)\\s*${S.art}\\b`);
+  return ((PL.text.en||[]).find(b=>b[0]===1&&re.test(b[1]))||[])[1]||'';
 }
 function artsBar(){
   const q=(D.summa[S.part]||{})[S.place]||{},aq=(D.texts.summa[S.part]||{})[S.place]||{};
-  const counts={};for(const r of q.works||[]){const k=String(r[3]||0);counts[k]=(counts[k]||new Set()).add(r[0]);}
+  const counts={};for(const r of q.works||[]){const k=String(r[3]||0);(counts[k]=counts[k]||new Set()).add(r[0]);}
   const ks=[...new Set([...Object.keys(aq).filter(k=>k!=='0'),...Object.keys(counts).filter(k=>k!=='0')])].map(Number).sort((a,b)=>a-b);
   if(!ks.length)return '';
-  return `<div class="arts" role="group" aria-label="Articles"><button type="button" class="chip" data-art="" aria-pressed="${S.art==null}">All articles</button>${ks.map(k=>`<button type="button" class="chip" data-art="${k}" aria-pressed="${String(k)===S.art}" title="${esc((aq[k]||[])[2]||'')}">Art. ${k} <small>${(counts[k]||new Set()).size}</small></button>`).join('')}</div>`;
+  return `<div class="arts" role="group" aria-label="Articles"><button type="button" class="chip" data-art="" aria-pressed="${S.art==null}">All articles</button>${ks.map(k=>`<button type="button" class="chip" data-art="${k}" aria-pressed="${String(k)===S.art}" title="${esc((aq[k]||[])[2]||'')}">Art. ${k}<small>${(counts[k]||new Set()).size}</small></button>`).join('')}</div>`;
 }
-function jumpArt(a){
-  const re=new RegExp(`^(?:A\\.|Art\\.?|Article|ARTICULUS|Articulus)\\s*${a}\\b`);
-  const el=[...document.querySelectorAll('#text .body h3,#text .body p')].find(x=>re.test(x.textContent.trim()));
-  document.querySelectorAll('#text .hit').forEach(x=>x.classList.remove('hit'));
-  if(el){el.classList.add('hit');el.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
+function jumpArt(side,quiet){
+  if(!S.art)return;
+  const re=new RegExp(`^(?:A\\.|Art\\.?|Article|ARTICULUS|Articulus)\\s*${S.art}\\b`);
+  const el=[...PANE[side].querySelectorAll('.scroll .hd,.scroll p')].find(x=>re.test(x.textContent.trim()));
+  scrollToEl(side,el,!quiet);
 }
-// THE COMMENTATORS: by tradition, then by date; each one's page opens beside the text
-function renderRail(){
-  const host=$('#rail');
-  if(!S.place){host.innerHTML='';return;}
-  const by=new Map();for(const r of rowsFor()){const k=r[0];if(!by.has(k)||+r[1]<+by.get(k)[1])by.set(k,r);}
-  const rows=[...by.values()].map(r=>{const w=D.texts.works[r[0]]||[];return {slug:r[0],page:r[1],head:r[2],art:r[3],a:w[0]||'',t:w[1]||r[0],vol:w[2]||'',tr:w[3]||'Other',y:w[4]||9999};}).filter(r=>r.a||r.t!==r.slug);
-  const groups=[...TRADS,'Other'].map(t=>[t,rows.filter(r=>(TRADS.includes(r.tr)?r.tr:'Other')===t).sort((a,b)=>a.y-b.y||a.a.localeCompare(b.a))]).filter(([,rs])=>rs.length);
-  const li=r=>`<li data-row="${esc(r.slug)}" aria-current="${Boolean(PEEK&&PEEK.slug===r.slug)}"><span class="who">${esc(r.a||'Unknown')}${r.y<9999?`<small>b. ${r.y}</small>`:''}</span><span class="work">${esc(r.t)}${r.vol?` · ${esc(r.vol)}`:''}</span>${r.head?`<span class="head">${esc(r.head)}${S.deck==='summa'&&S.art==null&&r.art?` (art. ${esc(r.art)})`:''}</span>`:''}
-    <span class="acts"><button type="button" data-peek="${esc(r.slug)}" data-page="${esc(r.page)}">Read here, p. ${esc(r.page)}</button><a href="${read(r.slug,r.page)}">Open ↗</a></span></li>`;
-  host.innerHTML=`<h2>Commentators</h2><p class="count">${rows.length?`${rows.length} on this ${noun()}${S.deck==='summa'&&S.art?`, article ${esc(S.art)}`:''}`:`None aligned to this ${noun()} yet`}</p><div id="peekhost"></div>${
-    groups.map(([t,rs])=>`<h3 class="trad">${esc(t)} <span class="muted">${rs.length}</span></h3><ul class="rows">${rs.map(li).join('')}</ul>`).join('')}`;
-  if(PEEK&&rows.some(r=>r.slug===PEEK.slug))peek(PEEK.slug,PEEK.page,false);else PEEK=null;
+// A COMMENTATOR'S PLACE, page after page, with his divisions of it as the pane's contents
+async function paneWork(side,slug,focus){
+  const host=PANE[side],cs=commentators(true),c=cs.find(x=>x.slug===slug),token=++RUN[side];
+  const key=['work',PL.key,slug,LANE].join('|');
+  if(!c){SHOWN[side]='';const w=D.texts.works[slug]||[];
+    host.innerHTML=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,'')}</div><h2>${esc(w[0]||slug)}</h2></header><div class="scroll"><p class="note">${esc(w[0]||'This commentator')} has no commentary on this ${noun()} in the library. Choose another in the list above.</p></div>`;return;}
+  const {items} = c;
+  if(focus==null&&S.deck==='summa'&&S.art){const k=items.findIndex(x=>String(x[4]||'')===String(S.art));if(k>=0)focus=k;}
+  const toc=items.length>1?`<select data-toc="${side}" aria-label="${esc(c.a)}'s divisions of this ${noun()}">${items.map((x,k)=>`<option value="${k}"${k===focus?' selected':''}>${' '.repeat(Math.max(0,Math.min(3,x[2])-1))}${esc(x[0].slice(0,110))} · p. ${esc(x[1])}</option>`).join('')}</select>`:'';
+  const cur=items[focus!=null?focus:0]||items[0];
+  const head=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,slug)}<a class="open" data-open="${side}" href="${read(slug,cur[1],cur[3])}">Open in the reader ↗</a></div>
+    ${side==='b'?`<button type="button" class="back" data-back>← All commentators</button>`:''}
+    <h2>${esc(c.a||c.t)}${c.y<9999?`<small>b. ${c.y}</small>`:''}</h2><p class="what">${esc(c.t)}${c.vol?`, ${esc(c.vol)}`:''} · ${esc(pp(c))}</p>${toc}</header>`;
+  if(SHOWN[side]===key){host.querySelector('.ph').outerHTML=head;if(focus!=null)scrollToEl(side,document.getElementById(`${side}-i${focus}`),true);return;}
+  SHOWN[side]=key;
+  host.innerHTML=`${head}<div class="scroll"><div class="pages"></div><div class="sk" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="end" hidden></p></div>`;
+  // a division beyond the first fifty pages of a long place (the Salmanticenses' grace runs to a hundred and forty) is read from
+  // its own page; the place's opening stays a click away
+  const fp=focus!=null?+items[focus][1]:c.from,start=fp>c.from+MAXP-6?Math.max(c.from,fp-1):c.from;
+  const pagesEl=host.querySelector('.pages'),last=Math.min(c.to,start+MAXP-1),lanes=LANE==='both'?['la','en']:[LANE];
+  if(start>c.from)pagesEl.insertAdjacentHTML('beforebegin',`<p class="end" style="border:0;margin:.6rem 0 0;padding:0">${esc(c.a)} begins this ${noun()} at p. ${esc(c.from)}. <a href="${read(slug,c.from,items[0][3])}">Read it from there in the reader ↗</a></p>`);
+  let drawn=0,landed=focus==null;host.dataset.moved='';
+  for(let n=start;n<=last;n++){
+    const cols={};for(const l of lanes)cols[l]=await blocksOf(slug,l,n);
+    if(token!==RUN[side])return;
+    if(lanes.every(l=>cols[l]==null)){if(n===start){pagesEl.innerHTML=`<p class="note">These pages could not be loaded. <a href="${read(slug,c.from,items[0][3])}">Open them in the reader ↗</a></p>`;host.querySelector('.sk').remove();return;}break;}
+    const on=items.map((x,k)=>({x,k})).filter(o=>+o.x[1]===n);
+    pagesEl.insertAdjacentHTML('beforeend',pageHTML(side,slug,n,cols,on,'page'));drawn=n;
+    if(!landed&&+items[focus][1]<=n){landed=true;if(!host.dataset.moved){const go2=()=>{if(!host.dataset.moved&&token===RUN[side])scrollToEl(side,document.getElementById(`${side}-i${focus}`),false);};
+      scrollToEl(side,document.getElementById(`${side}-i${focus}`),true);if(document.fonts)document.fonts.ready.then(go2);setTimeout(go2,400);}}
+  }
+  if(token!==RUN[side])return;
+  host.querySelector('.sk')?.remove();
+  const end=host.querySelector('.end');end.hidden=false;
+  end.innerHTML=drawn<c.to?`${esc(c.a)} goes on to p. ${esc(c.to)} on this ${noun()}. <a href="${read(slug,drawn+1)}">Read on in the reader from p. ${esc(drawn+1)} ↗</a>`:`End of ${esc(c.a)} on this ${noun()}. <a href="${read(slug,c.to)}">Read on in the reader ↗</a>`;
+  spy(side);
 }
-async function peek(slug,page,scroll){
-  PEEK={slug,page};
-  document.querySelectorAll('#rail li[data-row]').forEach(li=>li.setAttribute('aria-current',String(li.dataset.row===slug)));
-  const w=D.texts.works[slug]||[],narrow=matchMedia('(max-width:980px)').matches;
-  const box=document.createElement('section');box.className='peek';
-  box.innerHTML=`<header><strong>${esc(w[0]||'')}, p. ${esc(page)}</strong><span><a href="${read(slug,page)}">Open in the reader ↗</a> <button type="button" data-unpeek>Close</button></span></header><div class="peekbody"><p class="muted" style="padding:.6rem .7rem">Loading the page…</p></div>`;
-  document.querySelectorAll('#rail .peek').forEach(x=>x.remove());
-  const host=narrow?document.querySelector(`#rail li[data-row="${CSS.escape(slug)}"]`):$('#peekhost');
-  if(!host)return;host.appendChild(box);
-  if(scroll)box.scrollIntoView({block:'nearest'});
-  const ok=window.FRPageWindow?await window.FRPageWindow.fill(box.querySelector('.peekbody'),{slug,page,hl:''}):false;
-  if(!ok)box.querySelector('.peekbody').innerHTML=`<p class="muted" style="padding:.6rem .7rem"><a href="${read(slug,page)}">Open p. ${esc(page)} in the reader</a></p>`;
+// the contents follow the reading: the division last passed is the one shown, and "Open in the reader" opens it
+function spy(side){
+  const host=PANE[side],sel=host.querySelector('select[data-toc]'),open=host.querySelector('a[data-open]');
+  const slug=(host.querySelector('select[data-src]')||{}).value;if(!sel||!slug)return;
+  const s=scrollerOf(side),top=s?s.getBoundingClientRect().top:((parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sticky'))||1)*16+60);
+  let cur=null;for(const a of host.querySelectorAll('[data-item]')){if(a.getBoundingClientRect().top-top<=48)cur=a;else break;}
+  if(!cur)return;
+  const k=+cur.dataset.item.split('-i')[1];if(String(k)===sel.value)return;
+  sel.value=String(k);
+  const c=commentators(true).find(x=>x.slug===slug),it=c&&c.items[k];if(it&&open)open.href=read(slug,it[1],it[3]);
+}
+// THE COMMENTATORS OF THE PLACE: by tradition, then by date; each with his own divisions of it
+function paneDir(side){
+  const host=PANE[side],cs=commentators(),key=['dir',PL.key,S.art||''].join('|');
+  if(SHOWN[side]===key)return;
+  SHOWN[side]=key;RUN[side]++;
+  const row=c=>{const k=S.deck==='summa'&&S.art?c.items.findIndex(x=>String(x[4]||'')===String(S.art)):0,f=c.items[k>=0?k:0];
+    return `<li class="c" data-slug="${esc(c.slug)}"><div class="c-top"><button type="button" class="c-read" data-read="${esc(c.slug)}"${k>0?` data-i="${k}"`:''}>
+      <span class="who">${esc(c.a||'Unknown')}${c.y<9999?`<small>b. ${c.y}</small>`:''}</span><span class="work">${esc(c.t)}${c.vol?`, ${esc(c.vol)}`:''}</span>
+      <span class="sum">${esc(summary(c.items))} · ${esc(pp(c))}</span></button><a class="ext" href="${read(c.slug,f[1],f[3])}" aria-label="Open ${esc(c.a)} in the reader">Open ↗</a></div>
+      ${c.items.length>1?`<details class="toc"><summary>Contents</summary><ol>${c.items.map((x,k)=>`<li class="d${Math.max(1,Math.min(3,x[2]))}"><button type="button" data-read="${esc(c.slug)}" data-i="${k}">${esc(x[0])}</button><a href="${read(c.slug,x[1],x[3])}" title="Open in the reader">p. ${esc(x[1])}</a></li>`).join('')}</ol></details>`:''}</li>`;};
+  const groups=[...TRADS,'Other'].map(t=>[t,cs.filter(c=>(TRADS.includes(c.tr)?c.tr:'Other')===t)]).filter(([,g])=>g.length);
+  host.innerHTML=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,'')}</div>
+    <h2>Commentators</h2><p class="count">${cs.length?`${cs.length} on this ${noun()}${S.deck==='summa'&&S.art?`, article ${esc(S.art)}`:''}. Choose one to read beside the text.`:`None aligned to this ${noun()} yet.`}</p>
+    ${cs.length>8?`<input class="find" type="search" placeholder="Find a commentator" aria-label="Find a commentator">`:''}</header>
+    <div class="scroll">${groups.map(([t,g])=>`<section class="grp"><h3 class="trad">${esc(t)}<span>${g.length}</span></h3><ul class="dir">${g.map(row).join('')}</ul></section>`).join('')}</div>`;
 }
 async function render(){
-  // a part with no place chosen opens on its first place, so there is always a text to read
-  if(!S.place){const ps=places();const f=ps.find(p=>p.n)||ps[0];if(f){S.place=f.k;history.replaceState(null,'',`#${[S.deck,S.part,S.place].join('/')}`);}}
-  renderNav();renderRail();await renderText();
+  if(!D)return;
+  // a part with no place chosen opens on its first place with a commentator, so there is always a text to read
+  if(!S.place){const ps=places(),f=ps.find(p=>p.n)||ps[0];if(f){S.place=f.k;history.replaceState(null,'',`#${hashOf()}`);}}
+  renderNav();
+  if(!S.place)return;
+  await loadPlace();
+  $('#showB').textContent=S.r?((D.texts.works[S.r]||[])[0]||'Commentator'):`Commentators (${commentators().length})`;
+  await Promise.all([S.l?paneWork('a',S.l,S.j):paneText('a'),S.r?paneWork('b',S.r,S.i):Promise.resolve(paneDir('b'))]);
 }
-function step(d){const ps=places(),i=ps.findIndex(p=>p.k===S.place);const n=ps[i+d];if(n){S.place=n.k;S.art=null;PEEK=null;go();}}
+function step(d){const ps=places(),i=ps.findIndex(p=>p.k===S.place);const n=ps[i+d];if(n){S.place=n.k;S.art=null;S.i=null;S.j=null;$('#grid').hidden=true;go();}}
+function show(w){$('#desk').dataset.show=w;document.querySelectorAll('.switch [data-show]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.show===w)));}
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-deck]');if(t){S={deck:t.dataset.deck,part:FIRST[t.dataset.deck]||'1',place:null,art:null};PEEK=null;go();return;}
-  const p=e.target.closest('[data-part]');if(p){S.part=p.dataset.part;S.place=null;S.art=null;PEEK=null;go();return;}
-  const g=e.target.closest('[data-place]');if(g){S.place=g.dataset.place;S.art=null;PEEK=null;$('#grid').hidden=true;$('#pick').setAttribute('aria-expanded','false');go();return;}
-  const a=e.target.closest('[data-art]');if(a){S.art=a.dataset.art===''?null:a.dataset.art;go();return;}
-  const l=e.target.closest('[data-lane]');if(l){LANE=l.dataset.lane;try{localStorage.setItem('fr_deck_lane',LANE);}catch(_){}renderText();return;}
-  const k=e.target.closest('[data-peek]');if(k){peek(k.dataset.peek,k.dataset.page,true);return;}
-  if(e.target.closest('[data-unpeek]')){PEEK=null;document.querySelectorAll('#rail .peek').forEach(x=>x.remove());document.querySelectorAll('#rail li[aria-current]').forEach(li=>li.setAttribute('aria-current','false'));return;}
+  const t=e.target.closest('[data-deck]');if(t){S={deck:t.dataset.deck,part:FIRST[t.dataset.deck]||'1',place:null,art:null,r:null,i:null,l:null,j:null};go();return;}
+  // another book is mostly another volume: the panes go back to the text and the list
+  const p=e.target.closest('[data-part]');if(p){S.part=p.dataset.part;S.place=null;S.art=null;S.r=null;S.i=null;S.l=null;S.j=null;go();return;}
+  const g=e.target.closest('[data-place]');if(g){S.place=g.dataset.place;S.art=null;S.i=null;S.j=null;$('#grid').hidden=true;$('#pick').setAttribute('aria-expanded','false');go();return;}
+  const a=e.target.closest('[data-art]');if(a){S.art=a.dataset.art===''?null:a.dataset.art;S.i=null;S.j=null;go();return;}
+  const l=e.target.closest('[data-lane]');if(l){LANE=l.dataset.lane;try{localStorage.setItem('fr_deck_lane',LANE);}catch(_){}render();return;}
+  const r=e.target.closest('[data-read]');if(r){S.r=r.dataset.read;S.i=r.dataset.i!=null?+r.dataset.i:null;show('b');go();return;}
+  if(e.target.closest('[data-back]')){S.r=null;S.i=null;go();return;}
+  const w=e.target.closest('.switch [data-show]');if(w){show(w.dataset.show);return;}
   if(e.target.closest('#pick')){const g2=$('#grid');g2.hidden=!g2.hidden;$('#pick').setAttribute('aria-expanded',String(!g2.hidden));return;}
   if(e.target.closest('#prev')){step(-1);return;}
   if(e.target.closest('#next')){step(1);}
 });
+document.addEventListener('change',e=>{
+  const s=e.target.closest('select[data-src]');
+  if(s){if(s.dataset.src==='a'){S.l=s.value||null;S.j=null;}else{S.r=s.value||null;S.i=null;}go();return;}
+  const t=e.target.closest('select[data-toc]');
+  if(t){const side=t.dataset.toc,k=+t.value;if(side==='a')S.j=k;else S.i=k;history.replaceState(null,'',`#${hashOf()}`);
+    const el=document.getElementById(`${side}-i${k}`);if(el)scrollToEl(side,el,true);
+    const c=commentators(true).find(x=>x.slug===(side==='a'?S.l:S.r)),it=c&&c.items[k],o=PANE[side].querySelector('a[data-open]');if(it&&o)o.href=read(c.slug,it[1],it[3]);}
+});
+document.addEventListener('input',e=>{
+  const f=e.target.closest('.find');if(!f)return;const q=fold(f.value);
+  PANE.b.querySelectorAll('.c').forEach(li=>{li.hidden=!!q&&!fold(li.querySelector('.c-read').textContent).includes(q);});
+  PANE.b.querySelectorAll('.grp').forEach(g=>{g.hidden=![...g.querySelectorAll('.c')].some(li=>!li.hidden);});
+});
+// the reader scrolls a pane himself: the contents follow, and a late page no longer pulls him to the chosen division
+let spyRaf=0;
+document.addEventListener('scroll',()=>{
+  if(spyRaf)return;spyRaf=requestAnimationFrame(()=>{spyRaf=0;spy('a');spy('b');});},true);
+// reading down in a pane first lifts the page until the desk is docked under the bar, so the panes fill the window; then the pane
+// itself scrolls. Reading up past a pane's top brings the page back (the browser's own scroll chaining).
+document.addEventListener('wheel',e=>{
+  const pane=e.target.closest&&e.target.closest('.pane');if(!pane||isPhone()||e.deltaY<=0||e.ctrlKey)return;
+  const {top} = $('#desk').getBoundingClientRect(),st=parseFloat(getComputedStyle(pane).top)||12;
+  if(top>st+1){e.preventDefault();window.scrollBy(0,Math.min(e.deltaY,top-st));}
+},{passive:false});
+['wheel','touchmove','keydown'].forEach(ev=>document.addEventListener(ev,e=>{const pane=e.target.closest&&e.target.closest('.pane');if(pane)pane.dataset.moved='1';},{passive:true,capture:true}));
 document.addEventListener('keydown',e=>{
   if(e.target.closest&&e.target.closest('input,textarea,select,[contenteditable]'))return;
   if(e.key==='ArrowLeft'&&!e.metaKey&&!e.ctrlKey&&!e.altKey){step(-1);}
@@ -151,7 +340,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='Escape'&&!$('#grid').hidden){$('#grid').hidden=true;$('#pick').setAttribute('aria-expanded','false');}
 });
 window.addEventListener('hashchange',()=>{state();render();});
-Promise.all([fetch(`${BLOB}/v1/sentences.json${VER}`).then(r=>r.json()),fetch(`${BLOB}/v1/summa.json${VER}`).then(r=>r.json()),fetch(`${BLOB}/v1/decks/texts.json${VER}`).then(r=>r.json()),
-  fetch(`${BLOB}/v1/decks/canon.json${VER}`).then(r=>r.ok?r.json():null).catch(()=>null)])
-  .then(([sent,summa,texts,canonD])=>{if(canonD)texts.works={...canonD.works,...texts.works};D={sent,summa,texts,canon:canonD};state();render();})
-  .catch(()=>{$('#text').innerHTML='<p class="muted">The decks could not be loaded. Reload the page to try again.</p>';});
+Promise.all([J(`/v1/sentences.json${VER}`),J(`/v1/summa.json${VER}`),J(`/v1/decks/texts.json${VER}`),J(`/v1/decks/canon.json${VER}`)])
+  .then(([sent,summa,texts,canonD])=>{if(!sent||!summa||!texts)throw new Error('decks');if(canonD)texts.works={...canonD.works,...texts.works};
+    D={sent,summa,texts,canon:canonD};state();if(S.r&&isPhone())show('b');render();})
+  .catch(()=>{PANE.a.innerHTML='<p class="note" style="padding:1rem 1.2rem">The decks could not be loaded. Reload the page to try again.</p>';});
