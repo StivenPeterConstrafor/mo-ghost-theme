@@ -9,7 +9,7 @@
  *   - no horizontal overflow of the page
  *   - tiles of one grid are the same width within 1px
  *   - no two cards, and no two text lines inside a card, overlap
- *   - every article is drawn (493, and 77/179/13/224 per kind) and a full render takes under 150 ms of script
+ *   - every article is drawn (493 unique; grouped, multi-kind essays sit under each group; each kind filter shows its own set, flat, with no repeats) and a full render takes under 150 ms of script
  *   - every card is a link, and has an image or a placeholder tile
  *
  *   node scripts/check-resources-grid.mjs
@@ -22,6 +22,11 @@ import { createServer } from "node:http";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+
+const dataFile = JSON.parse(readFileSync(path.join(import.meta.dirname, "..", "assets/data/faith-received/mo-articles.json"), "utf8"));
+const ksOf = (a) => a.ks || [a.k];
+const WANT_KIND = Object.fromEntries(["doc", "work", "retrieval", "topic"].map((k) => [k, dataFile.articles.filter((a) => ksOf(a).includes(k)).length]));
+const WANT_CARDS = dataFile.articles.reduce((n, a) => n + ksOf(a).length, 0);
 
 const root = path.resolve(import.meta.dirname, "..");
 const chromePath = [process.env.CHROME, "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"].find((p) => p && existsSync(p));
@@ -70,18 +75,25 @@ const evaluate = async (expression) => { const r = await send("Runtime.evaluate"
 await send("Page.enable");
 
 const MEASURE = `(async () => {
+  const WANT_KIND = ${JSON.stringify(WANT_KIND)}, WANT_CARDS = ${WANT_CARDS};
   for (let i = 0; i < 60 && !document.querySelector(".fr-res-card"); i += 1) await new Promise((r) => setTimeout(r, 100));
   const grids = [...document.querySelectorAll(".fr-res-grid")];
   const out = { vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth, cards: document.querySelectorAll(".fr-res-card").length, problems: [] };
   if (!grids.length) { out.problems.push("no grid"); return out; }
   let g = grids[0];
   // every article is drawn: all 493 unfiltered, and the whole set for each kind
-  if (out.cards !== 493) out.problems.push(out.cards + " cards, wanted 493");
+  // grouped, a multi-kind essay is under each of its groups; the unique total stays 493
+  if (out.cards !== WANT_CARDS) out.problems.push(out.cards + " cards, wanted " + WANT_CARDS);
+  if (!/^493 articles$/.test(document.getElementById("resCount").textContent)) out.problems.push("the count says " + document.getElementById("resCount").textContent);
+  const hrefs = [...document.querySelectorAll(".fr-res-section")].map((sec) => new Set([...sec.querySelectorAll(".fr-res-cardlink")].map((a) => a.href)).size === sec.querySelectorAll(".fr-res-cardlink").length);
+  if (hrefs.includes(false)) out.problems.push("a group repeats an article");
   const counts = {};
-  for (const [k, n] of Object.entries({ doc: 77, work: 179, retrieval: 13, topic: 224 })) {
+  for (const [k, n] of Object.entries(WANT_KIND)) {
     document.querySelector('[data-kind="' + k + '"]').click();
     counts[k] = document.querySelectorAll(".fr-res-card").length;
     if (counts[k] !== n) out.problems.push(k + " shows " + counts[k] + " cards, wanted " + n);
+    const flat = [...document.querySelectorAll(".fr-res-cardlink")].map((a) => a.href);
+    if (new Set(flat).size !== flat.length) out.problems.push("the " + k + " filter repeats an article");
   }
   document.querySelector('[data-kind=""]').click();
   // a full render, timed: script work from the click to the DOM being built

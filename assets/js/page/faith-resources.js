@@ -159,23 +159,29 @@
   const ORDER = { doc: ["doc", "topic"], work: ["author", "work"], retrieval: ["topic", "doc"], topic: ["topic", "verse"] };
   function why(a) {
     const all = M.entities(a);
+    const ks = M.kindsOf(a);
     const label = (e) => (e.type === "verse" ? verseLabel(e.key) : e.type === "work" ? lower(shortTitle(e.label)) : e.type === "doc" || e.type === "topic" ? lower(e.label) : e.label);
-    const picked = [];
-    for (const t of ORDER[a.k] || []) for (const e of all) if (e.type === t && picked.length < 2 && !picked.some((p) => p.type === t && p.key === e.key)) picked.push(e);
-    if (a.k === "retrieval") return FALLBACK.retrieval;
-    const names = picked.map(label);
-    if (!names.length && a.k === "doc" && (a.n || []).length) names.push(...a.n.slice(0, 2).map(lower));
-    if (!names.length) return FALLBACK[a.k] || "";
-    return `${VERB[a.k]} ${names.join(" and ")}`;
+    // One clause per kind (up to three); a single-kind essay gets its first two entities in one clause.
+    const clauses = [];
+    for (const k of ks.slice(0, 3)) {
+      if (k === "retrieval") { clauses.push(FALLBACK.retrieval); continue; }
+      const picked = [];
+      for (const t of ORDER[k] || []) for (const e of all) if (e.type === t && picked.length < (ks.length > 1 ? 1 : 2) && !picked.some((p) => p.type === t && p.key === e.key)) picked.push(e);
+      const names = picked.map(label);
+      if (!names.length && k === "doc" && (a.n || []).length) names.push(...a.n.slice(0, ks.length > 1 ? 1 : 2).map(lower));
+      clauses.push(names.length ? `${VERB[k]} ${names.join(" and ")}` : FALLBACK[k]);
+    }
+    return clauses.map((c, i) => (i ? `${c.charAt(0).toLowerCase()}${c.slice(1)}` : c)).join("; ");
   }
 
   // One card, one link: the image (or a tinted tile with the kind), the title, author and month, the kind. What the essay serves rides in the title attribute.
   function card(a, ts, q) {
-    const kind = KIND_LABEL[a.k] || "";
+    const kind = M.kindsOf(a).map((k) => KIND_LABEL[k]).filter(Boolean).join(", ");
+    const ph = KIND_LABEL[a.k] || "";
     const src3 = M.image(a, 300);
     const img = src3
       ? `<img class="fr-res-photo" src="${esc(src3)}" srcset="${esc(src3)} 300w, ${esc(M.image(a, 600))} 600w" sizes="${SIZES}" width="600" height="400" alt="${esc(a.ia || "")}" loading="lazy" decoding="async">`
-      : `<span class="fr-res-ph" aria-hidden="true">${esc(kind)}</span>`;
+      : `<span class="fr-res-ph" aria-hidden="true">${esc(ph)}</span>`;
     const s = serves(a);
     const also = q ? M.mentions(a, q) : [];
     const tip = s.length ? ` title="${esc(`Serves: ${s.join("; ")}`)}"` : "";
@@ -201,8 +207,6 @@
     let list = base;
     if (state.sort === "new" || (state.sort === "match" && !q)) list = base.slice().sort((x, y) => (x.d < y.d ? 1 : x.d > y.d ? -1 : 0));
     else if (state.sort === "old") list = base.slice().sort((x, y) => (x.d < y.d ? -1 : x.d > y.d ? 1 : 0));
-    // No search and no filter: every article, grouped by kind, in group order.
-    if (!q && !state.kind) list = [].concat(...GROUPS.map(([k]) => list.filter((a) => a.k === k)));
     return list;
   }
 
@@ -216,7 +220,7 @@
     let html = "";
     if (grouped) {
       for (const [k, label] of GROUPS) {
-        const part = list.filter((a) => a.k === k);
+        const part = list.filter((a) => M.kindsOf(a).includes(k));
         if (!part.length) continue;
         html += `<section class="fr-res-section" aria-labelledby="res-g-${k}"><h3 class="fr-res-h" id="res-g-${k}">${esc(label)} <span class="fr-res-n">${part.length.toLocaleString("en-US")}</span></h3><ul class="fr-res-grid">${part.map((a) => card(a, ts, q)).join("")}</ul></section>`;
       }

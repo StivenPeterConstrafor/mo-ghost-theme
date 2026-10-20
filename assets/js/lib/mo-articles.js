@@ -17,7 +17,8 @@
  *                                   "double quotes" force a phrase; the alias groups below make common names find each other.
  *   MOArticles.loadIndex()          Promise of the full-text index, fetched once under its own version. Search works without it, on the fields only.
  *   MOArticles.mentions(article, q) the terms of the query that matched only deep in the essay's text, for an "Also mentions" line
- *   MOArticles.kinds()              [{k, label, n}] in display order
+ *   MOArticles.kinds()              [{k, label, n}] in display order; n counts every essay that has the kind, so the counts overlap
+ *   MOArticles.kindsOf(article)     the essay's kinds, primary first ([k] when it has only one)
  *   MOArticles.terms(q)             the folded words of a query, for highlighting
  *   MOArticles.image(article, w)   the featured image URL at width w (300, 600, 1000), or "" when there is none
  *   MOArticles.entities(article)    [{type, key, label}] the article serves, most specific first
@@ -92,6 +93,9 @@
     ["atonement", "propitiation"],
     ["baptism", "baptize", "baptized"],
   ];
+
+  // Every kind an essay really has (ks, written when there is more than one); k is the primary, first in the list.
+  const kindsOf = (a) => (a && a.ks && a.ks.length ? a.ks : [a && a.k]);
 
   const fold = (s) => String(s == null ? "" : s).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
   const words = (s) => fold(s).match(/[a-z0-9]+/g) || [];
@@ -416,7 +420,7 @@
       if (!data) return [];
       const o = opts || {};
       let list = data.articles;
-      if (o.kind) list = list.filter((a) => a.k === o.kind);
+      if (o.kind) list = list.filter((a) => kindsOf(a).includes(o.kind));
       let out;
       if (!wl(q).length) out = list.slice().sort((x, y) => (x.d < y.d ? 1 : x.d > y.d ? -1 : x.id < y.id ? -1 : 1));
       else out = run(q, list);
@@ -446,7 +450,7 @@
 
     function kinds() {
       const n = {};
-      if (data) for (const a of data.articles) n[a.k] = (n[a.k] || 0) + 1;
+      if (data) for (const a of data.articles) for (const k of kindsOf(a)) n[k] = (n[k] || 0) + 1;
       return KINDS.map(([k, label]) => ({ k, label, n: n[k] || 0 }));
     }
 
@@ -478,7 +482,7 @@
       forDoc: (slug) => pick("doc", slug),
       article: (id) => byId.get(id) || null,
       all: () => (data ? data.articles : []),
-      terms, fold, stream, stem, ALIASES,
+      terms, fold, stream, stem, ALIASES, kindsOf,
       create,
     };
   }

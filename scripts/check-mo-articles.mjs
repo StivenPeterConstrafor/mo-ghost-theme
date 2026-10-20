@@ -205,6 +205,26 @@ test("namesakes: no Martin Luther King essay is tagged Martin Luther, and no Cal
     if (/calvin and hobbes/i.test(a.x) && !/john calvin/i.test(a.x)) assert.ok(!(a.authors || []).includes("John Calvin"), a.t);
   }
 });
+test("kinds: every essay has valid kinds with its primary first; filters overlap and the unique total stays 493", () => {
+  const K = ["doc", "work", "retrieval", "topic"];
+  let multi = 0;
+  for (const a of data.articles) {
+    const ks = B.kindsOf(a);
+    assert.equal(ks[0], a.k, a.t);
+    assert.ok(ks.every((k) => K.includes(k)) && new Set(ks).size === ks.length, a.t);
+    if (a.ks) { assert.ok(a.ks.length > 1, `${a.t} writes ks for one kind`); multi++; }
+    if ((a.docs || []).length) assert.ok(ks.includes("doc"), `${a.t} has docs`);
+    if ((a.works || []).length || (a.authors || []).length) assert.ok(ks.includes("work"), `${a.t} has works or authors`);
+    if ((a.topics || []).length || (a.verses || []).length) assert.ok(ks.includes("topic"), `${a.t} has topics or verses`);
+  }
+  assert.ok(multi >= 30, `only ${multi} multi-kind essays`);
+  const counts = Object.fromEntries(B.kinds().map((k) => [k.k, k.n]));
+  for (const k of K) assert.equal(B.search("", { kind: k }).length, counts[k]);
+  assert.ok(K.reduce((n, k) => n + counts[k], 0) > 493, "the kind counts should overlap");
+  assert.equal(B.search("").length, 493);
+  const flat = B.search("", { kind: "work" }).map((a) => a.id);
+  assert.equal(new Set(flat).size, flat.length);
+});
 test("the lookups answer from the built file", () => {
   assert.ok(B.forAuthor("Augustine of Hippo").length >= 30, "Augustine's essays");
   assert.ok(B.forWork("pld-2722").length >= 20, "Confessions");

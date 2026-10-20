@@ -128,6 +128,12 @@ for (const a of input.articles) {
   if (verses.length) o.verses = verses;
   if (topics.length) o.topics = topics;
   if (names.length) o.n = names;
+  // Every kind the essay really has, from what it matched: k stays the primary one (it orders the groups).
+  const has = { doc: docs.length > 0 || names.length > 0, work: works.length > 0 || authors.length > 0, retrieval: kind === "retrieval" || a.retrieval === true, topic: topics.length > 0 || verses.length > 0 };
+  has[kind] = true;
+  // Written only when there is more than one (to stay under the size cap); the loader answers [k] otherwise.
+  const ks = [kind, ...["doc", "work", "retrieval", "topic"].filter((x) => x !== kind && has[x])];
+  if (ks.length > 1) o.ks = ks;
   o.about = a.about; // consumed below, removed before writing
   articles.push(o);
 }
@@ -196,6 +202,7 @@ const report = [
   `mo-articles: ${articles.length} articles, ${(bytes / 1024).toFixed(0)} KB (target under ${MAX_BYTES / 1024} KB)`,
   `  kinds: ${Object.entries(kinds).map(([k, n]) => `${k} ${n}`).join(", ")}`,
   ...Object.entries(sortedIdx).map(([name, t]) => `  idx.${name}: ${Object.keys(t).length} keys, ${Object.values(t).reduce((n, l) => n + l.length, 0)} entries`),
+  `  kinds per article: ${[1, 2, 3, 4].map((n) => `${n}: ${articles.filter((o) => (o.ks || [o.k]).length === n).length}`).join(", ")}`,
   `  with a featured image: ${withImage} of ${articles.length}`,
   `  without any entity: ${articles.filter((o) => !o.works && !o.authors && !o.docs && !o.verses && !o.topics).length}`,
   `  unresolved or dropped: ${dropped.length}`,

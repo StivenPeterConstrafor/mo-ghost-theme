@@ -144,6 +144,7 @@ for (const r of rows) {
   articles.push({
     id: r.id, title: r.title, url: r.url, date: r.date, byline: r.byline, class: r.class, confidence: r.confidence,
     works: w, authors: au, docs: dc, verses: compressVerses(vkeys), topics: tp.filter((t) => !["catechisms", "confessions", "councils", "creeds", "retrieval"].includes(t)),
+    retrieval: Boolean(m.retrieval && (m.retrieval.conf === "high" || m.retrieval.conf === "medium")),
     reason: r.reason, about, excerpt: excerptOf(b.text), keywords: scored.slice(0, 12).map((x) => x[0]),
   });
 }

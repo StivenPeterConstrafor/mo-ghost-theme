@@ -128,6 +128,7 @@
     "leviticus.19.34"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Leviticus 19 4 distinct refs",
    "about": [],
    "excerpt": "Certainly, Christopher Nolan’s adaptation of Homer’s Odyssey this past summer has been a triumph—both critically and financially, far surpassing the $1 billion threshold. Yet it has also engendered much reflection, particularly concerning…",
@@ -200,6 +201,7 @@
     "genesis.2.8"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Genesis 2 9 distinct refs; Genesis 1 8 distinct refs; Exodus 31 4 distinct refs",
    "about": [
     "verse:genesis.2",
@@ -236,6 +238,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 8 mentions",
    "about": [],
    "excerpt": "Roughly 1,600 years ago, a man named Alypius confidently proclaimed that witnessing the bloodshed of gladiator combat would not change him. St. Augustine later tells us that what Alypius witnessed wounded his soul more than the violence he…",
@@ -271,6 +274,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions and confessionalism (general) ABOUT (title/heading) 17x; Westminster Standards (umbrella) ABOUT 7x; Westminster Shorter Catechism ABOUT 7x",
    "about": [
     "doc:x:confessionalism",
@@ -309,6 +313,7 @@
     "de-attributis-distinctio",
     "de-deo"
    ],
+   "retrieval": true,
    "reason": "retrieval markers: 2 strong, 23 general; topic The Nature of God in title/heading, 26 term hits; topic The Divine Attributes 9 term hits",
    "about": [
     "topic:de-deo"
@@ -345,6 +350,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Thomas Aquinas 18 mentions; Thomas Cranmer 14 mentions",
    "about": [
     "author:Thomas Aquinas",
@@ -384,6 +390,7 @@
    "topics": [
     "de-justificatione"
    ],
+   "retrieval": false,
    "reason": "John Calvin 16 mentions; Martin Luther 9 mentions; topic Justification 15 term hits",
    "about": [
     "author:John Calvin",
@@ -420,6 +427,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ in title/heading, 26 term hits",
    "about": [
     "topic:de-christo"
@@ -455,6 +463,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 20 term hits",
    "about": [
     "topic:de-novissimis"
@@ -490,6 +499,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 17 mentions",
    "about": [
     "author:Augustine of Hippo"
@@ -527,6 +537,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 16 mentions; Confessions (Augustine of Hippo) cited 3x",
    "about": [],
    "excerpt": "Augustine’s Confessions has become one of my longest reading journeys. By that, I don’t mean it’s a book I’ve reread repeatedly, though I hope that to ultimately be true. What I mean is that I began the book over six months ago. Granted, I…",
@@ -599,6 +610,7 @@
     "de-sacramentis",
     "de-spiritu-sancto"
    ],
+   "retrieval": false,
    "reason": "topic The Holy Spirit in title/heading, 35 term hits; topic The Sacraments in title/heading, 13 term hits; topic Baptism 9 term hits; topic The Trinity 8 term hits; topic Justification 8 term hits",
    "about": [
     "topic:de-spiritu-sancto",
@@ -635,6 +647,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Second Vatican Council (1962–1965) mentioned 3x",
    "about": [],
    "excerpt": "Several years ago, I had a chance encounter that felt like the start of a joke: two Presbyterians, one Anglo-Catholic, one Lutheran, and one Baptist, all ministers, walked into a coffee shop. We were there for different meetings, but as…",
@@ -682,6 +695,7 @@
     "psalms.16.6"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Psalms 144 in title/heading, 2 distinct refs; Psalms 121 in title/heading, 2 distinct refs; Psalms 16 in title/heading, 1 distinct refs",
    "about": [
     "verse:psalms.144",
@@ -719,6 +733,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 8 term hits",
    "about": [],
    "excerpt": "While reading Vice President Vance's second memoir, Communion, two dots connected as I reflected on my own transition from the analog to the digital world in the late '90s. The first was Vance's mention of rereading C. S. Lewis's The…",
@@ -752,6 +767,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Book of Common Prayer ABOUT 4x",
    "about": [
     "doc:x:bcp"
@@ -787,6 +803,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds mentioned 3x",
    "about": [],
    "excerpt": "Each year at the Presbyterian Church in America's (PCA) General Assembly a group of younger pastors gather for the annual Next Generation Forum, which creates a space for rising leaders in the church to talk about the issues facing the PCA…",
@@ -820,6 +837,7 @@
    "topics": [
     "de-voluntate-dei"
    ],
+   "retrieval": false,
    "reason": "topic The Will of God in title/heading, 6 term hits",
    "about": [
     "topic:de-voluntate-dei"
@@ -855,6 +873,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther 5 mentions",
    "about": [],
    "excerpt": "America is a country that generally does not imprison her chaotic saints. There is a wildness to American Christianity that certainly comes with much pain. There is a vulnerability to hucksterism here, perhaps best summed up in the famous…",
@@ -888,6 +907,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Book of Common Prayer ABOUT (title/heading) 29x",
    "about": [
     "doc:x:bcp"
@@ -923,6 +943,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 39 mentions",
    "about": [
     "author:Augustine of Hippo"
@@ -962,6 +983,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Westminster Standards (umbrella) ABOUT 11x; Confessions and confessionalism (general) ABOUT 8x; Westminster Larger Catechism ABOUT 11x; Westminster Shorter Catechism ABOUT 11x; Westminster Confession Of Faith ABOUT 4x",
    "about": [
     "doc:umb:westminster-standards",
@@ -1001,6 +1023,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions and confessionalism (general) mentioned 3x",
    "about": [],
    "excerpt": "To begin, we need to cover two key topics: the words, behavior, and associations of Zachary Garris and the teaching record of the Presbyterian Church in America on issues of racial sin. After that, I want to move toward a broader point…",
@@ -1034,6 +1057,7 @@
    "topics": [
     "de-ecclesia"
    ],
+   "retrieval": false,
    "reason": "topic The Church in title/heading, 11 term hits",
    "about": [
     "topic:de-ecclesia"
@@ -1071,6 +1095,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 38 mentions; The City of God (Augustine of Hippo) cited 2x",
    "about": [
     "author:Augustine of Hippo"
@@ -1106,6 +1131,7 @@
    "topics": [
     "de-virtutibus"
    ],
+   "retrieval": false,
    "reason": "topic Virtues and Moral Theology 14 term hits",
    "about": [],
    "excerpt": "Derek Rishmawy 00:00:00.160 - 00:00:47.230 This episode is brought to you by Lexham Press, who publishes books that love the word, love the faith, and love the church. Lexham Press was recently acquired by Baker Publishing Group, and there…",
@@ -1140,6 +1166,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Against Heresies (Irenaeus of Lyon) in a heading 2x",
    "about": [
     "work:pg-2847",
@@ -1177,6 +1204,7 @@
     "1-corinthians.13.1"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "1 Corinthians 13 in title/heading, 1 distinct refs",
    "about": [
     "verse:1-corinthians.13"
@@ -1202,6 +1230,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Catechism of the Catholic Church (1992) ABOUT 7x",
    "about": [
     "doc:x:ccc"
@@ -1235,6 +1264,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": true,
    "reason": "retrieval markers: 1 strong, 24 general (in title/heading)",
    "about": [],
    "excerpt": "One consistently important practice for Christians since the early days of the church has been Bible reading. So how did they read the Bible? And how might knowing more about their varied approaches to interpreting God’s Word help us as…",
@@ -1268,6 +1298,7 @@
    "topics": [
     "repentance"
    ],
+   "retrieval": false,
    "reason": "topic Repentance in title/heading, 4 term hits",
    "about": [
     "topic:repentance"
@@ -1303,6 +1334,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Heidelberg Catechism ABOUT (title/heading) 4x",
    "about": [
     "doc:rc-061-heidelberg-catechism-1563"
@@ -1338,6 +1370,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Thomas Aquinas in the title; 8 mentions",
    "about": [
     "author:Thomas Aquinas"
@@ -1375,6 +1408,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Book of Common Prayer ABOUT 9x; Thirty-Nine Articles (1571) ABOUT 5x; Confessions and confessionalism (general) mentioned 3x",
    "about": [
     "doc:x:bcp",
@@ -1412,6 +1446,7 @@
     "acts.1.8"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Acts 1 in title/heading, 1 distinct refs",
    "about": [
     "verse:acts.1"
@@ -1447,6 +1482,7 @@
     "psalms.130"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Psalms 130 in title/heading, 1 distinct refs",
    "about": [
     "verse:psalms.130"
@@ -1476,6 +1512,7 @@
    "topics": [
     "de-creatione"
    ],
+   "retrieval": false,
    "reason": "topic Creation in title/heading, 22 term hits; Genesis 1 4 distinct refs",
    "about": [
     "topic:de-creatione"
@@ -1521,6 +1558,7 @@
     "ephesians.5.32"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Ephesians 5 5 distinct refs",
    "about": [],
    "excerpt": "I was a college freshman when I first heard the idea that marriage is a picture of the Gospel. It felt like a strange concept, but Paul’s words couldn’t be clearer: marriage is a profound mystery that refers to Christ and the church (Eph…",
@@ -1558,6 +1596,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "Augustine of Hippo 10 mentions; Confessions (Augustine of Hippo) cited 2x; topic The Trinity 8 term hits",
    "about": [],
    "excerpt": "Few things express our individual experience like music. Take the popularity of Spotify Wrapped, with its 200 million users sharing their year in music, complete with: Listening Age – the age Spotify thinks you are based on your most played…",
@@ -1591,6 +1630,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": true,
    "reason": "retrieval markers: 2 strong, 0 general; Confessions and confessionalism (general) ABOUT (title/heading) 7x",
    "about": [
     "doc:x:confessionalism"
@@ -1626,6 +1666,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 7 term hits",
    "about": [],
    "excerpt": "The following excerpt from Michael Horton, Magician and Mechanic: The Roots of “Spiritual but Not Religious” from the Renaissance to the Scientific Revolution (Eerdmans, 2026) is published with permission from Eerdmans Publishing. This is…",
@@ -1660,6 +1701,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Thirty-Nine Articles (1571) ABOUT 6x; Book of Common Prayer ABOUT 4x",
    "about": [
     "doc:x:thirty-nine-articles",
@@ -1696,6 +1738,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Bucer 34 mentions",
    "about": [
     "author:Martin Bucer"
@@ -1733,6 +1776,7 @@
    "topics": [
     "de-oratione"
    ],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT 2x; topic Prayer in title/heading, 5 term hits",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds",
@@ -1769,6 +1813,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "The City of God (Augustine of Hippo) cited 2x",
    "about": [],
    "excerpt": "I: The Formative Nature of Suffering When we speak about spiritual formation, we usually focus on intentional practices: Scripture, prayer, sacrament, community, obedience. What is striking, however, is that one of the most powerful forces…",
@@ -1802,6 +1847,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment in title/heading, 3 term hits",
    "about": [
     "topic:de-novissimis"
@@ -1837,6 +1883,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther in the title; 2 mentions",
    "about": [
     "author:Martin Luther"
@@ -1872,6 +1919,7 @@
    "topics": [
     "de-sanctificatione"
    ],
+   "retrieval": false,
    "reason": "topic Sanctification and Good Works 7 term hits",
    "about": [],
    "excerpt": "Very often, when we talk about faith and work, we talk about vocation. We encourage people to find and follow their calling, not just to pursue wealth or worldly success. Vocation is a very good thing and those are very good conversations…",
@@ -1905,6 +1953,7 @@
    "topics": [
     "repentance"
    ],
+   "retrieval": false,
    "reason": "topic Repentance in title/heading, 14 term hits",
    "about": [
     "topic:repentance"
@@ -1940,6 +1989,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 7 term hits",
    "about": [],
    "excerpt": "Richard Hughes Gibson. The Way of Dante: Going Through Hell, Purgatory, and Heaven with C.S. Lewis, Dorothy L. Sayers, and Charles Williams. IVP Academic, 2025. $24.99. 248 pp. Christmas has come and gone, and if your loved ones are…",
@@ -1973,6 +2023,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "The City of God (Augustine of Hippo) cited 2x",
    "about": [],
    "excerpt": "Paul Kingsnorth’s Against the Machine has generated both admiration and frustration, often in equal measure. Some read it as a manifesto against modern technology; others as a hopeless lament for a world already lost. But the book is best…",
@@ -2019,6 +2070,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin in a heading; 6 mentions; Thomas Aquinas in a heading; 4 mentions; Augustine of Hippo in a heading; 3 mentions; The City of God (Augustine of Hippo) in a heading 4x; Institutes of the Christian Religion (John Calvin) in a heading 3x",
    "about": [
     "author:John Calvin",
@@ -2066,6 +2118,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Ambrose of Milan in the title; 5 mentions; Augustine of Hippo 4 mentions",
    "about": [
     "author:Ambrose of Milan"
@@ -2099,6 +2152,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": true,
    "reason": "retrieval markers: 3 strong, 4 general (in title/heading)",
    "about": [],
    "excerpt": "In what is now the fourth installment of responses to Haley Baumeister’s original post against vasectomies, I take up Andrew Koperski’s critique of my article on the need for better moral guidance on sex.1 Koperski misunderstands my…",
@@ -2132,6 +2186,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther 7 mentions",
    "about": [],
    "excerpt": "There’s a quiet engine humming just beneath your attention. It shapes how you think and, in time, how you live. Can you hear it? Entire business models run on it, and they profit not only from your money but from your focus. This engine is…",
@@ -2165,6 +2220,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Westminster Confession Of Faith mentioned 3x",
    "about": [],
    "excerpt": "James Baird’s King of Kings: A Reformed Guide to Christian Government presents readers with a simple argument: “Government must promote Christianity as the only true religion.” In just eighty-five pages, Baird seeks to simplify centuries of…",
@@ -2198,6 +2254,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ in title/heading, 4 term hits",
    "about": [
     "topic:de-christo"
@@ -2234,6 +2291,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT 6x; Council of Nicaea I (325) ABOUT 0x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds",
@@ -2270,6 +2328,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Westminster Shorter Catechism ABOUT 6x",
    "about": [
     "doc:rc-115-westminster-shorter-catechism-1647"
@@ -2305,6 +2364,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 8 term hits",
    "about": [],
    "excerpt": "Nearly everyone agrees that American Protestantism is in crisis. Once comprising a supermajority in the country that lasted for centuries, Protestants now count less than 40% of Americans as adherents. Many exiting Protestants are part of…",
@@ -2344,6 +2404,7 @@
     "ephesians.5.20"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Colossians 3 4 distinct refs; Ephesians 5 4 distinct refs",
    "about": [],
    "excerpt": "What makes life beautiful, true, and even good? Many things could and should be said, from oxygen and calories to growth and confession. Each of those items, and many others, warrant attention. I want to reflect on how gratitude is a…",
@@ -2389,6 +2450,7 @@
     "nehemiah.8.9"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Nehemiah 8 4 distinct refs",
    "about": [],
    "excerpt": "I was 23 when I moved to Germany for the first time. From my university studies, I was already reasonably conversational in the language, but it wasn’t until I lived in Berlin that I started to get a handle on German history and culture…",
@@ -2427,6 +2489,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 8 term hits; Romans 11 4 distinct refs",
    "about": [],
    "excerpt": "In a credulous interview with a podcaster who praises Hitler and Stalin, Tucker Carlson claimed that Christian Zionism is “heresy.” This is a particularly explosive claim, of course, but it is being made amidst less inflammatory debates…",
@@ -2462,6 +2525,7 @@
     "de-spiritu-sancto",
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "topic The Holy Spirit in title/heading, 35 term hits; topic The Trinity 11 term hits; topic The Person and Work of Christ 10 term hits",
    "about": [
     "topic:de-spiritu-sancto"
@@ -2502,6 +2566,7 @@
     "philippians.1.5"
    ],
    "topics": [],
+   "retrieval": true,
    "reason": "retrieval markers: 0 strong, 9 general (in title/heading); Philippians 1 4 distinct refs",
    "about": [],
    "excerpt": "The American church is experiencing precipitous decline. In the last twenty-five years, forty million Americans have stopped going to church. At the same time, the percentage of religious “nones” has more than doubled to twenty-eight…",
@@ -2535,6 +2600,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT 3x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -2570,6 +2636,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": true,
    "reason": "Augustine of Hippo 8 mentions; retrieval markers: 2 strong, 7 general (in title/heading)",
    "about": [],
    "excerpt": "As a Protestant father with a growing family, I have followed with interest this magazine’s publications over the last few months treating contraception, a Protestant theology of the body, and whether there is already too much discourse…",
@@ -2613,6 +2680,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ in title/heading, 62 term hits; Exodus 24 in title/heading, 3 distinct refs; Leviticus 17 in title/heading, 2 distinct refs; Galatians 3 5 distinct refs",
    "about": [
     "topic:de-christo",
@@ -2650,6 +2718,7 @@
    "topics": [
     "de-homine"
    ],
+   "retrieval": false,
    "reason": "topic Humanity in title/heading, 6 term hits",
    "about": [
     "topic:de-homine"
@@ -2687,6 +2756,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 37 mentions; Confessions (Augustine of Hippo) cited 7x",
    "about": [
     "author:Augustine of Hippo",
@@ -2723,6 +2793,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ 9 term hits",
    "about": [],
    "excerpt": "“though He was rich, yet for your sakes He became poor…” (2 Cor. 8:9) It would be overly simplistic to attribute the modern tendency to flatten traditional hierarchies to a simple rejection of tradition for its own sake. It would be equally…",
@@ -2756,6 +2827,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 27 mentions",
    "about": [
     "author:Augustine of Hippo"
@@ -2791,6 +2863,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ in title/heading, 4 term hits",
    "about": [
     "topic:de-christo"
@@ -2826,6 +2899,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) cited 2x",
    "about": [],
    "excerpt": "“Even in a toothache there is enjoyment.” This is the perspective of the narrator in Notes from the Underground, perhaps the most spiteful narrator in all of literature. The creation of Fyodor Dostoevsky, the so-called Underground Man takes…",
@@ -2859,6 +2933,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 15 mentions",
    "about": [],
    "excerpt": "Originally published on May 26, 2023 I am a mother and a theologian. These two facts belong together, inextricable as they are for me and my experience of them. I was pregnant with my first child as I began my doctoral work; I carried her…",
@@ -2894,6 +2969,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 48 mentions; Confessions (Augustine of Hippo) cited 12x",
    "about": [
     "work:pld-2722"
@@ -2929,6 +3005,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 11 term hits",
    "about": [],
    "excerpt": "Originally published August 25, 2023 God guards, as in a treasury, things far more glorious than any yet seen by sun, moon, or angels, and he will bring these things to light when all creation has been freed from bondage to the enemy, and…",
@@ -2962,6 +3039,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Bunyan 13 mentions",
    "about": [],
    "excerpt": "Originally published on May 26, 2023 I love being a Christian. I mean, I love Jesus too. But I also love all the rest of it: Brunch after church with friends, hylomorphism, late-night Eucharist on Christmas Eve, and carols and stollen and…",
@@ -2995,6 +3073,7 @@
    "topics": [
     "de-religione"
    ],
+   "retrieval": false,
    "reason": "topic Religion and True Worship 12 term hits",
    "about": [],
    "excerpt": "Originally published May 26, 2023 Among the many sayings of Jesus that have echoed down through the ages, few have continued to sound so loudly or uncomfortably in our ears as his warning, “You cannot serve both God and Mammon.” But this…",
@@ -3028,6 +3107,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": true,
    "reason": "Athanasius of Alexandria 8 mentions; retrieval markers: 5 strong, 12 general",
    "about": [],
    "excerpt": "Originally published May 26, 2023 During my early training as a pastor and theologian, many of my mentors warned me that emulating the exegetical method of the Church Fathers is a dangerous game. The concerns were typically twofold. First…",
@@ -3061,6 +3141,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 15 term hits",
    "about": [],
    "excerpt": "Richard B. Gaffin Jr. Word & Spirit: Selected Writings in Biblical and Systematic Theology. Edited by David B. Garner and Guy Prentiss Waters. Glenside, PA: Westminster Seminary Press, 2023. xxi+776 pgs. $35.99 hardback. One of the most…",
@@ -3137,6 +3218,7 @@
     "matthew.9.8"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Matthew 8 5 distinct refs; Matthew 9 5 distinct refs",
    "about": [],
    "excerpt": "Death casts a shadow over life and, even before our last hours, its presence is already known to us. When we die, death strikes its great final blow, yet we all experience it in countless lesser ways before this time. Traces of its hand are…",
@@ -3172,6 +3254,7 @@
    "topics": [
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "Confessions and confessionalism (general) ABOUT 2x; topic The Sacraments 31 term hits",
    "about": [
     "doc:x:confessionalism",
@@ -3208,6 +3291,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Westminster Confession Of Faith ABOUT 4x cites 1.10",
    "about": [
     "doc:rc-111-westminster-confession-of-faith-1646"
@@ -3247,6 +3331,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 59 mentions; Confessions (Augustine of Hippo) cited 11x; The City of God (Augustine of Hippo) cited 7x; On the Trinity (Augustine of Hippo) cited 2x",
    "about": [
     "author:Augustine of Hippo",
@@ -3284,6 +3369,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions and confessionalism (general) ABOUT 5x",
    "about": [
     "doc:x:confessionalism"
@@ -3321,6 +3407,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Boethius 27 mentions; Consolation of Philosophy (Boethius) cited 5x",
    "about": [
     "work:pld-3278"
@@ -3361,6 +3448,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "Ecclesiastical History (Ecclesiasticae Historiae) (Eusebius of Caesarea) cited 3x; Council of Nicaea I (325) ABOUT 5x; Apostles’, Nicene and ancient creeds ABOUT 10x; topic The Trinity 26 term hits",
    "about": [
     "doc:cf-013-council-of-nicea-i-325",
@@ -3400,6 +3488,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT 9x; Council of Nicaea I (325) ABOUT 3x; topic The Trinity 28 term hits",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds",
@@ -3437,6 +3526,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions and confessionalism (general) mentioned 3x",
    "about": [],
    "excerpt": "In recent years, American conservatives seem obsessed with lamentation. Intellectual magazines and other outposts of conservative intellectualism have promoted several narratives of national decline which lift up a mythic American past to…",
@@ -3470,6 +3560,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ in title/heading, 19 term hits",
    "about": [
     "topic:de-christo"
@@ -3519,6 +3610,7 @@
     "de-coena",
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "Thomas Cranmer 8 mentions; Of the Laws of Ecclesiastical Polity (Richard Hooker) cited 2x; Book of Common Prayer ABOUT 36x; Thirty-Nine Articles (1571) ABOUT 4x; topic The Lord's Supper 41 term hits",
    "about": [
     "doc:x:bcp",
@@ -3556,6 +3648,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 4 mentions",
    "about": [],
    "excerpt": "This article was published in the Winter 2025 edition of our print Journal. To read for free online, please Subscribe. If you would like to receive future editions of the print Journal, become a Basic or Solidarity Member today. The late…",
@@ -3589,6 +3682,7 @@
    "topics": [
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic The Sacraments 13 term hits",
    "about": [],
    "excerpt": "This article was published in the Winter 2025 edition of our print Journal. To read for free online, please Subscribe. If you would like to receive future editions of the print Journal, become a Basic or Solidarity Member today. Tim Keller…",
@@ -3622,6 +3716,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 79 mentions",
    "about": [
     "author:Augustine of Hippo"
@@ -3657,6 +3752,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Book of Common Prayer ABOUT 2x",
    "about": [
     "doc:x:bcp"
@@ -3692,6 +3788,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Book of Common Prayer ABOUT 5x",
    "about": [
     "doc:x:bcp"
@@ -3725,6 +3822,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": true,
    "reason": "retrieval markers: 2 strong, 0 general",
    "about": [],
    "excerpt": "“I'm cleverer, true, than those fops of teachers,Doctors and Magisters, Scribes and Preachers;Neither scruples nor doubts come now to smite me,Nor Hell nor Devil can longer affright me.” --Doctor Faust, Part I, Goethe’s Faust Cajus…",
@@ -3758,6 +3856,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 13 mentions",
    "about": [
     "author:Augustine of Hippo"
@@ -3806,6 +3905,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin in a heading; 6 mentions; Thomas Aquinas in a heading; 4 mentions; Augustine of Hippo in a heading; 3 mentions; The City of God (Augustine of Hippo) in a heading 4x; Institutes of the Christian Religion (John Calvin) in a heading 3x",
    "about": [
     "author:John Calvin",
@@ -3856,6 +3956,7 @@
     "1-peter.2.9"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "1 Peter 2 4 distinct refs",
    "about": [],
    "excerpt": "This article is one of Mere Orthodoxy's Best of 2024. If you are ministered to by this article and others like it, would you consider supporting Mere Orthodoxy? Mere Orthodoxy is quickly growing. There is so much more work to do. And we…",
@@ -3889,6 +3990,7 @@
    "topics": [
     "de-existentia-dei"
    ],
+   "retrieval": false,
    "reason": "topic The Existence of God in title/heading, 3 term hits",
    "about": [
     "topic:de-existentia-dei"
@@ -3924,6 +4026,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther 7 mentions",
    "about": [],
    "excerpt": "Though 2024 is not yet over, it seems safe to declare this a year of anxiety. The aftereffects of the Covid pandemic are still being felt, the world economy seems unusually fragile, war rages in Ukraine and the Middle East, and Americans…",
@@ -3959,6 +4062,7 @@
     "de-coena",
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic Baptism in title/heading, 38 term hits; topic The Lord's Supper in title/heading, 19 term hits; topic The Sacraments 17 term hits",
    "about": [
     "topic:de-baptismo",
@@ -3996,6 +4100,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Bucer 27 mentions",
    "about": [],
    "excerpt": "We begin with a recent news report: OMAHA, NE—In a candid plea addressed to the entire global community, Omaha Mayor Jean Stothert gave an impassioned speech Tuesday in which she announced that her city did not have the community spirit to…",
@@ -4029,6 +4134,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Book of Common Prayer mentioned 3x",
    "about": [],
    "excerpt": "The young, restless, reformed movement of the late 2000s and 2010s was self-consciously an attempt to reclaim the evangelical center. This was something both Tim Keller and D. A. Carson were clear on from the earliest days of the Gospel…",
@@ -4062,6 +4168,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther 16 mentions",
    "about": [
     "author:Martin Luther"
@@ -4097,6 +4204,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Boethius 5 mentions",
    "about": [],
    "excerpt": "While in prison and awaiting execution in the sixth century, Boethius wrote a book titled The Consolation of Philosophy. In it he describes Lady Philosophy visiting him in his cell. She could not change his circumstances, but she could…",
@@ -4130,6 +4238,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Bucer 12 mentions",
    "about": [],
    "excerpt": "Paul Kingsnorth recently delivered the annual Erasmus Lecture with First Things at the Union League in New York. It was a barn burner. The transcript will be coming in time, I'm sure, so when it publishes you'll want to read it. Until then…",
@@ -4169,6 +4278,7 @@
     "de-christo",
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "John Calvin 16 mentions; Apostles’, Nicene and ancient creeds ABOUT 5x; Council Of Chalcedon ABOUT 2x; topic The Person and Work of Christ 30 term hits; topic Death and Judgment in title/heading, 18 term hits",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds",
@@ -4208,6 +4318,7 @@
     "de-coena",
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic The Lord's Supper 19 term hits; topic The Sacraments in title/heading, 12 term hits",
    "about": [
     "topic:de-coena",
@@ -4248,6 +4359,7 @@
     "psalms.42.5"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Psalms 42 6 distinct refs",
    "about": [
     "verse:psalms.42"
@@ -4283,6 +4395,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Book of Common Prayer mentioned 3x",
    "about": [],
    "excerpt": "Although the external challenges facing the church in a secularizing Western culture have dominated Christian discourse for more than a decade, the internal, personal conduct of pastors in the Dallas-Fort Worth area has proved a scourge in…",
@@ -4316,6 +4429,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 5 mentions",
    "about": [],
    "excerpt": "Winston Churchill once said, “A lie can travel halfway around the world before the truth can get its boots on.” Sounds like something he’d say, right? Only it wasn’t Churchill who said it but Mark Twain. But actually, no, Twain never said…",
@@ -4349,6 +4463,7 @@
     "romans.1"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Romans 1 in title/heading, 1 distinct refs",
    "about": [
     "verse:romans.1"
@@ -4387,6 +4502,7 @@
     "john.14.5"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "John 11 in title/heading, 1 distinct refs; John 14 in title/heading, 1 distinct refs",
    "about": [
     "verse:john.11",
@@ -4423,6 +4539,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 12 term hits",
    "about": [
     "topic:de-lege"
@@ -4458,6 +4575,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Thomas Aquinas 12 mentions",
    "about": [],
    "excerpt": "I recently started wearing my first completely wireless pair of earbuds. At first I would leave them in my ear even when I talked with my wife or kids. But I began to wonder, with the help of modern science, Herman Bavinck, and the…",
@@ -4497,6 +4615,7 @@
     "de-angelis",
     "de-religione"
    ],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 23 mentions; The City of God (Augustine of Hippo) cited 10x; Against Celsus (Origen) cited 2x; topic Religion and True Worship 15 term hits; topic Angels 10 term hits",
    "about": [
     "author:Augustine of Hippo",
@@ -4538,6 +4657,7 @@
     "luke.23.46"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Luke 23 5 distinct refs",
    "about": [],
    "excerpt": "Of his many famous characters, Miss Havisham is among Charles Dickens’ most vivid. The chief antagonist of his 1861 Great Expectations, she’s compellingly repulsive. We also find her vaguely familiar: like the rest of us, she’s a victim…",
@@ -4573,6 +4693,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 26 mentions; The City of God (Augustine of Hippo) in the title 10x",
    "about": [
     "author:Augustine of Hippo",
@@ -4626,6 +4747,7 @@
     "1-corinthians.7.8"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "1 Corinthians 7 4 distinct refs",
    "about": [],
    "excerpt": "“It would have been much more desirable if Protestantism could have found some room for celibacy.” Lacking context or attribution, one might think that the above quote comes from a Roman Catholic critique of Protestant theology. Yet to most…",
@@ -4659,6 +4781,7 @@
    "topics": [
     "de-ecclesia"
    ],
+   "retrieval": false,
    "reason": "topic The Church in title/heading, 29 term hits",
    "about": [
     "topic:de-ecclesia"
@@ -4694,6 +4817,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Eusebius of Caesarea 19 mentions",
    "about": [],
    "excerpt": "Late in February, an active-duty US Air Force airman set fire to himself outside of Israel’s embassy in Washington, DC; afterwards, some journalists rushed to try and provide historical context for the practice of “self-immolation.” Time…",
@@ -4731,6 +4855,7 @@
     "1-peter.2.9"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "1 Peter 2 4 distinct refs",
    "about": [],
    "excerpt": "As the great dechurching continues and Christian institutions fail and falter, those of us who remain and desire to see Christianity flourish will need to build new institutions to advance this work and carry it on after we are gone…",
@@ -4770,6 +4895,7 @@
     "proverbs.9.6"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Proverbs 9 4 distinct refs",
    "about": [],
    "excerpt": "In the Screwtape Letters, the senior tempter Screwtape admonishes Wormwood about the danger of tempting humans with pleasure. He tells his devilish understudy, “Never forget that when we are dealing with any pleasure in its healthy and…",
@@ -4803,6 +4929,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "topic The Civil Magistrate 14 term hits",
    "about": [],
    "excerpt": "The moniker of “Christian Nationalism,” a term that is still being defined and debated in academic circles, is now a common subject in elite discourse. The term is regularly referred to by news outlets with little to no explanation, just an…",
@@ -4837,6 +4964,7 @@
     "de-coena",
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic The Sacraments in title/heading, 29 term hits; topic The Lord's Supper 12 term hits",
    "about": [
     "topic:de-sacramentis"
@@ -4874,6 +5002,7 @@
    "topics": [
     "de-justificatione"
    ],
+   "retrieval": false,
    "reason": "Council Of Trent ABOUT 5x; topic Justification in title/heading, 26 term hits",
    "about": [
     "doc:cf-092-council-of-trent-1545-1563",
@@ -4910,6 +5039,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Alcuin in the title; 12 mentions",
    "about": [
     "author:Alcuin"
@@ -4945,6 +5075,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "topic The Civil Magistrate 15 term hits",
    "about": [],
    "excerpt": "A recent Politico piece profiled the so-called \"Christian Nationalist\" movement, in particular focusing on William Wolfe, a former Southern Baptist Theological Seminary student and Trump administration staffer. What marks Christian…",
@@ -4978,6 +5109,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 8 term hits",
    "about": [
     "topic:de-lege"
@@ -5013,6 +5145,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions and confessionalism (general) ABOUT 2x",
    "about": [
     "doc:x:confessionalism"
@@ -5048,6 +5181,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds mentioned 3x",
    "about": [],
    "excerpt": "You have heard it said, “The Gospel is not about going to heaven when you die.” Don’t sing about “flying away” when this life is over. Don’t preach about God’s celestial shore or the mansion for His children in the air. These sermons are…",
@@ -5081,6 +5215,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment in title/heading, 5 term hits",
    "about": [
     "topic:de-novissimis"
@@ -5119,6 +5254,7 @@
     "isaiah.14.16"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Isaiah 14 4 distinct refs",
    "about": [],
    "excerpt": "For Paul Kingsnorth, our perspective on Artificial Intelligence (AI) is as narrow and near-sighted as a teen hunched over a smartphone’s glow. He believes we must consider AI technology from a spiritual frame, and when we do we will see…",
@@ -5152,6 +5288,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Davenant 18 mentions",
    "about": [
     "author:John Davenant"
@@ -5187,6 +5324,7 @@
    "topics": [
     "de-justificatione"
    ],
+   "retrieval": false,
    "reason": "topic Justification in title/heading, 6 term hits",
    "about": [
     "topic:de-justificatione"
@@ -5227,6 +5365,7 @@
     "de-peccato",
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "John Calvin 149 mentions; Augustine of Hippo 75 mentions; topic The Church 30 term hits; topic Sin 15 term hits; topic The Sacraments 10 term hits",
    "about": [],
    "excerpt": "B.B. Warfield once famously described the Protestant Reformation as “the ultimate triumph of Augustine’s doctrine of grace over Augustine’s doctrine of the church.”[1] According to Warfield, the Reformers embraced Augustine’s…",
@@ -5263,6 +5402,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "The Pilgrim’s Progress (John Bunyan) cited 2x",
    "about": [],
    "excerpt": "In the immortal Pilgrim’s Progress, John Bunyan describes a scene in which his two protagonists, Christian and Faithful, have arrived in the town of Vanity Fair. The town is something of a mashup between the temple scene just before Jesus…",
@@ -5296,6 +5436,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) cited 2x",
    "about": [],
    "excerpt": "Imagine you had a chance to write a letter to C.S. Lewis. Perhaps you would pour out words about how important his work has been in your spiritual development. Perhaps you’d explain how important passages of his had moved you. Perhaps you…",
@@ -5329,6 +5470,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": true,
    "reason": "retrieval markers: 0 strong, 9 general; topic Death and Judgment 15 term hits",
    "about": [
     "topic:de-novissimis"
@@ -5364,6 +5506,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "topic The Civil Magistrate in title/heading, 27 term hits",
    "about": [
     "topic:de-magistratu"
@@ -5405,6 +5548,7 @@
     "de-gratia",
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "Irenaeus of Lyon 12 mentions; Against Heresies (Irenaeus of Lyon) cited 3x; topic Grace 12 term hits; topic Death and Judgment 10 term hits",
    "about": [],
    "excerpt": "Polycarp was born around the year 70 A.D., was later instituted as bishop of Smyrna, and was martyred at the age of 86. Despite Irenaeus describing him as a prolific writer, only his letter to the Philippians has survived, the dating of…",
@@ -5438,6 +5582,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": true,
    "reason": "retrieval markers: 0 strong, 8 general; Thirty-Nine Articles (1571) ABOUT 4x",
    "about": [
     "doc:x:thirty-nine-articles"
@@ -5473,6 +5618,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Bucer 11 mentions",
    "about": [],
    "excerpt": "Aaron Renn has kindly linked to a number of our recent pieces here at Mere O, including some of my work on a hypothetical new mainline as well as Tim Suffield's reflection on counter-institutions. In his response to my Mainline post, he…",
@@ -5508,6 +5654,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 15 mentions; The City of God (Augustine of Hippo) cited 7x",
    "about": [
     "work:pld-2755"
@@ -5613,6 +5760,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ 8 term hits; Philippians 1 10 distinct refs; Philippians 3 10 distinct refs; Philippians 2 7 distinct refs",
    "about": [
     "verse:philippians.1",
@@ -5656,6 +5804,7 @@
     "de-coena",
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "Thirty-Nine Articles (1571) ABOUT (title/heading) 24x; Book of Common Prayer ABOUT 6x; Confessions and confessionalism (general) ABOUT 5x; Westminster Confession Of Faith mentioned 3x; topic The Sacraments 11 term hits",
    "about": [
     "doc:x:thirty-nine-articles",
@@ -5693,6 +5842,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 14 mentions",
    "about": [
     "author:Augustine of Hippo"
@@ -5728,6 +5878,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "topic The Trinity in title/heading, 16 term hits",
    "about": [
     "topic:de-trinitate"
@@ -5765,6 +5916,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in a heading; 25 mentions; The City of God (Augustine of Hippo) cited 2x",
    "about": [
     "author:Augustine of Hippo"
@@ -5800,6 +5952,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": true,
    "reason": "retrieval markers: 1 strong, 3 general; topic Death and Judgment 13 term hits",
    "about": [],
    "excerpt": "In his recent article, Does Singleness Show Heaven? author Matthew Capone argues there is no biblical warrant to conclude that singleness in this life witnesses to or anticipates the life to come. More than that, he concludes that earthly…",
@@ -5834,6 +5987,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Book of Common Prayer ABOUT 8x; Thirty-Nine Articles (1571) ABOUT 4x",
    "about": [
     "doc:x:bcp",
@@ -5868,6 +6022,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": true,
    "reason": "retrieval markers: 0 strong, 9 general (in title/heading)",
    "about": [],
    "excerpt": "In one sense it is not hard to understand the collapse of American evangelicalism. After all, the much missed Michael Spencer saw it all coming way back in 2009. Yet it is still worth pausing to rehearse the problems as we prepare for a…",
@@ -5906,6 +6061,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Summa Theologiae (Thomas Aquinas) cited 2x",
    "about": [],
    "excerpt": "Medieval theologians think that you should stop being curious. This confuses us: Despite our common axiom that “curiosity killed the cat,” modern people typically see curiosity as a virtue. If a person does not ask questions and feel a…",
@@ -5939,6 +6095,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Thomas Aquinas 8 mentions",
    "about": [],
    "excerpt": "Five years since the publication of Patrick Deneen’s Why Liberalism Failed sparked a dialectical war among religious conservatives over their Lockean heritage, the cannons haven’t stopped firing. To the contrary, the war is expanding to new…",
@@ -5972,6 +6129,7 @@
    "topics": [
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic The Sacraments 10 term hits",
    "about": [],
    "excerpt": "Regular church attendance is probably not convenient for anyone. Consistent and whole-hearted participation in the divine liturgy, an active work of service and attentiveness to God and others, a demanding labor beyond passive observation…",
@@ -6005,6 +6163,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin 33 mentions",
    "about": [],
    "excerpt": "I was pleasantly surprised when he came up the stairs with a number of Calvin and Hobbes collections. The used bookstore owner had forgotten to price them; so, to make things easy he said they would be $10 each. The price sounded fair to…",
@@ -6039,6 +6198,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther 82 mentions; John Calvin in a heading; 61 mentions",
    "about": [
     "author:Martin Luther",
@@ -6077,6 +6237,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "On First Principles (Origen) cited 2x",
    "about": [],
    "excerpt": "What has God promised us about our lives, in the here and now? One of the earliest works of Christian theology is Origen of Alexandria’s On First Principles; a case can be made that it is our oldest, extant text of Christian systematic…",
@@ -6108,6 +6269,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": true,
    "reason": "retrieval markers: 10 strong, 0 general",
    "about": [],
    "excerpt": "I’ve always been intrigued by archaeology. The expectant digging, the gentle sweeping away of silt and debris, unearthing bones and artifacts hidden for millennia; it’s all endlessly fascinating. A thing lost and long forgotten to humankind…",
@@ -6141,6 +6303,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "topic The Civil Magistrate in title/heading, 13 term hits",
    "about": [
     "topic:de-magistratu"
@@ -6178,6 +6341,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 9 mentions; Confessions (Augustine of Hippo) cited 2x",
    "about": [],
    "excerpt": "Each Sunday, many churches throughout the world begin their service with “The Summary of the Law.” One of the first things Christians hear each week is Jesus’ words defining a good life. Here’s what he says: “You shall love the Lord your…",
@@ -6211,6 +6375,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Book of Common Prayer ABOUT 4x",
    "about": [
     "doc:x:bcp"
@@ -6246,6 +6411,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Second Vatican Council (1962–1965) ABOUT 2x",
    "about": [
     "doc:x:vatican-ii"
@@ -6283,6 +6449,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 10 mentions; Confessions (Augustine of Hippo) cited 5x",
    "about": [
     "work:pld-2722"
@@ -6318,6 +6485,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 14 mentions",
    "about": [
     "author:Augustine of Hippo"
@@ -6353,6 +6521,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 9 term hits",
    "about": [],
    "excerpt": "“Midway on our life’s journey, I found myself/ In a dark wood, the right road lost.” These are the famous opening lines of Dante’s Divine Comedy and, even if you hate what follows, their brevity and archetypal power are hard to deny. Mutter…",
@@ -6386,6 +6555,7 @@
     "matthew.18"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Matthew 18 in title/heading, 1 distinct refs",
    "about": [
     "verse:matthew.18"
@@ -6421,6 +6591,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 6 term hits",
    "about": [],
    "excerpt": "Christianity is a religion of seemingly impossible paradoxes, and the Christian life is a series of decisions made within a set of difficult, often excruciating tensions. The simplest paradoxes are the purely theological ones: Jesus is…",
@@ -6472,6 +6643,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "Martin Luther 35 mentions; John Calvin 31 mentions; Samuel Rutherford 9 mentions; Lex, Rex (Samuel Rutherford) cited 2x; Thirty-Nine Articles (1571) mentioned 3x",
    "about": [
     "verse:romans.13"
@@ -6507,6 +6679,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "topic The Civil Magistrate in title/heading, 9 term hits",
    "about": [
     "topic:de-magistratu"
@@ -6542,6 +6715,7 @@
    "topics": [
     "de-angelis"
    ],
+   "retrieval": false,
    "reason": "topic Angels 9 term hits",
    "about": [],
    "excerpt": "“There are some people [that] tell us that they are tremendously interested in the gospel as a point of view, as a Christian philosophy…Christianity is to them a matter of tremendous interest and they believe and proclaim that if only this…",
@@ -6575,6 +6749,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions and confessionalism (general) mentioned 3x",
    "about": [],
    "excerpt": "In the fall of 1998, I added what was at the time a pertinent, hot off the press book to my college dorm bookshelf alongside classics like Lewis’s Mere Christianity and Chesterton’s The Everlasting Man. The book, Francis Beckwith and…",
@@ -6609,6 +6784,7 @@
     "de-coena",
     "de-sacramentis"
    ],
+   "retrieval": true,
    "reason": "retrieval markers: 2 strong, 9 general; topic The Sacraments in title/heading, 26 term hits; topic The Lord's Supper 12 term hits",
    "about": [
     "topic:de-sacramentis"
@@ -6647,6 +6823,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 64 mentions; Confessions (Augustine of Hippo) cited 3x; The City of God (Augustine of Hippo) cited 2x",
    "about": [
     "author:Augustine of Hippo"
@@ -6682,6 +6859,7 @@
    "topics": [
     "de-justificatione"
    ],
+   "retrieval": false,
    "reason": "topic Justification 11 term hits",
    "about": [],
    "excerpt": "Isaac Adams serves as lead pastor at Iron City Church in Birmingham, Alabama, and is the founder of United? We Pray, a ministry devoted to praying about racial justice. The following transcripted interview revolves around his book, Talking…",
@@ -6715,6 +6893,7 @@
    "topics": [
     "de-baptismo"
    ],
+   "retrieval": false,
    "reason": "topic Baptism in title/heading, 7 term hits",
    "about": [
     "topic:de-baptismo"
@@ -6753,6 +6932,7 @@
     "de-coena",
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "Augsburg Confession ABOUT 4x; topic The Sacraments 22 term hits; topic The Lord's Supper 19 term hits",
    "about": [
     "doc:lc-002-augsburg-confession-1530",
@@ -6790,6 +6970,7 @@
     "proverbs.31"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Proverbs 31 in title/heading, 1 distinct refs",
    "about": [
     "verse:proverbs.31"
@@ -6825,6 +7006,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Basil the Great in the title; 1 mentions",
    "about": [
     "author:Basil the Great"
@@ -6855,6 +7037,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 11 term hits",
    "about": [
     "topic:de-lege"
@@ -6892,6 +7075,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "Thomas Cranmer 4 mentions; John Calvin 4 mentions; topic The Civil Magistrate in title/heading, 14 term hits",
    "about": [
     "topic:de-magistratu"
@@ -6927,6 +7111,7 @@
    "topics": [
     "de-potentia-dei"
    ],
+   "retrieval": false,
    "reason": "topic Omnipotence 8 term hits",
    "about": [],
    "excerpt": "Over the past few years a large number of American Christians have shared that they have “deconstructed,” or are in the process of “deconstructing” their faith. The term is an interesting one. I’ve often wondered why “faith deconstruction”…",
@@ -6960,6 +7145,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions and confessionalism (general) ABOUT 4x",
    "about": [
     "doc:x:confessionalism"
@@ -6995,6 +7181,7 @@
    "topics": [
     "de-baptismo"
    ],
+   "retrieval": false,
    "reason": "topic Baptism 9 term hits",
    "about": [],
    "excerpt": "“Did you play with other kids at the park today?” I ask my kids over lunch. “Yeah, we made a friend,” my son says, while my daughter chirps, “with a baby!” She is barely bigger than a baby herself. “But,” my son explains, “this baby wasn’t…",
@@ -7028,6 +7215,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther 13 mentions",
    "about": [
     "author:Martin Luther"
@@ -7063,6 +7251,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin 11 mentions",
    "about": [
     "author:John Calvin"
@@ -7102,6 +7291,7 @@
    "topics": [
     "de-homine"
    ],
+   "retrieval": false,
    "reason": "John Calvin 9 mentions; Institutes of the Christian Religion (John Calvin) cited 2x; topic Humanity in title/heading, 32 term hits",
    "about": [
     "topic:de-homine"
@@ -7137,6 +7327,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 11 term hits",
    "about": [],
    "excerpt": "Noah Gundersen, for as long as I’ve been aware of him, has been my quintessential example of an artist whose art clearly depicts his departure from faith. He shares honestly about his doubts much more than his beliefs. He is a creator who…",
@@ -7170,6 +7361,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 5 mentions",
    "about": [],
    "excerpt": "Dawson: Unlike Christian Byzantium, Christian Rome represents only a brief interlude between paganism and barbarism. There were only eighteen years between Theodosius’s closing of the temples and the first sack of the Eternal City by the…",
@@ -7204,6 +7396,7 @@
     "de-baptismo",
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "topic The Civil Magistrate 14 term hits; topic Baptism in title/heading, 10 term hits",
    "about": [
     "topic:de-baptismo"
@@ -7253,6 +7446,7 @@
     "de-magistratu",
     "de-novissimis"
    ],
+   "retrieval": true,
    "reason": "Samuel Rutherford in a heading; 24 mentions; John Calvin 25 mentions; John Owen 15 mentions; Thomas Aquinas 14 mentions; Richard Baxter 9 mentions",
    "about": [
     "author:Samuel Rutherford",
@@ -7289,6 +7483,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "topic The Trinity in title/heading, 48 term hits",
    "about": [
     "topic:de-trinitate"
@@ -7324,6 +7519,7 @@
    "topics": [
     "de-justificatione"
    ],
+   "retrieval": false,
    "reason": "topic Justification 13 term hits",
    "about": [],
    "excerpt": "Owen Strachan. Christianity and Wokeness. Washington: Salem Books, 2021. 224 pp, $19.99. The church was meant to be the hope of the world and a reflection of a diverse community reflecting the harmony of the Triune God Himself…",
@@ -7359,6 +7555,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "On Virginity (De Virginitate) (John Chrysostom) cited 2x; On Virginity (De Virginitate) (Gregory of Nyssa) cited 2x; On Virginity (Ambrose of Milan) cited 2x",
    "about": [],
    "excerpt": "I’m following Leah Sargeant’s lead this year and am trying to give myself a list of “goal books” to read for 2022. Thanks to some news I’m going to share in a separate post on the main site, I’m hoping to be able to do more reading this…",
@@ -7392,6 +7589,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 62 term hits",
    "about": [
     "topic:de-novissimis"
@@ -7427,6 +7625,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT 1x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -7462,6 +7661,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) cited 2x",
    "about": [],
    "excerpt": "Christians and even some non-Christian philosophers regularly strive to ‘remember death,’ but few of us seem willing to remember our birth. Only a few paragraphs into Augustine’s Confessions, he recalls the grace of God given to him by his…",
@@ -7495,6 +7695,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ 8 term hits",
    "about": [],
    "excerpt": "It seems to some the very epitome of a “mere” orthodoxy in the worst sense — too juridical for God’s mercy and too arbitrary for God’s justice — even to those who are not in the habit of yielding too quickly to theological fashions, it is a…",
@@ -7528,6 +7729,7 @@
    "topics": [
     "de-aeternitate"
    ],
+   "retrieval": false,
    "reason": "topic The Eternity of God 8 term hits",
    "about": [],
    "excerpt": "Lord, thou hast been our dwelling place in all generations. Before the mountains were brought forth, or ever thou hadst formed the earth and the world, even from everlasting to everlasting, thou art God. — Psalm 90:1–20 I have often thought…",
@@ -7561,6 +7763,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "topic The Civil Magistrate 17 term hits",
    "about": [],
    "excerpt": "Without qualification, masking has been one of the most contentious issues for church leaders to face over the last two years. For some, it is a matter of health and preserving life. For others, it is a matter of liberty and personhood. For…",
@@ -7594,6 +7797,7 @@
    "topics": [
     "de-baptismo"
    ],
+   "retrieval": false,
    "reason": "topic Baptism in title/heading, 29 term hits",
    "about": [
     "topic:de-baptismo"
@@ -7635,6 +7839,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Thomas Aquinas 22 mentions; Summa contra Gentiles (Thomas Aquinas) cited 2x; On Being and Essence (Thomas Aquinas) cited 2x",
    "about": [
     "author:Thomas Aquinas"
@@ -7670,6 +7875,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 9 term hits",
    "about": [],
    "excerpt": "2021 marks the 700th anniversary of the death of Dante Alighieri (b. 1265). Dante was a poet, a politician, a philosopher, and a theologian. He is best known for his masterpiece, La Commedia, known to anglophone readers as The Divine…",
@@ -7706,6 +7912,7 @@
    "topics": [
     "de-simplicitate"
    ],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) cited 2x; Exposition of the Orthodox Faith (John of Damascus) cited 2x; topic Divine Simplicity in title/heading, 30 term hits",
    "about": [
     "topic:de-simplicitate"
@@ -7741,6 +7948,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther in a heading; 6 mentions",
    "about": [
     "author:Martin Luther"
@@ -7784,6 +7992,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "topic The Civil Magistrate 12 term hits; Romans 13 in title/heading, 12 distinct refs",
    "about": [
     "verse:romans.13"
@@ -7819,6 +8028,7 @@
    "topics": [
     "de-vita-aeterna"
    ],
+   "retrieval": false,
    "reason": "topic Eternal Life 10 term hits",
    "about": [],
    "excerpt": "Interview with Rebekah Eklund for Mere Orthodoxy “Whence then doth He begin? and what kind of foundations of His new polity doth He lay for us? Let us hearken with strict attention unto what is said. For though it was spoken unto them, it…",
@@ -7852,6 +8062,7 @@
    "topics": [
     "de-homine"
    ],
+   "retrieval": false,
    "reason": "topic Humanity in title/heading, 6 term hits",
    "about": [
     "topic:de-homine"
@@ -7887,6 +8098,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT 4x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -7924,6 +8136,7 @@
    "topics": [
     "de-sanctificatione"
    ],
+   "retrieval": false,
    "reason": "Westminster Larger Catechism mentioned 3x cites Q.25, Q.138; topic Sanctification and Good Works 9 term hits",
    "about": [],
    "excerpt": "Recently, the 48th General Assembly of the Presbyterian Church in America convened in St. Louis, Missouri. While much important business was conducted in the span of a few days, considerable attention was directed to the issue of ordination…",
@@ -7957,6 +8170,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Philipp Melanchthon 14 mentions",
    "about": [
     "author:Philipp Melanchthon"
@@ -7992,6 +8206,7 @@
    "topics": [
     "de-resurrectione"
    ],
+   "retrieval": false,
    "reason": "topic The Resurrection in title/heading, 4 term hits",
    "about": [
     "topic:de-resurrectione"
@@ -8032,6 +8247,7 @@
     "romans.8.37"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Romans 8 4 distinct refs",
    "about": [],
    "excerpt": "The cross is not simply about rescue but also about restoration. The cross is not primarily about escape from some future punishment but rather about healing our relationship with God. Christ’s death brings us back into communion with our…",
@@ -8065,6 +8281,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds mentioned 3x",
    "about": [],
    "excerpt": "Written with Skyler Flowers Colin Kaepernick. “Grab them by the p… ” Confederate monuments. George Floyd, Breonna Taylor, Ahmaud Arbery. COVID – serious problem or overblown? Trump, Biden, other, or abstain? January 6th, 2021. The last few…",
@@ -8100,6 +8317,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Gregory of Nyssa 5 mentions; Apostles’, Nicene and ancient creeds ABOUT (title/heading) 4x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -8135,6 +8353,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT 4x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -8170,6 +8389,7 @@
    "topics": [
     "de-baptismo"
    ],
+   "retrieval": false,
    "reason": "topic Baptism in title/heading, 14 term hits",
    "about": [
     "topic:de-baptismo"
@@ -8208,6 +8428,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "Martin Luther 13 mentions; Thomas Aquinas 12 mentions; topic The Law 62 term hits",
    "about": [],
    "excerpt": "Theonomy talk has resurfaced. Perhaps, this is the Protestant-evangelical concomitant to the Integralist debate presently occupying politically astute Catholicism. I welcome it. If nothing else, it means that Christians are taking politics…",
@@ -8241,6 +8462,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Bernard of Clairvaux in a heading; 3 mentions",
    "about": [
     "author:Bernard of Clairvaux"
@@ -8276,6 +8498,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT (title/heading) 1x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -8311,6 +8534,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "topic The Trinity in title/heading, 8 term hits",
    "about": [
     "topic:de-trinitate"
@@ -8354,6 +8578,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": true,
    "reason": "Martin Luther 9 mentions; Thomas Aquinas 6 mentions; Summa Theologiae (Thomas Aquinas) cited 14x; retrieval markers: 0 strong, 13 general",
    "about": [
     "work:aq-st-ii-ii-19",
@@ -8400,6 +8625,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 7 mentions; Basil the Great 5 mentions; Gregory of Nazianzus 5 mentions; Gregory of Nyssa 5 mentions; Athanasius of Alexandria 4 mentions",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -8435,6 +8661,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT (title/heading) 6x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -8470,6 +8697,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT 3x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -8505,6 +8733,7 @@
    "topics": [
     "de-homine"
    ],
+   "retrieval": false,
    "reason": "John Calvin 17 mentions; Thomas Aquinas in a heading; 7 mentions; topic Humanity 13 term hits",
    "about": [
     "author:Thomas Aquinas"
@@ -8540,6 +8769,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT (title/heading) 6x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -8575,6 +8805,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law 26 term hits",
    "about": [],
    "excerpt": "Occasional Mere O contributor Andrew Walker has published a muddled and confused essay about theonomy over at TGC. Given the nature of the errors, I wanted to take the time to lay out the issues with the piece in hopes that it will improve…",
@@ -8608,6 +8839,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT (title/heading) 6x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -8644,6 +8876,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 69 mentions; Confessions (Augustine of Hippo) in the title 13x",
    "about": [
     "author:Augustine of Hippo",
@@ -8693,6 +8926,7 @@
     "romans.11.26"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Romans 11 4 distinct refs",
    "about": [],
    "excerpt": "The church’s participation in various historical injustices is a familiar theme, one rehearsed in some instances to discredit her, but in others to prompt her to needful repentance. But the primordial sin of the church which makes other…",
@@ -8729,6 +8963,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 5 mentions; Confessions (Augustine of Hippo) cited 3x; The City of God (Augustine of Hippo) cited 3x",
    "about": [
     "author:Augustine of Hippo"
@@ -8764,6 +8999,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Council of Nicaea I (325) ABOUT 2x",
    "about": [
     "doc:cf-013-council-of-nicea-i-325"
@@ -8795,6 +9031,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Council of Nicaea I (325) ABOUT 2x",
    "about": [
     "doc:cf-013-council-of-nicea-i-325"
@@ -8826,6 +9063,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT 2x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -8868,6 +9106,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": true,
    "reason": "Augustine of Hippo 15 mentions; The City of God (Augustine of Hippo) cited 4x; Confessions (Augustine of Hippo) cited 2x; retrieval markers: 2 strong, 12 general; Apostles’, Nicene and ancient creeds ABOUT 5x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -8910,6 +9149,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": true,
    "reason": "Augustine of Hippo 15 mentions; The City of God (Augustine of Hippo) cited 4x; Confessions (Augustine of Hippo) cited 2x; retrieval markers: 2 strong, 12 general; Apostles’, Nicene and ancient creeds ABOUT 5x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -8945,6 +9185,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Book of Common Prayer ABOUT 25x",
    "about": [
     "doc:x:bcp"
@@ -8980,6 +9221,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 24 mentions",
    "about": [],
    "excerpt": "More than ever, we need a subversive history of music. We need it both to subvert the staid accounts that misrepresent the past as well as to grasp the subversive quality inherent in these catalytic sounds in our own time. This book aims to…",
@@ -9013,6 +9255,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Westminster Confession Of Faith ABOUT 5x cites 8.1",
    "about": [
     "doc:rc-111-westminster-confession-of-faith-1646"
@@ -9048,6 +9291,7 @@
    "topics": [
     "repentance"
    ],
+   "retrieval": false,
    "reason": "topic Repentance in title/heading, 4 term hits",
    "about": [
     "topic:repentance"
@@ -9084,6 +9328,7 @@
     "de-novissimis",
     "prolegomena"
    ],
+   "retrieval": false,
    "reason": "topic Theological Method 18 term hits; topic Death and Judgment in title/heading, 5 term hits",
    "about": [
     "topic:de-novissimis"
@@ -9119,6 +9364,7 @@
    "topics": [
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic The Sacraments 6 term hits",
    "about": [],
    "excerpt": "“Do I look like I’m from Sacramento?” “You are from Sacramento.” Greta Gerwig’s 2018 film Lady Bird explores the relationship between identity, freedom, and givenness with painstaking attention to mundane details. An homage to her hometown…",
@@ -9152,6 +9398,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 21 term hits",
    "about": [
     "topic:de-novissimis"
@@ -9187,6 +9434,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Duns Scotus 4 mentions",
    "about": [],
    "excerpt": "If all being originates in God, and God is One, how can there be many beings? This is just one of the questions that Dr. Thomas Ward discusses here with Matt and Derek, and in his book, Divine Ideas. Dr. Ward and Matt go way back. And Duns…",
@@ -9229,6 +9477,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": true,
    "reason": "John Calvin in a heading; 22 mentions; Girolamo Zanchi in a heading; 21 mentions; Samuel Rutherford in a heading; 12 mentions; François Turretin in a heading; 11 mentions; Thomas Aquinas 16 mentions",
    "about": [
     "author:John Calvin",
@@ -9267,6 +9516,7 @@
    "topics": [
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic The Sacraments 10 term hits",
    "about": [],
    "excerpt": "“Blessed are the pure in heart, for they shall see God,” declared Jesus in his Sermon on the Mount (Matthew 5:8). It’s interesting that Christ directly associates purity with the ability to perceive God, and, as many interpreters argue, the…",
@@ -9302,6 +9552,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Anselm of Canterbury 6 mentions; Proslogion (Anselm of Canterbury) cited 4x",
    "about": [
     "work:pld-459"
@@ -9341,6 +9592,7 @@
     "de-coena",
     "de-sacramentis"
    ],
+   "retrieval": true,
    "reason": "retrieval markers: 2 strong, 2 general; Heidelberg Catechism mentioned 3x; topic The Lord's Supper 43 term hits; topic The Person and Work of Christ 14 term hits; topic The Sacraments 12 term hits",
    "about": [
     "topic:de-coena"
@@ -9376,6 +9628,7 @@
    "topics": [
     "de-homine"
    ],
+   "retrieval": false,
    "reason": "topic Humanity in title/heading, 9 term hits",
    "about": [
     "topic:de-homine"
@@ -9407,6 +9660,7 @@
    "topics": [
     "de-peccato"
    ],
+   "retrieval": false,
    "reason": "topic Sin in title/heading, 4 term hits",
    "about": [
     "topic:de-peccato"
@@ -9442,6 +9696,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Heidelberg Catechism ABOUT 4x",
    "about": [
     "doc:rc-061-heidelberg-catechism-1563"
@@ -9477,6 +9732,7 @@
    "topics": [
     "de-homine"
    ],
+   "retrieval": false,
    "reason": "topic Humanity in title/heading, 11 term hits",
    "about": [
     "topic:de-homine"
@@ -9519,6 +9775,7 @@
     "de-ecclesia",
     "de-sacramentis"
    ],
+   "retrieval": true,
    "reason": "Richard Hooker 19 mentions; retrieval markers: 0 strong, 15 general; Thirty-Nine Articles (1571) ABOUT 14x; Book of Common Prayer ABOUT 10x; Council Of Trent ABOUT 5x",
    "about": [
     "doc:x:thirty-nine-articles",
@@ -9556,6 +9813,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 47 term hits",
    "about": [
     "topic:de-novissimis"
@@ -9591,6 +9849,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law 14 term hits",
    "about": [],
    "excerpt": "Confessional Reformed Protestants are a tiny sliver of the broader Christian community. Still, when it comes to intellectual heft we like to think we punch above our weight. While this may not always be true, David VanDrunen’s decade-long…",
@@ -9633,6 +9892,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "Theological Orations (Gregory of Nazianzus) cited 2x; topic The Trinity in title/heading, 10 term hits; Matthew 2 4 distinct refs",
    "about": [
     "topic:de-trinitate"
@@ -9684,6 +9944,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "The City of God (Augustine of Hippo) cited 2x; topic The Law in title/heading, 66 term hits; Romans 1 4 distinct refs; Genesis 9 4 distinct refs",
    "about": [
     "topic:de-lege"
@@ -9721,6 +9982,7 @@
     "de-potentia-dei",
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "topic The Trinity 14 term hits; topic Omnipotence 13 term hits; topic The Divine Attributes 11 term hits",
    "about": [],
    "excerpt": "“Theology awakens a grateful heart.”[1] Thus the first words of Katherine Sonderegger’s remarkable Systematic Theology fall. I began reading theology years ago out of a longing to know the Lord. Desire drove study. It still does…",
@@ -9773,6 +10035,7 @@
     "de-sanctificatione",
     "repentance"
    ],
+   "retrieval": false,
    "reason": "Westminster Confession Of Faith ABOUT 20x cites 24.1, 24.2, 6.5, 15.4, 6.1, 6.6; topic Sin in title/heading, 18 term hits; topic Repentance in title/heading, 8 term hits; topic Sanctification and Good Works in title/heading, 7 term hits; Romans 8 5 distinct refs",
    "about": [
     "doc:rc-111-westminster-confession-of-faith-1646",
@@ -9815,6 +10078,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "Augustine of Hippo in a heading; 48 mentions; The City of God (Augustine of Hippo) cited 9x; topic Death and Judgment 8 term hits",
    "about": [
     "author:Augustine of Hippo",
@@ -9853,6 +10117,7 @@
    "topics": [
     "de-justificatione"
    ],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds mentioned 3x; topic Justification 14 term hits",
    "about": [],
    "excerpt": "Evangelicals love the Gospel. They also love to define it. And while that’s certainly important, it often results in bickering over the very thing that should draw all people together. The gospel is about Jesus, and Jesus says “I will draw…",
@@ -9886,6 +10151,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 13 mentions",
    "about": [],
    "excerpt": "The debate about the common good currently roiling American conservatism is not a new one. In the 1960s it vexed National Review contributors, with William F. Buckley dismissing Pope John XXIII’s encyclical on social progress “Mater et…",
@@ -9922,6 +10188,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Thomas Cranmer 8 mentions; Book of Common Prayer ABOUT 7x; Savoy Declaration (1658) ABOUT 4x",
    "about": [
     "doc:x:bcp",
@@ -9958,6 +10225,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Westminster Confession Of Faith ABOUT 2x",
    "about": [
     "doc:rc-111-westminster-confession-of-faith-1646"
@@ -9991,6 +10259,7 @@
    "topics": [
     "de-coena"
    ],
+   "retrieval": false,
    "reason": "topic The Lord's Supper 12 term hits",
    "about": [],
    "excerpt": "If this were a normal Holy Week (it isn’t), and if I were presiding over a Maundy Thursday service (I’m not), then the service would typically conclude with the stripping of the altar. As Psalm 22 is read, we would remove every element of…",
@@ -10024,6 +10293,7 @@
    "topics": [
     "de-baptismo"
    ],
+   "retrieval": false,
    "reason": "topic Baptism in title/heading, 15 term hits",
    "about": [
     "topic:de-baptismo"
@@ -10059,6 +10329,7 @@
    "topics": [
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic The Sacraments 9 term hits",
    "about": [],
    "excerpt": "Upon falling into the hands of Giant Despair, Christian and his friend Hopeful were imprisoned without any provisions for days on end and while enduring beatings. In John Bunyan’s 17th-century allegory Pilgrim’s Progress, Christian…",
@@ -10093,6 +10364,7 @@
     "de-coena",
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic The Lord's Supper 9 term hits; topic The Sacraments in title/heading, 8 term hits",
    "about": [
     "topic:de-sacramentis"
@@ -10128,6 +10400,7 @@
    "topics": [
     "de-praedestinatione"
    ],
+   "retrieval": false,
    "reason": "topic Predestination 34 term hits",
    "about": [
     "topic:de-praedestinatione"
@@ -10163,6 +10436,7 @@
    "topics": [
     "de-praedestinatione"
    ],
+   "retrieval": false,
    "reason": "topic Predestination in title/heading, 5 term hits",
    "about": [
     "topic:de-praedestinatione"
@@ -10199,6 +10473,7 @@
     "galatians.2.15"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Galatians 2 5 distinct refs",
    "about": [],
    "excerpt": "In 1889, an Indianapolis pastor named Oscar McCulloch gave a speech that empowered the development of eugenics in America. McCulloch had studied the Ishmaelites, a poor, white, extended family, and named his speech, “The Tribe of Ishmael: A…",
@@ -10234,6 +10509,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 11 mentions; The City of God (Augustine of Hippo) in a heading 3x",
    "about": [
     "author:Augustine of Hippo",
@@ -10270,6 +10546,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Westminster Confession Of Faith ABOUT 5x",
    "about": [
     "doc:rc-111-westminster-confession-of-faith-1646"
@@ -10305,6 +10582,7 @@
    "topics": [
     "de-coena"
    ],
+   "retrieval": false,
    "reason": "topic The Lord's Supper in title/heading, 14 term hits",
    "about": [
     "topic:de-coena"
@@ -10342,6 +10620,7 @@
    "topics": [
     "de-oratione"
    ],
+   "retrieval": false,
    "reason": "John Wesley in the title; 1 mentions; topic Prayer in title/heading, 4 term hits",
    "about": [
     "author:John Wesley",
@@ -10375,6 +10654,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Thomas Aquinas 11 mentions",
    "about": [],
    "excerpt": "Happiness is a personal problem. Or so it may seem. Consider the self-help section. A library of recent books offers just the right mindset, self-care regimen, or practical hack for troubled souls who, presumably, hope that one more piece…",
@@ -10408,6 +10688,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 19 term hits",
    "about": [
     "topic:de-lege"
@@ -10443,6 +10724,7 @@
    "topics": [
     "de-baptismo"
    ],
+   "retrieval": false,
    "reason": "topic Baptism 12 term hits",
    "about": [],
    "excerpt": "Contributions from Jake Meador, Jon Askonas, Chris Krycho, Matthew Loftus, Christian Young, and John Shelton. Credit to Twitter users Jake Raabe and Woke Space Jesuit for some joke ideas. Weird Baptist Twitter: Do not violate Baby Yoda’s…",
@@ -10482,6 +10764,7 @@
     "de-oratione",
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "Martin Luther in the title; 91 mentions; Large Catechism (Martin Luther) cited 2x; Apostles’, Nicene and ancient creeds ABOUT 12x; topic Prayer 14 term hits; topic The Law 13 term hits",
    "about": [
     "author:Martin Luther",
@@ -10518,6 +10801,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Book of Common Prayer ABOUT 3x",
    "about": [
     "doc:x:bcp"
@@ -10552,6 +10836,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin in the title; 6 mentions",
    "about": [
     "author:John Calvin"
@@ -10590,6 +10875,7 @@
     "1-corinthians.11.7"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "1 Corinthians 11 4 distinct refs",
    "about": [],
    "excerpt": "Suppose the reformer stops saying that a good woman may be like God and begins by saying that God is like a good woman. Suppose he says that we might just as well pray to ‘Our Mother which art in Heaven’ as to ‘Our Father’. Suppose he…",
@@ -10623,6 +10909,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Philipp Melanchthon in the title; 10 mentions",
    "about": [
     "author:Philipp Melanchthon"
@@ -10661,6 +10948,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 51 mentions; Confessions (Augustine of Hippo) cited 3x; The City of God (Augustine of Hippo) cited 2x",
    "about": [
     "author:Augustine of Hippo"
@@ -10699,6 +10987,7 @@
     "de-coena",
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "Belgic Confession ABOUT 3x; topic The Lord's Supper in title/heading, 5 term hits; topic The Sacraments 8 term hits",
    "about": [
     "doc:rc-057-belgic-confession-1561",
@@ -10737,6 +11026,7 @@
    "topics": [
     "de-libertate-christiana"
    ],
+   "retrieval": false,
    "reason": "Martin Luther 55 mentions; topic Christian Liberty in title/heading, 5 term hits",
    "about": [
     "author:Martin Luther",
@@ -10773,6 +11063,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "The City of God (Augustine of Hippo) cited 2x",
    "about": [],
    "excerpt": "Matt, Derek, and Alastair dive into the difficult and unsettling text of Jephthah's vow in Judges 11. The crew covers recent and old interpretations of the troubled passage, asking if certain texts can or should be \"smoothed over\" with…",
@@ -10806,6 +11097,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "Martin Luther in the title; 120 mentions; topic The Civil Magistrate 12 term hits",
    "about": [
     "author:Martin Luther"
@@ -10842,6 +11134,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 27 mentions; Martin Luther 15 mentions",
    "about": [],
    "excerpt": "The calls of warning for Protestant theology have been long in the making, or at least for a certain variety of Protestant theology. The 20th century, for all of the ecumenical exchanges which occurred, were rough times for Protestants, as…",
@@ -10875,6 +11168,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 6 mentions",
    "about": [],
    "excerpt": "Up until recently, the spoken Latin community has been preserved from the relentless focus on ideology that characterizes much of the academy. Enthusiasts have gathered at small conferences called “conventicula” (a pretty comprehensive list…",
@@ -10908,6 +11202,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "The City of God (Augustine of Hippo) cited 2x",
    "about": [],
    "excerpt": "Brad East has what is perhaps my favorite response to the book so far, not least because it is one of the more critical responses, for which I am thankful. You can read the whole thing over at Resident Theologian. I think the questions can…",
@@ -10941,6 +11236,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment in title/heading, 3 term hits",
    "about": [
     "topic:de-novissimis"
@@ -10976,6 +11272,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ 13 term hits",
    "about": [],
    "excerpt": "(Presented for Delivery at the 2019 Henry Institute Symposium on Christianity and Politics, Calvin College, April 26, 2019) Introduction I begin with an intentionally polemical anecdote. On December 7, 2015 – a day that will live in infamy…",
@@ -11009,6 +11306,7 @@
    "topics": [
     "prolegomena"
    ],
+   "retrieval": false,
    "reason": "topic Theological Method in title/heading, 12 term hits",
    "about": [
     "topic:prolegomena"
@@ -11044,6 +11342,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Bucer in the title; 20 mentions",
    "about": [
     "author:Martin Bucer"
@@ -11079,6 +11378,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Westminster Larger Catechism ABOUT 5x cites Q.151",
    "about": [
     "doc:rc-114-westminster-larger-catechism-1647"
@@ -11114,6 +11414,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 259 term hits",
    "about": [
     "topic:de-lege"
@@ -11149,6 +11450,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther 11 mentions",
    "about": [],
    "excerpt": "By John Thomas On February 24th, in an article titled Workism Is Making Americans Miserable, Derek Thompson made a compelling case that for many college-educated men and women, work has become a religion. Thompson writes, The economists of…",
@@ -11185,6 +11487,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "On the Incarnation (Athanasius of Alexandria) cited 2x",
    "about": [],
    "excerpt": "By Joshua Heavin Several decades ago, missiologist Lesslie Newbigin wrote about our impulse towards pragmatism in the post-Christendom West: In discussions about the contemporary mission of the Church it is often said that the Church ought…",
@@ -11219,6 +11522,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Westminster Confession Of Faith ABOUT (title/heading) 1x; Heidelberg Catechism ABOUT 2x",
    "about": [
     "doc:rc-111-westminster-confession-of-faith-1646",
@@ -11255,6 +11559,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Belgic Confession ABOUT 4x",
    "about": [
     "doc:rc-057-belgic-confession-1561"
@@ -11290,6 +11595,7 @@
    "topics": [
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic The Sacraments in title/heading, 4 term hits",
    "about": [
     "topic:de-sacramentis"
@@ -11317,6 +11623,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": true,
    "reason": "retrieval markers: 1 strong, 4 general",
    "about": [],
    "excerpt": "I. Theology As Master Discourse. I first met John Milbank, my doctoral supervisor, at a welcome event for new graduate students sponsored by the Divinity School of the University of Cambridge. During the meeting, each faculty member…",
@@ -11351,6 +11658,7 @@
     "de-baptismo",
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic Baptism in title/heading, 21 term hits; topic The Sacraments in title/heading, 5 term hits",
    "about": [
     "topic:de-baptismo",
@@ -11387,6 +11695,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 6 term hits",
    "about": [],
    "excerpt": "If you haven’t yet, please do read Anne Helen Peterson’s excellent Buzzfeed essay on millennials and burnout. My first reaction to the essay was to agree with nearly every word of it and pass it on to others. But after having a day to think…",
@@ -11421,6 +11730,7 @@
     "de-baptismo",
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic Baptism in title/heading, 63 term hits; topic The Sacraments 8 term hits",
    "about": [
     "topic:de-baptismo"
@@ -11461,6 +11771,7 @@
    "topics": [
     "de-praedestinatione"
    ],
+   "retrieval": true,
    "reason": "John Calvin 47 mentions; retrieval markers: 3 strong, 25 general; Confessions and confessionalism (general) ABOUT 6x; Canons Of Dort ABOUT 4x; topic Predestination 10 term hits",
    "about": [
     "doc:x:confessionalism",
@@ -11497,6 +11808,7 @@
    "topics": [
     "de-baptismo"
    ],
+   "retrieval": false,
    "reason": "topic Baptism in title/heading, 53 term hits",
    "about": [
     "topic:de-baptismo"
@@ -11532,6 +11844,7 @@
    "topics": [
     "de-baptismo"
    ],
+   "retrieval": false,
    "reason": "topic Baptism in title/heading, 50 term hits",
    "about": [
     "topic:de-baptismo"
@@ -11567,6 +11880,7 @@
    "topics": [
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic The Sacraments in title/heading, 18 term hits",
    "about": [
     "topic:de-sacramentis"
@@ -11633,6 +11947,7 @@
     "luke.1.78"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Genesis 3 5 distinct refs; Luke 1 5 distinct refs",
    "about": [],
    "excerpt": "By Matthew Y. Emerson and R. Lucas Stamps One of our favorite images that circulates on social media during Advent depicts Eve and Mary both gazing at Mary’s swollen abdomen, a belly pregnant with the Life of the World, Jesus. Eve, clearly…",
@@ -11670,6 +11985,7 @@
    "topics": [
     "de-virtutibus"
    ],
+   "retrieval": false,
    "reason": "Thomas Aquinas 17 mentions; Westminster Shorter Catechism ABOUT 4x; topic Virtues and Moral Theology in title/heading, 28 term hits",
    "about": [
     "doc:rc-115-westminster-shorter-catechism-1647",
@@ -11706,6 +12022,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law 12 term hits",
    "about": [],
    "excerpt": "Imagine that you are a young man and one day your father commands you to find the donkeys that have wandered off, like poor young Saul was commanded to do in 1 Samuel. How will you do this? To find the donkeys will require much more than…",
@@ -11739,6 +12056,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) in the title 1x",
    "about": [
     "work:pld-2722"
@@ -11767,6 +12085,7 @@
     "de-lege",
     "de-peccato"
    ],
+   "retrieval": false,
    "reason": "John Calvin 8 mentions; topic Sin in title/heading, 11 term hits; topic The Law in title/heading, 7 term hits; topic Justification 7 term hits; topic Sanctification and Good Works 6 term hits",
    "about": [
     "topic:de-peccato",
@@ -11804,6 +12123,7 @@
     "de-gratia",
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 7 term hits; topic Grace in title/heading, 5 term hits",
    "about": [
     "topic:de-lege",
@@ -11837,6 +12157,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) in the title 1x",
    "about": [
     "work:pld-2722"
@@ -11864,6 +12185,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) in the title 1x",
    "about": [
     "work:pld-2722"
@@ -11890,6 +12212,7 @@
    "topics": [
     "de-ecclesia"
    ],
+   "retrieval": false,
    "reason": "topic The Church in title/heading, 13 term hits",
    "about": [
     "topic:de-ecclesia"
@@ -11933,6 +12256,7 @@
     "de-christo",
     "de-trinitate"
    ],
+   "retrieval": true,
    "reason": "Summa Theologiae (Thomas Aquinas) cited 2x; retrieval markers: 0 strong, 9 general; topic The Trinity in title/heading, 24 term hits; topic The Person and Work of Christ 9 term hits",
    "about": [
     "topic:de-trinitate"
@@ -11972,6 +12296,7 @@
     "matthew.27.54"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Matthew 27 in title/heading, 1 distinct refs",
    "about": [
     "verse:matthew.27"
@@ -12000,6 +12325,7 @@
    "topics": [
     "de-peccato"
    ],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 12 mentions; topic Sin in title/heading, 14 term hits",
    "about": [
     "author:Augustine of Hippo",
@@ -12039,6 +12365,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "The Pilgrim’s Progress (John Bunyan) cited 2x",
    "about": [],
    "excerpt": "By Joshua Cayetano As Christian journeys from the “City of Destruction” to the “Celestial City” in The Pilgrim’s Progress, he and his companion, Hopeful, are captured by Giant Despair, the king of Doubting-Castle. In the dungeon, Giant…",
@@ -12072,6 +12399,7 @@
    "topics": [
     "repentance"
    ],
+   "retrieval": false,
    "reason": "topic Repentance 12 term hits",
    "about": [],
    "excerpt": "Can we have an argument about being a ‘gay Christian’? That is the question which I have been wondering since the storm of Baptist and Presbyterian furor descended upon Revoice. The conference is an attempt by a wide variety of such…",
@@ -12118,6 +12446,7 @@
     "1-corinthians.7.39"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "1 Corinthians 6 4 distinct refs; 1 Corinthians 7 4 distinct refs",
    "about": [],
    "excerpt": "Note: Given the recent discussions about Revoice–a conference at which I am speaking–I asked Jake if he would republish the two chapters from my first book that are directly on questions of sexual desire. Today’s essay takes up the question…",
@@ -12156,6 +12485,7 @@
     "ephesians.5.31"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Ephesians 5 4 distinct refs",
    "about": [],
    "excerpt": "Note: Given the recent discussions about Revoice–a conference at which I am speaking–I asked Jake if he would republish the two chapters from my first book that are directly on questions of sexual desire. Today’s essay takes up how…",
@@ -12189,6 +12519,7 @@
     "romans.13"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Romans 13 in title/heading, 1 distinct refs",
    "about": [
     "verse:romans.13"
@@ -12224,6 +12555,7 @@
    "topics": [
     "de-peccato"
    ],
+   "retrieval": false,
    "reason": "topic Sin in title/heading, 9 term hits",
    "about": [
     "topic:de-peccato"
@@ -12261,6 +12593,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT 1x; topic The Trinity 13 term hits",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -12296,6 +12629,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) in the title 1x",
    "about": [
     "work:pld-2722"
@@ -12322,6 +12656,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) in the title 1x",
    "about": [
     "work:pld-2722"
@@ -12348,6 +12683,7 @@
    "topics": [
     "de-ecclesia"
    ],
+   "retrieval": false,
    "reason": "topic The Church in title/heading, 11 term hits",
    "about": [
     "topic:de-ecclesia"
@@ -12383,6 +12719,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) in the title 1x",
    "about": [
     "work:pld-2722"
@@ -12409,6 +12746,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) in the title 1x",
    "about": [
     "work:pld-2722"
@@ -12435,6 +12773,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "topic The Civil Magistrate in title/heading, 24 term hits",
    "about": [
     "topic:de-magistratu"
@@ -12470,6 +12809,7 @@
    "topics": [
     "de-creatione"
    ],
+   "retrieval": false,
    "reason": "topic Creation 12 term hits",
    "about": [],
    "excerpt": "William T. Cavanaugh and Jamie K. A. Smith, eds.: Evolution and the Fall, Eerdmans, 2017. The questions the church confronts most severely at present are questions of human nature, and what to call good and what to reject as broken and…",
@@ -12503,6 +12843,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) in the title 1x",
    "about": [
     "work:pld-2722"
@@ -12530,6 +12871,7 @@
     "de-baptismo",
     "de-ecclesia"
    ],
+   "retrieval": false,
    "reason": "topic The Church in title/heading, 22 term hits; topic Baptism 17 term hits",
    "about": [
     "topic:de-ecclesia"
@@ -12567,6 +12909,7 @@
     "de-libertate-christiana",
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 12 term hits; topic Christian Liberty 20 term hits; topic The Civil Magistrate 12 term hits",
    "about": [
     "topic:de-lege"
@@ -12602,6 +12945,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) in the title 1x",
    "about": [
     "work:pld-2722"
@@ -12629,6 +12973,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Bucer in the title; 4 mentions",
    "about": [
     "author:Martin Bucer"
@@ -12664,6 +13009,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) in the title 1x",
    "about": [
     "work:pld-2722"
@@ -12696,6 +13042,7 @@
     "de-coena",
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "Pietro Martire Vermigli 11 mentions; Martin Luther 8 mentions; topic The Lord's Supper in title/heading, 53 term hits; topic The Sacraments 49 term hits; topic The Person and Work of Christ 12 term hits",
    "about": [
     "topic:de-coena",
@@ -12732,6 +13079,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) in the title 1x",
    "about": [
     "work:pld-2722"
@@ -12761,6 +13109,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 1 mentions; Confessions (Augustine of Hippo) in the title 1x",
    "about": [
     "author:Augustine of Hippo",
@@ -12789,6 +13138,7 @@
    "topics": [
     "de-homine"
    ],
+   "retrieval": false,
    "reason": "topic Humanity in title/heading, 4 term hits",
    "about": [
     "topic:de-homine"
@@ -12824,6 +13174,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": true,
    "reason": "Origen in the title; 9 mentions; retrieval markers: 0 strong, 9 general",
    "about": [
     "author:Origen"
@@ -12859,6 +13210,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "topic The Civil Magistrate in title/heading, 8 term hits",
    "about": [
     "topic:de-magistratu"
@@ -12894,6 +13246,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Bucer in the title; 10 mentions",
    "about": [
     "author:Martin Bucer"
@@ -12929,6 +13282,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Heidelberg Catechism ABOUT 4x",
    "about": [
     "doc:rc-061-heidelberg-catechism-1563"
@@ -12964,6 +13318,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "topic The Civil Magistrate 16 term hits",
    "about": [],
    "excerpt": "One of the smarter criticisms I’ve read of Rod’s book comes from Doug Wilson’s initial post about it in which he raises the question of whether we are moving into a time of extended testing under an established regime hostile to the Gospel…",
@@ -12997,6 +13352,7 @@
     "genesis.1"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Genesis 1 in title/heading, 1 distinct refs",
    "about": [
     "verse:genesis.1"
@@ -13023,6 +13379,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Book of Common Prayer ABOUT 2x",
    "about": [
     "doc:x:bcp"
@@ -13058,6 +13415,7 @@
     "genesis.1"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Genesis 1 in title/heading, 1 distinct refs",
    "about": [
     "verse:genesis.1"
@@ -13084,6 +13442,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Bucer 15 mentions",
    "about": [],
    "excerpt": "One of my primary points in my review of Rod’s book is that orthodox Christians need a robust commitment to conversation if we are to thrive in a post-Christian context. Given the importance this will play and the related point about how…",
@@ -13117,6 +13476,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Enchiridion (Augustine of Hippo) cited 2x",
    "about": [],
    "excerpt": "Fair Warning: This is long. But I’ve tried to break it up with some header tags that make it easy to scan on an initial read. The review basically falls into three parts: The paragraphs between “Introduction” and “What is Rod’s strategy…”…",
@@ -13151,6 +13511,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin 13 mentions; Philipp Melanchthon 6 mentions",
    "about": [],
    "excerpt": "We are pleased to publish this guest feature from Dr. Eric Hutchinson of Hillsdale College. In my first two posts, we’ve seen what the classical two-kingdoms distinction was for the sixteenth century Reformers, whether “Lutheran” or…",
@@ -13184,6 +13545,7 @@
    "topics": [
     "de-baptismo"
    ],
+   "retrieval": false,
    "reason": "topic Baptism 6 term hits",
    "about": [],
    "excerpt": "Given that today is Ash Wednesday, it seemed appropriate to republish this email conversation that Alastair Roberts and I had which was first published in 2014. Introduction Recently my friend and occasional Mere O contributor Alastair…",
@@ -13218,6 +13580,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Of the Laws of Ecclesiastical Polity (Richard Hooker) cited 2x",
    "about": [],
    "excerpt": "In 2017, many Protestants will observe the 500th anniversary of their revolution—or at least of its most celebrated image: the promulgation of Luther’s Ninety-five Theses. Though inevitably drowned out by triumphalism, some such observances…",
@@ -13253,6 +13616,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "Philipp Melanchthon 11 mentions; topic The Law 60 term hits",
    "about": [],
    "excerpt": "First, by way of introduction: a delightful scene from Whit Stillman’s recent movie Love and Friendship, in which Sir James Martin attempts to have an erudite conversation with Frederica, Lady Susan’s daughter, as Sir Reginald DeCourcy…",
@@ -13289,6 +13653,7 @@
     "de-christo",
     "de-justificatione"
    ],
+   "retrieval": false,
    "reason": "Martin Luther 12 mentions; topic The Person and Work of Christ 19 term hits; topic Justification 15 term hits",
    "about": [
     "topic:de-christo",
@@ -13327,6 +13692,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "John Calvin 22 mentions; topic The Civil Magistrate in title/heading, 15 term hits",
    "about": [
     "author:John Calvin",
@@ -13363,6 +13729,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Richard Hooker in the title; 1 mentions",
    "about": [
     "author:Richard Hooker"
@@ -13390,6 +13757,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther 8 mentions; The City of God (Augustine of Hippo) cited 12x",
    "about": [
     "work:pld-2755"
@@ -13425,6 +13793,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment in title/heading, 6 term hits",
    "about": [
     "topic:de-novissimis"
@@ -13460,6 +13829,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "topic The Trinity in title/heading, 23 term hits",
    "about": [
     "topic:de-trinitate"
@@ -13497,6 +13867,7 @@
     "de-simplicitate",
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "topic The Trinity in title/heading, 26 term hits; topic The Person and Work of Christ in title/heading, 7 term hits; topic Divine Simplicity in title/heading, 6 term hits",
    "about": [
     "topic:de-trinitate",
@@ -13534,6 +13905,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "topic The Trinity 9 term hits",
    "about": [],
    "excerpt": "Though it (rightly) hasn't been discussed as much as the actual trinitarian issues themselves, the current trinitarian debate does suggest some interesting things about how evangelicals are beginning to approach questions of gender. The…",
@@ -13567,6 +13939,7 @@
    "topics": [
     "de-ecclesia"
    ],
+   "retrieval": false,
    "reason": "topic The Church in title/heading, 4 term hits",
    "about": [
     "topic:de-ecclesia"
@@ -13602,6 +13975,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 8 term hits",
    "about": [],
    "excerpt": "On the morning of June 24, Britain awoke to the devastation of a vast political and social earthquake, as, after an unpleasant and divisive campaign, a majority of our nation voted to leave the European Union (EU). The aftershocks and long…",
@@ -13635,6 +14009,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "topic The Trinity in title/heading, 4 term hits",
    "about": [
     "topic:de-trinitate"
@@ -13670,6 +14045,7 @@
    "topics": [
     "de-ecclesia"
    ],
+   "retrieval": false,
    "reason": "topic The Church in title/heading, 5 term hits",
    "about": [
     "topic:de-ecclesia"
@@ -13705,6 +14081,7 @@
    "topics": [
     "de-ecclesia"
    ],
+   "retrieval": false,
    "reason": "topic The Church in title/heading, 6 term hits",
    "about": [
     "topic:de-ecclesia"
@@ -13740,6 +14117,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 15 term hits",
    "about": [],
    "excerpt": "Note from Jake Meador: In early 2009 after the election of Barack Obama, Matthew Lee Anderson published his “New Evangelical Scandal” essay in Houston Baptist University’s journal The City. The essay is no longer available online, so we are…",
@@ -13773,6 +14151,7 @@
    "topics": [
     "de-ecclesia"
    ],
+   "retrieval": false,
    "reason": "topic The Church in title/heading, 5 term hits",
    "about": [
     "topic:de-ecclesia"
@@ -13808,6 +14187,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "topic The Trinity in title/heading, 22 term hits",
    "about": [
     "topic:de-trinitate"
@@ -13843,6 +14223,7 @@
    "topics": [
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic The Sacraments in title/heading, 17 term hits",
    "about": [
     "topic:de-sacramentis"
@@ -13878,6 +14259,7 @@
    "topics": [
     "de-sanctificatione"
    ],
+   "retrieval": false,
    "reason": "topic Sanctification and Good Works in title/heading, 4 term hits",
    "about": [
     "topic:de-sanctificatione"
@@ -13916,6 +14298,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Richard Hooker in the title; 4 mentions; Of the Laws of Ecclesiastical Polity (Richard Hooker) cited 2x",
    "about": [
     "author:Richard Hooker"
@@ -13951,6 +14334,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "topic The Trinity 9 term hits",
    "about": [],
    "excerpt": "I'm pleased to run a second post today from new guest writer Berny Belvedere. You can follow him on Twitter here or catch up on all his online writing here. From a very young age we learn the difference between narrative and expository…",
@@ -13984,6 +14368,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ in title/heading, 5 term hits",
    "about": [
     "topic:de-christo"
@@ -14010,6 +14395,7 @@
    "topics": [
     "de-religione"
    ],
+   "retrieval": false,
    "reason": "topic Religion and True Worship 26 term hits",
    "about": [],
    "excerpt": "Editor's note: Samuel James is a writer based in Louisville, Kentucky. He earned a BA in apologetics from Boyce College. He blogs regularly at Patheos and tweets regularly at @samwisejams. Did Andrew Wilson’s parody misrepresent Matthew…",
@@ -14044,6 +14430,7 @@
     "genesis.2.24"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Genesis 2 in title/heading, 2 distinct refs",
    "about": [
     "verse:genesis.2"
@@ -14086,6 +14473,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "Athanasius of Alexandria 7 mentions; On the Incarnation (Athanasius of Alexandria) in a heading 4x; topic The Person and Work of Christ in title/heading, 22 term hits",
    "about": [
     "work:pg-2880",
@@ -14125,6 +14513,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment in title/heading, 3 term hits",
    "about": [
     "topic:de-novissimis"
@@ -14163,6 +14552,7 @@
     "de-attributis-distinctio",
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "Council Of Chalcedon ABOUT 0x; topic The Divine Attributes in title/heading, 19 term hits; topic The Person and Work of Christ in title/heading, 5 term hits",
    "about": [
     "doc:cf-025-council-of-chalcedon-451",
@@ -14200,6 +14590,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment in title/heading, 11 term hits",
    "about": [
     "topic:de-novissimis"
@@ -14236,6 +14627,7 @@
     "de-justificatione",
     "de-sanctificatione"
    ],
+   "retrieval": false,
    "reason": "John Calvin in the title; 12 mentions; topic Justification 21 term hits; topic Sanctification and Good Works in title/heading, 21 term hits",
    "about": [
     "author:John Calvin",
@@ -14274,6 +14666,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 5 mentions; Martin Luther 5 mentions",
    "about": [],
    "excerpt": "Rachel Held Evans believes we shouldn't be too scared about changing our minds on religious questions, as these things aren't always \"set in stone.\" Addressing religious believers in light of the SCOTUS decisions on gay marriage, she…",
@@ -14307,6 +14700,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ in title/heading, 4 term hits",
    "about": [
     "topic:de-christo"
@@ -14342,6 +14736,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 30 term hits",
    "about": [
     "topic:de-lege"
@@ -14377,6 +14772,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther in the title; 15 mentions",
    "about": [
     "author:Martin Luther"
@@ -14412,6 +14808,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "topic The Civil Magistrate 12 term hits",
    "about": [],
    "excerpt": "I am really pleased to welcome (again) Matthew Tuininga to Mere-O. A Ph.D. candidate at Emory University, Matthew is one of the sharpest young Christian voices working at the intersection of religion and politics. The first part of this…",
@@ -14447,6 +14844,7 @@
    "topics": [
     "de-magistratu"
    ],
+   "retrieval": false,
    "reason": "John Calvin 21 mentions; topic The Civil Magistrate 32 term hits",
    "about": [
     "author:John Calvin"
@@ -14482,6 +14880,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Athanasius of Alexandria in the title; 1 mentions",
    "about": [
     "author:Athanasius of Alexandria"
@@ -14508,6 +14907,7 @@
    "topics": [
     "de-coena"
    ],
+   "retrieval": false,
    "reason": "topic The Lord's Supper 12 term hits",
    "about": [],
    "excerpt": "Editor’s note: I am pleased to publish this two part review (see part one) by Brian Auten of Peter Leithart’s new book. Brian is a reader and friend of mine and this review is both substantive and important. I commend both parts to you…",
@@ -14541,6 +14941,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment in title/heading, 13 term hits",
    "about": [
     "topic:de-novissimis"
@@ -14576,6 +14977,7 @@
    "topics": [
     "de-providentia"
    ],
+   "retrieval": false,
    "reason": "topic Providence in title/heading, 14 term hits",
    "about": [
     "topic:de-providentia"
@@ -14612,6 +15014,7 @@
     "de-novissimis",
     "de-scriptura"
    ],
+   "retrieval": false,
    "reason": "topic Holy Scripture 17 term hits; topic Death and Judgment 7 term hits",
    "about": [],
    "excerpt": "Christopher Benson is a writer and educator living in Denver, Colorado. He writes regularly at Bensonian, and submitted the following as a guest post. Thomas Albert Howard, who is the Stephen Phillips Chair of History at Gordon College, and…",
@@ -14645,6 +15048,7 @@
    "topics": [
     "de-angelis"
    ],
+   "retrieval": false,
    "reason": "topic Angels 15 term hits",
    "about": [
     "topic:de-angelis"
@@ -14680,6 +15084,7 @@
    "topics": [
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic The Sacraments 8 term hits",
    "about": [],
    "excerpt": "There is a “hubbub” afoot on whether clergy should perform weddings on behalf of the state. The “hubbub” is fomented mostly by Tony Jones, who refuses to perform weddings on behalf of the state or have his own marriage recognized by the…",
@@ -14713,6 +15118,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Samuel Rutherford in the title; 2 mentions",
    "about": [
     "author:Samuel Rutherford"
@@ -14748,6 +15154,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 5 term hits",
    "about": [
     "topic:de-lege"
@@ -14783,6 +15190,7 @@
    "topics": [
     "de-scriptura"
    ],
+   "retrieval": false,
    "reason": "topic Holy Scripture 12 term hits",
    "about": [],
    "excerpt": "So, we had a hole in the wall. I don’t mean the tiny urban apartment we shared in the first year of marriage, but a literal gap in the plaster. We had to call maintenance to patch it up. (I could try to do it myself, but then we have to pay…",
@@ -14816,6 +15224,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 10 term hits",
    "about": [
     "topic:de-lege"
@@ -14851,6 +15260,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 16 term hits",
    "about": [
     "topic:de-novissimis"
@@ -14886,6 +15296,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 6 mentions",
    "about": [],
    "excerpt": "Last week, Justin Taylor highlighted an article on the history of the interpretation of Genesis 1. I almost posted a rapid response, as the history of biblical interpretation is my big specialty. But I feared the appearance of posturing for…",
@@ -14919,6 +15330,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Samuel Rutherford 11 mentions",
    "about": [
     "author:Samuel Rutherford"
@@ -14962,6 +15374,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Samuel Rutherford in the title; 12 mentions; Lex, Rex (Samuel Rutherford) cited 3x; Westminster Standards (umbrella) ABOUT 3x; Westminster Confession Of Faith ABOUT 3x; Westminster Larger Catechism ABOUT 3x",
    "about": [
     "author:Samuel Rutherford",
@@ -15001,6 +15414,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther in the title; 2 mentions",
    "about": [
     "author:Martin Luther"
@@ -15036,6 +15450,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ 8 term hits",
    "about": [],
    "excerpt": "One of the theological areas most likely to raise questions about the relationship between historical Christian teaching and Greek (especially Platonic) thought is that of human nature. Especially with regard to two related subjects: the…",
@@ -15069,6 +15484,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin 5 mentions",
    "about": [],
    "excerpt": "Iconoclastic Calvinism may never recover from Randall Zachman's Image and Word in the Theology of John Calvin, which culminates decades of Reformation scholarship to reveal how imagery is central - indeed constituent - to the Reformer's…",
@@ -15096,6 +15512,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT 3x; topic The Trinity 10 term hits",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -15131,6 +15548,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 8 mentions",
    "about": [],
    "excerpt": "MO: Who is your all-time political philosopher? Theologian? Do the two ever inform the other? CC: That is a good question. As it happens, my favourite political philosopher is also my favourite theologian: Augustine of Hippo. And I think…",
@@ -15164,6 +15582,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "topic The Trinity 12 term hits",
    "about": [],
    "excerpt": "\"Because the gospel is Trinitarian, evangelicals as gospel people are by definition Trinity people, whether or not they think so. It only makes sense that if the gospel is inherently Trinitarian, the most consistently and self-consciously…",
@@ -15195,6 +15614,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Basil the Great in the title; 4 mentions",
    "about": [
     "author:Basil the Great"
@@ -15230,6 +15650,7 @@
    "topics": [
     "de-sacramentis"
    ],
+   "retrieval": false,
    "reason": "topic The Sacraments in title/heading, 12 term hits",
    "about": [
     "topic:de-sacramentis"
@@ -15265,6 +15686,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Tertullian 6 mentions",
    "about": [],
    "excerpt": "If you ask noted pacifist John Howard Yoder, the answer is unequivocally “yes.” Writes Yoder: The answer of the pre-Constantinian church was negative; the Christian as an agent of God for reconciliation has other things to do than to be in…",
@@ -15298,6 +15720,7 @@
     "psalms.13"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Psalms 13 in title/heading, 1 distinct refs",
    "about": [
     "verse:psalms.13"
@@ -15333,6 +15756,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 7 mentions",
    "about": [],
    "excerpt": "Every generation struggles towards a certain self-understanding as its members move from immaturity to adulthood and walk through the trials of growing, thinking, discovering, and confronting responsibility. This path of maturation cannot…",
@@ -15366,6 +15790,7 @@
    "topics": [
     "de-ecclesia"
    ],
+   "retrieval": false,
    "reason": "topic The Church in title/heading, 7 term hits",
    "about": [
     "topic:de-ecclesia"
@@ -15401,6 +15826,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Bunyan 10 mentions",
    "about": [],
    "excerpt": "Whether a Protestant aesthetics is possible remains, unfortunately, a question which Protestants must answer. In “Dante, Bunyan, and a Case for Protestant Aesthetics,” William Dyrness argues that not only do Protestants have an aesthetics…",
@@ -15436,6 +15862,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 11 mentions; The City of God (Augustine of Hippo) in the title 3x",
    "about": [
     "author:Augustine of Hippo",
@@ -15474,6 +15901,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 6 mentions; The City of God (Augustine of Hippo) cited 4x",
    "about": [
     "author:Augustine of Hippo",
@@ -15513,6 +15941,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 11 mentions; On Free Choice of the Will (Augustine of Hippo) cited 3x",
    "about": [],
    "excerpt": "In this post, I want to conclude my summary and discussion of Thomas’s reasoning about killing in self-defense by examining the objections to his position that he considers and his replies to those objections. (The first post is here; the…",
@@ -15546,6 +15975,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Thomas Aquinas in the title; 2 mentions",
    "about": [
     "author:Thomas Aquinas"
@@ -15581,6 +16011,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 12 term hits",
    "about": [
     "topic:de-lege"
@@ -15616,6 +16047,7 @@
    "topics": [
     "de-angelis"
    ],
+   "retrieval": false,
    "reason": "topic Angels in title/heading, 4 term hits",
    "about": [
     "topic:de-angelis"
@@ -15651,6 +16083,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin in the title; 9 mentions",
    "about": [
     "author:John Calvin"
@@ -15686,6 +16119,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin in the title; 8 mentions",
    "about": [
     "author:John Calvin"
@@ -15721,6 +16155,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "John Calvin 9 mentions; topic The Law in title/heading, 8 term hits",
    "about": [
     "topic:de-lege"
@@ -15756,6 +16191,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin in the title; 8 mentions",
    "about": [
     "author:John Calvin"
@@ -15787,6 +16223,7 @@
    "topics": [
     "de-baptismo"
    ],
+   "retrieval": false,
    "reason": "topic Baptism 19 term hits",
    "about": [
     "topic:de-baptismo"
@@ -15822,6 +16259,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin 9 mentions",
    "about": [],
    "excerpt": "According to John Calvin, the knowledge of God \"is that by which we not only conceive that there is a God but also grasp what befits us and is proper to his glory, in fine, what is to our advantage to know of Him.\" Calvin's definition is…",
@@ -15853,6 +16291,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin 9 mentions",
    "about": [],
    "excerpt": "Update: Per Andrew’s comment, I amended the below to include the footnote and clarify the editors’ position. For John Calvin, the knowledge of God is necessarily tied to the experience of piety, by which Calvin means “that reverence joined…",
@@ -15886,6 +16325,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Thomas Aquinas 6 mentions",
    "about": [],
    "excerpt": "G.K. Chesterton is best known for his apologetic works Orthodoxy and The Everlasting Man. But the work that earned him some of the highest praise was Saint Thomas Aquinas: The Dumb Ox. The story of how Chesterton wrote the book is well…",
@@ -15919,6 +16359,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin in the title; 4 mentions",
    "about": [
     "author:John Calvin"
@@ -15953,6 +16394,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin in the title; 3 mentions",
    "about": [
     "author:John Calvin"
@@ -15982,6 +16424,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin in the title; 5 mentions",
    "about": [
     "author:John Calvin"
@@ -16009,6 +16452,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin in the title; 6 mentions",
    "about": [
     "author:John Calvin"
@@ -16043,6 +16487,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 8 term hits",
    "about": [
     "topic:de-lege"
@@ -16078,6 +16523,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Council Of Nicea II ABOUT 2x",
    "about": [
     "doc:cf-048-council-of-nicea-ii-787"
@@ -16114,6 +16560,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 4 mentions; John Calvin 5 mentions",
    "about": [
     "author:Augustine of Hippo"
@@ -16149,6 +16596,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Thomas Aquinas 4 mentions",
    "about": [],
    "excerpt": "\"Don't give into some illusion and lose your power, but even if you have, if you've lost all will and control, they come back when you fast, like soldiers appearing out of the ground, pennants flying above them.\" -Rumi We live in a world as…",
@@ -16182,6 +16630,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ in title/heading, 3 term hits",
    "about": [
     "topic:de-christo"
@@ -16217,6 +16666,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ in title/heading, 5 term hits",
    "about": [
     "topic:de-christo"
@@ -16252,6 +16702,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther in the title; 3 mentions",
    "about": [
     "author:Martin Luther"
@@ -16283,6 +16734,7 @@
    "topics": [
     "de-libertate-christiana"
    ],
+   "retrieval": false,
    "reason": "topic Christian Liberty in title/heading, 4 term hits; Romans 14 in title/heading, 1 distinct refs",
    "about": [
     "topic:de-libertate-christiana",
@@ -16315,6 +16767,7 @@
    "topics": [
     "de-christo"
    ],
+   "retrieval": false,
    "reason": "topic The Person and Work of Christ 6 term hits",
    "about": [],
    "excerpt": "The current featured essay at In Pursuit of Truth, the journal of the C.S. Lewis Foundation, is Phillip Harrold's \"Smuggling for God: What the Emerging Church Movement Can Learn from C.S. Lewis' Incarnational Aesthetic.\" Harrold's piece is…",
@@ -16346,6 +16799,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 7 term hits",
    "about": [],
    "excerpt": "***Note: I am precising Oliver O’Donovan’s Resurrection and Moral Order: An Outline for Evangelical Ethics this week here at Mere-O. I hope you will work through the challenging and provocative theological ethic that O’Donovan…",
@@ -16379,6 +16833,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment in title/heading, 4 term hits",
    "about": [
     "topic:de-novissimis"
@@ -16414,6 +16869,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Westminster Shorter Catechism ABOUT 4x",
    "about": [
     "doc:rc-115-westminster-shorter-catechism-1647"
@@ -16449,6 +16905,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 5 mentions",
    "about": [
     "author:Augustine of Hippo"
@@ -16484,6 +16941,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 6 mentions",
    "about": [],
    "excerpt": "The conception of just war and its relationship to the state is indispensable in both Christian and Islamic political thought. Since both Christians and Muslims set up right authority as a condition for just war, and further, they take this…",
@@ -16518,6 +16976,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 8 mentions; Thomas Aquinas 7 mentions",
    "about": [],
    "excerpt": "Earlier this week I introduced two major contributors to Christian just war theory—Augustine and Aquinas. Both of these men agree that a war can be just only when: it is prosecuted by a legitimate authority, is embarked upon for the sake of…",
@@ -16552,6 +17011,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 9 mentions; Thomas Aquinas 8 mentions",
    "about": [],
    "excerpt": "There are three specific similarities between Christian and Islamic conceptions of just war: legitimate authorization, just cause, and right intentions. This week we’ll begin our comparison of these two religious points of view by examining…",
@@ -16585,6 +17045,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Consolation of Philosophy (Boethius) cited 2x",
    "about": [],
    "excerpt": "Part II - Re-expansion of the lung may take several days with the chest tube left in place. The second time my lung collapsed was one of the worst experiences of my life. I was sitting in on a round-table philosophy seminar, a sophomore in…",
@@ -16618,6 +17079,7 @@
    "topics": [
     "de-justificatione"
    ],
+   "retrieval": false,
    "reason": "topic Justification 7 term hits",
    "about": [],
    "excerpt": "VIII. Conclusion My initial move was to outline interpretations of two exegetical issues, namely anthropology and justification, pointing out that a fundamental tension exists within exegesis of both issues, namely which paradigm has…",
@@ -16651,6 +17113,7 @@
     "romans.4"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Romans 4 in title/heading, 1 distinct refs",
    "about": [
     "verse:romans.4"
@@ -16686,6 +17149,7 @@
    "topics": [
     "de-justificatione"
    ],
+   "retrieval": false,
    "reason": "topic Justification 6 term hits",
    "about": [],
    "excerpt": "Romans 4.9-12 In this section of Romans 4, Paul engages either in actual dialogue or in a bit of dialectical rhetoric with an imaginary interlocutor. Moxnes thinks the former, arguing that Paul is addressing conflict within the contemporary…",
@@ -16731,6 +17195,7 @@
     "romans.3.31"
    ],
    "topics": [],
+   "retrieval": false,
    "reason": "Romans 3 in title/heading, 2 distinct refs",
    "about": [
     "verse:romans.3"
@@ -16766,6 +17231,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther in the title; 24 mentions",
    "about": [
     "author:Martin Luther"
@@ -16801,6 +17267,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther in the title; 14 mentions",
    "about": [
     "author:Martin Luther"
@@ -16836,6 +17303,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther in the title; 22 mentions",
    "about": [
     "author:Martin Luther"
@@ -16871,6 +17339,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther in the title; 28 mentions",
    "about": [
     "author:Martin Luther"
@@ -16906,6 +17375,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther in the title; 15 mentions",
    "about": [
     "author:Martin Luther"
@@ -16941,6 +17411,7 @@
    "topics": [
     "de-ecclesia"
    ],
+   "retrieval": false,
    "reason": "topic The Church in title/heading, 15 term hits",
    "about": [
     "topic:de-ecclesia"
@@ -16975,6 +17446,7 @@
    "topics": [
     "de-trinitate"
    ],
+   "retrieval": false,
    "reason": "topic The Trinity in title/heading, 27 term hits",
    "about": [
     "topic:de-trinitate"
@@ -17010,6 +17482,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Apostles’, Nicene and ancient creeds ABOUT 3x",
    "about": [
     "doc:cf-001-apostolic-and-ancient-creeds"
@@ -17041,6 +17514,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) cited 2x",
    "about": [],
    "excerpt": "I am a young man. That has never stopped me from having opinions, but I am often reminded of my youth when my opinions outstretch my years, as they do in the sad case of Ted Haggard. I would point out that though I speak in the passionate…",
@@ -17074,6 +17548,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 9 term hits",
    "about": [],
    "excerpt": "Faith, it drives me away But it turns me on Like a strangers love -Muse With regard to a Jewish agnostic friend of ours, Matt Anderson once remarked that he is “flirting with Christianity.” This friend of ours is a university professor…",
@@ -17107,6 +17582,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 3 mentions",
    "about": [
     "author:Augustine of Hippo"
@@ -17137,6 +17613,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Boethius in the title; 5 mentions; Consolation of Philosophy (Boethius) cited 3x",
    "about": [
     "author:Boethius"
@@ -17172,6 +17649,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Book of Common Prayer ABOUT (title/heading) 6x",
    "about": [
     "doc:x:bcp"
@@ -17207,6 +17685,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 8 term hits",
    "about": [
     "topic:de-lege"
@@ -17242,6 +17721,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Athanasius of Alexandria in the title; 3 mentions",
    "about": [
     "author:Athanasius of Alexandria"
@@ -17271,6 +17751,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Confessions (Augustine of Hippo) cited 3x",
    "about": [],
    "excerpt": "Update: Rhett weighs in! Surprise choice: My Name is Asher Lev. I haven't read it, but that's a strong recommendation... I'm a bit behind these days, but feeling a bit vindicated. The bloggers over at OneTrueGodBlog are a bit slow these…",
@@ -17304,6 +17785,7 @@
    "topics": [
     "de-angelis"
    ],
+   "retrieval": false,
    "reason": "topic Angels in title/heading, 3 term hits",
    "about": [
     "topic:de-angelis"
@@ -17339,6 +17821,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Thomas Aquinas in the title; 8 mentions",
    "about": [
     "author:Thomas Aquinas"
@@ -17370,6 +17853,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Chrysostom in the title; 6 mentions",
    "about": [
     "author:John Chrysostom"
@@ -17399,6 +17883,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Martin Luther in the title; 6 mentions; The Bondage of the Will (Martin Luther) in the title 1x",
    "about": [
     "author:Martin Luther"
@@ -17427,6 +17912,7 @@
    "topics": [
     "de-scriptura"
    ],
+   "retrieval": false,
    "reason": "topic Holy Scripture in title/heading, 7 term hits",
    "about": [
     "topic:de-scriptura"
@@ -17462,6 +17948,7 @@
    "topics": [
     "de-lege"
    ],
+   "retrieval": false,
    "reason": "topic The Law in title/heading, 21 term hits",
    "about": [
     "topic:de-lege"
@@ -17497,6 +17984,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "John Calvin in the title; 2 mentions",
    "about": [
     "author:John Calvin"
@@ -17525,6 +18013,7 @@
    "topics": [
     "de-novissimis"
    ],
+   "retrieval": false,
    "reason": "topic Death and Judgment 10 term hits",
    "about": [],
    "excerpt": "David begins his excellent review of Wayne Martindale's Beyond the Shadowlands: C.S. Lewis on Heaven and Hell by highlighting a conundrum. He wonders whether he should recommend Martindale's book to \"those who have read a lot of Lewis or to…",
@@ -17558,6 +18047,7 @@
    ],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Council Of Trent ABOUT 5x",
    "about": [
     "doc:cf-092-council-of-trent-1545-1563"
@@ -17595,6 +18085,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo in the title; 2 mentions; Confessions (Augustine of Hippo) in the title 0x",
    "about": [
     "author:Augustine of Hippo",
@@ -17631,6 +18122,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Thomas Goodwin in the title; 5 mentions",
    "about": [
     "author:Thomas Goodwin"
@@ -17662,6 +18154,7 @@
    "docs": [],
    "verses": [],
    "topics": [],
+   "retrieval": false,
    "reason": "Augustine of Hippo 6 mentions",
    "about": [],
    "excerpt": "In prep for my classes next semester, I picked up The City of God today and started what will have to a be a very fast read. It’s been a while since I was in Augustine so I was a bit apprehensive about how it would go, but I was pleasantly…",
