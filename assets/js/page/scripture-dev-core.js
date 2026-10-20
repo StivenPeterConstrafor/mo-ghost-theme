@@ -529,9 +529,24 @@
     const r = rk && rk.works && rk.works[e.w];
     return r ? r[0] : ((rk && rk.authors && rk.authors[e.a]) || 0);
   };
+  /* CITED IN COMMENTARIES ON OTHER BOOKS (2026-10-20, the owner: "where we have the commentary make a reference to a different text
+   * show up as a hit"). v1/scripture/hits/<book>/<c>.json: the commentaries filed under other books (and the whole-Bible sets) that cite
+   * this chapter, each at the page where it cites it most, with that page's own gist. They become the list's `cited` items. */
+  const SHELF_LABEL = { gf: "Greek Fathers", pl: "Latin Fathers", po: "Eastern Fathers", md: "Medieval", lu: "Lutheran", rf: "Continental Reformed",
+    rc: "Roman Catholic", ed: "English Divines", hl: "Humanism and Law" };
+  const fetchHits = (book, c) => (c ? fetch(`${LIBRARY_BASE}/v1/scripture/hits/${book.lib}/${c}.json`, { credentials: "omit" })
+    .then((r) => (r.ok ? r.json() : null)).then((d) => (d && d.hits) || []).catch(() => []) : Promise.resolve([]));
   const fetchCommentaries = (book, c, f) => Promise.all([api("/v1/verse/commentaries", {
     b: book.lib, c, tr: f.tr, au: f.au, cen: f.cen,
-  }), loadSeries(), loadRank()]).then(([d, sets, rk]) => {
+  }), loadSeries(), loadRank(), fetchHits(book, c)]).then(([d, sets, rk, hits]) => {
+    if (d) {
+      const have = new Set((d.items || []).map((e) => e.w));
+      d.cited = hits.filter((x) => !have.has(x.w) && (!f.tr || !f.tr.length || f.tr.includes(x.sh))).map((x) => ({
+        w: x.w, t: x.t, a: x.a, kind: "commentary", anchored: "cited", c1: 0, c2: 0, sh: x.sh, trad: SHELF_LABEL[x.sh] || "", cen: x.cen,
+        href: `/the-faith-received/read/?w=${encodeURIComponent(x.w)}#b${x.p}-0`, hit: { p: x.p, n: x.n, v: x.v || [], g: x.g || "" },
+        imp: (rk && rk.works && rk.works[x.w] && rk.works[x.w][0]) || 0,
+      }));
+    }
     ((d && d.items) || []).forEach((e) => {
       const s = sets.get(e.w); if (s) e.set = s;
       const r = rk && rk.works && rk.works[e.w];
@@ -922,18 +937,27 @@
   /* ONE ROW PER AUTHOR, THE KEY COMMENTARIES FIRST (2026-10-19, the owner on Psalm 51: "how are there 10 luther vols this is type of
    * organization im asking"; "musculus' psalm commentary should show up when i go through a psalm these are things that are
    * important"). Each list gives an author one row: his work with its own page on the chapter, in the curated order of his works
-   * (rank.json `books`: Luther's lectures of 1532 before the Summaries), his other works beneath it (`e.more`). The book's curated key
-   * commentaries lead, in the order their authors came; the rest by weight. A volume of collected works or sermons with no page of its
-   * own on the chapter only touches it: it goes under its author's row, or with the other works. A volume of a commentary whose
-   * volumes together take in the whole book (Calvin's Psalms in five) is listed with the commentaries on the book. */
-  function commentaryGroups(items, book) {
+   * (rank.json `books`: Luther's lectures of 1532 before the Summaries), his other works beneath it (`e.more`). A volume of collected
+   * works or sermons with no page of its own on the chapter only touches it: it goes under its author's row, or with the other works.
+   * ONE LIST FOR THE BOOK, BY TRADITION (2026-10-20, the owner: "whole chapter is a bad category … it functionally operates as whole
+   * bible book commentary and then organize by tradition"): the commentaries on the book, whole or part, are one list, under their
+   * traditions in a fixed order, the book's curated key commentaries first in each (in the order their authors came), then by weight;
+   * the whole-Bible sets the same way; then the commentaries on other books that cite the chapter (`cited`, one row per author however
+   * many of his volumes cite it: Salmerón, Lapide); then the works that are not commentaries. The first row of each tradition carries
+   * its name (`e.tradHead`), which commentaryRows draws as a heading. */
+  const TRADS = [["gf", "Greek Fathers"], ["pl", "Latin Fathers"], ["po", "Eastern Fathers"], ["by", "Byzantine"], ["md", "Medieval"],
+    ["lu", "Lutheran"], ["rf", "Continental Reformed"], ["rc", "Roman Catholic"], ["ed", "English writers"], ["hl", "Humanism and Law"]];
+  // the shelf is the Patrologia's (Peter Lombard and Haymo on the Latin Fathers' shelf): a Latin writer from the 8th century on is listed
+  // with the Medieval, a Greek from the 9th with the Byzantine
+  const tradOf = (e) => {
+    const sh = e.sh || "", cen = Number(e.cen) || 0;
+    return sh === "pl" && cen >= 8 ? "md" : sh === "gf" && cen >= 9 ? "by" : sh;
+  };
+  function commentaryGroups(items, book, cited) {
     const list = items || [];
-    const n = (book && book.chapters) || 0;
     const lib = book && book.lib;
-    const series = new Set(((RANKD && RANKD.series) || {})[lib] || []);
     const keyOf = new Map();
     (((RANKD && RANKD.books) || {})[lib] || []).forEach(([, slugs, born]) => slugs.forEach((w, i) => keyOf.set(w, { born: Number(born) || 0, i })));
-    const wholeBook = (e) => !(Number(e.c1) > 0) || series.has(e.w) || (n && (Number(e.c2 || e.c1) - Number(e.c1) + 1) >= 0.8 * n);
     const other = (e) => NOT_COMMENTARY.has(e.kind);
     const whole = (e) => !other(e) && (e.annotation || e.set || e.wb);
     const touches = (e) => !other(e) && !whole(e) && (e.kind === "collected" || e.kind === "sermons") && e.anchored !== "chapter"
@@ -951,31 +975,69 @@
       xs.forEach((e) => { const k = e.a || e.w; if (!by.has(k)) by.set(k, []); by.get(k).push(e); });
       return [...by.values()].map((es) => { es.sort(inAuthor); const [main, ...more] = es; main.more = more; return main; });
     };
+    // a hit's rows: the author's discussions together, the weightiest first (how much he discusses the chapter, by his weight)
+    const hitScore = (e) => (e.hit ? e.hit.n : 0) * (0.5 + (Number(e.imp) || 0) / 100);
+    const citedRows = (xs) => {
+      const by = new Map();
+      xs.forEach((e) => { const k = e.a || e.w; if (!by.has(k)) by.set(k, []); by.get(k).push(e); });
+      return [...by.values()].map((es) => { es.sort((a, b) => hitScore(b) - hitScore(a)); const [main, ...more] = es; main.more = more; main.sumScore = es.reduce((t, e) => t + hitScore(e), 0); return main; })
+        .sort((a, b) => b.sumScore - a.sumScore);
+    };
+    // by tradition, in the fixed order; the first row of each names it
+    const byTradition = (xs) => {
+      const out = [];
+      TRADS.concat([["", "Other"]]).forEach(([k, label]) => {
+        const these = xs.filter((e) => (k ? tradOf(e) === k : !TRADS.some(([t]) => t === tradOf(e)))).sort(rowOrder);
+        these.forEach((e, i) => { e.tradHead = i === 0 ? label : ""; e.tradRank = i; e.isKey = keyOf.has(e.w); out.push(e); });
+      });
+      return out;
+    };
     const g = {
-      chapter: rows(list.filter((e) => !other(e) && !whole(e) && !touches(e) && !wholeBook(e))),
-      book: rows(list.filter((e) => !other(e) && !whole(e) && !touches(e) && wholeBook(e))),
+      book: rows(list.filter((e) => !other(e) && !whole(e) && !touches(e))),
       whole: rows(list.filter(whole)),
     };
     const loose = [];
     list.filter(touches).sort(byStanding).forEach((e) => {
-      const main = g.book.find((m) => m.a === e.a) || g.chapter.find((m) => m.a === e.a);
+      const main = g.book.find((m) => m.a === e.a);
       if (main) main.more.push(e); else loose.push(e);
     });
-    g.other = rows(list.filter(other).concat(loose));
-    ["chapter", "book", "whole", "other"].forEach((k) => g[k].sort(rowOrder));
+    g.book = byTradition(g.book);
+    g.whole = byTradition(g.whole);
+    g.cited = citedRows(cited || []);
+    g.other = rows(list.filter(other).concat(loose)).sort(rowOrder);
     return g;
   }
-  // The lists' names, in one place: "On Romans 5", "On Romans", "On the whole Bible" ("… or New Testament" when a Testament's
-  // set is among them), "Other works on Romans".
+  // The lists' names, in one place: "Commentaries on Romans", "On the whole Bible" ("… or New Testament" when a Testament's set is
+  // among them), "Cited in commentaries on other books", "Other works on Romans".
   const commentaryTitles = (book, c, g) => {
     const sets = new Set(((g && g.whole) || []).map((e) => e.set));
     const name = book.slug === "psalms" ? "the Psalms" : book.name;
     return {
-      chapter: `On ${refLabel(book, c, 0)}`, book: `On ${name}`,
+      book: `Commentaries on ${name}`,
       whole: sets.has("nt") ? "On the whole Bible or New Testament" : sets.has("ot") ? "On the whole Bible or Old Testament" : "On the whole Bible",
+      cited: "Cited in commentaries on other books",
       other: `Other works on ${name}`,
     };
   };
+  // A list's rows with its tradition headings (e.tradHead), for the folds, the verse panel and the Desk alike. With `initial`, a list by
+  // tradition shows each tradition's key commentaries and its first three, the rest after "Show all" (the first nine of Psalm 51 were
+  // all Greek Fathers, Augustine and Luther behind the button); another list shows its first `initial`.
+  function commentaryRows($ol, items, ctx, initial) {
+    const shown = (e, index) => initial == null || (e.tradRank != null ? (e.isKey || e.tradRank < 3) : index < initial);
+    let $h = null, any = false;
+    items.forEach((e, index) => {
+      if (e.tradHead) {
+        if ($h) $h.hidden = !any;
+        $h = document.createElement("li");
+        $h.className = "sd-trad-h"; $h.setAttribute("role", "presentation"); $h.textContent = e.tradHead; any = false;
+        $ol.appendChild($h);
+      }
+      const item = commentaryItem(e, ctx);
+      item.hidden = !shown(e, index); any = any || !item.hidden;
+      $ol.appendChild(item);
+    });
+    if ($h) $h.hidden = !any;
+  }
   function commentaryItem(e, ctx) {
     const li = document.createElement("li");
     li.className = "sd-source sd-commentary";
@@ -988,9 +1050,12 @@
       : (e.c1 ? "" : (COMMENTARY_KIND[e.kind] || ""));
     // Said before the click: whether the work has its own page on this chapter or only cites it.
     const on = ctx.c && e.anchored === "chapter" ? `Comment on ${refLabel(ctx.book, ctx.c, 0)}`
-      : ctx.c && e.anchored === "cited" ? `Cites ${refLabel(ctx.book, ctx.c, 0)}` : "";
-    // the tradition beside the century (2026-10-19, the owner: Musculus "should show up under reformed (continental)")
-    const trad = e.trad && window.MOFaithLabel ? window.MOFaithLabel.shelf(e.trad) : e.trad;
+      : ctx.c && e.hit ? `Cites ${refLabel(ctx.book, ctx.c, 0)}${e.hit.v.length ? `:${e.hit.v.slice(0, 4).join(", ")}` : ""} \u00b7 p. ${e.hit.p}`
+        : ctx.c && e.anchored === "cited" ? `Cites ${refLabel(ctx.book, ctx.c, 0)}` : "";
+    // the tradition beside the century (2026-10-19, the owner: Musculus "should show up under reformed (continental)"), as the list
+    // files it (Peter Lombard with the Medieval, not the Latin Fathers' shelf)
+    const tk = tradOf(e), tl = (TRADS.find(([k]) => k === tk) || [])[1];
+    const trad = tl || (e.trad && window.MOFaithLabel ? window.MOFaithLabel.shelf(e.trad) : e.trad);
     const meta = [e.a, centuryLabel(e.cen), trad, range].filter(Boolean).map(esc).join(" \u00b7 ") +
       (on ? `<span class="sd-comm-on"> \u00b7 ${esc(on)}</span>` : "");
     const pid = `sdp-${Math.random().toString(36).slice(2, 9)}`;
@@ -1000,7 +1065,8 @@
           // A section inside a larger volume (v1/devotion.json `st`, corpus owner 2026-09-26) is named by the section,
           // with the volume's title beside it; shown when the verse worker passes `st` through.
           `<span class="sd-source-title">${esc(e.st ? `${e.st} (in ${e.t || e.w})` : (e.t || e.w))}</span>` +
-          `<span class="sd-source-meta">${meta}</span>` +
+          // a hit's page, in the library's own one-line summary of it
+          `<span class="sd-source-meta">${meta}</span>${e.hit && e.hit.g ? `<span class="sd-comm-gist">${esc(e.hit.g)}</span>` : ""}` +
         `</div>${ 
         href ? `<button type="button" class="sd-preview-btn" aria-expanded="false" aria-controls="${pid}">Preview</button>` : "" 
       }</div><div class="sd-preview" id="${pid}" hidden></div>`;
@@ -1133,7 +1199,7 @@
       `<div class="sd-comm-folds"></div>`;
     const $status = host.querySelector(".sd-comm-status");
     const $folds = host.querySelector(".sd-comm-folds");
-    const opened = { chapter: false, book: false, whole: false };
+    const opened = { book: false, whole: false, cited: false, other: false };
     const fold = (key, title, list) => {
       const el = document.createElement("details");
       el.className = "sd-panel-fold sd-comm-fold";
@@ -1142,14 +1208,11 @@
       el.innerHTML = `<summary><span>${esc(title)}</span> <span class="sd-comm-fold-n">(${fmt(list.length)})</span></summary><ol class="sd-sources sd-panel-commentaries"></ol>` +
         `<button type="button" class="sd-commentary-more"${list.length <= initial ? " hidden" : ""}>Show all ${fmt(list.length)}</button>`;
       const $ol = el.querySelector("ol");
-      list.forEach((e, index) => {
-        const item = commentaryItem(e, ctx);
-        if (index >= initial) item.hidden = true;
-        $ol.appendChild(item);
-      });
+      commentaryRows($ol, list, ctx, initial);
       const $more = el.querySelector(".sd-commentary-more");
+      $more.hidden = !$ol.querySelector(":scope > .sd-commentary[hidden]");
       $more.addEventListener("click", () => {
-        $ol.querySelectorAll(".sd-commentary[hidden]").forEach((item) => { item.hidden = false; });
+        $ol.querySelectorAll(":scope > [hidden]").forEach((item) => { item.hidden = false; });
         $more.hidden = true;
       });
       el.addEventListener("toggle", () => {
@@ -1178,9 +1241,9 @@
             ? `${plural(d.matched, "commentary", "commentaries")} of ${fmt(d.total)} match.`
             : `${plural(d.total, "commentary", "commentaries")} on ${refLabel(ctx.book, ctx.c)}. Open a list, then Preview to read one here.`)
           : (d.total ? "No commentaries match these filters." : "No commentaries are catalogued for this book yet.");
-        const g = commentaryGroups(items, ctx.book), names = commentaryTitles(ctx.book, ctx.c, g);
+        const g = commentaryGroups(items, ctx.book, d.cited), names = commentaryTitles(ctx.book, ctx.c, g);
         $folds.innerHTML = "";
-        ["chapter", "book", "whole", "other"].forEach((k) => { if (g[k].length) $folds.appendChild(fold(k, names[k], g[k])); });
+        ["book", "whole", "cited", "other"].forEach((k) => { if (g[k].length) $folds.appendChild(fold(k, names[k], g[k])); });
       }).catch(() => {
         if (my !== run || !$folds.isConnected) return;
         $status.innerHTML = `Commentaries did not load. <button type="button" class="sd-clear" data-sd-retry>Try again</button>`;
@@ -1249,7 +1312,7 @@
   }
 
   window.MOScriptureDev = {
-    commentaryStrip, commentaryFolds, commentaryItem, commentaryGroups, commentaryTitles, byCentury, loadCatalogue, loadAuthorYears, loadSeries, cleanChapter,
+    commentaryStrip, commentaryFolds, commentaryItem, commentaryRows, commentaryGroups, commentaryTitles, byCentury, loadCatalogue, loadAuthorYears, loadSeries, cleanChapter,
     TRANSLATIONS, BOOKS, BOOK_BY_SLUG, esc, fmt, plural,
     CANON, APOCRYPHA, SECTIONS, chainOf, APOCRYPHA_TEXT, textName, textShort,
     parseRef, legacyRef, bookFrom, refKey, refLabel, readerHref, deskHref, sourceHref,

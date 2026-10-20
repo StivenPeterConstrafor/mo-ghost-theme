@@ -101,11 +101,11 @@
      * each"). */
     `<section class="sd-desk-sec" aria-labelledby="sd-h-comm">` +
       `<h2 class="sd-h2" id="sd-h-comm">Commentaries</h2>` +
-      `<p class="sd-section-intro">First the commentaries with their own note on this verse; then every commentary on the chapter, on the book and on the whole Bible. Preview any of them without leaving the desk.</p>` +
+      `<p class="sd-section-intro">First the commentaries with their own note on this verse; then the commentaries on the book by tradition, the commentaries on the whole Bible, and the commentaries on other books that cite this chapter. Preview any of them without leaving the desk.</p>` +
       `<div data-sd-verse-comm></div>` +
-      `<div class="sd-collection-index" data-sd-commentary-index>${["chapter", "book", "whole", "other"].map((k) =>
+      `<div class="sd-collection-index" data-sd-commentary-index>${["book", "whole", "cited", "other"].map((k) =>
         `<button type="button" class="sd-index-card" data-sd-commentary-tab="${k}" aria-expanded="false"><span>${esc(COMM_NAMES[k])}</span><small data-sd-comm-n="${k}">Loading…</small></button>`).join("")}</div>${ 
-      ["chapter", "book", "whole", "other"].map((k) =>
+      ["book", "whole", "cited", "other"].map((k) =>
         `<section class="sd-expand-panel sd-commentary-panel" data-sd-commentary-panel="${k}" hidden><header><div><h3>${esc(COMM_NAMES[k])}</h3><p data-sd-comm-meta="${k}"></p></div><button type="button" class="sd-panel-close" data-sd-commentary-close aria-label="Close commentary collection">×</button></header><div data-sd-comm-body="${k}"><p class="sd-muted" role="status">Loading commentaries…</p></div></section>`).join("") 
     }</section>` +
 
@@ -412,7 +412,7 @@
   const commentaryList = (host, items) => {
     const $ol = document.createElement("ol");
     $ol.className = "sd-sources sd-panel-commentaries";
-    items.forEach((e) => $ol.appendChild(S.commentaryItem(e, ctx)));
+    S.commentaryRows($ol, items, ctx);
     host.replaceChildren($ol);
   };
   const $commentaryIndex = $root.querySelector("[data-sd-commentary-index]");
@@ -433,12 +433,13 @@
     button.addEventListener("click", () => setCommentaryPanel(""));
   });
   S.fetchCommentaries(book, c, S.emptyFilters()).then((d) => {
-    const g = S.commentaryGroups(d && d.items, book), names = S.commentaryTitles(book, c, g);
-    const none = { chapter: `No work on ${S.refLabel(book, c)} alone is catalogued yet.`, book: `No commentary on ${book.name} is catalogued yet.`, whole: `No whole-Bible commentary is catalogued for ${book.name} yet.` };
+    const g = S.commentaryGroups(d && d.items, book, d && d.cited), names = S.commentaryTitles(book, c, g);
+    const none = { book: `No commentary on ${book.name} is catalogued yet.`, whole: `No whole-Bible commentary is catalogued for ${book.name} yet.`,
+      cited: `No commentary on another book cites ${S.refLabel(book, c)} yet.` };
     // the whole list's name says whether a Testament's sets are in it; a book with no other works shows no fourth card
     $root.querySelectorAll('[data-sd-commentary-tab="whole"] > span, [data-sd-commentary-panel="whole"] h3').forEach(($t) => { $t.textContent = names.whole; });
     $root.querySelectorAll('[data-sd-commentary-tab="other"], [data-sd-commentary-panel="other"]').forEach(($o) => { if (!g.other.length) $o.remove(); });
-    ["chapter", "book", "whole", "other"].filter((k) => k !== "other" || g.other.length).forEach((k) => {
+    ["book", "whole", "cited", "other"].filter((k) => k !== "other" || g.other.length).forEach((k) => {
       const $body = $root.querySelector(`[data-sd-comm-body="${k}"]`);
       if (g[k].length) commentaryList($body, g[k]); else $body.innerHTML = `<p class="sd-muted">${esc(none[k])}</p>`;
       $root.querySelector(`[data-sd-comm-n="${k}"]`).textContent = plural(g[k].length, "commentary", "commentaries");
