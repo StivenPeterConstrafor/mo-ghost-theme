@@ -31,15 +31,15 @@ function draw(d){
   let e='';
   for(const r of d.relations){
     const a=r.from.n?at.get(r.from.n):null,b=r.to.n?at.get(r.to.n):null;
-    if((a&&a.un)||(b&&b.un))continue;   // an undated author has no place on the time axis: no line to the undated band
+    if((a&&a.un)||(b&&b.un))continue; // an undated author has no place on the time axis: no line to the undated band
     let x1,y1_,x2,y2;
     if(a){x1=a.x;y1_=a.y}else if(r.from.position){const k=P.findIndex(p=>p.id===r.from.position);if(k<0)continue;x1=posX(k);y1_=T-6}else continue;
     if(b){x2=b.x;y2=b.y}else if(r.to.position){const k=P.findIndex(p=>p.id===r.to.position);if(k<0)continue;x2=posX(k);y2=T-6}else continue;
     const mx=(x1+x2)/2,bend=Math.min(60,Math.abs(x2-x1)*.25);
-    e+=`<path class="edge ${r.kind}${r.recorded?' recorded':''}" data-kind="${r.kind}" data-a="${r.from.n||''}" data-b="${r.to.n||''}" d="M${x1.toFixed(1)},${y1_.toFixed(1)} C${(mx).toFixed(1)},${(y1_-bend).toFixed(1)} ${(mx).toFixed(1)},${(y2-bend).toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}"><title>${esc((r.from.author||r.from.position)+' '+r.kind+' '+(r.to.author||r.to.position)+(r.note?': '+r.note:''))}</title></path>`;
+    e+=`<path class="edge ${r.kind}${r.recorded?' recorded':''}" data-kind="${r.kind}" data-a="${r.from.n||''}" data-b="${r.to.n||''}" d="M${x1.toFixed(1)},${y1_.toFixed(1)} C${(mx).toFixed(1)},${(y1_-bend).toFixed(1)} ${(mx).toFixed(1)},${(y2-bend).toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}"><title>${esc(`${r.from.author||r.from.position} ${r.kind} ${r.to.author||r.to.position}${r.note?`: ${r.note}`:''}`)}</title></path>`;
   }
   let dots='';
-  for(const [n,o] of at){const h=o.h;dots+=`<a class="dot" data-n="${n}" data-trad="${esc(h.tradition||'')}" tabindex="0" role="button" aria-label="${esc(h.author)}, ${esc(h.tradition||'')}, ${esc(h.dates||h.y||'undated')}: ${esc(h.answer)}"><circle cx="${o.x.toFixed(1)}" cy="${o.y.toFixed(1)}" r="5" fill="${col(h.tradition)}"/></a>`;}
+  for(const [n,o] of at){const {h} = o;dots+=`<a class="dot" data-n="${n}" data-trad="${esc(h.tradition||'')}" tabindex="0" role="button" aria-label="${esc(h.author)}, ${esc(h.tradition||'')}, ${esc(h.dates||h.y||'undated')}: ${esc(h.answer)}"><circle cx="${o.x.toFixed(1)}" cy="${o.y.toFixed(1)}" r="5" fill="${col(h.tradition)}"/></a>`;}
   const heads=`<div class="heads" style="grid-template-columns:repeat(${P.length},1fr)">${P.map(p=>`<div>${esc(p.label)}<small>${p.holders.length} ${p.holders.length===1?'author':'authors'}${p.first?` · from ${esc(p.first.author)}`:''}</small></div>`).join('')}</div>`;
   return `${heads}<svg class="map" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(d.q)}: ${P.length} positions, ${all.length} authors placed by century">${g}${e}${dots}</svg><div class="tip" id="tip" hidden></div>`;
 }
@@ -55,7 +55,7 @@ function tip(n,anchor){
   t.hidden=false;
   const box=$('.diagram').getBoundingClientRect(),r=anchor.getBoundingClientRect();
   let x=r.left-box.left+12,y=r.top-box.top+12;if(x+t.offsetWidth>box.width-8)x=Math.max(8,r.left-box.left-t.offsetWidth-6);if(y+t.offsetHeight>box.height-4)y=Math.max(4,r.top-box.top-t.offsetHeight-6);
-  t.style.left=x+'px';t.style.top=y+'px';
+  t.style.left=`${x}px`;t.style.top=`${y}px`;
   document.querySelectorAll('.dot').forEach(x=>{x.classList.toggle('is-on',x.dataset.n===String(n));});
   const linked=new Set([String(n)]);document.querySelectorAll('svg.map .edge:not(.off)').forEach(el=>{if(el.dataset.a===String(n))linked.add(el.dataset.b);if(el.dataset.b===String(n))linked.add(el.dataset.a);});
   document.querySelectorAll('.dot').forEach(x=>x.classList.toggle('dim',!linked.has(x.dataset.n)));
@@ -73,7 +73,7 @@ function show(id,push){
       return `<section class="sec"><h3>${esc(p.label)} <span class="muted" style="font-size:.85rem">· ${p.holders.length}</span></h3>${p.summary?`<p class="sum">${esc(p.summary)}</p>`:''}${p.distinction?`<p class="dist">Turns on: ${esc(p.distinction)}</p>`:''}
         ${[...by.entries()].sort((a,b)=>b[1].length-a[1].length).map(([t,hs])=>`<h4><i style="--c:${col(t)}"></i>${esc(t)} <span class="muted">${hs.length}</span></h4><ul>${hs.sort((a,b)=>(+a.y||9999)-(+b.y||9999)).map(h=>`<li>${who(h)} <span class="ln">— ${esc(h.line)}</span>${pg(h)}</li>`).join('')}</ul>`).join('')}</section>`;}).join('');
     const tps=d.turning_points.length?`<section class="sec"><h3>Turning points</h3><ul class="tp">${d.turning_points.map(t=>`<li><b>${esc(ord(t.century))} century</b>${esc(t.what)}${t.who.length?` <span class="muted">(${t.who.map(w=>esc(w.author)).join(', ')})</span>`:''}</li>`).join('')}</ul></section>`:'';
-    const rels=d.relations.length?`<section class="sec"><h3>The lines between them</h3><ul class="rels">${d.relations.map(r=>`<li><span class="kd">${esc(r.kind)}</span>${esc(r.from.author||'the position '+(d.positions.find(p=>p.id===r.from.position)||{}).label)} → ${esc(r.to.author||'the position '+(d.positions.find(p=>p.id===r.to.position)||{}).label)}${r.note?` <span class="muted">· ${esc(r.note)}</span>`:''}</li>`).join('')}</ul></section>`:'';
+    const rels=d.relations.length?`<section class="sec"><h3>The lines between them</h3><ul class="rels">${d.relations.map(r=>`<li><span class="kd">${esc(r.kind)}</span>${esc(r.from.author||`the position ${(d.positions.find(p=>p.id===r.from.position)||{}).label}`)} → ${esc(r.to.author||`the position ${(d.positions.find(p=>p.id===r.to.position)||{}).label}`)}${r.note?` <span class="muted">· ${esc(r.note)}</span>`:''}</li>`).join('')}</ul></section>`:'';
     $('#m').innerHTML=`<h2>${esc(d.q)}</h2>
       <p class="meta">${esc(d.locus)} · ${d.n} authors · ${d.positions.length} positions · <a href="/the-faith-received/disputed-questions/#${esc(d.id)}">every answer in the atlas</a></p>
       ${d.note?`<p class="shape">${esc(d.note)}</p>`:''}${d.axes.length?`<p class="axes">Runs along: ${d.axes.map(esc).join(' · ')}</p>`:''}
