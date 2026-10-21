@@ -1,0 +1,116 @@
+{{!< default}}
+{{!-- The TFR rail, first on the page and pinned under the masthead as on the reader (Ian, 2026-09-23). --}}
+{{> "faith-received/_tfr-rail"}}
+{{#contentFor "moHead"}}
+<title>Maps of the tradition | The Faith Received | Mere Orthodoxy</title>
+<meta name="description" content="For every classic disputed question, the positions the tradition took, who holds each by tradition and century, and the lines between them." />
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
+<link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+.tfr-tool{--bg:var(--color-bg,#F0F0ED);--fg:var(--color-dark,#1C1C1A);--muted:var(--color-muted,#5A5A56);--border:var(--color-rule,#D8D8D3);--card-bg:var(--color-card,#FFFFFF);--highlight:var(--color-highlight,#E7E7E2);--accent:var(--color-accent,#8A3B2E);--grid:var(--color-rule,#E2E2DD);--font-display:var(--font-display,"EB Garamond",Georgia,serif);--font-body:var(--font-body,"Source Serif Pro",Georgia,serif);--sans:var(--font-body,"Source Serif Pro",Georgia,serif)}
+/* MAPS OF THE TRADITION (2026-10-21, owner: "conceptual diagrams, visualizations between the whole tradition"). v1/maps
+   (runs/minimax_1019/maps/qmap.py): for each classic question the positions, who holds each (by tradition, placed in time), the
+   relations between them, the axes and the turning points. The diagram is drawn here from the JSON; the lists below it carry the
+   same on a phone and for a screen reader. */
+.tfr-tool .wrap{max-width:74rem;margin:0 auto;padding:1.8rem 1.2rem 4rem}
+.tfr-tool h1{font:500 2rem/1.2 var(--font-display);margin:.2rem 0 .6rem;text-wrap:balance}
+.tfr-tool .lede{max-width:70ch;color:var(--muted);margin:0 0 1.4rem;text-wrap:pretty}
+.tfr-tool .cols{display:grid;grid-template-columns:minmax(15rem,19rem) minmax(0,1fr);gap:1.8rem;align-items:start}
+.tfr-tool .nav{position:sticky;top:.8rem;max-height:calc(100vh - 1.6rem);overflow:auto}
+.tfr-tool .find{width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:6px;background:var(--card-bg);color:var(--fg);font:1rem var(--font-body);margin:0 0 .6rem}
+.tfr-tool .find::placeholder{color:var(--muted)}
+.tfr-tool .loci{margin:0;padding:0;list-style:none;border-top:1px solid var(--border)}
+.tfr-tool .loci details{border-bottom:1px solid var(--border)}
+.tfr-tool .loci summary{cursor:pointer;padding:.55rem .2rem;font:500 1.05rem/1.3 var(--font-display);list-style:none;display:flex;justify-content:space-between;gap:.5rem}
+.tfr-tool .loci summary::-webkit-details-marker{display:none}
+.tfr-tool .loci summary small{color:var(--muted);font:.78rem/1.3 var(--sans)}
+.tfr-tool .loci ul{list-style:none;margin:0 0 .6rem;padding:0}
+.tfr-tool .loci li button{display:block;width:100%;text-align:left;padding:.4rem .3rem .4rem .8rem;border:0;background:none;color:var(--fg);font:.92rem/1.35 var(--font-body);cursor:pointer;border-radius:4px;text-wrap:pretty}
+.tfr-tool .loci li button:hover{background:var(--highlight)}
+.tfr-tool .loci li button[aria-current="true"]{background:var(--fg);color:var(--bg)}
+.tfr-tool .loci li button small{display:block;color:var(--muted);font:.75rem/1.3 var(--sans)}
+.tfr-tool .loci li button[aria-current="true"] small{color:inherit;opacity:.8}
+.tfr-tool .m h2{font:500 1.6rem/1.25 var(--font-display);margin:0 0 .3rem;text-wrap:balance}
+.tfr-tool .meta{color:var(--muted);font-size:.9rem;margin:0 0 .8rem}
+.tfr-tool .shape{max-width:72ch;margin:0 0 .4rem;text-wrap:pretty}
+.tfr-tool .axes{color:var(--muted);font-size:.92rem;margin:0 0 1rem}
+.tfr-tool .chips{display:flex;flex-wrap:wrap;gap:.35rem .4rem;margin:0 0 .9rem}
+.tfr-tool .chips button{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--border);background:var(--card-bg);color:var(--fg);padding:.25rem .65rem;border-radius:999px;font:600 .76rem/1.2 var(--sans);cursor:pointer}
+.tfr-tool .chips button[aria-pressed="false"]{opacity:.45}
+.tfr-tool .chips button i{width:.6rem;height:.6rem;border-radius:50%;background:var(--c,#999);display:inline-block}
+.tfr-tool .chips button.k i{width:1.1rem;height:0;border-top:2px solid var(--c,#999);border-radius:0}
+.tfr-tool .chips button.k.dash i{border-top-style:dashed}
+.tfr-tool .chips button.k.dot i{border-top-style:dotted}
+.tfr-tool .diagram{position:relative;border:1px solid var(--border);border-radius:8px;background:var(--card-bg);padding:.8rem .8rem 1rem;margin:0 0 1.4rem}
+.tfr-tool .heads{display:grid;gap:.6rem;padding-left:56px;margin:0 0 .4rem}
+.tfr-tool .heads div{font:500 .98rem/1.25 var(--font-display);text-wrap:balance;border-bottom:2px solid var(--border);padding:0 .2rem .35rem}
+.tfr-tool .heads div small{display:block;color:var(--muted);font:.74rem/1.3 var(--sans);margin-top:.15rem}
+.tfr-tool svg.map{display:block;width:100%;height:auto;overflow:visible}
+.tfr-tool svg.map text{font:11px var(--sans);fill:var(--muted)}
+.tfr-tool svg.map .band{fill:var(--highlight);opacity:.45}
+.tfr-tool svg.map .grid{stroke:var(--grid);stroke-width:1}
+.tfr-tool svg.map .col{stroke:var(--grid);stroke-width:1;stroke-dasharray:2 4}
+.tfr-tool svg.map .edge{fill:none;stroke-width:1.1;opacity:.55}
+.tfr-tool svg.map .edge.refutes{stroke:var(--accent)}
+.tfr-tool svg.map .edge.develops,.tfr-tool svg.map .edge.follows{stroke:var(--muted)}
+.tfr-tool svg.map .edge.distinguishes{stroke:var(--muted);stroke-dasharray:4 3}
+.tfr-tool svg.map .edge.reconciles{stroke:var(--muted);stroke-dasharray:1.5 3}
+.tfr-tool svg.map .edge.recorded{stroke-width:.8;opacity:.3}
+.tfr-tool svg.map .edge.off,.tfr-tool svg.map .dot.off{display:none}
+.tfr-tool svg.map .dot{cursor:pointer}
+.tfr-tool svg.map .dot circle{stroke:var(--card-bg);stroke-width:1.2}
+.tfr-tool svg.map .dot:hover circle,.tfr-tool svg.map .dot:focus circle,.tfr-tool svg.map .dot.is-on circle{stroke:var(--fg);stroke-width:2;r:7}
+.tfr-tool svg.map .dot:focus{outline:none}
+.tfr-tool svg.map .dot.dim{opacity:.18}
+.tfr-tool .tip{position:absolute;z-index:3;max-width:22rem;padding:.6rem .75rem;border:1px solid var(--border);border-radius:6px;background:var(--card-bg);box-shadow:0 6px 24px rgba(0,0,0,.12);font-size:.88rem;line-height:1.45;pointer-events:auto}
+.tfr-tool .tip b{font:500 1rem/1.3 var(--font-display)}
+.tfr-tool .tip .tt{color:var(--muted);font-size:.8rem}
+.tfr-tool .tip p{margin:.3rem 0 0;text-wrap:pretty}
+.tfr-tool .tip a{font-size:.82rem}
+.tfr-tool .tip button{position:absolute;top:.2rem;right:.3rem;border:0;background:none;color:var(--muted);font:1rem/1 var(--sans);cursor:pointer}
+.tfr-tool .sec h3{font:500 1.25rem/1.3 var(--font-display);margin:1.4rem 0 .2rem;padding-bottom:.25rem;border-bottom:1px solid var(--border)}
+.tfr-tool .sec .sum{margin:.3rem 0 .2rem;text-wrap:pretty}
+.tfr-tool .sec .dist{margin:0 0 .5rem;color:var(--muted);font-size:.92rem}
+.tfr-tool .sec h4{font:600 .76rem/1.4 var(--sans);color:var(--muted);margin:.7rem 0 .2rem;display:flex;align-items:center;gap:.4rem}
+.tfr-tool .sec h4 i{width:.55rem;height:.55rem;border-radius:50%;display:inline-block;background:var(--c,#999)}
+.tfr-tool .sec ul{list-style:none;margin:0;padding:0}
+.tfr-tool .sec li{margin:0 0 .35rem;font-size:.95rem;text-wrap:pretty}
+.tfr-tool .sec li .who{font-weight:600}
+.tfr-tool .sec li .yr{color:var(--muted);font-size:.85rem}
+.tfr-tool .sec li .ln{color:var(--muted)}
+.tfr-tool .pg{font-size:.85rem;white-space:nowrap}
+.tfr-tool .tp li{margin:0 0 .5rem}
+.tfr-tool .tp li b{font:500 1rem/1.3 var(--font-display);margin-right:.4rem}
+.tfr-tool .rels li{font-size:.92rem;margin:0 0 .25rem}
+.tfr-tool .rels .kd{display:inline-block;min-width:6.5rem;color:var(--muted);font:600 .74rem/1.4 var(--sans)}
+.tfr-tool .next{display:flex;justify-content:space-between;gap:1rem;margin:1.6rem 0 0;padding-top:.8rem;border-top:1px solid var(--border);font-size:.92rem}
+.tfr-tool .next button{border:0;background:none;color:var(--fg);font:inherit;cursor:pointer;padding:.2rem 0;text-decoration:underline;text-underline-offset:3px;text-align:left}
+.tfr-tool .note{max-width:72ch;margin:2rem 0 0;font-size:.85rem;color:var(--muted);text-wrap:pretty}
+.tfr-tool .muted{color:var(--muted)}
+@media (max-width:860px){.tfr-tool .cols{grid-template-columns:1fr}.tfr-tool .nav{position:static;max-height:none}.tfr-tool .heads{padding-left:40px;gap:.35rem}.tfr-tool .heads div{font-size:.84rem}}
+@media (prefers-reduced-motion:no-preference){.tfr-tool svg.map .dot circle{transition:r .12s ease-out}}
+</style>
+{{/contentFor}}
+{{!-- /the-faith-received/maps/ — Maps of the tradition, as The Faith Received has them (tools/prdl_reader_prototype/maps.html, 2026-10-21): for each
+     classic question the positions the tradition took, every author placed by century and tradition under his position, the lines between
+     them, the axes and the turning points (v1/maps on the library worker). The hero is the theme's; the body and faith-maps.js the library's. --}}
+<section class="bhero bhero--tool">
+  <div class="bhero-inner container">
+    <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Maps of the tradition</p>
+    <h1 class="bhero-title">Maps of the tradition</h1>
+    <p class="bhero-lede">For each classic disputed question: the positions the tradition took, named in its own terms; who holds each, placed by tradition and century; the lines between them, where one answers, develops or distinguishes another; the axes the disagreement runs along, and its turning points. Every author stands on his pages.</p>
+  </div>
+</section>
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+<main class="tfr-tool"><div class="wrap">
+    <p class="lede" hidden>For each classic disputed question: the positions the tradition took, named in its own terms; who holds each, placed by tradition and century; the lines between them, where one answers, develops or distinguishes another; the axes the disagreement runs along, and its turning points. Every author stands on his pages.</p>
+  <div class="cols">
+    <nav class="nav" aria-label="The questions">
+      <input class="find" id="find" type="search" placeholder="Find a question" aria-label="Find a question" autocomplete="off">
+      <ol class="loci" id="loci"><li class="muted">Loading…</li></ol>
+    </nav>
+    <article class="m" id="m" aria-live="polite"></article>
+  </div>
+  <p class="note" id="note"></p>
+</div></main>
+<script src="{{asset "js/faith-maps.js"}}&amp;frv=25835fb1d7e7ffa1"></script>

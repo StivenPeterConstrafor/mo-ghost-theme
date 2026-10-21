@@ -470,6 +470,10 @@ routes:
   # them (Rada: Thomas and Scotus; Capreolus: Thomas and his critics; Turretin and his opponents), each side in his own words.
   /the-faith-received/controversies/:
     template: custom-faith-controversies
+  # Maps of the tradition (2026-10-21): for each classic question the positions, every author placed by century and tradition,
+  # the lines between them, the axes and the turning points.
+  /the-faith-received/maps/:
+    template: custom-faith-maps
   # The atlas was at /web/ until 2026-09-21. Ian renamed it to match what
   # the rail calls it. The old address stays, pointing at the same
   # template, so links already shared keep working.
