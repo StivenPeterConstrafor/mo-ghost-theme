@@ -350,3 +350,12 @@ html.cp-site-mo .cp-tabs .cp-desk { flex: none; min-height: 36px; margin: 0 0 6p
   html.cp-site-mo .cp-tabs button { min-height: 44px; padding: 4px 0; font-size: 14px; }
   html.cp-site-mo .cp-tabs .cp-desk { min-height: 44px; margin: 0 0 0 8px; padding: 4px 9px; font-size: 13.5px; }
 }
+/* the most cited verses of the chapter, one line of buttons under the reception (scripture-verse-rail, 2026-10-21) */
+.cp-rec-most { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; margin: 4px 0 18px; padding-top: 12px; border-top: 1px solid var(--cp-rule); font-size: 0.82rem; }
+.cp-rec-most > span { color: var(--cp-muted); margin-right: 2px; }
+.cp-rec-most button { display: inline-flex; align-items: baseline; gap: 5px; padding: 4px 8px; background: none; border: 1px solid var(--cp-rule);
+  font: inherit; color: var(--cp-ink); cursor: pointer; font-variant-numeric: tabular-nums; }
+.cp-rec-most button small { color: var(--cp-muted); font-size: 0.74rem; }
+.cp-rec-most button[aria-current="true"] { border-color: var(--cp-ink); }
+.cp-rec-most button:hover { background: var(--cp-ground); }
+.cp-rec-most button:focus-visible, .cp-more:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 2px; }

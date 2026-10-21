@@ -1,0 +1,107 @@
+/* THE VERSE RAIL, ORGANIZED (2026-10-21): the picker's groups and find box, the Reception rows, the Citations authors. Extends the
+   pane's own tokens (--cp-*, commentary-pane.css); on Mere Orthodoxy the html.cp-site-mo overrides there apply here too.
+   Scale: labels 0.78rem, meta 0.84rem, rows 0.95rem, names 1rem, headings 1.08rem; one spacing step of 4px (8, 12, 16, 24). */
+
+/* ── the picker ── */
+.cp-list .vr-find { position: sticky; top: 0; z-index: 1; padding: 8px 10px 6px; background: var(--cp-paper); border-bottom: 1px solid var(--cp-rule); }
+.cp-list .vr-find input { width: 100%; box-sizing: border-box; padding: 7px 10px; border: 1px solid var(--cp-rule); border-radius: 4px; background: var(--cp-ground); color: var(--cp-ink); font: inherit; font-size: 0.9rem; }
+.cp-list .vr-find input::placeholder { color: var(--cp-muted); opacity: 1; }
+.cp-list .vr-find input:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 1px; }
+.cp-list .vr-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 14px 14px 4px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.01em; color: var(--cp-ink); border-top: 1px solid var(--cp-ground); }
+.cp-list .vr-h:first-of-type, .cp-list .vr-find + .vr-h { border-top: 0; }
+.cp-list .vr-h small { font-weight: 400; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
+.cp-list .vr-trad { padding: 8px 14px 2px; font-size: 0.72rem; color: var(--cp-faint); }
+.cp-list li[data-slug] { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "a n" "t n"; gap: 0 10px; padding: 7px 14px; cursor: pointer; }
+.cp-list li[data-slug] .vr-a { grid-area: a; font-size: 0.98rem; line-height: 1.3; }
+.cp-list li[data-slug] .vr-t { grid-area: t; font-size: 0.8rem; color: var(--cp-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cp-list li[data-slug] .vr-n { grid-area: n; align-self: center; font-size: 0.76rem; color: var(--cp-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cp-list li.vr-sub { grid-template-areas: "t n"; padding-top: 2px; padding-left: 26px; }
+.cp-list li.vr-sub .vr-t { grid-area: t; }
+.cp-list li.vr-cited { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "a n b" "t n b"; }
+.cp-list .vr-vols { grid-area: b; align-self: center; margin-left: 4px; padding: 2px 7px; border: 1px solid var(--cp-rule); border-radius: 4px; background: none; font: inherit; font-size: 0.74rem; color: var(--cp-muted); cursor: pointer; }
+.cp-list .vr-vols[aria-expanded="true"] { background: var(--cp-ink); color: var(--cp-paper); border-color: var(--cp-ink); }
+.cp-list .vr-h-fold { padding: 10px 6px 0; }
+.cp-list .vr-fold { display: flex; width: 100%; align-items: baseline; justify-content: space-between; gap: 8px; padding: 6px 8px; border: 0; background: none; font: inherit; font-size: 0.78rem; font-weight: 600; color: var(--cp-ink); text-align: left; cursor: pointer; }
+.cp-list .vr-fold::before { content: "\203A"; display: inline-block; width: 0.9em; margin-right: 2px; color: var(--cp-muted); transition: transform 0.18s ease-out; }
+.cp-list .vr-fold[aria-expanded="true"]::before { transform: rotate(90deg); }
+.cp-list .vr-fold small { font-weight: 400; color: var(--cp-muted); margin-left: auto; }
+.cp-list .vr-folded ul { margin: 0; padding: 0; list-style: none; }
+.cp-list .vr-fold:focus-visible, .cp-list .vr-vols:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 2px; }
+
+/* ── reception ── */
+.vr-rec-head h3 { margin: 0 0 2px; font-family: var(--cp-display, var(--font-display, var(--display, 'EB Garamond', Georgia, serif))); font-weight: 500; font-size: 1.5rem; line-height: 1.15; }
+.vr-count { margin: 0 0 16px; font-size: 0.9rem; color: var(--cp-muted); }
+.vr-count b { font-weight: 600; color: var(--cp-ink); font-variant-numeric: tabular-nums; }
+.vr-sec { margin: 0 0 24px; }
+.vr-sec h4 { display: flex; align-items: baseline; gap: 8px; margin: 0 0 6px; padding-bottom: 6px; border-bottom: 1px solid var(--cp-rule); font-size: 0.82rem; font-weight: 600; letter-spacing: 0.01em; }
+.vr-sec h4 small { font-weight: 400; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
+.vr-rows { margin: 0; padding: 0; list-style: none; }
+.vr-rows .vr-trad { padding: 10px 0 2px; font-size: 0.72rem; color: var(--cp-faint); }
+.vr-rows .vr-row { padding: 7px 0 8px; border-top: 1px solid var(--cp-ground); }
+.vr-rows .vr-trad + .vr-row { border-top: 0; }
+.vr-rows .vr-row:first-child { border-top: 0; }
+.vr-row .vr-a { font-size: 1rem; color: var(--cp-ink); }
+.vr-row a.vr-a { text-decoration: none; }
+.vr-row a.vr-a:hover, .vr-row a.vr-a:focus-visible, .vr-open:hover .vr-a, .vr-open:focus-visible .vr-a { text-decoration: underline; text-underline-offset: 3px; }
+.vr-row .vr-y { margin-left: 6px; font-size: 0.8rem; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
+.vr-row .vr-what { display: block; font-size: 0.84rem; color: var(--cp-muted); }
+.vr-row .vr-what a { color: var(--cp-muted); font-variant-numeric: tabular-nums; }
+.vr-row .vr-what cite { font-style: italic; }
+.vr-rows .vr-row:has(.vr-open) { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 12px; }
+.vr-open { display: grid; min-width: 0; padding: 0; background: none; border: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.vr-open .vr-t { font-size: 0.8rem; color: var(--cp-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vr-open:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 2px; }
+.vr-pg { font-size: 0.8rem; color: var(--cp-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.vr-line { margin: 0; }
+.vr-gbtn { margin-left: 8px; padding: 0 6px; border: 1px solid var(--cp-rule); border-radius: 4px; background: none; font: inherit; font-size: 0.72rem; line-height: 1.5; color: var(--cp-muted); vertical-align: 1px; cursor: pointer; }
+.vr-gbtn[aria-expanded="true"], .vr-gbtn:hover { color: var(--cp-ink); border-color: var(--cp-muted); }
+.vr-gbtn:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 2px; }
+.vr-g { margin: 4px 0 0; max-width: 62ch; font-size: 0.84rem; font-style: italic; color: var(--cp-muted); }
+.vr-eras { margin: 0; padding: 0; list-style: none; }
+.vr-era { margin: 0 0 18px; }
+.vr-era h5 { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 4px; font-family: var(--cp-display, var(--font-display, var(--display, 'EB Garamond', Georgia, serif))); font-weight: 500; font-size: 1.08rem; }
+.vr-era h5 small { font-family: inherit; font-size: 0.76rem; color: var(--cp-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.vr-era-foot { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 6px 0 0; }
+.vr-more, .vr-all { padding: 4px 0; background: none; border: 0; font: inherit; font-size: 0.84rem; color: var(--cp-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.vr-all { color: var(--cp-muted); }
+.vr-more:focus-visible, .vr-all:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 2px; }
+.vr-foot { margin: 8px 0 0; font-size: 0.76rem; color: var(--cp-faint); }
+
+/* ── citations by author ── */
+.vr-cit .vr-count { margin-bottom: 10px; }
+.vr-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+.vr-chips + .vr-chips { margin-bottom: 14px; }
+.vr-chips button { display: inline-flex; align-items: baseline; gap: 5px; min-height: 30px; padding: 3px 10px; border: 1px solid var(--cp-rule); border-radius: 4px; background: none; font: inherit; font-size: 0.8rem; color: var(--cp-ink); cursor: pointer; }
+.vr-chips button small { font-size: 0.72rem; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
+.vr-chips button[aria-pressed="true"] { background: var(--cp-ink); border-color: var(--cp-ink); color: var(--cp-paper); }
+.vr-chips button[aria-pressed="true"] small { color: inherit; opacity: 0.8; }
+.vr-chips button:hover:not([aria-pressed="true"]) { background: var(--cp-ground); }
+.vr-chips button:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 2px; }
+.vr-authors .vr-au { padding: 0; }
+.vr-aubtn { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "a n" "m n"; gap: 0 12px; width: 100%; min-height: 44px; padding: 8px 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.vr-aubtn .vr-a { grid-area: a; }
+.vr-aubtn .vr-meta { grid-area: m; font-size: 0.8rem; color: var(--cp-muted); }
+.vr-aubtn .vr-n { grid-area: n; align-self: center; font-size: 0.78rem; color: var(--cp-muted); font-variant-numeric: tabular-nums; text-align: right; }
+.vr-aubtn:hover .vr-a, .vr-aubtn:focus-visible .vr-a { text-decoration: underline; text-underline-offset: 3px; }
+.vr-aubtn:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: -2px; }
+.vr-works { margin: 0 0 10px; padding: 0 0 0 12px; list-style: none; border-left: 1px solid var(--cp-rule); }
+.vr-work { padding: 4px 0; font-size: 0.86rem; }
+.vr-work cite { font-style: italic; }
+.vr-pp { margin-left: 6px; font-variant-numeric: tabular-nums; }
+.vr-pp a { display: inline-block; min-width: 28px; padding: 1px 4px; color: var(--cp-ink); text-align: center; text-decoration: none; border-bottom: 1px solid var(--cp-rule); }
+.vr-pp a:hover, .vr-pp a:focus-visible { border-bottom-color: var(--cp-ink); }
+.vr-k { color: var(--cp-muted); font-size: 0.78rem; }
+.vr-gl { margin: 4px 0 2px; padding: 0; list-style: none; }
+.vr-gl li { margin: 2px 0; font-size: 0.82rem; font-style: italic; color: var(--cp-muted); max-width: 62ch; }
+.vr-gl a { font-style: normal; color: var(--cp-muted); font-variant-numeric: tabular-nums; }
+.vr-empty { color: var(--cp-muted); font-style: italic; }
+.vr-period { margin: -4px 0 10px; font-size: 0.84rem; color: var(--cp-muted); }
+.vr-period button { padding: 0; border: 0; background: none; font: inherit; color: var(--cp-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+@media (max-width: 900px) {
+  .cp-list { width: min(520px, 94vw); }
+  .vr-era h5 { font-size: 1rem; }
+  .vr-aubtn { grid-template-columns: 1fr; grid-template-areas: "a" "m" "n"; }
+  .vr-aubtn .vr-n { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) { .cp-list .vr-fold::before { transition: none; } }

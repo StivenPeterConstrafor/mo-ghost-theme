@@ -346,50 +346,27 @@
 
   function paintRec() {
     const box = pane && pane.querySelector('.cp-rec'), w = where(); if (!box || !w) return;
-    const {rec} = S, n = S.verse || 1, rv = rec && rec.verses && rec.verses[String(n)];
+    const rec = S.rec, n = S.verse || 1, rv = rec && rec.verses && rec.verses[String(n)];
     const name = w.name || w.book.replace(/-/g, ' ');
     const all = Object.entries((rec && rec.verses) || {}).map(([k, x]) => [+k, x.works || 0]);
     const most = all.slice().sort((a, b) => b[1] - a[1] || a[0] - b[0]).slice(0, 6);
-    const top = Math.max(1, ...most.map(([, x]) => x));
-    // the most cited verses of the chapter: the rows the Citations view uses, a verse and a meter and a count
-    const mostHTML = most.length ? `<h3 class="cp-h3">Most cited verses</h3><ol class="cp-top-list" aria-label="Most cited verses of ${esc(name)} ${esc(w.ch)}">${most.map(([k, x]) =>
-      `<li><button type="button" class="cp-verse-row" data-cp-verse="${k}"${k === n ? ' aria-current="true"' : ''}><span class="cp-vr-ref">${esc(w.ch)}:${k}</span>`
-      + `<span class="cp-meter" aria-hidden="true"><i style="width:${Math.max(3, Math.round((x / top) * 100))}%"></i></span><span class="cp-vr-n">${fmt(x)}</span></button></li>`).join('')}</ol>` : '';
+    const mostHTML = most.length ? `<nav class="cp-rec-most" aria-label="Most cited verses of ${esc(name)} ${esc(w.ch)}"><span>Most cited</span>${most.map(([k, x]) =>
+      `<button type="button" data-cp-verse="${k}"${k === n ? ' aria-current="true"' : ''}>${esc(w.ch)}:${k}<small>${fmt(x)}</small></button>`).join('')}</nav>` : '';
     if (!rec) { box.innerHTML = '<p class="cp-empty">The reception history of this chapter is not yet available.</p>'; return; }
-    if (!rv) { box.innerHTML = `<p class="cp-empty">No page in the library cites this verse yet.</p>${mostHTML}`; return; }
-    const strip = rv.strip || [];
+    if (!rv) { box.innerHTML = `${mostHTML}<header class="vr-rec-head"><h3>${esc(name)} ${esc(w.ch)}:${n}</h3><p class="vr-count">No page in the library cites this verse yet.</p></header>`; return; }
+    /* RECEPTION, ORGANIZED (10-21, scripture-verse-rail.js): one line of counts, the century strip, the commentaries on the verse
+     * (each author once, keys first, then by tradition), each period's witnesses by standing with the gist behind the row and the
+     * rest of the period one click away in Citations; one methodology line for the view. */
+    const VR = window.FRVerseRail, keys = curated(w.book), keySet = new Set(keys.map((c) => c.slug));
     const ns = Object.entries(rv.notes || {}).map(([slug, p]) => {
       const c = S.list.find((x) => x.slug === slug) || S.meta[slug] || {};
-      return { slug, p, a: c.a || '', t: c.t || slug };
-    }).sort((x, y) => rankOf(x.slug, x.a) - rankOf(y.slug, y.a) || x.a.localeCompare(y.a));
-    const tiles = `<div class="cp-stats"><div class="cp-stat"><b>${fmt(rv.works)}</b><span>${rv.works === 1 ? 'work cites it' : 'works cite it'}</span></div>`
-      + `<div class="cp-stat"><b>${fmt(ns.length)}</b><span>${ns.length === 1 ? 'commentary on it' : 'commentaries on it'}</span></div></div>`;
-    const span = strip.length ? `<p class="cp-lede">From the ${ord(strip[0][0])} century to the ${ord(strip[strip.length - 1][0])}.</p>` : '';
-    let bars = '';
-    if (strip.length >= 2) {
-      const max = Math.max(...strip.map(([, k]) => k)), by = new Map(strip), cols = [];
-      for (let c = strip[0][0]; c <= strip[strip.length - 1][0]; c += 1) {
-        const k = by.get(c) || 0, tip = `${ord(c)} century: ${fmt(k)} ${k === 1 ? 'work' : 'works'}`;
-        cols.push(`<li${k ? '' : ' class="is-zero"'} style="--k:${k ? Math.max(0.08, Math.sqrt(k / max)).toFixed(3) : 0}" title="${tip}"><span class="cp-bar"></span><small aria-hidden="true">${c}</small><span class="cp-sr">${tip}</span></li>`);
-      }
-      bars = `<figure class="cp-rec-strip"><ol>${cols.join('')}</ol><figcaption>Works citing it, by century</figcaption></figure>${method("<p>Every page in the library that cites the verse, dated by its author's life.</p>")}`;
-    }
-    const notes = ns.length ? `<h3 class="cp-h3">Commentaries on this verse</h3><ol class="cp-rows">${ns.map((c) =>
-      `<li class="cp-row-li"><button type="button" class="cp-row" data-cp-open="${esc(c.slug)}" data-cp-p="${esc(c.p)}" title="Read beside the text"><span class="cp-row-t">${esc(c.t)}</span><span class="cp-row-m">${esc(c.a)}</span></button>`
-      + `<a class="cp-row-pg" href="${esc(SITE.read(c.slug, c.p))}" aria-label="${esc(`${c.a || c.t}, page ${c.p}, in the reader`)}">p. ${esc(c.p)}</a></li>`).join('')}</ol>` : '';
-    const SHOW = 4, byYear = (a, b) => (a.y || 9999) - (b.y || 9999);
-    const wit = (x, hid) => `<li class="cp-row-li cp-wit"${hid ? ' hidden' : ''}><a class="cp-row-t" href="${esc(SITE.read(x.w, x.p))}">${esc(x.t || x.w)}</a>`
-      + `<span class="cp-row-m">${[x.a || x.w, x.d ? x.d : (x.y ? `fl. c. ${x.y}` : ''), `p. ${x.p}`, VERB[x.how] || 'cites it'].filter(Boolean).map(esc).join(dot)}</span>`
-      + `${x.g && !(x.commentary && x.how === 'exegesis') ? `<span class="cp-w-g">${esc(gist(x.g))}</span>` : ''}</li>`;
-    const eras = (rv.eras || []).map((e) => {
-      const [label, years] = ERA[e.id] || [e.label, ''];
-      const xs = (e.top || []).slice().sort(byYear);
-      return `<li class="cp-era"><h4 class="cp-era-h">${esc(label)} <small>${years ? `${esc(years)}${dot}` : ''}${fmt(e.works)} ${e.works === 1 ? 'work' : 'works'}</small></h4>`
-        + `<ul class="cp-rows">${xs.map((x, j) => wit(x, j >= SHOW)).join('')}</ul>${xs.length > SHOW ? `<button type="button" class="cp-more">Show ${fmt(xs.length - SHOW)} more</button>` : ''}`
-        + `${e.more ? `<p class="cp-era-more">${fmt(e.more)} more ${e.more === 1 ? 'author' : 'authors'} in this period (Citations lists every use).</p>` : ''}</li>`;
-    }).join('');
-    box.innerHTML = `${tiles}${span}${bars}${notes}`
-      + `${eras ? `<h3 class="cp-h3">Through the centuries</h3><ol class="cp-eras">${eras}</ol>` : ''}${mostHTML}`;
+      return { slug, p, a: c.a || '', t: c.t || slug, sh: c.sh || '' };
+    });
+    const cfg = { name, ch: w.ch, v: n, read: SITE.read, rankOf, tradOf, keySet, keyOrder: keys.map((c) => c.slug), era: ERA, show: 6 };
+    box.innerHTML = VR.reception.head(rv, ns, cfg) + VR.reception.strip(rv.strip || []) + VR.reception.notes(ns, cfg) + VR.reception.eras(rv.eras || [], cfg)
+      + mostHTML + VR.reception.foot('Every page in the library that cites the verse, dated by its author\'s life; the gists are machine-written from the pages.');
+    VR.wire(box, { era: (id) => { setTab('s'); window.dispatchEvent(new CustomEvent('fr-verse-citations', { detail: { era: id, verse: n } })); } });
+    box.scrollTop = 0;
   }
   // ── creeds, confessions and catechisms that cite the verse ────────────────────────────────────────────────────────────────
   // Built by scripts/build-confession-proofs.mjs from the documents' own text, one file per chapter (confession-proofs/<book>/<ch>.json).
@@ -573,59 +550,25 @@
     const list = pane.querySelector('.cp-list'), w = where() || {};
     const bookName = w.book === 'psalms' ? 'the Psalms' : (w.name || 'this book');
     const keys = curated(w.book), keySet = new Set(keys.map((c) => c.slug));
-    /* ONE ROW PER AUTHOR (owner 10-19 on Psalm 51: "how are there 10 luther vols this is type of organization im asking"): the
-     * author's key work, else his first-ranked; his other works on the chapter beneath it, each by the piece it is. The curated key
-     * commentaries lead, in the order they wrote; the rest by tradition, each by weight; then the whole Bible; then the commentaries
-     * on other books that cite the chapter (owner 10-20), one row per author however many of his volumes cite it (Salmerón). */
-    /* ONE ROW PER AUTHOR ACROSS ALL THE LISTS (review of #175: Luther's volumes on Psalm 51 were in his card and again as a second row
-     * under the cited list). An author is in the first list he earns, the book's, else the whole Bible's, else the cited; the rest of
-     * his volumes are beneath his row. A guessed attribution ("Uncertain author (Bede?)") is under Other works, one row to a work. */
-    const listOf = (c) => (guessed(c) ? 3 : c.wb === 1 && namesOneBook(c.t) ? 0 : c.wb);
-    const byAuthor = new Map();
-    for (const c of S.list) {
-      const k = anonymous(c) ? c.slug : String(c.a || c.slug).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
-      if (!byAuthor.has(k)) byAuthor.set(k, []);
-      byAuthor.get(k).push(c);
-    }
-    const lists = [[], [], [], []];
-    for (const cs of byAuthor.values()) {
-      const dest = Math.min(...cs.map(listOf));
-      const mine = cs.filter((c) => listOf(c) === dest);
-      const main = dest === 0 ? (mine.find((c) => keySet.has(c.slug)) || mine[0]) : mine[0];
-      const score = cs.reduce((t, c) => t + (c.hit ? c.hit.n * (c.hit.how === 'allusion' ? 0.3 : 1) : 0), 0);
-      lists[dest].push({ main, more: cs.filter((c) => c !== main).sort((x, y) => listOf(x) - listOf(y)), score, alludesOnly: cs.every((c) => c.hit && c.hit.how === 'allusion') });
-    }
-    const onBook = lists[0], whole = lists[1], other = lists[3];
-    // the cited, the strongest first: those who quote or cite the chapter most; those who only allude to it last
-    const cited = lists[2].sort((x, y) => (x.alludesOnly ? 1 : 0) - (y.alludesOnly ? 1 : 0) || y.score - x.score);
-    const keyRows = onBook.filter((r) => keySet.has(r.main.slug)).sort((x, y) => when(x.main) - when(y.main) || keys.indexOf(x.main) - keys.indexOf(y.main));
-    const restRows = onBook.filter((r) => !keySet.has(r.main.slug));
-    const notes = (c) => (c.hit ? `${c.hit.how === 'allusion' ? 'alludes to' : 'cites'} ${c.hit.v.length ? `v. ${c.hit.v.slice(0, 3).join(', ')}` : 'the chapter'}, p. ${c.open}`
-      : Object.keys(c.notes).length ? `${Object.keys(c.notes).length} verse notes` : 'chapter');
-    const li = (c, sub, hid) => `<li class="cp-row-li${sub ? ' cp-row-sub' : ''}" data-slug="${esc(c.slug)}"${hid ? ' hidden' : ''}><button type="button" class="cp-row" aria-pressed="${!!(S.cur && S.cur.slug === c.slug)}">`
-      + `<span class="cp-row-t">${esc(c.t)}</span><span class="cp-row-m">${(sub ? [volShort(c.vol), notes(c)] : [authorName(c), centuryOf(c.slug), volShort(c.vol), notes(c)]).filter(Boolean).map(esc).join(dot)}</span></button></li>`;
-    const row = (r, hid) => li(r.main, false, hid) + r.more.map((c) => li(c, true, hid)).join('');
-    const h = (t) => `<li class="cp-li-h" role="presentation">${esc(t)}</li>`;
-    const SHOWN_CITED = 10; // the strongest ten; the rest after "Show all"
-    const citedRows = cited.map((r, i) => row(r, !S.allCited && i >= SHOWN_CITED)).join('')
-      + (!S.allCited && cited.length > SHOWN_CITED ? `<li class="cp-li-more" data-cp-more><button type="button" class="cp-more-btn">Show all ${cited.length}</button></li>` : '');
-    const byTrad = TRADS.map(([k, label]) => [label, restRows.filter((r) => tradOf(r.main) === k)])
-      .concat([['Other', restRows.filter((r) => !TRADS.some(([k]) => k === tradOf(r.main)))]]).filter(([, rs]) => rs.length);
-    list.innerHTML = (keyRows.length ? h(`Key commentaries on ${bookName}`) + keyRows.map((r) => row(r)).join('') : '')
-      + byTrad.map(([label, rs]) => h(keyRows.length ? `More on ${bookName}: ${label}` : `On ${bookName}: ${label}`) + rs.map((r) => row(r)).join('')).join('')
-      + (whole.length ? h('On the whole Bible') + whole.map((r) => row(r)).join('') : '')
-      + (cited.length ? h('Cited in commentaries on other books') + citedRows : '')
-      + (other.length ? h(`Other works on ${bookName}`) + other.map((r) => row(r)).join('') : '')
-      || h('No commentary on this chapter yet');
-    // The key works, one click away (owner 10-19: "connect readers to what they want and should see, which is usually looking at key
-    // bible book commentaries, and whole bible commentaries"): the book's curated keys, at most eight, the most needed, in the order
-    // their authors came; else the curated key commentators (rank.json tier 1, then tier 2), at most five; a rule; the first two sets on
-    // the whole Bible (the Glossa, the Westminster Annotations, Poole …). A chapter with neither shows its first four.
+    /* THE PICKER, ORGANIZED (10-21, scripture-verse-rail.js): four groups by what a commentary holds for the verse in view (a note on
+     * it; a note on the chapter; the whole Bible; works on other books citing the chapter, one row an author however many volumes),
+     * the curated keys first in the order their authors wrote, then by tradition; a find box. */
+    const VR = window.FRVerseRail;
+    // a commentary's note on the verse known to the reception history (its exegesis rows) counts as a note here too
+    const rn = ((S.rec && S.rec.verses && S.rec.verses[String(S.verse || 0)]) || {}).notes || {};
+    for (const c of S.list) if (rn[c.slug] != null && S.verse && !(S.verse in c.notes)) c.notes[S.verse] = rn[c.slug];
+    list.innerHTML = VR.picker(S.list, keys, S.verse || 0, { cur: S.cur, bookName, ch: w.ch, tradOf, volShort, rankOf });
+    VR.wirePicker(list);
+    const onBook = S.list.filter((c) => c.wb === 0), whole = S.list.filter((c) => c.wb === 1);
+    const firstsOf = (xs) => { const seen = new Set(), out = []; for (const c of xs.slice().sort((x, y) => y.score - x.score)) { const k = c.a || c.slug; if (!seen.has(k)) { seen.add(k); out.push(c); } } return out; };
+    // the key works, one click away: the book's curated keys (at most eight, the most needed), in the order they wrote; else the
+    // curated key commentators (tier 1, then 2), at most five; a rule; the first two sets on the whole Bible. A chapter with neither
+    // shows its first four.
     const tierOf = (c) => (RANK.works[c.slug] || [])[4] || 0;
-    const firsts = onBook.map((r) => r.main);
+    const firsts = firstsOf(onBook);
     const book = (keys.length ? keys.slice(0, 8) : firsts.filter((c) => tierOf(c)).sort((x, y) => tierOf(x) - tierOf(y) || y.score - x.score).slice(0, 5))
       .sort((x, y) => when(x) - when(y) || y.score - x.score);
-    const strip = (book.length ? book : firsts.slice(0, 4)).concat(whole.slice(0, 2).map((r) => r.main));
+    const strip = (book.length ? book : firsts.slice(0, 4)).concat(firstsOf(whole).slice(0, 2));
     const nb = book.length || Math.min(4, firsts.length);
     pane.querySelector('.cp-keys').innerHTML = strip.length < 2 ? '' : strip.map((c, i) =>
       `${i === nb && i ? '<span class="cp-keys-sep" aria-hidden="true"></span>' : ''}<button type="button" class="cp-key" data-slug="${esc(c.slug)}" aria-pressed="${!!(S.cur && S.cur.slug === c.slug)}" title="${esc(`${c.t}${volShort(c.vol) ? ` (${volShort(c.vol)})` : ''}, ${c.a}`)}">${esc(short(c.a))}</button>`).join('');
