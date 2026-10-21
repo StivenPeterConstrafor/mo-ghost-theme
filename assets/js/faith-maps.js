@@ -11,7 +11,7 @@ const ord=n=>n+(n%100>=11&&n%100<=13?'th':['th','st','nd','rd'][Math.min(n%10,4)
 const COL={'Greek Fathers':'#2E6E8E','Latin Fathers':'#7A4E9B','Eastern Fathers':'#5E8C61','Byzantine':'#1F8A7A','Medieval':'#B07B2A','Lutheran':'#C1593C','Reformed':'#2F7D4F','Continental Reformed':'#2F7D4F','Roman Catholic':'#A63D5A','English Divines':'#3B5BA5','Humanism and Law':'#8C7B5C'};
 const col=t=>COL[t]||'#7A7A76';
 const KINDS=[['refutes','Refutes','k'],['develops','Develops','k'],['follows','Follows','k'],['distinguishes','Distinguishes','k dash'],['reconciles','Reconciles','k dot']];
-let IX=null,D=null,CUR=null,TRAD=new Set(),KIND=new Set(KINDS.map(k=>k[0]));
+let IX=null,D=null,CUR=null,TRAD=new Set();const KIND=new Set(KINDS.map(k=>k[0]));
 const hash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0)/4294967295};
 function who(h){return `<span class="who">${esc(h.author)}</span>${h.dates||h.y?` <span class="yr">${esc(h.dates||h.y)}</span>`:''}`}
 function pg(h){const c=(h.cited||[])[0];return c?` <a class="pg" href="${read(c[0],c[1])}" target="_blank" rel="noopener">p. ${esc(c[1])}</a>`:''}
