@@ -1551,7 +1551,7 @@ function __initReaderTools(){
   function ensureWorkResearch(){
     if(!window.FRWorkResearch){($('#nbWorkAnalysis')||{}).textContent='Work analysis tools could not be loaded. Reload this page to try again.';return;}
     if(!workResearch){
-      workResearch=FRWorkResearch.mount($('#nbWorkAnalysis'),{slug:WORK_SLUG,blob:BLOB,title:[$('#h1')?.textContent||DATA.title,DATA.volume].filter(Boolean).join(', '),author:AUTHOR,page:cur,location:locOf,
+      workResearch=FRWorkResearch.mount($('#nbWorkAnalysis'),{only:['summaries','positions','answers','answered'],slug:WORK_SLUG,blob:BLOB,title:[$('#h1')?.textContent||DATA.title,DATA.volume].filter(Boolean).join(', '),author:AUTHOR,page:cur,location:locOf,
         about:()=>{closeNotebook(false);$('#rdAbout')?.click();},
         read:page=>{if(!sideMedia.matches)closeNotebook();jump(String(page));},
         ask:q=>{closeNotebook(false);window.FRAsk?.open({fresh:true,q:q||'',contextWork:WORK_SLUG,works:WORK_SLUG?[WORK_SLUG]:[]});},
@@ -1560,7 +1560,7 @@ function __initReaderTools(){
           const cite=CITEWORK+(record.page?', '+locOf(record.page):''),source={slug:WORK_SLUG,page:String(record.page),url:new URL(url,location.origin).href,cite,title:DATA.title_en||DATA.title||WORK,author:AUTHOR};
           return FRResearchNotebook.save({id:'work-analysis:'+WORK_SLUG+':'+record.id,type:'note',researchRecord:true,slug:WORK_SLUG,page:record.page,text:'Extracted '+FRWorkResearch.recordNames[record.kind]+': '+record.text,cite,url:source.url,work:WORK,author:AUTHOR,label:'Work analysis',research:{kind:record.kind,sources:[source],authors:AUTHOR?[AUTHOR]:[],topics:context.statementTopics||[],sectionTopics:context.sectionTopics||[],verses:context.verses||[],citations:context.citations||[],analysis:{...record.raw,sectionMembership:record.sections||[record.unit],sectionTopics:record.sectionTopics||[]},provenance:'Published work analysis; not a verbatim quotation'}});
         }});
-      window.FRWorkResearchSources?.mount($('#nbWorkSources'),{slug:WORK_SLUG,blob:BLOB,author:AUTHOR,confession:window.FRReaderNavigation?.isConfession(DATA),location:locOf,browseAnalysis:options=>workResearch.browse(options),read:page=>{if(!sideMedia.matches)closeNotebook();jump(String(page));}});
+      window.FRWorkResearchSources?.mount($('#nbWorkSources'),{only:['topics','sources','historical'],labels:{topics:'Positions by topic'},slug:WORK_SLUG,blob:BLOB,author:AUTHOR,confession:window.FRReaderNavigation?.isConfession(DATA),location:locOf,browseAnalysis:options=>workResearch.browse(options),read:page=>{if(!sideMedia.matches)closeNotebook();jump(String(page));}});
       const place=$('#reader-location');if(place)new MutationObserver(()=>workResearch.setPage(cur)).observe(place,{childList:true,characterData:true,subtree:true});
     }
     workResearch.setPage(cur);workResearch.load();

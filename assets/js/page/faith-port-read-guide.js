@@ -312,14 +312,19 @@
     const analysis = $("nbAnalysisFold");
     if (analysis) {
       const s = analysis.querySelector(":scope > summary");
-      if (s) s.textContent = "Analysis";
+      if (s) s.textContent = "What it argues";
       analysis.classList.add("wrs-section");
       if (kept.analysis) analysis.open = true;
       remember(analysis, "analysis");
-      guide.appendChild(analysis);
+      // what the page argues sits under what the page indexes, before what it cites and who cites it
+      const ix = pageFolds.length && pageFolds[0].id === "in-index" ? pageFolds[0].el : null;
+      if (ix) ix.after(analysis); else guide.appendChild(analysis);
     }
     guide.appendChild(group("The whole work"));
-    if (data) HUB.GUIDE.forEach((id) => {
+    // the whole work: what it is (overview, argument, sections, quotations), then finding things in it (the index), then the
+    // library around it (positions by topic and sources cited, from work-research-sources.js, then later readers, last)
+    const ORDER = ["overview", "argument", "sections", "quotes", "index"].filter((id) => HUB.GUIDE.includes(id));
+    if (data) ORDER.forEach((id) => {
       if (!c[id]) return;
       // the index is long: it is built the first time it is opened, with the rail open
       const lazy = id === "index";
@@ -353,6 +358,14 @@
     HUB.wire(guide, (p) => go(p));
     const anchor = $("nbWorkSources");
     if (anchor) panel.insertBefore(guide, anchor); else panel.appendChild(guide);
+    // later readers close the whole work, after the sources it cites
+    const laterWork = guide.querySelector(':scope > details[data-sec="citedby"]');
+    if (laterWork && anchor && anchor.parentNode === panel) {
+      const tail = document.createElement("div");
+      tail.className = "wrs nb-work-tail";
+      tail.appendChild(laterWork);
+      panel.insertBefore(tail, anchor.nextSibling);
+    }
     // The library notes are machine-written: said once, in a Methodology dropdown at the foot of the tab's sections.
     if (data && !$("nbWorkNote")) {
       const note = document.createElement("div");
@@ -360,7 +373,7 @@
       note.className = "wrs-note wh-note";
       note.innerHTML = HUB.noteHtml ? HUB.noteHtml() : "";
       if (!note.innerHTML) note.textContent = HUB.NOTE;
-      const after = $("nbWorkSources");
+      const after = panel.querySelector(":scope > .nb-work-tail") || $("nbWorkSources");
       if (after && after.parentNode === panel) panel.insertBefore(note, after.nextSibling); else guide.appendChild(note);
     }
     sync(true);

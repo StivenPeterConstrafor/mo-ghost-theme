@@ -60,7 +60,7 @@
     // One work, one set of sections (work-hub.js): the rail's folds take the work page's names and order, and each ends in a
     // link to its tab there. On the work page itself (opts.desk) a section renders open, without the fold or the link.
     const HUB=root.FRWorkHub,only=Array.isArray(opts.only)?new Set(opts.only):null;
-    const name=(id,fallback)=>HUB?HUB.label(id):fallback;
+    const name=(id,fallback)=>(opts.labels&&opts.labels[id])||(HUB?HUB.label(id):fallback);
     const deskLink=id=>link('Open on the work page',HUB?HUB.deskHref(slug,id):'/the-faith-received/author/#w/'+encodeURIComponent(slug)+(id?'/'+id:''));
     const location = page => string(opts.location?.(string(page)) || 'Page '+string(page));
     const frame = element('div','wrs');
@@ -172,6 +172,8 @@
         group(parent,(string(topic.t)||'Untitled topic')+(n!==null?' · '+n:''),description,[...positions,...pages],row=>record(row.kind==='position'?string(row.q)||'Statement text not supplied':string(topic.ph&&topic.ph[row.p])||'Indexed source page',row.kind==='position'&&row.s?'Local annotation: '+row.s:'',row.p));
         return parent;
       },12,'topics');
+      // the rail keeps one door from the old Positions section: the author's positions, doctrine by doctrine (10-21)
+      if(only&&author)roster().then(data=>{if(dead)return;const m=(data.matches||[])[0];if(m)door(body,link('Read '+m.a+'’s positions · '+shelves[m.sh],positionsURL(m,slug)),'The positions drawn from this author’s works, doctrine by doctrine, with the pages each comes from.');}).catch(()=>{});
     },'positions','topics');
 
     const scriptureSection=lazy(frame,name('scripture','Scripture'),async body => {
@@ -253,7 +255,7 @@
       },12,'authorities');
       body.appendChild(link('Explore author reception','/the-faith-received/fathers/?'+new URLSearchParams({sh:room.sh})+'#'+encodeURIComponent(room.s)+'/reception'));
     }
-    if(author)lazy(frame,name('sources','Sources cited'),async body => {
+    const sourcesSection=author?lazy(frame,name('sources','Sources cited'),async body => {
       let pending=false;
       const draw=async()=>{
         if(pending||dead)return;pending=true;let failed=false,data;
@@ -266,7 +268,7 @@
         if(!dead&&(failed||data?.failed.length))body.appendChild(button('Retry reference loading',draw));
       };
       await draw();
-    },undefined,'sources');
+    },undefined,'sources'):null;
     async function renderReferenceRooms(body, matches) {
       const unique=[...new Map(matches.map(row=>[row.s,row])).values()];
       if(unique.length===1)await resolved(body,unique[0]);
@@ -293,7 +295,7 @@
     },undefined,'names');
     // Migne's subject index exists only for Patrologia Latina works (v1/mine/pld_subjects/pld-*.json); the fold shows for those
     // alone, as the work page's tab does, and mounting still fetches nothing.
-    if(!opts.confession&&/^pld-/.test(slug))lazy(frame,name('historical','Historical subject index'),async body => {
+    const historicalSection=!opts.confession&&/^pld-/.test(slug)?lazy(frame,name('historical','Historical subject index'),async body => {
       const result=await json('/v1/mine/pld_subjects/'+encodeURIComponent(slug)+'.json',data=>Array.isArray(data?.entries));
       if(result.missing){missing(body,'A historical subject-index file has not been published for this edition.');return;}
       const entries=result.data.entries;
@@ -302,9 +304,26 @@
       paginate(body,entries,entry=>{
         const parent=element('div');group(parent,string(entry.t)||'Untitled subject','',list(entry.refs),ref=>record('Historical index reference','',ref.c),'references');return parent;
       },12,'subjects');
-    },undefined,'historical');
+    },undefined,'historical'):null;
     // the work page's order (Scripture before topics)
     if(HUB)HUB.SECTIONS.forEach(s=>{const d=frame.querySelector(':scope > details[data-sec="'+s.id+'"]');if(d)frame.appendChild(d);});
+    // THE RAIL SHOWS ONLY WHAT A WORK HAS (10-21, owner: "coverage … not redundant"): in a view that names its sections (opts.only),
+    // each one is checked before it is offered (the topic overview, the author's resolved references, Migne's subject index); a
+    // section with nothing in it stays hidden, and a check that fails leaves its section shown, to be tried again by opening it.
+    if(only&&!opts.desk&&!opts.confession){   // (the work page's tabs, opts.desk, keep their own messages)
+      const shown=[only.has('topics')&&topicsSection,only.has('sources')&&sourcesSection,only.has('historical')&&historicalSection].filter(Boolean);
+      shown.forEach(s=>s.hidden=true);
+      const has={
+        topics:()=>overview().then(r=>!r.missing&&list(r.data?.topics).length>0),
+        sources:()=>roster().then(async d=>{const m=[...new Map((d.matches||[]).map(x=>[x.s,x])).values()];if(!m.length)return false;
+          const sum=await json('/v1/reception/'+encodeURIComponent(m[0].s)+'.json.gz',x=>x&&typeof x==='object'&&!Array.isArray(x));
+          const full=await json('/v1/reception/full/'+encodeURIComponent(sum.missing?m[0].s:sum.data.fk||m[0].s)+'.json.gz',x=>x&&x.to&&typeof x.to==='object'&&!Array.isArray(x.to));
+          return m.length>1||(!full.missing&&referencesForWork(full.data,slug).some(g=>g.rows.length));}),
+        historical:()=>json('/v1/mine/pld_subjects/'+encodeURIComponent(slug)+'.json',x=>Array.isArray(x?.entries)).then(r=>!r.missing&&r.data.entries.length>0),
+      };
+      for(const [k,sec] of [['topics',topicsSection],['sources',sourcesSection],['historical',historicalSection]])
+        if(sec&&only.has(k))has[k]().then(ok=>{if(!dead)sec.hidden=!ok;}).catch(()=>{if(!dead)sec.hidden=false;});
+    }
     // Confessions currently have uneven published research coverage. Do not present
     // empty indexes as working destinations; a failed check remains recoverable.
     if(opts.confession){
