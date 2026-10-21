@@ -36,14 +36,13 @@
   };
   const centuryOf = (year) => Math.floor((year - 1) / 100) + 1;
 
-  // "1483–1546" -> "15th–16th"; "c. 296–298 – 2 May 373" -> "3rd–4th"; BC and undated -> "".
+  // The dates under the name as a span of centuries: "1483–1546" -> "15th–16th". BC and undated give "".
   function centuryLabel(deck) {
-    const dates = String(deck || "").split(" · ")[0];
-    if (/\b(?:B\.?C\.?|BCE)\b/i.test(dates)) return "";
-    const years = (dates.match(/\b\d{3,4}\b/g) || []).map(Number).filter((y) => y >= 30 && y <= 2100);
-    if (!years.length) return "";
-    const first = centuryOf(years[0]);
-    const last = centuryOf(years[years.length - 1]);
+    const Y = window.MOAuthorYears;
+    const span = Y && Y.parse(deck);
+    if (!span) return "";
+    const first = centuryOf(span.from);
+    const last = centuryOf(span.to);
     return first === last ? ordinal(first) : `${ordinal(first)}–${ordinal(last)}`;
   }
 
@@ -95,10 +94,6 @@
     const full = pair.slice(split + 1);
     BOOKS[abbr] = full;
   });
-  // The era bands the Topic Desk draws: early church to 1054, medieval to 1517, Reformation to 1648, post-Reformation to 1800, then modern.
-  const ERAS = [
-    ["Early church", 0, 1054], ["Medieval", 1054, 1517], ["Reformation", 1517, 1648], ["Post-Reformation", 1648, 1800], ["Modern", 1800, 2000],
-  ];
   const num = (n) => Number(n).toLocaleString("en-US");
   const el = (tag, cls, text) => {
     const e = document.createElement(tag);
@@ -147,34 +142,48 @@
     main.prepend(fig);
   }
 
-  // Dates the port prints, before the first " · ": "1483–1546" -> [1483, 1546]. BC and undated give null.
-  function lifeYears(deck) {
-    const dates = String(deck || "").split(" · ")[0];
-    if (/\b(?:B\.?C\.?|BCE)\b/i.test(dates)) return null;
-    const ys = (dates.match(/\b\d{3,4}\b/g) || []).map(Number).filter((y) => y >= 30 && y <= 2100);
-    return ys.length ? [ys[0], ys[ys.length - 1]] : null;
-  }
+  // The dates the page prints under the name, as a span on the shared scale (assets/js/lib/author-years.js). BC and undated give null.
+  const lifeYears = (deck) => (window.MOAuthorYears ? window.MOAuthorYears.parse(deck) : null);
 
-  function eraStrip(name, years) {
-    const [from, to] = years;
+  /* The timeline. One scale for everything: linear years 0 to 2000. A band is as wide as its years; the marker starts where the life starts
+     and is as wide as the life. Each band's name sits under its own band (centered on it; the narrow bands are staggered onto a second
+     row so no two collide), and on a phone the same bands are a list in order with their colors. The bar says in words who, which dates
+     (as printed) and which era or eras. */
+  function eraStrip(name, span) {
+    const Y = window.MOAuthorYears;
+    const end = Y.SCALE_END;
+    const range = (e) => (e.from ? `${e.from}\u2013${e.to}` : `to ${e.to}`);
     const wrap = el("div", "ah-era");
+    const said = `${name}, ${span.text}, ${Y.eraWords(span)}`;
     const bar = el("div", "ah-era-bar");
     bar.setAttribute("role", "img");
-    bar.setAttribute("aria-label", from === to ? `${name}, around ${from}` : `${name} lived from ${from} to ${to}`);
-    ERAS.forEach(([label, a, b], i) => {
+    bar.setAttribute("aria-label", said);
+    bar.title = said;
+    Y.ERAS.forEach((e, i) => {
       const seg = el("i", `ah-era-seg ah-era-${i}`);
-      seg.style.flexGrow = String(b - a);
-      seg.title = `${label}, ${a || "to"}${a ? " to " : " "}${b}`;
+      seg.style.flexGrow = String(e.to - e.from);
       bar.append(seg);
     });
     const mark = el("b", "ah-era-mark");
-    const left = Math.min(98, Math.max(0, (from / 2000) * 100));
-    mark.style.left = `${left}%`;
-    mark.style.width = `${Math.max(0.8, Math.min(100 - left, ((to - from) / 2000) * 100))}%`;
+    const at = Y.placement(span);
+    mark.style.left = `${at.left}%`;
+    mark.style.width = `${at.width}%`;
     bar.append(mark);
+    const labels = el("div", "ah-era-labels");
+    labels.setAttribute("aria-hidden", "true");
+    Y.ERAS.forEach((e, i) => {
+      const l = el("span", `ah-era-label${i === 3 ? " is-low" : ""}`);
+      l.style.left = `${(((e.from + e.to) / 2) / end) * 100}%`;
+      l.append(el("b", null, e.short), el("small", null, range(e)));
+      labels.append(l);
+    });
     const legend = el("ul", "ah-era-legend");
-    ERAS.forEach(([label, a, b]) => legend.append(el("li", null, `${label} ${a ? `${a}` : "to"}${a ? "–" : " "}${b}`)));
-    wrap.append(bar, legend);
+    Y.ERAS.forEach((e, i) => {
+      const li = el("li");
+      li.append(el("i", `ah-era-swatch ah-era-${i}`), `${e.name} ${range(e)}`);
+      legend.append(li);
+    });
+    wrap.append(bar, labels, legend);
     return wrap;
   }
 
@@ -193,7 +202,7 @@
 
   const fact = (dl, label, value) => {
     if (!value) return;
-    const row = el("div", "ah-fact");
+    const row = el("div", String(value).length > 18 ? "ah-fact ah-fact--long" : "ah-fact");
     row.append(el("dt", null, label), el("dd", null, value));
     dl.append(row);
   };
@@ -229,21 +238,28 @@
     return b;
   }
 
-  /* Quick facts is a sidebar from 981px up. It is sticky when it fits under the masthead and rail, and the row is
-     only kept two-column while the bio is within 64px of the sidebar's height; otherwise the card drops under the
-     bio, so no column ever leaves a hole. Measured with the stacked class off, in one frame, so nothing flickers. */
+  /* Quick facts is ALWAYS the right-hand sidebar from 981px up, for every author. It is sticky when it fits under the masthead and
+     rail. The main column beside it (the bio and the When strip) is kept as tall as the sidebar by moving the next natural blocks
+     of About (Cites most and Cited by, Related authors) up into it while the sidebar is more than 120px taller; below 981px they
+     go back and the card follows the bio. Measured in one frame, so nothing flickers. */
   const wide = window.matchMedia("(min-width: 981px)");
-  function balance(sec, grid, life, card) {
+  const FILL_SLACK = 120;
+  function balance(sec, grid, mainCol, card, more) {
     if (!sec.isConnected) return;
-    grid.classList.remove("is-stacked", "is-sticky");
+    grid.classList.remove("is-sticky");
+    // Anything moved up on an earlier pass goes back first, in order, so each pass starts from the same page.
+    Array.from(mainCol.querySelectorAll(":scope > [data-ah-moved]")).reverse().forEach((n) => { n.removeAttribute("data-ah-moved"); more.prepend(n); });
     if (!wide.matches) return;
-    const mainH = life.offsetHeight;
-    const sideH = card.offsetHeight;
-    if (sideH - mainH > 64) { grid.classList.add("is-stacked"); return; }
+    while (card.offsetHeight - mainCol.offsetHeight > FILL_SLACK) {
+      const next = more.querySelector(":scope > .ah-two, :scope > .ah-block");
+      if (!next) break;
+      next.setAttribute("data-ah-moved", "");
+      mainCol.append(next);
+    }
     const room = window.innerHeight - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--mo-head")) || 85) - 64 - 24;
-    if (sideH < room) grid.classList.add("is-sticky");
+    if (card.offsetHeight < room) grid.classList.add("is-sticky");
   }
-  function watchSide(sec, grid, life, card) {
+  function watchSide(sec, grid, mainCol, card, more) {
     let queued = false;
     const run = () => {
       if (!sec.isConnected) {
@@ -253,16 +269,16 @@
       }
       if (queued) return;
       queued = true;
-      requestAnimationFrame(() => { queued = false; balance(sec, grid, life, card); });
+      requestAnimationFrame(() => { queued = false; balance(sec, grid, mainCol, card, more); });
     };
-    if (window.ResizeObserver) new ResizeObserver(run).observe(life);
+    if (window.ResizeObserver) new ResizeObserver(run).observe(mainCol);
     window.addEventListener("resize", run);
     wide.addEventListener("change", run);
     run();
   }
 
   function buildAbout(main, ctx) {
-    const { name, room, nb, notes, portrait, tiles, bioText, bioSource } = ctx;
+    const { name, room, nb, notes, tiles, bioText } = ctx;
     const sec = el("section", "ah-about");
     const more = el("div", "ah-about-more");
     more.id = "ah-about-more";
@@ -290,14 +306,13 @@
     fact(dl, "Works", tiles.Works || (room.n_works ? num(room.n_works) : ""));
     fact(dl, "Pages", tiles.Pages || (room.n_pages ? num(room.n_pages) : ""));
     fact(dl, "Scripture citations", tiles["Scripture citations"] || (room.n_cit ? num(room.n_cit) : ""));
-    fact(dl, "Tradition", tiles.Tradition);
-    fact(dl, "Denomination", tiles.Denomination);
-    fact(dl, "Order", tiles.Order);
-    fact(dl, "Church", tiles.Church);
+    // Tradition and its denomination, order or church read as one line ("Protestant \u00b7 Presbyterian, Puritan").
+    fact(dl, "Tradition", [tiles.Tradition, tiles.Denomination || tiles.Order || tiles.Church].filter(Boolean).join(" \u00b7 "));
     // The shelf only when it says something the church or order has not ("Latin Fathers" under "Latin Church" still does; "Lutheran" under "Lutheran" does not).
     const shelf = SHELF[ctx.sh];
     const said = [tiles.Tradition, tiles.Denomination, tiles.Order, tiles.Church].filter(Boolean).map(fold);
-    if (shelf && !said.includes(fold(shelf))) fact(dl, "Library shelf", shelf);
+    const saidAll = fold([tiles.Tradition, tiles.Denomination, tiles.Order, tiles.Church].filter(Boolean).join(" "));
+    if (shelf && !said.includes(fold(shelf)) && !saidAll.includes(fold(shelf))) fact(dl, "Library shelf", shelf);
     card.append(dl);
     // Bio first, then the card: the card is a sidebar beside the bio on a wide screen and follows it everywhere else (CSS grid areas).
     const mainCol = el("div", "ah-main");
@@ -307,12 +322,10 @@
       tl.append(eraStrip(name, years));
       mainCol.append(tl);
     }
-    if (mainCol.children.length) grid.append(mainCol);
-    grid.append(card);
-    if (!mainCol.children.length) grid.classList.add("is-solo");
+    grid.append(mainCol, card);
     sec.append(grid);
     sec.classList.add("ah-side");
-    watchSide(sec, grid, mainCol, card);
+    watchSide(sec, grid, mainCol, card, more);
 
     const by = (nb && nb.cited_by || []).filter((x) => x && x.a && x.w).sort((a, b) => b.w - a.w);
     const of = (nb && nb.cites || []).filter((x) => x && x.a && x.w).sort((a, b) => b.w - a.w);
@@ -348,22 +361,6 @@
       more.append(b);
     }
 
-    const src = el("p", "ah-sources");
-    src.append(`Biography: ${bioSource}.`);
-    more.append(src);
-    if (portrait && T) {
-      const det = el("details", "ah-credits");
-      det.append(el("summary", null, "Image credits"));
-      const line = el("p", null, `${name}. ${T.credit(portrait).replace(/\. Source: https:\/\/\S+$/, "")}. `);
-      if (/^https:\/\//.test(portrait.u)) {
-        const a = link(portrait.u, "Source", "ah-credit-link");
-        a.rel = "noopener noreferrer";
-        a.target = "_blank";
-        line.append(a);
-      }
-      det.append(line);
-      more.append(det);
-    }
     return { sec, more };
   }
 
@@ -443,7 +440,7 @@
     const target = main.querySelector(":scope > #rnNotes") || main.querySelector(":scope > .rgrid") || main.querySelector(":scope > .moa-host");
     if (!target) return;
     const deck = profile.querySelector(".deck");
-    const { sec, more } = buildAbout(main, { name: d.name, key: tag, sh: d.sh, room: d.room, nb: d.nb, notes: d.notes, portrait: portraitFor(d.m, d.name, d.slug), tiles, bioText: d.bioText, bioSource: d.bioSource, deck: deck ? deck.textContent : "", years: lifeYears(deck && deck.textContent) });
+    const { sec, more } = buildAbout(main, { name: d.name, key: tag, sh: d.sh, room: d.room, nb: d.nb, notes: d.notes, tiles, bioText: d.bioText, deck: deck ? deck.textContent : "", years: lifeYears(deck && deck.textContent) });
     sec.dataset.tiles = sig;
     if (prevMore) prevMore.remove();
     if (prev) prev.replaceWith(sec);
@@ -468,7 +465,7 @@
     const state = ABOUT.get(tag);
     const mount = (nb, m) => {
       if (main.querySelector(":scope > .ah-about") && main.querySelector(":scope > .ah-about").dataset.tiles === sig) return;
-      mountAbout(main, tag, { room: {}, nb, notes: null, m, bioText: paras.join("\n"), bioSource: "the library's author records", sh: "", name, slug: a }, tiles, sig, profile);
+      mountAbout(main, tag, { room: {}, nb, notes: null, m, bioText: paras.join("\n"), sh: "", name, slug: a }, tiles, sig, profile);
     };
     if (state) { mount(state.nb, state.m); return; }
     if (main.getAttribute("data-ah-loading") === tag) return;
@@ -526,13 +523,12 @@
             if (!room) return;
             const m = await manifestP();
             let bioText = room.bio || "";
-            let bioSource = "the library's research record";
             if (!bioText) {
               const cur = await curatedP();
               const c = cur && cur[room.a || name];
-              if (c && c.bio) { bioText = c.bio; bioSource = "Mere Orthodoxy"; }
+              if (c && c.bio) { bioText = c.bio; }
             }
-            ABOUT.set(tag, { room, nb, notes, m, bioText, bioSource, sh: key.sh, name, slug });
+            ABOUT.set(tag, { room, nb, notes, m, bioText, sh: key.sh, name, slug });
             scan();
           });
         }
