@@ -73,6 +73,7 @@ function show(id,push){
       return `<section class="sec"><h3>${esc(p.label)} <span class="muted" style="font-size:.85rem">· ${p.holders.length}</span></h3>${p.summary?`<p class="sum">${esc(p.summary)}</p>`:''}${p.distinction?`<p class="dist">Turns on: ${esc(p.distinction)}</p>`:''}
         ${[...by.entries()].sort((a,b)=>b[1].length-a[1].length).map(([t,hs])=>`<h4><i style="--c:${col(t)}"></i>${esc(t)} <span class="muted">${hs.length}</span></h4><ul>${hs.sort((a,b)=>(+a.y||9999)-(+b.y||9999)).map(h=>`<li>${who(h)} <span class="ln">— ${esc(h.line)}</span>${pg(h)}</li>`).join('')}</ul>`).join('')}</section>`;}).join('');
     const tps=d.turning_points.length?`<section class="sec"><h3>Turning points</h3><ul class="tp">${d.turning_points.map(t=>`<li><b>${esc(ord(t.century))} century</b>${esc(t.what)}${t.who.length?` <span class="muted">(${t.who.map(w=>esc(w.author)).join(', ')})</span>`:''}</li>`).join('')}</ul></section>`:'';
+    const unpl=(d.unplaced||[]).length?`<section class="sec"><h3>Not placed <span class="muted" style="font-size:.85rem">· ${d.unplaced.length}</span></h3><p class="dist">Answers the reading could not file under a position; each stands on his page.</p><ul>${d.unplaced.map(h=>`<li>${who(h)} <span class="ln">— ${esc(h.line)}</span>${pg(h)}</li>`).join('')}</ul></section>`:'';
     const rels=d.relations.length?`<section class="sec"><h3>The lines between them</h3><ul class="rels">${d.relations.map(r=>`<li><span class="kd">${esc(r.kind)}</span>${esc(r.from.author||`the position ${(d.positions.find(p=>p.id===r.from.position)||{}).label}`)} → ${esc(r.to.author||`the position ${(d.positions.find(p=>p.id===r.to.position)||{}).label}`)}${r.note?` <span class="muted">· ${esc(r.note)}</span>`:''}</li>`).join('')}</ul></section>`:'';
     $('#m').innerHTML=`<h2>${esc(d.q)}</h2>
       <p class="meta">${esc(d.locus)} · ${d.n} authors · ${d.positions.length} positions · <a href="/the-faith-received/disputed-questions/#${esc(d.id)}">every answer in the atlas</a></p>
@@ -80,7 +81,7 @@ function show(id,push){
       <div class="chips" id="trads" role="group" aria-label="Traditions shown">${trads.map(([t,n])=>`<button type="button" data-trad="${esc(t)}" aria-pressed="true"><i style="--c:${col(t)}"></i>${esc(t||'Other')} <span class="muted">${n}</span></button>`).join('')}</div>
       <div class="chips" id="kinds" role="group" aria-label="Lines shown">${KINDS.filter(k=>d.relations.some(r=>r.kind===k[0])).map(([k,l,c])=>`<button type="button" class="${c}" data-kind="${k}" aria-pressed="true"><i style="--c:${k==='refutes'?'var(--accent)':'var(--muted)'}"></i>${l}</button>`).join('')}</div>
       <div class="diagram">${draw(d)}</div>
-      ${secs}${tps}${rels}
+      ${secs}${unpl}${tps}${rels}
       <nav class="next" aria-label="Previous and next question">${prev?`<button type="button" data-go="${esc(prev.id)}">‹ ${esc(prev.q)}</button>`:'<span></span>'}${next?`<button type="button" data-go="${esc(next.id)}">${esc(next.q)} ›</button>`:'<span></span>'}</nav>`;
     $('#note').textContent=d.method||'';
     if(push)history.replaceState(null,'',`#${id}`);
