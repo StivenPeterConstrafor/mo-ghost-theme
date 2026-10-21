@@ -38,7 +38,7 @@ async function showTerm(id,write){
   const t=await J(`/v1/lexicon/terms/${encodeURIComponent(id)}.json`);if(!t){$('#entry').innerHTML='<p class="muted">This term could not be loaded.</p>';return;}
   CUR=id;document.querySelectorAll('#list button').forEach(b=>b.setAttribute('aria-current',String(b.dataset.id===id)));
   const forms=[...(t.latin||[]).map(x=>`Latin ${x}`),...(t.greek||[]).map(x=>`Greek ${x}`)].join(' · ');
-  $('#entry').innerHTML=`<h2>${esc(t.headword)}</h2>${forms?`<p class="forms">${esc(forms)}</p>`:''}<p class="muted">Defined in ${esc(t.works)} ${t.works===1?'work':'works'} of the library; the senses below come from up to thirty of them.</p>${
+  $('#entry').innerHTML=`<h2>${esc(t.headword)}</h2>${forms?`<p class="forms">${esc(forms)}</p>`:''}<p class="muted">The senses below come from up to thirty of the works that define it; every work that does is listed under How the library defines it.</p>${
     (t.senses||[]).map((s,i)=>`<section class="sense"><p><strong>${i+1}.</strong> ${esc(s.gloss)}</p><ol>${(s.src||[]).slice(0,12).map(([w,p,a,ti])=>`<li>${esc(a||'')}${a?', ':''}<a href="${read(w,p)}">${esc(ti||w)}, p. ${esc(p)}</a></li>`).join('')}${(s.src||[]).length>12?`<li>and ${(s.src||[]).length-12} more</li>`:''}</ol></section>`).join('')}<section class="hist" id="hist" aria-labelledby="hist-h"></section>`;
   showHistory(id);
   if(write)history.replaceState(null,'',`#${encodeURIComponent(id)}`);
