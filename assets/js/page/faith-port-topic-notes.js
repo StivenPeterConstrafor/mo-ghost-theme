@@ -79,6 +79,19 @@
       ${g.terms ? `<p class="bn-themes">${esc(g.terms)}</p>` : ""}`;
   }
 
+  /* IN THE WORKS' OWN INDEXES (2026-10-21, with the site): v1/enrich/concept_index/<id>.json names the works whose made index
+   * (subjects, terms defined) carries the concept's words, with the pages the index gives it, ordered by curated standing and then by
+   * how much of the work the index gives the concept (no model). The first twelve works are shown; "Show all" the rest. */
+  function indexHTML(ix) {
+    if (!ix || !(ix.rows || []).length) return "";
+    const SHOW = 12;
+    const row = (r, i) => `<li${i >= SHOW ? " hidden" : ""}><strong>${esc(r.a || r.w)}</strong>, <em>${esc(r.t)}</em>
+        <span class="cn-pages">${(r.pages || []).slice(0, 6).map((p) => pageLink(r.w, p, `p. ${p}`)).join(" · ")}${r.n > 6 ? ` · ${r.n} pages in its index` : ""}</span>
+        ${r.headings && r.headings.length ? `<span class="tn-ix-h">${esc(r.headings.slice(0, 2).join(" · "))}</span>` : ""}</li>`;
+    return `<h5>In the works' own indexes <small>${Number(ix.works).toLocaleString()} ${ix.works === 1 ? "work" : "works"} · ${Number(ix.pages).toLocaleString()} pages</small></h5>
+      <ul class="rn-list tn-ix">${ix.rows.map(row).join("")}</ul>${ix.rows.length > SHOW ? `<button type="button" class="rx-button tn-ix-all">Show all ${ix.rows.length}</button>` : ""}`;
+  }
+
   let busy = false;
   async function draw() {
     const slug = slugNow();
@@ -101,13 +114,16 @@
       box.dataset.slug = slug;
       box.innerHTML = `${body}${method(`<p>Machine-written from the authors' own claims, not their words; every page is checked. Open a page to read the passage.</p>`)}`;
       box.addEventListener("click", async (e) => {
+        const all = e.target.closest(".tn-ix-all");
+        if (all) { all.previousElementSibling.querySelectorAll("li[hidden]").forEach((li) => { li.hidden = false; }); all.remove(); return; }
         const b = e.target.closest(".tn-open");
         if (!b) return;
         const slot = b.nextElementSibling;
         if (!slot.hidden) { slot.hidden = true; b.textContent = "Read the guide"; return; }
         if (!slot.dataset.loaded) {
-          const g = await getJSON(`${BASE}/v1/enrich/concepts/${encodeURIComponent(b.dataset.concept)}.json`);
-          slot.innerHTML = g ? guideHTML(g) : "<p>This guide could not load.</p>";
+          const [g, ix] = await Promise.all([getJSON(`${BASE}/v1/enrich/concepts/${encodeURIComponent(b.dataset.concept)}.json`),
+            getJSON(`${BASE}/v1/enrich/concept_index/${encodeURIComponent(b.dataset.concept)}.json`)]);
+          slot.innerHTML = (g ? guideHTML(g) : "<p>This guide could not load.</p>") + indexHTML(ix);
           slot.dataset.loaded = "1";
         }
         slot.hidden = false; b.textContent = "Close the guide";
