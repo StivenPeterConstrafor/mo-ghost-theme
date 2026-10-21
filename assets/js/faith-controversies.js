@@ -7,7 +7,7 @@ const J=u=>fetch(u).then(r=>r.ok?r.json():null).catch(()=>null);
 const READER=(window.__FR_READER_PATH__||'/read');
 const read=(w,p)=>`${READER}?w=${encodeURIComponent(w)}#b${encodeURIComponent(p)}-0`;
 const KIND={contradiction:'They contradict',distinction:'A distinction, not a denial',emphasis:'A difference of emphasis',agreement:'They agree'};
-let D=null,KINDS=new Set(),CUR=null;
+let D=null,CUR=null;const KINDS=new Set();
 const pg=(w,p,label)=>p?`<a class="pg" href="${read(w,p)}" target="_blank" rel="noopener">${esc(label||`p. ${p}`)}</a>`:'';
 function sideHTML(name,s,src){
   const args=(s.arguments||[]).map(a=>`<li>${esc(a.arg)} ${pg(src.w,a.page)}</li>`).join('');
