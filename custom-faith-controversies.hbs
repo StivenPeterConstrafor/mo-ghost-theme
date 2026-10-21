@@ -1,0 +1,86 @@
+{{!< default}}
+{{!-- The TFR rail, first on the page and pinned under the masthead as on the reader (Ian, 2026-09-23). --}}
+{{> "faith-received/_tfr-rail"}}
+{{#contentFor "moHead"}}
+<title>Controversies | The Faith Received | Mere Orthodoxy</title>
+<meta name="description" content="The controversies between two authorities as the library's own controversy literature argued them (Thomas and Scotus after Juan de Rada; Thomas and his critics after Capreolus; Turretin and his opponents), each side in his own words." />
+<link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
+<link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+.tfr-tool{--bg:var(--color-bg,#F0F0ED);--fg:var(--color-dark,#1C1C1A);--muted:var(--color-muted,#5A5A56);--border:var(--color-rule,#D8D8D3);--card-bg:var(--color-card,#FFFFFF);--highlight:var(--color-highlight,#E7E7E2);--accent:var(--color-accent,#8A3B2E);--font-display:var(--font-display,"EB Garamond",Georgia,serif);--font-body:var(--font-body,"Source Serif Pro",Georgia,serif);--sans:var(--font-body,"Source Serif Pro",Georgia,serif)}
+/* THE CONTROVERSIES (2026-10-21, owner: "as comprehensive and deep as possible, like being able to see differences between Thomas vs
+   Scotus (like Juan de Rada shows) and more"). v1/enrich/controversies (runs/minimax_1019/controversies): a pair's controversies as the
+   library's own controversy literature argued them, question by question, each side in his own words. */
+.tfr-tool .wrap{max-width:66rem;margin:0 auto;padding:1.8rem 1.2rem 4rem}
+.tfr-tool h1{font:500 2rem/1.2 var(--font-display);margin:.2rem 0 .6rem;text-wrap:balance}
+.tfr-tool .lede{max-width:70ch;color:var(--muted);margin:0 0 .6rem;text-wrap:pretty}
+.tfr-tool .src{max-width:70ch;margin:0 0 1.4rem;font-size:.95rem}
+.tfr-tool .cols{display:grid;grid-template-columns:minmax(15rem,21rem) minmax(0,1fr);gap:1.8rem;align-items:start}
+.tfr-tool .nav{position:sticky;top:.8rem;max-height:calc(100vh - 1.6rem);overflow:auto}
+.tfr-tool .find{width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:6px;background:var(--card-bg);color:var(--fg);font:1rem var(--font-body);margin:0 0 .6rem}
+.tfr-tool .find::placeholder{color:var(--muted)}
+.tfr-tool .chips{display:flex;flex-wrap:wrap;gap:.35rem;margin:0 0 .8rem}
+.tfr-tool .chips button{border:1px solid var(--border);background:var(--card-bg);color:var(--fg);padding:.25rem .65rem;border-radius:999px;font:600 .78rem/1.2 var(--sans);cursor:pointer}
+.tfr-tool .chips button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tfr-tool .books{margin:0;padding:0;list-style:none;border-top:1px solid var(--border)}
+.tfr-tool .books details{border-bottom:1px solid var(--border)}
+.tfr-tool .books summary{cursor:pointer;padding:.55rem .2rem;font:500 1.05rem/1.3 var(--font-display);list-style:none;display:flex;justify-content:space-between;gap:.5rem}
+.tfr-tool .books summary::-webkit-details-marker{display:none}
+.tfr-tool .books summary small{color:var(--muted);font:.78rem/1.3 var(--sans)}
+.tfr-tool .books ul{list-style:none;margin:0 0 .6rem;padding:0}
+.tfr-tool .books li button{display:block;width:100%;text-align:left;padding:.4rem .3rem .4rem .8rem;border:0;background:none;color:var(--fg);font:.92rem/1.35 var(--font-body);cursor:pointer;border-radius:4px;text-wrap:pretty}
+.tfr-tool .books li button:hover{background:var(--highlight)}
+.tfr-tool .books li button[aria-current="true"]{background:var(--fg);color:var(--bg)}
+.tfr-tool .books li button small{display:block;color:var(--muted);font:.75rem/1.3 var(--sans)}
+.tfr-tool .books li button[aria-current="true"] small{color:inherit;opacity:.8}
+.tfr-tool .c h2{font:500 1.6rem/1.25 var(--font-display);margin:0 0 .3rem;text-wrap:balance}
+.tfr-tool .meta{color:var(--muted);font-size:.9rem;margin:0 0 1rem}
+.tfr-tool .meta a{color:inherit}
+.tfr-tool .kind{display:inline-block;padding:.1rem .55rem;border:1px solid var(--border);border-radius:999px;font:600 .74rem/1.4 var(--sans);margin-right:.5rem;vertical-align:middle}
+.tfr-tool .sides{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin:1rem 0}
+@media (max-width:760px){.tfr-tool .cols{grid-template-columns:1fr}.tfr-tool .nav{position:static;max-height:none}.tfr-tool .sides{grid-template-columns:1fr}}
+.tfr-tool .side h3{font:500 1.25rem/1.3 var(--font-display);margin:0 0 .4rem;padding-bottom:.3rem;border-bottom:1px solid var(--border)}
+.tfr-tool .side h4{font:600 .78rem/1.4 var(--sans);color:var(--muted);margin:.9rem 0 .25rem;letter-spacing:.01em}
+.tfr-tool .side p{margin:0 0 .5rem;text-wrap:pretty}
+.tfr-tool .side ol{margin:0 0 .5rem 1.1rem;padding:0}
+.tfr-tool .side li{margin:0 0 .3rem}
+.tfr-tool .pg{font-size:.85rem;white-space:nowrap}
+.tfr-tool blockquote.own{margin:.4rem 0 .7rem;padding:0 0 0 .8rem;border-left:1px solid var(--border);font-style:italic;text-wrap:pretty}
+.tfr-tool blockquote.own footer{font-style:normal;font-size:.85rem;color:var(--muted);margin-top:.15rem}
+.tfr-tool .says{font-size:.92rem;color:var(--muted);margin:0 0 .6rem}
+.tfr-tool .judgment{margin:1.2rem 0 0;padding:1rem 1.1rem;background:var(--card-bg);border:1px solid var(--border);border-radius:8px}
+.tfr-tool .judgment h3{font:500 1.15rem/1.3 var(--font-display);margin:0 0 .3rem}
+.tfr-tool .judgment p{margin:0;text-wrap:pretty}
+.tfr-tool .next{display:flex;justify-content:space-between;gap:1rem;margin:1.6rem 0 0;padding-top:.8rem;border-top:1px solid var(--border);font-size:.92rem}
+.tfr-tool .next button{border:0;background:none;color:var(--fg);font:inherit;cursor:pointer;padding:.2rem 0;text-decoration:underline;text-underline-offset:3px}
+.tfr-tool .note{max-width:72ch;margin:2rem 0 0;font-size:.85rem;color:var(--muted);text-wrap:pretty}
+.tfr-tool .muted{color:var(--muted)}
+.tfr-tool .sr{position:absolute;left:-9999px}
+</style>
+{{/contentFor}}
+{{!-- /the-faith-received/controversies/ — The controversies, as The Faith Received has them (tools/prdl_reader_prototype/controversies.html, 2026-10-21):
+     a pair's controversies read whole from the work that argued them (Juan de Rada's Controversiae; Capreolus's Defensiones; Turretin's
+     Institutio), each side's position and arguments with the work's page, its judgment, and each side in his own words from the pages
+     of his works (v1/enrich/controversies on the library worker). The hero is the theme's; the body and faith-controversies.js the library's. --}}
+<section class="bhero bhero--tool">
+  <div class="bhero-inner container">
+    <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Controversies</p>
+    <h1 class="bhero-title">The controversies</h1>
+    <p class="bhero-lede">Two authorities set against each other question by question, as the library's own controversy literature argued them: each side's position and arguments as the work states them, the work's judgment, and each side in his own words from the pages of his works.</p>
+  </div>
+</section>
+<script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
+<main class="tfr-tool"><div class="wrap">
+    <p class="lede" id="lede" hidden>The disputes between two authorities as the library's own controversy literature argued them, question by question: each side's position and arguments as the work states them, the work's judgment, and each side in his own words from the pages of his works.</p>
+  <p class="src" id="src"></p>
+  <div class="cols">
+    <nav class="nav" aria-label="The controversies">
+      <input class="find" id="find" type="search" placeholder="Find a controversy" aria-label="Find a controversy" autocomplete="off">
+      <div class="chips" id="chips" role="group" aria-label="Kind of difference"></div>
+      <ol class="books" id="books"><li class="muted">Loading…</li></ol>
+    </nav>
+    <article class="c" id="c" aria-live="polite"></article>
+  </div>
+  <p class="note" id="note"></p>
+</div></main>
+<script src="{{asset "js/faith-controversies.js"}}&amp;frv=de3fa5f572e27f42"></script>

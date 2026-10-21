@@ -466,6 +466,10 @@ routes:
   # on 2026-09-21 before Ian settled on Connections.
   /the-faith-received/constellations/:
     template: custom-faith-port-web
+  # The controversies (2026-10-21): two authorities question by question, as the library's own controversy literature argued
+  # them (Rada: Thomas and Scotus; Capreolus: Thomas and his critics; Turretin and his opponents), each side in his own words.
+  /the-faith-received/controversies/:
+    template: custom-faith-controversies
   # The atlas was at /web/ until 2026-09-21. Ian renamed it to match what
   # the rail calls it. The old address stays, pointing at the same
   # template, so links already shared keep working.
