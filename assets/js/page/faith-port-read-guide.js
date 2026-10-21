@@ -83,7 +83,7 @@
     d.dataset.sec = id;
     if (id in kept ? kept[id] : open) d.open = true;
     // each page fold opens the work page on the tab that holds its whole-work list
-    const desk = id === "cited" ? "" : id === "later-page" ? "citedby" : id === "in-index" ? "index" : id;
+    const desk = id === "cited" ? "" : id === "later-page" ? "citedby" : id === "in-index" || /^index-/.test(id) ? "index" : id;
     d.innerHTML = `<summary><span class="wh-sum">${esc(title)}</span>${n == null ? "" : `<span class="wh-count">${Number(n).toLocaleString()}</span>`}</summary><div class="wrs-section-body">${body}${desk ? `<a class="wrs-link wh-desk" href="${esc(deskHref(desk))}">${desk === "citedby" && id === "later-page" ? "Every later citation of this work" : "Open on the work page"}</a>` : ""}</div>`;
     remember(d, id);
     return d;
@@ -178,10 +178,10 @@
   // The whole work's Index, open on a part and found to an entry.
   const fills = {};
   function openIndex(part, q) {
-    const f = panel.querySelector('#nbWorkGuide [data-sec="index"]');
+    const f = panel.querySelector(`#nbWorkGuide [data-sec="index-${part}"]`) || panel.querySelector('#nbWorkGuide [data-sec="index"]');
     if (!f) return;
     f.open = true;
-    if (fills.index) fills.index();
+    if (fills[f.dataset.sec]) fills[f.dataset.sec]();
     const tab = f.querySelector(`.wh-parts [data-part="${part}"]`);
     if (tab) tab.click();
     const box = f.querySelector(`.wh-part[data-part="${part}"] .wh-filter input`);
@@ -324,24 +324,43 @@
     // the whole work: what it is (overview, argument, sections, quotations), then finding things in it (the index), then the
     // library around it (positions by topic and sources cited, from work-research-sources.js, then later readers, last)
     const ORDER = ["overview", "argument", "sections", "quotes", "index"].filter((id) => HUB.GUIDE.includes(id));
+    // a fold built the first time it is opened, with the rail open (the indexes are long)
+    const lazyFold = (id, title, n, render) => {
+      const f = fold(id, title, `<div class="wh-lazy"></div>`, false, n > 1 ? n : null);
+      guide.appendChild(f);
+      const fill = () => {
+        const host = f.querySelector(".wh-lazy");
+        if (!f.open || !host || host.dataset.done) return;
+        host.dataset.done = "1";
+        host.innerHTML = render();
+      };
+      fills[id] = fill;
+      f.addEventListener("toggle", () => whenOpen(fill));
+      if (f.open) whenOpen(fill);
+      return f;
+    };
+    /* THE INDEXES, EACH NAMED (2026-10-21, owner: "the rail should have Subject Index, Scripture Index, Topic Index (index explicit)"):
+     * the made index's parts are folds of their own, each with its count: Subject index and Scripture index first, then the Topic
+     * index (the positions by topic from work-research-sources.js, moved up to sit with them below), the persons, the terms defined
+     * and the questions asked. A work whose index is only a subject list keeps the one fold. */
+    const INDEXES = [["subjects", "Subject index"], ["scripture", "Scripture index"], ["persons", "Index of persons"], ["terms", "Terms defined"], ["questions", "Questions asked"]];
     if (data) ORDER.forEach((id) => {
       if (!c[id]) return;
-      // the index is long: it is built the first time it is opened, with the rail open
-      const lazy = id === "index";
-      const f = fold(id, HUB.label(id), lazy ? `<div class="wh-lazy"></div>` : HUB.render(id, data, { compact: true }), false, c[id] > 1 ? c[id] : null);
-      guide.appendChild(f);
-      if (lazy) {
-        const fill = () => {
-          const host = f.querySelector(".wh-lazy");
-          if (!f.open || !host || host.dataset.done) return;
-          host.dataset.done = "1";
-          host.innerHTML = HUB.render(id, data, { compact: true });
-        };
-        fills.index = fill;
-        f.addEventListener("toggle", () => whenOpen(fill));
-        if (f.open) whenOpen(fill);
+      if (id !== "index") { guide.appendChild(fold(id, HUB.label(id), HUB.render(id, data, { compact: true }), false, c[id] > 1 ? c[id] : null)); return; }
+      if (!data.full || !HUB.partList) { lazyFold("index", "Subject index", c.index, () => HUB.render("index", data, { compact: true })); return; }
+      for (const [k, title] of INDEXES) {
+        const n = HUB.partList(data, k).length;
+        if (n) lazyFold(`index-${k}`, title, n, () => HUB.render("index", data, { compact: true, part: k }));
       }
     });
+    // the Topic index keeps its own loader in work-research-sources.js, which mounts when the rail opens; it moves up to follow
+    // the Scripture index as soon as it exists
+    const lastIndex = guide.querySelector('[data-sec="index-scripture"]') || guide.querySelector('[data-sec="index-subjects"]') || guide.querySelector('[data-sec="index"]');
+    const sources = $("nbWorkSources");
+    if (lastIndex && sources) {
+      const place = () => { const t = sources.querySelector('details[data-sec="topics"]'); if (t) lastIndex.after(t); return !!t; };
+      if (!place()) { const mo = new MutationObserver(() => { if (place()) mo.disconnect(); }); mo.observe(sources, { childList: true, subtree: true }); }
+    }
     // the whole work's most-cited pages, after the quotations, as on the work page
     if (later) {
       const f = fold("citedby", HUB.label("citedby"), `<div class="nb-later-work"></div>`, false, later.n);

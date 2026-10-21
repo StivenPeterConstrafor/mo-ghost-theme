@@ -201,6 +201,13 @@
   function index(d, opt) {
     if (!d.full) return subjects(d.index);
     const lists = Object.fromEntries(PARTS.map(([k]) => [k, partList(d, k)]));
+    // ONE PART BY ITSELF (2026-10-21, owner: "Subject Index, Scripture Index, Topic Index (index explicit)"): the Research rail names
+    // each index as a fold of its own; the tab strip and the note are the work page's
+    if (opt && opt.part && lists[opt.part]) {
+      const id = `ix${++ixSeq}`;
+      IX.set(id, lists);
+      return `<div class="wh-part wh-part-only" data-part="${opt.part}" data-ix="${id}">${partHTML(opt.part, lists[opt.part])}</div>`;
+    }
     // the part shown first: the one asked for when it has entries (the reader's Contents opens on Scripture), else the first that has any
     const first = (opt && opt.first && lists[opt.first] && lists[opt.first].length) ? opt.first : (PARTS.find(([k]) => lists[k].length) || PARTS[0])[0];
     const id = `ix${++ixSeq}`;
@@ -529,6 +536,6 @@
 
   const parts = (d) => Object.fromEntries(PARTS.map(([k]) => [k, d ? partList(d, k) : []]));
 
-  root.FRWorkHub = { SECTIONS, GUIDE, label, config, cfg, guide, counts, render, wire, esc, NOTE, noteHtml, desk, deskSwitch, inlinePage, citedBy, names, mountLater, citerRow, fullIndex, setOf, parts,
+  root.FRWorkHub = { SECTIONS, GUIDE, PARTS, partList, label, config, cfg, guide, counts, render, wire, esc, NOTE, noteHtml, desk, deskSwitch, inlinePage, citedBy, names, mountLater, citerRow, fullIndex, setOf, parts,
     deskHref: (slug, id) => cfg.deskHref(slug, id), readerHref: (slug, p) => cfg.readerHref(slug, p) };
 })(typeof window === "undefined" ? globalThis : window);
