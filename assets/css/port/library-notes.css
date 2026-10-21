@@ -49,3 +49,8 @@
 /* Glossary page (faith-port-glossary-brief.js) */
 .faith-glossary-brief{margin:.25rem 0 .75rem;font-size:.95em}
 .faith-glossary-brief span{font-weight:600;margin-right:.25em}
+/* the kind of difference and each side's own words (faith-port-compare-notes.js, 2026-10-21) */
+.cn-kind { display: inline-block; margin: 0 0 6px; font-size: 0.78rem; color: var(--color-muted, #6b6660); }
+.cn-quote { margin: 4px 0 10px; padding: 0 0 0 14px; border-left: 1px solid var(--color-rule, #d9d4d0); }
+.cn-quote p { margin: 0; font-style: italic; }
+.cn-quote footer { margin-top: 2px; font-size: 0.78rem; color: var(--color-muted, #6b6660); }

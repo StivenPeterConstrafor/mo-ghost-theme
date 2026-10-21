@@ -32,18 +32,26 @@
     return a.length >= 2 ? [a[0], a[1]].map((x) => (/^[a-z0-9-]+$/.test(x) ? x : slugify(x))) : null;
   }
 
+  /* THE KIND OF DIFFERENCE AND EACH SIDE'S OWN WORDS (2026-10-21, owner: "comparison to show us and connect us to quotes … the
+   * differences being a lot more nuanced"): each point says what kind of difference it is (contradiction, distinction, emphasis,
+   * agreement) and carries a passage in each author's words, found on its page word for word (runs/minimax_1019/pairs/pairs_1021.py).
+   * An older file without them draws as before. */
+  const KIND = { contradiction: "They contradict", distinction: "A distinction, not a denial", emphasis: "A difference of emphasis", terminology: "Different words for one thing",
+    scope: "A difference of scope", agreement: "They agree", misreading: "Agreement the opponent misread", development: "One develops the other" };
+  const kindTag = (k) => (k ? `<span class="cn-kind">${esc(KIND[String(k).toLowerCase()] || k)}</span>` : "");
+  const quote = (q, who) => (q && q.text ? `<blockquote class="cn-quote"><p>${esc(q.text)}</p><footer>${esc(who)}, <a href="${READ}${encodeURIComponent(q.w)}#b${encodeURIComponent(q.p)}-0" target="_blank" rel="noopener">p. ${esc(q.p)}</a></footer></blockquote>` : "");
   function debateHTML(d) {
-    const pts = (d.points || []).map((p) => `<li><h4>${esc(p.question)}</h4>
-      <p><strong>${esc(d.a)}</strong>: ${esc(p.a_says)} <span class="cn-pages">${pageLinks(p.a_refs)}</span></p>
-      ${p.b_holds ? `<p><strong>${esc(d.b)}</strong>: ${esc(p.b_holds)} <span class="cn-pages">${pageLinks(p.b_refs)}</span></p>` : ""}</li>`).join("");
+    const pts = (d.points || []).map((p) => `<li><h4>${esc(p.question)}</h4>${kindTag(p.kind)}
+      <p><strong>${esc(d.a)}</strong>: ${esc(p.a_says)} <span class="cn-pages">${pageLinks(p.a_refs)}</span></p>${quote(p.a_quote, d.a)}
+      ${p.b_holds ? `<p><strong>${esc(d.b)}</strong>: ${esc(p.b_holds)} <span class="cn-pages">${pageLinks(p.b_refs)}</span></p>${quote(p.b_quote, d.b)}` : ""}</li>`).join("");
     return `<details class="rx-fold cn-fold" open><summary><span><strong>${esc(d.a)} answers ${esc(d.b)}</strong><small>on ${Number(d.refutations || 0).toLocaleString()} pages in the library</small></span></summary>
       <p class="cn-summary">${esc(d.summary)}</p><ol class="cn-points">${pts}</ol></details>`;
   }
 
   function compareHTML(c) {
-    const tops = (c.topics || []).map((t) => `<li><h4>${esc(t.locus)}</h4>
+    const tops = (c.topics || []).map((t) => `<li><h4>${esc(t.locus)}</h4>${kindTag(t.kind)}
       ${t.agree ? `<p><em>Agree:</em> ${esc(t.agree)}</p>` : ""}${t.differ ? `<p><em>Differ:</em> ${esc(t.differ)}</p>` : ""}
-      <p class="cn-pages">${esc(c.a)}: ${pageLinks(t.a_refs) || "none"} · ${esc(c.b)}: ${pageLinks(t.b_refs) || "none"}</p></li>`).join("");
+      <p class="cn-pages">${esc(c.a)}: ${pageLinks(t.a_refs) || "none"} · ${esc(c.b)}: ${pageLinks(t.b_refs) || "none"}</p>${quote(t.a_quote, c.a)}${quote(t.b_quote, c.b)}</li>`).join("");
     return `<details class="rx-fold cn-fold" open><summary><span><strong>How ${esc(c.a)} and ${esc(c.b)} compare</strong><small>on the subjects they share most</small></span></summary>
       <p class="cn-summary">${esc(c.summary)}</p><ol class="cn-points">${tops}</ol></details>`;
   }

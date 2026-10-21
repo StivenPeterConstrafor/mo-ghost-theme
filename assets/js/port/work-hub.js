@@ -134,8 +134,10 @@
 
   function sectionRows(d) {
     const out = [];
-    if (!d.sections || !Array.isArray(d.structure)) return out;
-    d.structure.forEach((e, i) => {
+    // the contents table from meta.json, else the outline read from the work's TEI headings (merge_sections_tei.py, 2026-10-21)
+    const struct = Array.isArray(d.structure) ? d.structure : (Array.isArray(d.outline) ? d.outline : null);
+    if (!d.sections || !struct) return out;
+    struct.forEach((e, i) => {
       const note = d.sections[String(i)];
       if (!note || !e || e.page == null) return;
       const depth = Number(e.depth) || 1;
