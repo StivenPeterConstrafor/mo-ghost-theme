@@ -1341,8 +1341,15 @@ function __initReaderTools(){
   const LEX=(window.__FR_LEXICON_PATH__||'/lexicon');
   const lexEsc=t=>String(t??'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   function lexClose(){lexPop.hidden=true;}
+  // how many works define the term, oldest and latest author (10-20, item 6): v1/lexicon/history bundles, FNV-1a over the term's id;
+  // fetched after the senses are shown, so the pop-up never waits on it
+  const lexFnv=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h;};
+  async function lexHistory(id){try{const r=await fetch(BLOB+'/v1/lexicon/history/'+(lexFnv(id)%2048)+'.json.gz');if(!r.ok)return null;
+    const b=new Uint8Array(await r.arrayBuffer());const t=b[0]===31&&b[1]===139?await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'))).text():new TextDecoder().decode(b);
+    return (JSON.parse(t).terms||{})[id]||null;}catch(_){return null;}}
+  let lexTok=0;
   async function defineWord(word,rc){
-    const f=lexFold(word);if(!f)return;
+    const f=lexFold(word);if(!f)return;const tok=++lexTok;
     lexPop.innerHTML=`<p class="lx-wait" role="status">Looking up “${lexEsc(word)}”…</p>`;lexPop.hidden=false;
     const place=()=>{if(innerWidth<=640){lexPop.style.left='8px';lexPop.style.top='auto';return;}
       lexPop.style.left=Math.max(8,Math.min(rc.left,innerWidth-lexPop.offsetWidth-8))+'px';
@@ -1356,6 +1363,13 @@ function __initReaderTools(){
     lexPop.innerHTML=`<button type="button" class="lx-x" aria-label="Close">×</button><p class="lx-h">${lexEsc(t.headword)}</p>${forms?`<p class="lx-f">${lexEsc(forms)}</p>`:''}`
       +`<ol class="lx-s">${(t.senses||[]).slice(0,3).map(sn=>`<li><span>${lexEsc(sn.gloss)}</span>${(sn.src||[]).slice(0,2).map(([w,pg,a,ti])=>`<a href="${lexEsc(READER_PATH(w,pg))}">${lexEsc(a?a+', ':'')}${lexEsc(ti||w)}, p. ${lexEsc(pg)}</a>`).join('')}</li>`).join('')}</ol>`
       +`<a class="lx-open" href="${LEX}#${encodeURIComponent(t.id)}">${(t.senses||[]).length>3?`All ${t.senses.length} senses in the lexicon`:'Open in the lexicon'}</a>`;
+    place();
+    if(typeof DecompressionStream==='undefined')return;
+    const h=await lexHistory(t.id);
+    if(!h||!h.works||lexPop.hidden||tok!==lexTok)return;
+    const dated=h.rows.map(r=>h.authors[r[2]]).filter(a=>a&&a[2]!=null),a0=dated[0],a1=dated[dated.length-1];
+    const span=a0&&a1&&a0!==a1?`, from ${lexEsc(a0[0])} to ${lexEsc(a1[0])}`:'';
+    lexPop.querySelector('.lx-open')?.insertAdjacentHTML('beforebegin',`<p class="lx-hist">Defined in ${h.works.toLocaleString()} ${h.works===1?'work':'works'}${span}. <a href="${LEX}#${encodeURIComponent(t.id)}">How each defines it</a></p>`);
     place();
   }
   const READER_PATH=(w,pg)=>(window.__FR_READER_PATH__||'/read')+'?w='+encodeURIComponent(w)+'#b'+encodeURIComponent(pg)+'-0';

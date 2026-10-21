@@ -40,6 +40,17 @@
 .tfr-tool .sense li{font-size:.9rem;color:var(--muted)}
 .tfr-tool .sense li a{color:var(--fg)}
 .tfr-tool .muted{color:var(--muted)}
+.tfr-tool .hist{margin:1.6rem 0 0}
+.tfr-tool .hist h3{font:500 1.35rem/1.25 var(--font-display);margin:0 0 .3rem}
+.tfr-tool .hist>.muted{max-width:66ch;margin:0 0 .8rem;font-size:.92rem}
+.tfr-tool .hist ol{list-style:none;margin:0;padding:0}
+.tfr-tool .hist .hc{font:600 .78rem/1.2 var(--sans);color:var(--muted);letter-spacing:.02em;margin:1rem 0 .3rem;padding-bottom:.2rem;border-bottom:1px solid var(--border)}
+.tfr-tool .hist .hr{padding:.45rem 0 .55rem;border-bottom:1px solid var(--border)}
+.tfr-tool .hist .hw{font-size:.9rem;color:var(--muted)}
+.tfr-tool .hist .hw a,.tfr-tool .hist .hw .ha{color:var(--fg)}
+.tfr-tool .hist .hr p{margin:.2rem 0 0;max-width:68ch}
+.tfr-tool .hist .more{margin:.9rem 0 0;padding:.5rem .9rem;border:1px solid var(--border);border-radius:3px;background:transparent;color:var(--fg);font:1rem/1.2 var(--font-body);cursor:pointer}
+.tfr-tool .hist .more:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 @media (max-width:720px){.tfr-tool .cols{grid-template-columns:1fr}
 .tfr-tool .list{max-height:40vh}
 .tfr-tool .lgroup{grid-template-columns:1fr;gap:.25rem}
@@ -64,4 +75,4 @@
   <div class="cols"><ul class="list" id="list" aria-label="Terms"></ul><article class="entry" id="entry" aria-live="polite"><p class="muted">Loading the lexicon…</p></article></div>
 
 </div></main>
-<script src="{{asset "js/faith-lexicon.js"}}&amp;frv=883cc3707104417f"></script>
+<script src="{{asset "js/faith-lexicon.js"}}&amp;frv=ed40406b09df54f4"></script>

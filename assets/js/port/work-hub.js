@@ -198,10 +198,11 @@
     const [find, hint, none] = FIND[k];
     return `<label class="wh-filter">${find} <input type="search" placeholder="${esc(hint)}" autocomplete="off"></label><ul class="wh-index">${ixRows(k, list.slice(0, STEP))}</ul><p class="wh-none" hidden>${none}</p>${list.length > STEP ? `<button type="button" class="wh-ixmore">Show all ${list.length.toLocaleString()}</button>` : ""}`;
   }
-  function index(d) {
+  function index(d, opt) {
     if (!d.full) return subjects(d.index);
     const lists = Object.fromEntries(PARTS.map(([k]) => [k, partList(d, k)]));
-    const first = (PARTS.find(([k]) => lists[k].length) || PARTS[0])[0];
+    // the part shown first: the one asked for when it has entries (the reader's Contents opens on Scripture), else the first that has any
+    const first = (opt && opt.first && lists[opt.first] && lists[opt.first].length) ? opt.first : (PARTS.find(([k]) => lists[k].length) || PARTS[0])[0];
     const id = `ix${++ixSeq}`;
     IX.set(id, lists);
     return `<div class="wh-parts" role="tablist" aria-label="Parts of the index">${PARTS.map(([k, l]) =>

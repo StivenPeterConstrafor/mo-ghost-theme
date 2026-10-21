@@ -4139,12 +4139,15 @@ function build(){
       // back-of-book index (INDEX_PAGES, §2.2/P5) — same gate as P5's render dispatch, so the
       // tab and the content it opens always agree. Everything else in this tab strip/state
       // machine (_navView, the "on" class, buildNav() re-invocation on click) is untouched.
-      if(INDEX_PAGES&&INDEX_PAGES.size)tab("Index","index");
+      // 10-21 (owner: "every work needs a scripture index? and i can see it on mobile"): the Index tab also carries the index made from
+      // the text (v1/enrich/index: Scripture, subjects, persons, terms, questions, through work-hub.js), so every work with one shows
+      // the tab, on a phone too, and a printed index is named by the book's own heading for it
+      if((INDEX_PAGES&&INDEX_PAGES.size)||window.FRWorkHub)tab("Index","index");
       tab("Library","library");
       if(vt.children.length>1)nav.appendChild(vt);
     }
     if(_navView==="library"){renderLibrary(nav);return;}
-    if(_navView==="index"&&INDEX_PAGES&&INDEX_PAGES.size){renderIndexNav(nav);return;}
+    if(_navView==="index"&&((INDEX_PAGES&&INDEX_PAGES.size)||window.FRWorkHub)){renderIndexNav(nav);return;}
     if(_navView==="outline"&&window.FRReaderNavigation?.isConfession(DATA)&&renderConfessionContents(nav))return;
     const showOutline=STRUCT&&_navView!=="pages";
     if(showOutline) renderOutline(nav);
@@ -4168,10 +4171,16 @@ function build(){
   function renderIndexNav(nav){
     const KIND_LABEL={quaestionum:"Index Quaestionum",errata:"Errata",citations:"Index of Citations",topical:"Index",alphabetic:"Index",contents:"Contents"};
     const box=el("div","nav-index");
-    [...INDEX_PAGES.entries()].forEach(([page,kind])=>{
+    const printed=!!(INDEX_PAGES&&INDEX_PAGES.size);
+    // a printed index page by the book's own heading for it ("Index of the Passages of Holy Scripture"), not four rows of "Index"
+    const outline=printed?readerDisplayOutline().filter(r=>r&&r.title&&r.page!=null&&!isNaN(+r.page)):[];
+    const named=page=>{let best=null;for(const r of outline){if(+r.page<=+page&&(!best||+r.page>=+best.page))best=r;}
+      return best&&/\bind(?:ex|ice|ices)\b|register|catalog/i.test(best.title)?String(best.title).split(" — ")[0]:null;};
+    if(printed){const h=el("h3","index-h");h.textContent="Printed in this book";box.appendChild(h);}
+    [...(printed?INDEX_PAGES.entries():[])].forEach(([page,kind])=>{
       const row=el("div","nav-node nd1 ixnavrow");
       row.dataset.page=page;
-      row.innerHTML=`<span class="cv leaf">▾</span><span class="nn-t">${esc(KIND_LABEL[kind]||"Index")}</span>`;
+      row.innerHTML=`<span class="cv leaf">▾</span><span class="nn-t">${esc(named(page)||KIND_LABEL[kind]||"Index")}</span><span class="nn-p">p. ${esc(String(page))}</span>`;
       row.onclick=()=>goNav(+page,row);
       box.appendChild(row);
       if(kind==="alphabetic"){
@@ -4195,6 +4204,19 @@ function build(){
         box.appendChild(rail);
       }
     });
+    // the index made from the text, opened on Scripture (work-hub.js, the work page's own index)
+    const HUB=window.FRWorkHub;
+    if(HUB&&DATA&&DATA.slug){
+      const made=el("section","index-made");
+      made.innerHTML='<h3 class="index-h">Made from the text</h3><p class="index-guidance" role="status">Loading the index…</p>';
+      box.appendChild(made);
+      HUB.guide(DATA.slug).then(d=>{
+        if(!made.isConnected)return;
+        if(!d||!d.full){made.querySelector(".index-guidance").textContent="No index has been made for this work yet.";return;}
+        made.innerHTML='<h3 class="index-h">Made from the text</h3>'+HUB.render("index",d,{first:"scripture"});
+        HUB.wire(made,(p,b)=>goNav(/^\d+$/.test(String(p))?+p:p,b));
+      }).catch(()=>{if(made.isConnected)made.querySelector(".index-guidance").textContent="The index could not be loaded.";});
+    }
     nav.appendChild(box);
   }
   // LIBRARY: browse every work in the corpus without leaving the reader — a filterable
