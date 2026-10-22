@@ -869,6 +869,9 @@
     // it cites the chapter, said to be that. Never read for verse heads: the resolver read that other book's pages from there and
     // took its "Vers. 1." for a note on this chapter's verse.
     if (c.wb === 2) return c.notes[v] != null ? { p: c.notes[v], how: 'note', v, indexed: true } : c.open != null ? { p: c.open, how: 'cites' } : null;
+    // (10-22) a work on this book with no page for the chapter, at the page that treats it: its note on the verse where the library
+    // indexes one, else that page, said to be that (never the resolver: the page is not where the chapter begins)
+    if (c.treats) return c.notes[v] != null ? { p: c.notes[v], how: 'note', v, indexed: true } : c.open != null ? { p: c.open, how: 'treats' } : null;
     // a set whose map knows only where the book begins, with no note in the chapter: never the resolver either (it would read the
     // book's first chapters for this one's verse heads)
     if (c.open == null && c.bookAt != null && !Object.keys(c.notes).length) return bookPlace(c);
@@ -1038,7 +1041,8 @@
       : t.how === 'page' ? `Its comment on ${name} ${w.ch}:${t.v} is on ${at}`
       : t.how === 'later' ? `No separate note on ${w.ch}:${v}. Its next note is on ${w.ch}:${t.v}, ${at}`
       : t.how === 'nearest' ? `No separate note on ${w.ch}:${v}. Its closest earlier note is on ${w.ch}:${t.v}, ${at}`
-      : t.how === 'cites' ? `It cites ${name} ${w.ch} on ${at}, in its commentary on another book`
+      : t.how === 'cites' ? `It cites ${name} ${w.ch} on ${at}, in its commentary on another passage`
+      : t.how === 'treats' ? `Treats this chapter on ${at}`
       : t.how === 'head' ? `No note on ${w.ch}:${v} was found. ${name} ${w.ch} begins on ${at}, by its heading`
       : t.how === 'book' ? `${name} ${w.ch} is not mapped in it. ${w.book === 'psalms' ? 'The Psalms begin' : `${name} begins`} on ${at}`
       : t.how === 'sermon' || t.how === 'sermon-ch' ? `${sermonSay(t, v, w.ch, name)}, ${at}`
@@ -1089,7 +1093,8 @@
     if (!bodyEl.textContent.trim() || !same) {
       // the verse only where the place is a note on it
       whereEl.textContent = `Opening ${cur.a || cur.t} on ${refName(w)} ${w.ch}${t.v ? `:${t.v}` : ''}, ${pgOf(cur.slug, t.p)}…`;
-      if (!bodyEl.textContent.trim()) bodyEl.innerHTML = `<p class="cp-empty">${PG.EEBO.test(cur.slug) ? 'Opening the book (a large file, loaded once)…' : 'Opening the page…'}</p>`;
+      // (10-22) EEBO is the module's (commentary-pages.js exports it there), not the loader's: PG.EEBO was undefined and threw here
+      if (!bodyEl.textContent.trim()) bodyEl.innerHTML = `<p class="cp-empty">${window.FRCommentaryPages.EEBO.test(cur.slug) ? 'Opening the book (a large file, loaded once)…' : 'Opening the page…'}</p>`;
     }
     try {
       if (t.how === 'collected') {
@@ -1130,7 +1135,8 @@
       : t.how === 'nearest' ? `No separate note on ${sh.ch}:${S.verse}. Its closest earlier note is on ${ref(t.v)}`
       : t.how === 'chapter' ? `No note on ${ref(S.verse)} was found. This is where it opens ${bookName} ${sh.ch}`
       // (10-22) a work on another book, at the page where it cites the chapter; a set whose map knows only where the book begins
-      : t.how === 'cites' ? `It cites ${bookName} ${sh.ch} on this page, in its commentary on another book`
+      : t.how === 'cites' ? `It cites ${bookName} ${sh.ch} on this page, in its commentary on another passage`
+      : t.how === 'treats' ? 'Treats this chapter on this page'
       : t.how === 'head' ? `No note on ${ref(S.verse)} was found. This is where ${bookName} ${sh.ch} begins, by its heading`
       : t.how === 'book' ? `${bookName} ${sh.ch} is not mapped in it. This is where ${sh.book === 'psalms' ? 'the Psalms begin' : `${bookName} begins`}`
       : t.how === 'sermon' || t.how === 'sermon-ch' ? sermonSay(t, S.verse, sh.ch, bookName) : 'Reading on';
@@ -1285,15 +1291,19 @@
     S.rec = null; S.pin = false; S.dirOpen = new Set();
     setDir(false);
     const [list, rec, hits, pr] = await Promise.all([commentaries(w.book, w.ch), recOf(w.book, w.ch), hitsOf(w.book, w.ch), preachOf(w.book)]);
-    // the hits join the list as works the pane can open at their page (wb 2: a list of their own, never a key)
+    // the hits join the list as works the pane can open at their page (wb 2: a list of their own, never a key). (10-22) A work the map
+    // files under this book with no page for the chapter is a hit flagged own: where its page is the chapter's own (treats) it is listed
+    // as a commentary that treats the chapter there, on the book or the whole Bible as its standing says; the rest with the citations
     const have = new Set(list.map((c) => c.slug));
     for (const x of hits) {
       if (have.has(x.w)) continue;
-      list.push({ slug: x.w, a: x.a || '', t: x.t || x.w, notes: {}, open: x.p, rows: {}, hit: { v: x.v || [], n: x.n, g: x.g, how: x.how || '' }, sh: x.sh, wb: 2, score: 0 });
+      const treats = !!(x.own && x.treats);
+      list.push({ slug: x.w, a: x.a || '', t: x.t || x.w, notes: {}, open: x.p, rows: {}, hit: { v: x.v || [], n: x.n, g: x.g, how: x.how || '' }, sh: x.sh,
+        wb: treats ? ((RANK.works[x.w] || [])[1] === 1 ? 1 : 0) : 2, treats, score: 0 });
       S.cen[x.w] = x.cen || 0;
     }
     // a work citing the chapter opens at its note on a verse where the reception history knows one, as the commentaries do (10-22)
-    const citing = new Map(list.filter((y) => y.wb === 2).map((y) => [y.slug, y]));
+    const citing = new Map(list.filter((y) => y.wb === 2 || y.treats).map((y) => [y.slug, y]));
     for (const [v, x] of Object.entries((rec && rec.verses) || {})) {
       for (const [slug, p] of Object.entries(x.notes || {})) { const c = citing.get(slug); if (c && !(v in c.notes)) c.notes[v] = p; }
     }

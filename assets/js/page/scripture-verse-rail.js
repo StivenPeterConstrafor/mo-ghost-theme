@@ -198,7 +198,9 @@
    * volumes nested, his tradition said on the row. A series of homilies through the book (Chrysostom on Matthew, Augustine's Tractates
    * on John) is a commentary, as the pane weighs it: only what the host marks c.kd "sermons" is filed with the sermons; any work may
    * carry its sermons on the passage (c.ser), listed under its row.
-   * rows: the pane's list; cfg.keyOrder: the book's curated key slugs in order. */
+   * rows: the pane's list; cfg.keyOrder: the book's curated key slugs in order. A work the map files under the book with no page for the
+   * chapter is on the hits as own: listed here as a commentary where its page is the chapter's own (c.treats), else with the citations,
+   * whose group is now "Cited in commentaries on other passages" (other books, and other chapters of this one). */
   const ERA_SPANS = [["fathers", 600], ["early-medieval", 1100], ["scholastic", 1500], ["reformation", 1600], ["17th", 1700], ["18th", 1800], ["modern", 1e9]];
   const ERA_LABEL = { ...ERA_NAME, undated: "Undated" };
   const eraOfYear = (y) => (y && y < 9000 ? (ERA_SPANS.find(([, end]) => y < end) || ERA_SPANS[ERA_SPANS.length - 1])[0] : "undated");
@@ -256,7 +258,7 @@
       cited: (p, q) => p.rank - q.rank || byName(p, q),
     };
     const book = cfg.bookName === "Psalm" ? "the Psalms" : cfg.bookName || "the book", ref = `${cfg.bookName || ""} ${cfg.ch || ""}`.trim();
-    const NAMES = { keys: `Key commentaries on ${book}`, book: `Commentaries on ${book}`, whole: "Whole-Bible commentaries", sermons: `Homilies and sermons on ${ref}`, cited: "Cited in commentaries on other books" };
+    const NAMES = { keys: `Key commentaries on ${book}`, book: `Commentaries on ${book}`, whole: "Whole-Bible commentaries", sermons: `Homilies and sermons on ${ref}`, cited: "Cited in commentaries on other passages" };
     const groups = ["keys", "book", "whole", "sermons", "cited"].map((k) => ({ key: k, name: NAMES[k], authors: authors(ws.filter((w) => w.kind === k)).sort(ORDER[k]) }))
       .filter((g) => g.authors.length);
     for (const g of groups) {
@@ -284,6 +286,8 @@
         bits.push(on ? `${on === n && n === 1 ? `${one[0].toUpperCase()}${one.slice(1)}` : `${on} of ${n} ${many}`} on ${cfg.ch}:${v}` : `${n} ${n === 1 ? one : many} on ${ref}`);
       }
       else if (notedOn(c, v)) bits.push(`Note on ${cfg.ch}:${v}`);
+      // (10-22) a work the map files under the book with no page for the chapter, whose page here is the chapter's own
+      else if (c.treats && !Object.keys(c.notes || {}).length) bits.push(`Treats this chapter${c.hit && c.hit.v && c.hit.v.length ? ` (${cfg.ch}:${c.hit.v.slice(0, 4).join(", ")})` : ""}`);
       else {
         // its notes elsewhere in the chapter: the verses themselves when they are few ("Notes on 1:18, 20"), else how many
         const vs = Object.keys(c.notes || {}).map(Number).filter((x) => x > 0).sort((p, q) => p - q), n = vs.length;
