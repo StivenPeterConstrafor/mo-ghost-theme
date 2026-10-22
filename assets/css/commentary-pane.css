@@ -10,11 +10,11 @@
   --cp-hit: #F3EED9;
   --cp-faint: var(--faint, #83837E);
   --cp-heat: var(--fg, #1C1C1A);
-}
+ --cp-sheet: #fff; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]):not([data-theme="sepia"]) { --cp-rule: #3A3A36; --cp-mark: #2E2C26; --cp-hit: #353020; }
+  :root:not([data-theme="light"]):not([data-theme="sepia"]) { --cp-rule: #3A3A36; --cp-mark: #2E2C26; --cp-hit: #353020; --cp-sheet: #1F1E1B; }
 }
-:root[data-theme="dark"] { --cp-rule: #3A3A36; --cp-mark: #2E2C26; --cp-hit: #353020; }
+:root[data-theme="dark"] { --cp-rule: #3A3A36; --cp-mark: #2E2C26; --cp-hit: #353020; --cp-sheet: #1F1E1B; }
 
 /* the reader's own rule is .scripture-reader-layout:has(…) (0,3,0): these outrank it while the pane is open */
 html body.cp-on main .scripture-reader-layout:has(.cp-pane) {
@@ -143,8 +143,8 @@ a.cp-row-t { text-decoration: none; }
 .cp-list .vr-dir-find { position: static; padding: 8px 0; }
 /* the rail's paper and ground are one cream here: a work's preview is set on a white sheet with a hairline, so it reads as the work's
    page and not as the list */
-html.cp-site-mo .vr-e-box { background: #fff; border: 1px solid var(--cp-rule); border-radius: 3px; }
-html.cp-site-mo .vr-dir-find input { background: #fff; }
+html.cp-site-mo .vr-e-box { background: var(--cp-sheet, #fff); border: 1px solid var(--cp-rule); border-radius: 3px; }
+html.cp-site-mo .vr-dir-find input { background: var(--cp-sheet, #fff); }
 
 .cp-where { margin: 10px 0 16px; padding: 0 0 10px; font-size: 13px; color: var(--cp-muted); border-bottom: 1px solid var(--cp-rule); }
 .cp-where .cp-pg { font-variant-numeric: tabular-nums; }
@@ -184,7 +184,7 @@ html.cp-site-mo .vr-dir-find input { background: #fff; }
 
 /* ── Reception: the verse's history from the pages ── */
 .cp-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0 0 10px; }
-.cp-stat { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px 10px; background: #fff; border: 1px solid var(--cp-rule); border-radius: 3px; }
+.cp-stat { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px 10px; background: var(--cp-sheet, #fff); border: 1px solid var(--cp-rule); border-radius: 3px; }
 .cp-stat b { font-size: 24px; line-height: 1.1; font-weight: 500; font-variant-numeric: tabular-nums; }
 .cp-stat span { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cp-muted); }
 .cp-lede { margin: 0 0 14px; font-size: 13px; color: var(--cp-muted); }
