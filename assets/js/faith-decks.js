@@ -739,8 +739,8 @@ function stripHTML(p,authors,who){
 // and others in the reformed system"). A problem's argued list (props: argued [{slug, page, author, work, heading, kind, quote?}],
 // n_more) folds out under it as the paths do on the controversies page: the author with his tradition's swatch, the work and the
 // heading, the page with Preview, his words set in; the Selectae first, then the systems, the disputation sets, the commentaries. Where
-// the problem is a disputed question its atlas and controversies ids give a line of links. A problem with neither an argued list nor
-// joined moves says quietly where to look: the works beside the title.
+// the problem is a disputed question its atlas and controversies ids give a line of links. Where some problems have neither an argued
+// list nor joined moves, one quiet line under the title's head says where to look: the works beside the title.
 const ATLASP=window.__FR_ATLAS_PATH__||'/atlas';
 const AKIND=['selectae','system','disputation','commentary'];
 function arguedHTML(list,more){
@@ -777,8 +777,7 @@ function probRow(side,p,i,ctx){
     +`<div class="pr-b"><p class="pr-q" lang="${main[1]}">${main[0]}</p>${under[0]?`<p class="pr-u" lang="${under[1]}">${under[0]}</p>`:''}`
     +`<p class="pr-v"><span class="pr-vw">${esc(verdict)}</span>${adv?`<span class="pr-adv">, against ${adv}</span>`:''}${pg}</p>${p.answer?`<p class="pr-ans">${esc(p.answer)}</p>`:''}`
     +`${acts.length?`<div class="pr-acts">${acts.join('')}</div>`:''}${folds.join('')}`
-    +`${qlinks.length?`<p class="sec-links">The same question ${qlinks.join(' · ')}</p>`:''}`
-    +`${!ag.length&&!mv.length&&GD()?`<p class="pr-where">Where it is argued: <button type="button" class="res-of" data-gob>see the ${esc(GRID[S.deck].head.toLowerCase())} beside this ${noun()}</button></p>`:''}</div></li>`;
+    +`${qlinks.length?`<p class="sec-links">The same question ${qlinks.join(' · ')}</p>`:''}</div></li>`;
 }
 // THE GRAPH BAND under the title's head, in the module's share bar (tradition-graphics.css .tg-pf): the verdicts in the answer colours,
 // the adversaries' parties in the school colours, the words and counts under each; on the Lutheran deck how often the systems beside
@@ -830,7 +829,7 @@ async function paneProblems(side){
   host.innerHTML=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,'')}${P.slug&&from!=null?`<a class="open" href="${read(P.slug,from)}">Open in the reader ↗</a>`:''}</div>
     <h2>${esc(P.title||h2g)}</h2><p class="what">${esc([P.title_la,partName(S.part)].filter(Boolean).join(' · ')||subg)}</p>
     <p class="pbase">${esc(spine)}${from!=null?`, ${from===to?`p. ${from}`:`pp. ${from}–${to}`}`:''}</p></header>`
-    +`<div class="scroll pscroll${authors.length?' has-strip':''}">${graphHTML(P,cfg)}<div class="pctl">${strip?`<div class="pfilter" role="group" aria-label="Show the ${cfg.many} by their verdict">${strip}</div>`:''}`
+    +`<div class="scroll pscroll${authors.length?' has-strip':''}">${ps.some(p=>!(p.moves||p.voetius||[]).length&&!(Array.isArray(p.argued)&&p.argued.length))?`<p class="pr-where">Where these ${cfg.many} are argued: <button type="button" class="res-of" data-gob>see the ${esc(GRID[S.deck].head.toLowerCase())} beside this ${noun()}</button></p>`:''}${graphHTML(P,cfg)}<div class="pctl">${strip?`<div class="pfilter" role="group" aria-label="Show the ${cfg.many} by their verdict">${strip}</div>`:''}`
     +`${head}</div>`
     +`${groups.map(g=>`<section class="pgrp">${g.ch?`<h3 class="pchap">${esc(g.ch)}</h3>`:''}<ol class="probs">${g.rows.join('')}</ol></section>`).join('')}<p class="note pnone" hidden>None of the ${cfg.many} in this ${noun()} match.</p>`
     +`${more.length?`<section class="pmore" aria-labelledby="${side}-pmh"><h3 id="${side}-pmh">${esc(cfg.more)} <small>${more.length}</small></h3><ol class="argued">${more.map(m=>moveHTML(m,host)).join('')}</ol></section>`:''}`
