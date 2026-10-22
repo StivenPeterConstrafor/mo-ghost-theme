@@ -3,7 +3,7 @@
 {{> "faith-received/_tfr-rail"}}
 {{#contentFor "moHead"}}
 <title>Commentary decks | The Faith Received | Mere Orthodoxy</title>
-<meta name="description" content="Lombard's Sentences, Aquinas's Summa, Vitringa's aphorisms with Martin Vitringa's notes, the Decretals and Gratian's Decretum, place by place: the text and its commentators, read side by side, each with his own questions and articles and their pages." />
+<meta name="description" content="Lombard's Sentences, Aquinas's Summa, Suárez's Metaphysical Disputations, Voetius's problems, Vitringa's aphorisms, Quenstedt's questions, the Decretals and Gratian's Decretum, place by place: the text and its commentators or systems, read side by side, each with his own questions and articles and their pages; Suárez between the authors he cites and the authors who received him." />
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap">
 <style>
@@ -24,7 +24,6 @@
 .tfr-tool .tabs{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.35rem 1.8rem;border-bottom:1px solid var(--border);margin:0 0 .9rem}
 .tfr-tool .tgrp{display:flex;flex-direction:column;min-width:0}
 .tfr-tool .tgk{margin:.2rem 0 -.1rem;font:600 .8125rem/1.2 var(--sans);color:var(--muted)}
-.tfr-tool[data-family="courses"] [data-fam="commentary"],.tfr-tool[data-family="commentary"] [data-fam="courses"]{display:none!important}
 .tfr-tool .tgb{display:flex;flex-wrap:wrap;gap:0 1.1rem}
 .tfr-tool .tabs [role="tab"]{display:inline-block;text-decoration:none;appearance:none;border:0;background:none;padding:.45rem 0 .55rem;margin-bottom:-1px;font:500 1.1875rem/1.2 var(--font-display);color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
 .tfr-tool .tabs [role="tab"][aria-selected="true"]{color:var(--fg);border-bottom-color:var(--fg)}
@@ -474,7 +473,8 @@
 .tfr-tool .cc-kind{display:inline-block;padding:0 .55rem;border:1px solid var(--border);border-radius:999px;font:600 .8125rem/1.6 var(--sans)}
 .tfr-tool .cc-r1{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.3rem 1rem}
 .tfr-tool .cc-r1>span,.tfr-tool .cc-r1>p{min-width:0;max-width:66ch;margin:0;text-wrap:pretty}
-.tfr-tool .pgs{display:inline-flex;flex:none;align-items:baseline;gap:0;white-space:nowrap}
+.tfr-tool .pgs{display:inline-flex;flex:none;align-items:baseline;gap:0;white-space:nowrap;max-width:100%;flex-wrap:wrap}
+.tfr-tool .pg{overflow-wrap:anywhere}
 .tfr-tool .pg{color:var(--fg);font:.8125rem/1.6 var(--sans);font-variant-numeric:tabular-nums;text-underline-offset:3px}
 .tfr-tool .cc-rows{list-style:none;margin:0;padding:0}
 .tfr-tool .cc-rows>li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.2rem 1rem;align-items:baseline;padding:.45rem 0;border-top:1px solid var(--border);font:.9375rem/1.55 var(--font-body);text-wrap:pretty}
@@ -635,6 +635,25 @@
 .tfr-tool .stepper #prev,.tfr-tool .stepper #next{min-width:2.75rem;min-height:2.75rem}
 }
 .tfr-tool :is(.dl-more,.c .ext):focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.tfr-tool .rec-for{margin:.1rem 0 .2rem;font:italic 1rem/1.45 var(--font-display);color:var(--muted);text-wrap:balance}
+.tfr-tool .pv{margin:.6rem 0 .2rem}
+.tfr-tool .pv-plot{position:relative;height:7.2rem}
+.tfr-tool .pv-axis{position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--muted)}
+.tfr-tool .pv-piv{position:absolute;top:0;bottom:0;border-left:1px solid var(--fg)}
+.tfr-tool .pv-ax .pv-sy{color:var(--fg);white-space:nowrap}
+.tfr-tool .pv-ax .pv-sy b{font-weight:600;margin-right:.2rem}
+.tfr-tool .pv-d{position:absolute;width:.5rem;height:.5rem;margin-left:-.25rem;border-radius:50%;background:var(--c);box-shadow:0 0 0 1.5px var(--card-bg)}
+.tfr-tool .pv-d[data-dir="b"]{top:calc(50% - .75rem - var(--k) * .6rem)}
+.tfr-tool .pv-d[data-dir="a"]{top:calc(50% + .25rem + var(--k) * .6rem)}
+.tfr-tool .pv-n{position:absolute;left:0;font:.8125rem/1.2 var(--sans);color:var(--muted);font-variant-numeric:tabular-nums}
+.tfr-tool .pv-n b{color:var(--fg);font-weight:600}
+.tfr-tool .pv-nb{top:0}
+.tfr-tool .pv-na{bottom:0;left:auto;right:0}
+.tfr-tool .pv-ax{position:relative;height:1.1rem;margin-top:.15rem;font:.75rem/1 var(--sans);color:var(--muted);font-variant-numeric:tabular-nums}
+.tfr-tool .pv-ax span{position:absolute;transform:translateX(-50%)}
+.tfr-tool .rec-sub2{margin-left:.8rem}
+.tfr-tool .rcp-pane .rcp-r{padding:.5rem 0}
+.tfr-tool .rec-none{margin-top:.2rem}
 .tfr-tool{background:transparent}
 .tfr-tool .wrap{padding-top:1.2rem}
 .tfr-tool{--sticky:9rem}
@@ -646,26 +665,24 @@
   <div class="bhero-inner container">
     <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Commentary decks</p>
     <h1 class="bhero-title">The commented texts, with their commentators</h1>
-    <p class="bhero-lede">Read a distinction of Lombard's Sentences, a question of Aquinas's Summa, a title of the Decretals or a distinction or causa of Gratian's Decretum beside any commentator the library holds on it, each with his own questions and articles, and Vitringa's aphorisms, with Martin Vitringa's notes, beside the Reformed systems. Either pane can hold a commentator or a system, so two can be compared.</p>
+    <p class="bhero-lede">Read a distinction of Lombard's Sentences, a question of Aquinas's Summa, a title of the Decretals or a distinction or causa of Gratian's Decretum beside any commentator the library holds on it, each with his own questions and articles; Suárez's Metaphysical Disputations section by section, between the authors he cites and the authors who received him; Voetius's problems or Vitringa's aphorisms beside the Reformed systems and disputations, and Quenstedt's questions beside the Lutheran systems. Either pane can hold a commentator or a system, so two can be compared.</p>
   </div>
 </section>
 <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
-<main class="tfr-tool" data-family="commentary"><div class="wrap">
-  <div class="tabs" role="tablist" aria-label="Commented text" data-fam="commentary">
+<main class="tfr-tool"><div class="wrap">
+  <div class="tabs" role="tablist" aria-label="Commented text">
     <div class="tgrp" role="presentation"><span class="tgk" aria-hidden="true">Scholastic</span><div class="tgb" role="presentation">
       <a role="tab" aria-selected="true" tabindex="0" href="#sentences" data-deck="sentences">Lombard's Sentences</a>
-      <a role="tab" aria-selected="false" tabindex="-1" href="#summa" data-deck="summa">Aquinas's Summa</a></div></div>
+      <a role="tab" aria-selected="false" tabindex="-1" href="#summa" data-deck="summa">Aquinas's Summa</a>
+      <a role="tab" aria-selected="false" tabindex="-1" href="#metaphysics" data-deck="metaphysics">Metaphysics with Suárez</a></div></div>
     <div class="tgrp" role="presentation"><span class="tgk" aria-hidden="true">Reformed</span><div class="tgb" role="presentation">
+      <a role="tab" aria-selected="false" tabindex="-1" href="#reformed" data-deck="reformed">Voetius's problems</a>
       <a role="tab" aria-selected="false" tabindex="-1" href="#vitringa" data-deck="vitringa">Vitringa's aphorisms</a></div></div>
+    <div class="tgrp" role="presentation"><span class="tgk" aria-hidden="true">Lutheran</span><div class="tgb" role="presentation">
+      <a role="tab" aria-selected="false" tabindex="-1" href="#lutheran" data-deck="lutheran">Quenstedt's questions</a></div></div>
     <div class="tgrp" role="presentation"><span class="tgk" aria-hidden="true">Canon law</span><div class="tgb" role="presentation">
       <a role="tab" aria-selected="false" tabindex="-1" href="#decretals" data-deck="decretals">The Decretals</a>
       <a role="tab" aria-selected="false" tabindex="-1" href="#decretum" data-deck="decretum">Gratian's Decretum</a></div></div>
-  </div>
-  <div class="tabs" role="tablist" aria-label="Course" data-fam="courses">
-    <div class="tgb" role="presentation">
-      <a role="tab" aria-selected="false" tabindex="-1" href="#metaphysics" data-deck="metaphysics">Metaphysics with Suárez</a>
-      <a role="tab" aria-selected="false" tabindex="-1" href="#reformed" data-deck="reformed">Voetius's problems</a>
-      <a role="tab" aria-selected="false" tabindex="-1" href="#lutheran" data-deck="lutheran">Quenstedt's questions</a></div>
   </div>
   <p class="dlede" id="dlede" hidden></p>
   <button type="button" class="dl-more" id="dlMore" aria-expanded="false" aria-controls="dlede" hidden>More</button>
@@ -684,4 +701,4 @@
 </div></main>
 <link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=0374a552e8452478"><script src="{{asset "js/port/page-window.js"}}&amp;frv=2023bacb69cf7ee4"></script>
 <link rel="stylesheet" href="{{asset "css/port/tradition-graphics.css"}}&amp;frv=cc8cf6f7c7831d99"><script src="{{asset "js/port/tradition-graphics.js"}}&amp;frv=3780efc0f7559ddf"></script>
-<script src="{{asset "js/faith-decks.js"}}&amp;frv=59b7d79f5f4cb396"></script>
+<script src="{{asset "js/faith-decks.js"}}&amp;frv=df87450798b0c1dd"></script>

@@ -5,8 +5,6 @@ window.__FR_LEXICON_PATH__=window.__FR_LEXICON_PATH__||"/the-faith-received/lexi
 window.__FR_CONTROVERSIES_PATH__=window.__FR_CONTROVERSIES_PATH__||"/the-faith-received/controversies/";
 window.__FR_MAPS_PATH__=window.__FR_MAPS_PATH__||"/the-faith-received/maps/";
 window.__FR_ATLAS_PATH__=window.__FR_ATLAS_PATH__||"/the-faith-received/disputed-questions/";
-window.__FR_DECKS_PATH__=window.__FR_DECKS_PATH__||"/the-faith-received/commentary-decks/";
-window.__FR_COURSES_PATH__=window.__FR_COURSES_PATH__||"/the-faith-received/courses/";
 window.__FR_DECKS_TEXT__=window.__FR_DECKS_TEXT__==null?"":window.__FR_DECKS_TEXT__;
 const BLOB=(window.__FR_BLOB_BASE__||"").replace(/\/$/,"");
 const VER=window.__FR_VER?(`?v=${window.__FR_VER}`):"";
@@ -16,16 +14,6 @@ const ROMAN=n=>{const m=[[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[9
 const PARTS=[['Ia','First Part'],['I-II','First Part of the Second'],['II-II','Second Part of the Second'],['III','Third Part']];
 // the Decretum's four runs of places: the distinctions of Part I, the causae of Part II, De penitentia (inside C. 33) and De consecratione
 const DECRETUM=[['D','Distinctions','Distinctio'],['C','Causae','Causa'],['DP','De penitentia','De penitentia, Distinctio'],['DC','De consecratione','De consecratione, Distinctio']];
-// TWO PAGES FROM ONE TEMPLATE (2026-10-22; owner: "now suarez is distinct and should it belong in the commentary decks???"): /decks
-// keeps the commentary decks, a base text with its commentators; /courses carries the courses, the sets that teach by questions and
-// verdicts. The build writes courses.html from this file with the family set; a deck's address on the other page goes there whole.
-const FAMILY=(document.querySelector('.tfr-tool[data-family]')||document.documentElement).dataset.family==='courses'?'courses':'commentary';
-const COURSES=['metaphysics','reformed','lutheran'],COMMENTARY=['sentences','summa','vitringa','decretals','decretum','systems'];
-const famOf=d=>(COURSES.includes(d)?'courses':COMMENTARY.includes(d)?'commentary':'');
-const DECKS_URL=window.__FR_DECKS_PATH__||'/decks',COURSES_URL=window.__FR_COURSES_PATH__||'/courses';
-let AWAY=false;
-// a deck of the other family goes to its own page at once, before any of this page's texts is fetched
-{let h0='';try{h0=decodeURIComponent(location.hash.slice(1).split('?')[0]).split('/')[0];}catch(_){}if(famOf(h0)&&famOf(h0)!==FAMILY){AWAY=true;location.replace(`${FAMILY==='courses'?DECKS_URL:COURSES_URL}${location.hash}`);}}
 const FIRST={sentences:'1',summa:'Ia',decretals:'1',decretum:'D',systems:'I'};
 const TEXTNAME={sentences:"Lombard's text",summa:"Aquinas's text",decretals:"The Decretals",decretum:"Gratian's text",systems:"The place (no common text)"};
 const DECKNAME={sentences:"Lombard's Sentences",summa:"Aquinas's Summa",decretals:"the Decretals",decretum:"Gratian's Decretum",systems:"the systems of theology"};
@@ -64,7 +52,7 @@ const GRID={
   metaphysics:{noun:'disputation',nouns:'disputations',one:'work',many:'works',head:'Works beside',find:'work',name:"Suárez's Metaphysical Disputations",text:"Suárez's text",cell:['section','sections']}
 };
 // a deck's own lede, under the tabs while it is open
-const DECKLEDE={metaphysics:"Each disputation section by section: the opinions Suárez sets out, the Thomists, Scotists, Nominalists and Jesuits who hold them, his verdict and his resolution in his own words, and how the Reformed and Lutheran metaphysicians answered him."};
+const DECKLEDE={metaphysics:"Each disputation section by section: the opinions Suárez sets out with the authors he cites for them, his verdict and his resolution in his own words, and beside them the authors who received him, from the Reformed and Lutheran metaphysicians to the whole works written against him."};
 const GD=()=>Object.prototype.hasOwnProperty.call(GRID,S.deck);
 const G=()=>(D&&D.grids&&D.grids[S.deck])||null;
 const NAMED=()=>SYS()||GD();
@@ -89,8 +77,6 @@ const probOn=()=>!!(PRB()&&PL.props&&S.l!=='~pages'&&!S.alt);
 function state(){
   const [path,query='']=location.hash.slice(1).split('?');
   let h=[];try{h=decodeURIComponent(path).split('/');}catch(_){}
-  if(famOf(h[0])&&famOf(h[0])!==FAMILY){AWAY=true;location.replace(`${FAMILY==='courses'?DECKS_URL:COURSES_URL}${location.hash}`);return;}
-  if(FAMILY==='courses'&&!famOf(h[0]))h=['metaphysics'];
   const q=new URLSearchParams(query),n=k=>q.has(k)&&/^\d+$/.test(q.get(k))?+q.get(k):null;
   if(h[0]==='summa')S={deck:'summa',part:PARTS.some(([k])=>k===h[1])?h[1]:'Ia',place:/^\d+$/.test(h[2]||'')?h[2]:null,art:/^\d+$/.test(h[3]||'')?h[3]:null};
   else if(h[0]==='decretals')S={deck:'decretals',part:['1','2','3','4','5'].includes(h[1])?h[1]:'1',place:/^\d+$/.test(h[2]||'')?h[2]:null,art:null};
@@ -179,7 +165,7 @@ async function loadPlace(){
   const f=`${encodeURIComponent(S.deck)}/${encodeURIComponent(S.part)}/${encodeURIComponent(S.place)}.json`;
   PL={key,text:null,out:null,props:null,rec:null,lazyText:S.deck==='metaphysics'?f:null};
   // a place no commentator is aligned to has no outline file: it is not asked for; a deck with problems asks for the place's own;
-  // the Suárez course asks too for the disputation's reception, beside its props (none yet is normal)
+  // the Suárez deck asks too for the disputation's reception, beside its props (none yet is normal)
   const pf=PRB()?`/v1/decks/${encodeURIComponent(S.deck)}/props/${encodeURIComponent(S.part)}/${encodeURIComponent(S.place)}.json${VER}`:null;
   const rf=S.deck==='metaphysics'?`/v1/decks/metaphysics/reception/${encodeURIComponent(S.part)}/${encodeURIComponent(S.place)}.json${VER}`:null;
   PL.wait=Promise.all([SYS()||PL.lazyText?null:J(`/v1/decks/read/${f}`),rowsFor().length||S.art?J(`/v1/decks/outline/${f}`):null,pf?J(pf):null,rf?J(rf):null]).then(([t,o,pr,rc])=>{
@@ -739,8 +725,8 @@ function moveHTML(m,host){
     +`${adv?`<p class="mv-adv">Against ${adv}</p>`:''}`
     +`${m.quote?qbHTML({quote:m.quote,w:m.slug,p:m.page,cap:`<span class="mv-src">${src}</span>`}):`<p class="mv-src">${src}</p>`}</li>`;
 }
-// ── COMPACT OR IN FULL (2026-10-22; owner: "i dont want just two sentences i like the depth the old controversies had"): the courses
-// open in full, each section as its controversy card and each problem with its statement, its objections and the disputations that
+// ── COMPACT OR IN FULL (2026-10-22; owner: "i dont want just two sentences i like the depth the old controversies had"): the Suárez,
+// Reformed and Lutheran decks open in full, each section as its controversy card and each problem with its statement, its objections and the disputations that
 // argue it, every passage set in; "Compact" brings back the rows of a few lines with their folds. The choice is kept for the reader.
 let COMPACT=(()=>{try{return localStorage.getItem('fr_course_compact')==='1';}catch(_){return false;}})();
 let RID=0;
@@ -1133,11 +1119,11 @@ function setHref(x){
   return u.replace(/^\/controversies(?=[#?]|$)/,CONTRO);
 }
 function rcpRowHTML(r,s){
-  const st=STANCE[r.stance],w=D.texts.works[r.slug]||[],work=r.work||w[1]||'',yr=r.year||w[4]||'',pg=r.page!=null&&r.page!==''&&!!r.slug,at=r.locator||(pg?`p. ${r.page}`:'');
+  const st=STANCE[r.stance],w=D.texts.works[r.slug]||[],work=r.work||w[1]||'',yr=r.year||w[4]||'',pg=r.page!=null&&r.page!==''&&!!r.slug,loc=String(r.locator||'').trim();
   return `<li class="rcp-r" data-st="${esc(r.stance||'')}" data-sc="${esc(mschool(r.school))}"><p class="rcp-h">${s?`<span class="rcp-s">Section ${esc(s.n)}</span> `:''}${st?`<span class="sv sv-${st[1]}">${st[0]}</span> `:''}<b>${esc(r.author||w[0]||'')}</b>${work?`, <em>${esc(work)}</em>`:''}${yr?`, ${esc(yearOf(yr))}`:''}</p>`
     +`${r.head?`<p class="rcp-hd">${esc(r.head)}</p>`:''}${r.claim?`<p class="rcp-c">${esc(r.claim)}</p>`:''}`
-    +`${(r.quote_en||r.quote_la)&&!COMPACT?qbHTML({quote:r.quote_en,la:r.quote_la,w:r.slug,p:r.page,pl:at})
-      :pg?`<p class="ob-pg">${ccPg(r.slug,r.page,at)}</p>`:''}</li>`;
+    +`${(r.quote_en||r.quote_la)&&!COMPACT?qbHTML({quote:r.quote_en,la:r.quote_la,w:r.slug,p:r.page,label:loc})
+      :pg||loc?`<p class="ob-pg">${loc?`<span class="qb-t">${esc(loc)}</span> `:''}${pg?ccPg(r.slug,r.page):''}</p>`:''}</li>`;
 }
 // after Suárez's resolution, the section's reception: twelve rows, the rest a step to the set finder
 function rcpHTML(s){
@@ -1179,7 +1165,7 @@ function pathRowsHTML(paths){
       +`<div class="pth-b">${e.position?`<p>${esc(e.position)}</p>`:''}${e.quote?`<p class="pth-q">“${esc(e.quote)}”</p>`:''}${w[1]?`<p class="pth-src"><em>${esc(w[1])}</em></p>`:''}</div>`
       +`${pg&&e.slug?`<p class="pth-pg"><a href="${read(e.slug,e.page)}">p. ${esc(e.page)}</a> ${pvBtn(e.slug,e.page)}</p>`:''}</li>`;}).join('')}</ol>`;
 }
-// the section's own rows: the views with their holders and Suárez's verdict, his resolution (the compact course, and a section the
+// the section's own rows: the views with their holders and Suárez's verdict, his resolution (the compact view, and a section the
 // controversies have not reached)
 function secCore(side,s,ctx,n){
   const ops=Array.isArray(s.opinions)?s.opinions:[];
@@ -1218,12 +1204,14 @@ function mGraphHTML(P){
     seen.add(nm);
     if(yy>0&&yy<2100)items.push({y:yy,t:TGK[mschool(sch)],name:nm});else if(yy<0)early.push(nm);
   }
-  const marks=items.slice().sort((a,b)=>(cnt.get(b.name)-cnt.get(a.name))||(a.y-b.y)).map((x,i)=>({y:x.y,label:x.name,p:i}));
-  const strip=items.length?TG.eraStrip(TG.bin(items,25),{unit:'holder',units:'holders',labels:TGL,title:'The holders of these opinions, at their birth years',legendLabel:'Schools shown',marks}):'';
+  const R=PL.rec&&PL.rec.sections?Object.values(PL.rec.sections):[];
+  for(const x of R)for(const r of (x&&x.reception)||[]){const nm=String(r.author||'').trim(),yy=Number(r.year);if(!nm||seen.has(nm))continue;seen.add(nm);if(yy>0&&yy<2100)items.push({y:yy,t:TGK[mschool(r.school)],name:nm});}
+  const marks=[{y:SUAREZ_Y,label:'Suárez',p:-1}].concat(items.slice().sort((a,b)=>(cnt.get(b.name)-cnt.get(a.name))||(a.y-b.y)).map((x,i)=>({y:x.y,label:x.name,p:i})));
+  const strip=items.length?TG.eraStrip(TG.bin(items,25),{unit:'author',units:'authors',labels:TGL,title:'The authors Suárez cites and those who received him, at their birth years',legendLabel:'Schools shown',marks}):'';
   const box=(h,body)=>`<div class="pg-c"><h3 class="pg-h">${h}</h3>${body}</div>`;
   return `<section class="pgraph pg-schools tg" aria-label="This disputation in figures">${parts.length?box('The opinions’ holders, by school',tgBar(parts,'The holders of the opinions in this disputation, by school')):''}`
     +`${vs.length?box('Suárez’s verdicts on the opinions',tgBar(vs,'Suárez’s verdicts on the opinions of this disputation')):''}`
-    +`${strip?`<div class="pg-wide"><h3 class="pg-h">The holders through time</h3>${strip}${early.length?`<p class="pg-note">Born before the axis, not drawn: ${esc(early.join(', '))}</p>`:''}</div>`:''}</section>`;
+    +`${strip?`<div class="pg-wide"><h3 class="pg-h">Before and after Suárez: the authors he cites and those who received him</h3>${strip}${early.length?`<p class="pg-note">Born before the axis, not drawn: ${esc(early.join(', '))}</p>`:''}</div>`:''}</section>`;
 }
 async function paneSections(side){
   const host=PANE[side],P=PL.props,cfg=PRB(),cs=commentators(true),key=['secs',PL.key,LANE,COMPACT,PL.rec?1:0].join('|');
@@ -1413,25 +1401,70 @@ function selInfo(s,sel,c){
   if(sel==='r')return {kind:'r',label:'Suárez’s resolution',holders:null,ways:['suarezian']};
   return null;
 }
-// THE RECEPTION OF A SECTION, A VIEW OR SUÁREZ'S RESOLUTION, in the pane beside the course: who holds it (his school, his year, a strip
+// THE RECEPTION OF A SECTION, A VIEW OR SUÁREZ'S RESOLUTION, in the pane beside the sections: who holds it (his school, his year, a strip
 // of them in time), the authors who answer the section (by school, by century, by stance), its place on the map of the tradition, the
 // atlas's answers, the Reformed and Lutherans on its path or another, the splits inside the schools, the links, and the whole works
 // written against Suárez. Never the card again: the card is on the left.
 function recHTML(s,sel,c){
   const pr=(s.schools||[]).find(x=>x&&x.school==='protestant'),paths=pr&&Array.isArray(pr.paths)?pr.paths:[],info=selInfo(s,sel,c);
-  const ways=info?info.ways:[],on=info?paths.filter(e=>ways.includes(e.path)):[],off=info?paths.filter(e=>!ways.includes(e.path)):paths;
+  const ways=info?info.ways:[],on=info?paths.filter(e=>ways.includes(e.path)):paths.filter(e=>e.path==='suarezian'),off=info?paths.filter(e=>!ways.includes(e.path)):paths.filter(e=>e.path!=='suarezian');
   const hs=info?info.holders:secHolders(s),R=recOf(s);
   const links=[s.question?`<a href="${CONTRO}#debate/thomists-scotists/${encodeURIComponent(s.question)}">the same question in the controversies</a>`:'',s.map?`<a href="${MAPSP}#${encodeURIComponent(s.map)}">on the map</a>`:'',s.question?`<a href="${ATLASP}#${encodeURIComponent(s.question)}">in the atlas</a>`:''].filter(Boolean);
   const terms=(s.terms||[]).filter(Boolean),title=info?info.label:`Section ${s.n}`;
-  return `<section class="rec" aria-labelledby="rec-h"><h3 class="rec-hh" id="rec-h">Reception: ${esc(title)}</h3>`
-    +`${info&&info.kind==='r'?'':`<h4>${info?'Who holds this':'Who holds the views'}</h4>${hs&&hs.length?whoHolds(hs,s.n):'<p class="rec-note">Suárez names no holder we can place.</p>'}`}`
-    +`${R?recCountsHTML(R):''}`
-    +`${s.map?`<h4>On the map of the tradition</h4><div class="rec-map tg" data-map="${esc(s.map)}"><p class="rec-note">Loading the map…</p></div>`:''}`
-    +`${s.question?`<h4>In the atlas</h4><div class="rec-atlas tg" data-atlas="${esc(s.question)}"><p class="rec-note">Loading the answers…</p></div>`:''}`
-    +`${paths.length?`<h4>Among the Reformed and Lutherans</h4>${on.length?`<p class="rec-sub">On this path <span class="cc-ct">${on.length}</span></p><div class="pths tg">${pathRowsHTML(on)}</div>`:''}${off.length?`<p class="rec-sub">${on.length?'On another path':'Their paths'} <span class="cc-ct">${off.length}</span></p><div class="pths tg">${pathRowsHTML(off)}</div>`:''}`:''}`
-    +`${(s.intra||[]).length?`<h4>Inside the schools</h4><div class="intras">${intraHTML(s.intra,s,'b',String(s.n))}</div>`:''}`
-    +`${links.length||terms.length?`<p class="sec-links rec-links">${links.length?`Elsewhere: ${links.join(', ')}.`:''}${terms.length?` <span class="sec-lk">Terms</span> ${terms.map(t=>`<a href="${LEXP}#${encodeURIComponent(t)}">${esc(String(t).replace(/-/g,' '))}</a>`).join(', ')}`:''}</p>`:''}`
-    +`<div class="rec-advs" data-adv></div></section>`;
+  const onL=info?(info.kind==='r'?'Who follow his resolution':'On this view’s path'):'Who follow Suárez',offL=on.length?'On another path':'Their paths';
+  return `<section class="rec" aria-labelledby="rec-h"><h3 class="rec-hh" id="rec-h">Before and after Suárez</h3>${info?`<p class="rec-for">${esc(title)}</p>`:''}`
+    +`<div class="pv-box" data-pv><p class="rec-note">Drawing the authors in time…</p></div>`
+    +`<h4 class="pv-h">Whom he cites</h4>`
+    +`${info&&info.kind==='r'?'<p class="rec-note">His resolution is his own; the authors he weighs are under the views.</p>':hs&&hs.length?citedHTML(hs,s.n):'<p class="rec-note">Suárez names no holder we can place.</p>'}`
+    +`${(s.intra||[]).length?`<p class="rec-sub">Divided inside a school</p><div class="intras">${intraHTML(s.intra,s,'b',String(s.n))}</div>`:''}`
+    +`<h4 class="pv-h">Who received him</h4>`
+    +`<div class="rec-advs" data-adv data-d="${esc(S.place)}" data-n="${esc(s.n)}"></div>`
+    +`${R?`${recLineHTML(R)}<ol class="rcp-rows rcp-pane">${R.reception.map(r=>rcpLineHTML(r)).join('')}</ol>${Number(R.reception_more)>0?`<p class="rcp-more">${setHref(R.reception_set)?`<a href="${esc(setHref(R.reception_set))}">+${fmtN(R.reception_more)} more</a>`:`+${fmtN(R.reception_more)} more`}</p>`:''}`:''}`
+    +`${paths.length?`<p class="rec-sub">Among the Reformed and Lutherans</p>${on.length?`<p class="rec-sub rec-sub2">${onL} <span class="cc-ct">${on.length}</span></p><div class="pths tg">${pathRowsHTML(on)}</div>`:''}${off.length?`<p class="rec-sub rec-sub2">${offL} <span class="cc-ct">${off.length}</span></p><div class="pths tg">${pathRowsHTML(off)}</div>`:''}`:''}`
+    +`${!R&&!paths.length?'<p class="rec-note rec-none">No reader of Suárez is recorded on this section.</p>':''}`
+    +`<h4 class="pv-h">Across the tradition</h4>`
+    +`${s.map?`<div class="rec-map tg" data-map="${esc(s.map)}"><p class="rec-note">Loading the map…</p></div>`:''}`
+    +`${s.question?`<div class="rec-atlas tg" data-atlas="${esc(s.question)}"><p class="rec-note">Loading the answers…</p></div>`:''}`
+    +`${links.length||terms.length?`<p class="sec-links rec-links">${links.length?`Elsewhere: ${links.join(', ')}.`:''}${terms.length?` <span class="sec-lk">Terms</span> ${terms.map(t=>`<a href="${LEXP}#${encodeURIComponent(t)}">${esc(String(t).replace(/-/g,' '))}</a>`).join(', ')}`:''}</p>`:''}</section>`;
+}
+// the holders he cites, by school, each with his year (a chip opens his dossier)
+function citedHTML(hs,sn){
+  const by=holdersBy(hs);
+  return `<ul class="rec-who">${MSCH.filter(([k])=>by.has(k)).map(([k,l])=>`<li><span class="hg-k">${l}</span> ${by.get(k).map(h=>`<span class="rec-h1">${holderChip(h,k,h._plain?null:sn)}${h.year!=null&&h.year!==''?` <small>${esc(yearOf(h.year))}</small>`:''}</span>`).join(' ')}</li>`).join('')}</ul>`;
+}
+// a reader's line in the pane: his stance, his name, work and year, his claim, the page (his words are on the left, under the card)
+function rcpLineHTML(r){
+  const st=STANCE[r.stance],w=D.texts.works[r.slug]||[],work=r.work||w[1]||'',yr=r.year||w[4]||'',pg=r.page!=null&&r.page!==''&&!!r.slug;
+  return `<li class="rcp-r" data-sc="${esc(mschool(r.school))}"><p class="rcp-h">${st?`<span class="sv sv-${st[1]}">${st[0]}</span> `:''}<b>${esc(r.author||w[0]||'')}</b>${work?`, <em>${esc(work)}</em>`:''}${yr?`, ${esc(yearOf(yr))}`:''}</p>${r.claim?`<p class="rcp-c">${esc(r.claim)}</p>`:''}${pg||r.locator?`<p class="ob-pg">${r.locator?`<span class="qb-t">${esc(r.locator)}</span> `:''}${pg?ccPg(r.slug,r.page):''}</p>`:''}</li>`;
+}
+// BEFORE AND AFTER SUÁREZ (2026-10-22; owner: "all im assking for is people who recieve suarez opinion and deal with it alongside people
+// whom suaurez cites"). One axis of years with Suárez's birth on it: above it a dot for each author he cites, below it one for each who
+// received him, at his year, in his school's or his tradition's colour; the counts and the spans beside the figure, the names in the
+// lists under it. A dot that would touch its neighbour steps away from the axis. Undated authors are counted, not drawn.
+const SUAREZ_Y=1548;
+const recvC=x=>(/luther/i.test(x.tradition||x.school||'')?'var(--tg-lu)':/reform|calvin|english/i.test(x.tradition||x.school||'')?'var(--tg-rf)':mcol(mschool(x.school)));
+function pivotHTML(before,after){
+  const yr=x=>{const y=Number(x.year)||(TG&&TG.dates?TG.dates.year(x.author||x.name):0);return y>0&&y<2100?y:0;};
+  const uniq=list=>{const seen=new Set(),out=[];for(const x of list){const k=fold(x.author||x.name);if(!k||seen.has(k))continue;seen.add(k);out.push({...x,y:yr(x)});}return out;};
+  const B=uniq(before),A=uniq(after),bd=B.filter(x=>x.y),ad=A.filter(x=>x.y);
+  if(!bd.length&&!ad.length)return '';
+  const ys=[...bd,...ad].map(x=>x.y).concat(SUAREZ_Y),lo=Math.floor(Math.min(...ys)/100)*100,hi=Math.max(1700,Math.ceil((Math.max(...ys)+1)/100)*100),X=y=>(y-lo)/(hi-lo)*100;
+  const place=(list,dir)=>{const lanes=[];return list.slice().sort((a,b)=>a.y-b.y).map(x=>{const cx=X(x.y);let k=0;while(k<4&&lanes[k]!=null&&cx-lanes[k]<1.9)k++;lanes[Math.min(k,3)]=cx;return `<i class="pv-d" style="left:${cx.toFixed(2)}%;--k:${Math.min(k,3)};--c:${dir<0?mcol(mschool(x.school)):recvC(x)}" data-dir="${dir<0?'b':'a'}" title="${esc(`${x.author||x.name}, ${yearOf(x.y)}`)}"></i>`;}).join('');};
+  const span=l=>(l.length?`${yearOf(Math.min(...l.map(x=>x.y)))}${l.length>1?`–${yearOf(Math.max(...l.map(x=>x.y)))}`:''}`:'');
+  const ticks=[];for(let c=Math.ceil(lo/200)*200;c<hi;c+=200)if(Math.abs(c-SUAREZ_Y)>90)ticks.push(`<span style="left:${X(c).toFixed(2)}%">${c}</span>`);
+  ticks.push(`<span class="pv-sy" style="left:${X(SUAREZ_Y).toFixed(2)}%"><b>Suárez</b> 1548</span>`);
+  const und=B.length-bd.length+A.length-ad.length;
+  const say=`${B.length} ${B.length===1?'author':'authors'} he cites${bd.length?`, born ${span(bd)}`:''}; ${A.length} who received him${ad.length?`, ${span(ad)}`:''}`;
+  return `<figure class="pv" role="img" aria-label="${esc(`Before and after Suárez, born 1548: ${say}`)}"><div class="pv-plot">`
+    +`<span class="pv-n pv-nb">He cites <b>${B.length}</b></span><span class="pv-n pv-na">Received by <b>${A.length}</b></span>`
+    +`<i class="pv-axis"></i><span class="pv-piv" style="left:${X(SUAREZ_Y).toFixed(2)}%"></span>${place(bd,-1)}${place(ad,1)}</div>`
+    +`<div class="pv-ax" aria-hidden="true">${ticks.join('')}</div><figcaption class="pg-note">${bd.length?`Those he cites born ${span(bd)}`:''}${bd.length&&ad.length?'; ':''}${ad.length?`those who received him ${span(ad)}`:''}${und?`; ${und} undated, counted and not drawn`:''}.</figcaption></figure>`;
+}
+function recLineHTML(R){
+  const rows=R.reception,bt=new Map(),bs=new Map();
+  for(const r of rows){if(STANCE[r.stance])bt.set(r.stance,(bt.get(r.stance)||0)+1);const k=mschool(r.school);bs.set(k,(bs.get(k)||0)+1);}
+  return `<p class="rec-sub">Answering this section <span class="cc-ct">${fmtN(rows.length+(Number(R.reception_more)||0))}</span></p>`
+    +`<p class="rec-sub rec-sub2">${['against','for','qualifies'].filter(k=>bt.has(k)).map(k=>`<span class="sv sv-${STANCE[k][1]}">${STANCE[k][0]}</span> <span class="cc-ct">${bt.get(k)}</span>`).join(' ')}${bs.size?` <span class="rec-cs">${MSCH.filter(([k])=>bs.has(k)).map(([k,l])=>`<span class="rec-c"><i class="tg-sw" style="--c:${mcol(k)}" aria-hidden="true"></i>${l} <span class="cc-ct">${bs.get(k)}</span></span>`).join(' ')}</span>`:''}</p>`;
 }
 // the authors who answer a section, counted: their stances, their schools, their centuries, and a strip of them in time
 function recCountsHTML(R){
@@ -1448,8 +1481,14 @@ function recCountsHTML(R){
 // the map's position for the choice: the one whose authors include most of its holders, drawn by the shared module; else the map's
 // positions with their counts. The atlas's answers to the question with their counts. The whole works against Suárez.
 async function recFill(root,s,sel,c){
-  const info=selInfo(s,sel,c),mapBox=root.querySelector('.rec-map'),atBox=root.querySelector('.rec-atlas'),advBox=root.querySelector('.rec-advs[data-adv]');
-  if(advBox)advFill(advBox);
+  const info=selInfo(s,sel,c),mapBox=root.querySelector('.rec-map'),atBox=root.querySelector('.rec-atlas'),advBox=root.querySelector('.rec-advs[data-adv]'),pv=root.querySelector('.pv-box[data-pv]');
+  const pr=(s.schools||[]).find(x=>x&&x.school==='protestant'),paths=pr&&Array.isArray(pr.paths)?pr.paths:[],R=recOf(s);
+  const before=(info?info.holders:secHolders(s))||[];
+  advFile().then(A=>{
+    const rows=advFor(A,S.place,s.n);
+    if(advBox&&advBox.isConnected)advBox.innerHTML=rows.length?advListHTML({rows},true):'';
+    if(pv&&pv.isConnected){const after=[...rows.map(r=>({author:r.author,year:r.year,tradition:r.tradition,school:r.tradition})),...(R?R.reception:[]),...paths];pv.innerHTML=pivotHTML(before,after);}
+  });
   if(mapBox){
     const m=await qfile('maps',mapBox.dataset.map);
     if(!mapBox.isConnected)return;
@@ -1459,7 +1498,7 @@ async function recFill(root,s,sel,c){
       let best=null,score=0;
       for(const p of m.positions){const hay=` ${(p.holders||[]).map(x=>fold(x.author)).join(' | ')} `;let n=0;for(const x of names)if(hay.includes(x))n++;if(n>score){score=n;best=p;}}
       const total=m.n||m.positions.reduce((n,p)=>n+(p.holders||[]).length,0);
-      mapBox.innerHTML=`<p class="rec-sub"><a href="${MAPSP}#${encodeURIComponent(m.id||mapBox.dataset.map)}">${esc(m.q)}</a></p>${
+      mapBox.innerHTML=`<p class="rec-sub">On the map: <a href="${MAPSP}#${encodeURIComponent(m.id||mapBox.dataset.map)}">${esc(m.q)}</a></p>${
         best&&TG?TG.positionBlock(best,{total,read,preview:(w,p)=>pvBtn(w,p),level:5,open:false})
           :`${info&&info.holders&&info.holders.length?'<p class="rec-note">The map does not place these holders; its positions:</p>':''}${TG?TG.positionRows(m.positions.map(p=>[p.label,(p.holders||[]).length])):''}`}`;
       if(TG)TG.layout(mapBox);
@@ -1471,17 +1510,21 @@ async function recFill(root,s,sel,c){
     const ans=a&&Array.isArray(a.answers)?a.answers:[];
     if(!ans.length){atBox.innerHTML='<p class="rec-note">No answers in the atlas yet.</p>';return;}
     const t=new Map();for(const x of ans){const k=String(x.answer||'unclear');t.set(k,(t.get(k)||0)+1);}
-    atBox.innerHTML=`<p class="rec-sub"><a href="${ATLASP}#${encodeURIComponent(a.id||atBox.dataset.atlas)}">${esc(a.q)}</a>, ${fmtN(ans.length)} authors answer</p>${TG?TG.positionRows([...t].sort((x,y)=>y[1]-x[1]).map(([k,n])=>[cap1(k),n])):''}`;
+    atBox.innerHTML=`<p class="rec-sub">In the atlas: <a href="${ATLASP}#${encodeURIComponent(a.id||atBox.dataset.atlas)}">${esc(a.q)}</a>, ${fmtN(ans.length)} authors answer</p>${TG?TG.positionRows([...t].sort((x,y)=>y[1]-x[1]).map(([k,n])=>[cap1(k),n])):''}`;
   }
 }
-// the whole works against Suárez, fetched once: each with its places in the Disputations, a step to each disputation in the course
+// the whole works against Suárez, fetched once: each with its places in the Disputations, a step to each disputation on the deck
 let ADVP=null;
 const advFile=()=>ADVP||(ADVP=J(`/v1/decks/metaphysics/adversaries.json${VER}`));
 function placePart(d){const g=G();if(!g)return null;for(const p of Object.keys(g)){if(p.startsWith('_'))continue;if(g[p]&&g[p][String(d)])return p;}return null;}
-function advListHTML(A){
+function advFor(A,d,n){
+  const rows=A&&Array.isArray(A.rows)?A.rows:[];
+  return rows.filter(r=>(r.entries||[]).some(e=>e&&String(e.d)===String(d)&&(n==null||!Array.isArray(e.sections)||!e.sections.length||e.sections.map(String).includes(String(n)))));
+}
+function advListHTML(A,here){
   const rows=A&&Array.isArray(A.rows)?A.rows:[];
   if(!rows.length)return '';
-  return `<h4>Whole works against Suárez <span class="cc-ct">${rows.length}</span></h4><ol class="cc-rows adv-rows">${rows.map(r=>{
+  return `<${here?'p class="rec-sub"':'h4'}>${here?'Whole works against him on this disputation':'Whole works against Suárez'} <span class="cc-ct">${rows.length}</span></${here?'p':'h4'}><ol class="cc-rows adv-rows">${rows.map(r=>{
     const es=(Array.isArray(r.entries)?r.entries:[]).filter(e=>e&&e.d!=null),yr=r.year?`, ${esc(yearOf(r.year))}`:'';
     return `<li><div><p class="adv-w"><b>${esc(r.author||'')}</b>${r.title?`, <em>${esc(r.title)}</em>`:''}${yr}${r.tradition?` <small>${esc(r.tradition)}</small>`:''}${r.kind?` <small>${esc(r.kind)}</small>`:''}</p>${r.scope?`<p class="rec-note">${esc(r.scope)}</p>`:''}`
       +`${es.length?`<ul class="adv-es">${es.map(e=>{const part=placePart(e.d),here=part===S.part&&String(e.d)===String(S.place),pg=e.page!=null&&e.page!==''&&r.slug,secs=Array.isArray(e.sections)?e.sections:[];
@@ -1577,7 +1620,7 @@ function dossierOf(pf){
   const ag=Array.isArray(p.argued)?p.argued.filter(x=>x&&x.slug):[];
   return {title:`${cap1(PRB().one)} ${p.n??k+1}`,html:probHeadHTML(p,k)+probRecBody(p,ag),kind:'problem'};
 }
-// what arrives later: the map, the atlas and the whole works against Suárez; in the compact course the card, its chosen part marked
+// what arrives later: the map, the atlas and the whole works against Suárez; in the compact view the card, its chosen part marked
 async function dossierFill(root,d,scroller){
   if(d.kind==='holder'){holderFill(root);return;}
   if(d.kind==='answer'){const b=root.querySelector('.rec-advs[data-adv]');if(b)advFill(b);return;}
@@ -1642,8 +1685,8 @@ function selectDos(art,sel,from){
   if(isPhone())dossierSheet(from);
   else paneDossier('b');
 }
-// the chosen view, problem, holder or answer marked on the left: in the full course on the card (a view of the props on the card's
-// opinion that answers to it), in the compact course on its row
+// the chosen view, problem, holder or answer marked on the left: in full on the card (a view of the props on the card's
+// opinion that answers to it), in the compact view on its row
 function markSel(){
   const A=PANE.a;
   A.querySelectorAll('[aria-current="true"]').forEach(x=>{if(x.closest('.secs,.probs,.ansb'))x.removeAttribute('aria-current');});
@@ -2027,7 +2070,7 @@ function leftSlug(){
 }
 let DOSLAST='';
 async function render(){
-  if(!D||AWAY)return;
+  if(!D)return;
   if(SYS()){
     if(!D.sys){renderNav();PANE.a.innerHTML='<p class="note" style="padding:1rem 1.2rem">Loading the systems…</p>';PANE.b.innerHTML='';SHOWN.a=SHOWN.b='';
       await loadSystems();if(!SYS())return;
@@ -2150,8 +2193,7 @@ document.addEventListener('keydown',e=>{
   e.preventDefault();
 },true);
 window.addEventListener('hashchange',()=>{state();render();});
-if(FAMILY==='courses'&&document.documentElement.dataset.family==='courses'){document.title='Courses · The Faith Received';const md=document.querySelector('meta[name="description"]'),ld=document.querySelector('.lede[data-fam="courses"]');if(md&&ld)md.content=ld.textContent;}
-if(!AWAY)Promise.all(FAMILY==='courses'?[{},{},J(`/v1/decks/texts.json${VER}`),null]:[J(`/v1/sentences.json${VER}`),J(`/v1/summa.json${VER}`),J(`/v1/decks/texts.json${VER}`),J(`/v1/decks/canon.json${VER}`)])
+Promise.all([J(`/v1/sentences.json${VER}`),J(`/v1/summa.json${VER}`),J(`/v1/decks/texts.json${VER}`),J(`/v1/decks/canon.json${VER}`)])
   .then(([sent,summa,texts,canonD])=>{if(!sent||!summa||!texts)throw new Error('decks');if(canonD)texts.works={...canonD.works,...texts.works};
     D={sent,summa,texts,canon:canonD};state();if(S.r&&isPhone())show('b');render();})
   .catch(()=>{PANE.a.innerHTML='<p class="note" style="padding:1rem 1.2rem">The decks could not be loaded. Reload the page to try again.</p>';});
