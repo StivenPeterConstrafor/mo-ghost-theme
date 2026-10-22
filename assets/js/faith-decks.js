@@ -15,6 +15,10 @@ const TEXTNAME={sentences:"Lombard's text",summa:"Aquinas's text",decretals:"The
 const DECKNAME={sentences:"Lombard's Sentences",summa:"Aquinas's Summa",decretals:"the Decretals",decretum:"Gratian's Decretum",systems:"the systems of theology"};
 // the traditions in a fixed order; a work's own (works-index) decides
 const TRADS=['Greek Fathers','Latin Fathers','Medieval','Roman Catholic','Lutheran','Reformed','Continental Reformed','English Divines'];
+// the group a work is listed under: a medieval author on a Fathers shelf (Hugh of St Victor in the Patrologia) is Medieval; on the Summa an author born before Aquinas (1225) is an earlier system treating the question, not a commentator
+function groupOf(c){const y=+c.y||9999,tr=TRADS.includes(c.tr)?c.tr:'Other',early=y<9999&&(tr==='Medieval'||/Fathers$/.test(tr));if(S.deck==='summa'&&early&&y<1225)return 'Before Aquinas';if(early&&y>=600&&/Fathers$/.test(tr))return 'Medieval';return tr;}
+const GROUPS=()=>(S.deck==='summa'?['Before Aquinas']:[]).concat(TRADS,['Other']);
+const byGroup=list=>GROUPS().map(t=>[t,list.filter(c=>groupOf(c)===t)]).filter(([,g])=>g.length);
 // a commentator's place is read here up to this many pages; the reader has the rest
 const MAXP=50;
 // MereO hosts the same page with its own reader path (window.__FR_READER_PATH__ = '/the-faith-received/read/') and data address.
@@ -160,7 +164,7 @@ function summary(items){
 const who=c=>`${c.a||'Unknown'}${c.y<9999&&!SYS()?` (b. ${c.y})`:''}`;
 // the year beside a name is a commentator's birth; on the systems it is the edition's, and goes with the work
 const born=c=>c.y<9999&&!SYS()?`<small>b. ${c.y}</small>`:'';
-const workLine=c=>`${esc(c.t)}${c.vol?`, ${esc(c.vol)}`:''}${SYS()&&c.y<9999&&!String(c.vol).includes(String(c.y))?`, ${c.y}`:''}`;
+const workLine=c=>{const t=String(c.t||''),v=String(c.vol||''),dup=v&&t.toLowerCase().includes(v.toLowerCase());return `${esc(t)}${v&&!dup?`, ${esc(v)}`:''}${SYS()&&c.y<9999&&!v.includes(String(c.y))?`, ${c.y}`:''}`;};
 const pp=c=>c.to>c.from?`pp. ${c.from}–${c.to}`:`p. ${c.from}`;
 
 // ── where a work is not: every place of the deck in order, and the nearest places a work treats ───────────────────────
@@ -199,7 +203,10 @@ function hashFor(p,slug,side){
   const q=new URLSearchParams(),r=side==='a'?S.r:slug,l=side==='a'?slug:S.l;if(r)q.set('r',r);if(l)q.set('l',l);if(S.alt)q.set('alt',S.alt);
   return `${S.deck}/${p.part}/${p.k}${q.toString()?`?${q}`:''}`;
 }
-const placeLink=(p,slug,side,full)=>`<a href="#${esc(hashFor(p,slug,side))}">${esc(placeLabel(p,full))}</a>`;
+const PABBR={'Ia':'Ia','I-II':'Ia-IIae','II-II':'IIa-IIae','III':'IIIa'};
+// a place in a list line: the short citation on the Summa (Ia q. 50, IIa-IIae q. 57), the usual label elsewhere
+const briefLabel=p=>S.deck==='summa'?`${PABBR[p.part]||p.part} q. ${p.k}`:placeLabel(p,false);
+const placeLink=(p,slug,side,full,brief)=>`<a href="#${esc(hashFor(p,slug,side))}">${esc(brief?briefLabel(p):placeLabel(p,full))}</a>`;
 // the pane of a work chosen where it has no division: it says so, and where the nearest are
 function absentNote(slug,side){
   const w=D.texts.works[slug]||[],name=w[0]||(SYS()?'This system':GD()?'This work':'This commentator'),N=nearest(slug),pk=S.part,sys=SYS()||GD();
@@ -217,7 +224,7 @@ function absentNote(slug,side){
 }
 // the line under an absent work in the list: where it begins, ends, or the nearest on either side
 function nearHTML(slug){
-  const N=nearest(slug),L=p=>placeLink(p,slug,'b',false);
+  const N=nearest(slug),L=p=>placeLink(p,slug,'b',false,true);
   if(N.before&&N.after)return `Nearest: ${L(N.before)}, before; ${L(N.after)}, after`;
   if(N.after)return `Begins at ${L(N.after)}`;
   if(N.before)return `Ends at ${L(N.before)}`;
@@ -292,7 +299,7 @@ function scrollToEl(side,el,flash){
 }
 function sourceSelect(side,cs,current){
   const first=side==='a'?`<option value="${SYS()?'-':''}">${esc(TEXTNAME[S.deck])}</option>`:`<option value="">All ${WHO()} (${cs.length})</option>`;
-  const groups=[...TRADS,'Other'].map(t=>[t,cs.filter(c=>(TRADS.includes(c.tr)?c.tr:'Other')===t)]).filter(([,g])=>g.length);
+  const groups=byGroup(cs);
   const w=current&&current!=='-'&&!cs.some(c=>c.slug===current)?D.texts.works[current]||[]:null;
   const away=w?`<optgroup label="Not on this ${noun()}"><option value="${esc(current)}" selected>${esc(w[0]||current)}${w[1]?` · ${esc(String(w[1]).slice(0,48))}`:''}</option></optgroup>`:'';
   return `<label class="srcl"><span>Read</span><select data-src="${side}" aria-label="What the ${side==='a'?'left':'right'} pane reads">${first}${away}${groups.map(([t,g])=>`<optgroup label="${esc(t)}">${g.map(c=>`<option value="${esc(c.slug)}"${c.slug===current?' selected':''}>${esc(c.a||c.t)} · ${esc(c.t.slice(0,48))}${c.vol?`, ${esc(c.vol.slice(0,24))}`:''}</option>`).join('')}</optgroup>`).join('')}</select></label>`;
@@ -689,13 +696,17 @@ function paneDir(side){
       <span class="who">${esc(c.a||'Unknown')}${born(c)}</span><span class="work">${workLine(c)}</span>
       <span class="sum">${esc(summary(c.items))} · ${esc(pp(c))}</span></button><a class="ext" href="${read(c.slug,f[1],f[3])}" aria-label="Open ${esc(c.a)} in the reader">Open ↗</a></div>
       ${PV&&PV.has(c.slug)?`<p class="pv">${esc(PV.get(c.slug))}</p>`:''}${c.items.length>1?`<details class="toc"><summary>Contents</summary><ol>${c.items.map((x,k)=>`<li class="d${Math.max(1,Math.min(3,x[2]))}"><button type="button" data-read="${esc(c.slug)}" data-i="${k}">${esc(x[0])}</button><a href="${read(c.slug,x[1],x[3])}" title="Open in the reader">p. ${esc(x[1])}</a></li>`).join('')}</ol></details>`:''}</li>`;};
-  const byTrad=list=>[...TRADS,'Other'].map(t=>[t,list.filter(c=>(TRADS.includes(c.tr)?c.tr:'Other')===t)]).filter(([,g])=>g.length);
+  const byTrad=byGroup;
   const groups=byTrad(cs);
   // the deck's other commentators, not on this place: folded under the list, each with the nearest place he treats
   const here=new Set(commentators(true).map(c=>c.slug));
   const away=deckWorks().filter(sl=>!here.has(sl)).map(sl=>{const w=D.texts.works[sl]||[];return {slug:sl,a:w[0]||'',t:w[1]||sl,vol:w[2]||'',tr:w[3]||'Other',y:w[4]||9999,from:0};}).filter(c=>c.a||c.t!==c.slug).sort(order);
-  const arow=c=>`<li class="c" data-slug="${esc(c.slug)}"><div class="c-who"><span class="who">${esc(c.a||'Unknown')}${born(c)}</span><span class="work">${workLine(c)}</span><span class="near">${nearHTML(c.slug)}</span></div></li>`;
-  const absent=away.length?`<details class="absent"><summary>Not on this ${noun()}<span>${away.length}</span></summary><p class="count">The other ${WHO()} of ${esc(DECKNAME[S.deck])}, with the nearest ${noun()} each treats.</p>${byTrad(away).map(([t,g])=>`<section class="grp"><h3 class="trad">${esc(t)}<span>${g.length}</span></h3><ul class="dir">${g.map(arow).join('')}</ul></section>`).join('')}</details>`:'';
+  // one row per author: a lone work on its own line, several works or volumes nested under him
+const byAuthor=list=>{const m=new Map();list.forEach(c=>{const k=c.a||c.t;if(!m.has(k))m.set(k,{a:c.a,y:c.y,tr:c.tr,items:[]});m.get(k).items.push(c);});return [...m.values()];};
+const arow1=c=>`<li class="c" data-slug="${esc(c.slug)}"><div class="c-who"><span class="who">${esc(c.a||'Unknown')}${born(c)}</span><span class="work">${workLine(c)}</span><span class="near">${nearHTML(c.slug)}</span></div></li>`;
+const arow=g=>{if(g.items.length===1)return arow1(g.items[0]);const same=g.items.every(c=>c.t===g.items[0].t);
+  return `<li class="c c-many"><div class="c-who"><span class="who">${esc(g.a||'Unknown')}${born(g)}</span><span class="work">${same?esc(g.items[0].t):''}</span><span class="near">${g.items.length} ${same?'volumes':'works'}</span></div><ul class="vols">${g.items.map(c=>`<li data-slug="${esc(c.slug)}"><span class="work">${same?esc(c.vol||c.t):workLine(c)}</span><span class="near">${nearHTML(c.slug)}</span></li>`).join('')}</ul></li>`;};
+  const absent=away.length?`<details class="absent"><summary>Not on this ${noun()}<span>${away.length}</span></summary><p class="count">The other ${WHO()} of ${esc(DECKNAME[S.deck])}, with the nearest ${noun()} each treats.${S.deck==='summa'&&away.some(c=>groupOf(c)==='Before Aquinas')?' Those born before Aquinas are earlier systems that treat the same questions.':''}</p>${byTrad(away).map(([t,g])=>`<section class="grp"><h3 class="trad">${esc(t)}<span>${g.length}</span></h3><ul class="dir">${byAuthor(g).map(arow).join('')}</ul></section>`).join('')}</details>`:'';
   host.innerHTML=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,'')}</div>
     <h2>${GD()?GRID[S.deck].head:SYS()?'Systems':'Commentators'}</h2><p class="count">${cs.length?`${cs.length} on this ${noun()}${S.deck==='summa'&&S.art?`, article ${esc(S.art)}`:''}. Choose one to read beside ${SYS()?'the other pane':'the text'}.`:`None aligned to this ${noun()} yet.`}</p>
     ${cs.length+away.length>8?`<input class="find" type="search" placeholder="Find a ${GD()?GRID[S.deck].find:SYS()?'system':'commentator'}" aria-label="Find a ${GD()?GRID[S.deck].find:SYS()?'system':'commentator'}">`:''}</header>
