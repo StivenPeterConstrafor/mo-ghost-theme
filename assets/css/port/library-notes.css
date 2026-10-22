@@ -88,5 +88,7 @@ a.tn-q-q:hover { text-decoration-color: currentColor; }
 .tn-work > summary:hover > span:first-child { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .tn-work > summary:focus-visible { outline: 2px solid var(--fg, currentColor); outline-offset: 2px; }
 .tn-work .tn-qs { margin: 0; padding: 0 0 10px 22px; }
+.tn-work .tn-scroll { max-height: min(60vh, 32rem); overflow: auto; overscroll-behavior: contain; margin-bottom: 12px; border-bottom: 1px solid var(--border, #ddd); }
+.tn-work .tn-scroll:focus-visible { outline: 2px solid var(--fg, currentColor); outline-offset: 2px; }
 @media (pointer: coarse) { .tn-qs .cn-pages a { display: inline-flex; align-items: center; min-height: 36px; } }
 @media (max-width: 640px) { .tn-q-q { font-size: 15.5px; } .tn-work .tn-qs { padding-left: 4px; } }

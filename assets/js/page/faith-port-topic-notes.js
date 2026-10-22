@@ -290,7 +290,8 @@
     const body = groups.length > 1
       ? groups.map(([locus, rows]) => `<h4 class="tn-locus">${esc(locus)}<small>${fmt(rows.length)}</small></h4>${list(rows)}`).join("")
       : list(qs);
-    return fold("Disputed questions", `${nOf(qs.length, "question", "questions")} · ${qs.slice(0, 3).map((q) => q.q).join(" · ")}`,
+    // The fold's line counts the questions and their loci; the questions themselves are the fold's body.
+    return fold("Disputed questions", `${nOf(qs.length, "question", "questions")}${groups.length > 1 ? ` in ${fmt(groups.length)} loci` : ""}`,
       `${body}<p class="rx-note">Each author's answer is read by machine from the claims on his pages; the answers and the map name the pages. <a href="${ATLAS.slice(0, -1)}">Every disputed question, by locus</a></p>`, false, "tn-dq");
   }
 
@@ -322,7 +323,7 @@
       <button type="button" class="rx-button tn-more" aria-expanded="false" aria-controls="tnSharedAll">Show all ${fmt(rows.length)}</button>` : ""}
       <p class="rx-note">Questions three or more works of the library ask, grouped by a machine reading of each work's questions.</p>`;
   }
-  const sharedCount = (rows) => (rows ? `${nOf(rows.length, "question", "questions")}${rows.length ? ` · ${rows.slice(0, 2).map((r) => r.q).join(" · ")}` : ""}` : "Loading");
+  const sharedCount = (rows) => (rows ? `${nOf(rows.length, "question", "questions")}${rows.length > 1 ? ", the most asked first" : ""}` : "Loading");
   function sharedHTML(rows, parts) {
     if (!parts.length || (rows && !rows.length)) return "";
     return fold("Questions the tradition shares", sharedCount(rows), sharedBody(rows), false, "tn-shared");
@@ -340,9 +341,11 @@
       <div class="tn-contro-list">${pairs.map((p) => `<div data-pair="${esc(p.pair)}" hidden></div>`).join("")}</div>
       <p class="rx-note">Each opens the controversy as the work argued it: both sides, the work's judgment, and each side in his own words.</p>`, false, "tn-contro");
   }
+  // A work's list longer than a screenful scrolls in its own pane (the topic page never runs on for fifty questions).
   function controGroup(d, rows) {
+    const list = `<ul class="rn-list tn-qs">${rows.map((c) => `<li><a class="tn-q-q" href="${CONTROVERSIES}${esc(c.id)}">${esc(c.question)}</a><span class="cn-pages">${esc(KIND[c.kind] || c.kind)}</span></li>`).join("")}</ul>`;
     return `<details class="tn-work"><summary><span>${esc(d.source)}, <em>${esc(d.source_title)}</em><small>${esc(d.a)} and ${esc(d.b)}</small></span><span class="tn-n">${nOf(rows.length, "controversy", "controversies")}</span></summary>
-      <ul class="rn-list tn-qs">${rows.map((c) => `<li><a class="tn-q-q" href="${CONTROVERSIES}${esc(c.id)}">${esc(c.question)}</a><span class="cn-pages">${esc(KIND[c.kind] || c.kind)}</span></li>`).join("")}</ul></details>`;
+      ${rows.length > 8 ? `<div class="tn-scroll" role="region" tabindex="0" aria-label="${esc(d.source)}: ${nOf(rows.length, "controversy", "controversies")}">${list}</div>` : list}</details>`;
   }
   async function loadControversies(box, foldEl) {
     if (foldEl.dataset.loaded) return;

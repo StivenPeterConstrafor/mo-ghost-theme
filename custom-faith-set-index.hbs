@@ -7,52 +7,89 @@
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap">
 <style>
-.tfr-tool{--bg:#FFFFFF;--fg:#1C1C1A;--muted:#5A5A56;--border:#D8D8D3;--card-bg:#FFFFFF;--highlight:#EFEFEA;
-  --font-display:'EB Garamond',Georgia,serif;--font-body:'Source Serif Pro',Georgia,serif;--sans:'Source Serif Pro',Georgia,serif;}
+/* ONE INDEX FOR A WHOLE SET (2026-10-20, owner item 6: "back-of-book index for every work … plus combined indexes across sets such as
+   WA and Migne"). v1/enrich/sets/<id>/ (runs/minimax_1019/indices/setindex.py): meta.json, L/ (the lists), E/ (the entries).
+   THE DESIGN PASS (2026-10-22, owner: "design is impeccable"): the directory is a reading list (each set's title, its author with his
+   year and tradition, its entries and volumes in a column of figures) under one find box, one row of kinds and one menu of
+   traditions; one set's index reads as a printed index: the sections, a thumb index of plain letters, the headings in a pane with a
+   running head (the letter, the first and last heading, how many), and each entry's lines with the volume as their locator.
+   Academic Monochrome v3: EB Garamond for titles and headings, Source Serif Pro for everything a hand or an eye works with. */
+.tfr-tool{--bg:#FFFFFF;--fg:#1C1C1A;--muted:#5A5A56;--border:#D8D8D3;--card-bg:#FFFFFF;--highlight:#EFEFEA;--font-display:'EB Garamond',Georgia,serif;--font-body:'Source Serif Pro',Georgia,serif;--sans:'Source Serif Pro',Georgia,serif;--ease:cubic-bezier(.22,1,.36,1);--r:6px;color-scheme:light}
 .tfr-tool *{box-sizing:border-box}
 .tfr-tool{margin:0;background:var(--bg);color:var(--fg);font:16px/1.62 var(--font-body);-webkit-font-smoothing:antialiased}
-.tfr-tool a{color:var(--fg)}
-.tfr-tool .top{padding:1rem 1.4rem .8rem;display:flex;align-items:baseline;gap:.9rem;flex-wrap:wrap;border-bottom:1px solid var(--border)}
-.tfr-tool .top .wm{font:500 1.25rem/1 var(--font-display);text-decoration:none}
-.tfr-tool .top .sub{font:italic 1rem/1 var(--font-display);color:var(--muted)}
-.tfr-tool .wrap{max-width:64rem;margin:0 auto;padding:1.8rem 1.2rem 4rem}
-.tfr-tool h1{font:500 2rem/1.2 var(--font-display);margin:.2rem 0 .3rem;text-wrap:balance}
-.tfr-tool .by{color:var(--muted);margin:0 0 1.2rem}
-.tfr-tool .tabs{display:flex;flex-wrap:wrap;gap:0 1.6rem;border-bottom:1px solid var(--border);margin:0 0 1rem}
-.tfr-tool .tabs button{appearance:none;border:0;background:none;padding:.6rem 0;margin-bottom:-1px;font:500 1.25rem/1.2 var(--font-display);color:var(--muted);border-bottom:2px solid transparent;cursor:pointer}
-.tfr-tool .tabs button small{font:.8rem/1 var(--sans);margin-left:.3rem;font-variant-numeric:tabular-nums}
-.tfr-tool .tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--fg)}
-.tfr-tool .find{display:flex;gap:.5rem;margin:0 0 .8rem}
-.tfr-tool .find input{flex:1;min-width:0;font:1rem/1.3 var(--font-body);padding:.6rem .8rem;border:1px solid var(--border);border-radius:8px;background:var(--card-bg);color:var(--fg)}
-.tfr-tool .find input:focus-visible,.tfr-tool .tabs button:focus-visible,.tfr-tool .letters button:focus-visible,.tfr-tool .list button:focus-visible,.tfr-tool .more:focus-visible,.tfr-tool .chips button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
-.tfr-tool .letters,.tfr-tool .chips{display:flex;flex-wrap:wrap;gap:.25rem;margin:0 0 1.1rem}
-.tfr-tool .letters button,.tfr-tool .chips button{min-width:2rem;padding:.3rem .5rem;border:1px solid var(--border);background:var(--card-bg);color:var(--fg);border-radius:6px;font:500 .8rem/1 var(--font-display);cursor:pointer}
-.tfr-tool .letters button[aria-pressed="true"],.tfr-tool .chips button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.tfr-tool .cols{display:grid;grid-template-columns:minmax(13rem,19rem) minmax(0,1fr);gap:1.6rem;align-items:start}
-.tfr-tool .list{list-style:none;margin:0;padding:0;max-height:72vh;overflow:auto;border-top:1px solid var(--border)}
-.tfr-tool .list li button{display:flex;justify-content:space-between;gap:.6rem;width:100%;text-align:left;padding:.42rem .3rem;border:0;border-bottom:1px solid var(--border);background:none;color:var(--fg);font:1rem/1.3 var(--font-body);cursor:pointer}
-.tfr-tool .list li button small{color:var(--muted);font:.8rem/1.3 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
-.tfr-tool .list li button[aria-current="true"]{background:var(--highlight)}
-.tfr-tool .entry h2{font:500 1.6rem/1.2 var(--font-display);margin:0 0 .2rem;text-wrap:balance}
-.tfr-tool .entry .count{color:var(--muted);margin:0 0 1rem}
-.tfr-tool .rows{list-style:none;margin:0;padding:0}
-.tfr-tool .rows li{padding:.55rem 0;border-bottom:1px solid var(--border)}
-.tfr-tool .rows .vol{font:500 1rem/1.3 var(--font-display)}
-.tfr-tool .rows .subs{margin:.15rem 0 0;color:var(--muted);font-size:.8rem}
-.tfr-tool .rows .subs a{color:var(--fg)}
-.tfr-tool .more{margin:1rem 0 0;border:1px solid var(--border);background:var(--card-bg);color:var(--fg);padding:.45rem .9rem;border-radius:3px;font:600 .8rem/1 var(--sans);cursor:pointer}
-.tfr-tool .verse{margin:1rem 0 .2rem;font:500 1rem/1.3 var(--font-display)}
+.tfr-tool a{color:var(--fg);text-underline-offset:3px}
+.tfr-tool button,.tfr-tool input,.tfr-tool select{font:inherit;color:inherit}
+/* a part the page hides stays hidden, whatever its display (the directory hides the index's tabs, find box, letters and columns) */
+.tfr-tool [hidden]{display:none!important}
+.tfr-tool .sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.tfr-tool .wrap{max-width:70rem;margin:0 auto;padding:1.8rem 1.5rem 4rem}
+.tfr-tool h1{font:500 2rem/1.15 var(--font-display);margin:.2rem 0 .4rem;text-wrap:balance}
+.tfr-tool .by{max-width:62ch;margin:0 0 1.5rem;color:var(--muted);text-wrap:pretty}
 .tfr-tool .muted{color:var(--muted)}
-.tfr-tool .dir{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
-.tfr-tool .dir li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.2rem 1rem;padding:.6rem 0;border-bottom:1px solid var(--border)}
-.tfr-tool .dir a{font:500 1.25rem/1.3 var(--font-display)}
-.tfr-tool .dir .who{color:var(--muted);font-size:.8rem;flex:1 1 100%}
-.tfr-tool .dir small{color:var(--muted);font:.8rem/1.3 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
-@media (max-width:720px){.tfr-tool .cols{grid-template-columns:1fr}
-.tfr-tool .list{max-height:40vh}
-.tfr-tool h1{font-size:1.6rem}}
-.tfr-tool{background:transparent}
-.tfr-tool .wrap{padding-top:1.2rem}
+.tfr-tool :is(a,button,input,select,summary):focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.tfr-tool input:focus-visible,.tfr-tool select:focus-visible{outline-offset:1px}
+/* ── the controls: one vocabulary (body face, 6px corners, 44px tall to a finger), the selected one in ink ──────────────────── */
+.tfr-tool .find input,.tfr-tool .dfind{display:block;width:100%;min-height:2.75rem;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--r);background:var(--card-bg);color:var(--fg);font:1rem/1.3 var(--font-body)}
+.tfr-tool :is(.find input,.dfind)::placeholder{color:var(--muted)}
+.tfr-tool .chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.tfr-tool .chips button{display:inline-flex;align-items:baseline;gap:.45rem;min-height:2.5rem;padding:.4rem .85rem;border:1px solid var(--border);border-radius:var(--r);background:var(--card-bg);color:var(--fg);font:.9375rem/1.25 var(--font-body);cursor:pointer;white-space:nowrap}
+.tfr-tool .chips button small{color:var(--muted);font-size:.8125rem;font-variant-numeric:tabular-nums}
+.tfr-tool .chips button:hover{border-color:var(--muted)}
+.tfr-tool .chips button[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.tfr-tool .chips button[aria-pressed="true"] small{color:inherit;opacity:.8}
+.tfr-tool .pick{display:flex;align-items:center;gap:.6rem;font:.9375rem/1.3 var(--font-body);color:var(--muted)}
+.tfr-tool .pick select{min-height:2.75rem;max-width:100%;padding:0 .7rem;border:1px solid var(--border);border-radius:var(--r);background-color:var(--card-bg);color:var(--fg);font:1rem/1.3 var(--font-body);cursor:pointer}
+.tfr-tool .more{display:inline-flex;align-items:center;min-height:2.5rem;margin:1.1rem 0 0;padding:.45rem 1rem;border:1px solid var(--border);border-radius:var(--r);background:var(--card-bg);color:var(--fg);font:.9375rem/1.2 var(--font-body);cursor:pointer}
+.tfr-tool .more:hover{border-color:var(--muted)}
+/* ── one set: its five sections, a thumb index of plain letters ──────────────────────────────────────────────────────────── */
+.tfr-tool .tabs{display:flex;gap:0 1.9rem;margin:0;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}
+.tfr-tool .tabs::-webkit-scrollbar{display:none}
+.tfr-tool .tabs button{flex:none;display:inline-flex;align-items:baseline;gap:.45rem;min-height:2.75rem;padding:.6rem 0 .55rem;margin-bottom:-1px;border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);font:1.0625rem/1.2 var(--font-body);white-space:nowrap;cursor:pointer}
+.tfr-tool .tabs button small{font-size:.8125rem;font-variant-numeric:tabular-nums}
+.tfr-tool .tabs button:hover{color:var(--fg)}
+.tfr-tool .tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--fg)}
+.tfr-tool .tabs button:focus-visible{outline-offset:-2px}
+.tfr-tool .letters{display:flex;flex-wrap:wrap;gap:2px;margin:.8rem 0 1.4rem}
+.tfr-tool .letters button{display:inline-grid;place-items:center;min-width:2.25rem;min-height:2.25rem;padding:0 .3rem;border:0;border-radius:var(--r);background:none;color:var(--fg);font:600 .9375rem/1 var(--font-body);cursor:pointer}
+.tfr-tool .letters button:hover{background:var(--highlight)}
+.tfr-tool .letters button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.tfr-tool .letters .pick{flex-wrap:wrap}
+/* ── the headings in a pane that keeps its place while the entry scrolls; the pane's running head ────────────────────────── */
+.tfr-tool .cols{display:grid;grid-template-columns:minmax(15rem,20rem) minmax(0,1fr);gap:0 2.75rem;align-items:start}
+.tfr-tool .side{position:sticky;top:calc(var(--fr-sticky-top,0px) + 1rem);display:flex;flex-direction:column;min-width:0;max-height:calc(100vh - var(--fr-sticky-top,0px) - 2rem);max-height:calc(100dvh - var(--fr-sticky-top,0px) - 2rem)}
+.tfr-tool .find{margin:0 0 .75rem}
+.tfr-tool .runhead{display:grid;gap:.15rem;margin:0;padding:0 .5rem .45rem;border-bottom:1px solid var(--fg)}
+.tfr-tool .runhead .rh-1{display:flex;align-items:baseline;gap:.6rem;min-width:0}
+.tfr-tool .runhead b{flex:none;font:500 1.5rem/1.1 var(--font-display);color:var(--fg)}
+.tfr-tool .runhead .rh-range{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:italic 1rem/1.3 var(--font-display);color:var(--muted)}
+.tfr-tool .runhead .rh-2{display:flex;justify-content:space-between;gap:.75rem;font:.8125rem/1.3 var(--font-body);color:var(--muted);font-variant-numeric:tabular-nums}
+.tfr-tool .list{list-style:none;margin:0;padding:0;flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}
+.tfr-tool .list li button{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;width:100%;min-height:2.5rem;padding:.45rem .5rem;border:0;border-bottom:1px solid var(--border);background:none;color:var(--fg);font:1rem/1.35 var(--font-body);text-align:left;cursor:pointer}
+.tfr-tool .list li button small{flex:none;color:var(--muted);font:.8125rem/1.35 var(--font-body);font-variant-numeric:tabular-nums}
+.tfr-tool .list li button:hover{background:var(--highlight)}
+.tfr-tool .list li button[aria-current="true"]{background:var(--fg);color:var(--bg)}
+.tfr-tool .list li button[aria-current="true"] small{color:inherit;opacity:.8}
+.tfr-tool .list li button:focus-visible{outline-offset:-2px}
+.tfr-tool .list .empty{padding:.8rem .5rem;color:var(--muted)}
+.tfr-tool .list[aria-busy="true"]{opacity:.55}
+/* Scripture: the chapters of the book chosen, as a grid of numerals */
+.tfr-tool .list.chs{display:grid;grid-template-columns:repeat(auto-fill,minmax(2.75rem,1fr));gap:4px;align-content:start;padding:.6rem 0 0}
+.tfr-tool .list.chs li button{align-items:center;justify-content:center;min-height:2.5rem;padding:0;border:1px solid var(--border);border-radius:var(--r);font-variant-numeric:tabular-nums}
+/* ── an entry: its heading, then a line for each volume: the volume as locator, the work, the pages ───────────────────────── */
+.tfr-tool .entry{min-width:0;scroll-margin-top:calc(var(--fr-sticky-top,0px) + 1rem)}
+.tfr-tool .entry h2{font:500 1.75rem/1.2 var(--font-display);margin:0 0 .3rem;text-wrap:balance}
+.tfr-tool .entry .count{max-width:62ch;margin:0 0 1.1rem;color:var(--muted);font-size:.9375rem;text-wrap:pretty}
+.tfr-tool .rows{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
+.tfr-tool .rows>li{display:grid;grid-template-columns:var(--loc,0px) minmax(0,1fr);column-gap:var(--locgap,0px);align-items:baseline;padding:.7rem 0;border-bottom:1px solid var(--border)}
+.tfr-tool .rows>li.lo{padding:.5rem 0}
+.tfr-tool .rows>li.nl>.vt{grid-column:1/-1}
+.tfr-tool .rows .loc{font:600 .9375rem/1.5 var(--font-body);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tfr-tool .rows .vt{min-width:0}
+.tfr-tool .rows .vol{margin:0;font:500 1.0625rem/1.4 var(--font-display);text-wrap:pretty}
+.tfr-tool .rows .subs{margin:.15rem 0 0;font:.9375rem/1.6 var(--font-body);color:var(--muted);overflow-wrap:anywhere}
+.tfr-tool .rows .subs a{color:var(--fg)}
+.tfr-tool .verse{margin:1.5rem 0 .4rem;font:500 1.1875rem/1.3 var(--font-display)}
+.tfr-tool .verse:first-of-type{margin-top:.4rem}
 /* THE PAGE PREVIEW (2026-10-22, owner: "make it easy to preview things in the controversies, indices, etc"): a page reference's
    Preview opens the page itself under its row, in the page window (page-window.js; its look is work-hub.css). The same block on the
    controversies, the maps, the atlas, the shared questions and the set indexes. Here the cited page is named in its head rather than
@@ -86,45 +123,93 @@
 @keyframes pvw-in{from{opacity:0;transform:translateY(-3px)}}
 /* an index's page number opens its page here: the number is the button (and still the reader's link) */
 .tfr-tool .rows .subs a.pvl{padding:0 .1rem;text-underline-offset:3px}
+/* page numbers keep their underline (a link is never told by its colour alone) but lightly, so a run of them reads as an index line */
+.tfr-tool .rows .subs a{text-decoration-color:color-mix(in srgb,var(--fg) 38%,transparent)}
+.tfr-tool .rows .subs a:hover{text-decoration-color:currentColor}
 .tfr-tool .rows .subs a.pvl[aria-expanded="true"]{color:var(--bg)}
-/* a part the page hides stays hidden, whatever its display (the directory hides the index's tabs, find box, letters and columns) */
-.tfr-tool [hidden]{display:none!important}
-/* the directory: a find box and the kinds and traditions, wrapping on a phone; the count of the sets shown */
-.tfr-tool .dfind{display:block;width:100%;max-width:36rem;margin:0 0 .7rem;padding:.6rem .8rem;border:1px solid var(--border);border-radius:8px;background:var(--card-bg);color:var(--fg);font:1rem/1.3 var(--font-body)}
-.tfr-tool .dfind::placeholder{color:var(--muted)}
-.tfr-tool .dfind:focus-visible,.tfr-tool .dir a:focus-visible,.tfr-tool .subs a:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
-.tfr-tool .dirtools .chips{margin:0 0 .5rem}
-.tfr-tool .chips button small{margin-left:.35rem;color:var(--muted);font:.8rem/1 var(--sans);font-variant-numeric:tabular-nums}
-.tfr-tool .chips button[aria-pressed="true"] small{color:inherit}
-.tfr-tool .dstat{margin:.5rem 0 .6rem;color:var(--muted);font:.8rem/1.4 var(--sans);font-variant-numeric:tabular-nums}
-.tfr-tool .dir .muted button{margin-left:.5rem}
-@media (pointer:coarse){.tfr-tool .dirtools .chips button{min-height:36px}}
+/* ── the directory: a reading list of the sets under one find box, a row of kinds and a menu of traditions ────────────────── */
+.tfr-tool .dirtools{display:grid;grid-template-columns:minmax(0,34rem) auto;justify-content:start;gap:.75rem 1.25rem;align-items:center;margin:0 0 1.75rem}
+.tfr-tool .dirtools .chips{grid-column:1/-1}
+.tfr-tool .dhead{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding:0 .5rem .45rem;border-bottom:1px solid var(--fg);font:.8125rem/1.3 var(--font-body);color:var(--muted)}
+.tfr-tool .dstat{margin:0;font-variant-numeric:tabular-nums}
+.tfr-tool .dir{list-style:none;margin:0;padding:0}
+.tfr-tool .dir>li{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:2rem;align-items:baseline;padding:.85rem .5rem .9rem;border-bottom:1px solid var(--border)}
+.tfr-tool .dir .t{grid-column:1;min-width:0}
+.tfr-tool .dir .t a{font:500 1.25rem/1.3 var(--font-display);text-decoration:none;text-wrap:pretty}
+.tfr-tool .dir .t a::after{content:"";position:absolute;inset:0}
+.tfr-tool .dir .t a:focus-visible{outline:none}
+.tfr-tool .dir .t a:focus-visible::after{outline:2px solid var(--fg);outline-offset:-2px}
+.tfr-tool .dir>li:hover{background:var(--highlight)}
+.tfr-tool .dir>li:hover .t a{text-decoration:underline;text-decoration-thickness:1px}
+.tfr-tool .dir .who{grid-column:1;margin-top:.2rem;font:.9375rem/1.45 var(--font-body);color:var(--muted)}
+.tfr-tool .dir .n{grid-column:2;grid-row:1/span 2;align-self:center;text-align:right;font:.9375rem/1.3 var(--font-body);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tfr-tool .dir .n small{display:block;margin-top:.2rem;font-size:.8125rem;color:var(--muted)}
+.tfr-tool .dir>li.none{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;padding:1.2rem .5rem;color:var(--muted)}
+.tfr-tool .dir>li.none:hover{background:none}
+.tfr-tool .dir>li.none .more{margin:0}
+@media (prefers-reduced-motion:no-preference){.tfr-tool :is(.chips button,.letters button,.list li button,.dir>li,.more,.tabs button){transition:background-color .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease)}
+.tfr-tool .list{transition:opacity .15s var(--ease)}}
+@media (pointer:coarse){.tfr-tool .letters button{min-width:2.75rem;min-height:2.75rem}
+.tfr-tool .list li button{min-height:2.75rem}}
+@media (max-width:760px){.tfr-tool .cols{grid-template-columns:minmax(0,1fr);gap:1.5rem}
+.tfr-tool .side{position:static;max-height:none}
+.tfr-tool .list{max-height:42vh;border-bottom:1px solid var(--border)}
+.tfr-tool .dirtools{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.tfr-tool .wrap{padding:1.25rem 1rem 3rem}
+.tfr-tool h1{font-size:1.625rem}
+.tfr-tool .entry h2{font-size:1.5rem}
+/* on a phone each row of choices is one line that scrolls inside itself, never the page */
+.tfr-tool .tabs,.tfr-tool .letters:not(.is-book),.tfr-tool .dirtools .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;margin-inline:-1rem;padding-inline:1rem;scroll-padding-inline:1rem}
+.tfr-tool :is(.letters,.dirtools .chips)::-webkit-scrollbar{display:none}
+.tfr-tool .letters button,.tfr-tool .dirtools .chips button{flex:none}
+.tfr-tool .tabs{gap:0 1.4rem}
+.tfr-tool .pick{flex-wrap:wrap}
+.tfr-tool .pick select{flex:1 1 12rem}
+.tfr-tool .dir>li{column-gap:1rem;padding-inline:0}
+.tfr-tool .dhead{padding-inline:0}
+.tfr-tool .dir .t a{font-size:1.125rem}
+.tfr-tool .rows>li{grid-template-columns:minmax(0,1fr);column-gap:0}
+.tfr-tool .rows .loc{grid-column:1}}
+/* the port: the theme's white page under its hero; sticky parts sit under the masthead and the pinned rail (as the decks port) */
+.tfr-tool{background:transparent}
+.tfr-tool .wrap{padding-top:1.2rem}
+.tfr-tool{--fr-sticky-top:8rem}
+/* the theme's own .entry (its article lists: a 150px plate column, 36px of padding, a rule between entries) is not this entry */
+.tfr-tool .cols>.entry,.tfr-tool .cols>.entry:hover{display:block;grid-template-columns:none;gap:0;padding:0;border-top:0;position:static;color:inherit;text-decoration:none;transition:none}
+/* the theme takes the underline off every link; here a link is told by its underline */
+.tfr-tool a{text-decoration:underline}
 </style>
 {{/contentFor}}
-{{!-- /the-faith-received/set-index/ — Index of the set, as The Faith Received has it (tools/prdl_reader_prototype/setindex.html), in this site's
+{{!-- /the-faith-received/set-index/: Index of the set, as The Faith Received has it (tools/prdl_reader_prototype/setindex.html), in this site's
      shell: the hero is the theme's, the body and its script (faith-set-index.js) the library's, reading the library worker. --}}
 <section class="bhero bhero--tool">
   <div class="bhero-inner container">
     <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Index of the set</p>
     <h1 class="bhero-title" id="title">Index of the set</h1>
-    
+
   </div>
 </section>
 <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
 <main class="tfr-tool"><div class="wrap">
   <p class="by" id="by">Loading…</p>
-  <div class="tabs" role="tablist" aria-label="Index" id="tabs"></div>
-  <form class="find" role="search" id="find"><label for="q" style="position:absolute;left:-9999px">Find in the index</label><input id="q" type="search" autocomplete="off"></form>
+  <div class="tabs" role="tablist" aria-label="Sections of the index" id="tabs"></div>
   <div class="letters" id="letters" role="group" aria-label="Browse by letter"></div>
-  <div class="cols" id="cols"><ul class="list" id="list" aria-label="Entries"></ul><article class="entry" id="entry" aria-live="polite"></article></div>
-  <div class="dirtools" id="dirtools" hidden>
-    <input class="dfind" id="dfind" type="search" autocomplete="off" placeholder="Find a set: Luther, Migne, Suárez" aria-label="Find a set by its title, author or id">
-    <div class="chips" id="dkinds" role="group" aria-label="Kind of set"></div>
-    <div class="chips" id="dtrads" role="group" aria-label="Tradition, by the set's shelf or its author's"></div>
-    <p class="dstat" id="dstat" role="status"></p>
+  <div class="cols" id="cols" role="tabpanel">
+    <div class="side">
+      <form class="find" role="search" id="find"><label for="q" class="sr">Find in the index</label><input id="q" type="search" autocomplete="off" spellcheck="false"></form>
+      <div class="runhead" id="runhead" aria-live="polite" aria-atomic="true" hidden></div>
+      <ul class="list" id="list" aria-label="Headings"></ul>
+    </div>
+    <article class="entry" id="entry" aria-live="polite"></article>
   </div>
+  <div class="dirtools" id="dirtools" hidden>
+    <input class="dfind" id="dfind" type="search" autocomplete="off" spellcheck="false" placeholder="Find a set: Luther, Migne, Suárez" aria-label="Find a set by its title, author or id">
+    <label class="pick" id="dtrad-wrap"><span>Tradition</span><select id="dtrad"></select></label>
+    <div class="chips" id="dkinds" role="group" aria-label="Kind of set"></div>
+  </div>
+  <div class="dhead" id="dhead" hidden><p class="dstat" id="dstat" role="status"></p><span aria-hidden="true">Index entries</span></div>
   <ul class="dir" id="dir" hidden aria-label="Sets with an index"></ul>
 
 </div></main>
 <link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=0374a552e8452478"><script src="{{asset "js/port/page-window.js"}}&amp;frv=2023bacb69cf7ee4"></script>
-<script src="{{asset "js/faith-set-index.js"}}&amp;frv=ab5958b793668654"></script>
+<script src="{{asset "js/faith-set-index.js"}}&amp;frv=af45d775c235a768"></script>
